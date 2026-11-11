@@ -1,14 +1,11 @@
 import 'package:niarim/services/theme_service.dart';
 
 import 'dart:io';
-import 'dart:math' as math;
 import 'dart:typed_data';
-import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../engine/layer_compositor.dart';
 import '../../l10n/app_localizations.dart';
 import '../../models/project.dart';
 import '../../models/save_node.dart';
@@ -330,7 +327,7 @@ class _GameStyleSlotScreen extends StatelessWidget {
           ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: Text(l10n.saveTreeResumeFromHereAction),
+            child: Text(l10n.saveTreeRestoreAction),
           ),
         ],
       ),
@@ -355,6 +352,7 @@ class _GameStyleSlotScreen extends StatelessWidget {
             node.comment ?? l10n.saveTreeSlotFallbackName(node.slotIndex + 1),
           ),
         ),
+        elevation: 0,
       ),
     );
   }
@@ -417,22 +415,14 @@ class _SlotConfirmationSummary extends StatelessWidget {
 /// セーブスロット1件ぶんの行。
 ///
 /// 以前は行をタップするとボトムシートが開き、その中の
-/// 「上書きする／復元／削除」を選ぶ形だった。操作が2段になるうえ、
-/// どのスロットに対する操作なのかがシートの中では分からなくなるため、
-/// **各スロットの行に3つのボタンを直接置く**形へ変更した。
-/// メモ＋ペン＝セーブデータの書き込み、ノート＝読み込み、ゴミ箱＝削除。
+/// Three explicit actions are available for every slot. A phone-sized row
+/// moves the controls beneath the preview, preserving readable names while
+/// providing separated, at least 56dp-wide touch targets.
 class _GameSaveSlotTile extends StatelessWidget {
   final int slotIndex;
   final SaveNode? node;
-
-  /// メモ＋ペン（このスロットへ保存）。空スロットでも押せる。
   final VoidCallback onWrite;
-
-  /// ノート（このスロットから読み込む）。空スロット・クイックセーブ経由では
-  /// nullを渡して無効表示にする。
   final VoidCallback? onLoad;
-
-  /// ゴミ箱（このスロットを削除）。空スロットではnull。
   final VoidCallback? onDelete;
 
   const _GameSaveSlotTile({
@@ -449,8 +439,34 @@ class _GameSaveSlotTile extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     final hasData = node != null;
 
+    final actions = Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _SlotActionButton(
+          icon: Icons.edit_note,
+          tooltip: l10n.saveTreeSlotWriteTooltip,
+          color: scheme.onSurfaceVariant,
+          onPressed: onWrite,
+        ),
+        const SizedBox(width: 14),
+        _SlotActionButton(
+          icon: Icons.menu_book_outlined,
+          tooltip: l10n.saveTreeSlotLoadTooltip,
+          color: scheme.onSurfaceVariant,
+          onPressed: onLoad,
+        ),
+        const SizedBox(width: 14),
+        _SlotActionButton(
+          icon: Icons.delete_outline,
+          tooltip: l10n.saveTreeSlotDeleteTooltip,
+          color: AccentTextTheme.of(context),
+          onPressed: onDelete,
+        ),
+      ],
+    );
+
     return Padding(
-      padding: EdgeInsets.symmetric(vertical: 5),
+      padding: const EdgeInsets.symmetric(vertical: 5),
       child: Material(
         color: hasData
             ? scheme.surfaceContainerLow
@@ -462,100 +478,111 @@ class _GameSaveSlotTile extends StatelessWidget {
         borderRadius: BorderRadius.circular(14),
         clipBehavior: Clip.antiAlias,
         child: InkWell(
-          // 行全体のタップは主操作（＝書き込み）に割り当てる。
-          // 既存データがある場合はボタンと同じく、サムネイルと保存日時入りの
-          // 上書き確認を必ず挟む。
+          // The full row still opens the overwrite confirmation.
           onTap: onWrite,
-          child: Container(
-            constraints: const BoxConstraints(minHeight: 82),
-            decoration: BoxDecoration(
-              border: Border.all(
-                color: hasData
-                    ? scheme.outlineVariant
-                    : scheme.outlineVariant.withValues(alpha: 0.65),
-              ),
-              borderRadius: BorderRadius.circular(14),
-            ),
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-            child: Row(
-              children: [
-                _SlotThumbnail(node: node, size: 58),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        l10n.saveTreeSlotLabel(slotIndex + 1),
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w700,
-                          fontFamily: 'Kuramubon',
-                          fontFamilyFallback: kHeadingFontFallback,
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final stacked = constraints.maxWidth < 530;
+              final details = Row(
+                children: [
+                  _SlotThumbnail(node: node, size: 58),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          l10n.saveTreeSlotLabel(slotIndex + 1),
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w700,
+                            fontFamily: 'Kuramubon',
+                            fontFamilyFallback: kHeadingFontFallback,
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 4),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              hasData
-                                  ? (node!.comment ??
-                                        l10n.saveTreeSlotFallbackName(slotIndex + 1))
-                                  : l10n.saveTreeNoDataLabel,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                color: hasData
-                                    ? scheme.onSurface
-                                    : scheme.onSurfaceVariant,
+                        const SizedBox(height: 4),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Flexible(
+                              fit: FlexFit.loose,
+                              child: Text(
+                                hasData
+                                    ? (node!.comment ??
+                                          l10n.saveTreeSlotFallbackName(
+                                            slotIndex + 1,
+                                          ))
+                                    : l10n.saveTreeNoDataLabel,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  color: hasData
+                                      ? scheme.onSurface
+                                      : scheme.onSurfaceVariant,
+                                ),
                               ),
                             ),
-                          ),
-                          if (hasData)
-                            SaveRenameButton(
-                              node: node!,
-                              fallbackName:
-                                  l10n.saveTreeSlotFallbackName(slotIndex + 1),
-                            ),
-                        ],
-                      ),
-                      if (hasData) ...[
-                        const SizedBox(height: 3),
-                        Text(
-                          _formatDate(node!.savedAt),
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: scheme.onSurfaceVariant,
-                          ),
+                            if (hasData)
+                              Padding(
+                                padding: const EdgeInsets.only(left: 2),
+                                child: SaveRenameButton(
+                                  node: node!,
+                                  fallbackName:
+                                      l10n.saveTreeSlotFallbackName(
+                                        slotIndex + 1,
+                                      ),
+                                ),
+                              ),
+                          ],
                         ),
+                        if (hasData) ...[
+                          const SizedBox(height: 3),
+                          Text(
+                            _formatDate(node!.savedAt),
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: scheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ],
                       ],
-                    ],
+                    ),
                   ),
+                  if (!stacked) ...[
+                    const SizedBox(width: 16),
+                    actions,
+                  ],
+                ],
+              );
+              return Container(
+                constraints: const BoxConstraints(minHeight: 82),
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: hasData
+                        ? scheme.outlineVariant
+                        : scheme.outlineVariant.withValues(alpha: 0.65),
+                  ),
+                  borderRadius: BorderRadius.circular(14),
                 ),
-                const SizedBox(width: 4),
-                // 書き込み・読み込みはテーマの中立色、削除はアクセントの文字・アイコン色。
-                // 空スロットの読み込み・削除は共通の無効色になる。
-                _SlotActionButton(
-                  icon: Icons.edit_note,
-                  tooltip: l10n.saveTreeSlotWriteTooltip,
-                  color: scheme.onSurfaceVariant,
-                  onPressed: onWrite,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 10,
                 ),
-                _SlotActionButton(
-                  icon: Icons.menu_book_outlined,
-                  tooltip: l10n.saveTreeSlotLoadTooltip,
-                  color: scheme.onSurfaceVariant,
-                  onPressed: onLoad,
-                ),
-                _SlotActionButton(
-                  icon: Icons.delete_outline,
-                  tooltip: l10n.saveTreeSlotDeleteTooltip,
-                  color: AccentTextTheme.of(context),
-                  onPressed: onDelete,
-                ),
-              ],
-            ),
+                child: stacked
+                    ? Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          details,
+                          const SizedBox(height: 10),
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: actions,
+                          ),
+                        ],
+                      )
+                    : details,
+              );
+            },
           ),
         ),
       ),
@@ -563,11 +590,6 @@ class _GameSaveSlotTile extends StatelessWidget {
   }
 }
 
-/// セーブスロット行に並ぶ小さな操作ボタン。
-///
-/// 標準の`IconButton`は48dpのタップ判定を確保するため、3つ並べると
-/// 行の右側だけで150dp近くを占め、スロット名やサムネイルが押し出される。
-/// 判定を確保しつつ幅を抑えるため、密度を詰めたうえで固定幅にしている。
 class _SlotActionButton extends StatelessWidget {
   final IconData icon;
   final String tooltip;
@@ -584,13 +606,20 @@ class _SlotActionButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final enabled = onPressed != null;
+    final scheme = Theme.of(context).colorScheme;
     return IconButton(
       tooltip: tooltip,
       onPressed: onPressed,
-      visualDensity: VisualDensity.compact,
-      padding: const EdgeInsets.all(6),
-      constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
-      iconSize: 22,
+      padding: EdgeInsets.zero,
+      constraints: const BoxConstraints.tightFor(width: 56, height: 56),
+      style: IconButton.styleFrom(
+        backgroundColor: scheme.surfaceContainerHighest,
+        side: BorderSide(color: scheme.outlineVariant),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+      ),
+      iconSize: 28,
       icon: Icon(
         icon,
         color: enabled ? color : Theme.of(context).disabledColor,
@@ -624,7 +653,7 @@ class _SlotThumbnail extends StatelessWidget {
             )
           : Image.file(
               File(path),
-              fit: BoxFit.cover,
+              fit: BoxFit.contain,
               // 保存済みサムネイルは長辺200px。ここでの表示は58pxなので、
               // 表示画素数に合わせてデコードして画像キャッシュを節約する。
               cacheWidth: (size * MediaQuery.devicePixelRatioOf(context))
@@ -639,49 +668,7 @@ class _SlotThumbnail extends StatelessWidget {
 Future<Uint8List?> _generateThumbnail(
   ProjectService ps,
   String projectId,
-) async {
-  final scenes = ps.scenesOf(projectId);
-  if (scenes.isEmpty || scenes.first.frames.isEmpty) {
-    return captureEmptySaveThumbnail(ps, projectId);
-  }
-  final scene = scenes.first;
-  final frame = scene.frames.first;
-  final tileManager = ps.tileManagerOf(projectId);
-  final w = tileManager.canvasWidth;
-  final h = tileManager.canvasHeight;
-  if (w <= 0 || h <= 0) return null;
-
-  const thumbMax = 200;
-  final scale = thumbMax / math.max(w, h);
-  final tw = (w * scale).round().clamp(1, thumbMax);
-  final th = (h * scale).round().clamp(1, thumbMax);
-  final layers = ps.layersOf(projectId, scene.id, frame.index);
-  final fullImage = await LayerCompositor.composite(
-    tileManager,
-    layers,
-    (layer) => ps.tileKeyFor(projectId, scene.id, frame.index, layer.id),
-    w,
-    h,
-    paperColor: LayerCompositor.paperForBlendModes(
-      layers,
-      ps.projects.where((p) => p.id == projectId).firstOrNull?.backgroundColor,
-    ),
-  );
-  final recorder = ui.PictureRecorder();
-  final canvas = ui.Canvas(recorder);
-  canvas.drawImageRect(
-    fullImage,
-    ui.Rect.fromLTWH(0, 0, w.toDouble(), h.toDouble()),
-    ui.Rect.fromLTWH(0, 0, tw.toDouble(), th.toDouble()),
-    ui.Paint(),
-  );
-  fullImage.dispose();
-  final picture = recorder.endRecording();
-  final thumbImage = await picture.toImage(tw, th);
-  final byteData = await thumbImage.toByteData(format: ui.ImageByteFormat.png);
-  thumbImage.dispose();
-  return byteData?.buffer.asUint8List();
-}
+) => captureSaveThumbnail(ps, projectId);
 
 String _formatDate(DateTime dt) =>
     '${dt.year}/${dt.month.toString().padLeft(2, '0')}/${dt.day.toString().padLeft(2, '0')} '
