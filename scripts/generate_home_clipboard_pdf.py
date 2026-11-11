@@ -27,14 +27,18 @@ CAPTIONS = {
     "12_project_restore_confirmation": "Project restoration confirmation",
     "13_project_restored": "Project returned to Projects collection",
     "14_outgoing_share_pill": "Created outgoing share collection (separate pill format)",
+    "15_outgoing_trash_confirmation": "Confirmation before moving own shared export to Trash",
+    "16_outgoing_in_trash": "Own exported share shown in Trash",
+    "17_outgoing_restore_confirmation": "Confirmation before restoring outgoing share",
+    "18_outgoing_restored": "Own shared export restored into its original pill",
 }
 
 def main() -> None:
     src = Path(sys.argv[1] if len(sys.argv) > 1 else "build/home-clipboard-captures")
     dest = Path(sys.argv[2] if len(sys.argv) > 2 else "build/home-clipboard-captures/NIARIM_clipboard_trash_screenshots.pdf")
     files = sorted(src.glob("*.png"))
-    if len(files) < 14:
-        raise SystemExit(f"Expected at least 14 real captures; found {len(files)}: {[p.name for p in files]}")
+    if len(files) < 18:
+        raise SystemExit(f"Expected at least 18 real captures; found {len(files)}: {[p.name for p in files]}")
     missing = set(CAPTIONS) - {p.stem for p in files}
     if missing:
         raise SystemExit("Missing required real screenshots: " + ", ".join(sorted(missing)))
