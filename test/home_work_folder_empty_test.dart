@@ -311,7 +311,12 @@ void main() {
       await tester.pumpAndSettle();
       expect(findExportedWorkName('AUDIT_root.gif'), findsOneWidget);
       expect(find.text(env.l10n.homeWorkFolderEmpty), findsNothing);
-      await tester.tap(find.byIcon(Icons.delete_outline));
+      await tester.tap(find.byKey(const Key('exportedWorkMoreMenu')));
+      await tester.pumpAndSettle();
+      final deleteAction = find.text(env.l10n.commonDelete).last;
+      await tester.ensureVisible(deleteAction);
+      await tester.pumpAndSettle();
+      await tester.tap(deleteAction);
       await tester.pumpAndSettle();
       final confirm = find.widgetWithText(FilledButton, env.l10n.commonDelete);
       await tester.ensureVisible(confirm);
