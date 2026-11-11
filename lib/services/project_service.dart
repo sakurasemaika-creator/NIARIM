@@ -360,7 +360,8 @@ class ProjectService extends ChangeNotifier {
   DateTime? deletedAtOf(String projectId) => _trashDeletedAt[projectId];
 
   /// 保存先のプロジェクトを読み込めなかったか（保存先が開けない・一覧を
-  /// 読めない）。1件ずつの破損は数えない（その作品だけ飛ばす）。
+  /// 読めない・作品のフォルダや保存に入れない）。1件ずつの破損は数えない
+  /// （その作品だけ飛ばす。読み直しても同じなので）。
   bool get projectsLoadFailed => _projectsLoadFailed;
   bool _projectsLoadFailed = false;
 
@@ -387,17 +388,50 @@ class ProjectService extends ChangeNotifier {
   }
 
   /// プロジェクトを読み込めなかったとき（[projectsLoadFailed]）に、保存先を
-  /// 読み直す。読み込み済み・ゴミ箱の作品は二重にしない。
-  Future<void> retryLoadProjects() => _loadProjectsFromDisk();
+  /// 読み直す。読み込み済み・ゴミ箱の作品は二重にしない。読み直しの途中で
+  /// もう一度呼ばれたら、同じ読み直しを待つ（2つが並んで走ると、どちらも
+  /// まだ読んでいない作品として同じ作品を一覧へ足した）。読めたら
+  /// [onProjectsReloaded]も待つ。
+  Future<void> retryLoadProjects() =>
+      _retryingLoad ??= _retryLoad().whenComplete(() => _retryingLoad = null);
+  Future<void>? _retryingLoad;
 
-  Future<void> _loadProjectsFromDisk() async {
+  /// [retryLoadProjects]で保存先を読めたときに呼ぶ処理。同じ保存先から読む
+  /// もの（作品ごとの手動の保存の一覧）を、読み直した作品の分まで読む
+  /// （起動時に読めなかった分は、ここで読まないと次に起動するまで出ない）。
+  Future<void> Function()? onProjectsReloaded;
+
+  Future<void> _retryLoad() async {
+    final listed = await _loadProjectsFromDisk();
+    final reload = onProjectsReloaded;
+    // 入れない作品が残っていても（[projectsLoadFailed]のまま）、読めた
+    // 作品の分は読む。
+    if (!listed || reload == null) return;
+    try {
+      await reload();
+    } catch (error, stackTrace) {
+      AppErrorReporter.record(error, stackTrace);
+    }
+  }
+
+  /// 保存先の作品を読み込む。保存先の中を一覧できたら（保存先が無い
+  /// ときも）true。
+  Future<bool> _loadProjectsFromDisk() async {
+    var listed = false;
     try {
       final basePath = await NiaproSerializer.projectsBasePath();
       final baseDir = Directory(basePath);
       if (!baseDir.existsSync()) {
-        _projectsLoadFailed = false;
-        notifyListeners();
-        return;
+        // existsSyncは、上のフォルダ（書類フォルダ/niarim等）に入れない
+        // ときもfalse。無いと分かったときだけ「作品が無い」とする
+        // （入れないときはlistSyncが投げ、下のcatchで受ける）。
+        try {
+          baseDir.listSync();
+        } on PathNotFoundException {
+          _projectsLoadFailed = false;
+          notifyListeners();
+          return true;
+        }
       }
       final cleanup = await ProjectTrashGuard.pending(basePath);
       for (final guard in cleanup) {
@@ -409,12 +443,21 @@ class ProjectService extends ChangeNotifier {
       final known = {
         for (final p in [..._projects, ..._trash]) p.id,
       };
-      for (final dir in baseDir.listSync().whereType<Directory>()) {
+      final folders = baseDir.listSync().whereType<Directory>().toList();
+      listed = true;
+      // 入れない作品のフォルダ・開けない作品の保存（権限が無い・入出力の
+      // 失敗）。壊れた保存と違い、読めるようになれば読み直しで戻るので、
+      // 知らせと「再試行」を残す。
+      var unreadable = false;
+      for (final dir in folders) {
         final projectId = dir.path.split(RegExp(r'[\\/]')).last;
         existingDirectories.add(projectId);
         if (known.contains(projectId)) continue;
         final niaproFile = File('${dir.path}/$projectId.niapro');
-        if (!niaproFile.existsSync()) continue;
+        if (!niaproFile.existsSync()) {
+          if (_isUnreadableArchive(niaproFile)) unreadable = true;
+          continue;
+        }
         try {
           final data = await NiaproSerializer.load(niaproFile.path);
           if (data.project.id != projectId) {
@@ -434,6 +477,13 @@ class ProjectService extends ChangeNotifier {
             _projects.add(project);
             _applyLoadedProjectData(data);
           }
+        } on PathNotFoundException catch (error, stackTrace) {
+          // 読む前に消えた（消す途中等）。
+          AppErrorReporter.record(error, stackTrace);
+        } on FileSystemException catch (error, stackTrace) {
+          // 開けない・読めない（ファイルの権限が無い・入出力の失敗）。
+          AppErrorReporter.record(error, stackTrace);
+          unreadable = true;
         } catch (error, stackTrace) {
           AppErrorReporter.record(error, stackTrace);
           // 破損ファイルはスキップ
@@ -458,7 +508,7 @@ class ProjectService extends ChangeNotifier {
           AppErrorReporter.record(error, stackTrace);
         }
       }
-      _projectsLoadFailed = false;
+      _projectsLoadFailed = unreadable;
     } catch (error, stackTrace) {
       AppErrorReporter.record(error, stackTrace);
       // 保存先を開けないときは読み込めた分（無ければ空）で続け、ホームで
@@ -467,6 +517,24 @@ class ProjectService extends ChangeNotifier {
       _projectsLoadFailed = true;
     }
     notifyListeners();
+    return listed;
+  }
+
+  /// 作品のフォルダに作品の保存（.niapro）が見当たらないとき、「無い」のか
+  /// 「入れない」のか（フォルダの権限が無い・入出力の失敗。existsSyncは
+  /// どちらもfalse）を分ける。入れないときは記録してtrue（作品が何の
+  /// 知らせも無く一覧から消えないように）。保存の無いフォルダ（消す途中で
+  /// 残ったもの等）はfalse。
+  static bool _isUnreadableArchive(File archive) {
+    try {
+      archive.lengthSync();
+    } on PathNotFoundException {
+      // 作品の保存の無いフォルダ。
+    } catch (error, stackTrace) {
+      AppErrorReporter.record(error, stackTrace);
+      return true;
+    }
+    return false;
   }
 
   // ─── ゴミ箱の状態永続化（ゴミ箱・自動削除設定） ─────────────────────────
@@ -524,8 +592,11 @@ class ProjectService extends ChangeNotifier {
 
   /// ゴミ箱の自動削除設定（設定画面で選んだ日数）に従い、保持期限を過ぎた
   /// プロジェクトを完全削除する。days<=0（OFF）の場合は何もしない。
+  /// 保存先を読めなかったとき（[projectsLoadFailed]）も何もしない：ゴミ箱の
+  /// 作品を読めていないので、フォルダの記録だけを消して中の作品を残す等、
+  /// 読めていないものを書き換えてしまう（片付けは次に読めた起動で行う）。
   Future<void> sweepExpiredTrash(int days) async {
-    if (days <= 0) return;
+    if (days <= 0 || _projectsLoadFailed) return;
     final now = DateTime.now();
     // フォルダは中の作品ごと消す。
     final expiredFolders = [

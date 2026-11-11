@@ -67,21 +67,48 @@ class SaveTreeService extends ChangeNotifier {
   /// 作品ごとの保存の一覧のファイル名（SaveTree/の中）。
   static const String indexFileName = 'index.json';
 
+  /// 保存の一覧を読んだ作品（一覧が無かった作品を含む）。読めなかった一覧は
+  /// ここに入らず、[_writeIndex]は書き換えない（書くと、読んでいない保存が
+  /// 一覧から消える）。
+  final Set<String> _readProjects = {};
+
   /// 起動時に、各作品の保存の一覧（SaveTree/index.json）を読み込む。一覧に
   /// 無い保存のファイル（一覧を書けなかった・以前の版で保存した）も拾い直す。
   /// 読めないものは飛ばし、起動は止めない。
-  Future<void> init() async {
+  Future<void> init() => loadUnread();
+
+  /// まだ一覧を読めていない作品の保存の一覧を読む。起動時と、読めなかった
+  /// 保存先を作品の一覧の「再試行」で読めたとき
+  /// （`ProjectService.onProjectsReloaded`）に呼ぶ。読んだ作品・この起動中に
+  /// 保存した作品は読み直さない（同じ保存を二重にしない）。読み終える前に
+  /// もう一度呼ばれたら、同じ読み込みを待つ。
+  Future<void> loadUnread() => _loadingUnread ??= _loadUnread().whenComplete(
+    () => _loadingUnread = null,
+  );
+  Future<void>? _loadingUnread;
+
+  Future<void> _loadUnread() async {
     final String base;
+    final List<Directory> folders;
     try {
       base = await NiaproSerializer.projectsBasePath();
+      final root = Directory(base);
+      if (!root.existsSync()) return;
+      folders = root.listSync().whereType<Directory>().toList();
     } catch (error, stack) {
+      // 保存先を取れない・中を一覧できない（権限が無い・入出力の失敗）。
+      // 作品の一覧も読めていないので、そちらの「再試行」で読めたときに
+      // 読み直す。
       AppErrorReporter.record(error, stack);
       return;
     }
-    final root = Directory(base);
-    if (!root.existsSync()) return;
-    for (final dir in root.listSync().whereType<Directory>()) {
+    for (final dir in folders) {
       final projectId = dir.path.split(RegExp(r'[\\/]')).last;
+      if (_readProjects.contains(projectId) ||
+          _nodesByProject.containsKey(projectId) ||
+          _archivedByProject.containsKey(projectId)) {
+        continue;
+      }
       try {
         await _loadProject(projectId, Directory('${dir.path}/SaveTree'));
       } catch (error, stack) {
@@ -92,7 +119,36 @@ class SaveTreeService extends ChangeNotifier {
   }
 
   Future<void> _loadProject(String projectId, Directory dir) async {
-    if (!dir.existsSync()) return;
+    // existsSyncは「無い」と「入れない」（フォルダの権限が無い・入出力の
+    // 失敗）をどちらもfalseにするので、読んでみて分ける。入れない一覧は
+    // この作品の保存を出さず、読んだことにもしない（[_writeIndex]が
+    // 書き換えず、入れるようになれば[loadUnread]で読み直す）。
+    final index = File('${dir.path}/$indexFileName');
+    String? text;
+    try {
+      text = index.readAsStringSync();
+    } on PathNotFoundException {
+      // 一覧が無い（保存のフォルダごと無い場合も）。
+    } catch (error, stack) {
+      AppErrorReporter.record(error, stack);
+      return;
+    }
+    // 一覧に無い保存のファイルを拾い直すため、フォルダの中を一覧する。
+    // 一覧できないときは、一覧にある保存だけを出す（拾い直すのは次の起動）。
+    // 一覧も読めていなければ、何があるか分からないので読んだことにしない。
+    var files = const <File>[];
+    try {
+      files = dir.listSync().whereType<File>().toList();
+    } on PathNotFoundException {
+      // 保存のフォルダが無い：保存の無い作品。
+      if (text == null) {
+        _readProjects.add(projectId);
+        return;
+      }
+    } catch (error, stack) {
+      AppErrorReporter.record(error, stack);
+      if (text == null) return;
+    }
     String? thumbnailOf(String id) {
       final file = File('${dir.path}/${id}_thumb.png');
       return file.existsSync() ? file.path : null;
@@ -102,10 +158,9 @@ class SaveTreeService extends ChangeNotifier {
     final nodes = <SaveNode>[];
     final archived = <SaveNode>[];
     final known = <String>{};
-    final index = File('${dir.path}/$indexFileName');
-    if (index.existsSync()) {
+    if (text != null) {
       try {
-        final json = jsonDecode(index.readAsStringSync());
+        final json = jsonDecode(text);
         if (json is Map) {
           final rawMemos = json['slotMemos'];
           if (rawMemos is Map) {
@@ -146,7 +201,7 @@ class SaveTreeService extends ChangeNotifier {
     }
     // 一覧に無い保存のファイルを古い順に拾い直す。
     final orphans = <SaveNode>[];
-    for (final file in dir.listSync().whereType<File>()) {
+    for (final file in files) {
       final name = file.uri.pathSegments.last;
       if (!name.endsWith('.niapro')) continue;
       final id = name.substring(0, name.length - '.niapro'.length);
@@ -194,10 +249,24 @@ class SaveTreeService extends ChangeNotifier {
         );
       }
     }
+    _readProjects.add(projectId);
     if (nodes.isEmpty && archived.isEmpty) return;
     _nodesByProject[projectId] = nodes;
     if (archived.isNotEmpty) _archivedByProject[projectId] = archived;
     if (orphans.isNotEmpty) await _persist(projectId);
+  }
+
+  /// [file]が無いと確かめられるか（入れない・入出力の失敗で分からないときは
+  /// false）。
+  static bool _isMissing(File file) {
+    try {
+      file.lengthSync();
+      return false;
+    } on PathNotFoundException {
+      return true;
+    } on FileSystemException {
+      return false;
+    }
   }
 
   /// 保存のIDは`save_<ミリ秒>_<連番>`なので、そこから保存した時刻が分かる。
@@ -224,6 +293,12 @@ class SaveTreeService extends ChangeNotifier {
       // 作品ごと消えたあとは書かない（フォルダを作り直さない）。
       if (!Directory('$base/$projectId').existsSync()) return;
       final dir = Directory('$base/$projectId/SaveTree');
+      final index = File('${dir.path}/$indexFileName');
+      // 読めなかった（まだ読んでいない）一覧は書き換えない。この起動中の
+      // 保存は一覧に入らないが、ファイルは残り、次に起動したとき拾い直す。
+      // 一覧が無いと確かめられたとき（この起動中に作った作品等）だけ書く
+      // （existsSyncは入れないフォルダの中でもfalseになる）。
+      if (!_readProjects.contains(projectId) && !_isMissing(index)) return;
       if (!dir.existsSync()) dir.createSync(recursive: true);
       final json = jsonEncode({
         'nodes': [
@@ -243,9 +318,12 @@ class SaveTreeService extends ChangeNotifier {
       });
       // 書き込みと置き換えは同期で行い、途中で別の書き込みが割り込まない
       // ようにする（作品の保存と同じ）。
-      File('${dir.path}/$indexFileName.tmp')
+      File('${index.path}.tmp')
         ..writeAsStringSync(json, flush: true)
-        ..renameSync('${dir.path}/$indexFileName');
+        ..renameSync(index.path);
+      // 一覧はこの起動の内容と同じになった（この起動中に作った作品も、
+      // 次からは書き換えてよい）。
+      _readProjects.add(projectId);
     } catch (error, stack) {
       AppErrorReporter.record(error, stack);
     }

@@ -50,6 +50,7 @@ import 'widgets/work_folder_move_sheet.dart';
 import 'home_clipboard_policy.dart';
 import '../../config/font_fallback.dart';
 import '../../utils/line_break.dart';
+import '../../widgets/projects_load_failure_notice.dart';
 import '../../widgets/scrollable_sheet_body.dart';
 import '../../utils/app_error_reporter.dart';
 import '../../utils/responsive_tile_defaults.dart';
@@ -575,6 +576,19 @@ class _HomeScreenState extends State<HomeScreen>
                       scrollController: _projectScrollController,
                       header: Column(
                         children: [
+                          // 保存先を読めなかったときは、空の一覧に見えて
+                          // 作品が消えたと思わないよう知らせ、読み直せる
+                          // ようにする。
+                          if (context
+                              .watch<ProjectService>()
+                              .projectsLoadFailed)
+                            ProjectsLoadFailureNotice(
+                              key: const Key('homeProjectsLoadFailed'),
+                              onRetry: () => context
+                                  .read<ProjectService>()
+                                  .retryLoadProjects(),
+                              screenFocus: _homeFocus,
+                            ),
                           Padding(
                             padding: const EdgeInsets.symmetric(
                               horizontal: 8,
@@ -682,6 +696,7 @@ class _HomeScreenState extends State<HomeScreen>
                     SharedScreen(
                       key: const PageStorageKey('home-shared'),
                       embedded: true,
+                      screenFocus: _homeFocus,
                       onDirectionChanged: (outgoing) =>
                           setState(() => _sharedOutgoing = outgoing),
                       onCopyEntry: _copyLibraryEntry,
@@ -689,6 +704,7 @@ class _HomeScreenState extends State<HomeScreen>
                     TrashScreen(
                       key: const PageStorageKey('home-trash'),
                       embedded: true,
+                      screenFocus: _homeFocus,
                       onCopyEntry: _copyLibraryEntry,
                     ),
                   ],
@@ -1858,11 +1874,16 @@ class SharedScreen extends StatefulWidget {
   const SharedScreen({
     super.key, this.embedded = false, this.onDirectionChanged,
     this.onCopyEntry,
+    this.screenFocus,
   });
 
   final bool embedded;
   final ValueChanged<bool>? onDirectionChanged;
   final ValueChanged<HomeClipboardEntry>? onCopyEntry;
+
+  /// ホームの画面のフォーカス（保存先を読めなかった知らせが消えたとき、
+  /// フォーカスを戻す先）。
+  final FocusNode? screenFocus;
 
   @override
   State<SharedScreen> createState() => _SharedScreenState();
@@ -2010,6 +2031,7 @@ class _SharedScreenState extends State<SharedScreen> {
                     sortMode: _sortMode,
                     showFavoritesOnly: _showFavoritesOnly,
                     onCopyEntry: widget.onCopyEntry,
+                    screenFocus: widget.screenFocus,
                   ),
           ),
         ],
@@ -2066,10 +2088,15 @@ String _trashKindLabel(BuildContext context, TrashEntryKind kind) {
 class TrashScreen extends StatefulWidget {
   const TrashScreen({
     super.key, this.embedded = false, this.onCopyEntry,
+    this.screenFocus,
   });
 
   final bool embedded;
   final ValueChanged<HomeClipboardEntry>? onCopyEntry;
+
+  /// ホームの画面のフォーカス（保存先を読めなかった知らせが消えたとき、
+  /// フォーカスを戻す先）。
+  final FocusNode? screenFocus;
 
   @override
   State<TrashScreen> createState() => _TrashScreenState();
@@ -2159,6 +2186,7 @@ class _TrashScreenState extends State<TrashScreen> {
                 sortMode: _sortMode,
                 selectedKinds: _selectedKinds,
                 onCopyEntry: widget.onCopyEntry,
+                screenFocus: widget.screenFocus,
               ),
             ),
           ),
@@ -2221,11 +2249,13 @@ class _SharedTab extends StatelessWidget {
   final ProjectSortMode sortMode;
   final bool showFavoritesOnly;
   final ValueChanged<HomeClipboardEntry>? onCopyEntry;
+  final FocusNode? screenFocus;
 
   const _SharedTab({
     required this.sortMode,
     required this.showFavoritesOnly,
     this.onCopyEntry,
+    this.screenFocus,
   });
 
   @override
@@ -2238,15 +2268,27 @@ class _SharedTab extends StatelessWidget {
     }
     shared = _sortProjects(shared, sortMode);
     final l10n = AppLocalizations.of(context)!;
+    // 受け取ったものは保存先から読む。読めなかったときは知らせ、
+    // 「共有プロジェクトがありません」とは言わない。
+    final loadFailed = service.projectsLoadFailed;
     return _FolderableList<Project>(
       reserveForFloatingActions: true,
       allItems: shared,
       folders: folders,
-      emptyState: EmptyStatePlaceholder(
-        icon: Icons.share_outlined,
-        title: l10n.homeSharedEmpty,
-        scrollable: false,
-      ),
+      header: loadFailed
+          ? ProjectsLoadFailureNotice(
+              key: const Key('sharedProjectsLoadFailed'),
+              onRetry: service.retryLoadProjects,
+              screenFocus: screenFocus,
+            )
+          : null,
+      emptyState: loadFailed
+          ? null
+          : EmptyStatePlaceholder(
+              icon: Icons.share_outlined,
+              title: l10n.homeSharedEmpty,
+              scrollable: false,
+            ),
       folderIdOf: (p) => folders.any((f) => f.id == p.sharedFolderId)
           ? p.sharedFolderId
           : null,
@@ -2779,6 +2821,9 @@ class _FolderableList<T> extends StatelessWidget {
   final Widget? emptyState;
   final bool reserveForFloatingActions;
 
+  /// 一覧の先頭（フォルダより上）に出し、一覧と一緒にスクロールするもの。
+  final Widget? header;
+
   const _FolderableList({
     required this.allItems,
     required this.folders,
@@ -2790,6 +2835,7 @@ class _FolderableList<T> extends StatelessWidget {
     this.emptyState,
     this.reserveForFloatingActions = false,
     this.onCopyFolder,
+    this.header,
   });
 
   @override
@@ -2803,6 +2849,7 @@ class _FolderableList<T> extends StatelessWidget {
       if (id != null) countByFolder[id] = (countByFolder[id] ?? 0) + 1;
     }
     final hasHeader = folders.isNotEmpty;
+    final lead = header == null ? 0 : 1;
     // 作品の行は表示されるぶんだけ作る。ListView(children:)だと、実際に
     // 描画されるのは画面内の行だけでも、全作品ぶんのカード（サムネイルの
     // Image.fileを含む）のウィジェットが毎buildで作られて捨てられる。
@@ -2814,6 +2861,7 @@ class _FolderableList<T> extends StatelessWidget {
           return CustomScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
             slivers: [
+              if (header != null) SliverToBoxAdapter(child: header!),
               if (hasHeader) ...[
                 SliverToBoxAdapter(child: _folderChips(context, countByFolder)),
                 const SliverToBoxAdapter(child: Divider(height: 1)),
@@ -2840,8 +2888,10 @@ class _FolderableList<T> extends StatelessWidget {
                       MediaQuery.paddingOf(context).bottom
                 : 0,
           ),
-          itemCount: rootItems.length + (hasHeader ? 2 : 0),
-          itemBuilder: (context, index) {
+          itemCount: lead + rootItems.length + (hasHeader ? 2 : 0),
+          itemBuilder: (context, position) {
+            if (position < lead) return header!;
+            final index = position - lead;
             if (hasHeader && index == 0) {
               return _folderChips(context, countByFolder);
             }
@@ -2981,11 +3031,13 @@ class _TrashTab extends StatefulWidget {
     required this.sortMode,
     required this.selectedKinds,
     this.onCopyEntry,
+    this.screenFocus,
   });
 
   final ProjectSortMode sortMode;
   final Set<TrashEntryKind> selectedKinds;
   final ValueChanged<HomeClipboardEntry>? onCopyEntry;
+  final FocusNode? screenFocus;
 
   @override
   State<_TrashTab> createState() => _TrashTabState();
@@ -3453,19 +3505,32 @@ class _TrashTabState extends State<_TrashTab> {
           ProjectSortMode.updatedAsc => a.deletedAt.compareTo(b.deletedAt),
           ProjectSortMode.updatedDesc => b.deletedAt.compareTo(a.deletedAt),
         });
-        if (snapshot.connectionState != ConnectionState.done && rows.isEmpty) {
+        // ゴミ箱の作品は保存先から読む。読めなかったときは知らせを先頭に
+        // 出し、「ゴミ箱は空です」とは言わない（作品が消えたように見える）。
+        final loadFailed = service.projectsLoadFailed;
+        final lead = loadFailed ? 1 : 0;
+        if (snapshot.connectionState != ConnectionState.done &&
+            rows.isEmpty &&
+            !loadFailed) {
           return const Center(child: CircularProgressIndicator());
         }
-        if (rows.isEmpty) {
+        if (rows.isEmpty && !loadFailed) {
           return EmptyStatePlaceholder(
             icon: Icons.delete_outline, title: l10n.homeTrashEmpty,
           );
         }
         return ListView.builder(
-          itemCount: rows.length,
+          itemCount: lead + rows.length,
           padding: const EdgeInsets.only(bottom: 100),
-          itemBuilder: (context, index) {
-            final row = rows[index];
+          itemBuilder: (context, position) {
+            if (position < lead) {
+              return ProjectsLoadFailureNotice(
+                key: const Key('trashProjectsLoadFailed'),
+                onRetry: service.retryLoadProjects,
+                screenFocus: widget.screenFocus,
+              );
+            }
+            final row = rows[position - lead];
             if (row.project != null) {
               return _projectRow(row.project!, row.kind, l10n);
             }

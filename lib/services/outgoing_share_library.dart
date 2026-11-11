@@ -7,6 +7,7 @@ import '../engine/niapro_serializer.dart';
 import '../engine/tile_manager.dart';
 import '../models/project.dart';
 import '../models/scene.dart';
+import '../utils/app_error_reporter.dart';
 
 /// An immutable .niashare snapshot, independent of its source project.
 class SavedOutgoingShare {
@@ -97,13 +98,15 @@ abstract final class OutgoingShareLibrary {
                   (file) => file.path.toLowerCase().endsWith('.niashare'),
                 ),
               );
-            } on FileSystemException {
+            } on FileSystemException catch (error, stackTrace) {
               // A single unreadable directory must not hide other exports.
+              AppErrorReporter.record(error, stackTrace);
             }
           }
         }
-      } on FileSystemException {
+      } on FileSystemException catch (error, stackTrace) {
         // Missing or unreadable paths are not an empty project library.
+        AppErrorReporter.record(error, stackTrace);
       }
     }
 

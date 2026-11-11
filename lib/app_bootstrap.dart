@@ -196,6 +196,9 @@ Future<List<SingleChildWidget>> _buildAppProviders(
   // 方式とスロット数が決まってから、保存の一覧を読む（一覧に無いファイルを
   // 空いているスロットへ戻すため）。
   await saveTreeService.init();
+  // 保存先を読めなかった起動では、ホームの「再試行」で作品を読めたときに、
+  // その作品の保存の一覧も読む。
+  projectService.onProjectsReloaded = saveTreeService.loadUnread;
   await enter('autofill_preset');
   final autofillPresetService = own(AutofillPresetService());
   await autofillPresetService.init();

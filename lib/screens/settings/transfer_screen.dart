@@ -29,6 +29,7 @@ import '../../services/tone_service.dart';
 import '../../widgets/export_share_feedback.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/help_button.dart';
+import '../../widgets/projects_load_failure_notice.dart';
 import '../home/widgets/project_list_widget.dart' show buildFontShareBundle;
 
 class TransferScreen extends StatefulWidget {
@@ -137,10 +138,25 @@ class _TransferScreenState extends State<TransferScreen> {
                       ),
                     ),
                   ),
+                  // 保存先を読めなかったときは知らせて読み直せるようにし、
+                  // 「プロジェクトがありません。」とは言わない（引き継げる
+                  // 作品が無いように見える）。
+                  Consumer<ProjectService>(
+                    builder: (context, projectService, _) =>
+                        projectService.projectsLoadFailed
+                        ? ProjectsLoadFailureNotice(
+                            key: const Key('transferProjectsLoadFailed'),
+                            onRetry: projectService.retryLoadProjects,
+                          )
+                        : const SizedBox.shrink(),
+                  ),
                   Consumer<ProjectService>(
                     builder: (context, projectService, _) {
                       final projects = projectService.projects;
                       if (projects.isEmpty) {
+                        if (projectService.projectsLoadFailed) {
+                          return const SizedBox.shrink();
+                        }
                         return Card(
                           elevation: 1,
                           shadowColor: ThemeService.activeColorScheme.shadow
