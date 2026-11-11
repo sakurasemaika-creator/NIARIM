@@ -4,9 +4,11 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 
+import 'work_folder_service.dart';
+
 /// Locally owned files are moved to a recoverable archive instead of being
 /// permanently deleted from the Works or outgoing .niashare library.
-enum LocalTrashKind { outgoingShare, exportedWork }
+enum LocalTrashKind { outgoingShare, exportedWork, exportedWorkFolder }
 
 class LocalTrashedFile {
   const LocalTrashedFile({
@@ -15,6 +17,8 @@ class LocalTrashedFile {
     required this.originalPath,
     required this.archivedPath,
     required this.deletedAt,
+    this.folderName,
+    this.fileNames = const [],
   });
 
   final String id;
@@ -22,14 +26,19 @@ class LocalTrashedFile {
   final String originalPath;
   final String archivedPath;
   final DateTime deletedAt;
+  final String? folderName;
+  final List<String> fileNames;
+  bool get isFolder => kind == LocalTrashKind.exportedWorkFolder;
 
-  String get fileName => Uri.file(originalPath).pathSegments.last;
+  String get fileName => folderName ?? Uri.file(originalPath).pathSegments.last;
 
   Map<String, Object> toJson() => {
     'id': id,
     'kind': kind.name,
     'originalPath': originalPath,
     'deletedAt': deletedAt.toIso8601String(),
+    if (folderName != null) 'folderName': folderName!,
+    if (isFolder) 'fileNames': fileNames,
   };
 }
 
@@ -64,10 +73,18 @@ abstract final class LocalFileTrashService {
           continue;
         }
         final archive = '${entity.path}/data';
-        if (!await File(archive).exists()) continue;
+        final isFolder = kind == LocalTrashKind.exportedWorkFolder;
+        if (isFolder
+            ? !await Directory(archive).exists()
+            : !await File(archive).exists()) continue;
+        final names = (meta['fileNames'] as List<dynamic>? ?? const [])
+            .whereType<String>().toList();
+        if (isFolder && (meta['folderName'] is! String ||
+            names.any((name) => !_safeFileName(name)))) continue;
         entries.add(LocalTrashedFile(
           id: id, kind: kind, originalPath: original,
           archivedPath: archive, deletedAt: deletedAt,
+          folderName: meta['folderName'] as String?, fileNames: names,
         ));
       } catch (_) {
         // Corrupt metadata does not prevent other entries from being restored.
@@ -77,7 +94,14 @@ abstract final class LocalFileTrashService {
     return entries;
   }
 
+  static bool _safeFileName(String name) =>
+      name.isNotEmpty && name != '.' && name != '..' &&
+      !name.contains('/') && !name.contains('\\');
+
   static Future<LocalTrashedFile> move(File source, LocalTrashKind kind) async {
+    if (kind == LocalTrashKind.exportedWorkFolder) {
+      throw ArgumentError('Use moveWorkFolder for a folder');
+    }
     if (!await source.exists()) throw FileSystemException('File missing', source.path);
     final root = await _root();
     await root.create(recursive: true);
@@ -114,6 +138,7 @@ abstract final class LocalFileTrashService {
   }
 
   static Future<void> restore(LocalTrashedFile entry) async {
+    if (entry.isFolder) throw ArgumentError('Use restoreWorkFolder');
     final archived = File(entry.archivedPath);
     if (!await archived.exists()) throw FileSystemException('Trash entry missing', entry.archivedPath);
     final original = File(entry.originalPath);
@@ -130,10 +155,140 @@ abstract final class LocalFileTrashService {
     changes.value++;
   }
 
+
+  /// Archive all actual export files before removing any source.
+  static Future<LocalTrashedFile> moveWorkFolder({
+    required String folderName,
+    required List<File> files,
+  }) async {
+    final sources = files.map((f) => File(f.absolute.path)).toList();
+    final names = <String>[];
+    for (final file in sources) {
+      if (!await file.exists()) {
+        throw FileSystemException('Export missing', file.path);
+      }
+      final name = file.uri.pathSegments.last;
+      if (!_safeFileName(name) || names.contains(name) ||
+          file.parent.path != sources.first.parent.path) {
+        throw FileSystemException('Invalid folder export', file.path);
+      }
+      names.add(name);
+    }
+    final root = await _root();
+    await root.create(recursive: true);
+    var seed = DateTime.now().microsecondsSinceEpoch;
+    var directory = Directory('${root.path}/$seed');
+    while (await directory.exists()) {
+      seed++;
+      directory = Directory('${root.path}/$seed');
+    }
+    await directory.create(recursive: true);
+    final entry = LocalTrashedFile(
+      id: '$seed',
+      kind: LocalTrashKind.exportedWorkFolder,
+      originalPath: sources.isEmpty ? '' : sources.first.parent.path,
+      archivedPath: '${directory.path}/data',
+      deletedAt: DateTime.now(),
+      folderName: folderName,
+      fileNames: names,
+    );
+    var removedAny = false;
+    try {
+      final archive = Directory(entry.archivedPath);
+      await archive.create();
+      await File('${directory.path}/meta.json')
+          .writeAsString(jsonEncode(entry.toJson()), flush: true);
+      for (final source in sources) {
+        final copy = await source.copy('${archive.path}/${source.uri.pathSegments.last}');
+        if (await copy.length() != await source.length()) {
+          throw FileSystemException('Incomplete folder archive', source.path);
+        }
+      }
+      for (final source in sources) {
+        await source.delete();
+        removedAny = true;
+      }
+      changes.value++;
+      return entry;
+    } catch (_) {
+      // Once a source has been removed, retain all archived bytes.
+      if (!removedAny) {
+        try { await directory.delete(recursive: true); } catch (_) {}
+      } else {
+        changes.value++;
+      }
+      rethrow;
+    }
+  }
+
+  /// Resumes an interrupted restore without overwriting unrelated files.
+  /// A verified copy is checkpointed before updating its folder membership.
+  static Future<void> restoreWorkFolder(
+    LocalTrashedFile entry,
+    WorkFolderService workFolders,
+  ) async {
+    if (!entry.isFolder) throw ArgumentError('Not an export folder');
+    final archive = Directory(entry.archivedPath);
+    if (!await archive.exists()) {
+      throw FileSystemException('Archived folder missing', archive.path);
+    }
+    final metaFile = File('${archive.parent.path}/meta.json');
+    final meta = jsonDecode(await metaFile.readAsString()) as Map<String, dynamic>;
+    final restored = (meta['restoredFiles'] as List<dynamic>? ?? const [])
+        .whereType<String>().toSet();
+    final savedId = meta['restoreFolderId'] as String?;
+    final known = workFolders.folders.any((f) => f.id == savedId);
+    for (final name in entry.fileNames) {
+      if (!_safeFileName(name) ||
+          !await File('${archive.path}/$name').exists()) {
+        throw FileSystemException('Archived file missing', name);
+      }
+      if (entry.originalPath.isEmpty) {
+        throw FileSystemException('Export directory missing', name);
+      }
+      if (!restored.contains(name) &&
+          await File('${entry.originalPath}/$name').exists()) {
+        throw FileSystemException('File already exists on restore', name);
+      }
+    }
+    final folderId = known
+        ? savedId!
+        : (await workFolders.createFolder(entry.folderName ?? 'Restored folder')).id;
+    if (!known) {
+      meta['restoreFolderId'] = folderId;
+      await metaFile.writeAsString(jsonEncode(meta), flush: true);
+    }
+    for (final name in entry.fileNames) {
+      final source = File('${archive.path}/$name');
+      final destination = File('${entry.originalPath}/$name');
+      if (!restored.contains(name) || !await destination.exists()) {
+        await destination.parent.create(recursive: true);
+        final copy = await source.copy(destination.path);
+        if (await copy.length() != await source.length()) {
+          await copy.delete();
+          throw FileSystemException('Incomplete restored file', name);
+        }
+        restored.add(name);
+        meta['restoredFiles'] = restored.toList();
+        await metaFile.writeAsString(jsonEncode(meta), flush: true);
+      }
+      await workFolders.moveFileToFolder(name, folderId);
+    }
+    await archive.parent.delete(recursive: true);
+    changes.value++;
+  }
+
   static Future<void> deleteForever(LocalTrashedFile entry) async {
-    final archive = File(entry.archivedPath);
-    if (await archive.exists()) {
-      await archive.parent.delete(recursive: true);
+    if (entry.isFolder) {
+      final directory = Directory(entry.archivedPath);
+      if (await directory.parent.exists()) {
+        await directory.parent.delete(recursive: true);
+      }
+    } else {
+      final archive = File(entry.archivedPath);
+      if (await archive.exists()) {
+        await archive.parent.delete(recursive: true);
+      }
     }
     changes.value++;
   }
