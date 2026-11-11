@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:ui' as ui;
 
 import 'package:flutter/services.dart';
 import 'package:niarim/app.dart';
@@ -7,6 +8,7 @@ import 'package:niarim/router.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/screens/save_tree/widgets/save_rename_button.dart';
@@ -32,10 +34,31 @@ void main() {
     tester.view.devicePixelRatio = 3;
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
+    final captureKey = GlobalKey();
+    Future<void> capture(String name) async {
+      await tester.pump(const Duration(milliseconds: 150));
+      expect(tester.takeException(), isNull);
+      final boundary = captureKey.currentContext!.findRenderObject()!
+          as RenderRepaintBoundary;
+      final image = (await tester.runAsync(
+          () => boundary.toImage(pixelRatio: 1)))!;
+      final bytes = (await tester.runAsync(
+          () => image.toByteData(format: ui.ImageByteFormat.png)))!;
+      image.dispose();
+      final dir = Directory('build/save-slot-visual-audit')
+        ..createSync(recursive: true);
+      await tester.runAsync(() async =>
+          File('${dir.path}/$name.png')
+              .writeAsBytes(bytes.buffer.asUint8List()));
+    }
+
     appRouter.go('/');
     final providers = await tester.runAsync(buildAppProviders);
     await tester.pumpWidget(
-      MultiProvider(providers: providers!, child: const NiarimApp()),
+      RepaintBoundary(
+        key: captureKey,
+        child: MultiProvider(providers: providers!, child: const NiarimApp()),
+      ),
     );
     await tester.pump(const Duration(milliseconds: 600));
     final ctx = tester.element(find.byType(MaterialApp).first);
@@ -66,6 +89,7 @@ void main() {
     final text = List.filled(100, 'あ').join();
     await tester.enterText(input, text);
     await tester.pumpAndSettle();
+    await capture('memo_01_100_characters_in_single_title_dialog');
     await tester.tap(find.widgetWithText(FilledButton, '保存'));
     for (var attempt = 0; attempt < 6; attempt++) {
       await tester.pump(const Duration(milliseconds: 100));
@@ -83,6 +107,7 @@ void main() {
     expect(widget.maxLines, 1);
     expect(widget.overflow, TextOverflow.ellipsis);
     expect(tester.takeException(), isNull);
+    await capture('memo_02_100_characters_ellipsized_empty_slot');
 
     final reloaded = SaveTreeService();
     await tester.runAsync(reloaded.init);
