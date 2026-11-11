@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/screens/home/widgets/exported_work_card.dart';
 import 'package:niarim/screens/home/widgets/exported_work_thumbnail_dialog.dart';
 import 'package:niarim/screens/home/widgets/project_thumbnail_dialog.dart';
@@ -72,7 +73,8 @@ void main() {
       child: MaterialApp(
         navigatorKey: navKey,
         locale: const Locale('ja'),
-        supportedLocales: const [Locale('ja'), Locale('en')],
+        supportedLocales: AppLocalizations.supportedLocales,
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
         theme: ThemeData(useMaterial3: true,
           fontFamily: 'HakkouMincho',
           fontFamilyFallback: const ['NotoSerifJP']),
