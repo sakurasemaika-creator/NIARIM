@@ -191,6 +191,30 @@ class WorkFolderService extends ChangeNotifier {
     _notify();
   });
 
+  Future<void> setFolderThumbnail(
+    String folderId, {
+    required String mode,
+    String? sourceId,
+    String? imagePath,
+  }) => _enqueue(() async {
+    if (!const {'auto', 'none', 'item', 'custom'}.contains(mode)) {
+      throw ArgumentError.value(mode, 'mode');
+    }
+    final index = _folders.indexWhere((f) => f.id == folderId);
+    if (index < 0) return;
+    final next = [..._folders];
+    next[index] = next[index].copyWith(
+      thumbnailMode: mode,
+      thumbnailSourceId: sourceId,
+      thumbnailImagePath: imagePath,
+    );
+    await _save({
+      _foldersPrefsKey: jsonEncode(next.map((f) => f.toJson()).toList()),
+    });
+    _folders[index] = next[index];
+    _notify();
+  });
+
   /// フォルダ削除時、直下のファイルはルートへ戻す。
   Future<void> deleteFolder(String folderId) => _enqueue(() async {
     if (!_folders.any((f) => f.id == folderId)) return;
