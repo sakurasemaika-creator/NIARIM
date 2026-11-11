@@ -2,6 +2,8 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
+import '../../../widgets/docked_panel_scope.dart';
+
 /// The body of a desktop dock is resized in two deliberately different ways.
 ///
 /// [DesktopDockContentMode.fit] is for complete visual objects (colour wheel,
@@ -28,7 +30,16 @@ class DesktopDockContentViewport extends StatelessWidget {
   final double minimumContentHeight;
 
   @override
-  Widget build(BuildContext context) => LayoutBuilder(
+  Widget build(BuildContext context) {
+    // Desktop dock content is laid out at its real column width. Scaling a
+    // mobile-sized card left large blank margins and duplicated window chrome.
+    if (DockedPanelScope.of(context)) {
+      return SizedBox.expand(
+        key: const ValueKey('desktopDockContentScale'),
+        child: child,
+      );
+    }
+    return LayoutBuilder(
     builder: (context, constraints) {
       final width = constraints.maxWidth;
       final height = constraints.maxHeight;
@@ -80,4 +91,5 @@ class DesktopDockContentViewport extends StatelessWidget {
       );
     },
   );
+  }
 }
