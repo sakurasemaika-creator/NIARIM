@@ -3998,7 +3998,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get saveTreeSaveAsRootHint => '루트 노드로 저장합니다.';
 
   @override
-  String get saveTreeCommentLabel => '코멘트(선택 사항)';
+  String get saveTreeCommentLabel => '메모';
 
   @override
   String get saveTreeCommentHint => '예: 배경 완성';
@@ -4049,10 +4049,10 @@ class AppLocalizationsKo extends AppLocalizations {
   String get saveTreeResumeFromHereAction => '여기서부터 다시 시작';
 
   @override
-  String get saveTreeResumeConfirmBody => '저장하지 않은 현재 데이터가 사라집니다. 계속하시겠습니까?';
+  String get saveTreeResumeConfirmBody => '이 세이브 데이터에서 작업을 다시 시작하시겠습니까?\n\n현재 데이터가 덮어쓰여집니다. 현재 작업을 보관하려면 먼저 저장하세요.';
 
   @override
-  String get saveTreeProjectDetailResumeBody => '이 세이브 데이터에서 작업을 다시 시작하시겠습니까?';
+  String get saveTreeProjectDetailResumeBody => '이 세이브 데이터에서 작업을 다시 시작하시겠습니까?\n\n현재 데이터가 덮어쓰여집니다. 현재 작업을 보관하려면 먼저 저장하세요.';
 
   @override
   String get saveTreeLoadFailedSnackbar => '저장 데이터를 불러오지 못했습니다';
