@@ -55,6 +55,17 @@ import '../../utils/app_error_reporter.dart';
 import '../../utils/responsive_tile_defaults.dart';
 import '../../utils/tolerant_preferences.dart';
 
+class _ClipboardSourceMissing implements Exception {
+  const _ClipboardSourceMissing();
+}
+
+String _clipboardMissingMessage(BuildContext context) =>
+    Localizations.localeOf(context).languageCode == 'ja'
+        ? 'コピー元の作品・フォルダが見つかりません。ゴミ箱から復元するか、'
+          'もう一度コピーしてください。'
+        : 'The source file or folder is missing. Restore it from Trash '
+          'or copy it again.';
+
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -1264,11 +1275,16 @@ class _HomeScreenState extends State<HomeScreen>
       } else if (target == HomePasteArea.projects) {
         for (final id in projectIds) {
           if (_clipboardIsCut) {
+            if (!service.projects.any((project) => project.id == id)) {
+              throw const _ClipboardSourceMissing();
+            }
             await service.moveToFolder(id, _currentFolderId);
             _clipboardProjectIds.remove(id);
           } else {
-            await service.duplicateProject(id,
-                targetFolderId: _currentFolderId, useTargetFolder: true);
+            if (!await service.duplicateProject(id,
+                targetFolderId: _currentFolderId, useTargetFolder: true)) {
+              throw const _ClipboardSourceMissing();
+            }
           }
         }
         for (final id in folderIds) {
@@ -1277,15 +1293,19 @@ class _HomeScreenState extends State<HomeScreen>
                 service.isFolderDescendantOf(_currentFolderId ?? '', id)) {
               throw StateError('Cannot move folder inside itself');
             }
+            if (!service.folders.any((folder) => folder.id == id)) {
+              throw const _ClipboardSourceMissing();
+            }
             await service.moveFolderTo(id, _currentFolderId);
             _clipboardFolderIds.remove(id);
           } else {
             final source = service.folders.where((f) => f.id == id).firstOrNull;
-            if (source == null) continue;
-            await service.duplicateFolder(
+            if (source == null) throw const _ClipboardSourceMissing();
+            final result = await service.duplicateFolder(
               id, targetParentId: _currentFolderId,
               name: '${source.name} (コピー)',
             );
+            if (result == null) throw const _ClipboardSourceMissing();
           }
         }
       } else {
@@ -1293,7 +1313,7 @@ class _HomeScreenState extends State<HomeScreen>
         // collection. Removing a cut source occurs ONLY after that succeeds.
         for (final id in folderIds) {
           final folder = service.folders.where((f) => f.id == id).firstOrNull;
-          if (folder == null) continue;
+          if (folder == null) throw const _ClipboardSourceMissing();
           if (target == HomePasteArea.works) {
             await context.read<WorkFolderService>().createFolder(folder.name);
           } else {
@@ -1315,8 +1335,9 @@ class _HomeScreenState extends State<HomeScreen>
       AppErrorReporter.record(error, stackTrace);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(folderSaveFailureText(
-            AppLocalizations.of(context)!, error))),
+          SnackBar(content: Text(error is _ClipboardSourceMissing
+              ? _clipboardMissingMessage(context)
+              : folderSaveFailureText(AppLocalizations.of(context)!, error))),
         );
       }
     } finally {
@@ -1550,7 +1571,9 @@ class _HomeScreenState extends State<HomeScreen>
           _otherClipboard = null;
         }
       } else if (entry.source == HomePasteArea.received) {
-        await ps.duplicateProject(entry.id);
+        if (!await ps.duplicateProject(entry.id)) {
+          throw const _ClipboardSourceMissing();
+        }
       } else {
         final original = File(entry.id);
         if (!await original.exists()) throw FileSystemException('Missing file', entry.id);
@@ -1585,7 +1608,9 @@ class _HomeScreenState extends State<HomeScreen>
       AppErrorReporter.record(error,stackTrace);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text(AppLocalizations.of(context)!.homeTrashOperationFailed),
+          content: Text(error is _ClipboardSourceMissing
+              ? _clipboardMissingMessage(context)
+              : AppLocalizations.of(context)!.homeTrashOperationFailed),
         ));
       }
     } finally {
