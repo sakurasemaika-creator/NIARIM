@@ -1,0 +1,44 @@
+name: Home clipboard and Trash regression
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - ".github/workflows/home-clipboard-trash-regression.yml"
+      - "lib/screens/home/home_clipboard_policy.dart"
+      - "lib/screens/home/home_screen.dart"
+      - "lib/services/project_service.dart"
+      - "lib/services/work_folder_service.dart"
+      - "lib/services/local_file_trash_service.dart"
+      - "test/home_clipboard_policy_test.dart"
+      - "test/shared_folder_clipboard_trash_test.dart"
+      - "test/local_work_folder_trash_test.dart"
+      - "test/project_selection_clipboard_test.dart"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  clipboard-trash:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.47.2"
+          channel: stable
+          cache: true
+      - run: flutter pub get --enforce-lockfile
+      - name: Analyze touched sources and tests
+        run: |
+          dart format --output=none --set-exit-if-changed lib/screens/home/home_clipboard_policy.dart lib/screens/home/home_screen.dart lib/services/project_service.dart lib/services/local_file_trash_service.dart test/shared_folder_clipboard_trash_test.dart test/local_work_folder_trash_test.dart
+          flutter analyze --no-fatal-infos lib/screens/home/home_clipboard_policy.dart lib/screens/home/home_screen.dart lib/services/project_service.dart lib/services/local_file_trash_service.dart test/shared_folder_clipboard_trash_test.dart test/local_work_folder_trash_test.dart
+      - name: Clipboard, Trash, folder regressions
+        run: |
+          flutter test test/home_clipboard_policy_test.dart --reporter expanded
+          flutter test test/shared_folder_clipboard_trash_test.dart --reporter expanded
+          flutter test test/local_work_folder_trash_test.dart --reporter expanded
+          flutter test test/local_file_trash_service_test.dart --reporter expanded
+          flutter test test/project_selection_clipboard_test.dart --reporter expanded
