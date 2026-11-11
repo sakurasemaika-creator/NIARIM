@@ -650,9 +650,8 @@ class _SlotTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final scheme = Theme.of(context).colorScheme;
-    // 他の一覧画面（ホーム・設定・ヘルプ等）と統一した「影付きカード」デザイン。
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 4, vertical: 3),
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 3),
       child: Material(
         color: scheme.surfaceContainerLow,
         borderRadius: BorderRadius.circular(12),
@@ -660,56 +659,99 @@ class _SlotTile extends StatelessWidget {
         shadowColor: ThemeService.activeColorScheme.shadow.withValues(
           alpha: 0.15,
         ),
-        child: ListTile(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          leading: _SaveNodeThumbnail(node: node),
-          title: Row(
-            children: [
-              Flexible(
-                fit: FlexFit.loose,
-                child: Text(
-                  '${l10n.saveTreeSlotLabel(slotIndex + 1)}${node?.comment != null ? '　${node!.comment}' : ''}',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontFamily: 'Kuramubon',
-                    fontFamilyFallback: kHeadingFontFallback,
-                  ),
-                ),
-              ),
-              if (node != null)
-                SaveRenameButton(
-                  node: node!,
-                  fallbackName: l10n.saveTreeSlotFallbackName(slotIndex + 1),
-                ),
-            ],
-          ),
-          subtitle: node != null
-              ? Text(_formatDate(node!.savedAt))
-              : Text(l10n.saveTreeNoDataLabel),
-          trailing: Row(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              IconButton(
-                icon: const Icon(Icons.save, size: 20),
-                onPressed: onSave,
-                tooltip: l10n.commonSave,
+              Row(
+                children: [
+                  _SaveNodeThumbnail(node: node, size: 58),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          l10n.saveTreeSlotLabel(slotIndex + 1),
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontFamily: 'Kuramubon',
+                            fontFamilyFallback: kHeadingFontFallback,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Flexible(
+                              fit: FlexFit.loose,
+                              child: Text(
+                                node?.comment ??
+                                    (node == null
+                                        ? l10n.saveTreeNoDataLabel
+                                        : l10n.saveTreeSlotFallbackName(
+                                            slotIndex + 1,
+                                          )),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            if (node != null)
+                              Padding(
+                                padding: const EdgeInsets.only(left: 2),
+                                child: SaveRenameButton(
+                                  node: node!,
+                                  fallbackName:
+                                      l10n.saveTreeSlotFallbackName(
+                                        slotIndex + 1,
+                                      ),
+                                ),
+                              ),
+                          ],
+                        ),
+                        if (node != null)
+                          Text(
+                            _formatDate(node!.savedAt),
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: scheme.onSurfaceVariant,
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
-              if (onRestore != null)
-                IconButton(
-                  icon: const Icon(Icons.restore, size: 20),
-                  onPressed: onRestore,
-                  tooltip: l10n.saveTreeRestoreAction,
+              const SizedBox(height: 10),
+              Align(
+                alignment: Alignment.centerRight,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _SaveTreeSlotActionButton(
+                      icon: Icons.edit_note,
+                      tooltip: l10n.saveTreeSlotWriteTooltip,
+                      color: scheme.onSurfaceVariant,
+                      onPressed: onSave,
+                    ),
+                    const SizedBox(width: 14),
+                    _SaveTreeSlotActionButton(
+                      icon: Icons.menu_book_outlined,
+                      tooltip: l10n.saveTreeSlotLoadTooltip,
+                      color: scheme.onSurfaceVariant,
+                      onPressed: onRestore,
+                    ),
+                    const SizedBox(width: 14),
+                    _SaveTreeSlotActionButton(
+                      icon: Icons.delete_outline,
+                      tooltip: l10n.saveTreeSlotDeleteTooltip,
+                      color: scheme.error,
+                      onPressed: onDelete,
+                    ),
+                  ],
                 ),
-              if (onDelete != null)
-                IconButton(
-                  icon: Icon(Icons.delete, size: 20, color: scheme.error),
-                  onPressed: onDelete,
-                  tooltip: l10n.commonDelete,
-                ),
+              ),
             ],
           ),
         ),
@@ -720,6 +762,43 @@ class _SlotTile extends StatelessWidget {
   String _formatDate(DateTime dt) =>
       '${dt.year}/${dt.month.toString().padLeft(2, '0')}/${dt.day.toString().padLeft(2, '0')} '
       '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
+}
+
+class _SaveTreeSlotActionButton extends StatelessWidget {
+  final IconData icon;
+  final String tooltip;
+  final Color color;
+  final VoidCallback? onPressed;
+
+  const _SaveTreeSlotActionButton({
+    required this.icon,
+    required this.tooltip,
+    required this.color,
+    required this.onPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return IconButton(
+      tooltip: tooltip,
+      onPressed: onPressed,
+      padding: EdgeInsets.zero,
+      constraints: const BoxConstraints.tightFor(width: 56, height: 56),
+      style: IconButton.styleFrom(
+        backgroundColor: scheme.surfaceContainerHighest,
+        side: BorderSide(color: scheme.outlineVariant),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+      ),
+      iconSize: 28,
+      icon: Icon(
+        icon,
+        color: onPressed == null ? Theme.of(context).disabledColor : color,
+      ),
+    );
+  }
 }
 
 // ─────────────────────────────────────────────
