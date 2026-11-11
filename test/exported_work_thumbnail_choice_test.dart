@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image/image.dart' as image_codec;
 import 'package:flutter_test/flutter_test.dart';
+import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/screens/home/widgets/exported_work_card.dart';
 import 'package:niarim/screens/home/widgets/exported_work_thumbnail_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -69,7 +70,8 @@ void main() {
   testWidgets('Exported card exposes a three-dot thumbnail action', (tester) async {
     await tester.pumpWidget(MaterialApp(
       locale: const Locale('ja'),
-      supportedLocales: const [Locale('ja'), Locale('en')],
+      supportedLocales: AppLocalizations.supportedLocales,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
       home: Scaffold(body:
       ExportedWorkCard(
         name: 'movie.mp4',
