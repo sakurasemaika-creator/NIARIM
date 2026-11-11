@@ -11,6 +11,7 @@ import '../../../services/brush_service.dart';
 import '../../../services/export_share_service.dart';
 import '../../../services/settings_service.dart';
 import '../../../widgets/labeled_slider.dart';
+import '../../../widgets/stroke_sample_preview.dart';
 import '../../../widgets/pixel_color_mode_selector.dart';
 import 'creative_folder_sheets.dart';
 import '../../../widgets/docked_panel_scope.dart';
@@ -307,20 +308,25 @@ class _BrushPanelState extends State<BrushPanel> {
                           // 上の文字色。差し色を直接渡すと、選択色と同じ色の
                           // テーマでアイコンが見えなくなる）。
                           leading: const Icon(Icons.brush, size: 16),
-                          title: Text(
-                            brush.name,
-                            style: const TextStyle(
-                              fontSize: 13,
-                              fontFamily: 'Kuramubon',
-                              fontFamilyFallback: kHeadingFontFallback,
-                            ),
-                          ),
-                          subtitle: Text(
-                            l10n.penSubToolBrushSizeOpacity(
+                          title: Tooltip(
+                            message: l10n.penSubToolBrushSizeOpacity(
                               shown.size.round(),
                               shown.opacity,
                             ),
-                            style: const TextStyle(fontSize: 10),
+                            child: Text(
+                              brush.name,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontFamily: 'Kuramubon',
+                                fontFamilyFallback: kHeadingFontFallback,
+                              ),
+                            ),
+                          ),
+                          subtitle: StrokeSamplePreview(
+                            brush: shown,
+                            color: Theme.of(context).colorScheme.onSurface,
                           ),
                           trailing: Row(
                             mainAxisSize: MainAxisSize.min,
