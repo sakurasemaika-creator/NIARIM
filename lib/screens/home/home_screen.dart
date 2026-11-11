@@ -3934,9 +3934,8 @@ class _WorkListItemState extends State<_WorkListItem> {
         final setting = cover.data ?? const <String, dynamic>{};
         final path = setting['imagePath'];
         return ExportedWorkCard(
-      thumbnailPath: path is String && path.isNotEmpty
-          ? path
-          : isOriginalImageFile(file) ? file.path : null,
+      thumbnailPath: path is String && path.isNotEmpty ? path : null,
+      originalMediaPath: file.path,
       thumbnailHidden: setting['mode'] == 'none',
       onChangeThumbnail: () => showExportedWorkThumbnailDialog(
         context,
