@@ -322,5 +322,63 @@ void main() {
       physicalSize: const Size(1440, 900),
       dpr: 1,
     );
-  }, timeout: const Timeout(Duration(seconds: 180)));
+
+    // A separate tree-mode project, with two distinct saved image snapshots.
+    // This verifies the tree view rather than just the slot-only presentation.
+    final treeProject = (await tester.runAsync(
+      () => projectService.createProject(
+        name: 'ツリー保存表示検証',
+        fps: 12,
+        durationSeconds: 1,
+        backgroundColor: 0xFFCCE0FF,
+        exportWidth: 320,
+        exportHeight: 180,
+      ),
+    ))!;
+    saveService.setTreeMode(true);
+    final root = await tester.runAsync(() => saveService.saveAsChild(
+      projectId: treeProject.id,
+      project: treeProject,
+      scenes: projectService.scenesOf(treeProject.id),
+      tileManager: projectService.tileManagerOf(treeProject.id),
+      comment: 'ツリー保存・最初の状態',
+      thumbnailPngBytes: thumbnailBytes,
+    ));
+    final branch = await tester.runAsync(() => saveService.saveAsChild(
+      projectId: treeProject.id,
+      project: treeProject,
+      scenes: projectService.scenesOf(treeProject.id),
+      tileManager: projectService.tileManagerOf(treeProject.id),
+      parentId: root.id,
+      comment: 'ツリー保存・分岐',
+      thumbnailPngBytes: thumbnailBytes,
+    ));
+    expect(root.thumbnailPath, isNotNull);
+    expect(branch.thumbnailPath, isNotNull);
+    await setViewport(const Size(1080, 2280), 3);
+    appRouter.go('/save-tree/${treeProject.id}?entry=projectDetail');
+    await settle(rounds: 10);
+    expect(find.text('ツリー保存・最初の状態'), findsWidgets);
+    expect(find.text('ツリー保存・分岐'), findsWidgets);
+    final treeRename = find.byKey(Key('saveRename_${root.id}'));
+    expect(treeRename, findsOneWidget);
+    await capture('sp_360x760_09_tree_nodes_with_thumbnails_and_dates');
+    await tester.tap(treeRename);
+    await settle();
+    expectDialogContains(l10n.commonRename);
+    await capture('sp_360x760_10_tree_rename_dialog');
+    await tester.enterText(
+      find.descendant(of: dialog(), matching: find.byType(TextField)),
+      'ツリー名変更後',
+    );
+    await tester.tap(find.widgetWithText(FilledButton, l10n.commonSave));
+    await settle();
+    expect(find.text('ツリー名変更後'), findsWidgets);
+    final renamedRoot = saveService.getNodes(treeProject.id)
+        .singleWhere((n) => n.id == root.id);
+    expect(renamedRoot.thumbnailPath, root.thumbnailPath);
+    expect(renamedRoot.savedAt, root.savedAt);
+    await capture('sp_360x760_11_tree_renamed');
+
+  }, timeout: const Timeout(Duration(seconds: 240)));
 }
