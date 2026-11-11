@@ -150,7 +150,6 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
     final l10n = AppLocalizations.of(context)!;
     final paletteService = context.watch<PaletteService>();
     final docked = DockedPanelScope.of(context);
-    final docked = DockedPanelScope.of(context);
     return PanelSurface(
       width: 288,
       maxHeight: 680,
