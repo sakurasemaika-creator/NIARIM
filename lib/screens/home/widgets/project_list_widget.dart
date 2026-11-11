@@ -1080,7 +1080,7 @@ class ProjectListWidget extends StatelessWidget {
       case 'favorite':
         runProjectAction(
           context,
-          () => service.setFavorite(project.id, !project.isFavorite),
+          () => service.toggleFavorite(project.id),
         );
       case 'move':
         _showMoveProjectToFolderDialog(context, project);
