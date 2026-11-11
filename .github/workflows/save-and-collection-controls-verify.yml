@@ -9,6 +9,7 @@ on:
       - 'lib/services/save_tree_service.dart'
       - 'lib/screens/save_tree/**'
       - 'lib/screens/home/home_screen.dart'
+      - 'lib/screens/export/export_screen.dart'
       - 'lib/screens/home/widgets/project_list_widget.dart'
       - 'lib/screens/home/widgets/folder_thumbnail.dart'
       - 'lib/screens/home/widgets/exported_work_thumbnail_dialog.dart'
@@ -56,6 +57,7 @@ jobs:
             lib/services/save_tree_service.dart \
             lib/screens/save_tree \
             lib/screens/home/home_screen.dart \
+            lib/screens/export/export_screen.dart \
             lib/screens/home/widgets/project_list_widget.dart \
             lib/screens/home/widgets/folder_thumbnail.dart \
             lib/screens/home/widgets/exported_work_thumbnail_dialog.dart \
