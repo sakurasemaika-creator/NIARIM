@@ -67,7 +67,10 @@ void main() {
   });
 
   testWidgets('Exported card exposes a three-dot thumbnail action', (tester) async {
-    await tester.pumpWidget(MaterialApp(home: Scaffold(body:
+    await tester.pumpWidget(MaterialApp(
+      locale: const Locale('ja'),
+      supportedLocales: const [Locale('ja'), Locale('en')],
+      home: Scaffold(body:
       ExportedWorkCard(
         name: 'movie.mp4',
         metadata: '2026/11/11',
