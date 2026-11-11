@@ -234,6 +234,33 @@ class SaveTreeService extends ChangeNotifier {
   List<SaveNode> getNodes(String projectId) =>
       List.unmodifiable(_nodesByProject[projectId] ?? []);
 
+  /// Rename a save snapshot without rewriting the archive or changing its
+  /// capture time, thumbnail, parent link or slot position.
+  ///
+  /// Names are stored in the existing index.json so they survive app restarts.
+  Future<bool> renameSave(String projectId, String nodeId, String name) async {
+    final normalized = name.trim();
+    if (normalized.isEmpty) return false;
+    final nodes = _nodesByProject[projectId];
+    if (nodes == null) return false;
+    final index = nodes.indexWhere((node) => node.id == nodeId);
+    if (index < 0) return false;
+    final old = nodes[index];
+    if (old.comment == normalized) return true;
+    nodes[index] = SaveNode(
+      id: old.id,
+      projectId: old.projectId,
+      savedAt: old.savedAt,
+      comment: normalized,
+      thumbnailPath: old.thumbnailPath,
+      parentId: old.parentId,
+      slotIndex: old.slotIndex,
+    );
+    notifyListeners();
+    await _persist(projectId);
+    return true;
+  }
+
   /// この作品の保存のうち一番新しいものの時刻（無ければnull）。保存の画面へ
   /// 移る前と戻った後で比べると、その間に保存したかが分かる。
   DateTime? latestSaveOf(String projectId) {
