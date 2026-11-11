@@ -661,7 +661,10 @@ class _HomeScreenState extends State<HomeScreen>
                       currentFolderId: _currentFolderId,
                       onOpenFolder: _openProjectFolder,
                     ),
-                    const _WorksTab(key: PageStorageKey('home-works')),
+                    _WorksTab(
+                      key: const PageStorageKey('home-works'),
+                      onCopyEntry: _copyLibraryEntry,
+                    ),
                     SharedScreen(
                       key: const PageStorageKey('home-shared'),
                       embedded: true,
@@ -3183,7 +3186,8 @@ class _TrashTabState extends State<_TrashTab> {
 
 
 class _WorksTab extends StatefulWidget {
-  const _WorksTab({super.key});
+  const _WorksTab({super.key, this.onCopyEntry});
+  final ValueChanged<HomeClipboardEntry>? onCopyEntry;
 
   @override
   State<_WorksTab> createState() => _WorksTabState();
@@ -3256,16 +3260,27 @@ class _WorksTabState extends State<_WorksTab> {
                       folderId: folderId,
                       folderName: folderName,
                       onDeleted: _reload,
+                      onCopyEntry: widget.onCopyEntry,
                     ),
                   ),
                 ),
             onRenameFolder: (id, name) => workFolders.renameFolder(id, name),
             onDeleteFolder: (id) => workFolders.deleteFolder(id),
+            onCopyFolder: widget.onCopyEntry == null ? null : (folder) =>
+                widget.onCopyEntry!(HomeClipboardEntry(
+                  source: HomePasteArea.works, id: folder.id,
+                  name: folder.name, isFolder: true,
+                )),
             reserveForFloatingActions: true,
             itemBuilder: (context, file) => _WorkListItem(
               key: ValueKey(file.path),
               file: file,
               onDeleted: _reload,
+              onCopy: widget.onCopyEntry == null ? null : () =>
+                  widget.onCopyEntry!(HomeClipboardEntry(
+                    source: HomePasteArea.works,
+                    id: file.path, name: file.uri.pathSegments.last,
+                  )),
             ),
           ),
         );
@@ -3313,10 +3328,12 @@ class _WorksFolderScreen extends StatefulWidget {
   final String folderId;
   final String folderName;
   final VoidCallback onDeleted;
+  final ValueChanged<HomeClipboardEntry>? onCopyEntry;
   const _WorksFolderScreen({
     required this.folderId,
     required this.folderName,
     required this.onDeleted,
+    this.onCopyEntry,
   });
 
   @override
@@ -3371,6 +3388,12 @@ class _WorksFolderScreenState extends State<_WorksFolderScreen> {
             itemBuilder: (context, index) => _WorkListItem(
               key: ValueKey(items[index].path),
               file: items[index],
+              onCopy: widget.onCopyEntry == null ? null : () =>
+                  widget.onCopyEntry!(HomeClipboardEntry(
+                    source: HomePasteArea.works,
+                    id: items[index].path,
+                    name: items[index].uri.pathSegments.last,
+                  )),
               onDeleted: () {
                 setState(() {
                   _future = ExportEngine.listExportedFiles(forceRefresh: true);
@@ -3388,7 +3411,10 @@ class _WorksFolderScreenState extends State<_WorksFolderScreen> {
 class _WorkListItem extends StatefulWidget {
   final File file;
   final VoidCallback onDeleted;
-  const _WorkListItem({super.key, required this.file, required this.onDeleted});
+  final VoidCallback? onCopy;
+  const _WorkListItem({
+    super.key, required this.file, required this.onDeleted, this.onCopy,
+  });
 
   @override
   State<_WorkListItem> createState() => _WorkListItemState();
@@ -3456,6 +3482,7 @@ class _WorkListItemState extends State<_WorkListItem> {
       deleteLabel: l10n.commonDelete,
       onOpen: _sharing ? null : () => _openPreview(context),
       onMove: () => _showMoveToFolderSheet(context),
+      onCopy: widget.onCopy,
       onShare: _sharing ? null : _share,
       onDelete: _sharing ? null : () => _confirmDelete(context),
       shareBusy: _sharing,
