@@ -1628,7 +1628,7 @@
       }
     }
   },
-  "saveTreeRestoreAction": "Restaurar",
+  "saveTreeRestoreAction": "Cargar",
   "saveTreeTimelineActionChoiceBody": "Elige si quieres sobrescribir esta partida guardada con el contenido actual, o reanudar el trabajo desde aquí.",
   "saveTreeOverwriteAction": "Sobrescribir",
   "saveTreeOverwriteConfirmBody": "Se perderán los datos guardados en ese momento. ¿Continuar?",
@@ -1636,7 +1636,7 @@
   "saveTreeResumeConfirmBody": "Se perderán los cambios que no hayas guardado. ¿Continuar?",
   "saveTreeProjectDetailResumeBody": "¿Reanudar el trabajo desde esta partida guardada?",
   "saveTreeLoadFailedSnackbar": "No se pudieron cargar los datos guardados",
-  "saveTreeRestoredSnackbar": "Se restauró {name}",
+  "saveTreeRestoredSnackbar": "Datos guardados cargados ({name})",
   "@saveTreeRestoredSnackbar": {
     "placeholders": {
       "name": {
