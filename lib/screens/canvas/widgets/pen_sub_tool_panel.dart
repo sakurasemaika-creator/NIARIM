@@ -190,7 +190,7 @@ class _BrushTab extends StatelessWidget {
           ),
           subtitle: StrokeSamplePreview(
             brush: shown,
-            color: Theme.of(context).colorScheme.onSurface,
+            color: context.watch<BrushService>().currentColor,
           ),
           trailing: GestureDetector(
             onTap: () => brushService.toggleFavoriteBrush(brush.id),
@@ -245,7 +245,7 @@ class _ToneTab extends StatelessWidget {
           ),
           subtitle: StrokeSamplePreview(
             tone: tone,
-            color: Theme.of(context).colorScheme.onSurface,
+            color: context.watch<BrushService>().currentColor,
           ),
           onTap: () {
             toneService.selectTone(tone.id);
@@ -291,7 +291,7 @@ class _StampTab extends StatelessWidget {
           ),
           subtitle: StrokeSamplePreview(
             stamp: stamp,
-            color: Theme.of(context).colorScheme.onSurface,
+            color: context.watch<BrushService>().currentColor,
           ),
           onTap: () {
             stampService.selectStamp(stamp.id);
