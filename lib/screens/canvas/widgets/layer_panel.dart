@@ -535,20 +535,28 @@ class _LayerPanelState extends State<LayerPanel> {
                         const SizedBox(width: 4),
                         _layerTypeIcon(context, layer.type),
                         const SizedBox(width: 4),
-                        _LayerThumbnail(
-                          // Frame/scene/background changes must invalidate
-                          // thumbnails even when the layer ID is unchanged.
-                          key: ValueKey(
-                            '${widget.sceneId}:${widget.frameIndex}:${layer.id}:'
-                            '${_thumbRevision[layer.id] ?? 0}:$canvasBackground:'
-                            '${layer.opacity}:${layer.isVisible}',
+                        GestureDetector(
+                          key: ValueKey('layer-preview-tap-${layer.id}'),
+                          behavior: HitTestBehavior.opaque,
+                          onTap: () => _openLayerFullscreenPreview(
+                            layer,
+                            canvasBackground,
                           ),
-                          projectId: widget.projectId,
-                          sceneId: widget.sceneId,
-                          frameIndex: widget.frameIndex,
-                          layerId: layer.id,
-                          backgroundColor: canvasBackground,
-                          layerOpacity: layer.isVisible ? layer.opacity : 0,
+                          child: _LayerThumbnail(
+                            // Visibility affects the canvas composition,
+                            // never the layer's own thumbnail/preview.
+                            key: ValueKey(
+                              '${widget.sceneId}:${widget.frameIndex}:${layer.id}:'
+                              '${_thumbRevision[layer.id] ?? 0}:$canvasBackground:'
+                              '${layer.opacity}',
+                            ),
+                            projectId: widget.projectId,
+                            sceneId: widget.sceneId,
+                            frameIndex: widget.frameIndex,
+                            layerId: layer.id,
+                            backgroundColor: canvasBackground,
+                            layerOpacity: layer.opacity,
+                          ),
                         ),
                       ],
                     ),
@@ -2797,6 +2805,160 @@ class _LayerPanelState extends State<LayerPanel> {
     if (!context.mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(l10n.layerPanelImportImageSuccessSnackbar(name))),
+    );
+  }
+
+  void _openLayerFullscreenPreview(model.Layer layer, int backgroundColor) {
+    showDialog<void>(
+      context: context,
+      useSafeArea: false,
+      builder: (_) => Dialog.fullscreen(
+        child: _LayerFullscreenPreview(
+          projectId: widget.projectId,
+          sceneId: widget.sceneId,
+          frameIndex: widget.frameIndex,
+          layerId: layer.id,
+          layerName: layer.name,
+          backgroundColor: backgroundColor,
+          layerOpacity: layer.opacity,
+        ),
+      ),
+    );
+  }
+}
+
+/// 描画の表示/非表示に関係なく、このレイヤーだけを原寸データから
+/// 読み込み、全画面でピンチ拡大・縮小とドラッグ移動を提供する。
+class _LayerFullscreenPreview extends StatefulWidget {
+  const _LayerFullscreenPreview({
+    required this.projectId,
+    required this.sceneId,
+    required this.frameIndex,
+    required this.layerId,
+    required this.layerName,
+    required this.backgroundColor,
+    required this.layerOpacity,
+  });
+
+  final String projectId;
+  final String sceneId;
+  final int frameIndex;
+  final String layerId;
+  final String layerName;
+  final int backgroundColor;
+  final int layerOpacity;
+
+  @override
+  State<_LayerFullscreenPreview> createState() => _LayerFullscreenPreviewState();
+}
+
+class _LayerFullscreenPreviewState extends State<_LayerFullscreenPreview> {
+  ui.Image? _image;
+  Object? _loadError;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadImage();
+  }
+
+  Future<void> _loadImage() async {
+    try {
+      final ps = context.read<ProjectService>();
+      final key = ps.tileKeyFor(
+        widget.projectId,
+        widget.sceneId,
+        widget.frameIndex,
+        widget.layerId,
+      );
+      // Full resolution; do not scale up the 48px list thumbnail.
+      final image = await ps.tileManagerOf(widget.projectId)
+          .compositeLayerToImage(key);
+      if (!mounted) {
+        image.dispose();
+        return;
+      }
+      setState(() => _image = image);
+    } catch (error) {
+      if (mounted) setState(() => _loadError = error);
+    }
+  }
+
+  @override
+  void dispose() {
+    _image?.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final image = _image;
+    return SafeArea(
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsetsDirectional.fromSTEB(16, 8, 8, 8),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    widget.layerName,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                ),
+                IconButton(
+                  key: const ValueKey('layer-preview-close'),
+                  tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
+                  icon: const Icon(Icons.close),
+                  onPressed: () => Navigator.of(context).pop(),
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            child: image == null
+                ? Center(
+                    child: _loadError == null
+                        ? const CircularProgressIndicator()
+                        : Text(_loadError.toString()),
+                  )
+                : LayoutBuilder(
+                    builder: (context, constraints) {
+                      final iw = image.width.toDouble();
+                      final ih = image.height.toDouble();
+                      final fitScale = math.min(
+                        constraints.maxWidth / iw,
+                        constraints.maxHeight / ih,
+                      );
+                      return InteractiveViewer(
+                        key: const ValueKey('layer-preview-interactive'),
+                        constrained: false,
+                        alignment: Alignment.center,
+                        minScale: 0.25,
+                        maxScale: 8,
+                        boundaryMargin: const EdgeInsets.all(256),
+                        panEnabled: true,
+                        scaleEnabled: true,
+                        child: SizedBox(
+                          width: iw * fitScale,
+                          height: ih * fitScale,
+                          child: ColoredBox(
+                            color: Color(widget.backgroundColor),
+                            child: Opacity(
+                              opacity: (widget.layerOpacity / 100)
+                                  .clamp(0.0, 1.0),
+                              child: RawImage(image: image, fit: BoxFit.fill),
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+          ),
+        ],
+      ),
     );
   }
 }
