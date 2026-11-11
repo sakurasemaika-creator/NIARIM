@@ -59,6 +59,18 @@ void main() {
     expect(find.byType(CircularProgressIndicator), findsNothing);
     failDocuments = false;
     await tester.tap(find.text('再試行'));
+    // 読み直しは実ファイルの入出力（フォルダの作成・一覧）で、偽の時計の下では
+    // pumpだけでは終わらない。実時間を進めては描き直し、失敗の表示が消えるのを待つ。
+    for (
+      var i = 0;
+      i < 100 && find.text('作品一覧を読み込めませんでした').evaluate().isNotEmpty;
+      i++
+    ) {
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 20)),
+      );
+      await tester.pump();
+    }
     await tester.pumpAndSettle();
     expect(find.text('書き出した作品がありません'), findsOneWidget);
     expect(find.text('作品一覧を読み込めませんでした'), findsNothing);
