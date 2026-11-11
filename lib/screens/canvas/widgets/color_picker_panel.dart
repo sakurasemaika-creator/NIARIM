@@ -170,7 +170,25 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
                       fontFamilyFallback: kHeadingFontFallback,
                     ),
                   ),
-                  const Spacer(),
+                  const SizedBox(width: 8),
+                  // 現在色は見出しと同じ高さの横長チップで常時表示する。
+                  // 表示専用なのでタップ・ドラッグは受け付けない。
+                  Expanded(
+                    child: Semantics(
+                      label: '${l10n.colorPickerTitle}: #${_colorToHex(_currentColor)}',
+                      child: SizedBox(
+                        key: const ValueKey('selected-color-preview-chip'),
+                        height: 20,
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(3),
+                          child: CustomPaint(
+                            painter: _CheckerboardPainter(),
+                            child: ColoredBox(color: _currentColor),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
                   // スポイトボタン（カラーピッカー内のスポイトボタン）
                   if (widget.onEyedropperTap != null)
                     IconButton(
@@ -181,9 +199,8 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
                 ],
               ),
               const SizedBox(height: 8),
-              // HSVサークルとRGBスライダーは別タブへ分けず常に両方表示し、
-              // どちらを操作してももう片方へ即座に反映することで、RGB側が
-              // 実質的にHSV操作のプレビューにもなるようにする。
+              // HSVサークルとHSV/RGBスライダーを共通パネルで常に表示し、
+              // いずれの操作でも全コントロールと現在色を即時同期する。
               // 正方形（彩度・明度）＋外側カラーサークル（色相）でタップ選択できる
               // 方式。円の
               // 外側・左下の空きスペースには透明色切り替えボタンを配置する。
@@ -207,6 +224,21 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
                 ),
               ),
               const SizedBox(height: 8),
+              const Text('HSV', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11)),
+              _slider('H', _hue.roundToDouble(), 0, 360, (v) {
+                _hue = v.roundToDouble();
+                _applyHsv();
+              }, (_) => _commitToRecent()),
+              _slider('S', (_saturation * 100).roundToDouble(), 0, 100, (v) {
+                _saturation = v.round() / 100;
+                _applyHsv();
+              }, (_) => _commitToRecent()),
+              _slider('V', (_value * 100).roundToDouble(), 0, 100, (v) {
+                _value = v.round() / 100;
+                _applyHsv();
+              }, (_) => _commitToRecent()),
+              const SizedBox(height: 8),
+              const Text('RGB', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11)),
               _slider('R', _r.toDouble(), 0, 255, (v) {
                 _r = v.round();
                 _applyRgb();
@@ -833,6 +865,8 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
       max: max,
       valueText: value.round().toString(),
       valueStyle: const TextStyle(fontSize: 11),
+      divisions: (max - min).round(),
+      step: 1,
       onChanged: onChanged,
       onChangeEnd: onChangeEnd,
     );
