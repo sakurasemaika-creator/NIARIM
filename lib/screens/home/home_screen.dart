@@ -40,6 +40,7 @@ import '../../widgets/share_project_file_action.dart';
 import '../../widgets/mission_completion_dialog.dart';
 import '../../widgets/typing_aware_shortcuts.dart';
 import 'widgets/project_list_widget.dart';
+import 'widgets/folder_thumbnail.dart';
 import 'widgets/home_selection_toolbar.dart';
 import 'widgets/home_drawer.dart';
 import 'widgets/exported_work_card.dart';
@@ -2306,6 +2307,14 @@ class _SharedTab extends StatelessWidget {
           context.read<ProjectService>().renameSharedFolder(id, name),
       onDeleteFolder: (id) =>
           context.read<ProjectService>().deleteSharedFolder(id),
+      onSetFolderThumbnail: (id, {required mode, sourceId, imagePath}) =>
+          context.read<ProjectService>().setFolderThumbnail(
+            id,
+            mode: mode,
+            sourceId: sourceId,
+            imagePath: imagePath,
+            shared: true,
+          ),
       onCopyFolder: onCopyEntry == null ? null : (folder) =>
           onCopyEntry!(HomeClipboardEntry(
             source: HomePasteArea.received, id: folder.id,
@@ -2817,6 +2826,11 @@ class _FolderableList<T> extends StatelessWidget {
   onEnterFolder;
   final Future<void> Function(String id, String name) onRenameFolder;
   final Future<void> Function(String id) onDeleteFolder;
+  final Future<void> Function(String id, {
+    required String mode,
+    String? sourceId,
+    String? imagePath,
+  })? onSetFolderThumbnail;
   final Widget Function(BuildContext, T) itemBuilder;
   final Widget? emptyState;
   final bool reserveForFloatingActions;
@@ -2831,6 +2845,7 @@ class _FolderableList<T> extends StatelessWidget {
     required this.onEnterFolder,
     required this.onRenameFolder,
     required this.onDeleteFolder,
+    this.onSetFolderThumbnail,
     required this.itemBuilder,
     this.emptyState,
     this.reserveForFloatingActions = false,
@@ -2903,69 +2918,80 @@ class _FolderableList<T> extends StatelessWidget {
     );
   }
 
+  List<FolderThumbnailChoice> _folderCoverChoices(String folderId) {
+    final result = <FolderThumbnailChoice>[];
+    for (final entry in allItems) {
+      if (folderIdOf(entry) != folderId) continue;
+      if (entry is Project) {
+        final path = entry.thumbnailPath;
+        if (path != null && path.isNotEmpty) {
+          result.add(FolderThumbnailChoice(
+            id: entry.id,
+            name: entry.name,
+            imagePath: path,
+            updatedAt: entry.updatedAt,
+          ));
+        }
+      } else if (entry is File) {
+        final file = entry;
+        final extension = file.path.split('.').last.toLowerCase();
+        // Only still-image formats can be displayed with Image.file.
+        // Video files are omitted until a preview image exists.
+        if (!const {'png', 'jpg', 'jpeg', 'gif', 'webp', 'bmp'}
+            .contains(extension)) continue;
+        try {
+          result.add(FolderThumbnailChoice(
+            id: file.path,
+            name: file.uri.pathSegments.last,
+            imagePath: file.path,
+            updatedAt: file.lastModifiedSync(),
+          ));
+        } on FileSystemException {
+          // A file removed outside the app must not crash the folder list.
+        }
+      }
+    }
+    return result;
+  }
+
+  /// Folder entries use the same full-width, roughly 80dp ListTile as files,
+  /// rather than small 48dp chips. Their cover is drawn inside the folder.
   Widget _folderChips(BuildContext context, Map<String, int> countByFolder) {
-    return LayoutBuilder(
-      builder: (context, constraints) => Padding(
-        padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
-        child: Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: folders.map((f) {
-            final count = countByFolder[f.id] ?? 0;
-            return ConstrainedBox(
-              constraints: BoxConstraints(
-                maxWidth: (constraints.maxWidth - 24).clamp(
-                  0.0,
-                  double.infinity,
-                ),
-                minHeight: 48,
-              ),
-              child: Semantics(
-                button: true,
-                child: InkWell(
-                  borderRadius: BorderRadius.circular(10),
-                  onTap: () => onEnterFolder(
-                    f.id,
-                    f.name,
-                    allItems.where((e) => folderIdOf(e) == f.id).toList(),
-                  ),
-                  onLongPress: () => _showFolderMenu(context, f),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 8,
-                    ),
-                    decoration: BoxDecoration(
-                      border: Border.all(
-                        color: Theme.of(context).colorScheme.outlineVariant,
-                      ),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(Icons.folder, size: 18),
-                        const SizedBox(width: 6),
-                        Flexible(child: Text(f.name)),
-                        const SizedBox(width: 4),
-                        Text(
-                          '($count)',
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: Theme.of(
-                              context,
-                            ).colorScheme.onSurfaceVariant,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+    return Column(
+      children: [
+        for (final folder in folders)
+          Card(
+            key: ValueKey('collectionFolder_${folder.id}'),
+            margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            color: Theme.of(context).colorScheme.surfaceContainerLow,
+            child: ListTile(
+              minVerticalPadding: 8,
+              leading: SizedBox(
+                width: 56,
+                height: 56,
+                child: FolderThumbnail(
+                  folder: folder,
+                  choices: _folderCoverChoices(folder.id),
                 ),
               ),
-            );
-          }).toList(),
-        ),
-      ),
+              title: Text(folder.name),
+              subtitle: Text('${countByFolder[folder.id] ?? 0}'),
+              trailing: IconButton(
+                key: ValueKey('collectionFolderMenu_${folder.id}'),
+                icon: const Icon(Icons.more_vert),
+                tooltip: Localizations.localeOf(context).languageCode == 'ja'
+                    ? 'フォルダのメニュー' : 'Folder menu',
+                onPressed: () => _showFolderMenu(context, folder),
+              ),
+              onTap: () => onEnterFolder(
+                folder.id,
+                folder.name,
+                allItems.where((e) => folderIdOf(e) == folder.id).toList(),
+              ),
+              onLongPress: () => _showFolderMenu(context, folder),
+            ),
+          ),
+      ],
     );
   }
 
@@ -2984,6 +3010,28 @@ class _FolderableList<T> extends StatelessWidget {
                 onTap: () {
                   Navigator.pop(ctx);
                   onCopyFolder!(folder);
+                },
+              ),
+            if (onSetFolderThumbnail != null)
+              ListTile(
+                key: const Key('collectionFolderThumbnailMenuItem'),
+                leading: const Icon(Icons.image_outlined),
+                title: Text(Localizations.localeOf(context).languageCode == 'ja'
+                    ? 'サムネイル変更' : 'Change thumbnail'),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  showFolderThumbnailDialog(
+                    context,
+                    folder: folder,
+                    choices: _folderCoverChoices(folder.id),
+                    onSave: ({required mode, sourceId, imagePath}) =>
+                        onSetFolderThumbnail!(
+                          folder.id,
+                          mode: mode,
+                          sourceId: sourceId,
+                          imagePath: imagePath,
+                        ),
+                  );
                 },
               ),
             ListTile(
@@ -3627,6 +3675,13 @@ class _WorksTabState extends State<_WorksTab> {
                 ),
             onRenameFolder: (id, name) => workFolders.renameFolder(id, name),
             onDeleteFolder: (id) => workFolders.deleteFolder(id),
+            onSetFolderThumbnail: (id, {required mode, sourceId, imagePath}) =>
+                workFolders.setFolderThumbnail(
+                  id,
+                  mode: mode,
+                  sourceId: sourceId,
+                  imagePath: imagePath,
+                ),
             onCopyFolder: widget.onCopyEntry == null ? null : (folder) =>
                 widget.onCopyEntry!(HomeClipboardEntry(
                   source: HomePasteArea.works, id: folder.id,
