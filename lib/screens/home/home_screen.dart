@@ -2379,7 +2379,8 @@ class _OutgoingSharesList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final saved = context.watch<ProjectService>().outgoingShares;
+    final service = context.watch<ProjectService>();
+    final saved = service.outgoingShares;
     final l10n = AppLocalizations.of(context)!;
     if (saved.isEmpty) {
       return EmptyStatePlaceholder(
@@ -2407,39 +2408,69 @@ class _OutgoingSharesList extends StatelessWidget {
               '${(entry.sizeBytes / 1024).toStringAsFixed(1)} KB',
             ),
             onTap: () => shareSavedNiashare(context, entry.path),
-            trailing: CollectionActionFrame(
-              child: PopupMenuButton<String>(
-              key: ValueKey('outgoingShareMenu_${entry.path}'),
-              padding: EdgeInsets.zero,
-              icon: const Icon(Icons.more_vert, size: CollectionActionFrame.glyphSize),
-              onSelected: (action) {
-                if (action == 'copyToClipboard') {
-                  onCopyEntry?.call(HomeClipboardEntry(
-                    source: HomePasteArea.outgoing,
-                    id: entry.path, name: entry.name,
-                  ));
-                } else {
-                  _outgoingShareAction(context, entry, action);
-                }
-              },
-              itemBuilder: (_) => [
-                PopupMenuItem(value: 'share',
-                    child: Text(l10n.projectDetailShareQuickAction)),
-                PopupMenuItem(value: 'rename', child: Text(l10n.commonRename)),
-                if (onCopyEntry != null)
-                  PopupMenuItem(
-                    value: 'copyToClipboard',
-                    child: Text(l10n.themeDuplicateAction),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CollectionFavoriteButton(
+                  itemId: entry.path,
+                  favorite: service.isOutgoingShareFavorite(entry.path),
+                  tooltip: service.isOutgoingShareFavorite(entry.path)
+                      ? l10n.colorPickerFavoriteRemove
+                      : l10n.colorPickerFavoriteAdd,
+                  onPressed: () => runProjectAction(
+                    context,
+                    () => service.toggleOutgoingShareFavorite(entry.path),
                   ),
-                PopupMenuItem(value: 'duplicate',
-                    child: Text(l10n.themeDuplicateAction)),
-                PopupMenuItem(
-                  value: 'delete',
-                  child: Text(l10n.projectDetailTrashMenuItem,
-                      style: TextStyle(color: Theme.of(context).colorScheme.error)),
+                ),
+                const SizedBox(width: 4),
+                CollectionActionFrame(
+                  key: Key('collectionMenu_${entry.path}'),
+                  child: PopupMenuButton<String>(
+                    key: ValueKey('outgoingShareMenu_${entry.path}'),
+                    padding: EdgeInsets.zero,
+                    icon: const Icon(
+                      Icons.more_vert,
+                      size: CollectionActionFrame.glyphSize,
+                    ),
+                    onSelected: (action) {
+                      if (action == 'copyToClipboard') {
+                        onCopyEntry?.call(HomeClipboardEntry(
+                          source: HomePasteArea.outgoing,
+                          id: entry.path,
+                          name: entry.name,
+                        ));
+                      } else {
+                        _outgoingShareAction(context, entry, action);
+                      }
+                    },
+                    itemBuilder: (_) => [
+                      PopupMenuItem(
+                        value: 'share',
+                        child: Text(l10n.projectDetailShareQuickAction),
+                      ),
+                      PopupMenuItem(value: 'rename', child: Text(l10n.commonRename)),
+                      if (onCopyEntry != null)
+                        PopupMenuItem(
+                          value: 'copyToClipboard',
+                          child: Text(l10n.themeDuplicateAction),
+                        ),
+                      PopupMenuItem(
+                        value: 'duplicate',
+                        child: Text(l10n.themeDuplicateAction),
+                      ),
+                      PopupMenuItem(
+                        value: 'delete',
+                        child: Text(
+                          l10n.projectDetailTrashMenuItem,
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.error,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ],
-            ),
             ),
           ),
         );
