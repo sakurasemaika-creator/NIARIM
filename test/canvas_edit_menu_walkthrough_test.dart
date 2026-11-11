@@ -196,15 +196,14 @@ void main() {
       expect(menuSheet(), findsNothing);
       expect(canvasIsOnTop(tester), !covers);
       if (label == '色調調整') {
-        // キャンセル・適用はパネルの幅に広げて並べる（左に寄らない）：
-        // 左右の余白が同じ。
+        // No separate 120x120 preview popup: the entire available width is
+        // a bottom controls bar and the real canvas remains the preview.
+        expect(find.byKey(const ValueKey('color-adjust-bottom-bar')),
+            findsOneWidget);
         final panel = tester.getRect(find.byType(ColorAdjustSheet));
-        final cancel = tester.getRect(find.widgetWithText(TextButton, 'キャンセル'));
-        final apply = tester.getRect(find.widgetWithText(FilledButton, '適用'));
-        expect(
-          (cancel.left - panel.left) - (panel.right - apply.right),
-          moreOrLessEquals(0, epsilon: 2),
-        );
+        expect(panel.width, closeTo(390, 1));
+        expect(find.widgetWithText(FilledButton, '適用'), findsOneWidget);
+        expect(find.widgetWithText(TextButton, 'キャンセル'), findsOneWidget);
       }
       if (covers) {
         await tester.binding.handlePopRoute();
