@@ -213,7 +213,9 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
               Center(
                 child: LayoutBuilder(
                   builder: (context, constraints) => HsvColorWheel(
-                    size: math.min(220.0, constraints.maxWidth),
+                    // Leave room for the HSV/RGB pill below the hue ring even
+                    // in a compact PC dock; mobile keeps the larger wheel.
+                    size: math.min(docked ? 185.0 : 220.0, constraints.maxWidth),
                   hue: _hue,
                   saturation: _saturation,
                   value: _value,
