@@ -915,6 +915,14 @@ class _TreeView extends StatelessWidget {
         );
         break;
       case 'delete':
+        // A tree node contains a complete historical archive. Never delete it
+        // directly from a popup menu without confirming the chosen save.
+        if (!await confirmDelete(
+          context,
+          itemName: node.comment ?? l10n.saveTreeNodeDefaultTitle,
+        )) {
+          return;
+        }
         await saveService.deleteNode(projectId, node.id);
         break;
     }
