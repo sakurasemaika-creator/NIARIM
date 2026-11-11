@@ -31,6 +31,7 @@ import 'folder_delete_dialog.dart';
 import 'work_folder_move_sheet.dart';
 import 'project_folder_edit_dialog.dart';
 import '../../../utils/folder_persistence.dart';
+import '../../../utils/folder_tree.dart';
 
 /// 新規フォルダ作成ダイアログ（フォルダ名入力）。プロジェクト一覧画面の
 /// ＋ボタン（新規プロジェクト/新規フォルダ選択）・フォルダ移動ピッカーの
@@ -1333,17 +1334,14 @@ class ProjectListWidget extends StatelessWidget {
     required Future<void> Function(String name) onCreateAndSelect,
   }) {
     final service = context.read<ProjectService>();
-    final folders = service.folders
-        .where(
-          (f) =>
-              f.id != excludeFolderId &&
-              !service.isFolderDescendantOf(f.id, excludeFolderId),
-        )
-        .toList();
+    // Keep each child immediately below its parent, with visible indentation.
+    // The shared folderTree utility also excludes an attempted move into self.
+    final folders = folderTree(service.folders, excluding: excludeFolderId);
     showModalBottomSheet<void>(
       context: context,
       builder: (_) => WorkFolderMoveSheet(
-        folders: folders,
+        folders: [for (final row in folders) row.folder],
+        depths: {for (final row in folders) row.folder.id: row.depth},
         filename: itemName,
         rootLabel: AppLocalizations.of(context)!.projectListFolderRootOption,
         onMove: onSelect,
