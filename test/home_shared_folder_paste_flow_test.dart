@@ -12,6 +12,7 @@ import 'package:niarim/models/project.dart';
 import 'package:niarim/router.dart';
 import 'package:niarim/screens/splash/splash_screen.dart';
 import 'package:niarim/services/project_service.dart';
+import 'package:niarim/services/local_file_trash_service.dart';
 import 'package:niarim/services/work_folder_service.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -181,6 +182,43 @@ void main() {
     await pumpIo(tester);
     expect(service.outgoingShares, isNotEmpty);
     await capture(tester, captureKey, '14_outgoing_share_pill');
+
+    // The outgoing-share pill has a distinct file format but may use Trash.
+    final sharePath = service.outgoingShares.single.path;
+    await tester.tap(find.byKey(ValueKey('outgoingShareMenu_$sharePath')));
+    await tester.pump(const Duration(milliseconds: 400));
+    final copyOption = find.byWidgetPredicate((widget) =>
+        widget is PopupMenuItem<String> &&
+        widget.value == 'copyToClipboard');
+    expect(copyOption, findsOneWidget);
+    await tester.tap(copyOption);
+    await pumpIo(tester);
+    await tester.tap(find.byKey(const ValueKey('home_tab_3')));
+    await pumpIo(tester);
+    await tester.tap(find.byKey(const Key('homeCrossTabPasteButton')));
+    await tester.pump(const Duration(milliseconds: 400));
+    expect(find.byKey(const Key('homePasteToTrashDialog')), findsOneWidget);
+    await capture(tester, captureKey, '15_outgoing_trash_confirmation');
+    await tester.tap(find.byKey(const Key('homePasteTrashConfirmButton')));
+    await pumpIo(tester);
+    expect(service.outgoingShares, isEmpty);
+    final archived = (await tester.runAsync(LocalFileTrashService.list))!;
+    expect(archived, hasLength(1));
+    expect(archived.single.kind, LocalTrashKind.outgoingShare);
+    await capture(tester, captureKey, '16_outgoing_in_trash');
+
+    await tester.tap(find.byKey(ValueKey('trashCopyLocal_${archived.single.id}')));
+    await pumpIo(tester);
+    await tester.tap(find.byKey(const ValueKey('home_tab_2')));
+    await pumpIo(tester);
+    await tester.tap(find.byKey(const Key('homeCrossTabPasteButton')));
+    await tester.pump(const Duration(milliseconds: 400));
+    expect(find.byKey(const Key('homePasteRestoreDialog')), findsOneWidget);
+    await capture(tester, captureKey, '17_outgoing_restore_confirmation');
+    await tester.tap(find.byKey(const Key('homePasteRestoreConfirmButton')));
+    await pumpIo(tester);
+    expect(service.outgoingShares, hasLength(1));
+    await capture(tester, captureKey, '18_outgoing_restored');
   });
 
   testWidgets('empty Works folder with stale file membership may paste into Projects',
