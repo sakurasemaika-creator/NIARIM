@@ -1707,7 +1707,6 @@ class _CanvasScreenState extends State<CanvasScreen> {
                                       child: IgnorePointer(
                                         child: Center(
                                           child: Material(
-                                            elevation: 4,
                                             borderRadius: BorderRadius.circular(
                                               10,
                                             ),
@@ -2404,7 +2403,6 @@ class _CanvasScreenState extends State<CanvasScreen> {
                         onDragEnd: (_) => _setDesktopDockDragging(false),
                         feedback: Material(
                           color: scheme.surfaceContainerHighest,
-                          elevation: 4,
                           child: SizedBox(
                             width: 52,
                             height: 48,

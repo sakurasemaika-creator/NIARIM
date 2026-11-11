@@ -45,10 +45,18 @@ void main() {
       key: captureKey,
       child: MultiProvider(providers: providers!, child: const NiarimApp()),
     ));
-    await tester.pumpAndSettle();
+    // App previews schedule ongoing frames; pumpAndSettle may never resolve.
+    Future<void> advanceUi() async {
+      for (var i = 0; i < 12; i++) {
+        await tester.runAsync(() =>
+            Future<void>.delayed(const Duration(milliseconds: 35)));
+        await tester.pump(const Duration(milliseconds: 100));
+      }
+    }
+    await advanceUi();
 
     Future<void> capture(String filename, {int minFabs = 1}) async {
-      await tester.pumpAndSettle();
+      await advanceUi();
       final fabFinder = find.byType(FloatingActionButton);
       expect(fabFinder, findsAtLeastNWidgets(minFabs), reason: filename);
       final theme = Theme.of(tester.element(fabFinder.first));
@@ -92,7 +100,7 @@ void main() {
       ('/settings/shortcuts', '07_shortcuts_extended_fab', 1),
     ]) {
       appRouter.go(item.$1);
-      await tester.pumpAndSettle();
+      await advanceUi();
       await capture(item.$2, minFabs: item.$3);
     }
   });
