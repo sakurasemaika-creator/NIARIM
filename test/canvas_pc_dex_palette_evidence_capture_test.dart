@@ -121,7 +121,9 @@ void main() {
     await tester.ensureVisible(brush);
     await tester.tap(brush);
     await tester.pump(const Duration(milliseconds: 500));
-    expect(find.byType(BrushPanel), findsOneWidget);
-    await capture('02_pc_dex_brush_palette_open');
+    // The brush dock is already open in the first capture. Tapping its
+    // toolbar icon closes it; the second screenshot verifies both states.
+    expect(find.byType(BrushPanel), findsNothing);
+    await capture('02_pc_dex_brush_palette_closed');
   }, timeout: const Timeout(Duration(minutes: 3)));
 }
