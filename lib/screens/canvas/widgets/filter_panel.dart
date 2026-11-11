@@ -63,6 +63,9 @@ class FilterPanel extends StatefulWidget {
   /// where the canvas chrome is hidden while a filter is adjusted) rather
   /// than as a narrow floating or docked panel.
   final bool bottomBar;
+  /// When a PC dock hands off its selected filter to the immersive bottom
+  /// controls, do not reset the live edit during the widget replacement.
+  final bool preserveCurrentFilterOnMount;
 
   /// Receives each new preview of the filter (the layer as it would look),
   /// to be shown on the canvas in place of the layer; the receiver owns the
@@ -90,6 +93,7 @@ class FilterPanel extends StatefulWidget {
     this.onStartCanvasEyedropper,
     this.activeCanvasEyedropperTarget,
     this.bottomBar = false,
+    this.preserveCurrentFilterOnMount = false,
     this.onCanvasPreviewChanged,
     this.selectionMask,
     this.lensMask,
@@ -177,7 +181,9 @@ class _FilterPanelState extends State<FilterPanel> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) context.read<FilterService>().clearCurrentFilter();
+      if (mounted && !widget.preserveCurrentFilterOnMount) {
+        context.read<FilterService>().clearCurrentFilter();
+      }
     });
     widget.lensMask?.addListener(_onLensMaskChanged);
     _loadPreviewBase();
