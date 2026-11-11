@@ -32,6 +32,7 @@ class WorkFolderService extends ChangeNotifier {
   List<ProjectFolder> get folders => List.unmodifiable(_folders);
 
   String? folderIdOf(String fileName) => _fileFolder[fileName];
+  bool folderHasFiles(String id) => _fileFolder.values.contains(id);
 
   static const _foldersPrefsKey = 'work_folders';
   static const _fileFolderPrefsKey = 'work_file_folder_map';

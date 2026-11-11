@@ -161,6 +161,7 @@ class _HomeScreenState extends State<HomeScreen>
   final Set<String> _clipboardProjectIds = {};
   final Set<String> _clipboardFolderIds = {};
   HomePasteArea _clipboardSourceArea = HomePasteArea.projects;
+  HomeClipboardEntry? _otherClipboard;
   bool _sharedOutgoing = false;
   bool _clipboardIsCut = false;
   bool _showFavoritesOnly = false;
@@ -460,7 +461,8 @@ class _HomeScreenState extends State<HomeScreen>
                   key: const Key('homeCrossTabPasteButton'),
                   icon: const Icon(Icons.content_paste),
                   tooltip: l10n.homePasteTooltip(
-                    _clipboardProjectIds.length + _clipboardFolderIds.length,
+                    _clipboardProjectIds.length + _clipboardFolderIds.length +
+                        (_otherClipboard == null ? 0 : 1),
                   ),
                   onPressed: _pasting ? null : _pasteClipboard,
                 ),
@@ -1062,6 +1064,7 @@ class _HomeScreenState extends State<HomeScreen>
           ),
         );
       _clipboardSourceArea = HomePasteArea.projects;
+      _otherClipboard = null;
       _clipboardIsCut = true;
       _selectedIds.clear();
       _isSelectionMode = false;
@@ -1086,6 +1089,7 @@ class _HomeScreenState extends State<HomeScreen>
           (id) => folderIds.contains(id) && visibleIds.contains(id),
         ));
       _clipboardSourceArea = HomePasteArea.projects;
+      _otherClipboard = null;
       _clipboardIsCut = false;
       _selectedIds.clear();
       _isSelectionMode = false;
@@ -1093,7 +1097,18 @@ class _HomeScreenState extends State<HomeScreen>
   }
 
   bool get _hasClipboard =>
-      _clipboardProjectIds.isNotEmpty || _clipboardFolderIds.isNotEmpty;
+      _clipboardProjectIds.isNotEmpty || _clipboardFolderIds.isNotEmpty ||
+      _otherClipboard != null;
+
+  void _copyLibraryEntry(HomeClipboardEntry entry) {
+    setState(() {
+      _clipboardProjectIds.clear();
+      _clipboardFolderIds.clear();
+      _clipboardSourceArea = entry.source;
+      _clipboardIsCut = entry.isCut;
+      _otherClipboard = entry;
+    });
+  }
 
 
   HomePasteArea get _pasteDestination => switch (_currentTabIndex) {
@@ -1169,6 +1184,10 @@ class _HomeScreenState extends State<HomeScreen>
   bool _pasting = false;
   Future<void> _pasteClipboard() async {
     if (_pasting || !_hasClipboard) return;
+    if (_otherClipboard != null) {
+      await _pasteLibraryEntry();
+      return;
+    }
     final service = context.read<ProjectService>();
     final folderIds = _clipboardFolderIds.toList();
     final projectIds = _clipboardProjectIds.toList();
@@ -1294,6 +1313,169 @@ class _HomeScreenState extends State<HomeScreen>
           SnackBar(content: Text(folderSaveFailureText(
             AppLocalizations.of(context)!, error))),
         );
+      }
+    } finally {
+      if (mounted) setState(() => _pasting = false);
+    }
+  }
+
+
+  Future<void> _pasteLibraryEntry() async {
+    final entry = _otherClipboard;
+    if (entry == null || _pasting) return;
+    final ps = context.read<ProjectService>();
+    final ws = context.read<WorkFolderService>();
+    final dest = _pasteDestination;
+    final containsFiles = !entry.isFolder ||
+        (entry.source == HomePasteArea.works &&
+            ws.folderHasFiles(entry.id)) ||
+        (entry.source == HomePasteArea.received &&
+            ps.shared.any((p) => p.sharedFolderId == entry.id));
+    final decision = HomePastePolicy.check(
+      source: entry.source, destination: dest,
+      originalArea: entry.originalArea,
+      containsFiles: containsFiles, containsFolders: entry.isFolder,
+    );
+    if (decision != HomePasteDecision.allowed) {
+      await _explainPasteRestriction(
+        'タブやピルボタンをまたいだ形式違いのペーストはできません。'
+        '作品やファイルは元の形式の区分にペーストしてください。'
+        '中にファイルの無いフォルダのみ例外です。',
+        'Files cannot be pasted across tab or pill formats. '
+        'Restore files to their original collection. Only empty folders are an exception.',
+      );
+      return;
+    }
+    if (entry.isFolder && dest == HomePasteArea.outgoing) {
+      await _explainPasteRestriction(
+        '共有の「自分が作成したもの」はファイル専用でフォルダは保存できません。',
+        'Outgoing shares do not support folders.',
+      );
+      return;
+    }
+    if (dest == HomePasteArea.trash) {
+      if (entry.isFolder) {
+        await _explainPasteRestriction(
+          'この区分のフォルダは、現在中身ごとゴミ箱に保管できません。'
+          'フォルダと内容を保護するためペーストを中止しました。',
+          'This collection cannot yet safely archive folders. No changes were made.',
+        );
+        return;
+      }
+      if (!await _confirmPasteToTrash([entry.name]) || !mounted) return;
+    }
+    if (entry.source == HomePasteArea.trash) {
+      final l10n = AppLocalizations.of(context)!;
+      final japanese = Localizations.localeOf(context).languageCode == 'ja';
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          key: const Key('homePasteRestoreDialog'),
+          title: Text(japanese ? 'ゴミ箱から復元' : 'Restore from Trash'),
+          content: Text((japanese
+              ? '以下の作品・フォルダをゴミ箱から復元しますか？'
+              : 'Restore this item from Trash?') + '\n・${entry.name}'),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx, false),
+                child: Text(l10n.commonCancel)),
+            FilledButton(
+              key: const Key('homePasteRestoreConfirmButton'),
+              onPressed: () => Navigator.pop(ctx, true),
+              child: Text(l10n.commonRestore),
+            ),
+          ],
+        ),
+      );
+      if (confirmed != true || !mounted) return;
+    }
+    setState(() => _pasting = true);
+    try {
+      if (entry.source == HomePasteArea.trash) {
+        if (entry.isFolder) {
+          await ps.restoreTrashedFolder(entry.id);
+        } else if (entry.originalArea == HomePasteArea.projects ||
+            entry.originalArea == HomePasteArea.received) {
+          await ps.restoreProject(entry.id);
+        } else {
+          final files = await LocalFileTrashService.list();
+          final file = files.where((f) => f.id == entry.id).firstOrNull;
+          if (file == null) throw FileSystemException('Missing trash entry', entry.id);
+          await LocalFileTrashService.restore(file);
+          StorageInfoService().invalidate();
+          if (entry.originalArea == HomePasteArea.outgoing) {
+            await ps.refreshOutgoingShares();
+          }
+        }
+        _otherClipboard = null;
+      } else if (dest == HomePasteArea.trash) {
+        if (entry.source == HomePasteArea.received) {
+          await ps.deleteProject(entry.id);
+        } else {
+          await LocalFileTrashService.move(
+            File(entry.id),
+            entry.source == HomePasteArea.works
+                ? LocalTrashKind.exportedWork : LocalTrashKind.outgoingShare,
+          );
+          StorageInfoService().invalidate();
+          if (entry.source == HomePasteArea.outgoing) {
+            await ps.refreshOutgoingShares();
+          }
+        }
+        _otherClipboard = null;
+      } else if (entry.isFolder) {
+        if (dest == HomePasteArea.projects) {
+          await ps.createFolder(entry.name, parentFolderId: _currentFolderId);
+        } else if (dest == HomePasteArea.works) {
+          await ws.createFolder(entry.name);
+        } else if (dest == HomePasteArea.received) {
+          await ps.createSharedFolder(entry.name);
+        }
+        if (entry.isCut) {
+          if (entry.source == HomePasteArea.works) {
+            await ws.deleteFolder(entry.id);
+          } else if (entry.source == HomePasteArea.received) {
+            await ps.deleteSharedFolder(entry.id);
+          }
+          _otherClipboard = null;
+        }
+      } else if (entry.source == HomePasteArea.received) {
+        await ps.duplicateProject(entry.id);
+      } else {
+        final original = File(entry.id);
+        if (!await original.exists()) throw FileSystemException('Missing file', entry.id);
+        final fileName = original.uri.pathSegments.last;
+        final dot = fileName.lastIndexOf('.');
+        final stem = dot > 0 ? fileName.substring(0,dot) : fileName;
+        final extension = dot > 0 ? fileName.substring(dot) : '';
+        var n = 1;
+        late File destFile;
+        do {
+          destFile = File('${original.parent.path}/$stem (コピー $n)$extension');
+          n++;
+        } while (await destFile.exists());
+        await original.copy(destFile.path);
+        if (entry.source == HomePasteArea.outgoing) {
+          await ps.refreshOutgoingShares();
+        } else {
+          final folder = ws.folderIdOf(fileName);
+          if (folder != null) {
+            await ws.moveFileToFolder(destFile.uri.pathSegments.last, folder);
+          }
+          LocalFileTrashService.changes.value++;
+        }
+      }
+      if (mounted) {
+        setState(() {});
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(AppLocalizations.of(context)!.homePasteSnackbar),
+        ));
+      }
+    } catch (error,stackTrace) {
+      AppErrorReporter.record(error,stackTrace);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(AppLocalizations.of(context)!.homeTrashOperationFailed),
+        ));
       }
     } finally {
       if (mounted) setState(() => _pasting = false);
