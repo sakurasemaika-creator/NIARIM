@@ -709,6 +709,7 @@ class ProjectListWidget extends StatelessWidget {
               child: FolderThumbnail(
                 folder: folder,
                 choices: _folderCoverChoices(context, folder),
+                defaultImagePath: _projectFolderCoverPath(context, folder),
               ),
             ),
       title: Text(
@@ -858,6 +859,18 @@ class ProjectListWidget extends StatelessWidget {
     );
   }
 
+  String? _projectFolderCoverPath(
+    BuildContext context,
+    ProjectFolder folder,
+  ) {
+    final service = context.read<ProjectService>();
+    return projectFolderEffectiveCover(
+      folder.id,
+      service.folders,
+      service.projects,
+    );
+  }
+
   List<FolderThumbnailChoice> _folderCoverChoices(
     BuildContext context,
     ProjectFolder folder,
@@ -944,6 +957,9 @@ class ProjectListWidget extends StatelessWidget {
                           key: ValueKey('projectFolderCover_${folder.id}'),
                           folder: folder,
                           choices: _folderCoverChoices(context, folder),
+                          defaultImagePath: _projectFolderCoverPath(
+                            context, folder,
+                          ),
                         ),
                         _gridCardActions(
                           context,
