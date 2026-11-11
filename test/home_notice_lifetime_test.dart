@@ -122,6 +122,15 @@ void main() {
     await settle(tester);
   }
 
+  Future<void> cut(WidgetTester tester, String name) async {
+    await tester.longPress(card(name));
+    await settle(tester);
+    await tester.tap(find.byTooltip(l10nOf(tester).commonCut));
+    await settle(tester);
+    expect(snackText(tester), l10nOf(tester).homeCutSnackbar(1));
+    expect(find.byKey(const Key('homeCrossTabPasteButton')), findsOneWidget);
+  }
+
   Future<void> close(WidgetTester tester) async {
     await tester.pumpWidget(const SizedBox.shrink());
     await tester.pump(const Duration(milliseconds: 100));
@@ -180,6 +189,101 @@ void main() {
       await settleIo(tester);
       expect(card('apple'), findsOneWidget);
       expect(tester.takeException(), isNull);
+      await close(tester);
+    });
+  });
+
+  group('cut', () {
+    // 切り取りは貼り付けるまで続くが、知らせは時間で消える。
+    testWidgets('the cut notice closes by itself and the cut stays pending', (
+      tester,
+    ) async {
+      await openHome(tester, names: ['apple', 'banana']);
+      await cut(tester, 'apple');
+      expect(find.text(l10nOf(tester).homeUndoAction), findsOneWidget);
+      await tester.pump(const Duration(seconds: 7));
+      await settle(tester);
+      expect(find.byType(SnackBar), findsNothing);
+      expect(find.byKey(const Key('homeCrossTabPasteButton')), findsOneWidget);
+      expect(
+        find.ancestor(of: card('apple'), matching: find.byType(Opacity)),
+        findsOneWidget,
+        reason: 'the cut work stays dimmed',
+      );
+      expect(tester.takeException(), isNull);
+      await close(tester);
+    });
+
+    testWidgets('Esc that cancels a cut also closes the cut notice', (
+      tester,
+    ) async {
+      await openHome(tester, names: ['apple', 'banana']);
+      await cut(tester, 'apple');
+      await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+      await settle(tester);
+      expect(find.byKey(const Key('homeCrossTabPasteButton')), findsNothing);
+      expect(
+        find.byType(SnackBar),
+        findsNothing,
+        reason: 'the notice still tells the user to press Paste',
+      );
+      expect(tester.takeException(), isNull);
+      await close(tester);
+    });
+
+    // 切り取りの知らせの「元に戻す」でやめたときも、知らせは閉じる。
+    testWidgets('Undo on the cut notice cancels the cut and closes it', (
+      tester,
+    ) async {
+      await openHome(tester, names: ['apple', 'banana']);
+      await cut(tester, 'apple');
+      await tester.tap(find.text(l10nOf(tester).homeUndoAction));
+      await settle(tester);
+      expect(find.byKey(const Key('homeCrossTabPasteButton')), findsNothing);
+      expect(find.byType(SnackBar), findsNothing);
+      expect(tester.takeException(), isNull);
+      await close(tester);
+    });
+
+    // 切り取りの後で別の知らせ（ゴミ箱へ移した・元に戻す）が出ているときに
+    // Escで切り取りをやめても、その知らせは閉じない。
+    testWidgets('Esc that cancels a cut leaves a later notice alone', (
+      tester,
+    ) async {
+      final service = await openHome(tester, names: ['apple', 'banana']);
+      await cut(tester, 'apple');
+      await trashFromMenu(tester, 'banana');
+      final moved = l10nOf(tester).homeMovedToTrashSnackbar(1);
+      expect(snackText(tester), moved);
+      await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+      await settle(tester);
+      expect(find.byKey(const Key('homeCrossTabPasteButton')), findsNothing);
+      expect(snackText(tester), moved);
+      // 残った知らせの「元に戻す」は効く。
+      await tester.tap(find.text(l10nOf(tester).homeUndoAction));
+      await waitFor(tester, () => service.projects.length == 2);
+      expect(service.trash, isEmpty);
+      expect(tester.takeException(), isNull);
+      await close(tester);
+    });
+
+    // 他の知らせが出ていて、その後ろでもう1つ待っているときに切り取っても、
+    // 切り取りの知らせをすぐ出す。待っていた知らせの後ろに回ると、Escで
+    // 切り取りをやめたときに、出ている別の知らせを閉じてしまう。
+    testWidgets('a cut made while other notices are waiting shows its notice '
+        'at once and can be cancelled', (tester) async {
+      await openHome(tester, names: ['apple', 'banana']);
+      ScaffoldMessenger.of(tester.element(find.byType(HomeScreen)))
+        ..showSnackBar(const SnackBar(content: Text('first notice')))
+        ..showSnackBar(const SnackBar(content: Text('waiting notice')));
+      await settle(tester);
+      expect(snackText(tester), 'first notice');
+      await cut(tester, 'apple');
+      await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+      await settle(tester);
+      expect(tester.takeException(), isNull);
+      expect(find.byKey(const Key('homeCrossTabPasteButton')), findsNothing);
+      expect(find.byType(SnackBar), findsNothing);
       await close(tester);
     });
   });

@@ -1596,6 +1596,9 @@ class _HomeScreenState extends State<HomeScreen>
     ScaffoldMessenger.of(context).removeCurrentSnackBar();
   }
 
+  // 出ている切り取りの知らせ（閉じたらnull）。
+  ScaffoldFeatureController<SnackBar, SnackBarClosedReason>? _cutNotice;
+
   void _cancelCutClipboard() {
     if (!_clipboardIsCut) return;
     _clearHomeClipboard();
@@ -1604,10 +1607,17 @@ class _HomeScreenState extends State<HomeScreen>
   void _showClipboardFeedback(String message, {bool allowUndoCut = false}) {
     if (!mounted) return;
     final messenger = ScaffoldMessenger.of(context);
+    // 切り取りの知らせは、待っている他の知らせの後ろへ回さずにすぐ出す
+    // （後ろに回ると、切り取りをやめたときに閉じる相手を取り違える）。
+    if (allowUndoCut) messenger.clearSnackBars();
     messenger.removeCurrentSnackBar();
-    messenger.showSnackBar(
+    final notice = messenger.showSnackBar(
       SnackBar(
         content: Text(message),
+        // 操作ボタンの付いたSnackBarは、既定では時間で消えず次の画面まで
+        // 付いてくる。切り取りは貼り付けるまで続くが、知らせは5秒で消す。
+        persist: false,
+        duration: Duration(seconds: allowUndoCut ? 5 : 4),
         action: allowUndoCut
             ? SnackBarAction(
                 label: AppLocalizations.of(context)!.homeUndoAction,
@@ -1616,6 +1626,12 @@ class _HomeScreenState extends State<HomeScreen>
             : null,
       ),
     );
+    if (allowUndoCut) {
+      _cutNotice = notice;
+      notice.closed.whenComplete(() {
+        if (identical(_cutNotice, notice)) _cutNotice = null;
+      });
+    }
   }
 
   /// 選択中のプロジェクト・フォルダを切り取り、内部クリップボードへ保持する。
