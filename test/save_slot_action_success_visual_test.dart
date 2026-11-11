@@ -187,7 +187,7 @@ void main() {
       await tester.tap(loads.first);
       await settle();
       await tester.tap(
-        find.widgetWithText(FilledButton, l10n.saveTreeResumeFromHereAction),
+        find.widgetWithText(FilledButton, l10n.saveTreeRestoreAction),
       );
       await settle(rounds: 12);
       expect(find.byType(AlertDialog), findsNothing);
