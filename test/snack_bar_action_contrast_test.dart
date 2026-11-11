@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/services/theme_service.dart';
 import 'package:niarim/utils/color_contrast.dart';
@@ -15,7 +16,14 @@ void main() {
     expect(service.presets, isNotEmpty);
     for (final preset in service.presets) {
       service.applyPreset(preset.id);
-      final snackBar = service.themeData.snackBarTheme;
+      final theme = service.themeData;
+      final snackBar = theme.snackBarTheme;
+      // Regressions: Flutter's default elevated SnackBar becomes an opaque
+      // thick black ring in screenshot tests; flat by default in every theme.
+      expect(snackBar.elevation, 0, reason: preset.name);
+      expect(theme.shadowColor, Colors.transparent, reason: preset.name);
+      expect(theme.bottomSheetTheme.elevation, 0, reason: preset.name);
+      expect(theme.bottomSheetTheme.modalElevation, 0, reason: preset.name);
       final action = snackBar.actionTextColor;
       final background = snackBar.backgroundColor;
       expect(action, isNotNull, reason: preset.name);

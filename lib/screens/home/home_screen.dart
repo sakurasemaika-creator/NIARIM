@@ -2828,7 +2828,9 @@ class _FolderableList<T> extends StatelessWidget {
     // Image.fileを含む）のウィジェットが毎buildで作られて捨てられる。
     return LayoutBuilder(
       builder: (context, constraints) {
-        if (rootItems.isEmpty && emptyState != null) {
+        // A collection is empty only when it has neither root files
+        // nor folders. A folder containing no files is still an entry.
+        if (rootItems.isEmpty && !hasHeader && emptyState != null) {
           return CustomScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
             slivers: [

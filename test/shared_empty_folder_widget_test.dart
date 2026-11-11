@@ -114,12 +114,15 @@ void main() {
         final l10n = await show(tester, service!, locale);
         expect(service.shared, isEmpty);
         expect(find.text('S25'), findsOneWidget, reason: '$locale $size');
+        expect(find.text(l10n.homeSharedEmpty), findsNothing,
+            reason: 'A folder exists even when no shared projects exist: $locale $size');
         final favorite = find.byType(FilterChip);
         final wasSelected = tester.widget<FilterChip>(favorite).selected;
         await tester.tap(favorite);
         await tester.pumpAndSettle();
         expect(tester.widget<FilterChip>(favorite).selected, !wasSelected);
         expect(find.text('S25'), findsOneWidget);
+        expect(find.text(l10n.homeSharedEmpty), findsNothing);
         await tester.tap(find.text('S25'));
         await tester.pumpAndSettle();
         expect(find.text(l10n.folderManagementEmpty), findsNothing);
@@ -148,6 +151,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(service.sharedFolders.single.name, 'S25');
     expect(find.text('S25'), findsOneWidget);
+    expect(find.text(l10n.homeSharedEmpty), findsNothing);
     await tester.longPress(find.text('S25'));
     await tester.pumpAndSettle();
     await tester.tap(find.text(l10n.commonRename));

@@ -97,6 +97,24 @@ void main() {
     return (l10n: l10n, folders: folders);
   }
 
+  testWidgets('folder-only Works collection hides no-works message and restores it after delete', (tester) async {
+    final env = await open(tester, language: 'ja', libraryHasFile: false);
+    expect(find.text('AUDIT'), findsOneWidget);
+    expect(find.text(env.l10n.homeWorksEmpty), findsNothing,
+        reason: 'Folder-only root is not an empty collection');
+    await tester.tap(find.text('AUDIT'));
+    await tester.pumpAndSettle();
+    expect(find.text(env.l10n.homeWorkFolderEmpty), findsOneWidget,
+        reason: 'An opened empty folder may show its own empty message');
+    await tester.tap(find.byType(BackButton));
+    await tester.pumpAndSettle();
+    expect(find.text(env.l10n.homeWorksEmpty), findsNothing);
+    await env.folders.deleteFolder('audit-folder');
+    await tester.pumpAndSettle();
+    expect(find.text(env.l10n.homeWorksEmpty), findsOneWidget,
+        reason: 'Only the genuinely empty root shows the message');
+  });
+
   testWidgets('an existing empty Works folder never claims no folders exist', (
     tester,
   ) async {

@@ -800,6 +800,9 @@ class ThemeService extends ChangeNotifier {
       useMaterial3: true,
       brightness: brightness,
       colorScheme: scheme,
+      // Material's default shadows appear as thick black outlines in UI
+      // captures. Prefer flat surfaces throughout the application.
+      shadowColor: Colors.transparent,
       fontFamily: 'HakkouMincho',
       textTheme: textTheme,
       extensions: [AccentTextTheme(accentText)],
@@ -977,6 +980,8 @@ class ThemeService extends ChangeNotifier {
       bottomSheetTheme: BottomSheetThemeData(
         backgroundColor: popupColor,
         modalBackgroundColor: popupColor,
+        elevation: 0,
+        modalElevation: 0,
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
         ),
@@ -984,6 +989,9 @@ class ThemeService extends ChangeNotifier {
       snackBarTheme: SnackBarThemeData(
         behavior: SnackBarBehavior.floating,
         backgroundColor: popupColor,
+        // Central rule for all copy/paste and action notifications: no
+        // default Material elevation (hard black outline in screenshots).
+        elevation: 0,
         // AppBarのtitleTextStyle・FilledButtonのtextStyleとまったく同じ罠。
         // 素のTextStyle()を渡すとそれが本文の書式を丸ごと決めてしまい、
         // ThemeData.fontFamily='HakkouMincho'は継承されない。その結果
