@@ -1085,6 +1085,12 @@ class _HomeScreenState extends State<HomeScreen>
       _selectedIds.clear();
       _isSelectionMode = false;
     });
+    final count = _clipboardProjectIds.length + _clipboardFolderIds.length;
+    if (count > 0 && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(AppLocalizations.of(context)!.homeCutSnackbar(count))),
+      );
+    }
   }
 
   /// Project and folder copies preserve source references for repeated paste.
@@ -1110,6 +1116,12 @@ class _HomeScreenState extends State<HomeScreen>
       _selectedIds.clear();
       _isSelectionMode = false;
     });
+    final count = _clipboardProjectIds.length + _clipboardFolderIds.length;
+    if (count > 0 && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(AppLocalizations.of(context)!.homeCopiedSnackbar(count))),
+      );
+    }
   }
 
   bool get _hasClipboard =>
@@ -1124,6 +1136,11 @@ class _HomeScreenState extends State<HomeScreen>
       _clipboardIsCut = entry.isCut;
       _otherClipboard = entry;
     });
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(AppLocalizations.of(context)!.homeCopiedSnackbar(1))),
+      );
+    }
   }
 
 
