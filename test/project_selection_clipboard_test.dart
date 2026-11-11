@@ -620,6 +620,9 @@ void main() {
         find.text('元に戻す').evaluate().isNotEmpty);
     final deleted = service.deleteFolder(folderId);
     await waitFor(tester, () => !service.folders.any((f) => f.id == folderId));
+    // Fail with a useful assertion instead of waiting forever for a blocked
+    // project/folder save queue.
+    expect(service.folders.any((f) => f.id == folderId), isFalse);
     await tester.runAsync(() => deleted);
     await tester.tap(find.text('元に戻す'));
     await waitFor(tester, () => service.projects.isNotEmpty);
