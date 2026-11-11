@@ -72,7 +72,7 @@ void main() {
       required String savedAtText,
       required String comment,
     }) async {
-      final dialog = find.widgetWithText(AlertDialog, title);
+      // The title also appears on the confirm button ('読み込み').\n      // Select the visible dialog by type, not by duplicate descendant text.\n      final dialog = find.byType(AlertDialog);
       expect(dialog, findsOneWidget);
       expect(
         find.descendant(of: dialog, matching: find.text(comment)),
@@ -83,7 +83,7 @@ void main() {
         findsOneWidget,
       );
 
-      final imageFinder = find.descendant(
+      expect(find.descendant(of: dialog, matching: find.text(title)), findsWidgets);\n\n      final imageFinder = find.descendant(
         of: dialog,
         matching: find.byType(Image),
       );
