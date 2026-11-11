@@ -440,13 +440,26 @@ void main() {
     final afterHue = tester.widget<LabeledSlider>(hueSlider).value;
     expect(afterHue, beforeHue + 1, reason: 'HSV stepper must add 1');
     await shot('10c_color_picker_hsv_after_plus_one');
+    final rgbPill = find.byKey(const ValueKey('color-slider-mode-rgb'));
+    final hsvPill = find.byKey(const ValueKey('color-slider-mode-hsv'));
+    expect(rgbPill, findsOneWidget);
+    expect(hsvPill, findsOneWidget);
+    await tester.ensureVisible(rgbPill);
+    await tester.tap(rgbPill);
+    await settle();
+    expect(hueSlider, findsNothing);
     final rgbSlider = find.ancestor(
       of: find.descendant(of: colorPanel, matching: find.text('R')),
       matching: find.byType(LabeledSlider),
     );
+    expect(rgbSlider, findsOneWidget);
     await tester.ensureVisible(rgbSlider);
     await settle();
     await shot('10d_color_picker_rgb_sliders');
+    await tester.ensureVisible(hsvPill);
+    await tester.tap(hsvPill);
+    await settle();
+    expect(hueSlider, findsOneWidget);
 
     final resize = find.byKey(const ValueKey('pcPaneResize.canvasPreview'));
     if (resize.evaluate().isNotEmpty) {
