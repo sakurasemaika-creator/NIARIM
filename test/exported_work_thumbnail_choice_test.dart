@@ -1,6 +1,8 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:image/image.dart' as image_codec;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/screens/home/widgets/exported_work_card.dart';
 import 'package:niarim/screens/home/widgets/exported_work_thumbnail_dialog.dart';
@@ -28,6 +30,40 @@ void main() {
     // An external overwrite must not retain an obsolete selected cover.
     original.writeAsBytesSync([1, 2, 3, 4, 5]);
     expect((await ExportedWorkCoverStore.read(original))['mode'], 'latest');
+  });
+
+  test('Exported raster covers are downscaled, cached and deleted safely',
+      () async {
+    SharedPreferences.setMockInitialValues({});
+    final temp = Directory.systemTemp.createTempSync('cover_cache_test_');
+    const channel = MethodChannel('plugins.flutter.io/path_provider');
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(channel, (_) async => temp.path);
+    addTearDown(() {
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(channel, null);
+      if (temp.existsSync()) temp.deleteSync(recursive: true);
+    });
+    final source = image_codec.Image(width: 1000, height: 600);
+    image_codec.fill(source, color: image_codec.ColorRgba8(16, 122, 188, 255));
+    final originalBytes = image_codec.encodePng(source);
+    final file = File('${temp.path}/original.png');
+    await file.writeAsBytes(originalBytes, flush: true);
+
+    final setting = await ExportedWorkCoverStore.ensureCached(file);
+    expect(setting['mode'], 'latest');
+    expect(setting['frameIndex'], 0);
+    final path = setting['imagePath'] as String;
+    expect(path, isNot(file.path));
+    final cover = File(path);
+    expect(await cover.exists(), isTrue);
+    final rendered = image_codec.decodeImage(await cover.readAsBytes())!;
+    expect(rendered.width, lessThanOrEqualTo(420));
+    expect(rendered.height, lessThanOrEqualTo(420));
+    expect(await file.readAsBytes(), originalBytes);
+    await ExportedWorkCoverStore.write(file, mode: 'none');
+    expect(await cover.exists(), isFalse);
+    expect(await file.readAsBytes(), originalBytes);
   });
 
   testWidgets('Exported card exposes a three-dot thumbnail action', (tester) async {
