@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../../config/font_fallback.dart';
+import '../../../widgets/collection_action_controls.dart';
 import 'folder_thumbnail.dart';
 
 /// A saved export keeps its complete identity visible, including large text.
@@ -25,6 +26,7 @@ class ExportedWorkCard extends StatelessWidget {
     this.thumbnailHidden = false,
     this.shareBusy = false,
     this.shareError,
+    this.gridTile = false,
   });
 
   final String name;
@@ -44,6 +46,8 @@ class ExportedWorkCard extends StatelessWidget {
   final VoidCallback? onDelete;
   final bool shareBusy;
   final String? shareError;
+  /// Match the project collection's small/medium/large card presentation.
+  final bool gridTile;
 
   static final _filenameSeparators = RegExp(r'([_.-])');
 
@@ -96,66 +100,71 @@ class ExportedWorkCard extends StatelessWidget {
         ],
       ),
     );
-    Widget actions() => Wrap(
-      spacing: 0,
-      runSpacing: 0,
-      children: [
-        if (onCopy != null)
-          IconButton(
-            key: const Key('exportedWorkCopyButton'),
-            constraints: const BoxConstraints.tightFor(width: 48, height: 48),
-            color: foreground,
-            icon: const Icon(Icons.content_copy_outlined, size: 20),
-            tooltip: '${MaterialLocalizations.of(context).copyButtonLabel}: $name',
-            onPressed: onCopy,
-          ),
-        IconButton(
-          constraints: const BoxConstraints.tightFor(width: 48, height: 48),
-          color: foreground,
-          icon: const Icon(Icons.drive_file_move_outline, size: 20),
-          tooltip: '$moveLabel: $name',
-          onPressed: onMove,
-        ),
-        IconButton(
-          constraints: const BoxConstraints.tightFor(width: 48, height: 48),
-          color: foreground,
-          icon: shareBusy
-              ? SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: foreground,
-                  ),
-                )
-              : const Icon(Icons.ios_share, size: 20),
-          tooltip: '$shareLabel: $name',
-          onPressed: onShare,
-        ),
-        if (onChangeThumbnail != null)
-          PopupMenuButton<String>(
-            key: const Key('exportedWorkMoreMenu'),
-            icon: const Icon(Icons.more_vert, size: 20),
-            tooltip: MaterialLocalizations.of(context).showMenuTooltip,
-            onSelected: (value) {
-              if (value == 'thumbnail') onChangeThumbnail?.call();
-            },
-            itemBuilder: (context) => [
+    Widget menu() => CollectionActionFrame(
+      child: PopupMenuButton<String>(
+        key: const Key('exportedWorkMoreMenu'),
+        padding: EdgeInsets.zero,
+        icon: shareBusy
+            ? SizedBox.square(
+                dimension: 20,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2, color: foreground,
+                ),
+              )
+            : const Icon(
+                Icons.more_vert, size: CollectionActionFrame.glyphSize),
+        tooltip: MaterialLocalizations.of(context).showMenuTooltip,
+        onSelected: (action) {
+          switch (action) {
+            case 'open':
+              onOpen?.call();
+            case 'copy':
+              onCopy?.call();
+            case 'move':
+              onMove();
+            case 'share':
+              onShare?.call();
+            case 'thumbnail':
+              onChangeThumbnail?.call();
+            case 'delete':
+              onDelete?.call();
+          }
+        },
+        itemBuilder: (context) {
+          final japanese = Localizations.localeOf(context).languageCode == 'ja';
+          return [
+            PopupMenuItem(
+              value: 'open',
+              enabled: onOpen != null,
+              child: Text(japanese ? '開く' : 'Open'),
+            ),
+            if (onCopy != null)
+              PopupMenuItem(
+                value: 'copy',
+                child: Text(MaterialLocalizations.of(context).copyButtonLabel),
+              ),
+            PopupMenuItem(value: 'move', child: Text(moveLabel)),
+            PopupMenuItem(
+              value: 'share',
+              enabled: onShare != null && !shareBusy,
+              child: Text(shareLabel),
+            ),
+            if (onChangeThumbnail != null)
               PopupMenuItem(
                 value: 'thumbnail',
-                child: Text(Localizations.localeOf(context).languageCode == 'ja'
-                    ? 'サムネイル変更' : 'Change thumbnail'),
+                child: Text(japanese ? 'サムネイル変更' : 'Change thumbnail'),
               ),
-            ],
-          ),
-        IconButton(
-          constraints: const BoxConstraints.tightFor(width: 48, height: 48),
-          color: foreground,
-          icon: const Icon(Icons.delete_outline, size: 20),
-          tooltip: '$deleteLabel: $name',
-          onPressed: onDelete,
-        ),
-      ],
+            PopupMenuItem(
+              value: 'delete',
+              enabled: onDelete != null,
+              child: Text(
+                deleteLabel,
+                style: TextStyle(color: theme.colorScheme.error),
+              ),
+            ),
+          ];
+        },
+      ),
     );
 
     // The whole left edge of the card is its cover. Keeping the title and
@@ -169,6 +178,64 @@ class ExportedWorkCard extends StatelessWidget {
         child: thumbnailHidden || path == null
             ? Center(child: Icon(icon, color: foreground))
             : FolderCoverMedia(path: path, cacheWidth: 256),
+      );
+    }
+
+    if (gridTile) {
+      return Card(
+        margin: EdgeInsets.zero,
+        clipBehavior: Clip.antiAlias,
+        color: background,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(14),
+        ),
+        child: InkWell(
+          onTap: onOpen,
+          onLongPress: onMove,
+          onSecondaryTap: onMove,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    thumbnail(),
+                    Positioned(
+                      top: 4,
+                      right: 4,
+                      child: menu(),
+                    ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(8, 5, 8, 6),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      displayName,
+                      semanticsLabel: name,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: titleStyle,
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      metadata,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: detailStyle,
+                    ),
+                    if (shareError != null) shareFeedback(),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
       );
     }
 
@@ -215,17 +282,20 @@ class ExportedWorkCard extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              title(),
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Expanded(child: title()),
+                                  const SizedBox(width: 4),
+                                  menu(),
+                                ],
+                              ),
                               const SizedBox(height: 4),
                               details(),
                               if (shareError != null) ...[
                                 const SizedBox(height: 8),
                                 shareFeedback(),
                               ],
-                              const SizedBox(height: 4),
-                              // Large controls are kept; on narrow cards they
-                              // wrap rather than overflowing/clipping.
-                              actions(),
                             ],
                           ),
                         ),
