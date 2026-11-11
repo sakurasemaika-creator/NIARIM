@@ -378,8 +378,10 @@ class SaveTreeService extends ChangeNotifier {
     _nodesByProject[projectId]!.removeWhere((n) => n.slotIndex == slotIndex);
     // A newly committed save updates its slot memo only after archive/thumbnail
     // persistence succeeds. An existing empty slot memo is not lost on delete.
-    _slotMemosByProject.putIfAbsent(projectId, () => {})[slotIndex] =
-        (comment ?? slotMemoOf(projectId, slotIndex) ?? old.firstOrNull?.comment ?? '').trim();
+    _slotMemosByProject.putIfAbsent(projectId, () => {}).putIfAbsent(
+      slotIndex,
+      () => (comment ?? old.firstOrNull?.comment ?? '').trim(),
+    );
     final node = SaveNode(
       id: nodeId,
       projectId: projectId,
