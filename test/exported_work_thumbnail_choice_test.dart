@@ -94,4 +94,78 @@ void main() {
     expect(find.text('サムネイル変更'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+  testWidgets(
+    'exported cover fills card height while name and metadata stay to its right',
+    (tester) async {
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+
+      for (final width in [280.0, 320.0, 390.0, 768.0]) {
+        for (final textScale in [1.0, 2.0]) {
+          tester.view.physicalSize = Size(width, 900);
+          tester.platformDispatcher.textScaleFactorTestValue = textScale;
+          await tester.pumpWidget(MaterialApp(
+            locale: const Locale('ja'),
+            supportedLocales: AppLocalizations.supportedLocales,
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            home: Scaffold(
+              body: ExportedWorkCard(
+                name: 'a_very_long_exported_animation_filename_episode_01.mp4',
+                metadata: '2026/11/11 18:00 ・ 123.5 MB',
+                icon: Icons.movie_outlined,
+                moveLabel: '移動',
+                shareLabel: '共有',
+                deleteLabel: '削除',
+                thumbnailHidden: true,
+                onOpen: () {},
+                onMove: () {},
+                onCopy: () {},
+                onShare: () {},
+                onDelete: () {},
+                onChangeThumbnail: () {},
+              ),
+            ),
+          ));
+          await tester.pumpAndSettle();
+          final scope = 'width=$width textScale=$textScale';
+          final card = find.descendant(
+            of: find.byType(ExportedWorkCard),
+            matching: find.byType(InkWell),
+          ).first;
+          final content = tester.getRect(card);
+          final thumb = tester.getRect(
+            find.byKey(const Key('exportedWorkThumbnailArea')),
+          );
+          final title = tester.getRect(
+            find.byKey(const Key('exportedWorkTitle')),
+          );
+          final metadata = tester.getRect(
+            find.byKey(const Key('exportedWorkMetadata')),
+          );
+          expect(thumb.top, closeTo(content.top, 0.5), reason: scope);
+          expect(thumb.bottom, closeTo(content.bottom, 0.5),
+              reason: scope);
+          expect(title.left, greaterThan(thumb.right), reason: scope);
+          expect(metadata.left, greaterThan(thumb.right), reason: scope);
+          for (final key in [
+            'exportedWorkCopyButton',
+            'exportedWorkMoreMenu',
+          ]) {
+            final rect = tester.getRect(find.byKey(Key(key)));
+            expect(rect.left, greaterThanOrEqualTo(thumb.right),
+                reason: '$scope $key');
+            expect(rect.right, lessThanOrEqualTo(content.right + 0.5),
+                reason: '$scope $key');
+            expect(rect.bottom, lessThanOrEqualTo(content.bottom + 0.5),
+                reason: '$scope $key');
+          }
+          expect(tester.takeException(), isNull, reason: scope);
+          await tester.pumpWidget(const SizedBox.shrink());
+        }
+      }
+    },
+  );
+
 }
