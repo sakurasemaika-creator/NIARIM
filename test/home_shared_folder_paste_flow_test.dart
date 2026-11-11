@@ -10,6 +10,7 @@ import 'package:niarim/models/project.dart';
 import 'package:niarim/router.dart';
 import 'package:niarim/screens/splash/splash_screen.dart';
 import 'package:niarim/services/project_service.dart';
+import 'package:niarim/services/work_folder_service.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -117,5 +118,45 @@ void main() {
     expect(service.shared.single.sharedFolderId, folderId);
     expect(service.shared.single.name, '元の作品');
     expect(service.trash, isEmpty);
+  });
+
+  testWidgets('empty Works folder with stale file membership may paste into Projects',
+      (tester) async {
+    tester.view.physicalSize = const Size(800, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final providers = (await tester.runAsync(buildAppProviders))!;
+    await tester.pumpWidget(
+      MultiProvider(providers: providers, child: const NiarimApp()),
+    );
+    await tester.pump(const Duration(milliseconds: 300));
+    final splash = tester.element(find.byType(SplashScreen));
+    final projects = splash.read<ProjectService>();
+    final works = splash.read<WorkFolderService>();
+    await tester.runAsync(() async {
+      final folder = await works.createFolder('空の書き出し');
+      // Metadata remains from a file that is no longer on disk.
+      await works.moveFileToFolder('previously-deleted.mp4', folder.id);
+    });
+    await tester.tap(find.byIcon(Icons.brush_outlined));
+    await pumpIo(tester);
+    await tester.tap(find.byKey(const ValueKey('home_tab_1')));
+    await pumpIo(tester);
+    await tester.longPress(find.text('空の書き出し').first);
+    await tester.pump();
+    await tester.tap(find.widgetWithIcon(ListTile, Icons.content_copy));
+    await pumpIo(tester);
+    expect(find.byKey(const Key('homeCrossTabPasteButton')), findsOneWidget);
+
+    await tester.tap(find.byKey(const ValueKey('home_tab_0')));
+    await pumpIo(tester);
+    await tester.tap(find.byKey(const Key('homeCrossTabPasteButton')));
+    await pumpIo(tester);
+    expect(find.byKey(const Key('homePasteRestrictionDialog')), findsNothing);
+    expect(projects.folders.map((folder) => folder.name),
+        contains('空の書き出し'));
+    expect(works.folders.single.name, '空の書き出し');
   });
 }
