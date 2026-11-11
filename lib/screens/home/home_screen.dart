@@ -3935,7 +3935,12 @@ class _WorkListItemState extends State<_WorkListItem> {
         final path = setting['imagePath'];
         return ExportedWorkCard(
       thumbnailPath: path is String && path.isNotEmpty ? path : null,
-      originalMediaPath: file.path,
+      // Avoid decoding the original video twice while its compact cover
+      // is generated in the queued cache service.
+      originalMediaPath: const {'mp4', 'm4v', 'mov', 'webm', 'mkv', 'avi', '3gp'}
+              .contains(file.path.split('.').last.toLowerCase())
+          ? null
+          : file.path,
       thumbnailHidden: setting['mode'] == 'none',
       onChangeThumbnail: () => showExportedWorkThumbnailDialog(
         context,
