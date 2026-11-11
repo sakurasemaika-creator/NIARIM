@@ -3976,7 +3976,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get saveTreeSaveAsRootHint => 'ルートノードとして保存します。';
 
   @override
-  String get saveTreeCommentLabel => 'コメント（任意）';
+  String get saveTreeCommentLabel => 'メモ';
 
   @override
   String get saveTreeCommentHint => '例：背景完成';
@@ -4027,10 +4027,10 @@ class AppLocalizationsJa extends AppLocalizations {
   String get saveTreeResumeFromHereAction => 'ここから再開する';
 
   @override
-  String get saveTreeResumeConfirmBody => 'セーブしていない場合は現在のデータが消えますがよろしいですか？';
+  String get saveTreeResumeConfirmBody => 'このセーブデータから作業を再開しますか？\n\n現在のデータは上書きされます。保存する必要がある場合は先にセーブしてください。';
 
   @override
-  String get saveTreeProjectDetailResumeBody => 'このセーブデータから作業を再開しますか？';
+  String get saveTreeProjectDetailResumeBody => 'このセーブデータから作業を再開しますか？\n\n現在のデータは上書きされます。保存する必要がある場合は先にセーブしてください。';
 
   @override
   String get saveTreeLoadFailedSnackbar => '保存データの読み込みに失敗しました';
