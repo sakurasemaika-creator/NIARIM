@@ -204,19 +204,24 @@ void main() {
     tester.view.devicePixelRatio = 1;
     await tester.pump(const Duration(milliseconds: 300));
     await capture('13_desktop_cards');
-    await tester.tap(find.byKey(const Key('projectCoverMenuFixture')));
-    await tester.pump(const Duration(milliseconds: 300));
-    await tester.tap(find.text('サムネイル変更').last);
-    await tester.pump(const Duration(milliseconds: 300));
+    // Phone captures already exercise the three-dot route. Open the same
+    // production dialog directly on desktop to keep this evidence focused
+    // on its responsive layout, not a popup-menu transition race.
+    showProjectThumbnailDialog(
+      tester.element(find.byKey(const Key('projectCoverMenuFixture'))),
+      project: project!, service: service,
+    );
+    await tester.pump(const Duration(milliseconds: 450));
     await tester.tap(find.byKey(const Key('projectThumbnailFrame')));
     await tester.pump(const Duration(milliseconds: 300));
     await capture('14_desktop_project_frame');
     await tester.tap(find.text('キャンセル').last);
     await tester.pump(const Duration(milliseconds: 300));
-    await tester.tap(find.byKey(const Key('exportedWorkMoreMenu')));
-    await tester.pump(const Duration(milliseconds: 300));
-    await tester.tap(find.text('サムネイル変更').last);
-    await tester.pump(const Duration(milliseconds: 300));
+    showExportedWorkThumbnailDialog(
+      tester.element(find.byKey(const Key('exportedWorkMoreMenu'))),
+      file: exportedImage,
+    );
+    await tester.pump(const Duration(milliseconds: 450));
     await tester.tap(find.byKey(const Key('exportCoverFrame')));
     await tester.pump(const Duration(milliseconds: 300));
     await capture('15_desktop_export_image_frame');
