@@ -395,7 +395,7 @@ Future<void> _handleSaveNodeRestore(
           ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: Text(l10n.commonOk),
+            child: Text(l10n.saveTreeRestoreAction),
           ),
         ],
       ),
