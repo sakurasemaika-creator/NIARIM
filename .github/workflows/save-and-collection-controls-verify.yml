@@ -10,6 +10,9 @@ on:
       - 'lib/screens/save_tree/**'
       - 'lib/screens/home/home_screen.dart'
       - 'lib/screens/home/widgets/project_list_widget.dart'
+      - 'lib/screens/home/widgets/folder_thumbnail.dart'
+      - 'lib/services/project_service.dart'
+      - 'lib/services/work_folder_service.dart'
       - 'lib/widgets/collection_action_controls.dart'
       - 'test/save_slot_visual_audit_test.dart'
       - 'test/save_thumbnail_accuracy_test.dart'
@@ -20,6 +23,9 @@ on:
       - 'test/save_slot_action_buttons_test.dart'
       - 'test/save_slot_action_success_visual_test.dart'
       - 'test/shared_collection_controls_capture_test.dart'
+      - 'test/folder_thumbnail_modes_test.dart'
+      - 'test/save_memo_max_length_test.dart'
+      - 'test/save_tree_large_branch_stress_test.dart'
   workflow_dispatch:
 
 permissions:
@@ -43,7 +49,13 @@ jobs:
             lib/screens/save_tree \
             lib/screens/home/home_screen.dart \
             lib/screens/home/widgets/project_list_widget.dart \
-            lib/widgets/collection_action_controls.dart
+            lib/screens/home/widgets/folder_thumbnail.dart \
+            lib/services/project_service.dart \
+            lib/services/work_folder_service.dart \
+            lib/widgets/collection_action_controls.dart \
+            test/folder_thumbnail_modes_test.dart \
+            test/save_memo_max_length_test.dart \
+            test/save_tree_large_branch_stress_test.dart
       - name: Save and collection UI regressions
         run: |
           flutter test --no-pub --reporter expanded \
@@ -55,7 +67,10 @@ jobs:
             test/save_slot_confirmation_dialog_test.dart \
             test/project_grid_actions_test.dart \
             test/save_slot_action_success_visual_test.dart \
-            test/shared_collection_controls_capture_test.dart
+            test/shared_collection_controls_capture_test.dart \
+            test/folder_thumbnail_modes_test.dart \
+            test/save_memo_max_length_test.dart \
+            test/save_tree_large_branch_stress_test.dart
       - name: Prepare Python PDF generator
         if: always()
         uses: actions/setup-python@v5
