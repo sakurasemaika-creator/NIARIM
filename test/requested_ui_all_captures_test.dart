@@ -173,17 +173,17 @@ void main() {
       find.byKey(const Key('timelinePreviewFullscreenButton')),
     );
     expect(
-      (frameCounter.left - (viewport.left + 8)).abs(),
+      (frameCounter.left - viewport.left).abs(),
       lessThan(1),
       reason: 'Counter must track the preview viewport, not artwork.',
     );
-    expect((frameCounter.bottom - (viewport.bottom - 8)).abs(), lessThan(1));
+    expect((frameCounter.bottom - viewport.bottom).abs(), lessThan(1));
     expect(
-      (fullscreenButton.right - (viewport.right - 8)).abs(),
+      (fullscreenButton.right - viewport.right).abs(),
       lessThan(1),
       reason: 'Fullscreen control must track the preview viewport edge.',
     );
-    expect((fullscreenButton.top - (viewport.top + 8)).abs(), lessThan(1));
+    expect((fullscreenButton.top - viewport.top).abs(), lessThan(1));
     await shot('04b_timeline_portrait_artwork_controls_at_viewport_edges');
 
     await navigate('/canvas/${colored.id}');
