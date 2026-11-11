@@ -289,10 +289,10 @@ void main() {
         lessThanOrEqualTo(tester.getRect(find.text(work.authorName)).top + 1));
     expect(tester.getRect(find.text(work.authorName)).bottom,
         lessThanOrEqualTo(tester.getRect(bookmark).top + 1));
-    // Smaller artwork, preserved 48dp touch target.
+    // Both controls use the same 40dp outlined hit area and 16dp glyph.
     final action = tester.widget<IconButton>(bookmark);
-    expect(action.iconSize, 22);
-    expect(tester.getSize(bookmark), const Size(48, 48));
+    expect(action.iconSize, 16);
+    expect(tester.getSize(bookmark), const Size(40, 40));
     final card = tester.getRect(find.byType(Card));
     expect(card.right - tester.getRect(menu).right, lessThanOrEqualTo(10));
     expect(tester.getRect(bookmark).center.dx, greaterThan(card.center.dx));
