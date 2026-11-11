@@ -3920,12 +3920,19 @@ class ProjectService extends ChangeNotifier {
     }
     await _commitFolders([..._folders, ...added]);
     for (final p in projects) {
-      await duplicateProject(
+      final previous = _projects.map((project) => project.id).toSet();
+      if (!await duplicateProject(
         p.id,
         targetFolderId: copies[p.folderId],
         useTargetFolder: true,
         name: p.name,
-      );
+      )) {
+        throw StateError('Folder project vanished during copy: ${p.id}');
+      }
+      final created = _projects.where((project) =>
+          !previous.contains(project.id) &&
+          copies.values.contains(project.folderId)).single;
+      await saveProject(created.id);
     }
     return _folders.firstWhere((f) => f.id == copies[folderId]);
   });
