@@ -75,6 +75,45 @@ void main() {
     folders.dispose();
   });
 
+  test('retention OFF preserves local files; an expired local file is removed',
+      () async {
+    final source = File('${root.path}/exports/old.mp4');
+    await source.parent.create(recursive: true);
+    await source.writeAsBytes([7, 8]);
+    final archived = await LocalFileTrashService.move(
+      source, LocalTrashKind.exportedWork,
+    );
+    final metaFile = File('${File(archived.archivedPath).parent.path}/meta.json');
+    final json = await metaFile.readAsString();
+    // The service reads the persisted timestamp, not the current clock.
+    await metaFile.writeAsString(json.replaceFirst(
+      archived.deletedAt.toIso8601String(),
+      DateTime.utc(2020).toIso8601String(),
+    ));
+    await LocalFileTrashService.sweepExpired(0);
+    expect(await LocalFileTrashService.list(), hasLength(1));
+    await LocalFileTrashService.sweepExpired(30);
+    expect(await LocalFileTrashService.list(), isEmpty);
+  });
+
+  test('partially restored work folders are never auto-deleted', () async {
+    final source = File('${root.path}/exports/kept.gif');
+    await source.parent.create(recursive: true);
+    await source.writeAsBytes([1, 4]);
+    final folder = await LocalFileTrashService.moveWorkFolder(
+      folderName: '保護', files: [source],
+    );
+    final metaFile = File('${Directory(folder.archivedPath).parent.path}/meta.json');
+    final meta = await metaFile.readAsString();
+    await metaFile.writeAsString(meta
+        .replaceFirst(folder.deletedAt.toIso8601String(),
+            DateTime.utc(2020).toIso8601String())
+        .replaceFirst('"fileNames":', '"restoreFolderId":"resume-test","fileNames":'));
+    await LocalFileTrashService.sweepExpired(30);
+    expect(await LocalFileTrashService.list(), hasLength(1));
+    expect(await File('${folder.archivedPath}/kept.gif').readAsBytes(), [1, 4]);
+  });
+
   test('a conflicting file blocks restore without overwriting bytes', () async {
     final folders = WorkFolderService();
     await folders.init();
