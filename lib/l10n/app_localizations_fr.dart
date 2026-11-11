@@ -4175,7 +4175,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get saveTreeSaveAsRootHint => 'Sera enregistré comme nœud racine.';
 
   @override
-  String get saveTreeCommentLabel => 'Commentaire (facultatif)';
+  String get saveTreeCommentLabel => 'Note';
 
   @override
   String get saveTreeCommentHint => 'ex. : Arrière-plan terminé';
@@ -4227,12 +4227,10 @@ class AppLocalizationsFr extends AppLocalizations {
   String get saveTreeResumeFromHereAction => 'Reprendre à partir d\'ici';
 
   @override
-  String get saveTreeResumeConfirmBody =>
-      'Toute modification non enregistrée sera perdue. Voulez-vous continuer ?';
+  String get saveTreeResumeConfirmBody => 'Reprendre le travail à partir de cette sauvegarde ?\n\nLes données actuelles seront remplacées. Enregistrez d\'abord votre travail si vous souhaitez le conserver.';
 
   @override
-  String get saveTreeProjectDetailResumeBody =>
-      'Reprendre le travail à partir de cette sauvegarde ?';
+  String get saveTreeProjectDetailResumeBody => 'Reprendre le travail à partir de cette sauvegarde ?\n\nLes données actuelles seront remplacées. Enregistrez d\'abord votre travail si vous souhaitez le conserver.';
 
   @override
   String get saveTreeLoadFailedSnackbar =>
