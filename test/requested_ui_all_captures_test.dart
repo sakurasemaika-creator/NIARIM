@@ -416,7 +416,7 @@ void main() {
 
     // Shared picker: verify the exact controls rendered in PC/DeX and used
     // by the canvas and other dialogs, not an illustration of the design.
-    expect(find.byKey(const ValueKey('selected-color-preview-chip')),
+    expect(find.byKey(const ValueKey('pc-color-picker-current-chip')),
         findsOneWidget);
     final colorPanel = find.byType(ColorPickerPanel);
     expect(find.descendant(of: colorPanel, matching: find.text('HSV')),
