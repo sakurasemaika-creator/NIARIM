@@ -385,6 +385,9 @@ class _CanvasScreenState extends State<CanvasScreen> {
       _showRulerPanel = false;
       _showFilterPanel = false;
       _showQuickToolPanel = false;
+      // Switching tools cancels the uncommitted colour preview immediately.
+      _colorAdjustCanvasPreview?.dispose();
+      _colorAdjustCanvasPreview = null;
       _showColorAdjustPanel = false;
     }
     // 他のパネルを開く操作で自由変形/メッシュ変形パネルが押し出される場合は、
