@@ -75,6 +75,11 @@ class ExportedWorkCard extends StatelessWidget {
       displayName,
       key: const Key('exportedWorkTitle'),
       semanticsLabel: name,
+      // A very long filename at 2x text size must not grow beyond the
+      // screen-height card; the original full name remains in semantics and
+      // in the file detail view.
+      maxLines: 8,
+      overflow: TextOverflow.ellipsis,
       style: titleStyle,
     );
     Widget details() => Text(
