@@ -127,7 +127,36 @@ class _HomeScreenState extends State<HomeScreen>
   final _projectScrollController = ScrollController();
   late TabController _tabController;
   static const _projectViewModeKey = 'home.projectViewMode.v1';
+  static const _worksViewModeKey = 'home.worksViewMode.v1';
   ProjectViewMode? _userViewMode;
+  // Preserve the existing full-height list cover until a view size is chosen.
+  ProjectViewMode _worksViewMode = ProjectViewMode.detail;
+
+  Future<void> _selectWorksViewMode(ProjectViewMode mode) async {
+    setState(() => _worksViewMode = mode);
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_worksViewModeKey, mode.name);
+    } catch (error) {
+      debugPrint('Works tile preference could not be saved: $error');
+    }
+  }
+
+  Future<void> _loadWorksViewMode() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final stored = prefs.getString(_worksViewModeKey);
+      if (!mounted || stored == null) return;
+      for (final mode in ProjectViewMode.values) {
+        if (mode.name == stored) {
+          setState(() => _worksViewMode = mode);
+          return;
+        }
+      }
+    } catch (error) {
+      debugPrint('Works tile preference could not be restored: $error');
+    }
+  }
 
   ProjectViewMode _effectiveViewMode(BuildContext context) =>
       _userViewMode ??
@@ -220,6 +249,7 @@ class _HomeScreenState extends State<HomeScreen>
       }
     });
     _loadProjectViewMode();
+    _loadWorksViewMode();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _checkFirstLaunch();
       _initShareIntentHandling();
@@ -481,21 +511,20 @@ class _HomeScreenState extends State<HomeScreen>
                   ),
                   onPressed: _pasting ? null : _pasteClipboard,
                 ),
-              if (_currentTabIndex == 0) ...[
-                // ヘルプ・設定は左側ハンバーガーメニュー（HomeDrawer）に既に存在するため、
-                // トップ画面右上からは重複表示を削除した。
-                if (_isSearching)
+              if (_currentTabIndex == 0 || _currentTabIndex == 1) ...[
+                if (_currentTabIndex == 0 && _isSearching)
                   IconButton(
                     icon: const Icon(Icons.close),
                     tooltip: l10n.commonClose,
                     onPressed: _closeProjectSearch,
                   )
                 else ...[
-
                   PopupMenuButton<ProjectViewMode>(
+                    key: const Key('homeCollectionViewModeMenu'),
                     icon: const Icon(Icons.view_module),
                     tooltip: l10n.homeViewModeTooltip,
-                    onSelected: _selectProjectViewMode,
+                    onSelected: _currentTabIndex == 0
+                        ? _selectProjectViewMode : _selectWorksViewMode,
                     itemBuilder: (_) => [
                       PopupMenuItem(
                         value: ProjectViewMode.large,
@@ -515,11 +544,12 @@ class _HomeScreenState extends State<HomeScreen>
                       ),
                     ],
                   ),
-                  IconButton(
-                    icon: const Icon(Icons.search),
-                    tooltip: l10n.commonSearch,
-                    onPressed: _openProjectSearch,
-                  ),
+                  if (_currentTabIndex == 0)
+                    IconButton(
+                      icon: const Icon(Icons.search),
+                      tooltip: l10n.commonSearch,
+                      onPressed: _openProjectSearch,
+                    ),
                 ],
               ],
               IconButton(
@@ -694,6 +724,8 @@ class _HomeScreenState extends State<HomeScreen>
                     ),
                     _WorksTab(
                       key: const PageStorageKey('home-works'),
+                      viewMode: _worksViewMode,
+                      onViewModeChanged: _selectWorksViewMode,
                       onCopyEntry: _copyLibraryEntry,
                     ),
                     SharedScreen(
