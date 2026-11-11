@@ -1,10 +1,12 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math' as math;
 import 'dart:typed_data';
 import 'dart:ui' show Color, Offset, TextAlign;
 
 import 'package:archive/archive_io.dart';
 import 'package:flutter/foundation.dart' show debugPrint;
+import 'package:image/image.dart' as thumbnail_image;
 import 'package:path_provider/path_provider.dart';
 
 import '../models/audio_clip.dart';
@@ -342,12 +344,36 @@ class NiaproSerializer {
     String projectId,
     Uint8List pngBytes,
   ) async {
+    // Cache a compact standalone thumbnail, never an original-sized image.
+    // PNG is lossless: transparent brush strokes and thin lines stay intact.
+    // Existing .png paths remain compatible with prior project archives.
+    var storedBytes = pngBytes;
+    final source = thumbnail_image.decodeImage(pngBytes);
+    if (source != null) {
+      const maxEdge = 420;
+      final longest = math.max(source.width, source.height);
+      final factor = longest > maxEdge ? maxEdge / longest : 1.0;
+      final optimized = factor < 1
+          ? thumbnail_image.copyResize(
+              source,
+              width: math.max(1, (source.width * factor).round()),
+              height: math.max(1, (source.height * factor).round()),
+              interpolation: thumbnail_image.Interpolation.average,
+            )
+          : source;
+      final encoded = Uint8List.fromList(
+        thumbnail_image.encodePng(optimized, level: 6),
+      );
+      if (factor < 1 || encoded.length < pngBytes.length) {
+        storedBytes = encoded;
+      }
+    }
     final dir = await _projectDir(projectId);
     // 作り直すたびに別の名前で保存する。画像はパスごとにキャッシュされる
     // ので、同じ名前へ上書きすると一覧には古い絵が出続けた。
     final path =
         '${dir.path}/thumbnail_${DateTime.now().microsecondsSinceEpoch}.png';
-    await File(path).writeAsBytes(pngBytes);
+    await File(path).writeAsBytes(storedBytes, flush: true);
     return path;
   }
 
