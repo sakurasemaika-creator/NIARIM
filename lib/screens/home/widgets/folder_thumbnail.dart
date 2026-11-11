@@ -356,7 +356,9 @@ String _folderCoverText(BuildContext context, String key) {
     case 'custom':
       return ja ? '端末内から画像を読み込む' : 'Choose an image from device';
     case 'select':
-      return ja ? '作品を選択' : 'Select a work';
+      return ja ? 'フォルダ内の作品から選択' : 'Choose a work in this folder';
+    case 'empty':
+      return ja ? 'このフォルダに作品はありません' : 'No works in this folder';
     case 'load':
       return ja ? '画像を選択' : 'Choose image';
     case 'apply':
@@ -390,6 +392,13 @@ Future<void> showFolderThumbnailDialog(
   String? pickedName;
   bool saving = false;
   String? failure;
+  // Most recently updated first, stable by title and id for equal timestamps.
+  final sortedChoices = [...choices]..sort((a, b) {
+    final updated = b.updatedAt.compareTo(a.updatedAt);
+    if (updated != 0) return updated;
+    final name = a.name.compareTo(b.name);
+    return name != 0 ? name : a.id.compareTo(b.id);
+  });
 
   await showDialog<void>(
     context: context,
@@ -417,12 +426,6 @@ Future<void> showFolderThumbnailDialog(
                       value: 'auto',
                     ),
                     RadioListTile<String>(
-                      key: const Key('folderCoverNone'),
-                      contentPadding: EdgeInsets.zero,
-                      title: Text(_folderCoverText(ctx, 'none')),
-                      value: 'none',
-                    ),
-                    RadioListTile<String>(
                       key: const Key('folderCoverItem'),
                       contentPadding: EdgeInsets.zero,
                       title: Text(_folderCoverText(ctx, 'item')),
@@ -433,6 +436,12 @@ Future<void> showFolderThumbnailDialog(
                       contentPadding: EdgeInsets.zero,
                       title: Text(_folderCoverText(ctx, 'custom')),
                       value: 'custom',
+                    ),
+                    RadioListTile<String>(
+                      key: const Key('folderCoverNone'),
+                      contentPadding: EdgeInsets.zero,
+                      title: Text(_folderCoverText(ctx, 'none')),
+                      value: 'none',
                     ),
                   ],
                 ),
@@ -449,43 +458,125 @@ Future<void> showFolderThumbnailDialog(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        DropdownButtonFormField<String>(
-                          key: const Key('folderCoverItemChoice'),
-                          initialValue: choices.any((c) => c.id == selectedId)
-                              ? selectedId
-                              : null,
-                          isExpanded: true,
-                          hint: Text(_folderCoverText(ctx, 'select')),
-                          items: [
-                            for (final choice in choices)
-                              DropdownMenuItem(
-                                value: choice.id,
-                                child: Text(
-                                  choice.name,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                          ],
-                          onChanged: (value) =>
-                              setState(() => selectedId = value),
+                        Text(
+                          _folderCoverText(ctx, 'select'),
+                          style: Theme.of(ctx).textTheme.labelMedium,
                         ),
-                        if (choices.any((c) => c.id == selectedId)) ...[
-                          const SizedBox(height: 8),
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(8),
-                            child: SizedBox(
-                              width: 112,
-                              height: 72,
-                              child: FolderCoverMedia(
-                                key: const Key('folderCoverWorkPreview'),
-                                path: choices.firstWhere(
-                                  (c) => c.id == selectedId,
-                                ).imagePath,
-                                cacheWidth: 224,
-                              ),
+                        const SizedBox(height: 8),
+                        if (sortedChoices.isEmpty)
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 18),
+                            child: Text(_folderCoverText(ctx, 'empty')),
+                          )
+                        else
+                          SizedBox(
+                            height: 262,
+                            child: LayoutBuilder(
+                              builder: (context, gridBounds) {
+                                final columns =
+                                    gridBounds.maxWidth >= 390 ? 3 : 2;
+                                return GridView.builder(
+                                  key: const Key('folderCoverWorkGrid'),
+                                  primary: false,
+                                  shrinkWrap: false,
+                                  padding: const EdgeInsets.only(bottom: 4),
+                                  gridDelegate:
+                                      SliverGridDelegateWithFixedCrossAxisCount(
+                                    crossAxisCount: columns,
+                                    mainAxisSpacing: 8,
+                                    crossAxisSpacing: 8,
+                                    mainAxisExtent: 140,
+                                  ),
+                                  itemCount: sortedChoices.length,
+                                  itemBuilder: (context, index) {
+                                    final choice = sortedChoices[index];
+                                    final selected = selectedId == choice.id;
+                                    final scheme = Theme.of(ctx).colorScheme;
+                                    return Material(
+                                      key: ValueKey(
+                                        'folderCoverWorkTile_${choice.id}',
+                                      ),
+                                      color: selected
+                                          ? scheme.primaryContainer
+                                          : scheme.surfaceContainerLow,
+                                      borderRadius: BorderRadius.circular(10),
+                                      clipBehavior: Clip.antiAlias,
+                                      child: InkWell(
+                                        key: ValueKey(
+                                          'folderCoverSelect_${choice.id}',
+                                        ),
+                                        onTap: saving
+                                            ? null
+                                            : () => setState(
+                                                  () => selectedId = choice.id,
+                                                ),
+                                        child: Container(
+                                          decoration: BoxDecoration(
+                                            border: Border.all(
+                                              color: selected
+                                                  ? scheme.primary
+                                                  : scheme.outlineVariant,
+                                              width: selected ? 2 : 1,
+                                            ),
+                                            borderRadius:
+                                                BorderRadius.circular(10),
+                                          ),
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.stretch,
+                                            children: [
+                                              Expanded(
+                                                child: Stack(
+                                                  fit: StackFit.expand,
+                                                  children: [
+                                                    if (choice.imagePath != null)
+                                                      FolderCoverMedia(
+                                                        path: choice.imagePath!,
+                                                        cacheWidth: 220,
+                                                      )
+                                                    else
+                                                      Icon(
+                                                        Icons.image_outlined,
+                                                        color: scheme
+                                                            .onSurfaceVariant,
+                                                        size: 30,
+                                                      ),
+                                                    if (selected)
+                                                      Positioned(
+                                                        top: 4,
+                                                        right: 4,
+                                                        child: Icon(
+                                                          Icons.check_circle,
+                                                          color: scheme.primary,
+                                                          size: 22,
+                                                        ),
+                                                      ),
+                                                  ],
+                                                ),
+                                              ),
+                                              Padding(
+                                                padding:
+                                                    const EdgeInsets.all(6),
+                                                child: Text(
+                                                  choice.name,
+                                                  maxLines: 2,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                  style: const TextStyle(
+                                                    fontSize: 11,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                );
+                              },
                             ),
                           ),
-                        ],
                       ],
                     ),
                   ),
