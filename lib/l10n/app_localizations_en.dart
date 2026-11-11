@@ -4148,7 +4148,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get saveTreeRestoreAction => 'Restore';
+  String get saveTreeRestoreAction => 'Load';
 
   @override
   String get saveTreeTimelineActionChoiceBody =>
@@ -4176,7 +4176,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String saveTreeRestoredSnackbar(String name) {
-    return 'Restored $name';
+    return 'Save data loaded ($name)';
   }
 
   @override
