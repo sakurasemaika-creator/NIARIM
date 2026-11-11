@@ -26,7 +26,7 @@ class DesktopDockColumnFit {
   static const double titleHeight = 34;
   static const double resizeGripHeight = 22;
   static const double collapsedHeight = 48;
-  static const double gap = 8;
+  static const double gap = 0;
   static const double minimumBodyHeight = 80;
 
   /// Left-handed mode mirrors the visual sides without mutating saved
