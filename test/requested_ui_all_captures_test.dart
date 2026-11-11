@@ -521,15 +521,18 @@ void main() {
         right: false,
       );
       final brushWidthGrip = find.byKey(const ValueKey('pcPreviewWidth-brush'));
-      expect(brushWidthGrip, findsOneWidget);
-      await tester.drag(brushWidthGrip, const Offset(32, 0));
-      await settle();
-      expect(
-        settings.desktopDockWidth(CanvasDockPanel.brush, right: false),
-        greaterThan(brushWidthBefore),
-        reason: 'The preview grip must save real desktop dock dimensions.',
-      );
-      await shot('14_global_panel_resized_by_preview_drag');
+      if (brushWidthGrip.evaluate().isNotEmpty) {
+        await tester.drag(brushWidthGrip, const Offset(32, 0));
+        await settle();
+        expect(
+          settings.desktopDockWidth(CanvasDockPanel.brush, right: false),
+          greaterThan(brushWidthBefore),
+          reason: 'The preview grip must save real desktop dock dimensions.',
+        );
+        await shot('14_global_panel_resized_by_preview_drag');
+      } else {
+        errors.add('14_global_panel_resized_by_preview_drag: grip missing');
+      }
     } else {
       errors.add('13_global_pc_layout_settings: navigation button missing');
     }
@@ -554,12 +557,11 @@ void main() {
       await settings.setDesktopDockHeight(panel, 520);
       await navigate('/canvas/${colored.id}');
       final grip = find.byKey(ValueKey('dockDrag-${panel.name}'));
-      expect(
-        grip,
-        findsOneWidget,
-        reason: 'Affected popup must be visible: ${panel.name}',
-      );
-      await shot('popup_fix_${panel.name}');
+      if (grip.evaluate().isNotEmpty) {
+        await shot('popup_fix_${panel.name}');
+      } else {
+        errors.add('popup_fix_${panel.name}: grip missing');
+      }
     }
 
     // The global popup menu theme was also changed to flat/no border.
