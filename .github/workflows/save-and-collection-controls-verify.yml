@@ -5,6 +5,7 @@ on:
     branches: [dev_branch]
     paths:
       - '.github/workflows/save-and-collection-controls-verify.yml'
+      - '.github/scripts/build_save_ui_capture_pdf.py'
       - 'lib/services/save_tree_service.dart'
       - 'lib/screens/save_tree/**'
       - 'lib/screens/home/home_screen.dart'
@@ -49,6 +50,17 @@ jobs:
             test/project_grid_actions_test.dart \
             test/save_slot_action_success_visual_test.dart \
             test/shared_collection_controls_capture_test.dart
+      - name: Prepare Python PDF generator
+        if: always()
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Bundle all actual Flutter save captures into a PDF
+        if: always()
+        run: |
+          python -m pip install --quiet reportlab Pillow
+          python .github/scripts/build_save_ui_capture_pdf.py \
+            --output build/save-slot-visual-audit/NIARIM_save_UI_captures.pdf
       - name: Upload actual Flutter screenshots
         if: always()
         uses: actions/upload-artifact@v4
