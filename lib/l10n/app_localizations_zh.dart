@@ -3994,7 +3994,7 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get saveTreeRestoreAction => '还原';
+  String get saveTreeRestoreAction => '读取';
 
   @override
   String get saveTreeTimelineActionChoiceBody =>
@@ -4020,7 +4020,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String saveTreeRestoredSnackbar(String name) {
-    return '已还原$name';
+    return '已读取存档数据（$name）';
   }
 
   @override
@@ -12005,7 +12005,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   }
 
   @override
-  String get saveTreeRestoreAction => '還原';
+  String get saveTreeRestoreAction => '讀取';
 
   @override
   String get saveTreeTimelineActionChoiceBody =>
@@ -12031,7 +12031,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String saveTreeRestoredSnackbar(String name) {
-    return '已還原$name';
+    return '已讀取存檔資料（$name）';
   }
 
   @override
