@@ -896,53 +896,102 @@ class _HomeScreenState extends State<HomeScreen>
   }
 
   void _deleteSelected() {
-    // ゴミ箱はプロジェクトのみが対象（ゴミ箱＝「削除したプロジェクト」）。
-    // 選択にフォルダが含まれていても、フォルダ自体はここでは削除しない。
     final l10n = AppLocalizations.of(context)!;
     final service = context.read<ProjectService>();
-    final projectIds = service.projects.map((p) => p.id).toSet();
     final visibleIds = _visibleProjectIds(service);
-    final targetIds = _selectedIds
-        .where((id) => projectIds.contains(id) && visibleIds.contains(id))
+    final folderIds = service.folders
+        .where((f) => visibleIds.contains(f.id) && _selectedIds.contains(f.id))
+        .map((f) => f.id).toSet();
+    // Selecting a parent and child must not move the same subtree twice.
+    final rootFolderIds = folderIds.where((id) =>
+        !folderIds.any((ancestor) =>
+            id != ancestor && service.isFolderDescendantOf(id, ancestor)))
         .toList();
-    bool includesFavorite() => service.projects.any(
-      (project) => targetIds.contains(project.id) && project.isFavorite,
-    );
+    final coveredFolderIds = <String>{
+      for (final id in rootFolderIds) ...service.folderSubtreeIds(id),
+    };
+    final directProjectIds = service.projects
+        .where((p) => !p.isSharedImport && visibleIds.contains(p.id) &&
+            _selectedIds.contains(p.id) &&
+            !coveredFolderIds.contains(p.folderId))
+        .map((p) => p.id).toList();
+    final count = rootFolderIds.length + directProjectIds.length;
+    if (count == 0) return;
+    bool includesFavorite() =>
+        service.folders.any((f) => rootFolderIds.contains(f.id) && f.isFavorite) ||
+        service.projects.any((p) => p.isFavorite &&
+            (directProjectIds.contains(p.id) ||
+                coveredFolderIds.contains(p.folderId)));
     if (includesFavorite()) {
-      ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(
-          SnackBar(content: Text(l10n.commonFavoriteDeleteBlocked)),
-        );
+      final messenger = ScaffoldMessenger.of(context);
+      messenger.hideCurrentSnackBar();
+      messenger.showSnackBar(
+        SnackBar(content: Text(l10n.commonFavoriteDeleteBlocked)),
+      );
       return;
     }
-    showDialog(
+    final projectCountInFolders = rootFolderIds.fold<int>(0,
+        (count, id) => count + service.folderContentCounts(id).projects);
+    final subfolderCount = rootFolderIds.fold<int>(0,
+        (count, id) => count + service.folderContentCounts(id).folders);
+    final names = [
+      for (final id in directProjectIds)
+        ...service.projects.where((p) => p.id == id).map((p) => p.name),
+      for (final id in rootFolderIds)
+        ...service.folders.where((f) => f.id == id).map((f) => f.name),
+    ];
+    final descendantText = projectCountInFolders + subfolderCount == 0
+        ? ''
+        : Localizations.localeOf(context).languageCode == 'ja'
+            ? '\nフォルダの中のプロジェクト$projectCountInFolders件・フォルダ$subfolderCount件も一緒に移動します。'
+            : '\nThis also moves $projectCountInFolders projects and $subfolderCount nested folders.';
+    showDialog<void>(
       context: context,
       builder: (_) => ProjectTrashDialog(
         title: l10n.homeMoveToTrash,
-        message: l10n.homeMoveToTrashConfirm(targetIds.length),
+        message: l10n.homeMoveToTrashConfirm(count) + descendantText,
         confirmLabel: l10n.commonMove,
-        itemNames: const [],
-        pendingMessage: () => l10n.homeMoveToTrashConfirm(
-          service.projects.where((p) => targetIds.contains(p.id)).length,
-        ),
-        pendingItemNames: () => service.projects
-            .where((p) => targetIds.contains(p.id))
-            .map((p) => p.name)
-            .toList(),
+        itemNames: names,
         onApply: () async {
-          // Validate the whole current selection before moving the first item.
-          // The service also enforces protection when each queued write runs.
+          // Recheck protection before changing anything, not just on dialog open.
           if (includesFavorite()) throw const FavoriteProjectDeleteException();
-          for (final id in targetIds) {
-            await service.deleteProject(id);
-            if (mounted) {
-              setState(() {
-                _selectedIds.remove(id);
-                _isSelectionMode = _selectedIds.isNotEmpty;
-              });
-            }
+          for (final id in rootFolderIds) {
+            await service.moveFolderToTrash(id);
           }
+          for (final id in directProjectIds) {
+            await service.deleteProject(id);
+          }
+          if (!mounted) return;
+          setState(() {
+            _selectedIds.removeAll({...rootFolderIds, ...directProjectIds});
+            _isSelectionMode = _selectedIds.isNotEmpty;
+          });
+          final messenger = ScaffoldMessenger.of(context);
+          messenger.hideCurrentSnackBar();
+          messenger.showSnackBar(SnackBar(
+            content: Text(l10n.homeMovedToTrashSnackbar(count)),
+            duration: const Duration(seconds: 6),
+            action: SnackBarAction(
+              label: l10n.homeUndoAction,
+              onPressed: () async {
+                try {
+                  for (final id in rootFolderIds) {
+                    await service.restoreTrashedFolder(id);
+                  }
+                  for (final id in directProjectIds) {
+                    await service.restoreProject(id);
+                  }
+                } catch (error, stackTrace) {
+                  AppErrorReporter.record(error, stackTrace);
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(l10n.homeTrashOperationFailed)),
+                    );
+                  }
+                }
+              },
+            ),
+          ));
         },
       ),
     );

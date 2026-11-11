@@ -23,6 +23,7 @@ import '../../../widgets/empty_state_placeholder.dart';
 import '../../../widgets/export_share_feedback.dart';
 import '../../../widgets/frame_preview_background.dart';
 import '../../../widgets/project_trash_dialog.dart';
+import '../../../widgets/name_entry_dialog.dart';
 import '../../../widgets/collection_action_controls.dart';
 import '../../../utils/app_error_reporter.dart';
 import 'folder_save_feedback.dart';
@@ -744,6 +745,11 @@ class ProjectListWidget extends StatelessWidget {
     final selectionColor = scheme.secondary;
     final selectionForeground = scheme.onSecondary;
     return GestureDetector(
+      onSecondaryTapDown: (details) {
+        if (!isSelectionMode && onPickProject == null) {
+          _showProjectSecondaryMenu(context, project, details.globalPosition);
+        }
+      },
       onTap: isSelectionMode
           ? () => onSelectionChanged(project.id)
           : onPickProject != null
@@ -851,6 +857,11 @@ class ProjectListWidget extends StatelessWidget {
     final selectionForeground = scheme.onSecondary;
     final color = folder.color != null ? Color(folder.color!) : primary;
     return GestureDetector(
+      onSecondaryTapDown: (details) {
+        if (!isSelectionMode && onPickProject == null) {
+          _showFolderSecondaryMenu(context, folder, details.globalPosition);
+        }
+      },
       onTap: isSelectionMode
           ? () => onSelectionChanged(folder.id)
           : () => onOpenFolder(folder.id),
@@ -1001,6 +1012,92 @@ class ProjectListWidget extends StatelessWidget {
     );
   }
 
+  List<PopupMenuEntry<String>> _projectMenuEntries(
+    BuildContext context,
+    Project project,
+  ) {
+    final l10n = AppLocalizations.of(context)!;
+    return [
+      PopupMenuItem(value: 'open', child: Text(l10n.projectListOpenAction)),
+      PopupMenuItem(value: 'rename', child: Text(l10n.commonRename)),
+      PopupMenuItem(value: 'duplicate', child: Text(l10n.themeDuplicateAction)),
+      PopupMenuItem(
+        value: 'share',
+        enabled: !ExportShareService.isRunning(niashareKey(project.id)),
+        child: Text(l10n.projectListCreateShareAction),
+      ),
+      PopupMenuItem(
+        value: 'favorite',
+        child: Text(project.isFavorite
+            ? l10n.colorPickerFavoriteRemove
+            : l10n.colorPickerFavoriteAdd),
+      ),
+      PopupMenuItem(value: 'move', child: Text(l10n.folderMoveToTitle)),
+      PopupMenuItem(
+        value: 'delete',
+        child: Text(l10n.projectDetailTrashMenuItem,
+            style: TextStyle(color: ThemeService.activeColorScheme.error)),
+      ),
+    ];
+  }
+
+  List<PopupMenuEntry<String>> _folderMenuEntries(
+    BuildContext context,
+    ProjectFolder folder,
+  ) {
+    final l10n = AppLocalizations.of(context)!;
+    return [
+      PopupMenuItem(value: 'open', child: Text(l10n.projectListOpenAction)),
+      PopupMenuItem(value: 'edit', child: Text(l10n.projectListEditFolderAction)),
+      PopupMenuItem(
+        value: 'favorite',
+        child: Text(folder.isFavorite
+            ? l10n.colorPickerFavoriteRemove
+            : l10n.colorPickerFavoriteAdd),
+      ),
+      PopupMenuItem(value: 'move', child: Text(l10n.folderMoveToTitle)),
+      PopupMenuItem(
+        value: 'delete',
+        child: Text(l10n.commonDelete,
+            style: TextStyle(color: ThemeService.activeColorScheme.error)),
+      ),
+    ];
+  }
+
+  Future<void> _showEntryContextMenu(
+    BuildContext context,
+    Offset globalPosition,
+    List<PopupMenuEntry<String>> entries,
+    ValueChanged<String> onSelected,
+  ) async {
+    final overlay = Overlay.of(context).context.findRenderObject() as RenderBox;
+    final local = overlay.globalToLocal(globalPosition);
+    final result = await showMenu<String>(
+      context: context,
+      position: RelativeRect.fromLTRB(
+        local.dx, local.dy,
+        overlay.size.width - local.dx, overlay.size.height - local.dy,
+      ),
+      items: entries,
+    );
+    if (context.mounted && result != null) onSelected(result);
+  }
+
+  void _showProjectSecondaryMenu(
+    BuildContext context, Project project, Offset position,
+  ) {
+    if (context.read<ProjectService>().isFavoriteSaving(project.id)) return;
+    _showEntryContextMenu(context, position, _projectMenuEntries(context, project),
+        (action) => _handleAction(context, action, project));
+  }
+
+  void _showFolderSecondaryMenu(
+    BuildContext context, ProjectFolder folder, Offset position,
+  ) {
+    _showEntryContextMenu(context, position, _folderMenuEntries(context, folder),
+        (action) => _handleFolderAction(context, action, folder));
+  }
+
   Widget _projectMenu(BuildContext context, Project project) {
     final l10n = AppLocalizations.of(context)!;
     final saving = context.read<ProjectService>().isFavoriteSaving(project.id);
@@ -1019,68 +1116,16 @@ class ProjectListWidget extends StatelessWidget {
             )
           : const Icon(Icons.more_vert, size: CollectionActionFrame.glyphSize),
       onSelected: (action) => _handleAction(context, action, project),
-      itemBuilder: (_) => [
-        PopupMenuItem(value: 'open', child: Text(l10n.projectListOpenAction)),
-        PopupMenuItem(value: 'rename', child: Text(l10n.commonRename)),
-        PopupMenuItem(
-          value: 'duplicate',
-          child: Text(l10n.themeDuplicateAction),
-        ),
-        PopupMenuItem(
-          value: 'share',
-          // 同じ作品の共有ファイルの作成・共有が終わるまで、二度目は始めない。
-          enabled: !ExportShareService.isRunning(niashareKey(project.id)),
-          child: Text(l10n.projectListCreateShareAction),
-        ),
-        PopupMenuItem(
-          value: 'favorite',
-          child: Text(
-            project.isFavorite
-                ? l10n.colorPickerFavoriteRemove
-                : l10n.colorPickerFavoriteAdd,
-          ),
-        ),
-        PopupMenuItem(value: 'move', child: Text(l10n.folderMoveToTitle)),
-        PopupMenuItem(
-          value: 'delete',
-          child: Text(
-            l10n.projectDetailTrashMenuItem,
-            style: TextStyle(color: ThemeService.activeColorScheme.error),
-          ),
-        ),
-      ],
+      itemBuilder: (_) => _projectMenuEntries(context, project),
     );
   }
 
   Widget _folderMenu(BuildContext context, ProjectFolder folder) {
-    final l10n = AppLocalizations.of(context)!;
     return PopupMenuButton<String>(
       padding: EdgeInsets.zero,
       icon: const Icon(Icons.more_vert, size: CollectionActionFrame.glyphSize),
       onSelected: (action) => _handleFolderAction(context, action, folder),
-      itemBuilder: (_) => [
-        PopupMenuItem(value: 'open', child: Text(l10n.projectListOpenAction)),
-        PopupMenuItem(
-          value: 'edit',
-          child: Text(l10n.projectListEditFolderAction),
-        ),
-        PopupMenuItem(
-          value: 'favorite',
-          child: Text(
-            folder.isFavorite
-                ? l10n.colorPickerFavoriteRemove
-                : l10n.colorPickerFavoriteAdd,
-          ),
-        ),
-        PopupMenuItem(value: 'move', child: Text(l10n.folderMoveToTitle)),
-        PopupMenuItem(
-          value: 'delete',
-          child: Text(
-            l10n.commonDelete,
-            style: TextStyle(color: ThemeService.activeColorScheme.error),
-          ),
-        ),
-      ],
+      itemBuilder: (_) => _folderMenuEntries(context, folder),
     );
   }
 
@@ -1108,22 +1153,35 @@ class ProjectListWidget extends StatelessWidget {
   }
 
   /// お気に入り登録中は削除できない。
+  /// Move to Trash and provide the same short-lived undo affordance as bulk move.
   Future<void> _deleteProject(
     BuildContext context,
     ProjectService service,
     Project project,
   ) async {
+    final l10n = AppLocalizations.of(context)!;
     if (project.isFavorite) {
-      final l10n = AppLocalizations.of(context)!;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(l10n.commonFavoriteDeleteBlocked)));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.commonFavoriteDeleteBlocked)),
+      );
       return;
     }
-    await runProjectTrashAction(
-      context,
-      () => service.deleteProject(project.id),
-    );
+    if (!await runProjectTrashAction(context, () => service.deleteProject(project.id))) {
+      return;
+    }
+    if (!context.mounted) return;
+    final messenger = ScaffoldMessenger.of(context);
+    messenger.hideCurrentSnackBar();
+    messenger.showSnackBar(SnackBar(
+      content: Text(l10n.homeMovedToTrashSnackbar(1)),
+      duration: const Duration(seconds: 6),
+      action: SnackBarAction(
+        label: l10n.homeUndoAction,
+        onPressed: () async {
+          await runProjectAction(context, () => service.restoreProject(project.id));
+        },
+      ),
+    ));
   }
 
   Future<void> _handleFolderAction(
@@ -1212,32 +1270,15 @@ class ProjectListWidget extends StatelessWidget {
 
   void _showRenameDialog(BuildContext context, Project project) {
     final l10n = AppLocalizations.of(context)!;
-    final controller = TextEditingController(text: project.name);
-    showDialog(
+    showDialog<void>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(l10n.commonRename),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          decoration: const InputDecoration(border: OutlineInputBorder()),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(l10n.commonCancel),
-          ),
-          FilledButton(
-            onPressed: () {
-              context.read<ProjectService>().renameProject(
-                project.id,
-                controller.text,
-              );
-              Navigator.pop(ctx);
-            },
-            child: Text(l10n.commonChange),
-          ),
-        ],
+      builder: (_) => NameEntryDialog(
+        title: l10n.commonRename,
+        confirmLabel: l10n.commonChange,
+        cancelLabel: l10n.commonCancel,
+        initialName: project.name,
+        onSubmit: (name) =>
+            context.read<ProjectService>().renameProject(project.id, name),
       ),
     );
   }

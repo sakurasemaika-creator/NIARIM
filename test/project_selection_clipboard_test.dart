@@ -325,7 +325,7 @@ void main() {
     await settle(tester);
     await tester.tap(find.byTooltip('1件を貼り付け'));
     await settleIo(tester);
-    expect(snackText(tester), contains('元の作品が見つからない'));
+    expect(snackText(tester), contains('コピー元の作品・フォルダが見つかりません'));
     expect(service.projects.map((p) => p.name), ['banana']);
   });
 
