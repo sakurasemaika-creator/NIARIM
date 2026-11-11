@@ -99,6 +99,24 @@ void main() {
     service.dispose();
   });
 
+  test('duplicated received project is durable before paste completes',
+      () async {
+    final service = ProjectService();
+    await service.init();
+    final source = await incoming(service, '保存確認');
+    expect(await service.duplicateProject(source.id), isTrue);
+    expect(service.shared.map((p) => p.name).toSet(),
+        {'保存確認', '保存確認 (コピー)'});
+
+    // Reopening immediately must not depend on a fire-and-forget save.
+    final reopened = ProjectService();
+    await reopened.init();
+    expect(reopened.shared.map((p) => p.name).toSet(),
+        {'保存確認', '保存確認 (コピー)'});
+    service.dispose();
+    reopened.dispose();
+  });
+
   test('favorite received project prevents trashing its entire folder',
       () async {
     final service = ProjectService();
