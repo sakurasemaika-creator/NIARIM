@@ -68,6 +68,7 @@ import 'widgets/reference_window.dart';
 import 'widgets/canvas_preview_navigator.dart';
 import 'widgets/desktop_dock_content_viewport.dart';
 import 'widgets/docked_panel_close_scope.dart';
+import '../../widgets/docked_panel_scope.dart';
 import '../../utils/desktop_dock_column_fit.dart';
 import '../../utils/desktop_window_snap.dart';
 import '../../models/canvas_dock_panel.dart';
