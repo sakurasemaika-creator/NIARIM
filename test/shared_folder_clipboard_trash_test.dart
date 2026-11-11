@@ -92,6 +92,10 @@ void main() {
         .map((p) => p.name).toSet(), {'海 (コピー)', '空 (コピー)'});
     expect(service.shared.where((p) => p.sharedFolderId == folder.id)
         .map((p) => p.name).toSet(), {'海', '空'});
+    final copiedAgain = await service.duplicateSharedFolderWithContents(folder.id);
+    expect(copiedAgain.name, '受信作品 (コピー 2)');
+    expect(service.shared.where((p) => p.sharedFolderId == copiedAgain.id)
+        .map((p) => p.name).toSet(), {'海 (コピー 2)', '空 (コピー 2)'});
     service.dispose();
   });
 
