@@ -334,7 +334,7 @@ class _ProjectThumbnailDialogState extends State<_ProjectThumbnailDialog> {
           children: [
             RadioGroup<String>(
               groupValue: mode,
-              onChanged: saving ? null : _setMode,
+              onChanged: (value) { if (!saving) _setMode(value); },
               child: Column(
                 children: [
                   RadioListTile<String>(
