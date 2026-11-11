@@ -16,7 +16,7 @@ Future<Uint8List?> captureEmptySaveThumbnail(
   final recorder = ui.PictureRecorder();
   final canvas = ui.Canvas(recorder);
   canvas.drawRect(
-    const ui.Rect.fromLTWH(0, 0, width.toDouble(), height.toDouble()),
+    const ui.Rect.fromLTWH(0, 0, 200, 112),
     ui.Paint()
       ..color = ui.Color(project?.backgroundColor ?? 0xFFFFFFFF),
   );
