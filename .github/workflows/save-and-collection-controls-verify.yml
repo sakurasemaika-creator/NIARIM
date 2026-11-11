@@ -1,0 +1,53 @@
+name: Save snapshot and collection action controls verification
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/save-and-collection-controls-verify.yml'
+      - 'lib/services/save_tree_service.dart'
+      - 'lib/screens/save_tree/**'
+      - 'lib/screens/home/home_screen.dart'
+      - 'lib/screens/home/widgets/project_list_widget.dart'
+      - 'lib/widgets/collection_action_controls.dart'
+      - 'test/save_slot_visual_audit_test.dart'
+      - 'test/project_grid_actions_test.dart'
+      - 'test/save_slot_action_buttons_test.dart'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get --enforce-lockfile
+      - name: Static analysis
+        run: |
+          flutter analyze --no-pub --no-fatal-infos --no-fatal-warnings \
+            lib/services/save_tree_service.dart \
+            lib/screens/save_tree \
+            lib/screens/home/home_screen.dart \
+            lib/screens/home/widgets/project_list_widget.dart \
+            lib/widgets/collection_action_controls.dart
+      - name: Save and collection UI regressions
+        run: |
+          flutter test --no-pub --reporter expanded \
+            test/save_slot_action_buttons_test.dart \
+            test/save_slot_visual_audit_test.dart \
+            test/project_grid_actions_test.dart
+      - name: Upload actual Flutter screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: save-project-ui-captures
+          path: build/save-slot-visual-audit/*.png
+          if-no-files-found: warn
+          retention-days: 7
