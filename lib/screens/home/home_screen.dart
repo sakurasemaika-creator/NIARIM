@@ -41,6 +41,7 @@ import '../../widgets/mission_completion_dialog.dart';
 import '../../widgets/typing_aware_shortcuts.dart';
 import 'widgets/project_list_widget.dart';
 import 'widgets/folder_thumbnail.dart';
+import 'widgets/project_thumbnail_dialog.dart';
 import 'widgets/home_selection_toolbar.dart';
 import 'widgets/home_drawer.dart';
 import 'widgets/exported_work_card.dart';
@@ -2469,6 +2470,12 @@ Widget _receivedShareMenu(
               controller.dispose();
             });
           }
+        case 'thumbnail':
+          if (context.mounted) {
+            await showProjectThumbnailDialog(
+              context, project: project, service: service,
+            );
+          }
         case 'duplicate':
           await service.duplicateProject(project.id);
         case 'share':
@@ -2518,6 +2525,11 @@ Widget _receivedShareMenu(
       PopupMenuItem(value: 'open', child: Text(l10n.projectListOpenAction)),
       PopupMenuItem(value: 'rename', child: Text(l10n.commonRename)),
       PopupMenuItem(value: 'duplicate', child: Text(l10n.themeDuplicateAction)),
+      PopupMenuItem(
+        value: 'thumbnail',
+        child: Text(Localizations.localeOf(context).languageCode == 'ja'
+            ? 'サムネイル変更' : 'Change thumbnail'),
+      ),
       PopupMenuItem(
         value: 'share',
         // この作品の共有ファイルの作成・共有が終わるまで、二度目は選べない。
