@@ -1,0 +1,31 @@
+name: Thumbnail editor visual captures
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/thumbnail-editor-visual-captures.yml'
+      - 'test/thumbnail_editor_visual_capture_test.dart'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  captures:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get --enforce-lockfile
+      - name: Capture actual Flutter thumbnail screens
+        run: flutter test --no-pub test/thumbnail_editor_visual_capture_test.dart --reporter expanded
+      - name: Upload screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: niarim-thumbnail-editor-real-flutter-captures
+          path: build/thumbnail-editor-visual-audit/*.png
+          if-no-files-found: warn
+          retention-days: 7
