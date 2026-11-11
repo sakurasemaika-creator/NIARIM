@@ -142,20 +142,29 @@ class _ColorAdjustSheetState extends State<ColorAdjustSheet> {
     final layerId = widget.layerId;
     if (layerId == null || _applying) return;
     setState(() => _applying = true);
-    final ps = context.read<ProjectService>();
-    final tm = ps.tileManagerOf(widget.projectId);
-    final key = ps.tileKeyFor(
-      widget.projectId, widget.sceneId, widget.frameIndex, layerId,
-    );
+    final base = _previewBase;
+    if (base == null) {
+      setState(() => _applying = false);
+      return;
+    }
     try {
-      await tm.applyColorAdjustToLayer(
-        key,
+      final committed = _engine.applyColorAdjust(
+        base, _previewW, _previewH,
         saturation: _saturation,
         brightness: _brightness,
         contrast: _contrast,
       );
       if (!mounted) return;
-      _cancel(); // After committing, the saved pixels replace the preview.
+      // Persist through ProjectService (one undoable editing operation)
+      // rather than directly mutating TileManager without an undo entry.
+      context.read<ProjectService>().replaceLayerPixels(
+        projectId: widget.projectId,
+        sceneId: widget.sceneId,
+        frameIndex: widget.frameIndex,
+        layerId: layerId,
+        pixels: committed,
+      );
+      _cancel(); // The canvas replaces the temporary image with saved pixels.
     } finally {
       if (mounted) setState(() => _applying = false);
     }
