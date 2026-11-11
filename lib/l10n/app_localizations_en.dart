@@ -4113,7 +4113,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get saveTreeSaveAsRootHint => 'This will save as a root node.';
 
   @override
-  String get saveTreeCommentLabel => 'Comment (optional)';
+  String get saveTreeCommentLabel => 'Memo';
 
   @override
   String get saveTreeCommentHint => 'e.g. Background done';
@@ -4165,11 +4165,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get saveTreeResumeFromHereAction => 'Resume from here';
 
   @override
-  String get saveTreeResumeConfirmBody =>
-      'Any changes you haven\'t saved will be lost. Are you sure?';
+  String get saveTreeResumeConfirmBody => 'Resume work from this saved data?\n\nYour current data will be overwritten. Save your current work first if you need to keep it.';
 
   @override
-  String get saveTreeProjectDetailResumeBody => 'Resume work from this save?';
+  String get saveTreeProjectDetailResumeBody => 'Resume work from this saved data?\n\nYour current data will be overwritten. Save your current work first if you need to keep it.';
 
   @override
   String get saveTreeLoadFailedSnackbar => 'Failed to load the save data';
