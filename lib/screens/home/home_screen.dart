@@ -672,9 +672,10 @@ class _HomeScreenState extends State<HomeScreen>
                           setState(() => _sharedOutgoing = outgoing),
                       onCopyEntry: _copyLibraryEntry,
                     ),
-                    const TrashScreen(
-                      key: PageStorageKey('home-trash'),
+                    TrashScreen(
+                      key: const PageStorageKey('home-trash'),
                       embedded: true,
+                      onCopyEntry: _copyLibraryEntry,
                     ),
                   ],
                 ),
@@ -1858,9 +1859,12 @@ String _trashKindLabel(BuildContext context, TrashEntryKind kind) {
 
 /// ゴミ箱一覧。ホームタブと'/trash'直リンクで共用する。
 class TrashScreen extends StatefulWidget {
-  const TrashScreen({super.key, this.embedded = false});
+  const TrashScreen({
+    super.key, this.embedded = false, this.onCopyEntry,
+  });
 
   final bool embedded;
+  final ValueChanged<HomeClipboardEntry>? onCopyEntry;
 
   @override
   State<TrashScreen> createState() => _TrashScreenState();
@@ -1949,6 +1953,7 @@ class _TrashScreenState extends State<TrashScreen> {
                 key: ValueKey('trash-list-version-$version'),
                 sortMode: _sortMode,
                 selectedKinds: _selectedKinds,
+                onCopyEntry: widget.onCopyEntry,
               ),
             ),
           ),
@@ -2737,10 +2742,12 @@ class _TrashTab extends StatefulWidget {
     super.key,
     required this.sortMode,
     required this.selectedKinds,
+    this.onCopyEntry,
   });
 
   final ProjectSortMode sortMode;
   final Set<TrashEntryKind> selectedKinds;
+  final ValueChanged<HomeClipboardEntry>? onCopyEntry;
 
   @override
   State<_TrashTab> createState() => _TrashTabState();
@@ -2910,6 +2917,16 @@ class _TrashTabState extends State<_TrashTab> {
       title: record.folder.name,
       subtitle: subtitle,
       actions: [
+        if (widget.onCopyEntry != null)
+          TextButton(
+            key: ValueKey('trashCopyFolder_$id'),
+            onPressed: () => widget.onCopyEntry!(HomeClipboardEntry(
+              source: HomePasteArea.trash,
+              id: id, name: record.folder.name,
+              isFolder: true, originalArea: HomePasteArea.projects,
+            )),
+            child: const Text('コピー'),
+          ),
         TextButton(
           key: ValueKey('trashedFolderRestore_$id'),
           onPressed: _pending.contains(id) ? null : () => _restoreFolder(id),
@@ -2993,6 +3010,17 @@ class _TrashTabState extends State<_TrashTab> {
       meta,
     ].join(' · ');
     final actions = <Widget>[
+      if (widget.onCopyEntry != null)
+        TextButton(
+          key: ValueKey('trashCopyProject_${project.id}'),
+          onPressed: () => widget.onCopyEntry!(HomeClipboardEntry(
+            source: HomePasteArea.trash,
+            id: project.id, name: project.name,
+            originalArea: project.isSharedImport
+                ? HomePasteArea.received : HomePasteArea.projects,
+          )),
+          child: const Text('コピー'),
+        ),
       TextButton(
         key: ValueKey('trash-restore-${project.id}'),
         onPressed: _pending.contains(project.id)
@@ -3024,6 +3052,17 @@ class _TrashTabState extends State<_TrashTab> {
     LocalTrashedFile entry, TrashEntryKind kind, AppLocalizations l10n,
   ) {
     final actions = <Widget>[
+      if (widget.onCopyEntry != null)
+        TextButton(
+          key: ValueKey('trashCopyLocal_${entry.id}'),
+          onPressed: () => widget.onCopyEntry!(HomeClipboardEntry(
+            source: HomePasteArea.trash, id: entry.id,
+            name: entry.fileName,
+            originalArea: entry.kind == LocalTrashKind.outgoingShare
+                ? HomePasteArea.outgoing : HomePasteArea.works,
+          )),
+          child: const Text('コピー'),
+        ),
       TextButton(
         key: ValueKey('trash-restore-local-${entry.id}'),
         onPressed: _pending.contains(entry.id)
