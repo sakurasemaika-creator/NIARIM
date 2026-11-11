@@ -794,7 +794,10 @@ void main() {
     expect(find.byKey(const Key('homePasteRestoreDialog')), findsOneWidget);
     await captureClipboardScreen(tester, '12_project_restore_confirmation');
     await tester.tap(find.byKey(const Key('homePasteRestoreConfirmButton')));
-    await settleIo(tester);
+    // Disk deserialization is asynchronous and can outlive a few pump frames.
+    // Verify the *completed* restore instead of checking a fixed-delay race.
+    await waitFor(tester,
+        () => service.projects.any((project) => project.id == appleId));
     expect(service.projects.map((p) => p.id), contains(appleId));
     await captureClipboardScreen(tester, '13_project_restored');
   });
