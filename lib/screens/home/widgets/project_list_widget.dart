@@ -865,10 +865,7 @@ class ProjectListWidget extends StatelessWidget {
               width: 2,
             ),
           ),
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              Column(
+          child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Expanded(
@@ -893,6 +890,14 @@ class ProjectListWidget extends StatelessWidget {
                               size: 46,
                             ),
                           ),
+                        ),
+                        _gridCardActions(
+                          context,
+                          menu: _folderMenu(context, folder),
+                          isFavorite: folder.isFavorite,
+                          itemId: folder.id,
+                          onFavorite: () =>
+                              _handleFolderAction(context, 'favorite', folder),
                         ),
                         if (isSelectionMode)
                           Positioned(
@@ -923,15 +928,6 @@ class ProjectListWidget extends StatelessWidget {
                   _gridCaption(context, folder.name),
                 ],
               ),
-              _gridCardActions(
-                context,
-                menu: _folderMenu(context, folder),
-                isFavorite: folder.isFavorite,
-                itemId: folder.id,
-                onFavorite: () => _handleFolderAction(context, 'favorite', folder),
-              ),
-            ],
-          ),
         ),
       ),
     );
