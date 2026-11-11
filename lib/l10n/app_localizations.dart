@@ -7358,7 +7358,7 @@ abstract class AppLocalizations {
   /// No description provided for @saveTreeCommentLabel.
   ///
   /// In ja, this message translates to:
-  /// **'コメント（任意）'**
+  /// **'メモ'**
   String get saveTreeCommentLabel;
 
   /// No description provided for @saveTreeCommentHint.
@@ -7442,13 +7442,13 @@ abstract class AppLocalizations {
   /// No description provided for @saveTreeResumeConfirmBody.
   ///
   /// In ja, this message translates to:
-  /// **'セーブしていない場合は現在のデータが消えますがよろしいですか？'**
+  /// **'このセーブデータから作業を再開しますか？\n\n現在のデータは上書きされます。保存する必要がある場合は先にセーブしてください。'**
   String get saveTreeResumeConfirmBody;
 
   /// No description provided for @saveTreeProjectDetailResumeBody.
   ///
   /// In ja, this message translates to:
-  /// **'このセーブデータから作業を再開しますか？'**
+  /// **'このセーブデータから作業を再開しますか？\n\n現在のデータは上書きされます。保存する必要がある場合は先にセーブしてください。'**
   String get saveTreeProjectDetailResumeBody;
 
   /// No description provided for @saveTreeLoadFailedSnackbar.
