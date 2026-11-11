@@ -22,6 +22,7 @@ import '../../utils/app_error_reporter.dart';
 import '../../widgets/dispose_on_unmount.dart';
 import '../../config/font_fallback.dart';
 import '../../config/accent_text_theme.dart';
+import 'widgets/save_rename_button.dart';
 
 /// セーブツリー（SaveTree/）の合計容量がこれを超えた場合にユーザーへ通知する
 /// 閾値。「容量が大きくなる場合はユーザーへ通知」するために使う。ツリー方式は
@@ -703,13 +704,26 @@ class _SlotTile extends StatelessWidget {
             borderRadius: BorderRadius.circular(12),
           ),
           leading: _SaveNodeThumbnail(node: node),
-          title: Text(
-            '${l10n.saveTreeSlotLabel(slotIndex + 1)}${node?.comment != null ? '　${node!.comment}' : ''}',
-            style: const TextStyle(
-              fontWeight: FontWeight.w600,
-              fontFamily: 'Kuramubon',
-              fontFamilyFallback: kHeadingFontFallback,
-            ),
+          title: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  '${l10n.saveTreeSlotLabel(slotIndex + 1)}${node?.comment != null ? '　${node!.comment}' : ''}',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontFamily: 'Kuramubon',
+                    fontFamilyFallback: kHeadingFontFallback,
+                  ),
+                ),
+              ),
+              if (node != null)
+                SaveRenameButton(
+                  node: node!,
+                  fallbackName: l10n.saveTreeSlotFallbackName(slotIndex + 1),
+                ),
+            ],
           ),
           subtitle: node != null
               ? Text(_formatDate(node!.savedAt))
@@ -880,14 +894,22 @@ class _TreeView extends StatelessWidget {
             selected: isSelected,
             selectedTileColor: Theme.of(context).colorScheme.primaryContainer
                 .withValues(alpha: 0.3),
-            leading: node.thumbnailPath != null
-                ? _SaveNodeThumbnail(node: node, size: 40)
-                : Icon(
-                    Icons.commit,
-                    size: 20,
-                    color: isSelected ? AccentTextTheme.of(context) : null,
+            leading: _SaveNodeThumbnail(node: node, size: 40),
+            title: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    node.comment ?? l10n.saveTreeNodeDefaultTitle,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
-            title: Text(node.comment ?? l10n.saveTreeNodeDefaultTitle),
+                ),
+                SaveRenameButton(
+                  node: node,
+                  fallbackName: l10n.saveTreeNodeDefaultTitle,
+                ),
+              ],
+            ),
             subtitle: Text(_formatDate(node.savedAt)),
             onTap: () => onNodeSelected(isSelected ? null : node.id),
             trailing: PopupMenuButton<String>(
