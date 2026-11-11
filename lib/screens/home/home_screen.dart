@@ -3695,6 +3695,25 @@ List<File> _sortExportedFiles(List<File> files, ProjectSortMode mode) {
   return sorted;
 }
 
+/// Sort the exported-work folders within their folder section as well.
+/// WorkFolderService has creation dates (no separate update timestamp).
+List<ProjectFolder> _sortWorkFolders(
+    List<ProjectFolder> folders, ProjectSortMode mode) {
+  final sorted = List<ProjectFolder>.of(folders);
+  sorted.sort((a, b) {
+    final order = switch (mode) {
+      ProjectSortMode.nameAsc =>
+        a.name.toLowerCase().compareTo(b.name.toLowerCase()),
+      ProjectSortMode.nameDesc =>
+        b.name.toLowerCase().compareTo(a.name.toLowerCase()),
+      ProjectSortMode.updatedAsc => a.createdAt.compareTo(b.createdAt),
+      ProjectSortMode.updatedDesc => b.createdAt.compareTo(a.createdAt),
+    };
+    return order == 0 ? a.id.compareTo(b.id) : order;
+  });
+  return sorted;
+}
+
 /// Same size choices as project cards. The caption retains two rows
 /// while the tile itself grows with the chosen size and text scaling.
 SliverGridDelegate _worksGridDelegate(
@@ -3834,7 +3853,7 @@ class _WorksTabState extends State<_WorksTab> {
                   )
                 : null,
             allItems: files,
-            folders: workFolders.folders,
+            folders: _sortWorkFolders(workFolders.folders, _sortMode),
             folderIdOf: (f) =>
                 workFolders.folderIdOf(f.path.split(RegExp(r'[\\/]')).last),
             onEnterFolder: (folderId, folderName, itemsInFolder) =>
