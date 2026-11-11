@@ -20,6 +20,7 @@ import '../../widgets/dispose_on_unmount.dart';
 import '../../widgets/help_button.dart';
 import '../../widgets/responsive.dart';
 import 'save_tree_screen.dart';
+import 'widgets/save_thumbnail_capture.dart';
 import 'widgets/save_rename_button.dart';
 import '../../config/font_fallback.dart';
 import '../../config/accent_text_theme.dart';
@@ -640,7 +641,9 @@ Future<Uint8List?> _generateThumbnail(
   String projectId,
 ) async {
   final scenes = ps.scenesOf(projectId);
-  if (scenes.isEmpty || scenes.first.frames.isEmpty) return null;
+  if (scenes.isEmpty || scenes.first.frames.isEmpty) {
+    return captureEmptySaveThumbnail(ps, projectId);
+  }
   final scene = scenes.first;
   final frame = scene.frames.first;
   final tileManager = ps.tileManagerOf(projectId);
