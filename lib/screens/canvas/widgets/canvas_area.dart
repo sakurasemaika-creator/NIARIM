@@ -4328,8 +4328,13 @@ class _CanvasAreaState extends State<CanvasArea> {
       _layers.where((l) => l.id == _layerId).firstOrNull?.blendMode ??
       LayerBlendMode.normal;
 
-  int get _currentDisplayOpacity =>
-      _layers.where((l) => l.id == _layerId).firstOrNull?.opacity ?? 100;
+  int get _currentDisplayOpacity {
+    final layer = _layers.where((l) => l.id == _layerId).firstOrNull;
+    if (layer == null) return 100;
+    // The selected layer is drawn outside the normal layer compositor.
+    // Hidden artwork must remain in its own thumbnail, not on the canvas.
+    return layer.isVisible ? layer.opacity : 0;
+  }
 
   /// What the exact blend of the current layer is made from now, or null
   /// when the current layer's mode needs none.
@@ -4642,12 +4647,7 @@ class _CanvasAreaState extends State<CanvasArea> {
                             _exactBlendKey == _exactBlendInputs
                         ? _exactBlend
                         : null,
-                    currentLayerOpacity:
-                        _layers
-                            .where((l) => l.id == _layerId)
-                            .firstOrNull
-                            ?.opacity ??
-                        100,
+                    currentLayerOpacity: _currentDisplayOpacity,
                     currentLayerBlendMode:
                         (widget.currentLayerPreview != null
                             ? widget.currentLayerPreviewBlendMode
