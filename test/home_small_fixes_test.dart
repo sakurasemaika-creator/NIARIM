@@ -150,6 +150,8 @@ double _contrast(Color a, Color b) {
   return (math.max(la, lb) + 0.05) / (math.min(la, lb) + 0.05);
 }
 
+const _languages = ['ja', 'en', 'es', 'fr', 'ko', 'zh', 'zh_Hant'];
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -342,6 +344,55 @@ void main() {
         }
       }
     }
+    expect(tester.takeException(), isNull);
+    await _close(tester);
+  });
+
+  // アプリバーの題「プロジェクト」は、狭い画面でも「プロジ…」と切れない。
+  // 題の左右の余白（16pxずつ）を幅400px未満では詰める。
+  testWidgets('the Projects title is not cut on small phones', (tester) async {
+    final home = await _openHome(tester, size: const Size(320, 844));
+    final cut = <String>[];
+    for (final width in [320.0, 360.0, 390.0]) {
+      for (final scale in [1.0, 1.3, 2.0]) {
+        tester.view.physicalSize = Size(width, 844);
+        tester.platformDispatcher.textScaleFactorTestValue = scale;
+        for (final language in _languages) {
+          await tester.runAsync(() => home.settings.setLanguage(language));
+          await _frames(tester, 4);
+          final title = _l10n(tester).homeTabProjects;
+          final paragraphs = [
+            for (final element
+                in find
+                    .descendant(
+                      of: find.byType(AppBar),
+                      matching: find.text(title),
+                    )
+                    .evaluate())
+              // 幅が広いとタブにも同じ名前が出る。題だけを見る。
+              if (element.findAncestorWidgetOfExactType<TabBar>() == null)
+                element.renderObject! as RenderParagraph,
+          ];
+          expect(paragraphs, hasLength(1), reason: '$language $width x$scale');
+          final paragraph = paragraphs.single;
+          if (paragraph.didExceedMaxLines ||
+              paragraph.getMaxIntrinsicWidth(double.infinity) >
+                  paragraph.size.width + 0.5) {
+            cut.add('$language ${width.round()} x$scale');
+          }
+        }
+      }
+    }
+    // まだ切れる所（戻る・表示サイズ・検索・メニューのボタンで題に120pxしか
+    // 残らない幅320pxで、文字を大きくしたとき）。ボタンの置き方を決めないと
+    // 直せないので、いまはここだけを許す。
+    const stillCut = {
+      'ja 320 x1.3',
+      'ja 320 x2.0',
+      'es 320 x1.3',
+      'es 320 x2.0',
+    };
+    expect(cut.toSet().difference(stillCut), isEmpty, reason: '$cut');
     expect(tester.takeException(), isNull);
     await _close(tester);
   });
