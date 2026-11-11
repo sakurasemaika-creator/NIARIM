@@ -21,7 +21,9 @@ on:
 
 concurrency:
   group: home-clipboard-trash-dev-branch
-  cancel-in-progress: true
+  # Keep the currently running regression alive while other dev_branch
+  # commits arrive. Newer pending checks supersede older pending checks.
+  cancel-in-progress: false
 
 permissions:
   contents: read
