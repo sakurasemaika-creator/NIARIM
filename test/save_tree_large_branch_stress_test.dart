@@ -130,7 +130,12 @@ void main() {
     expect(tester.takeException(), isNull);
     // Scroll several pages upward in the 256-node history.
     for (var i = 0; i < 6; i++) {
-      await tester.drag(find.byType(ListView).last, const Offset(0, 650));
+      // The wide tree ListView's center is off-screen horizontally. Start
+      // the gesture from an actual visible point inside the viewport.
+      await tester.dragFrom(
+        const Offset(180, 400),
+        const Offset(0, 300),
+      );
       await tester.pump(const Duration(milliseconds: 100));
       expect(tester.takeException(), isNull);
     }
