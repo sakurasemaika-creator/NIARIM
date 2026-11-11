@@ -2490,10 +2490,40 @@ class _CanvasScreenState extends State<CanvasScreen> {
                                 ),
                               ),
                               Expanded(
-                                child: Text(
-                                  title,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
+                                child: Row(
+                                  children: [
+                                    Flexible(
+                                      child: Text(
+                                        title,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                    if (p == CanvasDockPanel.colorPicker) ...[
+                                      const SizedBox(width: 8),
+                                      Expanded(
+                                        child: IgnorePointer(
+                                          child: Semantics(
+                                            label: '現在色',
+                                            child: ClipRRect(
+                                              borderRadius: BorderRadius.circular(3),
+                                              child: SizedBox(
+                                                key: const ValueKey('pc-color-picker-current-chip'),
+                                                height: 20,
+                                                child: Stack(
+                                                  fit: StackFit.expand,
+                                                  children: [
+                                                    ColoredBox(color: scheme.surfaceContainerHighest),
+                                                    ColoredBox(color: _currentColor),
+                                                  ],
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ],
                                 ),
                               ),
                               IconButton(
