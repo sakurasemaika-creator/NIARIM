@@ -161,7 +161,7 @@ class ExportedWorkCoverStore {
 
   static Future<Map<String, dynamic>> _ensureCachedNow(File file) async {
     final current = await read(file);
-    if (current['mode'] != 'latest' ||
+    if (current['mode'] == 'none' || current['mode'] == 'custom' ||
         _failedInSession.contains(file.path)) return current;
     final previous = current['imagePath'];
     if (previous is String && previous.isNotEmpty &&
@@ -172,7 +172,10 @@ class ExportedWorkCoverStore {
     try {
       var frame = 0;
       if (_isVideo(file)) {
-        frame = await _lastVideoFrame(file);
+        frame = current['mode'] == 'frame' &&
+                current['frameIndex'] is int
+            ? math.max(0, current['frameIndex'] as int)
+            : await _lastVideoFrame(file);
         generated = await extractVideoFrame(file, frame);
       } else {
         generated = await storeCompressedImage(await file.readAsBytes());
@@ -185,7 +188,7 @@ class ExportedWorkCoverStore {
         }
         return await read(file);
       }
-      await write(file, mode: 'latest',
+      await write(file, mode: current['mode'] == 'frame' ? 'frame' : 'latest',
           imagePath: generated,
           frameIndex: _isVideo(file) ? frame : 0);
       return await read(file);
