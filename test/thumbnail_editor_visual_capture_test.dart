@@ -117,7 +117,7 @@ void main() {
       ),
     );
     await tester.pumpWidget(host);
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 300));
 
     Future<void> capture(String name) async {
       for (var attempt = 0; attempt < 3; attempt++) {
@@ -145,63 +145,63 @@ void main() {
 
     await capture('01_phone_cards');
     await tester.tap(find.byKey(const Key('projectCoverMenuFixture')));
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 300));
     await capture('02_phone_project_menu_fixture');
     await tester.tap(find.text('サムネイル変更').last);
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 300));
     await capture('03_phone_project_latest');
     await tester.tap(find.byKey(const Key('projectThumbnailFrame')));
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 300));
     await capture('04_phone_project_frame');
     await tester.tap(find.byKey(const Key('projectThumbnailLastFrame')));
     await tester.pump();
     await capture('05_phone_project_last');
     await tester.tap(find.byKey(const Key('projectThumbnailCustom')));
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 300));
     await capture('06_phone_project_custom');
     await tester.tap(find.byKey(const Key('projectThumbnailNone')));
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 300));
     await capture('07_phone_project_none');
     await tester.tap(find.text('キャンセル').last);
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 300));
 
     await tester.tap(find.byKey(const Key('exportedWorkMoreMenu')));
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 300));
     await capture('08_phone_export_menu');
     await tester.tap(find.text('サムネイル変更').last);
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 300));
     await capture('09_phone_export_latest');
     await tester.tap(find.byKey(const Key('exportCoverFrame')));
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 300));
     await capture('10_phone_export_image_frame');
     await tester.tap(find.byKey(const Key('exportCoverCustom')));
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 300));
     await capture('11_phone_export_custom');
     await tester.tap(find.byKey(const Key('exportCoverNone')));
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 300));
     await capture('12_phone_export_none');
     await tester.tap(find.text('キャンセル').last);
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 300));
 
     tester.view.physicalSize = const Size(1440, 900);
     tester.view.devicePixelRatio = 1;
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 300));
     await capture('13_desktop_cards');
     await tester.tap(find.byKey(const Key('projectCoverMenuFixture')));
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 300));
     await tester.tap(find.text('サムネイル変更').last);
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 300));
     await tester.tap(find.byKey(const Key('projectThumbnailFrame')));
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 300));
     await capture('14_desktop_project_frame');
     await tester.tap(find.text('キャンセル').last);
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 300));
     await tester.tap(find.byKey(const Key('exportedWorkMoreMenu')));
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 300));
     await tester.tap(find.text('サムネイル変更').last);
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 300));
     await tester.tap(find.byKey(const Key('exportCoverFrame')));
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 300));
     await capture('15_desktop_export_image_frame');
   });
 }
