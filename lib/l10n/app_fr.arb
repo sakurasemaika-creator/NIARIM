@@ -1628,7 +1628,7 @@
       }
     }
   },
-  "saveTreeRestoreAction": "Restaurer",
+  "saveTreeRestoreAction": "Charger",
   "saveTreeTimelineActionChoiceBody": "Choisissez si vous voulez écraser cette sauvegarde avec le contenu actuel, ou reprendre le travail à partir d'ici.",
   "saveTreeOverwriteAction": "Écraser",
   "saveTreeOverwriteConfirmBody": "Les données enregistrées à ce moment-là seront perdues. Voulez-vous continuer ?",
@@ -1636,7 +1636,7 @@
   "saveTreeResumeConfirmBody": "Toute modification non enregistrée sera perdue. Voulez-vous continuer ?",
   "saveTreeProjectDetailResumeBody": "Reprendre le travail à partir de cette sauvegarde ?",
   "saveTreeLoadFailedSnackbar": "Échec du chargement des données de sauvegarde",
-  "saveTreeRestoredSnackbar": "{name} restauré",
+  "saveTreeRestoredSnackbar": "Données de sauvegarde chargées ({name})",
   "@saveTreeRestoredSnackbar": {
     "placeholders": {
       "name": {
