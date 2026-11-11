@@ -15,6 +15,8 @@ import 'package:niarim/services/theme_service.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'helpers/load_app_fonts.dart';
+
 class _GridProjects extends ProjectService {
   final favoriteIds = <String>{};
   final favoriteCalls = <String>[];
@@ -100,6 +102,7 @@ void main() {
   testWidgets('capture all project and folder view modes with outlined actions',
       (tester) async {
     SharedPreferences.setMockInitialValues({});
+    await loadAppFonts(tester);
     tester.view.physicalSize = const Size(390, 844);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
