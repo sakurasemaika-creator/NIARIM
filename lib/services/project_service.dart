@@ -54,6 +54,10 @@ class ProjectFolder {
   final String? parentFolderId;
   // フォルダもお気に入り登録可能。
   final bool isFavorite;
+  /// 'auto', 'none', 'item', or 'custom'. Kept in folder metadata.
+  final String thumbnailMode;
+  final String? thumbnailSourceId;
+  final String? thumbnailImagePath;
   // 更新日時ソート時にプロジェクトと同じ基準で並べられるようにするための作成日時
   final DateTime createdAt;
 
@@ -63,6 +67,9 @@ class ProjectFolder {
     this.color,
     this.parentFolderId,
     this.isFavorite = false,
+    this.thumbnailMode = 'auto',
+    this.thumbnailSourceId,
+    this.thumbnailImagePath,
     DateTime? createdAt,
   }) : createdAt = createdAt ?? DateTime.now();
 
@@ -71,6 +78,9 @@ class ProjectFolder {
     Object? color = _folderSentinel,
     Object? parentFolderId = _folderSentinel,
     bool? isFavorite,
+    String? thumbnailMode,
+    Object? thumbnailSourceId = _folderSentinel,
+    Object? thumbnailImagePath = _folderSentinel,
   }) => ProjectFolder(
     id: id,
     name: name ?? this.name,
@@ -79,6 +89,11 @@ class ProjectFolder {
         ? this.parentFolderId
         : parentFolderId as String?,
     isFavorite: isFavorite ?? this.isFavorite,
+    thumbnailMode: thumbnailMode ?? this.thumbnailMode,
+    thumbnailSourceId: identical(thumbnailSourceId, _folderSentinel)
+        ? this.thumbnailSourceId : thumbnailSourceId as String?,
+    thumbnailImagePath: identical(thumbnailImagePath, _folderSentinel)
+        ? this.thumbnailImagePath : thumbnailImagePath as String?,
     createdAt: createdAt,
   );
 
@@ -88,6 +103,9 @@ class ProjectFolder {
     'color': color,
     'parentFolderId': parentFolderId,
     'isFavorite': isFavorite,
+    'thumbnailMode': thumbnailMode,
+    'thumbnailSourceId': thumbnailSourceId,
+    'thumbnailImagePath': thumbnailImagePath,
     'createdAt': createdAt.toIso8601String(),
   };
 
@@ -97,6 +115,9 @@ class ProjectFolder {
     color: json['color'] as int?,
     parentFolderId: json['parentFolderId'] as String?,
     isFavorite: json['isFavorite'] as bool? ?? false,
+    thumbnailMode: json['thumbnailMode'] as String? ?? 'auto',
+    thumbnailSourceId: json['thumbnailSourceId'] as String?,
+    thumbnailImagePath: json['thumbnailImagePath'] as String?,
     createdAt: json['createdAt'] != null
         ? DateTime.parse(json['createdAt'] as String)
         : DateTime.now(),
@@ -3717,6 +3738,29 @@ class ProjectService extends ChangeNotifier {
       editFolder(folderId, name: name);
   Future<void> setFolderColor(String folderId, int? color) =>
       editFolder(folderId, color: color);
+
+  /// Preserve folder thumbnail preferences independently of project content.
+  Future<void> setFolderThumbnail(
+    String folderId, {
+    required String mode,
+    String? sourceId,
+    String? imagePath,
+    bool shared = false,
+  }) => _queueFolder(() async {
+    if (!const {'auto', 'none', 'item', 'custom'}.contains(mode)) {
+      throw ArgumentError.value(mode, 'mode');
+    }
+    final current = shared ? _sharedFolders : _folders;
+    final i = current.indexWhere((folder) => folder.id == folderId);
+    if (i < 0) return;
+    final next = [...current];
+    next[i] = next[i].copyWith(
+      thumbnailMode: mode,
+      thumbnailSourceId: sourceId,
+      thumbnailImagePath: imagePath,
+    );
+    await _commitFolders(next, shared: shared);
+  });
 
   Future<void> toggleFolderFavorite(String folderId) => _queueFolder(() async {
     final i = _folders.indexWhere((f) => f.id == folderId);
