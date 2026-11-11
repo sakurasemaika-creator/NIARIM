@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../l10n/community_plaza_labels.dart';
 import '../../../services/community_service.dart';
+import '../../../widgets/collection_action_controls.dart';
 
 import 'package:provider/provider.dart';
 
@@ -374,34 +375,34 @@ class CommunityWorkCard extends StatelessWidget {
                                     ? l10n.communityWorkDetailBookmarkRemove
                                     : l10n.communityWorkDetailBookmarkAdd,
                                 toggled: isBookmarked,
-                                child: IconButton(
-                                  key: ValueKey('community-bookmark-${work.id}'),
-                                  tooltip: isBookmarked
-                                      ? l10n.communityWorkDetailBookmarkRemove
-                                      : l10n.communityWorkDetailBookmarkAdd,
-                                  constraints: const BoxConstraints.tightFor(
-                                    width: 48,
-                                    height: 48,
-                                  ),
-                                  iconSize: 22,
-                                  padding: EdgeInsets.zero,
-                                  onPressed: onBookmarkToggle,
-                                  icon: Icon(
-                                    isBookmarked
-                                        ? Icons.bookmark
-                                        : Icons.bookmark_border,
-                                    color: detailColor,
+                                child: CollectionActionFrame(
+                                  child: IconButton(
+                                    key: ValueKey('community-bookmark-${work.id}'),
+                                    tooltip: isBookmarked
+                                        ? l10n.communityWorkDetailBookmarkRemove
+                                        : l10n.communityWorkDetailBookmarkAdd,
+                                    constraints: const BoxConstraints.tightFor(
+                                      width: CollectionActionFrame.extent,
+                                      height: CollectionActionFrame.extent,
+                                    ),
+                                    iconSize: CollectionActionFrame.glyphSize,
+                                    padding: EdgeInsets.zero,
+                                    onPressed: onBookmarkToggle,
+                                    icon: Icon(
+                                      isBookmarked
+                                          ? Icons.bookmark
+                                          : Icons.bookmark_border,
+                                      color: detailColor,
+                                    ),
                                   ),
                                 ),
                               ),
                             if (onMuteToggle != null)
-                              SizedBox(
-                                width: 48,
-                                height: 48,
+                              CollectionActionFrame(
                                 child: PopupMenuButton<String>(
                                   key: ValueKey('communityMuteMenu-${work.id}'),
                                   padding: EdgeInsets.zero,
-                                  iconSize: 22,
+                                  iconSize: CollectionActionFrame.glyphSize,
                                   tooltip: isMuted
                                       ? CommunityPlazaLabels.of(context)
                                           .unmuteWork
