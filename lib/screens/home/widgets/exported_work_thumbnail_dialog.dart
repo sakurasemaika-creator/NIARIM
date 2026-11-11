@@ -66,7 +66,8 @@ class ExportedWorkCoverStore {
     return File('${dir.path}/${prefix}_${DateTime.now().microsecondsSinceEpoch}.$extension');
   }
 
-  static Future<String> storeCompressedImage(Uint8List sourceBytes) async {
+  static Future<String> storeCompressedImage(Uint8List sourceBytes,
+      {bool preferJpeg = false}) async {
     final source = image_codec.decodeImage(sourceBytes);
     if (source == null || source.width <= 0 || source.height <= 0) {
       throw const FormatException('Unsupported thumbnail image');
@@ -82,8 +83,12 @@ class ExportedWorkCoverStore {
             interpolation: image_codec.Interpolation.average,
           )
         : source;
-    final optimized = image_codec.encodePng(result, level: 6);
-    final output = await _newCacheFile('custom', 'png');
+    // JPEG exports stay JPEG; preserving their lossy compression avoids
+    // converting a small photo into a much larger lossless PNG.
+    final optimized = preferJpeg
+        ? image_codec.encodeJpg(result, quality: 82)
+        : image_codec.encodePng(result, level: 6);
+    final output = await _newCacheFile('custom', preferJpeg ? 'jpg' : 'png');
     await output.writeAsBytes(optimized, flush: true);
     return output.path;
   }
@@ -178,7 +183,9 @@ class ExportedWorkCoverStore {
             : await _lastVideoFrame(file);
         generated = await extractVideoFrame(file, frame);
       } else {
-        generated = await storeCompressedImage(await file.readAsBytes());
+        generated = await storeCompressedImage(await file.readAsBytes(),
+            preferJpeg: const {'jpg', 'jpeg'}
+                .contains(file.path.split('.').last.toLowerCase()));
       }
       final after = await file.stat();
       if (after.size != original.size ||
@@ -458,7 +465,9 @@ class _ExportedWorkThumbnailDialogState
         imagePath = generated;
       } else if (isImage && mode != 'none') {
         generated = await ExportedWorkCoverStore.storeCompressedImage(
-            await widget.file.readAsBytes());
+            await widget.file.readAsBytes(),
+            preferJpeg: const {'jpg', 'jpeg'}
+                .contains(widget.file.path.split('.').last.toLowerCase()));
         imagePath = generated;
       }
       await ExportedWorkCoverStore.write(
