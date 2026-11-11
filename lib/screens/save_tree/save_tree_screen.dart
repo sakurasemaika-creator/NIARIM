@@ -23,6 +23,7 @@ import '../../widgets/dispose_on_unmount.dart';
 import '../../config/font_fallback.dart';
 import '../../config/accent_text_theme.dart';
 import 'widgets/save_rename_button.dart';
+import 'widgets/save_thumbnail_capture.dart';
 
 /// セーブツリー（SaveTree/）の合計容量がこれを超えた場合にユーザーへ通知する
 /// 閾値。「容量が大きくなる場合はユーザーへ通知」するために使う。ツリー方式は
@@ -37,9 +38,9 @@ Future<Uint8List?> _generateSaveNodeThumbnail(
   String projectId,
 ) async {
   final scenes = ps.scenesOf(projectId);
-  if (scenes.isEmpty) return null;
+  if (scenes.isEmpty) return captureEmptySaveThumbnail(ps, projectId);
   final scene = scenes.first;
-  if (scene.frames.isEmpty) return null;
+  if (scene.frames.isEmpty) return captureEmptySaveThumbnail(ps, projectId);
   final frame = scene.frames.first;
   final tileManager = ps.tileManagerOf(projectId);
   final w = tileManager.canvasWidth;
