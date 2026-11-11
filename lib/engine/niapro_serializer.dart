@@ -851,6 +851,11 @@ class NiaproSerializer {
     'enabledAutofillPresetIds': p.enabledAutofillPresetIds,
     'tags': p.tags,
     'thumbnailPath': p.thumbnailPath,
+    'thumbnailMode': p.thumbnailMode,
+    'thumbnailFrameSceneId': p.thumbnailFrameSceneId,
+    'thumbnailFrameIndex': p.thumbnailFrameIndex,
+    'thumbnailLastSceneId': p.thumbnailLastSceneId,
+    'thumbnailLastFrameIndex': p.thumbnailLastFrameIndex,
   };
 
   static Map<String, dynamic> _serializeScene(Scene scene) => {
@@ -1006,6 +1011,11 @@ class NiaproSerializer {
         .map((e) => e as String)
         .toList(),
     thumbnailPath: j['thumbnailPath'] as String?,
+    thumbnailMode: j['thumbnailMode'] as String? ?? 'latest',
+    thumbnailFrameSceneId: j['thumbnailFrameSceneId'] as String?,
+    thumbnailFrameIndex: j['thumbnailFrameIndex'] as int?,
+    thumbnailLastSceneId: j['thumbnailLastSceneId'] as String?,
+    thumbnailLastFrameIndex: j['thumbnailLastFrameIndex'] as int?,
   );
 
   /// シーンファイル（frames.json）を読み込む。新形式は
