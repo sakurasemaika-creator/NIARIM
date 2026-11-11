@@ -15,7 +15,7 @@ import '../../../services/project_service.dart';
 class FolderThumbnailChoice {
   final String id;
   final String name;
-  final String imagePath;
+  final String? imagePath;
   final DateTime updatedAt;
 
   const FolderThumbnailChoice({
@@ -48,13 +48,11 @@ List<FolderThumbnailChoice> projectFolderThumbnailChoices(
   }
   return [
     for (final project in projects)
-      if (project.folderId != null &&
-          descendants.contains(project.folderId) &&
-          project.thumbnailPath?.isNotEmpty == true)
+      if (project.folderId != null && descendants.contains(project.folderId))
         FolderThumbnailChoice(
           id: project.id,
           name: project.name,
-          imagePath: project.thumbnailPath!,
+          imagePath: project.thumbnailPath,
           updatedAt: project.updatedAt,
         ),
   ];
@@ -171,7 +169,8 @@ String? folderThumbnailPath(
     default:
       FolderThumbnailChoice? latest;
       for (final choice in choices) {
-        if (latest == null || choice.updatedAt.isAfter(latest.updatedAt)) {
+        if (choice.imagePath != null &&
+            (latest == null || choice.updatedAt.isAfter(latest.updatedAt))) {
           latest = choice;
         }
       }
