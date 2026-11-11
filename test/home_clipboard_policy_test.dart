@@ -51,5 +51,15 @@ void main() {
       source: HomePasteArea.trash, destination: HomePasteArea.projects,
       containsFiles: true, containsFolders: false,
     ), HomePasteDecision.unsupportedTrashRestore);
+    expect(HomePastePolicy.check(
+      source: HomePasteArea.trash, destination: HomePasteArea.projects,
+      originalArea: HomePasteArea.projects,
+      containsFiles: true, containsFolders: false,
+    ), HomePasteDecision.allowed);
+    expect(HomePastePolicy.check(
+      source: HomePasteArea.trash, destination: HomePasteArea.works,
+      originalArea: HomePasteArea.projects,
+      containsFiles: true, containsFolders: false,
+    ), HomePasteDecision.unsupportedTrashRestore);
   });
 }

@@ -10,8 +10,10 @@ abstract final class HomePastePolicy {
     required HomePasteArea destination,
     required bool containsFiles,
     required bool containsFolders,
+    HomePasteArea? originalArea,
   }) {
     if (source == HomePasteArea.trash) {
+      if (destination == originalArea) return HomePasteDecision.allowed;
       return HomePasteDecision.unsupportedTrashRestore;
     }
     if (destination == HomePasteArea.trash) {
