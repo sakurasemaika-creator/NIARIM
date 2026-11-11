@@ -35,6 +35,7 @@ import '../../widgets/ad_banner_mock_widget.dart';
 import '../../widgets/empty_state_placeholder.dart';
 import '../../widgets/sort_mode_control.dart';
 import '../../widgets/project_trash_dialog.dart';
+import '../../widgets/collection_action_controls.dart';
 import '../../widgets/share_project_file_action.dart';
 import '../../widgets/mission_completion_dialog.dart';
 import '../../widgets/typing_aware_shortcuts.dart';
@@ -1885,7 +1886,7 @@ class _SharedTab extends StatelessWidget {
             l10n.homeProjectMeta(project.fps, project.durationSeconds),
           ),
           onTap: () => context.push('/project/${project.id}'),
-          trailing: _receivedShareMenu(context, project),
+          trailing: _sharedProjectActions(context, project),
           onLongPress: () => _showMoveToSharedFolderSheet(context, project),
         ),
       ),
@@ -1921,13 +1922,38 @@ String _shareCollectionText(BuildContext context, {required bool outgoing}) {
 
 /// Received projects remain editable. Sharing one explicitly creates a new
 /// saved .niashare snapshot, whereas outbound snapshots reuse existing bytes.
+Widget _sharedProjectActions(BuildContext context, Project project) {
+  final l10n = AppLocalizations.of(context)!;
+  return Row(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      CollectionFavoriteButton(
+        itemId: project.id,
+        favorite: project.isFavorite,
+        tooltip: project.isFavorite
+            ? l10n.colorPickerFavoriteRemove
+            : l10n.colorPickerFavoriteAdd,
+        onPressed: () => runProjectAction(
+          context,
+          () => context.read<ProjectService>().toggleFavorite(project.id),
+        ),
+      ),
+      const SizedBox(width: 4),
+      CollectionActionFrame(
+        key: Key('collectionMenu_${project.id}'),
+        child: _receivedShareMenu(context, project),
+      ),
+    ],
+  );
+}
+
 Widget _receivedShareMenu(BuildContext context, Project project) {
   final l10n = AppLocalizations.of(context)!;
   final service = context.read<ProjectService>();
   return PopupMenuButton<String>(
     key: ValueKey('receivedShareMenu_${project.id}'),
     padding: EdgeInsets.zero,
-    icon: const Icon(Icons.more_vert, size: 18),
+    icon: const Icon(Icons.more_vert, size: CollectionActionFrame.glyphSize),
     tooltip: MaterialLocalizations.of(context).showMenuTooltip,
     onSelected: (action) async {
       switch (action) {
@@ -2156,10 +2182,11 @@ class _OutgoingSharesList extends StatelessWidget {
               '${(entry.sizeBytes / 1024).toStringAsFixed(1)} KB',
             ),
             onTap: () => shareSavedNiashare(context, entry.path),
-            trailing: PopupMenuButton<String>(
+            trailing: CollectionActionFrame(
+              child: PopupMenuButton<String>(
               key: ValueKey('outgoingShareMenu_${entry.path}'),
               padding: EdgeInsets.zero,
-              icon: const Icon(Icons.more_vert, size: 18),
+              icon: const Icon(Icons.more_vert, size: CollectionActionFrame.glyphSize),
               onSelected: (action) => _outgoingShareAction(context, entry, action),
               itemBuilder: (_) => [
                 PopupMenuItem(value: 'share',
@@ -2173,6 +2200,7 @@ class _OutgoingSharesList extends StatelessWidget {
                       style: TextStyle(color: Theme.of(context).colorScheme.error)),
                 ),
               ],
+            ),
             ),
           ),
         );
@@ -2247,7 +2275,7 @@ class _SharedFolderScreen extends StatelessWidget {
                       ),
                     ),
                     onTap: () => context.push('/project/${project.id}'),
-                    trailing: _receivedShareMenu(context, project),
+                    trailing: _sharedProjectActions(context, project),
                   ),
                 );
               },
