@@ -161,7 +161,9 @@ void main() {
         of: card,
         matching: find.byKey(const Key('exportedWorkMoreMenu')),
       );
-      await tester.drag(scroll, const Offset(0, -2000));
+      // Three-dot control now sits at the *top* of the card. An old
+      // bottom-alignment drag would scroll it offscreen on a 220px viewport.
+      await tester.ensureVisible(button);
       await tester.pumpAndSettle();
       final hitRect = tester.getRect(button);
       final viewport = tester.getRect(scroll);
