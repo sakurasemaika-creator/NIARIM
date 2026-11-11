@@ -27,6 +27,12 @@ class Project {
   final bool isSharedImport;
   final bool isFavorite;
   final String? thumbnailPath;
+  /// latest / frame / custom / none. Older projects default to latest.
+  final String thumbnailMode;
+  final String? thumbnailFrameSceneId;
+  final int? thumbnailFrameIndex;
+  final String? thumbnailLastSceneId;
+  final int? thumbnailLastFrameIndex;
   final int sizeBytes;
   // タグ（詳細情報画面のタグ機能）
   final List<String> tags;
@@ -57,6 +63,11 @@ class Project {
     this.isSharedImport = false,
     this.isFavorite = false,
     this.thumbnailPath,
+    this.thumbnailMode = 'latest',
+    this.thumbnailFrameSceneId,
+    this.thumbnailFrameIndex,
+    this.thumbnailLastSceneId,
+    this.thumbnailLastFrameIndex,
     this.sizeBytes = 0,
     this.tags = const [],
     this.exportWidth = 1920,
@@ -86,6 +97,11 @@ class Project {
     bool? isSharedImport,
     bool? isFavorite,
     Object? thumbnailPath = _projectSentinel,
+    String? thumbnailMode,
+    Object? thumbnailFrameSceneId = _projectSentinel,
+    Object? thumbnailFrameIndex = _projectSentinel,
+    Object? thumbnailLastSceneId = _projectSentinel,
+    Object? thumbnailLastFrameIndex = _projectSentinel,
     int? sizeBytes,
     List<String>? tags,
     int? exportWidth,
@@ -113,6 +129,15 @@ class Project {
       thumbnailPath: thumbnailPath == _projectSentinel
           ? this.thumbnailPath
           : thumbnailPath as String?,
+      thumbnailMode: thumbnailMode ?? this.thumbnailMode,
+      thumbnailFrameSceneId: identical(thumbnailFrameSceneId, _projectSentinel)
+          ? this.thumbnailFrameSceneId : thumbnailFrameSceneId as String?,
+      thumbnailFrameIndex: identical(thumbnailFrameIndex, _projectSentinel)
+          ? this.thumbnailFrameIndex : thumbnailFrameIndex as int?,
+      thumbnailLastSceneId: identical(thumbnailLastSceneId, _projectSentinel)
+          ? this.thumbnailLastSceneId : thumbnailLastSceneId as String?,
+      thumbnailLastFrameIndex: identical(thumbnailLastFrameIndex, _projectSentinel)
+          ? this.thumbnailLastFrameIndex : thumbnailLastFrameIndex as int?,
       sizeBytes: sizeBytes ?? this.sizeBytes,
       tags: tags ?? this.tags,
       exportWidth: exportWidth ?? this.exportWidth,
