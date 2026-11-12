@@ -3845,6 +3845,17 @@ class ProjectService extends ChangeNotifier {
     await _commitFolders(next, shared: shared);
   });
 
+  Future<void> toggleSharedFolderFavorite(String folderId) =>
+      _queueFolder(() async {
+        final index = _sharedFolders.indexWhere((f) => f.id == folderId);
+        if (index < 0) return;
+        final next = [..._sharedFolders];
+        next[index] = next[index].copyWith(
+          isFavorite: !next[index].isFavorite,
+        );
+        await _commitFolders(next, shared: true);
+      });
+
   Future<void> toggleFolderFavorite(String folderId) => _queueFolder(() async {
     final i = _folders.indexWhere((f) => f.id == folderId);
     if (i < 0) return;
