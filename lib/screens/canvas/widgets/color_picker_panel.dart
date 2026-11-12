@@ -183,6 +183,9 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
                         label: '${l10n.colorPickerTitle}: #${_colorToHex(_currentColor)}',
                         child: SizedBox(
                           key: const ValueKey('selected-color-preview-chip'),
+                          // A height-only box inside Flexible can collapse to
+                          // zero width, hiding the preview entirely on phones.
+                          width: 108,
                           height: 20,
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(3),

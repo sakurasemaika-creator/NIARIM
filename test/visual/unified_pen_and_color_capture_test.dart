@@ -189,6 +189,16 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('canvasColorSwatch')));
     await settle();
     expect(find.byType(ColorPickerPanel), findsOneWidget);
+    final swatch = find.byKey(const ValueKey('selected-color-preview-chip'));
+    expect(swatch, findsOneWidget);
+    final swatchRect = tester.getRect(swatch);
+    expect(swatchRect.width, closeTo(108, 0.1),
+        reason: 'The current-color preview must not collapse to zero width');
+    expect(
+      tester.getRect(find.byType(HsvColorWheel)).top - swatchRect.bottom,
+      greaterThanOrEqualTo(7.5),
+      reason: 'The requested 8px gap above the color wheel must remain',
+    );
     await shot('05_sp_shorter_color_chip_more_gap');
   });
 }
