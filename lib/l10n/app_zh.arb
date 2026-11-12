@@ -2775,7 +2775,7 @@
     }
   },
   "colorPickerShareViaQr": "以二维码分享",
-  "qrShareTooLargeHint": "颜色过多，无法以二维码分享（请使用文件分享）",
+  "qrShareTooLargeHint": "包含图片或数据量过大的素材无法通过二维码分享，请使用文件分享。",
   "colorPickerImportViaFile": "从文件选择",
   "colorPickerImportFailedSnackbar": "导入失败：{error}",
   "@colorPickerImportFailedSnackbar": {
