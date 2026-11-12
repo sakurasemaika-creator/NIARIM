@@ -15,6 +15,7 @@ import 'package:niarim/screens/home/widgets/project_list_widget.dart';
 import 'package:niarim/screens/home/widgets/exported_work_card.dart';
 import 'package:niarim/services/local_file_trash_service.dart';
 import 'package:niarim/services/project_service.dart';
+import 'package:niarim/services/work_folder_service.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'helpers/first_use_tooltips.dart';
@@ -221,5 +222,39 @@ void main() {
     expect(find.byKey(Key('homeSelectedMarker_shared_file:${projects.shared.first.id}')),
         findsOneWidget);
     await shot('11_shared_selected');
+
+    // Capture selected folders using real cards on every tab.
+    final folders = await tester.runAsync(() async {
+      final projectFolder = await projects.createFolder('プロジェクト資料フォルダ');
+      final works = tester.element(find.byType(HomeScreen)).read<WorkFolderService>();
+      final worksFolder = await works.createFolder('作品整理フォルダ');
+      final sharedFolder = await projects.createSharedFolder('共有整理フォルダ');
+      final deletedFolder = await LocalFileTrashService.moveWorkFolder(
+          folderName: '削除した作品フォルダ', files: <File>[],
+      );
+      return (projectFolder, worksFolder, sharedFolder, deletedFolder);
+    });
+    await settle();
+    await tab(0);
+    await tester.longPress(find.text('プロジェクト資料フォルダ').first);
+    await settle();
+    expect(find.byKey(const Key('home-selection-count')), findsOneWidget);
+    await shot('13_projects_folder_selected');
+    await tab(1);
+    await tester.longPress(find.text('作品整理フォルダ').first);
+    await settle();
+    expect(find.byKey(Key('homeSelectedMarker_work_folder:${folders.$2.id}')), findsOneWidget);
+    await shot('14_works_folder_selected');
+    await tab(2);
+    await tester.longPress(find.text('共有整理フォルダ').first);
+    await settle();
+    expect(find.byKey(Key('homeSelectedMarker_shared_folder:${folders.$3.id}')), findsOneWidget);
+    await shot('15_shared_folder_selected');
+    await tab(3);
+    await tester.longPress(find.text('削除した作品フォルダ').first);
+    await settle();
+    expect(find.byKey(Key('homeSelectedMarker_trash_local:${folders.$4.id}')), findsOneWidget);
+    await shot('16_trash_folder_selected');
+
   }, timeout: const Timeout(Duration(minutes: 5)));
 }
