@@ -246,7 +246,7 @@ class _PcWorkspaceLayoutPreviewState extends State<PcWorkspaceLayoutPreview> {
             icon: Icon(Icons.view_sidebar_outlined, color: scheme.onSurface),
             onSelected: (panel) => _toggleVisible(settings, panel),
             itemBuilder: (_) => [
-              for (final panel in CanvasDockPanel.values)
+              for (final panel in CanvasDockPanel.values.where((p) => !isLegacyMaterialDock(p)))
                 CheckedPopupMenuItem<CanvasDockPanel>(
                   value: panel,
                   checked: settings.defaultDockedPanels.contains(panel),
