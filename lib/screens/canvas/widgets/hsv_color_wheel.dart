@@ -66,9 +66,23 @@ class HsvColorWheel extends StatelessWidget {
     // the ring is centered and its lower edge only touches the middle.
     // Keeping the bottom 20px visible also avoids wasting a 36px row.
     final width = math.max(size, controlsWidth ?? size);
+    // The pill occupies the lower-right corner, at a mathematically safe
+    // tangent to the hue ring. In a narrow dock it moves down just enough
+    // to avoid overlap; in a wide dock it sits higher. No wasted bottom row.
+    final radius = size / 2;
+    const pillWidth = 66.0; // Two 32px segments and the 1px borders.
+    const pillRight = -6.0;
+    final pillLeft = width - pillRight - pillWidth;
+    final horizontalDistance = pillLeft - width / 2;
+    final modeTop = radius +
+        math.sqrt(math.max(
+          0.0,
+          radius * radius - horizontalDistance * horizontalDistance,
+        )) +
+        5;
     return SizedBox(
       width: width,
-      height: size + 24,
+      height: math.max(size, modeTop + 28),
       child: Stack(
         alignment: Alignment.topCenter,
         clipBehavior: Clip.none,
@@ -157,7 +171,7 @@ class HsvColorWheel extends StatelessWidget {
           if (onToggleTransparent != null)
             Positioned(
               left: 2,
-              top: size - 5,
+              top: size - 27,
               child: _TransparentToggleButton(
                 isActive: isTransparent,
                 onTap: onToggleTransparent!,
@@ -165,8 +179,8 @@ class HsvColorWheel extends StatelessWidget {
             ),
           if (onSliderModeChanged != null)
             Positioned(
-              right: 1,
-              top: size - 5,
+              right: pillRight,
+              top: modeTop,
               child: _SliderModePill(
                 showHsv: showHsvSliders,
                 onChanged: onSliderModeChanged!,
@@ -353,7 +367,7 @@ class _SliderModePill extends StatelessWidget {
       borderRadius: BorderRadius.circular(14),
       onTap: () => onChanged(hsv),
       child: Container(
-        constraints: const BoxConstraints(minWidth: 38),
+        constraints: const BoxConstraints(minWidth: 32),
         height: 26,
         alignment: Alignment.center,
         decoration: BoxDecoration(
