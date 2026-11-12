@@ -3347,7 +3347,6 @@ class _FolderableList<T> extends StatelessWidget {
 
   Widget _folderGridTile(
       BuildContext context, ProjectFolder folder, int count) {
-    final theme = Theme.of(context);
     return Card(
       key: ValueKey('collectionFolder_${folder.id}'),
       margin: EdgeInsets.zero,

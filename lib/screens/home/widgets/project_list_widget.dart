@@ -615,7 +615,6 @@ class ProjectListWidget extends StatelessWidget {
 
   Widget _folderDetailTile(BuildContext context, ProjectFolder folder) {
     final isSelected = selectedIds.contains(folder.id);
-    final color = folder.color != null ? Color(folder.color!) : null;
     return ListTile(
       leading: isSelectionMode
           ? Checkbox(
@@ -826,7 +825,6 @@ class ProjectListWidget extends StatelessWidget {
     final primary = scheme.primary;
     final selectionColor = scheme.secondary;
     final selectionForeground = scheme.onSecondary;
-    final color = folder.color != null ? Color(folder.color!) : primary;
     return GestureDetector(
       onSecondaryTapDown: (details) {
         if (!isSelectionMode && onPickProject == null) {

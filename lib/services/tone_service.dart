@@ -458,6 +458,7 @@ class ToneService extends ChangeNotifier {
         _tones.addAll(missing);
         changed = true;
       }
+      final defaults = {for (final t in _defaultTones()) t.id: t};
       // Original horizontally/vertically striped presets predate the
       // familiar stripe/border naming. Update only their *original* names;
       // user-renamed assets and custom tags/favourites stay intact.
@@ -475,7 +476,6 @@ class ToneService extends ChangeNotifier {
       // 「ドット○○（1px）」は「ピクセル○○（1px）」へ改称した（「ドット」が
       // 丸い水玉模様と誤認されるため）。旧名のまま残っている既存ユーザーの
       // トーンをIDで特定して更新する。
-      final defaults = {for (final t in _defaultTones()) t.id: t};
       for (int i = 0; i < _tones.length; i++) {
         final fresh = defaults[_tones[i].id];
         if (fresh != null &&
