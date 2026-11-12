@@ -2775,7 +2775,7 @@
     }
   },
   "colorPickerShareViaQr": "Share as QR code",
-  "qrShareTooLargeHint": "Too many colors to share as a QR code (use file sharing instead)",
+  "qrShareTooLargeHint": "Assets with images or settings too large for a QR code must be shared as files.",
   "colorPickerImportViaFile": "Choose a file",
   "colorPickerImportFailedSnackbar": "Failed to import: {error}",
   "@colorPickerImportFailedSnackbar": {
