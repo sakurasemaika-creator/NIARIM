@@ -2531,7 +2531,6 @@ Widget _receivedShareProjectTile(
   if (grid) {
     return Card(
       margin: EdgeInsets.zero,
-      color: theme.colorScheme.surfaceContainerLow,
       clipBehavior: Clip.antiAlias,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(14),
@@ -2972,7 +2971,6 @@ class _OutgoingSharesList extends StatelessWidget {
       if (grid) {
         return Card(
           margin: EdgeInsets.zero,
-          color: scheme.surfaceContainerLow,
           clipBehavior: Clip.antiAlias,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14),
@@ -3352,7 +3350,6 @@ class _FolderableList<T> extends StatelessWidget {
     final theme = Theme.of(context);
     return Card(
       key: ValueKey('collectionFolder_${folder.id}'),
-      color: theme.colorScheme.surfaceContainerLow,
       margin: EdgeInsets.zero,
       clipBehavior: Clip.antiAlias,
       shape: RoundedRectangleBorder(
