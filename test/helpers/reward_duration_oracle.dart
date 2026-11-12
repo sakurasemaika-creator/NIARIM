@@ -2,11 +2,11 @@ import 'dart:ui';
 
 import 'package:niarim/models/coin_unlock_quote.dart';
 
-/// 特典交換で選べる152通りの期間（1〜24時間・2〜6日・1〜3週間・1〜120か月）。
+/// 特典交換で選べる153通りの期間（1〜24時間・1〜6日・1〜3週間・1〜120か月）。
 /// 画面やモデルから取らず、仕様の範囲をここに書いてある。
 final List<CoinUnlockDuration> offeredRewardDurations = [
   for (var i = 1; i <= 24; i++) CoinUnlockDuration(i, CoinDurationUnit.hour),
-  for (var i = 2; i <= 6; i++) CoinUnlockDuration(i, CoinDurationUnit.day),
+  for (var i = 1; i <= 6; i++) CoinUnlockDuration(i, CoinDurationUnit.day),
   for (var i = 1; i <= 3; i++) CoinUnlockDuration(i, CoinDurationUnit.week),
   for (var i = 1; i <= 120; i++) CoinUnlockDuration(i, CoinDurationUnit.month),
 ];
@@ -57,6 +57,7 @@ const rewardDurationLanguages = <RewardDurationLanguage>[
     },
     pinned: {
       'hour_2': '2時間',
+      'day_1': '1日間',
       'day_2': '2日間',
       'week_1': '1週間',
       'month_1': '1か月',
@@ -77,6 +78,7 @@ const rewardDurationLanguages = <RewardDurationLanguage>[
     },
     pinned: {
       'hour_2': '2 hours',
+      'day_1': '1 day',
       'day_2': '2 days',
       'week_1': '1 week',
       'month_1': '1 month',
@@ -97,6 +99,7 @@ const rewardDurationLanguages = <RewardDurationLanguage>[
     },
     pinned: {
       'hour_2': '2 horas',
+      'day_1': '1 día',
       'day_2': '2 días',
       'week_1': '1 semana',
       'month_1': '1 mes',
@@ -118,6 +121,7 @@ const rewardDurationLanguages = <RewardDurationLanguage>[
     },
     pinned: {
       'hour_2': '2 heures',
+      'day_1': '1 jour',
       'day_2': '2 jours',
       'week_1': '1 semaine',
       'month_1': '1 mois',
@@ -139,6 +143,7 @@ const rewardDurationLanguages = <RewardDurationLanguage>[
     },
     pinned: {
       'hour_2': '2시간',
+      'day_1': '1일',
       'day_2': '2일',
       'week_1': '1주',
       'month_1': '1개월',
@@ -159,6 +164,7 @@ const rewardDurationLanguages = <RewardDurationLanguage>[
     },
     pinned: {
       'hour_2': '2小时',
+      'day_1': '1天',
       'day_2': '2天',
       'week_1': '1周',
       'month_1': '1个月',
@@ -179,6 +185,7 @@ const rewardDurationLanguages = <RewardDurationLanguage>[
     },
     pinned: {
       'hour_2': '2小時',
+      'day_1': '1天',
       'day_2': '2天',
       'week_1': '1週',
       'month_1': '1個月',
