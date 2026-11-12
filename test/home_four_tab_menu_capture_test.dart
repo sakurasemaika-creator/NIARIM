@@ -43,6 +43,7 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
     await loadAppFonts(tester);
+    late String workPath;
     await tester.runAsync(() async {
       final exports = await ExportEngine.exportsDir();
       final recorder = ui.PictureRecorder();
@@ -58,6 +59,7 @@ void main() {
       final data = await image.toByteData(format: ui.ImageByteFormat.png);
       image.dispose(); picture.dispose();
       final work = File(exports.path + '/ANIME_EP01.png');
+      workPath = work.path;
       await work.writeAsBytes(data!.buffer.asUint8List(), flush: true);
       final deleted = File(exports.path + '/ANIME_OLD.png');
       await deleted.writeAsBytes(await work.readAsBytes(), flush: true);
@@ -189,7 +191,7 @@ void main() {
     await tab(1);
     await tester.longPress(find.text('ANIME_EP01.png').first);
     await settle();
-    expect(find.byKey(Key('homeSelectedMarker_work_file:${(await ExportEngine.listExportedFiles()).first.path}')),
+    expect(find.byKey(Key('homeSelectedMarker_work_file:$workPath')),
         findsOneWidget);
     await shot('10_works_selected');
 
