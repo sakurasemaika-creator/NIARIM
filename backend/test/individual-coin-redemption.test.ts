@@ -49,7 +49,7 @@ describe("fail closed individual benefit redemption",()=>{
   it("charges only the server-computed fixed price, granting two account-owned rights atomically",async()=>{
     enable();
     const result=await redeemIndividualCoins("Naccount",{
-      ...input(),costCoins:1,accountId:"attacker",
+      ...input(), ...({costCoins:1,accountId:"attacker"} as Record<string,unknown>),
     });
     expect(JSON.parse(result.body??"{}")).toMatchObject({
       redeemed:true,costCoins:6230,duplicate:false,
