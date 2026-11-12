@@ -8,6 +8,7 @@ import 'package:provider/provider.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../models/stamp.dart';
 import '../../../services/export_share_service.dart';
+import '../../../services/shared_asset_card_service.dart';
 import '../../../services/stamp_service.dart';
 import '../../../widgets/labeled_slider.dart';
 import 'creative_folder_sheets.dart';
@@ -145,7 +146,7 @@ class _StampPanelState extends State<StampPanel> {
                         fontFamilyFallback: kHeadingFontFallback,
                       ),
                     ),
-                    onPressed: () => _importStamp(context, stampService),
+                    onPressed: () => SharedAssetCardService.pickAndImport(context, stampService: stampService),
                   ),
                 ],
               ),
@@ -336,13 +337,13 @@ class _StampPanelState extends State<StampPanel> {
                                     child: Text(l10n.creativePanelTagsLabel),
                                   ),
                                   PopupMenuItem(
-                                    value: 'export',
+                                    value: 'assetCard',
                                     // 書き出しと共有が終わるまで、同じ
                                     // スタンプをもう一度は書き出さない。
                                     enabled: !ExportShareService.isRunning(
                                       _exportKey(stamp),
                                     ),
-                                    child: Text(l10n.transferExport),
+                                    child: Text(SharedAssetCardService.exportMenuLabel(context)),
                                   ),
                                   if (!builtIn)
                                     PopupMenuItem(
@@ -437,7 +438,7 @@ class _StampPanelState extends State<StampPanel> {
           onSave: (tags) =>
               service.setTags(stamp.id, delocalizeAssetTags(l10n, tags)),
         );
-      case 'export':
+      case 'assetCard':
         _exportStamp(context, service, stamp);
       case 'delete':
         _deleteStamp(context, service, stamp);
@@ -531,7 +532,7 @@ class _StampPanelState extends State<StampPanel> {
   ) => ExportShareService.runExclusive(_exportKey(stamp), () async {
     final File file;
     try {
-      file = await service.exportStamp(stamp.id);
+      file = await SharedAssetCardService.exportStamp(service, stamp);
     } catch (e) {
       if (!context.mounted) return;
       final l10n = AppLocalizations.of(context)!;
@@ -541,7 +542,7 @@ class _StampPanelState extends State<StampPanel> {
       return;
     }
     if (!context.mounted) return;
-    await shareExportedFileWithNotice(context, file);
+    await SharedAssetCardService.showExportResult(context, file);
   });
 }
 

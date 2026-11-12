@@ -9,6 +9,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../../models/brush.dart';
 import '../../../services/brush_service.dart';
 import '../../../services/export_share_service.dart';
+import '../../../services/shared_asset_card_service.dart';
 import '../../../services/settings_service.dart';
 import '../../../widgets/labeled_slider.dart';
 import '../../../widgets/preset_stroke_row.dart';
@@ -173,7 +174,7 @@ class _BrushPanelState extends State<BrushPanel> {
                         fontFamilyFallback: kHeadingFontFallback,
                       ),
                     ),
-                    onPressed: () => _showBrushImportOptions(context, brushService),
+                    onPressed: () => SharedAssetCardService.pickAndImport(context, brushService: brushService),
                   ),
                 ],
               ),
@@ -377,17 +378,13 @@ class _BrushPanelState extends State<BrushPanel> {
                                     child: Text(l10n.creativePanelTagsLabel),
                                   ),
                                   PopupMenuItem(
-                                    value: 'export',
+                                    value: 'assetCard',
                                     // 書き出しと共有が終わるまで、同じ
                                     // ブラシをもう一度は書き出さない。
                                     enabled: !ExportShareService.isRunning(
                                       _exportKey(brush),
                                     ),
-                                    child: Text(l10n.transferExport),
-                                  ),
-                                  PopupMenuItem(
-                                    value: 'qr',
-                                    child: Text(l10n.colorPickerShareViaQr),
+                                    child: Text(SharedAssetCardService.exportMenuLabel(context)),
                                   ),
                                   // 組み込みブラシは、キャンバスで変えて
                                   // 覚えた太さ・不透明度を既定へ戻せる。
@@ -508,10 +505,8 @@ class _BrushPanelState extends State<BrushPanel> {
           onSave: (tags) =>
               service.setTags(brush.id, delocalizeAssetTags(l10n, tags)),
         );
-      case 'export':
+      case 'assetCard':
         _exportBrush(context, service, brush);
-      case 'qr':
-        _shareBrushQr(context, service, brush);
       case 'delete':
         _deleteBrush(context, service, brush);
     }
@@ -701,7 +696,7 @@ class _BrushPanelState extends State<BrushPanel> {
     final l10n = AppLocalizations.of(context)!;
     final File file;
     try {
-      file = await service.exportBrush(brush.id);
+      file = await SharedAssetCardService.exportBrush(service, brush);
     } catch (e) {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -710,7 +705,7 @@ class _BrushPanelState extends State<BrushPanel> {
       return;
     }
     if (!context.mounted) return;
-    await shareExportedFileWithNotice(context, file);
+    await SharedAssetCardService.showExportResult(context, file);
   });
 }
 

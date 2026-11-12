@@ -8,6 +8,7 @@ import 'package:provider/provider.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../models/tone.dart';
 import '../../../services/export_share_service.dart';
+import '../../../services/shared_asset_card_service.dart';
 import '../../../services/brush_service.dart';
 import '../../../services/tone_service.dart';
 import 'creative_folder_sheets.dart';
@@ -145,7 +146,7 @@ class _TonePanelState extends State<TonePanel> {
                         fontFamilyFallback: kHeadingFontFallback,
                       ),
                     ),
-                    onPressed: () => _importTone(context, toneService),
+                    onPressed: () => SharedAssetCardService.pickAndImport(context, toneService: toneService),
                   ),
                 ],
               ),
@@ -336,13 +337,13 @@ class _TonePanelState extends State<TonePanel> {
                                     child: Text(l10n.creativePanelTagsLabel),
                                   ),
                                   PopupMenuItem(
-                                    value: 'export',
+                                    value: 'assetCard',
                                     // 書き出しと共有が終わるまで、同じ
                                     // トーンをもう一度は書き出さない。
                                     enabled: !ExportShareService.isRunning(
                                       _exportKey(tone),
                                     ),
-                                    child: Text(l10n.transferExport),
+                                    child: Text(SharedAssetCardService.exportMenuLabel(context)),
                                   ),
                                   if (!builtIn)
                                     PopupMenuItem(
@@ -437,7 +438,7 @@ class _TonePanelState extends State<TonePanel> {
           onSave: (tags) =>
               service.setTags(tone.id, delocalizeAssetTags(l10n, tags)),
         );
-      case 'export':
+      case 'assetCard':
         _exportTone(context, service, tone);
       case 'delete':
         _deleteTone(context, service, tone);
@@ -530,7 +531,7 @@ class _TonePanelState extends State<TonePanel> {
   ) => ExportShareService.runExclusive(_exportKey(tone), () async {
     final File file;
     try {
-      file = await service.exportTone(tone.id);
+      file = await SharedAssetCardService.exportTone(service, tone);
     } catch (e) {
       if (!context.mounted) return;
       final l10n = AppLocalizations.of(context)!;
@@ -540,7 +541,7 @@ class _TonePanelState extends State<TonePanel> {
       return;
     }
     if (!context.mounted) return;
-    await shareExportedFileWithNotice(context, file);
+    await SharedAssetCardService.showExportResult(context, file);
   });
 }
 
