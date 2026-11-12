@@ -643,7 +643,9 @@ class _HomeScreenState extends State<HomeScreen>
                             ? null : _cutSelectedLibrary),
                   onCopy: _selectedIds.isEmpty ? null :
                       (_currentTabIndex == 0 ? _copySelected :
-                        _selectedIds.length == 1 ? _copySelectedLibrary : null),
+                        _selectedIds.length != 1 ? null :
+                        _currentTabIndex == 3 ? _copySelectedTrash :
+                        _copySelectedLibrary),
                   onTrash: _selectedIds.isEmpty ? null :
                       (_currentTabIndex == 0 ? _deleteSelected :
                         _currentTabIndex == 3 ? _restoreSelectedTrash :
@@ -921,6 +923,51 @@ class _HomeScreenState extends State<HomeScreen>
   void _copySelectedLibrary() {
     final entry = _singleLibrarySelection();
     if (entry == null) return;
+    _copyLibraryEntry(entry);
+    _endProjectSelection();
+  }
+
+  Future<void> _copySelectedTrash() async {
+    if (_selectedIds.length != 1) return;
+    final id = _selectedIds.first;
+    final ps = context.read<ProjectService>();
+    HomeClipboardEntry? entry;
+    if (id.startsWith('trash_project:')) {
+      final projectId = id.substring('trash_project:'.length);
+      final project = ps.trash.where((p) => p.id == projectId).firstOrNull;
+      if (project != null) {
+        entry = HomeClipboardEntry(
+          source: HomePasteArea.trash, id: projectId, name: project.name,
+          originalArea: project.isSharedImport
+              ? HomePasteArea.received : HomePasteArea.projects,
+        );
+      }
+    } else if (id.startsWith('trash_folder:')) {
+      final folderId = id.substring('trash_folder:'.length);
+      final folder = ps.trashedFolders
+          .where((f) => f.folder.id == folderId).firstOrNull;
+      if (folder != null) {
+        entry = HomeClipboardEntry(
+          source: HomePasteArea.trash, id: folderId,
+          name: folder.folder.name, isFolder: true,
+          originalArea: folder.isShared
+              ? HomePasteArea.received : HomePasteArea.projects,
+        );
+      }
+    } else if (id.startsWith('trash_local:')) {
+      final localId = id.substring('trash_local:'.length);
+      final items = await LocalFileTrashService.list();
+      final local = items.where((e) => e.id == localId).firstOrNull;
+      if (local != null) {
+        entry = HomeClipboardEntry(
+          source: HomePasteArea.trash, id: local.id,
+          name: local.fileName, isFolder: local.isFolder,
+          originalArea: local.kind == LocalTrashKind.outgoingShare
+              ? HomePasteArea.outgoing : HomePasteArea.works,
+        );
+      }
+    }
+    if (entry == null || !mounted) return;
     _copyLibraryEntry(entry);
     _endProjectSelection();
   }
