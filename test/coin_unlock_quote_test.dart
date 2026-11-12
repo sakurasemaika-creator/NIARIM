@@ -15,6 +15,7 @@ void main() {
 
   test('時間・日・週・月の境界を共通期間で扱う', () {
     expect(const CoinUnlockDuration(24, CoinDurationUnit.hour).isValid, isTrue);
+    expect(const CoinUnlockDuration(1, CoinDurationUnit.day).isValid, isTrue);
     expect(const CoinUnlockDuration(2, CoinDurationUnit.day).isValid, isTrue);
     expect(const CoinUnlockDuration(6, CoinDurationUnit.day).isValid, isTrue);
     expect(const CoinUnlockDuration(1, CoinDurationUnit.week).isValid, isTrue);
