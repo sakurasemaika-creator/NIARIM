@@ -19,7 +19,7 @@ void main() {
     for (final id in [
       'Tone0007', 'Tone0008', 'Tone0009',
       'Tone0010', 'Tone0011', 'Tone0012', 'Tone0013',
-      'Tone0014', 'Tone0015', 'Tone0048', 'Tone0049',
+      'Tone0014', 'Tone0015', 'Tone0048', 'Tone0049', 'Tone0065',
     ]) {
       expect(byId.containsKey(id), true, reason: 'missing tone $id');
     }
