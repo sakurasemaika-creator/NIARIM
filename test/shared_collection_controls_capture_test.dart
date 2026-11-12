@@ -108,12 +108,16 @@ void main() {
 
     appRouter.go('/shared');
     await settle();
+    // Received shares default to the same small-tile grid as Projects.
+    expect(find.byType(SliverGrid), findsWidgets);
     expect(find.byType(CollectionFavoriteButton), findsWidgets);
     expect(find.byType(PopupMenuButton<String>), findsWidgets);
     await capture('sp_360x760_20_received_share_with_action_buttons');
 
     await tester.tap(find.byKey(const Key('sharedOutgoingFilter')));
     await settle();
+    // Outgoing .niashare archives also default to tiled presentation.
+    expect(find.byType(GridView), findsOneWidget);
     expect(find.byType(CollectionFavoriteButton), findsWidgets);
     expect(find.byType(PopupMenuButton<String>), findsWidgets);
     await capture('sp_360x760_21_outgoing_share_with_action_buttons');
