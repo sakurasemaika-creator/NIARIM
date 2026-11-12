@@ -2175,9 +2175,11 @@ class TrashScreen extends StatefulWidget {
   const TrashScreen({
     super.key, this.embedded = false, this.onCopyEntry,
     this.screenFocus,
+    this.searchQuery = '',
   });
 
   final bool embedded;
+  final String searchQuery;
   final ValueChanged<HomeClipboardEntry>? onCopyEntry;
 
   /// ホームの画面のフォーカス（保存先を読めなかった知らせが消えたとき、
@@ -2269,6 +2271,7 @@ class _TrashScreenState extends State<TrashScreen> {
                 key: ValueKey('trash-list-version-$version'),
                 sortMode: _sortMode,
                 selectedKinds: _selectedKinds,
+                searchQuery: widget.searchQuery,
                 onCopyEntry: widget.onCopyEntry,
                 screenFocus: widget.screenFocus,
               ),
@@ -3444,12 +3447,14 @@ class _TrashTab extends StatefulWidget {
     super.key,
     required this.sortMode,
     required this.selectedKinds,
+    this.searchQuery = '',
     this.onCopyEntry,
     this.screenFocus,
   });
 
   final ProjectSortMode sortMode;
   final Set<TrashEntryKind> selectedKinds;
+  final String searchQuery;
   final ValueChanged<HomeClipboardEntry>? onCopyEntry;
   final FocusNode? screenFocus;
 
@@ -3912,6 +3917,12 @@ class _TrashTabState extends State<_TrashTab> {
             kind: kind, project: null, folder: null, local: local,
             deletedAt: local.deletedAt, name: local.fileName,
           ));
+        }
+        final query = widget.searchQuery.trim().toLowerCase();
+        if (query.isNotEmpty) {
+          rows.removeWhere((row) =>
+              !row.name.toLowerCase().contains(query) &&
+              !_trashKindLabel(context, row.kind).toLowerCase().contains(query));
         }
         rows.sort((a, b) => switch (widget.sortMode) {
           ProjectSortMode.nameAsc => a.name.compareTo(b.name),
