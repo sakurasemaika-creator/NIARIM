@@ -219,20 +219,20 @@ class ExportedWorkCard extends StatelessWidget {
                   fit: StackFit.expand,
                   children: [
                     thumbnail(),
+                    // Keep grid actions in the same corners as Projects:
+                    // menu at top-right, favorite at bottom-left.
                     Positioned(
                       top: 4,
                       right: 4,
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          if (onToggleFavorite != null) ...[
-                            favorite(),
-                            const SizedBox(width: 4),
-                          ],
-                          menu(),
-                        ],
-                      ),
+                      child: menu(),
                     ),
+                    if (onToggleFavorite != null)
+                      Positioned(
+                        key: const Key('exportedWorkGridFavoriteBottomLeft'),
+                        bottom: 4,
+                        left: 4,
+                        child: favorite(),
+                      ),
                   ],
                 ),
               ),
