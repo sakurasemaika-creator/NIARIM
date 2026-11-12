@@ -2774,7 +2774,7 @@
     }
   },
   "colorPickerShareViaQr": "以QR碼分享",
-  "qrShareTooLargeHint": "顏色過多，無法以QR碼分享（請使用檔案分享）",
+  "qrShareTooLargeHint": "包含圖片或資料量過大的素材無法透過 QR 碼分享，請使用檔案分享。",
   "colorPickerImportViaFile": "從檔案選擇",
   "colorPickerImportFailedSnackbar": "匯入失敗：{error}",
   "@colorPickerImportFailedSnackbar": {
