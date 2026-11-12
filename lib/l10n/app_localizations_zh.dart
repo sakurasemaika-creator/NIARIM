@@ -6338,7 +6338,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get colorPickerShareViaQr => '以二维码分享';
 
   @override
-  String get qrShareTooLargeHint => '颜色过多，无法以二维码分享（请使用文件分享）';
+  String get qrShareTooLargeHint => '包含图片或数据量过大的素材无法通过二维码分享，请使用文件分享。';
 
   @override
   String get colorPickerImportViaFile => '从文件选择';
@@ -15519,7 +15519,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get colorPickerShareViaQr => '以QR碼分享';
 
   @override
-  String get qrShareTooLargeHint => '顏色過多，無法以QR碼分享（請使用檔案分享）';
+  String get qrShareTooLargeHint => '包含圖片或資料量過大的素材無法透過 QR 碼分享，請使用檔案分享。';
 
   @override
   String get colorPickerImportViaFile => '從檔案選擇';
