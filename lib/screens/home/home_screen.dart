@@ -3150,6 +3150,13 @@ class _OutgoingSharesList extends StatelessWidget {
       final l10n = AppLocalizations.of(context)!;
       final scheme = Theme.of(context).colorScheme;
       final isFavorite = service.isOutgoingShareFavorite(entry.path);
+      final selection = HomeCollectionSelectionScope.maybeOf(context);
+      final selectionId = 'outgoing_file:${entry.path}';
+      final selecting = selection?.active ?? false;
+      final onTap = selecting ? () => selection!.onToggle(selectionId)
+          : () => shareSavedNiashare(context, entry.path);
+      final onLongPress = selection == null
+          ? null : () => selection.onLongPress(selectionId);
       final subtitle =
           '${entry.updatedAt.year}/${entry.updatedAt.month.toString().padLeft(2, '0')}/'
           '${entry.updatedAt.day.toString().padLeft(2, '0')}  ·  '
@@ -3210,7 +3217,9 @@ class _OutgoingSharesList extends StatelessWidget {
         ],
       );
       if (grid) {
-        return collectionTileShadow(context, Card(
+        return HomeCollectionSelectionSurface(
+          selectionId: selectionId,
+          child: collectionTileShadow(context, Card(
           margin: EdgeInsets.zero,
       elevation: 0,
           clipBehavior: Clip.antiAlias,
@@ -3219,7 +3228,8 @@ class _OutgoingSharesList extends StatelessWidget {
         side: const BorderSide(color: Colors.transparent, width: 2),
           ),
           child: InkWell(
-            onTap: () => shareSavedNiashare(context, entry.path),
+            onTap: onTap,
+            onLongPress: onLongPress,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -3231,17 +3241,23 @@ class _OutgoingSharesList extends StatelessWidget {
                       child: const Center(child: Icon(
                         Icons.insert_drive_file_outlined, size: 52)),
                     ),
-                    Positioned(top: 4, right: 4, child: menuAction),
-                    Positioned(bottom: 4, left: 4, child: favoriteAction),
+                    if (!selecting)
+                      Positioned(top: 4, right: 4, child: menuAction),
+                    if (!selecting)
+                      Positioned(bottom: 4, left: 4, child: favoriteAction),
                   ],
                 )),
                 collectionTileCaption(context, entry.name),
               ],
             ),
           ),
-        ));
+        )),
+        );
       }
-      return Card(
+      return HomeCollectionSelectionSurface(
+        selectionId: selectionId,
+        grid: false,
+        child: Card(
         margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         color: scheme.surfaceContainerLow,
         child: ListTile(
@@ -3251,8 +3267,10 @@ class _OutgoingSharesList extends StatelessWidget {
             fontFamilyFallback: kHeadingFontFallback,
           )),
           subtitle: Text(subtitle),
-          onTap: () => shareSavedNiashare(context, entry.path),
-          trailing: actions,
+          onTap: onTap,
+          onLongPress: onLongPress,
+          trailing: selecting ? null : actions,
+        ),
         ),
       );
     }
