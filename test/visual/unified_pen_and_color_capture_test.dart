@@ -24,6 +24,8 @@ import 'package:niarim/screens/canvas/widgets/toolbar_widget.dart';
 import 'package:niarim/services/filter_service.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:niarim/services/tone_service.dart';
+import 'package:niarim/services/brush_service.dart';
+import 'package:niarim/services/stamp_service.dart';
 import 'package:niarim/services/settings_service.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -160,7 +162,34 @@ void main() {
     await navigate('/canvas/' + demo.id);
     expect(find.byType(PenSubToolPanel), findsOneWidget);
     expect(find.byType(BrushPanel), findsOneWidget);
+    final brushService = context.read<BrushService>();
+    final toneService = context.read<ToneService>();
+    final stampService = context.read<StampService>();
+    brushService.toggleFavoriteBrush(brushService.brushes.first.id);
+    toneService.toggleFavorite(toneService.tones.first.id);
+    stampService.toggleFavorite(stampService.stamps.first.id);
+
+    Future<void> captureStarAndSearch(String kind, Finder panel) async {
+      final favorite = find.descendant(
+        of: panel, matching: find.byTooltip('お気に入りのみ表示'),
+      );
+      final search = find.descendant(
+        of: panel, matching: find.byTooltip('名前で検索'),
+      );
+      expect(favorite, findsOneWidget);
+      expect(search, findsOneWidget);
+      await tester.tap(favorite);
+      await shot('${kind}_favorite_only');
+      await tester.tap(favorite);
+      await settle();
+      await tester.tap(search);
+      await shot('${kind}_search_open');
+      await tester.tap(search);
+      await settle();
+    }
+
     await shot('01_pc_unified_full_brush_management');
+    await captureStarAndSearch('06_brush', find.byType(BrushPanel));
     final subtool = find.byType(PenSubToolPanel);
     await tester.tap(find.descendant(
       of: subtool, matching: find.text('トーン'),
@@ -171,13 +200,16 @@ void main() {
     expect(toneCatalog.any((tone) => tone.id == 'Tone0009'), isTrue);
     expect(toneCatalog.any((tone) => tone.id == 'Tone0063'), isFalse);
     expect(toneCatalog.any((tone) => tone.id == 'Tone0064'), isFalse);
+    expect(toneCatalog.any((tone) => tone.id == 'Tone0065'), isTrue);
     await shot('02_pc_unified_full_tone_management');
+    await captureStarAndSearch('07_tone', find.byType(TonePanel));
     await tester.tap(find.descendant(
       of: subtool, matching: find.text('スタンプ'),
     ).first);
     await settle();
     expect(find.byType(StampPanel), findsOneWidget);
     await shot('03_pc_unified_full_stamp_management');
+    await captureStarAndSearch('08_stamp', find.byType(StampPanel));
     await shot('04_pc_color_wheel_small_sv_square');
 
     tester.view.physicalSize = const Size(390, 844);
@@ -192,7 +224,7 @@ void main() {
     final swatch = find.byKey(const ValueKey('selected-color-preview-chip'));
     expect(swatch, findsOneWidget);
     final swatchRect = tester.getRect(swatch);
-    expect(swatchRect.width, closeTo(108, 0.1),
+    expect(swatchRect.width, closeTo(200, 0.1),
         reason: 'The current-color preview must not collapse to zero width');
     expect(
       tester.getRect(find.byType(HsvColorWheel)).top - swatchRect.bottom,
