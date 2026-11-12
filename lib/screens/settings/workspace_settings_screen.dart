@@ -283,7 +283,7 @@ class WorkspaceSettingsScreen extends StatelessWidget {
               color: Theme.of(context).colorScheme.surfaceContainerLow,
               child: Column(
                 children: [
-                  for (final panel in CanvasDockPanel.values)
+                  for (final panel in CanvasDockPanel.values.where((p) => !isLegacyMaterialDock(p)))
                     CheckboxListTile(
                       dense: true,
                       title: Text(_dockPanelLabel(l10n, panel)),
