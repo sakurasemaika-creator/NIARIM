@@ -111,6 +111,7 @@ export function premiumFlexibleOffer(
   const coins = finalBenefitCostCoins("fullPremium",duration,quantity);
   return {
     enabled, target:"fullPremium" as const, duration, quantity,
+    ...(duration==="month"?{months:quantity}:{}),
     catalogPriceCoins:coins,
     priceCoins:enabled?coins:null,
     priceVersion:enabled?COIN_BENEFIT_PRICE_VERSION:null,
