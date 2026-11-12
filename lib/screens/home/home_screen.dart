@@ -130,7 +130,46 @@ class _HomeScreenState extends State<HomeScreen>
   static const _worksViewModeKey = 'home.worksViewMode.v1';
   ProjectViewMode? _userViewMode;
   // Preserve the existing full-height list cover until a view size is chosen.
-  ProjectViewMode _worksViewMode = ProjectViewMode.detail;
+  ProjectViewMode? _worksViewMode;
+  ProjectViewMode? _sharedViewMode;
+  static const _sharedViewModeKey = 'home.sharedViewMode.v1';
+
+  ProjectViewMode _defaultCollectionViewMode(BuildContext context) =>
+      switch (tileScreenClassForWidth(MediaQuery.sizeOf(context).width)) {
+        TileScreenClass.phone => ProjectViewMode.small,
+        TileScreenClass.tablet => ProjectViewMode.medium,
+        TileScreenClass.desktop => ProjectViewMode.large,
+      };
+  ProjectViewMode _effectiveWorksViewMode(BuildContext context) =>
+      _worksViewMode ?? _defaultCollectionViewMode(context);
+  ProjectViewMode _effectiveSharedViewMode(BuildContext context) =>
+      _sharedViewMode ?? _defaultCollectionViewMode(context);
+
+  Future<void> _selectSharedViewMode(ProjectViewMode mode) async {
+    setState(() => _sharedViewMode = mode);
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_sharedViewModeKey, mode.name);
+    } catch (error) {
+      debugPrint('Shared tile preference could not be saved: $error');
+    }
+  }
+
+  Future<void> _loadSharedViewMode() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final stored = prefs.getString(_sharedViewModeKey);
+      if (!mounted || stored == null) return;
+      for (final mode in ProjectViewMode.values) {
+        if (mode.name == stored) {
+          setState(() => _sharedViewMode = mode);
+          return;
+        }
+      }
+    } catch (error) {
+      debugPrint('Shared tile preference could not be restored: $error');
+    }
+  }
 
   Future<void> _selectWorksViewMode(ProjectViewMode mode) async {
     setState(() => _worksViewMode = mode);
@@ -237,11 +276,9 @@ class _HomeScreenState extends State<HomeScreen>
         final wasSearching = _isSearching;
         setState(() {
           _currentTabIndex = _tabController.index;
-          if (_currentTabIndex != 0) {
-            _selectedIds.clear();
-            _isSelectionMode = false;
-            _resetProjectSearch();
-          }
+          _selectedIds.clear();
+          _isSelectionMode = false;
+          _resetProjectSearch();
         });
         if (wasSearching && _currentTabIndex != 0) {
           _homeFocus.requestFocus();
@@ -250,6 +287,7 @@ class _HomeScreenState extends State<HomeScreen>
     });
     _loadProjectViewMode();
     _loadWorksViewMode();
+    _loadSharedViewMode();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _checkFirstLaunch();
       _initShareIntentHandling();
@@ -436,58 +474,40 @@ class _HomeScreenState extends State<HomeScreen>
               tooltip: l10n.homeBackToSplashTooltip,
               onPressed: () => context.go('/'),
             ),
-            title: _currentTabIndex != 0
-                ? Text(
-                    switch (_currentTabIndex) {
-                      1 => l10n.homeTabWorks,
-                      2 => l10n.homeTabShared,
-                      3 => l10n.homeTabTrash,
-                      _ => l10n.homeTabProjects,
-                    },
-                  )
-                : _isSearching
+            title: _isSearching
                 ? Row(
                     children: [
-                      // The icon always represents the mode we can switch TO:
-                      // keyword mode -> tag icon, tag mode -> search icon.
-                      IconButton(
-                        icon: Icon(
-                          _searchByTag ? Icons.search : Icons.sell_outlined,
+                      if (_currentTabIndex == 0)
+                        IconButton(
+                          key: const Key('homeSearchTagToggle'),
+                          icon: Icon(_searchByTag
+                              ? Icons.search : Icons.sell_outlined),
+                          tooltip: _searchByTag
+                              ? l10n.homeSearchHint
+                              : l10n.projectDetailTagsQuickAction,
+                          onPressed: () {
+                            _changeProjectScope(
+                              () => _searchByTag = !_searchByTag,
+                            );
+                            _searchFocus.requestFocus();
+                          },
                         ),
-                        tooltip: _searchByTag
-                            ? l10n.homeSearchHint
-                            : l10n.projectDetailTagsQuickAction,
-                        // マウス・ペンで押すと欄の外を押したことになり入力が
-                        // 外れるので、欄へ戻して打ち続けられるようにする。
-                        onPressed: () {
-                          _changeProjectScope(
-                            () => _searchByTag = !_searchByTag,
-                          );
-                          _searchFocus.requestFocus();
-                        },
-                      ),
                       Expanded(
-                        // 入力中のEscも検索を閉じる（画面のショートカットは
-                        // 入力欄にフォーカスがある間は動かない）。
                         child: CallbackShortcuts(
                           bindings: {_escapeOnce: _closeProjectSearch},
                           child: TextField(
+                            key: const Key('homeSearchInput'),
                             controller: _searchController,
                             focusNode: _searchFocus,
                             decoration: InputDecoration(
-                              hintText: _searchByTag
+                              hintText: _currentTabIndex == 0 && _searchByTag
                                   ? l10n.projectDetailTagsQuickAction
                                   : l10n.homeSearchHint,
                               border: InputBorder.none,
                             ),
                             onChanged: (v) =>
                                 _changeProjectScope(() => _searchQuery = v),
-                            // Enterで入力を終えたら画面のショートカットへ戻す
-                            // （検索は開いたまま）。
                             onEditingComplete: _homeFocus.requestFocus,
-                            // マウス・ペンで欄の外を押したときも同じ。指で
-                            // 外を触っただけでは入力を続ける（Androidの
-                            // 標準の振る舞い）。
                             onTapOutside: (event) {
                               if (event.kind != PointerDeviceKind.touch &&
                                   _searchFocus.hasFocus) {
@@ -499,7 +519,14 @@ class _HomeScreenState extends State<HomeScreen>
                       ),
                     ],
                   )
-                : Text(l10n.homeTabProjects),
+                : Text(
+                    switch (_currentTabIndex) {
+                      1 => l10n.homeTabWorks,
+                      2 => l10n.homeTabShared,
+                      3 => l10n.homeTabTrash,
+                      _ => l10n.homeTabProjects,
+                    },
+                  ),
             actions: [
               if (_hasClipboard)
                 IconButton(
@@ -511,20 +538,29 @@ class _HomeScreenState extends State<HomeScreen>
                   ),
                   onPressed: _pasting ? null : _pasteClipboard,
                 ),
-              if (_currentTabIndex == 0 || _currentTabIndex == 1) ...[
-                if (_currentTabIndex == 0 && _isSearching)
-                  IconButton(
-                    icon: const Icon(Icons.close),
-                    tooltip: l10n.commonClose,
-                    onPressed: _closeProjectSearch,
-                  )
-                else ...[
+              if (_isSearching)
+                IconButton(
+                  key: const Key('homeSearchCloseButton'),
+                  icon: const Icon(Icons.close),
+                  tooltip: l10n.commonClose,
+                  onPressed: _closeProjectSearch,
+                )
+              else ...[
+                if (_currentTabIndex <= 2)
                   PopupMenuButton<ProjectViewMode>(
                     key: const Key('homeCollectionViewModeMenu'),
                     icon: const Icon(Icons.view_module),
                     tooltip: l10n.homeViewModeTooltip,
-                    onSelected: _currentTabIndex == 0
-                        ? _selectProjectViewMode : _selectWorksViewMode,
+                    onSelected: (mode) {
+                      switch (_currentTabIndex) {
+                        case 0:
+                          _selectProjectViewMode(mode);
+                        case 1:
+                          _selectWorksViewMode(mode);
+                        case 2:
+                          _selectSharedViewMode(mode);
+                      }
+                    },
                     itemBuilder: (_) => [
                       PopupMenuItem(
                         value: ProjectViewMode.large,
@@ -544,13 +580,12 @@ class _HomeScreenState extends State<HomeScreen>
                       ),
                     ],
                   ),
-                  if (_currentTabIndex == 0)
-                    IconButton(
-                      icon: const Icon(Icons.search),
-                      tooltip: l10n.commonSearch,
-                      onPressed: _openProjectSearch,
-                    ),
-                ],
+                IconButton(
+                  key: const Key('homeSearchButton'),
+                  icon: const Icon(Icons.search),
+                  tooltip: l10n.commonSearch,
+                  onPressed: _openProjectSearch,
+                ),
               ],
               IconButton(
                 key: const Key('homeMenuButton'),
@@ -702,14 +737,20 @@ class _HomeScreenState extends State<HomeScreen>
                     ),
                     _WorksTab(
                       key: const PageStorageKey('home-works'),
-                      viewMode: _worksViewMode,
+                      viewMode: _effectiveWorksViewMode(context),
                       onViewModeChanged: _selectWorksViewMode,
+                      searchQuery: _currentTabIndex == 1 && _isSearching
+                          ? _searchQuery : '',
                       onCopyEntry: _copyLibraryEntry,
                     ),
                     SharedScreen(
                       key: const PageStorageKey('home-shared'),
                       embedded: true,
                       screenFocus: _homeFocus,
+                      viewMode: _effectiveSharedViewMode(context),
+                      onViewModeChanged: _selectSharedViewMode,
+                      searchQuery: _currentTabIndex == 2 && _isSearching
+                          ? _searchQuery : '',
                       onDirectionChanged: (outgoing) =>
                           setState(() => _sharedOutgoing = outgoing),
                       onCopyEntry: _copyLibraryEntry,
@@ -717,6 +758,8 @@ class _HomeScreenState extends State<HomeScreen>
                     TrashScreen(
                       key: const PageStorageKey('home-trash'),
                       embedded: true,
+                      searchQuery: _currentTabIndex == 3 && _isSearching
+                          ? _searchQuery : '',
                       screenFocus: _homeFocus,
                       onCopyEntry: _copyLibraryEntry,
                     ),
@@ -754,8 +797,9 @@ class _HomeScreenState extends State<HomeScreen>
   }
 
   bool get _hasLocalBackScope =>
-      _currentTabIndex == 0 &&
-      (_isSelectionMode || _isSearching || _currentFolderId != null);
+      _isSearching ||
+      (_currentTabIndex == 0 &&
+          (_isSelectionMode || _currentFolderId != null));
 
   bool _handleLocalBack() {
     // A dialog or pushed page owns Back until it closes.
