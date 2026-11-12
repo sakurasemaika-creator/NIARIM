@@ -95,6 +95,7 @@ class _TonePanelState extends State<TonePanel> {
     return PanelSurface(
       width: 280,
       height: widget.embeddedHeight ?? 460,
+      embedded: widget.embedded,
       child: Padding(
         padding: const EdgeInsets.all(12),
         child: Column(
