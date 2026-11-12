@@ -1725,7 +1725,7 @@ class AppLocalizationsFr extends AppLocalizations {
       'Un clip audio placé sur la timeline peut avoir son volume et ses durées de fondu d\'entrée et de sortie ajustés depuis sa fiche détaillée. Utile pour équilibrer le volume des effets sonores et de la musique, ou adoucir le début et la fin d\'un morceau.';
 
   @override
-  String get helpPenSubToolTitle => 'Sous-outils du stylet';
+  String get helpPenSubToolTitle => 'Stylet';
 
   @override
   String get helpPenSubToolDesc =>
@@ -2555,7 +2555,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get creativePanelFolderButton => 'Dossier';
 
   @override
-  String get creativePanelCreateButton => 'Créer';
+  String get creativePanelCreateButton => 'Nouveau';
 
   @override
   String get creativePanelImportButton => 'Importer';
@@ -5906,7 +5906,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get workspaceDockPanelStamp => 'Tampon';
 
   @override
-  String get workspaceDockPanelPenSubTool => 'Sous-outil crayon';
+  String get workspaceDockPanelPenSubTool => 'Stylet';
 
   @override
   String get workspaceDockPanelOnionSkin => 'Pelure d’oignon';
