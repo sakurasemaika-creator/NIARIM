@@ -400,7 +400,7 @@ class SettingsService extends ChangeNotifier {
     _desktopPanelHeights.clear();
     _collapsedDesktopDocks.clear();
     _defaultDockedPanels = {
-      CanvasDockPanel.brush,
+      CanvasDockPanel.penSubTool,
       CanvasDockPanel.colorPicker,
       CanvasDockPanel.layer,
     };
