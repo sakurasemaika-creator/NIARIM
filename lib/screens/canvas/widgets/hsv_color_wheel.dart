@@ -49,7 +49,7 @@ class HsvColorWheel extends StatelessWidget {
   });
 
   double get _ringThickness => size * 0.14;
-  double get _squareSize => (size - _ringThickness * 2) * 0.72;
+  double get _squareSize => (size - _ringThickness * 2) * 0.69;
 
   @override
   Widget build(BuildContext context) {
