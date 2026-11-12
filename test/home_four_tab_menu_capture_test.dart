@@ -106,7 +106,7 @@ void main() {
       final boundary = boundaryKey.currentContext!.findRenderObject()
           as RenderRepaintBoundary;
       final bytes = await tester.runAsync(() async {
-        final image = await boundary.toImage(pixelRatio: 1);
+        final image = await boundary.toImage(pixelRatio: 3);
         final data = await image.toByteData(format: ui.ImageByteFormat.png);
         image.dispose();
         return data!.buffer.asUint8List();
