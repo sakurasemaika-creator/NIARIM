@@ -19,7 +19,7 @@ import '../../../utils/reorder_index.dart';
 import 'asset_search_bar.dart';
 import 'asset_tag_dialog.dart';
 import '../../../widgets/asset_tag_label.dart';
-import '../../../widgets/stroke_sample_preview.dart';
+import '../../../widgets/preset_stroke_row.dart';
 
 /// トーンの全機能管理パネル（一覧・お気に入り・検索・
 /// 自作トーン・読み込み・書き出し・フォルダ管理）。ブラシパネルと同構成。
@@ -260,28 +260,12 @@ class _TonePanelState extends State<TonePanel> {
                         // プリインストールのトーンは編集・削除できない
                         // （複製したものは複製元とは別IDになるため編集・削除可能）。
                         final builtIn = toneService.isBuiltIn(tone.id);
-                        return ListTile(
+                        return PresetStrokeRow(
                           key: ValueKey(tone.id),
-                          dense: true,
+                          name: tone.name,
+                          color: context.watch<BrushService>().currentColor,
+                          tone: tone,
                           selected: isSelected,
-                          // 色は一覧の行の決まりに任せる（選んだ行は選択色の
-                          // 上の文字色。差し色を直接渡すと、選択色と同じ色の
-                          // テーマでアイコンが見えなくなる）。
-                          leading: const Icon(Icons.texture, size: 16),
-                          title: Text(
-                            tone.name,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              fontSize: 13,
-                              fontFamily: 'Kuramubon',
-                              fontFamilyFallback: kHeadingFontFallback,
-                            ),
-                          ),
-                          subtitle: StrokeSamplePreview(
-                            tone: tone,
-                            color: context.watch<BrushService>().currentColor,
-                          ),
                           trailing: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
