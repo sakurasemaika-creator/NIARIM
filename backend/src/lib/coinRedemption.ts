@@ -23,9 +23,7 @@ export function premiumRedemptionOffer(): PremiumRedemptionOffer {
   const raw = process.env.COIN_FULL_PREMIUM_MONTH_COINS ?? "";
   const amount = Number(raw);
   const version = process.env.COIN_PRICE_VERSION ?? "";
-  const approved = process.env.COIN_REDEMPTION_REVIEW_APPROVED === "true";
   const enabled = process.env.COIN_REDEMPTION_ENABLED === "true" &&
-    approved &&
     /^[1-9][0-9]{0,8}$/.test(raw) &&
     Number.isSafeInteger(amount) &&
     amount % 10 === 0 &&
