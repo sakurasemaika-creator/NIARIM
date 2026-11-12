@@ -178,7 +178,7 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
                     Flexible(
                       fit: FlexFit.loose,
                       child: ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 132),
+                        constraints: const BoxConstraints(maxWidth: 108),
                         child: Semantics(
                         label: '${l10n.colorPickerTitle}: #${_colorToHex(_currentColor)}',
                         child: SizedBox(
@@ -197,7 +197,7 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 5),
+                const SizedBox(height: 8),
               ],
               // カラーサークルは常時表示。右下のピルで数値スライダーを
               // HSV/RGBから切り替える。現在色の値はモード変更で変えない。
