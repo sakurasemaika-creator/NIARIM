@@ -13,10 +13,12 @@ import '../utils/tolerant_preferences.dart';
 class CoinRedemptionAttemptStore {
   const CoinRedemptionAttemptStore();
 
-  static String _key(String accountId, int months) =>
-      months == 1
+  static String _key(String accountId, String duration, int quantity) =>
+      duration == 'month' && quantity == 1
           ? 'pending_coin_redemption_full_premium_v1_$accountId'
-          : 'pending_coin_redemption_full_premium_v1_${months}m_$accountId';
+          : duration == 'month' && quantity == 12
+          ? 'pending_coin_redemption_full_premium_v1_12m_$accountId'
+          : 'pending_coin_redemption_full_premium_v2_${duration}_${quantity}_$accountId';
 
   static String _newUuid() {
     final random = Random.secure();
@@ -38,15 +40,20 @@ class CoinRedemptionAttemptStore {
     required String accountId,
     required String serverPriceVersion,
     int months = 1,
+    String? duration,
+    int? quantity,
   }) async {
-    if (months != 1 && months != 12) {
-      throw ArgumentError.value(months, 'months', 'Only 1 or 12 allowed');
+    final unit = duration ?? 'month';
+    final amount = quantity ?? months;
+    if (!const {'hour','day','week','month'}.contains(unit) ||
+        amount < 1 || amount > 120) {
+      throw ArgumentError('Invalid Premium duration or quantity');
     }
     if (accountId.isEmpty || serverPriceVersion.isEmpty) {
       throw ArgumentError('Missing identity or server price version');
     }
     final prefs = await SharedPreferences.getInstance();
-    final key = _key(accountId, months);
+    final key = _key(accountId, unit, amount);
     String? requestId;
     String version = serverPriceVersion;
     final raw = prefs.readString(key);
@@ -76,11 +83,18 @@ class CoinRedemptionAttemptStore {
     if (!stored) throw StateError('Cannot persist the redemption request');
 
     try {
-      final response = await api.redeemFullPremiumCoins(
-        requestId: requestId,
-        priceVersion: version,
-        months: months,
-      );
+      final response = unit == 'month' && (amount == 1 || amount == 12)
+          ? await api.redeemFullPremiumCoins(
+              requestId: requestId,
+              priceVersion: version,
+              months: amount,
+            )
+          : await api.redeemFlexiblePremiumCoins(
+              duration: unit,
+              quantity: amount,
+              requestId: requestId,
+              priceVersion: version,
+            );
       if (response['redeemed'] != true) {
         throw StateError('Server did not confirm the redemption');
       }
