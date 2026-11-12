@@ -1672,7 +1672,7 @@ class AppLocalizationsJa extends AppLocalizations {
       'タイムラインに配置した音声クリップは、詳細シートから音量・フェードイン・フェードアウトの秒数を調整できます。効果音やBGMの音量バランスを整えたり、曲の始まり・終わりを滑らかにしたりできます。';
 
   @override
-  String get helpPenSubToolTitle => 'ペンサブツール';
+  String get helpPenSubToolTitle => 'ペン';
 
   @override
   String get helpPenSubToolDesc =>
@@ -2427,7 +2427,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get creativePanelFolderButton => 'フォルダ';
 
   @override
-  String get creativePanelCreateButton => '自作';
+  String get creativePanelCreateButton => '新規';
 
   @override
   String get creativePanelImportButton => '読込';
@@ -5614,7 +5614,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get workspaceDockPanelStamp => 'スタンプ';
 
   @override
-  String get workspaceDockPanelPenSubTool => 'ペンサブツール';
+  String get workspaceDockPanelPenSubTool => 'ペン';
 
   @override
   String get workspaceDockPanelOnionSkin => 'オニオンスキン';
