@@ -6,7 +6,7 @@ import 'package:niarim/services/shared_asset_card_codec.dart';
 void main() {
   // Valid minimal 1x1 PNG. The displayed image remains a regular PNG.
   final png = base64Decode(
-      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/cXcAAAAASUVORK5CYII=');
+      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4nGP4////fwAJ+wP9KobjigAAAABJRU5ErkJggg==');
   test('all three kinds are round-tripped losslessly in one PNG', () {
     for (final kind in ['brush', 'tone', 'stamp']) {
       final original = Uint8List.fromList(List<int>.generate(1024, (i) => i % 255));

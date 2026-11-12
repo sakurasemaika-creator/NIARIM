@@ -29,7 +29,7 @@ void main() {
       if (directory.existsSync()) directory.deleteSync(recursive: true);
     });
     final pixels = base64Decode(
-        'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/cXcAAAAASUVORK5CYII=');
+        'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4nGP4////fwAJ+wP9KobjigAAAABJRU5ErkJggg==');
     final screenshots = Directory('build/shared-asset-card-captures')..createSync(recursive: true);
     final originalImage = File('${directory.path}/source.png');
     await originalImage.writeAsBytes(pixels);
@@ -116,7 +116,7 @@ void main() {
 
   test('a plain PNG or a stripped chunk cannot be imported', () {
     final raw = Uint8List.fromList(base64Decode(
-        'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/cXcAAAAASUVORK5CYII='));
+        'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4nGP4////fwAJ+wP9KobjigAAAABJRU5ErkJggg=='));
     expect(() => SharedAssetCardCodec.extract(raw), throwsFormatException);
     final card = SharedAssetCardCodec.embed(
       png: raw,
