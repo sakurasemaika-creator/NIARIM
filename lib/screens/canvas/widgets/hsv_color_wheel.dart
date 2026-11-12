@@ -61,14 +61,13 @@ class HsvColorWheel extends StatelessWidget {
         .watch<ThemeService>()
         .current
         .menuBgColor;
-    // Controls occupy the empty corners of the ring's bounding square.
-    // They are moved up into the unused space, not over the hue ring itself:
-    // the ring is centered and its lower edge only touches the middle.
-    // Keeping the bottom 20px visible also avoids wasting a 36px row.
+    // Tuck the accessory controls into the unused outer corners of the
+    // wheel. Keep their hit targets outside the hue ring and remove the
+    // former generous clearance that made the controls look detached.
     final width = math.max(size, controlsWidth ?? size);
-    // The pill occupies the lower-right corner, at a mathematically safe
-    // tangent to the hue ring. In a narrow dock it moves down just enough
-    // to avoid overlap; in a wide dock it sits higher. No wasted bottom row.
+    // The mode pill follows the hue ring's exact lower-right tangent.
+    // Only 2px of clearance remains; its 28px hit target never overlaps
+    // the wheel, even in the narrowest supported color-picker dock.
     final radius = size / 2;
     const pillWidth = 66.0; // Two 32px segments and the 1px borders.
     const pillRight = -6.0;
@@ -79,7 +78,7 @@ class HsvColorWheel extends StatelessWidget {
           0.0,
           radius * radius - horizontalDistance * horizontalDistance,
         )) +
-        5;
+        2;
     return SizedBox(
       width: width,
       height: math.max(size, modeTop + 28),
@@ -156,8 +155,8 @@ class HsvColorWheel extends StatelessWidget {
             Positioned(
               // In compact docks the 40px touch target needs a few pixels
               // of the panel's outer padding to stay clear of the hue ring.
-              right: -5,
-              top: -5,
+              right: -1,
+              top: -1,
               child: IconButton(
                 key: const ValueKey('color-picker-eyedropper'),
                 constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
@@ -171,7 +170,7 @@ class HsvColorWheel extends StatelessWidget {
           if (onToggleTransparent != null)
             Positioned(
               left: 2,
-              top: size - 27,
+              top: size - 31,
               child: _TransparentToggleButton(
                 isActive: isTransparent,
                 onTap: onToggleTransparent!,
