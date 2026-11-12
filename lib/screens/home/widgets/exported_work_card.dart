@@ -201,12 +201,14 @@ class ExportedWorkCard extends StatelessWidget {
     }
 
     if (gridTile) {
-      return Card(
+      return collectionTileShadow(context, Card(
         margin: EdgeInsets.zero,
+        elevation: 0,
         clipBehavior: Clip.antiAlias,
         color: background,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(14),
+          side: const BorderSide(color: Colors.transparent, width: 2),
         ),
         child: InkWell(
           onTap: onOpen,
@@ -241,7 +243,7 @@ class ExportedWorkCard extends StatelessWidget {
             ],
           ),
         ),
-      );
+      ));
     }
 
     return Card(
