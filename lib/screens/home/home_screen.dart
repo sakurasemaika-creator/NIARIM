@@ -622,51 +622,29 @@ class _HomeScreenState extends State<HomeScreen>
                                   .retryLoadProjects(),
                               screenFocus: _homeFocus,
                             ),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 4,
-                            ),
-                            child: Row(
-                              children: [
-                                FilterChip(
-                                  label: Text(
-                                    l10n.homeFavoritesOnly,
-                                    style: TextStyle(
-                                      fontFamily: 'Kuramubon',
-                                      fontFamilyFallback: kHeadingFontFallback,
-                                      color: _showFavoritesOnly
-                                          ? Theme.of(
-                                              context,
-                                            ).colorScheme.onPrimary
-                                          : null,
-                                    ),
-                                  ),
-                                  selectedColor: Theme.of(
-                                    context,
-                                  ).colorScheme.primary,
-                                  checkmarkColor: Theme.of(
-                                    context,
-                                  ).colorScheme.onPrimary,
-                                  selected: _showFavoritesOnly,
-                                  onSelected: (v) => _changeProjectScope(
-                                    () => _showFavoritesOnly = v,
-                                  ),
+                          _HomeCollectionSortHeader(
+                            leading: FilterChip(
+                              label: Text(
+                                l10n.homeFavoritesOnly,
+                                style: TextStyle(
+                                  fontFamily: 'Kuramubon',
+                                  fontFamilyFallback: kHeadingFontFallback,
+                                  color: _showFavoritesOnly
+                                      ? Theme.of(context).colorScheme.onPrimary
+                                      : null,
                                 ),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  child: Align(
-                                    alignment: Alignment.centerRight,
-                                    child: SortModeControl(
-                                      sortByName: _sortByName,
-                                      sortAscending: _sortAscending,
-                                      onSortByNameChanged: _setSortByName,
-                                      onToggleDirection: _toggleSortDirection,
-                                    ),
-                                  ),
-                                ),
-                              ],
+                              ),
+                              selectedColor: Theme.of(context).colorScheme.primary,
+                              checkmarkColor: Theme.of(context).colorScheme.onPrimary,
+                              selected: _showFavoritesOnly,
+                              onSelected: (v) => _changeProjectScope(
+                                () => _showFavoritesOnly = v,
+                              ),
                             ),
+                            sortByName: _sortByName,
+                            sortAscending: _sortAscending,
+                            onSortByNameChanged: _setSortByName,
+                            onToggleDirection: _toggleSortDirection,
                           ),
                           // フォルダ内移動時のパンくずリスト。検索中は
                           // 全体から検索するため非表示にする。
@@ -2205,13 +2183,11 @@ class _TrashScreenState extends State<TrashScreen> {
               ),
             ),
           ),
-          _LibraryListControls(
-            sort: SortModeControl(
-              sortByName: _sortByName,
-              sortAscending: _sortAscending,
-              onSortByNameChanged: _setSortByName,
-              onToggleDirection: _toggleSortDirection,
-            ),
+          _HomeCollectionSortHeader(
+            sortByName: _sortByName,
+            sortAscending: _sortAscending,
+            onSortByNameChanged: _setSortByName,
+            onToggleDirection: _toggleSortDirection,
           ),
           Expanded(
             child: ValueListenableBuilder<int>(
@@ -2229,6 +2205,50 @@ class _TrashScreenState extends State<TrashScreen> {
       ),
     );
   }
+}
+
+/// Exact same sorting header geometry in Projects and Works (root/folders).
+/// The shared SortModeControl is allowed the whole available trailing width,
+/// so normal phones display the selected field label instead of only a clock.
+class _HomeCollectionSortHeader extends StatelessWidget {
+  const _HomeCollectionSortHeader({
+    this.leading,
+    required this.sortByName,
+    required this.sortAscending,
+    required this.onSortByNameChanged,
+    required this.onToggleDirection,
+  });
+
+  final Widget? leading;
+  final bool sortByName;
+  final bool sortAscending;
+  final ValueChanged<bool> onSortByNameChanged;
+  final VoidCallback onToggleDirection;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    key: const Key('homeCollectionSortHeader'),
+    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+    child: Row(
+      children: [
+        if (leading != null) ...[
+          leading!,
+          const SizedBox(width: 8),
+        ],
+        Expanded(
+          child: Align(
+            alignment: Alignment.centerRight,
+            child: SortModeControl(
+              sortByName: sortByName,
+              sortAscending: sortAscending,
+              onSortByNameChanged: onSortByNameChanged,
+              onToggleDirection: onToggleDirection,
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
 }
 
 /// Library actions can wrap without taking space from the route title.
@@ -3834,13 +3854,11 @@ class _WorksTabState extends State<_WorksTab> {
           onRefresh: _reload,
           child: _FolderableList<File>(
             key: ValueKey(('works-list', widget.viewMode)),
-            header: _LibraryListControls(
-              sort: SortModeControl(
-                sortByName: _sortByName,
-                sortAscending: _sortAscending,
-                onSortByNameChanged: _setSortByName,
-                onToggleDirection: _toggleSortDirection,
-              ),
+            header: _HomeCollectionSortHeader(
+              sortByName: _sortByName,
+              sortAscending: _sortAscending,
+              onSortByNameChanged: _setSortByName,
+              onToggleDirection: _toggleSortDirection,
             ),
             viewMode: widget.viewMode,
             gridItemBuilder: (context, file) => buildWork(context, file, true),
