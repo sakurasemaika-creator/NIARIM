@@ -2869,99 +2869,144 @@ Future<void> _outgoingShareAction(
 }
 
 class _OutgoingSharesList extends StatelessWidget {
-  const _OutgoingSharesList({this.onCopyEntry});
+  const _OutgoingSharesList({
+    this.onCopyEntry,
+    required this.viewMode,
+    required this.sortMode,
+    required this.showFavoritesOnly,
+    required this.searchQuery,
+  });
   final ValueChanged<HomeClipboardEntry>? onCopyEntry;
+  final ProjectViewMode viewMode;
+  final ProjectSortMode sortMode;
+  final bool showFavoritesOnly;
+  final String searchQuery;
 
   @override
   Widget build(BuildContext context) {
     final service = context.watch<ProjectService>();
-    final saved = service.outgoingShares;
-    final l10n = AppLocalizations.of(context)!;
+    final query = searchQuery.trim().toLowerCase();
+    final saved = service.outgoingShares.where((entry) =>
+        (!showFavoritesOnly || service.isOutgoingShareFavorite(entry.path)) &&
+        (query.isEmpty || entry.name.toLowerCase().contains(query))
+    ).toList();
+    saved.sort((a, b) {
+      final n = switch (sortMode) {
+        ProjectSortMode.nameAsc =>
+          a.name.toLowerCase().compareTo(b.name.toLowerCase()),
+        ProjectSortMode.nameDesc =>
+          b.name.toLowerCase().compareTo(a.name.toLowerCase()),
+        ProjectSortMode.updatedAsc => a.updatedAt.compareTo(b.updatedAt),
+        ProjectSortMode.updatedDesc => b.updatedAt.compareTo(a.updatedAt),
+      };
+      return n == 0 ? a.path.compareTo(b.path) : n;
+    });
     if (saved.isEmpty) {
       return EmptyStatePlaceholder(
         icon: Icons.file_present_outlined,
         title: _shareCollectionEmptyText(context),
       );
     }
-    return ListView.builder(
-      key: const PageStorageKey('outgoing-niashares'),
-      padding: const EdgeInsets.only(bottom: 100),
-      itemCount: saved.length,
-      itemBuilder: (context, index) {
-        final entry = saved[index];
-        return Card(
-          margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-          child: ListTile(
-            leading: const Icon(Icons.insert_drive_file_outlined, size: 36),
-            title: Text(entry.name, style: const TextStyle(
-              fontFamily: 'Kuramubon',
-              fontFamilyFallback: kHeadingFontFallback,
-            )),
-            subtitle: Text(
-              '${entry.updatedAt.year}/${entry.updatedAt.month.toString().padLeft(2, '0')}/'
-              '${entry.updatedAt.day.toString().padLeft(2, '0')}  ·  '
-              '${(entry.sizeBytes / 1024).toStringAsFixed(1)} KB',
+    Widget card(BuildContext context, SavedOutgoingShare entry, bool grid) {
+      final l10n = AppLocalizations.of(context)!;
+      final scheme = Theme.of(context).colorScheme;
+      final isFavorite = service.isOutgoingShareFavorite(entry.path);
+      final subtitle =
+          '\${entry.updatedAt.year}/\${entry.updatedAt.month.toString().padLeft(2, '0')}/'
+          '\${entry.updatedAt.day.toString().padLeft(2, '0')}  ·  '
+          '\${(entry.sizeBytes / 1024).toStringAsFixed(1)} KB';
+      final actions = Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          CollectionFavoriteButton(
+            itemId: entry.path,
+            favorite: isFavorite,
+            tooltip: isFavorite
+                ? l10n.colorPickerFavoriteRemove
+                : l10n.colorPickerFavoriteAdd,
+            onPressed: () => runProjectAction(
+              context,
+              () => service.toggleOutgoingShareFavorite(entry.path),
             ),
-            onTap: () => shareSavedNiashare(context, entry.path),
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                CollectionFavoriteButton(
-                  itemId: entry.path,
-                  favorite: service.isOutgoingShareFavorite(entry.path),
-                  tooltip: service.isOutgoingShareFavorite(entry.path)
-                      ? l10n.colorPickerFavoriteRemove
-                      : l10n.colorPickerFavoriteAdd,
-                  onPressed: () => runProjectAction(
-                    context,
-                    () => service.toggleOutgoingShareFavorite(entry.path),
+          ),
+          const SizedBox(width: 4),
+          CollectionActionFrame(
+            key: Key('collectionMenu_\${entry.path}'),
+            child: PopupMenuButton<String>(
+              key: ValueKey('outgoingShareMenu_\${entry.path}'),
+              padding: EdgeInsets.zero,
+              icon: const Icon(
+                Icons.more_vert,
+                size: CollectionActionFrame.glyphSize,
+              ),
+              onSelected: (action) {
+                if (action == 'copyToClipboard') {
+                  onCopyEntry?.call(HomeClipboardEntry(
+                    source: HomePasteArea.outgoing,
+                    id: entry.path, name: entry.name,
+                  ));
+                } else {
+                  _outgoingShareAction(context, entry, action);
+                }
+              },
+              itemBuilder: (_) => [
+                PopupMenuItem(value: 'share',
+                    child: Text(l10n.projectDetailShareQuickAction)),
+                PopupMenuItem(value: 'rename',
+                    child: Text(l10n.commonRename)),
+                if (onCopyEntry != null)
+                  PopupMenuItem(value: 'copyToClipboard',
+                      child: Text(l10n.themeDuplicateAction)),
+                PopupMenuItem(value: 'duplicate',
+                    child: Text(l10n.themeDuplicateAction)),
+                PopupMenuItem(
+                  value: 'delete',
+                  child: Text(
+                    l10n.projectDetailTrashMenuItem,
+                    style: TextStyle(color: scheme.error),
                   ),
                 ),
-                const SizedBox(width: 4),
-                CollectionActionFrame(
-                  key: Key('collectionMenu_${entry.path}'),
-                  child: PopupMenuButton<String>(
-                    key: ValueKey('outgoingShareMenu_${entry.path}'),
-                    padding: EdgeInsets.zero,
-                    icon: const Icon(
-                      Icons.more_vert,
-                      size: CollectionActionFrame.glyphSize,
+              ],
+            ),
+          ),
+        ],
+      );
+      if (grid) {
+        return Card(
+          margin: EdgeInsets.zero,
+          color: scheme.surfaceContainerLow,
+          clipBehavior: Clip.antiAlias,
+          child: InkWell(
+            onTap: () => shareSavedNiashare(context, entry.path),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Expanded(child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    ColoredBox(
+                      color: scheme.surfaceContainerHighest,
+                      child: const Center(child: Icon(
+                        Icons.insert_drive_file_outlined, size: 52)),
                     ),
-                    onSelected: (action) {
-                      if (action == 'copyToClipboard') {
-                        onCopyEntry?.call(HomeClipboardEntry(
-                          source: HomePasteArea.outgoing,
-                          id: entry.path,
-                          name: entry.name,
-                        ));
-                      } else {
-                        _outgoingShareAction(context, entry, action);
-                      }
-                    },
-                    itemBuilder: (_) => [
-                      PopupMenuItem(
-                        value: 'share',
-                        child: Text(l10n.projectDetailShareQuickAction),
-                      ),
-                      PopupMenuItem(value: 'rename', child: Text(l10n.commonRename)),
-                      if (onCopyEntry != null)
-                        PopupMenuItem(
-                          value: 'copyToClipboard',
-                          child: Text(l10n.themeDuplicateAction),
-                        ),
-                      PopupMenuItem(
-                        value: 'duplicate',
-                        child: Text(l10n.themeDuplicateAction),
-                      ),
-                      PopupMenuItem(
-                        value: 'delete',
-                        child: Text(
-                          l10n.projectDetailTrashMenuItem,
-                          style: TextStyle(
-                            color: Theme.of(context).colorScheme.error,
-                          ),
-                        ),
-                      ),
+                    Positioned(top: 4, right: 4, child: actions),
+                  ],
+                )),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(8, 5, 8, 6),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(entry.name, maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontFamily: 'Kuramubon',
+                            fontFamilyFallback: kHeadingFontFallback,
+                          )),
+                      const SizedBox(height: 2),
+                      Text(subtitle, maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: Theme.of(context).textTheme.bodySmall),
                     ],
                   ),
                 ),
@@ -2969,7 +3014,36 @@ class _OutgoingSharesList extends StatelessWidget {
             ),
           ),
         );
-      },
+      }
+      return Card(
+        margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        color: scheme.surfaceContainerLow,
+        child: ListTile(
+          leading: const Icon(Icons.insert_drive_file_outlined, size: 36),
+          title: Text(entry.name, style: const TextStyle(
+            fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback,
+          )),
+          subtitle: Text(subtitle),
+          onTap: () => shareSavedNiashare(context, entry.path),
+          trailing: actions,
+        ),
+      );
+    }
+    if (viewMode != ProjectViewMode.detail) {
+      return GridView.builder(
+        key: ValueKey(('outgoing-niashares', viewMode)),
+        padding: const EdgeInsets.fromLTRB(8, 0, 8, 100),
+        gridDelegate: _worksGridDelegate(context, viewMode),
+        itemCount: saved.length,
+        itemBuilder: (context, i) => card(context, saved[i], true),
+      );
+    }
+    return ListView.builder(
+      key: const PageStorageKey('outgoing-niashares'),
+      padding: const EdgeInsets.only(bottom: 100),
+      itemCount: saved.length,
+      itemBuilder: (context, i) => card(context, saved[i], false),
     );
   }
 }
