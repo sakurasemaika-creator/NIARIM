@@ -1,0 +1,30 @@
+name: Unified pen assets actual Flutter screens
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - 'test/visual/unified_pen_and_color_capture_test.dart'
+      - '.github/workflows/unified-pen-assets-screenshots.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 22
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+      - run: flutter pub get
+      - name: Photograph actual SP color and three PC management tabs
+        run: flutter test test/visual/unified_pen_and_color_capture_test.dart --reporter expanded
+      - name: Retain shots even if later assertions fail
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: unified-brush-tone-stamp-and-sp-color
+          path: build/unified-pen-assets-screens/*.png
+          if-no-files-found: warn
+          retention-days: 7
