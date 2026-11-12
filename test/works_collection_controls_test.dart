@@ -24,6 +24,9 @@ void main() {
       'first_launch': false,
       'language': 'ja',
       'force_pc_mode': 0,
+      // This test compares vertical detail-list sorting; default mode is now
+      // a responsive tile grid, covered by separate tests.
+      'home.worksViewMode.v1': 'detail',
       firstUseTooltipsSeenKey: kAllFirstUseTooltipKeys,
     });
     const pathProvider = MethodChannel('plugins.flutter.io/path_provider');
