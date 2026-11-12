@@ -2912,9 +2912,9 @@ class _OutgoingSharesList extends StatelessWidget {
       final scheme = Theme.of(context).colorScheme;
       final isFavorite = service.isOutgoingShareFavorite(entry.path);
       final subtitle =
-          '\${entry.updatedAt.year}/\${entry.updatedAt.month.toString().padLeft(2, '0')}/'
-          '\${entry.updatedAt.day.toString().padLeft(2, '0')}  ·  '
-          '\${(entry.sizeBytes / 1024).toStringAsFixed(1)} KB';
+          '${entry.updatedAt.year}/${entry.updatedAt.month.toString().padLeft(2, '0')}/'
+          '${entry.updatedAt.day.toString().padLeft(2, '0')}  ·  '
+          '${(entry.sizeBytes / 1024).toStringAsFixed(1)} KB';
       final actions = Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -2931,9 +2931,9 @@ class _OutgoingSharesList extends StatelessWidget {
           ),
           const SizedBox(width: 4),
           CollectionActionFrame(
-            key: Key('collectionMenu_\${entry.path}'),
+            key: Key('collectionMenu_${entry.path}'),
             child: PopupMenuButton<String>(
-              key: ValueKey('outgoingShareMenu_\${entry.path}'),
+              key: ValueKey('outgoingShareMenu_${entry.path}'),
               padding: EdgeInsets.zero,
               icon: const Icon(
                 Icons.more_vert,
