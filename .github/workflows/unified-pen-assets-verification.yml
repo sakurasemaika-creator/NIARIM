@@ -1,0 +1,60 @@
+name: Unified pen assets and color controls verification
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - 'lib/models/brush.dart'
+      - 'lib/models/brush_presets_extension.dart'
+      - 'lib/models/canvas_dock_panel.dart'
+      - 'lib/services/brush_service.dart'
+      - 'lib/services/tone_service.dart'
+      - 'lib/services/settings_service.dart'
+      - 'lib/engine/procedural_texture.dart'
+      - 'lib/engine/drawing_engine.dart'
+      - 'lib/screens/canvas/widgets/color_picker_panel.dart'
+      - 'lib/screens/canvas/widgets/hsv_color_wheel.dart'
+      - 'lib/screens/canvas/widgets/pen_sub_tool_panel.dart'
+      - 'lib/screens/canvas/widgets/brush_panel.dart'
+      - 'lib/screens/canvas/widgets/tone_panel.dart'
+      - 'lib/screens/canvas/widgets/stamp_panel.dart'
+      - 'lib/screens/canvas/canvas_screen.dart'
+      - 'lib/screens/settings/workspace_settings_screen.dart'
+      - 'lib/screens/settings/widgets/pc_workspace_layout_preview.dart'
+      - 'test/unified_pens_and_tones_regression_test.dart'
+      - '.github/workflows/unified-pen-assets-verification.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+      - run: flutter pub get
+      - name: Verify each 1px mask, stockings, analog media and workspace migration
+        run: flutter test test/unified_pens_and_tones_regression_test.dart test/brush_preset_fidelity_test.dart test/stroke_sample_preview_test.dart test/color_wheel_corner_layout_test.dart --reporter expanded
+      - name: Analyze all changed production modules
+        run: |
+          flutter analyze --no-fatal-infos --no-fatal-warnings \
+            lib/models/brush.dart \
+            lib/models/brush_presets_extension.dart \
+            lib/models/canvas_dock_panel.dart \
+            lib/services/brush_service.dart \
+            lib/services/tone_service.dart \
+            lib/services/settings_service.dart \
+            lib/engine/procedural_texture.dart \
+            lib/engine/drawing_engine.dart \
+            lib/screens/canvas/widgets/color_picker_panel.dart \
+            lib/screens/canvas/widgets/hsv_color_wheel.dart \
+            lib/screens/canvas/widgets/pen_sub_tool_panel.dart \
+            lib/screens/canvas/widgets/brush_panel.dart \
+            lib/screens/canvas/widgets/tone_panel.dart \
+            lib/screens/canvas/widgets/stamp_panel.dart \
+            lib/screens/canvas/canvas_screen.dart \
+            lib/screens/settings/workspace_settings_screen.dart \
+            lib/screens/settings/widgets/pc_workspace_layout_preview.dart \
+            test/unified_pens_and_tones_regression_test.dart
