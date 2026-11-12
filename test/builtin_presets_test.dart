@@ -189,6 +189,39 @@ void main() {
       );
     });
 
+    test('名称から期待する描画特性が組み込み設定に存在する', () {
+      final brushes = {for (final b in BrushService.builtInBrushes) b.name: b};
+      final air = brushes['エアブラシ']!;
+      final blur = brushes['ぼかし']!;
+      final watercolor = brushes['水彩']!;
+      final pencil = brushes['鉛筆']!;
+      final chalk = brushes['チョーク']!;
+      final marker = brushes['マーカーペン']!;
+      final pixel = brushes['ピクセルペン']!;
+      final glitter = brushes['グリッターペン']!;
+      final spray = brushes['スプレー']!;
+
+      // A soft tool must not rasterize as a crisp marker.
+      expect(air.pixelMode, isFalse);
+      expect(air.pressureOn.blur.enabled, isTrue);
+      expect(air.pressureOff.blur.value, greaterThan(0));
+      expect(air.opacity, lessThan(100));
+      expect(blur.pressureOff.blur.value,
+          greaterThan(air.pressureOff.blur.value));
+      expect(blur.opacity, lessThan(air.opacity));
+      // These tools use genuinely distinct engines / tip attributes.
+      expect(watercolor.pressureOff.mixing.enabled, isTrue);
+      expect(watercolor.pressureOff.mixing.mode, BrushMixingMode.watercolor);
+      expect(pencil.pressureOff.edgeJitter.enabled, isTrue);
+      expect(chalk.pressureOff.edgeJitter.enabled, isTrue);
+      expect(chalk.pressureOff.edgeJitter.value,
+          greaterThan(pencil.pressureOff.edgeJitter.value));
+      expect(marker.calligraphyAngle, isNotNull);
+      expect(pixel.pixelMode, isTrue);
+      expect(glitter.tipShape, BrushTipShape.hexagon);
+      expect(spray.scatter, greaterThan(0));
+    });
+
     test('設定値がUIの許容範囲に収まっている', () async {
       final service = BrushService();
       await service.init();
