@@ -684,6 +684,7 @@ class DrawingEngine {
           resolvedPressure.blur,
           customTexture,
           stylusTiltMagnitude: stylusTiltMagnitude,
+          grainStrength: brush.grainStrength,
           edgeJitter: resolvedPressure.edgeJitterEnabled,
           edgeJitterStrength: resolvedPressure.edgeJitterStrength,
           mixingMode: resolvedPressure.mixingMode,
@@ -718,6 +719,7 @@ class DrawingEngine {
           resolvedPressure.blur,
           customTexture,
           stylusTiltMagnitude: stylusTiltMagnitude,
+          grainStrength: brush.grainStrength,
           edgeJitter: resolvedPressure.edgeJitterEnabled,
           edgeJitterStrength: resolvedPressure.edgeJitterStrength,
           mixingMode: resolvedPressure.mixingMode,
@@ -750,6 +752,7 @@ class DrawingEngine {
     int blurRadius,
     Uint8List? customTexture, {
     double stylusTiltMagnitude = 0.0,
+    int grainStrength = 0,
     bool edgeJitter = false,
     int edgeJitterStrength = 50,
     BrushMixingMode mixingMode = BrushMixingMode.off,
@@ -986,6 +989,20 @@ class DrawingEngine {
               } else {
                 pixelAlpha = (radius + 0.5 - dist).clamp(0.0, 1.0);
               }
+            }
+
+            // Reproducible paper tooth for graphite, charcoal, gouache and
+            // pastel. World-coordinate hash keeps the same grain across
+            // overlapping dabs, zoom levels, and exported raster frames.
+            // Built-in smooth brushes and legacy files pass zero and retain
+            // exactly the previous pixels.
+            if (grainStrength > 0 && pixelAlpha > 0) {
+              var grain = ((tileOriginX + px) * 73856093) ^
+                  ((tileOriginY + py) * 19349663);
+              grain = (grain ^ (grain >> 13)) * 1274126177;
+              final noise = (grain & 255) / 255.0;
+              final grit = grainStrength / 100.0;
+              pixelAlpha *= 1.0 - grit * (0.15 + 0.82 * noise);
             }
 
             if (pixelAlpha > coverageCap) pixelAlpha = coverageCap;
