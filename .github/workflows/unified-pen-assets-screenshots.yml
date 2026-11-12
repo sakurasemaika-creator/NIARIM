@@ -5,6 +5,7 @@ on:
     paths:
       - 'test/visual/unified_pen_and_color_capture_test.dart'
       - '.github/workflows/unified-pen-assets-screenshots.yml'
+      - 'docs/specs/NIARIM_complete_asset_share_card_v1.0.md'
   workflow_dispatch:
 permissions:
   contents: read
