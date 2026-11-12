@@ -70,7 +70,7 @@ class HsvColorWheel extends StatelessWidget {
     // the wheel, even in the narrowest supported color-picker dock.
     final radius = size / 2;
     const pillWidth = 66.0; // Two 32px segments and the 1px borders.
-    const pillRight = -6.0;
+    const pillRight = 6.0; // Keep clear of the scroll bar on phones.
     final pillLeft = width - pillRight - pillWidth;
     final horizontalDistance = pillLeft - width / 2;
     final modeTop = radius +
