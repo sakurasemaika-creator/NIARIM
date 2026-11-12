@@ -2723,6 +2723,12 @@ Widget _receivedShareProjectTile(
 }) {
   final l10n = AppLocalizations.of(context)!;
   final theme = Theme.of(context);
+  final selection = HomeCollectionSelectionScope.maybeOf(context);
+  final selectionId = 'shared_file:${project.id}';
+  final selecting = selection?.active ?? false;
+  final selectedTap = selecting
+      ? () => selection!.onToggle(selectionId)
+      : () => context.push('/project/${project.id}');
   final captionStyle = const TextStyle(
     fontFamily: 'Kuramubon',
     fontFamilyFallback: kHeadingFontFallback,
@@ -2756,8 +2762,13 @@ Widget _receivedShareProjectTile(
       ),
     );
   }
+  final selectedLongPress = selection == null
+      ? showFolderMove
+      : () => selection.onLongPress(selectionId);
   if (grid) {
-    return collectionTileShadow(context, Card(
+    return HomeCollectionSelectionSurface(
+      selectionId: selectionId,
+      child: collectionTileShadow(context, Card(
       margin: EdgeInsets.zero,
       elevation: 0,
       clipBehavior: Clip.antiAlias,
@@ -2766,8 +2777,8 @@ Widget _receivedShareProjectTile(
         side: const BorderSide(color: Colors.transparent, width: 2),
       ),
       child: InkWell(
-        onTap: () => context.push('/project/${project.id}'),
-        onLongPress: showFolderMove,
+        onTap: selectedTap,
+        onLongPress: selectedLongPress,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -2776,7 +2787,7 @@ Widget _receivedShareProjectTile(
                 fit: StackFit.expand,
                 children: [
                   cover(),
-                  Positioned(
+                  if (!selecting) Positioned(
                     top: 4,
                     right: 4,
                     child: _sharedProjectActions(
@@ -2784,7 +2795,7 @@ Widget _receivedShareProjectTile(
                       showFavorite: false,
                     ),
                   ),
-                  Positioned(
+                  if (!selecting) Positioned(
                     bottom: 4,
                     left: 4,
                     child: _sharedProjectActions(
@@ -2799,9 +2810,13 @@ Widget _receivedShareProjectTile(
           ],
         ),
       ),
-    ));
+    )),
+    );
   }
-  return Card(
+  return HomeCollectionSelectionSurface(
+    selectionId: selectionId,
+    grid: false,
+    child: Card(
     margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
     color: theme.colorScheme.surfaceContainerLow,
     child: ListTile(
@@ -2810,11 +2825,12 @@ Widget _receivedShareProjectTile(
       subtitle: Text(l10n.homeProjectMeta(
         project.fps, project.durationSeconds,
       )),
-      onTap: () => context.push('/project/${project.id}'),
-      onLongPress: showFolderMove,
-      trailing: _sharedProjectActions(
+      onTap: selectedTap,
+      onLongPress: selectedLongPress,
+      trailing: selecting ? null : _sharedProjectActions(
         context, project, onCopyEntry: onCopyEntry,
       ),
+    ),
     ),
   );
 }
