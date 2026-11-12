@@ -13,6 +13,7 @@ import 'package:niarim/screens/home/home_screen.dart';
 import 'package:niarim/screens/home/widgets/project_list_widget.dart';
 import 'package:niarim/screens/home/widgets/project_thumbnail_dialog.dart';
 import 'package:niarim/services/project_service.dart';
+import 'package:niarim/services/local_file_trash_service.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'helpers/first_use_tooltips.dart';
@@ -82,6 +83,13 @@ void main() {
       picture.dispose();
       final file = File(dir.path + '/sample_export.png');
       await file.writeAsBytes(bytes!.buffer.asUint8List(), flush: true);
+      // Populate the real Trash tab with an independent, disposable sample.
+      // The exported original stays in the Works collection.
+      final deletedExample = File(dir.path + '/deleted_sample.png');
+      await deletedExample.writeAsBytes(await file.readAsBytes(), flush: true);
+      await LocalFileTrashService.move(
+        deletedExample, LocalTrashKind.exportedWork,
+      );
       await ExportEngine.listExportedFiles(forceRefresh: true);
       return file;
     });
@@ -238,5 +246,26 @@ void main() {
     await tester.tap(find.byKey(const Key('projectThumbnailFrame')));
     await tester.pump(const Duration(milliseconds: 360));
     await capture('19_desktop_project_select_frame');
+    await closeDialog();
+
+    // Four matching phone captures from the genuine app TabBarView.
+    // Tabs 0/1 have locally created sample content; Shared is the natural
+    // logged-out/empty state and Trash contains an archived sample file.
+    tester.view.physicalSize = const Size(1170, 2532);
+    tester.view.devicePixelRatio = 3.0;
+    await tester.pump(const Duration(milliseconds: 600));
+    for (final (tab, name) in [
+      (0, '20_phone_tab_projects'),
+      (1, '21_phone_tab_works'),
+      (2, '22_phone_tab_shared'),
+      (3, '23_phone_tab_trash'),
+    ]) {
+      final target = find.byKey(ValueKey('home_tab_$tab'));
+      expect(target, findsOneWidget);
+      await tester.ensureVisible(target);
+      await tester.tap(target);
+      await tester.pump(const Duration(milliseconds: 700));
+      await capture(name);
+    }
   }, timeout: const Timeout(Duration(minutes: 6)));
 }
