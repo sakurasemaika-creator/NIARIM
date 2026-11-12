@@ -49,7 +49,9 @@ class HsvColorWheel extends StatelessWidget {
   });
 
   double get _ringThickness => size * 0.14;
-  double get _squareSize => (size - _ringThickness * 2) * 0.69;
+  // Leave a subtle but definite gap between the ring and SV square at
+  // every picker width, including compact PC docks and mobile.
+  double get _squareSize => (size - _ringThickness * 2) * 0.67;
 
   @override
   Widget build(BuildContext context) {
