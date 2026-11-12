@@ -99,9 +99,20 @@ void main() {
     expect(find.byType(ExportedWorkCard), findsNWidgets(2));
     expect(tester.widget<ExportedWorkCard>(
       work('Alpha.gif')).gridTile, isTrue);
+    // Exported Works must share the Projects layout: top-right menu and
+    // bottom-left favorite, not two controls side by side at the top.
     final favorite = find.descendant(
       of: work('Alpha.gif'),
       matching: find.byType(CollectionFavoriteButton));
+    final menu = find.descendant(
+      of: work('Alpha.gif'),
+      matching: find.byKey(const Key('exportedWorkMoreMenu')));
+    expect(favorite, findsOneWidget);
+    expect(menu, findsOneWidget);
+    final favoriteRect = tester.getRect(favorite);
+    final menuRect = tester.getRect(menu);
+    expect(favoriteRect.left, lessThan(menuRect.left));
+    expect(favoriteRect.center.dy, greaterThan(menuRect.center.dy));
     await tester.tap(favorite);
     await pumpRealAsync(tester, const Duration(milliseconds: 150));
     final prefs = await SharedPreferences.getInstance();
