@@ -4221,10 +4221,12 @@ class AppLocalizationsEs extends AppLocalizations {
   String get saveTreeResumeFromHereAction => 'Reanudar desde aquí';
 
   @override
-  String get saveTreeResumeConfirmBody => '¿Quieres continuar trabajando desde estos datos guardados?\n\nSe sobrescribirán los datos actuales. Guarda el trabajo actual antes si necesitas conservarlo.';
+  String get saveTreeResumeConfirmBody =>
+      '¿Quieres continuar trabajando desde estos datos guardados?\n\nSe sobrescribirán los datos actuales. Guarda el trabajo actual antes si necesitas conservarlo.';
 
   @override
-  String get saveTreeProjectDetailResumeBody => '¿Reanudar el trabajo desde estos datos guardados?\n\nSe sobrescribirán los datos actuales. Para conservarlos, cancela por ahora y guarda primero en otra ranura (o en otra rama del árbol).';
+  String get saveTreeProjectDetailResumeBody =>
+      '¿Reanudar el trabajo desde estos datos guardados?\n\nSe sobrescribirán los datos actuales. Para conservarlos, cancela por ahora y guarda primero en otra ranura (o en otra rama del árbol).';
 
   @override
   String get saveTreeLoadFailedSnackbar =>

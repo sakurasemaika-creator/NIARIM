@@ -4227,10 +4227,12 @@ class AppLocalizationsFr extends AppLocalizations {
   String get saveTreeResumeFromHereAction => 'Reprendre à partir d\'ici';
 
   @override
-  String get saveTreeResumeConfirmBody => 'Reprendre le travail à partir de cette sauvegarde ?\n\nLes données actuelles seront remplacées. Enregistrez d\'abord votre travail si vous souhaitez le conserver.';
+  String get saveTreeResumeConfirmBody =>
+      'Reprendre le travail à partir de cette sauvegarde ?\n\nLes données actuelles seront remplacées. Enregistrez d\'abord votre travail si vous souhaitez le conserver.';
 
   @override
-  String get saveTreeProjectDetailResumeBody => 'Reprendre le travail à partir de cette sauvegarde ?\n\nLes données actuelles seront remplacées. Pour les conserver, annulez puis enregistrez-les dans un autre emplacement (ou dans une autre branche en mode arborescent).';
+  String get saveTreeProjectDetailResumeBody =>
+      'Reprendre le travail à partir de cette sauvegarde ?\n\nLes données actuelles seront remplacées. Pour les conserver, annulez puis enregistrez-les dans un autre emplacement (ou dans une autre branche en mode arborescent).';
 
   @override
   String get saveTreeLoadFailedSnackbar =>
