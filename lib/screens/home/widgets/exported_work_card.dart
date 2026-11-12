@@ -157,12 +157,6 @@ class ExportedWorkCard extends StatelessWidget {
               enabled: onOpen != null,
               child: Text(japanese ? '開く' : 'Open'),
             ),
-            if (onCopy != null)
-              PopupMenuItem(
-                value: 'copy',
-                child: Text(MaterialLocalizations.of(context).copyButtonLabel),
-              ),
-            PopupMenuItem(value: 'move', child: Text(moveLabel)),
             PopupMenuItem(
               value: 'share',
               enabled: onShare != null && !shareBusy,
