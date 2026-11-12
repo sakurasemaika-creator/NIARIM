@@ -13,8 +13,10 @@ import '../utils/tolerant_preferences.dart';
 class CoinRedemptionAttemptStore {
   const CoinRedemptionAttemptStore();
 
-  static String _key(String accountId) =>
-      'pending_coin_redemption_full_premium_v1_$accountId';
+  static String _key(String accountId, int months) =>
+      months == 1
+          ? 'pending_coin_redemption_full_premium_v1_$accountId'
+          : 'pending_coin_redemption_full_premium_v1_${months}m_$accountId';
 
   static String _newUuid() {
     final random = Random.secure();
@@ -35,12 +37,16 @@ class CoinRedemptionAttemptStore {
     required CommunityApi api,
     required String accountId,
     required String serverPriceVersion,
+    int months = 1,
   }) async {
+    if (months != 1 && months != 12) {
+      throw ArgumentError.value(months, 'months', 'Only 1 or 12 allowed');
+    }
     if (accountId.isEmpty || serverPriceVersion.isEmpty) {
       throw ArgumentError('Missing identity or server price version');
     }
     final prefs = await SharedPreferences.getInstance();
-    final key = _key(accountId);
+    final key = _key(accountId, months);
     String? requestId;
     String version = serverPriceVersion;
     final raw = prefs.readString(key);
@@ -73,6 +79,7 @@ class CoinRedemptionAttemptStore {
       final response = await api.redeemFullPremiumCoins(
         requestId: requestId,
         priceVersion: version,
+        months: months,
       );
       if (response['redeemed'] != true) {
         throw StateError('Server did not confirm the redemption');
