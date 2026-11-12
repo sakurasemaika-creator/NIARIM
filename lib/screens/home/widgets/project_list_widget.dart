@@ -994,7 +994,6 @@ class ProjectListWidget extends StatelessWidget {
             ? l10n.colorPickerFavoriteRemove
             : l10n.colorPickerFavoriteAdd),
       ),
-      PopupMenuItem(value: 'move', child: Text(l10n.folderMoveToTitle)),
       PopupMenuItem(
         value: 'delete',
         child: Text(l10n.projectDetailTrashMenuItem,
@@ -1022,10 +1021,9 @@ class ProjectListWidget extends StatelessWidget {
             ? l10n.colorPickerFavoriteRemove
             : l10n.colorPickerFavoriteAdd),
       ),
-      PopupMenuItem(value: 'move', child: Text(l10n.folderMoveToTitle)),
       PopupMenuItem(
         value: 'delete',
-        child: Text(l10n.commonDelete,
+        child: Text(l10n.homeMoveToTrash,
             style: TextStyle(color: ThemeService.activeColorScheme.error)),
       ),
     ];
@@ -1206,8 +1204,10 @@ class ProjectListWidget extends StatelessWidget {
       context: context,
       builder: (_) => FolderDeleteDialog(
         folderName: folder.name,
-        body: l10n.projectListDeleteFolderConfirmBody(folder.name),
-        onDelete: () => service.deleteFolder(folder.id),
+        title: l10n.homeMoveToTrash,
+        confirmLabel: l10n.homeMoveToTrash,
+        body: l10n.homeMoveToTrashConfirm(1),
+        onDelete: () async => service.moveFolderToTrash(folder.id),
       ),
     );
   }
