@@ -244,7 +244,15 @@ class _StrokeSamplePreviewState extends State<StrokeSamplePreview> {
             color: scheme.surfaceContainerLow,
             child: _sample == null
                 ? const SizedBox.expand()
-                : RawImage(image: _sample, fit: BoxFit.contain),
+                : RawImage(
+                    image: _sample,
+                    fit: BoxFit.contain,
+                    // The 240px raster is normally shrunk into a narrow
+                    // dock. Smooth resampling must preserve the diffuse
+                    // edge of airbrush and blur presets instead of turning
+                    // their soft halo into jagged opaque-looking pixels.
+                    filterQuality: FilterQuality.high,
+                  ),
           ),
         ),
       ),
