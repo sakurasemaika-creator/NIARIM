@@ -1602,7 +1602,7 @@
   "projectListEmptyTitle": "プロジェクトがありません",
   "projectListEmptyHint": "＋ ボタンから新規作成",
   "projectListOpenAction": "開く",
-  "projectListCreateShareAction": ".niashareを作成",
+  "projectListCreateShareAction": "プロジェクトを共有",
   "projectListEditFolderAction": "名前・色を編集",
   "projectListDeleteFolderConfirmTitle": "フォルダを削除しますか？",
   "projectListDeleteFolderConfirmBody": "「{name}」を削除します。中のプロジェクト・子フォルダはルートへ戻ります。",
