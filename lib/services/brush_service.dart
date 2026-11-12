@@ -1438,6 +1438,61 @@ class BrushService extends ChangeNotifier {
     return brush;
   }
 
+  // ─── QR共有（画像を使わないブラシの全設定） ────────────────────────
+  static const brushQrPrefix = 'niarim:brush:v1:';
+
+  /// Returns null for custom-image brushes or payloads too dense to scan.
+  /// ZIP-style file export remains the lossless route for all brushes.
+  String? exportBrushQrPayload(String id, {int maxChars = 900}) {
+    final brush = _brushes.firstWhere((b) => b.id == id);
+    if (brush.resolvedCustomImagePaths.isNotEmpty) return null;
+    final data = Map<String, dynamic>.from(brush.toJson())
+      ..['id'] = ''
+      ..['folderId'] = null
+      ..['isFavorite'] = false
+      ..['customImagePath'] = null
+      ..['customImagePaths'] = <String>[];
+    final packed = base64UrlEncode(gzip.encode(utf8.encode(jsonEncode(data))));
+    final payload = '$brushQrPrefix$packed';
+    return payload.length <= maxChars ? payload : null;
+  }
+
+  /// Decode a versioned QR string and install a new editable brush. Never
+  /// trust device-specific paths or IDs included in imported JSON.
+  Brush importBrushQrPayload(String payload) {
+    final text = payload.trim();
+    if (!text.startsWith(brushQrPrefix) || text.length > 900) {
+      throw const FormatException('Unsupported brush QR payload');
+    }
+    final compressed = base64Url.decode(text.substring(brushQrPrefix.length));
+    final bytes = gzip.decode(compressed);
+    if (bytes.length > 32768) {
+      throw const FormatException('Brush QR data too large');
+    }
+    final decoded = jsonDecode(utf8.decode(bytes));
+    if (decoded is! Map<String, dynamic> ||
+        decoded['customImagePath'] != null ||
+        (decoded['customImagePaths'] is List &&
+            (decoded['customImagePaths'] as List).isNotEmpty)) {
+      throw const FormatException('Brush QR data is invalid');
+    }
+    final incoming = Brush.fromJson(decoded);
+    var id = 'Brush${DateTime.now().microsecondsSinceEpoch}';
+    while (_brushes.any((b) => b.id == id)) {
+      id = '${id}_';
+    }
+    final imported = Brush.fromJson(
+      Map<String, dynamic>.from(incoming.toJson())
+        ..['id'] = id
+        ..['folderId'] = null
+        ..['isFavorite'] = false
+        ..['customImagePath'] = null
+        ..['customImagePaths'] = <String>[],
+    );
+    addBrush(imported);
+    return imported;
+  }
+
   // ─── 読み込み・書き出し（個別ファイル単位） ──────────────────────────────
 
   static const _bundleDataFile = 'data.json';
