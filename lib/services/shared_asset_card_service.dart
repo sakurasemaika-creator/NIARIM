@@ -30,12 +30,12 @@ class SharedAssetCardService {
           ? '共有カードを書き出す'
           : 'Export share card';
 
-  /// One PNG, already saved in the app documents directory. The second
-  /// action opens Android's normal share sheet for the very same file.
+  /// The card is created once. Save-as writes the original PNG bytes to a
+  /// user-selected location; Share uses the same original file unchanged.
   static Future<void> showExportResult(BuildContext context, File card) async {
     if (!context.mounted) return;
     final isJapanese = Localizations.localeOf(context).languageCode == 'ja';
-    final share = await showDialog<bool>(
+    final action = await showDialog<String>(
       context: context,
       builder: (dialog) => AlertDialog(
         title: Text(isJapanese ? '共有カードを作成しました' : 'Share card created'),
@@ -46,26 +46,56 @@ class SharedAssetCardService {
               Image.file(card, height: 310, fit: BoxFit.contain),
               const SizedBox(height: 12),
               Text(isJapanese
-                  ? 'PNGを保存しました。復元情報が失われないよう、元のPNGファイルをファイルとして共有してください。'
-                  : 'PNG saved. Share the original PNG as a file; screenshotting or re-encoding loses the import data.'),
+                  ? '元のPNGファイルをそのまま保存・共有してください。SNSで画像を再保存すると復元データが失われる場合があります。'
+                  : 'Save or share the original PNG. Re-encoding the image can strip its import data.'),
             ],
           ),
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(dialog, false),
-            child: Text(isJapanese ? '保存して閉じる' : 'Saved · Close'),
+            onPressed: () => Navigator.pop(dialog),
+            child: Text(isJapanese ? '閉じる' : 'Close'),
+          ),
+          OutlinedButton.icon(
+            onPressed: () => Navigator.pop(dialog, 'save'),
+            icon: const Icon(Icons.save_alt),
+            label: Text(isJapanese ? '端末に保存' : 'Save'),
           ),
           FilledButton.icon(
-            onPressed: () => Navigator.pop(dialog, true),
+            onPressed: () => Navigator.pop(dialog, 'share'),
             icon: const Icon(Icons.share_outlined),
             label: Text(isJapanese ? '共有' : 'Share'),
           ),
         ],
       ),
     );
-    if (share == true && context.mounted) {
+    if (!context.mounted) return;
+    if (action == 'share') {
       await shareExportedFileWithNotice(context, card);
+    } else if (action == 'save') {
+      try {
+        final fileName = card.uri.pathSegments.last;
+        final selected = await FilePicker.platform.saveFile(
+          dialogTitle: isJapanese ? '共有カードの保存先' : 'Save share card',
+          fileName: fileName,
+          type: FileType.custom,
+          allowedExtensions: ['png'],
+          bytes: await card.readAsBytes(),
+        );
+        if (selected != null && context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text(isJapanese ? '共有カードを保存しました' : 'Share card saved'),
+          ));
+        }
+      } catch (error) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text(isJapanese
+                ? '保存できませんでした: $error'
+                : 'Could not save card: $error'),
+          ));
+        }
+      }
     }
   }
 
@@ -274,6 +304,7 @@ class SharedAssetCardService {
           isFavorite: false,
           tags: original.tags,
         ));
+        brushService.selectBrush(imported.id);
       } else if (toneService != null) {
         final original = Tone.fromJson(data);
         final names = {for (final t in toneService.tones) t.name};
@@ -284,6 +315,7 @@ class SharedAssetCardService {
           isFavorite: false,
           tags: original.tags,
         ));
+        toneService.selectTone(imported.id);
       } else {
         final original = Stamp.fromJson(data);
         final stamps = stampService!;
@@ -294,6 +326,7 @@ class SharedAssetCardService {
           isFavorite: false,
           tags: original.tags,
         ));
+        stamps.selectStamp(imported.id);
       }
     } finally {
       if (await file.exists()) await file.delete();
