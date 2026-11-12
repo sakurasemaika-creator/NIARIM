@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/models/brush.dart';
+import 'package:niarim/services/brush_service.dart';
 import 'package:niarim/models/stamp.dart';
 import 'package:niarim/models/tone.dart';
 import 'package:niarim/widgets/stroke_sample_preview.dart';
@@ -139,6 +140,62 @@ void main() {
       expect(listEquals(before[i], after[i]), isFalse,
           reason: 'Edited user preset #$i must change the actual wave pixels');
     }
+    expect(tester.takeException(), isNull);
+  });
+
+
+  testWidgets('Airbrush and blur presets actually contain soft alpha halos', (
+    tester,
+  ) async {
+    final presets = BrushService.builtInBrushes;
+    final pen = presets.firstWhere((p) => p.name == 'ペン');
+    final airbrush = presets.firstWhere((p) => p.name == 'エアブラシ');
+    final softBlur = presets.firstWhere((p) => p.name == 'ぼかし');
+    expect(airbrush.pressureOff.blur.enabled, isTrue);
+    expect(airbrush.pressureOff.blur.value, greaterThan(0));
+    expect(softBlur.pressureOff.blur.value,
+        greaterThan(airbrush.pressureOff.blur.value));
+    expect(pen.pressureOff.blur.enabled, isFalse);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: Column(children: [
+            StrokeSamplePreview(brush: pen, color: Colors.black),
+            StrokeSamplePreview(brush: airbrush, color: Colors.black),
+            StrokeSamplePreview(brush: softBlur, color: Colors.black),
+          ]),
+        ),
+      ),
+    );
+    for (var i = 0; i < 80 &&
+        find.byType(RawImage).evaluate().length < 3; i++) {
+      await tester.runAsync(() =>
+          Future<void>.delayed(const Duration(milliseconds: 70)));
+      await tester.pump(const Duration(milliseconds: 30));
+    }
+    final images = tester.widgetList<RawImage>(find.byType(RawImage))
+        .map((widget) => widget.image).whereType<ui.Image>().toList();
+    expect(images, hasLength(3));
+    final pixels = (await tester.runAsync(() async {
+      final output = <List<int>>[];
+      for (final image in images) {
+        final data = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
+        output.add(data!.buffer.asUint8List());
+      }
+      return output;
+    }))!;
+    int softPixels(List<int> data) {
+      var count = 0;
+      for (var i = 3; i < data.length; i += 4) {
+        if (data[i] > 0 && data[i] < 80) count++;
+      }
+      return count;
+    }
+    expect(softPixels(pixels[1]), greaterThan(softPixels(pixels[0])),
+        reason: 'Airbrush must visibly soften more pixels than a pen');
+    expect(softPixels(pixels[2]), greaterThan(softPixels(pixels[0])),
+        reason: 'Blur preset must visibly soften more pixels than a pen');
     expect(tester.takeException(), isNull);
   });
 
