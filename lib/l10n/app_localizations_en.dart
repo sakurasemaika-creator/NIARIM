@@ -1701,7 +1701,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'An audio clip placed on the timeline can have its volume, fade-in, and fade-out durations adjusted from its detail sheet. Use it to balance sound effect and BGM volume, or smooth out a track\'s start and end.';
 
   @override
-  String get helpPenSubToolTitle => 'Pen sub-tools';
+  String get helpPenSubToolTitle => 'Pen';
 
   @override
   String get helpPenSubToolDesc =>
@@ -2522,7 +2522,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get creativePanelFolderButton => 'Folder';
 
   @override
-  String get creativePanelCreateButton => 'Create';
+  String get creativePanelCreateButton => 'New';
 
   @override
   String get creativePanelImportButton => 'Import';
@@ -5808,7 +5808,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get workspaceDockPanelStamp => 'Stamp';
 
   @override
-  String get workspaceDockPanelPenSubTool => 'Pen Sub-tool';
+  String get workspaceDockPanelPenSubTool => 'Pen';
 
   @override
   String get workspaceDockPanelOnionSkin => 'Onion Skin';
