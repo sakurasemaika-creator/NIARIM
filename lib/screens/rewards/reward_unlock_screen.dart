@@ -57,6 +57,15 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
   bool _rewardBusy = false;
   bool _redeemBusy = false;
   Map<String, dynamic>? _officialPremiumQuote;
+  Map<String, dynamic>? _officialAnnualPremiumQuote;
+
+  /// Only a matching, enabled server quote can authorize spending coins.
+  Map<String, dynamic>? get _selectedFullPremiumQuote {
+    if (_duration.unit != CoinDurationUnit.month) return null;
+    if (_duration.amount == 1) return _officialPremiumQuote;
+    if (_duration.amount == 12) return _officialAnnualPremiumQuote;
+    return null;
+  }
 
   @override
   void initState() {
@@ -80,6 +89,7 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
     setState(() {
       _rewardState = null;
       _officialPremiumQuote = null;
+      _officialAnnualPremiumQuote = null;
     });
     if (id != null) _loadWallet(id);
   }
@@ -113,16 +123,33 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
       );
       if (state['redemptionEnabled'] == true) {
         try {
-          final quote = await api.fullPremiumCoinQuote();
+          final quote = await api.fullPremiumCoinQuote(months: 1);
+          // Annual availability is independently approved on the server.
+          // A failed annual request must not hide the verified monthly quote.
+          Map<String, dynamic>? annual;
+          try {
+            annual = await api.fullPremiumCoinQuote(months: 12);
+          } catch (_) {
+            annual = null;
+          }
           if (!mounted || _authService?.account?.id != accountId) return;
-          setState(() => _officialPremiumQuote = quote);
+          setState(() {
+            _officialPremiumQuote = quote;
+            _officialAnnualPremiumQuote = annual;
+          });
         } catch (_) {
           if (mounted && _authService?.account?.id == accountId) {
-            setState(() => _officialPremiumQuote = null);
+            setState(() {
+              _officialPremiumQuote = null;
+              _officialAnnualPremiumQuote = null;
+            });
           }
         }
       } else {
-        setState(() => _officialPremiumQuote = null);
+        setState(() {
+          _officialPremiumQuote = null;
+          _officialAnnualPremiumQuote = null;
+        });
       }
     } catch (_) {
       // Never show a stale wallet or an invented zero while offline.
@@ -240,17 +267,20 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
     if (_redeemBusy) return;
     final accountId = context.read<GoogleAuthService>().account?.id;
     final api = context.read<CommunityService>().api;
-    final priceVersion = _officialPremiumQuote?['priceVersion'];
-    final price = _officialPremiumQuote?['priceCoins'];
+    final months = _duration.unit == CoinDurationUnit.month
+        ? _duration.amount : 0;
+    final serverQuote = _selectedFullPremiumQuote;
+    final priceVersion = serverQuote?['priceVersion'];
+    final price = serverQuote?['priceCoins'];
     if (accountId == null ||
         api == null ||
+        (months != 1 && months != 12) ||
+        serverQuote?['enabled'] != true ||
         priceVersion is! String ||
         price is! int ||
-        price !=
-            CoinBenefitPriceCatalog.unitCoins(
-              CoinUnlockTarget.fullPremium,
-              CoinDurationUnit.month,
-            ) ||
+        price != CoinBenefitPriceCatalog.cost(
+          CoinUnlockTarget.fullPremium, _duration,
+        ) ||
         priceVersion != CoinBenefitPriceCatalog.version) {
       return;
     }
@@ -265,12 +295,12 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
     final activeCoin = premium.activeCoinPremiumExpiry;
     final now = DateTime.now();
     final from = _later(now, activeCoin);
-    final projectedEnd = _redeemablePeriod.previewExpiry(from);
+    final projectedEnd = _duration.previewExpiry(from);
     final l10n = AppLocalizations.of(context)!;
     final overlapMessage = activeCoin != null && activeCoin.isAfter(now)
         ? l10n.rewardUnlockRedeemExtendNotice(projectedEnd.toLocal())
         : l10n.rewardUnlockRedeemExpiryNotice(projectedEnd.toLocal());
-    final period = coinUnlockDurationLabel(l10n, _redeemablePeriod);
+    final period = coinUnlockDurationLabel(l10n, _duration);
     final amount = l10n.coinAmount(price);
     final confirmed = await showDialog<bool>(
       context: context,
@@ -313,6 +343,7 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
         api: api,
         accountId: accountId,
         serverPriceVersion: priceVersion,
+        months: months,
       );
       if (!mounted ||
           context.read<GoogleAuthService>().account?.id != accountId) {
@@ -444,13 +475,6 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
     CoinUnlockTarget.processingAds,
   ];
   static const _bundles = <CoinUnlockTarget>[CoinUnlockTarget.allAds];
-
-  /// The only period the server sells for coins (the redeem request is
-  /// always one month of the full bundle).
-  static const _redeemablePeriod = CoinUnlockDuration(
-    1,
-    CoinDurationUnit.month,
-  );
 
   CoinUnlockQuote? _quote() {
     if (_selected.isEmpty) return null;
@@ -729,18 +753,14 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
     } on StateError {
       officialPrice = null;
     }
+    final verifiedPremiumQuote = _selectedFullPremiumQuote;
     if (target == CoinUnlockTarget.fullPremium &&
-        _duration.unit == CoinDurationUnit.month &&
-        _duration.amount == 1 &&
-        _officialPremiumQuote?['enabled'] == true &&
-        _officialPremiumQuote?['priceCoins'] ==
-            CoinBenefitPriceCatalog.unitCoins(
-              CoinUnlockTarget.fullPremium,
-              CoinDurationUnit.month,
-            ) &&
-        _officialPremiumQuote?['priceVersion'] ==
+        verifiedPremiumQuote?['enabled'] == true &&
+        verifiedPremiumQuote?['priceCoins'] ==
+            CoinBenefitPriceCatalog.cost(target, _duration) &&
+        verifiedPremiumQuote?['priceVersion'] ==
             CoinBenefitPriceCatalog.version) {
-      officialPrice = _officialPremiumQuote!['priceCoins'] as int;
+      officialPrice = verifiedPremiumQuote!['priceCoins'] as int;
     }
     final referencePrice = enabled
         ? CoinBenefitPriceCatalog.cost(target, _duration)
@@ -851,20 +871,18 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
     final premiumActiveFromPlay = context
         .watch<PremiumService>()
         .hasVerifiedPlayPremium;
+    final fullPremiumQuote = _selectedFullPremiumQuote;
     final serverPrice =
         _selected.length == 1 &&
             _selected.contains(CoinUnlockTarget.fullPremium) &&
-            _duration.unit == CoinDurationUnit.month &&
-            _duration.amount == 1 &&
-            _officialPremiumQuote?['enabled'] == true &&
-            _officialPremiumQuote?['priceCoins'] ==
-                CoinBenefitPriceCatalog.unitCoins(
-                  CoinUnlockTarget.fullPremium,
-                  CoinDurationUnit.month,
+            fullPremiumQuote?['enabled'] == true &&
+            fullPremiumQuote?['priceCoins'] ==
+                CoinBenefitPriceCatalog.cost(
+                  CoinUnlockTarget.fullPremium, _duration,
                 ) &&
-            _officialPremiumQuote?['priceVersion'] ==
+            fullPremiumQuote?['priceVersion'] ==
                 CoinBenefitPriceCatalog.version
-        ? _officialPremiumQuote!['priceCoins'] as int
+        ? fullPremiumQuote!['priceCoins'] as int
         : null;
     final balance = _rewardState?['balanceCoins'];
     final rewardDailyLimit = _rewardState?['rewardedDailyLimit'];
