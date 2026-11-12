@@ -229,7 +229,7 @@ void main() {
   });
 
   for (final language in rewardDurationLanguages) {
-    testWidgets('期間のシートの152件すべてが正しい文言で出る（${language.code}）', (tester) async {
+    testWidgets('期間のシートの153件すべてが正しい文言で出る（${language.code}）', (tester) async {
       await _pumpScreen(tester, locale: language.locale);
 
       final shown = <String>[];
@@ -267,8 +267,8 @@ void main() {
         }
         await _closeSheet(tester);
       }
-      expect(shown, hasLength(152));
-      expect(shown.toSet(), hasLength(152), reason: '同じ文言の行がある');
+      expect(shown, hasLength(153));
+      expect(shown.toSet(), hasLength(153), reason: '同じ文言の行がある');
       await _unmount(tester);
     });
 
@@ -369,7 +369,7 @@ void main() {
     });
   }
 
-  testWidgets('152件のどれを選んでも、文言と必要コインがモデルの値のまま', (tester) async {
+  testWidgets('153件のどれを選んでも、文言と必要コインがモデルの値のまま', (tester) async {
     await _pumpScreen(
       tester,
       locale: const Locale('en'),
@@ -401,7 +401,7 @@ void main() {
       expect(tester.widget<Text>(total).data, '$coins coins', reason: where);
       checked++;
     }
-    expect(checked, 152);
+    expect(checked, 153);
     await _unmount(tester);
   });
 }
