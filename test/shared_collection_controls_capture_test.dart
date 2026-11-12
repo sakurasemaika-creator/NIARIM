@@ -73,6 +73,22 @@ void main() {
       );
     }
 
+    void expectProjectStyleTileActions(String itemId) {
+      final favorite = find.byKey(Key('collectionFavorite_$itemId'));
+      final menu = find.byKey(Key('collectionMenu_$itemId'));
+      expect(favorite, findsOneWidget);
+      expect(menu, findsOneWidget);
+      final favoriteRect = tester.getRect(favorite);
+      final menuRect = tester.getRect(menu);
+      final card = find.ancestor(of: favorite, matching: find.byType(Card)).first;
+      final cardRect = tester.getRect(card);
+      expect(favoriteRect.left, closeTo(cardRect.left + 4, 2));
+      expect(menuRect.right, closeTo(cardRect.right - 4, 2));
+      expect(favoriteRect.center.dy, greaterThan(menuRect.center.dy));
+      expect(favoriteRect.size, const Size(40, 40));
+      expect(menuRect.size, const Size(40, 40));
+    }
+
     await loadAppFonts(tester);
     appRouter.go('/');
     final providers = await tester.runAsync(buildAppProviders);
@@ -112,6 +128,7 @@ void main() {
     expect(find.byType(SliverGrid), findsWidgets);
     expect(find.byType(CollectionFavoriteButton), findsWidgets);
     expect(find.byType(PopupMenuButton<String>), findsWidgets);
+    expectProjectStyleTileActions(ps.shared.first.id);
     await capture('sp_360x760_20_received_share_with_action_buttons');
 
     await tester.tap(find.byKey(const Key('sharedOutgoingFilter')));
@@ -120,6 +137,7 @@ void main() {
     expect(find.byType(GridView), findsOneWidget);
     expect(find.byType(CollectionFavoriteButton), findsWidgets);
     expect(find.byType(PopupMenuButton<String>), findsWidgets);
+    expectProjectStyleTileActions(archive.path);
     await capture('sp_360x760_21_outgoing_share_with_action_buttons');
 
     final favorite = find.byType(CollectionFavoriteButton).first;
