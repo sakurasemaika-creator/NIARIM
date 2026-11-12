@@ -254,24 +254,19 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        // The selected tab's glyph and its underline must use this very
-        // accent, not a cached copy of the default pink.
+        // At phone width navigation intentionally shows icons, not labels.
+        // Verify the actual TabBar accent and selected tab semantics.
         final tab = find.byKey(const ValueKey('home_tab_0'));
-        final tabTitle = find.descendant(
-          of: tab,
-          matching: find.text(l10n.homeTabProjects),
+        expect(tab, findsOneWidget);
+        expect(tester.widget<Semantics>(tab).properties.selected, isTrue);
+        expect(
+          find.descendant(of: tab,
+              matching: find.byIcon(Icons.movie_creation_outlined)),
+          findsOneWidget,
         );
-        expect(tester.widget<Text>(tabTitle).style?.color, accent);
-        final border =
-            tester
-                    .widget<Container>(
-                      find
-                          .descendant(of: tab, matching: find.byType(Container))
-                          .first,
-                    )
-                    .decoration
-                as BoxDecoration;
-        expect(border.border!.bottom.color, accent);
+        final bar = tester.widget<TabBar>(find.byType(TabBar).first);
+        expect(bar.indicatorColor, accent);
+        expect(bar.labelColor, accent);
 
         final opener = find.byIcon(Icons.menu);
         await tester.tap(opener);
@@ -367,10 +362,14 @@ void main() {
       of: find.byKey(const ValueKey('home_tab_0')),
       matching: find.text(l10n.homeTabProjects),
     );
-    final style = tester.renderObject<RenderParagraph>(label).text.style!;
-    expect(style.color, menu);
-    expect(style.shadows, hasLength(8));
-    expect(style.shadows!.every((s) => s.color == ink), isTrue);
+    expect(label, findsOneWidget);
+    // Navigation now uses Flutter's TabBar indicator, not a text-shadow
+    // outline. Its selected label and underline follow the current accent.
+    final tabBar = tester.widget<TabBar>(find.byType(TabBar).first);
+    expect(tabBar.labelColor, menu);
+    expect(tabBar.indicatorColor, menu);
+    expect(tester.widget<Semantics>(
+      find.byKey(const ValueKey('home_tab_0'))).properties.selected, isTrue);
     await tester.pumpWidget(const SizedBox.shrink());
   });
 
@@ -386,13 +385,17 @@ void main() {
     final fabs = find.byType(FloatingActionButton);
     expect(fabs, findsNWidgets(2));
     final scrollFab = tester.widget<FloatingActionButton>(scrollFinder);
-    expect(scrollFab.elevation, 0);
-    expect(scrollFab.shape, isA<CircleBorder>());
-    expect((scrollFab.shape! as CircleBorder).side, BorderSide.none);
+    final fabTheme = Theme.of(tester.element(scrollFinder))
+        .floatingActionButtonTheme;
+    final scrollShape = scrollFab.shape ?? fabTheme.shape;
+    expect(scrollFab.elevation ?? fabTheme.elevation, 0);
+    expect(scrollShape, isA<CircleBorder>());
+    expect((scrollShape! as CircleBorder).side, BorderSide.none);
     final add = tester.widget<FloatingActionButton>(fabs.last);
-    expect(add.elevation, 0);
-    expect(add.shape, isA<CircleBorder>());
-    expect((add.shape! as CircleBorder).side, BorderSide.none);
+    final addShape = add.shape ?? fabTheme.shape;
+    expect(add.elevation ?? fabTheme.elevation, 0);
+    expect(addShape, isA<CircleBorder>());
+    expect((addShape! as CircleBorder).side, BorderSide.none);
     final leftCenter = tester.getCenter(scrollFinder);
     final rightCenter = tester.getCenter(fabs.last);
     expect(leftCenter.dx, lessThan(rightCenter.dx));
@@ -496,17 +499,13 @@ void main() {
             .colorScheme;
         for (final index in [0, 1, 2, 3]) {
           await switchTab(tester, index);
-          final labels = tester.widgetList<Text>(
-            find.descendant(
-              of: find.byKey(ValueKey('home_tab_$index')),
-              matching: find.byType(Text),
-            ),
-          );
-          expect(
-            labels.single.style!.color,
-            scheme.primary,
-            reason: 'selected tab $index on ${theme.id}',
-          );
+          final tab = find.byKey(ValueKey('home_tab_$index'));
+          expect(tab, findsOneWidget);
+          expect(tester.widget<Semantics>(tab).properties.selected, isTrue);
+          final bar = tester.widget<TabBar>(find.byType(TabBar).first);
+          expect(bar.indicatorColor, scheme.primary,
+              reason: 'selected tab $index on ${theme.id}');
+          expect(bar.labelColor, scheme.primary);
         }
         expect(find.byKey(const ValueKey('home_tab_2')), findsOneWidget);
         expect(find.byKey(const ValueKey('home_tab_3')), findsOneWidget);
