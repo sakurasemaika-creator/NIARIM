@@ -11,13 +11,16 @@ class _FakeRedemptionApi extends CommunityApi {
 
   final List<String> attemptedIds = [];
   final List<String> attemptedVersions = [];
+  final List<int> attemptedMonths = [];
   bool failNext = false;
 
   @override
   Future<Map<String, dynamic>> redeemFullPremiumCoins({
     required String requestId,
     required String priceVersion,
+    int months = 1,
   }) async {
+    attemptedMonths.add(months);
     attemptedIds.add(requestId);
     attemptedVersions.add(priceVersion);
     if (failNext) {
@@ -105,4 +108,51 @@ void main() {
       expect(api.attemptedIds[2], first);
     },
   );
+
+  test('monthly and annual retries keep separate durable request IDs', () async {
+    final api = _FakeRedemptionApi()..failNext = true;
+    const store = CoinRedemptionAttemptStore();
+    await expectLater(
+      store.redeem(
+        api: api,
+        accountId: 'account',
+        serverPriceVersion: 'v3-final-annual550000',
+        months: 12,
+      ),
+      throwsA(isA<NiarimApiException>()),
+    );
+    final pendingAnnual = api.attemptedIds.single;
+    final monthly = await store.redeem(
+      api: api,
+      accountId: 'account',
+      serverPriceVersion: 'v3-final-annual550000',
+      months: 1,
+    );
+    expect(monthly['redeemed'], true);
+    expect(api.attemptedIds[1], isNot(pendingAnnual));
+    final annual = await store.redeem(
+      api: api,
+      accountId: 'account',
+      serverPriceVersion: 'v3-final-annual550000',
+      months: 12,
+    );
+    expect(annual['redeemed'], true);
+    expect(api.attemptedIds[2], pendingAnnual);
+    expect(api.attemptedMonths, [12, 1, 12]);
+  });
+
+  test('unsupported Premium periods never send redemption requests', () async {
+    final api = _FakeRedemptionApi();
+    const store = CoinRedemptionAttemptStore();
+    await expectLater(
+      store.redeem(
+        api: api,
+        accountId: 'account',
+        serverPriceVersion: 'v3-final-annual550000',
+        months: 2,
+      ),
+      throwsArgumentError,
+    );
+    expect(api.attemptedIds, isEmpty);
+  });
 }
