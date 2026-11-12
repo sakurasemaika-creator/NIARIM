@@ -1,0 +1,41 @@
+name: Complete PNG share cards verification
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - 'lib/services/shared_asset_card_codec.dart'
+      - 'lib/services/shared_asset_card_service.dart'
+      - 'lib/screens/canvas/widgets/asset_search_bar.dart'
+      - 'lib/screens/canvas/widgets/brush_panel.dart'
+      - 'lib/screens/canvas/widgets/tone_panel.dart'
+      - 'lib/screens/canvas/widgets/stamp_panel.dart'
+      - 'pubspec.yaml'
+      - 'test/shared_asset_card_codec_test.dart'
+      - 'test/shared_asset_card_round_trip_test.dart'
+      - '.github/workflows/share-card-verification.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+      - run: flutter pub get
+      - name: Test PNG chunk security and image/settings round-trips
+        run: flutter test test/shared_asset_card_codec_test.dart test/shared_asset_card_round_trip_test.dart --reporter expanded
+      - name: Analyze PNG codec, sharing service and three UI panels
+        run: |
+          flutter analyze --no-fatal-infos --no-fatal-warnings \
+            lib/services/shared_asset_card_codec.dart \
+            lib/services/shared_asset_card_service.dart \
+            lib/screens/canvas/widgets/asset_search_bar.dart \
+            lib/screens/canvas/widgets/brush_panel.dart \
+            lib/screens/canvas/widgets/tone_panel.dart \
+            lib/screens/canvas/widgets/stamp_panel.dart \
+            test/shared_asset_card_codec_test.dart \
+            test/shared_asset_card_round_trip_test.dart
