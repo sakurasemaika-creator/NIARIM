@@ -2329,24 +2329,20 @@ class _HomeCollectionSortHeader extends StatelessWidget {
 
 /// Library actions can wrap without taking space from the route title.
 class _LibraryListControls extends StatelessWidget {
-  const _LibraryListControls({required this.sort, this.leading});
+  const _LibraryListControls({required this.sort});
 
   final Widget sort;
-  final Widget? leading;
 
   @override
   Widget build(BuildContext context) => Padding(
     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
     child: LayoutBuilder(
       builder: (context, constraints) => OverflowBar(
-        alignment: leading == null
-            ? MainAxisAlignment.end
-            : MainAxisAlignment.spaceBetween,
+        alignment: MainAxisAlignment.end,
         overflowAlignment: OverflowBarAlignment.end,
         spacing: 8,
         overflowSpacing: 4,
         children: [
-          ?leading,
           ConstrainedBox(
             constraints: BoxConstraints(
               maxWidth: constraints.maxWidth < 400 ? 96 : constraints.maxWidth,
@@ -2486,17 +2482,6 @@ class _SharedTab extends StatelessWidget {
     );
   }
 
-  void _showMoveToSharedFolderSheet(BuildContext context, Project project) {
-    final service = context.read<ProjectService>();
-    showModalBottomSheet<void>(
-      context: context,
-      builder: (_) => WorkFolderMoveSheet(
-        folders: service.sharedFolders,
-        filename: project.name,
-        onMove: (id) => service.moveToSharedFolder(project.id, id),
-      ),
-    );
-  }
 }
 
 
@@ -2646,24 +2631,24 @@ Widget _sharedProjectActions(
     children: [
       if (showFavorite)
         CollectionFavoriteButton(
-        itemId: project.id,
-        favorite: project.isFavorite,
-        tooltip: project.isFavorite
-            ? l10n.colorPickerFavoriteRemove
-            : l10n.colorPickerFavoriteAdd,
-        onPressed: () => runProjectAction(
-          context,
-          () => context.read<ProjectService>().toggleFavorite(project.id),
+          itemId: project.id,
+          favorite: project.isFavorite,
+          tooltip: project.isFavorite
+              ? l10n.colorPickerFavoriteRemove
+              : l10n.colorPickerFavoriteAdd,
+          onPressed: () => runProjectAction(
+            context,
+            () => context.read<ProjectService>().toggleFavorite(project.id),
+          ),
         ),
-      ),
       if (showFavorite && showMenu) const SizedBox(width: 4),
       if (showMenu)
         CollectionActionFrame(
-        key: Key('collectionMenu_${project.id}'),
-        child: _receivedShareMenu(
-          context, project, onCopyEntry: onCopyEntry,
+          key: Key('collectionMenu_${project.id}'),
+          child: _receivedShareMenu(
+            context, project, onCopyEntry: onCopyEntry,
+          ),
         ),
-      ),
     ],
   );
 }
@@ -2941,19 +2926,19 @@ class _OutgoingSharesList extends StatelessWidget {
           '${entry.updatedAt.day.toString().padLeft(2, '0')}  ·  '
           '${(entry.sizeBytes / 1024).toStringAsFixed(1)} KB';
       final favoriteAction = CollectionFavoriteButton(
-            itemId: entry.path,
-            favorite: isFavorite,
-            tooltip: isFavorite
-                ? l10n.colorPickerFavoriteRemove
-                : l10n.colorPickerFavoriteAdd,
-            onPressed: () => runProjectAction(
-              context,
-              () => service.toggleOutgoingShareFavorite(entry.path),
-            ),
-          );
+        itemId: entry.path,
+        favorite: isFavorite,
+        tooltip: isFavorite
+            ? l10n.colorPickerFavoriteRemove
+            : l10n.colorPickerFavoriteAdd,
+        onPressed: () => runProjectAction(
+          context,
+          () => service.toggleOutgoingShareFavorite(entry.path),
+        ),
+      );
       final menuAction = CollectionActionFrame(
-            key: Key('collectionMenu_${entry.path}'),
-            child: PopupMenuButton<String>(
+        key: Key('collectionMenu_${entry.path}'),
+        child: PopupMenuButton<String>(
               key: ValueKey('outgoingShareMenu_${entry.path}'),
               padding: EdgeInsets.zero,
               icon: const Icon(
@@ -2988,8 +2973,8 @@ class _OutgoingSharesList extends StatelessWidget {
                   ),
                 ),
               ],
-            ),
-          );
+        ),
+      );
       final actions = Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -3379,16 +3364,16 @@ class _FolderableList<T> extends StatelessWidget {
         ],
         if (showMenu)
           CollectionActionFrame(
-          child: IconButton(
-            key: ValueKey('collectionFolderMenu_${folder.id}'),
-            icon: const Icon(Icons.more_vert,
-                size: CollectionActionFrame.glyphSize),
-            tooltip: Localizations.localeOf(context).languageCode == 'ja'
-                ? 'フォルダのメニュー' : 'Folder menu',
-            padding: EdgeInsets.zero,
-            onPressed: () => _showFolderMenu(context, folder),
+            child: IconButton(
+              key: ValueKey('collectionFolderMenu_${folder.id}'),
+              icon: const Icon(Icons.more_vert,
+                  size: CollectionActionFrame.glyphSize),
+              tooltip: Localizations.localeOf(context).languageCode == 'ja'
+                  ? 'フォルダのメニュー' : 'Folder menu',
+              padding: EdgeInsets.zero,
+              onPressed: () => _showFolderMenu(context, folder),
+            ),
           ),
-        ),
       ],
     );
   }
