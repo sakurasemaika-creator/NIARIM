@@ -54,6 +54,27 @@ beforeEach(() => {
 });
 
 describe("fail-closed one-month full Premium coin redemption", () => {
+  it("never spends any coins without independent redemption review", async () => {
+    enable();
+    delete process.env.COIN_REDEMPTION_REVIEW_APPROVED;
+    expect(premiumRedemptionOffer()).toMatchObject({
+      enabled: false,
+      priceCoins: null,
+    });
+    const quote = await getCoinRedemptionQuote(req());
+    expect(JSON.parse(quote.body ?? "{}")).toMatchObject({
+      enabled: false,
+      priceCoins: null,
+    });
+    await expect(redeemCoins(req({
+      target:"fullPremium",
+      months:1,
+      priceVersion:"v3-final-annual550000",
+      requestId,
+    }))).rejects.toMatchObject({code:"REDEMPTION_DISABLED"});
+    expect(send).not.toHaveBeenCalled();
+  });
+
   it("rejects unapproved or unusually low prices, with no database writes", async () => {
     expect(premiumRedemptionOffer().enabled).toBe(false);
     await expect(redeemCoins(req({target:"fullPremium",months:1}))).rejects.toMatchObject({
