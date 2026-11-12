@@ -1,42 +1,8 @@
 name: Five Updated UI Screenshots
 
+# Full-scope visual bundles are opt-in; feature-specific captures still run on relevant changes.
 on:
   workflow_dispatch:
-  push:
-    branches: [dev_branch]
-    paths:
-      - '.github/workflows/five-updates-screenshots.yml'
-      - 'test/five_fixes_screenshot_test.dart'
-      - 'lib/screens/community/community_screen.dart'
-      - 'lib/screens/community/community_my_works_screen.dart'
-      - 'lib/screens/community/community_author_works_screen.dart'
-      - 'lib/screens/community/community_work_settings_screen.dart'
-      - 'lib/screens/home/home_screen.dart'
-      - 'lib/screens/home/widgets/project_list_widget.dart'
-      - 'lib/services/community_service.dart'
-      - 'lib/services/theme_service.dart'
-      - 'lib/l10n/**'
-      - 'pubspec.yaml'
-      - 'test/community_my_works_controls_test.dart'
-      - 'test/community_back_navigation_test.dart'
-      - 'test/community_content_filter_dialog_test.dart'
-      - 'test/community_filter_dialog_layout_test.dart'
-      - 'test/community_search_tabs_test.dart'
-      - 'test/community_work_card_layout_test.dart'
-      - 'test/community_mute_wording_l10n_test.dart'
-      - 'test/community_content_filter_l10n_contract_test.dart'
-      - 'lib/screens/community/widgets/community_work_card.dart'
-      - 'lib/screens/community/widgets/community_floating_preview.dart'
-      - 'lib/screens/community/widgets/community_playback_status_view.dart'
-      - 'lib/screens/community/community_work_detail_screen.dart'
-      - 'lib/services/api/community_api.dart'
-      - 'test/community_playback_status_capture_test.dart'
-      - 'test/community_milestone_store_test.dart'
-      - 'test/community_service_test.dart'
-      - 'lib/services/community_milestone_store.dart'
-      - 'lib/screens/community/community_follow_notifications_screen.dart'
-      - 'test/home_entry_navigation_test.dart'
-      - 'test/community_header_matrix_test.dart'
 
 jobs:
   capture:

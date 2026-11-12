@@ -6,7 +6,19 @@ on:
     paths:
       - 'test/home_four_tab_menu_capture_test.dart'
       - '.github/workflows/home-four-tab-menu-screenshots.yml'
+      # Only home four-tab UI and its data/actions should auto-trigger this 16-screen capture.
+      - 'lib/screens/home/home_screen.dart'
+      - 'lib/screens/home/widgets/project_list_widget.dart'
+      - 'lib/screens/home/widgets/exported_work_card.dart'
+      - 'lib/services/project_service.dart'
+      - 'lib/services/work_folder_service.dart'
+      - 'lib/services/local_file_trash_service.dart'
   workflow_dispatch:
+
+# Keep only the newest capture during rapid UI iterations.
+concurrency:
+  group: home-four-tab-captures-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read

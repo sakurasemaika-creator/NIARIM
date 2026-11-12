@@ -1,14 +1,8 @@
 name: One-shot All Routes Screenshot Audit
 
+# Full-scope visual bundles are opt-in; feature-specific captures still run on relevant changes.
 on:
   workflow_dispatch:
-  push:
-    branches: [dev_branch]
-    paths:
-      - ".github/workflows/one-shot-all-routes-screenshot-audit.yml"
-      - "test/all_routes_screenshot_audit_test.dart"
-      - "lib/**"
-      - "assets/**"
 
 permissions:
   contents: read

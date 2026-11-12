@@ -1,20 +1,8 @@
 name: NIARIM Latest UI & Playback Captures
 
+# Full-scope visual bundles are opt-in; feature-specific captures still run on relevant changes.
 on:
   workflow_dispatch:
-  push:
-    branches: [dev_branch]
-    paths:
-      - '.github/workflows/niarim-playback-ui-captures.yml'
-      - 'test/five_fixes_screenshot_test.dart'
-      - 'test/community_playback_status_capture_test.dart'
-      - 'test/community_ranking_layout_test.dart'
-      - 'lib/screens/community/widgets/community_ranking_work_list.dart'
-      - 'lib/screens/community/widgets/community_playback_status_view.dart'
-      - 'lib/screens/community/widgets/community_floating_preview.dart'
-      - 'lib/screens/community/widgets/community_work_card.dart'
-      - 'lib/screens/community/community_screen.dart'
-      - 'lib/l10n/**'
 
 jobs:
   captures:
