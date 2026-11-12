@@ -81,7 +81,7 @@ Uint8List generateBuiltInToneTexture(Tone tone, {int size = 64}) {
     if (cached != null) return cached;
   }
   final data = Uint8List(size * size * 4);
-  final name = tone.name;
+  final name = tone.patternName ?? tone.name;
   // 名前で分岐する都合上、**判定の順序が仕様**になっている点に注意。
   // 「ピクセルディザ」は「ピクセル」を含み、「ピクセル格子」は「格子」を
   // 含む、といった包含関係があるため、より限定的な名前から先に判定する。
