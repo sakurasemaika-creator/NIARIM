@@ -3157,6 +3157,7 @@ class _SharedFolderScreenState extends State<_SharedFolderScreen> {
 /// 作品一覧タブで共用）。フォルダは常にルート直下の1階層のみ（ネスト非対応）。
 class _FolderableList<T> extends StatelessWidget {
   final ValueChanged<ProjectFolder>? onCopyFolder;
+  final ValueChanged<ProjectFolder>? onToggleFolderFavorite;
   final List<T> allItems;
   final List<ProjectFolder> folders;
   final String? Function(T) folderIdOf;
@@ -3193,6 +3194,7 @@ class _FolderableList<T> extends StatelessWidget {
     this.emptyState,
     this.reserveForFloatingActions = false,
     this.onCopyFolder,
+    this.onToggleFolderFavorite,
     this.header,
   });
 
@@ -3243,17 +3245,20 @@ class _FolderableList<T> extends StatelessWidget {
           return CustomScrollView(
             slivers: [
               if (header != null) SliverToBoxAdapter(child: header!),
-              if (hasHeader) ...[
-                SliverToBoxAdapter(child: _folderChips(context, countByFolder)),
-                const SliverToBoxAdapter(child: Divider(height: 1)),
-              ],
               SliverPadding(
                 padding: const EdgeInsets.all(8),
                 sliver: SliverGrid.builder(
                   gridDelegate: _worksGridDelegate(context, viewMode!),
-                  itemCount: rootItems.length,
+                  itemCount: folders.length + rootItems.length,
                   itemBuilder: (context, index) =>
-                      gridItemBuilder!(context, rootItems[index]),
+                      index < folders.length
+                          ? _folderGridTile(
+                              context,
+                              folders[index],
+                              countByFolder[folders[index].id] ?? 0,
+                            )
+                          : gridItemBuilder!(
+                              context, rootItems[index - folders.length]),
                 ),
               ),
               if (reserveForFloatingActions)
@@ -3323,6 +3328,93 @@ class _FolderableList<T> extends StatelessWidget {
     return result;
   }
 
+  Widget _folderActions(BuildContext context, ProjectFolder folder) {
+    final l10n = AppLocalizations.of(context)!;
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (onToggleFolderFavorite != null) ...[
+          CollectionFavoriteButton(
+            itemId: folder.id,
+            favorite: folder.isFavorite,
+            tooltip: folder.isFavorite
+                ? l10n.colorPickerFavoriteRemove
+                : l10n.colorPickerFavoriteAdd,
+            onPressed: () => onToggleFolderFavorite!(folder),
+          ),
+          const SizedBox(width: 4),
+        ],
+        CollectionActionFrame(
+          child: IconButton(
+            key: ValueKey('collectionFolderMenu_${folder.id}'),
+            icon: const Icon(Icons.more_vert,
+                size: CollectionActionFrame.glyphSize),
+            tooltip: Localizations.localeOf(context).languageCode == 'ja'
+                ? 'フォルダのメニュー' : 'Folder menu',
+            padding: EdgeInsets.zero,
+            onPressed: () => _showFolderMenu(context, folder),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _folderGridTile(
+      BuildContext context, ProjectFolder folder, int count) {
+    final theme = Theme.of(context);
+    return Card(
+      key: ValueKey('collectionFolder_${folder.id}'),
+      color: theme.colorScheme.surfaceContainerLow,
+      margin: EdgeInsets.zero,
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: () => onEnterFolder(
+          folder.id,
+          folder.name,
+          allItems.where((e) => folderIdOf(e) == folder.id).toList(),
+        ),
+        onLongPress: () => _showFolderMenu(context, folder),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Expanded(
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  FolderThumbnail(
+                    folder: folder,
+                    choices: _folderCoverChoices(folder.id),
+                  ),
+                  Positioned(
+                    top: 4, right: 4,
+                    child: _folderActions(context, folder),
+                  ),
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(8, 5, 8, 6),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(folder.name, maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontFamily: 'Kuramubon',
+                      fontFamilyFallback: kHeadingFontFallback,
+                    )),
+                  Text('$count',
+                    maxLines: 1,
+                    style: theme.textTheme.bodySmall),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   /// Folder entries use the same full-width, roughly 80dp ListTile as files,
   /// rather than small 48dp chips. Their cover is drawn inside the folder.
   Widget _folderChips(BuildContext context, Map<String, int> countByFolder) {
@@ -3345,13 +3437,7 @@ class _FolderableList<T> extends StatelessWidget {
               ),
               title: Text(folder.name),
               subtitle: Text('${countByFolder[folder.id] ?? 0}'),
-              trailing: IconButton(
-                key: ValueKey('collectionFolderMenu_${folder.id}'),
-                icon: const Icon(Icons.more_vert),
-                tooltip: Localizations.localeOf(context).languageCode == 'ja'
-                    ? 'フォルダのメニュー' : 'Folder menu',
-                onPressed: () => _showFolderMenu(context, folder),
-              ),
+              trailing: _folderActions(context, folder),
               onTap: () => onEnterFolder(
                 folder.id,
                 folder.name,
