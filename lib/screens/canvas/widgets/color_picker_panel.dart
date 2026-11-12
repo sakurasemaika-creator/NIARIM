@@ -175,8 +175,11 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
                       ),
                     ),
                     const SizedBox(width: 8),
-                    Expanded(
-                      child: Semantics(
+                    Flexible(
+                      fit: FlexFit.loose,
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 132),
+                        child: Semantics(
                         label: '${l10n.colorPickerTitle}: #${_colorToHex(_currentColor)}',
                         child: SizedBox(
                           key: const ValueKey('selected-color-preview-chip'),
@@ -189,11 +192,12 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
                             ),
                           ),
                         ),
+                        ),
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 2),
+                const SizedBox(height: 5),
               ],
               // カラーサークルは常時表示。右下のピルで数値スライダーを
               // HSV/RGBから切り替える。現在色の値はモード変更で変えない。
@@ -271,17 +275,6 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
                 labelStyle: TextStyle(
                   fontSize: 10,
                   color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-                labelTrailing: Padding(
-                  padding: const EdgeInsetsDirectional.only(start: 8),
-                  child: SizedBox(
-                    width: 28,
-                    height: 28,
-                    child: CustomPaint(
-                      painter: _CheckerboardPainter(),
-                      child: ColoredBox(color: _currentColor),
-                    ),
-                  ),
                 ),
                 value: _alpha * 100,
                 min: 0,
