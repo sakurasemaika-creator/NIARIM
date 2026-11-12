@@ -1677,7 +1677,7 @@ class AppLocalizationsKo extends AppLocalizations {
       '타임라인에 배치한 오디오 클립은 상세 시트에서 음량・페이드인・페이드아웃 시간을 조정할 수 있습니다. 효과음이나 배경음악의 음량 균형을 맞추거나, 곡의 시작・끝을 부드럽게 만들 수 있습니다.';
 
   @override
-  String get helpPenSubToolTitle => '펜 서브 도구';
+  String get helpPenSubToolTitle => '펜';
 
   @override
   String get helpPenSubToolDesc =>
@@ -2437,7 +2437,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get creativePanelFolderButton => '폴더';
 
   @override
-  String get creativePanelCreateButton => '직접 제작';
+  String get creativePanelCreateButton => '신규';
 
   @override
   String get creativePanelImportButton => '불러오기';
@@ -5642,7 +5642,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get workspaceDockPanelStamp => '스탬프';
 
   @override
-  String get workspaceDockPanelPenSubTool => '펜 서브 도구';
+  String get workspaceDockPanelPenSubTool => '펜';
 
   @override
   String get workspaceDockPanelOnionSkin => '어니언 스킨';
