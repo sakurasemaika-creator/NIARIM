@@ -267,17 +267,17 @@ export class NiarimBackendStack extends Stack {
         // no NIARIM-specific count cap; Google may independently no-fill.
         REWARDED_AD_DAILY_LIMIT:
           String(this.node.tryGetContext("rewardedAdDailyLimit") ?? ""),
-        // Final full Premium monthly tariff is exactly 55,000 coins (550 yen).
-        // This context provides price and version only, NEVER activates
-        // wallet deductions: redemption and safety approval stay default-OFF.
+        // Coin exchange development toggles. All amounts are computed again
+        // by the backend from the approved fixed catalog before debiting.
         COIN_REDEMPTION_ENABLED:
           this.node.tryGetContext("coinRedemptionEnabled") === "true"
             ? "true" : "false",
-        COIN_REDEMPTION_REVIEW_APPROVED:
-          this.node.tryGetContext("coinRedemptionReviewApproved") === "true"
+        COIN_PREMIUM_ANNUAL_REDEMPTION_ENABLED:
+          this.node.tryGetContext("coinPremiumAnnualRedemptionEnabled") === "true"
             ? "true" : "false",
-        // Owner-approved prices are preconfigured, NOT redemption approvals.
-        // Independent review switches remain OFF until audited and approved.
+        COIN_INDIVIDUAL_REDEMPTION_ENABLED:
+          this.node.tryGetContext("coinIndividualRedemptionEnabled") === "true"
+            ? "true" : "false",
         COIN_FULL_PREMIUM_MONTH_COINS:
           String(this.node.tryGetContext("coinFullPremiumMonthCoins") ?? "55000"),
         COIN_FULL_PREMIUM_YEAR_COINS:
@@ -285,18 +285,6 @@ export class NiarimBackendStack extends Stack {
         COIN_PRICE_VERSION:
           String(this.node.tryGetContext("coinPriceVersion") ??
             "v3-final-annual550000"),
-        COIN_PREMIUM_ANNUAL_REDEMPTION_ENABLED:
-          this.node.tryGetContext("coinPremiumAnnualRedemptionEnabled") === "true"
-            ? "true" : "false",
-        COIN_INDIVIDUAL_REDEMPTION_ENABLED:
-          this.node.tryGetContext("coinIndividualRedemptionEnabled") === "true"
-            ? "true" : "false",
-        COIN_INDIVIDUAL_REDEMPTION_REVIEW_APPROVED:
-          this.node.tryGetContext("coinIndividualRedemptionReviewApproved") === "true"
-            ? "true" : "false",
-        COIN_INDIVIDUAL_RIGHTS_CONSUMERS_APPROVED:
-          this.node.tryGetContext("coinIndividualRightsConsumersApproved") === "true"
-            ? "true" : "false",
       },
       bundling: { minify: true, sourceMap: false },
     });
