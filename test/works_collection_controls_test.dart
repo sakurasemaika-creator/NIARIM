@@ -9,6 +9,7 @@ import 'package:niarim/engine/export_engine.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/router.dart';
 import 'package:niarim/screens/home/widgets/exported_work_card.dart';
+import 'package:niarim/widgets/sort_mode_control.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'helpers/first_use_tooltips.dart';
@@ -63,6 +64,15 @@ void main() {
       MultiProvider(providers: providers!, child: const NiarimApp()),
     );
     await tester.pump(const Duration(milliseconds: 700));
+    // The project and exported-work sort controls must use the exact same
+    // header placement and tap-target geometry, not a 96px Works-only strip.
+    final projectHeaderRect = tester.getRect(
+      find.byKey(const Key('homeCollectionSortHeader')),
+    );
+    final projectSortRect = tester.getRect(find.byType(SortModeControl));
+    final projectSizeButtonRect = tester.getRect(
+      find.byKey(const Key('homeCollectionViewModeMenu')),
+    );
     final worksTab = find.byKey(const ValueKey('home_tab_1'));
     await tester.ensureVisible(worksTab);
     await tester.tap(worksTab);
@@ -75,6 +85,24 @@ void main() {
     expect(find.byType(ExportedWorkCard), findsNWidgets(3));
     final context = tester.element(find.byType(ExportedWorkCard).first);
     final l10n = AppLocalizations.of(context)!;
+    final worksHeaderRect = tester.getRect(
+      find.byKey(const Key('homeCollectionSortHeader')),
+    );
+    final worksSortRect = tester.getRect(find.byType(SortModeControl));
+    final worksSizeButtonRect = tester.getRect(
+      find.byKey(const Key('homeCollectionViewModeMenu')),
+    );
+    expect(worksHeaderRect.top, closeTo(projectHeaderRect.top, 1));
+    expect(worksHeaderRect.height, closeTo(projectHeaderRect.height, 1));
+    expect(worksSortRect.right, closeTo(projectSortRect.right, 1));
+    expect(worksSizeButtonRect, projectSizeButtonRect);
+    expect(find.text(l10n.homeSortFieldUpdated), findsOneWidget,
+        reason: 'Works should display the same readable sort label as Projects');
+    // When the field label fits, the small clock icon fallback is not needed.
+    expect(find.descendant(
+      of: find.byType(SortModeControl),
+      matching: find.byIcon(Icons.update),
+    ), findsNothing);
 
     Finder card(String filename) => find.byWidgetPredicate(
       (w) => w is ExportedWorkCard && w.name == filename,
