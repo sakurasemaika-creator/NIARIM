@@ -6386,7 +6386,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get colorPickerShareViaQr => 'QRコードで共有';
 
   @override
-  String get qrShareTooLargeHint => '色数が多いためQRコードでは共有できません（ファイル共有をご利用ください）';
+  String get qrShareTooLargeHint => '画像を含む素材やQRコードに収まらない設定は、ファイル共有をご利用ください。';
 
   @override
   String get colorPickerImportViaFile => 'ファイルから選択';
