@@ -129,6 +129,53 @@ class _BrushPanelState extends State<BrushPanel> {
             // DockedPanelScopeの中では出ない）。
             if (!widget.dockedMode && !widget.embedded)
               PanelCenterCloseBar(onClose: widget.onClose),
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: [
+                  TextButton.icon(
+                    icon: const Icon(Icons.folder_outlined, size: 15),
+                    label: Text(
+                      l10n.creativePanelFolderButton,
+                      style: const TextStyle(
+                        fontSize: 11,
+                        fontFamily: 'Kuramubon',
+                        fontFamilyFallback: kHeadingFontFallback,
+                      ),
+                    ),
+                    onPressed: () =>
+                        _openFolderManagement(context, brushService),
+                  ),
+                  TextButton.icon(
+                    icon: const Icon(
+                      Icons.add_photo_alternate_outlined,
+                      size: 15,
+                    ),
+                    label: Text(
+                      l10n.creativePanelCreateButton,
+                      style: const TextStyle(
+                        fontSize: 11,
+                        fontFamily: 'Kuramubon',
+                        fontFamilyFallback: kHeadingFontFallback,
+                      ),
+                    ),
+                    onPressed: () => _createFromImage(context, brushService),
+                  ),
+                  TextButton.icon(
+                    icon: const Icon(Icons.file_upload_outlined, size: 15),
+                    label: Text(
+                      l10n.creativePanelImportButton,
+                      style: const TextStyle(
+                        fontSize: 11,
+                        fontFamily: 'Kuramubon',
+                        fontFamilyFallback: kHeadingFontFallback,
+                      ),
+                    ),
+                    onPressed: () => _importBrush(context, brushService),
+                  ),
+                ],
+              ),
+            ),
             Row(
               children: [
                 if (!DockedPanelScope.of(context) && !widget.dockedMode && !widget.embedded) Text(
@@ -177,53 +224,6 @@ class _BrushPanelState extends State<BrushPanel> {
             // 実際に自律テストで開くまで気付かれていなかった）。
             // 横スクロール可能にして、狭い幅でも常に例外なく描画・
             // 全ボタンへアクセスできるようにする。
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: [
-                  TextButton.icon(
-                    icon: const Icon(Icons.folder_outlined, size: 15),
-                    label: Text(
-                      l10n.creativePanelFolderButton,
-                      style: const TextStyle(
-                        fontSize: 11,
-                        fontFamily: 'Kuramubon',
-                        fontFamilyFallback: kHeadingFontFallback,
-                      ),
-                    ),
-                    onPressed: () =>
-                        _openFolderManagement(context, brushService),
-                  ),
-                  TextButton.icon(
-                    icon: const Icon(
-                      Icons.add_photo_alternate_outlined,
-                      size: 15,
-                    ),
-                    label: Text(
-                      l10n.creativePanelCreateButton,
-                      style: const TextStyle(
-                        fontSize: 11,
-                        fontFamily: 'Kuramubon',
-                        fontFamilyFallback: kHeadingFontFallback,
-                      ),
-                    ),
-                    onPressed: () => _createFromImage(context, brushService),
-                  ),
-                  TextButton.icon(
-                    icon: const Icon(Icons.file_upload_outlined, size: 15),
-                    label: Text(
-                      l10n.creativePanelImportButton,
-                      style: const TextStyle(
-                        fontSize: 11,
-                        fontFamily: 'Kuramubon',
-                        fontFamilyFallback: kHeadingFontFallback,
-                      ),
-                    ),
-                    onPressed: () => _importBrush(context, brushService),
-                  ),
-                ],
-              ),
-            ),
             if (folders.isNotEmpty)
               Padding(
                 padding: const EdgeInsets.only(bottom: 4),
