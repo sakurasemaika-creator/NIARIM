@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import '../../../config/font_fallback.dart';
 import '../../../widgets/collection_action_controls.dart';
 import '../../../widgets/collection_tile_layout.dart';
+import '../../../widgets/home_collection_selection_scope.dart';
 import 'folder_thumbnail.dart';
 
 /// A saved export keeps its complete identity visible, including large text.
@@ -30,6 +31,7 @@ class ExportedWorkCard extends StatelessWidget {
     this.gridTile = false,
     this.isFavorite = false,
     this.onToggleFavorite,
+    this.selectionId,
   });
 
   final String name;
@@ -53,12 +55,18 @@ class ExportedWorkCard extends StatelessWidget {
   final bool gridTile;
   final bool isFavorite;
   final VoidCallback? onToggleFavorite;
+  final String? selectionId;
 
   static final _filenameSeparators = RegExp(r'([_.-])');
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final selection = HomeCollectionSelectionScope.maybeOf(context);
+    final selectionActive = selection != null && selection.active && selectionId != null;
+    final selectTap = selectionActive ? () => selection.onToggle(selectionId!) : onOpen;
+    final selectLongPress = selection != null && selectionId != null
+        ? () => selection.onLongPress(selectionId!) : onMove;
     final foreground =
         theme.popupMenuTheme.textStyle?.color ?? theme.colorScheme.onSurface;
     final background = theme.cardTheme.color ?? theme.colorScheme.surface;
@@ -195,7 +203,9 @@ class ExportedWorkCard extends StatelessWidget {
     }
 
     if (gridTile) {
-      return collectionTileShadow(context, Card(
+      return HomeCollectionSelectionSurface(
+        selectionId: selectionId ?? name,
+        child: collectionTileShadow(context, Card(
         margin: EdgeInsets.zero,
         elevation: 0,
         clipBehavior: Clip.antiAlias,
@@ -205,9 +215,9 @@ class ExportedWorkCard extends StatelessWidget {
           side: const BorderSide(color: Colors.transparent, width: 2),
         ),
         child: InkWell(
-          onTap: onOpen,
-          onLongPress: onMove,
-          onSecondaryTap: onMove,
+          onTap: selectTap,
+          onLongPress: selectLongPress,
+          onSecondaryTap: selectLongPress,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -218,12 +228,13 @@ class ExportedWorkCard extends StatelessWidget {
                     thumbnail(),
                     // Keep grid actions in the same corners as Projects:
                     // menu at top-right, favorite at bottom-left.
-                    Positioned(
-                      top: 4,
-                      right: 4,
-                      child: menu(),
-                    ),
-                    if (onToggleFavorite != null)
+                    if (!selectionActive)
+                      Positioned(
+                        top: 4,
+                        right: 4,
+                        child: menu(),
+                      ),
+                    if (!selectionActive && onToggleFavorite != null)
                       Positioned(
                         key: const Key('exportedWorkGridFavoriteBottomLeft'),
                         bottom: 4,
@@ -237,10 +248,14 @@ class ExportedWorkCard extends StatelessWidget {
             ],
           ),
         ),
-      ));
+      )),
+      );
     }
 
-    return Card(
+    return HomeCollectionSelectionSurface(
+      selectionId: selectionId ?? name,
+      grid: false,
+      child: Card(
       margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       color: background,
       clipBehavior: Clip.antiAlias,
@@ -250,9 +265,9 @@ class ExportedWorkCard extends StatelessWidget {
           const SingleActivator(LogicalKeyboardKey.contextMenu): onMove,
         },
         child: InkWell(
-          onTap: onOpen,
-          onLongPress: onMove,
-          onSecondaryTap: onMove,
+          onTap: selectTap,
+          onLongPress: selectLongPress,
+          onSecondaryTap: selectLongPress,
           child: LayoutBuilder(
             builder: (context, constraints) {
               // Use a proportionate cover on phones without letting it grow
@@ -288,11 +303,11 @@ class ExportedWorkCard extends StatelessWidget {
                                 children: [
                                   Expanded(child: title()),
                                   const SizedBox(width: 4),
-                                  if (onToggleFavorite != null) ...[
+                                  if (!selectionActive && onToggleFavorite != null) ...[
                                     favorite(),
                                     const SizedBox(width: 4),
                                   ],
-                                  menu(),
+                                  if (!selectionActive) menu(),
                                 ],
                               ),
                               const SizedBox(height: 4),
@@ -312,6 +327,7 @@ class ExportedWorkCard extends StatelessWidget {
             },
           ),
         ),
+      ),
       ),
     );
   }
