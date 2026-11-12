@@ -17,6 +17,7 @@ import 'brush_service.dart';
 import 'stamp_service.dart';
 import 'tone_service.dart';
 import 'shared_asset_card_codec.dart';
+import 'shared_asset_card_preview.dart';
 import '../widgets/export_share_feedback.dart';
 
 /// One public sharing format for brushes, tones and stamps: a complete PNG.
@@ -510,7 +511,13 @@ class SharedAssetCardService {
     label('NIARIM  /  $displayKind', 90, 98, 44, const Color(0xff343c55), weight: FontWeight.bold);
     label(name, 90, 177, 55, const Color(0xff171d30), weight: FontWeight.bold);
     label('素材の見本・使用画像', 90, 295, 31, const Color(0xff5d687b));
-    canvas.drawRRect(RRect.fromRectAndRadius(const Rect.fromLTWH(87, 355, 1025, 500), const Radius.circular(15)), Paint()..color = const Color(0xffe6eaf1));
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        const Rect.fromLTWH(87, 355, 1025, 450),
+        const Radius.circular(15),
+      ),
+      Paint()..color = const Color(0xffe6eaf1),
+    );
 
     final images = <ui.Image>[];
     final archive = ZipDecoder().decodeBytes(originalArchive);
@@ -537,18 +544,78 @@ class SharedAssetCardService {
       }
     }
     if (images.isNotEmpty) {
+      // Original bytes are in the PNG payload; shown thumbnails are visual only.
       final main = images.first;
-      final sx = main.width.toDouble(), sy = main.height.toDouble();
-      final sc = [920 / sx, 405 / sy].reduce((a,b)=>a<b?a:b);
-      final w = sx * sc, h = sy * sc;
-      canvas.drawImageRect(main, Rect.fromLTWH(0, 0, sx, sy),
-          Rect.fromLTWH(600 - w/2, 605 - h/2, w, h), Paint()..filterQuality = FilterQuality.medium);
-      label('元画像 ${sourceEntries.length}枚${sourceEntries.length > images.length ? '（先頭4枚を表示）' : ''}', 105, 808, 22, const Color(0xff445068));
+      final sx = main.width.toDouble();
+      final sy = main.height.toDouble();
+      final scale = [920 / sx, 310 / sy].reduce((a, b) => a < b ? a : b);
+      final w = sx * scale;
+      final h = sy * scale;
+      canvas.drawImageRect(
+        main, Rect.fromLTWH(0, 0, sx, sy),
+        Rect.fromLTWH(600 - w / 2, 550 - h / 2, w, h),
+        Paint()..filterQuality = FilterQuality.medium,
+      );
+      label('元画像 ' + sourceEntries.length.toString() + '枚' +
+            (sourceEntries.length > 4 ? '（先頭4枚を表示）' : ''),
+        105, 782, 22, const Color(0xff445068));
+      for (var i = 0; i < images.length; i++) {
+        final source = images[i];
+        const boxSize = 68.0;
+        final dw = source.width.toDouble();
+        final dh = source.height.toDouble();
+        final small = [boxSize / dw, boxSize / dh]
+            .reduce((a, b) => a < b ? a : b);
+        final x = 104 + i * 105.0;
+        final y = 821.0;
+        canvas.drawRRect(
+          RRect.fromRectAndRadius(
+            Rect.fromLTWH(x - 3, y - 3, boxSize + 6, boxSize + 6),
+            const Radius.circular(6),
+          ),
+          Paint()..color = const Color(0xffedf0f4),
+        );
+        canvas.drawImageRect(
+          source,
+          Rect.fromLTWH(0, 0, dw, dh),
+          Rect.fromLTWH(
+            x + (boxSize - dw * small) / 2,
+            y + (boxSize - dh * small) / 2,
+            dw * small, dh * small,
+          ),
+          Paint()..filterQuality = FilterQuality.medium,
+        );
+      }
     } else {
-      // Procedural brush/tone/stamp: all editable parameters still travel in
-      // the hidden original-archive payload; this label is not a fake stroke.
-      label('内蔵パターン / 設定で生成', 280, 565, 37, const Color(0xff4e5b6d));
-      label('外部の使用画像はありません', 310, 627, 24, const Color(0xff68758a));
+      // Render a genuine stroke using the very same raster engines as the
+      // live pen sub-tool panel; parameters are never approximated by a
+      // hand-drawn line when a source image is not attached.
+      final settings = archive.findFile('data.json');
+      var rendered = false;
+      if (settings != null) {
+        try {
+          final data = jsonDecode(utf8.decode(settings.content as List<int>));
+          if (data is Map<String, dynamic>) {
+            final sample = await SharedAssetCardPreview.render(kind, data);
+            try {
+              canvas.drawImageRect(
+                sample,
+                Rect.fromLTWH(0, 0, sample.width.toDouble(), sample.height.toDouble()),
+                const Rect.fromLTWH(120, 470, 960, 192),
+                Paint()..filterQuality = FilterQuality.medium,
+              );
+              rendered = true;
+            } finally {
+              sample.dispose();
+            }
+          }
+        } catch (_) {
+          // Settings are independently validated when importing this card.
+        }
+      }
+      label(rendered ? '描画エンジンによるストローク見本' : '内蔵パターン / 設定で生成',
+        260, 713, 28, const Color(0xff4e5b6d));
+      label('外部の使用画像はありません', 310, 760, 22, const Color(0xff68758a));
     }
     label('完全共有カード', 90, 927, 38, const Color(0xff171d30), weight: FontWeight.bold);
     label('この画像をNIARIMの「読込」から選ぶと、設定と使用画像を復元できます。', 90, 998, 25, const Color(0xff4a566a), maxWidth: 1000);
