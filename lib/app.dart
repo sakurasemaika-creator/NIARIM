@@ -208,6 +208,7 @@ class _NiarimAppState extends State<NiarimApp> with WidgetsBindingObserver {
                 _ => true,
               };
               return AdPersistentRootFrame(
+                coinPlacementKey: coinAdBenefitForRoute(route),
                 allowBanner:
                     isBannerEligibleRoute(
                       route,

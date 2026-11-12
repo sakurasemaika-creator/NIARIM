@@ -8,6 +8,19 @@ import '../services/advertising_service.dart';
 import 'ad_live_slot_widget.dart';
 import '../l10n/app_localizations.dart';
 
+
+/// Map exactly the three editable app areas that offer scoped coin ad removal.
+/// All other routes retain the normal advertising policy; allAds is global.
+String? coinAdBenefitForRoute(String route) {
+  if (route == '/home' || route == '/shared' || route == '/trash' ||
+      route.startsWith('/home/')) return 'projectListAds';
+  if (route == '/canvas' || route.startsWith('/canvas/')) return 'canvasAds';
+  if (route == '/timeline' || route.startsWith('/timeline/')) {
+    return 'timelineAds';
+  }
+  return null;
+}
+
 /// SafeAreaの上端を除いた、横長広告専用領域の高さ。
 const double kPersistentHorizontalAdMockExtent = 74;
 const double _fixedBannerWidth = 320;
@@ -53,17 +66,20 @@ Size? bannerSizeForViewport({
 class AdPersistentRootFrame extends StatelessWidget {
   final Widget child;
   final bool allowBanner;
+  final String? coinPlacementKey;
 
   const AdPersistentRootFrame({
     super.key,
     required this.child,
     this.allowBanner = true,
+    this.coinPlacementKey,
   });
 
   @override
   Widget build(BuildContext context) {
     return AdMockPageFrame(
       allowBanner: allowBanner,
+      coinPlacementKey: coinPlacementKey,
       child: _PersistentAdRootMarker(child: child),
     );
   }
@@ -86,11 +102,13 @@ class _PersistentAdRootMarker extends InheritedWidget {
 class AdMockPageFrame extends StatelessWidget {
   final Widget child;
   final bool allowBanner;
+  final String? coinPlacementKey;
 
   const AdMockPageFrame({
     super.key,
     required this.child,
     this.allowBanner = true,
+    this.coinPlacementKey,
   });
 
   @override
@@ -102,7 +120,10 @@ class AdMockPageFrame extends StatelessWidget {
         null) {
       return child;
     }
-    final isPremium = context.watch<PremiumService>().isPremium;
+    final premium = context.watch<PremiumService>();
+    final isPremium = premium.isPremium ||
+        (coinPlacementKey != null &&
+         premium.isServerCoinBenefitActive(coinPlacementKey!));
     // Standalone widget tests omit AdvertisingService; production always
     // provides it, and canRequestAds gates real SDK requests.
     final ads = context.watch<AdvertisingService?>();
@@ -251,7 +272,10 @@ class AdMediumRectangleMockWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ads = context.watch<AdvertisingService?>();
-    if (context.watch<PremiumService>().isPremium ||
+    final premium = context.watch<PremiumService>();
+    if (premium.isPremium ||
+        premium.isServerCoinBenefitActive('allAds') ||
+        premium.isServerCoinBenefitActive('processingAds') ||
         (ads != null && !ads.shouldShowAds && !kNiarimAdSnapshotPreview)) {
       return const SizedBox.shrink();
     }
