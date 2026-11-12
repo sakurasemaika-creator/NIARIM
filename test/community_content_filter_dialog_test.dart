@@ -625,14 +625,20 @@ void main() {
     expect(fab.child, isA<Icon>());
     expect((fab.child! as Icon).icon, Icons.video_library_outlined);
     expect(fab.tooltip, l10nOf(tester).communityMyWorksTitle);
-    expect(fab.backgroundColor, theme.colorScheme.primary);
-    expect(fab.foregroundColor, theme.colorScheme.onPrimary);
-    expect(fab.shape, isA<CircleBorder>());
-    expect((fab.shape! as CircleBorder).side, BorderSide.none);
-    expect(fab.elevation, 0);
-    expect(fab.focusElevation, 0);
-    expect(fab.hoverElevation, 0);
-    expect(fab.highlightElevation, 0);
+    // Visual values may come from the global FAB theme rather than being
+    // repeated explicitly on each button.
+    final fabTheme = theme.floatingActionButtonTheme;
+    expect(fab.backgroundColor ?? fabTheme.backgroundColor,
+        theme.colorScheme.primary);
+    expect(fab.foregroundColor ?? fabTheme.foregroundColor,
+        theme.colorScheme.onPrimary);
+    final shape = fab.shape ?? fabTheme.shape;
+    expect(shape, isA<CircleBorder>());
+    expect((shape! as CircleBorder).side, BorderSide.none);
+    expect(fab.elevation ?? fabTheme.elevation, 0);
+    expect(fab.focusElevation ?? fabTheme.focusElevation, 0);
+    expect(fab.hoverElevation ?? fabTheme.hoverElevation, 0);
+    expect(fab.highlightElevation ?? fabTheme.highlightElevation, 0);
     final size = tester.getSize(button);
     expect(size.width, size.height);
 
