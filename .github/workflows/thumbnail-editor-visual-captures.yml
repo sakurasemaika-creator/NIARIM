@@ -7,6 +7,8 @@ on:
       - 'test/thumbnail_editor_visual_capture_test.dart'
       - 'test/thumbnail_editor_actual_app_capture_test.dart'
       - 'lib/screens/home/widgets/exported_work_card.dart'
+      - 'lib/screens/home/home_screen.dart'
+      - 'lib/widgets/sort_mode_control.dart'
   workflow_dispatch:
 permissions:
   contents: read
@@ -19,6 +21,7 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
+          flutter-version: '3.47.9'
           cache: true
       - run: flutter pub get --enforce-lockfile
       - name: Capture actual Flutter thumbnail screens
