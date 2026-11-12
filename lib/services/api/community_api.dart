@@ -192,27 +192,38 @@ class CommunityApi {
       );
 
   /// Price from authenticated server catalog. Never use local reference rates.
-  Future<Map<String, dynamic>> fullPremiumCoinQuote() => _client.getJson(
-    '/me/rewards/quote',
-    authenticated: true,
-    query: {'target': 'fullPremium', 'months': '1'},
-  );
+  Future<Map<String, dynamic>> fullPremiumCoinQuote({int months = 1}) {
+    if (months != 1 && months != 12) {
+      throw ArgumentError.value(months, 'months', 'Only 1 or 12 allowed');
+    }
+    return _client.getJson(
+      '/me/rewards/quote',
+      authenticated: true,
+      query: {'target': 'fullPremium', 'months': '$months'},
+    );
+  }
 
   /// Exactly-once redemption; the stable request UUID MUST be reused after
   /// network timeout, rather than creating a fresh debit attempt.
   Future<Map<String, dynamic>> redeemFullPremiumCoins({
     required String requestId,
     required String priceVersion,
-  }) => _client.postJson(
-    '/me/rewards/redeem',
-    authenticated: true,
-    body: {
-      'target': 'fullPremium',
-      'months': 1,
-      'requestId': requestId,
-      'priceVersion': priceVersion,
-    },
-  );
+    int months = 1,
+  }) {
+    if (months != 1 && months != 12) {
+      throw ArgumentError.value(months, 'months', 'Only 1 or 12 allowed');
+    }
+    return _client.postJson(
+      '/me/rewards/redeem',
+      authenticated: true,
+      body: {
+        'target': 'fullPremium',
+        'months': months,
+        'requestId': requestId,
+        'priceVersion': priceVersion,
+      },
+    );
+  }
 
   /// Server-signed catalog quote for an individual or grouped selection.
   /// Enabled is false until entitlement consumers and operators are reviewed.
