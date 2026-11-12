@@ -225,6 +225,35 @@ class CommunityApi {
     );
   }
 
+  /// Server-authoritative Full Premium quote for any supported shared period.
+  Future<Map<String, dynamic>> flexiblePremiumCoinQuote({
+    required String duration,
+    required int quantity,
+  }) => _client.getJson(
+    '/me/rewards/quote',
+    authenticated: true,
+    query: {'target':'fullPremium','duration':duration,
+      'quantity':'$quantity'},
+  );
+
+  /// Coin debit is confirmed only by an authenticated, atomic backend write.
+  Future<Map<String, dynamic>> redeemFlexiblePremiumCoins({
+    required String duration,
+    required int quantity,
+    required String requestId,
+    required String priceVersion,
+  }) => _client.postJson(
+    '/me/rewards/redeem',
+    authenticated:true,
+    body:{
+      'target':'fullPremium',
+      'duration':duration,
+      'quantity':quantity,
+      'requestId':requestId,
+      'priceVersion':priceVersion,
+    },
+  );
+
   /// Server-signed catalog quote for an individual or grouped selection.
   /// Enabled is false until entitlement consumers and operators are reviewed.
   Future<Map<String, dynamic>> selectedBenefitCoinQuote({
