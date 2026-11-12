@@ -489,8 +489,9 @@ class _CanvasScreenState extends State<CanvasScreen> {
     final completer = Completer<int?>();
     setState(() {
       _pendingBrushOutlineEyedropper = completer;
+      // Keep the unified panel mounted (offstage) while sampling, so its
+      // editable brush sheet can return with the unsaved draft intact.
       _showBrushPanel = false;
-      _showPenSubToolPanel = false;
     });
     return completer.future;
   }
@@ -2122,7 +2123,10 @@ class _CanvasScreenState extends State<CanvasScreen> {
                     leftHanded: leftHanded,
                     top: 56,
                     bottom: null,
-                    child: _penSubToolPanel(),
+                    child: Offstage(
+                      offstage: _pendingBrushOutlineEyedropper != null,
+                      child: _penSubToolPanel(),
+                    ),
                   ),
                 // オニオンスキンパネル
                 if (_showOnionSkinPanel && !isDesktop)
@@ -2187,7 +2191,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
       _showBrushPanel ||
       _showTonePanel ||
       _showStampPanel ||
-      _showPenSubToolPanel ||
+      (_showPenSubToolPanel && _pendingBrushOutlineEyedropper == null) ||
       _showOnionSkinPanel ||
       _showRulerPanel ||
       _showFilterPanel ||
@@ -2345,7 +2349,10 @@ class _CanvasScreenState extends State<CanvasScreen> {
     ),
     CanvasDockPanel.tone => _penSubToolPanel(),
     CanvasDockPanel.stamp => _penSubToolPanel(),
-    CanvasDockPanel.penSubTool => _penSubToolPanel(),
+    CanvasDockPanel.penSubTool => Offstage(
+      offstage: _pendingBrushOutlineEyedropper != null,
+      child: _penSubToolPanel(),
+    ),
     CanvasDockPanel.onionSkin => _onionSkinPanel(),
     CanvasDockPanel.ruler => _rulerPanel(),
     CanvasDockPanel.filter => _filterPanel(),
