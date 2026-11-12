@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../../config/font_fallback.dart';
 import '../../../l10n/app_localizations.dart';
@@ -42,6 +43,7 @@ class AssetSearchBar extends StatelessWidget {
   final AssetSearchMode mode;
   final ValueChanged<AssetSearchMode> onModeChanged;
   final ValueChanged<String> onQueryChanged;
+  final VoidCallback? onClose;
 
   /// タグ検索モードで候補として並べるタグ（使用件数の多い順）。
   final List<String> availableTags;
@@ -55,6 +57,7 @@ class AssetSearchBar extends StatelessWidget {
     required this.mode,
     required this.onModeChanged,
     required this.onQueryChanged,
+    this.onClose,
     required this.availableTags,
     required this.keywordHint,
   });
@@ -82,9 +85,18 @@ class AssetSearchBar extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          TextField(
+          CallbackShortcuts(
+            bindings: {
+              if (onClose != null)
+                const SingleActivator(LogicalKeyboardKey.escape): onClose!,
+            },
+            child: TextField(
+            key: const ValueKey('asset-search-input'),
             controller: controller,
             autofocus: true,
+            textInputAction: TextInputAction.search,
+            onSubmitted: (_) => FocusScope.of(context).unfocus(),
+            onTapOutside: (_) => FocusScope.of(context).unfocus(),
             style: const TextStyle(fontSize: 13),
             decoration: InputDecoration(
               isDense: true,
@@ -103,8 +115,18 @@ class AssetSearchBar extends StatelessWidget {
                     ? l10n.creativePanelSearchModeTag
                     : l10n.creativePanelSearchModeKeyword,
               ),
+              suffixIcon: IconButton(
+                key: const ValueKey('asset-search-close'),
+                tooltip: l10n.commonClose,
+                icon: const Icon(Icons.close, size: 18),
+                onPressed: onClose ?? () {
+                  controller.clear();
+                  onQueryChanged('');
+                },
+              ),
             ),
             onChanged: onQueryChanged,
+          ),
           ),
           if (isTag)
             Padding(
