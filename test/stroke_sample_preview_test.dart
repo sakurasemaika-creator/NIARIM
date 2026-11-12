@@ -1,3 +1,5 @@
+import 'dart:ui' as ui;
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/models/brush.dart';
@@ -61,4 +63,83 @@ void main() {
     );
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('New and edited user brush, tone and stamp refresh their pixels', (
+    tester,
+  ) async {
+    const brush = Brush(
+      id: 'user-custom-brush',
+      name: 'My brush',
+      size: 12,
+      opacity: 100,
+      spacing: 2,
+      stabilization: false,
+      stabilizationStrength: 0,
+      pixelMode: false,
+      fadeMode: FadeMode.off,
+      strokeDecay: false,
+    );
+    const tone = Tone(id: 'custom-tone', name: '網点 50%');
+    const stamp = Stamp(id: 'custom-stamp', name: '星');
+
+    Widget make(Brush b, Tone t, Stamp a) => MaterialApp(
+      home: Scaffold(
+        body: Column(
+          children: [
+            StrokeSamplePreview(
+              key: const ValueKey('custom-brush'), brush: b, color: Colors.black,
+            ),
+            StrokeSamplePreview(
+              key: const ValueKey('custom-tone'), tone: t, color: Colors.black,
+            ),
+            StrokeSamplePreview(
+              key: const ValueKey('custom-stamp'), stamp: a, color: Colors.black,
+            ),
+          ],
+        ),
+      ),
+    );
+    Future<List<ui.Image>> sample({List<ui.Image>? previous}) async {
+      for (var attempt = 0; attempt < 100; attempt++) {
+        await tester.runAsync(
+          () => Future<void>.delayed(const Duration(milliseconds: 60)),
+        );
+        await tester.pump(const Duration(milliseconds: 30));
+        final frames = tester.widgetList<RawImage>(find.byType(RawImage))
+            .map((w) => w.image).whereType<ui.Image>().toList();
+        if (frames.length == 3 &&
+            (previous == null || List.generate(3, (i) =>
+                !identical(frames[i], previous[i])).every((changed) => changed))) {
+          return frames;
+        }
+      }
+      throw StateError('Raster images were not regenerated after editing');
+    }
+    Future<List<List<int>>> pixels(List<ui.Image> images) async =>
+        (await tester.runAsync(() async {
+          final result = <List<int>>[];
+          for (final image in images) {
+            final data = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
+            result.add(data!.buffer.asUint8List().toList());
+          }
+          return result;
+        }))!;
+
+    await tester.pumpWidget(make(brush, tone, stamp));
+    final oldImages = await sample();
+    final before = await pixels(oldImages);
+    await tester.pumpWidget(make(
+      brush.copyWith(opacity: 18, size: 18),
+      tone.copyWith(name: '横ライン'),
+      stamp.copyWith(opacity: 22, scatter: 0.7, density: 2.0),
+    ));
+    final afterImages = await sample(previous: oldImages);
+    final after = await pixels(afterImages);
+    for (var i = 0; i < 3; i++) {
+      expect(listEquals(before[i], after[i]), isFalse,
+          reason: 'Edited user preset #$i must change the actual wave pixels');
+    }
+    expect(tester.takeException(), isNull);
+  });
+
 }
