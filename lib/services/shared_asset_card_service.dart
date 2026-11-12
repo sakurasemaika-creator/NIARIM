@@ -25,8 +25,14 @@ class SharedAssetCardService {
   SharedAssetCardService._();
 
   static Future<File> exportBrush(BrushService service, Brush brush) async {
-    final a = _assetArchive(brush.toJson());
     final paths = brush.resolvedCustomImagePaths;
+    final settings = Map<String, dynamic>.from(brush.toJson())
+      ..['folderId'] = null
+      ..['customImagePath'] = paths.length == 1 ? 'images/000' : null
+      ..['customImagePaths'] = [
+        for (var i = 0; i < paths.length; i++) 'images/$i',
+      ];
+    final a = _assetArchive(settings);
     for (var i = 0; i < paths.length; i++) {
       final f = File(paths[i]);
       if (!await f.exists()) {
@@ -41,7 +47,10 @@ class SharedAssetCardService {
   }
 
   static Future<File> exportTone(ToneService service, Tone tone) async {
-    final a = _assetArchive(tone.toJson());
+    final settings = Map<String, dynamic>.from(tone.toJson())
+      ..['folderId'] = null
+      ..['texturePath'] = tone.texturePath == null ? null : 'image';
+    final a = _assetArchive(settings);
     if (tone.texturePath != null) {
       final f = File(tone.texturePath!);
       if (!await f.exists()) throw const FormatException('Tone texture is missing');
@@ -53,7 +62,10 @@ class SharedAssetCardService {
   }
 
   static Future<File> exportStamp(StampService service, Stamp stamp) async {
-    final a = _assetArchive(stamp.toJson());
+    final settings = Map<String, dynamic>.from(stamp.toJson())
+      ..['folderId'] = null
+      ..['imagePath'] = stamp.imagePath == null ? null : 'image';
+    final a = _assetArchive(settings);
     if (stamp.imagePath != null) {
       final f = File(stamp.imagePath!);
       if (!await f.exists()) throw const FormatException('Stamp image is missing');
@@ -195,17 +207,61 @@ class SharedAssetCardService {
             : 'niastamp';
     final file = File('${dir.path}/.card-import-${DateTime.now().microsecondsSinceEpoch}.$suffix');
     try {
+      // The internal temporary archive is never offered to the user.
+      // Reuse the tested archive importer, then restore fields that older
+      // tone/stamp importers historically dropped (tags and pattern key).
       await file.writeAsBytes(card.data, flush: true);
+      final archive = ZipDecoder().decodeBytes(card.data);
+      final dataFile = archive.findFile('data.json');
+      if (dataFile == null) {
+        throw const FormatException('Shared asset settings are missing');
+      }
+      final data = jsonDecode(utf8.decode(dataFile.content as List<int>));
+      if (data is! Map<String, dynamic>) {
+        throw const FormatException('Invalid shared asset settings');
+      }
       if (brushService != null) {
-        await brushService.importBrushFile(file.path);
+        final original = Brush.fromJson(data);
+        final names = {for (final b in brushService.brushes) b.name};
+        final imported = await brushService.importBrushFile(file.path);
+        brushService.updateBrush(imported.copyWith(
+          name: _uniqueName(original.name, names),
+          isFavorite: false,
+          tags: original.tags,
+        ));
       } else if (toneService != null) {
-        await toneService.importToneFile(file.path);
+        final original = Tone.fromJson(data);
+        final names = {for (final t in toneService.tones) t.name};
+        final imported = await toneService.importToneFile(file.path);
+        toneService.updateTone(imported.copyWith(
+          name: _uniqueName(original.name, names),
+          patternName: original.patternName,
+          isFavorite: false,
+          tags: original.tags,
+        ));
       } else {
-        await stampService!.importStampFile(file.path);
+        final original = Stamp.fromJson(data);
+        final stamps = stampService!;
+        final names = {for (final t in stamps.stamps) t.name};
+        final imported = await stamps.importStampFile(file.path);
+        stamps.updateStamp(imported.copyWith(
+          name: _uniqueName(original.name, names),
+          isFavorite: false,
+          tags: original.tags,
+        ));
       }
     } finally {
       if (await file.exists()) await file.delete();
     }
+  }
+
+  static String _uniqueName(String original, Set<String> existing) {
+    if (!existing.contains(original)) return original;
+    var number = 2;
+    while (existing.contains('$original ($number)')) {
+      number++;
+    }
+    return '$original ($number)';
   }
 
   static Future<File> _createCard(
