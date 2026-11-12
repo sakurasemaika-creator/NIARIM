@@ -134,6 +134,10 @@ void main() {
         await tester.tap(favorite);
         await tester.pumpAndSettle();
         expect(tester.widget<FilterChip>(favorite).selected, !wasSelected);
+        // A nonfavorite folder is intentionally hidden by favorites-only.
+        expect(find.text('S25'), findsNothing);
+        await tester.tap(favorite);
+        await tester.pumpAndSettle();
         expect(find.text('S25'), findsOneWidget);
         expect(find.text(l10n.homeSharedEmpty), findsNothing);
         await tester.tap(find.text('S25'));
@@ -190,7 +194,7 @@ void main() {
     await tester.pumpWidget(const SizedBox.shrink());
   });
 
-  testWidgets('shared folder full names wrap within narrow and short screens', (
+  testWidgets('shared folder names stay bounded inside responsive tiles', (
     tester,
   ) async {
     const name = 'S25 shared folder / 海と空のアニメーション / Animation étude';
@@ -221,8 +225,9 @@ void main() {
       expect(rect.width, lessThanOrEqualTo(size.width));
       expect(rect.height, greaterThanOrEqualTo(48));
       final label = tester.widget<Text>(text);
-      expect(label.maxLines, isNull);
-      expect(label.overflow, isNot(TextOverflow.ellipsis));
+      // Tiled cards intentionally limit the caption to two lines.
+      expect(label.maxLines, 2);
+      expect(label.overflow, TextOverflow.ellipsis);
     }
     await tester.pumpWidget(const SizedBox.shrink());
   });
