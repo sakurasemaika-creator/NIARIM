@@ -1001,7 +1001,9 @@ class _HomeScreenState extends State<HomeScreen>
     final confirm = await showDialog<bool>(context: context,
       builder: (dialog) => AlertDialog(
         title: Text(l10n.commonRestore),
-        content: Text(l10n.homeTrashRestoreConfirm(selected.length)),
+        content: Text(Localizations.localeOf(context).languageCode == 'ja'
+            ? '${selected.length}件を復元しますか？'
+            : 'Restore ${selected.length} selected items?'),
         actions: [
           TextButton(onPressed: () => Navigator.pop(dialog, false),
             child: Text(l10n.commonCancel)),
