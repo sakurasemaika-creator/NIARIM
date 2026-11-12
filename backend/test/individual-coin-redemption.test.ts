@@ -19,8 +19,6 @@ const input=()=>({targets:["toneCurve","levelAdjustment"],duration:"week",
   quantity:1,priceVersion,requestId});
 const enable=()=>{
   process.env.COIN_INDIVIDUAL_REDEMPTION_ENABLED="true";
-  process.env.COIN_INDIVIDUAL_REDEMPTION_REVIEW_APPROVED="true";
-  process.env.COIN_INDIVIDUAL_RIGHTS_CONSUMERS_APPROVED="true";
   process.env.COIN_PRICE_VERSION=priceVersion;
 };
 beforeEach(()=>{
@@ -31,8 +29,6 @@ beforeEach(()=>{
   } as Awaited<ReturnType<typeof getUser>>);
   process.env.TABLE_NAME="test-table";
   delete process.env.COIN_INDIVIDUAL_REDEMPTION_ENABLED;
-  delete process.env.COIN_INDIVIDUAL_REDEMPTION_REVIEW_APPROVED;
-  delete process.env.COIN_INDIVIDUAL_RIGHTS_CONSUMERS_APPROVED;
   delete process.env.COIN_PRICE_VERSION;
 });
 describe("fail closed individual benefit redemption",()=>{
@@ -42,8 +38,7 @@ describe("fail closed individual benefit redemption",()=>{
       .rejects.toMatchObject({code:"REDEMPTION_DISABLED"});
     expect(send).not.toHaveBeenCalled();
     process.env.COIN_INDIVIDUAL_REDEMPTION_ENABLED="true";
-    process.env.COIN_INDIVIDUAL_REDEMPTION_REVIEW_APPROVED="true";
-    process.env.COIN_PRICE_VERSION=priceVersion;
+    process.env.COIN_PRICE_VERSION="wrong";
     expect(individualCoinRedemptionEnabled()).toBe(false);
   });
   it("charges only the server-computed fixed price, granting two account-owned rights atomically",async()=>{

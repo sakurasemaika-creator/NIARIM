@@ -17,9 +17,8 @@ import { COIN_BENEFIT_PRICE_VERSION } from "./coinBenefitProposal";
  * explicitly enable the independent release switches.
  */
 export function individualCoinRedemptionEnabled(): boolean {
+  // One development feature flag. No extra, redundant approval toggles.
   return process.env.COIN_INDIVIDUAL_REDEMPTION_ENABLED === "true" &&
-    process.env.COIN_INDIVIDUAL_REDEMPTION_REVIEW_APPROVED === "true" &&
-    process.env.COIN_INDIVIDUAL_RIGHTS_CONSUMERS_APPROVED === "true" &&
     process.env.COIN_PRICE_VERSION === COIN_BENEFIT_PRICE_VERSION;
 }
 

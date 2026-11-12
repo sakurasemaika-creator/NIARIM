@@ -56,7 +56,7 @@ beforeEach(() => {
 describe("fail-closed one-month full Premium coin redemption", () => {
   it("rejects unapproved or unusually low prices, with no database writes", async () => {
     expect(premiumRedemptionOffer().enabled).toBe(false);
-    await expect(redeemCoins(req({}))).rejects.toMatchObject({
+    await expect(redeemCoins(req({target:"fullPremium",months:1}))).rejects.toMatchObject({
       code: "REDEMPTION_DISABLED",
     });
     expect(send).not.toHaveBeenCalled();
