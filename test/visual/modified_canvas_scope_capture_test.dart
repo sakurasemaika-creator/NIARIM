@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math' as math;
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
@@ -13,6 +14,7 @@ import 'package:niarim/models/canvas_dock_panel.dart';
 import 'package:niarim/router.dart';
 import 'package:niarim/screens/canvas/widgets/color_adjust_sheet.dart';
 import 'package:niarim/screens/canvas/widgets/color_picker_panel.dart';
+import 'package:niarim/screens/canvas/widgets/hsv_color_wheel.dart';
 import 'package:niarim/screens/canvas/widgets/filter_panel.dart';
 import 'package:niarim/screens/canvas/widgets/pen_sub_tool_panel.dart';
 import 'package:niarim/screens/canvas/widgets/toolbar_widget.dart';
@@ -116,12 +118,42 @@ void main() {
       layerId: layer.id, pixels: art,
     );
 
+    // Controls live in the unused corners of the wheel square. A touch
+    // target must never intersect the visible circular hue ring.
+    void assertColorWheelControlsClear() {
+      final wheelFinder = find.byType(HsvColorWheel);
+      expect(wheelFinder, findsOneWidget);
+      final wheel = tester.widget<HsvColorWheel>(wheelFinder);
+      final bounds = tester.getRect(wheelFinder);
+      final center = Offset(bounds.center.dx, bounds.top + wheel.size / 2);
+      for (final key in [
+        'color-picker-eyedropper',
+        'color-picker-transparent-toggle',
+        'color-slider-mode-hsv',
+        'color-slider-mode-rgb',
+      ]) {
+        final target = find.byKey(ValueKey(key));
+        if (target.evaluate().isEmpty) continue;
+        final rect = tester.getRect(target);
+        final nearest = Offset(
+          math.max(rect.left, math.min(center.dx, rect.right)),
+          math.max(rect.top, math.min(center.dy, rect.bottom)),
+        );
+        expect(
+          (nearest - center).distance,
+          greaterThanOrEqualTo(wheel.size / 2 - 2),
+          reason: '$key must not overlap the circular hue ring',
+        );
+      }
+    }
+
     await settings.setForcePcMode(true);
     await settings.setDefaultDockedPanels({CanvasDockPanel.colorPicker});
     await navigate('/home');
     await navigate('/canvas/' + demo.id);
     expect(find.byType(ColorPickerPanel), findsOneWidget);
     expect(find.byKey(const ValueKey('color-slider-mode-hsv')), findsOneWidget);
+    assertColorWheelControlsClear();
     await shot('01_pc_large_color_wheel_hsv_edge_controls');
     await tester.tap(find.byKey(const ValueKey('color-slider-mode-rgb')));
     await shot('02_pc_large_color_wheel_rgb_edge_controls');
@@ -186,6 +218,7 @@ void main() {
     await tester.tap(swatch);
     await settle();
     expect(find.byType(ColorPickerPanel), findsOneWidget);
+    assertColorWheelControlsClear();
     await shot('08_mobile_color_wheel_hsv_edge_controls');
     await tester.tap(find.byKey(const ValueKey('color-slider-mode-rgb')));
     await shot('09_mobile_color_wheel_rgb_edge_controls');
