@@ -822,7 +822,6 @@ class ProjectListWidget extends StatelessWidget {
   Widget _folderGridCard(BuildContext context, ProjectFolder folder) {
     final isSelected = selectedIds.contains(folder.id);
     final scheme = Theme.of(context).colorScheme;
-    final primary = scheme.primary;
     final selectionColor = scheme.secondary;
     final selectionForeground = scheme.onSecondary;
     return GestureDetector(
