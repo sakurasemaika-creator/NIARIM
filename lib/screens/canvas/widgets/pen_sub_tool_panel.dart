@@ -10,7 +10,8 @@ import '../../../services/tone_service.dart';
 import '../../../services/stamp_service.dart';
 import '../../../models/stamp.dart';
 import '../../../widgets/labeled_slider.dart';
-import '../../../widgets/stroke_sample_preview.dart';
+import '../../../widgets/preset_stroke_row.dart';
+import '../../../utils/reorder_index.dart';
 import '../../../widgets/first_use_tooltip.dart';
 import '../canvas_screen.dart';
 import '../../../config/font_fallback.dart';
@@ -136,9 +137,9 @@ class _PenSubToolPanelState extends State<PenSubToolPanel>
             child: TabBarView(
               controller: _tabController,
               children: [
-                _BrushTab(onClose: widget.onClose),
-                _ToneTab(onClose: widget.onClose),
-                _StampTab(onClose: widget.onClose),
+                _BrushTab(onClose: widget.onClose, onManage: widget.onManage == null ? null : () => widget.onManage!(PenSubTool.brush)),
+                _ToneTab(onClose: widget.onClose, onManage: widget.onManage == null ? null : () => widget.onManage!(PenSubTool.tone)),
+                _StampTab(onClose: widget.onClose, onManage: widget.onManage == null ? null : () => widget.onManage!(PenSubTool.stamp)),
               ],
             ),
           ),
@@ -148,159 +149,223 @@ class _PenSubToolPanelState extends State<PenSubToolPanel>
   }
 }
 
-/// ブラシタブ
-class _BrushTab extends StatelessWidget {
-  final VoidCallback onClose;
-  const _BrushTab({required this.onClose});
+/// Compact actions shared by every pen-subtool tab. The action buttons and
+/// the reorder grip are never sacrificed to make room for the wave preview.
+class _QuickPresetActions extends StatelessWidget {
+  const _QuickPresetActions({
+    required this.index,
+    required this.favorite,
+    required this.onFavorite,
+    required this.onDuplicate,
+    this.onEdit,
+    this.onManage,
+  });
+
+  final int index;
+  final bool favorite;
+  final VoidCallback onFavorite;
+  final VoidCallback onDuplicate;
+  final VoidCallback? onEdit;
+  final VoidCallback? onManage;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final brushService = context.watch<BrushService>();
-    final brushes = brushService.brushes;
-    final current = brushService.currentBrush;
-
-    return ListView.builder(
-      itemCount: brushes.length,
-      itemBuilder: (context, index) {
-        final brush = brushes[index];
-        final isSelected = current?.id == brush.id;
-        // 使っているブラシは、いま描く太さ・不透明度を出す。
-        final shown = isSelected ? current! : brush;
-        return ListTile(
-          dense: true,
-          selected: isSelected,
-          // 色は一覧の行の決まりに任せる（選んだ行は選択色の上の文字色）。
-          leading: const Icon(Icons.brush, size: 16),
-          title: Semantics(
-            label: l10n.penSubToolBrushSizeOpacity(
-              shown.size.round(),
-              shown.opacity,
-            ),
-            child: Text(
-              brush.name,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                fontSize: 12,
-                fontFamily: 'Kuramubon',
-                fontFamilyFallback: kHeadingFontFallback,
-              ),
-            ),
-          ),
-          subtitle: StrokeSamplePreview(
-            brush: shown,
-            color: context.watch<BrushService>().currentColor,
-          ),
-          trailing: GestureDetector(
-            onTap: () => brushService.toggleFavoriteBrush(brush.id),
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        GestureDetector(
+          onTap: onFavorite,
+          child: Padding(
+            padding: const EdgeInsets.all(4),
             child: Icon(
-              brush.isFavorite ? Icons.star : Icons.star_outline,
+              favorite ? Icons.star : Icons.star_outline,
               size: 14,
-              color: brush.isFavorite
+              color: favorite
                   ? ThemeService.activeColorScheme.tertiary
                   : ThemeService.activeColorScheme.onSurfaceVariant,
             ),
           ),
+        ),
+        PopupMenuButton<String>(
+          icon: const Icon(Icons.more_vert, size: 14),
+          tooltip: l10n.penSubToolManageTooltip,
+          onSelected: (value) {
+            switch (value) {
+              case 'edit':
+                onEdit?.call();
+              case 'duplicate':
+                onDuplicate();
+              case 'manage':
+                onManage?.call();
+            }
+          },
+          itemBuilder: (_) => [
+            if (onEdit != null)
+              PopupMenuItem(
+                value: 'edit',
+                child: Text(l10n.creativePanelEditAction),
+              ),
+            PopupMenuItem(
+              value: 'duplicate',
+              child: Text(l10n.themeDuplicateAction),
+            ),
+            if (onManage != null)
+              PopupMenuItem(
+                value: 'manage',
+                child: Text(l10n.penSubToolManageTooltip),
+              ),
+          ],
+        ),
+        ReorderableDragStartListener(
+          index: index,
+          child: Padding(
+            padding: const EdgeInsetsDirectional.only(start: 2, end: 4),
+            child: Icon(
+              Icons.drag_indicator,
+              size: 16,
+              color: ThemeService.activeColorScheme.onSurfaceVariant,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Brush, tone and stamp all use PresetStrokeRow for identical text,
+/// stroke preview and action placement.
+class _BrushTab extends StatelessWidget {
+  const _BrushTab({required this.onClose, this.onManage});
+  final VoidCallback onClose;
+  final VoidCallback? onManage;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final service = context.watch<BrushService>();
+    final brushes = service.brushes;
+    final current = service.currentBrush;
+    return ReorderableListView.builder(
+      buildDefaultDragHandles: false,
+      itemCount: brushes.length,
+      onReorderItem: (from, to) =>
+          service.reorderBrush(from, preRemovalIndex(from, to)),
+      itemBuilder: (context, index) {
+        final brush = brushes[index];
+        final selected = current?.id == brush.id;
+        final shown = selected ? current! : brush;
+        return PresetStrokeRow(
+          key: ValueKey('pen-subtool-brush-' + brush.id),
+          name: brush.name,
+          brush: shown,
+          color: service.currentColor,
+          selected: selected,
+          semanticsLabel: l10n.penSubToolBrushSizeOpacity(
+            shown.size.round(), shown.opacity,
+          ),
           onTap: () {
-            brushService.selectBrush(brush.id);
+            service.selectBrush(brush.id);
             onClose();
           },
+          onLongPress: service.isBuiltIn(brush.id) ? null : onManage,
+          trailing: _QuickPresetActions(
+            index: index,
+            favorite: brush.isFavorite,
+            onFavorite: () => service.toggleFavoriteBrush(brush.id),
+            onEdit: service.isBuiltIn(brush.id) ? null : onManage,
+            onDuplicate: () => service.duplicateBrush(brush.id),
+            onManage: onManage,
+          ),
         );
       },
     );
   }
 }
 
-/// トーンタブ：上段に名称、下段に実際のトーンで描いた波形を表示。
 class _ToneTab extends StatelessWidget {
+  const _ToneTab({required this.onClose, this.onManage});
   final VoidCallback onClose;
-  const _ToneTab({required this.onClose});
+  final VoidCallback? onManage;
 
   @override
   Widget build(BuildContext context) {
-    final toneService = context.watch<ToneService>();
-    final tones = toneService.tones;
-    final current = toneService.currentTone;
-
-    return ListView.builder(
+    final service = context.watch<ToneService>();
+    final tones = service.tones;
+    final current = service.currentTone;
+    return ReorderableListView.builder(
+      buildDefaultDragHandles: false,
       itemCount: tones.length,
+      onReorderItem: (from, to) =>
+          service.reorderTone(from, preRemovalIndex(from, to)),
       itemBuilder: (context, index) {
         final tone = tones[index];
-        final isSelected = current?.id == tone.id;
-        return ListTile(
+        return PresetStrokeRow(
           key: ValueKey('pen-subtool-tone-' + tone.id),
-          dense: true,
-          selected: isSelected,
-          leading: const Icon(Icons.texture, size: 16),
-          title: Text(
-            tone.name,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              fontSize: 12,
-              fontFamily: 'Kuramubon',
-              fontFamilyFallback: kHeadingFontFallback,
-            ),
-          ),
-          subtitle: StrokeSamplePreview(
-            tone: tone,
-            color: context.watch<BrushService>().currentColor,
-          ),
+          name: tone.name,
+          tone: tone,
+          color: context.watch<BrushService>().currentColor,
+          selected: current?.id == tone.id,
           onTap: () {
-            toneService.selectTone(tone.id);
+            service.selectTone(tone.id);
             onClose();
           },
+          onLongPress: service.isBuiltIn(tone.id) ? null : onManage,
+          trailing: _QuickPresetActions(
+            index: index,
+            favorite: tone.isFavorite,
+            onFavorite: () => service.toggleFavorite(tone.id),
+            onEdit: service.isBuiltIn(tone.id) ? null : onManage,
+            onDuplicate: () => service.duplicateTone(tone.id),
+            onManage: onManage,
+          ),
         );
       },
     );
   }
 }
 
-/// スタンプタブ：上段に名称、下段に実際のスタンプで描いた波形を表示。
 class _StampTab extends StatelessWidget {
+  const _StampTab({required this.onClose, this.onManage});
   final VoidCallback onClose;
-  const _StampTab({required this.onClose});
+  final VoidCallback? onManage;
 
   @override
   Widget build(BuildContext context) {
-    final stampService = context.watch<StampService>();
-    final stamps = stampService.stamps;
-    final current = stampService.currentStamp;
-
-    return ListView.builder(
+    final service = context.watch<StampService>();
+    final stamps = service.stamps;
+    final current = service.currentStamp;
+    return ReorderableListView.builder(
+      buildDefaultDragHandles: false,
       itemCount: stamps.length,
+      onReorderItem: (from, to) =>
+          service.reorderStamp(from, preRemovalIndex(from, to)),
       itemBuilder: (context, index) {
         final stamp = stamps[index];
-        final isSelected = current?.id == stamp.id;
-        final builtIn = stampService.isBuiltIn(stamp.id);
-        return ListTile(
+        final builtIn = service.isBuiltIn(stamp.id);
+        return PresetStrokeRow(
           key: ValueKey('pen-subtool-stamp-' + stamp.id),
-          dense: true,
-          selected: isSelected,
-          leading: const Icon(Icons.star_border, size: 16),
-          title: Text(
-            stamp.name,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              fontSize: 12,
-              fontFamily: 'Kuramubon',
-              fontFamilyFallback: kHeadingFontFallback,
-            ),
-          ),
-          subtitle: StrokeSamplePreview(
-            stamp: stamp,
-            color: context.watch<BrushService>().currentColor,
-          ),
+          name: stamp.name,
+          stamp: stamp,
+          color: Theme.of(context).colorScheme.onSurface,
+          selected: current?.id == stamp.id,
           onTap: () {
-            stampService.selectStamp(stamp.id);
+            service.selectStamp(stamp.id);
             onClose();
           },
-          // Built-in assets are read-only; a duplicate is editable.
           onLongPress: builtIn
               ? null
-              : () => _showStampSettingsDialog(context, stampService, stamp),
+              : () => _showStampSettingsDialog(context, service, stamp),
+          trailing: _QuickPresetActions(
+            index: index,
+            favorite: stamp.isFavorite,
+            onFavorite: () => service.toggleFavorite(stamp.id),
+            onEdit: builtIn
+                ? null
+                : () => _showStampSettingsDialog(context, service, stamp),
+            onDuplicate: () => service.duplicateStamp(stamp.id),
+            onManage: onManage,
+          ),
         );
       },
     );
