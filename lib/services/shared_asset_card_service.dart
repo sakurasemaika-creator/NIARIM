@@ -447,6 +447,7 @@ class SharedAssetCardService {
         originalArchive.length > SharedAssetCardCodec.maxAssetBytes) {
       throw const FormatException('Shared asset file is too large');
     }
+    _validateZipEnvelope(originalArchive);
     final digest = sha256.convert(originalArchive).toString();
     final rendered = await _renderCard(kind, name, originalArchive, digest);
     final cardBytes = SharedAssetCardCodec.embed(
@@ -461,8 +462,14 @@ class SharedAssetCardService {
     final short = digest.substring(0, 12);
     final stamp = DateTime.now().microsecondsSinceEpoch;
     final out = File('${outDir.path}/${safeName.isEmpty ? kind : safeName}-$short-$stamp.png');
-    await out.writeAsBytes(cardBytes, flush: true);
-    return out;
+    try {
+      await out.writeAsBytes(cardBytes, flush: true);
+      await inspect(out); // Verify the exact file the recipient will import.
+      return out;
+    } catch (_) {
+      if (await out.exists()) await out.delete();
+      rethrow;
+    }
   }
 
   static Future<Uint8List> _renderCard(
@@ -507,18 +514,26 @@ class SharedAssetCardService {
 
     final images = <ui.Image>[];
     final archive = ZipDecoder().decodeBytes(originalArchive);
-    for (final entry in archive.files) {
-      if (!entry.isFile || !entry.name.startsWith('images/') && !entry.name.startsWith('image.')) continue;
-      if (images.length == 4) break;
+    final sourceEntries = archive.files.where((entry) => entry.isFile &&
+      (entry.name.startsWith('images/') || entry.name.startsWith('image.'))).toList();
+    // Decode every source before offering the exported file. Missing or
+    // corrupt images must never create a misleading "complete" card.
+    for (final entry in sourceEntries) {
+      final data = entry.content as List<int>;
+      final codec = await ui.instantiateImageCodec(Uint8List.fromList(data));
       try {
-        final data = entry.content as List<int>;
-        final codec = await ui.instantiateImageCodec(Uint8List.fromList(data));
         final frame = await codec.getNextFrame();
+        if (frame.image.width > 4096 || frame.image.height > 4096) {
+          frame.image.dispose();
+          throw const FormatException('Source image exceeds 4096px');
+        }
+        if (images.length < 4) {
+          images.add(frame.image);
+        } else {
+          frame.image.dispose();
+        }
+      } finally {
         codec.dispose();
-        images.add(frame.image);
-      } catch (_) {
-        // Visible preview decoding is best effort; binary payload remains
-        // original. Import verification is performed independently.
       }
     }
     if (images.isNotEmpty) {
@@ -528,7 +543,7 @@ class SharedAssetCardService {
       final w = sx * sc, h = sy * sc;
       canvas.drawImageRect(main, Rect.fromLTWH(0, 0, sx, sy),
           Rect.fromLTWH(600 - w/2, 605 - h/2, w, h), Paint()..filterQuality = FilterQuality.medium);
-      label('オリジナル画像 ${images.length}枚${archive.files.where((e) => e.name.startsWith('images/')).length > images.length ? '（一部表示）' : ''}', 105, 808, 22, const Color(0xff445068));
+      label('元画像 ${sourceEntries.length}枚${sourceEntries.length > images.length ? '（先頭4枚を表示）' : ''}', 105, 808, 22, const Color(0xff445068));
     } else {
       // Procedural brush/tone/stamp: all editable parameters still travel in
       // the hidden original-archive payload; this label is not a fake stroke.
