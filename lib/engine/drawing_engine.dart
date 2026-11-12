@@ -781,6 +781,11 @@ class DrawingEngine {
     final effectiveRadius = radius * math.max(tilt.scaleX, tilt.scaleY);
     final blur = blurRadius.toDouble();
     final totalRadius = effectiveRadius + blur;
+    // Precompute falloff constants once per tip, not for every raster pixel.
+    final softSigma = math.max(0.5, (radius + blur) / 3.3);
+    final softnessMix = blur > 0
+        ? (blur / (blur + radius)).clamp(0.0, 1.0)
+        : 0.0;
 
     final minTx = ((cx - totalRadius) / TileManager.tileSize).floor();
     final maxTx = ((cx + totalRadius) / TileManager.tileSize).floor();
@@ -963,14 +968,11 @@ class DrawingEngine {
               // smooth, center-weighted Gaussian as blur grows; tiny blur
               // values retain the crisp underlying brush character.
               if (dist <= radius + blur) {
-                final classic = dist <= radius
-                    ? 1.0
-                    : 1.0 - math.pow((dist - radius) / blur, 2).toDouble();
-                final sigma = math.max(0.5, (radius + blur) / 3.3);
-                final ratio = dist / sigma;
+                final t = dist <= radius ? 0.0 : (dist - radius) / blur;
+                final classic = 1.0 - t * t;
+                final ratio = dist / softSigma;
                 final soft = math.exp(-0.5 * ratio * ratio);
-                final softness = (blur / (blur + radius)).clamp(0.0, 1.0);
-                pixelAlpha = classic * (1.0 - softness) + soft * softness;
+                pixelAlpha = classic * (1.0 - softnessMix) + soft * softnessMix;
               } else {
                 pixelAlpha = 0.0;
               }
