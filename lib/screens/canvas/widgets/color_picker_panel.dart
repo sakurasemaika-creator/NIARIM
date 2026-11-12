@@ -155,7 +155,7 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
       maxHeight: 680,
       selfScrolling: true,
       child: Padding(
-        padding: const EdgeInsets.all(12),
+        padding: EdgeInsets.symmetric(horizontal: 12, vertical: docked ? 4 : 12),
         child: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
