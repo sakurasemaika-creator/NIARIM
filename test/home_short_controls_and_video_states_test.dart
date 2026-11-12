@@ -179,7 +179,7 @@ void main() {
       expect(hitRect.overlaps(createFolderRect), isFalse);
       await tester.tap(button);
       await tester.pumpAndSettle();
-      final delete = find.text(l10n.commonDelete).last;
+      final delete = find.text(l10n.homeMoveToTrash).last;
       await tester.ensureVisible(delete);
       await tester.pumpAndSettle();
       await tester.tap(delete);
