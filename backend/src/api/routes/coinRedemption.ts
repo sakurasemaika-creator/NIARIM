@@ -8,18 +8,24 @@ import { ddb, Keys, tableName } from "../../lib/dynamo";
 import { badRequest, conflict, forbidden, ok } from "../../lib/response";
 import { parseJsonObject } from "../../lib/request";
 import { addOneCalendarMonthUtc, premiumRedemptionOffer } from "../../lib/coinRedemption";
+import { catalogRedemptionQuote } from "../../lib/coinRedemptionCatalog";
 
 /** Read quote from the same server configuration used for spending. */
 export async function getCoinRedemptionQuote(event: APIGatewayProxyEventV2) {
   await authenticate(
     event.headers["authorization"] ?? event.headers["Authorization"],
   );
-  const target = event.queryStringParameters?.target ?? "fullPremium";
-  const months = event.queryStringParameters?.months ?? "1";
-  if (target !== "fullPremium" || months !== "1") {
-    badRequest("この特典・期間の交換は準備中です", "REDEMPTION_NOT_AVAILABLE");
+  // The catalog is read-only, authenticated and entirely server-priced.
+  // A visible catalog price must NEVER imply spending is enabled.
+  const request = event.queryStringParameters ?? {};
+  const quote = catalogRedemptionQuote(request);
+  if (quote.target === "fullPremium" &&
+      quote.duration === "month" && quote.quantity === 1) {
+    return ok({ ...premiumRedemptionOffer(),
+      duration: quote.duration, quantity: quote.quantity,
+      catalogPriceCoins: quote.catalogPriceCoins });
   }
-  return ok(premiumRedemptionOffer());
+  return ok(quote);
 }
 
 /**
