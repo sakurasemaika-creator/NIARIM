@@ -957,12 +957,20 @@ class DrawingEngine {
               // ピクセルモード：エッジをシャープに（アンチエイリアス無し）
               pixelAlpha = dist <= radius ? 1.0 : 0.0;
             } else if (blur > 0) {
-              // ソフトブラシ：ガウス的なフォールオフ
-              if (dist <= radius) {
-                pixelAlpha = 1.0;
-              } else if (dist <= radius + blur) {
-                final t = (dist - radius) / blur;
-                pixelAlpha = 1.0 - t * t;
+              // A blurred tip must soften *inside* its nominal radius too.
+              // A fully opaque disc with a faded rim made the airbrush look
+              // like a thick marker. Blend the original coverage with a
+              // smooth, center-weighted Gaussian as blur grows; tiny blur
+              // values retain the crisp underlying brush character.
+              if (dist <= radius + blur) {
+                final classic = dist <= radius
+                    ? 1.0
+                    : 1.0 - math.pow((dist - radius) / blur, 2).toDouble();
+                final sigma = math.max(0.5, (radius + blur) / 3.3);
+                final ratio = dist / sigma;
+                final soft = math.exp(-0.5 * ratio * ratio);
+                final softness = (blur / (blur + radius)).clamp(0.0, 1.0);
+                pixelAlpha = classic * (1.0 - softness) + soft * softness;
               } else {
                 pixelAlpha = 0.0;
               }
