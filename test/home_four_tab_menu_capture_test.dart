@@ -169,5 +169,35 @@ void main() {
     expect(find.byKey(const Key('homeTrashRestoreConfirmation')),
         findsOneWidget);
     await shot('08_trash_restore_confirmation');
+    await tester.tap(find.text('キャンセル').last);
+    await settle();
+
+    // Capture the actual long-press selection mode, not a simulated card.
+    await tester.longPress(find.text('削除した練習作品').first);
+    await settle();
+    expect(find.byKey(const Key('home-selection-count')), findsOneWidget);
+    expect(find.byKey(Key('homeSelectedMarker_trash_project:${deleted.id}')),
+        findsOneWidget);
+    await shot('12_trash_selected');
+
+    await tab(0);
+    await tester.longPress(find.text('第1話 サンプルアニメ').first);
+    await settle();
+    expect(find.byKey(const Key('home-selection-count')), findsOneWidget);
+    await shot('09_projects_selected');
+
+    await tab(1);
+    await tester.longPress(find.text('ANIME_EP01.png').first);
+    await settle();
+    expect(find.byKey(Key('homeSelectedMarker_work_file:${(await ExportEngine.listExportedFiles()).first.path}')),
+        findsOneWidget);
+    await shot('10_works_selected');
+
+    await tab(2);
+    await tester.longPress(find.text('第1話 サンプルアニメ').first);
+    await settle();
+    expect(find.byKey(Key('homeSelectedMarker_shared_file:${projects.shared.first.id}')),
+        findsOneWidget);
+    await shot('11_shared_selected');
   }, timeout: const Timeout(Duration(minutes: 5)));
 }
