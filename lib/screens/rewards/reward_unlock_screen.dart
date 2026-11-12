@@ -743,7 +743,7 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
       (
         t['day'],
         [
-          for (var i = 2; i <= 6; i++)
+          for (var i = 1; i <= 6; i++)
             CoinUnlockDuration(i, CoinDurationUnit.day),
         ],
       ),
