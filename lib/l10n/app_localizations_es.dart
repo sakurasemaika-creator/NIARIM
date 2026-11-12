@@ -1731,7 +1731,7 @@ class AppLocalizationsEs extends AppLocalizations {
       'Un clip de audio colocado en la línea de tiempo puede tener su volumen y las duraciones de fundido de entrada y salida ajustados desde su hoja de detalles. Úsalo para equilibrar el volumen de efectos de sonido y música, o suavizar el inicio y el final de una pista.';
 
   @override
-  String get helpPenSubToolTitle => 'Subherramientas del lápiz';
+  String get helpPenSubToolTitle => 'Lápiz';
 
   @override
   String get helpPenSubToolDesc =>
@@ -2559,7 +2559,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get creativePanelFolderButton => 'Carpeta';
 
   @override
-  String get creativePanelCreateButton => 'Crear';
+  String get creativePanelCreateButton => 'Nuevo';
 
   @override
   String get creativePanelImportButton => 'Importar';
@@ -5893,7 +5893,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get workspaceDockPanelStamp => 'Sello';
 
   @override
-  String get workspaceDockPanelPenSubTool => 'Subherramienta de lápiz';
+  String get workspaceDockPanelPenSubTool => 'Lápiz';
 
   @override
   String get workspaceDockPanelOnionSkin => 'Papel cebolla';
