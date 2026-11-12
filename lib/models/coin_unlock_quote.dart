@@ -33,7 +33,7 @@ class CoinUnlockDuration {
     : assert(amount > 0),
       assert(
         (unit == CoinDurationUnit.hour && amount <= 24) ||
-            (unit == CoinDurationUnit.day && amount >= 2 && amount <= 6) ||
+            (unit == CoinDurationUnit.day && amount >= 1 && amount <= 6) ||
             (unit == CoinDurationUnit.week && amount >= 1 && amount <= 3) ||
             (unit == CoinDurationUnit.month && amount >= 1 && amount <= 120),
       );
@@ -43,7 +43,7 @@ class CoinUnlockDuration {
 
   bool get isValid => switch (unit) {
     CoinDurationUnit.hour => amount >= 1 && amount <= 24,
-    CoinDurationUnit.day => amount >= 2 && amount <= 6,
+    CoinDurationUnit.day => amount >= 1 && amount <= 6,
     CoinDurationUnit.week => amount >= 1 && amount <= 3,
     CoinDurationUnit.month => amount >= 1 && amount <= 120,
   };
