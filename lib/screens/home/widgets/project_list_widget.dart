@@ -1207,7 +1207,7 @@ class ProjectListWidget extends StatelessWidget {
         title: l10n.homeMoveToTrash,
         confirmLabel: l10n.homeMoveToTrash,
         body: l10n.homeMoveToTrashConfirm(1),
-        onDelete: () async => service.moveFolderToTrash(folder.id),
+        onDelete: () async { await service.moveFolderToTrash(folder.id); },
       ),
     );
   }
