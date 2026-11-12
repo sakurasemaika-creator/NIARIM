@@ -1441,6 +1441,36 @@ class BrushService extends ChangeNotifier {
   // ─── QR共有（画像を使わないブラシの全設定） ────────────────────────
   static const brushQrPrefix = 'niarim:brush:v1:';
 
+  // QR v1 compact schema: preserve every model field while replacing verbose
+  // (nested) JSON object keys with positional arrays. Both sides use the
+  // built-in Brush.toJson schema from this app version. A future incompatible
+  // schema change must bump brushQrPrefix, not silently reinterpret a QR.
+  static Object? _packBrushQr(Object? value, Object? schema) {
+    if (schema is Map && value is Map) {
+      return [
+        for (final key in schema.keys)
+          _packBrushQr(value[key], schema[key]),
+      ];
+    }
+    return value;
+  }
+
+  static Object? _unpackBrushQr(Object? value, Object? schema) {
+    if (schema is Map) {
+      if (value is! List || value.length != schema.length) {
+        throw const FormatException('Brush QR schema mismatch');
+      }
+      final result = <String, dynamic>{};
+      var index = 0;
+      for (final entry in schema.entries) {
+        result[entry.key.toString()] =
+            _unpackBrushQr(value[index++], entry.value);
+      }
+      return result;
+    }
+    return value;
+  }
+
   /// Returns null for custom-image brushes or payloads too dense to scan.
   /// ZIP-style file export remains the lossless route for all brushes.
   String? exportBrushQrPayload(String id, {int maxChars = 900}) {
@@ -1452,7 +1482,11 @@ class BrushService extends ChangeNotifier {
       ..['isFavorite'] = false
       ..['customImagePath'] = null
       ..['customImagePaths'] = <String>[];
-    final packed = base64UrlEncode(gzip.encode(utf8.encode(jsonEncode(data))));
+    final schema = _builtInDefinitions.values.first.toJson();
+    final compact = _packBrushQr(data, schema);
+    final packed = base64UrlEncode(
+      gzip.encode(utf8.encode(jsonEncode(compact))),
+    );
     final payload = '$brushQrPrefix$packed';
     return payload.length <= maxChars ? payload : null;
   }
@@ -1469,7 +1503,8 @@ class BrushService extends ChangeNotifier {
     if (bytes.length > 32768) {
       throw const FormatException('Brush QR data too large');
     }
-    final decoded = jsonDecode(utf8.decode(bytes));
+    final schema = _builtInDefinitions.values.first.toJson();
+    final decoded = _unpackBrushQr(jsonDecode(utf8.decode(bytes)), schema);
     if (decoded is! Map<String, dynamic> ||
         decoded['customImagePath'] != null ||
         (decoded['customImagePaths'] is List &&
