@@ -25,6 +25,7 @@ import '../../../widgets/frame_preview_background.dart';
 import '../../../widgets/project_trash_dialog.dart';
 import '../../../widgets/name_entry_dialog.dart';
 import '../../../widgets/collection_action_controls.dart';
+import '../../../widgets/collection_tile_layout.dart';
 import '../../../utils/app_error_reporter.dart';
 import 'folder_save_feedback.dart';
 import 'folder_delete_dialog.dart';
@@ -219,39 +220,6 @@ void showRenameFolderNameDialog(
     builder: (_) =>
         _FolderNameDialog(onSave: onRename, initialName: name, rename: true),
   );
-}
-
-/// Preserve the normal thumbnail ratio while making room for the action rail
-/// and scaled caption, including the smallest grid tiles.
-class _ProjectGridDelegate extends SliverGridDelegateWithMaxCrossAxisExtent {
-  const _ProjectGridDelegate({
-    required double maxExtent,
-    required this.minHeight,
-  }) : super(
-         maxCrossAxisExtent: maxExtent,
-         crossAxisSpacing: 8,
-         mainAxisSpacing: 8,
-         childAspectRatio: 16 / 12,
-       );
-  final double minHeight;
-
-  @override
-  SliverGridLayout getLayout(SliverConstraints constraints) {
-    final usual = super.getLayout(constraints) as SliverGridRegularTileLayout;
-    if (usual.childMainAxisExtent >= minHeight) return usual;
-    return SliverGridRegularTileLayout(
-      crossAxisCount: usual.crossAxisCount,
-      mainAxisStride: minHeight + mainAxisSpacing,
-      crossAxisStride: usual.crossAxisStride,
-      childMainAxisExtent: minHeight,
-      childCrossAxisExtent: usual.childCrossAxisExtent,
-      reverseCrossAxis: usual.reverseCrossAxis,
-    );
-  }
-
-  @override
-  bool shouldRelayout(covariant _ProjectGridDelegate oldDelegate) =>
-      minHeight != oldDelegate.minHeight || super.shouldRelayout(oldDelegate);
 }
 
 /// フォルダ・プロジェクトを同一一覧内で扱うための表示用ラッパー
@@ -511,24 +479,7 @@ class ProjectListWidget extends StatelessWidget {
       ProjectViewMode.small => 130.0,
       ProjectViewMode.detail => double.infinity,
     };
-
-    final caption = TextPainter(
-      text: TextSpan(
-        text: 'Ag国한',
-        style: DefaultTextStyle.of(context).style
-            .merge(_captionStyle(context))
-            .copyWith(
-              fontWeight: MediaQuery.boldTextOf(context)
-                  ? FontWeight.bold
-                  : FontWeight.w600,
-            ),
-      ),
-      textScaler: MediaQuery.textScalerOf(context),
-      textDirection: Directionality.of(context),
-      locale: Localizations.localeOf(context),
-    )..layout();
-    final minimumHeight = 80 + caption.height + 8;
-    caption.dispose();
+    final gridDelegate = collectionTileGridDelegate(context, targetExtent);
     if (header != null) {
       return CustomScrollView(
         controller: scrollController,
@@ -537,10 +488,7 @@ class ProjectListWidget extends StatelessWidget {
           SliverPadding(
             padding: const EdgeInsets.all(8),
             sliver: SliverGrid.builder(
-              gridDelegate: _ProjectGridDelegate(
-                maxExtent: targetExtent,
-                minHeight: minimumHeight,
-              ),
+              gridDelegate: gridDelegate,
               itemCount: sorted.length,
               itemBuilder: (context, index) => _withCutFeedback(
                 context, sorted[index], _gridCard(context, sorted[index]),
@@ -554,10 +502,7 @@ class ProjectListWidget extends StatelessWidget {
     return GridView.builder(
       controller: scrollController,
       padding: const EdgeInsets.all(8),
-      gridDelegate: _ProjectGridDelegate(
-        maxExtent: targetExtent,
-        minHeight: minimumHeight,
-      ),
+      gridDelegate: gridDelegate,
       itemCount: sorted.length,
       itemBuilder: (context, index) => _withCutFeedback(
           context, sorted[index], _gridCard(context, sorted[index]),
@@ -610,35 +555,8 @@ class ProjectListWidget extends StatelessWidget {
     );
   }
 
-  TextStyle _captionStyle(BuildContext context) => TextStyle(
-    fontSize: 12,
-    color:
-        Theme.of(context).popupMenuTheme.textStyle?.color ??
-        Theme.of(context).colorScheme.onSurface,
-    fontWeight: FontWeight.w600,
-    fontFamily: 'Kuramubon',
-    fontFamilyFallback: kHeadingFontFallback,
-  );
-
-  Widget _gridCaption(BuildContext context, String name) => ColoredBox(
-    color:
-        Theme.of(context).cardTheme.color ??
-        Theme.of(context).colorScheme.surfaceContainer,
-    child: Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-      child: Tooltip(
-        message: name,
-        triggerMode: TooltipTriggerMode.manual,
-        excludeFromSemantics: true,
-        child: Text(
-          name,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: _captionStyle(context),
-        ),
-      ),
-    ),
-  );
+  Widget _gridCaption(BuildContext context, String name) =>
+      collectionTileCaption(context, name);
 
   Widget _detailTile(
     BuildContext context,
