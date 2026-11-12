@@ -231,6 +231,21 @@ class WorkFolderService extends ChangeNotifier {
     _notify();
   });
 
+  /// Same durable favorite flag as project folders, without altering exports.
+  Future<void> toggleFolderFavorite(String folderId) => _enqueue(() async {
+    final index = _folders.indexWhere((folder) => folder.id == folderId);
+    if (index < 0) return;
+    final next = [..._folders];
+    next[index] = next[index].copyWith(
+      isFavorite: !next[index].isFavorite,
+    );
+    await _save({
+      _foldersPrefsKey: jsonEncode(next.map((f) => f.toJson()).toList()),
+    });
+    _folders[index] = next[index];
+    _notify();
+  });
+
   Future<void> setFolderThumbnail(
     String folderId, {
     required String mode,
