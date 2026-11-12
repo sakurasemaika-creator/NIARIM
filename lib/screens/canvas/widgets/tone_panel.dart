@@ -161,17 +161,27 @@ class _TonePanelState extends State<TonePanel> {
                   ),
                 ),
                 Spacer(),
-                IconButton(
-                  icon: Icon(
+                FilterChip(
+                  key: const ValueKey('asset-favorites-only'),
+                  avatar: Icon(
                     _showFavoritesOnly ? Icons.star : Icons.star_outline,
                     size: 16,
                     color: _showFavoritesOnly
                         ? ThemeService.activeColorScheme.tertiary
-                        : null,
+                        : Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
-                  onPressed: () =>
-                      setState(() => _showFavoritesOnly = !_showFavoritesOnly),
+                  label: Text(
+                    Localizations.localeOf(context).languageCode == 'ja'
+                        ? 'お気に入りのみ'
+                        : l10n.creativePanelFavoritesOnlyTooltip,
+                    style: const TextStyle(fontSize: 11),
+                  ),
+                  selected: _showFavoritesOnly,
                   tooltip: l10n.creativePanelFavoritesOnlyTooltip,
+                  visualDensity: VisualDensity.compact,
+                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  onSelected: (selected) =>
+                      setState(() => _showFavoritesOnly = selected),
                 ),
                 IconButton(
                   icon: Icon(
@@ -236,6 +246,11 @@ class _TonePanelState extends State<TonePanel> {
                   _searchController.clear();
                 }),
                 onQueryChanged: (v) => setState(() => _searchQuery = v),
+                onClose: () => setState(() {
+                  _showSearch = false;
+                  _searchQuery = '';
+                  _searchController.clear();
+                }),
               ),
             const Divider(),
             Expanded(
