@@ -54,9 +54,9 @@ beforeEach(() => {
 });
 
 describe("fail-closed one-month full Premium coin redemption", () => {
-  it("never spends any coins without independent redemption review", async () => {
+  it("never spends any coins when the development feature is switched off", async () => {
     enable();
-    delete process.env.COIN_REDEMPTION_REVIEW_APPROVED;
+    delete process.env.COIN_REDEMPTION_ENABLED;
     expect(premiumRedemptionOffer()).toMatchObject({
       enabled: false,
       priceCoins: null,
