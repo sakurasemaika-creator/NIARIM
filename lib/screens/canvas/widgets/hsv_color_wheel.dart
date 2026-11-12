@@ -20,6 +20,8 @@ class HsvColorWheel extends StatelessWidget {
   /// Width available to the controls under the ring; lets both buttons sit
   /// at the panel edges without making the wheel itself narrow.
   final double? controlsWidth;
+  final VoidCallback? onEyedropperTap;
+  final String? eyedropperTooltip;
   // 透明色への切り替えボタン（カラーピッカーは常に透明色も選択
   // できるようにする）。円の外側・左下の空きスペースに配置する。
   final bool isTransparent;
@@ -38,6 +40,8 @@ class HsvColorWheel extends StatelessWidget {
     this.onChangeEnd,
     this.size = 220,
     this.controlsWidth,
+    this.onEyedropperTap,
+    this.eyedropperTooltip,
     this.isTransparent = false,
     this.onToggleTransparent,
     this.showHsvSliders = true,
@@ -57,12 +61,17 @@ class HsvColorWheel extends StatelessWidget {
         .watch<ThemeService>()
         .current
         .menuBgColor;
-    // Keep both controls BELOW the circular hue ring. A wide HSV/RGB pill
-    // in the wheel's bottom-right corner overlapped the ring at small sizes.
+    // Controls occupy the empty corners of the ring's bounding square.
+    // They are moved up into the unused space, not over the hue ring itself:
+    // the ring is centered and its lower edge only touches the middle.
+    // Keeping the bottom 20px visible also avoids wasting a 36px row.
+    final width = math.max(size, controlsWidth ?? size);
     return SizedBox(
-      width: math.max(size, controlsWidth ?? size),
-      height: size + 36,
-      child: Column(
+      width: width,
+      height: size + 22,
+      child: Stack(
+        alignment: Alignment.topCenter,
+        clipBehavior: Clip.none,
         children: [
           SizedBox(
             width: size,
@@ -70,83 +79,97 @@ class HsvColorWheel extends StatelessWidget {
             child: Stack(
               alignment: Alignment.center,
               children: [
-          GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onPanStart: (d) => _handleRing(d.localPosition),
-            onPanUpdate: (d) => _handleRing(d.localPosition),
-            onPanEnd: (_) => onChangeEnd?.call(),
-            onTapDown: (d) => _handleRing(d.localPosition),
-            onTapUp: (_) => onChangeEnd?.call(),
-            child: CustomPaint(
-              size: Size(size, size),
-              painter: _HueRingPainter(
-                hue: hue,
-                thickness: ringThickness,
-                markerOutlineColor: markerOutlineColor,
-              ),
-            ),
-          ),
-          GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onPanStart: (d) => _handleSquare(d.localPosition, squareSize),
-            onPanUpdate: (d) => _handleSquare(d.localPosition, squareSize),
-            onPanEnd: (_) => onChangeEnd?.call(),
-            onTapDown: (d) => _handleSquare(d.localPosition, squareSize),
-            onTapUp: (_) => onChangeEnd?.call(),
-            child: SizedBox(
-              width: squareSize,
-              height: squareSize,
-              child: Stack(
-                children: [
-                  Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(6),
-                      gradient: LinearGradient(
-                        colors: [
-                          Colors.white,
-                          HSVColor.fromAHSV(1, hue, 1, 1).toColor(),
-                        ],
-                      ),
-                    ),
-                    foregroundDecoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(6),
-                      gradient: const LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [Colors.transparent, Colors.black],
-                      ),
+                GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onPanStart: (d) => _handleRing(d.localPosition),
+                  onPanUpdate: (d) => _handleRing(d.localPosition),
+                  onPanEnd: (_) => onChangeEnd?.call(),
+                  onTapDown: (d) => _handleRing(d.localPosition),
+                  onTapUp: (_) => onChangeEnd?.call(),
+                  child: CustomPaint(
+                    size: Size(size, size),
+                    painter: _HueRingPainter(
+                      hue: hue,
+                      thickness: ringThickness,
+                      markerOutlineColor: markerOutlineColor,
                     ),
                   ),
-                  Positioned(
-                    left: (saturation * squareSize) - 8,
-                    top: ((1 - value) * squareSize) - 8,
-                    child: _marker(markerOutlineColor),
+                ),
+                GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onPanStart: (d) => _handleSquare(d.localPosition, squareSize),
+                  onPanUpdate: (d) => _handleSquare(d.localPosition, squareSize),
+                  onPanEnd: (_) => onChangeEnd?.call(),
+                  onTapDown: (d) => _handleSquare(d.localPosition, squareSize),
+                  onTapUp: (_) => onChangeEnd?.call(),
+                  child: SizedBox(
+                    width: squareSize,
+                    height: squareSize,
+                    child: Stack(
+                      children: [
+                        Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(6),
+                            gradient: LinearGradient(
+                              colors: [
+                                Colors.white,
+                                HSVColor.fromAHSV(1, hue, 1, 1).toColor(),
+                              ],
+                            ),
+                          ),
+                          foregroundDecoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(6),
+                            gradient: const LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [Colors.transparent, Colors.black],
+                            ),
+                          ),
+                        ),
+                        Positioned(
+                          left: (saturation * squareSize) - 8,
+                          top: ((1 - value) * squareSize) - 8,
+                          child: _marker(markerOutlineColor),
+                        ),
+                      ],
+                    ),
                   ),
-                ],
-              ),
-            ),
-          ),
+                ),
               ],
             ),
           ),
-          SizedBox(
-            height: 36,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                if (onToggleTransparent != null)
-                  _TransparentToggleButton(
-                    isActive: isTransparent,
-                    onTap: onToggleTransparent!,
-                  ),
-                if (onSliderModeChanged != null)
-                  _SliderModePill(
-                    showHsv: showHsvSliders,
-                    onChanged: onSliderModeChanged!,
-                  ),
-              ],
+          if (onEyedropperTap != null)
+            Positioned(
+              right: 1,
+              top: 1,
+              child: IconButton(
+                key: const ValueKey('color-picker-eyedropper'),
+                constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                padding: const EdgeInsets.all(4),
+                visualDensity: VisualDensity.compact,
+                icon: const Icon(Icons.colorize, size: 18),
+                tooltip: eyedropperTooltip,
+                onPressed: onEyedropperTap,
+              ),
             ),
-          ),
+          if (onToggleTransparent != null)
+            Positioned(
+              left: 2,
+              top: size - 8,
+              child: _TransparentToggleButton(
+                isActive: isTransparent,
+                onTap: onToggleTransparent!,
+              ),
+            ),
+          if (onSliderModeChanged != null)
+            Positioned(
+              right: 1,
+              top: size - 9,
+              child: _SliderModePill(
+                showHsv: showHsvSliders,
+                onChanged: onSliderModeChanged!,
+              ),
+            ),
         ],
       ),
     );
