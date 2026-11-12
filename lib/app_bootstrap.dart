@@ -361,6 +361,19 @@ Future<List<SingleChildWidget>> _buildAppProviders(
     learnPoster(accountId);
   }
 
+  // Refresh the short-lived server entitlement lease while the app stays
+  // open; expiry still fails closed if the backend becomes unreachable.
+  final coinEntitlementRefreshTimer = Timer.periodic(
+    const Duration(minutes: 10),
+    (_) {
+      final accountId = googleAuthService.account?.id;
+      if (accountId != null && communityService.isBackendConnected) {
+        unawaited(refreshCoinPremium(accountId));
+      }
+    },
+  );
+  disposers.add(coinEntitlementRefreshTimer.cancel);
+
   await enter('share_intent');
   final shareIntentService = ShareIntentService();
   disposers.add(shareIntentService.dispose);
