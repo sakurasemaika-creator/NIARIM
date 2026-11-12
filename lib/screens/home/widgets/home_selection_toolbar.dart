@@ -13,6 +13,8 @@ class HomeSelectionToolbar extends StatelessWidget {
     this.onCut,
     this.onCopy,
     this.onTrash,
+    this.primaryActionLabel,
+    this.primaryActionIcon = Icons.delete,
   });
 
   final int selectedCount;
@@ -21,6 +23,8 @@ class HomeSelectionToolbar extends StatelessWidget {
   final VoidCallback? onCut;
   final VoidCallback? onCopy;
   final VoidCallback? onTrash;
+  final String? primaryActionLabel;
+  final IconData primaryActionIcon;
 
   @override
   Widget build(BuildContext context) {
@@ -101,8 +105,8 @@ class HomeSelectionToolbar extends StatelessWidget {
             iconButton(l10n.commonCut, Icons.content_cut, onCut),
             iconButton(l10n.commonCopy, Icons.content_copy, onCopy),
             iconButton(
-              l10n.homeMoveToTrash,
-              Icons.delete,
+              primaryActionLabel ?? l10n.homeMoveToTrash,
+              primaryActionIcon,
               onTrash,
               color: theme.colorScheme.primary,
             ),
