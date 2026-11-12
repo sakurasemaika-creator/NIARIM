@@ -133,6 +133,10 @@ void main() {
     }
 
     await shot('01_projects');
+    final projectsFabY = tester.getCenter(find.byWidgetPredicate(
+      (widget) => widget is FloatingActionButton &&
+          widget.heroTag == 'home-add-project',
+    )).dy;
     final projectMenu = find.descendant(
       of: find.byType(ProjectListWidget),
       matching: find.byType(PopupMenuButton<String>),
@@ -140,19 +144,33 @@ void main() {
     await tester.tap(projectMenu);
     await settle();
     expect(find.byType(PopupMenuItem<String>), findsWidgets);
+    expect(find.text('プロジェクトを共有'), findsOneWidget);
+    expect(find.text('フォルダへ移動'), findsNothing);
     await shot('02_projects_menu');
     await closeMenu();
 
     await tab(1);
+    final worksFabY = tester.getCenter(find.byWidgetPredicate(
+      (widget) => widget is FloatingActionButton &&
+          widget.heroTag == 'home-add-work-folder',
+    )).dy;
+    expect(worksFabY, closeTo(projectsFabY, 1));
     expect(find.byType(ExportedWorkCard), findsWidgets);
     await shot('03_works');
     await tester.tap(find.byKey(const Key('exportedWorkMoreMenu')).first);
     await settle();
     expect(find.byType(PopupMenuItem<String>), findsWidgets);
+    expect(find.text('ゴミ箱へ移動'), findsWidgets);
+    expect(find.text('フォルダへ移動'), findsNothing);
     await shot('04_works_menu');
     await closeMenu();
 
     await tab(2);
+    final sharedFabY = tester.getCenter(find.byWidgetPredicate(
+      (widget) => widget is FloatingActionButton &&
+          widget.heroTag == 'shared-add-folder',
+    )).dy;
+    expect(sharedFabY, closeTo(projectsFabY, 1));
     expect(projects.shared, isNotEmpty);
     await shot('05_shared');
     final shareMenu = find.byKey(Key('collectionMenu_' + projects.shared.first.id));
@@ -160,6 +178,8 @@ void main() {
     await tester.tap(shareMenu);
     await settle();
     expect(find.byType(PopupMenuItem<String>), findsWidgets);
+    expect(find.text('プロジェクトを共有'), findsOneWidget);
+    expect(find.text('フォルダへ移動'), findsNothing);
     await shot('06_shared_menu');
     await closeMenu();
 
