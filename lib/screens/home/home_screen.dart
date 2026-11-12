@@ -2633,6 +2633,13 @@ class _SharedTab extends StatelessWidget {
         (query.isEmpty || folder.name.toLowerCase().contains(query) ||
             shared.any((p) => p.sharedFolderId == folder.id))
     ).toList();
+    HomeCollectionSelectionScope.maybeOf(context)?.onVisibleIds({
+      for (final folder in visibleFolders) 'shared_folder:${folder.id}',
+      for (final project in shared)
+        if (project.sharedFolderId == null ||
+            !visibleFolders.any((f) => f.id == project.sharedFolderId))
+          'shared_file:${project.id}',
+    });
     final l10n = AppLocalizations.of(context)!;
     // 受け取ったものは保存先から読む。読めなかったときは知らせ、
     // 「共有プロジェクトがありません」とは言わない。
@@ -3113,6 +3120,9 @@ class _OutgoingSharesList extends StatelessWidget {
         ProjectSortMode.updatedDesc => b.updatedAt.compareTo(a.updatedAt),
       };
       return n == 0 ? a.path.compareTo(b.path) : n;
+    });
+    HomeCollectionSelectionScope.maybeOf(context)?.onVisibleIds({
+      for (final entry in saved) 'outgoing_file:${entry.path}',
     });
     if (saved.isEmpty) {
       return EmptyStatePlaceholder(
@@ -4444,6 +4454,12 @@ class _WorksTabState extends State<_WorksTab> {
           ).toList(),
           _sortMode,
         );
+        HomeCollectionSelectionScope.maybeOf(context)?.onVisibleIds({
+          for (final folder in folders) 'work_folder:${folder.id}',
+          for (final file in files)
+            if (workFolders.folderIdOf(file.uri.pathSegments.last) == null)
+              'work_file:${file.path}',
+        });
         Widget buildWork(BuildContext context, File file, bool grid) =>
             _WorkListItem(
               key: ValueKey(file.path),
