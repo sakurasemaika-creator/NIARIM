@@ -163,9 +163,9 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
             children: [
               if (widget.showCloseBar)
                 PanelCenterCloseBar(onClose: widget.onClose),
-              Row(
-                children: [
-                  if (!docked) ...[
+              if (!docked) ...[
+                Row(
+                  children: [
                     Text(
                       l10n.colorPickerTitle,
                       style: const TextStyle(
@@ -175,8 +175,6 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
                       ),
                     ),
                     const SizedBox(width: 8),
-                    // Mobile: title and selected colour share the top row.
-                    // PC: the same chip is owned by the sole dock title bar.
                     Expanded(
                       child: Semantics(
                         label: '${l10n.colorPickerTitle}: #${_colorToHex(_currentColor)}',
@@ -193,18 +191,10 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
                         ),
                       ),
                     ),
-                  ] else
-                    const Spacer(),
-                  // スポイトボタン（カラーピッカー内のスポイトボタン）
-                  if (widget.onEyedropperTap != null)
-                    IconButton(
-                      icon: const Icon(Icons.colorize, size: 18),
-                      tooltip: l10n.toolbarItemEyedropper,
-                      onPressed: widget.onEyedropperTap,
-                    ),
-                ],
-              ),
-              const SizedBox(height: 8),
+                  ],
+                ),
+                const SizedBox(height: 2),
+              ],
               // カラーサークルは常時表示。右下のピルで数値スライダーを
               // HSV/RGBから切り替える。現在色の値はモード変更で変えない。
               // 正方形（彩度・明度）＋外側カラーサークル（色相）でタップ選択できる
@@ -219,6 +209,8 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
                     // ring width; the wheel can therefore fill more space.
                     size: math.min(236.0, constraints.maxWidth),
                     controlsWidth: constraints.maxWidth,
+                    onEyedropperTap: widget.onEyedropperTap,
+                    eyedropperTooltip: l10n.toolbarItemEyedropper,
                   hue: _hue,
                   saturation: _saturation,
                   value: _value,
@@ -239,7 +231,7 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
                   ),
                 ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 2),
               if (_showHsvSliders) ...[
                 _slider('H', _hue.roundToDouble(), 0, 360, (v) {
                   _hue = v.roundToDouble();
