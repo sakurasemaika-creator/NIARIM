@@ -68,7 +68,7 @@ class HsvColorWheel extends StatelessWidget {
     final width = math.max(size, controlsWidth ?? size);
     return SizedBox(
       width: width,
-      height: size + 22,
+      height: size + 24,
       child: Stack(
         alignment: Alignment.topCenter,
         clipBehavior: Clip.none,
@@ -155,7 +155,7 @@ class HsvColorWheel extends StatelessWidget {
           if (onToggleTransparent != null)
             Positioned(
               left: 2,
-              top: size - 8,
+              top: size - 5,
               child: _TransparentToggleButton(
                 isActive: isTransparent,
                 onTap: onToggleTransparent!,
@@ -164,7 +164,7 @@ class HsvColorWheel extends StatelessWidget {
           if (onSliderModeChanged != null)
             Positioned(
               right: 1,
-              top: size - 9,
+              top: size - 5,
               child: _SliderModePill(
                 showHsv: showHsvSliders,
                 onChanged: onSliderModeChanged!,
@@ -277,6 +277,7 @@ class _TransparentToggleButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
+      key: const ValueKey('color-picker-transparent-toggle'),
       onTap: onTap,
       child: Container(
         width: 26,
