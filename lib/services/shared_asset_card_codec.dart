@@ -13,7 +13,7 @@ class SharedAssetCardCodec {
   SharedAssetCardCodec._();
 
   static const int version = 1;
-  static const int maxPngBytes = 48 * 1024 * 1024;
+  static const int maxPngBytes = 40 * 1024 * 1024;
   static const int maxAssetBytes = 32 * 1024 * 1024;
   static const int maxHeaderBytes = 64 * 1024;
   static const String _chunkName = 'niAR';
@@ -128,13 +128,20 @@ class SharedAssetCardCodec {
       if (chunks.isEmpty && (type != 'IHDR' || length != 13)) {
         throw const FormatException('PNG IHDR is missing');
       }
-      if (type == 'IHDR') foundIhdr = true;
+      if (type == 'IHDR') {
+        if (foundIhdr) throw const FormatException('Duplicate PNG header');
+        foundIhdr = true;
+        final width = _readU32(png, pos + 8);
+        final height = _readU32(png, pos + 12);
+        if (width == 0 || height == 0 || width > 4096 || height > 4096) {
+          throw const FormatException('Invalid share card dimensions');
+        }
+      }
       final crcExpected = _readU32(png, pos + 8 + length);
-      // Validate the card chunk itself; ordinary PNG chunks are decoded by
-      // Flutter's PNG image codec and may be validated there as needed.
-      if (type == _chunkName &&
-          _crc32(png, pos + 4, pos + 8 + length) != crcExpected) {
-        throw const FormatException('Asset card CRC mismatch');
+      // All chunks must verify, not just our private payload. This prevents
+      // an import when the visible image's IDAT/IHDR was corrupted.
+      if (_crc32(png, pos + 4, pos + 8 + length) != crcExpected) {
+        throw const FormatException('PNG chunk CRC mismatch');
       }
       chunks.add(_PngChunk(type, pos, pos + 8, length));
       pos += 12 + length;
@@ -165,13 +172,20 @@ class SharedAssetCardCodec {
   static int _readU32(Uint8List b, int off) =>
       ByteData.sublistView(b, off, off + 4).getUint32(0);
 
+  static final List<int> _crcTable = List<int>.generate(256, (index) {
+    var value = index;
+    for (var bit = 0; bit < 8; bit++) {
+      value = (value & 1) != 0
+          ? (value >> 1) ^ 0xedb88320
+          : value >> 1;
+    }
+    return value;
+  });
+
   static int _crc32(Uint8List bytes, int start, int end) {
     var crc = 0xffffffff;
     for (var i = start; i < end; i++) {
-      crc ^= bytes[i];
-      for (var bit = 0; bit < 8; bit++) {
-        crc = (crc & 1) == 1 ? (crc >> 1) ^ 0xedb88320 : crc >> 1;
-      }
+      crc = _crcTable[(crc ^ bytes[i]) & 0xff] ^ (crc >> 8);
     }
     return (crc ^ 0xffffffff) & 0xffffffff;
   }
