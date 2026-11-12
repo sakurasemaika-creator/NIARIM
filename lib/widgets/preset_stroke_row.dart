@@ -56,9 +56,13 @@ class PresetStrokeRow extends StatelessWidget {
       dense: true,
       contentPadding: const EdgeInsetsDirectional.fromSTEB(6, 2, 6, 2),
       selected: selected,
-      title: semanticsLabel == null
-          ? title
-          : Semantics(label: semanticsLabel, child: title),
+      title: Padding(
+        // Shift names slightly higher and separate all three asset samples.
+        padding: const EdgeInsets.only(bottom: 6),
+        child: semanticsLabel == null
+            ? title
+            : Semantics(label: semanticsLabel, child: title),
+      ),
       subtitle: StrokeSamplePreview(
         brush: brush,
         tone: tone,
