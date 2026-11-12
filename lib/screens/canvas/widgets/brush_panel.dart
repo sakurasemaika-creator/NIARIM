@@ -11,7 +11,7 @@ import '../../../services/brush_service.dart';
 import '../../../services/export_share_service.dart';
 import '../../../services/settings_service.dart';
 import '../../../widgets/labeled_slider.dart';
-import '../../../widgets/stroke_sample_preview.dart';
+import '../../../widgets/preset_stroke_row.dart';
 import '../../../widgets/pixel_color_mode_selector.dart';
 import 'creative_folder_sheets.dart';
 import '../../../widgets/docked_panel_scope.dart';
@@ -300,34 +300,13 @@ class _BrushPanelState extends State<BrushPanel> {
                         // プリインストールのブラシは編集・削除できない
                         // （複製したものは複製元とは別IDになるため編集・削除可能）。
                         final builtIn = brushService.isBuiltIn(brush.id);
-                        return ListTile(
+                        return PresetStrokeRow(
                           key: ValueKey(brush.id),
-                          dense: true,
+                          name: brush.name,
+                          color: brushService.currentColor,
+                          brush: shown,
                           selected: isSelected,
-                          // 色は一覧の行の決まりに任せる（選んだ行は選択色の
-                          // 上の文字色。差し色を直接渡すと、選択色と同じ色の
-                          // テーマでアイコンが見えなくなる）。
-                          leading: const Icon(Icons.brush, size: 16),
-                          title: Semantics(
-                            label: l10n.penSubToolBrushSizeOpacity(
-                              shown.size.round(),
-                              shown.opacity,
-                            ),
-                            child: Text(
-                              brush.name,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                fontSize: 13,
-                                fontFamily: 'Kuramubon',
-                                fontFamilyFallback: kHeadingFontFallback,
-                              ),
-                            ),
-                          ),
-                          subtitle: StrokeSamplePreview(
-                            brush: shown,
-                            color: brushService.currentColor,
-                          ),
+                          semanticsLabel: l10n.penSubToolBrushSizeOpacity(shown.size.round(), shown.opacity),
                           trailing: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
