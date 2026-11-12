@@ -1,4 +1,5 @@
 import 'dart:typed_data';
+import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/engine/procedural_texture.dart';
@@ -69,6 +70,27 @@ void main() {
     expect(service.tones.any((t) => t.id == 'Tone0064'), isFalse,
         reason: 'Checker inverse is a redundant phase shift');
     service.dispose();
+  });
+
+  test('Obsolete saved inverse checker is retired without losing customized copies', () async {
+    final stock = jsonEncode(const Tone(
+      id: 'Tone0064', name: 'ピクセル市松反転（1px）',
+    ).toJson());
+    SharedPreferences.setMockInitialValues({'tones': [stock]});
+    final service = ToneService();
+    await service.init();
+    expect(service.tones.any((t) => t.id == 'Tone0064'), isFalse);
+    service.dispose();
+
+    final customized = jsonEncode(const Tone(
+      id: 'Tone0064', name: 'ピクセル市松反転（1px）',
+      isFavorite: true,
+    ).toJson());
+    SharedPreferences.setMockInitialValues({'tones': [customized]});
+    final customService = ToneService();
+    await customService.init();
+    expect(customService.tones.any((t) => t.id == 'Tone0064'), isTrue);
+    customService.dispose();
   });
 
   test('Charcoal, gouache, 4B pencil and pastel have real grain settings', () {
