@@ -1,0 +1,36 @@
+name: Home four-tab menu screenshots
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - 'test/home_four_tab_menu_capture_test.dart'
+      - '.github/workflows/home-four-tab-menu-screenshots.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.47.2'
+          channel: stable
+          cache: true
+      - name: Resolve locked dependencies
+        run: flutter pub get --enforce-lockfile
+      - name: Verify and capture all four production tabs
+        run: flutter test --no-pub --reporter expanded test/home_four_tab_menu_capture_test.dart
+      - name: Preserve real Flutter screenshots even when a later step fails
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: home-four-tab-menu-actual-flutter-screenshots
+          path: build/home-four-tab-captures/*.png
+          if-no-files-found: warn
+          retention-days: 14
