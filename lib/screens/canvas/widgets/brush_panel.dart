@@ -12,6 +12,8 @@ import '../../../services/export_share_service.dart';
 import '../../../services/settings_service.dart';
 import '../../../widgets/labeled_slider.dart';
 import '../../../widgets/preset_stroke_row.dart';
+import '../../../widgets/qr_share_dialog.dart';
+import '../../../widgets/qr_import_dialog.dart';
 import '../../../widgets/pixel_color_mode_selector.dart';
 import 'creative_folder_sheets.dart';
 import '../../../widgets/docked_panel_scope.dart';
@@ -171,7 +173,7 @@ class _BrushPanelState extends State<BrushPanel> {
                         fontFamilyFallback: kHeadingFontFallback,
                       ),
                     ),
-                    onPressed: () => _importBrush(context, brushService),
+                    onPressed: () => _showBrushImportOptions(context, brushService),
                   ),
                 ],
               ),
@@ -368,6 +370,10 @@ class _BrushPanelState extends State<BrushPanel> {
                                     ),
                                     child: Text(l10n.transferExport),
                                   ),
+                                  PopupMenuItem(
+                                    value: 'qr',
+                                    child: Text(l10n.colorPickerShareViaQr),
+                                  ),
                                   // 組み込みブラシは、キャンバスで変えて
                                   // 覚えた太さ・不透明度を既定へ戻せる。
                                   if (brushService.hasRememberedBuiltInValues(
@@ -489,6 +495,8 @@ class _BrushPanelState extends State<BrushPanel> {
         );
       case 'export':
         _exportBrush(context, service, brush);
+      case 'qr':
+        _shareBrushQr(context, service, brush);
       case 'delete':
         _deleteBrush(context, service, brush);
     }
@@ -584,6 +592,45 @@ class _BrushPanelState extends State<BrushPanel> {
     await service.createBrushFromImage(result.files.first.path!, name: name);
   }
 
+  void _showBrushImportOptions(BuildContext context, BrushService service) {
+    final l10n = AppLocalizations.of(context)!;
+    showModalBottomSheet<void>(
+      context: context,
+      builder: (sheet) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.folder_open_outlined),
+              title: Text(l10n.colorPickerImportViaFile),
+              onTap: () {
+                Navigator.pop(sheet);
+                _importBrush(context, service);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.qr_code_2),
+              title: Text(l10n.colorPickerImportViaQr),
+              onTap: () {
+                Navigator.pop(sheet);
+                showDialog<void>(
+                  context: context,
+                  builder: (_) => QrImportDialog(
+                    title: l10n.colorPickerImportViaQr,
+                    onImport: (text) async {
+                      service.importBrushQrPayload(text);
+                      return true;
+                    },
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Future<void> _importBrush(BuildContext context, BrushService service) async {
     final l10n = AppLocalizations.of(context)!;
     final result = await FilePicker.platform.pickFiles(
@@ -603,6 +650,28 @@ class _BrushPanelState extends State<BrushPanel> {
         SnackBar(content: Text(l10n.brushImportFailedSnackbar('$e'))),
       );
     }
+  }
+
+  void _shareBrushQr(
+    BuildContext context, BrushService service, Brush brush,
+  ) {
+    final l10n = AppLocalizations.of(context)!;
+    final payload = service.exportBrushQrPayload(
+      brush.id, maxChars: kQrShareSafeCharLimit,
+    );
+    if (payload == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.qrShareTooLargeHint)),
+      );
+      return;
+    }
+    showDialog<void>(
+      context: context,
+      builder: (_) => QrShareDialog(
+        title: '${brush.name} · ${l10n.colorPickerShareViaQr}',
+        payload: payload,
+      ),
+    );
   }
 
   static String _exportKey(Brush brush) => 'brush:${brush.id}';
