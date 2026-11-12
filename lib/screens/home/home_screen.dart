@@ -2410,7 +2410,7 @@ class _SharedTab extends StatelessWidget {
     }
     shared = _sortProjects(shared, sortMode);
     final visibleFolders = service.sharedFolders.where((folder) =>
-        (!showFavoritesOnly ||
+        (!showFavoritesOnly || folder.isFavorite ||
             shared.any((p) => p.sharedFolderId == folder.id)) &&
         (query.isEmpty || folder.name.toLowerCase().contains(query) ||
             shared.any((p) => p.sharedFolderId == folder.id))
@@ -2452,12 +2452,17 @@ class _SharedTab extends StatelessWidget {
                 folderName: folderName,
                 viewMode: viewMode,
                 onViewModeChanged: onViewModeChanged,
-                showFavoritesOnly: showFavoritesOnly,
-                searchQuery: searchQuery,
+                showFavoritesOnly: showFavoritesOnly &&
+                    !service.sharedFolders.any((folder) =>
+                        folder.id == folderId && folder.isFavorite),
+                searchQuery: folderName.toLowerCase().contains(query)
+                    ? '' : searchQuery,
                 onCopyEntry: onCopyEntry,
               ),
             ),
           ),
+      onToggleFolderFavorite: (folder) =>
+          context.read<ProjectService>().toggleSharedFolderFavorite(folder.id),
       onRenameFolder: (id, name) =>
           context.read<ProjectService>().renameSharedFolder(id, name),
       onDeleteFolder: (id) =>
@@ -4246,7 +4251,7 @@ class _WorksTabState extends State<_WorksTab> {
         final workFolders = context.watch<WorkFolderService>();
         final folders = _sortWorkFolders(
           workFolders.folders.where((folder) =>
-              (!_showFavoritesOnly || files.any((f) =>
+              (!_showFavoritesOnly || folder.isFavorite || files.any((f) =>
                   workFolders.folderIdOf(f.uri.pathSegments.last) == folder.id)) &&
               (query.isEmpty ||
                   folder.name.toLowerCase().contains(query) ||
@@ -4320,8 +4325,11 @@ class _WorksTabState extends State<_WorksTab> {
                       folderName: folderName,
                       viewMode: widget.viewMode,
                       initialSortMode: _sortMode,
-                      searchQuery: widget.searchQuery,
-                      favoritesOnly: _showFavoritesOnly,
+                      searchQuery: folderName.toLowerCase().contains(query)
+                          ? '' : widget.searchQuery,
+                      favoritesOnly: _showFavoritesOnly &&
+                          !workFolders.folders.any((folder) =>
+                              folder.id == folderId && folder.isFavorite),
                       favoritePaths: _favoritePaths,
                       onToggleFavorite: _toggleFavorite,
                       onViewModeChanged: widget.onViewModeChanged,
@@ -4330,6 +4338,8 @@ class _WorksTabState extends State<_WorksTab> {
                     ),
                   ),
                 ),
+            onToggleFolderFavorite: (folder) =>
+                workFolders.toggleFolderFavorite(folder.id),
             onRenameFolder: (id, name) => workFolders.renameFolder(id, name),
             onDeleteFolder: (id) => workFolders.deleteFolder(id),
             onSetFolderThumbnail: (id, {required mode, sourceId, imagePath}) =>
