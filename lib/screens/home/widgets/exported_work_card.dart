@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 
 import '../../../config/font_fallback.dart';
 import '../../../widgets/collection_action_controls.dart';
+import '../../../widgets/collection_tile_layout.dart';
 import 'folder_thumbnail.dart';
 
 /// A saved export keeps its complete identity visible, including large text.
@@ -236,30 +237,7 @@ class ExportedWorkCard extends StatelessWidget {
                   ],
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(8, 5, 8, 6),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      displayName,
-                      semanticsLabel: name,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: titleStyle,
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      metadata,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: detailStyle,
-                    ),
-                    if (shareError != null) shareFeedback(),
-                  ],
-                ),
-              ),
+              collectionTileCaption(context, name),
             ],
           ),
         ),
