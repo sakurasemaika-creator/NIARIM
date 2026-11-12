@@ -52,6 +52,8 @@ class Brush {
   final bool rotation;
   final double density;
   final double scatter;
+  /// Fixed paper/charcoal granulation in percent (0 = smooth).
+  final int grainStrength;
   final double? calligraphyAngle;
   final PixelColorMode pixelColorMode;
   final int pixelColorLevels;
@@ -118,6 +120,7 @@ class Brush {
     this.rotation = false,
     this.density = 1.0,
     this.scatter = 0.0,
+    this.grainStrength = 0,
     this.calligraphyAngle,
     this.pixelColorMode = PixelColorMode.none,
     this.pixelColorLevels = 8,
@@ -192,6 +195,7 @@ class Brush {
     bool? rotation,
     double? density,
     double? scatter,
+    int? grainStrength,
     double? calligraphyAngle,
     bool clearCalligraphyAngle = false,
     bool clearCustomImages = false,
@@ -253,6 +257,7 @@ class Brush {
     rotation: rotation ?? this.rotation,
     density: density ?? this.density,
     scatter: scatter ?? this.scatter,
+    grainStrength: (grainStrength ?? this.grainStrength).clamp(0, 100),
     calligraphyAngle: clearCalligraphyAngle
         ? null
         : calligraphyAngle ?? this.calligraphyAngle,
@@ -327,6 +332,7 @@ class Brush {
     'rotation': rotation,
     'density': density,
     'scatter': scatter,
+    'grainStrength': grainStrength,
     'calligraphyAngle': calligraphyAngle,
     'pixelColorMode': pixelColorMode.name,
     'pixelColorLevels': pixelColorLevels,
@@ -427,6 +433,7 @@ class Brush {
     rotation: j['rotation'] as bool? ?? false,
     density: (j['density'] as num?)?.toDouble() ?? 1,
     scatter: (j['scatter'] as num?)?.toDouble() ?? 0,
+    grainStrength: (j['grainStrength'] as num?)?.round().clamp(0, 100) ?? 0,
     calligraphyAngle: (j['calligraphyAngle'] as num?)?.toDouble(),
     pixelColorMode: PixelColorMode.values.firstWhere(
       (e) => e.name == j['pixelColorMode'],
