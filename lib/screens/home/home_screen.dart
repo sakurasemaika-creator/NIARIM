@@ -2690,8 +2690,9 @@ class _SharedTab extends StatelessWidget {
           context.read<ProjectService>().toggleSharedFolderFavorite(folder.id),
       onRenameFolder: (id, name) =>
           context.read<ProjectService>().renameSharedFolder(id, name),
-      onDeleteFolder: (id) =>
-          context.read<ProjectService>().deleteSharedFolder(id),
+      onDeleteFolder: (id) async {
+        await context.read<ProjectService>().moveFolderToTrash(id, shared: true);
+      },
       onSetFolderThumbnail: (id, {required mode, sourceId, imagePath}) =>
           context.read<ProjectService>().setFolderThumbnail(
             id,
@@ -4597,7 +4598,17 @@ class _WorksTabState extends State<_WorksTab> {
             onToggleFolderFavorite: (folder) =>
                 workFolders.toggleFolderFavorite(folder.id),
             onRenameFolder: (id, name) => workFolders.renameFolder(id, name),
-            onDeleteFolder: (id) => workFolders.deleteFolder(id),
+            onDeleteFolder: (id) async {
+              final folder = workFolders.folders.where((f) => f.id == id).firstOrNull;
+              if (folder == null) return;
+              final exports = await ExportEngine.listExportedFiles(forceRefresh: true);
+              final members = exports.where((file) =>
+                  workFolders.folderIdOf(file.uri.pathSegments.last) == id).toList();
+              await LocalFileTrashService.moveWorkFolder(
+                folderName: folder.name, files: members);
+              await workFolders.deleteFolder(id);
+              StorageInfoService().invalidate();
+            },
             onSetFolderThumbnail: (id, {required mode, sourceId, imagePath}) =>
                 workFolders.setFolderThumbnail(
                   id,
