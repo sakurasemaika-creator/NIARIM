@@ -2529,11 +2529,13 @@ Widget _receivedShareProjectTile(
     );
   }
   if (grid) {
-    return Card(
+    return collectionTileShadow(context, Card(
       margin: EdgeInsets.zero,
+      elevation: 0,
       clipBehavior: Clip.antiAlias,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(14),
+        side: const BorderSide(color: Colors.transparent, width: 2),
       ),
       child: InkWell(
         onTap: () => context.push('/project/${project.id}'),
@@ -2569,7 +2571,7 @@ Widget _receivedShareProjectTile(
           ],
         ),
       ),
-    );
+    ));
   }
   return Card(
     margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -2969,11 +2971,13 @@ class _OutgoingSharesList extends StatelessWidget {
         ],
       );
       if (grid) {
-        return Card(
+        return collectionTileShadow(context, Card(
           margin: EdgeInsets.zero,
+      elevation: 0,
           clipBehavior: Clip.antiAlias,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14),
+        side: const BorderSide(color: Colors.transparent, width: 2),
           ),
           child: InkWell(
             onTap: () => shareSavedNiashare(context, entry.path),
@@ -2996,7 +3000,7 @@ class _OutgoingSharesList extends StatelessWidget {
               ],
             ),
           ),
-        );
+        ));
       }
       return Card(
         margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -3347,12 +3351,14 @@ class _FolderableList<T> extends StatelessWidget {
 
   Widget _folderGridTile(
       BuildContext context, ProjectFolder folder, int count) {
-    return Card(
+    return collectionTileShadow(context, Card(
       key: ValueKey('collectionFolder_${folder.id}'),
       margin: EdgeInsets.zero,
+      elevation: 0,
       clipBehavior: Clip.antiAlias,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(14),
+        side: const BorderSide(color: Colors.transparent, width: 2),
       ),
       child: InkWell(
         onTap: () => onEnterFolder(
@@ -3390,7 +3396,7 @@ class _FolderableList<T> extends StatelessWidget {
           ],
         ),
       ),
-    );
+    ));
   }
 
   /// Folder entries use the same full-width, roughly 80dp ListTile as files,
