@@ -214,6 +214,42 @@ class CommunityApi {
     },
   );
 
+  /// Server-signed catalog quote for an individual or grouped selection.
+  /// Enabled is false until entitlement consumers and operators are reviewed.
+  Future<Map<String, dynamic>> selectedBenefitCoinQuote({
+    required List<String> targets,
+    required String duration,
+    required int quantity,
+  }) => _client.getJson(
+    '/me/rewards/quote',
+    authenticated: true,
+    query: {
+      'targets': targets.join(','),
+      'duration': duration,
+      'quantity': '$quantity',
+    },
+  );
+
+  /// Atomic debit + feature rights, only after independent server approval.
+  /// No client-provided coin amount is ever accepted or sent.
+  Future<Map<String, dynamic>> redeemSelectedBenefitCoins({
+    required List<String> targets,
+    required String duration,
+    required int quantity,
+    required String requestId,
+    required String priceVersion,
+  }) => _client.postJson(
+    '/me/rewards/redeem',
+    authenticated: true,
+    body: {
+      'targets': targets,
+      'duration': duration,
+      'quantity': quantity,
+      'requestId': requestId,
+      'priceVersion': priceVersion,
+    },
+  );
+
   /// Account status by default; specify an owned YouTube video ID to
   /// inspect the once-per-work bookmark and rank claim history.
   /// Advances only a bounded server-owned candidate scan.
