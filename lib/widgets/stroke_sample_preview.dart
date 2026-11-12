@@ -251,7 +251,13 @@ class _StrokeSamplePreviewState extends State<StrokeSamplePreview> {
                     // dock. Smooth resampling must preserve the diffuse
                     // edge of airbrush and blur presets instead of turning
                     // their soft halo into jagged opaque-looking pixels.
-                    filterQuality: FilterQuality.high,
+                    // Pixel-art brushes, stamps and dot-grid tones must
+                    // remain crisp; soften only continuous-color samples.
+                    filterQuality: (widget.brush?.pixelMode ?? false) ||
+                            (widget.stamp?.pixelMode ?? false) ||
+                            (widget.tone?.name.startsWith('ピクセル') ?? false)
+                        ? FilterQuality.none
+                        : FilterQuality.high,
                   ),
           ),
         ),
