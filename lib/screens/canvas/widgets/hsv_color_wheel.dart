@@ -124,7 +124,7 @@ class HsvColorWheel extends StatelessWidget {
                       children: [
                         Container(
                           decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(6),
+                            borderRadius: BorderRadius.zero,
                             gradient: LinearGradient(
                               colors: [
                                 Colors.white,
@@ -133,7 +133,7 @@ class HsvColorWheel extends StatelessWidget {
                             ),
                           ),
                           foregroundDecoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(6),
+                            borderRadius: BorderRadius.zero,
                             gradient: const LinearGradient(
                               begin: Alignment.topCenter,
                               end: Alignment.bottomCenter,
