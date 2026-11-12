@@ -37,6 +37,7 @@ import '../../widgets/sort_mode_control.dart';
 import '../../widgets/project_trash_dialog.dart';
 import '../../widgets/collection_action_controls.dart';
 import '../../widgets/collection_tile_layout.dart';
+import '../../widgets/home_collection_selection_scope.dart';
 import '../../widgets/share_project_file_action.dart';
 import '../../widgets/mission_completion_dialog.dart';
 import '../../widgets/typing_aware_shortcuts.dart';
@@ -235,6 +236,7 @@ class _HomeScreenState extends State<HomeScreen>
   ProjectSortMode _sortMode = ProjectSortMode.updatedDesc;
   bool _isSelectionMode = false;
   final Set<String> _selectedIds = {};
+  final Set<String> _visibleLibraryIds = {};
   // 複数選択モードの切り取り・コピー・貼り付け。フォルダ間の移動を手軽に
   // するための内部クリップボード（アプリを離れると保持しない、
   // セッション内のみのUI状態）。_clipboardIsCutがtrueなら切り取り（貼り付け
@@ -278,6 +280,7 @@ class _HomeScreenState extends State<HomeScreen>
         setState(() {
           _currentTabIndex = _tabController.index;
           _selectedIds.clear();
+          _visibleLibraryIds.clear();
           _isSelectionMode = false;
           _resetProjectSearch();
         });
@@ -631,14 +634,37 @@ class _HomeScreenState extends State<HomeScreen>
               if (_isSelectionMode)
                 HomeSelectionToolbar(
                   selectedCount: _selectedIds.length,
-                  onSelectAll: _selectAllInCurrentFolder,
+                  onSelectAll: _currentTabIndex == 0
+                      ? _selectAllInCurrentFolder : _selectAllLibrary,
                   onDeselectAll: _endProjectSelection,
-                  onCut: _selectedIds.isEmpty ? null : _cutSelected,
-                  onCopy: _selectedIds.isNotEmpty ? _copySelected : null,
-                  onTrash: _selectedIds.isEmpty ? null : _deleteSelected,
+                  onCut: _selectedIds.isEmpty ? null :
+                      (_currentTabIndex == 0 ? _cutSelected :
+                        _currentTabIndex == 3 || _selectedIds.length != 1
+                            ? null : _cutSelectedLibrary),
+                  onCopy: _selectedIds.isEmpty ? null :
+                      (_currentTabIndex == 0 ? _copySelected :
+                        _selectedIds.length == 1 ? _copySelectedLibrary : null),
+                  onTrash: _selectedIds.isEmpty ? null :
+                      (_currentTabIndex == 0 ? _deleteSelected :
+                        _currentTabIndex == 3 ? _restoreSelectedTrash :
+                        _trashSelectedLibrary),
+                  primaryActionLabel: _currentTabIndex == 3
+                      ? l10n.commonRestore : null,
+                  primaryActionIcon: _currentTabIndex == 3
+                      ? Icons.restore : Icons.delete,
                 ),
               Expanded(
-                child: TabBarView(
+                child: HomeCollectionSelectionScope(
+                  active: _isSelectionMode,
+                  selectedIds: Set<String>.of(_selectedIds),
+                  onLongPress: _longPressLibraryEntry,
+                  onToggle: _toggleLibraryEntry,
+                  onVisibleIds: (ids) {
+                    _visibleLibraryIds
+                      ..clear()
+                      ..addAll(ids);
+                  },
+                  child: TabBarView(
                   controller: _tabController,
                   children: [
                     ProjectListWidget(
@@ -765,6 +791,7 @@ class _HomeScreenState extends State<HomeScreen>
                       onCopyEntry: _copyLibraryEntry,
                     ),
                   ],
+                  ),
                 ),
               ),
             ],
@@ -832,6 +859,185 @@ class _HomeScreenState extends State<HomeScreen>
       _changeProjectScope(() => _currentFolderId = parent);
     }
     return true;
+  }
+
+
+  void _longPressLibraryEntry(String id) => setState(() {
+    _isSelectionMode = true;
+    _selectedIds.add(id);
+  });
+
+  void _toggleLibraryEntry(String id) => setState(() {
+    if (!_selectedIds.add(id)) _selectedIds.remove(id);
+    _isSelectionMode = _selectedIds.isNotEmpty;
+  });
+
+  void _selectAllLibrary() => setState(() {
+    _selectedIds.addAll(_visibleLibraryIds);
+    _isSelectionMode = _selectedIds.isNotEmpty;
+  });
+
+  HomeClipboardEntry? _singleLibrarySelection({bool cut = false}) {
+    if (_selectedIds.length != 1) return null;
+    final id = _selectedIds.first;
+    final ps = context.read<ProjectService>();
+    final ws = context.read<WorkFolderService>();
+    if (id.startsWith('work_file:')) {
+      final path = id.substring('work_file:'.length);
+      return HomeClipboardEntry(source: HomePasteArea.works, id: path,
+        name: File(path).uri.pathSegments.last, isCut: cut);
+    }
+    if (id.startsWith('work_folder:')) {
+      final folderId = id.substring('work_folder:'.length);
+      final folder = ws.folders.where((f) => f.id == folderId).firstOrNull;
+      if (folder == null) return null;
+      return HomeClipboardEntry(source: HomePasteArea.works,
+        id: folderId, name: folder.name, isFolder: true, isCut: cut);
+    }
+    if (id.startsWith('shared_file:')) {
+      final projectId = id.substring('shared_file:'.length);
+      final project = ps.shared.where((p) => p.id == projectId).firstOrNull;
+      if (project == null) return null;
+      return HomeClipboardEntry(source: HomePasteArea.received,
+        id: projectId, name: project.name, isCut: cut);
+    }
+    if (id.startsWith('shared_folder:')) {
+      final folderId = id.substring('shared_folder:'.length);
+      final folder = ps.sharedFolders.where((f) => f.id == folderId).firstOrNull;
+      if (folder == null) return null;
+      return HomeClipboardEntry(source: HomePasteArea.received,
+        id: folderId, name: folder.name, isFolder: true, isCut: cut);
+    }
+    if (id.startsWith('outgoing_file:')) {
+      final path = id.substring('outgoing_file:'.length);
+      final entry = ps.outgoingShares.where((e) => e.path == path).firstOrNull;
+      if (entry == null) return null;
+      return HomeClipboardEntry(source: HomePasteArea.outgoing,
+        id: path, name: entry.name, isCut: cut);
+    }
+    return null;
+  }
+
+  void _copySelectedLibrary() {
+    final entry = _singleLibrarySelection();
+    if (entry == null) return;
+    _copyLibraryEntry(entry);
+    _endProjectSelection();
+  }
+
+  void _cutSelectedLibrary() {
+    final entry = _singleLibrarySelection(cut: true);
+    if (entry == null) return;
+    _copyLibraryEntry(entry);
+    _endProjectSelection();
+  }
+
+  Future<void> _trashSelectedLibrary() async {
+    if (_selectedIds.isEmpty) return;
+    final selected = _selectedIds.toList(growable: false);
+    final l10n = AppLocalizations.of(context)!;
+    final confirm = await showDialog<bool>(context: context,
+      builder: (dialog) => AlertDialog(
+        title: Text(l10n.homeMoveToTrash),
+        content: Text(l10n.homeMoveToTrashConfirm(selected.length)),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(dialog, false),
+            child: Text(l10n.commonCancel)),
+          FilledButton(onPressed: () => Navigator.pop(dialog, true),
+            child: Text(l10n.commonMove)),
+        ],
+      ),
+    );
+    if (confirm != true || !mounted) return;
+    final ps = context.read<ProjectService>();
+    final ws = context.read<WorkFolderService>();
+    try {
+      for (final id in selected) {
+        if (id.startsWith('work_file:')) {
+          final path = id.substring('work_file:'.length);
+          await LocalFileTrashService.move(File(path), LocalTrashKind.exportedWork);
+        } else if (id.startsWith('work_folder:')) {
+          final folderId = id.substring('work_folder:'.length);
+          final folder = ws.folders.where((f) => f.id == folderId).firstOrNull;
+          if (folder == null) continue;
+          final exports = await ExportEngine.listExportedFiles(forceRefresh: true);
+          final files = exports.where((file) =>
+            ws.folderIdOf(file.uri.pathSegments.last) == folderId).toList();
+          await LocalFileTrashService.moveWorkFolder(
+            folderName: folder.name, files: files);
+          await ws.deleteFolder(folderId);
+        } else if (id.startsWith('shared_file:')) {
+          final projectId = id.substring('shared_file:'.length);
+          final project = ps.shared.where((p) => p.id == projectId).firstOrNull;
+          if (project != null && !project.isFavorite) {
+            await ps.deleteProject(projectId);
+          }
+        } else if (id.startsWith('shared_folder:')) {
+          final folderId = id.substring('shared_folder:'.length);
+          final folder = ps.sharedFolders.where((f) => f.id == folderId).firstOrNull;
+          if (folder != null && !folder.isFavorite) {
+            await ps.moveFolderToTrash(folderId, shared: true);
+          }
+        } else if (id.startsWith('outgoing_file:')) {
+          await LocalFileTrashService.move(
+            File(id.substring('outgoing_file:'.length)),
+            LocalTrashKind.outgoingShare);
+          await ps.refreshOutgoingShares();
+        }
+      }
+      StorageInfoService().invalidate();
+      if (mounted) _endProjectSelection();
+    } catch (error, stackTrace) {
+      AppErrorReporter.record(error, stackTrace);
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.homeTrashOperationFailed)));
+    }
+  }
+
+  Future<void> _restoreSelectedTrash() async {
+    if (_selectedIds.isEmpty) return;
+    final selected = _selectedIds.toList(growable: false);
+    final l10n = AppLocalizations.of(context)!;
+    final confirm = await showDialog<bool>(context: context,
+      builder: (dialog) => AlertDialog(
+        title: Text(l10n.commonRestore),
+        content: Text(l10n.homeTrashRestoreConfirm(selected.length)),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(dialog, false),
+            child: Text(l10n.commonCancel)),
+          FilledButton(onPressed: () => Navigator.pop(dialog, true),
+            child: Text(l10n.commonRestore)),
+        ],
+      ),
+    );
+    if (confirm != true || !mounted) return;
+    final ps = context.read<ProjectService>();
+    final ws = context.read<WorkFolderService>();
+    try {
+      final local = await LocalFileTrashService.list();
+      for (final id in selected) {
+        if (id.startsWith('trash_project:')) {
+          await ps.restoreProject(id.substring('trash_project:'.length));
+        } else if (id.startsWith('trash_folder:')) {
+          await ps.restoreTrashedFolder(id.substring('trash_folder:'.length));
+        } else if (id.startsWith('trash_local:')) {
+          final key = id.substring('trash_local:'.length);
+          final entry = local.where((e) => e.id == key).firstOrNull;
+          if (entry == null) continue;
+          if (entry.isFolder) {
+            await LocalFileTrashService.restoreWorkFolder(entry, ws);
+          } else {
+            await LocalFileTrashService.restore(entry);
+          }
+        }
+      }
+      StorageInfoService().invalidate();
+      if (mounted) _endProjectSelection();
+    } catch (error, stackTrace) {
+      AppErrorReporter.record(error, stackTrace);
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.homeTrashOperationFailed)));
+    }
   }
 
   void _endProjectSelection() => setState(() {
