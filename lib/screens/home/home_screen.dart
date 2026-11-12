@@ -1932,9 +1932,15 @@ class SharedScreen extends StatefulWidget {
     super.key, this.embedded = false, this.onDirectionChanged,
     this.onCopyEntry,
     this.screenFocus,
+    this.viewMode,
+    this.onViewModeChanged,
+    this.searchQuery = '',
   });
 
   final bool embedded;
+  final ProjectViewMode? viewMode;
+  final ValueChanged<ProjectViewMode>? onViewModeChanged;
+  final String searchQuery;
   final ValueChanged<bool>? onDirectionChanged;
   final ValueChanged<HomeClipboardEntry>? onCopyEntry;
 
@@ -1949,6 +1955,23 @@ class SharedScreen extends StatefulWidget {
 class _SharedScreenState extends State<SharedScreen> {
   // Keep the received and locally exported snapshot collections distinct.
   bool _showOutgoing = false;
+  ProjectViewMode? _standaloneViewMode;
+
+  ProjectViewMode _effectiveViewMode(BuildContext context) =>
+      widget.viewMode ?? _standaloneViewMode ??
+      switch (tileScreenClassForWidth(MediaQuery.sizeOf(context).width)) {
+        TileScreenClass.phone => ProjectViewMode.small,
+        TileScreenClass.tablet => ProjectViewMode.medium,
+        TileScreenClass.desktop => ProjectViewMode.large,
+      };
+
+  void _selectViewMode(ProjectViewMode value) {
+    if (widget.onViewModeChanged != null) {
+      widget.onViewModeChanged!(value);
+    } else {
+      setState(() => _standaloneViewMode = value);
+    }
+  }
 
   @override
   void initState() {
@@ -2056,23 +2079,20 @@ class _SharedScreenState extends State<SharedScreen> {
               ),
             ),
           ),
-          if (!_showOutgoing)
-            _LibraryListControls(
-            sort: SortModeControl(
-              sortByName: _sortByName,
-              sortAscending: _sortAscending,
-              onSortByNameChanged: _setSortByName,
-              onToggleDirection: _toggleSortDirection,
-            ),
+          _HomeCollectionSortHeader(
+            sortByName: _sortByName,
+            sortAscending: _sortAscending,
+            onSortByNameChanged: _setSortByName,
+            onToggleDirection: _toggleSortDirection,
             leading: FilterChip(
+              key: const Key('sharedFavoritesOnlyFilter'),
               label: Text(
                 l10n.homeFavoritesOnly,
                 style: TextStyle(
                   fontFamily: 'Kuramubon',
                   fontFamilyFallback: kHeadingFontFallback,
                   color: _showFavoritesOnly
-                      ? Theme.of(context).colorScheme.onPrimary
-                      : null,
+                      ? Theme.of(context).colorScheme.onPrimary : null,
                 ),
               ),
               selectedColor: Theme.of(context).colorScheme.primary,
@@ -2083,10 +2103,19 @@ class _SharedScreenState extends State<SharedScreen> {
           ),
           Expanded(
             child: _showOutgoing
-                ? _OutgoingSharesList(onCopyEntry: widget.onCopyEntry)
-                : _SharedTab(
+                ? _OutgoingSharesList(
+                    onCopyEntry: widget.onCopyEntry,
+                    viewMode: _effectiveViewMode(context),
                     sortMode: _sortMode,
                     showFavoritesOnly: _showFavoritesOnly,
+                    searchQuery: widget.searchQuery,
+                  )
+                : _SharedTab(
+                    viewMode: _effectiveViewMode(context),
+                    onViewModeChanged: _selectViewMode,
+                    sortMode: _sortMode,
+                    showFavoritesOnly: _showFavoritesOnly,
+                    searchQuery: widget.searchQuery,
                     onCopyEntry: widget.onCopyEntry,
                     screenFocus: widget.screenFocus,
                   ),
@@ -2345,14 +2374,20 @@ List<Project> _sortProjects(List<Project> projects, ProjectSortMode mode) {
 }
 
 class _SharedTab extends StatelessWidget {
+  final ProjectViewMode viewMode;
+  final ValueChanged<ProjectViewMode> onViewModeChanged;
   final ProjectSortMode sortMode;
   final bool showFavoritesOnly;
+  final String searchQuery;
   final ValueChanged<HomeClipboardEntry>? onCopyEntry;
   final FocusNode? screenFocus;
 
   const _SharedTab({
+    required this.viewMode,
+    required this.onViewModeChanged,
     required this.sortMode,
     required this.showFavoritesOnly,
+    required this.searchQuery,
     this.onCopyEntry,
     this.screenFocus,
   });
@@ -2365,7 +2400,18 @@ class _SharedTab extends StatelessWidget {
     if (showFavoritesOnly) {
       shared = shared.where((p) => p.isFavorite).toList();
     }
+    final query = searchQuery.trim().toLowerCase();
+    if (query.isNotEmpty) {
+      shared = shared.where((p) =>
+          p.name.toLowerCase().contains(query)).toList();
+    }
     shared = _sortProjects(shared, sortMode);
+    final visibleFolders = service.sharedFolders.where((folder) =>
+        (!showFavoritesOnly ||
+            shared.any((p) => p.sharedFolderId == folder.id)) &&
+        (query.isEmpty || folder.name.toLowerCase().contains(query) ||
+            shared.any((p) => p.sharedFolderId == folder.id))
+    ).toList();
     final l10n = AppLocalizations.of(context)!;
     // 受け取ったものは保存先から読む。読めなかったときは知らせ、
     // 「共有プロジェクトがありません」とは言わない。
@@ -2373,7 +2419,11 @@ class _SharedTab extends StatelessWidget {
     return _FolderableList<Project>(
       reserveForFloatingActions: true,
       allItems: shared,
-      folders: folders,
+      folders: visibleFolders,
+      viewMode: viewMode,
+      gridItemBuilder: (context, project) =>
+          _receivedShareProjectTile(
+            context, project, onCopyEntry: onCopyEntry, grid: true),
       header: loadFailed
           ? ProjectsLoadFailureNotice(
               key: const Key('sharedProjectsLoadFailed'),
@@ -2397,6 +2447,10 @@ class _SharedTab extends StatelessWidget {
               builder: (_) => _SharedFolderScreen(
                 folderId: folderId,
                 folderName: folderName,
+                viewMode: viewMode,
+                onViewModeChanged: onViewModeChanged,
+                showFavoritesOnly: showFavoritesOnly,
+                searchQuery: searchQuery,
                 onCopyEntry: onCopyEntry,
               ),
             ),
@@ -2418,39 +2472,9 @@ class _SharedTab extends StatelessWidget {
             source: HomePasteArea.received, id: folder.id,
             name: folder.name, isFolder: true,
           )),
-      itemBuilder: (context, project) => Card(
-        margin: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-        elevation: 1,
-        shadowColor: ThemeService.activeColorScheme.shadow.withValues(
-          alpha: 0.15,
-        ),
-        color: Theme.of(context).colorScheme.surfaceContainerLow,
-        child: ListTile(
-          leading: Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              color: Color(project.backgroundColor),
-              borderRadius: BorderRadius.circular(10),
-            ),
-          ),
-          title: Text(
-            project.name,
-            style: const TextStyle(
-              fontFamily: 'Kuramubon',
-              fontFamilyFallback: kHeadingFontFallback,
-            ),
-          ),
-          subtitle: Text(
-            l10n.homeProjectMeta(project.fps, project.durationSeconds),
-          ),
-          onTap: () => context.push('/project/${project.id}'),
-          trailing: _sharedProjectActions(
-            context, project, onCopyEntry: onCopyEntry,
-          ),
-          onLongPress: () => _showMoveToSharedFolderSheet(context, project),
-        ),
-      ),
+      itemBuilder: (context, project) =>
+          _receivedShareProjectTile(
+            context, project, onCopyEntry: onCopyEntry, grid: false),
     );
   }
 
