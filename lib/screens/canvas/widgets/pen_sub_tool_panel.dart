@@ -1,33 +1,32 @@
-import '../../../widgets/docked_panel_scope.dart';
+import 'dart:math' as math;
 
-import 'package:niarim/services/theme_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../../services/brush_service.dart';
 import '../../../services/tone_service.dart';
-import '../../../services/stamp_service.dart';
-import '../../../models/stamp.dart';
-import '../../../widgets/labeled_slider.dart';
-import '../../../widgets/preset_stroke_row.dart';
-import '../../../utils/reorder_index.dart';
+import '../../../services/theme_service.dart';
+import '../../../config/font_fallback.dart';
 import '../../../widgets/first_use_tooltip.dart';
 import '../canvas_screen.dart';
-import '../../../config/font_fallback.dart';
+import 'brush_panel.dart';
+import 'tone_panel.dart';
+import 'stamp_panel.dart';
 
-/// ペンツール長押し・上スワイプで表示されるサブツールタブUI
-/// ブラシ / トーン / スタンプ
-/// （投げ縄塗りは、投げ縄で囲った範囲を塗る点でバケツ塗りに近い性質を
-/// 持つため、ペンのサブツールからバケツ長押しメニューへ移した）。
+/// The ONLY entry point for pen subtools and their catalogue management.
+/// Each tab hosts the actual full-featured management panel, not a duplicate
+/// quick list. Favourites, search, folder management, create/import/export,
+/// rename/edit/duplicate/delete, and drag handles remain fully operational.
 class PenSubToolPanel extends StatefulWidget {
   final DrawingTool currentTool;
   final PenSubTool currentSubTool;
   final ValueChanged<PenSubTool> onSubToolSelected;
   final VoidCallback onClose;
-  // ブラシ/トーン/スタンプの全機能管理パネル（フォルダ・自作・検索・
-  // 読み込み書き出し）を開く。現在表示中のタブに応じて呼び出し側で
-  // 対象を判断する。
+  final Future<int?> Function()? onEyedropOutlineColor;
+
+  /// Old caller compatibility; selection and editing no longer open a
+  /// different management panel. All actions live inside these three tabs.
   final void Function(PenSubTool subTool)? onManage;
 
   const PenSubToolPanel({
@@ -36,6 +35,7 @@ class PenSubToolPanel extends StatefulWidget {
     required this.currentSubTool,
     required this.onSubToolSelected,
     required this.onClose,
+    this.onEyedropOutlineColor,
     this.onManage,
   });
 
@@ -45,62 +45,70 @@ class PenSubToolPanel extends StatefulWidget {
 
 class _PenSubToolPanelState extends State<PenSubToolPanel>
     with SingleTickerProviderStateMixin {
-  late TabController _tabController;
+  late final TabController _tabs;
+
+  int _index(PenSubTool tool) => switch (tool) {
+    PenSubTool.brush => 0,
+    PenSubTool.tone => 1,
+    PenSubTool.stamp => 2,
+    PenSubTool.lassoFill => 0,
+  };
+
+  PenSubTool _subTool(int index) => switch (index) {
+    1 => PenSubTool.tone,
+    2 => PenSubTool.stamp,
+    _ => PenSubTool.brush,
+  };
 
   @override
   void initState() {
     super.initState();
-    final initialIndex = switch (widget.currentSubTool) {
-      PenSubTool.brush => 0,
-      PenSubTool.tone => 1,
-      PenSubTool.stamp => 2,
-      // 投げ縄塗り選択中にペンサブツールパネルが開かれることはない
-      // （投げ縄塗りはバケツ長押しメニューから選ぶため）が、念のため
-      // ブラシタブへフォールバックする。
-      PenSubTool.lassoFill => 0,
-    };
-    _tabController = TabController(
+    _tabs = TabController(
       length: 3,
       vsync: this,
-      initialIndex: initialIndex,
-    );
-    // TabControllerのindex変化をonSubToolSelectedに通知
-    _tabController.addListener(_onTabChanged);
+      initialIndex: _index(widget.currentSubTool),
+    )..addListener(_onTabChanged);
+  }
+
+  @override
+  void didUpdateWidget(covariant PenSubToolPanel oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.currentSubTool != widget.currentSubTool) {
+      final index = _index(widget.currentSubTool);
+      if (_tabs.index != index) _tabs.animateTo(index);
+    }
   }
 
   void _onTabChanged() {
-    if (_tabController.indexIsChanging) return;
-    final subTool = switch (_tabController.index) {
-      0 => PenSubTool.brush,
-      1 => PenSubTool.tone,
-      2 => PenSubTool.stamp,
-      _ => PenSubTool.brush,
-    };
-    widget.onSubToolSelected(subTool);
+    if (_tabs.indexIsChanging) return;
+    widget.onSubToolSelected(_subTool(_tabs.index));
   }
 
   @override
   void dispose() {
-    _tabController.removeListener(_onTabChanged);
-    _tabController.dispose();
+    _tabs.removeListener(_onTabChanged);
+    _tabs.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final availableHeight = MediaQuery.sizeOf(context).height;
+    // Full catalogue panels need more vertical room than the former quick
+    // list. Parent dock viewports retain their own scrolling/collapse rules.
+    final panelHeight = math.min(540.0, math.max(290.0, availableHeight - 70));
     return PanelSurface(
       width: 280,
-      height: 480,
+      height: panelHeight,
       child: Column(
         children: [
           Row(
             children: [
               Expanded(
                 child: TabBar(
-                  controller: _tabController,
+                  controller: _tabs,
                   labelStyle: const TextStyle(fontSize: 11),
-                  // 各サブツールタブの初回使用時に吹き出し説明を表示する
                   tabs: [
                     Tab(text: l10n.penSubToolTabBrush),
                     FirstUseTooltip(
@@ -116,344 +124,54 @@ class _PenSubToolPanelState extends State<PenSubToolPanel>
                   ],
                 ),
               ),
-              // フォルダ管理・自作・検索・読み込み書き出し等のフル機能パネルを開く。
-              if (widget.onManage != null)
+              if (!DockedPanelScope.of(context))
                 IconButton(
-                  icon: const Icon(Icons.tune, size: 16),
-                  tooltip: l10n.penSubToolManageTooltip,
-                  onPressed: () {
-                    final subTool = switch (_tabController.index) {
-                      0 => PenSubTool.brush,
-                      1 => PenSubTool.tone,
-                      2 => PenSubTool.stamp,
-                      _ => PenSubTool.brush,
-                    };
-                    widget.onManage!(subTool);
-                  },
+                  tooltip: l10n.commonClose,
+                  icon: const Icon(Icons.close, size: 18),
+                  onPressed: widget.onClose,
                 ),
             ],
           ),
           Expanded(
             child: TabBarView(
-              controller: _tabController,
+              controller: _tabs,
               children: [
-                _BrushTab(onClose: widget.onClose, onManage: widget.onManage == null ? null : () => widget.onManage!(PenSubTool.brush)),
-                _ToneTab(onClose: widget.onClose, onManage: widget.onManage == null ? null : () => widget.onManage!(PenSubTool.tone)),
-                _StampTab(onClose: widget.onClose, onManage: widget.onManage == null ? null : () => widget.onManage!(PenSubTool.stamp)),
+                LayoutBuilder(
+                  builder: (context, constraints) => BrushPanel(
+                    embedded: true,
+                    embeddedHeight: constraints.maxHeight,
+                    dockedMode: true,
+                    onEyedropOutlineColor: widget.onEyedropOutlineColor,
+                    onClose: widget.onClose,
+                    onPresetSelected: () => widget.onSubToolSelected(
+                      PenSubTool.brush,
+                    ),
+                  ),
+                ),
+                LayoutBuilder(
+                  builder: (context, constraints) => TonePanel(
+                    embedded: true,
+                    embeddedHeight: constraints.maxHeight,
+                    onClose: widget.onClose,
+                    onPresetSelected: () => widget.onSubToolSelected(
+                      PenSubTool.tone,
+                    ),
+                  ),
+                ),
+                LayoutBuilder(
+                  builder: (context, constraints) => StampPanel(
+                    embedded: true,
+                    embeddedHeight: constraints.maxHeight,
+                    onClose: widget.onClose,
+                    onPresetSelected: () => widget.onSubToolSelected(
+                      PenSubTool.stamp,
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-/// Compact actions shared by every pen-subtool tab. The action buttons and
-/// the reorder grip are never sacrificed to make room for the wave preview.
-class _QuickPresetActions extends StatelessWidget {
-  const _QuickPresetActions({
-    required this.index,
-    required this.favorite,
-    required this.onFavorite,
-    required this.onDuplicate,
-    this.onEdit,
-    this.onManage,
-  });
-
-  final int index;
-  final bool favorite;
-  final VoidCallback onFavorite;
-  final VoidCallback onDuplicate;
-  final VoidCallback? onEdit;
-  final VoidCallback? onManage;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        GestureDetector(
-          onTap: onFavorite,
-          child: Padding(
-            padding: const EdgeInsets.all(4),
-            child: Icon(
-              favorite ? Icons.star : Icons.star_outline,
-              size: 14,
-              color: favorite
-                  ? ThemeService.activeColorScheme.tertiary
-                  : ThemeService.activeColorScheme.onSurfaceVariant,
-            ),
-          ),
-        ),
-        PopupMenuButton<String>(
-          icon: const Icon(Icons.more_vert, size: 14),
-          tooltip: l10n.penSubToolManageTooltip,
-          onSelected: (value) {
-            switch (value) {
-              case 'edit':
-                onEdit?.call();
-              case 'duplicate':
-                onDuplicate();
-              case 'manage':
-                onManage?.call();
-            }
-          },
-          itemBuilder: (_) => [
-            if (onEdit != null)
-              PopupMenuItem(
-                value: 'edit',
-                child: Text(l10n.creativePanelEditAction),
-              ),
-            PopupMenuItem(
-              value: 'duplicate',
-              child: Text(l10n.themeDuplicateAction),
-            ),
-            if (onManage != null)
-              PopupMenuItem(
-                value: 'manage',
-                child: Text(l10n.penSubToolManageTooltip),
-              ),
-          ],
-        ),
-        ReorderableDragStartListener(
-          index: index,
-          child: Padding(
-            padding: const EdgeInsetsDirectional.only(start: 2, end: 4),
-            child: Icon(
-              Icons.drag_indicator,
-              size: 16,
-              color: ThemeService.activeColorScheme.onSurfaceVariant,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-/// Brush, tone and stamp all use PresetStrokeRow for identical text,
-/// stroke preview and action placement.
-class _BrushTab extends StatelessWidget {
-  const _BrushTab({required this.onClose, this.onManage});
-  final VoidCallback onClose;
-  final VoidCallback? onManage;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    final service = context.watch<BrushService>();
-    final brushes = service.brushes;
-    final current = service.currentBrush;
-    return ReorderableListView.builder(
-      buildDefaultDragHandles: false,
-      itemCount: brushes.length,
-      onReorderItem: (from, to) =>
-          service.reorderBrush(from, preRemovalIndex(from, to)),
-      itemBuilder: (context, index) {
-        final brush = brushes[index];
-        final selected = current?.id == brush.id;
-        final shown = selected ? current! : brush;
-        return PresetStrokeRow(
-          key: ValueKey('pen-subtool-brush-' + brush.id),
-          name: brush.name,
-          brush: shown,
-          color: service.currentColor,
-          selected: selected,
-          semanticsLabel: l10n.penSubToolBrushSizeOpacity(
-            shown.size.round(), shown.opacity,
-          ),
-          onTap: () {
-            service.selectBrush(brush.id);
-            onClose();
-          },
-          onLongPress: service.isBuiltIn(brush.id) ? null : onManage,
-          trailing: _QuickPresetActions(
-            index: index,
-            favorite: brush.isFavorite,
-            onFavorite: () => service.toggleFavoriteBrush(brush.id),
-            onEdit: service.isBuiltIn(brush.id) ? null : onManage,
-            onDuplicate: () => service.duplicateBrush(brush.id),
-            onManage: onManage,
-          ),
-        );
-      },
-    );
-  }
-}
-
-class _ToneTab extends StatelessWidget {
-  const _ToneTab({required this.onClose, this.onManage});
-  final VoidCallback onClose;
-  final VoidCallback? onManage;
-
-  @override
-  Widget build(BuildContext context) {
-    final service = context.watch<ToneService>();
-    final tones = service.tones;
-    final current = service.currentTone;
-    return ReorderableListView.builder(
-      buildDefaultDragHandles: false,
-      itemCount: tones.length,
-      onReorderItem: (from, to) =>
-          service.reorderTone(from, preRemovalIndex(from, to)),
-      itemBuilder: (context, index) {
-        final tone = tones[index];
-        return PresetStrokeRow(
-          key: ValueKey('pen-subtool-tone-' + tone.id),
-          name: tone.name,
-          tone: tone,
-          color: context.watch<BrushService>().currentColor,
-          selected: current?.id == tone.id,
-          onTap: () {
-            service.selectTone(tone.id);
-            onClose();
-          },
-          onLongPress: service.isBuiltIn(tone.id) ? null : onManage,
-          trailing: _QuickPresetActions(
-            index: index,
-            favorite: tone.isFavorite,
-            onFavorite: () => service.toggleFavorite(tone.id),
-            onEdit: service.isBuiltIn(tone.id) ? null : onManage,
-            onDuplicate: () => service.duplicateTone(tone.id),
-            onManage: onManage,
-          ),
-        );
-      },
-    );
-  }
-}
-
-class _StampTab extends StatelessWidget {
-  const _StampTab({required this.onClose, this.onManage});
-  final VoidCallback onClose;
-  final VoidCallback? onManage;
-
-  @override
-  Widget build(BuildContext context) {
-    final service = context.watch<StampService>();
-    final stamps = service.stamps;
-    final current = service.currentStamp;
-    return ReorderableListView.builder(
-      buildDefaultDragHandles: false,
-      itemCount: stamps.length,
-      onReorderItem: (from, to) =>
-          service.reorderStamp(from, preRemovalIndex(from, to)),
-      itemBuilder: (context, index) {
-        final stamp = stamps[index];
-        final builtIn = service.isBuiltIn(stamp.id);
-        return PresetStrokeRow(
-          key: ValueKey('pen-subtool-stamp-' + stamp.id),
-          name: stamp.name,
-          stamp: stamp,
-          color: Theme.of(context).colorScheme.onSurface,
-          selected: current?.id == stamp.id,
-          onTap: () {
-            service.selectStamp(stamp.id);
-            onClose();
-          },
-          onLongPress: builtIn
-              ? null
-              : () => _showStampSettingsDialog(context, service, stamp),
-          trailing: _QuickPresetActions(
-            index: index,
-            favorite: stamp.isFavorite,
-            onFavorite: () => service.toggleFavorite(stamp.id),
-            onEdit: builtIn
-                ? null
-                : () => _showStampSettingsDialog(context, service, stamp),
-            onDuplicate: () => service.duplicateStamp(stamp.id),
-            onManage: onManage,
-          ),
-        );
-      },
-    );
-  }
-
-  /// スタンプ設定ダイアログ（回転ON/OFF・密度・散布）
-  void _showStampSettingsDialog(
-    BuildContext context,
-    StampService service,
-    Stamp stamp,
-  ) {
-    final l10n = AppLocalizations.of(context)!;
-    bool rotation = stamp.rotation;
-    int opacity = stamp.opacity;
-    double density = stamp.density;
-    double scatter = stamp.scatter;
-    showDialog(
-      context: context,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setS) => AlertDialog(
-          title: Text(stamp.name),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SwitchListTile(
-                dense: true,
-                title: Text(l10n.stampRotationLabel),
-                subtitle: Text(
-                  l10n.penSubToolStampRotationSubtitle,
-                  style: const TextStyle(fontSize: 11),
-                ),
-                value: rotation,
-                onChanged: (v) => setS(() => rotation = v),
-              ),
-              LabeledSlider(
-                label: l10n.brushSettingsOpacityLabel,
-                value: opacity.toDouble(),
-                min: 1,
-                max: 100,
-                sliderLabel: '$opacity%',
-                valueText: '$opacity%',
-                onChanged: (v) => setS(() => opacity = v.round()),
-              ),
-              LabeledSlider(
-                label: l10n.stampDensityLabel,
-                value: density.clamp(0.1, 5.0),
-                min: 0.1,
-                max: 5.0,
-                step: 0.1,
-                isInt: false,
-                sliderLabel: density.toStringAsFixed(1),
-                valueText: density.toStringAsFixed(1),
-                onChanged: (v) => setS(() => density = v),
-              ),
-              // 散布は0〜1で持つが、直接入力と同じく百分率で動かす。
-              LabeledSlider(
-                label: l10n.stampScatterLabel,
-                value: scatter * 100,
-                min: 0,
-                max: 100,
-                sliderLabel: '${(scatter * 100).round()}%',
-                valueText: '${(scatter * 100).round()}%',
-                onChanged: (v) => setS(() => scatter = v / 100.0),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: Text(l10n.commonCancel),
-            ),
-            FilledButton(
-              onPressed: () {
-                service.updateStamp(
-                  stamp.copyWith(
-                    rotation: rotation,
-                    opacity: opacity,
-                    density: density,
-                    scatter: scatter,
-                  ),
-                );
-                Navigator.pop(ctx);
-              },
-              child: Text(l10n.commonOk),
-            ),
-          ],
-        ),
       ),
     );
   }
