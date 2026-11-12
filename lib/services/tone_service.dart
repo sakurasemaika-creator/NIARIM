@@ -347,12 +347,12 @@ class ToneService extends ChangeNotifier {
     // 1px単位の縞。市松・格子・散らしと違い、向きを選べる。
     const Tone(
       id: 'Tone0048',
-      name: 'ピクセル横縞（1px）',
+      name: 'ピクセルボーダー（横1px）',
       tags: [AssetTagKeys.pixelArt],
     ),
     const Tone(
       id: 'Tone0049',
-      name: 'ピクセル縦縞（1px）',
+      name: 'ピクセルストライプ（縦1px）',
       tags: [AssetTagKeys.pixelArt],
     ),
     const Tone(
@@ -420,6 +420,19 @@ class ToneService extends ChangeNotifier {
       name: 'ピクセルディザ(細) 94%（8×8）',
       tags: [AssetTagKeys.pixelArt, AssetTagKeys.gradient],
     ),
+    // Existing 1px checker/grid/stripe/border and the 10–80 denier
+    // stockings remain in the list. Add the explicitly requested inverse
+    // masks with stable, migration-safe IDs.
+    const Tone(
+      id: 'Tone0063',
+      name: 'ピクセル格子反転（1px）',
+      tags: [AssetTagKeys.pixelArt],
+    ),
+    const Tone(
+      id: 'Tone0064',
+      name: 'ピクセル市松反転（1px）',
+      tags: [AssetTagKeys.pixelArt],
+    ),
   ];
 
   Future<void> init() async {
@@ -444,6 +457,20 @@ class ToneService extends ChangeNotifier {
       if (missing.isNotEmpty) {
         _tones.addAll(missing);
         changed = true;
+      }
+      // Original horizontally/vertically striped presets predate the
+      // familiar stripe/border naming. Update only their *original* names;
+      // user-renamed assets and custom tags/favourites stay intact.
+      const originalStripeNames = <String, String>{
+        'Tone0048': 'ピクセル横縞（1px）',
+        'Tone0049': 'ピクセル縦縞（1px）',
+      };
+      for (var i = 0; i < _tones.length; i++) {
+        final oldName = originalStripeNames[_tones[i].id];
+        if (oldName != null && _tones[i].name == oldName) {
+          _tones[i] = _tones[i].copyWith(name: defaults[_tones[i].id]!.name);
+          changed = true;
+        }
       }
       // 「ドット○○（1px）」は「ピクセル○○（1px）」へ改称した（「ドット」が
       // 丸い水玉模様と誤認されるため）。旧名のまま残っている既存ユーザーの
