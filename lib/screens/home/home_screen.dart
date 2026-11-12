@@ -790,8 +790,12 @@ class _HomeScreenState extends State<HomeScreen>
                       onViewModeChanged: _selectSharedViewMode,
                       searchQuery: _currentTabIndex == 2 && _isSearching
                           ? _searchQuery : '',
-                      onDirectionChanged: (outgoing) =>
-                          setState(() => _sharedOutgoing = outgoing),
+                      onDirectionChanged: (outgoing) => setState(() {
+                        _sharedOutgoing = outgoing;
+                        _selectedIds.clear();
+                        _visibleLibraryIds.clear();
+                        _isSelectionMode = false;
+                      }),
                       onCopyEntry: _copyLibraryEntry,
                     ),
                     TrashScreen(
