@@ -106,7 +106,10 @@ Uint8List generateBuiltInToneTexture(Tone tone, {int size = 64}) {
     _fillNoisePattern(data, size, percent / 100.0, cell: 1);
   } else if (name.contains('ピクセルレンガ')) {
     _fillBrickPattern(data, size, unit: 4, thickness: 1);
-  } else if (name.contains('ピクセル') && name.contains('縞')) {
+  } else if (name.contains('ピクセル') &&
+      (name.contains('縞') ||
+          name.contains('ストライプ') ||
+          name.contains('ボーダー'))) {
     final diagonal = name.contains('斜め');
     _fillStripePattern(
       data,
@@ -122,11 +125,10 @@ Uint8List generateBuiltInToneTexture(Tone tone, {int size = 64}) {
           : _StripeDirection.horizontal,
     );
   } else if (name.contains('市松')) {
-    // ピクセルモード用：1ピクセルごとに市松模様。
-    _fillPixelCheckerPattern(data, size);
+    // Reverse is the exact inverse mask, not a second generic 30% halftone.
+    _fillPixelCheckerPattern(data, size, inverted: name.contains('反転'));
   } else if (name.contains('格子')) {
-    // ピクセルモード用：1ピクセルごとに格子柄。
-    _fillPixelGridPattern(data, size);
+    _fillPixelGridPattern(data, size, inverted: name.contains('反転'));
   } else if (name.contains('散らし')) {
     // ピクセルモード用：1ピクセルの点を上下左右1pxずつ空けて独立配置。
     // 市松（斜めに隣接）・格子（縦横の線がつながる）とは異なり、
@@ -195,19 +197,21 @@ Uint8List generateBuiltInToneTexture(Tone tone, {int size = 64}) {
 }
 
 /// 1ピクセルごとの市松模様（チェッカー柄）：(x+y)が偶数の画素のみインクあり。
-void _fillPixelCheckerPattern(Uint8List data, int size) {
+void _fillPixelCheckerPattern(Uint8List data, int size, {bool inverted = false}) {
   for (int y = 0; y < size; y++) {
     for (int x = 0; x < size; x++) {
-      if ((x + y).isEven) data[(y * size + x) * 4 + 3] = 255;
+      if ((x + y).isEven != inverted) data[(y * size + x) * 4 + 3] = 255;
     }
   }
 }
 
 /// 1ピクセルごとの格子柄：1ピクセルおきの縦線・横線が交差して網目状になる。
-void _fillPixelGridPattern(Uint8List data, int size) {
+void _fillPixelGridPattern(Uint8List data, int size, {bool inverted = false}) {
   for (int y = 0; y < size; y++) {
     for (int x = 0; x < size; x++) {
-      if (x.isEven || y.isEven) data[(y * size + x) * 4 + 3] = 255;
+      if ((x.isEven || y.isEven) != inverted) {
+        data[(y * size + x) * 4 + 3] = 255;
+      }
     }
   }
 }
