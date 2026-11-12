@@ -265,6 +265,20 @@ void main() {
       await tester.ensureVisible(target);
       await tester.tap(target);
       await tester.pump(const Duration(milliseconds: 700));
+      if (tab == 3) {
+        // LocalFileTrashService.list() performs genuine asynchronous IO.
+        // pump() alone can photograph the FutureBuilder's initial spinner.
+        for (var attempt = 0;
+            attempt < 16 &&
+                find.text('deleted_sample.png').evaluate().isEmpty;
+            attempt++) {
+          await tester.runAsync(() =>
+              Future<void>.delayed(const Duration(milliseconds: 120)));
+          await tester.pump(const Duration(milliseconds: 100));
+        }
+        expect(find.text('deleted_sample.png'), findsOneWidget,
+            reason: 'Capture the real Trash row, not its loading spinner');
+      }
       await capture(name);
     }
   }, timeout: const Timeout(Duration(minutes: 6)));
