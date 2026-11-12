@@ -25,7 +25,16 @@ import '../../../widgets/preset_stroke_row.dart';
 /// 自作スタンプ・読み込み・書き出し・フォルダ管理）。ブラシパネルと同構成。
 class StampPanel extends StatefulWidget {
   final VoidCallback onClose;
-  const StampPanel({super.key, required this.onClose});
+  final bool embedded;
+  final double? embeddedHeight;
+  final VoidCallback? onPresetSelected;
+  const StampPanel({
+    super.key,
+    required this.onClose,
+    this.embedded = false,
+    this.embeddedHeight,
+    this.onPresetSelected,
+  });
 
   @override
   State<StampPanel> createState() => _StampPanelState();
@@ -85,16 +94,17 @@ class _StampPanelState extends State<StampPanel> {
 
     return PanelSurface(
       width: 280,
-      height: 460,
+      height: widget.embeddedHeight ?? 460,
       child: Padding(
         padding: const EdgeInsets.all(12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            PanelCenterCloseBar(onClose: widget.onClose),
+            if (!widget.embedded)
+              PanelCenterCloseBar(onClose: widget.onClose),
             Row(
               children: [
-                Text(
+                if (!widget.embedded) Text(
                   l10n.stampTitle,
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
@@ -348,7 +358,10 @@ class _StampPanelState extends State<StampPanel> {
                                 ),
                             ],
                           ),
-                          onTap: () => stampService.selectStamp(stamp.id),
+                          onTap: () {
+                            stampService.selectStamp(stamp.id);
+                            widget.onPresetSelected?.call();
+                          },
                           onLongPress: builtIn
                               ? null
                               : () => _showStampSettings(context, stamp),
