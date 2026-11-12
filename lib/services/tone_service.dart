@@ -651,7 +651,12 @@ class ToneService extends ChangeNotifier {
     final tone = _tones.firstWhere((t) => t.id == id);
     final newId = 'Tone${DateTime.now().millisecondsSinceEpoch}';
     _tones.add(
-      tone.copyWith(id: newId, name: '${tone.name} (コピー)', isFavorite: false),
+      tone.copyWith(
+        id: newId,
+        name: '${tone.name} (コピー)',
+        patternName: tone.patternName ?? tone.name,
+        isFavorite: false,
+      ),
     );
     notifyListeners();
     _persist();
