@@ -2547,6 +2547,9 @@ Widget _receivedShareProjectTile(
       margin: EdgeInsets.zero,
       color: theme.colorScheme.surfaceContainerLow,
       clipBehavior: Clip.antiAlias,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(14),
+      ),
       child: InkWell(
         onTap: () => context.push('/project/${project.id}'),
         onLongPress: showFolderMove,
@@ -2559,9 +2562,19 @@ Widget _receivedShareProjectTile(
                 children: [
                   cover(),
                   Positioned(
-                    right: 4, top: 4,
+                    top: 4,
+                    right: 4,
                     child: _sharedProjectActions(
                       context, project, onCopyEntry: onCopyEntry,
+                      showFavorite: false,
+                    ),
+                  ),
+                  Positioned(
+                    bottom: 4,
+                    left: 4,
+                    child: _sharedProjectActions(
+                      context, project, onCopyEntry: onCopyEntry,
+                      showMenu: false,
                     ),
                   ),
                 ],
@@ -2624,12 +2637,15 @@ String _shareCollectionText(BuildContext context, {required bool outgoing}) {
 Widget _sharedProjectActions(
   BuildContext context, Project project, {
   ValueChanged<HomeClipboardEntry>? onCopyEntry,
+  bool showFavorite = true,
+  bool showMenu = true,
 }) {
   final l10n = AppLocalizations.of(context)!;
   return Row(
     mainAxisSize: MainAxisSize.min,
     children: [
-      CollectionFavoriteButton(
+      if (showFavorite)
+        CollectionFavoriteButton(
         itemId: project.id,
         favorite: project.isFavorite,
         tooltip: project.isFavorite
@@ -2640,8 +2656,9 @@ Widget _sharedProjectActions(
           () => context.read<ProjectService>().toggleFavorite(project.id),
         ),
       ),
-      const SizedBox(width: 4),
-      CollectionActionFrame(
+      if (showFavorite && showMenu) const SizedBox(width: 4),
+      if (showMenu)
+        CollectionActionFrame(
         key: Key('collectionMenu_${project.id}'),
         child: _receivedShareMenu(
           context, project, onCopyEntry: onCopyEntry,
@@ -2923,10 +2940,7 @@ class _OutgoingSharesList extends StatelessWidget {
           '${entry.updatedAt.year}/${entry.updatedAt.month.toString().padLeft(2, '0')}/'
           '${entry.updatedAt.day.toString().padLeft(2, '0')}  ·  '
           '${(entry.sizeBytes / 1024).toStringAsFixed(1)} KB';
-      final actions = Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          CollectionFavoriteButton(
+      final favoriteAction = CollectionFavoriteButton(
             itemId: entry.path,
             favorite: isFavorite,
             tooltip: isFavorite
@@ -2936,9 +2950,8 @@ class _OutgoingSharesList extends StatelessWidget {
               context,
               () => service.toggleOutgoingShareFavorite(entry.path),
             ),
-          ),
-          const SizedBox(width: 4),
-          CollectionActionFrame(
+          );
+      final menuAction = CollectionActionFrame(
             key: Key('collectionMenu_${entry.path}'),
             child: PopupMenuButton<String>(
               key: ValueKey('outgoingShareMenu_${entry.path}'),
@@ -2976,7 +2989,13 @@ class _OutgoingSharesList extends StatelessWidget {
                 ),
               ],
             ),
-          ),
+          );
+      final actions = Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          favoriteAction,
+          const SizedBox(width: 4),
+          menuAction,
         ],
       );
       if (grid) {
@@ -2984,6 +3003,9 @@ class _OutgoingSharesList extends StatelessWidget {
           margin: EdgeInsets.zero,
           color: scheme.surfaceContainerLow,
           clipBehavior: Clip.antiAlias,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
           child: InkWell(
             onTap: () => shareSavedNiashare(context, entry.path),
             child: Column(
@@ -2997,7 +3019,8 @@ class _OutgoingSharesList extends StatelessWidget {
                       child: const Center(child: Icon(
                         Icons.insert_drive_file_outlined, size: 52)),
                     ),
-                    Positioned(top: 4, right: 4, child: actions),
+                    Positioned(top: 4, right: 4, child: menuAction),
+                    Positioned(bottom: 4, left: 4, child: favoriteAction),
                   ],
                 )),
                 Padding(
@@ -3333,12 +3356,17 @@ class _FolderableList<T> extends StatelessWidget {
     return result;
   }
 
-  Widget _folderActions(BuildContext context, ProjectFolder folder) {
+  Widget _folderActions(
+    BuildContext context,
+    ProjectFolder folder, {
+    bool showFavorite = true,
+    bool showMenu = true,
+  }) {
     final l10n = AppLocalizations.of(context)!;
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        if (onToggleFolderFavorite != null) ...[
+        if (showFavorite && onToggleFolderFavorite != null) ...[
           CollectionFavoriteButton(
             itemId: folder.id,
             favorite: folder.isFavorite,
@@ -3347,9 +3375,10 @@ class _FolderableList<T> extends StatelessWidget {
                 : l10n.colorPickerFavoriteAdd,
             onPressed: () => onToggleFolderFavorite!(folder),
           ),
-          const SizedBox(width: 4),
+          if (showMenu) const SizedBox(width: 4),
         ],
-        CollectionActionFrame(
+        if (showMenu)
+          CollectionActionFrame(
           child: IconButton(
             key: ValueKey('collectionFolderMenu_${folder.id}'),
             icon: const Icon(Icons.more_vert,
@@ -3372,6 +3401,9 @@ class _FolderableList<T> extends StatelessWidget {
       color: theme.colorScheme.surfaceContainerLow,
       margin: EdgeInsets.zero,
       clipBehavior: Clip.antiAlias,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(14),
+      ),
       child: InkWell(
         onTap: () => onEnterFolder(
           folder.id,
@@ -3391,9 +3423,16 @@ class _FolderableList<T> extends StatelessWidget {
                     choices: _folderCoverChoices(folder.id),
                   ),
                   Positioned(
-                    top: 4, right: 4,
-                    child: _folderActions(context, folder),
+                    top: 4,
+                    right: 4,
+                    child: _folderActions(context, folder, showFavorite: false),
                   ),
+                  if (onToggleFolderFavorite != null)
+                    Positioned(
+                      bottom: 4,
+                      left: 4,
+                      child: _folderActions(context, folder, showMenu: false),
+                    ),
                 ],
               ),
             ),
