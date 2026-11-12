@@ -24,7 +24,6 @@ beforeEach(()=>{
   send.mockReset();send.mockResolvedValue({});
   process.env.TABLE_NAME="test-table";
   process.env.COIN_REDEMPTION_ENABLED="true";
-  process.env.COIN_REDEMPTION_REVIEW_APPROVED="true";
   process.env.COIN_FULL_PREMIUM_MONTH_COINS="55000";
   process.env.COIN_FULL_PREMIUM_YEAR_COINS="550000";
   process.env.COIN_PRICE_VERSION="v3-final-annual550000";
