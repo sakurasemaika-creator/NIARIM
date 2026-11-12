@@ -32,6 +32,30 @@ void main() {
     expect(filled, size * size ~/ 4);
   });
 
+  test('Diamond mesh is crossed 1px diagonal lines, not checker or stripes', () async {
+    final service = ToneService();
+    await service.init();
+    final mesh = service.tones.singleWhere((t) => t.id == 'Tone0065');
+    expect(mesh.name, 'ピクセル斜め格子（1px）');
+    final pixels = generateBuiltInToneTexture(mesh, size: 32);
+    final checker = generateBuiltInToneTexture(
+      const Tone(id: 'Tone0007', name: 'ピクセル市松（1px）'), size: 32,
+    );
+    final stripe = generateBuiltInToneTexture(
+      const Tone(id: 'Tone0050', name: 'ピクセル斜め縞（1px）'), size: 32,
+    );
+    expect(pixels, isNot(equals(checker)));
+    expect(pixels, isNot(equals(stripe)));
+    for (var y = 0; y < 32; y++) {
+      for (var x = 0; x < 32; x++) {
+        expect(alpha(pixels, 32, x, y),
+            (x + y) % 4 == 0 || (x - y) % 4 == 0 ? 255 : 0,
+            reason: 'diamond mesh at ($x, $y)');
+      }
+    }
+    service.dispose();
+  });
+
   test('Normal 1px grid, checker, border and stripe are distinct masks', () {
     const size = 8;
     final specs = [
