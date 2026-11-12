@@ -276,10 +276,27 @@ export class NiarimBackendStack extends Stack {
         COIN_REDEMPTION_REVIEW_APPROVED:
           this.node.tryGetContext("coinRedemptionReviewApproved") === "true"
             ? "true" : "false",
+        // Owner-approved prices are preconfigured, NOT redemption approvals.
+        // Independent review switches remain OFF until audited and approved.
         COIN_FULL_PREMIUM_MONTH_COINS:
-          this.node.tryGetContext("coinFullPremiumMonthCoins") ?? "",
+          String(this.node.tryGetContext("coinFullPremiumMonthCoins") ?? "55000"),
+        COIN_FULL_PREMIUM_YEAR_COINS:
+          String(this.node.tryGetContext("coinFullPremiumYearCoins") ?? "550000"),
         COIN_PRICE_VERSION:
-          this.node.tryGetContext("coinPriceVersion") ?? "",
+          String(this.node.tryGetContext("coinPriceVersion") ??
+            "v3-final-annual550000"),
+        COIN_PREMIUM_ANNUAL_REDEMPTION_ENABLED:
+          this.node.tryGetContext("coinPremiumAnnualRedemptionEnabled") === "true"
+            ? "true" : "false",
+        COIN_INDIVIDUAL_REDEMPTION_ENABLED:
+          this.node.tryGetContext("coinIndividualRedemptionEnabled") === "true"
+            ? "true" : "false",
+        COIN_INDIVIDUAL_REDEMPTION_REVIEW_APPROVED:
+          this.node.tryGetContext("coinIndividualRedemptionReviewApproved") === "true"
+            ? "true" : "false",
+        COIN_INDIVIDUAL_RIGHTS_CONSUMERS_APPROVED:
+          this.node.tryGetContext("coinIndividualRightsConsumersApproved") === "true"
+            ? "true" : "false",
       },
       bundling: { minify: true, sourceMap: false },
     });
