@@ -103,48 +103,6 @@ class _StampPanelState extends State<StampPanel> {
           children: [
             if (!widget.embedded)
               PanelCenterCloseBar(onClose: widget.onClose),
-            Row(
-              children: [
-                if (!widget.embedded) Text(
-                  l10n.stampTitle,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'Kuramubon',
-                    fontFamilyFallback: kHeadingFontFallback,
-                  ),
-                ),
-                Spacer(),
-                IconButton(
-                  icon: Icon(
-                    _showFavoritesOnly ? Icons.star : Icons.star_outline,
-                    size: 16,
-                    color: _showFavoritesOnly
-                        ? ThemeService.activeColorScheme.tertiary
-                        : null,
-                  ),
-                  onPressed: () =>
-                      setState(() => _showFavoritesOnly = !_showFavoritesOnly),
-                  tooltip: l10n.creativePanelFavoritesOnlyTooltip,
-                ),
-                IconButton(
-                  icon: Icon(
-                    _showSearch ? Icons.search_off : Icons.search,
-                    size: 16,
-                  ),
-                  onPressed: () => setState(() {
-                    _showSearch = !_showSearch;
-                    if (!_showSearch) {
-                      _searchQuery = '';
-                      _searchController.clear();
-                    }
-                  }),
-                  tooltip: l10n.creativePanelSearchTooltip,
-                ),
-              ],
-            ),
-            // 【不具合修正】brush_panel.dartと同じ理由（PC/DeXモードの
-            // ドッキングパネル既定幅ではボタン3つの自然幅が収まらず
-            // RenderFlexがオーバーフローしていた）で横スクロール化。
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: Row(
@@ -192,6 +150,48 @@ class _StampPanelState extends State<StampPanel> {
                 ],
               ),
             ),
+            Row(
+              children: [
+                if (!widget.embedded) Text(
+                  l10n.stampTitle,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'Kuramubon',
+                    fontFamilyFallback: kHeadingFontFallback,
+                  ),
+                ),
+                Spacer(),
+                IconButton(
+                  icon: Icon(
+                    _showFavoritesOnly ? Icons.star : Icons.star_outline,
+                    size: 16,
+                    color: _showFavoritesOnly
+                        ? ThemeService.activeColorScheme.tertiary
+                        : null,
+                  ),
+                  onPressed: () =>
+                      setState(() => _showFavoritesOnly = !_showFavoritesOnly),
+                  tooltip: l10n.creativePanelFavoritesOnlyTooltip,
+                ),
+                IconButton(
+                  icon: Icon(
+                    _showSearch ? Icons.search_off : Icons.search,
+                    size: 16,
+                  ),
+                  onPressed: () => setState(() {
+                    _showSearch = !_showSearch;
+                    if (!_showSearch) {
+                      _searchQuery = '';
+                      _searchController.clear();
+                    }
+                  }),
+                  tooltip: l10n.creativePanelSearchTooltip,
+                ),
+              ],
+            ),
+            // 【不具合修正】brush_panel.dartと同じ理由（PC/DeXモードの
+            // ドッキングパネル既定幅ではボタン3つの自然幅が収まらず
+            // RenderFlexがオーバーフローしていた）で横スクロール化。
             if (folders.isNotEmpty)
               Padding(
                 padding: const EdgeInsets.only(bottom: 4),
