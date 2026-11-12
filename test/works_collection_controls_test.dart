@@ -95,7 +95,11 @@ void main() {
     expect(worksHeaderRect.top, closeTo(projectHeaderRect.top, 1));
     expect(worksHeaderRect.height, closeTo(projectHeaderRect.height, 1));
     expect(worksSortRect.right, closeTo(projectSortRect.right, 1));
-    expect(worksSizeButtonRect, projectSizeButtonRect);
+    expect(worksSizeButtonRect.size, projectSizeButtonRect.size);
+    expect(worksSizeButtonRect.top, closeTo(projectSizeButtonRect.top, 1));
+    // Projects also has a Search action to the right of this menu. Works
+    // does not, so the same 48px button naturally sits one slot farther right.
+    expect(worksSizeButtonRect.left, greaterThan(projectSizeButtonRect.left));
     expect(find.text(l10n.homeSortFieldUpdated), findsOneWidget,
         reason: 'Works should display the same readable sort label as Projects');
     // When the field label fits, the small clock icon fallback is not needed.
