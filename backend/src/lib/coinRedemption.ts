@@ -1,6 +1,7 @@
 import { PREMIUM_MONTHLY_REFERENCE_COINS } from "./coinEconomyScale";
 import { FINAL_ALL_INDIVIDUAL_MONTHLY_COINS,
   FINAL_PREMIUM_MONTHLY_COINS, FINAL_PREMIUM_YEARLY_COINS,
+  finalBenefitCostCoins,
   COIN_BENEFIT_PRICE_VERSION } from "./coinBenefitProposal";
 
 /**
@@ -96,4 +97,51 @@ export function addOneCalendarYearUtc(epochMs: number): number {
   return Date.UTC(year, month, Math.min(base.getUTCDate(),lastDay),
     base.getUTCHours(),base.getUTCMinutes(),
     base.getUTCSeconds(),base.getUTCMilliseconds());
+}
+
+/** General Full Premium durations, including the short trial-sized periods. */
+export function premiumFlexibleOffer(
+  duration: import("./coinBenefitProposal").BenefitDuration,
+  quantity: number,
+) {
+  const fullMonth = premiumRedemptionOffer();
+  const annual = premiumAnnualRedemptionOffer();
+  const needsAnnualDiscount = duration === "month" && quantity >= 12;
+  const enabled = fullMonth.enabled && (!needsAnnualDiscount || annual.enabled);
+  const coins = finalBenefitCostCoins("fullPremium",duration,quantity);
+  return {
+    enabled, target:"fullPremium" as const, duration, quantity,
+    catalogPriceCoins:coins,
+    priceCoins:enabled?coins:null,
+    priceVersion:enabled?COIN_BENEFIT_PRICE_VERSION:null,
+  };
+}
+
+/** Add a checked amount of UTC hours, days, weeks or calendar months. */
+export function premiumExpiryForDuration(
+  start:number, duration:import("./coinBenefitProposal").BenefitDuration,
+  quantity:number,
+):number {
+  if(!Number.isSafeInteger(start)||start<0||
+     !Number.isSafeInteger(quantity)||quantity<1||quantity>120) {
+    throw new Error("Invalid Premium period");
+  }
+  if(duration!=="month") {
+    const millis = duration==="hour" ? 3_600_000
+      : duration==="day" ? 86_400_000
+      : duration==="week" ? 604_800_000 : 0;
+    if(!millis)throw new Error("Invalid Premium period");
+    const out=start+quantity*millis;
+    if(!Number.isSafeInteger(out))throw new Error("Invalid Premium expiry");
+    return out;
+  }
+  const date=new Date(start);
+  const base=date.getUTCFullYear()*12+date.getUTCMonth()+quantity;
+  const year=Math.floor(base/12),month=base%12;
+  const lastDay=new Date(Date.UTC(year,month+1,0)).getUTCDate();
+  const out=Date.UTC(year,month,Math.min(date.getUTCDate(),lastDay),
+    date.getUTCHours(),date.getUTCMinutes(),
+    date.getUTCSeconds(),date.getUTCMilliseconds());
+  if(!Number.isSafeInteger(out))throw new Error("Invalid Premium expiry");
+  return out;
 }

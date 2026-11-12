@@ -7,7 +7,7 @@ import { authenticate, getUser } from "../../lib/auth";
 import { ddb, Keys, tableName } from "../../lib/dynamo";
 import { badRequest, conflict, forbidden, ok } from "../../lib/response";
 import { parseJsonObject } from "../../lib/request";
-import { addOneCalendarMonthUtc, addOneCalendarYearUtc, premiumRedemptionOffer, premiumAnnualRedemptionOffer } from "../../lib/coinRedemption";
+import { addOneCalendarMonthUtc, addOneCalendarYearUtc, premiumRedemptionOffer, premiumAnnualRedemptionOffer, premiumFlexibleOffer, premiumExpiryForDuration } from "../../lib/coinRedemption";
 import { catalogRedemptionQuote, catalogSelectionQuote } from "../../lib/coinRedemptionCatalog";
 import { redeemIndividualCoins, individualCoinRedemptionEnabled } from "../../lib/individualCoinRedemption";
 
@@ -29,17 +29,8 @@ export async function getCoinRedemptionQuote(event: APIGatewayProxyEventV2) {
     });
   }
   const quote = catalogRedemptionQuote(request);
-  if (quote.target === "fullPremium" &&
-      quote.duration === "month" && quote.quantity === 1) {
-    return ok({ ...premiumRedemptionOffer(),
-      duration: quote.duration, quantity: quote.quantity,
-      catalogPriceCoins: quote.catalogPriceCoins });
-  }
-  if (quote.target === "fullPremium" &&
-      quote.duration === "month" && quote.quantity === 12) {
-    return ok({...premiumAnnualRedemptionOffer(),
-      duration: quote.duration, quantity: 12,
-      catalogPriceCoins: quote.catalogPriceCoins});
+  if (quote.target === "fullPremium") {
+    return ok(premiumFlexibleOffer(quote.duration,quote.quantity));
   }
   return ok(quote);
 }
@@ -58,12 +49,24 @@ export async function redeemCoins(event: APIGatewayProxyEventV2) {
   if (body.targets !== undefined) {
     return redeemIndividualCoins(auth.niarimUserId,body);
   }
-  const months = body.months;
-  if (body.target !== "fullPremium" || (months !== 1 && months !== 12)) {
+  if (body.target !== "fullPremium") {
     badRequest("この交換内容は準備中です", "REDEMPTION_NOT_AVAILABLE");
   }
-  const offer = months === 12
-    ? premiumAnnualRedemptionOffer() : premiumRedemptionOffer();
+  const duration = body.duration === undefined ? "month" : body.duration;
+  const quantity = body.quantity ?? body.months ?? 1;
+  if (typeof duration !== "string" ||
+      typeof quantity !== "number" ||
+      !Number.isSafeInteger(quantity) ||
+      (body.months !== undefined && duration !== "month") ||
+      (body.months !== undefined && body.quantity !== undefined &&
+       body.months !== body.quantity)) {
+    badRequest("交換期間が不正です","REDEMPTION_INVALID_DURATION");
+  }
+  const catalog = catalogRedemptionQuote({
+    target:"fullPremium",duration,quantity:String(quantity),
+  });
+  const offer = premiumFlexibleOffer(catalog.duration,catalog.quantity);
+  const months = catalog.duration === "month" ? catalog.quantity : 0;
   if (!offer.enabled || offer.priceCoins === null ||
       offer.priceVersion === null) {
     forbidden("コイン交換は準備中です", "REDEMPTION_DISABLED");
@@ -83,7 +86,10 @@ export async function redeemCoins(event: APIGatewayProxyEventV2) {
   if (already.Item) {
     if (already.Item.itemType !== "COIN_REDEMPTION" ||
         already.Item.target !== "fullPremium" ||
-        already.Item.months !== months ||
+        (already.Item.duration !== undefined
+          ? already.Item.duration !== catalog.duration ||
+            already.Item.quantity !== catalog.quantity
+          : catalog.duration !== "month" || already.Item.months !== months) ||
         already.Item.priceVersion !== body.priceVersion ||
         !Number.isSafeInteger(already.Item.costCoins) ||
         !Number.isSafeInteger(already.Item.expiresAtEpochMs)) {
@@ -139,8 +145,9 @@ export async function redeemCoins(event: APIGatewayProxyEventV2) {
   }
   const now = Date.now();
   const from = Math.max(now, typeof oldExpiry === "number" ? oldExpiry : 0);
-  const expiresAtEpochMs = months === 12
-    ? addOneCalendarYearUtc(from) : addOneCalendarMonthUtc(from);
+  const expiresAtEpochMs = premiumExpiryForDuration(
+    from,catalog.duration,catalog.quantity,
+  );
   const oldExpiryCondition = oldExpiry === undefined
     ? "attribute_not_exists(expiresAtEpochMs)"
     : "expiresAtEpochMs = :oldExpiry";
@@ -158,6 +165,8 @@ export async function redeemCoins(event: APIGatewayProxyEventV2) {
               requestId,
               target: "fullPremium",
               months,
+              duration:catalog.duration,
+              quantity:catalog.quantity,
               priceVersion: offer.priceVersion,
               costCoins: amount,
               redeemedAtMs: now,
@@ -250,7 +259,10 @@ export async function redeemCoins(event: APIGatewayProxyEventV2) {
       const old = receipt.Item;
       if (old?.itemType === "COIN_REDEMPTION" &&
           old.target === "fullPremium" &&
-          old.months === months &&
+          (old.duration !== undefined
+            ? old.duration === catalog.duration &&
+              old.quantity === catalog.quantity
+            : catalog.duration === "month" && old.months === months) &&
           old.priceVersion === offer.priceVersion &&
           old.costCoins === amount &&
           Number.isSafeInteger(old.expiresAtEpochMs)) {
