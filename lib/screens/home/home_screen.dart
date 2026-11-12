@@ -4877,6 +4877,7 @@ class _WorkListItemState extends State<_WorkListItem> {
         final path = setting['imagePath'];
         return ExportedWorkCard(
       gridTile: widget.gridTile,
+      selectionId: 'work_file:${file.path}',
       isFavorite: widget.isFavorite,
       onToggleFavorite: widget.onToggleFavorite,
       thumbnailPath: path is String && path.isNotEmpty ? path : null,
