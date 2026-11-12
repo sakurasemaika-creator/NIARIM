@@ -3986,6 +3986,7 @@ class _TrashTabState extends State<_TrashTab> {
         ? projectNames.join('、')
         : l10n.homeFolderContents(0, record.subfolders.length);
     return _trashCard(
+      selectionId: 'trash_folder:$id',
       detailsKey: ValueKey('trashedFolder_$id'),
       leading: const Icon(Icons.folder_delete_outlined, size: 36),
       title: record.folder.name,
@@ -4112,6 +4113,7 @@ class _TrashTabState extends State<_TrashTab> {
       ),
     ];
     return _trashCard(
+      selectionId: 'trash_project:${project.id}',
       leading: Container(
         width: 48, height: 48,
         decoration: BoxDecoration(
@@ -4153,6 +4155,7 @@ class _TrashTabState extends State<_TrashTab> {
       ),
     ];
     return _trashCard(
+      selectionId: 'trash_local:${entry.id}',
       leading: Icon(entry.isFolder ? Icons.folder_delete_outlined
           : kind == TrashEntryKind.createdShare
               ? Icons.file_present_outlined : Icons.video_library_outlined,
@@ -4167,12 +4170,18 @@ class _TrashTabState extends State<_TrashTab> {
   }
 
   Widget _trashCard({
+    required String selectionId,
     required Widget leading, required String title,
     required String subtitle, required List<Widget> actions,
     Key? detailsKey,
   }) {
+    final selection = HomeCollectionSelectionScope.maybeOf(context);
+    final selecting = selection?.active ?? false;
     final details = ListTile(
       key: detailsKey,
+      onTap: selecting ? () => selection!.onToggle(selectionId) : null,
+      onLongPress: selection == null
+          ? null : () => selection.onLongPress(selectionId),
       leading: leading,
       title: Text(title, style: const TextStyle(
         fontFamily: 'Kuramubon',
@@ -4180,7 +4189,10 @@ class _TrashTabState extends State<_TrashTab> {
       )),
       subtitle: Text(subtitle),
     );
-    return LayoutBuilder(
+    return HomeCollectionSelectionSurface(
+      selectionId: selectionId,
+      grid: false,
+      child: LayoutBuilder(
       builder: (context, constraints) {
         final compact = constraints.maxWidth <
             600 * MediaQuery.textScalerOf(context).scale(1);
@@ -4192,7 +4204,7 @@ class _TrashTabState extends State<_TrashTab> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     details,
-                    Padding(
+                    if (!selecting) Padding(
                       padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
                       child: OverflowBar(
                         alignment: MainAxisAlignment.end,
@@ -4206,7 +4218,7 @@ class _TrashTabState extends State<_TrashTab> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     details,
-                    Align(
+                    if (!selecting) Align(
                       alignment: Alignment.centerRight,
                       child: Padding(
                         padding: const EdgeInsets.only(right: 8, bottom: 4),
@@ -4217,6 +4229,7 @@ class _TrashTabState extends State<_TrashTab> {
                 ),
         );
       },
+      ),
     );
   }
 
@@ -4279,6 +4292,12 @@ class _TrashTabState extends State<_TrashTab> {
           ProjectSortMode.nameDesc => b.name.compareTo(a.name),
           ProjectSortMode.updatedAsc => a.deletedAt.compareTo(b.deletedAt),
           ProjectSortMode.updatedDesc => b.deletedAt.compareTo(a.deletedAt),
+        });
+        HomeCollectionSelectionScope.maybeOf(context)?.onVisibleIds({
+          for (final row in rows)
+            if (row.project != null) 'trash_project:${row.project!.id}'
+            else if (row.folder != null) 'trash_folder:${row.folder!.folder.id}'
+            else 'trash_local:${row.local!.id}',
         });
         // ゴミ箱の作品は保存先から読む。読めなかったときは知らせを先頭に
         // 出し、「ゴミ箱は空です」とは言わない（作品が消えたように見える）。
