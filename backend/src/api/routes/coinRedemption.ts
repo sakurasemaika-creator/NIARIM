@@ -9,6 +9,7 @@ import { badRequest, conflict, forbidden, ok } from "../../lib/response";
 import { parseJsonObject } from "../../lib/request";
 import { addOneCalendarMonthUtc, addOneCalendarYearUtc, premiumRedemptionOffer, premiumAnnualRedemptionOffer } from "../../lib/coinRedemption";
 import { catalogRedemptionQuote, catalogSelectionQuote } from "../../lib/coinRedemptionCatalog";
+import { redeemIndividualCoins } from "../../lib/individualCoinRedemption";
 
 /** Read quote from the same server configuration used for spending. */
 export async function getCoinRedemptionQuote(event: APIGatewayProxyEventV2) {
@@ -48,6 +49,9 @@ export async function redeemCoins(event: APIGatewayProxyEventV2) {
     event.headers["authorization"] ?? event.headers["Authorization"],
   );
   const body = parseJsonObject(event.body);
+  if (body.targets !== undefined) {
+    return redeemIndividualCoins(auth.niarimUserId,body);
+  }
   const months = body.months;
   if (body.target !== "fullPremium" || (months !== 1 && months !== 12)) {
     badRequest("この交換内容は準備中です", "REDEMPTION_NOT_AVAILABLE");
