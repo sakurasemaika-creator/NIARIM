@@ -6606,7 +6606,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get qrShareTooLargeHint =>
-      'Too many colors to share as a QR code (use file sharing instead)';
+      'Assets with images or settings too large for a QR code must be shared as files.';
 
   @override
   String get colorPickerImportViaFile => 'Choose a file';
