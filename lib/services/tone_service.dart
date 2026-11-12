@@ -454,6 +454,21 @@ class ToneService extends ChangeNotifier {
         _tones.addAll(missing);
         changed = true;
       }
+      // The briefly shipped inverse checker is just the normal checker
+      // shifted by one pixel. Retire only the untouched stock copy from
+      // existing preferences; never erase a renamed/favorited/moved or
+      // independently tagged user asset.
+      final oldCount = _tones.length;
+      _tones.removeWhere((tone) =>
+          tone.id == 'Tone0064' &&
+          tone.name == 'ピクセル市松反転（1px）' &&
+          tone.texturePath == null &&
+          !tone.isFavorite &&
+          tone.folderId == null &&
+          (tone.tags.isEmpty ||
+              (tone.tags.length == 1 &&
+                  tone.tags.single == AssetTagKeys.pixelArt)));
+      if (_tones.length != oldCount) changed = true;
       final defaults = {for (final t in _defaultTones()) t.id: t};
       // Original horizontally/vertically striped presets predate the
       // familiar stripe/border naming. Update only their *original* names;
