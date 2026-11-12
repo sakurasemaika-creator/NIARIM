@@ -225,8 +225,8 @@ void main() {
       expect(rect.width, lessThanOrEqualTo(size.width));
       expect(rect.height, greaterThanOrEqualTo(48));
       final label = tester.widget<Text>(text);
-      // Tiled cards intentionally limit the caption to two lines.
-      expect(label.maxLines, 2);
+      // Match Projects: tiled captions are always a single text line.
+      expect(label.maxLines, 1);
       expect(label.overflow, TextOverflow.ellipsis);
     }
     await tester.pumpWidget(const SizedBox.shrink());
