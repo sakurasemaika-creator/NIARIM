@@ -3608,7 +3608,13 @@ class _FolderableList<T> extends StatelessWidget {
 
   Widget _folderGridTile(
       BuildContext context, ProjectFolder folder, int count) {
-    return collectionTileShadow(context, Card(
+    final selection = HomeCollectionSelectionScope.maybeOf(context);
+    final selectionId = T == File
+        ? 'work_folder:${folder.id}' : 'shared_folder:${folder.id}';
+    final selecting = selection?.active ?? false;
+    return HomeCollectionSelectionSurface(
+      selectionId: selectionId,
+      child: collectionTileShadow(context, Card(
       key: ValueKey('collectionFolder_${folder.id}'),
       margin: EdgeInsets.zero,
       elevation: 0,
@@ -3618,12 +3624,16 @@ class _FolderableList<T> extends StatelessWidget {
         side: const BorderSide(color: Colors.transparent, width: 2),
       ),
       child: InkWell(
-        onTap: () => onEnterFolder(
-          folder.id,
-          folder.name,
-          allItems.where((e) => folderIdOf(e) == folder.id).toList(),
-        ),
-        onLongPress: () => _showFolderMenu(context, folder),
+        onTap: selecting
+            ? () => selection!.onToggle(selectionId)
+            : () => onEnterFolder(
+                folder.id,
+                folder.name,
+                allItems.where((e) => folderIdOf(e) == folder.id).toList(),
+              ),
+        onLongPress: selection == null
+            ? () => _showFolderMenu(context, folder)
+            : () => selection.onLongPress(selectionId),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -3635,12 +3645,13 @@ class _FolderableList<T> extends StatelessWidget {
                     folder: folder,
                     choices: _folderCoverChoices(folder.id),
                   ),
-                  Positioned(
-                    top: 4,
-                    right: 4,
-                    child: _folderActions(context, folder, showFavorite: false),
-                  ),
-                  if (onToggleFolderFavorite != null)
+                  if (!selecting)
+                    Positioned(
+                      top: 4,
+                      right: 4,
+                      child: _folderActions(context, folder, showFavorite: false),
+                    ),
+                  if (!selecting && onToggleFolderFavorite != null)
                     Positioned(
                       bottom: 4,
                       left: 4,
@@ -3653,7 +3664,8 @@ class _FolderableList<T> extends StatelessWidget {
           ],
         ),
       ),
-    ));
+    )),
+    );
   }
 
   /// Folder entries use the same full-width, roughly 80dp ListTile as files,
@@ -3662,7 +3674,11 @@ class _FolderableList<T> extends StatelessWidget {
     return Column(
       children: [
         for (final folder in folders)
-          Card(
+          HomeCollectionSelectionSurface(
+            selectionId: T == File
+                ? 'work_folder:${folder.id}' : 'shared_folder:${folder.id}',
+            grid: false,
+            child: Card(
             key: ValueKey('collectionFolder_${folder.id}'),
             margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             color: Theme.of(context).colorScheme.surfaceContainerLow,
@@ -3678,14 +3694,26 @@ class _FolderableList<T> extends StatelessWidget {
               ),
               title: Text(folder.name),
               subtitle: Text('${countByFolder[folder.id] ?? 0}'),
-              trailing: _folderActions(context, folder),
-              onTap: () => onEnterFolder(
-                folder.id,
-                folder.name,
-                allItems.where((e) => folderIdOf(e) == folder.id).toList(),
-              ),
-              onLongPress: () => _showFolderMenu(context, folder),
+              trailing: HomeCollectionSelectionScope.maybeOf(context)?.active == true
+                  ? null : _folderActions(context, folder),
+              onTap: () {
+                final selection = HomeCollectionSelectionScope.maybeOf(context);
+                final id = T == File ? 'work_folder:${folder.id}' : 'shared_folder:${folder.id}';
+                if (selection?.active == true) {
+                  selection!.onToggle(id);
+                } else {
+                  onEnterFolder(folder.id, folder.name,
+                    allItems.where((e) => folderIdOf(e) == folder.id).toList());
+                }
+              },
+              onLongPress: () {
+                final selection = HomeCollectionSelectionScope.maybeOf(context);
+                final id = T == File ? 'work_folder:${folder.id}' : 'shared_folder:${folder.id}';
+                if (selection == null) _showFolderMenu(context, folder);
+                else selection.onLongPress(id);
+              },
             ),
+          ),
           ),
       ],
     );
@@ -3699,15 +3727,6 @@ class _FolderableList<T> extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            if (onCopyFolder != null)
-              ListTile(
-                leading: const Icon(Icons.content_copy),
-                title: Text(l10n.themeDuplicateAction),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  onCopyFolder!(folder);
-                },
-              ),
             if (onSetFolderThumbnail != null)
               ListTile(
                 key: const Key('collectionFolderThumbnailMenuItem'),
@@ -3757,6 +3776,9 @@ class _FolderableList<T> extends StatelessWidget {
                   context: context,
                   builder: (_) => FolderDeleteDialog(
                     folderName: folder.name,
+                    title: l10n.homeMoveToTrash,
+                    body: l10n.homeMoveToTrashConfirm(1),
+                    confirmLabel: l10n.homeMoveToTrash,
                     onDelete: () => onDeleteFolder(folder.id),
                   ),
                 );
