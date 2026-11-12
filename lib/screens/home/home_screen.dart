@@ -662,6 +662,16 @@ class _HomeScreenState extends State<HomeScreen>
                   onLongPress: _longPressLibraryEntry,
                   onToggle: _toggleLibraryEntry,
                   onVisibleIds: (ids) {
+                    // TabBarView may prebuild adjacent off-screen tabs. Only
+                    // the active collection can supply the Select All set.
+                    final prefix = switch (_currentTabIndex) {
+                      1 => 'work_',
+                      2 => _sharedOutgoing ? 'outgoing_' : 'shared_',
+                      3 => 'trash_',
+                      _ => '',
+                    };
+                    if (prefix.isEmpty || (ids.isNotEmpty &&
+                        ids.any((id) => !id.startsWith(prefix)))) return;
                     _visibleLibraryIds
                       ..clear()
                       ..addAll(ids);
