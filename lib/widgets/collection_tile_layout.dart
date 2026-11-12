@@ -93,3 +93,23 @@ Widget collectionTileCaption(BuildContext context, String name) => ColoredBox(
     ),
   ),
 );
+
+
+/// Same gentle elevation as ProjectListWidget's unselected tile cards.
+Widget collectionTileShadow(BuildContext context, Widget child) =>
+    AnimatedContainer(
+      duration: const Duration(milliseconds: 150),
+      curve: Curves.easeOut,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: [
+          BoxShadow(
+            color: Theme.of(context).colorScheme.onSurface
+                .withValues(alpha: 0.12),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: child,
+    );
