@@ -149,7 +149,8 @@ void main() {
         api: api,
         accountId: 'account',
         serverPriceVersion: 'v3-final-annual550000',
-        months: 2,
+        duration: 'year',
+        quantity: 1,
       ),
       throwsArgumentError,
     );
