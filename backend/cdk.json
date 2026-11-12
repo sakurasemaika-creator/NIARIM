@@ -35,6 +35,9 @@
     "coinRedemptionEnabled": "true",
     "coinPremiumAnnualRedemptionEnabled": "true",
     "coinIndividualRedemptionEnabled": "true",
-    "coinFullPremiumYearCoins": "550000"
+    "coinFullPremiumYearCoins": "550000",
+    "coinRedemptionReviewApproved": "true",
+    "coinIndividualRedemptionReviewApproved": "true",
+    "coinIndividualRightsConsumersApproved": "true"
   }
 }
