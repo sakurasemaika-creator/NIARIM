@@ -886,6 +886,19 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
                 onChanged: (value) => setState(() => _brush = value),
                 onAddImages: _addImages,
               ),
+              LabeledSlider(
+                label: Localizations.localeOf(context).languageCode == 'ja'
+                    ? '紙目・粒子'
+                    : 'Paper grain',
+                value: _brush.grainStrength.toDouble(),
+                min: 0,
+                max: 100,
+                divisions: 100,
+                valueText: '${_brush.grainStrength}%',
+                onChanged: (value) => setState(
+                  () => _brush = _brush.copyWith(grainStrength: value.round()),
+                ),
+              ),
             ],
           ),
           _settingsSection(
