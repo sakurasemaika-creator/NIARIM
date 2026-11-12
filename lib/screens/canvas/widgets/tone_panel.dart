@@ -607,7 +607,12 @@ class _ToneSettingsSheetState extends State<_ToneSettingsSheet> {
             FilledButton(
               onPressed: () {
                 context.read<ToneService>().updateTone(
-                  widget.tone.copyWith(name: _nameController.text),
+                  widget.tone.copyWith(
+                    name: _nameController.text,
+                    patternName: widget.tone.texturePath == null
+                        ? (widget.tone.patternName ?? widget.tone.name)
+                        : null,
+                  ),
                 );
                 Navigator.pop(context);
               },
