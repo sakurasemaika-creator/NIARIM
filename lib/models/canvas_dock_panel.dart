@@ -17,3 +17,24 @@ enum CanvasDockPanel {
   colorAdjust,
   canvasPreview,
 }
+
+ 
+/// Legacy per-material dock IDs remain readable in existing saved
+/// workspaces. Their UI now lives inside the one tabbed pen-subtool window.
+bool isLegacyMaterialDock(CanvasDockPanel value) =>
+    value == CanvasDockPanel.brush ||
+    value == CanvasDockPanel.tone ||
+    value == CanvasDockPanel.stamp;
+
+CanvasDockPanel canonicalCanvasDock(CanvasDockPanel value) =>
+    isLegacyMaterialDock(value) ? CanvasDockPanel.penSubTool : value;
+
+List<CanvasDockPanel> uniqueCanonicalCanvasDocks(
+  Iterable<CanvasDockPanel> panels,
+) {
+  final seen = <CanvasDockPanel>{};
+  return [
+    for (final panel in panels)
+      if (seen.add(canonicalCanvasDock(panel))) canonicalCanvasDock(panel),
+  ];
+}
