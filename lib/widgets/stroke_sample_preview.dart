@@ -103,23 +103,56 @@ class _StrokeSamplePreviewState extends State<StrokeSamplePreview> {
         brush.resolvedCustomImagePaths,
         mode: brush.imageInkMode,
       );
+      // A soft preset can spread far beyond its nominal pen size. Scale
+      // BOTH the diameter and the blur radius to keep the whole soft edge
+      // visible in this 48px strip. Previously only size was clamped, which
+      // made e.g. a 30px/50-blur airbrush look like a solid, clipped mark.
+      final offBlur = brush.pressureOff.blur;
+      final onBlur = brush.pressureOn.blur;
+      final maxBlur = math.max(
+        offBlur.enabled ? offBlur.value : 0,
+        onBlur.enabled ? math.max(onBlur.weak, onBlur.strong) : 0,
+      );
+      final extent = brush.size / 2 + maxBlur;
+      final scale = math.min(
+        1.0,
+        math.min(19.0 / math.max(brush.size, 1), 16.0 / math.max(extent, 1)),
+      );
+      int scaledBlur(int original) => (original * scale).round().clamp(0, 100);
+      final previewBrush = brush.copyWith(
+        size: math.max(0.5, brush.size * scale),
+        pressureOff: brush.pressureOff.copyWith(
+          blur: offBlur.copyWith(value: scaledBlur(offBlur.value)),
+        ),
+        pressureOn: brush.pressureOn.copyWith(
+          blur: onBlur.copyWith(
+            weak: scaledBlur(onBlur.weak),
+            strong: scaledBlur(onBlur.strong),
+          ),
+        ),
+      );
       final tiles = TileManager(canvasWidth: _width, canvasHeight: _height);
       try {
         final engine = DrawingEngine(tileManager: tiles)
           ..currentColor = color
-          ..currentBrush = brush.copyWith(
-            // Fit larger brush sizes into the strip; preserve tip,
-            // scattering, fade and stroke shape settings.
-            size: brush.size.clamp(1.0, 19.0).toDouble(),
-          )
-          ..pressureEnabled = false;
+          ..currentBrush = previewBrush
+          // Simulate a stylus moving with variable pressure, so G pens,
+          // pencils and user-configured pressure-sensitive brushes also
+          // show their characteristic thickness and opacity.
+          ..pressureEnabled = true;
         final points = _wavePoints();
-        engine.beginStroke(
-          StrokePoint(x: points.first.dx, y: points.first.dy),
-          'preview',
-        );
-        for (final p in points.skip(1)) {
-          engine.continueStroke(StrokePoint(x: p.dx, y: p.dy), 'preview');
+        StrokePoint samplePoint(ui.Offset p, int index) {
+          final t = index / (points.length - 1);
+          return StrokePoint(
+            x: p.dx,
+            y: p.dy,
+            inputType: InputType.stylus,
+            pressure: 0.4 + 0.6 * math.sin(math.pi * t),
+          );
+        }
+        engine.beginStroke(samplePoint(points.first, 0), 'preview');
+        for (var i = 1; i < points.length; i++) {
+          engine.continueStroke(samplePoint(points[i], i), 'preview');
         }
         if (engine.needsFinalFadeReplay) {
           engine.replayCurrentStrokeWithFinalFade();
