@@ -142,15 +142,6 @@ void main() {
       await tester.tap(find.text('キャンセル').last);
       await tester.pump(const Duration(milliseconds: 450));
     }
-    Future<void> openProjectDialog() async {
-      expect(projectMenu(), findsWidgets);
-      await tester.tap(projectMenu().first);
-      await tester.pump(const Duration(milliseconds: 350));
-      await tester.tap(find.text('サムネイル変更').last);
-      await tester.pump(const Duration(milliseconds: 450));
-      expect(find.byKey(const Key('projectThumbnailLatest')), findsOneWidget);
-    }
-
     await capture('01_phone_real_projects');
     await tester.tap(projectMenu().first);
     await tester.pump(const Duration(milliseconds: 350));

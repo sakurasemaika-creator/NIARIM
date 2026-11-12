@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'dart:math' as math;
-import 'dart:ui' show Locale, Offset, PlatformDispatcher;
+import 'dart:ui' show Locale, PlatformDispatcher;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart' show PointerDeviceKind;

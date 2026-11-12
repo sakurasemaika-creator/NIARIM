@@ -221,7 +221,7 @@ void main() {
       );
       expect(
         fill.widthFactor,
-        closeTo(values!.bytesOf(category) / largest, 0.0001),
+        closeTo(values.bytesOf(category) / largest, 0.0001),
         reason: 'Wrong relative size for $label',
       );
       // The outline is drawn over the colored fill, never replaced by it.

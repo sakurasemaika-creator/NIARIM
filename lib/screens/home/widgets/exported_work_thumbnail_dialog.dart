@@ -190,7 +190,7 @@ class ExportedWorkCoverStore {
       final after = await file.stat();
       if (after.size != original.size ||
           after.modified != original.modified) {
-        if (generated != null && await File(generated).exists()) {
+        if (await File(generated).exists()) {
           await File(generated).delete();
         }
         return await read(file);
@@ -306,7 +306,6 @@ class _ExportedWorkThumbnailDialogState
   int totalFrames = 1;
   int frameIndex = 0;
   Timer? playbackPoll;
-  Future<void>? _loading;
 
   bool get isImage => const {'png','jpg','jpeg','gif','bmp','webp'}
       .contains(widget.file.path.split('.').last.toLowerCase());
@@ -317,7 +316,7 @@ class _ExportedWorkThumbnailDialogState
   @override
   void initState() {
     super.initState();
-    _loading = _load();
+    unawaited(_load());
   }
 
   double _rate(String value) {

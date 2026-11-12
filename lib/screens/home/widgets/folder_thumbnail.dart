@@ -631,7 +631,7 @@ Future<void> showFolderThumbnailDialog(
                           Text(pickedName!, maxLines: 1, overflow: TextOverflow.ellipsis),
                         ] else if (customPath != null) ...[
                           Text(
-                            customPath!.split(Platform.pathSeparator).last,
+                            customPath.split(Platform.pathSeparator).last,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),

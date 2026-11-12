@@ -209,7 +209,7 @@ void main() {
     // on its responsive layout, not a popup-menu transition race.
     showProjectThumbnailDialog(
       tester.element(find.byKey(const Key('projectCoverMenuFixture'))),
-      project: project!, service: service,
+      project: project, service: service,
     );
     await tester.pump(const Duration(milliseconds: 450));
     await tester.tap(find.byKey(const Key('projectThumbnailFrame')));
