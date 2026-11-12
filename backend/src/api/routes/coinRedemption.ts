@@ -9,7 +9,7 @@ import { badRequest, conflict, forbidden, ok } from "../../lib/response";
 import { parseJsonObject } from "../../lib/request";
 import { addOneCalendarMonthUtc, addOneCalendarYearUtc, premiumRedemptionOffer, premiumAnnualRedemptionOffer } from "../../lib/coinRedemption";
 import { catalogRedemptionQuote, catalogSelectionQuote } from "../../lib/coinRedemptionCatalog";
-import { redeemIndividualCoins } from "../../lib/individualCoinRedemption";
+import { redeemIndividualCoins, individualCoinRedemptionEnabled } from "../../lib/individualCoinRedemption";
 
 /** Read quote from the same server configuration used for spending. */
 export async function getCoinRedemptionQuote(event: APIGatewayProxyEventV2) {
@@ -20,7 +20,13 @@ export async function getCoinRedemptionQuote(event: APIGatewayProxyEventV2) {
   // A visible catalog price must NEVER imply spending is enabled.
   const request = event.queryStringParameters ?? {};
   if (request.targets !== undefined) {
-    return ok(catalogSelectionQuote(request));
+    const catalog = catalogSelectionQuote(request);
+    const enabled = individualCoinRedemptionEnabled() &&
+      !catalog.targets.includes("fullPremium");
+    return ok({
+      ...catalog, enabled, priceCoins:enabled?catalog.catalogPriceCoins:null,
+      reason:enabled?null:catalog.reason,
+    });
   }
   const quote = catalogRedemptionQuote(request);
   if (quote.target === "fullPremium" &&

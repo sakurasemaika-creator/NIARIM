@@ -5,6 +5,7 @@ import { ddb, Keys, tableName } from "../../lib/dynamo";
 import { badRequest, ok } from "../../lib/response";
 import { rewardedAdConfiguration } from "./rewardedAd";
 import { premiumRedemptionOffer } from "../../lib/coinRedemption";
+import { individualCoinRedemptionEnabled } from "../../lib/individualCoinRedemption";
 import { remainingRewardedGrants, rewardAdDailyQuota } from "../../lib/rewardAdQuota";
 
 /**
@@ -96,6 +97,7 @@ export async function getMyRewardState(event: APIGatewayProxyEventV2) {
     rewardedDailyResetAtEpochMs: adConfig.enabled && adQuota.limit !== null
       ? adQuota.resetsAtEpochMs : null,
     redemptionEnabled: premiumRedemptionOffer().enabled,
+    individualRedemptionEnabled: individualCoinRedemptionEnabled(),
   });
 }
 
