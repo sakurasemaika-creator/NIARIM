@@ -3803,10 +3803,12 @@ class _WorksTab extends StatefulWidget {
     super.key,
     required this.viewMode,
     required this.onViewModeChanged,
+    this.searchQuery = '',
     this.onCopyEntry,
   });
   final ProjectViewMode viewMode;
   final ValueChanged<ProjectViewMode> onViewModeChanged;
+  final String searchQuery;
   final ValueChanged<HomeClipboardEntry>? onCopyEntry;
 
   @override
@@ -3814,8 +3816,37 @@ class _WorksTab extends StatefulWidget {
 }
 
 class _WorksTabState extends State<_WorksTab> {
+  static const _favoritePathsKey = 'home.works.favoritePaths.v1';
+  final Set<String> _favoritePaths = {};
+  bool _showFavoritesOnly = false;
   late Future<List<File>> _future;
   ProjectSortMode _sortMode = ProjectSortMode.updatedDesc;
+
+  Future<void> _loadFavoritePaths() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final stored = prefs.getStringList(_favoritePathsKey) ?? const <String>[];
+      if (mounted) setState(() {
+        _favoritePaths
+          ..clear()
+          ..addAll(stored);
+      });
+    } catch (error) {
+      debugPrint('Works favorites could not be loaded: $error');
+    }
+  }
+
+  Future<void> _toggleFavorite(String path) async {
+    setState(() {
+      if (!_favoritePaths.add(path)) _favoritePaths.remove(path);
+    });
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setStringList(_favoritePathsKey, _favoritePaths.toList()..sort());
+    } catch (error) {
+      debugPrint('Works favorites could not be saved: $error');
+    }
+  }
 
   bool get _sortByName =>
       _sortMode == ProjectSortMode.nameAsc ||
@@ -3843,6 +3874,7 @@ class _WorksTabState extends State<_WorksTab> {
   void initState() {
     super.initState();
     _future = ExportEngine.listExportedFiles();
+    _loadFavoritePaths();
     LocalFileTrashService.changes.addListener(_onLocalFilesChanged);
   }
 
@@ -3879,13 +3911,34 @@ class _WorksTabState extends State<_WorksTab> {
         if (!snapshot.hasData) {
           return const Center(child: CircularProgressIndicator());
         }
-        final files = _sortExportedFiles(snapshot.data!, _sortMode);
+        final query = widget.searchQuery.trim().toLowerCase();
+        final files = _sortExportedFiles(
+          snapshot.data!.where((file) =>
+              (!_showFavoritesOnly || _favoritePaths.contains(file.path)) &&
+              (query.isEmpty ||
+                  file.uri.pathSegments.last.toLowerCase().contains(query))
+          ).toList(),
+          _sortMode,
+        );
         final workFolders = context.watch<WorkFolderService>();
+        final folders = _sortWorkFolders(
+          workFolders.folders.where((folder) =>
+              (!_showFavoritesOnly || files.any((f) =>
+                  workFolders.folderIdOf(f.uri.pathSegments.last) == folder.id)) &&
+              (query.isEmpty ||
+                  folder.name.toLowerCase().contains(query) ||
+                  files.any((f) => workFolders.folderIdOf(
+                      f.uri.pathSegments.last) == folder.id))
+          ).toList(),
+          _sortMode,
+        );
         Widget buildWork(BuildContext context, File file, bool grid) =>
             _WorkListItem(
               key: ValueKey(file.path),
               file: file,
               gridTile: grid,
+              isFavorite: _favoritePaths.contains(file.path),
+              onToggleFavorite: () => _toggleFavorite(file.path),
               onDeleted: _reload,
               onCopy: widget.onCopyEntry == null ? null : () =>
                   widget.onCopyEntry!(HomeClipboardEntry(
@@ -3899,6 +3952,24 @@ class _WorksTabState extends State<_WorksTab> {
           child: _FolderableList<File>(
             key: ValueKey(('works-list', widget.viewMode)),
             header: _HomeCollectionSortHeader(
+              leading: FilterChip(
+                key: const Key('worksFavoritesOnlyFilter'),
+                label: Text(
+                  l10n.homeFavoritesOnly,
+                  style: TextStyle(
+                    fontFamily: 'Kuramubon',
+                    fontFamilyFallback: kHeadingFontFallback,
+                    color: _showFavoritesOnly
+                        ? Theme.of(context).colorScheme.onPrimary : null,
+                  ),
+                ),
+                selectedColor: Theme.of(context).colorScheme.primary,
+                checkmarkColor: Theme.of(context).colorScheme.onPrimary,
+                selected: _showFavoritesOnly,
+                onSelected: (value) => setState(
+                  () => _showFavoritesOnly = value,
+                ),
+              ),
               sortByName: _sortByName,
               sortAscending: _sortAscending,
               onSortByNameChanged: _setSortByName,
@@ -3906,7 +3977,7 @@ class _WorksTabState extends State<_WorksTab> {
             ),
             viewMode: widget.viewMode,
             gridItemBuilder: (context, file) => buildWork(context, file, true),
-            emptyState: files.isEmpty
+            emptyState: files.isEmpty && folders.isEmpty
                 ? EmptyStatePlaceholder(
                     icon: Icons.video_library_outlined,
                     title: l10n.homeWorksEmpty,
@@ -3915,7 +3986,7 @@ class _WorksTabState extends State<_WorksTab> {
                   )
                 : null,
             allItems: files,
-            folders: _sortWorkFolders(workFolders.folders, _sortMode),
+            folders: folders,
             folderIdOf: (f) =>
                 workFolders.folderIdOf(f.path.split(RegExp(r'[\\/]')).last),
             onEnterFolder: (folderId, folderName, itemsInFolder) =>
@@ -3926,6 +3997,10 @@ class _WorksTabState extends State<_WorksTab> {
                       folderName: folderName,
                       viewMode: widget.viewMode,
                       initialSortMode: _sortMode,
+                      searchQuery: widget.searchQuery,
+                      favoritesOnly: _showFavoritesOnly,
+                      favoritePaths: _favoritePaths,
+                      onToggleFavorite: _toggleFavorite,
                       onViewModeChanged: widget.onViewModeChanged,
                       onDeleted: _reload,
                       onCopyEntry: widget.onCopyEntry,
