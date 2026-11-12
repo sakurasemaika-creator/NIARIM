@@ -58,7 +58,7 @@ void main() {
     final patterns = <String>{};
     for (final denier in [10, 20, 30, 40, 60, 80]) {
       final tone = service.tones.singleWhere((t) =>
-          t.name.contains('$denierデニール'));
+          t.name.contains(denier.toString() + 'デニール'));
       final pixels = generateBuiltInToneTexture(tone, size: 64);
       patterns.add(String.fromCharCodes([
         for (var i = 3; i < pixels.length; i += 4) pixels[i] != 0 ? 49 : 48,
