@@ -27,6 +27,8 @@ class ExportedWorkCard extends StatelessWidget {
     this.shareBusy = false,
     this.shareError,
     this.gridTile = false,
+    this.isFavorite = false,
+    this.onToggleFavorite,
   });
 
   final String name;
@@ -48,6 +50,8 @@ class ExportedWorkCard extends StatelessWidget {
   final String? shareError;
   /// Match the project collection's small/medium/large card presentation.
   final bool gridTile;
+  final bool isFavorite;
+  final VoidCallback? onToggleFavorite;
 
   static final _filenameSeparators = RegExp(r'([_.-])');
 
@@ -104,6 +108,15 @@ class ExportedWorkCard extends StatelessWidget {
           ),
         ],
       ),
+    );
+    Widget favorite() => CollectionFavoriteButton(
+      favorite: isFavorite,
+      tooltip: isFavorite
+          ? (Localizations.localeOf(context).languageCode == 'ja'
+              ? 'お気に入りを解除' : 'Remove from favorites')
+          : (Localizations.localeOf(context).languageCode == 'ja'
+              ? 'お気に入りに追加' : 'Add to favorites'),
+      onPressed: onToggleFavorite,
     );
     Widget menu() => CollectionActionFrame(
       child: PopupMenuButton<String>(
@@ -209,7 +222,16 @@ class ExportedWorkCard extends StatelessWidget {
                     Positioned(
                       top: 4,
                       right: 4,
-                      child: menu(),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (onToggleFavorite != null) ...[
+                            favorite(),
+                            const SizedBox(width: 4),
+                          ],
+                          menu(),
+                        ],
+                      ),
                     ),
                   ],
                 ),
@@ -292,6 +314,10 @@ class ExportedWorkCard extends StatelessWidget {
                                 children: [
                                   Expanded(child: title()),
                                   const SizedBox(width: 4),
+                                  if (onToggleFavorite != null) ...[
+                                    favorite(),
+                                    const SizedBox(width: 4),
+                                  ],
                                   menu(),
                                 ],
                               ),
