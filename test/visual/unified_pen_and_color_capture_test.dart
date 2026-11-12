@@ -23,6 +23,7 @@ import 'package:niarim/screens/canvas/widgets/stamp_panel.dart';
 import 'package:niarim/screens/canvas/widgets/toolbar_widget.dart';
 import 'package:niarim/services/filter_service.dart';
 import 'package:niarim/services/project_service.dart';
+import 'package:niarim/services/tone_service.dart';
 import 'package:niarim/services/settings_service.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -166,6 +167,10 @@ void main() {
     ).first);
     await settle();
     expect(find.byType(TonePanel), findsOneWidget);
+    final toneCatalog = context.read<ToneService>().tones;
+    expect(toneCatalog.any((tone) => tone.id == 'Tone0009'), isTrue);
+    expect(toneCatalog.any((tone) => tone.id == 'Tone0063'), isFalse);
+    expect(toneCatalog.any((tone) => tone.id == 'Tone0064'), isFalse);
     await shot('02_pc_unified_full_tone_management');
     await tester.tap(find.descendant(
       of: subtool, matching: find.text('スタンプ'),

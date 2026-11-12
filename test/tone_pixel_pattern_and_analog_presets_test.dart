@@ -15,15 +15,15 @@ void main() {
   int alpha(Uint8List pixels, int size, int x, int y) =>
       pixels[(y * size + x) * 4 + 3];
 
-  test('Inverted 1px grid is isolated dots with one pixel gaps in both directions', () {
+  test('Pixel scatter is isolated dots with one-pixel gaps on both axes', () {
     const size = 8;
     final pixels = generateBuiltInToneTexture(
-      const Tone(id: 'Tone0063', name: 'ピクセル格子反転（1px）'), size: size,
+      const Tone(id: 'Tone0009', name: 'ピクセル散らし（1px）'), size: size,
     );
     var filled = 0;
     for (var y = 0; y < size; y++) {
       for (var x = 0; x < size; x++) {
-        final expected = x.isOdd && y.isOdd ? 255 : 0;
+        final expected = x.isEven && y.isEven ? 255 : 0;
         expect(alpha(pixels, size, x, y), expected,
             reason: 'one-dot one-gap at pixel ($x, $y)');
         if (expected != 0) filled++;
@@ -66,31 +66,45 @@ void main() {
       ]));
     }
     expect(patterns.length, 6);
-    expect(service.tones.any((t) => t.id == 'Tone0063'), isTrue);
-    expect(service.tones.any((t) => t.id == 'Tone0064'), isFalse,
-        reason: 'Checker inverse is a redundant phase shift');
+    expect(service.tones.any((t) => t.id == 'Tone0009'), isTrue);
+    expect(service.tones.any((t) => t.id == 'Tone0063'), isFalse);
+    expect(service.tones.any((t) => t.id == 'Tone0064'), isFalse);
     service.dispose();
   });
 
-  test('Obsolete saved inverse checker is retired without losing customized copies', () async {
-    final stock = jsonEncode(const Tone(
-      id: 'Tone0064', name: 'ピクセル市松反転（1px）',
-    ).toJson());
-    SharedPreferences.setMockInitialValues({'tones': [stock]});
-    final service = ToneService();
-    await service.init();
-    expect(service.tones.any((t) => t.id == 'Tone0064'), isFalse);
-    service.dispose();
+  test('Unedited legacy inverses retire but personalized copies survive', () async {
+    for (final retired in [
+      const Tone(id: 'Tone0063', name: 'ピクセル格子反転（1px）'),
+      const Tone(id: 'Tone0064', name: 'ピクセル市松反転（1px）'),
+    ]) {
+      SharedPreferences.setMockInitialValues({
+        'tones': [jsonEncode(retired.toJson())],
+      });
+      final stock = ToneService();
+      await stock.init();
+      expect(stock.tones.any((t) => t.id == retired.id), isFalse);
+      expect(stock.tones.any((t) => t.id == 'Tone0009'), isTrue);
+      stock.dispose();
 
-    final customized = jsonEncode(const Tone(
-      id: 'Tone0064', name: 'ピクセル市松反転（1px）',
-      isFavorite: true,
-    ).toJson());
-    SharedPreferences.setMockInitialValues({'tones': [customized]});
-    final customService = ToneService();
-    await customService.init();
-    expect(customService.tones.any((t) => t.id == 'Tone0064'), isTrue);
-    customService.dispose();
+      SharedPreferences.setMockInitialValues({
+        'tones': [jsonEncode(retired.copyWith(isFavorite: true).toJson())],
+      });
+      final favorite = ToneService();
+      await favorite.init();
+      expect(favorite.tones.any((t) =>
+          t.id == retired.id && t.isFavorite), isTrue);
+      favorite.dispose();
+
+      SharedPreferences.setMockInitialValues({
+        'tones': [jsonEncode(retired.copyWith(
+            name: 'カスタム反転模様', tags: ['custom']).toJson())],
+      });
+      final renamed = ToneService();
+      await renamed.init();
+      expect(renamed.tones.any((t) =>
+          t.id == retired.id && t.name == 'カスタム反転模様'), isTrue);
+      renamed.dispose();
+    }
   });
 
   test('Charcoal, gouache, 4B pencil and pastel have real grain settings', () {

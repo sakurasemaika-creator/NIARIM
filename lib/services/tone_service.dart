@@ -420,15 +420,8 @@ class ToneService extends ChangeNotifier {
       name: 'ピクセルディザ(細) 94%（8×8）',
       tags: [AssetTagKeys.pixelArt, AssetTagKeys.gradient],
     ),
-    // Existing 1px checker/grid/stripe/border and the 10–80 denier
-    // stockings remain in the list. Add the inverse grid mask: 1px dots
-    // separated by 1px in both directions (25% coverage). The checker
-    // inverse is only a phase shift, so it is intentionally not a preset.
-    const Tone(
-      id: 'Tone0063',
-      name: 'ピクセル格子反転（1px）',
-      tags: [AssetTagKeys.pixelArt],
-    ),
+    // 反転格子（旧 Tone0063）も既存「ピクセル散らし」（Tone0009）
+    // と位相だけが異なるため既定一覧から外す。市松反転も同様。
   ];
 
   Future<void> init() async {
@@ -454,20 +447,25 @@ class ToneService extends ChangeNotifier {
         _tones.addAll(missing);
         changed = true;
       }
-      // The briefly shipped inverse checker is just the normal checker
-      // shifted by one pixel. Retire only the untouched stock copy from
-      // existing preferences; never erase a renamed/favorited/moved or
-      // independently tagged user asset.
+      // 保存済みデータでは未編集の標準「格子反転」「市松反転」のみを退役。
+      // 名前変更・お気に入り・フォルダ移動・独自タグ・画像・描画元は保護。
+      const retiredStockNames = <String, String>{
+        'Tone0063': 'ピクセル格子反転（1px）',
+        'Tone0064': 'ピクセル市松反転（1px）',
+      };
       final oldCount = _tones.length;
-      _tones.removeWhere((tone) =>
-          tone.id == 'Tone0064' &&
-          tone.name == 'ピクセル市松反転（1px）' &&
-          tone.texturePath == null &&
-          !tone.isFavorite &&
-          tone.folderId == null &&
-          (tone.tags.isEmpty ||
-              (tone.tags.length == 1 &&
-                  tone.tags.single == AssetTagKeys.pixelArt)));
+      _tones.removeWhere((tone) {
+        final stockName = retiredStockNames[tone.id];
+        return stockName != null &&
+            tone.name == stockName &&
+            tone.patternName == null &&
+            tone.texturePath == null &&
+            !tone.isFavorite &&
+            tone.folderId == null &&
+            (tone.tags.isEmpty ||
+                (tone.tags.length == 1 &&
+                    tone.tags.single == AssetTagKeys.pixelArt));
+      });
       if (_tones.length != oldCount) changed = true;
       final defaults = {for (final t in _defaultTones()) t.id: t};
       // Original horizontally/vertically striped presets predate the
