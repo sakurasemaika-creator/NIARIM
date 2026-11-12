@@ -3505,7 +3505,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get projectListOpenAction => '開く';
 
   @override
-  String get projectListCreateShareAction => '.niashareを作成';
+  String get projectListCreateShareAction => 'プロジェクトを共有';
 
   @override
   String get projectListEditFolderAction => '名前・色を編集';
