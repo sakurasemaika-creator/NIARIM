@@ -140,8 +140,10 @@ class HsvColorWheel extends StatelessWidget {
           ),
           if (onEyedropperTap != null)
             Positioned(
-              right: 1,
-              top: 1,
+              // In compact docks the 40px touch target needs a few pixels
+              // of the panel's outer padding to stay clear of the hue ring.
+              right: -5,
+              top: -5,
               child: IconButton(
                 key: const ValueKey('color-picker-eyedropper'),
                 constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
