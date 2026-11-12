@@ -2775,7 +2775,7 @@
     }
   },
   "colorPickerShareViaQr": "QR 코드로 공유",
-  "qrShareTooLargeHint": "색상이 너무 많아 QR 코드로 공유할 수 없습니다(파일 공유를 이용해 주세요)",
+  "qrShareTooLargeHint": "이미지가 포함되거나 QR 코드에 담기 어려운 설정은 파일로 공유해 주세요.",
   "colorPickerImportViaFile": "파일에서 선택",
   "colorPickerImportFailedSnackbar": "가져오기에 실패했습니다: {error}",
   "@colorPickerImportFailedSnackbar": {
