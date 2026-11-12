@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/engine/procedural_texture.dart';
 import 'package:niarim/models/canvas_dock_panel.dart';
 import 'package:niarim/models/brush.dart';
+import 'package:niarim/models/tone.dart';
 import 'package:niarim/services/brush_service.dart';
 import 'package:niarim/services/settings_service.dart';
 import 'package:niarim/services/tone_service.dart';
@@ -43,6 +44,22 @@ void main() {
     expect(alpha(stripe, 0, 0), alpha(stripe, 0, 1));
     expect(alpha(border, 0, 0), isNot(alpha(border, 0, 1)));
     expect(alpha(border, 0, 0), alpha(border, 1, 0));
+  });
+
+  test('renaming a duplicated procedural tone retains its raster pattern', () {
+    const edited = Tone(
+      id: 'my-renamed-tone',
+      name: '自由に付けた名前',
+      patternName: 'ピクセル格子反転（1px）',
+    );
+    final restored = Tone.fromJson(edited.toJson());
+    expect(restored.name, edited.name);
+    expect(restored.patternName, edited.patternName);
+    final expected = generateBuiltInToneTexture(
+      const Tone(id: 'original', name: 'ピクセル格子反転（1px）'),
+      size: 16,
+    );
+    expect(generateBuiltInToneTexture(restored, size: 16), expected);
   });
 
   test('existing tone storage is augmented instead of replaced', () async {
