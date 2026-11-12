@@ -32,6 +32,7 @@ class PanelSurface extends StatelessWidget {
     this.color,
     this.borderRadius,
     this.selfScrolling = false,
+    this.embedded = false,
     required this.child,
   });
 
@@ -47,10 +48,15 @@ class PanelSurface extends StatelessWidget {
 
   /// 中身が自分でスクロールする（ドックではペインの高さをそのまま渡す）。
   final bool selfScrolling;
+  /// Already hosted inside another PanelSurface; do not draw a second card.
+  final bool embedded;
   final Widget child;
 
   @override
   Widget build(BuildContext context) {
+    if (embedded) {
+      return height == null ? child : SizedBox(height: height, child: child);
+    }
     if (DockedPanelScope.of(context)) {
       // An unframed Material belongs to the PC dock content itself. It keeps
       // ListTile ink and selected backgrounds above the outer dock decoration
