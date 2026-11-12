@@ -25,6 +25,8 @@ export function premiumRedemptionOffer(): PremiumRedemptionOffer {
   const amount = Number(raw);
   const version = process.env.COIN_PRICE_VERSION ?? "";
   const enabled = process.env.COIN_REDEMPTION_ENABLED === "true" &&
+    // A configured release switch is not an independent debit safety review.
+    process.env.COIN_REDEMPTION_REVIEW_APPROVED === "true" &&
     /^[1-9][0-9]{0,8}$/.test(raw) &&
     Number.isSafeInteger(amount) &&
     amount % 10 === 0 &&
