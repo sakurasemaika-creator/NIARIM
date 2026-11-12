@@ -44,11 +44,19 @@ String _numberedBrushCopyName(
 
 class BrushPanel extends StatefulWidget {
   final VoidCallback onClose;
+  /// Embedded inside the single Brush/Tone/Stamp picker with all management
+  /// actions intact. Legacy standalone panel entries remain as aliases.
+  final bool embedded;
+  final double? embeddedHeight;
+  final VoidCallback? onPresetSelected;
   final bool dockedMode;
   final Future<int?> Function()? onEyedropOutlineColor;
   const BrushPanel({
     super.key,
     required this.onClose,
+    this.embedded = false,
+    this.embeddedHeight,
+    this.onPresetSelected,
     this.dockedMode = false,
     this.onEyedropOutlineColor,
   });
@@ -110,7 +118,7 @@ class _BrushPanelState extends State<BrushPanel> {
 
     return PanelSurface(
       width: 280,
-      height: 460,
+      height: widget.embeddedHeight ?? 460,
       child: Padding(
         padding: const EdgeInsets.all(12),
         child: Column(
@@ -118,11 +126,11 @@ class _BrushPanelState extends State<BrushPanel> {
           children: [
             // ドックの中では窓の見出しの×で閉じる（PanelCenterCloseBarも
             // DockedPanelScopeの中では出ない）。
-            if (!widget.dockedMode)
+            if (!widget.dockedMode && !widget.embedded)
               PanelCenterCloseBar(onClose: widget.onClose),
             Row(
               children: [
-                if (!DockedPanelScope.of(context) && !widget.dockedMode) Text(
+                if (!DockedPanelScope.of(context) && !widget.dockedMode && !widget.embedded) Text(
                   l10n.penSubToolTabBrush,
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
@@ -400,7 +408,10 @@ class _BrushPanelState extends State<BrushPanel> {
                                 ),
                             ],
                           ),
-                          onTap: () => brushService.selectBrush(brush.id),
+                          onTap: () {
+                            brushService.selectBrush(brush.id);
+                            widget.onPresetSelected?.call();
+                          },
                           onLongPress: builtIn
                               ? null
                               : () => _showBrushSettings(context, brush),
