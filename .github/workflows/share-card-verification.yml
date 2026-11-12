@@ -28,6 +28,14 @@ jobs:
       - run: flutter pub get
       - name: Test PNG chunk security and image/settings round-trips
         run: flutter test test/shared_asset_card_codec_test.dart test/shared_asset_card_round_trip_test.dart --reporter expanded
+      - name: Upload the three generated real PNG share cards
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: niarim-complete-share-cards
+          path: build/shared-asset-card-captures/*.png
+          if-no-files-found: warn
+          retention-days: 7
       - name: Analyze PNG codec, sharing service and three UI panels
         run: |
           flutter analyze --no-fatal-infos --no-fatal-warnings \

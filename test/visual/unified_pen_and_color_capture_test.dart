@@ -178,11 +178,20 @@ void main() {
       );
       expect(favorite, findsOneWidget);
       expect(search, findsOneWidget);
+      expect(find.descendant(
+        of: panel, matching: find.byKey(const ValueKey('asset-favorites-only')),
+      ), findsOneWidget);
       await tester.tap(favorite);
       await shot('${kind}_favorite_only');
       await tester.tap(favorite);
       await settle();
       await tester.tap(search);
+      expect(find.descendant(
+        of: panel, matching: find.byKey(const ValueKey('asset-search-input')),
+      ), findsOneWidget);
+      expect(find.descendant(
+        of: panel, matching: find.byKey(const ValueKey('asset-search-close')),
+      ), findsOneWidget);
       await shot('${kind}_search_open');
       await tester.tap(search);
       await settle();

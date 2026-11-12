@@ -30,6 +30,7 @@ void main() {
     });
     final pixels = base64Decode(
         'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/cXcAAAAASUVORK5CYII=');
+    final screenshots = Directory('build/shared-asset-card-captures')..createSync(recursive: true);
     final originalImage = File('${directory.path}/source.png');
     await originalImage.writeAsBytes(pixels);
 
@@ -47,6 +48,7 @@ void main() {
     brushes.addBrush(custom);
     final brushPng = await SharedAssetCardService.exportBrush(brushes, custom);
     expect(brushPng.path, endsWith('.png'));
+    await brushPng.copy('${screenshots.path}/brush_complete_share_card.png');
     final brushCard = await SharedAssetCardService.inspect(brushPng);
     expect(brushCard.kind, 'brush');
     expect(brushCard.name, custom.name);
@@ -73,6 +75,7 @@ void main() {
     );
     tones.addTone(customTone);
     final tonePng = await SharedAssetCardService.exportTone(tones, customTone);
+    await tonePng.copy('${screenshots.path}/tone_complete_share_card.png');
     final toneCard = await SharedAssetCardService.inspect(tonePng);
     await SharedAssetCardService.importCard(toneCard, toneService: tones);
     final restoredTone = tones.tones.last;
@@ -97,6 +100,7 @@ void main() {
     );
     stamps.addStamp(customStamp);
     final stampPng = await SharedAssetCardService.exportStamp(stamps, customStamp);
+    await stampPng.copy('${screenshots.path}/stamp_complete_share_card.png');
     final stampCard = await SharedAssetCardService.inspect(stampPng);
     await SharedAssetCardService.importCard(stampCard, stampService: stamps);
     final restoredStamp = stamps.stamps.last;
