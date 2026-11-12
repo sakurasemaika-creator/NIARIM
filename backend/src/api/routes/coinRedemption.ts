@@ -8,7 +8,7 @@ import { ddb, Keys, tableName } from "../../lib/dynamo";
 import { badRequest, conflict, forbidden, ok } from "../../lib/response";
 import { parseJsonObject } from "../../lib/request";
 import { addOneCalendarMonthUtc, addOneCalendarYearUtc, premiumRedemptionOffer, premiumAnnualRedemptionOffer } from "../../lib/coinRedemption";
-import { catalogRedemptionQuote } from "../../lib/coinRedemptionCatalog";
+import { catalogRedemptionQuote, catalogSelectionQuote } from "../../lib/coinRedemptionCatalog";
 
 /** Read quote from the same server configuration used for spending. */
 export async function getCoinRedemptionQuote(event: APIGatewayProxyEventV2) {
@@ -18,6 +18,9 @@ export async function getCoinRedemptionQuote(event: APIGatewayProxyEventV2) {
   // The catalog is read-only, authenticated and entirely server-priced.
   // A visible catalog price must NEVER imply spending is enabled.
   const request = event.queryStringParameters ?? {};
+  if (request.targets !== undefined) {
+    return ok(catalogSelectionQuote(request));
+  }
   const quote = catalogRedemptionQuote(request);
   if (quote.target === "fullPremium" &&
       quote.duration === "month" && quote.quantity === 1) {

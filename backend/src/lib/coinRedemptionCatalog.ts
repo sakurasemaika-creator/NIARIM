@@ -70,3 +70,50 @@ export function catalogRedemptionQuote(
     reason: "REDEMPTION_NOT_IMPLEMENTED",
   };
 }
+
+/**
+ * Canonical server-calculated comparison for multiple features, in one
+ * shared duration. This is a non-spendable preview until each feature has
+ * production entitlement enforcement and an independently reviewed debit.
+ */
+export function catalogSelectionQuote(query: Record<string,string|undefined>) {
+  const raw = query.targets;
+  if (!raw || raw.length > 320) {
+    badRequest("交換対象を指定してください","REDEMPTION_INVALID_TARGET");
+  }
+  const selection = raw.split(",");
+  if (selection.length < 1 || selection.length > 11 ||
+      selection.some(target=>!targets.has(target as BenefitPriceTarget)) ||
+      new Set(selection).size !== selection.length) {
+    badRequest("特典の重複または不正な組み合わせです",
+      "REDEMPTION_INVALID_SELECTION");
+  }
+  const chosen = selection as BenefitPriceTarget[];
+  if (chosen.includes("fullPremium") && chosen.length > 1) {
+    badRequest("フルPremiumと個別特典は同時に指定できません",
+      "REDEMPTION_OVERLAPPING_BUNDLE");
+  }
+  if (chosen.includes("allAds") && chosen.some(target=>[
+    "projectListAds","canvasAds","timelineAds","processingAds",
+  ].includes(target))) {
+    badRequest("全広告非表示と個別の広告非表示は重複できません",
+      "REDEMPTION_OVERLAPPING_ADS");
+  }
+  const first = catalogRedemptionQuote({...query,target:chosen[0]});
+  const items = chosen.map(target=>({
+    target, catalogPriceCoins:finalBenefitCostCoins(
+      target,first.duration,first.quantity,
+    ),
+  }));
+  const totalCoins = items.reduce((sum,item)=>sum+item.catalogPriceCoins,0);
+  if (!Number.isSafeInteger(totalCoins)||totalCoins<1) {
+    throw new Error("Invalid catalog price total");
+  }
+  return {
+    targets: chosen, duration:first.duration,quantity:first.quantity,
+    items, catalogPriceCoins:totalCoins,
+    priceVersion:COIN_BENEFIT_PRICE_VERSION,
+    enabled:false,priceCoins:null,
+    reason:"REDEMPTION_NOT_IMPLEMENTED" as const,
+  };
+}

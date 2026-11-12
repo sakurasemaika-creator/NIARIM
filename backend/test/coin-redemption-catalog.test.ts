@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { catalogRedemptionQuote } from "../src/lib/coinRedemptionCatalog";
+import { catalogRedemptionQuote, catalogSelectionQuote } from "../src/lib/coinRedemptionCatalog";
 
 describe("authenticated catalog preview contract", () => {
   it("reports owner-fixed prices for each period but never claims redemption", () => {
@@ -42,5 +42,29 @@ describe("authenticated catalog preview contract", () => {
     ]) {
       expect(()=>catalogRedemptionQuote(query)).toThrow();
     }
+  });
+});
+
+describe("multiple benefit comparisons are server-authoritative and non-spendable",()=>{
+  it("totals individually selected color tools for a week",()=>{
+    const result=catalogSelectionQuote({
+      targets:"toneCurve,levelAdjustment",duration:"week",
+    });
+    expect(result).toMatchObject({
+      enabled:false,priceCoins:null,catalogPriceCoins:6230,
+      duration:"week",quantity:1,
+    });
+    expect(result.items).toHaveLength(2);
+  });
+  it("forbids overlapping all-ads and placement-ads",()=>{
+    expect(()=>catalogSelectionQuote({
+      targets:"allAds,canvasAds",duration:"month",
+    })).toThrow();
+    expect(()=>catalogSelectionQuote({
+      targets:"fullPremium,toneCurve",
+    })).toThrow();
+    expect(()=>catalogSelectionQuote({
+      targets:"toneCurve,toneCurve",
+    })).toThrow();
   });
 });
