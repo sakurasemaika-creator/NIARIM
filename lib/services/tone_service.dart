@@ -420,8 +420,13 @@ class ToneService extends ChangeNotifier {
       name: 'ピクセルディザ(細) 94%（8×8）',
       tags: [AssetTagKeys.pixelArt, AssetTagKeys.gradient],
     ),
-    // 反転格子（旧 Tone0063）も既存「ピクセル散らし」（Tone0009）
-    // と位相だけが異なるため既定一覧から外す。市松反転も同様。
+    // 反転格子（旧 Tone0063）は散らし（Tone0009）と重複するため退役済み。
+    // 斜め線を両方向で交差させる菱形格子は新しい独立プリセット。
+    const Tone(
+      id: 'Tone0065',
+      name: 'ピクセル斜め格子（1px）',
+      tags: [AssetTagKeys.pixelArt],
+    ),
   ];
 
   Future<void> init() async {
