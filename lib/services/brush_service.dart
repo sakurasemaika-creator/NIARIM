@@ -62,7 +62,7 @@ class BrushService extends ChangeNotifier {
     notifyListeners();
   }
 
-  static List<Brush> _defaultBrushes() => [
+  /// Read-only definitions used for preset-fidelity regression tests.\n  static List<Brush> get builtInBrushes => List.unmodifiable(_defaultBrushes());\n\n  static List<Brush> _defaultBrushes() => [
     const Brush(
       id: 'Brush0001',
       name: 'ペン',
