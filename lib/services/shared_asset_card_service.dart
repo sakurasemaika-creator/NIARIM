@@ -17,12 +17,57 @@ import 'brush_service.dart';
 import 'stamp_service.dart';
 import 'tone_service.dart';
 import 'shared_asset_card_codec.dart';
+import '../widgets/export_share_feedback.dart';
 
 /// One public sharing format for brushes, tones and stamps: a complete PNG.
 /// A ZIP is used only as an *in-memory* implementation of the compressed
 /// model+original-image payload; users never select or share that container.
 class SharedAssetCardService {
   SharedAssetCardService._();
+
+  static String exportMenuLabel(BuildContext context) =>
+      Localizations.localeOf(context).languageCode == 'ja'
+          ? '共有カードを書き出す'
+          : 'Export share card';
+
+  /// One PNG, already saved in the app documents directory. The second
+  /// action opens Android's normal share sheet for the very same file.
+  static Future<void> showExportResult(BuildContext context, File card) async {
+    if (!context.mounted) return;
+    final isJapanese = Localizations.localeOf(context).languageCode == 'ja';
+    final share = await showDialog<bool>(
+      context: context,
+      builder: (dialog) => AlertDialog(
+        title: Text(isJapanese ? '共有カードを作成しました' : 'Share card created'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Image.file(card, height: 310, fit: BoxFit.contain),
+              const SizedBox(height: 12),
+              Text(isJapanese
+                  ? 'PNGを保存しました。復元情報が失われないよう、元のPNGファイルをファイルとして共有してください。'
+                  : 'PNG saved. Share the original PNG as a file; screenshotting or re-encoding loses the import data.'),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialog, false),
+            child: Text(isJapanese ? '保存して閉じる' : 'Saved · Close'),
+          ),
+          FilledButton.icon(
+            onPressed: () => Navigator.pop(dialog, true),
+            icon: const Icon(Icons.share_outlined),
+            label: Text(isJapanese ? '共有' : 'Share'),
+          ),
+        ],
+      ),
+    );
+    if (share == true && context.mounted) {
+      await shareExportedFileWithNotice(context, card);
+    }
+  }
 
   static Future<File> exportBrush(BrushService service, Brush brush) async {
     final paths = brush.resolvedCustomImagePaths;
