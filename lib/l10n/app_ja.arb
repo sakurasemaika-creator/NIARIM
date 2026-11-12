@@ -3122,7 +3122,7 @@
     }
   },
   "colorPickerShareViaQr": "QRコードで共有",
-  "qrShareTooLargeHint": "色数が多いためQRコードでは共有できません（ファイル共有をご利用ください）",
+  "qrShareTooLargeHint": "画像を含む素材やQRコードに収まらない設定は、ファイル共有をご利用ください。",
   "colorPickerImportViaFile": "ファイルから選択",
   "colorPickerImportFailedSnackbar": "読み込みに失敗しました: {error}",
   "@colorPickerImportFailedSnackbar": {
