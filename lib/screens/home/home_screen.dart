@@ -36,6 +36,7 @@ import '../../widgets/empty_state_placeholder.dart';
 import '../../widgets/sort_mode_control.dart';
 import '../../widgets/project_trash_dialog.dart';
 import '../../widgets/collection_action_controls.dart';
+import '../../widgets/collection_tile_layout.dart';
 import '../../widgets/share_project_file_action.dart';
 import '../../widgets/mission_completion_dialog.dart';
 import '../../widgets/typing_aware_shortcuts.dart';
@@ -2565,22 +2566,7 @@ Widget _receivedShareProjectTile(
                 ],
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(8, 5, 8, 6),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(project.name, maxLines: 2,
-                      overflow: TextOverflow.ellipsis, style: captionStyle),
-                  const SizedBox(height: 2),
-                  Text(l10n.homeProjectMeta(
-                    project.fps, project.durationSeconds,
-                  ), maxLines: 1, overflow: TextOverflow.ellipsis,
-                      style: theme.textTheme.bodySmall),
-                ],
-              ),
-            ),
+            collectionTileCaption(context, project.name),
           ],
         ),
       ),
@@ -3008,24 +2994,7 @@ class _OutgoingSharesList extends StatelessWidget {
                     Positioned(bottom: 4, left: 4, child: favoriteAction),
                   ],
                 )),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(8, 5, 8, 6),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(entry.name, maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            fontFamily: 'Kuramubon',
-                            fontFamilyFallback: kHeadingFontFallback,
-                          )),
-                      const SizedBox(height: 2),
-                      Text(subtitle, maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: Theme.of(context).textTheme.bodySmall),
-                    ],
-                  ),
-                ),
+                collectionTileCaption(context, entry.name),
               ],
             ),
           ),
@@ -3421,23 +3390,7 @@ class _FolderableList<T> extends StatelessWidget {
                 ],
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(8, 5, 8, 6),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(folder.name, maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontFamily: 'Kuramubon',
-                      fontFamilyFallback: kHeadingFontFallback,
-                    )),
-                  Text('$count',
-                    maxLines: 1,
-                    style: theme.textTheme.bodySmall),
-                ],
-              ),
-            ),
+            collectionTileCaption(context, folder.name),
           ],
         ),
       ),
@@ -4130,8 +4083,7 @@ List<ProjectFolder> _sortWorkFolders(
   return sorted;
 }
 
-/// Same size choices as project cards. The caption retains two rows
-/// while the tile itself grows with the chosen size and text scaling.
+/// Reuse the exact Projects 16:12 grid and minimum caption allowance.
 SliverGridDelegate _worksGridDelegate(
     BuildContext context, ProjectViewMode mode) {
   final extent = switch (mode) {
@@ -4140,14 +4092,7 @@ SliverGridDelegate _worksGridDelegate(
     ProjectViewMode.large => 240.0,
     ProjectViewMode.detail => 240.0,
   };
-  final scaledFontExtra =
-      (MediaQuery.textScalerOf(context).scale(16) - 16).clamp(0.0, 48.0).toDouble();
-  return SliverGridDelegateWithMaxCrossAxisExtent(
-    maxCrossAxisExtent: extent,
-    crossAxisSpacing: 8,
-    mainAxisSpacing: 8,
-    mainAxisExtent: extent * 0.74 + 75 + scaledFontExtra * 3,
-  );
+  return collectionTileGridDelegate(context, extent);
 }
 
 class _WorksTab extends StatefulWidget {
