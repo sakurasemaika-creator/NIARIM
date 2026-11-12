@@ -875,11 +875,13 @@ class _HomeScreenState extends State<HomeScreen>
   );
 
   Widget? _buildHomeActions(BuildContext context, AppLocalizations l10n) {
-    if (_isSelectionMode || _currentTabIndex >= 2) return null;
+    if (_isSelectionMode || _currentTabIndex == 3 ||
+        (_currentTabIndex == 2 && _sharedOutgoing)) return null;
     final compact = MediaQuery.sizeOf(context).height < 400;
 
     // The footer and the scrollable tab body have separate hit regions.
     final projects = _currentTabIndex == 0;
+    final shared = _currentTabIndex == 2;
     return SafeArea(
       top: false,
       minimum: EdgeInsets.fromLTRB(16, 0, 16, compact ? 8 : 16),
@@ -911,7 +913,18 @@ class _HomeScreenState extends State<HomeScreen>
               onPressed: () => _showAddChoiceSheet(context),
               icon: Icons.add,
             ),
-          ] else
+          ] else if (shared)
+            _buildHomeAction(
+              compact: compact,
+              heroTag: 'shared-add-folder',
+              tooltip: l10n.homeAddSheetNewFolder,
+              onPressed: () => showCreateFolderNameDialog(
+                context,
+                (name) => context.read<ProjectService>().createSharedFolder(name),
+              ),
+              icon: Icons.create_new_folder_outlined,
+            )
+          else
             _buildCreateWorkFolderAction(context, l10n, compact: compact),
         ],
       ),
@@ -2123,7 +2136,7 @@ class _SharedScreenState extends State<SharedScreen> {
           ),
         ],
       ),
-      floatingActionButton: _showOutgoing
+      floatingActionButton: widget.embedded || _showOutgoing
           ? null
           : FloatingActionButton(
         heroTag: 'shared-add-folder',
@@ -2758,7 +2771,7 @@ Widget _receivedShareMenu(
         value: 'share',
         // この作品の共有ファイルの作成・共有が終わるまで、二度目は選べない。
         enabled: !ExportShareService.isRunning(niashareKey(project.id)),
-        child: Text(l10n.projectDetailShareQuickAction),
+        child: Text(l10n.projectListCreateShareAction),
       ),
       PopupMenuItem(
         value: 'favorite',
@@ -2766,11 +2779,6 @@ Widget _receivedShareMenu(
             ? l10n.colorPickerFavoriteRemove
             : l10n.colorPickerFavoriteAdd),
       ),
-      if (onCopyEntry != null)
-        PopupMenuItem(
-          value: 'copyToClipboard', child: Text(l10n.themeDuplicateAction),
-        ),
-      PopupMenuItem(value: 'move', child: Text(l10n.folderMoveToTitle)),
       PopupMenuItem(
         value: 'delete',
         child: Text(
@@ -2947,9 +2955,6 @@ class _OutgoingSharesList extends StatelessWidget {
                     child: Text(l10n.projectDetailShareQuickAction)),
                 PopupMenuItem(value: 'rename',
                     child: Text(l10n.commonRename)),
-                if (onCopyEntry != null)
-                  PopupMenuItem(value: 'copyToClipboard',
-                      child: Text(l10n.themeDuplicateAction)),
                 PopupMenuItem(value: 'duplicate',
                     child: Text(l10n.themeDuplicateAction)),
                 PopupMenuItem(
@@ -3491,7 +3496,7 @@ class _FolderableList<T> extends StatelessWidget {
                 color: ThemeService.activeColorScheme.error,
               ),
               title: Text(
-                l10n.commonDelete,
+                l10n.homeMoveToTrash,
                 style: TextStyle(color: ThemeService.activeColorScheme.error),
               ),
               onTap: () {
@@ -4684,7 +4689,7 @@ class _WorkListItemState extends State<_WorkListItem> {
       icon: _icon,
       moveLabel: l10n.folderMoveToTitle,
       shareLabel: l10n.homeShareOpenWith,
-      deleteLabel: l10n.commonDelete,
+      deleteLabel: l10n.homeMoveToTrash,
       onOpen: _sharing ? null : () => _openPreview(context),
       onMove: () => _showMoveToFolderSheet(context),
       onCopy: widget.onCopy,
@@ -4730,8 +4735,8 @@ class _WorkListItemState extends State<_WorkListItem> {
       builder: (ctx) => AlertDialog(
         scrollable: true,
         insetPadding: const EdgeInsets.all(16),
-        title: Text(l10n.homeWorkDeleteConfirmTitle(file.path.split('/').last)),
-        content: Text(l10n.homeWorkDeleteConfirmBody),
+        title: Text(l10n.homeMoveToTrash),
+        content: Text(l10n.homeMoveToTrashConfirm(1)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
@@ -4759,7 +4764,7 @@ class _WorkListItemState extends State<_WorkListItem> {
                 }
               }
             },
-            child: Text(l10n.commonDelete),
+            child: Text(l10n.commonMove),
           ),
         ],
       ),
