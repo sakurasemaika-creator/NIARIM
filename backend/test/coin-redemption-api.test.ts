@@ -35,7 +35,6 @@ const requestId = "123e4567-e89b-12d3-a456-426614174000";
 
 function enable() {
   process.env.COIN_REDEMPTION_ENABLED = "true";
-  process.env.COIN_REDEMPTION_REVIEW_APPROVED = "true";
   process.env.COIN_FULL_PREMIUM_MONTH_COINS = "55000";
   process.env.COIN_PRICE_VERSION = "v3-final-annual550000";
 }
@@ -48,7 +47,6 @@ beforeEach(() => {
   } as Awaited<ReturnType<typeof getUser>>);
   process.env.TABLE_NAME = "unit-test-table";
   delete process.env.COIN_REDEMPTION_ENABLED;
-  delete process.env.COIN_REDEMPTION_REVIEW_APPROVED;
   delete process.env.COIN_FULL_PREMIUM_MONTH_COINS;
   delete process.env.COIN_PRICE_VERSION;
 });
