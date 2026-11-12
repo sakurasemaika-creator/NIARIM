@@ -124,6 +124,10 @@ Uint8List generateBuiltInToneTexture(Tone tone, {int size = 64}) {
           ? _StripeDirection.vertical
           : _StripeDirection.horizontal,
     );
+  } else if (name.contains('ピクセル斜め格子')) {
+    // Genuine 1px diagonal crosshatch with diamond-shaped transparent holes.
+    // A period of two degenerates into checkerboard, hence period four.
+    _fillPixelDiagonalMeshPattern(data, size);
   } else if (name.contains('市松')) {
     // Reverse is the exact inverse mask, not a second generic 30% halftone.
     _fillPixelCheckerPattern(data, size, inverted: name.contains('反転'));
@@ -210,6 +214,18 @@ void _fillPixelGridPattern(Uint8List data, int size, {bool inverted = false}) {
   for (int y = 0; y < size; y++) {
     for (int x = 0; x < size; x++) {
       if ((x.isEven || y.isEven) != inverted) {
+        data[(y * size + x) * 4 + 3] = 255;
+      }
+    }
+  }
+}
+
+/// Two crossed 1px diagonal line families; transparent diamonds remain.
+void _fillPixelDiagonalMeshPattern(Uint8List data, int size) {
+  const step = 4;
+  for (var y = 0; y < size; y++) {
+    for (var x = 0; x < size; x++) {
+      if ((x + y) % step == 0 || (x - y) % step == 0) {
         data[(y * size + x) * 4 + 3] = 255;
       }
     }
