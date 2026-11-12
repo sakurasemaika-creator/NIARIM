@@ -25,7 +25,16 @@ import '../../../widgets/preset_stroke_row.dart';
 /// 自作トーン・読み込み・書き出し・フォルダ管理）。ブラシパネルと同構成。
 class TonePanel extends StatefulWidget {
   final VoidCallback onClose;
-  const TonePanel({super.key, required this.onClose});
+  final bool embedded;
+  final double? embeddedHeight;
+  final VoidCallback? onPresetSelected;
+  const TonePanel({
+    super.key,
+    required this.onClose,
+    this.embedded = false,
+    this.embeddedHeight,
+    this.onPresetSelected,
+  });
 
   @override
   State<TonePanel> createState() => _TonePanelState();
@@ -85,16 +94,17 @@ class _TonePanelState extends State<TonePanel> {
 
     return PanelSurface(
       width: 280,
-      height: 460,
+      height: widget.embeddedHeight ?? 460,
       child: Padding(
         padding: const EdgeInsets.all(12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            PanelCenterCloseBar(onClose: widget.onClose),
+            if (!widget.embedded)
+              PanelCenterCloseBar(onClose: widget.onClose),
             Row(
               children: [
-                Text(
+                if (!widget.embedded) Text(
                   l10n.toneTitle,
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
@@ -348,7 +358,10 @@ class _TonePanelState extends State<TonePanel> {
                                 ),
                             ],
                           ),
-                          onTap: () => toneService.selectTone(tone.id),
+                          onTap: () {
+                            toneService.selectTone(tone.id);
+                            widget.onPresetSelected?.call();
+                          },
                           onLongPress: builtIn
                               ? null
                               : () => _showToneSettings(context, tone),
