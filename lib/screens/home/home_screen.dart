@@ -2492,6 +2492,112 @@ class _SharedTab extends StatelessWidget {
 }
 
 
+
+Widget _receivedShareProjectTile(
+  BuildContext context,
+  Project project, {
+  required bool grid,
+  ValueChanged<HomeClipboardEntry>? onCopyEntry,
+}) {
+  final l10n = AppLocalizations.of(context)!;
+  final theme = Theme.of(context);
+  final captionStyle = const TextStyle(
+    fontFamily: 'Kuramubon',
+    fontFamilyFallback: kHeadingFontFallback,
+  );
+  Widget cover() {
+    final thumbnailPath = project.thumbnailPath;
+    if (thumbnailPath == null || thumbnailPath.isEmpty) {
+      return ColoredBox(
+        color: Color(project.backgroundColor),
+        child: const Center(child: Icon(Icons.movie_creation_outlined)),
+      );
+    }
+    return Image.file(
+      File(thumbnailPath),
+      fit: BoxFit.cover,
+      cacheWidth: 320,
+      errorBuilder: (context, error, stack) => ColoredBox(
+        color: Color(project.backgroundColor),
+        child: const Center(child: Icon(Icons.movie_creation_outlined)),
+      ),
+    );
+  }
+  void showFolderMove() {
+    final service = context.read<ProjectService>();
+    showModalBottomSheet<void>(
+      context: context,
+      builder: (_) => WorkFolderMoveSheet(
+        folders: service.sharedFolders,
+        filename: project.name,
+        onMove: (id) => service.moveToSharedFolder(project.id, id),
+      ),
+    );
+  }
+  if (grid) {
+    return Card(
+      margin: EdgeInsets.zero,
+      color: theme.colorScheme.surfaceContainerLow,
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: () => context.push('/project/${project.id}'),
+        onLongPress: showFolderMove,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Expanded(
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  cover(),
+                  Positioned(
+                    right: 4, top: 4,
+                    child: _sharedProjectActions(
+                      context, project, onCopyEntry: onCopyEntry,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(8, 5, 8, 6),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(project.name, maxLines: 2,
+                      overflow: TextOverflow.ellipsis, style: captionStyle),
+                  const SizedBox(height: 2),
+                  Text(l10n.homeProjectMeta(
+                    project.fps, project.durationSeconds,
+                  ), maxLines: 1, overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.bodySmall),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+  return Card(
+    margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+    color: theme.colorScheme.surfaceContainerLow,
+    child: ListTile(
+      leading: SizedBox(width: 56, height: 56, child: cover()),
+      title: Text(project.name, style: captionStyle),
+      subtitle: Text(l10n.homeProjectMeta(
+        project.fps, project.durationSeconds,
+      )),
+      onTap: () => context.push('/project/${project.id}'),
+      onLongPress: showFolderMove,
+      trailing: _sharedProjectActions(
+        context, project, onCopyEntry: onCopyEntry,
+      ),
+    ),
+  );
+}
+
 String _shareCollectionText(BuildContext context, {required bool outgoing}) {
   final locale = Localizations.localeOf(context).languageCode;
   final names = switch (locale) {
