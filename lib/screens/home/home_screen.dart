@@ -4075,11 +4075,19 @@ class _WorksFolderScreen extends StatefulWidget {
   final ProjectViewMode viewMode;
   final ProjectSortMode initialSortMode;
   final ValueChanged<ProjectViewMode> onViewModeChanged;
+  final String searchQuery;
+  final bool favoritesOnly;
+  final Set<String> favoritePaths;
+  final ValueChanged<String> onToggleFavorite;
   const _WorksFolderScreen({
     required this.folderId,
     required this.folderName,
     required this.viewMode,
     required this.initialSortMode,
+    required this.searchQuery,
+    required this.favoritesOnly,
+    required this.favoritePaths,
+    required this.onToggleFavorite,
     required this.onViewModeChanged,
     required this.onDeleted,
     this.onCopyEntry,
@@ -4190,7 +4198,13 @@ class _WorksFolderScreenState extends State<_WorksFolderScreen> {
                   snapshot.data!.where((f) =>
                       workFolders.folderIdOf(
                         f.path.split(RegExp(r'[\\/]')).last,
-                      ) == widget.folderId).toList(),
+                      ) == widget.folderId &&
+                      (!widget.favoritesOnly ||
+                          widget.favoritePaths.contains(f.path)) &&
+                      (widget.searchQuery.trim().isEmpty ||
+                          f.uri.pathSegments.last.toLowerCase().contains(
+                              widget.searchQuery.trim().toLowerCase()))
+                  ).toList(),
                   _sortMode,
                 );
                 if (items.isEmpty) {
@@ -4205,6 +4219,8 @@ class _WorksFolderScreenState extends State<_WorksFolderScreen> {
                     key: ValueKey(file.path),
                     file: file,
                     gridTile: grid,
+                    isFavorite: widget.favoritePaths.contains(file.path),
+                    onToggleFavorite: () => widget.onToggleFavorite(file.path),
                     onCopy: widget.onCopyEntry == null ? null : () =>
                         widget.onCopyEntry!(HomeClipboardEntry(
                           source: HomePasteArea.works,
@@ -4243,12 +4259,16 @@ class _WorkListItem extends StatefulWidget {
   final VoidCallback onDeleted;
   final VoidCallback? onCopy;
   final bool gridTile;
+  final bool isFavorite;
+  final VoidCallback? onToggleFavorite;
   const _WorkListItem({
     super.key,
     required this.file,
     required this.onDeleted,
     this.onCopy,
     this.gridTile = false,
+    this.isFavorite = false,
+    this.onToggleFavorite,
   });
 
   @override
@@ -4340,6 +4360,8 @@ class _WorkListItemState extends State<_WorkListItem> {
         final path = setting['imagePath'];
         return ExportedWorkCard(
       gridTile: widget.gridTile,
+      isFavorite: widget.isFavorite,
+      onToggleFavorite: widget.onToggleFavorite,
       thumbnailPath: path is String && path.isNotEmpty ? path : null,
       // Avoid decoding the original video twice while its compact cover
       // is generated in the queued cache service.
