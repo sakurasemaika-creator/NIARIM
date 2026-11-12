@@ -272,6 +272,17 @@ export class NiarimBackendStack extends Stack {
         COIN_REDEMPTION_ENABLED:
           this.node.tryGetContext("coinRedemptionEnabled") === "true"
             ? "true" : "false",
+        // Financial activation additionally requires independent security
+        // approval; prerelease CDK context must never grant entitlements.
+        COIN_REDEMPTION_REVIEW_APPROVED:
+          this.node.tryGetContext("coinRedemptionReviewApproved") === "true"
+            ? "true" : "false",
+        COIN_INDIVIDUAL_REDEMPTION_REVIEW_APPROVED:
+          this.node.tryGetContext("coinIndividualRedemptionReviewApproved") === "true"
+            ? "true" : "false",
+        COIN_INDIVIDUAL_RIGHTS_CONSUMERS_APPROVED:
+          this.node.tryGetContext("coinIndividualRightsConsumersApproved") === "true"
+            ? "true" : "false",
         COIN_PREMIUM_ANNUAL_REDEMPTION_ENABLED:
           this.node.tryGetContext("coinPremiumAnnualRedemptionEnabled") === "true"
             ? "true" : "false",
