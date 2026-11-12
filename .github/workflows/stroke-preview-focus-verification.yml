@@ -4,6 +4,10 @@ on:
     branches: [dev_branch]
     paths:
       - 'lib/widgets/stroke_sample_preview.dart'
+      - 'lib/widgets/preset_stroke_row.dart'
+      - 'lib/engine/drawing_engine.dart'
+      - 'lib/services/brush_service.dart'
+      - 'lib/screens/canvas/filter_immersive_policy.dart'
       - 'lib/screens/canvas/widgets/brush_panel.dart'
       - 'lib/screens/canvas/widgets/tone_panel.dart'
       - 'lib/screens/canvas/widgets/stamp_panel.dart'
@@ -13,6 +17,8 @@ on:
       - 'lib/screens/canvas/widgets/filter_panel.dart'
       - 'lib/screens/canvas/canvas_screen.dart'
       - 'test/stroke_sample_preview_test.dart'
+      - 'test/brush_preset_fidelity_test.dart'
+      - 'test/filter_immersive_all_presets_test.dart'
       - '.github/workflows/stroke-preview-focus-verification.yml'
   workflow_dispatch:
 permissions:
@@ -28,11 +34,15 @@ jobs:
           channel: stable
       - run: flutter pub get
       - name: Verify production wave raster preview widgets
-        run: flutter test test/stroke_sample_preview_test.dart --reporter expanded
+        run: flutter test test/stroke_sample_preview_test.dart test/brush_preset_fidelity_test.dart test/filter_immersive_all_presets_test.dart --reporter expanded
       - name: Analyze all modified widget and layout code
         run: |
           flutter analyze --no-fatal-infos --no-fatal-warnings \
             lib/widgets/stroke_sample_preview.dart \
+            lib/widgets/preset_stroke_row.dart \
+            lib/engine/drawing_engine.dart \
+            lib/services/brush_service.dart \
+            lib/screens/canvas/filter_immersive_policy.dart \
             lib/screens/canvas/widgets/brush_panel.dart \
             lib/screens/canvas/widgets/tone_panel.dart \
             lib/screens/canvas/widgets/stamp_panel.dart \
@@ -41,4 +51,6 @@ jobs:
             lib/screens/canvas/widgets/hsv_color_wheel.dart \
             lib/screens/canvas/widgets/filter_panel.dart \
             lib/screens/canvas/canvas_screen.dart \
-            test/stroke_sample_preview_test.dart
+            test/stroke_sample_preview_test.dart \
+            test/brush_preset_fidelity_test.dart \
+            test/filter_immersive_all_presets_test.dart
