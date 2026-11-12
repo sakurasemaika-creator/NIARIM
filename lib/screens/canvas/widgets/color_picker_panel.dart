@@ -155,7 +155,7 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
       maxHeight: 680,
       selfScrolling: true,
       child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 12, vertical: docked ? 4 : 12),
+        padding: EdgeInsets.fromLTRB(12, docked ? 4 : 8, 12, 12),
         child: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -231,7 +231,7 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
                   ),
                 ),
               ),
-              const SizedBox(height: 2),
+              // Wheel controls already clear the ring: no extra spacer.
               if (_showHsvSliders) ...[
                 _slider('H', _hue.roundToDouble(), 0, 360, (v) {
                   _hue = v.roundToDouble();
