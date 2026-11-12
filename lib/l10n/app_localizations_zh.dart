@@ -1662,7 +1662,7 @@ class AppLocalizationsZh extends AppLocalizations {
       '放置在时间轴上的音频片段，可以在详情面板中调整音量、淡入、淡出的秒数。可用来调整音效和背景音乐的音量平衡，或让曲子的开头、结尾更加顺滑。';
 
   @override
-  String get helpPenSubToolTitle => '画笔子工具';
+  String get helpPenSubToolTitle => '画笔';
 
   @override
   String get helpPenSubToolDesc =>
@@ -2413,7 +2413,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get creativePanelFolderButton => '文件夹';
 
   @override
-  String get creativePanelCreateButton => '自制';
+  String get creativePanelCreateButton => '新建';
 
   @override
   String get creativePanelImportButton => '导入';
@@ -5572,7 +5572,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get workspaceDockPanelStamp => '贴纸';
 
   @override
-  String get workspaceDockPanelPenSubTool => '画笔子工具';
+  String get workspaceDockPanelPenSubTool => '画笔';
 
   @override
   String get workspaceDockPanelOnionSkin => '洋葱皮';
@@ -10843,7 +10843,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
       '放置在時間軸上的音訊片段，可以在詳細面板中調整音量、淡入、淡出的秒數。可用來調整音效和配樂的音量平衡，或讓曲子的開頭、結尾更加順暢。';
 
   @override
-  String get helpPenSubToolTitle => '畫筆子工具';
+  String get helpPenSubToolTitle => '畫筆';
 
   @override
   String get helpPenSubToolDesc =>
@@ -11594,7 +11594,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get creativePanelFolderButton => '資料夾';
 
   @override
-  String get creativePanelCreateButton => '自製';
+  String get creativePanelCreateButton => '新增';
 
   @override
   String get creativePanelImportButton => '匯入';
@@ -14753,7 +14753,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get workspaceDockPanelStamp => '貼紙';
 
   @override
-  String get workspaceDockPanelPenSubTool => '畫筆子工具';
+  String get workspaceDockPanelPenSubTool => '畫筆';
 
   @override
   String get workspaceDockPanelOnionSkin => '洋蔥皮';
