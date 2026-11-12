@@ -4,6 +4,7 @@ import 'dart:ui' as ui;
 
 import 'package:niarim/services/theme_service.dart';
 import 'package:flutter/material.dart';
+import 'filter_immersive_policy.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
@@ -1494,8 +1495,11 @@ class _CanvasScreenState extends State<CanvasScreen> {
     // サブツール系パネル（ブラシ・トーン・スタンプ等）もPC版では互いに
     // 排他にせず、開いているものをすべて縦に積んで同時表示する。
     final isDesktop = isWideScreen(context);
-    final filterAdjusting = _showFilterPanel &&
-        (!isDesktop || context.watch<FilterService>().currentFilter != null);
+    final filterAdjusting = shouldUseImmersiveFilterUi(
+      panelOpen: _showFilterPanel,
+      desktop: isDesktop,
+      selectedFilter: context.watch<FilterService>().currentFilter,
+    );
     final colorAdjusting = _showColorAdjustPanel;
     // Keep only the actual canvas and the fixed bottom adjustment controls
     // visible while editing, on desktop as well as on phones. Do not change
