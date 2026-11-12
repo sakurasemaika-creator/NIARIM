@@ -60,30 +60,36 @@ class HomeCollectionSelectionSurface extends StatelessWidget {
             child: IgnorePointer(
               child: DecoratedBox(
                 decoration: BoxDecoration(
-                  color: scheme.secondary.withValues(alpha: 0.14),
-                  border: Border.all(color: scheme.secondary, width: 3),
+                  border: Border.all(color: scheme.secondary, width: 2),
                   borderRadius: BorderRadius.circular(grid ? 14 : 12),
                 ),
               ),
             ),
           ),
         Positioned(
-          top: grid ? 8 : 12,
-          left: grid ? 8 : 14,
+          top: grid ? 4 : 12,
+          left: grid ? 4 : 14,
           child: IgnorePointer(
             child: Container(
               key: ValueKey('homeSelectedMarker_$selectionId'),
-              width: 32,
-              height: 32,
+              padding: const EdgeInsets.all(1),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: checked ? scheme.secondary : scheme.surface,
-                border: Border.all(color: scheme.secondary, width: 2),
+                color: checked
+                    ? scheme.secondary
+                    : scheme.surface.withValues(alpha: 0.9),
+                border: Border.all(color: scheme.secondary, width: 1.5),
+                boxShadow: [
+                  BoxShadow(
+                    color: scheme.onSurface.withValues(alpha: 0.2),
+                    blurRadius: 3,
+                  ),
+                ],
               ),
               child: Icon(
-                checked ? Icons.check : Icons.circle_outlined,
-                size: 22,
-                color: checked ? scheme.onSecondary : scheme.secondary,
+                checked ? Icons.check : null,
+                size: 16,
+                color: scheme.onSecondary,
               ),
             ),
           ),
