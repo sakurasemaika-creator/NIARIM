@@ -178,14 +178,14 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
                     Flexible(
                       fit: FlexFit.loose,
                       child: ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 108),
+                        constraints: const BoxConstraints(maxWidth: 200),
                         child: Semantics(
                         label: '${l10n.colorPickerTitle}: #${_colorToHex(_currentColor)}',
                         child: SizedBox(
                           key: const ValueKey('selected-color-preview-chip'),
                           // A height-only box inside Flexible can collapse to
                           // zero width, hiding the preview entirely on phones.
-                          width: 108,
+                          width: 200,
                           height: 20,
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(3),
