@@ -222,6 +222,22 @@ export async function redeemIndividualCoins(
           },
         }},
         ...entitlementWrites,
+        // Guard against a concurrent fullPremium purchase that would grant
+        // these rights at the same moment. The preflight read alone is not
+        // sufficient to prevent a double charge.
+        {ConditionCheck:{
+          TableName:tableName(),
+          Key:Keys.rewardEntitlement(niarimUserId,"fullPremium"),
+          ConditionExpression:
+            "attribute_not_exists(itemType) OR " +
+            "(itemType = :type AND (#status = :active AND " +
+            "expiresAtEpochMs <= :now))",
+          ExpressionAttributeNames:{"#status":"status"},
+          ExpressionAttributeValues:{
+            ":type":"REWARD_ENTITLEMENT",
+            ":active":"active",":now":now,
+          },
+        }},
         {Put:{
           TableName:tableName(),
           Item:{
