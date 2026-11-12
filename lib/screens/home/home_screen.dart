@@ -3060,70 +3060,92 @@ String _shareCollectionEmptyText(BuildContext context) {
 }
 
 /// 共有タブのフォルダ内表示（共有タブへのフォルダ新規追加機能）。
-class _SharedFolderScreen extends StatelessWidget {
+class _SharedFolderScreen extends StatefulWidget {
   final String folderId;
   final String folderName;
+  final ProjectViewMode viewMode;
+  final ValueChanged<ProjectViewMode> onViewModeChanged;
+  final bool showFavoritesOnly;
+  final String searchQuery;
   final ValueChanged<HomeClipboardEntry>? onCopyEntry;
+
   const _SharedFolderScreen({
-    required this.folderId, required this.folderName, this.onCopyEntry,
+    required this.folderId,
+    required this.folderName,
+    required this.viewMode,
+    required this.onViewModeChanged,
+    required this.showFavoritesOnly,
+    required this.searchQuery,
+    this.onCopyEntry,
   });
+  @override
+  State<_SharedFolderScreen> createState() => _SharedFolderScreenState();
+}
+
+class _SharedFolderScreenState extends State<_SharedFolderScreen> {
+  late ProjectViewMode _viewMode;
+
+  @override
+  void initState() {
+    super.initState();
+    _viewMode = widget.viewMode;
+  }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final items = context
-        .watch<ProjectService>()
-        .shared
-        .where((p) => p.sharedFolderId == folderId)
-        .toList();
+    final query = widget.searchQuery.trim().toLowerCase();
+    final items = context.watch<ProjectService>().shared.where((p) =>
+        p.sharedFolderId == widget.folderId &&
+        (!widget.showFavoritesOnly || p.isFavorite) &&
+        (query.isEmpty || p.name.toLowerCase().contains(query))
+    ).toList();
+    Widget card(BuildContext ctx, int i, bool grid) =>
+        _receivedShareProjectTile(
+          ctx, items[i], grid: grid,
+          onCopyEntry: widget.onCopyEntry,
+        );
     return Scaffold(
-      appBar: AppBar(title: Text(folderName)),
+      appBar: AppBar(
+        title: Text(widget.folderName),
+        actions: [
+          PopupMenuButton<ProjectViewMode>(
+            key: const Key('sharedFolderViewModeMenu'),
+            icon: const Icon(Icons.view_module),
+            tooltip: l10n.homeViewModeTooltip,
+            onSelected: (mode) {
+              setState(() => _viewMode = mode);
+              widget.onViewModeChanged(mode);
+            },
+            itemBuilder: (_) => [
+              PopupMenuItem(value: ProjectViewMode.large,
+                  child: Text(l10n.homeViewModeLarge)),
+              PopupMenuItem(value: ProjectViewMode.medium,
+                  child: Text(l10n.homeViewModeMedium)),
+              PopupMenuItem(value: ProjectViewMode.small,
+                  child: Text(l10n.homeViewModeSmall)),
+              PopupMenuItem(value: ProjectViewMode.detail,
+                  child: Text(l10n.homeViewModeDetail)),
+            ],
+          ),
+        ],
+      ),
       body: items.isEmpty
           ? EmptyStatePlaceholder(
               icon: Icons.folder_open_outlined,
               title: l10n.homeSharedFolderEmpty,
             )
-          : ListView.builder(
-              itemCount: items.length,
-              itemBuilder: (context, index) {
-                final project = items[index];
-                return Card(
-                  margin: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  elevation: 1,
-                  shadowColor: ThemeService.activeColorScheme.shadow.withValues(
-                    alpha: 0.15,
-                  ),
-                  color: Theme.of(context).colorScheme.surfaceContainerLow,
-                  child: ListTile(
-                    leading: Container(
-                      width: 48,
-                      height: 48,
-                      decoration: BoxDecoration(
-                        color: Color(project.backgroundColor),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                    title: Text(
-                      project.name,
-                      style: const TextStyle(
-                        fontFamily: 'Kuramubon',
-                        fontFamilyFallback: kHeadingFontFallback,
-                      ),
-                    ),
-                    subtitle: Text(
-                      l10n.homeProjectMeta(
-                        project.fps,
-                        project.durationSeconds,
-                      ),
-                    ),
-                    onTap: () => context.push('/project/${project.id}'),
-                    trailing: _sharedProjectActions(
-                      context, project, onCopyEntry: onCopyEntry,
-                    ),
-                  ),
-                );
-              },
-            ),
+          : _viewMode != ProjectViewMode.detail
+              ? GridView.builder(
+                  padding: const EdgeInsets.all(8),
+                  gridDelegate: _worksGridDelegate(context, _viewMode),
+                  itemCount: items.length,
+                  itemBuilder: (ctx, i) => card(ctx, i, true),
+                )
+              : ListView.builder(
+                  itemCount: items.length,
+                  itemBuilder: (ctx, i) => card(ctx, i, false),
+                ),
     );
   }
 }
