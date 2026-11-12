@@ -139,6 +139,12 @@ class PremiumService extends ChangeNotifier {
   DateTime? _serverCoinPremiumExpiresAt;
   String? _serverCoinPremiumOwnerId;
   Timer? _coinPremiumExpiryTimer;
+  // Valid only for the currently verified account and a short online lease.
+  // A cached/local setting can never turn these rights on.
+  final Map<String, DateTime> _serverCoinBenefitExpiries = {};
+  String? _serverCoinBenefitOwner;
+  DateTime? _serverCoinBenefitsVerifiedUntil;
+  Timer? _coinBenefitsLeaseTimer;
   GoogleAuthService? _boundGoogleAuth;
   String? _lastGoogleAccountId;
 
@@ -152,6 +158,7 @@ class PremiumService extends ChangeNotifier {
     _coinPremiumExpiryTimer?.cancel();
     _serverCoinPremiumExpiresAt = null;
     _serverCoinPremiumOwnerId = null;
+    _clearServerCoinBenefits();
     _invalidatePlayPremium();
     auth.addListener(_onGoogleAccountChanged);
     notifyListeners();
@@ -162,6 +169,7 @@ class PremiumService extends ChangeNotifier {
     if (current == _lastGoogleAccountId) return;
     _lastGoogleAccountId = current;
     applyServerCoinPremiumExpiry(null);
+    _clearServerCoinBenefits();
     _invalidatePlayPremium();
     if (current != null && _storeAvailable && _playVerifier != null) {
       unawaited(_restorePlayPurchasesSilently());
@@ -195,6 +203,65 @@ class PremiumService extends ChangeNotifier {
       });
     }
     notifyListeners();
+  }
+
+  static const Set<String> _allowedCoinBenefits = {
+    'endCardEdit', 'watermark', 'toneCurve', 'levelAdjustment',
+    'unlimitedDuration', 'customAutomation',
+    'projectListAds','canvasAds','timelineAds','processingAds','allAds',
+  };
+
+  void _clearServerCoinBenefits() {
+    _coinBenefitsLeaseTimer?.cancel();
+    _coinBenefitsLeaseTimer = null;
+    _serverCoinBenefitExpiries.clear();
+    _serverCoinBenefitOwner = null;
+    _serverCoinBenefitsVerifiedUntil = null;
+    notifyListeners();
+  }
+
+  /// Consume only an authenticated reward-state response; account mismatches
+  /// are ignored so a slow request cannot unlock another signed-in user.
+  /// Rights expire locally after 15 minutes unless renewed by the backend.
+  void applyServerCoinBenefitEntitlements(
+    List<dynamic>? entitlements, {
+    required String accountId,
+  }) {
+    if (_boundGoogleAuth?.account?.id != accountId) return;
+    _coinBenefitsLeaseTimer?.cancel();
+    _serverCoinBenefitExpiries.clear();
+    _serverCoinBenefitOwner = accountId;
+    final now = DateTime.now();
+    final verifiedUntil = now.add(const Duration(minutes: 15));
+    _serverCoinBenefitsVerifiedUntil = verifiedUntil;
+    for (final row in entitlements ?? const <dynamic>[]) {
+      if (row is! Map || row['status'] != 'active') continue;
+      final name = row['feature'];
+      final millis = row['expiresAtEpochMs'];
+      if (name is! String || !_allowedCoinBenefits.contains(name) ||
+          millis is! int || millis <= now.millisecondsSinceEpoch) {
+        continue;
+      }
+      final expiry = DateTime.fromMillisecondsSinceEpoch(millis);
+      _serverCoinBenefitExpiries[name] = expiry;
+    }
+    _coinBenefitsLeaseTimer = Timer(const Duration(minutes: 15), () {
+      _clearServerCoinBenefits();
+    });
+    notifyListeners();
+  }
+
+  /// A server grant is for one account, one known feature and one bounded
+  /// lease. A phone-side saved value, unknown benefit or expired grant fails.
+  bool isServerCoinBenefitActive(String benefit) {
+    if (!_allowedCoinBenefits.contains(benefit)) return false;
+    final account = _boundGoogleAuth?.account?.id;
+    if (account == null || account != _serverCoinBenefitOwner) return false;
+    final now = DateTime.now();
+    final until = _serverCoinBenefitsVerifiedUntil;
+    final expiry = _serverCoinBenefitExpiries[benefit];
+    return until != null && now.isBefore(until) &&
+        expiry != null && now.isBefore(expiry);
   }
 
   // 購入日時・商品IDは参考表示用の端末データ。
@@ -493,12 +560,14 @@ class PremiumService extends ChangeNotifier {
   int get maxProjectDurationSeconds =>
       isFeatureAvailable(PremiumFeature.unlimitedDuration) ? 7200 : 90;
 
-  bool isFeatureAvailable(PremiumFeature feature) => isPremium;
+  bool isFeatureAvailable(PremiumFeature feature) =>
+      isPremium || isServerCoinBenefitActive(feature.name);
 
   @override
   void dispose() {
     _boundGoogleAuth?.removeListener(_onGoogleAccountChanged);
     _coinPremiumExpiryTimer?.cancel();
+    _coinBenefitsLeaseTimer?.cancel();
     _playExpiryTimer?.cancel();
     _playRefreshTimer?.cancel();
     _subscription?.cancel();
