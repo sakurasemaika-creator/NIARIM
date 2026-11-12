@@ -29,12 +29,26 @@ beforeEach(()=>{
   send.mockReset();send.mockResolvedValue({});
   process.env.TABLE_NAME="unit-test-table";
   process.env.COIN_REDEMPTION_ENABLED="true";
+  process.env.COIN_REDEMPTION_REVIEW_APPROVED="true";
   process.env.COIN_PREMIUM_ANNUAL_REDEMPTION_ENABLED="true";
   process.env.COIN_FULL_PREMIUM_MONTH_COINS="55000";
   process.env.COIN_FULL_PREMIUM_YEAR_COINS="550000";
   process.env.COIN_PRICE_VERSION="v3-final-annual550000";
 });
 describe("flexible Full Premium duration redemption",()=>{
+  it("does not expose any spendable price before independent safety approval",async()=>{
+    process.env.COIN_REDEMPTION_REVIEW_APPROVED="false";
+    const quote=await getCoinRedemptionQuote(req());
+    expect(JSON.parse(quote.body??"{}")).toMatchObject({
+      enabled:false,priceCoins:null,
+    });
+    await expect(redeemCoins(req({
+      target:"fullPremium",duration:"hour",quantity:2,
+      requestId,priceVersion:"v3-final-annual550000",
+    }))).rejects.toMatchObject({code:"REDEMPTION_DISABLED"});
+    expect(send).not.toHaveBeenCalled();
+  });
+
   it("quotes hourly, daily, weekly and multi-month prices from the server",async()=>{
     const cases=[
       ["hour","2",1000],["day","2",5000],
