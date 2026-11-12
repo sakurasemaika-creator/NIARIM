@@ -46,7 +46,7 @@ class SettingsService extends ChangeNotifier {
   // Last visible set of PC dock windows, shared across all projects and
   // restored on every canvas open. Mobile overlay state stays independent.
   Set<CanvasDockPanel> _defaultDockedPanels = {
-    CanvasDockPanel.brush,
+    CanvasDockPanel.penSubTool,
     CanvasDockPanel.colorPicker,
     CanvasDockPanel.layer,
   };
@@ -334,9 +334,6 @@ class SettingsService extends ChangeNotifier {
   // saved physical left-side order, regardless of panel type or handedness.
   static const List<CanvasDockPanel> _defaultToolOptionDockOrder = [
     CanvasDockPanel.penSubTool,
-    CanvasDockPanel.brush,
-    CanvasDockPanel.tone,
-    CanvasDockPanel.stamp,
     CanvasDockPanel.onionSkin,
     CanvasDockPanel.ruler,
     CanvasDockPanel.filter,
@@ -353,11 +350,11 @@ class SettingsService extends ChangeNotifier {
 
   Future<void> setToolOptionDockOrder(List<CanvasDockPanel> order) async {
     await _pinDesktopDockLayout();
-    _toolOptionDockOrder = List.of(order);
+    _toolOptionDockOrder = uniqueCanonicalCanvasDocks(order);
     final prefs = await SharedPreferences.getInstance();
     await prefs.setStringList(
       'tool_option_dock_order',
-      order.map((e) => e.name).toList(),
+      _toolOptionDockOrder.map((e) => e.name).toList(),
     );
     notifyListeners();
   }
@@ -380,11 +377,11 @@ class SettingsService extends ChangeNotifier {
 
   Future<void> setRightDockOrder(List<CanvasDockPanel> order) async {
     await _pinDesktopDockLayout();
-    _rightDockOrder = List.of(order);
+    _rightDockOrder = uniqueCanonicalCanvasDocks(order);
     final prefs = await SharedPreferences.getInstance();
     await prefs.setStringList(
       'right_dock_order',
-      order.map((e) => e.name).toList(),
+      _rightDockOrder.map((e) => e.name).toList(),
     );
     notifyListeners();
   }
@@ -461,6 +458,8 @@ class SettingsService extends ChangeNotifier {
   }) async {
     // [toRight] now always means the physical right edge, regardless of hand.
     await _pinDesktopDockLayout();
+    panel = canonicalCanvasDock(panel);
+    before = before == null ? null : canonicalCanvasDock(before);
     final left = List<CanvasDockPanel>.of(_toolOptionDockOrder)..remove(panel);
     final right = List<CanvasDockPanel>.of(_rightDockOrder)..remove(panel);
     final target = toRight ? right : left;
@@ -860,7 +859,10 @@ class SettingsService extends ChangeNotifier {
       void appendUnique(List<CanvasDockPanel> target, Iterable<String> values) {
         for (final value in values) {
           final panel = byName[value];
-          if (panel != null && seen.add(panel)) target.add(panel);
+          if (panel != null) {
+            final canonical = canonicalCanvasDock(panel);
+            if (seen.add(canonical)) target.add(canonical);
+          }
         }
       }
 
@@ -930,6 +932,7 @@ class SettingsService extends ChangeNotifier {
       _defaultDockedPanels = dockedPanelNames
           .map((n) => map[n])
           .whereType<CanvasDockPanel>()
+          .map(canonicalCanvasDock)
           .toSet();
     }
     _twoFingerTap = _gestureActionFromName(
@@ -1123,10 +1126,11 @@ class SettingsService extends ChangeNotifier {
   /// PC/DeXモードで既定でドッキング表示するパネルの一覧を丸ごと入れ替える
   /// （ワークスペース設定＞PC版で既定で開くパネル）。
   Future<void> setDefaultDockedPanels(Set<CanvasDockPanel> panels) async {
-    if (setEquals(_defaultDockedPanels, panels)) return;
+    final canonical = panels.map(canonicalCanvasDock).toSet();
+    if (setEquals(_defaultDockedPanels, canonical)) return;
     // Publish the most recent user action in memory before the first await.
     // Rapidly opening two panels must not lose the earlier open/close change.
-    _defaultDockedPanels = Set.of(panels);
+    _defaultDockedPanels = canonical;
     await _pinDesktopDockLayout();
     final prefs = await SharedPreferences.getInstance();
     await prefs.setStringList(
