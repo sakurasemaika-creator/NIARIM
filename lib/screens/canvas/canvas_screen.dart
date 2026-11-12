@@ -490,6 +490,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
     setState(() {
       _pendingBrushOutlineEyedropper = completer;
       _showBrushPanel = false;
+      _showPenSubToolPanel = false;
     });
     return completer.future;
   }
@@ -1231,12 +1232,13 @@ class _CanvasScreenState extends State<CanvasScreen> {
   };
 
   void _setDockPanels(Set<CanvasDockPanel> panels) {
-    _showBrushPanel = panels.contains(CanvasDockPanel.brush);
+    final canonical = panels.map(canonicalCanvasDock).toSet();
+    _showBrushPanel = false;
     _showColorPicker = panels.contains(CanvasDockPanel.colorPicker);
     _showLayerPanel = panels.contains(CanvasDockPanel.layer);
-    _showTonePanel = panels.contains(CanvasDockPanel.tone);
-    _showStampPanel = panels.contains(CanvasDockPanel.stamp);
-    _showPenSubToolPanel = panels.contains(CanvasDockPanel.penSubTool);
+    _showTonePanel = false;
+    _showStampPanel = false;
+    _showPenSubToolPanel = canonical.contains(CanvasDockPanel.penSubTool);
     _showOnionSkinPanel = panels.contains(CanvasDockPanel.onionSkin);
     _showRulerPanel = panels.contains(CanvasDockPanel.ruler);
     _showFilterPanel = panels.contains(CanvasDockPanel.filter);
@@ -2193,11 +2195,11 @@ class _CanvasScreenState extends State<CanvasScreen> {
       _showColorAdjustPanel;
 
   bool _desktopPanelVisible(CanvasDockPanel p) => switch (p) {
-    CanvasDockPanel.brush => _showBrushPanel,
+    CanvasDockPanel.brush => false,
     CanvasDockPanel.colorPicker => _showColorPicker,
     CanvasDockPanel.layer => _showLayerPanel,
-    CanvasDockPanel.tone => _showTonePanel,
-    CanvasDockPanel.stamp => _showStampPanel,
+    CanvasDockPanel.tone => false,
+    CanvasDockPanel.stamp => false,
     CanvasDockPanel.penSubTool => _showPenSubToolPanel,
     CanvasDockPanel.onionSkin => _showOnionSkinPanel,
     CanvasDockPanel.ruler => _showRulerPanel,
@@ -2207,6 +2209,14 @@ class _CanvasScreenState extends State<CanvasScreen> {
     CanvasDockPanel.canvasPreview => _showCanvasPreviewPanel,
   };
   void _setDesktopPanelVisible(CanvasDockPanel p, bool visible) {
+    if (isLegacyMaterialDock(p)) {
+      _currentSubTool = switch (p) {
+        CanvasDockPanel.tone => PenSubTool.tone,
+        CanvasDockPanel.stamp => PenSubTool.stamp,
+        _ => PenSubTool.brush,
+      };
+    }
+    p = canonicalCanvasDock(p);
     setState(() {
       switch (p) {
         case CanvasDockPanel.brush:
@@ -2258,7 +2268,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
   }
 
   void _toggleDesktopOrMobileDockPanel(CanvasDockPanel panel) {
-    final next = !_desktopPanelVisible(panel);
+    final next = !_desktopPanelVisible(canonicalCanvasDock(panel));
     setState(_closeAllOverlayPanels);
     _setDesktopPanelVisible(panel, next);
   }
@@ -2311,6 +2321,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
       minimumContentHeight: switch (panel) {
         CanvasDockPanel.colorPicker => 310,
         CanvasDockPanel.canvasPreview => 220,
+        CanvasDockPanel.penSubTool => 520,
         CanvasDockPanel.brush => 460,
         _ => 260,
       },
@@ -2319,7 +2330,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
   }
 
   Widget _dockBody(CanvasDockPanel p) => switch (p) {
-    CanvasDockPanel.brush => _brushPanel(),
+    CanvasDockPanel.brush => _penSubToolPanel(),
     CanvasDockPanel.colorPicker => _colorPickerPanel(),
     CanvasDockPanel.layer => LayerPanel(
       projectId: widget.projectId,
@@ -2332,8 +2343,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
       onEditTextLayer: _onEditTextLayerTapped,
       onLayerSelected: (id) => setState(() => _currentLayerId = id),
     ),
-    CanvasDockPanel.tone => _tonePanel(),
-    CanvasDockPanel.stamp => _stampPanel(),
+    CanvasDockPanel.tone => _penSubToolPanel(),
+    CanvasDockPanel.stamp => _penSubToolPanel(),
     CanvasDockPanel.penSubTool => _penSubToolPanel(),
     CanvasDockPanel.onionSkin => _onionSkinPanel(),
     CanvasDockPanel.ruler => _rulerPanel(),
@@ -2785,23 +2796,9 @@ class _CanvasScreenState extends State<CanvasScreen> {
       });
     },
     onClose: () => _setDesktopPanelVisible(CanvasDockPanel.penSubTool, false),
-    // フル機能管理パネル（フォルダ・自作・検索・読み込み書き出し）
-    onManage: (subTool) {
-      setState(() {
-        _showPenSubToolPanel = false;
-        switch (subTool) {
-          case PenSubTool.brush:
-            _showBrushPanel = true;
-          case PenSubTool.tone:
-            _showTonePanel = true;
-          case PenSubTool.stamp:
-            _showStampPanel = true;
-          case PenSubTool.lassoFill:
-            break;
-        }
-      });
-      _persistDesktopDockVisibility();
-    },
+    // The full Brush/Tone/Stamp managers now live inside the tabbed panel.
+    // Preserve outline-color eyedropper while editing a copied brush.
+    onEyedropOutlineColor: _startBrushOutlineEyedropper,
   );
 
   Widget _onionSkinPanel() => OnionSkinPanel(
