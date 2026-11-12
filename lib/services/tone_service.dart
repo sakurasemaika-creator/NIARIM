@@ -421,16 +421,12 @@ class ToneService extends ChangeNotifier {
       tags: [AssetTagKeys.pixelArt, AssetTagKeys.gradient],
     ),
     // Existing 1px checker/grid/stripe/border and the 10–80 denier
-    // stockings remain in the list. Add the explicitly requested inverse
-    // masks with stable, migration-safe IDs.
+    // stockings remain in the list. Add the inverse grid mask: 1px dots
+    // separated by 1px in both directions (25% coverage). The checker
+    // inverse is only a phase shift, so it is intentionally not a preset.
     const Tone(
       id: 'Tone0063',
       name: 'ピクセル格子反転（1px）',
-      tags: [AssetTagKeys.pixelArt],
-    ),
-    const Tone(
-      id: 'Tone0064',
-      name: 'ピクセル市松反転（1px）',
       tags: [AssetTagKeys.pixelArt],
     ),
   ];
