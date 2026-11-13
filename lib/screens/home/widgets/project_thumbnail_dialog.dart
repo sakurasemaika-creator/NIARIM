@@ -60,16 +60,20 @@ class _ProjectThumbnailDialogState extends State<_ProjectThumbnailDialog> {
   void initState() {
     super.initState();
     mode = widget.project.thumbnailMode;
-    final selected = widget.project.thumbnailFrameSceneId ??
+    final selected =
+        widget.project.thumbnailFrameSceneId ??
         widget.project.thumbnailLastSceneId;
     final all = scenes;
     sceneId = all.any((s) => s.id == selected)
         ? selected
         : (all.isNotEmpty ? all.first.id : null);
     final count = scene?.frames.length ?? 0;
-    frameIndex = count == 0 ? 0 :
-        (widget.project.thumbnailFrameIndex ??
-         widget.project.thumbnailLastFrameIndex ?? 0).clamp(0, count - 1);
+    frameIndex = count == 0
+        ? 0
+        : (widget.project.thumbnailFrameIndex ??
+                  widget.project.thumbnailLastFrameIndex ??
+                  0)
+              .clamp(0, count - 1);
     if (mode == 'frame') {
       WidgetsBinding.instance.addPostFrameCallback((_) => _render());
     }
@@ -105,8 +109,12 @@ class _ProjectThumbnailDialogState extends State<_ProjectThumbnailDialog> {
       });
     } catch (_) {
       if (mounted && sequence == renderSequence) {
-        setState(() => error = localized(
-          'プレビューを表示できませんでした', 'Could not display preview'));
+        setState(
+          () => error = localized(
+            'プレビューを表示できませんでした',
+            'Could not display preview',
+          ),
+        );
       }
     }
   }
@@ -131,16 +139,13 @@ class _ProjectThumbnailDialogState extends State<_ProjectThumbnailDialog> {
     if (total < 2) return;
     setState(() => playing = true);
     final fps = widget.project.fps.clamp(1, 60);
-    timer = Timer.periodic(
-      Duration(milliseconds: (1000 / fps).round()),
-      (_) {
-        if (!mounted || mode != 'frame') {
-          _stop();
-          return;
-        }
-        _seek((frameIndex + 1) % total);
-      },
-    );
+    timer = Timer.periodic(Duration(milliseconds: (1000 / fps).round()), (_) {
+      if (!mounted || mode != 'frame') {
+        _stop();
+        return;
+      }
+      _seek((frameIndex + 1) % total);
+    });
   }
 
   void _setMode(String? next) {
@@ -156,12 +161,16 @@ class _ProjectThumbnailDialogState extends State<_ProjectThumbnailDialog> {
   Future<void> _chooseImage() async {
     try {
       final result = await FilePicker.platform.pickFiles(
-        type: FileType.image, withData: true);
+        type: FileType.image,
+        withData: true,
+      );
       if (result == null || result.files.isEmpty) return;
       final selected = result.files.first;
-      final bytes = selected.bytes ??
-          (selected.path == null ? null :
-              await File(selected.path!).readAsBytes());
+      final bytes =
+          selected.bytes ??
+          (selected.path == null
+              ? null
+              : await File(selected.path!).readAsBytes());
       if (bytes == null || bytes.isEmpty || bytes.length > 10 * 1024 * 1024) {
         throw const FormatException('Invalid image');
       }
@@ -178,8 +187,9 @@ class _ProjectThumbnailDialogState extends State<_ProjectThumbnailDialog> {
       });
     } catch (_) {
       if (mounted) {
-        setState(() => error = localized(
-            '画像を読み込めませんでした', 'Could not load image'));
+        setState(
+          () => error = localized('画像を読み込めませんでした', 'Could not load image'),
+        );
       }
     }
   }
@@ -200,8 +210,7 @@ class _ProjectThumbnailDialogState extends State<_ProjectThumbnailDialog> {
       if (mounted) {
         setState(() {
           saving = false;
-          error = localized('サムネイルを保存できませんでした',
-              'Could not save thumbnail');
+          error = localized('サムネイルを保存できませんでした', 'Could not save thumbnail');
         });
       }
     }
@@ -231,7 +240,8 @@ class _ProjectThumbnailDialogState extends State<_ProjectThumbnailDialog> {
           },
         ),
       AspectRatio(
-        aspectRatio: widget.project.exportWidth /
+        aspectRatio:
+            widget.project.exportWidth /
             widget.project.exportHeight.clamp(1, 100000),
         child: Container(
           key: const Key('projectThumbnailFramePreview'),
@@ -242,18 +252,24 @@ class _ProjectThumbnailDialogState extends State<_ProjectThumbnailDialog> {
         ),
       ),
       const SizedBox(height: 4),
-      Text(localized('現在のフレーム', 'Current frame') +
-          ': ${total == 0 ? 0 : frameIndex + 1} / $total',
-          key: const Key('projectThumbnailFrameCount'),
-          textAlign: TextAlign.center),
+      Text(
+        localized('現在のフレーム', 'Current frame') +
+            ': ${total == 0 ? 0 : frameIndex + 1} / $total',
+        key: const Key('projectThumbnailFrameCount'),
+        textAlign: TextAlign.center,
+      ),
       Slider(
         key: const Key('projectThumbnailSeek'),
         value: total > 0 ? frameIndex.toDouble() : 0,
         min: 0,
         max: (total > 1 ? total - 1 : 1).toDouble(),
         divisions: total > 1 ? total - 1 : 1,
-        onChanged: total < 2 || saving ? null :
-            (value) { _stop(); _seek(value.round()); },
+        onChanged: total < 2 || saving
+            ? null
+            : (value) {
+                _stop();
+                _seek(value.round());
+              },
       ),
       Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -262,14 +278,23 @@ class _ProjectThumbnailDialogState extends State<_ProjectThumbnailDialog> {
             key: const Key('projectThumbnailFirstFrame'),
             tooltip: localized('最初のフレーム', 'First frame'),
             icon: const Icon(Icons.skip_previous),
-            onPressed: total == 0 ? null : () { _stop(); _seek(0); },
+            onPressed: total == 0
+                ? null
+                : () {
+                    _stop();
+                    _seek(0);
+                  },
           ),
           IconButton(
             key: const Key('projectThumbnailPreviousFrame'),
             tooltip: localized('1フレーム戻る', 'Previous frame'),
             icon: const Icon(Icons.fast_rewind),
-            onPressed: total == 0 ? null :
-                () { _stop(); _seek(frameIndex - 1); },
+            onPressed: total == 0
+                ? null
+                : () {
+                    _stop();
+                    _seek(frameIndex - 1);
+                  },
           ),
           IconButton(
             key: const Key('projectThumbnailPlayPause'),
@@ -283,15 +308,23 @@ class _ProjectThumbnailDialogState extends State<_ProjectThumbnailDialog> {
             key: const Key('projectThumbnailNextFrame'),
             tooltip: localized('1フレーム進む', 'Next frame'),
             icon: const Icon(Icons.fast_forward),
-            onPressed: total == 0 ? null :
-                () { _stop(); _seek(frameIndex + 1); },
+            onPressed: total == 0
+                ? null
+                : () {
+                    _stop();
+                    _seek(frameIndex + 1);
+                  },
           ),
           IconButton(
             key: const Key('projectThumbnailLastFrame'),
             tooltip: localized('最後のフレーム', 'Last frame'),
             icon: const Icon(Icons.skip_next),
-            onPressed: total == 0 ? null :
-                () { _stop(); _seek(total - 1); },
+            onPressed: total == 0
+                ? null
+                : () {
+                    _stop();
+                    _seek(total - 1);
+                  },
           ),
         ],
       ),
@@ -315,8 +348,12 @@ class _ProjectThumbnailDialogState extends State<_ProjectThumbnailDialog> {
       ],
       if (customBytes != null)
         Image.memory(
-          customBytes!, key: const Key('projectThumbnailCustomPreview'),
-          height: 120, width: double.infinity, fit: BoxFit.contain),
+          customBytes!,
+          key: const Key('projectThumbnailCustomPreview'),
+          height: 120,
+          width: double.infinity,
+          fit: BoxFit.contain,
+        ),
     ],
   );
 
@@ -334,35 +371,37 @@ class _ProjectThumbnailDialogState extends State<_ProjectThumbnailDialog> {
           children: [
             RadioGroup<String>(
               groupValue: mode,
-              onChanged: (value) { if (!saving) _setMode(value); },
+              onChanged: (value) {
+                if (!saving) _setMode(value);
+              },
               child: Column(
                 children: [
                   RadioListTile<String>(
                     key: const Key('projectThumbnailLatest'),
                     contentPadding: EdgeInsets.zero,
-                    title: Text(localized('最後に保存したフレーム',
-                        'Last saved frame')),
+                    title: Text(localized('最後に保存したフレーム', 'Last saved frame')),
                     value: 'latest',
                   ),
                   RadioListTile<String>(
                     key: const Key('projectThumbnailFrame'),
                     contentPadding: EdgeInsets.zero,
-                    title: Text(localized('フレームを指定する',
-                        'Select a frame')),
+                    title: Text(localized('フレームを指定する', 'Select a frame')),
                     value: 'frame',
                   ),
                   RadioListTile<String>(
                     key: const Key('projectThumbnailCustom'),
                     contentPadding: EdgeInsets.zero,
-                    title: Text(localized('端末から画像を読み込む',
-                        'Choose image from device')),
+                    title: Text(
+                      localized('端末から画像を読み込む', 'Choose image from device'),
+                    ),
                     value: 'custom',
                   ),
                   RadioListTile<String>(
                     key: const Key('projectThumbnailNone'),
                     contentPadding: EdgeInsets.zero,
-                    title: Text(localized('サムネイル表示しない',
-                        'Do not show thumbnail')),
+                    title: Text(
+                      localized('サムネイル表示しない', 'Do not show thumbnail'),
+                    ),
                     value: 'none',
                   ),
                 ],
@@ -380,21 +419,32 @@ class _ProjectThumbnailDialogState extends State<_ProjectThumbnailDialog> {
             if (error != null)
               Padding(
                 padding: const EdgeInsets.only(top: 8),
-                child: Text(error!, style: TextStyle(color: theme.colorScheme.error)),
+                child: Text(
+                  error!,
+                  style: TextStyle(color: theme.colorScheme.error),
+                ),
               ),
           ],
         ),
       ),
       actions: [
         TextButton(
-          onPressed: saving ? null : () { _stop(); Navigator.pop(context); },
+          onPressed: saving
+              ? null
+              : () {
+                  _stop();
+                  Navigator.pop(context);
+                },
           child: Text(localized('キャンセル', 'Cancel')),
         ),
         FilledButton(
           key: const Key('projectThumbnailApply'),
-          onPressed: saving || (mode == 'frame' && total == 0) ||
+          onPressed:
+              saving ||
+                  (mode == 'frame' && total == 0) ||
                   (mode == 'custom' && customBytes == null)
-              ? null : _apply,
+              ? null
+              : _apply,
           child: Text(localized('適用', 'Apply')),
         ),
       ],

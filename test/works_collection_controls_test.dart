@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -12,14 +13,16 @@ import 'package:niarim/screens/home/widgets/exported_work_card.dart';
 import 'package:niarim/widgets/sort_mode_control.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
 import 'helpers/first_use_tooltips.dart';
 import 'helpers/load_app_fonts.dart';
 import 'helpers/pump_real_async.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
-  testWidgets('works uses project-like sort, view mode and contextual menus',
-      (tester) async {
+  testWidgets('works uses project-like sort, view mode and contextual menus', (
+    tester,
+  ) async {
     SharedPreferences.setMockInitialValues({
       'first_launch': false,
       'language': 'ja',
@@ -80,9 +83,11 @@ void main() {
     await tester.ensureVisible(worksTab);
     await tester.tap(worksTab);
     await pumpRealAsync(tester, const Duration(milliseconds: 600));
-    for (var attempt = 0;
-        attempt < 8 && find.byType(ExportedWorkCard).evaluate().isEmpty;
-        attempt++) {
+    for (
+      var attempt = 0;
+      attempt < 8 && find.byType(ExportedWorkCard).evaluate().isEmpty;
+      attempt++
+    ) {
       await pumpRealAsync(tester, const Duration(milliseconds: 200));
     }
     expect(find.byType(ExportedWorkCard), findsNWidgets(3));
@@ -103,23 +108,31 @@ void main() {
     // Search is now available in every Home tab, so size controls share
     // identical coordinates as well as dimensions.
     expect(worksSizeButtonRect.left, closeTo(projectSizeButtonRect.left, 1));
-    expect(find.text(l10n.homeSortFieldUpdated), findsOneWidget,
-        reason: 'Works should display the same readable sort label as Projects');
+    expect(
+      find.text(l10n.homeSortFieldUpdated),
+      findsOneWidget,
+      reason: 'Works should display the same readable sort label as Projects',
+    );
     // When the field label fits, the small clock icon fallback is not needed.
-    expect(find.descendant(
-      of: find.byType(SortModeControl),
-      matching: find.byIcon(Icons.update),
-    ), findsNothing);
+    expect(
+      find.descendant(
+        of: find.byType(SortModeControl),
+        matching: find.byIcon(Icons.update),
+      ),
+      findsNothing,
+    );
 
     Finder card(String filename) => find.byWidgetPredicate(
       (w) => w is ExportedWorkCard && w.name == filename,
     );
     List<String> visualOrder() {
       final names = ['Alpha.gif', 'Bravo.gif', 'Charlie.gif'];
-      names.sort((a, b) =>
-          tester.getTopLeft(card(a)).dy.compareTo(
-            tester.getTopLeft(card(b)).dy,
-          ));
+      names.sort(
+        (a, b) => tester
+            .getTopLeft(card(a))
+            .dy
+            .compareTo(tester.getTopLeft(card(b)).dy),
+      );
       return names;
     }
 
@@ -156,10 +169,13 @@ void main() {
     }
     // The Home tab bar includes its Trash icon; only the export card itself
     // must omit an inline delete button.
-    expect(find.descendant(
-      of: find.byType(ExportedWorkCard).first,
-      matching: find.byIcon(Icons.delete_outline),
-    ), findsNothing);
+    expect(
+      find.descendant(
+        of: find.byType(ExportedWorkCard).first,
+        matching: find.byIcon(Icons.delete_outline),
+      ),
+      findsNothing,
+    );
     expect(tester.takeException(), isNull);
   }, timeout: const Timeout(Duration(minutes: 3)));
 }

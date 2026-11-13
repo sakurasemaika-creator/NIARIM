@@ -15,10 +15,10 @@ class CoinRedemptionAttemptStore {
 
   static String _key(String accountId, String duration, int quantity) =>
       duration == 'month' && quantity == 1
-          ? 'pending_coin_redemption_full_premium_v1_$accountId'
-          : duration == 'month' && quantity == 12
-          ? 'pending_coin_redemption_full_premium_v1_12m_$accountId'
-          : 'pending_coin_redemption_full_premium_v2_${duration}_${quantity}_$accountId';
+      ? 'pending_coin_redemption_full_premium_v1_$accountId'
+      : duration == 'month' && quantity == 12
+      ? 'pending_coin_redemption_full_premium_v1_12m_$accountId'
+      : 'pending_coin_redemption_full_premium_v2_${duration}_${quantity}_$accountId';
 
   static String _newUuid() {
     final random = Random.secure();
@@ -45,8 +45,9 @@ class CoinRedemptionAttemptStore {
   }) async {
     final unit = duration ?? 'month';
     final amount = quantity ?? months;
-    if (!const {'hour','day','week','month'}.contains(unit) ||
-        amount < 1 || amount > 120) {
+    if (!const {'hour', 'day', 'week', 'month'}.contains(unit) ||
+        amount < 1 ||
+        amount > 120) {
       throw ArgumentError('Invalid Premium duration or quantity');
     }
     if (accountId.isEmpty || serverPriceVersion.isEmpty) {

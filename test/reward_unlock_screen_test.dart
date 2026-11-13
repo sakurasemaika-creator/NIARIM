@@ -14,27 +14,30 @@ void main() {
     final premium = PremiumService();
     final settings = SettingsService();
     final auth = GoogleAuthService();
-    await tester.pumpWidget(MultiProvider(
-      providers: [
-        ChangeNotifierProvider<PremiumService>.value(value: premium),
-        ChangeNotifierProvider<SettingsService>.value(value: settings),
-        ChangeNotifierProvider<GoogleAuthService>.value(value: auth),
-      ],
-      child: const MaterialApp(
-        locale: Locale('en'),
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        home: RewardUnlockScreen(),
+    await tester.pumpWidget(
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider<PremiumService>.value(value: premium),
+          ChangeNotifierProvider<SettingsService>.value(value: settings),
+          ChangeNotifierProvider<GoogleAuthService>.value(value: auth),
+        ],
+        child: const MaterialApp(
+          locale: Locale('en'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: RewardUnlockScreen(),
+        ),
       ),
-    ));
+    );
     await tester.pumpAndSettle();
 
     final picker = find.byKey(const Key('rewardDurationButton'));
     await tester.tap(picker);
     await tester.pumpAndSettle();
     final monthly = find.byType(ExpansionTile).last;
-    await tester.tap(find.descendant(
-      of: monthly, matching: find.byType(ListTile)).first);
+    await tester.tap(
+      find.descendant(of: monthly, matching: find.byType(ListTile)).first,
+    );
     await tester.pumpAndSettle();
     final twelve = find.byKey(const ValueKey('rewardDuration_month_12'));
     await tester.ensureVisible(twelve);
@@ -48,18 +51,26 @@ void main() {
     await tester.tap(full);
     await tester.pumpAndSettle();
     final price = find.descendant(
-      of: full, matching: find.textContaining('550000 coins'));
+      of: full,
+      matching: find.textContaining('550000 coins'),
+    );
     expect(price, findsOneWidget);
     expect(find.textContaining('660000 coins'), findsNothing);
     final total = find.byKey(const Key('rewardTotalCoins'));
     // The summary card is lazily built below the benefit list.
     await tester.scrollUntilVisible(
-      total, 260, scrollable: find.byType(Scrollable).first,
+      total,
+      260,
+      scrollable: find.byType(Scrollable).first,
     );
     await tester.pumpAndSettle();
     expect(tester.widget<Text>(total).data, contains('550000 coins'));
-    expect(tester.widget<OutlinedButton>(
-      find.byKey(const Key('rewardRedeemButton'))).onPressed, isNull);
+    expect(
+      tester
+          .widget<OutlinedButton>(find.byKey(const Key('rewardRedeemButton')))
+          .onPressed,
+      isNull,
+    );
 
     await tester.pumpWidget(const SizedBox.shrink());
     premium.dispose();

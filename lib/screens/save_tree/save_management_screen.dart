@@ -363,9 +363,7 @@ class _GameStyleSlotScreen extends StatelessWidget {
         ),
         // Shared SnackBarThemeData already removes the thick shadow.
         // Keep this intentionally smaller corner radius.
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
     );
   }
@@ -576,10 +574,7 @@ class _GameSaveSlotTile extends StatelessWidget {
                       ],
                     ),
                   ),
-                  if (!stacked) ...[
-                    const SizedBox(width: 16),
-                    actions,
-                  ],
+                  if (!stacked) ...[const SizedBox(width: 16), actions],
                 ],
               );
               return Container(
@@ -643,9 +638,7 @@ class _SlotActionButton extends StatelessWidget {
       style: IconButton.styleFrom(
         backgroundColor: scheme.surfaceContainerHighest,
         side: BorderSide(color: scheme.outlineVariant),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
       iconSize: 28,
       icon: Icon(
@@ -693,10 +686,8 @@ class _SlotThumbnail extends StatelessWidget {
   }
 }
 
-Future<Uint8List?> _generateThumbnail(
-  ProjectService ps,
-  String projectId,
-) => captureSaveThumbnail(ps, projectId);
+Future<Uint8List?> _generateThumbnail(ProjectService ps, String projectId) =>
+    captureSaveThumbnail(ps, projectId);
 
 String _formatDate(DateTime dt) =>
     '${dt.year}/${dt.month.toString().padLeft(2, '0')}/${dt.day.toString().padLeft(2, '0')} '

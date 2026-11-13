@@ -997,7 +997,8 @@ class DrawingEngine {
             // Built-in smooth brushes and legacy files pass zero and retain
             // exactly the previous pixels.
             if (grainStrength > 0 && pixelAlpha > 0) {
-              var grain = ((tileOriginX + px) * 73856093) ^
+              var grain =
+                  ((tileOriginX + px) * 73856093) ^
                   ((tileOriginY + py) * 19349663);
               grain = (grain ^ (grain >> 13)) * 1274126177;
               final noise = (grain & 255) / 255.0;

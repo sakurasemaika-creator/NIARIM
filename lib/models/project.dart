@@ -27,6 +27,7 @@ class Project {
   final bool isSharedImport;
   final bool isFavorite;
   final String? thumbnailPath;
+
   /// latest / frame / custom / none. Older projects default to latest.
   final String thumbnailMode;
   final String? thumbnailFrameSceneId;
@@ -131,13 +132,18 @@ class Project {
           : thumbnailPath as String?,
       thumbnailMode: thumbnailMode ?? this.thumbnailMode,
       thumbnailFrameSceneId: identical(thumbnailFrameSceneId, _projectSentinel)
-          ? this.thumbnailFrameSceneId : thumbnailFrameSceneId as String?,
+          ? this.thumbnailFrameSceneId
+          : thumbnailFrameSceneId as String?,
       thumbnailFrameIndex: identical(thumbnailFrameIndex, _projectSentinel)
-          ? this.thumbnailFrameIndex : thumbnailFrameIndex as int?,
+          ? this.thumbnailFrameIndex
+          : thumbnailFrameIndex as int?,
       thumbnailLastSceneId: identical(thumbnailLastSceneId, _projectSentinel)
-          ? this.thumbnailLastSceneId : thumbnailLastSceneId as String?,
-      thumbnailLastFrameIndex: identical(thumbnailLastFrameIndex, _projectSentinel)
-          ? this.thumbnailLastFrameIndex : thumbnailLastFrameIndex as int?,
+          ? this.thumbnailLastSceneId
+          : thumbnailLastSceneId as String?,
+      thumbnailLastFrameIndex:
+          identical(thumbnailLastFrameIndex, _projectSentinel)
+          ? this.thumbnailLastFrameIndex
+          : thumbnailLastFrameIndex as int?,
       sizeBytes: sizeBytes ?? this.sizeBytes,
       tags: tags ?? this.tags,
       exportWidth: exportWidth ?? this.exportWidth,

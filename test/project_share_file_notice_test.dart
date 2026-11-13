@@ -86,9 +86,8 @@ void main() {
     ];
 
     Future<void> clearSnackBars() async {
-      ScaffoldMessenger.of(
-        tester.element(find.byType(Scaffold).first),
-      ).clearSnackBars();
+      ScaffoldMessenger.of(tester.element(find.byType(Scaffold).first))
+          .clearSnackBars();
       await tester.pump();
       await tester.pump(const Duration(seconds: 1));
     }

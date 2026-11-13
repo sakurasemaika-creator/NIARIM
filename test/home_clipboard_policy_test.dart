@@ -9,13 +9,18 @@ void main() {
       for (final destination in HomePasteArea.values.where(
         (kind) => kind != HomePasteArea.trash,
       )) {
-        expect(HomePastePolicy.check(
-          source: source, destination: destination,
-          containsFiles: true, containsFolders: false,
-        ), source == destination
-            ? HomePasteDecision.allowed
-            : HomePasteDecision.incompatibleFormat,
-          reason: '$source -> $destination');
+        expect(
+          HomePastePolicy.check(
+            source: source,
+            destination: destination,
+            containsFiles: true,
+            containsFolders: false,
+          ),
+          source == destination
+              ? HomePasteDecision.allowed
+              : HomePasteDecision.incompatibleFormat,
+          reason: '$source -> $destination',
+        );
       }
     }
   });
@@ -27,10 +32,15 @@ void main() {
       for (final destination in HomePasteArea.values.where(
         (kind) => kind != HomePasteArea.trash,
       )) {
-        expect(HomePastePolicy.check(
-          source: source, destination: destination,
-          containsFiles: false, containsFolders: true,
-        ), HomePasteDecision.allowed);
+        expect(
+          HomePastePolicy.check(
+            source: source,
+            destination: destination,
+            containsFiles: false,
+            containsFolders: true,
+          ),
+          HomePasteDecision.allowed,
+        );
       }
     }
   });
@@ -39,27 +49,47 @@ void main() {
     for (final source in HomePasteArea.values.where(
       (kind) => kind != HomePasteArea.trash,
     )) {
-      expect(HomePastePolicy.check(
-        source: source, destination: HomePasteArea.trash,
-        containsFiles: true, containsFolders: true,
-      ), HomePasteDecision.allowed);
+      expect(
+        HomePastePolicy.check(
+          source: source,
+          destination: HomePasteArea.trash,
+          containsFiles: true,
+          containsFolders: true,
+        ),
+        HomePasteDecision.allowed,
+      );
     }
   });
 
   test('trash does not perform an unconfirmed automatic restore', () {
-    expect(HomePastePolicy.check(
-      source: HomePasteArea.trash, destination: HomePasteArea.projects,
-      containsFiles: true, containsFolders: false,
-    ), HomePasteDecision.unsupportedTrashRestore);
-    expect(HomePastePolicy.check(
-      source: HomePasteArea.trash, destination: HomePasteArea.projects,
-      originalArea: HomePasteArea.projects,
-      containsFiles: true, containsFolders: false,
-    ), HomePasteDecision.allowed);
-    expect(HomePastePolicy.check(
-      source: HomePasteArea.trash, destination: HomePasteArea.works,
-      originalArea: HomePasteArea.projects,
-      containsFiles: true, containsFolders: false,
-    ), HomePasteDecision.unsupportedTrashRestore);
+    expect(
+      HomePastePolicy.check(
+        source: HomePasteArea.trash,
+        destination: HomePasteArea.projects,
+        containsFiles: true,
+        containsFolders: false,
+      ),
+      HomePasteDecision.unsupportedTrashRestore,
+    );
+    expect(
+      HomePastePolicy.check(
+        source: HomePasteArea.trash,
+        destination: HomePasteArea.projects,
+        originalArea: HomePasteArea.projects,
+        containsFiles: true,
+        containsFolders: false,
+      ),
+      HomePasteDecision.allowed,
+    );
+    expect(
+      HomePastePolicy.check(
+        source: HomePasteArea.trash,
+        destination: HomePasteArea.works,
+        originalArea: HomePasteArea.projects,
+        containsFiles: true,
+        containsFolders: false,
+      ),
+      HomePasteDecision.unsupportedTrashRestore,
+    );
   });
 }

@@ -165,8 +165,7 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
   Future<void> _refreshBookmarks() async {
     if (_refreshingBookmarks) return;
     final service = context.read<CommunityService>();
-    if (!service.isBackendConnected ||
-        !service.isOwnAuthor(widget.authorId)) {
+    if (!service.isBackendConnected || !service.isOwnAuthor(widget.authorId)) {
       return;
     }
     _refreshingBookmarks = true;
@@ -351,7 +350,9 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
                             ),
                             if (isSelf)
                               InkWell(
-                                key: const Key('communityOwnFollowingCountButton'),
+                                key: const Key(
+                                  'communityOwnFollowingCountButton',
+                                ),
                                 borderRadius: BorderRadius.circular(6),
                                 onTap: () => Navigator.of(context).push(
                                   adMockMaterialPageRoute<void>(
@@ -468,44 +469,44 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
                           child: SingleChildScrollView(
                             controller: _authorWorksScroll,
                             physics: const AlwaysScrollableScrollPhysics(),
-                          child: filteredWorks.isEmpty
-                              ? Column(
-                                  children: [
-                                    Padding(
-                                      padding: const EdgeInsets.all(32),
-                                      child: Center(
-                                        child: Text(
-                                          l10n.communityNoWorksMessage,
-                                          style: TextStyle(
-                                            color: scheme.onSurfaceVariant,
+                            child: filteredWorks.isEmpty
+                                ? Column(
+                                    children: [
+                                      Padding(
+                                        padding: const EdgeInsets.all(32),
+                                        child: Center(
+                                          child: Text(
+                                            l10n.communityNoWorksMessage,
+                                            style: TextStyle(
+                                              color: scheme.onSurfaceVariant,
+                                            ),
                                           ),
                                         ),
                                       ),
-                                    ),
-                                    if (communityService.hasMoreAuthor(
-                                      widget.authorId,
-                                    ))
-                                      TextButton.icon(
-                                        key: const Key(
-                                          'communityAuthorLoadNextPage',
+                                      if (communityService.hasMoreAuthor(
+                                        widget.authorId,
+                                      ))
+                                        TextButton.icon(
+                                          key: const Key(
+                                            'communityAuthorLoadNextPage',
+                                          ),
+                                          onPressed: _loadingMoreWorks
+                                              ? null
+                                              : _loadMoreAuthorWorks,
+                                          icon: const Icon(Icons.expand_more),
+                                          label: Text(
+                                            MaterialLocalizations.of(context)
+                                                .moreButtonTooltip,
+                                          ),
                                         ),
-                                        onPressed: _loadingMoreWorks
-                                            ? null
-                                            : _loadMoreAuthorWorks,
-                                        icon: const Icon(Icons.expand_more),
-                                        label: Text(
-                                          MaterialLocalizations.of(context)
-                                              .moreButtonTooltip,
-                                        ),
-                                      ),
-                                  ],
-                                )
-                              : CommunityWorkGrid(
-                                  works: filteredWorks,
-                                  bookmarkedIds: bookmarkedIds,
-                                  onTapWork: openWork,
-                                  onToggleBookmark: toggleBookmark,
-                                ),
+                                    ],
+                                  )
+                                : CommunityWorkGrid(
+                                    works: filteredWorks,
+                                    bookmarkedIds: bookmarkedIds,
+                                    onTapWork: openWork,
+                                    onToggleBookmark: toggleBookmark,
+                                  ),
                           ),
                         ),
                         // Private bookmarks are visible to their owner only.
@@ -518,20 +519,20 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
                             controller: _bookmarksScroll,
                             physics: const AlwaysScrollableScrollPhysics(),
                             child: bookmarkedWorks.isEmpty
-                              ? Padding(
-                                  padding: const EdgeInsets.all(32),
-                                  child: Center(
-                                    child: Text(
-                                      l10n.communityBookmarksEmptyMessage,
+                                ? Padding(
+                                    padding: const EdgeInsets.all(32),
+                                    child: Center(
+                                      child: Text(
+                                        l10n.communityBookmarksEmptyMessage,
+                                      ),
                                     ),
+                                  )
+                                : CommunityWorkGrid(
+                                    works: bookmarkedWorks,
+                                    bookmarkedIds: bookmarkedIds,
+                                    onTapWork: openWork,
+                                    onToggleBookmark: toggleBookmark,
                                   ),
-                                )
-                              : CommunityWorkGrid(
-                                  works: bookmarkedWorks,
-                                  bookmarkedIds: bookmarkedIds,
-                                  onTapWork: openWork,
-                                  onToggleBookmark: toggleBookmark,
-                                ),
                           ),
                         ),
                       ],
@@ -545,38 +546,38 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
                         controller: _authorWorksScroll,
                         physics: const AlwaysScrollableScrollPhysics(),
                         child: filteredWorks.isEmpty
-                          ? Column(
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.all(32),
-                                  child: Center(
-                                    child: Text(l10n.communityNoWorksMessage),
-                                  ),
-                                ),
-                                if (communityService.hasMoreAuthor(
-                                  widget.authorId,
-                                ))
-                                  TextButton.icon(
-                                    key: const Key(
-                                      'communityAuthorLoadNextPage',
-                                    ),
-                                    onPressed: _loadingMoreWorks
-                                        ? null
-                                        : _loadMoreAuthorWorks,
-                                    icon: const Icon(Icons.expand_more),
-                                    label: Text(
-                                      MaterialLocalizations.of(context)
-                                          .moreButtonTooltip,
+                            ? Column(
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.all(32),
+                                    child: Center(
+                                      child: Text(l10n.communityNoWorksMessage),
                                     ),
                                   ),
-                              ],
-                            )
-                          : CommunityWorkGrid(
-                              works: filteredWorks,
-                              bookmarkedIds: bookmarkedIds,
-                              onTapWork: openWork,
-                              onToggleBookmark: toggleBookmark,
-                            ),
+                                  if (communityService.hasMoreAuthor(
+                                    widget.authorId,
+                                  ))
+                                    TextButton.icon(
+                                      key: const Key(
+                                        'communityAuthorLoadNextPage',
+                                      ),
+                                      onPressed: _loadingMoreWorks
+                                          ? null
+                                          : _loadMoreAuthorWorks,
+                                      icon: const Icon(Icons.expand_more),
+                                      label: Text(
+                                        MaterialLocalizations.of(context)
+                                            .moreButtonTooltip,
+                                      ),
+                                    ),
+                                ],
+                              )
+                            : CommunityWorkGrid(
+                                works: filteredWorks,
+                                bookmarkedIds: bookmarkedIds,
+                                onTapWork: openWork,
+                                onToggleBookmark: toggleBookmark,
+                              ),
                       ),
                     ),
             ),

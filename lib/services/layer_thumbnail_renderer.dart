@@ -31,12 +31,18 @@ Future<ui.Image> renderLayerThumbnail(
     final paint = ui.Paint()
       ..filterQuality = ui.FilterQuality.medium
       ..color = ui.Color.fromARGB(
-        (opacity.clamp(0, 100) * 255 / 100).round(), 255, 255, 255,
+        (opacity.clamp(0, 100) * 255 / 100).round(),
+        255,
+        255,
+        255,
       );
     canvas.drawImageRect(
       layerImage,
       ui.Rect.fromLTWH(
-        0, 0, layerImage.width.toDouble(), layerImage.height.toDouble(),
+        0,
+        0,
+        layerImage.width.toDouble(),
+        layerImage.height.toDouble(),
       ),
       rect,
       paint,

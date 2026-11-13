@@ -1448,8 +1448,7 @@ class BrushService extends ChangeNotifier {
   static Object? _packBrushQr(Object? value, Object? schema) {
     if (schema is Map && value is Map) {
       return [
-        for (final key in schema.keys)
-          _packBrushQr(value[key], schema[key]),
+        for (final key in schema.keys) _packBrushQr(value[key], schema[key]),
       ];
     }
     return value;
@@ -1463,8 +1462,10 @@ class BrushService extends ChangeNotifier {
       final result = <String, dynamic>{};
       var index = 0;
       for (final entry in schema.entries) {
-        result[entry.key.toString()] =
-            _unpackBrushQr(value[index++], entry.value);
+        result[entry.key.toString()] = _unpackBrushQr(
+          value[index++],
+          entry.value,
+        );
       }
       return result;
     }
@@ -1572,9 +1573,9 @@ class BrushService extends ChangeNotifier {
     final archive = ZipDecoder().decodeBytes(bytes);
     final dataFile = archive.findFile(_bundleDataFile);
     if (dataFile == null) throw const FormatException('data.json not found');
-    final json =
-        jsonDecode(utf8.decode(dataFile.content as List<int>))
-            as Map<String, dynamic>;
+    final json = jsonDecode(
+      utf8.decode(dataFile.content as List<int>),
+    ) as Map<String, dynamic>;
     final imported = Brush.fromJson(json);
     final id = 'Brush${DateTime.now().millisecondsSinceEpoch}';
     final variantFiles =

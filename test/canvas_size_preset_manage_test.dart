@@ -203,9 +203,9 @@ void main() {
     expect(settings.customSizePresets.single.height, 1920);
 
     final prefs = await SharedPreferences.getInstance();
-    final saved =
-        jsonDecode(prefs.getStringList('custom_size_presets')!.single)
-            as Map<String, dynamic>;
+    final saved = jsonDecode(
+      prefs.getStringList('custom_size_presets')!.single,
+    ) as Map<String, dynamic>;
     expect(saved['width'], 640);
     expect(saved['height'], 1920);
   });

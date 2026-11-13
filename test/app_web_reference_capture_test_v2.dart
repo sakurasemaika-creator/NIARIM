@@ -332,12 +332,14 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 400));
       await tester.pump();
-      final displayedTheme =
-          Theme.of(tester.element(find.byType(Scaffold).first));
+      final displayedTheme = Theme.of(
+        tester.element(find.byType(Scaffold).first),
+      );
       expect(
         displayedTheme.colorScheme.primary,
         accent,
-        reason: 'Captured app theme must match the website frame for $name variant ${variant + 1}',
+        reason:
+            'Captured app theme must match the website frame for $name variant ${variant + 1}',
       );
 
       expect(find.byType(AdBannerWidget, skipOffstage: false), findsNothing);
@@ -354,8 +356,9 @@ void main() {
       );
 
       Future<Uint8List> renderPng(double scale) async {
-        final boundary = screenshotKey.currentContext!.findRenderObject()
-            as RenderRepaintBoundary;
+        final boundary =
+            screenshotKey.currentContext!.findRenderObject()
+                as RenderRepaintBoundary;
         return (await tester.runAsync(() async {
           final image = await boundary.toImage(pixelRatio: scale);
           final data = await image.toByteData(format: ui.ImageByteFormat.png);
@@ -369,8 +372,7 @@ void main() {
       // SP is rendered at the actual 320x569 logical screen, but saved at
       // retina resolution for legible website zooming.
       final phoneBytes = await renderPng(2.0);
-      File('${dir.path}/webref_$name$suffix.png')
-          .writeAsBytesSync(phoneBytes);
+      File('${dir.path}/webref_$name$suffix.png').writeAsBytesSync(phoneBytes);
 
       // Capture the EXACT same Flutter route/palette at PC/DeX width, not an
       // enlarged smartphone screenshot or a CSS approximation.

@@ -34,13 +34,18 @@ void main() {
     final service = BrushService();
     await service.init();
     final original = service.brushes.first;
-    service.addBrush(original.copyWith(
-      id: 'custom_image_test',
-      name: '画像ブラシ',
-      customImagePath: '/nonexistent-test-brush.png',
-    ));
+    service.addBrush(
+      original.copyWith(
+        id: 'custom_image_test',
+        name: '画像ブラシ',
+        customImagePath: '/nonexistent-test-brush.png',
+      ),
+    );
     expect(service.exportBrushQrPayload('custom_image_test'), isNull);
-    expect(() => service.importBrushQrPayload('invalid'), throwsFormatException);
+    expect(
+      () => service.importBrushQrPayload('invalid'),
+      throwsFormatException,
+    );
     service.dispose();
   });
 }

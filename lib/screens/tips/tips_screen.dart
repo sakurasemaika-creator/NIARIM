@@ -67,7 +67,9 @@ class _TipsScreenState extends State<TipsScreen> {
         .where((c) => c.tips.isNotEmpty)
         .toList();
     return Scaffold(
-      appBar: widget.embedded ? null : AppBar(title: Text(l10n.tipsScreenTitle)),
+      appBar: widget.embedded
+          ? null
+          : AppBar(title: Text(l10n.tipsScreenTitle)),
       body: SafeArea(
         child: Column(
           children: [

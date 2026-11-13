@@ -416,13 +416,19 @@ void main() {
 
     // Shared picker: verify the exact controls rendered in PC/DeX and used
     // by the canvas and other dialogs, not an illustration of the design.
-    expect(find.byKey(const ValueKey('pc-color-picker-current-chip')),
-        findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('pc-color-picker-current-chip')),
+      findsOneWidget,
+    );
     final colorPanel = find.byType(ColorPickerPanel);
-    expect(find.descendant(of: colorPanel, matching: find.text('HSV')),
-        findsOneWidget);
-    expect(find.descendant(of: colorPanel, matching: find.text('RGB')),
-        findsOneWidget);
+    expect(
+      find.descendant(of: colorPanel, matching: find.text('HSV')),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(of: colorPanel, matching: find.text('RGB')),
+      findsOneWidget,
+    );
     final hueSlider = find.ancestor(
       of: find.descendant(of: colorPanel, matching: find.text('H')),
       matching: find.byType(LabeledSlider),
@@ -432,10 +438,12 @@ void main() {
     await tester.ensureVisible(hueSlider);
     await settle();
     await shot('10b_color_picker_hsv_sliders_and_current_color_chip');
-    await tester.tap(find.descendant(
-      of: hueSlider,
-      matching: find.byIcon(Icons.add_circle_outline),
-    ));
+    await tester.tap(
+      find.descendant(
+        of: hueSlider,
+        matching: find.byIcon(Icons.add_circle_outline),
+      ),
+    );
     await settle();
     final afterHue = tester.widget<LabeledSlider>(hueSlider).value;
     expect(afterHue, beforeHue + 1, reason: 'HSV stepper must add 1');
@@ -466,9 +474,7 @@ void main() {
       await tester.drag(resize.first, const Offset(0, 80));
       await settle();
       await shot('11_desktop_window_resized');
-      final widthHandle = find.byKey(
-        const ValueKey('dockColumnResize-right'),
-      );
+      final widthHandle = find.byKey(const ValueKey('dockColumnResize-right'));
       expect(widthHandle, findsOneWidget);
       await tester.drag(widthHandle.first, const Offset(-35, 0));
       await settle();
@@ -533,7 +539,9 @@ void main() {
         CanvasDockPanel.brush,
         right: false,
       );
-      final brushWidthGrip = find.byKey(const ValueKey('pcPreviewToolColumnResize'));
+      final brushWidthGrip = find.byKey(
+        const ValueKey('pcPreviewToolColumnResize'),
+      );
       if (brushWidthGrip.evaluate().isNotEmpty) {
         await tester.drag(brushWidthGrip, const Offset(32, 0));
         await settle();
@@ -660,9 +668,7 @@ void main() {
     await shot('15_hidden_layer_thumbnail_keeps_artwork');
     await tester.tap(layerThumbnail);
     await settle();
-    final fullPreview = find.byKey(
-      const ValueKey('layer-preview-interactive'),
-    );
+    final fullPreview = find.byKey(const ValueKey('layer-preview-interactive'));
     expect(fullPreview, findsOneWidget);
     expect(tester.widget<InteractiveViewer>(fullPreview).scaleEnabled, isTrue);
     await shot('16_hidden_layer_fullscreen_preview');
@@ -692,7 +698,10 @@ void main() {
     await navigate('/home');
     await navigate('/canvas/${colored.id}');
     expect(find.byKey(const ValueKey('dockTarget-brush')), findsOneWidget);
-    expect(find.byKey(const ValueKey('dockTarget-colorPicker')), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('dockTarget-colorPicker')),
+      findsOneWidget,
+    );
     expect(find.byKey(const ValueKey('freeDockWindow-brush')), findsNothing);
     await shot('19_pc_dex_compact_dock_panels');
     await tester.tap(find.byKey(const ValueKey('dockMenu-brush')));

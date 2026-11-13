@@ -109,37 +109,40 @@ void main() {
     },
   );
 
-  test('monthly and annual retries keep separate durable request IDs', () async {
-    final api = _FakeRedemptionApi()..failNext = true;
-    const store = CoinRedemptionAttemptStore();
-    await expectLater(
-      store.redeem(
+  test(
+    'monthly and annual retries keep separate durable request IDs',
+    () async {
+      final api = _FakeRedemptionApi()..failNext = true;
+      const store = CoinRedemptionAttemptStore();
+      await expectLater(
+        store.redeem(
+          api: api,
+          accountId: 'account',
+          serverPriceVersion: 'v3-final-annual550000',
+          months: 12,
+        ),
+        throwsA(isA<NiarimApiException>()),
+      );
+      final pendingAnnual = api.attemptedIds.single;
+      final monthly = await store.redeem(
+        api: api,
+        accountId: 'account',
+        serverPriceVersion: 'v3-final-annual550000',
+        months: 1,
+      );
+      expect(monthly['redeemed'], true);
+      expect(api.attemptedIds[1], isNot(pendingAnnual));
+      final annual = await store.redeem(
         api: api,
         accountId: 'account',
         serverPriceVersion: 'v3-final-annual550000',
         months: 12,
-      ),
-      throwsA(isA<NiarimApiException>()),
-    );
-    final pendingAnnual = api.attemptedIds.single;
-    final monthly = await store.redeem(
-      api: api,
-      accountId: 'account',
-      serverPriceVersion: 'v3-final-annual550000',
-      months: 1,
-    );
-    expect(monthly['redeemed'], true);
-    expect(api.attemptedIds[1], isNot(pendingAnnual));
-    final annual = await store.redeem(
-      api: api,
-      accountId: 'account',
-      serverPriceVersion: 'v3-final-annual550000',
-      months: 12,
-    );
-    expect(annual['redeemed'], true);
-    expect(api.attemptedIds[2], pendingAnnual);
-    expect(api.attemptedMonths, [12, 1, 12]);
-  });
+      );
+      expect(annual['redeemed'], true);
+      expect(api.attemptedIds[2], pendingAnnual);
+      expect(api.attemptedMonths, [12, 1, 12]);
+    },
+  );
 
   test('unsupported Premium periods never send redemption requests', () async {
     final api = _FakeRedemptionApi();

@@ -63,7 +63,9 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    return tester.element(find.byType(CommunityScreen)).read<CommunityService>();
+    return tester
+        .element(find.byType(CommunityScreen))
+        .read<CommunityService>();
   }
 
   Future<void> bookmarks(WidgetTester tester) async {
@@ -131,7 +133,8 @@ void main() {
           expect(
             find.byKey(const Key('communityScrollToTopButton')),
             findsOneWidget,
-            reason: 'The plaza scroll control remains available on bookmarks; delay=$delay',
+            reason:
+                'The plaza scroll control remains available on bookmarks; delay=$delay',
           );
           expect(
             find.byKey(const Key('communityBackToSplashButton')),

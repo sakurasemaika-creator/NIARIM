@@ -38,14 +38,16 @@ class SharedAssetCardCodec {
       throw const FormatException('PNG already has an asset card payload');
     }
     final iend = chunks.last;
-    final header = utf8.encode(jsonEncode({
-      'format': 'niarim.asset-card',
-      'version': version,
-      'kind': kind,
-      'name': name,
-      'sha256': sha256.convert(data).toString(),
-      'length': data.length,
-    }));
+    final header = utf8.encode(
+      jsonEncode({
+        'format': 'niarim.asset-card',
+        'version': version,
+        'kind': kind,
+        'name': name,
+        'sha256': sha256.convert(data).toString(),
+        'length': data.length,
+      }),
+    );
     if (header.length > maxHeaderBytes) {
       throw const FormatException('Asset card header too large');
     }
@@ -71,13 +73,17 @@ class SharedAssetCardCodec {
     if (cards.length != 1) {
       throw const FormatException('Not a NIARIM share card PNG');
     }
-    final raw = Uint8List.sublistView(png, cards.single.dataStart,
-        cards.single.dataStart + cards.single.length);
+    final raw = Uint8List.sublistView(
+      png,
+      cards.single.dataStart,
+      cards.single.dataStart + cards.single.length,
+    );
     if (raw.length < 5) {
       throw const FormatException('Truncated asset card');
     }
     final headerLength = _readU32(raw, 0);
-    if (headerLength <= 0 || headerLength > maxHeaderBytes ||
+    if (headerLength <= 0 ||
+        headerLength > maxHeaderBytes ||
         headerLength > raw.length - 4) {
       throw const FormatException('Invalid card header');
     }
@@ -88,12 +94,14 @@ class SharedAssetCardCodec {
         decoded['format'] != 'niarim.asset-card' ||
         decoded['version'] != version ||
         !const {'brush', 'tone', 'stamp'}.contains(decoded['kind']) ||
-        decoded['name'] is! String || decoded['sha256'] is! String ||
+        decoded['name'] is! String ||
+        decoded['sha256'] is! String ||
         decoded['length'] is! int) {
       throw const FormatException('Unsupported or corrupt asset card');
     }
     final data = Uint8List.fromList(raw.sublist(4 + headerLength));
-    if (data.length != decoded['length'] || data.isEmpty ||
+    if (data.length != decoded['length'] ||
+        data.isEmpty ||
         data.length > maxAssetBytes ||
         sha256.convert(data).toString() != decoded['sha256']) {
       throw const FormatException('Damaged asset card content');
@@ -107,7 +115,8 @@ class SharedAssetCardCodec {
   }
 
   static List<_PngChunk> _scanPng(Uint8List png) {
-    if (png.length < 20 || png.length > maxPngBytes ||
+    if (png.length < 20 ||
+        png.length > maxPngBytes ||
         !_pngMagic.asMap().entries.every((e) => png[e.key] == e.value)) {
       throw const FormatException('Invalid PNG signature or size');
     }
@@ -120,8 +129,10 @@ class SharedAssetCardCodec {
       if (length > maxLen || length > maxPngBytes) {
         throw const FormatException('Truncated or oversized PNG chunk');
       }
-      final type = ascii.decode(png.sublist(pos + 4, pos + 8),
-          allowInvalid: false);
+      final type = ascii.decode(
+        png.sublist(pos + 4, pos + 8),
+        allowInvalid: false,
+      );
       if (!RegExp(r'^[A-Za-z]{4}$').hasMatch(type)) {
         throw const FormatException('Invalid PNG chunk type');
       }
@@ -163,21 +174,20 @@ class SharedAssetCardCodec {
       ..add(content);
     final prefix = b.takeBytes();
     return (BytesBuilder(copy: false)
-      ..add(prefix)
-      ..add(_u32(_crc32(prefix, 4, prefix.length))))
+          ..add(prefix)
+          ..add(_u32(_crc32(prefix, 4, prefix.length))))
         .takeBytes();
   }
 
-  static Uint8List _u32(int v) => Uint8List(4)..buffer.asByteData().setUint32(0, v);
+  static Uint8List _u32(int v) =>
+      Uint8List(4)..buffer.asByteData().setUint32(0, v);
   static int _readU32(Uint8List b, int off) =>
       ByteData.sublistView(b, off, off + 4).getUint32(0);
 
   static final List<int> _crcTable = List<int>.generate(256, (index) {
     var value = index;
     for (var bit = 0; bit < 8; bit++) {
-      value = (value & 1) != 0
-          ? (value >> 1) ^ 0xedb88320
-          : value >> 1;
+      value = (value & 1) != 0 ? (value >> 1) ^ 0xedb88320 : value >> 1;
     }
     return value;
   });

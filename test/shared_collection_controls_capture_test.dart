@@ -22,8 +22,9 @@ import 'helpers/load_app_fonts.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  testWidgets('received and outgoing share files have outlined menu/favorite',
-      (tester) async {
+  testWidgets('received and outgoing share files have outlined menu/favorite', (
+    tester,
+  ) async {
     SharedPreferences.setMockInitialValues({
       'quality_level': 'medium',
       'first_launch': false,
@@ -59,7 +60,8 @@ void main() {
       await settle();
       expect(tester.takeException(), isNull);
       final boundary =
-          boundaryKey.currentContext!.findRenderObject() as RenderRepaintBoundary;
+          boundaryKey.currentContext!.findRenderObject()
+              as RenderRepaintBoundary;
       final bytes = await tester.runAsync(() async {
         final image = await boundary.toImage(pixelRatio: 1);
         final data = await image.toByteData(format: ui.ImageByteFormat.png);
@@ -80,7 +82,9 @@ void main() {
       expect(menu, findsOneWidget);
       final favoriteRect = tester.getRect(favorite);
       final menuRect = tester.getRect(menu);
-      final card = find.ancestor(of: favorite, matching: find.byType(Card)).first;
+      final card = find
+          .ancestor(of: favorite, matching: find.byType(Card))
+          .first;
       final cardRect = tester.getRect(card);
       expect(favoriteRect.left, closeTo(cardRect.left + 4, 2));
       expect(menuRect.right, closeTo(cardRect.right - 4, 2));

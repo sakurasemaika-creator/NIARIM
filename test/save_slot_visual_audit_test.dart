@@ -228,16 +228,15 @@ void main() {
       expect(find.byType(AlertDialog), findsNothing);
       expect(find.text('名前変更済み'), findsOneWidget);
       await capture('${prefix}_01b_renamed_slot');
-      final renamed = saveService.getNodes(project.id)
+      final renamed = saveService
+          .getNodes(project.id)
           .singleWhere((n) => n.id == node.id);
       expect(renamed.savedAt, node.savedAt);
       expect(renamed.thumbnailPath, node.thumbnailPath);
       // Restoring the visible slot memo does not alter the archive.
-      await tester.runAsync(() => saveService.setSlotMemo(
-        project.id,
-        0,
-        comment,
-      ));
+      await tester.runAsync(
+        () => saveService.setSlotMemo(project.id, 0, comment),
+      );
       await settle();
 
       // Even a never-saved slot has its own pencil and can retain a memo.
@@ -372,23 +371,27 @@ void main() {
       () => captureSaveThumbnail(projectService, treeProject.id),
     ))!;
     saveService.setTreeMode(true);
-    final root = (await tester.runAsync(() => saveService.saveAsChild(
-      projectId: treeProject.id,
-      project: treeProject,
-      scenes: projectService.scenesOf(treeProject.id),
-      tileManager: projectService.tileManagerOf(treeProject.id),
-      comment: 'ツリー保存・最初の状態',
-      thumbnailPngBytes: actualTreeThumbnail,
-    )))!;
-    final branch = (await tester.runAsync(() => saveService.saveAsChild(
-      projectId: treeProject.id,
-      project: treeProject,
-      scenes: projectService.scenesOf(treeProject.id),
-      tileManager: projectService.tileManagerOf(treeProject.id),
-      parentId: root.id,
-      comment: 'ツリー保存・分岐',
-      thumbnailPngBytes: actualTreeThumbnail,
-    )))!;
+    final root = (await tester.runAsync(
+      () => saveService.saveAsChild(
+        projectId: treeProject.id,
+        project: treeProject,
+        scenes: projectService.scenesOf(treeProject.id),
+        tileManager: projectService.tileManagerOf(treeProject.id),
+        comment: 'ツリー保存・最初の状態',
+        thumbnailPngBytes: actualTreeThumbnail,
+      ),
+    ))!;
+    final branch = (await tester.runAsync(
+      () => saveService.saveAsChild(
+        projectId: treeProject.id,
+        project: treeProject,
+        scenes: projectService.scenesOf(treeProject.id),
+        tileManager: projectService.tileManagerOf(treeProject.id),
+        parentId: root.id,
+        comment: 'ツリー保存・分岐',
+        thumbnailPngBytes: actualTreeThumbnail,
+      ),
+    ))!;
     expect(root.thumbnailPath, isNotNull);
     expect(branch.thumbnailPath, isNotNull);
     await setViewport(const Size(1080, 2280), 3);
@@ -408,14 +411,15 @@ void main() {
       'ツリー名変更後',
     );
     await tester.tap(
-        find.descendant(
-          of: dialog(),
-          matching: find.widgetWithText(FilledButton, l10n.commonSave),
-        ),
-      );
+      find.descendant(
+        of: dialog(),
+        matching: find.widgetWithText(FilledButton, l10n.commonSave),
+      ),
+    );
     await settle();
     expect(find.text('ツリー名変更後'), findsWidgets);
-    final renamedRoot = saveService.getNodes(treeProject.id)
+    final renamedRoot = saveService
+        .getNodes(treeProject.id)
         .singleWhere((n) => n.id == root.id);
     expect(renamedRoot.thumbnailPath, root.thumbnailPath);
     expect(renamedRoot.savedAt, root.savedAt);
@@ -443,11 +447,7 @@ void main() {
       find.widgetWithText(FilledButton, l10n.saveTreeRestoreAction),
     );
     await settle(rounds: 10);
-    expect(
-      find.text(l10n.saveTreeRestoredSnackbar('ツリー名変更後')),
-      findsOneWidget,
-    );
+    expect(find.text(l10n.saveTreeRestoredSnackbar('ツリー名変更後')), findsOneWidget);
     await capture('sp_360x760_14_tree_loaded_toast');
-
   }, timeout: const Timeout(Duration(seconds: 240)));
 }

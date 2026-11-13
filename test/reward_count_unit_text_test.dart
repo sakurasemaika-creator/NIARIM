@@ -1050,9 +1050,9 @@ void main() {
     // 0のときに1つの作品の文になる。gen-l10nは`=1`と`one`を同じ引数に
     // まとめる（Intl.pluralLogicの`one`）ので、`=1`で分けることもできない。
     // 0の文（`=0`）があれば0はそちらへ行くので、数の無い`one`でもよい。
-    final data =
-        json.decode(File('lib/l10n/app_fr.arb').readAsStringSync())
-            as Map<String, dynamic>;
+    final data = json.decode(
+      File('lib/l10n/app_fr.arb').readAsStringSync(),
+    ) as Map<String, dynamic>;
     final numberless = <String>[];
     data.forEach((key, value) {
       if (key.startsWith('@') || value is! String) return;
@@ -1071,9 +1071,10 @@ void main() {
     expect(numberless, isEmpty, reason: numberless.join('\n'));
     // 走査そのものが分岐を拾えていること。
     expect(
-      _pluralBlocks(
-        data['creatorMissionActivityWorksBookmarks'] as String,
-      ).first.$2.keys,
+      _pluralBlocks(data['creatorMissionActivityWorksBookmarks'] as String)
+          .first
+          .$2
+          .keys,
       containsAll(<String>['one', 'other']),
     );
   });

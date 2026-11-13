@@ -151,6 +151,7 @@ class CommunityService extends ChangeNotifier {
   int _latestEpoch = 0;
   int _rankingEpoch = 0;
   final Map<String, int> _periodRankingBookmarkCounts = {};
+
   /// Display-only period score; canonical work.bookmarkCount remains cumulative.
   Map<String, int> get periodRankingBookmarkCounts =>
       Map<String, int>.unmodifiable(_periodRankingBookmarkCounts);

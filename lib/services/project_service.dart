@@ -54,6 +54,7 @@ class ProjectFolder {
   final String? parentFolderId;
   // フォルダもお気に入り登録可能。
   final bool isFavorite;
+
   /// 'auto', 'none', 'item', or 'custom'. Kept in folder metadata.
   final String thumbnailMode;
   final String? thumbnailSourceId;
@@ -91,9 +92,11 @@ class ProjectFolder {
     isFavorite: isFavorite ?? this.isFavorite,
     thumbnailMode: thumbnailMode ?? this.thumbnailMode,
     thumbnailSourceId: identical(thumbnailSourceId, _folderSentinel)
-        ? this.thumbnailSourceId : thumbnailSourceId as String?,
+        ? this.thumbnailSourceId
+        : thumbnailSourceId as String?,
     thumbnailImagePath: identical(thumbnailImagePath, _folderSentinel)
-        ? this.thumbnailImagePath : thumbnailImagePath as String?,
+        ? this.thumbnailImagePath
+        : thumbnailImagePath as String?,
     createdAt: createdAt,
   );
 
@@ -129,6 +132,7 @@ class ProjectFolder {
 /// 中身もすべて元の階層のまま戻る。
 class TrashedFolder {
   final ProjectFolder folder;
+
   /// 共有・受信タブのフォルダはプロジェクト用フォルダとは別管理。
   final bool isShared;
 
@@ -314,7 +318,8 @@ class ProjectService extends ChangeNotifier {
         _outgoingFavoritePrefsKey,
         _outgoingFavoritePaths.toList()..sort(),
       );
-      if (!persisted) throw StateError('Could not save outgoing favorite state');
+      if (!persisted)
+        throw StateError('Could not save outgoing favorite state');
     } catch (error, stackTrace) {
       if (wasFavorite) {
         _outgoingFavoritePaths.add(path);
@@ -1399,9 +1404,8 @@ class ProjectService extends ChangeNotifier {
     _registerHomeIfNeeded(projectId, sceneId, frameIndex, copy);
     if (pixels != null) {
       final targetKey = tileKeyFor(projectId, sceneId, frameIndex, newId);
-      tileManagerOf(
-        projectId,
-      ).replaceLayerPixels(targetKey, Uint8List.fromList(pixels));
+      tileManagerOf(projectId)
+          .replaceLayerPixels(targetKey, Uint8List.fromList(pixels));
     }
     _undoManager?.push(
       LayerAddUndoAction(
@@ -3020,9 +3024,8 @@ class ProjectService extends ChangeNotifier {
   /// [saveProject]と同じ保存。保存できたかを返す（失敗しても例外にしない）。
   Future<bool> _saveReportingSuccess(String projectId) {
     if (!_projects.any((p) => p.id == projectId)) return Future.value(false);
-    return saveProject(
-      projectId,
-    ).then((_) => true, onError: (Object _, StackTrace _) => false);
+    return saveProject(projectId)
+        .then((_) => true, onError: (Object _, StackTrace _) => false);
   }
 
   Future<void> _saveMembership(
@@ -3057,25 +3060,25 @@ class ProjectService extends ChangeNotifier {
     // completed its queued first save. Fail before changing Trash membership.
     await saveProject(id);
     await _queueTrash(id, () async {
-    final idx = _projects.indexWhere((p) => p.id == id);
-    if (idx >= 0) {
-      final project = _projects[idx];
-      // Check inside both queues: a project may become a favorite while a
-      // previous save or Trash operation is still awaiting acknowledgement.
-      if (project.isFavorite) throw const FavoriteProjectDeleteException();
-      final next = {..._trashDeletedAt, id: DateTime.now()};
-      await _persistTrashState(next);
-      _projects.removeAt(idx);
-      _trash.add(project);
-      _scenes.remove(id);
-      _layerIdCounters.remove(id);
-      _layerHomes.remove(id);
-      _tileManagers.remove(id)?.dispose();
-      _trashDeletedAt
-        ..clear()
-        ..addAll(next);
-      _notifyFolders();
-    }
+      final idx = _projects.indexWhere((p) => p.id == id);
+      if (idx >= 0) {
+        final project = _projects[idx];
+        // Check inside both queues: a project may become a favorite while a
+        // previous save or Trash operation is still awaiting acknowledgement.
+        if (project.isFavorite) throw const FavoriteProjectDeleteException();
+        final next = {..._trashDeletedAt, id: DateTime.now()};
+        await _persistTrashState(next);
+        _projects.removeAt(idx);
+        _trash.add(project);
+        _scenes.remove(id);
+        _layerIdCounters.remove(id);
+        _layerHomes.remove(id);
+        _tileManagers.remove(id)?.dispose();
+        _trashDeletedAt
+          ..clear()
+          ..addAll(next);
+        _notifyFolders();
+      }
     });
   }
 
@@ -3176,7 +3179,8 @@ class ProjectService extends ChangeNotifier {
             restored = restored.copyWith(folderId: null);
             changed = true;
           }
-          if (restored.isSharedImport && restored.sharedFolderId != null &&
+          if (restored.isSharedImport &&
+              restored.sharedFolderId != null &&
               !_sharedFolders.any((f) => f.id == restored.sharedFolderId)) {
             restored = restored.copyWith(sharedFolderId: null);
             changed = true;
@@ -3309,11 +3313,14 @@ class ProjectService extends ChangeNotifier {
       final original = _projects[idx];
       final newId = _nextId('proj');
       // Repeated paste must not create indistinguishable copies.
-      final copyName = name ?? _nextCopyName(
-        original.name,
-        _projects.where((p) => p.isSharedImport == original.isSharedImport)
-            .map((p) => p.name),
-      );
+      final copyName =
+          name ??
+          _nextCopyName(
+            original.name,
+            _projects
+                .where((p) => p.isSharedImport == original.isSharedImport)
+                .map((p) => p.name),
+          );
 
       // シーンリストは複製先専用の新しいListにする（Scene/Frame/Layerはimmutableなため
       // 中身の値オブジェクト自体は共有してよいが、外側のListを共有すると片方への
@@ -3358,7 +3365,8 @@ class ProjectService extends ChangeNotifier {
         updatedAt: DateTime.now(),
         folderId: useTargetFolder ? targetFolderId : original.folderId,
         sharedFolderId: useTargetSharedFolder
-            ? targetSharedFolderId : original.sharedFolderId,
+            ? targetSharedFolderId
+            : original.sharedFolderId,
         // 複製元と同じファイルを指したままだと、複製元の削除で一緒に消えた。
         thumbnailPath: thumbnail,
       );
@@ -3587,12 +3595,16 @@ class ProjectService extends ChangeNotifier {
     final tm = _tileManagers[projectId];
     if (scenes == null || scenes.isEmpty || tm == null) return;
     final requestedScene = sceneId ?? project.thumbnailLastSceneId;
-    final scene = scenes.where((s) => s.id == requestedScene).firstOrNull ??
-        scenes.first;
+    final scene =
+        scenes.where((s) => s.id == requestedScene).firstOrNull ?? scenes.first;
     if (scene.frames.isEmpty) return;
-    final position = (frameIndex ??
-            (requestedScene == scene.id ? project.thumbnailLastFrameIndex : null) ??
-            0).clamp(0, scene.frames.length - 1);
+    final position =
+        (frameIndex ??
+                (requestedScene == scene.id
+                    ? project.thumbnailLastFrameIndex
+                    : null) ??
+                0)
+            .clamp(0, scene.frames.length - 1);
     final w = tm.canvasWidth;
     final h = tm.canvasHeight;
     if (w <= 0 || h <= 0) return;
@@ -3648,9 +3660,11 @@ class ProjectService extends ChangeNotifier {
     _projects[curIdx] = _projects[curIdx].copyWith(
       thumbnailPath: path,
       thumbnailLastSceneId: !force && sceneId != null
-          ? scene.id : _projects[curIdx].thumbnailLastSceneId,
+          ? scene.id
+          : _projects[curIdx].thumbnailLastSceneId,
       thumbnailLastFrameIndex: !force && frameIndex != null
-          ? position : _projects[curIdx].thumbnailLastFrameIndex,
+          ? position
+          : _projects[curIdx].thumbnailLastFrameIndex,
     );
     final saved = _saveReportingSuccess(projectId);
     notifyListeners();
@@ -3687,20 +3701,29 @@ class ProjectService extends ChangeNotifier {
     final original = _projects[beforeIndex];
     String? nextPath = original.thumbnailPath;
     if (mode == 'frame') {
-      final scene = scenesOf(projectId).where((s) => s.id == sceneId)
+      final scene = scenesOf(projectId)
+          .where((s) => s.id == sceneId)
           .firstOrNull;
-      if (scene == null || frameIndex == null ||
-          frameIndex < 0 || frameIndex >= scene.frames.length) {
+      if (scene == null ||
+          frameIndex == null ||
+          frameIndex < 0 ||
+          frameIndex >= scene.frames.length) {
         throw ArgumentError('A valid scene/frame is required');
       }
-      await generateAndSaveThumbnail(projectId,
-          sceneId: scene.id, frameIndex: frameIndex, force: true);
+      await generateAndSaveThumbnail(
+        projectId,
+        sceneId: scene.id,
+        frameIndex: frameIndex,
+        force: true,
+      );
       nextPath = _projects.firstWhere((p) => p.id == projectId).thumbnailPath;
       if (nextPath == null) throw StateError('Frame could not be rendered');
     } else if (mode == 'latest') {
       await generateAndSaveThumbnail(
-        projectId, sceneId: original.thumbnailLastSceneId,
-        frameIndex: original.thumbnailLastFrameIndex, force: true,
+        projectId,
+        sceneId: original.thumbnailLastSceneId,
+        frameIndex: original.thumbnailLastFrameIndex,
+        force: true,
       );
       nextPath = _projects.firstWhere((p) => p.id == projectId).thumbnailPath;
     } else if (mode == 'custom') {
@@ -3708,7 +3731,8 @@ class ProjectService extends ChangeNotifier {
         throw ArgumentError('Choose an image before applying');
       }
       nextPath = await NiaproSerializer.saveProjectThumbnail(
-        projectId, customBytes,
+        projectId,
+        customBytes,
       );
     } else {
       nextPath = null;
@@ -3726,10 +3750,14 @@ class ProjectService extends ChangeNotifier {
     if (!await _saveReportingSuccess(projectId)) {
       throw StateError('Could not persist thumbnail preference');
     }
-    if (previous != null && previous != nextPath &&
+    if (previous != null &&
+        previous != nextPath &&
         ![..._projects, ..._trash].any((p) => p.thumbnailPath == previous)) {
-      try { await File(previous).delete(); }
-      on FileSystemException { /* already removed */ }
+      try {
+        await File(previous).delete();
+      } on FileSystemException {
+        /* already removed */
+      }
     }
   }
 
@@ -3850,9 +3878,7 @@ class ProjectService extends ChangeNotifier {
         final index = _sharedFolders.indexWhere((f) => f.id == folderId);
         if (index < 0) return;
         final next = [..._sharedFolders];
-        next[index] = next[index].copyWith(
-          isFavorite: !next[index].isFavorite,
-        );
+        next[index] = next[index].copyWith(isFavorite: !next[index].isFavorite);
         await _commitFolders(next, shared: true);
       });
 
@@ -3930,96 +3956,99 @@ class ProjectService extends ChangeNotifier {
   /// [restoreTrashedFolder]でまとめて元に戻せる。先にゴミ箱の記録を、次に
   /// フォルダの一覧を保存する。どちらかを保存できなければ何も変えずに
   /// [FolderSaveException]を投げる。
-  Future<TrashedFolder?> moveFolderToTrash(String folderId, {bool shared = false}) =>
-      _queueFolder(() async {
-        final folders = shared ? _sharedFolders : _folders;
-        final top = folders.where((f) => f.id == folderId).firstOrNull;
-        if (top == null) return null;
-        final ids = shared ? <String>{folderId} : folderSubtreeIds(folderId);
-        final now = DateTime.now();
-        final record = TrashedFolder(
-          folder: top,
-          isShared: shared,
-          subfolders: [
-            for (final f in folders)
-              if (f.id != folderId && ids.contains(f.id)) f,
-          ],
-          projectIds: [
-            for (final p in _projects)
-              if (shared
-                  ? p.isSharedImport && p.sharedFolderId == folderId
-                  : !p.isSharedImport && ids.contains(p.folderId)) p.id,
-          ],
-          deletedAt: now,
+  Future<TrashedFolder?> moveFolderToTrash(
+    String folderId, {
+    bool shared = false,
+  }) => _queueFolder(() async {
+    final folders = shared ? _sharedFolders : _folders;
+    final top = folders.where((f) => f.id == folderId).firstOrNull;
+    if (top == null) return null;
+    final ids = shared ? <String>{folderId} : folderSubtreeIds(folderId);
+    final now = DateTime.now();
+    final record = TrashedFolder(
+      folder: top,
+      isShared: shared,
+      subfolders: [
+        for (final f in folders)
+          if (f.id != folderId && ids.contains(f.id)) f,
+      ],
+      projectIds: [
+        for (final p in _projects)
+          if (shared
+              ? p.isSharedImport && p.sharedFolderId == folderId
+              : !p.isSharedImport && ids.contains(p.folderId))
+            p.id,
+      ],
+      deletedAt: now,
+    );
+    // お気に入りの作品は、保護を外すまでゴミ箱へ移さない（作品の一括の
+    // 削除と同じ。フォルダごとでも迂回させない）。
+    if (_projects.any(
+      (p) => record.projectIds.contains(p.id) && p.isFavorite,
+    )) {
+      throw const FavoriteProjectDeleteException();
+    }
+    // Do not archive a folder until all of its projects are readable
+    // on disk. This also waits for any queued autosaves to complete.
+    for (final projectId in record.projectIds) {
+      await saveProject(projectId);
+    }
+    // ゴミ箱のフォルダの記録→作品のゴミ箱の記録→フォルダの一覧の順に
+    // 保存し、途中で失敗したら保存済みのものを戻して何も変えない。
+    try {
+      await saveFolderPreference(
+        _trashedFoldersPrefsKey,
+        _encodeTrashedFolders([..._trashedFolders, record]),
+      );
+    } catch (error) {
+      throw FolderSaveException(partiallySaved: false, cause: error);
+    }
+    Future<void> forgetRecord() async {
+      try {
+        await saveFolderPreference(
+          _trashedFoldersPrefsKey,
+          _encodeTrashedFolders(_trashedFolders),
         );
-        // お気に入りの作品は、保護を外すまでゴミ箱へ移さない（作品の一括の
-        // 削除と同じ。フォルダごとでも迂回させない）。
-        if (_projects.any(
-          (p) => record.projectIds.contains(p.id) && p.isFavorite,
-        )) {
-          throw const FavoriteProjectDeleteException();
-        }
-        // Do not archive a folder until all of its projects are readable
-        // on disk. This also waits for any queued autosaves to complete.
-        for (final projectId in record.projectIds) {
-          await saveProject(projectId);
-        }
-        // ゴミ箱のフォルダの記録→作品のゴミ箱の記録→フォルダの一覧の順に
-        // 保存し、途中で失敗したら保存済みのものを戻して何も変えない。
-        try {
-          await saveFolderPreference(
-            _trashedFoldersPrefsKey,
-            _encodeTrashedFolders([..._trashedFolders, record]),
-          );
-        } catch (error) {
-          throw FolderSaveException(partiallySaved: false, cause: error);
-        }
-        Future<void> forgetRecord() async {
-          try {
-            await saveFolderPreference(
-              _trashedFoldersPrefsKey,
-              _encodeTrashedFolders(_trashedFolders),
-            );
-          } catch (_) {
-            // 残った記録は、起動時にフォルダがまだあれば捨てる。
-          }
-        }
+      } catch (_) {
+        // 残った記録は、起動時にフォルダがまだあれば捨てる。
+      }
+    }
 
-        final next = {
-          ..._trashDeletedAt,
-          for (final id in record.projectIds) id: now,
-        };
-        try {
-          await _persistTrashState(next);
-        } catch (error) {
-          await forgetRecord();
-          throw FolderSaveException(partiallySaved: false, cause: error);
-        }
-        try {
-          await _commitFolders([
-            for (final f in folders)
-              if (!ids.contains(f.id)) f,
-          ], shared: shared);
-        } catch (error) {
-          try {
-            await _persistTrashState(_trashDeletedAt);
-          } catch (_) {
-            // 起動時に、ゴミ箱の記録だけ残った作品はフォルダのまま読む。
-          }
-          await forgetRecord();
-          throw FolderSaveException(partiallySaved: false, cause: error);
-        }
-        _trashedFolders.add(record);
-        for (final id in record.projectIds) {
-          final i = _projects.indexWhere((p) => p.id == id);
-          if (i >= 0) _moveProjectToTrash(i);
-        }
-        _trashDeletedAt
-          ..clear()
-          ..addAll(next);
-        _notifyFolders();
-        return record;
-      });
+    final next = {
+      ..._trashDeletedAt,
+      for (final id in record.projectIds) id: now,
+    };
+    try {
+      await _persistTrashState(next);
+    } catch (error) {
+      await forgetRecord();
+      throw FolderSaveException(partiallySaved: false, cause: error);
+    }
+    try {
+      await _commitFolders([
+        for (final f in folders)
+          if (!ids.contains(f.id)) f,
+      ], shared: shared);
+    } catch (error) {
+      try {
+        await _persistTrashState(_trashDeletedAt);
+      } catch (_) {
+        // 起動時に、ゴミ箱の記録だけ残った作品はフォルダのまま読む。
+      }
+      await forgetRecord();
+      throw FolderSaveException(partiallySaved: false, cause: error);
+    }
+    _trashedFolders.add(record);
+    for (final id in record.projectIds) {
+      final i = _projects.indexWhere((p) => p.id == id);
+      if (i >= 0) _moveProjectToTrash(i);
+    }
+    _trashDeletedAt
+      ..clear()
+      ..addAll(next);
+    _notifyFolders();
+    return record;
+  });
 
   /// ゴミ箱のフォルダを中身ごと元の場所へ戻す。元の親のフォルダが無く
   /// なっていれば一番上へ戻す。フォルダの一覧を保存できなければ何も変えずに
@@ -4113,8 +4142,10 @@ class ProjectService extends ChangeNotifier {
   }) => _queueFolder(() async {
     final top = _folders.where((f) => f.id == folderId).firstOrNull;
     if (top == null) return null;
-    final siblingNames = _folders.where((f) =>
-        f.parentFolderId == targetParentId).map((f) => f.name).toSet();
+    final siblingNames = _folders
+        .where((f) => f.parentFolderId == targetParentId)
+        .map((f) => f.name)
+        .toSet();
     var copyTopName = name;
     if (siblingNames.contains(copyTopName)) {
       copyTopName = name == '${top.name} (コピー)'
@@ -4159,9 +4190,13 @@ class ProjectService extends ChangeNotifier {
       )) {
         throw StateError('Folder project vanished during copy: ${p.id}');
       }
-      final created = _projects.where((project) =>
-          !previous.contains(project.id) &&
-          copies.values.contains(project.folderId)).single;
+      final created = _projects
+          .where(
+            (project) =>
+                !previous.contains(project.id) &&
+                copies.values.contains(project.folderId),
+          )
+          .single;
       await saveProject(created.id);
     }
     return _folders.firstWhere((f) => f.id == copies[folderId]);
@@ -4227,23 +4262,31 @@ class ProjectService extends ChangeNotifier {
       });
 
   /// 共有の受信フォルダを、中の受信プロジェクトと一緒に複製する。
-  Future<ProjectFolder> duplicateSharedFolderWithContents(String folderId) async {
+  Future<ProjectFolder> duplicateSharedFolderWithContents(
+    String folderId,
+  ) async {
     final source = _sharedFolders.where((f) => f.id == folderId).firstOrNull;
     if (source == null) throw StateError('Shared folder missing: $folderId');
-    final projects = _projects.where((p) =>
-        p.isSharedImport && p.sharedFolderId == folderId).toList();
+    final projects = _projects
+        .where((p) => p.isSharedImport && p.sharedFolderId == folderId)
+        .toList();
     final copyName = _nextCopyName(
-      source.name, _sharedFolders.map((folder) => folder.name),
+      source.name,
+      _sharedFolders.map((folder) => folder.name),
     );
     final target = await createSharedFolder(copyName);
     for (final project in projects) {
       final oldIds = _projects.map((p) => p.id).toSet();
-      if (!await duplicateProject(project.id,
-          targetSharedFolderId: target.id, useTargetSharedFolder: true)) {
+      if (!await duplicateProject(
+        project.id,
+        targetSharedFolderId: target.id,
+        useTargetSharedFolder: true,
+      )) {
         throw StateError('Shared project missing: ${project.id}');
       }
-      final created = _projects.where((p) =>
-          !oldIds.contains(p.id) && p.sharedFolderId == target.id).single;
+      final created = _projects
+          .where((p) => !oldIds.contains(p.id) && p.sharedFolderId == target.id)
+          .single;
       // duplicateProject queues an async save; acknowledge its completion
       // before reporting the entire folder copy as complete.
       await saveProject(created.id);
@@ -4335,8 +4378,11 @@ class ProjectService extends ChangeNotifier {
             TrashedFolder.fromJson(e as Map<String, dynamic>),
         ])
         // ゴミ箱へ移す途中で終わったときは、フォルダがまだ一覧にある。
-        ..removeWhere((t) => (t.isShared ? _sharedFolders : _folders)
-            .any((f) => f.id == t.folder.id));
+        ..removeWhere(
+          (t) => (t.isShared ? _sharedFolders : _folders).any(
+            (f) => f.id == t.folder.id,
+          ),
+        );
     } catch (error, stackTrace) {
       // 読めなければゴミ箱のフォルダなしとして続ける（中の作品はゴミ箱に
       // 1件ずつ出る）。

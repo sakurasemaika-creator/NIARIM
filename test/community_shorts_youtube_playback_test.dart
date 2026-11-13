@@ -34,15 +34,13 @@ void main() {
   setUp(() {
     SharedPreferences.setMockInitialValues({});
     CommunityYoutubePlayer.debugPlayerBuilder = (context, id, playing) =>
-        ColoredBox(
-          key: Key('yt-embedded-$id-$playing'),
-          color: Colors.black,
-        );
+        ColoredBox(key: Key('yt-embedded-$id-$playing'), color: Colors.black);
   });
   tearDown(() => CommunityYoutubePlayer.debugPlayerBuilder = null);
 
-  testWidgets('Shorts loads only a freshly approved active YouTube video',
-      (tester) async {
+  testWidgets('Shorts loads only a freshly approved active YouTube video', (
+    tester,
+  ) async {
     const firstId = 'abcdefghijk';
     const secondId = 'lmnopqrstuv';
     final first = _work(firstId, 'Public first');
@@ -53,31 +51,38 @@ void main() {
       final status = request.url.path.endsWith('/$secondId/playback-status')
           ? 'private'
           : 'available';
-      return http.Response(jsonEncode({'status': status}), 200,
-          headers: {'content-type': 'application/json'});
+      return http.Response(
+        jsonEncode({'status': status}),
+        200,
+        headers: {'content-type': 'application/json'},
+      );
     });
     final community = CommunityService(
-      api: CommunityApi(NiarimApiClient(
-        baseUrl: 'https://example.invalid',
-        httpClient: client,
-        maxGetRetries: 0,
-        retryBackoff: Duration.zero,
-      )),
+      api: CommunityApi(
+        NiarimApiClient(
+          baseUrl: 'https://example.invalid',
+          httpClient: client,
+          maxGetRetries: 0,
+          retryBackoff: Duration.zero,
+        ),
+      ),
     );
     community.applyServerWork(first);
     community.applyServerWork(second);
-    await tester.pumpWidget(ChangeNotifierProvider<CommunityService>.value(
-      value: community,
-      child: MaterialApp(
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        home: CommunityShortsScreen(
-          works: [first, second],
-          bookmarkedIds: const <String>{},
-          onToggleBookmark: (_) {},
+    await tester.pumpWidget(
+      ChangeNotifierProvider<CommunityService>.value(
+        value: community,
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: CommunityShortsScreen(
+            works: [first, second],
+            bookmarkedIds: const <String>{},
+            onToggleBookmark: (_) {},
+          ),
         ),
       ),
-    ));
+    );
     await tester.pumpAndSettle();
     expect(checks, contains('/works/$firstId/playback-status'));
     expect(find.byKey(const Key('yt-embedded-$firstId-true')), findsOneWidget);
@@ -87,7 +92,10 @@ void main() {
     expect(checks, contains('/works/$secondId/playback-status'));
     expect(find.text('Now private second'), findsNothing);
     expect(find.byKey(const Key('yt-embedded-$secondId-true')), findsNothing);
-    expect(find.byKey(const Key('communityPlaybackStatusPanel')), findsOneWidget);
+    expect(
+      find.byKey(const Key('communityPlaybackStatusPanel')),
+      findsOneWidget,
+    );
     expect(tester.takeException(), isNull);
     await tester.pumpWidget(const SizedBox.shrink());
     community.dispose();

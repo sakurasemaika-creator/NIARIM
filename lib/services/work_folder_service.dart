@@ -18,11 +18,7 @@ class WorkFolderSaveException extends FolderSaveException {
 
 /// Exported file cover preferences are separate from the exported video bytes.
 class WorkFileCover {
-  const WorkFileCover({
-    this.mode = 'latest',
-    this.frameIndex,
-    this.imagePath,
-  });
+  const WorkFileCover({this.mode = 'latest', this.frameIndex, this.imagePath});
   final String mode;
   final int? frameIndex;
   final String? imagePath;
@@ -85,8 +81,12 @@ class WorkFolderService extends ChangeNotifier {
         if (raw is Map) {
           _fileCovers
             ..clear()
-            ..addAll(raw.map((key, value) =>
-                MapEntry(key.toString(), WorkFileCover.fromJson(value))));
+            ..addAll(
+              raw.map(
+                (key, value) =>
+                    MapEntry(key.toString(), WorkFileCover.fromJson(value)),
+              ),
+            );
         }
       }
       final rawMap = prefs.readString(_fileFolderPrefsKey);
@@ -236,9 +236,7 @@ class WorkFolderService extends ChangeNotifier {
     final index = _folders.indexWhere((folder) => folder.id == folderId);
     if (index < 0) return;
     final next = [..._folders];
-    next[index] = next[index].copyWith(
-      isFavorite: !next[index].isFavorite,
-    );
+    next[index] = next[index].copyWith(isFavorite: !next[index].isFavorite);
     await _save({
       _foldersPrefsKey: jsonEncode(next.map((f) => f.toJson()).toList()),
     });

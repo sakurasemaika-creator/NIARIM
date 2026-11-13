@@ -102,8 +102,7 @@ class _StampPanelState extends State<StampPanel> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (!widget.embedded)
-              PanelCenterCloseBar(onClose: widget.onClose),
+            if (!widget.embedded) PanelCenterCloseBar(onClose: widget.onClose),
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: Row(
@@ -146,21 +145,25 @@ class _StampPanelState extends State<StampPanel> {
                         fontFamilyFallback: kHeadingFontFallback,
                       ),
                     ),
-                    onPressed: () => SharedAssetCardService.pickAndImport(context, stampService: stampService),
+                    onPressed: () => SharedAssetCardService.pickAndImport(
+                      context,
+                      stampService: stampService,
+                    ),
                   ),
                 ],
               ),
             ),
             Row(
               children: [
-                if (!widget.embedded) Text(
-                  l10n.stampTitle,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'Kuramubon',
-                    fontFamilyFallback: kHeadingFontFallback,
+                if (!widget.embedded)
+                  Text(
+                    l10n.stampTitle,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Kuramubon',
+                      fontFamilyFallback: kHeadingFontFallback,
+                    ),
                   ),
-                ),
                 Spacer(),
                 FilterChip(
                   key: const ValueKey('asset-favorites-only'),
@@ -343,7 +346,11 @@ class _StampPanelState extends State<StampPanel> {
                                     enabled: !ExportShareService.isRunning(
                                       _exportKey(stamp),
                                     ),
-                                    child: Text(SharedAssetCardService.exportMenuLabel(context)),
+                                    child: Text(
+                                      SharedAssetCardService.exportMenuLabel(
+                                        context,
+                                      ),
+                                    ),
                                   ),
                                   if (!builtIn)
                                     PopupMenuItem(

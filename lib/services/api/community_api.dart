@@ -232,8 +232,11 @@ class CommunityApi {
   }) => _client.getJson(
     '/me/rewards/quote',
     authenticated: true,
-    query: {'target':'fullPremium','duration':duration,
-      'quantity':'$quantity'},
+    query: {
+      'target': 'fullPremium',
+      'duration': duration,
+      'quantity': '$quantity',
+    },
   );
 
   /// Coin debit is confirmed only by an authenticated, atomic backend write.
@@ -244,13 +247,13 @@ class CommunityApi {
     required String priceVersion,
   }) => _client.postJson(
     '/me/rewards/redeem',
-    authenticated:true,
-    body:{
-      'target':'fullPremium',
-      'duration':duration,
-      'quantity':quantity,
-      'requestId':requestId,
-      'priceVersion':priceVersion,
+    authenticated: true,
+    body: {
+      'target': 'fullPremium',
+      'duration': duration,
+      'quantity': quantity,
+      'requestId': requestId,
+      'priceVersion': priceVersion,
     },
   );
 

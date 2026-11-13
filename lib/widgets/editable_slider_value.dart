@@ -163,9 +163,9 @@ class _NumberInputDialogState extends State<_NumberInputDialog> {
   String _format(num v) =>
       widget.isInt ? v.round().toString() : _trimZeros(v.toDouble());
 
-  String _rangeText() => AppLocalizations.of(
-    context,
-  )!.numberInputRangeError(_format(widget.min), _format(widget.max));
+  String _rangeText() =>
+      AppLocalizations.of(context)!
+          .numberInputRangeError(_format(widget.min), _format(widget.max));
 
   String _trimZeros(double v) {
     var s = v.toStringAsFixed(2);

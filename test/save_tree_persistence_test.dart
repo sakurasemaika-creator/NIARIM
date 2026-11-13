@@ -87,39 +87,42 @@ void main() {
     expect(await again.loadNode(p.id, kept.id), isNotNull);
   });
 
-  test('empty slot memos persist without save files and survive overwrite/delete', () async {
-    final (ps, p) = await project();
-    final service = SaveTreeService()..setSlotMax(5);
-    expect(service.getNodes(p.id), isEmpty);
-    expect(await service.setSlotMemo(p.id, 1, 'ラフ用'), isTrue);
-    expect(await service.setSlotMemo(p.id, 3, '塗り前'), isTrue);
-    expect(service.slotMemoOf(p.id, 1), 'ラフ用');
-    expect(index(p).existsSync(), isTrue);
+  test(
+    'empty slot memos persist without save files and survive overwrite/delete',
+    () async {
+      final (ps, p) = await project();
+      final service = SaveTreeService()..setSlotMax(5);
+      expect(service.getNodes(p.id), isEmpty);
+      expect(await service.setSlotMemo(p.id, 1, 'ラフ用'), isTrue);
+      expect(await service.setSlotMemo(p.id, 3, '塗り前'), isTrue);
+      expect(service.slotMemoOf(p.id, 1), 'ラフ用');
+      expect(index(p).existsSync(), isTrue);
 
-    // A metadata-only index must be loaded even when no .niapro exists.
-    final restartedEmpty = await restart();
-    expect(restartedEmpty.getNodes(p.id), isEmpty);
-    expect(restartedEmpty.slotDisplayMemoOf(p.id, 1), 'ラフ用');
-    expect(restartedEmpty.slotDisplayMemoOf(p.id, 3), '塗り前');
+      // A metadata-only index must be loaded even when no .niapro exists.
+      final restartedEmpty = await restart();
+      expect(restartedEmpty.getNodes(p.id), isEmpty);
+      expect(restartedEmpty.slotDisplayMemoOf(p.id, 1), 'ラフ用');
+      expect(restartedEmpty.slotDisplayMemoOf(p.id, 3), '塗り前');
 
-    final first = await slot(service, ps, p, 1, comment: '保存1');
-    expect(service.slotMemoOf(p.id, 1), 'ラフ用');
-    final second = await slot(service, ps, p, 1, comment: '保存2');
-    expect(second.id, isNot(first.id));
-    expect(service.slotMemoOf(p.id, 1), 'ラフ用');
-    await service.deleteNode(p.id, second.id);
-    expect(service.getNodes(p.id), isEmpty);
-    expect(service.slotMemoOf(p.id, 1), 'ラフ用');
+      final first = await slot(service, ps, p, 1, comment: '保存1');
+      expect(service.slotMemoOf(p.id, 1), 'ラフ用');
+      final second = await slot(service, ps, p, 1, comment: '保存2');
+      expect(second.id, isNot(first.id));
+      expect(service.slotMemoOf(p.id, 1), 'ラフ用');
+      await service.deleteNode(p.id, second.id);
+      expect(service.getNodes(p.id), isEmpty);
+      expect(service.slotMemoOf(p.id, 1), 'ラフ用');
 
-    final reloaded = await restart();
-    expect(reloaded.getNodes(p.id), isEmpty);
-    expect(reloaded.slotMemoOf(p.id, 1), 'ラフ用');
-    expect(reloaded.slotMemoOf(p.id, 3), '塗り前');
-    expect(await reloaded.setSlotMemo(p.id, 1, ''), isTrue);
-    final cleared = await restart();
-    expect(cleared.slotMemoOf(p.id, 1), '');
-    expect(cleared.slotMemoOf(p.id, 3), '塗り前');
-  });
+      final reloaded = await restart();
+      expect(reloaded.getNodes(p.id), isEmpty);
+      expect(reloaded.slotMemoOf(p.id, 1), 'ラフ用');
+      expect(reloaded.slotMemoOf(p.id, 3), '塗り前');
+      expect(await reloaded.setSlotMemo(p.id, 1, ''), isTrue);
+      final cleared = await restart();
+      expect(cleared.slotMemoOf(p.id, 1), '');
+      expect(cleared.slotMemoOf(p.id, 3), '塗り前');
+    },
+  );
 
   test('tree saves keep their parent after a restart', () async {
     final (ps, p) = await project();

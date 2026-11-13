@@ -242,6 +242,7 @@ class ProjectListWidget extends StatelessWidget {
   final ProjectSortMode sortMode;
   final bool isSelectionMode;
   final Set<String> selectedIds;
+
   /// The entries cut to the clipboard remain visible, but are dimmed.
   final Set<String> cutIds;
   // 長押しされた項目（プロジェクトまたはフォルダ）のIDを渡す。呼び出し側で
@@ -453,7 +454,8 @@ class ProjectListWidget extends StatelessWidget {
             SliverList.builder(
               itemCount: sorted.length,
               itemBuilder: (context, index) => _withCutFeedback(
-                context, sorted[index],
+                context,
+                sorted[index],
                 _detailTile(context, l10n, sorted[index]),
               ),
             ),
@@ -465,7 +467,8 @@ class ProjectListWidget extends StatelessWidget {
         controller: scrollController,
         itemCount: sorted.length,
         itemBuilder: (context, index) => _withCutFeedback(
-          context, sorted[index],
+          context,
+          sorted[index],
           _detailTile(context, l10n, sorted[index]),
         ),
       );
@@ -491,7 +494,9 @@ class ProjectListWidget extends StatelessWidget {
               gridDelegate: gridDelegate,
               itemCount: sorted.length,
               itemBuilder: (context, index) => _withCutFeedback(
-                context, sorted[index], _gridCard(context, sorted[index]),
+                context,
+                sorted[index],
+                _gridCard(context, sorted[index]),
               ),
             ),
           ),
@@ -505,8 +510,10 @@ class ProjectListWidget extends StatelessWidget {
       gridDelegate: gridDelegate,
       itemCount: sorted.length,
       itemBuilder: (context, index) => _withCutFeedback(
-          context, sorted[index], _gridCard(context, sorted[index]),
-        ),
+        context,
+        sorted[index],
+        _gridCard(context, sorted[index]),
+      ),
     );
   }
 
@@ -597,7 +604,9 @@ class ProjectListWidget extends StatelessWidget {
                       : l10n.colorPickerFavoriteAdd,
                   onPressed: () => runProjectAction(
                     context,
-                    () => context.read<ProjectService>().toggleFavorite(project.id),
+                    () => context.read<ProjectService>().toggleFavorite(
+                      project.id,
+                    ),
                   ),
                 ),
                 const SizedBox(width: 4),
@@ -732,7 +741,9 @@ class ProjectListWidget extends StatelessWidget {
                       itemId: project.id,
                       onFavorite: () => runProjectAction(
                         context,
-                        () => context.read<ProjectService>().toggleFavorite(project.id),
+                        () => context.read<ProjectService>().toggleFavorite(
+                          project.id,
+                        ),
                       ),
                     ),
                     if (isSelectionMode)
@@ -777,10 +788,7 @@ class ProjectListWidget extends StatelessWidget {
     );
   }
 
-  String? _projectFolderCoverPath(
-    BuildContext context,
-    ProjectFolder folder,
-  ) {
+  String? _projectFolderCoverPath(BuildContext context, ProjectFolder folder) {
     final service = context.read<ProjectService>();
     return projectFolderEffectiveCover(
       folder.id,
@@ -801,10 +809,7 @@ class ProjectListWidget extends StatelessWidget {
     );
   }
 
-  void _changeFolderThumbnail(
-    BuildContext context,
-    ProjectFolder folder,
-  ) {
+  void _changeFolderThumbnail(BuildContext context, ProjectFolder folder) {
     showFolderThumbnailDialog(
       context,
       folder: folder,
@@ -863,57 +868,58 @@ class ProjectListWidget extends StatelessWidget {
             ),
           ),
           child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Expanded(
-                    child: Stack(
-                      fit: StackFit.expand,
-                      children: [
-                        FolderThumbnail(
-                          key: ValueKey('projectFolderCover_${folder.id}'),
-                          folder: folder,
-                          choices: _folderCoverChoices(context, folder),
-                          defaultImagePath: _projectFolderCoverPath(
-                            context, folder,
-                          ),
-                        ),
-                        _gridCardActions(
-                          context,
-                          menu: _folderMenu(context, folder),
-                          isFavorite: folder.isFavorite,
-                          itemId: folder.id,
-                          onFavorite: () =>
-                              _handleFolderAction(context, 'favorite', folder),
-                        ),
-                        if (isSelectionMode)
-                          Positioned(
-                            top: 4,
-                            left: 4,
-                            child: Container(
-                              padding: const EdgeInsets.all(1),
-                              decoration: BoxDecoration(
-                                color: isSelected
-                                    ? selectionColor
-                                    : scheme.surface.withValues(alpha: 0.9),
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: selectionColor,
-                                  width: 1.5,
-                                ),
-                              ),
-                              child: Icon(
-                                isSelected ? Icons.check : null,
-                                size: 16,
-                                color: selectionForeground,
-                              ),
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    FolderThumbnail(
+                      key: ValueKey('projectFolderCover_${folder.id}'),
+                      folder: folder,
+                      choices: _folderCoverChoices(context, folder),
+                      defaultImagePath: _projectFolderCoverPath(
+                        context,
+                        folder,
+                      ),
+                    ),
+                    _gridCardActions(
+                      context,
+                      menu: _folderMenu(context, folder),
+                      isFavorite: folder.isFavorite,
+                      itemId: folder.id,
+                      onFavorite: () =>
+                          _handleFolderAction(context, 'favorite', folder),
+                    ),
+                    if (isSelectionMode)
+                      Positioned(
+                        top: 4,
+                        left: 4,
+                        child: Container(
+                          padding: const EdgeInsets.all(1),
+                          decoration: BoxDecoration(
+                            color: isSelected
+                                ? selectionColor
+                                : scheme.surface.withValues(alpha: 0.9),
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: selectionColor,
+                              width: 1.5,
                             ),
                           ),
-                      ],
-                    ),
-                  ),
-                  _gridCaption(context, folder.name),
-                ],
+                          child: Icon(
+                            isSelected ? Icons.check : null,
+                            size: 16,
+                            color: selectionForeground,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
               ),
+              _gridCaption(context, folder.name),
+            ],
+          ),
         ),
       ),
     );
@@ -979,8 +985,11 @@ class ProjectListWidget extends StatelessWidget {
       PopupMenuItem(value: 'rename', child: Text(l10n.commonRename)),
       PopupMenuItem(
         value: 'thumbnail',
-        child: Text(Localizations.localeOf(context).languageCode == 'ja'
-            ? 'サムネイル変更' : 'Change thumbnail'),
+        child: Text(
+          Localizations.localeOf(context).languageCode == 'ja'
+              ? 'サムネイル変更'
+              : 'Change thumbnail',
+        ),
       ),
       PopupMenuItem(value: 'duplicate', child: Text(l10n.themeDuplicateAction)),
       PopupMenuItem(
@@ -990,14 +999,18 @@ class ProjectListWidget extends StatelessWidget {
       ),
       PopupMenuItem(
         value: 'favorite',
-        child: Text(project.isFavorite
-            ? l10n.colorPickerFavoriteRemove
-            : l10n.colorPickerFavoriteAdd),
+        child: Text(
+          project.isFavorite
+              ? l10n.colorPickerFavoriteRemove
+              : l10n.colorPickerFavoriteAdd,
+        ),
       ),
       PopupMenuItem(
         value: 'delete',
-        child: Text(l10n.projectDetailTrashMenuItem,
-            style: TextStyle(color: ThemeService.activeColorScheme.error)),
+        child: Text(
+          l10n.projectDetailTrashMenuItem,
+          style: TextStyle(color: ThemeService.activeColorScheme.error),
+        ),
       ),
     ];
   }
@@ -1009,22 +1022,32 @@ class ProjectListWidget extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     return [
       PopupMenuItem(value: 'open', child: Text(l10n.projectListOpenAction)),
-      PopupMenuItem(value: 'edit', child: Text(l10n.projectListEditFolderAction)),
+      PopupMenuItem(
+        value: 'edit',
+        child: Text(l10n.projectListEditFolderAction),
+      ),
       PopupMenuItem(
         value: 'thumbnail',
-        child: Text(Localizations.localeOf(context).languageCode == 'ja'
-            ? 'サムネイル変更' : 'Change thumbnail'),
+        child: Text(
+          Localizations.localeOf(context).languageCode == 'ja'
+              ? 'サムネイル変更'
+              : 'Change thumbnail',
+        ),
       ),
       PopupMenuItem(
         value: 'favorite',
-        child: Text(folder.isFavorite
-            ? l10n.colorPickerFavoriteRemove
-            : l10n.colorPickerFavoriteAdd),
+        child: Text(
+          folder.isFavorite
+              ? l10n.colorPickerFavoriteRemove
+              : l10n.colorPickerFavoriteAdd,
+        ),
       ),
       PopupMenuItem(
         value: 'delete',
-        child: Text(l10n.homeMoveToTrash,
-            style: TextStyle(color: ThemeService.activeColorScheme.error)),
+        child: Text(
+          l10n.homeMoveToTrash,
+          style: TextStyle(color: ThemeService.activeColorScheme.error),
+        ),
       ),
     ];
   }
@@ -1040,8 +1063,10 @@ class ProjectListWidget extends StatelessWidget {
     final result = await showMenu<String>(
       context: context,
       position: RelativeRect.fromLTRB(
-        local.dx, local.dy,
-        overlay.size.width - local.dx, overlay.size.height - local.dy,
+        local.dx,
+        local.dy,
+        overlay.size.width - local.dx,
+        overlay.size.height - local.dy,
       ),
       items: entries,
     );
@@ -1049,18 +1074,30 @@ class ProjectListWidget extends StatelessWidget {
   }
 
   void _showProjectSecondaryMenu(
-    BuildContext context, Project project, Offset position,
+    BuildContext context,
+    Project project,
+    Offset position,
   ) {
     if (context.read<ProjectService>().isFavoriteSaving(project.id)) return;
-    _showEntryContextMenu(context, position, _projectMenuEntries(context, project),
-        (action) => _handleAction(context, action, project));
+    _showEntryContextMenu(
+      context,
+      position,
+      _projectMenuEntries(context, project),
+      (action) => _handleAction(context, action, project),
+    );
   }
 
   void _showFolderSecondaryMenu(
-    BuildContext context, ProjectFolder folder, Offset position,
+    BuildContext context,
+    ProjectFolder folder,
+    Offset position,
   ) {
-    _showEntryContextMenu(context, position, _folderMenuEntries(context, folder),
-        (action) => _handleFolderAction(context, action, folder));
+    _showEntryContextMenu(
+      context,
+      position,
+      _folderMenuEntries(context, folder),
+      (action) => _handleFolderAction(context, action, folder),
+    );
   }
 
   Widget _projectMenu(BuildContext context, Project project) {
@@ -1102,18 +1139,13 @@ class ProjectListWidget extends StatelessWidget {
       case 'rename':
         _showRenameDialog(context, project);
       case 'thumbnail':
-        showProjectThumbnailDialog(
-          context, project: project, service: service,
-        );
+        showProjectThumbnailDialog(context, project: project, service: service);
       case 'duplicate':
         service.duplicateProject(project.id);
       case 'share':
         _createNiashare(context, project);
       case 'favorite':
-        runProjectAction(
-          context,
-          () => service.toggleFavorite(project.id),
-        );
+        runProjectAction(context, () => service.toggleFavorite(project.id));
       case 'move':
         _showMoveProjectToFolderDialog(context, project);
       case 'delete':
@@ -1130,27 +1162,35 @@ class ProjectListWidget extends StatelessWidget {
   ) async {
     final l10n = AppLocalizations.of(context)!;
     if (project.isFavorite) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.commonFavoriteDeleteBlocked)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.commonFavoriteDeleteBlocked)));
       return;
     }
-    if (!await runProjectTrashAction(context, () => service.deleteProject(project.id))) {
+    if (!await runProjectTrashAction(
+      context,
+      () => service.deleteProject(project.id),
+    )) {
       return;
     }
     if (!context.mounted) return;
     final messenger = ScaffoldMessenger.of(context);
     messenger.hideCurrentSnackBar();
-    messenger.showSnackBar(SnackBar(
-      content: Text(l10n.homeMovedToTrashSnackbar(1)),
-      duration: const Duration(seconds: 6),
-      action: SnackBarAction(
-        label: l10n.homeUndoAction,
-        onPressed: () async {
-          await runProjectAction(context, () => service.restoreProject(project.id));
-        },
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(l10n.homeMovedToTrashSnackbar(1)),
+        duration: const Duration(seconds: 6),
+        action: SnackBarAction(
+          label: l10n.homeUndoAction,
+          onPressed: () async {
+            await runProjectAction(
+              context,
+              () => service.restoreProject(project.id),
+            );
+          },
+        ),
       ),
-    ));
+    );
   }
 
   Future<void> _handleFolderAction(
@@ -1207,7 +1247,9 @@ class ProjectListWidget extends StatelessWidget {
         title: l10n.homeMoveToTrash,
         confirmLabel: l10n.homeMoveToTrash,
         body: l10n.homeMoveToTrashConfirm(1),
-        onDelete: () async { await service.moveFolderToTrash(folder.id); },
+        onDelete: () async {
+          await service.moveFolderToTrash(folder.id);
+        },
       ),
     );
   }

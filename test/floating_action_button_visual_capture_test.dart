@@ -17,7 +17,9 @@ import 'helpers/load_app_fonts.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  testWidgets('capture seven real bottom floating action surfaces', (tester) async {
+  testWidgets('capture seven real bottom floating action surfaces', (
+    tester,
+  ) async {
     SharedPreferences.setMockInitialValues({
       'first_launch': false,
       'language': 'ja',
@@ -41,18 +43,22 @@ void main() {
     final captureKey = GlobalKey();
     appRouter.go('/home');
     final providers = await tester.runAsync(buildAppProviders);
-    await tester.pumpWidget(RepaintBoundary(
-      key: captureKey,
-      child: MultiProvider(providers: providers!, child: const NiarimApp()),
-    ));
+    await tester.pumpWidget(
+      RepaintBoundary(
+        key: captureKey,
+        child: MultiProvider(providers: providers!, child: const NiarimApp()),
+      ),
+    );
     // App previews schedule ongoing frames; pumpAndSettle may never resolve.
     Future<void> advanceUi() async {
       for (var i = 0; i < 12; i++) {
-        await tester.runAsync(() =>
-            Future<void>.delayed(const Duration(milliseconds: 35)));
+        await tester.runAsync(
+          () => Future<void>.delayed(const Duration(milliseconds: 35)),
+        );
         await tester.pump(const Duration(milliseconds: 100));
       }
     }
+
     await advanceUi();
 
     Future<void> capture(String filename, {int minFabs = 1}) async {
@@ -61,21 +67,33 @@ void main() {
       expect(fabFinder, findsAtLeastNWidgets(minFabs), reason: filename);
       final theme = Theme.of(tester.element(fabFinder.first));
       expect(theme.floatingActionButtonTheme.elevation, 0, reason: filename);
-      expect(theme.floatingActionButtonTheme.highlightElevation, 0,
-          reason: filename);
+      expect(
+        theme.floatingActionButtonTheme.highlightElevation,
+        0,
+        reason: filename,
+      );
       for (final button in tester.widgetList<FloatingActionButton>(fabFinder)) {
         expect(button.elevation, isNull, reason: filename);
         expect(button.highlightElevation, isNull, reason: filename);
-        final materials = tester.widgetList<Material>(find.descendant(
-          of: find.byWidget(button), matching: find.byType(Material),
-        )).toList();
+        final materials = tester
+            .widgetList<Material>(
+              find.descendant(
+                of: find.byWidget(button),
+                matching: find.byType(Material),
+              ),
+            )
+            .toList();
         expect(materials, isNotEmpty, reason: filename);
-        expect(materials.every((m) => m.elevation == 0), isTrue,
-            reason: filename);
+        expect(
+          materials.every((m) => m.elevation == 0),
+          isTrue,
+          reason: filename,
+        );
       }
       expect(tester.takeException(), isNull, reason: filename);
-      final boundary = captureKey.currentContext!.findRenderObject()
-          as RenderRepaintBoundary;
+      final boundary =
+          captureKey.currentContext!.findRenderObject()
+              as RenderRepaintBoundary;
       final png = await tester.runAsync(() async {
         final image = await boundary.toImage(pixelRatio: 1);
         final bytes = await image.toByteData(format: ui.ImageByteFormat.png);

@@ -8,12 +8,14 @@ import '../services/advertising_service.dart';
 import 'ad_live_slot_widget.dart';
 import '../l10n/app_localizations.dart';
 
-
 /// Map exactly the three editable app areas that offer scoped coin ad removal.
 /// All other routes retain the normal advertising policy; allAds is global.
 String? coinAdBenefitForRoute(String route) {
-  if (route == '/home' || route == '/shared' || route == '/trash' ||
-      route.startsWith('/home/')) return 'projectListAds';
+  if (route == '/home' ||
+      route == '/shared' ||
+      route == '/trash' ||
+      route.startsWith('/home/'))
+    return 'projectListAds';
   if (route == '/canvas' || route.startsWith('/canvas/')) return 'canvasAds';
   if (route == '/timeline' || route.startsWith('/timeline/')) {
     return 'timelineAds';
@@ -121,9 +123,10 @@ class AdMockPageFrame extends StatelessWidget {
       return child;
     }
     final premium = context.watch<PremiumService>();
-    final isPremium = premium.isPremium ||
+    final isPremium =
+        premium.isPremium ||
         (coinPlacementKey != null &&
-         premium.isServerCoinBenefitActive(coinPlacementKey!));
+            premium.isServerCoinBenefitActive(coinPlacementKey!));
     // Standalone widget tests omit AdvertisingService; production always
     // provides it, and canRequestAds gates real SDK requests.
     final ads = context.watch<AdvertisingService?>();

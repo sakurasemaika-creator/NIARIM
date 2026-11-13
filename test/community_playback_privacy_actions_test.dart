@@ -59,61 +59,82 @@ void main() {
   setUp(() {
     SharedPreferences.setMockInitialValues({});
     CommunityYoutubePlayer.debugPlayerBuilder = (context, id, playing) =>
-        Container(
-          key: Key('mockYouTube-$id-$playing'),
-          color: Colors.black,
-        );
+        Container(key: Key('mockYouTube-$id-$playing'), color: Colors.black);
   });
   tearDown(() => CommunityYoutubePlayer.debugPlayerBuilder = null);
 
-  for (final blockedStatus in ['private', 'deleted', 'unavailable', 'unknown']) {
-    testWidgets('preview cannot open details after video becomes $blockedStatus',
-        (tester) async {
-      var state = 'available';
-      var checks = 0;
-      final client = MockClient((request) async {
-        if (request.url.path == '/works/$_id/playback-status') {
-          checks++;
-          return http.Response(jsonEncode({'status': state}), 200,
-              headers: {'content-type': 'application/json'});
-        }
-        return http.Response('{}', 404);
-      });
-      final community = CommunityService(api: CommunityApi(NiarimApiClient(
-        baseUrl: 'https://example.invalid',
-        httpClient: client,
-        maxGetRetries: 0,
-        retryBackoff: Duration.zero,
-      )));
-      final preview = CommunityPreviewService();
-      final work = _work();
-      community.applyServerWork(work);
-      preview.show(work);
-      await tester.pumpWidget(_host(
-        community: community,
-        preview: preview,
-        home: const Scaffold(body: Stack(children: [CommunityFloatingPreview()])),
-      ));
-      await tester.pumpAndSettle();
-      expect(checks, greaterThanOrEqualTo(1));
-      expect(find.byKey(const Key('communityPreviewDetails')), findsOneWidget);
-      expect(find.byKey(const Key('mockYouTube-$_id-true')), findsOneWidget);
+  for (final blockedStatus in [
+    'private',
+    'deleted',
+    'unavailable',
+    'unknown',
+  ]) {
+    testWidgets(
+      'preview cannot open details after video becomes $blockedStatus',
+      (tester) async {
+        var state = 'available';
+        var checks = 0;
+        final client = MockClient((request) async {
+          if (request.url.path == '/works/$_id/playback-status') {
+            checks++;
+            return http.Response(
+              jsonEncode({'status': state}),
+              200,
+              headers: {'content-type': 'application/json'},
+            );
+          }
+          return http.Response('{}', 404);
+        });
+        final community = CommunityService(
+          api: CommunityApi(
+            NiarimApiClient(
+              baseUrl: 'https://example.invalid',
+              httpClient: client,
+              maxGetRetries: 0,
+              retryBackoff: Duration.zero,
+            ),
+          ),
+        );
+        final preview = CommunityPreviewService();
+        final work = _work();
+        community.applyServerWork(work);
+        preview.show(work);
+        await tester.pumpWidget(
+          _host(
+            community: community,
+            preview: preview,
+            home: const Scaffold(
+              body: Stack(children: [CommunityFloatingPreview()]),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+        expect(checks, greaterThanOrEqualTo(1));
+        expect(
+          find.byKey(const Key('communityPreviewDetails')),
+          findsOneWidget,
+        );
+        expect(find.byKey(const Key('mockYouTube-$_id-true')), findsOneWidget);
 
-      // The public data was cached when the preview was opened.
-      // Publication is revoked before the user presses Details.
-      state = blockedStatus;
-      await tester.tap(find.byKey(const Key('communityPreviewDetails')));
-      await tester.pumpAndSettle();
-      expect(checks, greaterThanOrEqualTo(2));
-      expect(preview.work?.id, _id);
-      expect(find.byType(CommunityWorkDetailScreen), findsNothing);
-      expect(find.byKey(const Key('communityPlaybackStatusPanel')), findsOneWidget);
-      expect(find.byKey(const Key('mockYouTube-$_id-true')), findsNothing);
-      expect(tester.takeException(), isNull);
-      await tester.pumpWidget(const SizedBox.shrink());
-      preview.dispose();
-      community.dispose();
-    });
+        // The public data was cached when the preview was opened.
+        // Publication is revoked before the user presses Details.
+        state = blockedStatus;
+        await tester.tap(find.byKey(const Key('communityPreviewDetails')));
+        await tester.pumpAndSettle();
+        expect(checks, greaterThanOrEqualTo(2));
+        expect(preview.work?.id, _id);
+        expect(find.byType(CommunityWorkDetailScreen), findsNothing);
+        expect(
+          find.byKey(const Key('communityPlaybackStatusPanel')),
+          findsOneWidget,
+        );
+        expect(find.byKey(const Key('mockYouTube-$_id-true')), findsNothing);
+        expect(tester.takeException(), isNull);
+        await tester.pumpWidget(const SizedBox.shrink());
+        preview.dispose();
+        community.dispose();
+      },
+    );
   }
 
   testWidgets('resuming a paused preview rechecks visibility', (tester) async {
@@ -121,24 +142,35 @@ void main() {
     var checks = 0;
     final client = MockClient((request) async {
       checks++;
-      return http.Response(jsonEncode({'status': state}), 200,
-          headers: {'content-type': 'application/json'});
+      return http.Response(
+        jsonEncode({'status': state}),
+        200,
+        headers: {'content-type': 'application/json'},
+      );
     });
-    final community = CommunityService(api: CommunityApi(NiarimApiClient(
-      baseUrl: 'https://example.invalid',
-      httpClient: client,
-      maxGetRetries: 0,
-      retryBackoff: Duration.zero,
-    )));
+    final community = CommunityService(
+      api: CommunityApi(
+        NiarimApiClient(
+          baseUrl: 'https://example.invalid',
+          httpClient: client,
+          maxGetRetries: 0,
+          retryBackoff: Duration.zero,
+        ),
+      ),
+    );
     final preview = CommunityPreviewService();
     final work = _work();
     community.applyServerWork(work);
     preview.show(work);
-    await tester.pumpWidget(_host(
-      community: community,
-      preview: preview,
-      home: const Scaffold(body: Stack(children: [CommunityFloatingPreview()])),
-    ));
+    await tester.pumpWidget(
+      _host(
+        community: community,
+        preview: preview,
+        home: const Scaffold(
+          body: Stack(children: [CommunityFloatingPreview()]),
+        ),
+      ),
+    );
     await tester.pumpAndSettle();
     final play = find.byKey(const Key('communityPreviewPlay'));
     await tester.tap(play); // Pause should remain possible without an API call.
@@ -148,7 +180,10 @@ void main() {
     await tester.tap(play); // Resume must revalidate now.
     await tester.pumpAndSettle();
     expect(checks, greaterThan(before));
-    expect(find.byKey(const Key('communityPlaybackStatusPanel')), findsOneWidget);
+    expect(
+      find.byKey(const Key('communityPlaybackStatusPanel')),
+      findsOneWidget,
+    );
     expect(find.byKey(const Key('communityPreviewPlay')), findsNothing);
     expect(tester.takeException(), isNull);
     await tester.pumpWidget(const SizedBox.shrink());
@@ -156,25 +191,35 @@ void main() {
     community.dispose();
   });
 
-  testWidgets('approved detail embeds the official YouTube player surface',
-      (tester) async {
-    final client = MockClient((request) async => http.Response(
-      jsonEncode({'status': 'available'}), 200,
-      headers: {'content-type': 'application/json'},
-    ));
-    final community = CommunityService(api: CommunityApi(NiarimApiClient(
-      baseUrl: 'https://example.invalid',
-      httpClient: client,
-      maxGetRetries: 0,
-      retryBackoff: Duration.zero,
-    )));
+  testWidgets('approved detail embeds the official YouTube player surface', (
+    tester,
+  ) async {
+    final client = MockClient(
+      (request) async => http.Response(
+        jsonEncode({'status': 'available'}),
+        200,
+        headers: {'content-type': 'application/json'},
+      ),
+    );
+    final community = CommunityService(
+      api: CommunityApi(
+        NiarimApiClient(
+          baseUrl: 'https://example.invalid',
+          httpClient: client,
+          maxGetRetries: 0,
+          retryBackoff: Duration.zero,
+        ),
+      ),
+    );
     final preview = CommunityPreviewService();
     community.applyServerWork(_work());
-    await tester.pumpWidget(_host(
-      community: community,
-      preview: preview,
-      home: const CommunityWorkDetailScreen(workId: _id),
-    ));
+    await tester.pumpWidget(
+      _host(
+        community: community,
+        preview: preview,
+        home: const CommunityWorkDetailScreen(workId: _id),
+      ),
+    );
     await tester.pumpAndSettle();
     expect(find.byType(CommunityYoutubePlayer), findsOneWidget);
     expect(find.byKey(const Key('mockYouTube-$_id-false')), findsOneWidget);
@@ -185,32 +230,44 @@ void main() {
     community.dispose();
   });
 
-  testWidgets('detail hides cached non-owner metadata until freshly approved',
-      (tester) async {
-    final client = MockClient((request) async => http.Response(
-      jsonEncode({'status': 'private'}),
-      200,
-      headers: {'content-type': 'application/json'},
-    ));
-    final community = CommunityService(api: CommunityApi(NiarimApiClient(
-      baseUrl: 'https://example.invalid',
-      httpClient: client,
-      maxGetRetries: 0,
-      retryBackoff: Duration.zero,
-    )));
+  testWidgets('detail hides cached non-owner metadata until freshly approved', (
+    tester,
+  ) async {
+    final client = MockClient(
+      (request) async => http.Response(
+        jsonEncode({'status': 'private'}),
+        200,
+        headers: {'content-type': 'application/json'},
+      ),
+    );
+    final community = CommunityService(
+      api: CommunityApi(
+        NiarimApiClient(
+          baseUrl: 'https://example.invalid',
+          httpClient: client,
+          maxGetRetries: 0,
+          retryBackoff: Duration.zero,
+        ),
+      ),
+    );
     final preview = CommunityPreviewService();
     community.applyServerWork(_work());
 
-    await tester.pumpWidget(_host(
-      community: community,
-      preview: preview,
-      home: const CommunityWorkDetailScreen(workId: _id),
-    ));
+    await tester.pumpWidget(
+      _host(
+        community: community,
+        preview: preview,
+        home: const CommunityWorkDetailScreen(workId: _id),
+      ),
+    );
     expect(find.text(_secretTitle), findsNothing);
     await tester.pumpAndSettle();
     expect(find.text(_secretTitle), findsNothing);
     expect(find.text('Hidden author'), findsNothing);
-    expect(find.byKey(const Key('communityPlaybackStatusPanel')), findsOneWidget);
+    expect(
+      find.byKey(const Key('communityPlaybackStatusPanel')),
+      findsOneWidget,
+    );
     expect(tester.takeException(), isNull);
     await tester.pumpWidget(const SizedBox.shrink());
     preview.dispose();

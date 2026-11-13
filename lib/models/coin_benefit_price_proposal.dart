@@ -7,6 +7,7 @@ import 'coin_economy_scale.dart';
 /// authenticated, approved, server-versioned quote and atomic redemption.
 abstract final class CoinBenefitPriceCatalog {
   static const version = 'v3-final-annual550000';
+
   /// Exactly the Japanese annual Premium plan price × 100 coins.
   static const yearlyPremiumCoins =
       CoinEconomyScale.yearlyPlanYen * CoinEconomyScale.referenceCoinsPerYen;

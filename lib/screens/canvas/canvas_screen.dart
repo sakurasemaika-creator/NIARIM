@@ -4,7 +4,9 @@ import 'dart:ui' as ui;
 
 import 'package:niarim/services/theme_service.dart';
 import 'package:flutter/material.dart';
+
 import 'filter_immersive_policy.dart';
+
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
@@ -238,7 +240,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
       // No free-positioned windows: every tool belongs to the left/right dock.
       panel != CanvasDockPanel.colorAdjust &&
       !(panel == CanvasDockPanel.filter &&
-        context.read<FilterService>().currentFilter != null);
+          context.read<FilterService>().currentFilter != null);
 
   void _setDesktopDockDragging(bool active) {
     if (!mounted || _desktopDockDragActive == active) return;
@@ -263,9 +265,10 @@ class _CanvasScreenState extends State<CanvasScreen> {
     SettingsService settings, {
     required bool right,
   }) =>
-      _physicalDockOrder(settings, right: right).any(
-        (panel) => _visibleInDock(settings, panel),
-      ) ||
+      _physicalDockOrder(
+        settings,
+        right: right,
+      ).any((panel) => _visibleInDock(settings, panel)) ||
       (right == _meshDockOnRight(settings) && _showMeshTransformPanel);
 
   void _resizePhysicalDockColumn({
@@ -1361,7 +1364,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
     projectService?.generateAndSaveThumbnail(
       widget.projectId,
       sceneId: scenesAtExit == null || scenesAtExit.isEmpty
-          ? null : scenesAtExit.first.id,
+          ? null
+          : scenesAtExit.first.id,
       frameIndex: _currentFrame,
     );
     super.dispose();
@@ -1512,9 +1516,13 @@ class _CanvasScreenState extends State<CanvasScreen> {
         _selectionEditingGivesWay(isDesktop) || colorAdjusting;
     final settings = context.watch<SettingsService>();
     final leftDockHasPanels =
-        isDesktop && !immersiveAdjusting && _hasPhysicalDockPanels(settings, right: false);
+        isDesktop &&
+        !immersiveAdjusting &&
+        _hasPhysicalDockPanels(settings, right: false);
     final rightDockHasPanels =
-        isDesktop && !immersiveAdjusting && _hasPhysicalDockPanels(settings, right: true);
+        isDesktop &&
+        !immersiveAdjusting &&
+        _hasPhysicalDockPanels(settings, right: true);
     // 左利きモード：フローティング／ドッキングパネルを左右反転し、
     // 描画する手の側にパネルが重ならないようにする。
     final leftHanded = settings.isLeftHanded;
@@ -1595,7 +1603,9 @@ class _CanvasScreenState extends State<CanvasScreen> {
                                   onDragEnd: () =>
                                       _finishPhysicalDockResize(right: false),
                                 ),
-                            ] else if (isDesktop && !immersiveAdjusting && _desktopDockDragActive)
+                            ] else if (isDesktop &&
+                                !immersiveAdjusting &&
+                                _desktopDockDragActive)
                               _desktopEmptyDockDropTarget(right: false),
                             Expanded(
                               child: Stack(
@@ -1644,7 +1654,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
                                           _filterCanvasPreviewBlendMode(),
                                       contentRevision: _canvasContentRevision,
                                       lockToolInput:
-                                          selectionEditingHidden || colorAdjusting,
+                                          selectionEditingHidden ||
+                                          colorAdjusting,
                                       onFilterGizmoChanged: (gizmo) =>
                                           _moveFilterGizmo(project, gizmo),
                                       onFilterGizmoDragStart: () => context
@@ -1751,9 +1762,9 @@ class _CanvasScreenState extends State<CanvasScreen> {
                                             borderRadius: BorderRadius.circular(
                                               10,
                                             ),
-                                            color: Theme.of(
-                                              context,
-                                            ).colorScheme.inverseSurface,
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .inverseSurface,
                                             child: Padding(
                                               padding:
                                                   const EdgeInsets.symmetric(
@@ -1849,7 +1860,9 @@ class _CanvasScreenState extends State<CanvasScreen> {
                                 ),
                                 child: _buildRightDockColumn(),
                               )
-                            else if (isDesktop && !immersiveAdjusting && _desktopDockDragActive)
+                            else if (isDesktop &&
+                                !immersiveAdjusting &&
+                                _desktopDockDragActive)
                               _desktopEmptyDockDropTarget(right: true),
                             // The outer toolbar moves to the dominant hand;
                             // the saved dock groups are visually mirrored.
@@ -1894,8 +1907,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                           _resetSelectionSliders();
                         }),
                       ),
-                    if (!immersiveAdjusting &&
-                        _usesBrushSize(_currentTool))
+                    if (!immersiveAdjusting && _usesBrushSize(_currentTool))
                       BrushSizeSlider(
                         brushSize: _brushSize,
                         opacity: _brushOpacity,
@@ -2053,8 +2065,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                 // キャンバスへ通す。バリア自体は外さずIgnorePointerで素通し
                 // にすること（外すとStackの並びがずれ、パネルが作り直されて
                 // 編集中のフィルターが一覧へ戻ってしまう）。
-                if (_anyToolPanelOpen && !isDesktop &&
-                    !colorAdjusting)
+                if (_anyToolPanelOpen && !isDesktop && !colorAdjusting)
                   Positioned.fill(
                     child: IgnorePointer(
                       ignoring: _filterPanelUsesCanvas(),
@@ -2538,15 +2549,23 @@ class _CanvasScreenState extends State<CanvasScreen> {
                                           child: Semantics(
                                             label: '現在色',
                                             child: ClipRRect(
-                                              borderRadius: BorderRadius.circular(3),
+                                              borderRadius:
+                                                  BorderRadius.circular(3),
                                               child: SizedBox(
-                                                key: const ValueKey('pc-color-picker-current-chip'),
+                                                key: const ValueKey(
+                                                  'pc-color-picker-current-chip',
+                                                ),
                                                 height: 20,
                                                 child: Stack(
                                                   fit: StackFit.expand,
                                                   children: [
-                                                    ColoredBox(color: scheme.surfaceContainerHighest),
-                                                    ColoredBox(color: _currentColor),
+                                                    ColoredBox(
+                                                      color: scheme
+                                                          .surfaceContainerHighest,
+                                                    ),
+                                                    ColoredBox(
+                                                      color: _currentColor,
+                                                    ),
                                                   ],
                                                 ),
                                               ),
@@ -2618,7 +2637,9 @@ class _CanvasScreenState extends State<CanvasScreen> {
                         ),
                         SizedBox(
                           height: height,
-                          child: DockedPanelScope(child: _responsiveDockBody(p)),
+                          child: DockedPanelScope(
+                            child: _responsiveDockBody(p),
+                          ),
                         ),
                         MouseRegion(
                           cursor: SystemMouseCursors.resizeUpDown,
@@ -3823,9 +3844,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
           if (isWideScreen(context))
             PopupMenuButton<CanvasDockPanel>(
               key: const Key('desktopWindowVisibilityMenu'),
-              tooltip: AppLocalizations.of(
-                context,
-              )!.pcWorkspaceLayoutScreenTitle,
+              tooltip: AppLocalizations.of(context)!
+                  .pcWorkspaceLayoutScreenTitle,
               icon: const Icon(Icons.view_sidebar_outlined, size: 22),
               onSelected: (panel) =>
                   _setDesktopPanelVisible(panel, !_desktopPanelVisible(panel)),

@@ -44,11 +44,7 @@ class _TrackingCommunityService extends CommunityService {
     required bool exact,
   }) {
     searchCalls++;
-    return super.refreshSearch(
-      query: query,
-      tagMode: tagMode,
-      exact: exact,
-    );
+    return super.refreshSearch(query: query, tagMode: tagMode, exact: exact);
   }
 }
 
@@ -95,7 +91,9 @@ void main() {
       } else if (path == '/ranking/visibility') {
         body = {
           'visibility': {
-            for (final id in (request.url.queryParameters['ids'] ?? '').split(','))
+            for (final id in (request.url.queryParameters['ids'] ?? '').split(
+              ',',
+            ))
               if (id.isNotEmpty) id: true,
           },
         };
@@ -195,7 +193,6 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-
   testWidgets('pull-to-refresh works only at the list top', (tester) async {
     var latestFetches = 0;
     final client = MockClient((request) async {
@@ -278,8 +275,10 @@ void main() {
     scrollController.jumpTo(0);
     await tester.pumpAndSettle();
     expect(
-      latestFetches, 1,
-      reason: 'Programmatic scroll-to-top must not issue refresh; '
+      latestFetches,
+      1,
+      reason:
+          'Programmatic scroll-to-top must not issue refresh; '
           'refreshCalls=${service.refreshCalls}',
     );
     await tester.fling(
@@ -288,8 +287,11 @@ void main() {
       1000,
     );
     await tester.pumpAndSettle();
-    expect(latestFetches, 2,
-      reason: 'refreshCalls=${service.refreshCalls}, moreCalls=${service.moreCalls}, searchCalls=${service.searchCalls}',
+    expect(
+      latestFetches,
+      2,
+      reason:
+          'refreshCalls=${service.refreshCalls}, moreCalls=${service.moreCalls}, searchCalls=${service.searchCalls}',
     );
   });
 

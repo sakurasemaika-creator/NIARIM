@@ -150,6 +150,7 @@ class _StrokeSamplePreviewState extends State<StrokeSamplePreview> {
             pressure: 0.4 + 0.6 * math.sin(math.pi * t),
           );
         }
+
         engine.beginStroke(samplePoint(points.first, 0), 'preview');
         for (var i = 1; i < points.length; i++) {
           engine.continueStroke(samplePoint(points[i], i), 'preview');
@@ -183,10 +184,7 @@ class _StrokeSamplePreviewState extends State<StrokeSamplePreview> {
     }
 
     final activeStamp = stamp!;
-    final texture = await generateBuiltInStampTexture(
-      activeStamp,
-      size: 48,
-    );
+    final texture = await generateBuiltInStampTexture(activeStamp, size: 48);
     final result = StampEngine().stampAlongPath(
       canvasData: Uint8List(_width * _height * 4),
       width: _width,
@@ -253,7 +251,8 @@ class _StrokeSamplePreviewState extends State<StrokeSamplePreview> {
                     // their soft halo into jagged opaque-looking pixels.
                     // Pixel-art brushes, stamps and dot-grid tones must
                     // remain crisp; soften only continuous-color samples.
-                    filterQuality: (widget.brush?.pixelMode ?? false) ||
+                    filterQuality:
+                        (widget.brush?.pixelMode ?? false) ||
                             (widget.stamp?.pixelMode ?? false) ||
                             (widget.tone?.name.startsWith('ピクセル') ?? false)
                         ? FilterQuality.none

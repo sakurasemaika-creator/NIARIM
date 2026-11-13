@@ -87,7 +87,9 @@ void main() {
     // Exported-file scanning is genuinely asynchronous and can keep a
     // progress indicator alive; bounded pumps avoid waiting for infinity.
     await tester.pump(const Duration(milliseconds: 350));
-    await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 80)));
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 80)),
+    );
     await tester.pump(const Duration(milliseconds: 350));
     expect(tester.widget<Semantics>(tab).properties.selected, isTrue);
   }
@@ -260,8 +262,10 @@ void main() {
         expect(tab, findsOneWidget);
         expect(tester.widget<Semantics>(tab).properties.selected, isTrue);
         expect(
-          find.descendant(of: tab,
-              matching: find.byIcon(Icons.movie_creation_outlined)),
+          find.descendant(
+            of: tab,
+            matching: find.byIcon(Icons.movie_creation_outlined),
+          ),
           findsOneWidget,
         );
         final bar = tester.widget<TabBar>(find.byType(TabBar).first);
@@ -368,8 +372,13 @@ void main() {
     final tabBar = tester.widget<TabBar>(find.byType(TabBar).first);
     expect(tabBar.labelColor, menu);
     expect(tabBar.indicatorColor, menu);
-    expect(tester.widget<Semantics>(
-      find.byKey(const ValueKey('home_tab_0'))).properties.selected, isTrue);
+    expect(
+      tester
+          .widget<Semantics>(find.byKey(const ValueKey('home_tab_0')))
+          .properties
+          .selected,
+      isTrue,
+    );
     await tester.pumpWidget(const SizedBox.shrink());
   });
 
@@ -418,51 +427,72 @@ void main() {
     await switchTab(tester, 1);
     expect(backFinder, findsOneWidget);
     expect(find.byKey(const Key('homeScrollToTopFab')), findsNothing);
-    expect(find.byType(FloatingActionButton), findsOneWidget,
-        reason: 'The exported works tab still has its new-folder button');
+    expect(
+      find.byType(FloatingActionButton),
+      findsOneWidget,
+      reason: 'The exported works tab still has its new-folder button',
+    );
     await tester.pumpWidget(const SizedBox.shrink());
   });
 
-  testWidgets('every drawer destination returns to the same exported works tab', (
-    tester,
-  ) async {
-    final l10n = await open(tester);
-    await switchTab(tester, 1);
-    for (final (target, path) in [
-      (find.text(l10n.homeDrawerStorage), '/storage'),
-      (find.text(l10n.homeDrawerSettings), '/settings'),
-      (find.byKey(const Key('homeGuideMenuItem')), '/help'),
-      (find.byKey(const Key('homeCoinBenefitsMenuItem')), '/rewards'),
-      (find.byKey(const Key('homeMembershipBenefitsMenuItem')), '/membership'),
-    ]) {
-      tester
-          .state<ScaffoldState>(
-            find
-                .descendant(
-                  of: find.byType(HomeScreen),
-                  matching: find.byType(Scaffold),
-                )
-                .first,
-          )
-          .openEndDrawer();
-      await settleWithAsyncExport(tester);
-      final item = find.descendant(of: find.byType(Drawer), matching: target);
-      await tester.ensureVisible(item);
-      await tester.tap(item);
-      await tester.pump(const Duration(milliseconds: 500));
-      for (var attempt = 0; attempt < 20; attempt++) {
-        await tester.runAsync(
-          () => Future<void>.delayed(const Duration(milliseconds: 30)),
+  testWidgets(
+    'every drawer destination returns to the same exported works tab',
+    (tester) async {
+      final l10n = await open(tester);
+      await switchTab(tester, 1);
+      for (final (target, path) in [
+        (find.text(l10n.homeDrawerStorage), '/storage'),
+        (find.text(l10n.homeDrawerSettings), '/settings'),
+        (find.byKey(const Key('homeGuideMenuItem')), '/help'),
+        (find.byKey(const Key('homeCoinBenefitsMenuItem')), '/rewards'),
+        (
+          find.byKey(const Key('homeMembershipBenefitsMenuItem')),
+          '/membership',
+        ),
+      ]) {
+        tester
+            .state<ScaffoldState>(
+              find
+                  .descendant(
+                    of: find.byType(HomeScreen),
+                    matching: find.byType(Scaffold),
+                  )
+                  .first,
+            )
+            .openEndDrawer();
+        await settleWithAsyncExport(tester);
+        final item = find.descendant(of: find.byType(Drawer), matching: target);
+        await tester.ensureVisible(item);
+        await tester.tap(item);
+        await tester.pump(const Duration(milliseconds: 500));
+        for (var attempt = 0; attempt < 20; attempt++) {
+          await tester.runAsync(
+            () => Future<void>.delayed(const Duration(milliseconds: 30)),
+          );
+          await tester.pump(const Duration(milliseconds: 100));
+          if (find.byType(CircularProgressIndicator).evaluate().isEmpty) break;
+        }
+        expect(tester.takeException(), isNull, reason: path);
+        expect(
+          appRouter.routerDelegate.currentConfiguration.last.matchedLocation,
+          path,
         );
-        await tester.pump(const Duration(milliseconds: 100));
-        if (find.byType(CircularProgressIndicator).evaluate().isEmpty) break;
+        expect(appRouter.canPop(), isTrue, reason: path);
+        appRouter.pop();
+        await settleWithAsyncExport(tester);
+        expect(
+          tester
+              .widget<Semantics>(find.byKey(const ValueKey('home_tab_1')))
+              .properties
+              .selected,
+          isTrue,
+        );
       }
-      expect(tester.takeException(), isNull, reason: path);
-      expect(
-        appRouter.routerDelegate.currentConfiguration.last.matchedLocation,
-        path,
-      );
-      expect(appRouter.canPop(), isTrue, reason: path);
+      // Community remains a separate route; the home library stays on Works.
+      appRouter.push('/community');
+      await settleWithAsyncExport(tester);
+      expect(find.byType(CommunityScreen), findsOneWidget);
+      expect(appRouter.canPop(), isTrue);
       appRouter.pop();
       await settleWithAsyncExport(tester);
       expect(
@@ -472,17 +502,9 @@ void main() {
             .selected,
         isTrue,
       );
-    }
-    // Community remains a separate route; the home library stays on Works.
-    appRouter.push('/community');
-    await settleWithAsyncExport(tester);
-    expect(find.byType(CommunityScreen), findsOneWidget);
-    expect(appRouter.canPop(), isTrue);
-    appRouter.pop();
-    await settleWithAsyncExport(tester);
-    expect(tester.widget<Semantics>(find.byKey(const ValueKey('home_tab_1'))).properties.selected, isTrue);
-    await tester.pumpWidget(const SizedBox.shrink());
-  });
+      await tester.pumpWidget(const SizedBox.shrink());
+    },
+  );
 
   testWidgets(
     'the four home tabs follow the configured accent without correction',
@@ -503,8 +525,11 @@ void main() {
           expect(tab, findsOneWidget);
           expect(tester.widget<Semantics>(tab).properties.selected, isTrue);
           final bar = tester.widget<TabBar>(find.byType(TabBar).first);
-          expect(bar.indicatorColor, scheme.primary,
-              reason: 'selected tab $index on ${theme.id}');
+          expect(
+            bar.indicatorColor,
+            scheme.primary,
+            reason: 'selected tab $index on ${theme.id}',
+          );
           expect(bar.labelColor, scheme.primary);
         }
         expect(find.byKey(const ValueKey('home_tab_2')), findsOneWidget);

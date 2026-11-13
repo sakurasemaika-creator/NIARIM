@@ -78,9 +78,8 @@ class _PlazaMissionsPanelState extends State<PlazaMissionsPanel> {
       );
     } catch (_) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(_l10n.missionClaimFailed)));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(_l10n.missionClaimFailed)));
       }
     } finally {
       if (mounted && identical(_api, api) && _owner == owner) {

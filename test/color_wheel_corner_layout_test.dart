@@ -42,8 +42,7 @@ void main() {
 
         final wheel = tester.getRect(find.byType(HsvColorWheel));
         const radius = 118.0;
-        final center = Offset(wheel.left + panelWidth / 2,
-            wheel.top + radius);
+        final center = Offset(wheel.left + panelWidth / 2, wheel.top + radius);
         for (final name in [
           'color-picker-transparent-toggle',
           'color-picker-eyedropper',
@@ -57,16 +56,25 @@ void main() {
             math.max(rect.left, math.min(center.dx, rect.right)),
             math.max(rect.top, math.min(center.dy, rect.bottom)),
           );
-          expect((nearest - center).distance,
-              greaterThanOrEqualTo(radius - 2),
-              reason: '$name overlapped the ring at $panelWidth dp');
+          expect(
+            (nearest - center).distance,
+            greaterThanOrEqualTo(radius - 2),
+            reason: '$name overlapped the ring at $panelWidth dp',
+          );
         }
         final rgb = tester.getRect(
-            find.byKey(const ValueKey('color-slider-mode-rgb')));
-        expect(rgb.right, lessThanOrEqualTo(wheel.right - 4),
-            reason: 'RGB must leave space for a scroll bar');
-        expect(rgb.bottom, lessThanOrEqualTo(wheel.bottom),
-            reason: 'The picker must allocate enough height for the pill');
+          find.byKey(const ValueKey('color-slider-mode-rgb')),
+        );
+        expect(
+          rgb.right,
+          lessThanOrEqualTo(wheel.right - 4),
+          reason: 'RGB must leave space for a scroll bar',
+        );
+        expect(
+          rgb.bottom,
+          lessThanOrEqualTo(wheel.bottom),
+          reason: 'The picker must allocate enough height for the pill',
+        );
         expect(tester.takeException(), isNull);
       },
     );

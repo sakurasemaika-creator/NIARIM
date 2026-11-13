@@ -51,6 +51,7 @@ class ExportedWorkCard extends StatelessWidget {
   final VoidCallback? onDelete;
   final bool shareBusy;
   final String? shareError;
+
   /// Match the project collection's small/medium/large card presentation.
   final bool gridTile;
   final bool isFavorite;
@@ -63,10 +64,14 @@ class ExportedWorkCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final selection = HomeCollectionSelectionScope.maybeOf(context);
-    final selectionActive = selection != null && selection.active && selectionId != null;
-    final selectTap = selectionActive ? () => selection.onToggle(selectionId!) : onOpen;
+    final selectionActive =
+        selection != null && selection.active && selectionId != null;
+    final selectTap = selectionActive
+        ? () => selection.onToggle(selectionId!)
+        : onOpen;
     final selectLongPress = selection != null && selectionId != null
-        ? () => selection.onLongPress(selectionId!) : onMove;
+        ? () => selection.onLongPress(selectionId!)
+        : onMove;
     final foreground =
         theme.popupMenuTheme.textStyle?.color ?? theme.colorScheme.onSurface;
     final background = theme.cardTheme.color ?? theme.colorScheme.surface;
@@ -122,9 +127,11 @@ class ExportedWorkCard extends StatelessWidget {
       favorite: isFavorite,
       tooltip: isFavorite
           ? (Localizations.localeOf(context).languageCode == 'ja'
-              ? 'お気に入りを解除' : 'Remove from favorites')
+                ? 'お気に入りを解除'
+                : 'Remove from favorites')
           : (Localizations.localeOf(context).languageCode == 'ja'
-              ? 'お気に入りに追加' : 'Add to favorites'),
+                ? 'お気に入りに追加'
+                : 'Add to favorites'),
       onPressed: onToggleFavorite,
     );
     Widget menu() => CollectionActionFrame(
@@ -135,11 +142,14 @@ class ExportedWorkCard extends StatelessWidget {
             ? SizedBox.square(
                 dimension: 20,
                 child: CircularProgressIndicator(
-                  strokeWidth: 2, color: foreground,
+                  strokeWidth: 2,
+                  color: foreground,
                 ),
               )
             : const Icon(
-                Icons.more_vert, size: CollectionActionFrame.glyphSize),
+                Icons.more_vert,
+                size: CollectionActionFrame.glyphSize,
+              ),
         tooltip: MaterialLocalizations.of(context).showMenuTooltip,
         onSelected: (action) {
           switch (action) {
@@ -205,50 +215,51 @@ class ExportedWorkCard extends StatelessWidget {
     if (gridTile) {
       return HomeCollectionSelectionSurface(
         selectionId: selectionId ?? name,
-        child: collectionTileShadow(context, Card(
-        margin: EdgeInsets.zero,
-        elevation: 0,
-        clipBehavior: Clip.antiAlias,
-        color: background,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(14),
-          side: const BorderSide(color: Colors.transparent, width: 2),
-        ),
-        child: InkWell(
-          onTap: selectTap,
-          onLongPress: selectLongPress,
-          onSecondaryTap: selectLongPress,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Expanded(
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    thumbnail(),
-                    // Keep grid actions in the same corners as Projects:
-                    // menu at top-right, favorite at bottom-left.
-                    if (!selectionActive)
-                      Positioned(
-                        top: 4,
-                        right: 4,
-                        child: menu(),
-                      ),
-                    if (!selectionActive && onToggleFavorite != null)
-                      Positioned(
-                        key: const Key('exportedWorkGridFavoriteBottomLeft'),
-                        bottom: 4,
-                        left: 4,
-                        child: favorite(),
-                      ),
-                  ],
-                ),
+        child: collectionTileShadow(
+          context,
+          Card(
+            margin: EdgeInsets.zero,
+            elevation: 0,
+            clipBehavior: Clip.antiAlias,
+            color: background,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(14),
+              side: const BorderSide(color: Colors.transparent, width: 2),
+            ),
+            child: InkWell(
+              onTap: selectTap,
+              onLongPress: selectLongPress,
+              onSecondaryTap: selectLongPress,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Expanded(
+                    child: Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        thumbnail(),
+                        // Keep grid actions in the same corners as Projects:
+                        // menu at top-right, favorite at bottom-left.
+                        if (!selectionActive)
+                          Positioned(top: 4, right: 4, child: menu()),
+                        if (!selectionActive && onToggleFavorite != null)
+                          Positioned(
+                            key: const Key(
+                              'exportedWorkGridFavoriteBottomLeft',
+                            ),
+                            bottom: 4,
+                            left: 4,
+                            child: favorite(),
+                          ),
+                      ],
+                    ),
+                  ),
+                  collectionTileCaption(context, name),
+                ],
               ),
-              collectionTileCaption(context, name),
-            ],
+            ),
           ),
         ),
-      )),
       );
     }
 
@@ -256,78 +267,79 @@ class ExportedWorkCard extends StatelessWidget {
       selectionId: selectionId ?? name,
       grid: false,
       child: Card(
-      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      color: background,
-      clipBehavior: Clip.antiAlias,
-      child: CallbackShortcuts(
-        bindings: {
-          const SingleActivator(LogicalKeyboardKey.f10, shift: true): onMove,
-          const SingleActivator(LogicalKeyboardKey.contextMenu): onMove,
-        },
-        child: InkWell(
-          onTap: selectTap,
-          onLongPress: selectLongPress,
-          onSecondaryTap: selectLongPress,
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              // Use a proportionate cover on phones without letting it grow
-              // unreasonably large on desktop. The Table fills this cover to
-              // the *actual* content height, including wrapped action rows.
-              final coverWidth = constraints.maxWidth.isFinite
-                  ? (constraints.maxWidth * 0.24).clamp(72.0, 96.0).toDouble()
-                  : 88.0;
-              return Table(
-                columnWidths: {
-                  0: FixedColumnWidth(coverWidth),
-                  1: const FixedColumnWidth(12),
-                  2: const FlexColumnWidth(),
-                },
-                children: [
-                  TableRow(
-                    children: [
-                      TableCell(
-                        verticalAlignment: TableCellVerticalAlignment.fill,
-                        child: thumbnail(),
-                      ),
-                      const SizedBox.shrink(),
-                      TableCell(
-                        verticalAlignment: TableCellVerticalAlignment.top,
-                        child: Padding(
-                          padding: const EdgeInsets.fromLTRB(0, 8, 8, 8),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Expanded(child: title()),
-                                  const SizedBox(width: 4),
-                                  if (!selectionActive && onToggleFavorite != null) ...[
-                                    favorite(),
+        margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        color: background,
+        clipBehavior: Clip.antiAlias,
+        child: CallbackShortcuts(
+          bindings: {
+            const SingleActivator(LogicalKeyboardKey.f10, shift: true): onMove,
+            const SingleActivator(LogicalKeyboardKey.contextMenu): onMove,
+          },
+          child: InkWell(
+            onTap: selectTap,
+            onLongPress: selectLongPress,
+            onSecondaryTap: selectLongPress,
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                // Use a proportionate cover on phones without letting it grow
+                // unreasonably large on desktop. The Table fills this cover to
+                // the *actual* content height, including wrapped action rows.
+                final coverWidth = constraints.maxWidth.isFinite
+                    ? (constraints.maxWidth * 0.24).clamp(72.0, 96.0).toDouble()
+                    : 88.0;
+                return Table(
+                  columnWidths: {
+                    0: FixedColumnWidth(coverWidth),
+                    1: const FixedColumnWidth(12),
+                    2: const FlexColumnWidth(),
+                  },
+                  children: [
+                    TableRow(
+                      children: [
+                        TableCell(
+                          verticalAlignment: TableCellVerticalAlignment.fill,
+                          child: thumbnail(),
+                        ),
+                        const SizedBox.shrink(),
+                        TableCell(
+                          verticalAlignment: TableCellVerticalAlignment.top,
+                          child: Padding(
+                            padding: const EdgeInsets.fromLTRB(0, 8, 8, 8),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Expanded(child: title()),
                                     const SizedBox(width: 4),
+                                    if (!selectionActive &&
+                                        onToggleFavorite != null) ...[
+                                      favorite(),
+                                      const SizedBox(width: 4),
+                                    ],
+                                    if (!selectionActive) menu(),
                                   ],
-                                  if (!selectionActive) menu(),
+                                ),
+                                const SizedBox(height: 4),
+                                details(),
+                                if (shareError != null) ...[
+                                  const SizedBox(height: 8),
+                                  shareFeedback(),
                                 ],
-                              ),
-                              const SizedBox(height: 4),
-                              details(),
-                              if (shareError != null) ...[
-                                const SizedBox(height: 8),
-                                shareFeedback(),
                               ],
-                            ],
+                            ),
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                ],
-              );
-            },
+                      ],
+                    ),
+                  ],
+                );
+              },
+            ),
           ),
         ),
-      ),
       ),
     );
   }

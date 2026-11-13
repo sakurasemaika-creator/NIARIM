@@ -42,7 +42,10 @@ CommunityService _service(MockClient client) {
   return service;
 }
 
-Widget _app(CommunityService service, {Widget home = const CommunityFollowingListScreen()}) => MultiProvider(
+Widget _app(
+  CommunityService service, {
+  Widget home = const CommunityFollowingListScreen(),
+}) => MultiProvider(
   providers: [
     ChangeNotifierProvider.value(value: service),
     ChangeNotifierProvider(create: (_) => SettingsService()),
@@ -60,20 +63,25 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   setUp(() => SharedPreferences.setMockInitialValues({}));
 
-  testWidgets('refreshes only own follows at top without fetching the plaza',
-      (tester) async {
+  testWidgets('refreshes only own follows at top without fetching the plaza', (
+    tester,
+  ) async {
     var callCount = 0;
     final paths = <String>[];
     var name = 'Alice before';
-    final service = _service(MockClient((request) async {
-      paths.add(request.url.path);
-      if (request.url.path == '/users/self/following') {
-        callCount++;
-        expect(request.headers['authorization'], isNotNull);
-        return _reply({'following': [_user('alice', name)]});
-      }
-      fail('Unexpected unrelated request: ${request.url.path}');
-    }));
+    final service = _service(
+      MockClient((request) async {
+        paths.add(request.url.path);
+        if (request.url.path == '/users/self/following') {
+          callCount++;
+          expect(request.headers['authorization'], isNotNull);
+          return _reply({
+            'following': [_user('alice', name)],
+          });
+        }
+        fail('Unexpected unrelated request: ${request.url.path}');
+      }),
+    );
     addTearDown(service.dispose);
 
     await tester.pumpWidget(_app(service));
@@ -95,20 +103,23 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('a swipe started mid-list cannot refresh; next top swipe can',
-      (tester) async {
+  testWidgets('a swipe started mid-list cannot refresh; next top swipe can', (
+    tester,
+  ) async {
     var calls = 0;
-    final service = _service(MockClient((request) async {
-      if (request.url.path == '/users/self/following') {
-        calls++;
-        return _reply({
-          'following': [
-            for (var i = 0; i < 40; i++) _user('user$i', 'User $i'),
-          ],
-        });
-      }
-      fail('Unexpected unrelated request: ${request.url.path}');
-    }));
+    final service = _service(
+      MockClient((request) async {
+        if (request.url.path == '/users/self/following') {
+          calls++;
+          return _reply({
+            'following': [
+              for (var i = 0; i < 40; i++) _user('user$i', 'User $i'),
+            ],
+          });
+        }
+        fail('Unexpected unrelated request: ${request.url.path}');
+      }),
+    );
     addTearDown(service.dispose);
 
     await tester.pumpWidget(_app(service));
@@ -142,22 +153,27 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('opens author works without exposing their social lists',
-      (tester) async {
+  testWidgets('opens author works without exposing their social lists', (
+    tester,
+  ) async {
     final requested = <String>[];
-    final service = _service(MockClient((request) async {
-      requested.add(request.url.path);
-      switch (request.url.path) {
-        case '/users/self/following':
-          return _reply({'following': [_user('alice', 'Alice')]});
-        case '/users/alice/works':
-          return _reply({'works': <Object>[]});
-        case '/users/alice/social-counts':
-          return _reply({'followerCount': 4, 'followingCount': 3});
-        default:
-          fail('Unexpected request: ${request.url.path}');
-      }
-    }));
+    final service = _service(
+      MockClient((request) async {
+        requested.add(request.url.path);
+        switch (request.url.path) {
+          case '/users/self/following':
+            return _reply({
+              'following': [_user('alice', 'Alice')],
+            });
+          case '/users/alice/works':
+            return _reply({'works': <Object>[]});
+          case '/users/alice/social-counts':
+            return _reply({'followerCount': 4, 'followingCount': 3});
+          default:
+            fail('Unexpected request: ${request.url.path}');
+        }
+      }),
+    );
     addTearDown(service.dispose);
 
     await tester.pumpWidget(_app(service));
@@ -170,35 +186,46 @@ void main() {
     );
     expect(author.authorId, 'alice');
     expect(author.authorName, 'Alice');
-    expect(find.byKey(const Key('communityAuthorFollowToggle')), findsOneWidget);
-    expect(find.byKey(const Key('communityOwnFollowingListButton')), findsNothing);
+    expect(
+      find.byKey(const Key('communityAuthorFollowToggle')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const Key('communityOwnFollowingListButton')),
+      findsNothing,
+    );
     expect(requested, isNot(contains('/users/alice/following')));
     expect(requested, isNot(contains('/users/alice/followers')));
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('unfollow and re-follow work directly in the private directory',
-      (tester) async {
+  testWidgets('unfollow and re-follow work directly in the private directory', (
+    tester,
+  ) async {
     var toggleCount = 0;
-    final service = _service(MockClient((request) async {
-      if (request.url.path == '/users/self/following') {
-        return _reply({'following': [_user('alice', 'Alice')]});
-      }
-      if (request.url.path == '/users/alice/follow') {
-        toggleCount++;
-        return _reply({'following': toggleCount == 2});
-      }
-      if (request.url.path == '/users/alice/works') {
-        return _reply({'works': <Object>[]});
-      }
-      if (request.url.path == '/users/alice/reposts') {
-        return _reply({'reposts': <Object>[]});
-      }
-      if (request.url.path == '/users/self/reposts') {
-        return _reply({'reposts': <Object>[]});
-      }
-      fail('Unexpected request: ${request.url.path}');
-    }));
+    final service = _service(
+      MockClient((request) async {
+        if (request.url.path == '/users/self/following') {
+          return _reply({
+            'following': [_user('alice', 'Alice')],
+          });
+        }
+        if (request.url.path == '/users/alice/follow') {
+          toggleCount++;
+          return _reply({'following': toggleCount == 2});
+        }
+        if (request.url.path == '/users/alice/works') {
+          return _reply({'works': <Object>[]});
+        }
+        if (request.url.path == '/users/alice/reposts') {
+          return _reply({'reposts': <Object>[]});
+        }
+        if (request.url.path == '/users/self/reposts') {
+          return _reply({'reposts': <Object>[]});
+        }
+        fail('Unexpected request: ${request.url.path}');
+      }),
+    );
     addTearDown(service.dispose);
 
     await tester.pumpWidget(_app(service));
@@ -208,44 +235,60 @@ void main() {
 
     expect(toggleCount, 1);
     expect(service.favoriteAuthorIds, isEmpty);
-    expect(find.byKey(const Key('communityFollowingFollow_alice')), findsOneWidget);
+    expect(
+      find.byKey(const Key('communityFollowingFollow_alice')),
+      findsOneWidget,
+    );
     expect(find.text('最近フォローを解除したユーザー'), findsOneWidget);
 
     await tester.tap(find.byKey(const Key('communityFollowingFollow_alice')));
     await tester.pumpAndSettle();
     expect(toggleCount, 2);
     expect(service.favoriteAuthorIds, contains('alice'));
-    expect(find.byKey(const Key('communityFollowingUnfollow_alice')), findsOneWidget);
+    expect(
+      find.byKey(const Key('communityFollowingUnfollow_alice')),
+      findsOneWidget,
+    );
     expect(find.text('最近フォローを解除したユーザー'), findsNothing);
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('own profile following count opens private following list',
-      (tester) async {
+  testWidgets('own profile following count opens private following list', (
+    tester,
+  ) async {
     final requested = <String>[];
-    final service = _service(MockClient((request) async {
-      requested.add(request.url.path);
-      switch (request.url.path) {
-        case '/users/self/works':
-          return _reply({'works': <Object>[]});
-        case '/users/self/social-counts':
-          return _reply({'followerCount': 2, 'followingCount': 1});
-        case '/users/self/following':
-          return _reply({'following': [_user('alice', 'Alice')]});
-        case '/users/alice/follow':
-          return _reply({'following': false});
-        case '/users/self/reposts':
-          return _reply({'reposts': <Object>[]});
-        default:
-          fail('Unexpected request: ${request.url.path}');
-      }
-    }));
+    final service = _service(
+      MockClient((request) async {
+        requested.add(request.url.path);
+        switch (request.url.path) {
+          case '/users/self/works':
+            return _reply({'works': <Object>[]});
+          case '/users/self/social-counts':
+            return _reply({'followerCount': 2, 'followingCount': 1});
+          case '/users/self/following':
+            return _reply({
+              'following': [_user('alice', 'Alice')],
+            });
+          case '/users/alice/follow':
+            return _reply({'following': false});
+          case '/users/self/reposts':
+            return _reply({'reposts': <Object>[]});
+          default:
+            fail('Unexpected request: ${request.url.path}');
+        }
+      }),
+    );
     addTearDown(service.dispose);
 
-    await tester.pumpWidget(_app(
-      service,
-      home: const CommunityAuthorWorksScreen(authorId: 'self', authorName: 'Me'),
-    ));
+    await tester.pumpWidget(
+      _app(
+        service,
+        home: const CommunityAuthorWorksScreen(
+          authorId: 'self',
+          authorName: 'Me',
+        ),
+      ),
+    );
     await tester.pumpAndSettle();
 
     final count = find.byKey(const Key('communityOwnFollowingCountButton'));
@@ -254,50 +297,65 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byType(CommunityFollowingListScreen), findsOneWidget);
     expect(find.text('Alice'), findsOneWidget);
-    expect(requested.where((path) => path == '/users/self/following').length, 1);
+    expect(
+      requested.where((path) => path == '/users/self/following').length,
+      1,
+    );
 
     await tester.tap(find.byKey(const Key('communityFollowingUnfollow_alice')));
     await tester.pumpAndSettle();
     expect(service.favoriteAuthorIds, isEmpty);
 
     // Returning to the profile updates the same numeric control immediately.
-    Navigator.of(tester.element(find.byType(CommunityFollowingListScreen))).pop();
+    Navigator.of(tester.element(find.byType(CommunityFollowingListScreen)))
+        .pop();
     await tester.pumpAndSettle();
     final l10n = AppLocalizations.of(
       tester.element(find.byType(CommunityAuthorWorksScreen)),
     )!;
     expect(find.text(l10n.communityAuthorFollowingCount(0)), findsOneWidget);
-    expect(find.byKey(const Key('communityOwnFollowingCountButton')), findsOneWidget);
+    expect(
+      find.byKey(const Key('communityOwnFollowingCountButton')),
+      findsOneWidget,
+    );
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('other profiles show only non-tappable follow counts',
-      (tester) async {
+  testWidgets('other profiles show only non-tappable follow counts', (
+    tester,
+  ) async {
     final requested = <String>[];
-    final service = _service(MockClient((request) async {
-      requested.add(request.url.path);
-      if (request.url.path == '/users/alice/works') {
-        return _reply({'works': <Object>[]});
-      }
-      if (request.url.path == '/users/alice/social-counts') {
-        return _reply({'followerCount': 9, 'followingCount': 4});
-      }
-      fail('Unexpected request: ${request.url.path}');
-    }));
+    final service = _service(
+      MockClient((request) async {
+        requested.add(request.url.path);
+        if (request.url.path == '/users/alice/works') {
+          return _reply({'works': <Object>[]});
+        }
+        if (request.url.path == '/users/alice/social-counts') {
+          return _reply({'followerCount': 9, 'followingCount': 4});
+        }
+        fail('Unexpected request: ${request.url.path}');
+      }),
+    );
     addTearDown(service.dispose);
-    await tester.pumpWidget(_app(
-      service,
-      home: const CommunityAuthorWorksScreen(
-        authorId: 'alice',
-        authorName: 'Alice',
+    await tester.pumpWidget(
+      _app(
+        service,
+        home: const CommunityAuthorWorksScreen(
+          authorId: 'alice',
+          authorName: 'Alice',
+        ),
       ),
-    ));
+    );
     await tester.pumpAndSettle();
     final l10n = AppLocalizations.of(
       tester.element(find.byType(CommunityAuthorWorksScreen)),
     )!;
     expect(find.text(l10n.communityAuthorFollowingCount(4)), findsOneWidget);
-    expect(find.byKey(const Key('communityOwnFollowingCountButton')), findsNothing);
+    expect(
+      find.byKey(const Key('communityOwnFollowingCountButton')),
+      findsNothing,
+    );
     expect(requested, isNot(contains('/users/alice/following')));
     expect(requested, isNot(contains('/users/alice/followers')));
     expect(tester.takeException(), isNull);

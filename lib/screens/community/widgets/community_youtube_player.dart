@@ -20,11 +20,14 @@ class CommunityYoutubePlayer extends StatefulWidget {
   final String videoId;
   final bool playing;
   final bool active;
+
   /// Allows Shorts to either replay the current video or advance a page.
   final void Function(VoidCallback replay)? onEnded;
+
   /// On each native IFrame play/resume, recheck the server-side visibility.
   /// Rejecting pauses the player and allows the parent to unmount it.
   final Future<bool> Function()? validatePlayback;
+
   /// Syncs the host play/pause button with YouTube's native controls.
   final ValueChanged<bool>? onPlayingChanged;
 
@@ -89,7 +92,7 @@ class _CommunityYoutubePlayerState extends State<CommunityYoutubePlayer> {
             unawaited(_recheckNativePlay(controller));
           }
         } else if (value.playerState == PlayerState.paused ||
-                   value.playerState == PlayerState.ended) {
+            value.playerState == PlayerState.ended) {
           widget.onPlayingChanged?.call(false);
         }
         _lastNativeState = value.playerState;

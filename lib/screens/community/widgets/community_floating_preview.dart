@@ -42,7 +42,9 @@ class _CommunityFloatingPreviewState extends State<CommunityFloatingPreview> {
   /// Discard stale replies from previous checks or another preview.
   Future<CommunityPlaybackStatus?> _checkPlayback(String workId) async {
     final epoch = ++_playbackCheckEpoch;
-    final status = await context.read<CommunityService>().playbackStatus(workId);
+    final status = await context.read<CommunityService>().playbackStatus(
+      workId,
+    );
     if (!mounted ||
         _lastWorkId != workId ||
         epoch != _playbackCheckEpoch ||
@@ -361,40 +363,40 @@ class _CommunityFloatingPreviewState extends State<CommunityFloatingPreview> {
         boundedPosition(service.position + event.delta),
       ),
       child: Container(
-      key: const Key('communityPreviewControls'),
-      color: barColor,
-      padding: const EdgeInsets.symmetric(horizontal: 8),
-      child: splitRows
-          ? Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        key: const Key('communityPreviewControls'),
+        color: barColor,
+        padding: const EdgeInsets.symmetric(horizontal: 8),
+        child: splitRows
+            ? Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      if (showPlayer &&
+                          _playbackStatus == CommunityPlaybackStatus.available)
+                        play,
+                      close,
+                      if (showPlayer) resizeControl,
+                    ],
+                  ),
+                  detailButton,
+                ],
+              )
+            : SizedBox(
+                height: detailsHeight,
+                child: Row(
                   children: [
                     if (showPlayer &&
                         _playbackStatus == CommunityPlaybackStatus.available)
                       play,
                     close,
+                    Expanded(child: detailButton),
                     if (showPlayer) resizeControl,
                   ],
                 ),
-                detailButton,
-              ],
-            )
-          : SizedBox(
-              height: detailsHeight,
-              child: Row(
-                children: [
-                  if (showPlayer &&
-                      _playbackStatus == CommunityPlaybackStatus.available)
-                    play,
-                  close,
-                  Expanded(child: detailButton),
-                  if (showPlayer) resizeControl,
-                ],
               ),
-            ),
       ),
     );
 
@@ -478,7 +480,9 @@ class _CommunityFloatingPreviewState extends State<CommunityFloatingPreview> {
                                       onRetry: _retryPlayback,
                                     )
                                   : CommunityYoutubePlayer(
-                                      key: ValueKey('communityPreviewYoutube-${work.id}'),
+                                      key: ValueKey(
+                                        'communityPreviewYoutube-${work.id}',
+                                      ),
                                       videoId: work.id,
                                       playing: _isPlaying,
                                       validatePlayback: () async =>
@@ -487,7 +491,9 @@ class _CommunityFloatingPreviewState extends State<CommunityFloatingPreview> {
                                       onPlayingChanged: (playing) {
                                         if (mounted &&
                                             _lastWorkId == work.id &&
-                                            _playbackStatus == CommunityPlaybackStatus.available &&
+                                            _playbackStatus ==
+                                                CommunityPlaybackStatus
+                                                    .available &&
                                             _isPlaying != playing) {
                                           setState(() => _isPlaying = playing);
                                         }

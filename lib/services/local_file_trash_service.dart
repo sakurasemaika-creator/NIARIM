@@ -60,32 +60,49 @@ abstract final class LocalFileTrashService {
     await for (final entity in root.list(followLinks: false)) {
       if (entity is! Directory) continue;
       try {
-        final meta = jsonDecode(await File('${entity.path}/meta.json').readAsString());
+        final meta = jsonDecode(
+          await File('${entity.path}/meta.json').readAsString(),
+        );
         if (meta is! Map<String, dynamic>) continue;
         final kindName = meta['kind'];
-        final kind = LocalTrashKind.values.where((v) => v.name == kindName).firstOrNull;
+        final kind = LocalTrashKind.values
+            .where((v) => v.name == kindName)
+            .firstOrNull;
         final id = meta['id'];
         final original = meta['originalPath'];
         final deletedAt = DateTime.tryParse(meta['deletedAt'] as String? ?? '');
-        if (kind == null || id is! String || original is! String ||
-            deletedAt == null || id != entity.uri.pathSegments
-                .where((part) => part.isNotEmpty).last) {
+        if (kind == null ||
+            id is! String ||
+            original is! String ||
+            deletedAt == null ||
+            id !=
+                entity.uri.pathSegments.where((part) => part.isNotEmpty).last) {
           continue;
         }
         final archive = '${entity.path}/data';
         final isFolder = kind == LocalTrashKind.exportedWorkFolder;
         if (isFolder
             ? !await Directory(archive).exists()
-            : !await File(archive).exists()) continue;
+            : !await File(archive).exists())
+          continue;
         final names = (meta['fileNames'] as List<dynamic>? ?? const [])
-            .whereType<String>().toList();
-        if (isFolder && (meta['folderName'] is! String ||
-            names.any((name) => !_safeFileName(name)))) continue;
-        entries.add(LocalTrashedFile(
-          id: id, kind: kind, originalPath: original,
-          archivedPath: archive, deletedAt: deletedAt,
-          folderName: meta['folderName'] as String?, fileNames: names,
-        ));
+            .whereType<String>()
+            .toList();
+        if (isFolder &&
+            (meta['folderName'] is! String ||
+                names.any((name) => !_safeFileName(name))))
+          continue;
+        entries.add(
+          LocalTrashedFile(
+            id: id,
+            kind: kind,
+            originalPath: original,
+            archivedPath: archive,
+            deletedAt: deletedAt,
+            folderName: meta['folderName'] as String?,
+            fileNames: names,
+          ),
+        );
       } catch (_) {
         // Corrupt metadata does not prevent other entries from being restored.
       }
@@ -95,14 +112,18 @@ abstract final class LocalFileTrashService {
   }
 
   static bool _safeFileName(String name) =>
-      name.isNotEmpty && name != '.' && name != '..' &&
-      !name.contains('/') && !name.contains('\\');
+      name.isNotEmpty &&
+      name != '.' &&
+      name != '..' &&
+      !name.contains('/') &&
+      !name.contains('\\');
 
   static Future<LocalTrashedFile> move(File source, LocalTrashKind kind) async {
     if (kind == LocalTrashKind.exportedWorkFolder) {
       throw ArgumentError('Use moveWorkFolder for a folder');
     }
-    if (!await source.exists()) throw FileSystemException('File missing', source.path);
+    if (!await source.exists())
+      throw FileSystemException('File missing', source.path);
     final root = await _root();
     await root.create(recursive: true);
     var seed = DateTime.now().microsecondsSinceEpoch;
@@ -113,13 +134,15 @@ abstract final class LocalFileTrashService {
     }
     await directory.create(recursive: true);
     final entry = LocalTrashedFile(
-      id: '$seed', kind: kind, originalPath: source.absolute.path,
-      archivedPath: '${directory.path}/data', deletedAt: DateTime.now(),
+      id: '$seed',
+      kind: kind,
+      originalPath: source.absolute.path,
+      archivedPath: '${directory.path}/data',
+      deletedAt: DateTime.now(),
     );
     try {
-      await File('${directory.path}/meta.json').writeAsString(
-        jsonEncode(entry.toJson()), flush: true,
-      );
+      await File('${directory.path}/meta.json')
+          .writeAsString(jsonEncode(entry.toJson()), flush: true);
       final saved = await source.copy(entry.archivedPath);
       if (await saved.length() != await source.length()) {
         throw FileSystemException('Incomplete archive copy', source.path);
@@ -131,7 +154,9 @@ abstract final class LocalFileTrashService {
       // If source removal failed it remains intact; do not display partial
       // trash entries. A complete archive is never deleted without its source.
       if (await source.exists()) {
-        try { await directory.delete(recursive: true); } catch (_) {}
+        try {
+          await directory.delete(recursive: true);
+        } catch (_) {}
       }
       rethrow;
     }
@@ -140,10 +165,14 @@ abstract final class LocalFileTrashService {
   static Future<void> restore(LocalTrashedFile entry) async {
     if (entry.isFolder) throw ArgumentError('Use restoreWorkFolder');
     final archived = File(entry.archivedPath);
-    if (!await archived.exists()) throw FileSystemException('Trash entry missing', entry.archivedPath);
+    if (!await archived.exists())
+      throw FileSystemException('Trash entry missing', entry.archivedPath);
     final original = File(entry.originalPath);
     if (await original.exists()) {
-      throw FileSystemException('Restore destination already exists', original.path);
+      throw FileSystemException(
+        'Restore destination already exists',
+        original.path,
+      );
     }
     await original.parent.create(recursive: true);
     final copy = await archived.copy(original.path);
@@ -154,7 +183,6 @@ abstract final class LocalFileTrashService {
     await archived.parent.delete(recursive: true);
     changes.value++;
   }
-
 
   /// Archive all actual export files before removing any source.
   static Future<LocalTrashedFile> moveWorkFolder({
@@ -168,7 +196,8 @@ abstract final class LocalFileTrashService {
         throw FileSystemException('Export missing', file.path);
       }
       final name = file.uri.pathSegments.last;
-      if (!_safeFileName(name) || names.contains(name) ||
+      if (!_safeFileName(name) ||
+          names.contains(name) ||
           file.parent.path != sources.first.parent.path) {
         throw FileSystemException('Invalid folder export', file.path);
       }
@@ -197,7 +226,9 @@ abstract final class LocalFileTrashService {
       final archive = Directory(entry.archivedPath);
       await archive.create();
       for (final source in sources) {
-        final copy = await source.copy('${archive.path}/${source.uri.pathSegments.last}');
+        final copy = await source.copy(
+          '${archive.path}/${source.uri.pathSegments.last}',
+        );
         if (await copy.length() != await source.length()) {
           throw FileSystemException('Incomplete folder archive', source.path);
         }
@@ -215,7 +246,9 @@ abstract final class LocalFileTrashService {
     } catch (_) {
       // Once a source has been removed, retain all archived bytes.
       if (!removedAny) {
-        try { await directory.delete(recursive: true); } catch (_) {}
+        try {
+          await directory.delete(recursive: true);
+        } catch (_) {}
       } else {
         changes.value++;
       }
@@ -227,8 +260,10 @@ abstract final class LocalFileTrashService {
   /// after archiving may leave some original files already present; only
   /// byte-identical files are safe to reuse during recovery.
   static Future<bool> _sameFileContents(File a, File b) async {
-    if (!await a.exists() || !await b.exists() ||
-        await a.length() != await b.length()) return false;
+    if (!await a.exists() ||
+        !await b.exists() ||
+        await a.length() != await b.length())
+      return false;
     final left = await a.open();
     final right = await b.open();
     try {
@@ -256,9 +291,11 @@ abstract final class LocalFileTrashService {
       throw FileSystemException('Archived folder missing', archive.path);
     }
     final metaFile = File('${archive.parent.path}/meta.json');
-    final meta = jsonDecode(await metaFile.readAsString()) as Map<String, dynamic>;
+    final meta =
+        jsonDecode(await metaFile.readAsString()) as Map<String, dynamic>;
     final restored = (meta['restoredFiles'] as List<dynamic>? ?? const [])
-        .whereType<String>().toSet();
+        .whereType<String>()
+        .toSet();
     final savedId = meta['restoreFolderId'] as String?;
     final known = workFolders.folders.any((f) => f.id == savedId);
     for (final name in entry.fileNames) {
@@ -271,13 +308,21 @@ abstract final class LocalFileTrashService {
       }
       final destination = File('${entry.originalPath}/$name');
       if (await destination.exists() &&
-          !await _sameFileContents(File('${archive.path}/$name'), destination)) {
-        throw FileSystemException('Different file already exists on restore', name);
+          !await _sameFileContents(
+            File('${archive.path}/$name'),
+            destination,
+          )) {
+        throw FileSystemException(
+          'Different file already exists on restore',
+          name,
+        );
       }
     }
     final folderId = known
         ? savedId!
-        : (await workFolders.createFolder(entry.folderName ?? 'Restored folder')).id;
+        : (await workFolders.createFolder(
+            entry.folderName ?? 'Restored folder',
+          )).id;
     if (!known) {
       meta['restoreFolderId'] = folderId;
       await metaFile.writeAsString(jsonEncode(meta), flush: true);
@@ -293,7 +338,10 @@ abstract final class LocalFileTrashService {
           throw FileSystemException('Incomplete restored file', name);
         }
       } else if (!await _sameFileContents(source, destination)) {
-        throw FileSystemException('Restored file changed during recovery', name);
+        throw FileSystemException(
+          'Restored file changed during recovery',
+          name,
+        );
       }
       if (restored.add(name)) {
         meta['restoredFiles'] = restored.toList();
@@ -315,7 +363,9 @@ abstract final class LocalFileTrashService {
       if (now.difference(entry.deletedAt).inDays < days) continue;
       try {
         if (entry.isFolder) {
-          final metadata = File('${Directory(entry.archivedPath).parent.path}/meta.json');
+          final metadata = File(
+            '${Directory(entry.archivedPath).parent.path}/meta.json',
+          );
           final decoded = jsonDecode(await metadata.readAsString());
           if (decoded is Map && decoded['restoreFolderId'] != null) {
             // A partially restored directory may still be the only safe copy

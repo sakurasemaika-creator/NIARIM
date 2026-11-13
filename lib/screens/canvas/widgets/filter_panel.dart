@@ -63,6 +63,7 @@ class FilterPanel extends StatefulWidget {
   /// where the canvas chrome is hidden while a filter is adjusted) rather
   /// than as a narrow floating or docked panel.
   final bool bottomBar;
+
   /// When a PC dock hands off its selected filter to the immersive bottom
   /// controls, do not reset the live edit during the widget replacement.
   final bool preserveCurrentFilterOnMount;

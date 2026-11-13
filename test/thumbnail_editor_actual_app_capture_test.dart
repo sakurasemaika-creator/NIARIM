@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:ui' as ui;
+
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -16,6 +17,7 @@ import 'package:niarim/services/project_service.dart';
 import 'package:niarim/services/local_file_trash_service.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
 import 'helpers/first_use_tooltips.dart';
 import 'helpers/load_app_fonts.dart';
 
@@ -70,12 +72,20 @@ void main() {
       final dir = await ExportEngine.exportsDir();
       final recorder = ui.PictureRecorder();
       final canvas = Canvas(recorder);
-      canvas.drawRect(const Rect.fromLTWH(0, 0, 480, 270),
-          Paint()..color = const Color(0xFFF3E6F5));
-      canvas.drawCircle(const Offset(240, 130), 83,
-          Paint()..color = const Color(0xFF6B8CC8));
-      canvas.drawCircle(const Offset(245, 120), 45,
-          Paint()..color = const Color(0xFFFFCA89));
+      canvas.drawRect(
+        const Rect.fromLTWH(0, 0, 480, 270),
+        Paint()..color = const Color(0xFFF3E6F5),
+      );
+      canvas.drawCircle(
+        const Offset(240, 130),
+        83,
+        Paint()..color = const Color(0xFF6B8CC8),
+      );
+      canvas.drawCircle(
+        const Offset(245, 120),
+        45,
+        Paint()..color = const Color(0xFFFFCA89),
+      );
       final picture = recorder.endRecording();
       final img = await picture.toImage(480, 270);
       final bytes = await img.toByteData(format: ui.ImageByteFormat.png);
@@ -88,7 +98,8 @@ void main() {
       final deletedExample = File(dir.path + '/deleted_sample.png');
       await deletedExample.writeAsBytes(await file.readAsBytes(), flush: true);
       await LocalFileTrashService.move(
-        deletedExample, LocalTrashKind.exportedWork,
+        deletedExample,
+        LocalTrashKind.exportedWork,
       );
       await ExportEngine.listExportedFiles(forceRefresh: true);
       return file;
@@ -96,31 +107,42 @@ void main() {
     expect(exported, isNotNull);
     final boundaryKey = GlobalKey();
     final providers = await tester.runAsync(buildAppProviders);
-    await tester.pumpWidget(RepaintBoundary(
-      key: boundaryKey,
-      child: MultiProvider(providers: providers!, child: const NiarimApp()),
-    ));
+    await tester.pumpWidget(
+      RepaintBoundary(
+        key: boundaryKey,
+        child: MultiProvider(providers: providers!, child: const NiarimApp()),
+      ),
+    );
     await tester.pump(const Duration(milliseconds: 800));
     expect(find.byType(HomeScreen), findsOneWidget);
-    final projects = tester.element(find.byType(HomeScreen))
+    final projects = tester
+        .element(find.byType(HomeScreen))
         .read<ProjectService>();
-    final created = await tester.runAsync(() => projects.createProject(
-      name: '第1話 サンプルアニメ', fps: 12, durationSeconds: 2,
-      backgroundColor: 0xFFE8F2FF, exportWidth: 480, exportHeight: 270,
-    ));
+    final created = await tester.runAsync(
+      () => projects.createProject(
+        name: '第1話 サンプルアニメ',
+        fps: 12,
+        durationSeconds: 2,
+        backgroundColor: 0xFFE8F2FF,
+        exportWidth: 480,
+        exportHeight: 270,
+      ),
+    );
     expect(created, isNotNull);
     await tester.pump(const Duration(milliseconds: 700));
 
     Future<void> capture(String name) async {
       for (var i = 0; i < 3; i++) {
         await tester.pump(const Duration(milliseconds: 150));
-        await tester.runAsync(() =>
-            Future<void>.delayed(const Duration(milliseconds: 30)));
+        await tester.runAsync(
+          () => Future<void>.delayed(const Duration(milliseconds: 30)),
+        );
         await tester.pump();
       }
       expect(tester.takeException(), isNull, reason: name);
-      final boundary = boundaryKey.currentContext!.findRenderObject()!
-          as RenderRepaintBoundary;
+      final boundary =
+          boundaryKey.currentContext!.findRenderObject()!
+              as RenderRepaintBoundary;
       final png = await tester.runAsync(() async {
         final img = await boundary.toImage(pixelRatio: 1);
         final bytes = await img.toByteData(format: ui.ImageByteFormat.png);
@@ -129,19 +151,25 @@ void main() {
       });
       final output = Directory('build/thumbnail-editor-actual-app')
         ..createSync(recursive: true);
-      await tester.runAsync(() =>
-        File(output.path + '/' + name + '.png').writeAsBytes(png!, flush: true));
+      await tester.runAsync(
+        () =>
+            File(output.path + '/' + name + '.png')
+                .writeAsBytes(png!, flush: true),
+      );
       print('ACTUAL_APP_CAPTURE: ' + name);
     }
 
-    Finder projectMenu() => find.descendant(
-      of: find.byType(ProjectListWidget),
-      matching: find.byWidgetPredicate((w) => w is PopupMenuButton<String>),
-    ).hitTestable();
+    Finder projectMenu() => find
+        .descendant(
+          of: find.byType(ProjectListWidget),
+          matching: find.byWidgetPredicate((w) => w is PopupMenuButton<String>),
+        )
+        .hitTestable();
     Future<void> closeDialog() async {
       await tester.tap(find.text('キャンセル').last);
       await tester.pump(const Duration(milliseconds: 450));
     }
+
     await capture('01_phone_real_projects');
     await tester.tap(projectMenu().first);
     await tester.pump(const Duration(milliseconds: 350));
@@ -168,9 +196,24 @@ void main() {
     expect(worksTab, findsOneWidget);
     await tester.tap(worksTab);
     await tester.pump(const Duration(milliseconds: 750));
-    print('DEBUG_WORKS_FILES: ' + (await tester.runAsync(() => ExportEngine.listExportedFiles(forceRefresh: true)))!.map((e) => e.path).join(', '));
-    print('DEBUG_WORKS_MENU: ' + find.byKey(const Key('exportedWorkMoreMenu')).evaluate().length.toString());
-    print('DEBUG_WORKS_PROJECT_VISIBLE: ' + find.byType(ProjectListWidget).evaluate().length.toString());
+    print(
+      'DEBUG_WORKS_FILES: ' +
+          (await tester.runAsync(
+            () => ExportEngine.listExportedFiles(forceRefresh: true),
+          ))!.map((e) => e.path).join(', '),
+    );
+    print(
+      'DEBUG_WORKS_MENU: ' +
+          find
+              .byKey(const Key('exportedWorkMoreMenu'))
+              .evaluate()
+              .length
+              .toString(),
+    );
+    print(
+      'DEBUG_WORKS_PROJECT_VISIBLE: ' +
+          find.byType(ProjectListWidget).evaluate().length.toString(),
+    );
     await capture('08_phone_real_exported_works');
     expect(find.byKey(const Key('exportedWorkMoreMenu')), findsOneWidget);
     await tester.tap(find.byKey(const Key('exportedWorkMoreMenu')));
@@ -199,17 +242,21 @@ void main() {
     await capture('15_desktop_real_export_menu');
     await tester.tap(find.text('サムネイル変更').last);
     await tester.pump(const Duration(milliseconds: 450));
-    await tester.runAsync(() =>
-        Future<void>.delayed(const Duration(milliseconds: 90)));
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 90)),
+    );
     await tester.pump();
-    for (var attempt = 0;
-        attempt < 4 &&
-            find.byKey(const Key('exportCoverFramePanel')).evaluate().isEmpty;
-        attempt++) {
+    for (
+      var attempt = 0;
+      attempt < 4 &&
+          find.byKey(const Key('exportCoverFramePanel')).evaluate().isEmpty;
+      attempt++
+    ) {
       await tester.tap(find.byKey(const Key('exportCoverFrame')));
       await tester.pump(const Duration(milliseconds: 320));
-      await tester.runAsync(() =>
-          Future<void>.delayed(const Duration(milliseconds: 45)));
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 45)),
+      );
       await tester.pump();
     }
     expect(find.byKey(const Key('exportCoverFramePanel')), findsOneWidget);
@@ -231,7 +278,8 @@ void main() {
     await tester.pump(const Duration(milliseconds: 500));
     showProjectThumbnailDialog(
       tester.element(find.byType(ProjectListWidget)),
-      project: created!, service: projects,
+      project: created!,
+      service: projects,
     );
     await tester.pump(const Duration(milliseconds: 450));
     await tester.tap(find.byKey(const Key('projectThumbnailFrame')));
@@ -259,16 +307,21 @@ void main() {
       if (tab == 3) {
         // LocalFileTrashService.list() performs genuine asynchronous IO.
         // pump() alone can photograph the FutureBuilder's initial spinner.
-        for (var attempt = 0;
-            attempt < 16 &&
-                find.text('deleted_sample.png').evaluate().isEmpty;
-            attempt++) {
-          await tester.runAsync(() =>
-              Future<void>.delayed(const Duration(milliseconds: 120)));
+        for (
+          var attempt = 0;
+          attempt < 16 && find.text('deleted_sample.png').evaluate().isEmpty;
+          attempt++
+        ) {
+          await tester.runAsync(
+            () => Future<void>.delayed(const Duration(milliseconds: 120)),
+          );
           await tester.pump(const Duration(milliseconds: 100));
         }
-        expect(find.text('deleted_sample.png'), findsOneWidget,
-            reason: 'Capture the real Trash row, not its loading spinner');
+        expect(
+          find.text('deleted_sample.png'),
+          findsOneWidget,
+          reason: 'Capture the real Trash row, not its loading spinner',
+        );
       }
       await capture(name);
     }

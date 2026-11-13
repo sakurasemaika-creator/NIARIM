@@ -1,4 +1,5 @@
 import 'dart:typed_data';
+
 import 'package:niarim/services/theme_service.dart';
 
 import 'dart:io';
@@ -586,9 +587,7 @@ class _SlotView extends StatelessWidget {
         ),
         // Shared SnackBarThemeData already removes the thick shadow.
         // Keep this intentionally smaller corner radius.
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
     );
   }
@@ -811,9 +810,7 @@ class _SaveTreeSlotActionButton extends StatelessWidget {
       style: IconButton.styleFrom(
         backgroundColor: scheme.surfaceContainerHighest,
         side: BorderSide(color: scheme.outlineVariant),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
       iconSize: 28,
       icon: Icon(
@@ -901,12 +898,15 @@ class _TreeView extends StatelessWidget {
     // Iterative DFS avoids recursive stack overflow on extremely deep
     // histories and still produces the same bottom-to-top node order.
     final rows = <_TreeRowSpec>[];
-    final work = <({
-      List<SaveNode> siblings,
-      int index,
-      int depth,
-      List<bool> ancestors,
-    })>[];
+    final work =
+        <
+          ({
+            List<SaveNode> siblings,
+            int index,
+            int depth,
+            List<bool> ancestors,
+          })
+        >[];
     for (int i = roots.length - 1; i >= 0; i--) {
       work.add((siblings: roots, index: i, depth: 0, ancestors: const []));
     }
@@ -936,7 +936,8 @@ class _TreeView extends StatelessWidget {
     // lay out inside a negative width on small phones. Horizontal scrolling
     // is enabled only when the deepest visible indent exceeds the viewport.
     final deepest = rows.fold<int>(
-      0, (maxDepth, row) => row.depth > maxDepth ? row.depth : maxDepth,
+      0,
+      (maxDepth, row) => row.depth > maxDepth ? row.depth : maxDepth,
     );
     return LayoutBuilder(
       builder: (context, viewport) {
@@ -1098,9 +1099,7 @@ class _TreeView extends StatelessWidget {
         ),
         // Shared SnackBarThemeData already removes the thick shadow.
         // Keep this intentionally smaller corner radius.
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
     );
   }

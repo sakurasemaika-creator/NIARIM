@@ -22,8 +22,8 @@ class HomeCollectionSelectionScope extends InheritedWidget {
   final ValueChanged<String> onToggle;
   final ValueChanged<Set<String>> onVisibleIds;
 
-  static HomeCollectionSelectionScope? maybeOf(BuildContext context) =>
-      context.dependOnInheritedWidgetOfExactType<HomeCollectionSelectionScope>();
+  static HomeCollectionSelectionScope? maybeOf(BuildContext context) => context
+      .dependOnInheritedWidgetOfExactType<HomeCollectionSelectionScope>();
 
   bool selected(String id) => selectedIds.contains(id);
 

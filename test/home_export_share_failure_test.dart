@@ -124,7 +124,9 @@ void main() {
   }
 
   Future<void> checkWorkActionsEnabled(
-    WidgetTester tester, bool enabled) async {
+    WidgetTester tester,
+    bool enabled,
+  ) async {
     await tester.tap(find.byKey(const Key('exportedWorkMoreMenu')));
     await tester.pumpAndSettle();
     for (final value in ['open', 'share', 'delete']) {
@@ -166,10 +168,7 @@ void main() {
             find.widgetWithText(TextButton, env.l10n.homeShareOpenWith),
           );
         } else {
-          await share(
-            tester,
-            find.byKey(const Key('exportedWorkMoreMenu')),
-          );
+          await share(tester, find.byKey(const Key('exportedWorkMoreMenu')));
         }
         final notice = find.text(env.l10n.communityErrorUnsupported);
         expect(notice, findsOneWidget);
@@ -315,10 +314,7 @@ void main() {
       expect(env.file.readAsBytesSync(), before);
       pending = null;
       failure = null;
-      await share(
-        tester,
-        find.byKey(const Key('exportedWorkMoreMenu')),
-      );
+      await share(tester, find.byKey(const Key('exportedWorkMoreMenu')));
       expect(
         calls,
         2,
@@ -399,10 +395,7 @@ void main() {
           );
           final before = env.file.readAsBytesSync();
           failure = MissingPluginException('Synthetic unsupported share');
-          await share(
-            tester,
-            find.byKey(const Key('exportedWorkMoreMenu')),
-          );
+          await share(tester, find.byKey(const Key('exportedWorkMoreMenu')));
           expect(find.text(env.l10n.communityErrorUnsupported), findsOneWidget);
           expect(tester.takeException(), isNull, reason: '$language/$size/row');
           final name = findExportedWorkName('AUDIT_share.png');
@@ -490,17 +483,16 @@ void main() {
       await share(tester, control);
       expect(find.text(env.l10n.communityErrorGeneric), findsOneWidget);
       var undone = false;
-      ScaffoldMessenger.of(
-        tester.element(find.byType(HomeScreen)),
-      ).showSnackBar(
-        SnackBar(
-          content: const Text('AUDIT unrelated action'),
-          action: SnackBarAction(
-            label: 'AUDIT Undo',
-            onPressed: () => undone = true,
-          ),
-        ),
-      );
+      ScaffoldMessenger.of(tester.element(find.byType(HomeScreen)))
+          .showSnackBar(
+            SnackBar(
+              content: const Text('AUDIT unrelated action'),
+              action: SnackBarAction(
+                label: 'AUDIT Undo',
+                onPressed: () => undone = true,
+              ),
+            ),
+          );
       await tester.pumpAndSettle();
       expect(find.text('AUDIT unrelated action'), findsOneWidget);
       failure = null;

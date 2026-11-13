@@ -12,7 +12,11 @@ import 'widgets/community_work_card.dart';
 
 /// 閲覧フィルターとブックマーク日時順を反映する公開作品一覧。
 class CommunityBookmarkedTab extends StatelessWidget {
-  const CommunityBookmarkedTab({super.key, required this.onBrowseWorks, required this.scrollController});
+  const CommunityBookmarkedTab({
+    super.key,
+    required this.onBrowseWorks,
+    required this.scrollController,
+  });
 
   final VoidCallback onBrowseWorks;
   final ScrollController scrollController;

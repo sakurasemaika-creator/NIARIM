@@ -83,103 +83,119 @@ void main() {
   }
 
   void expectBandAnchors(
-    WidgetTester tester, String label, Size screen, List<String> keys,
+    WidgetTester tester,
+    String label,
+    Size screen,
+    List<String> keys,
   ) {
     expect(tester.takeException(), isNull, reason: label);
     final picture = tester.getRect(
       find.byKey(const Key('timelinePreviewPicture')),
     );
-    final band = tester.getRect(
-      find.byKey(const Key('timelinePreviewArea')),
-    );
+    final band = tester.getRect(find.byKey(const Key('timelinePreviewArea')));
     expect(picture.width, greaterThan(0), reason: label);
     for (final key in keys) {
       final rect = tester.getRect(find.byKey(Key(key)));
-      expect(rect.left >= 0 && rect.right <= screen.width + 1, isTrue,
-          reason: '$label $key $rect');
+      expect(
+        rect.left >= 0 && rect.right <= screen.width + 1,
+        isTrue,
+        reason: '$label $key $rect',
+      );
       if (key == 'timelinePreviewFullscreenButton') {
-        expect((rect.top - band.top).abs(), lessThanOrEqualTo(12),
-            reason: '$label header edge');
-        expect((rect.right - band.right).abs(), lessThanOrEqualTo(12),
-            reason: '$label right edge');
+        expect(
+          (rect.top - band.top).abs(),
+          lessThanOrEqualTo(12),
+          reason: '$label header edge',
+        );
+        expect(
+          (rect.right - band.right).abs(),
+          lessThanOrEqualTo(12),
+          reason: '$label right edge',
+        );
       } else {
-        expect((rect.left - band.left).abs(), lessThanOrEqualTo(12),
-            reason: '$label frame count left');
-        expect((rect.bottom - band.bottom).abs(), lessThanOrEqualTo(12),
-            reason: '$label resize handle edge');
+        expect(
+          (rect.left - band.left).abs(),
+          lessThanOrEqualTo(12),
+          reason: '$label frame count left',
+        );
+        expect(
+          (rect.bottom - band.bottom).abs(),
+          lessThanOrEqualTo(12),
+          reason: '$label resize handle edge',
+        );
       }
     }
     expect(find.byKey(const Key('timelinePreviewLoopButton')), findsNothing);
   }
 
-  testWidgets(
-    'preview controls anchor to the band, not the canvas image',
-    (tester) async {
-      addTearDown(tester.view.resetPhysicalSize);
-      addTearDown(tester.view.resetDevicePixelRatio);
-      for (final MapEntry(key: shape, value: project) in projects.entries) {
-        for (final screen in screens) {
-          for (final fraction in const [0.18, 0.42, 0.7]) {
-            final label =
-                '$shape ${screen.size.width.toInt()}x'
-                '${screen.size.height.toInt()} $fraction';
-            await openTimeline(
-              tester,
-              project: project,
-              screen: screen.size,
-              pc: screen.pc,
-              fraction: fraction,
-            );
-            expectBandAnchors(tester, label, screen.size, controls);
-            final fullscreen = tester.getRect(
-              find.byKey(const Key('timelinePreviewFullscreenButton')),
-            );
-            final count = tester.getRect(
-              find.byKey(const Key('timelinePreviewFrameCount')),
-            );
-            final band = tester.getRect(
-              find.byKey(const Key('timelinePreviewArea')),
-            );
-            expect(fullscreen.top, closeTo(band.top + 8, 12), reason: label);
-            expect(count.left, closeTo(band.left + 8, 12), reason: label);
-          }
-        }
-      }
-      await tester.pumpWidget(const SizedBox.shrink());
-    },
-  );
-
-  testWidgets('fullscreen frame count anchors to the band; entry button disappears', (
+  testWidgets('preview controls anchor to the band, not the canvas image', (
     tester,
   ) async {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
     for (final MapEntry(key: shape, value: project) in projects.entries) {
-      const screen = Size(390, 844);
-      await openTimeline(
-        tester,
-        project: project,
-        screen: screen,
-        pc: false,
-        fraction: 0.42,
-      );
-      await tester.tap(
-        find.byKey(const Key('timelinePreviewFullscreenButton')),
-      );
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 300));
-      expect(find.byIcon(Icons.fullscreen_exit), findsOneWidget);
-      // 全画面の中には「全画面にする」ボタンを出さない。
-      expect(
-        find.byKey(const Key('timelinePreviewFullscreenButton')),
-        findsNothing,
-      );
-      expectBandAnchors(tester, 'fullscreen $shape', screen, const [
-        'timelinePreviewFrameCount',
-      ]);
+      for (final screen in screens) {
+        for (final fraction in const [0.18, 0.42, 0.7]) {
+          final label =
+              '$shape ${screen.size.width.toInt()}x'
+              '${screen.size.height.toInt()} $fraction';
+          await openTimeline(
+            tester,
+            project: project,
+            screen: screen.size,
+            pc: screen.pc,
+            fraction: fraction,
+          );
+          expectBandAnchors(tester, label, screen.size, controls);
+          final fullscreen = tester.getRect(
+            find.byKey(const Key('timelinePreviewFullscreenButton')),
+          );
+          final count = tester.getRect(
+            find.byKey(const Key('timelinePreviewFrameCount')),
+          );
+          final band = tester.getRect(
+            find.byKey(const Key('timelinePreviewArea')),
+          );
+          expect(fullscreen.top, closeTo(band.top + 8, 12), reason: label);
+          expect(count.left, closeTo(band.left + 8, 12), reason: label);
+        }
+      }
     }
     await tester.pumpWidget(const SizedBox.shrink());
   });
+
+  testWidgets(
+    'fullscreen frame count anchors to the band; entry button disappears',
+    (tester) async {
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      for (final MapEntry(key: shape, value: project) in projects.entries) {
+        const screen = Size(390, 844);
+        await openTimeline(
+          tester,
+          project: project,
+          screen: screen,
+          pc: false,
+          fraction: 0.42,
+        );
+        await tester.tap(
+          find.byKey(const Key('timelinePreviewFullscreenButton')),
+        );
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 300));
+        expect(find.byIcon(Icons.fullscreen_exit), findsOneWidget);
+        // 全画面の中には「全画面にする」ボタンを出さない。
+        expect(
+          find.byKey(const Key('timelinePreviewFullscreenButton')),
+          findsNothing,
+        );
+        expectBandAnchors(tester, 'fullscreen $shape', screen, const [
+          'timelinePreviewFrameCount',
+        ]);
+      }
+      await tester.pumpWidget(const SizedBox.shrink());
+    },
+  );
 
   // プレビュー欄を一番大きくすると、横長の絵は画面の横幅いっぱい（欄の
   // 端からの8pxを除く）まで大きくなる。欄の高さの上限には、絵の上下の
@@ -241,8 +257,7 @@ void main() {
       expect(picture.width, greaterThan(900), reason: '$label $picture');
       // 欄の高さか幅のどちらかいっぱいまで使う。
       expect(
-        picture.height >= area.height - 1 ||
-            picture.width >= area.width - 1,
+        picture.height >= area.height - 1 || picture.width >= area.width - 1,
         isTrue,
         reason: '$label $picture in $area',
       );

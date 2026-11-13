@@ -40,56 +40,56 @@ class DesktopDockContentViewport extends StatelessWidget {
       );
     }
     return LayoutBuilder(
-    builder: (context, constraints) {
-      final width = constraints.maxWidth;
-      final height = constraints.maxHeight;
-      if (!width.isFinite || !height.isFinite || width <= 0 || height <= 0) {
-        return child;
-      }
+      builder: (context, constraints) {
+        final width = constraints.maxWidth;
+        final height = constraints.maxHeight;
+        if (!width.isFinite || !height.isFinite || width <= 0 || height <= 0) {
+          return child;
+        }
 
-      final widthScale = width / designWidth;
-      // fit mode keeps the first, complete object (e.g. HSV wheel and its
-      // heading) in view; further advanced controls can still scroll inside.
-      final desiredScale = mode == DesktopDockContentMode.fit
-          ? math.min(widthScale, height / minimumContentHeight)
-          : widthScale;
-      final scale = desiredScale.clamp(0.05, 3.0).toDouble();
-      final contentHeight = math.max(height / scale, minimumContentHeight);
-      final visualWidth = designWidth * scale;
-      final visualHeight = contentHeight * scale;
-      // Matching layout dimensions on both axes means BoxFit.fill applies
-      // exactly the SAME scale in X and Y; the colour wheel stays circular,
-      // pointer coordinates remain accurate and list rows keep their ratio.
-      final scaledChild = SizedBox(
-        width: visualWidth,
-        height: visualHeight,
-        child: FittedBox(
-          key: const ValueKey('desktopDockContentScale'),
-          fit: BoxFit.fill,
-          alignment: Alignment.topLeft,
-          child: SizedBox(
-            width: designWidth,
-            height: contentHeight,
-            child: child,
-          ),
-        ),
-      );
-
-      if (mode == DesktopDockContentMode.scroll) {
-        return ClipRect(
-          child: Scrollbar(
-            child: SingleChildScrollView(
-              key: const ValueKey('desktopDockVerticalScroll'),
-              primary: false,
-              child: Align(alignment: Alignment.topLeft, child: scaledChild),
+        final widthScale = width / designWidth;
+        // fit mode keeps the first, complete object (e.g. HSV wheel and its
+        // heading) in view; further advanced controls can still scroll inside.
+        final desiredScale = mode == DesktopDockContentMode.fit
+            ? math.min(widthScale, height / minimumContentHeight)
+            : widthScale;
+        final scale = desiredScale.clamp(0.05, 3.0).toDouble();
+        final contentHeight = math.max(height / scale, minimumContentHeight);
+        final visualWidth = designWidth * scale;
+        final visualHeight = contentHeight * scale;
+        // Matching layout dimensions on both axes means BoxFit.fill applies
+        // exactly the SAME scale in X and Y; the colour wheel stays circular,
+        // pointer coordinates remain accurate and list rows keep their ratio.
+        final scaledChild = SizedBox(
+          width: visualWidth,
+          height: visualHeight,
+          child: FittedBox(
+            key: const ValueKey('desktopDockContentScale'),
+            fit: BoxFit.fill,
+            alignment: Alignment.topLeft,
+            child: SizedBox(
+              width: designWidth,
+              height: contentHeight,
+              child: child,
             ),
           ),
         );
-      }
-      return ClipRect(
-        child: Align(alignment: Alignment.topCenter, child: scaledChild),
-      );
-    },
-  );
+
+        if (mode == DesktopDockContentMode.scroll) {
+          return ClipRect(
+            child: Scrollbar(
+              child: SingleChildScrollView(
+                key: const ValueKey('desktopDockVerticalScroll'),
+                primary: false,
+                child: Align(alignment: Alignment.topLeft, child: scaledChild),
+              ),
+            ),
+          );
+        }
+        return ClipRect(
+          child: Align(alignment: Alignment.topCenter, child: scaledChild),
+        );
+      },
+    );
   }
 }

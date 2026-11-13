@@ -17,6 +17,7 @@ class HsvColorWheel extends StatelessWidget {
   final void Function(double saturation, double value) onSvChanged;
   final VoidCallback? onChangeEnd;
   final double size;
+
   /// Width available to the controls under the ring; lets both buttons sit
   /// at the panel edges without making the wheel itself narrow.
   final double? controlsWidth;
@@ -75,11 +76,14 @@ class HsvColorWheel extends StatelessWidget {
     const pillRight = 6.0; // Keep clear of the scroll bar on phones.
     final pillLeft = width - pillRight - pillWidth;
     final horizontalDistance = pillLeft - width / 2;
-    final modeTop = radius +
-        math.sqrt(math.max(
-          0.0,
-          radius * radius - horizontalDistance * horizontalDistance,
-        )) +
+    final modeTop =
+        radius +
+        math.sqrt(
+          math.max(
+            0.0,
+            radius * radius - horizontalDistance * horizontalDistance,
+          ),
+        ) +
         2;
     return SizedBox(
       width: width,
@@ -113,7 +117,8 @@ class HsvColorWheel extends StatelessWidget {
                 GestureDetector(
                   behavior: HitTestBehavior.opaque,
                   onPanStart: (d) => _handleSquare(d.localPosition, squareSize),
-                  onPanUpdate: (d) => _handleSquare(d.localPosition, squareSize),
+                  onPanUpdate: (d) =>
+                      _handleSquare(d.localPosition, squareSize),
                   onPanEnd: (_) => onChangeEnd?.call(),
                   onTapDown: (d) => _handleSquare(d.localPosition, squareSize),
                   onTapUp: (_) => onChangeEnd?.call(),
@@ -330,10 +335,7 @@ class _TransparentToggleButton extends StatelessWidget {
 /// 左下の透明色トグルと右下位置が対称になるように配置する。
 /// 選択中のモードだけを強調し、タップしたモードの3スライダーを表示する。
 class _SliderModePill extends StatelessWidget {
-  const _SliderModePill({
-    required this.showHsv,
-    required this.onChanged,
-  });
+  const _SliderModePill({required this.showHsv, required this.onChanged});
 
   final bool showHsv;
   final ValueChanged<bool> onChanged;

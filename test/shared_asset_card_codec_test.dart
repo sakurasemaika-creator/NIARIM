@@ -1,17 +1,24 @@
 import 'dart:convert';
 import 'dart:typed_data';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/services/shared_asset_card_codec.dart';
 
 void main() {
   // Valid minimal 1x1 PNG. The displayed image remains a regular PNG.
   final png = base64Decode(
-      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4nGP4////fwAJ+wP9KobjigAAAABJRU5ErkJggg==');
+    'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4nGP4////fwAJ+wP9KobjigAAAABJRU5ErkJggg==',
+  );
   test('all three kinds are round-tripped losslessly in one PNG', () {
     for (final kind in ['brush', 'tone', 'stamp']) {
-      final original = Uint8List.fromList(List<int>.generate(1024, (i) => i % 255));
+      final original = Uint8List.fromList(
+        List<int>.generate(1024, (i) => i % 255),
+      );
       final card = SharedAssetCardCodec.embed(
-        png: png, kind: kind, name: '共有素材・$kind', data: original,
+        png: png,
+        kind: kind,
+        name: '共有素材・$kind',
+        data: original,
       );
       expect(card.sublist(0, png.length - 12), png.sublist(0, png.length - 12));
       final parsed = SharedAssetCardCodec.extract(card);
@@ -25,7 +32,10 @@ void main() {
   });
   test('payload corruption does not import silently', () {
     final card = SharedAssetCardCodec.embed(
-      png: png, kind: 'brush', name: 'brush', data: Uint8List.fromList([42, 43, 44]),
+      png: png,
+      kind: 'brush',
+      name: 'brush',
+      data: Uint8List.fromList([42, 43, 44]),
     );
     final invalid = Uint8List.fromList(card);
     invalid[invalid.length - 18] ^= 0x1;
@@ -104,5 +114,4 @@ void main() {
       throwsFormatException,
     );
   });
-
 }

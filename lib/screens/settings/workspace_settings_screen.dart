@@ -283,7 +283,9 @@ class WorkspaceSettingsScreen extends StatelessWidget {
               color: Theme.of(context).colorScheme.surfaceContainerLow,
               child: Column(
                 children: [
-                  for (final panel in CanvasDockPanel.values.where((p) => !isLegacyMaterialDock(p)))
+                  for (final panel in CanvasDockPanel.values.where(
+                    (p) => !isLegacyMaterialDock(p),
+                  ))
                     CheckboxListTile(
                       dense: true,
                       title: Text(_dockPanelLabel(l10n, panel)),
@@ -903,9 +905,8 @@ class _WorkspaceSaveDialogState extends State<_WorkspaceSaveDialog> {
   Future<void> _overwrite() async {
     final l10n = AppLocalizations.of(context)!;
     if (widget.presetService.presets.isEmpty) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(l10n.workspaceNoSavedPresets)));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(l10n.workspaceNoSavedPresets)));
       return;
     }
     final selected = await showModalBottomSheet<WorkspacePreset>(

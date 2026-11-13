@@ -206,9 +206,17 @@ class PremiumService extends ChangeNotifier {
   }
 
   static const Set<String> _allowedCoinBenefits = {
-    'endCardEdit', 'watermark', 'toneCurve', 'levelAdjustment',
-    'unlimitedDuration', 'customAutomation',
-    'projectListAds','canvasAds','timelineAds','processingAds','allAds',
+    'endCardEdit',
+    'watermark',
+    'toneCurve',
+    'levelAdjustment',
+    'unlimitedDuration',
+    'customAutomation',
+    'projectListAds',
+    'canvasAds',
+    'timelineAds',
+    'processingAds',
+    'allAds',
   };
 
   void _clearServerCoinBenefits() {
@@ -238,8 +246,10 @@ class PremiumService extends ChangeNotifier {
       if (row is! Map || row['status'] != 'active') continue;
       final name = row['feature'];
       final millis = row['expiresAtEpochMs'];
-      if (name is! String || !_allowedCoinBenefits.contains(name) ||
-          millis is! int || millis <= now.millisecondsSinceEpoch) {
+      if (name is! String ||
+          !_allowedCoinBenefits.contains(name) ||
+          millis is! int ||
+          millis <= now.millisecondsSinceEpoch) {
         continue;
       }
       final expiry = DateTime.fromMillisecondsSinceEpoch(millis);
@@ -260,8 +270,10 @@ class PremiumService extends ChangeNotifier {
     final now = DateTime.now();
     final until = _serverCoinBenefitsVerifiedUntil;
     final expiry = _serverCoinBenefitExpiries[benefit];
-    return until != null && now.isBefore(until) &&
-        expiry != null && now.isBefore(expiry);
+    return until != null &&
+        now.isBefore(until) &&
+        expiry != null &&
+        now.isBefore(expiry);
   }
 
   // 購入日時・商品IDは参考表示用の端末データ。

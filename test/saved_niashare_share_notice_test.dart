@@ -85,18 +85,16 @@ void main() {
   ];
 
   Future<void> clearSnackBars(WidgetTester tester) async {
-    ScaffoldMessenger.of(
-      tester.element(find.byType(Scaffold).first),
-    ).clearSnackBars();
+    ScaffoldMessenger.of(tester.element(find.byType(Scaffold).first))
+        .clearSnackBars();
     await tester.pump();
     await tester.pump(const Duration(seconds: 1));
   }
 
   /// いま出ている通知を消した後、後ろに積まれた通知が出てこないこと。
   Future<void> expectNoQueuedSnackBar(WidgetTester tester) async {
-    ScaffoldMessenger.of(
-      tester.element(find.byType(Scaffold).first),
-    ).hideCurrentSnackBar();
+    ScaffoldMessenger.of(tester.element(find.byType(Scaffold).first))
+        .hideCurrentSnackBar();
     await tester.pump();
     await tester.pump(const Duration(seconds: 1));
     expect(find.byType(SnackBar), findsNothing, reason: '知らせを2つ積まない');

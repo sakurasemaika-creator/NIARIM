@@ -607,7 +607,9 @@ class _HelpScreenState extends State<HelpScreen> {
     // 開ける。
     final showTutorial = _searchQuery.isEmpty && _topic == null;
     return Scaffold(
-      appBar: widget.embedded ? null : AppBar(title: Text(l10n.helpScreenTitle)),
+      appBar: widget.embedded
+          ? null
+          : AppBar(title: Text(l10n.helpScreenTitle)),
       body: SafeArea(
         child: Column(
           children: [

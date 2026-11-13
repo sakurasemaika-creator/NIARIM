@@ -91,42 +91,44 @@ class AssetSearchBar extends StatelessWidget {
                 const SingleActivator(LogicalKeyboardKey.escape): onClose!,
             },
             child: TextField(
-            key: const ValueKey('asset-search-input'),
-            controller: controller,
-            autofocus: true,
-            textInputAction: TextInputAction.search,
-            onSubmitted: (_) => FocusScope.of(context).unfocus(),
-            onTapOutside: (_) => FocusScope.of(context).unfocus(),
-            style: const TextStyle(fontSize: 13),
-            decoration: InputDecoration(
-              isDense: true,
-              hintText: isTag ? l10n.creativePanelTagSearchHint : keywordHint,
-              // 検索方式の切り替えは入力欄の左端に置く。ヘッダー行は
-              // お気に入り・検索・フォルダのボタンで既に埋まっており、
-              // 幅280pxのドッキングパネルではこれ以上ボタンを足せないため。
-              prefixIcon: IconButton(
-                icon: Icon(isTag ? Icons.sell : Icons.search, size: 16),
-                color: isTag ? AccentTextTheme.of(context) : null,
-                visualDensity: VisualDensity.compact,
-                onPressed: () => onModeChanged(
-                  isTag ? AssetSearchMode.keyword : AssetSearchMode.tag,
+              key: const ValueKey('asset-search-input'),
+              controller: controller,
+              autofocus: true,
+              textInputAction: TextInputAction.search,
+              onSubmitted: (_) => FocusScope.of(context).unfocus(),
+              onTapOutside: (_) => FocusScope.of(context).unfocus(),
+              style: const TextStyle(fontSize: 13),
+              decoration: InputDecoration(
+                isDense: true,
+                hintText: isTag ? l10n.creativePanelTagSearchHint : keywordHint,
+                // 検索方式の切り替えは入力欄の左端に置く。ヘッダー行は
+                // お気に入り・検索・フォルダのボタンで既に埋まっており、
+                // 幅280pxのドッキングパネルではこれ以上ボタンを足せないため。
+                prefixIcon: IconButton(
+                  icon: Icon(isTag ? Icons.sell : Icons.search, size: 16),
+                  color: isTag ? AccentTextTheme.of(context) : null,
+                  visualDensity: VisualDensity.compact,
+                  onPressed: () => onModeChanged(
+                    isTag ? AssetSearchMode.keyword : AssetSearchMode.tag,
+                  ),
+                  tooltip: isTag
+                      ? l10n.creativePanelSearchModeTag
+                      : l10n.creativePanelSearchModeKeyword,
                 ),
-                tooltip: isTag
-                    ? l10n.creativePanelSearchModeTag
-                    : l10n.creativePanelSearchModeKeyword,
+                suffixIcon: IconButton(
+                  key: const ValueKey('asset-search-close'),
+                  tooltip: l10n.commonClose,
+                  icon: const Icon(Icons.close, size: 18),
+                  onPressed:
+                      onClose ??
+                      () {
+                        controller.clear();
+                        onQueryChanged('');
+                      },
+                ),
               ),
-              suffixIcon: IconButton(
-                key: const ValueKey('asset-search-close'),
-                tooltip: l10n.commonClose,
-                icon: const Icon(Icons.close, size: 18),
-                onPressed: onClose ?? () {
-                  controller.clear();
-                  onQueryChanged('');
-                },
-              ),
+              onChanged: onQueryChanged,
             ),
-            onChanged: onQueryChanged,
-          ),
           ),
           if (isTag)
             Padding(

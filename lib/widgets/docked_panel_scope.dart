@@ -48,6 +48,7 @@ class PanelSurface extends StatelessWidget {
 
   /// 中身が自分でスクロールする（ドックではペインの高さをそのまま渡す）。
   final bool selfScrolling;
+
   /// Already hosted inside another PanelSurface; do not draw a second card.
   final bool embedded;
   final Widget child;

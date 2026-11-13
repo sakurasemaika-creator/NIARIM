@@ -33,7 +33,11 @@ class SharedAssetCardPreview {
   static Future<ui.Image> _decode(Uint8List rgba) {
     final completer = Completer<ui.Image>();
     ui.decodeImageFromPixels(
-      rgba, width, height, ui.PixelFormat.rgba8888, completer.complete,
+      rgba,
+      width,
+      height,
+      ui.PixelFormat.rgba8888,
+      completer.complete,
     );
     return completer.future;
   }
@@ -46,7 +50,9 @@ class SharedAssetCardPreview {
     if (kind == 'brush') {
       final brush = Brush.fromJson(json);
       if (brush.resolvedCustomImagePaths.isNotEmpty) {
-        throw const FormatException('Image brush needs original source textures');
+        throw const FormatException(
+          'Image brush needs original source textures',
+        );
       }
       final offBlur = brush.pressureOff.blur;
       final onBlur = brush.pressureOn.blur;
@@ -57,8 +63,7 @@ class SharedAssetCardPreview {
       final extent = brush.size / 2 + maxBlur;
       final scale = math.min(
         1.0,
-        math.min(19.0 / math.max(brush.size, 1),
-            16.0 / math.max(extent, 1)),
+        math.min(19.0 / math.max(brush.size, 1), 16.0 / math.max(extent, 1)),
       );
       int scaledBlur(int value) => (value * scale).round().clamp(0, 100);
       final preview = brush.copyWith(
@@ -89,6 +94,7 @@ class SharedAssetCardPreview {
             pressure: 0.4 + 0.6 * math.sin(math.pi * t),
           );
         }
+
         engine.beginStroke(strokePoint(points.first, 0), 'share-card');
         for (var i = 1; i < points.length; i++) {
           engine.continueStroke(strokePoint(points[i], i), 'share-card');
@@ -125,7 +131,9 @@ class SharedAssetCardPreview {
     if (kind == 'stamp') {
       final stamp = Stamp.fromJson(json);
       if (stamp.imagePath != null) {
-        throw const FormatException('Image stamp needs original source texture');
+        throw const FormatException(
+          'Image stamp needs original source texture',
+        );
       }
       final texture = await generateBuiltInStampTexture(stamp, size: 48);
       final pixels = StampEngine().stampAlongPath(

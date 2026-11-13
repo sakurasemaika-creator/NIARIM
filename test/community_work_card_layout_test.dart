@@ -167,10 +167,16 @@ void main() {
                 );
                 final titleRect = tester.getRect(find.text(work.title));
                 final authorRect = tester.getRect(find.text(work.authorName));
-                expect(titleRect.bottom, lessThanOrEqualTo(authorRect.top + 1),
-                    reason: '$scope title must be above author');
-                expect(authorRect.bottom, lessThanOrEqualTo(buttonRect.top + 1),
-                    reason: '$scope author must be above actions');
+                expect(
+                  titleRect.bottom,
+                  lessThanOrEqualTo(authorRect.top + 1),
+                  reason: '$scope title must be above author',
+                );
+                expect(
+                  authorRect.bottom,
+                  lessThanOrEqualTo(buttonRect.top + 1),
+                  reason: '$scope author must be above actions',
+                );
                 final l10n = AppLocalizations.of(
                   tester.element(find.byType(CommunityWorkGrid)),
                 )!;
@@ -225,95 +231,102 @@ void main() {
     timeout: const Timeout(Duration(minutes: 10)),
   );
 
-  testWidgets('card shows title, author, then count / bookmark / menu in one row', (
-    tester,
-  ) async {
-    final work = CommunityWork(
-      id: 'layout-sample',
-      title: 'A sample',
-      authorId: 'author',
-      authorName: 'Artist',
-      viewCount: 1234,
-      likeCount: 0,
-      bookmarkCount: 55,
-      postedAt: DateTime.utc(2026, 10, 29),
-      durationSeconds: 90,
-      thumbnailColorIndex: 2,
-    );
-    var marks = 0;
-    var hidden = 0;
-    await tester.pumpWidget(
-      MaterialApp(
-        locale: const Locale('ja'),
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        home: Scaffold(
-          body: Center(
-            child: SizedBox(
-              width: 180,
-              child: CommunityWorkCard(
-                work: work,
-                isBookmarked: false,
-                onTap: () {},
-                onBookmarkToggle: () => marks++,
-                onMuteToggle: () => hidden++,
+  testWidgets(
+    'card shows title, author, then count / bookmark / menu in one row',
+    (tester) async {
+      final work = CommunityWork(
+        id: 'layout-sample',
+        title: 'A sample',
+        authorId: 'author',
+        authorName: 'Artist',
+        viewCount: 1234,
+        likeCount: 0,
+        bookmarkCount: 55,
+        postedAt: DateTime.utc(2026, 10, 29),
+        durationSeconds: 90,
+        thumbnailColorIndex: 2,
+      );
+      var marks = 0;
+      var hidden = 0;
+      await tester.pumpWidget(
+        MaterialApp(
+          locale: const Locale('ja'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: Center(
+              child: SizedBox(
+                width: 180,
+                child: CommunityWorkCard(
+                  work: work,
+                  isBookmarked: false,
+                  onTap: () {},
+                  onBookmarkToggle: () => marks++,
+                  onMuteToggle: () => hidden++,
+                ),
               ),
             ),
           ),
         ),
-      ),
-    );
-    await tester.pumpAndSettle();
-    final menu = find.byKey(const ValueKey('communityMuteMenu-layout-sample'));
-    final bookmark = find.byKey(
-      const ValueKey('community-bookmark-layout-sample'),
-    );
-    expect(menu, findsOneWidget);
-    expect(bookmark, findsOneWidget);
-    final thumbnail = tester.getRect(find.byType(AspectRatio));
-    expect(tester.getRect(menu).top, greaterThanOrEqualTo(thumbnail.bottom));
-    expect(
-      tester.getRect(bookmark).top,
-      greaterThanOrEqualTo(thumbnail.bottom),
-    );
-    expect(
-      tester.getRect(bookmark).right,
-      lessThanOrEqualTo(tester.getRect(menu).left + 1),
-    );
-    expect(
-      (tester.getRect(bookmark).center.dy - tester.getRect(menu).center.dy)
-          .abs(),
-      lessThan(3),
-    );
-    expect(tester.getRect(find.text(work.title)).bottom,
-        lessThanOrEqualTo(tester.getRect(find.text(work.authorName)).top + 1));
-    expect(tester.getRect(find.text(work.authorName)).bottom,
-        lessThanOrEqualTo(tester.getRect(bookmark).top + 1));
-    // Both controls use the same 40dp outlined hit area and 16dp glyph.
-    final action = tester.widget<IconButton>(bookmark);
-    expect(action.iconSize, 16);
-    expect(tester.getSize(bookmark), const Size(40, 40));
-    final card = tester.getRect(find.byType(Card));
-    expect(card.right - tester.getRect(menu).right, lessThanOrEqualTo(10));
-    expect(tester.getRect(bookmark).center.dx, greaterThan(card.center.dx));
-    expect(
-      find.descendant(
-        of: find.byType(AspectRatio),
-        matching: find.byIcon(Icons.play_arrow_rounded),
-      ),
-      findsNothing,
-      reason: 'The central play symbol must not cover the artwork',
-    );
-    await tester.tap(bookmark);
-    await tester.pump();
-    expect(marks, 1);
-    await tester.tap(menu);
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('この作品を非表示にする'));
-    await tester.pumpAndSettle();
-    expect(hidden, 1);
-    expect(tester.takeException(), isNull);
-  });
+      );
+      await tester.pumpAndSettle();
+      final menu = find.byKey(
+        const ValueKey('communityMuteMenu-layout-sample'),
+      );
+      final bookmark = find.byKey(
+        const ValueKey('community-bookmark-layout-sample'),
+      );
+      expect(menu, findsOneWidget);
+      expect(bookmark, findsOneWidget);
+      final thumbnail = tester.getRect(find.byType(AspectRatio));
+      expect(tester.getRect(menu).top, greaterThanOrEqualTo(thumbnail.bottom));
+      expect(
+        tester.getRect(bookmark).top,
+        greaterThanOrEqualTo(thumbnail.bottom),
+      );
+      expect(
+        tester.getRect(bookmark).right,
+        lessThanOrEqualTo(tester.getRect(menu).left + 1),
+      );
+      expect(
+        (tester.getRect(bookmark).center.dy - tester.getRect(menu).center.dy)
+            .abs(),
+        lessThan(3),
+      );
+      expect(
+        tester.getRect(find.text(work.title)).bottom,
+        lessThanOrEqualTo(tester.getRect(find.text(work.authorName)).top + 1),
+      );
+      expect(
+        tester.getRect(find.text(work.authorName)).bottom,
+        lessThanOrEqualTo(tester.getRect(bookmark).top + 1),
+      );
+      // Both controls use the same 40dp outlined hit area and 16dp glyph.
+      final action = tester.widget<IconButton>(bookmark);
+      expect(action.iconSize, 16);
+      expect(tester.getSize(bookmark), const Size(40, 40));
+      final card = tester.getRect(find.byType(Card));
+      expect(card.right - tester.getRect(menu).right, lessThanOrEqualTo(10));
+      expect(tester.getRect(bookmark).center.dx, greaterThan(card.center.dx));
+      expect(
+        find.descendant(
+          of: find.byType(AspectRatio),
+          matching: find.byIcon(Icons.play_arrow_rounded),
+        ),
+        findsNothing,
+        reason: 'The central play symbol must not cover the artwork',
+      );
+      await tester.tap(bookmark);
+      await tester.pump();
+      expect(marks, 1);
+      await tester.tap(menu);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('この作品を非表示にする'));
+      await tester.pumpAndSettle();
+      expect(hidden, 1);
+      expect(tester.takeException(), isNull);
+    },
+  );
   testWidgets('compact 320dp cards abbreviate only the visible total', (
     tester,
   ) async {
@@ -358,19 +371,31 @@ void main() {
         findsOneWidget,
         reason: 'card width $width',
       );
-      final total = find.byKey(const ValueKey('community-bookmark-count-compact-count'));
+      final total = find.byKey(
+        const ValueKey('community-bookmark-count-compact-count'),
+      );
       final semantics = tester.widget<Semantics>(total);
-      expect(semantics.properties.label, contains('2,684'),
-          reason: 'full value remains accessible at width $width');
-      final bookmark = find.byKey(const ValueKey('community-bookmark-compact-count'));
-      final menu = find.byKey(const ValueKey('communityMuteMenu-compact-count'));
-      expect(tester.getRect(total).right,
-          lessThanOrEqualTo(tester.getRect(bookmark).left + 1));
-      expect(tester.getRect(bookmark).right,
-          lessThanOrEqualTo(tester.getRect(menu).left + 1));
+      expect(
+        semantics.properties.label,
+        contains('2,684'),
+        reason: 'full value remains accessible at width $width',
+      );
+      final bookmark = find.byKey(
+        const ValueKey('community-bookmark-compact-count'),
+      );
+      final menu = find.byKey(
+        const ValueKey('communityMuteMenu-compact-count'),
+      );
+      expect(
+        tester.getRect(total).right,
+        lessThanOrEqualTo(tester.getRect(bookmark).left + 1),
+      );
+      expect(
+        tester.getRect(bookmark).right,
+        lessThanOrEqualTo(tester.getRect(menu).left + 1),
+      );
       expect(tester.takeException(), isNull, reason: 'card width $width');
       await tester.pumpWidget(const SizedBox.shrink());
     }
   });
-
 }

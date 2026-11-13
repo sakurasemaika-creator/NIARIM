@@ -30,14 +30,16 @@ class AdMobProvider implements AdProvider {
   );
   static String get _bannerAdUnitId => kReleaseMode
       ? (defaultTargetPlatform == TargetPlatform.android
-          ? _releaseAndroidBannerId : '')
+            ? _releaseAndroidBannerId
+            : '')
       : (defaultTargetPlatform == TargetPlatform.iOS
-          ? 'ca-app-pub-3940256099942544/2934735716'
-          : 'ca-app-pub-3940256099942544/6300978111');
+            ? 'ca-app-pub-3940256099942544/2934735716'
+            : 'ca-app-pub-3940256099942544/6300978111');
 
   static String get _squareAdUnitId => kReleaseMode
       ? (defaultTargetPlatform == TargetPlatform.android
-          ? _releaseAndroidRectangleId : '')
+            ? _releaseAndroidRectangleId
+            : '')
       : _bannerAdUnitId;
 
   /// Google-issued test IDs until production ad review is complete.

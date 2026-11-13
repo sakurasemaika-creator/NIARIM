@@ -967,9 +967,7 @@ class ThemeService extends ChangeNotifier {
       dialogTheme: DialogThemeData(
         backgroundColor: popupColor,
         elevation: 0,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(28),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
         titleTextStyle: textTheme.titleLarge?.copyWith(color: preset.textColor),
       ),
       bottomSheetTheme: BottomSheetThemeData(

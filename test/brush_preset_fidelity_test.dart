@@ -35,10 +35,14 @@ void main() {
       final brush = presets[id]!;
       expect(brush.pressureOff.blur.enabled, isTrue, reason: brush.name);
       final off = resolveBrushPressure(
-        brush: brush, pressureEnabled: false, curvedPressure: 1,
+        brush: brush,
+        pressureEnabled: false,
+        curvedPressure: 1,
       );
       final on = resolveBrushPressure(
-        brush: brush, pressureEnabled: true, curvedPressure: 1,
+        brush: brush,
+        pressureEnabled: true,
+        curvedPressure: 1,
       );
       expect(off.blur, blur, reason: brush.name);
       expect(on.blur, blur, reason: brush.name);
@@ -72,10 +76,12 @@ void main() {
       }
     }
 
-    final samples = await tester.runAsync(() async => [
-      await paint(presets['Brush0003']!),
-      await paint(presets['Brush0001']!.copyWith(size: 30, opacity: 40)),
-    ]);
+    final samples = await tester.runAsync(
+      () async => [
+        await paint(presets['Brush0003']!),
+        await paint(presets['Brush0001']!.copyWith(size: 30, opacity: 40)),
+      ],
+    );
     expect(samples, isNotNull);
     final airbrush = samples![0];
     final pen = samples[1];

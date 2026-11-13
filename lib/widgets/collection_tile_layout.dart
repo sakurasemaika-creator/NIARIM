@@ -5,7 +5,8 @@ import '../config/font_fallback.dart';
 
 /// Projects, exported works, shared files and folders use the same grid
 /// geometry even when accessibility text scaling increases.
-class CollectionTileGridDelegate extends SliverGridDelegateWithMaxCrossAxisExtent {
+class CollectionTileGridDelegate
+    extends SliverGridDelegateWithMaxCrossAxisExtent {
   const CollectionTileGridDelegate({
     required double maxExtent,
     required this.minHeight,
@@ -39,7 +40,8 @@ class CollectionTileGridDelegate extends SliverGridDelegateWithMaxCrossAxisExten
 
 TextStyle collectionTileCaptionStyle(BuildContext context) => TextStyle(
   fontSize: 12,
-  color: Theme.of(context).popupMenuTheme.textStyle?.color ??
+  color:
+      Theme.of(context).popupMenuTheme.textStyle?.color ??
       Theme.of(context).colorScheme.onSurface,
   fontWeight: FontWeight.w600,
   fontFamily: 'Kuramubon',
@@ -76,7 +78,8 @@ CollectionTileGridDelegate collectionTileGridDelegate(
 /// The cover takes all available height above the single-line name band.
 /// Extended metadata stays available in the detail view or preview.
 Widget collectionTileCaption(BuildContext context, String name) => ColoredBox(
-  color: Theme.of(context).cardTheme.color ??
+  color:
+      Theme.of(context).cardTheme.color ??
       Theme.of(context).colorScheme.surfaceContainer,
   child: Padding(
     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
@@ -93,7 +96,6 @@ Widget collectionTileCaption(BuildContext context, String name) => ColoredBox(
     ),
   ),
 );
-
 
 /// Same gentle elevation as ProjectListWidget's unselected tile cards.
 Widget collectionTileShadow(BuildContext context, Widget child) =>

@@ -82,9 +82,8 @@ void main() {
   }
 
   Future<void> clearSnackBars(WidgetTester tester) async {
-    ScaffoldMessenger.of(
-      tester.element(find.byType(Scaffold).first),
-    ).clearSnackBars();
+    ScaffoldMessenger.of(tester.element(find.byType(Scaffold).first))
+        .clearSnackBars();
     await tester.pump();
     await tester.pump(const Duration(seconds: 1));
   }
@@ -143,9 +142,8 @@ void main() {
     expect(shown.single, startsWith(lead));
     expect(shown.single, isNot(contains(l10n.communityErrorUnsupported)));
     expect(shown.single, isNot(contains(l10n.communityErrorGeneric)));
-    ScaffoldMessenger.of(
-      tester.element(find.byType(Scaffold).first),
-    ).hideCurrentSnackBar();
+    ScaffoldMessenger.of(tester.element(find.byType(Scaffold).first))
+        .hideCurrentSnackBar();
     await tester.pump();
     await tester.pump(const Duration(seconds: 1));
     expect(find.byType(SnackBar), findsNothing, reason: '知らせを2つ積まない');
@@ -154,9 +152,8 @@ void main() {
   /// いま出ている通知を消した後、後ろに積まれた通知が出てこないこと
   /// （開いている共有へ2つの呼び出しが合流すると、失敗の知らせが2つ積まれる）。
   Future<void> expectNoQueuedSnackBar(WidgetTester tester) async {
-    ScaffoldMessenger.of(
-      tester.element(find.byType(Scaffold).first),
-    ).hideCurrentSnackBar();
+    ScaffoldMessenger.of(tester.element(find.byType(Scaffold).first))
+        .hideCurrentSnackBar();
     await tester.pump();
     await tester.pump(const Duration(seconds: 1));
     expect(find.byType(SnackBar), findsNothing, reason: '知らせを2つ積まない');
@@ -956,9 +953,8 @@ void main() {
     expect(tester.takeException(), isNull);
     expect(share.calls, callsBeforeDoubleTap + 1);
     expect(snackBarTexts(tester), [l10n.transferExportSuccessSnackbar]);
-    ScaffoldMessenger.of(
-      tester.element(find.byType(Scaffold).first),
-    ).hideCurrentSnackBar();
+    ScaffoldMessenger.of(tester.element(find.byType(Scaffold).first))
+        .hideCurrentSnackBar();
     await tester.pump();
     await tester.pump(const Duration(seconds: 1));
     expect(find.byType(SnackBar), findsNothing, reason: '知らせを2つ積まない');

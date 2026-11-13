@@ -22,7 +22,9 @@ import 'helpers/load_app_fonts.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  testWidgets('Capture actual color, hidden layer and magnet UI', (tester) async {
+  testWidgets('Capture actual color, hidden layer and magnet UI', (
+    tester,
+  ) async {
     SharedPreferences.setMockInitialValues({
       firstUseTooltipsSeenKey: kAllFirstUseTooltipKeys,
       'first_launch': false,
@@ -44,10 +46,12 @@ void main() {
     appRouter.go('/');
     final providers = (await tester.runAsync(buildAppProviders))!;
     final captureKey = GlobalKey();
-    await tester.pumpWidget(RepaintBoundary(
-      key: captureKey,
-      child: MultiProvider(providers: providers, child: const NiarimApp()),
-    ));
+    await tester.pumpWidget(
+      RepaintBoundary(
+        key: captureKey,
+        child: MultiProvider(providers: providers, child: const NiarimApp()),
+      ),
+    );
     final output = Directory('build/canvas-color-layer-snap-evidence')
       ..createSync(recursive: true);
 
@@ -62,8 +66,9 @@ void main() {
 
     Future<void> shot(String file) async {
       await settle();
-      final repaint = captureKey.currentContext!
-          .findRenderObject() as RenderRepaintBoundary;
+      final repaint =
+          captureKey.currentContext!.findRenderObject()
+              as RenderRepaintBoundary;
       final bytes = await tester.runAsync(() async {
         final image = await repaint.toImage(pixelRatio: 1);
         final data = await image.toByteData(format: ui.ImageByteFormat.png);
@@ -84,17 +89,20 @@ void main() {
 
     await settle();
     final ps = tester.element(find.byType(MaterialApp)).read<ProjectService>();
-    final settings = tester.element(find.byType(MaterialApp))
+    final settings = tester
+        .element(find.byType(MaterialApp))
         .read<SettingsService>();
     await settings.markFirstLaunchDone();
-    final project = (await tester.runAsync(() => ps.createProject(
-      name: 'カラー・レイヤー証跡',
-      fps: 12,
-      durationSeconds: 1,
-      backgroundColor: 0xFFB8CEDA,
-      exportWidth: 320,
-      exportHeight: 180,
-    )))!;
+    final project = (await tester.runAsync(
+      () => ps.createProject(
+        name: 'カラー・レイヤー証跡',
+        fps: 12,
+        durationSeconds: 1,
+        backgroundColor: 0xFFB8CEDA,
+        exportWidth: 320,
+        exportHeight: 180,
+      ),
+    ))!;
     final scene = ps.scenesOf(project.id).first;
     final layer = scene.frames.first.layers.first;
     final pixels = Uint8List(320 * 180 * 4);
@@ -123,8 +131,10 @@ void main() {
     await navigate('/home');
     await navigate('/canvas/${project.id}');
     expect(find.byType(ColorPickerPanel), findsOneWidget);
-    expect(find.byKey(const ValueKey('pc-color-picker-current-chip')),
-        findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('pc-color-picker-current-chip')),
+      findsOneWidget,
+    );
     await shot('01_color_header_and_wheel');
 
     final hsv = find.byKey(const ValueKey('color-slider-mode-hsv'));
@@ -160,8 +170,9 @@ void main() {
     // The selected hidden layer must not leak through the actual canvas.
     // This sample is inside the painted area in the 1500x900 capture.
     final backgroundPixel = await tester.runAsync(() async {
-      final boundary = captureKey.currentContext!
-          .findRenderObject() as RenderRepaintBoundary;
+      final boundary =
+          captureKey.currentContext!.findRenderObject()
+              as RenderRepaintBoundary;
       final image = await boundary.toImage(pixelRatio: 1);
       final rgba = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
       final offset = (350 * image.width + 500) * 4;
@@ -174,8 +185,11 @@ void main() {
       image.dispose();
       return color;
     });
-    expect(backgroundPixel, const Color(0xFFB8CEDA),
-        reason: 'Hidden drawing must not appear on the main canvas');
+    expect(
+      backgroundPixel,
+      const Color(0xFFB8CEDA),
+      reason: 'Hidden drawing must not appear on the main canvas',
+    );
     await tester.tap(thumbnail);
     await settle();
     final viewer = find.byKey(const ValueKey('layer-preview-interactive'));
@@ -205,7 +219,10 @@ void main() {
     await navigate('/home');
     await navigate('/canvas/${project.id}');
     expect(find.byKey(const ValueKey('dockTarget-layer')), findsOneWidget);
-    expect(find.byKey(const ValueKey('dockTarget-colorPicker')), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('dockTarget-colorPicker')),
+      findsOneWidget,
+    );
     expect(find.byKey(const ValueKey('freeDockWindow-layer')), findsNothing);
     await shot('08_docked_tool_windows_touch_without_gaps');
     await tester.tap(find.byKey(const ValueKey('dockMenu-colorPicker')));

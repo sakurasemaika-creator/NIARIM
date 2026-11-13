@@ -107,9 +107,7 @@ Uint8List generateBuiltInToneTexture(Tone tone, {int size = 64}) {
   } else if (name.contains('ピクセルレンガ')) {
     _fillBrickPattern(data, size, unit: 4, thickness: 1);
   } else if (name.contains('ピクセル') &&
-      (name.contains('縞') ||
-          name.contains('ストライプ') ||
-          name.contains('ボーダー'))) {
+      (name.contains('縞') || name.contains('ストライプ') || name.contains('ボーダー'))) {
     final diagonal = name.contains('斜め');
     _fillStripePattern(
       data,
@@ -201,7 +199,11 @@ Uint8List generateBuiltInToneTexture(Tone tone, {int size = 64}) {
 }
 
 /// 1ピクセルごとの市松模様（チェッカー柄）：(x+y)が偶数の画素のみインクあり。
-void _fillPixelCheckerPattern(Uint8List data, int size, {bool inverted = false}) {
+void _fillPixelCheckerPattern(
+  Uint8List data,
+  int size, {
+  bool inverted = false,
+}) {
   for (int y = 0; y < size; y++) {
     for (int x = 0; x < size; x++) {
       if ((x + y).isEven != inverted) data[(y * size + x) * 4 + 3] = 255;

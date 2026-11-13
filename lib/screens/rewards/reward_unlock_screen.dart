@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+
 import '../../config/accent_text_theme.dart';
+
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
@@ -84,7 +86,10 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
     _lastAccountId = id;
     context.read<PremiumService>().applyServerCoinPremiumExpiry(null);
     if (id != null) {
-      context.read<PremiumService>().applyServerCoinBenefitEntitlements(null,accountId:id);
+      context.read<PremiumService>().applyServerCoinBenefitEntitlements(
+        null,
+        accountId: id,
+      );
     }
     setState(() {
       _rewardState = null;
@@ -119,7 +124,8 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
         accountId: accountId,
       );
       context.read<PremiumService>().applyServerCoinBenefitEntitlements(
-        state['entitlements'] as List<dynamic>?,accountId:accountId,
+        state['entitlements'] as List<dynamic>?,
+        accountId: accountId,
       );
       if (state['redemptionEnabled'] == true) {
         try {
@@ -268,7 +274,8 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
     final accountId = context.read<GoogleAuthService>().account?.id;
     final api = context.read<CommunityService>().api;
     final months = _duration.unit == CoinDurationUnit.month
-        ? _duration.amount : 0;
+        ? _duration.amount
+        : 0;
     final serverQuote = _selectedFullPremiumQuote;
     final priceVersion = serverQuote?['priceVersion'];
     final price = serverQuote?['priceCoins'];
@@ -278,9 +285,11 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
         serverQuote?['enabled'] != true ||
         priceVersion is! String ||
         price is! int ||
-        price != CoinBenefitPriceCatalog.cost(
-          CoinUnlockTarget.fullPremium, _duration,
-        ) ||
+        price !=
+            CoinBenefitPriceCatalog.cost(
+              CoinUnlockTarget.fullPremium,
+              _duration,
+            ) ||
         priceVersion != CoinBenefitPriceCatalog.version) {
       return;
     }
@@ -352,15 +361,13 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
       if (result['redeemed'] == true) {
         await _loadWallet(accountId);
         if (!mounted) return;
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(t['redemptionSuccess'])));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(t['redemptionSuccess'])));
       }
     } catch (_) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(t['redemptionUncertain'])));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(t['redemptionUncertain'])));
       }
     } finally {
       if (mounted) setState(() => _redeemBusy = false);
@@ -370,178 +377,213 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
   /// Flexible Full Premium period: always fetch a fresh server quote at tap.
   /// This shares the legacy idempotency store and server entitlement model.
   Future<void> _redeemFlexibleFullPremium() async {
-    if(_redeemBusy || _selected.length!=1 ||
-       !_selected.contains(CoinUnlockTarget.fullPremium) ||
-       _rewardState?['redemptionEnabled']!=true)return;
-    final accountId=context.read<GoogleAuthService>().account?.id;
-    final api=context.read<CommunityService>().api;
-    if(accountId==null||api==null||
-       context.read<PremiumService>().hasVerifiedPlayPremium)return;
-    final currentDuration=_duration;
-    final unit=currentDuration.unit.name;
-    final quantity=currentDuration.amount;
-    final reference=CoinBenefitPriceCatalog.cost(
-      CoinUnlockTarget.fullPremium,currentDuration,
+    if (_redeemBusy ||
+        _selected.length != 1 ||
+        !_selected.contains(CoinUnlockTarget.fullPremium) ||
+        _rewardState?['redemptionEnabled'] != true)
+      return;
+    final accountId = context.read<GoogleAuthService>().account?.id;
+    final api = context.read<CommunityService>().api;
+    if (accountId == null ||
+        api == null ||
+        context.read<PremiumService>().hasVerifiedPlayPremium)
+      return;
+    final currentDuration = _duration;
+    final unit = currentDuration.unit.name;
+    final quantity = currentDuration.amount;
+    final reference = CoinBenefitPriceCatalog.cost(
+      CoinUnlockTarget.fullPremium,
+      currentDuration,
     );
-    setState(()=>_redeemBusy=true);
-    final t=RewardUnlockLabels.of(context);
-    final l10n=AppLocalizations.of(context)!;
-    try{
-      final quote=await api.flexiblePremiumCoinQuote(
-        duration:unit,quantity:quantity,
+    setState(() => _redeemBusy = true);
+    final t = RewardUnlockLabels.of(context);
+    final l10n = AppLocalizations.of(context)!;
+    try {
+      final quote = await api.flexiblePremiumCoinQuote(
+        duration: unit,
+        quantity: quantity,
       );
-      if(!mounted||
-         context.read<GoogleAuthService>().account?.id!=accountId)return;
-      final amount=quote['priceCoins'];
-      final version=quote['priceVersion'];
-      final balance=_rewardState?['balanceCoins'];
-      if(quote['enabled']!=true||amount is! int||amount!=reference||
-         quote['catalogPriceCoins']!=amount||
-         version!=CoinBenefitPriceCatalog.version||
-         balance is! int||balance<amount) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content:Text(t['redemptionUncertain'])),
-        );
+      if (!mounted ||
+          context.read<GoogleAuthService>().account?.id != accountId)
+        return;
+      final amount = quote['priceCoins'];
+      final version = quote['priceVersion'];
+      final balance = _rewardState?['balanceCoins'];
+      if (quote['enabled'] != true ||
+          amount is! int ||
+          amount != reference ||
+          quote['catalogPriceCoins'] != amount ||
+          version != CoinBenefitPriceCatalog.version ||
+          balance is! int ||
+          balance < amount) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(t['redemptionUncertain'])));
         return;
       }
-      final period=coinUnlockDurationLabel(l10n,currentDuration);
-      final cost=l10n.coinAmount(amount);
-      final now=DateTime.now();
-      final last=context.read<PremiumService>().activeCoinPremiumExpiry;
-      final projected=currentDuration.previewExpiry(
-        last!=null&&last.isAfter(now)?last:now,
+      final period = coinUnlockDurationLabel(l10n, currentDuration);
+      final cost = l10n.coinAmount(amount);
+      final now = DateTime.now();
+      final last = context.read<PremiumService>().activeCoinPremiumExpiry;
+      final projected = currentDuration.previewExpiry(
+        last != null && last.isAfter(now) ? last : now,
       );
-      final overlapMessage=last!=null&&last.isAfter(now)
-        ? l10n.rewardUnlockRedeemExtendNotice(projected.toLocal())
-        : l10n.rewardUnlockRedeemExpiryNotice(projected.toLocal());
-      final confirmed=await showDialog<bool>(
-        context:context,
-        builder:(dialog)=>AlertDialog(
-          scrollable:true,
-          title:Text(t['redeem']),
-          content:KeepTogetherText(
+      final overlapMessage = last != null && last.isAfter(now)
+          ? l10n.rewardUnlockRedeemExtendNotice(projected.toLocal())
+          : l10n.rewardUnlockRedeemExpiryNotice(projected.toLocal());
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (dialog) => AlertDialog(
+          scrollable: true,
+          title: Text(t['redeem']),
+          content: KeepTogetherText(
             '${t['fullPremium']} · $period · $cost\\n\\n$overlapMessage',
-            keep:[period,cost],
+            keep: [period, cost],
           ),
-          actions:[
+          actions: [
             TextButton(
-              onPressed:()=>Navigator.pop(dialog,false),
-              child:Text(MaterialLocalizations.of(dialog).cancelButtonLabel),
+              onPressed: () => Navigator.pop(dialog, false),
+              child: Text(MaterialLocalizations.of(dialog).cancelButtonLabel),
             ),
-            FilledButton(onPressed:()=>Navigator.pop(dialog,true),
-              child:Text(t['redeem'])),
+            FilledButton(
+              onPressed: () => Navigator.pop(dialog, true),
+              child: Text(t['redeem']),
+            ),
           ],
         ),
       );
-      if(confirmed!=true||!mounted||
-         context.read<GoogleAuthService>().account?.id!=accountId)return;
-      final response=await const CoinRedemptionAttemptStore().redeem(
-        api:api,accountId:accountId,serverPriceVersion:version,
-        duration:unit,quantity:quantity,
+      if (confirmed != true ||
+          !mounted ||
+          context.read<GoogleAuthService>().account?.id != accountId)
+        return;
+      final response = await const CoinRedemptionAttemptStore().redeem(
+        api: api,
+        accountId: accountId,
+        serverPriceVersion: version,
+        duration: unit,
+        quantity: quantity,
       );
-      if(!mounted||
-         context.read<GoogleAuthService>().account?.id!=accountId)return;
-      if(response['redeemed']==true){
+      if (!mounted ||
+          context.read<GoogleAuthService>().account?.id != accountId)
+        return;
+      if (response['redeemed'] == true) {
         await _loadWallet(accountId);
-        if(!mounted)return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content:Text(t['redemptionSuccess'])),
-        );
+        if (!mounted) return;
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(t['redemptionSuccess'])));
       }
-    }catch(_){
-      if(mounted){
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content:Text(t['redemptionUncertain'])),
-        );
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(t['redemptionUncertain'])));
       }
-    }finally{
-      if(mounted)setState(()=>_redeemBusy=false);
+    } finally {
+      if (mounted) setState(() => _redeemBusy = false);
     }
   }
 
   Future<void> _redeemSelectedBenefits() async {
-    if (_redeemBusy || _selected.isEmpty ||
+    if (_redeemBusy ||
+        _selected.isEmpty ||
         _selected.contains(CoinUnlockTarget.fullPremium) ||
         _selected.contains(CoinUnlockTarget.communityPostQuota) ||
         _rewardState?['individualRedemptionEnabled'] != true) {
       return;
     }
-    final accountId=context.read<GoogleAuthService>().account?.id;
-    final api=context.read<CommunityService>().api;
-    final premium=context.read<PremiumService>();
-    if(accountId==null||api==null||premium.isPremium)return;
-    final targets=CoinUnlockTarget.values
-        .where((target)=>_selected.contains(target))
-        .map((target)=>target.name).toList(growable:false);
-    final duration=_duration.unit.name;
-    final count=_duration.amount;
-    final expected=_selected.fold<int>(0,(sum,target)=>
-        sum+CoinBenefitPriceCatalog.cost(target,_duration));
-    if(expected<=0)return;
-    final labels=RewardUnlockLabels.of(context);
-    final l10n=AppLocalizations.of(context)!;
-    setState(()=>_redeemBusy=true);
+    final accountId = context.read<GoogleAuthService>().account?.id;
+    final api = context.read<CommunityService>().api;
+    final premium = context.read<PremiumService>();
+    if (accountId == null || api == null || premium.isPremium) return;
+    final targets = CoinUnlockTarget.values
+        .where((target) => _selected.contains(target))
+        .map((target) => target.name)
+        .toList(growable: false);
+    final duration = _duration.unit.name;
+    final count = _duration.amount;
+    final expected = _selected.fold<int>(
+      0,
+      (sum, target) => sum + CoinBenefitPriceCatalog.cost(target, _duration),
+    );
+    if (expected <= 0) return;
+    final labels = RewardUnlockLabels.of(context);
+    final l10n = AppLocalizations.of(context)!;
+    setState(() => _redeemBusy = true);
     try {
       // Server quote is the only authority for price and activation.
-      final quote=await api.selectedBenefitCoinQuote(
-        targets:targets,duration:duration,quantity:count,
+      final quote = await api.selectedBenefitCoinQuote(
+        targets: targets,
+        duration: duration,
+        quantity: count,
       );
-      if(!mounted ||
-          context.read<GoogleAuthService>().account?.id!=accountId)return;
-      final price=quote['priceCoins'];
-      final version=quote['priceVersion'];
-      final wallet=_rewardState?['balanceCoins'];
-      if(quote['enabled']!=true||price is! int||price!=expected||
-          quote['catalogPriceCoins']!=price||
-          version!=CoinBenefitPriceCatalog.version||
-          wallet is! int||wallet<price) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content:Text(labels['redemptionUncertain'])),
-        );
+      if (!mounted ||
+          context.read<GoogleAuthService>().account?.id != accountId)
+        return;
+      final price = quote['priceCoins'];
+      final version = quote['priceVersion'];
+      final wallet = _rewardState?['balanceCoins'];
+      if (quote['enabled'] != true ||
+          price is! int ||
+          price != expected ||
+          quote['catalogPriceCoins'] != price ||
+          version != CoinBenefitPriceCatalog.version ||
+          wallet is! int ||
+          wallet < price) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(labels['redemptionUncertain'])));
         return;
       }
-      final period=coinUnlockDurationLabel(l10n,_duration);
-      final amount=l10n.coinAmount(price);
-      final confirm=await showDialog<bool>(
-        context:context,
-        builder:(dialog)=>AlertDialog(
-          scrollable:true,
-          title:Text(labels['redeem']),
-          content:KeepTogetherText(
+      final period = coinUnlockDurationLabel(l10n, _duration);
+      final amount = l10n.coinAmount(price);
+      final confirm = await showDialog<bool>(
+        context: context,
+        builder: (dialog) => AlertDialog(
+          scrollable: true,
+          title: Text(labels['redeem']),
+          content: KeepTogetherText(
             '${targets.length} · $period · $amount',
-            keep:[period,amount],
+            keep: [period, amount],
           ),
-          actions:[
-            TextButton(onPressed:()=>Navigator.pop(dialog,false),
-              child:Text(MaterialLocalizations.of(dialog).cancelButtonLabel)),
-            FilledButton(onPressed:()=>Navigator.pop(dialog,true),
-              child:Text(labels['redeem'])),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialog, false),
+              child: Text(MaterialLocalizations.of(dialog).cancelButtonLabel),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(dialog, true),
+              child: Text(labels['redeem']),
+            ),
           ],
         ),
       );
-      if(confirm!=true||!mounted||
-          context.read<GoogleAuthService>().account?.id!=accountId)return;
-      final result=await const IndividualCoinRedemptionAttemptStore().redeem(
-        api:api,accountId:accountId,targets:targets,
-        duration:duration,quantity:count,serverPriceVersion:version,
+      if (confirm != true ||
+          !mounted ||
+          context.read<GoogleAuthService>().account?.id != accountId)
+        return;
+      final result = await const IndividualCoinRedemptionAttemptStore().redeem(
+        api: api,
+        accountId: accountId,
+        targets: targets,
+        duration: duration,
+        quantity: count,
+        serverPriceVersion: version,
       );
-      if(!mounted||
-          context.read<GoogleAuthService>().account?.id!=accountId)return;
-      if(result['redeemed']==true) {
+      if (!mounted ||
+          context.read<GoogleAuthService>().account?.id != accountId)
+        return;
+      if (result['redeemed'] == true) {
         await _loadWallet(accountId);
-        if(!mounted)return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content:Text(labels['redemptionSuccess'])),
-        );
+        if (!mounted) return;
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(labels['redemptionSuccess'])));
       }
-    }catch(_) {
-      if(mounted){
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content:Text(labels['redemptionUncertain'])),
-        );
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(labels['redemptionUncertain'])));
       }
-    }finally{
-      if(mounted)setState(()=>_redeemBusy=false);
+    } finally {
+      if (mounted) setState(() => _redeemBusy = false);
     }
   }
 
@@ -970,10 +1012,10 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
             fullPremiumQuote?['enabled'] == true &&
             fullPremiumQuote?['priceCoins'] ==
                 CoinBenefitPriceCatalog.cost(
-                  CoinUnlockTarget.fullPremium, _duration,
+                  CoinUnlockTarget.fullPremium,
+                  _duration,
                 ) &&
-            fullPremiumQuote?['priceVersion'] ==
-                CoinBenefitPriceCatalog.version
+            fullPremiumQuote?['priceVersion'] == CoinBenefitPriceCatalog.version
         ? fullPremiumQuote!['priceCoins'] as int
         : null;
     final balance = _rewardState?['balanceCoins'];
@@ -1189,7 +1231,9 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
                                 !_redeemBusy
                             ? _redeemFullPremium
                             : _selected.length == 1 &&
-                                  _selected.contains(CoinUnlockTarget.fullPremium) &&
+                                  _selected.contains(
+                                    CoinUnlockTarget.fullPremium,
+                                  ) &&
                                   _rewardState?['redemptionEnabled'] == true &&
                                   balance is int &&
                                   balance >= referenceTotal &&
@@ -1197,9 +1241,14 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
                                   !_redeemBusy
                             ? _redeemFlexibleFullPremium
                             : _selected.isNotEmpty &&
-                                  !_selected.contains(CoinUnlockTarget.fullPremium) &&
-                                  !_selected.contains(CoinUnlockTarget.communityPostQuota) &&
-                                  _rewardState?['individualRedemptionEnabled'] == true &&
+                                  !_selected.contains(
+                                    CoinUnlockTarget.fullPremium,
+                                  ) &&
+                                  !_selected.contains(
+                                    CoinUnlockTarget.communityPostQuota,
+                                  ) &&
+                                  _rewardState?['individualRedemptionEnabled'] ==
+                                      true &&
                                   balance is int &&
                                   balance >= referenceTotal &&
                                   !context.watch<PremiumService>().isPremium &&

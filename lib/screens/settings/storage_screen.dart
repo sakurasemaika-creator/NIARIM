@@ -43,11 +43,11 @@ import '../../config/font_fallback.dart';
 /// 色相と彩度だけを現在のアクセントから取得する。
 const storageChartLightnessLevels = <double>[
   0.615, // former 4th tone
-  0.70,  // former 5th tone
+  0.70, // former 5th tone
   0.785, // former 6th tone
-  0.85,  // new 7th tone
+  0.85, // new 7th tone
   0.915, // new 8th tone
-  0.98,  // new 9th tone: below pure white
+  0.98, // new 9th tone: below pure white
 ];
 
 List<Color> sliceColorsOf(ColorScheme scheme) {
@@ -80,8 +80,7 @@ const double _barRowExtent = 42;
 const int _deviceBarCount = 3;
 
 /// 棒のみ表示する領域。widthは既存のレイアウト呼び元と互換にする。
-double _breakdownChartHeight(int bars, double width) =>
-    bars * _barRowExtent;
+double _breakdownChartHeight(int bars, double width) => bars * _barRowExtent;
 
 /// 端末の容量の問い合わせを待つ長さ。過ぎても答えが無ければ、その欄だけ
 /// 「取得できませんでした」にして、やり直せるようにする（内訳と操作は

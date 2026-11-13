@@ -314,9 +314,9 @@ class SaveTreeService extends ChangeNotifier {
             n.toJson(),
         ],
         'slotMemos': {
-          for (final entry in (_slotMemosByProject[projectId] ??
-                  const <int, String>{})
-              .entries)
+          for (final entry
+              in (_slotMemosByProject[projectId] ?? const <int, String>{})
+                  .entries)
             '${entry.key}': entry.value,
         },
       });
@@ -354,11 +354,7 @@ class SaveTreeService extends ChangeNotifier {
 
   /// Edits metadata only: never changes or deletes .niapro data, thumbnail,
   /// save time or tree relationships. Retain empty memos as explicit clears.
-  Future<bool> setSlotMemo(
-    String projectId,
-    int slotIndex,
-    String memo,
-  ) async {
+  Future<bool> setSlotMemo(String projectId, int slotIndex, String memo) async {
     if (slotIndex < 0) return false;
     final normalized = memo.trim();
     final bySlot = _slotMemosByProject.putIfAbsent(projectId, () => {});
@@ -460,10 +456,12 @@ class SaveTreeService extends ChangeNotifier {
     _nodesByProject[projectId]!.removeWhere((n) => n.slotIndex == slotIndex);
     // A newly committed save updates its slot memo only after archive/thumbnail
     // persistence succeeds. An existing empty slot memo is not lost on delete.
-    _slotMemosByProject.putIfAbsent(projectId, () => {}).putIfAbsent(
-      slotIndex,
-      () => (comment ?? old.firstOrNull?.comment ?? '').trim(),
-    );
+    _slotMemosByProject
+        .putIfAbsent(projectId, () => {})
+        .putIfAbsent(
+          slotIndex,
+          () => (comment ?? old.firstOrNull?.comment ?? '').trim(),
+        );
     final node = SaveNode(
       id: nodeId,
       projectId: projectId,

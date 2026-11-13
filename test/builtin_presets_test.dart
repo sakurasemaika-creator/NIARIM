@@ -206,16 +206,20 @@ void main() {
       expect(air.pressureOn.blur.enabled, isTrue);
       expect(air.pressureOff.blur.value, greaterThan(0));
       expect(air.opacity, lessThan(100));
-      expect(blur.pressureOff.blur.value,
-          greaterThan(air.pressureOff.blur.value));
+      expect(
+        blur.pressureOff.blur.value,
+        greaterThan(air.pressureOff.blur.value),
+      );
       expect(blur.opacity, lessThan(air.opacity));
       // These tools use genuinely distinct engines / tip attributes.
       expect(watercolor.pressureOff.mixing.enabled, isTrue);
       expect(watercolor.pressureOff.mixing.mode, BrushMixingMode.watercolor);
       expect(pencil.pressureOff.edgeJitter.enabled, isTrue);
       expect(chalk.pressureOff.edgeJitter.enabled, isTrue);
-      expect(chalk.pressureOff.edgeJitter.value,
-          greaterThan(pencil.pressureOff.edgeJitter.value));
+      expect(
+        chalk.pressureOff.edgeJitter.value,
+        greaterThan(pencil.pressureOff.edgeJitter.value),
+      );
       expect(marker.calligraphyAngle, isNotNull);
       expect(pixel.pixelMode, isTrue);
       expect(glitter.tipShape, BrushTipShape.hexagon);

@@ -18,7 +18,9 @@ import 'helpers/load_app_fonts.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  testWidgets('capture exact Japanese icon-and-label width threshold', (tester) async {
+  testWidgets('capture exact Japanese icon-and-label width threshold', (
+    tester,
+  ) async {
     SharedPreferences.setMockInitialValues({
       'first_launch': false,
       'language': 'ja',
@@ -46,10 +48,7 @@ void main() {
     await tester.pumpWidget(
       RepaintBoundary(
         key: boundary,
-        child: MultiProvider(
-          providers: providers!,
-          child: const NiarimApp(),
-        ),
+        child: MultiProvider(providers: providers!, child: const NiarimApp()),
       ),
     );
     await tester.pumpAndSettle();
@@ -59,10 +58,13 @@ void main() {
       final bar = find.byType(TabBar);
       expect(bar, findsOneWidget);
       expect(tester.widget<TabBar>(bar).tabs.length, 5);
-      return find.descendant(
-        of: find.byKey(const Key('communityTabWidth0')),
-        matching: find.byType(Text),
-      ).evaluate().isNotEmpty;
+      return find
+          .descendant(
+            of: find.byKey(const Key('communityTabWidth0')),
+            matching: find.byType(Text),
+          )
+          .evaluate()
+          .isNotEmpty;
     }
 
     Future<void> setWidth(int width) async {
@@ -96,33 +98,37 @@ void main() {
       final expectedVisible = width == upper;
       for (var i = 0; i < 5; i++) {
         final tab = find.byKey(Key('communityTabWidth$i'));
-        final textVisible = find.descendant(
-          of: tab,
-          matching: find.byType(Text),
-        ).evaluate().isNotEmpty;
-        expect(textVisible, expectedVisible,
-            reason: 'width $width tab $i');
-        expect(find.descendant(of: tab, matching: find.byType(Icon)),
-            findsOneWidget);
+        final textVisible = find
+            .descendant(of: tab, matching: find.byType(Text))
+            .evaluate()
+            .isNotEmpty;
+        expect(textVisible, expectedVisible, reason: 'width $width tab $i');
+        expect(
+          find.descendant(of: tab, matching: find.byType(Icon)),
+          findsOneWidget,
+        );
         expect(tester.getRect(tab).width, closeTo(width / 5, 0.5));
       }
-      final render = boundary.currentContext!.findRenderObject()!
-          as RenderRepaintBoundary;
+      final render =
+          boundary.currentContext!.findRenderObject()! as RenderRepaintBoundary;
       final png = await tester.runAsync(() async {
         final image = await render.toImage(pixelRatio: 1);
         final data = await image.toByteData(format: ui.ImageByteFormat.png);
         image.dispose();
         return data!.buffer.asUint8List();
       });
-      File("${dir.path}/${width}dp-${expectedVisible ? 'icon-and-label' : 'icon-only'}.png")
-          .writeAsBytesSync(png!);
+      File(
+        "${dir.path}/${width}dp-${expectedVisible ? 'icon-and-label' : 'icon-only'}.png",
+      ).writeAsBytesSync(png!);
     }
     File('${dir.path}/threshold.txt').writeAsStringSync(
       'NIARIM dev_branch, ja, text scale 1.0, devicePixelRatio 1\n'
       'Last icon-only viewport: ${lower}dp\n'
       'First icon-and-label viewport: ${upper}dp\n',
     );
-    debugPrint('ADAPTIVE_TAB_THRESHOLD_JA: ${lower}dp icons / ${upper}dp labels');
+    debugPrint(
+      'ADAPTIVE_TAB_THRESHOLD_JA: ${lower}dp icons / ${upper}dp labels',
+    );
     await tester.pumpWidget(const SizedBox.shrink());
   }, timeout: const Timeout(Duration(minutes: 6)));
 }

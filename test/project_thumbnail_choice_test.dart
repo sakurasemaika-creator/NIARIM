@@ -31,21 +31,35 @@ void main() {
     final service = ProjectService();
     await tester.runAsync(service.init);
     addTearDown(service.dispose);
-    final project = await tester.runAsync(() => service.createProject(
-      name: 'Thumbnail picker test', fps: 12, durationSeconds: 2,
-      backgroundColor: 0xFFFFFFFF, exportWidth: 64, exportHeight: 64,
-    ));
+    final project = await tester.runAsync(
+      () => service.createProject(
+        name: 'Thumbnail picker test',
+        fps: 12,
+        durationSeconds: 2,
+        backgroundColor: 0xFFFFFFFF,
+        exportWidth: 64,
+        exportHeight: 64,
+      ),
+    );
     expect(project, isNotNull);
 
-    await tester.pumpWidget(MaterialApp(
-      locale: const Locale('ja'),
-      home: Scaffold(body: Builder(builder: (ctx) => TextButton(
-        onPressed: () => showProjectThumbnailDialog(
-          ctx, project: project!, service: service,
+    await tester.pumpWidget(
+      MaterialApp(
+        locale: const Locale('ja'),
+        home: Scaffold(
+          body: Builder(
+            builder: (ctx) => TextButton(
+              onPressed: () => showProjectThumbnailDialog(
+                ctx,
+                project: project!,
+                service: service,
+              ),
+              child: const Text('Open picker'),
+            ),
+          ),
         ),
-        child: const Text('Open picker'),
-      ))),
-    ));
+      ),
+    );
     await tester.tap(find.text('Open picker'));
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('projectThumbnailLatest')), findsOneWidget);
@@ -57,9 +71,15 @@ void main() {
     await tester.tap(find.byKey(const Key('projectThumbnailFrame')));
     await tester.pump(const Duration(milliseconds: 250));
     expect(find.byKey(const Key('projectThumbnailFramePanel')), findsOneWidget);
-    expect(find.byKey(const Key('projectThumbnailFramePreview')), findsOneWidget);
+    expect(
+      find.byKey(const Key('projectThumbnailFramePreview')),
+      findsOneWidget,
+    );
     expect(find.byKey(const Key('projectThumbnailSeek')), findsOneWidget);
-    expect(find.byKey(const Key('projectThumbnailPreviousFrame')), findsOneWidget);
+    expect(
+      find.byKey(const Key('projectThumbnailPreviousFrame')),
+      findsOneWidget,
+    );
     expect(find.byKey(const Key('projectThumbnailNextFrame')), findsOneWidget);
     expect(find.byKey(const Key('projectThumbnailFirstFrame')), findsOneWidget);
     expect(find.byKey(const Key('projectThumbnailLastFrame')), findsOneWidget);
@@ -84,9 +104,11 @@ void main() {
     expect(service.projects.single.thumbnailMode, 'none');
     expect(service.projects.single.thumbnailPath, isNull);
 
-    final saved = await tester.runAsync(() => NiaproSerializer.load(
-      '${dir.path}/niarim/projects/${project.id}/${project.id}.niapro',
-    ));
+    final saved = await tester.runAsync(
+      () => NiaproSerializer.load(
+        '${dir.path}/niarim/projects/${project.id}/${project.id}.niapro',
+      ),
+    );
     expect(saved!.project.thumbnailMode, 'none');
     expect(saved.project.thumbnailPath, isNull);
   });

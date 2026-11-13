@@ -28,15 +28,19 @@ class GuideHubScreen extends StatelessWidget {
       child: Scaffold(
         appBar: AppBar(
           title: Text(guideHubTitle(context)),
-          bottom: TabBar(tabs: [
-            Tab(text: l10n.tipsScreenTitle),
-            Tab(text: l10n.helpScreenTitle),
-          ]),
+          bottom: TabBar(
+            tabs: [
+              Tab(text: l10n.tipsScreenTitle),
+              Tab(text: l10n.helpScreenTitle),
+            ],
+          ),
         ),
-        body: TabBarView(children: [
-          const TipsScreen(embedded: true),
-          HelpScreen(embedded: true, initialTopic: initialTopic),
-        ]),
+        body: TabBarView(
+          children: [
+            const TipsScreen(embedded: true),
+            HelpScreen(embedded: true, initialTopic: initialTopic),
+          ],
+        ),
       ),
     );
   }

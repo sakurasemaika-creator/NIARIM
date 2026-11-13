@@ -192,7 +192,9 @@ void main() {
               await tester.tapAt(const Offset(4, 4));
               await tester.pumpAndSettle();
             } else if (state != 'new') {
-              final tab = find.byKey(Key('communityTab${state == 'ranking' ? 1 : 2}'));
+              final tab = find.byKey(
+                Key('communityTab${state == 'ranking' ? 1 : 2}'),
+              );
               await tester.ensureVisible(tab);
               await tester.tap(tab);
               await tester.pumpAndSettle();
@@ -284,7 +286,10 @@ void main() {
             );
             final paragraph = tester.renderObject<RenderParagraph>(title);
             expect(paragraph.didExceedMaxLines, isFalse);
-            expect(paragraph.text.style?.color, theme.appBarTheme.foregroundColor);
+            expect(
+              paragraph.text.style?.color,
+              theme.appBarTheme.foregroundColor,
+            );
             final tips = state == 'search' || state == 'tag-search'
                 ? [
                     l10n.commonClose,

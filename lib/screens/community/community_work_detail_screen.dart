@@ -102,22 +102,22 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
       return;
     }
     final status = await _checkPlaybackStatus();
-    if (!mounted || widget.workId != workId ||
+    if (!mounted ||
+        widget.workId != workId ||
         status != CommunityPlaybackStatus.available) {
       return;
     }
     final url = Uri.https('www.youtube.com', '/watch', {'v': workId});
     try {
-      if (!await launchUrl(url, mode: LaunchMode.externalApplication) && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('YouTubeの動画を開けませんでした')),
-        );
+      if (!await launchUrl(url, mode: LaunchMode.externalApplication) &&
+          mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(const SnackBar(content: Text('YouTubeの動画を開けませんでした')));
       }
     } catch (_) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('YouTubeの動画を開けませんでした')),
-        );
+        ScaffoldMessenger.of(context)
+            .showSnackBar(const SnackBar(content: Text('YouTubeの動画を開けませんでした')));
       }
     }
   }
@@ -438,19 +438,25 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
                                 maxWidth: previewHeight * (16 / 9),
                               ),
                               child: CommunityYoutubePlayer(
-                                key: ValueKey('communityDetailYoutube-${work.id}'),
+                                key: ValueKey(
+                                  'communityDetailYoutube-${work.id}',
+                                ),
                                 videoId: work.id,
                                 playing: false,
                                 validatePlayback: () async {
-                                  final status = await context.read<CommunityService>()
+                                  final status = await context
+                                      .read<CommunityService>()
                                       .playbackStatus(work.id);
-                                  if (mounted && widget.workId == work.id &&
-                                      status != CommunityPlaybackStatus.available) {
+                                  if (mounted &&
+                                      widget.workId == work.id &&
+                                      status !=
+                                          CommunityPlaybackStatus.available) {
                                     setState(() => _playbackStatus = status);
                                   }
                                   return mounted &&
                                       widget.workId == work.id &&
-                                      status == CommunityPlaybackStatus.available;
+                                      status ==
+                                          CommunityPlaybackStatus.available;
                                 },
                               ),
                             ),

@@ -50,7 +50,9 @@ void main() {
 
   Future<void> settleHomeTab(WidgetTester tester) async {
     await tester.pump(const Duration(milliseconds: 350));
-    await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 70)));
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 70)),
+    );
     await tester.pump(const Duration(milliseconds: 350));
   }
 
@@ -118,7 +120,9 @@ void main() {
     await tester.pumpWidget(const SizedBox.shrink());
   });
 
-  testWidgets('drawer consolidates reward and help destinations', (tester) async {
+  testWidgets('drawer consolidates reward and help destinations', (
+    tester,
+  ) async {
     await openHome(tester);
     await tester.tap(find.byKey(const Key('homeMenuButton')));
     await tester.pumpAndSettle();
@@ -131,59 +135,64 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('shared pills separate imported projects and reusable snapshots', (
-    tester,
-  ) async {
-    final service = await openHome(tester);
-    final project = await tester.runAsync(
-      () => service.createProject(
-        name: 'Reusable drawing',
-        fps: 12,
-        durationSeconds: 1,
-        backgroundColor: 0xFFFFFFFF,
-        exportWidth: 320,
-        exportHeight: 180,
-      ),
-    );
-    final file = await tester.runAsync(
-      () => service.createOutgoingShare(project: project!),
-    );
-    expect(file, isNotNull);
-    final importedData = await tester.runAsync(
-      () => NiaproSerializer.loadShare(file!.path),
-    );
-    await tester.runAsync(
-      () => service.importSharedProject(importedData!),
-    );
-    await settleHomeTab(tester);
-    await tester.tap(find.byKey(const ValueKey('home_tab_2')));
-    await settleHomeTab(tester);
-    expect(find.byKey(const Key('sharedReceivedFilter')), findsOneWidget);
-    expect(find.byKey(const Key('sharedOutgoingFilter')), findsOneWidget);
-    expect(find.byKey(const Key('sharedReceivedFilter')), findsOneWidget);
-    expect(find.byIcon(Icons.ios_share_outlined), findsNothing);
+  testWidgets(
+    'shared pills separate imported projects and reusable snapshots',
+    (tester) async {
+      final service = await openHome(tester);
+      final project = await tester.runAsync(
+        () => service.createProject(
+          name: 'Reusable drawing',
+          fps: 12,
+          durationSeconds: 1,
+          backgroundColor: 0xFFFFFFFF,
+          exportWidth: 320,
+          exportHeight: 180,
+        ),
+      );
+      final file = await tester.runAsync(
+        () => service.createOutgoingShare(project: project!),
+      );
+      expect(file, isNotNull);
+      final importedData = await tester.runAsync(
+        () => NiaproSerializer.loadShare(file!.path),
+      );
+      await tester.runAsync(() => service.importSharedProject(importedData!));
+      await settleHomeTab(tester);
+      await tester.tap(find.byKey(const ValueKey('home_tab_2')));
+      await settleHomeTab(tester);
+      expect(find.byKey(const Key('sharedReceivedFilter')), findsOneWidget);
+      expect(find.byKey(const Key('sharedOutgoingFilter')), findsOneWidget);
+      expect(find.byKey(const Key('sharedReceivedFilter')), findsOneWidget);
+      expect(find.byIcon(Icons.ios_share_outlined), findsNothing);
 
-    // Received project has its own share action in its three-dot menu.
-    final receivedMenu = find.byKey(
-      ValueKey('receivedShareMenu_${service.shared.single.id}'),
-    );
-    expect(receivedMenu, findsOneWidget);
-    await tester.tap(receivedMenu);
-    await tester.pumpAndSettle();
-    expect(find.text('共有'), findsWidgets);
-    await tester.tapAt(const Offset(5, 700));
-    await settleHomeTab(tester);
+      // Received project has its own share action in its three-dot menu.
+      final receivedMenu = find.byKey(
+        ValueKey('receivedShareMenu_${service.shared.single.id}'),
+      );
+      expect(receivedMenu, findsOneWidget);
+      await tester.tap(receivedMenu);
+      await tester.pumpAndSettle();
+      expect(find.text('共有'), findsWidgets);
+      await tester.tapAt(const Offset(5, 700));
+      await settleHomeTab(tester);
 
-    await tester.tap(find.byKey(const Key('sharedOutgoingFilter')));
-    await settleHomeTab(tester);
-    expect(find.text('Reusable drawing'), findsOneWidget);
-    expect(find.byKey(ValueKey('outgoingShareMenu_${file!.path}')), findsOneWidget);
-    expect(find.byKey(ValueKey('receivedShareMenu_${service.shared.single.id}')), findsNothing);
-    await tester.tap(find.byKey(const Key('sharedReceivedFilter')));
-    await settleHomeTab(tester);
-    expect(receivedMenu, findsOneWidget);
-    expect(tester.takeException(), isNull);
-  });
+      await tester.tap(find.byKey(const Key('sharedOutgoingFilter')));
+      await settleHomeTab(tester);
+      expect(find.text('Reusable drawing'), findsOneWidget);
+      expect(
+        find.byKey(ValueKey('outgoingShareMenu_${file!.path}')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(ValueKey('receivedShareMenu_${service.shared.single.id}')),
+        findsNothing,
+      );
+      await tester.tap(find.byKey(const Key('sharedReceivedFilter')));
+      await settleHomeTab(tester);
+      expect(receivedMenu, findsOneWidget);
+      expect(tester.takeException(), isNull);
+    },
+  );
 
   testWidgets('project search controls do not imply filtering other tabs', (
     tester,

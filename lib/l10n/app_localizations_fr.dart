@@ -1,5 +1,6 @@
 // ignore: unused_import
 import 'package:intl/intl.dart' as intl;
+
 import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
@@ -8957,9 +8958,8 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String rewardNavigationMembershipExpiresAt(DateTime expiry) {
-    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(
-      localeName,
-    ).add_jm();
+    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(localeName)
+        .add_jm();
     final String expiryString = expiryDateFormat.format(expiry);
 
     return 'Valable jusqu’au $expiryString';
@@ -8967,9 +8967,8 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String rewardNavigationMembershipCoinExpiresAt(DateTime expiry) {
-    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(
-      localeName,
-    ).add_jm();
+    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(localeName)
+        .add_jm();
     final String expiryString = expiryDateFormat.format(expiry);
 
     return 'Débloqué avec des pièces · Valable jusqu’au $expiryString';
@@ -9938,9 +9937,8 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String rewardUnlockRedeemExtendNotice(DateTime expiry) {
-    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(
-      localeName,
-    ).add_jm();
+    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(localeName)
+        .add_jm();
     final String expiryString = expiryDateFormat.format(expiry);
 
     return 'Vous profitez déjà des avantages Premium. L’échange devrait les prolonger jusqu’au $expiryString. Continuer ?';
@@ -9948,9 +9946,8 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String rewardUnlockRedeemExpiryNotice(DateTime expiry) {
-    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(
-      localeName,
-    ).add_jm();
+    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(localeName)
+        .add_jm();
     final String expiryString = expiryDateFormat.format(expiry);
 
     return 'Expiration après l’échange (estimation) : $expiryString';
@@ -9958,9 +9955,8 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String rewardUnlockReviewPlayPremiumUntil(DateTime expiry) {
-    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(
-      localeName,
-    ).add_jm();
+    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(localeName)
+        .add_jm();
     final String expiryString = expiryDateFormat.format(expiry);
 
     return 'Vous êtes abonné Premium (jusqu’au $expiryString).';
@@ -9972,9 +9968,8 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String rewardUnlockReviewCoinPremiumUntil(DateTime expiry) {
-    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(
-      localeName,
-    ).add_jm();
+    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(localeName)
+        .add_jm();
     final String expiryString = expiryDateFormat.format(expiry);
 
     return 'Vous profitez des avantages Premium (jusqu’au $expiryString).';
@@ -9992,9 +9987,8 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String rewardUnlockReviewItem(String benefit, DateTime expiry) {
-    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(
-      localeName,
-    ).add_jm();
+    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(localeName)
+        .add_jm();
     final String expiryString = expiryDateFormat.format(expiry);
 
     return '$benefit : nouvelle expiration estimée au $expiryString';
@@ -10002,9 +9996,8 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String rewardUnlockReviewItemOverlap(String benefit, DateTime expiry) {
-    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(
-      localeName,
-    ).add_jm();
+    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(localeName)
+        .add_jm();
     final String expiryString = expiryDateFormat.format(expiry);
 
     return '$benefit : fait double emploi avec un avantage actif ou groupé. Nouvelle expiration estimée au $expiryString';

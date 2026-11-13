@@ -30,14 +30,16 @@ class CoinBenefitsScreen extends StatelessWidget {
             ],
           ),
         ),
-        body: TabBarView(children: [
-          CreatorMissionsScreen(embedded: true, workId: workId),
-          const RewardUnlockScreen(
-            embedded: true,
-            mode: RewardPageMode.earnCoins,
-          ),
-          const RewardUnlockScreen(embedded: true),
-        ]),
+        body: TabBarView(
+          children: [
+            CreatorMissionsScreen(embedded: true, workId: workId),
+            const RewardUnlockScreen(
+              embedded: true,
+              mode: RewardPageMode.earnCoins,
+            ),
+            const RewardUnlockScreen(embedded: true),
+          ],
+        ),
       ),
     );
   }

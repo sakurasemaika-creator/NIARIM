@@ -319,7 +319,8 @@ Future<List<SingleChildWidget>> _buildAppProviders(
         accountId: accountId,
       );
       premiumService.applyServerCoinBenefitEntitlements(
-        state['entitlements'] as List<dynamic>?,accountId: accountId,
+        state['entitlements'] as List<dynamic>?,
+        accountId: accountId,
       );
     } catch (error) {
       // Offline projects remain usable; never invent a successful coin grant.
@@ -344,7 +345,10 @@ Future<List<SingleChildWidget>> _buildAppProviders(
     if (accountId == signedInAccountId) return;
     signedInAccountId = accountId;
     premiumService.applyServerCoinPremiumExpiry(null);
-    premiumService.applyServerCoinBenefitEntitlements(null,accountId: accountId ?? "");
+    premiumService.applyServerCoinBenefitEntitlements(
+      null,
+      accountId: accountId ?? "",
+    );
     communityService.forgetOwner();
     if (accountId != null && communityService.isBackendConnected) {
       editReporter.retryPendingAfterSignIn();

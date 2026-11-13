@@ -32,8 +32,9 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   setUp(() => SharedPreferences.setMockInitialValues({}));
 
-  testWidgets('hidden ranking entry is removed and remaining ranks compact',
-      (tester) async {
+  testWidgets('hidden ranking entry is removed and remaining ranks compact', (
+    tester,
+  ) async {
     var bIsPrivate = false;
     var rankingReads = 0;
     var visibilityReads = 0;
@@ -43,77 +44,96 @@ void main() {
       final path = request.url.path;
       if (path == '/ranking/bookmarks') {
         rankingReads++;
-        return http.Response(jsonEncode({
-          'period':'bookmarks',
-          // A newly fetched snapshot never contains work B if already hidden.
-          'works': [
-            work(a),
-            if (!bIsPrivate) work(b),
-            work(c),
-          ],
-        }), 200, headers: headers);
+        return http.Response(
+          jsonEncode({
+            'period': 'bookmarks',
+            // A newly fetched snapshot never contains work B if already hidden.
+            'works': [work(a), if (!bIsPrivate) work(b), work(c)],
+          }),
+          200,
+          headers: headers,
+        );
       }
       if (path == '/ranking/visibility') {
         visibilityReads++;
         final ids = (request.url.queryParameters['ids'] ?? '').split(',');
-        return http.Response(jsonEncode({
-          'visibility': {
-            for (final id in ids) id: id != b || !bIsPrivate,
-          }
-        }), 200, headers: headers);
+        return http.Response(
+          jsonEncode({
+            'visibility': {for (final id in ids) id: id != b || !bIsPrivate},
+          }),
+          200,
+          headers: headers,
+        );
       }
       return http.Response('{}', 404, headers: headers);
     });
-    final service = CommunityService(api: CommunityApi(NiarimApiClient(
-      baseUrl: 'https://example.invalid',
-      httpClient: httpClient,
-      tokenProvider: () async => null,
-      maxGetRetries: 0,
-      retryBackoff: Duration.zero,
-    )));
+    final service = CommunityService(
+      api: CommunityApi(
+        NiarimApiClient(
+          baseUrl: 'https://example.invalid',
+          httpClient: httpClient,
+          tokenProvider: () async => null,
+          maxGetRetries: 0,
+          retryBackoff: Duration.zero,
+        ),
+      ),
+    );
     await service.fetchRanking(RankingPeriod.bookmarks);
-    expect(service.rankedWorks.map((w) => w.id).toList(), [a,b,c]);
-    expect(rankingReads,1);
+    expect(service.rankedWorks.map((w) => w.id).toList(), [a, b, c]);
+    expect(rankingReads, 1);
     bIsPrivate = true;
     expect(await service.validateRankingWorkForOpen(b), isFalse);
-    expect(visibilityReads,1);
+    expect(visibilityReads, 1);
     final after = service.rankedWorks;
-    expect(after.map((w) => w.id).toList(), [a,c]);
+    expect(after.map((w) => w.id).toList(), [a, c]);
     expect(after[1].isUnavailable, isFalse);
-    expect(rankingReads,1); // The click guard does not do a second ranking query.
+    expect(
+      rankingReads,
+      1,
+    ); // The click guard does not do a second ranking query.
 
-    var taps=0;
-    await tester.pumpWidget(ChangeNotifierProvider.value(
-      value:service,
-      child:MaterialApp(
-        locale:const Locale('ja'),
-        localizationsDelegates:AppLocalizations.localizationsDelegates,
-        supportedLocales:AppLocalizations.supportedLocales,
-        home:Scaffold(body:SingleChildScrollView(child:
-          CommunityRankingWorkList(
-            works:after,
-            layout:CommunityRankingLayout.horizontal,
-            bookmarkedIds:const {},
-            onTapWork:(_)=>taps++,
-            onToggleBookmark:(_)=>taps++,
-            onTapAuthor:(_)=>taps++,
+    var taps = 0;
+    await tester.pumpWidget(
+      ChangeNotifierProvider.value(
+        value: service,
+        child: MaterialApp(
+          locale: const Locale('ja'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: SingleChildScrollView(
+              child: CommunityRankingWorkList(
+                works: after,
+                layout: CommunityRankingLayout.horizontal,
+                bookmarkedIds: const {},
+                onTapWork: (_) => taps++,
+                onToggleBookmark: (_) => taps++,
+                onTapAuthor: (_) => taps++,
+              ),
+            ),
           ),
-        )),
+        ),
       ),
-    ));
+    );
     await tester.pumpAndSettle();
-    expect(find.byKey(const ValueKey('community-ranking-card-bbbbbbbbbbb')),findsNothing);
-    expect(find.text('Original title $b'),findsNothing);
-    expect(find.text('Creator $b'),findsNothing);
-    expect(find.byKey(const ValueKey('community-ranking-card-ccccccccccc')),findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('community-ranking-card-bbbbbbbbbbb')),
+      findsNothing,
+    );
+    expect(find.text('Original title $b'), findsNothing);
+    expect(find.text('Creator $b'), findsNothing);
+    expect(
+      find.byKey(const ValueKey('community-ranking-card-ccccccccccc')),
+      findsOneWidget,
+    );
     expect(find.byKey(const ValueKey('communityRankMedal-2')), findsOneWidget);
-    expect(taps,0);
+    expect(taps, 0);
 
     // A fresh ranking returns the same compact order, without extra polling.
     await service.fetchRanking(RankingPeriod.bookmarks);
-    expect(service.rankedWorks.map((w)=>w.id).toList(),[a,c]);
-    expect(rankingReads,2);
-    expect(requests.where((p)=>p=='/ranking/visibility').length,1);
+    expect(service.rankedWorks.map((w) => w.id).toList(), [a, c]);
+    expect(rankingReads, 2);
+    expect(requests.where((p) => p == '/ranking/visibility').length, 1);
     await tester.pumpWidget(const SizedBox.shrink());
     service.dispose();
   });

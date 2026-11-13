@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:ui' as ui;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
@@ -10,6 +11,7 @@ import 'package:niarim/screens/home/widgets/exported_work_thumbnail_dialog.dart'
 import 'package:niarim/screens/home/widgets/project_thumbnail_dialog.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
 import 'helpers/load_app_fonts.dart';
 
 void main() {
@@ -28,12 +30,19 @@ void main() {
     });
     final recorder = ui.PictureRecorder();
     final c = Canvas(recorder);
-    c.drawRect(const Rect.fromLTWH(0, 0, 480, 270),
-        Paint()..color = const Color(0xFF8BC5DE));
-    c.drawCircle(const Offset(352, 76), 54,
-        Paint()..color = const Color(0xFFFFDA76));
-    c.drawRect(const Rect.fromLTWH(0, 195, 480, 75),
-        Paint()..color = const Color(0xFF4B9A91));
+    c.drawRect(
+      const Rect.fromLTWH(0, 0, 480, 270),
+      Paint()..color = const Color(0xFF8BC5DE),
+    );
+    c.drawCircle(
+      const Offset(352, 76),
+      54,
+      Paint()..color = const Color(0xFFFFDA76),
+    );
+    c.drawRect(
+      const Rect.fromLTWH(0, 195, 480, 75),
+      Paint()..color = const Color(0xFF4B9A91),
+    );
     final picture = recorder.endRecording();
     // Image encoding and disk I/O must escape the widget test fake clock.
     final exportedImage = File(temp.path + '/sample_export.png');
@@ -54,11 +63,16 @@ void main() {
     print('CAPTURE_STAGE 04 after service init');
     addTearDown(service.dispose);
     print('CAPTURE_STAGE 05 before project create');
-    final project = await tester.runAsync(() => service.createProject(
-      name: '第1話 サンプルアニメ', fps: 12, durationSeconds: 2,
-      backgroundColor: 0xFFE8F2FF,
-      exportWidth: 480, exportHeight: 270,
-    ));
+    final project = await tester.runAsync(
+      () => service.createProject(
+        name: '第1話 サンプルアニメ',
+        fps: 12,
+        durationSeconds: 2,
+        backgroundColor: 0xFFE8F2FF,
+        exportWidth: 480,
+        exportHeight: 270,
+      ),
+    );
     print('CAPTURE_STAGE 06 project created');
     expect(project, isNotNull);
     final boundaryKey = GlobalKey();
@@ -75,57 +89,82 @@ void main() {
         locale: const Locale('ja'),
         supportedLocales: AppLocalizations.supportedLocales,
         localizationsDelegates: AppLocalizations.localizationsDelegates,
-        theme: ThemeData(useMaterial3: true,
+        theme: ThemeData(
+          useMaterial3: true,
           fontFamily: 'HakkouMincho',
-          fontFamilyFallback: const ['NotoSerifJP']),
+          fontFamilyFallback: const ['NotoSerifJP'],
+        ),
         home: Scaffold(
           appBar: AppBar(title: const Text('作品をつくる')),
-          body: ListView(children: [
-            const Padding(
-              padding: EdgeInsets.fromLTRB(16, 16, 16, 6),
-              child: Text('プロジェクト', style: TextStyle(fontSize: 21))),
-            Card(
-              child: ListTile(
-                leading: const Icon(Icons.movie_creation_outlined),
-                title: Text(project!.name),
-                subtitle: const Text('12 fps ・ 480 × 270'),
-                trailing: Builder(builder: (context) => IconButton(
-                  key: const Key('projectCoverMenuFixture'),
-                  tooltip: 'プロジェクトの操作',
-                  icon: const Icon(Icons.more_vert),
-                  onPressed: () => showMenu<String>(
-                    context: context,
-                    position: RelativeRect.fromLTRB(
-                      MediaQuery.sizeOf(context).width - 210, 110, 8, 0),
-                    items: const [PopupMenuItem(
-                      value: 'thumbnail',
-                      child: Text('サムネイル変更'))],
-                  ).then((choice) {
-                    if (choice == 'thumbnail' && context.mounted) {
-                      showProjectThumbnailDialog(context,
-                        project: project, service: service);
-                    }
-                  }),
-                )),
+          body: ListView(
+            children: [
+              const Padding(
+                padding: EdgeInsets.fromLTRB(16, 16, 16, 6),
+                child: Text('プロジェクト', style: TextStyle(fontSize: 21)),
               ),
-            ),
-            const Padding(
-              padding: EdgeInsets.fromLTRB(16, 18, 16, 6),
-              child: Text('書き出し済み作品', style: TextStyle(fontSize: 21))),
-            ExportedWorkCard(
-              name: 'sample_export.png',
-              metadata: '2026/11/11 ・ PNG',
-              icon: Icons.image_outlined,
-              moveLabel: '移動', shareLabel: '共有', deleteLabel: '削除',
-              originalMediaPath: exportedImage.path,
-              onOpen: () {}, onMove: () {},
-              onShare: () {}, onDelete: () {},
-              onChangeThumbnail: () {
-                showExportedWorkThumbnailDialog(
-                  navKey.currentContext!, file: exportedImage);
-              },
-            ),
-          ]),
+              Card(
+                child: ListTile(
+                  leading: const Icon(Icons.movie_creation_outlined),
+                  title: Text(project!.name),
+                  subtitle: const Text('12 fps ・ 480 × 270'),
+                  trailing: Builder(
+                    builder: (context) => IconButton(
+                      key: const Key('projectCoverMenuFixture'),
+                      tooltip: 'プロジェクトの操作',
+                      icon: const Icon(Icons.more_vert),
+                      onPressed: () =>
+                          showMenu<String>(
+                            context: context,
+                            position: RelativeRect.fromLTRB(
+                              MediaQuery.sizeOf(context).width - 210,
+                              110,
+                              8,
+                              0,
+                            ),
+                            items: const [
+                              PopupMenuItem(
+                                value: 'thumbnail',
+                                child: Text('サムネイル変更'),
+                              ),
+                            ],
+                          ).then((choice) {
+                            if (choice == 'thumbnail' && context.mounted) {
+                              showProjectThumbnailDialog(
+                                context,
+                                project: project,
+                                service: service,
+                              );
+                            }
+                          }),
+                    ),
+                  ),
+                ),
+              ),
+              const Padding(
+                padding: EdgeInsets.fromLTRB(16, 18, 16, 6),
+                child: Text('書き出し済み作品', style: TextStyle(fontSize: 21)),
+              ),
+              ExportedWorkCard(
+                name: 'sample_export.png',
+                metadata: '2026/11/11 ・ PNG',
+                icon: Icons.image_outlined,
+                moveLabel: '移動',
+                shareLabel: '共有',
+                deleteLabel: '削除',
+                originalMediaPath: exportedImage.path,
+                onOpen: () {},
+                onMove: () {},
+                onShare: () {},
+                onDelete: () {},
+                onChangeThumbnail: () {
+                  showExportedWorkThumbnailDialog(
+                    navKey.currentContext!,
+                    file: exportedImage,
+                  );
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -137,13 +176,15 @@ void main() {
     Future<void> capture(String name) async {
       for (var attempt = 0; attempt < 3; attempt++) {
         await tester.pump(const Duration(milliseconds: 100));
-        await tester.runAsync(() => Future<void>.delayed(
-          const Duration(milliseconds: 35)));
+        await tester.runAsync(
+          () => Future<void>.delayed(const Duration(milliseconds: 35)),
+        );
         await tester.pump();
       }
       expect(tester.takeException(), isNull, reason: name);
-      final boundary = boundaryKey.currentContext!.findRenderObject()!
-          as RenderRepaintBoundary;
+      final boundary =
+          boundaryKey.currentContext!.findRenderObject()!
+              as RenderRepaintBoundary;
       final png = await tester.runAsync(() async {
         final img = await boundary.toImage(pixelRatio: 1);
         final data = await img.toByteData(format: ui.ImageByteFormat.png);
@@ -209,7 +250,8 @@ void main() {
     // on its responsive layout, not a popup-menu transition race.
     showProjectThumbnailDialog(
       tester.element(find.byKey(const Key('projectCoverMenuFixture'))),
-      project: project, service: service,
+      project: project,
+      service: service,
     );
     await tester.pump(const Duration(milliseconds: 450));
     await tester.tap(find.byKey(const Key('projectThumbnailFrame')));

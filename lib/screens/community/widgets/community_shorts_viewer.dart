@@ -177,7 +177,8 @@ class _CommunityShortsScreenState extends State<CommunityShortsScreen> {
                           value: CommunityShortsEndBehavior.loopCurrent,
                           child: _EndBehaviorMenuItem(
                             selected:
-                                _endBehavior == CommunityShortsEndBehavior.loopCurrent,
+                                _endBehavior ==
+                                CommunityShortsEndBehavior.loopCurrent,
                             icon: Icons.repeat_one_rounded,
                             label: l10n.communityShortsEndBehaviorLoop,
                           ),
@@ -186,7 +187,8 @@ class _CommunityShortsScreenState extends State<CommunityShortsScreen> {
                           value: CommunityShortsEndBehavior.autoAdvance,
                           child: _EndBehaviorMenuItem(
                             selected:
-                                _endBehavior == CommunityShortsEndBehavior.autoAdvance,
+                                _endBehavior ==
+                                CommunityShortsEndBehavior.autoAdvance,
                             icon: Icons.vertical_align_bottom_rounded,
                             label: l10n.communityShortsEndBehaviorAutoAdvance,
                           ),
@@ -199,7 +201,8 @@ class _CommunityShortsScreenState extends State<CommunityShortsScreen> {
                         child: Padding(
                           padding: const EdgeInsets.all(10),
                           child: Icon(
-                            _endBehavior == CommunityShortsEndBehavior.loopCurrent
+                            _endBehavior ==
+                                    CommunityShortsEndBehavior.loopCurrent
                                 ? Icons.repeat_one_rounded
                                 : Icons.vertical_align_bottom_rounded,
                             color: scheme.onSurface,
@@ -215,30 +218,30 @@ class _CommunityShortsScreenState extends State<CommunityShortsScreen> {
           ),
           Expanded(
             child: PageView.builder(
-                    controller: _controller,
-                    scrollDirection: Axis.vertical,
-                    itemCount: visibleWorks.length,
-                    onPageChanged: (index) => setState(() => _currentIndex = index),
-                    itemBuilder: (context, index) {
-                      final work = visibleWorks[index];
-                      return _ShortsVerifiedPage(
-                        key: ValueKey('shorts-verified-${work.id}'),
-                        work: work,
-                        isCurrentPage: index == _currentIndex,
-                        isBookmarked: communityService.isBookmarked(work.id),
-                        onToggleBookmark: () => reportFailedCommunityEdit(
-                          context,
-                          communityService,
-                          communityService.toggleBookmark(work.id),
-                        ),
-                        onPlaybackEnded: (onLoopCurrent) => _handlePlaybackEnded(
-                          index,
-                          visibleWorks,
-                          onLoopCurrent: onLoopCurrent,
-                        ),
-                      );
-                    },
+              controller: _controller,
+              scrollDirection: Axis.vertical,
+              itemCount: visibleWorks.length,
+              onPageChanged: (index) => setState(() => _currentIndex = index),
+              itemBuilder: (context, index) {
+                final work = visibleWorks[index];
+                return _ShortsVerifiedPage(
+                  key: ValueKey('shorts-verified-${work.id}'),
+                  work: work,
+                  isCurrentPage: index == _currentIndex,
+                  isBookmarked: communityService.isBookmarked(work.id),
+                  onToggleBookmark: () => reportFailedCommunityEdit(
+                    context,
+                    communityService,
+                    communityService.toggleBookmark(work.id),
                   ),
+                  onPlaybackEnded: (onLoopCurrent) => _handlePlaybackEnded(
+                    index,
+                    visibleWorks,
+                    onLoopCurrent: onLoopCurrent,
+                  ),
+                );
+              },
+            ),
           ),
         ],
       ),
@@ -303,8 +306,10 @@ class _ShortsVerifiedPageState extends State<_ShortsVerifiedPage> {
     final epoch = ++_checkEpoch;
     setState(() => _status = CommunityPlaybackStatus.checking);
     final status = await context.read<CommunityService>().playbackStatus(id);
-    if (!mounted || !widget.isCurrentPage ||
-        widget.work.id != id || epoch != _checkEpoch) {
+    if (!mounted ||
+        !widget.isCurrentPage ||
+        widget.work.id != id ||
+        epoch != _checkEpoch) {
       return;
     }
     setState(() => _status = status);
@@ -318,8 +323,10 @@ class _ShortsVerifiedPageState extends State<_ShortsVerifiedPage> {
     final id = widget.work.id;
     final epoch = ++_checkEpoch;
     final status = await context.read<CommunityService>().playbackStatus(id);
-    if (!mounted || !widget.isCurrentPage ||
-        widget.work.id != id || epoch != _checkEpoch) {
+    if (!mounted ||
+        !widget.isCurrentPage ||
+        widget.work.id != id ||
+        epoch != _checkEpoch) {
       return false;
     }
     if (status != CommunityPlaybackStatus.available) {
@@ -343,10 +350,7 @@ class _ShortsVerifiedPageState extends State<_ShortsVerifiedPage> {
     if (_status != CommunityPlaybackStatus.available) {
       return SafeArea(
         child: Center(
-          child: CommunityPlaybackStatusView(
-            status: _status,
-            onRetry: _verify,
-          ),
+          child: CommunityPlaybackStatusView(status: _status, onRetry: _verify),
         ),
       );
     }

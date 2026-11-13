@@ -285,11 +285,10 @@ class CommunityWorkCard extends StatelessWidget {
                       Text(
                         isUnavailable
                             ? CommunityPlazaLabels.of(context)
-                                .unavailablePlaceholder
+                                  .unavailablePlaceholder
                             : isMuted
-                                ? CommunityPlazaLabels.of(context)
-                                    .mutedPlaceholder
-                                : work.title,
+                            ? CommunityPlazaLabels.of(context).mutedPlaceholder
+                            : work.title,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
@@ -377,7 +376,9 @@ class CommunityWorkCard extends StatelessWidget {
                                 toggled: isBookmarked,
                                 child: CollectionActionFrame(
                                   child: IconButton(
-                                    key: ValueKey('community-bookmark-${work.id}'),
+                                    key: ValueKey(
+                                      'community-bookmark-${work.id}',
+                                    ),
                                     tooltip: isBookmarked
                                         ? l10n.communityWorkDetailBookmarkRemove
                                         : l10n.communityWorkDetailBookmarkAdd,
@@ -405,13 +406,10 @@ class CommunityWorkCard extends StatelessWidget {
                                   iconSize: CollectionActionFrame.glyphSize,
                                   tooltip: isMuted
                                       ? CommunityPlazaLabels.of(context)
-                                          .unmuteWork
+                                            .unmuteWork
                                       : CommunityPlazaLabels.of(context)
-                                          .muteWork,
-                                  icon: Icon(
-                                    Icons.more_vert,
-                                    color: textColor,
-                                  ),
+                                            .muteWork,
+                                  icon: Icon(Icons.more_vert, color: textColor),
                                   onSelected: (_) => onMuteToggle!(),
                                   itemBuilder: (_) => [
                                     PopupMenuItem(
@@ -419,9 +417,9 @@ class CommunityWorkCard extends StatelessWidget {
                                       child: Text(
                                         isMuted
                                             ? CommunityPlazaLabels.of(context)
-                                                .unmuteWork
+                                                  .unmuteWork
                                             : CommunityPlazaLabels.of(context)
-                                                .muteWork,
+                                                  .muteWork,
                                       ),
                                     ),
                                   ],

@@ -104,7 +104,10 @@ class SaveRenameButton extends StatelessWidget {
       padding: EdgeInsets.zero,
       constraints: const BoxConstraints.tightFor(width: 30, height: 30),
       onPressed: () async {
-        final memo = await _showMemoEditor(context, node.comment ?? fallbackName);
+        final memo = await _showMemoEditor(
+          context,
+          node.comment ?? fallbackName,
+        );
         if (memo == null || !context.mounted) return;
         // Empty means "clear" only for slots. An archived tree snapshot must
         // retain a readable title until the storage service supports null.

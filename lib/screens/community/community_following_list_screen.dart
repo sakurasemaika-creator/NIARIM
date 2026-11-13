@@ -36,8 +36,9 @@ class _CommunityFollowingListScreenState
     if (_refreshing || !mounted) return;
     _refreshing = true;
     try {
-      final updated =
-          await context.read<CommunityService>().refreshOwnFollowing();
+      final updated = await context
+          .read<CommunityService>()
+          .refreshOwnFollowing();
       if (updated && mounted) {
         setState(_recentlyUnfollowed.clear);
       }
@@ -91,10 +92,8 @@ class _CommunityFollowingListScreenState
         subtitle: following ? null : const Text('フォロー解除済み'),
         onTap: () => Navigator.of(context).push(
           adMockMaterialPageRoute<void>(
-            builder: (_) => CommunityAuthorWorksScreen(
-              authorId: id,
-              authorName: name,
-            ),
+            builder: (_) =>
+                CommunityAuthorWorksScreen(authorId: id, authorName: name),
           ),
         ),
         trailing: OutlinedButton(
@@ -120,7 +119,9 @@ class _CommunityFollowingListScreenState
           key: const Key('communityOwnFollowingList'),
           controller: _scrollController,
           physics: const AlwaysScrollableScrollPhysics(),
-          itemCount: isEmpty ? 1 : ids.length + (removed.isEmpty ? 0 : removed.length + 1),
+          itemCount: isEmpty
+              ? 1
+              : ids.length + (removed.isEmpty ? 0 : removed.length + 1),
           itemBuilder: (context, index) {
             if (isEmpty) {
               return const Padding(
@@ -130,7 +131,11 @@ class _CommunityFollowingListScreenState
             }
             if (index < ids.length) {
               final id = ids[index];
-              return authorRow(id, service.followedAuthorName(id), following: true);
+              return authorRow(
+                id,
+                service.followedAuthorName(id),
+                following: true,
+              );
             }
             if (index == ids.length) {
               return const Padding(

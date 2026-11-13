@@ -147,13 +147,25 @@ void main() {
     // widget boundary instead of requiring a deleted placeholder comment.
     final videoMarker = source.indexOf('child: CommunityYoutubePlayer(');
     final outsideMarker = source.indexOf('// 作者・タグ・制作情報・詳細導線はすべて動画領域の外。');
-    final infoIcon = source.indexOf('Icons.info_outline_rounded', outsideMarker);
+    final infoIcon = source.indexOf(
+      'Icons.info_outline_rounded',
+      outsideMarker,
+    );
 
-    expect(videoMarker, greaterThanOrEqualTo(0),
-        reason: 'A production YouTube player must own the video surface');
-    expect(outsideMarker, greaterThan(videoMarker),
-        reason: 'The information panel must come after the video surface');
-    expect(infoIcon, greaterThan(outsideMarker),
-        reason: 'Details must remain outside the YouTube player');
+    expect(
+      videoMarker,
+      greaterThanOrEqualTo(0),
+      reason: 'A production YouTube player must own the video surface',
+    );
+    expect(
+      outsideMarker,
+      greaterThan(videoMarker),
+      reason: 'The information panel must come after the video surface',
+    );
+    expect(
+      infoIcon,
+      greaterThan(outsideMarker),
+      reason: 'Details must remain outside the YouTube player',
+    );
   });
 }

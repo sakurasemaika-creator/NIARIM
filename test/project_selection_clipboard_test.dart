@@ -60,12 +60,15 @@ void main() {
   // ファイルの読み書きを伴う操作（複製・保存）を実時間で終わらせる。
   Future<void> captureClipboardScreen(WidgetTester tester, String name) async {
     for (var i = 0; i < 5; i++) {
-      await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 30)));
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 30)),
+      );
       await tester.pump(const Duration(milliseconds: 75));
     }
     expect(tester.takeException(), isNull);
-    final boundary = captureBoundaryKey.currentContext!.findRenderObject()
-        as RenderRepaintBoundary;
+    final boundary =
+        captureBoundaryKey.currentContext!.findRenderObject()
+            as RenderRepaintBoundary;
     final pngBytes = await tester.runAsync(() async {
       final image = await boundary.toImage(pixelRatio: 1);
       final data = await image.toByteData(format: ui.ImageByteFormat.png);
@@ -108,10 +111,12 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
     final providers = (await tester.runAsync(buildAppProviders))!;
-    await tester.pumpWidget(RepaintBoundary(
-      key: captureBoundaryKey,
-      child: MultiProvider(providers: providers, child: const NiarimApp()),
-    ));
+    await tester.pumpWidget(
+      RepaintBoundary(
+        key: captureBoundaryKey,
+        child: MultiProvider(providers: providers, child: const NiarimApp()),
+      ),
+    );
     await tester.pump(const Duration(milliseconds: 300));
     final service = tester
         .element(find.byType(SplashScreen))
@@ -564,9 +569,10 @@ void main() {
     await tester.tap(find.text('ゴミ箱へ移動'));
     // The menu starts an acknowledged asynchronous save; a few fake frames
     // cannot prove the project has reached persistent Trash.
-    await waitFor(tester, () =>
-        service.projects.isEmpty &&
-        snackText(tester) == '1件をゴミ箱へ移動しました');
+    await waitFor(
+      tester,
+      () => service.projects.isEmpty && snackText(tester) == '1件をゴミ箱へ移動しました',
+    );
     expect(service.projects, isEmpty);
     expect(snackText(tester), '1件をゴミ箱へ移動しました');
     await tester.tap(find.text('元に戻す'));
@@ -615,9 +621,10 @@ void main() {
     await tester.tap(find.text('ゴミ箱へ移動'));
     // Complete the Trash save before deleting the original folder. Deleting
     // while the project save is still queued can deadlock this widget test.
-    await waitFor(tester, () =>
-        service.projects.isEmpty &&
-        find.text('元に戻す').evaluate().isNotEmpty);
+    await waitFor(
+      tester,
+      () => service.projects.isEmpty && find.text('元に戻す').evaluate().isNotEmpty,
+    );
     final deleted = service.deleteFolder(folderId);
     await waitFor(tester, () => !service.folders.any((f) => f.id == folderId));
     // Fail with a useful assertion instead of waiting forever for a blocked
@@ -746,7 +753,6 @@ void main() {
     expect(service.folders.where((f) => f.name == '箱 (コピー 2)'), hasLength(1));
   });
 
-
   testWidgets('incompatible tab paste explains why and leaves project intact', (
     tester,
   ) async {
@@ -766,10 +772,14 @@ void main() {
     expect(find.textContaining('形式違いのペーストはできません'), findsOneWidget);
     await captureClipboardScreen(tester, '09_project_cross_format_restriction');
     expect(service.projects.where((p) => p.name == 'apple'), hasLength(1));
-    await tester.tap(find.byType(AlertDialog).evaluate().isNotEmpty
-        ? find.descendant(of: find.byType(AlertDialog),
-            matching: find.byType(TextButton))
-        : find.byType(TextButton).first);
+    await tester.tap(
+      find.byType(AlertDialog).evaluate().isNotEmpty
+          ? find.descendant(
+              of: find.byType(AlertDialog),
+              matching: find.byType(TextButton),
+            )
+          : find.byType(TextButton).first,
+    );
     await settle(tester);
     expect(service.trash, isEmpty);
   });
@@ -780,8 +790,9 @@ void main() {
     final service = await boot(tester, names: ['apple']);
     final appleId = service.projects.single.id;
     final context = tester.element(find.byType(ProjectListWidget));
-    await tester.runAsync(() =>
-        context.read<SettingsService>().setTrashAutoDelete(30));
+    await tester.runAsync(
+      () => context.read<SettingsService>().setTrashAutoDelete(30),
+    );
     await tester.longPress(card('apple'));
     await settle(tester);
     await tester.sendKeyDownEvent(LogicalKeyboardKey.controlLeft);
@@ -795,7 +806,10 @@ void main() {
     expect(find.byKey(const Key('homePasteToTrashDialog')), findsOneWidget);
     expect(find.textContaining('以下の作品・フォルダをゴミ箱に捨てますか'), findsOneWidget);
     expect(find.textContaining('30日後に完全削除'), findsOneWidget);
-    await captureClipboardScreen(tester, '10_project_trash_30days_confirmation');
+    await captureClipboardScreen(
+      tester,
+      '10_project_trash_30days_confirmation',
+    );
     expect(service.trash, isEmpty);
     await tester.tap(find.byKey(const Key('homePasteTrashConfirmButton')));
     await settleIo(tester);
@@ -812,8 +826,10 @@ void main() {
     await tester.tap(find.byKey(const Key('homePasteRestoreConfirmButton')));
     // Disk deserialization is asynchronous and can outlive a few pump frames.
     // Verify the *completed* restore instead of checking a fixed-delay race.
-    await waitFor(tester,
-        () => service.projects.any((project) => project.id == appleId));
+    await waitFor(
+      tester,
+      () => service.projects.any((project) => project.id == appleId),
+    );
     expect(service.projects.map((p) => p.id), contains(appleId));
     await captureClipboardScreen(tester, '13_project_restored');
   });

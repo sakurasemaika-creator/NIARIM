@@ -13,8 +13,7 @@ Future<Uint8List> captureSaveThumbnail(
   ProjectService service,
   String projectId,
 ) async {
-  final project =
-      service.projects.where((p) => p.id == projectId).firstOrNull;
+  final project = service.projects.where((p) => p.id == projectId).firstOrNull;
   final tileManager = service.tileManagerOf(projectId);
   final width = tileManager.canvasWidth;
   final height = tileManager.canvasHeight;
@@ -45,8 +44,7 @@ Future<Uint8List> captureSaveThumbnail(
     final composited = await LayerCompositor.composite(
       tileManager,
       layers,
-      (layer) =>
-          service.tileKeyFor(projectId, scene.id, frame.index, layer.id),
+      (layer) => service.tileKeyFor(projectId, scene.id, frame.index, layer.id),
       width,
       height,
       paperColor: LayerCompositor.paperForBlendModes(layers, background),
@@ -55,12 +53,7 @@ Future<Uint8List> captureSaveThumbnail(
       canvas.drawImageRect(
         composited,
         ui.Rect.fromLTWH(0, 0, width.toDouble(), height.toDouble()),
-        ui.Rect.fromLTWH(
-          0,
-          0,
-          targetWidth.toDouble(),
-          targetHeight.toDouble(),
-        ),
+        ui.Rect.fromLTWH(0, 0, targetWidth.toDouble(), targetHeight.toDouble()),
         ui.Paint()..filterQuality = ui.FilterQuality.medium,
       );
     } finally {

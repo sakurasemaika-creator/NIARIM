@@ -81,7 +81,8 @@ abstract final class OutgoingShareLibrary {
     Directory? legacyProjectsRoot,
   }) async {
     final root = libraryRoot ?? await _root();
-    final projects = legacyProjectsRoot ??
+    final projects =
+        legacyProjectsRoot ??
         Directory(await NiaproSerializer.projectsBasePath());
     final files = <File>[];
 
@@ -94,9 +95,12 @@ abstract final class OutgoingShareLibrary {
           } else if (entry is Directory) {
             try {
               files.addAll(
-                entry.listSync(followLinks: false).whereType<File>().where(
-                  (file) => file.path.toLowerCase().endsWith('.niashare'),
-                ),
+                entry
+                    .listSync(followLinks: false)
+                    .whereType<File>()
+                    .where(
+                      (file) => file.path.toLowerCase().endsWith('.niashare'),
+                    ),
               );
             } on FileSystemException catch (error, stackTrace) {
               // A single unreadable directory must not hide other exports.

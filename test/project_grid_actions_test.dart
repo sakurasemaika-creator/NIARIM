@@ -99,65 +99,69 @@ Finder _menu(String name) => find.descendant(
 );
 
 void main() {
-  testWidgets('capture all project and folder view modes with outlined actions',
-      (tester) async {
-    SharedPreferences.setMockInitialValues({});
-    await loadAppFonts(tester);
-    tester.view.physicalSize = const Size(390, 844);
-    tester.view.devicePixelRatio = 1;
-    addTearDown(tester.view.resetPhysicalSize);
-    addTearDown(tester.view.resetDevicePixelRatio);
-    final service = _GridProjects();
-    addTearDown(service.dispose);
-    final boundaryKey = GlobalKey();
-    final out = Directory('build/save-slot-visual-audit')..createSync(recursive: true);
+  testWidgets(
+    'capture all project and folder view modes with outlined actions',
+    (tester) async {
+      SharedPreferences.setMockInitialValues({});
+      await loadAppFonts(tester);
+      tester.view.physicalSize = const Size(390, 844);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      final service = _GridProjects();
+      addTearDown(service.dispose);
+      final boundaryKey = GlobalKey();
+      final out = Directory('build/save-slot-visual-audit')
+        ..createSync(recursive: true);
 
-    Future<void> capture(String name) async {
-      final boundary =
-          boundaryKey.currentContext!.findRenderObject() as RenderRepaintBoundary;
-      final bytes = await tester.runAsync(() async {
-        final image = await boundary.toImage(pixelRatio: 1);
-        final data = await image.toByteData(format: ui.ImageByteFormat.png);
-        image.dispose();
-        return data!.buffer.asUint8List();
-      });
-      await tester.runAsync(
-        () => File('${out.path}/$name.png').writeAsBytes(bytes!),
-      );
-    }
-
-    for (final mode in [
-      ProjectViewMode.large,
-      ProjectViewMode.medium,
-      ProjectViewMode.small,
-      ProjectViewMode.detail,
-    ]) {
-      await tester.pumpWidget(
-        RepaintBoundary(
-          key: boundaryKey,
-          child: _host(
-            service,
-            mode,
-            onOpenFolder: (_) {},
-            onSelectionChanged: (_) {},
-          ),
-        ),
-      );
-      await tester.pumpAndSettle();
-      for (final id in ['project', 'folder']) {
-        expect(find.byKey(Key('collectionFavorite_$id')), findsOneWidget);
-        expect(find.byIcon(Icons.star), findsWidgets);
+      Future<void> capture(String name) async {
+        final boundary =
+            boundaryKey.currentContext!.findRenderObject()
+                as RenderRepaintBoundary;
+        final bytes = await tester.runAsync(() async {
+          final image = await boundary.toImage(pixelRatio: 1);
+          final data = await image.toByteData(format: ui.ImageByteFormat.png);
+          image.dispose();
+          return data!.buffer.asUint8List();
+        });
+        await tester.runAsync(
+          () => File('${out.path}/$name.png').writeAsBytes(bytes!),
+        );
       }
-      expect(find.byType(PopupMenuButton<String>), findsNWidgets(2));
-      await capture('collection_${mode.name}_unselected');
-    }
 
-    await tester.tap(find.byKey(const Key('collectionFavorite_project')));
-    await tester.pumpAndSettle();
-    expect(service.favoriteIds, contains('project'));
-    await capture('collection_detail_favorite_selected');
-    expect(tester.takeException(), isNull);
-  });
+      for (final mode in [
+        ProjectViewMode.large,
+        ProjectViewMode.medium,
+        ProjectViewMode.small,
+        ProjectViewMode.detail,
+      ]) {
+        await tester.pumpWidget(
+          RepaintBoundary(
+            key: boundaryKey,
+            child: _host(
+              service,
+              mode,
+              onOpenFolder: (_) {},
+              onSelectionChanged: (_) {},
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+        for (final id in ['project', 'folder']) {
+          expect(find.byKey(Key('collectionFavorite_$id')), findsOneWidget);
+          expect(find.byIcon(Icons.star), findsWidgets);
+        }
+        expect(find.byType(PopupMenuButton<String>), findsNWidgets(2));
+        await capture('collection_${mode.name}_unselected');
+      }
+
+      await tester.tap(find.byKey(const Key('collectionFavorite_project')));
+      await tester.pumpAndSettle();
+      expect(service.favoriteIds, contains('project'));
+      await capture('collection_detail_favorite_selected');
+      expect(tester.takeException(), isNull);
+    },
+  );
 
   for (final mode in [
     ProjectViewMode.large,
@@ -191,7 +195,11 @@ void main() {
         for (final name in ['Project', 'Folder']) {
           expect(
             tester.getSize(
-              find.byKey(Key('collectionMenu_${name == 'Project' ? 'project' : 'folder'}')),
+              find.byKey(
+                Key(
+                  'collectionMenu_${name == 'Project' ? 'project' : 'folder'}',
+                ),
+              ),
             ),
             const Size(40, 40),
           );
@@ -200,7 +208,10 @@ void main() {
           );
           final target = tester.getRect(frame);
           expect(tester.getRect(_card(name)).contains(target.topLeft), isTrue);
-          expect(tester.getRect(_card(name)).contains(target.bottomRight), isTrue);
+          expect(
+            tester.getRect(_card(name)).contains(target.bottomRight),
+            isTrue,
+          );
           await tester.tap(_menu(name));
           await tester.pump(
             kDoubleTapTimeout + const Duration(milliseconds: 1),

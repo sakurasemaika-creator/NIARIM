@@ -41,18 +41,23 @@ void main() {
     Future<void> capture(String name) async {
       await tester.pump(const Duration(milliseconds: 150));
       expect(tester.takeException(), isNull);
-      final boundary = boundaryKey.currentContext!.findRenderObject()!
-          as RenderRepaintBoundary;
+      final boundary =
+          boundaryKey.currentContext!.findRenderObject()!
+              as RenderRepaintBoundary;
       final image = (await tester.runAsync(
-          () => boundary.toImage(pixelRatio: 1)))!;
+        () => boundary.toImage(pixelRatio: 1),
+      ))!;
       final data = (await tester.runAsync(
-          () => image.toByteData(format: ui.ImageByteFormat.png)))!;
+        () => image.toByteData(format: ui.ImageByteFormat.png),
+      ))!;
       image.dispose();
       final output = Directory('build/save-slot-visual-audit')
         ..createSync(recursive: true);
-      await tester.runAsync(() async =>
-          File('${output.path}/$name.png')
-              .writeAsBytes(data.buffer.asUint8List()));
+      await tester.runAsync(
+        () async =>
+            File('${output.path}/$name.png')
+                .writeAsBytes(data.buffer.asUint8List()),
+      );
     }
 
     appRouter.go('/');
@@ -60,10 +65,7 @@ void main() {
     await tester.pumpWidget(
       RepaintBoundary(
         key: boundaryKey,
-        child: MultiProvider(
-          providers: providers!,
-          child: const NiarimApp(),
-        ),
+        child: MultiProvider(providers: providers!, child: const NiarimApp()),
       ),
     );
     await tester.pump(const Duration(milliseconds: 500));
@@ -72,14 +74,16 @@ void main() {
     final ps = context.read<ProjectService>();
     final saves = context.read<SaveTreeService>();
     saves.setTreeMode(true);
-    final project = await tester.runAsync(() => ps.createProject(
-      name: 'Tree stress test',
-      fps: 12,
-      durationSeconds: 1,
-      backgroundColor: 0xFFFFFFFF,
-      exportWidth: 64,
-      exportHeight: 64,
-    ));
+    final project = await tester.runAsync(
+      () => ps.createProject(
+        name: 'Tree stress test',
+        fps: 12,
+        durationSeconds: 1,
+        backgroundColor: 0xFFFFFFFF,
+        exportWidth: 64,
+        exportHeight: 64,
+      ),
+    );
     expect(project, isNotNull);
     final pid = project!.id;
     final base = await tester.runAsync(NiaproSerializer.projectsBasePath);
@@ -89,13 +93,15 @@ void main() {
     final now = DateTime.utc(2026, 11, 11);
 
     void addNode(String id, String? parentId) {
-      allNodes.add(SaveNode(
-        id: id,
-        projectId: pid,
-        savedAt: now.add(Duration(seconds: allNodes.length)),
-        parentId: parentId,
-        comment: id,
-      ));
+      allNodes.add(
+        SaveNode(
+          id: id,
+          projectId: pid,
+          savedAt: now.add(Duration(seconds: allNodes.length)),
+          parentId: parentId,
+          comment: id,
+        ),
+      );
     }
 
     // Deep chain exceeds a phone's logical width when each level has 24px
@@ -125,11 +131,14 @@ void main() {
         File('${folder.path}/${node.id}.niapro')
             .writeAsBytesSync([0], flush: false);
       }
-      File('${folder.path}/index.json').writeAsStringSync(jsonEncode({
-        'nodes': allNodes.map((n) => n.toJson()).toList(),
-        'archived': <Object>[],
-        'slotMemos': <String, String>{},
-      }), flush: true);
+      File('${folder.path}/index.json').writeAsStringSync(
+        jsonEncode({
+          'nodes': allNodes.map((n) => n.toJson()).toList(),
+          'archived': <Object>[],
+          'slotMemos': <String, String>{},
+        }),
+        flush: true,
+      );
       await saves.loadUnread();
     });
     expect(saves.getNodes(pid).length, allNodes.length);
@@ -141,11 +150,13 @@ void main() {
 
     final scrolling = find.byKey(const Key('saveTreeHorizontalScroll'));
     expect(scrolling, findsOneWidget);
-    expect(tester.widget<SingleChildScrollView>(scrolling).scrollDirection,
-        Axis.horizontal);
-    final lazy = tester.widgetList<ListView>(
-        find.byType(ListView, skipOffstage: false)).where(
-            (list) => list.childrenDelegate is SliverChildBuilderDelegate);
+    expect(
+      tester.widget<SingleChildScrollView>(scrolling).scrollDirection,
+      Axis.horizontal,
+    );
+    final lazy = tester
+        .widgetList<ListView>(find.byType(ListView, skipOffstage: false))
+        .where((list) => list.childrenDelegate is SliverChildBuilderDelegate);
     expect(
       lazy.map((list) => list.childrenDelegate.estimatedChildCount),
       contains(allNodes.length),
@@ -159,10 +170,7 @@ void main() {
     for (var i = 0; i < 6; i++) {
       // The wide tree ListView's center is off-screen horizontally. Start
       // the gesture from an actual visible point inside the viewport.
-      await tester.dragFrom(
-        const Offset(180, 400),
-        const Offset(0, 300),
-      );
+      await tester.dragFrom(const Offset(180, 400), const Offset(0, 300));
       await tester.pump(const Duration(milliseconds: 100));
       expect(tester.takeException(), isNull);
     }

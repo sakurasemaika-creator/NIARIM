@@ -45,6 +45,7 @@ String _numberedBrushCopyName(
 
 class BrushPanel extends StatefulWidget {
   final VoidCallback onClose;
+
   /// Embedded inside the single Brush/Tone/Stamp picker with all management
   /// actions intact. Legacy standalone panel entries remain as aliases.
   final bool embedded;
@@ -172,21 +173,27 @@ class _BrushPanelState extends State<BrushPanel> {
                         fontFamilyFallback: kHeadingFontFallback,
                       ),
                     ),
-                    onPressed: () => SharedAssetCardService.pickAndImport(context, brushService: brushService),
+                    onPressed: () => SharedAssetCardService.pickAndImport(
+                      context,
+                      brushService: brushService,
+                    ),
                   ),
                 ],
               ),
             ),
             Row(
               children: [
-                if (!DockedPanelScope.of(context) && !widget.dockedMode && !widget.embedded) Text(
-                  l10n.penSubToolTabBrush,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'Kuramubon',
-                    fontFamilyFallback: kHeadingFontFallback,
+                if (!DockedPanelScope.of(context) &&
+                    !widget.dockedMode &&
+                    !widget.embedded)
+                  Text(
+                    l10n.penSubToolTabBrush,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Kuramubon',
+                      fontFamilyFallback: kHeadingFontFallback,
+                    ),
                   ),
-                ),
                 Spacer(),
                 // お気に入りのみ表示
                 FilterChip(
@@ -331,7 +338,10 @@ class _BrushPanelState extends State<BrushPanel> {
                           color: brushService.currentColor,
                           brush: shown,
                           selected: isSelected,
-                          semanticsLabel: l10n.penSubToolBrushSizeOpacity(shown.size.round(), shown.opacity),
+                          semanticsLabel: l10n.penSubToolBrushSizeOpacity(
+                            shown.size.round(),
+                            shown.opacity,
+                          ),
                           trailing: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
@@ -382,7 +392,11 @@ class _BrushPanelState extends State<BrushPanel> {
                                     enabled: !ExportShareService.isRunning(
                                       _exportKey(brush),
                                     ),
-                                    child: Text(SharedAssetCardService.exportMenuLabel(context)),
+                                    child: Text(
+                                      SharedAssetCardService.exportMenuLabel(
+                                        context,
+                                      ),
+                                    ),
                                   ),
                                   // 組み込みブラシは、キャンバスで変えて
                                   // 覚えた太さ・不透明度を既定へ戻せる。

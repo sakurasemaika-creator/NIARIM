@@ -628,10 +628,14 @@ void main() {
     // Visual values may come from the global FAB theme rather than being
     // repeated explicitly on each button.
     final fabTheme = theme.floatingActionButtonTheme;
-    expect(fab.backgroundColor ?? fabTheme.backgroundColor,
-        theme.colorScheme.primary);
-    expect(fab.foregroundColor ?? fabTheme.foregroundColor,
-        theme.colorScheme.onPrimary);
+    expect(
+      fab.backgroundColor ?? fabTheme.backgroundColor,
+      theme.colorScheme.primary,
+    );
+    expect(
+      fab.foregroundColor ?? fabTheme.foregroundColor,
+      theme.colorScheme.onPrimary,
+    );
     final shape = fab.shape ?? fabTheme.shape;
     expect(shape, isA<CircleBorder>());
     expect((shape! as CircleBorder).side, BorderSide.none);

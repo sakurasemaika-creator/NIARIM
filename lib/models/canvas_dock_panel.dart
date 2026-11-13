@@ -18,7 +18,6 @@ enum CanvasDockPanel {
   canvasPreview,
 }
 
- 
 /// Legacy per-material dock IDs remain readable in existing saved
 /// workspaces. Their UI now lives inside the one tabbed pen-subtool window.
 bool isLegacyMaterialDock(CanvasDockPanel value) =>

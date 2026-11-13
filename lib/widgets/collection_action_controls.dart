@@ -5,10 +5,7 @@ import '../screens/canvas/widgets/canvas_icon_button.dart';
 /// Identical tap areas and toolbar-style outline across project, folder,
 /// received-share and local-file collection actions.
 class CollectionActionFrame extends StatelessWidget {
-  const CollectionActionFrame({
-    super.key,
-    required this.child,
-  });
+  const CollectionActionFrame({super.key, required this.child});
 
   static const double extent = 40;
   static const double glyphSize = 16;

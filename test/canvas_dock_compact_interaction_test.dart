@@ -19,8 +19,9 @@ import 'helpers/load_app_fonts.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  testWidgets('PC dock panels are flush and have no free-position option',
-      (tester) async {
+  testWidgets('PC dock panels are flush and have no free-position option', (
+    tester,
+  ) async {
     SharedPreferences.setMockInitialValues({
       'first_launch': false,
       'force_pc_mode': 1,
@@ -47,30 +48,40 @@ void main() {
     SettingsService? settings;
     StateSetter? refresh;
     String? projectId;
-    await tester.pumpWidget(MultiProvider(
-      providers: providers,
-      child: Builder(builder: (providerContext) => MaterialApp(
-        theme: providerContext.watch<ThemeService>().themeData,
-        locale: const Locale('ja'),
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        home: StatefulBuilder(builder: (context, setState) {
-          projects ??= context.read<ProjectService>();
-          settings ??= context.read<SettingsService>();
-          refresh = setState;
-          return projectId == null
-              ? const SizedBox.expand()
-              : CanvasScreen(projectId: projectId);
-        }),
-      )),
-    ));
+    await tester.pumpWidget(
+      MultiProvider(
+        providers: providers,
+        child: Builder(
+          builder: (providerContext) => MaterialApp(
+            theme: providerContext.watch<ThemeService>().themeData,
+            locale: const Locale('ja'),
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: StatefulBuilder(
+              builder: (context, setState) {
+                projects ??= context.read<ProjectService>();
+                settings ??= context.read<SettingsService>();
+                refresh = setState;
+                return projectId == null
+                    ? const SizedBox.expand()
+                    : CanvasScreen(projectId: projectId);
+              },
+            ),
+          ),
+        ),
+      ),
+    );
     await tester.pump();
-    final project = (await tester.runAsync(() => projects!.createProject(
-      name: 'compact-dock-test',
-      fps: 12, durationSeconds: 1,
-      backgroundColor: 0xFFBCE3F4,
-      exportWidth: 320, exportHeight: 180,
-    )))!;
+    final project = (await tester.runAsync(
+      () => projects!.createProject(
+        name: 'compact-dock-test',
+        fps: 12,
+        durationSeconds: 1,
+        backgroundColor: 0xFFBCE3F4,
+        exportWidth: 320,
+        exportHeight: 180,
+      ),
+    ))!;
     projectId = project.id;
     refresh!(() {});
     await tester.pump(const Duration(milliseconds: 1600));
@@ -88,8 +99,10 @@ void main() {
     expect(picker, findsOneWidget);
     expect(brush, findsOneWidget);
     // Adjacent edges touch exactly: no 8px spacer remains between panels.
-    expect(tester.getBottomLeft(picker).dy,
-        closeTo(tester.getTopLeft(brush).dy, 0.1));
+    expect(
+      tester.getBottomLeft(picker).dy,
+      closeTo(tester.getTopLeft(brush).dy, 0.1),
+    );
     expect(find.byKey(const ValueKey('freeDockWindow-brush')), findsNothing);
 
     await tester.tap(find.byKey(const ValueKey('dockMenu-brush')));

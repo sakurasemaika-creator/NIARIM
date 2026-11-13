@@ -25,6 +25,7 @@ class ColorAdjustSheet extends StatefulWidget {
   final VoidCallback onClose;
   final VoidCallback? onApplied;
   final bool bottomBar;
+
   /// Ownership of non-null preview images is transferred to the parent.
   final ValueChanged<ui.Image?>? onCanvasPreviewChanged;
 
@@ -88,7 +89,10 @@ class _ColorAdjustSheetState extends State<ColorAdjustSheet> {
     final ps = context.read<ProjectService>();
     final tm = ps.tileManagerOf(widget.projectId);
     final key = ps.tileKeyFor(
-      widget.projectId, widget.sceneId, widget.frameIndex, layerId,
+      widget.projectId,
+      widget.sceneId,
+      widget.frameIndex,
+      layerId,
     );
     // Always use the real canvas aspect ratio and pixels. No 120x120
     // preview box or stretching to a square.
@@ -114,7 +118,9 @@ class _ColorAdjustSheetState extends State<ColorAdjustSheet> {
     }
     final generation = ++_previewGeneration;
     final pixels = _engine.applyColorAdjust(
-      base, _previewW, _previewH,
+      base,
+      _previewW,
+      _previewH,
       saturation: _saturation,
       brightness: _brightness,
       contrast: _contrast,
@@ -151,7 +157,9 @@ class _ColorAdjustSheetState extends State<ColorAdjustSheet> {
     }
     try {
       final committed = _engine.applyColorAdjust(
-        base, _previewW, _previewH,
+        base,
+        _previewW,
+        _previewH,
         saturation: _saturation,
         brightness: _brightness,
         contrast: _contrast,
@@ -245,11 +253,15 @@ class _ColorAdjustSheetState extends State<ColorAdjustSheet> {
                     ),
                   ],
                 ),
-                _slider(l10n.filterColorAdjustSaturationLabel, _saturation, (v) {
+                _slider(l10n.filterColorAdjustSaturationLabel, _saturation, (
+                  v,
+                ) {
                   setState(() => _saturation = v);
                   unawaited(_updatePreview());
                 }),
-                _slider(l10n.filterColorAdjustBrightnessLabel, _brightness, (v) {
+                _slider(l10n.filterColorAdjustBrightnessLabel, _brightness, (
+                  v,
+                ) {
                   setState(() => _brightness = v);
                   unawaited(_updatePreview());
                 }),
@@ -268,7 +280,8 @@ class _ColorAdjustSheetState extends State<ColorAdjustSheet> {
                     ),
                     FilledButton(
                       onPressed: _applying || widget.layerId == null
-                          ? null : _apply,
+                          ? null
+                          : _apply,
                       child: Text(l10n.filterApplyButton),
                     ),
                     TextButton(

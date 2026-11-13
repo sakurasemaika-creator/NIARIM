@@ -35,31 +35,36 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  testWidgets('plaza cards place bookmark and context menu side by side below author', (
-    tester,
-  ) async {
-    SharedPreferences.setMockInitialValues({});
-    await tester.pumpWidget(app());
-    await tester.pumpAndSettle();
-    final card = tester.widget<CommunityWorkCard>(
-      find.byType(CommunityWorkCard).first,
-    );
-    final menu = find.byKey(ValueKey('communityMuteMenu-${card.work.id}'));
-    final bookmark = find.byKey(ValueKey('community-bookmark-${card.work.id}'));
-    expect(menu, findsOneWidget);
-    expect(bookmark, findsOneWidget);
-    final menuRect = tester.getRect(menu);
-    final bookmarkRect = tester.getRect(bookmark);
-    expect(bookmarkRect.right, lessThanOrEqualTo(menuRect.left + 1));
-    expect((menuRect.center.dy - bookmarkRect.center.dy).abs(), lessThan(3));
-    final titleRect = tester.getRect(find.text(card.work.title).first);
-    final authorRect = tester.getRect(find.text(card.work.authorName).first);
-    expect(titleRect.bottom, lessThanOrEqualTo(authorRect.top + 1));
-    expect(authorRect.bottom, lessThanOrEqualTo(bookmarkRect.top + 1));
-    expect(tester.widget<IconButton>(bookmark).iconSize,
-        CollectionActionFrame.glyphSize);
-    expect(tester.takeException(), isNull);
-  });
+  testWidgets(
+    'plaza cards place bookmark and context menu side by side below author',
+    (tester) async {
+      SharedPreferences.setMockInitialValues({});
+      await tester.pumpWidget(app());
+      await tester.pumpAndSettle();
+      final card = tester.widget<CommunityWorkCard>(
+        find.byType(CommunityWorkCard).first,
+      );
+      final menu = find.byKey(ValueKey('communityMuteMenu-${card.work.id}'));
+      final bookmark = find.byKey(
+        ValueKey('community-bookmark-${card.work.id}'),
+      );
+      expect(menu, findsOneWidget);
+      expect(bookmark, findsOneWidget);
+      final menuRect = tester.getRect(menu);
+      final bookmarkRect = tester.getRect(bookmark);
+      expect(bookmarkRect.right, lessThanOrEqualTo(menuRect.left + 1));
+      expect((menuRect.center.dy - bookmarkRect.center.dy).abs(), lessThan(3));
+      final titleRect = tester.getRect(find.text(card.work.title).first);
+      final authorRect = tester.getRect(find.text(card.work.authorName).first);
+      expect(titleRect.bottom, lessThanOrEqualTo(authorRect.top + 1));
+      expect(authorRect.bottom, lessThanOrEqualTo(bookmarkRect.top + 1));
+      expect(
+        tester.widget<IconButton>(bookmark).iconSize,
+        CollectionActionFrame.glyphSize,
+      );
+      expect(tester.takeException(), isNull);
+    },
+  );
 
   testWidgets('horizontal ranking thumbnails stretch to tile height', (
     tester,
@@ -209,7 +214,11 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     for (final width in [320.0, 360.0, 375.0, 390.0, 430.0, 720.0, 1440.0]) {
       tester.view.physicalSize = Size(width, 844);
-      for (final locale in [const Locale('ja'), const Locale('en'), const Locale('fr')]) {
+      for (final locale in [
+        const Locale('ja'),
+        const Locale('en'),
+        const Locale('fr'),
+      ]) {
         await tester.pumpWidget(const SizedBox.shrink());
         await tester.pumpWidget(app(locale: locale));
         await tester.pumpAndSettle();
@@ -219,8 +228,11 @@ void main() {
         final expected = tester.getSize(barFinder).width / 5;
         for (var i = 0; i < 5; i++) {
           final tab = find.byKey(Key('communityTabWidth$i'));
-          expect(tester.getSize(tab).width, closeTo(expected, 0.5),
-              reason: '$locale at width $width tab $i');
+          expect(
+            tester.getSize(tab).width,
+            closeTo(expected, 0.5),
+            reason: '$locale at width $width tab $i',
+          );
           final rect = tester.getRect(tab);
           expect(rect.left, greaterThanOrEqualTo(-0.5));
           expect(rect.right, lessThanOrEqualTo(width + 0.5));
@@ -233,19 +245,31 @@ void main() {
             matching: find.byType(Text),
           );
           if (width <= 430) {
-            expect(visibleLabel, findsNothing,
-                reason: '$locale width $width stays icon-only');
+            expect(
+              visibleLabel,
+              findsNothing,
+              reason: '$locale width $width stays icon-only',
+            );
           } else if (width >= 1440) {
-            expect(visibleLabel, findsOneWidget,
-                reason: '$locale width $width shows full text labels');
+            expect(
+              visibleLabel,
+              findsOneWidget,
+              reason: '$locale width $width shows full text labels',
+            );
           }
           // No mixed mode: all tabs are icons, or every one has a label.
-          final hasLabels = find.descendant(
-            of: find.byKey(const Key('communityTabWidth0')),
-            matching: find.byType(Text),
-          ).evaluate().isNotEmpty;
-          expect(visibleLabel.evaluate().isNotEmpty, hasLabels,
-              reason: '$locale width $width tab $i must match first tab');
+          final hasLabels = find
+              .descendant(
+                of: find.byKey(const Key('communityTabWidth0')),
+                matching: find.byType(Text),
+              )
+              .evaluate()
+              .isNotEmpty;
+          expect(
+            visibleLabel.evaluate().isNotEmpty,
+            hasLabels,
+            reason: '$locale width $width tab $i must match first tab',
+          );
         }
         expect(tester.takeException(), isNull);
       }
@@ -264,22 +288,31 @@ void main() {
     await tester.pumpWidget(app(locale: const Locale('ja')));
     await tester.pumpAndSettle();
     final firstTab = find.byKey(const Key('communityTabWidth0'));
-    expect(find.descendant(of: firstTab, matching: find.byType(Text)),
-        findsOneWidget);
+    expect(
+      find.descendant(of: firstTab, matching: find.byType(Text)),
+      findsOneWidget,
+    );
     tester.platformDispatcher.textScaleFactorTestValue = 3.0;
     await tester.pumpAndSettle();
     for (var i = 0; i < 5; i++) {
       final tab = find.byKey(Key('communityTabWidth$i'));
-      expect(find.descendant(of: tab, matching: find.byType(Text)),
-          findsNothing, reason: 'at 3x text scale, icons regain the space');
-      expect(find.descendant(of: tab, matching: find.byType(Icon)),
-          findsOneWidget);
+      expect(
+        find.descendant(of: tab, matching: find.byType(Text)),
+        findsNothing,
+        reason: 'at 3x text scale, icons regain the space',
+      );
+      expect(
+        find.descendant(of: tab, matching: find.byType(Icon)),
+        findsOneWidget,
+      );
       expect(tester.getRect(tab).width, closeTo(144, 0.5));
     }
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('long press reveals the localized bookmark tab name', (tester) async {
+  testWidgets('long press reveals the localized bookmark tab name', (
+    tester,
+  ) async {
     SharedPreferences.setMockInitialValues({});
     tester.view.physicalSize = const Size(320, 844);
     tester.view.devicePixelRatio = 1;
@@ -287,12 +320,17 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
     await tester.pumpWidget(app());
     await tester.pumpAndSettle();
-    final l10n = AppLocalizations.of(tester.element(find.byType(CommunityScreen)))!;
+    final l10n = AppLocalizations.of(
+      tester.element(find.byType(CommunityScreen)),
+    )!;
     await tester.longPress(find.byKey(const Key('communityTab4')));
     await tester.pump(const Duration(milliseconds: 250));
     expect(find.text(l10n.homeTabBookmarked), findsOneWidget);
-    expect(tester.widget<TabBar>(find.byType(TabBar)).controller!.index, 0,
-        reason: 'long-press should reveal the name without changing tabs');
+    expect(
+      tester.widget<TabBar>(find.byType(TabBar)).controller!.index,
+      0,
+      reason: 'long-press should reveal the name without changing tabs',
+    );
     await tester.tap(find.byKey(const Key('communityTab4')));
     await tester.pumpAndSettle();
     expect(tester.widget<TabBar>(find.byType(TabBar)).controller!.index, 4);

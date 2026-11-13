@@ -52,6 +52,7 @@ class Brush {
   final bool rotation;
   final double density;
   final double scatter;
+
   /// Fixed paper/charcoal granulation in percent (0 = smooth).
   final int grainStrength;
   final double? calligraphyAngle;

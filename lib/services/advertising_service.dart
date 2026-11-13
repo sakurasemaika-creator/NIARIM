@@ -102,8 +102,10 @@ class AdvertisingService extends ChangeNotifier {
     return completer.future;
   }
 
-  bool get shouldShowAds => !premiumService.isPremium &&
-      !premiumService.isServerCoinBenefitActive("allAds") && _canRequestAds;
+  bool get shouldShowAds =>
+      !premiumService.isPremium &&
+      !premiumService.isServerCoinBenefitActive("allAds") &&
+      _canRequestAds;
 
   /// Rewarded ads are USER-INITIATED and separate from normal placements.
   /// A paying Premium member may choose to accumulate coins for later use.
@@ -166,12 +168,15 @@ class AdvertisingService extends ChangeNotifier {
 
   /// ロード済み正方形広告。未ロード・プレミアム時はnull（処理中ダイアログが描画に使う）。
   BannerAd? get squareAd =>
-      shouldShowAds && !premiumService.isServerCoinBenefitActive("processingAds")
-          ? _provider.currentSquareAd : null;
+      shouldShowAds &&
+          !premiumService.isServerCoinBenefitActive("processingAds")
+      ? _provider.currentSquareAd
+      : null;
 
   void _onPremiumChanged() {
     if (premiumService.isPremium ||
-        premiumService.isServerCoinBenefitActive("allAds")) hideAllAds();
+        premiumService.isServerCoinBenefitActive("allAds"))
+      hideAllAds();
     notifyListeners();
   }
 
@@ -182,7 +187,8 @@ class AdvertisingService extends ChangeNotifier {
 
   Future<void> showSquareAd() async {
     if (!shouldShowAds ||
-        premiumService.isServerCoinBenefitActive("processingAds")) return;
+        premiumService.isServerCoinBenefitActive("processingAds"))
+      return;
     await _provider.showSquareAd();
   }
 

@@ -163,9 +163,9 @@ void main() {
     // 数字を確定した時点で保存され、起動し直しても同じ。
     await settle(tester, 2);
     final prefs = await SharedPreferences.getInstance();
-    final working =
-        jsonDecode(prefs.getString('brush_builtin_working_values')!)
-            as Map<String, dynamic>;
+    final working = jsonDecode(
+      prefs.getString('brush_builtin_working_values')!,
+    ) as Map<String, dynamic>;
     expect(working['Brush0002'], {'size': 42.0, 'opacity': 35});
     final again = BrushService();
     await tester.runAsync(again.init);
@@ -284,9 +284,8 @@ void main() {
       'stamp_panel',
       'tone_panel',
     ]) {
-      final source = File(
-        'lib/screens/canvas/widgets/$name.dart',
-      ).readAsStringSync();
+      final source = File('lib/screens/canvas/widgets/$name.dart')
+          .readAsStringSync();
       expect(
         RegExp(
           r'leading:\s*(const\s+)?Icon\([^;]*?isSelected[^;]*?AccentTextTheme',

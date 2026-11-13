@@ -4,6 +4,7 @@ import 'asset_tags.dart';
 class Tone {
   final String id;
   final String name;
+
   /// Original procedural pattern key; allows safe user renaming of a copy.
   final String? patternName;
   final String? texturePath; // アセットまたはファイルパス

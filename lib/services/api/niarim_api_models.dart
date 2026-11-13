@@ -15,6 +15,7 @@ class ApiWork {
   final int likeCount;
   final int commentCount;
   final int bookmarkCount;
+
   /// Bookmarks added during the selected calendar ranking window; absent elsewhere.
   final int? periodBookmarkCount;
   final int repostCount;

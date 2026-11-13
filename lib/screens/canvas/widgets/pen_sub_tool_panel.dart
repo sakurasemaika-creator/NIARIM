@@ -144,9 +144,8 @@ class _PenSubToolPanelState extends State<PenSubToolPanel>
                     dockedMode: true,
                     onEyedropOutlineColor: widget.onEyedropOutlineColor,
                     onClose: widget.onClose,
-                    onPresetSelected: () => widget.onSubToolSelected(
-                      PenSubTool.brush,
-                    ),
+                    onPresetSelected: () =>
+                        widget.onSubToolSelected(PenSubTool.brush),
                   ),
                 ),
                 LayoutBuilder(
@@ -154,9 +153,8 @@ class _PenSubToolPanelState extends State<PenSubToolPanel>
                     embedded: true,
                     embeddedHeight: constraints.maxHeight,
                     onClose: widget.onClose,
-                    onPresetSelected: () => widget.onSubToolSelected(
-                      PenSubTool.tone,
-                    ),
+                    onPresetSelected: () =>
+                        widget.onSubToolSelected(PenSubTool.tone),
                   ),
                 ),
                 LayoutBuilder(
@@ -164,9 +162,8 @@ class _PenSubToolPanelState extends State<PenSubToolPanel>
                     embedded: true,
                     embeddedHeight: constraints.maxHeight,
                     onClose: widget.onClose,
-                    onPresetSelected: () => widget.onSubToolSelected(
-                      PenSubTool.stamp,
-                    ),
+                    onPresetSelected: () =>
+                        widget.onSubToolSelected(PenSubTool.stamp),
                   ),
                 ),
               ],

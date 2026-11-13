@@ -83,11 +83,17 @@ void main() {
       expect(titleFinder, findsOneWidget);
       final titleParagraph = tester.renderObject<RenderParagraph>(titleFinder);
       expect(titleParagraph.didExceedMaxLines, isFalse);
-      expect(titleParagraph.text.style?.color, theme.appBarTheme.foregroundColor);
+      expect(
+        titleParagraph.text.style?.color,
+        theme.appBarTheme.foregroundColor,
+      );
       for (var i = 0; i < 5; i++) {
         final tab = find.byKey(Key('communityTab$i'));
         expect(tab, findsOneWidget);
-        expect(find.descendant(of: tab, matching: find.byType(Icon)), findsOneWidget);
+        expect(
+          find.descendant(of: tab, matching: find.byType(Icon)),
+          findsOneWidget,
+        );
         final rect = tester.getRect(tab);
         if (rect.left < 0 || rect.right > 390 || rect.width < 48) {
           failures.add('icon tab $i touch area $rect');

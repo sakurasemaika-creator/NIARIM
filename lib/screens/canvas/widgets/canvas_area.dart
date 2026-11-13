@@ -425,6 +425,7 @@ class CanvasArea extends StatefulWidget {
   /// moves the filter's handles (two-finger zoom and pan still work).
   final ui.Image? currentLayerPreview;
   final LayerBlendMode? currentLayerPreviewBlendMode;
+
   /// Increment when external controls commit new pixels to the current layer.
   final int contentRevision;
   final bool lockToolInput;

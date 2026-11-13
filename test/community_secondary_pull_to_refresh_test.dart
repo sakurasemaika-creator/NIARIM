@@ -79,19 +79,25 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   setUp(() => SharedPreferences.setMockInitialValues({}));
 
-  testWidgets('author page refreshes only that author at the top', (tester) async {
+  testWidgets('author page refreshes only that author at the top', (
+    tester,
+  ) async {
     var title = 'Original author work';
     var authorFetches = 0;
-    final service = _service(MockClient((request) async {
-      if (request.url.path == '/users/other/works') {
-        authorFetches++;
-        return _reply({'works': [_work('other', title)]});
-      }
-      if (request.url.path == '/users/other/social-counts') {
-        return _reply({'followerCount': 1, 'followingCount': 2});
-      }
-      return _reply({});
-    }));
+    final service = _service(
+      MockClient((request) async {
+        if (request.url.path == '/users/other/works') {
+          authorFetches++;
+          return _reply({
+            'works': [_work('other', title)],
+          });
+        }
+        if (request.url.path == '/users/other/social-counts') {
+          return _reply({'followerCount': 1, 'followingCount': 2});
+        }
+        return _reply({});
+      }),
+    );
     addTearDown(service.dispose);
     await tester.pumpWidget(
       MultiProvider(
@@ -127,27 +133,33 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('owner bookmarks refresh does not request follows', (tester) async {
+  testWidgets('owner bookmarks refresh does not request follows', (
+    tester,
+  ) async {
     var title = 'Initial bookmark';
     var bookmarkFetches = 0;
     var followFetches = 0;
-    final service = _service(MockClient((request) async {
-      if (request.url.path == '/users/self/bookmarks') {
-        bookmarkFetches++;
-        return _reply({'works': [_work('other', title)]});
-      }
-      if (request.url.path == '/users/self/following') {
-        followFetches++;
-        return _reply({'following': <Object>[]});
-      }
-      if (request.url.path == '/users/self/works') {
-        return _reply({'works': <Object>[]});
-      }
-      if (request.url.path == '/users/self/social-counts') {
-        return _reply({'followerCount': 0, 'followingCount': 0});
-      }
-      return _reply({});
-    }));
+    final service = _service(
+      MockClient((request) async {
+        if (request.url.path == '/users/self/bookmarks') {
+          bookmarkFetches++;
+          return _reply({
+            'works': [_work('other', title)],
+          });
+        }
+        if (request.url.path == '/users/self/following') {
+          followFetches++;
+          return _reply({'following': <Object>[]});
+        }
+        if (request.url.path == '/users/self/works') {
+          return _reply({'works': <Object>[]});
+        }
+        if (request.url.path == '/users/self/social-counts') {
+          return _reply({'followerCount': 0, 'followingCount': 0});
+        }
+        return _reply({});
+      }),
+    );
     service.setCurrentUserId('self');
     addTearDown(service.dispose);
     await service.refreshViewerBookmarks();
@@ -195,16 +207,18 @@ void main() {
     final auth = _Auth('self');
     var title = 'Original owner title';
     var ownerFetches = 0;
-    final service = _service(MockClient((request) async {
-      if (request.url.path == '/me/works') {
-        ownerFetches++;
-        return _reply({
-          'authorId': 'self',
-          'works': [_work('self', title)],
-        });
-      }
-      return _reply({});
-    }));
+    final service = _service(
+      MockClient((request) async {
+        if (request.url.path == '/me/works') {
+          ownerFetches++;
+          return _reply({
+            'authorId': 'self',
+            'works': [_work('self', title)],
+          });
+        }
+        return _reply({});
+      }),
+    );
     addTearDown(auth.dispose);
     addTearDown(service.dispose);
     await tester.pumpWidget(

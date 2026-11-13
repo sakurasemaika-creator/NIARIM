@@ -38,8 +38,9 @@ void main() {
             'force_pc_mode': pc ? 1 : 0,
             firstUseTooltipsSeenKey: kAllFirstUseTooltipKeys,
           });
-          tester.view.physicalSize =
-              pc ? const Size(1440, 900) : const Size(390, 844);
+          tester.view.physicalSize = pc
+              ? const Size(1440, 900)
+              : const Size(390, 844);
           tester.view.devicePixelRatio = 1;
           addTearDown(tester.view.resetPhysicalSize);
           addTearDown(tester.view.resetDevicePixelRatio);
@@ -64,42 +65,48 @@ void main() {
 
           var visibilityChecks = 0;
           final service = CommunityService(
-            api: CommunityApi(NiarimApiClient(
-              baseUrl: _apiBase,
-              tokenProvider: () async => 'fixture-token',
-              httpClient: MockClient((request) async {
-                if (request.url.path.endsWith('/bookmarks')) {
-                  return http.Response(jsonEncode({
-                    'works': [{
-                      'workId': _videoId,
-                      'authorId': 'different-author',
-                      'channelName': 'Test Creator',
-                      'title': _title,
-                      'postedAt': '2026-11-10T00:00:00Z',
-                      'isNiarimPublished': true,
-                    }],
-                  }), 200);
-                }
-                if (request.url.path.endsWith('/following')) {
-                  return http.Response('{"following":[]}', 200);
-                }
-                if (request.url.path.endsWith('/reposts')) {
-                  return http.Response('{"reposts":[]}', 200);
-                }
-                if (request.url.path ==
-                    '/works/$_videoId/playback-status') {
-                  visibilityChecks++;
-                  return http.Response(
-                    jsonEncode({
-                      'status': isPublic ? 'available' : 'private',
-                    }),
-                    200,
-                  );
-                }
-                return http.Response('{}', 404);
-              }),
-              maxGetRetries: 0,
-            )),
+            api: CommunityApi(
+              NiarimApiClient(
+                baseUrl: _apiBase,
+                tokenProvider: () async => 'fixture-token',
+                httpClient: MockClient((request) async {
+                  if (request.url.path.endsWith('/bookmarks')) {
+                    return http.Response(
+                      jsonEncode({
+                        'works': [
+                          {
+                            'workId': _videoId,
+                            'authorId': 'different-author',
+                            'channelName': 'Test Creator',
+                            'title': _title,
+                            'postedAt': '2026-11-10T00:00:00Z',
+                            'isNiarimPublished': true,
+                          },
+                        ],
+                      }),
+                      200,
+                    );
+                  }
+                  if (request.url.path.endsWith('/following')) {
+                    return http.Response('{"following":[]}', 200);
+                  }
+                  if (request.url.path.endsWith('/reposts')) {
+                    return http.Response('{"reposts":[]}', 200);
+                  }
+                  if (request.url.path == '/works/$_videoId/playback-status') {
+                    visibilityChecks++;
+                    return http.Response(
+                      jsonEncode({
+                        'status': isPublic ? 'available' : 'private',
+                      }),
+                      200,
+                    );
+                  }
+                  return http.Response('{}', 404);
+                }),
+                maxGetRetries: 0,
+              ),
+            ),
           );
           addTearDown(service.dispose);
           await service.contentFiltersReady;
@@ -107,13 +114,15 @@ void main() {
 
           appRouter.go('/community');
           final providers = await tester.runAsync(buildAppProviders);
-          await tester.pumpWidget(MultiProvider(
-            providers: [
-              ...providers!,
-              ChangeNotifierProvider<CommunityService>.value(value: service),
-            ],
-            child: const NiarimApp(),
-          ));
+          await tester.pumpWidget(
+            MultiProvider(
+              providers: [
+                ...providers!,
+                ChangeNotifierProvider<CommunityService>.value(value: service),
+              ],
+              child: const NiarimApp(),
+            ),
+          );
           await tester.pumpAndSettle();
           await tester.runAsync(() => service.loadSocial());
           final bookmarkedTab = find.byKey(const ValueKey('communityTab4'));
@@ -128,19 +137,13 @@ void main() {
           expect(visibilityChecks, greaterThan(0));
           expect(find.byType(CommunityFloatingPreview), findsOneWidget);
           if (isPublic) {
-            expect(
-              find.byType(CommunityYoutubePlayer),
-              findsOneWidget,
-            );
+            expect(find.byType(CommunityYoutubePlayer), findsOneWidget);
             expect(
               find.byKey(const Key('saved-youtube-$_videoId-true')),
               findsOneWidget,
             );
           } else {
-            expect(
-              find.byType(CommunityYoutubePlayer),
-              findsNothing,
-            );
+            expect(find.byType(CommunityYoutubePlayer), findsNothing);
             expect(
               find.byKey(const Key('communityPlaybackStatusPanel')),
               findsOneWidget,

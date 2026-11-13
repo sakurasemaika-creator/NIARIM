@@ -117,18 +117,27 @@ void main() {
         // Folder tiles use the Project card's bottom-left favorite and
         // top-right overflow menu at both mobile and desktop widths.
         final folderFavorite = find.byKey(
-          const Key('collectionFavorite_saved'));
+          const Key('collectionFavorite_saved'),
+        );
         final folderMenu = find.byKey(
-          const ValueKey('collectionFolderMenu_saved'));
+          const ValueKey('collectionFolderMenu_saved'),
+        );
         expect(folderFavorite, findsOneWidget, reason: '$locale $size');
         expect(folderMenu, findsOneWidget, reason: '$locale $size');
         final starRect = tester.getRect(folderFavorite);
         final menuRect = tester.getRect(folderMenu);
         expect(starRect.left, lessThan(menuRect.left), reason: '$locale $size');
-        expect(starRect.center.dy, greaterThan(menuRect.center.dy),
-            reason: '$locale $size');
-        expect(find.text(l10n.homeSharedEmpty), findsNothing,
-            reason: 'A folder exists even when no shared projects exist: $locale $size');
+        expect(
+          starRect.center.dy,
+          greaterThan(menuRect.center.dy),
+          reason: '$locale $size',
+        );
+        expect(
+          find.text(l10n.homeSharedEmpty),
+          findsNothing,
+          reason:
+              'A folder exists even when no shared projects exist: $locale $size',
+        );
         final favorite = find.byType(FilterChip);
         final wasSelected = tester.widget<FilterChip>(favorite).selected;
         await tester.tap(favorite);

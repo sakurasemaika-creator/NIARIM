@@ -692,7 +692,10 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
               child: IconButton(
                 key: const Key('projectDetailFullscreenButton'),
                 padding: EdgeInsets.zero,
-                constraints: const BoxConstraints.tightFor(width: 32, height: 32),
+                constraints: const BoxConstraints.tightFor(
+                  width: 32,
+                  height: 32,
+                ),
                 visualDensity: VisualDensity.compact,
                 icon: Icon(
                   Icons.fullscreen,

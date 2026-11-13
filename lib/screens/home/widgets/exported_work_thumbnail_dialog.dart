@@ -44,7 +44,6 @@ class ExportedWorkCoverStore {
     return {};
   }
 
-
   // Generate missing covers in a serial queue so large libraries do not
   // start multiple FFmpeg decoders at the same time.
   static final Map<String, Future<Map<String, dynamic>>> _pending = {};
@@ -52,22 +51,37 @@ class ExportedWorkCoverStore {
   static final Set<String> _failedInSession = {};
 
   static bool _isRaster(File file) => const {
-    'png', 'jpg', 'jpeg', 'webp', 'bmp', 'gif'
+    'png',
+    'jpg',
+    'jpeg',
+    'webp',
+    'bmp',
+    'gif',
   }.contains(file.path.split('.').last.toLowerCase());
 
   static bool _isVideo(File file) => const {
-    'mp4', 'm4v', 'mov', 'webm', 'mkv', 'avi', '3gp'
+    'mp4',
+    'm4v',
+    'mov',
+    'webm',
+    'mkv',
+    'avi',
+    '3gp',
   }.contains(file.path.split('.').last.toLowerCase());
 
   static Future<File> _newCacheFile(String prefix, String extension) async {
     final support = await getApplicationSupportDirectory();
     final dir = Directory('${support.path}/exported_covers');
     await dir.create(recursive: true);
-    return File('${dir.path}/${prefix}_${DateTime.now().microsecondsSinceEpoch}.$extension');
+    return File(
+      '${dir.path}/${prefix}_${DateTime.now().microsecondsSinceEpoch}.$extension',
+    );
   }
 
-  static Future<String> storeCompressedImage(Uint8List sourceBytes,
-      {bool preferJpeg = false}) async {
+  static Future<String> storeCompressedImage(
+    Uint8List sourceBytes, {
+    bool preferJpeg = false,
+  }) async {
     final source = image_codec.decodeImage(sourceBytes);
     if (source == null || source.width <= 0 || source.height <= 0) {
       throw const FormatException('Unsupported thumbnail image');
@@ -100,9 +114,9 @@ class ExportedWorkCoverStore {
     // Opaque video frames: compact JPEG. WebM/GIF: PNG retains possible alpha.
     final suffix = file.path.split('.').last.toLowerCase();
     final preserveAlpha = suffix == 'webm' || suffix == 'gif';
-    final output = await _newCacheFile(
-      'export', preserveAlpha ? 'png' : 'jpg');
-    final filter = 'select=eq(n\\,$frame),'
+    final output = await _newCacheFile('export', preserveAlpha ? 'png' : 'jpg');
+    final filter =
+        'select=eq(n\\,$frame),'
         'scale=420:420:force_original_aspect_ratio=decrease:flags=lanczos';
     final quality = preserveAlpha ? '-compression_level 9' : '-q:v 4';
     final session = await FFmpegKit.execute(
@@ -111,7 +125,8 @@ class ExportedWorkCoverStore {
     );
     final exitCode = await session.getReturnCode();
     if (!ReturnCode.isSuccess(exitCode) ||
-        !await output.exists() || await output.length() == 0) {
+        !await output.exists() ||
+        await output.length() == 0) {
       if (await output.exists()) await output.delete();
       throw const FileSystemException('Thumbnail extraction failed');
     }
@@ -125,14 +140,15 @@ class ExportedWorkCoverStore {
     var rate = 0.0;
     for (final stream in info.getStreams()) {
       if (stream.getType() != 'video') continue;
-      final parts = (stream.getAverageFrameRate() ??
-              stream.getRealFrameRate() ?? '0').split('/');
+      final parts =
+          (stream.getAverageFrameRate() ?? stream.getRealFrameRate() ?? '0')
+              .split('/');
       final numerator = double.tryParse(parts[0]) ?? 0;
-      final denominator = parts.length > 1
-          ? double.tryParse(parts[1]) ?? 0 : 1;
+      final denominator = parts.length > 1 ? double.tryParse(parts[1]) ?? 0 : 1;
       rate = denominator == 0 ? 0 : numerator / denominator;
       final reported = int.tryParse(
-          stream.getStringProperty('nb_frames') ?? '');
+        stream.getStringProperty('nb_frames') ?? '',
+      );
       if (reported != null && reported > 0) return reported - 1;
       break;
     }
@@ -147,57 +163,68 @@ class ExportedWorkCoverStore {
     final completer = Completer<Map<String, dynamic>>();
     final task = completer.future;
     _pending[file.path] = task;
-    _serialGeneration = _serialGeneration.then((_) async {
-      try {
-        completer.complete(await _ensureCachedNow(file));
-      } catch (_) {
-        _failedInSession.add(file.path);
-        try {
-          completer.complete(await read(file));
-        } catch (_) {
-          completer.complete(const {'mode': 'latest'});
-        }
-      } finally {
-        _pending.remove(file.path);
-      }
-    }).catchError((_) {});
+    _serialGeneration = _serialGeneration
+        .then((_) async {
+          try {
+            completer.complete(await _ensureCachedNow(file));
+          } catch (_) {
+            _failedInSession.add(file.path);
+            try {
+              completer.complete(await read(file));
+            } catch (_) {
+              completer.complete(const {'mode': 'latest'});
+            }
+          } finally {
+            _pending.remove(file.path);
+          }
+        })
+        .catchError((_) {});
     return task;
   }
 
   static Future<Map<String, dynamic>> _ensureCachedNow(File file) async {
     final current = await read(file);
-    if (current['mode'] == 'none' || current['mode'] == 'custom' ||
-        _failedInSession.contains(file.path)) return current;
+    if (current['mode'] == 'none' ||
+        current['mode'] == 'custom' ||
+        _failedInSession.contains(file.path))
+      return current;
     final previous = current['imagePath'];
-    if (previous is String && previous.isNotEmpty &&
-        await File(previous).exists()) return current;
+    if (previous is String &&
+        previous.isNotEmpty &&
+        await File(previous).exists())
+      return current;
     if (!_isRaster(file) && !_isVideo(file)) return current;
     final original = await file.stat();
     String? generated;
     try {
       var frame = 0;
       if (_isVideo(file)) {
-        frame = current['mode'] == 'frame' &&
-                current['frameIndex'] is int
+        frame = current['mode'] == 'frame' && current['frameIndex'] is int
             ? math.max(0, current['frameIndex'] as int)
             : await _lastVideoFrame(file);
         generated = await extractVideoFrame(file, frame);
       } else {
-        generated = await storeCompressedImage(await file.readAsBytes(),
-            preferJpeg: const {'jpg', 'jpeg'}
-                .contains(file.path.split('.').last.toLowerCase()));
+        generated = await storeCompressedImage(
+          await file.readAsBytes(),
+          preferJpeg: const {
+            'jpg',
+            'jpeg',
+          }.contains(file.path.split('.').last.toLowerCase()),
+        );
       }
       final after = await file.stat();
-      if (after.size != original.size ||
-          after.modified != original.modified) {
+      if (after.size != original.size || after.modified != original.modified) {
         if (await File(generated).exists()) {
           await File(generated).delete();
         }
         return await read(file);
       }
-      await write(file, mode: current['mode'] == 'frame' ? 'frame' : 'latest',
-          imagePath: generated,
-          frameIndex: _isVideo(file) ? frame : 0);
+      await write(
+        file,
+        mode: current['mode'] == 'frame' ? 'frame' : 'latest',
+        imagePath: generated,
+        frameIndex: _isVideo(file) ? frame : 0,
+      );
       return await read(file);
     } catch (_) {
       if (generated != null && await File(generated).exists()) {
@@ -229,9 +256,11 @@ class ExportedWorkCoverStore {
     }
     // Only managed cached images are removed, and only after persistence.
     final oldPath = previous is Map ? previous['imagePath'] : null;
-    if (oldPath is String && oldPath != imagePath &&
-        !current.values.any((entry) =>
-            entry is Map && entry['imagePath'] == oldPath)) {
+    if (oldPath is String &&
+        oldPath != imagePath &&
+        !current.values.any(
+          (entry) => entry is Map && entry['imagePath'] == oldPath,
+        )) {
       try {
         final support = await getApplicationSupportDirectory();
         final cache = Directory('${support.path}/exported_covers');
@@ -257,8 +286,8 @@ class ExportedWorkCoverStore {
     }
     // Image files can always use their original bytes as a cover.
     final suffix = file.path.split('.').last.toLowerCase();
-    if (const {'png', 'jpg', 'jpeg', 'webp', 'gif', 'bmp'}
-        .contains(suffix)) return file.path;
+    if (const {'png', 'jpg', 'jpeg', 'webp', 'gif', 'bmp'}.contains(suffix))
+      return file.path;
     return null;
   }
 }
@@ -270,18 +299,13 @@ Future<void> showExportedWorkThumbnailDialog(
 }) async {
   await showDialog<void>(
     context: context,
-    builder: (_) => _ExportedWorkThumbnailDialog(
-      file: file,
-      onApplied: onApplied,
-    ),
+    builder: (_) =>
+        _ExportedWorkThumbnailDialog(file: file, onApplied: onApplied),
   );
 }
 
 class _ExportedWorkThumbnailDialog extends StatefulWidget {
-  const _ExportedWorkThumbnailDialog({
-    required this.file,
-    this.onApplied,
-  });
+  const _ExportedWorkThumbnailDialog({required this.file, this.onApplied});
   final File file;
   final VoidCallback? onApplied;
 
@@ -307,8 +331,14 @@ class _ExportedWorkThumbnailDialogState
   int frameIndex = 0;
   Timer? playbackPoll;
 
-  bool get isImage => const {'png','jpg','jpeg','gif','bmp','webp'}
-      .contains(widget.file.path.split('.').last.toLowerCase());
+  bool get isImage => const {
+    'png',
+    'jpg',
+    'jpeg',
+    'gif',
+    'bmp',
+    'webp',
+  }.contains(widget.file.path.split('.').last.toLowerCase());
 
   String tr(String ja, String en) =>
       Localizations.localeOf(context).languageCode == 'ja' ? ja : en;
@@ -330,8 +360,9 @@ class _ExportedWorkThumbnailDialogState
     try {
       final setting = await ExportedWorkCoverStore.read(widget.file);
       final choice = setting['mode'];
-      if (choice is String && const {'latest','frame','custom','none'}
-          .contains(choice)) mode = choice;
+      if (choice is String &&
+          const {'latest', 'frame', 'custom', 'none'}.contains(choice))
+        mode = choice;
       existingCover = setting['imagePath'] is String
           ? setting['imagePath'] as String
           : null;
@@ -343,24 +374,26 @@ class _ExportedWorkThumbnailDialogState
           final streams = info.getStreams();
           for (final stream in streams) {
             if (stream.getType() != 'video') continue;
-            final rate = _rate(stream.getAverageFrameRate() ??
-                stream.getRealFrameRate() ?? '0');
+            final rate = _rate(
+              stream.getAverageFrameRate() ?? stream.getRealFrameRate() ?? '0',
+            );
             if (rate > 0 && rate.isFinite) fps = rate;
             final number = int.tryParse(
-                stream.getStringProperty('nb_frames') ?? '');
+              stream.getStringProperty('nb_frames') ?? '',
+            );
             if (number != null && number > 0) totalFrames = number;
             break;
           }
           final duration = double.tryParse(info.getDuration() ?? '');
-          if (totalFrames <= 1 && duration != null &&
-              duration > 0 && fps > 0) {
+          if (totalFrames <= 1 && duration != null && duration > 0 && fps > 0) {
             totalFrames = math.max(1, (duration * fps).round());
           }
         }
       }
       supportedFrames = totalFrames > 1;
-      frameIndex = (setting['frameIndex'] is int
-          ? setting['frameIndex'] as int : 0).clamp(0, totalFrames - 1);
+      frameIndex =
+          (setting['frameIndex'] is int ? setting['frameIndex'] as int : 0)
+              .clamp(0, totalFrames - 1);
       if (!isImage) {
         final player = VideoPlayerController.file(widget.file);
         controller = player;
@@ -369,12 +402,12 @@ class _ExportedWorkThumbnailDialogState
       }
       if (mounted) setState(() => ready = true);
     } catch (_) {
-      if (mounted) setState(() {
-        ready = true;
-        supportedFrames = false;
-        failure = tr('動画情報を読み取れませんでした',
-            'Could not read media information');
-      });
+      if (mounted)
+        setState(() {
+          ready = true;
+          supportedFrames = false;
+          failure = tr('動画情報を読み取れませんでした', 'Could not read media information');
+        });
     }
   }
 
@@ -383,8 +416,7 @@ class _ExportedWorkThumbnailDialogState
     setState(() => frameIndex = next);
     final player = controller;
     if (player == null || !player.value.isInitialized) return;
-    await player.seekTo(Duration(microseconds:
-        (next / fps * 1000000).round()));
+    await player.seekTo(Duration(microseconds: (next / fps * 1000000).round()));
   }
 
   void _stop() {
@@ -405,7 +437,8 @@ class _ExportedWorkThumbnailDialogState
       playbackPoll = Timer.periodic(const Duration(milliseconds: 90), (_) {
         if (!mounted) return;
         final index = (player.value.position.inMicroseconds * fps / 1000000)
-            .round().clamp(0, totalFrames - 1);
+            .round()
+            .clamp(0, totalFrames - 1);
         setState(() {
           frameIndex = index;
           if (!player.value.isPlaying) playing = false;
@@ -418,10 +451,13 @@ class _ExportedWorkThumbnailDialogState
   Future<void> _chooseCustom() async {
     try {
       final selected = await FilePicker.platform.pickFiles(
-          type: FileType.image, withData: true);
+        type: FileType.image,
+        withData: true,
+      );
       if (selected == null || selected.files.isEmpty) return;
       final file = selected.files.first;
-      final bytes = file.bytes ??
+      final bytes =
+          file.bytes ??
           (file.path == null ? null : await File(file.path!).readAsBytes());
       if (bytes == null || bytes.isEmpty || bytes.length > 10 * 1024 * 1024) {
         throw const FormatException('Invalid image');
@@ -435,8 +471,10 @@ class _ExportedWorkThumbnailDialogState
         failure = null;
       });
     } catch (_) {
-      if (mounted) setState(() =>
-          failure = tr('画像を読み込めませんでした', 'Could not open the image'));
+      if (mounted)
+        setState(
+          () => failure = tr('画像を読み込めませんでした', 'Could not open the image'),
+        );
     }
   }
 
@@ -455,26 +493,34 @@ class _ExportedWorkThumbnailDialogState
           imagePath = existingCover;
         } else {
           generated = await ExportedWorkCoverStore.storeCompressedImage(
-              customBytes!);
+            customBytes!,
+          );
           imagePath = generated;
         }
       } else if (!isImage && (mode == 'frame' || mode == 'latest')) {
         generated = await _extract(
-            mode == 'latest' ? totalFrames - 1 : frameIndex);
+          mode == 'latest' ? totalFrames - 1 : frameIndex,
+        );
         imagePath = generated;
       } else if (isImage && mode != 'none') {
         generated = await ExportedWorkCoverStore.storeCompressedImage(
-            await widget.file.readAsBytes(),
-            preferJpeg: const {'jpg', 'jpeg'}
-                .contains(widget.file.path.split('.').last.toLowerCase()));
+          await widget.file.readAsBytes(),
+          preferJpeg: const {
+            'jpg',
+            'jpeg',
+          }.contains(widget.file.path.split('.').last.toLowerCase()),
+        );
         imagePath = generated;
       }
       await ExportedWorkCoverStore.write(
         widget.file,
         mode: mode,
         imagePath: imagePath,
-        frameIndex: mode == 'frame' ? frameIndex :
-            mode == 'latest' ? (isImage ? 0 : totalFrames - 1) : null,
+        frameIndex: mode == 'frame'
+            ? frameIndex
+            : mode == 'latest'
+            ? (isImage ? 0 : totalFrames - 1)
+            : null,
       );
       committed = true;
       widget.onApplied?.call();
@@ -488,11 +534,11 @@ class _ExportedWorkThumbnailDialogState
           // The previous cover is still referenced by persisted settings.
         }
       }
-      if (mounted) setState(() {
-        busy = false;
-        failure = tr('サムネイルを保存できませんでした',
-            'Could not save thumbnail');
-      });
+      if (mounted)
+        setState(() {
+          busy = false;
+          failure = tr('サムネイルを保存できませんでした', 'Could not save thumbnail');
+        });
     }
   }
 
@@ -511,22 +557,25 @@ class _ExportedWorkThumbnailDialogState
       children: [
         const SizedBox(height: 8),
         AspectRatio(
-          aspectRatio: player?.value.isInitialized == true &&
+          aspectRatio:
+              player?.value.isInitialized == true &&
                   player!.value.aspectRatio > 0
               ? player.value.aspectRatio
-              : 16/9,
+              : 16 / 9,
           child: Container(
             key: const Key('exportCoverPreview'),
             color: Theme.of(context).colorScheme.surfaceContainerHighest,
             child: player != null && player.value.isInitialized
                 ? VideoPlayer(player)
-                : Image.file(widget.file, fit: BoxFit.contain,
-                    errorBuilder: (_, _, _) =>
-                        const Icon(Icons.image_outlined)),
+                : Image.file(
+                    widget.file,
+                    fit: BoxFit.contain,
+                    errorBuilder: (_, _, _) => const Icon(Icons.image_outlined),
+                  ),
           ),
         ),
         Text(
-          '${tr('現在のフレーム','Current frame')}: '
+          '${tr('現在のフレーム', 'Current frame')}: '
           '${frameIndex + 1} / $totalFrames',
           key: const Key('exportCoverFrameCount'),
           textAlign: TextAlign.center,
@@ -535,51 +584,71 @@ class _ExportedWorkThumbnailDialogState
           key: const Key('exportCoverSeek'),
           value: frameIndex.toDouble(),
           min: 0,
-          max: math.max(1,totalFrames - 1).toDouble(),
-          onChanged: busy || totalFrames < 2 ? null : (value) {
-            _stop(); _seek(value.round());
-          },
+          max: math.max(1, totalFrames - 1).toDouble(),
+          onChanged: busy || totalFrames < 2
+              ? null
+              : (value) {
+                  _stop();
+                  _seek(value.round());
+                },
         ),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             IconButton(
               key: const Key('exportCoverFirst'),
-              tooltip: tr('最初のフレーム','First frame'),
-              onPressed: busy ? null : () { _stop(); _seek(0); },
+              tooltip: tr('最初のフレーム', 'First frame'),
+              onPressed: busy
+                  ? null
+                  : () {
+                      _stop();
+                      _seek(0);
+                    },
               icon: const Icon(Icons.skip_previous),
             ),
             IconButton(
               key: const Key('exportCoverPrevious'),
-              tooltip: tr('1フレーム戻る','Previous frame'),
-              onPressed: busy ? null : () { _stop(); _seek(frameIndex-1); },
+              tooltip: tr('1フレーム戻る', 'Previous frame'),
+              onPressed: busy
+                  ? null
+                  : () {
+                      _stop();
+                      _seek(frameIndex - 1);
+                    },
               icon: const Icon(Icons.fast_rewind),
             ),
             IconButton(
               key: const Key('exportCoverPlayback'),
-              tooltip: tr('再生・停止','Play / pause'),
+              tooltip: tr('再生・停止', 'Play / pause'),
               onPressed: player == null || totalFrames < 2 ? null : _playPause,
               icon: Icon(playing ? Icons.pause : Icons.play_arrow),
             ),
             IconButton(
               key: const Key('exportCoverNext'),
-              tooltip: tr('1フレーム進む','Next frame'),
-              onPressed: busy ? null : () { _stop(); _seek(frameIndex+1); },
+              tooltip: tr('1フレーム進む', 'Next frame'),
+              onPressed: busy
+                  ? null
+                  : () {
+                      _stop();
+                      _seek(frameIndex + 1);
+                    },
               icon: const Icon(Icons.fast_forward),
             ),
             IconButton(
               key: const Key('exportCoverLast'),
-              tooltip: tr('最後のフレーム','Last frame'),
-              onPressed: busy ? null : () { _stop(); _seek(totalFrames-1); },
+              tooltip: tr('最後のフレーム', 'Last frame'),
+              onPressed: busy
+                  ? null
+                  : () {
+                      _stop();
+                      _seek(totalFrames - 1);
+                    },
               icon: const Icon(Icons.skip_next),
             ),
           ],
         ),
         if (isImage)
-          Text(tr(
-            '静止画像は1フレームとして扱います。',
-            'Still images have one frame.',
-          )),
+          Text(tr('静止画像は1フレームとして扱います。', 'Still images have one frame.')),
       ],
     );
   }
@@ -601,66 +670,87 @@ class _ExportedWorkThumbnailDialogState
               _stop();
               if (value != null) setState(() => mode = value);
             },
-            child: Column(children: [
-              RadioListTile<String>(
-                key: const Key('exportCoverLatest'), value: 'latest',
-                title: Text(tr('最後に保存したフレーム','Last saved frame')),
-              ),
-              RadioListTile<String>(
-                key: const Key('exportCoverFrame'), value: 'frame',
-                title: Text(tr('フレームを指定する','Select a frame')),
-              ),
-              RadioListTile<String>(
-                key: const Key('exportCoverCustom'), value: 'custom',
-                title: Text(tr('端末から画像を読み込む','Choose image from device')),
-              ),
-              RadioListTile<String>(
-                key: const Key('exportCoverNone'), value: 'none',
-                title: Text(tr('サムネイル表示しない','Do not show thumbnail')),
-              ),
-            ]),
+            child: Column(
+              children: [
+                RadioListTile<String>(
+                  key: const Key('exportCoverLatest'),
+                  value: 'latest',
+                  title: Text(tr('最後に保存したフレーム', 'Last saved frame')),
+                ),
+                RadioListTile<String>(
+                  key: const Key('exportCoverFrame'),
+                  value: 'frame',
+                  title: Text(tr('フレームを指定する', 'Select a frame')),
+                ),
+                RadioListTile<String>(
+                  key: const Key('exportCoverCustom'),
+                  value: 'custom',
+                  title: Text(tr('端末から画像を読み込む', 'Choose image from device')),
+                ),
+                RadioListTile<String>(
+                  key: const Key('exportCoverNone'),
+                  value: 'none',
+                  title: Text(tr('サムネイル表示しない', 'Do not show thumbnail')),
+                ),
+              ],
+            ),
           ),
           AnimatedSize(
             duration: const Duration(milliseconds: 160),
             child: mode == 'frame'
                 ? _framePanel()
                 : mode == 'custom'
-                    ? Column(
-                        key: const Key('exportCoverCustomPanel'),
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          OutlinedButton.icon(
-                            onPressed: busy ? null : _chooseCustom,
-                            icon: const Icon(Icons.photo_library_outlined),
-                            label: Text(tr('画像を読み込む','Choose image')),
-                          ),
-                          if (customName != null) Text(customName!),
-                          if (customBytes != null) Image.memory(
-                            customBytes!, height: 110, fit: BoxFit.contain,
-                          ),
-                        ],
-                      )
-                    : const SizedBox.shrink(),
+                ? Column(
+                    key: const Key('exportCoverCustomPanel'),
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      OutlinedButton.icon(
+                        onPressed: busy ? null : _chooseCustom,
+                        icon: const Icon(Icons.photo_library_outlined),
+                        label: Text(tr('画像を読み込む', 'Choose image')),
+                      ),
+                      if (customName != null) Text(customName!),
+                      if (customBytes != null)
+                        Image.memory(
+                          customBytes!,
+                          height: 110,
+                          fit: BoxFit.contain,
+                        ),
+                    ],
+                  )
+                : const SizedBox.shrink(),
           ),
           if (!ready) const LinearProgressIndicator(),
           if (failure != null)
-            Text(failure!, style: TextStyle(
-              color: Theme.of(context).colorScheme.error)),
+            Text(
+              failure!,
+              style: TextStyle(color: Theme.of(context).colorScheme.error),
+            ),
         ],
       ),
     ),
     actions: [
       TextButton(
-        onPressed: busy ? null : () { _stop(); Navigator.pop(context); },
-        child: Text(tr('キャンセル','Cancel')),
+        onPressed: busy
+            ? null
+            : () {
+                _stop();
+                Navigator.pop(context);
+              },
+        child: Text(tr('キャンセル', 'Cancel')),
       ),
       FilledButton(
         key: const Key('exportCoverApply'),
-        onPressed: !ready || busy ||
-          (mode == 'frame' && !supportedFrames && !isImage) ||
-          (mode == 'custom' && customBytes == null && existingCover == null)
-            ? null : _apply,
-        child: Text(tr('適用','Apply')),
+        onPressed:
+            !ready ||
+                busy ||
+                (mode == 'frame' && !supportedFrames && !isImage) ||
+                (mode == 'custom' &&
+                    customBytes == null &&
+                    existingCover == null)
+            ? null
+            : _apply,
+        child: Text(tr('適用', 'Apply')),
       ),
     ],
   );

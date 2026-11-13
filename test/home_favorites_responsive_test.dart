@@ -122,10 +122,7 @@ void main() {
           tester.view.physicalSize = size;
           tester.platformDispatcher.textScaleFactorTestValue = scale;
           await tester.pumpAndSettle();
-          final labels = [
-            l10n.homeTabProjects,
-            l10n.homeTabWorks,
-          ];
+          final labels = [l10n.homeTabProjects, l10n.homeTabWorks];
           for (var index = 0; index < labels.length; index++) {
             final label = labels[index];
             final paragraph = tester.renderObject<RenderParagraph>(

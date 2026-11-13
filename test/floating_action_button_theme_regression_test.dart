@@ -22,48 +22,70 @@ void main() {
       expect(fab.highlightElevation, 0, reason: preset.name);
       expect(fab.disabledElevation, 0, reason: preset.name);
       expect(fab.shape, isA<CircleBorder>(), reason: preset.name);
-      expect((fab.shape! as CircleBorder).side, BorderSide.none,
-          reason: preset.name);
-      expect(fab.backgroundColor, theme.colorScheme.primary,
-          reason: preset.name);
-      expect(fab.foregroundColor, theme.colorScheme.onPrimary,
-          reason: preset.name);
-      expect(theme.shadowColor, isNot(Colors.transparent),
-          reason: 'Card/dialog shadows must remain independent of FAB');
+      expect(
+        (fab.shape! as CircleBorder).side,
+        BorderSide.none,
+        reason: preset.name,
+      );
+      expect(
+        fab.backgroundColor,
+        theme.colorScheme.primary,
+        reason: preset.name,
+      );
+      expect(
+        fab.foregroundColor,
+        theme.colorScheme.onPrimary,
+        reason: preset.name,
+      );
+      expect(
+        theme.shadowColor,
+        isNot(Colors.transparent),
+        reason: 'Card/dialog shadows must remain independent of FAB',
+      );
       expect(theme.snackBarTheme.elevation, 0, reason: preset.name);
     }
   });
 
-  testWidgets('normal, mini and extended FABs inherit zero elevation',
-      (tester) async {
+  testWidgets('normal, mini and extended FABs inherit zero elevation', (
+    tester,
+  ) async {
     SharedPreferences.setMockInitialValues({});
     final service = ThemeService();
     await service.init();
     addTearDown(service.dispose);
-    await tester.pumpWidget(MaterialApp(
-      theme: service.themeData,
-      home: Scaffold(
-        body: const Center(child: Text('Floating action button audit')),
-        floatingActionButton: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            FloatingActionButton(
-              key: const Key('normal-fab'), heroTag: 'normal',
-              onPressed: () {}, child: const Icon(Icons.add),
-            ),
-            FloatingActionButton(
-              key: const Key('mini-fab'), heroTag: 'mini', mini: true,
-              onPressed: () {}, child: const Icon(Icons.edit),
-            ),
-            FloatingActionButton.extended(
-              key: const Key('extended-fab'), heroTag: 'extended',
-              onPressed: () {}, shape: const StadiumBorder(),
-              label: const Text('Create'),
-            ),
-          ],
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: service.themeData,
+        home: Scaffold(
+          body: const Center(child: Text('Floating action button audit')),
+          floatingActionButton: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              FloatingActionButton(
+                key: const Key('normal-fab'),
+                heroTag: 'normal',
+                onPressed: () {},
+                child: const Icon(Icons.add),
+              ),
+              FloatingActionButton(
+                key: const Key('mini-fab'),
+                heroTag: 'mini',
+                mini: true,
+                onPressed: () {},
+                child: const Icon(Icons.edit),
+              ),
+              FloatingActionButton.extended(
+                key: const Key('extended-fab'),
+                heroTag: 'extended',
+                onPressed: () {},
+                shape: const StadiumBorder(),
+                label: const Text('Create'),
+              ),
+            ],
+          ),
         ),
       ),
-    ));
+    );
     await tester.pumpAndSettle();
     for (final name in ['normal-fab', 'mini-fab', 'extended-fab']) {
       final button = find.byKey(Key(name));
@@ -74,12 +96,17 @@ void main() {
       expect(fab.hoverElevation, isNull, reason: name);
       expect(fab.highlightElevation, isNull, reason: name);
       expect(fab.disabledElevation, isNull, reason: name);
-      final materials = tester.widgetList<Material>(
-        find.descendant(of: button, matching: find.byType(Material)),
-      ).toList();
+      final materials = tester
+          .widgetList<Material>(
+            find.descendant(of: button, matching: find.byType(Material)),
+          )
+          .toList();
       expect(materials, isNotEmpty, reason: name);
-      expect(materials.every((m) => m.elevation == 0), isTrue,
-          reason: 'No thick shadow on $name');
+      expect(
+        materials.every((m) => m.elevation == 0),
+        isTrue,
+        reason: 'No thick shadow on $name',
+      );
     }
     await tester.tap(find.byKey(const Key('normal-fab')));
     await tester.pumpAndSettle();

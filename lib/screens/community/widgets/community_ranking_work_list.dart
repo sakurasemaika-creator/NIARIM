@@ -31,6 +31,7 @@ class CommunityRankingWorkList extends StatelessWidget {
   });
 
   final List<CommunityWork> works;
+
   /// Selected JST period scores; cumulative bookmarkCount stays unchanged.
   final Map<String, int> periodScores;
   final CommunityRankingLayout layout;
@@ -258,21 +259,21 @@ class CommunityRankingWorkCard extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     return CollectionActionFrame(
       child: IconButton(
-      key: ValueKey('community-bookmark-${work.id}'),
-      tooltip: isBookmarked
-          ? l10n.communityWorkDetailBookmarkRemove
-          : l10n.communityWorkDetailBookmarkAdd,
-      icon: Icon(
-        isBookmarked ? Icons.bookmark : Icons.bookmark_border,
-        color: scheme.onSurfaceVariant,
-      ),
-      iconSize: CollectionActionFrame.glyphSize,
-      constraints: const BoxConstraints.tightFor(
-        width: CollectionActionFrame.extent,
-        height: CollectionActionFrame.extent,
-      ),
-      padding: EdgeInsets.zero,
-      onPressed: onBookmarkToggle,
+        key: ValueKey('community-bookmark-${work.id}'),
+        tooltip: isBookmarked
+            ? l10n.communityWorkDetailBookmarkRemove
+            : l10n.communityWorkDetailBookmarkAdd,
+        icon: Icon(
+          isBookmarked ? Icons.bookmark : Icons.bookmark_border,
+          color: scheme.onSurfaceVariant,
+        ),
+        iconSize: CollectionActionFrame.glyphSize,
+        constraints: const BoxConstraints.tightFor(
+          width: CollectionActionFrame.extent,
+          height: CollectionActionFrame.extent,
+        ),
+        padding: EdgeInsets.zero,
+        onPressed: onBookmarkToggle,
       ),
     );
   }
@@ -337,7 +338,8 @@ class CommunityRankingWorkCard extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     final language = Localizations.localeOf(context).languageCode;
     final bookmarks = formatCompactCount(
-      periodBookmarkCount ?? work.bookmarkCount, language,
+      periodBookmarkCount ?? work.bookmarkCount,
+      language,
     );
     final rankLabel = periodBookmarkCount == null
         ? l10n.communityRankingSortBookmarks

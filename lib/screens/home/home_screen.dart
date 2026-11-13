@@ -67,9 +67,9 @@ class _ClipboardSourceMissing implements Exception {
 
 String _clipboardMissingMessage(BuildContext context) =>
     Localizations.localeOf(context).languageCode == 'ja'
-        ? 'コピー元の作品・フォルダが見つかりません。ゴミ箱から復元するか、'
+    ? 'コピー元の作品・フォルダが見つかりません。ゴミ箱から復元するか、'
           'もう一度コピーしてください。'
-        : 'The source file or folder is missing. Restore it from Trash '
+    : 'The source file or folder is missing. Restore it from Trash '
           'or copy it again.';
 
 class HomeScreen extends StatefulWidget {
@@ -106,7 +106,8 @@ class _HomeScreenState extends State<HomeScreen>
       }
       try {
         final visit = await api.visitLoginBonus();
-        if (mounted && (ModalRoute.of(context)?.isCurrent ?? false) &&
+        if (mounted &&
+            (ModalRoute.of(context)?.isCurrent ?? false) &&
             context.read<GoogleAuthService>().account?.id == ownerId) {
           await showServerMissionCompletions(context, visit);
         }
@@ -484,8 +485,9 @@ class _HomeScreenState extends State<HomeScreen>
                       if (_currentTabIndex == 0)
                         IconButton(
                           key: const Key('homeSearchTagToggle'),
-                          icon: Icon(_searchByTag
-                              ? Icons.search : Icons.sell_outlined),
+                          icon: Icon(
+                            _searchByTag ? Icons.search : Icons.sell_outlined,
+                          ),
                           tooltip: _searchByTag
                               ? l10n.homeSearchHint
                               : l10n.projectDetailTagsQuickAction,
@@ -523,21 +525,20 @@ class _HomeScreenState extends State<HomeScreen>
                       ),
                     ],
                   )
-                : Text(
-                    switch (_currentTabIndex) {
-                      1 => l10n.homeTabWorks,
-                      2 => l10n.homeTabShared,
-                      3 => l10n.homeTabTrash,
-                      _ => l10n.homeTabProjects,
-                    },
-                  ),
+                : Text(switch (_currentTabIndex) {
+                    1 => l10n.homeTabWorks,
+                    2 => l10n.homeTabShared,
+                    3 => l10n.homeTabTrash,
+                    _ => l10n.homeTabProjects,
+                  }),
             actions: [
               if (_hasClipboard)
                 IconButton(
                   key: const Key('homeCrossTabPasteButton'),
                   icon: const Icon(Icons.content_paste),
                   tooltip: l10n.homePasteTooltip(
-                    _clipboardProjectIds.length + _clipboardFolderIds.length +
+                    _clipboardProjectIds.length +
+                        _clipboardFolderIds.length +
                         (_otherClipboard == null ? 0 : 1),
                   ),
                   onPressed: _pasting ? null : _pasteClipboard,
@@ -635,25 +636,38 @@ class _HomeScreenState extends State<HomeScreen>
                 HomeSelectionToolbar(
                   selectedCount: _selectedIds.length,
                   onSelectAll: _currentTabIndex == 0
-                      ? _selectAllInCurrentFolder : _selectAllLibrary,
+                      ? _selectAllInCurrentFolder
+                      : _selectAllLibrary,
                   onDeselectAll: _endProjectSelection,
-                  onCut: _selectedIds.isEmpty ? null :
-                      (_currentTabIndex == 0 ? _cutSelected :
-                        _currentTabIndex == 3 || _selectedIds.length != 1
-                            ? null : _cutSelectedLibrary),
-                  onCopy: _selectedIds.isEmpty ? null :
-                      (_currentTabIndex == 0 ? _copySelected :
-                        _selectedIds.length != 1 ? null :
-                        _currentTabIndex == 3 ? _copySelectedTrash :
-                        _copySelectedLibrary),
-                  onTrash: _selectedIds.isEmpty ? null :
-                      (_currentTabIndex == 0 ? _deleteSelected :
-                        _currentTabIndex == 3 ? _restoreSelectedTrash :
-                        _trashSelectedLibrary),
+                  onCut: _selectedIds.isEmpty
+                      ? null
+                      : (_currentTabIndex == 0
+                            ? _cutSelected
+                            : _currentTabIndex == 3 || _selectedIds.length != 1
+                            ? null
+                            : _cutSelectedLibrary),
+                  onCopy: _selectedIds.isEmpty
+                      ? null
+                      : (_currentTabIndex == 0
+                            ? _copySelected
+                            : _selectedIds.length != 1
+                            ? null
+                            : _currentTabIndex == 3
+                            ? _copySelectedTrash
+                            : _copySelectedLibrary),
+                  onTrash: _selectedIds.isEmpty
+                      ? null
+                      : (_currentTabIndex == 0
+                            ? _deleteSelected
+                            : _currentTabIndex == 3
+                            ? _restoreSelectedTrash
+                            : _trashSelectedLibrary),
                   primaryActionLabel: _currentTabIndex == 3
-                      ? l10n.commonRestore : null,
+                      ? l10n.commonRestore
+                      : null,
                   primaryActionIcon: _currentTabIndex == 3
-                      ? Icons.restore : Icons.delete,
+                      ? Icons.restore
+                      : Icons.delete,
                 ),
               Expanded(
                 child: HomeCollectionSelectionScope(
@@ -670,149 +684,161 @@ class _HomeScreenState extends State<HomeScreen>
                       3 => 'trash_',
                       _ => '',
                     };
-                    if (prefix.isEmpty || (ids.isNotEmpty &&
-                        ids.any((id) => !id.startsWith(prefix)))) return;
+                    if (prefix.isEmpty ||
+                        (ids.isNotEmpty &&
+                            ids.any((id) => !id.startsWith(prefix))))
+                      return;
                     _visibleLibraryIds
                       ..clear()
                       ..addAll(ids);
                   },
                   child: TabBarView(
-                  controller: _tabController,
-                  children: [
-                    ProjectListWidget(
-                      scrollController: _projectScrollController,
-                      header: Column(
-                        children: [
-                          // 保存先を読めなかったときは、空の一覧に見えて
-                          // 作品が消えたと思わないよう知らせ、読み直せる
-                          // ようにする。
-                          if (context
-                              .watch<ProjectService>()
-                              .projectsLoadFailed)
-                            ProjectsLoadFailureNotice(
-                              key: const Key('homeProjectsLoadFailed'),
-                              onRetry: () => context
-                                  .read<ProjectService>()
-                                  .retryLoadProjects(),
-                              screenFocus: _homeFocus,
-                            ),
-                          _HomeCollectionSortHeader(
-                            leading: FilterChip(
-                              label: Text(
-                                l10n.homeFavoritesOnly,
-                                style: TextStyle(
-                                  fontFamily: 'Kuramubon',
-                                  fontFamilyFallback: kHeadingFontFallback,
-                                  color: _showFavoritesOnly
-                                      ? Theme.of(context).colorScheme.onPrimary
-                                      : null,
+                    controller: _tabController,
+                    children: [
+                      ProjectListWidget(
+                        scrollController: _projectScrollController,
+                        header: Column(
+                          children: [
+                            // 保存先を読めなかったときは、空の一覧に見えて
+                            // 作品が消えたと思わないよう知らせ、読み直せる
+                            // ようにする。
+                            if (context
+                                .watch<ProjectService>()
+                                .projectsLoadFailed)
+                              ProjectsLoadFailureNotice(
+                                key: const Key('homeProjectsLoadFailed'),
+                                onRetry: () => context
+                                    .read<ProjectService>()
+                                    .retryLoadProjects(),
+                                screenFocus: _homeFocus,
+                              ),
+                            _HomeCollectionSortHeader(
+                              leading: FilterChip(
+                                label: Text(
+                                  l10n.homeFavoritesOnly,
+                                  style: TextStyle(
+                                    fontFamily: 'Kuramubon',
+                                    fontFamilyFallback: kHeadingFontFallback,
+                                    color: _showFavoritesOnly
+                                        ? Theme.of(context)
+                                              .colorScheme
+                                              .onPrimary
+                                        : null,
+                                  ),
+                                ),
+                                selectedColor: Theme.of(context)
+                                    .colorScheme
+                                    .primary,
+                                checkmarkColor: Theme.of(context)
+                                    .colorScheme
+                                    .onPrimary,
+                                selected: _showFavoritesOnly,
+                                onSelected: (v) => _changeProjectScope(
+                                  () => _showFavoritesOnly = v,
                                 ),
                               ),
-                              selectedColor: Theme.of(context).colorScheme.primary,
-                              checkmarkColor: Theme.of(context).colorScheme.onPrimary,
-                              selected: _showFavoritesOnly,
-                              onSelected: (v) => _changeProjectScope(
-                                () => _showFavoritesOnly = v,
-                              ),
+                              sortByName: _sortByName,
+                              sortAscending: _sortAscending,
+                              onSortByNameChanged: _setSortByName,
+                              onToggleDirection: _toggleSortDirection,
                             ),
-                            sortByName: _sortByName,
-                            sortAscending: _sortAscending,
-                            onSortByNameChanged: _setSortByName,
-                            onToggleDirection: _toggleSortDirection,
-                          ),
-                          // フォルダ内移動時のパンくずリスト。検索中は
-                          // 全体から検索するため非表示にする。
-                          if (!_isSearching) _buildBreadcrumb(),
-                        ],
-                      ),
-                      // Keep bounded browsing scopes rather than every typed query.
-                      key: PageStorageKey((
-                        'home-projects',
-                        _effectiveViewMode(context),
-                        _currentFolderId,
-                        _showFavoritesOnly,
-                        _isSearching,
-                        _searchByTag,
-                      )),
-                      // 「共有」タブ（.niashareインポート由来）は別枠の
-                      // 一覧のため、プロジェクトタブには表示しない。
-                      projects: context
-                          .watch<ProjectService>()
-                          .projects
-                          .where((p) => !p.isSharedImport)
-                          .toList(),
-                      viewMode: _effectiveViewMode(context),
-                      sortMode: _sortMode,
-                      isSelectionMode: _isSelectionMode,
-                      selectedIds: _selectedIds,
-                      cutIds: _clipboardIsCut ? {
-                        ..._clipboardProjectIds, ..._clipboardFolderIds,
-                      } : const {},
-                      // 長押しモードへ入ると同時に、長押しした項目自体も
-                      // 選択状態にする（複数選択モードに入っただけで
-                      // 何も選ばれていない状態を避ける）。
-                      onLongPress: (id) => setState(() {
-                        _isSelectionMode = true;
-                        _selectedIds.add(id);
-                      }),
-                      onSelectionChanged: (id) => setState(() {
-                        if (_selectedIds.contains(id)) {
-                          _selectedIds.remove(id);
-                        } else {
+                            // フォルダ内移動時のパンくずリスト。検索中は
+                            // 全体から検索するため非表示にする。
+                            if (!_isSearching) _buildBreadcrumb(),
+                          ],
+                        ),
+                        // Keep bounded browsing scopes rather than every typed query.
+                        key: PageStorageKey((
+                          'home-projects',
+                          _effectiveViewMode(context),
+                          _currentFolderId,
+                          _showFavoritesOnly,
+                          _isSearching,
+                          _searchByTag,
+                        )),
+                        // 「共有」タブ（.niashareインポート由来）は別枠の
+                        // 一覧のため、プロジェクトタブには表示しない。
+                        projects: context
+                            .watch<ProjectService>()
+                            .projects
+                            .where((p) => !p.isSharedImport)
+                            .toList(),
+                        viewMode: _effectiveViewMode(context),
+                        sortMode: _sortMode,
+                        isSelectionMode: _isSelectionMode,
+                        selectedIds: _selectedIds,
+                        cutIds: _clipboardIsCut
+                            ? {..._clipboardProjectIds, ..._clipboardFolderIds}
+                            : const {},
+                        // 長押しモードへ入ると同時に、長押しした項目自体も
+                        // 選択状態にする（複数選択モードに入っただけで
+                        // 何も選ばれていない状態を避ける）。
+                        onLongPress: (id) => setState(() {
+                          _isSelectionMode = true;
                           _selectedIds.add(id);
-                        }
-                        // 手動でのタップ操作によって選択が0件になった場合も、
-                        // 「全解除」ボタンを押した時と同様に複数選択モードを
-                        // 自動終了する。
-                        if (_selectedIds.isEmpty) {
+                        }),
+                        onSelectionChanged: (id) => setState(() {
+                          if (_selectedIds.contains(id)) {
+                            _selectedIds.remove(id);
+                          } else {
+                            _selectedIds.add(id);
+                          }
+                          // 手動でのタップ操作によって選択が0件になった場合も、
+                          // 「全解除」ボタンを押した時と同様に複数選択モードを
+                          // 自動終了する。
+                          if (_selectedIds.isEmpty) {
+                            _isSelectionMode = false;
+                          }
+                        }),
+                        showFavoritesOnly: _showFavoritesOnly,
+                        searchQuery: _searchQuery,
+                        searchByTag: _searchByTag,
+                        currentFolderId: _currentFolderId,
+                        onOpenFolder: _openProjectFolder,
+                      ),
+                      _WorksTab(
+                        key: const PageStorageKey('home-works'),
+                        viewMode: _effectiveWorksViewMode(context),
+                        onViewModeChanged: _selectWorksViewMode,
+                        searchQuery: _currentTabIndex == 1 && _isSearching
+                            ? _searchQuery
+                            : '',
+                        onCopyEntry: _copyLibraryEntry,
+                      ),
+                      SharedScreen(
+                        key: const PageStorageKey('home-shared'),
+                        embedded: true,
+                        screenFocus: _homeFocus,
+                        viewMode: _effectiveSharedViewMode(context),
+                        onViewModeChanged: _selectSharedViewMode,
+                        searchQuery: _currentTabIndex == 2 && _isSearching
+                            ? _searchQuery
+                            : '',
+                        onDirectionChanged: (outgoing) => setState(() {
+                          _sharedOutgoing = outgoing;
+                          _selectedIds.clear();
+                          _visibleLibraryIds.clear();
                           _isSelectionMode = false;
-                        }
-                      }),
-                      showFavoritesOnly: _showFavoritesOnly,
-                      searchQuery: _searchQuery,
-                      searchByTag: _searchByTag,
-                      currentFolderId: _currentFolderId,
-                      onOpenFolder: _openProjectFolder,
-                    ),
-                    _WorksTab(
-                      key: const PageStorageKey('home-works'),
-                      viewMode: _effectiveWorksViewMode(context),
-                      onViewModeChanged: _selectWorksViewMode,
-                      searchQuery: _currentTabIndex == 1 && _isSearching
-                          ? _searchQuery : '',
-                      onCopyEntry: _copyLibraryEntry,
-                    ),
-                    SharedScreen(
-                      key: const PageStorageKey('home-shared'),
-                      embedded: true,
-                      screenFocus: _homeFocus,
-                      viewMode: _effectiveSharedViewMode(context),
-                      onViewModeChanged: _selectSharedViewMode,
-                      searchQuery: _currentTabIndex == 2 && _isSearching
-                          ? _searchQuery : '',
-                      onDirectionChanged: (outgoing) => setState(() {
-                        _sharedOutgoing = outgoing;
-                        _selectedIds.clear();
-                        _visibleLibraryIds.clear();
-                        _isSelectionMode = false;
-                      }),
-                      onCopyEntry: _copyLibraryEntry,
-                    ),
-                    TrashScreen(
-                      key: const PageStorageKey('home-trash'),
-                      embedded: true,
-                      searchQuery: _currentTabIndex == 3 && _isSearching
-                          ? _searchQuery : '',
-                      screenFocus: _homeFocus,
-                      onCopyEntry: _copyLibraryEntry,
-                    ),
-                  ],
+                        }),
+                        onCopyEntry: _copyLibraryEntry,
+                      ),
+                      TrashScreen(
+                        key: const PageStorageKey('home-trash'),
+                        embedded: true,
+                        searchQuery: _currentTabIndex == 3 && _isSearching
+                            ? _searchQuery
+                            : '',
+                        screenFocus: _homeFocus,
+                        onCopyEntry: _copyLibraryEntry,
+                      ),
+                    ],
                   ),
                 ),
               ),
             ],
           ),
-          floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+          floatingActionButtonLocation:
+              FloatingActionButtonLocation.centerFloat,
           floatingActionButton: _buildHomeActions(context, l10n),
         ),
       ),
@@ -842,8 +868,7 @@ class _HomeScreenState extends State<HomeScreen>
 
   bool get _hasLocalBackScope =>
       _isSearching ||
-      (_currentTabIndex == 0 &&
-          (_isSelectionMode || _currentFolderId != null));
+      (_currentTabIndex == 0 && (_isSelectionMode || _currentFolderId != null));
 
   bool _handleLocalBack() {
     // A dialog or pushed page owns Back until it closes.
@@ -877,7 +902,6 @@ class _HomeScreenState extends State<HomeScreen>
     return true;
   }
 
-
   void _longPressLibraryEntry(String id) => setState(() {
     _isSelectionMode = true;
     _selectedIds.add(id);
@@ -900,36 +924,60 @@ class _HomeScreenState extends State<HomeScreen>
     final ws = context.read<WorkFolderService>();
     if (id.startsWith('work_file:')) {
       final path = id.substring('work_file:'.length);
-      return HomeClipboardEntry(source: HomePasteArea.works, id: path,
-        name: File(path).uri.pathSegments.last, isCut: cut);
+      return HomeClipboardEntry(
+        source: HomePasteArea.works,
+        id: path,
+        name: File(path).uri.pathSegments.last,
+        isCut: cut,
+      );
     }
     if (id.startsWith('work_folder:')) {
       final folderId = id.substring('work_folder:'.length);
       final folder = ws.folders.where((f) => f.id == folderId).firstOrNull;
       if (folder == null) return null;
-      return HomeClipboardEntry(source: HomePasteArea.works,
-        id: folderId, name: folder.name, isFolder: true, isCut: cut);
+      return HomeClipboardEntry(
+        source: HomePasteArea.works,
+        id: folderId,
+        name: folder.name,
+        isFolder: true,
+        isCut: cut,
+      );
     }
     if (id.startsWith('shared_file:')) {
       final projectId = id.substring('shared_file:'.length);
       final project = ps.shared.where((p) => p.id == projectId).firstOrNull;
       if (project == null) return null;
-      return HomeClipboardEntry(source: HomePasteArea.received,
-        id: projectId, name: project.name, isCut: cut);
+      return HomeClipboardEntry(
+        source: HomePasteArea.received,
+        id: projectId,
+        name: project.name,
+        isCut: cut,
+      );
     }
     if (id.startsWith('shared_folder:')) {
       final folderId = id.substring('shared_folder:'.length);
-      final folder = ps.sharedFolders.where((f) => f.id == folderId).firstOrNull;
+      final folder = ps.sharedFolders
+          .where((f) => f.id == folderId)
+          .firstOrNull;
       if (folder == null) return null;
-      return HomeClipboardEntry(source: HomePasteArea.received,
-        id: folderId, name: folder.name, isFolder: true, isCut: cut);
+      return HomeClipboardEntry(
+        source: HomePasteArea.received,
+        id: folderId,
+        name: folder.name,
+        isFolder: true,
+        isCut: cut,
+      );
     }
     if (id.startsWith('outgoing_file:')) {
       final path = id.substring('outgoing_file:'.length);
       final entry = ps.outgoingShares.where((e) => e.path == path).firstOrNull;
       if (entry == null) return null;
-      return HomeClipboardEntry(source: HomePasteArea.outgoing,
-        id: path, name: entry.name, isCut: cut);
+      return HomeClipboardEntry(
+        source: HomePasteArea.outgoing,
+        id: path,
+        name: entry.name,
+        isCut: cut,
+      );
     }
     return null;
   }
@@ -951,21 +999,28 @@ class _HomeScreenState extends State<HomeScreen>
       final project = ps.trash.where((p) => p.id == projectId).firstOrNull;
       if (project != null) {
         entry = HomeClipboardEntry(
-          source: HomePasteArea.trash, id: projectId, name: project.name,
+          source: HomePasteArea.trash,
+          id: projectId,
+          name: project.name,
           originalArea: project.isSharedImport
-              ? HomePasteArea.received : HomePasteArea.projects,
+              ? HomePasteArea.received
+              : HomePasteArea.projects,
         );
       }
     } else if (id.startsWith('trash_folder:')) {
       final folderId = id.substring('trash_folder:'.length);
       final folder = ps.trashedFolders
-          .where((f) => f.folder.id == folderId).firstOrNull;
+          .where((f) => f.folder.id == folderId)
+          .firstOrNull;
       if (folder != null) {
         entry = HomeClipboardEntry(
-          source: HomePasteArea.trash, id: folderId,
-          name: folder.folder.name, isFolder: true,
+          source: HomePasteArea.trash,
+          id: folderId,
+          name: folder.folder.name,
+          isFolder: true,
           originalArea: folder.isShared
-              ? HomePasteArea.received : HomePasteArea.projects,
+              ? HomePasteArea.received
+              : HomePasteArea.projects,
         );
       }
     } else if (id.startsWith('trash_local:')) {
@@ -974,10 +1029,13 @@ class _HomeScreenState extends State<HomeScreen>
       final local = items.where((e) => e.id == localId).firstOrNull;
       if (local != null) {
         entry = HomeClipboardEntry(
-          source: HomePasteArea.trash, id: local.id,
-          name: local.fileName, isFolder: local.isFolder,
+          source: HomePasteArea.trash,
+          id: local.id,
+          name: local.fileName,
+          isFolder: local.isFolder,
           originalArea: local.kind == LocalTrashKind.outgoingShare
-              ? HomePasteArea.outgoing : HomePasteArea.works,
+              ? HomePasteArea.outgoing
+              : HomePasteArea.works,
         );
       }
     }
@@ -997,15 +1055,20 @@ class _HomeScreenState extends State<HomeScreen>
     if (_selectedIds.isEmpty) return;
     final selected = _selectedIds.toList(growable: false);
     final l10n = AppLocalizations.of(context)!;
-    final confirm = await showDialog<bool>(context: context,
+    final confirm = await showDialog<bool>(
+      context: context,
       builder: (dialog) => AlertDialog(
         title: Text(l10n.homeMoveToTrash),
         content: Text(l10n.homeMoveToTrashConfirm(selected.length)),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(dialog, false),
-            child: Text(l10n.commonCancel)),
-          FilledButton(onPressed: () => Navigator.pop(dialog, true),
-            child: Text(l10n.commonMove)),
+          TextButton(
+            onPressed: () => Navigator.pop(dialog, false),
+            child: Text(l10n.commonCancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(dialog, true),
+            child: Text(l10n.commonMove),
+          ),
         ],
       ),
     );
@@ -1016,16 +1079,26 @@ class _HomeScreenState extends State<HomeScreen>
       for (final id in selected) {
         if (id.startsWith('work_file:')) {
           final path = id.substring('work_file:'.length);
-          await LocalFileTrashService.move(File(path), LocalTrashKind.exportedWork);
+          await LocalFileTrashService.move(
+            File(path),
+            LocalTrashKind.exportedWork,
+          );
         } else if (id.startsWith('work_folder:')) {
           final folderId = id.substring('work_folder:'.length);
           final folder = ws.folders.where((f) => f.id == folderId).firstOrNull;
           if (folder == null) continue;
-          final exports = await ExportEngine.listExportedFiles(forceRefresh: true);
-          final files = exports.where((file) =>
-            ws.folderIdOf(file.uri.pathSegments.last) == folderId).toList();
+          final exports = await ExportEngine.listExportedFiles(
+            forceRefresh: true,
+          );
+          final files = exports
+              .where(
+                (file) => ws.folderIdOf(file.uri.pathSegments.last) == folderId,
+              )
+              .toList();
           await LocalFileTrashService.moveWorkFolder(
-            folderName: folder.name, files: files);
+            folderName: folder.name,
+            files: files,
+          );
           await ws.deleteFolder(folderId);
         } else if (id.startsWith('shared_file:')) {
           final projectId = id.substring('shared_file:'.length);
@@ -1035,14 +1108,17 @@ class _HomeScreenState extends State<HomeScreen>
           }
         } else if (id.startsWith('shared_folder:')) {
           final folderId = id.substring('shared_folder:'.length);
-          final folder = ps.sharedFolders.where((f) => f.id == folderId).firstOrNull;
+          final folder = ps.sharedFolders
+              .where((f) => f.id == folderId)
+              .firstOrNull;
           if (folder != null && !folder.isFavorite) {
             await ps.moveFolderToTrash(folderId, shared: true);
           }
         } else if (id.startsWith('outgoing_file:')) {
           await LocalFileTrashService.move(
             File(id.substring('outgoing_file:'.length)),
-            LocalTrashKind.outgoingShare);
+            LocalTrashKind.outgoingShare,
+          );
           await ps.refreshOutgoingShares();
         }
       }
@@ -1050,8 +1126,10 @@ class _HomeScreenState extends State<HomeScreen>
       if (mounted) _endProjectSelection();
     } catch (error, stackTrace) {
       AppErrorReporter.record(error, stackTrace);
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.homeTrashOperationFailed)));
+      if (mounted)
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.homeTrashOperationFailed)));
     }
   }
 
@@ -1059,17 +1137,24 @@ class _HomeScreenState extends State<HomeScreen>
     if (_selectedIds.isEmpty) return;
     final selected = _selectedIds.toList(growable: false);
     final l10n = AppLocalizations.of(context)!;
-    final confirm = await showDialog<bool>(context: context,
+    final confirm = await showDialog<bool>(
+      context: context,
       builder: (dialog) => AlertDialog(
         title: Text(l10n.commonRestore),
-        content: Text(Localizations.localeOf(context).languageCode == 'ja'
-            ? '${selected.length}件を復元しますか？'
-            : 'Restore ${selected.length} selected items?'),
+        content: Text(
+          Localizations.localeOf(context).languageCode == 'ja'
+              ? '${selected.length}件を復元しますか？'
+              : 'Restore ${selected.length} selected items?',
+        ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(dialog, false),
-            child: Text(l10n.commonCancel)),
-          FilledButton(onPressed: () => Navigator.pop(dialog, true),
-            child: Text(l10n.commonRestore)),
+          TextButton(
+            onPressed: () => Navigator.pop(dialog, false),
+            child: Text(l10n.commonCancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(dialog, true),
+            child: Text(l10n.commonRestore),
+          ),
         ],
       ),
     );
@@ -1098,8 +1183,10 @@ class _HomeScreenState extends State<HomeScreen>
       if (mounted) _endProjectSelection();
     } catch (error, stackTrace) {
       AppErrorReporter.record(error, stackTrace);
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.homeTrashOperationFailed)));
+      if (mounted)
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.homeTrashOperationFailed)));
     }
   }
 
@@ -1144,8 +1231,10 @@ class _HomeScreenState extends State<HomeScreen>
   );
 
   Widget? _buildHomeActions(BuildContext context, AppLocalizations l10n) {
-    if (_isSelectionMode || _currentTabIndex == 3 ||
-        (_currentTabIndex == 2 && _sharedOutgoing)) return null;
+    if (_isSelectionMode ||
+        _currentTabIndex == 3 ||
+        (_currentTabIndex == 2 && _sharedOutgoing))
+      return null;
     final compact = MediaQuery.sizeOf(context).height < 400;
 
     // The footer and the scrollable tab body have separate hit regions.
@@ -1189,7 +1278,8 @@ class _HomeScreenState extends State<HomeScreen>
               tooltip: l10n.homeAddSheetNewFolder,
               onPressed: () => showCreateFolderNameDialog(
                 context,
-                (name) => context.read<ProjectService>().createSharedFolder(name),
+                (name) =>
+                    context.read<ProjectService>().createSharedFolder(name),
               ),
               icon: Icons.create_new_folder_outlined,
             )
@@ -1245,27 +1335,42 @@ class _HomeScreenState extends State<HomeScreen>
     final visibleIds = _visibleProjectIds(service);
     final folderIds = service.folders
         .where((f) => visibleIds.contains(f.id) && _selectedIds.contains(f.id))
-        .map((f) => f.id).toSet();
+        .map((f) => f.id)
+        .toSet();
     // Selecting a parent and child must not move the same subtree twice.
-    final rootFolderIds = folderIds.where((id) =>
-        !folderIds.any((ancestor) =>
-            id != ancestor && service.isFolderDescendantOf(id, ancestor)))
+    final rootFolderIds = folderIds
+        .where(
+          (id) => !folderIds.any(
+            (ancestor) =>
+                id != ancestor && service.isFolderDescendantOf(id, ancestor),
+          ),
+        )
         .toList();
     final coveredFolderIds = <String>{
       for (final id in rootFolderIds) ...service.folderSubtreeIds(id),
     };
     final directProjectIds = service.projects
-        .where((p) => !p.isSharedImport && visibleIds.contains(p.id) &&
-            _selectedIds.contains(p.id) &&
-            !coveredFolderIds.contains(p.folderId))
-        .map((p) => p.id).toList();
+        .where(
+          (p) =>
+              !p.isSharedImport &&
+              visibleIds.contains(p.id) &&
+              _selectedIds.contains(p.id) &&
+              !coveredFolderIds.contains(p.folderId),
+        )
+        .map((p) => p.id)
+        .toList();
     final count = rootFolderIds.length + directProjectIds.length;
     if (count == 0) return;
     bool includesFavorite() =>
-        service.folders.any((f) => rootFolderIds.contains(f.id) && f.isFavorite) ||
-        service.projects.any((p) => p.isFavorite &&
-            (directProjectIds.contains(p.id) ||
-                coveredFolderIds.contains(p.folderId)));
+        service.folders.any(
+          (f) => rootFolderIds.contains(f.id) && f.isFavorite,
+        ) ||
+        service.projects.any(
+          (p) =>
+              p.isFavorite &&
+              (directProjectIds.contains(p.id) ||
+                  coveredFolderIds.contains(p.folderId)),
+        );
     if (includesFavorite()) {
       final messenger = ScaffoldMessenger.of(context);
       messenger.hideCurrentSnackBar();
@@ -1274,10 +1379,14 @@ class _HomeScreenState extends State<HomeScreen>
       );
       return;
     }
-    final projectCountInFolders = rootFolderIds.fold<int>(0,
-        (count, id) => count + service.folderContentCounts(id).projects);
-    final subfolderCount = rootFolderIds.fold<int>(0,
-        (count, id) => count + service.folderContentCounts(id).folders);
+    final projectCountInFolders = rootFolderIds.fold<int>(
+      0,
+      (count, id) => count + service.folderContentCounts(id).projects,
+    );
+    final subfolderCount = rootFolderIds.fold<int>(
+      0,
+      (count, id) => count + service.folderContentCounts(id).folders,
+    );
     final names = [
       for (final id in directProjectIds)
         ...service.projects.where((p) => p.id == id).map((p) => p.name),
@@ -1287,8 +1396,8 @@ class _HomeScreenState extends State<HomeScreen>
     final descendantText = projectCountInFolders + subfolderCount == 0
         ? ''
         : Localizations.localeOf(context).languageCode == 'ja'
-            ? '\nフォルダの中のプロジェクト$projectCountInFolders件・フォルダ$subfolderCount件も一緒に移動します。'
-            : '\nThis also moves $projectCountInFolders projects and $subfolderCount nested folders.';
+        ? '\nフォルダの中のプロジェクト$projectCountInFolders件・フォルダ$subfolderCount件も一緒に移動します。'
+        : '\nThis also moves $projectCountInFolders projects and $subfolderCount nested folders.';
     showDialog<void>(
       context: context,
       builder: (_) => ProjectTrashDialog(
@@ -1312,30 +1421,32 @@ class _HomeScreenState extends State<HomeScreen>
           });
           final messenger = ScaffoldMessenger.of(context);
           messenger.hideCurrentSnackBar();
-          messenger.showSnackBar(SnackBar(
-            content: Text(l10n.homeMovedToTrashSnackbar(count)),
-            duration: const Duration(seconds: 6),
-            action: SnackBarAction(
-              label: l10n.homeUndoAction,
-              onPressed: () async {
-                try {
-                  for (final id in rootFolderIds) {
-                    await service.restoreTrashedFolder(id);
+          messenger.showSnackBar(
+            SnackBar(
+              content: Text(l10n.homeMovedToTrashSnackbar(count)),
+              duration: const Duration(seconds: 6),
+              action: SnackBarAction(
+                label: l10n.homeUndoAction,
+                onPressed: () async {
+                  try {
+                    for (final id in rootFolderIds) {
+                      await service.restoreTrashedFolder(id);
+                    }
+                    for (final id in directProjectIds) {
+                      await service.restoreProject(id);
+                    }
+                  } catch (error, stackTrace) {
+                    AppErrorReporter.record(error, stackTrace);
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text(l10n.homeTrashOperationFailed)),
+                      );
+                    }
                   }
-                  for (final id in directProjectIds) {
-                    await service.restoreProject(id);
-                  }
-                } catch (error, stackTrace) {
-                  AppErrorReporter.record(error, stackTrace);
-                  if (mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text(l10n.homeTrashOperationFailed)),
-                    );
-                  }
-                }
-              },
+                },
+              ),
             ),
-          ));
+          );
         },
       ),
     );
@@ -1470,15 +1581,17 @@ class _HomeScreenState extends State<HomeScreen>
     if (!mounted) return;
     final messenger = ScaffoldMessenger.of(context);
     messenger.removeCurrentSnackBar();
-    messenger.showSnackBar(SnackBar(
-      content: Text(message),
-      action: allowUndoCut
-          ? SnackBarAction(
-              label: AppLocalizations.of(context)!.homeUndoAction,
-              onPressed: _cancelCutClipboard,
-            )
-          : null,
-    ));
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(message),
+        action: allowUndoCut
+            ? SnackBarAction(
+                label: AppLocalizations.of(context)!.homeUndoAction,
+                onPressed: _cancelCutClipboard,
+              )
+            : null,
+      ),
+    );
   }
 
   /// 選択中のプロジェクト・フォルダを切り取り、内部クリップボードへ保持する。
@@ -1528,14 +1641,18 @@ class _HomeScreenState extends State<HomeScreen>
     setState(() {
       _clipboardProjectIds
         ..clear()
-        ..addAll(_selectedIds.where(
-          (id) => projectIds.contains(id) && visibleIds.contains(id),
-        ));
+        ..addAll(
+          _selectedIds.where(
+            (id) => projectIds.contains(id) && visibleIds.contains(id),
+          ),
+        );
       _clipboardFolderIds
         ..clear()
-        ..addAll(_selectedIds.where(
-          (id) => folderIds.contains(id) && visibleIds.contains(id),
-        ));
+        ..addAll(
+          _selectedIds.where(
+            (id) => folderIds.contains(id) && visibleIds.contains(id),
+          ),
+        );
       _clipboardSourceArea = HomePasteArea.projects;
       _otherClipboard = null;
       _clipboardIsCut = false;
@@ -1544,12 +1661,15 @@ class _HomeScreenState extends State<HomeScreen>
     });
     final count = _clipboardProjectIds.length + _clipboardFolderIds.length;
     if (count > 0 && mounted) {
-      _showClipboardFeedback(AppLocalizations.of(context)!.homeCopiedSnackbar(count));
+      _showClipboardFeedback(
+        AppLocalizations.of(context)!.homeCopiedSnackbar(count),
+      );
     }
   }
 
   bool get _hasClipboard =>
-      _clipboardProjectIds.isNotEmpty || _clipboardFolderIds.isNotEmpty ||
+      _clipboardProjectIds.isNotEmpty ||
+      _clipboardFolderIds.isNotEmpty ||
       _otherClipboard != null;
 
   void _copyLibraryEntry(HomeClipboardEntry entry) {
@@ -1561,10 +1681,11 @@ class _HomeScreenState extends State<HomeScreen>
       _otherClipboard = entry;
     });
     if (mounted) {
-      _showClipboardFeedback(AppLocalizations.of(context)!.homeCopiedSnackbar(1));
+      _showClipboardFeedback(
+        AppLocalizations.of(context)!.homeCopiedSnackbar(1),
+      );
     }
   }
-
 
   HomePasteArea get _pasteDestination => switch (_currentTabIndex) {
     0 => HomePasteArea.projects,
@@ -1580,11 +1701,14 @@ class _HomeScreenState extends State<HomeScreen>
       context: context,
       builder: (ctx) => AlertDialog(
         key: const Key('homePasteRestrictionDialog'),
-        title: Text(Localizations.localeOf(ctx).languageCode == 'ja'
-            ? 'この場所にはペーストできません'
-            : 'Cannot paste here'),
-        content: Text(Localizations.localeOf(ctx).languageCode == 'ja'
-            ? ja : en),
+        title: Text(
+          Localizations.localeOf(ctx).languageCode == 'ja'
+              ? 'この場所にはペーストできません'
+              : 'Cannot paste here',
+        ),
+        content: Text(
+          Localizations.localeOf(ctx).languageCode == 'ja' ? ja : en,
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
@@ -1600,40 +1724,48 @@ class _HomeScreenState extends State<HomeScreen>
     final l10n = AppLocalizations.of(context)!;
     final ja = Localizations.localeOf(context).languageCode == 'ja';
     return await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        key: const Key('homePasteToTrashDialog'),
-        title: Text(l10n.homeMoveToTrash),
-        content: SingleChildScrollView(child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(ja ? '以下の作品・フォルダをゴミ箱に捨てますか？'
-                : 'Move the following files and folders to Trash?'),
-            for (final name in names) Text('・$name'),
-            const SizedBox(height: 12),
-            Text(ja
-                ? days > 0
-                    ? '※ゴミ箱に移動されたファイルは$days日後に完全削除されます。'
-                    : '※ゴミ箱の自動削除はオフです。手動で削除するまで保存されます。'
-                : days > 0
-                    ? 'Files in Trash are permanently deleted after $days days.'
-                    : 'Automatic deletion is off. Items remain until deleted manually.'),
-          ],
-        )),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: Text(l10n.commonCancel),
+          context: context,
+          builder: (ctx) => AlertDialog(
+            key: const Key('homePasteToTrashDialog'),
+            title: Text(l10n.homeMoveToTrash),
+            content: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    ja
+                        ? '以下の作品・フォルダをゴミ箱に捨てますか？'
+                        : 'Move the following files and folders to Trash?',
+                  ),
+                  for (final name in names) Text('・$name'),
+                  const SizedBox(height: 12),
+                  Text(
+                    ja
+                        ? days > 0
+                              ? '※ゴミ箱に移動されたファイルは$days日後に完全削除されます。'
+                              : '※ゴミ箱の自動削除はオフです。手動で削除するまで保存されます。'
+                        : days > 0
+                        ? 'Files in Trash are permanently deleted after $days days.'
+                        : 'Automatic deletion is off. Items remain until deleted manually.',
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: Text(l10n.commonCancel),
+              ),
+              FilledButton(
+                key: const Key('homePasteTrashConfirmButton'),
+                onPressed: () => Navigator.pop(ctx, true),
+                child: Text(l10n.commonMove),
+              ),
+            ],
           ),
-          FilledButton(
-            key: const Key('homePasteTrashConfirmButton'),
-            onPressed: () => Navigator.pop(ctx, true),
-            child: Text(l10n.commonMove),
-          ),
-        ],
-      ),
-    ) ?? false;
+        ) ??
+        false;
   }
 
   bool _pasting = false;
@@ -1659,18 +1791,18 @@ class _HomeScreenState extends State<HomeScreen>
     if (decision != HomePasteDecision.allowed) {
       await _explainPasteRestriction(
         'タブやピルボタンをまたいだ形式違いのペーストはできません。'
-        '作品・ファイルはコピー元と同じタブ・区分にペーストしてください。'
-        '中にファイルのないフォルダのみ例外です。',
+            '作品・ファイルはコピー元と同じタブ・区分にペーストしてください。'
+            '中にファイルのないフォルダのみ例外です。',
         'Files and projects cannot be pasted across incompatible tab or '
-        'pill formats. Paste into the original collection. Empty folders '
-        'without files are the only exception.',
+            'pill formats. Paste into the original collection. Empty folders '
+            'without files are the only exception.',
       );
       return;
     }
     if (target == HomePasteArea.outgoing) {
       await _explainPasteRestriction(
         '共有の「自分が作成したもの」はファイル専用で、'
-        'フォルダを保存する機能がないため、ここにはペーストできません。',
+            'フォルダを保存する機能がないため、ここにはペーストできません。',
         'The outgoing-shares collection does not support folders.',
       );
       return;
@@ -1680,10 +1812,10 @@ class _HomeScreenState extends State<HomeScreen>
         folderIds.any((id) => service.folderContentCounts(id).folders > 0)) {
       await _explainPasteRestriction(
         'このフォルダには子フォルダがあります。'
-        '移動先ではフォルダの入れ子に対応していないため、'
-        '中の構造を失わないようペーストを中止しました。',
+            '移動先ではフォルダの入れ子に対応していないため、'
+            '中の構造を失わないようペーストを中止しました。',
         'This folder contains nested folders. The destination does not '
-        'support nesting, so the paste was cancelled to preserve its structure.',
+            'support nesting, so the paste was cancelled to preserve its structure.',
       );
       return;
     }
@@ -1694,7 +1826,8 @@ class _HomeScreenState extends State<HomeScreen>
         for (final id in folderIds)
           ...service.folders.where((f) => f.id == id).map((f) => f.name),
       ];
-      if (names.isEmpty || !await _confirmPasteToTrash(names) || !mounted) return;
+      if (names.isEmpty || !await _confirmPasteToTrash(names) || !mounted)
+        return;
     }
     setState(() => _pasting = true);
     try {
@@ -1720,8 +1853,11 @@ class _HomeScreenState extends State<HomeScreen>
             await service.moveToFolder(id, _currentFolderId);
             _clipboardProjectIds.remove(id);
           } else {
-            if (!await service.duplicateProject(id,
-                targetFolderId: _currentFolderId, useTargetFolder: true)) {
+            if (!await service.duplicateProject(
+              id,
+              targetFolderId: _currentFolderId,
+              useTargetFolder: true,
+            )) {
               throw const _ClipboardSourceMissing();
             }
           }
@@ -1741,7 +1877,8 @@ class _HomeScreenState extends State<HomeScreen>
             final source = service.folders.where((f) => f.id == id).firstOrNull;
             if (source == null) throw const _ClipboardSourceMissing();
             final result = await service.duplicateFolder(
-              id, targetParentId: _currentFolderId,
+              id,
+              targetParentId: _currentFolderId,
               name: '${source.name} (コピー)',
             );
             if (result == null) throw const _ClipboardSourceMissing();
@@ -1771,23 +1908,23 @@ class _HomeScreenState extends State<HomeScreen>
     } catch (error, stackTrace) {
       AppErrorReporter.record(error, stackTrace);
       if (mounted) {
-        _showClipboardFeedback(error is _ClipboardSourceMissing
+        _showClipboardFeedback(
+          error is _ClipboardSourceMissing
               ? _clipboardMissingMessage(context)
               : error is StateError &&
-                      error.message == 'Cannot move folder inside itself'
-                  ? AppLocalizations.of(context)!.homePasteSkippedIntoSelf(1)
-                  : !_clipboardIsCut &&
-                          target == HomePasteArea.projects &&
-                          projectIds.isNotEmpty
-                      ? AppLocalizations.of(context)!.homePasteFailed
-                      : folderSaveFailureText(AppLocalizations.of(context)!, error));
+                    error.message == 'Cannot move folder inside itself'
+              ? AppLocalizations.of(context)!.homePasteSkippedIntoSelf(1)
+              : !_clipboardIsCut &&
+                    target == HomePasteArea.projects &&
+                    projectIds.isNotEmpty
+              ? AppLocalizations.of(context)!.homePasteFailed
+              : folderSaveFailureText(AppLocalizations.of(context)!, error),
+        );
       }
     } finally {
       if (mounted) setState(() => _pasting = false);
     }
   }
-
-
 
   /// An exported-work folder owns real video/image files, not project rows.
   /// Copy the bytes and only then write each new file's membership.
@@ -1800,8 +1937,12 @@ class _HomeScreenState extends State<HomeScreen>
       throw StateError('Export folder no longer exists');
     }
     final exported = await ExportEngine.listExportedFiles(forceRefresh: true);
-    final members = exported.where((file) =>
-        workFolders.folderIdOf(file.uri.pathSegments.last) == sourceId).toList();
+    final members = exported
+        .where(
+          (file) =>
+              workFolders.folderIdOf(file.uri.pathSegments.last) == sourceId,
+        )
+        .toList();
     final used = workFolders.folders.map((folder) => folder.name).toSet();
     var copyName = '$sourceName (コピー)';
     for (var number = 2; used.contains(copyName); number++) {
@@ -1827,7 +1968,8 @@ class _HomeScreenState extends State<HomeScreen>
           throw FileSystemException('Incomplete folder copy', source.path);
         }
         await workFolders.moveFileToFolder(
-          saved.uri.pathSegments.last, copiedFolder.id,
+          saved.uri.pathSegments.last,
+          copiedFolder.id,
         );
       }
       LocalFileTrashService.changes.value++;
@@ -1852,36 +1994,42 @@ class _HomeScreenState extends State<HomeScreen>
     var workFolderHasFiles = false;
     if (entry.isFolder && entry.source == HomePasteArea.works) {
       try {
-        final exports = await ExportEngine.listExportedFiles(forceRefresh: true);
-        workFolderHasFiles = exports.any((file) =>
-            ws.folderIdOf(file.uri.pathSegments.last) == entry.id);
+        final exports = await ExportEngine.listExportedFiles(
+          forceRefresh: true,
+        );
+        workFolderHasFiles = exports.any(
+          (file) => ws.folderIdOf(file.uri.pathSegments.last) == entry.id,
+        );
       } catch (error, stackTrace) {
         AppErrorReporter.record(error, stackTrace);
         await _explainPasteRestriction(
           'フォルダの中身を確認できませんでした。データを保護するため、'
-          'ペーストを中止しました。',
+              'ペーストを中止しました。',
           'Could not inspect folder contents safely. Paste was cancelled.',
         );
         return;
       }
       if (!mounted) return;
     }
-    final containsFiles = !entry.isFolder ||
+    final containsFiles =
+        !entry.isFolder ||
         (entry.source == HomePasteArea.works && workFolderHasFiles) ||
         (entry.source == HomePasteArea.received &&
             ps.shared.any((p) => p.sharedFolderId == entry.id));
     final decision = HomePastePolicy.check(
-      source: entry.source, destination: dest,
+      source: entry.source,
+      destination: dest,
       originalArea: entry.originalArea,
-      containsFiles: containsFiles, containsFolders: entry.isFolder,
+      containsFiles: containsFiles,
+      containsFolders: entry.isFolder,
     );
     if (decision != HomePasteDecision.allowed) {
       await _explainPasteRestriction(
         'タブやピルボタンをまたいだ形式違いのペーストはできません。'
-        '作品やファイルは元の形式の区分にペーストしてください。'
-        '中にファイルの無いフォルダのみ例外です。',
+            '作品やファイルは元の形式の区分にペーストしてください。'
+            '中にファイルの無いフォルダのみ例外です。',
         'Files cannot be pasted across tab or pill formats. '
-        'Restore files to their original collection. Only empty folders are an exception.',
+            'Restore files to their original collection. Only empty folders are an exception.',
       );
       return;
     }
@@ -1893,7 +2041,8 @@ class _HomeScreenState extends State<HomeScreen>
       return;
     }
     if (dest == HomePasteArea.trash) {
-      if (entry.isFolder && entry.source != HomePasteArea.works &&
+      if (entry.isFolder &&
+          entry.source != HomePasteArea.works &&
           entry.source != HomePasteArea.received) {
         await _explainPasteRestriction(
           'この形式のフォルダはゴミ箱に保管できません。',
@@ -1911,12 +2060,17 @@ class _HomeScreenState extends State<HomeScreen>
         builder: (ctx) => AlertDialog(
           key: const Key('homePasteRestoreDialog'),
           title: Text(japanese ? 'ゴミ箱から復元' : 'Restore from Trash'),
-          content: Text((japanese
-              ? '以下の作品・フォルダをゴミ箱から復元しますか？'
-              : 'Restore this item from Trash?') + '\n・${entry.name}'),
+          content: Text(
+            (japanese
+                    ? '以下の作品・フォルダをゴミ箱から復元しますか？'
+                    : 'Restore this item from Trash?') +
+                '\n・${entry.name}',
+          ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx, false),
-                child: Text(l10n.commonCancel)),
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: Text(l10n.commonCancel),
+            ),
             FilledButton(
               key: const Key('homePasteRestoreConfirmButton'),
               onPressed: () => Navigator.pop(ctx, true),
@@ -1933,10 +2087,14 @@ class _HomeScreenState extends State<HomeScreen>
         if (entry.isFolder) {
           if (entry.originalArea == HomePasteArea.works) {
             final files = await LocalFileTrashService.list();
-            final folder = files.where((f) => f.id == entry.id &&
-                f.isFolder).firstOrNull;
+            final folder = files
+                .where((f) => f.id == entry.id && f.isFolder)
+                .firstOrNull;
             if (folder == null) {
-              throw FileSystemException('Missing trashed work folder', entry.id);
+              throw FileSystemException(
+                'Missing trashed work folder',
+                entry.id,
+              );
             }
             await LocalFileTrashService.restoreWorkFolder(folder, ws);
             StorageInfoService().invalidate();
@@ -1949,7 +2107,8 @@ class _HomeScreenState extends State<HomeScreen>
         } else {
           final files = await LocalFileTrashService.list();
           final file = files.where((f) => f.id == entry.id).firstOrNull;
-          if (file == null) throw FileSystemException('Missing trash entry', entry.id);
+          if (file == null)
+            throw FileSystemException('Missing trash entry', entry.id);
           await LocalFileTrashService.restore(file);
           StorageInfoService().invalidate();
           if (entry.originalArea == HomePasteArea.outgoing) {
@@ -1965,11 +2124,17 @@ class _HomeScreenState extends State<HomeScreen>
           if (!ws.folders.any((folder) => folder.id == entry.id)) {
             throw StateError('Export folder not found');
           }
-          final files = await ExportEngine.listExportedFiles(forceRefresh: true);
-          final members = files.where((file) =>
-              ws.folderIdOf(file.uri.pathSegments.last) == entry.id).toList();
+          final files = await ExportEngine.listExportedFiles(
+            forceRefresh: true,
+          );
+          final members = files
+              .where(
+                (file) => ws.folderIdOf(file.uri.pathSegments.last) == entry.id,
+              )
+              .toList();
           await LocalFileTrashService.moveWorkFolder(
-            folderName: entry.name, files: members,
+            folderName: entry.name,
+            files: members,
           );
           // Delete membership only AFTER the archive is safely stored.
           await ws.deleteFolder(entry.id);
@@ -1980,7 +2145,8 @@ class _HomeScreenState extends State<HomeScreen>
           await LocalFileTrashService.move(
             File(entry.id),
             entry.source == HomePasteArea.works
-                ? LocalTrashKind.exportedWork : LocalTrashKind.outgoingShare,
+                ? LocalTrashKind.exportedWork
+                : LocalTrashKind.outgoingShare,
           );
           StorageInfoService().invalidate();
           if (entry.source == HomePasteArea.outgoing) {
@@ -2018,10 +2184,11 @@ class _HomeScreenState extends State<HomeScreen>
         }
       } else {
         final original = File(entry.id);
-        if (!await original.exists()) throw FileSystemException('Missing file', entry.id);
+        if (!await original.exists())
+          throw FileSystemException('Missing file', entry.id);
         final fileName = original.uri.pathSegments.last;
         final dot = fileName.lastIndexOf('.');
-        final stem = dot > 0 ? fileName.substring(0,dot) : fileName;
+        final stem = dot > 0 ? fileName.substring(0, dot) : fileName;
         final extension = dot > 0 ? fileName.substring(dot) : '';
         var n = 1;
         late File destFile;
@@ -2044,12 +2211,14 @@ class _HomeScreenState extends State<HomeScreen>
         setState(() {});
         _showClipboardFeedback(AppLocalizations.of(context)!.homePasteSnackbar);
       }
-    } catch (error,stackTrace) {
-      AppErrorReporter.record(error,stackTrace);
+    } catch (error, stackTrace) {
+      AppErrorReporter.record(error, stackTrace);
       if (mounted) {
-        _showClipboardFeedback(error is _ClipboardSourceMissing
-            ? _clipboardMissingMessage(context)
-            : AppLocalizations.of(context)!.homeTrashOperationFailed);
+        _showClipboardFeedback(
+          error is _ClipboardSourceMissing
+              ? _clipboardMissingMessage(context)
+              : AppLocalizations.of(context)!.homeTrashOperationFailed,
+        );
       }
     } finally {
       if (mounted) setState(() => _pasting = false);
@@ -2158,7 +2327,8 @@ class _HomeTabBar extends StatelessWidget {
             locale: Localizations.localeOf(context),
             maxLines: 1,
           )..layout();
-          final fits = iconWidth + gap + painter.width + breathingRoom <= cellWidth;
+          final fits =
+              iconWidth + gap + painter.width + breathingRoom <= cellWidth;
           painter.dispose();
           return fits;
         });
@@ -2191,9 +2361,12 @@ class _HomeTabBar extends StatelessWidget {
                                 Icon(_icons[i], size: iconWidth),
                                 const SizedBox(width: gap),
                                 Flexible(
-                                  child: Text(labels[i], maxLines: 1,
-                                      softWrap: false,
-                                      overflow: TextOverflow.clip),
+                                  child: Text(
+                                    labels[i],
+                                    maxLines: 1,
+                                    softWrap: false,
+                                    overflow: TextOverflow.clip,
+                                  ),
                                 ),
                               ],
                             )
@@ -2212,7 +2385,9 @@ class _HomeTabBar extends StatelessWidget {
 /// 共有一覧。ホームタブと'/shared'直リンクで共用する。
 class SharedScreen extends StatefulWidget {
   const SharedScreen({
-    super.key, this.embedded = false, this.onDirectionChanged,
+    super.key,
+    this.embedded = false,
+    this.onDirectionChanged,
     this.onCopyEntry,
     this.screenFocus,
     this.viewMode,
@@ -2241,7 +2416,8 @@ class _SharedScreenState extends State<SharedScreen> {
   ProjectViewMode? _standaloneViewMode;
 
   ProjectViewMode _effectiveViewMode(BuildContext context) =>
-      widget.viewMode ?? _standaloneViewMode ??
+      widget.viewMode ??
+      _standaloneViewMode ??
       switch (tileScreenClassForWidth(MediaQuery.sizeOf(context).width)) {
         TileScreenClass.phone => ProjectViewMode.small,
         TileScreenClass.tablet => ProjectViewMode.medium,
@@ -2375,7 +2551,8 @@ class _SharedScreenState extends State<SharedScreen> {
                   fontFamily: 'Kuramubon',
                   fontFamilyFallback: kHeadingFontFallback,
                   color: _showFavoritesOnly
-                      ? Theme.of(context).colorScheme.onPrimary : null,
+                      ? Theme.of(context).colorScheme.onPrimary
+                      : null,
                 ),
               ),
               selectedColor: Theme.of(context).colorScheme.primary,
@@ -2408,20 +2585,26 @@ class _SharedScreenState extends State<SharedScreen> {
       floatingActionButton: widget.embedded || _showOutgoing
           ? null
           : FloatingActionButton(
-        heroTag: 'shared-add-folder',
-        tooltip: l10n.homeAddSheetNewFolder,
-        onPressed: () => showCreateFolderNameDialog(
-          context,
-          (name) => context.read<ProjectService>().createSharedFolder(name),
-        ),
-        child: const Icon(Icons.create_new_folder_outlined),
-      ),
+              heroTag: 'shared-add-folder',
+              tooltip: l10n.homeAddSheetNewFolder,
+              onPressed: () => showCreateFolderNameDialog(
+                context,
+                (name) =>
+                    context.read<ProjectService>().createSharedFolder(name),
+              ),
+              child: const Icon(Icons.create_new_folder_outlined),
+            ),
     );
   }
 }
 
 /// Trash supports four independent multi-select type filters.
-enum TrashEntryKind { createdProject, receivedShare, createdShare, exportedWork }
+enum TrashEntryKind {
+  createdProject,
+  receivedShare,
+  createdShare,
+  exportedWork,
+}
 
 String _trashKindLabel(BuildContext context, TrashEntryKind kind) {
   final lang = Localizations.localeOf(context).languageCode;
@@ -2456,7 +2639,9 @@ String _trashKindLabel(BuildContext context, TrashEntryKind kind) {
 /// ゴミ箱一覧。ホームタブと'/trash'直リンクで共用する。
 class TrashScreen extends StatefulWidget {
   const TrashScreen({
-    super.key, this.embedded = false, this.onCopyEntry,
+    super.key,
+    this.embedded = false,
+    this.onCopyEntry,
     this.screenFocus,
     this.searchQuery = '',
   });
@@ -2590,10 +2775,7 @@ class _HomeCollectionSortHeader extends StatelessWidget {
     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
     child: Row(
       children: [
-        if (leading != null) ...[
-          leading!,
-          const SizedBox(width: 8),
-        ],
+        if (leading != null) ...[leading!, const SizedBox(width: 8)],
         Expanded(
           child: Align(
             alignment: Alignment.centerRight,
@@ -2684,16 +2866,22 @@ class _SharedTab extends StatelessWidget {
     }
     final query = searchQuery.trim().toLowerCase();
     if (query.isNotEmpty) {
-      shared = shared.where((p) =>
-          p.name.toLowerCase().contains(query)).toList();
+      shared = shared
+          .where((p) => p.name.toLowerCase().contains(query))
+          .toList();
     }
     shared = _sortProjects(shared, sortMode);
-    final visibleFolders = service.sharedFolders.where((folder) =>
-        (!showFavoritesOnly || folder.isFavorite ||
-            shared.any((p) => p.sharedFolderId == folder.id)) &&
-        (query.isEmpty || folder.name.toLowerCase().contains(query) ||
-            shared.any((p) => p.sharedFolderId == folder.id))
-    ).toList();
+    final visibleFolders = service.sharedFolders
+        .where(
+          (folder) =>
+              (!showFavoritesOnly ||
+                  folder.isFavorite ||
+                  shared.any((p) => p.sharedFolderId == folder.id)) &&
+              (query.isEmpty ||
+                  folder.name.toLowerCase().contains(query) ||
+                  shared.any((p) => p.sharedFolderId == folder.id)),
+        )
+        .toList();
     HomeCollectionSelectionScope.maybeOf(context)?.onVisibleIds({
       for (final folder in visibleFolders) 'shared_folder:${folder.id}',
       for (final project in shared)
@@ -2710,9 +2898,12 @@ class _SharedTab extends StatelessWidget {
       allItems: shared,
       folders: visibleFolders,
       viewMode: viewMode,
-      gridItemBuilder: (context, project) =>
-          _receivedShareProjectTile(
-            context, project, onCopyEntry: onCopyEntry, grid: true),
+      gridItemBuilder: (context, project) => _receivedShareProjectTile(
+        context,
+        project,
+        onCopyEntry: onCopyEntry,
+        grid: true,
+      ),
       header: loadFailed
           ? ProjectsLoadFailureNotice(
               key: const Key('sharedProjectsLoadFailed'),
@@ -2738,11 +2929,14 @@ class _SharedTab extends StatelessWidget {
                 folderName: folderName,
                 viewMode: viewMode,
                 onViewModeChanged: onViewModeChanged,
-                showFavoritesOnly: showFavoritesOnly &&
-                    !service.sharedFolders.any((folder) =>
-                        folder.id == folderId && folder.isFavorite),
+                showFavoritesOnly:
+                    showFavoritesOnly &&
+                    !service.sharedFolders.any(
+                      (folder) => folder.id == folderId && folder.isFavorite,
+                    ),
                 searchQuery: folderName.toLowerCase().contains(query)
-                    ? '' : searchQuery,
+                    ? ''
+                    : searchQuery,
                 onCopyEntry: onCopyEntry,
               ),
             ),
@@ -2752,7 +2946,10 @@ class _SharedTab extends StatelessWidget {
       onRenameFolder: (id, name) =>
           context.read<ProjectService>().renameSharedFolder(id, name),
       onDeleteFolder: (id) async {
-        await context.read<ProjectService>().moveFolderToTrash(id, shared: true);
+        await context.read<ProjectService>().moveFolderToTrash(
+          id,
+          shared: true,
+        );
       },
       onSetFolderThumbnail: (id, {required mode, sourceId, imagePath}) =>
           context.read<ProjectService>().setFolderThumbnail(
@@ -2762,20 +2959,25 @@ class _SharedTab extends StatelessWidget {
             imagePath: imagePath,
             shared: true,
           ),
-      onCopyFolder: onCopyEntry == null ? null : (folder) =>
-          onCopyEntry!(HomeClipboardEntry(
-            source: HomePasteArea.received, id: folder.id,
-            name: folder.name, isFolder: true,
-          )),
-      itemBuilder: (context, project) =>
-          _receivedShareProjectTile(
-            context, project, onCopyEntry: onCopyEntry, grid: false),
+      onCopyFolder: onCopyEntry == null
+          ? null
+          : (folder) => onCopyEntry!(
+              HomeClipboardEntry(
+                source: HomePasteArea.received,
+                id: folder.id,
+                name: folder.name,
+                isFolder: true,
+              ),
+            ),
+      itemBuilder: (context, project) => _receivedShareProjectTile(
+        context,
+        project,
+        onCopyEntry: onCopyEntry,
+        grid: false,
+      ),
     );
   }
-
 }
-
-
 
 Widget _receivedShareProjectTile(
   BuildContext context,
@@ -2813,6 +3015,7 @@ Widget _receivedShareProjectTile(
       ),
     );
   }
+
   void showFolderMove() {
     final service = context.read<ProjectService>();
     showModalBottomSheet<void>(
@@ -2824,75 +3027,85 @@ Widget _receivedShareProjectTile(
       ),
     );
   }
+
   final selectedLongPress = selection == null
       ? showFolderMove
       : () => selection.onLongPress(selectionId);
   if (grid) {
     return HomeCollectionSelectionSurface(
       selectionId: selectionId,
-      child: collectionTileShadow(context, Card(
-      margin: EdgeInsets.zero,
-      elevation: 0,
-      clipBehavior: Clip.antiAlias,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(14),
-        side: const BorderSide(color: Colors.transparent, width: 2),
-      ),
-      child: InkWell(
-        onTap: selectedTap,
-        onLongPress: selectedLongPress,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Expanded(
-              child: Stack(
-                fit: StackFit.expand,
-                children: [
-                  cover(),
-                  if (!selecting) Positioned(
-                    top: 4,
-                    right: 4,
-                    child: _sharedProjectActions(
-                      context, project, onCopyEntry: onCopyEntry,
-                      showFavorite: false,
-                    ),
+      child: collectionTileShadow(
+        context,
+        Card(
+          margin: EdgeInsets.zero,
+          elevation: 0,
+          clipBehavior: Clip.antiAlias,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+            side: const BorderSide(color: Colors.transparent, width: 2),
+          ),
+          child: InkWell(
+            onTap: selectedTap,
+            onLongPress: selectedLongPress,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Expanded(
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      cover(),
+                      if (!selecting)
+                        Positioned(
+                          top: 4,
+                          right: 4,
+                          child: _sharedProjectActions(
+                            context,
+                            project,
+                            onCopyEntry: onCopyEntry,
+                            showFavorite: false,
+                          ),
+                        ),
+                      if (!selecting)
+                        Positioned(
+                          bottom: 4,
+                          left: 4,
+                          child: _sharedProjectActions(
+                            context,
+                            project,
+                            onCopyEntry: onCopyEntry,
+                            showMenu: false,
+                          ),
+                        ),
+                    ],
                   ),
-                  if (!selecting) Positioned(
-                    bottom: 4,
-                    left: 4,
-                    child: _sharedProjectActions(
-                      context, project, onCopyEntry: onCopyEntry,
-                      showMenu: false,
-                    ),
-                  ),
-                ],
-              ),
+                ),
+                collectionTileCaption(context, project.name),
+              ],
             ),
-            collectionTileCaption(context, project.name),
-          ],
+          ),
         ),
       ),
-    )),
     );
   }
   return HomeCollectionSelectionSurface(
     selectionId: selectionId,
     grid: false,
     child: Card(
-    margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-    color: theme.colorScheme.surfaceContainerLow,
-    child: ListTile(
-      leading: SizedBox(width: 56, height: 56, child: cover()),
-      title: Text(project.name, style: captionStyle),
-      subtitle: Text(l10n.homeProjectMeta(
-        project.fps, project.durationSeconds,
-      )),
-      onTap: selectedTap,
-      onLongPress: selectedLongPress,
-      trailing: selecting ? null : _sharedProjectActions(
-        context, project, onCopyEntry: onCopyEntry,
+      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      color: theme.colorScheme.surfaceContainerLow,
+      child: ListTile(
+        leading: SizedBox(width: 56, height: 56, child: cover()),
+        title: Text(project.name, style: captionStyle),
+        subtitle: Text(
+          l10n.homeProjectMeta(project.fps, project.durationSeconds),
+        ),
+        onTap: selectedTap,
+        onLongPress: selectedLongPress,
+        trailing: selecting
+            ? null
+            : _sharedProjectActions(context, project, onCopyEntry: onCopyEntry),
       ),
-    ),
     ),
   );
 }
@@ -2913,7 +3126,8 @@ String _shareCollectionText(BuildContext context, {required bool outgoing}) {
 /// Received projects remain editable. Sharing one explicitly creates a new
 /// saved .niashare snapshot, whereas outbound snapshots reuse existing bytes.
 Widget _sharedProjectActions(
-  BuildContext context, Project project, {
+  BuildContext context,
+  Project project, {
   ValueChanged<HomeClipboardEntry>? onCopyEntry,
   bool showFavorite = true,
   bool showMenu = true,
@@ -2938,16 +3152,15 @@ Widget _sharedProjectActions(
       if (showMenu)
         CollectionActionFrame(
           key: Key('collectionMenu_${project.id}'),
-          child: _receivedShareMenu(
-            context, project, onCopyEntry: onCopyEntry,
-          ),
+          child: _receivedShareMenu(context, project, onCopyEntry: onCopyEntry),
         ),
     ],
   );
 }
 
 Widget _receivedShareMenu(
-  BuildContext context, Project project, {
+  BuildContext context,
+  Project project, {
   ValueChanged<HomeClipboardEntry>? onCopyEntry,
 }) {
   final l10n = AppLocalizations.of(context)!;
@@ -2962,10 +3175,13 @@ Widget _receivedShareMenu(
         case 'open':
           context.push('/canvas/${project.id}');
         case 'copyToClipboard':
-          onCopyEntry?.call(HomeClipboardEntry(
-            source: HomePasteArea.received,
-            id: project.id, name: project.name,
-          ));
+          onCopyEntry?.call(
+            HomeClipboardEntry(
+              source: HomePasteArea.received,
+              id: project.id,
+              name: project.name,
+            ),
+          );
         case 'rename':
           final controller = TextEditingController(text: project.name);
           try {
@@ -3003,7 +3219,9 @@ Widget _receivedShareMenu(
         case 'thumbnail':
           if (context.mounted) {
             await showProjectThumbnailDialog(
-              context, project: project, service: service,
+              context,
+              project: project,
+              service: service,
             );
           }
         case 'duplicate':
@@ -3057,8 +3275,11 @@ Widget _receivedShareMenu(
       PopupMenuItem(value: 'duplicate', child: Text(l10n.themeDuplicateAction)),
       PopupMenuItem(
         value: 'thumbnail',
-        child: Text(Localizations.localeOf(context).languageCode == 'ja'
-            ? 'サムネイル変更' : 'Change thumbnail'),
+        child: Text(
+          Localizations.localeOf(context).languageCode == 'ja'
+              ? 'サムネイル変更'
+              : 'Change thumbnail',
+        ),
       ),
       PopupMenuItem(
         value: 'share',
@@ -3068,9 +3289,11 @@ Widget _receivedShareMenu(
       ),
       PopupMenuItem(
         value: 'favorite',
-        child: Text(project.isFavorite
-            ? l10n.colorPickerFavoriteRemove
-            : l10n.colorPickerFavoriteAdd),
+        child: Text(
+          project.isFavorite
+              ? l10n.colorPickerFavoriteRemove
+              : l10n.colorPickerFavoriteAdd,
+        ),
       ),
       PopupMenuItem(
         value: 'delete',
@@ -3086,7 +3309,9 @@ Widget _receivedShareMenu(
 /// A saved .niashare is a frozen file, so its file-specific menu
 /// intentionally omits canvas editing and folder operations.
 Future<void> _outgoingShareAction(
-  BuildContext context, SavedOutgoingShare entry, String action,
+  BuildContext context,
+  SavedOutgoingShare entry,
+  String action,
 ) async {
   final l10n = AppLocalizations.of(context)!;
   final service = context.read<ProjectService>();
@@ -3109,22 +3334,31 @@ Future<void> _outgoingShareAction(
                 onSubmitted: (v) => Navigator.pop(ctx, v),
               ),
               actions: [
-                TextButton(onPressed: () => Navigator.pop(ctx),
-                    child: Text(l10n.commonCancel)),
-                FilledButton(onPressed: () => Navigator.pop(ctx, controller.text),
-                    child: Text(l10n.commonSave)),
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  child: Text(l10n.commonCancel),
+                ),
+                FilledButton(
+                  onPressed: () => Navigator.pop(ctx, controller.text),
+                  child: Text(l10n.commonSave),
+                ),
               ],
             ),
           );
         } finally {
-          WidgetsBinding.instance.addPostFrameCallback((_) => controller.dispose());
+          WidgetsBinding.instance.addPostFrameCallback(
+            (_) => controller.dispose(),
+          );
         }
         if (value == null || value.trim() == entry.name) return;
         final name = value.trim().replaceAll(RegExp(r'[\\/]'), '_');
         if (name.isEmpty || name == '.' || name == '..') return;
         final target = File('${file.parent.path}/$name.niashare');
         if (await target.exists()) {
-          throw FileSystemException('Share filename already exists', target.path);
+          throw FileSystemException(
+            'Share filename already exists',
+            target.path,
+          );
         }
         await file.rename(target.path);
         await service.refreshOutgoingShares();
@@ -3144,10 +3378,14 @@ Future<void> _outgoingShareAction(
             title: Text(l10n.homeMoveToTrash),
             content: Text(l10n.homeMoveToTrashConfirm(1)),
             actions: [
-              TextButton(onPressed: () => Navigator.pop(ctx, false),
-                  child: Text(l10n.commonCancel)),
-              FilledButton(onPressed: () => Navigator.pop(ctx, true),
-                  child: Text(l10n.commonMove)),
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: Text(l10n.commonCancel),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.pop(ctx, true),
+                child: Text(l10n.commonMove),
+              ),
             ],
           ),
         );
@@ -3159,9 +3397,8 @@ Future<void> _outgoingShareAction(
   } catch (error, stackTrace) {
     AppErrorReporter.record(error, stackTrace);
     if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.homeTrashOperationFailed)),
-      );
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(l10n.homeTrashOperationFailed)));
     }
   }
 }
@@ -3184,24 +3421,30 @@ class _OutgoingSharesList extends StatelessWidget {
   Widget build(BuildContext context) {
     final service = context.watch<ProjectService>();
     final query = searchQuery.trim().toLowerCase();
-    final saved = service.outgoingShares.where((entry) =>
-        (!showFavoritesOnly || service.isOutgoingShareFavorite(entry.path)) &&
-        (query.isEmpty || entry.name.toLowerCase().contains(query))
-    ).toList();
+    final saved = service.outgoingShares
+        .where(
+          (entry) =>
+              (!showFavoritesOnly ||
+                  service.isOutgoingShareFavorite(entry.path)) &&
+              (query.isEmpty || entry.name.toLowerCase().contains(query)),
+        )
+        .toList();
     saved.sort((a, b) {
       final n = switch (sortMode) {
-        ProjectSortMode.nameAsc =>
-          a.name.toLowerCase().compareTo(b.name.toLowerCase()),
-        ProjectSortMode.nameDesc =>
-          b.name.toLowerCase().compareTo(a.name.toLowerCase()),
+        ProjectSortMode.nameAsc => a.name.toLowerCase().compareTo(
+          b.name.toLowerCase(),
+        ),
+        ProjectSortMode.nameDesc => b.name.toLowerCase().compareTo(
+          a.name.toLowerCase(),
+        ),
         ProjectSortMode.updatedAsc => a.updatedAt.compareTo(b.updatedAt),
         ProjectSortMode.updatedDesc => b.updatedAt.compareTo(a.updatedAt),
       };
       return n == 0 ? a.path.compareTo(b.path) : n;
     });
-    HomeCollectionSelectionScope.maybeOf(context)?.onVisibleIds({
-      for (final entry in saved) 'outgoing_file:${entry.path}',
-    });
+    HomeCollectionSelectionScope.maybeOf(
+      context,
+    )?.onVisibleIds({for (final entry in saved) 'outgoing_file:${entry.path}'});
     if (saved.isEmpty) {
       return EmptyStatePlaceholder(
         icon: Icons.file_present_outlined,
@@ -3215,10 +3458,12 @@ class _OutgoingSharesList extends StatelessWidget {
       final selection = HomeCollectionSelectionScope.maybeOf(context);
       final selectionId = 'outgoing_file:${entry.path}';
       final selecting = selection?.active ?? false;
-      final onTap = selecting ? () => selection!.onToggle(selectionId)
+      final onTap = selecting
+          ? () => selection!.onToggle(selectionId)
           : () => shareSavedNiashare(context, entry.path);
       final onLongPress = selection == null
-          ? null : () => selection.onLongPress(selectionId);
+          ? null
+          : () => selection.onLongPress(selectionId);
       final subtitle =
           '${entry.updatedAt.year}/${entry.updatedAt.month.toString().padLeft(2, '0')}/'
           '${entry.updatedAt.day.toString().padLeft(2, '0')}  ·  '
@@ -3237,105 +3482,124 @@ class _OutgoingSharesList extends StatelessWidget {
       final menuAction = CollectionActionFrame(
         key: Key('collectionMenu_${entry.path}'),
         child: PopupMenuButton<String>(
-              key: ValueKey('outgoingShareMenu_${entry.path}'),
-              padding: EdgeInsets.zero,
-              icon: const Icon(
-                Icons.more_vert,
-                size: CollectionActionFrame.glyphSize,
-              ),
-              onSelected: (action) {
-                if (action == 'copyToClipboard') {
-                  onCopyEntry?.call(HomeClipboardEntry(
-                    source: HomePasteArea.outgoing,
-                    id: entry.path, name: entry.name,
-                  ));
-                } else {
-                  _outgoingShareAction(context, entry, action);
-                }
-              },
-              itemBuilder: (_) => [
-                PopupMenuItem(value: 'share',
-                    child: Text(l10n.projectDetailShareQuickAction)),
-                PopupMenuItem(value: 'rename',
-                    child: Text(l10n.commonRename)),
-                PopupMenuItem(value: 'duplicate',
-                    child: Text(l10n.themeDuplicateAction)),
-                PopupMenuItem(
-                  value: 'delete',
-                  child: Text(
-                    l10n.projectDetailTrashMenuItem,
-                    style: TextStyle(color: scheme.error),
-                  ),
+          key: ValueKey('outgoingShareMenu_${entry.path}'),
+          padding: EdgeInsets.zero,
+          icon: const Icon(
+            Icons.more_vert,
+            size: CollectionActionFrame.glyphSize,
+          ),
+          onSelected: (action) {
+            if (action == 'copyToClipboard') {
+              onCopyEntry?.call(
+                HomeClipboardEntry(
+                  source: HomePasteArea.outgoing,
+                  id: entry.path,
+                  name: entry.name,
                 ),
-              ],
+              );
+            } else {
+              _outgoingShareAction(context, entry, action);
+            }
+          },
+          itemBuilder: (_) => [
+            PopupMenuItem(
+              value: 'share',
+              child: Text(l10n.projectDetailShareQuickAction),
+            ),
+            PopupMenuItem(value: 'rename', child: Text(l10n.commonRename)),
+            PopupMenuItem(
+              value: 'duplicate',
+              child: Text(l10n.themeDuplicateAction),
+            ),
+            PopupMenuItem(
+              value: 'delete',
+              child: Text(
+                l10n.projectDetailTrashMenuItem,
+                style: TextStyle(color: scheme.error),
+              ),
+            ),
+          ],
         ),
       );
       final actions = Row(
         mainAxisSize: MainAxisSize.min,
-        children: [
-          favoriteAction,
-          const SizedBox(width: 4),
-          menuAction,
-        ],
+        children: [favoriteAction, const SizedBox(width: 4), menuAction],
       );
       if (grid) {
         return HomeCollectionSelectionSurface(
           selectionId: selectionId,
-          child: collectionTileShadow(context, Card(
-          margin: EdgeInsets.zero,
-      elevation: 0,
-          clipBehavior: Clip.antiAlias,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
-        side: const BorderSide(color: Colors.transparent, width: 2),
-          ),
-          child: InkWell(
-            onTap: onTap,
-            onLongPress: onLongPress,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Expanded(child: Stack(
-                  fit: StackFit.expand,
+          child: collectionTileShadow(
+            context,
+            Card(
+              margin: EdgeInsets.zero,
+              elevation: 0,
+              clipBehavior: Clip.antiAlias,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+                side: const BorderSide(color: Colors.transparent, width: 2),
+              ),
+              child: InkWell(
+                onTap: onTap,
+                onLongPress: onLongPress,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    ColoredBox(
-                      color: scheme.surfaceContainerHighest,
-                      child: const Center(child: Icon(
-                        Icons.insert_drive_file_outlined, size: 52)),
+                    Expanded(
+                      child: Stack(
+                        fit: StackFit.expand,
+                        children: [
+                          ColoredBox(
+                            color: scheme.surfaceContainerHighest,
+                            child: const Center(
+                              child: Icon(
+                                Icons.insert_drive_file_outlined,
+                                size: 52,
+                              ),
+                            ),
+                          ),
+                          if (!selecting)
+                            Positioned(top: 4, right: 4, child: menuAction),
+                          if (!selecting)
+                            Positioned(
+                              bottom: 4,
+                              left: 4,
+                              child: favoriteAction,
+                            ),
+                        ],
+                      ),
                     ),
-                    if (!selecting)
-                      Positioned(top: 4, right: 4, child: menuAction),
-                    if (!selecting)
-                      Positioned(bottom: 4, left: 4, child: favoriteAction),
+                    collectionTileCaption(context, entry.name),
                   ],
-                )),
-                collectionTileCaption(context, entry.name),
-              ],
+                ),
+              ),
             ),
           ),
-        )),
         );
       }
       return HomeCollectionSelectionSurface(
         selectionId: selectionId,
         grid: false,
         child: Card(
-        margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-        color: scheme.surfaceContainerLow,
-        child: ListTile(
-          leading: const Icon(Icons.insert_drive_file_outlined, size: 36),
-          title: Text(entry.name, style: const TextStyle(
-            fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback,
-          )),
-          subtitle: Text(subtitle),
-          onTap: onTap,
-          onLongPress: onLongPress,
-          trailing: selecting ? null : actions,
-        ),
+          margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          color: scheme.surfaceContainerLow,
+          child: ListTile(
+            leading: const Icon(Icons.insert_drive_file_outlined, size: 36),
+            title: Text(
+              entry.name,
+              style: const TextStyle(
+                fontFamily: 'Kuramubon',
+                fontFamilyFallback: kHeadingFontFallback,
+              ),
+            ),
+            subtitle: Text(subtitle),
+            onTap: onTap,
+            onLongPress: onLongPress,
+            trailing: selecting ? null : actions,
+          ),
         ),
       );
     }
+
     if (viewMode != ProjectViewMode.detail) {
       return GridView.builder(
         key: ValueKey(('outgoing-niashares', viewMode)),
@@ -3401,14 +3665,21 @@ class _SharedFolderScreenState extends State<_SharedFolderScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final query = widget.searchQuery.trim().toLowerCase();
-    final items = context.watch<ProjectService>().shared.where((p) =>
-        p.sharedFolderId == widget.folderId &&
-        (!widget.showFavoritesOnly || p.isFavorite) &&
-        (query.isEmpty || p.name.toLowerCase().contains(query))
-    ).toList();
+    final items = context
+        .watch<ProjectService>()
+        .shared
+        .where(
+          (p) =>
+              p.sharedFolderId == widget.folderId &&
+              (!widget.showFavoritesOnly || p.isFavorite) &&
+              (query.isEmpty || p.name.toLowerCase().contains(query)),
+        )
+        .toList();
     Widget card(BuildContext ctx, int i, bool grid) =>
         _receivedShareProjectTile(
-          ctx, items[i], grid: grid,
+          ctx,
+          items[i],
+          grid: grid,
           onCopyEntry: widget.onCopyEntry,
         );
     return Scaffold(
@@ -3424,14 +3695,22 @@ class _SharedFolderScreenState extends State<_SharedFolderScreen> {
               widget.onViewModeChanged(mode);
             },
             itemBuilder: (_) => [
-              PopupMenuItem(value: ProjectViewMode.large,
-                  child: Text(l10n.homeViewModeLarge)),
-              PopupMenuItem(value: ProjectViewMode.medium,
-                  child: Text(l10n.homeViewModeMedium)),
-              PopupMenuItem(value: ProjectViewMode.small,
-                  child: Text(l10n.homeViewModeSmall)),
-              PopupMenuItem(value: ProjectViewMode.detail,
-                  child: Text(l10n.homeViewModeDetail)),
+              PopupMenuItem(
+                value: ProjectViewMode.large,
+                child: Text(l10n.homeViewModeLarge),
+              ),
+              PopupMenuItem(
+                value: ProjectViewMode.medium,
+                child: Text(l10n.homeViewModeMedium),
+              ),
+              PopupMenuItem(
+                value: ProjectViewMode.small,
+                child: Text(l10n.homeViewModeSmall),
+              ),
+              PopupMenuItem(
+                value: ProjectViewMode.detail,
+                child: Text(l10n.homeViewModeDetail),
+              ),
             ],
           ),
         ],
@@ -3442,16 +3721,16 @@ class _SharedFolderScreenState extends State<_SharedFolderScreen> {
               title: l10n.homeSharedFolderEmpty,
             )
           : _viewMode != ProjectViewMode.detail
-              ? GridView.builder(
-                  padding: const EdgeInsets.all(8),
-                  gridDelegate: _worksGridDelegate(context, _viewMode),
-                  itemCount: items.length,
-                  itemBuilder: (ctx, i) => card(ctx, i, true),
-                )
-              : ListView.builder(
-                  itemCount: items.length,
-                  itemBuilder: (ctx, i) => card(ctx, i, false),
-                ),
+          ? GridView.builder(
+              padding: const EdgeInsets.all(8),
+              gridDelegate: _worksGridDelegate(context, _viewMode),
+              itemCount: items.length,
+              itemBuilder: (ctx, i) => card(ctx, i, true),
+            )
+          : ListView.builder(
+              itemCount: items.length,
+              itemBuilder: (ctx, i) => card(ctx, i, false),
+            ),
     );
   }
 }
@@ -3468,11 +3747,13 @@ class _FolderableList<T> extends StatelessWidget {
   onEnterFolder;
   final Future<void> Function(String id, String name) onRenameFolder;
   final Future<void> Function(String id) onDeleteFolder;
-  final Future<void> Function(String id, {
+  final Future<void> Function(
+    String id, {
     required String mode,
     String? sourceId,
     String? imagePath,
-  })? onSetFolderThumbnail;
+  })?
+  onSetFolderThumbnail;
   final Widget Function(BuildContext, T) itemBuilder;
   final Widget Function(BuildContext, T)? gridItemBuilder;
   final ProjectViewMode? viewMode;
@@ -3543,7 +3824,8 @@ class _FolderableList<T> extends StatelessWidget {
             ],
           );
         }
-        if (gridItemBuilder != null && viewMode != null &&
+        if (gridItemBuilder != null &&
+            viewMode != null &&
             viewMode != ProjectViewMode.detail) {
           return CustomScrollView(
             slivers: [
@@ -3553,21 +3835,24 @@ class _FolderableList<T> extends StatelessWidget {
                 sliver: SliverGrid.builder(
                   gridDelegate: _worksGridDelegate(context, viewMode!),
                   itemCount: folders.length + rootItems.length,
-                  itemBuilder: (context, index) =>
-                      index < folders.length
-                          ? _folderGridTile(
-                              context,
-                              folders[index],
-                              countByFolder[folders[index].id] ?? 0,
-                            )
-                          : gridItemBuilder!(
-                              context, rootItems[index - folders.length]),
+                  itemBuilder: (context, index) => index < folders.length
+                      ? _folderGridTile(
+                          context,
+                          folders[index],
+                          countByFolder[folders[index].id] ?? 0,
+                        )
+                      : gridItemBuilder!(
+                          context,
+                          rootItems[index - folders.length],
+                        ),
                 ),
               ),
               if (reserveForFloatingActions)
-                SliverToBoxAdapter(child: SizedBox(
-                  height: 88 + MediaQuery.paddingOf(context).bottom,
-                )),
+                SliverToBoxAdapter(
+                  child: SizedBox(
+                    height: 88 + MediaQuery.paddingOf(context).bottom,
+                  ),
+                ),
             ],
           );
         }
@@ -3601,28 +3886,43 @@ class _FolderableList<T> extends StatelessWidget {
       if (entry is Project) {
         final path = entry.thumbnailPath;
         if (path != null && path.isNotEmpty) {
-          result.add(FolderThumbnailChoice(
-            id: entry.id,
-            name: entry.name,
-            imagePath: path,
-            updatedAt: entry.updatedAt,
-          ));
+          result.add(
+            FolderThumbnailChoice(
+              id: entry.id,
+              name: entry.name,
+              imagePath: path,
+              updatedAt: entry.updatedAt,
+            ),
+          );
         }
       } else if (entry is File) {
         final file = entry;
         final extension = file.path.split('.').last.toLowerCase();
         // Still images display directly. Exported videos get a cached
         // first-frame poster through FolderCoverMedia on Android.
-        if (!const {'png', 'jpg', 'jpeg', 'gif', 'webp', 'bmp',
-                    'mp4', 'mov', 'webm', 'mkv', 'avi'}
-            .contains(extension)) continue;
+        if (!const {
+          'png',
+          'jpg',
+          'jpeg',
+          'gif',
+          'webp',
+          'bmp',
+          'mp4',
+          'mov',
+          'webm',
+          'mkv',
+          'avi',
+        }.contains(extension))
+          continue;
         try {
-          result.add(FolderThumbnailChoice(
-            id: file.path,
-            name: file.uri.pathSegments.last,
-            imagePath: file.path,
-            updatedAt: file.lastModifiedSync(),
-          ));
+          result.add(
+            FolderThumbnailChoice(
+              id: file.path,
+              name: file.uri.pathSegments.last,
+              imagePath: file.path,
+              updatedAt: file.lastModifiedSync(),
+            ),
+          );
         } on FileSystemException {
           // A file removed outside the app must not crash the folder list.
         }
@@ -3656,10 +3956,13 @@ class _FolderableList<T> extends StatelessWidget {
           CollectionActionFrame(
             child: IconButton(
               key: ValueKey('collectionFolderMenu_${folder.id}'),
-              icon: const Icon(Icons.more_vert,
-                  size: CollectionActionFrame.glyphSize),
+              icon: const Icon(
+                Icons.more_vert,
+                size: CollectionActionFrame.glyphSize,
+              ),
               tooltip: Localizations.localeOf(context).languageCode == 'ja'
-                  ? 'フォルダのメニュー' : 'Folder menu',
+                  ? 'フォルダのメニュー'
+                  : 'Folder menu',
               padding: EdgeInsets.zero,
               onPressed: () => _showFolderMenu(context, folder),
             ),
@@ -3669,64 +3972,79 @@ class _FolderableList<T> extends StatelessWidget {
   }
 
   Widget _folderGridTile(
-      BuildContext context, ProjectFolder folder, int count) {
+    BuildContext context,
+    ProjectFolder folder,
+    int count,
+  ) {
     final selection = HomeCollectionSelectionScope.maybeOf(context);
     final selectionId = T == File
-        ? 'work_folder:${folder.id}' : 'shared_folder:${folder.id}';
+        ? 'work_folder:${folder.id}'
+        : 'shared_folder:${folder.id}';
     final selecting = selection?.active ?? false;
     return HomeCollectionSelectionSurface(
       selectionId: selectionId,
-      child: collectionTileShadow(context, Card(
-      key: ValueKey('collectionFolder_${folder.id}'),
-      margin: EdgeInsets.zero,
-      elevation: 0,
-      clipBehavior: Clip.antiAlias,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(14),
-        side: const BorderSide(color: Colors.transparent, width: 2),
-      ),
-      child: InkWell(
-        onTap: selecting
-            ? () => selection!.onToggle(selectionId)
-            : () => onEnterFolder(
-                folder.id,
-                folder.name,
-                allItems.where((e) => folderIdOf(e) == folder.id).toList(),
-              ),
-        onLongPress: selection == null
-            ? () => _showFolderMenu(context, folder)
-            : () => selection.onLongPress(selectionId),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Expanded(
-              child: Stack(
-                fit: StackFit.expand,
-                children: [
-                  FolderThumbnail(
-                    folder: folder,
-                    choices: _folderCoverChoices(folder.id),
+      child: collectionTileShadow(
+        context,
+        Card(
+          key: ValueKey('collectionFolder_${folder.id}'),
+          margin: EdgeInsets.zero,
+          elevation: 0,
+          clipBehavior: Clip.antiAlias,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+            side: const BorderSide(color: Colors.transparent, width: 2),
+          ),
+          child: InkWell(
+            onTap: selecting
+                ? () => selection!.onToggle(selectionId)
+                : () => onEnterFolder(
+                    folder.id,
+                    folder.name,
+                    allItems.where((e) => folderIdOf(e) == folder.id).toList(),
                   ),
-                  if (!selecting)
-                    Positioned(
-                      top: 4,
-                      right: 4,
-                      child: _folderActions(context, folder, showFavorite: false),
-                    ),
-                  if (!selecting && onToggleFolderFavorite != null)
-                    Positioned(
-                      bottom: 4,
-                      left: 4,
-                      child: _folderActions(context, folder, showMenu: false),
-                    ),
-                ],
-              ),
+            onLongPress: selection == null
+                ? () => _showFolderMenu(context, folder)
+                : () => selection.onLongPress(selectionId),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Expanded(
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      FolderThumbnail(
+                        folder: folder,
+                        choices: _folderCoverChoices(folder.id),
+                      ),
+                      if (!selecting)
+                        Positioned(
+                          top: 4,
+                          right: 4,
+                          child: _folderActions(
+                            context,
+                            folder,
+                            showFavorite: false,
+                          ),
+                        ),
+                      if (!selecting && onToggleFolderFavorite != null)
+                        Positioned(
+                          bottom: 4,
+                          left: 4,
+                          child: _folderActions(
+                            context,
+                            folder,
+                            showMenu: false,
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+                collectionTileCaption(context, folder.name),
+              ],
             ),
-            collectionTileCaption(context, folder.name),
-          ],
+          ),
         ),
       ),
-    )),
     );
   }
 
@@ -3738,44 +4056,63 @@ class _FolderableList<T> extends StatelessWidget {
         for (final folder in folders)
           HomeCollectionSelectionSurface(
             selectionId: T == File
-                ? 'work_folder:${folder.id}' : 'shared_folder:${folder.id}',
+                ? 'work_folder:${folder.id}'
+                : 'shared_folder:${folder.id}',
             grid: false,
             child: Card(
-            key: ValueKey('collectionFolder_${folder.id}'),
-            margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            color: Theme.of(context).colorScheme.surfaceContainerLow,
-            child: ListTile(
-              minVerticalPadding: 8,
-              leading: SizedBox(
-                width: 56,
-                height: 56,
-                child: FolderThumbnail(
-                  folder: folder,
-                  choices: _folderCoverChoices(folder.id),
+              key: ValueKey('collectionFolder_${folder.id}'),
+              margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              color: Theme.of(context).colorScheme.surfaceContainerLow,
+              child: ListTile(
+                minVerticalPadding: 8,
+                leading: SizedBox(
+                  width: 56,
+                  height: 56,
+                  child: FolderThumbnail(
+                    folder: folder,
+                    choices: _folderCoverChoices(folder.id),
+                  ),
                 ),
+                title: Text(folder.name),
+                subtitle: Text('${countByFolder[folder.id] ?? 0}'),
+                trailing:
+                    HomeCollectionSelectionScope.maybeOf(context)?.active ==
+                        true
+                    ? null
+                    : _folderActions(context, folder),
+                onTap: () {
+                  final selection = HomeCollectionSelectionScope.maybeOf(
+                    context,
+                  );
+                  final id = T == File
+                      ? 'work_folder:${folder.id}'
+                      : 'shared_folder:${folder.id}';
+                  if (selection?.active == true) {
+                    selection!.onToggle(id);
+                  } else {
+                    onEnterFolder(
+                      folder.id,
+                      folder.name,
+                      allItems
+                          .where((e) => folderIdOf(e) == folder.id)
+                          .toList(),
+                    );
+                  }
+                },
+                onLongPress: () {
+                  final selection = HomeCollectionSelectionScope.maybeOf(
+                    context,
+                  );
+                  final id = T == File
+                      ? 'work_folder:${folder.id}'
+                      : 'shared_folder:${folder.id}';
+                  if (selection == null)
+                    _showFolderMenu(context, folder);
+                  else
+                    selection.onLongPress(id);
+                },
               ),
-              title: Text(folder.name),
-              subtitle: Text('${countByFolder[folder.id] ?? 0}'),
-              trailing: HomeCollectionSelectionScope.maybeOf(context)?.active == true
-                  ? null : _folderActions(context, folder),
-              onTap: () {
-                final selection = HomeCollectionSelectionScope.maybeOf(context);
-                final id = T == File ? 'work_folder:${folder.id}' : 'shared_folder:${folder.id}';
-                if (selection?.active == true) {
-                  selection!.onToggle(id);
-                } else {
-                  onEnterFolder(folder.id, folder.name,
-                    allItems.where((e) => folderIdOf(e) == folder.id).toList());
-                }
-              },
-              onLongPress: () {
-                final selection = HomeCollectionSelectionScope.maybeOf(context);
-                final id = T == File ? 'work_folder:${folder.id}' : 'shared_folder:${folder.id}';
-                if (selection == null) _showFolderMenu(context, folder);
-                else selection.onLongPress(id);
-              },
             ),
-          ),
           ),
       ],
     );
@@ -3793,8 +4130,11 @@ class _FolderableList<T> extends StatelessWidget {
               ListTile(
                 key: const Key('collectionFolderThumbnailMenuItem'),
                 leading: const Icon(Icons.image_outlined),
-                title: Text(Localizations.localeOf(context).languageCode == 'ja'
-                    ? 'サムネイル変更' : 'Change thumbnail'),
+                title: Text(
+                  Localizations.localeOf(context).languageCode == 'ja'
+                      ? 'サムネイル変更'
+                      : 'Change thumbnail',
+                ),
                 onTap: () {
                   Navigator.pop(ctx);
                   showFolderThumbnailDialog(
@@ -3913,34 +4253,37 @@ class _TrashTabState extends State<_TrashTab> {
     final l10n = AppLocalizations.of(context)!;
     final japanese = Localizations.localeOf(context).languageCode == 'ja';
     return await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        key: const Key('homeTrashRestoreConfirmation'),
-        title: Text(japanese ? 'ゴミ箱から復元' : 'Restore from Trash'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(japanese
-                ? '以下の作品・フォルダをゴミ箱から復元しますか？'
-                : 'Restore the following files or folders from Trash?'),
-            const SizedBox(height: 8),
-            Text('・$name'),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext, false),
-            child: Text(l10n.commonCancel),
+          context: context,
+          builder: (dialogContext) => AlertDialog(
+            key: const Key('homeTrashRestoreConfirmation'),
+            title: Text(japanese ? 'ゴミ箱から復元' : 'Restore from Trash'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  japanese
+                      ? '以下の作品・フォルダをゴミ箱から復元しますか？'
+                      : 'Restore the following files or folders from Trash?',
+                ),
+                const SizedBox(height: 8),
+                Text('・$name'),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(dialogContext, false),
+                child: Text(l10n.commonCancel),
+              ),
+              FilledButton(
+                key: const Key('homeTrashRestoreConfirmButton'),
+                onPressed: () => Navigator.pop(dialogContext, true),
+                child: Text(l10n.commonRestore),
+              ),
+            ],
           ),
-          FilledButton(
-            key: const Key('homeTrashRestoreConfirmButton'),
-            onPressed: () => Navigator.pop(dialogContext, true),
-            child: Text(l10n.commonRestore),
-          ),
-        ],
-      ),
-    ) ?? false;
+        ) ??
+        false;
   }
 
   Future<void> _restoreProject(String id) async {
@@ -3948,7 +4291,9 @@ class _TrashTabState extends State<_TrashTab> {
     final service = context.read<ProjectService>();
     final project = service.trash.where((p) => p.id == id).firstOrNull;
     if (project == null ||
-        !await _confirmRestoreFromTrash(project.name) || !mounted) return;
+        !await _confirmRestoreFromTrash(project.name) ||
+        !mounted)
+      return;
     setState(() {
       _pending.add(id);
       _restoring.add(id);
@@ -3967,12 +4312,15 @@ class _TrashTabState extends State<_TrashTab> {
 
   Future<void> _restoreLocal(LocalTrashedFile entry) async {
     if (_pending.contains(entry.id) ||
-        !await _confirmRestoreFromTrash(entry.fileName) || !mounted) return;
+        !await _confirmRestoreFromTrash(entry.fileName) ||
+        !mounted)
+      return;
     setState(() => _pending.add(entry.id));
     try {
       if (entry.isFolder) {
         await LocalFileTrashService.restoreWorkFolder(
-          entry, context.read<WorkFolderService>(),
+          entry,
+          context.read<WorkFolderService>(),
         );
       } else {
         await LocalFileTrashService.restore(entry);
@@ -3986,7 +4334,11 @@ class _TrashTabState extends State<_TrashTab> {
       AppErrorReporter.record(error, stackTrace);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppLocalizations.of(context)!.homeTrashOperationFailed)),
+          SnackBar(
+            content: Text(
+              AppLocalizations.of(context)!.homeTrashOperationFailed,
+            ),
+          ),
         );
       }
     } finally {
@@ -3998,13 +4350,17 @@ class _TrashTabState extends State<_TrashTab> {
     if (_pending.contains(id)) return;
     final service = context.read<ProjectService>();
     final folder = service.trashedFolders
-        .where((record) => record.folder.id == id).firstOrNull;
+        .where((record) => record.folder.id == id)
+        .firstOrNull;
     if (folder == null ||
-        !await _confirmRestoreFromTrash(folder.folder.name) || !mounted) return;
+        !await _confirmRestoreFromTrash(folder.folder.name) ||
+        !mounted)
+      return;
     setState(() => _pending.add(id));
     try {
       await runProjectTrashAction(
-        context, () => service.restoreTrashedFolder(id),
+        context,
+        () => service.restoreTrashedFolder(id),
       );
     } finally {
       if (mounted) setState(() => _pending.remove(id));
@@ -4015,7 +4371,8 @@ class _TrashTabState extends State<_TrashTab> {
     if (_pending.contains(id)) return;
     final service = context.read<ProjectService>();
     final record = service.trashedFolders
-        .where((item) => item.folder.id == id).firstOrNull;
+        .where((item) => item.folder.id == id)
+        .firstOrNull;
     if (record == null) return;
     final l10n = AppLocalizations.of(context)!;
     setState(() => _pending.add(id));
@@ -4039,7 +4396,9 @@ class _TrashTabState extends State<_TrashTab> {
     final id = record.folder.id;
     final projectNames = [
       for (final projectId in record.projectIds)
-        ...context.read<ProjectService>().trash
+        ...context
+            .read<ProjectService>()
+            .trash
             .where((project) => project.id == projectId)
             .map((project) => project.name),
     ];
@@ -4056,12 +4415,17 @@ class _TrashTabState extends State<_TrashTab> {
         if (widget.onCopyEntry != null)
           TextButton(
             key: ValueKey('trashCopyFolder_$id'),
-            onPressed: () => widget.onCopyEntry!(HomeClipboardEntry(
-              source: HomePasteArea.trash,
-              id: id, name: record.folder.name,
-              isFolder: true, originalArea: record.isShared
-                  ? HomePasteArea.received : HomePasteArea.projects,
-            )),
+            onPressed: () => widget.onCopyEntry!(
+              HomeClipboardEntry(
+                source: HomePasteArea.trash,
+                id: id,
+                name: record.folder.name,
+                isFolder: true,
+                originalArea: record.isShared
+                    ? HomePasteArea.received
+                    : HomePasteArea.projects,
+              ),
+            ),
             child: const Text('コピー'),
           ),
         TextButton(
@@ -4072,9 +4436,12 @@ class _TrashTabState extends State<_TrashTab> {
         TextButton(
           key: ValueKey('trashedFolderDelete_$id'),
           onPressed: _pending.contains(id)
-              ? null : () => _permanentDeleteFolder(id),
-          child: Text(l10n.homePermanentDelete,
-              style: TextStyle(color: Theme.of(context).colorScheme.error)),
+              ? null
+              : () => _permanentDeleteFolder(id),
+          child: Text(
+            l10n.homePermanentDelete,
+            style: TextStyle(color: Theme.of(context).colorScheme.error),
+          ),
         ),
       ],
     );
@@ -4090,10 +4457,14 @@ class _TrashTabState extends State<_TrashTab> {
         title: Text(l10n.homePermanentDeleteConfirmTitle),
         content: Text(l10n.homePermanentDeleteConfirmBody),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false),
-              child: Text(l10n.commonCancel)),
-          FilledButton(onPressed: () => Navigator.pop(ctx, true),
-              child: Text(l10n.commonDelete)),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(l10n.commonCancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(l10n.commonDelete),
+          ),
         ],
       ),
     );
@@ -4105,9 +4476,9 @@ class _TrashTabState extends State<_TrashTab> {
     } catch (error, stackTrace) {
       AppErrorReporter.record(error, stackTrace);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.homeTrashOperationFailed)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.homeTrashOperationFailed)));
       }
     } finally {
       if (mounted) setState(() => _pending.remove(entry.id));
@@ -4136,7 +4507,9 @@ class _TrashTabState extends State<_TrashTab> {
   }
 
   Widget _projectRow(
-    Project project, TrashEntryKind kind, AppLocalizations l10n,
+    Project project,
+    TrashEntryKind kind,
+    AppLocalizations l10n,
   ) {
     final deleted = context.read<ProjectService>().deletedAtOf(project.id);
     final meta = l10n.homeProjectMeta(project.fps, project.durationSeconds);
@@ -4150,77 +4523,106 @@ class _TrashTabState extends State<_TrashTab> {
       if (widget.onCopyEntry != null)
         TextButton(
           key: ValueKey('trashCopyProject_${project.id}'),
-          onPressed: () => widget.onCopyEntry!(HomeClipboardEntry(
-            source: HomePasteArea.trash,
-            id: project.id, name: project.name,
-            originalArea: project.isSharedImport
-                ? HomePasteArea.received : HomePasteArea.projects,
-          )),
+          onPressed: () => widget.onCopyEntry!(
+            HomeClipboardEntry(
+              source: HomePasteArea.trash,
+              id: project.id,
+              name: project.name,
+              originalArea: project.isSharedImport
+                  ? HomePasteArea.received
+                  : HomePasteArea.projects,
+            ),
+          ),
           child: const Text('コピー'),
         ),
       TextButton(
         key: ValueKey('trash-restore-${project.id}'),
         onPressed: _pending.contains(project.id)
-            ? null : () => _restoreProject(project.id),
-        child: Text(_restoring.contains(project.id)
-            ? l10n.homeTrashWorking : l10n.commonRestore),
+            ? null
+            : () => _restoreProject(project.id),
+        child: Text(
+          _restoring.contains(project.id)
+              ? l10n.homeTrashWorking
+              : l10n.commonRestore,
+        ),
       ),
       TextButton(
         key: ValueKey('trash-delete-${project.id}'),
         onPressed: _pending.contains(project.id)
-            ? null : () => _confirmPermanentDelete(project),
-        child: Text(l10n.homePermanentDelete,
-            style: TextStyle(color: Theme.of(context).colorScheme.error)),
+            ? null
+            : () => _confirmPermanentDelete(project),
+        child: Text(
+          l10n.homePermanentDelete,
+          style: TextStyle(color: Theme.of(context).colorScheme.error),
+        ),
       ),
     ];
     return _trashCard(
       selectionId: 'trash_project:${project.id}',
       leading: Container(
-        width: 48, height: 48,
+        width: 48,
+        height: 48,
         decoration: BoxDecoration(
           color: Color(project.backgroundColor),
           borderRadius: BorderRadius.circular(10),
         ),
       ),
-      title: project.name, subtitle: subtitle, actions: actions,
+      title: project.name,
+      subtitle: subtitle,
+      actions: actions,
     );
   }
 
   Widget _fileRow(
-    LocalTrashedFile entry, TrashEntryKind kind, AppLocalizations l10n,
+    LocalTrashedFile entry,
+    TrashEntryKind kind,
+    AppLocalizations l10n,
   ) {
     final actions = <Widget>[
       if (widget.onCopyEntry != null)
         TextButton(
           key: ValueKey('trashCopyLocal_${entry.id}'),
-          onPressed: () => widget.onCopyEntry!(HomeClipboardEntry(
-            source: HomePasteArea.trash, id: entry.id,
-            name: entry.fileName, isFolder: entry.isFolder,
-            originalArea: entry.kind == LocalTrashKind.outgoingShare
-                ? HomePasteArea.outgoing : HomePasteArea.works,
-          )),
+          onPressed: () => widget.onCopyEntry!(
+            HomeClipboardEntry(
+              source: HomePasteArea.trash,
+              id: entry.id,
+              name: entry.fileName,
+              isFolder: entry.isFolder,
+              originalArea: entry.kind == LocalTrashKind.outgoingShare
+                  ? HomePasteArea.outgoing
+                  : HomePasteArea.works,
+            ),
+          ),
           child: const Text('コピー'),
         ),
       TextButton(
         key: ValueKey('trash-restore-local-${entry.id}'),
         onPressed: _pending.contains(entry.id)
-            ? null : () => _restoreLocal(entry),
+            ? null
+            : () => _restoreLocal(entry),
         child: Text(l10n.commonRestore),
       ),
       TextButton(
         key: ValueKey('trash-delete-local-${entry.id}'),
         onPressed: _pending.contains(entry.id)
-            ? null : () => _deleteLocal(entry),
-        child: Text(l10n.homePermanentDelete,
-            style: TextStyle(color: Theme.of(context).colorScheme.error)),
+            ? null
+            : () => _deleteLocal(entry),
+        child: Text(
+          l10n.homePermanentDelete,
+          style: TextStyle(color: Theme.of(context).colorScheme.error),
+        ),
       ),
     ];
     return _trashCard(
       selectionId: 'trash_local:${entry.id}',
-      leading: Icon(entry.isFolder ? Icons.folder_delete_outlined
-          : kind == TrashEntryKind.createdShare
-              ? Icons.file_present_outlined : Icons.video_library_outlined,
-          size: 36),
+      leading: Icon(
+        entry.isFolder
+            ? Icons.folder_delete_outlined
+            : kind == TrashEntryKind.createdShare
+            ? Icons.file_present_outlined
+            : Icons.video_library_outlined,
+        size: 36,
+      ),
       title: entry.fileName,
       subtitle: [
         _trashKindLabel(context, kind),
@@ -4232,8 +4634,10 @@ class _TrashTabState extends State<_TrashTab> {
 
   Widget _trashCard({
     required String selectionId,
-    required Widget leading, required String title,
-    required String subtitle, required List<Widget> actions,
+    required Widget leading,
+    required String title,
+    required String subtitle,
+    required List<Widget> actions,
     Key? detailsKey,
   }) {
     final selection = HomeCollectionSelectionScope.maybeOf(context);
@@ -4242,54 +4646,62 @@ class _TrashTabState extends State<_TrashTab> {
       key: detailsKey,
       onTap: selecting ? () => selection!.onToggle(selectionId) : null,
       onLongPress: selection == null
-          ? null : () => selection.onLongPress(selectionId),
+          ? null
+          : () => selection.onLongPress(selectionId),
       leading: leading,
-      title: Text(title, style: const TextStyle(
-        fontFamily: 'Kuramubon',
-        fontFamilyFallback: kHeadingFontFallback,
-      )),
+      title: Text(
+        title,
+        style: const TextStyle(
+          fontFamily: 'Kuramubon',
+          fontFamilyFallback: kHeadingFontFallback,
+        ),
+      ),
       subtitle: Text(subtitle),
     );
     return HomeCollectionSelectionSurface(
       selectionId: selectionId,
       grid: false,
       child: LayoutBuilder(
-      builder: (context, constraints) {
-        final compact = constraints.maxWidth <
-            600 * MediaQuery.textScalerOf(context).scale(1);
-        return Card(
-          margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-          color: Theme.of(context).colorScheme.surfaceContainerLow,
-          child: compact
-              ? Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    details,
-                    if (!selecting) Padding(
-                      padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
-                      child: OverflowBar(
-                        alignment: MainAxisAlignment.end,
-                        spacing: 8, overflowSpacing: 4,
-                        children: actions,
-                      ),
-                    ),
-                  ],
-                )
-              : Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    details,
-                    if (!selecting) Align(
-                      alignment: Alignment.centerRight,
-                      child: Padding(
-                        padding: const EdgeInsets.only(right: 8, bottom: 4),
-                        child: Wrap(spacing: 8, children: actions),
-                      ),
-                    ),
-                  ],
-                ),
-        );
-      },
+        builder: (context, constraints) {
+          final compact =
+              constraints.maxWidth <
+              600 * MediaQuery.textScalerOf(context).scale(1);
+          return Card(
+            margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            color: Theme.of(context).colorScheme.surfaceContainerLow,
+            child: compact
+                ? Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      details,
+                      if (!selecting)
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
+                          child: OverflowBar(
+                            alignment: MainAxisAlignment.end,
+                            spacing: 8,
+                            overflowSpacing: 4,
+                            children: actions,
+                          ),
+                        ),
+                    ],
+                  )
+                : Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      details,
+                      if (!selecting)
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: Padding(
+                            padding: const EdgeInsets.only(right: 8, bottom: 4),
+                            child: Wrap(spacing: 8, children: actions),
+                          ),
+                        ),
+                    ],
+                  ),
+          );
+        },
       ),
     );
   }
@@ -4301,14 +4713,17 @@ class _TrashTabState extends State<_TrashTab> {
     return FutureBuilder<List<LocalTrashedFile>>(
       future: _localFiles,
       builder: (context, snapshot) {
-        final rows = <({
-          TrashEntryKind kind,
-          Project? project,
-          TrashedFolder? folder,
-          LocalTrashedFile? local,
-          DateTime deletedAt,
-          String name,
-        })>[];
+        final rows =
+            <
+              ({
+                TrashEntryKind kind,
+                Project? project,
+                TrashedFolder? folder,
+                LocalTrashedFile? local,
+                DateTime deletedAt,
+                String name,
+              })
+            >[];
         for (final project in service.trash) {
           // Folder contents are represented by their parent folder row.
           if (service.trashedFolderOf(project.id) != null) continue;
@@ -4317,48 +4732,71 @@ class _TrashTabState extends State<_TrashTab> {
               : TrashEntryKind.createdProject;
           if (!widget.selectedKinds.contains(kind)) continue;
           rows.add((
-            kind: kind, project: project, folder: null, local: null,
-            deletedAt: service.deletedAtOf(project.id)
-                ?? DateTime.fromMillisecondsSinceEpoch(0),
+            kind: kind,
+            project: project,
+            folder: null,
+            local: null,
+            deletedAt:
+                service.deletedAtOf(project.id) ??
+                DateTime.fromMillisecondsSinceEpoch(0),
             name: project.name,
           ));
         }
         for (final folder in service.trashedFolders) {
           final kind = folder.isShared
-              ? TrashEntryKind.receivedShare : TrashEntryKind.createdProject;
+              ? TrashEntryKind.receivedShare
+              : TrashEntryKind.createdProject;
           if (!widget.selectedKinds.contains(kind)) continue;
           rows.add((
             kind: kind,
-            project: null, folder: folder, local: null,
-            deletedAt: folder.deletedAt, name: folder.folder.name,
+            project: null,
+            folder: folder,
+            local: null,
+            deletedAt: folder.deletedAt,
+            name: folder.folder.name,
           ));
         }
         for (final local in snapshot.data ?? <LocalTrashedFile>[]) {
           final kind = local.kind == LocalTrashKind.outgoingShare
-              ? TrashEntryKind.createdShare : TrashEntryKind.exportedWork;
+              ? TrashEntryKind.createdShare
+              : TrashEntryKind.exportedWork;
           if (!widget.selectedKinds.contains(kind)) continue;
           rows.add((
-            kind: kind, project: null, folder: null, local: local,
-            deletedAt: local.deletedAt, name: local.fileName,
+            kind: kind,
+            project: null,
+            folder: null,
+            local: local,
+            deletedAt: local.deletedAt,
+            name: local.fileName,
           ));
         }
         final query = widget.searchQuery.trim().toLowerCase();
         if (query.isNotEmpty) {
-          rows.removeWhere((row) =>
-              !row.name.toLowerCase().contains(query) &&
-              !_trashKindLabel(context, row.kind).toLowerCase().contains(query));
+          rows.removeWhere(
+            (row) =>
+                !row.name.toLowerCase().contains(query) &&
+                !_trashKindLabel(
+                  context,
+                  row.kind,
+                ).toLowerCase().contains(query),
+          );
         }
-        rows.sort((a, b) => switch (widget.sortMode) {
-          ProjectSortMode.nameAsc => a.name.compareTo(b.name),
-          ProjectSortMode.nameDesc => b.name.compareTo(a.name),
-          ProjectSortMode.updatedAsc => a.deletedAt.compareTo(b.deletedAt),
-          ProjectSortMode.updatedDesc => b.deletedAt.compareTo(a.deletedAt),
-        });
+        rows.sort(
+          (a, b) => switch (widget.sortMode) {
+            ProjectSortMode.nameAsc => a.name.compareTo(b.name),
+            ProjectSortMode.nameDesc => b.name.compareTo(a.name),
+            ProjectSortMode.updatedAsc => a.deletedAt.compareTo(b.deletedAt),
+            ProjectSortMode.updatedDesc => b.deletedAt.compareTo(a.deletedAt),
+          },
+        );
         HomeCollectionSelectionScope.maybeOf(context)?.onVisibleIds({
           for (final row in rows)
-            if (row.project != null) 'trash_project:${row.project!.id}'
-            else if (row.folder != null) 'trash_folder:${row.folder!.folder.id}'
-            else 'trash_local:${row.local!.id}',
+            if (row.project != null)
+              'trash_project:${row.project!.id}'
+            else if (row.folder != null)
+              'trash_folder:${row.folder!.folder.id}'
+            else
+              'trash_local:${row.local!.id}',
         });
         // ゴミ箱の作品は保存先から読む。読めなかったときは知らせを先頭に
         // 出し、「ゴミ箱は空です」とは言わない（作品が消えたように見える）。
@@ -4371,7 +4809,8 @@ class _TrashTabState extends State<_TrashTab> {
         }
         if (rows.isEmpty && !loadFailed) {
           return EmptyStatePlaceholder(
-            icon: Icons.delete_outline, title: l10n.homeTrashEmpty,
+            icon: Icons.delete_outline,
+            title: l10n.homeTrashEmpty,
           );
         }
         return ListView.builder(
@@ -4400,7 +4839,6 @@ class _TrashTabState extends State<_TrashTab> {
   }
 }
 
-
 /// Reuse the Projects collection's four sort modes for exported media.
 /// The source files are never renamed or modified by a view preference.
 List<File> _sortExportedFiles(List<File> files, ProjectSortMode mode) {
@@ -4419,6 +4857,7 @@ List<File> _sortExportedFiles(List<File> files, ProjectSortMode mode) {
         return b.lastModifiedSync().compareTo(a.lastModifiedSync());
     }
   }
+
   sorted.sort((a, b) {
     final order = compare(a, b);
     return order == 0 ? a.path.compareTo(b.path) : order;
@@ -4429,14 +4868,18 @@ List<File> _sortExportedFiles(List<File> files, ProjectSortMode mode) {
 /// Sort the exported-work folders within their folder section as well.
 /// WorkFolderService has creation dates (no separate update timestamp).
 List<ProjectFolder> _sortWorkFolders(
-    List<ProjectFolder> folders, ProjectSortMode mode) {
+  List<ProjectFolder> folders,
+  ProjectSortMode mode,
+) {
   final sorted = List<ProjectFolder>.of(folders);
   sorted.sort((a, b) {
     final order = switch (mode) {
-      ProjectSortMode.nameAsc =>
-        a.name.toLowerCase().compareTo(b.name.toLowerCase()),
-      ProjectSortMode.nameDesc =>
-        b.name.toLowerCase().compareTo(a.name.toLowerCase()),
+      ProjectSortMode.nameAsc => a.name.toLowerCase().compareTo(
+        b.name.toLowerCase(),
+      ),
+      ProjectSortMode.nameDesc => b.name.toLowerCase().compareTo(
+        a.name.toLowerCase(),
+      ),
       ProjectSortMode.updatedAsc => a.createdAt.compareTo(b.createdAt),
       ProjectSortMode.updatedDesc => b.createdAt.compareTo(a.createdAt),
     };
@@ -4447,7 +4890,9 @@ List<ProjectFolder> _sortWorkFolders(
 
 /// Reuse the exact Projects 16:12 grid and minimum caption allowance.
 SliverGridDelegate _worksGridDelegate(
-    BuildContext context, ProjectViewMode mode) {
+  BuildContext context,
+  ProjectViewMode mode,
+) {
   final extent = switch (mode) {
     ProjectViewMode.small => 130.0,
     ProjectViewMode.medium => 170.0,
@@ -4485,11 +4930,12 @@ class _WorksTabState extends State<_WorksTab> {
     try {
       final prefs = await SharedPreferences.getInstance();
       final stored = prefs.getStringList(_favoritePathsKey) ?? const <String>[];
-      if (mounted) setState(() {
-        _favoritePaths
-          ..clear()
-          ..addAll(stored);
-      });
+      if (mounted)
+        setState(() {
+          _favoritePaths
+            ..clear()
+            ..addAll(stored);
+        });
     } catch (error) {
       debugPrint('Works favorites could not be loaded: $error');
     }
@@ -4501,7 +4947,10 @@ class _WorksTabState extends State<_WorksTab> {
     });
     try {
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setStringList(_favoritePathsKey, _favoritePaths.toList()..sort());
+      await prefs.setStringList(
+        _favoritePathsKey,
+        _favoritePaths.toList()..sort(),
+      );
     } catch (error) {
       debugPrint('Works favorites could not be saved: $error');
     }
@@ -4518,7 +4967,8 @@ class _WorksTabState extends State<_WorksTab> {
     _sortMode = byName
         ? (_sortAscending ? ProjectSortMode.nameAsc : ProjectSortMode.nameDesc)
         : (_sortAscending
-            ? ProjectSortMode.updatedAsc : ProjectSortMode.updatedDesc);
+              ? ProjectSortMode.updatedAsc
+              : ProjectSortMode.updatedDesc);
   });
   void _toggleSortDirection() => setState(() {
     _sortMode = switch (_sortMode) {
@@ -4572,23 +5022,40 @@ class _WorksTabState extends State<_WorksTab> {
         }
         final query = widget.searchQuery.trim().toLowerCase();
         final files = _sortExportedFiles(
-          snapshot.data!.where((file) =>
-              (!_showFavoritesOnly || _favoritePaths.contains(file.path)) &&
-              (query.isEmpty ||
-                  file.uri.pathSegments.last.toLowerCase().contains(query))
-          ).toList(),
+          snapshot.data!
+              .where(
+                (file) =>
+                    (!_showFavoritesOnly ||
+                        _favoritePaths.contains(file.path)) &&
+                    (query.isEmpty ||
+                        file.uri.pathSegments.last.toLowerCase().contains(
+                          query,
+                        )),
+              )
+              .toList(),
           _sortMode,
         );
         final workFolders = context.watch<WorkFolderService>();
         final folders = _sortWorkFolders(
-          workFolders.folders.where((folder) =>
-              (!_showFavoritesOnly || folder.isFavorite || files.any((f) =>
-                  workFolders.folderIdOf(f.uri.pathSegments.last) == folder.id)) &&
-              (query.isEmpty ||
-                  folder.name.toLowerCase().contains(query) ||
-                  files.any((f) => workFolders.folderIdOf(
-                      f.uri.pathSegments.last) == folder.id))
-          ).toList(),
+          workFolders.folders
+              .where(
+                (folder) =>
+                    (!_showFavoritesOnly ||
+                        folder.isFavorite ||
+                        files.any(
+                          (f) =>
+                              workFolders.folderIdOf(f.uri.pathSegments.last) ==
+                              folder.id,
+                        )) &&
+                    (query.isEmpty ||
+                        folder.name.toLowerCase().contains(query) ||
+                        files.any(
+                          (f) =>
+                              workFolders.folderIdOf(f.uri.pathSegments.last) ==
+                              folder.id,
+                        )),
+              )
+              .toList(),
           _sortMode,
         );
         HomeCollectionSelectionScope.maybeOf(context)?.onVisibleIds({
@@ -4605,12 +5072,15 @@ class _WorksTabState extends State<_WorksTab> {
               isFavorite: _favoritePaths.contains(file.path),
               onToggleFavorite: () => _toggleFavorite(file.path),
               onDeleted: _reload,
-              onCopy: widget.onCopyEntry == null ? null : () =>
-                  widget.onCopyEntry!(HomeClipboardEntry(
-                    source: HomePasteArea.works,
-                    id: file.path,
-                    name: file.uri.pathSegments.last,
-                  )),
+              onCopy: widget.onCopyEntry == null
+                  ? null
+                  : () => widget.onCopyEntry!(
+                      HomeClipboardEntry(
+                        source: HomePasteArea.works,
+                        id: file.path,
+                        name: file.uri.pathSegments.last,
+                      ),
+                    ),
             );
         return RefreshIndicator(
           onRefresh: _reload,
@@ -4625,15 +5095,15 @@ class _WorksTabState extends State<_WorksTab> {
                     fontFamily: 'Kuramubon',
                     fontFamilyFallback: kHeadingFontFallback,
                     color: _showFavoritesOnly
-                        ? Theme.of(context).colorScheme.onPrimary : null,
+                        ? Theme.of(context).colorScheme.onPrimary
+                        : null,
                   ),
                 ),
                 selectedColor: Theme.of(context).colorScheme.primary,
                 checkmarkColor: Theme.of(context).colorScheme.onPrimary,
                 selected: _showFavoritesOnly,
-                onSelected: (value) => setState(
-                  () => _showFavoritesOnly = value,
-                ),
+                onSelected: (value) =>
+                    setState(() => _showFavoritesOnly = value),
               ),
               sortByName: _sortByName,
               sortAscending: _sortAscending,
@@ -4663,10 +5133,14 @@ class _WorksTabState extends State<_WorksTab> {
                       viewMode: widget.viewMode,
                       initialSortMode: _sortMode,
                       searchQuery: folderName.toLowerCase().contains(query)
-                          ? '' : widget.searchQuery,
-                      favoritesOnly: _showFavoritesOnly &&
-                          !workFolders.folders.any((folder) =>
-                              folder.id == folderId && folder.isFavorite),
+                          ? ''
+                          : widget.searchQuery,
+                      favoritesOnly:
+                          _showFavoritesOnly &&
+                          !workFolders.folders.any(
+                            (folder) =>
+                                folder.id == folderId && folder.isFavorite,
+                          ),
                       favoritePaths: _favoritePaths,
                       onToggleFavorite: _toggleFavorite,
                       onViewModeChanged: widget.onViewModeChanged,
@@ -4679,13 +5153,24 @@ class _WorksTabState extends State<_WorksTab> {
                 workFolders.toggleFolderFavorite(folder.id),
             onRenameFolder: (id, name) => workFolders.renameFolder(id, name),
             onDeleteFolder: (id) async {
-              final folder = workFolders.folders.where((f) => f.id == id).firstOrNull;
+              final folder = workFolders.folders
+                  .where((f) => f.id == id)
+                  .firstOrNull;
               if (folder == null) return;
-              final exports = await ExportEngine.listExportedFiles(forceRefresh: true);
-              final members = exports.where((file) =>
-                  workFolders.folderIdOf(file.uri.pathSegments.last) == id).toList();
+              final exports = await ExportEngine.listExportedFiles(
+                forceRefresh: true,
+              );
+              final members = exports
+                  .where(
+                    (file) =>
+                        workFolders.folderIdOf(file.uri.pathSegments.last) ==
+                        id,
+                  )
+                  .toList();
               await LocalFileTrashService.moveWorkFolder(
-                folderName: folder.name, files: members);
+                folderName: folder.name,
+                files: members,
+              );
               await workFolders.deleteFolder(id);
               StorageInfoService().invalidate();
             },
@@ -4696,13 +5181,16 @@ class _WorksTabState extends State<_WorksTab> {
                   sourceId: sourceId,
                   imagePath: imagePath,
                 ),
-            onCopyFolder: widget.onCopyEntry == null ? null : (folder) =>
-                widget.onCopyEntry!(HomeClipboardEntry(
-                  source: HomePasteArea.works,
-                  id: folder.id,
-                  name: folder.name,
-                  isFolder: true,
-                )),
+            onCopyFolder: widget.onCopyEntry == null
+                ? null
+                : (folder) => widget.onCopyEntry!(
+                    HomeClipboardEntry(
+                      source: HomePasteArea.works,
+                      id: folder.id,
+                      name: folder.name,
+                      isFolder: true,
+                    ),
+                  ),
             reserveForFloatingActions: true,
             itemBuilder: (context, file) => buildWork(context, file, false),
           ),
@@ -4800,7 +5288,8 @@ class _WorksFolderScreenState extends State<_WorksFolderScreen> {
     _sortMode = byName
         ? (_sortAscending ? ProjectSortMode.nameAsc : ProjectSortMode.nameDesc)
         : (_sortAscending
-            ? ProjectSortMode.updatedAsc : ProjectSortMode.updatedDesc);
+              ? ProjectSortMode.updatedAsc
+              : ProjectSortMode.updatedDesc);
   });
   void _toggleSortDirection() => setState(() {
     _sortMode = switch (_sortMode) {
@@ -4842,14 +5331,22 @@ class _WorksFolderScreenState extends State<_WorksFolderScreen> {
             tooltip: l10n.homeViewModeTooltip,
             onSelected: _selectViewMode,
             itemBuilder: (_) => [
-              PopupMenuItem(value: ProjectViewMode.large,
-                  child: Text(l10n.homeViewModeLarge)),
-              PopupMenuItem(value: ProjectViewMode.medium,
-                  child: Text(l10n.homeViewModeMedium)),
-              PopupMenuItem(value: ProjectViewMode.small,
-                  child: Text(l10n.homeViewModeSmall)),
-              PopupMenuItem(value: ProjectViewMode.detail,
-                  child: Text(l10n.homeViewModeDetail)),
+              PopupMenuItem(
+                value: ProjectViewMode.large,
+                child: Text(l10n.homeViewModeLarge),
+              ),
+              PopupMenuItem(
+                value: ProjectViewMode.medium,
+                child: Text(l10n.homeViewModeMedium),
+              ),
+              PopupMenuItem(
+                value: ProjectViewMode.small,
+                child: Text(l10n.homeViewModeSmall),
+              ),
+              PopupMenuItem(
+                value: ProjectViewMode.detail,
+                child: Text(l10n.homeViewModeDetail),
+              ),
             ],
           ),
         ],
@@ -4875,16 +5372,21 @@ class _WorksFolderScreenState extends State<_WorksFolderScreen> {
                   return const Center(child: CircularProgressIndicator());
                 }
                 final items = _sortExportedFiles(
-                  snapshot.data!.where((f) =>
-                      workFolders.folderIdOf(
-                        f.path.split(RegExp(r'[\\/]')).last,
-                      ) == widget.folderId &&
-                      (!widget.favoritesOnly ||
-                          widget.favoritePaths.contains(f.path)) &&
-                      (widget.searchQuery.trim().isEmpty ||
-                          f.uri.pathSegments.last.toLowerCase().contains(
-                              widget.searchQuery.trim().toLowerCase()))
-                  ).toList(),
+                  snapshot.data!
+                      .where(
+                        (f) =>
+                            workFolders.folderIdOf(
+                                  f.path.split(RegExp(r'[\\/]')).last,
+                                ) ==
+                                widget.folderId &&
+                            (!widget.favoritesOnly ||
+                                widget.favoritePaths.contains(f.path)) &&
+                            (widget.searchQuery.trim().isEmpty ||
+                                f.uri.pathSegments.last.toLowerCase().contains(
+                                  widget.searchQuery.trim().toLowerCase(),
+                                )),
+                      )
+                      .toList(),
                   _sortMode,
                 );
                 if (items.isEmpty) {
@@ -4901,23 +5403,26 @@ class _WorksFolderScreenState extends State<_WorksFolderScreen> {
                     gridTile: grid,
                     isFavorite: widget.favoritePaths.contains(file.path),
                     onToggleFavorite: () => widget.onToggleFavorite(file.path),
-                    onCopy: widget.onCopyEntry == null ? null : () =>
-                        widget.onCopyEntry!(HomeClipboardEntry(
-                          source: HomePasteArea.works,
-                          id: file.path,
-                          name: file.uri.pathSegments.last,
-                        )),
+                    onCopy: widget.onCopyEntry == null
+                        ? null
+                        : () => widget.onCopyEntry!(
+                            HomeClipboardEntry(
+                              source: HomePasteArea.works,
+                              id: file.path,
+                              name: file.uri.pathSegments.last,
+                            ),
+                          ),
                     onDeleted: _reload,
                   );
                 }
+
                 if (_viewMode != ProjectViewMode.detail) {
                   return GridView.builder(
                     key: ValueKey(('works-folder-grid', _viewMode)),
                     padding: const EdgeInsets.all(8),
                     gridDelegate: _worksGridDelegate(context, _viewMode),
                     itemCount: items.length,
-                    itemBuilder: (context, index) =>
-                        item(context, index, true),
+                    itemBuilder: (context, index) => item(context, index, true),
                   );
                 }
                 return ListView.builder(
@@ -4976,9 +5481,10 @@ class _WorkListItemState extends State<_WorkListItem> {
   }
 
   void _refreshCover() {
-    if (mounted) setState(() {
-      _coverSetting = ExportedWorkCoverStore.ensureCached(widget.file);
-    });
+    if (mounted)
+      setState(() {
+        _coverSetting = ExportedWorkCoverStore.ensureCached(widget.file);
+      });
   }
 
   Future<void> _share() async {
@@ -4997,9 +5503,14 @@ class _WorkListItemState extends State<_WorkListItem> {
     }
   }
 
-  bool isOriginalImageFile(File f) =>
-      const {'png', 'jpg', 'jpeg', 'gif', 'bmp', 'webp'}
-          .contains(f.path.split('.').last.toLowerCase());
+  bool isOriginalImageFile(File f) => const {
+    'png',
+    'jpg',
+    'jpeg',
+    'gif',
+    'bmp',
+    'webp',
+  }.contains(f.path.split('.').last.toLowerCase());
 
   String get _extension => file.path.split('.').last.toLowerCase();
 
@@ -5039,38 +5550,46 @@ class _WorkListItemState extends State<_WorkListItem> {
         final setting = cover.data ?? const <String, dynamic>{};
         final path = setting['imagePath'];
         return ExportedWorkCard(
-      gridTile: widget.gridTile,
-      selectionId: 'work_file:${file.path}',
-      isFavorite: widget.isFavorite,
-      onToggleFavorite: widget.onToggleFavorite,
-      thumbnailPath: path is String && path.isNotEmpty ? path : null,
-      // Avoid decoding the original video twice while its compact cover
-      // is generated in the queued cache service.
-      originalMediaPath: const {'mp4', 'm4v', 'mov', 'webm', 'mkv', 'avi', '3gp'}
-              .contains(file.path.split('.').last.toLowerCase())
-          ? null
-          : file.path,
-      thumbnailHidden: setting['mode'] == 'none',
-      onChangeThumbnail: () => showExportedWorkThumbnailDialog(
-        context,
-        file: file,
-        onApplied: _refreshCover,
-      ),
-      name: file.path.split(RegExp(r'[\\/]')).last,
-      metadata: '${_formatDate(stat.modified)} ・ ${_formatSize(stat.size)}',
-      icon: _icon,
-      moveLabel: l10n.folderMoveToTitle,
-      shareLabel: l10n.homeShareOpenWith,
-      deleteLabel: l10n.homeMoveToTrash,
-      onOpen: _sharing ? null : () => _openPreview(context),
-      onMove: () => _showMoveToFolderSheet(context),
-      onCopy: widget.onCopy,
-      onShare: _sharing ? null : _share,
-      onDelete: _sharing ? null : () => _confirmDelete(context),
-      shareBusy: _sharing,
-      shareError: _shareError == null
-          ? null
-          : exportShareFailureText(l10n, _shareError!),
+          gridTile: widget.gridTile,
+          selectionId: 'work_file:${file.path}',
+          isFavorite: widget.isFavorite,
+          onToggleFavorite: widget.onToggleFavorite,
+          thumbnailPath: path is String && path.isNotEmpty ? path : null,
+          // Avoid decoding the original video twice while its compact cover
+          // is generated in the queued cache service.
+          originalMediaPath:
+              const {
+                'mp4',
+                'm4v',
+                'mov',
+                'webm',
+                'mkv',
+                'avi',
+                '3gp',
+              }.contains(file.path.split('.').last.toLowerCase())
+              ? null
+              : file.path,
+          thumbnailHidden: setting['mode'] == 'none',
+          onChangeThumbnail: () => showExportedWorkThumbnailDialog(
+            context,
+            file: file,
+            onApplied: _refreshCover,
+          ),
+          name: file.path.split(RegExp(r'[\\/]')).last,
+          metadata: '${_formatDate(stat.modified)} ・ ${_formatSize(stat.size)}',
+          icon: _icon,
+          moveLabel: l10n.folderMoveToTitle,
+          shareLabel: l10n.homeShareOpenWith,
+          deleteLabel: l10n.homeMoveToTrash,
+          onOpen: _sharing ? null : () => _openPreview(context),
+          onMove: () => _showMoveToFolderSheet(context),
+          onCopy: widget.onCopy,
+          onShare: _sharing ? null : _share,
+          onDelete: _sharing ? null : () => _confirmDelete(context),
+          shareBusy: _sharing,
+          shareError: _shareError == null
+              ? null
+              : exportShareFailureText(l10n, _shareError!),
         );
       },
     );
@@ -5121,7 +5640,8 @@ class _WorkListItemState extends State<_WorkListItem> {
             onPressed: () async {
               try {
                 await LocalFileTrashService.move(
-                  file, LocalTrashKind.exportedWork,
+                  file,
+                  LocalTrashKind.exportedWork,
                 );
                 StorageInfoService().invalidate();
                 if (!ctx.mounted) return;

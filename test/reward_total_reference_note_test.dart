@@ -205,27 +205,13 @@ void main() {
           tester.getTopLeft(note).dy,
           greaterThanOrEqualTo(tester.getBottomLeft(total).dy),
         );
-        final noteStyle =
-            (tester.renderObject(
-                      find.descendant(
-                        of: note,
-                        matching: find.byType(RichText),
-                      ),
-                    )
-                    as RenderParagraph)
-                .text
-                .style!;
+        final noteStyle = (tester.renderObject(
+          find.descendant(of: note, matching: find.byType(RichText)),
+        ) as RenderParagraph).text.style!;
         expect(noteStyle.fontFamily, 'HakkouMincho', reason: '$name: 注記の書体');
-        final headlineStyle =
-            (tester.renderObject(
-                      find.descendant(
-                        of: total,
-                        matching: find.byType(RichText),
-                      ),
-                    )
-                    as RenderParagraph)
-                .text
-                .style!;
+        final headlineStyle = (tester.renderObject(
+          find.descendant(of: total, matching: find.byType(RichText)),
+        ) as RenderParagraph).text.style!;
         expect(headlineStyle.fontFamily, 'Kuramubon', reason: '$name: 合計の書体');
 
         // 合計のカードの文はどれも単語の途中で切れない。

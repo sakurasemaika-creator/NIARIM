@@ -235,7 +235,6 @@ class _HomeDrawerState extends State<HomeDrawer> {
                 context.push('/storage');
               },
             ),
-
           ],
         ),
       ),

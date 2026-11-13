@@ -183,9 +183,8 @@ void main() {
   });
 
   test('特典交換の画面は数と単位をコードでつながない', () {
-    final source = File(
-      'lib/screens/rewards/reward_unlock_screen.dart',
-    ).readAsStringSync();
+    final source = File('lib/screens/rewards/reward_unlock_screen.dart')
+        .readAsStringSync();
     expect(source, isNot(contains(r"'${value.amount}$unit'")));
     expect(source, isNot(contains(r"1 ${t['month']}")));
     expect(source, isNot(contains('_durationText')));

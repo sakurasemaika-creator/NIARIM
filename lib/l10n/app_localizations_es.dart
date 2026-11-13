@@ -1,5 +1,6 @@
 // ignore: unused_import
 import 'package:intl/intl.dart' as intl;
+
 import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
@@ -8932,9 +8933,8 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String rewardNavigationMembershipExpiresAt(DateTime expiry) {
-    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(
-      localeName,
-    ).add_jm();
+    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(localeName)
+        .add_jm();
     final String expiryString = expiryDateFormat.format(expiry);
 
     return 'Válido hasta el $expiryString';
@@ -8942,9 +8942,8 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String rewardNavigationMembershipCoinExpiresAt(DateTime expiry) {
-    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(
-      localeName,
-    ).add_jm();
+    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(localeName)
+        .add_jm();
     final String expiryString = expiryDateFormat.format(expiry);
 
     return 'Desbloqueado con monedas · Válido hasta el $expiryString';
@@ -9930,9 +9929,8 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String rewardUnlockRedeemExtendNotice(DateTime expiry) {
-    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(
-      localeName,
-    ).add_jm();
+    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(localeName)
+        .add_jm();
     final String expiryString = expiryDateFormat.format(expiry);
 
     return 'Ya usas las ventajas Premium. Al canjear, se prevé ampliarlas hasta el $expiryString. ¿Continuar?';
@@ -9940,9 +9938,8 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String rewardUnlockRedeemExpiryNotice(DateTime expiry) {
-    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(
-      localeName,
-    ).add_jm();
+    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(localeName)
+        .add_jm();
     final String expiryString = expiryDateFormat.format(expiry);
 
     return 'Vigencia tras el canje (estimada): $expiryString';
@@ -9950,9 +9947,8 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String rewardUnlockReviewPlayPremiumUntil(DateTime expiry) {
-    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(
-      localeName,
-    ).add_jm();
+    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(localeName)
+        .add_jm();
     final String expiryString = expiryDateFormat.format(expiry);
 
     return 'Eres miembro Premium (hasta el $expiryString).';
@@ -9964,9 +9960,8 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String rewardUnlockReviewCoinPremiumUntil(DateTime expiry) {
-    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(
-      localeName,
-    ).add_jm();
+    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(localeName)
+        .add_jm();
     final String expiryString = expiryDateFormat.format(expiry);
 
     return 'Estás usando las ventajas Premium (hasta el $expiryString).';
@@ -9984,9 +9979,8 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String rewardUnlockReviewItem(String benefit, DateTime expiry) {
-    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(
-      localeName,
-    ).add_jm();
+    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(localeName)
+        .add_jm();
     final String expiryString = expiryDateFormat.format(expiry);
 
     return '$benefit: nueva vigencia estimada hasta el $expiryString';
@@ -9994,9 +9988,8 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String rewardUnlockReviewItemOverlap(String benefit, DateTime expiry) {
-    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(
-      localeName,
-    ).add_jm();
+    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(localeName)
+        .add_jm();
     final String expiryString = expiryDateFormat.format(expiry);
 
     return '$benefit: se solapa con una ventaja activa o incluida en un paquete. Nueva vigencia estimada hasta el $expiryString';

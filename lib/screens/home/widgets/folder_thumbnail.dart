@@ -139,9 +139,7 @@ String? projectFolderEffectiveCover(
           if (subFolders.isEmpty) {
             return (path: null, updatedAt: date);
           }
-          subFolders.sort(
-            (a, b) => b.updatedAt.compareTo(a.updatedAt),
-          );
+          subFolders.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
           return (path: subFolders.first.path, updatedAt: date);
       }
     } finally {
@@ -268,10 +266,9 @@ class FolderCoverMedia extends StatelessWidget {
     if (!_isVideo(path)) return _image(path);
     return FutureBuilder<String?>(
       future: _videoFuture(path),
-      builder: (context, snapshot) =>
-          snapshot.data == null
-              ? const SizedBox.shrink()
-              : _image(snapshot.data!),
+      builder: (context, snapshot) => snapshot.data == null
+          ? const SizedBox.shrink()
+          : _image(snapshot.data!),
     );
   }
 }
@@ -287,6 +284,7 @@ class FolderThumbnail extends StatelessWidget {
   });
   final ProjectFolder folder;
   final List<FolderThumbnailChoice> choices;
+
   /// Pre-resolved nested-folder fallback for the project collection.
   final String? defaultImagePath;
 
@@ -309,9 +307,7 @@ class FolderThumbnail extends StatelessWidget {
           clipBehavior: Clip.hardEdge,
           children: [
             Positioned.fill(
-              child: ColoredBox(
-                color: color.withValues(alpha: 0.10),
-              ),
+              child: ColoredBox(color: color.withValues(alpha: 0.10)),
             ),
             Positioned(
               left: left,
@@ -393,12 +389,13 @@ Future<void> showFolderThumbnailDialog(
   bool saving = false;
   String? failure;
   // Most recently updated first, stable by title and id for equal timestamps.
-  final sortedChoices = [...choices]..sort((a, b) {
-    final updated = b.updatedAt.compareTo(a.updatedAt);
-    if (updated != 0) return updated;
-    final name = a.name.compareTo(b.name);
-    return name != 0 ? name : a.id.compareTo(b.id);
-  });
+  final sortedChoices = [...choices]
+    ..sort((a, b) {
+      final updated = b.updatedAt.compareTo(a.updatedAt);
+      if (updated != 0) return updated;
+      final name = a.name.compareTo(b.name);
+      return name != 0 ? name : a.id.compareTo(b.id);
+    });
 
   await showDialog<void>(
     context: context,
@@ -473,8 +470,9 @@ Future<void> showFolderThumbnailDialog(
                             height: 262,
                             child: LayoutBuilder(
                               builder: (context, gridBounds) {
-                                final columns =
-                                    gridBounds.maxWidth >= 390 ? 3 : 2;
+                                final columns = gridBounds.maxWidth >= 390
+                                    ? 3
+                                    : 2;
                                 return GridView.builder(
                                   key: const Key('folderCoverWorkGrid'),
                                   primary: false,
@@ -482,11 +480,11 @@ Future<void> showFolderThumbnailDialog(
                                   padding: const EdgeInsets.only(bottom: 4),
                                   gridDelegate:
                                       SliverGridDelegateWithFixedCrossAxisCount(
-                                    crossAxisCount: columns,
-                                    mainAxisSpacing: 8,
-                                    crossAxisSpacing: 8,
-                                    mainAxisExtent: 140,
-                                  ),
+                                        crossAxisCount: columns,
+                                        mainAxisSpacing: 8,
+                                        crossAxisSpacing: 8,
+                                        mainAxisExtent: 140,
+                                      ),
                                   itemCount: sortedChoices.length,
                                   itemBuilder: (context, index) {
                                     final choice = sortedChoices[index];
@@ -508,8 +506,8 @@ Future<void> showFolderThumbnailDialog(
                                         onTap: saving
                                             ? null
                                             : () => setState(
-                                                  () => selectedId = choice.id,
-                                                ),
+                                                () => selectedId = choice.id,
+                                              ),
                                         child: Container(
                                           decoration: BoxDecoration(
                                             border: Border.all(
@@ -518,8 +516,9 @@ Future<void> showFolderThumbnailDialog(
                                                   : scheme.outlineVariant,
                                               width: selected ? 2 : 1,
                                             ),
-                                            borderRadius:
-                                                BorderRadius.circular(10),
+                                            borderRadius: BorderRadius.circular(
+                                              10,
+                                            ),
                                           ),
                                           child: Column(
                                             crossAxisAlignment:
@@ -529,7 +528,8 @@ Future<void> showFolderThumbnailDialog(
                                                 child: Stack(
                                                   fit: StackFit.expand,
                                                   children: [
-                                                    if (choice.imagePath != null)
+                                                    if (choice.imagePath !=
+                                                        null)
                                                       FolderCoverMedia(
                                                         path: choice.imagePath!,
                                                         cacheWidth: 220,
@@ -555,8 +555,9 @@ Future<void> showFolderThumbnailDialog(
                                                 ),
                                               ),
                                               Padding(
-                                                padding:
-                                                    const EdgeInsets.all(6),
+                                                padding: const EdgeInsets.all(
+                                                  6,
+                                                ),
                                                 child: Text(
                                                   choice.name,
                                                   maxLines: 2,
@@ -592,24 +593,42 @@ Future<void> showFolderThumbnailDialog(
                               ? null
                               : () async {
                                   try {
-                                    final result = await FilePicker.platform.pickFiles(
-                                      type: FileType.image,
-                                      withData: true,
-                                    );
-                                    if (result == null || result.files.isEmpty) return;
+                                    final result = await FilePicker.platform
+                                        .pickFiles(
+                                          type: FileType.image,
+                                          withData: true,
+                                        );
+                                    if (result == null || result.files.isEmpty)
+                                      return;
                                     final picked = result.files.first;
-                                    final bytes = picked.bytes ??
+                                    final bytes =
+                                        picked.bytes ??
                                         (picked.path != null
-                                            ? await File(picked.path!).readAsBytes()
+                                            ? await File(picked.path!)
+                                                  .readAsBytes()
                                             : null);
-                                    if (bytes == null || bytes.isEmpty ||
-                                        bytes.lengthInBytes > 10 * 1024 * 1024) {
-                                      throw const FormatException('Invalid image size');
+                                    if (bytes == null ||
+                                        bytes.isEmpty ||
+                                        bytes.lengthInBytes >
+                                            10 * 1024 * 1024) {
+                                      throw const FormatException(
+                                        'Invalid image size',
+                                      );
                                     }
-                                    final ext = picked.extension?.toLowerCase() ?? 'png';
-                                    if (!const {'png', 'jpg', 'jpeg', 'webp', 'gif', 'bmp'}
-                                        .contains(ext)) {
-                                      throw const FormatException('Unsupported image');
+                                    final ext =
+                                        picked.extension?.toLowerCase() ??
+                                        'png';
+                                    if (!const {
+                                      'png',
+                                      'jpg',
+                                      'jpeg',
+                                      'webp',
+                                      'gif',
+                                      'bmp',
+                                    }.contains(ext)) {
+                                      throw const FormatException(
+                                        'Unsupported image',
+                                      );
                                     }
                                     setState(() {
                                       pickedBytes = bytes;
@@ -619,8 +638,12 @@ Future<void> showFolderThumbnailDialog(
                                     });
                                   } catch (_) {
                                     if (ctx.mounted) {
-                                      setState(() => failure =
-                                          _folderCoverText(ctx, 'error'));
+                                      setState(
+                                        () => failure = _folderCoverText(
+                                          ctx,
+                                          'error',
+                                        ),
+                                      );
                                     }
                                   }
                                 },
@@ -628,7 +651,11 @@ Future<void> showFolderThumbnailDialog(
                           label: Text(_folderCoverText(ctx, 'load')),
                         ),
                         if (pickedName != null) ...[
-                          Text(pickedName!, maxLines: 1, overflow: TextOverflow.ellipsis),
+                          Text(
+                            pickedName!,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ] else if (customPath != null) ...[
                           Text(
                             customPath.split(Platform.pathSeparator).last,
@@ -668,7 +695,10 @@ Future<void> showFolderThumbnailDialog(
                 },
               ),
               if (failure != null)
-                Text(failure!, style: TextStyle(color: Theme.of(ctx).colorScheme.error)),
+                Text(
+                  failure!,
+                  style: TextStyle(color: Theme.of(ctx).colorScheme.error),
+                ),
             ],
           ),
         ),
@@ -679,9 +709,13 @@ Future<void> showFolderThumbnailDialog(
           ),
           FilledButton(
             key: const Key('folderCoverApply'),
-            onPressed: saving ||
-                    (mode == 'item' && !choices.any((c) => c.id == selectedId)) ||
-                    (mode == 'custom' && pickedBytes == null && customPath == null)
+            onPressed:
+                saving ||
+                    (mode == 'item' &&
+                        !choices.any((c) => c.id == selectedId)) ||
+                    (mode == 'custom' &&
+                        pickedBytes == null &&
+                        customPath == null)
                 ? null
                 : () async {
                     setState(() => saving = true);
@@ -692,7 +726,10 @@ Future<void> showFolderThumbnailDialog(
                           '${(await getApplicationSupportDirectory()).path}/folder_thumbnails',
                         );
                         await dir.create(recursive: true);
-                        final safeId = folder.id.replaceAll(RegExp(r'[^a-zA-Z0-9_-]'), '_');
+                        final safeId = folder.id.replaceAll(
+                          RegExp(r'[^a-zA-Z0-9_-]'),
+                          '_',
+                        );
                         final file = File(
                           '${dir.path}/${safeId}_${DateTime.now().microsecondsSinceEpoch}.${pickedExtension ?? 'png'}',
                         );

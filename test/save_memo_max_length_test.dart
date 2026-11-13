@@ -38,18 +38,23 @@ void main() {
     Future<void> capture(String name) async {
       await tester.pump(const Duration(milliseconds: 150));
       expect(tester.takeException(), isNull);
-      final boundary = captureKey.currentContext!.findRenderObject()!
-          as RenderRepaintBoundary;
+      final boundary =
+          captureKey.currentContext!.findRenderObject()!
+              as RenderRepaintBoundary;
       final image = (await tester.runAsync(
-          () => boundary.toImage(pixelRatio: 1)))!;
+        () => boundary.toImage(pixelRatio: 1),
+      ))!;
       final bytes = (await tester.runAsync(
-          () => image.toByteData(format: ui.ImageByteFormat.png)))!;
+        () => image.toByteData(format: ui.ImageByteFormat.png),
+      ))!;
       image.dispose();
       final dir = Directory('build/save-slot-visual-audit')
         ..createSync(recursive: true);
-      await tester.runAsync(() async =>
-          File('${dir.path}/$name.png')
-              .writeAsBytes(bytes.buffer.asUint8List()));
+      await tester.runAsync(
+        () async =>
+            File('${dir.path}/$name.png')
+                .writeAsBytes(bytes.buffer.asUint8List()),
+      );
     }
 
     appRouter.go('/');
@@ -65,14 +70,16 @@ void main() {
     final ps = ctx.read<ProjectService>();
     final save = ctx.read<SaveTreeService>();
     save.setTreeMode(false);
-    final p = await tester.runAsync(() => ps.createProject(
-      name: '100 memo check',
-      fps: 12,
-      durationSeconds: 1,
-      backgroundColor: 0xffffffff,
-      exportWidth: 64,
-      exportHeight: 64,
-    ));
+    final p = await tester.runAsync(
+      () => ps.createProject(
+        name: '100 memo check',
+        fps: 12,
+        durationSeconds: 1,
+        backgroundColor: 0xffffffff,
+        exportWidth: 64,
+        exportHeight: 64,
+      ),
+    );
     expect(p, isNotNull);
     appRouter.go('/save-tree/${p!.id}');
     await tester.pump();
@@ -83,7 +90,8 @@ void main() {
     await tester.tap(pen);
     await tester.pumpAndSettle();
     final input = find.descendant(
-      of: find.byType(AlertDialog), matching: find.byType(TextField),
+      of: find.byType(AlertDialog),
+      matching: find.byType(TextField),
     );
     expect(input, findsOneWidget);
     final text = List.filled(100, 'あ').join();
@@ -99,8 +107,11 @@ void main() {
       await tester.pump();
     }
     expect(save.slotMemoOf(p.id, 0), text);
-    expect(save.getNodes(p.id), isEmpty,
-        reason: 'Editing an empty slot must not create saved data');
+    expect(
+      save.getNodes(p.id),
+      isEmpty,
+      reason: 'Editing an empty slot must not create saved data',
+    );
     final label = find.text(text);
     expect(label, findsOneWidget);
     final widget = tester.widget<Text>(label);
@@ -115,8 +126,9 @@ void main() {
     reloaded.dispose();
   });
 
-  testWidgets('Memo dialog uses only one heading and handles 100 characters',
-      (tester) async {
+  testWidgets('Memo dialog uses only one heading and handles 100 characters', (
+    tester,
+  ) async {
     tester.view.physicalSize = const Size(1080, 2280);
     tester.view.devicePixelRatio = 3;
     addTearDown(tester.view.resetPhysicalSize);
@@ -150,11 +162,12 @@ void main() {
 
     final dialog = find.byType(AlertDialog);
     expect(dialog, findsOneWidget);
-    expect(find.descendant(of: dialog, matching: find.text('メモ')),
-        findsOneWidget,
-        reason: 'The title must not be repeated as a floating input label');
-    final field = find.descendant(
-        of: dialog, matching: find.byType(TextField));
+    expect(
+      find.descendant(of: dialog, matching: find.text('メモ')),
+      findsOneWidget,
+      reason: 'The title must not be repeated as a floating input label',
+    );
+    final field = find.descendant(of: dialog, matching: find.byType(TextField));
     expect(field, findsOneWidget);
     expect(tester.widget<TextField>(field).maxLength, 100);
     expect(tester.widget<TextField>(field).maxLines, 3);

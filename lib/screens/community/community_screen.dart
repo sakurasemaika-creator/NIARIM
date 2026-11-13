@@ -86,9 +86,9 @@ class _CommunityScreenState extends State<CommunityScreen>
 
   static String _newPlazaSession() {
     final random = Random.secure();
-    return base64Url.encode(
-      List<int>.generate(24, (_) => random.nextInt(256)),
-    ).replaceAll('=', '');
+    return base64Url
+        .encode(List<int>.generate(24, (_) => random.nextInt(256)))
+        .replaceAll('=', '');
   }
 
   Future<void> _pulsePlazaTime() async {
@@ -140,7 +140,8 @@ class _CommunityScreenState extends State<CommunityScreen>
       }
       try {
         final visit = await api.visitLoginBonus();
-        if (mounted && (ModalRoute.of(context)?.isCurrent ?? false) &&
+        if (mounted &&
+            (ModalRoute.of(context)?.isCurrent ?? false) &&
             context.read<GoogleAuthService>().account?.id == ownerId) {
           await showServerMissionCompletions(context, visit);
         }
@@ -357,7 +358,8 @@ class _CommunityScreenState extends State<CommunityScreen>
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _plazaPulseTimer = Timer.periodic(
-      const Duration(minutes: 2), (_) => _pulsePlazaTime(),
+      const Duration(minutes: 2),
+      (_) => _pulsePlazaTime(),
     );
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) _pulsePlazaTime();
@@ -717,8 +719,10 @@ class _CommunityScreenState extends State<CommunityScreen>
     if (_tabController.index == 2 && service.isBackendConnected) {
       service.refreshFollowingFeed();
     }
-    if (_tabController.index == 4 && service.isBackendConnected &&
-        service.currentUserId != null && !service.hasLoadedSocial &&
+    if (_tabController.index == 4 &&
+        service.isBackendConnected &&
+        service.currentUserId != null &&
+        !service.hasLoadedSocial &&
         !service.isSocialLoading) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted && _tabController.index == 4) service.loadSocial();
@@ -799,7 +803,8 @@ class _CommunityScreenState extends State<CommunityScreen>
       child: Listener(
         onPointerDown: (_) {
           final controller = _tabScrollControllers[tab];
-          _pullBeganAtTop[tab] = !controller.hasClients ||
+          _pullBeganAtTop[tab] =
+              !controller.hasClients ||
               controller.position.pixels <=
                   controller.position.minScrollExtent + 0.5;
           _refreshedInPullGesture[tab] = false;
@@ -1000,8 +1005,9 @@ class _CommunityScreenState extends State<CommunityScreen>
         return;
       }
       final current = service.rankedWorks;
-      if (!current.any((w) =>
-          w.id == work.id && !w.isUnavailable && w.isNiarimPublished)) {
+      if (!current.any(
+        (w) => w.id == work.id && !w.isUnavailable && w.isNiarimPublished,
+      )) {
         return;
       }
     }
@@ -1884,9 +1890,12 @@ class _CommunityScreenState extends State<CommunityScreen>
                         return CommunityRankingWorkList(
                           layout: _rankingLayout,
                           works: ranked,
-                          periodScores: communityService.periodRankingBookmarkCounts,
+                          periodScores:
+                              communityService.periodRankingBookmarkCounts,
                           bookmarkedIds: bookmarkedIds,
-                          onTapWork: (work) { _openRankingPreview(work); },
+                          onTapWork: (work) {
+                            _openRankingPreview(work);
+                          },
                           onToggleBookmark: (w) => reportFailedCommunityEdit(
                             context,
                             communityService,

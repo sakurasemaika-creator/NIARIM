@@ -102,8 +102,7 @@ class _TonePanelState extends State<TonePanel> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (!widget.embedded)
-              PanelCenterCloseBar(onClose: widget.onClose),
+            if (!widget.embedded) PanelCenterCloseBar(onClose: widget.onClose),
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: Row(
@@ -146,21 +145,25 @@ class _TonePanelState extends State<TonePanel> {
                         fontFamilyFallback: kHeadingFontFallback,
                       ),
                     ),
-                    onPressed: () => SharedAssetCardService.pickAndImport(context, toneService: toneService),
+                    onPressed: () => SharedAssetCardService.pickAndImport(
+                      context,
+                      toneService: toneService,
+                    ),
                   ),
                 ],
               ),
             ),
             Row(
               children: [
-                if (!widget.embedded) Text(
-                  l10n.toneTitle,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'Kuramubon',
-                    fontFamilyFallback: kHeadingFontFallback,
+                if (!widget.embedded)
+                  Text(
+                    l10n.toneTitle,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Kuramubon',
+                      fontFamilyFallback: kHeadingFontFallback,
+                    ),
                   ),
-                ),
                 Spacer(),
                 FilterChip(
                   key: const ValueKey('asset-favorites-only'),
@@ -343,7 +346,11 @@ class _TonePanelState extends State<TonePanel> {
                                     enabled: !ExportShareService.isRunning(
                                       _exportKey(tone),
                                     ),
-                                    child: Text(SharedAssetCardService.exportMenuLabel(context)),
+                                    child: Text(
+                                      SharedAssetCardService.exportMenuLabel(
+                                        context,
+                                      ),
+                                    ),
                                   ),
                                   if (!builtIn)
                                     PopupMenuItem(

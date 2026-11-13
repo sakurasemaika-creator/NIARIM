@@ -110,7 +110,6 @@ void main() {
     expect(saveService.isTreeMode, isFalse);
     final l10n = await AppLocalizations.delegate.load(const Locale('ja'));
 
-
     Finder buttons(String tooltip) =>
         find.byWidgetPredicate((w) => w is IconButton && w.tooltip == tooltip);
 

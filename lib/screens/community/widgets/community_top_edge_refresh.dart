@@ -49,7 +49,8 @@ class _CommunityTopEdgeRefreshState extends State<CommunityTopEdgeRefresh> {
       child: Listener(
         onPointerDown: (_) {
           final controller = widget.controller;
-          _gestureStartedAtTop = !controller.hasClients ||
+          _gestureStartedAtTop =
+              !controller.hasClients ||
               controller.position.pixels <=
                   controller.position.minScrollExtent + 0.5;
           _refreshedInGesture = false;

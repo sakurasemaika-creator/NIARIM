@@ -180,21 +180,22 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
                       child: ConstrainedBox(
                         constraints: const BoxConstraints(maxWidth: 200),
                         child: Semantics(
-                        label: '${l10n.colorPickerTitle}: #${_colorToHex(_currentColor)}',
-                        child: SizedBox(
-                          key: const ValueKey('selected-color-preview-chip'),
-                          // A height-only box inside Flexible can collapse to
-                          // zero width, hiding the preview entirely on phones.
-                          width: 200,
-                          height: 20,
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(3),
-                            child: CustomPaint(
-                              painter: _CheckerboardPainter(),
-                              child: ColoredBox(color: _currentColor),
+                          label:
+                              '${l10n.colorPickerTitle}: #${_colorToHex(_currentColor)}',
+                          child: SizedBox(
+                            key: const ValueKey('selected-color-preview-chip'),
+                            // A height-only box inside Flexible can collapse to
+                            // zero width, hiding the preview entirely on phones.
+                            width: 200,
+                            height: 20,
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(3),
+                              child: CustomPaint(
+                                painter: _CheckerboardPainter(),
+                                child: ColoredBox(color: _currentColor),
+                              ),
                             ),
                           ),
-                        ),
                         ),
                       ),
                     ),
@@ -218,23 +219,24 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
                     controlsWidth: constraints.maxWidth,
                     onEyedropperTap: widget.onEyedropperTap,
                     eyedropperTooltip: l10n.toolbarItemEyedropper,
-                  hue: _hue,
-                  saturation: _saturation,
-                  value: _value,
-                  onHueChanged: (h) {
-                    _hue = h;
-                    _applyHsv();
-                  },
-                  onSvChanged: (s, v) {
-                    _saturation = s;
-                    _value = v;
-                    _applyHsv();
-                  },
-                  onChangeEnd: _commitToRecent,
-                  isTransparent: _alpha == 0,
-                  onToggleTransparent: _toggleTransparent,
-                  showHsvSliders: _showHsvSliders,
-                  onSliderModeChanged: (hsv) => setState(() => _showHsvSliders = hsv),
+                    hue: _hue,
+                    saturation: _saturation,
+                    value: _value,
+                    onHueChanged: (h) {
+                      _hue = h;
+                      _applyHsv();
+                    },
+                    onSvChanged: (s, v) {
+                      _saturation = s;
+                      _value = v;
+                      _applyHsv();
+                    },
+                    onChangeEnd: _commitToRecent,
+                    isTransparent: _alpha == 0,
+                    onToggleTransparent: _toggleTransparent,
+                    showHsvSliders: _showHsvSliders,
+                    onSliderModeChanged: (hsv) =>
+                        setState(() => _showHsvSliders = hsv),
                   ),
                 ),
               ),

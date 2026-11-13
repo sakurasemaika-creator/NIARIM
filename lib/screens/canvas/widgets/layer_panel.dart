@@ -241,7 +241,8 @@ class _LayerPanelState extends State<LayerPanel> {
       widget.frameIndex,
     );
     final layers = _visibleLayers(allLayers);
-    final canvasBackground = projectService.projects
+    final canvasBackground =
+        projectService.projects
             .where((project) => project.id == widget.projectId)
             .firstOrNull
             ?.backgroundColor ??
@@ -287,18 +288,19 @@ class _LayerPanelState extends State<LayerPanel> {
               children: [
                 // ドックを狭めたとき（下限200）でも右のボタンを押せるよう、
                 // 見出しの方を省略する。
-                if (!widget.dockedMode) Expanded(
-                  child: Text(
-                    l10n.layerPanelTitle,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontFamily: 'Kuramubon',
-                      fontFamilyFallback: kHeadingFontFallback,
+                if (!widget.dockedMode)
+                  Expanded(
+                    child: Text(
+                      l10n.layerPanelTitle,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontFamily: 'Kuramubon',
+                        fontFamilyFallback: kHeadingFontFallback,
+                      ),
                     ),
                   ),
-                ),
                 // 表示中の全レイヤーをワンタップで結合する（複数選択モードを
                 // 使わずに済む一括操作の一つ）。
                 IconButton(
@@ -2849,7 +2851,8 @@ class _LayerFullscreenPreview extends StatefulWidget {
   final int layerOpacity;
 
   @override
-  State<_LayerFullscreenPreview> createState() => _LayerFullscreenPreviewState();
+  State<_LayerFullscreenPreview> createState() =>
+      _LayerFullscreenPreviewState();
 }
 
 class _LayerFullscreenPreviewState extends State<_LayerFullscreenPreview> {
@@ -2872,7 +2875,8 @@ class _LayerFullscreenPreviewState extends State<_LayerFullscreenPreview> {
         widget.layerId,
       );
       // Full resolution; do not scale up the 48px list thumbnail.
-      final image = await ps.tileManagerOf(widget.projectId)
+      final image = await ps
+          .tileManagerOf(widget.projectId)
           .compositeLayerToImage(key);
       if (!mounted) {
         image.dispose();
@@ -2947,8 +2951,10 @@ class _LayerFullscreenPreviewState extends State<_LayerFullscreenPreview> {
                           child: ColoredBox(
                             color: Color(widget.backgroundColor),
                             child: Opacity(
-                              opacity: (widget.layerOpacity / 100)
-                                  .clamp(0.0, 1.0),
+                              opacity: (widget.layerOpacity / 100).clamp(
+                                0.0,
+                                1.0,
+                              ),
                               child: RawImage(image: image, fit: BoxFit.fill),
                             ),
                           ),

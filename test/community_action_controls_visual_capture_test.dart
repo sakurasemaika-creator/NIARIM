@@ -80,7 +80,8 @@ void main() {
 
     Future<void> capture(String name) async {
       final boundary =
-          boundaryKey.currentContext!.findRenderObject() as RenderRepaintBoundary;
+          boundaryKey.currentContext!.findRenderObject()
+              as RenderRepaintBoundary;
       final imageBytes = await tester.runAsync(() async {
         final image = await boundary.toImage(pixelRatio: 1);
         final data = await image.toByteData(format: ui.ImageByteFormat.png);
@@ -108,12 +109,16 @@ void main() {
       final menu = find.byKey(const ValueKey('communityMuteMenu-sample'));
       expect(bookmark, findsOneWidget);
       expect(menu, findsOneWidget);
-      expect(tester.widget<IconButton>(bookmark).iconSize,
-          CollectionActionFrame.glyphSize);
+      expect(
+        tester.widget<IconButton>(bookmark).iconSize,
+        CollectionActionFrame.glyphSize,
+      );
       expect(tester.getRect(bookmark).width, CollectionActionFrame.extent);
       expect(tester.getRect(menu).width, CollectionActionFrame.extent);
       await capture(
-        bookmarked ? 'community_work_bookmarked' : 'community_work_unbookmarked',
+        bookmarked
+            ? 'community_work_bookmarked'
+            : 'community_work_unbookmarked',
       );
     }
 
@@ -134,8 +139,10 @@ void main() {
       final menu = find.byKey(const ValueKey('communityRankingMenu-sample'));
       expect(bookmark, findsOneWidget);
       expect(menu, findsOneWidget);
-      expect(tester.widget<IconButton>(bookmark).iconSize,
-          CollectionActionFrame.glyphSize);
+      expect(
+        tester.widget<IconButton>(bookmark).iconSize,
+        CollectionActionFrame.glyphSize,
+      );
       await capture('community_ranking_${layout.name}');
     }
   });

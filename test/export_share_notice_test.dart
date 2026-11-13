@@ -118,9 +118,8 @@ void main() {
   });
 
   test('the export-complete dialog shares through the notice helper', () {
-    final source = File(
-      'lib/screens/export/export_screen.dart',
-    ).readAsStringSync();
+    final source = File('lib/screens/export/export_screen.dart')
+        .readAsStringSync();
     expect(source, isNot(contains('SharePlus.instance')));
     expect(source, contains('shareExportedFileWithNotice(context'));
     // 作品一覧の行とプレビューも同じ文の決まりを使う。
