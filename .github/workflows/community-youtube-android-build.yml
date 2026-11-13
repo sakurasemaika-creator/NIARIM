@@ -43,6 +43,10 @@ jobs:
           cache: true
       - name: Resolve exactly locked player dependencies
         run: flutter pub get --enforce-lockfile
+      - name: Compile Android APK with the real YouTube WebView
+        run: |
+          flutter build apk --debug --no-pub
+          test -s build/app/outputs/flutter-apk/app-debug.apk
       - name: Analyze actual project without suppressing warnings
         run: flutter analyze --no-pub --no-fatal-infos
       - name: Run player privacy and shorts tests
@@ -52,7 +56,3 @@ jobs:
             test/community_shorts_youtube_playback_test.dart \
             test/community_shorts_live_state_test.dart \
             test/home_bookmark_youtube_playback_test.dart
-      - name: Compile Android APK with the real YouTube WebView
-        run: |
-          flutter build apk --debug --no-pub
-          test -s build/app/outputs/flutter-apk/app-debug.apk
