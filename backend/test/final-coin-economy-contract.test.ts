@@ -540,7 +540,7 @@ function byId(data:readonly {id:string,coins:number}[]):[string,number][] {
 
 describe("versioned coin economy v2 remains exact across all reward categories",()=>{
   it("locks all 55 original creator mission awards by immutable mission ID",()=>{
-    expect(FINAL_COIN_ECONOMY_VERSION).toBe("economy-v2-min10-repriced-20261113");
+    expect(FINAL_COIN_ECONOMY_VERSION).toBe("economy-v3-shortterm-rebalanced-20261113");
     expect(CREATOR).toHaveLength(55);
     expect(byId(CREATOR_MISSIONS)).toEqual(CREATOR);
   });
@@ -568,7 +568,7 @@ describe("versioned coin economy v2 remains exact across all reward categories",
 
   it("locks rewarded-ad, 1-month Premium and 1-year Premium tariffs",()=>{
     expect(INITIAL_REWARDED_COINS_PER_COMPLETION).toBe(10);
-    expect(COIN_BENEFIT_PRICE_VERSION).toBe("v4-min10-repriced-20261113");
+    expect(COIN_BENEFIT_PRICE_VERSION).toBe("v5-shortterm-rebalanced-20261113");
     expect(FINAL_PREMIUM_MONTHLY_COINS).toBe(55000);
     expect(finalBenefitCoins("fullPremium","month")).toBe(55000);
     expect(FINAL_PREMIUM_YEARLY_COINS).toBe(550000);
