@@ -480,8 +480,10 @@ class ProjectListWidget extends StatelessWidget {
               ),
             ),
       title: Text(project.name),
+      // 2行目は最後に保存した日時（その言語の日付と時刻の書き方）。
       subtitle: Text(
-        l10n.homeProjectMeta(project.fps, project.durationSeconds),
+        '${l10n.homeProjectMeta(project.fps, project.durationSeconds)}\n'
+        '${l10n.projectListUpdatedOn(project.updatedAt)}',
       ),
       trailing: (isSelectionMode || onPickProject != null)
           ? null
@@ -538,6 +540,12 @@ class ProjectListWidget extends StatelessWidget {
           fontFamily: 'Kuramubon',
           fontFamilyFallback: kHeadingFontFallback,
         ),
+      ),
+      // フォルダを作った日時（「更新日時」の並びでフォルダに使う日時）。
+      subtitle: Text(
+        AppLocalizations.of(
+          context,
+        )!.projectListFolderCreatedOn(folder.createdAt),
       ),
       trailing: (!isSelectionMode && onPickProject == null)
           ? Row(

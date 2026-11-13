@@ -8328,8 +8328,23 @@ class AppLocalizationsEs extends AppLocalizations {
   String get projectListEmptyFolderTitle => 'Esta carpeta está vacía';
 
   @override
-  String projectListUpdatedOn(String date) {
-    return 'Actualizado: $date';
+  String projectListUpdatedOn(DateTime date) {
+    final intl.DateFormat dateDateFormat = intl.DateFormat.yMd(
+      localeName,
+    ).add_jm();
+    final String dateString = dateDateFormat.format(date);
+
+    return 'Actualizado: $dateString';
+  }
+
+  @override
+  String projectListFolderCreatedOn(DateTime date) {
+    final intl.DateFormat dateDateFormat = intl.DateFormat.yMd(
+      localeName,
+    ).add_jm();
+    final String dateString = dateDateFormat.format(date);
+
+    return 'Creada el $dateString';
   }
 
   @override

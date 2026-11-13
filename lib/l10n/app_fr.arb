@@ -3263,6 +3263,7 @@
   "projectListShowAll": "Tout afficher",
   "projectListEmptyFolderTitle": "Ce dossier est vide",
   "projectListUpdatedOn": "Modifié le {date}",
+  "projectListFolderCreatedOn": "Créé le {date}",
   "projectListInFolder": "Dans {path}",
   "homeProjectsLoadFailed": "Impossible de charger vos projets",
   "settingsErrorLogTitle": "Journal des erreurs",

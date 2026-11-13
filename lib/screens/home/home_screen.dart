@@ -3545,7 +3545,8 @@ Widget _receivedShareProjectTile(
         leading: SizedBox(width: 56, height: 56, child: cover()),
         title: Text(project.name, style: captionStyle),
         subtitle: Text(
-          l10n.homeProjectMeta(project.fps, project.durationSeconds),
+          '${l10n.homeProjectMeta(project.fps, project.durationSeconds)}\n'
+          '${l10n.projectListUpdatedOn(project.updatedAt)}',
         ),
         onTap: selectedTap,
         onLongPress: selectedLongPress,

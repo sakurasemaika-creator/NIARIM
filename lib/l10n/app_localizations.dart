@@ -14319,11 +14319,17 @@ abstract class AppLocalizations {
   /// **'このフォルダは空です'**
   String get projectListEmptyFolderTitle;
 
-  /// Detail row: the date the work was last changed.
+  /// ホームの詳細表示の作品の行：作品を最後に保存した日時（その言語の日付と時刻の書き方）
   ///
   /// In ja, this message translates to:
-  /// **'{date}更新'**
-  String projectListUpdatedOn(String date);
+  /// **'{date} 更新'**
+  String projectListUpdatedOn(DateTime date);
+
+  /// ホームの詳細表示のフォルダの行：フォルダを作った日時（「更新日時」の並びでフォルダに使う日時。その言語の日付と時刻の書き方）
+  ///
+  /// In ja, this message translates to:
+  /// **'{date} 作成'**
+  String projectListFolderCreatedOn(DateTime date);
 
   /// Search results: the folder a work is in (folder names joined by " / ").
   ///

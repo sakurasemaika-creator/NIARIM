@@ -7886,8 +7886,23 @@ class AppLocalizationsJa extends AppLocalizations {
   String get projectListEmptyFolderTitle => 'このフォルダは空です';
 
   @override
-  String projectListUpdatedOn(String date) {
-    return '$date更新';
+  String projectListUpdatedOn(DateTime date) {
+    final intl.DateFormat dateDateFormat = intl.DateFormat.yMd(
+      localeName,
+    ).add_jm();
+    final String dateString = dateDateFormat.format(date);
+
+    return '$dateString 更新';
+  }
+
+  @override
+  String projectListFolderCreatedOn(DateTime date) {
+    final intl.DateFormat dateDateFormat = intl.DateFormat.yMd(
+      localeName,
+    ).add_jm();
+    final String dateString = dateDateFormat.format(date);
+
+    return '$dateString 作成';
   }
 
   @override

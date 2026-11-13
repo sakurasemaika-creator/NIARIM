@@ -3263,6 +3263,7 @@
   "projectListShowAll": "모두 보기",
   "projectListEmptyFolderTitle": "이 폴더는 비어 있습니다",
   "projectListUpdatedOn": "{date} 수정",
+  "projectListFolderCreatedOn": "{date} 생성",
   "projectListInFolder": "폴더: {path}",
   "homeProjectsLoadFailed": "프로젝트를 불러오지 못했습니다",
   "settingsErrorLogTitle": "오류 기록",

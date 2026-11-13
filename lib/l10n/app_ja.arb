@@ -3892,12 +3892,23 @@
   "projectListNoFavoritesHint": "作品やフォルダのメニューで「お気に入り登録」を選ぶと、ここに表示されます。",
   "projectListShowAll": "すべて表示",
   "projectListEmptyFolderTitle": "このフォルダは空です",
-  "projectListUpdatedOn": "{date}更新",
+  "projectListUpdatedOn": "{date} 更新",
   "@projectListUpdatedOn": {
-    "description": "Detail row: the date the work was last changed.",
+    "description": "ホームの詳細表示の作品の行：作品を最後に保存した日時（その言語の日付と時刻の書き方）",
     "placeholders": {
       "date": {
-        "type": "String"
+        "type": "DateTime",
+        "format": "yMd+jm"
+      }
+    }
+  },
+  "projectListFolderCreatedOn": "{date} 作成",
+  "@projectListFolderCreatedOn": {
+    "description": "ホームの詳細表示のフォルダの行：フォルダを作った日時（「更新日時」の並びでフォルダに使う日時。その言語の日付と時刻の書き方）",
+    "placeholders": {
+      "date": {
+        "type": "DateTime",
+        "format": "yMd+jm"
       }
     }
   },

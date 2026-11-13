@@ -3263,6 +3263,7 @@
   "projectListShowAll": "Mostrar todo",
   "projectListEmptyFolderTitle": "Esta carpeta está vacía",
   "projectListUpdatedOn": "Actualizado: {date}",
+  "projectListFolderCreatedOn": "Creada el {date}",
   "projectListInFolder": "En {path}",
   "homeProjectsLoadFailed": "No se pudieron cargar tus proyectos",
   "settingsErrorLogTitle": "Registro de errores",

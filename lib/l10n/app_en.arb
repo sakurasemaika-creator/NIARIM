@@ -3270,6 +3270,7 @@
   "projectListShowAll": "Show all",
   "projectListEmptyFolderTitle": "This folder is empty",
   "projectListUpdatedOn": "Updated {date}",
+  "projectListFolderCreatedOn": "Created {date}",
   "projectListInFolder": "In {path}",
   "homeProjectsLoadFailed": "Could not load your projects",
   "settingsErrorLogTitle": "Error log",

@@ -7923,8 +7923,23 @@ class AppLocalizationsKo extends AppLocalizations {
   String get projectListEmptyFolderTitle => '이 폴더는 비어 있습니다';
 
   @override
-  String projectListUpdatedOn(String date) {
-    return '$date 수정';
+  String projectListUpdatedOn(DateTime date) {
+    final intl.DateFormat dateDateFormat = intl.DateFormat.yMd(
+      localeName,
+    ).add_jm();
+    final String dateString = dateDateFormat.format(date);
+
+    return '$dateString 수정';
+  }
+
+  @override
+  String projectListFolderCreatedOn(DateTime date) {
+    final intl.DateFormat dateDateFormat = intl.DateFormat.yMd(
+      localeName,
+    ).add_jm();
+    final String dateString = dateDateFormat.format(date);
+
+    return '$dateString 생성';
   }
 
   @override
