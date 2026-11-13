@@ -1816,11 +1816,19 @@ class _HomeScreenState extends State<HomeScreen>
     _clipboardClears++;
     final notice = _clipboardNotice;
     _clipboardNotice = null;
-    notice?.close();
-    // 順番を待っている知らせも、出さずに下げる。
     final messenger = _messenger;
-    if (messenger != null && messenger.mounted) {
-      _withdrawClipboardNotices(messenger, describingOnly: true);
+    if (messenger is AppToastMessengerState) {
+      // 出ている知らせも順番を待っている知らせも、印で見分けて自分の物だけを
+      // 下げる。close()は使わない：読み上げ・「動きを減らす」の設定では、
+      // 入れ替えで取り下げた知らせはその場で取り除かれ、閉じたことが
+      // [_clipboardNotice]へ届く前にここへ来る（貼り付けの終わり）。その
+      // close()は、次に出ていた別の知らせ（貼り付けの結果・他の機能の
+      // 知らせ）を閉じた。
+      if (messenger.mounted) {
+        _withdrawClipboardNotices(messenger, describingOnly: true);
+      }
+    } else {
+      notice?.close();
     }
   }
 
