@@ -132,6 +132,27 @@ jobs:
         env:
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+      - name: Block unsafe CDK drift against live reward configuration
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Deploy role itself cannot read Lambda configuration. Temporarily
+          # assume the already-trusted read-only CDK lookup role just for this
+          # step; never print or upload the live environment (contains secrets).
+          creds="$(aws sts assume-role \
+            --role-arn arn:aws:iam::368601349794:role/cdk-hnb659fds-lookup-role-368601349794-ap-northeast-1 \
+            --role-session-name niarim-coin-drift-check \
+            --query Credentials --output json)"
+          AWS_ACCESS_KEY_ID="$(jq -r .AccessKeyId <<<"$creds")" \
+          AWS_SECRET_ACCESS_KEY="$(jq -r .SecretAccessKey <<<"$creds")" \
+          AWS_SESSION_TOKEN="$(jq -r .SessionToken <<<"$creds")" \
+            aws lambda get-function-configuration \
+              --function-name niarim-api \
+              --query 'Environment.Variables' --output json \
+              > "$RUNNER_TEMP/niarim-live-env.json"
+          trap 'rm -f "$RUNNER_TEMP/niarim-live-env.json"' EXIT
+          node scripts/assert-live-coin-config.mjs \
+            "$RUNNER_TEMP/niarim-live-env.json"
       - name: cdk deploy
         shell: bash
         run: |
