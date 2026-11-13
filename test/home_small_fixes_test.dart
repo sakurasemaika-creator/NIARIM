@@ -397,6 +397,62 @@ void main() {
     await _close(tester);
   });
 
+  // 題の余白を詰めるのは題（「プロジェクト」）を出しているときだけ。検索中の
+  // 題の所には検索の種類の切り替えボタンが来るので、詰めると、押すとホームを
+  // 離れる「戻る」ボタンとの間が20pxから4pxになっていた。
+  testWidgets('in search the search-type button keeps its distance from the '
+      'back button on small phones', (tester) async {
+    await _openHome(tester, size: const Size(412, 844));
+    final l10n = _l10n(tester);
+    await tester.tap(find.byTooltip(l10n.commonSearch));
+    await _frames(tester, 8);
+    final back = find.byKey(const Key('homeBackToSplashButton'));
+    final toggle = find.byTooltip(l10n.projectDetailTagsQuickAction);
+    double gap() => tester.getRect(toggle).left - tester.getRect(back).right;
+    final wide = gap();
+    expect(wide, greaterThanOrEqualTo(16));
+    for (final width in [399.0, 360.0, 320.0]) {
+      tester.view.physicalSize = Size(width, 844);
+      await _frames(tester, 4);
+      expect(gap(), closeTo(wide, 0.5), reason: '${width}px');
+    }
+    // 検索を閉じると、題の余白はまた詰める。
+    await tester.tap(find.byTooltip(l10n.commonClose));
+    await _frames(tester, 8);
+    final title = [
+      for (final element
+          in find
+              .descendant(
+                of: find.byType(AppBar),
+                matching: find.text(l10n.homeTabProjects),
+              )
+              .evaluate())
+        if (element.findAncestorWidgetOfExactType<TabBar>() == null)
+          element.renderObject! as RenderBox,
+    ].single;
+    expect(
+      title.localToGlobal(Offset.zero).dx - tester.getRect(back).right,
+      lessThan(8),
+    );
+    // 他のタブの検索（入力欄だけ）も、狭い画面で戻るボタンに寄せない。
+    await _showTab(tester, 1);
+    tester.view.physicalSize = const Size(412, 844);
+    await _frames(tester, 4);
+    await tester.tap(find.byKey(const Key('homeSearchButton')));
+    await _frames(tester, 8);
+    final field = find.byKey(const Key('homeSearchInput'));
+    double fieldGap() =>
+        tester.getRect(field).left - tester.getRect(back).right;
+    final wideField = fieldGap();
+    for (final width in [399.0, 320.0]) {
+      tester.view.physicalSize = Size(width, 844);
+      await _frames(tester, 4);
+      expect(fieldGap(), closeTo(wideField, 0.5), reason: 'Works ${width}px');
+    }
+    expect(tester.takeException(), isNull);
+    await _close(tester);
+  });
+
   // ゴミ箱のカードの操作（コピー・復元・完全に削除）は、1行に入らず縦に
   // 並ぶときも右端にそろえる。英語・フランス語などの狭い画面では、左端に
   // 寄って1つずつ縦に並んでいた（日本語の1行のときは右端）。

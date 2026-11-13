@@ -493,7 +493,12 @@ class _HomeScreenState extends State<HomeScreen>
             automaticallyImplyLeading: false,
             // 狭い画面では題の左右の余白を詰める。戻る・表示サイズ・検索・
             // メニューのボタンで幅が残らず、題が「プロジ…」と切れていた。
-            titleSpacing: MediaQuery.sizeOf(context).width < 400 ? 0 : null,
+            // 検索中は題の所に検索の種類のボタン・入力欄が来るので詰めない
+            // （戻るボタンと4pxまで近づいた）。
+            titleSpacing:
+                !_isSearching && MediaQuery.sizeOf(context).width < 400
+                ? 0
+                : null,
             leading: IconButton(
               key: const Key('homeBackToSplashButton'),
               icon: const Icon(Icons.arrow_back),
