@@ -383,8 +383,13 @@ FONT_LICENSES.txt`への本文・著作権表示の追記、`license_screen.dart
   動かす）。実画面で確かめるときは一般ユーザー（`runuser -u nobody`）で
   動かすこと（rootは`chmod 000`を無視する）。見張りは
   `test/startup_unreadable_projects_folder_test.dart`（`IOOverrides`）。
-  残り：DISC083〜086（ホームのプロジェクトの空の表示・ゴミ箱のフォルダの行・
-  開けない作品1つで自動削除が止まる・読めていない間のスロットのメモ）。
+  読めない作品を含むゴミ箱のフォルダは理由を出し、完全削除・空にする・自動削除を
+  しない（`trashedFolderHasUnreadWorks`。復元・コピーはできる）。作品を読めない間も
+  フォルダはゴミ箱へ移せ、そのとき読めなかった中の作品（`TrashedFolder.unreadProjectIds`）
+  だけが、読めたときにゴミ箱のそのフォルダへ入る（読めた後にフォルダを指した作品・
+  お気に入りは入れない。入れると手動の保存の読み込みで戻った作品が期限で消えた）。
+  自動削除を止めるのは保存先を一覧できないときだけ。保存の一覧を読めない間のメモ・
+  保存は読めたときに重ねて残し、何も消さない（DISC083〜086、2026-11-13）。
 - **設定の引き継ぎ（.niatra）の読み込みは「この端末の内容を失わない・読み直しても変わらない」（DISC062）**：
   受け取った一覧の項目は各サービスの`mergeTransferred`が`lib/utils/transfer_merge.dart`の
   `mergeTransferredItems`で取り込む（IDは元のまま、同じ中身は同じ項目として整理〔お気に入り・
