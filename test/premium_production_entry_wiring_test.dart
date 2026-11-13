@@ -81,4 +81,19 @@ void main() {
     );
   });
 
+  test('timeline cannot add or modify watermark after entitlement expiry', () {
+    final source = File(
+      'lib/screens/timeline/timeline_screen.dart',
+    ).readAsStringSync();
+
+    expect(source, contains('Future<void> _addWatermarkLayer('));
+    expect(source, contains('Future<bool> _reRasterizeWatermark('));
+    expect(source, contains('if (!await _reRasterizeWatermark('));
+    expect(
+      RegExp(r'PremiumFeature\.watermark').allMatches(source).length,
+      greaterThanOrEqualTo(6),
+    );
+    expect(source, contains('if (mounted) showPremiumBanner(context);'));
+  });
+
 }
