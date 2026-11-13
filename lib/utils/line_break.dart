@@ -36,6 +36,30 @@ String keepKoreanWordsTogether(String text) {
 
 bool _isBreakable(String char) => char.trim().isEmpty;
 
+/// [text]にハングルが入っているか。
+bool containsHangul(String text) => _hangul.hasMatch(text);
+
+/// [keepKoreanWordsTogether]と同じく韓国語の語の途中で折り返さないように
+/// するが、[fits]が偽を返す語（1行に入らない長い語）はそのままにする（語の
+/// 途中で折り返せないと、行からはみ出す）。作品名のように長さの決まって
+/// いない文に使う。[fits]には語結合子を挟んだ後の語を渡す（語結合子にも
+/// 字の間隔〔letterSpacing〕が付くので、挟んだ後の幅で測る）。
+String keepKoreanWordsTogetherWhere(
+  String text,
+  bool Function(String word) fits,
+) {
+  if (!_hangul.hasMatch(text)) return text;
+  return text.splitMapJoin(
+    RegExp(r'\S+'),
+    onMatch: (match) {
+      final word = match[0]!;
+      if (!_hangul.hasMatch(word)) return word;
+      final joined = keepKoreanWordsTogether(word);
+      return fits(joined) ? joined : word;
+    },
+  );
+}
+
 /// 字の間のどこでも折り返せる字（漢字・ひらがな・カタカナ）。
 final RegExp _cjkLetter = RegExp(r'[\u3040-\u30FF\u3400-\u4DBF\u4E00-\u9FFF]');
 

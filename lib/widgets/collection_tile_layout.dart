@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 
 import '../config/font_fallback.dart';
+import '../utils/line_break.dart';
 
 /// Projects, exported works, shared files and folders use the same grid
 /// geometry even when accessibility text scaling increases.
@@ -136,6 +137,7 @@ void _forgetMeasurementsWhenFontsChange() {
     _nameHeights.clear();
     _locationHeights.clear();
     _displayNames.clear();
+    _koreanWords.clear();
   });
 }
 
@@ -231,7 +233,18 @@ String collectionTileDisplayName(BuildContext context, String name) {
   );
   bool fits(String text) {
     painter
-      ..text = TextSpan(text: text, style: style)
+      ..text = TextSpan(
+        // カードと同じく、ハングルの語は途中で折り返さずに測る。
+        text: _keepKoreanWordsWithin(
+          text,
+          style: style,
+          textScaler: TextScaler.noScaling,
+          textDirection: key.$3,
+          locale: key.$4,
+          maxWidth: kCollectionTileNameReferenceWidth,
+        ),
+        style: style,
+      )
       ..layout(maxWidth: kCollectionTileNameReferenceWidth);
     return !painter.didExceedMaxLines;
   }
@@ -269,6 +282,41 @@ String collectionTileDisplayName(BuildContext context, String name) {
 
 final _displayNames = <(String, TextStyle, TextDirection, Locale?), String>{};
 
+/// [text]のハングルの語のうち、幅[maxWidth]の1行に入る語を途中で折り返さない
+/// ようにする（[keepKoreanWordsTogetherWhere]。Flutterはハングルのどの字の
+/// 間でも折り返すので、2行の名前が「애니메이션 만들 / 기 연습」のように語の
+/// 途中で切れた）。1行に入らない長い語は、どこでも折り返せるまま。
+String _keepKoreanWordsWithin(
+  String text, {
+  required TextStyle style,
+  required TextScaler textScaler,
+  required TextDirection textDirection,
+  required Locale? locale,
+  required double maxWidth,
+}) {
+  if (!containsHangul(text)) return text;
+  final key = (text, style, textScaler, textDirection, locale, maxWidth);
+  final cached = _koreanWords[key];
+  if (cached != null) return cached;
+  final painter = TextPainter(
+    textScaler: textScaler,
+    textDirection: textDirection,
+    locale: locale,
+  );
+  final joined = keepKoreanWordsTogetherWhere(text, (word) {
+    painter
+      ..text = TextSpan(text: word, style: style)
+      ..layout();
+    return painter.width <= maxWidth;
+  });
+  painter.dispose();
+  if (_koreanWords.length > 512) _koreanWords.clear();
+  return _koreanWords[key] = joined;
+}
+
+final _koreanWords =
+    <(String, TextStyle, TextScaler, TextDirection, Locale?, double), String>{};
+
 /// [character]が、語を空白で区切って書く字（英字・数字・ハングル等）か。
 /// 空白と、どの字の間でも行を変えてよい字（漢字・かな・全角の字）は偽。
 bool _inSpacedWord(String character) {
@@ -297,6 +345,14 @@ Widget collectionTileCaption(
   String? location,
   bool locationRow = false,
 }) {
+  final shown = collectionTileDisplayName(context, name);
+  Widget nameText(String text) => Text(
+    text,
+    semanticsLabel: name,
+    maxLines: kCollectionTileNameLines,
+    overflow: TextOverflow.ellipsis,
+    style: collectionTileCaptionStyle(context),
+  );
   final nameBand = SizedBox(
     height: collectionTileNameHeight(context),
     child: Align(
@@ -305,13 +361,21 @@ Widget collectionTileCaption(
         message: name,
         triggerMode: TooltipTriggerMode.manual,
         excludeFromSemantics: true,
-        child: Text(
-          collectionTileDisplayName(context, name),
-          semanticsLabel: name,
-          maxLines: kCollectionTileNameLines,
-          overflow: TextOverflow.ellipsis,
-          style: collectionTileCaptionStyle(context),
-        ),
+        // ハングルの語は、カードの幅の1行に入る語なら途中で折り返さない。
+        child: containsHangul(shown)
+            ? LayoutBuilder(
+                builder: (context, constraints) => nameText(
+                  _keepKoreanWordsWithin(
+                    shown,
+                    style: _nameTextStyle(context),
+                    textScaler: MediaQuery.textScalerOf(context),
+                    textDirection: Directionality.of(context),
+                    locale: Localizations.maybeLocaleOf(context),
+                    maxWidth: constraints.maxWidth,
+                  ),
+                ),
+              )
+            : nameText(shown),
       ),
     ),
   );
