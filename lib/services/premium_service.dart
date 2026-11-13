@@ -179,17 +179,19 @@ class PremiumService extends ChangeNotifier {
   bool get hasCoinPremium {
     final expiresAt = _serverCoinPremiumExpiresAt;
     if (expiresAt == null || !expiresAt.isAfter(DateTime.now())) return false;
-    final auth = _boundGoogleAuth;
-    return auth == null ||
-        (auth.account != null && _serverCoinPremiumOwnerId == auth.account!.id);
+    final account = _boundGoogleAuth?.account;
+    return account != null && _serverCoinPremiumOwnerId == account.id;
   }
 
   /// Only an account-matched, authenticated API response may update expiry.
   void applyServerCoinPremiumExpiry(DateTime? expiresAt, {String? accountId}) {
     final auth = _boundGoogleAuth;
+    // A full Premium grant must never be installed without a bound,
+    // authenticated owner, even if a caller passes a future expiry.
     if (expiresAt != null &&
-        auth != null &&
-        (accountId == null || auth.account?.id != accountId)) {
+        (auth?.account == null ||
+            accountId == null ||
+            auth!.account!.id != accountId)) {
       return;
     }
     _coinPremiumExpiryTimer?.cancel();
