@@ -9197,7 +9197,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get rewardUnlockAllAds => 'Sin anuncios';
 
   @override
-  String get rewardUnlockFullPremium => 'Todas las funciones y sin anuncios';
+  String get rewardUnlockFullPremium => 'Paquete de todas las ventajas';
 
   @override
   String get rewardUnlockChoose => 'Seleccionar';
