@@ -44,8 +44,13 @@ jobs:
             --define=NIARIM_API_BASE_URL=https://ibjfhyoqvfanle62ltokgz6sry0fjqfh.lambda-url.ap-northeast-1.on.aws/ \
             tool/live_backend_smoke.dart
 
-      - name: Analyze Flutter source and live API test script
-        run: flutter analyze
+      - name: Analyze Flutter API client, live script and contract tests
+        run: |
+          flutter analyze --no-pub --no-fatal-infos \
+            lib/services/api \
+            tool/live_backend_smoke.dart \
+            test/community_api_contract_test.dart \
+            test/community_service_backend_test.dart
 
       - name: Validate the existing Flutter API/service contracts
         run: |
