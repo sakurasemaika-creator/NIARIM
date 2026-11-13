@@ -9140,8 +9140,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get rewardUnlockBestValue => 'Mejor valor';
 
   @override
-  String get rewardUnlockBestExplain =>
-      'Más ventajoso que canjear cada beneficio por separado';
+  String get rewardUnlockBestExplain => 'Reúne las mismas ventajas que Premium en un paquete con descuento';
 
   @override
   String get rewardUnlockEarning =>
