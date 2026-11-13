@@ -264,12 +264,9 @@ void main() {
         entry.id == folders.$4!.id && entry.isFolder), isTrue);
     LocalFileTrashService.changes.value++;
     await settle();
-    // Keep one diagnostic real-Flutter capture if a lazily built Trash tab is
-    // still not present. It is not part of the 16 required deliverable frames.
-    print('TRASH_DEBUG: page count=${find.byType(TrashScreen).evaluate().length}'
-      ' scrollables=${find.descendant(of: find.byType(TrashScreen), matching: find.byType(Scrollable)).evaluate().length}'
-      ' folderText=${find.text('削除した作品フォルダ').evaluate().length}');
-    await shot('diagnostic_trash_before_folder_selection');
+    // A second settling pass lets the Trash FutureBuilder finish reading
+    // the newly archived folder before the widget finder searches the list.
+    await settle();
     final trashedFolder = find.text('削除した作品フォルダ');
     if (trashedFolder.evaluate().isEmpty) {
       // The Trash list is lazy, and a new record can be outside its viewport.
@@ -283,10 +280,6 @@ void main() {
         maxScrolls: 15,
       );
       await settle();
-    }
-    if (trashedFolder.evaluate().isEmpty) {
-      // Retain a genuine Flutter frame for diagnosis, not as a final capture.
-      await shot('diagnostic_trash_folder_missing');
     }
     expect(trashedFolder, findsWidgets);
     await tester.longPress(trashedFolder.first);
