@@ -79,7 +79,7 @@ void main() {
   });
 
   testWidgets(
-    'duration picker is above benefit checkboxes and recalculates each price',
+    'duration picker remains above benefits and rejects stale quoted prices',
     (tester) async {
       final premium = PremiumService();
       final settings = SettingsService();
@@ -120,7 +120,14 @@ void main() {
       );
       expect(before.dy, lessThan(after.dy));
 
-      expect(find.text('110 coins'), findsOneWidget);
+      // The injected 110-coin quote is stale. Show the owner-final 750-coin
+      // hourly price instead; a stale quote must never authorize spending.
+      final toneCurve = find.byKey(const Key('rewardFeature_toneCurve'));
+      expect(
+        find.descendant(of: toneCurve, matching: find.textContaining('750 coins')),
+        findsOneWidget,
+      );
+      expect(find.textContaining('110 coins'), findsNothing);
       await tester.tap(find.byKey(const Key('rewardDurationButton')));
       await tester.pumpAndSettle();
       // Categories start collapsed so days remains reachable on small screens.
@@ -131,7 +138,13 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(day2);
       await tester.pumpAndSettle();
-      expect(find.text('940 coins'), findsOneWidget);
+      // Two days use the owner-final day price (1800 x 2), not the
+      // injected stale 470-coin day rate.
+      expect(
+        find.descendant(of: toneCurve, matching: find.textContaining('3600 coins')),
+        findsOneWidget,
+      );
+      expect(find.textContaining('940 coins'), findsNothing);
 
       // No wallet/SSV/price quote is connected: neither action can spend coins.
       final goalButton = find.byKey(const Key('rewardSetGoalButton'));
