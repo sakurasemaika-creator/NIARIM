@@ -1,5 +1,6 @@
 # Isolated ECDSA + DynamoDB transaction integration checks.
 # NEVER connects to AWS production, grants live coins or uses live AdMob.
+# Verify exact +10 reward, signature, replay and daily quota after latest changes.
 name: Reward SSV DynamoDB Local integration
 on:
   push:
