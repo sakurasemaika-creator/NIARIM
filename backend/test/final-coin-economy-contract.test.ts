@@ -24,512 +24,512 @@ const CREATOR: readonly (readonly [string, number])[] =
   [
     [
       "bookmark_rank_1",
-      200
+      205
     ],
     [
       "bookmark_rank_10",
-      75
-    ],
-    [
-      "bookmark_rank_3",
-      125
-    ],
-    [
-      "bookmark_rank_50",
-      30
-    ],
-    [
-      "edit_100000h",
-      75
-    ],
-    [
-      "edit_10000h",
-      60
-    ],
-    [
-      "edit_1000h",
-      45
-    ],
-    [
-      "edit_100h",
-      30
-    ],
-    [
-      "edit_10h",
-      15
-    ],
-    [
-      "edit_1h",
-      5
-    ],
-    [
-      "edit_20h",
-      20
-    ],
-    [
-      "edit_25000h",
-      65
-    ],
-    [
-      "edit_2500h",
-      50
-    ],
-    [
-      "edit_250h",
-      35
-    ],
-    [
-      "edit_50000h",
-      70
-    ],
-    [
-      "edit_5000h",
-      55
-    ],
-    [
-      "edit_500h",
-      40
-    ],
-    [
-      "edit_50h",
-      25
-    ],
-    [
-      "edit_5h",
-      10
-    ],
-    [
-      "followers_10",
-      5
-    ],
-    [
-      "followers_100",
-      15
-    ],
-    [
-      "followers_1000",
-      25
-    ],
-    [
-      "followers_10000",
-      35
-    ],
-    [
-      "followers_100000",
-      45
-    ],
-    [
-      "followers_1000000",
-      60
-    ],
-    [
-      "followers_250000",
-      50
-    ],
-    [
-      "followers_50",
-      10
-    ],
-    [
-      "followers_500",
-      20
-    ],
-    [
-      "followers_5000",
-      30
-    ],
-    [
-      "followers_50000",
-      40
-    ],
-    [
-      "followers_500000",
-      55
-    ],
-    [
-      "work_bookmarks_10",
-      10
-    ],
-    [
-      "work_bookmarks_100",
-      55
-    ],
-    [
-      "work_bookmarks_1000",
-      120
-    ],
-    [
-      "work_bookmarks_150",
-      60
-    ],
-    [
-      "work_bookmarks_20",
-      15
-    ],
-    [
-      "work_bookmarks_200",
-      65
-    ],
-    [
-      "work_bookmarks_250",
-      70
-    ],
-    [
-      "work_bookmarks_30",
-      20
-    ],
-    [
-      "work_bookmarks_300",
-      75
-    ],
-    [
-      "work_bookmarks_350",
       80
     ],
     [
-      "work_bookmarks_40",
-      25
+      "bookmark_rank_3",
+      130
     ],
     [
-      "work_bookmarks_400",
-      85
-    ],
-    [
-      "work_bookmarks_450",
-      90
-    ],
-    [
-      "work_bookmarks_50",
-      30
-    ],
-    [
-      "work_bookmarks_500",
-      95
-    ],
-    [
-      "work_bookmarks_60",
+      "bookmark_rank_50",
       35
     ],
     [
-      "work_bookmarks_600",
-      100
+      "edit_100000h",
+      80
     ],
     [
-      "work_bookmarks_70",
-      40
+      "edit_10000h",
+      65
     ],
     [
-      "work_bookmarks_700",
-      105
-    ],
-    [
-      "work_bookmarks_80",
-      45
-    ],
-    [
-      "work_bookmarks_800",
-      110
-    ],
-    [
-      "work_bookmarks_90",
+      "edit_1000h",
       50
     ],
     [
-      "work_bookmarks_900",
+      "edit_100h",
+      35
+    ],
+    [
+      "edit_10h",
+      20
+    ],
+    [
+      "edit_1h",
+      10
+    ],
+    [
+      "edit_20h",
+      25
+    ],
+    [
+      "edit_25000h",
+      70
+    ],
+    [
+      "edit_2500h",
+      55
+    ],
+    [
+      "edit_250h",
+      40
+    ],
+    [
+      "edit_50000h",
+      75
+    ],
+    [
+      "edit_5000h",
+      60
+    ],
+    [
+      "edit_500h",
+      45
+    ],
+    [
+      "edit_50h",
+      30
+    ],
+    [
+      "edit_5h",
+      15
+    ],
+    [
+      "followers_10",
+      10
+    ],
+    [
+      "followers_100",
+      20
+    ],
+    [
+      "followers_1000",
+      30
+    ],
+    [
+      "followers_10000",
+      40
+    ],
+    [
+      "followers_100000",
+      50
+    ],
+    [
+      "followers_1000000",
+      65
+    ],
+    [
+      "followers_250000",
+      55
+    ],
+    [
+      "followers_50",
+      15
+    ],
+    [
+      "followers_500",
+      25
+    ],
+    [
+      "followers_5000",
+      35
+    ],
+    [
+      "followers_50000",
+      45
+    ],
+    [
+      "followers_500000",
+      60
+    ],
+    [
+      "work_bookmarks_10",
+      15
+    ],
+    [
+      "work_bookmarks_100",
+      60
+    ],
+    [
+      "work_bookmarks_1000",
+      125
+    ],
+    [
+      "work_bookmarks_150",
+      65
+    ],
+    [
+      "work_bookmarks_20",
+      20
+    ],
+    [
+      "work_bookmarks_200",
+      70
+    ],
+    [
+      "work_bookmarks_250",
+      75
+    ],
+    [
+      "work_bookmarks_30",
+      25
+    ],
+    [
+      "work_bookmarks_300",
+      80
+    ],
+    [
+      "work_bookmarks_350",
+      85
+    ],
+    [
+      "work_bookmarks_40",
+      30
+    ],
+    [
+      "work_bookmarks_400",
+      90
+    ],
+    [
+      "work_bookmarks_450",
+      95
+    ],
+    [
+      "work_bookmarks_50",
+      35
+    ],
+    [
+      "work_bookmarks_500",
+      100
+    ],
+    [
+      "work_bookmarks_60",
+      40
+    ],
+    [
+      "work_bookmarks_600",
+      105
+    ],
+    [
+      "work_bookmarks_70",
+      45
+    ],
+    [
+      "work_bookmarks_700",
+      110
+    ],
+    [
+      "work_bookmarks_80",
+      50
+    ],
+    [
+      "work_bookmarks_800",
       115
     ],
     [
+      "work_bookmarks_90",
+      55
+    ],
+    [
+      "work_bookmarks_900",
+      120
+    ],
+    [
       "work_posted",
-      5
+      10
     ]
   ] as const;
 const PLAZA: readonly (readonly [string, number])[] =
   [
     [
       "plaza_day_15m",
-      10
+      15
     ],
     [
       "plaza_day_30m",
-      15
+      20
     ],
     [
       "plaza_day_5m",
-      5
-    ],
-    [
-      "plaza_day_60m",
-      20
-    ],
-    [
-      "plaza_month_10h",
-      15
-    ],
-    [
-      "plaza_month_20h",
-      20
-    ],
-    [
-      "plaza_month_40h",
-      25
-    ],
-    [
-      "plaza_week_1h",
-      5
-    ],
-    [
-      "plaza_week_3h",
       10
     ],
     [
-      "plaza_week_6h",
+      "plaza_day_60m",
+      25
+    ],
+    [
+      "plaza_month_10h",
+      20
+    ],
+    [
+      "plaza_month_20h",
+      25
+    ],
+    [
+      "plaza_month_40h",
+      30
+    ],
+    [
+      "plaza_week_1h",
+      10
+    ],
+    [
+      "plaza_week_3h",
       15
+    ],
+    [
+      "plaza_week_6h",
+      20
     ]
   ] as const;
 const RECURRING: readonly (readonly [string, number])[] =
   [
     [
       "visit_month_10",
-      5
+      10
     ],
     [
       "visit_month_20",
-      10
+      15
     ],
     [
       "visit_month_25",
-      15
+      20
     ],
     [
       "visit_week_3",
-      5
-    ],
-    [
-      "visit_week_5",
       10
     ],
     [
-      "visit_week_7",
+      "visit_week_5",
       15
+    ],
+    [
+      "visit_week_7",
+      20
     ]
   ] as const;
 const LOGIN: readonly (readonly [number, number])[] =
   [
     [
       5,
-      5
-    ],
-    [
-      10,
-      6
-    ],
-    [
-      15,
-      7
-    ],
-    [
-      20,
-      8
-    ],
-    [
-      25,
-      9
-    ],
-    [
-      30,
       10
     ],
     [
-      35,
+      10,
       11
     ],
     [
-      40,
+      15,
       12
     ],
     [
-      45,
+      20,
       13
     ],
     [
-      50,
+      25,
       14
     ],
     [
-      60,
+      30,
       15
     ],
     [
-      70,
+      35,
       16
     ],
     [
-      80,
+      40,
       17
     ],
     [
-      90,
+      45,
       18
     ],
     [
-      100,
+      50,
       19
     ],
     [
+      60,
+      20
+    ],
+    [
+      70,
+      21
+    ],
+    [
+      80,
+      22
+    ],
+    [
+      90,
+      23
+    ],
+    [
+      100,
+      24
+    ],
+    [
       150,
-      40
+      45
     ],
     [
       200,
-      42
+      47
     ],
     [
       250,
-      44
+      49
     ],
     [
       300,
-      46
+      51
     ],
     [
       350,
-      48
+      53
     ],
     [
       400,
-      50
+      55
     ],
     [
       450,
-      52
+      57
     ],
     [
       500,
-      54
+      59
     ],
     [
       600,
-      60
+      65
     ],
     [
       700,
-      64
+      69
     ],
     [
       800,
-      68
+      73
     ],
     [
       900,
-      72
+      77
     ],
     [
       1000,
-      76
+      81
     ],
     [
       1100,
-      80
-    ],
-    [
-      1200,
       85
     ],
     [
-      1300,
+      1200,
       90
     ],
     [
-      1400,
+      1300,
       95
     ],
     [
-      1500,
+      1400,
       100
     ],
     [
-      1600,
+      1500,
       105
     ],
     [
-      1700,
+      1600,
       110
     ],
     [
-      1800,
+      1700,
       115
     ],
     [
-      1900,
+      1800,
       120
     ],
     [
-      2000,
+      1900,
       125
     ],
     [
-      2100,
+      2000,
       130
     ],
     [
-      2200,
+      2100,
       135
     ],
     [
-      2300,
+      2200,
       140
     ],
     [
-      2400,
+      2300,
       145
     ],
     [
-      2500,
+      2400,
       150
     ],
     [
-      2600,
+      2500,
       155
     ],
     [
-      2700,
+      2600,
       160
     ],
     [
-      2800,
+      2700,
       165
     ],
     [
-      2900,
+      2800,
       170
     ],
     [
-      3000,
+      2900,
       175
     ],
     [
-      3100,
+      3000,
       180
     ],
     [
-      3200,
+      3100,
       185
     ],
     [
-      3300,
+      3200,
       190
     ],
     [
-      3400,
+      3300,
       195
     ],
     [
-      3500,
+      3400,
       200
     ],
     [
-      3600,
+      3500,
       205
+    ],
+    [
+      3600,
+      210
     ]
   ] as const;
 
@@ -538,9 +538,9 @@ function byId(data:readonly {id:string,coins:number}[]):[string,number][] {
     .sort((a,b)=>a[0].localeCompare(b[0],"en"));
 }
 
-describe("final coin economy v1 is frozen across all reward categories",()=>{
+describe("versioned coin economy v2 remains exact across all reward categories",()=>{
   it("locks all 55 original creator mission awards by immutable mission ID",()=>{
-    expect(FINAL_COIN_ECONOMY_VERSION).toBe("economy-v1-final-20261110");
+    expect(FINAL_COIN_ECONOMY_VERSION).toBe("economy-v2-min10-repriced-20261113");
     expect(CREATOR).toHaveLength(55);
     expect(byId(CREATOR_MISSIONS)).toEqual(CREATOR);
   });
@@ -548,7 +548,7 @@ describe("final coin economy v1 is frozen across all reward categories",()=>{
   it("locks every exact value in the complete 480-mission grid",()=>{
     const expected=WORK_COUNT_GOALS.flatMap((w,i)=>
       BOOKMARK_GOALS.map((b,j)=>[
-        `works_${w}_x_${b}`,5*(1+i+j),
+        `works_${w}_x_${b}`,5*(2+i+j),
       ] as [string,number]));
     expect(WORK_COUNT_MISSIONS).toHaveLength(480);
     expect(byId(WORK_COUNT_MISSIONS)).toEqual(expected.sort(
@@ -561,14 +561,14 @@ describe("final coin economy v1 is frozen across all reward categories",()=>{
     expect(byId(RECURRING_MISSIONS)).toEqual(RECURRING);
   });
 
-  it("locks all 54 cumulative login awards and the separate daily 1 coin",()=>{
-    expect(DAILY_LOGIN_COINS).toBe(1);
+  it("locks all 54 cumulative login awards and the separate daily 10 coins",()=>{
+    expect(DAILY_LOGIN_COINS).toBe(10);
     expect(LOGIN_BONUS_MILESTONES.map(m=>[m.days,m.coins])).toEqual(LOGIN);
   });
 
   it("locks rewarded-ad, 1-month Premium and 1-year Premium tariffs",()=>{
     expect(INITIAL_REWARDED_COINS_PER_COMPLETION).toBe(10);
-    expect(COIN_BENEFIT_PRICE_VERSION).toBe("v3-final-annual550000");
+    expect(COIN_BENEFIT_PRICE_VERSION).toBe("v4-min10-repriced-20261113");
     expect(FINAL_PREMIUM_MONTHLY_COINS).toBe(55000);
     expect(finalBenefitCoins("fullPremium","month")).toBe(55000);
     expect(FINAL_PREMIUM_YEARLY_COINS).toBe(550000);
@@ -584,7 +584,7 @@ describe("final coin economy v1 is frozen across all reward categories",()=>{
       150000,250000,400000,600000,800000,1000000];
     expect(RANKING_POPULATION_TIERS).toEqual(populations);
     expect(ranks.map(m=>[m.required,m.coins,m.bit])).toEqual([
-      [50,30,13],[10,75,14],[3,125,15],[1,200,16],
+      [50,35,13],[10,80,14],[3,130,15],[1,205,16],
     ]);
     for(let i=0;i<populations.length;i++)for(const mission of ranks){
       const scaled=5*Math.ceil(mission.coins*(6+i)/30);
