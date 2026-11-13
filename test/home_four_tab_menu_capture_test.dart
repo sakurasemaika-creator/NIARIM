@@ -256,7 +256,17 @@ void main() {
     expect(find.byKey(Key('homeSelectedMarker_shared_folder:${folders.$3!.id}')), findsOneWidget);
     await shot('15_shared_folder_selected');
     await tab(3);
-    await tester.longPress(find.text('削除した作品フォルダ').first);
+    // The folder is archived while another tab is active. Confirm the real
+    // on-disk entry, then refresh the Trash tab's asynchronous list.
+    final localTrash = await tester.runAsync(LocalFileTrashService.list);
+    expect(localTrash, isNotNull);
+    expect(localTrash!.any((entry) =>
+        entry.id == folders.$4!.id && entry.isFolder), isTrue);
+    LocalFileTrashService.changes.value++;
+    await settle();
+    final trashedFolder = find.text('削除した作品フォルダ');
+    expect(trashedFolder, findsWidgets);
+    await tester.longPress(trashedFolder.first);
     await settle();
     expect(find.byKey(Key('homeSelectedMarker_trash_local:${folders.$4!.id}')), findsOneWidget);
     await shot('16_trash_folder_selected');
