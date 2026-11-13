@@ -50,6 +50,8 @@ const Duration kToastLongestShown = Duration(milliseconds: 4250);
 ///   のと同じ結果）。隠す・すぐ消すだけで後に何も出さないとき、入れ替え
 ///   ではなく後ろに並んだ知らせ（失敗の知らせ等）、薄くなる前から並んで
 ///   いた知らせは下げない。
+/// * [withdrawSnackBars]で、自分が出した知らせだけを取り下げられる（出て
+///   いるものは薄くして閉じ、順番を待っているものは出さずに下げる）。
 /// * 「動きを減らす」設定ではアニメーションなしで消える。読み上げ・
 ///   スイッチ操作（accessibleNavigation）でもアニメーションなしで、Flutterが
 ///   残す知らせ（操作ボタン付きで`persist`を指定していないもの）だけは、
@@ -181,7 +183,7 @@ class AppToastMessengerState extends ScaffoldMessengerState {
     if (_leaving != null) return;
     if (reason == SnackBarClosedReason.timeout &&
         _assistiveUse &&
-        _toasts.length == 1 &&
+        !_othersWaiting &&
         _toasts.first.toast.keptForAssistiveUse) {
       _heldForAssistiveUse = true;
       return;
@@ -233,6 +235,31 @@ class AppToastMessengerState extends ScaffoldMessengerState {
     super.clearSnackBars();
   }
 
+  /// [test]に合う知らせを取り下げる。出ている（出てくる途中も）ものは
+  /// [hideCurrentSnackBar]と同じく薄くして閉じ、順番を待っているものは出さずに
+  /// 下げる（閉じた理由はremove）。合わない知らせには触れない。
+  ///
+  /// [ScaffoldFeatureController.close]は出ている知らせにしか使えず、
+  /// `hideCurrentSnackBar`・`clearSnackBars`は他の機能の知らせまで閉じる。
+  /// 自分が出した知らせだけを閉じたいときに使う（[test]は[SnackBar.key]等で
+  /// 見分ける）。
+  void withdrawSnackBars(bool Function(SnackBar snackBar) test) {
+    // 先に印を付ける（出ている知らせがその場で消えると、次の知らせが
+    // 出始めるので）。
+    for (final waiting in _toasts.skip(1)) {
+      if (test(waiting.toast)) waiting.withdrawn = true;
+    }
+    if (_toasts.isNotEmpty && test(_toasts.first.toast)) {
+      hideCurrentSnackBar();
+    }
+  }
+
+  /// 出ている知らせの後に出す知らせがあるか（取り下げた・追い越された
+  /// 知らせは出さないので数えない）。
+  bool get _othersWaiting => _toasts
+      .skip(1)
+      .any((waiting) => !waiting.withdrawn && !waiting.overtaken);
+
   void _noteReplacing() {
     if (_replacing) return;
     _replacing = true;
@@ -240,9 +267,7 @@ class AppToastMessengerState extends ScaffoldMessengerState {
   }
 
   void _startExit() {
-    final whole = _toasts.length > 1
-        ? kToastFadeOutWhenReplaced
-        : kToastFadeOut;
+    final whole = _othersWaiting ? kToastFadeOutWhenReplaced : kToastFadeOut;
     _exit.animateBack(0.0, duration: whole * _exit.value);
   }
 
@@ -269,9 +294,11 @@ class AppToastMessengerState extends ScaffoldMessengerState {
     if (_toasts.isNotEmpty) _toasts.removeFirst().animation.retire();
     // 基底クラスは、ここで待っていた次の知らせを出し始める。
     super.removeCurrentSnackBar(reason: reason);
-    // 追い越された入れ替えは、見える前にその場で下げる（素の
-    // removeCurrentSnackBarで入れ替えたときと同じく、閉じた理由はremove）。
-    while (_toasts.isNotEmpty && _toasts.first.overtaken) {
+    // 追い越された入れ替え・取り下げた知らせは、見える前にその場で下げる
+    // （素のremoveCurrentSnackBarで入れ替えたときと同じく、閉じた理由は
+    // remove）。
+    while (_toasts.isNotEmpty &&
+        (_toasts.first.overtaken || _toasts.first.withdrawn)) {
       _toasts.removeFirst().animation.retire();
       super.removeCurrentSnackBar();
     }
@@ -500,4 +527,8 @@ class _Queued {
 
   /// 同じ薄くなる途中の、後の入れ替えに追い越された（出さずに下げる）。
   bool overtaken = false;
+
+  /// 順番を待っている間に取り下げられた（出さずに下げる、
+  /// [AppToastMessengerState.withdrawSnackBars]）。
+  bool withdrawn = false;
 }

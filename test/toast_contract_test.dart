@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/app.dart';
 import 'package:niarim/app_bootstrap.dart';
+import 'package:niarim/engine/niapro_serializer.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/router.dart';
 import 'package:niarim/screens/home/widgets/project_list_widget.dart';
@@ -578,6 +579,447 @@ void main() {
       );
     });
 
+    Finder star(String id) => find.descendant(
+      of: find.byKey(Key('collectionFavorite_$id')),
+      matching: find.byType(IconButton),
+    );
+
+    /// 作品の保存（.niapro）を書けなくする。同じ名前のフォルダを置くので、
+    /// rootで動かしても置き換えに失敗する。戻す関数を返す。
+    Future<void Function()> breakSave(WidgetTester tester, String id) async {
+      final base = (await tester.runAsync(NiaproSerializer.projectsBasePath))!;
+      final file = File('$base/$id/$id.niapro');
+      final aside = File('${file.path}.aside');
+      file.renameSync(aside.path);
+      Directory(file.path).createSync();
+      File('${file.path}/keep').writeAsStringSync('x');
+      return () {
+        Directory(file.path).deleteSync(recursive: true);
+        aside.renameSync(file.path);
+      };
+    }
+
+    /// [watched]の知らせ（文）ごとに、出切っていた時間とツリーにあった時間を
+    /// 足しながら[by]だけ描く。ファイルの読み書き（お気に入りの保存等）も
+    /// 実時間で進める。
+    Future<void> step(
+      WidgetTester tester,
+      Map<String, _Noticed> watched, [
+      Duration by = frame,
+    ]) async {
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 2)),
+      );
+      await tester.pump(by);
+      for (final MapEntry(key: text, value: times) in watched.entries) {
+        final mine = find.descendant(of: toast(), matching: find.text(text));
+        if (mine.evaluate().isEmpty) continue;
+        times.inTree += by;
+        if (toastOpacity() == 1.0) times.fullyShown += by;
+      }
+    }
+
+    /// 知らせが全部消えるまで（[stopText]が[stopAfter]出切ったら、そこまで）
+    /// 1フレームずつ数える。
+    Future<void> follow(
+      WidgetTester tester,
+      Map<String, _Noticed> watched, {
+      String? stopText,
+      Duration? stopAfter,
+    }) async {
+      var elapsed = Duration.zero;
+      while (toastOpacity() != null && elapsed < const Duration(seconds: 15)) {
+        await step(tester, watched);
+        elapsed += frame;
+        if (stopText != null && watched[stopText]!.fullyShown >= stopAfter!) {
+          break;
+        }
+      }
+      for (final MapEntry(key: text, value: times) in watched.entries) {
+        debugPrint(
+          '「$text」：出切っていた時間 ${times.fullyShown.inMilliseconds} ms、'
+          'ツリーにあった時間 ${times.inTree.inMilliseconds} ms',
+        );
+      }
+    }
+
+    // ホームの星はカードがダブルタップ（キャンバスを開く）を待つので、
+    // 押してから約0.3秒後に動く。作品の操作の始めに出ている知らせを種類を
+    // 見ずに隠していたので、ゴミ箱へ移した直後に星を押すと「元に戻す」が
+    // 出る前（または出てすぐ）に消え、ゴミ箱へ移した作品を戻せなかった。
+    for (final via in ['カードのメニュー', '選択のバー']) {
+      for (final delay in [100, 400]) {
+        testWidgets('ホーム：$viaからゴミ箱へ移して$delay ms後に別の作品の星を押しても、'
+            '「元に戻す」が4秒出ていて押すと戻る', (tester) async {
+          final service = await boot(tester, names: ['apple', 'banana']);
+          final bananaId = service.projects
+              .firstWhere((p) => p.name == 'banana')
+              .id;
+          bool favorite() =>
+              service.projects.firstWhere((p) => p.id == bananaId).isFavorite;
+          if (via == 'カードのメニュー') {
+            await tester.tap(card('apple'), buttons: kSecondaryMouseButton);
+            await settle(tester);
+            await tester.tap(find.text(l10n.homeMoveToTrash));
+          } else {
+            await tester.longPress(card('apple'));
+            await settle(tester);
+            await tester.tap(find.byTooltip(l10n.homeMoveToTrash));
+            await settle(tester);
+            await tester.tap(
+              find.widgetWithText(FilledButton, l10n.commonMove),
+            );
+          }
+          final moved = l10n.homeMovedToTrashSnackbar(1);
+          final watched = {moved: _Noticed()};
+          // ゴミ箱へ移す保存は実時間で進め、知らせが出たフレームから数える。
+          for (
+            var i = 0;
+            i < 400 && watched[moved]!.inTree == Duration.zero;
+            i++
+          ) {
+            await step(tester, watched, const Duration(milliseconds: 1));
+          }
+          expect(
+            watched[moved]!.inTree,
+            greaterThan(Duration.zero),
+            reason: 'ゴミ箱へ移した知らせが出なかった',
+          );
+          expect(service.trash.map((p) => p.name), ['apple']);
+          for (var t = 0; t < delay; t += 20) {
+            await step(tester, watched, const Duration(milliseconds: 20));
+          }
+          await tester.tap(star(bananaId));
+          await follow(
+            tester,
+            watched,
+            stopText: moved,
+            stopAfter: const Duration(seconds: 4),
+          );
+          expect(
+            watched[moved]!.fullyShown,
+            greaterThanOrEqualTo(const Duration(seconds: 4)),
+            reason: '星を押したら「元に戻す」が消えた',
+          );
+          expect(favorite(), isTrue, reason: '星が効かなかった');
+          // まだ出ている「元に戻す」を押すと戻る。
+          await tester.tap(
+            find.descendant(
+              of: toast(),
+              matching: find.text(l10n.homeUndoAction),
+            ),
+          );
+          for (
+            var i = 0;
+            i < 400 && service.projects.every((p) => p.name != 'apple');
+            i++
+          ) {
+            await step(tester, watched);
+          }
+          await settle(tester);
+          expect(service.projects.map((p) => p.name), contains('apple'));
+          expect(service.trash, isEmpty);
+          expect(card('apple'), findsOneWidget);
+        });
+      }
+    }
+
+    /// ホームで「apple」をコピーし、コピーの知らせが出切るまで数える。
+    Future<String> copyApple(
+      WidgetTester tester,
+      Map<String, _Noticed> watched,
+    ) async {
+      await tester.longPress(card('apple'));
+      await settle(tester);
+      await tester.tap(find.byTooltip(l10n.commonCopy));
+      final copied = l10n.homeCopiedSnackbar(1);
+      watched[copied] = _Noticed();
+      for (
+        var i = 0;
+        i < 100 && watched[copied]!.fullyShown == Duration.zero;
+        i++
+      ) {
+        await step(tester, watched);
+      }
+      expect(
+        watched[copied]!.fullyShown,
+        greaterThan(Duration.zero),
+        reason: 'コピーの知らせが出なかった',
+      );
+      return copied;
+    }
+
+    // 作品の操作（お気に入り等）を始めるときは、前の操作の失敗の知らせだけを
+    // 閉じる（やり直したのに前の失敗が出たままにならない）。他の機能の知らせ
+    // （コピーの知らせ等）は閉じない。
+    testWidgets('ホーム：前の操作の失敗の知らせは次の操作で閉じ、コピーの知らせは閉じない', (tester) async {
+      final service = await boot(tester, names: ['apple', 'banana']);
+      final bananaId = service.projects
+          .firstWhere((p) => p.name == 'banana')
+          .id;
+      bool favorite() =>
+          service.projects.firstWhere((p) => p.id == bananaId).isFavorite;
+      final failed = l10n.homeTrashOperationFailed;
+      final watched = {failed: _Noticed()};
+      final restore = await breakSave(tester, bananaId);
+      await tester.tap(star(bananaId));
+      for (
+        var i = 0;
+        i < 400 && watched[failed]!.fullyShown == Duration.zero;
+        i++
+      ) {
+        await step(tester, watched);
+      }
+      expect(
+        watched[failed]!.fullyShown,
+        greaterThan(Duration.zero),
+        reason: 'お気に入りを保存できなかったと知らせなかった',
+      );
+      expect(favorite(), isFalse);
+
+      // もう一度押す（今度は保存できる）と、前の失敗の知らせは閉じる。
+      restore();
+      await tester.tap(star(bananaId));
+      final failure = find.descendant(of: toast(), matching: find.text(failed));
+      var waited = Duration.zero;
+      while (failure.evaluate().isNotEmpty &&
+          waited < const Duration(seconds: 6)) {
+        await step(tester, watched);
+        waited += frame;
+      }
+      debugPrint('前の失敗の知らせは、もう一度押してから${waited.inMilliseconds} msで消えた');
+      expect(
+        waited,
+        lessThanOrEqualTo(const Duration(milliseconds: 1200)),
+        reason: '前の失敗の知らせが、もう一度押した後も出続けた',
+      );
+      for (var i = 0; i < 400 && !favorite(); i++) {
+        await step(tester, watched);
+      }
+      expect(favorite(), isTrue);
+
+      // コピーの知らせが出ているときにお気に入りを外しても、コピーの知らせは
+      // 自分の時間だけ出ている。
+      final copied = await copyApple(tester, watched);
+      await tester.tap(star(bananaId));
+      await follow(tester, watched);
+      expect(
+        watched[copied]!.fullyShown,
+        greaterThanOrEqualTo(const Duration(milliseconds: 3900)),
+        reason: 'お気に入りを外したらコピーの知らせが消えた',
+      );
+      for (var i = 0; i < 400 && favorite(); i++) {
+        await step(tester, watched);
+      }
+      expect(favorite(), isFalse, reason: '星が効かなかった');
+    });
+
+    /// 読み上げの木に、[text]を読み上げる知らせ（liveRegion）があるか。
+    bool announced(String text) => find.semantics
+        .byPredicate(
+          (node) =>
+              node.label.contains(text) && node.flagsCollection.isLiveRegion,
+        )
+        .evaluate()
+        .isNotEmpty;
+
+    /// 星を押してお気に入りの保存を失敗させる（失敗の知らせが並ぶ）。
+    Future<void> failingStar(
+      WidgetTester tester,
+      String id,
+      Map<String, _Noticed> watched,
+    ) async {
+      final errors = AppErrorReporter.recentErrors.length;
+      await tester.tap(star(id));
+      for (
+        var i = 0;
+        i < 400 && AppErrorReporter.recentErrors.length == errors;
+        i++
+      ) {
+        await step(tester, watched);
+      }
+      expect(
+        AppErrorReporter.recentErrors.length,
+        errors + 1,
+        reason: '保存が失敗しなかった',
+      );
+      await step(tester, watched);
+    }
+
+    // 失敗の知らせが前の知らせの後ろで待っている間に次の操作が始まったら、
+    // 前の知らせはそのまま出し、失敗の知らせは出さずに下げる（押し直して
+    // 保存できた後で、前の失敗を出さない）。
+    testWidgets('ホーム：待っている失敗の知らせは、押し直して保存できたら出さずに下げる。前に出ている知らせは閉じない', (
+      tester,
+    ) async {
+      final service = await boot(tester, names: ['apple', 'banana']);
+      final bananaId = service.projects
+          .firstWhere((p) => p.name == 'banana')
+          .id;
+      bool favorite() =>
+          service.projects.firstWhere((p) => p.id == bananaId).isFavorite;
+      AppErrorReporter.recentErrors.clear();
+      addTearDown(AppErrorReporter.recentErrors.clear);
+      final failed = l10n.homeTrashOperationFailed;
+      final restore = await breakSave(tester, bananaId);
+
+      // 押し直さなければ、失敗の知らせはコピーの知らせの後に出る（並んで
+      // いることの確かめ）。
+      var watched = {failed: _Noticed()};
+      var copied = await copyApple(tester, watched);
+      await failingStar(tester, bananaId, watched);
+      await follow(tester, watched);
+      expect(
+        watched[failed]!.fullyShown,
+        greaterThan(Duration.zero),
+        reason: '失敗の知らせが並ばなかった',
+      );
+      expect(favorite(), isFalse);
+
+      // 並んでいる間に押し直して保存できたら、失敗の知らせは出さない。
+      watched = {failed: _Noticed()};
+      copied = await copyApple(tester, watched);
+      await failingStar(tester, bananaId, watched);
+      restore();
+      await tester.tap(star(bananaId));
+      for (var i = 0; i < 400 && !favorite(); i++) {
+        await step(tester, watched);
+      }
+      expect(favorite(), isTrue);
+      await follow(tester, watched);
+      expect(
+        watched[copied]!.fullyShown,
+        greaterThanOrEqualTo(const Duration(milliseconds: 3900)),
+        reason: 'お気に入りを押したらコピーの知らせが消えた',
+      );
+      expect(
+        watched[failed]!.inTree,
+        Duration.zero,
+        reason: '押し直して保存できたのに、前の失敗の知らせが出た',
+      );
+      expect(toast(), findsNothing);
+    });
+
+    // 読み上げ（TalkBack）の利用者にも、押し直して保存できた後で前の失敗を
+    // 読み上げない。
+    testWidgets('ホーム（読み上げ）：「元に戻す」の後ろで待っている失敗の知らせは、押し直して保存できたら読み上げない', (
+      tester,
+    ) async {
+      final semantics = tester.ensureSemantics();
+      tester.platformDispatcher.accessibilityFeaturesTestValue =
+          const FakeAccessibilityFeatures(accessibleNavigation: true);
+      addTearDown(
+        tester.platformDispatcher.clearAccessibilityFeaturesTestValue,
+      );
+      final service = await boot(tester, names: ['apple', 'banana', 'cherry']);
+      final bananaId = service.projects
+          .firstWhere((p) => p.name == 'banana')
+          .id;
+      bool favorite() =>
+          service.projects.firstWhere((p) => p.id == bananaId).isFavorite;
+      AppErrorReporter.recentErrors.clear();
+      addTearDown(AppErrorReporter.recentErrors.clear);
+      final moved = l10n.homeMovedToTrashSnackbar(1);
+      final failed = l10n.homeTrashOperationFailed;
+      final restore = await breakSave(tester, bananaId);
+
+      Future<Map<String, _Noticed>> trash(String name) async {
+        final watched = {moved: _Noticed(), failed: _Noticed()};
+        await tester.tap(card(name), buttons: kSecondaryMouseButton);
+        await settle(tester);
+        await tester.tap(find.text(l10n.homeMoveToTrash));
+        for (
+          var i = 0;
+          i < 400 && watched[moved]!.fullyShown == Duration.zero;
+          i++
+        ) {
+          await step(tester, watched, const Duration(milliseconds: 4));
+        }
+        expect(
+          watched[moved]!.fullyShown,
+          greaterThan(Duration.zero),
+          reason: 'ゴミ箱へ移した知らせが出なかった',
+        );
+        return watched;
+      }
+
+      /// 知らせが全部消えるまで進め、その間に[failed]を読み上げたか。
+      Future<bool> untilQuiet(Map<String, _Noticed> watched) async {
+        var heard = announced(failed);
+        for (
+          var t = Duration.zero;
+          t < const Duration(seconds: 12) && toastOpacity() != null;
+          t += frame
+        ) {
+          await step(tester, watched);
+          heard |= announced(failed);
+        }
+        expect(toast(), findsNothing);
+        return heard;
+      }
+
+      // 押し直さなければ、「元に戻す」の後に失敗の知らせを読み上げる（並んで
+      // いることの確かめ）。
+      var watched = await trash('apple');
+      await failingStar(tester, bananaId, watched);
+      expect(await untilQuiet(watched), isTrue, reason: '失敗の知らせが並ばなかった');
+
+      // 並んでいる間に押し直して保存できたら、失敗の知らせは読み上げない。
+      watched = await trash('cherry');
+      await failingStar(tester, bananaId, watched);
+      restore();
+      await tester.tap(star(bananaId));
+      var heard = false;
+      for (var i = 0; i < 400 && !favorite(); i++) {
+        await step(tester, watched);
+        heard |= announced(failed);
+      }
+      expect(favorite(), isTrue);
+      heard |= await untilQuiet(watched);
+      expect(heard, isFalse, reason: '押し直して保存できたのに、前の失敗を読み上げた');
+      expect(watched[failed]!.inTree, Duration.zero);
+      expect(
+        watched[moved]!.fullyShown,
+        greaterThanOrEqualTo(const Duration(milliseconds: 3900)),
+        reason: 'お気に入りを押したら「元に戻す」が消えた',
+      );
+      semantics.dispose();
+    });
+
+    // 失敗の知らせが待っている間に切り取ると、切り取りの知らせをすぐ出す
+    // ためにホームが待っている知らせを下げる（clearSnackBars）。下げられた
+    // 知らせは閉じた知らせとして終わらないので、覚えたまま残さない。
+    testWidgets('ホーム：待っている失敗の知らせが切り取りで下げられても、覚えたまま残らない', (tester) async {
+      final service = await boot(tester, names: ['apple', 'banana', 'cherry']);
+      final bananaId = service.projects
+          .firstWhere((p) => p.name == 'banana')
+          .id;
+      AppErrorReporter.recentErrors.clear();
+      addTearDown(AppErrorReporter.recentErrors.clear);
+      final failed = l10n.homeTrashOperationFailed;
+      final watched = {failed: _Noticed()};
+      final messenger = ScaffoldMessenger.of(home(tester));
+      final restore = await breakSave(tester, bananaId);
+      for (var round = 0; round < 3; round++) {
+        await copyApple(tester, watched);
+        await failingStar(tester, bananaId, watched);
+        await tester.longPress(card('cherry'));
+        await settle(tester);
+        await tester.tap(find.byTooltip(l10n.commonCut));
+        await follow(tester, watched);
+        await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+        await follow(tester, watched);
+        await settle(tester);
+      }
+      restore();
+      expect(toast(), findsNothing);
+      expect(
+        debugProjectActionFailuresTracked(messenger),
+        0,
+        reason: '下げられた失敗の知らせを覚えたまま残した',
+      );
+    });
+
     testWidgets('アプリ全体のキーから出す知らせ（通知を受けたときの形）', (tester) async {
       await boot(tester);
       // PushNotificationService._showForegroundと同じ出し方・同じ形。
@@ -684,6 +1126,105 @@ void main() {
     life = await watchToast(tester);
     expectWithinFiveSeconds(life, '起動に失敗した画面の操作ボタン付きの知らせ');
     expectGradualExit(life, '起動に失敗した画面の操作ボタン付きの知らせ');
+  });
+
+  // 素のScaffoldMessenger（アプリの外・部品だけのテスト）でも、作品の操作を
+  // 始めるときは前の失敗の知らせだけを閉じる。closeは出ている知らせにしか
+  // 使えないので、待っているものは出た所で閉じる。下げられた（clearSnackBars）
+  // 知らせは閉じた知らせとして終わらないので、覚えたまま残さない。
+  testWidgets('素のScaffoldMessenger：待っている失敗の知らせは出た所で閉じ、下げられた知らせは覚えたまま残さない', (
+    tester,
+  ) async {
+    late BuildContext context;
+    await tester.pumpWidget(
+      MaterialApp(
+        locale: const Locale('ja'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: Scaffold(
+          body: Builder(
+            builder: (c) {
+              context = c;
+              return const SizedBox.expand();
+            },
+          ),
+        ),
+      ),
+    );
+    final messenger = ScaffoldMessenger.of(context);
+    final failed = l10n.homeTrashOperationFailed;
+    Finder shown(String text) =>
+        find.descendant(of: toast(), matching: find.text(text));
+    Future<bool> fails() =>
+        runProjectAction(context, () async => throw StateError('rejected'));
+
+    // 前の知らせの後ろで失敗の知らせが待っている間に、次の操作が始まって
+    // 成功する。前の知らせは自分の時間だけ出て、失敗の知らせは出た所で閉じる。
+    messenger.showSnackBar(const SnackBar(content: Text('front')));
+    await tester.pump();
+    expect(await fails(), isFalse);
+    expect(await runProjectAction(context, () async {}), isTrue);
+    var front = Duration.zero;
+    var failure = Duration.zero;
+    for (
+      var t = Duration.zero;
+      t < const Duration(seconds: 12) && toast().evaluate().isNotEmpty;
+      t += frame
+    ) {
+      await tester.pump(frame);
+      if (shown('front').evaluate().isNotEmpty) front += frame;
+      if (shown(failed).evaluate().isNotEmpty) failure += frame;
+    }
+    debugPrint(
+      '素のメッセンジャー：前の知らせ ${front.inMilliseconds} ms、'
+      '待っていた失敗の知らせ ${failure.inMilliseconds} ms',
+    );
+    expect(toast(), findsNothing);
+    expect(
+      front,
+      greaterThanOrEqualTo(const Duration(milliseconds: 3900)),
+      reason: '次の操作で前の知らせが閉じた',
+    );
+    expect(failure, greaterThan(Duration.zero), reason: '失敗の知らせが並ばなかった');
+    expect(
+      failure,
+      lessThanOrEqualTo(const Duration(milliseconds: 700)),
+      reason: '成功した後で前の失敗の知らせが出続けた',
+    );
+
+    // 待っている失敗の知らせが下げられる（clearSnackBars）のを3回。
+    for (var round = 0; round < 3; round++) {
+      messenger.showSnackBar(const SnackBar(content: Text('front')));
+      await tester.pump();
+      expect(await fails(), isFalse);
+      messenger.clearSnackBars();
+      await tester.pumpAndSettle();
+      expect(toast(), findsNothing);
+    }
+    expect(
+      debugProjectActionFailuresTracked(messenger),
+      0,
+      reason: '下げられた失敗の知らせを覚えたまま残した',
+    );
+
+    // 出ている失敗の知らせは、時間で消えたら覚えたまま残さない。
+    expect(await fails(), isFalse);
+    await tester.pumpAndSettle(frame);
+    expect(shown(failed), findsOneWidget);
+    expect(debugProjectActionFailuresTracked(messenger), 1);
+    await tester.pump(const Duration(seconds: 5));
+    await tester.pumpAndSettle(frame);
+    expect(toast(), findsNothing);
+    expect(debugProjectActionFailuresTracked(messenger), 0);
+
+    // 出ている失敗の知らせは、次の操作で閉じる。
+    expect(await fails(), isFalse);
+    await tester.pumpAndSettle(frame);
+    expect(shown(failed), findsOneWidget);
+    expect(await runProjectAction(context, () async {}), isTrue);
+    await tester.pumpAndSettle(frame);
+    expect(toast(), findsNothing);
+    expect(debugProjectActionFailuresTracked(messenger), 0);
   });
 
   group('lib配下に決まりを避けて通る書き方が無い', () {
@@ -1419,4 +1960,10 @@ class _ToastLife {
 
   /// 出切った後、薄くなり始めてから消え切るまでの毎フレームの不透明度。
   final List<double> exit;
+}
+
+/// 知らせ1つの、出切っていた時間とツリーにあった時間。
+class _Noticed {
+  Duration fullyShown = Duration.zero;
+  Duration inTree = Duration.zero;
 }

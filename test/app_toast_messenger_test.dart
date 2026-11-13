@@ -1211,6 +1211,166 @@ void main() {
     });
   });
 
+  group('taking back only my own toasts', () {
+    bool isMine(SnackBar snackBar) => snackBar.key is _MineKey;
+    SnackBar mine(String text) =>
+        SnackBar(key: _MineKey(), content: Text(text));
+    AppToastMessengerState central(WidgetTester tester) =>
+        messenger(tester) as AppToastMessengerState;
+
+    testWidgets('a waiting toast of mine never shows; others keep their turn', (
+      tester,
+    ) async {
+      await tester.pumpWidget(app());
+      final reasons = <String, SnackBarClosedReason>{};
+      for (final toast in [
+        const SnackBar(content: Text('front')),
+        mine('mine'),
+        const SnackBar(content: Text('other')),
+      ]) {
+        final text = ((toast.content as Text).data)!;
+        messenger(
+          tester,
+        ).showSnackBar(toast).closed.then((reason) => reasons[text] = reason);
+      }
+      await untilShown(tester, 'front');
+      central(tester).withdrawSnackBars(isMine);
+      final fullyShown = <String, Duration>{};
+      var mineInTree = Duration.zero;
+      for (
+        var t = Duration.zero;
+        t < const Duration(seconds: 15) &&
+            find.byType(SnackBar).evaluate().isNotEmpty;
+        t += frame
+      ) {
+        await tester.pump(frame);
+        if (find.text('mine').evaluate().isNotEmpty) mineInTree += frame;
+        for (final text in ['front', 'other']) {
+          if (opacityOf(text) == 1.0) {
+            fullyShown[text] = (fullyShown[text] ?? Duration.zero) + frame;
+          }
+        }
+      }
+      expect(mineInTree, Duration.zero, reason: 'the waiting toast showed');
+      expect(fullyShown['front'], greaterThan(const Duration(seconds: 3)));
+      expect(fullyShown['other'], greaterThan(const Duration(seconds: 3)));
+      expect(reasons, {
+        'front': SnackBarClosedReason.timeout,
+        'mine': SnackBarClosedReason.remove,
+        'other': SnackBarClosedReason.timeout,
+      });
+    });
+
+    testWidgets('a toast of mine on screen fades from where it is', (
+      tester,
+    ) async {
+      await tester.pumpWidget(app());
+      messenger(tester).showSnackBar(mine('shown'));
+      messenger(tester).showSnackBar(const SnackBar(content: Text('other')));
+      await untilShown(tester, 'shown');
+      central(tester).withdrawSnackBars(isMine);
+      expect(find.text('other'), findsNothing);
+      final samples = await sample(tester, 'shown');
+      // 次の知らせが待っているので300ms（19フレーム）かけて薄くなる。
+      expectGradual(samples, atLeast: 15, maxStep: 0.09);
+      await tester.pump(frame);
+      expect(find.text('other'), findsOneWidget);
+      messenger(tester).removeCurrentSnackBar();
+      await tester.pumpAndSettle();
+
+      // 出てくる途中なら、そのときの濃さから薄くなる（一度はっきり見せない）。
+      messenger(tester).showSnackBar(mine('coming'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 130));
+      final at = opacityOf('coming')!;
+      expect(at, inExclusiveRange(0.0, 1.0));
+      central(tester).withdrawSnackBars(isMine);
+      var gone = Duration.zero;
+      while (find.text('coming').evaluate().isNotEmpty) {
+        expect(opacityOf('coming'), lessThanOrEqualTo(at + 1e-9));
+        expect(gone, lessThan(const Duration(milliseconds: 400)));
+        await tester.pump(frame);
+        gone += frame;
+      }
+    });
+
+    testWidgets('a toast whose only follower was taken back leaves at its own '
+        'pace', (tester) async {
+      await tester.pumpWidget(app());
+      Future<int> fadeFrames({required bool withdraw}) async {
+        messenger(tester).showSnackBar(
+          const SnackBar(
+            content: Text('front'),
+            duration: Duration(seconds: 1),
+          ),
+        );
+        messenger(tester).showSnackBar(mine('mine'));
+        await untilShown(tester, 'front');
+        if (withdraw) central(tester).withdrawSnackBars(isMine);
+        var fading = 0;
+        while (find.text('front').evaluate().isNotEmpty) {
+          await tester.pump(frame);
+          final now = opacityOf('front');
+          if (now != null && now < 1.0) fading++;
+        }
+        messenger(tester).removeCurrentSnackBar();
+        await tester.pumpAndSettle();
+        return fading;
+      }
+
+      final hurried = await fadeFrames(withdraw: false);
+      final ownPace = await fadeFrames(withdraw: true);
+      debugPrint('fade frames: next waiting $hurried, taken back $ownPace');
+      // 300msと400ms（16msのフレームで18〜19と24〜25）。
+      expect(hurried, inInclusiveRange(17, 20));
+      expect(ownPace, inInclusiveRange(23, 26));
+    });
+
+    testWidgets('screen reader: an action toast whose only follower was taken '
+        'back still waits', (tester) async {
+      screenReader.value = true;
+      await tester.pumpWidget(app());
+      var pressed = 0;
+      messenger(
+        tester,
+      ).showSnackBar(actionToast('undo me', onPressed: () => pressed++));
+      messenger(tester).showSnackBar(mine('mine'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+      central(tester).withdrawSnackBars(isMine);
+      await tester.pump(const Duration(seconds: 10));
+      await tester.pump(const Duration(seconds: 10));
+      expect(find.text('undo me'), findsOneWidget);
+      expect(find.text('mine'), findsNothing);
+      await tester.tap(find.text('UNDO'));
+      await tester.pump(frame);
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(pressed, 1);
+      expect(find.byType(SnackBar), findsNothing);
+    });
+
+    testWidgets('a toast already dropped, or none of mine, touches nothing', (
+      tester,
+    ) async {
+      await tester.pumpWidget(app());
+      messenger(tester).showSnackBar(const SnackBar(content: Text('front')));
+      messenger(tester).showSnackBar(mine('dropped'));
+      await untilShown(tester, 'front');
+      messenger(tester).clearSnackBars();
+      await tester.pumpAndSettle();
+      expect(find.byType(SnackBar), findsNothing);
+      messenger(tester).showSnackBar(const SnackBar(content: Text('next')));
+      await untilShown(tester, 'next');
+      central(tester).withdrawSnackBars(isMine);
+      final samples = await sample(tester, 'next', frames: 200);
+      expect(
+        samples.where((value) => value == 1.0).length,
+        greaterThan(200 * 0.9),
+      );
+      expect(find.text('dropped'), findsNothing);
+    });
+  });
+
   group('nothing else about a toast changes', () {
     Future<Map<String, Object?>> describe(
       WidgetTester tester, {
@@ -1494,3 +1654,6 @@ class _Page extends StatelessWidget {
     );
   }
 }
+
+/// テストで「自分が出した」知らせに付ける印。
+class _MineKey extends UniqueKey {}
