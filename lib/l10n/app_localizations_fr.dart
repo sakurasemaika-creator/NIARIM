@@ -8974,7 +8974,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get rewardNavigationExchange => 'Échanger des avantages';
 
   @override
-  String get rewardNavigationHub => 'Opales et avantages';
+  String get rewardNavigationHub => 'Opales et bonus';
 
   @override
   String get rewardNavigationEarnTab => 'Voir des pubs pour des opales';
@@ -9204,7 +9204,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get rewardUnlockEarning =>
-      'Les abonnés Premium pourront aussi économiser des opales';
+      'Les abonnés Premium pourront aussi cumuler des opales';
 
   @override
   String get rewardUnlockHour => 'heures';
@@ -9509,7 +9509,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get creatorMissionDetailsTimeRule =>
-      'TEMPS DE CRÉATION : Une durée déclarée localement ne peut pas créditer d’opales. Une preuve fiable de la création réelle n’est pas encore disponible. Cette récompense est donc inaccessible.';
+      'TEMPS DE CRÉATION : Une durée déclarée localement ne rapporte pas d’opales. Une preuve fiable de la création réelle n’est pas encore disponible. Cette récompense est donc inaccessible pour l’instant. Le temps affiché est indicatif.';
 
   @override
   String get creatorMissionDetailsClaimRule =>

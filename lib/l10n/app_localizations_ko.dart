@@ -8535,7 +8535,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get rewardNavigationMembershipPlay => '프리미엄 회원';
 
   @override
-  String get rewardNavigationMembershipCoin => '오팔로 해제';
+  String get rewardNavigationMembershipCoin => '오팔로 잠금 해제됨';
 
   @override
   String get rewardNavigationMembershipBenefit => '사용 중인 특전';
@@ -8563,7 +8563,7 @@ class AppLocalizationsKo extends AppLocalizations {
     ).add_jm();
     final String expiryString = expiryDateFormat.format(expiry);
 
-    return '오팔로 해제 · 이용 기한: $expiryString';
+    return '오팔로 잠금 해제됨 · 이용 기한: $expiryString';
   }
 
   @override
@@ -8646,7 +8646,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get rewardUnlockBalancePending => '오팔 잔액: 서버 연결 준비 중';
 
   @override
-  String get rewardUnlockGoal => '이 오팔 수를 목표로 설정';
+  String get rewardUnlockGoal => '목표로 설정';
 
   @override
   String get rewardUnlockRedeem => '오팔로 교환';
@@ -8917,7 +8917,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get creatorMissionDetailsTimeRule =>
-      '【제작 시간 조건】기기에서 신고한 제작 시간은 오팔로 인정되지 않습니다. 실제 제작을 신뢰할 수 있게 검증하는 시스템이 아직 없어 오팔 수령은 불가합니다.';
+      '【제작 시간 조건】기기에서 신고하거나 기기에 저장된 제작 시간은 보상 대상이 아닙니다. 실제 제작을 증명하는 시스템이 아직 완성되지 않아 제작 시간 미션의 오팔은 현재 받을 수 없습니다. 화면에 표시되는 제작 시간은 참고용입니다.';
 
   @override
   String get creatorMissionDetailsClaimRule =>

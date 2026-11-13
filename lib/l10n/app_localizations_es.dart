@@ -8948,7 +8948,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get rewardNavigationExchange => 'Canjear ventajas';
 
   @override
-  String get rewardNavigationHub => 'Ópalos y recompensas';
+  String get rewardNavigationHub => 'Ópalos y premios';
 
   @override
   String get rewardNavigationEarnTab => 'Ver anuncios por ópalos';
@@ -8978,7 +8978,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get rewardNavigationMembershipPlay => 'Miembro Premium';
 
   @override
-  String get rewardNavigationMembershipCoin => 'Desbloqueado con ópalos';
+  String get rewardNavigationMembershipCoin => 'Activado con ópalos';
 
   @override
   String get rewardNavigationMembershipBenefit => 'Ventajas activas';
@@ -9007,7 +9007,7 @@ class AppLocalizationsEs extends AppLocalizations {
     ).add_jm();
     final String expiryString = expiryDateFormat.format(expiry);
 
-    return 'Desbloqueado con ópalos · Válido hasta el $expiryString';
+    return 'Activado con ópalos · Válido hasta el $expiryString';
   }
 
   @override
@@ -9175,7 +9175,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get rewardUnlockEarning =>
-      'Los miembros Premium también podrán ahorrar ópalos';
+      'Los miembros Premium también podrán acumular ópalos';
 
   @override
   String get rewardUnlockHour => 'horas';
@@ -9479,7 +9479,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get creatorMissionDetailsTimeRule =>
-      'TIEMPO: El tiempo declarado por el dispositivo no genera ópalos. Aún no hay una prueba fiable de la edición real y estas recompensas no se pueden reclamar.';
+      'TIEMPO: El tiempo declarado por el dispositivo no genera ópalos. Aún no hay una prueba fiable de la edición real y estas recompensas no se pueden reclamar. El tiempo mostrado es orientativo.';
 
   @override
   String get creatorMissionDetailsClaimRule =>

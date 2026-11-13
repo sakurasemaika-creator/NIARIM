@@ -8612,7 +8612,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get rewardUnlockRedeem => 'オパールと引き換え';
 
   @override
-  String get rewardUnlockWatchRewardedAd => 'リワード広告を見てオパールをためる';
+  String get rewardUnlockWatchRewardedAd => 'リワード広告を見てオパールを貯める';
 
   @override
   String get rewardUnlockRewardPending => '広告の確認待ちです。Googleの検証後にオパールが反映されます。';

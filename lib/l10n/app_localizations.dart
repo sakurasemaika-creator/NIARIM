@@ -15690,7 +15690,7 @@ abstract class AppLocalizations {
   /// No description provided for @rewardUnlockWatchRewardedAd.
   ///
   /// In ja, this message translates to:
-  /// **'リワード広告を見てオパールをためる'**
+  /// **'リワード広告を見てオパールを貯める'**
   String get rewardUnlockWatchRewardedAd;
 
   /// No description provided for @rewardUnlockRewardPending.

@@ -4223,7 +4223,7 @@
   "rewardUnlockBalancePending": "オパール残高：サーバー連携準備中",
   "rewardUnlockGoal": "このオパール数を目標にする",
   "rewardUnlockRedeem": "オパールと引き換え",
-  "rewardUnlockWatchRewardedAd": "リワード広告を見てオパールをためる",
+  "rewardUnlockWatchRewardedAd": "リワード広告を見てオパールを貯める",
   "rewardUnlockRewardPending": "広告の確認待ちです。Googleの検証後にオパールが反映されます。",
   "rewardUnlockRewardUnavailable": "広告を表示できませんでした。しばらくしてから再試行してください。",
   "rewardUnlockRewardRefresh": "残高を更新",

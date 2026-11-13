@@ -8371,7 +8371,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get loginBonusVisitMissing => '正在确认今日登录';
 
   @override
-  String get rewardNavigationExchange => '兑换特权';
+  String get rewardNavigationExchange => '兑换权益';
 
   @override
   String get rewardNavigationHub => '欧泊与奖励';
@@ -8404,13 +8404,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get rewardNavigationMembershipPlay => '高级会员';
 
   @override
-  String get rewardNavigationMembershipCoin => '欧泊解锁';
+  String get rewardNavigationMembershipCoin => '已用欧泊解锁';
 
   @override
   String get rewardNavigationMembershipBenefit => '当前权益';
 
   @override
-  String get rewardNavigationMembershipNoBenefit => '暂无特权';
+  String get rewardNavigationMembershipNoBenefit => '暂无权益';
 
   @override
   String get rewardNavigationMembershipUpsell => '了解高级会员的功能和价格后再决定。';
@@ -8432,7 +8432,7 @@ class AppLocalizationsZh extends AppLocalizations {
     ).add_jm();
     final String expiryString = expiryDateFormat.format(expiry);
 
-    return '欧泊解锁 · 有效期至：$expiryString';
+    return '已用欧泊解锁 · 有效期至：$expiryString';
   }
 
   @override
@@ -8781,7 +8781,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get creatorMissionDetailsTimeRule =>
-      '【创作时间】设备自行上报的时间不能兑换欧泊。目前尚无法确切证明真实的创作行为，创作时间奖励暂不可领取。';
+      '【创作时间】设备自行上报的时间不能兑换欧泊。目前尚无法确切证明真实的创作行为，创作时间奖励暂不可领取。显示的创作时间仅供参考。';
 
   @override
   String get creatorMissionDetailsClaimRule =>
@@ -18052,7 +18052,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get loginBonusVisitMissing => '正在確認今日登入';
 
   @override
-  String get rewardNavigationExchange => '兌換特權';
+  String get rewardNavigationExchange => '兌換權益';
 
   @override
   String get rewardNavigationHub => '歐泊與獎勵';
@@ -18085,13 +18085,13 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get rewardNavigationMembershipPlay => '高級會員';
 
   @override
-  String get rewardNavigationMembershipCoin => '歐泊解鎖';
+  String get rewardNavigationMembershipCoin => '已用歐泊解鎖';
 
   @override
   String get rewardNavigationMembershipBenefit => '目前權益';
 
   @override
-  String get rewardNavigationMembershipNoBenefit => '暫無特權';
+  String get rewardNavigationMembershipNoBenefit => '暫無權益';
 
   @override
   String get rewardNavigationMembershipUpsell => '了解高級會員的功能和價格後再決定。';
@@ -18113,7 +18113,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
     ).add_jm();
     final String expiryString = expiryDateFormat.format(expiry);
 
-    return '歐泊解鎖 · 有效期限：$expiryString';
+    return '已用歐泊解鎖 · 有效期限：$expiryString';
   }
 
   @override
@@ -18462,7 +18462,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get creatorMissionDetailsTimeRule =>
-      '【創作時間】裝置自行回報的時間無法兌換歐泊。目前尚無法確切證明真實的創作行為，因此創作時間獎勵暫不可領取。';
+      '【創作時間】裝置自行回報的時間無法兌換歐泊。目前尚無法確切證明真實的創作行為，因此創作時間獎勵暫不可領取。顯示的創作時間僅供參考。';
 
   @override
   String get creatorMissionDetailsClaimRule =>
