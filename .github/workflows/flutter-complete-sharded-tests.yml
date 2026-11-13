@@ -1,5 +1,6 @@
 # Full Dart/Flutter test suite in four deterministic file shards.
-# Current complete-suite verification after November 13 regression repairs and backend integration. The work
+# Verification of the complete, current dev_branch regression suite after
+# coin-amount display migration, localization and backend integration repairs. The work
 # is independent and does not write production data or publish APKs.
 name: Flutter complete test suite (4 shards)
 on:
