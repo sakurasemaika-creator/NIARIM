@@ -372,9 +372,7 @@ void main() {
     );
     await shot('16_trash_folder_selected');
 
-    // Capture real paste controls in each tab after an actual copy action.
-    // The top-right paste icon is intentionally hidden until the clipboard
-    // contains an entry. Verify the visibility rather than injecting UI state.
+    // Capture the real paste toolbar immediately below the tabs after copying.
     Future<void> copyCurrentSelection() async {
       final copyButton = find.descendant(
         of: find.byType(HomeSelectionToolbar),
@@ -383,7 +381,21 @@ void main() {
       expect(copyButton, findsOneWidget);
       await tester.tap(copyButton);
       await settle();
-      expect(find.byKey(const Key('homeCrossTabPasteButton')), findsOneWidget);
+      final toolbar = find.byKey(const Key('homeClipboardToolbar'));
+      final paste = find.byKey(const Key('homeCrossTabPasteButton'));
+      final clear = find.byKey(const Key('homeClearClipboardButton'));
+      expect(toolbar, findsOneWidget);
+      expect(paste, findsOneWidget);
+      expect(clear, findsOneWidget);
+      expect(find.descendant(of: toolbar, matching: paste), findsOneWidget);
+      expect(find.descendant(of: toolbar, matching: clear), findsOneWidget);
+      expect(find.ancestor(of: paste, matching: find.byType(AppBar)), findsNothing);
+      expect(
+        tester.getTopLeft(toolbar).dy,
+        greaterThanOrEqualTo(
+          tester.getBottomLeft(find.byKey(const ValueKey('home_tab_0'))).dy - 1,
+        ),
+      );
     }
 
     await tab(0);
@@ -413,5 +425,30 @@ void main() {
     await tab(3);
     expect(find.byKey(const Key('homeCrossTabPasteButton')), findsOneWidget);
     await shot('20_trash_paste_ready');
+
+    // Clearing after cross-tab copy removes all clipboard references and
+    // hides the toolbar immediately, including when switching tabs again.
+    await tester.tap(find.byKey(const Key('homeClearClipboardButton')));
+    await settle();
+    expect(find.byKey(const Key('homeClipboardToolbar')), findsNothing);
+    expect(find.byKey(const Key('homeCrossTabPasteButton')), findsNothing);
+    await tab(0);
+    expect(find.byKey(const Key('homeClipboardToolbar')), findsNothing);
+
+    // Cutting and clearing must not move or delete the original project.
+    await tester.longPress(find.text('第1話 サンプルアニメ').first);
+    await settle();
+    final cutButton = find.descendant(
+      of: find.byType(HomeSelectionToolbar),
+      matching: find.byIcon(Icons.content_cut),
+    );
+    await tester.tap(cutButton);
+    await settle();
+    expect(find.byKey(const Key('homeClipboardToolbar')), findsOneWidget);
+    expect(find.textContaining('切り取り中'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('homeClearClipboardButton')));
+    await settle();
+    expect(find.byKey(const Key('homeClipboardToolbar')), findsNothing);
+    expect(projects.projects.any((p) => p.id == project.id), isTrue);
   }, timeout: const Timeout(Duration(minutes: 5)));
 }
