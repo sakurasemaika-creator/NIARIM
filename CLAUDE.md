@@ -385,6 +385,19 @@ FONT_LICENSES.txt`への本文・著作権表示の追記、`license_screen.dart
   `test/startup_unreadable_projects_folder_test.dart`（`IOOverrides`）。
   残り：DISC083〜086（ホームのプロジェクトの空の表示・ゴミ箱のフォルダの行・
   開けない作品1つで自動削除が止まる・読めていない間のスロットのメモ）。
+- **設定の引き継ぎ（.niatra）の読み込みは「この端末の内容を失わない・読み直しても変わらない」（DISC062）**：
+  受け取った一覧の項目は各サービスの`mergeTransferred`が`lib/utils/transfer_merge.dart`の
+  `mergeTransferredItems`で取り込む（IDは元のまま、同じ中身は同じ項目として整理〔お気に入り・
+  タグ〕だけを合わせ、食い違った物は「名前 (コピー)」として足して知らせる。足した複製・つないだ
+  項目は`TransferCopyRecord`〔保存キー`transfer_copies.*`〕に残し、読み直しで同じ項目を選ぶ）。
+  ブラシの太さ・不透明度はキャンバスで描くだけで変わるので比べない。「端末保存データ」は保存を
+  生のまま書き換えないこと（動いているサービスが次の保存で戻し、起動し直すとこの端末の物が
+  消えた）。**新しい保存キーを足したら`lib/engine/niatra_serializer.dart`で、設定として移すか
+  この端末の記録（`deviceRecordKeys`：作品・ファイルの場所・購入・知らせ等）かを決めること**
+  （`test/niatra_transfer_saved_keys_test.dart`がlib配下の全キーの分類を見張り、決めないと落ちる）。
+  Linuxの実画面では共有に対応していないので、書き出しの中身はデバッグのVM serviceで取り出し、
+  読み込みのファイル選択はD-Busのportal（`dbus-run-session`＋xdg-desktop-portal-gtk）の中で
+  動かす（無いと「読み込み」が何も起こさず、例外はログにだけ出る）。
 - **`backend/`のDynamoDB容量はAlways Free枠25 RCU/25 WCUちょうど**：
   `lib/niarim-backend-stack.ts`の`CAPACITY_PLAN`はテーブル本体15＋GSI 7本
   合計10＝25で上限いっぱい。GSIを足すときは必ずどこかを減らすこと。
