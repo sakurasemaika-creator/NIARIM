@@ -11,6 +11,7 @@ import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/models/canvas_dock_panel.dart';
 import 'package:niarim/router.dart';
 import 'package:niarim/screens/canvas/widgets/color_picker_panel.dart';
+import 'package:niarim/screens/canvas/widgets/hsv_color_wheel.dart';
 import 'package:niarim/screens/canvas/widgets/pen_sub_tool_panel.dart';
 import 'package:niarim/screens/canvas/widgets/brush_panel.dart';
 import 'package:niarim/screens/canvas/widgets/tone_panel.dart';
