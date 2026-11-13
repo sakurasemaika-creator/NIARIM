@@ -214,9 +214,9 @@ List<String> _shownTexts(WidgetTester tester) => [
 /// 単位の語を1つの数に付けたときの誤り（「1 coins」等）と、数と単位の間の
 /// 空白の抜け（「2coins」等）を探す。
 final _unitWords =
-    'hours|days|coins|followers|bookmarks|minutes|works|'
-    'horas|días|monedas|seguidores|marcadores|minutos|obras|'
-    'heures|jours|pièces|abonnés|favoris|œuvres';
+    'hours|days|opals|followers|bookmarks|minutes|works|'
+    'horas|días|ópalos|seguidores|marcadores|minutos|obras|'
+    'heures|jours|opales|abonnés|favoris|œuvres';
 final _pluralAfterOne = RegExp(
   '(^|[^0-9])1 ($_unitWords)(?![\\p{L}])',
   unicode: true,
@@ -254,13 +254,13 @@ List<String> _missionScreenTexts(String locale, int n) {
     'en' => [
       'Claim all',
       'Total ${c('day', 'days')}',
-      '${c('coin', 'coins')} each day',
+      '${c('opal', 'opals')} each day',
       'Logged in ${c('day', 'days')}',
-      c('coin', 'coins'),
+      c('opal', 'opals'),
       'Sign in on ${c('day', 'days')} this week',
-      '$n / ${c('day', 'days')} · ${c('coin', 'coins')}',
+      '$n / ${c('day', 'days')} · ${c('opal', 'opals')}',
       'Keep Work Plaza open for $hoursOrMinutes in total',
-      '${c('minute', 'minutes')} / $hoursOrMinutes · ${c('coin', 'coins')}',
+      '${c('minute', 'minutes')} / $hoursOrMinutes · ${c('opal', 'opals')}',
       'Not achieved',
       'Daily',
       'Weekly',
@@ -280,13 +280,13 @@ List<String> _missionScreenTexts(String locale, int n) {
     'es' => [
       'Reclamar todo',
       'Total ${c('día', 'días')}',
-      '${c('moneda', 'monedas')} al día',
+      '${c('ópalo', 'ópalos')} al día',
       '${c('día', 'días')} de acceso',
-      c('moneda', 'monedas'),
+      c('ópalo', 'ópalos'),
       'Inicia sesión ${c('día', 'días')} esta semana',
-      '$n / ${c('día', 'días')} · ${c('moneda', 'monedas')}',
+      '$n / ${c('día', 'días')} · ${c('ópalo', 'ópalos')}',
       'Mantén abierta la Plaza de Obras $hoursOrMinutes en total',
-      '${c('minuto', 'minutos')} / $hoursOrMinutes · ${c('moneda', 'monedas')}',
+      '${c('minuto', 'minutos')} / $hoursOrMinutes · ${c('ópalo', 'ópalos')}',
       'Sin completar',
       'Diarias',
       'Semanales',
@@ -310,13 +310,13 @@ List<String> _missionScreenTexts(String locale, int n) {
     _ => [
       'Tout réclamer',
       'Total\u00a0: ${c('jour', 'jours')}',
-      '${c('pièce', 'pièces')} par jour',
+      '${c('opale', 'opales')} par jour',
       '${c('jour', 'jours')} de connexion',
-      c('pièce', 'pièces'),
+      c('opale', 'opales'),
       'Se connecter ${c('jour', 'jours')} cette semaine',
-      '$n / ${c('jour', 'jours')} · ${c('pièce', 'pièces')}',
+      '$n / ${c('jour', 'jours')} · ${c('opale', 'opales')}',
       'Garder la Place des œuvres ouverte $hoursOrMinutes au total',
-      '${c('minute', 'minutes')} / $hoursOrMinutes · ${c('pièce', 'pièces')}',
+      '${c('minute', 'minutes')} / $hoursOrMinutes · ${c('opale', 'opales')}',
       'Non atteint',
       'Quotidiennes',
       'Hebdomadaires',
@@ -414,9 +414,9 @@ List<String> _completionTexts(String locale, int n) {
 }
 
 Map<String, String> _coinWords(int n) => {
-  'en': '$n ${_one('en', n) ? 'coin' : 'coins'}',
-  'es': '$n ${_one('es', n) ? 'moneda' : 'monedas'}',
-  'fr': '$n ${_one('fr', n) ? 'pièce' : 'pièces'}',
+  'en': '$n ${_one('en', n) ? 'opal' : 'opals'}',
+  'es': '$n ${_one('es', n) ? 'ópalo' : 'ópalos'}',
+  'fr': '$n ${_one('fr', n) ? 'opale' : 'opales'}',
 };
 
 Locale _localeOf(String code) => code == 'zh_Hant'
@@ -907,11 +907,11 @@ void main() {
   }
 
   for (final (locale, daily, milestone, coins, spaced) in [
-    ('ja', '毎日1コイン', '累計1日達成', '1コイン', RegExp(r'\d コイン')),
-    ('ko', '매일 1코인', '누적 1일 달성', '1코인', RegExp(r'\d 코인')),
+    ('ja', '毎日1オパール', '累計1日達成', '1オパール', RegExp(r'\d オパール')),
+    ('ko', '매일 1오팔', '누적 1일 달성', '1오팔', RegExp(r'\d 오팔')),
     // 中国語は期間（「1小时」「2天」）と同じく数と単位の間を空けない。
-    ('zh', '每日1金币', '累计登录1天', '1金币', RegExp(r'\d 金币')),
-    ('zh_Hant', '每日1金幣', '累計登入1天', '1金幣', RegExp(r'\d 金幣')),
+    ('zh', '每日1欧泊', '累计登录1天', '1欧泊', RegExp(r'\d 欧泊')),
+    ('zh_Hant', '每日1歐泊', '累計登入1天', '1歐泊', RegExp(r'\d 歐泊')),
   ]) {
     testWidgets('累計ログインの毎日のコインと節目のコインが同じ書き方（$locale）', (tester) async {
       await _pumpMissions(tester, locale, _serviceWithCounts(1));
@@ -949,7 +949,7 @@ void main() {
         '累计打开作品广场10小时',
         'NIARIM 收藏榜前10名',
         '服务器记录的候选时间：10分钟（待验证）',
-        '每日10金币',
+        '每日10欧泊',
         '累计10天',
       ],
     ),
@@ -962,7 +962,7 @@ void main() {
         '累計開啟作品廣場10小時',
         'NIARIM 收藏榜前10名',
         '伺服器記錄的候選時間：10分鐘（待驗證）',
-        '每日10金幣',
+        '每日10歐泊',
         '累計10天',
       ],
     ),
