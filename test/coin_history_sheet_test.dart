@@ -47,18 +47,18 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    expect(find.text('+10 coins'), findsOneWidget);
+    expect(find.text('+10 opals'), findsOneWidget);
     expect(find.text('Rewarded ad'), findsOneWidget);
     await tester.tap(find.byKey(const Key('coinHistoryMoreButton')));
     await tester.pumpAndSettle();
     expect(cursors, [null, 'server-cursor']);
-    expect(find.text('-55000 coins'), findsOneWidget);
+    expect(find.text('-55000 opals'), findsOneWidget);
     expect(find.byKey(const Key('coinHistoryMoreButton')), findsNothing);
 
     owner.value = 'owner-b';
     await tester.pumpAndSettle();
-    expect(find.text('+10 coins'), findsNothing);
-    expect(find.text('-55000 coins'), findsNothing);
+    expect(find.text('+10 opals'), findsNothing);
+    expect(find.text('-55000 opals'), findsNothing);
     owner.dispose();
   });
 
