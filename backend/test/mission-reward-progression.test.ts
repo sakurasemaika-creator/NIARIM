@@ -38,7 +38,7 @@ describe("mission rewards strictly rise with difficulty",()=>{
     for(const m of ranks)
       increasing([0,1000,10000,100000,1000000]
         .map(n=>missionRewardCoins(m,n)));
-    expect(missionRewardCoins(ranks[ranks.length-1],1000000)).toBe(1000);
+    expect(missionRewardCoins(ranks[ranks.length-1],1000000)).toBe(1025);
   });
   it("raises every one of the 480 grid rewards along both dimensions",()=>{
     expect(WORK_COUNT_MISSIONS).toHaveLength(480);
@@ -48,15 +48,15 @@ describe("mission rewards strictly rise with difficulty",()=>{
     for(const bookmarks of BOOKMARK_GOALS)
       increasing(WORK_COUNT_GOALS.map(works=>
         workCountMissionById(`works_${works}_x_${bookmarks}`)!.coins));
-    expect(workCountMissionById("works_500_x_1000")!.coins).toBe(215);
+    expect(workCountMissionById("works_500_x_1000")!.coins).toBe(220);
   });
   it("never stalls or decreases at any of the 54 cumulative login goals",()=>{
-    expect(DAILY_LOGIN_COINS).toBe(1);
+    expect(DAILY_LOGIN_COINS).toBe(10);
     expect(LOGIN_BONUS_MILESTONES).toHaveLength(54);
     increasing(LOGIN_BONUS_MILESTONES.map(m=>m.days));
     increasing(LOGIN_BONUS_MILESTONES.map(m=>m.coins));
-    expect(LOGIN_BONUS_MILESTONES.find(m=>m.days===500)?.coins).toBe(54);
-    expect(LOGIN_BONUS_MILESTONES.find(m=>m.days===3600)?.coins).toBe(205);
+    expect(LOGIN_BONUS_MILESTONES.find(m=>m.days===500)?.coins).toBe(59);
+    expect(LOGIN_BONUS_MILESTONES.find(m=>m.days===3600)?.coins).toBe(210);
   });
   it("raises repeatable plaza and recurring login goals within each period",()=>{
     for(const period of ["day","week","month"] as const)
@@ -99,8 +99,8 @@ describe("all 551 mission coins use strict five-coin steps",()=>{
     for(const bookmarks of BOOKMARK_GOALS)
       increasingFive(WORK_COUNT_GOALS.map(works=>
         workCountMissionById(`works_${works}_x_${bookmarks}`)!.coins));
-    expect(workCountMissionById("works_3_x_0")!.coins).toBe(5);
-    expect(workCountMissionById("works_500_x_1000")!.coins).toBe(215);
+    expect(workCountMissionById("works_3_x_0")!.coins).toBe(10);
+    expect(workCountMissionById("works_500_x_1000")!.coins).toBe(220);
   });
   it("covers all 16 recurring/time missions",()=>{
     expect(PLAZA_MISSIONS).toHaveLength(10);
@@ -113,10 +113,10 @@ describe("all 551 mission coins use strict five-coin steps",()=>{
       increasingFive(RECURRING_MISSIONS.filter(m=>m.period===period)
         .sort((a,b)=>a.requiredDays-b.requiredDays).map(m=>m.coins));
   });
-  it("keeps daily login, rewarded ads and exchange costs unchanged",()=>{
-    expect(DAILY_LOGIN_COINS).toBe(1);
+  it("ensures ten-coin minimum while keeping the ad and monthly bundle reference stable",()=>{
+    expect(DAILY_LOGIN_COINS).toBe(10);
     expect(INITIAL_REWARDED_COINS_PER_COMPLETION).toBe(10);
-    expect(finalBenefitCoins("endCardEdit","hour")).toBe(70);
+    expect(finalBenefitCoins("endCardEdit","hour")).toBe(500);
     expect(finalBenefitCoins("fullPremium","month")).toBe(55000);
   });
 });
@@ -136,20 +136,20 @@ describe("owner-finalized coin exchange rates round the ones digit upwards",()=>
         expect(cost%10).toBe(0);
       }
     }
-    expect(finalBenefitCoins("endCardEdit","hour")).toBe(70);
-    expect(finalBenefitCoins("endCardEdit","day")).toBe(290);
-    expect(finalBenefitCoins("endCardEdit","week")).toBe(2170);
-    expect(finalBenefitCoins("endCardEdit","month")).toBe(8000);
+    expect(finalBenefitCoins("endCardEdit","hour")).toBe(500);
+    expect(finalBenefitCoins("endCardEdit","day")).toBe(1200);
+    expect(finalBenefitCoins("endCardEdit","week")).toBe(6000);
+    expect(finalBenefitCoins("endCardEdit","month")).toBe(12000);
     expect(finalBenefitCoins("fullPremium","month")).toBe(55000);
     expect(FINAL_PREMIUM_YEARLY_COINS).toBe(550000);
     expect(finalBenefitCostCoins("fullPremium","month",12)).toBe(550000);
     expect(finalBenefitCostCoins("fullPremium","month",13)).toBe(605000);
     expect(finalBenefitCostCoins("fullPremium","month",24)).toBe(1100000);
     expect(finalBenefitCostCoins("fullPremium","month",11)).toBe(605000);
-    expect(finalBenefitCostCoins("toneCurve","month",12)).toBe(156000);
+    expect(finalBenefitCostCoins("toneCurve","month",12)).toBe(216000);
     expect(isBundledPremiumCheaperForAllDurations()).toBe(true);
     // Freeze the complete 12 × 4 launch rate card, not just 4 examples.
-    const fixed: readonly (readonly [typeof targets[number],readonly number[]])[] = [["endCardEdit",[70,290,2170,8000]],["watermark",[120,500,3790,14000]],["toneCurve",[110,470,3520,13000]],["levelAdjustment",[90,360,2710,10000]],["unlimitedDuration",[150,650,4870,18000]],["customAutomation",[170,720,5410,20000]],["projectListAds",[80,330,2440,9000]],["canvasAds",[130,540,4060,15000]],["timelineAds",[100,430,3250,12000]],["processingAds",[50,220,1630,6000]],["allAds",[300,1290,9730,36000]],["fullPremium",[500,2500,18000,55000]]];
+    const fixed: readonly (readonly [typeof targets[number],readonly number[]])[] = [["endCardEdit",[500,1200,6000,12000]],["watermark",[750,1800,9000,18000]],["toneCurve",[750,1800,9000,18000]],["levelAdjustment",[630,1500,7500,15000]],["unlimitedDuration",[1050,2500,12500,25000]],["customAutomation",[1050,2500,12500,25000]],["projectListAds",[500,1200,6000,12000]],["canvasAds",[840,2000,10000,20000]],["timelineAds",[670,1600,8000,16000]],["processingAds",[420,1000,5000,10000]],["allAds",[1670,4000,20000,40000]],["fullPremium",[5000,10000,30000,55000]]];
     for(const [target,amounts] of fixed){
       expect(durations.map(d=>finalBenefitCoins(target,d))).toEqual(amounts);
     }
