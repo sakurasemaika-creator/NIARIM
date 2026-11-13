@@ -3590,7 +3590,7 @@
   "creatorMissionRankingRequirements": "Eligibility: at least {works, plural, one{{works} published work} other{{works} published works}} and {bookmarks, plural, one{{bookmarks} bookmark} other{{bookmarks} bookmarks}} on this work",
   "creatorMissionRankingEffective": "Required live rank with the current community size: top {rank}",
   "loginBonusDays": "Total {days, plural, one{{days} day} other{{days} days}}",
-  "loginBonusDailyCoins": "{opals, plural, one{{opals} opal} other{{opals} opals}} each day",
+  "loginBonusDailyCoins": "{coins, plural, one{{coins} opal} other{{coins} opals}} each day",
   "loginBonusMilestone": "Logged in {days, plural, one{{days} day} other{{days} days}}",
   "loginBonusActivityMilestone": "You reached {days, plural, one{{days} total login day} other{{days} total login days}}",
   "rewardUnlockRewardQuotaRemaining": "Opal rewards left today: {count} (UTC)",
@@ -3628,13 +3628,13 @@
   "plazaMissionDetailsMeasurement": "Time is measured by authenticated server-time heartbeats, not client-reported seconds. Long connection gaps and time with the page closed do not count.",
   "plazaMissionDetailsPeriods": "Periods use Japan time (JST): days reset at midnight, weeks start on Monday and months start on the first.",
   "plazaMissionDetailsProgress": "Current open time: {progress} / {goal}",
-  "plazaMissionDetailsClaim": "CLAIM: Earn {opals, plural, one{{opals} opal} other{{opals} opals}} for this milestone. Each milestone pays once per period. You may earn it again in a new period, but cannot claim an expired period.",
+  "plazaMissionDetailsClaim": "CLAIM: Earn {coins, plural, one{{coins} opal} other{{coins} opals}} for this milestone. Each milestone pays once per period. You may earn it again in a new period, but cannot claim an expired period.",
   "recurringMissionGoalWeek": "Sign in on {days, plural, one{{days} day} other{{days} days}} this week",
   "recurringMissionGoalMonth": "Sign in on {days, plural, one{{days} day} other{{days} days}} this month",
   "recurringMissionDetailsConditionsWeek": "CONDITIONS: Sign in on {days, plural, one{{days} distinct day} other{{days} distinct days}} in the same Monday–Sunday week, using Japan time (JST). Consecutive days are not required; multiple sign-ins on one day count as one. The server verifies visits.",
   "recurringMissionDetailsConditionsMonth": "CONDITIONS: Sign in on {days, plural, one{{days} distinct day} other{{days} distinct days}} in the same calendar month, using Japan time (JST). Consecutive days are not required; multiple sign-ins on one day count as one. The server verifies visits.",
   "recurringMissionDetailsProgress": "Current progress: {progress} / {goal, plural, one{{goal} day} other{{goal} days}}",
-  "recurringMissionDetailsClaim": "CLAIM: Completing the goal grants {opals, plural, one{{opals} opal} other{{opals} opals}}. Each milestone can pay only once per period. Progress resets in a new week/month; rewards from the previous period cannot be claimed later.",
+  "recurringMissionDetailsClaim": "CLAIM: Completing the goal grants {coins, plural, one{{coins} opal} other{{coins} opals}}. Each milestone can pay only once per period. Progress resets in a new week/month; rewards from the previous period cannot be claimed later.",
   "missionCompletedTitle": "Mission completed!",
   "missionCompletedBody": "Visit Missions to claim your reward.",
   "missionCompletedGoToMissions": "Go to Missions",
@@ -3658,5 +3658,5 @@
   "rewardUnlockReviewAdsOverlap": "The selected ad-removal benefits overlap with “{bundle}”.",
   "rewardUnlockReviewItem": "{benefit}: estimated new expiry {expiry}",
   "rewardUnlockReviewItemOverlap": "{benefit}: overlaps with a current or bundled benefit. Estimated new expiry {expiry}",
-  "rewardUnlockReviewFixedTotal": "Total at fixed unit prices: {opals}. The server does not yet support spending opals on individual benefits or overlapping exchanges. The price is final, but you can exchange only when the server returns an official quote. The official expiry is set by the server check right before exchanging."
+  "rewardUnlockReviewFixedTotal": "Total at fixed unit prices: {coins}. The server does not yet support spending opals on individual benefits or overlapping exchanges. The price is final, but you can exchange only when the server returns an official quote. The official expiry is set by the server check right before exchanging."
 }
