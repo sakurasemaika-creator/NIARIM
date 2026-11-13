@@ -17,6 +17,6 @@ class CommunityYoutubeCommentLabels {
   String get noComments => _l10n.communityYoutubeCommentNoComments;
   String get unavailable => _l10n.communityYoutubeCommentUnavailable;
   String get retry => _l10n.communityYoutubeCommentRetry;
-  String get replies => _l10n.communityYoutubeCommentReplies;
+  String replies(int count) => _l10n.communityYoutubeCommentReplies(count);
   String get attribution => _l10n.communityYoutubeCommentAttribution;
 }

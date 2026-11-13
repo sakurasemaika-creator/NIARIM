@@ -779,6 +779,12 @@ abstract class AppLocalizations {
   /// **'複製'**
   String get commonDuplicate;
 
+  /// 項目名と値（「半径: 12」）。仏語は「:」の前を改行しない空白、中国語は全角の「：」。
+  ///
+  /// In ja, this message translates to:
+  /// **'{label}: {value}'**
+  String commonLabelWithValue(String label, String value);
+
   /// No description provided for @homePasteTooltip.
   ///
   /// In ja, this message translates to:
@@ -14808,8 +14814,8 @@ abstract class AppLocalizations {
   /// No description provided for @communityChannelRefreshFailed.
   ///
   /// In ja, this message translates to:
-  /// **'YouTube情報を更新できませんでした'**
-  String get communityChannelRefreshFailed;
+  /// **'YouTube情報を更新できませんでした: {error}'**
+  String communityChannelRefreshFailed(String error);
 
   /// No description provided for @communityPlazaMuteWork.
   ///
@@ -15111,11 +15117,11 @@ abstract class AppLocalizations {
   /// **'再読み込み'**
   String get communityYoutubeCommentRetry;
 
-  /// No description provided for @communityYoutubeCommentReplies.
+  /// YouTubeのコメントの下に出す、まだ表示していない返信を含めた返信の数。
   ///
   /// In ja, this message translates to:
-  /// **'返信'**
-  String get communityYoutubeCommentReplies;
+  /// **'{count, plural, other{返信 {count}件}}'**
+  String communityYoutubeCommentReplies(int count);
 
   /// No description provided for @communityYoutubeCommentAttribution.
   ///

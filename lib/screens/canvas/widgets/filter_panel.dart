@@ -2885,7 +2885,9 @@ class _FilterPanelState extends State<FilterPanel> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           EditableSliderValue(
-            text: '$label: $valueLabel',
+            text: AppLocalizations.of(
+              context,
+            )!.commonLabelWithValue(label, valueLabel),
             style: const TextStyle(fontSize: 11),
             value: safeValue,
             min: min,
@@ -2942,7 +2944,12 @@ class _FilterPanelState extends State<FilterPanel> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('$label: $shown$suffix', style: const TextStyle(fontSize: 11)),
+          Text(
+            AppLocalizations.of(
+              context,
+            )!.commonLabelWithValue(label, '$shown$suffix'),
+            style: const TextStyle(fontSize: 11),
+          ),
           Row(
             children: [
               IconButton(

@@ -373,6 +373,11 @@ class AppLocalizationsKo extends AppLocalizations {
   String get commonDuplicate => '복제';
 
   @override
+  String commonLabelWithValue(String label, String value) {
+    return '$label: $value';
+  }
+
+  @override
   String homePasteTooltip(int count) {
     return '$count건 붙여넣기';
   }
@@ -8232,7 +8237,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get communityChannelRefreshUnavailable => '로그인 및 서버 연결이 필요합니다';
 
   @override
-  String get communityChannelRefreshFailed => 'YouTube 채널 정보를 갱신하지 못했습니다';
+  String communityChannelRefreshFailed(String error) {
+    return 'YouTube 채널 정보를 갱신하지 못했습니다: $error';
+  }
 
   @override
   String get communityPlazaMuteWork => '이 작품 숨기기';
@@ -8396,7 +8403,14 @@ class AppLocalizationsKo extends AppLocalizations {
   String get communityYoutubeCommentRetry => '다시 시도';
 
   @override
-  String get communityYoutubeCommentReplies => '답글';
+  String communityYoutubeCommentReplies(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '답글 $count개',
+    );
+    return '$_temp0';
+  }
 
   @override
   String get communityYoutubeCommentAttribution =>

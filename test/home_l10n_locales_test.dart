@@ -56,7 +56,7 @@ const _expected = <String, Map<String, String>>{
     'exportedWork': 'Œuvre exportée',
     'cut2': '2 éléments coupés',
     'copied1': '1 élément copié',
-    'clear': 'Annuler',
+    'clear': 'Vider',
     'open': 'Ouvrir',
     'thumbnail': 'Changer la miniature',
   },

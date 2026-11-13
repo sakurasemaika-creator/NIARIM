@@ -371,7 +371,7 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
       _showSnackBar(labels.success);
     } catch (error) {
       if (!mounted) return;
-      _showSnackBar('${labels.failed}: $error');
+      _showSnackBar(labels.failed(error));
     } finally {
       if (mounted) setState(() => _refreshingYouTubeChannel = false);
     }
@@ -825,8 +825,9 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
                 controller: _worksScrollController,
                 enabled: usingBackendOwnerList,
                 onRefresh: () async {
-                  if (_loadingWorks || _bulkBusy || _loadingMoreOwnWorks)
+                  if (_loadingWorks || _bulkBusy || _loadingMoreOwnWorks) {
                     return;
+                  }
                   await _reloadOwnerWorks();
                 },
                 child: works.isEmpty

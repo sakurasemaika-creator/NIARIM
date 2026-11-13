@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'dart:ui' as ui;
-import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -330,7 +329,7 @@ void main() {
     await capture(tester, '14_color_adjust_fr_x2');
     expect(tester.takeException(), isNull);
     // 一番下の「追加する」まで送って押せる位置に出せる。
-    final add = find.text("Ajouter aux filtres d'effet");
+    final add = find.text('Ajouter aux filtres d’effet');
     await tester.ensureVisible(add);
     await tester.pump();
     expect(tester.getRect(add).right, lessThanOrEqualTo(320));

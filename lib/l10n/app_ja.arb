@@ -187,6 +187,18 @@
   "commonCut": "切り取り",
   "commonPaste": "貼り付け",
   "commonDuplicate": "複製",
+  "commonLabelWithValue": "{label}: {value}",
+  "@commonLabelWithValue": {
+    "description": "項目名と値（「半径: 12」）。仏語は「:」の前を改行しない空白、中国語は全角の「：」。",
+    "placeholders": {
+      "label": {
+        "type": "String"
+      },
+      "value": {
+        "type": "String"
+      }
+    }
+  },
   "homePasteTooltip": "{count}件を貼り付け",
   "@homePasteTooltip": {
     "placeholders": {
@@ -4105,7 +4117,14 @@
   "communityChannelRefreshSuccess": "YouTubeの名前・アイコンを更新しました",
   "communityChannelRefreshNoToken": "YouTubeの認証が必要です",
   "communityChannelRefreshUnavailable": "ログインとサーバー接続が必要です",
-  "communityChannelRefreshFailed": "YouTube情報を更新できませんでした",
+  "communityChannelRefreshFailed": "YouTube情報を更新できませんでした: {error}",
+  "@communityChannelRefreshFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
   "communityPlazaMuteWork": "この作品を非表示にする",
   "communityPlazaUnmuteWork": "この作品の非表示を解除する",
   "communityPlazaMutedPlaceholder": "この作品は非表示対象です",
@@ -4164,7 +4183,15 @@
   "communityYoutubeCommentNoComments": "コメントはまだありません",
   "communityYoutubeCommentUnavailable": "YouTubeコメントを取得できませんでした",
   "communityYoutubeCommentRetry": "再読み込み",
-  "communityYoutubeCommentReplies": "返信",
+  "communityYoutubeCommentReplies": "{count, plural, other{返信 {count}件}}",
+  "@communityYoutubeCommentReplies": {
+    "description": "YouTubeのコメントの下に出す、まだ表示していない返信を含めた返信の数。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "communityYoutubeCommentAttribution": "コメントはYouTubeから取得しています。投稿・返信はできません。",
   "creatorMissionTitle": "ミッション",
   "creatorMissionGenericPublished": "投稿した作品を公開する",

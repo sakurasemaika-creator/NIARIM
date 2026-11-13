@@ -372,6 +372,11 @@ class AppLocalizationsJa extends AppLocalizations {
   String get commonDuplicate => '複製';
 
   @override
+  String commonLabelWithValue(String label, String value) {
+    return '$label: $value';
+  }
+
+  @override
   String homePasteTooltip(int count) {
     return '$count件を貼り付け';
   }
@@ -8190,7 +8195,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get communityChannelRefreshUnavailable => 'ログインとサーバー接続が必要です';
 
   @override
-  String get communityChannelRefreshFailed => 'YouTube情報を更新できませんでした';
+  String communityChannelRefreshFailed(String error) {
+    return 'YouTube情報を更新できませんでした: $error';
+  }
 
   @override
   String get communityPlazaMuteWork => 'この作品を非表示にする';
@@ -8353,7 +8360,14 @@ class AppLocalizationsJa extends AppLocalizations {
   String get communityYoutubeCommentRetry => '再読み込み';
 
   @override
-  String get communityYoutubeCommentReplies => '返信';
+  String communityYoutubeCommentReplies(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '返信 $count件',
+    );
+    return '$_temp0';
+  }
 
   @override
   String get communityYoutubeCommentAttribution =>

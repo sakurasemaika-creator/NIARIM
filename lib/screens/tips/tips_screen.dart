@@ -5,6 +5,7 @@ import '../../l10n/app_localizations.dart';
 import 'tip_diagrams.dart';
 import '../../config/font_fallback.dart';
 import '../../config/accent_text_theme.dart';
+import '../../utils/name_collation.dart';
 
 /// ヘルプ（機能の説明）とは別に、「こうすると便利」という活用方法を
 /// 紹介するTipsページ。ホーム画面のハンバーガーメニューから開く。
@@ -45,11 +46,15 @@ class _TipsScreenState extends State<TipsScreen> {
   List<_TipCategory> _buildCategories(AppLocalizations l10n) =>
       _buildTipCategories(l10n);
 
-  bool _matches(_Tip tip, String category) =>
-      _searchQuery.isEmpty ||
-      tip.title.contains(_searchQuery) ||
-      tip.description.contains(_searchQuery) ||
-      category.contains(_searchQuery);
+  // The text is written with ’ and no-break spaces (French), the keyboard
+  // types ' and plain spaces: compare both in the same form.
+  bool _matches(_Tip tip, String category) {
+    if (_searchQuery.isEmpty) return true;
+    final query = foldName(_searchQuery);
+    return nameMatches(tip.title, query) ||
+        nameMatches(tip.description, query) ||
+        nameMatches(category, query);
+  }
 
   @override
   Widget build(BuildContext context) {

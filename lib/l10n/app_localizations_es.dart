@@ -396,6 +396,11 @@ class AppLocalizationsEs extends AppLocalizations {
   String get commonDuplicate => 'Duplicar';
 
   @override
+  String commonLabelWithValue(String label, String value) {
+    return '$label: $value';
+  }
+
+  @override
   String homePasteTooltip(int count) {
     return 'Pegar $count elemento(s)';
   }
@@ -8670,8 +8675,9 @@ class AppLocalizationsEs extends AppLocalizations {
       'Inicia sesión y conéctate al servidor';
 
   @override
-  String get communityChannelRefreshFailed =>
-      'No se pudo actualizar el canal de YouTube';
+  String communityChannelRefreshFailed(String error) {
+    return 'No se pudo actualizar el canal de YouTube: $error';
+  }
 
   @override
   String get communityPlazaMuteWork => 'Ocultar esta obra';
@@ -8848,7 +8854,15 @@ class AppLocalizationsEs extends AppLocalizations {
   String get communityYoutubeCommentRetry => 'Reintentar';
 
   @override
-  String get communityYoutubeCommentReplies => 'Respuestas';
+  String communityYoutubeCommentReplies(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count respuestas',
+      one: '1 respuesta',
+    );
+    return '$_temp0';
+  }
 
   @override
   String get communityYoutubeCommentAttribution =>

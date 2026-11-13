@@ -12,6 +12,7 @@ import '../../widgets/responsive.dart';
 import '../../widgets/help_button.dart';
 import '../../config/font_fallback.dart';
 import '../../config/accent_text_theme.dart';
+import '../../utils/name_collation.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -29,7 +30,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
   void initState() {
     super.initState();
     _searchController.addListener(() {
-      setState(() => _query = _searchController.text.trim().toLowerCase());
+      // Compared in the same form as the entries (’ and no-break spaces in
+      // French text, ' and plain spaces from the keyboard, any letter case).
+      setState(() => _query = foldName(_searchController.text.trim()));
     });
   }
 
@@ -188,9 +191,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
         : entries
               .where(
                 (e) =>
-                    e.title.toLowerCase().contains(_query) ||
-                    e.subtitle.toLowerCase().contains(_query) ||
-                    e.keywords.toLowerCase().contains(_query),
+                    nameMatches(e.title, _query) ||
+                    nameMatches(e.subtitle, _query) ||
+                    nameMatches(e.keywords, _query),
               )
               .toList();
     return Scaffold(

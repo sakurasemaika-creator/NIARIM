@@ -369,6 +369,11 @@ class AppLocalizationsZh extends AppLocalizations {
   String get commonDuplicate => '创建副本';
 
   @override
+  String commonLabelWithValue(String label, String value) {
+    return '$label：$value';
+  }
+
+  @override
   String homePasteTooltip(int count) {
     return '粘贴$count项';
   }
@@ -8108,7 +8113,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get communityChannelRefreshUnavailable => '请先登录并连接服务器';
 
   @override
-  String get communityChannelRefreshFailed => '无法更新 YouTube 频道信息';
+  String communityChannelRefreshFailed(String error) {
+    return '无法更新 YouTube 频道信息：$error';
+  }
 
   @override
   String get communityPlazaMuteWork => '隐藏此作品';
@@ -8268,7 +8275,14 @@ class AppLocalizationsZh extends AppLocalizations {
   String get communityYoutubeCommentRetry => '重试';
 
   @override
-  String get communityYoutubeCommentReplies => '回复';
+  String communityYoutubeCommentReplies(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count 条回复',
+    );
+    return '$_temp0';
+  }
 
   @override
   String get communityYoutubeCommentAttribution => '评论来自 YouTube。暂不支持发布和回复。';
@@ -10239,6 +10253,11 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get commonDuplicate => '建立副本';
+
+  @override
+  String commonLabelWithValue(String label, String value) {
+    return '$label：$value';
+  }
 
   @override
   String homePasteTooltip(int count) {
@@ -17982,7 +18001,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get communityChannelRefreshUnavailable => '請先登入並連線伺服器';
 
   @override
-  String get communityChannelRefreshFailed => '無法更新 YouTube 頻道資訊';
+  String communityChannelRefreshFailed(String error) {
+    return '無法更新 YouTube 頻道資訊：$error';
+  }
 
   @override
   String get communityPlazaMuteWork => '隱藏此作品';
@@ -18142,7 +18163,14 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get communityYoutubeCommentRetry => '重試';
 
   @override
-  String get communityYoutubeCommentReplies => '回覆';
+  String communityYoutubeCommentReplies(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count 則回覆',
+    );
+    return '$_temp0';
+  }
 
   @override
   String get communityYoutubeCommentAttribution => '留言來自 YouTube。暫不支援發佈與回覆。';

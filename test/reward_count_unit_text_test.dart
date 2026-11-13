@@ -404,7 +404,7 @@ List<String> _completionTexts(String locale, int n) {
       'Ir a Misiones',
     ],
     _ => [
-      'Mission accomplie\u00a0!',
+      'Mission accomplie\u202f!',
       'Se connecter ${c('jour', 'jours')} cette semaine',
       'Se connecter ${c('jour', 'jours')} ce mois-ci',
       'Se connecter ${c('jour', 'jours')} au total',

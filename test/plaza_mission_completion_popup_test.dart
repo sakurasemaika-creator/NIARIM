@@ -122,7 +122,7 @@ const _expected = <String, List<String>>{
     '미션 페이지로',
   ],
   'fr': [
-    'Mission accomplie\u00a0!',
+    'Mission accomplie\u202f!',
     '・Mission quotidienne\u00a0: Garder la Place des œuvres ouverte 10 minutes '
         'au total',
     '・Mission hebdomadaire\u00a0: Garder la Place des œuvres ouverte 1 heure '

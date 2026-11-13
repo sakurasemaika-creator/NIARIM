@@ -7,7 +7,11 @@
 /// - 半角カタカナを全角に（濁点・半濁点はまとめて1文字に）
 /// - カタカナをひらがなに
 /// - 英字の大文字を小文字に
+/// - アポストロフィ（’ ‘ ʼ）をキーボードの ' に、改行しない空白（U+00A0・
+///   U+202F 等）を普通の空白に（仏語の文は ’ と改行しない空白で書くが、
+///   キーボードで打つのは ' と普通の空白）
 /// 並べるときは、名前の中の数字の並びを数として比べる。
+/// ヘルプ・活用Tips・設定の検索も[foldName]・[nameMatches]で比べる。
 library;
 
 /// [compareNames]・[nameMatches]で使う、比べるための形。
@@ -16,8 +20,10 @@ String foldName(String name) {
   final runes = name.runes.toList();
   for (var i = 0; i < runes.length; i++) {
     var c = runes[i];
-    if (c == 0x3000) {
+    if (c == 0x3000 || _noBreakSpaces.contains(c)) {
       c = 0x20;
+    } else if (_apostrophes.contains(c)) {
+      c = 0x27;
     } else if (c >= 0xFF01 && c <= 0xFF5E) {
       c -= 0xFEE0;
     } else if (c >= 0xFF61 && c <= 0xFF9F) {
@@ -111,6 +117,13 @@ String _stripZeros(String digits) {
   }
   return digits.substring(k);
 }
+
+// 改行しない空白（U+00A0・U+2007・U+202F）と細い空白（U+2009）。
+const Set<int> _noBreakSpaces = {0x00A0, 0x2007, 0x2009, 0x202F};
+
+// アポストロフィとして使われる字（’ ‘ ʼ ‛ ′）。全角の ＇ は全角の記号として
+// 半角の ' になる。
+const Set<int> _apostrophes = {0x2019, 0x2018, 0x02BC, 0x201B, 0x2032};
 
 // 半角カタカナ（U+FF61〜U+FF9F）に対応する全角の文字。
 const List<int> _halfwidthKana = [

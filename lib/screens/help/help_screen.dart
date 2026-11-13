@@ -5,6 +5,7 @@ import '../../l10n/app_localizations.dart';
 import '../../config/font_fallback.dart';
 import '../../config/accent_text_theme.dart';
 import '../../widgets/app_tutorial.dart';
+import '../../utils/name_collation.dart';
 
 class HelpScreen extends StatefulWidget {
   // 各画面のヘルプボタンから「この画面に関連する項目」を指定して開いた
@@ -590,19 +591,25 @@ class _HelpScreenState extends State<HelpScreen> {
     super.dispose();
   }
 
-  List<_HelpEntry> _filtered(List<_HelpEntry> entries) => _searchQuery.isEmpty
-      ? _topic == null
-            ? entries
-            : entries.where((e) => e.topicKey == _topic).toList()
-      : entries
-            .where(
-              (e) =>
-                  e.topicKey == _searchQuery ||
-                  e.title.contains(_searchQuery) ||
-                  e.description.contains(_searchQuery) ||
-                  e.category.contains(_searchQuery),
-            )
-            .toList();
+  List<_HelpEntry> _filtered(List<_HelpEntry> entries) {
+    if (_searchQuery.isEmpty) {
+      return _topic == null
+          ? entries
+          : entries.where((e) => e.topicKey == _topic).toList();
+    }
+    // The text is written with ’ and no-break spaces (French), the keyboard
+    // types ' and plain spaces: compare both in the same form.
+    final query = foldName(_searchQuery);
+    return entries
+        .where(
+          (e) =>
+              e.topicKey == _searchQuery ||
+              nameMatches(e.title, query) ||
+              nameMatches(e.description, query) ||
+              nameMatches(e.category, query),
+        )
+        .toList();
+  }
 
   @override
   Widget build(BuildContext context) {

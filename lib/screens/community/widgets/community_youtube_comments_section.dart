@@ -176,7 +176,9 @@ class _CommunityYoutubeCommentsSectionState
               Padding(
                 padding: const EdgeInsets.only(left: 28),
                 child: Text(
-                  '${labels.replies}: ${comment['totalReplyCount']}',
+                  labels.replies(
+                    (comment['totalReplyCount'] as num? ?? 0).toInt(),
+                  ),
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
               ),
