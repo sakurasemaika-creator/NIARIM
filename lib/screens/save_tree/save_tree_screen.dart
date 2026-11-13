@@ -64,8 +64,13 @@ typedef _TreeRowSpec = ({
 
 Map<String?, List<SaveNode>> _childrenIndex(List<SaveNode> nodes) {
   final index = <String?, List<SaveNode>>{};
+  // 親の保存が一覧に無い保存（親の保存を消した等）は根として並べる（親の
+  // 下に入れると、ツリーのどこにも描かれず、開くことも消すこともできな
+  // かった）。
+  final ids = {for (final n in nodes) n.id};
   for (final n in nodes) {
-    (index[n.parentId] ??= <SaveNode>[]).add(n);
+    final parent = ids.contains(n.parentId) ? n.parentId : null;
+    (index[parent] ??= <SaveNode>[]).add(n);
   }
   return index;
 }
@@ -120,6 +125,14 @@ class _SaveTreeScreenState extends State<SaveTreeScreen> {
     final l10n = AppLocalizations.of(context)!;
     final saveService = context.watch<SaveTreeService>();
     final isTreeMode = saveService.isTreeMode;
+    // 選んでいた保存を消したら、選んでいないことにする（消した保存の子として
+    // 保存すると、新しい保存がツリーのどこにも描かれなかった）。
+    if (_selectedNodeId != null &&
+        !saveService
+            .getNodes(widget.projectId)
+            .any((n) => n.id == _selectedNodeId)) {
+      _selectedNodeId = null;
+    }
 
     return Scaffold(
       appBar: AppBar(
