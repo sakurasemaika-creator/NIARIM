@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 
@@ -48,11 +50,18 @@ TextStyle collectionTileCaptionStyle(BuildContext context) => TextStyle(
   fontFamilyFallback: kHeadingFontFallback,
 );
 
+/// [locationRow]が真なら、名前の下の場所の行（検索の結果が入っている
+/// フォルダ）の高さも足す。
 CollectionTileGridDelegate collectionTileGridDelegate(
   BuildContext context,
-  double maxExtent,
-) {
-  final minimumHeight = 80 + collectionTileNameHeight(context) + 8;
+  double maxExtent, {
+  bool locationRow = false,
+}) {
+  final minimumHeight =
+      80 +
+      collectionTileNameHeight(context) +
+      (locationRow ? collectionTileLocationHeight(context) : 0) +
+      8;
   return CollectionTileGridDelegate(
     maxExtent: maxExtent,
     minHeight: minimumHeight,
@@ -107,6 +116,41 @@ double collectionTileNameHeight(BuildContext context) {
 final _nameHeights =
     <(TextStyle, TextScaler, TextDirection, Locale?), double>{};
 
+/// 場所の行の字。名前と同じ面（カードの帯）の上にあるので、名前と同じ
+/// 文字色から作る（ページの文字色だと、帯だけ暗いテーマで溶けた）。
+TextStyle collectionTileLocationStyle(BuildContext context) {
+  final name = collectionTileCaptionStyle(context).color!;
+  return TextStyle(fontSize: 10, color: name.withValues(alpha: name.a * 0.75));
+}
+
+/// 場所の行の高さ（フォルダの印と1行の字の高い方）。
+double collectionTileLocationHeight(BuildContext context) {
+  final style = DefaultTextStyle.of(
+    context,
+  ).style.merge(collectionTileLocationStyle(context));
+  final key = (
+    style,
+    MediaQuery.textScalerOf(context),
+    Directionality.of(context),
+    Localizations.maybeLocaleOf(context),
+  );
+  final cached = _locationHeights[key];
+  if (cached != null) return cached;
+  final painter = TextPainter(
+    text: TextSpan(text: 'Ag国한', style: style),
+    textScaler: key.$2,
+    textDirection: key.$3,
+    locale: key.$4,
+  )..layout();
+  final height = math.max(painter.height, key.$2.scale(12));
+  painter.dispose();
+  if (_locationHeights.length > 16) _locationHeights.clear();
+  return _locationHeights[key] = height;
+}
+
+final _locationHeights =
+    <(TextStyle, TextScaler, TextDirection, Locale?), double>{};
+
 /// [name]を、カードの名前に出す長さ（[kCollectionTileNameMaxUnits]、全角は
 /// 2・半角は1と数える）までにする。超える名前はそこまでで「…」を付ける。
 /// 単語を空白で区切る言語では、途中で切れる単語を出さない。
@@ -149,32 +193,76 @@ bool _isWide(int rune) =>
 /// The cover takes all available height above the name band. The name
 /// shows on up to two lines (see [collectionTileDisplayName]); extended
 /// metadata stays available in the detail view or preview.
-Widget collectionTileCaption(BuildContext context, String name) => ColoredBox(
-  color:
-      Theme.of(context).cardTheme.color ??
-      Theme.of(context).colorScheme.surfaceContainer,
-  child: Padding(
-    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-    child: SizedBox(
-      height: collectionTileNameHeight(context),
-      child: Align(
-        alignment: AlignmentDirectional.topStart,
-        child: Tooltip(
-          message: name,
-          triggerMode: TooltipTriggerMode.manual,
-          excludeFromSemantics: true,
-          child: Text(
-            collectionTileDisplayName(name),
-            semanticsLabel: name,
-            maxLines: kCollectionTileNameLines,
-            overflow: TextOverflow.ellipsis,
-            style: collectionTileCaptionStyle(context),
-          ),
+///
+/// [locationRow]が真なら、名前の下に場所の行（[location]、検索の結果が
+/// 入っているフォルダ）を置く。場所の無いカードも同じ高さを空けて、同じ
+/// 行のカードの絵の高さをそろえる。
+Widget collectionTileCaption(
+  BuildContext context,
+  String name, {
+  String? location,
+  bool locationRow = false,
+}) {
+  final nameBand = SizedBox(
+    height: collectionTileNameHeight(context),
+    child: Align(
+      alignment: AlignmentDirectional.topStart,
+      child: Tooltip(
+        message: name,
+        triggerMode: TooltipTriggerMode.manual,
+        excludeFromSemantics: true,
+        child: Text(
+          collectionTileDisplayName(name),
+          semanticsLabel: name,
+          maxLines: kCollectionTileNameLines,
+          overflow: TextOverflow.ellipsis,
+          style: collectionTileCaptionStyle(context),
         ),
       ),
     ),
-  ),
-);
+  );
+  final style = collectionTileLocationStyle(context);
+  return ColoredBox(
+    color:
+        Theme.of(context).cardTheme.color ??
+        Theme.of(context).colorScheme.surfaceContainer,
+    child: Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+      child: !locationRow && location == null
+          ? nameBand
+          : Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                nameBand,
+                SizedBox(
+                  height: collectionTileLocationHeight(context),
+                  child: location == null
+                      ? null
+                      : Row(
+                          children: [
+                            Icon(
+                              Icons.folder_outlined,
+                              size: MediaQuery.textScalerOf(context).scale(12),
+                              color: style.color,
+                            ),
+                            const SizedBox(width: 2),
+                            Flexible(
+                              child: Text(
+                                location,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: style,
+                              ),
+                            ),
+                          ],
+                        ),
+                ),
+              ],
+            ),
+    ),
+  );
+}
 
 /// Same gentle elevation as ProjectListWidget's unselected tile cards.
 Widget collectionTileShadow(BuildContext context, Widget child) =>

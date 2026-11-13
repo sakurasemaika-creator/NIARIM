@@ -382,7 +382,12 @@ class ProjectListWidget extends StatelessWidget {
       ProjectViewMode.small => 130.0,
       ProjectViewMode.detail => double.infinity,
     };
-    final gridDelegate = collectionTileGridDelegate(context, targetExtent);
+    // 検索の結果には、入っているフォルダの場所の行を添える。
+    final gridDelegate = collectionTileGridDelegate(
+      context,
+      targetExtent,
+      locationRow: searchQuery.trim().isNotEmpty,
+    );
     if (header != null) {
       return CustomScrollView(
         controller: scrollController,
@@ -462,8 +467,35 @@ class ProjectListWidget extends StatelessWidget {
     );
   }
 
-  Widget _gridCaption(BuildContext context, String name) =>
-      collectionTileCaption(context, name);
+  Widget _gridCaption(BuildContext context, String name, String? parentId) =>
+      collectionTileCaption(
+        context,
+        name,
+        location: _searchLocation(context, parentId),
+        locationRow: searchQuery.trim().isNotEmpty,
+      );
+
+  /// 検索の結果は階層をまたぐので、どのフォルダの中にあるかを添える
+  /// （同じ名前の作品が別々のフォルダにあると見分けられなかった）。
+  /// [parentId]のフォルダの場所（上の階層から「 / 」でつなぐ）。探して
+  /// いないとき・一番上にあるときはnull。
+  String? _searchLocation(BuildContext context, String? parentId) {
+    if (searchQuery.trim().isEmpty) return null;
+    final folders = {
+      for (final folder in context.read<ProjectService>().folders)
+        folder.id: folder,
+    };
+    final names = <String>[];
+    final seen = <String>{};
+    var id = parentId;
+    while (id != null && seen.add(id)) {
+      final folder = folders[id];
+      if (folder == null) break;
+      names.insert(0, folder.name);
+      id = folder.parentFolderId;
+    }
+    return names.isEmpty ? null : names.join(' / ');
+  }
 
   Widget _detailTile(
     BuildContext context,
@@ -488,10 +520,15 @@ class ProjectListWidget extends StatelessWidget {
               ),
             ),
       title: Text(project.name),
-      // 2行目は最後に保存した日時（その言語の日付と時刻の書き方）。
+      // 2行目は最後に保存した日時（その言語の日付と時刻の書き方）。検索の
+      // 結果には、入っているフォルダを添える。
       subtitle: Text(
-        '${l10n.homeProjectMeta(project.fps, project.durationSeconds)}\n'
-        '${l10n.projectListUpdatedOn(project.updatedAt)}',
+        [
+          l10n.homeProjectMeta(project.fps, project.durationSeconds),
+          l10n.projectListUpdatedOn(project.updatedAt),
+          if (_searchLocation(context, project.folderId) case final location?)
+            l10n.projectListInFolder(location),
+        ].join('\n'),
       ),
       trailing: (isSelectionMode || onPickProject != null)
           ? null
@@ -550,10 +587,16 @@ class ProjectListWidget extends StatelessWidget {
         ),
       ),
       // フォルダを作った日時（「更新日時」の並びでフォルダに使う日時）。
+      // 検索の結果には、入っているフォルダを添える。
       subtitle: Text(
-        AppLocalizations.of(
-          context,
-        )!.projectListFolderCreatedOn(folder.createdAt),
+        [
+          AppLocalizations.of(
+            context,
+          )!.projectListFolderCreatedOn(folder.createdAt),
+          if (_searchLocation(context, folder.parentFolderId)
+              case final location?)
+            AppLocalizations.of(context)!.projectListInFolder(location),
+        ].join('\n'),
       ),
       trailing: (!isSelectionMode && onPickProject == null)
           ? Row(
@@ -688,7 +731,7 @@ class ProjectListWidget extends StatelessWidget {
                   ],
                 ),
               ),
-              _gridCaption(context, project.name),
+              _gridCaption(context, project.name, project.folderId),
             ],
           ),
         ),
@@ -825,7 +868,7 @@ class ProjectListWidget extends StatelessWidget {
                   ],
                 ),
               ),
-              _gridCaption(context, folder.name),
+              _gridCaption(context, folder.name, folder.parentFolderId),
             ],
           ),
         ),
