@@ -12,7 +12,7 @@ import 'package:niarim/screens/home/home_screen.dart';
 import 'package:niarim/screens/home/widgets/project_list_widget.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:niarim/widgets/app_toast_messenger.dart'
-    show kToastEntrance, kToastFadeOut;
+    show kToastEntrance, kToastFadeOut, kToastMaxLifetime;
 import 'package:niarim/widgets/moved_to_trash_snack_bar.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -384,14 +384,14 @@ void main() {
       await close(tester);
     });
 
-    // 他の知らせが出ていて、その後ろでもう1つ待っているときに切り取っても、
-    // 切り取りの知らせをすぐ出す。待っていた知らせの後ろに回ると、Escで
-    // 切り取りをやめたときに、出ている別の知らせを閉じてしまう。
-    // 「すぐ」は、出ている知らせが薄くなって消える（次の知らせが待っている
-    // ときは300ms）のを待つだけ、ということ。1フレーム（16ms）ずつ描いて、
-    // 出た知らせの順と時間を見る。
-    testWidgets('a cut made while other notices are waiting shows its notice '
-        'at once and can be cancelled', (tester) async {
+    // 他の知らせが出ていて、その後ろでもう1つ待っているときに切り取ると、
+    // 切り取りの知らせはその後ろに並ぶ（出ている・待っている他の機能の
+    // 知らせを消さない。以前は待っている知らせを黙って下げていた、DISC092）。
+    // Escで切り取りをやめると、順番を待っている切り取りの知らせだけを
+    // 印で下げ、出ている知らせ・待っている知らせは閉じない。1フレーム
+    // （16ms）ずつ描いて、出た知らせの順と時間を見る。
+    testWidgets('a cut made while other notices are waiting queues its notice '
+        'behind them, and Esc withdraws only it', (tester) async {
       await openHome(tester, names: ['apple', 'banana']);
       final l10n = l10nOf(tester);
       final cutText = l10n.homeCutSnackbar(1);
@@ -412,7 +412,8 @@ void main() {
 
       var sinceCut = Duration.zero;
       Duration? cutShownAt;
-      // 切り取ってから600ms後にEscで切り取りをやめる。
+      // 切り取ってから600ms後にEscで切り取りをやめる（切り取りの知らせは
+      // まだ順番を待っている）。
       while (sinceCut < const Duration(milliseconds: 600)) {
         await tester.pump(frame);
         sinceCut += frame;
@@ -423,7 +424,7 @@ void main() {
       await tester.sendKeyEvent(LogicalKeyboardKey.escape);
       var sinceEsc = Duration.zero;
       while (find.byType(SnackBar).evaluate().isNotEmpty &&
-          sinceEsc < const Duration(seconds: 8)) {
+          sinceEsc < const Duration(seconds: 12)) {
         await tester.pump(frame);
         sinceEsc += frame;
         note();
@@ -435,17 +436,17 @@ void main() {
       );
       expect(tester.takeException(), isNull);
       expect(find.byKey(const Key('homeCrossTabPasteButton')), findsNothing);
-      expect(seen, ['first notice', cutText, null]);
+      expect(seen, ['first notice', 'waiting notice', null]);
       expect(
         cutShownAt,
-        lessThanOrEqualTo(const Duration(milliseconds: 350)),
-        reason: 'the cut notice waited behind other notices',
+        isNull,
+        reason: 'the cut notice was shown after the cut was cancelled',
       );
-      // Escで閉じた切り取りの知らせが薄くなって消えるまで（400ms）。
+      // 出ていた知らせと待っていた知らせは、それぞれ5秒以内に消える。
       expect(
         sinceEsc,
-        lessThanOrEqualTo(const Duration(milliseconds: 500)),
-        reason: 'Esc did not close the cut notice',
+        lessThanOrEqualTo(kToastMaxLifetime * 2),
+        reason: 'the other notices stayed too long',
       );
       await close(tester);
     });
@@ -542,10 +543,10 @@ void main() {
       await close(tester);
     });
 
-    // コピーの知らせは、出ている知らせを閉じて出るので、その後ろで別の
-    // 知らせが待っていると、それが先に出てコピーの知らせは順番を待つ。
-    // そこで空にしても、出ている知らせは閉じない。順番を待っていたコピーの
-    // 知らせは、空のクリップボードを伝えたまま残らない。
+    // コピーの知らせは、出ている・待っている他の知らせの後ろで順番を待つ
+    // （他の機能の知らせを消さない、DISC092）。そこで空にしても、出ている
+    // 知らせ・待っている知らせは閉じない。順番を待っていたコピーの知らせは、
+    // 空のクリップボードを伝えたまま残らない。
     for (final talkBack in [false, true]) {
       testWidgets('Clear while the copy notice waits leaves the shown notice '
           '(TalkBack ${talkBack ? 'on' : 'off'})', (tester) async {
@@ -558,19 +559,22 @@ void main() {
         await settle(tester);
         expect(snackText(tester), 'first notice');
         await copy(tester, 'apple');
-        expect(snackText(tester), 'waiting notice');
+        expect(snackText(tester), 'first notice');
         await tester.tap(clearButton);
         await settle(tester);
         expect(clearButton, findsNothing);
-        expect(snackText(tester), 'waiting notice');
-        // 待っていた知らせが時間で閉じた後、コピーの知らせは出ても
-        // すぐ閉じる（自分の4秒は残らない）。出てくる（250ms）のと薄く
+        expect(snackText(tester), 'first notice');
+        // 出ていた知らせと待っていた知らせが時間で閉じた後、コピーの知らせは
+        // 出てもすぐ閉じる（自分の4秒は残らない）。出てくる（250ms）のと薄く
         // なって消える（400ms）のは見える：100msのフレームで8回まで。
         var copiedFrames = 0;
-        for (var i = 0; i < 70; i++) {
+        var waitingShown = false;
+        for (var i = 0; i < 110; i++) {
           await tester.pump(const Duration(milliseconds: 100));
           if (snackText(tester) == copied) copiedFrames++;
+          if (snackText(tester) == 'waiting notice') waitingShown = true;
         }
+        expect(waitingShown, isTrue, reason: 'the waiting notice was dropped');
         final enterAndFade = (kToastEntrance + kToastFadeOut).inMilliseconds;
         debugPrint('the copy notice was on screen for $copiedFrames frames');
         expect(find.byType(SnackBar), findsNothing);

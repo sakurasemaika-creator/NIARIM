@@ -33,6 +33,7 @@ import '../../models/shortcut_binding.dart';
 import '../../widgets/export_share_feedback.dart';
 import '../../widgets/action_beside_or_below.dart';
 import '../../widgets/ad_banner_mock_widget.dart';
+import '../../widgets/app_toast_messenger.dart';
 import '../../widgets/empty_state_placeholder.dart';
 import '../../widgets/sort_mode_control.dart';
 import '../../widgets/project_trash_dialog.dart';
@@ -65,6 +66,42 @@ import '../../utils/tolerant_preferences.dart';
 
 class _ClipboardSourceMissing implements Exception {
   const _ClipboardSourceMissing();
+}
+
+/// ホームのコピー・切り取り・貼り付けの知らせの印（取り下げるときに、他の
+/// 機能の知らせと見分ける）。知らせごとに別のキーになる。
+/// [describesClipboard]はクリップボードの中身を伝える知らせ（コピー・
+/// 切り取り。クリップボードを空にしたら閉じる）。
+class _ClipboardNoticeKey extends UniqueKey {
+  _ClipboardNoticeKey({required this.describesClipboard});
+
+  final bool describesClipboard;
+
+  /// 操作ボタン（「元に戻す」）が押されたか。押された知らせは知らせの側で
+  /// 閉じるので、取り下げない（取り下げると、読み上げを使っているときは
+  /// すぐ取り除かれ、続く知らせの側の「閉じる」が後ろで待っていた別の
+  /// 知らせを閉じる）。
+  final _PressedFlag actionPressed = _PressedFlag();
+}
+
+class _PressedFlag {
+  bool value = false;
+}
+
+/// [messenger]に出ている・順番を待っているホームのコピー・切り取り・
+/// 貼り付けの知らせを取り下げる（[describingOnly]ならクリップボードの中身を
+/// 伝える知らせだけ）。他の機能の知らせには触れない。
+void _withdrawClipboardNotices(
+  ScaffoldMessengerState messenger, {
+  bool describingOnly = false,
+}) {
+  if (messenger is! AppToastMessengerState) return;
+  messenger.withdrawSnackBars((snackBar) {
+    final key = snackBar.key;
+    return key is _ClipboardNoticeKey &&
+        !key.actionPressed.value &&
+        (!describingOnly || key.describesClipboard);
+  });
 }
 
 String _clipboardMissingMessage(BuildContext context) =>
@@ -1668,6 +1705,11 @@ class _HomeScreenState extends State<HomeScreen>
     final notice = _clipboardNotice;
     _clipboardNotice = null;
     notice?.close();
+    // 順番を待っている知らせも、出さずに下げる。
+    final messenger = ScaffoldMessenger.maybeOf(context);
+    if (messenger != null) {
+      _withdrawClipboardNotices(messenger, describingOnly: true);
+    }
   }
 
   void _cancelCutClipboard() {
@@ -1684,17 +1726,20 @@ class _HomeScreenState extends State<HomeScreen>
   }) {
     if (!mounted) return;
     final messenger = ScaffoldMessenger.of(context);
-    // 切り取りの知らせは、待っている他の知らせの後ろへ回さずにすぐ出す
-    // （後ろに回ると、切り取りをやめたときに閉じる相手を取り違える）。
-    if (allowUndoCut) messenger.clearSnackBars();
-    messenger.removeCurrentSnackBar();
+    // 前のコピー・切り取り・貼り付けの知らせだけを取り下げて入れ替える。
+    // 出ている・待っている他の機能の知らせ（ゴミ箱へ移した知らせとその
+    // 「元に戻す」・保存の失敗の知らせ等）は消さず、その後ろに並ぶ
+    // （切り取りをやめたときは、印で自分の知らせだけを閉じる）。
+    _withdrawClipboardNotices(messenger);
     final tracked = describesClipboard || allowUndoCut;
+    final noticeKey = _ClipboardNoticeKey(describesClipboard: tracked);
     final clears = _clipboardClears;
     // 閉じた、または閉じ始めた（二度閉じると、次に出た別の知らせを閉じる）。
     var closing = false;
     late final ScaffoldFeatureController<SnackBar, SnackBarClosedReason> notice;
     notice = messenger.showSnackBar(
       SnackBar(
+        key: noticeKey,
         content: Text(message),
         // 操作ボタンの付いたSnackBarは、既定では時間で消えず次の画面まで
         // 付いてくる。切り取りは貼り付けるまで続くが、知らせは5秒で消す。
@@ -1720,6 +1765,7 @@ class _HomeScreenState extends State<HomeScreen>
                 // 取り除かれるので、後ろで待っている別の知らせまで閉じる。
                 onPressed: () {
                   closing = true;
+                  noticeKey.actionPressed.value = true;
                   if (identical(_clipboardNotice, notice)) {
                     _clipboardNotice = null;
                   }
