@@ -4,7 +4,7 @@ import { catalogRedemptionQuote, catalogSelectionQuote } from "../src/lib/coinRe
 describe("authenticated catalog preview contract", () => {
   it("reports owner-fixed prices for each period but never claims redemption", () => {
     for (const [duration,price] of [
-      ["hour", 500],["day",2500],["week",18000],["month",55000],
+      ["hour", 5000],["day",10000],["week",30000],["month",55000],
     ] as const) {
       const q = catalogRedemptionQuote({target:"fullPremium",duration});
       expect(q).toMatchObject({
@@ -12,7 +12,7 @@ describe("authenticated catalog preview contract", () => {
         catalogPriceCoins:price,
         enabled:false,priceCoins:null,
         reason:"REDEMPTION_NOT_IMPLEMENTED",
-        priceVersion:"v3-final-annual550000",
+        priceVersion:"v4-min10-repriced-20261113",
       });
     }
   });
@@ -20,7 +20,7 @@ describe("authenticated catalog preview contract", () => {
     const quote = catalogRedemptionQuote({
       target:"toneCurve",duration:"week",quantity:"3",
     });
-    expect(quote.catalogPriceCoins).toBe(10560);
+    expect(quote.catalogPriceCoins).toBe(27000);
     expect(quote.enabled).toBe(false);
     expect(quote.priceCoins).toBeNull();
   });
@@ -51,7 +51,7 @@ describe("multiple benefit comparisons are server-authoritative and non-spendabl
       targets:"toneCurve,levelAdjustment",duration:"week",
     });
     expect(result).toMatchObject({
-      enabled:false,priceCoins:null,catalogPriceCoins:6230,
+      enabled:false,priceCoins:null,catalogPriceCoins:16500,
       duration:"week",quantity:1,
     });
     expect(result.items).toHaveLength(2);
