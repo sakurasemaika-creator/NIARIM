@@ -138,10 +138,14 @@ void main() {
       final ranked = await service.fetchRanking(RankingPeriod.week);
       expect(ranked.map((w) => w.id), ['a', 'b']);
       await service.setMutedTags(['spoiler']);
-      expect(service.discoverableWorks.map((w) => w.id), ['b']);
+      // Ranking preserves the original server slots. The hidden work
+      // remains represented by a masked, non-openable placeholder.
+      expect(service.discoverableWorks.map((w) => w.id), ['a', 'b']);
+      expect(service.isWorkMuted(service.byId('a')!), isTrue);
+      expect(service.isDiscoverableForViewer(service.byId('a')!), isFalse);
       expect(
         (await service.fetchRanking(RankingPeriod.week)).map((w) => w.id),
-        ['b'],
+        ['a', 'b'],
       );
     });
   });
@@ -163,7 +167,9 @@ void main() {
       expect(jsonDecode(patch.body), {'action': 'add', 'tag': 'spoiler'});
       expect(service.byId('w')!.tags, ['spoiler', 'server']);
       await service.setMutedTags(['spoiler']);
-      expect(service.discoverableWorks, isEmpty);
+      expect(service.discoverableWorks.map((w) => w.id), ['w']);
+      expect(service.isWorkMuted(service.byId('w')!), isTrue);
+      expect(service.isDiscoverableForViewer(service.byId('w')!), isFalse);
     });
 
     test('a refused tag edit is undone and reported', () async {
@@ -219,10 +225,18 @@ void main() {
       own.id,
     ]);
     await service.setMutedWords([own.title, other.title]);
-    expect(service.bookmarkedWorksForViewer.map((w) => w.id), [own.id]);
-    expect(service.bookmarkedWorksOf(kDummySelfAuthorId).map((w) => w.id), [
+    // Saved items stay removable as masked placeholders, not silently lost.
+    expect(service.bookmarkedWorksForViewer.map((w) => w.id), [
+      other.id,
       own.id,
     ]);
+    expect(service.isWorkMuted(own), isTrue);
+    expect(service.isWorkMuted(other), isTrue);
+    expect(service.isDiscoverableForViewer(other), isFalse);
+    expect(
+      service.bookmarkedWorksOf(kDummySelfAuthorId).map((w) => w.id),
+      containsAll([own.id, other.id]),
+    );
   });
 
   group('screens', () {
