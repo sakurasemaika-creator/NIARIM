@@ -151,6 +151,8 @@ jobs:
         env:
           RELEASE_API_BASE_URL: ${{ vars.NIARIM_PRODUCTION_API_BASE_URL }}
           GOOGLE_WEB_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          RELEASE_BANNER_ID: ${{ vars.NIARIM_ANDROID_BANNER_AD_UNIT_ID }}
+          RELEASE_RECTANGLE_ID: ${{ vars.NIARIM_ANDROID_RECTANGLE_AD_UNIT_ID }}
         shell: bash
         run: |
           set -euo pipefail
@@ -167,7 +169,15 @@ jobs:
             echo "::error::GOOGLE_CLIENT_ID is required for production sign-in."
             exit 1
           fi
-          echo "Release API URL and OAuth client are configured."
+          # Both production placements must be registered in NIARIM's AdMob
+          # account; Google's demonstration ad units are never release-ready.
+          for unit in "$RELEASE_BANNER_ID" "$RELEASE_RECTANGLE_ID"; do
+            if [[ ! "$unit" =~ ^ca-app-pub-4380578821900659/[0-9]{10}$ ]]; then
+              echo "::error::A NIARIM-owned banner/rectangle AdMob unit is missing."
+              exit 1
+            fi
+          done
+          echo "Release API, OAuth client and AdMob placements are configured."
 
       - name: APKビルド（release）
         if: ${{ inputs.build-type == 'release' }}
@@ -176,12 +186,16 @@ jobs:
           NIARIM_UPLOAD_STORE_PASSWORD: ${{ secrets.NIARIM_UPLOAD_STORE_PASSWORD }}
           RELEASE_API_BASE_URL: ${{ vars.NIARIM_PRODUCTION_API_BASE_URL }}
           GOOGLE_WEB_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          RELEASE_BANNER_ID: ${{ vars.NIARIM_ANDROID_BANNER_AD_UNIT_ID }}
+          RELEASE_RECTANGLE_ID: ${{ vars.NIARIM_ANDROID_RECTANGLE_AD_UNIT_ID }}
         shell: bash
         run: |
           set -euo pipefail
           flutter build apk --release \
             --dart-define="NIARIM_API_BASE_URL=$RELEASE_API_BASE_URL" \
-            --dart-define="NIARIM_GOOGLE_CLIENT_ID=$GOOGLE_WEB_CLIENT_ID"
+            --dart-define="NIARIM_GOOGLE_CLIENT_ID=$GOOGLE_WEB_CLIENT_ID" \
+            --dart-define="NIARIM_ADMOB_ANDROID_BANNER_AD_UNIT_ID=$RELEASE_BANNER_ID" \
+            --dart-define="NIARIM_ADMOB_ANDROID_RECTANGLE_AD_UNIT_ID=$RELEASE_RECTANGLE_ID"
 
       # Actions Storage（無料枠0.5GB）の上限に達していると、このステップ
       # だけが失敗してもビルド済みAPKは下のGitHub Releaseから取得できる。
