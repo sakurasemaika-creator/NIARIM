@@ -320,6 +320,36 @@ void main() {
       await close(tester);
     });
 
+    // 切り取りの知らせの後ろで別の知らせが待っているときに「元に戻す」で
+    // 切り取りをやめても、待っている知らせは消さずに出す。読み上げ（TalkBack）
+    // を使っていると、閉じた知らせはすぐ取り除かれ次の知らせが出るので、
+    // 切り取りの知らせを二度閉じると、待っていた知らせまで出ないまま消えた。
+    for (final talkBack in [false, true]) {
+      testWidgets('Undo on the cut notice leaves a waiting notice '
+          '(TalkBack ${talkBack ? 'on' : 'off'})', (tester) async {
+        if (talkBack) {
+          tester.platformDispatcher.accessibilityFeaturesTestValue =
+              const FakeAccessibilityFeatures(accessibleNavigation: true);
+          addTearDown(
+            tester.platformDispatcher.clearAccessibilityFeaturesTestValue,
+          );
+        }
+        await openHome(tester, names: ['apple', 'banana']);
+        await cut(tester, 'apple');
+        ScaffoldMessenger.of(
+          tester.element(find.byType(HomeScreen)),
+        ).showSnackBar(const SnackBar(content: Text('waiting notice')));
+        await settle(tester);
+        expect(snackText(tester), l10nOf(tester).homeCutSnackbar(1));
+        await tester.tap(find.text(l10nOf(tester).homeUndoAction));
+        await settle(tester);
+        expect(find.byKey(const Key('homeCrossTabPasteButton')), findsNothing);
+        expect(snackText(tester), 'waiting notice');
+        expect(tester.takeException(), isNull);
+        await close(tester);
+      });
+    }
+
     // 切り取りの後で別の知らせ（ゴミ箱へ移した・元に戻す）が出ているときに
     // Escで切り取りをやめても、その知らせは閉じない。
     testWidgets('Esc that cancels a cut leaves a later notice alone', (

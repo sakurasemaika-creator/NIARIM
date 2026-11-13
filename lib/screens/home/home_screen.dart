@@ -1636,7 +1636,13 @@ class _HomeScreenState extends State<HomeScreen>
         action: allowUndoCut
             ? SnackBarAction(
                 label: AppLocalizations.of(context)!.homeUndoAction,
-                onPressed: _cancelCutClipboard,
+                // 押された知らせは知らせの側で閉じる。ここでも閉じると、
+                // 読み上げ（TalkBack）を使っているときは閉じた知らせがすぐ
+                // 取り除かれるので、後ろで待っている別の知らせまで閉じる。
+                onPressed: () {
+                  _cutNotice = null;
+                  _cancelCutClipboard();
+                },
               )
             : null,
       ),
