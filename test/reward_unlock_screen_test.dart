@@ -9,7 +9,7 @@ import 'package:niarim/services/premium_service.dart';
 import 'package:niarim/services/settings_service.dart';
 
 void main() {
-  testWidgets('12-month full Premium shows 550000 coins and cannot redeem '
+  testWidgets('12-month full Premium shows 550000 opals and cannot redeem '
       'until the annual server offer is implemented', (tester) async {
     final premium = PremiumService();
     final settings = SettingsService();
@@ -52,10 +52,10 @@ void main() {
     await tester.pumpAndSettle();
     final price = find.descendant(
       of: full,
-      matching: find.textContaining('550000 coins'),
+      matching: find.textContaining('550000 opals'),
     );
     expect(price, findsOneWidget);
-    expect(find.textContaining('660000 coins'), findsNothing);
+    expect(find.textContaining('660000 opals'), findsNothing);
     final total = find.byKey(const Key('rewardTotalCoins'));
     // The summary card is lazily built below the benefit list.
     await tester.scrollUntilVisible(
@@ -64,7 +64,7 @@ void main() {
       scrollable: find.byType(Scrollable).first,
     );
     await tester.pumpAndSettle();
-    expect(tester.widget<Text>(total).data, contains('550000 coins'));
+    expect(tester.widget<Text>(total).data, contains('550000 opals'));
     expect(
       tester
           .widget<OutlinedButton>(find.byKey(const Key('rewardRedeemButton')))
@@ -124,10 +124,10 @@ void main() {
       // hourly price instead; a stale quote must never authorize spending.
       final toneCurve = find.byKey(const Key('rewardFeature_toneCurve'));
       expect(
-        find.descendant(of: toneCurve, matching: find.textContaining('750 coins')),
+        find.descendant(of: toneCurve, matching: find.textContaining('750 opals')),
         findsOneWidget,
       );
-      expect(find.textContaining('110 coins'), findsNothing);
+      expect(find.textContaining('110 opals'), findsNothing);
       await tester.tap(find.byKey(const Key('rewardDurationButton')));
       await tester.pumpAndSettle();
       // Categories start collapsed so days remains reachable on small screens.
@@ -141,12 +141,12 @@ void main() {
       // Two days use the owner-final day price (1800 x 2), not the
       // injected stale 470-coin day rate.
       expect(
-        find.descendant(of: toneCurve, matching: find.textContaining('3600 coins')),
+        find.descendant(of: toneCurve, matching: find.textContaining('3600 opals')),
         findsOneWidget,
       );
-      expect(find.textContaining('940 coins'), findsNothing);
+      expect(find.textContaining('940 opals'), findsNothing);
 
-      // No wallet/SSV/price quote is connected: neither action can spend coins.
+      // No wallet/SSV/price quote is connected: neither action can spend opals.
       final goalButton = find.byKey(const Key('rewardSetGoalButton'));
       await tester.scrollUntilVisible(
         goalButton,
