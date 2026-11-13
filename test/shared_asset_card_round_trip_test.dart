@@ -61,6 +61,36 @@ void main() {
     expect(restoredBrush.pressureOn.toJson(), custom.pressureOn.toJson());
     expect(restoredBrush.customImagePaths, hasLength(1));
     expect(await File(restoredBrush.resolvedCustomImagePaths.first).readAsBytes(), pixels);
+    // A complete brush card must preserve all source files and their order,
+    // not just the first thumbnail or the legacy single-image path.
+    final secondPixels = base64Decode(
+        'iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAAFElEQVR42mMUtLmUz8DAwMDEAAUAF3cBkm44k6YAAAAASUVORK5CYII=');
+    final secondImage = File('${directory.path}/source-2.png');
+    await secondImage.writeAsBytes(secondPixels);
+    final multiBrush = base.copyWith(
+      id: 'outside-multi-image-brush',
+      name: '共有テスト・複数画像ブラシ',
+      customImagePaths: [secondImage.path, originalImage.path],
+      isFavorite: true,
+      tags: ['first', 'second'],
+    );
+    brushes.addBrush(multiBrush);
+    final multiPng = await SharedAssetCardService.exportBrush(brushes, multiBrush);
+    final multiCard = await SharedAssetCardService.inspect(multiPng);
+    await SharedAssetCardService.importCard(multiCard, brushService: brushes);
+    final restoredMulti = brushes.brushes.last;
+    expect(restoredMulti.id, isNot(multiBrush.id));
+    expect(restoredMulti.tags, multiBrush.tags);
+    expect(restoredMulti.isFavorite, isFalse);
+    expect(restoredMulti.customImagePaths, hasLength(2));
+    expect(
+      await File(restoredMulti.customImagePaths[0]).readAsBytes(),
+      secondPixels,
+    );
+    expect(
+      await File(restoredMulti.customImagePaths[1]).readAsBytes(),
+      pixels,
+    );
     brushes.dispose();
 
     final tones = ToneService();
