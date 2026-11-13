@@ -1,4 +1,5 @@
 # Full-tree style and analyzer gate, isolated from screenshot workflows.
+# Rerun after repairing analyzer warnings and aligning the formatter language version.
 name: Postformat Flutter analyze and style
 on:
   push:

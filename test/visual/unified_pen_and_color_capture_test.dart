@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:math' as math;
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
@@ -9,19 +8,13 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/app.dart';
 import 'package:niarim/app_bootstrap.dart';
-import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/models/canvas_dock_panel.dart';
 import 'package:niarim/router.dart';
-import 'package:niarim/screens/canvas/widgets/color_adjust_sheet.dart';
 import 'package:niarim/screens/canvas/widgets/color_picker_panel.dart';
-import 'package:niarim/screens/canvas/widgets/hsv_color_wheel.dart';
-import 'package:niarim/screens/canvas/widgets/filter_panel.dart';
 import 'package:niarim/screens/canvas/widgets/pen_sub_tool_panel.dart';
 import 'package:niarim/screens/canvas/widgets/brush_panel.dart';
 import 'package:niarim/screens/canvas/widgets/tone_panel.dart';
 import 'package:niarim/screens/canvas/widgets/stamp_panel.dart';
-import 'package:niarim/screens/canvas/widgets/toolbar_widget.dart';
-import 'package:niarim/services/filter_service.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:niarim/services/tone_service.dart';
 import 'package:niarim/services/brush_service.dart';
@@ -149,35 +142,6 @@ void main() {
         layerId: layer.id,
         pixels: art,
       );
-
-      // Controls live in the unused corners of the wheel square. A touch
-      // target must never intersect the visible circular hue ring.
-      void assertColorWheelControlsClear() {
-        final wheelFinder = find.byType(HsvColorWheel);
-        expect(wheelFinder, findsOneWidget);
-        final wheel = tester.widget<HsvColorWheel>(wheelFinder);
-        final bounds = tester.getRect(wheelFinder);
-        final center = Offset(bounds.center.dx, bounds.top + wheel.size / 2);
-        for (final key in [
-          'color-picker-eyedropper',
-          'color-picker-transparent-toggle',
-          'color-slider-mode-hsv',
-          'color-slider-mode-rgb',
-        ]) {
-          final target = find.byKey(ValueKey(key));
-          if (target.evaluate().isEmpty) continue;
-          final rect = tester.getRect(target);
-          final nearest = Offset(
-            math.max(rect.left, math.min(center.dx, rect.right)),
-            math.max(rect.top, math.min(center.dy, rect.bottom)),
-          );
-          expect(
-            (nearest - center).distance,
-            greaterThanOrEqualTo(wheel.size / 2 - 2),
-            reason: '$key must not overlap the circular hue ring',
-          );
-        }
-      }
 
       await settings.setForcePcMode(true);
       await settings.setDefaultDockedPanels({

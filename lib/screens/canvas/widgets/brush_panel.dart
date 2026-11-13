@@ -16,7 +16,6 @@ import '../../../widgets/preset_stroke_row.dart';
 import '../../../widgets/pixel_color_mode_selector.dart';
 import 'creative_folder_sheets.dart';
 import '../../../widgets/docked_panel_scope.dart';
-import '../../../widgets/export_share_feedback.dart';
 import 'panel_close_bar.dart';
 import 'color_picker_panel.dart';
 import 'brush_extension_settings.dart';

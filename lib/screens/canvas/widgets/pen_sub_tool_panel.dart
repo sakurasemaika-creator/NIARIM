@@ -5,7 +5,6 @@ import 'package:provider/provider.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../../widgets/docked_panel_scope.dart';
-import '../../../services/brush_service.dart';
 import '../../../services/tone_service.dart';
 import '../../../services/theme_service.dart';
 import '../../../config/font_fallback.dart';

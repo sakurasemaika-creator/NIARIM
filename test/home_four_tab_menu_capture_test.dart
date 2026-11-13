@@ -320,7 +320,7 @@ void main() {
     await tester.longPress(find.text('作品整理フォルダ').first);
     await settle();
     expect(
-      find.byKey(Key('homeSelectedMarker_work_folder:${folders.$2!.id}')),
+      find.byKey(Key('homeSelectedMarker_work_folder:${folders.$2.id}')),
       findsOneWidget,
     );
     await shot('14_works_folder_selected');
@@ -328,7 +328,7 @@ void main() {
     await tester.longPress(find.text('共有整理フォルダ').first);
     await settle();
     expect(
-      find.byKey(Key('homeSelectedMarker_shared_folder:${folders.$3!.id}')),
+      find.byKey(Key('homeSelectedMarker_shared_folder:${folders.$3.id}')),
       findsOneWidget,
     );
     await shot('15_shared_folder_selected');
@@ -338,7 +338,7 @@ void main() {
     final localTrash = await tester.runAsync(LocalFileTrashService.list);
     expect(localTrash, isNotNull);
     expect(
-      localTrash!.any((entry) => entry.id == folders.$4!.id && entry.isFolder),
+      localTrash!.any((entry) => entry.id == folders.$4.id && entry.isFolder),
       isTrue,
     );
     LocalFileTrashService.changes.value++;
@@ -366,7 +366,7 @@ void main() {
     await tester.longPress(trashedFolder.first);
     await settle();
     expect(
-      find.byKey(Key('homeSelectedMarker_trash_local:${folders.$4!.id}')),
+      find.byKey(Key('homeSelectedMarker_trash_local:${folders.$4.id}')),
       findsOneWidget,
     );
     await shot('16_trash_folder_selected');
