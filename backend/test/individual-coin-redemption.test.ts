@@ -69,14 +69,25 @@ describe("fail closed individual benefit redemption",()=>{
     const tx=send.mock.calls.find(([cmd])=>cmd instanceof TransactWriteCommand)?.[0] as TransactWriteCommand;
     expect(tx).toBeInstanceOf(TransactWriteCommand);
     const rows=tx.input.TransactItems!;
-    expect(rows).toHaveLength(6);
+    expect(rows).toHaveLength(7);
     expect(rows[0].Put?.Item?.selectionKey).toBe("toneCurve,levelAdjustment");
     expect(rows[1].Update?.Key?.pk).toBe("USER#Naccount");
     expect(rows[1].Update?.ExpressionAttributeValues?.[":minus"]).toBe(-6230);
     expect(rows[2].Update?.Key?.sk).toBe("ENTITLEMENT#toneCurve");
     expect(rows[3].Update?.Key?.sk).toBe("ENTITLEMENT#levelAdjustment");
-    expect(rows[4].ConditionCheck?.Key?.sk).toBe("ENTITLEMENT#fullPremium");
-    expect(rows[5].Put?.Item?.deltaCoins).toBe(-6230);
+    // The membership and Play term are checked in the SAME transaction as
+    // the coin debit. A Play purchase committed after preflight must block it.
+    expect(rows[4].ConditionCheck?.Key).toMatchObject({
+      pk:"USER#Naccount",sk:"META",
+    });
+    expect(rows[4].ConditionCheck?.ConditionExpression)
+      .toContain("membershipTier = :free");
+    expect(rows[4].ConditionCheck?.ConditionExpression)
+      .toContain("playPremiumExpiresAtEpochMs <= :now");
+    expect(rows[4].ConditionCheck?.ExpressionAttributeValues?.[":free"])
+      .toBe("free");
+    expect(rows[5].ConditionCheck?.Key?.sk).toBe("ENTITLEMENT#fullPremium");
+    expect(rows[6].Put?.Item?.deltaCoins).toBe(-6230);
     expect(rows[2].Update?.ConditionExpression).toContain("attribute_not_exists(expiresAtEpochMs)");
   });
   it("rejects price tampering, overlapping ad rights and duplicate targets",async()=>{
