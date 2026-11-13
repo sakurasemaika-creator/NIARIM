@@ -199,12 +199,12 @@ export async function redeemCoins(event: APIGatewayProxyEventV2) {
             UpdateExpression:
               "SET itemType = :type, entitlement = :entitlement, " +
               "#status = :active, expiresAtEpochMs = :expiry, " +
-              "source = :source, lastRedemptionId = :requestId",
+              "#source = :source, lastRedemptionId = :requestId",
             ConditionExpression:
               "(attribute_not_exists(itemType) OR itemType = :type) " +
               "AND (attribute_not_exists(#status) OR #status = :active) " +
               `AND ${oldExpiryCondition}`,
-            ExpressionAttributeNames: { "#status": "status" },
+            ExpressionAttributeNames: { "#status": "status", "#source": "source" },
             ExpressionAttributeValues: {
               ":type": "REWARD_ENTITLEMENT",
               ":entitlement": "fullPremium",
