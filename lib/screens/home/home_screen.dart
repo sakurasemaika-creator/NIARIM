@@ -916,11 +916,15 @@ class _HomeScreenState extends State<HomeScreen>
                 )
               else ...[
                 if (_currentTabIndex <= 2)
-                  PopupMenuButton<ProjectViewMode>(
+                  // 開いているタブの今の表示サイズに印を付ける。
+                  ProjectViewModeMenu(
                     key: const Key('homeCollectionViewModeMenu'),
-                    icon: const Icon(Icons.view_module),
-                    tooltip: l10n.homeViewModeTooltip,
-                    onSelected: (mode) {
+                    value: switch (_currentTabIndex) {
+                      1 => _effectiveWorksViewMode(context),
+                      2 => _effectiveSharedViewMode(context),
+                      _ => _effectiveViewMode(context),
+                    },
+                    onChanged: (mode) {
                       switch (_currentTabIndex) {
                         case 0:
                           _selectProjectViewMode(mode);
@@ -930,24 +934,6 @@ class _HomeScreenState extends State<HomeScreen>
                           _selectSharedViewMode(mode);
                       }
                     },
-                    itemBuilder: (_) => [
-                      PopupMenuItem(
-                        value: ProjectViewMode.large,
-                        child: Text(l10n.homeViewModeLarge),
-                      ),
-                      PopupMenuItem(
-                        value: ProjectViewMode.medium,
-                        child: Text(l10n.homeViewModeMedium),
-                      ),
-                      PopupMenuItem(
-                        value: ProjectViewMode.small,
-                        child: Text(l10n.homeViewModeSmall),
-                      ),
-                      PopupMenuItem(
-                        value: ProjectViewMode.detail,
-                        child: Text(l10n.homeViewModeDetail),
-                      ),
-                    ],
                   ),
                 IconButton(
                   key: const Key('homeSearchButton'),

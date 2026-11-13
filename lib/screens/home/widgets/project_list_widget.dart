@@ -19,6 +19,7 @@ import '../../../services/material_service.dart';
 import '../../../services/project_service.dart';
 import '../home_screen.dart';
 import '../../../config/font_fallback.dart';
+import '../../../widgets/checked_menu_item.dart';
 import '../../../widgets/empty_state_placeholder.dart';
 import '../../../widgets/export_share_feedback.dart';
 import '../../../widgets/frame_preview_background.dart';
@@ -100,6 +101,48 @@ void showRenameFolderNameDialog(
       rename: true,
     ),
   );
+}
+
+/// 一覧の表示サイズ（大・中・小・詳細）を選ぶメニュー。開くと今の表示に
+/// チェックが付き（読み上げでも選択中）、ボタンを覆わないよう下に開く
+/// （以前はどれを選んでいるか分からず、ボタンの上に重なって開いた）。
+/// ホームのタブと、ホーム画面ウィジェットの作品を選ぶ一覧で使う。
+class ProjectViewModeMenu extends StatelessWidget {
+  const ProjectViewModeMenu({
+    super.key,
+    required this.value,
+    required this.onChanged,
+  });
+
+  final ProjectViewMode value;
+  final ValueChanged<ProjectViewMode> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    String label(ProjectViewMode mode) => switch (mode) {
+      ProjectViewMode.large => l10n.homeViewModeLarge,
+      ProjectViewMode.medium => l10n.homeViewModeMedium,
+      ProjectViewMode.small => l10n.homeViewModeSmall,
+      ProjectViewMode.detail => l10n.homeViewModeDetail,
+    };
+    return PopupMenuButton<ProjectViewMode>(
+      icon: const Icon(Icons.view_module),
+      tooltip: l10n.homeViewModeTooltip,
+      initialValue: value,
+      position: PopupMenuPosition.under,
+      onSelected: onChanged,
+      itemBuilder: (_) => [
+        for (final mode in ProjectViewMode.values)
+          checkedMenuItem(
+            context,
+            value: mode,
+            checked: mode == value,
+            label: label(mode),
+          ),
+      ],
+    );
+  }
 }
 
 /// フォルダ・プロジェクトを同一一覧内で扱うための表示用ラッパー
