@@ -362,11 +362,17 @@ class SaveTreeService extends ChangeNotifier {
         archived.add(p);
         continue;
       }
-      if (_isTreeMode || p.slotIndex < 0) {
+      if (_isTreeMode) {
         nodes.add(p);
         continue;
       }
-      if (sessionSlots.contains(p.slotIndex)) {
+      // 今のスロットに無い番号（スロット数を減らした・ツリー方式で保存した
+      // 枝）は、この起動の保存に譲った保存と同じく空いているスロットへ
+      // （無ければ退避へ）、コメント・親・控えのメモごと移す（番号のまま
+      // 置くと、どのスロットにも退避にも出ず、見えなかった）。
+      if (p.slotIndex < 0 ||
+          p.slotIndex >= _slotMax ||
+          sessionSlots.contains(p.slotIndex)) {
         displaced.add(p);
         continue;
       }

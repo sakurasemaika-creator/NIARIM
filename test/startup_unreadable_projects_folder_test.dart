@@ -4140,6 +4140,111 @@ void main() {
     expect(nodes[1].slotIndex, 1);
     expect(nodes[1].comment, 'B');
   });
+
+  // 一覧を読めない間の保存の控えは、次に読めたとき、控えのスロットの番号の
+  // まま入った。スロット数を減らした後（スロット4へ保存→スロット数3）や、
+  // ツリー方式で保存した枝をスロット方式で読んだときは、どのスロットにも
+  // 出ず退避にも入らず、見えなくなった（控えが無かった頃は、一覧に無い
+  // ファイルとして空いたスロットへ入り、見えていた）。スロット方式では、
+  // 今のスロットに無い番号の控えは、空いているスロットへ（無ければ退避へ）
+  // コメント・親・控えのメモごと入れる。
+  for (final taken in [1, 3]) {
+    test(
+      'a save kept in its note whose slot no longer exists comes back in '
+      '${taken < 3 ? 'a free slot' : 'the archive when no slot is free'}',
+      () async {
+        final (project, saves) = await _seedProjectWithSaves(
+          comments: ['A', 'B', 'C'].take(taken).toList(),
+        );
+        final indexPath =
+            '${storage.projectsPath}/${project.id}/SaveTree/'
+            '${SaveTreeService.indexFileName}';
+        storage.paths.blockReading(indexPath);
+        final first = SaveTreeService()..setSlotMax(5);
+        await first.init();
+        final e = await _saveToSlot(first, project, 4, 'セーブE');
+        await first.setSlotMemo(project.id, 4, 'セーブE');
+        first.dispose();
+
+        storage.paths.clear();
+        void expectShown(SaveTreeService saveTree) {
+          final bySlot = {
+            for (final n in saveTree.getNodes(project.id)) n.slotIndex: n,
+          };
+          final archived = saveTree.getArchivedNodes(project.id);
+          if (taken < 3) {
+            expect(bySlot.map((k, v) => MapEntry(k, v.id)), {
+              0: saves[0].id,
+              1: e.id,
+            });
+            expect(bySlot[1]!.comment, 'セーブE');
+            expect(archived, isEmpty);
+            expect(
+              [
+                for (var i = 0; i < 3; i++)
+                  saveTree.slotDisplayMemoOf(project.id, i),
+              ],
+              ['A', 'セーブE', null],
+            );
+          } else {
+            expect(bySlot.map((k, v) => MapEntry(k, v.id)), {
+              0: saves[0].id,
+              1: saves[1].id,
+              2: saves[2].id,
+            });
+            expect(archived.map((n) => n.id), [e.id]);
+            expect(archived.single.comment, 'セーブE');
+          }
+        }
+
+        final second = SaveTreeService()..setSlotMax(3);
+        addTearDown(second.dispose);
+        await second.init();
+        expectShown(second);
+        final third = SaveTreeService()..setSlotMax(3);
+        addTearDown(third.dispose);
+        await third.init();
+        expectShown(third);
+      },
+    );
+  }
+
+  test('a branch kept in its note comes back in a free slot, with its '
+      'comment and parent, when the next start uses slots', () async {
+    final (project, saves) = await _seedProjectWithSaves(comments: ['A']);
+    storage.paths.blockReading(
+      '${storage.projectsPath}/${project.id}/SaveTree/'
+      '${SaveTreeService.indexFileName}',
+    );
+    final first = SaveTreeService()..setTreeMode(true);
+    await first.init();
+    final projects = _seedServices[project.id]!;
+    final e = await first.saveAsChild(
+      projectId: project.id,
+      project: project,
+      scenes: projects.scenesOf(project.id),
+      tileManager: projects.tileManagerOf(project.id),
+      parentId: saves[0].id,
+      comment: '枝',
+    );
+    first.dispose();
+
+    storage.paths.clear();
+    final second = SaveTreeService()..setSlotMax(5);
+    addTearDown(second.dispose);
+    await second.init();
+    final bySlot = {
+      for (final n in second.getNodes(project.id)) n.slotIndex: n,
+    };
+    expect(bySlot.map((k, v) => MapEntry(k, v.id)), {0: saves[0].id, 1: e.id});
+    expect(bySlot[1]!.comment, '枝');
+    expect(bySlot[1]!.parentId, saves[0].id);
+    expect(second.getArchivedNodes(project.id), isEmpty);
+    expect(
+      [for (var i = 0; i < 2; i++) second.slotDisplayMemoOf(project.id, i)],
+      ['A', '枝'],
+    );
+  });
 }
 
 /// 実際のファイルを読む処理（ゴミ箱の一覧・読み直し）を実時間で待ちながら
