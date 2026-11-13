@@ -38,15 +38,15 @@ jobs:
       - name: Resolve Flutter dependencies
         run: flutter pub get
 
+      - name: Execute actual Flutter Dart client against live AWS (GET only)
+        run: |
+          dart run \
+            --define=NIARIM_API_BASE_URL=https://ibjfhyoqvfanle62ltokgz6sry0fjqfh.lambda-url.ap-northeast-1.on.aws/ \
+            tool/live_backend_smoke.dart
+
       - name: Analyze Flutter source and live API test script
         run: flutter analyze
 
       - name: Validate the existing Flutter API/service contracts
         run: |
           flutter test test/community_api_contract_test.dart test/community_service_backend_test.dart
-
-      - name: Execute actual Flutter Dart client against live AWS (GET only)
-        run: |
-          dart run \
-            --define=NIARIM_API_BASE_URL=https://ibjfhyoqvfanle62ltokgz6sry0fjqfh.lambda-url.ap-northeast-1.on.aws/ \
-            tool/live_backend_smoke.dart
