@@ -41,17 +41,24 @@ class HomeCollectionSelectionSurface extends StatelessWidget {
     required this.selectionId,
     required this.child,
     this.grid = true,
+    this.onSecondaryClick,
   });
 
   final String selectionId;
   final Widget child;
   final bool grid;
 
+  /// 選んでいないときの右クリック（画面の座標）。nullなら行の︙と同じ
+  /// メニューを探して開く（[SecondaryClickMenu]）。
+  final void Function(Offset globalPosition)? onSecondaryClick;
+
   @override
   Widget build(BuildContext context) {
     final scope = HomeCollectionSelectionScope.maybeOf(context);
     // 選んでいないときは、右クリックで行の︙と同じメニューを開く。
-    if (scope == null || !scope.active) return SecondaryClickMenu(child: child);
+    if (scope == null || !scope.active) {
+      return SecondaryClickMenu(openMenuAt: onSecondaryClick, child: child);
+    }
     final checked = scope.selected(selectionId);
     final scheme = Theme.of(context).colorScheme;
     return Stack(

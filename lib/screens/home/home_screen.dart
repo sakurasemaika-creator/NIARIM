@@ -41,6 +41,7 @@ import '../../widgets/project_trash_dialog.dart';
 import '../../widgets/collection_action_controls.dart';
 import '../../widgets/collection_tile_layout.dart';
 import '../../widgets/home_collection_selection_scope.dart';
+import '../../widgets/secondary_click_menu.dart';
 import '../../widgets/share_project_file_action.dart';
 import '../../widgets/mission_completion_dialog.dart';
 import '../../widgets/typing_aware_shortcuts.dart';
@@ -4472,6 +4473,7 @@ class _FolderableList<T> extends StatelessWidget {
     final selecting = selection?.active ?? false;
     return HomeCollectionSelectionSurface(
       selectionId: selectionId,
+      onSecondaryClick: (at) => _showFolderMenuAt(context, folder, at),
       child: collectionTileShadow(
         context,
         Card(
@@ -4549,6 +4551,7 @@ class _FolderableList<T> extends StatelessWidget {
                 ? 'work_folder:${folder.id}'
                 : 'shared_folder:${folder.id}',
             grid: false,
+            onSecondaryClick: (at) => _showFolderMenuAt(context, folder, at),
             child: Card(
               key: ValueKey('collectionFolder_${folder.id}'),
               margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -4689,6 +4692,67 @@ class _FolderableList<T> extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  /// 右クリック（マウスの副ボタン）では、︙のシート（[_showFolderMenu]）と
+  /// 同じ項目を押した所に出し、選んだ項目はシートと同じダイアログを開く
+  /// （シートは画面の下から出るので、上の方の行を右クリックすると押した所から
+  /// 離れて出ていた）。プロジェクトのタブのフォルダと同じ出し方。
+  Future<void> _showFolderMenuAt(
+    BuildContext context,
+    ProjectFolder folder,
+    Offset globalPosition,
+  ) async {
+    final l10n = AppLocalizations.of(context)!;
+    final action =
+        await SecondaryClickMenu.showItemsAt<String>(context, globalPosition, [
+          if (onSetFolderThumbnail != null)
+            PopupMenuItem(
+              value: 'thumbnail',
+              child: Text(l10n.thumbnailChangeAction),
+            ),
+          PopupMenuItem(value: 'rename', child: Text(l10n.commonRename)),
+          PopupMenuItem(
+            value: 'delete',
+            child: Text(
+              l10n.homeMoveToTrash,
+              style: TextStyle(color: ThemeService.activeColorScheme.error),
+            ),
+          ),
+        ]);
+    if (action == null || !context.mounted) return;
+    switch (action) {
+      case 'thumbnail':
+        showFolderThumbnailDialog(
+          context,
+          folder: folder,
+          choices: _folderCoverChoices(folder.id),
+          onSave: ({required mode, sourceId, imagePath}) =>
+              onSetFolderThumbnail!(
+                folder.id,
+                mode: mode,
+                sourceId: sourceId,
+                imagePath: imagePath,
+              ),
+        );
+      case 'rename':
+        showRenameFolderNameDialog(
+          context,
+          folder.name,
+          (name) => onRenameFolder(folder.id, name),
+        );
+      case 'delete':
+        showDialog(
+          context: context,
+          builder: (_) => FolderDeleteDialog(
+            folderName: folder.name,
+            title: l10n.homeMoveToTrash,
+            body: l10n.homeMoveToTrashConfirm(1),
+            confirmLabel: l10n.homeMoveToTrash,
+            onDelete: () => onDeleteFolder(folder.id),
+          ),
+        );
+    }
   }
 }
 
