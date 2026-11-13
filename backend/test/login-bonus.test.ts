@@ -40,14 +40,14 @@ describe("cumulative login bonus and non-streak earning",()=>{
   expect(jstLoginDay(Date.parse("2026-11-04T15:00:00Z"))).toBe("2026-11-05");
  });
  it("uses the specified five milestone ranges with extra round-number prizes",()=>{
-  expect(DAILY_LOGIN_COINS).toBe(1);
+  expect(DAILY_LOGIN_COINS).toBe(10);
   expect(LOGIN_BONUS_MILESTONES).toHaveLength(54);
-  expect(LOGIN_BONUS_MILESTONES[0]).toMatchObject({days:5,coins:5});
-  expect(milestoneCoins(50)).toBe(14);
-  expect(milestoneCoins(100)).toBe(19);
-  expect(milestoneCoins(500)).toBe(54);
-  expect(milestoneCoins(1000)).toBe(76);
-  expect(milestoneCoins(3600)).toBe(205);
+  expect(LOGIN_BONUS_MILESTONES[0]).toMatchObject({days:5,coins:10});
+  expect(milestoneCoins(50)).toBe(19);
+  expect(milestoneCoins(100)).toBe(24);
+  expect(milestoneCoins(500)).toBe(59);
+  expect(milestoneCoins(1000)).toBe(81);
+  expect(milestoneCoins(3600)).toBe(210);
   expect(milestoneCoins(51)).toBeUndefined();
  });
  it("visit increments only a distinct server-side day and never mints",async()=>{
@@ -102,10 +102,10 @@ describe("cumulative login bonus and non-streak earning",()=>{
     .rejects.toMatchObject({code:"LOGIN_BONUS_PAYOUTS_DISABLED"});
   expect(send).not.toHaveBeenCalled();
  });
- it("daily claim atomically marks the date and credits one coin exactly once",async()=>{
+ it("daily claim atomically marks the date and credits ten coins exactly once",async()=>{
   enable();
   const result=JSON.parse((await claimMyLoginBonus(req({kind:"daily"}))).body??"{}");
-  expect(result).toMatchObject({claimed:true,awardedCoins:1});
+  expect(result).toMatchObject({claimed:true,awardedCoins:10});
   const transaction=send.mock.calls[0][0] as TransactWriteCommand;
   expect(transaction).toBeInstanceOf(TransactWriteCommand);
   expect(transaction.input.TransactItems).toHaveLength(3);
@@ -114,13 +114,13 @@ describe("cumulative login bonus and non-streak earning",()=>{
   expect(claim.Update?.Key?.pk).toBe("USER#Nowner");
   expect(wallet.Update?.Key?.sk).toBe("COIN_WALLET");
   expect(history.Put?.Item?.source).toBe("login-bonus");
-  expect(history.Put?.Item?.deltaCoins).toBe(1);
+  expect(history.Put?.Item?.deltaCoins).toBe(10);
  });
  it("milestone uses an immutable per-goal claim marker, wallet and history",async()=>{
   enable();
   const result=JSON.parse((await claimMyLoginBonus(
     req({kind:"milestone",days:100}))).body??"{}");
-  expect(result).toMatchObject({claimed:true,awardedCoins:19,days:100});
+  expect(result).toMatchObject({claimed:true,awardedCoins:24,days:100});
   const transaction=send.mock.calls[0][0] as TransactWriteCommand;
   expect(transaction.input.TransactItems).toHaveLength(4);
   expect(transaction.input.TransactItems?.[0].ConditionCheck?.ConditionExpression)
