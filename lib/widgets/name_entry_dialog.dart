@@ -98,9 +98,17 @@ class _NameEntryDialogState extends State<NameEntryDialog> {
       }
       return;
     }
-    // 閉じ始めた後に終わった場合、popすると下の画面を閉じてしまう。
-    if (mounted && (ModalRoute.of(context)?.isCurrent ?? false)) {
+    // 閉じ始めた後（キャンセルした後）に終わった場合は何もしない（popすると
+    // 下の画面を閉じてしまう）。保存の途中で別の画面（共有の受け取り等）が
+    // 上に重なったときは、その下のこのダイアログだけを閉じる（閉じないと、
+    // 済んだのに進んでいる印のまま残った）。
+    if (!mounted) return;
+    final route = ModalRoute.of(context);
+    if (route == null || !route.isActive) return;
+    if (route.isCurrent) {
       Navigator.of(context).pop();
+    } else {
+      Navigator.of(context).removeRoute(route);
     }
   }
 

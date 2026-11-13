@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -11,6 +12,7 @@ import 'package:niarim/screens/home/widgets/project_list_widget.dart';
 import 'package:niarim/screens/splash/splash_screen.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:niarim/services/theme_service.dart';
+import 'package:niarim/widgets/name_entry_dialog.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -200,4 +202,136 @@ void main() {
     expect(find.byType(TextField), findsNothing);
     expect(tester.takeException(), isNull);
   });
+
+  /// 名前のダイアログを開くボタンだけの画面。[open]がダイアログを出す。
+  Future<GlobalKey<NavigatorState>> pumpOpener(
+    WidgetTester tester,
+    void Function(BuildContext context) open,
+  ) async {
+    SharedPreferences.setMockInitialValues({});
+    final theme = ThemeService();
+    await theme.init();
+    addTearDown(theme.dispose);
+    final navigator = GlobalKey<NavigatorState>();
+    await tester.pumpWidget(
+      MaterialApp(
+        navigatorKey: navigator,
+        theme: theme.themeData,
+        locale: const Locale('ja'),
+        supportedLocales: AppLocalizations.supportedLocales,
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        home: Scaffold(
+          body: Builder(
+            builder: (context) => TextButton(
+              onPressed: () => open(context),
+              child: const Text('open'),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.text('open'));
+    await tester.pumpAndSettle();
+    return navigator;
+  }
+
+  Future<void> pumpFor(WidgetTester tester, Duration duration) async {
+    for (var left = duration; left > Duration.zero; left -= _step) {
+      await tester.pump(_step);
+    }
+  }
+
+  // 保存の途中で別の画面（共有の受け取り・ホーム画面のウィジェットから等）が
+  // 上に重なり、その間に保存が終わっても、戻ったときにダイアログは閉じて
+  // いる（以前のフォルダのダイアログと同じ）。閉じないと、作成済みなのに
+  // 進んでいる印のまま「作成」も押せず、キャンセルするまで残った。
+  for (final (label, closable) in const [
+    ('the folder dialog', true),
+    ('a name dialog that cannot close while saving', false),
+  ]) {
+    testWidgets('$label closes when its save ends while another screen '
+        'covers it', (tester) async {
+      final save = Completer<void>();
+      final names = <String>[];
+      final navigator = await pumpOpener(tester, (context) {
+        Future<void> onSubmit(String name) {
+          names.add(name);
+          return save.future;
+        }
+
+        if (closable) {
+          showCreateFolderNameDialog(context, onSubmit);
+        } else {
+          showDialog<void>(
+            context: context,
+            builder: (_) => NameEntryDialog(
+              title: 'Rename',
+              confirmLabel: 'Change',
+              cancelLabel: 'Cancel',
+              initialName: 'Old',
+              onSubmit: onSubmit,
+            ),
+          );
+        }
+      });
+      await tester.enterText(find.byType(TextField), '旅行');
+      await tester.pump();
+      await tester.tap(find.byType(FilledButton));
+      await tester.pump();
+      unawaited(
+        navigator.currentState!.push(
+          MaterialPageRoute<void>(
+            builder: (_) => const Scaffold(body: Text('covering page')),
+          ),
+        ),
+      );
+      await pumpFor(tester, const Duration(seconds: 1));
+      save.complete();
+      await pumpFor(tester, const Duration(seconds: 1));
+      // 上の画面はそのまま。
+      expect(find.text('covering page'), findsOneWidget);
+      navigator.currentState!.pop();
+      await pumpFor(tester, const Duration(seconds: 1));
+      expect(names, ['旅行']);
+      expect(find.byType(TextField), findsNothing, reason: 'still open');
+      expect(find.byType(CircularProgressIndicator), findsNothing);
+      // 下の画面は閉じていない。
+      expect(find.text('open'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+  }
+
+  testWidgets('a folder dialog cancelled while saving does not close the '
+      'screen above when the save ends', (tester) async {
+    final save = Completer<void>();
+    final navigator = await pumpOpener(
+      tester,
+      (context) => showCreateFolderNameDialog(context, (_) => save.future),
+    );
+    final l10n = AppLocalizations.of(tester.element(find.byType(TextField)))!;
+    await tester.enterText(find.byType(TextField), '旅行');
+    await tester.pump();
+    await tester.tap(find.byType(FilledButton));
+    await tester.pump();
+    await tester.tap(find.text(l10n.commonCancel));
+    await pumpFor(tester, const Duration(seconds: 1));
+    expect(find.byType(TextField), findsNothing);
+    unawaited(
+      navigator.currentState!.push(
+        MaterialPageRoute<void>(
+          builder: (_) => const Scaffold(body: Text('covering page')),
+        ),
+      ),
+    );
+    await pumpFor(tester, const Duration(seconds: 1));
+    save.complete();
+    await pumpFor(tester, const Duration(seconds: 1));
+    expect(find.text('covering page'), findsOneWidget);
+    navigator.currentState!.pop();
+    await pumpFor(tester, const Duration(seconds: 1));
+    expect(find.text('open'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
 }
+
+const _step = Duration(milliseconds: 100);
