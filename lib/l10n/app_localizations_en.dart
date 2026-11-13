@@ -8024,12 +8024,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String homeCutSnackbar(int count) {
-    return 'Cut $count item(s). Open the destination and tap Paste at the top right.';
+    return 'Cut $count item(s). Open the destination and tap Paste in the bar below the tabs.';
   }
 
   @override
   String homeCopiedSnackbar(int count) {
-    return 'Copied $count item(s). Open where you want them and tap Paste at the top right.';
+    return 'Copied $count item(s). Open where you want them and tap Paste in the bar below the tabs.';
   }
 
   @override

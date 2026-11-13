@@ -7789,12 +7789,12 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String homeCutSnackbar(int count) {
-    return '$count개 항목을 잘라냈습니다. 옮길 곳을 열고 오른쪽 위의 붙여넣기를 누르세요.';
+    return '$count개 항목을 잘라냈습니다. 옮길 곳을 열고 탭 아래 막대의 붙여넣기를 누르세요.';
   }
 
   @override
   String homeCopiedSnackbar(int count) {
-    return '$count개 항목을 복사했습니다. 붙여넣을 곳을 열고 오른쪽 위의 붙여넣기를 누르세요.';
+    return '$count개 항목을 복사했습니다. 붙여넣을 곳을 열고 탭 아래 막대의 붙여넣기를 누르세요.';
   }
 
   @override

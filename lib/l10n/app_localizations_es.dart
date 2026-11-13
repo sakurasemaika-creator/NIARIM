@@ -8149,12 +8149,12 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String homeCutSnackbar(int count) {
-    return '$count elemento(s) cortado(s). Abre el destino y toca Pegar arriba a la derecha.';
+    return '$count elemento(s) cortado(s). Abre el destino y toca Pegar en la barra debajo de las pestañas.';
   }
 
   @override
   String homeCopiedSnackbar(int count) {
-    return '$count elemento(s) copiado(s). Abre el lugar de destino y toca Pegar arriba a la derecha.';
+    return '$count elemento(s) copiado(s). Abre el lugar de destino y toca Pegar en la barra debajo de las pestañas.';
   }
 
   @override

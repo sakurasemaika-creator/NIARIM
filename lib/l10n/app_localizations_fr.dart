@@ -8170,12 +8170,12 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String homeCutSnackbar(int count) {
-    return '$count élément(s) coupé(s). Ouvrez la destination et touchez Coller en haut à droite.';
+    return '$count élément(s) coupé(s). Ouvrez la destination et touchez Coller dans la barre sous les onglets.';
   }
 
   @override
   String homeCopiedSnackbar(int count) {
-    return '$count élément(s) copié(s). Ouvrez l’emplacement voulu et touchez Coller en haut à droite.';
+    return '$count élément(s) copié(s). Ouvrez l’emplacement voulu et touchez Coller dans la barre sous les onglets.';
   }
 
   @override

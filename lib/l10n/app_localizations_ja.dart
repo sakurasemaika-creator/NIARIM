@@ -7752,12 +7752,12 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String homeCutSnackbar(int count) {
-    return '$count件を切り取りました。移動先を開いて、右上の貼り付けを押してください。';
+    return '$count件を切り取りました。移動先を開いて、タブの下の貼り付けを押してください。';
   }
 
   @override
   String homeCopiedSnackbar(int count) {
-    return '$count件をコピーしました。貼り付けたい場所を開いて、右上の貼り付けを押してください。';
+    return '$count件をコピーしました。貼り付けたい場所を開いて、タブの下の貼り付けを押してください。';
   }
 
   @override

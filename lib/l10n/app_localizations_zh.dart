@@ -7676,12 +7676,12 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String homeCutSnackbar(int count) {
-    return '已剪切$count项。打开目标位置后，点按右上角的粘贴。';
+    return '已剪切$count项。打开目标位置后，点按标签栏下方工具栏的粘贴。';
   }
 
   @override
   String homeCopiedSnackbar(int count) {
-    return '已复制$count项。打开要粘贴的位置后，点按右上角的粘贴。';
+    return '已复制$count项。打开要粘贴的位置后，点按标签栏下方工具栏的粘贴。';
   }
 
   @override
@@ -16886,12 +16886,12 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String homeCutSnackbar(int count) {
-    return '已剪下$count項。開啟目標位置後，點按右上角的貼上。';
+    return '已剪下$count項。開啟目標位置後，點按分頁下方工具列的貼上。';
   }
 
   @override
   String homeCopiedSnackbar(int count) {
-    return '已複製$count項。開啟要貼上的位置後，點按右上角的貼上。';
+    return '已複製$count項。開啟要貼上的位置後，點按分頁下方工具列的貼上。';
   }
 
   @override
