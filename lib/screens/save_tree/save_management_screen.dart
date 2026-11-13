@@ -20,6 +20,7 @@ import '../../widgets/responsive.dart';
 import 'save_tree_screen.dart';
 import 'widgets/save_thumbnail_capture.dart';
 import 'widgets/save_rename_button.dart';
+import 'widgets/save_screen_app_bar.dart';
 import '../../config/font_fallback.dart';
 import '../../config/accent_text_theme.dart';
 
@@ -66,7 +67,7 @@ class _GameStyleSlotScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(l10n.saveTreeScreenTitleSlot),
+        title: SaveScreenTitle(l10n.saveTreeScreenTitleSlot),
         actions: const [
           HelpButton(topic: 'セーブツリー'),
           SizedBox(width: 8),

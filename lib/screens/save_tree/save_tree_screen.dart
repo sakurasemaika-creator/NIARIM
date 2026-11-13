@@ -22,6 +22,7 @@ import '../../widgets/dispose_on_unmount.dart';
 import '../../config/font_fallback.dart';
 import '../../config/accent_text_theme.dart';
 import 'widgets/save_rename_button.dart';
+import 'widgets/save_screen_app_bar.dart';
 import 'widgets/save_thumbnail_capture.dart';
 
 /// セーブツリー（SaveTree/）の合計容量がこれを超えた場合にユーザーへ通知する
@@ -121,7 +122,7 @@ class _SaveTreeScreenState extends State<SaveTreeScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(
+        title: SaveScreenTitle(
           isTreeMode
               ? l10n.saveTreeScreenTitleTree
               : l10n.saveTreeScreenTitleSlot,
@@ -129,9 +130,7 @@ class _SaveTreeScreenState extends State<SaveTreeScreen> {
         actions: [
           const HelpButton(topic: 'セーブツリー'),
           if (isTreeMode)
-            FilledButton.icon(
-              icon: const Icon(Icons.save, size: 16),
-              label: Text(l10n.commonSave),
+            SaveTreeBarSaveButton(
               onPressed: () => _showTreeSaveDialog(
                 context,
                 widget.projectId,
