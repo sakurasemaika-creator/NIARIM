@@ -24,6 +24,7 @@ import '../../widgets/confirm_delete.dart';
 import '../../widgets/ad_banner_mock_widget.dart';
 import '../../widgets/editable_slider_value.dart';
 import '../../widgets/export_share_feedback.dart';
+import '../../widgets/first_that_fits.dart';
 import '../../widgets/stepped_slider.dart';
 import '../../widgets/help_button.dart';
 import '../../widgets/image_eyedropper_dialog.dart';
@@ -88,6 +89,135 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
     return list;
   }
 
+  /// The row shown while choosing presets: select all, deselect all, the
+  /// count and the actions on the chosen presets, on one line.
+  ///
+  /// Text is never shrunk. Where the row does not fit, select all / deselect
+  /// all become icons (their names in the tooltip and screen-reader label),
+  /// then the count becomes a short count with the full text as its tooltip,
+  /// and as a last resort the row wraps onto a second line. Every action stays
+  /// on screen.
+  Widget _selectionBar(AppLocalizations l10n, List<AutofillPreset> filtered) {
+    void selectAll() =>
+        setState(() => _selectedIds.addAll(filtered.map((p) => p.id)));
+    void deselectAll() => setState(() {
+      _selectedIds.clear();
+      _isSelectionMode = false;
+    });
+    final textButtons = [
+      TextButton(
+        onPressed: selectAll,
+        child: Text(l10n.homeSelectionAllSelect),
+      ),
+      TextButton(
+        onPressed: deselectAll,
+        child: Text(l10n.homeSelectionAllDeselect),
+      ),
+    ];
+    final iconButtons = [
+      IconButton(
+        icon: const Icon(Icons.select_all),
+        tooltip: l10n.homeSelectionAllSelect,
+        onPressed: selectAll,
+      ),
+      IconButton(
+        icon: const Icon(Icons.deselect),
+        tooltip: l10n.homeSelectionAllDeselect,
+        onPressed: deselectAll,
+      ),
+    ];
+    final countText = l10n.homeSelectionCount(_selectedIds.length);
+    final fullCount = Text(countText, maxLines: 1, softWrap: false);
+    // The number alone, next to a check-box glyph; the full text is in the
+    // tooltip (long press / hover) and read out by screen readers.
+    final shortCount = Tooltip(
+      message: countText,
+      excludeFromSemantics: true,
+      child: Semantics(
+        label: countText,
+        excludeSemantics: true,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.check_box_outlined, size: 18),
+            const SizedBox(width: 2),
+            Text('${_selectedIds.length}', maxLines: 1, softWrap: false),
+          ],
+        ),
+      ),
+    );
+    final actions = <Widget>[
+      if (_selectedIds.isNotEmpty) ...[
+        IconButton(
+          icon: const Icon(Icons.content_copy),
+          onPressed: () => _bulkDuplicate(filtered),
+          tooltip: l10n.commonDuplicate,
+        ),
+        IconButton(
+          icon: const Icon(Icons.content_paste),
+          onPressed: _presetClipboard.isEmpty ? null : _bulkPaste,
+          tooltip: l10n.commonPaste,
+        ),
+        IconButton(
+          icon: Icon(Icons.ios_share),
+          // 前の書き出しと共有が終わるまでは押せない。
+          onPressed: ExportShareService.isRunning(_niafillExportKey)
+              ? null
+              : () => _bulkExport(filtered),
+          tooltip: l10n.autofillPresetExportMenuItem,
+        ),
+        IconButton(
+          icon: Icon(Icons.delete, color: ThemeService.activeColorScheme.error),
+          onPressed: () => _bulkDelete(filtered),
+          tooltip: l10n.commonDelete,
+        ),
+      ],
+    ];
+    Widget line(List<Widget> select, Widget count) => Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Row(mainAxisSize: MainAxisSize.min, children: select),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsetsDirectional.only(start: 8),
+              child: count,
+            ),
+            ...actions,
+          ],
+        ),
+      ],
+    );
+    return FirstThatFits(
+      children: [
+        line(textButtons, fullCount),
+        line(iconButtons, fullCount),
+        line(iconButtons, shortCount),
+        // Last resort: two lines, the count beside select / deselect (it may
+        // wrap, never shrink) and the actions on the line below.
+        Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              children: [
+                ...iconButtons,
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsetsDirectional.only(start: 8),
+                    child: Text(countText, textAlign: TextAlign.end),
+                  ),
+                ),
+              ],
+            ),
+            if (actions.isNotEmpty)
+              Row(mainAxisAlignment: MainAxisAlignment.end, children: actions),
+          ],
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -126,54 +256,7 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
                   vertical: 8,
                 ),
                 color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                child: Row(
-                  children: [
-                    TextButton(
-                      onPressed: () => setState(
-                        () => _selectedIds.addAll(filtered.map((p) => p.id)),
-                      ),
-                      child: Text(l10n.homeSelectionAllSelect),
-                    ),
-                    TextButton(
-                      onPressed: () => setState(() {
-                        _selectedIds.clear();
-                        _isSelectionMode = false;
-                      }),
-                      child: Text(l10n.homeSelectionAllDeselect),
-                    ),
-                    const Spacer(),
-                    Text(l10n.homeSelectionCount(_selectedIds.length)),
-                    if (_selectedIds.isNotEmpty) ...[
-                      IconButton(
-                        icon: const Icon(Icons.content_copy),
-                        onPressed: () => _bulkDuplicate(filtered),
-                        tooltip: l10n.commonDuplicate,
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.content_paste),
-                        onPressed: _presetClipboard.isEmpty ? null : _bulkPaste,
-                        tooltip: l10n.commonPaste,
-                      ),
-                      IconButton(
-                        icon: Icon(Icons.ios_share),
-                        // 前の書き出しと共有が終わるまでは押せない。
-                        onPressed:
-                            ExportShareService.isRunning(_niafillExportKey)
-                            ? null
-                            : () => _bulkExport(filtered),
-                        tooltip: l10n.autofillPresetExportMenuItem,
-                      ),
-                      IconButton(
-                        icon: Icon(
-                          Icons.delete,
-                          color: ThemeService.activeColorScheme.error,
-                        ),
-                        onPressed: () => _bulkDelete(filtered),
-                        tooltip: l10n.commonDelete,
-                      ),
-                    ],
-                  ],
-                ),
+                child: _selectionBar(l10n, filtered),
               ),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
