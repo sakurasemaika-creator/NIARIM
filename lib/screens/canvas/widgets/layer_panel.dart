@@ -27,6 +27,7 @@ import '../../../widgets/autofill_preset_selection_sheet.dart';
 import '../../../widgets/dispose_on_unmount.dart';
 import '../../../widgets/first_use_tooltip.dart';
 import '../../../widgets/labeled_slider.dart';
+import '../../../widgets/list_ink_clip.dart';
 import 'layer_keyframe_sheet.dart';
 import '../../../services/layer_thumbnail_renderer.dart';
 import 'panel_close_bar.dart';
@@ -431,6 +432,8 @@ class _LayerPanelState extends State<LayerPanel> {
             ),
           ),
           const Divider(height: 1),
+          // 選んだ行の背景を一覧の外（上のボタン）へはみ出させない
+          // （末尾のclipListInk）。
           Expanded(
             child: ReorderableListView.builder(
               // 標準の自動ドラッグハンドル（PC/DeXモードなどマウス操作環境で
@@ -717,7 +720,7 @@ class _LayerPanelState extends State<LayerPanel> {
                   ),
                 );
               },
-            ),
+            ).clipListInk(),
           ),
           // パネル下部の三点メニュー・ゴミ箱は各レイヤー右側へ移動したため削除した。
           // 「追加」ボタンも上部ショートカット行へ移動済み。削除・結合は

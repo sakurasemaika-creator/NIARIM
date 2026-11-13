@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../models/ruler.dart';
 import '../../../widgets/docked_panel_scope.dart';
+import '../../../widgets/list_ink_clip.dart';
 import 'panel_close_bar.dart';
 import '../../../config/font_fallback.dart';
 import '../../../config/accent_text_theme.dart';
@@ -95,6 +96,8 @@ class RulerPanel extends StatelessWidget {
             ),
           ],
           const Divider(height: 1),
+          // 選んだ行の背景を一覧の外（上のスイッチ・見出し）へはみ出させない
+          // （末尾のclipListInk）。
           Flexible(
             child: SingleChildScrollView(
               child: Column(
@@ -149,7 +152,7 @@ class RulerPanel extends StatelessWidget {
                   ],
                 ],
               ),
-            ),
+            ).clipListInk(),
           ),
           const SizedBox(height: 4),
         ],

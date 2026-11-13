@@ -6,6 +6,7 @@ import '../../../models/onion_skin_settings.dart';
 import '../../../services/performance_service.dart';
 import '../../../widgets/labeled_slider.dart';
 import '../../../widgets/docked_panel_scope.dart';
+import '../../../widgets/list_ink_clip.dart';
 import 'panel_close_bar.dart';
 import '../../../config/font_fallback.dart';
 
@@ -111,6 +112,8 @@ class _OnionSkinPanelState extends State<OnionSkinPanel> {
             ),
             if (_settings.enabled) ...[
               const Divider(),
+              // 行に重ねたときの色を一覧の外（下の余白）へはみ出させない
+              // （末尾のclipListInk）。
               Flexible(
                 child: SingleChildScrollView(
                   child: Column(
@@ -199,7 +202,7 @@ class _OnionSkinPanelState extends State<OnionSkinPanel> {
                       ),
                     ],
                   ),
-                ),
+                ).clipListInk(),
               ),
             ],
           ],

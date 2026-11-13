@@ -26,6 +26,7 @@ import '../../../utils/reorder_index.dart';
 import 'asset_search_bar.dart';
 import 'asset_tag_dialog.dart';
 import '../../../widgets/asset_tag_label.dart';
+import '../../../widgets/list_ink_clip.dart';
 
 class BrushPanel extends StatefulWidget {
   final VoidCallback onClose;
@@ -290,6 +291,8 @@ class _BrushPanelState extends State<BrushPanel> {
                         ),
                       ),
                     )
+                  // 選んだ行の背景を一覧の外（上のタブ・ボタン）へはみ出させない
+                  // （末尾のclipListInk）。
                   : ReorderableListView.builder(
                       // ドラッグハンドルは行末に明示アイコンとして置く（既定の
                       // ドラッグハンドルだと、行全体の長押しで開く編集シート
@@ -430,7 +433,7 @@ class _BrushPanelState extends State<BrushPanel> {
                               : () => _showBrushSettings(context, brush),
                         );
                       },
-                    ),
+                    ).clipListInk(),
             ),
           ],
         ),

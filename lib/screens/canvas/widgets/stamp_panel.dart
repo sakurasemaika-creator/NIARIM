@@ -20,6 +20,7 @@ import 'asset_search_bar.dart';
 import 'asset_tag_dialog.dart';
 import '../../../widgets/asset_tag_label.dart';
 import '../../../widgets/preset_stroke_row.dart';
+import '../../../widgets/list_ink_clip.dart';
 
 /// スタンプの全機能管理パネル（一覧・お気に入り・検索・
 /// 自作スタンプ・読み込み・書き出し・フォルダ管理）。ブラシパネルと同構成。
@@ -266,6 +267,8 @@ class _StampPanelState extends State<StampPanel> {
                         ),
                       ),
                     )
+                  // 選んだ行の背景を一覧の外（上のタブ・ボタン）へはみ出させない
+                  // （末尾のclipListInk）。
                   : ReorderableListView.builder(
                       // ドラッグハンドルは行末に明示アイコンとして置く
                       // （既定のドラッグハンドルだと、行全体の長押しで開く
@@ -388,7 +391,7 @@ class _StampPanelState extends State<StampPanel> {
                               : () => _showStampSettings(context, stamp),
                         );
                       },
-                    ),
+                    ).clipListInk(),
             ),
           ],
         ),
