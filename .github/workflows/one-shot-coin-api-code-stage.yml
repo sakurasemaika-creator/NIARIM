@@ -17,6 +17,11 @@ jobs:
     if: github.ref == 'refs/heads/dev_branch'
     runs-on: ubuntu-latest
     timeout-minutes: 25
+    services:
+      local-dynamodb:
+        image: amazon/dynamodb-local:2.6.1
+        ports:
+          - 8000:8000
     permissions:
       contents: read
       id-token: write
@@ -39,6 +44,17 @@ jobs:
           npm run build
           npm test
           npx cdk synth --quiet -c googleClientId=ci-placeholder -c youtubeApiKey=ci-placeholder
+      - name: Validate atomic coin exchanges against disposable DynamoDB before staging
+        env:
+          NIARIM_DYNAMODB_LOCAL_TESTS: '1'
+          AWS_EC2_METADATA_DISABLED: 'true'
+          AWS_ACCESS_KEY_ID: 'localonly'
+          AWS_SECRET_ACCESS_KEY: 'localonly'
+          AWS_DEFAULT_REGION: 'ap-northeast-1'
+        run: |
+          set -euo pipefail
+          sleep 5
+          npx vitest run test/coin-redemption-dynamodb-local.test.ts --reporter verbose
       - name: Bundle exact Node.js 22 API entrypoint, preserving Lambda handler
         run: |
           set -euo pipefail
