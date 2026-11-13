@@ -55,6 +55,15 @@ class NameSortKey {
   final String folded;
 }
 
+/// [nameOf]で取り出した名前を[compareNames]の順に比べる関数。名前は項目
+/// ごとに1回だけそろえる（1回の並べ替えの間だけ使い、項目の名前が変わったら
+/// 作り直す）。
+int Function(T a, T b) nameComparator<T>(String Function(T item) nameOf) {
+  final keys = Map<T, NameSortKey>.identity();
+  NameSortKey key(T item) => keys[item] ??= NameSortKey(nameOf(item));
+  return (a, b) => compareNameKeys(key(a), key(b));
+}
+
 /// [compareNames]と同じ順で、そろえ済みの名前を比べる。
 int compareNameKeys(NameSortKey a, NameSortKey b) {
   final byFolded = _compareNatural(a.folded, b.folded);

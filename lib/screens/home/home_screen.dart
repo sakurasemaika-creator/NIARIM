@@ -56,6 +56,7 @@ import 'widgets/work_folder_move_sheet.dart';
 import 'home_clipboard_policy.dart';
 import '../../config/font_fallback.dart';
 import '../../utils/line_break.dart';
+import '../../utils/name_collation.dart';
 import '../../widgets/projects_load_failure_notice.dart';
 import '../../widgets/scrollable_sheet_body.dart';
 import '../../utils/app_error_reporter.dart';
@@ -3271,11 +3272,14 @@ class _LibraryListControls extends StatelessWidget {
 /// ・プロジェクト一覧のいずれでも同じ基準（名前／更新日時）で並び替える。
 List<Project> _sortProjects(List<Project> projects, ProjectSortMode mode) {
   final list = List<Project>.from(projects);
+  // 名前は人が読む順（数字は数として、大文字・小文字、全角・半角、
+  // カタカナ・ひらがなの違いは区別しない）。
+  final byName = nameComparator<Project>((p) => p.name);
   switch (mode) {
     case ProjectSortMode.nameAsc:
-      list.sort((a, b) => a.name.compareTo(b.name));
+      list.sort(byName);
     case ProjectSortMode.nameDesc:
-      list.sort((a, b) => b.name.compareTo(a.name));
+      list.sort((a, b) => byName(b, a));
     case ProjectSortMode.updatedAsc:
       list.sort((a, b) => a.updatedAt.compareTo(b.updatedAt));
     case ProjectSortMode.updatedDesc:
@@ -3871,14 +3875,11 @@ class _OutgoingSharesList extends StatelessWidget {
               (query.isEmpty || entry.name.toLowerCase().contains(query)),
         )
         .toList();
+    final byName = nameComparator<SavedOutgoingShare>((entry) => entry.name);
     saved.sort((a, b) {
       final n = switch (sortMode) {
-        ProjectSortMode.nameAsc => a.name.toLowerCase().compareTo(
-          b.name.toLowerCase(),
-        ),
-        ProjectSortMode.nameDesc => b.name.toLowerCase().compareTo(
-          a.name.toLowerCase(),
-        ),
+        ProjectSortMode.nameAsc => byName(a, b),
+        ProjectSortMode.nameDesc => byName(b, a),
         ProjectSortMode.updatedAsc => a.updatedAt.compareTo(b.updatedAt),
         ProjectSortMode.updatedDesc => b.updatedAt.compareTo(a.updatedAt),
       };
@@ -5267,10 +5268,11 @@ class _TrashTabState extends State<_TrashTab> {
                 ).toLowerCase().contains(query),
           );
         }
+        final byName = nameComparator<String>((name) => name);
         rows.sort(
           (a, b) => switch (widget.sortMode) {
-            ProjectSortMode.nameAsc => a.name.compareTo(b.name),
-            ProjectSortMode.nameDesc => b.name.compareTo(a.name),
+            ProjectSortMode.nameAsc => byName(a.name, b.name),
+            ProjectSortMode.nameDesc => byName(b.name, a.name),
             ProjectSortMode.updatedAsc => a.deletedAt.compareTo(b.deletedAt),
             ProjectSortMode.updatedDesc => b.deletedAt.compareTo(a.deletedAt),
           },
@@ -5329,14 +5331,13 @@ class _TrashTabState extends State<_TrashTab> {
 /// The source files are never renamed or modified by a view preference.
 List<File> _sortExportedFiles(List<File> files, ProjectSortMode mode) {
   final sorted = List<File>.of(files);
+  final byName = nameComparator<File>((file) => file.uri.pathSegments.last);
   int compare(File a, File b) {
-    final nameA = a.uri.pathSegments.last.toLowerCase();
-    final nameB = b.uri.pathSegments.last.toLowerCase();
     switch (mode) {
       case ProjectSortMode.nameAsc:
-        return nameA.compareTo(nameB);
+        return byName(a, b);
       case ProjectSortMode.nameDesc:
-        return nameB.compareTo(nameA);
+        return byName(b, a);
       case ProjectSortMode.updatedAsc:
         return a.lastModifiedSync().compareTo(b.lastModifiedSync());
       case ProjectSortMode.updatedDesc:
@@ -5358,14 +5359,11 @@ List<ProjectFolder> _sortWorkFolders(
   ProjectSortMode mode,
 ) {
   final sorted = List<ProjectFolder>.of(folders);
+  final byName = nameComparator<ProjectFolder>((folder) => folder.name);
   sorted.sort((a, b) {
     final order = switch (mode) {
-      ProjectSortMode.nameAsc => a.name.toLowerCase().compareTo(
-        b.name.toLowerCase(),
-      ),
-      ProjectSortMode.nameDesc => b.name.toLowerCase().compareTo(
-        a.name.toLowerCase(),
-      ),
+      ProjectSortMode.nameAsc => byName(a, b),
+      ProjectSortMode.nameDesc => byName(b, a),
       ProjectSortMode.updatedAsc => a.createdAt.compareTo(b.createdAt),
       ProjectSortMode.updatedDesc => b.createdAt.compareTo(a.createdAt),
     };

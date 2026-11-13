@@ -1,12 +1,19 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:niarim/engine/export_engine.dart';
+import 'package:niarim/engine/niapro_serializer.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/models/project.dart';
 import 'package:niarim/screens/home/home_screen.dart';
 import 'package:niarim/screens/home/widgets/project_list_widget.dart';
 import 'package:niarim/services/project_service.dart';
+import 'package:niarim/services/work_folder_service.dart';
 import 'package:provider/provider.dart';
 
+import 'helpers/exported_work_name.dart';
 import 'helpers/home_app_harness.dart';
 
 /// ホームの名前の並びは人が読む順（数字は数として、大文字・小文字、全角・
@@ -16,13 +23,17 @@ void main() {
   final ja = lookupAppLocalizations(const Locale('ja'));
 
   Future<void> chooseName(WidgetTester tester, {bool ascending = true}) async {
-    await tester.tap(find.byTooltip(ja.homeSortFieldUpdated).first);
+    await tester.tap(
+      find.byTooltip(ja.homeSortFieldUpdated).hitTestable().first,
+    );
     await tester.pumpAndSettle();
     await tester.tap(find.text(ja.homeSortFieldName).last);
     await tester.pumpAndSettle();
     // 名前を選ぶと降順のまま。
     if (ascending) {
-      await tester.tap(find.byTooltip(ja.homeSortDirectionDescTooltip).first);
+      await tester.tap(
+        find.byTooltip(ja.homeSortDirectionDescTooltip).hitTestable().first,
+      );
       await tester.pumpAndSettle();
     }
   }
@@ -148,5 +159,115 @@ void main() {
       );
     }
     await tester.pumpWidget(const SizedBox.shrink());
+  });
+
+  // 上から並んでいる順の名前。
+  List<String> byTop(
+    WidgetTester tester,
+    List<String> names,
+    Finder Function(String) finder,
+  ) => [...names]
+    ..sort(
+      (a, b) => tester
+          .getTopLeft(finder(a).hitTestable().first)
+          .dy
+          .compareTo(tester.getTopLeft(finder(b).hitTestable().first).dy),
+    );
+
+  Future<void> openTab(WidgetTester tester, int index) async {
+    await tester.tap(find.byKey(ValueKey('home_tab_$index')));
+    await tester.pumpAndSettle();
+  }
+
+  const names = ['作品10', '作品2', 'apple', 'Banana'];
+
+  // 共有の「受け取ったもの」も同じ順。名前を選ぶと降順。
+  testWidgets('received shares sort names for people', (tester) async {
+    final home = HomeAppHarness.prepare(
+      tester,
+      preferences: {'home.sharedViewMode.v1': 'detail'},
+    );
+    await home.open(
+      size: const Size(800, 1200),
+      seed: (service) async {
+        for (final name in names) {
+          final original = await HomeAppHarness.work(service, name);
+          await service.saveProject(original.id);
+          final base = await NiaproSerializer.projectsBasePath();
+          final data = await NiaproSerializer.load(
+            '$base/${original.id}/${original.id}.niapro',
+          );
+          await service.importSharedProject(data);
+        }
+      },
+    );
+    await openTab(tester, 2);
+    await chooseName(tester, ascending: false);
+    expect(byTop(tester, names, find.text), ['作品10', '作品2', 'Banana', 'apple']);
+    expect(tester.takeException(), isNull);
+    await home.close();
+  });
+
+  testWidgets('trash sorts names for people', (tester) async {
+    final home = HomeAppHarness.prepare(tester);
+    await home.open(
+      size: const Size(800, 1200),
+      seed: (service) async {
+        for (final name in names) {
+          final work = await HomeAppHarness.work(service, name);
+          await service.deleteProject(work.id);
+        }
+      },
+    );
+    await openTab(tester, 3);
+    await chooseName(tester);
+    expect(byTop(tester, names, find.text), ['apple', 'Banana', '作品2', '作品10']);
+    expect(tester.takeException(), isNull);
+    await home.close();
+  });
+
+  // 作品一覧の書き出したファイルとフォルダも同じ順。
+  testWidgets('exported works and their folders sort names for people', (
+    tester,
+  ) async {
+    final home = HomeAppHarness.prepare(
+      tester,
+      preferences: {'home.worksViewMode.v1': 'detail'},
+    );
+    const files = ['clip10.gif', 'clip2.gif', 'Banana.gif', 'apple.gif'];
+    final exports = Directory('${home.dir.path}/exports')..createSync();
+    for (final name in files) {
+      File('${exports.path}/$name').writeAsBytesSync(
+        base64Decode(
+          'R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7',
+        ),
+      );
+    }
+    await tester.runAsync(
+      () => ExportEngine.listExportedFiles(forceRefresh: true),
+    );
+    await home.open(size: const Size(800, 1600));
+    final workFolders = tester
+        .element(find.byType(HomeScreen))
+        .read<WorkFolderService>();
+    await tester.runAsync(() async {
+      for (final name in ['フォルダ10', 'フォルダ2', 'ｆｏｌｄｅｒ', 'Folder B']) {
+        await workFolders.createFolder(name);
+      }
+    });
+    await openTab(tester, 1);
+    await chooseName(tester);
+    expect(byTop(tester, files, findExportedWorkName), [
+      'apple.gif',
+      'Banana.gif',
+      'clip2.gif',
+      'clip10.gif',
+    ]);
+    expect(
+      byTop(tester, ['フォルダ10', 'フォルダ2', 'ｆｏｌｄｅｒ', 'Folder B'], find.text),
+      ['ｆｏｌｄｅｒ', 'Folder B', 'フォルダ2', 'フォルダ10'],
+    );
+    expect(tester.takeException(), isNull);
+    await home.close();
   });
 }
