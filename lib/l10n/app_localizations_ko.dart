@@ -9897,6 +9897,84 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
+  String get themePreviewCloseTooltip => '미리보기 닫기';
+
+  @override
+  String get themePreviewSampleCaption => '배색 견본';
+
+  @override
+  String get themePreviewPreviousScreen => '이전 화면';
+
+  @override
+  String get themePreviewNextScreen => '다음 화면';
+
+  @override
+  String get themePreviewHideControls => '조작 바 숨기기';
+
+  @override
+  String get themePreviewShowControls => '조작 바 표시';
+
+  @override
+  String get themePreviewThumbnailSemantics => '현재 테마로 그린 프로젝트 목록 축소 견본';
+
+  @override
+  String get themePreviewScreenSplash => '시작 화면';
+
+  @override
+  String get themePreviewScreenProjects => '프로젝트 목록';
+
+  @override
+  String get themePreviewScreenProjectDetail => '프로젝트 상세';
+
+  @override
+  String get themePreviewScreenCanvas => '캔버스 모드';
+
+  @override
+  String get themePreviewScreenTimeline => '타임라인 모드';
+
+  @override
+  String get themePreviewScreenExport => '작품 내보내기';
+
+  @override
+  String get themePreviewScreenSaves => '세이브 관리';
+
+  @override
+  String get themePreviewScreenWorkDetail => '작품 광장: 작품 상세';
+
+  @override
+  String get themePreviewScreenPost => '작품 광장: 게시하기';
+
+  @override
+  String get themePreviewScreenAuthor => '투고자의 작품';
+
+  @override
+  String get themePreviewScreenNotifications => '팔로우 알림';
+
+  @override
+  String get themePreviewSampleProjectName => '나의 첫 애니메이션';
+
+  @override
+  String get themePreviewSampleWorkTitle1 => '비 갠 뒤의 약속';
+
+  @override
+  String get themePreviewSampleWorkTitle2 => '새벽의 모험';
+
+  @override
+  String get themePreviewSampleWorkTitle3 => '마지막 멜로디';
+
+  @override
+  String get themePreviewSampleArtist => '샘플 작가';
+
+  @override
+  String get themePreviewSampleStudio => '아사카제 공방';
+
+  @override
+  String get themePreviewSampleDescriptionLabel => '설명';
+
+  @override
+  String get themePreviewSampleDescriptionHint => '설명 입력';
+
+  @override
   String get workspaceToolbarSizeLabel => '도구 표시 크기';
 
   @override

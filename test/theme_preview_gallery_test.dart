@@ -128,7 +128,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(
       tester.widget<Text>(find.byKey(const Key('themePreviewTitle'))).data,
-      themePreviewEntries[2].ja,
+      themePreviewEntries[2].label(lookupAppLocalizations(const Locale('ja'))),
     );
     await tester.tap(find.byKey(const Key('themePreviewHideControls')));
     await tester.pumpAndSettle();
@@ -297,7 +297,9 @@ void main() {
       }
       expect(
         tester.widget<Text>(find.byKey(const Key('themePreviewTitle'))).data,
-        themePreviewEntries[i].ja,
+        themePreviewEntries[i].label(
+          lookupAppLocalizations(const Locale('ja')),
+        ),
       );
       await saveCapture(
         'theme_gallery_${(i + 1).toString().padLeft(2, '0')}_${themePreviewEntries[i].id}.png',
@@ -539,6 +541,9 @@ void main() {
       expect(find.byIcon(Icons.repeat), findsOneWidget);
 
       await visit('export');
+      // The preset row is the real ExportPresetSelector: when the three
+      // labels do not fit it shows only the chosen one ('標準') in a menu
+      // field, so the other two are checked only when they are on screen.
       for (final label in [
         'プリセット',
         '標準',
@@ -550,6 +555,10 @@ void main() {
         '透過WebM',
         'AVI',
       ]) {
+        if ((label == '高画質' || label == 'カスタム') &&
+            find.text(label).evaluate().isEmpty) {
+          continue;
+        }
         final text = tester.widget<Text>(find.text(label));
         expect(
           text.style?.fontFamily,
@@ -604,7 +613,9 @@ void main() {
       await tester.pumpAndSettle();
       expect(
         tester.widget<Text>(find.byKey(const Key('themePreviewTitle'))).data,
-        themePreviewEntries[i].ja,
+        themePreviewEntries[i].label(
+          lookupAppLocalizations(const Locale('ja')),
+        ),
       );
       expect(tester.takeException(), isNull);
     }

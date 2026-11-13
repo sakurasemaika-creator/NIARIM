@@ -5811,6 +5811,110 @@
       }
     }
   },
+  "themePreviewCloseTooltip": "プレビューを閉じる",
+  "@themePreviewCloseTooltip": {
+    "description": "テーマの見本一覧：見本を閉じるボタンの吹き出し"
+  },
+  "themePreviewSampleCaption": "配色見本",
+  "@themePreviewSampleCaption": {
+    "description": "テーマの見本一覧：画面名の下に出す「これは配色の見本」という小さな説明"
+  },
+  "themePreviewPreviousScreen": "前の画面",
+  "@themePreviewPreviousScreen": {
+    "description": "テーマの見本一覧：前の見本へ戻るボタンの吹き出し"
+  },
+  "themePreviewNextScreen": "次の画面",
+  "@themePreviewNextScreen": {
+    "description": "テーマの見本一覧：次の見本へ進むボタンの吹き出し"
+  },
+  "themePreviewHideControls": "操作バーを隠す",
+  "@themePreviewHideControls": {
+    "description": "テーマの見本一覧：下の操作バーを隠すボタンの吹き出し"
+  },
+  "themePreviewShowControls": "操作バーを表示",
+  "@themePreviewShowControls": {
+    "description": "テーマの見本一覧：隠した操作バーを出すボタンの吹き出し"
+  },
+  "themePreviewThumbnailSemantics": "現在のテーマで描画したプロジェクト一覧の縮小見本",
+  "@themePreviewThumbnailSemantics": {
+    "description": "テーマ・外観：縮小見本の読み上げの名前"
+  },
+  "themePreviewScreenSplash": "起動画面",
+  "@themePreviewScreenSplash": {
+    "description": "テーマの見本一覧：見本の画面名（起動画面）"
+  },
+  "themePreviewScreenProjects": "プロジェクト一覧",
+  "@themePreviewScreenProjects": {
+    "description": "テーマの見本一覧：見本の画面名（ホームのプロジェクト一覧）"
+  },
+  "themePreviewScreenProjectDetail": "プロジェクト詳細",
+  "@themePreviewScreenProjectDetail": {
+    "description": "テーマの見本一覧：見本の画面名（プロジェクト詳細）"
+  },
+  "themePreviewScreenCanvas": "キャンバスモード",
+  "@themePreviewScreenCanvas": {
+    "description": "テーマの見本一覧：見本の画面名（キャンバス）"
+  },
+  "themePreviewScreenTimeline": "タイムラインモード",
+  "@themePreviewScreenTimeline": {
+    "description": "テーマの見本一覧：見本の画面名（タイムライン）"
+  },
+  "themePreviewScreenExport": "作品書き出し",
+  "@themePreviewScreenExport": {
+    "description": "テーマの見本一覧：見本の画面名（作品の書き出し）"
+  },
+  "themePreviewScreenSaves": "セーブ管理",
+  "@themePreviewScreenSaves": {
+    "description": "テーマの見本一覧：見本の画面名（セーブスロット）"
+  },
+  "themePreviewScreenWorkDetail": "作品広場・作品詳細",
+  "@themePreviewScreenWorkDetail": {
+    "description": "テーマの見本一覧：見本の画面名（作品広場の作品詳細）"
+  },
+  "themePreviewScreenPost": "作品広場・投稿",
+  "@themePreviewScreenPost": {
+    "description": "テーマの見本一覧：見本の画面名（作品広場への投稿）"
+  },
+  "themePreviewScreenAuthor": "投稿者の作品",
+  "@themePreviewScreenAuthor": {
+    "description": "テーマの見本一覧：見本の画面名（投稿者の作品一覧）"
+  },
+  "themePreviewScreenNotifications": "フォロー通知",
+  "@themePreviewScreenNotifications": {
+    "description": "テーマの見本一覧：見本の画面名（フォローなどの通知）"
+  },
+  "themePreviewSampleProjectName": "はじめてのアニメ",
+  "@themePreviewSampleProjectName": {
+    "description": "テーマの見本一覧：見本に出す架空のプロジェクト名"
+  },
+  "themePreviewSampleWorkTitle1": "雨上がりの約束",
+  "@themePreviewSampleWorkTitle1": {
+    "description": "テーマの見本一覧：作品広場の見本に出す架空の作品名（1）"
+  },
+  "themePreviewSampleWorkTitle2": "夜明けの冒険",
+  "@themePreviewSampleWorkTitle2": {
+    "description": "テーマの見本一覧：作品広場の見本に出す架空の作品名（2）"
+  },
+  "themePreviewSampleWorkTitle3": "最後のメロディ",
+  "@themePreviewSampleWorkTitle3": {
+    "description": "テーマの見本一覧：作品広場の見本に出す架空の作品名（3）"
+  },
+  "themePreviewSampleArtist": "サンプル作者",
+  "@themePreviewSampleArtist": {
+    "description": "テーマの見本一覧：作品広場の見本に出す架空の投稿者名"
+  },
+  "themePreviewSampleStudio": "あさかぜ工房",
+  "@themePreviewSampleStudio": {
+    "description": "テーマの見本一覧：作品詳細の見本に出す架空の投稿者名（制作グループ）"
+  },
+  "themePreviewSampleDescriptionLabel": "説明",
+  "@themePreviewSampleDescriptionLabel": {
+    "description": "テーマの見本一覧：投稿の見本の説明欄の見出し"
+  },
+  "themePreviewSampleDescriptionHint": "説明を入力",
+  "@themePreviewSampleDescriptionHint": {
+    "description": "テーマの見本一覧：投稿の見本の説明欄の入力案内"
+  },
   "workspaceToolbarSizeLabel": "ツールの表示サイズ",
   "@workspaceToolbarSizeLabel": {
     "description": "ワークスペース設定：ツールバーのアイコンの大きさ"

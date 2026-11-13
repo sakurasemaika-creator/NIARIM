@@ -17427,6 +17427,162 @@ abstract class AppLocalizations {
   /// **'タップして全{count}画面を見る'**
   String themePreviewCardViewAll(int count);
 
+  /// テーマの見本一覧：見本を閉じるボタンの吹き出し
+  ///
+  /// In ja, this message translates to:
+  /// **'プレビューを閉じる'**
+  String get themePreviewCloseTooltip;
+
+  /// テーマの見本一覧：画面名の下に出す「これは配色の見本」という小さな説明
+  ///
+  /// In ja, this message translates to:
+  /// **'配色見本'**
+  String get themePreviewSampleCaption;
+
+  /// テーマの見本一覧：前の見本へ戻るボタンの吹き出し
+  ///
+  /// In ja, this message translates to:
+  /// **'前の画面'**
+  String get themePreviewPreviousScreen;
+
+  /// テーマの見本一覧：次の見本へ進むボタンの吹き出し
+  ///
+  /// In ja, this message translates to:
+  /// **'次の画面'**
+  String get themePreviewNextScreen;
+
+  /// テーマの見本一覧：下の操作バーを隠すボタンの吹き出し
+  ///
+  /// In ja, this message translates to:
+  /// **'操作バーを隠す'**
+  String get themePreviewHideControls;
+
+  /// テーマの見本一覧：隠した操作バーを出すボタンの吹き出し
+  ///
+  /// In ja, this message translates to:
+  /// **'操作バーを表示'**
+  String get themePreviewShowControls;
+
+  /// テーマ・外観：縮小見本の読み上げの名前
+  ///
+  /// In ja, this message translates to:
+  /// **'現在のテーマで描画したプロジェクト一覧の縮小見本'**
+  String get themePreviewThumbnailSemantics;
+
+  /// テーマの見本一覧：見本の画面名（起動画面）
+  ///
+  /// In ja, this message translates to:
+  /// **'起動画面'**
+  String get themePreviewScreenSplash;
+
+  /// テーマの見本一覧：見本の画面名（ホームのプロジェクト一覧）
+  ///
+  /// In ja, this message translates to:
+  /// **'プロジェクト一覧'**
+  String get themePreviewScreenProjects;
+
+  /// テーマの見本一覧：見本の画面名（プロジェクト詳細）
+  ///
+  /// In ja, this message translates to:
+  /// **'プロジェクト詳細'**
+  String get themePreviewScreenProjectDetail;
+
+  /// テーマの見本一覧：見本の画面名（キャンバス）
+  ///
+  /// In ja, this message translates to:
+  /// **'キャンバスモード'**
+  String get themePreviewScreenCanvas;
+
+  /// テーマの見本一覧：見本の画面名（タイムライン）
+  ///
+  /// In ja, this message translates to:
+  /// **'タイムラインモード'**
+  String get themePreviewScreenTimeline;
+
+  /// テーマの見本一覧：見本の画面名（作品の書き出し）
+  ///
+  /// In ja, this message translates to:
+  /// **'作品書き出し'**
+  String get themePreviewScreenExport;
+
+  /// テーマの見本一覧：見本の画面名（セーブスロット）
+  ///
+  /// In ja, this message translates to:
+  /// **'セーブ管理'**
+  String get themePreviewScreenSaves;
+
+  /// テーマの見本一覧：見本の画面名（作品広場の作品詳細）
+  ///
+  /// In ja, this message translates to:
+  /// **'作品広場・作品詳細'**
+  String get themePreviewScreenWorkDetail;
+
+  /// テーマの見本一覧：見本の画面名（作品広場への投稿）
+  ///
+  /// In ja, this message translates to:
+  /// **'作品広場・投稿'**
+  String get themePreviewScreenPost;
+
+  /// テーマの見本一覧：見本の画面名（投稿者の作品一覧）
+  ///
+  /// In ja, this message translates to:
+  /// **'投稿者の作品'**
+  String get themePreviewScreenAuthor;
+
+  /// テーマの見本一覧：見本の画面名（フォローなどの通知）
+  ///
+  /// In ja, this message translates to:
+  /// **'フォロー通知'**
+  String get themePreviewScreenNotifications;
+
+  /// テーマの見本一覧：見本に出す架空のプロジェクト名
+  ///
+  /// In ja, this message translates to:
+  /// **'はじめてのアニメ'**
+  String get themePreviewSampleProjectName;
+
+  /// テーマの見本一覧：作品広場の見本に出す架空の作品名（1）
+  ///
+  /// In ja, this message translates to:
+  /// **'雨上がりの約束'**
+  String get themePreviewSampleWorkTitle1;
+
+  /// テーマの見本一覧：作品広場の見本に出す架空の作品名（2）
+  ///
+  /// In ja, this message translates to:
+  /// **'夜明けの冒険'**
+  String get themePreviewSampleWorkTitle2;
+
+  /// テーマの見本一覧：作品広場の見本に出す架空の作品名（3）
+  ///
+  /// In ja, this message translates to:
+  /// **'最後のメロディ'**
+  String get themePreviewSampleWorkTitle3;
+
+  /// テーマの見本一覧：作品広場の見本に出す架空の投稿者名
+  ///
+  /// In ja, this message translates to:
+  /// **'サンプル作者'**
+  String get themePreviewSampleArtist;
+
+  /// テーマの見本一覧：作品詳細の見本に出す架空の投稿者名（制作グループ）
+  ///
+  /// In ja, this message translates to:
+  /// **'あさかぜ工房'**
+  String get themePreviewSampleStudio;
+
+  /// テーマの見本一覧：投稿の見本の説明欄の見出し
+  ///
+  /// In ja, this message translates to:
+  /// **'説明'**
+  String get themePreviewSampleDescriptionLabel;
+
+  /// テーマの見本一覧：投稿の見本の説明欄の入力案内
+  ///
+  /// In ja, this message translates to:
+  /// **'説明を入力'**
+  String get themePreviewSampleDescriptionHint;
+
   /// ワークスペース設定：ツールバーのアイコンの大きさ
   ///
   /// In ja, this message translates to:

@@ -9745,6 +9745,84 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String get themePreviewCloseTooltip => '关闭预览';
+
+  @override
+  String get themePreviewSampleCaption => '配色示例';
+
+  @override
+  String get themePreviewPreviousScreen => '上一个画面';
+
+  @override
+  String get themePreviewNextScreen => '下一个画面';
+
+  @override
+  String get themePreviewHideControls => '隐藏操作栏';
+
+  @override
+  String get themePreviewShowControls => '显示操作栏';
+
+  @override
+  String get themePreviewThumbnailSemantics => '用当前主题绘制的项目列表缩略示例';
+
+  @override
+  String get themePreviewScreenSplash => '启动画面';
+
+  @override
+  String get themePreviewScreenProjects => '项目列表';
+
+  @override
+  String get themePreviewScreenProjectDetail => '项目详情';
+
+  @override
+  String get themePreviewScreenCanvas => '画布模式';
+
+  @override
+  String get themePreviewScreenTimeline => '时间轴模式';
+
+  @override
+  String get themePreviewScreenExport => '导出作品';
+
+  @override
+  String get themePreviewScreenSaves => '存档管理';
+
+  @override
+  String get themePreviewScreenWorkDetail => '作品广场：作品详情';
+
+  @override
+  String get themePreviewScreenPost => '作品广场：发布作品';
+
+  @override
+  String get themePreviewScreenAuthor => '投稿者的作品';
+
+  @override
+  String get themePreviewScreenNotifications => '关注通知';
+
+  @override
+  String get themePreviewSampleProjectName => '我的第一部动画';
+
+  @override
+  String get themePreviewSampleWorkTitle1 => '雨后的约定';
+
+  @override
+  String get themePreviewSampleWorkTitle2 => '黎明的冒险';
+
+  @override
+  String get themePreviewSampleWorkTitle3 => '最后的旋律';
+
+  @override
+  String get themePreviewSampleArtist => '示例作者';
+
+  @override
+  String get themePreviewSampleStudio => '朝风工作室';
+
+  @override
+  String get themePreviewSampleDescriptionLabel => '说明';
+
+  @override
+  String get themePreviewSampleDescriptionHint => '输入说明';
+
+  @override
   String get workspaceToolbarSizeLabel => '工具显示大小';
 
   @override
@@ -19503,6 +19581,84 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String themePreviewCardViewAll(int count) {
     return '點按查看全部$count個畫面';
   }
+
+  @override
+  String get themePreviewCloseTooltip => '關閉預覽';
+
+  @override
+  String get themePreviewSampleCaption => '配色範例';
+
+  @override
+  String get themePreviewPreviousScreen => '上一個畫面';
+
+  @override
+  String get themePreviewNextScreen => '下一個畫面';
+
+  @override
+  String get themePreviewHideControls => '隱藏操作列';
+
+  @override
+  String get themePreviewShowControls => '顯示操作列';
+
+  @override
+  String get themePreviewThumbnailSemantics => '以目前主題繪製的專案列表縮圖範例';
+
+  @override
+  String get themePreviewScreenSplash => '啟動畫面';
+
+  @override
+  String get themePreviewScreenProjects => '專案列表';
+
+  @override
+  String get themePreviewScreenProjectDetail => '專案詳情';
+
+  @override
+  String get themePreviewScreenCanvas => '畫布模式';
+
+  @override
+  String get themePreviewScreenTimeline => '時間軸模式';
+
+  @override
+  String get themePreviewScreenExport => '匯出作品';
+
+  @override
+  String get themePreviewScreenSaves => '存檔管理';
+
+  @override
+  String get themePreviewScreenWorkDetail => '作品廣場：作品詳情';
+
+  @override
+  String get themePreviewScreenPost => '作品廣場：發佈作品';
+
+  @override
+  String get themePreviewScreenAuthor => '投稿者的作品';
+
+  @override
+  String get themePreviewScreenNotifications => '追蹤通知';
+
+  @override
+  String get themePreviewSampleProjectName => '我的第一部動畫';
+
+  @override
+  String get themePreviewSampleWorkTitle1 => '雨後的約定';
+
+  @override
+  String get themePreviewSampleWorkTitle2 => '黎明的冒險';
+
+  @override
+  String get themePreviewSampleWorkTitle3 => '最後的旋律';
+
+  @override
+  String get themePreviewSampleArtist => '範例作者';
+
+  @override
+  String get themePreviewSampleStudio => '朝風工作室';
+
+  @override
+  String get themePreviewSampleDescriptionLabel => '說明';
+
+  @override
+  String get themePreviewSampleDescriptionHint => '輸入說明';
 
   @override
   String get workspaceToolbarSizeLabel => '工具顯示大小';

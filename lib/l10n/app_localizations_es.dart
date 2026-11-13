@@ -59,7 +59,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get homeSearchHint => 'Buscar por nombre de proyecto';
 
   @override
-  String get homeBackToSplashTooltip => 'Volver a la pantalla de inicio';
+  String get homeBackToSplashTooltip => 'Volver a la pantalla de arranque';
 
   @override
   String get homeFavoritesOnly => 'Favoritos';
@@ -10687,6 +10687,87 @@ class AppLocalizationsEs extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get themePreviewCloseTooltip => 'Cerrar la vista previa';
+
+  @override
+  String get themePreviewSampleCaption => 'Muestra de colores';
+
+  @override
+  String get themePreviewPreviousScreen => 'Pantalla anterior';
+
+  @override
+  String get themePreviewNextScreen => 'Pantalla siguiente';
+
+  @override
+  String get themePreviewHideControls => 'Ocultar los controles';
+
+  @override
+  String get themePreviewShowControls => 'Mostrar los controles';
+
+  @override
+  String get themePreviewThumbnailSemantics =>
+      'Miniatura de la lista de proyectos con el tema actual';
+
+  @override
+  String get themePreviewScreenSplash => 'Pantalla de arranque';
+
+  @override
+  String get themePreviewScreenProjects => 'Lista de proyectos';
+
+  @override
+  String get themePreviewScreenProjectDetail => 'Detalles del proyecto';
+
+  @override
+  String get themePreviewScreenCanvas => 'Modo lienzo';
+
+  @override
+  String get themePreviewScreenTimeline => 'Modo línea de tiempo';
+
+  @override
+  String get themePreviewScreenExport => 'Exportar la obra';
+
+  @override
+  String get themePreviewScreenSaves => 'Gestión de guardados';
+
+  @override
+  String get themePreviewScreenWorkDetail =>
+      'Plaza de Obras: detalles de la obra';
+
+  @override
+  String get themePreviewScreenPost => 'Plaza de Obras: publicar una obra';
+
+  @override
+  String get themePreviewScreenAuthor => 'Obras del autor';
+
+  @override
+  String get themePreviewScreenNotifications =>
+      'Notificaciones de la comunidad';
+
+  @override
+  String get themePreviewSampleProjectName => 'Mi primera animación';
+
+  @override
+  String get themePreviewSampleWorkTitle1 => 'Una promesa tras la lluvia';
+
+  @override
+  String get themePreviewSampleWorkTitle2 => 'Aventura al amanecer';
+
+  @override
+  String get themePreviewSampleWorkTitle3 => 'La última melodía';
+
+  @override
+  String get themePreviewSampleArtist => 'Artista de ejemplo';
+
+  @override
+  String get themePreviewSampleStudio => 'Estudio Asakaze';
+
+  @override
+  String get themePreviewSampleDescriptionLabel => 'Descripción';
+
+  @override
+  String get themePreviewSampleDescriptionHint => 'Añade una descripción';
 
   @override
   String get workspaceToolbarSizeLabel =>

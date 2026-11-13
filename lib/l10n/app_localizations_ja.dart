@@ -9847,6 +9847,84 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
+  String get themePreviewCloseTooltip => 'プレビューを閉じる';
+
+  @override
+  String get themePreviewSampleCaption => '配色見本';
+
+  @override
+  String get themePreviewPreviousScreen => '前の画面';
+
+  @override
+  String get themePreviewNextScreen => '次の画面';
+
+  @override
+  String get themePreviewHideControls => '操作バーを隠す';
+
+  @override
+  String get themePreviewShowControls => '操作バーを表示';
+
+  @override
+  String get themePreviewThumbnailSemantics => '現在のテーマで描画したプロジェクト一覧の縮小見本';
+
+  @override
+  String get themePreviewScreenSplash => '起動画面';
+
+  @override
+  String get themePreviewScreenProjects => 'プロジェクト一覧';
+
+  @override
+  String get themePreviewScreenProjectDetail => 'プロジェクト詳細';
+
+  @override
+  String get themePreviewScreenCanvas => 'キャンバスモード';
+
+  @override
+  String get themePreviewScreenTimeline => 'タイムラインモード';
+
+  @override
+  String get themePreviewScreenExport => '作品書き出し';
+
+  @override
+  String get themePreviewScreenSaves => 'セーブ管理';
+
+  @override
+  String get themePreviewScreenWorkDetail => '作品広場・作品詳細';
+
+  @override
+  String get themePreviewScreenPost => '作品広場・投稿';
+
+  @override
+  String get themePreviewScreenAuthor => '投稿者の作品';
+
+  @override
+  String get themePreviewScreenNotifications => 'フォロー通知';
+
+  @override
+  String get themePreviewSampleProjectName => 'はじめてのアニメ';
+
+  @override
+  String get themePreviewSampleWorkTitle1 => '雨上がりの約束';
+
+  @override
+  String get themePreviewSampleWorkTitle2 => '夜明けの冒険';
+
+  @override
+  String get themePreviewSampleWorkTitle3 => '最後のメロディ';
+
+  @override
+  String get themePreviewSampleArtist => 'サンプル作者';
+
+  @override
+  String get themePreviewSampleStudio => 'あさかぜ工房';
+
+  @override
+  String get themePreviewSampleDescriptionLabel => '説明';
+
+  @override
+  String get themePreviewSampleDescriptionHint => '説明を入力';
+
+  @override
   String get workspaceToolbarSizeLabel => 'ツールの表示サイズ';
 
   @override

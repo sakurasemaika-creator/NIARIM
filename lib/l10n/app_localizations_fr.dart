@@ -10704,6 +10704,87 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
+  String get themePreviewCloseTooltip => 'Fermer l’aperçu';
+
+  @override
+  String get themePreviewSampleCaption => 'Aperçu des couleurs';
+
+  @override
+  String get themePreviewPreviousScreen => 'Écran précédent';
+
+  @override
+  String get themePreviewNextScreen => 'Écran suivant';
+
+  @override
+  String get themePreviewHideControls => 'Masquer les commandes';
+
+  @override
+  String get themePreviewShowControls => 'Afficher les commandes';
+
+  @override
+  String get themePreviewThumbnailSemantics =>
+      'Miniature de la liste des projets avec le thème actuel';
+
+  @override
+  String get themePreviewScreenSplash => 'Écran de lancement';
+
+  @override
+  String get themePreviewScreenProjects => 'Liste des projets';
+
+  @override
+  String get themePreviewScreenProjectDetail => 'Détails du projet';
+
+  @override
+  String get themePreviewScreenCanvas => 'Mode canevas';
+
+  @override
+  String get themePreviewScreenTimeline => 'Mode timeline';
+
+  @override
+  String get themePreviewScreenExport => 'Export de l’œuvre';
+
+  @override
+  String get themePreviewScreenSaves => 'Gestion des sauvegardes';
+
+  @override
+  String get themePreviewScreenWorkDetail =>
+      'Place des œuvres : détails de l’œuvre';
+
+  @override
+  String get themePreviewScreenPost => 'Place des œuvres : publier une œuvre';
+
+  @override
+  String get themePreviewScreenAuthor => 'Œuvres de l’auteur';
+
+  @override
+  String get themePreviewScreenNotifications =>
+      'Notifications de la communauté';
+
+  @override
+  String get themePreviewSampleProjectName => 'Ma première animation';
+
+  @override
+  String get themePreviewSampleWorkTitle1 => 'Une promesse après la pluie';
+
+  @override
+  String get themePreviewSampleWorkTitle2 => 'Aventure à l’aube';
+
+  @override
+  String get themePreviewSampleWorkTitle3 => 'La dernière mélodie';
+
+  @override
+  String get themePreviewSampleArtist => 'Artiste exemple';
+
+  @override
+  String get themePreviewSampleStudio => 'Atelier Asakaze';
+
+  @override
+  String get themePreviewSampleDescriptionLabel => 'Description';
+
+  @override
+  String get themePreviewSampleDescriptionHint => 'Ajoutez une description';
+
+  @override
   String get workspaceToolbarSizeLabel => 'Taille des icônes d’outils';
 
   @override

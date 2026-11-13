@@ -107,6 +107,8 @@ const _sameInLocale = <String, Set<String>>{
     'rulerDivisions',
     'stampRotationLabel',
     'storageCategoryCache',
+    // テーマの見本の投稿欄の見出し（仏語でも Description）。
+    'themePreviewSampleDescriptionLabel',
     'timelineAddAudioTooltip',
     'timelineAddImageTooltip',
     'timelineCameraRotationLabel',

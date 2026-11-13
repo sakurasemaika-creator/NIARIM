@@ -7296,7 +7296,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Another Google account action is in progress. Try again when it finishes.';
 
   @override
-  String get communityMyWorksTitle => 'My posts';
+  String get communityMyWorksTitle => 'My Posts';
 
   @override
   String get communityMyWorksViewAuthorPage => 'View my public works page';
@@ -10528,6 +10528,85 @@ class AppLocalizationsEn extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get themePreviewCloseTooltip => 'Close preview';
+
+  @override
+  String get themePreviewSampleCaption => 'Color sample';
+
+  @override
+  String get themePreviewPreviousScreen => 'Previous screen';
+
+  @override
+  String get themePreviewNextScreen => 'Next screen';
+
+  @override
+  String get themePreviewHideControls => 'Hide controls';
+
+  @override
+  String get themePreviewShowControls => 'Show controls';
+
+  @override
+  String get themePreviewThumbnailSemantics =>
+      'Miniature of the project list drawn with the current theme';
+
+  @override
+  String get themePreviewScreenSplash => 'Launch Screen';
+
+  @override
+  String get themePreviewScreenProjects => 'Project List';
+
+  @override
+  String get themePreviewScreenProjectDetail => 'Project Details';
+
+  @override
+  String get themePreviewScreenCanvas => 'Canvas Mode';
+
+  @override
+  String get themePreviewScreenTimeline => 'Timeline Mode';
+
+  @override
+  String get themePreviewScreenExport => 'Export Work';
+
+  @override
+  String get themePreviewScreenSaves => 'Save Management';
+
+  @override
+  String get themePreviewScreenWorkDetail => 'Work Plaza: Work Details';
+
+  @override
+  String get themePreviewScreenPost => 'Work Plaza: Post a Work';
+
+  @override
+  String get themePreviewScreenAuthor => 'Creator’s Works';
+
+  @override
+  String get themePreviewScreenNotifications => 'Follow Notifications';
+
+  @override
+  String get themePreviewSampleProjectName => 'My first animation';
+
+  @override
+  String get themePreviewSampleWorkTitle1 => 'A Promise After the Rain';
+
+  @override
+  String get themePreviewSampleWorkTitle2 => 'Adventure at Dawn';
+
+  @override
+  String get themePreviewSampleWorkTitle3 => 'The Last Melody';
+
+  @override
+  String get themePreviewSampleArtist => 'Sample Artist';
+
+  @override
+  String get themePreviewSampleStudio => 'Asakaze Studio';
+
+  @override
+  String get themePreviewSampleDescriptionLabel => 'Description';
+
+  @override
+  String get themePreviewSampleDescriptionHint => 'Add a description';
 
   @override
   String get workspaceToolbarSizeLabel => 'Tool icon size';
