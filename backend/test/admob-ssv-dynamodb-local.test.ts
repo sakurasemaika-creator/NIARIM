@@ -115,7 +115,7 @@ describe.skipIf(process.env.NIARIM_DYNAMODB_LOCAL_TESTS !== "1")(
     it("exactly once credits ten signed coins and five durable records", async () => {
       const start = parse(await startRewardedAdSession(request()));
       expect(start.rewardCoins).toBe(10);
-      expect(start.customData).toMatch(/^v1\\.N[a-f0-9]{32}\\.[a-f0-9-]{36}$/);
+      expect(start.customData).toMatch(/^v1\.N[a-f0-9]{32}\.[a-f0-9-]{36}$/);
       const receiptId = randomBytes(16).toString("hex");
       const signed = signedCallback(start.customData, receiptId);
       const event = { ...request(), rawQueryString: signed };
