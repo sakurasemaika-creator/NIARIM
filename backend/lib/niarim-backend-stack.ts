@@ -295,7 +295,7 @@ export class NiarimBackendStack extends Stack {
           String(this.node.tryGetContext("coinFullPremiumYearCoins") ?? "550000"),
         COIN_PRICE_VERSION:
           String(this.node.tryGetContext("coinPriceVersion") ??
-            "v3-final-annual550000"),
+            "v4-min10-repriced-20261113"),
       },
       bundling: { minify: true, sourceMap: false },
     });
