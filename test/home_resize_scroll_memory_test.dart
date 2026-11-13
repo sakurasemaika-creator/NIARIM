@@ -162,6 +162,107 @@ void main() {
     });
   }
 
+  Future<void> pick(WidgetTester tester, ProjectViewMode chosen) async {
+    final l10n = AppLocalizations.of(
+      tester.element(find.byType(ProjectListWidget)),
+    )!;
+    await tester.tap(find.byTooltip(l10n.homeViewModeTooltip));
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.text(switch (chosen) {
+        ProjectViewMode.large => l10n.homeViewModeLarge,
+        ProjectViewMode.medium => l10n.homeViewModeMedium,
+        ProjectViewMode.small => l10n.homeViewModeSmall,
+        ProjectViewMode.detail => l10n.homeViewModeDetail,
+      }).last,
+    );
+    await tester.pumpAndSettle();
+    expect(
+      tester.widget<ProjectListWidget>(find.byType(ProjectListWidget)).viewMode,
+      chosen,
+    );
+  }
+
+  Future<void> scrollTo(WidgetTester tester, double pixels) async {
+    position(tester).jumpTo(pixels);
+    await tester.pumpAndSettle();
+    expect(position(tester).pixels, pixels);
+  }
+
+  // いま出ている表示サイズを選んだ後は、その表示サイズの位置として覚える。
+  // 別の表示サイズへ移って戻ると、その表示サイズで読んでいた所に戻る
+  // （開いたときの表示サイズの位置として覚えていたので、先頭へ戻っていた）。
+  for (final (open, now, shown) in const [
+    (560.0, 640.0, ProjectViewMode.medium),
+    (1020.0, 560.0, ProjectViewMode.small),
+  ]) {
+    testWidgets('the view size already shown remembers its own place after '
+        'another size ($open -> $now)', (tester) async {
+      await openHome(tester, size: Size(open, 844));
+      await resize(tester, now);
+      await pick(tester, shown);
+      await scrollTo(tester, 500);
+      await pick(tester, ProjectViewMode.detail);
+      expect(position(tester).pixels, 0, reason: 'detail starts at the top');
+      await scrollTo(tester, 120);
+      await pick(tester, shown);
+      expect(
+        position(tester).pixels,
+        closeTo(500, 1),
+        reason: 'coming back to $shown lost its place',
+      );
+      await pick(tester, ProjectViewMode.detail);
+      expect(position(tester).pixels, closeTo(120, 1));
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox.shrink());
+    });
+  }
+
+  // 開いたときの表示サイズは、窓の幅が変わる前に読んでいた所を覚えている。
+  // いま出ている表示サイズを選んで読み進めた後でも、その表示サイズへ移ると
+  // 自分の位置に戻り、元の表示サイズへ戻ると読み進めた所に戻る。
+  for (final (open, now, shown, atOpen) in const [
+    (560.0, 640.0, ProjectViewMode.medium, ProjectViewMode.small),
+    (1020.0, 560.0, ProjectViewMode.small, ProjectViewMode.large),
+  ]) {
+    testWidgets('the size shown at opening keeps its own place after the '
+        'size now shown was chosen ($open -> $now)', (tester) async {
+      await openHome(tester, size: Size(open, 844));
+      await scrollTo(tester, 300);
+      await resize(tester, now);
+      expect(position(tester).pixels, closeTo(300, 1));
+      await pick(tester, shown);
+      expect(
+        position(tester).pixels,
+        closeTo(300, 1),
+        reason: 'choosing the size already shown moved the list',
+      );
+      // 選んだ後にまだ動かしていなくても、その位置を覚えている。
+      await pick(tester, ProjectViewMode.detail);
+      await pick(tester, shown);
+      expect(
+        position(tester).pixels,
+        closeTo(300, 1),
+        reason: '$shown forgot the place it was chosen at',
+      );
+      await scrollTo(tester, 500);
+      await pick(tester, atOpen);
+      expect(
+        position(tester).pixels,
+        closeTo(math.min(300.0, position(tester).maxScrollExtent), 1),
+        reason: '$atOpen did not come back to its own place',
+      );
+      await pick(tester, shown);
+      expect(
+        position(tester).pixels,
+        closeTo(500, 1),
+        reason: 'coming back to $shown lost its place',
+      );
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox.shrink());
+    });
+  }
+
   // 表示サイズを自分で選んだときは、これまでどおりサイズごとに別の位置を
   // 覚える（窓の幅では変わらない）。
   testWidgets('a chosen view size keeps its place across the same widths', (
