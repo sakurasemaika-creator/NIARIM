@@ -6418,8 +6418,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get colorPickerShareViaQr => 'QR 코드로 공유';
 
   @override
-  String get qrShareTooLargeHint =>
-      '이미지가 포함되거나 QR 코드에 담기 어려운 설정은 파일로 공유해 주세요.';
+  String get qrShareTooLargeHint => '이미지가 포함되거나 QR 코드에 담기 어려운 설정은 파일로 공유해 주세요.';
 
   @override
   String get colorPickerImportViaFile => '파일에서 선택';
