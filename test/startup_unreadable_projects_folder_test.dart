@@ -4426,6 +4426,142 @@ void main() {
     await tester.pumpWidget(const SizedBox.shrink());
     appRouter.go('/');
   });
+
+  // 保存のダイアログ（スロットの画面〔保存の管理〕・セーブツリーの画面の
+  // 「スロットNに保存」・セーブツリーの「保存」）は、開くとすぐメモの欄に
+  // フォーカスがあり、スマホではキーボードがすぐ開く。中身はスクロール
+  // できず、小さい画面・大きな文字では、打っている欄がボタンの下や
+  // キーボードの下に隠れ、中身がはみ出した。中身をスクロールでき、欄は
+  // キーボードの上に見える。
+  for (final language in ['ja', 'fr']) {
+    for (final screen in ['save management', 'save tree slots', 'save tree']) {
+      testWidgets('the $screen save dialog keeps its field above the keyboard '
+          'on a small screen with large text ($language)', (tester) async {
+        tester.view.physicalSize = const Size(320, 568);
+        tester.view.devicePixelRatio = 1.0;
+        tester.platformDispatcher.textScaleFactorTestValue = 2.0;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+        addTearDown(tester.view.resetViewInsets);
+        addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+        SharedPreferences.setMockInitialValues({
+          'first_launch': false,
+          'language': language,
+          firstUseTooltipsSeenKey: kAllFirstUseTooltipKeys,
+        });
+        final l10n = lookupAppLocalizations(Locale(language));
+        final seeded = await tester.runAsync(
+          () => _seedProjectWithSaves(name: '保存する作品', comments: ['A']),
+        );
+        final (project, _) = seeded!;
+        appRouter.go('/home');
+        final providers = await tester.runAsync(buildAppProviders);
+        if (screen == 'save tree slots') {
+          await tester.pumpWidget(
+            MultiProvider(
+              providers: providers!,
+              child: MaterialApp(
+                locale: Locale(language),
+                localizationsDelegates: AppLocalizations.localizationsDelegates,
+                supportedLocales: AppLocalizations.supportedLocales,
+                home: SaveTreeScreen(
+                  projectId: project.id,
+                  entryMode: SaveTreeEntryMode.projectDetail,
+                ),
+              ),
+            ),
+          );
+        } else {
+          await tester.pumpWidget(
+            MultiProvider(providers: providers!, child: const NiarimApp()),
+          );
+          await _settleWithFiles(tester);
+          if (screen == 'save tree') {
+            tester
+                .element(find.byType(Scaffold).first)
+                .read<SaveTreeService>()
+                .setTreeMode(true);
+          }
+          appRouter.push('/save-tree/${project.id}?entry=detail');
+        }
+        await _settleWithFiles(tester, rounds: 6);
+        // 画面そのもののはみ出し（ダイアログと関係ない）は見ない。
+        tester.takeException();
+
+        final errors = <String>[];
+        final onError = FlutterError.onError;
+        FlutterError.onError = (details) =>
+            errors.add(details.exceptionAsString());
+        try {
+          if (screen == 'save tree') {
+            await tester.tap(find.byIcon(Icons.save));
+          } else {
+            final write = find.byTooltip(l10n.saveTreeSlotWriteTooltip).at(1);
+            await tester.ensureVisible(write);
+            await tester.tap(write);
+          }
+          await _settleWithFiles(tester, rounds: 3);
+          final field = find.descendant(
+            of: find.byType(AlertDialog),
+            matching: find.byType(EditableText),
+          );
+          expect(field, findsOneWidget);
+          expect(tester.widget<EditableText>(field).focusNode.hasFocus, isTrue);
+          // 開いたときに出るキーボード（端末と同じく、300msほどかけて
+          // 速く上がり、ゆっくり止まる）。
+          for (var frame = 1; frame <= 18; frame++) {
+            final inset = 280 * Curves.easeOutCubic.transform(frame / 18);
+            tester.view.viewInsets = FakeViewPadding(bottom: inset);
+            await tester.pump(const Duration(milliseconds: 16));
+          }
+          await _settleWithFiles(tester, rounds: 3);
+          expect(errors, isEmpty, reason: 'the dialog overflows');
+          // セーブツリーの画面のスロット表示（アプリからは出ない）は、
+          // テストではアプリのテーマを使わない画面に載せるので、ボタンの
+          // 段の大きさが違う（はみ出さないことだけを見る）。
+          if (screen != 'save tree slots') {
+            final rect = tester.getRect(field);
+            final viewport = tester.getRect(
+              find
+                  .descendant(
+                    of: find.byType(AlertDialog),
+                    matching: find.byType(Scrollable),
+                  )
+                  .first,
+            );
+            debugPrint(
+              'save dialog $screen $language: field=$rect '
+              'visible part=$viewport',
+            );
+            expect(
+              rect.bottom,
+              lessThanOrEqualTo(568 - 280 + 0.5),
+              reason: 'the field is under the keyboard',
+            );
+            expect(
+              rect.top >= viewport.top - 0.5 &&
+                  rect.bottom <= viewport.bottom + 0.5,
+              isTrue,
+              reason: 'the field is outside the visible part of the dialog',
+            );
+          }
+        } finally {
+          FlutterError.onError = onError;
+        }
+        await tester.tap(find.widgetWithText(TextButton, l10n.commonCancel));
+        for (
+          var i = 0;
+          i < 20 && find.byType(AlertDialog).evaluate().isNotEmpty;
+          i++
+        ) {
+          await _settleWithFiles(tester, rounds: 1);
+        }
+        expect(find.byType(AlertDialog), findsNothing);
+        await tester.pumpWidget(const SizedBox.shrink());
+        appRouter.go('/');
+      });
+    }
+  }
 }
 
 /// 実際のファイルを読む処理（ゴミ箱の一覧・読み直し）を実時間で待ちながら

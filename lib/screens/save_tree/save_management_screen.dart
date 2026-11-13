@@ -202,6 +202,9 @@ class _GameStyleSlotScreen extends StatelessWidget {
         controller: commentController,
         builder: (ctx) => StatefulBuilder(
           builder: (ctx, setDialogState) => AlertDialog(
+            // 小さい画面・大きな文字では、開いてすぐ出るキーボードの上に、
+            // 打っている欄が見えるようにスクロールする。
+            scrollable: true,
             title: Text(l10n.saveTreeSlotSaveDialogTitle(slotIndex + 1)),
             content: Column(
               mainAxisSize: MainAxisSize.min,
