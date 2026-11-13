@@ -1,0 +1,40 @@
+# Focused regression gate; does not contact AWS/Firebase or award coins.
+name: Community filters and simulated FCM regression
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/community-filters-and-fcm-regression.yml'
+      - 'test/community_filter_surfaces_test.dart'
+      - 'test/community_store_sync_test.dart'
+      - 'test/push_notification_service_test.dart'
+      - 'lib/services/community_service.dart'
+      - 'lib/services/push_notification_service.dart'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: niarim-community-filter-fcm-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  test:
+    if: github.ref == 'refs/heads/dev_branch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.47.2'
+          channel: stable
+          cache: true
+      - name: Restore locked dependencies
+        run: flutter pub get --enforce-lockfile
+      - name: Verify masked ranking and removable bookmarked placeholders
+        run: flutter test --no-pub test/community_filter_surfaces_test.dart test/community_store_sync_test.dart --reporter expanded
+      - name: Verify simulated Firebase messaging payload handling
+        run: flutter test --no-pub test/push_notification_service_test.dart --reporter expanded
+      - name: Analyze the three regression files
+        run: flutter analyze --no-pub --no-fatal-infos test/community_filter_surfaces_test.dart test/community_store_sync_test.dart test/push_notification_service_test.dart
