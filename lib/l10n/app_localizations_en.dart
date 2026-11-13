@@ -9012,8 +9012,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get rewardUnlockBestValue => 'Best value';
 
   @override
-  String get rewardUnlockBestExplain =>
-      'Use the same eligible features as Premium membership in one discounted bundle';
+  String get rewardUnlockBestExplain => 'Use the same eligible features as Premium membership in one discounted bundle';
 
   @override
   String get rewardUnlockEarning =>
