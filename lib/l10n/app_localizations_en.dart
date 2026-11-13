@@ -8137,6 +8137,18 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String homePasteSkippedPartial(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count items were only partly pasted. Check the list and try again.',
+      one: '$count item was only partly pasted. Check the list and try again.',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get homeCutPendingHint => 'Cut, waiting to be pasted';
 
   @override

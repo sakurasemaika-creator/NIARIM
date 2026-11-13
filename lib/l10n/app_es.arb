@@ -3247,6 +3247,7 @@
   "homePasteSkippedMissing": "{count, plural, one{No se pudo pegar {count} elemento porque el original ya no está (en la papelera o eliminado).} other{No se pudieron pegar {count} elementos porque los originales ya no están (en la papelera o eliminados).}}",
   "homePasteSkippedFavorite": "{count, plural, one{{count} elemento es una obra favorita (o una carpeta que la contiene), así que no se movió a la papelera. Quítalo de favoritos y vuelve a pegar.} other{{count} elementos son obras favoritas (o carpetas que las contienen), así que no se movieron a la papelera. Quítalos de favoritos y vuelve a pegar.}}",
   "homePasteSkippedFailed": "{count, plural, one{No se pudo pegar {count} elemento. Revisa el almacenamiento e inténtalo de nuevo.} other{No se pudieron pegar {count} elementos. Revisa el almacenamiento e inténtalo de nuevo.}}",
+  "homePasteSkippedPartial": "{count, plural, one{{count} elemento solo se pegó en parte. Comprueba la lista e inténtalo de nuevo.} other{{count} elementos solo se pegaron en parte. Comprueba la lista e inténtalo de nuevo.}}",
   "homeCutPendingHint": "Cortado, pendiente de pegar",
   "projectDuplicateName": "{name} (copia)",
   "projectDuplicateNameNumbered": "{name} (copia {number})",

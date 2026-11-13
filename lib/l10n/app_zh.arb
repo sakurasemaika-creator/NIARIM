@@ -3247,6 +3247,7 @@
   "homePasteSkippedMissing": "{count, plural, other{有{count}项因原作品或文件夹已不存在（已移至回收站或已删除）而无法粘贴。}}",
   "homePasteSkippedFavorite": "{count, plural, other{有{count}项是已收藏的作品（或含有已收藏作品的文件夹），因此未移至回收站。请先取消收藏，再重新粘贴。}}",
   "homePasteSkippedFailed": "{count, plural, other{有{count}项未能粘贴。请检查存储空间后重试。}}",
+  "homePasteSkippedPartial": "{count, plural, other{有{count}项只粘贴了一部分。请检查列表后重试。}}",
   "homeCutPendingHint": "已剪切（等待粘贴）",
   "projectDuplicateName": "{name}（副本）",
   "projectDuplicateNameNumbered": "{name}（副本 {number}）",

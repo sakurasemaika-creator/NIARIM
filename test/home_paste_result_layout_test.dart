@@ -83,21 +83,18 @@ void main() {
               '${snack.bottom.toStringAsFixed(0)}, paste bar bottom '
               '${toolbar.bottom.toStringAsFixed(0)}',
             );
-            // 高さの低い横向き（640x360）は、上のバー・貼り付けの欄・浮かぶ
-            // ボタンの間が120pxほどしか無く、4つの理由を出すと文字1倍でも
-            // 欄に数px重なる（知らせの中はスクロールする）。測って残すだけ。
-            if (size.height >= 568) {
-              expect(
-                snack.top,
-                greaterThanOrEqualTo(toolbar.bottom),
-                reason: '$where: the notice covers the paste bar',
-              );
-            }
+            // 高さの低い横向き（640x360）でも、知らせは貼り付けの欄の下で
+            // 止まり、入らない分は中でスクロールする。
+            expect(
+              snack.top,
+              greaterThanOrEqualTo(toolbar.bottom),
+              reason: '$where: the notice covers the paste bar',
+            );
             expect(snack.bottom, lessThanOrEqualTo(size.height), reason: where);
             final paragraph = tester.renderObject<RenderParagraph>(
               find.descendant(
                 of: find.byType(SnackBar),
-                matching: find.text(expected),
+                matching: find.byType(RichText),
               ),
             );
             expect(paragraph.didExceedMaxLines, isFalse, reason: where);

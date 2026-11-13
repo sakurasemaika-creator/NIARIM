@@ -3830,6 +3830,15 @@
       }
     }
   },
+  "homePasteSkippedPartial": "{count, plural, other{{count}件は一部だけ貼り付けられました。一覧を確認して、もう一度お試しください。}}",
+  "@homePasteSkippedPartial": {
+    "description": "一部の変更だけが保存され、途中までしか貼り付けられなかった件数（クリップボードに残る）",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "homeCutPendingHint": "切り取り中（貼り付けを待っています）",
   "@homePasteSkippedMissing": {
     "placeholders": {

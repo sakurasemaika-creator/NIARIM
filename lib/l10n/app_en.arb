@@ -3254,6 +3254,7 @@
   "homePasteSkippedMissing": "{count, plural, one{{count} item couldn’t be pasted because the original is gone (moved to the Trash or deleted).} other{{count} items couldn’t be pasted because the originals are gone (moved to the Trash or deleted).}}",
   "homePasteSkippedFavorite": "{count, plural, one{{count} item is a favorite work (or a folder holding one), so it stayed out of the Trash. Remove it from favorites, then paste again.} other{{count} items are favorite works (or folders holding them), so they stayed out of the Trash. Remove them from favorites, then paste again.}}",
   "homePasteSkippedFailed": "{count, plural, one{{count} item couldn’t be pasted. Check your storage and try again.} other{{count} items couldn’t be pasted. Check your storage and try again.}}",
+  "homePasteSkippedPartial": "{count, plural, one{{count} item was only partly pasted. Check the list and try again.} other{{count} items were only partly pasted. Check the list and try again.}}",
   "homeCutPendingHint": "Cut, waiting to be pasted",
   "projectDuplicateName": "{name} (copy)",
   "projectDuplicateNameNumbered": "{name} (copy {number})",

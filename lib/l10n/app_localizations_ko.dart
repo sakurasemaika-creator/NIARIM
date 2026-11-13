@@ -7863,6 +7863,16 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
+  String homePasteSkippedPartial(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count개 항목은 일부만 붙여넣었습니다. 목록을 확인하고 다시 시도해 주세요.',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get homeCutPendingHint => '잘라냄(붙여넣기 대기 중)';
 
   @override

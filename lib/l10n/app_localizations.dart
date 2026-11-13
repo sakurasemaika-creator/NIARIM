@@ -14229,6 +14229,12 @@ abstract class AppLocalizations {
   /// **'{count, plural, other{{count}件は貼り付けられませんでした。保存先を確認して、もう一度お試しください。}}'**
   String homePasteSkippedFailed(int count);
 
+  /// 一部の変更だけが保存され、途中までしか貼り付けられなかった件数（クリップボードに残る）
+  ///
+  /// In ja, this message translates to:
+  /// **'{count, plural, other{{count}件は一部だけ貼り付けられました。一覧を確認して、もう一度お試しください。}}'**
+  String homePasteSkippedPartial(int count);
+
   /// No description provided for @homeCutPendingHint.
   ///
   /// In ja, this message translates to:

@@ -23,6 +23,7 @@ void main() {
       switch (key) {
             'favorite' => (l10n as dynamic).homePasteSkippedFavorite(count),
             'failed' => (l10n as dynamic).homePasteSkippedFailed(count),
+            'partial' => (l10n as dynamic).homePasteSkippedPartial(count),
             _ => throw ArgumentError(key),
           }
           as String;
@@ -249,6 +250,7 @@ void main() {
             l10n.homePasteSkippedIntoSelf(count),
             reason(l10n, 'favorite', count),
             reason(l10n, 'failed', count),
+            reason(l10n, 'partial', count),
           ])
             (count, sentence),
       ];

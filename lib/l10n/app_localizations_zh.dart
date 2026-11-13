@@ -7749,6 +7749,16 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String homePasteSkippedPartial(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '有$count项只粘贴了一部分。请检查列表后重试。',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get homeCutPendingHint => '已剪切（等待粘贴）';
 
   @override
@@ -17465,6 +17475,16 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
       count,
       locale: localeName,
       other: '有$count項未能貼上。請檢查儲存空間後重試。',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String homePasteSkippedPartial(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '有$count項只貼上了一部分。請檢查清單後再試一次。',
     );
     return '$_temp0';
   }

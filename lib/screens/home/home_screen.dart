@@ -60,6 +60,7 @@ import '../../widgets/projects_load_failure_notice.dart';
 import '../../widgets/scrollable_sheet_body.dart';
 import '../../utils/app_error_reporter.dart';
 import '../../utils/duplicate_name.dart';
+import '../../utils/folder_persistence.dart';
 import '../../utils/responsive_tile_defaults.dart';
 import '../../utils/tolerant_preferences.dart';
 
@@ -104,21 +105,128 @@ void _withdrawClipboardNotices(
 }
 
 /// コピー・切り取り・貼り付けの知らせの文。貼り付けの結果は理由ごとに行が
-/// 増えるので、大きな文字でも上のバーと貼り付けの欄を覆わないよう、画面の
-/// 高さの4分の1までにして中でスクロールする（高さは知らせを出した後に画面の
-/// 大きさが変わっても、その時の画面で決める）。
-class _ClipboardNoticeText extends StatelessWidget {
-  const _ClipboardNoticeText(this.message);
+/// 増える。知らせの上の空いている所（[ceiling]＝上のバー・貼り付けの欄の
+/// 下端まで）に入る文はそのまま全部出し、入らないときだけ空いている所
+/// いっぱいまでにして中でスクロールする（上のバーと貼り付けの欄は覆わない）。
+/// 決まった高さで切ると、大きな文字では、空いている所があるのに件数の行が
+/// 5秒で消える知らせの見えない所に隠れた。空いている所は描くたびに測り直す
+/// （画面の大きさ・貼り付けの欄の有無が変わっても、その時の画面で決める）。
+/// 韓国語は語の途中で折り返さない。
+class _ClipboardNoticeText extends StatefulWidget {
+  const _ClipboardNoticeText(this.message, {this.ceiling});
 
   final String message;
 
+  /// 知らせを広げてよい上端（画面の座標）。分からないとき（ホームが別の
+  /// 画面の下にある等）はnull。
+  final double? Function()? ceiling;
+
   @override
-  Widget build(BuildContext context) => ConstrainedBox(
-    constraints: BoxConstraints(
-      maxHeight: MediaQuery.sizeOf(context).height / 4,
-    ),
-    child: SingleChildScrollView(child: Text(message)),
-  );
+  State<_ClipboardNoticeText> createState() => _ClipboardNoticeTextState();
+}
+
+class _ClipboardNoticeTextState extends State<_ClipboardNoticeText> {
+  /// 知らせの上端と[_ClipboardNoticeText.ceiling]の間に空ける幅。
+  static const double _gap = 8;
+
+  /// 文の高さの上限（空いている所から決めたもの。まだ測っていなければnull）。
+  double? _maxHeight;
+
+  // 上限を測ったときの画面の大きさ・キーボード等で隠れる所。
+  Size? _screen;
+  EdgeInsets? _insets;
+
+  @override
+  void initState() {
+    super.initState();
+    _measureAfterFrame();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final screen = MediaQuery.sizeOf(context);
+    final insets = MediaQuery.viewInsetsOf(context);
+    if (screen != _screen || insets != _insets) {
+      // 画面が変わったら、前の画面で測った上限を使わない（大きすぎる上限の
+      // まま描くと、知らせが画面の上へはみ出す）。描いた後で測り直す。
+      _screen = screen;
+      _insets = insets;
+      _maxHeight = null;
+    }
+  }
+
+  // 描くたびに、描いた後で空いている所を測る（フレームを増やさない。
+  // 上限が変わったときだけ描き直す）。
+  void _measureAfterFrame() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _measure();
+      _measureAfterFrame();
+    });
+  }
+
+  void _measure() {
+    final box = context.findRenderObject();
+    final ceiling = widget.ceiling?.call();
+    if (box is! RenderBox || !box.attached || !box.hasSize) return;
+    double? next;
+    if (ceiling != null) {
+      // 知らせは下端をそろえて置かれるので、文の下端は文の高さが変わっても
+      // 動かない。文の上の余白（知らせの面の上端から文まで）も知らせに入る。
+      final top = box.localToGlobal(Offset.zero).dy;
+      final surfaceTop = _surface()?.localToGlobal(Offset.zero).dy ?? top;
+      final room = top + box.size.height - ceiling - _gap - (top - surfaceTop);
+      final line = _lineHeight;
+      next = room > line ? room : line;
+    }
+    final current = _maxHeight;
+    if (next == current) return;
+    if (next != null && current != null && (next - current).abs() < 0.5) {
+      return;
+    }
+    setState(() => _maxHeight = next);
+  }
+
+  /// 知らせの面（文を囲むSnackBarのMaterial）。
+  RenderBox? _surface() {
+    RenderBox? surface;
+    context.visitAncestorElements((element) {
+      if (element.widget is! Material) return true;
+      final box = element.findRenderObject();
+      if (box is RenderBox && box.attached && box.hasSize) surface = box;
+      return false;
+    });
+    return surface;
+  }
+
+  /// 1行の高さ（空いている所がこれより狭くても、1行は見せる）。描くときの
+  /// 書式・文字の大きさで測る。
+  double _lineHeight = 0;
+
+  void _measureLine(BuildContext context) {
+    final painter = TextPainter(
+      text: TextSpan(text: 'Ag', style: DefaultTextStyle.of(context).style),
+      textDirection: Directionality.of(context),
+      textScaler: MediaQuery.textScalerOf(context),
+    )..layout();
+    _lineHeight = painter.height;
+    painter.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    _measureLine(context);
+    final shown = keepKoreanWordsTogether(widget.message);
+    return ConstrainedBox(
+      constraints: BoxConstraints(
+        maxHeight: _maxHeight ?? MediaQuery.sizeOf(context).height / 4,
+      ),
+      child: SingleChildScrollView(
+        child: Text(shown, semanticsLabel: plainSemanticsLabel(shown)),
+      ),
+    );
+  }
 }
 
 /// 1件の貼り付けの結果。
@@ -134,6 +242,10 @@ enum _PasteOutcome {
 
   /// お気に入りの作品（またはそれを含むフォルダ）はゴミ箱へ移さない。
   favorite,
+
+  /// 一部の変更だけが保存された（フォルダの中身を移している途中で保存
+  /// できなかった等）。クリップボードに残す。
+  partial,
 
   /// 保存できなかった等。クリップボードに残し、もう一度貼り付けられる。
   failed,
@@ -160,11 +272,17 @@ class _PasteTally {
       outcome = _PasteOutcome.favorite;
     } catch (error, stackTrace) {
       AppErrorReporter.record(error, stackTrace);
-      outcome = _PasteOutcome.failed;
+      outcome = failureOf(error);
     }
     add(outcome);
     return outcome;
   }
+
+  /// 貼り付けられなかった[error]の理由（一部だけ保存できた・保存できない）。
+  static _PasteOutcome failureOf(Object error) =>
+      error is FolderSaveException && error.partiallySaved
+      ? _PasteOutcome.partial
+      : _PasteOutcome.failed;
 
   /// 結果の文：貼り付けた件数と、貼り付けられなかった理由ごとの件数を1行
   /// ずつ。1件も貼り付けられなかったときは、理由の行だけ。
@@ -176,6 +294,8 @@ class _PasteTally {
         l10n.homePasteSkippedIntoSelf(this[_PasteOutcome.intoSelf]),
       if (this[_PasteOutcome.favorite] > 0)
         l10n.homePasteSkippedFavorite(this[_PasteOutcome.favorite]),
+      if (this[_PasteOutcome.partial] > 0)
+        l10n.homePasteSkippedPartial(this[_PasteOutcome.partial]),
       if (this[_PasteOutcome.failed] > 0)
         l10n.homePasteSkippedFailed(this[_PasteOutcome.failed]),
     ];
@@ -471,6 +591,20 @@ class _HomeScreenState extends State<HomeScreen>
 
   // ホームの上に別の画面を積むと動き出す、ホームの画面の後ろの動き。
   Animation<double>? _coveredBy;
+
+  // タブの一覧（上のバー・貼り付けの欄・選択中の操作バーの下）。
+  final GlobalKey _listAreaKey = GlobalKey();
+
+  // コピー・切り取り・貼り付けの知らせを広げてよい上端（画面の座標）：
+  // タブの一覧の上端（上のバー・貼り付けの欄は覆わない）。ホームの上に別の
+  // 画面を積んでいる間は、知らせはその画面に出るので分からない（null）。
+  double? _noticeCeiling() {
+    final covered = _coveredBy;
+    if (!mounted || (covered != null && !covered.isDismissed)) return null;
+    final box = _listAreaKey.currentContext?.findRenderObject();
+    if (box is! RenderBox || !box.attached || !box.hasSize) return null;
+    return box.localToGlobal(Offset.zero).dy;
+  }
 
   @override
   void didChangeDependencies() {
@@ -877,6 +1011,7 @@ class _HomeScreenState extends State<HomeScreen>
                 ),
               Expanded(
                 child: HomeCollectionSelectionScope(
+                  key: _listAreaKey,
                   active: _isSelectionMode,
                   selectedIds: Set<String>.of(_selectedIds),
                   onLongPress: _longPressLibraryEntry,
@@ -1860,7 +1995,7 @@ class _HomeScreenState extends State<HomeScreen>
     notice = messenger.showSnackBar(
       SnackBar(
         key: noticeKey,
-        content: _ClipboardNoticeText(message),
+        content: _ClipboardNoticeText(message, ceiling: _noticeCeiling),
         // 操作ボタンの付いたSnackBarは、既定では時間で消えず次の画面まで
         // 付いてくる。切り取りは貼り付けるまで続くが、知らせは5秒で消す。
         persist: false,
@@ -2388,10 +2523,18 @@ class _HomeScreenState extends State<HomeScreen>
             await LocalFileTrashService.restoreWorkFolder(folder, ws);
             StorageInfoService().invalidate();
           } else {
+            // 戻すフォルダが無い（ゴミ箱から消した）ときは何も起きない。
+            if (!ps.trashedFolders.any((t) => t.folder.id == entry.id)) {
+              throw const _ClipboardSourceMissing();
+            }
             await ps.restoreTrashedFolder(entry.id);
           }
         } else if (entry.originalArea == HomePasteArea.projects ||
             entry.originalArea == HomePasteArea.received) {
+          // 戻す作品が無い（ゴミ箱から消した）ときは何も起きない。
+          if (!ps.trash.any((p) => p.id == entry.id)) {
+            throw const _ClipboardSourceMissing();
+          }
           await ps.restoreProject(entry.id);
         } else {
           final files = await LocalFileTrashService.list();
@@ -2428,8 +2571,16 @@ class _HomeScreenState extends State<HomeScreen>
           await ws.deleteFolder(entry.id);
           StorageInfoService().invalidate();
         } else if (entry.source == HomePasteArea.received) {
+          // 受け取った作品が無い（もうゴミ箱へ移した・消した）ときは何も
+          // 起きない。
+          if (!ps.shared.any((p) => p.id == entry.id)) {
+            throw const _ClipboardSourceMissing();
+          }
           await ps.deleteProject(entry.id);
         } else {
+          if (!await File(entry.id).exists()) {
+            throw const _ClipboardSourceMissing();
+          }
           await LocalFileTrashService.move(
             File(entry.id),
             entry.source == HomePasteArea.works
@@ -2443,6 +2594,16 @@ class _HomeScreenState extends State<HomeScreen>
         }
         _otherClipboard = null;
       } else if (entry.isFolder) {
+        // 元のフォルダが無い（消した・ゴミ箱へ移した）ときは、同じ名前の
+        // フォルダを作らない。
+        final sourceExists = switch (entry.source) {
+          HomePasteArea.works => ws.folders.any((f) => f.id == entry.id),
+          HomePasteArea.received => ps.sharedFolders.any(
+            (f) => f.id == entry.id,
+          ),
+          _ => true,
+        };
+        if (!sourceExists) throw const _ClipboardSourceMissing();
         if (dest == HomePasteArea.projects) {
           await ps.createFolder(entry.name, parentFolderId: _currentFolderId);
         } else if (dest == HomePasteArea.works) {
@@ -2502,7 +2663,7 @@ class _HomeScreenState extends State<HomeScreen>
                     ? _PasteOutcome.missing
                     : error is FavoriteProjectDeleteException
                     ? _PasteOutcome.favorite
-                    : _PasteOutcome.failed,
+                    : _PasteTally.failureOf(error),
               ))
               .message(l10n),
         );

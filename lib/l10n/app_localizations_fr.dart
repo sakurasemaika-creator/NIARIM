@@ -8286,6 +8286,19 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
+  String homePasteSkippedPartial(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count éléments n’ont été collés qu’en partie. Vérifiez la liste et réessayez.',
+      one:
+          '$count élément n’a été collé qu’en partie. Vérifiez la liste et réessayez.',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get homeCutPendingHint => 'Coupé, en attente de collage';
 
   @override

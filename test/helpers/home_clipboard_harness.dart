@@ -193,14 +193,18 @@ class HomeClipboardHarness {
     matching: find.text(name),
   );
 
-  /// いま出ている知らせ（SnackBar）の本文。無ければnull。
+  /// いま出ている知らせ（SnackBar）の本文。無ければnull。韓国語の語の
+  /// 途中で折り返さないために入れた語結合子（U+2060）は除く。
   String? snackText() {
     final texts = find.descendant(
       of: find.byType(SnackBar),
       matching: find.byType(Text),
     );
     if (texts.evaluate().isEmpty) return null;
-    return (texts.evaluate().first.widget as Text).data;
+    return (texts.evaluate().first.widget as Text).data?.replaceAll(
+      '\u2060',
+      '',
+    );
   }
 
   Finder get pasteButton => find.byKey(const Key('homeCrossTabPasteButton'));

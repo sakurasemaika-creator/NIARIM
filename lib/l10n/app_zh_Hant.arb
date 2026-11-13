@@ -3247,6 +3247,7 @@
   "homePasteSkippedMissing": "{count, plural, other{有{count}項因原作品或資料夾已不存在（已移至垃圾桶或已刪除）而無法貼上。}}",
   "homePasteSkippedFavorite": "{count, plural, other{有{count}項是已收藏的作品（或含有已收藏作品的資料夾），因此未移至垃圾桶。請先取消收藏，再重新貼上。}}",
   "homePasteSkippedFailed": "{count, plural, other{有{count}項未能貼上。請檢查儲存空間後重試。}}",
+  "homePasteSkippedPartial": "{count, plural, other{有{count}項只貼上了一部分。請檢查清單後再試一次。}}",
   "homeCutPendingHint": "已剪下（等待貼上）",
   "projectDuplicateName": "{name}（副本）",
   "projectDuplicateNameNumbered": "{name}（副本 {number}）",

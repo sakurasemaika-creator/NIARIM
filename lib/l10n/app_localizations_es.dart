@@ -8264,6 +8264,19 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
+  String homePasteSkippedPartial(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count elementos solo se pegaron en parte. Comprueba la lista e inténtalo de nuevo.',
+      one:
+          '$count elemento solo se pegó en parte. Comprueba la lista e inténtalo de nuevo.',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get homeCutPendingHint => 'Cortado, pendiente de pegar';
 
   @override

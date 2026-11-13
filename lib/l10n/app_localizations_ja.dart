@@ -7826,6 +7826,16 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
+  String homePasteSkippedPartial(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count件は一部だけ貼り付けられました。一覧を確認して、もう一度お試しください。',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get homeCutPendingHint => '切り取り中（貼り付けを待っています）';
 
   @override

@@ -3247,6 +3247,7 @@
   "homePasteSkippedMissing": "{count, plural, one{{count} élément n’a pas pu être collé, car l’original n’existe plus (mis à la corbeille ou supprimé).} other{{count} éléments n’ont pas pu être collés, car les originaux n’existent plus (mis à la corbeille ou supprimés).}}",
   "homePasteSkippedFavorite": "{count, plural, one{{count} élément est une œuvre favorite (ou un dossier qui en contient), il n’a donc pas été mis à la corbeille. Retirez-le des favoris, puis collez à nouveau.} other{{count} éléments sont des œuvres favorites (ou des dossiers qui en contiennent), ils n’ont donc pas été mis à la corbeille. Retirez-les des favoris, puis collez à nouveau.}}",
   "homePasteSkippedFailed": "{count, plural, one{{count} élément n’a pas pu être collé. Vérifiez votre stockage et réessayez.} other{{count} éléments n’ont pas pu être collés. Vérifiez votre stockage et réessayez.}}",
+  "homePasteSkippedPartial": "{count, plural, one{{count} élément n’a été collé qu’en partie. Vérifiez la liste et réessayez.} other{{count} éléments n’ont été collés qu’en partie. Vérifiez la liste et réessayez.}}",
   "homeCutPendingHint": "Coupé, en attente de collage",
   "projectDuplicateName": "{name} (copie)",
   "projectDuplicateNameNumbered": "{name} (copie {number})",
