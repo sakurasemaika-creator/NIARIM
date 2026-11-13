@@ -373,7 +373,13 @@ void main() {
               if (element.findAncestorWidgetOfExactType<TabBar>() == null)
                 element.renderObject! as RenderParagraph,
           ];
-          expect(paragraphs, hasLength(1), reason: '$language $width x$scale');
+          // 入らない幅では題を出さない（所有者の判断4）。出すときは1つ。
+          expect(
+            paragraphs.length,
+            lessThanOrEqualTo(1),
+            reason: '$language $width x$scale',
+          );
+          if (paragraphs.isEmpty) continue;
           final paragraph = paragraphs.single;
           if (paragraph.didExceedMaxLines ||
               paragraph.getMaxIntrinsicWidth(double.infinity) >
@@ -383,16 +389,10 @@ void main() {
         }
       }
     }
-    // まだ切れる所（戻る・表示サイズ・検索・メニューのボタンで題に120pxしか
-    // 残らない幅320pxで、文字を大きくしたとき）。ボタンの置き方を決めないと
-    // 直せないので、いまはここだけを許す。
-    const stillCut = {
-      'ja 320 x1.3',
-      'ja 320 x2.0',
-      'es 320 x1.3',
-      'es 320 x2.0',
-    };
-    expect(cut.toSet().difference(stillCut), isEmpty, reason: '$cut');
+    // 戻る・表示サイズ・検索・メニューのボタンで題に120pxしか残らない
+    // 幅320pxで文字を大きくしたときも、切れた題は出さない（入らなければ
+    // 題を出さない。test/home_title_fit_test.dartが全タブで見張る）。
+    expect(cut, isEmpty, reason: '$cut');
     expect(tester.takeException(), isNull);
     await _close(tester);
   });

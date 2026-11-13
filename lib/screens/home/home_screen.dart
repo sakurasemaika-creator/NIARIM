@@ -44,6 +44,7 @@ import '../../widgets/home_collection_selection_scope.dart';
 import '../../widgets/share_project_file_action.dart';
 import '../../widgets/mission_completion_dialog.dart';
 import '../../widgets/typing_aware_shortcuts.dart';
+import '../../widgets/fit_or_hide_title.dart';
 import 'widgets/project_list_widget.dart';
 import 'widgets/shared_direction_switch.dart';
 import 'widgets/folder_thumbnail.dart';
@@ -902,7 +903,8 @@ class _HomeScreenState extends State<HomeScreen>
                       ),
                     ],
                   )
-                : Text(switch (_currentTabIndex) {
+                // 入らない幅では題を出さない（省略記号で切らない）。
+                : FitOrHideTitle(switch (_currentTabIndex) {
                     1 => l10n.homeTabWorks,
                     2 => l10n.homeTabShared,
                     3 => l10n.homeTabTrash,
@@ -2976,7 +2978,9 @@ class _SharedScreenState extends State<SharedScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return Scaffold(
-      appBar: widget.embedded ? null : AppBar(title: Text(l10n.homeTabShared)),
+      appBar: widget.embedded
+          ? null
+          : AppBar(title: FitOrHideTitle(l10n.homeTabShared)),
       body: Column(
         children: [
           SharedDirectionSwitch(
@@ -3133,7 +3137,9 @@ class _TrashScreenState extends State<TrashScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return Scaffold(
-      appBar: widget.embedded ? null : AppBar(title: Text(l10n.homeTabTrash)),
+      appBar: widget.embedded
+          ? null
+          : AppBar(title: FitOrHideTitle(l10n.homeTabTrash)),
       body: Column(
         children: [
           Padding(
