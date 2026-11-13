@@ -214,4 +214,23 @@ void main() {
     auth.dispose();
   });
 
+
+  test('unbound and unattributed coin Premium grants fail closed', () {
+    final premium = PremiumService();
+    final expiry = DateTime.now().add(const Duration(days: 1));
+    premium.applyServerCoinPremiumExpiry(expiry, accountId: 'account-a');
+    expect(premium.hasCoinPremium, isFalse);
+
+    final auth = _FakeAuth()..switchAccount('account-a');
+    premium.bindGoogleAuth(auth);
+    premium.applyServerCoinPremiumExpiry(expiry);
+    expect(premium.hasCoinPremium, isFalse);
+    premium.applyServerCoinPremiumExpiry(expiry, accountId: 'account-a');
+    expect(premium.hasCoinPremium, isTrue);
+    auth.switchAccount(null);
+    expect(premium.hasCoinPremium, isFalse);
+    premium.dispose();
+    auth.dispose();
+  });
+
 }
