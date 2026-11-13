@@ -194,6 +194,8 @@ class SaveTreeService extends ChangeNotifier {
     final known = <String>{...sessionIds};
     // 一覧の保存のうち、この起動で保存したスロットにあったもの。
     final displaced = <SaveNode>[];
+    // 一覧にあったスロットのメモ（この起動で書いたメモを重ねる前）。
+    final diskMemos = <int, String>{};
     if (text != null) {
       try {
         final json = jsonDecode(text);
@@ -206,6 +208,7 @@ class SaveTreeService extends ChangeNotifier {
               if (slot == null || slot < 0 || entry.value is! String) continue;
               memos[slot] = entry.value as String;
             }
+            diskMemos.addAll(memos);
             memos.addAll(editedMemos);
             if (memos.isNotEmpty) _slotMemosByProject[projectId] = memos;
           }
@@ -269,12 +272,16 @@ class SaveTreeService extends ChangeNotifier {
           if (n.slotIndex >= 0) n.slotIndex,
       };
       // この起動の保存にスロットを譲った一覧の保存も、同じように移す。
+      // 譲った保存は、メモだけが付いた空きスロットを避け（入るとそのメモの
+      // 名前で呼ばれた）、一覧にあった自分のメモを移した先へ持っていく。
+      bool labelled(int slot) =>
+          _slotMemosByProject[projectId]?[slot]?.isNotEmpty ?? false;
       for (final orphan in [...displaced, ...orphans]) {
+        final moving = displaced.contains(orphan);
         int? free;
-        for (var i = 0; i < _slotMax; i++) {
-          if (!used.contains(i)) {
-            free = i;
-            break;
+        for (final skipLabelled in moving ? [true, false] : [false]) {
+          for (var i = 0; i < _slotMax && free == null; i++) {
+            if (!used.contains(i) && !(skipLabelled && labelled(i))) free = i;
           }
         }
         if (free == null) {
@@ -282,6 +289,20 @@ class SaveTreeService extends ChangeNotifier {
           continue;
         }
         used.add(free);
+        final from = orphan.slotIndex;
+        final memo = diskMemos[from];
+        if (moving && memo != null && memo.isNotEmpty && !labelled(free)) {
+          final memos = _slotMemosByProject.putIfAbsent(projectId, () => {});
+          memos[free] = memo;
+          // コメントを空にして保存した（メモを書いていない）スロットには、
+          // 譲った保存のメモを残さない（新しい保存がそのメモで呼ばれ、
+          // 2つのスロットが同じ名前になった）。移せなかったメモは消さない。
+          final edited = _memosEditedUnread[projectId]?.contains(from) ?? false;
+          final blank = sessionNodes.any(
+            (n) => n.slotIndex == from && (n.comment?.trim().isEmpty ?? true),
+          );
+          if (!edited && blank && memos[from] == memo) memos[from] = '';
+        }
         nodes.add(
           SaveNode(
             id: orphan.id,

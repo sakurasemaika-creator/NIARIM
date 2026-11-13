@@ -11,6 +11,7 @@ import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/models/project.dart';
 import 'package:niarim/models/save_node.dart';
 import 'package:niarim/router.dart';
+import 'package:niarim/screens/save_tree/save_tree_screen.dart';
 import 'package:niarim/screens/home/widgets/folder_delete_dialog.dart';
 import 'package:niarim/screens/home/widgets/folder_save_feedback.dart';
 import 'package:niarim/screens/home/widgets/project_list_widget.dart';
@@ -673,6 +674,81 @@ void main() {
     },
   );
 
+  // 一覧を読めていない間に保存したスロットにあった前の保存は、空いている
+  // スロットのうち、メモだけが付いたスロットを避けて移す（入るとそのメモの
+  // 名前で呼ばれ、前の保存のメモは消えていた）。前の保存のメモは、移した
+  // 先のスロットへ一緒に移す。コメントを空にして保存したときは、元の
+  // スロットに前の保存のメモを残さない（新しい保存がそのメモで呼ばれ、
+  // 2つのスロットが同じ名前になった）。保存はどれも消さない。
+  for (final comment in ['セーブD', '']) {
+    test('a save that gave its slot to a save made while the list was '
+        'unread moves with its own memo to a slot without one '
+        '(${comment.isEmpty ? 'blank comment' : 'with a comment'})', () async {
+      final (project, saves) = await _seedProjectWithSaves(
+        comments: ['A', 'B'],
+      );
+      // スロット0の保存「A」には、保存のコメントと違うメモを付けておく
+      // （移した先で、どちらの名前で呼ばれるか分かるように）。スロット2は
+      // メモだけ。
+      final seeder = SaveTreeService()..setSlotMax(5);
+      await seeder.init();
+      await seeder.setSlotMemo(project.id, 0, 'Aのメモ');
+      await seeder.setSlotMemo(project.id, 2, '次はここ');
+      seeder.dispose();
+      final folder = '${storage.projectsPath}/${project.id}/SaveTree';
+      final indexPath = '$folder/${SaveTreeService.indexFileName}';
+      Map<String, dynamic> memosOnDisk() =>
+          (jsonDecode(File(indexPath).readAsStringSync()) as Map)['slotMemos']
+              as Map<String, dynamic>;
+      expect(memosOnDisk(), {'0': 'Aのメモ', '1': 'B', '2': '次はここ'});
+      storage.paths.blockReading(indexPath);
+
+      final service = SaveTreeService()..setSlotMax(5);
+      addTearDown(service.dispose);
+      await service.init();
+      expect(service.getNodes(project.id), isEmpty);
+      // 保存の画面と同じ順：空に見えるスロット0（前の保存「A」がある）へ
+      // 保存してから、打ったコメントをスロットのメモにする。
+      final projects = _seedServices[project.id]!;
+      final d = await service.saveToSlot(
+        projectId: project.id,
+        slotIndex: 0,
+        project: project,
+        scenes: projects.scenesOf(project.id),
+        tileManager: projects.tileManagerOf(project.id),
+        comment: comment.isEmpty ? null : comment,
+      );
+      await service.setSlotMemo(project.id, 0, comment);
+
+      storage.paths.clear();
+      await service.loadUnread();
+      void expectMoved(SaveTreeService saveTree) {
+        final bySlot = {
+          for (final n in saveTree.getNodes(project.id)) n.slotIndex: n.id,
+        };
+        expect(bySlot, {0: d.id, 1: saves[1].id, 3: saves[0].id});
+        expect(saveTree.getArchivedNodes(project.id), isEmpty);
+        expect(
+          [
+            for (var i = 0; i < 5; i++)
+              saveTree.slotDisplayMemoOf(project.id, i),
+          ],
+          [comment, 'B', '次はここ', 'Aのメモ', null],
+        );
+      }
+
+      expectMoved(service);
+      expect(memosOnDisk(), {'0': comment, '1': 'B', '2': '次はここ', '3': 'Aのメモ'});
+      for (final id in [saves[0].id, saves[1].id, d.id]) {
+        expect(File('$folder/$id.niapro').existsSync(), isTrue, reason: id);
+      }
+      final again = SaveTreeService()..setSlotMax(5);
+      addTearDown(again.dispose);
+      await again.init();
+      expectMoved(again);
+    });
+  }
+
   // 保存の画面：一覧を読めていない間にメモを書いて「保存」を押すと、
   // 何も言わずにメモがスロットへ出ていた（保存できたように見える）。
   // 保存データを読み込めていないことを知らせる。読めるようになった後は、
@@ -757,6 +833,95 @@ void main() {
     await tester.pumpWidget(const SizedBox.shrink());
     appRouter.go('/');
   });
+
+  // 保存の画面の「保存」（スロットへ保存→打ったコメントをメモに）：保存の
+  // 一覧を読めていない間は、メモが次の起動に残らないかもしれないので、
+  // メモの欄と同じく「保存データの読み込みに失敗しました」と知らせる
+  // （何も言わずに閉じていた）。スロットの画面（保存の管理）と、セーブ
+  // ツリーの画面のスロット表示の両方。
+  for (final screen in ['save management', 'save tree']) {
+    testWidgets('saving to a slot from the $screen screen while the save list '
+        'is unread says the save data could not be read', (tester) async {
+      tester.view.physicalSize = const Size(420, 900);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      SharedPreferences.setMockInitialValues({
+        'first_launch': false,
+        'language': 'ja',
+        firstUseTooltipsSeenKey: kAllFirstUseTooltipKeys,
+      });
+      final seeded = await tester.runAsync(
+        () => _seedProjectWithSaves(name: '保存を読めない作品', comments: ['A', 'B']),
+      );
+      final (project, _) = seeded!;
+      final indexPath =
+          '${storage.projectsPath}/${project.id}/SaveTree/'
+          '${SaveTreeService.indexFileName}';
+      final before = File(indexPath).readAsStringSync();
+      storage.paths.blockReading(indexPath);
+      appRouter.go('/home');
+      final providers = await tester.runAsync(buildAppProviders);
+      if (screen == 'save management') {
+        await tester.pumpWidget(
+          MultiProvider(providers: providers!, child: const NiarimApp()),
+        );
+        await _settleWithFiles(tester);
+        appRouter.push('/save-tree/${project.id}?entry=detail');
+      } else {
+        await tester.pumpWidget(
+          MultiProvider(
+            providers: providers!,
+            child: MaterialApp(
+              locale: const Locale('ja'),
+              localizationsDelegates: AppLocalizations.localizationsDelegates,
+              supportedLocales: AppLocalizations.supportedLocales,
+              home: SaveTreeScreen(
+                projectId: project.id,
+                entryMode: SaveTreeEntryMode.projectDetail,
+              ),
+            ),
+          ),
+        );
+      }
+      await _settleWithFiles(tester, rounds: 6);
+      final saveTree = tester
+          .element(find.byType(Scaffold).first)
+          .read<SaveTreeService>();
+      expect(saveTree.isTreeMode, isFalse);
+      expect(saveTree.getNodes(project.id), isEmpty);
+
+      final write = find.byTooltip('このスロットへ保存').at(2);
+      await tester.ensureVisible(write);
+      await tester.tap(write);
+      await _settleWithFiles(tester, rounds: 3);
+      await tester.enterText(find.byType(TextField), '線画まで');
+      await tester.tap(find.widgetWithText(FilledButton, '保存'));
+      for (
+        var i = 0;
+        i < 40 && find.widgetWithText(FilledButton, '保存').evaluate().isNotEmpty;
+        i++
+      ) {
+        await _settleWithFiles(tester, rounds: 1);
+      }
+      await _settleWithFiles(tester, rounds: 3);
+      // 保存はできている（保存のファイルは残り、読めたときに出る）。
+      expect(saveTree.getNodes(project.id), hasLength(1));
+      expect(
+        find.descendant(
+          of: find.byType(SnackBar),
+          matching: find.text('保存データの読み込みに失敗しました'),
+        ),
+        findsOneWidget,
+        reason: 'the memo looked saved',
+      );
+      storage.paths.clear();
+      expect(File(indexPath).readAsStringSync(), before);
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox.shrink());
+      appRouter.go('/');
+    });
+  }
 
   // 作品の保存のフォルダ（SaveTree/）の中を一覧できないと、読めた一覧の
   // 保存まで出さず（作品ごと飛ばし）、次の保存でその一覧を上書きした。

@@ -276,12 +276,22 @@ class _GameStyleSlotScreen extends StatelessWidget {
                                 : commentController.text,
                             thumbnailPngBytes: thumbnail,
                           );
-                          await saveService.setSlotMemo(
+                          final kept = await saveService.setSlotMemo(
                             projectId,
                             slotIndex,
                             commentController.text,
                           );
                           if (ctx.mounted) Navigator.pop(ctx);
+                          // 保存の一覧を読めていないので、メモ（打った
+                          // コメント）は次の起動に残らないかもしれない
+                          // （メモの欄と同じく知らせる）。
+                          if (!kept && context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(l10n.saveTreeLoadFailedSnackbar),
+                              ),
+                            );
+                          }
                         } catch (e, st) {
                           AppErrorReporter.record(e, st);
                           // 開いたまま失敗を出す（閉じると打ったコメントが

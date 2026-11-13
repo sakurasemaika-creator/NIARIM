@@ -541,12 +541,19 @@ class _SlotView extends StatelessWidget {
                   comment: comment,
                   thumbnailPngBytes: thumb,
                 );
-                await saveService.setSlotMemo(
+                final kept = await saveService.setSlotMemo(
                   projectId,
                   slotIndex,
                   commentController.text,
                 );
                 if (ctx.mounted) Navigator.pop(ctx);
+                // 保存の一覧を読めていないので、メモ（打ったコメント）は次の
+                // 起動に残らないかもしれない（メモの欄と同じく知らせる）。
+                if (!kept && context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(l10n.saveTreeLoadFailedSnackbar)),
+                  );
+                }
               },
               child: Text(l10n.commonSave),
             ),
