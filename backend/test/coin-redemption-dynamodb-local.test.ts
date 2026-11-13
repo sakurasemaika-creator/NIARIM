@@ -213,7 +213,7 @@ describe.skipIf(process.env.NIARIM_DYNAMODB_LOCAL_TESTS !== "1")(
       expect(result.expiresAtEpochMs).toBeGreaterThan(Date.now());
       expect((await get(Keys.coinWallet(other)))?.balanceCoins).toBe(145000);
       expect((await get(Keys.coinWallet(owner)))?.balanceCoins).toBe(3770);
-      expect((await get(Keys.rewardEntitlement(other, "fullPremium"))?.expiresAtEpochMs)
+      expect((await get(Keys.rewardEntitlement(other, "fullPremium")))?.expiresAtEpochMs)
         .toBe(result.expiresAtEpochMs);
       expect((await get(Keys.user(other)))?.coinPremiumExpiresAtEpochMs)
         .toBe(result.expiresAtEpochMs);
