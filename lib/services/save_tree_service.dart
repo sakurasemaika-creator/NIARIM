@@ -1033,7 +1033,7 @@ class SaveTreeService extends ChangeNotifier {
     );
     String? thumbnailPath;
     if (thumbnailPngBytes != null) {
-      thumbnailPath = await NiaproSerializer.saveSaveTreeThumbnail(
+      thumbnailPath = await _saveThumbnail(
         projectId,
         nodeId,
         thumbnailPngBytes,
@@ -1086,6 +1086,34 @@ class SaveTreeService extends ChangeNotifier {
     await _persist(projectId);
     _notifySuccessfulManualSave(projectId);
     return node;
+  }
+
+  /// 保存のサムネイルを書く。書けなかったら（空き容量が無い等）記録して、
+  /// サムネイルの無い保存にする（null。書きかけのファイルは消す）。保存の
+  /// 中身（.niapro）は書けているので、保存を失敗にしない：以前は保存全体を
+  /// 失敗にし、書けた保存のファイルが一覧に無いまま残り、次の起動で名前の
+  /// 無い保存として戻った（もう一度保存した利用者には同じ保存が2つ）。
+  Future<String?> _saveThumbnail(
+    String projectId,
+    String nodeId,
+    Uint8List pngBytes,
+  ) async {
+    try {
+      return await NiaproSerializer.saveSaveTreeThumbnail(
+        projectId,
+        nodeId,
+        pngBytes,
+      );
+    } catch (error, stack) {
+      AppErrorReporter.record(error, stack);
+      try {
+        final base = await NiaproSerializer.projectsBasePath();
+        File('$base/$projectId/SaveTree/${nodeId}_thumb.png').deleteSync();
+      } on FileSystemException {
+        // 書き始めていない・消せない（保存は表示の代わりの絵で出る）。
+      }
+      return null;
+    }
   }
 
   /// [node]を空いているスロットへ移す（メモだけが付いたスロットは避ける。
@@ -1152,7 +1180,7 @@ class SaveTreeService extends ChangeNotifier {
         nodeId: nodeId,
       );
       if (thumbnailPngBytes != null) {
-        thumbnailPath = await NiaproSerializer.saveSaveTreeThumbnail(
+        thumbnailPath = await _saveThumbnail(
           projectId,
           nodeId,
           thumbnailPngBytes,
