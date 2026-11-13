@@ -64,4 +64,21 @@ void main() {
     expect(source, contains('showPremiumBanner(context);'));
     expect(source, contains('_showCustomAutomationManager();'));
   });
+  test('watermark deep links and open dialogs recheck active Premium rights', () {
+    final source = File(
+      'lib/screens/settings/watermark_settings_screen.dart',
+    ).readAsStringSync();
+
+    expect(source, contains('PremiumFeature.watermark'));
+    expect(source, contains('context.watch<PremiumService>()'));
+    expect(source, contains('bool _canEditNow(BuildContext context)'));
+    expect(source, contains('showPremiumBanner(context);'));
+    // Delete after confirmation, imported image after file picker, text save
+    // and image edit save must all fail closed if the lease expires mid-dialog.
+    expect(
+      RegExp(r'_canEditNow\(context\)').allMatches(source).length,
+      greaterThanOrEqualTo(4),
+    );
+  });
+
 }
