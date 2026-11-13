@@ -7,6 +7,8 @@ on:
     branches: [dev_branch]
     paths:
       - '.github/workflows/prelaunch-connected-debug-apk.yml'
+      - 'test/coin_authenticated_client_contract_test.dart'
+      - 'lib/services/api/niarim_api_client.dart'
   workflow_dispatch:
 
 permissions:
