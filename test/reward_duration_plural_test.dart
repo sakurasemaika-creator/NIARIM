@@ -83,10 +83,10 @@ CommunityService _redeemableServer(List<String> redeemCalls) =>
     );
 
 const _toneCurvePrices = CoinUnlockUnitPrices(
-  perHour: 110,
-  perDay: 470,
-  perWeek: 3520,
-  perMonth: 13000,
+  perHour: 750,
+  perDay: 1800,
+  perWeek: 9000,
+  perMonth: 18000,
 );
 
 /// [_toneCurvePrices]で[duration]を選んだときの必要コイン（モデルを通さず、
@@ -94,10 +94,10 @@ const _toneCurvePrices = CoinUnlockUnitPrices(
 int _expectedToneCurveCoins(CoinUnlockDuration duration) =>
     duration.amount *
     switch (duration.unit) {
-      CoinDurationUnit.hour => 110,
-      CoinDurationUnit.day => 470,
-      CoinDurationUnit.week => 3520,
-      CoinDurationUnit.month => 13000,
+      CoinDurationUnit.hour => 750,
+      CoinDurationUnit.day => 1800,
+      CoinDurationUnit.week => 9000,
+      CoinDurationUnit.month => 18000,
     };
 
 Future<void> _pumpScreen(
