@@ -8632,7 +8632,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get rewardUnlockAllAds => '移除所有广告';
 
   @override
-  String get rewardUnlockFullPremium => '全部权益组合';
+  String get rewardUnlockFullPremium => '权益全套礼包（与Premium会员内容相同）';
 
   @override
   String get rewardUnlockChoose => '选择';
@@ -17842,7 +17842,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get rewardUnlockAllAds => '移除所有廣告';
 
   @override
-  String get rewardUnlockFullPremium => '全部權益組合';
+  String get rewardUnlockFullPremium => '權益全套禮包（與Premium會員內容相同）';
 
   @override
   String get rewardUnlockChoose => '選擇';
