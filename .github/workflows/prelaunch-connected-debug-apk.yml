@@ -1,5 +1,5 @@
 # Build an actual AWS-connected, OAuth-enabled debug APK without Play Console.
-# Only dev_branch; the draft release is not public, and no live upload occurs.
+# Only dev_branch; the APK is kept as a private CI artifact, not published or tagged.
 name: NIARIM prelaunch connected debug APK
 
 on:
@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: niarim-prelaunch-connected-debug
@@ -32,6 +32,7 @@ jobs:
           java-version: '17'
       - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
         with:
+          flutter-version: '3.47.2'
           channel: stable
           cache: false
       - name: Restore persistent debug signing key
@@ -60,7 +61,7 @@ jobs:
             echo "::error::GOOGLE_CLIENT_ID is missing or invalid."
             exit 1
           fi
-          flutter pub get
+          flutter pub get --enforce-lockfile
           # Live NIARIM AdMob App ID is required for own-unit rewarded SSV.
           # Do not play the ad on Galaxy until registered as an AdMob test device.
           grep -F 'ca-app-pub-4380578821900659~1455226397' \
@@ -87,16 +88,10 @@ jobs:
             --dart-define="NIARIM_API_BASE_URL=$DEV_BACKEND_URL" \
             --dart-define="NIARIM_GOOGLE_CLIENT_ID=$GOOGLE_CLIENT_ID"
           test -s build/app/outputs/flutter-apk/app-debug.apk
-      - name: Save connected APK in an unpublished draft Release
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          set -euo pipefail
-          TAG="dev-connected-${GITHUB_SHA}"
-          gh release create "$TAG" \
-            build/app/outputs/flutter-apk/app-debug.apk \
-            --repo "$GITHUB_REPOSITORY" \
-            --target "$GITHUB_SHA" \
-            --title "NIARIM connected debug APK (${GITHUB_SHA:0:8})" \
-            --draft \
-            --notes "PRIVATE DRAFT. Debug-only: development AWS backend and Google OAuth enabled. Not for Google Play. Never publish this draft release."
+      - name: Upload current connected debug APK for device testing
+        uses: actions/upload-artifact@v4
+        with:
+          name: niarim-dev-connected-apk-${{ github.sha }}
+          path: build/app/outputs/flutter-apk/app-debug.apk
+          retention-days: 14
+          if-no-files-found: error
