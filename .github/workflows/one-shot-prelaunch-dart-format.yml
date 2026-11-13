@@ -1,5 +1,6 @@
 # One-shot canonical Dart formatting, dev_branch only. Never touch main.
 # Verified whole-tree formatting baseline: never force-push or alter other branches.
+# Recheck source formatting after unified dock and optional-auth regression fixes.
 name: One-shot prelaunch Dart format (dev_branch only)
 on:
   push:
