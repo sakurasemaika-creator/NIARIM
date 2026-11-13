@@ -1440,11 +1440,16 @@ class _HomeScreenState extends State<HomeScreen>
         : Localizations.localeOf(context).languageCode == 'ja'
         ? '\nフォルダの中のプロジェクト$projectCountInFolders件・フォルダ$subfolderCount件も一緒に移動します。'
         : '\nThis also moves $projectCountInFolders projects and $subfolderCount nested folders.';
+    // 読めていない作品は、どのフォルダの作品か分からず数えられない。
+    final unreadText = rootFolderIds.isNotEmpty && service.projectsLoadFailed
+        ? '\n${l10n.homeProjectsLoadFailed}'
+        : '';
     showDialog<void>(
       context: context,
       builder: (_) => ProjectTrashDialog(
         title: l10n.homeMoveToTrash,
-        message: l10n.homeMoveToTrashConfirm(count) + descendantText,
+        message:
+            l10n.homeMoveToTrashConfirm(count) + descendantText + unreadText,
         confirmLabel: l10n.commonMove,
         itemNames: names,
         onApply: () async {

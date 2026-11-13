@@ -152,13 +152,39 @@ class TrashedFolder {
   final List<String> projectIds;
   final DateTime deletedAt;
 
+  /// ゴミ箱へ移したときに保存先にあるのに読めていなかった作品（どの
+  /// フォルダの作品かは読めるまで分からないので、そのとき読めていなかった
+  /// 作品すべて）。読めたときに、このフォルダ（中のフォルダを含む）の作品
+  /// だった作品だけを、この記録へ入れる。
+  final List<String> unreadProjectIds;
+
+  /// ゴミ箱へ移したときに保存先を一覧できなかった（読めていなかった作品が
+  /// 分からない）。読めたときは、移した後に保存していない作品だけを入れる。
+  final bool unreadUnlisted;
+
   const TrashedFolder({
     required this.folder,
     this.isShared = false,
     required this.subfolders,
     required this.projectIds,
     required this.deletedAt,
+    this.unreadProjectIds = const [],
+    this.unreadUnlisted = false,
   });
+
+  TrashedFolder copyWith({
+    List<String>? projectIds,
+    List<String>? unreadProjectIds,
+    bool? unreadUnlisted,
+  }) => TrashedFolder(
+    folder: folder,
+    isShared: isShared,
+    subfolders: subfolders,
+    projectIds: projectIds ?? this.projectIds,
+    deletedAt: deletedAt,
+    unreadProjectIds: unreadProjectIds ?? this.unreadProjectIds,
+    unreadUnlisted: unreadUnlisted ?? this.unreadUnlisted,
+  );
 
   Map<String, dynamic> toJson() => {
     'folder': folder.toJson(),
@@ -166,6 +192,8 @@ class TrashedFolder {
     'subfolders': [for (final f in subfolders) f.toJson()],
     'projectIds': projectIds,
     'deletedAt': deletedAt.toIso8601String(),
+    if (unreadProjectIds.isNotEmpty) 'unreadProjectIds': unreadProjectIds,
+    if (unreadUnlisted) 'unreadUnlisted': true,
   };
 
   factory TrashedFolder.fromJson(Map<String, dynamic> json) => TrashedFolder(
@@ -181,6 +209,11 @@ class TrashedFolder {
     ],
     deletedAt:
         DateTime.tryParse(json['deletedAt'] as String? ?? '') ?? DateTime.now(),
+    unreadProjectIds: [
+      for (final id in json['unreadProjectIds'] as List<dynamic>? ?? const [])
+        id as String,
+    ],
+    unreadUnlisted: json['unreadUnlisted'] == true,
   );
 }
 
@@ -494,7 +527,7 @@ class ProjectService extends ChangeNotifier {
       // 失敗）。壊れた保存と違い、読めるようになれば読み直しで戻るので、
       // 知らせと「再試行」を残す。
       final unread = <String>{};
-      final lateMembers = <(Project, NiaproData)>[];
+      final read = <(Project, NiaproData)>[];
       for (final dir in folders) {
         final projectId = dir.path.split(RegExp(r'[\\/]')).last;
         existingDirectories.add(projectId);
@@ -519,13 +552,10 @@ class ProjectService extends ChangeNotifier {
             // ゴミ箱内のプロジェクト：一覧には出さず、シーンデータもメモリに
             // 載せない（deleteProject()直後と同じ状態を再現する）
             _trash.add(project);
-          } else if (_trashedFolderHolding(project) != null) {
-            // ゴミ箱へ移したフォルダの中の作品で、移したときには読めて
-            // いなかったもの。下でそのフォルダへ入れる。
-            lateMembers.add((project, data));
           } else {
-            _projects.add(project);
-            _applyLoadedProjectData(data);
+            // 一覧へ出すか、ゴミ箱のフォルダへ入れるかは、読み終えてから
+            // 下で決める。
+            read.add((project, data));
           }
         } on PathNotFoundException catch (error, stackTrace) {
           // 読む前に消えた（消す途中等）。
@@ -539,9 +569,32 @@ class ProjectService extends ChangeNotifier {
           // 破損ファイルはスキップ
         }
       }
-      if (lateMembers.isNotEmpty) {
-        await _queueFolder(() => _joinTrashedFolders(lateMembers));
-      }
+      // フォルダの列の中で決める：読んでいる間にフォルダがゴミ箱へ移ると、
+      // フォルダがあると見て一覧へ出した作品が、移したフォルダの記録にも
+      // 入らず、一番上に出た（次の起動ではゴミ箱へ入った）。読めていない
+      // 作品の覚えも列の中で書き換え、後から移すフォルダが今の分を記録する。
+      await _queueFolder(() async {
+        _projectsLoadFailed = unread.isNotEmpty;
+        _projectsListingFailed = false;
+        _unreadProjectIds
+          ..clear()
+          ..addAll(unread);
+        final present = {
+          for (final p in [..._projects, ..._trash]) p.id,
+        };
+        final lateMembers = <(Project, NiaproData)>[];
+        for (final (project, data) in read) {
+          if (!present.add(project.id)) continue;
+          if (_joinsTrashedFolder(project)) {
+            // ゴミ箱へ移したフォルダの中の作品で、移したときには読めて
+            // いなかったもの。そのフォルダへ入れる。
+            lateMembers.add((project, data));
+          } else {
+            _listLoadedProject(project, data);
+          }
+        }
+        await _joinTrashedFolders(lateMembers, unread);
+      });
       for (final guard in cleanup) {
         existingDirectories.add(guard.project.id);
         if (!_trash.any((p) => p.id == guard.project.id) &&
@@ -561,11 +614,6 @@ class ProjectService extends ChangeNotifier {
           AppErrorReporter.record(error, stackTrace);
         }
       }
-      _projectsLoadFailed = unread.isNotEmpty;
-      _projectsListingFailed = false;
-      _unreadProjectIds
-        ..clear()
-        ..addAll(unread);
     } catch (error, stackTrace) {
       AppErrorReporter.record(error, stackTrace);
       // 保存先を開けないときは読み込めた分（無ければ空）で続け、ホームで
@@ -714,6 +762,32 @@ class ProjectService extends ChangeNotifier {
         .firstOrNull;
   }
 
+  /// 読んだ作品が、ゴミ箱へ移したフォルダへ入る作品か：入っていたフォルダが
+  /// ゴミ箱のフォルダの記録（中のフォルダを含む）にあり、フォルダを移した
+  /// ときに読めていなかった作品。移したときに読めていた作品と、移した後に
+  /// 保存した作品（引き継ぎ・受け取った作品を開き直したもの・その複製・
+  /// 古い手動の保存を読み込んだもの）は、フォルダを指していても入れない
+  /// （入れると、ゴミ箱で見たことの無い作品が、フォルダの期限で消えた）。
+  bool _joinsTrashedFolder(Project project) {
+    final record = _trashedFolderHolding(project);
+    if (record == null) return false;
+    if (record.unreadProjectIds.contains(project.id)) return true;
+    // 一覧できなかったときは、どれが読めていなかったか分からない。作品の
+    // 保存の日時（保存のたびに書く）で、移した後に保存していないものだけ。
+    return record.unreadUnlisted &&
+        !project.updatedAt.isAfter(record.deletedAt);
+  }
+
+  /// 読んだ作品を一覧へ出す。
+  void _listLoadedProject(Project project, NiaproData data) {
+    _projects.add(project);
+    try {
+      _applyLoadedProjectData(data);
+    } catch (error, stackTrace) {
+      AppErrorReporter.record(error, stackTrace);
+    }
+  }
+
   /// フォルダをゴミ箱へ移したときに読めていなかった中の作品（[members]、
   /// 読めた作品とその中身）を、読めたときに、そのフォルダの記録とゴミ箱へ
   /// フォルダを移した日時のまま入れる（入れないと、フォルダの外＝
@@ -721,9 +795,34 @@ class ProjectService extends ChangeNotifier {
   /// フォルダの列の中で呼ぶ。お気に入りの作品はゴミ箱へ入れず（フォルダ
   /// ごとでもゴミ箱へ移さない決まり）、一番上へ出す。記録を保存できな
   /// ければ、これまでどおり一覧へ出す（次の起動でもう一度入れる）。
-  Future<void> _joinTrashedFolders(List<(Project, NiaproData)> members) async {
+  /// あわせて、記録の「読めていなかった作品」を、まだ読めていない作品
+  /// （[unread]）だけに絞る（保存先を一覧できたときに呼ぶ）。
+  Future<void> _joinTrashedFolders(
+    List<(Project, NiaproData)> members,
+    Set<String> unread,
+  ) async {
     final joining = <String, String>{};
-    final records = [..._trashedFolders];
+    final records = [
+      for (final t in _trashedFolders)
+        t.unreadUnlisted || t.unreadProjectIds.isNotEmpty
+            ? t.copyWith(
+                unreadProjectIds: [
+                  for (final id
+                      in t.unreadUnlisted ? unread : t.unreadProjectIds)
+                    if (unread.contains(id)) id,
+                ],
+                unreadUnlisted: false,
+              )
+            : t,
+    ];
+    var changed = false;
+    for (var i = 0; i < records.length; i++) {
+      final before = _trashedFolders[i];
+      changed =
+          changed ||
+          before.unreadUnlisted != records[i].unreadUnlisted ||
+          before.unreadProjectIds.length != records[i].unreadProjectIds.length;
+    }
     final nextTrash = {..._trashDeletedAt};
     for (final (project, _) in members) {
       final record = _trashedFolderHolding(project);
@@ -731,26 +830,22 @@ class ProjectService extends ChangeNotifier {
       final i = records.indexWhere((t) => t.folder.id == record.folder.id);
       final current = records[i];
       if (!current.projectIds.contains(project.id)) {
-        records[i] = TrashedFolder(
-          folder: current.folder,
-          isShared: current.isShared,
-          subfolders: current.subfolders,
+        records[i] = current.copyWith(
           projectIds: [...current.projectIds, project.id],
-          deletedAt: current.deletedAt,
         );
       }
       nextTrash[project.id] = current.deletedAt;
       joining[project.id] = current.folder.id;
     }
     var joined = false;
-    if (joining.isNotEmpty) {
+    if (joining.isNotEmpty || changed) {
       try {
         await saveFolderPreference(
           _trashedFoldersPrefsKey,
           _encodeTrashedFolders(records),
         );
         try {
-          await _persistTrashState(nextTrash);
+          if (joining.isNotEmpty) await _persistTrashState(nextTrash);
           joined = true;
         } catch (_) {
           try {
@@ -780,14 +875,21 @@ class ProjectService extends ChangeNotifier {
         _trash.add(project);
         continue;
       }
-      var listed = project;
       // ゴミ箱のフォルダに入れないお気に入りの作品は、一番上へ出す
-      // （消えたフォルダを指したままにしない）。
-      if (project.isFavorite && _trashedFolderHolding(project) != null) {
-        final shared = project.isSharedImport;
-        listed = shared
+      // （消えたフォルダを指したままにしない）。作品の保存にも書く：書く
+      // 処理は、一覧に出した作品を探して書くので、一覧へ出してから。
+      final rerooted =
+          project.isFavorite && _trashedFolderHolding(project) != null;
+      final shared = project.isSharedImport;
+      _listLoadedProject(
+        !rerooted
+            ? project
+            : shared
             ? project.copyWith(sharedFolderId: null)
-            : project.copyWith(folderId: null);
+            : project.copyWith(folderId: null),
+        data,
+      );
+      if (rerooted) {
         unawaited(
           _saveMembership(project.id, null, shared: shared).catchError(
             (Object error, StackTrace stackTrace) =>
@@ -795,8 +897,6 @@ class ProjectService extends ChangeNotifier {
           ),
         );
       }
-      _projects.add(listed);
-      _applyLoadedProjectData(data);
     }
   }
 
@@ -1818,9 +1918,17 @@ class ProjectService extends ChangeNotifier {
   void restoreFromAutosave(String projectId, NiaproData data) {
     final idx = _projects.indexWhere((p) => p.id == projectId);
     if (idx < 0) return;
+    final live = _projects[idx];
     _projects[idx] = data.project.copyWith(
       id: projectId,
       updatedAt: DateTime.now(),
+      // 入っているフォルダ・お気に入り・タグは今の作品のまま（古い手動の
+      // 保存を読み込むと、作品が前に入っていたフォルダ〔ゴミ箱へ移した・
+      // 消したフォルダも〕へ戻り、お気に入り・タグも戻った）。
+      folderId: live.folderId,
+      sharedFolderId: live.sharedFolderId,
+      isFavorite: live.isFavorite,
+      tags: live.tags,
     );
     _scenes[projectId] = data.scenes;
     _layerHomes[projectId] = buildLayerHomeIndex(data.scenes);
@@ -3126,10 +3234,17 @@ class ProjectService extends ChangeNotifier {
     final result = _folderOperations == null
         ? Future<T>.sync(write)
         : _folderOperations!.then((_) => write());
-    _folderOperations = result.then<void>(
+    final settled = result.then<void>(
       (_) {},
       onError: (Object _, StackTrace _) {},
     );
+    _folderOperations = settled;
+    // 何も並んでいなければ、次の処理はすぐに始める（作品の保存の列と
+    // 同じ）。作品を読み込むたびにこの列を通るので、終わった処理へ
+    // つなぎ続けない。
+    settled.whenComplete(() {
+      if (identical(_folderOperations, settled)) _folderOperations = null;
+    });
     return result;
   }
 
@@ -3294,7 +3409,22 @@ class ProjectService extends ChangeNotifier {
         }
         rethrow;
       }
-      final project = data.project.copyWith(sizeBytes: await file.length());
+      // ゴミ箱にある間に入っていたフォルダが無くなっていれば（削除した・
+      // ゴミ箱へ移した）一番上へ戻す（消えたフォルダを指したままだと一覧の
+      // どこにも出ず、検索でしか見つからなかった）。作品の保存にも、ゴミ箱の
+      // 記録を変える前に書く（後で書くと、書き終わる前にアプリが終わった
+      // とき、次の起動でゴミ箱へ移したフォルダへ入った）。
+      final saved = data.project;
+      final leaveFolder =
+          saved.folderId != null &&
+          !_folders.any((f) => f.id == saved.folderId);
+      final leaveSharedFolder =
+          saved.isSharedImport &&
+          saved.sharedFolderId != null &&
+          !_sharedFolders.any((f) => f.id == saved.sharedFolderId);
+      var project = saved.copyWith(sizeBytes: await file.length());
+      if (leaveFolder) project = project.copyWith(folderId: null);
+      if (leaveSharedFolder) project = project.copyWith(sharedFolderId: null);
       final homes = buildLayerHomeIndex(data.scenes);
       final counter = _maxLayerCounter(data.scenes);
       final tm = TileManager(
@@ -3305,6 +3435,19 @@ class ProjectService extends ChangeNotifier {
       var committed = false;
       try {
         tm.importAll(data.tileData);
+        if (leaveFolder) {
+          await NiaproSerializer.saveFolderMembership(
+            projectId: id,
+            folderId: null,
+          );
+        }
+        if (leaveSharedFolder) {
+          await NiaproSerializer.saveFolderMembership(
+            projectId: id,
+            folderId: null,
+            shared: true,
+          );
+        }
         // A readable archive makes a previous partial-cleanup record unnecessary.
         // Remove it before changing preferences: a rejected write still leaves
         // the complete archive and its old Trash membership intact.
@@ -3327,34 +3470,15 @@ class ProjectService extends ChangeNotifier {
         if (!committed) tm.dispose();
       }
       if (committed) {
-        // ゴミ箱にある間に入っていたフォルダが削除されていれば一番上へ戻し
-        // （消えたフォルダを指したままだと一覧のどこにも出ず、検索でしか
-        // 見つからなかった）、ゴミ箱にある間のサムネイルの付け替えも
-        // 合わせて保存する。
+        // ゴミ箱にある間のサムネイルの付け替えも合わせて保存する。
         final i = _projects.indexWhere((p) => p.id == id);
         if (i >= 0) {
-          var restored = _projects[i];
-          var changed = false;
+          final restored = _projects[i];
           if (trashedEntry.thumbnailPath != null &&
               trashedEntry.thumbnailPath != restored.thumbnailPath) {
-            restored = restored.copyWith(
+            _projects[i] = restored.copyWith(
               thumbnailPath: trashedEntry.thumbnailPath,
             );
-            changed = true;
-          }
-          if (restored.folderId != null &&
-              !_folders.any((f) => f.id == restored.folderId)) {
-            restored = restored.copyWith(folderId: null);
-            changed = true;
-          }
-          if (restored.isSharedImport &&
-              restored.sharedFolderId != null &&
-              !_sharedFolders.any((f) => f.id == restored.sharedFolderId)) {
-            restored = restored.copyWith(sharedFolderId: null);
-            changed = true;
-          }
-          if (changed) {
-            _projects[i] = restored;
             _saveAsync(id);
           }
         }
@@ -4156,7 +4280,8 @@ class ProjectService extends ChangeNotifier {
   /// フォルダの一覧を保存する。どちらかを保存できなければ何も変えずに
   /// [FolderSaveException]を投げる。記録するのは読めた作品だけで、読めて
   /// いない作品は、読めたとき（[retryLoadProjects]・次の起動）にフォルダの
-  /// 中の作品ならこの記録へ入る（[_joinTrashedFolders]）。
+  /// 中の作品ならこの記録へ入る（[_joinTrashedFolders]。そのため、読めて
+  /// いない作品を記録に覚えておく）。
   Future<TrashedFolder?> moveFolderToTrash(
     String folderId, {
     bool shared = false,
@@ -4181,6 +4306,12 @@ class ProjectService extends ChangeNotifier {
             p.id,
       ],
       deletedAt: now,
+      // 読めていない作品は、読めたときに、このフォルダの作品ならこの記録へ
+      // 入れる（[_joinTrashedFolders]）。
+      unreadProjectIds: _projectsListingFailed
+          ? const []
+          : [..._unreadProjectIds],
+      unreadUnlisted: _projectsListingFailed,
     );
     // お気に入りの作品は、保護を外すまでゴミ箱へ移さない（作品の一括の
     // 削除と同じ。フォルダごとでも迂回させない）。

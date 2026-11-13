@@ -1003,6 +1003,15 @@ class _StorageScreenState extends State<StorageScreen> {
         .where((t) => !ps.trashedFolderHasUnreadWorks(t))
         .map((t) => t.folder.id)
         .toSet();
+    bool holdsUnread() => ps.trashedFolders.any(ps.trashedFolderHasUnreadWorks);
+    // 残すフォルダしか無いときは、何も並ばないダイアログを出さず（「削除」を
+    // 押しても何も消えずに閉じた）、読み込めていないことを知らせる。
+    if (folderTargets.isEmpty && ps.looseTrash.isEmpty && holdsUnread()) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.homeProjectsLoadFailed)));
+      return false;
+    }
     // 途中で失敗してから閉じた場合も、消せた分だけ大きさは変わっている。
     var attempted = false;
     await showDialog<bool>(
@@ -1010,6 +1019,11 @@ class _StorageScreenState extends State<StorageScreen> {
       builder: (_) => ProjectTrashDialog(
         title: l10n.homePermanentDeleteConfirmTitle,
         message: l10n.homePermanentDeleteConfirmBody,
+        // 残すフォルダがあることも伝える。
+        pendingMessage: () => holdsUnread()
+            ? '${l10n.homePermanentDeleteConfirmBody}\n'
+                  '${l10n.homeProjectsLoadFailed}'
+            : l10n.homePermanentDeleteConfirmBody,
         confirmLabel: l10n.commonDelete,
         itemNames: const [],
         pendingItemNames: () => [
