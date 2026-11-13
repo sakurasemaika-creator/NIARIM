@@ -34,14 +34,54 @@ def values(path: Path):
 
 
 def placeholders(text: str):
-    # Capture ICU selector/plural argument names, then simple nested arguments.
-    # The words inside a selector (week{Weekly}) are literal UI copy.
-    found = set(re.findall(r'\{([A-Za-z_][A-Za-z0-9_]*)\s*,', text))
-    for match in re.finditer(r'\{([A-Za-z_][A-Za-z0-9_]*)\}', text):
-        prefix = text[:match.start()]
-        if re.search(r'\b(?:zero|one|two|few|many|other|day|week|month)$', prefix):
-            continue
-        found.add(match.group(1))
+    # Walk balanced ICU expressions, including nested plural/select arms.
+    # Selector values like zero{Empty} are literal copy, not placeholders.
+    found = set()
+
+    def closing(fragment, start):
+        depth = 0
+        for index in range(start, len(fragment)):
+            if fragment[index] == '{':
+                depth += 1
+            elif fragment[index] == '}':
+                depth -= 1
+                if depth == 0:
+                    return index
+        return len(fragment)
+
+    def parse(fragment):
+        i = 0
+        while i < len(fragment):
+            if fragment[i] != '{':
+                i += 1
+                continue
+            match = re.match(r'\{([A-Za-z_][A-Za-z0-9_]*)\s*(?=[},])', fragment[i:])
+            if not match:
+                i += 1
+                continue
+            found.add(match.group(1))
+            position = i + match.end()
+            if fragment[position] == '}':
+                i = position + 1
+                continue
+            kind = re.match(r',\s*(?:plural|select|selectordinal)\s*,', fragment[position:])
+            if kind:
+                position += kind.end()
+                while position < len(fragment):
+                    while position < len(fragment) and fragment[position].isspace():
+                        position += 1
+                    if position >= len(fragment) or fragment[position] == '}':
+                        break
+                    choice = re.match(r'(?:=?[A-Za-z0-9_-]+)\s*\{', fragment[position:])
+                    if not choice:
+                        break
+                    opening = position + choice.end() - 1
+                    closing_index = closing(fragment, opening)
+                    parse(fragment[opening + 1:closing_index])
+                    position = closing_index + 1
+            i = closing(fragment, i) + 1
+
+    parse(text)
     return sorted(found)
 
 
