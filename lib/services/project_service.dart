@@ -906,8 +906,37 @@ class ProjectService extends ChangeNotifier {
   /// 中の作品は読めた後にフォルダではなくゴミ箱の1件ずつの行に出るので、
   /// 読めるまで、完全に削除する・期限で片付けることをしない（戻すことは
   /// できる。[restoreTrashedFolder]）。
+  ///
+  /// フォルダをゴミ箱へ移したときに読めていなかった作品（記録の
+  /// [TrashedFolder.unreadProjectIds]・[TrashedFolder.unreadUnlisted]）が
+  /// まだ読めていないときも同じ：読めたときにこのフォルダへ入るかもしれない
+  /// （[_joinsTrashedFolder]）。消すと、読めた作品だけが完全に削除され、
+  /// 後で読めた作品はフォルダの外（一番上）に1つだけ出た。
   bool trashedFolderHasUnreadWorks(TrashedFolder record) =>
-      _unreadWorksOf(record).isNotEmpty;
+      _unreadWorksOf(record).isNotEmpty || _mayGainUnreadWorks(record);
+
+  /// [record]を移したときに読めていなかった作品のうち、まだ読めていなくて、
+  /// 読めたときにこのフォルダへ入りうるもの（1件ずつゴミ箱へ移した作品・
+  /// 別のフォルダの記録へ入った作品は入らない）があるか。
+  bool _mayGainUnreadWorks(TrashedFolder record) {
+    bool joinable(String id) =>
+        !record.projectIds.contains(id) && !_trashDeletedAt.containsKey(id);
+    if (_projectsListingFailed) {
+      if (record.unreadUnlisted) return true;
+      final loaded = {
+        for (final p in [..._projects, ..._trash]) p.id,
+      };
+      return record.unreadProjectIds.any(
+        (id) => joinable(id) && !loaded.contains(id),
+      );
+    }
+    // 一覧できなかったときの記録で、まだ読めていない作品のどれが入るかは
+    // 読むまで分からない（読めた分の記録への書き込みに失敗して残った印）。
+    if (record.unreadUnlisted) return _unreadProjectIds.any(joinable);
+    return record.unreadProjectIds.any(
+      (id) => joinable(id) && _unreadProjectIds.contains(id),
+    );
+  }
 
   /// [record]の作品のうち、読めていないもの（[trashedFolderHasUnreadWorks]）。
   List<String> _unreadWorksOf(TrashedFolder record) {
