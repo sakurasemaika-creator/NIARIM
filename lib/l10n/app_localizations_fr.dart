@@ -9168,8 +9168,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get rewardUnlockBestValue => 'Meilleur rapport qualité-prix';
 
   @override
-  String get rewardUnlockBestExplain =>
-      'Plus avantageux que chaque option séparée';
+  String get rewardUnlockBestExplain => 'Retrouvez les mêmes avantages que Premium dans un pack à tarif réduit';
 
   @override
   String get rewardUnlockEarning =>
