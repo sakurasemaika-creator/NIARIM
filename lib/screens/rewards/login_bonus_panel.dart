@@ -124,7 +124,7 @@ class _LoginBonusPanelState extends State<LoginBonusPanel> {
             }
             final status = snapshot.data!;
             final days = (status['totalDays'] as num?)?.toInt() ?? 0;
-            final amount = (status['dailyCoins'] as num?)?.toInt() ?? 1;
+            final amount = (status['dailyCoins'] as num?)?.toInt() ?? 10;
             final enabled = status['rewardEnabled'] == true;
             final visited = status['visitedToday'] == true;
             final dailyClaimed = status['dailyClaimed'] == true;
