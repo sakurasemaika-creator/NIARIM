@@ -6,25 +6,25 @@ import 'coin_economy_scale.dart';
 /// activate unsupported benefits. A live purchase still requires an
 /// authenticated, approved, server-versioned quote and atomic redemption.
 abstract final class CoinBenefitPriceCatalog {
-  static const version = 'v3-final-annual550000';
+  static const version = 'v4-min10-repriced-20261113';
 
   /// Exactly the Japanese annual Premium plan price × 100 coins.
   static const yearlyPremiumCoins =
       CoinEconomyScale.yearlyPlanYen * CoinEconomyScale.referenceCoinsPerYen;
 
   static const _monthlyCoins = <CoinUnlockTarget, int>{
-    CoinUnlockTarget.endCardEdit: 8000,
-    CoinUnlockTarget.watermark: 14000,
-    CoinUnlockTarget.toneCurve: 13000,
-    CoinUnlockTarget.levelAdjustment: 10000,
-    CoinUnlockTarget.unlimitedDuration: 18000,
-    CoinUnlockTarget.customAutomation: 20000,
-    CoinUnlockTarget.projectListAds: 9000,
-    CoinUnlockTarget.canvasAds: 15000,
-    CoinUnlockTarget.timelineAds: 12000,
-    CoinUnlockTarget.processingAds: 6000,
-    CoinUnlockTarget.allAds: 36000,
-    CoinUnlockTarget.fullPremium: 55000,
+    CoinUnlockTarget.endCardEdit: 12_000,
+    CoinUnlockTarget.watermark: 18_000,
+    CoinUnlockTarget.toneCurve: 18_000,
+    CoinUnlockTarget.levelAdjustment: 15_000,
+    CoinUnlockTarget.unlimitedDuration: 25_000,
+    CoinUnlockTarget.customAutomation: 25_000,
+    CoinUnlockTarget.projectListAds: 12_000,
+    CoinUnlockTarget.canvasAds: 20_000,
+    CoinUnlockTarget.timelineAds: 16_000,
+    CoinUnlockTarget.processingAds: 10_000,
+    CoinUnlockTarget.allAds: 40_000,
+    CoinUnlockTarget.fullPremium: 55_000,
   };
 
   static const individualTargets = <CoinUnlockTarget>[
@@ -46,16 +46,16 @@ abstract final class CoinBenefitPriceCatalog {
     if (unit == CoinDurationUnit.month) return month;
     if (target == CoinUnlockTarget.fullPremium) {
       return switch (unit) {
-        CoinDurationUnit.hour => 500,
-        CoinDurationUnit.day => 2500,
-        CoinDurationUnit.week => 18000,
+        CoinDurationUnit.hour => 5000,
+        CoinDurationUnit.day => 10000,
+        CoinDurationUnit.week => 30000,
         CoinDurationUnit.month => month,
       };
     }
     final raw = switch (unit) {
-      CoinDurationUnit.hour => (month / 120).ceil(),
-      CoinDurationUnit.day => (month / 28).ceil(),
-      CoinDurationUnit.week => (month / 3.7).ceil(),
+      CoinDurationUnit.hour => (month / 24).ceil(),
+      CoinDurationUnit.day => (month / 10).ceil(),
+      CoinDurationUnit.week => (month / 2).ceil(),
       CoinDurationUnit.month => month,
     };
     // Round the ones digit UP so each unit quote is a multiple of 10.
