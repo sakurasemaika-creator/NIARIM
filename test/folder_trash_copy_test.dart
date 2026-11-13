@@ -424,21 +424,27 @@ void main() {
       await openFolderMenu(tester, '親');
       await tester.tap(find.text('ゴミ箱へ移動').last);
       await settle(tester);
-      expect(find.text('フォルダをゴミ箱へ移動しますか？'), findsOneWidget);
-      // 本文は、移す件数の行と一緒に1つの文で出る。
+      // 選んでゴミ箱へ移すときと同じ確かめるダイアログ（所有者の判断2）：
+      // 移すフォルダの名前と、移す件数の行が1つの文で出る。
+      final dialog = find.byType(AlertDialog);
       expect(
-        find.textContaining('「親」をゴミ箱へ移動します。ゴミ箱からフォルダごと元に戻せます。'),
+        find.descendant(of: dialog, matching: find.text('ゴミ箱へ移動')),
         findsOneWidget,
       );
       expect(
-        find.textContaining('フォルダの中のプロジェクト3件・フォルダ2件も一緒に移動します。'),
+        find.descendant(of: dialog, matching: find.text('親')),
+        findsOneWidget,
+      );
+      expect(
+        find.text('1件をゴミ箱へ移動しますか？\nフォルダの中のプロジェクト3件・フォルダ2件も一緒に移動します。'),
         findsOneWidget,
       );
       await tester.tap(find.widgetWithText(FilledButton, '移動'));
-      await settleIo(tester);
+      // 中の作品を保存し終えてから移すので、移し終わるまで待つ。
+      await waitFor(tester, () => service.folders.isEmpty);
       expect(service.folders, isEmpty);
       expect(service.projects.map((p) => p.name), ['上の作品']);
-      expect(find.text('「親」をゴミ箱へ移動しました'), findsOneWidget);
+      expect(find.text('1件をゴミ箱へ移動しました'), findsOneWidget);
       await tester.tap(find.text('元に戻す'));
       await waitFor(tester, () => service.projects.length == 4);
       // 作品は一覧に戻った後もファイルから読み直しているので、戻し終わる
@@ -456,10 +462,7 @@ void main() {
       await openFolderMenu(tester, '空');
       await tester.tap(find.text('ゴミ箱へ移動').last);
       await settle(tester);
-      expect(
-        find.textContaining('「空」をゴミ箱へ移動します。ゴミ箱からフォルダごと元に戻せます。'),
-        findsOneWidget,
-      );
+      expect(find.text('1件をゴミ箱へ移動しますか？'), findsOneWidget);
       expect(find.textContaining('も一緒に移動します'), findsNothing);
       await tester.tap(find.widgetWithText(TextButton, 'キャンセル'));
       await settle(tester);

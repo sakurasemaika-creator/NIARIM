@@ -12,7 +12,6 @@ import 'package:niarim/models/project.dart';
 import 'package:niarim/models/save_node.dart';
 import 'package:niarim/router.dart';
 import 'package:niarim/screens/save_tree/save_tree_screen.dart';
-import 'package:niarim/screens/home/widgets/folder_delete_dialog.dart';
 import 'package:niarim/screens/home/widgets/folder_save_feedback.dart';
 import 'package:niarim/screens/home/widgets/project_list_widget.dart';
 import 'package:niarim/services/project_service.dart';
@@ -2987,7 +2986,8 @@ void main() {
     expect(find.byKey(const Key('trash-dialog-confirm')), findsNothing);
     expect(projects.trashedFolders.map((t) => t.folder.id), [folder.id]);
 
-    // フォルダの︙のメニューからゴミ箱へ移す（フォルダのダイアログ）。
+    // フォルダの︙のメニューからゴミ箱へ移す（選んで移すときと同じ
+    // 確かめるダイアログ）。
     final emptyCard = find
         .ancestor(
           of: find.text('空のフォルダ').first,
@@ -3000,15 +3000,10 @@ void main() {
     await _settleWithFiles(tester, rounds: 6);
     await tester.tap(find.text('ゴミ箱へ移動').last);
     await _settleWithFiles(tester, rounds: 3);
-    expect(find.byType(FolderDeleteDialog), findsOneWidget);
-    await tester.tap(
-      find.descendant(
-        of: find.byType(FolderDeleteDialog),
-        matching: find.widgetWithText(FilledButton, 'ゴミ箱へ移動'),
-      ),
-    );
+    expect(find.byKey(const Key('trash-dialog-confirm')), findsOneWidget);
+    await tester.tap(find.byKey(const Key('trash-dialog-confirm')));
     await _settleWithFiles(tester);
-    expect(find.byType(FolderDeleteDialog), findsNothing);
+    expect(find.byKey(const Key('trash-dialog-confirm')), findsNothing);
     expect(
       projects.trashedFolders.map((t) => t.folder.id),
       unorderedEquals([folder.id, empty.id]),

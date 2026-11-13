@@ -29,7 +29,6 @@ import '../../../widgets/collection_action_controls.dart';
 import '../../../widgets/collection_tile_layout.dart';
 import '../../../utils/app_error_reporter.dart';
 import 'folder_save_feedback.dart';
-import 'folder_delete_dialog.dart';
 import 'work_folder_move_sheet.dart';
 import 'project_folder_edit_dialog.dart';
 import 'folder_thumbnail.dart';
@@ -1101,27 +1100,58 @@ class ProjectListWidget extends StatelessWidget {
     }
   }
 
-  /// フォルダ削除時、中のプロジェクト・子フォルダをルートへ戻す旨を確認する
-  /// （フォルダ削除時は中のプロジェクトをルートへ戻すか確認ダイアログを表示する）。
+  /// フォルダのメニューの「ゴミ箱へ移動」。選んでゴミ箱へ移すとき（ホームの
+  /// 選択の帯）と同じく、中身（下の階層のフォルダ・作品）ごとゴミ箱へ移す：
+  /// 同じ文で中身の件数を確かめ、お気に入りのフォルダ・作品が中にあれば
+  /// 移さず、移した後は「元に戻す」で中身ごと戻せる（所有者の判断2。以前は
+  /// 件数の確認も「元に戻す」も無かった）。
   void _confirmDeleteFolder(BuildContext context, ProjectFolder folder) {
     final l10n = AppLocalizations.of(context)!;
-    // お気に入り登録中は削除できない。
-    if (folder.isFavorite) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(l10n.commonFavoriteDeleteBlocked)));
+    final service = context.read<ProjectService>();
+    final subtree = service.folderSubtreeIds(folder.id);
+    bool includesFavorite() =>
+        service.folders.any((f) => f.id == folder.id && f.isFavorite) ||
+        service.projects.any(
+          (p) => p.isFavorite && subtree.contains(p.folderId),
+        );
+    // お気に入り登録中は削除できない（中の作品も）。
+    if (includesFavorite()) {
+      final messenger = ScaffoldMessenger.of(context);
+      messenger.hideCurrentSnackBar();
+      messenger.showSnackBar(
+        SnackBar(content: Text(l10n.commonFavoriteDeleteBlocked)),
+      );
       return;
     }
-    final service = context.read<ProjectService>();
+    final counts = service.folderContentCounts(folder.id);
+    final descendantText = counts.projects + counts.folders == 0
+        ? ''
+        : '\n${l10n.homeMoveToTrashFolderContents(l10n.homeFolderContents(counts.projects, counts.folders))}';
+    // 読めていない作品は、どのフォルダの作品か分からず数えられない。
+    final unreadText = service.projectsLoadFailed
+        ? '\n${l10n.homeProjectsLoadFailed}'
+        : '';
+    // 移した後はフォルダのカード（この部品）が一覧から消えるので、知らせの
+    // 出し先は先に取っておく。
+    final messenger = ScaffoldMessenger.of(context);
     showDialog<void>(
       context: context,
-      builder: (_) => FolderDeleteDialog(
-        folderName: folder.name,
+      builder: (_) => ProjectTrashDialog(
         title: l10n.homeMoveToTrash,
-        confirmLabel: l10n.homeMoveToTrash,
-        body: l10n.homeMoveToTrashConfirm(1),
-        onDelete: () async {
-          await service.moveFolderToTrash(folder.id);
+        message: l10n.homeMoveToTrashConfirm(1) + descendantText + unreadText,
+        confirmLabel: l10n.commonMove,
+        itemNames: [folder.name],
+        onApply: () async {
+          // 開いた後にお気に入りにした場合も、何も変える前に断る。
+          if (includesFavorite()) throw const FavoriteProjectDeleteException();
+          if (await service.moveFolderToTrash(folder.id) == null) return;
+          showMovedToTrashSnackBar(
+            messenger,
+            l10n,
+            service,
+            const [],
+            folderIds: [folder.id],
+          );
         },
       ),
     );
