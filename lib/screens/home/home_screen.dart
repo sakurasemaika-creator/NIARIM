@@ -59,6 +59,7 @@ import '../../utils/line_break.dart';
 import '../../widgets/projects_load_failure_notice.dart';
 import '../../widgets/scrollable_sheet_body.dart';
 import '../../utils/app_error_reporter.dart';
+import '../../utils/duplicate_name.dart';
 import '../../utils/responsive_tile_defaults.dart';
 import '../../utils/tolerant_preferences.dart';
 
@@ -68,6 +69,29 @@ class _ClipboardSourceMissing implements Exception {
 
 String _clipboardMissingMessage(BuildContext context) =>
     AppLocalizations.of(context)!.homeClipboardSourceMissing;
+
+/// 複製・貼り付けで作る作品・フォルダの名前を、画面の言語の「(コピー)」と
+/// 番号で付ける。
+CopyNamer _copyNamer(BuildContext context) {
+  final l10n = AppLocalizations.of(context)!;
+  return (name, taken) => numberedCopyName(l10n, name, taken);
+}
+
+/// [source]の複製を置くファイル：同じフォルダに、画面の言語の「(コピー)」と
+/// 番号を付けた、まだ無い名前（拡張子はそのまま）。
+Future<File> _copyFileDestination(AppLocalizations l10n, File source) async {
+  final fileName = source.uri.pathSegments.last;
+  final dot = fileName.lastIndexOf('.');
+  final stem = dot > 0 ? fileName.substring(0, dot) : fileName;
+  final extension = dot > 0 ? fileName.substring(dot) : '';
+  final taken = <String>{};
+  while (true) {
+    final name = numberedCopyName(l10n, stem, taken);
+    final destination = File('${source.parent.path}/$name$extension');
+    if (!await destination.exists()) return destination;
+    taken.add(name);
+  }
+}
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -1920,6 +1944,8 @@ class _HomeScreenState extends State<HomeScreen>
       if (names.isEmpty || !await _confirmPasteToTrash(names) || !mounted)
         return;
     }
+    final l10n = AppLocalizations.of(context)!;
+    final namer = _copyNamer(context);
     setState(() => _pasting = true);
     try {
       if (target == HomePasteArea.trash) {
@@ -1948,6 +1974,7 @@ class _HomeScreenState extends State<HomeScreen>
               id,
               targetFolderId: _currentFolderId,
               useTargetFolder: true,
+              namer: namer,
             )) {
               throw const _ClipboardSourceMissing();
             }
@@ -1970,7 +1997,12 @@ class _HomeScreenState extends State<HomeScreen>
             final result = await service.duplicateFolder(
               id,
               targetParentId: _currentFolderId,
-              name: '${source.name} (コピー)',
+              name: duplicateFolderName(
+                l10n,
+                source.name,
+                parentId: _currentFolderId,
+                folders: service.folders,
+              ),
             );
             if (result == null) throw const _ClipboardSourceMissing();
           }
@@ -2023,6 +2055,7 @@ class _HomeScreenState extends State<HomeScreen>
     String sourceId,
     String sourceName,
     WorkFolderService workFolders,
+    AppLocalizations l10n,
   ) async {
     if (!workFolders.folders.any((folder) => folder.id == sourceId)) {
       throw StateError('Export folder no longer exists');
@@ -2034,25 +2067,15 @@ class _HomeScreenState extends State<HomeScreen>
               workFolders.folderIdOf(file.uri.pathSegments.last) == sourceId,
         )
         .toList();
-    final used = workFolders.folders.map((folder) => folder.name).toSet();
-    var copyName = '$sourceName (コピー)';
-    for (var number = 2; used.contains(copyName); number++) {
-      copyName = '$sourceName (コピー $number)';
-    }
-    final copiedFolder = await workFolders.createFolder(copyName);
+    final copiedFolder = await workFolders.createFolder(
+      numberedCopyName(l10n, sourceName, {
+        for (final folder in workFolders.folders) folder.name,
+      }),
+    );
     final copies = <File>[];
     try {
       for (final source in members) {
-        final filename = source.uri.pathSegments.last;
-        final dot = filename.lastIndexOf('.');
-        final name = dot > 0 ? filename.substring(0, dot) : filename;
-        final ext = dot > 0 ? filename.substring(dot) : '';
-        var counter = 1;
-        late File destination;
-        do {
-          destination = File('${source.parent.path}/$name (コピー $counter)$ext');
-          counter++;
-        } while (await destination.exists());
+        final destination = await _copyFileDestination(l10n, source);
         final saved = await source.copy(destination.path);
         copies.add(saved);
         if (await saved.length() != await source.length()) {
@@ -2153,6 +2176,8 @@ class _HomeScreenState extends State<HomeScreen>
       );
       if (confirmed != true || !mounted) return;
     }
+    final l10n = AppLocalizations.of(context)!;
+    final namer = _copyNamer(context);
     setState(() => _pasting = true);
     try {
       if (entry.source == HomePasteArea.trash) {
@@ -2231,13 +2256,13 @@ class _HomeScreenState extends State<HomeScreen>
           await ps.createFolder(entry.name, parentFolderId: _currentFolderId);
         } else if (dest == HomePasteArea.works) {
           if (entry.source == HomePasteArea.works) {
-            await _copyWorkFolderWithContents(entry.id, entry.name, ws);
+            await _copyWorkFolderWithContents(entry.id, entry.name, ws, l10n);
           } else {
             await ws.createFolder(entry.name);
           }
         } else if (dest == HomePasteArea.received) {
           if (entry.source == HomePasteArea.received) {
-            await ps.duplicateSharedFolderWithContents(entry.id);
+            await ps.duplicateSharedFolderWithContents(entry.id, namer: namer);
           } else {
             await ps.createSharedFolder(entry.name);
           }
@@ -2251,7 +2276,7 @@ class _HomeScreenState extends State<HomeScreen>
           _otherClipboard = null;
         }
       } else if (entry.source == HomePasteArea.received) {
-        if (!await ps.duplicateProject(entry.id)) {
+        if (!await ps.duplicateProject(entry.id, namer: namer)) {
           throw const _ClipboardSourceMissing();
         }
       } else {
@@ -2259,15 +2284,7 @@ class _HomeScreenState extends State<HomeScreen>
         if (!await original.exists())
           throw FileSystemException('Missing file', entry.id);
         final fileName = original.uri.pathSegments.last;
-        final dot = fileName.lastIndexOf('.');
-        final stem = dot > 0 ? fileName.substring(0, dot) : fileName;
-        final extension = dot > 0 ? fileName.substring(dot) : '';
-        var n = 1;
-        late File destFile;
-        do {
-          destFile = File('${original.parent.path}/$stem (コピー $n)$extension');
-          n++;
-        } while (await destFile.exists());
+        final destFile = await _copyFileDestination(l10n, original);
         await original.copy(destFile.path);
         if (entry.source == HomePasteArea.outgoing) {
           await ps.refreshOutgoingShares();
@@ -3290,7 +3307,10 @@ Widget _receivedShareMenu(
             );
           }
         case 'duplicate':
-          await service.duplicateProject(project.id);
+          await service.duplicateProject(
+            project.id,
+            namer: _copyNamer(context),
+          );
         case 'share':
           if (context.mounted) {
             await createAndShareProjectNiashare(context, service, project);

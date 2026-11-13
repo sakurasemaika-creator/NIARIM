@@ -15,17 +15,7 @@ import 'community_no_hardcoded_text_test.dart' show stringLiterals;
 final RegExp _cjk = RegExp(r'[　-ヿ㐀-䶿一-鿿가-힯＀-￯]');
 
 /// まだ直していないもの（ファイル名 → 文字列 → 理由）。直したら外すこと。
-const Map<String, Map<String, String>> _allowed = {
-  'home_screen.dart': {
-    // 複製の名前の言語は、貼り付けの件数の内訳（所有者の判断6）と一緒に
-    // 別の単位で直す。
-    ' (コピー)': '複製の名前（判断6の単位で直す）',
-    r'$sourceName (コピー)': '複製の名前（判断6の単位で直す）',
-    r'$sourceName (コピー $number)': '複製の名前（判断6の単位で直す）',
-    r'/$name (コピー $counter)$ext': '複製の名前（判断6の単位で直す）',
-    r'/$stem (コピー $n)$extension': '複製の名前（判断6の単位で直す）',
-  },
-};
+const Map<String, Map<String, String>> _allowed = {};
 
 List<File> _homeFiles() =>
     Directory('lib/screens/home')

@@ -28,6 +28,7 @@ import '../../../widgets/name_entry_dialog.dart';
 import '../../../widgets/collection_action_controls.dart';
 import '../../../widgets/collection_tile_layout.dart';
 import '../../../utils/app_error_reporter.dart';
+import '../../../utils/duplicate_name.dart';
 import 'folder_save_feedback.dart';
 import 'work_folder_move_sheet.dart';
 import 'project_folder_edit_dialog.dart';
@@ -1024,7 +1025,11 @@ class ProjectListWidget extends StatelessWidget {
       case 'thumbnail':
         showProjectThumbnailDialog(context, project: project, service: service);
       case 'duplicate':
-        service.duplicateProject(project.id);
+        final l10n = AppLocalizations.of(context)!;
+        service.duplicateProject(
+          project.id,
+          namer: (name, taken) => numberedCopyName(l10n, name, taken),
+        );
       case 'share':
         _createNiashare(context, project);
       case 'favorite':

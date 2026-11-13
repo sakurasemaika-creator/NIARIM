@@ -56,6 +56,11 @@ class TrashedFolderUnreadException implements Exception {
   String toString() => 'A trashed folder holds works that could not be read';
 }
 
+/// 複製の名前を付ける関数。複製元の[name]と、避ける名前の並び[taken]から
+/// 複製の名前を返す（画面の言語の「(コピー)」と番号、
+/// `lib/utils/duplicate_name.dart`の`numberedCopyName`）。
+typedef CopyNamer = String Function(String name, Set<String> taken);
+
 class ProjectFolder {
   final String id;
   final String name;
@@ -3636,9 +3641,10 @@ class ProjectService extends ChangeNotifier {
   /// （nullはルート直下）で明示的に上書きする。falseの場合（既定）は
   /// 複製元と同じフォルダのまま複製する。
   ///
-  /// [name]は複製の名前（画面の言語で「〇〇 (コピー)」を作って渡す）。
-  /// 省略すると日本語の「(コピー)」を付ける。複製したかどうかを返す
-  /// （元の作品が見つからなければfalse）。
+  /// [name]は複製の名前。省略すると[namer]（画面の言語の「〇〇 (コピー)」と
+  /// 番号）で、[namer]も省略すると日本語の「(コピー)」で付ける。番号は
+  /// 同じ区分（共有から取り込んだ作品か）の作品の名前と重ならないように
+  /// 付ける。複製したかどうかを返す（元の作品が見つからなければfalse）。
   Future<bool> duplicateProject(
     String id, {
     String? targetFolderId,
@@ -3646,6 +3652,7 @@ class ProjectService extends ChangeNotifier {
     String? targetSharedFolderId,
     bool useTargetSharedFolder = false,
     String? name,
+    CopyNamer? namer,
   }) async {
     final idx = _projects.indexWhere((p) => p.id == id);
     if (idx >= 0) {
@@ -3654,12 +3661,10 @@ class ProjectService extends ChangeNotifier {
       // Repeated paste must not create indistinguishable copies.
       final copyName =
           name ??
-          _nextCopyName(
-            original.name,
-            _projects
-                .where((p) => p.isSharedImport == original.isSharedImport)
-                .map((p) => p.name),
-          );
+          (namer ?? _nextCopyName)(original.name, {
+            for (final p in _projects)
+              if (p.isSharedImport == original.isSharedImport) p.name,
+          });
 
       // シーンリストは複製先専用の新しいListにする（Scene/Frame/Layerはimmutableなため
       // 中身の値オブジェクト自体は共有してよいが、外側のListを共有すると片方への
@@ -4669,19 +4674,20 @@ class ProjectService extends ChangeNotifier {
         return folder;
       });
 
-  /// 共有の受信フォルダを、中の受信プロジェクトと一緒に複製する。
+  /// 共有の受信フォルダを、中の受信プロジェクトと一緒に複製する。フォルダと
+  /// 中の作品の複製の名前は[namer]で付ける（省略すると日本語の「(コピー)」）。
   Future<ProjectFolder> duplicateSharedFolderWithContents(
-    String folderId,
-  ) async {
+    String folderId, {
+    CopyNamer? namer,
+  }) async {
     final source = _sharedFolders.where((f) => f.id == folderId).firstOrNull;
     if (source == null) throw StateError('Shared folder missing: $folderId');
     final projects = _projects
         .where((p) => p.isSharedImport && p.sharedFolderId == folderId)
         .toList();
-    final copyName = _nextCopyName(
-      source.name,
-      _sharedFolders.map((folder) => folder.name),
-    );
+    final copyName = (namer ?? _nextCopyName)(source.name, {
+      for (final folder in _sharedFolders) folder.name,
+    });
     final target = await createSharedFolder(copyName);
     for (final project in projects) {
       final oldIds = _projects.map((p) => p.id).toSet();
@@ -4689,6 +4695,7 @@ class ProjectService extends ChangeNotifier {
         project.id,
         targetSharedFolderId: target.id,
         useTargetSharedFolder: true,
+        namer: namer,
       )) {
         throw StateError('Shared project missing: ${project.id}');
       }
