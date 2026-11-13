@@ -9662,8 +9662,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get missionRefresh => 'Actualizar';
 
   @override
-  String get missionPayoutPending =>
-      'El pago de ópalos aún no está disponible';
+  String get missionPayoutPending => 'El pago de ópalos aún no está disponible';
 
   @override
   String get recurringMissionsPayoutPending =>
