@@ -2921,6 +2921,86 @@ void main() {
     await tester.pumpWidget(const SizedBox.shrink());
   });
 
+  // 所有者の判断1：読めていない作品を含むフォルダの行も、ほかのゴミ箱の
+  // カードと同じく、広いカードでは操作を名前の右・上下の真ん中、狭い
+  // カードでは名前の下の右端に置く。
+  testWidgets('a held folder row puts its actions right of the name on a '
+      'wide card and under it on a narrow card', (tester) async {
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+    SharedPreferences.setMockInitialValues({
+      'first_launch': false,
+      'language': 'en',
+      firstUseTooltipsSeenKey: kAllFirstUseTooltipKeys,
+    });
+    final seeded = await tester.runAsync(
+      () => _seedTrashedFolder('Trip', ['Sea', 'Mountain']),
+    );
+    final (folder, works) = seeded!;
+    storage.paths.blockReading(
+      '${storage.projectsPath}/${works[1].id}/${works[1].id}.niapro',
+    );
+    tester.view.physicalSize = const Size(1280, 800);
+    appRouter.go('/home');
+    final providers = await tester.runAsync(buildAppProviders);
+    await tester.pumpWidget(
+      MultiProvider(providers: providers!, child: const NiarimApp()),
+    );
+    await _settleWithFiles(tester);
+    await tester.tap(find.byKey(const ValueKey('home_tab_3')));
+    await _settleWithFiles(tester);
+    for (final (size, scale) in const [
+      (Size(1280, 800), 1.0),
+      (Size(1280, 800), 2.0),
+      (Size(320, 568), 2.0),
+      (Size(360, 800), 1.0),
+    ]) {
+      final where = '${size.width.toInt()} x$scale';
+      tester.view.physicalSize = size;
+      tester.platformDispatcher.textScaleFactorTestValue = scale;
+      await _settleWithFiles(tester, rounds: 2);
+      expect(tester.takeException(), isNull, reason: where);
+      final delete = find.byKey(
+        ValueKey('trashedFolderDelete_${folder.id}'),
+        skipOffstage: false,
+      );
+      await tester.scrollUntilVisible(
+        delete,
+        80,
+        scrollable: find.byType(Scrollable).last,
+      );
+      await _settleWithFiles(tester, rounds: 1);
+      expect(tester.widget<TextButton>(delete).onPressed, isNull);
+      final card = tester.getRect(
+        find.ancestor(of: delete, matching: find.byType(Card)).first,
+      );
+      final title = tester.getRect(find.text('Trip'));
+      for (final key in [
+        ValueKey('trashedFolderRestore_${folder.id}'),
+        ValueKey('trashedFolderDelete_${folder.id}'),
+      ]) {
+        final button = tester.getRect(find.byKey(key));
+        if (card.width >= 600 * scale) {
+          expect(button.left, greaterThanOrEqualTo(title.right), reason: where);
+          expect(
+            (button.center.dy - card.center.dy).abs(),
+            lessThanOrEqualTo(1),
+            reason: where,
+          );
+        } else {
+          expect(button.top, greaterThanOrEqualTo(title.bottom), reason: where);
+          expect(card.right - button.right, lessThanOrEqualTo(24));
+        }
+      }
+      await tester.drag(find.byType(Scrollable).last, const Offset(0, 4000));
+      await _settleWithFiles(tester, rounds: 1);
+    }
+    expect(tester.takeException(), isNull);
+    await tester.pumpWidget(const SizedBox.shrink());
+  });
+
   // ホーム：作品を読めていない間も、フォルダを選んで（︙のメニュー
   // からも）ゴミ箱へ移せる（以前は「プロジェクトを読み込めません
   // でした」で断った）。「再試行」で読めた中の作品は、プロジェクトの

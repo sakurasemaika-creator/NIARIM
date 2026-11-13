@@ -579,11 +579,11 @@ void main() {
             expect(tester.takeException(), isNull, reason: where);
             for (final (work, folder) in [
               (
-                find.byKey(ValueKey('trashedProjectRestore_$workId')),
+                find.byKey(ValueKey('trash-restore-$workId')),
                 find.byKey(ValueKey('trashedFolderRestore_$folderId')),
               ),
               (
-                find.byKey(ValueKey('trashedProjectDelete_$workId')),
+                find.byKey(ValueKey('trash-delete-$workId')),
                 find.byKey(ValueKey('trashedFolderDelete_$folderId')),
               ),
             ]) {

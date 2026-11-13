@@ -164,10 +164,10 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
-  String get homePermanentDelete => 'Eliminar permanentemente';
+  String get homePermanentDelete => 'Eliminar definitivamente';
 
   @override
-  String get homePermanentDeleteConfirmTitle => '¿Eliminar permanentemente?';
+  String get homePermanentDeleteConfirmTitle => '¿Eliminar definitivamente?';
 
   @override
   String get homePermanentDeleteConfirmBody =>

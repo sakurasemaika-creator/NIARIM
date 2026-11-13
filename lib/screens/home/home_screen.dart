@@ -4765,16 +4765,18 @@ class _TrashTabState extends State<_TrashTab> {
                         ),
                     ],
                   )
-                : Column(
-                    mainAxisSize: MainAxisSize.min,
+                // 広いカードは名前の右・上下の真ん中に並べる（所有者の判断1。
+                // 作品・フォルダ・ファイルのカードで同じ）。
+                : Row(
                     children: [
-                      details,
+                      Expanded(child: details),
                       if (!selecting)
-                        Align(
-                          alignment: Alignment.centerRight,
-                          child: Padding(
-                            padding: const EdgeInsets.only(right: 8, bottom: 4),
-                            child: Wrap(spacing: 8, children: actions),
+                        Padding(
+                          padding: const EdgeInsetsDirectional.only(end: 8),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            spacing: 8,
+                            children: actions,
                           ),
                         ),
                     ],
