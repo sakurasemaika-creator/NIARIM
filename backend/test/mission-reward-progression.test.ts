@@ -121,7 +121,7 @@ describe("all 551 mission coins use strict five-coin steps",()=>{
     expect(DAILY_LOGIN_COINS).toBe(10);
     expect(LOGIN_BONUS_MILESTONES.every(m=>m.coins>=10)).toBe(true);
     expect(INITIAL_REWARDED_COINS_PER_COMPLETION).toBe(10);
-    expect(finalBenefitCoins("endCardEdit","hour")).toBe(500);
+    expect(finalBenefitCoins("endCardEdit","hour")).toBe(2000);
     expect(finalBenefitCoins("fullPremium","month")).toBe(55000);
   });
 });
@@ -141,9 +141,9 @@ describe("owner-finalized coin exchange rates round the ones digit upwards",()=>
         expect(cost%10).toBe(0);
       }
     }
-    expect(finalBenefitCoins("endCardEdit","hour")).toBe(500);
-    expect(finalBenefitCoins("endCardEdit","day")).toBe(1200);
-    expect(finalBenefitCoins("endCardEdit","week")).toBe(6000);
+    expect(finalBenefitCoins("endCardEdit","hour")).toBe(2000);
+    expect(finalBenefitCoins("endCardEdit","day")).toBe(4000);
+    expect(finalBenefitCoins("endCardEdit","week")).toBe(9000);
     expect(finalBenefitCoins("endCardEdit","month")).toBe(12000);
     expect(finalBenefitCoins("fullPremium","month")).toBe(55000);
     expect(FINAL_PREMIUM_YEARLY_COINS).toBe(550000);
@@ -154,7 +154,7 @@ describe("owner-finalized coin exchange rates round the ones digit upwards",()=>
     expect(finalBenefitCostCoins("toneCurve","month",12)).toBe(216000);
     expect(isBundledPremiumCheaperForAllDurations()).toBe(true);
     // Freeze the complete 12 × 4 launch rate card, not just 4 examples.
-    const fixed: readonly (readonly [typeof targets[number],readonly number[]])[] = [["endCardEdit",[500,1200,6000,12000]],["watermark",[750,1800,9000,18000]],["toneCurve",[750,1800,9000,18000]],["levelAdjustment",[630,1500,7500,15000]],["unlimitedDuration",[1050,2500,12500,25000]],["customAutomation",[1050,2500,12500,25000]],["projectListAds",[500,1200,6000,12000]],["canvasAds",[840,2000,10000,20000]],["timelineAds",[670,1600,8000,16000]],["processingAds",[420,1000,5000,10000]],["allAds",[1670,4000,20000,40000]],["fullPremium",[5000,10000,30000,55000]]];
+    const fixed: readonly (readonly [typeof targets[number],readonly number[]])[] = [[["endCardEdit",[2000,4000,9000,12000]],["watermark",[3000,6000,13500,18000]],["toneCurve",[3000,6000,13500,18000]],["levelAdjustment",[2500,5000,11250,15000]],["unlimitedDuration",[4170,8340,18750,25000]],["customAutomation",[4170,8340,18750,25000]],["projectListAds",[2000,4000,9000,12000]],["canvasAds",[3340,6670,15000,20000]],["timelineAds",[2670,5340,12000,16000]],["processingAds",[1670,3340,7500,10000]],["allAds",[6670,13340,30000,40000]],["fullPremium",[10000,25000,45000,55000]]];
     for(const [target,amounts] of fixed){
       expect(durations.map(d=>finalBenefitCoins(target,d))).toEqual(amounts);
     }
