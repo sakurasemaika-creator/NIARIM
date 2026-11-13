@@ -206,6 +206,14 @@ export class NiarimBackendStack extends Stack {
         PLAY_PURCHASE_VERIFICATION_ENABLED:
           this.node.tryGetContext("playPurchaseVerificationEnabled") === "true"
             ? "true" : "false",
+        // Independent, non-secret GCP Workload Identity Federation for the
+        // Android Publisher API. Do NOT reuse the FCM sender service account.
+        // Actual Billing remains OFF until the service account has explicit
+        // Play Console API permission and an end-to-end purchase is tested.
+        PLAY_WIF_AUDIENCE:
+          String(this.node.tryGetContext("playWifAudience") ?? ""),
+        PLAY_VERIFIER_SERVICE_ACCOUNT:
+          String(this.node.tryGetContext("playVerifierServiceAccount") ?? ""),
         // Payout economics and wallet/moderation signoff are independent.
         // Early community policy permits multiple accounts and reciprocal
         // bookmarks; exactly-once credits are still mandatory.
