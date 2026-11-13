@@ -11,6 +11,8 @@ import 'package:niarim/router.dart';
 import 'package:niarim/screens/home/home_screen.dart';
 import 'package:niarim/screens/home/widgets/project_list_widget.dart';
 import 'package:niarim/services/project_service.dart';
+import 'package:niarim/widgets/app_toast_messenger.dart'
+    show kToastEntrance, kToastFadeOut;
 import 'package:niarim/widgets/moved_to_trash_snack_bar.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -194,9 +196,11 @@ void main() {
     });
   });
 
-  // 知らせは5秒以内に消える（所有者の判断：トーストは基本的に5秒以内に
-  // 消え、操作ボタンの付いたものも同じ）。消えるまでの時間は出終わってから
-  // 数え始まるので、出たのを細かく見張り、出終わった所から5秒待つ。
+  // 知らせは出てから5秒以内に消える（所有者の判断：トーストは基本的に5秒
+  // 以内に消え、消えるときは徐々に薄くなる。操作ボタンの付いたものも同じ）。
+  // 出たフレームを細かく見張り、そこから1フレーム（16ms）ずつ描いて、消え
+  // 切るまでの時間を測る。1回の長いpumpだと、時間切れの後の薄くなる動きが
+  // そのpumpの終わりのフレームまで始まらず、実際の端末より遅く見える。
   group('a moved-to-Trash notice closes within 5 s', () {
     Future<void> waitForSnack(WidgetTester tester, String text) async {
       for (var i = 0; i < 400 && snackText(tester) != text; i++) {
@@ -206,20 +210,28 @@ void main() {
         await tester.pump(const Duration(milliseconds: 10));
       }
       expect(snackText(tester), text);
-      // 出てくる動き（250ms）を終わらせ、次の描き直しで時間を数え始める。
-      await tester.pump(const Duration(milliseconds: 300));
-      await tester.pump();
     }
 
-    Future<void> expectGoneAfterFiveSeconds(WidgetTester tester) async {
-      await tester.pump(const Duration(seconds: 5));
-      // 消える動き（250ms）の分。
-      await tester.pump(const Duration(milliseconds: 300));
-      await tester.pump();
+    Future<void> expectGoneWithinFiveSeconds(WidgetTester tester) async {
+      const frame = Duration(milliseconds: 16);
+      var elapsed = Duration.zero;
+      while (find.byType(SnackBar).evaluate().isNotEmpty &&
+          elapsed < const Duration(seconds: 8)) {
+        await tester.pump(frame);
+        elapsed += frame;
+      }
+      debugPrint(
+        'the notice left ${elapsed.inMilliseconds} ms after it appeared',
+      );
       expect(
         find.byType(SnackBar),
         findsNothing,
-        reason: 'the notice is still on screen 5 s after it appeared',
+        reason: 'the notice is still on screen 8 s after it appeared',
+      );
+      expect(
+        elapsed,
+        lessThanOrEqualTo(const Duration(seconds: 5)),
+        reason: 'the notice stayed longer than 5 s after it appeared',
       );
     }
 
@@ -230,7 +242,7 @@ void main() {
       await settle(tester);
       await tester.tap(find.text(l10n.projectDetailTrashMenuItem));
       await waitForSnack(tester, l10n.homeMovedToTrashSnackbar(1));
-      await expectGoneAfterFiveSeconds(tester);
+      await expectGoneWithinFiveSeconds(tester);
       expect(tester.takeException(), isNull);
       await close(tester);
     });
@@ -244,7 +256,7 @@ void main() {
       await settle(tester);
       await tester.tap(find.widgetWithText(FilledButton, l10n.commonMove));
       await waitForSnack(tester, l10n.homeMovedToTrashSnackbar(1));
-      await expectGoneAfterFiveSeconds(tester);
+      await expectGoneWithinFiveSeconds(tester);
       expect(tester.takeException(), isNull);
       await close(tester);
     });
@@ -262,7 +274,7 @@ void main() {
         folder,
       );
       await waitForSnack(tester, l10n.homeFolderMovedToTrashSnackbar('scenes'));
-      await expectGoneAfterFiveSeconds(tester);
+      await expectGoneWithinFiveSeconds(tester);
       expect(tester.takeException(), isNull);
       await close(tester);
     });
@@ -375,20 +387,66 @@ void main() {
     // 他の知らせが出ていて、その後ろでもう1つ待っているときに切り取っても、
     // 切り取りの知らせをすぐ出す。待っていた知らせの後ろに回ると、Escで
     // 切り取りをやめたときに、出ている別の知らせを閉じてしまう。
+    // 「すぐ」は、出ている知らせが薄くなって消える（次の知らせが待っている
+    // ときは300ms）のを待つだけ、ということ。1フレーム（16ms）ずつ描いて、
+    // 出た知らせの順と時間を見る。
     testWidgets('a cut made while other notices are waiting shows its notice '
         'at once and can be cancelled', (tester) async {
       await openHome(tester, names: ['apple', 'banana']);
+      final l10n = l10nOf(tester);
+      final cutText = l10n.homeCutSnackbar(1);
       ScaffoldMessenger.of(tester.element(find.byType(HomeScreen)))
         ..showSnackBar(const SnackBar(content: Text('first notice')))
         ..showSnackBar(const SnackBar(content: Text('waiting notice')));
       await settle(tester);
       expect(snackText(tester), 'first notice');
-      await cut(tester, 'apple');
-      await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+      await tester.longPress(card('apple'));
       await settle(tester);
+      await tester.tap(find.byTooltip(l10n.commonCut));
+      const frame = Duration(milliseconds: 16);
+      final seen = <String?>[];
+      void note() {
+        final text = snackText(tester);
+        if (seen.isEmpty || seen.last != text) seen.add(text);
+      }
+
+      var sinceCut = Duration.zero;
+      Duration? cutShownAt;
+      // 切り取ってから600ms後にEscで切り取りをやめる。
+      while (sinceCut < const Duration(milliseconds: 600)) {
+        await tester.pump(frame);
+        sinceCut += frame;
+        note();
+        if (snackText(tester) == cutText) cutShownAt ??= sinceCut;
+      }
+      expect(find.byKey(const Key('homeCrossTabPasteButton')), findsOneWidget);
+      await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+      var sinceEsc = Duration.zero;
+      while (find.byType(SnackBar).evaluate().isNotEmpty &&
+          sinceEsc < const Duration(seconds: 8)) {
+        await tester.pump(frame);
+        sinceEsc += frame;
+        note();
+      }
+      debugPrint(
+        'notices in order $seen; the cut notice appeared '
+        '${cutShownAt?.inMilliseconds} ms after the cut; all notices were '
+        'gone ${sinceEsc.inMilliseconds} ms after Esc',
+      );
       expect(tester.takeException(), isNull);
       expect(find.byKey(const Key('homeCrossTabPasteButton')), findsNothing);
-      expect(find.byType(SnackBar), findsNothing);
+      expect(seen, ['first notice', cutText, null]);
+      expect(
+        cutShownAt,
+        lessThanOrEqualTo(const Duration(milliseconds: 350)),
+        reason: 'the cut notice waited behind other notices',
+      );
+      // Escで閉じた切り取りの知らせが薄くなって消えるまで（400ms）。
+      expect(
+        sinceEsc,
+        lessThanOrEqualTo(const Duration(milliseconds: 500)),
+        reason: 'Esc did not close the cut notice',
+      );
       await close(tester);
     });
   });
@@ -506,16 +564,19 @@ void main() {
         expect(clearButton, findsNothing);
         expect(snackText(tester), 'waiting notice');
         // 待っていた知らせが時間で閉じた後、コピーの知らせは出ても
-        // すぐ閉じる（自分の4秒は残らない）。
+        // すぐ閉じる（自分の4秒は残らない）。出てくる（250ms）のと薄く
+        // なって消える（400ms）のは見える：100msのフレームで8回まで。
         var copiedFrames = 0;
         for (var i = 0; i < 70; i++) {
           await tester.pump(const Duration(milliseconds: 100));
           if (snackText(tester) == copied) copiedFrames++;
         }
+        final enterAndFade = (kToastEntrance + kToastFadeOut).inMilliseconds;
+        debugPrint('the copy notice was on screen for $copiedFrames frames');
         expect(find.byType(SnackBar), findsNothing);
         expect(
           copiedFrames,
-          lessThanOrEqualTo(6),
+          lessThanOrEqualTo((enterAndFade / 100).ceil() + 2),
           reason: 'the copy notice stayed after the clipboard was cleared',
         );
         expect(tester.takeException(), isNull);

@@ -1024,10 +1024,11 @@ void main() {
     );
     storage.paths.clear();
     expect(File(indexPath).readAsStringSync(), before);
+    // 知らせは薄くなって消える（400ms）。
     ScaffoldMessenger.of(
       tester.element(find.byType(Scaffold).first),
     ).removeCurrentSnackBar();
-    await _settleWithFiles(tester, rounds: 3);
+    await _settleWithFiles(tester, rounds: 6);
     expect(find.byType(SnackBar), findsNothing);
 
     // 読めるようになってから、別のスロットへ書く。

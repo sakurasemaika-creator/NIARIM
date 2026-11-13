@@ -512,10 +512,10 @@ class _TransferScreenState extends State<TransferScreen> {
       final shortcuts = report.notAddedShortcuts;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          // 長い文なので、読み終えるまで出しておく。
-          duration: Duration(
-            seconds: copies.isEmpty && shortcuts.isEmpty ? 4 : 10,
-          ),
+          // 長い文なので、読み終えるまで出しておく（知らせは5秒以内）。
+          duration: copies.isEmpty && shortcuts.isEmpty
+              ? const Duration(seconds: 4)
+              : const Duration(seconds: 5),
           content: Text(
             [
               copies.isEmpty

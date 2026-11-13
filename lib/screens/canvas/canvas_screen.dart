@@ -1419,7 +1419,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
         // 操作ボタン付きのSnackBarは既定では時間で消えず、ホーム等の次の
         // 画面まで付いてきて、後から出す通知もその後ろで待ち続ける。
         persist: false,
-        duration: const Duration(seconds: 6),
+        duration: const Duration(seconds: 5),
       ),
     );
   }

@@ -21,6 +21,7 @@ import 'services/theme_service.dart';
 import 'utils/app_locale.dart';
 import 'widgets/app_scroll_behavior.dart';
 import 'widgets/app_chip_theme.dart';
+import 'widgets/app_toast_messenger.dart';
 import 'widgets/ad_banner_mock_widget.dart';
 
 class _AdPlacementNotifier extends ChangeNotifier {
@@ -158,7 +159,6 @@ class _NiarimAppState extends State<NiarimApp> with WidgetsBindingObserver {
     _syncHomeWidgets(context, themeService, localeFromLanguageCode(language));
     return MaterialApp.router(
       title: 'NIARIM',
-      scaffoldMessengerKey: PushNotificationService.scaffoldMessengerKey,
       debugShowCheckedModeBanner: false,
       theme: themeService.themeData,
       scrollBehavior: const AppScrollBehavior(),
@@ -218,8 +218,14 @@ class _NiarimAppState extends State<NiarimApp> with WidgetsBindingObserver {
                     // Never serve live release ads on low-content modal views.
                     (!kReleaseMode ||
                         !adModalVisibilityObserver.isModalVisible.value),
-                child: Stack(
-                  children: [child!, const CommunityFloatingPreview()],
+                // 知らせ（SnackBar）の出し先は、画面とプレビューを包むこの
+                // 1つだけ（5秒以内に、少しずつ薄くなって消える）。通知を
+                // 受けたときに使うキーもここへ渡す。
+                child: AppToastMessenger(
+                  key: PushNotificationService.scaffoldMessengerKey,
+                  child: Stack(
+                    children: [child!, const CommunityFloatingPreview()],
+                  ),
                 ),
               );
             },

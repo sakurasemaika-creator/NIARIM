@@ -6,6 +6,7 @@ import '../l10n/app_localizations.dart';
 import '../services/theme_service.dart';
 import '../utils/app_locale.dart';
 import '../utils/line_break.dart';
+import 'app_toast_messenger.dart';
 
 /// 起動処理が失敗したときに、アプリ本体の代わりに出す画面。
 ///
@@ -50,6 +51,8 @@ class StartupFailureApp extends StatelessWidget {
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
+      // 知らせ（SnackBar）はアプリ本体と同じ決まりで出す。
+      builder: (context, child) => AppToastMessenger(child: child!),
       home: StartupFailureScreen(details: details, onRetry: onRetry),
     );
   }
