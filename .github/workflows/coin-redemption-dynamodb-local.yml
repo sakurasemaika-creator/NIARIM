@@ -1,5 +1,6 @@
 # Transactional integration suite on disposable DynamoDB Local only.
 # Neither live AWS nor Google Play is contacted. No real coins are granted.
+# Revalidate the current dev_branch 1-item, multiple-item, and yearly Premium exchange contracts.
 name: Coin Redemption DynamoDB Local Integration
 on:
   push:
