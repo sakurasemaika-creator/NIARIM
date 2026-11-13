@@ -6,6 +6,14 @@ on:
     branches: [dev_branch]
     paths:
       - ".github/workflows/external-integration-contracts.yml"
+      - "lib/services/admob_provider.dart"
+      - "lib/services/push_notification_service.dart"
+      - "lib/services/premium_service.dart"
+      - "lib/services/api/**"
+      - "test/ad_mock_layout_test.dart"
+      - "test/push_notification_service_test.dart"
+      - "test/premium_play_verification_policy_test.dart"
+      - "test/premium_coin_account_isolation_test.dart"
   workflow_dispatch:
 permissions:
   contents: read
