@@ -23,13 +23,13 @@ void main() {
     expect(premium.isPremium, isFalse);
   });
 
-  test('Server-issued coin entitlement grants and revokes Premium', () {
+  test('An unbound, unattributed coin entitlement never grants Premium', () {
     final premium = PremiumService();
     addTearDown(premium.dispose);
     premium.applyServerCoinPremiumExpiry(
       DateTime.now().add(const Duration(days: 1)),
     );
-    expect(premium.isPremium, isTrue);
+    expect(premium.isPremium, isFalse);
     premium.applyServerCoinPremiumExpiry(null);
     expect(premium.isPremium, isFalse);
   });
