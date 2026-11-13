@@ -1,0 +1,50 @@
+# Offline contracts for external-service boundaries. No live purchases,
+# production rewards, FCM delivery or AWS writes are performed.
+name: External integration contract checks
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - ".github/workflows/external-integration-contracts.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: niarim-external-contracts-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  verify:
+    if: github.ref == 'refs/heads/dev_branch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.47.2"
+          channel: stable
+          cache: true
+      - name: Resolve locked Flutter dependencies
+        run: flutter pub get --enforce-lockfile
+      - name: Analyze Flutter external integration boundaries
+        run: |
+          flutter analyze --no-pub --no-fatal-infos --no-fatal-warnings \
+            lib/services/api \
+            lib/services/push_notification_service.dart \
+            lib/services/admob_provider.dart \
+            lib/services/premium_service.dart \
+            test/push_notification_service_test.dart \
+            test/community_api_contract_test.dart \
+            test/premium_play_verification_policy_test.dart
+      - name: Run FCM, login-backend, Billing, coin and ad UI contracts
+        run: |
+          flutter test --no-pub --reporter expanded \
+            test/push_notification_service_test.dart \
+            test/community_api_contract_test.dart \
+            test/community_service_backend_test.dart \
+            test/premium_play_verification_policy_test.dart \
+            test/premium_coin_account_isolation_test.dart \
+            test/ad_mock_layout_test.dart \
+            test/monetization_campaign_removed_test.dart
