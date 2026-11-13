@@ -29,6 +29,7 @@ import '../../../widgets/name_entry_dialog.dart';
 import '../../../widgets/collection_action_controls.dart';
 import '../../../widgets/collection_tile_layout.dart';
 import '../../../widgets/date_line_text.dart';
+import '../../../widgets/secondary_click_menu.dart';
 import '../../../utils/app_error_reporter.dart';
 import '../../../utils/duplicate_name.dart';
 import 'folder_save_feedback.dart';
@@ -428,7 +429,10 @@ class ProjectListWidget extends StatelessWidget {
               itemBuilder: (context, index) => _withCutFeedback(
                 context,
                 sorted[index],
-                _detailTile(context, l10n, sorted[index]),
+                // 右クリックで行の︙と同じメニューを開く（カードと同じ）。
+                SecondaryClickMenu(
+                  child: _detailTile(context, l10n, sorted[index]),
+                ),
               ),
             ),
             const SliverToBoxAdapter(child: SizedBox(height: 104)),
@@ -441,7 +445,7 @@ class ProjectListWidget extends StatelessWidget {
         itemBuilder: (context, index) => _withCutFeedback(
           context,
           sorted[index],
-          _detailTile(context, l10n, sorted[index]),
+          SecondaryClickMenu(child: _detailTile(context, l10n, sorted[index])),
         ),
       );
     }

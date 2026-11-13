@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'secondary_click_menu.dart';
+
 /// One selection state shared by the four embedded Home collections.
 ///
 /// IDs include collection prefixes outside Projects so files from different
@@ -48,7 +50,8 @@ class HomeCollectionSelectionSurface extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scope = HomeCollectionSelectionScope.maybeOf(context);
-    if (scope == null || !scope.active) return child;
+    // 選んでいないときは、右クリックで行の︙と同じメニューを開く。
+    if (scope == null || !scope.active) return SecondaryClickMenu(child: child);
     final checked = scope.selected(selectionId);
     final scheme = Theme.of(context).colorScheme;
     return Stack(
