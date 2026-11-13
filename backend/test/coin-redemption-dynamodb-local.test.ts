@@ -231,5 +231,38 @@ describe.skipIf(process.env.NIARIM_DYNAMODB_LOCAL_TESTS !== "1")(
         ]),
       );
     }, 30_000);
+    it("discounted annual Premium extends the existing expiry once at 550,000 coins", async () => {
+      const before = await get(Keys.rewardEntitlement(other, "fullPremium"));
+      const previousExpiry = before?.expiresAtEpochMs as number;
+      expect(previousExpiry).toBeGreaterThan(Date.now());
+      // This top-up exists only in the disposable local test table.
+      await localDdb.send(new UpdateCommand({
+        TableName: table, Key: Keys.coinWallet(other),
+        UpdateExpression: "SET balanceCoins = :balance",
+        ExpressionAttributeValues: { ":balance": 650000 },
+      }));
+      const requestId = randomUUID();
+      const body = {
+        target: "fullPremium", duration: "month", quantity: 12,
+        priceVersion: COIN_BENEFIT_PRICE_VERSION, requestId,
+      };
+      const response = await redeemCoins(event("other", body));
+      const result = JSON.parse(response.body ?? "{}");
+      expect(result).toMatchObject({
+        redeemed: true, duplicate: false, costCoins: 550000,
+      });
+      expect(result.expiresAtEpochMs)
+        .toBeGreaterThan(previousExpiry + 360 * 86400_000);
+      expect((await get(Keys.coinWallet(other)))?.balanceCoins).toBe(100000);
+      expect((await get(Keys.rewardEntitlement(other, "fullPremium")))?.expiresAtEpochMs)
+        .toBe(result.expiresAtEpochMs);
+      const retry = await redeemCoins(event("other", body));
+      expect(JSON.parse(retry.body ?? "{}")).toMatchObject({
+        redeemed: true, duplicate: true, costCoins: 550000,
+      });
+      expect((await get(Keys.coinWallet(other)))?.balanceCoins).toBe(100000);
+      expect((await get(Keys.coinWallet(owner)))?.balanceCoins).toBe(3770);
+    }, 30_000);
+
   },
 );
