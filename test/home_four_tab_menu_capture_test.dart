@@ -224,7 +224,7 @@ void main() {
     await shot('11_shared_selected');
 
     // Capture selected folders using real cards on every tab.
-    final folders = await tester.runAsync(() async {
+    final folders = (await tester.runAsync(() async {
       final projectFolder = await projects.createFolder('プロジェクト資料フォルダ');
       final works = tester.element(find.byType(HomeScreen)).read<WorkFolderService>();
       final worksFolder = await works.createFolder('作品整理フォルダ');
@@ -233,7 +233,7 @@ void main() {
           folderName: '削除した作品フォルダ', files: <File>[],
       );
       return (projectFolder, worksFolder, sharedFolder, deletedFolder);
-    });
+    }))!;
     await settle();
     await tab(0);
     await tester.longPress(find.text('プロジェクト資料フォルダ').first);
