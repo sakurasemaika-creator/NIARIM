@@ -254,4 +254,58 @@ void main() {
     expect(tester.takeException(), isNull);
     await tester.pumpWidget(const SizedBox.shrink());
   });
+  testWidgets('refusing a favourite folder from its menu keeps the undo '
+      'notice of a work just moved to Trash (only its own notices close)', (
+    tester,
+  ) async {
+    final service = await boot(tester);
+    final empty = service.folders.firstWhere((f) => f.name == '空');
+    await tester.runAsync(() => service.toggleFolderFavorite(empty.id));
+    await settle(tester);
+
+    // 作品をカードのメニューからゴミ箱へ（「元に戻す」の知らせが出る）。
+    await tester.tap(
+      find.descendant(
+        of: find.ancestor(of: card('上の作品'), matching: find.byType(Card)).first,
+        matching: find.byIcon(Icons.more_vert),
+      ),
+    );
+    await tester.pump(const Duration(milliseconds: 400));
+    await settle(tester, rounds: 3);
+    await tester.tap(find.text(l10n.projectDetailTrashMenuItem).last);
+    await waitFor(tester, () => service.trash.isNotEmpty);
+    final moved = find.text(l10n.homeMovedToTrashSnackbar(1));
+    final undo = find.descendant(
+      of: find.byType(SnackBar),
+      matching: find.text(l10n.homeUndoAction),
+    );
+    expect(moved, findsOneWidget);
+
+    // 知らせが出ている間に、お気に入りのフォルダをメニューからゴミ箱へ
+    // （断られる）。断りの知らせは、ゴミ箱へ移した知らせを閉じずに後に並ぶ。
+    await trashFromMenu(tester, '空');
+    // 知らせを閉じる・入れ替えるなら、もう済んでいる時間（薄くなる0.3〜
+    // 0.4秒＋次の知らせが出てくる0.25秒）を待つ。ゴミ箱へ移した知らせは
+    // まだ5秒の中。
+    await settle(tester, rounds: 3);
+    expect(find.byKey(const Key('trash-dialog-confirm')), findsNothing);
+    expect(moved, findsOneWidget, reason: 'the undo notice was closed');
+    expect(undo, findsOneWidget);
+
+    // 「元に戻す」で作品が戻る。
+    await tester.tap(undo);
+    await waitFor(tester, () => service.trash.isEmpty);
+    expect(service.projects.map((p) => p.name), contains('上の作品'));
+
+    // 断りの知らせはその後に出る（黙って下げない）。
+    final blocked = find.text(l10n.commonFavoriteDeleteBlocked);
+    for (var i = 0; i < 60 && blocked.evaluate().isEmpty; i++) {
+      await tester.pump(const Duration(milliseconds: 100));
+    }
+    expect(blocked, findsOneWidget);
+    expect(service.folders.map((f) => f.name), contains('空'));
+    expect(service.trashedFolders, isEmpty);
+    expect(tester.takeException(), isNull);
+    await tester.pumpWidget(const SizedBox.shrink());
+  });
 }

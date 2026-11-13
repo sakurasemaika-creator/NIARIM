@@ -1114,13 +1114,13 @@ class ProjectListWidget extends StatelessWidget {
         service.projects.any(
           (p) => p.isFavorite && subtree.contains(p.folderId),
         );
-    // お気に入り登録中は削除できない（中の作品も）。
+    // お気に入り登録中は削除できない（中の作品も）。断りの知らせは、出て
+    // いる他の機能の知らせ（ゴミ箱へ移した知らせの「元に戻す」等）を閉じず
+    // に後へ並べる（作品のメニューの断りと同じ）。
     if (includesFavorite()) {
-      final messenger = ScaffoldMessenger.of(context);
-      messenger.hideCurrentSnackBar();
-      messenger.showSnackBar(
-        SnackBar(content: Text(l10n.commonFavoriteDeleteBlocked)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.commonFavoriteDeleteBlocked)));
       return;
     }
     final counts = service.folderContentCounts(folder.id);
