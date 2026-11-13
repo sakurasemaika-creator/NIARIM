@@ -5,7 +5,9 @@ import '../l10n/app_localizations.dart';
 /// プロジェクトの保存先を読めなかったとき（`ProjectService.projectsLoadFailed`）
 /// の知らせと「再試行」。保存先から読む一覧（ホームのプロジェクト・共有の
 /// 受け取ったもの・ゴミ箱、設定の引き継ぎのプロジェクト）に出す（空の
-/// 一覧だけだと、作品が消えたように見える）。
+/// 一覧だけだと、作品が消えたように見える）。保存の画面は、作品の手動の
+/// 保存の一覧（`SaveTreeService.saveListUnreadable`）を読めなかったときに
+/// 文を替えて出す（[message]）。
 ///
 /// 「再試行」は読み直しの途中も押せるままにする（押しても同じ読み直しを
 /// 待つだけ）。押せなくすると、キーボードのフォーカスが前にフォーカスの
@@ -16,9 +18,13 @@ class ProjectsLoadFailureNotice extends StatefulWidget {
     super.key,
     required this.onRetry,
     this.screenFocus,
+    this.message,
   });
 
   final Future<void> Function() onRetry;
+
+  /// 知らせの文。nullなら「プロジェクトを読み込めませんでした」。
+  final String? message;
 
   /// 読み直せて知らせが消えるとき、フォーカスが知らせの中にあれば
   /// ここ（画面のフォーカス。ホームでは画面のショートカットを受ける
@@ -87,7 +93,7 @@ class _ProjectsLoadFailureNoticeState extends State<ProjectsLoadFailureNotice> {
                     alignment: MainAxisAlignment.spaceBetween,
                     overflowAlignment: OverflowBarAlignment.start,
                     children: [
-                      Text(l10n.homeProjectsLoadFailed),
+                      Text(widget.message ?? l10n.homeProjectsLoadFailed),
                       TextButton.icon(
                         onPressed: widget.onRetry,
                         icon: const Icon(Icons.refresh),

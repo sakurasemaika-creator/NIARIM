@@ -14,6 +14,7 @@ import '../../services/save_tree_service.dart';
 import '../../models/save_node.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/help_button.dart';
+import '../../widgets/projects_load_failure_notice.dart';
 import '../../widgets/confirm_delete.dart';
 import '../../widgets/ad_banner_mock_widget.dart';
 import '../../utils/app_error_reporter.dart';
@@ -143,6 +144,14 @@ class _SaveTreeScreenState extends State<SaveTreeScreen> {
       ),
       body: Column(
         children: [
+          // 保存の一覧を読めなかった：空に見えるスロット・ツリーにも保存が
+          // あるかもしれない（「保存データなし」とは言わない）。
+          if (saveService.saveListUnreadable(widget.projectId))
+            ProjectsLoadFailureNotice(
+              key: const Key('saveListLoadFailed'),
+              message: l10n.saveTreeLoadFailedSnackbar,
+              onRetry: () => saveService.retryReadList(widget.projectId),
+            ),
           Expanded(
             child: isTreeMode
                 ? _TreeView(
@@ -468,6 +477,7 @@ class _SlotView extends StatelessWidget {
           projectId: projectId,
           slotIndex: slotIndex,
           node: node,
+          listUnread: saveService.saveListUnreadable(projectId),
           onSave: () => _showSlotSaveDialog(context, slotIndex, node),
           onRestore: (node != null && entryMode != SaveTreeEntryMode.quickSave)
               ? () => _restore(context, node)
@@ -693,10 +703,15 @@ class _SlotTile extends StatelessWidget {
   final VoidCallback? onRestore;
   final VoidCallback? onDelete;
 
+  /// 保存の一覧を読めなかった（空に見えても保存があるかもしれないので、
+  /// 「保存データなし」と言わない）。
+  final bool listUnread;
+
   const _SlotTile({
     required this.projectId,
     required this.slotIndex,
     required this.node,
+    this.listUnread = false,
     required this.onSave,
     this.onRestore,
     this.onDelete,
@@ -750,7 +765,9 @@ class _SlotTile extends StatelessWidget {
                                 memo?.isNotEmpty == true
                                     ? memo!
                                     : (node == null
-                                          ? l10n.saveTreeNoDataLabel
+                                          ? (listUnread
+                                                ? ''
+                                                : l10n.saveTreeNoDataLabel)
                                           : l10n.saveTreeSlotFallbackName(
                                               slotIndex + 1,
                                             )),
@@ -776,7 +793,7 @@ class _SlotTile extends StatelessWidget {
                               color: scheme.onSurfaceVariant,
                             ),
                           )
-                        else if (memo?.isNotEmpty == true)
+                        else if (memo?.isNotEmpty == true && !listUnread)
                           Text(
                             l10n.saveTreeNoDataLabel,
                             style: TextStyle(
@@ -891,6 +908,11 @@ class _TreeView extends StatelessWidget {
     final childrenIndex = _childrenIndex(nodes);
     final roots = childrenIndex[null] ?? const <SaveNode>[];
     if (roots.isEmpty) {
+      // 保存の一覧を読めなかった：「保存データがありません」とは言わない
+      // （上の知らせが読めなかったことと「再試行」を出す）。
+      if (saveService.saveListUnreadable(projectId)) {
+        return const SizedBox.shrink();
+      }
       final scheme = Theme.of(context).colorScheme;
       return Center(
         child: Column(

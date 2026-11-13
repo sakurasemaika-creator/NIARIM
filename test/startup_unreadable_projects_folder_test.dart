@@ -1042,6 +1042,122 @@ void main() {
     });
   }
 
+  // 保存の一覧（SaveTree/index.json）を読めないと、保存の画面のどの
+  // スロットも「保存データなし」と言った（保存のあるスロットも）。
+  // ツリー表示は「保存データがありません」。読めなかったことと「再試行」を
+  // 出し、空に見えるスロットに「保存データなし」と言わない。「再試行」は
+  // 読めなければ知らせを残し、読めたら本当のスロット（ツリー）を出す。
+  // スロットの画面（保存の管理）・セーブツリーの画面のスロット表示・
+  // ツリー表示。
+  for (final screen in ['save management', 'save tree slots', 'save tree']) {
+    testWidgets('the $screen screen says the save list could not be read '
+        'instead of no save data, and its Retry shows the saves', (
+      tester,
+    ) async {
+      tester.view.physicalSize = const Size(420, 900);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      SharedPreferences.setMockInitialValues({
+        'first_launch': false,
+        'language': 'ja',
+        firstUseTooltipsSeenKey: kAllFirstUseTooltipKeys,
+      });
+      final seeded = await tester.runAsync(
+        () => _seedProjectWithSaves(name: '保存を読めない作品', comments: ['A', 'B']),
+      );
+      final (project, saves) = seeded!;
+      final indexPath =
+          '${storage.projectsPath}/${project.id}/SaveTree/'
+          '${SaveTreeService.indexFileName}';
+      final before = File(indexPath).readAsStringSync();
+      storage.paths.blockReading(indexPath);
+      appRouter.go('/home');
+      final providers = await tester.runAsync(buildAppProviders);
+      if (screen == 'save tree slots') {
+        await tester.pumpWidget(
+          MultiProvider(
+            providers: providers!,
+            child: MaterialApp(
+              locale: const Locale('ja'),
+              localizationsDelegates: AppLocalizations.localizationsDelegates,
+              supportedLocales: AppLocalizations.supportedLocales,
+              home: SaveTreeScreen(
+                projectId: project.id,
+                entryMode: SaveTreeEntryMode.projectDetail,
+              ),
+            ),
+          ),
+        );
+      } else {
+        await tester.pumpWidget(
+          MultiProvider(providers: providers!, child: const NiarimApp()),
+        );
+        await _settleWithFiles(tester);
+        if (screen == 'save tree') {
+          tester
+              .element(find.byType(Scaffold).first)
+              .read<SaveTreeService>()
+              .setTreeMode(true);
+        }
+        appRouter.push('/save-tree/${project.id}?entry=detail');
+      }
+      await _settleWithFiles(tester, rounds: 6);
+      final saveTree = tester
+          .element(find.byType(Scaffold).first)
+          .read<SaveTreeService>();
+      expect(saveTree.isTreeMode, screen == 'save tree');
+      expect(saveTree.getNodes(project.id), isEmpty);
+
+      // 保存のあるスロット（スロット1・2）にも「保存データなし」と言わない。
+      expect(find.text('保存データなし'), findsNothing, reason: 'says no data');
+      expect(find.text('保存データがありません'), findsNothing);
+      const failed = '保存データの読み込みに失敗しました';
+      final notice = find.byKey(const Key('saveListLoadFailed'));
+      expect(notice, findsOneWidget, reason: 'nothing says the list is unread');
+      expect(
+        find.descendant(of: notice, matching: find.text(failed)),
+        findsOneWidget,
+      );
+      final retry = find.descendant(of: notice, matching: find.text('再試行'));
+
+      // まだ読めないうちの「再試行」：知らせは残り、何も書き換えない。
+      await tester.tap(retry);
+      await _settleWithFiles(tester, rounds: 4);
+      expect(notice, findsOneWidget);
+      expect(find.text('保存データなし'), findsNothing);
+      expect(saveTree.getNodes(project.id), isEmpty);
+
+      // 読めるようになって「再試行」：本当のスロット（ツリー）が出る。
+      storage.paths.clear();
+      await tester.tap(retry);
+      for (
+        var i = 0;
+        i < 200 &&
+            (saveTree.getNodes(project.id).length < 2 ||
+                notice.evaluate().isNotEmpty);
+        i++
+      ) {
+        await _settleWithFiles(tester, rounds: 1);
+      }
+      await _settleWithFiles(tester, rounds: 2);
+      expect(notice, findsNothing);
+      expect(saveTree.getNodes(project.id).map((n) => n.id), [
+        saves[0].id,
+        saves[1].id,
+      ]);
+      expect(find.text('A'), findsOneWidget);
+      expect(find.text('B'), findsOneWidget);
+      if (screen != 'save tree') {
+        expect(find.text('保存データなし'), findsWidgets);
+      }
+      expect(File(indexPath).readAsStringSync(), before);
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox.shrink());
+      appRouter.go('/');
+    });
+  }
+
   // 作品の保存のフォルダ（SaveTree/）の中を一覧できないと、読めた一覧の
   // 保存まで出さず（作品ごと飛ばし）、次の保存でその一覧を上書きした。
   test('saves in a readable list come back even if their folder cannot be '

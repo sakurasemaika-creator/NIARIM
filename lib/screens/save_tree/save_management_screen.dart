@@ -15,6 +15,7 @@ import '../../widgets/confirm_delete.dart';
 import '../../utils/app_error_reporter.dart';
 import '../../widgets/dispose_on_unmount.dart';
 import '../../widgets/help_button.dart';
+import '../../widgets/projects_load_failure_notice.dart';
 import '../../widgets/responsive.dart';
 import 'save_tree_screen.dart';
 import 'widgets/save_thumbnail_capture.dart';
@@ -73,6 +74,14 @@ class _GameStyleSlotScreen extends StatelessWidget {
       ),
       body: Column(
         children: [
+          // 保存の一覧を読めなかった：空に見えるスロットにも保存があるかも
+          // しれない（「保存データなし」とは言わない）。
+          if (saveService.saveListUnreadable(projectId))
+            ProjectsLoadFailureNotice(
+              key: const Key('saveListLoadFailed'),
+              message: l10n.saveTreeLoadFailedSnackbar,
+              onRetry: () => saveService.retryReadList(projectId),
+            ),
           Expanded(
             child: desktopCentered(
               context,
@@ -89,6 +98,7 @@ class _GameStyleSlotScreen extends StatelessWidget {
                     slotIndex: slotIndex,
                     memo: saveService.slotDisplayMemoOf(projectId, slotIndex),
                     node: node,
+                    listUnread: saveService.saveListUnreadable(projectId),
                     // メモ＋ペン＝書き込み、ノート＝読み込み、ゴミ箱＝削除。
                     // 3つを全スロットへ常に出し、使えない操作は無効化して
                     // 見せる（空スロットは読み込み・削除ができない、
@@ -468,11 +478,16 @@ class _GameSaveSlotTile extends StatelessWidget {
   final VoidCallback? onLoad;
   final VoidCallback? onDelete;
 
+  /// 保存の一覧を読めなかった（空に見えても保存があるかもしれないので、
+  /// 「保存データなし」と言わない）。
+  final bool listUnread;
+
   const _GameSaveSlotTile({
     required this.projectId,
     required this.slotIndex,
     required this.memo,
     required this.node,
+    this.listUnread = false,
     required this.onWrite,
     required this.onLoad,
     required this.onDelete,
@@ -558,6 +573,8 @@ class _GameSaveSlotTile extends StatelessWidget {
                                           ? l10n.saveTreeSlotFallbackName(
                                               slotIndex + 1,
                                             )
+                                          : listUnread
+                                          ? ''
                                           : l10n.saveTreeNoDataLabel),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
@@ -587,7 +604,7 @@ class _GameSaveSlotTile extends StatelessWidget {
                               color: scheme.onSurfaceVariant,
                             ),
                           ),
-                        ] else if (memo?.isNotEmpty == true) ...[
+                        ] else if (memo?.isNotEmpty == true && !listUnread) ...[
                           const SizedBox(height: 3),
                           Text(
                             l10n.saveTreeNoDataLabel,

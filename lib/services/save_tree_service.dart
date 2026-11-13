@@ -78,6 +78,22 @@ class SaveTreeService extends ChangeNotifier {
   /// メモで置き換えると、書いたメモが消えた）。
   final Map<String, Set<int>> _memosEditedUnread = {};
 
+  /// 保存の一覧を読もうとして読めなかった作品（一覧を開けない・保存の
+  /// フォルダに入れない）。読めるまで、この起動の保存しか出ない。
+  final Set<String> _unreadLists = {};
+
+  /// [projectId]の保存の一覧を読めなかったか。保存の画面は、空に見える
+  /// スロットを「保存データなし」と言わず、読めなかったことと「再試行」
+  /// （[retryReadList]）を出す。
+  bool saveListUnreadable(String projectId) => _unreadLists.contains(projectId);
+
+  /// 保存の画面の「再試行」：読めなかった保存の一覧を読み直す（この起動の
+  /// 保存とメモは、読んだ一覧へ重ねる。[_loadProject]）。読めたらtrue。
+  Future<bool> retryReadList(String projectId) async {
+    await _readListIfReadable(projectId);
+    return _readProjects.contains(projectId);
+  }
+
   /// 起動時に、各作品の保存の一覧（SaveTree/index.json）を読み込む。一覧に
   /// 無い保存のファイル（一覧を書けなかった・以前の版で保存した）も拾い直す。
   /// 読めないものは飛ばし、起動は止めない。
@@ -161,6 +177,7 @@ class SaveTreeService extends ChangeNotifier {
       // 一覧が無い（保存のフォルダごと無い場合も）。
     } catch (error, stack) {
       AppErrorReporter.record(error, stack);
+      _unreadLists.add(projectId);
       return;
     }
     // 一覧に無い保存のファイルを拾い直すため、フォルダの中を一覧する。
@@ -173,6 +190,7 @@ class SaveTreeService extends ChangeNotifier {
       // 保存のフォルダが無い：保存の無い作品。
       if (text == null) {
         _readProjects.add(projectId);
+        _unreadLists.remove(projectId);
         if (editedMemos.isNotEmpty || sessionIds.isNotEmpty) {
           await _persist(projectId);
         }
@@ -180,7 +198,10 @@ class SaveTreeService extends ChangeNotifier {
       }
     } catch (error, stack) {
       AppErrorReporter.record(error, stack);
-      if (text == null) return;
+      if (text == null) {
+        _unreadLists.add(projectId);
+        return;
+      }
     }
     String? thumbnailOf(String id) {
       final file = File('${dir.path}/${id}_thumb.png');
@@ -319,6 +340,7 @@ class SaveTreeService extends ChangeNotifier {
     nodes.addAll(sessionNodes);
     archived.addAll(sessionArchived);
     _readProjects.add(projectId);
+    _unreadLists.remove(projectId);
     if (nodes.isEmpty && archived.isEmpty) {
       if (editedMemos.isNotEmpty) await _persist(projectId);
       return;
@@ -398,6 +420,7 @@ class SaveTreeService extends ChangeNotifier {
       // 一覧はこの起動の内容と同じになった（この起動中に作った作品も、
       // 次からは書き換えてよい）。
       _readProjects.add(projectId);
+      _unreadLists.remove(projectId);
       _memosEditedUnread.remove(projectId);
     } catch (error, stack) {
       AppErrorReporter.record(error, stack);
