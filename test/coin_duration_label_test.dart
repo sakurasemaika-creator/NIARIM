@@ -10,8 +10,8 @@ import 'helpers/reward_duration_oracle.dart';
 
 /// 交換期間の文言（数＋単位）は、7言語とも翻訳ファイルの複数形の規則で作る。
 void main() {
-  test('選べる期間は152通りで、範囲の外の期間は作れない', () {
-    expect(offeredRewardDurations, hasLength(152));
+  test('選べる期間は153通りで、範囲の外の期間は作れない', () {
+    expect(offeredRewardDurations, hasLength(153));
     expect(offeredRewardDurations.every((d) => d.isValid), isTrue);
 
     final offered = {
@@ -66,7 +66,7 @@ void main() {
   });
 
   for (final language in rewardDurationLanguages) {
-    test('152通りすべての文言が正しい（${language.code}）', () {
+    test('153通りすべての文言が正しい（${language.code}）', () {
       final l10n = lookupAppLocalizations(language.locale);
       final labels = <String>{};
       for (final duration in offeredRewardDurations) {
@@ -82,7 +82,7 @@ void main() {
         );
         labels.add(label);
       }
-      expect(labels, hasLength(152), reason: '同じ文言になる期間がある');
+      expect(labels, hasLength(153), reason: '同じ文言になる期間がある');
 
       for (final MapEntry(key: name, value: expected)
           in language.pinned.entries) {
@@ -141,7 +141,7 @@ void main() {
     expect(ja.rewardDurationMonths(120), '120か月');
   });
 
-  test('必要コインは152通りとも単価×数のまま', () {
+  test('必要コインは153通りとも単価×数のまま', () {
     const toneCurve = CoinUnlockUnitPrices(
       perHour: 4,
       perDay: 20,
