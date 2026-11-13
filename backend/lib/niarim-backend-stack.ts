@@ -255,6 +255,15 @@ export class NiarimBackendStack extends Stack {
         CREATOR_GRID_REWARDS_REVIEW_APPROVED:
           this.node.tryGetContext("creatorGridRewardsReviewApproved") === "true"
             ? "true" : "false",
+        // Retain independently authorized recurring/plaza mission settings.
+        // Omitting them from CDK would silently revoke current live payouts
+        // during a future unrelated infrastructure deployment.
+        RECURRING_MISSION_PAYOUTS_ENABLED:
+          this.node.tryGetContext("recurringMissionPayoutsEnabled") === "true"
+            ? "true" : "false",
+        PLAZA_MISSION_PAYOUTS_ENABLED:
+          this.node.tryGetContext("plazaMissionPayoutsEnabled") === "true"
+            ? "true" : "false",
         PLAY_ANDROID_PACKAGE_NAME: "com.niarim.niarim",
         // YouTube由来のランキングは追加指標利用の承認があるまで非公開。
         // Playback preflight reads the public YouTube video status server-side.
