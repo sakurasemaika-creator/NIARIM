@@ -9013,7 +9013,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get rewardUnlockBestExplain =>
-      'Better value than selecting every coin benefit separately';
+      'Use the same eligible features as Premium membership in one discounted bundle';
 
   @override
   String get rewardUnlockEarning =>
@@ -9069,7 +9069,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get rewardUnlockAllAds => 'Remove all ads';
 
   @override
-  String get rewardUnlockFullPremium => 'All features + no ads';
+  String get rewardUnlockFullPremium => 'All benefits bundle';
 
   @override
   String get rewardUnlockChoose => 'Select';
