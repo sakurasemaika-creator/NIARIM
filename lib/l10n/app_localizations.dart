@@ -15108,7 +15108,7 @@ abstract class AppLocalizations {
   /// No description provided for @creatorMissionCoinReward.
   ///
   /// In ja, this message translates to:
-  /// **'コイン報酬'**
+  /// **'オパール報酬'**
   String get creatorMissionCoinReward;
 
   /// No description provided for @creatorMissionClaim.
@@ -15258,7 +15258,7 @@ abstract class AppLocalizations {
   /// No description provided for @creatorMissionSubtitle.
   ///
   /// In ja, this message translates to:
-  /// **'制作・作品広場の達成でコインを獲得'**
+  /// **'制作・作品広場の達成でオパールを獲得'**
   String get creatorMissionSubtitle;
 
   /// No description provided for @creatorMissionPerWork.
@@ -15324,7 +15324,7 @@ abstract class AppLocalizations {
   /// No description provided for @creatorMissionTimeWarning.
   ///
   /// In ja, this message translates to:
-  /// **'制作時間は表示用の記録です。コイン対象にはサーバー側の検証が必要です。'**
+  /// **'制作時間は表示用の記録です。オパール対象にはサーバー側の検証が必要です。'**
   String get creatorMissionTimeWarning;
 
   /// No description provided for @creatorMissionRankingWarning.
@@ -15408,7 +15408,7 @@ abstract class AppLocalizations {
   /// No description provided for @loginBonusSuccess.
   ///
   /// In ja, this message translates to:
-  /// **'コインの受取が確認できました'**
+  /// **'オパールの受取が確認できました'**
   String get loginBonusSuccess;
 
   /// No description provided for @loginBonusVisitMissing.
@@ -15426,13 +15426,13 @@ abstract class AppLocalizations {
   /// No description provided for @rewardNavigationHub.
   ///
   /// In ja, this message translates to:
-  /// **'コイン・特典'**
+  /// **'オパール・特典'**
   String get rewardNavigationHub;
 
   /// No description provided for @rewardNavigationEarnTab.
   ///
   /// In ja, this message translates to:
-  /// **'広告を見てコインGET'**
+  /// **'広告を見てオパールGET'**
   String get rewardNavigationEarnTab;
 
   /// No description provided for @rewardNavigationMissions.
@@ -15444,7 +15444,7 @@ abstract class AppLocalizations {
   /// No description provided for @rewardNavigationEarn.
   ///
   /// In ja, this message translates to:
-  /// **'無料でコインを貯める'**
+  /// **'無料でオパールを貯める'**
   String get rewardNavigationEarn;
 
   /// No description provided for @rewardNavigationMembership.
@@ -15486,7 +15486,7 @@ abstract class AppLocalizations {
   /// No description provided for @rewardNavigationMembershipCoin.
   ///
   /// In ja, this message translates to:
-  /// **'コインで解放中'**
+  /// **'オパールで解放中'**
   String get rewardNavigationMembershipCoin;
 
   /// No description provided for @rewardNavigationMembershipBenefit.
@@ -15513,10 +15513,10 @@ abstract class AppLocalizations {
   /// **'利用期限：{expiry}'**
   String rewardNavigationMembershipExpiresAt(DateTime expiry);
 
-  /// 契約状態：コインで交換した全機能を利用中であることと、その利用期限（日時）
+  /// 契約状態：オパールで交換した全機能を利用中であることと、その利用期限（日時）
   ///
   /// In ja, this message translates to:
-  /// **'コインで解放中 · 利用期限：{expiry}'**
+  /// **'オパールで解放中 · 利用期限：{expiry}'**
   String rewardNavigationMembershipCoinExpiresAt(DateTime expiry);
 
   /// No description provided for @rewardNavigationMembershipUnavailable.
@@ -15552,7 +15552,7 @@ abstract class AppLocalizations {
   /// No description provided for @rewardNavigationEarnDescription.
   ///
   /// In ja, this message translates to:
-  /// **'広告を見るとコインを獲得できます'**
+  /// **'広告を見るとオパールを獲得できます'**
   String get rewardNavigationEarnDescription;
 
   /// No description provided for @rewardNavigationEarnUnavailable.
@@ -15576,7 +15576,7 @@ abstract class AppLocalizations {
   /// No description provided for @rewardUnlockMissionSubtitle.
   ///
   /// In ja, this message translates to:
-  /// **'作品の投稿やブックマーク達成でコインを獲得'**
+  /// **'作品の投稿やブックマーク達成でオパールを獲得'**
   String get rewardUnlockMissionSubtitle;
 
   /// No description provided for @rewardUnlockLoading.
@@ -15600,7 +15600,7 @@ abstract class AppLocalizations {
   /// No description provided for @rewardUnlockSubscriptionBenefit.
   ///
   /// In ja, this message translates to:
-  /// **'コインは広告視聴で無料で貯められます。広告視聴の時間を省きたい方には月額・年額Premiumが便利です。'**
+  /// **'オパールは広告視聴で無料で貯められます。広告視聴の時間を省きたい方には月額・年額Premiumが便利です。'**
   String get rewardUnlockSubscriptionBenefit;
 
   /// No description provided for @rewardUnlockActive.
@@ -15624,7 +15624,7 @@ abstract class AppLocalizations {
   /// No description provided for @rewardUnlockActiveUnavailable.
   ///
   /// In ja, this message translates to:
-  /// **'コイン特典の利用状況はサーバー連携後に表示します'**
+  /// **'オパール特典の利用状況はサーバー連携後に表示します'**
   String get rewardUnlockActiveUnavailable;
 
   /// No description provided for @rewardUnlockDuration.
@@ -15648,7 +15648,7 @@ abstract class AppLocalizations {
   /// No description provided for @rewardUnlockPricePending.
   ///
   /// In ja, this message translates to:
-  /// **'必要コイン：未設定'**
+  /// **'必要オパール：未設定'**
   String get rewardUnlockPricePending;
 
   /// No description provided for @rewardUnlockNotReady.
@@ -15660,7 +15660,7 @@ abstract class AppLocalizations {
   /// No description provided for @rewardUnlockTotal.
   ///
   /// In ja, this message translates to:
-  /// **'合計必要コイン'**
+  /// **'合計必要オパール'**
   String get rewardUnlockTotal;
 
   /// No description provided for @rewardUnlockUnavailable.
@@ -15672,31 +15672,31 @@ abstract class AppLocalizations {
   /// No description provided for @rewardUnlockBalancePending.
   ///
   /// In ja, this message translates to:
-  /// **'コイン残高：サーバー連携準備中'**
+  /// **'オパール残高：サーバー連携準備中'**
   String get rewardUnlockBalancePending;
 
   /// No description provided for @rewardUnlockGoal.
   ///
   /// In ja, this message translates to:
-  /// **'このコイン枚数を目標にする'**
+  /// **'このオパール数を目標にする'**
   String get rewardUnlockGoal;
 
   /// No description provided for @rewardUnlockRedeem.
   ///
   /// In ja, this message translates to:
-  /// **'コインと引き換え'**
+  /// **'オパールと引き換え'**
   String get rewardUnlockRedeem;
 
   /// No description provided for @rewardUnlockWatchRewardedAd.
   ///
   /// In ja, this message translates to:
-  /// **'リワード広告を見てコインをためる'**
+  /// **'リワード広告を見てオパールをためる'**
   String get rewardUnlockWatchRewardedAd;
 
   /// No description provided for @rewardUnlockRewardPending.
   ///
   /// In ja, this message translates to:
-  /// **'広告の確認待ちです。Googleの検証後にコインが反映されます。'**
+  /// **'広告の確認待ちです。Googleの検証後にオパールが反映されます。'**
   String get rewardUnlockRewardPending;
 
   /// No description provided for @rewardUnlockRewardUnavailable.
@@ -15750,7 +15750,7 @@ abstract class AppLocalizations {
   /// No description provided for @rewardUnlockHistoryRedemption.
   ///
   /// In ja, this message translates to:
-  /// **'コイン交換'**
+  /// **'オパール交換'**
   String get rewardUnlockHistoryRedemption;
 
   /// No description provided for @rewardUnlockHistoryOther.
@@ -15792,7 +15792,7 @@ abstract class AppLocalizations {
   /// No description provided for @rewardUnlockFreeOnly.
   ///
   /// In ja, this message translates to:
-  /// **'広告を見るだけでコインが貯まります（公開準備中）'**
+  /// **'広告を見るだけでオパールが貯まります（公開準備中）'**
   String get rewardUnlockFreeOnly;
 
   /// No description provided for @rewardUnlockSubscribe.
@@ -15816,7 +15816,7 @@ abstract class AppLocalizations {
   /// No description provided for @rewardUnlockEarning.
   ///
   /// In ja, this message translates to:
-  /// **'Premium加入中もコインを貯められる予定です'**
+  /// **'Premium加入中もオパールを貯められる予定です'**
   String get rewardUnlockEarning;
 
   /// No description provided for @rewardUnlockHour.
@@ -15918,7 +15918,7 @@ abstract class AppLocalizations {
   /// No description provided for @rewardUnlockFullPremium.
   ///
   /// In ja, this message translates to:
-  /// **'特典コンプリートパック（プレミアム会員と同内容）'**
+  /// **'コンプリートパック（プレミアム会員と同内容）'**
   String get rewardUnlockFullPremium;
 
   /// No description provided for @rewardUnlockChoose.
@@ -15951,10 +15951,10 @@ abstract class AppLocalizations {
   /// **'作成した共有ファイルはまだありません'**
   String get sharedArchiveEmpty;
 
-  /// コインの枚数（報酬・交換・履歴・ミッション共通）。数と単位をまとめた1つの文言
+  /// オパールの数（報酬・交換・履歴・ミッション共通）。数と単位をまとめた1つの文言
   ///
   /// In ja, this message translates to:
-  /// **'{count}コイン'**
+  /// **'{count}オパール'**
   String coinAmount(int count);
 
   /// ミッション：投稿した作品のブックマーク数の目標（作品名なし）
@@ -16110,7 +16110,7 @@ abstract class AppLocalizations {
   /// ミッションの達成条件：制作時間の決まり
   ///
   /// In ja, this message translates to:
-  /// **'【制作時間の条件】端末の自己申告や端末に保存した制作時間は報酬対象ではありません。実際の制作を証明する仕組みが未完成のため、制作時間ミッションのコイン受取は現在できません。画面に表示される制作時間は参考値です。'**
+  /// **'【制作時間の条件】端末の自己申告や端末に保存した制作時間は報酬対象ではありません。実際の制作を証明する仕組みが未完成のため、制作時間ミッションのオパール受取は現在できません。画面に表示される制作時間は参考値です。'**
   String get creatorMissionDetailsTimeRule;
 
   /// ミッションの達成条件：受け取り方（48時間の確認）
@@ -16197,10 +16197,10 @@ abstract class AppLocalizations {
   /// **'この作品は現在の上位50位に入っていません'**
   String get creatorMissionRankCurrentUnknown;
 
-  /// ミッション：制作時間がコインの対象にならない理由
+  /// ミッション：制作時間がオパールの対象にならない理由
   ///
   /// In ja, this message translates to:
-  /// **'制作時間は端末側で偽装可能なため、現在コイン報酬の対象外です。計測した時間は参考値です。'**
+  /// **'制作時間は端末側で偽装可能なため、現在オパール報酬の対象外です。計測した時間は参考値です。'**
   String get creatorMissionEditTimeUnverified;
 
   /// ランキングのミッションの達成条件：作品の今のブックマーク数
@@ -16215,10 +16215,10 @@ abstract class AppLocalizations {
   /// **'対象作品の現在順位：{rank}位'**
   String creatorMissionRankCurrentPlace(int rank);
 
-  /// ランキングのミッション：コインの支給をまだ始めていないとき
+  /// ランキングのミッション：オパールの支給をまだ始めていないとき
   ///
   /// In ja, this message translates to:
-  /// **'コイン支給は現在準備中です。条件を満たしても今は受け取れません。'**
+  /// **'オパール支給は現在準備中です。条件を満たしても今は受け取れません。'**
   String get creatorMissionRankNotLive;
 
   /// ミッション：サーバーの時刻で確かめた制作時間（分）
@@ -16245,10 +16245,10 @@ abstract class AppLocalizations {
   /// **'累計{days}日'**
   String loginBonusDays(int days);
 
-  /// 累計ログインボーナス：毎日受け取れるコインの枚数
+  /// 累計ログインボーナス：毎日受け取れるオパールの数
   ///
   /// In ja, this message translates to:
-  /// **'毎日{coins}コイン'**
+  /// **'毎日{coins}オパール'**
   String loginBonusDailyCoins(int coins);
 
   /// 累計ログインボーナス：節目の日数
@@ -16263,10 +16263,10 @@ abstract class AppLocalizations {
   /// **'累計ログイン{days}日を達成しました'**
   String loginBonusActivityMilestone(int days);
 
-  /// 特典交換：今日あと何回リワード広告でコインを獲得できるか
+  /// 特典交換：今日あと何回リワード広告でオパールを獲得できるか
   ///
   /// In ja, this message translates to:
-  /// **'本日のコイン獲得：残り{count}回（UTC）'**
+  /// **'本日のオパール獲得：残り{count}回（UTC）'**
   String rewardUnlockRewardQuotaRemaining(int count);
 
   /// 特典交換：価格は確定しているが、まだ交換できない特典の価格の前に付ける言葉（合計の下の注記にも使う）
@@ -16275,10 +16275,10 @@ abstract class AppLocalizations {
   /// **'確定価格（交換準備中）'**
   String get rewardUnlockFixedPrice;
 
-  /// ミッション：コインを受け取れたときの知らせ
+  /// ミッション：オパールを受け取れたときの知らせ
   ///
   /// In ja, this message translates to:
-  /// **'コインを受け取りました'**
+  /// **'オパールを受け取りました'**
   String get missionCoinsReceived;
 
   /// ミッション：受け取りに失敗したときの知らせ
@@ -16341,16 +16341,16 @@ abstract class AppLocalizations {
   /// **'更新'**
   String get missionRefresh;
 
-  /// ミッション：作品広場の滞在ミッションの欄で、コインの受け取りがまだ始まっていないことの説明
+  /// ミッション：作品広場の滞在ミッションの欄で、オパールの受け取りがまだ始まっていないことの説明
   ///
   /// In ja, this message translates to:
-  /// **'コインの受取は準備中です'**
+  /// **'オパールの受取は準備中です'**
   String get missionPayoutPending;
 
-  /// ミッション：ウィークリー・マンスリーミッションの欄で、コインの配布がまだ始まっていないことの説明
+  /// ミッション：ウィークリー・マンスリーミッションの欄で、オパールの配布がまだ始まっていないことの説明
   ///
   /// In ja, this message translates to:
-  /// **'コイン配布は準備中です'**
+  /// **'オパール配布は準備中です'**
   String get recurringMissionsPayoutPending;
 
   /// ミッション：時間の長さ（時間単位）。数と単位をまとめた1つの文言
@@ -16443,10 +16443,10 @@ abstract class AppLocalizations {
   /// **'まだ達成条件を満たしていません。'**
   String get missionDetailsGoalNotCompleted;
 
-  /// 期間・作品広場のミッションの達成条件：コインの受け取りをまだ始めていないとき
+  /// 期間・作品広場のミッションの達成条件：オパールの受け取りをまだ始めていないとき
   ///
   /// In ja, this message translates to:
-  /// **'コインの受取機能は現在準備中です。'**
+  /// **'オパールの受取機能は現在準備中です。'**
   String get missionDetailsPayoutUnavailable;
 
   /// 作品広場の滞在ミッションの達成条件。periodはday・week・month、durationは「5分」「1時間」などの長さ
@@ -16473,10 +16473,10 @@ abstract class AppLocalizations {
   /// **'現在の閲覧時間：{progress} / {goal}'**
   String plazaMissionDetailsProgress(String progress, String goal);
 
-  /// 作品広場の滞在ミッションの達成条件：受け取れるコインと回数
+  /// 作品広場の滞在ミッションの達成条件：受け取れるオパールと回数
   ///
   /// In ja, this message translates to:
-  /// **'【受取】条件を満たすと{coins}コインを受け取れます。各ミッションの受取は同じ期間中に1回限りです。次の期間には再度挑戦できます。前の期間の報酬は期間終了後に受け取れません。'**
+  /// **'【受取】条件を満たすと{coins}オパールを受け取れます。各ミッションの受取は同じ期間中に1回限りです。次の期間には再度挑戦できます。前の期間の報酬は期間終了後に受け取れません。'**
   String plazaMissionDetailsClaim(int coins);
 
   /// ウィークリーのログインミッション：週にログインする日数の目標
@@ -16509,10 +16509,10 @@ abstract class AppLocalizations {
   /// **'現在の達成日数：{progress} / {goal}日'**
   String recurringMissionDetailsProgress(int progress, int goal);
 
-  /// ウィークリー・マンスリーのログインミッションの達成条件：受け取れるコインと回数
+  /// ウィークリー・マンスリーのログインミッションの達成条件：受け取れるオパールと回数
   ///
   /// In ja, this message translates to:
-  /// **'【受取】条件を満たすと{coins}コインを受け取れます。同じ期間の同じ段階は1回限りです。新しい週・月には進捗がリセットされ、再度達成できます。期間終了後は前の期間の報酬を受け取れません。'**
+  /// **'【受取】条件を満たすと{coins}オパールを受け取れます。同じ期間の同じ段階は1回限りです。新しい週・月には進捗がリセットされ、再度達成できます。期間終了後は前の期間の報酬を受け取れません。'**
   String recurringMissionDetailsClaim(int coins);
 
   /// ミッション達成の知らせの見出し
@@ -16599,7 +16599,7 @@ abstract class AppLocalizations {
   /// **'特典の重複・有効期限の確認'**
   String get rewardUnlockReviewTitle;
 
-  /// 特典交換の確認：コインの全機能を利用中に交換すると延長される見込みの期限
+  /// 特典交換の確認：オパールの全機能を利用中に交換すると延長される見込みの期限
   ///
   /// In ja, this message translates to:
   /// **'現在プレミアム特典を利用中です。交換すると有効期限が{expiry}まで延長される見込みです。よろしいですか？'**
@@ -16623,7 +16623,7 @@ abstract class AppLocalizations {
   /// **'現在プレミアム会員を利用中です。契約終了日時は確認できていません。'**
   String get rewardUnlockReviewPlayPremiumUnknown;
 
-  /// 重複・有効期限の確認：コインで交換した全機能の期限
+  /// 重複・有効期限の確認：オパールで交換した全機能の期限
   ///
   /// In ja, this message translates to:
   /// **'現在プレミアム特典を利用中です（{expiry}まで）。'**
@@ -16653,10 +16653,10 @@ abstract class AppLocalizations {
   /// **'{benefit}：既存・セット特典と重複。参考の延長後期限 {expiry}'**
   String rewardUnlockReviewItemOverlap(String benefit, DateTime expiry);
 
-  /// 重複・有効期限の確認：確定単価による合計（coinsはcoinAmountで作ったコインの枚数）
+  /// 重複・有効期限の確認：確定単価による合計（coinsはcoinAmountで作ったオパールの数）
   ///
   /// In ja, this message translates to:
-  /// **'確定単価による合計：{coins}。単品特典・重複交換のコイン消費はまだサーバー未対応です。金額は確定済みですが、交換はサーバーが正式な見積もりを返す場合のみ可能です。正式な有効期限は交換直前のサーバー確認で決まります。'**
+  /// **'確定単価による合計：{coins}。単品特典・重複交換のオパール消費はまだサーバー未対応です。金額は確定済みですが、交換はサーバーが正式な見積もりを返す場合のみ可能です。正式な有効期限は交換直前のサーバー確認で決まります。'**
   String rewardUnlockReviewFixedTotal(String coins);
 }
 
