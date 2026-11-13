@@ -95,8 +95,17 @@ jobs:
               --query 'Environment.Variables' --output json \
               > "$RUNNER_TEMP/niarim-live-env.json"
           trap 'rm -f "$RUNNER_TEMP/niarim-live-env.json"' EXIT
-          (cd backend && node scripts/assert-live-coin-config.mjs \
-            "$RUNNER_TEMP/niarim-live-env.json")
+          if jq -e 'type == "object"' "$RUNNER_TEMP/niarim-live-env.json" >/dev/null; then
+            (cd backend && node scripts/assert-live-coin-config.mjs \
+              "$RUNNER_TEMP/niarim-live-env.json")
+          else
+            # CDK bootstrap lookup role cannot read/decrypt Lambda environment.
+            # Do not broaden access to production credentials just for this
+            # non-mutating preflight. Manual deploy's independent drift guard
+            # remains fail-closed when full live configuration is unreadable.
+            echo "::warning::Lambda settings not readable by restricted lookup role; 25-field parity is NOT verified in Actions."
+            echo "Live configuration comparison: NOT VERIFIED (restricted role)." >> "$GITHUB_STEP_SUMMARY"
+          fi
       - name: Diff against real AWS (template only; no change set or deploy)
         working-directory: backend
         run: |
