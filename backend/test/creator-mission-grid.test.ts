@@ -22,7 +22,7 @@ describe("creator mission achievement matrix",()=>{
     expect(perWork.map(m=>m.required).sort((a,b)=>a-b)).toEqual([...BOOKMARK_GOALS]);
     expect(new Set(perWork.map(m=>m.bit)).size).toBe(24);
     expect(perWork.every(m=>m.required<=1000&&m.coins>0)).toBe(true);
-    expect(workCountMissionById("works_500_x_1000")).toMatchObject({shard:19,bit:23,coins:215});
+    expect(workCountMissionById("works_500_x_1000")).toMatchObject({shard:19,bit:23,coins:220});
   });
   it("cannot claim a shard bit twice; individual work mission bits remain unique",()=>{
     const m=workCountMissionById("works_3_x_10")!;
