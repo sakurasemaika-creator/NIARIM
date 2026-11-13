@@ -33,8 +33,9 @@ jobs:
       - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
         with:
+          flutter-version: '3.47.2'
           channel: stable
-      - run: flutter pub get
+      - run: flutter pub get --enforce-lockfile
       - name: Verify collapsible docks, persistence and preview
         run: flutter test test/desktop_dock_interactions_test.dart test/desktop_dock_content_viewport_test.dart test/desktop_dock_column_fit_test.dart test/docked_panel_close_scope_test.dart --reporter expanded
       - name: Analyze PC layout changes
