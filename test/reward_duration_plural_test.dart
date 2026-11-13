@@ -83,9 +83,9 @@ CommunityService _redeemableServer(List<String> redeemCalls) =>
     );
 
 const _toneCurvePrices = CoinUnlockUnitPrices(
-  perHour: 750,
-  perDay: 1800,
-  perWeek: 9000,
+  perHour: 3000,
+  perDay: 6000,
+  perWeek: 13500,
   perMonth: 18000,
 );
 
@@ -94,9 +94,9 @@ const _toneCurvePrices = CoinUnlockUnitPrices(
 int _expectedToneCurveCoins(CoinUnlockDuration duration) =>
     duration.amount *
     switch (duration.unit) {
-      CoinDurationUnit.hour => 750,
-      CoinDurationUnit.day => 1800,
-      CoinDurationUnit.week => 9000,
+      CoinDurationUnit.hour => 3000,
+      CoinDurationUnit.day => 6000,
+      CoinDurationUnit.week => 13500,
       CoinDurationUnit.month => 18000,
     };
 
