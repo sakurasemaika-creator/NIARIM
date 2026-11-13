@@ -52,46 +52,125 @@ CollectionTileGridDelegate collectionTileGridDelegate(
   BuildContext context,
   double maxExtent,
 ) {
-  final caption = TextPainter(
-    text: TextSpan(
-      text: 'Ag国한',
-      style: DefaultTextStyle.of(context).style
-          .merge(collectionTileCaptionStyle(context))
-          .copyWith(
-            fontWeight: MediaQuery.boldTextOf(context)
-                ? FontWeight.bold
-                : FontWeight.w600,
-          ),
-    ),
-    textScaler: MediaQuery.textScalerOf(context),
-    textDirection: Directionality.of(context),
-    locale: Localizations.localeOf(context),
-  )..layout();
-  final minimumHeight = 80 + caption.height + 8;
-  caption.dispose();
+  final minimumHeight = 80 + collectionTileNameHeight(context) + 8;
   return CollectionTileGridDelegate(
     maxExtent: maxExtent,
     minHeight: minimumHeight,
   );
 }
 
-/// The cover takes all available height above the single-line name band.
-/// Extended metadata stays available in the detail view or preview.
+/// カードの名前の行数の上限。
+const int kCollectionTileNameLines = 2;
+
+/// カードの名前に出す長さの上限（全角16文字・半角32文字分）。
+///
+/// スマホの既定の大きさ（360px・小表示・文字の倍率1倍）のカードに、全角
+/// 16文字が2行でちょうど入る。これより長い名前はこの長さまでで「…」にする
+/// （どの大きさのカードでも同じ名前は同じところで切れる）。全部の名前は
+/// 詳細表示と読み上げで分かる。
+const int kCollectionTileNameMaxUnits = 32;
+
+/// 名前の帯（[kCollectionTileNameLines]行分）の高さ。名前が1行でも2行
+/// でも同じ高さにして、同じ行のカードの絵の高さをそろえる。
+double collectionTileNameHeight(BuildContext context) {
+  final style = DefaultTextStyle.of(context).style
+      .merge(collectionTileCaptionStyle(context))
+      .copyWith(
+        fontWeight: MediaQuery.boldTextOf(context)
+            ? FontWeight.bold
+            : FontWeight.w600,
+      );
+  final key = (
+    style,
+    MediaQuery.textScalerOf(context),
+    Directionality.of(context),
+    Localizations.maybeLocaleOf(context),
+  );
+  final cached = _nameHeights[key];
+  if (cached != null) return cached;
+  // 欧文・漢字・ハングルの代わりの書体の行の高さも含めて測る。
+  final painter = TextPainter(
+    text: TextSpan(
+      text: List.filled(kCollectionTileNameLines, 'Ag国한').join('\n'),
+      style: style,
+    ),
+    textScaler: key.$2,
+    textDirection: key.$3,
+    locale: key.$4,
+  )..layout();
+  final height = painter.height;
+  painter.dispose();
+  if (_nameHeights.length > 16) _nameHeights.clear();
+  return _nameHeights[key] = height;
+}
+
+final _nameHeights =
+    <(TextStyle, TextScaler, TextDirection, Locale?), double>{};
+
+/// [name]を、カードの名前に出す長さ（[kCollectionTileNameMaxUnits]、全角は
+/// 2・半角は1と数える）までにする。超える名前はそこまでで「…」を付ける。
+/// 単語を空白で区切る言語では、途中で切れる単語を出さない。
+String collectionTileDisplayName(String name) {
+  var units = 0;
+  final kept = StringBuffer();
+  for (final character in name.characters) {
+    final width = _isWide(character.runes.first) ? 2 : 1;
+    if (units + width > kCollectionTileNameMaxUnits) {
+      var text = kept.toString();
+      if (character.trim().isNotEmpty) {
+        final space = text.lastIndexOf(RegExp(r'\s'));
+        if (space >= text.length ~/ 2) text = text.substring(0, space);
+      }
+      return '${text.trimRight()}…';
+    }
+    units += width;
+    kept.write(character);
+  }
+  return name;
+}
+
+// 全角（East Asian Widthの広い字）か。
+bool _isWide(int rune) =>
+    (rune >= 0x1100 && rune <= 0x115F) ||
+    (rune >= 0x2E80 && rune <= 0x303E) ||
+    (rune >= 0x3041 && rune <= 0x33FF) ||
+    (rune >= 0x3400 && rune <= 0x4DBF) ||
+    (rune >= 0x4E00 && rune <= 0x9FFF) ||
+    (rune >= 0xA000 && rune <= 0xA4CF) ||
+    (rune >= 0xAC00 && rune <= 0xD7A3) ||
+    (rune >= 0xF900 && rune <= 0xFAFF) ||
+    (rune >= 0xFE30 && rune <= 0xFE4F) ||
+    (rune >= 0xFF00 && rune <= 0xFF60) ||
+    (rune >= 0xFFE0 && rune <= 0xFFE6) ||
+    (rune >= 0x1F300 && rune <= 0x1F64F) ||
+    (rune >= 0x1F900 && rune <= 0x1F9FF) ||
+    (rune >= 0x20000 && rune <= 0x3FFFD);
+
+/// The cover takes all available height above the name band. The name
+/// shows on up to two lines (see [collectionTileDisplayName]); extended
+/// metadata stays available in the detail view or preview.
 Widget collectionTileCaption(BuildContext context, String name) => ColoredBox(
   color:
       Theme.of(context).cardTheme.color ??
       Theme.of(context).colorScheme.surfaceContainer,
   child: Padding(
     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-    child: Tooltip(
-      message: name,
-      triggerMode: TooltipTriggerMode.manual,
-      excludeFromSemantics: true,
-      child: Text(
-        name,
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-        style: collectionTileCaptionStyle(context),
+    child: SizedBox(
+      height: collectionTileNameHeight(context),
+      child: Align(
+        alignment: AlignmentDirectional.topStart,
+        child: Tooltip(
+          message: name,
+          triggerMode: TooltipTriggerMode.manual,
+          excludeFromSemantics: true,
+          child: Text(
+            collectionTileDisplayName(name),
+            semanticsLabel: name,
+            maxLines: kCollectionTileNameLines,
+            overflow: TextOverflow.ellipsis,
+            style: collectionTileCaptionStyle(context),
+          ),
+        ),
       ),
     ),
   ),

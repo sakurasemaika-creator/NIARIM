@@ -226,7 +226,12 @@ void main() {
           : 1;
       await show(tester, service!, const Locale('fr'));
       expect(tester.takeException(), isNull, reason: '$size');
-      final text = find.text(name);
+      // Tiled captions show the name on up to two lines and shorten names
+      // longer than 16 full-width characters; the full name stays the
+      // spoken label.
+      final text = find.byWidgetPredicate(
+        (w) => w is Text && (w.semanticsLabel ?? w.data) == name,
+      );
       final target = find
           .ancestor(of: text, matching: find.byType(InkWell))
           .first;
@@ -234,8 +239,8 @@ void main() {
       expect(rect.width, lessThanOrEqualTo(size.width));
       expect(rect.height, greaterThanOrEqualTo(48));
       final label = tester.widget<Text>(text);
-      // Match Projects: tiled captions are always a single text line.
-      expect(label.maxLines, 1);
+      // Match Projects: tiled captions are at most two text lines.
+      expect(label.maxLines, 2);
       expect(label.overflow, TextOverflow.ellipsis);
     }
     await tester.pumpWidget(const SizedBox.shrink());
