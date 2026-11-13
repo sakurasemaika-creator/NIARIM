@@ -500,31 +500,9 @@ class _StampPanelState extends State<StampPanel> {
     await service.createStampFromImage(result.files.first.path!, name: name);
   }
 
-  Future<void> _importStamp(BuildContext context, StampService service) async {
-    final result = await FilePicker.platform.pickFiles(
-      type: FileType.custom,
-      allowedExtensions: ['niastamp'],
-    );
-    if (result == null ||
-        result.files.isEmpty ||
-        result.files.first.path == null) {
-      return;
-    }
-    try {
-      await service.importStampFile(result.files.first.path!);
-    } catch (e) {
-      if (!context.mounted) return;
-      final l10n = AppLocalizations.of(context)!;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.stampImportFailedSnackbar(e.toString()))),
-      );
-    }
-  }
-
   static String _exportKey(Stamp stamp) => 'stamp:${stamp.id}';
 
-  /// .niastampへ書き出してから共有する。書き出しの失敗と、共有できない端末・
-  /// 共有の失敗は別のことなので、別の文で知らせる。
+  /// PNG共有カードの生成と端末への保存・共有を順に処理する。
   Future<void> _exportStamp(
     BuildContext context,
     StampService service,
