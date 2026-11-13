@@ -270,7 +270,7 @@ void main() {
       await tester.pump();
       expect(
         requests.map((r) => r.url.path),
-        containsAll(['/works/latest', '/ranking/all']),
+        containsAll(['/works/latest', '/ranking/bookmarks']),
       );
       expect(service.byId('fresh'), isNotNull);
       expect(service.byId('ranked'), isNotNull);
