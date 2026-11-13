@@ -63,7 +63,7 @@ class _ScriptedStorage extends StorageInfoService {
       rememberedBreakdown;
 
   @override
-  int? get lastNonEmptyCategoryCount => null;
+  Set<StorageCategory>? get lastNonEmptyCategories => null;
 
   @override
   DeviceSpaceInfo? get lastDeviceSpace => rememberedDevice;
@@ -733,16 +733,27 @@ void main() {
           await capture(tester, '${shot}_top');
 
           final notices = [
-            (l10n.storageDeviceSpaceUnavailable, _retryDevice),
+            (
+              l10n.storageDeviceSpaceUnavailable,
+              _retryDevice,
+              const ValueKey('storageDeviceNotice'),
+            ),
             (
               failed
                   ? l10n.storageBreakdownLoadFailed
                   : l10n.storageBreakdownIncomplete,
               _retryBreakdown,
+              const ValueKey('storageBreakdownNotice'),
             ),
           ];
-          for (final (message, retryKey) in notices) {
-            final text = find.text(message, skipOffstage: false);
+          for (final (message, retryKey, noticeKey) in notices) {
+            // 出している知らせの文（欄が高さを測るために並べる、描かない
+            // 見本の知らせは数えない）。
+            final text = find.descendant(
+              of: find.byKey(noticeKey, skipOffstage: false),
+              matching: find.text(message, skipOffstage: false),
+              skipOffstage: false,
+            );
             await tester.scrollUntilVisible(text, 80, maxScrolls: 60);
             expect(tester.takeException(), isNull, reason: '$profile $message');
             // 文は省略されず、欄の幅に収まる。

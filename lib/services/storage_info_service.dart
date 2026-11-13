@@ -7,6 +7,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../utils/app_error_reporter.dart';
+import '../utils/tolerant_preferences.dart';
 import 'export_storage.dart';
 
 /// 容量削減画面（ホーム画面ハンバーガーメニュー）で表示するNIARIMの
@@ -48,6 +49,12 @@ class StorageBreakdown {
 
   int get totalBytes => bytesByCategory.values.fold(0, (a, b) => a + b);
 
+  /// 中身のある分類（内訳のグラフに棒が並ぶ分類）。
+  Set<StorageCategory> get nonEmptyCategories => {
+    for (final c in StorageCategory.values)
+      if (bytesOf(c) > 0) c,
+  };
+
   /// 中身のある分類の数（内訳のグラフに並ぶ棒の本数）。
   int get nonEmptyCategoryCount =>
       StorageCategory.values.where((c) => bytesOf(c) > 0).length;
@@ -83,6 +90,11 @@ const storageScanShareLimit = Duration(seconds: 30);
 /// 直近の結果だけをプロセスの中で覚えている（[lastBreakdown]・
 /// [lastDeviceSpace]）。大きさを変える操作の後は[invalidate]で捨てること
 /// （容量削減の画面の外でファイルを消す所も含む）。
+///
+/// 画面の並びの見込み（内訳の中身のあった分類と、読めなかった分類の知らせの
+/// 有無）だけは保存して、次の起動でも使う（[restoreSavedLayout]）。プロセスの
+/// 中だけで覚えていた頃は、起動して最初に開いた画面だけが分類の数だけの高さを
+/// 取り、2回目以降と操作の行の位置が100px前後違った。
 class StorageInfoService {
   static StorageBreakdown? _lastBreakdown;
 
@@ -90,9 +102,18 @@ class StorageInfoService {
   static Set<String>? _lastBreakdownTrashedIds;
   static DeviceSpaceInfo? _lastDeviceSpace;
 
-  /// 直近に集計できた内訳で、中身のあった分類の数。値ではなく画面の並びの
-  /// 見込みなので、[invalidate]でも忘れない。
-  static int? _lastNonEmptyCategoryCount;
+  /// 直近に集計できた内訳で、中身のあった分類。値ではなく画面の並びの
+  /// 見込みなので、[invalidate]でも忘れない（[eraseAllData]では忘れる）。
+  static Set<StorageCategory>? _lastNonEmptyCategories;
+
+  /// 直近に集計できた内訳に、読めなかった分類があったか（画面がその知らせの
+  /// 高さも取っておくため。[_lastNonEmptyCategories]と同じ見込み）。
+  static bool _lastBreakdownIncomplete = false;
+
+  /// 並びの見込みの保存（この端末の記録。設定の引き継ぎでは移さない）。
+  /// 分類は[StorageCategory]の名前の一覧。
+  static const _savedCategoriesKey = 'storage_breakdown_categories';
+  static const _savedIncompleteKey = 'storage_breakdown_incomplete';
 
   static final Stopwatch _sinceStart = Stopwatch()..start();
   static Duration _elapsedSinceStart() => _sinceStart.elapsed;
@@ -124,9 +145,99 @@ class StorageInfoService {
     return _lastBreakdown;
   }
 
-  /// 直近に集計できた内訳で、中身のあった分類の数（まだ一度も集計できて
-  /// いなければnull）。画面が、集計中の欄にグラフと同じ高さを取るために使う。
-  int? get lastNonEmptyCategoryCount => _lastNonEmptyCategoryCount;
+  /// 直近に集計できた内訳で、中身のあった分類（まだ一度も集計できて
+  /// いなければnull）。起動してまだ集計していなければ、前の起動で保存した
+  /// 分類。画面は[expectedBarCount]で、集計中の欄に取っておく高さを決める。
+  Set<StorageCategory>? get lastNonEmptyCategories => _lastNonEmptyCategories;
+
+  /// [lastNonEmptyCategories]の数（内訳のグラフに並んだ棒の本数）。
+  int? get lastNonEmptyCategoryCount => lastNonEmptyCategories?.length;
+
+  /// [lastNonEmptyCategories]の内訳に、読めなかった分類があったか（その
+  /// 内訳には「一部を読み取れなかった」の知らせが付いた）。
+  bool get lastBreakdownIncomplete => _lastBreakdownIncomplete;
+
+  /// 次に届く内訳の棒の本数の見込み（画面が、結果が届く前の欄に取っておく
+  /// 高さ）。覚えている内訳（前の起動の分も）が無ければnull（画面は分類の
+  /// 数だけ取る）。
+  ///
+  /// 覚えている内訳の後でひとりでに中身の有無が変わる分類は、覚えた値では
+  /// なく今の様子で見込む（覚えた本数のままだと、最初に開いた画面の行が
+  /// 結果が届いたときに動く・2回目に開いた画面と違う）：
+  /// - キャッシュは、いつもあるものとする。アプリ（サムネイル・書き出しの
+  ///   一時ファイル）とOSが絶えず書くので、消した後の起動でもたいてい戻る。
+  /// - ゴミ箱は、いまゴミ箱に作品があるか（[hasTrash]）で決まる（集計は
+  ///   ゴミ箱の作品のフォルダだけをゴミ箱に数える）。開く前にゴミ箱へ移した・
+  ///   起動時の自動削除で空になったのも、これで合う。
+  /// - 作品データは、ゴミ箱の外に作品があれば（[hasLiveProjects]）あるものと
+  ///   する。読めていない作品のフォルダも数えるので、作品が無くても減らさない。
+  /// それ以外（素材・書き出し・自作の素材）は覚えた値のまま。これらは利用者の
+  /// 操作でしか変わらないが、覚えた集計の後で中身ができた・無くなったときは、
+  /// その後に初めて開いた画面だけ、結果が届くと行が動く・2回目と違う。
+  int? expectedBarCount({
+    required bool hasTrash,
+    required bool hasLiveProjects,
+  }) {
+    final last = lastNonEmptyCategories;
+    if (last == null) return null;
+    final expected = {...last, StorageCategory.cache};
+    if (hasTrash) {
+      expected.add(StorageCategory.trash);
+    } else {
+      expected.remove(StorageCategory.trash);
+    }
+    if (hasLiveProjects) expected.add(StorageCategory.projectData);
+    return expected.length;
+  }
+
+  /// 前の起動で保存した並びの見込みを読む（起動処理が1度呼ぶ）。投げない。
+  /// 保存が無い・読めない・知らない分類の名前があるなら何もしない（画面は
+  /// いちばん高い場合を取っておく）。
+  Future<void> restoreSavedLayout() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final names = prefs.readStringList(_savedCategoriesKey);
+      if (names == null) return;
+      final byName = StorageCategory.values.asNameMap();
+      if (!names.every(byName.containsKey)) return;
+      _lastNonEmptyCategories = Set.unmodifiable({
+        for (final name in names) byName[name]!,
+      });
+      _lastBreakdownIncomplete = prefs.readBool(_savedIncompleteKey) ?? false;
+    } catch (error, stack) {
+      AppErrorReporter.record(error, stack);
+    }
+  }
+
+  /// 集計できた内訳から並びの見込みを覚え、変わったときだけ保存する。
+  static void _rememberLayout(StorageBreakdown breakdown) {
+    final categories = breakdown.nonEmptyCategories;
+    final incomplete = breakdown.incomplete.isNotEmpty;
+    if (setEquals(categories, _lastNonEmptyCategories) &&
+        incomplete == _lastBreakdownIncomplete) {
+      return;
+    }
+    _lastNonEmptyCategories = Set.unmodifiable(categories);
+    _lastBreakdownIncomplete = incomplete;
+    unawaited(_saveLayout(categories, incomplete));
+  }
+
+  static Future<void> _saveLayout(
+    Set<StorageCategory> categories,
+    bool incomplete,
+  ) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setStringList(_savedCategoriesKey, [
+        for (final category in StorageCategory.values)
+          if (categories.contains(category)) category.name,
+      ]);
+      await prefs.setBool(_savedIncompleteKey, incomplete);
+    } catch (error, stack) {
+      // 見込みが古いままになるだけ（次の起動の最初の画面の高さが違う）。
+      AppErrorReporter.record(error, stack);
+    }
+  }
 
   /// 直近に取得できた端末の容量。
   DeviceSpaceInfo? get lastDeviceSpace => _lastDeviceSpace;
@@ -173,9 +284,12 @@ class StorageInfoService {
     Future<StorageBreakdown> run() async {
       try {
         final breakdown = await _scanBreakdown(scan.trashedProjectIds);
-        if (!breakdown.isUnreadable) {
-          _lastNonEmptyCategoryCount = breakdown.nonEmptyCategoryCount;
-          if (identical(_running, scan) && scan.epoch == _epoch) {
+        // 大きさを変える操作の前に始めた集計は、操作の前のディスクを見て
+        // いる。後から終わっても、並びの見込みも結果も覚えない（後で始めた
+        // 集計が先に終わっていると、見込みが操作の前の中身へ戻った）。
+        if (!breakdown.isUnreadable && scan.epoch == _epoch) {
+          _rememberLayout(breakdown);
+          if (identical(_running, scan)) {
             _lastBreakdown = breakdown;
             _lastBreakdownTrashedIds = scan.trashedProjectIds;
           }
@@ -388,6 +502,12 @@ class StorageInfoService {
       await prefs.clear();
     } finally {
       invalidate();
+      // 並びの見込みの保存も消えたので、覚えも捨てる。削除の後の集計は、
+      // 前に覚えていた見込みと同じでも保存し直す（同じなら保存しないままに
+      // すると、その時に覚えていた見込みしだいで、次の起動の最初の画面が
+      // 分類の数だけの高さを取るか、削除の後の集計の高さを取るかが変わった）。
+      _lastNonEmptyCategories = null;
+      _lastBreakdownIncomplete = false;
     }
   }
 

@@ -35,7 +35,15 @@ void main() {
     root.deleteSync(recursive: true);
   });
 
-  Finder anywhere(String text) => find.text(text, skipOffstage: false);
+  // 一覧の画面の外も含めて探す。欄が高さを測るための見本（IndexedStackの
+  // 選ばれていない子。描かない・読み上げない）は数えない。
+  Finder anywhere(String text) => find.byElementPredicate(
+    (element) =>
+        element.widget is Text &&
+        (element.widget as Text).data == text &&
+        Visibility.of(element),
+    skipOffstage: false,
+  );
 
   Future<void> clearCacheByTap(
     WidgetTester tester,

@@ -98,7 +98,8 @@ class NiatraSerializer {
   /// 作品のフォルダ分けやゴミ箱の中身・購入日・性能の判定が、もう1台の記録で
   /// 置き換わる）。書き出した共有ファイルのお気に入り、書き出した作品の
   /// サムネイルの選び方と、ホームの「作品」タブのお気に入りは、この端末の
-  /// ファイルの場所で覚えている。
+  /// ファイルの場所で覚えている。容量削減の画面の並びの見込み（内訳の中身の
+  /// あった分類・知らせの有無）は、この端末のファイルを数えた結果。
   static const Set<String> deviceRecordKeys = {
     'project_folders',
     'trashed_projects',
@@ -118,6 +119,8 @@ class NiatraSerializer {
     'premium_purchase_date',
     'default_preset',
     'first_launch',
+    'storage_breakdown_categories',
+    'storage_breakdown_incomplete',
   };
 
   /// [deviceRecordKeys]と同じ記録で、キーの頭が決まっているもの（自動保存・

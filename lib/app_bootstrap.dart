@@ -37,6 +37,7 @@ import 'services/community_service.dart';
 import 'services/community_preview_service.dart';
 import 'services/google_auth_service.dart';
 import 'services/home_widget_service.dart';
+import 'services/storage_info_service.dart';
 
 /// 起動処理のどこかが失敗したことを表す。[step]は失敗した初期化処理の
 /// 名前で、起動失敗画面の詳細とエラー記録に出す。
@@ -129,6 +130,9 @@ Future<List<SingleChildWidget>> _buildAppProviders(
   final settingsService = own(SettingsService());
   await settingsService.init();
   languageLoaded(settingsService.language);
+  // 容量削減の画面が、起動して最初に開いたときも前回と同じ高さの欄を
+  // 取っておけるように、前の起動で覚えた並びの見込みを読む（投げない）。
+  await StorageInfoService().restoreSavedLayout();
 
   await enter('performance');
   final performanceService = own(PerformanceService());

@@ -128,7 +128,10 @@ void main() {
   testWidgets('前回の棒の本数を覚えていれば、その高さだけを取っておく（空きを残さない）', (tester) async {
     final providers = await bootstrapStorageScreen(tester);
     Future<(double, double)> heightsFor(int? rememberedBars, int bars) async {
-      final service = ScriptedStorage()..rememberedBarCount = rememberedBars;
+      final service = ScriptedStorage()
+        ..rememberedCategories = rememberedBars == null
+            ? null
+            : _withBars(rememberedBars).nonEmptyCategories;
       final l10n = await showStorageScreen(tester, providers, service);
       service.deviceQueries.single.complete(null);
       await tester.pump();
@@ -156,6 +159,9 @@ void main() {
     final (twoReserved, twoShown) = await heightsFor(2, 2);
     expect(twoShown, twoReserved);
     expect(twoReserved, lessThan(unknownReserved));
+    // 6本目はゴミ箱：ゴミ箱の棒は、ゴミ箱に作品があるときだけ並ぶ。
+    final projects = await storageProjectServiceOf(tester, providers);
+    await addStorageTestProject(tester, projects, trashed: true);
     final (sixReserved, _) = await heightsFor(6, 6);
     expect(sixReserved, unknownReserved);
     expect(tester.takeException(), isNull);

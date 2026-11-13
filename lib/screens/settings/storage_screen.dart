@@ -142,6 +142,28 @@ class _StorageScreenState extends State<StorageScreen> {
   /// 減っても、下の操作の行が指の下で動かないように）。
   late int _reservedBars;
 
+  /// 内訳の欄に「一部を読み取れなかった」の知らせの付いた内訳の高さも取って
+  /// おくときの、その内訳の棒の本数（取っておかなければnull）。開いたときに
+  /// 前回の内訳（前の起動の分も）にその知らせが付いていたら見込んだ本数で、
+  /// 開いている間に知らせ付きの結果が届いたらその本数で取り、閉じるまで
+  /// 減らさない（集計中・操作の後の集計し直しで知らせが消えても、下の操作の
+  /// 行が上へ動かない）。欄の高さは、[_reservedBars]本の棒と、この本数の
+  /// 棒＋知らせの高い方：知らせの付かなかった見込みに知らせの高さを足さない
+  /// （何も覚えていない画面は6本ぶんを取って待つので、2本と知らせの結果が
+  /// 届いたときに6本＋知らせへ伸ばすと、下の行が知らせの高さだけ動いた）。
+  int? _reservedNoticeBars;
+
+  /// 内訳の欄に「再試行」つきの知らせ（集計できなかった・待ち切れ）を出した
+  /// ときの、その上の棒の本数（出していなければnull）。この知らせは前もって
+  /// 分からないので、出たときは下の操作の行が動くが、出た後は閉じるまで
+  /// 取っておく：やり直す間に文が「集計中…」へ替わっても、結果が届いて知らせが
+  /// 消えても縮めない（縮むたびに行が上へ動き、結果でまた動いた）。
+  int? _reservedRetryNoticeBars;
+
+  /// 「集計できなかった」の知らせを出したことがある。その文と、やり直す間の
+  /// 「集計中…」の高い方を取っておく（待ち切れの知らせは「集計中…」だけ）。
+  bool _failureNoticeShown = false;
+
   // ── 端末の容量 ──
   DeviceSpaceInfo? _deviceSpace;
   bool _deviceWaiting = false;
@@ -155,6 +177,11 @@ class _StorageScreenState extends State<StorageScreen> {
   bool _deviceUnavailable = false;
   int _deviceGeneration = 0;
   Timer? _deviceTimeout;
+
+  /// 端末の容量のグラフの下に待ち切れの知らせを出したことがある（取り直して
+  /// また待ち切れになった）。出た後は、答えが届いても閉じるまでその高さを
+  /// 取っておく。
+  bool _deviceNoticeBelowChart = false;
 
   // ── 整理する ──
   /// 操作が1つ進んでいる間（確かめるダイアログが開いている間も含む）true。
@@ -200,12 +227,23 @@ class _StorageScreenState extends State<StorageScreen> {
     // 値はゴミ箱の大きさも作品データの大きさも合っていないので出さない。
     _breakdown = _service.lastBreakdownFor(_trashedProjectIds());
     _deviceSpace = _service.lastDeviceSpace;
-    // 棒が何本になるか分からない間は、分類の数だけ（いちばん高い場合）を
-    // 取っておく。少なく見込むと、結果が届いたときに操作の行が下へ動く。
-    _reservedBars =
-        _breakdown?.nonEmptyCategoryCount ??
-        _service.lastNonEmptyCategoryCount ??
-        StorageCategory.values.length;
+    // 棒の本数は、覚えている内訳（前の起動の分も）に今の様子を合わせて
+    // 見込む（ひとりでに変わるキャッシュ・ゴミ箱・作品データ。
+    // [StorageInfoService.expectedBarCount]）。最初に開いた画面も2回目以降も
+    // 同じ決まりなので、中身が同じなら操作の行は開くたびに同じ所に並ぶ。
+    // 何も覚えていなければ、分類の数だけ（いちばん高い場合）を取っておく。
+    // 少なく見込むと、結果が届いたときに操作の行が下へ動く。
+    final shownBars = _breakdown?.nonEmptyCategoryCount;
+    final expectedBars = _expectedBars();
+    _reservedBars = expectedBars == null
+        ? shownBars ?? StorageCategory.values.length
+        : math.max(shownBars ?? 0, expectedBars);
+    final shown = _breakdown;
+    final expectNotice = shown != null
+        ? shown.incomplete.isNotEmpty
+        : _service.lastNonEmptyCategories != null &&
+              _service.lastBreakdownIncomplete;
+    _reservedNoticeBars = expectNotice ? _reservedBars : null;
     _reload();
   }
 
@@ -229,6 +267,17 @@ class _StorageScreenState extends State<StorageScreen> {
 
   Set<String> _trashedProjectIds() =>
       context.read<ProjectService>().trash.map((p) => p.id).toSet();
+
+  /// 内訳の棒の本数の見込み（覚えている内訳に、いまのゴミ箱・作品の様子を
+  /// 合わせる。[StorageInfoService.expectedBarCount]）。何も覚えていなければ
+  /// null。
+  int? _expectedBars() {
+    final projects = context.read<ProjectService>();
+    return _service.expectedBarCount(
+      hasTrash: projects.trash.isNotEmpty,
+      hasLiveProjects: projects.projects.isNotEmpty,
+    );
+  }
 
   /// 内訳と端末の容量を取り直す。投げず、必ず終わる（引っぱって更新が
   /// これを待つ）。[restart]は大きさを変える操作の後に渡す：走っている
@@ -263,7 +312,21 @@ class _StorageScreenState extends State<StorageScreen> {
     });
     setState(() {
       _scanning = true;
-      if (restart) _sizesOutdated = true;
+      if (restart) {
+        _sizesOutdated = true;
+        // 操作の後は、ゴミ箱・作品の様子が開いたときと違うことがある（「作品を
+        // 整理する」のホームで作品をゴミ箱へ移して戻った等）。いまの様子で
+        // 見込み直し、多ければ結果を待たずにここで広げる：結果が届いてから
+        // 広げると、指の下で行が動く（戻る途中に広げれば、触れる前に収まる）。
+        final expected = _expectedBars();
+        if (expected != null) {
+          _reservedBars = math.max(_reservedBars, expected);
+          final noticeBars = _reservedNoticeBars;
+          if (noticeBars != null) {
+            _reservedNoticeBars = math.max(noticeBars, expected);
+          }
+        }
+      }
     });
     // 待ち切れになった集計はサービスの側でも走ったままなので、分け合わずに
     // 新しく始めさせる。
@@ -302,7 +365,11 @@ class _StorageScreenState extends State<StorageScreen> {
         _breakdownFailed = false;
         _breakdown = scanned;
         _sizesOutdated = false;
-        _reservedBars = math.max(_reservedBars, scanned.nonEmptyCategoryCount);
+        final bars = scanned.nonEmptyCategoryCount;
+        _reservedBars = math.max(_reservedBars, bars);
+        if (scanned.incomplete.isNotEmpty) {
+          _reservedNoticeBars = math.max(_reservedNoticeBars ?? 0, bars);
+        }
       }
     });
     _releaseScanWait();
@@ -407,26 +474,29 @@ class _StorageScreenState extends State<StorageScreen> {
         fontFamilyFallback: kHeadingFontFallback,
       ),
     );
+    // 印が無い間も印の幅を取っておく（印が出ると見出しの幅が狭まって2行に
+    // 折れ、印が消えると戻るので、下の欄と操作の行が上下に動いた。文字の
+    // 大きいフランス語・スペイン語で起きた）。
     return Focus(
       focusNode: focusNode,
       skipTraversal: true,
       includeSemantics: false,
-      child: busyLabel == null
-          ? title
-          : Row(
-              children: [
-                Flexible(child: title),
-                const SizedBox(width: 8),
-                SizedBox(
-                  width: 14,
-                  height: 14,
-                  child: CircularProgressIndicator(
+      child: Row(
+        children: [
+          Flexible(child: title),
+          const SizedBox(width: 8),
+          SizedBox(
+            width: 14,
+            height: 14,
+            child: busyLabel == null
+                ? null
+                : CircularProgressIndicator(
                     strokeWidth: 2,
                     semanticsLabel: busyLabel,
                   ),
-                ),
-              ],
-            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -452,26 +522,56 @@ class _StorageScreenState extends State<StorageScreen> {
 
   /// 欄の中身を、決めた高さ以上の場所に上から並べる。中身が集計中・グラフ・
   /// 知らせと入れ替わっても欄の高さが変わらず、下の操作の行が動かない。
-  Widget _reservedBlock({required int bars, required List<Widget> children}) {
-    return ConstrainedBox(
-      constraints: BoxConstraints(minHeight: _breakdownChartHeight(bars, 0)),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: children,
-      ),
+  /// 欄の高さは、中身と[samples]（取っておく高さの見本）のいちばん高いもの。
+  Widget _reservedBlock({
+    required List<Widget> samples,
+    required List<Widget> children,
+  }) {
+    // 見本は中身と並べて測る：知らせ・「集計中…」の行の高さは幅・文字の
+    // 大きさ・言語で変わる。IndexedStackは選んだ子（中身）だけを描き・
+    // 触れさせ・読み上げ、いちばん高い子の高さを取る（見本はフォーカスも
+    // 受けない）。中身はいつも先頭に置く：見本が増えても（開いている間に
+    // 知らせを取っておくようになったとき）中身（グラフ・知らせ・「再試行」）が
+    // 作り直されない。見本に回る表示を入れないこと（描かなくても動き続ける）。
+    return IndexedStack(
+      index: 0,
+      children: [
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: children,
+        ),
+        ...samples,
+      ],
     );
   }
 
-  /// まだ出せる値が無い欄の中身。
-  Widget _calculating(AppLocalizations l10n) {
+  /// [bars]本の棒の高さの見本。
+  Widget _barsSample(int bars) =>
+      SizedBox(height: _breakdownChartHeight(bars, 0));
+
+  /// [bars]本の棒の下に[message]の知らせが付いた高さの見本。知らせは、
+  /// やり直している間（回る表示）も同じ高さ。
+  Widget _noticeSample(int bars, String message) => Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      _barsSample(bars),
+      _StorageNotice(message: message, busy: false),
+    ],
+  );
+
+  /// まだ出せる値が無い欄の中身。[sample]なら高さの見本で、回る表示の
+  /// 場所だけを取る。
+  Widget _calculating(AppLocalizations l10n, {bool sample = false}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
         children: [
-          const SizedBox(
+          SizedBox(
             width: 20,
             height: 20,
-            child: CircularProgressIndicator(strokeWidth: 2),
+            child: sample
+                ? null
+                : const CircularProgressIndicator(strokeWidth: 2),
           ),
           const SizedBox(width: 12),
           Expanded(child: Text(l10n.storageCalculating)),
@@ -500,6 +600,7 @@ class _StorageScreenState extends State<StorageScreen> {
     final breakdown = _currentBreakdown;
     // グラフはNIARIMの分を内訳の合計から出すので、内訳も要る。
     final hasChart = device != null && breakdown != null;
+    if (_deviceTimedOut && hasChart) _deviceNoticeBelowChart = true;
     return Column(
       key: const ValueKey('storageDeviceSection'),
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -514,7 +615,22 @@ class _StorageScreenState extends State<StorageScreen> {
           ),
           const SizedBox(height: 8),
           _reservedBlock(
-            bars: _deviceBarCount,
+            samples: [
+              _barsSample(_deviceBarCount),
+              _calculating(l10n, sample: true),
+              // 待ち切れの知らせ（やり直す間は「集計中…」）は、いつも取って
+              // おく：ふつうは棒3本より低く、文字が大きく幅の狭いときだけ
+              // 高い（4秒で行が下へ動き、答えで戻った）。
+              _noticeSample(0, l10n.storageDeviceSpaceUnavailable),
+              _noticeSample(0, l10n.storageCalculating),
+              if (_deviceNoticeBelowChart) ...[
+                _noticeSample(
+                  _deviceBarCount,
+                  l10n.storageDeviceSpaceUnavailable,
+                ),
+                _noticeSample(_deviceBarCount, l10n.storageCalculating),
+              ],
+            ],
             children: [
               if (hasChart)
                 _buildDeviceChart(l10n, device, breakdown)
@@ -574,6 +690,15 @@ class _StorageScreenState extends State<StorageScreen> {
   Widget _breakdownSection(AppLocalizations l10n) {
     final breakdown = _currentBreakdown;
     final notice = _breakdownNoticed ? _breakdownNoticeText(l10n) : null;
+    if (notice != null && (_breakdownFailed || !_breakdownIncomplete)) {
+      _reservedRetryNoticeBars = math.max(
+        _reservedRetryNoticeBars ?? 0,
+        breakdown?.nonEmptyCategoryCount ?? 0,
+      );
+      if (_breakdownFailed) _failureNoticeShown = true;
+    }
+    final retryNoticeBars = _reservedRetryNoticeBars;
+    final noticeBars = _reservedNoticeBars;
     return Column(
       key: const ValueKey('storageBreakdownSection'),
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -588,7 +713,19 @@ class _StorageScreenState extends State<StorageScreen> {
         ),
         const SizedBox(height: 8),
         _reservedBlock(
-          bars: _reservedBars,
+          samples: [
+            _barsSample(_reservedBars),
+            // 棒が少ない（作品が無い端末の1本）と、文字が大きいときは
+            // 「集計中…」の行の方が高い。
+            _calculating(l10n, sample: true),
+            if (noticeBars != null)
+              _noticeSample(noticeBars, l10n.storageBreakdownIncomplete),
+            if (retryNoticeBars != null) ...[
+              _noticeSample(retryNoticeBars, l10n.storageCalculating),
+              if (_failureNoticeShown)
+                _noticeSample(retryNoticeBars, l10n.storageBreakdownLoadFailed),
+            ],
+          ],
           children: [
             if (breakdown != null)
               _buildBreakdownChart(l10n, breakdown)
@@ -879,14 +1016,38 @@ class _StorageScreenState extends State<StorageScreen> {
     FocusNode? focusNode,
     VoidCallback? onTap,
   }) {
+    // 行の下の文は「集計中…」・大きさ（数字）・空と入れ替わる。行の高さを
+    // 文の字で変えない（韓国語・中国語の「集計中…」は補う書体で数字より
+    // 1〜2px高く、結果が届くと下の行が動いた）。
+    final subtitleStyle =
+        ListTileTheme.of(context).subtitleTextStyle ??
+        Theme.of(context).textTheme.bodyMedium;
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 4),
       child: ListTile(
         focusNode: focusNode,
         leading: Icon(icon, color: iconColor),
         title: Text(title, style: TextStyle(color: titleColor)),
-        subtitle: subtitle == null ? null : Text(subtitle),
-        trailing: onTap == null ? null : const Icon(Icons.chevron_right),
+        subtitle: subtitle == null
+            ? null
+            : Text(
+                subtitle,
+                strutStyle: subtitleStyle == null
+                    ? null
+                    : StrutStyle.fromTextStyle(
+                        subtitleStyle,
+                        forceStrutHeight: true,
+                      ),
+              ),
+        // 押せない間も矢印の幅は取っておく（押せるようになって矢印が出ると、
+        // 名前の幅が狭まって2行に折れ、下の行が動く。文字が大きいときに起きた）。
+        trailing: Visibility(
+          visible: onTap != null,
+          maintainSize: true,
+          maintainAnimation: true,
+          maintainState: true,
+          child: const Icon(Icons.chevron_right),
+        ),
         onTap: onTap,
         enabled: onTap != null,
       ),
@@ -1107,21 +1268,23 @@ class _StorageScreenState extends State<StorageScreen> {
 /// やり直している間（[busy]）も同じ所に残り、ボタンは押せるままにする
 /// （重ねて押しても、走っている1回にまとめられる）。ボタンを消す・押せなく
 /// すると、キーボードで押した人のフォーカスがほかのボタンへ飛ぶ。
+///
+/// [onRetry]が無いものは、欄の高さを測るための見本（描かない）。
 class _StorageNotice extends StatelessWidget {
   const _StorageNotice({
     super.key,
     required this.message,
     required this.busy,
-    required this.retryKey,
-    required this.retryFocusNode,
-    required this.onRetry,
+    this.retryKey,
+    this.retryFocusNode,
+    this.onRetry,
   });
 
   final String message;
   final bool busy;
-  final Key retryKey;
-  final FocusNode retryFocusNode;
-  final VoidCallback onRetry;
+  final Key? retryKey;
+  final FocusNode? retryFocusNode;
+  final VoidCallback? onRetry;
 
   @override
   Widget build(BuildContext context) {

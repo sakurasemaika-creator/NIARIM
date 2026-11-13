@@ -8,6 +8,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/screens/settings/storage_screen.dart';
+import 'package:niarim/services/project_service.dart';
 import 'package:niarim/services/storage_info_service.dart';
 import 'package:niarim/services/theme_service.dart';
 import 'package:niarim/utils/app_locale.dart';
@@ -54,8 +55,11 @@ class ScriptedStorage extends StorageInfoService {
   /// [rememberedBreakdown]を集計したときに、ゴミ箱の分として数えた作品。
   Set<String> rememberedTrashedIds = const {};
 
-  /// 前回の内訳で中身のあった分類の数（[invalidate]でも忘れない）。
-  int? rememberedBarCount;
+  /// 前回の内訳で中身のあった分類（[invalidate]でも忘れない）。
+  Set<StorageCategory>? rememberedCategories;
+
+  /// 前回の内訳に、読めなかった分類があったか（[rememberedCategories]と同じ）。
+  bool rememberedIncomplete = false;
   DeviceSpaceInfo? rememberedDevice;
   int invalidations = 0;
   int cacheClears = 0;
@@ -70,7 +74,10 @@ class ScriptedStorage extends StorageInfoService {
       : null;
 
   @override
-  int? get lastNonEmptyCategoryCount => rememberedBarCount;
+  Set<StorageCategory>? get lastNonEmptyCategories => rememberedCategories;
+
+  @override
+  bool get lastBreakdownIncomplete => rememberedIncomplete;
 
   @override
   DeviceSpaceInfo? get lastDeviceSpace => rememberedDevice;
@@ -127,12 +134,14 @@ Future<List<SingleChildWidget>> bootstrapStorageScreen(
   return (await tester.runAsync(buildAppProviders))!;
 }
 
-/// 本番と同じテーマ・スクロールの振る舞いで、画面だけを載せる。
+/// 本番と同じテーマ・スクロールの振る舞いで、画面だけを載せる（表示の
+/// 言語は[language]）。
 Future<AppLocalizations> showStorageScreen(
   WidgetTester tester,
   List<SingleChildWidget> providers,
   StorageInfoService service, {
   Size size = const Size(390, 844),
+  String language = 'ja',
 }) async {
   tester.view.physicalSize = size;
   await tester.pumpWidget(
@@ -144,7 +153,7 @@ Future<AppLocalizations> showStorageScreen(
           debugShowCheckedModeBanner: false,
           theme: context.watch<ThemeService>().themeData,
           scrollBehavior: const AppScrollBehavior(),
-          locale: localeFromLanguageCode('ja'),
+          locale: localeFromLanguageCode(language),
           supportedLocales: AppLocalizations.supportedLocales,
           localizationsDelegates: const [
             AppLocalizations.delegate,
@@ -186,4 +195,46 @@ Future<bool> tabTo(WidgetTester tester, Finder target) async {
     await tester.pump();
   }
   return focusIsWithin(tester, target);
+}
+
+/// [providers]の作品のサービス（画面を開く前に作品を作る・ゴミ箱へ移すため）。
+Future<ProjectService> storageProjectServiceOf(
+  WidgetTester tester,
+  List<SingleChildWidget> providers,
+) async {
+  late ProjectService projects;
+  await tester.pumpWidget(
+    MultiProvider(
+      providers: providers,
+      child: Builder(
+        builder: (context) {
+          projects = context.read<ProjectService>();
+          return const SizedBox.shrink();
+        },
+      ),
+    ),
+  );
+  await tester.pumpWidget(const SizedBox.shrink());
+  return projects;
+}
+
+/// 作品を1つ作る（[trashed]ならゴミ箱へ移す）。作品のIDを返す。
+Future<String> addStorageTestProject(
+  WidgetTester tester,
+  ProjectService projects, {
+  bool trashed = false,
+}) async {
+  final id = await tester.runAsync(() async {
+    final project = await projects.createProject(
+      name: 'Storage test',
+      fps: 1,
+      durationSeconds: 1,
+      backgroundColor: 0xFFFFFFFF,
+      exportWidth: 64,
+      exportHeight: 64,
+    );
+    if (trashed) await projects.deleteProject(project.id);
+    return project.id;
+  });
+  return id!;
 }
