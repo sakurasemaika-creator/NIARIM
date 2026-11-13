@@ -386,8 +386,40 @@ class _HomeScreenState extends State<HomeScreen>
     });
   }
 
+  // 知らせの出し先（破棄の中では探せないので覚えておく）。
+  ScaffoldMessengerState? _messenger;
+
+  // ホームの上に別の画面を積むと動き出す、ホームの画面の後ろの動き。
+  Animation<double>? _coveredBy;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _messenger = ScaffoldMessenger.maybeOf(context);
+    final covered = ModalRoute.of(context)?.secondaryAnimation;
+    if (!identical(covered, _coveredBy)) {
+      _coveredBy?.removeStatusListener(_onCoveredChanged);
+      _coveredBy = covered?..addStatusListener(_onCoveredChanged);
+    }
+  }
+
+  // 別の画面（ヘルプ・キャンバス等）を上に積んだら、「貼り付けを押して
+  // ください」というコピー・切り取りの知らせを閉じる（その画面には貼り付けが
+  // 無い）。コピー・切り取りそのものは残り、戻れば貼り付けられる。メニュー・
+  // ダイアログは画面の後ろの動きを動かさないので閉じない。
+  void _onCoveredChanged(AnimationStatus status) {
+    if (status == AnimationStatus.forward ||
+        status == AnimationStatus.completed) {
+      _closeClipboardNotice();
+    }
+  }
+
   @override
   void dispose() {
+    // 履歴ごと置き換えてホームを離れたときも、コピー・切り取りの知らせを
+    // 次の画面に残さない（クリップボードはホームと一緒に無くなる）。
+    _coveredBy?.removeStatusListener(_onCoveredChanged);
+    _closeClipboardNotice();
     WidgetsBinding.instance.removeObserver(this);
     _tabController.dispose();
     _searchController.dispose();
@@ -1706,8 +1738,8 @@ class _HomeScreenState extends State<HomeScreen>
     _clipboardNotice = null;
     notice?.close();
     // 順番を待っている知らせも、出さずに下げる。
-    final messenger = ScaffoldMessenger.maybeOf(context);
-    if (messenger != null) {
+    final messenger = _messenger;
+    if (messenger != null && messenger.mounted) {
       _withdrawClipboardNotices(messenger, describingOnly: true);
     }
   }
@@ -1960,6 +1992,9 @@ class _HomeScreenState extends State<HomeScreen>
       await _pasteClipboardNow();
     } finally {
       _pasteRequested = false;
+      // 貼り付けでクリップボードが空になったら（切り取りを貼り終えた・
+      // ゴミ箱へ移した）、切り取りの印（Esc）と中身を伝える知らせも消す。
+      if (mounted && !_hasClipboard) _clearHomeClipboard();
     }
   }
 
