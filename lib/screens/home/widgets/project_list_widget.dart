@@ -36,6 +36,7 @@ import 'folder_thumbnail.dart';
 import 'project_thumbnail_dialog.dart';
 import '../../../utils/folder_persistence.dart';
 import '../../../utils/folder_tree.dart';
+import '../../../utils/name_collation.dart';
 
 /// 新規フォルダ作成ダイアログ（フォルダ名入力）。プロジェクト一覧画面の
 /// ＋ボタン（新規プロジェクト/新規フォルダ選択）・フォルダ移動ピッカーの
@@ -266,19 +267,28 @@ class ProjectListWidget extends StatelessWidget {
     return entries;
   }
 
+  /// [sortMode]で並べる。名前は人が読む順（数字は数として、大文字・
+  /// 小文字や全角・半角、カタカナ・ひらがなの違いは区別しない）。同じ名前・
+  /// 同じ日時の項目は、もう一方の基準で決める（並びが毎回変わらないように）。
   List<_Entry> _sorted(List<_Entry> src) {
-    final list = List<_Entry>.from(src);
-    switch (sortMode) {
-      case ProjectSortMode.nameAsc:
-        list.sort((a, b) => a.name.compareTo(b.name));
-      case ProjectSortMode.nameDesc:
-        list.sort((a, b) => b.name.compareTo(a.name));
-      case ProjectSortMode.updatedAsc:
-        list.sort((a, b) => a.sortDate.compareTo(b.sortDate));
-      case ProjectSortMode.updatedDesc:
-        list.sort((a, b) => b.sortDate.compareTo(a.sortDate));
-    }
-    return list;
+    // 名前は1件につき1回だけそろえる。
+    final keys = Map<_Entry, NameSortKey>.identity();
+    NameSortKey key(_Entry e) => keys[e] ??= NameSortKey(e.name);
+    int byName(_Entry a, _Entry b) => compareNameKeys(key(a), key(b));
+    final byNameFirst =
+        sortMode == ProjectSortMode.nameAsc ||
+        sortMode == ProjectSortMode.nameDesc;
+    return List<_Entry>.from(src)..sort((a, b) {
+      final order = switch (sortMode) {
+        ProjectSortMode.nameAsc => byName(a, b),
+        ProjectSortMode.nameDesc => byName(b, a),
+        ProjectSortMode.updatedAsc => a.sortDate.compareTo(b.sortDate),
+        ProjectSortMode.updatedDesc => b.sortDate.compareTo(a.sortDate),
+      };
+      if (order != 0) return order;
+      final tie = byNameFirst ? b.sortDate.compareTo(a.sortDate) : byName(a, b);
+      return tie != 0 ? tie : a.id.compareTo(b.id);
+    });
   }
 
   Widget _withCutFeedback(BuildContext context, _Entry entry, Widget child) {

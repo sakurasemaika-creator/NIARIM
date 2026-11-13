@@ -117,21 +117,29 @@ class HomeAppHarness {
   static Finder inProjects(Finder finder) =>
       find.descendant(of: find.byType(ProjectListWidget), matching: finder);
 
-  /// 一覧のカード・行の名前（上の行から、行の中は左から）。名前は
-  /// 見出しの書体の字で、読み上げの名前（[Text.semanticsLabel]）があれば
-  /// それを使う（カードは長い名前を短くして出す）。
+  /// 一覧のカード・行の名前（上の行から、行の中は左から）。行は見出し
+  /// （[ListTile.title]）、カードは見出しの書体の字。読み上げの名前
+  /// （[Text.semanticsLabel]）があればそれを使う（カードは長い名前を短く
+  /// して出す）。
   List<String> shownNames() {
-    final items = inProjects(
-      find.byWidgetPredicate((w) => w is Card || w is ListTile),
-    );
     final names = <(Offset, String)>[];
+    String? nameOf(Text text) => text.semanticsLabel ?? text.data;
+    for (final element in inProjects(find.byType(ListTile)).evaluate()) {
+      final title = (element.widget as ListTile).title;
+      if (title is! Text) continue;
+      final name = nameOf(title);
+      if (name == null) continue;
+      final box = element.renderObject! as RenderBox;
+      names.add((box.localToGlobal(Offset.zero), name));
+    }
+    final cards = inProjects(find.byType(Card));
     for (final element
         in find
-            .descendant(of: items, matching: find.byType(Text))
+            .descendant(of: cards, matching: find.byType(Text))
             .evaluate()
             .toSet()) {
       final text = element.widget as Text;
-      final name = text.semanticsLabel ?? text.data;
+      final name = nameOf(text);
       if (name == null) continue;
       if (text.style?.fontFamily != 'Kuramubon') continue;
       final box = element.renderObject! as RenderBox;
