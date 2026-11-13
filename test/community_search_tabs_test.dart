@@ -5,6 +5,7 @@ import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/screens/community/community_screen.dart';
 import 'package:niarim/models/community_work.dart';
 import 'package:niarim/screens/community/widgets/community_work_card.dart';
+import 'package:niarim/widgets/collection_action_controls.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:niarim/services/community_preview_service.dart';
 import 'package:niarim/services/community_service.dart';
@@ -55,7 +56,8 @@ void main() {
     final authorRect = tester.getRect(find.text(card.work.authorName).first);
     expect(titleRect.bottom, lessThanOrEqualTo(authorRect.top + 1));
     expect(authorRect.bottom, lessThanOrEqualTo(bookmarkRect.top + 1));
-    expect(tester.widget<IconButton>(bookmark).iconSize, 22);
+    expect(tester.widget<IconButton>(bookmark).iconSize,
+        CollectionActionFrame.glyphSize);
     expect(tester.takeException(), isNull);
   });
 
