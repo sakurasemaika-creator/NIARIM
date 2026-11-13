@@ -7,6 +7,8 @@ on:
       - '.github/workflows/reward-duration-plural-regression.yml'
       - 'test/reward_duration_plural_test.dart'
       - 'test/reward_count_unit_text_test.dart'
+      - 'lib/l10n/app_fr.arb'
+      - 'lib/l10n/app_localizations_fr.dart'
       - 'test/reward_total_reference_note_test.dart'
       - 'lib/screens/rewards/reward_unlock_screen.dart'
       - 'lib/models/coin_benefit_price_proposal.dart'
