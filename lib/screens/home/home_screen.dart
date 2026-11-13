@@ -1578,6 +1578,7 @@ class _HomeScreenState extends State<HomeScreen>
       _clipboardSourceArea = HomePasteArea.projects;
       _clipboardIsCut = false;
     });
+    ScaffoldMessenger.of(context).removeCurrentSnackBar();
   }
 
   void _cancelCutClipboard() {
