@@ -56,7 +56,7 @@
   "homePreviewFailed": "Impossible de lire l'aperçu",
   "homeFirstLaunchMessage": "Vous pouvez créer des animations dessinées à la main",
   "homeFirstLaunchStart": "Commencer",
-  "homeFirstLaunchSaveFailed": "Impossible d’enregistrer que vous avez vu ce message de bienvenue. Appuyez sur « Commencer » pour réessayer.",
+  "homeFirstLaunchSaveFailed": "Impossible d’enregistrer que vous avez vu ce message de bienvenue. Appuyez sur « Commencer » pour réessayer.",
   "settingsScreenTitle": "Réglages",
   "settingsBasicTitle": "Général",
   "settingsBasicSubtitle": "FPS, couleur de fond, langue",

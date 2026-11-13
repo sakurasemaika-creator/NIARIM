@@ -299,6 +299,61 @@ void main() {
     await tester.pumpWidget(const SizedBox.shrink());
   });
 
+  // 名前を囲む引用符は名前と同じ行に置く。フランス語は引用符と名前の間に
+  // 空白を入れて書くので、普通の空白だと「« Commencer / » pour…」と閉じる
+  // 引用符だけが次の行の頭に来ていた（356px・文字1倍、332px・2倍など）。
+  testWidgets('the quotation marks around the Start name stay on the same line '
+      'as the name at every width', (tester) async {
+    final c = await open(tester, language: 'ja');
+    c.store.reject = true;
+    await tester.tap(find.byType(FilledButton));
+    await tester.pumpAndSettle();
+    expect(c.store.attempts, 1);
+    final split = <String>[];
+    for (final language in ['fr', 'es', 'en', 'ja', 'zh', 'zh_Hant', 'ko']) {
+      await show(
+        tester,
+        c.settings,
+        language: language,
+        size: const Size(480, 844),
+        scale: 1,
+      );
+      for (final scale in const [1.0, 1.3, 2.0]) {
+        tester.platformDispatcher.textScaleFactorTestValue = scale;
+        for (var width = 320.0; width <= 480; width += 4) {
+          tester.view.physicalSize = Size(width, 844);
+          await tester.pump();
+          final l10n = l10nOf(tester);
+          final message = l10n.homeFirstLaunchSaveFailed;
+          final name = l10n.homeFirstLaunchStart;
+          final lines = ParagraphLines(paragraphOf(tester, message));
+          final first = lines.visible.indexOf(name);
+          final last = first + name.length - 1;
+          // 名前の前後の空白（ふつうの空白・改行しない空白）を飛ばした
+          // 隣の字が引用符。
+          var open = first - 1;
+          while (open > 0 && lines.visible[open].trim().isEmpty) {
+            open--;
+          }
+          var close = last + 1;
+          while (close < lines.visible.length - 1 &&
+              lines.visible[close].trim().isEmpty) {
+            close++;
+          }
+          if (lines.lineOf(open) != lines.lineOf(first) ||
+              lines.lineOf(close) != lines.lineOf(last)) {
+            split.add(
+              '$language ${width}px x$scale: ${lines.lines.join(' / ')}',
+            );
+          }
+        }
+      }
+    }
+    expect(split, isEmpty, reason: split.join('\n'));
+    expect(tester.takeException(), isNull);
+    await tester.pumpWidget(const SizedBox.shrink());
+  });
+
   test('keepPhraseTogether joins a CJK name and its quotation marks only', () {
     const ja = 'もう一度「はじめる」を押してください。';
     final joined = keepPhraseTogether(ja, 'はじめる');
