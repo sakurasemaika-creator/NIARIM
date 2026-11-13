@@ -95,7 +95,7 @@ describe("live rankings are per-work, per-rank, and once-only",()=>{
   it("first observation starts a 48h hold but never credits coins",async()=>{
     const result=JSON.parse((await claimCreatorMission(ev("bookmark_rank_1"))).body??"{}");
     expect(result).toMatchObject({pending:true,claimed:false,
-      offeredCoins:200,awardedCoins:0});
+      offeredCoins:205,awardedCoins:0});
     expect(current.firstQualifiedAt["16"]).toBeGreaterThan(0);
     expect(writes.filter(w=>w instanceof TransactWriteCommand)).toHaveLength(0);
   });
@@ -120,7 +120,7 @@ describe("live rankings are per-work, per-rank, and once-only",()=>{
     expect(second).toMatchObject({claimed:true,awardedCoins:0});
     expect(writes.filter(w=>w instanceof TransactWriteCommand)).toHaveLength(1);
     const otherTier=JSON.parse((await claimCreatorMission(ev("bookmark_rank_3"))).body??"{}");
-    expect(otherTier).toMatchObject({pending:true,offeredCoins:125,awardedCoins:0});
+    expect(otherTier).toMatchObject({pending:true,offeredCoins:130,awardedCoins:0});
     expect(current.firstQualifiedAt["15"]).toBeGreaterThan(0);
     expect(current.claimedMask).toBe(2**16);
   });
