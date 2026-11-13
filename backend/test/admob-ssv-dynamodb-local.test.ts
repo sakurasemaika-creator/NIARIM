@@ -30,14 +30,19 @@ vi.mock("../src/lib/auth", () => ({
     googleSub: "test-only", membershipTier: "free",
   })),
 }));
-vi.mock("../src/lib/dynamo", async (original) => ({
-  ...(await original<typeof import("../src/lib/dynamo")>()),
-  ddb: DynamoDBDocumentClient.from(new DynamoDBClient({
-    endpoint: "http://127.0.0.1:8000",
-    region: "ap-northeast-1",
-    credentials: { accessKeyId: "localonly", secretAccessKey: "localonly" },
-  }), { marshallOptions: { removeUndefinedValues: true } }),
-}));
+vi.mock("../src/lib/dynamo", async (original) => {
+  const source = await original<typeof import("../src/lib/dynamo")>();
+  const { DynamoDBClient: Client } = await import("@aws-sdk/client-dynamodb");
+  const { DynamoDBDocumentClient: Doc } = await import("@aws-sdk/lib-dynamodb");
+  return {
+    ...source,
+    ddb: Doc.from(new Client({
+      endpoint: "http://127.0.0.1:8000",
+      region: "ap-northeast-1",
+      credentials: { accessKeyId: "localonly", secretAccessKey: "localonly" },
+    }), { marshallOptions: { removeUndefinedValues: true } }),
+  };
+});
 vi.mock("../src/lib/admobSsv", async (original) => ({
   ...(await original<typeof import("../src/lib/admobSsv")>()),
   admobPublicKeys: publicKeys,
