@@ -50,7 +50,7 @@ http.Response _reply(Object body) => http.Response(
   headers: {'content-type': 'application/json; charset=utf-8'},
 );
 
-/// 残高60000コイン・全機能1か月が55000コインで交換できるサーバー。
+/// 残高60000オパール・全機能1か月が55000オパールで交換できるサーバー。
 /// 交換そのもの（POST）が呼ばれたら[redeemCalls]に数える。
 CommunityService _redeemableServer(List<String> redeemCalls) =>
     CommunityService(
@@ -89,7 +89,7 @@ const _toneCurvePrices = CoinUnlockUnitPrices(
   perMonth: 18000,
 );
 
-/// [_toneCurvePrices]で[duration]を選んだときの必要コイン（モデルを通さず、
+/// [_toneCurvePrices]で[duration]を選んだときの必要オパール（モデルを通さず、
 /// 単価×数で求めた値）。
 int _expectedToneCurveCoins(CoinUnlockDuration duration) =>
     duration.amount *
@@ -307,8 +307,8 @@ void main() {
         expect(find.byIcon(Icons.check), findsOneWidget);
         await _closeSheet(tester);
 
-        // 文言を変えても、その期間の必要コインは単価×数のまま（日本語・
-        // 韓国語は数と「コイン」「코인」の間に空白を入れない）。
+        // 文言を変えても、その期間の必要オパールは単価×数のまま（日本語・
+        // 韓国語は数と「オパール」「오팔」の間に空白を入れない）。
         final toneCurve = find.byKey(const ValueKey('rewardFeature_toneCurve'));
         await _reveal(tester, toneCurve);
         expect(
@@ -372,7 +372,7 @@ void main() {
     });
   }
 
-  testWidgets('153件のどれを選んでも、文言と必要コインがモデルの値のまま', (tester) async {
+  testWidgets('153件のどれを選んでも、文言と必要オパールがモデルの値のまま', (tester) async {
     await _pumpScreen(
       tester,
       locale: const Locale('en'),
@@ -396,12 +396,12 @@ void main() {
       expect(_toneCurvePrices.cost(duration), coins, reason: where);
       await _reveal(tester, toneCurve);
       expect(
-        find.descendant(of: toneCurve, matching: find.text('$coins coins')),
+        find.descendant(of: toneCurve, matching: find.text('$coins opals')),
         findsOneWidget,
         reason: where,
       );
       await _reveal(tester, total);
-      expect(tester.widget<Text>(total).data, '$coins coins', reason: where);
+      expect(tester.widget<Text>(total).data, '$coins opals', reason: where);
       checked++;
     }
     expect(checked, 153);
