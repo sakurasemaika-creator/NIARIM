@@ -44,18 +44,17 @@ void main() {
   test('an authenticated GET refreshes a rejected ID token once', () async {
     var count = 0;
     var requests = 0;
-    final httpClient = MockClient((request) async {
-      requests++;
-      return requests == 1
-          ? http.Response('{"code":"UNAUTHORIZED","error":"expired"}', 401)
-          : http.Response('{"balanceCoins":120}', 200);
-    });
     final tokens = <String>[];
     final client = NiarimApiClient(
       baseUrl: apiRoot,
+      // Do not forward a finalized Request into a second MockClient.
+      // The single transport records both token refresh and response order.
       httpClient: MockClient((request) async {
         tokens.add(request.headers['authorization'] ?? '');
-        return httpClient.send(request).then(http.Response.fromStream);
+        requests++;
+        return requests == 1
+            ? http.Response('{"code":"UNAUTHORIZED","error":"expired"}', 401)
+            : http.Response('{"balanceCoins":120}', 200);
       }),
       tokenProvider: () async => (++count == 1 ? 'expired' : 'fresh'),
       maxGetRetries: 0,
