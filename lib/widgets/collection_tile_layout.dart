@@ -23,7 +23,17 @@ class CollectionTileGridDelegate
 
   @override
   SliverGridLayout getLayout(SliverConstraints constraints) {
-    final usual = super.getLayout(constraints) as SliverGridRegularTileLayout;
+    final usual =
+        SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: collectionTileColumnCount(
+                maxCrossAxisExtent,
+                constraints.crossAxisExtent,
+              ),
+              crossAxisSpacing: crossAxisSpacing,
+              mainAxisSpacing: mainAxisSpacing,
+              childAspectRatio: childAspectRatio,
+            ).getLayout(constraints)
+            as SliverGridRegularTileLayout;
     if (usual.childMainAxisExtent >= minHeight) return usual;
     return SliverGridRegularTileLayout(
       crossAxisCount: usual.crossAxisCount,
@@ -38,6 +48,29 @@ class CollectionTileGridDelegate
   @override
   bool shouldRelayout(covariant CollectionTileGridDelegate oldDelegate) =>
       minHeight != oldDelegate.minHeight || super.shouldRelayout(oldDelegate);
+}
+
+/// 表示サイズ（小・中・大）のカードの基準の幅。
+const double kCollectionTileSmallExtent = 130;
+const double kCollectionTileMediumExtent = 170;
+const double kCollectionTileLargeExtent = 240;
+
+/// 基準の幅[maxExtent]のカードを幅[width]に並べるときの列数。
+///
+/// 基準の幅だけで決めると、スマホの幅では近い2つの表示サイズが同じ列数に
+/// なり、選んでも何も変わらなかった（360pxで大と中、390〜430pxで中と小）。
+/// 小を基準に、中は小より、大は中より少なくとも1列少なくする（スマホは
+/// 大1列・中2列・小3列。広い画面ではもともと基準の幅どおりで差がある）。
+int collectionTileColumnCount(double maxExtent, double width) {
+  int fit(double extent) => math.max(1, (width / (extent + 8)).ceil());
+  if (maxExtent <= kCollectionTileSmallExtent) return fit(maxExtent);
+  final small = fit(kCollectionTileSmallExtent);
+  final medium = math.max(
+    1,
+    math.min(fit(kCollectionTileMediumExtent), small - 1),
+  );
+  if (maxExtent <= kCollectionTileMediumExtent) return medium;
+  return math.max(1, math.min(fit(maxExtent), medium - 1));
 }
 
 TextStyle collectionTileCaptionStyle(BuildContext context) => TextStyle(
