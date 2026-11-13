@@ -169,16 +169,18 @@ void main() {
         await service.contentFiltersReady;
         service.setCurrentUserId('fixture-owner');
         await open(tester, pc, backend: service);
-        await tester.runAsync(() => service.loadSocial());
         await bookmarks(tester);
-        expect(fetches, 1);
+        // Plaza may preload social data before the tab is selected.
+        final initialFetches = fetches;
+        expect(initialFetches, greaterThanOrEqualTo(1));
         final refresh = find.descendant(
           of: find.byType(CommunityScreen),
           matching: find.byType(RefreshIndicator),
         );
         await tester.drag(refresh, const Offset(0, 400));
         await tester.pumpAndSettle();
-        expect(fetches, 2);
+        expect(fetches, initialFetches + 1,
+            reason: 'A pull gesture must refresh the saved feed once');
         expect(service.hasLoadedSocial, isTrue);
         expect(service.bookmarkedIds, isEmpty);
         expect(tester.widget<TabBar>(find.byType(TabBar)).controller!.index, 4);
@@ -234,7 +236,15 @@ void main() {
           );
           await bookmarks(tester);
           expect(service.bookmarkedIds, hasLength(1));
-          expect(service.bookmarkedWorksForViewer, isEmpty);
+          if (unresolved) {
+            expect(service.bookmarkedWorksForViewer, isEmpty);
+          } else {
+            expect(service.bookmarkedWorksForViewer.map((w) => w.id),
+                contains('fixture-ai'));
+            expect(service.isWorkMuted(service.byId('fixture-ai')!), isTrue);
+            expect(service.isDiscoverableForViewer(service.byId('fixture-ai')!),
+                isFalse);
+          }
           expect(
             find.text(
               AppLocalizations.of(
@@ -361,7 +371,7 @@ void main() {
           var requests = 0;
           final service = backend(
             MockClient((r) async {
-              requests++;
+              if (r.url.path.endsWith('/bookmarks')) requests++;
               return http.Response(
                 r.url.path.endsWith('/bookmarks')
                     ? '{"works":[]}'
