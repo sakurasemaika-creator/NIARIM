@@ -98,30 +98,40 @@ class SharedDirectionSwitch extends StatelessWidget {
             // アイコンでも入らない幅（ほぼ無い）のときだけ縮める。
             child: FittedBox(
               fit: BoxFit.scaleDown,
-              child: SegmentedButton<bool>(
-                key: const Key('sharedDirectionSegmentedControl'),
-                showSelectedIcon: false,
-                multiSelectionEnabled: false,
-                emptySelectionAllowed: false,
-                style: ButtonStyle(
-                  visualDensity: VisualDensity.standard,
-                  shape: const WidgetStatePropertyAll(StadiumBorder()),
-                  side: WidgetStatePropertyAll(
-                    BorderSide(color: Theme.of(context).colorScheme.outline),
-                  ),
-                  padding: const WidgetStatePropertyAll(
-                    EdgeInsets.symmetric(
-                      horizontal: _segmentPadding,
-                      vertical: 12,
+              // 名前は読み上げにはアイコンのラベルとして1度だけ渡し、区画の
+              // ツールチップ（長押し・ホバーで出す名前）は読み上げに入れない。
+              // 両方に入れると、読み上げが名前を2度読んだ（Android 9より前の
+              // TalkBackはラベルとツールチップをつないで読む）。
+              child: TooltipTheme(
+                data: TooltipTheme.of(
+                  context,
+                ).copyWith(excludeFromSemantics: true),
+                child: SegmentedButton<bool>(
+                  key: const Key('sharedDirectionSegmentedControl'),
+                  showSelectedIcon: false,
+                  multiSelectionEnabled: false,
+                  emptySelectionAllowed: false,
+                  style: ButtonStyle(
+                    visualDensity: VisualDensity.standard,
+                    shape: const WidgetStatePropertyAll(StadiumBorder()),
+                    side: WidgetStatePropertyAll(
+                      BorderSide(color: Theme.of(context).colorScheme.outline),
+                    ),
+                    padding: const WidgetStatePropertyAll(
+                      EdgeInsets.symmetric(
+                        horizontal: _segmentPadding,
+                        vertical: 12,
+                      ),
                     ),
                   ),
+                  segments: [
+                    segment(false, received, receivedIcon),
+                    segment(true, created, outgoingIcon),
+                  ],
+                  selected: {outgoing},
+                  onSelectionChanged: (selection) =>
+                      onChanged(selection.single),
                 ),
-                segments: [
-                  segment(false, received, receivedIcon),
-                  segment(true, created, outgoingIcon),
-                ],
-                selected: {outgoing},
-                onSelectionChanged: (selection) => onChanged(selection.single),
               ),
             ),
           );

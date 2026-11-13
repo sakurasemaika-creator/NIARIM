@@ -133,6 +133,26 @@ List<String> _cutLabels(WidgetTester tester, List<String> names) {
   return cut;
 }
 
+/// 画面の読み上げの部品（親へまとめられたものは親で数える）のうち、
+/// ラベルかツールチップに[name]を含むもの。
+List<String> _semanticsNaming(WidgetTester tester, String name) {
+  final found = <String>[];
+  void visit(SemanticsNode node) {
+    final data = node.getSemanticsData();
+    if (!node.isMergedIntoParent &&
+        (data.label.contains(name) || data.tooltip.contains(name))) {
+      found.add('label="${data.label}" tooltip="${data.tooltip}"');
+    }
+    node.visitChildren((child) {
+      visit(child);
+      return true;
+    });
+  }
+
+  visit(tester.getSemantics(find.byType(HomeScreen)));
+  return found;
+}
+
 bool _showsIcons(WidgetTester tester) =>
     find
         .descendant(of: _switch, matching: find.byIcon(_receivedIcon))
@@ -249,6 +269,13 @@ void main() {
       tester.getSemantics(receivedIcon).getSemanticsData().label,
       received,
     );
+    // 名前は1度だけ渡す。ラベルとツールチップの両方に入れると、読み上げが
+    // 名前を2度読む（Android 9より前のTalkBackは2つをつないで読む）。
+    for (final name in [received, created]) {
+      expect(_semanticsNaming(tester, name), [
+        'label="$name" tooltip=""',
+      ], reason: name);
+    }
 
     // 長押しで元の名前を出す（押しても切り替わらない）。
     expect(find.text(created), findsNothing);
