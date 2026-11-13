@@ -212,7 +212,8 @@ class ProjectListWidget extends StatelessWidget {
     required bool searchByTag,
   }) {
     final folderIds = allFolders.map((f) => f.id).toSet();
-    final rawQuery = searchQuery.trim().toLowerCase();
+    // 大文字・小文字、全角・半角、カタカナ・ひらがなの違いを区別せずに探す。
+    final rawQuery = foldName(searchQuery).trim();
     // Accept both `tag` and `#tag` input in tag mode.
     final query = searchByTag && rawQuery.startsWith('#')
         ? rawQuery.substring(1).trimLeft()
@@ -225,19 +226,16 @@ class ProjectListWidget extends StatelessWidget {
       // projects whose saved tags contain the query.
       if (searchByTag) {
         entries = source
-            .where(
-              (p) =>
-                  p.tags.any((tag) => tag.trim().toLowerCase().contains(query)),
-            )
+            .where((p) => p.tags.any((tag) => nameMatches(tag.trim(), query)))
             .map((p) => _Entry.project(p))
             .toList();
       } else {
         entries = [
           ...allFolders
-              .where((f) => f.name.toLowerCase().contains(query))
+              .where((f) => nameMatches(f.name, query))
               .map((f) => _Entry.folder(f)),
           ...source
-              .where((p) => p.name.toLowerCase().contains(query))
+              .where((p) => nameMatches(p.name, query))
               .map((p) => _Entry.project(p)),
         ];
       }

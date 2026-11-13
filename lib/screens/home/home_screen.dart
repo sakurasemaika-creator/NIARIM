@@ -3315,11 +3315,10 @@ class _SharedTab extends StatelessWidget {
     if (showFavoritesOnly) {
       shared = shared.where((p) => p.isFavorite).toList();
     }
-    final query = searchQuery.trim().toLowerCase();
+    // 大文字・小文字、全角・半角、カタカナ・ひらがなの違いを区別しない。
+    final query = foldName(searchQuery).trim();
     if (query.isNotEmpty) {
-      shared = shared
-          .where((p) => p.name.toLowerCase().contains(query))
-          .toList();
+      shared = shared.where((p) => nameMatches(p.name, query)).toList();
     }
     shared = _sortProjects(shared, sortMode);
     final visibleFolders = service.sharedFolders
@@ -3329,7 +3328,7 @@ class _SharedTab extends StatelessWidget {
                   folder.isFavorite ||
                   shared.any((p) => p.sharedFolderId == folder.id)) &&
               (query.isEmpty ||
-                  folder.name.toLowerCase().contains(query) ||
+                  nameMatches(folder.name, query) ||
                   shared.any((p) => p.sharedFolderId == folder.id)),
         )
         .toList();
@@ -3385,9 +3384,7 @@ class _SharedTab extends StatelessWidget {
                     !service.sharedFolders.any(
                       (folder) => folder.id == folderId && folder.isFavorite,
                     ),
-                searchQuery: folderName.toLowerCase().contains(query)
-                    ? ''
-                    : searchQuery,
+                searchQuery: nameMatches(folderName, query) ? '' : searchQuery,
                 onCopyEntry: onCopyEntry,
               ),
             ),
@@ -3866,13 +3863,13 @@ class _OutgoingSharesList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final service = context.watch<ProjectService>();
-    final query = searchQuery.trim().toLowerCase();
+    final query = foldName(searchQuery).trim();
     final saved = service.outgoingShares
         .where(
           (entry) =>
               (!showFavoritesOnly ||
                   service.isOutgoingShareFavorite(entry.path)) &&
-              (query.isEmpty || entry.name.toLowerCase().contains(query)),
+              (query.isEmpty || nameMatches(entry.name, query)),
         )
         .toList();
     final byName = nameComparator<SavedOutgoingShare>((entry) => entry.name);
@@ -4100,7 +4097,7 @@ class _SharedFolderScreenState extends State<_SharedFolderScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final query = widget.searchQuery.trim().toLowerCase();
+    final query = foldName(widget.searchQuery).trim();
     final items = context
         .watch<ProjectService>()
         .shared
@@ -4108,7 +4105,7 @@ class _SharedFolderScreenState extends State<_SharedFolderScreen> {
           (p) =>
               p.sharedFolderId == widget.folderId &&
               (!widget.showFavoritesOnly || p.isFavorite) &&
-              (query.isEmpty || p.name.toLowerCase().contains(query)),
+              (query.isEmpty || nameMatches(p.name, query)),
         )
         .toList();
     Widget card(BuildContext ctx, int i, bool grid) =>
@@ -5257,15 +5254,12 @@ class _TrashTabState extends State<_TrashTab> {
             name: local.fileName,
           ));
         }
-        final query = widget.searchQuery.trim().toLowerCase();
+        final query = foldName(widget.searchQuery).trim();
         if (query.isNotEmpty) {
           rows.removeWhere(
             (row) =>
-                !row.name.toLowerCase().contains(query) &&
-                !_trashKindLabel(
-                  context,
-                  row.kind,
-                ).toLowerCase().contains(query),
+                !nameMatches(row.name, query) &&
+                !nameMatches(_trashKindLabel(context, row.kind), query),
           );
         }
         final byName = nameComparator<String>((name) => name);
@@ -5504,7 +5498,7 @@ class _WorksTabState extends State<_WorksTab> {
         if (!snapshot.hasData) {
           return const Center(child: CircularProgressIndicator());
         }
-        final query = widget.searchQuery.trim().toLowerCase();
+        final query = foldName(widget.searchQuery).trim();
         final files = _sortExportedFiles(
           snapshot.data!
               .where(
@@ -5512,9 +5506,7 @@ class _WorksTabState extends State<_WorksTab> {
                     (!_showFavoritesOnly ||
                         _favoritePaths.contains(file.path)) &&
                     (query.isEmpty ||
-                        file.uri.pathSegments.last.toLowerCase().contains(
-                          query,
-                        )),
+                        nameMatches(file.uri.pathSegments.last, query)),
               )
               .toList(),
           _sortMode,
@@ -5532,7 +5524,7 @@ class _WorksTabState extends State<_WorksTab> {
                               folder.id,
                         )) &&
                     (query.isEmpty ||
-                        folder.name.toLowerCase().contains(query) ||
+                        nameMatches(folder.name, query) ||
                         files.any(
                           (f) =>
                               workFolders.folderIdOf(f.uri.pathSegments.last) ==
@@ -5616,7 +5608,7 @@ class _WorksTabState extends State<_WorksTab> {
                       folderName: folderName,
                       viewMode: widget.viewMode,
                       initialSortMode: _sortMode,
-                      searchQuery: folderName.toLowerCase().contains(query)
+                      searchQuery: nameMatches(folderName, query)
                           ? ''
                           : widget.searchQuery,
                       favoritesOnly:
@@ -5866,8 +5858,9 @@ class _WorksFolderScreenState extends State<_WorksFolderScreen> {
                             (!widget.favoritesOnly ||
                                 widget.favoritePaths.contains(f.path)) &&
                             (widget.searchQuery.trim().isEmpty ||
-                                f.uri.pathSegments.last.toLowerCase().contains(
-                                  widget.searchQuery.trim().toLowerCase(),
+                                nameMatches(
+                                  f.uri.pathSegments.last,
+                                  foldName(widget.searchQuery).trim(),
                                 )),
                       )
                       .toList(),
