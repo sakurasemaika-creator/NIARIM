@@ -286,6 +286,9 @@ class _GameStyleSlotScreen extends StatelessWidget {
                           return;
                         }
                         setDialogState(() => saving = true);
+                        // 保存中に端末の「戻る」でダイアログを閉じても失敗を
+                        // 知らせられるように、画面の知らせの出し先を先に取る。
+                        final messenger = ScaffoldMessenger.of(context);
                         // 押したときに見せていたスロットの中身で保存する
                         // （保存している間に一覧を読めても、確かめていない
                         // 保存は消さない）。
@@ -322,7 +325,12 @@ class _GameStyleSlotScreen extends StatelessWidget {
                             slotIndex,
                             commentController.text,
                           );
-                          if (ctx.mounted) Navigator.pop(ctx);
+                          // 閉じるのは自分のダイアログが一番上のときだけ（保存中に
+                          // 戻るで閉じていたら、下の画面を閉じない）。
+                          if (ctx.mounted &&
+                              (ModalRoute.of(ctx)?.isCurrent ?? false)) {
+                            Navigator.pop(ctx);
+                          }
                           // 保存の一覧を読めていないので、メモ（打った
                           // コメント）は次の起動に残らないかもしれない
                           // （メモの欄と同じく知らせる）。
@@ -337,11 +345,22 @@ class _GameStyleSlotScreen extends StatelessWidget {
                           AppErrorReporter.record(e, st);
                           // 開いたまま失敗を出す（閉じると打ったコメントが
                           // 消え、もう一度試すには打ち直すしかなかった）。
-                          if (ctx.mounted) {
+                          if (ctx.mounted &&
+                              (ModalRoute.of(ctx)?.isCurrent ?? false)) {
                             setDialogState(() {
                               saving = false;
                               failure = l10n.saveTreeSaveFailedSnackbar('$e');
                             });
+                          } else {
+                            // 保存中に戻るでダイアログを閉じていた：画面に出す
+                            // （以前は記録にだけ残り、誰にも知らされなかった）。
+                            messenger.showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  l10n.saveTreeSaveFailedSnackbar('$e'),
+                                ),
+                              ),
+                            );
                           }
                         } finally {
                           slotSave.end();

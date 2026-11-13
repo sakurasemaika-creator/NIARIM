@@ -287,6 +287,9 @@ void _showTreeSaveDialog(
                         return;
                       }
                       setDialogState(() => saving = true);
+                      // 保存中に端末の「戻る」でダイアログを閉じても失敗を
+                      // 知らせられるように、画面の知らせの出し先を先に取る。
+                      final messenger = ScaffoldMessenger.of(context);
                       try {
                         final comment = commentController.text.isEmpty
                             ? null
@@ -306,7 +309,12 @@ void _showTreeSaveDialog(
                           comment: comment,
                           thumbnailPngBytes: thumb,
                         );
-                        if (ctx.mounted) Navigator.pop(ctx);
+                        // 閉じるのは自分のダイアログが一番上のときだけ（保存中
+                        // に戻るで閉じていたら、下の画面を閉じない）。
+                        if (ctx.mounted &&
+                            (ModalRoute.of(ctx)?.isCurrent ?? false)) {
+                          Navigator.pop(ctx);
+                        }
                         if (context.mounted) {
                           await _warnIfSaveTreeSizeLarge(context, projectId);
                         }
@@ -314,11 +322,22 @@ void _showTreeSaveDialog(
                         AppErrorReporter.record(e, st);
                         // 開いたまま失敗を出す（閉じると打ったコメントが
                         // 消え、もう一度試すには打ち直すしかなかった）。
-                        if (ctx.mounted) {
+                        if (ctx.mounted &&
+                            (ModalRoute.of(ctx)?.isCurrent ?? false)) {
                           setDialogState(() {
                             saving = false;
                             failure = l10n.saveTreeSaveFailedSnackbar('$e');
                           });
+                        } else {
+                          // 保存中に戻るでダイアログを閉じていた：画面に出す
+                          // （以前は記録にだけ残り、誰にも知らされなかった）。
+                          messenger.showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                l10n.saveTreeSaveFailedSnackbar('$e'),
+                              ),
+                            ),
+                          );
                         }
                       }
                     },
