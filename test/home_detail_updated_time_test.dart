@@ -21,6 +21,11 @@ void main() {
     await HomeAppHarness.work(service, workName);
   }
 
+  // 表示の文（日時を途中で折り返さないための語結合子・改行しない空白を
+  // 普通の文に戻したもの）。
+  String plain(Text text) =>
+      (text.data ?? '').replaceAll('\u2060', '').replaceAll('\u00A0', ' ');
+
   // 行（ListTile）の中の文を全部つなげたもの。
   String rowText(WidgetTester tester, String name) {
     final row = HomeAppHarness.inProjects(
@@ -29,7 +34,7 @@ void main() {
     return find
         .descendant(of: row, matching: find.byType(Text))
         .evaluate()
-        .map((e) => (e.widget as Text).data ?? '')
+        .map((e) => plain(e.widget as Text))
         .join('\n');
   }
 
@@ -105,7 +110,7 @@ void main() {
     final text = find
         .descendant(of: row, matching: find.byType(Text))
         .evaluate()
-        .map((e) => (e.widget as Text).data ?? '')
+        .map((e) => plain(e.widget as Text))
         .join('\n');
     final localeName = AppLocalizations.of(
       tester.element(find.byType(ListTile).first),

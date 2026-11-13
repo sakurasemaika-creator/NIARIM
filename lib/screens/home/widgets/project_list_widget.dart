@@ -28,6 +28,7 @@ import '../../../widgets/moved_to_trash_snack_bar.dart';
 import '../../../widgets/name_entry_dialog.dart';
 import '../../../widgets/collection_action_controls.dart';
 import '../../../widgets/collection_tile_layout.dart';
+import '../../../widgets/date_line_text.dart';
 import '../../../utils/app_error_reporter.dart';
 import '../../../utils/duplicate_name.dart';
 import 'folder_save_feedback.dart';
@@ -635,13 +636,15 @@ class ProjectListWidget extends StatelessWidget {
       title: Text(project.name),
       // 2行目は最後に保存した日時（その言語の日付と時刻の書き方）。検索の
       // 結果には、入っているフォルダを添える。
-      subtitle: Text(
+      subtitle: DateLineText(
         [
           l10n.homeProjectMeta(project.fps, project.durationSeconds),
           l10n.projectListUpdatedOn(project.updatedAt),
           if (_searchLocation(context, project.folderId) case final location?)
             l10n.projectListInFolder(location),
         ].join('\n'),
+        when: project.updatedAt,
+        localeName: l10n.localeName,
       ),
       trailing: (isSelectionMode || onPickProject != null)
           ? null
@@ -701,7 +704,7 @@ class ProjectListWidget extends StatelessWidget {
       ),
       // フォルダを作った日時（「更新日時」の並びでフォルダに使う日時）。
       // 検索の結果には、入っているフォルダを添える。
-      subtitle: Text(
+      subtitle: DateLineText(
         [
           AppLocalizations.of(
             context,
@@ -710,6 +713,8 @@ class ProjectListWidget extends StatelessWidget {
               case final location?)
             AppLocalizations.of(context)!.projectListInFolder(location),
         ].join('\n'),
+        when: folder.createdAt,
+        localeName: AppLocalizations.of(context)!.localeName,
       ),
       trailing: (!isSelectionMode && onPickProject == null)
           ? Row(

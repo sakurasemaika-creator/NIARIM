@@ -35,6 +35,7 @@ import '../../widgets/action_beside_or_below.dart';
 import '../../widgets/ad_banner_mock_widget.dart';
 import '../../widgets/app_toast_messenger.dart';
 import '../../widgets/empty_state_placeholder.dart';
+import '../../widgets/date_line_text.dart';
 import '../../widgets/sort_mode_control.dart';
 import '../../widgets/project_trash_dialog.dart';
 import '../../widgets/collection_action_controls.dart';
@@ -3568,9 +3569,11 @@ Widget _receivedShareProjectTile(
       child: ListTile(
         leading: SizedBox(width: 56, height: 56, child: cover()),
         title: Text(project.name, style: captionStyle),
-        subtitle: Text(
+        subtitle: DateLineText(
           '${l10n.homeProjectMeta(project.fps, project.durationSeconds)}\n'
           '${l10n.projectListUpdatedOn(project.updatedAt)}',
+          when: project.updatedAt,
+          localeName: l10n.localeName,
         ),
         onTap: selectedTap,
         onLongPress: selectedLongPress,

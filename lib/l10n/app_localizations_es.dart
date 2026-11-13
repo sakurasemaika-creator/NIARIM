@@ -8334,7 +8334,7 @@ class AppLocalizationsEs extends AppLocalizations {
     ).add_jm();
     final String dateString = dateDateFormat.format(date);
 
-    return 'Actualizado: $dateString';
+    return 'Actualizado el $dateString';
   }
 
   @override

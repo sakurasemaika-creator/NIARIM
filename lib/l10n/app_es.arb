@@ -3262,7 +3262,7 @@
   "projectListNoFavoritesHint": "Elige «Añadir a favoritos» en el menú de una obra o carpeta para verla aquí.",
   "projectListShowAll": "Mostrar todo",
   "projectListEmptyFolderTitle": "Esta carpeta está vacía",
-  "projectListUpdatedOn": "Actualizado: {date}",
+  "projectListUpdatedOn": "Actualizado el {date}",
   "projectListFolderCreatedOn": "Creada el {date}",
   "projectListInFolder": "En {path}",
   "homeProjectsLoadFailed": "No se pudieron cargar tus proyectos",

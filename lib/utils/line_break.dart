@@ -1,3 +1,5 @@
+import 'package:intl/intl.dart';
+
 /// 単語結合子（U+2060）。幅も字形も持たず、両側での折り返しを禁じる。
 const String _wordJoiner = '\u2060';
 
@@ -35,6 +37,61 @@ String keepKoreanWordsTogether(String text) {
 }
 
 bool _isBreakable(String char) => char.trim().isEmpty;
+
+/// 文[text]の中の[parts]（日付・時刻など）を、それぞれ行の途中で折り返さない
+/// ひとかたまりにする。かたまりの中の空白は改行しない空白（U+00A0）にし、
+/// ほかの字の間には語結合子を挟む（数字・記号・ハングル・漢字のどの間でも
+/// 折り返さない）。かたまりの外の空白では今までどおり折り返せる。
+///
+/// [fits]を渡すと、それが偽を返すかたまり（1行に入らないもの）はそのままに
+/// する（かたまりにすると、行に入らないとき字の途中で切れる）。[fits]には
+/// かたまりにした後の文を渡す。表示する`Text`には[plainSemanticsLabel]か
+/// 元の文を読み上げに添えること。
+String keepPartsTogether(
+  String text,
+  Iterable<String> parts, {
+  bool Function(String part)? fits,
+}) {
+  var result = text;
+  for (final part in parts) {
+    if (part.isEmpty) continue;
+    final at = result.indexOf(part);
+    if (at < 0) continue;
+    final joined = StringBuffer();
+    String? previous;
+    for (final rune in part.runes) {
+      var char = String.fromCharCode(rune);
+      if (char == ' ') char = '\u00A0';
+      if (previous != null && !_isBreakable(previous) && !_isBreakable(char)) {
+        joined.write(_wordJoiner);
+      }
+      joined.write(char);
+      previous = char;
+    }
+    final kept = joined.toString();
+    if (fits != null && !fits(kept)) continue;
+    result = result.replaceRange(at, at + part.length, kept);
+  }
+  return result;
+}
+
+/// [when]を日付（`yMd`）と時刻（`jm`）の書き方で含む文[line]を、日付・時刻の
+/// 途中と韓国語の語の途中では折り返さないようにする（狭い行・大きな文字で、
+/// 「2026. 11. 13. 오 / 후 6:19」のように午後の途中で切れた）。日付と時刻の
+/// 間・ほかの語との間の空白では折り返せる。[fits]は[keepPartsTogether]と同じ
+/// （1行に入らない日付・時刻・語はそのまま）。
+String keepDateTimeTogether(
+  String line,
+  DateTime when,
+  String localeName, {
+  bool Function(String part)? fits,
+}) => keepKoreanWordsTogetherWhere(
+  keepPartsTogether(line, [
+    DateFormat.yMd(localeName).format(when),
+    DateFormat.jm(localeName).format(when),
+  ], fits: fits),
+  fits ?? (_) => true,
+);
 
 /// [text]にハングルが入っているか。
 bool containsHangul(String text) => _hangul.hasMatch(text);
