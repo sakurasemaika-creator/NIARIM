@@ -1,0 +1,29 @@
+# Focused locale/price regression; no live Google, AWS, or AdMob calls.
+name: Reward duration multilingual and reference-note regression
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/reward-duration-plural-regression.yml'
+      - 'test/reward_duration_plural_test.dart'
+      - 'test/reward_total_reference_note_test.dart'
+      - 'lib/screens/rewards/reward_unlock_screen.dart'
+      - 'lib/models/coin_benefit_price_proposal.dart'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.47.2'
+          channel: stable
+      - run: flutter pub get --enforce-lockfile
+      - name: Validate 7-language, 153-duration UI and note geometry
+        run: flutter test --no-pub test/reward_duration_plural_test.dart test/reward_total_reference_note_test.dart --reporter expanded
+      - name: Analyze widget regression tests
+        run: flutter analyze --no-pub --no-fatal-infos test/reward_duration_plural_test.dart test/reward_total_reference_note_test.dart
