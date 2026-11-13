@@ -33,6 +33,7 @@ concurrency:
 
 jobs:
   build:
+    if: github.ref == 'refs/heads/dev_branch'
     runs-on: ubuntu-latest
     # GitHub Releaseへapkを添付するために書き込み権限が必要
     # （Actions Storageの上限に達している間の代替配布経路。下記
@@ -145,12 +146,42 @@ jobs:
           echo "::error::リリースAPKではconnect_backendをオフにしてください"
           exit 1
 
+      - name: 本番用バックエンド・Google認証の接続設定を検証
+        if: ${{ inputs.build-type == 'release' }}
+        env:
+          RELEASE_API_BASE_URL: ${{ vars.NIARIM_PRODUCTION_API_BASE_URL }}
+          GOOGLE_WEB_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Do not accidentally ship a release that silently uses mock data.
+          if [[ ! "$RELEASE_API_BASE_URL" =~ ^https://[a-z0-9.-]+/$ ]]; then
+            echo "::error::NIARIM_PRODUCTION_API_BASE_URL must be a verified HTTPS API root."
+            exit 1
+          fi
+          if [[ "$RELEASE_API_BASE_URL" == *"ibjfhyoqvfanle62ltokgz6sry0fjqfh.lambda-url.ap-northeast-1.on.aws"* ]]; then
+            echo "::error::The development Lambda URL is not a production release endpoint."
+            exit 1
+          fi
+          if [[ ! "$GOOGLE_WEB_CLIENT_ID" =~ ^[A-Za-z0-9-]+[.]apps[.]googleusercontent[.]com$ ]]; then
+            echo "::error::GOOGLE_CLIENT_ID is required for production sign-in."
+            exit 1
+          fi
+          echo "Release API URL and OAuth client are configured."
+
       - name: APKビルド（release）
         if: ${{ inputs.build-type == 'release' }}
         env:
           NIARIM_UPLOAD_KEYSTORE_PATH: ${{ runner.temp }}/niarim-upload.jks
           NIARIM_UPLOAD_STORE_PASSWORD: ${{ secrets.NIARIM_UPLOAD_STORE_PASSWORD }}
-        run: flutter build apk --release
+          RELEASE_API_BASE_URL: ${{ vars.NIARIM_PRODUCTION_API_BASE_URL }}
+          GOOGLE_WEB_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          flutter build apk --release \
+            --dart-define="NIARIM_API_BASE_URL=$RELEASE_API_BASE_URL" \
+            --dart-define="NIARIM_GOOGLE_CLIENT_ID=$GOOGLE_WEB_CLIENT_ID"
 
       # Actions Storage（無料枠0.5GB）の上限に達していると、このステップ
       # だけが失敗してもビルド済みAPKは下のGitHub Releaseから取得できる。
