@@ -1000,7 +1000,10 @@ class _TreeView extends StatelessWidget {
         return const SizedBox.shrink();
       }
       final scheme = Theme.of(context).colorScheme;
-      return Center(
+      return Container(
+        alignment: Alignment.center,
+        // 長い言語・大きな文字でも、見出しと案内を画面の端に付けない。
+        padding: const EdgeInsets.symmetric(horizontal: 24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -1020,6 +1023,7 @@ class _TreeView extends StatelessWidget {
             const SizedBox(height: 20),
             Text(
               l10n.saveTreeEmptyTitle,
+              textAlign: TextAlign.center,
               style: TextStyle(
                 fontWeight: FontWeight.w600,
                 fontFamily: 'Kuramubon',
@@ -1028,8 +1032,23 @@ class _TreeView extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 8),
-            Text(
-              l10n.saveTreeEmptyHint,
+            Text.rich(
+              TextSpan(
+                children: [
+                  // 上部の「保存」は、入らない幅ではアイコンだけになるので、
+                  // 案内にもそのアイコンを添える。
+                  WidgetSpan(
+                    alignment: PlaceholderAlignment.middle,
+                    child: Icon(
+                      Icons.save,
+                      size: 14,
+                      color: scheme.onSurfaceVariant,
+                    ),
+                  ),
+                  const TextSpan(text: ' '),
+                  TextSpan(text: l10n.saveTreeEmptyHint),
+                ],
+              ),
               style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
               textAlign: TextAlign.center,
             ),

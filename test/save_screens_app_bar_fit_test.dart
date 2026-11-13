@@ -294,11 +294,13 @@ void main() {
     expect(find.text('Enregistrer'), findsNothing);
     // アイコンだけのボタンも、読み上げでは「保存」の名前を持つ（測るための
     // 見えない文字のボタンは読み上げに出ない）。
+    // 名前は押せるボタンの節そのものに付く（labeledTapTargetGuideline）。
     expect(
-      find.semantics.byPredicate((node) => node.tooltip == 'Enregistrer'),
+      find.semantics.byPredicate(
+        (node) => node.label == 'Enregistrer' && node.flagsCollection.isButton,
+      ),
       findsOne,
     );
-    expect(find.semantics.byLabel('Enregistrer'), findsNothing);
     // 押すと保存のダイアログが開く。
     await tester.tap(save);
     await tester.pump();

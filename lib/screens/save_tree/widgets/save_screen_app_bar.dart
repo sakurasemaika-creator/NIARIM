@@ -51,7 +51,7 @@ class SaveScreenTitle extends StatelessWidget {
 }
 
 /// セーブツリーの上部バーの「保存」。文字のボタンが戻るボタンに重ならずに
-/// 入るときはそのまま出し、入らないとき（狭い画面・大きな文字・長い言語）は
+/// （画面名の欄を幅0にせずに）入るときはそのまま出し、入らないとき（狭い画面・大きな文字・長い言語）は
 /// アイコンだけのボタンにして、名前を長押し・ホバー（ツールチップ）と読み上げで
 /// 出す（文字を縮めない・切らない。以前は上部バーの右がはみ出し、戻るボタンの
 /// 上に「ヘルプ」が重なった）。上部バーの`actions`に直接置く（自分で
@@ -68,6 +68,20 @@ class SaveTreeBarSaveButton extends StatefulWidget {
 class _SaveTreeBarSaveButtonState extends State<SaveTreeBarSaveButton> {
   /// 文字のボタンの幅（見えない写しで、この組み立ての中で先に測る）。
   double _labeledWidth = 0;
+
+  /// 下のLayoutBuilderが決めたときに使った[_labeledWidth]。
+  double? _decidedWith;
+
+  /// 写しの幅を測った。下のLayoutBuilderがこの幅で決めていなければ、次の
+  /// フレームで決め直す（開いたまま文字の大きさを変えると、写しは自分だけで
+  /// 測り直されるので、LayoutBuilderが先に前の幅で決め、文字の「保存」が
+  /// 戻るボタンの上まで広がったままになった）。
+  void _measured(double width) {
+    _labeledWidth = width;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && _decidedWith != _labeledWidth) setState(() {});
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -97,10 +111,7 @@ class _SaveTreeBarSaveButtonState extends State<SaveTreeBarSaveButton> {
                     child: OverflowBox(
                       minWidth: 0,
                       maxWidth: double.infinity,
-                      child: _WidthProbe(
-                        onLayout: (width) => _labeledWidth = width,
-                        child: labeled(),
-                      ),
+                      child: _WidthProbe(onLayout: _measured, child: labeled()),
                     ),
                   ),
                 ),
@@ -109,15 +120,26 @@ class _SaveTreeBarSaveButtonState extends State<SaveTreeBarSaveButton> {
           ),
           LayoutBuilder(
             builder: (context, constraints) {
+              _decidedWith = _labeledWidth;
+              // 文字の「保存」は、画面名の欄（両側の間隔の内側）が0にならない
+              // ときだけ（0になると、出さない画面名が読み上げの木からも外れる）。
+              final titleRoom =
+                  2 *
+                      (AppBarTheme.of(context).titleSpacing ??
+                          NavigationToolbar.kMiddleSpacing) +
+                  1;
               if (_labeledWidth <=
-                  constraints.maxWidth - _leadingWidth(context)) {
+                  constraints.maxWidth - _leadingWidth(context) - titleRoom) {
                 return labeled();
               }
               return Tooltip(
                 message: label,
+                // 読み上げの名前はボタンそのものに付ける（ツールチップの名前は
+                // ボタンでない別の節になり、押せる節に名前が無かった）。
+                excludeFromSemantics: true,
                 child: FilledButton(
                   onPressed: widget.onPressed,
-                  child: const Icon(Icons.save, size: 16),
+                  child: Icon(Icons.save, size: 16, semanticLabel: label),
                 ),
               );
             },
