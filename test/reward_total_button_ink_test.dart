@@ -180,7 +180,7 @@ CommunityService _missionsServer() => CommunityService(
             'dailyClaimed': false,
             'rewardEnabled': true,
             'milestones': [
-              {'days': 7, 'coins': 5, 'claimed': true, 'eligible': true},
+              {'days': 7, 'coins': 10, 'claimed': true, 'eligible': true},
               {'days': 30, 'coins': 20, 'claimed': false, 'eligible': true},
               {'days': 100, 'coins': 50, 'claimed': false, 'eligible': false},
             ],
@@ -209,7 +209,7 @@ CommunityService _missionsServer() => CommunityService(
                   'period': 'day',
                   'requiredSeconds': seconds,
                   'progressSeconds': progress,
-                  'coins': 1,
+                  'coins': 10,
                   'claimed': false,
                   'eligible': progress >= seconds,
                 },
