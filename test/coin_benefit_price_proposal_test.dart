@@ -4,7 +4,7 @@ import 'package:niarim/models/coin_unlock_quote.dart';
 
 void main() {
   test('final owner-approved price model never implies a live redemption', () {
-    expect(CoinBenefitPriceCatalog.version, 'v3-final-annual550000');
+    expect(CoinBenefitPriceCatalog.version, 'v4-min10-repriced-20261113');
     expect(
       CoinBenefitPriceCatalog.cost(
         CoinUnlockTarget.fullPremium,
@@ -50,7 +50,7 @@ void main() {
         CoinUnlockTarget.toneCurve,
         const CoinUnlockDuration(12, month),
       ),
-      156000,
+      216000,
     );
   });
 
@@ -67,21 +67,21 @@ void main() {
         CoinUnlockTarget.endCardEdit,
         CoinDurationUnit.hour,
       ),
-      70,
+      500,
     );
     expect(
       CoinBenefitPriceCatalog.unitCoins(
         CoinUnlockTarget.endCardEdit,
         CoinDurationUnit.day,
       ),
-      290,
+      1200,
     );
     expect(
       CoinBenefitPriceCatalog.unitCoins(
         CoinUnlockTarget.endCardEdit,
         CoinDurationUnit.week,
       ),
-      2170,
+      6000,
     );
     expect(
       CoinBenefitPriceCatalog.unitCoins(
@@ -94,18 +94,18 @@ void main() {
 
   test('all 48 final benefit rates match the approved launch tariff', () {
     const rates = <CoinUnlockTarget, List<int>>{
-      CoinUnlockTarget.endCardEdit: [70, 290, 2170, 8000],
-      CoinUnlockTarget.watermark: [120, 500, 3790, 14000],
-      CoinUnlockTarget.toneCurve: [110, 470, 3520, 13000],
-      CoinUnlockTarget.levelAdjustment: [90, 360, 2710, 10000],
-      CoinUnlockTarget.unlimitedDuration: [150, 650, 4870, 18000],
-      CoinUnlockTarget.customAutomation: [170, 720, 5410, 20000],
-      CoinUnlockTarget.projectListAds: [80, 330, 2440, 9000],
-      CoinUnlockTarget.canvasAds: [130, 540, 4060, 15000],
-      CoinUnlockTarget.timelineAds: [100, 430, 3250, 12000],
-      CoinUnlockTarget.processingAds: [50, 220, 1630, 6000],
-      CoinUnlockTarget.allAds: [300, 1290, 9730, 36000],
-      CoinUnlockTarget.fullPremium: [500, 2500, 18000, 55000],
+      CoinUnlockTarget.endCardEdit: [500, 1200, 6000, 12000],
+      CoinUnlockTarget.watermark: [750, 1800, 9000, 18000],
+      CoinUnlockTarget.toneCurve: [750, 1800, 9000, 18000],
+      CoinUnlockTarget.levelAdjustment: [630, 1500, 7500, 15000],
+      CoinUnlockTarget.unlimitedDuration: [1050, 2500, 12500, 25000],
+      CoinUnlockTarget.customAutomation: [1050, 2500, 12500, 25000],
+      CoinUnlockTarget.projectListAds: [500, 1200, 6000, 12000],
+      CoinUnlockTarget.canvasAds: [840, 2000, 10000, 20000],
+      CoinUnlockTarget.timelineAds: [670, 1600, 8000, 16000],
+      CoinUnlockTarget.processingAds: [420, 1000, 5000, 10000],
+      CoinUnlockTarget.allAds: [1670, 4000, 20000, 40000],
+      CoinUnlockTarget.fullPremium: [5000, 10000, 30000, 55000],
     };
     for (final row in rates.entries) {
       expect(
