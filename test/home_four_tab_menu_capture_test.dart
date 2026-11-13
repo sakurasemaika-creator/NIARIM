@@ -390,6 +390,8 @@ void main() {
       expect(find.descendant(of: toolbar, matching: paste), findsOneWidget);
       expect(find.descendant(of: toolbar, matching: clear), findsOneWidget);
       expect(find.ancestor(of: paste, matching: find.byType(AppBar)), findsNothing);
+      // Stale instruction from the previous header-based UI must be absent.
+      expect(find.textContaining('右上の貼り付け'), findsNothing);
       expect(
         tester.getTopLeft(toolbar).dy,
         greaterThanOrEqualTo(
@@ -409,12 +411,18 @@ void main() {
     await settle();
     await copyCurrentSelection();
     await shot('18_works_paste_ready');
+    await tester.tap(find.byKey(const Key('homeClearClipboardButton')));
+    await settle();
+    expect(find.byKey(const Key('homeClipboardToolbar')), findsNothing);
 
     await tab(2);
     await tester.longPress(find.text('第1話 サンプルアニメ').first);
     await settle();
     await copyCurrentSelection();
     await shot('19_shared_paste_ready');
+    await tester.tap(find.byKey(const Key('homeClearClipboardButton')));
+    await settle();
+    expect(find.byKey(const Key('homeClipboardToolbar')), findsNothing);
 
     // Trash accepts a copied source from another tab as a move-to-Trash
     // destination. A copied Trash item itself is restored via its source tab.
