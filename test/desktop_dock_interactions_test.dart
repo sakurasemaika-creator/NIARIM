@@ -29,7 +29,10 @@ void main() {
         settings.toolOptionDockOrder.contains(CanvasDockPanel.layer),
         isTrue,
       );
-      expect(settings.rightDockOrder.contains(CanvasDockPanel.penSubTool), isTrue);
+      expect(
+        settings.rightDockOrder.contains(CanvasDockPanel.penSubTool),
+        isTrue,
+      );
       await settings.setLeftHanded(false);
       expect(
         settings.toolOptionDockOrder.contains(CanvasDockPanel.penSubTool),
@@ -109,7 +112,10 @@ void main() {
       reopened.toolOptionDockOrder.contains(CanvasDockPanel.layer),
       isTrue,
     );
-    expect(reopened.rightDockOrder.contains(CanvasDockPanel.penSubTool), isTrue);
+    expect(
+      reopened.rightDockOrder.contains(CanvasDockPanel.penSubTool),
+      isTrue,
+    );
     expect(reopened.desktopPanelWidth, 280);
     expect(reopened.desktopToolPanelWidth, 280);
     expect(reopened.desktopDockHeight(CanvasDockPanel.layer), 260);
@@ -126,7 +132,6 @@ void main() {
     );
     expect(reopened.rightDockOrder.contains(CanvasDockPanel.layer), isTrue);
   });
-
 
   test(
     'automatic dock folding defaults ON and persists the user toggle',
@@ -150,7 +155,10 @@ void main() {
     () async {
       final settings = SettingsService();
       await settings.init();
-      expect(settings.isDesktopDockCollapsed(CanvasDockPanel.penSubTool), isFalse);
+      expect(
+        settings.isDesktopDockCollapsed(CanvasDockPanel.penSubTool),
+        isFalse,
+      );
       expect(settings.isDesktopDockCollapsed(CanvasDockPanel.layer), isFalse);
       await settings.setDesktopDockWidth(CanvasDockPanel.penSubTool, 360);
       expect(settings.desktopToolPanelWidth, 360);
@@ -173,7 +181,10 @@ void main() {
 
       final reloaded = SettingsService();
       await reloaded.init();
-      expect(reloaded.isDesktopDockCollapsed(CanvasDockPanel.penSubTool), isFalse);
+      expect(
+        reloaded.isDesktopDockCollapsed(CanvasDockPanel.penSubTool),
+        isFalse,
+      );
       expect(reloaded.isDesktopDockCollapsed(CanvasDockPanel.layer), isTrue);
       expect(
         reloaded.desktopDockWidth(CanvasDockPanel.penSubTool, right: false),
@@ -228,19 +239,31 @@ void main() {
         find.byKey(const ValueKey('pcPreviewExpand-quickTool')),
         findsOneWidget,
       );
-      expect(settings.isDesktopDockCollapsed(CanvasDockPanel.quickTool), isFalse);
+      expect(
+        settings.isDesktopDockCollapsed(CanvasDockPanel.quickTool),
+        isFalse,
+      );
       await tester.tap(find.byKey(const ValueKey('pcPreviewExpand-quickTool')));
       await tester.pumpAndSettle();
       expect(
         find.byKey(const ValueKey('pcPreviewCollapse-quickTool')),
         findsOneWidget,
       );
-      expect(settings.isDesktopDockCollapsed(CanvasDockPanel.quickTool), isFalse);
+      expect(
+        settings.isDesktopDockCollapsed(CanvasDockPanel.quickTool),
+        isFalse,
+      );
 
       await settings.setDesktopDockAutoCollapseEnabled(false);
       await tester.pumpAndSettle();
-      expect(find.byKey(const ValueKey('pcPreviewExpand-quickTool')), findsNothing);
-      expect(settings.isDesktopDockCollapsed(CanvasDockPanel.quickTool), isFalse);
+      expect(
+        find.byKey(const ValueKey('pcPreviewExpand-quickTool')),
+        findsNothing,
+      );
+      expect(
+        settings.isDesktopDockCollapsed(CanvasDockPanel.quickTool),
+        isFalse,
+      );
       expect(tester.takeException(), isNull);
     },
   );
@@ -278,8 +301,14 @@ void main() {
       find.byKey(const ValueKey('pcPreviewCollapse-layer')),
       findsOneWidget,
     );
-    expect(find.byKey(const ValueKey('pcPreviewDrag-penSubTool')), findsOneWidget);
-    expect(find.byKey(const ValueKey('pcPreviewWidth-penSubTool')), findsNothing);
+    expect(
+      find.byKey(const ValueKey('pcPreviewDrag-penSubTool')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('pcPreviewWidth-penSubTool')),
+      findsNothing,
+    );
     expect(find.byKey(const ValueKey('pcPreviewWidth-layer')), findsNothing);
     expect(
       find.byKey(const ValueKey('pcPreviewToolColumnResize')),
@@ -289,7 +318,10 @@ void main() {
       find.byKey(const ValueKey('pcPreviewRightColumnResize')),
       findsOneWidget,
     );
-    expect(find.byKey(const ValueKey('pcPreviewHeight-penSubTool')), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('pcPreviewHeight-penSubTool')),
+      findsOneWidget,
+    );
 
     // A single column drag changes every window on that side, not the other.
     await tester.drag(
@@ -316,7 +348,9 @@ void main() {
       lessThan(tester.getRect(rightColumn).left),
     );
     expect(
-      tester.getRect(find.byKey(const ValueKey('pcPreviewDrop-penSubTool'))).right,
+      tester
+          .getRect(find.byKey(const ValueKey('pcPreviewDrop-penSubTool')))
+          .right,
       lessThanOrEqualTo(tester.getRect(toolColumn).right),
     );
     expect(
@@ -330,7 +364,9 @@ void main() {
     await settings.setLeftHanded(false);
     await tester.pumpAndSettle();
     expect(
-      tester.getRect(find.byKey(const ValueKey('pcPreviewDrop-penSubTool'))).right,
+      tester
+          .getRect(find.byKey(const ValueKey('pcPreviewDrop-penSubTool')))
+          .right,
       lessThanOrEqualTo(tester.getRect(toolColumn).right),
     );
     expect(
@@ -338,10 +374,15 @@ void main() {
       greaterThanOrEqualTo(tester.getRect(rightColumn).left),
     );
 
-    await tester.tap(find.byKey(const ValueKey('pcPreviewCollapse-penSubTool')));
+    await tester.tap(
+      find.byKey(const ValueKey('pcPreviewCollapse-penSubTool')),
+    );
     await tester.pump();
     expect(settings.isDesktopDockCollapsed(CanvasDockPanel.penSubTool), isTrue);
-    expect(find.byKey(const ValueKey('pcPreviewExpand-penSubTool')), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('pcPreviewExpand-penSubTool')),
+      findsOneWidget,
+    );
     expect(
       find.byKey(const ValueKey('pcPreviewCollapsedDrag-penSubTool')),
       findsOneWidget,
@@ -358,14 +399,19 @@ void main() {
 
     // Drag the collapsed brush icon into the RIGHT column before the
     // layer. Default workspace does not open the navigator.
-    final dragIcon = find.byKey(const ValueKey('pcPreviewCollapsedDrag-penSubTool'));
+    final dragIcon = find.byKey(
+      const ValueKey('pcPreviewCollapsedDrag-penSubTool'),
+    );
     final target = find.byKey(const ValueKey('pcPreviewDrop-layer'));
     await tester.drag(
       dragIcon,
       tester.getCenter(target) - tester.getCenter(dragIcon),
     );
     await tester.pumpAndSettle();
-    expect(settings.rightDockOrder.contains(CanvasDockPanel.penSubTool), isTrue);
+    expect(
+      settings.rightDockOrder.contains(CanvasDockPanel.penSubTool),
+      isTrue,
+    );
     expect(
       settings.toolOptionDockOrder.contains(CanvasDockPanel.penSubTool),
       isFalse,
@@ -375,10 +421,16 @@ void main() {
       settings.rightDockOrder.indexOf(CanvasDockPanel.penSubTool),
       lessThan(settings.rightDockOrder.indexOf(CanvasDockPanel.layer)),
     );
-    expect(find.byKey(const ValueKey('pcPreviewExpand-penSubTool')), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('pcPreviewExpand-penSubTool')),
+      findsOneWidget,
+    );
     await tester.tap(find.byKey(const ValueKey('pcPreviewExpand-penSubTool')));
     await tester.pump();
-    expect(settings.isDesktopDockCollapsed(CanvasDockPanel.penSubTool), isFalse);
+    expect(
+      settings.isDesktopDockCollapsed(CanvasDockPanel.penSubTool),
+      isFalse,
+    );
     expect(
       find.byKey(const ValueKey('pcPreviewCollapse-penSubTool')),
       findsOneWidget,
@@ -403,9 +455,18 @@ void main() {
       final reloaded = SettingsService();
       await reloaded.init();
       expect(reloaded.toolOptionDockOrder, isEmpty);
-      expect(reloaded.rightDockOrder.toSet(), CanvasDockPanel.values.map(canonicalCanvasDock).toSet());
-      expect(reloaded.rightDockOrder.length, CanvasDockPanel.values.map(canonicalCanvasDock).toSet().length);
-      expect(reloaded.isDesktopDockCollapsed(CanvasDockPanel.penSubTool), isTrue);
+      expect(
+        reloaded.rightDockOrder.toSet(),
+        CanvasDockPanel.values.map(canonicalCanvasDock).toSet(),
+      );
+      expect(
+        reloaded.rightDockOrder.length,
+        CanvasDockPanel.values.map(canonicalCanvasDock).toSet().length,
+      );
+      expect(
+        reloaded.isDesktopDockCollapsed(CanvasDockPanel.penSubTool),
+        isTrue,
+      );
 
       for (final panel in List<CanvasDockPanel>.of(reloaded.rightDockOrder)) {
         await reloaded.moveDesktopDockPanel(panel, toRight: false);
@@ -422,7 +483,10 @@ void main() {
         restored.toolOptionDockOrder.length,
         CanvasDockPanel.values.map(canonicalCanvasDock).toSet().length,
       );
-      expect(restored.isDesktopDockCollapsed(CanvasDockPanel.penSubTool), isTrue);
+      expect(
+        restored.isDesktopDockCollapsed(CanvasDockPanel.penSubTool),
+        isTrue,
+      );
     },
   );
 
@@ -441,7 +505,10 @@ void main() {
       CanvasDockPanel.layer,
     });
     await settings.setDesktopDockCollapsed(CanvasDockPanel.penSubTool, true);
-    await settings.moveDesktopDockPanel(CanvasDockPanel.penSubTool, toRight: true);
+    await settings.moveDesktopDockPanel(
+      CanvasDockPanel.penSubTool,
+      toRight: true,
+    );
 
     await tester.pumpWidget(
       ChangeNotifierProvider.value(
@@ -481,14 +548,19 @@ void main() {
       settings.toolOptionDockOrder.contains(CanvasDockPanel.penSubTool),
       isTrue,
     );
-    expect(settings.rightDockOrder.contains(CanvasDockPanel.penSubTool), isFalse);
+    expect(
+      settings.rightDockOrder.contains(CanvasDockPanel.penSubTool),
+      isFalse,
+    );
     expect(settings.isDesktopDockCollapsed(CanvasDockPanel.penSubTool), isTrue);
     expect(tester.getSize(left).width, 52);
 
     await settings.moveDesktopDockPanel(CanvasDockPanel.layer, toRight: false);
     await tester.pumpAndSettle();
     expect(tester.getSize(right).width, 0);
-    final fromLeft = find.byKey(const ValueKey('pcPreviewCollapsedDrag-penSubTool'));
+    final fromLeft = find.byKey(
+      const ValueKey('pcPreviewCollapsedDrag-penSubTool'),
+    );
     final dragRight = await tester.startGesture(tester.getCenter(fromLeft));
     await dragRight.moveBy(const Offset(50, 0));
     await tester.pump();
@@ -497,7 +569,10 @@ void main() {
     await tester.pump();
     await dragRight.up();
     await tester.pumpAndSettle();
-    expect(settings.rightDockOrder.contains(CanvasDockPanel.penSubTool), isTrue);
+    expect(
+      settings.rightDockOrder.contains(CanvasDockPanel.penSubTool),
+      isTrue,
+    );
     expect(
       settings.toolOptionDockOrder.contains(CanvasDockPanel.penSubTool),
       isFalse,
@@ -563,7 +638,9 @@ void main() {
     expect(settings.desktopPanelWidth, 280);
 
     // Physical right -> physical left must update the SAVED physical left list.
-    final dragIcon = find.byKey(const ValueKey('pcPreviewCollapsedDrag-penSubTool'));
+    final dragIcon = find.byKey(
+      const ValueKey('pcPreviewCollapsedDrag-penSubTool'),
+    );
     await tester.drag(
       dragIcon,
       tester.getCenter(layer) - tester.getCenter(dragIcon),
@@ -573,7 +650,10 @@ void main() {
       settings.toolOptionDockOrder.contains(CanvasDockPanel.penSubTool),
       isTrue,
     );
-    expect(settings.rightDockOrder.contains(CanvasDockPanel.penSubTool), isFalse);
+    expect(
+      settings.rightDockOrder.contains(CanvasDockPanel.penSubTool),
+      isFalse,
+    );
     expect(settings.isDesktopDockCollapsed(CanvasDockPanel.penSubTool), isTrue);
     expect(
       tester.getRect(brush).left,
@@ -614,7 +694,10 @@ void main() {
       CanvasDockPanel.layer,
     });
     await settings.setDesktopDockCollapsed(CanvasDockPanel.penSubTool, true);
-    await settings.moveDesktopDockPanel(CanvasDockPanel.penSubTool, toRight: false);
+    await settings.moveDesktopDockPanel(
+      CanvasDockPanel.penSubTool,
+      toRight: false,
+    );
     await tester.pumpWidget(
       ChangeNotifierProvider.value(
         value: settings,
@@ -632,7 +715,9 @@ void main() {
 
     final physicalRight = find.byKey(const ValueKey('pcPreviewRightColumn'));
     expect(tester.getSize(physicalRight).width, 0);
-    final dragIcon = find.byKey(const ValueKey('pcPreviewCollapsedDrag-penSubTool'));
+    final dragIcon = find.byKey(
+      const ValueKey('pcPreviewCollapsedDrag-penSubTool'),
+    );
     final drag = await tester.startGesture(tester.getCenter(dragIcon));
     await drag.moveBy(const Offset(40, 0));
     await tester.pump();
@@ -642,7 +727,10 @@ void main() {
     await drag.up();
     await tester.pumpAndSettle();
 
-    expect(settings.rightDockOrder.contains(CanvasDockPanel.penSubTool), isTrue);
+    expect(
+      settings.rightDockOrder.contains(CanvasDockPanel.penSubTool),
+      isTrue,
+    );
     expect(
       settings.toolOptionDockOrder.contains(CanvasDockPanel.penSubTool),
       isFalse,

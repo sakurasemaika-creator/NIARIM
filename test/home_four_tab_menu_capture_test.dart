@@ -383,10 +383,7 @@ void main() {
       expect(copyButton, findsOneWidget);
       await tester.tap(copyButton);
       await settle();
-      expect(
-        find.byKey(const Key('homeCrossTabPasteButton')),
-        findsOneWidget,
-      );
+      expect(find.byKey(const Key('homeCrossTabPasteButton')), findsOneWidget);
     }
 
     await tab(0);

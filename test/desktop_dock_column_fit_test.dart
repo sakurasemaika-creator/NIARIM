@@ -186,8 +186,11 @@ void main() {
     );
     expect(heights.length, 3);
     final content = heights.values.fold<double>(0, (sum, h) => sum + h);
-    final used = content +
-        panels.length * (DesktopDockColumnFit.titleHeight + DesktopDockColumnFit.resizeGripHeight) +
+    final used =
+        content +
+        panels.length *
+            (DesktopDockColumnFit.titleHeight +
+                DesktopDockColumnFit.resizeGripHeight) +
         (panels.length - 1) * DesktopDockColumnFit.gap;
     expect(used, lessThanOrEqualTo(560.001));
     expect(heights.values.every((v) => v >= 80), isTrue);
@@ -212,7 +215,9 @@ void main() {
     expect(heights.containsKey(CanvasDockPanel.colorPicker), isFalse);
     final used =
         heights.values.fold<double>(0, (s, h) => s + h) +
-        2 * (DesktopDockColumnFit.titleHeight + DesktopDockColumnFit.resizeGripHeight) +
+        2 *
+            (DesktopDockColumnFit.titleHeight +
+                DesktopDockColumnFit.resizeGripHeight) +
         DesktopDockColumnFit.collapsedHeight +
         2 * DesktopDockColumnFit.gap;
     expect(used, lessThanOrEqualTo(560.001));
