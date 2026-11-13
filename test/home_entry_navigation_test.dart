@@ -279,16 +279,12 @@ void main() {
         final drawer = find.byType(Drawer);
         expect(drawer, findsOneWidget);
         final expectedIcons = [
-          Icons.share_outlined,
-          Icons.delete_outline,
-          Icons.palette_outlined,
-          Icons.cleaning_services_outlined,
-          Icons.settings_outlined,
-          Icons.help_outline,
-          Icons.lightbulb_outline,
+          Icons.toll_outlined,
           Icons.workspace_premium_outlined,
-        ];
-        for (final glyph in expectedIcons) {
+          Icons.menu_book_outlined,
+          Icons.settings_outlined,
+          Icons.cleaning_services_outlined,
+        ];        for (final glyph in expectedIcons) {
           final found = find.descendant(
             of: drawer,
             matching: find.byIcon(glyph),
