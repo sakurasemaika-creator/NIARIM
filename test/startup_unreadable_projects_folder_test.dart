@@ -3788,6 +3788,358 @@ void main() {
     expect(tester.takeException(), isNull);
     await tester.pumpWidget(const SizedBox.shrink());
   });
+
+  // 保存の画面：保存の一覧を読めない間に、空に見えるスロット0（一覧には
+  // 前の保存「A」がある）へ保存し、保存中に戻るでダイアログを閉じてから、
+  // 読めるようになって知らせの「再試行」を押すと、保存は書き始めたときに
+  // スロットにあった「A」を差し替えて消していた（ダイアログは上書きを
+  // 確かめていない）。保存は押したときに見せていたスロットの中身で行い、
+  // その間に読んだ一覧の保存は、この起動の保存と同じく、消さずに空いて
+  // いるスロットへ自分のメモごと移す。
+  for (final screen in ['save management', 'save tree slots']) {
+    testWidgets('Back during a slot save, then Retry on the $screen screen, '
+        'keeps the save the dialog did not show', (tester) async {
+      tester.view.physicalSize = const Size(420, 900);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      SharedPreferences.setMockInitialValues({
+        'first_launch': false,
+        'language': 'ja',
+        firstUseTooltipsSeenKey: kAllFirstUseTooltipKeys,
+      });
+      final seeded = await tester.runAsync(
+        () => _seedProjectWithSaves(name: '保存を読めない作品', comments: ['A', 'B']),
+      );
+      final (project, saves) = seeded!;
+      // 「A」には、保存のコメントと違うメモを付けておく（移した先で、
+      // メモごと移ったか分かるように）。
+      await tester.runAsync(() async {
+        final seeder = SaveTreeService()..setSlotMax(5);
+        await seeder.init();
+        await seeder.setSlotMemo(project.id, 0, 'Aのメモ');
+        seeder.dispose();
+      });
+      final folder = '${storage.projectsPath}/${project.id}/SaveTree';
+      final indexPath = '$folder/${SaveTreeService.indexFileName}';
+      storage.paths.blockReading(indexPath);
+      appRouter.go('/home');
+      final providers = await tester.runAsync(buildAppProviders);
+      if (screen == 'save management') {
+        await tester.pumpWidget(
+          MultiProvider(providers: providers!, child: const NiarimApp()),
+        );
+        await _settleWithFiles(tester);
+        appRouter.push('/save-tree/${project.id}?entry=detail');
+      } else {
+        await tester.pumpWidget(
+          MultiProvider(
+            providers: providers!,
+            child: MaterialApp(
+              locale: const Locale('ja'),
+              localizationsDelegates: AppLocalizations.localizationsDelegates,
+              supportedLocales: AppLocalizations.supportedLocales,
+              home: SaveTreeScreen(
+                projectId: project.id,
+                entryMode: SaveTreeEntryMode.projectDetail,
+              ),
+            ),
+          ),
+        );
+      }
+      await _settleWithFiles(tester, rounds: 6);
+      final saveTree = tester
+          .element(find.byType(Scaffold).first)
+          .read<SaveTreeService>();
+      expect(saveTree.getNodes(project.id), isEmpty);
+
+      final write = find.byTooltip('このスロットへ保存').at(0);
+      await tester.ensureVisible(write);
+      await tester.tap(write);
+      await _settleWithFiles(tester, rounds: 3);
+      // 空に見えるスロット：上書きは確かめていない。
+      expect(find.textContaining('上書き'), findsNothing);
+      await tester.enterText(find.byType(TextField), 'セーブE');
+      await tester.tap(find.widgetWithText(FilledButton, '保存'));
+      await tester.pump();
+      // 保存中に戻る（Androidの戻るボタン）。
+      await tester.binding.handlePopRoute();
+      for (var i = 0; i < 6; i++) {
+        await tester.pump(const Duration(milliseconds: 100));
+      }
+      expect(find.byType(AlertDialog), findsNothing);
+      // 読めるようになって、保存の画面の知らせの「再試行」。
+      storage.paths.clear();
+      final notice = find.byKey(const Key('saveListLoadFailed'));
+      await tester.tap(find.descendant(of: notice, matching: find.text('再試行')));
+      bool saved() =>
+          saveTree.getNodes(project.id).any((n) => n.comment == 'セーブE');
+      for (
+        var i = 0;
+        i < 200 && (!saved() || notice.evaluate().isNotEmpty);
+        i++
+      ) {
+        await _settleWithFiles(tester, rounds: 1);
+      }
+      await _settleWithFiles(tester, rounds: 3);
+
+      final nodes = saveTree.getNodes(project.id);
+      final e = nodes.where((n) => n.comment == 'セーブE').single;
+      expect(
+        {for (final n in nodes) n.slotIndex: n.id},
+        {0: e.id, 1: saves[1].id, 2: saves[0].id},
+        reason: 'the save that was in slot 0 was replaced without asking',
+      );
+      expect(
+        File('$folder/${saves[0].id}.niapro').existsSync(),
+        isTrue,
+        reason: 'A was deleted',
+      );
+      expect(
+        [for (var i = 0; i < 5; i++) saveTree.slotDisplayMemoOf(project.id, i)],
+        ['セーブE', 'B', 'Aのメモ', null, null],
+      );
+      final listed = [
+        for (final n
+            in (jsonDecode(File(indexPath).readAsStringSync()) as Map)['nodes']
+                as List)
+          (n as Map)['id'],
+      ];
+      expect(listed, unorderedEquals([saves[0].id, saves[1].id, e.id]));
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox.shrink());
+      appRouter.go('/');
+    });
+  }
+
+  // 保存の一覧を読めない間にスロット0へ保存している途中（保存のファイルは
+  // 書き終え、サムネイルを書いている）に「再試行」が一覧を読むと、書いて
+  // いる保存は一覧に無いファイルとして別のスロットへ拾われ、保存が終わると
+  // 同じ保存が2つ並び（一覧にも同じIDが2つ）、スロット0にあった「A」は
+  // メモごと一覧から外れた。書いている保存は拾わず、そのスロットにあった
+  // 一覧の保存は、この起動の保存と同じく空いているスロットへ自分のメモ
+  // ごと移す。
+  test('Retry landing while a slot save is being written neither lists the '
+      'save twice nor drops the save that was in its slot', () async {
+    final (project, saves) = await _seedProjectWithSaves(comments: ['A', 'B']);
+    final seeder = SaveTreeService()..setSlotMax(5);
+    await seeder.init();
+    await seeder.setSlotMemo(project.id, 0, 'Aのメモ');
+    seeder.dispose();
+    final folder = '${storage.projectsPath}/${project.id}/SaveTree';
+    final indexPath = '$folder/${SaveTreeService.indexFileName}';
+    storage.paths.blockReading(indexPath);
+    final service = SaveTreeService()..setSlotMax(5);
+    addTearDown(service.dispose);
+    await service.init();
+    final projects = _seedServices[project.id]!;
+    var finished = false;
+    final saving = service
+        .saveToSlot(
+          projectId: project.id,
+          slotIndex: 0,
+          project: project,
+          scenes: projects.scenesOf(project.id),
+          tileManager: projects.tileManagerOf(project.id),
+          comment: 'セーブE',
+          thumbnailPngBytes: Uint8List.fromList(List.filled(64, 7)),
+        )
+        .whenComplete(() => finished = true);
+    storage.paths.clear();
+    expect(await service.retryReadList(project.id), isTrue);
+    expect(
+      finished,
+      isFalse,
+      reason: 'Retry has to read the list while the save is being written',
+    );
+    final e = await saving;
+    await service.setSlotMemo(project.id, 0, 'セーブE');
+
+    void expectKept(SaveTreeService saveTree) {
+      final nodes = saveTree.getNodes(project.id);
+      expect(
+        nodes.map((n) => n.id).toSet(),
+        hasLength(nodes.length),
+        reason: 'a save is listed twice',
+      );
+      expect(
+        {for (final n in nodes) n.slotIndex: n.id},
+        {0: e.id, 1: saves[1].id, 2: saves[0].id},
+      );
+      expect(
+        [for (var i = 0; i < 5; i++) saveTree.slotDisplayMemoOf(project.id, i)],
+        ['セーブE', 'B', 'Aのメモ', null, null],
+      );
+    }
+
+    expectKept(service);
+    final listed = [
+      for (final n
+          in (jsonDecode(File(indexPath).readAsStringSync()) as Map)['nodes']
+              as List)
+        (n as Map)['id'],
+    ];
+    expect(listed, unorderedEquals([saves[0].id, saves[1].id, e.id]));
+    final again = SaveTreeService()..setSlotMax(5);
+    addTearDown(again.dispose);
+    await again.init();
+    expectKept(again);
+    // 出ている保存はどれも開ける。
+    for (final n in again.getNodes(project.id)) {
+      expect(await again.loadNode(project.id, n.id), isNotNull, reason: n.id);
+    }
+  });
+
+  // 空に見えたスロットへの保存のダイアログを開いている間に、一覧を読めた
+  // （前に閉じた保存のメモ等で）とき：押したときに見せていなかった保存は
+  // 差し替えず、空いているスロットへ移す。
+  test('a save to a slot that looked empty does not replace a save read into '
+      'it before Save was pressed', () async {
+    final (project, saves) = await _seedProjectWithSaves(comments: ['A', 'B']);
+    final folder = '${storage.projectsPath}/${project.id}/SaveTree';
+    final indexPath = '$folder/${SaveTreeService.indexFileName}';
+    storage.paths.blockReading(indexPath);
+    final service = SaveTreeService()..setSlotMax(5);
+    addTearDown(service.dispose);
+    await service.init();
+    expect(service.getNodes(project.id), isEmpty);
+    storage.paths.clear();
+    expect(await service.retryReadList(project.id), isTrue);
+    expect(service.getNodes(project.id).first.id, saves[0].id);
+
+    final projects = _seedServices[project.id]!;
+    final intent = service.beginSlotSave(project.id, 0);
+    final SaveNode e;
+    try {
+      e = await service.saveToSlot(
+        projectId: project.id,
+        slotIndex: 0,
+        project: project,
+        scenes: projects.scenesOf(project.id),
+        tileManager: projects.tileManagerOf(project.id),
+        comment: 'セーブE',
+        intent: intent,
+      );
+    } finally {
+      intent.end();
+    }
+    await service.setSlotMemo(project.id, 0, 'セーブE');
+    expect(
+      {for (final n in service.getNodes(project.id)) n.slotIndex: n.id},
+      {0: e.id, 1: saves[1].id, 2: saves[0].id},
+    );
+    expect(File('$folder/${saves[0].id}.niapro').existsSync(), isTrue);
+    expect(
+      [for (var i = 0; i < 3; i++) service.slotDisplayMemoOf(project.id, i)],
+      ['セーブE', 'B', 'A'],
+    );
+    // 確かめた保存は、これまでどおり差し替える。
+    final f = await (() async {
+      final again = service.beginSlotSave(project.id, 0, replacing: e.id);
+      try {
+        return await service.saveToSlot(
+          projectId: project.id,
+          slotIndex: 0,
+          project: project,
+          scenes: projects.scenesOf(project.id),
+          tileManager: projects.tileManagerOf(project.id),
+          comment: 'セーブF',
+          intent: again,
+        );
+      } finally {
+        again.end();
+      }
+    })();
+    expect(
+      service.getNodes(project.id).map((n) => n.id),
+      isNot(contains(e.id)),
+    );
+    expect(File('$folder/${e.id}.niapro').existsSync(), isFalse);
+    expect(
+      service.getNodes(project.id).where((n) => n.slotIndex == 0).single.id,
+      f.id,
+    );
+  });
+
+  // セーブツリー：一覧を読めない間に保存している途中に「再試行」が一覧を
+  // 読むと、書いている保存は一覧に無いファイル（コメントの無い根）として
+  // 拾われ、保存が終わると同じ保存が2つ並んだ。
+  test('Retry landing while a tree save is being written does not list the '
+      'save twice', () async {
+    final (project, _) = await _seedProjectWithSaves(comments: const []);
+    final projects = _seedServices[project.id]!;
+    Future<SaveNode> branch(SaveTreeService s, String comment) => s.saveAsChild(
+      projectId: project.id,
+      project: project,
+      scenes: projects.scenesOf(project.id),
+      tileManager: projects.tileManagerOf(project.id),
+      comment: comment,
+      thumbnailPngBytes: Uint8List.fromList(List.filled(64, 7)),
+    );
+    final seeder = SaveTreeService()..setTreeMode(true);
+    await seeder.init();
+    final root = await branch(seeder, '根');
+    seeder.dispose();
+    storage.paths.blockReading(
+      '${storage.projectsPath}/${project.id}/SaveTree/'
+      '${SaveTreeService.indexFileName}',
+    );
+    final service = SaveTreeService()..setTreeMode(true);
+    addTearDown(service.dispose);
+    await service.init();
+    var finished = false;
+    final saving = branch(service, '枝').whenComplete(() => finished = true);
+    storage.paths.clear();
+    expect(await service.retryReadList(project.id), isTrue);
+    expect(
+      finished,
+      isFalse,
+      reason: 'Retry has to read the list while the save is being written',
+    );
+    final leaf = await saving;
+
+    void expectOnce(SaveTreeService saveTree) {
+      final nodes = saveTree.getNodes(project.id);
+      expect(nodes.map((n) => n.id), unorderedEquals([root.id, leaf.id]));
+      final byId = {for (final n in nodes) n.id: n};
+      expect(byId[root.id]!.comment, '根');
+      expect(byId[leaf.id]!.comment, '枝');
+    }
+
+    expectOnce(service);
+    final again = SaveTreeService()..setTreeMode(true);
+    addTearDown(again.dispose);
+    await again.init();
+    expectOnce(again);
+  });
+
+  // 前の版で、書いている保存を拾ってしまい同じIDが2つ入った一覧は、前の方
+  // （名前の無い、拾った保存）を使っていた。後の方（保存が終わったときに
+  // 入れた方）を使う。
+  test('a save list that holds a save twice keeps the later entry', () async {
+    final (project, saves) = await _seedProjectWithSaves(comments: ['A', 'B']);
+    final indexPath =
+        '${storage.projectsPath}/${project.id}/SaveTree/'
+        '${SaveTreeService.indexFileName}';
+    final json =
+        jsonDecode(File(indexPath).readAsStringSync()) as Map<String, dynamic>;
+    final listed = json['nodes'] as List;
+    final b = listed[1] as Map<String, dynamic>;
+    json['nodes'] = [
+      listed[0],
+      {'id': b['id'], 'savedAt': b['savedAt'], 'slotIndex': 2},
+      b,
+    ];
+    File(indexPath).writeAsStringSync(jsonEncode(json));
+
+    final service = SaveTreeService()..setSlotMax(5);
+    addTearDown(service.dispose);
+    await service.init();
+    final nodes = service.getNodes(project.id);
+    expect(nodes.map((n) => n.id), [saves[0].id, saves[1].id]);
+    expect(nodes[1].slotIndex, 1);
+    expect(nodes[1].comment, 'B');
+  });
 }
 
 /// 実際のファイルを読む処理（ゴミ箱の一覧・読み直し）を実時間で待ちながら

@@ -96,6 +96,26 @@ class SaveTreeService extends ChangeNotifier {
   /// フォルダに入れない）。読めるまで、この起動の保存しか出ない。
   final Set<String> _unreadLists = {};
 
+  /// 書いている途中の保存（作品ごと）：保存の画面で「保存」を押してから
+  /// （[beginSlotSave]）、または[saveToSlot]・[saveAsChild]を呼んでから、
+  /// 終わるまで。その間に一覧を読んだとき（「再試行」等）、[_loadProject]は
+  /// 書いている保存のファイルを一覧に無い保存として拾わず（拾うと、保存が
+  /// 終わったときに同じ保存が2つ並んだ）、保存先のスロットにあった一覧の
+  /// 保存は、この起動の保存と同じく空いているスロットへ移す（そのスロットに
+  /// 置くと、保存が終わったときに、確かめていない保存を差し替えて消した）。
+  final Map<String, List<SlotSave>> _saving = {};
+
+  /// 保存の画面で「保存」を押したときに呼ぶ（サムネイルを作る前）。押した
+  /// ときに見せていたスロットの中身で保存する：[replacing]は上書きを確かめた
+  /// 保存のID（空に見えたスロットはnull）。返した[SlotSave]を[saveToSlot]の
+  /// `intent`へ渡し、保存が終わったら（失敗・取りやめも）[SlotSave.end]を呼ぶ。
+  /// それまで、そのスロットは保存中として扱う。
+  SlotSave beginSlotSave(String projectId, int slotIndex, {String? replacing}) {
+    final save = SlotSave._(this, projectId, slotIndex, replacing);
+    _saving.putIfAbsent(projectId, () => []).add(save);
+    return save;
+  }
+
   /// [projectId]の保存の一覧を読めなかったか。保存の画面は、空に見える
   /// スロットを「保存データなし」と言わず、読めなかったことと「再試行」
   /// （[retryReadList]）を出す。
@@ -175,10 +195,17 @@ class SaveTreeService extends ChangeNotifier {
     final sessionIds = {
       for (final n in [...sessionNodes, ...sessionArchived]) n.id,
     };
+    // 書いている途中の保存（[_saving]）も、この起動の保存と同じく扱う：
+    // そのスロットにあった一覧の保存は空いているスロットへ移し、書いている
+    // 保存のファイルは一覧に無い保存として拾わない。
+    final saving = _saving[projectId] ?? const <SlotSave>[];
     final sessionSlots = {
       if (!_isTreeMode)
         for (final n in sessionNodes)
           if (n.slotIndex >= 0) n.slotIndex,
+      if (!_isTreeMode)
+        for (final s in saving)
+          if (s.slotIndex >= 0) s.slotIndex,
     };
     String? text;
     try {
@@ -262,7 +289,7 @@ class SaveTreeService extends ChangeNotifier {
     final nodes = <SaveNode>[];
     final archived = <SaveNode>[];
     // この起動の保存は、一覧からも、一覧に無いファイルとしても拾わない。
-    final known = <String>{...sessionIds};
+    final known = <String>{...sessionIds, for (final s in saving) ?s.nodeId};
     // 一覧の保存のうち、この起動で保存したスロットにあったもの。
     final displaced = <SaveNode>[];
     // 一覧にあったスロットのメモ（この起動で書いたメモを重ねる前）。
@@ -289,10 +316,19 @@ class SaveTreeService extends ChangeNotifier {
           ]) {
             final list = json[key];
             if (list is! List) continue;
+            // 同じIDが2つある一覧（書いている保存を拾ってしまった前の版）は、
+            // 後の方（保存が終わったときに入れた方）を使う。
+            final lastOf = <Object?, Object?>{
+              for (final item in list)
+                if (item is Map) item['id']: item,
+            };
             for (final item in list) {
               final id = item is Map ? item['id'] : null;
               // 実データの無い保存は出さない（開くと失敗するため）。
-              if (id is! String || known.contains(id) || !hasData(id)) {
+              if (id is! String ||
+                  known.contains(id) ||
+                  !hasData(id) ||
+                  !identical(lastOf[id], item)) {
                 continue;
               }
               final node = SaveNode.fromJson(
@@ -412,9 +448,17 @@ class SaveTreeService extends ChangeNotifier {
           final edited =
               (_memosEditedUnread[projectId]?.contains(from) ?? false) ||
               pendingMemos.containsKey(claimed[from]?.id);
-          final blank = [...sessionNodes, ...claimed.values].any(
-            (n) => n.slotIndex == from && (n.comment?.trim().isEmpty ?? true),
-          );
+          final blank =
+              [...sessionNodes, ...claimed.values].any(
+                (n) =>
+                    n.slotIndex == from && (n.comment?.trim().isEmpty ?? true),
+              ) ||
+              saving.any(
+                (s) =>
+                    s.slotIndex == from &&
+                    s.nodeId != null &&
+                    (s.comment?.trim().isEmpty ?? true),
+              );
           if (!ownPending && !edited && blank && memos[from] == memo) {
             memos[from] = '';
           }
@@ -715,7 +759,46 @@ class SaveTreeService extends ChangeNotifier {
 
   /// スロット方式：指定スロットへ上書き保存。実データ（シーン・タイル）を
   /// SaveTree/{nodeId}.niaproへ書き込む。
+  ///
+  /// [intent]は、保存の画面で「保存」を押したときの[beginSlotSave]。渡すと、
+  /// 押したときに見せていた保存（上書きを確かめた保存）だけを差し替え、
+  /// それ以外にスロットへ入っていた保存は消さずに空いているスロットへ移す。
+  /// 渡さないと、呼んだときにスロットにある保存を差し替える。
   Future<SaveNode> saveToSlot({
+    required String projectId,
+    required int slotIndex,
+    required Project project,
+    required List<Scene> scenes,
+    required TileManager tileManager,
+    String? comment,
+    Uint8List? thumbnailPngBytes,
+    SlotSave? intent,
+  }) async {
+    assert(
+      intent == null ||
+          (intent.projectId == projectId && intent.slotIndex == slotIndex),
+    );
+    final save = intent ?? beginSlotSave(projectId, slotIndex);
+    try {
+      return await _saveToSlot(
+        save: save,
+        confirmedOnly: intent != null,
+        projectId: projectId,
+        slotIndex: slotIndex,
+        project: project,
+        scenes: scenes,
+        tileManager: tileManager,
+        comment: comment,
+        thumbnailPngBytes: thumbnailPngBytes,
+      );
+    } finally {
+      if (intent == null) save.end();
+    }
+  }
+
+  Future<SaveNode> _saveToSlot({
+    required SlotSave save,
+    required bool confirmedOnly,
     required String projectId,
     required int slotIndex,
     required Project project,
@@ -729,10 +812,19 @@ class SaveTreeService extends ChangeNotifier {
       'slotIndex must be 0..${_slotMax - 1}',
     );
     _nodesByProject.putIfAbsent(projectId, () => []);
+    // 差し替える保存。保存の画面から押したときは、押したときに見せていた
+    // 保存（空に見えたスロットなら無し）だけ。
     final old = _nodesByProject[projectId]!
-        .where((n) => n.slotIndex == slotIndex)
+        .where(
+          (n) =>
+              n.slotIndex == slotIndex &&
+              (!confirmedOnly || n.id == save.replacing),
+        )
         .toList();
     final nodeId = _newId();
+    save
+      ..nodeId = nodeId
+      ..comment = comment;
     // 【重要】既存スロットの差し替えは「新しい保存が完全に書き終わってから」
     // 行う。以前はここより前に removeWhere で既存ノードを一覧から外して
     // いたため、この書き込みが失敗すると（空き容量不足・書き込みエラー等）
@@ -753,14 +845,29 @@ class SaveTreeService extends ChangeNotifier {
         thumbnailPngBytes,
       );
     }
-    _nodesByProject[projectId]!.removeWhere((n) => n.slotIndex == slotIndex);
+    // 差し替えるのは、確かめた保存がまだこのスロットにあるときだけ。書いて
+    // いる間にこのスロットへ入った、差し替えを確かめていない保存（押す前に
+    // 読んだ一覧の保存等）は、消さずに空いているスロットへ移す。
+    final nodes = _nodesByProject[projectId]!;
+    final inSlot = [
+      for (final n in nodes)
+        if (n.slotIndex == slotIndex && n.id != nodeId) n,
+    ];
+    final replaced = [
+      for (final n in inSlot)
+        if (old.any((o) => o.id == n.id)) n,
+    ];
+    nodes.removeWhere((n) => n.slotIndex == slotIndex || n.id == nodeId);
+    for (final n in inSlot) {
+      if (!replaced.contains(n)) _moveAside(projectId, n, slotIndex);
+    }
     // A newly committed save updates its slot memo only after archive/thumbnail
     // persistence succeeds. An existing empty slot memo is not lost on delete.
     _slotMemosByProject
         .putIfAbsent(projectId, () => {})
         .putIfAbsent(
           slotIndex,
-          () => (comment ?? old.firstOrNull?.comment ?? '').trim(),
+          () => (comment ?? replaced.firstOrNull?.comment ?? '').trim(),
         );
     final node = SaveNode(
       id: nodeId,
@@ -770,7 +877,7 @@ class SaveTreeService extends ChangeNotifier {
       thumbnailPath: thumbnailPath,
       slotIndex: slotIndex,
     );
-    for (final o in old) {
+    for (final o in replaced) {
       await _deleteNodeFiles(projectId, o.id);
     }
     _nodesByProject[projectId]!.add(node);
@@ -778,6 +885,44 @@ class SaveTreeService extends ChangeNotifier {
     await _persist(projectId);
     _notifySuccessfulManualSave(projectId);
     return node;
+  }
+
+  /// [node]を空いているスロットへ移す（メモだけが付いたスロットは避ける。
+  /// 空きが無ければ退避する。ツリー方式へ変えると出る）。保存は消さない。
+  /// [slotIndex]（いま保存しているスロット）と、書いている途中の保存の
+  /// スロットにも入れない。
+  void _moveAside(String projectId, SaveNode node, int slotIndex) {
+    final nodes = _nodesByProject.putIfAbsent(projectId, () => []);
+    final memos = _slotMemosByProject[projectId] ?? const <int, String>{};
+    final used = {
+      slotIndex,
+      for (final n in nodes)
+        if (n.slotIndex >= 0) n.slotIndex,
+      for (final s in _saving[projectId] ?? const <SlotSave>[])
+        if (s.slotIndex >= 0) s.slotIndex,
+    };
+    int? free;
+    for (final skipLabelled in [true, false]) {
+      for (var i = 0; i < _slotMax && free == null; i++) {
+        if (used.contains(i)) continue;
+        if (skipLabelled && (memos[i]?.isNotEmpty ?? false)) continue;
+        free = i;
+      }
+    }
+    final moved = SaveNode(
+      id: node.id,
+      projectId: node.projectId,
+      savedAt: node.savedAt,
+      comment: node.comment,
+      thumbnailPath: node.thumbnailPath,
+      parentId: node.parentId,
+      slotIndex: free ?? node.slotIndex,
+    );
+    if (free == null) {
+      _archivedByProject.putIfAbsent(projectId, () => []).add(moved);
+    } else {
+      nodes.add(moved);
+    }
   }
 
   /// ツリー方式：親ノードから枝分かれして保存。実データ（シーン・タイル）を
@@ -793,19 +938,27 @@ class SaveTreeService extends ChangeNotifier {
   }) async {
     _nodesByProject.putIfAbsent(projectId, () => []);
     final nodeId = _newId();
-    await NiaproSerializer.saveSaveTreeNode(
-      project: project,
-      scenes: scenes,
-      tileManager: tileManager,
-      nodeId: nodeId,
-    );
+    // 書いている間に一覧を読んでも、このファイルを一覧に無い保存として拾わ
+    // ない（[_saving]）。書き終えたら、待たずにすぐ一覧へ入れる。
+    final save = SlotSave._(this, projectId, -1, null)..nodeId = nodeId;
+    _saving.putIfAbsent(projectId, () => []).add(save);
     String? thumbnailPath;
-    if (thumbnailPngBytes != null) {
-      thumbnailPath = await NiaproSerializer.saveSaveTreeThumbnail(
-        projectId,
-        nodeId,
-        thumbnailPngBytes,
+    try {
+      await NiaproSerializer.saveSaveTreeNode(
+        project: project,
+        scenes: scenes,
+        tileManager: tileManager,
+        nodeId: nodeId,
       );
+      if (thumbnailPngBytes != null) {
+        thumbnailPath = await NiaproSerializer.saveSaveTreeThumbnail(
+          projectId,
+          nodeId,
+          thumbnailPngBytes,
+        );
+      }
+    } finally {
+      save.end();
     }
     final node = SaveNode(
       id: nodeId,
@@ -945,4 +1098,28 @@ class SaveTreeService extends ChangeNotifier {
     notifyListeners();
     unawaited(_persist(projectId));
   }
+}
+
+/// 書いている途中の手動の保存（[SaveTreeService.beginSlotSave]）。
+class SlotSave {
+  SlotSave._(this._service, this.projectId, this.slotIndex, this.replacing);
+
+  final SaveTreeService _service;
+  final String projectId;
+
+  /// 保存先のスロット（ツリー方式の保存は-1）。
+  final int slotIndex;
+
+  /// 押したときに見せていた、上書きを確かめた保存のID（空に見えたスロットは
+  /// null）。
+  final String? replacing;
+
+  /// 書いている保存のID（書き始めてから）。
+  String? nodeId;
+
+  /// 書いている保存のコメント（書き始めてから）。
+  String? comment;
+
+  /// 保存が終わった（失敗・取りやめも）。何度呼んでもよい。
+  void end() => _service._saving[projectId]?.remove(this);
 }

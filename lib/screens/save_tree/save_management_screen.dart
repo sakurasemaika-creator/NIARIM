@@ -280,6 +280,14 @@ class _GameStyleSlotScreen extends StatelessWidget {
                           return;
                         }
                         setDialogState(() => saving = true);
+                        // 押したときに見せていたスロットの中身で保存する
+                        // （保存している間に一覧を読めても、確かめていない
+                        // 保存は消さない）。
+                        final slotSave = saveService.beginSlotSave(
+                          projectId,
+                          slotIndex,
+                          replacing: existing?.id,
+                        );
                         // 保存はディスク書き込み・画像合成を伴うため失敗し得る
                         // （空き容量不足・ファイル書き込み失敗など）。以前は
                         // try/catchが無く、失敗すると例外が非同期の外へ抜けて
@@ -301,6 +309,7 @@ class _GameStyleSlotScreen extends StatelessWidget {
                                 ? null
                                 : commentController.text,
                             thumbnailPngBytes: thumbnail,
+                            intent: slotSave,
                           );
                           final kept = await saveService.setSlotMemo(
                             projectId,
@@ -328,6 +337,8 @@ class _GameStyleSlotScreen extends StatelessWidget {
                               failure = l10n.saveTreeSaveFailedSnackbar('$e');
                             });
                           }
+                        } finally {
+                          slotSave.end();
                         }
                       },
                 child: saving

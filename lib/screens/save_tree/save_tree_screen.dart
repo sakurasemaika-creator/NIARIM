@@ -507,15 +507,23 @@ class _SlotView extends StatelessWidget {
     // メモの欄のEnterで押す「保存」ボタン。
     final saveButton = GlobalKey();
     // 二度押し・Enterの繰り返しで同じスロットへ二重に保存しない（失敗した
-    // ときは押し直せるように戻す）。
+    // ときは押し直せるように戻す）。押したときに見せていたスロットの中身で
+    // 保存する（保存している間に一覧を読めても、確かめていない保存は消さない）。
     var saving = false;
+    SlotSave? slotSave;
     Future<void> once(Future<void> Function() save) async {
       if (saving) return;
       saving = true;
+      slotSave = saveService.beginSlotSave(
+        projectId,
+        slotIndex,
+        replacing: existing?.id,
+      );
       try {
         await save();
       } finally {
         saving = false;
+        slotSave?.end();
       }
     }
 
@@ -592,6 +600,7 @@ class _SlotView extends StatelessWidget {
                   tileManager: tileManager,
                   comment: comment,
                   thumbnailPngBytes: thumb,
+                  intent: slotSave,
                 );
                 final kept = await saveService.setSlotMemo(
                   projectId,
