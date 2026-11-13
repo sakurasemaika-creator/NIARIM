@@ -1145,6 +1145,15 @@ onTap: ...)`だったために
   踏んだ）。`persist: false`を付けること（ゴミ箱へ移した通知は
   `lib/widgets/moved_to_trash_snack_bar.dart`）。キャンバスの「不足素材」の
   SnackBarも同じ理由で`persist: false`にしてある。
+- **知らせ（SnackBar）を閉じるときは、自分が出した知らせだけを閉じる**：
+  `removeCurrentSnackBar()`・`clearSnackBars()`は、そのとき出ている**他の機能の**知らせ
+  （ゴミ箱へ移した知らせの「元に戻す」等）まで消す。ホームのクリップボードを空にしたとき
+  これで「元に戻す」が消えていた（DISC092に同じ形が残る）。ホームは出した知らせを
+  `SnackBar.onVisible`で覚え、空にしたときはそれだけを閉じる（`_closeClipboardNotice`。
+  コントローラーの`close()`は今出ている知らせにしか使えない。待っている知らせは出た時点で
+  自分で閉じる）。`SnackBarAction`は押された後に自分で`hideCurrentSnackBar`するので、
+  `onPressed`の中で同じ知らせを閉じないこと（読み上げ使用中は閉じた知らせがすぐ取り除かれ、
+  後ろで待っている別の知らせまで閉じた）。
 - **名前を1つ入力するダイアログは`lib/widgets/name_entry_dialog.dart`の
   `NameEntryDialog`**：空白だけの名前を確定させない・前後の空白を除く・
   Enterで確定・二度押しで2回動かない・失敗したら開いたまま・確定中は閉じない、
