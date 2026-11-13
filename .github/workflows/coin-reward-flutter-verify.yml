@@ -46,6 +46,7 @@ on:
       - 'test/coin_benefit_price_proposal_test.dart'
       - 'test/premium_play_verification_policy_test.dart'
       - 'test/premium_coin_account_isolation_test.dart'
+      - 'test/coin_authenticated_client_contract_test.dart'
       - 'test/monetization_campaign_removed_test.dart'
   workflow_dispatch:
 
@@ -114,6 +115,8 @@ jobs:
             lib/app_bootstrap.dart \
             test/coin_redemption_attempt_store_test.dart \
             test/premium_coin_account_isolation_test.dart \
+            test/coin_authenticated_client_contract_test.dart \
+            test/coin_authenticated_client_contract_test.dart \
             test/premium_play_verification_policy_test.dart
       - name: Reward idempotency and pricing widget tests
         run: |
