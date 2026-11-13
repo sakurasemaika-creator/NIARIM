@@ -11,6 +11,7 @@ import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/router.dart';
 import 'package:niarim/screens/community/community_screen.dart';
 import 'package:niarim/screens/community/widgets/community_work_card.dart';
+import 'package:niarim/widgets/collection_action_controls.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -150,8 +151,10 @@ void main() {
           reason: '$width bookmark button must precede menu');
       expect((saveRect.center.dy - menuRect.center.dy).abs(), lessThan(3),
           reason: '$width bookmark and menu must share a horizontal row');
+      // The collection action glyph and hit region must follow the same
+      // shared dimensions used on Project and Works cards.
       expect(tester.getSize(find.byKey(ValueKey('community-bookmark-$workId'))),
-          const Size(48, 48));
+          const Size(CollectionActionFrame.extent, CollectionActionFrame.extent));
       expect(tester.takeException(), isNull);
       await capture('new-arrivals');
       await tester.tap(find.byKey(const Key('communityTab4')));
