@@ -1619,31 +1619,70 @@ class _HomeScreenState extends State<HomeScreen>
       _clipboardSourceArea = HomePasteArea.projects;
       _clipboardIsCut = false;
     });
-    ScaffoldMessenger.of(context).removeCurrentSnackBar();
+    _closeClipboardNotice();
   }
 
-  // 出ている切り取りの知らせ（閉じたらnull）。
-  ScaffoldFeatureController<SnackBar, SnackBarClosedReason>? _cutNotice;
+  // 出ているコピー・切り取りの知らせ（閉じたら、閉じ始めたらnull）。
+  ScaffoldFeatureController<SnackBar, SnackBarClosedReason>? _clipboardNotice;
+
+  // クリップボードを空にした回数。順番を待っている間に空にされたコピー・
+  // 切り取りの知らせは、出た所で自分を閉じる。
+  int _clipboardClears = 0;
+
+  // 空にしたクリップボードを伝えていたコピー・切り取りの知らせだけを閉じる。
+  // 出ている知らせを種類を見ずに閉じると、後から出た別の知らせ（ゴミ箱へ
+  // 移した知らせとその「元に戻す」等）や、後ろで待っていた知らせを閉じる。
+  // ScaffoldFeatureController.closeは出ている知らせにしか使えない（どれで
+  // 呼んでも出ている知らせを閉じる）ので、待っている知らせは出た所で閉じる。
+  void _closeClipboardNotice() {
+    _clipboardClears++;
+    final notice = _clipboardNotice;
+    _clipboardNotice = null;
+    notice?.close();
+  }
 
   void _cancelCutClipboard() {
     if (!_clipboardIsCut) return;
     _clearHomeClipboard();
   }
 
-  void _showClipboardFeedback(String message, {bool allowUndoCut = false}) {
+  /// [describesClipboard]（切り取りは常に）の知らせは、クリップボードを
+  /// 空にしたら閉じる（[_closeClipboardNotice]）。貼り付けの結果は閉じない。
+  void _showClipboardFeedback(
+    String message, {
+    bool allowUndoCut = false,
+    bool describesClipboard = false,
+  }) {
     if (!mounted) return;
     final messenger = ScaffoldMessenger.of(context);
     // 切り取りの知らせは、待っている他の知らせの後ろへ回さずにすぐ出す
     // （後ろに回ると、切り取りをやめたときに閉じる相手を取り違える）。
     if (allowUndoCut) messenger.clearSnackBars();
     messenger.removeCurrentSnackBar();
-    final notice = messenger.showSnackBar(
+    final tracked = describesClipboard || allowUndoCut;
+    final clears = _clipboardClears;
+    // 閉じた、または閉じ始めた（二度閉じると、次に出た別の知らせを閉じる）。
+    var closing = false;
+    late final ScaffoldFeatureController<SnackBar, SnackBarClosedReason> notice;
+    notice = messenger.showSnackBar(
       SnackBar(
         content: Text(message),
         // 操作ボタンの付いたSnackBarは、既定では時間で消えず次の画面まで
         // 付いてくる。切り取りは貼り付けるまで続くが、知らせは5秒で消す。
         persist: false,
         duration: Duration(seconds: allowUndoCut ? 5 : 4),
+        onVisible: !tracked
+            ? null
+            : () {
+                if (closing) return;
+                if (clears != _clipboardClears) {
+                  // 順番を待っている間にクリップボードが空になった。
+                  closing = true;
+                  notice.close();
+                } else {
+                  _clipboardNotice = notice;
+                }
+              },
         action: allowUndoCut
             ? SnackBarAction(
                 label: AppLocalizations.of(context)!.homeUndoAction,
@@ -1651,17 +1690,20 @@ class _HomeScreenState extends State<HomeScreen>
                 // 読み上げ（TalkBack）を使っているときは閉じた知らせがすぐ
                 // 取り除かれるので、後ろで待っている別の知らせまで閉じる。
                 onPressed: () {
-                  _cutNotice = null;
+                  closing = true;
+                  if (identical(_clipboardNotice, notice)) {
+                    _clipboardNotice = null;
+                  }
                   _cancelCutClipboard();
                 },
               )
             : null,
       ),
     );
-    if (allowUndoCut) {
-      _cutNotice = notice;
+    if (tracked) {
       notice.closed.whenComplete(() {
-        if (identical(_cutNotice, notice)) _cutNotice = null;
+        closing = true;
+        if (identical(_clipboardNotice, notice)) _clipboardNotice = null;
       });
     }
   }
@@ -1735,6 +1777,7 @@ class _HomeScreenState extends State<HomeScreen>
     if (count > 0 && mounted) {
       _showClipboardFeedback(
         AppLocalizations.of(context)!.homeCopiedSnackbar(count),
+        describesClipboard: true,
       );
     }
   }
@@ -1755,6 +1798,7 @@ class _HomeScreenState extends State<HomeScreen>
     if (mounted) {
       _showClipboardFeedback(
         AppLocalizations.of(context)!.homeCopiedSnackbar(1),
+        describesClipboard: true,
       );
     }
   }

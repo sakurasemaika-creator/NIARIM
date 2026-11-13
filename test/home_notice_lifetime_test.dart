@@ -392,4 +392,155 @@ void main() {
       await close(tester);
     });
   });
+
+  // 貼り付けボタンの横の「クリア」でクリップボードを空にすると、それを
+  // 伝えていたコピー・切り取りの知らせ（「…貼り付けを押してください」）は
+  // 閉じる。閉じるのはその知らせだけで、出ている・待っている他の知らせ
+  // （ゴミ箱へ移した知らせとその「元に戻す」等）は閉じない。
+  group('clearing the clipboard', () {
+    final clearButton = find.byKey(const Key('homeClearClipboardButton'));
+
+    void setTalkBack(WidgetTester tester, bool on) {
+      if (!on) return;
+      tester.platformDispatcher.accessibilityFeaturesTestValue =
+          const FakeAccessibilityFeatures(accessibleNavigation: true);
+      addTearDown(
+        tester.platformDispatcher.clearAccessibilityFeaturesTestValue,
+      );
+    }
+
+    Future<void> copy(WidgetTester tester, String name) async {
+      await tester.longPress(card(name));
+      await settle(tester);
+      await tester.tap(find.byTooltip(l10nOf(tester).commonCopy));
+      await settle(tester);
+      expect(clearButton, findsOneWidget);
+    }
+
+    for (final isCut in [false, true]) {
+      final kind = isCut ? 'cut' : 'copy';
+
+      testWidgets('Clear closes the $kind notice it made obsolete', (
+        tester,
+      ) async {
+        await openHome(tester, names: ['apple', 'banana']);
+        if (isCut) {
+          await cut(tester, 'apple');
+        } else {
+          await copy(tester, 'apple');
+          expect(snackText(tester), l10nOf(tester).homeCopiedSnackbar(1));
+        }
+        await tester.tap(clearButton);
+        await settle(tester);
+        expect(clearButton, findsNothing);
+        expect(
+          find.byType(SnackBar),
+          findsNothing,
+          reason: 'the notice still tells the user to press Paste',
+        );
+        expect(tester.takeException(), isNull);
+        await close(tester);
+      });
+
+      testWidgets('Clear after a $kind leaves a later notice and its Undo', (
+        tester,
+      ) async {
+        final service = await openHome(tester, names: ['apple', 'banana']);
+        if (isCut) {
+          await cut(tester, 'apple');
+        } else {
+          await copy(tester, 'apple');
+        }
+        await trashFromMenu(tester, 'banana');
+        final moved = l10nOf(tester).homeMovedToTrashSnackbar(1);
+        expect(snackText(tester), moved);
+        await tester.tap(clearButton);
+        await settle(tester);
+        expect(clearButton, findsNothing);
+        expect(snackText(tester), moved);
+        await tester.tap(find.text(l10nOf(tester).homeUndoAction));
+        await waitFor(tester, () => service.projects.length == 2);
+        expect(service.trash, isEmpty);
+        expect(tester.takeException(), isNull);
+        await close(tester);
+      });
+    }
+
+    // 出てくる途中で空にしても、出終わった所で閉じる（4秒残らない）。
+    testWidgets('Clear while the copy notice is still coming in closes it', (
+      tester,
+    ) async {
+      await openHome(tester, names: ['apple', 'banana']);
+      await tester.longPress(card('apple'));
+      await settle(tester);
+      await tester.tap(find.byTooltip(l10nOf(tester).commonCopy));
+      await tester.pump(const Duration(milliseconds: 50));
+      await tester.tap(clearButton);
+      await tester.pump(const Duration(seconds: 1));
+      await settle(tester);
+      expect(clearButton, findsNothing);
+      expect(find.byType(SnackBar), findsNothing);
+      expect(tester.takeException(), isNull);
+      await close(tester);
+    });
+
+    // コピーの知らせは、出ている知らせを閉じて出るので、その後ろで別の
+    // 知らせが待っていると、それが先に出てコピーの知らせは順番を待つ。
+    // そこで空にしても、出ている知らせは閉じない。順番を待っていたコピーの
+    // 知らせは、空のクリップボードを伝えたまま残らない。
+    for (final talkBack in [false, true]) {
+      testWidgets('Clear while the copy notice waits leaves the shown notice '
+          '(TalkBack ${talkBack ? 'on' : 'off'})', (tester) async {
+        setTalkBack(tester, talkBack);
+        await openHome(tester, names: ['apple', 'banana']);
+        final copied = l10nOf(tester).homeCopiedSnackbar(1);
+        ScaffoldMessenger.of(tester.element(find.byType(HomeScreen)))
+          ..showSnackBar(const SnackBar(content: Text('first notice')))
+          ..showSnackBar(const SnackBar(content: Text('waiting notice')));
+        await settle(tester);
+        expect(snackText(tester), 'first notice');
+        await copy(tester, 'apple');
+        expect(snackText(tester), 'waiting notice');
+        await tester.tap(clearButton);
+        await settle(tester);
+        expect(clearButton, findsNothing);
+        expect(snackText(tester), 'waiting notice');
+        // 待っていた知らせが時間で閉じた後、コピーの知らせは出ても
+        // すぐ閉じる（自分の4秒は残らない）。
+        var copiedFrames = 0;
+        for (var i = 0; i < 70; i++) {
+          await tester.pump(const Duration(milliseconds: 100));
+          if (snackText(tester) == copied) copiedFrames++;
+        }
+        expect(find.byType(SnackBar), findsNothing);
+        expect(
+          copiedFrames,
+          lessThanOrEqualTo(6),
+          reason: 'the copy notice stayed after the clipboard was cleared',
+        );
+        expect(tester.takeException(), isNull);
+        await close(tester);
+      });
+    }
+
+    // 貼り付けた結果の知らせは、クリップボードの中身を伝えるものではないので、
+    // 空にしても閉じない。
+    testWidgets('Clear after pasting a copy leaves the paste notice', (
+      tester,
+    ) async {
+      final service = await openHome(tester, names: ['apple', 'banana']);
+      await copy(tester, 'apple');
+      await tester.tap(find.byKey(const Key('homeCrossTabPasteButton')));
+      final pasted = l10nOf(tester).homePasteSnackbar;
+      await waitFor(tester, () => snackText(tester) == pasted);
+      await settle(tester);
+      expect(service.projects.length, 3);
+      await tester.tap(clearButton);
+      await settle(tester);
+      expect(clearButton, findsNothing);
+      expect(snackText(tester), pasted);
+      expect(tester.takeException(), isNull);
+      await close(tester);
+    });
+  });
 }
