@@ -508,6 +508,8 @@ class _SlotView extends StatelessWidget {
     );
     // メモの欄のEnterで押す「保存」ボタン。
     final saveButton = GlobalKey();
+    // 保存に失敗したときの文（ダイアログの中）。
+    final failureText = GlobalKey<_SlotSaveFailureTextState>();
     // 二度押し・Enterの繰り返しで同じスロットへ二重に保存しない（失敗した
     // ときは押し直せるように戻す）。押したときに見せていたスロットの中身で
     // 保存する（保存している間に一覧を読めても、確かめていない保存は消さない）。
@@ -523,6 +525,18 @@ class _SlotView extends StatelessWidget {
       );
       try {
         await save();
+      } catch (e, st) {
+        // 保存の管理の画面と同じく、ダイアログを開いたまま中に失敗を出す
+        // （打ったメモは欄に残る。以前は何も出なかった）。閉じた後なら
+        // 画面に出す。
+        AppErrorReporter.record(e, st);
+        final message = l10n.saveTreeSaveFailedSnackbar('$e');
+        final shown = failureText.currentState?.show(message) ?? false;
+        if (!shown && context.mounted) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(message)));
+        }
       } finally {
         saving = false;
         slotSave?.end();
@@ -573,6 +587,7 @@ class _SlotView extends StatelessWidget {
                   hintText: l10n.saveTreeCommentHint,
                 ),
               ),
+              _SlotSaveFailureText(key: failureText),
             ],
           ),
           actions: [
@@ -676,7 +691,15 @@ class _SaveNodeThumbnail extends StatelessWidget {
   final SaveNode? node;
   final double size;
 
-  const _SaveNodeThumbnail({required this.node, this.size = 48});
+  /// 保存の一覧を読めなかった：空に見えても保存があるかもしれないので、
+  /// 「＋」（ここへ保存）ではなく、読めなかった印を出す。
+  final bool listUnread;
+
+  const _SaveNodeThumbnail({
+    required this.node,
+    this.size = 48,
+    this.listUnread = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -707,11 +730,51 @@ class _SaveNodeThumbnail extends StatelessWidget {
 
   Widget _placeholderIcon(BuildContext context) => Center(
     child: Icon(
-      node != null ? Icons.image : Icons.add,
+      node != null
+          ? Icons.image
+          : (listUnread ? Icons.folder_off_outlined : Icons.add),
       size: size / 2,
       color: Theme.of(context).colorScheme.onSurfaceVariant,
     ),
   );
+}
+
+/// スロットへの保存のダイアログの中の、保存に失敗したときの文。ダイアログが
+/// 閉じている（閉じかけている）ときは[show]がfalseを返す。
+class _SlotSaveFailureText extends StatefulWidget {
+  const _SlotSaveFailureText({super.key});
+
+  @override
+  State<_SlotSaveFailureText> createState() => _SlotSaveFailureTextState();
+}
+
+class _SlotSaveFailureTextState extends State<_SlotSaveFailureText> {
+  String? _message;
+
+  bool show(String message) {
+    if (!mounted || !(ModalRoute.of(context)?.isCurrent ?? false)) {
+      return false;
+    }
+    setState(() => _message = message);
+    return true;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final message = _message;
+    if (message == null) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.only(top: 12),
+      child: Text(
+        message,
+        key: const Key('saveSlotDialogFailure'),
+        style: TextStyle(
+          fontSize: 12,
+          color: Theme.of(context).colorScheme.error,
+        ),
+      ),
+    );
+  }
 }
 
 class _SlotTile extends StatelessWidget {
@@ -760,7 +823,11 @@ class _SlotTile extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  _SaveNodeThumbnail(node: node, size: 58),
+                  _SaveNodeThumbnail(
+                    node: node,
+                    size: 58,
+                    listUnread: listUnread,
+                  ),
                   const SizedBox(width: 14),
                   Expanded(
                     child: Column(

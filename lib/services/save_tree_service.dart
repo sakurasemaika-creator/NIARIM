@@ -982,7 +982,14 @@ class SaveTreeService extends ChangeNotifier {
       slotIndex: slotIndex,
     );
     for (final o in replaced) {
-      await _deleteNodeFiles(projectId, o.id);
+      try {
+        await _deleteNodeFiles(projectId, o.id);
+      } on FileSystemException catch (error, stack) {
+        // 新しい保存は書けたので失敗にしない。消せなかった前の保存は
+        // ファイルが残っているので、消さずに空いているスロットへ残す。
+        AppErrorReporter.record(error, stack);
+        _moveAside(projectId, o, slotIndex);
+      }
     }
     _nodesByProject[projectId]!.add(node);
     notifyListeners();
@@ -1093,9 +1100,23 @@ class SaveTreeService extends ChangeNotifier {
   /// ノードの実データとサムネイルを消す。容量削減の画面が覚えている集計結果は
   /// 消す前のものなので、捨てさせる（途中で失敗しても、消せた分だけ大きさは
   /// 変わっている）。
+  ///
+  /// 保存（.niapro）を消せた後の後片付け（サムネイル・控え）が失敗しても、
+  /// 記録して続ける（保存を書き終えた・消し終えた後で[saveToSlot]・
+  /// [deleteNode]を失敗にしない）。残ったサムネイル・控えは、保存が無いので
+  /// 次に一覧を読んだときも使わない（[_loadProject]）。保存を消せなかった
+  /// ときは呼び出し元へ投げる。
   Future<void> _deleteNodeFiles(String projectId, String nodeId) async {
     try {
-      await NiaproSerializer.deleteSaveTreeNode(projectId, nodeId);
+      try {
+        await NiaproSerializer.deleteSaveTreeNode(projectId, nodeId);
+      } on FileSystemException catch (error, stack) {
+        final base = await NiaproSerializer.projectsBasePath();
+        if (!_isMissing(File('$base/$projectId/SaveTree/$nodeId.niapro'))) {
+          rethrow;
+        }
+        AppErrorReporter.record(error, stack);
+      }
       // 消した保存の控え（一覧を読めない間に書いたもの）も消す。
       final heldNote = _heldSaves[projectId]?.remove(nodeId) != null;
       if ((_pendingIds[projectId]?.remove(nodeId) ?? false) || heldNote) {
@@ -1104,6 +1125,8 @@ class SaveTreeService extends ChangeNotifier {
           File('$base/$projectId/SaveTree/$nodeId$pendingSuffix').deleteSync();
         } on PathNotFoundException {
           // もう無い。
+        } on FileSystemException catch (error, stack) {
+          AppErrorReporter.record(error, stack);
         }
       }
     } finally {
