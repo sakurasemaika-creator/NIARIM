@@ -456,7 +456,7 @@ class SharedAssetCardService {
     );
     final check = SharedAssetCardCodec.extract(cardBytes);
     if (check.digest != digest) {
-      throw const StateError('Shared asset card failed its own verification');
+      throw StateError('Shared asset card failed its own verification');
     }
     final outDir = await getApplicationDocumentsDirectory();
     final safeName = name.replaceAll(RegExp(r'[\\/:*?"<>|\x00-\x1f]'), '_');
