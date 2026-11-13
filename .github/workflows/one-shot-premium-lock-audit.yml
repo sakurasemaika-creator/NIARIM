@@ -9,6 +9,7 @@ on:
       - "lib/services/premium_service.dart"
       - "lib/widgets/premium_lock_widget.dart"
       - "lib/screens/settings/settings_screen.dart"
+      - "lib/screens/settings/watermark_settings_screen.dart"
       - "lib/screens/canvas/widgets/filter_panel.dart"
       - "lib/screens/canvas/canvas_screen.dart"
       - "lib/screens/export/export_screen.dart"
@@ -55,6 +56,7 @@ jobs:
             lib/services/premium_service.dart \
             lib/widgets/premium_lock_widget.dart \
             lib/screens/settings/settings_screen.dart \
+            lib/screens/settings/watermark_settings_screen.dart \
             lib/screens/canvas/widgets/filter_panel.dart \
             lib/screens/canvas/canvas_screen.dart \
             lib/screens/export/export_screen.dart \
