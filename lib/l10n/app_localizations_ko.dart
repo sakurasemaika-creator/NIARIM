@@ -8535,7 +8535,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get rewardNavigationMembershipPlay => '프리미엄 회원';
 
   @override
-  String get rewardNavigationMembershipCoin => '오팔으로 해제';
+  String get rewardNavigationMembershipCoin => '오팔로 해제';
 
   @override
   String get rewardNavigationMembershipBenefit => '사용 중인 특전';
@@ -8563,7 +8563,7 @@ class AppLocalizationsKo extends AppLocalizations {
     ).add_jm();
     final String expiryString = expiryDateFormat.format(expiry);
 
-    return '오팔으로 해제 · 이용 기한: $expiryString';
+    return '오팔로 해제 · 이용 기한: $expiryString';
   }
 
   @override
@@ -8631,13 +8631,13 @@ class AppLocalizationsKo extends AppLocalizations {
   String get rewardUnlockChooseBenefits => '혜택 선택';
 
   @override
-  String get rewardUnlockPricePending => '오팔: 미설정';
+  String get rewardUnlockPricePending => '필요 오팔: 미설정';
 
   @override
   String get rewardUnlockNotReady => '준비 중';
 
   @override
-  String get rewardUnlockTotal => '필요 오팔';
+  String get rewardUnlockTotal => '필요한 오팔 합계';
 
   @override
   String get rewardUnlockUnavailable => '공식 교환 가격 준비 중';
@@ -8646,10 +8646,10 @@ class AppLocalizationsKo extends AppLocalizations {
   String get rewardUnlockBalancePending => '오팔 잔액: 서버 연결 준비 중';
 
   @override
-  String get rewardUnlockGoal => '이 오팔을 목표로 설정';
+  String get rewardUnlockGoal => '이 오팔 수를 목표로 설정';
 
   @override
-  String get rewardUnlockRedeem => '오팔 교환';
+  String get rewardUnlockRedeem => '오팔로 교환';
 
   @override
   String get rewardUnlockWatchRewardedAd => '보상형 광고를 보고 오팔 적립';
@@ -8719,7 +8719,7 @@ class AppLocalizationsKo extends AppLocalizations {
       'Premium 회원과 동일한 대상 기능을 묶음 할인으로 이용할 수 있어요';
 
   @override
-  String get rewardUnlockEarning => 'Premium 회원도 오팔을 미리 모을 수 있습니다';
+  String get rewardUnlockEarning => 'Premium 회원도 오팔을 모을 수 있게 될 예정입니다';
 
   @override
   String get rewardUnlockHour => '시간';
@@ -8917,7 +8917,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get creatorMissionDetailsTimeRule =>
-      '【제작 시간 조건】기기에서 신고한 제작 시간은 오팔으로 인정되지 않습니다. 실제 제작을 신뢰할 수 있게 검증하는 시스템이 아직 없어 오팔 수령은 불가합니다.';
+      '【제작 시간 조건】기기에서 신고한 제작 시간은 오팔로 인정되지 않습니다. 실제 제작을 신뢰할 수 있게 검증하는 시스템이 아직 없어 오팔 수령은 불가합니다.';
 
   @override
   String get creatorMissionDetailsClaimRule =>

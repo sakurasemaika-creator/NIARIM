@@ -8953,7 +8953,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get rewardUnlockChooseBenefits => 'Choose benefits';
 
   @override
-  String get rewardUnlockPricePending => 'Opals: not set';
+  String get rewardUnlockPricePending => 'Opals required: not set';
 
   @override
   String get rewardUnlockNotReady => 'Coming soon';

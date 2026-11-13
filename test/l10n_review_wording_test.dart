@@ -81,8 +81,47 @@ const _forbidden = <String, Map<String, Map<String, String>>>{
   'zh_Hant': {
     'homePasteRestrictionTitle': {'貼上到': '簡体字の「粘贴到」の直訳（このARBは「貼到」）'},
     'homePasteCrossFormatBody': {'貼上到': '簡体字の「粘贴到」の直訳（このARBは「貼到」）'},
+    'rewardUnlockRedeem': {'兌換歐泊': '「兌換＋目的語」は手に入れる物。歐泊を使う操作が歐泊をもらうように読める'},
+  },
+  'zh': {
+    'rewardUnlockRedeem': {'兑换欧泊': '「兑换＋目的語」は手に入れる物。欧泊を使う操作が欧泊をもらうように読める'},
   },
 };
+
+/// 報酬の通貨の名前（コイン→オパール）を語だけ置き換えた所の文法の崩れ。
+///
+/// フランス語の「opale」は母音で始まる女性名詞（「de opales」→「d’opales」、
+/// 冠詞を落とさない）、スペイン語の「ópalo」は男性名詞（「monedas recibidas」→
+/// 「ópalos recibidas」「Las ópalos」になっていた）、韓国語の「오팔」は終声ㄹで
+/// 終わる（「오팔으로」→「오팔로」）。
+final _frOpalElision = RegExp(
+  r'(?<![\p{L}’])(?:de|le|la|que|ne|se|ce|je|me|te|jusque|lorsque|puisque) '
+  r'opales?(?![\p{L}])',
+  caseSensitive: false,
+  unicode: true,
+);
+final _frOpalBareAfterAvec = RegExp(
+  r'(?<![\p{L}])avec opales?(?![\p{L}])',
+  caseSensitive: false,
+  unicode: true,
+);
+final _esOpalFeminine = RegExp(
+  r'(?<![\p{L}])(?:la|las|una|unas|esta|estas|esa|esas|aquella|aquellas|'
+  r'nuestra|nuestras|toda|todas|mucha|muchas|poca|pocas|alguna|algunas|'
+  r'ninguna) ópalos?(?![\p{L}])|'
+  r'(?<![\p{L}])ópalos? \p{L}+(?:ada|adas|ida|idas)(?![\p{L}])',
+  caseSensitive: false,
+  unicode: true,
+);
+final _koOpalParticle = RegExp(r'오팔(?:으로|를|는|와|가(?![가-힣]))');
+
+/// 頭文字が小文字で始まってよい語（固有の綴り）。
+const _lowercaseNames = ['iOS', 'iPad', 'iPhone', 'macOS'];
+
+String _firstLetterOf(String text) {
+  final trimmed = text.replaceFirst(RegExp('^[¿¡«“"\'(   ]+'), '');
+  return trimmed.isEmpty ? '' : trimmed[0];
+}
 
 /// コピー・切り取りをやめて帯を閉じるボタン（homeClipboardClear）に使わない語
 /// （切り取った項目を消すように読める）。
@@ -167,6 +206,54 @@ void main() {
         for (final MapEntry(:key, :value) in values[locale]!.entries)
           if (spaced.hasMatch(value)) '$locale $key: $value',
     ];
+    expect(offenders, isEmpty, reason: offenders.join('\n'));
+  });
+
+  test('オパール（報酬の通貨）の文は、各言語の文法（省略形・冠詞・性・助詞）に合わせる', () {
+    final offenders = <String>[];
+    void check(String locale, RegExp pattern, String why) {
+      for (final MapEntry(:key, :value) in values[locale]!.entries) {
+        for (final match in pattern.allMatches(value)) {
+          offenders.add('$locale $key:「${match[0]}」($why)');
+        }
+      }
+    }
+
+    check('fr', _frOpalElision, '母音の前は d’・l’・qu’ と省略する');
+    check('fr', _frOpalBareAfterAvec, '冠詞が無い（avec des opales）');
+    check('es', _esOpalFeminine, 'ópalo は男性名詞');
+    check('ko', _koOpalParticle, '終声ㄹの後は 로・을・은・과・이');
+    expect(offenders, isEmpty, reason: offenders.join('\n'));
+  });
+
+  test('英語・スペイン語・フランス語で、同じ文の書き出しの大文字・小文字がそろっている', () {
+    // 「Monedas recibidas」の語だけを置き換えて「ópalos recibidas」と小文字で
+    // 始まっていた（英語は「Opals received」）。画面の見出し・知らせは文頭を
+    // 大文字にする。
+    final offenders = <String>[];
+    for (final key in values['en']!.keys) {
+      final starts = <String, String>{
+        for (final locale in const ['en', 'es', 'fr'])
+          if (values[locale]![key] case final text?)
+            if (!_lowercaseNames.any(text.startsWith))
+              locale: _firstLetterOf(text),
+      };
+      bool isLetter(String c) => c.toUpperCase() != c.toLowerCase();
+      final upper = [
+        for (final MapEntry(key: locale, value: c) in starts.entries)
+          if (isLetter(c) && c == c.toUpperCase()) locale,
+      ];
+      final lower = [
+        for (final MapEntry(key: locale, value: c) in starts.entries)
+          if (isLetter(c) && c == c.toLowerCase()) locale,
+      ];
+      if (upper.isNotEmpty && lower.isNotEmpty) {
+        offenders.add(
+          '$key: ${[for (final l in lower) '$l「${values[l]![key]}」'].join(' ')}'
+          '（${upper.join('・')}は大文字）',
+        );
+      }
+    }
     expect(offenders, isEmpty, reason: offenders.join('\n'));
   });
 

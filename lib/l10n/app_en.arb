@@ -3490,7 +3490,7 @@
   "rewardUnlockDuration": "Usage period",
   "rewardUnlockChooseDuration": "Select duration",
   "rewardUnlockChooseBenefits": "Choose benefits",
-  "rewardUnlockPricePending": "Opals: not set",
+  "rewardUnlockPricePending": "Opals required: not set",
   "rewardUnlockNotReady": "Coming soon",
   "rewardUnlockTotal": "Total opals required",
   "rewardUnlockUnavailable": "Official exchange rates are not yet available",

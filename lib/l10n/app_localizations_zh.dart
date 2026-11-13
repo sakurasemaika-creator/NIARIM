@@ -8500,7 +8500,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get rewardUnlockChooseBenefits => '选择权益';
 
   @override
-  String get rewardUnlockPricePending => '欧泊：未设置';
+  String get rewardUnlockPricePending => '所需欧泊：未设置';
 
   @override
   String get rewardUnlockNotReady => '即将推出';
@@ -8518,7 +8518,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get rewardUnlockGoal => '将此欧泊数设为目标';
 
   @override
-  String get rewardUnlockRedeem => '兑换欧泊';
+  String get rewardUnlockRedeem => '用欧泊兑换';
 
   @override
   String get rewardUnlockWatchRewardedAd => '观看激励广告获得欧泊';
@@ -8584,7 +8584,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get rewardUnlockBestExplain => '以组合优惠价使用与 Premium 会员相同的功能';
 
   @override
-  String get rewardUnlockEarning => 'Premium 会员也可以积攒欧泊';
+  String get rewardUnlockEarning => 'Premium 会员今后也能积攒欧泊';
 
   @override
   String get rewardUnlockHour => '小时';
@@ -18181,7 +18181,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get rewardUnlockChooseBenefits => '選擇權益';
 
   @override
-  String get rewardUnlockPricePending => '歐泊：尚未設定';
+  String get rewardUnlockPricePending => '所需歐泊：尚未設定';
 
   @override
   String get rewardUnlockNotReady => '即將推出';
@@ -18199,7 +18199,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get rewardUnlockGoal => '將此歐泊數設為目標';
 
   @override
-  String get rewardUnlockRedeem => '兌換歐泊';
+  String get rewardUnlockRedeem => '用歐泊兌換';
 
   @override
   String get rewardUnlockWatchRewardedAd => '觀看獎勵廣告獲得歐泊';
@@ -18265,7 +18265,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get rewardUnlockBestExplain => '以組合優惠價使用與 Premium 會員相同的功能';
 
   @override
-  String get rewardUnlockEarning => 'Premium 會員也可以累積歐泊';
+  String get rewardUnlockEarning => 'Premium 會員之後也能累積歐泊';
 
   @override
   String get rewardUnlockHour => '小時';

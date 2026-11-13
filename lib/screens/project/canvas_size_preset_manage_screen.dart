@@ -142,7 +142,10 @@ class _PresetTile extends StatelessWidget {
                   child: Text(l10n.canvasSizePresetEditDialogTitle),
                 ),
                 PopupMenuItem(value: 'rename', child: Text(l10n.commonRename)),
-                PopupMenuItem(value: 'duplicate', child: Text(l10n.commonCopy)),
+                PopupMenuItem(
+                  value: 'duplicate',
+                  child: Text(l10n.commonDuplicate),
+                ),
                 PopupMenuItem(
                   value: 'delete',
                   child: Text(

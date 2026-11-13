@@ -47,7 +47,7 @@ void main() {
     expect(find.textContaining('小数点以下切り捨て'), findsOneWidget);
     expect(find.textContaining('作品ごとに別途'), findsNothing);
     expect(find.textContaining('作品ごとに判定'), findsOneWidget);
-    expect(find.textContaining('現在コイン報酬'), findsNothing);
+    expect(find.textContaining('現在オパール報酬'), findsNothing);
     expect(find.textContaining('48時間経過後'), findsOneWidget);
     expect(find.textContaining('同じ作品の同じ順位報酬は1回限り'), findsOneWidget);
     expect(find.textContaining('現在80件／必要100件'), findsOneWidget);

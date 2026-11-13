@@ -321,7 +321,7 @@ const _englishOnly = [
   'Goal not yet completed',
   'Goal completed',
   'Already claimed for this period',
-  'Coin payouts are currently unavailable',
+  'Opal payouts are currently unavailable',
   'NIARIM bookmark ranking #1',
 ];
 
@@ -330,9 +330,9 @@ const _englishOnly = [
 /// ここでは1と2だけを出す。
 final _pluralAfterOne = RegExp(
   r'(^|[^0-9.,])1 (?:[\p{L}-]+ )?'
-  r'(hours|days|coins|followers|bookmarks|minutes|works|places|'
-  r'horas|días|monedas|seguidores|marcadores|minutos|obras|puestos|'
-  r'heures|jours|pièces|abonnés|favoris|œuvres|minutes)(?![\p{L}])',
+  r'(hours|days|coins|opals|followers|bookmarks|minutes|works|places|'
+  r'horas|días|monedas|ópalos|seguidores|marcadores|minutos|obras|puestos|'
+  r'heures|jours|pièces|opales|abonnés|favoris|œuvres|minutes)(?![\p{L}])',
   unicode: true,
 );
 
@@ -345,7 +345,7 @@ final _breakingSpaceBeforeUnitSymbol = RegExp(
   unicode: true,
 );
 
-/// ミッション・報酬・コインのARBの文（このテストの画面と、報酬・特典交換の
+/// ミッション・報酬・オパールのARBの文（このテストの画面と、報酬・特典交換の
 /// 画面に出る文）と、作品広場・投稿の手書きの表からARBへ移した文。
 bool _missionOrRewardKey(String key) =>
     RegExp(
@@ -511,31 +511,31 @@ void main() {
 
       final texts = _texts(tester);
       expect(texts, contains('サーバー時刻で検証した制作時間: $n分'));
-      expect(texts, contains('制作時間は端末側で偽装可能なため、現在コイン報酬の対象外です。計測した時間は参考値です。'));
+      expect(texts, contains('制作時間は端末側で偽装可能なため、現在オパール報酬の対象外です。計測した時間は参考値です。'));
       expect(texts, contains('週に$n日ログイン'));
       expect(texts, contains('月に$n日ログイン'));
-      // コインの受取の準備中の知らせは、欄ごとに元の文のまま（ウィークリー・
+      // オパールの受取の準備中の知らせは、欄ごとに元の文のまま（ウィークリー・
       // マンスリーは「配布」、作品広場は「受取」）。
       final recurringTexts = _texts(
         tester,
         find.byKey(const Key('recurringMissionsPanel')),
       );
-      expect(recurringTexts, contains('コイン配布は準備中です'));
-      expect(recurringTexts, isNot(contains('コインの受取は準備中です')));
+      expect(recurringTexts, contains('オパール配布は準備中です'));
+      expect(recurringTexts, isNot(contains('オパールの受取は準備中です')));
       final plazaTexts = _texts(
         tester,
         find.byKey(const Key('plazaMissionsPanel')),
       );
-      expect(plazaTexts, contains('コインの受取は準備中です'));
-      expect(plazaTexts, isNot(contains('コイン配布は準備中です')));
+      expect(plazaTexts, contains('オパールの受取は準備中です'));
+      expect(plazaTexts, isNot(contains('オパール配布は準備中です')));
       final week = await _details(
         tester,
         const Key('recurringMissionDetails_visit_week_n'),
       );
       expect(week, contains('同じ週（月曜日から日曜日）内に、異なる日付で$n日以上ログイン'));
       expect(week, contains('現在の達成日数：$n / $n'));
-      expect(week, contains('【受取】条件を満たすと$nコインを受け取れます。'));
-      expect(week, contains('コインの受取機能は現在準備中です。'));
+      expect(week, contains('【受取】条件を満たすと$nオパールを受け取れます。'));
+      expect(week, contains('オパールの受取機能は現在準備中です。'));
       final plaza = await _details(
         tester,
         const ValueKey('plazaMissionDetails_plaza_day_n'),

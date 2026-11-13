@@ -8939,7 +8939,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get loginBonusFailed => 'No se pudo confirmar';
 
   @override
-  String get loginBonusSuccess => 'ópalos recibidas';
+  String get loginBonusSuccess => 'Ópalos recibidos';
 
   @override
   String get loginBonusVisitMissing => 'Comprobando el acceso';
@@ -8948,7 +8948,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get rewardNavigationExchange => 'Canjear ventajas';
 
   @override
-  String get rewardNavigationHub => 'ópalos y recompensas';
+  String get rewardNavigationHub => 'Ópalos y recompensas';
 
   @override
   String get rewardNavigationEarnTab => 'Ver anuncios por ópalos';
@@ -9081,7 +9081,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get rewardUnlockChooseBenefits => 'Selecciona ventajas';
 
   @override
-  String get rewardUnlockPricePending => 'ópalos: pendiente';
+  String get rewardUnlockPricePending => 'Ópalos necesarios: por definir';
 
   @override
   String get rewardUnlockNotReady => 'Próximamente';
@@ -9108,7 +9108,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get rewardUnlockRewardPending =>
-      'Verificación pendiente. Las ópalos se añadirán después de la confirmación.';
+      'Verificación pendiente. Los ópalos se añadirán después de la confirmación.';
 
   @override
   String get rewardUnlockRewardUnavailable =>
@@ -9659,7 +9659,7 @@ class AppLocalizationsEs extends AppLocalizations {
       'Precio definitivo (canje aún no disponible)';
 
   @override
-  String get missionCoinsReceived => 'ópalos recibidas';
+  String get missionCoinsReceived => 'Ópalos recibidos';
 
   @override
   String get missionClaimFailed => 'No se pudo reclamar';

@@ -120,10 +120,13 @@ void main() {
     await tester.pumpAndSettle();
     expect(settings.customSizePresets.single.name, '動画');
 
-    await menu(tester, 'コピー');
+    // 「複製」の項目（クリップボードへの「コピー」ではない。簡体字・繁体字では
+    // 「复制」「複製」と「创建副本」「建立副本」で別の語になる）。
+    await menu(tester, '複製');
     await tester.tap(find.byIcon(Icons.more_vert).first);
     await tester.pumpAndSettle();
-    await tester.tap(find.text('コピー').last);
+    expect(find.text('コピー'), findsNothing);
+    await tester.tap(find.text('複製').last);
     await tester.pumpAndSettle();
     expect(settings.customSizePresets.map((p) => p.name), [
       '動画',

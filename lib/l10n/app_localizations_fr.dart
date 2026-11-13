@@ -8965,7 +8965,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get loginBonusFailed => 'Récompense non confirmée';
 
   @override
-  String get loginBonusSuccess => 'opales reçues';
+  String get loginBonusSuccess => 'Opales reçues';
 
   @override
   String get loginBonusVisitMissing => 'Vérification de connexion';
@@ -8974,7 +8974,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get rewardNavigationExchange => 'Échanger des avantages';
 
   @override
-  String get rewardNavigationHub => 'opales et avantages';
+  String get rewardNavigationHub => 'Opales et avantages';
 
   @override
   String get rewardNavigationEarnTab => 'Voir des pubs pour des opales';
@@ -9004,7 +9004,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get rewardNavigationMembershipPlay => 'Membre Premium';
 
   @override
-  String get rewardNavigationMembershipCoin => 'Débloqué avec opales';
+  String get rewardNavigationMembershipCoin => 'Débloqué avec des opales';
 
   @override
   String get rewardNavigationMembershipBenefit => 'Avantages actifs';
@@ -9107,7 +9107,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get rewardUnlockChooseBenefits => 'Choisir des avantages';
 
   @override
-  String get rewardUnlockPricePending => 'opales : non défini';
+  String get rewardUnlockPricePending => 'Opales nécessaires : à définir';
 
   @override
   String get rewardUnlockNotReady => 'Bientôt disponible';
@@ -9163,7 +9163,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get rewardUnlockHistoryMission => 'Mission';
 
   @override
-  String get rewardUnlockHistoryRedemption => 'Échange de opales';
+  String get rewardUnlockHistoryRedemption => 'Échange d’opales';
 
   @override
   String get rewardUnlockHistoryOther => 'Autre transaction';
@@ -9509,7 +9509,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get creatorMissionDetailsTimeRule =>
-      'TEMPS DE CRÉATION : Une durée déclarée localement ne peut pas créditer de opales. Une preuve fiable de la création réelle n’est pas encore disponible. Cette récompense est donc inaccessible.';
+      'TEMPS DE CRÉATION : Une durée déclarée localement ne peut pas créditer d’opales. Une preuve fiable de la création réelle n’est pas encore disponible. Cette récompense est donc inaccessible.';
 
   @override
   String get creatorMissionDetailsClaimRule =>
@@ -9574,7 +9574,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get creatorMissionEditTimeUnverified =>
-      'Le temps de création mesuré sur l’appareil peut être falsifié : il ne rapporte donc pas de opales pour l’instant. Le temps affiché est indicatif.';
+      'Le temps de création mesuré sur l’appareil peut être falsifié : il ne rapporte donc pas d’opales pour l’instant. Le temps affiché est indicatif.';
 
   @override
   String creatorMissionRankBookmarkCurrent(int count) {
@@ -9671,7 +9671,7 @@ class AppLocalizationsFr extends AppLocalizations {
       'Prix définitif (échange pas encore disponible)';
 
   @override
-  String get missionCoinsReceived => 'opales reçues';
+  String get missionCoinsReceived => 'Opales reçues';
 
   @override
   String get missionClaimFailed => 'Réclamation impossible';
