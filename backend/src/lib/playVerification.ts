@@ -36,13 +36,50 @@ export function evaluatePlaySubscription(
   return { active, expiresAtEpochMs: expiry > 0 ? expiry : null };
 }
 
+/** Separate, keyless Google Play credentials. FCM's sender account must
+ * not silently become a payment-verification identity.
+ * The service account needs Google Play Console API access and this AWS
+ * Lambda execution role must be permitted to impersonate it via Google WIF.
+ */
+export function playWorkloadIdentityConfig():
+    { audience: string; serviceAccount: string } | null {
+  const audience = process.env.PLAY_WIF_AUDIENCE ?? "";
+  const serviceAccount = process.env.PLAY_VERIFIER_SERVICE_ACCOUNT ?? "";
+  if (!/^\\/\\/iam\\.googleapis\\.com\\/projects\\/[0-9]+\\/locations\\/global\\/workloadIdentityPools\\/[A-Za-z0-9_-]+\\/providers\\/[A-Za-z0-9_-]+$/.test(audience) ||
+      !/^[A-Za-z0-9._-]+@[A-Za-z0-9.-]+\\.iam\\.gserviceaccount\\.com$/.test(serviceAccount)) {
+    return null;
+  }
+  return { audience, serviceAccount };
+}
+
 /** ADC/workload identity only; never embed keys or raw purchase tokens in app. */
 export async function queryGooglePlaySubscription(
   packageName: typeof PLAY_PACKAGE_NAME, purchaseToken: string,
 ): Promise<unknown> {
-  const client = await new GoogleAuth({
+  const credential = playWorkloadIdentityConfig();
+  if (!credential) {
+    throw new Error("Google Play workload identity is not configured");
+  }
+  // AWS4-signed subject tokens are exchanged for short-lived Google tokens;
+  // no long-lived Google private keys are stored in Lambda, CDK or Flutter.
+  const client = new GoogleAuth({
     scopes: ["https://www.googleapis.com/auth/androidpublisher"],
-  }).getClient();
+  }).fromJSON({
+    type: "external_account",
+    universe_domain: "googleapis.com",
+    audience: credential.audience,
+    subject_token_type: "urn:ietf:params:aws:token-type:aws4_request",
+    token_url: "https://sts.googleapis.com/v1/token",
+    credential_source: {
+      environment_id: "aws1",
+      region_url: "http://169.254.169.254/latest/meta-data/placement/availability-zone",
+      url: "http://169.254.169.254/latest/meta-data/iam/security-credentials",
+      regional_cred_verification_url:
+        "https://sts.{region}.amazonaws.com?Action=GetCallerIdentity&Version=2011-06-15",
+    },
+    service_account_impersonation_url:
+      `https://iamcredentials.googleapis.com/v1/projects/-/serviceAccounts/${credential.serviceAccount}:generateAccessToken`,
+  } as any);
   const url = "https://androidpublisher.googleapis.com/androidpublisher/v3/" +
     "applications/" + encodeURIComponent(packageName) +
     "/purchases/subscriptionsv2/tokens/" + encodeURIComponent(purchaseToken);
