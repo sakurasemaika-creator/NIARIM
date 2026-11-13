@@ -265,6 +265,23 @@ void main() {
     LocalFileTrashService.changes.value++;
     await settle();
     final trashedFolder = find.text('削除した作品フォルダ');
+    if (trashedFolder.evaluate().isEmpty) {
+      // The Trash list is lazy, and a new record can be outside its viewport.
+      await tester.scrollUntilVisible(
+        trashedFolder,
+        160,
+        scrollable: find.descendant(
+          of: find.byType(TrashScreen),
+          matching: find.byType(Scrollable),
+        ).last,
+        maxScrolls: 15,
+      );
+      await settle();
+    }
+    if (trashedFolder.evaluate().isEmpty) {
+      // Retain a genuine Flutter frame for diagnosis, not as a final capture.
+      await shot('diagnostic_trash_folder_missing');
+    }
     expect(trashedFolder, findsWidgets);
     await tester.longPress(trashedFolder.first);
     await settle();
