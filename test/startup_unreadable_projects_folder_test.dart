@@ -2708,10 +2708,16 @@ void main() {
     await tester.tap(emptyTrash);
     await _settleWithFiles(tester, rounds: 3);
     expect(find.byKey(const Key('trash-dialog-confirm')), findsNothing);
+    // 読み込めなかったことだけでなく、ゴミ箱を空にしなかったこと・その
+    // 理由・ホームの「再試行」で読み直せることを伝える（DISC098の1）。
     expect(
       find.descendant(
         of: find.byType(SnackBar),
-        matching: find.text('プロジェクトを読み込めませんでした'),
+        matching: find.text(
+          'ゴミ箱を空にしませんでした。読み込めていないプロジェクトを含む'
+          'フォルダは、読み込めるまで削除できません。ホームの「再試行」で'
+          'もう一度読み込んでください。',
+        ),
       ),
       findsOneWidget,
     );
@@ -3052,11 +3058,15 @@ void main() {
     await tester.tap(find.byTooltip('ゴミ箱へ移動').first);
     await _settleWithFiles(tester, rounds: 4);
     // フォルダの中の件数は、読めた作品の分しか数えられない。読み込めて
-    // いないことを、確かめるダイアログの中でも伝える。
+    // いない作品がフォルダの中にあれば、読めたときにゴミ箱のフォルダへ
+    // 入ることを、確かめるダイアログの中で伝える。
     expect(
       find.descendant(
         of: find.byType(AlertDialog),
-        matching: find.textContaining('プロジェクトを読み込めませんでした'),
+        matching: find.textContaining(
+          '読み込めていないプロジェクトがフォルダの中にあれば、読み込めたときに'
+          'ゴミ箱のそのフォルダへ入ります。',
+        ),
       ),
       findsOneWidget,
     );
@@ -3111,6 +3121,96 @@ void main() {
       find.descendant(of: row, matching: find.text('海、山')),
       findsOneWidget,
     );
+    expect(tester.takeException(), isNull);
+    await tester.pumpWidget(const SizedBox.shrink());
+  });
+
+  // DISC098の2：読めていない作品がゴミ箱の中の作品だけのとき（選んだ
+  // フォルダの作品ではありえない）は、フォルダをゴミ箱へ移す確かめる
+  // ダイアログに「読み込めませんでした」の行を足さない。中身の件数は0の
+  // 所を出さない（「フォルダ0件」と出ていた）。選んで移すときもフォルダの
+  // メニューから移すときも同じ。
+  testWidgets('moving a folder to Trash does not warn about works that '
+      'could not be read when they are only in Trash', (tester) async {
+    tester.view.physicalSize = const Size(1280, 800);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    SharedPreferences.setMockInitialValues({
+      'first_launch': false,
+      'language': 'ja',
+      firstUseTooltipsSeenKey: kAllFirstUseTooltipKeys,
+    });
+    final seeded = await tester.runAsync(
+      () => _seed((service) async {
+        final old = await _createWork(service, '古い作品');
+        await service.deleteProject(old.id);
+        final folder = await service.createFolder('旅行');
+        for (final name in ['海', '山']) {
+          final work = await _createWork(service, name);
+          await service.moveToFolder(work.id, folder.id);
+        }
+        return old;
+      }),
+    );
+    storage.paths.blockReading(archiveOf(seeded!.id));
+    appRouter.go('/home');
+    final providers = await tester.runAsync(buildAppProviders);
+    await tester.pumpWidget(
+      MultiProvider(providers: providers!, child: const NiarimApp()),
+    );
+    await _settleWithFiles(tester);
+    final projects = tester
+        .element(find.byType(Scaffold).first)
+        .read<ProjectService>();
+    expect(projects.projectsLoadFailed, isTrue);
+
+    Future<String> dialogText() async {
+      await _settleWithFiles(tester, rounds: 4);
+      final texts = [
+        for (final text in tester.widgetList<Text>(
+          find.descendant(
+            of: find.byType(AlertDialog),
+            matching: find.byType(Text),
+          ),
+        ))
+          text.data ?? '',
+      ];
+      await tester.tap(find.byKey(const Key('trash-dialog-cancel')));
+      await _settleWithFiles(tester, rounds: 3);
+      return texts.join('\n');
+    }
+
+    // 選んで移す。
+    await tester.longPress(find.text('旅行').first);
+    await _settleWithFiles(tester, rounds: 3);
+    await tester.tap(find.byTooltip('ゴミ箱へ移動').first);
+    final fromSelection = await dialogText();
+    await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+    await _settleWithFiles(tester, rounds: 3);
+    // フォルダの︙のメニューから移す。
+    final card = find
+        .ancestor(
+          of: find.text('旅行').first,
+          matching: find.byWidgetPredicate((w) => w is Card || w is ListTile),
+        )
+        .first;
+    await tester.tap(
+      find.descendant(of: card, matching: find.byIcon(Icons.more_vert)),
+    );
+    await _settleWithFiles(tester, rounds: 6);
+    await tester.tap(find.text('ゴミ箱へ移動').last);
+    final fromMenu = await dialogText();
+    for (final (where, text) in [
+      ('selection', fromSelection),
+      ('menu', fromMenu),
+    ]) {
+      expect(text, contains('フォルダの中のプロジェクト2件も一緒に移動します。'), reason: where);
+      expect(text, isNot(contains('フォルダ0件')), reason: where);
+      expect(text, isNot(contains('読み込めませんでした')), reason: where);
+      expect(text, isNot(contains('読み込めていない')), reason: where);
+    }
+    expect(projects.trashedFolders, isEmpty);
     expect(tester.takeException(), isNull);
     await tester.pumpWidget(const SizedBox.shrink());
   });
@@ -3206,7 +3306,7 @@ void main() {
     expect(projects.trashedFolders.map((t) => t.folder.id), [folder.id]);
 
     // 容量削減の「ゴミ箱を空にする」：残すフォルダしか無いので、確かめる
-    // ダイアログを出さずに読み込めていないことを知らせ、何も消さない。
+    // ダイアログを出さずにゴミ箱を空にしなかったことを知らせ、何も消さない。
     appRouter.push('/storage');
     final emptyTrash = find.widgetWithText(
       ListTile,
@@ -3230,10 +3330,11 @@ void main() {
       findsNothing,
       reason: 'Empty trash lists the held folder as deleted',
     );
+    // ゴミ箱を空にしなかったこと・その理由・「再試行」を伝える（DISC098の1）。
     expect(
       find.descendant(
         of: find.byType(SnackBar),
-        matching: find.text('プロジェクトを読み込めませんでした'),
+        matching: find.textContaining('ゴミ箱を空にしませんでした。'),
       ),
       findsOneWidget,
     );

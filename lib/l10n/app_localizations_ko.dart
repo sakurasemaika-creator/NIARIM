@@ -6402,6 +6402,11 @@ class AppLocalizationsKo extends AppLocalizations {
   String get storageEmptyTrashButton => '휴지통 비우기';
 
   @override
+  String storageEmptyTrashKeptUnreadFolders(String retry) {
+    return '휴지통을 비우지 않았습니다. 불러오지 못한 프로젝트가 들어 있는 폴더는 불러올 때까지 삭제할 수 없습니다. 홈 화면에서 「$retry」를 눌러 다시 불러와 주세요.';
+  }
+
+  @override
   String get storageOrganizeProjectsButton => '프로젝트 정리하기';
 
   @override
@@ -8029,6 +8034,10 @@ class AppLocalizationsKo extends AppLocalizations {
   String homeMoveToTrashFolderContents(String contents) {
     return '폴더 안의 $contents도 함께 이동합니다.';
   }
+
+  @override
+  String get homeMoveToTrashUnreadNote =>
+      '불러오지 못한 프로젝트가 폴더 안에 있으면, 불러온 뒤 휴지통의 그 폴더로 들어갑니다.';
 
   @override
   String homeTrashFolderPermanentDeleteBody(String name) {

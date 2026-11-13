@@ -11637,6 +11637,12 @@ abstract class AppLocalizations {
   /// **'ゴミ箱を空にする'**
   String get storageEmptyTrashButton;
 
+  /// No description provided for @storageEmptyTrashKeptUnreadFolders.
+  ///
+  /// In ja, this message translates to:
+  /// **'ゴミ箱を空にしませんでした。読み込めていないプロジェクトを含むフォルダは、読み込めるまで削除できません。ホームの「{retry}」でもう一度読み込んでください。'**
+  String storageEmptyTrashKeptUnreadFolders(String retry);
+
   /// No description provided for @storageOrganizeProjectsButton.
   ///
   /// In ja, this message translates to:
@@ -14576,6 +14582,12 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'フォルダの中の{contents}も一緒に移動します。'**
   String homeMoveToTrashFolderContents(String contents);
+
+  /// No description provided for @homeMoveToTrashUnreadNote.
+  ///
+  /// In ja, this message translates to:
+  /// **'読み込めていないプロジェクトがフォルダの中にあれば、読み込めたときにゴミ箱のそのフォルダへ入ります。'**
+  String get homeMoveToTrashUnreadNote;
 
   /// No description provided for @homeTrashFolderPermanentDeleteBody.
   ///

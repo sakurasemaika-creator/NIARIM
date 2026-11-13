@@ -6716,6 +6716,11 @@ class AppLocalizationsFr extends AppLocalizations {
   String get storageEmptyTrashButton => 'Vider la corbeille';
 
   @override
+  String storageEmptyTrashKeptUnreadFolders(String retry) {
+    return 'La corbeille n’a pas été vidée. Les dossiers contenant des projets impossibles à charger ne peuvent pas être supprimés tant qu’ils ne sont pas chargés. Appuyez sur « $retry » sur l’écran d’accueil pour les recharger.';
+  }
+
+  @override
   String get storageOrganizeProjectsButton => 'Organiser les projets';
 
   @override
@@ -8458,6 +8463,10 @@ class AppLocalizationsFr extends AppLocalizations {
   String homeMoveToTrashFolderContents(String contents) {
     return 'Le contenu des dossiers sera aussi déplacé : $contents.';
   }
+
+  @override
+  String get homeMoveToTrashUnreadNote =>
+      'Les projets impossibles à charger qui se trouvent à l’intérieur rejoindront le dossier dans la corbeille une fois chargés.';
 
   @override
   String homeTrashFolderPermanentDeleteBody(String name) {

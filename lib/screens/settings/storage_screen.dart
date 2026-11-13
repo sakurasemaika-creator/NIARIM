@@ -1166,11 +1166,16 @@ class _StorageScreenState extends State<StorageScreen> {
         .toSet();
     bool holdsUnread() => ps.trashedFolders.any(ps.trashedFolderHasUnreadWorks);
     // 残すフォルダしか無いときは、何も並ばないダイアログを出さず（「削除」を
-    // 押しても何も消えずに閉じた）、読み込めていないことを知らせる。
+    // 押しても何も消えずに閉じた）、ゴミ箱を空にしなかったこと・その理由・
+    // ホームの「再試行」で読み直せることを知らせる。
     if (folderTargets.isEmpty && ps.looseTrash.isEmpty && holdsUnread()) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(l10n.homeProjectsLoadFailed)));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            l10n.storageEmptyTrashKeptUnreadFolders(l10n.communityRetry),
+          ),
+        ),
+      );
       return false;
     }
     // 途中で失敗してから閉じた場合も、消せた分だけ大きさは変わっている。

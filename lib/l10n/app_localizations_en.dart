@@ -6594,6 +6594,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get storageEmptyTrashButton => 'Empty trash';
 
   @override
+  String storageEmptyTrashKeptUnreadFolders(String retry) {
+    return 'The trash was not emptied. Folders with projects that could not be loaded can’t be deleted until they load. Press “$retry” on Home to load them again.';
+  }
+
+  @override
   String get storageOrganizeProjectsButton => 'Organize projects';
 
   @override
@@ -8308,6 +8313,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String homeMoveToTrashFolderContents(String contents) {
     return 'The $contents inside will be moved too.';
   }
+
+  @override
+  String get homeMoveToTrashUnreadNote =>
+      'Any projects inside that could not be loaded will join the folder in the trash once they load.';
 
   @override
   String homeTrashFolderPermanentDeleteBody(String name) {

@@ -6370,6 +6370,11 @@ class AppLocalizationsJa extends AppLocalizations {
   String get storageEmptyTrashButton => 'ゴミ箱を空にする';
 
   @override
+  String storageEmptyTrashKeptUnreadFolders(String retry) {
+    return 'ゴミ箱を空にしませんでした。読み込めていないプロジェクトを含むフォルダは、読み込めるまで削除できません。ホームの「$retry」でもう一度読み込んでください。';
+  }
+
+  @override
   String get storageOrganizeProjectsButton => 'プロジェクトを整理する';
 
   @override
@@ -7988,6 +7993,10 @@ class AppLocalizationsJa extends AppLocalizations {
   String homeMoveToTrashFolderContents(String contents) {
     return 'フォルダの中の$contentsも一緒に移動します。';
   }
+
+  @override
+  String get homeMoveToTrashUnreadNote =>
+      '読み込めていないプロジェクトがフォルダの中にあれば、読み込めたときにゴミ箱のそのフォルダへ入ります。';
 
   @override
   String homeTrashFolderPermanentDeleteBody(String name) {

@@ -1431,8 +1431,12 @@ class _HomeScreenState extends State<HomeScreen>
         ? ''
         : '\n${l10n.homeMoveToTrashFolderContents(l10n.homeFolderContents(projectCountInFolders, subfolderCount))}';
     // 読めていない作品は、どのフォルダの作品か分からず数えられない。
-    final unreadText = rootFolderIds.isNotEmpty && service.projectsLoadFailed
-        ? '\n${l10n.homeProjectsLoadFailed}'
+    // ゴミ箱の外にあるものは選んだフォルダの作品かもしれないので、読めた
+    // ときにゴミ箱のフォルダへ入ることを伝える（ゴミ箱の中の作品だけが
+    // 読めないときは、選んだフォルダとは関係が無いので何も足さない）。
+    final unreadText =
+        rootFolderIds.isNotEmpty && service.mayHoldUnreadWorksOutsideTrash
+        ? '\n${l10n.homeMoveToTrashUnreadNote}'
         : '';
     showDialog<void>(
       context: context,
@@ -4721,10 +4725,6 @@ class _TrashTabState extends State<_TrashTab> {
     final selecting = selection?.active ?? false;
     final details = ListTile(
       key: detailsKey,
-      onTap: selecting ? () => selection!.onToggle(selectionId) : null,
-      onLongPress: selection == null
-          ? null
-          : () => selection.onLongPress(selectionId),
       leading: leading,
       title: Text(
         title,
@@ -4734,6 +4734,16 @@ class _TrashTabState extends State<_TrashTab> {
         ),
       ),
       subtitle: Text(subtitle),
+    );
+    // カードを押す・長押しする所とマウスを載せた色は、カード全体（ボタンの
+    // 行も含む）。名前の行（ListTile）だけに付けていた頃は、ボタンの行の
+    // 空いた所に載せても色が付かず、カードの上半分だけが反応した。
+    Widget surface(Widget child) => InkWell(
+      onTap: selecting ? () => selection!.onToggle(selectionId) : null,
+      onLongPress: selection == null
+          ? null
+          : () => selection.onLongPress(selectionId),
+      child: child,
     );
     return HomeCollectionSelectionSurface(
       selectionId: selectionId,
@@ -4746,41 +4756,44 @@ class _TrashTabState extends State<_TrashTab> {
           return Card(
             margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             color: Theme.of(context).colorScheme.surfaceContainerLow,
-            child: compact
-                ? Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      details,
-                      if (!selecting)
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
-                          child: OverflowBar(
-                            alignment: MainAxisAlignment.end,
-                            // 1行に入らず縦に並ぶときも右端にそろえる。
-                            overflowAlignment: OverflowBarAlignment.end,
-                            spacing: 8,
-                            overflowSpacing: 4,
-                            children: actions,
+            clipBehavior: Clip.antiAlias,
+            child: surface(
+              compact
+                  ? Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        details,
+                        if (!selecting)
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
+                            child: OverflowBar(
+                              alignment: MainAxisAlignment.end,
+                              // 1行に入らず縦に並ぶときも右端にそろえる。
+                              overflowAlignment: OverflowBarAlignment.end,
+                              spacing: 8,
+                              overflowSpacing: 4,
+                              children: actions,
+                            ),
                           ),
-                        ),
-                    ],
-                  )
-                // 広いカードは名前の右・上下の真ん中に並べる（所有者の判断1。
-                // 作品・フォルダ・ファイルのカードで同じ）。
-                : Row(
-                    children: [
-                      Expanded(child: details),
-                      if (!selecting)
-                        Padding(
-                          padding: const EdgeInsetsDirectional.only(end: 8),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            spacing: 8,
-                            children: actions,
+                      ],
+                    )
+                  // 広いカードは名前の右・上下の真ん中に並べる（所有者の判断1。
+                  // 作品・フォルダ・ファイルのカードで同じ）。
+                  : Row(
+                      children: [
+                        Expanded(child: details),
+                        if (!selecting)
+                          Padding(
+                            padding: const EdgeInsetsDirectional.only(end: 8),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              spacing: 8,
+                              children: actions,
+                            ),
                           ),
-                        ),
-                    ],
-                  ),
+                      ],
+                    ),
+            ),
           );
         },
       ),

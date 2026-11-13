@@ -6703,6 +6703,11 @@ class AppLocalizationsEs extends AppLocalizations {
   String get storageEmptyTrashButton => 'Vaciar papelera';
 
   @override
+  String storageEmptyTrashKeptUnreadFolders(String retry) {
+    return 'No se vació la papelera. Las carpetas con proyectos que no se pudieron cargar no se pueden eliminar hasta que se carguen. Pulsa «$retry» en Inicio para volver a cargarlos.';
+  }
+
+  @override
   String get storageOrganizeProjectsButton => 'Organizar proyectos';
 
   @override
@@ -8436,6 +8441,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String homeMoveToTrashFolderContents(String contents) {
     return 'También se moverá el contenido de las carpetas: $contents.';
   }
+
+  @override
+  String get homeMoveToTrashUnreadNote =>
+      'Si dentro hay proyectos que no se pudieron cargar, pasarán a la carpeta de la papelera cuando se carguen.';
 
   @override
   String homeTrashFolderPermanentDeleteBody(String name) {

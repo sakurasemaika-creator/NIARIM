@@ -443,6 +443,16 @@ class ProjectService extends ChangeNotifier {
   /// 開けない）。保存先を一覧できたときの分。
   final Set<String> _unreadProjectIds = {};
 
+  /// 読めていない作品のうち、ゴミ箱の外にあるかもしれないものがあるか
+  /// （保存先を一覧できなかったときは、どれが読めていないか分からないので
+  /// 真）。フォルダをゴミ箱へ移すとき、そういう作品はそのフォルダの中の
+  /// 作品かもしれない（読めたときにゴミ箱のフォルダへ入る）。読めていない
+  /// 作品がゴミ箱の中の作品（1件ずつ移した作品・ゴミ箱のフォルダの作品）
+  /// だけのときは、移すフォルダとは関係が無いので偽。
+  bool get mayHoldUnreadWorksOutsideTrash =>
+      _projectsListingFailed ||
+      _unreadProjectIds.any((id) => !_trashDeletedAt.containsKey(id));
+
   Future<void> init() async {
     try {
       await _loadTrashState();

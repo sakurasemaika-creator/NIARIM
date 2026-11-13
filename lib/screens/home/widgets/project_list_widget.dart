@@ -1128,8 +1128,10 @@ class ProjectListWidget extends StatelessWidget {
         ? ''
         : '\n${l10n.homeMoveToTrashFolderContents(l10n.homeFolderContents(counts.projects, counts.folders))}';
     // 読めていない作品は、どのフォルダの作品か分からず数えられない。
-    final unreadText = service.projectsLoadFailed
-        ? '\n${l10n.homeProjectsLoadFailed}'
+    // ゴミ箱の外にあるものはこのフォルダの作品かもしれない（選んで移す
+    // ときと同じ）。
+    final unreadText = service.mayHoldUnreadWorksOutsideTrash
+        ? '\n${l10n.homeMoveToTrashUnreadNote}'
         : '';
     // 移した後はフォルダのカード（この部品）が一覧から消えるので、知らせの
     // 出し先は先に取っておく。

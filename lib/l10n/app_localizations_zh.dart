@@ -6319,6 +6319,11 @@ class AppLocalizationsZh extends AppLocalizations {
   String get storageEmptyTrashButton => '清空回收站';
 
   @override
+  String storageEmptyTrashKeptUnreadFolders(String retry) {
+    return '未清空回收站。包含无法加载的项目的文件夹在加载之前无法删除。请在主页点击“$retry”重新加载。';
+  }
+
+  @override
   String get storageOrganizeProjectsButton => '整理项目';
 
   @override
@@ -7908,6 +7913,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String homeMoveToTrashFolderContents(String contents) {
     return '文件夹中的$contents也将一并移动。';
   }
+
+  @override
+  String get homeMoveToTrashUnreadNote => '如果文件夹中有无法加载的项目，加载后会移入回收站中的该文件夹。';
 
   @override
   String homeTrashFolderPermanentDeleteBody(String name) {
@@ -16004,6 +16012,11 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get storageEmptyTrashButton => '清空垃圾桶';
 
   @override
+  String storageEmptyTrashKeptUnreadFolders(String retry) {
+    return '未清空垃圾桶。包含無法載入之專案的資料夾在載入前無法刪除。請在首頁點擊「$retry」重新載入。';
+  }
+
+  @override
   String get storageOrganizeProjectsButton => '整理專案';
 
   @override
@@ -17595,6 +17608,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String homeMoveToTrashFolderContents(String contents) {
     return '資料夾中的$contents也會一併移動。';
   }
+
+  @override
+  String get homeMoveToTrashUnreadNote => '如果資料夾中有無法載入的專案，載入後會移入垃圾桶中的該資料夾。';
 
   @override
   String homeTrashFolderPermanentDeleteBody(String name) {

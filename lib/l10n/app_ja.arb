@@ -3123,6 +3123,14 @@
   "storageClearCacheButton": "キャッシュを削除",
   "storageRemoveUnusedMaterialsButton": "未使用素材を一括削除（全プロジェクト）",
   "storageEmptyTrashButton": "ゴミ箱を空にする",
+  "storageEmptyTrashKeptUnreadFolders": "ゴミ箱を空にしませんでした。読み込めていないプロジェクトを含むフォルダは、読み込めるまで削除できません。ホームの「{retry}」でもう一度読み込んでください。",
+  "@storageEmptyTrashKeptUnreadFolders": {
+    "placeholders": {
+      "retry": {
+        "type": "String"
+      }
+    }
+  },
   "storageOrganizeProjectsButton": "プロジェクトを整理する",
   "storageEraseAllButton": "全データを削除（初期化）",
   "storageClearCacheDoneSnackbar": "{size}のキャッシュを削除しました",
@@ -3951,6 +3959,7 @@
       }
     }
   },
+  "homeMoveToTrashUnreadNote": "読み込めていないプロジェクトがフォルダの中にあれば、読み込めたときにゴミ箱のそのフォルダへ入ります。",
   "homeTrashFolderPermanentDeleteBody": "「{name}」を完全に削除します。元に戻すことはできません。",
   "@homeTrashFolderPermanentDeleteBody": {
     "placeholders": {
