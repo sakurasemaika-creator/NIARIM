@@ -60,8 +60,8 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
   Future<void> _loadOwnerOnlyWorkIfNeeded() async {
     if (!mounted) return;
     final community = context.read<CommunityService>();
-    final auth = context.read<GoogleAuthService>();
-    final accountId = auth.account?.id;
+    final auth = context.read<GoogleAuthService?>();
+    final accountId = auth?.account?.id;
     // A public-feed placeholder is not proof that the owner's private work
     // details are available. Only a real cached work can skip owner lookup.
     final cached = community.byId(widget.workId);
@@ -73,7 +73,7 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
     try {
       final response = await community.api!.myWork(widget.workId);
       if (!mounted ||
-          context.read<GoogleAuthService>().account?.id != accountId) {
+          context.read<GoogleAuthService?>()?.account?.id != accountId) {
         return;
       }
       setState(() {
@@ -340,7 +340,7 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final communityService = context.watch<CommunityService>();
-    final currentAccount = context.watch<GoogleAuthService>().account?.id;
+    final currentAccount = context.watch<GoogleAuthService?>()?.account?.id;
     final ownerFallback =
         currentAccount != null && currentAccount == _ownerOnlyAccountId
         ? _ownerOnlyWork
