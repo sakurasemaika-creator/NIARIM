@@ -17,7 +17,7 @@ vi.mock("../src/lib/playVerification", async (original) => ({
   queryGooglePlaySubscription: googleLookup,
 }));
 import { verifyMyPlayPremium, getPlayPurchaseAvailability } from "../src/api/routes/playPremium";
-import { evaluatePlaySubscription } from "../src/lib/playVerification";
+import { evaluatePlaySubscription, playWorkloadIdentityConfig } from "../src/lib/playVerification";
 const productId = "niarim_premium_monthly";
 const purchaseToken = "long-google-play-token-1234567890";
 const valid = {
@@ -31,6 +31,10 @@ const request = (body: object) => ({
 beforeEach(() => {
   process.env.TABLE_NAME = "unit-test-table";
   process.env.PLAY_ANDROID_PACKAGE_NAME = "com.niarim.niarim";
+  process.env.PLAY_WIF_AUDIENCE =
+    "//iam.googleapis.com/projects/123456789/locations/global/workloadIdentityPools/play-tests/providers/aws-lambda";
+  process.env.PLAY_VERIFIER_SERVICE_ACCOUNT =
+    "niarim-play-test@play-ci.iam.gserviceaccount.com";
   delete process.env.PLAY_PURCHASE_VERIFICATION_ENABLED;
   send.mockReset(); send.mockResolvedValue({});
   googleLookup.mockReset(); googleLookup.mockResolvedValue(valid);
@@ -41,6 +45,27 @@ describe("Google Play purchase verification", () => {
     expect(JSON.parse(out.body ?? "{}")).toEqual({enabled:false,products:[]});
     expect(send).not.toHaveBeenCalled();
     expect(googleLookup).not.toHaveBeenCalled();
+  });
+  it("never offers paid Billing when the Google Play WIF identity is absent", async () => {
+    process.env.PLAY_PURCHASE_VERIFICATION_ENABLED = "true";
+    delete process.env.PLAY_WIF_AUDIENCE;
+    expect(playWorkloadIdentityConfig()).toBeNull();
+    expect(JSON.parse((await getPlayPurchaseAvailability(request({}))).body ?? "{}"))
+      .toMatchObject({ enabled: false, products: [] });
+    await expect(verifyMyPlayPremium(request({ productId, purchaseToken })))
+      .rejects.toMatchObject({ code: "PLAY_VERIFICATION_DISABLED" });
+    expect(googleLookup).not.toHaveBeenCalled();
+    expect(send).not.toHaveBeenCalled();
+  });
+  it("rejects malformed WIF identifiers and never falls back to FCM credentials", async () => {
+    process.env.PLAY_PURCHASE_VERIFICATION_ENABLED = "true";
+    process.env.PLAY_WIF_AUDIENCE = "https://example.invalid/redirect";
+    process.env.FCM_WIF_AUDIENCE = "//iam.googleapis.com/projects/123456789/locations/global/workloadIdentityPools/fcm/providers/aws";
+    process.env.FCM_SENDER_SERVICE_ACCOUNT = "fcm@test.iam.gserviceaccount.com";
+    expect(playWorkloadIdentityConfig()).toBeNull();
+    expect(JSON.parse((await getPlayPurchaseAvailability(request({}))).body ?? "{}"))
+      .toMatchObject({ enabled: false, products: [] });
+    expect(send).not.toHaveBeenCalled();
   });
   it("only reports server-side product IDs when enabled", async () => {
     process.env.PLAY_PURCHASE_VERIFICATION_ENABLED = "true";
