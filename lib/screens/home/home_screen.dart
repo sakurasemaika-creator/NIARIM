@@ -1453,7 +1453,7 @@ class _HomeScreenState extends State<HomeScreen>
               // 操作ボタンの付いたSnackBarは、既定では時間で消えない
               // （次の画面まで付いてきて下のボタンに重なる）。
               persist: false,
-              duration: const Duration(seconds: 6),
+              duration: const Duration(seconds: 5),
               action: SnackBarAction(
                 label: l10n.homeUndoAction,
                 onPressed: () async {

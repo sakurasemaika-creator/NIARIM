@@ -26,7 +26,7 @@ void showMovedToTrashSnackBar(
           l10n.homeMovedToTrashSnackbar(projectIds.length + folderIds.length),
         ),
         persist: false,
-        duration: const Duration(seconds: 6),
+        duration: const Duration(seconds: 5),
         action: SnackBarAction(
           label: l10n.homeUndoAction,
           onPressed: () => _undo(messenger, l10n, [
@@ -52,7 +52,7 @@ void showFolderMovedToTrashSnackBar(
       SnackBar(
         content: Text(l10n.homeFolderMovedToTrashSnackbar(folder.name)),
         persist: false,
-        duration: const Duration(seconds: 6),
+        duration: const Duration(seconds: 5),
         action: SnackBarAction(
           label: l10n.homeUndoAction,
           onPressed: () => _undo(messenger, l10n, [

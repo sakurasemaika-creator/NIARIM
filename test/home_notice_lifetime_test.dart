@@ -11,6 +11,7 @@ import 'package:niarim/router.dart';
 import 'package:niarim/screens/home/home_screen.dart';
 import 'package:niarim/screens/home/widgets/project_list_widget.dart';
 import 'package:niarim/services/project_service.dart';
+import 'package:niarim/widgets/moved_to_trash_snack_bar.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -188,6 +189,80 @@ void main() {
       expect(service.trash, isEmpty);
       await settleIo(tester);
       expect(card('apple'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+      await close(tester);
+    });
+  });
+
+  // 知らせは5秒以内に消える（所有者の判断：トーストは基本的に5秒以内に
+  // 消え、操作ボタンの付いたものも同じ）。消えるまでの時間は出終わってから
+  // 数え始まるので、出たのを細かく見張り、出終わった所から5秒待つ。
+  group('a moved-to-Trash notice closes within 5 s', () {
+    Future<void> waitForSnack(WidgetTester tester, String text) async {
+      for (var i = 0; i < 400 && snackText(tester) != text; i++) {
+        await tester.runAsync(
+          () => Future<void>.delayed(const Duration(milliseconds: 30)),
+        );
+        await tester.pump(const Duration(milliseconds: 10));
+      }
+      expect(snackText(tester), text);
+      // 出てくる動き（250ms）を終わらせ、次の描き直しで時間を数え始める。
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pump();
+    }
+
+    Future<void> expectGoneAfterFiveSeconds(WidgetTester tester) async {
+      await tester.pump(const Duration(seconds: 5));
+      // 消える動き（250ms）の分。
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pump();
+      expect(
+        find.byType(SnackBar),
+        findsNothing,
+        reason: 'the notice is still on screen 5 s after it appeared',
+      );
+    }
+
+    testWidgets('from a card menu', (tester) async {
+      await openHome(tester, names: ['apple', 'banana']);
+      final l10n = l10nOf(tester);
+      await tester.tap(card('apple'), buttons: kSecondaryMouseButton);
+      await settle(tester);
+      await tester.tap(find.text(l10n.projectDetailTrashMenuItem));
+      await waitForSnack(tester, l10n.homeMovedToTrashSnackbar(1));
+      await expectGoneAfterFiveSeconds(tester);
+      expect(tester.takeException(), isNull);
+      await close(tester);
+    });
+
+    testWidgets('from a bulk move', (tester) async {
+      await openHome(tester, names: ['apple', 'banana']);
+      final l10n = l10nOf(tester);
+      await tester.longPress(card('apple'));
+      await settle(tester);
+      await tester.tap(find.byTooltip(l10n.homeMoveToTrash));
+      await settle(tester);
+      await tester.tap(find.widgetWithText(FilledButton, l10n.commonMove));
+      await waitForSnack(tester, l10n.homeMovedToTrashSnackbar(1));
+      await expectGoneAfterFiveSeconds(tester);
+      expect(tester.takeException(), isNull);
+      await close(tester);
+    });
+
+    testWidgets('for a folder moved with its contents', (tester) async {
+      final service = await openHome(tester, names: ['apple']);
+      final l10n = l10nOf(tester);
+      final folder = (await tester.runAsync(
+        () => service.createFolder('scenes'),
+      ))!;
+      showFolderMovedToTrashSnackBar(
+        ScaffoldMessenger.of(tester.element(find.byType(HomeScreen))),
+        l10n,
+        service,
+        folder,
+      );
+      await waitForSnack(tester, l10n.homeFolderMovedToTrashSnackbar('scenes'));
+      await expectGoneAfterFiveSeconds(tester);
       expect(tester.takeException(), isNull);
       await close(tester);
     });
