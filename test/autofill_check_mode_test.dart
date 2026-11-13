@@ -25,13 +25,16 @@ void main() {
     }
   });
 
-  test('silhouette mode is the exact same low-value achromatic gray for every part', () {
-    final colors = [
-      for (var i = 0; i < 20; i++)
-        autofillCheckColor(AutofillCheckMode.silhouette, i),
-    ];
-    expect(colors.toSet(), {0xFF3D3D3D});
-  });
+  test(
+    'silhouette mode is the exact same low-value achromatic gray for every part',
+    () {
+      final colors = [
+        for (var i = 0; i < 20; i++)
+          autofillCheckColor(AutofillCheckMode.silhouette, i),
+      ];
+      expect(colors.toSet(), {0xFF3D3D3D});
+    },
+  );
 
   test(
     'check recolor preserves alpha, transparent pixels, and source bytes',

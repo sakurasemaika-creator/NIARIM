@@ -15,9 +15,9 @@ void main() {
       'app_zh_Hant.arb',
     ];
     for (final name in files) {
-      final json = jsonDecode(
-        File('lib/l10n/$name').readAsStringSync(),
-      ) as Map<String, dynamic>;
+      final json =
+          jsonDecode(File('lib/l10n/$name').readAsStringSync())
+              as Map<String, dynamic>;
       expect(
         json['communityContainsGenerativeAiImageVideo'],
         isNotEmpty,
@@ -34,9 +34,9 @@ void main() {
       expect(json['communityMutedTagsHint'], isNotEmpty, reason: name);
     }
 
-    final ja = jsonDecode(
-      File('lib/l10n/app_ja.arb').readAsStringSync(),
-    ) as Map<String, dynamic>;
+    final ja =
+        jsonDecode(File('lib/l10n/app_ja.arb').readAsStringSync())
+            as Map<String, dynamic>;
     expect(ja['communityContainsGenerativeAiImageVideo'], 'AI画像・AI動画使用');
     expect(ja['communityMutedWords'], '非表示ワード登録');
     expect(ja['communityMutedTags'], '非表示タグ登録');

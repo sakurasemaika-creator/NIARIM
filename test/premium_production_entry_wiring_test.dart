@@ -4,8 +4,9 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   test('watermark production entry remains gated before navigation', () {
-    final source = File('lib/screens/settings/settings_screen.dart')
-        .readAsStringSync();
+    final source = File(
+      'lib/screens/settings/settings_screen.dart',
+    ).readAsStringSync();
 
     expect(source, contains('void _showWatermarkSetting()'));
     expect(source, contains('PremiumFeature.watermark'));
@@ -15,8 +16,9 @@ void main() {
   });
 
   test('tone curve and level adjustment production entries stay locked', () {
-    final source = File('lib/screens/canvas/widgets/filter_panel.dart')
-        .readAsStringSync();
+    final source = File(
+      'lib/screens/canvas/widgets/filter_panel.dart',
+    ).readAsStringSync();
 
     expect(
       source,
@@ -35,8 +37,9 @@ void main() {
   });
 
   test('export enforces unlimited duration and end-card Premium gates', () {
-    final source = File('lib/screens/export/export_screen.dart')
-        .readAsStringSync();
+    final source = File(
+      'lib/screens/export/export_screen.dart',
+    ).readAsStringSync();
 
     expect(
       source,
@@ -51,8 +54,9 @@ void main() {
   });
 
   test('custom automation production entry remains gated before manager', () {
-    final source = File('lib/screens/canvas/canvas_screen.dart')
-        .readAsStringSync();
+    final source = File(
+      'lib/screens/canvas/canvas_screen.dart',
+    ).readAsStringSync();
 
     expect(source, contains('void _showCustomAutomationManager()'));
     expect(source, contains('PremiumFeature.customAutomation'));

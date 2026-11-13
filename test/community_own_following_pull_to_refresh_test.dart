@@ -307,8 +307,9 @@ void main() {
     expect(service.favoriteAuthorIds, isEmpty);
 
     // Returning to the profile updates the same numeric control immediately.
-    Navigator.of(tester.element(find.byType(CommunityFollowingListScreen)))
-        .pop();
+    Navigator.of(
+      tester.element(find.byType(CommunityFollowingListScreen)),
+    ).pop();
     await tester.pumpAndSettle();
     final l10n = AppLocalizations.of(
       tester.element(find.byType(CommunityAuthorWorksScreen)),

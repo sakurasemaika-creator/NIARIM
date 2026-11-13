@@ -108,8 +108,9 @@ void main() {
           final exports = Directory('${documents.path}/exports')
             ..createSync(recursive: true);
           for (var i = 0; i < 60; i++) {
-            File('${exports.path}/work_${i.toString().padLeft(3, '0')}.png')
-                .writeAsBytesSync(png);
+            File(
+              '${exports.path}/work_${i.toString().padLeft(3, '0')}.png',
+            ).writeAsBytesSync(png);
           }
         },
       );

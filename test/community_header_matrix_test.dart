@@ -362,8 +362,9 @@ void main() {
                 image.dispose();
                 final dir = Directory('$output/failures')
                   ..createSync(recursive: true);
-                File('${dir.path}/$file')
-                    .writeAsBytesSync(bytes!.buffer.asUint8List());
+                File(
+                  '${dir.path}/$file',
+                ).writeAsBytesSync(bytes!.buffer.asUint8List());
                 File('${dir.path}/$file.json').writeAsStringSync(
                   jsonEncode({'case': caseId, 'failures': failures}),
                 );
@@ -381,8 +382,9 @@ void main() {
               image.dispose();
               final directory = Directory('$output/$state')
                 ..createSync(recursive: true);
-              File('${directory.path}/$file')
-                  .writeAsBytesSync(data!.buffer.asUint8List());
+              File(
+                '${directory.path}/$file',
+              ).writeAsBytesSync(data!.buffer.asUint8List());
               manifest.add({
                 'file': file,
                 'locale': locale.toLanguageTag(),
@@ -395,10 +397,12 @@ void main() {
                 'scope': 'header only; hidden synthetic data',
                 'color_policy':
                     'configured roles; no automatic contrast correction',
-                'readability_assessment': 'separate original-image review; user-chosen low contrast permitted',
+                'readability_assessment':
+                    'separate original-image review; user-chosen low contrast permitted',
               });
-              File('${directory.path}/manifest.json')
-                  .writeAsStringSync(jsonEncode(manifest));
+              File(
+                '${directory.path}/manifest.json',
+              ).writeAsStringSync(jsonEncode(manifest));
             });
           }
         }

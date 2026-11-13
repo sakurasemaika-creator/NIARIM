@@ -29,8 +29,9 @@ void main() {
   });
 
   test('データファイルの冒頭にもライセンス表示がある', () {
-    final data = File('lib/engine/spectral_pigment_data.dart')
-        .readAsStringSync();
+    final data = File(
+      'lib/engine/spectral_pigment_data.dart',
+    ).readAsStringSync();
     expect(data, contains('// Copyright (c) 2025 Ronald van Wijnen'));
     expect(data, contains('// MIT License'));
   });

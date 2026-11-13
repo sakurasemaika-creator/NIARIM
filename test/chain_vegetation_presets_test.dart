@@ -53,9 +53,9 @@ void main() {
       }
       engine.endStroke();
       final image = await tm.compositeLayerToImage('chain');
-      final data = (await image.toByteData(format: ui.ImageByteFormat.rawRgba))!
-          .buffer
-          .asUint8List();
+      final data = (await image.toByteData(
+        format: ui.ImageByteFormat.rawRgba,
+      ))!.buffer.asUint8List();
       image.dispose();
       var painted = 0;
       var transparentInsideBand = 0;

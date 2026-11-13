@@ -1311,8 +1311,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
       layer: found.layer.copyWith(trackRow: target),
     );
     setState(() => clip.trackRow = target);
-    final stillUsed = _clipsOfType(clip.trackType)
-        .any((c) => c.trackRow == oldRow);
+    final stillUsed = _clipsOfType(
+      clip.trackType,
+    ).any((c) => c.trackRow == oldRow);
     if (oldRow > 0 &&
         !stillUsed &&
         ps.removeTrackRow(widget.projectId, sceneId, kind, oldRow)) {
@@ -2662,9 +2663,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
                                 ),
                               ),
                               backgroundColor: isMoving
-                                  ? Theme.of(context)
-                                        .colorScheme
-                                        .primaryContainer
+                                  ? Theme.of(
+                                      context,
+                                    ).colorScheme.primaryContainer
                                   : null,
                             ),
                           );
@@ -3420,12 +3421,12 @@ class _TimelineScreenState extends State<TimelineScreen> {
                                             width: 3,
                                             height: 28,
                                             color: isActive
-                                                ? Theme.of(context)
-                                                      .colorScheme
-                                                      .primary
-                                                : Theme.of(context)
-                                                      .colorScheme
-                                                      .outline,
+                                                ? Theme.of(
+                                                    context,
+                                                  ).colorScheme.primary
+                                                : Theme.of(
+                                                    context,
+                                                  ).colorScheme.outline,
                                           ),
                                         ),
                                       );
@@ -3446,9 +3447,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
                                         ),
                                         decoration: BoxDecoration(
                                           color: isMoving
-                                              ? Theme.of(context)
-                                                    .colorScheme
-                                                    .primaryContainer
+                                              ? Theme.of(
+                                                  context,
+                                                ).colorScheme.primaryContainer
                                               : ThemeService
                                                     .activeColorScheme
                                                     .onSurfaceVariant,
@@ -3467,9 +3468,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
                                             style: TextStyle(
                                               fontSize: 9,
                                               color: isMoving
-                                                  ? Theme.of(context)
-                                                        .colorScheme
-                                                        .primary
+                                                  ? Theme.of(
+                                                      context,
+                                                    ).colorScheme.primary
                                                   : null,
                                             ),
                                           ),
@@ -3572,12 +3573,12 @@ class _TimelineScreenState extends State<TimelineScreen> {
                                       decoration: BoxDecoration(
                                         border: Border.all(
                                           color: isChecked
-                                              ? Theme.of(context)
-                                                    .colorScheme
-                                                    .primary
-                                              : Theme.of(context)
-                                                    .colorScheme
-                                                    .outlineVariant,
+                                              ? Theme.of(
+                                                  context,
+                                                ).colorScheme.primary
+                                              : Theme.of(
+                                                  context,
+                                                ).colorScheme.outlineVariant,
                                         ),
                                         borderRadius: BorderRadius.circular(3),
                                       ),
@@ -4737,9 +4738,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
                                     decoration: BoxDecoration(
                                       border: Border(
                                         right: BorderSide(
-                                          color: Theme.of(context)
-                                              .colorScheme
-                                              .outlineVariant,
+                                          color: Theme.of(
+                                            context,
+                                          ).colorScheme.outlineVariant,
                                           width: 0.5,
                                         ),
                                       ),
@@ -5593,9 +5594,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
                               decoration: BoxDecoration(
                                 border: Border(
                                   right: BorderSide(
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .outlineVariant,
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.outlineVariant,
                                     width: 0.5,
                                   ),
                                 ),

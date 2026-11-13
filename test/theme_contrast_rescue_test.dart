@@ -528,9 +528,9 @@ void main() {
     expect(service.current.id, AppThemePreset.defaultLight.id);
     expect(resetButton, findsNothing);
     final prefs = await SharedPreferences.getInstance();
-    final saved = jsonDecode(
-      prefs.getString('theme_current_json')!,
-    ) as Map<String, dynamic>;
+    final saved =
+        jsonDecode(prefs.getString('theme_current_json')!)
+            as Map<String, dynamic>;
     expect(
       AppThemePreset.fromJson(saved).textColor,
       AppThemePreset.defaultLight.textColor,

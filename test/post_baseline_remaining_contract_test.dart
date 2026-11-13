@@ -23,8 +23,9 @@ void main() {
   );
 
   test('timeline UI and playback use clip.volume for video audio', () {
-    final source = File('lib/screens/timeline/timeline_screen.dart')
-        .readAsStringSync();
+    final source = File(
+      'lib/screens/timeline/timeline_screen.dart',
+    ).readAsStringSync();
     expect(
       source,
       contains('controller.setVolume(clip.volume.clamp(0.0, 1.0))'),
@@ -33,8 +34,9 @@ void main() {
     // A video is edited in the material edit panel (with the preview in
     // view): its volume slider writes the layer's videoVolume, and the
     // track's clip mirrors it for playback.
-    final panel = File('lib/screens/timeline/widgets/material_edit_panel.dart')
-        .readAsStringSync();
+    final panel = File(
+      'lib/screens/timeline/widgets/material_edit_panel.dart',
+    ).readAsStringSync();
     final videoSection = panel.substring(
       panel.indexOf('Widget _videoSection(Layer layer)'),
     );
@@ -47,8 +49,9 @@ void main() {
   test(
     'text body and outline expose current-color chips and canvas eyedropper',
     () {
-      final source = File('lib/screens/canvas/canvas_screen.dart')
-          .readAsStringSync();
+      final source = File(
+        'lib/screens/canvas/canvas_screen.dart',
+      ).readAsStringSync();
       expect(source, contains('_TextColorEyedropperTarget.body'));
       expect(source, contains('_TextColorEyedropperTarget.outline'));
       expect(source, contains('startTextCanvasEyedropper'));
@@ -62,8 +65,9 @@ void main() {
   test(
     'project serialization stores videoVolume with backward-compatible default',
     () {
-      final source = File('lib/engine/niapro_serializer.dart')
-          .readAsStringSync();
+      final source = File(
+        'lib/engine/niapro_serializer.dart',
+      ).readAsStringSync();
       expect(source, contains("'videoVolume': l.videoVolume"));
       expect(source, contains("(j['videoVolume'] as num?)?.toDouble() ?? 1.0"));
     },

@@ -65,8 +65,9 @@ class IndividualCoinRedemptionAttemptStore {
         final savedId = existing['requestId'];
         final savedVersion = existing['priceVersion'];
         if (savedId is! String ||
-            !RegExp(r'^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$')
-                .hasMatch(savedId) ||
+            !RegExp(
+              r'^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$',
+            ).hasMatch(savedId) ||
             savedVersion is! String ||
             savedVersion.isEmpty) {
           throw StateError('Corrupt unresolved redemption metadata');

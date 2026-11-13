@@ -111,13 +111,15 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
     try {
       if (!await launchUrl(url, mode: LaunchMode.externalApplication) &&
           mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(const SnackBar(content: Text('YouTubeの動画を開けませんでした')));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('YouTubeの動画を開けませんでした')));
       }
     } catch (_) {
       if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(const SnackBar(content: Text('YouTubeの動画を開けませんでした')));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('YouTubeの動画を開けませんでした')));
       }
     }
   }
@@ -136,8 +138,9 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
   ) async {
     if (_aiDisclosureBusy) return;
     final messenger = ScaffoldMessenger.of(context);
-    final failed = AppLocalizations.of(context)!
-        .communityAiImageVideoUpdateFailed;
+    final failed = AppLocalizations.of(
+      context,
+    )!.communityAiImageVideoUpdateFailed;
     setState(() => _aiDisclosureBusy = true);
     try {
       await service.setAiImageVideoDisclosure(workId, value);
@@ -163,8 +166,9 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
   }
 
   void _showComingSoonSnackbar(String message) {
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   void _showAddTagDialog(CommunityService communityService, String workId) {

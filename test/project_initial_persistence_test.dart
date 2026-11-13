@@ -58,33 +58,36 @@ void main() {
     expect(restarted.scenesOf(project.id).single.frames.length, 12);
   });
 
-  test('failed initial storage is reported without publishing a ghost project', () async {
-    final service = ProjectService();
-    addTearDown(service.dispose);
-    var notifications = 0;
-    service.addListener(() => notifications++);
-    documentsAvailable = false;
-    await expectLater(
-      create(service),
-      throwsA(isA<MissingPlatformDirectoryException>()),
-    );
-    expect(service.projects, isEmpty);
-    expect(notifications, 0);
-    documentsAvailable = true;
-    final project = await create(service);
-    expect(service.projects.single.id, project.id);
-    expect(notifications, 1);
-    expect(
-      service.scenesOf(project.id).single.frames.first.layers.single.id,
-      'Layer0001',
-    );
-    expect(
-      File(
-        '${directory.path}/niarim/projects/${project.id}/${project.id}.niapro',
-      ).existsSync(),
-      isTrue,
-    );
-  });
+  test(
+    'failed initial storage is reported without publishing a ghost project',
+    () async {
+      final service = ProjectService();
+      addTearDown(service.dispose);
+      var notifications = 0;
+      service.addListener(() => notifications++);
+      documentsAvailable = false;
+      await expectLater(
+        create(service),
+        throwsA(isA<MissingPlatformDirectoryException>()),
+      );
+      expect(service.projects, isEmpty);
+      expect(notifications, 0);
+      documentsAvailable = true;
+      final project = await create(service);
+      expect(service.projects.single.id, project.id);
+      expect(notifications, 1);
+      expect(
+        service.scenesOf(project.id).single.frames.first.layers.single.id,
+        'Layer0001',
+      );
+      expect(
+        File(
+          '${directory.path}/niarim/projects/${project.id}/${project.id}.niapro',
+        ).existsSync(),
+        isTrue,
+      );
+    },
+  );
 
   test(
     'a filesystem write failure preserves the blocker and allows retry',

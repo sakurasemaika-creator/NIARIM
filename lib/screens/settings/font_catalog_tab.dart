@@ -159,8 +159,9 @@ class _FontCatalogTabState extends State<FontCatalogTab>
       await context.read<FontService>().downloadCatalogFont(entry);
     } on FontDownloadException catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(e.message)));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.message)));
       }
     } finally {
       if (mounted) setState(() => _downloadingIds.remove(entry.id));

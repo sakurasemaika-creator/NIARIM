@@ -51,9 +51,9 @@ void main() {
       final dir = Directory('build/save-slot-visual-audit')
         ..createSync(recursive: true);
       await tester.runAsync(
-        () async =>
-            File('${dir.path}/$name.png')
-                .writeAsBytes(bytes.buffer.asUint8List()),
+        () async => File(
+          '${dir.path}/$name.png',
+        ).writeAsBytes(bytes.buffer.asUint8List()),
       );
     }
 

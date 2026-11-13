@@ -509,32 +509,35 @@ void main() {
     expect(clamped.water, 0);
   });
 
-  test('read-only global pixel sampling crosses tile boundaries without allocating tiles', () {
-    final manager = TileManager(
-      canvasWidth: TileManager.tileSize * 2,
-      canvasHeight: TileManager.tileSize,
-    );
-    expect(
-      manager.getPixelColorAt('layer', TileManager.tileSize + 2, 10),
-      isNull,
-    );
-    expect(manager.exportAll(), isEmpty);
+  test(
+    'read-only global pixel sampling crosses tile boundaries without allocating tiles',
+    () {
+      final manager = TileManager(
+        canvasWidth: TileManager.tileSize * 2,
+        canvasHeight: TileManager.tileSize,
+      );
+      expect(
+        manager.getPixelColorAt('layer', TileManager.tileSize + 2, 10),
+        isNull,
+      );
+      expect(manager.exportAll(), isEmpty);
 
-    final tile = manager.getOrCreateTile('layer', 1, 0);
-    final index = (10 * TileManager.tileSize + 2) * 4;
-    tile[index] = 12;
-    tile[index + 1] = 34;
-    tile[index + 2] = 56;
-    tile[index + 3] = 255;
-    final sampled = manager.getPixelColorAt(
-      'layer',
-      TileManager.tileSize + 2,
-      10,
-    );
+      final tile = manager.getOrCreateTile('layer', 1, 0);
+      final index = (10 * TileManager.tileSize + 2) * 4;
+      tile[index] = 12;
+      tile[index + 1] = 34;
+      tile[index + 2] = 56;
+      tile[index + 3] = 255;
+      final sampled = manager.getPixelColorAt(
+        'layer',
+        TileManager.tileSize + 2,
+        10,
+      );
 
-    expect(sampled, isNotNull);
-    expect(sampled!.red8, 12);
-    expect(sampled.green8, 34);
-    expect(sampled.blue8, 56);
-  });
+      expect(sampled, isNotNull);
+      expect(sampled!.red8, 12);
+      expect(sampled.green8, 34);
+      expect(sampled.blue8, 56);
+    },
+  );
 }

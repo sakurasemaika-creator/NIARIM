@@ -382,8 +382,9 @@ void main() {
     }
     final dir = Directory('build/sphere-shading')..createSync(recursive: true);
     File('${dir.path}/engine_cases.png').writeAsBytesSync(img.encodePng(sheet));
-    File('${dir.path}/engine_cases.txt')
-        .writeAsStringSync([for (final c in cases) c.$1].join('\n'));
+    File(
+      '${dir.path}/engine_cases.txt',
+    ).writeAsStringSync([for (final c in cases) c.$1].join('\n'));
     // The two modes look different, and both differ from the original.
     expect(cases[1].$2, isNot(orderedEquals(base)));
     expect(cases[2].$2, isNot(orderedEquals(cases[1].$2)));

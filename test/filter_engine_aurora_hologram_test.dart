@@ -467,9 +467,9 @@ void main() {
     int luminance((double, int, int, int) s) =>
         ((299 * s.$2 + 587 * s.$3 + 114 * s.$4) / 1000).round();
     for (final preset in [AuroraHologramPreset.silverFoil]) {
-      final high = auroraHologramStops(preset)
-          .where((s) => s.$1 >= 0.88)
-          .toList();
+      final high = auroraHologramStops(
+        preset,
+      ).where((s) => s.$1 >= 0.88).toList();
       expect(
         high.map(luminance).reduce((a, b) => a < b ? a : b),
         greaterThanOrEqualTo(200),

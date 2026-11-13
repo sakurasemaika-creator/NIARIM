@@ -48,10 +48,9 @@ void main() {
   test('beam bleed smears the picture sideways only', () {
     final crisp = engine.applyCrt(bar(), w, h, 0, aberration: 0, bleed: 0);
     final smeared = engine.applyCrt(bar(), w, h, 0, aberration: 0, bleed: 100);
-    int lit(Uint8List rgba) =>
-        [for (var x = 0; x < w; x++) rgba[(4 * w + x) * 4 + 1]]
-            .where((v) => v > 8)
-            .length;
+    int lit(Uint8List rgba) => [
+      for (var x = 0; x < w; x++) rgba[(4 * w + x) * 4 + 1],
+    ].where((v) => v > 8).length;
     expect(lit(crisp), 1);
     expect(lit(smeared), greaterThanOrEqualTo(5));
     // Every row smears the same way: nothing bleeds up or down.

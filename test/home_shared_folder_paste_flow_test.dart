@@ -63,8 +63,9 @@ void main() {
     final output = Directory('build/home-clipboard-captures')
       ..createSync(recursive: true);
     await tester.runAsync(() async {
-      await File(output.path + '/' + name + '.png')
-          .writeAsBytes(bytes!, flush: true);
+      await File(
+        output.path + '/' + name + '.png',
+      ).writeAsBytes(bytes!, flush: true);
     });
   }
 

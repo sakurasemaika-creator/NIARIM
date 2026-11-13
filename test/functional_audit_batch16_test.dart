@@ -82,7 +82,8 @@ void main() {
     expect(
       pixel,
       isNot(orderedEquals(normal)),
-      reason: 'pixelMode should alter the texture geometry/color processing without resetting opacity',
+      reason:
+          'pixelMode should alter the texture geometry/color processing without resetting opacity',
     );
   });
 

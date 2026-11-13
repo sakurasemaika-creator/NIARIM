@@ -361,8 +361,9 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
         await _storeThumbnail(File(path));
       } on Object catch (error) {
         if (mounted) {
-          ScaffoldMessenger.of(context)
-              .showSnackBar(SnackBar(content: Text('画像を選択できませんでした: $error')));
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('画像を選択できませんでした: $error')));
         }
       }
     }
@@ -433,8 +434,9 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
       }
     } on Object catch (error) {
       if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('フレーム取得に失敗しました: $error')));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('フレーム取得に失敗しました: $error')));
       }
     }
   }
@@ -850,8 +852,9 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
     final message = error == CommunityFieldCopyError.invalidYoutubeDescription
         ? labels.youtubeDescriptionInvalid
         : labels.copyTooLong(maxLength);
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   @override
@@ -887,8 +890,9 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
                   enabled:
                       !_busy && !_restoringPending && retainedVideoId == null,
                   maxLength: 100,
-                  label: CommunityWorkMetadataLabels.of(context)
-                      .copyTitleToYoutube,
+                  label: CommunityWorkMetadataLabels.of(
+                    context,
+                  ).copyTitleToYoutube,
                   onError: _showCopyError,
                 ),
                 const SizedBox(height: 12),
@@ -898,8 +902,9 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
                   enabled: !_busy && retainedVideoId == null,
                   maxLength: 100,
                   decoration: InputDecoration(
-                    labelText: CommunityWorkMetadataLabels.of(context)
-                        .youtubeTitle,
+                    labelText: CommunityWorkMetadataLabels.of(
+                      context,
+                    ).youtubeTitle,
                     border: const OutlineInputBorder(),
                   ),
                 ),
@@ -910,8 +915,9 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
                   enabled:
                       !_busy && !_restoringPending && retainedVideoId == null,
                   maxLength: 100,
-                  label: CommunityWorkMetadataLabels.of(context)
-                      .copyTitleToNiarim,
+                  label: CommunityWorkMetadataLabels.of(
+                    context,
+                  ).copyTitleToNiarim,
                   onError: _showCopyError,
                 ),
                 const SizedBox(height: 12),
@@ -923,10 +929,12 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
                   maxLines: 5,
                   maxLength: 2000,
                   decoration: InputDecoration(
-                    labelText: CommunityWorkMetadataLabels.of(context)
-                        .description,
-                    hintText: CommunityWorkMetadataLabels.of(context)
-                        .descriptionHint,
+                    labelText: CommunityWorkMetadataLabels.of(
+                      context,
+                    ).description,
+                    hintText: CommunityWorkMetadataLabels.of(
+                      context,
+                    ).descriptionHint,
                     border: const OutlineInputBorder(),
                   ),
                 ),
@@ -938,8 +946,9 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
                       !_busy && !_restoringPending && retainedVideoId == null,
                   maxLength: 5000,
                   youtubeDescription: true,
-                  label: CommunityWorkMetadataLabels.of(context)
-                      .copyDescriptionToYoutube,
+                  label: CommunityWorkMetadataLabels.of(
+                    context,
+                  ).copyDescriptionToYoutube,
                   onError: _showCopyError,
                 ),
                 const SizedBox(height: 12),
@@ -951,10 +960,12 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
                   maxLines: 5,
                   maxLength: 5000,
                   decoration: InputDecoration(
-                    labelText: CommunityWorkMetadataLabels.of(context)
-                        .youtubeDescription,
-                    hintText: CommunityWorkMetadataLabels.of(context)
-                        .youtubeDescriptionHint,
+                    labelText: CommunityWorkMetadataLabels.of(
+                      context,
+                    ).youtubeDescription,
+                    hintText: CommunityWorkMetadataLabels.of(
+                      context,
+                    ).youtubeDescriptionHint,
                     border: const OutlineInputBorder(),
                   ),
                 ),
@@ -965,8 +976,9 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
                   enabled:
                       !_busy && !_restoringPending && retainedVideoId == null,
                   maxLength: 2000,
-                  label: CommunityWorkMetadataLabels.of(context)
-                      .copyDescriptionToNiarim,
+                  label: CommunityWorkMetadataLabels.of(
+                    context,
+                  ).copyDescriptionToNiarim,
                   onError: _showCopyError,
                 ),
                 const SizedBox(height: 12),

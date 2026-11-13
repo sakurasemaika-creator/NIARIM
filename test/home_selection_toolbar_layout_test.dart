@@ -42,8 +42,9 @@ void main() {
         supportedLocales: AppLocalizations.supportedLocales,
         theme: theme,
         builder: (context, child) => MediaQuery(
-          data: MediaQuery.of(context)
-              .copyWith(textScaler: TextScaler.linear(scale)),
+          data: MediaQuery.of(
+            context,
+          ).copyWith(textScaler: TextScaler.linear(scale)),
           child: child!,
         ),
         home: Scaffold(
@@ -198,8 +199,9 @@ void main() {
             Icons.content_copy,
             Icons.delete,
           ]) {
-            final actual = IconTheme.of(tester.element(find.byIcon(icon)))
-                .color;
+            final actual = IconTheme.of(
+              tester.element(find.byIcon(icon)),
+            ).color;
             expect(
               actual,
               icon == Icons.delete ? preset.accentColor : preset.menuTextColor,
@@ -399,7 +401,8 @@ void main() {
               .widget<Text>(find.byKey(const Key('home-selection-count')))
               .data,
           '$count',
-          reason: 'Select All must use the visible scope, including filters and excluding shared imports.',
+          reason:
+              'Select All must use the visible scope, including filters and excluding shared imports.',
         );
       }
 

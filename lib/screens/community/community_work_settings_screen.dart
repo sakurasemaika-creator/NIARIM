@@ -176,8 +176,9 @@ class _CommunityWorkSettingsScreenState
           description: saved['description']!,
         );
         if (mounted) {
-          ScaffoldMessenger.of(context)
-              .showSnackBar(SnackBar(content: Text(labels.saved)));
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(labels.saved)));
         }
       } finally {
         titleController.dispose();

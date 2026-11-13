@@ -483,16 +483,17 @@ void main() {
       await share(tester, control);
       expect(find.text(env.l10n.communityErrorGeneric), findsOneWidget);
       var undone = false;
-      ScaffoldMessenger.of(tester.element(find.byType(HomeScreen)))
-          .showSnackBar(
-            SnackBar(
-              content: const Text('AUDIT unrelated action'),
-              action: SnackBarAction(
-                label: 'AUDIT Undo',
-                onPressed: () => undone = true,
-              ),
-            ),
-          );
+      ScaffoldMessenger.of(
+        tester.element(find.byType(HomeScreen)),
+      ).showSnackBar(
+        SnackBar(
+          content: const Text('AUDIT unrelated action'),
+          action: SnackBarAction(
+            label: 'AUDIT Undo',
+            onPressed: () => undone = true,
+          ),
+        ),
+      );
       await tester.pumpAndSettle();
       expect(find.text('AUDIT unrelated action'), findsOneWidget);
       failure = null;

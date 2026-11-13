@@ -39,8 +39,9 @@ void main() {
       final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
       image.dispose();
       Directory(directory).createSync(recursive: true);
-      File('$directory/$filename.png')
-          .writeAsBytesSync(bytes!.buffer.asUint8List());
+      File(
+        '$directory/$filename.png',
+      ).writeAsBytesSync(bytes!.buffer.asUint8List());
     });
   }
 

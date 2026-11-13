@@ -152,9 +152,9 @@ void main() {
       final output = Directory('build/thumbnail-editor-actual-app')
         ..createSync(recursive: true);
       await tester.runAsync(
-        () =>
-            File(output.path + '/' + name + '.png')
-                .writeAsBytes(png!, flush: true),
+        () => File(
+          output.path + '/' + name + '.png',
+        ).writeAsBytes(png!, flush: true),
       );
       print('ACTUAL_APP_CAPTURE: ' + name);
     }

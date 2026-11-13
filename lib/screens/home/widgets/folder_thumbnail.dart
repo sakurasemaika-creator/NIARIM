@@ -366,11 +366,12 @@ String _folderCoverText(BuildContext context, String key) {
   }
 }
 
-typedef SaveFolderThumbnail = Future<void> Function({
-  required String mode,
-  String? sourceId,
-  String? imagePath,
-});
+typedef SaveFolderThumbnail =
+    Future<void> Function({
+      required String mode,
+      String? sourceId,
+      String? imagePath,
+    });
 
 /// Four mutually exclusive radio choices. The custom image is copied into
 /// app-owned storage only after Apply, so Cancel does not mutate metadata.
@@ -604,8 +605,9 @@ Future<void> showFolderThumbnailDialog(
                                     final bytes =
                                         picked.bytes ??
                                         (picked.path != null
-                                            ? await File(picked.path!)
-                                                  .readAsBytes()
+                                            ? await File(
+                                                picked.path!,
+                                              ).readAsBytes()
                                             : null);
                                     if (bytes == null ||
                                         bytes.isEmpty ||

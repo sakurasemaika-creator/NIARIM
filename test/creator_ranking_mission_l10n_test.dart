@@ -548,9 +548,9 @@ void main() {
   }
 
   test('フランス語のミッション・報酬の文は句読点の前で改行しない空白を使う', () {
-    final arb = jsonDecode(
-      File('lib/l10n/app_fr.arb').readAsStringSync(),
-    ) as Map<String, dynamic>;
+    final arb =
+        jsonDecode(File('lib/l10n/app_fr.arb').readAsStringSync())
+            as Map<String, dynamic>;
     final checked = <String>[];
     final problems = <String>[];
     for (final MapEntry(:key, :value) in arb.entries) {
@@ -571,9 +571,9 @@ void main() {
       '間に改行しない空白を使う', () {
     final problems = <String>[];
     for (final locale in ['fr', 'es']) {
-      final arb = jsonDecode(
-        File('lib/l10n/app_$locale.arb').readAsStringSync(),
-      ) as Map<String, dynamic>;
+      final arb =
+          jsonDecode(File('lib/l10n/app_$locale.arb').readAsStringSync())
+              as Map<String, dynamic>;
       var checked = 0;
       for (final MapEntry(:key, :value) in arb.entries) {
         if (key.startsWith('@') || value is! String) continue;

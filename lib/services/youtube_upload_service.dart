@@ -12,10 +12,8 @@ class YoutubeUploadResult {
   final String videoId;
 }
 
-typedef YoutubeUploadProgress = void Function(
-  int uploadedBytes,
-  int totalBytes,
-);
+typedef YoutubeUploadProgress =
+    void Function(int uploadedBytes, int totalBytes);
 
 /// YouTube Data API v3へ動画を直接アップロードするクライアント。
 ///

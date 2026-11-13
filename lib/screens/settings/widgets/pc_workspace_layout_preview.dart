@@ -572,8 +572,9 @@ class _PcWorkspaceLayoutPreviewState extends State<PcWorkspaceLayoutPreview> {
                             ),
                             IconButton(
                               key: ValueKey('pcPreviewCollapse-${panel.name}'),
-                              tooltip: AppLocalizations.of(context)!
-                                  .filterPanelCollapse,
+                              tooltip: AppLocalizations.of(
+                                context,
+                              )!.filterPanelCollapse,
                               constraints: const BoxConstraints.tightFor(
                                 width: 36,
                                 height: 32,

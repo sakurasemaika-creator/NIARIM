@@ -194,8 +194,9 @@ void main() {
       final dir = Directory('build/thumbnail-editor-visual-audit')
         ..createSync(recursive: true);
       await tester.runAsync(() async {
-        await File(dir.path + '/' + name + '.png')
-            .writeAsBytes(png!, flush: true);
+        await File(
+          dir.path + '/' + name + '.png',
+        ).writeAsBytes(png!, flush: true);
       });
     }
 

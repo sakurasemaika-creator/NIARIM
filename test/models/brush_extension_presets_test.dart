@@ -33,22 +33,25 @@ void main() {
     expect(net.tipShape, BrushTipShape.hollowSquare);
   });
 
-  test('hair preset uses current fill, outline, straight fold and 30% endpoint wave', () {
-    final hair = brushExtensionPresets().singleWhere(
-      (b) => b.id == 'Brush0023',
-    );
-    expect(hair.name, '髪の毛');
-    expect(hair.outlineEnabled, isTrue);
-    expect(hair.outlineColor, 0xff000000);
-    expect(hair.outlineWidth, 1.5);
-    expect(hair.foldEnabled, isTrue);
-    expect(hair.foldTriggerAngle, 90);
-    expect(hair.foldCurveStartRatio, 0);
-    expect(hair.foldAngleRatio, .5);
-    expect(hair.foldLengthRatio, .5);
-    expect(hair.foldEndTaperRatio, .35);
-    expect(hair.toJson().containsKey('fillColor'), isFalse);
-  });
+  test(
+    'hair preset uses current fill, outline, straight fold and 30% endpoint wave',
+    () {
+      final hair = brushExtensionPresets().singleWhere(
+        (b) => b.id == 'Brush0023',
+      );
+      expect(hair.name, '髪の毛');
+      expect(hair.outlineEnabled, isTrue);
+      expect(hair.outlineColor, 0xff000000);
+      expect(hair.outlineWidth, 1.5);
+      expect(hair.foldEnabled, isTrue);
+      expect(hair.foldTriggerAngle, 90);
+      expect(hair.foldCurveStartRatio, 0);
+      expect(hair.foldAngleRatio, .5);
+      expect(hair.foldLengthRatio, .5);
+      expect(hair.foldEndTaperRatio, .35);
+      expect(hair.toJson().containsKey('fillColor'), isFalse);
+    },
+  );
 
   test(
     'bangs preset uses multiple random textures and keeps wave disabled',

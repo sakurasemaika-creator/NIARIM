@@ -992,8 +992,9 @@ class _TreeView extends StatelessWidget {
           padding: EdgeInsets.only(left: (depth + 1) * 24.0),
           child: ListTile(
             selected: isSelected,
-            selectedTileColor: Theme.of(context).colorScheme.primaryContainer
-                .withValues(alpha: 0.3),
+            selectedTileColor: Theme.of(
+              context,
+            ).colorScheme.primaryContainer.withValues(alpha: 0.3),
             leading: _SaveNodeThumbnail(node: node, size: 40),
             title: Row(
               children: [

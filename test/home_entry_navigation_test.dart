@@ -112,8 +112,9 @@ void main() {
               .toImage();
       final data = await image.toByteData(format: ui.ImageByteFormat.png);
       final directory = Directory(captureRoot)..createSync(recursive: true);
-      File('${directory.path}/$name.png')
-          .writeAsBytesSync(data!.buffer.asUint8List());
+      File(
+        '${directory.path}/$name.png',
+      ).writeAsBytesSync(data!.buffer.asUint8List());
       image.dispose();
     });
     manifest.add({
@@ -394,8 +395,9 @@ void main() {
     final fabs = find.byType(FloatingActionButton);
     expect(fabs, findsNWidgets(2));
     final scrollFab = tester.widget<FloatingActionButton>(scrollFinder);
-    final fabTheme = Theme.of(tester.element(scrollFinder))
-        .floatingActionButtonTheme;
+    final fabTheme = Theme.of(
+      tester.element(scrollFinder),
+    ).floatingActionButtonTheme;
     final scrollShape = scrollFab.shape ?? fabTheme.shape;
     expect(scrollFab.elevation ?? fabTheme.elevation, 0);
     expect(scrollShape, isA<CircleBorder>());
@@ -517,8 +519,9 @@ void main() {
         ),
       ]) {
         await open(tester, theme: theme);
-        final scheme = Theme.of(tester.element(find.byType(HomeScreen)))
-            .colorScheme;
+        final scheme = Theme.of(
+          tester.element(find.byType(HomeScreen)),
+        ).colorScheme;
         for (final index in [0, 1, 2, 3]) {
           await switchTab(tester, index);
           final tab = find.byKey(ValueKey('home_tab_$index'));

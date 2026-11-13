@@ -143,8 +143,9 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     if (!_nameInitialized) {
-      _nameController.text = AppLocalizations.of(context)!
-          .newProjectDefaultName;
+      _nameController.text = AppLocalizations.of(
+        context,
+      )!.newProjectDefaultName;
       _nameInitialized = true;
     }
   }
@@ -584,9 +585,9 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                     aspectRatio: _exportWidth / _exportHeight,
                     child: DecoratedBox(
                       decoration: BoxDecoration(
-                        color: Theme.of(context)
-                            .colorScheme
-                            .surfaceContainerHighest,
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.surfaceContainerHighest,
                         border: Border.all(
                           color: Theme.of(context).colorScheme.outline,
                         ),

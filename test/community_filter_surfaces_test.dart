@@ -284,8 +284,9 @@ void main() {
   );
 
   test('recovery and idempotent replies re-send the chosen AI flag', () {
-    final source = File('lib/screens/community/community_post_screen.dart')
-        .readAsStringSync();
+    final source = File(
+      'lib/screens/community/community_post_screen.dart',
+    ).readAsStringSync();
     // An already registered work whose stored flag differs is patched
     // before the recovered registration finishes…
     final recovered = source.indexOf('if (work.workId != videoId) continue;');

@@ -6,8 +6,9 @@ void main() {
   late String source;
 
   setUpAll(() {
-    source = File('lib/screens/canvas/widgets/canvas_area.dart')
-        .readAsStringSync();
+    source = File(
+      'lib/screens/canvas/widgets/canvas_area.dart',
+    ).readAsStringSync();
   });
 
   String methodBody(String signature, String nextMarker) {

@@ -121,9 +121,9 @@ void main() {
             return data!.buffer.asUint8List();
           });
           await tester.runAsync(
-            () =>
-                File('${output.path}/${width}dp-$name.png')
-                    .writeAsBytes(bytes!),
+            () => File(
+              '${output.path}/${width}dp-$name.png',
+            ).writeAsBytes(bytes!),
           );
         }
 
@@ -373,12 +373,14 @@ void main() {
           await tester.pumpAndSettle();
           expect(find.byType(GuideHubScreen), findsOneWidget);
           await shot('10-guide-help');
-          DefaultTabController.of(tester.element(find.byType(TabBar).first))
-              .animateTo(0);
+          DefaultTabController.of(
+            tester.element(find.byType(TabBar).first),
+          ).animateTo(0);
           await settleTabAnimation();
           expect(
-            DefaultTabController.of(tester.element(find.byType(TabBar).first))
-                .index,
+            DefaultTabController.of(
+              tester.element(find.byType(TabBar).first),
+            ).index,
             0,
           );
           await shot('11-guide-tips');
@@ -393,8 +395,9 @@ void main() {
           // Always preserve the independently verified home/share captures.
           if (find.byType(CoinBenefitsScreen).evaluate().isNotEmpty) {
             for (var i = 0; i < 3; i++) {
-              DefaultTabController.of(tester.element(find.byType(TabBar).first))
-                  .animateTo(i);
+              DefaultTabController.of(
+                tester.element(find.byType(TabBar).first),
+              ).animateTo(i);
               await settleTabAnimation();
               expect(
                 DefaultTabController.of(
@@ -412,8 +415,9 @@ void main() {
         );
         await tester.pumpWidget(const SizedBox.shrink());
       }
-      File('${output.path}/matrix.txt')
-          .writeAsStringSync(rows.join('\n') + '\n');
+      File(
+        '${output.path}/matrix.txt',
+      ).writeAsStringSync(rows.join('\n') + '\n');
     },
     timeout: const Timeout(Duration(minutes: 8)),
   );

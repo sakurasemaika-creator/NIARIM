@@ -528,8 +528,9 @@ class ToolbarWidget extends StatelessWidget {
                     ),
                     const Divider(height: 1),
                     Theme(
-                      data: Theme.of(ctx)
-                          .copyWith(dividerColor: Colors.transparent),
+                      data: Theme.of(
+                        ctx,
+                      ).copyWith(dividerColor: Colors.transparent),
                       child: ExpansionTile(
                         dense: true,
                         leading: const Icon(Icons.tune, size: 18),

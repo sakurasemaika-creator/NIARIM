@@ -6,8 +6,9 @@ void main() {
   test(
     'canvas root wires brush outline eyedropper into composite sampling',
     () {
-      final source = File('lib/screens/canvas/canvas_screen.dart')
-          .readAsStringSync();
+      final source = File(
+        'lib/screens/canvas/canvas_screen.dart',
+      ).readAsStringSync();
 
       expect(source, contains('_pendingBrushOutlineEyedropper'));
       expect(
@@ -33,8 +34,9 @@ void main() {
   test(
     'brush settings dismisses modal sheet before canvas outline sampling',
     () {
-      final source = File('lib/screens/canvas/widgets/brush_panel.dart')
-          .readAsStringSync();
+      final source = File(
+        'lib/screens/canvas/widgets/brush_panel.dart',
+      ).readAsStringSync();
 
       final methodStart = source.indexOf(
         'Future<void> _eyedropOutlineColor() async',

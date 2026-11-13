@@ -23,9 +23,9 @@ void main() {
       expect(json['foldCrescentDepthThreshold'], 1);
       json['foldCrescentDepthThreshold'] = .35;
       expect(
-        Brush.fromJson(json)
-            .copyWith(name: 'My crescent')
-            .toJson()['foldCrescentDepthThreshold'],
+        Brush.fromJson(
+          json,
+        ).copyWith(name: 'My crescent').toJson()['foldCrescentDepthThreshold'],
         .35,
       );
       json['foldCrescentDepthThreshold'] = 10;

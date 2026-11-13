@@ -15,11 +15,16 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 const _clauses = <String, String>{
-  'ja': '開発者は、ユーザーが作成または投稿したコンテンツ、プロジェクトデータその他の制作データを、生成AIモデルその他の機械学習モデルの学習データとして利用しません。',
-  'en': 'The developer does not use content created or published by users, project data, or other creation data as training data for generative AI models or other machine-learning models.',
-  'es': 'El desarrollador no utiliza el contenido creado o publicado por los usuarios, los datos de proyectos ni otros datos de creación como datos de entrenamiento para modelos de IA generativa u otros modelos de aprendizaje automático.',
-  'fr': "Le développeur n’utilise pas les contenus créés ou publiés par les utilisateurs, les données de projet ni les autres données de création comme données d’entraînement pour des modèles d’IA générative ou d’autres modèles d’apprentissage automatique.",
-  'ko': '개발자는 사용자가 제작하거나 게시한 콘텐츠, 프로젝트 데이터 및 기타 제작 데이터를 생성형 AI 모델 또는 기타 머신러닝 모델의 학습 데이터로 사용하지 않습니다.',
+  'ja':
+      '開発者は、ユーザーが作成または投稿したコンテンツ、プロジェクトデータその他の制作データを、生成AIモデルその他の機械学習モデルの学習データとして利用しません。',
+  'en':
+      'The developer does not use content created or published by users, project data, or other creation data as training data for generative AI models or other machine-learning models.',
+  'es':
+      'El desarrollador no utiliza el contenido creado o publicado por los usuarios, los datos de proyectos ni otros datos de creación como datos de entrenamiento para modelos de IA generativa u otros modelos de aprendizaje automático.',
+  'fr':
+      "Le développeur n’utilise pas les contenus créés ou publiés par les utilisateurs, les données de projet ni les autres données de création comme données d’entraînement pour des modèles d’IA générative ou d’autres modèles d’apprentissage automatique.",
+  'ko':
+      '개발자는 사용자가 제작하거나 게시한 콘텐츠, 프로젝트 데이터 및 기타 제작 데이터를 생성형 AI 모델 또는 기타 머신러닝 모델의 학습 데이터로 사용하지 않습니다.',
   'zh': '开发者不会将用户创作或发布的内容、项目数据及其他创作数据，用作生成式 AI 模型或其他机器学习模型的训练数据。',
   'zh_Hant': '開發者不會將使用者創作或發布的內容、專案資料及其他創作資料，用作生成式 AI 模型或其他機器學習模型的訓練資料。',
 };

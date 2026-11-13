@@ -136,10 +136,8 @@ class BlendModePreview extends StatelessWidget {
 
 /// What the canvas would look like with the layer in a blend mode: a
 /// picture of the frame, or null when it cannot be drawn.
-typedef BlendModeCanvasPreview = Future<ui.Image?> Function(
-  LayerBlendMode mode,
-  int maxSize,
-);
+typedef BlendModeCanvasPreview =
+    Future<ui.Image?> Function(LayerBlendMode mode, int maxSize);
 
 /// The blend modes as tiles in two columns, each mode's name above a
 /// picture of its look. Tapping a tile picks the mode and, with [preview],

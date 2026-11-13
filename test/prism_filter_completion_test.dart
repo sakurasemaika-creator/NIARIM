@@ -150,8 +150,9 @@ void main() {
 
       final out = Directory('build/visual-reaudit/prism')
         ..createSync(recursive: true);
-      File('${out.path}/prism_default17_vertical_linear_dodge_background.png')
-          .writeAsBytesSync(proof.png!.buffer.asUint8List());
+      File(
+        '${out.path}/prism_default17_vertical_linear_dodge_background.png',
+      ).writeAsBytesSync(proof.png!.buffer.asUint8List());
 
       final horizontalPrism = engine.apply(
         source,
@@ -174,8 +175,9 @@ void main() {
         return png;
       });
       expect(horizontalPng, isNotNull);
-      File('${out.path}/prism_default17_horizontal_linear_dodge_background.png')
-          .writeAsBytesSync(horizontalPng!.buffer.asUint8List());
+      File(
+        '${out.path}/prism_default17_horizontal_linear_dodge_background.png',
+      ).writeAsBytesSync(horizontalPng!.buffer.asUint8List());
       tm.dispose();
     },
   );

@@ -240,7 +240,8 @@ void main() {
       }
     }
     final dir = Directory('build/brush-mixing')..createSync(recursive: true);
-    File('${dir.path}/watercolor_illustration.png')
-        .writeAsBytesSync(img.encodePng(sheet));
+    File(
+      '${dir.path}/watercolor_illustration.png',
+    ).writeAsBytesSync(img.encodePng(sheet));
   });
 }

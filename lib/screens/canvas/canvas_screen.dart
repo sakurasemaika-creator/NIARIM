@@ -1762,9 +1762,9 @@ class _CanvasScreenState extends State<CanvasScreen> {
                                             borderRadius: BorderRadius.circular(
                                               10,
                                             ),
-                                            color: Theme.of(context)
-                                                .colorScheme
-                                                .inverseSurface,
+                                            color: Theme.of(
+                                              context,
+                                            ).colorScheme.inverseSurface,
                                             child: Padding(
                                               padding:
                                                   const EdgeInsets.symmetric(
@@ -3844,8 +3844,9 @@ class _CanvasScreenState extends State<CanvasScreen> {
           if (isWideScreen(context))
             PopupMenuButton<CanvasDockPanel>(
               key: const Key('desktopWindowVisibilityMenu'),
-              tooltip: AppLocalizations.of(context)!
-                  .pcWorkspaceLayoutScreenTitle,
+              tooltip: AppLocalizations.of(
+                context,
+              )!.pcWorkspaceLayoutScreenTitle,
               icon: const Icon(Icons.view_sidebar_outlined, size: 22),
               onSelected: (panel) =>
                   _setDesktopPanelVisible(panel, !_desktopPanelVisible(panel)),

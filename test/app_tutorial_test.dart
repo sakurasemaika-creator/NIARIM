@@ -312,8 +312,9 @@ void main() {
                   supportedLocales: AppLocalizations.supportedLocales,
                   theme: themes.themeData,
                   builder: (context, child) => MediaQuery(
-                    data: MediaQuery.of(context)
-                        .copyWith(textScaler: TextScaler.linear(scale)),
+                    data: MediaQuery.of(
+                      context,
+                    ).copyWith(textScaler: TextScaler.linear(scale)),
                     child: child!,
                   ),
                   home: Builder(

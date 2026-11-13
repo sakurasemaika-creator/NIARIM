@@ -53,8 +53,10 @@ void main() {
       expect(restored.copyWith(accentTextColor: null).accentTextColor, isNull);
       // 型の違う値は未指定として読む。
       expect(
-        AppThemePreset.fromJson({...chosen.toJson(), 'accentTextColor': 'red'})
-            .accentTextColor,
+        AppThemePreset.fromJson({
+          ...chosen.toJson(),
+          'accentTextColor': 'red',
+        }).accentTextColor,
         isNull,
       );
     });

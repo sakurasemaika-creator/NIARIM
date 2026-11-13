@@ -329,9 +329,9 @@ void _fill(TileManager tm, String key, ui.Color c, {int inset = 0}) {
   tm.markDirty(key, 0, 0);
 }
 
-Future<Uint8List> _rgba(ui.Image image) async =>
-    (await image.toByteData(format: ui.ImageByteFormat.rawRgba))!.buffer
-        .asUint8List();
+Future<Uint8List> _rgba(ui.Image image) async => (await image.toByteData(
+  format: ui.ImageByteFormat.rawRgba,
+))!.buffer.asUint8List();
 
 Future<void> _save(ui.Image image, String path) async {
   final data = await image.toByteData(format: ui.ImageByteFormat.png);

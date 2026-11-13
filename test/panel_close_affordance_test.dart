@@ -4,8 +4,9 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   test('floating tool panels use a small top-right close affordance', () {
-    final source = File('lib/screens/canvas/widgets/panel_close_bar.dart')
-        .readAsStringSync();
+    final source = File(
+      'lib/screens/canvas/widgets/panel_close_bar.dart',
+    ).readAsStringSync();
 
     expect(source, contains('Alignment.centerRight'));
     expect(source, contains('Icons.close, size: 18'));
@@ -15,8 +16,9 @@ void main() {
   });
 
   test('mobile floating panels dismiss when tapping outside', () {
-    final source = File('lib/screens/canvas/canvas_screen.dart')
-        .readAsStringSync();
+    final source = File(
+      'lib/screens/canvas/canvas_screen.dart',
+    ).readAsStringSync();
 
     // スマホの画面だけ（PC/DeXモードは別の作業画面`_buildPcWorkspace`で、
     // パネルはドックに入るので外側を押して閉じる幕は要らない）。

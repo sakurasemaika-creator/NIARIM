@@ -102,8 +102,9 @@ void main() {
       await tester.pump(const Duration(milliseconds: 500));
     }
 
-    GoRouter.of(tester.element(find.byType(Scaffold).first))
-        .push('/new-project');
+    GoRouter.of(
+      tester.element(find.byType(Scaffold).first),
+    ).push('/new-project');
     await tester.pump(const Duration(milliseconds: 600));
     final create = find.widgetWithText(FilledButton, '作成', skipOffstage: false);
     await tester.dragUntilVisible(
@@ -119,8 +120,9 @@ void main() {
         .element(find.byType(Scaffold).first)
         .read<ProjectService>();
     final project = projectService.projects.first;
-    GoRouter.of(tester.element(find.byType(Scaffold).first))
-        .go('/canvas/${project.id}');
+    GoRouter.of(
+      tester.element(find.byType(Scaffold).first),
+    ).go('/canvas/${project.id}');
     await tester.pump(const Duration(milliseconds: 700));
 
     final canvas = find.byType(CanvasScreen);

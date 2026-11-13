@@ -151,9 +151,9 @@ void main() {
       final folder = Directory('build/home-four-tab-captures')
         ..createSync(recursive: true);
       await tester.runAsync(
-        () =>
-            File(folder.path + '/' + name + '.png')
-                .writeAsBytes(bytes!, flush: true),
+        () => File(
+          folder.path + '/' + name + '.png',
+        ).writeAsBytes(bytes!, flush: true),
       );
       // ignore: avoid_print
       print('FOUR_TAB_CAPTURE: ' + name);

@@ -46,8 +46,9 @@ void main() {
       final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
       image.dispose();
       final directory = Directory(output)..createSync(recursive: true);
-      File('${directory.path}/$fileName.png')
-          .writeAsBytesSync(bytes!.buffer.asUint8List());
+      File(
+        '${directory.path}/$fileName.png',
+      ).writeAsBytesSync(bytes!.buffer.asUint8List());
     });
   }
 
@@ -180,8 +181,9 @@ void main() {
     await capture(root, '11_individual_delete_confirmation', tester);
     await tester.tap(find.text(l10n.commonCancel));
     await tester.pumpAndSettle();
-    Navigator.of(tester.element(find.byType(CommunityWorkSettingsScreen)))
-        .pop();
+    Navigator.of(
+      tester.element(find.byType(CommunityWorkSettingsScreen)),
+    ).pop();
     await tester.pumpAndSettle();
 
     // Direct access to the author's public-facing works list.

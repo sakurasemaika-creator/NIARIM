@@ -284,8 +284,9 @@ class CommunityWorkCard extends StatelessWidget {
                       // count, bookmark action and menu left-to-right.
                       Text(
                         isUnavailable
-                            ? CommunityPlazaLabels.of(context)
-                                  .unavailablePlaceholder
+                            ? CommunityPlazaLabels.of(
+                                context,
+                              ).unavailablePlaceholder
                             : isMuted
                             ? CommunityPlazaLabels.of(context).mutedPlaceholder
                             : work.title,
@@ -405,10 +406,12 @@ class CommunityWorkCard extends StatelessWidget {
                                   padding: EdgeInsets.zero,
                                   iconSize: CollectionActionFrame.glyphSize,
                                   tooltip: isMuted
-                                      ? CommunityPlazaLabels.of(context)
-                                            .unmuteWork
-                                      : CommunityPlazaLabels.of(context)
-                                            .muteWork,
+                                      ? CommunityPlazaLabels.of(
+                                          context,
+                                        ).unmuteWork
+                                      : CommunityPlazaLabels.of(
+                                          context,
+                                        ).muteWork,
                                   icon: Icon(Icons.more_vert, color: textColor),
                                   onSelected: (_) => onMuteToggle!(),
                                   itemBuilder: (_) => [
@@ -416,10 +419,12 @@ class CommunityWorkCard extends StatelessWidget {
                                       value: isMuted ? 'unmute' : 'mute',
                                       child: Text(
                                         isMuted
-                                            ? CommunityPlazaLabels.of(context)
-                                                  .unmuteWork
-                                            : CommunityPlazaLabels.of(context)
-                                                  .muteWork,
+                                            ? CommunityPlazaLabels.of(
+                                                context,
+                                              ).unmuteWork
+                                            : CommunityPlazaLabels.of(
+                                                context,
+                                              ).muteWork,
                                       ),
                                     ),
                                   ],

@@ -406,8 +406,9 @@ void main() {
     }
     final dir = Directory('build/background-acclimation-v2')
       ..createSync(recursive: true);
-    File('${dir.path}/character_scenes.png')
-        .writeAsBytesSync(img.encodePng(sheet));
+    File(
+      '${dir.path}/character_scenes.png',
+    ).writeAsBytesSync(img.encodePng(sheet));
   });
 
   test('the setting is saved, restored and 50 for older filters', () {

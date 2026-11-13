@@ -234,8 +234,9 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
 
   void _showSnackBar(String message) {
     // SnackBarThemeData owns the same 18px rounded, shadow-free appearance.
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   /// Why a Google sign-in step failed. A refusal because another account
@@ -716,8 +717,9 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
                                     )
                                   : const Icon(Icons.refresh_outlined),
                               label: Text(
-                                CommunityChannelRefreshLabels.of(context)
-                                    .button,
+                                CommunityChannelRefreshLabels.of(
+                                  context,
+                                ).button,
                               ),
                             ),
                             const SizedBox(height: 8),
@@ -848,8 +850,9 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
                                     Icon(
                                       Icons.video_library_outlined,
                                       size: 56,
-                                      color: AccentTextTheme.of(context)
-                                          .withValues(alpha: 0.55),
+                                      color: AccentTextTheme.of(
+                                        context,
+                                      ).withValues(alpha: 0.55),
                                     ),
                                     const SizedBox(height: 12),
                                     Text(

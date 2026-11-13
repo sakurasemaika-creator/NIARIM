@@ -54,9 +54,9 @@ void main() {
       final output = Directory('build/save-slot-visual-audit')
         ..createSync(recursive: true);
       await tester.runAsync(
-        () async =>
-            File('${output.path}/$name.png')
-                .writeAsBytes(data.buffer.asUint8List()),
+        () async => File(
+          '${output.path}/$name.png',
+        ).writeAsBytes(data.buffer.asUint8List()),
       );
     }
 
@@ -128,8 +128,9 @@ void main() {
     // file presence and never decodes these placeholder blobs.
     await tester.runAsync(() async {
       for (final node in allNodes) {
-        File('${folder.path}/${node.id}.niapro')
-            .writeAsBytesSync([0], flush: false);
+        File(
+          '${folder.path}/${node.id}.niapro',
+        ).writeAsBytesSync([0], flush: false);
       }
       File('${folder.path}/index.json').writeAsStringSync(
         jsonEncode({

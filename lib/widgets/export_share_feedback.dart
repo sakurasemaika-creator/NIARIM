@@ -45,9 +45,9 @@ Future<ShareResult?> shareFilesWithNotice(
   List<XFile> files, {
   required String key,
   List<String>? fileNameOverrides,
-}) =>
-    ExportShareHandles.of(context)
-        .shareFiles(files, key: key, fileNameOverrides: fileNameOverrides);
+}) => ExportShareHandles.of(
+  context,
+).shareFiles(files, key: key, fileNameOverrides: fileNameOverrides);
 
 /// 画面から先に取っておく、知らせる先・文言・共有シートの出どころ。
 ///

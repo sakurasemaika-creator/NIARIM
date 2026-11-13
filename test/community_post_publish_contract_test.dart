@@ -3,13 +3,16 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  final post = File('lib/screens/community/community_post_screen.dart')
-      .readAsStringSync();
-  final work = File('lib/screens/community/community_my_works_screen.dart')
-      .readAsStringSync();
+  final post = File(
+    'lib/screens/community/community_post_screen.dart',
+  ).readAsStringSync();
+  final work = File(
+    'lib/screens/community/community_my_works_screen.dart',
+  ).readAsStringSync();
   final api = File('lib/services/api/community_api.dart').readAsStringSync();
-  final detail = File('lib/screens/community/community_work_detail_screen.dart')
-      .readAsStringSync();
+  final detail = File(
+    'lib/screens/community/community_work_detail_screen.dart',
+  ).readAsStringSync();
 
   test('submission carries YouTube scheduling and preserves the video ID', () {
     expect(post, contains("value: 'scheduled'"));

@@ -410,9 +410,9 @@ void _markCross(TileManager tm, String key, ui.Offset p, ui.Color c) {
   tm.markDirty(key, tx, ty);
 }
 
-Future<Uint8List> _rgba(ui.Image image) async =>
-    (await image.toByteData(format: ui.ImageByteFormat.rawRgba))!.buffer
-        .asUint8List();
+Future<Uint8List> _rgba(ui.Image image) async => (await image.toByteData(
+  format: ui.ImageByteFormat.rawRgba,
+))!.buffer.asUint8List();
 
 Future<void> _save(ui.Image image, String path) async {
   final bytes = await image.toByteData(format: ui.ImageByteFormat.png);

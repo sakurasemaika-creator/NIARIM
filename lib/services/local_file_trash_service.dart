@@ -141,8 +141,9 @@ abstract final class LocalFileTrashService {
       deletedAt: DateTime.now(),
     );
     try {
-      await File('${directory.path}/meta.json')
-          .writeAsString(jsonEncode(entry.toJson()), flush: true);
+      await File(
+        '${directory.path}/meta.json',
+      ).writeAsString(jsonEncode(entry.toJson()), flush: true);
       final saved = await source.copy(entry.archivedPath);
       if (await saved.length() != await source.length()) {
         throw FileSystemException('Incomplete archive copy', source.path);
@@ -235,8 +236,9 @@ abstract final class LocalFileTrashService {
       }
       // Commit the manifest only after all bytes have been verified.
       // A crash during staging must not expose an incomplete Trash item.
-      await File('${directory.path}/meta.json')
-          .writeAsString(jsonEncode(entry.toJson()), flush: true);
+      await File(
+        '${directory.path}/meta.json',
+      ).writeAsString(jsonEncode(entry.toJson()), flush: true);
       for (final source in sources) {
         await source.delete();
         removedAny = true;

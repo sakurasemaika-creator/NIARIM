@@ -276,9 +276,9 @@ void main() {
       final dir = Directory('build/storage-six-slices')
         ..createSync(recursive: true);
       await tester.runAsync(
-        () =>
-            File('${dir.path}/storage_ja_six_categories.png')
-                .writeAsBytes(png!),
+        () => File(
+          '${dir.path}/storage_ja_six_categories.png',
+        ).writeAsBytes(png!),
       );
       debugPrint(
         'STORAGE SIX SLICES CAPTURE: ${dir.path}/storage_ja_six_categories.png',

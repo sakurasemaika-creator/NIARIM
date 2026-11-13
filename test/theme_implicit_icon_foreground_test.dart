@@ -59,8 +59,9 @@ void main() {
                   localizationsDelegates:
                       AppLocalizations.localizationsDelegates,
                   builder: (context, child) => MediaQuery(
-                    data: MediaQuery.of(context)
-                        .copyWith(textScaler: TextScaler.linear(scale)),
+                    data: MediaQuery.of(
+                      context,
+                    ).copyWith(textScaler: TextScaler.linear(scale)),
                     child: child!,
                   ),
                   home: Scaffold(
@@ -90,7 +91,8 @@ void main() {
               expect(
                 paintedColor('panel'),
                 preset.textColor,
-                reason: 'An unqualified folder icon must follow the configured normal foreground',
+                reason:
+                    'An unqualified folder icon must follow the configured normal foreground',
               );
               expect(paintedColor('menu'), preset.menuTextColor);
               expect(paintedColor('filled'), preset.buttonTextColor);

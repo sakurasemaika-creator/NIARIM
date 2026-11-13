@@ -111,8 +111,9 @@ void main() {
         final data = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
         final png = await image.toByteData(format: ui.ImageByteFormat.png);
         Directory('build/blend-display').createSync(recursive: true);
-        File('build/blend-display/canvas.png')
-            .writeAsBytesSync(png!.buffer.asUint8List());
+        File(
+          'build/blend-display/canvas.png',
+        ).writeAsBytesSync(png!.buffer.asUint8List());
         final rect = tester.getRect(find.byType(CanvasArea));
         final x = rect.center.dx.round(), y = rect.center.dy.round();
         final i = (y * image.width + x) * 4;

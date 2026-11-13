@@ -1,6 +1,5 @@
 // ignore: unused_import
 import 'package:intl/intl.dart' as intl;
-
 import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
@@ -8388,8 +8387,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String rewardNavigationMembershipExpiresAt(DateTime expiry) {
-    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(localeName)
-        .add_jm();
+    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(
+      localeName,
+    ).add_jm();
     final String expiryString = expiryDateFormat.format(expiry);
 
     return '有效期至：$expiryString';
@@ -8397,8 +8397,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String rewardNavigationMembershipCoinExpiresAt(DateTime expiry) {
-    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(localeName)
-        .add_jm();
+    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(
+      localeName,
+    ).add_jm();
     final String expiryString = expiryDateFormat.format(expiry);
 
     return '金币解锁 · 有效期至：$expiryString';
@@ -9106,8 +9107,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String rewardUnlockRedeemExtendNotice(DateTime expiry) {
-    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(localeName)
-        .add_jm();
+    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(
+      localeName,
+    ).add_jm();
     final String expiryString = expiryDateFormat.format(expiry);
 
     return '你正在使用 Premium 权益。兑换后有效期预计延长至$expiryString。要继续吗？';
@@ -9115,8 +9117,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String rewardUnlockRedeemExpiryNotice(DateTime expiry) {
-    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(localeName)
-        .add_jm();
+    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(
+      localeName,
+    ).add_jm();
     final String expiryString = expiryDateFormat.format(expiry);
 
     return '兑换后的有效期（参考）：$expiryString';
@@ -9124,8 +9127,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String rewardUnlockReviewPlayPremiumUntil(DateTime expiry) {
-    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(localeName)
-        .add_jm();
+    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(
+      localeName,
+    ).add_jm();
     final String expiryString = expiryDateFormat.format(expiry);
 
     return '你目前是 Premium 会员（至$expiryString）。';
@@ -9137,8 +9141,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String rewardUnlockReviewCoinPremiumUntil(DateTime expiry) {
-    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(localeName)
-        .add_jm();
+    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(
+      localeName,
+    ).add_jm();
     final String expiryString = expiryDateFormat.format(expiry);
 
     return '你正在使用 Premium 权益（至$expiryString）。';
@@ -9156,8 +9161,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String rewardUnlockReviewItem(String benefit, DateTime expiry) {
-    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(localeName)
-        .add_jm();
+    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(
+      localeName,
+    ).add_jm();
     final String expiryString = expiryDateFormat.format(expiry);
 
     return '$benefit：延长后的参考有效期 $expiryString';
@@ -9165,8 +9171,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String rewardUnlockReviewItemOverlap(String benefit, DateTime expiry) {
-    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(localeName)
-        .add_jm();
+    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(
+      localeName,
+    ).add_jm();
     final String expiryString = expiryDateFormat.format(expiry);
 
     return '$benefit：与现有或套餐权益重复。延长后的参考有效期 $expiryString';
@@ -17563,8 +17570,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String rewardNavigationMembershipExpiresAt(DateTime expiry) {
-    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(localeName)
-        .add_jm();
+    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(
+      localeName,
+    ).add_jm();
     final String expiryString = expiryDateFormat.format(expiry);
 
     return '有效期限：$expiryString';
@@ -17572,8 +17580,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String rewardNavigationMembershipCoinExpiresAt(DateTime expiry) {
-    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(localeName)
-        .add_jm();
+    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(
+      localeName,
+    ).add_jm();
     final String expiryString = expiryDateFormat.format(expiry);
 
     return '金幣解鎖 · 有效期限：$expiryString';
@@ -18281,8 +18290,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String rewardUnlockRedeemExtendNotice(DateTime expiry) {
-    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(localeName)
-        .add_jm();
+    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(
+      localeName,
+    ).add_jm();
     final String expiryString = expiryDateFormat.format(expiry);
 
     return '你正在使用 Premium 權益。兌換後有效期限預計延長至$expiryString。要繼續嗎？';
@@ -18290,8 +18300,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String rewardUnlockRedeemExpiryNotice(DateTime expiry) {
-    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(localeName)
-        .add_jm();
+    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(
+      localeName,
+    ).add_jm();
     final String expiryString = expiryDateFormat.format(expiry);
 
     return '兌換後的有效期限（參考）：$expiryString';
@@ -18299,8 +18310,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String rewardUnlockReviewPlayPremiumUntil(DateTime expiry) {
-    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(localeName)
-        .add_jm();
+    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(
+      localeName,
+    ).add_jm();
     final String expiryString = expiryDateFormat.format(expiry);
 
     return '你目前是 Premium 會員（至$expiryString）。';
@@ -18312,8 +18324,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String rewardUnlockReviewCoinPremiumUntil(DateTime expiry) {
-    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(localeName)
-        .add_jm();
+    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(
+      localeName,
+    ).add_jm();
     final String expiryString = expiryDateFormat.format(expiry);
 
     return '你正在使用 Premium 權益（至$expiryString）。';
@@ -18331,8 +18344,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String rewardUnlockReviewItem(String benefit, DateTime expiry) {
-    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(localeName)
-        .add_jm();
+    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(
+      localeName,
+    ).add_jm();
     final String expiryString = expiryDateFormat.format(expiry);
 
     return '$benefit：延長後的參考有效期限 $expiryString';
@@ -18340,8 +18354,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String rewardUnlockReviewItemOverlap(String benefit, DateTime expiry) {
-    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(localeName)
-        .add_jm();
+    final intl.DateFormat expiryDateFormat = intl.DateFormat.yMMMd(
+      localeName,
+    ).add_jm();
     final String expiryString = expiryDateFormat.format(expiry);
 
     return '$benefit：與現有或套餐權益重複。延長後的參考有效期限 $expiryString';

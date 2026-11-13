@@ -247,8 +247,9 @@ class SharedAssetCardService {
       }
     } catch (error) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('共有カードを読み込めませんでした: $error')));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('共有カードを読み込めませんでした: $error')));
       }
     }
   }

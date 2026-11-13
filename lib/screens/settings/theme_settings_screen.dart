@@ -98,9 +98,9 @@ class ThemeSettingsScreen extends StatelessWidget {
                                     : 'Project list sample',
                                 style: TextStyle(
                                   fontSize: 12,
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .onSurfaceVariant,
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onSurfaceVariant,
                                 ),
                               ),
                               const SizedBox(height: 12),
@@ -109,8 +109,9 @@ class ThemeSettingsScreen extends StatelessWidget {
                                 children: [
                                   Flexible(
                                     child: Text(
-                                      Localizations.localeOf(context)
-                                                  .languageCode ==
+                                      Localizations.localeOf(
+                                                context,
+                                              ).languageCode ==
                                               'ja'
                                           ? 'タップして全${themePreviewEntries.length}画面を見る'
                                           : 'Tap to view all ${themePreviewEntries.length} screens',
@@ -560,8 +561,9 @@ class ThemeSettingsScreen extends StatelessWidget {
     try {
       final content = await File(result.files.first.path!).readAsString();
       final json = jsonDecode(content) as Map<String, dynamic>;
-      final preset = AppThemePreset.fromJson(json)
-          .copyWith(id: 'theme_${DateTime.now().millisecondsSinceEpoch}');
+      final preset = AppThemePreset.fromJson(
+        json,
+      ).copyWith(id: 'theme_${DateTime.now().millisecondsSinceEpoch}');
       service.savePreset(preset);
       service.applyPreset(preset.id);
       if (!context.mounted) return;

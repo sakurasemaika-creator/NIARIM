@@ -160,8 +160,9 @@ void main() {
                         top: 8,
                         child: DecoratedBox(
                           decoration: BoxDecoration(
-                            color: Theme.of(context).colorScheme.surface
-                                .withValues(alpha: .92),
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.surface.withValues(alpha: .92),
                             borderRadius: BorderRadius.circular(6),
                           ),
                           child: Padding(

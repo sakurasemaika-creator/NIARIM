@@ -122,54 +122,60 @@ void main() {
     },
   );
 
-  test('delete rolls back a completed association write when folder persistence fails', () async {
-    final env = await open(inside: true);
-    final before = await env.store.getAll();
-    env.store.reject = (key, value) => key == foldersKey && value == '[]';
-    await expectLater(
-      env.service.deleteFolder(folder.id),
-      throwsA(
-        isA<WorkFolderSaveException>().having(
-          (e) => e.partiallySaved,
-          'partiallySaved',
-          false,
+  test(
+    'delete rolls back a completed association write when folder persistence fails',
+    () async {
+      final env = await open(inside: true);
+      final before = await env.store.getAll();
+      env.store.reject = (key, value) => key == foldersKey && value == '[]';
+      await expectLater(
+        env.service.deleteFolder(folder.id),
+        throwsA(
+          isA<WorkFolderSaveException>().having(
+            (e) => e.partiallySaved,
+            'partiallySaved',
+            false,
+          ),
         ),
-      ),
-    );
-    expect(await env.store.getAll(), before);
-    expect(env.service.folders.single.id, folder.id);
-    expect(env.service.folderIdOf(filename), folder.id);
-    await sameAfterReload(env.service, cold: false);
-    await sameAfterReload(env.service);
-  });
+      );
+      expect(await env.store.getAll(), before);
+      expect(env.service.folders.single.id, folder.id);
+      expect(env.service.folderIdOf(filename), folder.id);
+      await sameAfterReload(env.service, cold: false);
+      await sameAfterReload(env.service);
+    },
+  );
 
-  test('failed delete rollback exposes the actual partial state and remains retryable', () async {
-    final env = await open(inside: true);
-    env.store.reject = (key, value) =>
-        (key == foldersKey && value == '[]') ||
-        (key == mapKey &&
-            value is String &&
-            (jsonDecode(value) as Map).isNotEmpty);
-    await expectLater(
-      env.service.deleteFolder(folder.id),
-      throwsA(
-        isA<WorkFolderSaveException>().having(
-          (e) => e.partiallySaved,
-          'partiallySaved',
-          true,
+  test(
+    'failed delete rollback exposes the actual partial state and remains retryable',
+    () async {
+      final env = await open(inside: true);
+      env.store.reject = (key, value) =>
+          (key == foldersKey && value == '[]') ||
+          (key == mapKey &&
+              value is String &&
+              (jsonDecode(value) as Map).isNotEmpty);
+      await expectLater(
+        env.service.deleteFolder(folder.id),
+        throwsA(
+          isA<WorkFolderSaveException>().having(
+            (e) => e.partiallySaved,
+            'partiallySaved',
+            true,
+          ),
         ),
-      ),
-    );
-    expect(env.service.folders.single.id, folder.id);
-    expect(env.service.folderIdOf(filename), isNull);
-    await sameAfterReload(env.service, cold: false);
-    await sameAfterReload(env.service);
-    env.store.reject = null;
-    await env.service.deleteFolder(folder.id);
-    expect(env.service.folders, isEmpty);
-    expect(env.service.folderIdOf(filename), isNull);
-    await sameAfterReload(env.service);
-  });
+      );
+      expect(env.service.folders.single.id, folder.id);
+      expect(env.service.folderIdOf(filename), isNull);
+      await sameAfterReload(env.service, cold: false);
+      await sameAfterReload(env.service);
+      env.store.reject = null;
+      await env.service.deleteFolder(folder.id);
+      expect(env.service.folders, isEmpty);
+      expect(env.service.folderIdOf(filename), isNull);
+      await sameAfterReload(env.service);
+    },
+  );
 
   test('a rejected operation does not poison the retry queue', () async {
     final env = await open();
@@ -184,24 +190,27 @@ void main() {
     await sameAfterReload(env.service);
   });
 
-  test('queued mutations publish after persistence and include the previous result', () async {
-    final env = await open();
-    final gate = Completer<void>();
-    env.store.nextWriteGate = gate;
-    final first = env.service.createFolder('FIRST');
-    final second = env.service.createFolder('SECOND');
-    await Future<void>.delayed(Duration.zero);
-    expect(env.service.folders.map((f) => f.name), ['AUDIT']);
-    expect(env.store.writes, hasLength(1));
-    gate.complete();
-    await Future.wait([first, second]);
-    expect(env.service.folders.map((f) => f.name), [
-      'AUDIT',
-      'FIRST',
-      'SECOND',
-    ]);
-    await sameAfterReload(env.service);
-  });
+  test(
+    'queued mutations publish after persistence and include the previous result',
+    () async {
+      final env = await open();
+      final gate = Completer<void>();
+      env.store.nextWriteGate = gate;
+      final first = env.service.createFolder('FIRST');
+      final second = env.service.createFolder('SECOND');
+      await Future<void>.delayed(Duration.zero);
+      expect(env.service.folders.map((f) => f.name), ['AUDIT']);
+      expect(env.store.writes, hasLength(1));
+      gate.complete();
+      await Future.wait([first, second]);
+      expect(env.service.folders.map((f) => f.name), [
+        'AUDIT',
+        'FIRST',
+        'SECOND',
+      ]);
+      await sameAfterReload(env.service);
+    },
+  );
 
   for (final original in <Object>[
     true,
@@ -227,19 +236,22 @@ void main() {
     );
   }
 
-  test('accepted save completes safely after disposal without notifying dead listeners', () async {
-    final env = await open(autoDispose: false);
-    final gate = Completer<void>();
-    env.store.nextWriteGate = gate;
-    final pending = env.service.moveFileToFolder(filename, folder.id);
-    await Future<void>.delayed(Duration.zero);
-    env.service.dispose();
-    gate.complete();
-    await pending;
-    SharedPreferences.resetStatic();
-    final restored = WorkFolderService();
-    await restored.init();
-    expect(restored.folderIdOf(filename), folder.id);
-    restored.dispose();
-  });
+  test(
+    'accepted save completes safely after disposal without notifying dead listeners',
+    () async {
+      final env = await open(autoDispose: false);
+      final gate = Completer<void>();
+      env.store.nextWriteGate = gate;
+      final pending = env.service.moveFileToFolder(filename, folder.id);
+      await Future<void>.delayed(Duration.zero);
+      env.service.dispose();
+      gate.complete();
+      await pending;
+      SharedPreferences.resetStatic();
+      final restored = WorkFolderService();
+      await restored.init();
+      expect(restored.folderIdOf(filename), folder.id);
+      restored.dispose();
+    },
+  );
 }

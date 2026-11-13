@@ -241,13 +241,14 @@ void main() {
         );
         await tester.pumpAndSettle();
         unawaited(
-          Navigator.of(tester.element(find.byType(CommunityMyWorksScreen)))
-              .push<void>(
-                MaterialPageRoute(
-                  builder: (_) =>
-                      const CommunityWorkSettingsScreen(workId: 'old-private'),
-                ),
-              ),
+          Navigator.of(
+            tester.element(find.byType(CommunityMyWorksScreen)),
+          ).push<void>(
+            MaterialPageRoute(
+              builder: (_) =>
+                  const CommunityWorkSettingsScreen(workId: 'old-private'),
+            ),
+          ),
         );
         await tester.pumpAndSettle();
         await tester.ensureVisible(find.byType(ai ? Checkbox : Switch));
@@ -291,7 +292,8 @@ void main() {
               ? tester.widget<CheckboxListTile>(row).onChanged
               : tester.widget<SwitchListTile>(row).onChanged,
           isNull,
-          reason: 'The old request must not clear the busy flag of the current account request.',
+          reason:
+              'The old request must not clear the busy flag of the current account request.',
         );
         pending[1].complete(
           _reply({

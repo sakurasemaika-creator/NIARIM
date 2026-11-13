@@ -244,8 +244,9 @@ void main() {
         final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
         image.dispose();
         Directory(captureDir).createSync(recursive: true);
-        File('$captureDir/$name.png')
-            .writeAsBytesSync(bytes!.buffer.asUint8List());
+        File(
+          '$captureDir/$name.png',
+        ).writeAsBytesSync(bytes!.buffer.asUint8List());
       });
     }
 

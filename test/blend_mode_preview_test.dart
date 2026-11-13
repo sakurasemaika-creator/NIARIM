@@ -245,8 +245,9 @@ void main() {
       final png = await image.toByteData(format: ui.ImageByteFormat.png);
       image.dispose();
       Directory('build/blend-preview').createSync(recursive: true);
-      File('build/blend-preview/picker.png')
-          .writeAsBytesSync(png!.buffer.asUint8List());
+      File(
+        'build/blend-preview/picker.png',
+      ).writeAsBytesSync(png!.buffer.asUint8List());
     });
 
     // Scrolling moves only the tiles.
@@ -292,8 +293,9 @@ void main() {
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         builder: (context, child) => MediaQuery(
-          data: MediaQuery.of(context)
-              .copyWith(textScaler: const TextScaler.linear(2)),
+          data: MediaQuery.of(
+            context,
+          ).copyWith(textScaler: const TextScaler.linear(2)),
           child: child!,
         ),
         home: Builder(
@@ -303,8 +305,9 @@ void main() {
                 onPressed: () => showBlendModePicker(
                   context,
                   current: LayerBlendMode.linearDodge,
-                  title: AppLocalizations.of(context)!
-                      .autofillPartBlendModeLabel,
+                  title: AppLocalizations.of(
+                    context,
+                  )!.autofillPartBlendModeLabel,
                   label: (mode) =>
                       blendModeLabel(AppLocalizations.of(context)!, mode),
                   preview: (mode, size) async => null,

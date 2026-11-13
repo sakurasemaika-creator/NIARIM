@@ -384,9 +384,9 @@ class _PixelArtPalettePickerDialogState
                           FilledButton(
                             onPressed: selected == null
                                 ? null
-                                : () =>
-                                      Navigator.of(context)
-                                          .pop(selected.colors),
+                                : () => Navigator.of(
+                                    context,
+                                  ).pop(selected.colors),
                             child: Text(l10n.pixelArtPalettePickerApplyButton),
                           ),
                         ],

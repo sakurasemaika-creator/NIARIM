@@ -91,9 +91,9 @@ void main() {
     await tester.pumpAndSettle();
     expect(preview.work, isNull);
     expect(
-      GoRouterState.of(tester.element(find.byType(CommunityWorkDetailScreen)))
-          .uri
-          .path,
+      GoRouterState.of(
+        tester.element(find.byType(CommunityWorkDetailScreen)),
+      ).uri.path,
       '/community/work/${work.id}',
     );
     expect(
@@ -122,9 +122,9 @@ void main() {
     await tester.tap(find.byIcon(Icons.info_outline_rounded));
     await tester.pumpAndSettle();
     expect(
-      GoRouterState.of(tester.element(find.byType(CommunityWorkDetailScreen)))
-          .uri
-          .path,
+      GoRouterState.of(
+        tester.element(find.byType(CommunityWorkDetailScreen)),
+      ).uri.path,
       '/community/work/${work.id}',
     );
     expect(

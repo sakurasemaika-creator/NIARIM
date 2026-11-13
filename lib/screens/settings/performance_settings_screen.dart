@@ -176,9 +176,9 @@ class _PerformanceSettingsScreenState extends State<PerformanceSettingsScreen> {
                                   vertical: 2,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .primaryContainer,
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.primaryContainer,
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: Text(
@@ -188,9 +188,9 @@ class _PerformanceSettingsScreenState extends State<PerformanceSettingsScreen> {
                                     fontWeight: FontWeight.bold,
                                     fontFamily: 'Kuramubon',
                                     fontFamilyFallback: kHeadingFontFallback,
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .onPrimaryContainer,
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.onPrimaryContainer,
                                   ),
                                 ),
                               ),

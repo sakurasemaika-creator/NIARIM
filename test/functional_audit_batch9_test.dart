@@ -106,7 +106,8 @@ void main() {
     expect(
       smoothSpan,
       lessThan(rawSpan),
-      reason: 'strong stabilization should reduce the vertical excursion of the same jittery input',
+      reason:
+          'strong stabilization should reduce the vertical excursion of the same jittery input',
     );
   });
 
@@ -405,9 +406,9 @@ bool _pointInPolygon(ui.Offset p, List<ui.Offset> poly) {
   return inside;
 }
 
-Future<Uint8List> _rgba(ui.Image image) async =>
-    (await image.toByteData(format: ui.ImageByteFormat.rawRgba))!.buffer
-        .asUint8List();
+Future<Uint8List> _rgba(ui.Image image) async => (await image.toByteData(
+  format: ui.ImageByteFormat.rawRgba,
+))!.buffer.asUint8List();
 
 List<int> _pixel(List<int> rgba, int width, int x, int y) {
   final i = (y * width + x) * 4;

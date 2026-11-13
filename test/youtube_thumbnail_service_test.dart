@@ -106,29 +106,32 @@ void main() {
     uploader.close();
   });
 
-  test('Shorts never set a thumbnail while YouTube still processes the video', () async {
-    var checks = 0;
-    final uploader = YoutubeThumbnailService(
-      client: MockClient((_) async {
-        checks++;
-        return http.Response(
-          '{"items":[{"processingDetails":{"processingStatus":"processing"}}]}',
-          200,
-        );
-      }),
-    );
-    await expectLater(
-      uploader.waitUntilProcessed(
-        videoId: 'abcdefghijk',
-        accessToken: 'owner-token',
-        maxChecks: 2,
-        pollInterval: Duration.zero,
-      ),
-      throwsA(isA<YoutubeThumbnailException>()),
-    );
-    expect(checks, 2);
-    uploader.close();
-  });
+  test(
+    'Shorts never set a thumbnail while YouTube still processes the video',
+    () async {
+      var checks = 0;
+      final uploader = YoutubeThumbnailService(
+        client: MockClient((_) async {
+          checks++;
+          return http.Response(
+            '{"items":[{"processingDetails":{"processingStatus":"processing"}}]}',
+            200,
+          );
+        }),
+      );
+      await expectLater(
+        uploader.waitUntilProcessed(
+          videoId: 'abcdefghijk',
+          accessToken: 'owner-token',
+          maxChecks: 2,
+          pollInterval: Duration.zero,
+        ),
+        throwsA(isA<YoutubeThumbnailException>()),
+      );
+      expect(checks, 2);
+      uploader.close();
+    },
+  );
 
   test('Shorts reject terminal video processing failures', () async {
     final uploader = YoutubeThumbnailService(

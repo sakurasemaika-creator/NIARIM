@@ -121,8 +121,9 @@ void main() {
     expect(iconColor(loads), disabled, reason: '空スロットの読み込みは無効色');
     expect(iconColor(deletes), disabled, reason: '空スロットの削除は無効色');
 
-    final source = File('lib/screens/save_tree/save_management_screen.dart')
-        .readAsStringSync();
+    final source = File(
+      'lib/screens/save_tree/save_management_screen.dart',
+    ).readAsStringSync();
     expect(
       source.contains('showModalBottomSheet'),
       isFalse,

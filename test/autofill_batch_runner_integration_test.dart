@@ -395,9 +395,9 @@ void main() {
     final image = await tm.compositeLayerToImage(
       frameLayerKey('Scene0001', 0, fill.id),
     );
-    final bytes = (await image.toByteData(format: ui.ImageByteFormat.rawRgba))!
-        .buffer
-        .asUint8List();
+    final bytes = (await image.toByteData(
+      format: ui.ImageByteFormat.rawRgba,
+    ))!.buffer.asUint8List();
     image.dispose();
     final center = (4 * 9 + 4) * 4;
     expect(bytes.sublist(center, center + 4), [0xCC, 0x55, 0, 0xFF]);
@@ -595,8 +595,9 @@ void main() {
       final fillKey = frameLayerKey('Scene0001', 0, fill.id);
       final image = await tm.compositeLayerToImage(fillKey);
       final edited = Uint8List.fromList(
-        (await image.toByteData(format: ui.ImageByteFormat.rawRgba))!.buffer
-            .asUint8List(),
+        (await image.toByteData(
+          format: ui.ImageByteFormat.rawRgba,
+        ))!.buffer.asUint8List(),
       );
       image.dispose();
       final center = (4 * 9 + 4) * 4;

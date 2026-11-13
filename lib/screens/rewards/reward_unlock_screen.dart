@@ -361,13 +361,15 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
       if (result['redeemed'] == true) {
         await _loadWallet(accountId);
         if (!mounted) return;
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(t['redemptionSuccess'])));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(t['redemptionSuccess'])));
       }
     } catch (_) {
       if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(t['redemptionUncertain'])));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(t['redemptionUncertain'])));
       }
     } finally {
       if (mounted) setState(() => _redeemBusy = false);
@@ -416,8 +418,9 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
           version != CoinBenefitPriceCatalog.version ||
           balance is! int ||
           balance < amount) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(t['redemptionUncertain'])));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(t['redemptionUncertain'])));
         return;
       }
       final period = coinUnlockDurationLabel(l10n, currentDuration);
@@ -468,13 +471,15 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
       if (response['redeemed'] == true) {
         await _loadWallet(accountId);
         if (!mounted) return;
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(t['redemptionSuccess'])));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(t['redemptionSuccess'])));
       }
     } catch (_) {
       if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(t['redemptionUncertain'])));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(t['redemptionUncertain'])));
       }
     } finally {
       if (mounted) setState(() => _redeemBusy = false);
@@ -573,8 +578,9 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
       if (result['redeemed'] == true) {
         await _loadWallet(accountId);
         if (!mounted) return;
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(labels['redemptionSuccess'])));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(labels['redemptionSuccess'])));
       }
     } catch (_) {
       if (mounted) {

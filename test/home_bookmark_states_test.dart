@@ -237,11 +237,13 @@ void main() {
           expect(service.bookmarkedWorksForViewer, isEmpty);
           expect(
             find.text(
-              AppLocalizations.of(tester.element(find.byType(CommunityScreen)))!
-                  .homeBookmarkedEmptyTitle,
+              AppLocalizations.of(
+                tester.element(find.byType(CommunityScreen)),
+              )!.homeBookmarkedEmptyTitle,
             ),
             findsNothing,
-            reason: 'A saved bookmark must not be presented as absent because its work is filtered or unavailable.',
+            reason:
+                'A saved bookmark must not be presented as absent because its work is filtered or unavailable.',
           );
           if (unresolved) {
             service.applyServerWork(

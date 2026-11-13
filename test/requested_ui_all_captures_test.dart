@@ -621,8 +621,9 @@ void main() {
     await tester.tap(find.byIcon(Icons.settings).first);
     await settle();
     final referenceEntry = find.text(
-      AppLocalizations.of(tester.element(find.byType(Scaffold).last))!
-          .canvasEditMenuReferenceWindow,
+      AppLocalizations.of(
+        tester.element(find.byType(Scaffold).last),
+      )!.canvasEditMenuReferenceWindow,
     );
     await tester.ensureVisible(referenceEntry.last);
     await tester.tap(referenceEntry.last);
@@ -710,9 +711,9 @@ void main() {
     await shot('20_pc_dex_dock_menu_without_free_position');
 
     await tester.runAsync(
-      () =>
-          File('${out.path}/capture_status.txt')
-              .writeAsString(errors.isEmpty ? 'PASS' : errors.join('\n')),
+      () => File(
+        '${out.path}/capture_status.txt',
+      ).writeAsString(errors.isEmpty ? 'PASS' : errors.join('\n')),
     );
     expect(errors, isEmpty, reason: errors.join('\n'));
   }, timeout: const Timeout(Duration(minutes: 12)));

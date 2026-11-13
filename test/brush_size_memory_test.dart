@@ -303,9 +303,9 @@ void main() {
         s.selectBrush('Brush0006');
         s.updateCurrentBrushSize(33);
         await s.commitRememberedValues();
-        final cleaned = jsonDecode(
-          prefs.getString('brush_builtin_working_values')!,
-        ) as Map<String, dynamic>;
+        final cleaned =
+            jsonDecode(prefs.getString('brush_builtin_working_values')!)
+                as Map<String, dynamic>;
         expect(
           cleaned.keys,
           unorderedEquals(['Brush0002', 'Brush0005', 'Brush0006']),

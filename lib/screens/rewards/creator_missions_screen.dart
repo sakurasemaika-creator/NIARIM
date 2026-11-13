@@ -100,8 +100,9 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
           : receipt['claimed'] == true
           ? t.get('claimReceived')
           : t.get('claimFailed');
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(message)));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(message)));
       _refresh(api);
     } catch (_) {
       if (mounted &&
@@ -214,8 +215,9 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              appLocalizationsOf(context)
-                  .creatorMissionClaimAllResult(received, failed),
+              appLocalizationsOf(
+                context,
+              ).creatorMissionClaimAllResult(received, failed),
             ),
           ),
         );
@@ -638,8 +640,9 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
     // Dart's list sort is not stable; use the original index as the tie break.
     final indexed = all.asMap().entries.toList();
     indexed.sort((a, b) {
-      final priority = missionSortPriority(a.value)
-          .compareTo(missionSortPriority(b.value));
+      final priority = missionSortPriority(
+        a.value,
+      ).compareTo(missionSortPriority(b.value));
       return priority != 0 ? priority : a.key.compareTo(b.key);
     });
     return indexed.map((e) => e.value).toList(growable: false);

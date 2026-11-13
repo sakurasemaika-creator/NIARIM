@@ -138,8 +138,9 @@ class _HomeDrawerState extends State<HomeDrawer> {
                             !missionDrawerNeedsAttention(snapshot.data)) {
                           return const SizedBox.shrink();
                         }
-                        final label = CreatorMissionLabels.of(context)
-                            .get('drawerAttention');
+                        final label = CreatorMissionLabels.of(
+                          context,
+                        ).get('drawerAttention');
                         return Tooltip(
                           message: label,
                           child: Semantics(

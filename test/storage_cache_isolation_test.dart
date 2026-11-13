@@ -22,10 +22,12 @@ void main() {
     cache = await Directory('${root.path}/app-cache').create();
     sharedTemp = await Directory('${root.path}/shared-temp').create();
     documents = await Directory('${root.path}/documents').create();
-    unrelated = await File('${sharedTemp.path}/another-app-data.bin')
-        .writeAsBytes(List.filled(257, 83));
-    cached = await File('${cache.path}/niarim-cache.bin')
-        .writeAsBytes(List.filled(123, 17));
+    unrelated = await File(
+      '${sharedTemp.path}/another-app-data.bin',
+    ).writeAsBytes(List.filled(257, 83));
+    cached = await File(
+      '${cache.path}/niarim-cache.bin',
+    ).writeAsBytes(List.filled(123, 17));
     SharedPreferences.setMockInitialValues({'first_launch': false});
     messenger.setMockMethodCallHandler(channel, (call) async {
       return switch (call.method) {
@@ -66,8 +68,9 @@ void main() {
       final export = File('${documents.path}/niarim/exports/animation.gif');
       await export.parent.create(recursive: true);
       await export.writeAsString('synthetic application export');
-      final otherDocument = await File('${documents.path}/another-app.txt')
-          .writeAsString('unrelated document');
+      final otherDocument = await File(
+        '${documents.path}/another-app.txt',
+      ).writeAsString('unrelated document');
 
       await StorageInfoService().eraseAllData();
 
@@ -84,8 +87,9 @@ void main() {
     'partial cache deletion reports failure and supports a later retry',
     () async {
       final locked = await Directory('${cache.path}/locked').create();
-      final retained = await File('${locked.path}/retained.bin')
-          .writeAsBytes(List.filled(111, 29));
+      final retained = await File(
+        '${locked.path}/retained.bin',
+      ).writeAsBytes(List.filled(111, 29));
       final chmod = await Process.run('chmod', ['0555', locked.path]);
       expect(chmod.exitCode, 0);
       try {
@@ -117,8 +121,9 @@ void main() {
   test(
     'cache cleanup does not follow links into another application',
     () async {
-      final link = await Link('${cache.path}/outside-link')
-          .create(unrelated.path);
+      final link = await Link(
+        '${cache.path}/outside-link',
+      ).create(unrelated.path);
       await StorageInfoService().clearCache();
       expect(await unrelated.readAsBytes(), List.filled(257, 83));
       expect(await link.exists(), isFalse);

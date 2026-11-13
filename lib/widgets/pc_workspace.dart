@@ -274,8 +274,9 @@ class PcStatusItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = PcWorkspaceColors.of(context);
-    final style = Theme.of(context).textTheme.bodySmall
-        ?.copyWith(fontSize: 11.5, color: colors.onChrome);
+    final style = Theme.of(
+      context,
+    ).textTheme.bodySmall?.copyWith(fontSize: 11.5, color: colors.onChrome);
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [

@@ -111,8 +111,9 @@ void main() {
         await testDirectory.delete(recursive: true);
       }
     });
-    documentsDirectory = await Directory('${testDirectory.path}/source-device')
-        .create();
+    documentsDirectory = await Directory(
+      '${testDirectory.path}/source-device',
+    ).create();
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(pathProviderChannel, (call) async {
           if (call.method == 'getApplicationDocumentsDirectory') {
@@ -202,9 +203,13 @@ void main() {
       final exported = await service.exportBrush(original.id);
       expect(exported.path, endsWith('.niabrush'));
       final archive = ZipDecoder().decodeBytes(await exported.readAsBytes());
-      final json = jsonDecode(
-        utf8.decode(archive.findFile('data.json')!.content as List<int>),
-      ) as Map<String, dynamic>;
+      final json =
+          jsonDecode(
+                utf8.decode(
+                  archive.findFile('data.json')!.content as List<int>,
+                ),
+              )
+              as Map<String, dynamic>;
       expect(json['foldMode'], mode.name);
       _expectFoldSettings(Brush.fromJson(json), original);
       expect(archive.findFile('images/000.png')!.content, imageBytes);
@@ -229,114 +234,110 @@ void main() {
     });
   }
 
-  test(
-    'niatra transfer preserves all five fold modes through restart',
-    () async {
-      final source = await _loadBrushService();
-      final originals = <Brush>[];
-      for (final mode in HairFoldMode.values) {
-        final image = await writeImage(mode.name);
-        final brush = _foldBrush(mode, imagePath: image.path);
-        source.addBrush(brush);
-        originals.add(brush);
-      }
+  test('niatra transfer preserves all five fold modes through restart', () async {
+    final source = await _loadBrushService();
+    final originals = <Brush>[];
+    for (final mode in HairFoldMode.values) {
+      final image = await writeImage(mode.name);
+      final brush = _foldBrush(mode, imagePath: image.path);
+      source.addBrush(brush);
+      originals.add(brush);
+    }
 
-      // These are real services; only the brush category is selected for transfer.
-      final settings = SettingsService();
-      final tone = ToneService();
-      final stamp = StampService();
-      final autofillPresets = AutofillPresetService();
-      final theme = ThemeService();
-      final palette = PaletteService();
-      final pixelArtPalette = PixelArtPaletteService();
-      addTearDown(settings.dispose);
-      addTearDown(tone.dispose);
-      addTearDown(stamp.dispose);
-      addTearDown(autofillPresets.dispose);
-      addTearDown(theme.dispose);
-      addTearDown(palette.dispose);
-      addTearDown(pixelArtPalette.dispose);
+    // These are real services; only the brush category is selected for transfer.
+    final settings = SettingsService();
+    final tone = ToneService();
+    final stamp = StampService();
+    final autofillPresets = AutofillPresetService();
+    final theme = ThemeService();
+    final palette = PaletteService();
+    final pixelArtPalette = PixelArtPaletteService();
+    addTearDown(settings.dispose);
+    addTearDown(tone.dispose);
+    addTearDown(stamp.dispose);
+    addTearDown(autofillPresets.dispose);
+    addTearDown(theme.dispose);
+    addTearDown(palette.dispose);
+    addTearDown(pixelArtPalette.dispose);
 
-      const selectedItems = {'ブラシ': true};
-      final rawBytes = await NiatraSerializer.export(
-        selectedItems: selectedItems,
-        settings: settings,
-        brush: source,
-        tone: tone,
-        stamp: stamp,
-        autofillPresets: autofillPresets,
-        theme: theme,
-        palette: palette,
-        pixelArtPalette: pixelArtPalette,
+    const selectedItems = {'ブラシ': true};
+    final rawBytes = await NiatraSerializer.export(
+      selectedItems: selectedItems,
+      settings: settings,
+      brush: source,
+      tone: tone,
+      stamp: stamp,
+      autofillPresets: autofillPresets,
+      theme: theme,
+      palette: palette,
+      pixelArtPalette: pixelArtPalette,
+    );
+    final bytes = await NiatraAssetBundle.enrichExport(
+      rawBytes,
+      selectedItems: selectedItems,
+      brush: source,
+      tone: tone,
+      stamp: stamp,
+    );
+    final transferFile = await File(
+      '${testDirectory.path}/fold-modes.niatra',
+    ).writeAsBytes(bytes);
+    final data = await NiatraSerializer.load(transferFile.path);
+    final brushJson = (data.raw['brushes'] as List)
+        .cast<Map<String, dynamic>>();
+    for (final original in originals) {
+      final saved = brushJson.singleWhere((json) => json['id'] == original.id);
+      expect(saved['foldMode'], original.foldMode.name);
+      expect(saved['customImagePath'], isNull);
+      expect(saved['embeddedImagePath'], isA<String>());
+      await File(original.customImagePath!).delete();
+    }
+
+    await useDestinationDevice();
+    final destination = await _loadBrushService();
+    await NiatraAssetBundle.restoreEmbeddedAssets(
+      data,
+      brush: destination,
+      tone: tone,
+      stamp: stamp,
+    );
+    final restoredCount = destination.brushes.length;
+    expect(data.raw.containsKey('brushes'), isFalse);
+    NiatraSerializer.applyTo(
+      data,
+      settings: settings,
+      brush: destination,
+      tone: tone,
+      stamp: stamp,
+      autofillPresets: autofillPresets,
+      theme: theme,
+      palette: palette,
+      pixelArtPalette: pixelArtPalette,
+    );
+    expect(destination.brushes, hasLength(restoredCount));
+
+    for (final original in originals) {
+      final imported = destination.brushes.singleWhere(
+        (brush) => brush.name == original.name,
       );
-      final bytes = await NiatraAssetBundle.enrichExport(
-        rawBytes,
-        selectedItems: selectedItems,
-        brush: source,
-        tone: tone,
-        stamp: stamp,
+      expect(imported.id, isNot(original.id));
+      expect(imported.folderId, isNull);
+      expect(imported.customImagePath, isNot(original.customImagePath));
+      expect(imported.customImagePath, startsWith(documentsDirectory.path));
+      expect(await File(imported.customImagePath!).readAsBytes(), imageBytes);
+      _expectFoldSettings(imported, original);
+      expect(
+        (await _savedBrush(imported.id))['foldMode'],
+        original.foldMode.name,
       );
-      final transferFile = await File('${testDirectory.path}/fold-modes.niatra')
-          .writeAsBytes(bytes);
-      final data = await NiatraSerializer.load(transferFile.path);
-      final brushJson = (data.raw['brushes'] as List)
-          .cast<Map<String, dynamic>>();
-      for (final original in originals) {
-        final saved = brushJson.singleWhere(
-          (json) => json['id'] == original.id,
-        );
-        expect(saved['foldMode'], original.foldMode.name);
-        expect(saved['customImagePath'], isNull);
-        expect(saved['embeddedImagePath'], isA<String>());
-        await File(original.customImagePath!).delete();
-      }
+    }
 
-      await useDestinationDevice();
-      final destination = await _loadBrushService();
-      await NiatraAssetBundle.restoreEmbeddedAssets(
-        data,
-        brush: destination,
-        tone: tone,
-        stamp: stamp,
+    final restarted = await _loadBrushService();
+    for (final original in originals) {
+      _expectFoldSettings(
+        restarted.brushes.singleWhere((brush) => brush.name == original.name),
+        original,
       );
-      final restoredCount = destination.brushes.length;
-      expect(data.raw.containsKey('brushes'), isFalse);
-      NiatraSerializer.applyTo(
-        data,
-        settings: settings,
-        brush: destination,
-        tone: tone,
-        stamp: stamp,
-        autofillPresets: autofillPresets,
-        theme: theme,
-        palette: palette,
-        pixelArtPalette: pixelArtPalette,
-      );
-      expect(destination.brushes, hasLength(restoredCount));
-
-      for (final original in originals) {
-        final imported = destination.brushes.singleWhere(
-          (brush) => brush.name == original.name,
-        );
-        expect(imported.id, isNot(original.id));
-        expect(imported.folderId, isNull);
-        expect(imported.customImagePath, isNot(original.customImagePath));
-        expect(imported.customImagePath, startsWith(documentsDirectory.path));
-        expect(await File(imported.customImagePath!).readAsBytes(), imageBytes);
-        _expectFoldSettings(imported, original);
-        expect(
-          (await _savedBrush(imported.id))['foldMode'],
-          original.foldMode.name,
-        );
-      }
-
-      final restarted = await _loadBrushService();
-      for (final original in originals) {
-        _expectFoldSettings(
-          restarted.brushes.singleWhere((brush) => brush.name == original.name),
-          original,
-        );
-      }
-    },
-  );
+    }
+  });
 }

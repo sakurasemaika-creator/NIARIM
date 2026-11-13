@@ -24,10 +24,8 @@ import '../models/scene.dart';
 import '../services/hw_video_encoder.dart';
 import '../services/export_storage.dart';
 
-typedef ExportProgressCallback = void Function(
-  int currentFrame,
-  int totalFrames,
-);
+typedef ExportProgressCallback =
+    void Function(int currentFrame, int totalFrames);
 
 /// 書き出し中のキャンセル要求を伝えるためのトークン（誤タップ対応の
 /// キャンセルボタン）。フレーム生成ループの各反復で

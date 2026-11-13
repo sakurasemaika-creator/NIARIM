@@ -36,10 +36,9 @@ void main() {
       final source = File(path).readAsStringSync();
       final at = source.indexOf(anchor);
       expect(at, greaterThan(0), reason: '$anchor in $path');
-      return RegExp(r'Icons\.(\w+)')
-          .allMatches(source.substring(0, at))
-          .last
-          .group(1)!;
+      return RegExp(
+        r'Icons\.(\w+)',
+      ).allMatches(source.substring(0, at)).last.group(1)!;
     }
 
     expect(
@@ -52,8 +51,9 @@ void main() {
   });
 
   test('the drawer entry and the guide text use one localized name', () {
-    final source = File('lib/screens/help/guide_hub_screen.dart')
-        .readAsStringSync();
+    final source = File(
+      'lib/screens/help/guide_hub_screen.dart',
+    ).readAsStringSync();
     final title = source.substring(
       source.indexOf('String guideHubTitle('),
       source.indexOf('class GuideHubScreen'),

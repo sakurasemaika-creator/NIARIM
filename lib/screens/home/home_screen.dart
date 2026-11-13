@@ -720,18 +720,18 @@ class _HomeScreenState extends State<HomeScreen>
                                     fontFamily: 'Kuramubon',
                                     fontFamilyFallback: kHeadingFontFallback,
                                     color: _showFavoritesOnly
-                                        ? Theme.of(context)
-                                              .colorScheme
-                                              .onPrimary
+                                        ? Theme.of(
+                                            context,
+                                          ).colorScheme.onPrimary
                                         : null,
                                   ),
                                 ),
-                                selectedColor: Theme.of(context)
-                                    .colorScheme
-                                    .primary,
-                                checkmarkColor: Theme.of(context)
-                                    .colorScheme
-                                    .onPrimary,
+                                selectedColor: Theme.of(
+                                  context,
+                                ).colorScheme.primary,
+                                checkmarkColor: Theme.of(
+                                  context,
+                                ).colorScheme.onPrimary,
                                 selected: _showFavoritesOnly,
                                 onSelected: (v) => _changeProjectScope(
                                   () => _showFavoritesOnly = v,
@@ -3397,8 +3397,9 @@ Future<void> _outgoingShareAction(
   } catch (error, stackTrace) {
     AppErrorReporter.record(error, stackTrace);
     if (context.mounted) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(l10n.homeTrashOperationFailed)));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.homeTrashOperationFailed)));
     }
   }
 }

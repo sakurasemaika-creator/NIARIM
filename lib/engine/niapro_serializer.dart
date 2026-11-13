@@ -155,9 +155,9 @@ class NiaproSerializer {
     if (manifest == null) {
       throw const FormatException('Missing project manifest');
     }
-    final json = jsonDecode(
-      utf8.decode(manifest.content as List<int>),
-    ) as Map<String, dynamic>;
+    final json =
+        jsonDecode(utf8.decode(manifest.content as List<int>))
+            as Map<String, dynamic>;
     if (json['id'] != projectId) {
       throw const FormatException('Project ID mismatch');
     }
@@ -234,8 +234,9 @@ class NiaproSerializer {
       await File('${materialsDir.path}/${entry.key}').writeAsBytes(entry.value);
     }
     if (data.materialsManifest != null) {
-      await File('${materialsDir.path}/materials.json')
-          .writeAsString(data.materialsManifest!);
+      await File(
+        '${materialsDir.path}/materials.json',
+      ).writeAsString(data.materialsManifest!);
     }
   }
 

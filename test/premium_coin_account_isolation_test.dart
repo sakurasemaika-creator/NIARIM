@@ -64,34 +64,45 @@ void main() {
     premium.dispose();
     auth.dispose();
   });
-  test('individual coin rights activate only their selected feature for the authenticated account', () {
-    final auth = _FakeAuth()..switchAccount('account-a');
-    final premium = PremiumService()..bindGoogleAuth(auth);
-    final expiry = DateTime.now()
-        .add(const Duration(hours: 2))
-        .millisecondsSinceEpoch;
-    premium.applyServerCoinBenefitEntitlements([
-      {'feature': 'toneCurve', 'status': 'active', 'expiresAtEpochMs': expiry},
-      {'feature': 'watermark', 'status': 'paused', 'expiresAtEpochMs': expiry},
-      {'feature': 'allAds', 'status': 'active', 'expiresAtEpochMs': expiry},
-      {
-        'feature': 'unknownBenefit',
-        'status': 'active',
-        'expiresAtEpochMs': expiry,
-      },
-    ], accountId: 'account-a');
-    expect(premium.isFeatureAvailable(PremiumFeature.toneCurve), isTrue);
-    expect(premium.isFeatureAvailable(PremiumFeature.watermark), isFalse);
-    expect(premium.isFeatureAvailable(PremiumFeature.endCardEdit), isFalse);
-    expect(premium.isServerCoinBenefitActive('allAds'), isTrue);
-    expect(premium.isServerCoinBenefitActive('unknownBenefit'), isFalse);
-    expect(premium.isPremium, isFalse);
-    auth.switchAccount('account-b');
-    expect(premium.isFeatureAvailable(PremiumFeature.toneCurve), isFalse);
-    expect(premium.isServerCoinBenefitActive('allAds'), isFalse);
-    premium.dispose();
-    auth.dispose();
-  });
+  test(
+    'individual coin rights activate only their selected feature for the authenticated account',
+    () {
+      final auth = _FakeAuth()..switchAccount('account-a');
+      final premium = PremiumService()..bindGoogleAuth(auth);
+      final expiry = DateTime.now()
+          .add(const Duration(hours: 2))
+          .millisecondsSinceEpoch;
+      premium.applyServerCoinBenefitEntitlements([
+        {
+          'feature': 'toneCurve',
+          'status': 'active',
+          'expiresAtEpochMs': expiry,
+        },
+        {
+          'feature': 'watermark',
+          'status': 'paused',
+          'expiresAtEpochMs': expiry,
+        },
+        {'feature': 'allAds', 'status': 'active', 'expiresAtEpochMs': expiry},
+        {
+          'feature': 'unknownBenefit',
+          'status': 'active',
+          'expiresAtEpochMs': expiry,
+        },
+      ], accountId: 'account-a');
+      expect(premium.isFeatureAvailable(PremiumFeature.toneCurve), isTrue);
+      expect(premium.isFeatureAvailable(PremiumFeature.watermark), isFalse);
+      expect(premium.isFeatureAvailable(PremiumFeature.endCardEdit), isFalse);
+      expect(premium.isServerCoinBenefitActive('allAds'), isTrue);
+      expect(premium.isServerCoinBenefitActive('unknownBenefit'), isFalse);
+      expect(premium.isPremium, isFalse);
+      auth.switchAccount('account-b');
+      expect(premium.isFeatureAvailable(PremiumFeature.toneCurve), isFalse);
+      expect(premium.isServerCoinBenefitActive('allAds'), isFalse);
+      premium.dispose();
+      auth.dispose();
+    },
+  );
 
   test(
     'expired, paused, and cross-account feature grants never unlock tools',

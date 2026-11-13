@@ -1409,8 +1409,9 @@ class _Harness {
       final image = await boundary.toImage(pixelRatio: 2);
       final png = await image.toByteData(format: ui.ImageByteFormat.png);
       image.dispose();
-      await File('${out.path}/$name.png')
-          .writeAsBytes(png!.buffer.asUint8List());
+      await File(
+        '${out.path}/$name.png',
+      ).writeAsBytes(png!.buffer.asUint8List());
     });
   }
 

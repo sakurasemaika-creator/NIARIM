@@ -79,7 +79,8 @@ void main() {
           expect(
             service.milestoneNotifications,
             isEmpty,
-            reason: 'The old private work title must not appear in the next account',
+            reason:
+                'The old private work title must not appear in the next account',
           );
         }
       },

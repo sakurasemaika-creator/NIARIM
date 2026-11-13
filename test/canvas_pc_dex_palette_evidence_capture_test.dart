@@ -119,9 +119,9 @@ void main() {
         final directory = Directory('build/pc-canvas-palette-evidence')
           ..createSync(recursive: true);
         await tester.runAsync(
-          () =>
-              File('${directory.path}/$name.png')
-                  .writeAsBytes(image!, flush: true),
+          () => File(
+            '${directory.path}/$name.png',
+          ).writeAsBytes(image!, flush: true),
         );
         expect(tester.takeException(), isNull, reason: name);
       }

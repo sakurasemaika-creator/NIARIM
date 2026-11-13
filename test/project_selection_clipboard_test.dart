@@ -78,8 +78,9 @@ void main() {
     final dest = Directory('build/home-clipboard-captures')
       ..createSync(recursive: true);
     await tester.runAsync(() async {
-      await File(dest.path + '/' + name + '.png')
-          .writeAsBytes(pngBytes!, flush: true);
+      await File(
+        dest.path + '/' + name + '.png',
+      ).writeAsBytes(pngBytes!, flush: true);
     });
   }
 
@@ -355,8 +356,9 @@ void main() {
           '${tempDir.path}/niarim/projects/$sourceId/Materials',
         )..createSync(recursive: true);
         File('${materials.path}/m1.png').writeAsBytesSync([1, 2, 3]);
-        File('${materials.path}/materials.json')
-            .writeAsStringSync('{"nextCounter":1,"materials":[]}');
+        File(
+          '${materials.path}/materials.json',
+        ).writeAsStringSync('{"nextCounter":1,"materials":[]}');
         await service.generateAndSaveThumbnail(sourceId);
       },
     );
