@@ -499,31 +499,9 @@ class _TonePanelState extends State<TonePanel> {
     await service.createToneFromImage(result.files.first.path!, name: name);
   }
 
-  Future<void> _importTone(BuildContext context, ToneService service) async {
-    final result = await FilePicker.platform.pickFiles(
-      type: FileType.custom,
-      allowedExtensions: ['niatone'],
-    );
-    if (result == null ||
-        result.files.isEmpty ||
-        result.files.first.path == null) {
-      return;
-    }
-    try {
-      await service.importToneFile(result.files.first.path!);
-    } catch (e) {
-      if (!context.mounted) return;
-      final l10n = AppLocalizations.of(context)!;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.toneImportFailedSnackbar(e.toString()))),
-      );
-    }
-  }
-
   static String _exportKey(Tone tone) => 'tone:${tone.id}';
 
-  /// .niatoneへ書き出してから共有する。書き出しの失敗と、共有できない端末・
-  /// 共有の失敗は別のことなので、別の文で知らせる。
+  /// PNG共有カードの生成と端末への保存・共有を順に処理する。
   Future<void> _exportTone(
     BuildContext context,
     ToneService service,
