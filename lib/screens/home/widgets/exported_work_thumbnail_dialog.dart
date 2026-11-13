@@ -120,7 +120,7 @@ class ExportedWorkCoverStore {
 
   static Future<int> _lastVideoFrame(File file) async {
     final session = await FFprobeKit.getMediaInformation(file.path);
-    final info = await session.getMediaInformation();
+    final info = session.getMediaInformation();
     if (info == null) return 0;
     var rate = 0.0;
     for (final stream in info.getStreams()) {
@@ -338,7 +338,7 @@ class _ExportedWorkThumbnailDialogState
       if (!isImage) {
         // Probe the media rather than assuming all exports are 30fps.
         final session = await FFprobeKit.getMediaInformation(widget.file.path);
-        final info = await session.getMediaInformation();
+        final info = session.getMediaInformation();
         if (info != null) {
           final streams = info.getStreams();
           for (final stream in streams) {
