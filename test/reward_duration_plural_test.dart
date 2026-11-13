@@ -73,7 +73,7 @@ CommunityService _redeemableServer(List<String> redeemCalls) =>
               '/me/rewards/quote' => _reply({
                 'enabled': true,
                 'priceCoins': 55000,
-                'priceVersion': 'v3-final-annual550000',
+                'priceVersion': 'v4-min10-repriced-20261113',
               }),
               _ => _reply(<String, Object>{}),
             };
