@@ -34,32 +34,16 @@ def values(path: Path):
 
 
 def placeholders(text: str):
-    # ICU select/plural branches contain literal labels such as week{Weekly}.
-    # Only the opening argument of a balanced ICU expression is a placeholder;
-    # the branch labels themselves are not named variables.
-    found = set()
-    i = 0
-    while i < len(text):
-        if text[i] != '{':
-            i += 1
-            continue
-        match = re.match(r'\{([A-Za-z_][A-Za-z0-9_]*)(?=[,}])', text[i:])
-        if not match:
-            i += 1
+    # Capture ICU selector/plural argument names, then simple nested arguments.
+    # The words inside a selector (week{Weekly}) are literal UI copy.
+    found = set(re.findall(r'\{([A-Za-z_][A-Za-z0-9_]*)\s*,', text))
+    for match in re.finditer(r'\{([A-Za-z_][A-Za-z0-9_]*)\}', text):
+        prefix = text[:match.start()]
+        if re.search(r'\b(?:zero|one|two|few|many|other|day|week|month)$', prefix):
             continue
         found.add(match.group(1))
-        depth = 0
-        j = i
-        while j < len(text):
-            if text[j] == '{':
-                depth += 1
-            elif text[j] == '}':
-                depth -= 1
-                if depth == 0:
-                    break
-            j += 1
-        i = j + 1
     return sorted(found)
+
 
 source = values(SOURCE)
 errors = []
