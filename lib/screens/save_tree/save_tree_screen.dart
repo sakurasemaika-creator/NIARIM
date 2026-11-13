@@ -182,6 +182,8 @@ void _showTreeSaveDialog(
   final commentController = TextEditingController();
   var saving = false;
   String? failure;
+  // メモの欄のEnterで押す「保存」ボタン（保存中は押せないので何もしない）。
+  final saveButton = GlobalKey();
   showDialog(
     context: context,
     barrierDismissible: false,
@@ -207,6 +209,17 @@ void _showTreeSaveDialog(
               ),
               TextField(
                 controller: commentController,
+                // 開いたらすぐ打てるように。Enterで保存する。
+                autofocus: true,
+                textInputAction: TextInputAction.done,
+                // 保存を始めた後のEnter（次の画面を描く前の2回目も）は何もしない。
+                onSubmitted: (_) {
+                  if (saving) return;
+                  (saveButton.currentWidget as FilledButton?)?.onPressed
+                      ?.call();
+                },
+                // Enterで欄からフォーカスを外さない。
+                onEditingComplete: () {},
                 decoration: InputDecoration(
                   labelText: l10n.saveTreeCommentLabel,
                   hintText: l10n.saveTreeCommentHint,
@@ -232,6 +245,7 @@ void _showTreeSaveDialog(
               child: Text(l10n.commonCancel),
             ),
             FilledButton(
+              key: saveButton,
               // スロット方式の保存ダイアログと同じ方針：保存中は二重実行を
               // 防ぐためボタンを無効化し、失敗は必ず画面へ出す（以前は
               // try/catchが無く、失敗しても何の表示も出ないまま
@@ -480,6 +494,10 @@ class _SlotView extends StatelessWidget {
     final commentController = TextEditingController(
       text: saveService.slotDisplayMemoOf(projectId, slotIndex) ?? '',
     );
+    // メモの欄のEnterで押す「保存」ボタン。
+    final saveButton = GlobalKey();
+    // 二度押し・Enterの繰り返しで同じスロットへ二重に保存しない。
+    var saving = false;
     showDialog(
       context: context,
       builder: (ctx) => DisposeOnUnmount(
@@ -504,6 +522,18 @@ class _SlotView extends StatelessWidget {
                 ),
               TextField(
                 controller: commentController,
+                // 開いたらすぐ打てるように（クリックする前に打った字が
+                // どこにも入らなかった）。Enterで保存する。
+                autofocus: true,
+                textInputAction: TextInputAction.done,
+                // 保存を始めた後のEnter（次の画面を描く前の2回目も）は何もしない。
+                onSubmitted: (_) {
+                  if (saving) return;
+                  (saveButton.currentWidget as FilledButton?)?.onPressed
+                      ?.call();
+                },
+                // Enterで欄からフォーカスを外さない。
+                onEditingComplete: () {},
                 decoration: InputDecoration(
                   labelText: l10n.saveTreeCommentLabel,
                   hintText: l10n.saveTreeCommentHint,
@@ -517,42 +547,49 @@ class _SlotView extends StatelessWidget {
               child: Text(l10n.commonCancel),
             ),
             FilledButton(
+              key: saveButton,
               onPressed: () async {
-                final ps = context.read<ProjectService>();
-                final project = ps.projects
-                    .where((p) => p.id == projectId)
-                    .firstOrNull;
-                if (project == null) {
-                  Navigator.pop(ctx);
-                  return;
-                }
-                final comment = commentController.text.isEmpty
-                    ? null
-                    : commentController.text;
-                final scenes = ps.scenesOf(projectId);
-                final tileManager = ps.tileManagerOf(projectId);
-                final thumb = await _generateSaveNodeThumbnail(ps, projectId);
-                await saveService.saveToSlot(
-                  projectId: projectId,
-                  slotIndex: slotIndex,
-                  project: project,
-                  scenes: scenes,
-                  tileManager: tileManager,
-                  comment: comment,
-                  thumbnailPngBytes: thumb,
-                );
-                final kept = await saveService.setSlotMemo(
-                  projectId,
-                  slotIndex,
-                  commentController.text,
-                );
-                if (ctx.mounted) Navigator.pop(ctx);
-                // 保存の一覧を読めていないので、メモ（打ったコメント）は次の
-                // 起動に残らないかもしれない（メモの欄と同じく知らせる）。
-                if (!kept && context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(l10n.saveTreeLoadFailedSnackbar)),
+                if (saving) return;
+                saving = true;
+                try {
+                  final ps = context.read<ProjectService>();
+                  final project = ps.projects
+                      .where((p) => p.id == projectId)
+                      .firstOrNull;
+                  if (project == null) {
+                    Navigator.pop(ctx);
+                    return;
+                  }
+                  final comment = commentController.text.isEmpty
+                      ? null
+                      : commentController.text;
+                  final scenes = ps.scenesOf(projectId);
+                  final tileManager = ps.tileManagerOf(projectId);
+                  final thumb = await _generateSaveNodeThumbnail(ps, projectId);
+                  await saveService.saveToSlot(
+                    projectId: projectId,
+                    slotIndex: slotIndex,
+                    project: project,
+                    scenes: scenes,
+                    tileManager: tileManager,
+                    comment: comment,
+                    thumbnailPngBytes: thumb,
                   );
+                  final kept = await saveService.setSlotMemo(
+                    projectId,
+                    slotIndex,
+                    commentController.text,
+                  );
+                  if (ctx.mounted) Navigator.pop(ctx);
+                  // 保存の一覧を読めていないので、メモ（打ったコメント）は次の
+                  // 起動に残らないかもしれない（メモの欄と同じく知らせる）。
+                  if (!kept && context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(l10n.saveTreeLoadFailedSnackbar)),
+                    );
+                  }
+                } finally {
+                  saving = false;
                 }
               },
               child: Text(l10n.commonSave),

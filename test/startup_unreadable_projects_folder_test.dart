@@ -930,6 +930,118 @@ void main() {
     });
   }
 
+  // 保存のダイアログ（スロットの画面〔保存の管理〕とセーブツリーの画面の
+  // 「スロットNに保存」、セーブツリーの「保存」）：開いてもメモの欄に
+  // フォーカスが無く、クリックする前に打った字はどこにも入らなかった
+  // （メモだけのダイアログは欄にフォーカスがある）。開いたらすぐ打て、
+  // Enterで保存する（続けてEnterを押しても二重に保存しない）。
+  for (final screen in ['save management', 'save tree slots', 'save tree']) {
+    testWidgets('the save dialog of the $screen screen takes typing at once '
+        'and Enter saves once', (tester) async {
+      tester.view.physicalSize = const Size(420, 900);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      SharedPreferences.setMockInitialValues({
+        'first_launch': false,
+        'language': 'ja',
+        firstUseTooltipsSeenKey: kAllFirstUseTooltipKeys,
+      });
+      final seeded = await tester.runAsync(
+        () => _seedProjectWithSaves(name: '保存する作品', comments: ['A']),
+      );
+      final (project, saves) = seeded!;
+      appRouter.go('/home');
+      final providers = await tester.runAsync(buildAppProviders);
+      if (screen == 'save tree slots') {
+        await tester.pumpWidget(
+          MultiProvider(
+            providers: providers!,
+            child: MaterialApp(
+              locale: const Locale('ja'),
+              localizationsDelegates: AppLocalizations.localizationsDelegates,
+              supportedLocales: AppLocalizations.supportedLocales,
+              home: SaveTreeScreen(
+                projectId: project.id,
+                entryMode: SaveTreeEntryMode.projectDetail,
+              ),
+            ),
+          ),
+        );
+      } else {
+        await tester.pumpWidget(
+          MultiProvider(providers: providers!, child: const NiarimApp()),
+        );
+        await _settleWithFiles(tester);
+        if (screen == 'save tree') {
+          tester
+              .element(find.byType(Scaffold).first)
+              .read<SaveTreeService>()
+              .setTreeMode(true);
+        }
+        appRouter.push('/save-tree/${project.id}?entry=detail');
+      }
+      await _settleWithFiles(tester, rounds: 6);
+      final saveTree = tester
+          .element(find.byType(Scaffold).first)
+          .read<SaveTreeService>();
+      expect(saveTree.isTreeMode, screen == 'save tree');
+      expect(saveTree.getNodes(project.id), hasLength(1));
+
+      if (screen == 'save tree') {
+        await tester.tap(find.byIcon(Icons.save));
+      } else {
+        final write = find.byTooltip('このスロットへ保存').at(1);
+        await tester.ensureVisible(write);
+        await tester.tap(write);
+      }
+      await _settleWithFiles(tester, rounds: 3);
+      final field = find.descendant(
+        of: find.byType(AlertDialog),
+        matching: find.byType(EditableText),
+      );
+      expect(field, findsOneWidget);
+      expect(
+        tester.widget<EditableText>(field).focusNode.hasFocus,
+        isTrue,
+        reason: 'typing before a click goes nowhere',
+      );
+      // クリックせずに打って、Enterを2回。
+      tester.testTextInput.enterText('線画まで');
+      await tester.pump();
+      await tester.testTextInput.receiveAction(TextInputAction.done);
+      await tester.testTextInput.receiveAction(TextInputAction.done);
+      for (
+        var i = 0;
+        i < 200 &&
+            (saveTree.getNodes(project.id).length < 2 ||
+                find.byType(AlertDialog).evaluate().isNotEmpty);
+        i++
+      ) {
+        await _settleWithFiles(tester, rounds: 1);
+      }
+      await _settleWithFiles(tester, rounds: 3);
+      expect(find.byType(AlertDialog), findsNothing);
+      final added = saveTree
+          .getNodes(project.id)
+          .where((n) => n.id != saves.single.id)
+          .toList();
+      expect(added, hasLength(1), reason: 'Enter saved twice');
+      expect(added.single.comment, '線画まで');
+      if (screen != 'save tree') {
+        expect(added.single.slotIndex, 1);
+        expect(saveTree.slotDisplayMemoOf(project.id, 1), '線画まで');
+      }
+      final saveFiles = Directory(
+        '${storage.projectsPath}/${project.id}/SaveTree',
+      ).listSync().where((f) => f.path.endsWith('.niapro'));
+      expect(saveFiles, hasLength(2), reason: 'a second save was written');
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox.shrink());
+      appRouter.go('/');
+    });
+  }
+
   // 作品の保存のフォルダ（SaveTree/）の中を一覧できないと、読めた一覧の
   // 保存まで出さず（作品ごと飛ばし）、次の保存でその一覧を上書きした。
   test('saves in a readable list come back even if their folder cannot be '

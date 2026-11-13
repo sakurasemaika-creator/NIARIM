@@ -182,6 +182,8 @@ class _GameStyleSlotScreen extends StatelessWidget {
     );
     var saving = false;
     String? failure;
+    // メモの欄のEnterで押す「保存」ボタン（保存中は押せないので何もしない）。
+    final saveButton = GlobalKey();
     showDialog<void>(
       context: context,
       // 保存中はボタンをスピナー表示にするため、ダイアログ内で状態を持つ。
@@ -209,6 +211,19 @@ class _GameStyleSlotScreen extends StatelessWidget {
                   ),
                 TextField(
                   controller: commentController,
+                  // 開いたらすぐ打てるように（クリックする前に打った字が
+                  // どこにも入らなかった）。Enterで保存する。
+                  autofocus: true,
+                  textInputAction: TextInputAction.done,
+                  // 保存を始めた後のEnter（次の画面を描く前の2回目も）は何もしない。
+                  onSubmitted: (_) {
+                    if (saving) return;
+                    (saveButton.currentWidget as FilledButton?)?.onPressed
+                        ?.call();
+                  },
+                  // Enterで欄からフォーカスを外さない（保存できなかったとき、
+                  // 続けて打った字がどこにも入らない）。
+                  onEditingComplete: () {},
                   decoration: InputDecoration(
                     labelText: l10n.saveTreeCommentLabel,
                     hintText: l10n.saveTreeCommentHint,
@@ -234,6 +249,7 @@ class _GameStyleSlotScreen extends StatelessWidget {
                 child: Text(l10n.commonCancel),
               ),
               FilledButton(
+                key: saveButton,
                 // 保存はキャンバス全体の合成＋PNG化＋アーカイブ書き込みを伴い、
                 // 大きなキャンバスでは数秒かかる。その間ボタンを押せたままに
                 // すると同じスロットへの保存が二重に走り、同じファイルを
