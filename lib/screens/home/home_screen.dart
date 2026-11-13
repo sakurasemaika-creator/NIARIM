@@ -1901,7 +1901,23 @@ class _HomeScreenState extends State<HomeScreen>
   }
 
   bool _pasting = false;
+
+  // 貼り付けを押してから終わるまで（確認のダイアログ・書き出したファイルの
+  // 読み込みを待っている間も）。_pastingは貼り付けを始めてから立つので、
+  // その前にもう一度押すと2回貼り付けた（書き出したファイルのフォルダが
+  // 2つできた）。
+  bool _pasteRequested = false;
   Future<void> _pasteClipboard() async {
+    if (_pasting || _pasteRequested || !_hasClipboard) return;
+    _pasteRequested = true;
+    try {
+      await _pasteClipboardNow();
+    } finally {
+      _pasteRequested = false;
+    }
+  }
+
+  Future<void> _pasteClipboardNow() async {
     if (_pasting || !_hasClipboard) return;
     if (_otherClipboard != null) {
       await _pasteLibraryEntry();

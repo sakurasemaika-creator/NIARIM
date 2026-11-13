@@ -3644,7 +3644,8 @@ class ProjectService extends ChangeNotifier {
   /// [name]は複製の名前。省略すると[namer]（画面の言語の「〇〇 (コピー)」と
   /// 番号）で、[namer]も省略すると日本語の「(コピー)」で付ける。番号は
   /// 同じ区分（共有から取り込んだ作品か）の作品の名前と重ならないように
-  /// 付ける。複製したかどうかを返す（元の作品が見つからなければfalse）。
+  /// 付ける。[namer]は素材を写し終えて複製を一覧へ加える直前に呼ぶ。
+  /// 複製したかどうかを返す（元の作品が見つからなければfalse）。
   Future<bool> duplicateProject(
     String id, {
     String? targetFolderId,
@@ -3658,13 +3659,6 @@ class ProjectService extends ChangeNotifier {
     if (idx >= 0) {
       final original = _projects[idx];
       final newId = _nextId('proj');
-      // Repeated paste must not create indistinguishable copies.
-      final copyName =
-          name ??
-          (namer ?? _nextCopyName)(original.name, {
-            for (final p in _projects)
-              if (p.isSharedImport == original.isSharedImport) p.name,
-          });
 
       // シーンリストは複製先専用の新しいListにする（Scene/Frame/Layerはimmutableなため
       // 中身の値オブジェクト自体は共有してよいが、外側のListを共有すると片方への
@@ -3702,6 +3696,15 @@ class ProjectService extends ChangeNotifier {
         thumbnailPath: original.thumbnailPath,
       );
 
+      // Repeated paste must not create indistinguishable copies. 名前は
+      // 写し終えて一覧へ加える直前の一覧で決める（押した時点で決めると、
+      // 写している間にもう一度複製したとき同じ名前が2つできた）。
+      final copyName =
+          name ??
+          (namer ?? _nextCopyName)(original.name, {
+            for (final p in _projects)
+              if (p.isSharedImport == original.isSharedImport) p.name,
+          });
       final copy = original.copyWith(
         id: newId,
         name: copyName,

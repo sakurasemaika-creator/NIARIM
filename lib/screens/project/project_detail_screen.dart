@@ -327,11 +327,13 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                   _showRenameDialog(context, project.name);
                 case 'duplicate':
                   // 画面の言語の「(コピー)」。同じ名前の複製があれば番号を付ける。
+                  // 名前は複製を一覧へ加える直前の一覧で決める（素材を写して
+                  // いる間にもう一度押しても同じ名前にしない）。
                   projectService.duplicateProject(
                     widget.projectId,
-                    name: duplicateProjectName(
+                    namer: (name, _) => duplicateProjectName(
                       l10n,
-                      project.name,
+                      name,
                       folderId: project.folderId,
                       projects: projectService.projects,
                     ),
