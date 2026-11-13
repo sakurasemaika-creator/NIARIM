@@ -1,5 +1,6 @@
 # Offline contracts for external-service boundaries. No live purchases,
 # production rewards, FCM delivery or AWS writes are performed.
+# Re-run FCM, Play Billing, AdMob and authenticated coin client contracts.
 name: External integration contract checks
 on:
   push:
