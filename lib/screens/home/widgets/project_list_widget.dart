@@ -164,6 +164,13 @@ class ProjectListWidget extends StatelessWidget {
   /// 「無い」と読め、新しく作るよう促していた）。
   final bool hideEmptyState;
 
+  /// 検索に当たらないときの「検索をやめる」。nullならボタンを出さない。
+  final VoidCallback? onClearSearch;
+
+  /// お気に入りだけを出していて何も無いときの「すべて表示」。nullなら
+  /// ボタンを出さない。
+  final VoidCallback? onShowAll;
+
   const ProjectListWidget({
     super.key,
     required this.viewMode,
@@ -184,6 +191,8 @@ class ProjectListWidget extends StatelessWidget {
     this.onPickProject,
     this.showEmptyCreateHint = true,
     this.hideEmptyState = false,
+    this.onClearSearch,
+    this.onShowAll,
   });
 
   /// IDs come from the same filtering as the rendered list, before sorting.
@@ -314,6 +323,19 @@ class ProjectListWidget extends StatelessWidget {
     final sorted = _sorted(entries);
 
     if (sorted.isEmpty) {
+      // 検索とお気に入りの絞り込みを両方かけているとき、検索には当たって
+      // いてお気に入りで隠れているだけなら、お気に入りの説明を出す。
+      final hiddenByFavorites =
+          showFavoritesOnly &&
+          searchQuery.trim().isNotEmpty &&
+          _visibleEntries(
+            source: source,
+            allFolders: allFolders,
+            currentFolderId: currentFolderId,
+            showFavoritesOnly: false,
+            searchQuery: searchQuery,
+            searchByTag: searchByTag,
+          ).isNotEmpty;
       if (hideEmptyState) {
         return CustomScrollView(
           controller: scrollController,
@@ -329,20 +351,12 @@ class ProjectListWidget extends StatelessWidget {
               // The empty-state layout uses LayoutBuilder, which cannot
               // provide intrinsic heights to the non-scrollable variant.
               hasScrollBody: true,
-              child: EmptyStatePlaceholder(
-                icon: Icons.movie_creation_outlined,
-                title: l10n.projectListEmptyTitle,
-                hint: showEmptyCreateHint ? l10n.projectListEmptyHint : null,
-              ),
+              child: _emptyState(l10n, hiddenByFavorites: hiddenByFavorites),
             ),
           ],
         );
       }
-      return EmptyStatePlaceholder(
-        icon: Icons.movie_creation_outlined,
-        title: l10n.projectListEmptyTitle,
-        hint: showEmptyCreateHint ? l10n.projectListEmptyHint : null,
-      );
+      return _emptyState(l10n, hiddenByFavorites: hiddenByFavorites);
     }
 
     if (viewMode == ProjectViewMode.detail) {
@@ -419,6 +433,62 @@ class ProjectListWidget extends StatelessWidget {
         sorted[index],
         _gridCard(context, sorted[index]),
       ),
+    );
+  }
+
+  /// 一覧が空のときの表示。検索・お気に入りの絞り込みで隠れているだけの
+  /// ときは「プロジェクトがありません」と言わず、絞り込みを外すボタンを
+  /// 出す。フォルダの中が空のときはそう言う。
+  Widget _emptyState(AppLocalizations l10n, {bool hiddenByFavorites = false}) {
+    // ホームでは左下・右下に丸いボタンが浮くので、絞り込みを外すボタンが
+    // その下に入らないよう、下にその分の余白を取る（選ぶ専用画面には無い）。
+    Widget clearOfFloatingButtons(Widget child) => Padding(
+      padding: EdgeInsets.only(bottom: onPickProject == null ? 88 : 0),
+      child: child,
+    );
+    final query = searchQuery.trim();
+    if (query.isNotEmpty && !hiddenByFavorites) {
+      return clearOfFloatingButtons(
+        EmptyStatePlaceholder(
+          icon: Icons.search_off,
+          title: l10n.projectListNoMatchTitle(query),
+          hint: searchByTag
+              ? l10n.projectListNoMatchTagHint
+              : l10n.projectListNoMatchNameHint,
+          action: onClearSearch == null
+              ? null
+              : OutlinedButton.icon(
+                  onPressed: onClearSearch,
+                  icon: const Icon(Icons.close),
+                  label: Text(l10n.projectListClearSearch),
+                ),
+        ),
+      );
+    }
+    if (showFavoritesOnly) {
+      return clearOfFloatingButtons(
+        EmptyStatePlaceholder(
+          icon: Icons.star_border,
+          title: l10n.projectListNoFavoritesTitle,
+          // 説明は作品・フォルダのメニューを指すので、カードにメニューの無い
+          // 選ぶ専用画面（[onPickProject]使用時）では出さない。
+          hint: onPickProject == null ? l10n.projectListNoFavoritesHint : null,
+          action: onShowAll == null
+              ? null
+              : OutlinedButton(
+                  onPressed: onShowAll,
+                  child: Text(l10n.projectListShowAll),
+                ),
+        ),
+      );
+    }
+    final inFolder = currentFolderId != null;
+    return EmptyStatePlaceholder(
+      icon: inFolder ? Icons.folder_open : Icons.movie_creation_outlined,
+      title: inFolder
+          ? l10n.projectListEmptyFolderTitle
+          : l10n.projectListEmptyTitle,
+      hint: showEmptyCreateHint ? l10n.projectListEmptyHint : null,
     );
   }
 

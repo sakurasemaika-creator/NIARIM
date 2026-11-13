@@ -3801,14 +3801,16 @@ void main() {
     expect(find.text('＋ ボタンから新規作成'), findsNothing);
 
     // 読めるようになって「再試行」：知らせが消え、お気に入りが無いことを
-    // いつもの空の表示で伝える。絞り込みを外すと2作品とも並ぶ。
+    // お気に入りの空の表示で伝える（作品はあるので「プロジェクトが
+    // ありません」とは言わない）。絞り込みを外すと2作品とも並ぶ。
     storage.paths.clear();
     await tester.tap(find.descendant(of: notice, matching: find.text('再試行')));
     for (var i = 0; i < 40 && notice.evaluate().isNotEmpty; i++) {
       await _settleWithFiles(tester, rounds: 2);
     }
     expect(notice, findsNothing);
-    expect(find.text('プロジェクトがありません'), findsOneWidget);
+    expect(find.text('お気に入りの作品はありません'), findsOneWidget);
+    expect(find.text('プロジェクトがありません'), findsNothing);
     await tester.tap(favoritesOnly);
     await _settleWithFiles(tester, rounds: 3);
     expect(find.text('読めた作品'), findsOneWidget);
