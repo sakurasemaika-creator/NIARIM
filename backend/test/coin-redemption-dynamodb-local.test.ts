@@ -130,8 +130,7 @@ describe.skipIf(process.env.NIARIM_DYNAMODB_LOCAL_TESTS !== "1")(
       const requestId = randomUUID();
       const reply = await redeemIndividualCoins(owner, {
         ...individualInput(requestId),
-        costCoins: 1,
-        accountId: other,
+        ...({ costCoins: 1, accountId: other } as Record<string, unknown>),
       });
       expect(JSON.parse(reply.body ?? "{}")).toMatchObject({
         redeemed: true, duplicate: false, costCoins: 6230,
