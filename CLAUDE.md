@@ -1155,6 +1155,15 @@ onTap: ...)`だったために
   する。あわせて品質の方針：「世界で賞をとれるレベルに。今できる機能を削る行為で
   なければ、いくらでもブラッシュアップしてよい（便利に・見やすく・おしゃれに）」。
   実装が済んだ項目から、このファイルの該当の決まりを書き直すこと。
+  実装済み（2026-11-13）：（7）は下の「知らせ（SnackBar）は5秒以内に…」、
+  （8）・（10）は多言語の見張り（`l10n_quote_marks_test`＝簡体字は“ ”‘ ’・
+  繁体字は「」、`home_no_cjk_literals_test`・`home_l10n_locales_test`・
+  `dialog_l10n_locales_test`・`settings_l10n_locales_test`＝画面の手書きの
+  日本語と`ja ? '…' : '…'`の表、`l10n_review_wording_test`＝訳の文法〔仏の冠詞の
+  省略・西の性・韓の助詞・en/es/frの大文字小文字のそろい〕）。画面の文を新しく
+  書くときは手書きの表にせず7言語のARBへ足し、サブセットフォントを作り直す。
+  テーマの見本一覧（DISC106）・共有カードの画像（DISC108）・複製の名前
+  （DISC105）はまだ日本語以外で訳されていない。
 - **知らせ（SnackBar）は5秒以内に、少しずつ薄くなって消える（所有者の判断7、
   2026-11-11）**：アプリの知らせはすべて`lib/widgets/app_toast_messenger.dart`の
   `AppToastMessenger`（`MaterialApp.router`の`builder`と起動失敗画面で、画面を包む
