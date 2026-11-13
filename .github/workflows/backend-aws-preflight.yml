@@ -77,6 +77,26 @@ jobs:
       - name: Install locked backend dependencies
         working-directory: backend
         run: npm ci
+      - name: Compare 25 protected live coin and mission settings (read-only)
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Existing OIDC deploy role may assume the CDK lookup role. This
+          # read-only step never prints the Lambda environment or secret keys.
+          creds="$(aws sts assume-role \
+            --role-arn arn:aws:iam::368601349794:role/cdk-hnb659fds-lookup-role-368601349794-ap-northeast-1 \
+            --role-session-name niarim-coin-config-read \
+            --query Credentials --output json)"
+          AWS_ACCESS_KEY_ID="$(jq -r .AccessKeyId <<<"$creds")" \
+          AWS_SECRET_ACCESS_KEY="$(jq -r .SecretAccessKey <<<"$creds")" \
+          AWS_SESSION_TOKEN="$(jq -r .SessionToken <<<"$creds")" \
+            aws lambda get-function-configuration \
+              --function-name niarim-api \
+              --query 'Environment.Variables' --output json \
+              > "$RUNNER_TEMP/niarim-live-env.json"
+          trap 'rm -f "$RUNNER_TEMP/niarim-live-env.json"' EXIT
+          (cd backend && node scripts/assert-live-coin-config.mjs \
+            "$RUNNER_TEMP/niarim-live-env.json")
       - name: Diff against real AWS (template only; no change set or deploy)
         working-directory: backend
         run: |
