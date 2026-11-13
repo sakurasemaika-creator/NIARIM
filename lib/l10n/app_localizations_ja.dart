@@ -4229,10 +4229,10 @@ class AppLocalizationsJa extends AppLocalizations {
   String get canvasRulerTooltip => '定規';
 
   @override
-  String get commonUndo => 'Undo';
+  String get commonUndo => '取り消し';
 
   @override
-  String get commonRedo => 'Redo';
+  String get commonRedo => 'やり直し';
 
   @override
   String get canvasSettingsMenuTooltip => '設定/編集';

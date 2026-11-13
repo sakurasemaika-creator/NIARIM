@@ -7758,13 +7758,13 @@ abstract class AppLocalizations {
   /// No description provided for @commonUndo.
   ///
   /// In ja, this message translates to:
-  /// **'Undo'**
+  /// **'取り消し'**
   String get commonUndo;
 
   /// No description provided for @commonRedo.
   ///
   /// In ja, this message translates to:
-  /// **'Redo'**
+  /// **'やり直し'**
   String get commonRedo;
 
   /// No description provided for @canvasSettingsMenuTooltip.

@@ -2077,8 +2077,8 @@
   "canvasTapToEnterTextLabel": "キャンバスをタップしてテキストを入力",
   "canvasRulerFirstUseTip": "定規を使うとまっすぐな線や綺麗な図形が描けます。",
   "canvasRulerTooltip": "定規",
-  "commonUndo": "Undo",
-  "commonRedo": "Redo",
+  "commonUndo": "取り消し",
+  "commonRedo": "やり直し",
   "canvasSettingsMenuTooltip": "設定/編集",
   "canvasFrameSelectedCount": "{selected} / {total} フレーム選択中",
   "@canvasFrameSelectedCount": {
