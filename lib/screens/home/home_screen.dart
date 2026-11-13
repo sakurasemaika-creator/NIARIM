@@ -2695,6 +2695,13 @@ String _trashKindLabel(BuildContext context, TrashEntryKind kind) {
   };
 }
 
+/// 作品一覧・共有の「自分が作成したもの」の行で出すファイルの大きさ。
+String _homeFileSizeLabel(int bytes) {
+  if (bytes < 1024) return '${bytes}B';
+  if (bytes < 1024 * 1024) return '${(bytes / 1024).toStringAsFixed(1)}KB';
+  return '${(bytes / (1024 * 1024)).toStringAsFixed(1)}MB';
+}
+
 /// ゴミ箱一覧。ホームタブと'/trash'直リンクで共用する。
 class TrashScreen extends StatefulWidget {
   const TrashScreen({
@@ -3514,10 +3521,11 @@ class _OutgoingSharesList extends StatelessWidget {
       final onLongPress = selection == null
           ? null
           : () => selection.onLongPress(selectionId);
-      final subtitle =
-          '${entry.updatedAt.year}/${entry.updatedAt.month.toString().padLeft(2, '0')}/'
-          '${entry.updatedAt.day.toString().padLeft(2, '0')}  ·  '
-          '${(entry.sizeBytes / 1024).toStringAsFixed(1)} KB';
+      // 作品一覧の行と同じ、その言語の日時と大きさの書き方。
+      final subtitle = l10n.homeExportedWorkMetadata(
+        entry.updatedAt,
+        _homeFileSizeLabel(entry.sizeBytes),
+      );
       final favoriteAction = CollectionFavoriteButton(
         itemId: entry.path,
         favorite: isFavorite,
@@ -4091,6 +4099,7 @@ class _FolderableList<T> extends StatelessWidget {
   /// Folder entries use the same full-width, roughly 80dp ListTile as files,
   /// rather than small 48dp chips. Their cover is drawn inside the folder.
   Widget _folderChips(BuildContext context, Map<String, int> countByFolder) {
+    final l10n = AppLocalizations.of(context)!;
     return Column(
       children: [
         for (final folder in folders)
@@ -4114,7 +4123,18 @@ class _FolderableList<T> extends StatelessWidget {
                   ),
                 ),
                 title: Text(folder.name),
-                subtitle: Text('${countByFolder[folder.id] ?? 0}'),
+                // 作品のフォルダは書き出した作品の数、共有のフォルダは
+                // プロジェクトのフォルダと同じ書き方（中は1階層だけ）。
+                subtitle: Text(
+                  T == File
+                      ? l10n.homeWorkFolderContents(
+                          countByFolder[folder.id] ?? 0,
+                        )
+                      : l10n.homeFolderContents(
+                          countByFolder[folder.id] ?? 0,
+                          0,
+                        ),
+                ),
                 trailing:
                     HomeCollectionSelectionScope.maybeOf(context)?.active ==
                         true
@@ -4280,10 +4300,7 @@ class _TrashTabState extends State<_TrashTab> {
 
   String _deletedLabel(DateTime? deleted, AppLocalizations l10n) {
     if (deleted == null) return '';
-    return l10n.homeTrashDeletedOn(
-      '${deleted.year}/${deleted.month.toString().padLeft(2, '0')}/'
-      '${deleted.day.toString().padLeft(2, '0')}',
-    );
+    return l10n.homeTrashDeletedOn(deleted);
   }
 
   Future<bool> _confirmRestoreFromTrash(String name) async {
@@ -5591,11 +5608,7 @@ class _WorkListItemState extends State<_WorkListItem> {
     }
   }
 
-  String _formatSize(int bytes) {
-    if (bytes < 1024) return '${bytes}B';
-    if (bytes < 1024 * 1024) return '${(bytes / 1024).toStringAsFixed(1)}KB';
-    return '${(bytes / (1024 * 1024)).toStringAsFixed(1)}MB';
-  }
+  String _formatSize(int bytes) => _homeFileSizeLabel(bytes);
 
   @override
   Widget build(BuildContext context) {

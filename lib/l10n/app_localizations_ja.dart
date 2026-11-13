@@ -144,8 +144,11 @@ class AppLocalizationsJa extends AppLocalizations {
   String get homeTrashEmpty => 'ゴミ箱は空です';
 
   @override
-  String homeTrashDeletedOn(String date) {
-    return '$date 削除';
+  String homeTrashDeletedOn(DateTime date) {
+    final intl.DateFormat dateDateFormat = intl.DateFormat.yMd(localeName);
+    final String dateString = dateDateFormat.format(date);
+
+    return '$dateString 削除';
   }
 
   @override
@@ -2251,7 +2254,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get helpBasicGestureDesc =>
-      'ツールバーのアイコンはシングルタップでそのツールに切り替わります。同じアイコンを長押し、または上にスワイプすると詳細設定が開きます。ペンならブラシ・トーン・スタンプ・投げ縄塗りの切り替え、バケツならベタ塗りとトーン塗りの切り替え、選択ツールなら矩形・投げ縄・自動選択の切り替え、指ツールならぼかしとモザイクの切り替え、早替えツールなら登録内容の編集が、それぞれ長押し・上スワイプの先にあります。アイコンのダブルタップでは、そのツールの短い説明が画面下に出ます。\\nキャンバスでは、2本指でつまむと拡大縮小、2本指でなぞると移動、2本指のタップで元に戻す、3本指のタップでやり直しです。画面の左右の端をダブルタップすると、前後のフレームへ移動します。\\nマウスやペンタブレットを繋いでいる場合は、ホイールで拡大縮小、中ボタンのドラッグで移動できます。';
+      'ツールバーのアイコンはシングルタップでそのツールに切り替わります。同じアイコンを長押し、または上にスワイプすると詳細設定が開きます。ペンならブラシ・トーン・スタンプ・投げ縄塗りの切り替え、バケツならベタ塗りとトーン塗りの切り替え、選択ツールなら矩形・投げ縄・自動選択の切り替え、指ツールならぼかしとモザイクの切り替え、早替えツールなら登録内容の編集が、それぞれ長押し・上スワイプの先にあります。アイコンのダブルタップでは、そのツールの短い説明が画面下に出ます。\nキャンバスでは、2本指でつまむと拡大縮小、2本指でなぞると移動、2本指のタップで元に戻す、3本指のタップでやり直しです。画面の左右の端をダブルタップすると、前後のフレームへ移動します。\nマウスやペンタブレットを繋いでいる場合は、ホイールで拡大縮小、中ボタンのドラッグで移動できます。';
 
   @override
   String get toolbarStampColorLockedSnackbar => 'スタンプは色情報を保持しているため色変更できません';
@@ -9404,6 +9407,17 @@ class AppLocalizationsJa extends AppLocalizations {
     final String dateString = dateDateFormat.format(date);
 
     return '$dateString ・ $size';
+  }
+
+  @override
+  String homeWorkFolderContents(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '作品$count件',
+      zero: '中身なし',
+    );
+    return '$_temp0';
   }
 
   @override

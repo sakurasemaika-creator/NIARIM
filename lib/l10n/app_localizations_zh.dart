@@ -143,8 +143,11 @@ class AppLocalizationsZh extends AppLocalizations {
   String get homeTrashEmpty => '回收站是空的';
 
   @override
-  String homeTrashDeletedOn(String date) {
-    return '$date 删除';
+  String homeTrashDeletedOn(DateTime date) {
+    final intl.DateFormat dateDateFormat = intl.DateFormat.yMd(localeName);
+    final String dateString = dateDateFormat.format(date);
+
+    return '$dateString 删除';
   }
 
   @override
@@ -363,7 +366,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get commonPaste => '粘贴';
 
   @override
-  String get commonDuplicate => '复制';
+  String get commonDuplicate => '创建副本';
 
   @override
   String homePasteTooltip(int count) {
@@ -2236,7 +2239,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get helpBasicGestureDesc =>
-      '单击工具栏图标即可切换到该工具。长按同一图标或向上滑动，可打开详细设置。钢笔可切换笔刷・网点・图章・套索填充，油漆桶可切换纯色填充与网点填充，选择工具可切换矩形・套索・自动选择，手指工具可切换模糊与马赛克，快速切换工具可编辑已登记的内容，这些都在长按或上滑之后。双击图标时，画面下方会显示该工具的简短说明。\\n在画布上，双指捏合可缩放，双指拖动可平移，双指点击撤销，三指点击重做。双击画面左右边缘可移动到前后一帧。\\n连接鼠标或数位板时，可用滚轮缩放、按住中键拖动平移。';
+      '单击工具栏图标即可切换到该工具。长按同一图标或向上滑动，可打开详细设置。钢笔可切换笔刷・网点・图章・套索填充，油漆桶可切换纯色填充与网点填充，选择工具可切换矩形・套索・自动选择，手指工具可切换模糊与马赛克，快速切换工具可编辑已登记的内容，这些都在长按或上滑之后。双击图标时，画面下方会显示该工具的简短说明。\n在画布上，双指捏合可缩放，双指拖动可平移，双指点击撤销，三指点击重做。双击画面左右边缘可移动到前后一帧。\n连接鼠标或数位板时，可用滚轮缩放、按住中键拖动平移。';
 
   @override
   String get toolbarStampColorLockedSnackbar => '图章保留了自身的颜色信息，因此无法更改颜色';
@@ -2579,7 +2582,7 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get themeDuplicateAction => '复制';
+  String get themeDuplicateAction => '创建副本';
 
   @override
   String themeAdoptColorsSnackbar(String name) {
@@ -8059,7 +8062,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get communityPlazaExactTitle => '搜索词完全匹配';
 
   @override
-  String get communityPlazaUnavailablePlaceholder => '此作品已删除或设为私密';
+  String get communityPlazaUnavailablePlaceholder => '此作品已删除或设为私享';
 
   @override
   String get communityPlazaSearchTab => '搜索';
@@ -8086,7 +8089,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get communityPostVisibilityUnlistedDisclosure =>
-      '注意：不公开列出不等于私密。知道链接的人也能在 NIARIM 外观看和分享。';
+      '注意：不公开列出不等于私享。知道链接的人也能在 NIARIM 外观看和分享。';
 
   @override
   String get communityRankingLayoutTitle => '排行榜布局';
@@ -9308,6 +9311,17 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String homeWorkFolderContents(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count个作品',
+      zero: '空',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get thumbnailChangeAction => '更换缩略图';
 
   @override
@@ -9479,7 +9493,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get communityPlaybackDeletedBody => '此视频已删除，无法播放。';
 
   @override
-  String get communityPlaybackPrivateTitle => '视频不公开';
+  String get communityPlaybackPrivateTitle => '私享视频';
 
   @override
   String get communityPlaybackPrivateBody => '发布者的隐私设置禁止播放。';
@@ -9488,7 +9502,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get communityPlaybackUnavailableTitle => '视频不可用';
 
   @override
-  String get communityPlaybackUnavailableBody => '可能已删除或设为私密，无法确认状态。';
+  String get communityPlaybackUnavailableBody => '可能已删除或设为私享，无法确认状态。';
 
   @override
   String get communityPlaybackUnknownTitle => '无法检查视频';
@@ -9544,7 +9558,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String communityPostFramePickerPosition(String current, String total) {
-    return '$current / $total 秒';
+    return '$current / $total秒';
   }
 
   @override
@@ -9808,8 +9822,11 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get homeTrashEmpty => '垃圾桶是空的';
 
   @override
-  String homeTrashDeletedOn(String date) {
-    return '$date 已刪除';
+  String homeTrashDeletedOn(DateTime date) {
+    final intl.DateFormat dateDateFormat = intl.DateFormat.yMd(localeName);
+    final String dateString = dateDateFormat.format(date);
+
+    return '$dateString 已刪除';
   }
 
   @override
@@ -10028,7 +10045,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get commonPaste => '貼上';
 
   @override
-  String get commonDuplicate => '複製';
+  String get commonDuplicate => '建立副本';
 
   @override
   String homePasteTooltip(int count) {
@@ -11901,7 +11918,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get helpBasicGestureDesc =>
-      '單擊工具列圖示即可切換到該工具。長按同一圖示或向上滑動，可開啟詳細設定。鋼筆可切換筆刷・網點・印章・套索填色，油漆桶可切換純色填色與網點填色，選取工具可切換矩形・套索・自動選取，手指工具可切換模糊與馬賽克，快速切換工具可編輯已登記的內容，這些都在長按或上滑之後。雙擊圖示時，畫面下方會顯示該工具的簡短說明。\\n在畫布上，雙指捏合可縮放，雙指拖曳可平移，雙指點擊復原，三指點擊重做。雙擊畫面左右邊緣可移動到前後一格。\\n連接滑鼠或繪圖板時，可用滾輪縮放、按住中鍵拖曳平移。';
+      '單擊工具列圖示即可切換到該工具。長按同一圖示或向上滑動，可開啟詳細設定。鋼筆可切換筆刷・網點・印章・套索填色，油漆桶可切換純色填色與網點填色，選取工具可切換矩形・套索・自動選取，手指工具可切換模糊與馬賽克，快速切換工具可編輯已登記的內容，這些都在長按或上滑之後。雙擊圖示時，畫面下方會顯示該工具的簡短說明。\n在畫布上，雙指捏合可縮放，雙指拖曳可平移，雙指點擊復原，三指點擊重做。雙擊畫面左右邊緣可移動到前後一格。\n連接滑鼠或繪圖板時，可用滾輪縮放、按住中鍵拖曳平移。';
 
   @override
   String get toolbarStampColorLockedSnackbar => '印章保留了自身的顏色資訊，因此無法變更顏色';
@@ -12244,7 +12261,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   }
 
   @override
-  String get themeDuplicateAction => '複製';
+  String get themeDuplicateAction => '建立副本';
 
   @override
   String themeAdoptColorsSnackbar(String name) {
@@ -18314,7 +18331,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get sharedArchiveShare => '分享';
 
   @override
-  String get sharedArchiveEmpty => '尚未建立分享檔案';
+  String get sharedArchiveEmpty => '尚未建立共享檔案';
 
   @override
   String coinAmount(int count) {
@@ -18900,11 +18917,11 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get homeClipboardSourceMissing => '找不到複製的作品或資料夾。請從垃圾桶復原，或重新複製。';
 
   @override
-  String get homePasteRestrictionTitle => '無法貼上到此處';
+  String get homePasteRestrictionTitle => '無法在此貼上';
 
   @override
   String get homePasteCrossFormatBody =>
-      '無法貼上到格式不同的分頁或分類中。請將作品和檔案貼回原本的分頁或分類。只有不含檔案的資料夾可以貼到其他位置。';
+      '無法貼到格式不同的分頁或分類中。請將作品和檔案貼回原本的分頁或分類。只有不含檔案的資料夾可以貼到其他位置。';
 
   @override
   String get homePasteOutgoingNoFolders => '「共享」中的「我建立的檔案」只能存放檔案，因此無法貼上資料夾。';
@@ -18972,6 +18989,17 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
     final String dateString = dateDateFormat.format(date);
 
     return '$dateString · $size';
+  }
+
+  @override
+  String homeWorkFolderContents(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count個作品',
+      zero: '空',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -19211,7 +19239,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String communityPostFramePickerPosition(String current, String total) {
-    return '$current / $total 秒';
+    return '$current / $total秒';
   }
 
   @override

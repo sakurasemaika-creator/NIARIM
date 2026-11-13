@@ -86,7 +86,13 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String homeMoveToTrashConfirm(int count) {
-    return 'Mettre $count élément(s) à la corbeille ?';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Mettre $count éléments à la corbeille ?',
+      one: 'Mettre $count élément à la corbeille ?',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -150,8 +156,11 @@ class AppLocalizationsFr extends AppLocalizations {
   String get homeTrashEmpty => 'La corbeille est vide';
 
   @override
-  String homeTrashDeletedOn(String date) {
-    return 'Supprimé le $date';
+  String homeTrashDeletedOn(DateTime date) {
+    final intl.DateFormat dateDateFormat = intl.DateFormat.yMd(localeName);
+    final String dateString = dateDateFormat.format(date);
+
+    return 'Supprimé le $dateString';
   }
 
   @override
@@ -180,7 +189,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String homeDeleteFolderKeepContents(String name) {
-    return '\"$name\" sera supprimé. Son contenu reviendra dans la liste principale et ne sera pas supprimé.';
+    return '« $name » sera supprimé. Son contenu reviendra dans la liste principale et ne sera pas supprimé.';
   }
 
   @override
@@ -2369,7 +2378,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get helpBasicGestureDesc =>
-      'Une simple pression sur une icône de la barre d’outils bascule vers cet outil. Appuyez longuement sur cette icône, ou faites-la glisser vers le haut, pour ouvrir ses réglages détaillés. Derrière cet appui long ou ce balayage se trouvent : pinceau, trame, tampon ou remplissage au lasso pour le stylo ; remplissage uni ou tramé pour le pot ; rectangle, lasso ou sélection automatique pour l’outil de sélection ; flou ou mosaïque pour l’outil doigt ; et la liste des outils enregistrés pour le changement rapide. Un double appui sur une icône affiche une brève description en bas de l’écran.\\nSur le canevas, pincez à deux doigts pour zoomer, faites glisser à deux doigts pour vous déplacer, touchez à deux doigts pour annuler et à trois doigts pour rétablir. Appuyez deux fois sur le bord gauche ou droit de l’écran pour passer à l’image précédente ou suivante.\\nAvec une souris ou une tablette graphique, la molette zoome et le glissement avec le bouton central déplace la vue.';
+      'Une simple pression sur une icône de la barre d’outils bascule vers cet outil. Appuyez longuement sur cette icône, ou faites-la glisser vers le haut, pour ouvrir ses réglages détaillés. Derrière cet appui long ou ce balayage se trouvent : pinceau, trame, tampon ou remplissage au lasso pour le stylo ; remplissage uni ou tramé pour le pot ; rectangle, lasso ou sélection automatique pour l’outil de sélection ; flou ou mosaïque pour l’outil doigt ; et la liste des outils enregistrés pour le changement rapide. Un double appui sur une icône affiche une brève description en bas de l’écran.\nSur le canevas, pincez à deux doigts pour zoomer, faites glisser à deux doigts pour vous déplacer, touchez à deux doigts pour annuler et à trois doigts pour rétablir. Appuyez deux fois sur le bord gauche ou droit de l’écran pour passer à l’image précédente ou suivante.\nAvec une souris ou une tablette graphique, la molette zoome et le glissement avec le bouton central déplace la vue.';
 
   @override
   String get toolbarStampColorLockedSnackbar =>
@@ -8162,7 +8171,13 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String homeMovedToTrashSnackbar(int count) {
-    return '$count élément(s) mis à la corbeille';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count éléments mis à la corbeille',
+      one: '$count élément mis à la corbeille',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -8170,12 +8185,28 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String homeCutSnackbar(int count) {
-    return '$count élément(s) coupé(s). Ouvrez la destination et touchez Coller dans la barre sous les onglets.';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count éléments coupés. Ouvrez la destination et touchez Coller dans la barre sous les onglets.',
+      one:
+          '$count élément coupé. Ouvrez la destination et touchez Coller dans la barre sous les onglets.',
+    );
+    return '$_temp0';
   }
 
   @override
   String homeCopiedSnackbar(int count) {
-    return '$count élément(s) copié(s). Ouvrez l’emplacement voulu et touchez Coller dans la barre sous les onglets.';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count éléments copiés. Ouvrez l’emplacement voulu et touchez Coller dans la barre sous les onglets.',
+      one:
+          '$count élément copié. Ouvrez l’emplacement voulu et touchez Coller dans la barre sous les onglets.',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -10051,10 +10082,10 @@ class AppLocalizationsFr extends AppLocalizations {
   String get homeTrashKindCreatedProject => 'Projet créé';
 
   @override
-  String get homeTrashKindReceivedShare => 'Fichier partagé reçu';
+  String get homeTrashKindReceivedShare => 'Partagé avec vous';
 
   @override
-  String get homeTrashKindCreatedShare => 'Fichier partagé créé par vous';
+  String get homeTrashKindCreatedShare => 'Partagé par vous';
 
   @override
   String get homeTrashKindExportedWork => 'Œuvre exportée';
@@ -10165,7 +10196,7 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
-  String get homeClipboardClear => 'Effacer';
+  String get homeClipboardClear => 'Annuler';
 
   @override
   String homeExportedWorkMetadata(DateTime date, String size) {
@@ -10178,11 +10209,22 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
+  String homeWorkFolderContents(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count œuvres',
+      one: '1 œuvre',
+      zero: 'Vide',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get thumbnailChangeAction => 'Changer la miniature';
 
   @override
-  String get thumbnailDefaultLatestWork =>
-      'Par défaut (œuvre modifiée le plus récemment)';
+  String get thumbnailDefaultLatestWork => 'Par défaut (œuvre la plus récente)';
 
   @override
   String get thumbnailHide => 'Ne pas afficher de miniature';
@@ -10201,7 +10243,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get thumbnailFolderNoWorks => 'Ce dossier ne contient aucune œuvre';
 
   @override
-  String get thumbnailPickImage => 'Choisir une image';
+  String get thumbnailPickImage => 'Choisir un fichier image';
 
   @override
   String get thumbnailImageLoadFailed => 'Impossible de charger l’image';
@@ -10223,13 +10265,13 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get thumbnailStillImageOneFrame =>
-      'Une image fixe ne compte qu’une seule image.';
+      'Une image fixe est traitée comme une animation d’une seule image.';
 
   @override
   String get thumbnailLastSavedFrame => 'Dernière image enregistrée';
 
   @override
-  String get thumbnailSelectFrame => 'Choisir une image';
+  String get thumbnailSelectFrame => 'Choisir une image de l’animation';
 
   @override
   String get commonApply => 'Appliquer';
@@ -10303,13 +10345,13 @@ class AppLocalizationsFr extends AppLocalizations {
   String get communityUnfollowAction => 'Ne plus suivre';
 
   @override
-  String get communityUnfollowedLabel => 'Vous ne suivez plus';
+  String get communityUnfollowedLabel => 'Vous ne suivez plus ce compte';
 
   @override
   String get communityFollowingListEmpty => 'Vous ne suivez encore personne';
 
   @override
-  String get communityRecentlyUnfollowedHeader => 'Plus suivis récemment';
+  String get communityRecentlyUnfollowedHeader => 'Désabonnements récents';
 
   @override
   String communityMyWorksStatusScheduled(DateTime date) {
@@ -10461,8 +10503,10 @@ class AppLocalizationsFr extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       minutes,
       locale: localeName,
-      other: 'Choisissez une heure au moins $minutes minutes plus tard',
-      one: 'Choisissez une heure au moins $minutes minute plus tard',
+      other:
+          'Choisissez une heure au moins $minutes minutes après l’heure actuelle',
+      one:
+          'Choisissez une heure au moins $minutes minute après l’heure actuelle',
     );
     return '$_temp0';
   }
@@ -10569,7 +10613,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get pcLayoutAutoFoldHelp =>
-      'Seulement si les fenêtres ne tiennent toujours pas une fois réduites, celles utilisées le moins récemment se replient temporairement. La fenêtre en cours reste ouverte et les fenêtres repliées reviennent dès que la place le permet. Désactivé, la colonne défile simplement.';
+      'Les fenêtres utilisées le moins récemment se replient temporairement, uniquement si les fenêtres ne tiennent toujours pas une fois réduites. La fenêtre en cours reste ouverte et les fenêtres repliées reviennent dès que la place le permet. Si l’option est désactivée, la colonne défile simplement.';
 
   @override
   String get pcLayoutResetWorkspace => 'Réinitialiser l’espace de travail';

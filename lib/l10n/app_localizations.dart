@@ -353,11 +353,11 @@ abstract class AppLocalizations {
   /// **'ゴミ箱は空です'**
   String get homeTrashEmpty;
 
-  /// No description provided for @homeTrashDeletedOn.
+  /// ゴミ箱の行の補足：ゴミ箱へ移した日（作品一覧の日付と同じ、その言語の書き方）
   ///
   /// In ja, this message translates to:
   /// **'{date} 削除'**
-  String homeTrashDeletedOn(String date);
+  String homeTrashDeletedOn(DateTime date);
 
   /// No description provided for @homePermanentDelete.
   ///
@@ -4152,7 +4152,7 @@ abstract class AppLocalizations {
   /// Help entry body describing tap, long-press, swipe and canvas gestures
   ///
   /// In ja, this message translates to:
-  /// **'ツールバーのアイコンはシングルタップでそのツールに切り替わります。同じアイコンを長押し、または上にスワイプすると詳細設定が開きます。ペンならブラシ・トーン・スタンプ・投げ縄塗りの切り替え、バケツならベタ塗りとトーン塗りの切り替え、選択ツールなら矩形・投げ縄・自動選択の切り替え、指ツールならぼかしとモザイクの切り替え、早替えツールなら登録内容の編集が、それぞれ長押し・上スワイプの先にあります。アイコンのダブルタップでは、そのツールの短い説明が画面下に出ます。\\nキャンバスでは、2本指でつまむと拡大縮小、2本指でなぞると移動、2本指のタップで元に戻す、3本指のタップでやり直しです。画面の左右の端をダブルタップすると、前後のフレームへ移動します。\\nマウスやペンタブレットを繋いでいる場合は、ホイールで拡大縮小、中ボタンのドラッグで移動できます。'**
+  /// **'ツールバーのアイコンはシングルタップでそのツールに切り替わります。同じアイコンを長押し、または上にスワイプすると詳細設定が開きます。ペンならブラシ・トーン・スタンプ・投げ縄塗りの切り替え、バケツならベタ塗りとトーン塗りの切り替え、選択ツールなら矩形・投げ縄・自動選択の切り替え、指ツールならぼかしとモザイクの切り替え、早替えツールなら登録内容の編集が、それぞれ長押し・上スワイプの先にあります。アイコンのダブルタップでは、そのツールの短い説明が画面下に出ます。\nキャンバスでは、2本指でつまむと拡大縮小、2本指でなぞると移動、2本指のタップで元に戻す、3本指のタップでやり直しです。画面の左右の端をダブルタップすると、前後のフレームへ移動します。\nマウスやペンタブレットを繋いでいる場合は、ホイールで拡大縮小、中ボタンのドラッグで移動できます。'**
   String get helpBasicGestureDesc;
 
   /// No description provided for @toolbarStampColorLockedSnackbar.
@@ -16809,11 +16809,17 @@ abstract class AppLocalizations {
   /// **'クリア'**
   String get homeClipboardClear;
 
-  /// 作品一覧の各行の補足：書き出したファイルの更新日時と大きさ
+  /// 作品一覧の各行と、共有の「自分が作成したもの」の各行の補足：ファイルの更新日時と大きさ
   ///
   /// In ja, this message translates to:
   /// **'{date} ・ {size}'**
   String homeExportedWorkMetadata(DateTime date, String size);
+
+  /// 作品一覧・作品のフォルダの行の補足：中の書き出した作品の数（空ならプロジェクトのフォルダと同じ「中身なし」）
+  ///
+  /// In ja, this message translates to:
+  /// **'{count, plural, =0{中身なし} other{作品{count}件}}'**
+  String homeWorkFolderContents(int count);
 
   /// プロジェクト・フォルダ・書き出した作品のメニュー項目と、サムネイルを選ぶダイアログの見出し
   ///

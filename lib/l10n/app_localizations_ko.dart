@@ -145,8 +145,11 @@ class AppLocalizationsKo extends AppLocalizations {
   String get homeTrashEmpty => '휴지통이 비어 있습니다';
 
   @override
-  String homeTrashDeletedOn(String date) {
-    return '$date 삭제됨';
+  String homeTrashDeletedOn(DateTime date) {
+    final intl.DateFormat dateDateFormat = intl.DateFormat.yMd(localeName);
+    final String dateString = dateDateFormat.format(date);
+
+    return '$dateString 삭제됨';
   }
 
   @override
@@ -172,7 +175,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String homeDeleteFolderKeepContents(String name) {
-    return '\"$name\" 폴더를 삭제해요. 안의 항목은 목록으로 돌아가며 삭제되지 않아요.';
+    return '「$name」 폴더를 삭제해요. 안의 항목은 목록으로 돌아가며 삭제되지 않아요.';
   }
 
   @override
@@ -338,7 +341,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String confirmDeleteNamedBody(String name) {
-    return '\"$name\"을(를) 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.';
+    return '「$name」을(를) 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.';
   }
 
   @override
@@ -512,7 +515,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get penSettingsPerBrushNote =>
-      '※ 필압의 \"크기/불투명도에 반영\" 설정은 브러시별 개별 설정입니다（브러시 설정 패널에서 변경）.';
+      '※ 필압의 「크기/불투명도에 반영」 설정은 브러시별 개별 설정입니다（브러시 설정 패널에서 변경）.';
 
   @override
   String get penSettingsButtonSection => '펜 버튼 설정';
@@ -548,7 +551,7 @@ class AppLocalizationsKo extends AppLocalizations {
       '확장된 부분을 선화 위에 그대로 덮지 않고, 선의 모습은 유지한 채 기존 픽셀 뒤쪽으로 채우기 색을 밀어 넣습니다. 선의 안티에일리어싱 부분에 틈이 잘 생기지 않습니다.';
 
   @override
-  String get bucketSettingsUnderLineDisabledHint => '\"확장\"이 0px이면 효과가 없습니다.';
+  String get bucketSettingsUnderLineDisabledHint => '「확장」이 0px이면 효과가 없습니다.';
 
   @override
   String fontCatalogSearchHint(int count) {
@@ -1260,7 +1263,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get helpBucketToolDesc =>
-      '둘러싸인 영역을 한 번에 채우는 도구입니다. 선화로 둘러싸인 범위 안을 탭하면 그 범위 전체가 선택 중인 색（또는 스크린톤）으로 채워집니다. 선화에 틈이 있으면 의도치 않은 범위까지 채워질 수 있으므로, 선화가 제대로 닫혀 있는지 확인한 후 사용하는 것이 요령입니다. 설정에서 단색 채우기/스크린톤 채우기를 전환할 수 있습니다. 상세 설정(허용 오차・확장 px・선 아래로 파고들기)은 설정 화면의 \"페인트 통 채우기\"에서 조정할 수 있습니다.';
+      '둘러싸인 영역을 한 번에 채우는 도구입니다. 선화로 둘러싸인 범위 안을 탭하면 그 범위 전체가 선택 중인 색（또는 스크린톤）으로 채워집니다. 선화에 틈이 있으면 의도치 않은 범위까지 채워질 수 있으므로, 선화가 제대로 닫혀 있는지 확인한 후 사용하는 것이 요령입니다. 설정에서 단색 채우기/스크린톤 채우기를 전환할 수 있습니다. 상세 설정(허용 오차・확장 px・선 아래로 파고들기)은 설정 화면의 「페인트 통 채우기」에서 조정할 수 있습니다.';
 
   @override
   String get helpLassoFillTitle => '올가미 채우기';
@@ -1810,7 +1813,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get tipsAutofillManualPartColorDesc =>
-      '먼저 눈에 잘 띄는 임시 색으로 부위를 나눈 뒤 실제 색으로 바꾸려면 이 방법을 사용하세요. 실제 선화는 일반 레이어 한 장에 모두 그리고 채색 레이어 위에 배치합니다.\n부위마다 ‘자동 채색용 선화 레이어’를 추가하고, 점 세 개 메뉴의 ‘파츠 설정’에서 해당 부위를 연결하세요. 이 방법에서는 이 레이어가 설정 연결용 보조 레이어이므로 비워 두면 됩니다. 실제 선화는 그리지 마세요. 같은 메뉴에서 ‘자동 채색 실행’을 한 번 실행해 연결된 ‘자동 채색 레이어’를 만듭니다.\n각 ‘자동 채색 레이어’에는 부위별로 눈에 잘 띄는 임시 색을 면으로 직접 칠합니다. 나중에 색을 바꿀 영역을 채우고, 윤곽선만 그리지 마세요.\n형태를 다듬은 뒤 해당 ‘자동 채색용 선화 레이어’ 메뉴에서 ‘자동 채색 실행’을 열고 ‘형태를 유지하고 색만 업데이트’를 선택하세요. 직접 칠한 형태는 유지하면서 ‘자동 채색 설정’의 실제 색을 적용할 수 있습니다. 선화에서 부위를 자동으로 판별해 한 번에 채색하려면 다른 방법을 사용하세요. 이때는 실제 선화를 ‘자동 채색용 선화 레이어’에 그립니다.';
+      '먼저 눈에 잘 띄는 임시 색으로 부위를 나눈 뒤 실제 색으로 바꾸려면 이 방법을 사용하세요. 실제 선화는 일반 레이어 한 장에 모두 그리고 채색 레이어 위에 배치합니다.\n부위마다 「자동 채색용 선화 레이어」를 추가하고, 점 세 개 메뉴의 「파츠 설정」에서 해당 부위를 연결하세요. 이 방법에서는 이 레이어가 설정 연결용 보조 레이어이므로 비워 두면 됩니다. 실제 선화는 그리지 마세요. 같은 메뉴에서 「자동 채색 실행」을 한 번 실행해 연결된 「자동 채색 레이어」를 만듭니다.\n각 「자동 채색 레이어」에는 부위별로 눈에 잘 띄는 임시 색을 면으로 직접 칠합니다. 나중에 색을 바꿀 영역을 채우고, 윤곽선만 그리지 마세요.\n형태를 다듬은 뒤 해당 「자동 채색용 선화 레이어」 메뉴에서 「자동 채색 실행」을 열고 「형태를 유지하고 색만 업데이트」를 선택하세요. 직접 칠한 형태는 유지하면서 「자동 채색 설정」의 실제 색을 적용할 수 있습니다. 선화에서 부위를 자동으로 판별해 한 번에 채색하려면 다른 방법을 사용하세요. 이때는 실제 선화를 「자동 채색용 선화 레이어」에 그립니다.';
 
   @override
   String get tipsBrushFavoriteTitle => '브러시는 즐겨찾기로 등록해두면 헤매지 않고 고를 수 있어요';
@@ -2260,7 +2263,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get helpBasicGestureDesc =>
-      '도구 모음의 아이콘은 한 번 탭하면 해당 도구로 전환됩니다. 같은 아이콘을 길게 누르거나 위로 쓸어올리면 세부 설정이 열립니다. 펜은 브러시・스크린톤・스탬프・올가미 채우기 전환, 페인트통은 단색과 스크린톤 채우기 전환, 선택 도구는 사각형・올가미・자동 선택 전환, 손가락 도구는 흐리기와 모자이크 전환, 빠른 전환 도구는 등록 내용 편집이 각각 길게 누르기・위로 쓸어올리기 뒤에 있습니다. 아이콘을 두 번 탭하면 그 도구의 간단한 설명이 화면 아래에 표시됩니다.\\n캔버스에서는 두 손가락으로 오므리면 확대・축소, 두 손가락으로 끌면 이동, 두 손가락 탭으로 실행 취소, 세 손가락 탭으로 다시 실행입니다. 화면 좌우 끝을 두 번 탭하면 앞뒤 프레임으로 이동합니다.\\n마우스나 펜 태블릿을 연결한 경우에는 휠로 확대・축소, 가운데 버튼 드래그로 이동할 수 있습니다.';
+      '도구 모음의 아이콘은 한 번 탭하면 해당 도구로 전환됩니다. 같은 아이콘을 길게 누르거나 위로 쓸어올리면 세부 설정이 열립니다. 펜은 브러시・스크린톤・스탬프・올가미 채우기 전환, 페인트통은 단색과 스크린톤 채우기 전환, 선택 도구는 사각형・올가미・자동 선택 전환, 손가락 도구는 흐리기와 모자이크 전환, 빠른 전환 도구는 등록 내용 편집이 각각 길게 누르기・위로 쓸어올리기 뒤에 있습니다. 아이콘을 두 번 탭하면 그 도구의 간단한 설명이 화면 아래에 표시됩니다.\n캔버스에서는 두 손가락으로 오므리면 확대・축소, 두 손가락으로 끌면 이동, 두 손가락 탭으로 실행 취소, 세 손가락 탭으로 다시 실행입니다. 화면 좌우 끝을 두 번 탭하면 앞뒤 프레임으로 이동합니다.\n마우스나 펜 태블릿을 연결한 경우에는 휠로 확대・축소, 가운데 버튼 드래그로 이동할 수 있습니다.';
 
   @override
   String get toolbarStampColorLockedSnackbar =>
@@ -4557,11 +4560,11 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get canvasLayerLockedNotice =>
-      '이 레이어는 잠겨 있어 그릴 수 없습니다. 레이어 설정에서 \"잠금\"을 끄세요.';
+      '이 레이어는 잠겨 있어 그릴 수 없습니다. 레이어 설정에서 「잠금」을 끄세요.';
 
   @override
   String brushPanelDeleteConfirmTitle(String name) {
-    return '\"$name\"을(를) 삭제할까요?';
+    return '「$name」을(를) 삭제할까요?';
   }
 
   @override
@@ -5906,7 +5909,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get tipsSphereShadingDesc =>
-      '구체 음영 필터는 타원형 빛의 안쪽에는 빛 색을, 바깥쪽에는 그림자 색을 그려진 곳에만 겹칩니다. 빛의 위치와 크기는 슬라이더 외에도 캔버스 위의 +(위치)와 둥근 손잡이(크기)를 드래그해 바꿀 수 있고, 경계 흐림으로 구처럼 부드러운 음영을 만들 수 있습니다. 그림자 색과 빛 색은 각각 블렌드 모드를 고를 수 있으며(예: 그림자는 곱하기, 빛은 스크린), \"하나로 묶어서\"를 고르면 그림자 색에서 빛 색으로 이어지는 그라데이션을 블렌드 모드 하나(하드 라이트 등)로 겹칩니다. 색은 투명으로도 할 수 있고, 투명한 쪽은 아무것도 바꾸지 않습니다. 선택 범위나 칠해 둔 선택 레이어가 있으면 그 범위에만 적용됩니다.';
+      '구체 음영 필터는 타원형 빛의 안쪽에는 빛 색을, 바깥쪽에는 그림자 색을 그려진 곳에만 겹칩니다. 빛의 위치와 크기는 슬라이더 외에도 캔버스 위의 +(위치)와 둥근 손잡이(크기)를 드래그해 바꿀 수 있고, 경계 흐림으로 구처럼 부드러운 음영을 만들 수 있습니다. 그림자 색과 빛 색은 각각 블렌드 모드를 고를 수 있으며(예: 그림자는 곱하기, 빛은 스크린), 「하나로 묶어서」를 고르면 그림자 색에서 빛 색으로 이어지는 그라데이션을 블렌드 모드 하나(하드 라이트 등)로 겹칩니다. 색은 투명으로도 할 수 있고, 투명한 쪽은 아무것도 바꾸지 않습니다. 선택 범위나 칠해 둔 선택 레이어가 있으면 그 범위에만 적용됩니다.';
 
   @override
   String get tipsBackgroundBlendTitle => '배경과 인물을 어우러지게 하는 순서';
@@ -5927,7 +5930,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get tipsLineColorUsageDesc =>
-      '부위의 윤곽을 분명하게 유지하면서 선이 튀지 않게 하려면 ‘선화 색상’에서 ‘색 트레이스・선화와 조화’를 선택하세요. 그림자나 하이라이트 부위는 ‘선화 색상’을 ‘채우기 색상과 동일’로 설정하면 선화도 채우기 색을 따라가 더 진한 선처럼 도드라지지 않습니다. 선화에 의도적으로 다른 색을 쓰려면 ‘지정 색상’을 선택하세요.';
+      '부위의 윤곽을 분명하게 유지하면서 선이 튀지 않게 하려면 「선화 색상」에서 「색 트레이스・선화와 조화」를 선택하세요. 그림자나 하이라이트 부위는 「선화 색상」을 「채우기 색상과 동일」로 설정하면 선화도 채우기 색을 따라가 더 진한 선처럼 도드라지지 않습니다. 선화에 의도적으로 다른 색을 쓰려면 「지정 색상」을 선택하세요.';
 
   @override
   String get tipsBlushAutofillTitle => '볼 홍조도 자동채색으로 부드럽게 올릴 수 있습니다';
@@ -6326,8 +6329,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get pixelArtPalettePickerTitle => '팔레트 선택';
 
   @override
-  String get pixelArtPalettePickerEmpty =>
-      '저장된 팔레트가 없습니다. \\\"추가\\\"를 눌러 만들어 보세요.';
+  String get pixelArtPalettePickerEmpty => '저장된 팔레트가 없습니다. 「추가」를 눌러 만들어 보세요.';
 
   @override
   String get pixelArtPalettePickerApplyButton => '적용';
@@ -6479,7 +6481,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get qrShareHint =>
-      '기본 카메라 앱 등으로 이 QR 코드를 스캔하면 텍스트를 복사할 수 있습니다. 상대방 기기에서 \"가져오기\"로 복사한 텍스트를 붙여넣어 주세요.';
+      '기본 카메라 앱 등으로 이 QR 코드를 스캔하면 텍스트를 복사할 수 있습니다. 상대방 기기에서 「가져오기」로 복사한 텍스트를 붙여넣어 주세요.';
 
   @override
   String get qrShareCopiedSnackbar => '텍스트를 복사했습니다';
@@ -6810,7 +6812,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get tipsFourPanelBrushDesc =>
-      '프리셋 ‘4컷 만화’ 브러시는 스트로크의 가로 방향 반복을 사용하지 않고 진행 방향을 따라 사각형 테두리를 일정한 간격으로 배치합니다. 직선 자를 켜고 곧게 그으면 4컷 만화의 칸을 쉽고 가지런하게 만들 수 있습니다.';
+      '프리셋 「4컷 만화」 브러시는 스트로크의 가로 방향 반복을 사용하지 않고 진행 방향을 따라 사각형 테두리를 일정한 간격으로 배치합니다. 직선 자를 켜고 곧게 그으면 4컷 만화의 칸을 쉽고 가지런하게 만들 수 있습니다.';
 
   @override
   String get canvasSelectionReferenceWorkingLayer => '작업 레이어만';
@@ -7051,7 +7053,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get communityAiImageVideoUpdateFailed =>
-      '‘생성형 AI 이미지·동영상 포함’을 변경하지 못했습니다. 연결 상태를 확인하고 다시 시도해 주세요.';
+      '「생성형 AI 이미지·동영상 포함」을 변경하지 못했습니다. 연결 상태를 확인하고 다시 시도해 주세요.';
 
   @override
   String get communityRetry => '다시 시도';
@@ -7245,7 +7247,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get communityPostStatusSyncingAiFlag =>
-      '게시한 작품의 ‘생성형 AI 이미지·동영상 포함’ 설정을 동기화하는 중…';
+      '게시한 작품의 「생성형 AI 이미지·동영상 포함」 설정을 동기화하는 중…';
 
   @override
   String get communityPostStatusSyncingVisibility => '게시한 작품의 공개 상태를 동기화하는 중…';
@@ -7839,7 +7841,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String projectListNoMatchTitle(String query) {
-    return '“$query”에 해당하는 작품이 없습니다';
+    return '「$query」에 해당하는 작품이 없습니다';
   }
 
   @override
@@ -7857,7 +7859,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get projectListNoFavoritesHint =>
-      '작품이나 폴더 메뉴에서 “즐겨찾기 등록”을 선택하면 여기에 표시됩니다.';
+      '작품이나 폴더 메뉴에서 「즐겨찾기 등록」을 선택하면 여기에 표시됩니다.';
 
   @override
   String get projectListShowAll => '모두 보기';
@@ -8455,7 +8457,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get creatorMissionRankingWarning =>
-      '참고: 순위 보상은 NIARIM 북마크 랭킹만 대상입니다. 전체 공개 작품 수, 작품의 북마크 수, 순위, 상위 비율 모두에 조건이 있습니다. 자세한 내용은 각 미션의 \"자세히 보기\"를 확인하세요.';
+      '참고: 순위 보상은 NIARIM 북마크 랭킹만 대상입니다. 전체 공개 작품 수, 작품의 북마크 수, 순위, 상위 비율 모두에 조건이 있습니다. 자세한 내용은 각 미션의 「자세히 보기」를 확인하세요.';
 
   @override
   String get creatorMissionBudget => '각 미션은 한 번만 보상됩니다.';
@@ -9383,7 +9385,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get homePasteOutgoingNoFolders =>
-      '‘공유’의 ‘내가 만든 파일’에는 파일만 둘 수 있어 폴더는 붙여넣을 수 없습니다.';
+      '「공유」의 「내가 만든 파일」에는 파일만 둘 수 있어 폴더는 붙여넣을 수 없습니다.';
 
   @override
   String get homePasteNestedFolders =>
@@ -9441,7 +9443,7 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
-  String get homeClipboardClear => '지우기';
+  String get homeClipboardClear => '취소';
 
   @override
   String homeExportedWorkMetadata(DateTime date, String size) {
@@ -9451,6 +9453,17 @@ class AppLocalizationsKo extends AppLocalizations {
     final String dateString = dateDateFormat.format(date);
 
     return '$dateString · $size';
+  }
+
+  @override
+  String homeWorkFolderContents(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '작품 $count개',
+      zero: '비어 있음',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -9546,9 +9559,9 @@ class AppLocalizationsKo extends AppLocalizations {
   @override
   String shareCardAddedSnackbar(String kind, String name) {
     String _temp0 = intl.Intl.selectLogic(kind, {
-      'brush': '브러시 ‘$name’을(를) 추가했습니다',
-      'tone': '스크린톤 ‘$name’을(를) 추가했습니다',
-      'other': '스탬프 ‘$name’을(를) 추가했습니다',
+      'brush': '브러시 「$name」을(를) 추가했습니다',
+      'tone': '스크린톤 「$name」을(를) 추가했습니다',
+      'other': '스탬프 「$name」을(를) 추가했습니다',
     });
     return '$_temp0';
   }

@@ -330,7 +330,7 @@ class _ProjectThumbnailDialogState extends State<_ProjectThumbnailDialog> {
         key: const Key('projectThumbnailChooseImage'),
         onPressed: saving ? null : _chooseImage,
         icon: const Icon(Icons.add_photo_alternate_outlined),
-        label: Text(l10n.thumbnailChooseDeviceImage),
+        label: Text(l10n.thumbnailPickImage),
       ),
       if (customName != null) ...[
         Text(customName!, maxLines: 1, overflow: TextOverflow.ellipsis),

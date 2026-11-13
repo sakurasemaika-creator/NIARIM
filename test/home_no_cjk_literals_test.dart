@@ -74,12 +74,57 @@ void main() {
     }
   });
 
+  test('ホームの画面の文言の欄に英語の直書きが無い', () {
+    // Text(…)・tooltip:・title: 等へ英語の文を直に書くと、日本語以外の
+    // どの言語でも英語のまま出る（「Change thumbnail」「Restore from Trash」が
+    // 実際にそうなっていた）。かな・漢字の見張りでは見つからない。
+    final slot = RegExp(
+      r"(\bText\(|\b(tooltip|title|subtitle|label|message|semanticsLabel|"
+      r"hintText|labelText|helperText|suffixText|prefixText|content):)"
+      r'''\s*(const\s+)?(Text\(\s*)?(['"])((?:(?!\5)[^\\]|\\.)*)\5''',
+    );
+    final interpolation = RegExp(r'\$\{[^}]*\}|\$[A-Za-z_]\w*');
+    final latinWord = RegExp('[A-Za-z]{2,}');
+    // 訳さない固有名詞だけ。
+    const properNouns = {'NIARIM'};
+    final offenders = <String>[];
+    for (final file in _homeFiles()) {
+      final source = file.readAsStringSync();
+      for (final match in slot.allMatches(source)) {
+        final start = source.lastIndexOf('\n', match.start) + 1;
+        if (source.substring(start, match.start).trimLeft().startsWith('//')) {
+          continue;
+        }
+        final text = match.group(6)!;
+        if (properNouns.contains(text) ||
+            !latinWord.hasMatch(text.replaceAll(interpolation, ''))) {
+          continue;
+        }
+        final line = '\n'.allMatches(source.substring(0, match.start)).length;
+        offenders.add('${file.path}:${line + 1}  $text');
+      }
+    }
+    expect(
+      offenders,
+      isEmpty,
+      reason:
+          '画面の文言はARBへ追加し、7言語すべてに手で訳を入れること:\n'
+          '${offenders.join('\n')}',
+    );
+  });
+
   test('ホームの画面で言語コードの手書きの表を作らない', () {
     // 'ja' / 'zh' で分ける表は、繁体字（zh_Hant）が簡体字になり、スペイン語・
     // フランス語が英語になる。ARBへ足すこと。
     final offenders = <String>[];
+    // languageCode・toLanguageTag()・localeName との比較、startsWith、
+    // switch の case と switch 式の分岐のどれで分けても見つける。
     final table = RegExp(
-      r"languageCode\s*==\s*'(ja|zh|ko|en|es|fr)'|^\s*'(ja|ko|zh|es|fr)'\s*=>",
+      r"(languageCode|toLanguageTag\(\)|localeName|toString\(\))\s*[!=]=\s*"
+      r"'(ja|zh|ko|en|es|fr)([-_][A-Za-z]+)?'"
+      r"|\.startsWith\(\s*'(ja|zh|ko|en|es|fr)([-_][A-Za-z]+)?'\s*\)"
+      r"|\bcase\s+'(ja|zh|ko|en|es|fr)([-_][A-Za-z]+)?'"
+      r"|^\s*'(ja|ko|zh|en|es|fr)([-_][A-Za-z]+)?'\s*(=>|:)",
       multiLine: true,
     );
     for (final file in _homeFiles()) {

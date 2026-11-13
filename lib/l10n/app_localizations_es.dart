@@ -86,7 +86,13 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String homeMoveToTrashConfirm(int count) {
-    return '¿Mover $count elemento(s) a la papelera?';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '¿Mover $count elementos a la papelera?',
+      one: '¿Mover $count elemento a la papelera?',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -150,8 +156,11 @@ class AppLocalizationsEs extends AppLocalizations {
   String get homeTrashEmpty => 'La papelera está vacía';
 
   @override
-  String homeTrashDeletedOn(String date) {
-    return 'Eliminado el $date';
+  String homeTrashDeletedOn(DateTime date) {
+    final intl.DateFormat dateDateFormat = intl.DateFormat.yMd(localeName);
+    final String dateString = dateDateFormat.format(date);
+
+    return 'Eliminado el $dateString';
   }
 
   @override
@@ -180,7 +189,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String homeDeleteFolderKeepContents(String name) {
-    return 'Se eliminará \"$name\". Su contenido volverá a la lista principal y no se eliminará.';
+    return 'Se eliminará «$name». Su contenido volverá a la lista principal y no se eliminará.';
   }
 
   @override
@@ -532,7 +541,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get penSettingsPerBrushNote =>
-      '* El ajuste de presión \"Aplicar al tamaño/opacidad\" es específico de cada pincel (cámbialo en el panel de ajustes del pincel).';
+      '* El ajuste de presión «Aplicar al tamaño/opacidad» es específico de cada pincel (cámbialo en el panel de ajustes del pincel).';
 
   @override
   String get penSettingsButtonSection => 'Ajustes de botones del lápiz';
@@ -919,7 +928,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String shortcutConflictBody(String combo, String existingLabel) {
-    return '$combo ya está asignado a \"$existingLabel\". ¿Deseas sobrescribirlo?';
+    return '$combo ya está asignado a «$existingLabel». ¿Deseas sobrescribirlo?';
   }
 
   @override
@@ -1302,7 +1311,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get helpEraserToolDesc =>
-      'La contraparte de la herramienta de pluma, usada para borrar lo que has dibujado. Al igual que un pincel, puedes ajustar su tamaño y opacidad, y los ajustes de pincel como el desvanecido y la atenuación de trazo también se aplican. En lugar de \"añadir\" a las partes transparentes de una capa, \"elimina\" el dibujo existente, por lo que la capa de abajo se vuelve visible a través de ella.';
+      'La contraparte de la herramienta de pluma, usada para borrar lo que has dibujado. Al igual que un pincel, puedes ajustar su tamaño y opacidad, y los ajustes de pincel como el desvanecido y la atenuación de trazo también se aplican. En lugar de «añadir» a las partes transparentes de una capa, «elimina» el dibujo existente, por lo que la capa de abajo se vuelve visible a través de ella.';
 
   @override
   String get helpBucketToolTitle => 'Herramienta cubo de pintura';
@@ -1323,14 +1332,14 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get helpEyedropperToolDesc =>
-      'Toma el color en la posición tocada y lo establece como color de dibujo. Muestrea el aspecto compuesto de todas las capas tal como se muestra en la pantalla, por lo que capta con precisión el \"color tal como se ve\" incluso donde se superponen varias capas.';
+      'Toma el color en la posición tocada y lo establece como color de dibujo. Muestrea el aspecto compuesto de todas las capas tal como se muestra en la pantalla, por lo que capta con precisión el «color tal como se ve» incluso donde se superponen varias capas.';
 
   @override
   String get helpSelectToolTitle => 'Herramienta de selección';
 
   @override
   String get helpSelectToolDesc =>
-      'Selecciona parte del lienzo para poder mover, rotar o escalar solo esa área. Mantén pulsado para elegir entre tres métodos de selección: \"Selección rectangular\", \"Selección de lazo\" (contorno libre), o \"Selección automática\" (varita mágica: agrupa automáticamente áreas de color similar). Mientras hay una selección activa, un contorno marca el área seleccionada en el lienzo, y la misma área permanece fija en todos los fotogramas y capas hasta que la deselecciones. En la selección de lazo, al activar \"Ajustar a las líneas\" se miran las zonas en que el dibujo de líneas divide el lienzo, igual que hace el bote de pintura, y se seleccionan solo las zonas que quedan mayormente dentro del lazo. El borde de la selección sigue exactamente el borde exterior del dibujo de líneas: las líneas que rodean esas zonas y las de su interior se seleccionan con ellas (una línea que sigue hacia fuera del contorno se corta donde lo deja). Los colores rellenos cuentan como zonas propias, igual que con el bote de pintura, así que una capa con rellenos y líneas también se selecciona según la forma del dibujo. Las interrupciones de una línea de hasta el ancho de \"Tolerancia de huecos\" se tratan como cerradas. Si no hay dibujo de líneas dentro del lazo, se selecciona el lazo tal como se trazó. Las líneas se toman de la referencia de selección (\"Solo capa de trabajo\" / \"Todas las capas visibles\").';
+      'Selecciona parte del lienzo para poder mover, rotar o escalar solo esa área. Mantén pulsado para elegir entre tres métodos de selección: «Selección rectangular», «Selección de lazo» (contorno libre), o «Selección automática» (varita mágica: agrupa automáticamente áreas de color similar). Mientras hay una selección activa, un contorno marca el área seleccionada en el lienzo, y la misma área permanece fija en todos los fotogramas y capas hasta que la deselecciones. En la selección de lazo, al activar «Ajustar a las líneas» se miran las zonas en que el dibujo de líneas divide el lienzo, igual que hace el bote de pintura, y se seleccionan solo las zonas que quedan mayormente dentro del lazo. El borde de la selección sigue exactamente el borde exterior del dibujo de líneas: las líneas que rodean esas zonas y las de su interior se seleccionan con ellas (una línea que sigue hacia fuera del contorno se corta donde lo deja). Los colores rellenos cuentan como zonas propias, igual que con el bote de pintura, así que una capa con rellenos y líneas también se selecciona según la forma del dibujo. Las interrupciones de una línea de hasta el ancho de «Tolerancia de huecos» se tratan como cerradas. Si no hay dibujo de líneas dentro del lazo, se selecciona el lazo tal como se trazó. Las líneas se toman de la referencia de selección («Solo capa de trabajo» / «Todas las capas visibles»).';
 
   @override
   String get helpFingerToolTitle => 'Herramienta de dedo (distorsión)';
@@ -1365,7 +1374,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get helpLayerDesc =>
-      'Un sistema que te permite dibujar en un mismo lienzo repartido en varias \"capas\" transparentes. Al dibujar el lineart, el coloreado y los fondos en capas separadas, puedes rehacer solo el color más tarde o cambiar el fondo sin borrar el lineart. Las capas apiladas más arriba aparecen delante en pantalla. Cada fila de capa tiene botones de un toque para eliminarla o combinarla con la capa de abajo, y un botón en la parte superior del panel de capas permite combinar todas las capas visibles a la vez.';
+      'Un sistema que te permite dibujar en un mismo lienzo repartido en varias «capas» transparentes. Al dibujar el lineart, el coloreado y los fondos en capas separadas, puedes rehacer solo el color más tarde o cambiar el fondo sin borrar el lineart. Las capas apiladas más arriba aparecen delante en pantalla. Cada fila de capa tiene botones de un toque para eliminarla o combinarla con la capa de abajo, y un botón en la parte superior del panel de capas permite combinar todas las capas visibles a la vez.';
 
   @override
   String get helpBlendModeTitle => 'Modo de fusión';
@@ -1393,7 +1402,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get helpAutoFillDesc =>
-      'Crea una capa de coloreado automático debajo de la capa de líneas para coloreado automático y la colorea automáticamente según un \"ajuste de coloreado automático\" ya creado (una combinación de colores y tramas por parte). Como puedes colorear todo de una vez después de terminar las líneas, reduce enormemente el esfuerzo de coloreado en animación dibujada a mano donde se dibuja repetidamente el mismo personaje. Si vuelves a dibujar las líneas, aparece una marca de actualización en la línea de tiempo y el panel de capas para indicarte que hay que volver a aplicar el coloreado automático. Elegir \"Ejecutar relleno automático\" en el menú de tres puntos de la pantalla de línea de tiempo recalcula de una vez todas las capas de relleno automático marcadas con el indicador de actualización . Te ahorra ejecutarlo capa por capa en el panel de capas tras volver a dibujar la línea. Cada parte de un ajuste de relleno automático tiene un ajuste sobre cómo tratar el color de la línea: un color especificado, igual al color de relleno, o calco de color. Elegir calco de color desplaza el HSL del color de línea para que coincida con el de relleno, de modo que la línea no destaque y se integre de forma natural. A medida que se acumulan ajustes, la lista mostrada al asignar partes se alarga y cuesta más recorrerla. Desde los ajustes del proyecto (o el diálogo de asignación de partes en el panel de capas) puedes limitarla a solo los ajustes usados en este proyecto, manteniendo la lista ordenada y fácil de elegir. Al subir «Cerrar el hueco entre líneas y relleno», el relleno llega más bajo el borde suave de las líneas y se reduce el hueco entre el dibujo lineal y el relleno que se ve con un contorno o un color de línea igual al relleno.';
+      'Crea una capa de coloreado automático debajo de la capa de líneas para coloreado automático y la colorea automáticamente según un «ajuste de coloreado automático» ya creado (una combinación de colores y tramas por parte). Como puedes colorear todo de una vez después de terminar las líneas, reduce enormemente el esfuerzo de coloreado en animación dibujada a mano donde se dibuja repetidamente el mismo personaje. Si vuelves a dibujar las líneas, aparece una marca de actualización en la línea de tiempo y el panel de capas para indicarte que hay que volver a aplicar el coloreado automático. Elegir «Ejecutar relleno automático» en el menú de tres puntos de la pantalla de línea de tiempo recalcula de una vez todas las capas de relleno automático marcadas con el indicador de actualización . Te ahorra ejecutarlo capa por capa en el panel de capas tras volver a dibujar la línea. Cada parte de un ajuste de relleno automático tiene un ajuste sobre cómo tratar el color de la línea: un color especificado, igual al color de relleno, o calco de color. Elegir calco de color desplaza el HSL del color de línea para que coincida con el de relleno, de modo que la línea no destaque y se integre de forma natural. A medida que se acumulan ajustes, la lista mostrada al asignar partes se alarga y cuesta más recorrerla. Desde los ajustes del proyecto (o el diálogo de asignación de partes en el panel de capas) puedes limitarla a solo los ajustes usados en este proyecto, manteniendo la lista ordenada y fácil de elegir. Al subir «Cerrar el hueco entre líneas y relleno», el relleno llega más bajo el borde suave de las líneas y se reduce el hueco entre el dibujo lineal y el relleno que se ve con un contorno o un color de línea igual al relleno.';
 
   @override
   String get helpOnionSkinTitle => 'Papel cebolla';
@@ -1421,7 +1430,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get helpStrokeDecayDesc =>
-      'Similar al desvanecido, pero más cercano al efecto de \"la tinta se agota\": el color se desvanece o se vuelve irregular cuanto más sigues dibujando. Reproduce la textura de un pincel o rotulador quedándose sin tinta a medida que lo usas.';
+      'Similar al desvanecido, pero más cercano al efecto de «la tinta se agota»: el color se desvanece o se vuelve irregular cuanto más sigues dibujando. Reproduce la textura de un pincel o rotulador quedándose sin tinta a medida que lo usas.';
 
   @override
   String get helpColorMixingTitle => 'Mezcla de colores';
@@ -1491,14 +1500,14 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get helpSaveTreeDesc =>
-      'Un método de guardado en el que se crea un nuevo punto de guardado cada vez que guardas, y puedes ramificar desde un punto de guardado pasado para crear un historial diferente. No hay límite en el número de guardados, lo que lo hace muy adecuado para casos como \"quiero volver a esa versión y probar un desarrollo diferente\". En la pantalla, los puntos de guardado se muestran como un diagrama de árbol que crece de abajo hacia arriba.';
+      'Un método de guardado en el que se crea un nuevo punto de guardado cada vez que guardas, y puedes ramificar desde un punto de guardado pasado para crear un historial diferente. No hay límite en el número de guardados, lo que lo hace muy adecuado para casos como «quiero volver a esa versión y probar un desarrollo diferente». En la pantalla, los puntos de guardado se muestran como un diagrama de árbol que crece de abajo hacia arriba.';
 
   @override
   String get helpFolderTitle => 'Carpeta';
 
   @override
   String get helpFolderDesc =>
-      'Una función para agrupar y organizar tus proyectos (obras). Admite varios niveles de anidación, por lo que también puedes usarla para gestionar juntos varios episodios o una serie de la misma obra (por ejemplo, organizando los proyectos \"Episodio 1\", \"Episodio 2\", etc. dentro de una carpeta con el nombre de la obra). Si quieres dividir un solo vídeo en escenas separadas, usa la función \"Escena\" de la pantalla del lienzo en lugar de carpetas.';
+      'Una función para agrupar y organizar tus proyectos (obras). Admite varios niveles de anidación, por lo que también puedes usarla para gestionar juntos varios episodios o una serie de la misma obra (por ejemplo, organizando los proyectos «Episodio 1», «Episodio 2», etc. dentro de una carpeta con el nombre de la obra). Si quieres dividir un solo vídeo en escenas separadas, usa la función «Escena» de la pantalla del lienzo en lugar de carpetas.';
 
   @override
   String get helpTrashTitle => 'Papelera';
@@ -1519,7 +1528,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get helpTransferDesc =>
-      'Una función para transferir todo el entorno de la aplicación —ajustes, materiales, pinceles, ajustes de relleno automático, tema, paletas (selector de color y pixel art) y más— a otro dispositivo de una sola vez. Puedes elegir elementos individuales para transferir con casillas de verificación, e incluir opcionalmente proyectos en curso (los proyectos seleccionados se transfieren completos, con sus materiales y fuentes). Si solo quieres entregar un proyecto individual, también puedes usar \"Compartir (.niashare)\".';
+      'Una función para transferir todo el entorno de la aplicación —ajustes, materiales, pinceles, ajustes de relleno automático, tema, paletas (selector de color y pixel art) y más— a otro dispositivo de una sola vez. Puedes elegir elementos individuales para transferir con casillas de verificación, e incluir opcionalmente proyectos en curso (los proyectos seleccionados se transfieren completos, con sus materiales y fuentes). Si solo quieres entregar un proyecto individual, también puedes usar «Compartir (.niashare)».';
 
   @override
   String get helpVideoExportTitle =>
@@ -1581,7 +1590,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get helpBucketDetailSettingsDesc =>
-      'Desde la sección \"Relleno con cubo\" de los ajustes puedes ajustar la tolerancia (cuánta diferencia de color respecto al píxel pulsado sigue contando como la misma zona), la expansión en px (cuánto se extiende el área rellenada más allá del borde para cubrir huecos en la línea) y rellenar bajo la línea (compone el relleno expandido detrás de los píxeles existentes en lugar de pintar sobre la línea, manteniendo su aspecto intacto). Ajustarlos ayuda cuando la línea tiene pequeños huecos o el relleno queda incompleto.';
+      'Desde la sección «Relleno con cubo» de los ajustes puedes ajustar la tolerancia (cuánta diferencia de color respecto al píxel pulsado sigue contando como la misma zona), la expansión en px (cuánto se extiende el área rellenada más allá del borde para cubrir huecos en la línea) y rellenar bajo la línea (compone el relleno expandido detrás de los píxeles existentes en lugar de pintar sobre la línea, manteniendo su aspecto intacto). Ajustarlos ayuda cuando la línea tiene pequeños huecos o el relleno queda incompleto.';
 
   @override
   String get helpStampToolTitle => 'Herramienta de sello';
@@ -1651,7 +1660,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get helpFrameOperationsDesc =>
-      'En la lista de fotogramas puedes añadir, duplicar y eliminar fotogramas, y en modo de selección múltiple mover, duplicar o eliminar varios a la vez. Aumentar el número de retención mantiene un mismo fotograma mostrado durante varias celdas (una \"retención\"), ahorrando trabajo de dibujo en planos con poco movimiento.';
+      'En la lista de fotogramas puedes añadir, duplicar y eliminar fotogramas, y en modo de selección múltiple mover, duplicar o eliminar varios a la vez. Aumentar el número de retención mantiene un mismo fotograma mostrado durante varias celdas (una «retención»), ahorrando trabajo de dibujo en planos con poco movimiento.';
 
   @override
   String get helpSceneOperationsTitle => 'Operaciones con escenas';
@@ -1779,7 +1788,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get helpFontImportDesc =>
-      'Permite cargar un archivo de fuente directamente desde el almacenamiento del dispositivo. Añádela desde la pestaña \"Importar\" en la gestión de fuentes, en ajustes. Útil cuando quieres usar una fuente personalizada que no se distribuye en ningún sitio, o una fuente comercial que has comprado.';
+      'Permite cargar un archivo de fuente directamente desde el almacenamiento del dispositivo. Añádela desde la pestaña «Importar» en la gestión de fuentes, en ajustes. Útil cuando quieres usar una fuente personalizada que no se distribuye en ningún sitio, o una fuente comercial que has comprado.';
 
   @override
   String get helpExportScreenTitle => 'Pantalla de exportación';
@@ -1801,7 +1810,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get helpLayerKeyframeDesc =>
-      'Define la posición, escala y rotación de cada capa por fotograma; los fotogramas clave se interpolan automáticamente. Mientras los fotogramas clave de cámara mueven toda la pantalla, esto mueve una sola capa. Como cada parte del relleno automático se genera como una capa independiente, esto funciona directamente para animar por partes: mover solo un brazo, abrir y cerrar solo una boca, etc. Cada fotograma clave también puede tener su propia interpolación (uniforme, entrada suave, salida suave, entrada y salida suaves, o rebote) que controla cómo se conecta con el siguiente fotograma clave, de modo que el movimiento no tiene por qué ser siempre a velocidad constante. Se configura desde \"Animación (fotogramas clave)\" en el menú de tres puntos de cada capa, en el panel de capas. El dibujo de la capa en sí no cambia: es una transformación no destructiva de dónde se muestra. Esto solo afecta a la visualización de la línea de tiempo (vista previa / exportación) y no afecta al dibujo real en el modo lienzo.';
+      'Define la posición, escala y rotación de cada capa por fotograma; los fotogramas clave se interpolan automáticamente. Mientras los fotogramas clave de cámara mueven toda la pantalla, esto mueve una sola capa. Como cada parte del relleno automático se genera como una capa independiente, esto funciona directamente para animar por partes: mover solo un brazo, abrir y cerrar solo una boca, etc. Cada fotograma clave también puede tener su propia interpolación (uniforme, entrada suave, salida suave, entrada y salida suaves, o rebote) que controla cómo se conecta con el siguiente fotograma clave, de modo que el movimiento no tiene por qué ser siempre a velocidad constante. Se configura desde «Animación (fotogramas clave)» en el menú de tres puntos de cada capa, en el panel de capas. El dibujo de la capa en sí no cambia: es una transformación no destructiva de dónde se muestra. Esto solo afecta a la visualización de la línea de tiempo (vista previa / exportación) y no afecta al dibujo real en el modo lienzo.';
 
   @override
   String get helpLayerGroupTitle =>
@@ -1809,7 +1818,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get helpLayerGroupDesc =>
-      'Mueve varias capas juntas con un único flujo de fotogramas clave. Por ejemplo, si un \"brazo\" está formado por dos partes de relleno automático —piel y manga—, agruparlas permite mover ambas con una sola operación de fotograma clave. Crea un grupo seleccionando varias capas (casillas) en el panel de capas y tocando el icono \"Agrupar\" en la barra inferior. El movimiento del grupo se superpone a los fotogramas clave propios de cada capa miembro (si los tiene), por lo que puedes combinar el movimiento general del grupo con ajustes finos por capa. Una capa solo puede pertenecer a un grupo a la vez.';
+      'Mueve varias capas juntas con un único flujo de fotogramas clave. Por ejemplo, si un «brazo» está formado por dos partes de relleno automático —piel y manga—, agruparlas permite mover ambas con una sola operación de fotograma clave. Crea un grupo seleccionando varias capas (casillas) en el panel de capas y tocando el icono «Agrupar» en la barra inferior. El movimiento del grupo se superpone a los fotogramas clave propios de cada capa miembro (si los tiene), por lo que puedes combinar el movimiento general del grupo con ajustes finos por capa. Una capa solo puede pertenecer a un grupo a la vez.';
 
   @override
   String get tipsScreenTitle => 'Consejos';
@@ -1902,7 +1911,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get tipsGestureShortcutDesc =>
-      'Desde \"Gestos\" en los ajustes puedes asignar deshacer/rehacer o el cuentagotas a un toque con dos dedos, un toque con tres dedos o una pulsación larga. Al no tener que cambiar de herramienta, no rompes el ritmo del dibujo.';
+      'Desde «Gestos» en los ajustes puedes asignar deshacer/rehacer o el cuentagotas a un toque con dos dedos, un toque con tres dedos o una pulsación larga. Al no tener que cambiar de herramienta, no rompes el ritmo del dibujo.';
 
   @override
   String get tipsAudioRepeatTitle =>
@@ -1982,7 +1991,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get tipsLowSpecSettingsDesc =>
-      'Si notas que va lento, prueba a cambiar los ajustes de rendimiento al preset de \"baja calidad\" y reduce también la longitud del historial de deshacer. Eso reduce el uso de memoria y puede hacer que todo vaya más fluido.';
+      'Si notas que va lento, prueba a cambiar los ajustes de rendimiento al preset de «baja calidad» y reduce también la longitud del historial de deshacer. Eso reduce el uso de memoria y puede hacer que todo vaya más fluido.';
 
   @override
   String get tipsSeriesPresetFolderTitle =>
@@ -2066,7 +2075,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get tipsVerticalPixelFontTitle =>
-      'Mezcla metraje real con dibujo a mano para \"acción real × anime\"';
+      'Mezcla metraje real con dibujo a mano para «acción real × anime»';
 
   @override
   String get tipsVerticalPixelFontDesc =>
@@ -2078,7 +2087,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get tipsTimelineMarkerDesc =>
-      'Las escenas manejan un rango —un fotograma de inicio y de fin—, mientras que las marcas de tiempo señalan un instante concreto con un comentario al que puedes saltar de un toque. Colocar varias marcas de tiempo dentro de la misma escena —\"efecto de sonido en el fotograma 120\", \"boca \'a\' en el fotograma 180\"— hace que sincronizar el sonido con la imagen sea muchísimo más fácil.';
+      'Las escenas manejan un rango —un fotograma de inicio y de fin—, mientras que las marcas de tiempo señalan un instante concreto con un comentario al que puedes saltar de un toque. Colocar varias marcas de tiempo dentro de la misma escena —«efecto de sonido en el fotograma 120», «boca \'a\' en el fotograma 180»— hace que sincronizar el sonido con la imagen sea muchísimo más fácil.';
 
   @override
   String get tipsCommunityYoutubeTitle =>
@@ -2086,7 +2095,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get tipsCommunityYoutubeDesc =>
-      'Al publicar en la Plaza de Obras, tu obra se publica a través de YouTube. NIARIM no transmite, recopila ni almacena el propio archivo de vídeo en los servidores del desarrollador. Si configuras el vídeo como \"No listado\" en YouTube, no aparecerá en los listados públicos de YouTube y solo se publicará dentro de la Plaza de Obras.';
+      'Al publicar en la Plaza de Obras, tu obra se publica a través de YouTube. NIARIM no transmite, recopila ni almacena el propio archivo de vídeo en los servidores del desarrollador. Si configuras el vídeo como «No listado» en YouTube, no aparecerá en los listados públicos de YouTube y solo se publicará dentro de la Plaza de Obras.';
 
   @override
   String get tipsToolbarCustomizeTitle =>
@@ -2102,7 +2111,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get tipsAutofillBlendModeDesc =>
-      'Cada parte de un ajuste de relleno automático puede tener su propio modo de fusión. Pon una parte de sombra en \"superponer\" o \"luz suave\" en lugar de \"multiplicar\" para un sombreado más suave, como si la luz lo atravesara. Una libertad oculta que permite cambiar la textura del sombreado sin cambiar el color.';
+      'Cada parte de un ajuste de relleno automático puede tener su propio modo de fusión. Pon una parte de sombra en «superponer» o «luz suave» en lugar de «multiplicar» para un sombreado más suave, como si la luz lo atravesara. Una libertad oculta que permite cambiar la textura del sombreado sin cambiar el color.';
 
   @override
   String get tipsStampBlendModeTitle =>
@@ -2110,7 +2119,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get tipsStampBlendModeDesc =>
-      'Ajustar el modo de fusión de una capa de sello colocada a \"pantalla\" o \"suma\" hace que las líneas de brillo o los destellos se integren de forma natural en el fondo y realmente destaquen.';
+      'Ajustar el modo de fusión de una capa de sello colocada a «pantalla» o «suma» hace que las líneas de brillo o los destellos se integren de forma natural en el fondo y realmente destaquen.';
 
   @override
   String get tipsQuickToolPenSubTitle =>
@@ -2126,7 +2135,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get tipsAutofillToneReuseDesc =>
-      'Configurar cada parte de un ajuste de relleno automático como \"usar trama\" reproduce el relleno con tramas automáticamente cada vez que redibujas la línea, sin necesidad de volver a aplicar la trama fotograma a fotograma.';
+      'Configurar cada parte de un ajuste de relleno automático como «usar trama» reproduce el relleno con tramas automáticamente cada vez que redibujas la línea, sin necesidad de volver a aplicar la trama fotograma a fotograma.';
 
   @override
   String get tipsAutofillMisfillTitle =>
@@ -2254,7 +2263,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get tipsTransferDeviceDesc =>
-      'Si quieres cambiar de dispositivo y seguir dibujando en el mismo entorno, la función de traspaso (.niatra) mueve tus ajustes, pinceles, tramas, sellos, paletas y más, todo junto. Para entregar un proyecto en el que estás trabajando, usa \"Compartir (.niashare)\" en su lugar.';
+      'Si quieres cambiar de dispositivo y seguir dibujando en el mismo entorno, la función de traspaso (.niatra) mueve tus ajustes, pinceles, tramas, sellos, paletas y más, todo junto. Para entregar un proyecto en el que estás trabajando, usa «Compartir (.niashare)» en su lugar.';
 
   @override
   String get fontSettingsTabDownloaded => 'Descargadas';
@@ -2277,7 +2286,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get fontEmptyHint =>
-      'Añade fuentes desde las pestañas \"Buscar y descargar\" o \"Importar\"';
+      'Añade fuentes desde las pestañas «Buscar y descargar» o «Importar»';
 
   @override
   String get fontRenameDialogTitle => 'Renombrar fuente';
@@ -2297,7 +2306,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String fontAddedSnackbar(String name) {
-    return 'Se añadió \"$name\" (visible en la pestaña Descargadas)';
+    return 'Se añadió «$name» (visible en la pestaña Descargadas)';
   }
 
   @override
@@ -2374,7 +2383,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get helpBasicGestureDesc =>
-      'Un toque simple en un icono de la barra de herramientas cambia a esa herramienta. Mantén pulsado ese icono, o deslízalo hacia arriba, para abrir sus ajustes detallados. Tras esa pulsación larga o ese deslizamiento encontrarás: pincel, trama, sello o relleno con lazo para la pluma; relleno sólido o con trama para el bote; rectángulo, lazo o selección automática para la herramienta de selección; desenfoque o mosaico para la herramienta de dedo; y la lista de herramientas registradas para el cambio rápido. Al tocar dos veces un icono aparece una breve descripción en la parte inferior de la pantalla.\\nEn el lienzo, pellizca con dos dedos para ampliar o reducir, arrastra con dos dedos para desplazar, toca con dos dedos para deshacer y con tres para rehacer. Toca dos veces el borde izquierdo o derecho de la pantalla para ir al fotograma anterior o siguiente.\\nSi tienes conectado un ratón o una tableta gráfica, la rueda amplía y el arrastre con el botón central desplaza.';
+      'Un toque simple en un icono de la barra de herramientas cambia a esa herramienta. Mantén pulsado ese icono, o deslízalo hacia arriba, para abrir sus ajustes detallados. Tras esa pulsación larga o ese deslizamiento encontrarás: pincel, trama, sello o relleno con lazo para la pluma; relleno sólido o con trama para el bote; rectángulo, lazo o selección automática para la herramienta de selección; desenfoque o mosaico para la herramienta de dedo; y la lista de herramientas registradas para el cambio rápido. Al tocar dos veces un icono aparece una breve descripción en la parte inferior de la pantalla.\nEn el lienzo, pellizca con dos dedos para ampliar o reducir, arrastra con dos dedos para desplazar, toca con dos dedos para deshacer y con tres para rehacer. Toca dos veces el borde izquierdo o derecho de la pantalla para ir al fotograma anterior o siguiente.\nSi tienes conectado un ratón o una tableta gráfica, la rueda amplía y el arrastre con el botón central desplaza.';
 
   @override
   String get toolbarStampColorLockedSnackbar =>
@@ -2913,7 +2922,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get exportSaveLocationHint =>
-      'Para abrirlo en la app de Fotos o el gestor de archivos de tu dispositivo, usa \"Compartir\" a continuación para elegir dónde guardarlo.';
+      'Para abrirlo en la app de Fotos o el gestor de archivos de tu dispositivo, usa «Compartir» a continuación para elegir dónde guardarlo.';
 
   @override
   String get exportBackToProjectsButton => 'Volver a proyectos';
@@ -3488,7 +3497,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String perfSettingsResetDialogBody(String preset) {
-    return 'El valor predeterminado corresponde al ajuste \"$preset\" que se determinó automáticamente según el rendimiento del dispositivo en el primer inicio.';
+    return 'El valor predeterminado corresponde al ajuste «$preset» que se determinó automáticamente según el rendimiento del dispositivo en el primer inicio.';
   }
 
   @override
@@ -3722,7 +3731,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String projectListDeleteFolderConfirmBody(String name) {
-    return 'Se eliminará \"$name\". Los proyectos y subcarpetas que contiene se moverán a la raíz.';
+    return 'Se eliminará «$name». Los proyectos y subcarpetas que contiene se moverán a la raíz.';
   }
 
   @override
@@ -3886,7 +3895,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String autofillPresetDeleteConfirmTitle(String name) {
-    return '¿Eliminar \"$name\"?';
+    return '¿Eliminar «$name»?';
   }
 
   @override
@@ -4285,7 +4294,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get saveTreeEmptyHint =>
-      'Toca el botón \"Guardar\" de arriba para crear el primer nodo';
+      'Toca el botón «Guardar» de arriba para crear el primer nodo';
 
   @override
   String get saveTreeNodeDefaultTitle => 'Guardado';
@@ -5273,8 +5282,7 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
-  String get timelineMarkerCommentHint =>
-      'Comentario (p. ej., boca \"a\" aquí)';
+  String get timelineMarkerCommentHint => 'Comentario (p. ej., boca «a» aquí)';
 
   @override
   String timelineAddClipDialogTitle(String trackName) {
@@ -5854,11 +5862,11 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get tipsRoughLayerRescueTitle =>
-      '¿Dibujaste el lineart sobre tu boceto? Rescátalo con \"Transparencia por brillo\"';
+      '¿Dibujaste el lineart sobre tu boceto? Rescátalo con «Transparencia por brillo»';
 
   @override
   String get tipsRoughLayerRescueDesc =>
-      'Aunque hayas dibujado el lineart por accidente encima de la capa de boceto, puedes recuperar solo el lineart sin borrar nada. 1) Añade una nueva capa y pon su modo de fusión en Dividir. 2) Toma el color del boceto con el cuentagotas y rellena toda esa capa Dividir con él (esto desvanece el boceto). 3) Duplica la capa Dividir y el boceto desaparece por completo. 4) Usa \"Combinar todas las capas visibles\" en el panel de capas para aplanar todo en una sola capa. 5) Desde el menú de tres puntos de esa capa combinada, elige \"Transparencia por brillo (Gris)\": las zonas blancas se vuelven transparentes y solo queda el lineart.';
+      'Aunque hayas dibujado el lineart por accidente encima de la capa de boceto, puedes recuperar solo el lineart sin borrar nada. 1) Añade una nueva capa y pon su modo de fusión en Dividir. 2) Toma el color del boceto con el cuentagotas y rellena toda esa capa Dividir con él (esto desvanece el boceto). 3) Duplica la capa Dividir y el boceto desaparece por completo. 4) Usa «Combinar todas las capas visibles» en el panel de capas para aplanar todo en una sola capa. 5) Desde el menú de tres puntos de esa capa combinada, elige «Transparencia por brillo (Gris)»: las zonas blancas se vuelven transparentes y solo queda el lineart.';
 
   @override
   String get timelineEffectTypeMonochrome => 'Filtro monocromo';
@@ -6188,7 +6196,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get tipsLineArtExtractionDesc =>
-      'Aumenta el contraste con el ajuste de color para que las líneas destaquen, y luego usa el filtro de umbral para dividir la imagen en blanco y negro puros: las líneas se separan claramente del resto. El control deslizante de umbral te permite ajustar el grosor de la línea y lo tenue o marcada que se ve. Por último, usa \"Transparencia por brillo (gris)\" desde el menú de tres puntos de la capa para volver transparentes las zonas blancas (todo excepto las líneas), dejando solo el dibujo lineal. Útil para extraer un dibujo lineal limpio a partir de una foto o un boceto.';
+      'Aumenta el contraste con el ajuste de color para que las líneas destaquen, y luego usa el filtro de umbral para dividir la imagen en blanco y negro puros: las líneas se separan claramente del resto. El control deslizante de umbral te permite ajustar el grosor de la línea y lo tenue o marcada que se ve. Por último, usa «Transparencia por brillo (gris)» desde el menú de tres puntos de la capa para volver transparentes las zonas blancas (todo excepto las líneas), dejando solo el dibujo lineal. Útil para extraer un dibujo lineal limpio a partir de una foto o un boceto.';
 
   @override
   String get tipsLineColorUsageTitle =>
@@ -6273,7 +6281,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String workspaceOverwriteConfirmBody(String name) {
-    return 'Esto sobrescribirá \"$name\" con los ajustes actuales. Se perderá su contenido anterior. ¿Continuar?';
+    return 'Esto sobrescribirá «$name» con los ajustes actuales. Se perderá su contenido anterior. ¿Continuar?';
   }
 
   @override
@@ -8141,7 +8149,13 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String homeMovedToTrashSnackbar(int count) {
-    return '$count elemento(s) movido(s) a la papelera';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count elementos movidos a la papelera',
+      one: '$count elemento movido a la papelera',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -8149,12 +8163,28 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String homeCutSnackbar(int count) {
-    return '$count elemento(s) cortado(s). Abre el destino y toca Pegar en la barra debajo de las pestañas.';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count elementos cortados. Abre el destino y toca Pegar en la barra debajo de las pestañas.',
+      one:
+          '$count elemento cortado. Abre el destino y toca Pegar en la barra debajo de las pestañas.',
+    );
+    return '$_temp0';
   }
 
   @override
   String homeCopiedSnackbar(int count) {
-    return '$count elemento(s) copiado(s). Abre el lugar de destino y toca Pegar en la barra debajo de las pestañas.';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count elementos copiados. Abre el lugar de destino y toca Pegar en la barra debajo de las pestañas.',
+      one:
+          '$count elemento copiado. Abre el lugar de destino y toca Pegar en la barra debajo de las pestañas.',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -8386,12 +8416,12 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String projectListTrashFolderConfirmBody(String name) {
-    return '\"$name\" se moverá a la papelera. Puedes restaurar la carpeta completa desde la papelera.';
+    return '«$name» se moverá a la papelera. Puedes restaurar la carpeta completa desde la papelera.';
   }
 
   @override
   String homeFolderMovedToTrashSnackbar(String name) {
-    return '\"$name\" movida a la papelera';
+    return '«$name» movida a la papelera';
   }
 
   @override
@@ -8401,7 +8431,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String homeTrashFolderPermanentDeleteBody(String name) {
-    return '\"$name\" se eliminará de forma permanente. Esta acción no se puede deshacer.';
+    return '«$name» se eliminará de forma permanente. Esta acción no se puede deshacer.';
   }
 
   @override
@@ -10041,10 +10071,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get homeTrashKindCreatedProject => 'Proyecto creado';
 
   @override
-  String get homeTrashKindReceivedShare => 'Archivo compartido recibido';
+  String get homeTrashKindReceivedShare => 'Compartido contigo';
 
   @override
-  String get homeTrashKindCreatedShare => 'Archivo compartido creado por ti';
+  String get homeTrashKindCreatedShare => 'Compartido por ti';
 
   @override
   String get homeTrashKindExportedWork => 'Obra exportada';
@@ -10155,7 +10185,7 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
-  String get homeClipboardClear => 'Borrar';
+  String get homeClipboardClear => 'Cancelar';
 
   @override
   String homeExportedWorkMetadata(DateTime date, String size) {
@@ -10168,11 +10198,22 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
+  String homeWorkFolderContents(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count obras',
+      one: '1 obra',
+      zero: 'Vacía',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get thumbnailChangeAction => 'Cambiar miniatura';
 
   @override
-  String get thumbnailDefaultLatestWork =>
-      'Predeterminada (la obra actualizada más recientemente)';
+  String get thumbnailDefaultLatestWork => 'Por defecto (obra más reciente)';
 
   @override
   String get thumbnailHide => 'No mostrar miniatura';
@@ -10293,14 +10334,14 @@ class AppLocalizationsEs extends AppLocalizations {
   String get communityUnfollowAction => 'Dejar de seguir';
 
   @override
-  String get communityUnfollowedLabel => 'Ya no lo sigues';
+  String get communityUnfollowedLabel => 'Ya no sigues esta cuenta';
 
   @override
   String get communityFollowingListEmpty => 'Todavía no sigues a nadie';
 
   @override
   String get communityRecentlyUnfollowedHeader =>
-      'Dejaste de seguir recientemente';
+      'Cuentas que dejaste de seguir hace poco';
 
   @override
   String communityMyWorksStatusScheduled(DateTime date) {
@@ -10452,8 +10493,8 @@ class AppLocalizationsEs extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       minutes,
       locale: localeName,
-      other: 'Elige una hora al menos $minutes minutos después de ahora',
-      one: 'Elige una hora al menos $minutes minuto después de ahora',
+      other: 'Elige una hora al menos $minutes minutos posterior a la actual',
+      one: 'Elige una hora al menos $minutes minuto posterior a la actual',
     );
     return '$_temp0';
   }
