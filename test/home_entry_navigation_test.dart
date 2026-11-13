@@ -284,7 +284,8 @@ void main() {
           Icons.menu_book_outlined,
           Icons.settings_outlined,
           Icons.cleaning_services_outlined,
-        ];        for (final glyph in expectedIcons) {
+        ];
+        for (final glyph in expectedIcons) {
           final found = find.descendant(
             of: drawer,
             matching: find.byIcon(glyph),
