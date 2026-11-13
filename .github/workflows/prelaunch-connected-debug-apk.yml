@@ -65,12 +65,23 @@ jobs:
           # Do not play the ad on Galaxy until registered as an AdMob test device.
           grep -F 'ca-app-pub-4380578821900659~1455226397' \
             android/app/src/main/AndroidManifest.xml >/dev/null
+          # A prelaunch APK must carry the v4 benefit contract and exercise
+          # the account-bound feature/expiry guards that guard real redemption.
+          flutter analyze --no-pub --no-fatal-infos --no-fatal-warnings \
+            lib/services/premium_service.dart \
+            lib/screens/settings/watermark_settings_screen.dart \
+            lib/screens/timeline/timeline_screen.dart \
+            lib/screens/rewards/reward_unlock_screen.dart
           flutter test --no-pub \
             test/community_post_publish_contract_test.dart \
             test/youtube_thumbnail_service_test.dart \
             test/community_post_recovery_contract_test.dart \
             test/push_notification_service_test.dart \
-            test/reward_unlock_screen_test.dart
+            test/reward_unlock_screen_test.dart \
+            test/premium_coin_account_isolation_test.dart \
+            test/premium_production_entry_wiring_test.dart \
+            test/premium_all_entry_points_test.dart \
+            test/coin_benefit_price_proposal_test.dart
           flutter build apk --debug --no-pub \
             --dart-define="NIARIM_API_BASE_URL=$DEV_BACKEND_URL" \
             --dart-define="NIARIM_GOOGLE_CLIENT_ID=$GOOGLE_CLIENT_ID"
