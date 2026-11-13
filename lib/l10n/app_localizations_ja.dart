@@ -8725,7 +8725,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get rewardUnlockAllAds => 'すべての広告なし';
 
   @override
-  String get rewardUnlockFullPremium => '特典全部入り';
+  String get rewardUnlockFullPremium => '特典コンプリートパック（プレミアム会員と同内容）';
 
   @override
   String get rewardUnlockChoose => '選択';
