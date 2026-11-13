@@ -13,6 +13,7 @@ import 'package:niarim/services/community_service.dart';
 import 'package:niarim/services/settings_service.dart';
 import 'package:niarim/widgets/premium_lock_widget.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class _FreePremiumService extends PremiumService {
   @override
@@ -127,10 +128,11 @@ void main() {
     },
   );
 
-  testWidgets('Home drawer Premium entry reaches /premium directly', (
+  testWidgets('Home drawer membership entry reaches /membership directly', (
     tester,
   ) async {
     final boundaryKey = GlobalKey();
+    SharedPreferences.setMockInitialValues({});
     final community = CommunityService();
     addTearDown(community.dispose);
     final router = GoRouter(
@@ -149,9 +151,9 @@ void main() {
               ),
         ),
         GoRoute(
-          path: '/premium',
+          path: '/membership',
           builder: (context, state) =>
-              const Scaffold(body: Text('PREMIUM DESTINATION')),
+              const Scaffold(body: Text('MEMBERSHIP DESTINATION')),
         ),
       ],
     );
@@ -167,16 +169,16 @@ void main() {
     );
     expect(drawerList, findsOneWidget);
     await tester.scrollUntilVisible(
-      find.byIcon(Icons.workspace_premium_outlined),
+      find.byKey(const Key('homeMembershipBenefitsMenuItem')),
       240,
       scrollable: drawerList,
     );
     await _pumpFrames(tester, count: 2);
-    expect(find.byIcon(Icons.workspace_premium_outlined), findsOneWidget);
+    expect(find.byKey(const Key('homeMembershipBenefitsMenuItem')), findsOneWidget);
     await _capture(tester, boundaryKey, 'home-drawer-premium-entry');
-    await tester.tap(find.byIcon(Icons.workspace_premium_outlined));
+    await tester.tap(find.byKey(const Key('homeMembershipBenefitsMenuItem')));
     await _pumpFrames(tester, count: 12);
-    expect(find.text('PREMIUM DESTINATION'), findsOneWidget);
+    expect(find.text('MEMBERSHIP DESTINATION'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
