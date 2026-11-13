@@ -16,6 +16,12 @@ import 'package:flutter/widgets.dart';
 /// スコープそのもの（この割り当てより上）へ落とすので、そのままでは画面を
 /// 一度押すまでショートカットが効かなかった（キャンバスの色コード欄・
 /// レイヤーの検索欄で実際に起きていた）。
+///
+/// また、画面の中でフォーカスを持っていた部品が消えた・押せなくなったとき
+/// （押したことで消えるボタン・選択中の操作バー・作り直される一覧の見出し等）
+/// も画面のフォーカスへ戻す。Flutterはその前にフォーカスのあった部品（Tabで
+/// 来る途中のタブ・「起動画面に戻る」等）へ移すので、続けて押したEnterで
+/// 見えていない別の操作が動いた（ホームでゴミ箱のタブが開いた）。
 class TypingAwareShortcuts extends StatefulWidget {
   const TypingAwareShortcuts({
     super.key,
@@ -45,6 +51,11 @@ class TypingAwareShortcuts extends StatefulWidget {
 class _TypingAwareShortcutsState extends State<TypingAwareShortcuts> {
   ModalRoute<Object?>? _route;
 
+  // 画面（[TypingAwareShortcuts.screenFocus]）の中で最後にフォーカスを
+  // 持っていた部品と、その部品が入っていたフォーカスの範囲。
+  FocusNode? _lastInside;
+  FocusScopeNode? _lastInsideScope;
+
   @override
   void initState() {
     super.initState();
@@ -63,20 +74,45 @@ class _TypingAwareShortcutsState extends State<TypingAwareShortcuts> {
     super.dispose();
   }
 
-  // フォーカスが画面のスコープそのものへ落ちたら（入力を終えた）、画面の
-  // フォーカスへ戻す。上に別の画面・ダイアログがある間は何もしない。
+  // フォーカスが画面のスコープそのものへ落ちたら（入力を終えた）、または
+  // 画面の中でフォーカスを持っていた部品が消えた・押せなくなってFlutterが
+  // フォーカスを別の部品へ移したら、画面のフォーカスへ戻す。上に別の画面・
+  // ダイアログがある間は何もしない（閉じて戻ったときに確かめる）。
   void _reclaimFocus() {
     final node = widget.screenFocus;
     if (node == null || !mounted || node.context == null) return;
-    final scope = node.enclosingScope;
     final primary = FocusManager.instance.primaryFocus;
-    if (scope == null || primary != scope) return;
+    final previous = _lastInside;
+    final previousScope = _lastInsideScope;
+    if (primary != null &&
+        (primary == node || primary.ancestors.contains(node))) {
+      _lastInside = primary;
+      _lastInsideScope = primary.enclosingScope;
+    }
+    final scope = node.enclosingScope;
+    if (scope == null) return;
     if (_route != null && !_route!.isCurrent) return;
+    final fellToScope = primary == scope;
+    // 消えた（木から外れた）・押せなくなった部品からの移動だけを戻す。
+    // 利用者がTab・クリックで移ったときは前の部品はそのまま残っている。
+    // 文字の入力欄へ移ったとき（検索を開いた等）はそのままにする。画面の
+    // 中の別の範囲（引き出し等）が閉じて開いたボタンへ戻るときは、Flutterの
+    // 戻し方のままにする。
+    final lostFocusedControl =
+        previous != null &&
+        previousScope == scope &&
+        previous != primary &&
+        previous != node &&
+        primary != node &&
+        (previous.parent == null || !previous.canRequestFocus) &&
+        !TypingAwareShortcuts.isTyping;
+    if (!fellToScope && !lostFocusedControl) return;
     // フォーカスの変更を通知している最中には変えない。
     scheduleMicrotask(() {
       if (mounted &&
           node.context != null &&
-          FocusManager.instance.primaryFocus == scope) {
+          FocusManager.instance.primaryFocus == primary &&
+          (_route == null || _route!.isCurrent)) {
         node.requestFocus();
       }
     });
