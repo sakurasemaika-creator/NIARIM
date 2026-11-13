@@ -14,7 +14,7 @@ import {
 } from "../src/lib/individualCoinRedemption";
 
 const requestId="123e4567-e89b-12d3-a456-426614174000";
-const priceVersion="v4-min10-repriced-20261113";
+const priceVersion="v5-shortterm-rebalanced-20261113";
 const input=()=>({targets:["toneCurve","levelAdjustment"],duration:"week",
   quantity:1,priceVersion,requestId});
 const enable=()=>{
@@ -64,7 +64,7 @@ describe("fail closed individual benefit redemption",()=>{
       ...input(), ...({costCoins:1,accountId:"attacker"} as Record<string,unknown>),
     });
     expect(JSON.parse(result.body??"{}")).toMatchObject({
-      redeemed:true,costCoins:16500,duplicate:false,
+      redeemed:true,costCoins:24750,duplicate:false,
     });
     const tx=send.mock.calls.find(([cmd])=>cmd instanceof TransactWriteCommand)?.[0] as TransactWriteCommand;
     expect(tx).toBeInstanceOf(TransactWriteCommand);
@@ -72,7 +72,7 @@ describe("fail closed individual benefit redemption",()=>{
     expect(rows).toHaveLength(7);
     expect(rows[0].Put?.Item?.selectionKey).toBe("toneCurve,levelAdjustment");
     expect(rows[1].Update?.Key?.pk).toBe("USER#Naccount");
-    expect(rows[1].Update?.ExpressionAttributeValues?.[":minus"]).toBe(-16500);
+    expect(rows[1].Update?.ExpressionAttributeValues?.[":minus"]).toBe(-24750);
     expect(rows[2].Update?.Key?.sk).toBe("ENTITLEMENT#toneCurve");
     expect(rows[3].Update?.Key?.sk).toBe("ENTITLEMENT#levelAdjustment");
     // The membership and Play term are checked in the SAME transaction as
@@ -87,7 +87,7 @@ describe("fail closed individual benefit redemption",()=>{
     expect(rows[4].ConditionCheck?.ExpressionAttributeValues?.[":free"])
       .toBe("free");
     expect(rows[5].ConditionCheck?.Key?.sk).toBe("ENTITLEMENT#fullPremium");
-    expect(rows[6].Put?.Item?.deltaCoins).toBe(-16500);
+    expect(rows[6].Put?.Item?.deltaCoins).toBe(-24750);
     expect(rows[2].Update?.ConditionExpression).toContain("attribute_not_exists(expiresAtEpochMs)");
   });
   it("rejects price tampering, overlapping ad rights and duplicate targets",async()=>{
@@ -122,7 +122,7 @@ describe("fail closed individual benefit redemption",()=>{
         return {Item:{
           itemType:"COIN_REDEMPTION",target:"individualBenefits",
           requestId,selectionKey:"toneCurve,levelAdjustment",
-          duration:"week",quantity:1,priceVersion,costCoins:16500,
+          duration:"week",quantity:1,priceVersion,costCoins:24750,
           expiresAtByTarget:{toneCurve:1900000000000,levelAdjustment:1900000000000},
         }};
       }
@@ -130,7 +130,7 @@ describe("fail closed individual benefit redemption",()=>{
     });
     const response=await redeemIndividualCoins("Naccount",input());
     expect(JSON.parse(response.body??"{}")).toMatchObject({
-      redeemed:true,duplicate:true,costCoins:16500,
+      redeemed:true,duplicate:true,costCoins:24750,
     });
     expect(send.mock.calls.some(([cmd])=>cmd instanceof TransactWriteCommand))
       .toBe(false);

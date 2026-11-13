@@ -27,7 +27,7 @@ beforeEach(()=>{
   process.env.COIN_REDEMPTION_REVIEW_APPROVED="true";
   process.env.COIN_FULL_PREMIUM_MONTH_COINS="55000";
   process.env.COIN_FULL_PREMIUM_YEAR_COINS="550000";
-  process.env.COIN_PRICE_VERSION="v4-min10-repriced-20261113";
+  process.env.COIN_PRICE_VERSION="v5-shortterm-rebalanced-20261113";
   delete process.env.COIN_PREMIUM_ANNUAL_REDEMPTION_ENABLED;
 });
 describe("independently gated annual Premium redemption",()=>{
@@ -38,14 +38,14 @@ describe("independently gated annual Premium redemption",()=>{
       enabled:false,priceCoins:null,catalogPriceCoins:550000,months:12,
     });
     await expect(redeemCoins(event({target:"fullPremium",months:12,
-      priceVersion:"v4-min10-repriced-20261113",requestId})))
+      priceVersion:"v5-shortterm-rebalanced-20261113",requestId})))
       .rejects.toMatchObject({code:"REDEMPTION_DISABLED"});
     expect(send).not.toHaveBeenCalled();
   });
   it("checks the exact approved annual rate and separate release switch",()=>{
     process.env.COIN_PREMIUM_ANNUAL_REDEMPTION_ENABLED="true";
     expect(premiumAnnualRedemptionOffer()).toMatchObject({
-      enabled:true,priceCoins:550000,priceVersion:"v4-min10-repriced-20261113",
+      enabled:true,priceCoins:550000,priceVersion:"v5-shortterm-rebalanced-20261113",
     });
     process.env.COIN_FULL_PREMIUM_YEAR_COINS="660000";
     expect(premiumAnnualRedemptionOffer().enabled).toBe(false);
@@ -60,7 +60,7 @@ describe("independently gated annual Premium redemption",()=>{
     process.env.COIN_PREMIUM_ANNUAL_REDEMPTION_ENABLED="true";
     const response=await redeemCoins(event({
       target:"fullPremium",months:12,
-      priceVersion:"v4-min10-repriced-20261113",requestId,priceCoins:1,
+      priceVersion:"v5-shortterm-rebalanced-20261113",requestId,priceCoins:1,
     }));
     expect(JSON.parse(response.body??"{}")).toMatchObject({
       redeemed:true,costCoins:550000,duplicate:false,
