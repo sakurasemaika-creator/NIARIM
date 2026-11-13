@@ -7,6 +7,8 @@ on:
     branches: [dev_branch]
     paths:
       - ".github/workflows/flutter-readiness-full-check.yml"
+      - "lib/l10n/app_localizations*.dart"
+      - "test/reward_unlock_screen_test.dart"
   workflow_dispatch:
 permissions:
   contents: read
