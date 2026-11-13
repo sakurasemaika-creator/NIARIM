@@ -38,6 +38,38 @@ jobs:
         run: flutter pub get --enforce-lockfile
       - name: Verify and capture all four production tabs
         run: flutter test --no-pub --reporter expanded test/home_four_tab_menu_capture_test.dart
+      - name: Verify all 16 captured PNGs and identical dimensions
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          from struct import unpack
+          names = [
+              '01_projects', '02_projects_menu', '03_works', '04_works_menu',
+              '05_shared', '06_shared_menu', '07_trash',
+              '08_trash_restore_confirmation', '09_projects_selected',
+              '10_works_selected', '11_shared_selected', '12_trash_selected',
+              '13_projects_folder_selected', '14_works_folder_selected',
+              '15_shared_folder_selected', '16_trash_folder_selected',
+          ]
+          folder = Path('build/home-four-tab-captures')
+          actual = sorted(folder.glob('*.png'))
+          expected = {folder / (name + '.png') for name in names}
+          assert set(actual) == expected, (
+              f'Expected exactly 16 PNGs: missing={sorted(map(str, expected - set(actual)))}, '
+              f'unexpected={sorted(map(str, set(actual) - expected))}'
+          )
+          sizes = set()
+          for path in actual:
+              with path.open('rb') as stream:
+                  header = stream.read(24)
+              assert header[:8] == b'\\x89PNG\\r\\n\\x1a\\n', f'Invalid PNG: {path}'
+              dimensions = unpack('>II', header[16:24])
+              assert all(n > 0 for n in dimensions), f'Invalid dimensions: {path}'
+              sizes.add(dimensions)
+              print(f'{path.name}: {dimensions[0]}x{dimensions[1]}')
+          assert len(sizes) == 1, f'Capture dimensions disagree: {sizes}'
+          print('Validated all 16 real Flutter captures with identical dimensions.')
+          PY
       - name: Preserve real Flutter screenshots even when a later step fails
         if: always()
         uses: actions/upload-artifact@v4
