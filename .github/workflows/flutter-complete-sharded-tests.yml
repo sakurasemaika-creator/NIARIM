@@ -1,4 +1,5 @@
-# Full Dart/Flutter test suite in four deterministic file shards. The work
+# Full Dart/Flutter test suite in four deterministic file shards.
+# Current complete-suite verification after November 13 regression repairs and backend integration. The work
 # is independent and does not write production data or publish APKs.
 name: Flutter complete test suite (4 shards)
 on:
