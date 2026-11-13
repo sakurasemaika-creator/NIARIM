@@ -1,6 +1,8 @@
 # One-shot artifact staging on dev_branch. NO Lambda or CloudFormation mutation.
 # The ZIP is built from verified backend sources and uploaded to a private
 # account-owned S3 bucket for a separately audited, code-only release.
+# The CDK coin-catalog parity test and disposable DynamoDB transactions
+# MUST pass for the current v4 catalog before publishing the artifact.
 name: One-shot Coin API Code Artifact Staging
 on:
   push:
