@@ -11,6 +11,8 @@ import '../../models/bundled_fonts.dart';
 import '../../models/watermark_asset.dart';
 import '../../services/font_service.dart';
 import '../../services/watermark_service.dart';
+import '../../services/premium_service.dart';
+import '../../widgets/premium_lock_widget.dart';
 import '../../utils/duplicate_name.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/help_button.dart';
@@ -32,6 +34,31 @@ class WatermarkSettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    // Deep links must not bypass the Premium check in SettingsScreen.
+    // Also react immediately to server-side entitlement expiry/revocation.
+    if (!context.watch<PremiumService>().isFeatureAvailable(
+      PremiumFeature.watermark,
+    )) {
+      return Scaffold(
+        appBar: AppBar(title: Text(l10n.settingsWatermarkTitle)),
+        body: Center(
+          child: PremiumLockWidget(
+            feature: PremiumFeature.watermark,
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.lock_outline, size: 44),
+                  const SizedBox(height: 12),
+                  Text(l10n.premiumBannerRegisterButton),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    }
     final service = context.watch<WatermarkService>();
     final assets = service.assets;
 
@@ -105,6 +132,7 @@ class WatermarkSettingsScreen extends StatelessWidget {
                     )) {
                       return;
                     }
+                    if (!context.mounted || !_canEditNow(context)) return;
                     service.removeWatermark(assets[index].id);
                   },
                   // タップで編集。過去に作成したウォーターマークの
@@ -124,6 +152,16 @@ class WatermarkSettingsScreen extends StatelessWidget {
               ),
       ),
     );
+  }
+
+  // Dialogs can survive a Premium lease expiring; check again at commit.
+  bool _canEditNow(BuildContext context) {
+    if (!context.mounted) return false;
+    if (context.read<PremiumService>().isFeatureAvailable(
+      PremiumFeature.watermark,
+    )) return true;
+    showPremiumBanner(context);
+    return false;
   }
 
   void _showAddSheet(BuildContext context, WatermarkService service) {
@@ -167,6 +205,7 @@ class WatermarkSettingsScreen extends StatelessWidget {
         result.files.first.path == null) {
       return;
     }
+    if (!context.mounted || !_canEditNow(context)) return;
     await service.addWatermark(result.files.first.path!);
     if (!context.mounted) return;
     ScaffoldMessenger.of(
@@ -303,6 +342,7 @@ class WatermarkSettingsScreen extends StatelessWidget {
               ),
               FilledButton(
                 onPressed: () async {
+                  if (!context.mounted || !_canEditNow(context)) return;
                   final text = controller.text.trim();
                   if (text.isEmpty) return;
                   if (existing == null) {
@@ -393,6 +433,7 @@ class WatermarkSettingsScreen extends StatelessWidget {
               ),
               FilledButton(
                 onPressed: () async {
+                  if (!context.mounted || !_canEditNow(context)) return;
                   await service.updateAsset(
                     existing.copyWith(
                       name: nameController.text.trim().isEmpty
