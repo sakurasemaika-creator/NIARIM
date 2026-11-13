@@ -185,3 +185,87 @@ class HomeSelectionToolbar extends StatelessWidget {
     );
   }
 }
+
+
+/// Copy/cut state sits immediately below the four tabs, in the same
+/// visual system and 48px action height as [HomeSelectionToolbar].
+class HomeClipboardToolbar extends StatelessWidget {
+  const HomeClipboardToolbar({
+    super.key,
+    required this.itemCount,
+    required this.isCut,
+    required this.onPaste,
+    required this.onClear,
+    this.isPasting = false,
+  });
+
+  final int itemCount;
+  final bool isCut;
+  final bool isPasting;
+  final VoidCallback onPaste;
+  final VoidCallback onClear;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
+    final foreground =
+        theme.appBarTheme.foregroundColor ?? theme.colorScheme.onSurface;
+    final language = Localizations.localeOf(context).languageCode;
+    final status = switch (language) {
+      'ja' => '$itemCount件を${isCut ? '切り取り' : 'コピー'}中',
+      'ko' => '$itemCount개 ${isCut ? '잘라내기' : '복사'} 중',
+      'zh' => '${isCut ? '剪切' : '复制'} $itemCount 项',
+      'es' => '$itemCount ${isCut ? 'elementos cortados' : 'elementos copiados'}',
+      'fr' => '$itemCount élément(s) ${isCut ? 'coupé(s)' : 'copié(s)'}',
+      _ => '$itemCount item(s) ${isCut ? 'cut' : 'copied'}',
+    };
+    final clearLabel = switch (language) {
+      'ja' => 'クリア',
+      'ko' => '지우기',
+      'zh' => '清除',
+      'es' => 'Borrar',
+      'fr' => 'Effacer',
+      _ => 'Clear',
+    };
+    final style = TextButton.styleFrom(
+      foregroundColor: foreground,
+      minimumSize: const Size(48, 48),
+      padding: const EdgeInsets.symmetric(horizontal: 6),
+      visualDensity: VisualDensity.standard,
+    );
+    return Container(
+      key: const Key('homeClipboardToolbar'),
+      width: double.infinity,
+      padding: const EdgeInsets.all(8),
+      color: theme.appBarTheme.backgroundColor ?? theme.colorScheme.surface,
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              status,
+              key: const Key('homeClipboardStatusLabel'),
+              style: theme.textTheme.bodyMedium?.copyWith(color: foreground),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          TextButton.icon(
+            key: const Key('homeClearClipboardButton'),
+            onPressed: isPasting ? null : onClear,
+            icon: const Icon(Icons.clear_all, size: 20),
+            label: Text(clearLabel, maxLines: 1),
+            style: style,
+          ),
+          TextButton.icon(
+            key: const Key('homeCrossTabPasteButton'),
+            onPressed: isPasting ? null : onPaste,
+            icon: const Icon(Icons.content_paste, size: 20),
+            label: Text(l10n.commonPaste, maxLines: 1),
+            style: style,
+          ),
+        ],
+      ),
+    );
+  }
+}
