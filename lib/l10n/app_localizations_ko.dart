@@ -7962,6 +7962,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get homeProjectsLoadFailed => '프로젝트를 불러오지 못했습니다';
 
   @override
+  String get homeOutgoingSharesLoadFailed => '생성한 공유 파일을 불러오지 못했습니다';
+
+  @override
   String get settingsErrorLogTitle => '오류 기록';
 
   @override

@@ -381,15 +381,27 @@ class ProjectService extends ChangeNotifier {
     }
   }
 
+  /// 前回の[refreshOutgoingShares]で、作成した共有ファイルの置き場所（の
+  /// どれか）を読めなかったか。読めなかったときは、一覧が空でも「まだ
+  /// ありません」と言わず、読めなかったことを知らせる。
+  bool get outgoingSharesLoadFailed => _outgoingSharesLoadFailed;
+  bool _outgoingSharesLoadFailed = false;
+
   Future<void> refreshOutgoingShares() async {
+    var unreadable = false;
     try {
-      final current = await OutgoingShareLibrary.list();
+      final current = await OutgoingShareLibrary.list(
+        onUnreadable: () => unreadable = true,
+      );
       _outgoingShares
         ..clear()
         ..addAll(current);
+      _outgoingSharesLoadFailed = unreadable;
       notifyListeners();
     } catch (error, stackTrace) {
       AppErrorReporter.record(error, stackTrace);
+      _outgoingSharesLoadFailed = true;
+      notifyListeners();
     }
   }
 

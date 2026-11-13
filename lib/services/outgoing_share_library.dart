@@ -76,9 +76,14 @@ abstract final class OutgoingShareLibrary {
 
   /// Include pre-existing .niashare files in source-project folders without
   /// moving or deleting those legacy files.
+  ///
+  /// [onUnreadable]は、一覧できなかったフォルダがあったときに呼ぶ（その中の
+  /// 共有ファイルは結果に入らない）。無いだけのフォルダ（まだ何も作って
+  /// いない）では呼ばない。
   static Future<List<SavedOutgoingShare>> list({
     Directory? libraryRoot,
     Directory? legacyProjectsRoot,
+    void Function()? onUnreadable,
   }) async {
     final root = libraryRoot ?? await _root();
     final projects =
@@ -87,7 +92,8 @@ abstract final class OutgoingShareLibrary {
     final files = <File>[];
 
     void collect(Directory directory) {
-      if (!directory.existsSync()) return;
+      // existsSyncは、上のフォルダに入れないときも偽になる（無いのか読め
+      // ないのか分からない）。一覧して、無いと言われたときだけ空とみなす。
       try {
         for (final entry in directory.listSync(followLinks: false)) {
           if (entry is File && entry.path.toLowerCase().endsWith('.niashare')) {
@@ -105,12 +111,16 @@ abstract final class OutgoingShareLibrary {
             } on FileSystemException catch (error, stackTrace) {
               // A single unreadable directory must not hide other exports.
               AppErrorReporter.record(error, stackTrace);
+              onUnreadable?.call();
             }
           }
         }
+      } on PathNotFoundException {
+        // Nothing has been created there yet.
       } on FileSystemException catch (error, stackTrace) {
-        // Missing or unreadable paths are not an empty project library.
+        // Unreadable paths are not an empty project library.
         AppErrorReporter.record(error, stackTrace);
+        onUnreadable?.call();
       }
     }
 

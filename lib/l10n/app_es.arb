@@ -3269,6 +3269,7 @@
   "projectListFolderCreatedOn": "Creada el {date}",
   "projectListInFolder": "En {path}",
   "homeProjectsLoadFailed": "No se pudieron cargar tus proyectos",
+  "homeOutgoingSharesLoadFailed": "No se pudieron cargar los archivos compartidos que creaste",
   "settingsErrorLogTitle": "Registro de errores",
   "settingsErrorLogSubtitle": "Consulta y copia los errores de la app para incluirlos al informar de un problema",
   "errorLogHint": "Muestra hasta 20 errores desde que se abrió la app, del más reciente al más antiguo. Las direcciones de correo y los datos de inicio de sesión se ocultan.",

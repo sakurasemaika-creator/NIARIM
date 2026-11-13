@@ -7846,6 +7846,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get homeProjectsLoadFailed => '无法加载项目';
 
   @override
+  String get homeOutgoingSharesLoadFailed => '无法加载已创建的共享文件';
+
+  @override
   String get settingsErrorLogTitle => '错误记录';
 
   @override
@@ -17601,6 +17604,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get homeProjectsLoadFailed => '無法載入專案';
+
+  @override
+  String get homeOutgoingSharesLoadFailed => '無法載入已建立的共享檔案';
 
   @override
   String get settingsErrorLogTitle => '錯誤記錄';

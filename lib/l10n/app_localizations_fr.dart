@@ -8391,6 +8391,10 @@ class AppLocalizationsFr extends AppLocalizations {
   String get homeProjectsLoadFailed => 'Impossible de charger vos projets';
 
   @override
+  String get homeOutgoingSharesLoadFailed =>
+      'Impossible de charger les fichiers partagés que vous avez créés';
+
+  @override
   String get settingsErrorLogTitle => 'Journal des erreurs';
 
   @override

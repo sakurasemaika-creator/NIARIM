@@ -3276,6 +3276,7 @@
   "projectListFolderCreatedOn": "Created {date}",
   "projectListInFolder": "In {path}",
   "homeProjectsLoadFailed": "Could not load your projects",
+  "homeOutgoingSharesLoadFailed": "Could not load the share files you created",
   "settingsErrorLogTitle": "Error log",
   "settingsErrorLogSubtitle": "View and copy errors from the app to include when reporting a problem",
   "errorLogHint": "Shows up to 20 errors since the app was opened, newest first. Email addresses and sign-in details are hidden.",

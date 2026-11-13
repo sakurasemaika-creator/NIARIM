@@ -3939,6 +3939,7 @@
     }
   },
   "homeProjectsLoadFailed": "プロジェクトを読み込めませんでした",
+  "homeOutgoingSharesLoadFailed": "作成した共有ファイルを読み込めませんでした",
   "settingsErrorLogTitle": "エラーの記録",
   "settingsErrorLogSubtitle": "不具合を知らせるときに、アプリで起きたエラーを確認してコピーできます",
   "errorLogHint": "このアプリを閉じるまでに起きたエラーを、新しい順に最大20件表示します。メールアドレスやログインの情報は伏せてあります。",

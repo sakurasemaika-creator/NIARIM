@@ -15,7 +15,9 @@ import 'package:niarim/router.dart';
 import 'package:niarim/screens/save_tree/save_tree_screen.dart';
 import 'package:niarim/screens/home/widgets/folder_save_feedback.dart';
 import 'package:niarim/screens/home/widgets/project_list_widget.dart';
+import 'package:niarim/screens/home/home_screen.dart';
 import 'package:niarim/services/project_service.dart';
+import 'package:niarim/services/settings_service.dart';
 import 'package:niarim/services/save_tree_service.dart';
 import 'package:niarim/services/storage_info_service.dart';
 import 'package:niarim/utils/app_error_reporter.dart';
@@ -4825,6 +4827,102 @@ void main() {
     await tester.pumpWidget(const SizedBox.shrink());
     appRouter.go('/');
   });
+
+  // 共有の「自分が作成したもの」も、置き場所（作成した共有ファイルの
+  // フォルダ・以前の版で作品のフォルダに作った共有ファイル）を読めなかった
+  // ときは「作成した共有ファイルはまだありません」と言わず、読めなかった
+  // ことと「再試行」を出す（受け取ったもの・ゴミ箱と同じ）。以前は何も
+  // 知らせず、空の表示のままだった。
+  for (final blocked in ['the created-share folder', 'the projects folder']) {
+    testWidgets('Created shares say they could not be read when $blocked '
+        'cannot be listed, and Retry lists them', (tester) async {
+      tester.view.physicalSize = const Size(1280, 800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      SharedPreferences.setMockInitialValues({
+        'first_launch': false,
+        'language': 'ja',
+        firstUseTooltipsSeenKey: kAllFirstUseTooltipKeys,
+      });
+      final outgoing = '${storage.directory.path}/niarim/shared/outgoing';
+      Directory('$outgoing/1').createSync(recursive: true);
+      File('$outgoing/1/手紙.niashare').writeAsBytesSync(const [1, 2, 3]);
+      Directory(storage.projectsPath).createSync(recursive: true);
+      storage.paths.blockListing(
+        blocked == 'the projects folder' ? storage.projectsPath : outgoing,
+      );
+      appRouter.go('/home');
+      final providers = await tester.runAsync(buildAppProviders);
+      await tester.pumpWidget(
+        MultiProvider(providers: providers!, child: const NiarimApp()),
+      );
+      await _settleWithFiles(tester);
+      await tester.tap(find.byKey(const ValueKey('home_tab_2')));
+      await _settleWithFiles(tester);
+      await tester.tap(find.byKey(const Key('sharedOutgoingFilter')));
+      await _settleWithFiles(tester);
+
+      final notice = find.byKey(const Key('outgoingSharesLoadFailed'));
+      expect(notice, findsOneWidget);
+      expect(
+        find.descendant(
+          of: notice,
+          matching: find.text('作成した共有ファイルを読み込めませんでした'),
+        ),
+        findsOneWidget,
+      );
+      expect(find.text('作成した共有ファイルはまだありません'), findsNothing);
+      // 読めた分は出す（作品のフォルダだけ読めないときの「手紙」）。
+      expect(
+        find.text('手紙'),
+        blocked == 'the projects folder' ? findsOneWidget : findsNothing,
+      );
+      // 7言語・幅320px・文字2倍でも、知らせの文がその言語で出てはみ出さない。
+      if (blocked == 'the created-share folder') {
+        final settings = tester
+            .element(find.byType(HomeScreen))
+            .read<SettingsService>();
+        tester.view.physicalSize = const Size(320, 640);
+        tester.platformDispatcher.textScaleFactorTestValue = 2.0;
+        addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+        for (final MapEntry(key: language, value: text) in const {
+          'ja': '作成した共有ファイルを読み込めませんでした',
+          'en': 'Could not load the share files you created',
+          'es': 'No se pudieron cargar los archivos compartidos que creaste',
+          'fr':
+              'Impossible de charger les fichiers partagés que vous avez créés',
+          'ko': '생성한 공유 파일을 불러오지 못했습니다',
+          'zh': '无法加载已创建的共享文件',
+          'zh_Hant': '無法載入已建立的共享檔案',
+        }.entries) {
+          await tester.runAsync(() => settings.setLanguage(language));
+          await _settleWithFiles(tester, rounds: 2);
+          expect(
+            find.descendant(of: notice, matching: find.text(text)),
+            findsOneWidget,
+            reason: language,
+          );
+          expect(tester.takeException(), isNull, reason: language);
+        }
+        await tester.runAsync(() => settings.setLanguage('ja'));
+        tester.view.physicalSize = const Size(1280, 800);
+        tester.platformDispatcher.clearTextScaleFactorTestValue();
+        await _settleWithFiles(tester, rounds: 2);
+      }
+
+      // 読めるようになってから「再試行」を押すと、知らせが消えて並ぶ。
+      storage.paths.clear();
+      await tester.tap(find.descendant(of: notice, matching: find.text('再試行')));
+      for (var i = 0; i < 40 && notice.evaluate().isNotEmpty; i++) {
+        await _settleWithFiles(tester, rounds: 2);
+      }
+      expect(notice, findsNothing);
+      expect(find.text('手紙'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox.shrink());
+    });
+  }
 }
 
 /// 実際のファイルを読む処理（ゴミ箱の一覧・読み直し）を実時間で待ちながら

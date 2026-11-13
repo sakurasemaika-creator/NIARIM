@@ -3269,6 +3269,7 @@
   "projectListFolderCreatedOn": "{date} 생성",
   "projectListInFolder": "폴더: {path}",
   "homeProjectsLoadFailed": "프로젝트를 불러오지 못했습니다",
+  "homeOutgoingSharesLoadFailed": "생성한 공유 파일을 불러오지 못했습니다",
   "settingsErrorLogTitle": "오류 기록",
   "settingsErrorLogSubtitle": "문제를 알릴 때 앱에서 발생한 오류를 확인하고 복사할 수 있습니다",
   "errorLogHint": "앱을 연 뒤 발생한 오류를 최신순으로 최대 20건 표시합니다. 이메일 주소와 로그인 정보는 가려져 있습니다.",

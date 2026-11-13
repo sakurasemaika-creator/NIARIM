@@ -3269,6 +3269,7 @@
   "projectListFolderCreatedOn": "Créé le {date}",
   "projectListInFolder": "Dans {path}",
   "homeProjectsLoadFailed": "Impossible de charger vos projets",
+  "homeOutgoingSharesLoadFailed": "Impossible de charger les fichiers partagés que vous avez créés",
   "settingsErrorLogTitle": "Journal des erreurs",
   "settingsErrorLogSubtitle": "Consultez et copiez les erreurs de l’application pour les joindre à un signalement",
   "errorLogHint": "Affiche jusqu’à 20 erreurs depuis l’ouverture de l’application, des plus récentes aux plus anciennes. Les adresses e-mail et les informations de connexion sont masquées.",

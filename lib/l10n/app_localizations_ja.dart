@@ -7925,6 +7925,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get homeProjectsLoadFailed => 'プロジェクトを読み込めませんでした';
 
   @override
+  String get homeOutgoingSharesLoadFailed => '作成した共有ファイルを読み込めませんでした';
+
+  @override
   String get settingsErrorLogTitle => 'エラーの記録';
 
   @override

@@ -8241,6 +8241,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeProjectsLoadFailed => 'Could not load your projects';
 
   @override
+  String get homeOutgoingSharesLoadFailed =>
+      'Could not load the share files you created';
+
+  @override
   String get settingsErrorLogTitle => 'Error log';
 
   @override

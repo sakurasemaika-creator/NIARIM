@@ -14361,6 +14361,12 @@ abstract class AppLocalizations {
   /// **'プロジェクトを読み込めませんでした'**
   String get homeProjectsLoadFailed;
 
+  /// No description provided for @homeOutgoingSharesLoadFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'作成した共有ファイルを読み込めませんでした'**
+  String get homeOutgoingSharesLoadFailed;
+
   /// No description provided for @settingsErrorLogTitle.
   ///
   /// In ja, this message translates to:

@@ -3028,6 +3028,7 @@ class _SharedScreenState extends State<SharedScreen> {
       body: _showOutgoing
           ? _OutgoingSharesList(
               header: header,
+              screenFocus: widget.screenFocus,
               onCopyEntry: widget.onCopyEntry,
               viewMode: _effectiveViewMode(context),
               sortMode: _sortMode,
@@ -3855,6 +3856,7 @@ Future<void> _outgoingShareAction(
 class _OutgoingSharesList extends StatelessWidget {
   const _OutgoingSharesList({
     required this.header,
+    this.screenFocus,
     this.onCopyEntry,
     required this.viewMode,
     required this.sortMode,
@@ -3870,9 +3872,37 @@ class _OutgoingSharesList extends StatelessWidget {
   /// 一覧の先頭に出し、一覧と一緒にスクロールするもの（切り替え・並び順）。
   final Widget header;
 
+  /// ホームの画面のフォーカス（読めなかった知らせが消えたとき、フォーカスを
+  /// 戻す先）。
+  final FocusNode? screenFocus;
+
   @override
   Widget build(BuildContext context) {
     final service = context.watch<ProjectService>();
+    // 作成した共有ファイルの置き場所を読めなかったときは知らせ、「まだ
+    // ありません」とは言わない（受け取ったもの・ゴミ箱と同じ）。
+    final loadFailed = service.outgoingSharesLoadFailed;
+    final top = loadFailed
+        ? Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              header,
+              ProjectsLoadFailureNotice(
+                key: const Key('outgoingSharesLoadFailed'),
+                message: AppLocalizations.of(
+                  context,
+                )!.homeOutgoingSharesLoadFailed,
+                onRetry: () async {
+                  if (service.projectsLoadFailed) {
+                    await service.retryLoadProjects();
+                  }
+                  await service.refreshOutgoingShares();
+                },
+                screenFocus: screenFocus,
+              ),
+            ],
+          )
+        : header;
     final query = foldName(searchQuery).trim();
     final saved = service.outgoingShares
         .where(
@@ -3898,15 +3928,16 @@ class _OutgoingSharesList extends StatelessWidget {
     if (saved.isEmpty) {
       return CustomScrollView(
         slivers: [
-          SliverToBoxAdapter(child: header),
-          SliverFillRemaining(
-            hasScrollBody: false,
-            child: EmptyStatePlaceholder(
-              icon: Icons.file_present_outlined,
-              title: _shareCollectionEmptyText(context),
-              scrollable: false,
+          SliverToBoxAdapter(child: top),
+          if (!loadFailed)
+            SliverFillRemaining(
+              hasScrollBody: false,
+              child: EmptyStatePlaceholder(
+                icon: Icons.file_present_outlined,
+                title: _shareCollectionEmptyText(context),
+                scrollable: false,
+              ),
             ),
-          ),
         ],
       );
     }
@@ -4064,7 +4095,7 @@ class _OutgoingSharesList extends StatelessWidget {
       return CustomScrollView(
         key: ValueKey(('outgoing-niashares', viewMode)),
         slivers: [
-          SliverToBoxAdapter(child: header),
+          SliverToBoxAdapter(child: top),
           SliverPadding(
             padding: const EdgeInsets.fromLTRB(8, 0, 8, 100),
             sliver: SliverGrid.builder(
@@ -4081,7 +4112,7 @@ class _OutgoingSharesList extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 100),
       itemCount: saved.length + 1,
       itemBuilder: (context, i) =>
-          i == 0 ? header : card(context, saved[i - 1], false),
+          i == 0 ? top : card(context, saved[i - 1], false),
     );
   }
 }

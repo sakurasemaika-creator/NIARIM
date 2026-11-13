@@ -3269,6 +3269,7 @@
   "projectListFolderCreatedOn": "{date} 建立",
   "projectListInFolder": "位於：{path}",
   "homeProjectsLoadFailed": "無法載入專案",
+  "homeOutgoingSharesLoadFailed": "無法載入已建立的共享檔案",
   "settingsErrorLogTitle": "錯誤記錄",
   "settingsErrorLogSubtitle": "回報問題時，可以查看並複製應用程式中發生的錯誤",
   "errorLogHint": "依新到舊的順序顯示開啟應用程式後發生的最多20筆錯誤。電子郵件地址與登入資訊已隱藏。",
