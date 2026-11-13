@@ -9,6 +9,7 @@ import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/screens/home/widgets/home_drawer.dart';
 import 'package:niarim/screens/settings/settings_screen.dart';
 import 'package:niarim/services/premium_service.dart';
+import 'package:niarim/services/community_service.dart';
 import 'package:niarim/services/settings_service.dart';
 import 'package:niarim/widgets/premium_lock_widget.dart';
 import 'package:provider/provider.dart';
@@ -130,16 +131,22 @@ void main() {
     tester,
   ) async {
     final boundaryKey = GlobalKey();
+    final community = CommunityService();
+    addTearDown(community.dispose);
     final router = GoRouter(
       initialLocation: '/',
       routes: [
         GoRoute(
           path: '/',
-          builder: (context, state) => Scaffold(
-            appBar: AppBar(),
-            drawer: const HomeDrawer(),
-            body: const SizedBox.expand(),
-          ),
+          builder: (context, state) =>
+              ChangeNotifierProvider<CommunityService>.value(
+                value: community,
+                child: Scaffold(
+                  appBar: AppBar(),
+                  drawer: const HomeDrawer(),
+                  body: const SizedBox.expand(),
+                ),
+              ),
         ),
         GoRoute(
           path: '/premium',
