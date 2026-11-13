@@ -104,24 +104,48 @@ CollectionTileGridDelegate collectionTileGridDelegate(
 /// カードの名前の行数の上限。
 const int kCollectionTileNameLines = 2;
 
-/// カードの名前に出す長さの上限（全角16文字・半角32文字分）。
+/// カードの名前に出す長さの上限を決める幅（文字の倍率1倍の論理px）。
 ///
-/// スマホの既定の大きさ（360px・小表示・文字の倍率1倍）のカードに、全角
-/// 16文字が2行でちょうど入る。これより長い名前はこの長さまでで「…」にする
-/// （どの大きさのカードでも同じ名前は同じところで切れる）。全部の名前は
+/// スマホの既定の大きさ（幅360px・小表示）のカードの名前の帯の幅
+/// （(360 − 左右の余白16 − カードの間16) ÷ 3列 − 帯の余白12 ≒ 97.3px）。
+/// 名前はこの幅の[kCollectionTileNameLines]行に入る長さまで出し、それより
+/// 長い名前はそこまでで「…」にする（同梱の見出しの書体で全角14文字。
+/// 英数字は字ごとの幅で決まる）。どの大きさのカードでも同じ名前は同じ
+/// ところで切れ、名前の帯がこの幅以上のカードでは切った名前が2行に
+/// 入りきる。帯がこれより狭いカード（幅320pxの小、列が1つ増えたばかりの
+/// 幅、文字の倍率が大きいとき）は2行目の終わりで「…」。全部の名前は
 /// 詳細表示と読み上げで分かる。
-const int kCollectionTileNameMaxUnits = 32;
+const double kCollectionTileNameReferenceWidth = 97;
+
+/// カードの名前の字の書式（[Text]が実際に使う書式。太字の設定も含む）。
+TextStyle _nameTextStyle(BuildContext context) => DefaultTextStyle.of(context)
+    .style
+    .merge(collectionTileCaptionStyle(context))
+    .copyWith(
+      fontWeight: MediaQuery.boldTextOf(context)
+          ? FontWeight.bold
+          : FontWeight.w600,
+    );
+
+/// 書体を読み込み直したら（後から読み込む書体・テストの書体）、測った値を
+/// 捨てる。
+void _forgetMeasurementsWhenFontsChange() {
+  if (_watchingFonts) return;
+  _watchingFonts = true;
+  PaintingBinding.instance.systemFonts.addListener(() {
+    _nameHeights.clear();
+    _locationHeights.clear();
+    _displayNames.clear();
+  });
+}
+
+var _watchingFonts = false;
 
 /// 名前の帯（[kCollectionTileNameLines]行分）の高さ。名前が1行でも2行
 /// でも同じ高さにして、同じ行のカードの絵の高さをそろえる。
 double collectionTileNameHeight(BuildContext context) {
-  final style = DefaultTextStyle.of(context).style
-      .merge(collectionTileCaptionStyle(context))
-      .copyWith(
-        fontWeight: MediaQuery.boldTextOf(context)
-            ? FontWeight.bold
-            : FontWeight.w600,
-      );
+  _forgetMeasurementsWhenFontsChange();
+  final style = _nameTextStyle(context);
   final key = (
     style,
     MediaQuery.textScalerOf(context),
@@ -167,6 +191,7 @@ double collectionTileLocationHeight(BuildContext context) {
     Directionality.of(context),
     Localizations.maybeLocaleOf(context),
   );
+  _forgetMeasurementsWhenFontsChange();
   final cached = _locationHeights[key];
   if (cached != null) return cached;
   final painter = TextPainter(
@@ -184,44 +209,60 @@ double collectionTileLocationHeight(BuildContext context) {
 final _locationHeights =
     <(TextStyle, TextScaler, TextDirection, Locale?), double>{};
 
-/// [name]を、カードの名前に出す長さ（[kCollectionTileNameMaxUnits]、全角は
-/// 2・半角は1と数える）までにする。超える名前はそこまでで「…」を付ける。
-/// 単語を空白で区切る言語では、途中で切れる単語を出さない。
-String collectionTileDisplayName(String name) {
-  var units = 0;
-  final kept = StringBuffer();
-  for (final character in name.characters) {
-    final width = _isWide(character.runes.first) ? 2 : 1;
-    if (units + width > kCollectionTileNameMaxUnits) {
-      var text = kept.toString();
-      if (character.trim().isNotEmpty) {
-        final space = text.lastIndexOf(RegExp(r'\s'));
-        if (space >= text.length ~/ 2) text = text.substring(0, space);
-      }
-      return '${text.trimRight()}…';
-    }
-    units += width;
-    kept.write(character);
+/// [name]を、カードの名前に出す長さ（[kCollectionTileNameReferenceWidth]の
+/// [kCollectionTileNameLines]行分、文字の倍率1倍）までにする。それより長い
+/// 名前は、「…」を付けてその長さに入るところまでにする。単語を空白で
+/// 区切る言語では、途中で切れる単語を出さない。
+String collectionTileDisplayName(BuildContext context, String name) {
+  _forgetMeasurementsWhenFontsChange();
+  final style = _nameTextStyle(context);
+  final key = (
+    name,
+    style,
+    Directionality.of(context),
+    Localizations.maybeLocaleOf(context),
+  );
+  final cached = _displayNames[key];
+  if (cached != null) return cached;
+  final painter = TextPainter(
+    maxLines: kCollectionTileNameLines,
+    textDirection: key.$3,
+    locale: key.$4,
+  );
+  bool fits(String text) {
+    painter
+      ..text = TextSpan(text: text, style: style)
+      ..layout(maxWidth: kCollectionTileNameReferenceWidth);
+    return !painter.didExceedMaxLines;
   }
-  return name;
+
+  var shown = name;
+  if (!fits(name)) {
+    final characters = name.characters.toList();
+    // 「…」を付けて入る、一番長い名前の頭（字の数で二分探索）。
+    var low = 0;
+    var high = characters.length - 1;
+    while (low < high) {
+      final middle = (low + high + 1) ~/ 2;
+      if (fits('${characters.take(middle).join().trimRight()}…')) {
+        low = middle;
+      } else {
+        high = middle - 1;
+      }
+    }
+    var text = characters.take(low).join();
+    if (characters[low].trim().isNotEmpty) {
+      final space = text.lastIndexOf(RegExp(r'\s'));
+      if (space >= text.length ~/ 2) text = text.substring(0, space);
+    }
+    shown = '${text.trimRight()}…';
+  }
+  painter.dispose();
+  if (_displayNames.length > 512) _displayNames.clear();
+  return _displayNames[key] = shown;
 }
 
-// 全角（East Asian Widthの広い字）か。
-bool _isWide(int rune) =>
-    (rune >= 0x1100 && rune <= 0x115F) ||
-    (rune >= 0x2E80 && rune <= 0x303E) ||
-    (rune >= 0x3041 && rune <= 0x33FF) ||
-    (rune >= 0x3400 && rune <= 0x4DBF) ||
-    (rune >= 0x4E00 && rune <= 0x9FFF) ||
-    (rune >= 0xA000 && rune <= 0xA4CF) ||
-    (rune >= 0xAC00 && rune <= 0xD7A3) ||
-    (rune >= 0xF900 && rune <= 0xFAFF) ||
-    (rune >= 0xFE30 && rune <= 0xFE4F) ||
-    (rune >= 0xFF00 && rune <= 0xFF60) ||
-    (rune >= 0xFFE0 && rune <= 0xFFE6) ||
-    (rune >= 0x1F300 && rune <= 0x1F64F) ||
-    (rune >= 0x1F900 && rune <= 0x1F9FF) ||
-    (rune >= 0x20000 && rune <= 0x3FFFD);
+final _displayNames = <(String, TextStyle, TextDirection, Locale?), String>{};
 
 /// The cover takes all available height above the name band. The name
 /// shows on up to two lines (see [collectionTileDisplayName]); extended
@@ -245,7 +286,7 @@ Widget collectionTileCaption(
         triggerMode: TooltipTriggerMode.manual,
         excludeFromSemantics: true,
         child: Text(
-          collectionTileDisplayName(name),
+          collectionTileDisplayName(context, name),
           semanticsLabel: name,
           maxLines: kCollectionTileNameLines,
           overflow: TextOverflow.ellipsis,

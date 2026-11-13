@@ -8,9 +8,9 @@ import 'package:niarim/widgets/frame_preview_background.dart';
 import 'helpers/home_app_harness.dart';
 import 'helpers/load_app_fonts.dart';
 
-/// カードの名前は最大2行・全角16文字（半角32文字）分まで出し、それを
-/// 超える分だけ「…」にする（所有者の判断5）。以前は1行で、320px・文字2倍の
-/// 小表示では2文字ほどで切れていた（「カッ…」）。
+/// カードの名前は最大2行・決めた長さ（スマホの既定のカードの2行分。全角
+/// なら14文字）まで出し、それを超える分だけ「…」にする（所有者の判断5）。
+/// 以前は1行で、320px・文字2倍の小表示では2文字ほどで切れていた（「カッ…」）。
 void main() {
   const short = ['カット36', 'Cut 36'];
   // 全角12文字。文字1倍ならどの幅の小表示でも2行に入る（320pxの小で
@@ -62,13 +62,21 @@ void main() {
       );
       expect(paragraph.didExceedMaxLines, isFalse, reason: '$reason $name');
     }
-    // 全角16文字（半角32文字）を超える名前は、そこまでで「…」。読み上げは
-    // 名前の全部。
+    // 決めた長さを超える名前は、そこまでで「…」（全角は「…」と合わせて
+    // 14文字分）。英語は語の途中で切らない。読み上げは名前の全部。
     final ja = tester.widget<Text>(caption(longJa));
-    expect(ja.data, '${longJa.substring(0, 16)}…', reason: reason);
+    expect(ja.data, '${longJa.substring(0, 13)}…', reason: reason);
     expect(ja.semanticsLabel, longJa, reason: reason);
     final en = tester.widget<Text>(caption(longEn));
-    expect(en.data, 'The quick brown fox jumps over…', reason: reason);
+    expect(en.data, endsWith('…'), reason: reason);
+    final enWords = en.data!.substring(0, en.data!.length - 1).split(' ');
+    expect(enWords, isNotEmpty, reason: reason);
+    expect(
+      longEn.startsWith(enWords.join(' ')),
+      isTrue,
+      reason: '$reason ${en.data}',
+    );
+    expect(longEn.split(' '), containsAll(enWords), reason: reason);
     expect(en.semanticsLabel, longEn, reason: reason);
     // 同じ行のカードは、名前が1行でも2行でも絵の高さがそろう（名前の帯は
     // いつも2行分）。右上の操作と左下の星が入る高さも残る。
