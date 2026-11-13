@@ -1,0 +1,56 @@
+# Full Dart/Flutter test suite in four deterministic file shards. The work
+# is independent and does not write production data or publish APKs.
+name: Flutter complete test suite (4 shards)
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - ".github/workflows/flutter-complete-sharded-tests.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: niarim-full-shards-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  full-tests:
+    if: github.ref == 'refs/heads/dev_branch'
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3]
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.47.2"
+          channel: stable
+          cache: true
+      - name: Restore locked dependencies
+        run: flutter pub get --enforce-lockfile
+      - name: Run every Flutter test in this shard
+        shell: bash
+        env:
+          SHARD: ${{ matrix.shard }}
+        run: |
+          set -euo pipefail
+          mkdir -p reports
+          mapfile -t tests < <(find test -type f -name '*_test.dart' | LC_ALL=C sort | awk -v s="$SHARD" 'NR % 4 == s {print}')
+          printf 'Shard %s: %s test files\\n' "$SHARD" "${#tests[@]}"
+          if [ "${#tests[@]}" -eq 0 ]; then
+            echo "No test files in shard!"
+            exit 1
+          fi
+          flutter test --no-pub --reporter expanded --concurrency=3 "${tests[@]}" 2>&1 | tee reports/flutter-shard.log
+      - name: Upload full result log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: flutter-full-shard-${{ matrix.shard }}-${{ github.sha }}
+          path: reports/
+          retention-days: 7
+          if-no-files-found: warn
