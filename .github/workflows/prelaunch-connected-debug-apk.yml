@@ -9,6 +9,10 @@ on:
       - '.github/workflows/prelaunch-connected-debug-apk.yml'
       - 'test/coin_authenticated_client_contract_test.dart'
       - 'lib/services/api/niarim_api_client.dart'
+      - 'lib/models/coin_benefit_price_proposal.dart'
+      - 'lib/l10n/*.arb'
+      - 'test/reward_unlock_screen_test.dart'
+      - 'test/coin_benefit_price_proposal_test.dart'
   workflow_dispatch:
 
 permissions:
