@@ -1155,21 +1155,36 @@ onTap: ...)`だったために
   する。あわせて品質の方針：「世界で賞をとれるレベルに。今できる機能を削る行為で
   なければ、いくらでもブラッシュアップしてよい（便利に・見やすく・おしゃれに）」。
   実装が済んだ項目から、このファイルの該当の決まりを書き直すこと。
-- **操作ボタン（`action:`）の付いた`SnackBar`は、既定では時間で消えない**：
-  `SnackBar.persist`の既定値が`action != null`のため、`duration`を書いても
-  効かない。アプリにはScaffoldMessengerが1つしか無いので、消えないSnackBarは
-  次の画面（キャンバス等）まで付いてきて下のツールバーに重なり、後から出す
-  SnackBarもその後ろで待ち続けて表示されない（ゴミ箱の「元に戻す」で
-  踏んだ）。`persist: false`を付けること（ゴミ箱へ移した通知は
-  `lib/widgets/moved_to_trash_snack_bar.dart`）。キャンバスの「不足素材」の
-  SnackBarも同じ理由で`persist: false`にしてある。
+- **知らせ（SnackBar）は5秒以内に、少しずつ薄くなって消える（所有者の判断7、
+  2026-11-11）**：アプリの知らせはすべて`lib/widgets/app_toast_messenger.dart`の
+  `AppToastMessenger`（`MaterialApp.router`の`builder`と起動失敗画面で、画面を包む
+  位置に置いたScaffoldMessengerの置き換え）が受ける。出切ってから最長
+  `kToastLongestShown`（4250ms）で自分で消え、消えるときは`kToastFadeOut`（400ms）で
+  薄くなる（操作ボタン付き・`persist: true`・長い`duration`でも同じ。短い指定は
+  そのまま）。出てくる前・途中に裏へ回っても見ないうちには消さない。例外は読み上げ・
+  スイッチ操作の使用中の操作ボタン付き（`persist`の指定なし）で、押すまで残す。
+  `test/toast_contract_test.dart`が、lib配下の`SnackBar`の`duration`（5秒以下の
+  定数、`c ? a : b`は長い方で判定）・`Timer`/`Future.delayed`/`Stream.periodic`を
+  使うファイルの一覧・`MaterialApp.new`/`ScaffoldMessenger.new`が無いことを見張る。
+  ファイルにタイマーを足したら、その一覧（`timerUsers`）にも足すこと。
+  **操作ボタン（`action:`）の付いた`SnackBar`は、素のScaffoldMessengerでは時間で
+  消えない**（`SnackBar.persist`の既定値が`action != null`。消えないSnackBarは
+  次の画面まで付いてきて下のツールバーに重なり、後の知らせが待ち続けた）。アプリは
+  上のメッセンジャーが抑えるが、部品だけのテストや画面の外の素の
+  ScaffoldMessengerのために`persist: false`も付けておくこと（ゴミ箱へ移した通知は
+  `lib/widgets/moved_to_trash_snack_bar.dart`、キャンバスの「不足素材」も同じ）。
 - **知らせ（SnackBar）を閉じるときは、自分が出した知らせだけを閉じる**：
   `removeCurrentSnackBar()`・`clearSnackBars()`は、そのとき出ている**他の機能の**知らせ
   （ゴミ箱へ移した知らせの「元に戻す」等）まで消す。ホームのクリップボードを空にしたとき
   これで「元に戻す」が消えていた（DISC092に同じ形が残る）。ホームは出した知らせを
   `SnackBar.onVisible`で覚え、空にしたときはそれだけを閉じる（`_closeClipboardNotice`。
   コントローラーの`close()`は今出ている知らせにしか使えない。待っている知らせは出た時点で
-  自分で閉じる）。`SnackBarAction`は押された後に自分で`hideCurrentSnackBar`するので、
+  自分で閉じる）。新しく書くときは`AppToastMessengerState.withdrawSnackBars(test)`で
+  自分の知らせだけを取り下げる（出ているものは薄くして閉じ、待っているものは出さずに
+  下げる。知らせに印のキーを付けて`test`で見分ける。`runProjectAction`の前の失敗の
+  知らせが実例：以前は`hideCurrentSnackBar()`で、ゴミ箱へ移した直後に別の作品の星を
+  押すと「元に戻す」が消えた。知らせを一覧で覚えると、`clearSnackBars`で下げられた
+  知らせは`closed`が終わらず一覧に残り続ける）。`SnackBarAction`は押された後に自分で`hideCurrentSnackBar`するので、
   `onPressed`の中で同じ知らせを閉じないこと（読み上げ使用中は閉じた知らせがすぐ取り除かれ、
   後ろで待っている別の知らせまで閉じた）。
 - **名前を1つ入力するダイアログは`lib/widgets/name_entry_dialog.dart`の
