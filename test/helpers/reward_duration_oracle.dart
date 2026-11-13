@@ -64,7 +64,7 @@ const rewardDurationLanguages = <RewardDurationLanguage>[
       'month_12': '12か月',
       'hour_1': '1時間',
     },
-    redeemConfirmation: '特典全部入り · 1か月 · 55000コイン',
+    redeemConfirmation: '特典コンプリートパック（プレミアム会員と同内容） · 1か月 · 55000コイン',
   ),
   RewardDurationLanguage(
     code: 'en',
@@ -85,7 +85,7 @@ const rewardDurationLanguages = <RewardDurationLanguage>[
       'month_12': '12 months',
       'hour_1': '1 hour',
     },
-    redeemConfirmation: 'All benefits bundle · 1 month · 55000 coins',
+    redeemConfirmation: 'Complete Benefits Pack (same as Premium membership) · 1 month · 55000 coins',
   ),
   RewardDurationLanguage(
     code: 'es',
@@ -107,7 +107,7 @@ const rewardDurationLanguages = <RewardDurationLanguage>[
       'hour_1': '1 hora',
     },
     redeemConfirmation:
-        'Paquete de todas las ventajas · 1 mes · 55000 monedas',
+        'Pack completo de ventajas (igual que Premium) · 1 mes · 55000 monedas',
   ),
   RewardDurationLanguage(
     code: 'fr',
@@ -129,7 +129,7 @@ const rewardDurationLanguages = <RewardDurationLanguage>[
       'hour_1': '1 heure',
     },
     redeemConfirmation:
-        'Pack tous les avantages · 1 mois · 55000 pièces',
+        'Pack complet d\'avantages (comme l\'abonnement Premium) · 1 mois · 55000 pièces',
   ),
   RewardDurationLanguage(
     code: 'ko',
@@ -150,7 +150,7 @@ const rewardDurationLanguages = <RewardDurationLanguage>[
       'month_12': '12개월',
       'hour_1': '1시간',
     },
-    redeemConfirmation: '전체 혜택 묶음 · 1개월 · 55000코인',
+    redeemConfirmation: '혜택 컴플리트 팩 (Premium 회원과 동일한 구성) · 1개월 · 55000코인',
   ),
   RewardDurationLanguage(
     code: 'zh',
@@ -171,7 +171,7 @@ const rewardDurationLanguages = <RewardDurationLanguage>[
       'month_12': '12个月',
       'hour_1': '1小时',
     },
-    redeemConfirmation: '全部权益组合 · 1个月 · 55000金币',
+    redeemConfirmation: '权益全套礼包（与Premium会员内容相同） · 1个月 · 55000金币',
   ),
   RewardDurationLanguage(
     code: 'zh_Hant',
@@ -192,7 +192,7 @@ const rewardDurationLanguages = <RewardDurationLanguage>[
       'month_12': '12個月',
       'hour_1': '1小時',
     },
-    redeemConfirmation: '全部權益組合 · 1個月 · 55000金幣',
+    redeemConfirmation: '權益全套禮包（與Premium會員內容相同） · 1個月 · 55000金幣',
   ),
 ];
 
