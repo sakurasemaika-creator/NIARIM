@@ -44,12 +44,95 @@ class SaveTreeService extends ChangeNotifier {
   void setSlotMax(int max) {
     assert(max > 0);
     _slotMax = max;
+    _fitAllIntoSlots();
     notifyListeners();
   }
 
   void setTreeMode(bool treeMode) {
     _isTreeMode = treeMode;
+    _fitAllIntoSlots();
     notifyListeners();
+  }
+
+  /// スロット方式で、今のスロットに無い保存（ツリー方式で保存した・減らした
+  /// スロットにあった）を、読んだ作品ごとに空いているスロットへ入れる
+  /// （[_fitIntoSlots]）。以前は方式・スロット数を変えても保存のスロットは
+  /// そのままで、スロットの画面のどこにも出なかった（次の起動でも同じ）。
+  void _fitAllIntoSlots() {
+    if (_isTreeMode) return;
+    for (final projectId in [..._nodesByProject.keys]) {
+      if (_fitIntoSlots(projectId)) unawaited(_persist(projectId));
+    }
+  }
+
+  /// [projectId]の、今のスロットに無い保存を、古い順に空いているスロットへ
+  /// 入れる（メモだけが付いたスロットは後回し。書いている途中の保存の
+  /// スロットには入れない）。全部が入りきらないときは何も動かさない（保存
+  /// 方式を変える画面で残す保存を選ぶ。選ばずに次に起動したときは、一覧に
+  /// 無い保存と同じく空いているスロットへ入れ、残りは退避する。
+  /// [_loadProject]）。保存の名前（減らしたスロットのメモ、ツリー方式の
+  /// 保存のコメント）は、名前の無い入れ先のスロットへ持っていく。入れた
+  /// 保存があればtrue。
+  bool _fitIntoSlots(String projectId) {
+    final nodes = _nodesByProject[projectId];
+    if (_isTreeMode || nodes == null) return false;
+    bool inSlots(SaveNode n) => n.slotIndex >= 0 && n.slotIndex < _slotMax;
+    final outside = [
+      for (final n in nodes)
+        if (!inSlots(n)) n,
+    ]..sort((a, b) => a.savedAt.compareTo(b.savedAt));
+    if (outside.isEmpty) return false;
+    final taken = {
+      for (final n in nodes)
+        if (inSlots(n)) n.slotIndex,
+      for (final s in _saving[projectId] ?? const <SlotSave>[])
+        if (s.slotIndex >= 0) s.slotIndex,
+    };
+    if (outside.length > _slotMax - taken.where((i) => i < _slotMax).length) {
+      return false;
+    }
+    final memos = _slotMemosByProject.putIfAbsent(projectId, () => {});
+    bool labelled(int slot) => memos[slot]?.isNotEmpty ?? false;
+    var changed = false;
+    for (final node in outside) {
+      final used = {
+        for (final n in nodes)
+          if (inSlots(n)) n.slotIndex,
+        for (final s in _saving[projectId] ?? const <SlotSave>[])
+          if (s.slotIndex >= 0) s.slotIndex,
+      };
+      int? free;
+      for (final skipLabelled in [true, false]) {
+        for (var i = 0; i < _slotMax && free == null; i++) {
+          if (!used.contains(i) && !(skipLabelled && labelled(i))) free = i;
+        }
+      }
+      if (free == null) break;
+      final name =
+          (node.slotIndex >= 0 && labelled(node.slotIndex)
+                  ? memos[node.slotIndex]
+                  : node.comment)
+              ?.trim();
+      if (name != null && name.isNotEmpty && !labelled(free)) {
+        memos[free] = name;
+        _slotMemoTimes.putIfAbsent(projectId, () => {})[free] = DateTime.now();
+      }
+      nodes
+        ..remove(node)
+        ..add(
+          SaveNode(
+            id: node.id,
+            projectId: node.projectId,
+            savedAt: node.savedAt,
+            comment: node.comment,
+            thumbnailPath: node.thumbnailPath,
+            parentId: node.parentId,
+            slotIndex: free,
+          ),
+        );
+      changed = true;
+    }
+    return changed;
   }
 
   final Map<String, List<SaveNode>> _nodesByProject = {};
@@ -392,8 +475,14 @@ class SaveTreeService extends ChangeNotifier {
               );
               if (node == null) continue;
               known.add(id);
+              // 今のスロットに無い保存（ツリー方式で保存した・スロット数を
+              // 減らした）も、空いているスロットへ移す（以前の版は方式を
+              // 変えても移さず、どのスロットにも出なかった）。
               if (identical(into, nodes) &&
-                  sessionSlots.contains(node.slotIndex)) {
+                  (sessionSlots.contains(node.slotIndex) ||
+                      (!_isTreeMode &&
+                          (node.slotIndex < 0 ||
+                              node.slotIndex >= _slotMax)))) {
                 displaced.add(node);
                 continue;
               }
@@ -574,6 +663,7 @@ class SaveTreeService extends ChangeNotifier {
     _nodesByProject[projectId] = nodes;
     if (archived.isNotEmpty) _archivedByProject[projectId] = archived;
     if (orphans.isNotEmpty ||
+        displaced.isNotEmpty ||
         editedMemos.isNotEmpty ||
         sessionIds.isNotEmpty ||
         pendingOnDisk) {

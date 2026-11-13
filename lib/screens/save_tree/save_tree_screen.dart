@@ -1393,9 +1393,17 @@ Future<void> showSaveModeChangeFlowIfNeeded({
 }) async {
   final nodes = saveService.getNodes(projectId);
   final currentIsTree = saveService.isTreeMode;
+  // この作品の保存がすべて新しいスロットに入っているか。設定は全作品へ順に
+  // 当てるので、前の作品で方式・スロット数を変えた後の作品も、方式ではなく
+  // この作品の保存で決める（以前は「同じ方式でスロットを増やすだけ」と
+  // 見なされ、保存がスロット数より多くても選ぶ画面が出なかった）。
+  final allInNewSlots = nodes.every(
+    (n) =>
+        n.slotIndex >= 0 && n.slotIndex < (newSlotMax ?? saveService.slotMax),
+  );
 
   // 同じモード内でスロット数増加のみ→即時適用して終了
-  if (!currentIsTree && !newIsTreeMode) {
+  if (!currentIsTree && !newIsTreeMode && allInNewSlots) {
     final nextMax = newSlotMax ?? saveService.slotMax;
     if (nextMax >= saveService.slotMax) {
       saveService.setSlotMax(nextMax);
@@ -1468,7 +1476,17 @@ class _SaveModeChangeScreenState extends State<_SaveModeChangeScreen> {
   @override
   void initState() {
     super.initState();
-    _initialIsTreeMode = widget.saveService.isTreeMode;
+    // 今のスロットに無い保存（前の作品で方式・スロット数を変えた後の、
+    // ツリー方式の保存・減らしたスロットの保存）があれば、スロットの一覧では
+    // 選べないので、すべての保存を並べるツリーの一覧で選ぶ。
+    _initialIsTreeMode =
+        widget.saveService.isTreeMode ||
+        widget.saveService
+            .getNodes(widget.projectId)
+            .any(
+              (n) =>
+                  n.slotIndex < 0 || n.slotIndex >= widget.saveService.slotMax,
+            );
   }
 
   @override
