@@ -749,6 +749,221 @@ void main() {
     });
   }
 
+  // 一覧を読めない間にスロットへ保存し（コメント「セーブE」）、読み直さずに
+  // 終えて、次の起動で一覧を読めると、保存はファイルから拾い直されるが
+  // コメントもスロットのメモも無く、空いた最初のスロットへ入った（メモ
+  // だけのスロットなら、そのメモの名前で呼ばれた）。保存ごとに控えを
+  // 残し、次に一覧を読めたときに、この起動の保存と同じく重ねる（保存した
+  // スロットのまま、そこにあった前の保存は自分のメモごと空きスロットへ。
+  // コメントを空にした保存の決まりも同じ）。どの保存も消さない。
+  for (final (slot, comment) in [(2, 'セーブE'), (0, 'セーブE'), (0, '')]) {
+    test('a save made while the save list was unread keeps its slot and '
+        'comment after a restart (slot $slot, '
+        '${comment.isEmpty ? 'blank comment' : 'with a comment'})', () async {
+      final (project, saves) = await _seedProjectWithSaves(
+        comments: ['A', 'B'],
+      );
+      final seeder = SaveTreeService()..setSlotMax(5);
+      await seeder.init();
+      await seeder.setSlotMemo(project.id, 0, 'Aのメモ');
+      await seeder.setSlotMemo(project.id, 2, '次はここ');
+      seeder.dispose();
+      final folder = '${storage.projectsPath}/${project.id}/SaveTree';
+      final indexPath = '$folder/${SaveTreeService.indexFileName}';
+      storage.paths.blockReading(indexPath);
+
+      final service = SaveTreeService()..setSlotMax(5);
+      await service.init();
+      expect(service.getNodes(project.id), isEmpty);
+      // 保存の画面と同じ順：保存してから、打ったコメントをスロットのメモに。
+      final projects = _seedServices[project.id]!;
+      final e = await service.saveToSlot(
+        projectId: project.id,
+        slotIndex: slot,
+        project: project,
+        scenes: projects.scenesOf(project.id),
+        tileManager: projects.tileManagerOf(project.id),
+        comment: comment.isEmpty ? null : comment,
+      );
+      await service.setSlotMemo(project.id, slot, comment);
+      // 読み直さずに終える。
+      service.dispose();
+
+      storage.paths.clear();
+      void expectKept(SaveTreeService saveTree) {
+        final bySlot = {
+          for (final n in saveTree.getNodes(project.id)) n.slotIndex: n,
+        };
+        expect(
+          bySlot.map((k, v) => MapEntry(k, v.id)),
+          slot == 2
+              ? {0: saves[0].id, 1: saves[1].id, 2: e.id}
+              : {0: e.id, 1: saves[1].id, 3: saves[0].id},
+          reason: 'the save lost its slot',
+        );
+        expect(bySlot[slot]!.comment, comment.isEmpty ? null : comment);
+        expect(saveTree.getArchivedNodes(project.id), isEmpty);
+        expect(
+          [
+            for (var i = 0; i < 5; i++)
+              saveTree.slotDisplayMemoOf(project.id, i),
+          ],
+          slot == 2
+              ? ['Aのメモ', 'B', 'セーブE', null, null]
+              : [comment, 'B', '次はここ', 'Aのメモ', null],
+        );
+      }
+
+      final again = SaveTreeService()..setSlotMax(5);
+      addTearDown(again.dispose);
+      await again.init();
+      expectKept(again);
+      for (final id in [saves[0].id, saves[1].id, e.id]) {
+        expect(File('$folder/$id.niapro').existsSync(), isTrue, reason: id);
+      }
+      // 一覧に書けたので、控えは残さない。
+      expect(
+        Directory(folder).listSync().where(
+          (f) => f.path.endsWith(SaveTreeService.pendingSuffix),
+        ),
+        isEmpty,
+      );
+      // 一覧に書いたので、次の起動でも同じ。
+      final third = SaveTreeService()..setSlotMax(5);
+      addTearDown(third.dispose);
+      await third.init();
+      expectKept(third);
+    });
+  }
+
+  // 一覧を読めないまま2回起動して、2回とも同じスロットへ保存した：読めた
+  // ときは新しい方がそのスロットに入り、前の方も、そこにあった一覧の保存も
+  // 消さずに、自分のメモごと空きスロットへ移る。読めない間の起動では、
+  // 前の起動の保存はまだ出ない（一覧を読めないので）が、消えもしない。
+  test('saves made in two starts while the save list stayed unread are all '
+      'kept, the newest in its slot', () async {
+    final (project, saves) = await _seedProjectWithSaves(comments: ['A', 'B']);
+    final folder = '${storage.projectsPath}/${project.id}/SaveTree';
+    final indexPath = '$folder/${SaveTreeService.indexFileName}';
+    storage.paths.blockReading(indexPath);
+    Future<SaveNode> saveIn(String comment) async {
+      final service = SaveTreeService()..setSlotMax(5);
+      await service.init();
+      expect(service.getNodes(project.id), isEmpty);
+      final node = await _saveToSlot(service, project, 0, comment);
+      await service.setSlotMemo(project.id, 0, comment);
+      service.dispose();
+      return node;
+    }
+
+    final d = await saveIn('セーブD');
+    // 同じミリ秒に保存すると、どちらが新しいか分からない。
+    await Future<void>.delayed(const Duration(milliseconds: 5));
+    final f = await saveIn('セーブF');
+
+    storage.paths.clear();
+    final read = SaveTreeService()..setSlotMax(5);
+    addTearDown(read.dispose);
+    await read.init();
+    final bySlot = {
+      for (final n in read.getNodes(project.id)) n.slotIndex: n.id,
+    };
+    expect(bySlot, {0: f.id, 1: saves[1].id, 2: saves[0].id, 3: d.id});
+    expect(
+      [for (var i = 0; i < 5; i++) read.slotDisplayMemoOf(project.id, i)],
+      ['セーブF', 'B', 'A', 'セーブD', null],
+    );
+    for (final id in [saves[0].id, saves[1].id, d.id, f.id]) {
+      expect(File('$folder/$id.niapro').existsSync(), isTrue, reason: id);
+    }
+  });
+
+  // 控えは、その後に一覧へ入った新しい保存をスロットから追い出さない：
+  // 一覧を読めない間にスロット0へ保存（控え）→次の起動は一覧を読めたが
+  // 保存のフォルダを一覧できず（控えを読めない）、スロット0へ上書き保存
+  // （一覧に入る）→その次に読めたとき、新しい方がスロット0のまま、控えの
+  // 保存は自分のメモごと空きスロットへ。
+  test('a save kept only in its note does not push a newer listed save out '
+      'of its slot', () async {
+    final (project, saves) = await _seedProjectWithSaves(comments: ['A', 'B']);
+    final folder = '${storage.projectsPath}/${project.id}/SaveTree';
+    final indexPath = '$folder/${SaveTreeService.indexFileName}';
+    storage.paths.blockReading(indexPath);
+    final first = SaveTreeService()..setSlotMax(5);
+    await first.init();
+    final d = await _saveToSlot(first, project, 0, 'セーブD');
+    await first.setSlotMemo(project.id, 0, 'セーブD');
+    first.dispose();
+    await Future<void>.delayed(const Duration(milliseconds: 5));
+
+    storage.paths
+      ..clear()
+      ..blockListing(folder);
+    final second = SaveTreeService()..setSlotMax(5);
+    await second.init();
+    expect(second.getNodes(project.id).map((n) => n.id), [
+      saves[0].id,
+      saves[1].id,
+    ]);
+    final f = await _saveToSlot(second, project, 0, 'セーブF');
+    await second.setSlotMemo(project.id, 0, 'セーブF');
+    second.dispose();
+
+    storage.paths.clear();
+    final third = SaveTreeService()..setSlotMax(5);
+    addTearDown(third.dispose);
+    await third.init();
+    final bySlot = {
+      for (final n in third.getNodes(project.id)) n.slotIndex: n.id,
+    };
+    expect(bySlot, {0: f.id, 1: saves[1].id, 2: d.id});
+    expect(
+      [for (var i = 0; i < 3; i++) third.slotDisplayMemoOf(project.id, i)],
+      ['セーブF', 'B', 'セーブD'],
+    );
+    expect(File('$folder/${d.id}.niapro').existsSync(), isTrue);
+  });
+
+  // セーブツリー：一覧を読めない間に枝分かれして保存した保存も、次の起動で
+  // 親とコメントごと戻る（拾い直すと、根のコメント無しの保存になった）。
+  test('a branch saved in the save tree while its list was unread keeps its '
+      'parent and comment after a restart', () async {
+    final (project, _) = await _seedProjectWithSaves(comments: const []);
+    final seeder = SaveTreeService()..setTreeMode(true);
+    await seeder.init();
+    final projects = _seedServices[project.id]!;
+    Future<SaveNode> branch(SaveTreeService s, String? parent, String c) =>
+        s.saveAsChild(
+          projectId: project.id,
+          project: project,
+          scenes: projects.scenesOf(project.id),
+          tileManager: projects.tileManagerOf(project.id),
+          parentId: parent,
+          comment: c,
+        );
+    final root = await branch(seeder, null, '根');
+    seeder.dispose();
+    final indexPath =
+        '${storage.projectsPath}/${project.id}/SaveTree/'
+        '${SaveTreeService.indexFileName}';
+    storage.paths.blockReading(indexPath);
+
+    final service = SaveTreeService()..setTreeMode(true);
+    await service.init();
+    final leaf = await branch(service, root.id, '枝');
+    service.dispose();
+
+    storage.paths.clear();
+    final again = SaveTreeService()..setTreeMode(true);
+    addTearDown(again.dispose);
+    await again.init();
+    final byId = {for (final n in again.getNodes(project.id)) n.id: n};
+    expect(byId.keys, unorderedEquals([root.id, leaf.id]));
+    expect(byId[leaf.id]!.comment, '枝');
+    expect(byId[leaf.id]!.parentId, root.id);
+    expect(byId[root.id]!.comment, '根');
+  });
+
   // 保存の画面：一覧を読めていない間にメモを書いて「保存」を押すと、
   // 何も言わずにメモがスロットへ出ていた（保存できたように見える）。
   // 保存データを読み込めていないことを知らせる。読めるようになった後は、

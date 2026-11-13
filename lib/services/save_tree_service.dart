@@ -78,6 +78,20 @@ class SaveTreeService extends ChangeNotifier {
   /// メモで置き換えると、書いたメモが消えた）。
   final Map<String, Set<int>> _memosEditedUnread = {};
 
+  /// 一覧を読めない間の保存の控え（`{保存のID}.pending.json`、保存のファイルの
+  /// 隣）の名前の終わり。一覧へ書けない間、保存ごとにスロット・コメント・
+  /// 親と、その起動で書いたそのスロットのメモを書く（[_writePendingSaves]）。
+  /// 次に一覧を読めたとき（次の起動を含む）、[_loadProject]がこの起動の
+  /// 保存と同じく一覧へ重ね、一覧を書けたら消す。控えが無いと、読めない間の
+  /// 保存は次の起動で一覧に無いファイルとして拾い直され、コメントも
+  /// スロットも失った（空いた最初のスロットへ入り、メモだけのスロットなら
+  /// そのメモの名前で呼ばれた）。
+  static const String pendingSuffix = '.pending.json';
+
+  /// 保存先にあると分かっている控え（作品ごと、保存のID）。一覧を書けたら、
+  /// 一覧に入った保存の控えを消す。
+  final Map<String, Set<String>> _pendingIds = {};
+
   /// 保存の一覧を読もうとして読めなかった作品（一覧を開けない・保存の
   /// フォルダに入れない）。読めるまで、この起動の保存しか出ない。
   final Set<String> _unreadLists = {};
@@ -209,6 +223,42 @@ class SaveTreeService extends ChangeNotifier {
     }
 
     bool hasData(String id) => File('${dir.path}/$id.niapro').existsSync();
+    // 前の起動で、一覧を読めない間にした保存の控え（[_writePendingSaves]）。
+    // 古い順に、この起動の保存と同じく下で一覧へ重ねる。読めない控えは
+    // 使わない（保存は、これまでどおり一覧に無いファイルとして拾い直す）。
+    final pending = <SaveNode>[];
+    final pendingArchived = <String>{};
+    final pendingMemos = <String, String>{};
+    // 保存のある控え（一覧を書いたら消す）。
+    var pendingOnDisk = false;
+    for (final file in files) {
+      final name = file.uri.pathSegments.last;
+      if (!name.endsWith(pendingSuffix)) continue;
+      final id = name.substring(0, name.length - pendingSuffix.length);
+      _pendingIds.putIfAbsent(projectId, () => {}).add(id);
+      if (!hasData(id)) continue;
+      pendingOnDisk = true;
+      if (sessionIds.contains(id)) continue;
+      try {
+        final json = jsonDecode(
+          utf8.decode(file.readAsBytesSync(), allowMalformed: true),
+        );
+        if (json is! Map) continue;
+        final node = SaveNode.fromJson(
+          json['node'],
+          projectId: projectId,
+          thumbnailPath: thumbnailOf(id),
+        );
+        if (node == null || node.id != id) continue;
+        pending.add(node);
+        if (json['archived'] == true) pendingArchived.add(id);
+        final memo = json['memo'];
+        if (memo is String) pendingMemos[id] = memo;
+      } catch (error, stack) {
+        AppErrorReporter.record(error, stack);
+      }
+    }
+    pending.sort((a, b) => a.savedAt.compareTo(b.savedAt));
     final nodes = <SaveNode>[];
     final archived = <SaveNode>[];
     // この起動の保存は、一覧からも、一覧に無いファイルとしても拾わない。
@@ -265,6 +315,44 @@ class SaveTreeService extends ChangeNotifier {
         AppErrorReporter.record(error, stack);
       }
     }
+    // 控えの保存を、この起動の保存と同じく重ねる：保存したスロットへ入れ、
+    // そこにあった保存は（新しい方が残り）消さずに空いているスロットへ移す。
+    // 一覧にある保存の控え（一覧を書いた後に消せなかったもの）は一覧のまま。
+    pending.removeWhere((p) => known.contains(p.id));
+    known.addAll([for (final p in pending) p.id]);
+    final claimed = <int, SaveNode>{};
+    for (final p in pending) {
+      if (pendingArchived.contains(p.id)) {
+        archived.add(p);
+        continue;
+      }
+      if (_isTreeMode || p.slotIndex < 0) {
+        nodes.add(p);
+        continue;
+      }
+      if (sessionSlots.contains(p.slotIndex)) {
+        displaced.add(p);
+        continue;
+      }
+      final i = nodes.indexWhere((n) => n.slotIndex == p.slotIndex);
+      if (i >= 0) {
+        if (nodes[i].savedAt.isAfter(p.savedAt)) {
+          displaced.add(p);
+          continue;
+        }
+        displaced.add(nodes.removeAt(i));
+      }
+      nodes.add(p);
+      claimed[p.slotIndex] = p;
+    }
+    // 控えのメモ（その起動で書いたスロットのメモ）は、入ったスロットへ
+    // （この起動で書いたメモが勝つ）。
+    for (final MapEntry(key: slot, value: p) in claimed.entries) {
+      final memo = pendingMemos[p.id];
+      if (memo == null || editedMemos.containsKey(slot)) continue;
+      _slotMemosByProject.putIfAbsent(projectId, () => {})[slot] = memo;
+    }
+    final pendingIds = {for (final p in pending) p.id};
     // 一覧に無い保存のファイルを古い順に拾い直す。
     final orphans = <SaveNode>[];
     for (final file in files) {
@@ -311,18 +399,25 @@ class SaveTreeService extends ChangeNotifier {
         }
         used.add(free);
         final from = orphan.slotIndex;
-        final memo = diskMemos[from];
+        // 控えの保存が譲ったときは自分の控えのメモ（元のスロットの一覧の
+        // メモは、そこにあった一覧の保存のもの）。
+        final ownPending = pendingIds.contains(orphan.id);
+        final memo = ownPending ? pendingMemos[orphan.id] : diskMemos[from];
         if (moving && memo != null && memo.isNotEmpty && !labelled(free)) {
           final memos = _slotMemosByProject.putIfAbsent(projectId, () => {});
           memos[free] = memo;
           // コメントを空にして保存した（メモを書いていない）スロットには、
           // 譲った保存のメモを残さない（新しい保存がそのメモで呼ばれ、
           // 2つのスロットが同じ名前になった）。移せなかったメモは消さない。
-          final edited = _memosEditedUnread[projectId]?.contains(from) ?? false;
-          final blank = sessionNodes.any(
+          final edited =
+              (_memosEditedUnread[projectId]?.contains(from) ?? false) ||
+              pendingMemos.containsKey(claimed[from]?.id);
+          final blank = [...sessionNodes, ...claimed.values].any(
             (n) => n.slotIndex == from && (n.comment?.trim().isEmpty ?? true),
           );
-          if (!edited && blank && memos[from] == memo) memos[from] = '';
+          if (!ownPending && !edited && blank && memos[from] == memo) {
+            memos[from] = '';
+          }
         }
         nodes.add(
           SaveNode(
@@ -347,7 +442,10 @@ class SaveTreeService extends ChangeNotifier {
     }
     _nodesByProject[projectId] = nodes;
     if (archived.isNotEmpty) _archivedByProject[projectId] = archived;
-    if (orphans.isNotEmpty || editedMemos.isNotEmpty || sessionIds.isNotEmpty) {
+    if (orphans.isNotEmpty ||
+        editedMemos.isNotEmpty ||
+        sessionIds.isNotEmpty ||
+        pendingOnDisk) {
       await _persist(projectId);
     }
   }
@@ -394,7 +492,10 @@ class SaveTreeService extends ChangeNotifier {
       // 保存は一覧に入らないが、ファイルは残り、次に起動したとき拾い直す。
       // 一覧が無いと確かめられたとき（この起動中に作った作品等）だけ書く
       // （existsSyncは入れないフォルダの中でもfalseになる）。
-      if (!_readProjects.contains(projectId) && !_isMissing(index)) return;
+      if (!_readProjects.contains(projectId) && !_isMissing(index)) {
+        _writePendingSaves(projectId, dir);
+        return;
+      }
       if (!dir.existsSync()) dir.createSync(recursive: true);
       final json = jsonEncode({
         'nodes': [
@@ -422,9 +523,72 @@ class SaveTreeService extends ChangeNotifier {
       _readProjects.add(projectId);
       _unreadLists.remove(projectId);
       _memosEditedUnread.remove(projectId);
+      _deletePendingSaves(projectId, dir);
     } catch (error, stack) {
       AppErrorReporter.record(error, stack);
     }
+  }
+
+  /// 保存の一覧へ書けない間（一覧を読めていない）、この起動の保存ごとに
+  /// 控えを書く（[pendingSuffix]）。一覧を読めていない間の保存の一覧には
+  /// この起動の保存しか無い。
+  void _writePendingSaves(String projectId, Directory dir) {
+    final edited = _memosEditedUnread[projectId] ?? const <int>{};
+    final memos = _slotMemosByProject[projectId] ?? const <int, String>{};
+    for (final (node, archived) in [
+      for (final n in _nodesByProject[projectId] ?? const <SaveNode>[])
+        (n, false),
+      for (final n in _archivedByProject[projectId] ?? const <SaveNode>[])
+        (n, true),
+    ]) {
+      // メモは、この起動で書いたスロットのものだけ（書いていなければ、
+      // 一覧のメモのまま）。
+      final memo = node.slotIndex >= 0 && edited.contains(node.slotIndex)
+          ? memos[node.slotIndex]
+          : null;
+      try {
+        final file = File('${dir.path}/${node.id}$pendingSuffix');
+        File('${file.path}.tmp')
+          ..writeAsStringSync(
+            jsonEncode({
+              'node': node.toJson(),
+              if (archived) 'archived': true,
+              'memo': ?memo,
+            }),
+            flush: true,
+          )
+          ..renameSync(file.path);
+        _pendingIds.putIfAbsent(projectId, () => {}).add(node.id);
+      } catch (error, stack) {
+        AppErrorReporter.record(error, stack);
+      }
+    }
+  }
+
+  /// 一覧を書けたので、一覧に入った保存の控えを消す（消せなかった控えは、
+  /// 次に読んだとき一覧にあるので使わず、次に一覧を書いたときに消し直す）。
+  void _deletePendingSaves(String projectId, Directory dir) {
+    final pending = _pendingIds[projectId];
+    if (pending == null || pending.isEmpty) return;
+    final listed = {
+      for (final n in [
+        ..._nodesByProject[projectId] ?? const <SaveNode>[],
+        ..._archivedByProject[projectId] ?? const <SaveNode>[],
+      ])
+        n.id,
+    };
+    pending.removeWhere((id) {
+      if (!listed.contains(id)) return false;
+      try {
+        File('${dir.path}/$id$pendingSuffix').deleteSync();
+      } on PathNotFoundException {
+        // もう無い。
+      } catch (error, stack) {
+        AppErrorReporter.record(error, stack);
+        return false;
+      }
+      return true;
+    });
   }
 
   List<SaveNode> getNodes(String projectId) =>
@@ -470,6 +634,9 @@ class SaveTreeService extends ChangeNotifier {
           notifyListeners();
         }
         _memosEditedUnread.putIfAbsent(projectId, () => {}).add(slotIndex);
+        // この起動でそのスロットへ保存していれば、メモを保存の控えにも
+        // 書く（次に一覧を読めたとき、次の起動でも保存と一緒に戻る）。
+        await _persist(projectId);
       }
       await _readListIfReadable(projectId);
       return _readProjects.contains(projectId);
@@ -672,6 +839,15 @@ class SaveTreeService extends ChangeNotifier {
   Future<void> _deleteNodeFiles(String projectId, String nodeId) async {
     try {
       await NiaproSerializer.deleteSaveTreeNode(projectId, nodeId);
+      // 消した保存の控え（一覧を読めない間に書いたもの）も消す。
+      if (_pendingIds[projectId]?.remove(nodeId) ?? false) {
+        try {
+          final base = await NiaproSerializer.projectsBasePath();
+          File('$base/$projectId/SaveTree/$nodeId$pendingSuffix').deleteSync();
+        } on PathNotFoundException {
+          // もう無い。
+        }
+      }
     } finally {
       StorageInfoService().invalidate();
     }
