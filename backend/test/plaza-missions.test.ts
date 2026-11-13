@@ -93,7 +93,7 @@ describe("plaza open-time low-value missions",()=>{
     const tx=send.mock.calls[1][0] as TransactWriteCommand;
     expect(tx).toBeInstanceOf(TransactWriteCommand);
     const [mark,wallet,history]=tx.input.TransactItems!;
-    expect(mark.Update?.ExpressionAttributeValues?.[":newVersion"]).toBe(10);
+    expect(mark.Update?.ExpressionAttributeValues?.[":newVersion"]).toBe(5);
     expect(wallet.Update?.ExpressionAttributeValues?.[":coins"]).toBe(10);
     expect(history.Put?.Item?.deltaCoins).toBe(10);
   });
