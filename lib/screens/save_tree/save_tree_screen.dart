@@ -506,8 +506,19 @@ class _SlotView extends StatelessWidget {
     );
     // メモの欄のEnterで押す「保存」ボタン。
     final saveButton = GlobalKey();
-    // 二度押し・Enterの繰り返しで同じスロットへ二重に保存しない。
+    // 二度押し・Enterの繰り返しで同じスロットへ二重に保存しない（失敗した
+    // ときは押し直せるように戻す）。
     var saving = false;
+    Future<void> once(Future<void> Function() save) async {
+      if (saving) return;
+      saving = true;
+      try {
+        await save();
+      } finally {
+        saving = false;
+      }
+    }
+
     showDialog(
       context: context,
       builder: (ctx) => DisposeOnUnmount(
@@ -558,50 +569,44 @@ class _SlotView extends StatelessWidget {
             ),
             FilledButton(
               key: saveButton,
-              onPressed: () async {
-                if (saving) return;
-                saving = true;
-                try {
-                  final ps = context.read<ProjectService>();
-                  final project = ps.projects
-                      .where((p) => p.id == projectId)
-                      .firstOrNull;
-                  if (project == null) {
-                    Navigator.pop(ctx);
-                    return;
-                  }
-                  final comment = commentController.text.isEmpty
-                      ? null
-                      : commentController.text;
-                  final scenes = ps.scenesOf(projectId);
-                  final tileManager = ps.tileManagerOf(projectId);
-                  final thumb = await _generateSaveNodeThumbnail(ps, projectId);
-                  await saveService.saveToSlot(
-                    projectId: projectId,
-                    slotIndex: slotIndex,
-                    project: project,
-                    scenes: scenes,
-                    tileManager: tileManager,
-                    comment: comment,
-                    thumbnailPngBytes: thumb,
-                  );
-                  final kept = await saveService.setSlotMemo(
-                    projectId,
-                    slotIndex,
-                    commentController.text,
-                  );
-                  if (ctx.mounted) Navigator.pop(ctx);
-                  // 保存の一覧を読めていないので、メモ（打ったコメント）は次の
-                  // 起動に残らないかもしれない（メモの欄と同じく知らせる）。
-                  if (!kept && context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text(l10n.saveTreeLoadFailedSnackbar)),
-                    );
-                  }
-                } finally {
-                  saving = false;
+              onPressed: () => once(() async {
+                final ps = context.read<ProjectService>();
+                final project = ps.projects
+                    .where((p) => p.id == projectId)
+                    .firstOrNull;
+                if (project == null) {
+                  Navigator.pop(ctx);
+                  return;
                 }
-              },
+                final comment = commentController.text.isEmpty
+                    ? null
+                    : commentController.text;
+                final scenes = ps.scenesOf(projectId);
+                final tileManager = ps.tileManagerOf(projectId);
+                final thumb = await _generateSaveNodeThumbnail(ps, projectId);
+                await saveService.saveToSlot(
+                  projectId: projectId,
+                  slotIndex: slotIndex,
+                  project: project,
+                  scenes: scenes,
+                  tileManager: tileManager,
+                  comment: comment,
+                  thumbnailPngBytes: thumb,
+                );
+                final kept = await saveService.setSlotMemo(
+                  projectId,
+                  slotIndex,
+                  commentController.text,
+                );
+                if (ctx.mounted) Navigator.pop(ctx);
+                // 保存の一覧を読めていないので、メモ（打ったコメント）は次の
+                // 起動に残らないかもしれない（メモの欄と同じく知らせる）。
+                if (!kept && context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(l10n.saveTreeLoadFailedSnackbar)),
+                  );
+                }
+              }),
               child: Text(l10n.commonSave),
             ),
           ],
