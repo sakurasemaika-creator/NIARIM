@@ -234,6 +234,11 @@ void main() {
       );
       return (projectFolder, worksFolder, sharedFolder, deletedFolder);
     }))!;
+    // Folder creation is a prerequisite: fail explicitly instead of
+    // accidentally testing markers for null IDs.
+    expect(folders.$2, isNotNull);
+    expect(folders.$3, isNotNull);
+    expect(folders.$4, isNotNull);
     await settle();
     await tab(0);
     await tester.longPress(find.text('プロジェクト資料フォルダ').first);
@@ -243,17 +248,17 @@ void main() {
     await tab(1);
     await tester.longPress(find.text('作品整理フォルダ').first);
     await settle();
-    expect(find.byKey(Key('homeSelectedMarker_work_folder:${folders.$2.id}')), findsOneWidget);
+    expect(find.byKey(Key('homeSelectedMarker_work_folder:${folders.$2!.id}')), findsOneWidget);
     await shot('14_works_folder_selected');
     await tab(2);
     await tester.longPress(find.text('共有整理フォルダ').first);
     await settle();
-    expect(find.byKey(Key('homeSelectedMarker_shared_folder:${folders.$3.id}')), findsOneWidget);
+    expect(find.byKey(Key('homeSelectedMarker_shared_folder:${folders.$3!.id}')), findsOneWidget);
     await shot('15_shared_folder_selected');
     await tab(3);
     await tester.longPress(find.text('削除した作品フォルダ').first);
     await settle();
-    expect(find.byKey(Key('homeSelectedMarker_trash_local:${folders.$4.id}')), findsOneWidget);
+    expect(find.byKey(Key('homeSelectedMarker_trash_local:${folders.$4!.id}')), findsOneWidget);
     await shot('16_trash_folder_selected');
 
   }, timeout: const Timeout(Duration(minutes: 5)));
