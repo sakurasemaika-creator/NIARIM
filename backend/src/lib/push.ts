@@ -170,6 +170,36 @@ export async function sendPushToUser(
   );
 }
 
+/**
+ * A generic 400 INVALID_ARGUMENT can describe an invalid notification
+ * payload, not an invalid token. Delete a token only when FCM's typed error
+ * explicitly identifies a registration problem.
+ * https://firebase.google.com/docs/cloud-messaging/error-codes
+ */
+export function invalidFcmRegistration(status: number, body: string): boolean {
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(body);
+  } catch {
+    return false;
+  }
+  if (typeof parsed !== "object" || parsed === null ||
+      !("error" in parsed)) return false;
+  const error = parsed.error;
+  if (typeof error !== "object" || error === null ||
+      !("status" in error)) return false;
+  if (status === 404) return error.status === "UNREGISTERED";
+  if (status !== 400 || error.status !== "INVALID_ARGUMENT" ||
+      !("details" in error) || !Array.isArray(error.details)) return false;
+  return error.details.some((detail: unknown) => {
+    if (typeof detail !== "object" || detail === null) return false;
+    const d = detail as Record<string, unknown>;
+    return d["@type"] ===
+      "type.googleapis.com/google.firebase.fcm.v1.FcmError" &&
+      d.errorCode === "INVALID_ARGUMENT";
+  });
+}
+
 async function sendOne(
   endpoint: string,
   accessToken: string,
@@ -195,12 +225,8 @@ async function sendOne(
 
     if (response.ok) return;
 
-    const text = await response.text().catch(() => "");
-    // 404 UNREGISTERED / 400 INVALID_ARGUMENT は「そのトークンは死んでいる」。
-    if (
-      response.status === 404 ||
-      (response.status === 400 && text.includes("INVALID_ARGUMENT"))
-    ) {
+    const body = await response.text().catch(() => "");
+    if (invalidFcmRegistration(response.status, body)) {
       await ddb
         .send(
           new DeleteCommand({
@@ -212,7 +238,7 @@ async function sendOne(
       return;
     }
     console.error(
-      `FCM送信に失敗しました（HTTP ${response.status}）: ${text.slice(0, 300)}`,
+      `FCM送信に失敗しました（HTTP ${response.status}）`,
     );
   } catch (err) {
     console.error("FCM送信で例外が発生しました", err);
