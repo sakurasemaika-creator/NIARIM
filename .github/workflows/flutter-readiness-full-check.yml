@@ -1,0 +1,54 @@
+# A repeatable, read-only full Flutter readiness check.
+# Automatic run only when this workflow file changes, preventing expensive
+# full-suite runs on every dev_branch commit. It can be dispatched manually.
+name: Flutter full readiness check
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - ".github/workflows/flutter-readiness-full-check.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: flutter-readiness-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  verify:
+    if: github.ref == 'refs/heads/dev_branch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.47.2"
+          channel: stable
+          cache: true
+      - name: Restore locked dependencies
+        run: flutter pub get --enforce-lockfile
+      - name: Full analyzer (record all diagnostics)
+        id: analyze
+        shell: bash
+        run: |
+          set -o pipefail
+          mkdir -p readiness-results
+          flutter analyze --no-pub 2>&1 | tee readiness-results/analyze.log
+      - name: Full Flutter test suite (record all failures)
+        id: tests
+        if: always() && steps.analyze.outcome != 'cancelled'
+        shell: bash
+        run: |
+          set -o pipefail
+          mkdir -p readiness-results
+          flutter test --no-pub --reporter expanded 2>&1 | tee readiness-results/flutter-test.log
+      - name: Upload analyzer and test logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: flutter-readiness-${{ github.sha }}
+          path: readiness-results/
+          if-no-files-found: warn
+          retention-days: 7
