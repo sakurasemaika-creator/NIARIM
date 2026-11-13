@@ -133,4 +133,85 @@ void main() {
       auth.dispose();
     },
   );
+
+  test('every individual tool entitlement unlocks only its own feature', () {
+    final auth = _FakeAuth()..switchAccount('account-a');
+    final premium = PremiumService()..bindGoogleAuth(auth);
+    final expiry = DateTime.now()
+        .add(const Duration(hours: 1))
+        .millisecondsSinceEpoch;
+    for (final target in PremiumFeature.values) {
+      premium.applyServerCoinBenefitEntitlements([
+        {
+          'feature': target.name,
+          'status': 'active',
+          'expiresAtEpochMs': expiry,
+        },
+      ], accountId: 'account-a');
+      for (final other in PremiumFeature.values) {
+        expect(
+          premium.isFeatureAvailable(other),
+          other == target,
+          reason: '${target.name} must not unlock ${other.name}',
+        );
+      }
+      expect(premium.isPremium, isFalse);
+    }
+    premium.dispose();
+    auth.dispose();
+  });
+
+  test('advertising entitlements are scoped, expired and account-bound', () {
+    final auth = _FakeAuth()..switchAccount('account-a');
+    final premium = PremiumService()..bindGoogleAuth(auth);
+    const placementKeys = [
+      'projectListAds', 'canvasAds', 'timelineAds', 'processingAds', 'allAds',
+    ];
+    final expiry = DateTime.now()
+        .add(const Duration(hours: 1))
+        .millisecondsSinceEpoch;
+    for (final target in placementKeys) {
+      premium.applyServerCoinBenefitEntitlements([
+        {
+          'feature': target,
+          'status': 'active',
+          'expiresAtEpochMs': expiry,
+        },
+      ], accountId: 'account-a');
+      for (final other in placementKeys) {
+        expect(
+          premium.isServerCoinBenefitActive(other),
+          other == target,
+          reason: '$target must not unlock $other',
+        );
+      }
+    }
+    premium.applyServerCoinBenefitEntitlements([
+      {
+        'feature': 'allAds',
+        'status': 'active',
+        'expiresAtEpochMs': expiry - const Duration(days: 1).inMilliseconds,
+      },
+      {
+        'feature': 'canvasAds',
+        'status': 'paused',
+        'expiresAtEpochMs': expiry,
+      },
+      {
+        'feature': 'projectListAds',
+        'status': 'active',
+        'expiresAtEpochMs': expiry,
+      },
+    ], accountId: 'account-a');
+    expect(premium.isServerCoinBenefitActive('allAds'), isFalse);
+    expect(premium.isServerCoinBenefitActive('canvasAds'), isFalse);
+    expect(premium.isServerCoinBenefitActive('projectListAds'), isTrue);
+    auth.switchAccount('account-b');
+    for (final target in placementKeys) {
+      expect(premium.isServerCoinBenefitActive(target), isFalse);
+    }
+    premium.dispose();
+    auth.dispose();
+  });
+
 }
