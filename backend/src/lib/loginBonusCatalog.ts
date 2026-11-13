@@ -1,13 +1,13 @@
 /**
- * Owner-approved FINAL cumulative login rewards (1 coin per JST visit;
+ * Owner-approved FINAL cumulative login rewards (10 coins per JST visit;
  * 54 progressive milestone coin amounts). Distinct calendar days, not
  * consecutive streaks; missed days never reset accumulated progress.
  *
  * Pricing is final; server-side issuance remains independently gated
  * pending integrity/operational approval. Server day changes at JST 00:00.
  */
-export const DAILY_LOGIN_COINS = 1;
-export const LOGIN_BONUS_CATALOG_VERSION = "cumulative-login-v3-progressive";
+export const DAILY_LOGIN_COINS = 10;
+export const LOGIN_BONUS_CATALOG_VERSION = "cumulative-login-v4-min10";
 export const LOGIN_BONUS_MAX_MILESTONE = 3600;
 
 export type LoginMilestone = {
@@ -15,11 +15,11 @@ export type LoginMilestone = {
   coins: number;
 };
 const tiers = [
-  {from:5,to:50,step:5,startCoins:5,increment:1},
-  {from:60,to:100,step:10,startCoins:15,increment:1},
-  {from:150,to:500,step:50,startCoins:40,increment:2},
-  {from:600,to:1000,step:100,startCoins:60,increment:4},
-  {from:1100,to:3600,step:100,startCoins:80,increment:5},
+  {from:5,to:50,step:5,startCoins:10,increment:1},
+  {from:60,to:100,step:10,startCoins:20,increment:1},
+  {from:150,to:500,step:50,startCoins:45,increment:2},
+  {from:600,to:1000,step:100,startCoins:65,increment:4},
+  {from:1100,to:3600,step:100,startCoins:85,increment:5},
 ] as const;
 
 export const LOGIN_BONUS_MILESTONES: readonly LoginMilestone[] =
