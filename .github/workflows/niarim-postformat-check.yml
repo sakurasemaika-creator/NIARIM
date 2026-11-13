@@ -1,6 +1,7 @@
 # Full-tree style and analyzer gate, isolated from screenshot workflows.
 # Rerun after repairing analyzer warnings and aligning the formatter language version.
 # Repeat the full analyzer gate after restoring the wheel type import.
+# Final post-format verification of unified dock, community and HomeDrawer changes.
 name: Postformat Flutter analyze and style
 on:
   push:
