@@ -2902,6 +2902,7 @@ class _SharedScreenState extends State<SharedScreen> {
   // Keep the received and locally exported snapshot collections distinct.
   late bool _showOutgoing = widget.initialOutgoing;
   ProjectViewMode? _standaloneViewMode;
+  final _headerKey = GlobalKey(debugLabel: 'sharedListHeader');
 
   ProjectViewMode _effectiveViewMode(BuildContext context) =>
       widget.viewMode ??
@@ -2977,11 +2978,15 @@ class _SharedScreenState extends State<SharedScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    return Scaffold(
-      appBar: widget.embedded
-          ? null
-          : AppBar(title: FitOrHideTitle(l10n.homeTabShared)),
-      body: Column(
+    // 切り替え・並び順は一覧の先頭に置き、一覧と一緒にスクロールする
+    // （プロジェクト・作品のタブと同じ）。上に固定していた頃は、低い画面
+    // （横向き・分割画面）と大きな文字で一覧の場所が無くなってはみ出し、
+    // 空の表示の文を画面に出せなかった。受け取ったもの⇔作成したもので
+    // 一覧が替わっても、同じ切り替えのまま（フォーカス・状態を保つ）。
+    final header = KeyedSubtree(
+      key: _headerKey,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
           SharedDirectionSwitch(
             outgoing: _showOutgoing,
@@ -3013,27 +3018,32 @@ class _SharedScreenState extends State<SharedScreen> {
               onSelected: (v) => setState(() => _showFavoritesOnly = v),
             ),
           ),
-          Expanded(
-            child: _showOutgoing
-                ? _OutgoingSharesList(
-                    onCopyEntry: widget.onCopyEntry,
-                    viewMode: _effectiveViewMode(context),
-                    sortMode: _sortMode,
-                    showFavoritesOnly: _showFavoritesOnly,
-                    searchQuery: widget.searchQuery,
-                  )
-                : _SharedTab(
-                    viewMode: _effectiveViewMode(context),
-                    onViewModeChanged: _selectViewMode,
-                    sortMode: _sortMode,
-                    showFavoritesOnly: _showFavoritesOnly,
-                    searchQuery: widget.searchQuery,
-                    onCopyEntry: widget.onCopyEntry,
-                    screenFocus: widget.screenFocus,
-                  ),
-          ),
         ],
       ),
+    );
+    return Scaffold(
+      appBar: widget.embedded
+          ? null
+          : AppBar(title: FitOrHideTitle(l10n.homeTabShared)),
+      body: _showOutgoing
+          ? _OutgoingSharesList(
+              header: header,
+              onCopyEntry: widget.onCopyEntry,
+              viewMode: _effectiveViewMode(context),
+              sortMode: _sortMode,
+              showFavoritesOnly: _showFavoritesOnly,
+              searchQuery: widget.searchQuery,
+            )
+          : _SharedTab(
+              header: header,
+              viewMode: _effectiveViewMode(context),
+              onViewModeChanged: _selectViewMode,
+              sortMode: _sortMode,
+              showFavoritesOnly: _showFavoritesOnly,
+              searchQuery: widget.searchQuery,
+              onCopyEntry: widget.onCopyEntry,
+              screenFocus: widget.screenFocus,
+            ),
       floatingActionButton: widget.embedded || _showOutgoing
           ? null
           : FloatingActionButton(
@@ -3282,6 +3292,8 @@ List<Project> _sortProjects(List<Project> projects, ProjectSortMode mode) {
 }
 
 class _SharedTab extends StatelessWidget {
+  /// 一覧の先頭に出し、一覧と一緒にスクロールするもの（切り替え・並び順）。
+  final Widget header;
   final ProjectViewMode viewMode;
   final ValueChanged<ProjectViewMode> onViewModeChanged;
   final ProjectSortMode sortMode;
@@ -3291,6 +3303,7 @@ class _SharedTab extends StatelessWidget {
   final FocusNode? screenFocus;
 
   const _SharedTab({
+    required this.header,
     required this.viewMode,
     required this.onViewModeChanged,
     required this.sortMode,
@@ -3347,13 +3360,18 @@ class _SharedTab extends StatelessWidget {
         onCopyEntry: onCopyEntry,
         grid: true,
       ),
-      header: loadFailed
-          ? ProjectsLoadFailureNotice(
+      header: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          header,
+          if (loadFailed)
+            ProjectsLoadFailureNotice(
               key: const Key('sharedProjectsLoadFailed'),
               onRetry: service.retryLoadProjects,
               screenFocus: screenFocus,
-            )
-          : null,
+            ),
+        ],
+      ),
       emptyState: loadFailed
           ? null
           : EmptyStatePlaceholder(
@@ -3836,6 +3854,7 @@ Future<void> _outgoingShareAction(
 
 class _OutgoingSharesList extends StatelessWidget {
   const _OutgoingSharesList({
+    required this.header,
     this.onCopyEntry,
     required this.viewMode,
     required this.sortMode,
@@ -3847,6 +3866,9 @@ class _OutgoingSharesList extends StatelessWidget {
   final ProjectSortMode sortMode;
   final bool showFavoritesOnly;
   final String searchQuery;
+
+  /// 一覧の先頭に出し、一覧と一緒にスクロールするもの（切り替え・並び順）。
+  final Widget header;
 
   @override
   Widget build(BuildContext context) {
@@ -3874,9 +3896,18 @@ class _OutgoingSharesList extends StatelessWidget {
       context,
     )?.onVisibleIds({for (final entry in saved) 'outgoing_file:${entry.path}'});
     if (saved.isEmpty) {
-      return EmptyStatePlaceholder(
-        icon: Icons.file_present_outlined,
-        title: _shareCollectionEmptyText(context),
+      return CustomScrollView(
+        slivers: [
+          SliverToBoxAdapter(child: header),
+          SliverFillRemaining(
+            hasScrollBody: false,
+            child: EmptyStatePlaceholder(
+              icon: Icons.file_present_outlined,
+              title: _shareCollectionEmptyText(context),
+              scrollable: false,
+            ),
+          ),
+        ],
       );
     }
     Widget card(BuildContext context, SavedOutgoingShare entry, bool grid) {
@@ -4030,19 +4061,27 @@ class _OutgoingSharesList extends StatelessWidget {
     }
 
     if (viewMode != ProjectViewMode.detail) {
-      return GridView.builder(
+      return CustomScrollView(
         key: ValueKey(('outgoing-niashares', viewMode)),
-        padding: const EdgeInsets.fromLTRB(8, 0, 8, 100),
-        gridDelegate: _worksGridDelegate(context, viewMode),
-        itemCount: saved.length,
-        itemBuilder: (context, i) => card(context, saved[i], true),
+        slivers: [
+          SliverToBoxAdapter(child: header),
+          SliverPadding(
+            padding: const EdgeInsets.fromLTRB(8, 0, 8, 100),
+            sliver: SliverGrid.builder(
+              gridDelegate: _worksGridDelegate(context, viewMode),
+              itemCount: saved.length,
+              itemBuilder: (context, i) => card(context, saved[i], true),
+            ),
+          ),
+        ],
       );
     }
     return ListView.builder(
       key: const PageStorageKey('outgoing-niashares'),
       padding: const EdgeInsets.only(bottom: 100),
-      itemCount: saved.length,
-      itemBuilder: (context, i) => card(context, saved[i], false),
+      itemCount: saved.length + 1,
+      itemBuilder: (context, i) =>
+          i == 0 ? header : card(context, saved[i - 1], false),
     );
   }
 }

@@ -137,8 +137,9 @@ void main() {
 
     await tester.tap(find.byKey(const Key('sharedOutgoingFilter')));
     await settle();
-    // Outgoing .niashare archives also default to tiled presentation.
-    expect(find.byType(GridView), findsOneWidget);
+    // Outgoing .niashare archives also default to tiled presentation (a grid
+    // under the switch and sort row, which scroll with it).
+    expect(find.byType(SliverGrid), findsOneWidget);
     expect(find.byType(CollectionFavoriteButton), findsWidgets);
     expect(find.byType(PopupMenuButton<String>), findsWidgets);
     expectProjectStyleTileActions(archive.path);

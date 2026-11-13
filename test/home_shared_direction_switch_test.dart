@@ -324,6 +324,9 @@ void main() {
     await tester.sendKeyEvent(LogicalKeyboardKey.enter);
     await _settleIo(tester);
     expect(_selected(tester), {true});
+    // 一覧が「作成したもの」に替わっても、フォーカスは押したアイコンに
+    // 残る（続けて切り替えられる）。
+    expect(focusInside(), isTrue, reason: 'the focus left the switch');
     expect(tester.takeException(), isNull);
     await _close(tester);
   });
