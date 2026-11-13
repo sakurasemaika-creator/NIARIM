@@ -672,7 +672,7 @@ class AppLocalizationsFr extends AppLocalizations {
       other:
           'Fichier .niatra importé. $count éléments étaient différents sur cet appareil : les versions de cet appareil ont été conservées et celles importées ont été ajoutées sous des noms comme « $name »',
       one:
-          'Fichier .niatra importé. 1 élément était différent sur cet appareil : la version de cet appareil a été conservée et celle importée a été ajoutée sous le nom « $name »',
+          'Fichier .niatra importé. $count élément était différent sur cet appareil : la version de cet appareil a été conservée et celle importée a été ajoutée sous le nom « $name »',
     );
     return '$_temp0';
   }
@@ -689,7 +689,7 @@ class AppLocalizationsFr extends AppLocalizations {
       other:
           '$count raccourcis importés, dont « $name » ($combo), n\'ont pas été ajoutés, car cet appareil utilise les mêmes touches pour d\'autres actions. Pour les utiliser, ajoutez-les avec d\'autres touches dans les réglages Raccourcis',
       one:
-          'Le raccourci importé « $name » ($combo) n\'a pas été ajouté, car cet appareil utilise les mêmes touches pour une autre action. Pour l\'utiliser, ajoutez-le avec d\'autres touches dans les réglages Raccourcis',
+          '$count raccourci importé « $name » ($combo) n\'a pas été ajouté, car cet appareil utilise les mêmes touches pour une autre action. Pour l\'utiliser, ajoutez-le avec d\'autres touches dans les réglages Raccourcis',
     );
     return '$_temp0';
   }
