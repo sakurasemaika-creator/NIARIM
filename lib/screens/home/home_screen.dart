@@ -532,17 +532,6 @@ class _HomeScreenState extends State<HomeScreen>
                     _ => l10n.homeTabProjects,
                   }),
             actions: [
-              if (_hasClipboard)
-                IconButton(
-                  key: const Key('homeCrossTabPasteButton'),
-                  icon: const Icon(Icons.content_paste),
-                  tooltip: l10n.homePasteTooltip(
-                    _clipboardProjectIds.length +
-                        _clipboardFolderIds.length +
-                        (_otherClipboard == null ? 0 : 1),
-                  ),
-                  onPressed: _pasting ? null : _pasteClipboard,
-                ),
               if (_isSearching)
                 IconButton(
                   key: const Key('homeSearchCloseButton'),
@@ -632,6 +621,16 @@ class _HomeScreenState extends State<HomeScreen>
           },
           body: Column(
             children: [
+              if (!_isSelectionMode && _hasClipboard)
+                HomeClipboardToolbar(
+                  itemCount: _clipboardProjectIds.length +
+                      _clipboardFolderIds.length +
+                      (_otherClipboard == null ? 0 : 1),
+                  isCut: _clipboardIsCut,
+                  isPasting: _pasting,
+                  onPaste: _pasteClipboard,
+                  onClear: _clearHomeClipboard,
+                ),
               if (_isSelectionMode)
                 HomeSelectionToolbar(
                   selectedCount: _selectedIds.length,
@@ -1568,13 +1567,22 @@ class _HomeScreenState extends State<HomeScreen>
     return result;
   }
 
-  void _cancelCutClipboard() {
-    if (!mounted || !_clipboardIsCut) return;
+  /// Clear the in-memory clipboard, including items copied from other tabs.
+  /// The toolbar disappears on the same rebuild.
+  void _clearHomeClipboard() {
+    if (!mounted || _pasting) return;
     setState(() {
       _clipboardProjectIds.clear();
       _clipboardFolderIds.clear();
+      _otherClipboard = null;
+      _clipboardSourceArea = HomePasteArea.projects;
       _clipboardIsCut = false;
     });
+  }
+
+  void _cancelCutClipboard() {
+    if (!_clipboardIsCut) return;
+    _clearHomeClipboard();
   }
 
   void _showClipboardFeedback(String message, {bool allowUndoCut = false}) {
