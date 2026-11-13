@@ -38,6 +38,7 @@ on:
       - 'test/coin_redemption_attempt_store_test.dart'
       - 'test/reward_unlock_screen_test.dart'
       - 'test/reward_duration_plural_test.dart'
+      - 'test/coin_history_sheet_test.dart'
       - 'test/helpers/reward_duration_oracle.dart'
       - 'test/coin_duration_label_test.dart'
       - 'lib/utils/coin_duration_label.dart'
