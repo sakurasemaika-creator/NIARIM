@@ -154,7 +154,20 @@ describe("owner-finalized coin exchange rates round the ones digit upwards",()=>
     expect(finalBenefitCostCoins("toneCurve","month",12)).toBe(216000);
     expect(isBundledPremiumCheaperForAllDurations()).toBe(true);
     // Freeze the complete 12 × 4 launch rate card, not just 4 examples.
-    const fixed: readonly (readonly [typeof targets[number],readonly number[]])[] = [[["endCardEdit",[2000,4000,9000,12000]],["watermark",[3000,6000,13500,18000]],["toneCurve",[3000,6000,13500,18000]],["levelAdjustment",[2500,5000,11250,15000]],["unlimitedDuration",[4170,8340,18750,25000]],["customAutomation",[4170,8340,18750,25000]],["projectListAds",[2000,4000,9000,12000]],["canvasAds",[3340,6670,15000,20000]],["timelineAds",[2670,5340,12000,16000]],["processingAds",[1670,3340,7500,10000]],["allAds",[6670,13340,30000,40000]],["fullPremium",[10000,25000,45000,55000]]];
+    const fixed: readonly (readonly [typeof targets[number],readonly number[]])[] = [
+      ["endCardEdit",[2000,4000,9000,12000]],
+      ["watermark",[3000,6000,13500,18000]],
+      ["toneCurve",[3000,6000,13500,18000]],
+      ["levelAdjustment",[2500,5000,11250,15000]],
+      ["unlimitedDuration",[4170,8340,18750,25000]],
+      ["customAutomation",[4170,8340,18750,25000]],
+      ["projectListAds",[2000,4000,9000,12000]],
+      ["canvasAds",[3340,6670,15000,20000]],
+      ["timelineAds",[2670,5340,12000,16000]],
+      ["processingAds",[1670,3340,7500,10000]],
+      ["allAds",[6670,13340,30000,40000]],
+      ["fullPremium",[10000,25000,45000,55000]]
+    ];
     for(const [target,amounts] of fixed){
       expect(durations.map(d=>finalBenefitCoins(target,d))).toEqual(amounts);
     }
