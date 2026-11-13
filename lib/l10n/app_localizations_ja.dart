@@ -8671,7 +8671,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get rewardUnlockBestValue => '最もお得';
 
   @override
-  String get rewardUnlockBestExplain => 'コインで全特典を揃えるより、お得なまとめ交換';
+  String get rewardUnlockBestExplain => 'プレミアム会員と同じ対象機能を、個別交換よりお得にまとめて使えます';
 
   @override
   String get rewardUnlockEarning => 'Premium加入中もコインを貯められる予定です';
@@ -8725,7 +8725,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get rewardUnlockAllAds => 'すべての広告なし';
 
   @override
-  String get rewardUnlockFullPremium => '全機能 + 全広告なし';
+  String get rewardUnlockFullPremium => '特典全部入り';
 
   @override
   String get rewardUnlockChoose => '選択';
