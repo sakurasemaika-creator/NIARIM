@@ -13,6 +13,14 @@ const context = JSON.parse(
   readFileSync(join(process.cwd(), "cdk.json"), "utf8"),
 ).context;
 const deployed = JSON.parse(readFileSync(deployedEnvPath, "utf8"));
+if (deployed === null || typeof deployed !== "object" ||
+    Array.isArray(deployed)) {
+  console.error(
+    "BLOCKED: read-only AWS role cannot inspect Lambda environment. " +
+    "Do not perform a full CDK deploy without a verified live configuration.",
+  );
+  process.exit(1);
+}
 
 const booleanFlags = {
   COIN_REDEMPTION_ENABLED: "coinRedemptionEnabled",
