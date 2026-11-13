@@ -33,7 +33,7 @@ beforeEach(()=>{
   process.env.COIN_PREMIUM_ANNUAL_REDEMPTION_ENABLED="true";
   process.env.COIN_FULL_PREMIUM_MONTH_COINS="55000";
   process.env.COIN_FULL_PREMIUM_YEAR_COINS="550000";
-  process.env.COIN_PRICE_VERSION="v3-final-annual550000";
+  process.env.COIN_PRICE_VERSION="v4-min10-repriced-20261113";
 });
 describe("flexible Full Premium duration redemption",()=>{
   it("does not expose any spendable price before independent safety approval",async()=>{
@@ -44,7 +44,7 @@ describe("flexible Full Premium duration redemption",()=>{
     });
     await expect(redeemCoins(req({
       target:"fullPremium",duration:"hour",quantity:2,
-      requestId,priceVersion:"v3-final-annual550000",
+      requestId,priceVersion:"v4-min10-repriced-20261113",
     }))).rejects.toMatchObject({code:"REDEMPTION_DISABLED"});
     expect(send).not.toHaveBeenCalled();
   });
@@ -62,7 +62,7 @@ describe("flexible Full Premium duration redemption",()=>{
       expect(JSON.parse(response.body??"{}")).toMatchObject({
         target:"fullPremium",duration,quantity:Number(quantity),
         enabled:true,priceCoins:price,catalogPriceCoins:price,
-        priceVersion:"v3-final-annual550000",
+        priceVersion:"v4-min10-repriced-20261113",
       });
     }
   });
@@ -70,7 +70,7 @@ describe("flexible Full Premium duration redemption",()=>{
     const before=Date.now();
     const response=await redeemCoins(req({
       target:"fullPremium",duration:"hour",quantity:2,
-      requestId,priceVersion:"v3-final-annual550000",priceCoins:0,
+      requestId,priceVersion:"v4-min10-repriced-20261113",priceCoins:0,
     }));
     expect(JSON.parse(response.body??"{}")).toMatchObject({
       redeemed:true,duplicate:false,costCoins:1000,
