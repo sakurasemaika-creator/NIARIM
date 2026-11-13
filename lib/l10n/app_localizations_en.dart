@@ -8076,22 +8076,65 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String homePastedSnackbar(int count) {
-    return 'Pasted $count item(s)';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Pasted $count items.',
+      one: 'Pasted $count item.',
+    );
+    return '$_temp0';
   }
 
   @override
   String homePasteSkippedIntoSelf(int count) {
-    return '$count folder(s) can’t move into themselves or their subfolders, so they are still cut and ready to paste elsewhere.';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count folders can’t move into themselves or their subfolders, so they are still cut and ready to paste elsewhere.',
+      one:
+          '$count folder can’t move into itself or its subfolders, so it is still cut and ready to paste elsewhere.',
+    );
+    return '$_temp0';
   }
 
   @override
   String homePasteSkippedMissing(int count) {
-    return '$count item(s) couldn’t be pasted because the original is gone (moved to the trash or deleted).';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count items couldn’t be pasted because the originals are gone (moved to the Trash or deleted).',
+      one:
+          '$count item couldn’t be pasted because the original is gone (moved to the Trash or deleted).',
+    );
+    return '$_temp0';
   }
 
   @override
-  String get homePasteFailed =>
-      'Some items couldn’t be pasted. Please try again.';
+  String homePasteSkippedFavorite(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count items are favorite works (or folders holding them), so they stayed out of the Trash. Remove them from favorites, then paste again.',
+      one:
+          '$count item is a favorite work (or a folder holding one), so it stayed out of the Trash. Remove it from favorites, then paste again.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String homePasteSkippedFailed(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count items couldn’t be pasted. Check your storage and try again.',
+      one: '$count item couldn’t be pasted. Check your storage and try again.',
+    );
+    return '$_temp0';
+  }
 
   @override
   String get homeCutPendingHint => 'Cut, waiting to be pasted';
@@ -8432,9 +8475,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String pcStatusFps(int fps) {
     return '$fps fps';
   }
-
-  @override
-  String get homePasteSnackbar => 'Pasted';
 
   @override
   String get canvasSizePresetDuplicateSuffix => 'copy';
@@ -9954,10 +9994,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get homeSharedCreatedFilter => 'Created by me';
-
-  @override
-  String get homeClipboardSourceMissing =>
-      'The copied work or folder can’t be found. Restore it from the Trash or copy it again.';
 
   @override
   String get homePasteRestrictionTitle => 'Can’t paste here';

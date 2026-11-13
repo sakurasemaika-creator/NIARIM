@@ -14202,26 +14202,32 @@ abstract class AppLocalizations {
   /// No description provided for @homePastedSnackbar.
   ///
   /// In ja, this message translates to:
-  /// **'{count}件を貼り付けました'**
+  /// **'{count, plural, other{{count}件を貼り付けました。}}'**
   String homePastedSnackbar(int count);
 
   /// No description provided for @homePasteSkippedIntoSelf.
   ///
   /// In ja, this message translates to:
-  /// **'フォルダ{count}件は、自分自身やその中へは移動できないため、切り取ったまま残しました。'**
+  /// **'{count, plural, other{フォルダ{count}件は、自分自身やその中へは移動できないため、切り取ったまま残しました。}}'**
   String homePasteSkippedIntoSelf(int count);
 
   /// No description provided for @homePasteSkippedMissing.
   ///
   /// In ja, this message translates to:
-  /// **'{count}件は元の作品が見つからないため、貼り付けられませんでした（ゴミ箱へ移動・削除済み）。'**
+  /// **'{count, plural, other{{count}件は、元の作品・フォルダが見つからないため貼り付けられませんでした（ゴミ箱へ移動・削除済み）。}}'**
   String homePasteSkippedMissing(int count);
 
-  /// No description provided for @homePasteFailed.
+  /// ゴミ箱への貼り付けで、お気に入りの作品（またはそれを含むフォルダ）だったため移さなかった件数
   ///
   /// In ja, this message translates to:
-  /// **'一部を貼り付けられませんでした。もう一度お試しください。'**
-  String get homePasteFailed;
+  /// **'{count, plural, other{{count}件は、お気に入りの作品（またはそれを含むフォルダ）のため、ゴミ箱へ移さずに残しました。お気に入りを外してから貼り付けてください。}}'**
+  String homePasteSkippedFavorite(int count);
+
+  /// 保存の失敗などで貼り付けられなかった件数（クリップボードに残る）
+  ///
+  /// In ja, this message translates to:
+  /// **'{count, plural, other{{count}件は貼り付けられませんでした。保存先を確認して、もう一度お試しください。}}'**
+  String homePasteSkippedFailed(int count);
 
   /// No description provided for @homeCutPendingHint.
   ///
@@ -14732,12 +14738,6 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'{fps} fps'**
   String pcStatusFps(int fps);
-
-  /// No description provided for @homePasteSnackbar.
-  ///
-  /// In ja, this message translates to:
-  /// **'貼り付けました'**
-  String get homePasteSnackbar;
 
   /// No description provided for @canvasSizePresetDuplicateSuffix.
   ///
@@ -16718,12 +16718,6 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'自分が作成したもの'**
   String get homeSharedCreatedFilter;
-
-  /// 貼り付けようとしたとき、コピー・切り取りした元の作品・フォルダが消えていた
-  ///
-  /// In ja, this message translates to:
-  /// **'コピー元の作品・フォルダが見つかりません。ゴミ箱から復元するか、もう一度コピーしてください。'**
-  String get homeClipboardSourceMissing;
 
   /// 貼り付けられない場所で貼り付けたときのダイアログの見出し
   ///

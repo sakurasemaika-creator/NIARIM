@@ -3795,7 +3795,7 @@
       }
     }
   },
-  "homePastedSnackbar": "{count}件を貼り付けました",
+  "homePastedSnackbar": "{count, plural, other{{count}件を貼り付けました。}}",
   "@homePastedSnackbar": {
     "placeholders": {
       "count": {
@@ -3803,7 +3803,7 @@
       }
     }
   },
-  "homePasteSkippedIntoSelf": "フォルダ{count}件は、自分自身やその中へは移動できないため、切り取ったまま残しました。",
+  "homePasteSkippedIntoSelf": "{count, plural, other{フォルダ{count}件は、自分自身やその中へは移動できないため、切り取ったまま残しました。}}",
   "@homePasteSkippedIntoSelf": {
     "placeholders": {
       "count": {
@@ -3811,8 +3811,25 @@
       }
     }
   },
-  "homePasteSkippedMissing": "{count}件は元の作品が見つからないため、貼り付けられませんでした（ゴミ箱へ移動・削除済み）。",
-  "homePasteFailed": "一部を貼り付けられませんでした。もう一度お試しください。",
+  "homePasteSkippedMissing": "{count, plural, other{{count}件は、元の作品・フォルダが見つからないため貼り付けられませんでした（ゴミ箱へ移動・削除済み）。}}",
+  "homePasteSkippedFavorite": "{count, plural, other{{count}件は、お気に入りの作品（またはそれを含むフォルダ）のため、ゴミ箱へ移さずに残しました。お気に入りを外してから貼り付けてください。}}",
+  "@homePasteSkippedFavorite": {
+    "description": "ゴミ箱への貼り付けで、お気に入りの作品（またはそれを含むフォルダ）だったため移さなかった件数",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "homePasteSkippedFailed": "{count, plural, other{{count}件は貼り付けられませんでした。保存先を確認して、もう一度お試しください。}}",
+  "@homePasteSkippedFailed": {
+    "description": "保存の失敗などで貼り付けられなかった件数（クリップボードに残る）",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "homeCutPendingHint": "切り取り中（貼り付けを待っています）",
   "@homePasteSkippedMissing": {
     "placeholders": {
@@ -4045,7 +4062,6 @@
       }
     }
   },
-  "homePasteSnackbar": "貼り付けました",
   "canvasSizePresetDuplicateSuffix": "のコピー",
   "communityChannelRefreshButton": "YouTube名・アイコンを更新（1日1回）",
   "communityChannelRefreshSuccess": "YouTubeの名前・アイコンを更新しました",
@@ -5169,10 +5185,6 @@
   "homeSharedCreatedFilter": "自分が作成したもの",
   "@homeSharedCreatedFilter": {
     "description": "共有タブの切り替え：自分が作成した共有ファイルの一覧（貼り付けの説明の文でもこの名前を引用する）"
-  },
-  "homeClipboardSourceMissing": "コピー元の作品・フォルダが見つかりません。ゴミ箱から復元するか、もう一度コピーしてください。",
-  "@homeClipboardSourceMissing": {
-    "description": "貼り付けようとしたとき、コピー・切り取りした元の作品・フォルダが消えていた"
   },
   "homePasteRestrictionTitle": "ここには貼り付けられません",
   "@homePasteRestrictionTitle": {

@@ -7700,21 +7700,53 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String homePastedSnackbar(int count) {
-    return '已粘贴$count项';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '已粘贴$count项。',
+    );
+    return '$_temp0';
   }
 
   @override
   String homePasteSkippedIntoSelf(int count) {
-    return '$count个文件夹无法移入自身或其子文件夹，已保留为剪切状态。';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count个文件夹无法移入自身或其子文件夹，已保留为剪切状态。',
+    );
+    return '$_temp0';
   }
 
   @override
   String homePasteSkippedMissing(int count) {
-    return '有$count项因原作品已不存在（已移至回收站或已删除）而无法粘贴。';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '有$count项因原作品或文件夹已不存在（已移至回收站或已删除）而无法粘贴。',
+    );
+    return '$_temp0';
   }
 
   @override
-  String get homePasteFailed => '部分项目未能粘贴，请重试。';
+  String homePasteSkippedFavorite(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '有$count项是已收藏的作品（或含有已收藏作品的文件夹），因此未移至回收站。请先取消收藏，再重新粘贴。',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String homePasteSkippedFailed(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '有$count项未能粘贴。请检查存储空间后重试。',
+    );
+    return '$_temp0';
+  }
 
   @override
   String get homeCutPendingHint => '已剪切（等待粘贴）';
@@ -8020,9 +8052,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String pcStatusFps(int fps) {
     return '$fps fps';
   }
-
-  @override
-  String get homePasteSnackbar => '已粘贴';
 
   @override
   String get canvasSizePresetDuplicateSuffix => '副本';
@@ -9245,9 +9274,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get homeSharedCreatedFilter => '我创建的文件';
-
-  @override
-  String get homeClipboardSourceMissing => '找不到复制的作品或文件夹。请从回收站恢复，或重新复制。';
 
   @override
   String get homePasteRestrictionTitle => '无法粘贴到此处';
@@ -17395,21 +17421,53 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String homePastedSnackbar(int count) {
-    return '已貼上$count項';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '已貼上$count項。',
+    );
+    return '$_temp0';
   }
 
   @override
   String homePasteSkippedIntoSelf(int count) {
-    return '$count個資料夾無法移入自身或其子資料夾，已保留為剪下狀態。';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count個資料夾無法移入自身或其子資料夾，已保留為剪下狀態。',
+    );
+    return '$_temp0';
   }
 
   @override
   String homePasteSkippedMissing(int count) {
-    return '有$count項因原作品已不存在（已移至垃圾桶或已刪除）而無法貼上。';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '有$count項因原作品或資料夾已不存在（已移至垃圾桶或已刪除）而無法貼上。',
+    );
+    return '$_temp0';
   }
 
   @override
-  String get homePasteFailed => '部分項目未能貼上，請再試一次。';
+  String homePasteSkippedFavorite(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '有$count項是已收藏的作品（或含有已收藏作品的資料夾），因此未移至垃圾桶。請先取消收藏，再重新貼上。',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String homePasteSkippedFailed(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '有$count項未能貼上。請檢查儲存空間後重試。',
+    );
+    return '$_temp0';
+  }
 
   @override
   String get homeCutPendingHint => '已剪下（等待貼上）';
@@ -17715,9 +17773,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String pcStatusFps(int fps) {
     return '$fps fps';
   }
-
-  @override
-  String get homePasteSnackbar => '已貼上';
 
   @override
   String get canvasSizePresetDuplicateSuffix => '副本';
@@ -18940,9 +18995,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get homeSharedCreatedFilter => '我建立的檔案';
-
-  @override
-  String get homeClipboardSourceMissing => '找不到複製的作品或資料夾。請從垃圾桶復原，或重新複製。';
 
   @override
   String get homePasteRestrictionTitle => '無法在此貼上';

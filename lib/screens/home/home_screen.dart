@@ -52,7 +52,6 @@ import 'widgets/exported_work_card.dart';
 import 'widgets/exported_work_thumbnail_dialog.dart';
 import 'widgets/exported_work_preview_layout.dart';
 import 'widgets/folder_delete_dialog.dart';
-import 'widgets/folder_save_feedback.dart';
 import 'widgets/work_folder_move_sheet.dart';
 import 'home_clipboard_policy.dart';
 import '../../config/font_fallback.dart';
@@ -104,8 +103,89 @@ void _withdrawClipboardNotices(
   });
 }
 
-String _clipboardMissingMessage(BuildContext context) =>
-    AppLocalizations.of(context)!.homeClipboardSourceMissing;
+/// コピー・切り取り・貼り付けの知らせの文。貼り付けの結果は理由ごとに行が
+/// 増えるので、大きな文字でも上のバーと貼り付けの欄を覆わないよう、画面の
+/// 高さの4分の1までにして中でスクロールする（高さは知らせを出した後に画面の
+/// 大きさが変わっても、その時の画面で決める）。
+class _ClipboardNoticeText extends StatelessWidget {
+  const _ClipboardNoticeText(this.message);
+
+  final String message;
+
+  @override
+  Widget build(BuildContext context) => ConstrainedBox(
+    constraints: BoxConstraints(
+      maxHeight: MediaQuery.sizeOf(context).height / 4,
+    ),
+    child: SingleChildScrollView(child: Text(message)),
+  );
+}
+
+/// 1件の貼り付けの結果。
+enum _PasteOutcome {
+  pasted,
+
+  /// 元の作品・フォルダが無い（ゴミ箱へ移した・消した）。クリップボードから
+  /// 外す。
+  missing,
+
+  /// 切り取ったフォルダを自分自身やその中へは移せない。切り取ったまま残す。
+  intoSelf,
+
+  /// お気に入りの作品（またはそれを含むフォルダ）はゴミ箱へ移さない。
+  favorite,
+
+  /// 保存できなかった等。クリップボードに残し、もう一度貼り付けられる。
+  failed,
+}
+
+/// 貼り付けた件数と、貼り付けられなかった理由ごとの件数（所有者の判断6：
+/// 件数の内訳を出し、正しく貼り付けられたかが分かるようにする）。
+class _PasteTally {
+  final Map<_PasteOutcome, int> _counts = {};
+
+  int operator [](_PasteOutcome outcome) => _counts[outcome] ?? 0;
+
+  void add(_PasteOutcome outcome) => _counts[outcome] = this[outcome] + 1;
+
+  /// 1件を貼り付ける。[paste]は貼り付けたらtrue、元の作品・フォルダが
+  /// 見つからなければfalseを返す。貼り付けられなくても止めずに数える。
+  Future<_PasteOutcome> run(Future<bool> Function() paste) async {
+    _PasteOutcome outcome;
+    try {
+      outcome = await paste() ? _PasteOutcome.pasted : _PasteOutcome.missing;
+    } on _ClipboardSourceMissing {
+      outcome = _PasteOutcome.missing;
+    } on FavoriteProjectDeleteException {
+      outcome = _PasteOutcome.favorite;
+    } catch (error, stackTrace) {
+      AppErrorReporter.record(error, stackTrace);
+      outcome = _PasteOutcome.failed;
+    }
+    add(outcome);
+    return outcome;
+  }
+
+  /// 結果の文：貼り付けた件数と、貼り付けられなかった理由ごとの件数を1行
+  /// ずつ。1件も貼り付けられなかったときは、理由の行だけ。
+  String message(AppLocalizations l10n) {
+    final skipped = [
+      if (this[_PasteOutcome.missing] > 0)
+        l10n.homePasteSkippedMissing(this[_PasteOutcome.missing]),
+      if (this[_PasteOutcome.intoSelf] > 0)
+        l10n.homePasteSkippedIntoSelf(this[_PasteOutcome.intoSelf]),
+      if (this[_PasteOutcome.favorite] > 0)
+        l10n.homePasteSkippedFavorite(this[_PasteOutcome.favorite]),
+      if (this[_PasteOutcome.failed] > 0)
+        l10n.homePasteSkippedFailed(this[_PasteOutcome.failed]),
+    ];
+    return [
+      if (this[_PasteOutcome.pasted] > 0 || skipped.isEmpty)
+        l10n.homePastedSnackbar(this[_PasteOutcome.pasted]),
+      ...skipped,
+    ].join('\n');
+  }
+}
 
 /// 複製・貼り付けで作る作品・フォルダの名前を、画面の言語の「(コピー)」と
 /// 番号で付ける。
@@ -1772,7 +1852,7 @@ class _HomeScreenState extends State<HomeScreen>
     notice = messenger.showSnackBar(
       SnackBar(
         key: noticeKey,
-        content: Text(message),
+        content: _ClipboardNoticeText(message),
         // 操作ボタンの付いたSnackBarは、既定では時間で消えず次の画面まで
         // 付いてくる。切り取りは貼り付けるまで続くが、知らせは5秒で消す。
         persist: false,
@@ -2043,54 +2123,78 @@ class _HomeScreenState extends State<HomeScreen>
     }
     final l10n = AppLocalizations.of(context)!;
     final namer = _copyNamer(context);
+    final workFolders = context.read<WorkFolderService>();
+    final cut = _clipboardIsCut;
+    // 貼り付けられない物があっても止めずに残りを貼り付け、件数を数える。
+    // 元が無くなった物はクリップボードから外し（もう一度押しても同じ失敗を
+    // 繰り返さない）、保存できなかった物・お気に入り・自分の中へ移せない
+    // フォルダは残す（直してからもう一度貼り付けられる）。
+    final tally = _PasteTally();
+    bool leavesClipboard(_PasteOutcome outcome) =>
+        outcome == _PasteOutcome.missing ||
+        (outcome == _PasteOutcome.pasted &&
+            (cut || target == HomePasteArea.trash));
     setState(() => _pasting = true);
     try {
       if (target == HomePasteArea.trash) {
         // Duplicate descendants can appear in the selection. Moving a
-        // parent folder takes its descendants; skip already-trashed rows.
+        // parent folder takes its descendants; rows that were there when the
+        // paste began and are gone now went to the Trash with their folder.
+        final present = {
+          for (final p in service.projects) p.id,
+          for (final f in service.folders) f.id,
+        };
         for (final id in folderIds) {
-          await service.moveFolderToTrash(id);
-          _clipboardFolderIds.remove(id);
+          final outcome = await tally.run(
+            () async =>
+                await service.moveFolderToTrash(id) != null ||
+                present.contains(id),
+          );
+          if (leavesClipboard(outcome)) _clipboardFolderIds.remove(id);
         }
         for (final id in projectIds) {
-          if (service.projects.any((p) => p.id == id)) {
+          final outcome = await tally.run(() async {
+            if (!service.projects.any((p) => p.id == id)) {
+              return present.contains(id);
+            }
             await service.deleteProject(id);
-          }
-          _clipboardProjectIds.remove(id);
+            return true;
+          });
+          if (leavesClipboard(outcome)) _clipboardProjectIds.remove(id);
         }
       } else if (target == HomePasteArea.projects) {
         for (final id in projectIds) {
-          if (_clipboardIsCut) {
-            if (!service.projects.any((project) => project.id == id)) {
-              throw const _ClipboardSourceMissing();
+          final outcome = await tally.run(() async {
+            if (cut) {
+              if (!service.projects.any((project) => project.id == id)) {
+                return false;
+              }
+              await service.moveToFolder(id, _currentFolderId);
+              return true;
             }
-            await service.moveToFolder(id, _currentFolderId);
-            _clipboardProjectIds.remove(id);
-          } else {
-            if (!await service.duplicateProject(
+            return service.duplicateProject(
               id,
               targetFolderId: _currentFolderId,
               useTargetFolder: true,
               namer: namer,
-            )) {
-              throw const _ClipboardSourceMissing();
-            }
-          }
+            );
+          });
+          if (leavesClipboard(outcome)) _clipboardProjectIds.remove(id);
         }
         for (final id in folderIds) {
-          if (_clipboardIsCut) {
-            if (id == _currentFolderId ||
-                service.isFolderDescendantOf(_currentFolderId ?? '', id)) {
-              throw StateError('Cannot move folder inside itself');
-            }
-            if (!service.folders.any((folder) => folder.id == id)) {
-              throw const _ClipboardSourceMissing();
-            }
-            await service.moveFolderTo(id, _currentFolderId);
-            _clipboardFolderIds.remove(id);
-          } else {
+          if (cut &&
+              (id == _currentFolderId ||
+                  service.isFolderDescendantOf(_currentFolderId ?? '', id))) {
+            tally.add(_PasteOutcome.intoSelf);
+            continue;
+          }
+          final outcome = await tally.run(() async {
             final source = service.folders.where((f) => f.id == id).firstOrNull;
-            if (source == null) throw const _ClipboardSourceMissing();
+            if (source == null) return false;
+            if (cut) {
+              await service.moveFolderTo(id, _currentFolderId);
+              return true;
+            }
             final result = await service.duplicateFolder(
               id,
               targetParentId: _currentFolderId,
@@ -2101,48 +2205,36 @@ class _HomeScreenState extends State<HomeScreen>
                 folders: service.folders,
               ),
             );
-            if (result == null) throw const _ClipboardSourceMissing();
-          }
+            return result != null;
+          });
+          if (leavesClipboard(outcome)) _clipboardFolderIds.remove(id);
         }
       } else {
         // A format-neutral empty folder is created in the destination
         // collection. Removing a cut source occurs ONLY after that succeeds.
         for (final id in folderIds) {
-          final folder = service.folders.where((f) => f.id == id).firstOrNull;
-          if (folder == null) throw const _ClipboardSourceMissing();
-          if (target == HomePasteArea.works) {
-            await context.read<WorkFolderService>().createFolder(folder.name);
-          } else {
-            await service.createSharedFolder(folder.name);
-          }
-          if (_clipboardIsCut) {
-            await service.deleteFolder(id);
-            _clipboardFolderIds.remove(id);
-          }
+          final outcome = await tally.run(() async {
+            final folder = service.folders.where((f) => f.id == id).firstOrNull;
+            if (folder == null) return false;
+            if (target == HomePasteArea.works) {
+              await workFolders.createFolder(folder.name);
+            } else {
+              await service.createSharedFolder(folder.name);
+            }
+            if (cut) await service.deleteFolder(id);
+            return true;
+          });
+          if (leavesClipboard(outcome)) _clipboardFolderIds.remove(id);
         }
-      }
-      if (mounted) {
-        setState(() {});
-        _showClipboardFeedback(AppLocalizations.of(context)!.homePasteSnackbar);
       }
     } catch (error, stackTrace) {
       AppErrorReporter.record(error, stackTrace);
-      if (mounted) {
-        _showClipboardFeedback(
-          error is _ClipboardSourceMissing
-              ? _clipboardMissingMessage(context)
-              : error is StateError &&
-                    error.message == 'Cannot move folder inside itself'
-              ? AppLocalizations.of(context)!.homePasteSkippedIntoSelf(1)
-              : !_clipboardIsCut &&
-                    target == HomePasteArea.projects &&
-                    projectIds.isNotEmpty
-              ? AppLocalizations.of(context)!.homePasteFailed
-              : folderSaveFailureText(AppLocalizations.of(context)!, error),
-        );
-      }
+      tally.add(_PasteOutcome.failed);
     } finally {
-      if (mounted) setState(() => _pasting = false);
+      if (mounted) {
+        setState(() => _pasting = false);
+        _showClipboardFeedback(tally.message(l10n));
+      }
     }
   }
 
@@ -2155,7 +2247,7 @@ class _HomeScreenState extends State<HomeScreen>
     AppLocalizations l10n,
   ) async {
     if (!workFolders.folders.any((folder) => folder.id == sourceId)) {
-      throw StateError('Export folder no longer exists');
+      throw const _ClipboardSourceMissing();
     }
     final exported = await ExportEngine.listExportedFiles(forceRefresh: true);
     final members = exported
@@ -2284,12 +2376,7 @@ class _HomeScreenState extends State<HomeScreen>
             final folder = files
                 .where((f) => f.id == entry.id && f.isFolder)
                 .firstOrNull;
-            if (folder == null) {
-              throw FileSystemException(
-                'Missing trashed work folder',
-                entry.id,
-              );
-            }
+            if (folder == null) throw const _ClipboardSourceMissing();
             await LocalFileTrashService.restoreWorkFolder(folder, ws);
             StorageInfoService().invalidate();
           } else {
@@ -2301,8 +2388,7 @@ class _HomeScreenState extends State<HomeScreen>
         } else {
           final files = await LocalFileTrashService.list();
           final file = files.where((f) => f.id == entry.id).firstOrNull;
-          if (file == null)
-            throw FileSystemException('Missing trash entry', entry.id);
+          if (file == null) throw const _ClipboardSourceMissing();
           await LocalFileTrashService.restore(file);
           StorageInfoService().invalidate();
           if (entry.originalArea == HomePasteArea.outgoing) {
@@ -2313,10 +2399,10 @@ class _HomeScreenState extends State<HomeScreen>
       } else if (dest == HomePasteArea.trash) {
         if (entry.isFolder && entry.source == HomePasteArea.received) {
           final moved = await ps.moveFolderToTrash(entry.id, shared: true);
-          if (moved == null) throw StateError('Shared folder not found');
+          if (moved == null) throw const _ClipboardSourceMissing();
         } else if (entry.isFolder && entry.source == HomePasteArea.works) {
           if (!ws.folders.any((folder) => folder.id == entry.id)) {
-            throw StateError('Export folder not found');
+            throw const _ClipboardSourceMissing();
           }
           final files = await ExportEngine.listExportedFiles(
             forceRefresh: true,
@@ -2378,8 +2464,7 @@ class _HomeScreenState extends State<HomeScreen>
         }
       } else {
         final original = File(entry.id);
-        if (!await original.exists())
-          throw FileSystemException('Missing file', entry.id);
+        if (!await original.exists()) throw const _ClipboardSourceMissing();
         final fileName = original.uri.pathSegments.last;
         final destFile = await _copyFileDestination(l10n, original);
         await original.copy(destFile.path);
@@ -2395,15 +2480,23 @@ class _HomeScreenState extends State<HomeScreen>
       }
       if (mounted) {
         setState(() {});
-        _showClipboardFeedback(AppLocalizations.of(context)!.homePasteSnackbar);
+        _showClipboardFeedback(l10n.homePastedSnackbar(1));
       }
     } catch (error, stackTrace) {
       AppErrorReporter.record(error, stackTrace);
+      // 元が無くなった物はクリップボードから外す（もう一度押しても同じ
+      // 失敗を繰り返さない）。
+      if (error is _ClipboardSourceMissing) _otherClipboard = null;
       if (mounted) {
         _showClipboardFeedback(
-          error is _ClipboardSourceMissing
-              ? _clipboardMissingMessage(context)
-              : AppLocalizations.of(context)!.homeTrashOperationFailed,
+          (_PasteTally()..add(
+                error is _ClipboardSourceMissing
+                    ? _PasteOutcome.missing
+                    : error is FavoriteProjectDeleteException
+                    ? _PasteOutcome.favorite
+                    : _PasteOutcome.failed,
+              ))
+              .message(l10n),
         );
       }
     } finally {

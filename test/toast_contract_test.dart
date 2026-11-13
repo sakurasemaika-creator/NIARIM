@@ -446,7 +446,7 @@ void main() {
       await paste(2);
       await tester.pump(frame);
       await paste(3);
-      final life = await afterRepeats(tester, l10n.homePasteSnackbar);
+      final life = await afterRepeats(tester, l10n.homePastedSnackbar(1));
       expect(life.onScreen, lessThanOrEqualTo(longestLife));
       expect(
         life.allGone,

@@ -7813,21 +7813,54 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String homePastedSnackbar(int count) {
-    return '$count개 항목을 붙여넣었습니다';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count개 항목을 붙여넣었습니다.',
+    );
+    return '$_temp0';
   }
 
   @override
   String homePasteSkippedIntoSelf(int count) {
-    return '폴더 $count개는 자기 자신이나 그 안으로 옮길 수 없어 잘라낸 상태로 남겨 두었습니다.';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '폴더 $count개는 자기 자신이나 그 안으로 옮길 수 없어 잘라낸 상태로 남겨 두었습니다.',
+    );
+    return '$_temp0';
   }
 
   @override
   String homePasteSkippedMissing(int count) {
-    return '원본이 없어 $count개 항목을 붙여넣지 못했습니다(휴지통으로 이동했거나 삭제됨).';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '원본 작품이나 폴더가 없어 $count개 항목을 붙여넣지 못했습니다(휴지통으로 이동했거나 삭제됨).',
+    );
+    return '$_temp0';
   }
 
   @override
-  String get homePasteFailed => '일부 항목을 붙여넣지 못했습니다. 다시 시도해 주세요.';
+  String homePasteSkippedFavorite(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count개 항목은 즐겨찾기한 작품(또는 그 작품이 있는 폴더)이라 휴지통으로 옮기지 않고 남겨 두었습니다. 즐겨찾기를 해제한 뒤 다시 붙여넣어 주세요.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String homePasteSkippedFailed(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count개 항목을 붙여넣지 못했습니다. 저장 공간을 확인하고 다시 시도해 주세요.',
+    );
+    return '$_temp0';
+  }
 
   @override
   String get homeCutPendingHint => '잘라냄(붙여넣기 대기 중)';
@@ -8143,9 +8176,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String pcStatusFps(int fps) {
     return '$fps fps';
   }
-
-  @override
-  String get homePasteSnackbar => '붙여넣었습니다';
 
   @override
   String get canvasSizePresetDuplicateSuffix => '사본';
@@ -9387,10 +9417,6 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get homeSharedCreatedFilter => '내가 만든 파일';
-
-  @override
-  String get homeClipboardSourceMissing =>
-      '복사한 작품이나 폴더를 찾을 수 없습니다. 휴지통에서 복원하거나 다시 복사해 주세요.';
 
   @override
   String get homePasteRestrictionTitle => '여기에는 붙여넣을 수 없습니다';

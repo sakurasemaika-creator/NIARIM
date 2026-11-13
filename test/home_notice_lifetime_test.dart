@@ -596,7 +596,7 @@ void main() {
       final service = await openHome(tester, names: ['apple', 'banana']);
       await copy(tester, 'apple');
       await tester.tap(find.byKey(const Key('homeCrossTabPasteButton')));
-      final pasted = l10nOf(tester).homePasteSnackbar;
+      final pasted = l10nOf(tester).homePastedSnackbar(1);
       await waitFor(tester, () => snackText(tester) == pasted);
       await settle(tester);
       expect(service.projects.length, 3);

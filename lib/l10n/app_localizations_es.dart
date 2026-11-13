@@ -8202,22 +8202,66 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String homePastedSnackbar(int count) {
-    return '$count elemento(s) pegado(s)';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Se pegaron $count elementos.',
+      one: 'Se pegó $count elemento.',
+    );
+    return '$_temp0';
   }
 
   @override
   String homePasteSkippedIntoSelf(int count) {
-    return '$count carpeta(s) no pueden moverse dentro de sí mismas; siguen cortadas para pegarlas en otro lugar.';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count carpetas no pueden moverse dentro de sí mismas ni de sus subcarpetas; siguen cortadas para pegarlas en otro lugar.',
+      one:
+          '$count carpeta no puede moverse dentro de sí misma ni de sus subcarpetas; sigue cortada para pegarla en otro lugar.',
+    );
+    return '$_temp0';
   }
 
   @override
   String homePasteSkippedMissing(int count) {
-    return 'No se pudieron pegar $count elemento(s) porque el original ya no está (en la papelera o eliminado).';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'No se pudieron pegar $count elementos porque los originales ya no están (en la papelera o eliminados).',
+      one:
+          'No se pudo pegar $count elemento porque el original ya no está (en la papelera o eliminado).',
+    );
+    return '$_temp0';
   }
 
   @override
-  String get homePasteFailed =>
-      'No se pudieron pegar algunos elementos. Inténtalo de nuevo.';
+  String homePasteSkippedFavorite(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count elementos son obras favoritas (o carpetas que las contienen), así que no se movieron a la papelera. Quítalos de favoritos y vuelve a pegar.',
+      one:
+          '$count elemento es una obra favorita (o una carpeta que la contiene), así que no se movió a la papelera. Quítalo de favoritos y vuelve a pegar.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String homePasteSkippedFailed(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'No se pudieron pegar $count elementos. Revisa el almacenamiento e inténtalo de nuevo.',
+      one:
+          'No se pudo pegar $count elemento. Revisa el almacenamiento e inténtalo de nuevo.',
+    );
+    return '$_temp0';
+  }
 
   @override
   String get homeCutPendingHint => 'Cortado, pendiente de pegar';
@@ -8560,9 +8604,6 @@ class AppLocalizationsEs extends AppLocalizations {
   String pcStatusFps(int fps) {
     return '$fps fps';
   }
-
-  @override
-  String get homePasteSnackbar => 'Pegado';
 
   @override
   String get canvasSizePresetDuplicateSuffix => 'copia';
@@ -10101,10 +10142,6 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get homeSharedCreatedFilter => 'Creados por mí';
-
-  @override
-  String get homeClipboardSourceMissing =>
-      'No se encuentra la obra o carpeta copiada. Restáurala desde la papelera o vuelve a copiarla.';
 
   @override
   String get homePasteRestrictionTitle => 'No se puede pegar aquí';

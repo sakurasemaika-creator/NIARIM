@@ -7776,21 +7776,54 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String homePastedSnackbar(int count) {
-    return '$count件を貼り付けました';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count件を貼り付けました。',
+    );
+    return '$_temp0';
   }
 
   @override
   String homePasteSkippedIntoSelf(int count) {
-    return 'フォルダ$count件は、自分自身やその中へは移動できないため、切り取ったまま残しました。';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'フォルダ$count件は、自分自身やその中へは移動できないため、切り取ったまま残しました。',
+    );
+    return '$_temp0';
   }
 
   @override
   String homePasteSkippedMissing(int count) {
-    return '$count件は元の作品が見つからないため、貼り付けられませんでした（ゴミ箱へ移動・削除済み）。';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count件は、元の作品・フォルダが見つからないため貼り付けられませんでした（ゴミ箱へ移動・削除済み）。',
+    );
+    return '$_temp0';
   }
 
   @override
-  String get homePasteFailed => '一部を貼り付けられませんでした。もう一度お試しください。';
+  String homePasteSkippedFavorite(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count件は、お気に入りの作品（またはそれを含むフォルダ）のため、ゴミ箱へ移さずに残しました。お気に入りを外してから貼り付けてください。',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String homePasteSkippedFailed(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count件は貼り付けられませんでした。保存先を確認して、もう一度お試しください。',
+    );
+    return '$_temp0';
+  }
 
   @override
   String get homeCutPendingHint => '切り取り中（貼り付けを待っています）';
@@ -8101,9 +8134,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String pcStatusFps(int fps) {
     return '$fps fps';
   }
-
-  @override
-  String get homePasteSnackbar => '貼り付けました';
 
   @override
   String get canvasSizePresetDuplicateSuffix => 'のコピー';
@@ -9341,10 +9371,6 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get homeSharedCreatedFilter => '自分が作成したもの';
-
-  @override
-  String get homeClipboardSourceMissing =>
-      'コピー元の作品・フォルダが見つかりません。ゴミ箱から復元するか、もう一度コピーしてください。';
 
   @override
   String get homePasteRestrictionTitle => 'ここには貼り付けられません';

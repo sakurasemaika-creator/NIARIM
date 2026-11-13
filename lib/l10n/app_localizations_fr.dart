@@ -8224,22 +8224,66 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String homePastedSnackbar(int count) {
-    return '$count élément(s) collé(s)';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count éléments collés.',
+      one: '$count élément collé.',
+    );
+    return '$_temp0';
   }
 
   @override
   String homePasteSkippedIntoSelf(int count) {
-    return '$count dossier(s) ne peuvent pas être déplacés dans eux-mêmes ou leurs sous-dossiers ; ils restent coupés pour être collés ailleurs.';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count dossiers ne peuvent pas être déplacés dans eux-mêmes ou leurs sous-dossiers ; ils restent coupés pour être collés ailleurs.',
+      one:
+          '$count dossier ne peut pas être déplacé dans lui-même ou ses sous-dossiers ; il reste coupé pour être collé ailleurs.',
+    );
+    return '$_temp0';
   }
 
   @override
   String homePasteSkippedMissing(int count) {
-    return '$count élément(s) n’ont pas pu être collés car l’original n’existe plus (corbeille ou supprimé).';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count éléments n’ont pas pu être collés, car les originaux n’existent plus (mis à la corbeille ou supprimés).',
+      one:
+          '$count élément n’a pas pu être collé, car l’original n’existe plus (mis à la corbeille ou supprimé).',
+    );
+    return '$_temp0';
   }
 
   @override
-  String get homePasteFailed =>
-      'Certains éléments n’ont pas pu être collés. Réessayez.';
+  String homePasteSkippedFavorite(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count éléments sont des œuvres favorites (ou des dossiers qui en contiennent), ils n’ont donc pas été mis à la corbeille. Retirez-les des favoris, puis collez à nouveau.',
+      one:
+          '$count élément est une œuvre favorite (ou un dossier qui en contient), il n’a donc pas été mis à la corbeille. Retirez-le des favoris, puis collez à nouveau.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String homePasteSkippedFailed(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count éléments n’ont pas pu être collés. Vérifiez votre stockage et réessayez.',
+      one:
+          '$count élément n’a pas pu être collé. Vérifiez votre stockage et réessayez.',
+    );
+    return '$_temp0';
+  }
 
   @override
   String get homeCutPendingHint => 'Coupé, en attente de collage';
@@ -8582,9 +8626,6 @@ class AppLocalizationsFr extends AppLocalizations {
   String pcStatusFps(int fps) {
     return '$fps i/s';
   }
-
-  @override
-  String get homePasteSnackbar => 'Collé';
 
   @override
   String get canvasSizePresetDuplicateSuffix => 'copie';
@@ -10112,10 +10153,6 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get homeSharedCreatedFilter => 'Créés par moi';
-
-  @override
-  String get homeClipboardSourceMissing =>
-      'L’œuvre ou le dossier copié est introuvable. Restaurez-le depuis la corbeille ou copiez-le à nouveau.';
 
   @override
   String get homePasteRestrictionTitle => 'Impossible de coller ici';
