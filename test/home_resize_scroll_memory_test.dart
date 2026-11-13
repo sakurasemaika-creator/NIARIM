@@ -6,7 +6,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/app.dart';
 import 'package:niarim/app_bootstrap.dart';
+import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/router.dart';
+import 'package:niarim/screens/home/home_screen.dart';
 import 'package:niarim/screens/home/widgets/project_list_widget.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:provider/provider.dart';
@@ -115,6 +117,50 @@ void main() {
     expect(tester.takeException(), isNull);
     await tester.pumpWidget(const SizedBox.shrink());
   });
+
+  // 窓の幅で表示サイズが変わった後に、いま出ている表示サイズを選んでも、
+  // 並びは変わらないので一覧はその場に留まる（先頭へ戻っていた）。
+  for (final (open, now, chosen) in const [
+    (560.0, 640.0, ProjectViewMode.medium), // 開いた後に600pxをまたいで広げた
+    (1020.0, 560.0, ProjectViewMode.small), // 開いた後に1000pxと600pxをまたいだ
+  ]) {
+    testWidgets('choosing the view size already shown after the window '
+        'crossed a size class keeps the place ($open -> $now)', (tester) async {
+      await openHome(tester, size: Size(open, 844));
+      await resize(tester, now);
+      position(tester).jumpTo(300);
+      await tester.pumpAndSettle();
+      expect(position(tester).pixels, 300);
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(ProjectListWidget)),
+      )!;
+      await tester.tap(find.byTooltip(l10n.homeViewModeTooltip));
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.text(switch (chosen) {
+          ProjectViewMode.large => l10n.homeViewModeLarge,
+          ProjectViewMode.medium => l10n.homeViewModeMedium,
+          ProjectViewMode.small => l10n.homeViewModeSmall,
+          ProjectViewMode.detail => l10n.homeViewModeDetail,
+        }).last,
+      );
+      await tester.pumpAndSettle();
+      expect(
+        tester
+            .widget<ProjectListWidget>(find.byType(ProjectListWidget))
+            .viewMode,
+        chosen,
+        reason: 'the list shows the size that was already shown',
+      );
+      expect(
+        position(tester).pixels,
+        closeTo(300, 1),
+        reason: 'choosing the size already shown moved the list',
+      );
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox.shrink());
+    });
+  }
 
   // 表示サイズを自分で選んだときは、これまでどおりサイズごとに別の位置を
   // 覚える（窓の幅では変わらない）。

@@ -213,8 +213,15 @@ class _HomeScreenState extends State<HomeScreen>
   // またいで表示サイズが変わるたびに区分まで変えると、一覧が先頭へ戻る。
   ProjectViewMode? _autoViewModeAtOpen;
 
+  // いま出ている表示サイズを選んだときに、そのまま使い続ける区分。並びが
+  // 変わらないので区分も変えない（窓の幅が境をまたいだ後に選ぶと、区分だけ
+  // 変わって一覧が先頭へ戻っていた）。別の表示サイズを選んだら外す。
+  ProjectViewMode? _keptScrollMemoryViewMode;
+
   ProjectViewMode _scrollMemoryViewMode(BuildContext context) =>
-      _userViewMode ?? (_autoViewModeAtOpen ??= _effectiveViewMode(context));
+      _keptScrollMemoryViewMode ??
+      _userViewMode ??
+      (_autoViewModeAtOpen ??= _effectiveViewMode(context));
 
   Future<void> _loadProjectViewMode() async {
     try {
@@ -233,6 +240,9 @@ class _HomeScreenState extends State<HomeScreen>
   }
 
   Future<void> _selectProjectViewMode(ProjectViewMode mode) async {
+    _keptScrollMemoryViewMode = mode == _effectiveViewMode(context)
+        ? _scrollMemoryViewMode(context)
+        : null;
     setState(() => _userViewMode = mode);
     try {
       final prefs = await SharedPreferences.getInstance();
