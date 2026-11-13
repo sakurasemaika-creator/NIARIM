@@ -45,6 +45,7 @@ import '../../widgets/share_project_file_action.dart';
 import '../../widgets/mission_completion_dialog.dart';
 import '../../widgets/typing_aware_shortcuts.dart';
 import 'widgets/project_list_widget.dart';
+import 'widgets/shared_direction_switch.dart';
 import 'widgets/folder_thumbnail.dart';
 import 'widgets/project_thumbnail_dialog.dart';
 import 'widgets/home_selection_toolbar.dart';
@@ -2978,50 +2979,12 @@ class _SharedScreenState extends State<SharedScreen> {
       appBar: widget.embedded ? null : AppBar(title: Text(l10n.homeTabShared)),
       body: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
-            child: Center(
-              child: FittedBox(
-                fit: BoxFit.scaleDown,
-                child: SegmentedButton<bool>(
-                  key: const Key('sharedDirectionSegmentedControl'),
-                  showSelectedIcon: false,
-                  multiSelectionEnabled: false,
-                  emptySelectionAllowed: false,
-                  style: ButtonStyle(
-                    visualDensity: VisualDensity.standard,
-                    shape: const WidgetStatePropertyAll(StadiumBorder()),
-                    side: WidgetStatePropertyAll(
-                      BorderSide(color: Theme.of(context).colorScheme.outline),
-                    ),
-                    padding: const WidgetStatePropertyAll(
-                      EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                    ),
-                  ),
-                  segments: [
-                    ButtonSegment<bool>(
-                      value: false,
-                      label: Text(
-                        _shareCollectionText(context, outgoing: false),
-                        key: const Key('sharedReceivedFilter'),
-                      ),
-                    ),
-                    ButtonSegment<bool>(
-                      value: true,
-                      label: Text(
-                        _shareCollectionText(context, outgoing: true),
-                        key: const Key('sharedOutgoingFilter'),
-                      ),
-                    ),
-                  ],
-                  selected: {_showOutgoing},
-                  onSelectionChanged: (selection) {
-                    setState(() => _showOutgoing = selection.single);
-                    widget.onDirectionChanged?.call(_showOutgoing);
-                  },
-                ),
-              ),
-            ),
+          SharedDirectionSwitch(
+            outgoing: _showOutgoing,
+            onChanged: (outgoing) {
+              setState(() => _showOutgoing = outgoing);
+              widget.onDirectionChanged?.call(_showOutgoing);
+            },
           ),
           _HomeCollectionSortHeader(
             sortByName: _sortByName,
@@ -3583,13 +3546,6 @@ Widget _receivedShareProjectTile(
       ),
     ),
   );
-}
-
-String _shareCollectionText(BuildContext context, {required bool outgoing}) {
-  final l10n = AppLocalizations.of(context)!;
-  return outgoing
-      ? l10n.homeSharedCreatedFilter
-      : l10n.homeSharedReceivedFilter;
 }
 
 /// Received projects remain editable. Sharing one explicitly creates a new
