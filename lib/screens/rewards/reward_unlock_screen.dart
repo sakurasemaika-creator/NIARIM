@@ -439,7 +439,7 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
           scrollable: true,
           title: Text(t['redeem']),
           content: KeepTogetherText(
-            '${t['fullPremium']} · $period · $cost\\n\\n$overlapMessage',
+            '${t['fullPremium']} · $period · $cost\n\n$overlapMessage',
             keep: [period, cost],
           ),
           actions: [

@@ -109,11 +109,17 @@ class _MembershipBenefitsScreenState extends State<MembershipBenefitsScreen> {
                           premium.verifiedExpiryDate!.toLocal(),
                         ),
                       ),
+                    // 見出しがすでに「オパールで解放中」のときは期限だけを出す
+                    // （同じ語を2行続けない）。
                     if (coinExpiry != null)
                       Text(
-                        l10n.rewardNavigationMembershipCoinExpiresAt(
-                          coinExpiry.toLocal(),
-                        ),
+                        isPlayMember
+                            ? l10n.rewardNavigationMembershipCoinExpiresAt(
+                                coinExpiry.toLocal(),
+                              )
+                            : l10n.rewardNavigationMembershipExpiresAt(
+                                coinExpiry.toLocal(),
+                              ),
                       ),
                   ],
                 ),

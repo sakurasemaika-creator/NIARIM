@@ -62,6 +62,21 @@ class _Member extends PremiumService {
   void applyServerCoinPremiumExpiry(DateTime? expiresAt, {String? accountId}) {}
 }
 
+/// Google Playの会員ではなく、オパールで交換した全機能だけを利用中の状態
+/// （カードの見出しが「オパールで解放中」になる）。
+class _OpalOnlyMember extends PremiumService {
+  _OpalOnlyMember(this.opalUntil);
+  final DateTime opalUntil;
+  @override
+  bool get hasVerifiedPlayPremium => false;
+  @override
+  bool get hasCoinPremium => true;
+  @override
+  DateTime? get activeCoinPremiumExpiry => opalUntil;
+  @override
+  void applyServerCoinPremiumExpiry(DateTime? expiresAt, {String? accountId}) {}
+}
+
 http.Response _json(Object data) => http.Response(
   jsonEncode(data),
   200,
@@ -190,6 +205,69 @@ void main() {
       }
       await tester.pumpWidget(const SizedBox.shrink());
       premium.dispose();
+    });
+
+    testWidgets('オパールだけで解放中のカードは、見出しの語を期限の行で繰り返さない'
+        '（$name）', (tester) async {
+      // 見出しが「オパールで解放中」なのに、その下の行も「オパールで解放中 ·
+      // 利用期限：…」で、同じ語が2行続いていた。Google Playの会員のカードでは
+      // 見出しが会員の種類なので、オパールの行はそのまま「オパールで解放中 ·
+      // 利用期限：…」（上のテスト）。
+      tester.view.devicePixelRatio = 1;
+      tester.view.physicalSize = const Size(800, 2000);
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      final now = DateTime.now();
+      final opalUntil = DateTime(now.year + 1, 4, 5, 9, 7);
+      final premium = _OpalOnlyMember(opalUntil);
+      addTearDown(premium.dispose);
+      await tester.pumpWidget(
+        MultiProvider(
+          providers: [
+            ChangeNotifierProvider<PremiumService>.value(value: premium),
+            ChangeNotifierProvider<SettingsService>.value(
+              value: SettingsService(),
+            ),
+            ChangeNotifierProvider<GoogleAuthService>.value(value: _SignedIn()),
+            ChangeNotifierProvider<CommunityService>.value(
+              value: _server(DateTime(now.year + 1, 6, 7, 21, 8)),
+            ),
+          ],
+          child: MaterialApp(
+            locale: locale,
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: const MembershipBenefitsScreen(),
+          ),
+        ),
+      );
+      for (var i = 0; i < 3; i++) {
+        await tester.runAsync(
+          () => Future<void>.delayed(const Duration(milliseconds: 50)),
+        );
+        await tester.pump();
+      }
+      final l10n = lookupAppLocalizations(locale);
+      final card = [
+        for (final text in tester.widgetList<Text>(
+          find.descendant(
+            of: find.byType(Card).first,
+            matching: find.byType(Text),
+          ),
+        ))
+          text.data ?? text.textSpan?.toPlainText() ?? '',
+      ];
+      final tier = l10n.rewardNavigationMembershipCoin;
+      expect(card, [
+        tier,
+        l10n.rewardNavigationMembershipExpiresAt(opalUntil.toLocal()),
+      ]);
+      expect(
+        card.where((text) => text.contains(tier)),
+        hasLength(1),
+        reason: '$name: 「$tier」が2回出ている $card',
+      );
+      await tester.pumpWidget(const SizedBox.shrink());
     });
   }
 }
