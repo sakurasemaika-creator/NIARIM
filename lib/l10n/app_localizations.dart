@@ -3176,7 +3176,7 @@ abstract class AppLocalizations {
   /// No description provided for @helpPenSubToolTitle.
   ///
   /// In ja, this message translates to:
-  /// **'ペンサブツール'**
+  /// **'ペン'**
   String get helpPenSubToolTitle;
 
   /// No description provided for @helpPenSubToolDesc.
@@ -4538,7 +4538,7 @@ abstract class AppLocalizations {
   /// No description provided for @creativePanelCreateButton.
   ///
   /// In ja, this message translates to:
-  /// **'自作'**
+  /// **'新規'**
   String get creativePanelCreateButton;
 
   /// No description provided for @creativePanelImportButton.
@@ -6518,7 +6518,7 @@ abstract class AppLocalizations {
   /// No description provided for @projectListCreateShareAction.
   ///
   /// In ja, this message translates to:
-  /// **'.niashareを作成'**
+  /// **'プロジェクトを共有'**
   String get projectListCreateShareAction;
 
   /// No description provided for @projectListEditFolderAction.
@@ -10274,7 +10274,7 @@ abstract class AppLocalizations {
   /// No description provided for @workspaceDockPanelPenSubTool.
   ///
   /// In ja, this message translates to:
-  /// **'ペンサブツール'**
+  /// **'ペン'**
   String get workspaceDockPanelPenSubTool;
 
   /// No description provided for @workspaceDockPanelOnionSkin.
@@ -11708,7 +11708,7 @@ abstract class AppLocalizations {
   /// No description provided for @qrShareTooLargeHint.
   ///
   /// In ja, this message translates to:
-  /// **'色数が多いためQRコードでは共有できません（ファイル共有をご利用ください）'**
+  /// **'画像を含む素材やQRコードに収まらない設定は、ファイル共有をご利用ください。'**
   String get qrShareTooLargeHint;
 
   /// No description provided for @colorPickerImportViaFile.
