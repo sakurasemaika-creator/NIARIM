@@ -16,20 +16,20 @@ import {
   PREMIUM_YEARLY_LIST_PRICE_YEN, REFERENCE_COINS_PER_YEN,
 } from "./coinEconomyScale";
 
-export const COIN_BENEFIT_PRICE_VERSION = "v3-final-annual550000" as const;
+export const COIN_BENEFIT_PRICE_VERSION = "v4-min10-repriced-20261113" as const;
 
 const month = {
-  endCardEdit: 8_000,
-  watermark: 14_000,
-  toneCurve: 13_000,
-  levelAdjustment: 10_000,
-  unlimitedDuration: 18_000,
-  customAutomation: 20_000,
-  projectListAds: 9_000,
-  canvasAds: 15_000,
-  timelineAds: 12_000,
-  processingAds: 6_000,
-  allAds: 36_000,
+  endCardEdit: 12_000,
+  watermark: 18_000,
+  toneCurve: 18_000,
+  levelAdjustment: 15_000,
+  unlimitedDuration: 25_000,
+  customAutomation: 25_000,
+  projectListAds: 12_000,
+  canvasAds: 20_000,
+  timelineAds: 16_000,
+  processingAds: 10_000,
+  allAds: 40_000,
   fullPremium: 55_000,
 } as const;
 
@@ -50,13 +50,13 @@ export function finalBenefitCoins(
   // Full bundle is fixed by the owner; redemption activation remains
   // separately gated by a server-signed, revisioned quote.
   if (target === "fullPremium") {
-    return {hour:500,day:2_500,week:18_000}[duration];
+    return {hour:5_000,day:10_000,week:30_000}[duration];
   }
   // Round every unit price UP at the ones place to a multiple of 10.
   const raw = {
-    hour: Math.ceil(perMonth / 120),
-    day: Math.ceil(perMonth / 28),
-    week: Math.ceil(perMonth / 3.7),
+    hour: Math.ceil(perMonth / 24),
+    day: Math.ceil(perMonth / 10),
+    week: Math.ceil(perMonth / 2),
   }[duration];
   return Math.ceil(raw / 10) * 10;
 }
