@@ -35,7 +35,9 @@ class _HomeDrawerState extends State<HomeDrawer> {
 
   @override
   Widget build(BuildContext context) {
-    final accountId = context.watch<GoogleAuthService>().account?.id;
+    // Isolated library previews can render without an authentication
+    // provider. They must behave as signed out, never as another user.
+    final accountId = context.watch<GoogleAuthService?>()?.account?.id;
     final api = context.read<CommunityService>().api;
     if (_accountId != accountId ||
         !identical(_lastApi, api) ||
