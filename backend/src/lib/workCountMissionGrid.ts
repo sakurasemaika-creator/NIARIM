@@ -16,7 +16,7 @@ export const BOOKMARK_GOALS = Object.freeze([
   ...Array.from({length:8},(_,i)=>100+i*50),
   ...Array.from({length:6},(_,i)=>500+i*100),
 ]);
-export const ACCOUNT_GRID_CATALOG_VERSION = "qualified-works-grid-v3-progressive-step5";
+export const ACCOUNT_GRID_CATALOG_VERSION = "qualified-works-grid-v4-min10";
 export interface GridMission {
   id: string;
   kind: "qualifiedWorks";
@@ -29,7 +29,7 @@ export interface GridMission {
   priceFinal: true;
 }
 /** Each strictly harder goal in either dimension increases the reward.
- * 20 work tiers x 24 bookmark tiers: 5 through 215 coins in steps of five.
+ * 20 work tiers x 24 bookmark tiers: 10 through 220 coins in steps of five.
  */
 function gridCoins(works: number, bookmarks: number): number {
   const countIndex = WORK_COUNT_GOALS.indexOf(works);
@@ -37,7 +37,7 @@ function gridCoins(works: number, bookmarks: number): number {
   if (countIndex < 0 || bookmarkIndex < 0) {
     throw new Error("Unknown work-count mission goal");
   }
-  return 5 * (1 + countIndex + bookmarkIndex);
+  return 5 * (2 + countIndex + bookmarkIndex);
 }
 /** 20 shards x 24 bits. Never reuse a shard/bit pair for another goal. */
 export const WORK_COUNT_MISSIONS: readonly GridMission[] =
