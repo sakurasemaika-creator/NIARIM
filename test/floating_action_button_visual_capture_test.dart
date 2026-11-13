@@ -73,8 +73,19 @@ void main() {
         reason: filename,
       );
       for (final button in tester.widgetList<FloatingActionButton>(fabFinder)) {
-        expect(button.elevation, isNull, reason: filename);
-        expect(button.highlightElevation, isNull, reason: filename);
+        // Explicit zero elevation and theme-inherited zero elevation are
+        // equally flat; verify the effective value, not the implementation.
+        expect(
+          button.elevation ?? theme.floatingActionButtonTheme.elevation,
+          0,
+          reason: filename,
+        );
+        expect(
+          button.highlightElevation ??
+              theme.floatingActionButtonTheme.highlightElevation,
+          0,
+          reason: filename,
+        );
         final materials = tester
             .widgetList<Material>(
               find.descendant(
