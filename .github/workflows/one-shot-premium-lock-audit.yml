@@ -12,6 +12,7 @@ on:
       - "lib/screens/settings/watermark_settings_screen.dart"
       - "lib/screens/canvas/widgets/filter_panel.dart"
       - "lib/screens/canvas/canvas_screen.dart"
+      - "lib/screens/timeline/timeline_screen.dart"
       - "lib/screens/export/export_screen.dart"
       - "test/premium_lock_widget_test.dart"
       - "test/premium_all_entry_points_test.dart"
@@ -59,6 +60,7 @@ jobs:
             lib/screens/settings/watermark_settings_screen.dart \
             lib/screens/canvas/widgets/filter_panel.dart \
             lib/screens/canvas/canvas_screen.dart \
+            lib/screens/timeline/timeline_screen.dart \
             lib/screens/export/export_screen.dart \
             test/premium_lock_widget_test.dart \
             test/premium_all_entry_points_test.dart \
