@@ -120,11 +120,11 @@ void main() {
       );
       expect(before.dy, lessThan(after.dy));
 
-      // The injected 110-coin quote is stale. Show the owner-final 750-coin
+      // The injected 110-coin quote is stale. Show the owner-final 3000-Opal
       // hourly price instead; a stale quote must never authorize spending.
       final toneCurve = find.byKey(const Key('rewardFeature_toneCurve'));
       expect(
-        find.descendant(of: toneCurve, matching: find.textContaining('750 opals')),
+        find.descendant(of: toneCurve, matching: find.textContaining('3000 opals')),
         findsOneWidget,
       );
       expect(find.textContaining('110 opals'), findsNothing);
@@ -138,10 +138,10 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(day2);
       await tester.pumpAndSettle();
-      // Two days use the owner-final day price (1800 x 2), not the
+      // Two days use the owner-final day price (6000 x 2), not the
       // injected stale 470-coin day rate.
       expect(
-        find.descendant(of: toneCurve, matching: find.textContaining('3600 opals')),
+        find.descendant(of: toneCurve, matching: find.textContaining('12000 opals')),
         findsOneWidget,
       );
       expect(find.textContaining('940 opals'), findsNothing);
