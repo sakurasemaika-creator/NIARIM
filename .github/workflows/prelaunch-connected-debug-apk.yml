@@ -81,7 +81,8 @@ jobs:
             test/premium_coin_account_isolation_test.dart \
             test/premium_production_entry_wiring_test.dart \
             test/premium_all_entry_points_test.dart \
-            test/coin_benefit_price_proposal_test.dart
+            test/coin_benefit_price_proposal_test.dart \
+            test/coin_authenticated_client_contract_test.dart
           flutter build apk --debug --no-pub \
             --dart-define="NIARIM_API_BASE_URL=$DEV_BACKEND_URL" \
             --dart-define="NIARIM_GOOGLE_CLIENT_ID=$GOOGLE_CLIENT_ID"
