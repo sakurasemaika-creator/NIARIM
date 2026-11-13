@@ -16658,6 +16658,264 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'確定単価による合計：{coins}。単品特典・重複交換のオパール消費はまだサーバー未対応です。金額は確定済みですが、交換はサーバーが正式な見積もりを返す場合のみ可能です。正式な有効期限は交換直前のサーバー確認で決まります。'**
   String rewardUnlockReviewFixedTotal(String coins);
+
+  /// ゴミ箱の種類：自分で作ったプロジェクト（フィルターのチップと各行の補足。ゴミ箱の検索でもこの文で探す）
+  ///
+  /// In ja, this message translates to:
+  /// **'作成したプロジェクト'**
+  String get homeTrashKindCreatedProject;
+
+  /// ゴミ箱の種類：受け取った共有ファイル（.niashare）
+  ///
+  /// In ja, this message translates to:
+  /// **'受け取った共有ファイル'**
+  String get homeTrashKindReceivedShare;
+
+  /// ゴミ箱の種類：自分が作成した共有ファイル（.niashare）
+  ///
+  /// In ja, this message translates to:
+  /// **'自分が作成した共有ファイル'**
+  String get homeTrashKindCreatedShare;
+
+  /// ゴミ箱の種類：書き出した作品（動画・画像のファイル）
+  ///
+  /// In ja, this message translates to:
+  /// **'書き出した作品'**
+  String get homeTrashKindExportedWork;
+
+  /// 共有タブの切り替え：受け取った共有ファイルの一覧
+  ///
+  /// In ja, this message translates to:
+  /// **'受け取ったもの'**
+  String get homeSharedReceivedFilter;
+
+  /// 共有タブの切り替え：自分が作成した共有ファイルの一覧（貼り付けの説明の文でもこの名前を引用する）
+  ///
+  /// In ja, this message translates to:
+  /// **'自分が作成したもの'**
+  String get homeSharedCreatedFilter;
+
+  /// 貼り付けようとしたとき、コピー・切り取りした元の作品・フォルダが消えていた
+  ///
+  /// In ja, this message translates to:
+  /// **'コピー元の作品・フォルダが見つかりません。ゴミ箱から復元するか、もう一度コピーしてください。'**
+  String get homeClipboardSourceMissing;
+
+  /// 貼り付けられない場所で貼り付けたときのダイアログの見出し
+  ///
+  /// In ja, this message translates to:
+  /// **'ここには貼り付けられません'**
+  String get homePasteRestrictionTitle;
+
+  /// 形式の違うタブ・区分（共有の「受け取ったもの」「自分が作成したもの」）へ貼り付けようとしたときの説明
+  ///
+  /// In ja, this message translates to:
+  /// **'形式の違うタブ・区分へは貼り付けられません。作品・ファイルは元のタブ・区分に貼り付けてください。中にファイルの無いフォルダだけは、別の場所にも貼り付けられます。'**
+  String get homePasteCrossFormatBody;
+
+  /// 共有タブの「自分が作成したもの」へフォルダを貼り付けようとしたときの説明（引用はhomeTabSharedとhomeSharedCreatedFilterと同じ文）
+  ///
+  /// In ja, this message translates to:
+  /// **'「共有」の「自分が作成したもの」にはファイルしか置けないため、フォルダは貼り付けられません。'**
+  String get homePasteOutgoingNoFolders;
+
+  /// 入れ子のフォルダに対応していない場所へ、子フォルダのあるフォルダを貼り付けようとしたときの説明
+  ///
+  /// In ja, this message translates to:
+  /// **'このフォルダには子フォルダがあります。貼り付け先はフォルダの入れ子に対応していないため、中の構造を失わないよう貼り付けを中止しました。'**
+  String get homePasteNestedFolders;
+
+  /// 貼り付ける前にフォルダの中身を調べられなかったときの説明
+  ///
+  /// In ja, this message translates to:
+  /// **'フォルダの中身を確認できませんでした。データを守るため、貼り付けを中止しました。'**
+  String get homePasteFolderUnreadable;
+
+  /// ゴミ箱へ入れられない種類のフォルダをゴミ箱へ貼り付けようとしたときの説明
+  ///
+  /// In ja, this message translates to:
+  /// **'この種類のフォルダはゴミ箱に入れられません。'**
+  String get homePasteFolderNotTrashable;
+
+  /// ゴミ箱のタブへ貼り付けたときの確認。下に名前を1行ずつ並べる
+  ///
+  /// In ja, this message translates to:
+  /// **'以下の作品・フォルダをゴミ箱に捨てますか？'**
+  String get homePasteToTrashQuestion;
+
+  /// ゴミ箱へ移す確認の注記：自動で完全に削除されるまでの日数（daysは1以上）
+  ///
+  /// In ja, this message translates to:
+  /// **'※ゴミ箱に移動されたファイルは{days}日後に完全削除されます。'**
+  String homeTrashAutoDeleteNotice(int days);
+
+  /// ゴミ箱へ移す確認の注記：自動削除がオフのとき
+  ///
+  /// In ja, this message translates to:
+  /// **'※ゴミ箱の自動削除はオフです。手動で削除するまで保存されます。'**
+  String get homeTrashAutoDeleteOffNotice;
+
+  /// ゴミ箱から戻す確認のダイアログの見出し
+  ///
+  /// In ja, this message translates to:
+  /// **'ゴミ箱から復元'**
+  String get homeRestoreFromTrashTitle;
+
+  /// ゴミ箱から戻す確認。下に名前を1行ずつ並べる
+  ///
+  /// In ja, this message translates to:
+  /// **'以下の作品・フォルダをゴミ箱から復元しますか？'**
+  String get homeRestoreFromTrashQuestion;
+
+  /// ゴミ箱で選んだ項目をまとめて復元する確認
+  ///
+  /// In ja, this message translates to:
+  /// **'{count}件を復元しますか？'**
+  String homeTrashRestoreSelectedConfirm(int count);
+
+  /// 確認のダイアログで名前を1行ずつ並べるときの行頭の印
+  ///
+  /// In ja, this message translates to:
+  /// **'・{item}'**
+  String commonBulletItem(String item);
+
+  /// 名前を1行に並べるときの区切り（日本語・中国語は読点、他は「, 」）
+  ///
+  /// In ja, this message translates to:
+  /// **'、'**
+  String get commonListSeparator;
+
+  /// 共有・作品一覧のフォルダの行にある「…」ボタンの説明
+  ///
+  /// In ja, this message translates to:
+  /// **'フォルダのメニュー'**
+  String get homeFolderMenuTooltip;
+
+  /// ホームの上の帯：切り取って貼り付けを待っている件数
+  ///
+  /// In ja, this message translates to:
+  /// **'{count}件を切り取り中'**
+  String homeClipboardCutStatus(int count);
+
+  /// ホームの上の帯：コピーして貼り付けを待っている件数
+  ///
+  /// In ja, this message translates to:
+  /// **'{count}件をコピー中'**
+  String homeClipboardCopiedStatus(int count);
+
+  /// ホームの上の帯：コピー・切り取りをやめて帯を閉じるボタン
+  ///
+  /// In ja, this message translates to:
+  /// **'クリア'**
+  String get homeClipboardClear;
+
+  /// 作品一覧の各行の補足：書き出したファイルの更新日時と大きさ
+  ///
+  /// In ja, this message translates to:
+  /// **'{date} ・ {size}'**
+  String homeExportedWorkMetadata(DateTime date, String size);
+
+  /// プロジェクト・フォルダ・書き出した作品のメニュー項目と、サムネイルを選ぶダイアログの見出し
+  ///
+  /// In ja, this message translates to:
+  /// **'サムネイル変更'**
+  String get thumbnailChangeAction;
+
+  /// フォルダのサムネイル：中の最新の作品を使う（既定）
+  ///
+  /// In ja, this message translates to:
+  /// **'デフォルト（最新の作品）'**
+  String get thumbnailDefaultLatestWork;
+
+  /// サムネイルを出さない
+  ///
+  /// In ja, this message translates to:
+  /// **'サムネイル表示しない'**
+  String get thumbnailHide;
+
+  /// フォルダのサムネイル：中の作品を1つ選んで使う
+  ///
+  /// In ja, this message translates to:
+  /// **'サムネイルにする作品を選ぶ'**
+  String get thumbnailChooseWork;
+
+  /// 端末の画像をサムネイルに使う
+  ///
+  /// In ja, this message translates to:
+  /// **'端末から画像を読み込む'**
+  String get thumbnailChooseDeviceImage;
+
+  /// フォルダのサムネイル：中の作品の一覧の見出し
+  ///
+  /// In ja, this message translates to:
+  /// **'フォルダ内の作品から選択'**
+  String get thumbnailChooseWorkInFolder;
+
+  /// フォルダのサムネイル：中に作品が無い
+  ///
+  /// In ja, this message translates to:
+  /// **'このフォルダに作品はありません'**
+  String get thumbnailFolderNoWorks;
+
+  /// サムネイルにする画像を端末から選ぶボタン
+  ///
+  /// In ja, this message translates to:
+  /// **'画像を選択'**
+  String get thumbnailPickImage;
+
+  /// 選んだ画像を読み込めなかった
+  ///
+  /// In ja, this message translates to:
+  /// **'画像を読み込めませんでした'**
+  String get thumbnailImageLoadFailed;
+
+  /// サムネイルを選ぶダイアログ：フレームの絵を描けなかった
+  ///
+  /// In ja, this message translates to:
+  /// **'プレビューを表示できませんでした'**
+  String get thumbnailPreviewFailed;
+
+  /// 選んだサムネイルを保存できなかった
+  ///
+  /// In ja, this message translates to:
+  /// **'サムネイルを保存できませんでした'**
+  String get thumbnailSaveFailed;
+
+  /// 書き出した動画の長さ・フレーム数を読み取れなかった
+  ///
+  /// In ja, this message translates to:
+  /// **'動画情報を読み取れませんでした'**
+  String get thumbnailVideoInfoFailed;
+
+  /// サムネイルを選ぶダイアログ：いま選んでいるフレームの番号と総数
+  ///
+  /// In ja, this message translates to:
+  /// **'現在のフレーム: {current} / {total}'**
+  String thumbnailCurrentFrame(int current, int total);
+
+  /// 書き出した静止画のサムネイルを選ぶとき：フレームは1つだけ
+  ///
+  /// In ja, this message translates to:
+  /// **'静止画像は1フレームとして扱います。'**
+  String get thumbnailStillImageOneFrame;
+
+  /// サムネイルの選び方：最後に保存したときのフレーム（既定）
+  ///
+  /// In ja, this message translates to:
+  /// **'最後に保存したフレーム'**
+  String get thumbnailLastSavedFrame;
+
+  /// サムネイルの選び方：フレームを指定する
+  ///
+  /// In ja, this message translates to:
+  /// **'フレームを指定する'**
+  String get thumbnailSelectFrame;
+
+  /// ダイアログで選んだ内容を反映するボタン
+  ///
+  /// In ja, this message translates to:
+  /// **'適用'**
+  String get commonApply;
 }
 
 class _AppLocalizationsDelegate

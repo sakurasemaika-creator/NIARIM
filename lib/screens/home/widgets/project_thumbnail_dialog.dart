@@ -7,6 +7,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:image/image.dart' as image_codec;
 
+import '../../../l10n/app_localizations.dart';
 import '../../../models/project.dart';
 import '../../../models/scene.dart';
 import '../../../services/frame_thumbnail_renderer.dart';
@@ -53,8 +54,7 @@ class _ProjectThumbnailDialogState extends State<_ProjectThumbnailDialog> {
       (scenes.isNotEmpty ? scenes.first : null);
   int get total => scene?.frames.length ?? 0;
 
-  String localized(String ja, String en) =>
-      Localizations.localeOf(context).languageCode == 'ja' ? ja : en;
+  AppLocalizations get l10n => AppLocalizations.of(context)!;
 
   @override
   void initState() {
@@ -109,12 +109,7 @@ class _ProjectThumbnailDialogState extends State<_ProjectThumbnailDialog> {
       });
     } catch (_) {
       if (mounted && sequence == renderSequence) {
-        setState(
-          () => error = localized(
-            'プレビューを表示できませんでした',
-            'Could not display preview',
-          ),
-        );
+        setState(() => error = l10n.thumbnailPreviewFailed);
       }
     }
   }
@@ -187,9 +182,7 @@ class _ProjectThumbnailDialogState extends State<_ProjectThumbnailDialog> {
       });
     } catch (_) {
       if (mounted) {
-        setState(
-          () => error = localized('画像を読み込めませんでした', 'Could not load image'),
-        );
+        setState(() => error = l10n.thumbnailImageLoadFailed);
       }
     }
   }
@@ -210,7 +203,7 @@ class _ProjectThumbnailDialogState extends State<_ProjectThumbnailDialog> {
       if (mounted) {
         setState(() {
           saving = false;
-          error = localized('サムネイルを保存できませんでした', 'Could not save thumbnail');
+          error = l10n.thumbnailSaveFailed;
         });
       }
     }
@@ -253,8 +246,7 @@ class _ProjectThumbnailDialogState extends State<_ProjectThumbnailDialog> {
       ),
       const SizedBox(height: 4),
       Text(
-        localized('現在のフレーム', 'Current frame') +
-            ': ${total == 0 ? 0 : frameIndex + 1} / $total',
+        l10n.thumbnailCurrentFrame(total == 0 ? 0 : frameIndex + 1, total),
         key: const Key('projectThumbnailFrameCount'),
         textAlign: TextAlign.center,
       ),
@@ -276,7 +268,7 @@ class _ProjectThumbnailDialogState extends State<_ProjectThumbnailDialog> {
         children: [
           IconButton(
             key: const Key('projectThumbnailFirstFrame'),
-            tooltip: localized('最初のフレーム', 'First frame'),
+            tooltip: l10n.projectDetailFirstFrameTooltip,
             icon: const Icon(Icons.skip_previous),
             onPressed: total == 0
                 ? null
@@ -287,7 +279,7 @@ class _ProjectThumbnailDialogState extends State<_ProjectThumbnailDialog> {
           ),
           IconButton(
             key: const Key('projectThumbnailPreviousFrame'),
-            tooltip: localized('1フレーム戻る', 'Previous frame'),
+            tooltip: l10n.projectDetailPrevFrameTooltip,
             icon: const Icon(Icons.fast_rewind),
             onPressed: total == 0
                 ? null
@@ -298,15 +290,13 @@ class _ProjectThumbnailDialogState extends State<_ProjectThumbnailDialog> {
           ),
           IconButton(
             key: const Key('projectThumbnailPlayPause'),
-            tooltip: playing
-                ? localized('停止', 'Pause')
-                : localized('再生', 'Play'),
+            tooltip: playing ? l10n.commonPause : l10n.commonPlay,
             icon: Icon(playing ? Icons.pause : Icons.play_arrow),
             onPressed: total < 2 ? null : _togglePlayback,
           ),
           IconButton(
             key: const Key('projectThumbnailNextFrame'),
-            tooltip: localized('1フレーム進む', 'Next frame'),
+            tooltip: l10n.projectDetailNextFrameTooltip,
             icon: const Icon(Icons.fast_forward),
             onPressed: total == 0
                 ? null
@@ -317,7 +307,7 @@ class _ProjectThumbnailDialogState extends State<_ProjectThumbnailDialog> {
           ),
           IconButton(
             key: const Key('projectThumbnailLastFrame'),
-            tooltip: localized('最後のフレーム', 'Last frame'),
+            tooltip: l10n.projectDetailLastFrameTooltip,
             icon: const Icon(Icons.skip_next),
             onPressed: total == 0
                 ? null
@@ -340,7 +330,7 @@ class _ProjectThumbnailDialogState extends State<_ProjectThumbnailDialog> {
         key: const Key('projectThumbnailChooseImage'),
         onPressed: saving ? null : _chooseImage,
         icon: const Icon(Icons.add_photo_alternate_outlined),
-        label: Text(localized('端末から画像を読み込む', 'Choose device image')),
+        label: Text(l10n.thumbnailChooseDeviceImage),
       ),
       if (customName != null) ...[
         Text(customName!, maxLines: 1, overflow: TextOverflow.ellipsis),
@@ -362,7 +352,7 @@ class _ProjectThumbnailDialogState extends State<_ProjectThumbnailDialog> {
     final theme = Theme.of(context);
     return AlertDialog(
       scrollable: true,
-      title: Text(localized('サムネイル変更', 'Change thumbnail')),
+      title: Text(l10n.thumbnailChangeAction),
       content: SizedBox(
         width: 420,
         child: Column(
@@ -379,29 +369,25 @@ class _ProjectThumbnailDialogState extends State<_ProjectThumbnailDialog> {
                   RadioListTile<String>(
                     key: const Key('projectThumbnailLatest'),
                     contentPadding: EdgeInsets.zero,
-                    title: Text(localized('最後に保存したフレーム', 'Last saved frame')),
+                    title: Text(l10n.thumbnailLastSavedFrame),
                     value: 'latest',
                   ),
                   RadioListTile<String>(
                     key: const Key('projectThumbnailFrame'),
                     contentPadding: EdgeInsets.zero,
-                    title: Text(localized('フレームを指定する', 'Select a frame')),
+                    title: Text(l10n.thumbnailSelectFrame),
                     value: 'frame',
                   ),
                   RadioListTile<String>(
                     key: const Key('projectThumbnailCustom'),
                     contentPadding: EdgeInsets.zero,
-                    title: Text(
-                      localized('端末から画像を読み込む', 'Choose image from device'),
-                    ),
+                    title: Text(l10n.thumbnailChooseDeviceImage),
                     value: 'custom',
                   ),
                   RadioListTile<String>(
                     key: const Key('projectThumbnailNone'),
                     contentPadding: EdgeInsets.zero,
-                    title: Text(
-                      localized('サムネイル表示しない', 'Do not show thumbnail'),
-                    ),
+                    title: Text(l10n.thumbnailHide),
                     value: 'none',
                   ),
                 ],
@@ -435,7 +421,7 @@ class _ProjectThumbnailDialogState extends State<_ProjectThumbnailDialog> {
                   _stop();
                   Navigator.pop(context);
                 },
-          child: Text(localized('キャンセル', 'Cancel')),
+          child: Text(l10n.commonCancel),
         ),
         FilledButton(
           key: const Key('projectThumbnailApply'),
@@ -445,7 +431,7 @@ class _ProjectThumbnailDialogState extends State<_ProjectThumbnailDialog> {
                   (mode == 'custom' && customBytes == null)
               ? null
               : _apply,
-          child: Text(localized('適用', 'Apply')),
+          child: Text(l10n.commonApply),
         ),
       ],
     );

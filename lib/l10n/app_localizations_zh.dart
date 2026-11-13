@@ -9210,6 +9210,155 @@ class AppLocalizationsZh extends AppLocalizations {
   String rewardUnlockReviewFixedTotal(String coins) {
     return '按最终单价计算的合计：$coins。服务器尚不支持用欧泊兑换单项权益或重复兑换。金额已确定，但只有服务器返回正式报价时才能兑换。正式的有效期在兑换前由服务器确认后决定。';
   }
+
+  @override
+  String get homeTrashKindCreatedProject => '创建的项目';
+
+  @override
+  String get homeTrashKindReceivedShare => '收到的共享文件';
+
+  @override
+  String get homeTrashKindCreatedShare => '我创建的共享文件';
+
+  @override
+  String get homeTrashKindExportedWork => '导出的作品';
+
+  @override
+  String get homeSharedReceivedFilter => '收到的文件';
+
+  @override
+  String get homeSharedCreatedFilter => '我创建的文件';
+
+  @override
+  String get homeClipboardSourceMissing => '找不到复制的作品或文件夹。请从回收站恢复，或重新复制。';
+
+  @override
+  String get homePasteRestrictionTitle => '无法粘贴到此处';
+
+  @override
+  String get homePasteCrossFormatBody =>
+      '无法粘贴到格式不同的标签页或分类中。请将作品和文件粘贴回原来的标签页或分类。只有不含文件的文件夹可以粘贴到其他位置。';
+
+  @override
+  String get homePasteOutgoingNoFolders => '“共享”中的“我创建的文件”只能存放文件，因此无法粘贴文件夹。';
+
+  @override
+  String get homePasteNestedFolders => '此文件夹包含子文件夹。目标位置不支持嵌套文件夹，为保留其结构，已取消粘贴。';
+
+  @override
+  String get homePasteFolderUnreadable => '无法确认文件夹中的内容。为保护数据，已取消粘贴。';
+
+  @override
+  String get homePasteFolderNotTrashable => '此类文件夹无法移至回收站。';
+
+  @override
+  String get homePasteToTrashQuestion => '要将以下作品和文件夹移至回收站吗？';
+
+  @override
+  String homeTrashAutoDeleteNotice(int days) {
+    return '移至回收站的文件将在$days天后被永久删除。';
+  }
+
+  @override
+  String get homeTrashAutoDeleteOffNotice => '回收站自动删除已关闭。在手动删除之前会一直保留。';
+
+  @override
+  String get homeRestoreFromTrashTitle => '从回收站恢复';
+
+  @override
+  String get homeRestoreFromTrashQuestion => '要从回收站恢复以下作品和文件夹吗？';
+
+  @override
+  String homeTrashRestoreSelectedConfirm(int count) {
+    return '要恢复$count项吗？';
+  }
+
+  @override
+  String commonBulletItem(String item) {
+    return '• $item';
+  }
+
+  @override
+  String get commonListSeparator => '、';
+
+  @override
+  String get homeFolderMenuTooltip => '文件夹菜单';
+
+  @override
+  String homeClipboardCutStatus(int count) {
+    return '已剪切$count项';
+  }
+
+  @override
+  String homeClipboardCopiedStatus(int count) {
+    return '已复制$count项';
+  }
+
+  @override
+  String get homeClipboardClear => '清除';
+
+  @override
+  String homeExportedWorkMetadata(DateTime date, String size) {
+    final intl.DateFormat dateDateFormat = intl.DateFormat.yMd(
+      localeName,
+    ).add_jm();
+    final String dateString = dateDateFormat.format(date);
+
+    return '$dateString · $size';
+  }
+
+  @override
+  String get thumbnailChangeAction => '更换缩略图';
+
+  @override
+  String get thumbnailDefaultLatestWork => '默认（最新的作品）';
+
+  @override
+  String get thumbnailHide => '不显示缩略图';
+
+  @override
+  String get thumbnailChooseWork => '选择用作缩略图的作品';
+
+  @override
+  String get thumbnailChooseDeviceImage => '使用设备中的图片';
+
+  @override
+  String get thumbnailChooseWorkInFolder => '从文件夹中的作品中选择';
+
+  @override
+  String get thumbnailFolderNoWorks => '此文件夹中没有作品';
+
+  @override
+  String get thumbnailPickImage => '选择图片';
+
+  @override
+  String get thumbnailImageLoadFailed => '无法加载图片';
+
+  @override
+  String get thumbnailPreviewFailed => '无法显示预览';
+
+  @override
+  String get thumbnailSaveFailed => '无法保存缩略图';
+
+  @override
+  String get thumbnailVideoInfoFailed => '无法读取视频信息';
+
+  @override
+  String thumbnailCurrentFrame(int current, int total) {
+    return '当前帧：$current / $total';
+  }
+
+  @override
+  String get thumbnailStillImageOneFrame => '静态图片按1帧处理。';
+
+  @override
+  String get thumbnailLastSavedFrame => '最后保存的帧';
+
+  @override
+  String get thumbnailSelectFrame => '指定帧';
+
+  @override
+  String get commonApply => '应用';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -18420,4 +18569,153 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String rewardUnlockReviewFixedTotal(String coins) {
     return '按最終單價計算的合計：$coins。伺服器尚不支援以歐泊兌換單項權益或重複兌換。金額已確定，但只有伺服器回傳正式報價時才能兌換。正式的有效期限在兌換前由伺服器確認後決定。';
   }
+
+  @override
+  String get homeTrashKindCreatedProject => '建立的專案';
+
+  @override
+  String get homeTrashKindReceivedShare => '收到的共享檔案';
+
+  @override
+  String get homeTrashKindCreatedShare => '我建立的共享檔案';
+
+  @override
+  String get homeTrashKindExportedWork => '匯出的作品';
+
+  @override
+  String get homeSharedReceivedFilter => '收到的檔案';
+
+  @override
+  String get homeSharedCreatedFilter => '我建立的檔案';
+
+  @override
+  String get homeClipboardSourceMissing => '找不到複製的作品或資料夾。請從垃圾桶復原，或重新複製。';
+
+  @override
+  String get homePasteRestrictionTitle => '無法貼上到此處';
+
+  @override
+  String get homePasteCrossFormatBody =>
+      '無法貼上到格式不同的分頁或分類中。請將作品和檔案貼回原本的分頁或分類。只有不含檔案的資料夾可以貼到其他位置。';
+
+  @override
+  String get homePasteOutgoingNoFolders => '「共享」中的「我建立的檔案」只能存放檔案，因此無法貼上資料夾。';
+
+  @override
+  String get homePasteNestedFolders => '此資料夾包含子資料夾。目標位置不支援巢狀資料夾，為保留其結構，已取消貼上。';
+
+  @override
+  String get homePasteFolderUnreadable => '無法確認資料夾中的內容。為保護資料，已取消貼上。';
+
+  @override
+  String get homePasteFolderNotTrashable => '此類資料夾無法移至垃圾桶。';
+
+  @override
+  String get homePasteToTrashQuestion => '要將以下作品和資料夾移至垃圾桶嗎？';
+
+  @override
+  String homeTrashAutoDeleteNotice(int days) {
+    return '移至垃圾桶的檔案將在$days天後永久刪除。';
+  }
+
+  @override
+  String get homeTrashAutoDeleteOffNotice => '垃圾桶自動刪除已關閉。在手動刪除之前會一直保留。';
+
+  @override
+  String get homeRestoreFromTrashTitle => '從垃圾桶復原';
+
+  @override
+  String get homeRestoreFromTrashQuestion => '要從垃圾桶復原以下作品和資料夾嗎？';
+
+  @override
+  String homeTrashRestoreSelectedConfirm(int count) {
+    return '要復原$count項嗎？';
+  }
+
+  @override
+  String commonBulletItem(String item) {
+    return '• $item';
+  }
+
+  @override
+  String get commonListSeparator => '、';
+
+  @override
+  String get homeFolderMenuTooltip => '資料夾選單';
+
+  @override
+  String homeClipboardCutStatus(int count) {
+    return '已剪下$count項';
+  }
+
+  @override
+  String homeClipboardCopiedStatus(int count) {
+    return '已複製$count項';
+  }
+
+  @override
+  String get homeClipboardClear => '清除';
+
+  @override
+  String homeExportedWorkMetadata(DateTime date, String size) {
+    final intl.DateFormat dateDateFormat = intl.DateFormat.yMd(
+      localeName,
+    ).add_jm();
+    final String dateString = dateDateFormat.format(date);
+
+    return '$dateString · $size';
+  }
+
+  @override
+  String get thumbnailChangeAction => '更換縮圖';
+
+  @override
+  String get thumbnailDefaultLatestWork => '預設（最新的作品）';
+
+  @override
+  String get thumbnailHide => '不顯示縮圖';
+
+  @override
+  String get thumbnailChooseWork => '選擇用作縮圖的作品';
+
+  @override
+  String get thumbnailChooseDeviceImage => '使用裝置中的圖片';
+
+  @override
+  String get thumbnailChooseWorkInFolder => '從資料夾中的作品中選擇';
+
+  @override
+  String get thumbnailFolderNoWorks => '此資料夾中沒有作品';
+
+  @override
+  String get thumbnailPickImage => '選擇圖片';
+
+  @override
+  String get thumbnailImageLoadFailed => '無法載入圖片';
+
+  @override
+  String get thumbnailPreviewFailed => '無法顯示預覽';
+
+  @override
+  String get thumbnailSaveFailed => '無法儲存縮圖';
+
+  @override
+  String get thumbnailVideoInfoFailed => '無法讀取影片資訊';
+
+  @override
+  String thumbnailCurrentFrame(int current, int total) {
+    return '目前影格：$current / $total';
+  }
+
+  @override
+  String get thumbnailStillImageOneFrame => '靜態圖片視為1個影格。';
+
+  @override
+  String get thumbnailLastSavedFrame => '最後儲存的影格';
+
+  @override
+  String get thumbnailSelectFrame => '指定影格';
+
+  @override
+  String get commonApply => '套用';
 }

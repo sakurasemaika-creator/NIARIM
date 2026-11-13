@@ -9213,7 +9213,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get sharedArchiveShare => 'Compartir';
 
   @override
-  String get sharedArchiveEmpty => 'Todavía no hay archivos compartidos';
+  String get sharedArchiveEmpty => 'Todavía no has creado archivos compartidos';
 
   @override
   String coinAmount(int count) {
@@ -10036,4 +10036,191 @@ class AppLocalizationsEs extends AppLocalizations {
   String rewardUnlockReviewFixedTotal(String coins) {
     return 'Total según los precios unitarios definitivos: $coins. El servidor aún no admite gastar ópalos en ventajas sueltas ni en canjes que se solapan. El importe ya es definitivo, pero solo se puede canjear cuando el servidor devuelve una cotización oficial. La vigencia oficial la determina el servidor justo antes del canje.';
   }
+
+  @override
+  String get homeTrashKindCreatedProject => 'Proyecto creado';
+
+  @override
+  String get homeTrashKindReceivedShare => 'Archivo compartido recibido';
+
+  @override
+  String get homeTrashKindCreatedShare => 'Archivo compartido creado por ti';
+
+  @override
+  String get homeTrashKindExportedWork => 'Obra exportada';
+
+  @override
+  String get homeSharedReceivedFilter => 'Recibidos';
+
+  @override
+  String get homeSharedCreatedFilter => 'Creados por mí';
+
+  @override
+  String get homeClipboardSourceMissing =>
+      'No se encuentra la obra o carpeta copiada. Restáurala desde la papelera o vuelve a copiarla.';
+
+  @override
+  String get homePasteRestrictionTitle => 'No se puede pegar aquí';
+
+  @override
+  String get homePasteCrossFormatBody =>
+      'No se puede pegar en una pestaña o sección con un formato distinto. Pega las obras y los archivos en su pestaña o sección de origen. Solo las carpetas sin archivos pueden pegarse en otro lugar.';
+
+  @override
+  String get homePasteOutgoingNoFolders =>
+      '«Creados por mí», en Compartidos, solo admite archivos, así que no se pueden pegar carpetas.';
+
+  @override
+  String get homePasteNestedFolders =>
+      'Esta carpeta contiene subcarpetas. El destino no admite carpetas dentro de carpetas, así que se canceló el pegado para conservar su estructura.';
+
+  @override
+  String get homePasteFolderUnreadable =>
+      'No se pudo comprobar el contenido de la carpeta. Se canceló el pegado para proteger tus datos.';
+
+  @override
+  String get homePasteFolderNotTrashable =>
+      'Este tipo de carpeta no se puede mover a la papelera.';
+
+  @override
+  String get homePasteToTrashQuestion =>
+      '¿Mover a la papelera las siguientes obras y carpetas?';
+
+  @override
+  String homeTrashAutoDeleteNotice(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other:
+          'Los elementos de la papelera se eliminan definitivamente al cabo de $days días.',
+      one:
+          'Los elementos de la papelera se eliminan definitivamente al cabo de $days día.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get homeTrashAutoDeleteOffNotice =>
+      'La eliminación automática de la papelera está desactivada. Los elementos se conservan hasta que los elimines.';
+
+  @override
+  String get homeRestoreFromTrashTitle => 'Restaurar desde la papelera';
+
+  @override
+  String get homeRestoreFromTrashQuestion =>
+      '¿Restaurar desde la papelera las siguientes obras y carpetas?';
+
+  @override
+  String homeTrashRestoreSelectedConfirm(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '¿Restaurar $count elementos?',
+      one: '¿Restaurar $count elemento?',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String commonBulletItem(String item) {
+    return '• $item';
+  }
+
+  @override
+  String get commonListSeparator => ', ';
+
+  @override
+  String get homeFolderMenuTooltip => 'Menú de la carpeta';
+
+  @override
+  String homeClipboardCutStatus(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count elementos cortados',
+      one: '$count elemento cortado',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String homeClipboardCopiedStatus(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count elementos copiados',
+      one: '$count elemento copiado',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get homeClipboardClear => 'Borrar';
+
+  @override
+  String homeExportedWorkMetadata(DateTime date, String size) {
+    final intl.DateFormat dateDateFormat = intl.DateFormat.yMd(
+      localeName,
+    ).add_jm();
+    final String dateString = dateDateFormat.format(date);
+
+    return '$dateString · $size';
+  }
+
+  @override
+  String get thumbnailChangeAction => 'Cambiar miniatura';
+
+  @override
+  String get thumbnailDefaultLatestWork =>
+      'Predeterminada (la obra actualizada más recientemente)';
+
+  @override
+  String get thumbnailHide => 'No mostrar miniatura';
+
+  @override
+  String get thumbnailChooseWork => 'Elegir una obra para la miniatura';
+
+  @override
+  String get thumbnailChooseDeviceImage => 'Usar una imagen del dispositivo';
+
+  @override
+  String get thumbnailChooseWorkInFolder =>
+      'Elige entre las obras de esta carpeta';
+
+  @override
+  String get thumbnailFolderNoWorks => 'No hay obras en esta carpeta';
+
+  @override
+  String get thumbnailPickImage => 'Elegir imagen';
+
+  @override
+  String get thumbnailImageLoadFailed => 'No se pudo cargar la imagen';
+
+  @override
+  String get thumbnailPreviewFailed => 'No se pudo mostrar la vista previa';
+
+  @override
+  String get thumbnailSaveFailed => 'No se pudo guardar la miniatura';
+
+  @override
+  String get thumbnailVideoInfoFailed =>
+      'No se pudieron leer los datos del vídeo';
+
+  @override
+  String thumbnailCurrentFrame(int current, int total) {
+    return 'Fotograma actual: $current / $total';
+  }
+
+  @override
+  String get thumbnailStillImageOneFrame =>
+      'Una imagen fija tiene un solo fotograma.';
+
+  @override
+  String get thumbnailLastSavedFrame => 'Último fotograma guardado';
+
+  @override
+  String get thumbnailSelectFrame => 'Elegir un fotograma';
+
+  @override
+  String get commonApply => 'Aplicar';
 }

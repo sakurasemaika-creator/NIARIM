@@ -14,6 +14,8 @@ import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:video_player/video_player.dart';
 
+import '../../../l10n/app_localizations.dart';
+
 /// Non-destructive display-only thumbnail metadata for exported media.
 /// Never rewrites the actual exported .mp4/.webm/.gif/.png file.
 class ExportedWorkCoverStore {
@@ -340,8 +342,7 @@ class _ExportedWorkThumbnailDialogState
     'webp',
   }.contains(widget.file.path.split('.').last.toLowerCase());
 
-  String tr(String ja, String en) =>
-      Localizations.localeOf(context).languageCode == 'ja' ? ja : en;
+  AppLocalizations get l10n => AppLocalizations.of(context)!;
 
   @override
   void initState() {
@@ -406,7 +407,7 @@ class _ExportedWorkThumbnailDialogState
         setState(() {
           ready = true;
           supportedFrames = false;
-          failure = tr('動画情報を読み取れませんでした', 'Could not read media information');
+          failure = l10n.thumbnailVideoInfoFailed;
         });
     }
   }
@@ -471,10 +472,7 @@ class _ExportedWorkThumbnailDialogState
         failure = null;
       });
     } catch (_) {
-      if (mounted)
-        setState(
-          () => failure = tr('画像を読み込めませんでした', 'Could not open the image'),
-        );
+      if (mounted) setState(() => failure = l10n.thumbnailImageLoadFailed);
     }
   }
 
@@ -537,7 +535,7 @@ class _ExportedWorkThumbnailDialogState
       if (mounted)
         setState(() {
           busy = false;
-          failure = tr('サムネイルを保存できませんでした', 'Could not save thumbnail');
+          failure = l10n.thumbnailSaveFailed;
         });
     }
   }
@@ -575,8 +573,7 @@ class _ExportedWorkThumbnailDialogState
           ),
         ),
         Text(
-          '${tr('現在のフレーム', 'Current frame')}: '
-          '${frameIndex + 1} / $totalFrames',
+          l10n.thumbnailCurrentFrame(frameIndex + 1, totalFrames),
           key: const Key('exportCoverFrameCount'),
           textAlign: TextAlign.center,
         ),
@@ -597,7 +594,7 @@ class _ExportedWorkThumbnailDialogState
           children: [
             IconButton(
               key: const Key('exportCoverFirst'),
-              tooltip: tr('最初のフレーム', 'First frame'),
+              tooltip: l10n.projectDetailFirstFrameTooltip,
               onPressed: busy
                   ? null
                   : () {
@@ -608,7 +605,7 @@ class _ExportedWorkThumbnailDialogState
             ),
             IconButton(
               key: const Key('exportCoverPrevious'),
-              tooltip: tr('1フレーム戻る', 'Previous frame'),
+              tooltip: l10n.projectDetailPrevFrameTooltip,
               onPressed: busy
                   ? null
                   : () {
@@ -619,13 +616,13 @@ class _ExportedWorkThumbnailDialogState
             ),
             IconButton(
               key: const Key('exportCoverPlayback'),
-              tooltip: tr('再生・停止', 'Play / pause'),
+              tooltip: (playing ? l10n.commonPause : l10n.commonPlay),
               onPressed: player == null || totalFrames < 2 ? null : _playPause,
               icon: Icon(playing ? Icons.pause : Icons.play_arrow),
             ),
             IconButton(
               key: const Key('exportCoverNext'),
-              tooltip: tr('1フレーム進む', 'Next frame'),
+              tooltip: l10n.projectDetailNextFrameTooltip,
               onPressed: busy
                   ? null
                   : () {
@@ -636,7 +633,7 @@ class _ExportedWorkThumbnailDialogState
             ),
             IconButton(
               key: const Key('exportCoverLast'),
-              tooltip: tr('最後のフレーム', 'Last frame'),
+              tooltip: l10n.projectDetailLastFrameTooltip,
               onPressed: busy
                   ? null
                   : () {
@@ -647,8 +644,7 @@ class _ExportedWorkThumbnailDialogState
             ),
           ],
         ),
-        if (isImage)
-          Text(tr('静止画像は1フレームとして扱います。', 'Still images have one frame.')),
+        if (isImage) Text(l10n.thumbnailStillImageOneFrame),
       ],
     );
   }
@@ -656,7 +652,7 @@ class _ExportedWorkThumbnailDialogState
   @override
   Widget build(BuildContext context) => AlertDialog(
     scrollable: true,
-    title: Text(tr('サムネイル変更', 'Change thumbnail')),
+    title: Text(l10n.thumbnailChangeAction),
     content: SizedBox(
       width: 420,
       child: Column(
@@ -675,22 +671,22 @@ class _ExportedWorkThumbnailDialogState
                 RadioListTile<String>(
                   key: const Key('exportCoverLatest'),
                   value: 'latest',
-                  title: Text(tr('最後に保存したフレーム', 'Last saved frame')),
+                  title: Text(l10n.thumbnailLastSavedFrame),
                 ),
                 RadioListTile<String>(
                   key: const Key('exportCoverFrame'),
                   value: 'frame',
-                  title: Text(tr('フレームを指定する', 'Select a frame')),
+                  title: Text(l10n.thumbnailSelectFrame),
                 ),
                 RadioListTile<String>(
                   key: const Key('exportCoverCustom'),
                   value: 'custom',
-                  title: Text(tr('端末から画像を読み込む', 'Choose image from device')),
+                  title: Text(l10n.thumbnailChooseDeviceImage),
                 ),
                 RadioListTile<String>(
                   key: const Key('exportCoverNone'),
                   value: 'none',
-                  title: Text(tr('サムネイル表示しない', 'Do not show thumbnail')),
+                  title: Text(l10n.thumbnailHide),
                 ),
               ],
             ),
@@ -707,7 +703,7 @@ class _ExportedWorkThumbnailDialogState
                       OutlinedButton.icon(
                         onPressed: busy ? null : _chooseCustom,
                         icon: const Icon(Icons.photo_library_outlined),
-                        label: Text(tr('画像を読み込む', 'Choose image')),
+                        label: Text(l10n.thumbnailPickImage),
                       ),
                       if (customName != null) Text(customName!),
                       if (customBytes != null)
@@ -737,7 +733,7 @@ class _ExportedWorkThumbnailDialogState
                 _stop();
                 Navigator.pop(context);
               },
-        child: Text(tr('キャンセル', 'Cancel')),
+        child: Text(l10n.commonCancel),
       ),
       FilledButton(
         key: const Key('exportCoverApply'),
@@ -750,7 +746,7 @@ class _ExportedWorkThumbnailDialogState
                     existingCover == null)
             ? null
             : _apply,
-        child: Text(tr('適用', 'Apply')),
+        child: Text(l10n.commonApply),
       ),
     ],
   );

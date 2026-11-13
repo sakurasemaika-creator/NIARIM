@@ -8,6 +8,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 
+import '../../../l10n/app_localizations.dart';
 import '../../../models/project.dart';
 import '../../../services/project_service.dart';
 
@@ -339,31 +340,20 @@ class FolderThumbnail extends StatelessWidget {
 }
 
 String _folderCoverText(BuildContext context, String key) {
-  final ja = Localizations.localeOf(context).languageCode == 'ja';
-  switch (key) {
-    case 'title':
-      return ja ? 'サムネイル変更' : 'Change thumbnail';
-    case 'auto':
-      return ja ? 'デフォルト（最新の作品）' : 'Default (most recently updated work)';
-    case 'none':
-      return ja ? 'サムネイル表示しない' : 'Do not show a thumbnail';
-    case 'item':
-      return ja ? 'サムネイルにする作品を選ぶ' : 'Choose a work';
-    case 'custom':
-      return ja ? '端末内から画像を読み込む' : 'Choose an image from device';
-    case 'select':
-      return ja ? 'フォルダ内の作品から選択' : 'Choose a work in this folder';
-    case 'empty':
-      return ja ? 'このフォルダに作品はありません' : 'No works in this folder';
-    case 'load':
-      return ja ? '画像を選択' : 'Choose image';
-    case 'apply':
-      return ja ? '適用' : 'Apply';
-    case 'cancel':
-      return ja ? 'キャンセル' : 'Cancel';
-    default:
-      return ja ? '画像を読み込めませんでした' : 'Could not open image';
-  }
+  final l10n = AppLocalizations.of(context)!;
+  return switch (key) {
+    'title' => l10n.thumbnailChangeAction,
+    'auto' => l10n.thumbnailDefaultLatestWork,
+    'none' => l10n.thumbnailHide,
+    'item' => l10n.thumbnailChooseWork,
+    'custom' => l10n.thumbnailChooseDeviceImage,
+    'select' => l10n.thumbnailChooseWorkInFolder,
+    'empty' => l10n.thumbnailFolderNoWorks,
+    'load' => l10n.thumbnailPickImage,
+    'apply' => l10n.commonApply,
+    'cancel' => l10n.commonCancel,
+    _ => l10n.thumbnailImageLoadFailed,
+  };
 }
 
 typedef SaveFolderThumbnail =

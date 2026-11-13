@@ -999,11 +999,7 @@ class ProjectListWidget extends StatelessWidget {
       PopupMenuItem(value: 'rename', child: Text(l10n.commonRename)),
       PopupMenuItem(
         value: 'thumbnail',
-        child: Text(
-          Localizations.localeOf(context).languageCode == 'ja'
-              ? 'サムネイル変更'
-              : 'Change thumbnail',
-        ),
+        child: Text(l10n.thumbnailChangeAction),
       ),
       PopupMenuItem(value: 'duplicate', child: Text(l10n.themeDuplicateAction)),
       PopupMenuItem(
@@ -1042,11 +1038,7 @@ class ProjectListWidget extends StatelessWidget {
       ),
       PopupMenuItem(
         value: 'thumbnail',
-        child: Text(
-          Localizations.localeOf(context).languageCode == 'ja'
-              ? 'サムネイル変更'
-              : 'Change thumbnail',
-        ),
+        child: Text(l10n.thumbnailChangeAction),
       ),
       PopupMenuItem(
         value: 'favorite',

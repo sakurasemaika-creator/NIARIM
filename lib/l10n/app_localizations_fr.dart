@@ -9242,7 +9242,8 @@ class AppLocalizationsFr extends AppLocalizations {
   String get sharedArchiveShare => 'Partager';
 
   @override
-  String get sharedArchiveEmpty => 'Aucun fichier de partage créé';
+  String get sharedArchiveEmpty =>
+      'Vous n’avez encore créé aucun fichier partagé';
 
   @override
   String coinAmount(int count) {
@@ -10045,4 +10046,191 @@ class AppLocalizationsFr extends AppLocalizations {
   String rewardUnlockReviewFixedTotal(String coins) {
     return 'Total selon les prix unitaires définitifs : $coins. Le serveur ne permet pas encore de dépenser des opales pour des avantages individuels ou des échanges en double. Le montant est définitif, mais l’échange n’est possible que si le serveur renvoie un devis officiel. L’expiration officielle est fixée par la vérification du serveur juste avant l’échange.';
   }
+
+  @override
+  String get homeTrashKindCreatedProject => 'Projet créé';
+
+  @override
+  String get homeTrashKindReceivedShare => 'Fichier partagé reçu';
+
+  @override
+  String get homeTrashKindCreatedShare => 'Fichier partagé créé par vous';
+
+  @override
+  String get homeTrashKindExportedWork => 'Œuvre exportée';
+
+  @override
+  String get homeSharedReceivedFilter => 'Reçus';
+
+  @override
+  String get homeSharedCreatedFilter => 'Créés par moi';
+
+  @override
+  String get homeClipboardSourceMissing =>
+      'L’œuvre ou le dossier copié est introuvable. Restaurez-le depuis la corbeille ou copiez-le à nouveau.';
+
+  @override
+  String get homePasteRestrictionTitle => 'Impossible de coller ici';
+
+  @override
+  String get homePasteCrossFormatBody =>
+      'Impossible de coller dans un onglet ou une section d’un autre format. Collez les œuvres et les fichiers dans leur onglet ou leur section d’origine. Seuls les dossiers sans fichiers peuvent être collés ailleurs.';
+
+  @override
+  String get homePasteOutgoingNoFolders =>
+      '« Créés par moi », dans Partagés, ne contient que des fichiers : impossible d’y coller des dossiers.';
+
+  @override
+  String get homePasteNestedFolders =>
+      'Ce dossier contient des sous-dossiers. La destination n’accepte pas les dossiers imbriqués : le collage a été annulé pour préserver sa structure.';
+
+  @override
+  String get homePasteFolderUnreadable =>
+      'Impossible de vérifier le contenu du dossier. Le collage a été annulé pour protéger vos données.';
+
+  @override
+  String get homePasteFolderNotTrashable =>
+      'Ce type de dossier ne peut pas être mis à la corbeille.';
+
+  @override
+  String get homePasteToTrashQuestion =>
+      'Mettre à la corbeille les œuvres et dossiers suivants ?';
+
+  @override
+  String homeTrashAutoDeleteNotice(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other:
+          'Les éléments de la corbeille sont supprimés définitivement au bout de $days jours.',
+      one:
+          'Les éléments de la corbeille sont supprimés définitivement au bout de $days jour.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get homeTrashAutoDeleteOffNotice =>
+      'La suppression automatique de la corbeille est désactivée. Les éléments restent jusqu’à ce que vous les supprimiez.';
+
+  @override
+  String get homeRestoreFromTrashTitle => 'Restaurer depuis la corbeille';
+
+  @override
+  String get homeRestoreFromTrashQuestion =>
+      'Restaurer depuis la corbeille les œuvres et dossiers suivants ?';
+
+  @override
+  String homeTrashRestoreSelectedConfirm(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Restaurer $count éléments ?',
+      one: 'Restaurer $count élément ?',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String commonBulletItem(String item) {
+    return '• $item';
+  }
+
+  @override
+  String get commonListSeparator => ', ';
+
+  @override
+  String get homeFolderMenuTooltip => 'Menu du dossier';
+
+  @override
+  String homeClipboardCutStatus(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count éléments coupés',
+      one: '$count élément coupé',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String homeClipboardCopiedStatus(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count éléments copiés',
+      one: '$count élément copié',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get homeClipboardClear => 'Effacer';
+
+  @override
+  String homeExportedWorkMetadata(DateTime date, String size) {
+    final intl.DateFormat dateDateFormat = intl.DateFormat.yMd(
+      localeName,
+    ).add_jm();
+    final String dateString = dateDateFormat.format(date);
+
+    return '$dateString · $size';
+  }
+
+  @override
+  String get thumbnailChangeAction => 'Changer la miniature';
+
+  @override
+  String get thumbnailDefaultLatestWork =>
+      'Par défaut (œuvre modifiée le plus récemment)';
+
+  @override
+  String get thumbnailHide => 'Ne pas afficher de miniature';
+
+  @override
+  String get thumbnailChooseWork => 'Choisir une œuvre pour la miniature';
+
+  @override
+  String get thumbnailChooseDeviceImage => 'Utiliser une image de l’appareil';
+
+  @override
+  String get thumbnailChooseWorkInFolder =>
+      'Choisissez parmi les œuvres de ce dossier';
+
+  @override
+  String get thumbnailFolderNoWorks => 'Ce dossier ne contient aucune œuvre';
+
+  @override
+  String get thumbnailPickImage => 'Choisir une image';
+
+  @override
+  String get thumbnailImageLoadFailed => 'Impossible de charger l’image';
+
+  @override
+  String get thumbnailPreviewFailed => 'Impossible d’afficher l’aperçu';
+
+  @override
+  String get thumbnailSaveFailed => 'Impossible d’enregistrer la miniature';
+
+  @override
+  String get thumbnailVideoInfoFailed =>
+      'Impossible de lire les informations de la vidéo';
+
+  @override
+  String thumbnailCurrentFrame(int current, int total) {
+    return 'Image actuelle : $current / $total';
+  }
+
+  @override
+  String get thumbnailStillImageOneFrame =>
+      'Une image fixe ne compte qu’une seule image.';
+
+  @override
+  String get thumbnailLastSavedFrame => 'Dernière image enregistrée';
+
+  @override
+  String get thumbnailSelectFrame => 'Choisir une image';
+
+  @override
+  String get commonApply => 'Appliquer';
 }

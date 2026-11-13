@@ -5132,5 +5132,219 @@
         "type": "String"
       }
     }
+  },
+  "homeTrashKindCreatedProject": "作成したプロジェクト",
+  "@homeTrashKindCreatedProject": {
+    "description": "ゴミ箱の種類：自分で作ったプロジェクト（フィルターのチップと各行の補足。ゴミ箱の検索でもこの文で探す）"
+  },
+  "homeTrashKindReceivedShare": "受け取った共有ファイル",
+  "@homeTrashKindReceivedShare": {
+    "description": "ゴミ箱の種類：受け取った共有ファイル（.niashare）"
+  },
+  "homeTrashKindCreatedShare": "自分が作成した共有ファイル",
+  "@homeTrashKindCreatedShare": {
+    "description": "ゴミ箱の種類：自分が作成した共有ファイル（.niashare）"
+  },
+  "homeTrashKindExportedWork": "書き出した作品",
+  "@homeTrashKindExportedWork": {
+    "description": "ゴミ箱の種類：書き出した作品（動画・画像のファイル）"
+  },
+  "homeSharedReceivedFilter": "受け取ったもの",
+  "@homeSharedReceivedFilter": {
+    "description": "共有タブの切り替え：受け取った共有ファイルの一覧"
+  },
+  "homeSharedCreatedFilter": "自分が作成したもの",
+  "@homeSharedCreatedFilter": {
+    "description": "共有タブの切り替え：自分が作成した共有ファイルの一覧（貼り付けの説明の文でもこの名前を引用する）"
+  },
+  "homeClipboardSourceMissing": "コピー元の作品・フォルダが見つかりません。ゴミ箱から復元するか、もう一度コピーしてください。",
+  "@homeClipboardSourceMissing": {
+    "description": "貼り付けようとしたとき、コピー・切り取りした元の作品・フォルダが消えていた"
+  },
+  "homePasteRestrictionTitle": "ここには貼り付けられません",
+  "@homePasteRestrictionTitle": {
+    "description": "貼り付けられない場所で貼り付けたときのダイアログの見出し"
+  },
+  "homePasteCrossFormatBody": "形式の違うタブ・区分へは貼り付けられません。作品・ファイルは元のタブ・区分に貼り付けてください。中にファイルの無いフォルダだけは、別の場所にも貼り付けられます。",
+  "@homePasteCrossFormatBody": {
+    "description": "形式の違うタブ・区分（共有の「受け取ったもの」「自分が作成したもの」）へ貼り付けようとしたときの説明"
+  },
+  "homePasteOutgoingNoFolders": "「共有」の「自分が作成したもの」にはファイルしか置けないため、フォルダは貼り付けられません。",
+  "@homePasteOutgoingNoFolders": {
+    "description": "共有タブの「自分が作成したもの」へフォルダを貼り付けようとしたときの説明（引用はhomeTabSharedとhomeSharedCreatedFilterと同じ文）"
+  },
+  "homePasteNestedFolders": "このフォルダには子フォルダがあります。貼り付け先はフォルダの入れ子に対応していないため、中の構造を失わないよう貼り付けを中止しました。",
+  "@homePasteNestedFolders": {
+    "description": "入れ子のフォルダに対応していない場所へ、子フォルダのあるフォルダを貼り付けようとしたときの説明"
+  },
+  "homePasteFolderUnreadable": "フォルダの中身を確認できませんでした。データを守るため、貼り付けを中止しました。",
+  "@homePasteFolderUnreadable": {
+    "description": "貼り付ける前にフォルダの中身を調べられなかったときの説明"
+  },
+  "homePasteFolderNotTrashable": "この種類のフォルダはゴミ箱に入れられません。",
+  "@homePasteFolderNotTrashable": {
+    "description": "ゴミ箱へ入れられない種類のフォルダをゴミ箱へ貼り付けようとしたときの説明"
+  },
+  "homePasteToTrashQuestion": "以下の作品・フォルダをゴミ箱に捨てますか？",
+  "@homePasteToTrashQuestion": {
+    "description": "ゴミ箱のタブへ貼り付けたときの確認。下に名前を1行ずつ並べる"
+  },
+  "homeTrashAutoDeleteNotice": "※ゴミ箱に移動されたファイルは{days}日後に完全削除されます。",
+  "@homeTrashAutoDeleteNotice": {
+    "description": "ゴミ箱へ移す確認の注記：自動で完全に削除されるまでの日数（daysは1以上）",
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "homeTrashAutoDeleteOffNotice": "※ゴミ箱の自動削除はオフです。手動で削除するまで保存されます。",
+  "@homeTrashAutoDeleteOffNotice": {
+    "description": "ゴミ箱へ移す確認の注記：自動削除がオフのとき"
+  },
+  "homeRestoreFromTrashTitle": "ゴミ箱から復元",
+  "@homeRestoreFromTrashTitle": {
+    "description": "ゴミ箱から戻す確認のダイアログの見出し"
+  },
+  "homeRestoreFromTrashQuestion": "以下の作品・フォルダをゴミ箱から復元しますか？",
+  "@homeRestoreFromTrashQuestion": {
+    "description": "ゴミ箱から戻す確認。下に名前を1行ずつ並べる"
+  },
+  "homeTrashRestoreSelectedConfirm": "{count}件を復元しますか？",
+  "@homeTrashRestoreSelectedConfirm": {
+    "description": "ゴミ箱で選んだ項目をまとめて復元する確認",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "commonBulletItem": "・{item}",
+  "@commonBulletItem": {
+    "description": "確認のダイアログで名前を1行ずつ並べるときの行頭の印",
+    "placeholders": {
+      "item": {
+        "type": "String"
+      }
+    }
+  },
+  "commonListSeparator": "、",
+  "@commonListSeparator": {
+    "description": "名前を1行に並べるときの区切り（日本語・中国語は読点、他は「, 」）"
+  },
+  "homeFolderMenuTooltip": "フォルダのメニュー",
+  "@homeFolderMenuTooltip": {
+    "description": "共有・作品一覧のフォルダの行にある「…」ボタンの説明"
+  },
+  "homeClipboardCutStatus": "{count}件を切り取り中",
+  "@homeClipboardCutStatus": {
+    "description": "ホームの上の帯：切り取って貼り付けを待っている件数",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "homeClipboardCopiedStatus": "{count}件をコピー中",
+  "@homeClipboardCopiedStatus": {
+    "description": "ホームの上の帯：コピーして貼り付けを待っている件数",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "homeClipboardClear": "クリア",
+  "@homeClipboardClear": {
+    "description": "ホームの上の帯：コピー・切り取りをやめて帯を閉じるボタン"
+  },
+  "homeExportedWorkMetadata": "{date} ・ {size}",
+  "@homeExportedWorkMetadata": {
+    "description": "作品一覧の各行の補足：書き出したファイルの更新日時と大きさ",
+    "placeholders": {
+      "date": {
+        "type": "DateTime",
+        "format": "yMd+jm"
+      },
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "thumbnailChangeAction": "サムネイル変更",
+  "@thumbnailChangeAction": {
+    "description": "プロジェクト・フォルダ・書き出した作品のメニュー項目と、サムネイルを選ぶダイアログの見出し"
+  },
+  "thumbnailDefaultLatestWork": "デフォルト（最新の作品）",
+  "@thumbnailDefaultLatestWork": {
+    "description": "フォルダのサムネイル：中の最新の作品を使う（既定）"
+  },
+  "thumbnailHide": "サムネイル表示しない",
+  "@thumbnailHide": {
+    "description": "サムネイルを出さない"
+  },
+  "thumbnailChooseWork": "サムネイルにする作品を選ぶ",
+  "@thumbnailChooseWork": {
+    "description": "フォルダのサムネイル：中の作品を1つ選んで使う"
+  },
+  "thumbnailChooseDeviceImage": "端末から画像を読み込む",
+  "@thumbnailChooseDeviceImage": {
+    "description": "端末の画像をサムネイルに使う"
+  },
+  "thumbnailChooseWorkInFolder": "フォルダ内の作品から選択",
+  "@thumbnailChooseWorkInFolder": {
+    "description": "フォルダのサムネイル：中の作品の一覧の見出し"
+  },
+  "thumbnailFolderNoWorks": "このフォルダに作品はありません",
+  "@thumbnailFolderNoWorks": {
+    "description": "フォルダのサムネイル：中に作品が無い"
+  },
+  "thumbnailPickImage": "画像を選択",
+  "@thumbnailPickImage": {
+    "description": "サムネイルにする画像を端末から選ぶボタン"
+  },
+  "thumbnailImageLoadFailed": "画像を読み込めませんでした",
+  "@thumbnailImageLoadFailed": {
+    "description": "選んだ画像を読み込めなかった"
+  },
+  "thumbnailPreviewFailed": "プレビューを表示できませんでした",
+  "@thumbnailPreviewFailed": {
+    "description": "サムネイルを選ぶダイアログ：フレームの絵を描けなかった"
+  },
+  "thumbnailSaveFailed": "サムネイルを保存できませんでした",
+  "@thumbnailSaveFailed": {
+    "description": "選んだサムネイルを保存できなかった"
+  },
+  "thumbnailVideoInfoFailed": "動画情報を読み取れませんでした",
+  "@thumbnailVideoInfoFailed": {
+    "description": "書き出した動画の長さ・フレーム数を読み取れなかった"
+  },
+  "thumbnailCurrentFrame": "現在のフレーム: {current} / {total}",
+  "@thumbnailCurrentFrame": {
+    "description": "サムネイルを選ぶダイアログ：いま選んでいるフレームの番号と総数",
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "thumbnailStillImageOneFrame": "静止画像は1フレームとして扱います。",
+  "@thumbnailStillImageOneFrame": {
+    "description": "書き出した静止画のサムネイルを選ぶとき：フレームは1つだけ"
+  },
+  "thumbnailLastSavedFrame": "最後に保存したフレーム",
+  "@thumbnailLastSavedFrame": {
+    "description": "サムネイルの選び方：最後に保存したときのフレーム（既定）"
+  },
+  "thumbnailSelectFrame": "フレームを指定する",
+  "@thumbnailSelectFrame": {
+    "description": "サムネイルの選び方：フレームを指定する"
+  },
+  "commonApply": "適用",
+  "@commonApply": {
+    "description": "ダイアログで選んだ内容を反映するボタン"
   }
 }

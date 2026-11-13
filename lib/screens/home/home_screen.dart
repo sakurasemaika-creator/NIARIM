@@ -66,11 +66,7 @@ class _ClipboardSourceMissing implements Exception {
 }
 
 String _clipboardMissingMessage(BuildContext context) =>
-    Localizations.localeOf(context).languageCode == 'ja'
-    ? 'コピー元の作品・フォルダが見つかりません。ゴミ箱から復元するか、'
-          'もう一度コピーしてください。'
-    : 'The source file or folder is missing. Restore it from Trash '
-          'or copy it again.';
+    AppLocalizations.of(context)!.homeClipboardSourceMissing;
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -416,7 +412,7 @@ class _HomeScreenState extends State<HomeScreen>
       if (missing.isNotEmpty) {
         final names = missing
             .map((f) => f.replaceFirst('UserFont_', ''))
-            .join('、');
+            .join(l10n.commonListSeparator);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(l10n.homeMissingFontsSnackbar(names))),
         );
@@ -1183,11 +1179,7 @@ class _HomeScreenState extends State<HomeScreen>
       context: context,
       builder: (dialog) => AlertDialog(
         title: Text(l10n.commonRestore),
-        content: Text(
-          Localizations.localeOf(context).languageCode == 'ja'
-              ? '${selected.length}件を復元しますか？'
-              : 'Restore ${selected.length} selected items?',
-        ),
+        content: Text(l10n.homeTrashRestoreSelectedConfirm(selected.length)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialog, false),
@@ -1437,9 +1429,7 @@ class _HomeScreenState extends State<HomeScreen>
     ];
     final descendantText = projectCountInFolders + subfolderCount == 0
         ? ''
-        : Localizations.localeOf(context).languageCode == 'ja'
-        ? '\nフォルダの中のプロジェクト$projectCountInFolders件・フォルダ$subfolderCount件も一緒に移動します。'
-        : '\nThis also moves $projectCountInFolders projects and $subfolderCount nested folders.';
+        : '\n${l10n.homeMoveToTrashFolderContents(l10n.homeFolderContents(projectCountInFolders, subfolderCount))}';
     // 読めていない作品は、どのフォルダの作品か分からず数えられない。
     final unreadText = rootFolderIds.isNotEmpty && service.projectsLoadFailed
         ? '\n${l10n.homeProjectsLoadFailed}'
@@ -1820,21 +1810,17 @@ class _HomeScreenState extends State<HomeScreen>
     _ => HomePasteArea.trash,
   };
 
-  Future<void> _explainPasteRestriction(String ja, String en) async {
+  Future<void> _explainPasteRestriction(
+    String Function(AppLocalizations l10n) message,
+  ) async {
     if (!mounted) return;
     final l10n = AppLocalizations.of(context)!;
     await showDialog<void>(
       context: context,
       builder: (ctx) => AlertDialog(
         key: const Key('homePasteRestrictionDialog'),
-        title: Text(
-          Localizations.localeOf(ctx).languageCode == 'ja'
-              ? 'この場所にはペーストできません'
-              : 'Cannot paste here',
-        ),
-        content: Text(
-          Localizations.localeOf(ctx).languageCode == 'ja' ? ja : en,
-        ),
+        title: Text(l10n.homePasteRestrictionTitle),
+        content: Text(message(l10n)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
@@ -1848,7 +1834,6 @@ class _HomeScreenState extends State<HomeScreen>
   Future<bool> _confirmPasteToTrash(List<String> names) async {
     final days = context.read<SettingsService>().trashAutoDeleteDays;
     final l10n = AppLocalizations.of(context)!;
-    final ja = Localizations.localeOf(context).languageCode == 'ja';
     return await showDialog<bool>(
           context: context,
           builder: (ctx) => AlertDialog(
@@ -1859,21 +1844,13 @@ class _HomeScreenState extends State<HomeScreen>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(
-                    ja
-                        ? '以下の作品・フォルダをゴミ箱に捨てますか？'
-                        : 'Move the following files and folders to Trash?',
-                  ),
-                  for (final name in names) Text('・$name'),
+                  Text(l10n.homePasteToTrashQuestion),
+                  for (final name in names) Text(l10n.commonBulletItem(name)),
                   const SizedBox(height: 12),
                   Text(
-                    ja
-                        ? days > 0
-                              ? '※ゴミ箱に移動されたファイルは$days日後に完全削除されます。'
-                              : '※ゴミ箱の自動削除はオフです。手動で削除するまで保存されます。'
-                        : days > 0
-                        ? 'Files in Trash are permanently deleted after $days days.'
-                        : 'Automatic deletion is off. Items remain until deleted manually.',
+                    days > 0
+                        ? l10n.homeTrashAutoDeleteNotice(days)
+                        : l10n.homeTrashAutoDeleteOffNotice,
                   ),
                 ],
               ),
@@ -1915,34 +1892,17 @@ class _HomeScreenState extends State<HomeScreen>
       containsFolders: folderIds.isNotEmpty,
     );
     if (decision != HomePasteDecision.allowed) {
-      await _explainPasteRestriction(
-        'タブやピルボタンをまたいだ形式違いのペーストはできません。'
-            '作品・ファイルはコピー元と同じタブ・区分にペーストしてください。'
-            '中にファイルのないフォルダのみ例外です。',
-        'Files and projects cannot be pasted across incompatible tab or '
-            'pill formats. Paste into the original collection. Empty folders '
-            'without files are the only exception.',
-      );
+      await _explainPasteRestriction((l) => l.homePasteCrossFormatBody);
       return;
     }
     if (target == HomePasteArea.outgoing) {
-      await _explainPasteRestriction(
-        '共有の「自分が作成したもの」はファイル専用で、'
-            'フォルダを保存する機能がないため、ここにはペーストできません。',
-        'The outgoing-shares collection does not support folders.',
-      );
+      await _explainPasteRestriction((l) => l.homePasteOutgoingNoFolders);
       return;
     }
     if (target != HomePasteArea.projects &&
         target != HomePasteArea.trash &&
         folderIds.any((id) => service.folderContentCounts(id).folders > 0)) {
-      await _explainPasteRestriction(
-        'このフォルダには子フォルダがあります。'
-            '移動先ではフォルダの入れ子に対応していないため、'
-            '中の構造を失わないようペーストを中止しました。',
-        'This folder contains nested folders. The destination does not '
-            'support nesting, so the paste was cancelled to preserve its structure.',
-      );
+      await _explainPasteRestriction((l) => l.homePasteNestedFolders);
       return;
     }
     if (target == HomePasteArea.trash) {
@@ -2128,11 +2088,7 @@ class _HomeScreenState extends State<HomeScreen>
         );
       } catch (error, stackTrace) {
         AppErrorReporter.record(error, stackTrace);
-        await _explainPasteRestriction(
-          'フォルダの中身を確認できませんでした。データを保護するため、'
-              'ペーストを中止しました。',
-          'Could not inspect folder contents safely. Paste was cancelled.',
-        );
+        await _explainPasteRestriction((l) => l.homePasteFolderUnreadable);
         return;
       }
       if (!mounted) return;
@@ -2150,47 +2106,32 @@ class _HomeScreenState extends State<HomeScreen>
       containsFolders: entry.isFolder,
     );
     if (decision != HomePasteDecision.allowed) {
-      await _explainPasteRestriction(
-        'タブやピルボタンをまたいだ形式違いのペーストはできません。'
-            '作品やファイルは元の形式の区分にペーストしてください。'
-            '中にファイルの無いフォルダのみ例外です。',
-        'Files cannot be pasted across tab or pill formats. '
-            'Restore files to their original collection. Only empty folders are an exception.',
-      );
+      await _explainPasteRestriction((l) => l.homePasteCrossFormatBody);
       return;
     }
     if (entry.isFolder && dest == HomePasteArea.outgoing) {
-      await _explainPasteRestriction(
-        '共有の「自分が作成したもの」はファイル専用でフォルダは保存できません。',
-        'Outgoing shares do not support folders.',
-      );
+      await _explainPasteRestriction((l) => l.homePasteOutgoingNoFolders);
       return;
     }
     if (dest == HomePasteArea.trash) {
       if (entry.isFolder &&
           entry.source != HomePasteArea.works &&
           entry.source != HomePasteArea.received) {
-        await _explainPasteRestriction(
-          'この形式のフォルダはゴミ箱に保管できません。',
-          'This folder format cannot be archived in Trash.',
-        );
+        await _explainPasteRestriction((l) => l.homePasteFolderNotTrashable);
         return;
       }
       if (!await _confirmPasteToTrash([entry.name]) || !mounted) return;
     }
     if (entry.source == HomePasteArea.trash) {
       final l10n = AppLocalizations.of(context)!;
-      final japanese = Localizations.localeOf(context).languageCode == 'ja';
       final confirmed = await showDialog<bool>(
         context: context,
         builder: (ctx) => AlertDialog(
           key: const Key('homePasteRestoreDialog'),
-          title: Text(japanese ? 'ゴミ箱から復元' : 'Restore from Trash'),
+          title: Text(l10n.homeRestoreFromTrashTitle),
           content: Text(
-            (japanese
-                    ? '以下の作品・フォルダをゴミ箱から復元しますか？'
-                    : 'Restore this item from Trash?') +
-                '\n・${entry.name}',
+            '${l10n.homeRestoreFromTrashQuestion}\n'
+            '${l10n.commonBulletItem(entry.name)}',
           ),
           actions: [
             TextButton(
@@ -2745,32 +2686,12 @@ enum TrashEntryKind {
 }
 
 String _trashKindLabel(BuildContext context, TrashEntryKind kind) {
-  final lang = Localizations.localeOf(context).languageCode;
-  return switch (lang) {
-    'ja' => switch (kind) {
-      TrashEntryKind.createdProject => '作成したプロジェクト',
-      TrashEntryKind.receivedShare => '受け取った共有ファイル',
-      TrashEntryKind.createdShare => '自分が作成した共有ファイル',
-      TrashEntryKind.exportedWork => '書き出した作品',
-    },
-    'ko' => switch (kind) {
-      TrashEntryKind.createdProject => '내 프로젝트',
-      TrashEntryKind.receivedShare => '받은 공유 파일',
-      TrashEntryKind.createdShare => '내 공유 파일',
-      TrashEntryKind.exportedWork => '내보낸 작품',
-    },
-    'zh' => switch (kind) {
-      TrashEntryKind.createdProject => '创建的项目',
-      TrashEntryKind.receivedShare => '收到的共享文件',
-      TrashEntryKind.createdShare => '创建的共享文件',
-      TrashEntryKind.exportedWork => '导出的作品',
-    },
-    _ => switch (kind) {
-      TrashEntryKind.createdProject => 'Created project',
-      TrashEntryKind.receivedShare => 'Received share',
-      TrashEntryKind.createdShare => 'Created share',
-      TrashEntryKind.exportedWork => 'Exported work',
-    },
+  final l10n = AppLocalizations.of(context)!;
+  return switch (kind) {
+    TrashEntryKind.createdProject => l10n.homeTrashKindCreatedProject,
+    TrashEntryKind.receivedShare => l10n.homeTrashKindReceivedShare,
+    TrashEntryKind.createdShare => l10n.homeTrashKindCreatedShare,
+    TrashEntryKind.exportedWork => l10n.homeTrashKindExportedWork,
   };
 }
 
@@ -3249,16 +3170,10 @@ Widget _receivedShareProjectTile(
 }
 
 String _shareCollectionText(BuildContext context, {required bool outgoing}) {
-  final locale = Localizations.localeOf(context).languageCode;
-  final names = switch (locale) {
-    'ja' => ('受け取ったもの', '自分が作成したもの'),
-    'ko' => ('받은 파일', '내가 만든 파일'),
-    'zh' => ('收到的文件', '我创建的文件'),
-    'fr' => ('Reçus', 'Créés par moi'),
-    'es' => ('Recibidos', 'Creados por mí'),
-    _ => ('Received', 'Created by me'),
-  };
-  return outgoing ? names.$2 : names.$1;
+  final l10n = AppLocalizations.of(context)!;
+  return outgoing
+      ? l10n.homeSharedCreatedFilter
+      : l10n.homeSharedReceivedFilter;
 }
 
 /// Received projects remain editable. Sharing one explicitly creates a new
@@ -3413,11 +3328,7 @@ Widget _receivedShareMenu(
       PopupMenuItem(value: 'duplicate', child: Text(l10n.themeDuplicateAction)),
       PopupMenuItem(
         value: 'thumbnail',
-        child: Text(
-          Localizations.localeOf(context).languageCode == 'ja'
-              ? 'サムネイル変更'
-              : 'Change thumbnail',
-        ),
+        child: Text(l10n.thumbnailChangeAction),
       ),
       PopupMenuItem(
         value: 'share',
@@ -3757,16 +3668,8 @@ class _OutgoingSharesList extends StatelessWidget {
   }
 }
 
-String _shareCollectionEmptyText(BuildContext context) {
-  return switch (Localizations.localeOf(context).languageCode) {
-    'ja' => '作成した共有ファイルはまだありません',
-    'ko' => '생성한 공유 파일이 없습니다',
-    'zh' => '还没有创建的共享文件',
-    'fr' => 'Aucun fichier partagé créé',
-    'es' => 'Todavía no hay archivos compartidos creados',
-    _ => 'No created share files yet',
-  };
-}
+String _shareCollectionEmptyText(BuildContext context) =>
+    AppLocalizations.of(context)!.sharedArchiveEmpty;
 
 /// 共有タブのフォルダ内表示（共有タブへのフォルダ新規追加機能）。
 class _SharedFolderScreen extends StatefulWidget {
@@ -4099,9 +4002,7 @@ class _FolderableList<T> extends StatelessWidget {
                 Icons.more_vert,
                 size: CollectionActionFrame.glyphSize,
               ),
-              tooltip: Localizations.localeOf(context).languageCode == 'ja'
-                  ? 'フォルダのメニュー'
-                  : 'Folder menu',
+              tooltip: AppLocalizations.of(context)!.homeFolderMenuTooltip,
               padding: EdgeInsets.zero,
               onPressed: () => _showFolderMenu(context, folder),
             ),
@@ -4270,9 +4171,7 @@ class _FolderableList<T> extends StatelessWidget {
                 key: const Key('collectionFolderThumbnailMenuItem'),
                 leading: const Icon(Icons.image_outlined),
                 title: Text(
-                  Localizations.localeOf(context).languageCode == 'ja'
-                      ? 'サムネイル変更'
-                      : 'Change thumbnail',
+                  AppLocalizations.of(context)!.thumbnailChangeAction,
                 ),
                 onTap: () {
                   Navigator.pop(ctx);
@@ -4390,23 +4289,18 @@ class _TrashTabState extends State<_TrashTab> {
   Future<bool> _confirmRestoreFromTrash(String name) async {
     if (!mounted) return false;
     final l10n = AppLocalizations.of(context)!;
-    final japanese = Localizations.localeOf(context).languageCode == 'ja';
     return await showDialog<bool>(
           context: context,
           builder: (dialogContext) => AlertDialog(
             key: const Key('homeTrashRestoreConfirmation'),
-            title: Text(japanese ? 'ゴミ箱から復元' : 'Restore from Trash'),
+            title: Text(l10n.homeRestoreFromTrashTitle),
             content: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  japanese
-                      ? '以下の作品・フォルダをゴミ箱から復元しますか？'
-                      : 'Restore the following files or folders from Trash?',
-                ),
+                Text(l10n.homeRestoreFromTrashQuestion),
                 const SizedBox(height: 8),
-                Text('・$name'),
+                Text(l10n.commonBulletItem(name)),
               ],
             ),
             actions: [
@@ -4565,7 +4459,7 @@ class _TrashTabState extends State<_TrashTab> {
         : unread
         ? '$recorded\n${l10n.homeProjectsLoadFailed}'
         : projectNames.isNotEmpty
-        ? projectNames.join('、')
+        ? projectNames.join(l10n.commonListSeparator)
         : l10n.homeFolderContents(0, record.subfolders.length);
     return _trashCard(
       selectionId: 'trash_folder:$id',
@@ -4588,7 +4482,7 @@ class _TrashTabState extends State<_TrashTab> {
                     : HomePasteArea.projects,
               ),
             ),
-            child: const Text('コピー'),
+            child: Text(l10n.commonCopy),
           ),
         TextButton(
           key: ValueKey('trashedFolderRestore_$id'),
@@ -4699,7 +4593,7 @@ class _TrashTabState extends State<_TrashTab> {
                   : HomePasteArea.projects,
             ),
           ),
-          child: const Text('コピー'),
+          child: Text(l10n.commonCopy),
         ),
       TextButton(
         key: ValueKey('trash-restore-${project.id}'),
@@ -4759,7 +4653,7 @@ class _TrashTabState extends State<_TrashTab> {
                   : HomePasteArea.works,
             ),
           ),
-          child: const Text('コピー'),
+          child: Text(l10n.commonCopy),
         ),
       TextButton(
         key: ValueKey('trash-restore-local-${entry.id}'),
@@ -5703,11 +5597,6 @@ class _WorkListItemState extends State<_WorkListItem> {
     return '${(bytes / (1024 * 1024)).toStringAsFixed(1)}MB';
   }
 
-  String _formatDate(DateTime dt) {
-    return '${dt.year}/${dt.month.toString().padLeft(2, '0')}/${dt.day.toString().padLeft(2, '0')} '
-        '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
-  }
-
   @override
   Widget build(BuildContext context) {
     final stat = file.statSync();
@@ -5744,7 +5633,10 @@ class _WorkListItemState extends State<_WorkListItem> {
             onApplied: _refreshCover,
           ),
           name: file.path.split(RegExp(r'[\\/]')).last,
-          metadata: '${_formatDate(stat.modified)} ・ ${_formatSize(stat.size)}',
+          metadata: l10n.homeExportedWorkMetadata(
+            stat.modified,
+            _formatSize(stat.size),
+          ),
           icon: _icon,
           moveLabel: l10n.folderMoveToTitle,
           shareLabel: l10n.homeShareOpenWith,

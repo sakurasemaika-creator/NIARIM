@@ -9890,4 +9890,187 @@ class AppLocalizationsEn extends AppLocalizations {
   String rewardUnlockReviewFixedTotal(String coins) {
     return 'Total at fixed unit prices: $coins. The server does not yet support spending opals on individual benefits or overlapping exchanges. The price is final, but you can exchange only when the server returns an official quote. The official expiry is set by the server check right before exchanging.';
   }
+
+  @override
+  String get homeTrashKindCreatedProject => 'Created project';
+
+  @override
+  String get homeTrashKindReceivedShare => 'Received shared file';
+
+  @override
+  String get homeTrashKindCreatedShare => 'Shared file you created';
+
+  @override
+  String get homeTrashKindExportedWork => 'Exported work';
+
+  @override
+  String get homeSharedReceivedFilter => 'Received';
+
+  @override
+  String get homeSharedCreatedFilter => 'Created by me';
+
+  @override
+  String get homeClipboardSourceMissing =>
+      'The copied work or folder can’t be found. Restore it from the Trash or copy it again.';
+
+  @override
+  String get homePasteRestrictionTitle => 'Can’t paste here';
+
+  @override
+  String get homePasteCrossFormatBody =>
+      'Items can’t be pasted into a tab or section that uses a different format. Paste works and files back into their original tab or section. Only folders with no files inside can be pasted elsewhere.';
+
+  @override
+  String get homePasteOutgoingNoFolders =>
+      '“Created by me” in Shared holds only files, so folders can’t be pasted there.';
+
+  @override
+  String get homePasteNestedFolders =>
+      'This folder contains subfolders. The destination doesn’t support folders inside folders, so pasting was canceled to keep its structure intact.';
+
+  @override
+  String get homePasteFolderUnreadable =>
+      'Couldn’t check the folder’s contents. Pasting was canceled to protect your data.';
+
+  @override
+  String get homePasteFolderNotTrashable =>
+      'This kind of folder can’t be moved to the Trash.';
+
+  @override
+  String get homePasteToTrashQuestion =>
+      'Move the following works and folders to the Trash?';
+
+  @override
+  String homeTrashAutoDeleteNotice(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: 'Items in the Trash are permanently deleted after $days days.',
+      one: 'Items in the Trash are permanently deleted after $days day.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get homeTrashAutoDeleteOffNotice =>
+      'Automatic deletion in the Trash is off. Items stay until you delete them.';
+
+  @override
+  String get homeRestoreFromTrashTitle => 'Restore from Trash';
+
+  @override
+  String get homeRestoreFromTrashQuestion =>
+      'Restore the following works and folders from the Trash?';
+
+  @override
+  String homeTrashRestoreSelectedConfirm(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Restore $count items?',
+      one: 'Restore $count item?',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String commonBulletItem(String item) {
+    return '• $item';
+  }
+
+  @override
+  String get commonListSeparator => ', ';
+
+  @override
+  String get homeFolderMenuTooltip => 'Folder menu';
+
+  @override
+  String homeClipboardCutStatus(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count items cut',
+      one: '$count item cut',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String homeClipboardCopiedStatus(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count items copied',
+      one: '$count item copied',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get homeClipboardClear => 'Clear';
+
+  @override
+  String homeExportedWorkMetadata(DateTime date, String size) {
+    final intl.DateFormat dateDateFormat = intl.DateFormat.yMd(
+      localeName,
+    ).add_jm();
+    final String dateString = dateDateFormat.format(date);
+
+    return '$dateString · $size';
+  }
+
+  @override
+  String get thumbnailChangeAction => 'Change thumbnail';
+
+  @override
+  String get thumbnailDefaultLatestWork =>
+      'Default (most recently updated work)';
+
+  @override
+  String get thumbnailHide => 'Don’t show a thumbnail';
+
+  @override
+  String get thumbnailChooseWork => 'Choose a work for the thumbnail';
+
+  @override
+  String get thumbnailChooseDeviceImage => 'Use an image from this device';
+
+  @override
+  String get thumbnailChooseWorkInFolder =>
+      'Choose from the works in this folder';
+
+  @override
+  String get thumbnailFolderNoWorks => 'There are no works in this folder';
+
+  @override
+  String get thumbnailPickImage => 'Choose image';
+
+  @override
+  String get thumbnailImageLoadFailed => 'Couldn’t load the image';
+
+  @override
+  String get thumbnailPreviewFailed => 'Couldn’t show the preview';
+
+  @override
+  String get thumbnailSaveFailed => 'Couldn’t save the thumbnail';
+
+  @override
+  String get thumbnailVideoInfoFailed => 'Couldn’t read the video’s details';
+
+  @override
+  String thumbnailCurrentFrame(int current, int total) {
+    return 'Current frame: $current / $total';
+  }
+
+  @override
+  String get thumbnailStillImageOneFrame => 'A still image has only one frame.';
+
+  @override
+  String get thumbnailLastSavedFrame => 'Last saved frame';
+
+  @override
+  String get thumbnailSelectFrame => 'Choose a frame';
+
+  @override
+  String get commonApply => 'Apply';
 }

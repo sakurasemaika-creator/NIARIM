@@ -211,23 +211,10 @@ class HomeClipboardToolbar extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final foreground =
         theme.appBarTheme.foregroundColor ?? theme.colorScheme.onSurface;
-    final language = Localizations.localeOf(context).languageCode;
-    final status = switch (language) {
-      'ja' => '$itemCount件を${isCut ? '切り取り' : 'コピー'}中',
-      'ko' => '$itemCount개 ${isCut ? '잘라내기' : '복사'} 중',
-      'zh' => '${isCut ? '剪切' : '复制'} $itemCount 项',
-      'es' => '$itemCount ${isCut ? 'elementos cortados' : 'elementos copiados'}',
-      'fr' => '$itemCount élément(s) ${isCut ? 'coupé(s)' : 'copié(s)'}',
-      _ => '$itemCount item(s) ${isCut ? 'cut' : 'copied'}',
-    };
-    final clearLabel = switch (language) {
-      'ja' => 'クリア',
-      'ko' => '지우기',
-      'zh' => '清除',
-      'es' => 'Borrar',
-      'fr' => 'Effacer',
-      _ => 'Clear',
-    };
+    final status = isCut
+        ? l10n.homeClipboardCutStatus(itemCount)
+        : l10n.homeClipboardCopiedStatus(itemCount);
+    final clearLabel = l10n.homeClipboardClear;
     final style = TextButton.styleFrom(
       foregroundColor: foreground,
       minimumSize: const Size(48, 48),

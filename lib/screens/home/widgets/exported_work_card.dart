@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../../config/font_fallback.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../widgets/collection_action_controls.dart';
 import '../../../widgets/collection_tile_layout.dart';
 import '../../../widgets/home_collection_selection_scope.dart';
@@ -126,12 +127,8 @@ class ExportedWorkCard extends StatelessWidget {
     Widget favorite() => CollectionFavoriteButton(
       favorite: isFavorite,
       tooltip: isFavorite
-          ? (Localizations.localeOf(context).languageCode == 'ja'
-                ? 'お気に入りを解除'
-                : 'Remove from favorites')
-          : (Localizations.localeOf(context).languageCode == 'ja'
-                ? 'お気に入りに追加'
-                : 'Add to favorites'),
+          ? AppLocalizations.of(context)!.colorPickerFavoriteRemove
+          : AppLocalizations.of(context)!.colorPickerFavoriteAdd,
       onPressed: onToggleFavorite,
     );
     Widget menu() => CollectionActionFrame(
@@ -168,12 +165,12 @@ class ExportedWorkCard extends StatelessWidget {
           }
         },
         itemBuilder: (context) {
-          final japanese = Localizations.localeOf(context).languageCode == 'ja';
+          final l10n = AppLocalizations.of(context)!;
           return [
             PopupMenuItem(
               value: 'open',
               enabled: onOpen != null,
-              child: Text(japanese ? '開く' : 'Open'),
+              child: Text(l10n.projectListOpenAction),
             ),
             PopupMenuItem(
               value: 'share',
@@ -183,7 +180,7 @@ class ExportedWorkCard extends StatelessWidget {
             if (onChangeThumbnail != null)
               PopupMenuItem(
                 value: 'thumbnail',
-                child: Text(japanese ? 'サムネイル変更' : 'Change thumbnail'),
+                child: Text(l10n.thumbnailChangeAction),
               ),
             PopupMenuItem(
               value: 'delete',

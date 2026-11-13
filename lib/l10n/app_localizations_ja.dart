@@ -9305,4 +9305,157 @@ class AppLocalizationsJa extends AppLocalizations {
   String rewardUnlockReviewFixedTotal(String coins) {
     return '確定単価による合計：$coins。単品特典・重複交換のオパール消費はまだサーバー未対応です。金額は確定済みですが、交換はサーバーが正式な見積もりを返す場合のみ可能です。正式な有効期限は交換直前のサーバー確認で決まります。';
   }
+
+  @override
+  String get homeTrashKindCreatedProject => '作成したプロジェクト';
+
+  @override
+  String get homeTrashKindReceivedShare => '受け取った共有ファイル';
+
+  @override
+  String get homeTrashKindCreatedShare => '自分が作成した共有ファイル';
+
+  @override
+  String get homeTrashKindExportedWork => '書き出した作品';
+
+  @override
+  String get homeSharedReceivedFilter => '受け取ったもの';
+
+  @override
+  String get homeSharedCreatedFilter => '自分が作成したもの';
+
+  @override
+  String get homeClipboardSourceMissing =>
+      'コピー元の作品・フォルダが見つかりません。ゴミ箱から復元するか、もう一度コピーしてください。';
+
+  @override
+  String get homePasteRestrictionTitle => 'ここには貼り付けられません';
+
+  @override
+  String get homePasteCrossFormatBody =>
+      '形式の違うタブ・区分へは貼り付けられません。作品・ファイルは元のタブ・区分に貼り付けてください。中にファイルの無いフォルダだけは、別の場所にも貼り付けられます。';
+
+  @override
+  String get homePasteOutgoingNoFolders =>
+      '「共有」の「自分が作成したもの」にはファイルしか置けないため、フォルダは貼り付けられません。';
+
+  @override
+  String get homePasteNestedFolders =>
+      'このフォルダには子フォルダがあります。貼り付け先はフォルダの入れ子に対応していないため、中の構造を失わないよう貼り付けを中止しました。';
+
+  @override
+  String get homePasteFolderUnreadable =>
+      'フォルダの中身を確認できませんでした。データを守るため、貼り付けを中止しました。';
+
+  @override
+  String get homePasteFolderNotTrashable => 'この種類のフォルダはゴミ箱に入れられません。';
+
+  @override
+  String get homePasteToTrashQuestion => '以下の作品・フォルダをゴミ箱に捨てますか？';
+
+  @override
+  String homeTrashAutoDeleteNotice(int days) {
+    return '※ゴミ箱に移動されたファイルは$days日後に完全削除されます。';
+  }
+
+  @override
+  String get homeTrashAutoDeleteOffNotice => '※ゴミ箱の自動削除はオフです。手動で削除するまで保存されます。';
+
+  @override
+  String get homeRestoreFromTrashTitle => 'ゴミ箱から復元';
+
+  @override
+  String get homeRestoreFromTrashQuestion => '以下の作品・フォルダをゴミ箱から復元しますか？';
+
+  @override
+  String homeTrashRestoreSelectedConfirm(int count) {
+    return '$count件を復元しますか？';
+  }
+
+  @override
+  String commonBulletItem(String item) {
+    return '・$item';
+  }
+
+  @override
+  String get commonListSeparator => '、';
+
+  @override
+  String get homeFolderMenuTooltip => 'フォルダのメニュー';
+
+  @override
+  String homeClipboardCutStatus(int count) {
+    return '$count件を切り取り中';
+  }
+
+  @override
+  String homeClipboardCopiedStatus(int count) {
+    return '$count件をコピー中';
+  }
+
+  @override
+  String get homeClipboardClear => 'クリア';
+
+  @override
+  String homeExportedWorkMetadata(DateTime date, String size) {
+    final intl.DateFormat dateDateFormat = intl.DateFormat.yMd(
+      localeName,
+    ).add_jm();
+    final String dateString = dateDateFormat.format(date);
+
+    return '$dateString ・ $size';
+  }
+
+  @override
+  String get thumbnailChangeAction => 'サムネイル変更';
+
+  @override
+  String get thumbnailDefaultLatestWork => 'デフォルト（最新の作品）';
+
+  @override
+  String get thumbnailHide => 'サムネイル表示しない';
+
+  @override
+  String get thumbnailChooseWork => 'サムネイルにする作品を選ぶ';
+
+  @override
+  String get thumbnailChooseDeviceImage => '端末から画像を読み込む';
+
+  @override
+  String get thumbnailChooseWorkInFolder => 'フォルダ内の作品から選択';
+
+  @override
+  String get thumbnailFolderNoWorks => 'このフォルダに作品はありません';
+
+  @override
+  String get thumbnailPickImage => '画像を選択';
+
+  @override
+  String get thumbnailImageLoadFailed => '画像を読み込めませんでした';
+
+  @override
+  String get thumbnailPreviewFailed => 'プレビューを表示できませんでした';
+
+  @override
+  String get thumbnailSaveFailed => 'サムネイルを保存できませんでした';
+
+  @override
+  String get thumbnailVideoInfoFailed => '動画情報を読み取れませんでした';
+
+  @override
+  String thumbnailCurrentFrame(int current, int total) {
+    return '現在のフレーム: $current / $total';
+  }
+
+  @override
+  String get thumbnailStillImageOneFrame => '静止画像は1フレームとして扱います。';
+
+  @override
+  String get thumbnailLastSavedFrame => '最後に保存したフレーム';
+
+  @override
+  String get thumbnailSelectFrame => 'フレームを指定する';
+
+  @override
+  String get commonApply => '適用';
 }

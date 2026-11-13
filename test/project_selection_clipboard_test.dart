@@ -772,7 +772,7 @@ void main() {
     await tester.tap(find.byKey(const Key('homeCrossTabPasteButton')));
     await settle(tester);
     expect(find.byKey(const Key('homePasteRestrictionDialog')), findsOneWidget);
-    expect(find.textContaining('形式違いのペーストはできません'), findsOneWidget);
+    expect(find.textContaining('形式の違うタブ・区分へは貼り付けられません'), findsOneWidget);
     await captureClipboardScreen(tester, '09_project_cross_format_restriction');
     expect(service.projects.where((p) => p.name == 'apple'), hasLength(1));
     await tester.tap(

@@ -9351,4 +9351,158 @@ class AppLocalizationsKo extends AppLocalizations {
   String rewardUnlockReviewFixedTotal(String coins) {
     return '확정 단가 기준 합계: $coins. 개별 혜택·중복 교환의 오팔 사용은 아직 서버에서 지원하지 않습니다. 금액은 확정되었지만, 서버가 정식 견적을 제공하는 경우에만 교환할 수 있습니다. 정식 만료일은 교환 직전에 서버에서 확인하여 정해집니다.';
   }
+
+  @override
+  String get homeTrashKindCreatedProject => '내 프로젝트';
+
+  @override
+  String get homeTrashKindReceivedShare => '받은 공유 파일';
+
+  @override
+  String get homeTrashKindCreatedShare => '내가 만든 공유 파일';
+
+  @override
+  String get homeTrashKindExportedWork => '내보낸 작품';
+
+  @override
+  String get homeSharedReceivedFilter => '받은 파일';
+
+  @override
+  String get homeSharedCreatedFilter => '내가 만든 파일';
+
+  @override
+  String get homeClipboardSourceMissing =>
+      '복사한 작품이나 폴더를 찾을 수 없습니다. 휴지통에서 복원하거나 다시 복사해 주세요.';
+
+  @override
+  String get homePasteRestrictionTitle => '여기에는 붙여넣을 수 없습니다';
+
+  @override
+  String get homePasteCrossFormatBody =>
+      '형식이 다른 탭이나 구분에는 붙여넣을 수 없습니다. 작품과 파일은 원래 있던 탭이나 구분에 붙여넣어 주세요. 파일이 없는 폴더만 다른 곳에도 붙여넣을 수 있습니다.';
+
+  @override
+  String get homePasteOutgoingNoFolders =>
+      '‘공유’의 ‘내가 만든 파일’에는 파일만 둘 수 있어 폴더는 붙여넣을 수 없습니다.';
+
+  @override
+  String get homePasteNestedFolders =>
+      '이 폴더에는 하위 폴더가 있습니다. 붙여넣을 위치는 폴더 안에 폴더를 둘 수 없어, 구조가 흐트러지지 않도록 붙여넣기를 중단했습니다.';
+
+  @override
+  String get homePasteFolderUnreadable =>
+      '폴더 내용을 확인하지 못했습니다. 데이터를 보호하기 위해 붙여넣기를 중단했습니다.';
+
+  @override
+  String get homePasteFolderNotTrashable => '이 유형의 폴더는 휴지통으로 옮길 수 없습니다.';
+
+  @override
+  String get homePasteToTrashQuestion => '다음 작품과 폴더를 휴지통으로 옮기시겠습니까?';
+
+  @override
+  String homeTrashAutoDeleteNotice(int days) {
+    return '휴지통으로 옮긴 파일은 $days일 후에 완전히 삭제됩니다.';
+  }
+
+  @override
+  String get homeTrashAutoDeleteOffNotice =>
+      '휴지통 자동 삭제가 꺼져 있습니다. 직접 삭제할 때까지 보관됩니다.';
+
+  @override
+  String get homeRestoreFromTrashTitle => '휴지통에서 복원';
+
+  @override
+  String get homeRestoreFromTrashQuestion => '다음 작품과 폴더를 휴지통에서 복원하시겠습니까?';
+
+  @override
+  String homeTrashRestoreSelectedConfirm(int count) {
+    return '$count개 항목을 복원하시겠습니까?';
+  }
+
+  @override
+  String commonBulletItem(String item) {
+    return '• $item';
+  }
+
+  @override
+  String get commonListSeparator => ', ';
+
+  @override
+  String get homeFolderMenuTooltip => '폴더 메뉴';
+
+  @override
+  String homeClipboardCutStatus(int count) {
+    return '$count개 항목 잘라냄';
+  }
+
+  @override
+  String homeClipboardCopiedStatus(int count) {
+    return '$count개 항목 복사함';
+  }
+
+  @override
+  String get homeClipboardClear => '지우기';
+
+  @override
+  String homeExportedWorkMetadata(DateTime date, String size) {
+    final intl.DateFormat dateDateFormat = intl.DateFormat.yMd(
+      localeName,
+    ).add_jm();
+    final String dateString = dateDateFormat.format(date);
+
+    return '$dateString · $size';
+  }
+
+  @override
+  String get thumbnailChangeAction => '썸네일 변경';
+
+  @override
+  String get thumbnailDefaultLatestWork => '기본값(최근 수정한 작품)';
+
+  @override
+  String get thumbnailHide => '썸네일 표시 안 함';
+
+  @override
+  String get thumbnailChooseWork => '썸네일로 쓸 작품 선택';
+
+  @override
+  String get thumbnailChooseDeviceImage => '기기의 이미지 사용';
+
+  @override
+  String get thumbnailChooseWorkInFolder => '폴더 안의 작품에서 선택';
+
+  @override
+  String get thumbnailFolderNoWorks => '이 폴더에는 작품이 없습니다';
+
+  @override
+  String get thumbnailPickImage => '이미지 선택';
+
+  @override
+  String get thumbnailImageLoadFailed => '이미지를 불러오지 못했습니다';
+
+  @override
+  String get thumbnailPreviewFailed => '미리보기를 표시하지 못했습니다';
+
+  @override
+  String get thumbnailSaveFailed => '썸네일을 저장하지 못했습니다';
+
+  @override
+  String get thumbnailVideoInfoFailed => '동영상 정보를 읽지 못했습니다';
+
+  @override
+  String thumbnailCurrentFrame(int current, int total) {
+    return '현재 프레임: $current / $total';
+  }
+
+  @override
+  String get thumbnailStillImageOneFrame => '정지 이미지는 1프레임으로 취급합니다.';
+
+  @override
+  String get thumbnailLastSavedFrame => '마지막으로 저장한 프레임';
+
+  @override
+  String get thumbnailSelectFrame => '프레임 지정';
+
+  @override
+  String get commonApply => '적용';
 }

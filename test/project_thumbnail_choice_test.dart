@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/engine/niapro_serializer.dart';
+import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/screens/home/widgets/project_thumbnail_dialog.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -46,6 +47,8 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         locale: const Locale('ja'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(
           body: Builder(
             builder: (ctx) => TextButton(
