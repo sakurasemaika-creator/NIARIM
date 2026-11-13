@@ -402,6 +402,14 @@ FONT_LICENSES.txt`への本文・著作権表示の追記、`license_screen.dart
   （`beginSlotSave(…, replacing:)`→`saveToSlot(intent:)`）：書き終える時点の
   一覧で置き換える保存を決めると、保存中の読み直しで入った、利用者に見せて
   いない前の保存を消した（DISC094〜096、2026-11-13）。
+  保存の失敗は黙らない（DISC101〜104、2026-11-13）：削除できなければ一覧に残して
+  「保存データを削除できませんでした」（`deleteSaveWithFeedback`）、一覧を書けなければ
+  メモ・名前の変更は`false`を返して知らせる（`saveListUnwritten`・`saveListProblemText`）、
+  前の保存の後片付け（サムネイル・控え）を消せないだけなら記録して保存は成功のまま。
+  保存の画面の上部バーは`save_screen_app_bar.dart`（入らない画面名は出さない・「保存」は
+  入らなければアイコンだけ。判断4がアプリ全体に入ったら共通の部品へ置き換える）。
+  ツリーは`ListView.builder(reverse: true)`で下から伸びる作り（所有者の依頼）なので、
+  保存が1つでも根は一番下に出る。
 - **設定の引き継ぎ（.niatra）の読み込みは「この端末の内容を失わない・読み直しても変わらない」（DISC062）**：
   受け取った一覧の項目は各サービスの`mergeTransferred`が`lib/utils/transfer_merge.dart`の
   `mergeTransferredItems`で取り込む（IDは元のまま、同じ中身は同じ項目として整理〔お気に入り・
