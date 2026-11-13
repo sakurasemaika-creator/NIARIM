@@ -403,8 +403,8 @@ void main() {
       final reloaded = SettingsService();
       await reloaded.init();
       expect(reloaded.toolOptionDockOrder, isEmpty);
-      expect(reloaded.rightDockOrder.toSet(), CanvasDockPanel.values.toSet());
-      expect(reloaded.rightDockOrder.length, CanvasDockPanel.values.length);
+      expect(reloaded.rightDockOrder.toSet(), CanvasDockPanel.values.map(canonicalCanvasDock).toSet());
+      expect(reloaded.rightDockOrder.length, CanvasDockPanel.values.map(canonicalCanvasDock).toSet().length);
       expect(reloaded.isDesktopDockCollapsed(CanvasDockPanel.penSubTool), isTrue);
 
       for (final panel in List<CanvasDockPanel>.of(reloaded.rightDockOrder)) {
@@ -416,11 +416,11 @@ void main() {
       expect(restored.rightDockOrder, isEmpty);
       expect(
         restored.toolOptionDockOrder.toSet(),
-        CanvasDockPanel.values.toSet(),
+        CanvasDockPanel.values.map(canonicalCanvasDock).toSet(),
       );
       expect(
         restored.toolOptionDockOrder.length,
-        CanvasDockPanel.values.length,
+        CanvasDockPanel.values.map(canonicalCanvasDock).toSet().length,
       );
       expect(restored.isDesktopDockCollapsed(CanvasDockPanel.penSubTool), isTrue);
     },
