@@ -996,7 +996,13 @@ class _StorageScreenState extends State<StorageScreen> {
     final ps = context.read<ProjectService>();
     // ゴミ箱のフォルダ（中の作品ごと）も含めて空にする。
     final targets = ps.trash.map((p) => p.id).toSet();
-    final folderTargets = ps.trashedFolders.map((t) => t.folder.id).toSet();
+    // 読めていない作品を含むフォルダは消さない（中の読めた作品ごと残す）
+    // ので、消すものとして並べない。開いた後で読めなくなったものは、下で
+    // 消せなかったと知らせる。
+    final folderTargets = ps.trashedFolders
+        .where((t) => !ps.trashedFolderHasUnreadWorks(t))
+        .map((t) => t.folder.id)
+        .toSet();
     // 途中で失敗してから閉じた場合も、消せた分だけ大きさは変わっている。
     var attempted = false;
     await showDialog<bool>(

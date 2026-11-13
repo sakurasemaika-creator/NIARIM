@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
 
 import '../../../l10n/app_localizations.dart';
+import '../../../services/project_service.dart'
+    show TrashedFolderUnreadException;
 import '../../../utils/folder_persistence.dart';
 
 String folderSaveFailureText(AppLocalizations l10n, Object error) =>
-    error is FolderSaveException && error.partiallySaved
+    // 読めていない作品のために断ったときは、やり直しを促さない。
+    error is TrashedFolderUnreadException
+    ? l10n.homeProjectsLoadFailed
+    : error is FolderSaveException && error.partiallySaved
     ? l10n.folderChangesPartiallySaved
     : l10n.folderChangesSaveFailed;
 
