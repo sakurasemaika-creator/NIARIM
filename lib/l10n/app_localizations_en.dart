@@ -9449,8 +9449,8 @@ class AppLocalizationsEn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       coins,
       locale: localeName,
-      other: '$opals opals',
-      one: '$opals opal',
+      other: '$coins opals',
+      one: '$coins opal',
     );
     return '$_temp0 each day';
   }
@@ -9633,8 +9633,8 @@ class AppLocalizationsEn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       coins,
       locale: localeName,
-      other: '$opals opals',
-      one: '$opals opal',
+      other: '$coins opals',
+      one: '$coins opal',
     );
     return 'CLAIM: Earn $_temp0 for this milestone. Each milestone pays once per period. You may earn it again in a new period, but cannot claim an expired period.';
   }
@@ -9699,8 +9699,8 @@ class AppLocalizationsEn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       coins,
       locale: localeName,
-      other: '$opals opals',
-      one: '$opals opal',
+      other: '$coins opals',
+      one: '$coins opal',
     );
     return 'CLAIM: Completing the goal grants $_temp0. Each milestone can pay only once per period. Progress resets in a new week/month; rewards from the previous period cannot be claimed later.';
   }
@@ -9888,6 +9888,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String rewardUnlockReviewFixedTotal(String coins) {
-    return 'Total at fixed unit prices: $opals. The server does not yet support spending opals on individual benefits or overlapping exchanges. The price is final, but you can exchange only when the server returns an official quote. The official expiry is set by the server check right before exchanging.';
+    return 'Total at fixed unit prices: $coins. The server does not yet support spending opals on individual benefits or overlapping exchanges. The price is final, but you can exchange only when the server returns an official quote. The official expiry is set by the server check right before exchanging.';
   }
 }
