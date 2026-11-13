@@ -255,7 +255,7 @@ describe("creator mission endpoints", () => {
       workId: "abcdefghijk",
     }));
     expect(JSON.parse(resp.body ?? "{}")).toMatchObject({
-      pending: true, offeredCoins: 10, awardedCoins: 0,
+      pending: true, offeredCoins: 15, awardedCoins: 0,
       workId: "abcdefghijk",
     });
     const write = send.mock.calls.map(([c]) => c)
