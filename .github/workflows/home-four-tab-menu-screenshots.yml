@@ -13,6 +13,8 @@ on:
       - 'lib/services/project_service.dart'
       - 'lib/services/work_folder_service.dart'
       - 'lib/services/local_file_trash_service.dart'
+      - 'lib/widgets/home_collection_selection_scope.dart'
+      - 'lib/app_bootstrap.dart'
   workflow_dispatch:
 
 # Keep only the newest capture during rapid UI iterations.
