@@ -897,9 +897,16 @@ void main() {
       await _settleWithFiles(tester, rounds: 3);
       await tester.enterText(find.byType(TextField), '線画まで');
       await tester.tap(find.widgetWithText(FilledButton, '保存'));
+      // 保存（サムネイルの合成・書き込み・メモ）が終わってダイアログが
+      // 閉じるまで待つ（保存中のボタンは「保存」の文字ではなく回る印に
+      // なるので、文字が消えたことでは待てない。負荷の高い端末では
+      // 120ms程度では終わらなかった）。失敗の文が出たら待たない。
       for (
         var i = 0;
-        i < 40 && find.widgetWithText(FilledButton, '保存').evaluate().isNotEmpty;
+        i < 200 &&
+            (saveTree.getNodes(project.id).isEmpty ||
+                find.byType(AlertDialog).evaluate().isNotEmpty) &&
+            find.byKey(const Key('saveSlotDialogFailure')).evaluate().isEmpty;
         i++
       ) {
         await _settleWithFiles(tester, rounds: 1);
