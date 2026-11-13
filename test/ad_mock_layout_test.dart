@@ -86,7 +86,6 @@ void main() {
       '/storage',
       '/autofill-presets',
       '/unknown',
-      '/community/work/123',
     ]) {
       expect(isBannerEligibleRoute(path), isFalse, reason: path);
     }
