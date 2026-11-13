@@ -22,6 +22,9 @@ class NameEntryDialog extends StatefulWidget {
     this.initialName = '',
     this.labelText,
     this.hint,
+    this.failureText,
+    this.showsProgress = false,
+    this.closableWhileSubmitting = false,
   });
 
   final String title;
@@ -32,6 +35,18 @@ class NameEntryDialog extends StatefulWidget {
 
   /// 入力欄の下に出す補足。
   final Widget? hint;
+
+  /// [onSubmit]が失敗したときにダイアログの中に出す文（打った名前は残し、
+  /// 名前を打ち直すと消える）。nullなら文は出さない。
+  final String Function(Object error)? failureText;
+
+  /// 確定の処理中、確定ボタンの中に進んでいる印を出す（保存に時間の
+  /// かかることがあるフォルダの作成・名前の変更）。
+  final bool showsProgress;
+
+  /// 確定の処理中も「キャンセル」・戻る操作で閉じられる（閉じた後に処理が
+  /// 終わっても、下の画面は閉じない）。既定では処理中は閉じない。
+  final bool closableWhileSubmitting;
 
   /// 前後の空白を除いた名前を受け取る。終わったらダイアログを閉じる。
   final Future<void> Function(String name) onSubmit;
@@ -48,6 +63,8 @@ class _NameEntryDialogState extends State<NameEntryDialog> {
           extentOffset: widget.initialName.length,
         );
   bool _submitting = false;
+  Object? _failure;
+  final _failureKey = GlobalKey();
 
   @override
   void dispose() {
@@ -59,13 +76,26 @@ class _NameEntryDialogState extends State<NameEntryDialog> {
 
   Future<void> _submit() async {
     if (!_canSubmit) return;
-    setState(() => _submitting = true);
+    setState(() {
+      _submitting = true;
+      _failure = null;
+    });
     try {
       await widget.onSubmit(_controller.text.trim());
     } catch (error, stack) {
       // 失敗したら開いたまま、もう一度押せるようにする。
       AppErrorReporter.record(error, stack);
-      if (mounted) setState(() => _submitting = false);
+      if (mounted) {
+        setState(() {
+          _submitting = false;
+          _failure = error;
+        });
+        // 横向き・大きな文字では文が欄の下の見えない所に出ることがある。
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          final target = _failureKey.currentContext;
+          if (mounted && target != null) Scrollable.ensureVisible(target);
+        });
+      }
       return;
     }
     // 閉じ始めた後に終わった場合、popすると下の画面を閉じてしまう。
@@ -77,7 +107,11 @@ class _NameEntryDialogState extends State<NameEntryDialog> {
   @override
   Widget build(BuildContext context) {
     // 確定の処理中は閉じない（取り消したつもりでも名前は変わるため）。
-    return PopScope(canPop: !_submitting, child: _buildDialog(context));
+    // [NameEntryDialog.closableWhileSubmitting]のときだけ閉じられる。
+    return PopScope(
+      canPop: !_submitting || widget.closableWhileSubmitting,
+      child: _buildDialog(context),
+    );
   }
 
   Widget _buildDialog(BuildContext context) {
@@ -109,7 +143,7 @@ class _NameEntryDialogState extends State<NameEntryDialog> {
             controller: _controller,
             autofocus: true,
             textInputAction: TextInputAction.done,
-            onChanged: (_) => setState(() {}),
+            onChanged: (_) => setState(() => _failure = null),
             // 空のままEnterを押しても欄から抜けず、続けて打てる。
             onEditingComplete: () {},
             onSubmitted: (_) => _submit(),
@@ -119,21 +153,67 @@ class _NameEntryDialogState extends State<NameEntryDialog> {
             ),
           ),
           if (widget.hint != null) ...[const SizedBox(height: 8), widget.hint!],
+          if (_failure != null && widget.failureText != null) ...[
+            const SizedBox(height: 12),
+            Semantics(
+              key: _failureKey,
+              liveRegion: true,
+              child: Text(widget.failureText!(_failure!)),
+            ),
+          ],
+          // ボタンも中身と一緒にスクロールする（小さな画面・大きな文字で
+          // キーボードが開くと、下に固定したボタンの行が入らずはみ出し、
+          // 「作成」を押せなかった）。並び方はダイアログの操作の行と同じ。
+          const SizedBox(height: 24),
+          Align(
+            alignment: AlignmentDirectional.centerEnd,
+            child: OverflowBar(
+              alignment: MainAxisAlignment.end,
+              overflowAlignment: OverflowBarAlignment.end,
+              spacing: 8,
+              overflowSpacing: 8,
+              children: [
+                TextButton(
+                  onPressed: _submitting && !widget.closableWhileSubmitting
+                      ? null
+                      : () => Navigator.of(context).pop(),
+                  child: Text(
+                    widget.cancelLabel,
+                    style: TextStyle(shadows: cancelLabelShadows(context)),
+                  ),
+                ),
+                FilledButton(
+                  onPressed: _canSubmit ? _submit : null,
+                  // 確定の処理中は、ボタンの大きさを変えずに進んでいることを出す。
+                  child: !widget.showsProgress
+                      ? Text(widget.confirmLabel)
+                      : Builder(
+                          builder: (context) => Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              Opacity(
+                                opacity: _submitting ? 0 : 1,
+                                child: Text(widget.confirmLabel),
+                              ),
+                              if (_submitting)
+                                SizedBox.square(
+                                  dimension: 20,
+                                  child: CircularProgressIndicator(
+                                    color: DefaultTextStyle.of(
+                                      context,
+                                    ).style.color,
+                                    semanticsLabel: widget.confirmLabel,
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
-      actions: [
-        TextButton(
-          onPressed: _submitting ? null : () => Navigator.of(context).pop(),
-          child: Text(
-            widget.cancelLabel,
-            style: TextStyle(shadows: cancelLabelShadows(context)),
-          ),
-        ),
-        FilledButton(
-          onPressed: _canSubmit ? _submit : null,
-          child: Text(widget.confirmLabel),
-        ),
-      ],
     );
   }
 }

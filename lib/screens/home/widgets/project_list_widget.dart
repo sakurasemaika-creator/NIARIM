@@ -47,168 +47,42 @@ void showCreateFolderNameDialog(
 ) {
   showDialog<void>(
     context: context,
-    builder: (_) => _FolderNameDialog(onSave: onCreate),
+    builder: (dialogContext) =>
+        _folderNameDialog(dialogContext, onSave: onCreate),
   );
 }
 
-class _FolderNameDialog extends StatefulWidget {
-  const _FolderNameDialog({
-    required this.onSave,
-    this.initialName = '',
-    this.rename = false,
-  });
-  final Future<void> Function(String name) onSave;
-  final String initialName;
-  final bool rename;
-  @override
-  State<_FolderNameDialog> createState() => _FolderNameDialogState();
-}
-
-class _FolderNameDialogState extends State<_FolderNameDialog> {
-  late final TextEditingController _controller;
-  final _errorKey = GlobalKey();
-  bool _saving = false;
-  Object? _error;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = TextEditingController(text: widget.initialName);
-    _controller.selection = TextSelection(
-      baseOffset: 0,
-      extentOffset: widget.initialName.length,
-    );
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  Future<void> _submit() async {
-    final name = _controller.text.trim();
-    if (_saving || name.isEmpty) return;
-    setState(() {
-      _saving = true;
-      _error = null;
-    });
-    try {
-      await widget.onSave(name);
-      if (mounted) closeFolderRoute(context);
-      // Keep submission disabled through the closing route animation.
-    } catch (error, stackTrace) {
-      AppErrorReporter.record(error, stackTrace);
-      if (mounted) {
-        setState(() {
-          _saving = false;
-          _error = error;
-        });
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          final target = _errorKey.currentContext;
-          if (mounted && target != null) Scrollable.ensureVisible(target);
-        });
-      }
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final l10n = AppLocalizations.of(context)!;
-    final foreground =
-        theme.popupMenuTheme.textStyle?.color ?? theme.colorScheme.onSurface;
-    final heading =
-        (theme.dialogTheme.titleTextStyle ?? theme.textTheme.headlineSmall)
-            ?.copyWith(
-              color: foreground,
-              fontFamily: 'Kuramubon',
-              fontFamilyFallback: kHeadingFontFallback,
-            );
-    return Dialog(
-      insetPadding: const EdgeInsets.all(16),
-      constraints: const BoxConstraints(maxWidth: 560),
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
-        child: DefaultTextStyle.merge(
-          style: TextStyle(color: foreground),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Semantics(
-                namesRoute: true,
-                child: Text(
-                  widget.rename
-                      ? l10n.commonRename
-                      : l10n.projectListNewFolderTitle,
-                  style: heading,
-                ),
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: _controller,
-                autofocus: true,
-                enabled: !_saving,
-                style: TextStyle(color: foreground),
-                onChanged: (_) => setState(() {
-                  _error = null;
-                }),
-                decoration: InputDecoration(
-                  labelText: l10n.folderNameLabel,
-                  border: const OutlineInputBorder(),
-                ),
-              ),
-              if (!widget.rename) ...[
-                const SizedBox(height: 8),
-                Text(
-                  l10n.projectListFolderHint,
-                  style: TextStyle(fontSize: 11, color: foreground),
-                ),
-              ],
-              if (_error != null) ...[
-                const SizedBox(height: 12),
-                Semantics(
-                  key: _errorKey,
-                  liveRegion: true,
-                  child: Text(
-                    widget.rename ||
-                            (_error is FolderSaveException &&
-                                (_error as FolderSaveException).partiallySaved)
-                        ? folderSaveFailureText(l10n, _error!)
-                        : l10n.folderCreateFailed,
-                  ),
-                ),
-              ],
-              const SizedBox(height: 16),
-              OverflowBar(
-                alignment: MainAxisAlignment.end,
-                spacing: 8,
-                overflowSpacing: 8,
-                children: [
-                  TextButton(
-                    onPressed: () {
-                      if (ModalRoute.of(context)?.isCurrent ?? false) {
-                        Navigator.pop(context);
-                      }
-                    },
-                    child: Text(l10n.commonCancel),
-                  ),
-                  FolderSaveButton(
-                    onPressed: _controller.text.trim().isEmpty ? null : _submit,
-                    label: widget.rename
-                        ? l10n.commonChange
-                        : l10n.commonCreate,
-                    saving: _saving,
-                  ),
-                ],
-              ),
-            ],
+/// フォルダの名前を入力するダイアログ。[NameEntryDialog]に乗せる（Enterで
+/// 確定・二度押しで2つ作らない・空白だけの名前は確定しない・失敗したら
+/// 名前を残して開いたまま理由を出す）。以前の専用のダイアログは、Enterを
+/// 押しても作成しなかった。
+Widget _folderNameDialog(
+  BuildContext context, {
+  required Future<void> Function(String name) onSave,
+  String initialName = '',
+  bool rename = false,
+}) {
+  final l10n = AppLocalizations.of(context)!;
+  return NameEntryDialog(
+    title: rename ? l10n.commonRename : l10n.projectListNewFolderTitle,
+    confirmLabel: rename ? l10n.commonChange : l10n.commonCreate,
+    cancelLabel: l10n.commonCancel,
+    labelText: l10n.folderNameLabel,
+    initialName: initialName,
+    hint: rename
+        ? null
+        : Text(
+            l10n.projectListFolderHint,
+            style: const TextStyle(fontSize: 11),
           ),
-        ),
-      ),
-    );
-  }
+    failureText: (error) =>
+        rename || (error is FolderSaveException && error.partiallySaved)
+        ? folderSaveFailureText(l10n, error)
+        : l10n.folderCreateFailed,
+    showsProgress: true,
+    closableWhileSubmitting: true,
+    onSubmit: onSave,
+  );
 }
 
 void showRenameFolderNameDialog(
@@ -218,8 +92,12 @@ void showRenameFolderNameDialog(
 ) {
   showDialog<void>(
     context: context,
-    builder: (_) =>
-        _FolderNameDialog(onSave: onRename, initialName: name, rename: true),
+    builder: (dialogContext) => _folderNameDialog(
+      dialogContext,
+      onSave: onRename,
+      initialName: name,
+      rename: true,
+    ),
   );
 }
 
