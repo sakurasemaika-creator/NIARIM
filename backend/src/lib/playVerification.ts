@@ -45,8 +45,8 @@ export function playWorkloadIdentityConfig():
     { audience: string; serviceAccount: string } | null {
   const audience = process.env.PLAY_WIF_AUDIENCE ?? "";
   const serviceAccount = process.env.PLAY_VERIFIER_SERVICE_ACCOUNT ?? "";
-  if (!/^\\/\\/iam\\.googleapis\\.com\\/projects\\/[0-9]+\\/locations\\/global\\/workloadIdentityPools\\/[A-Za-z0-9_-]+\\/providers\\/[A-Za-z0-9_-]+$/.test(audience) ||
-      !/^[A-Za-z0-9._-]+@[A-Za-z0-9.-]+\\.iam\\.gserviceaccount\\.com$/.test(serviceAccount)) {
+  if (!/^\/\/iam\.googleapis\.com\/projects\/[0-9]+\/locations\/global\/workloadIdentityPools\/[A-Za-z0-9_-]+\/providers\/[A-Za-z0-9_-]+$/.test(audience) ||
+      !/^[A-Za-z0-9._-]+@[A-Za-z0-9.-]+\.iam\.gserviceaccount\.com$/.test(serviceAccount)) {
     return null;
   }
   return { audience, serviceAccount };
