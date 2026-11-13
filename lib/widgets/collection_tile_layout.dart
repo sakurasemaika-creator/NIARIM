@@ -251,7 +251,12 @@ String collectionTileDisplayName(BuildContext context, String name) {
       }
     }
     var text = characters.take(low).join();
-    if (characters[low].trim().isNotEmpty) {
+    // 語を空白で区切って書く字（英字・ハングル等）の語の途中で切れるとき
+    // だけ、その語を出さない。漢字・かなはどの字の間で切ってもよいので、
+    // 名前に空白があっても上限まで出す。
+    if (low > 0 &&
+        _inSpacedWord(characters[low - 1]) &&
+        _inSpacedWord(characters[low])) {
       final space = text.lastIndexOf(RegExp(r'\s'));
       if (space >= text.length ~/ 2) text = text.substring(0, space);
     }
@@ -263,6 +268,21 @@ String collectionTileDisplayName(BuildContext context, String name) {
 }
 
 final _displayNames = <(String, TextStyle, TextDirection, Locale?), String>{};
+
+/// [character]が、語を空白で区切って書く字（英字・数字・ハングル等）か。
+/// 空白と、どの字の間でも行を変えてよい字（漢字・かな・全角の字）は偽。
+bool _inSpacedWord(String character) {
+  if (character.trim().isEmpty) return false;
+  final rune = character.runes.first;
+  return !((rune >= 0x2E80 && rune <= 0x303F) ||
+      (rune >= 0x3040 && rune <= 0x30FF) ||
+      (rune >= 0x31F0 && rune <= 0x31FF) ||
+      (rune >= 0x3400 && rune <= 0x4DBF) ||
+      (rune >= 0x4E00 && rune <= 0x9FFF) ||
+      (rune >= 0xF900 && rune <= 0xFAFF) ||
+      (rune >= 0xFF00 && rune <= 0xFFEF) ||
+      (rune >= 0x20000 && rune <= 0x3FFFD));
+}
 
 /// The cover takes all available height above the name band. The name
 /// shows on up to two lines (see [collectionTileDisplayName]); extended
