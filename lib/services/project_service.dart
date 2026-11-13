@@ -915,6 +915,12 @@ class ProjectService extends ChangeNotifier {
   bool trashedFolderHasUnreadWorks(TrashedFolder record) =>
       _unreadWorksOf(record).isNotEmpty || _mayGainUnreadWorks(record);
 
+  /// [record]を移したときに読めていなかった作品が、読めたときにこのフォルダへ
+  /// 入るかもしれないか（[trashedFolderHasUnreadWorks]の一部）。その間は、
+  /// 記録の作品の件数（移したときに読めた作品だけ）が中身の数にならない。
+  bool trashedFolderMayGainWorks(TrashedFolder record) =>
+      _mayGainUnreadWorks(record);
+
   /// [record]を移したときに読めていなかった作品のうち、まだ読めていなくて、
   /// 読めたときにこのフォルダへ入りうるもの（1件ずつゴミ箱へ移した作品・
   /// 別のフォルダの記録へ入った作品は入らない）があるか。

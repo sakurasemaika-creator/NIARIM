@@ -4554,7 +4554,15 @@ class _TrashTabState extends State<_TrashTab> {
       record.projectIds.length,
       record.subfolders.length,
     );
-    final subtitle = unread
+    // 移したときに読めていなかった作品が、読めたときに入るかもしれない間は、
+    // 記録の件数（読めた作品だけ）を出さない（「中身なし」や少ない件数に
+    // なった）。読み込めていないことだけを出す。
+    final mayGain =
+        unread &&
+        context.read<ProjectService>().trashedFolderMayGainWorks(record);
+    final subtitle = mayGain
+        ? l10n.homeProjectsLoadFailed
+        : unread
         ? '$recorded\n${l10n.homeProjectsLoadFailed}'
         : projectNames.isNotEmpty
         ? projectNames.join('、')

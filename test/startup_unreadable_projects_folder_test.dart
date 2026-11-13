@@ -3109,14 +3109,15 @@ void main() {
     );
     expect(tester.widget<TextButton>(restore).onPressed, isNotNull);
     expect(tester.widget<TextButton>(copy).onPressed, isNotNull);
-    // 中身は読めた作品の名前ではなく記録の件数で、押せない理由も行の中に。
+    // 中身は読めた作品の名前ではなく、押せない理由を行の中に。件数は
+    // 出さない（記録の件数は、移したときに読めていなかった山を数えない）。
     expect(
       find.descendant(of: row, matching: find.textContaining('海')),
       findsNothing,
     );
     expect(
       find.descendant(of: row, matching: find.textContaining('プロジェクト2件')),
-      findsOneWidget,
+      findsNothing,
     );
     final reason = find.descendant(
       of: row,
@@ -4363,6 +4364,67 @@ void main() {
     addTearDown(fourth.dispose);
     await fourth.init();
     expectBack(fourth);
+  });
+
+  // ゴミ箱：フォルダ「旅行」の作品が「山」だけで、山を読めない間に旅行を
+  // ゴミ箱へ移すと、行は旅行を残す（完全削除を押せない）のに「中身なし」と
+  // 言った（記録の件数は、移したときに読めた作品だけを数える）。読めた
+  // 作品があるときも件数が少なかった。読めたときに入るかもしれない作品が
+  // ある間は件数を出さず、読み込めていないことを出す。
+  testWidgets('the trash row of a folder moved to Trash while its only work '
+      'was unread does not say it is empty', (tester) async {
+    tester.view.physicalSize = const Size(1280, 800);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    SharedPreferences.setMockInitialValues({
+      'first_launch': false,
+      'language': 'ja',
+      firstUseTooltipsSeenKey: kAllFirstUseTooltipKeys,
+    });
+    final seeded = await tester.runAsync(
+      () => _seed((service) async {
+        final folder = await service.createFolder('旅行');
+        final mountain = await _createWork(service, '山');
+        await service.moveToFolder(mountain.id, folder.id);
+        return (folder, mountain);
+      }),
+    );
+    final (folder, mountain) = seeded!;
+    storage.paths.blockReading(
+      '${storage.projectsPath}/${mountain.id}/${mountain.id}.niapro',
+    );
+    appRouter.go('/home');
+    final providers = await tester.runAsync(buildAppProviders);
+    await tester.pumpWidget(
+      MultiProvider(providers: providers!, child: const NiarimApp()),
+    );
+    await _settleWithFiles(tester);
+    final projects = tester
+        .element(find.byType(Scaffold).first)
+        .read<ProjectService>();
+    await tester.runAsync(() => projects.moveFolderToTrash(folder.id));
+    await _settleWithFiles(tester, rounds: 3);
+    final record = projects.trashedFolders.single;
+    expect(record.projectIds, isEmpty);
+    expect(projects.trashedFolderHasUnreadWorks(record), isTrue);
+    await tester.tap(find.byKey(const ValueKey('home_tab_3')));
+    await _settleWithFiles(tester);
+
+    final row = find.byKey(ValueKey('trashedFolder_${folder.id}'));
+    final delete = find.byKey(ValueKey('trashedFolderDelete_${folder.id}'));
+    expect(row, findsOneWidget);
+    expect(tester.widget<TextButton>(delete).onPressed, isNull);
+    final lines = [
+      for (final e
+          in find.descendant(of: row, matching: find.byType(Text)).evaluate())
+        ...?(e.widget as Text).data?.split('\n'),
+    ];
+    expect(lines, isNot(contains('中身なし')), reason: 'the row says it is empty');
+    expect(lines, contains('プロジェクトを読み込めませんでした'));
+    expect(tester.takeException(), isNull);
+    await tester.pumpWidget(const SizedBox.shrink());
+    appRouter.go('/');
   });
 }
 
