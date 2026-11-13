@@ -91,7 +91,7 @@ describe("JST recurring login mission catalog", () => {
       .mockResolvedValueOnce({Item:{...previous,weekClaimedMask:1}})
       .mockResolvedValueOnce({});
     await expect(recordRecurringLoginVisit("Nowner")).resolves.toEqual([
-      {id:"visit_week_3",period:"week",requiredDays:3,coins:5},
+      {id:"visit_week_3",period:"week",requiredDays:3,coins:10},
     ]);
     expect(send).toHaveBeenCalledTimes(4);
     const retry=send.mock.calls[3][0] as UpdateCommand;
@@ -131,15 +131,15 @@ describe("JST recurring login mission catalog", () => {
     const result=JSON.parse((await claimMyRecurringMission(
       req({missionId:"visit_week_3",coins:999999,days:999,owner:"Nattacker"})))
       .body??"{}");
-    expect(result).toMatchObject({claimed:true,awardedCoins:5});
+    expect(result).toMatchObject({claimed:true,awardedCoins:10});
     const transaction=send.mock.calls[1][0] as TransactWriteCommand;
     expect(transaction).toBeInstanceOf(TransactWriteCommand);
     const [state,wallet,journal]=transaction.input.TransactItems!;
     expect(state.Update?.Key?.pk).toBe("USER#Nowner");
     expect(state.Update?.ConditionExpression).toContain("#days >= :required");
     expect(state.Update?.ExpressionAttributeValues?.[":required"]).toBe(3);
-    expect(wallet.Update?.ExpressionAttributeValues?.[":coins"]).toBe(5);
-    expect(journal.Put?.Item?.deltaCoins).toBe(5);
+    expect(wallet.Update?.ExpressionAttributeValues?.[":coins"]).toBe(10);
+    expect(journal.Put?.Item?.deltaCoins).toBe(10);
   });
   it("already claimed is a zero-coin idempotent no-write response", async () => {
     process.env.RECURRING_MISSION_PAYOUTS_ENABLED="true";
