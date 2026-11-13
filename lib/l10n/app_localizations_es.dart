@@ -9140,7 +9140,8 @@ class AppLocalizationsEs extends AppLocalizations {
   String get rewardUnlockBestValue => 'Mejor valor';
 
   @override
-  String get rewardUnlockBestExplain => 'Reúne las mismas ventajas que Premium en un paquete con descuento';
+  String get rewardUnlockBestExplain =>
+      'Reúne las mismas ventajas que Premium en un paquete con descuento';
 
   @override
   String get rewardUnlockEarning =>
@@ -9196,7 +9197,8 @@ class AppLocalizationsEs extends AppLocalizations {
   String get rewardUnlockAllAds => 'Sin anuncios';
 
   @override
-  String get rewardUnlockFullPremium => 'Pack completo de ventajas (igual que Premium)';
+  String get rewardUnlockFullPremium =>
+      'Pack completo de ventajas (igual que Premium)';
 
   @override
   String get rewardUnlockChoose => 'Seleccionar';

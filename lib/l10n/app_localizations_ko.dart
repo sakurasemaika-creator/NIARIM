@@ -8713,7 +8713,8 @@ class AppLocalizationsKo extends AppLocalizations {
   String get rewardUnlockBestValue => '가장 경제적';
 
   @override
-  String get rewardUnlockBestExplain => 'Premium 회원과 동일한 대상 기능을 묶음 할인으로 이용할 수 있어요';
+  String get rewardUnlockBestExplain =>
+      'Premium 회원과 동일한 대상 기능을 묶음 할인으로 이용할 수 있어요';
 
   @override
   String get rewardUnlockEarning => 'Premium 회원도 코인을 미리 모을 수 있습니다';

@@ -14172,13 +14172,13 @@ abstract class AppLocalizations {
   /// No description provided for @homeCutSnackbar.
   ///
   /// In ja, this message translates to:
-  /// **'{count}件を切り取りました。移動先を開いて、右上の貼り付けを押してください。'**
+  /// **'{count}件を切り取りました。移動先を開いて、タブの下の貼り付けを押してください。'**
   String homeCutSnackbar(int count);
 
   /// No description provided for @homeCopiedSnackbar.
   ///
   /// In ja, this message translates to:
-  /// **'{count}件をコピーしました。貼り付けたい場所を開いて、右上の貼り付けを押してください。'**
+  /// **'{count}件をコピーしました。貼り付けたい場所を開いて、タブの下の貼り付けを押してください。'**
   String homeCopiedSnackbar(int count);
 
   /// No description provided for @homePastedSnackbar.
@@ -15810,7 +15810,7 @@ abstract class AppLocalizations {
   /// No description provided for @rewardUnlockBestExplain.
   ///
   /// In ja, this message translates to:
-  /// **'コインで全特典を揃えるより、お得なまとめ交換'**
+  /// **'プレミアム会員と同じ対象機能を、個別交換よりお得にまとめて使えます'**
   String get rewardUnlockBestExplain;
 
   /// No description provided for @rewardUnlockEarning.
@@ -15918,7 +15918,7 @@ abstract class AppLocalizations {
   /// No description provided for @rewardUnlockFullPremium.
   ///
   /// In ja, this message translates to:
-  /// **'全機能 + 全広告なし'**
+  /// **'特典コンプリートパック（プレミアム会員と同内容）'**
   String get rewardUnlockFullPremium;
 
   /// No description provided for @rewardUnlockChoose.

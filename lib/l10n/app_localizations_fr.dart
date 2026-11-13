@@ -9168,7 +9168,8 @@ class AppLocalizationsFr extends AppLocalizations {
   String get rewardUnlockBestValue => 'Meilleur rapport qualité-prix';
 
   @override
-  String get rewardUnlockBestExplain => 'Retrouvez les mêmes avantages que Premium dans un pack à tarif réduit';
+  String get rewardUnlockBestExplain =>
+      'Retrouvez les mêmes avantages que Premium dans un pack à tarif réduit';
 
   @override
   String get rewardUnlockEarning =>
@@ -9225,7 +9226,8 @@ class AppLocalizationsFr extends AppLocalizations {
   String get rewardUnlockAllAds => 'Sans publicité';
 
   @override
-  String get rewardUnlockFullPremium => 'Pack complet d\'avantages (comme l\'abonnement Premium)';
+  String get rewardUnlockFullPremium =>
+      'Pack complet d\'avantages (comme l\'abonnement Premium)';
 
   @override
   String get rewardUnlockChoose => 'Sélectionner';
