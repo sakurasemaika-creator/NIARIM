@@ -2141,6 +2141,12 @@ class _TimelineScreenState extends State<TimelineScreen> {
   /// ウォーターマークは専用トラックを持たず、画像素材と同じレイヤー機構
   /// 〔LayerType.watermark〕を使ってタイムライン素材として追加する）。
   void _showWatermarkPicker() {
+    if (!context.read<PremiumService>().isFeatureAvailable(
+      PremiumFeature.watermark,
+    )) {
+      showPremiumBanner(context);
+      return;
+    }
     final l10n = AppLocalizations.of(context)!;
     final watermarkService = context.read<WatermarkService>();
     final assets = watermarkService.assets;
@@ -2221,6 +2227,12 @@ class _TimelineScreenState extends State<TimelineScreen> {
   /// デフォルトで全フレーム＝常時表示。以後の表示範囲・不透明度・差し替えは
   /// レイヤーパネルから調整できる）。
   Future<void> _addWatermarkLayer(WatermarkAsset asset) async {
+    if (!mounted || !context.read<PremiumService>().isFeatureAvailable(
+      PremiumFeature.watermark,
+    )) {
+      if (mounted) showPremiumBanner(context);
+      return;
+    }
     final l10n = AppLocalizations.of(context)!;
     final sceneId = _selectedSceneId;
     if (sceneId == null) return;
@@ -2247,6 +2259,13 @@ class _TimelineScreenState extends State<TimelineScreen> {
             scale: defaultScale,
           );
     if (pixels == null || !mounted) return;
+    // Rasterization may outlive the server entitlement lease.
+    if (!context.read<PremiumService>().isFeatureAvailable(
+      PremiumFeature.watermark,
+    )) {
+      showPremiumBanner(context);
+      return;
+    }
 
     final layer = projectService.addLayer(
       projectId: widget.projectId,
@@ -2282,17 +2301,23 @@ class _TimelineScreenState extends State<TimelineScreen> {
 
   /// [layer]の角度・大きさ・不透明度の変更をピクセルへ反映し直す
   /// （タイムラインでウォーターマークをタップして編集した際に呼ばれる）。
-  Future<void> _reRasterizeWatermark(
+  Future<bool> _reRasterizeWatermark(
     Layer layer,
     LayerHome home, {
     required double angle,
     required double scale,
   }) async {
+    if (!mounted || !context.read<PremiumService>().isFeatureAvailable(
+      PremiumFeature.watermark,
+    )) {
+      if (mounted) showPremiumBanner(context);
+      return false;
+    }
     final watermarkService = context.read<WatermarkService>();
     final asset = watermarkService.assets
         .where((a) => a.id == layer.watermarkAssetId)
         .firstOrNull;
-    if (asset == null || !mounted) return;
+    if (asset == null || !mounted) return false;
     final projectService = context.read<ProjectService>();
     final tileManager = projectService.tileManagerOf(widget.projectId);
     final w = tileManager.canvasWidth;
@@ -2306,7 +2331,13 @@ class _TimelineScreenState extends State<TimelineScreen> {
             angle: angle,
             scale: scale,
           );
-    if (pixels == null || !mounted) return;
+    if (pixels == null || !mounted) return false;
+    if (!context.read<PremiumService>().isFeatureAvailable(
+      PremiumFeature.watermark,
+    )) {
+      showPremiumBanner(context);
+      return false;
+    }
     pixels = _applyWatermarkEffects(pixels, w, h, asset);
     tileManager.replaceLayerPixels(
       projectService.tileKeyFor(
@@ -2317,6 +2348,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
       ),
       pixels,
     );
+    return true;
   }
 
   /// ウォーターマークのドロップシャドウ・縁取りを適用する。ウォーターマーク
@@ -5130,13 +5162,16 @@ class _TimelineScreenState extends State<TimelineScreen> {
             FilledButton(
               onPressed: () async {
                 Navigator.pop(ctx);
-                await _reRasterizeWatermark(
+                if (!await _reRasterizeWatermark(
                   layer,
                   home,
                   angle: angle,
                   scale: scale,
-                );
-                if (!mounted) return;
+                )) return;
+                if (!mounted ||
+                    !context.read<PremiumService>().isFeatureAvailable(
+                      PremiumFeature.watermark,
+                    )) return;
                 ps.updateLayer(
                   projectId: widget.projectId,
                   sceneId: home.sceneId,
