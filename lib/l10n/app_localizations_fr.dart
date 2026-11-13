@@ -9225,7 +9225,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get rewardUnlockAllAds => 'Sans publicité';
 
   @override
-  String get rewardUnlockFullPremium => 'Pack tous les avantages';
+  String get rewardUnlockFullPremium => 'Pack complet d\'avantages (comme l\'abonnement Premium)';
 
   @override
   String get rewardUnlockChoose => 'Sélectionner';
