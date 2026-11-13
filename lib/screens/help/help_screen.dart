@@ -523,6 +523,12 @@ class _HelpScreenState extends State<HelpScreen> {
       category: l10n.helpCategorySettings,
     ),
     _HelpEntry(
+      topicKey: 'ショートカット設定',
+      title: l10n.shortcutSettingsTitle,
+      description: l10n.helpShortcutSettingsDesc,
+      category: l10n.helpCategorySettings,
+    ),
+    _HelpEntry(
       topicKey: 'ジェスチャー設定',
       title: l10n.helpGestureSettingsTitle,
       description: l10n.helpGestureSettingsDesc,

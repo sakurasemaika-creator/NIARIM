@@ -198,7 +198,9 @@ Future<String?> _promptFolderName(
           ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, controller.text),
-            child: const Text('OK'),
+            child: Text(
+              initial == null ? l10n.commonCreate : l10n.commonRename,
+            ),
           ),
         ],
       ),

@@ -2547,7 +2547,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
                                       Expanded(
                                         child: IgnorePointer(
                                           child: Semantics(
-                                            label: '現在色',
+                                            label:
+                                                l.colorPickerCurrentColorLabel,
                                             child: ClipRRect(
                                               borderRadius:
                                                   BorderRadius.circular(3),

@@ -9505,4 +9505,289 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get commonApply => '적용';
+
+  @override
+  String get commonShare => '공유';
+
+  @override
+  String get shareCardExportMenu => '공유 카드 내보내기';
+
+  @override
+  String get shareCardCreatedTitle => '공유 카드를 만들었습니다';
+
+  @override
+  String get shareCardKeepOriginalNote =>
+      '원본 PNG 파일을 그대로 저장하거나 공유해 주세요. SNS에서 이미지를 다시 저장하면 불러오기에 필요한 데이터가 사라질 수 있습니다.';
+
+  @override
+  String get shareCardSaveToDevice => '기기에 저장';
+
+  @override
+  String get shareCardSaveDialogTitle => '공유 카드 저장 위치';
+
+  @override
+  String get shareCardSavedSnackbar => '공유 카드를 저장했습니다';
+
+  @override
+  String shareCardSaveFailedSnackbar(String error) {
+    return '공유 카드를 저장하지 못했습니다: $error';
+  }
+
+  @override
+  String shareCardImportConfirmTitle(String kind) {
+    String _temp0 = intl.Intl.selectLogic(kind, {
+      'brush': '브러시를 불러올까요?',
+      'tone': '스크린톤을 불러올까요?',
+      'other': '스탬프를 불러올까요?',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String shareCardAddedSnackbar(String kind, String name) {
+    String _temp0 = intl.Intl.selectLogic(kind, {
+      'brush': '브러시 ‘$name’을(를) 추가했습니다',
+      'tone': '스크린톤 ‘$name’을(를) 추가했습니다',
+      'other': '스탬프 ‘$name’을(를) 추가했습니다',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String shareCardWrongKind(String kind) {
+    String _temp0 = intl.Intl.selectLogic(kind, {
+      'brush': '브러시 공유 카드입니다. 브러시 목록에서 불러와 주세요.',
+      'tone': '스크린톤 공유 카드입니다. 스크린톤 목록에서 불러와 주세요.',
+      'other': '스탬프 공유 카드입니다. 스탬프 목록에서 불러와 주세요.',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String shareCardImportFailedSnackbar(String error) {
+    return '공유 카드를 불러오지 못했습니다: $error';
+  }
+
+  @override
+  String get communityUnfollowAction => '팔로우 취소';
+
+  @override
+  String get communityUnfollowedLabel => '팔로우 취소됨';
+
+  @override
+  String get communityFollowingListEmpty => '팔로우 중인 사용자가 없습니다';
+
+  @override
+  String get communityRecentlyUnfollowedHeader => '최근 팔로우를 취소한 사용자';
+
+  @override
+  String communityMyWorksStatusScheduled(DateTime date) {
+    final intl.DateFormat dateDateFormat = intl.DateFormat.yMd(
+      localeName,
+    ).add_jm();
+    final String dateString = dateDateFormat.format(date);
+
+    return '예약 공개 중 • $dateString';
+  }
+
+  @override
+  String communityMyWorksStatusScheduledHidden(DateTime date) {
+    final intl.DateFormat dateDateFormat = intl.DateFormat.yMd(
+      localeName,
+    ).add_jm();
+    final String dateString = dateDateFormat.format(date);
+
+    return '예약 공개 중 • $dateString • 작품 광장 비공개';
+  }
+
+  @override
+  String get communityMyWorksStatusSchedulePassed =>
+      '예약 시간 지남 • YouTube 공개 처리 확인 중';
+
+  @override
+  String get communityWorkDetailYoutubeOpenFailed => 'YouTube 동영상을 열 수 없습니다';
+
+  @override
+  String get communityPlayerNotLinked => '연결된 YouTube 동영상이 없습니다';
+
+  @override
+  String get communityPlayerPlaybackFailed => 'YouTube 동영상을 재생하지 못했습니다';
+
+  @override
+  String communityPlayerTooSmall(int size) {
+    return '동영상을 재생하려면 가로세로 ${size}px 이상의 표시 공간이 필요합니다';
+  }
+
+  @override
+  String get communityPlaybackDeletedTitle => '삭제된 동영상';
+
+  @override
+  String get communityPlaybackDeletedBody => '삭제된 동영상이라 재생할 수 없습니다.';
+
+  @override
+  String get communityPlaybackPrivateTitle => '비공개 동영상';
+
+  @override
+  String get communityPlaybackPrivateBody => '게시자의 공개 설정으로 인해 재생할 수 없습니다.';
+
+  @override
+  String get communityPlaybackUnavailableTitle => '동영상을 사용할 수 없음';
+
+  @override
+  String get communityPlaybackUnavailableBody =>
+      '삭제되었거나 비공개일 수 있습니다. 상태를 확인할 수 없습니다.';
+
+  @override
+  String get communityPlaybackUnknownTitle => '상태 확인 실패';
+
+  @override
+  String get communityPlaybackUnknownBody => '네트워크 또는 서비스 문제로 확인하지 못했습니다.';
+
+  @override
+  String get communityPlaybackCheckingTitle => '동영상 확인 중';
+
+  @override
+  String get communityPlaybackCheckingBody => '재생 가능 여부를 확인하고 있습니다.';
+
+  @override
+  String get communityPlaybackRecheck => '다시 확인';
+
+  @override
+  String get communityPostThumbnailHeading => '썸네일';
+
+  @override
+  String get communityPostThumbnailUnreadable =>
+      '이미지를 불러올 수 없습니다. 다른 이미지를 선택해 주세요.';
+
+  @override
+  String get communityPostThumbnailApplied => 'YouTube에 썸네일을 설정했습니다';
+
+  @override
+  String get communityPostThumbnailAutoHint =>
+      '지정하지 않으면 YouTube의 자동 썸네일을 사용합니다.';
+
+  @override
+  String get communityPostThumbnailPickImage => '이미지 지정';
+
+  @override
+  String get communityPostThumbnailPickFrame => '동영상 프레임 지정';
+
+  @override
+  String get communityPostThumbnailUseAuto => '자동 썸네일로 되돌리기';
+
+  @override
+  String get communityPostThumbnailWrongFormat => 'PNG 또는 JPEG 이미지를 선택해 주세요';
+
+  @override
+  String communityPostThumbnailTooLarge(int mb) {
+    return '썸네일 이미지는 ${mb}MB 이하로 해 주세요';
+  }
+
+  @override
+  String communityPostThumbnailPickFailed(String error) {
+    return '이미지를 선택하지 못했습니다: $error';
+  }
+
+  @override
+  String get communityPostFramePickerTitle => '썸네일로 쓸 프레임 선택';
+
+  @override
+  String communityPostFramePickerPosition(String current, String total) {
+    return '$current / $total초';
+  }
+
+  @override
+  String get communityPostFramePickerUse => '이 프레임 사용';
+
+  @override
+  String get communityPostVideoLengthUnavailable => '동영상 재생 시간을 가져올 수 없습니다';
+
+  @override
+  String get communityPostFrameUnavailable => '동영상 프레임을 가져올 수 없습니다';
+
+  @override
+  String get communityPostFrameUnsupported =>
+      '이 환경에서는 동영상 프레임을 가져올 수 없습니다. 이미지를 선택해 주세요.';
+
+  @override
+  String communityPostFrameFailed(String error) {
+    return '프레임을 가져오지 못했습니다: $error';
+  }
+
+  @override
+  String communityPostScheduleTooSoon(int minutes) {
+    return '현재 시각에서 $minutes분 이상 뒤의 시간을 지정해 주세요';
+  }
+
+  @override
+  String get communityPostVisibilityPrivateTitle => '비공개';
+
+  @override
+  String get communityPostVisibilityPrivateHelp =>
+      'YouTube와 작품 광장 모두에 공개되지 않습니다.';
+
+  @override
+  String get communityPostVisibilityScheduledTitle => '날짜와 시간을 지정해 예약 공개';
+
+  @override
+  String get communityPostVisibilityScheduledHelp =>
+      '지정한 시간까지 YouTube에서 비공개이며, 공개되면 작품 광장에도 표시됩니다.';
+
+  @override
+  String get communityPostScheduleUnset => '공개 일시가 설정되지 않았습니다';
+
+  @override
+  String communityPostScheduleAt(DateTime date) {
+    final intl.DateFormat dateDateFormat = intl.DateFormat.yMd(
+      localeName,
+    ).add_jm();
+    final String dateString = dateDateFormat.format(date);
+
+    return '공개 예정: $dateString';
+  }
+
+  @override
+  String get communityPostScheduleChoose => '예약 일시 선택';
+
+  @override
+  String get communityPostScheduleChange => '예약 일시 변경';
+
+  @override
+  String get fontDownloadNetworkError => '네트워크에 연결할 수 없습니다.';
+
+  @override
+  String get fontDownloadUnavailable => '이 폰트는 불러올 수 없습니다.';
+
+  @override
+  String get fontDownloadCorrupted => '폰트 파일이 손상되었습니다.';
+
+  @override
+  String get fontCategorySansSerif => '고딕';
+
+  @override
+  String get fontCategorySerif => '명조·세리프';
+
+  @override
+  String get fontCategoryDisplay => '장식';
+
+  @override
+  String get fontCategoryHandwriting => '손글씨';
+
+  @override
+  String get fontCategoryMonospace => '고정폭';
+
+  @override
+  String fontCatalogEntrySubtitle(String category, String license) {
+    return '$category · $license';
+  }
+
+  @override
+  String get brushSettingsPaperGrain => '종이 결·입자';
+
+  @override
+  String get colorPickerCurrentColorLabel => '현재 색상';
+
+  @override
+  String get helpShortcutSettingsDesc =>
+      '키보드나 왼손 장치의 키에 도구(브러시와 굵기까지 지정 가능)나 실행 취소, 다시 실행, 재생, 프레임 이동, 전체 선택, 복사, 잘라내기, 붙여넣기 같은 동작을 할당하는 화면입니다. 캔버스와 타임라인 모두에서 사용할 수 있습니다. 이미 다른 동작에 쓰고 있는 키 조합을 할당하려 하면 바꿔도 되는지 확인합니다.';
 }

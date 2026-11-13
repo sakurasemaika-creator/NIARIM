@@ -10073,4 +10073,304 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get commonApply => 'Apply';
+
+  @override
+  String get commonShare => 'Share';
+
+  @override
+  String get shareCardExportMenu => 'Export share card';
+
+  @override
+  String get shareCardCreatedTitle => 'Share card created';
+
+  @override
+  String get shareCardKeepOriginalNote =>
+      'Save or share the original PNG file as is. Re-saving the image through social media can remove the data needed to import it.';
+
+  @override
+  String get shareCardSaveToDevice => 'Save to device';
+
+  @override
+  String get shareCardSaveDialogTitle => 'Save share card';
+
+  @override
+  String get shareCardSavedSnackbar => 'Share card saved';
+
+  @override
+  String shareCardSaveFailedSnackbar(String error) {
+    return 'Couldn’t save the share card: $error';
+  }
+
+  @override
+  String shareCardImportConfirmTitle(String kind) {
+    String _temp0 = intl.Intl.selectLogic(kind, {
+      'brush': 'Import this brush?',
+      'tone': 'Import this screentone?',
+      'other': 'Import this stamp?',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String shareCardAddedSnackbar(String kind, String name) {
+    String _temp0 = intl.Intl.selectLogic(kind, {
+      'brush': 'Added the brush “$name”',
+      'tone': 'Added the screentone “$name”',
+      'other': 'Added the stamp “$name”',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String shareCardWrongKind(String kind) {
+    String _temp0 = intl.Intl.selectLogic(kind, {
+      'brush': 'This is a brush share card. Import it from the brush list.',
+      'tone':
+          'This is a screentone share card. Import it from the screentone list.',
+      'other': 'This is a stamp share card. Import it from the stamp list.',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String shareCardImportFailedSnackbar(String error) {
+    return 'Couldn’t import the share card: $error';
+  }
+
+  @override
+  String get communityUnfollowAction => 'Unfollow';
+
+  @override
+  String get communityUnfollowedLabel => 'Unfollowed';
+
+  @override
+  String get communityFollowingListEmpty => 'You’re not following anyone yet';
+
+  @override
+  String get communityRecentlyUnfollowedHeader => 'Recently unfollowed';
+
+  @override
+  String communityMyWorksStatusScheduled(DateTime date) {
+    final intl.DateFormat dateDateFormat = intl.DateFormat.yMd(
+      localeName,
+    ).add_jm();
+    final String dateString = dateDateFormat.format(date);
+
+    return 'Scheduled • $dateString';
+  }
+
+  @override
+  String communityMyWorksStatusScheduledHidden(DateTime date) {
+    final intl.DateFormat dateDateFormat = intl.DateFormat.yMd(
+      localeName,
+    ).add_jm();
+    final String dateString = dateDateFormat.format(date);
+
+    return 'Scheduled • $dateString • Hidden in the Work Plaza';
+  }
+
+  @override
+  String get communityMyWorksStatusSchedulePassed =>
+      'Scheduled time passed • Checking publication on YouTube';
+
+  @override
+  String get communityWorkDetailYoutubeOpenFailed =>
+      'Couldn’t open the video on YouTube';
+
+  @override
+  String get communityPlayerNotLinked => 'No YouTube video is linked';
+
+  @override
+  String get communityPlayerPlaybackFailed => 'Couldn’t play the YouTube video';
+
+  @override
+  String communityPlayerTooSmall(int size) {
+    return 'Video playback needs at least $size × $size px of space';
+  }
+
+  @override
+  String get communityPlaybackDeletedTitle => 'Video deleted';
+
+  @override
+  String get communityPlaybackDeletedBody =>
+      'This video has been deleted and cannot be played.';
+
+  @override
+  String get communityPlaybackPrivateTitle => 'Private video';
+
+  @override
+  String get communityPlaybackPrivateBody =>
+      'This video can’t be played because of its privacy settings.';
+
+  @override
+  String get communityPlaybackUnavailableTitle => 'Video unavailable';
+
+  @override
+  String get communityPlaybackUnavailableBody =>
+      'It may have been deleted or made private. Its status can’t be confirmed.';
+
+  @override
+  String get communityPlaybackUnknownTitle => 'Couldn’t check the video';
+
+  @override
+  String get communityPlaybackUnknownBody =>
+      'A connection or service problem prevented the check.';
+
+  @override
+  String get communityPlaybackCheckingTitle => 'Checking video';
+
+  @override
+  String get communityPlaybackCheckingBody =>
+      'Checking whether this video can be played.';
+
+  @override
+  String get communityPlaybackRecheck => 'Try again';
+
+  @override
+  String get communityPostThumbnailHeading => 'Thumbnail';
+
+  @override
+  String get communityPostThumbnailUnreadable =>
+      'Couldn’t load the image. Please choose another one.';
+
+  @override
+  String get communityPostThumbnailApplied => 'Thumbnail set on YouTube';
+
+  @override
+  String get communityPostThumbnailAutoHint =>
+      'If you don’t choose one, YouTube’s automatic thumbnail is used.';
+
+  @override
+  String get communityPostThumbnailPickImage => 'Choose image';
+
+  @override
+  String get communityPostThumbnailPickFrame => 'Choose a video frame';
+
+  @override
+  String get communityPostThumbnailUseAuto => 'Use automatic thumbnail';
+
+  @override
+  String get communityPostThumbnailWrongFormat => 'Choose a PNG or JPEG image';
+
+  @override
+  String communityPostThumbnailTooLarge(int mb) {
+    return 'The thumbnail image must be $mb MB or smaller';
+  }
+
+  @override
+  String communityPostThumbnailPickFailed(String error) {
+    return 'Couldn’t use the image: $error';
+  }
+
+  @override
+  String get communityPostFramePickerTitle =>
+      'Choose a frame for the thumbnail';
+
+  @override
+  String communityPostFramePickerPosition(String current, String total) {
+    return '$current / $total s';
+  }
+
+  @override
+  String get communityPostFramePickerUse => 'Use this frame';
+
+  @override
+  String get communityPostVideoLengthUnavailable =>
+      'Couldn’t read the video’s length';
+
+  @override
+  String get communityPostFrameUnavailable =>
+      'Couldn’t get the frame from the video';
+
+  @override
+  String get communityPostFrameUnsupported =>
+      'Frames can’t be taken from videos on this device. Please choose an image instead.';
+
+  @override
+  String communityPostFrameFailed(String error) {
+    return 'Couldn’t get the frame: $error';
+  }
+
+  @override
+  String communityPostScheduleTooSoon(int minutes) {
+    String _temp0 = intl.Intl.pluralLogic(
+      minutes,
+      locale: localeName,
+      other: 'Choose a time at least $minutes minutes from now',
+      one: 'Choose a time at least $minutes minute from now',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get communityPostVisibilityPrivateTitle => 'Private';
+
+  @override
+  String get communityPostVisibilityPrivateHelp =>
+      'Not shown to the public on YouTube or in the Work Plaza.';
+
+  @override
+  String get communityPostVisibilityScheduledTitle => 'Schedule publication';
+
+  @override
+  String get communityPostVisibilityScheduledHelp =>
+      'Private on YouTube until the chosen time, then also shown in the Work Plaza.';
+
+  @override
+  String get communityPostScheduleUnset => 'No publication time set';
+
+  @override
+  String communityPostScheduleAt(DateTime date) {
+    final intl.DateFormat dateDateFormat = intl.DateFormat.yMd(
+      localeName,
+    ).add_jm();
+    final String dateString = dateDateFormat.format(date);
+
+    return 'Publishes: $dateString';
+  }
+
+  @override
+  String get communityPostScheduleChoose => 'Choose a time';
+
+  @override
+  String get communityPostScheduleChange => 'Change the time';
+
+  @override
+  String get fontDownloadNetworkError => 'Can’t connect to the network.';
+
+  @override
+  String get fontDownloadUnavailable => 'This font can’t be downloaded.';
+
+  @override
+  String get fontDownloadCorrupted => 'The font file is damaged.';
+
+  @override
+  String get fontCategorySansSerif => 'Sans serif';
+
+  @override
+  String get fontCategorySerif => 'Serif';
+
+  @override
+  String get fontCategoryDisplay => 'Display';
+
+  @override
+  String get fontCategoryHandwriting => 'Handwriting';
+
+  @override
+  String get fontCategoryMonospace => 'Monospace';
+
+  @override
+  String fontCatalogEntrySubtitle(String category, String license) {
+    return '$category · $license';
+  }
+
+  @override
+  String get brushSettingsPaperGrain => 'Paper grain';
+
+  @override
+  String get colorPickerCurrentColorLabel => 'Current color';
+
+  @override
+  String get helpShortcutSettingsDesc =>
+      'Assign keys on a keyboard or left-hand device to tools (down to a specific brush and size) or to actions such as undo, redo, play, frame stepping, select all, copy, cut and paste. Shortcuts work in both Canvas and Timeline. If a key combination is already used by another action, you’re asked before it’s replaced.';
 }

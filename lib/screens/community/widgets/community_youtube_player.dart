@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 
+import '../../../l10n/app_localizations.dart';
+
 /// The only YouTube media surface used by Community. Video files are never
 /// downloaded or played outside the official YouTube IFrame player.
 /// Parents must validate NIARIM + YouTube visibility before mounting this.
@@ -174,7 +176,9 @@ class _CommunityYoutubePlayerState extends State<CommunityYoutubePlayer> {
   @override
   Widget build(BuildContext context) {
     if (!CommunityYoutubePlayer.isValidVideoId(widget.videoId)) {
-      return const Center(child: Text('YouTube動画が連携されていません'));
+      return Center(
+        child: Text(AppLocalizations.of(context)!.communityPlayerNotLinked),
+      );
     }
     final debugBuilder = CommunityYoutubePlayer.debugPlayerBuilder;
     if (debugBuilder != null) {
@@ -185,7 +189,11 @@ class _CommunityYoutubePlayerState extends State<CommunityYoutubePlayer> {
       );
     }
     if (_playerFailed) {
-      return const Center(child: Text('YouTube動画を再生できませんでした'));
+      return Center(
+        child: Text(
+          AppLocalizations.of(context)!.communityPlayerPlaybackFailed,
+        ),
+      );
     }
     final controller = _controller;
     if (controller == null) return const SizedBox.shrink();
@@ -193,7 +201,11 @@ class _CommunityYoutubePlayerState extends State<CommunityYoutubePlayer> {
       builder: (context, box) {
         // YouTube's own minimum embedded player viewport is 200 x 200.
         if (box.maxWidth < 200 || box.maxHeight < 200) {
-          return const Center(child: Text('動画再生には200px以上の表示領域が必要です'));
+          return Center(
+            child: Text(
+              AppLocalizations.of(context)!.communityPlayerTooSmall(200),
+            ),
+          );
         }
         return YoutubePlayer(
           controller: controller,

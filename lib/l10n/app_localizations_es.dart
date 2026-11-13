@@ -10223,4 +10223,311 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get commonApply => 'Aplicar';
+
+  @override
+  String get commonShare => 'Compartir';
+
+  @override
+  String get shareCardExportMenu => 'Exportar tarjeta para compartir';
+
+  @override
+  String get shareCardCreatedTitle => 'Tarjeta para compartir creada';
+
+  @override
+  String get shareCardKeepOriginalNote =>
+      'Guarda o comparte el archivo PNG original tal cual. Si vuelves a guardar la imagen desde una red social, pueden perderse los datos necesarios para importarla.';
+
+  @override
+  String get shareCardSaveToDevice => 'Guardar en el dispositivo';
+
+  @override
+  String get shareCardSaveDialogTitle => 'Guardar tarjeta para compartir';
+
+  @override
+  String get shareCardSavedSnackbar => 'Tarjeta para compartir guardada';
+
+  @override
+  String shareCardSaveFailedSnackbar(String error) {
+    return 'No se pudo guardar la tarjeta: $error';
+  }
+
+  @override
+  String shareCardImportConfirmTitle(String kind) {
+    String _temp0 = intl.Intl.selectLogic(kind, {
+      'brush': '¿Importar este pincel?',
+      'tone': '¿Importar esta trama?',
+      'other': '¿Importar este sello?',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String shareCardAddedSnackbar(String kind, String name) {
+    String _temp0 = intl.Intl.selectLogic(kind, {
+      'brush': 'Se añadió el pincel «$name»',
+      'tone': 'Se añadió la trama «$name»',
+      'other': 'Se añadió el sello «$name»',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String shareCardWrongKind(String kind) {
+    String _temp0 = intl.Intl.selectLogic(kind, {
+      'brush':
+          'Esta es una tarjeta de pincel. Impórtala desde la lista de pinceles.',
+      'tone':
+          'Esta es una tarjeta de trama. Impórtala desde la lista de tramas.',
+      'other':
+          'Esta es una tarjeta de sello. Impórtala desde la lista de sellos.',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String shareCardImportFailedSnackbar(String error) {
+    return 'No se pudo importar la tarjeta: $error';
+  }
+
+  @override
+  String get communityUnfollowAction => 'Dejar de seguir';
+
+  @override
+  String get communityUnfollowedLabel => 'Ya no lo sigues';
+
+  @override
+  String get communityFollowingListEmpty => 'Todavía no sigues a nadie';
+
+  @override
+  String get communityRecentlyUnfollowedHeader =>
+      'Dejaste de seguir recientemente';
+
+  @override
+  String communityMyWorksStatusScheduled(DateTime date) {
+    final intl.DateFormat dateDateFormat = intl.DateFormat.yMd(
+      localeName,
+    ).add_jm();
+    final String dateString = dateDateFormat.format(date);
+
+    return 'Programado • $dateString';
+  }
+
+  @override
+  String communityMyWorksStatusScheduledHidden(DateTime date) {
+    final intl.DateFormat dateDateFormat = intl.DateFormat.yMd(
+      localeName,
+    ).add_jm();
+    final String dateString = dateDateFormat.format(date);
+
+    return 'Programado • $dateString • Oculto en la Plaza de Obras';
+  }
+
+  @override
+  String get communityMyWorksStatusSchedulePassed =>
+      'Hora programada superada • Comprobando la publicación en YouTube';
+
+  @override
+  String get communityWorkDetailYoutubeOpenFailed =>
+      'No se pudo abrir el vídeo en YouTube';
+
+  @override
+  String get communityPlayerNotLinked =>
+      'No hay ningún vídeo de YouTube vinculado';
+
+  @override
+  String get communityPlayerPlaybackFailed =>
+      'No se pudo reproducir el vídeo de YouTube';
+
+  @override
+  String communityPlayerTooSmall(int size) {
+    return 'Para reproducir el vídeo se necesita un espacio de al menos $size × $size px';
+  }
+
+  @override
+  String get communityPlaybackDeletedTitle => 'Vídeo eliminado';
+
+  @override
+  String get communityPlaybackDeletedBody =>
+      'Este vídeo se ha eliminado y no se puede reproducir.';
+
+  @override
+  String get communityPlaybackPrivateTitle => 'Vídeo privado';
+
+  @override
+  String get communityPlaybackPrivateBody =>
+      'La configuración de privacidad impide reproducirlo.';
+
+  @override
+  String get communityPlaybackUnavailableTitle => 'Vídeo no disponible';
+
+  @override
+  String get communityPlaybackUnavailableBody =>
+      'Puede que se haya eliminado o sea privado. No se puede confirmar su estado.';
+
+  @override
+  String get communityPlaybackUnknownTitle => 'No se pudo comprobar';
+
+  @override
+  String get communityPlaybackUnknownBody =>
+      'Un error de conexión o del servicio impidió la comprobación.';
+
+  @override
+  String get communityPlaybackCheckingTitle => 'Comprobando el vídeo';
+
+  @override
+  String get communityPlaybackCheckingBody =>
+      'Comprobando si se puede reproducir.';
+
+  @override
+  String get communityPlaybackRecheck => 'Reintentar';
+
+  @override
+  String get communityPostThumbnailHeading => 'Miniatura';
+
+  @override
+  String get communityPostThumbnailUnreadable =>
+      'No se pudo cargar la imagen. Elige otra.';
+
+  @override
+  String get communityPostThumbnailApplied =>
+      'Miniatura configurada en YouTube';
+
+  @override
+  String get communityPostThumbnailAutoHint =>
+      'Si no eliges ninguna, se usará la miniatura automática de YouTube.';
+
+  @override
+  String get communityPostThumbnailPickImage => 'Elegir imagen';
+
+  @override
+  String get communityPostThumbnailPickFrame => 'Elegir un fotograma del vídeo';
+
+  @override
+  String get communityPostThumbnailUseAuto => 'Usar la miniatura automática';
+
+  @override
+  String get communityPostThumbnailWrongFormat => 'Elige una imagen PNG o JPEG';
+
+  @override
+  String communityPostThumbnailTooLarge(int mb) {
+    return 'La imagen de la miniatura debe ocupar $mb MB como máximo';
+  }
+
+  @override
+  String communityPostThumbnailPickFailed(String error) {
+    return 'No se pudo usar la imagen: $error';
+  }
+
+  @override
+  String get communityPostFramePickerTitle =>
+      'Elige un fotograma para la miniatura';
+
+  @override
+  String communityPostFramePickerPosition(String current, String total) {
+    return '$current / $total s';
+  }
+
+  @override
+  String get communityPostFramePickerUse => 'Usar este fotograma';
+
+  @override
+  String get communityPostVideoLengthUnavailable =>
+      'No se pudo leer la duración del vídeo';
+
+  @override
+  String get communityPostFrameUnavailable =>
+      'No se pudo obtener el fotograma del vídeo';
+
+  @override
+  String get communityPostFrameUnsupported =>
+      'En este dispositivo no se pueden extraer fotogramas de vídeos. Elige una imagen.';
+
+  @override
+  String communityPostFrameFailed(String error) {
+    return 'No se pudo obtener el fotograma: $error';
+  }
+
+  @override
+  String communityPostScheduleTooSoon(int minutes) {
+    String _temp0 = intl.Intl.pluralLogic(
+      minutes,
+      locale: localeName,
+      other: 'Elige una hora al menos $minutes minutos después de ahora',
+      one: 'Elige una hora al menos $minutes minuto después de ahora',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get communityPostVisibilityPrivateTitle => 'Privado';
+
+  @override
+  String get communityPostVisibilityPrivateHelp =>
+      'No se muestra al público ni en YouTube ni en la Plaza de Obras.';
+
+  @override
+  String get communityPostVisibilityScheduledTitle =>
+      'Programar la publicación';
+
+  @override
+  String get communityPostVisibilityScheduledHelp =>
+      'Privado en YouTube hasta la hora elegida; después también aparece en la Plaza de Obras.';
+
+  @override
+  String get communityPostScheduleUnset => 'No hay hora de publicación';
+
+  @override
+  String communityPostScheduleAt(DateTime date) {
+    final intl.DateFormat dateDateFormat = intl.DateFormat.yMd(
+      localeName,
+    ).add_jm();
+    final String dateString = dateDateFormat.format(date);
+
+    return 'Se publicará: $dateString';
+  }
+
+  @override
+  String get communityPostScheduleChoose => 'Elegir hora';
+
+  @override
+  String get communityPostScheduleChange => 'Cambiar hora';
+
+  @override
+  String get fontDownloadNetworkError => 'No se puede conectar a la red.';
+
+  @override
+  String get fontDownloadUnavailable => 'No se puede descargar esta fuente.';
+
+  @override
+  String get fontDownloadCorrupted => 'El archivo de la fuente está dañado.';
+
+  @override
+  String get fontCategorySansSerif => 'Sin serifa';
+
+  @override
+  String get fontCategorySerif => 'Con serifa';
+
+  @override
+  String get fontCategoryDisplay => 'Decorativa';
+
+  @override
+  String get fontCategoryHandwriting => 'Manuscrita';
+
+  @override
+  String get fontCategoryMonospace => 'Monoespaciada';
+
+  @override
+  String fontCatalogEntrySubtitle(String category, String license) {
+    return '$category · $license';
+  }
+
+  @override
+  String get brushSettingsPaperGrain => 'Grano del papel';
+
+  @override
+  String get colorPickerCurrentColorLabel => 'Color actual';
+
+  @override
+  String get helpShortcutSettingsDesc =>
+      'Asigna teclas del teclado o de un dispositivo de mano izquierda a herramientas (hasta un pincel y un tamaño concretos) o a acciones como deshacer, rehacer, reproducir, avanzar fotograma a fotograma, seleccionar todo, copiar, cortar y pegar. Los atajos funcionan en el lienzo y en la línea de tiempo. Si una combinación ya se usa para otra acción, se te pregunta antes de sustituirla.';
 }

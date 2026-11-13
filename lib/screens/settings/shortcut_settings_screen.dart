@@ -471,7 +471,10 @@ class ShortcutSettingsScreen extends StatelessWidget {
         builder: (ctx) => AlertDialog(
           title: Text(l10n.shortcutConflictTitle),
           content: Text(
-            l10n.shortcutConflictBody(binding.comboLabel, conflict.label),
+            l10n.shortcutConflictBody(
+              binding.comboLabel,
+              shortcutDisplayLabel(l10n, conflict),
+            ),
           ),
           actions: [
             TextButton(

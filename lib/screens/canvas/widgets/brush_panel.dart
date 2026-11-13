@@ -190,9 +190,7 @@ class _BrushPanelState extends State<BrushPanel> {
                         : Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                   label: Text(
-                    Localizations.localeOf(context).languageCode == 'ja'
-                        ? 'お気に入りのみ'
-                        : l10n.creativePanelFavoritesOnlyTooltip,
+                    l10n.customAutomationFavoritesOnly,
                     style: const TextStyle(fontSize: 11),
                   ),
                   selected: _showFavoritesOnly,
@@ -892,9 +890,7 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
                 onAddImages: _addImages,
               ),
               LabeledSlider(
-                label: Localizations.localeOf(context).languageCode == 'ja'
-                    ? '紙目・粒子'
-                    : 'Paper grain',
+                label: AppLocalizations.of(context)!.brushSettingsPaperGrain,
                 value: _brush.grainStrength.toDouble(),
                 min: 0,
                 max: 100,

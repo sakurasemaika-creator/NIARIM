@@ -9359,6 +9359,286 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get commonApply => '应用';
+
+  @override
+  String get commonShare => '分享';
+
+  @override
+  String get shareCardExportMenu => '导出分享卡片';
+
+  @override
+  String get shareCardCreatedTitle => '已创建分享卡片';
+
+  @override
+  String get shareCardKeepOriginalNote =>
+      '请直接保存或分享原始PNG文件。在社交平台上重新保存图片，可能会丢失导入所需的数据。';
+
+  @override
+  String get shareCardSaveToDevice => '保存到设备';
+
+  @override
+  String get shareCardSaveDialogTitle => '分享卡片的保存位置';
+
+  @override
+  String get shareCardSavedSnackbar => '已保存分享卡片';
+
+  @override
+  String shareCardSaveFailedSnackbar(String error) {
+    return '无法保存分享卡片：$error';
+  }
+
+  @override
+  String shareCardImportConfirmTitle(String kind) {
+    String _temp0 = intl.Intl.selectLogic(kind, {
+      'brush': '要导入此画笔吗？',
+      'tone': '要导入此网点吗？',
+      'other': '要导入此图章吗？',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String shareCardAddedSnackbar(String kind, String name) {
+    String _temp0 = intl.Intl.selectLogic(kind, {
+      'brush': '已添加画笔“$name”',
+      'tone': '已添加网点“$name”',
+      'other': '已添加图章“$name”',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String shareCardWrongKind(String kind) {
+    String _temp0 = intl.Intl.selectLogic(kind, {
+      'brush': '这是画笔的分享卡片，请从画笔列表中导入。',
+      'tone': '这是网点的分享卡片，请从网点列表中导入。',
+      'other': '这是图章的分享卡片，请从图章列表中导入。',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String shareCardImportFailedSnackbar(String error) {
+    return '无法导入分享卡片：$error';
+  }
+
+  @override
+  String get communityUnfollowAction => '取消关注';
+
+  @override
+  String get communityUnfollowedLabel => '已取消关注';
+
+  @override
+  String get communityFollowingListEmpty => '还没有关注任何人';
+
+  @override
+  String get communityRecentlyUnfollowedHeader => '最近取消关注的用户';
+
+  @override
+  String communityMyWorksStatusScheduled(DateTime date) {
+    final intl.DateFormat dateDateFormat = intl.DateFormat.yMd(
+      localeName,
+    ).add_jm();
+    final String dateString = dateDateFormat.format(date);
+
+    return '定时公开中 • $dateString';
+  }
+
+  @override
+  String communityMyWorksStatusScheduledHidden(DateTime date) {
+    final intl.DateFormat dateDateFormat = intl.DateFormat.yMd(
+      localeName,
+    ).add_jm();
+    final String dateString = dateDateFormat.format(date);
+
+    return '定时公开中 • $dateString • 在作品广场非公开';
+  }
+
+  @override
+  String get communityMyWorksStatusSchedulePassed =>
+      '已过预定公开时间 • 正在确认YouTube的公开处理';
+
+  @override
+  String get communityWorkDetailYoutubeOpenFailed => '无法打开YouTube视频';
+
+  @override
+  String get communityPlayerNotLinked => '未关联YouTube视频';
+
+  @override
+  String get communityPlayerPlaybackFailed => '无法播放YouTube视频';
+
+  @override
+  String communityPlayerTooSmall(int size) {
+    return '播放视频需要至少$size×${size}px的显示区域';
+  }
+
+  @override
+  String get communityPlaybackDeletedTitle => '视频已删除';
+
+  @override
+  String get communityPlaybackDeletedBody => '此视频已删除，无法播放。';
+
+  @override
+  String get communityPlaybackPrivateTitle => '视频不公开';
+
+  @override
+  String get communityPlaybackPrivateBody => '发布者的隐私设置禁止播放。';
+
+  @override
+  String get communityPlaybackUnavailableTitle => '视频不可用';
+
+  @override
+  String get communityPlaybackUnavailableBody => '可能已删除或设为私密，无法确认状态。';
+
+  @override
+  String get communityPlaybackUnknownTitle => '无法检查视频';
+
+  @override
+  String get communityPlaybackUnknownBody => '连接或服务故障导致检查失败。';
+
+  @override
+  String get communityPlaybackCheckingTitle => '正在检查视频';
+
+  @override
+  String get communityPlaybackCheckingBody => '正在确认是否可以播放。';
+
+  @override
+  String get communityPlaybackRecheck => '重试';
+
+  @override
+  String get communityPostThumbnailHeading => '缩略图';
+
+  @override
+  String get communityPostThumbnailUnreadable => '无法加载图片，请重新选择。';
+
+  @override
+  String get communityPostThumbnailApplied => '已在YouTube上设置缩略图';
+
+  @override
+  String get communityPostThumbnailAutoHint => '如未指定，将使用YouTube自动生成的缩略图。';
+
+  @override
+  String get communityPostThumbnailPickImage => '指定图片';
+
+  @override
+  String get communityPostThumbnailPickFrame => '指定视频帧';
+
+  @override
+  String get communityPostThumbnailUseAuto => '恢复为自动缩略图';
+
+  @override
+  String get communityPostThumbnailWrongFormat => '请指定PNG或JPEG图片';
+
+  @override
+  String communityPostThumbnailTooLarge(int mb) {
+    return '缩略图图片不能超过${mb}MB';
+  }
+
+  @override
+  String communityPostThumbnailPickFailed(String error) {
+    return '无法选择图片：$error';
+  }
+
+  @override
+  String get communityPostFramePickerTitle => '选择用作缩略图的帧';
+
+  @override
+  String communityPostFramePickerPosition(String current, String total) {
+    return '$current / $total 秒';
+  }
+
+  @override
+  String get communityPostFramePickerUse => '使用此帧';
+
+  @override
+  String get communityPostVideoLengthUnavailable => '无法获取视频时长';
+
+  @override
+  String get communityPostFrameUnavailable => '无法从视频中获取帧';
+
+  @override
+  String get communityPostFrameUnsupported => '此环境无法从视频中提取帧，请选择图片。';
+
+  @override
+  String communityPostFrameFailed(String error) {
+    return '获取帧失败：$error';
+  }
+
+  @override
+  String communityPostScheduleTooSoon(int minutes) {
+    return '请指定距现在至少$minutes分钟之后的时间';
+  }
+
+  @override
+  String get communityPostVisibilityPrivateTitle => '私享';
+
+  @override
+  String get communityPostVisibilityPrivateHelp => '不会在YouTube和作品广场上公开。';
+
+  @override
+  String get communityPostVisibilityScheduledTitle => '定时公开';
+
+  @override
+  String get communityPostVisibilityScheduledHelp =>
+      '在指定时间前于YouTube设为私享，公开后也会显示在作品广场。';
+
+  @override
+  String get communityPostScheduleUnset => '尚未设置公开时间';
+
+  @override
+  String communityPostScheduleAt(DateTime date) {
+    final intl.DateFormat dateDateFormat = intl.DateFormat.yMd(
+      localeName,
+    ).add_jm();
+    final String dateString = dateDateFormat.format(date);
+
+    return '预定公开：$dateString';
+  }
+
+  @override
+  String get communityPostScheduleChoose => '选择时间';
+
+  @override
+  String get communityPostScheduleChange => '更改时间';
+
+  @override
+  String get fontDownloadNetworkError => '无法连接网络。';
+
+  @override
+  String get fontDownloadUnavailable => '无法读取此字体。';
+
+  @override
+  String get fontDownloadCorrupted => '字体文件已损坏。';
+
+  @override
+  String get fontCategorySansSerif => '黑体';
+
+  @override
+  String get fontCategorySerif => '宋体·衬线';
+
+  @override
+  String get fontCategoryDisplay => '装饰';
+
+  @override
+  String get fontCategoryHandwriting => '手写风';
+
+  @override
+  String get fontCategoryMonospace => '等宽';
+
+  @override
+  String fontCatalogEntrySubtitle(String category, String license) {
+    return '$category · $license';
+  }
+
+  @override
+  String get brushSettingsPaperGrain => '纸纹与颗粒';
+
+  @override
+  String get colorPickerCurrentColorLabel => '当前颜色';
+
+  @override
+  String get helpShortcutSettingsDesc =>
+      '可以为键盘或左手设备的按键分配工具（可细到具体画笔和粗细），或撤销、重做、播放、逐帧移动、全选、复制、剪切、粘贴等操作。画布和时间轴中都可以使用。如果要分配的组合键已用于其他操作，会先确认是否替换。';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -18718,4 +18998,284 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get commonApply => '套用';
+
+  @override
+  String get commonShare => '分享';
+
+  @override
+  String get shareCardExportMenu => '匯出分享卡片';
+
+  @override
+  String get shareCardCreatedTitle => '已建立分享卡片';
+
+  @override
+  String get shareCardKeepOriginalNote =>
+      '請直接儲存或分享原始PNG檔案。在社群平台上重新儲存圖片，可能會遺失匯入所需的資料。';
+
+  @override
+  String get shareCardSaveToDevice => '儲存到裝置';
+
+  @override
+  String get shareCardSaveDialogTitle => '分享卡片的儲存位置';
+
+  @override
+  String get shareCardSavedSnackbar => '已儲存分享卡片';
+
+  @override
+  String shareCardSaveFailedSnackbar(String error) {
+    return '無法儲存分享卡片：$error';
+  }
+
+  @override
+  String shareCardImportConfirmTitle(String kind) {
+    String _temp0 = intl.Intl.selectLogic(kind, {
+      'brush': '要匯入此筆刷嗎？',
+      'tone': '要匯入此網點嗎？',
+      'other': '要匯入此印章嗎？',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String shareCardAddedSnackbar(String kind, String name) {
+    String _temp0 = intl.Intl.selectLogic(kind, {
+      'brush': '已新增筆刷「$name」',
+      'tone': '已新增網點「$name」',
+      'other': '已新增印章「$name」',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String shareCardWrongKind(String kind) {
+    String _temp0 = intl.Intl.selectLogic(kind, {
+      'brush': '這是筆刷的分享卡片，請從筆刷列表中匯入。',
+      'tone': '這是網點的分享卡片，請從網點列表中匯入。',
+      'other': '這是印章的分享卡片，請從印章列表中匯入。',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String shareCardImportFailedSnackbar(String error) {
+    return '無法匯入分享卡片：$error';
+  }
+
+  @override
+  String get communityUnfollowAction => '取消追蹤';
+
+  @override
+  String get communityUnfollowedLabel => '已取消追蹤';
+
+  @override
+  String get communityFollowingListEmpty => '還沒有追蹤任何人';
+
+  @override
+  String get communityRecentlyUnfollowedHeader => '最近取消追蹤的使用者';
+
+  @override
+  String communityMyWorksStatusScheduled(DateTime date) {
+    final intl.DateFormat dateDateFormat = intl.DateFormat.yMd(
+      localeName,
+    ).add_jm();
+    final String dateString = dateDateFormat.format(date);
+
+    return '排定公開中 • $dateString';
+  }
+
+  @override
+  String communityMyWorksStatusScheduledHidden(DateTime date) {
+    final intl.DateFormat dateDateFormat = intl.DateFormat.yMd(
+      localeName,
+    ).add_jm();
+    final String dateString = dateDateFormat.format(date);
+
+    return '排定公開中 • $dateString • 在作品廣場非公開';
+  }
+
+  @override
+  String get communityMyWorksStatusSchedulePassed =>
+      '已過排定公開時間 • 正在確認YouTube的公開處理';
+
+  @override
+  String get communityWorkDetailYoutubeOpenFailed => '無法開啟YouTube影片';
+
+  @override
+  String get communityPlayerNotLinked => '未連結YouTube影片';
+
+  @override
+  String get communityPlayerPlaybackFailed => '無法播放YouTube影片';
+
+  @override
+  String communityPlayerTooSmall(int size) {
+    return '播放影片需要至少$size×${size}px的顯示區域';
+  }
+
+  @override
+  String get communityPlaybackDeletedTitle => '影片已刪除';
+
+  @override
+  String get communityPlaybackDeletedBody => '此影片已刪除，無法播放。';
+
+  @override
+  String get communityPlaybackPrivateTitle => '私人影片';
+
+  @override
+  String get communityPlaybackPrivateBody => '發佈者的隱私設定禁止播放。';
+
+  @override
+  String get communityPlaybackUnavailableTitle => '影片無法使用';
+
+  @override
+  String get communityPlaybackUnavailableBody => '可能已刪除或設為私人，無法確認狀態。';
+
+  @override
+  String get communityPlaybackUnknownTitle => '無法檢查影片';
+
+  @override
+  String get communityPlaybackUnknownBody => '連線或服務問題導致檢查失敗。';
+
+  @override
+  String get communityPlaybackCheckingTitle => '正在檢查影片';
+
+  @override
+  String get communityPlaybackCheckingBody => '正在確認是否可以播放。';
+
+  @override
+  String get communityPlaybackRecheck => '重試';
+
+  @override
+  String get communityPostThumbnailHeading => '縮圖';
+
+  @override
+  String get communityPostThumbnailUnreadable => '無法載入圖片，請重新選擇。';
+
+  @override
+  String get communityPostThumbnailApplied => '已在YouTube上設定縮圖';
+
+  @override
+  String get communityPostThumbnailAutoHint => '如未指定，將使用YouTube自動產生的縮圖。';
+
+  @override
+  String get communityPostThumbnailPickImage => '指定圖片';
+
+  @override
+  String get communityPostThumbnailPickFrame => '指定影片影格';
+
+  @override
+  String get communityPostThumbnailUseAuto => '恢復為自動縮圖';
+
+  @override
+  String get communityPostThumbnailWrongFormat => '請指定PNG或JPEG圖片';
+
+  @override
+  String communityPostThumbnailTooLarge(int mb) {
+    return '縮圖圖片不能超過${mb}MB';
+  }
+
+  @override
+  String communityPostThumbnailPickFailed(String error) {
+    return '無法選擇圖片：$error';
+  }
+
+  @override
+  String get communityPostFramePickerTitle => '選擇用作縮圖的影格';
+
+  @override
+  String communityPostFramePickerPosition(String current, String total) {
+    return '$current / $total 秒';
+  }
+
+  @override
+  String get communityPostFramePickerUse => '使用此影格';
+
+  @override
+  String get communityPostVideoLengthUnavailable => '無法取得影片長度';
+
+  @override
+  String get communityPostFrameUnavailable => '無法從影片中取得影格';
+
+  @override
+  String get communityPostFrameUnsupported => '此環境無法從影片中擷取影格，請選擇圖片。';
+
+  @override
+  String communityPostFrameFailed(String error) {
+    return '取得影格失敗：$error';
+  }
+
+  @override
+  String communityPostScheduleTooSoon(int minutes) {
+    return '請指定距現在至少$minutes分鐘之後的時間';
+  }
+
+  @override
+  String get communityPostVisibilityPrivateTitle => '私人';
+
+  @override
+  String get communityPostVisibilityPrivateHelp => '不會在YouTube與作品廣場上公開。';
+
+  @override
+  String get communityPostVisibilityScheduledTitle => '排定公開時間';
+
+  @override
+  String get communityPostVisibilityScheduledHelp =>
+      '在指定時間前於YouTube設為私人，公開後也會顯示在作品廣場。';
+
+  @override
+  String get communityPostScheduleUnset => '尚未設定公開時間';
+
+  @override
+  String communityPostScheduleAt(DateTime date) {
+    final intl.DateFormat dateDateFormat = intl.DateFormat.yMd(
+      localeName,
+    ).add_jm();
+    final String dateString = dateDateFormat.format(date);
+
+    return '預定公開：$dateString';
+  }
+
+  @override
+  String get communityPostScheduleChoose => '選擇時間';
+
+  @override
+  String get communityPostScheduleChange => '變更時間';
+
+  @override
+  String get fontDownloadNetworkError => '無法連線至網路。';
+
+  @override
+  String get fontDownloadUnavailable => '無法讀取此字型。';
+
+  @override
+  String get fontDownloadCorrupted => '字型檔案已損毀。';
+
+  @override
+  String get fontCategorySansSerif => '黑體';
+
+  @override
+  String get fontCategorySerif => '明體·襯線';
+
+  @override
+  String get fontCategoryDisplay => '裝飾';
+
+  @override
+  String get fontCategoryHandwriting => '手寫風';
+
+  @override
+  String get fontCategoryMonospace => '等寬';
+
+  @override
+  String fontCatalogEntrySubtitle(String category, String license) {
+    return '$category · $license';
+  }
+
+  @override
+  String get brushSettingsPaperGrain => '紙紋與顆粒';
+
+  @override
+  String get colorPickerCurrentColorLabel => '目前的顏色';
+
+  @override
+  String get helpShortcutSettingsDesc =>
+      '可以為鍵盤或左手裝置的按鍵分配工具（可細到具體筆刷和粗細），或復原、取消復原、播放、逐格移動、全選、複製、剪下、貼上等操作。畫布和時間軸中都可以使用。如果要分配的組合鍵已用於其他操作，會先確認是否替換。';
 }

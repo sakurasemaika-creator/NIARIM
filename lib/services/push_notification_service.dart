@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 
+import '../l10n/app_localizations.dart';
 import '../router.dart';
 import 'community_service.dart';
 import 'google_auth_service.dart';
@@ -88,14 +89,16 @@ class PushNotificationService {
     final route = routeForData(message.data);
     final messenger = scaffoldMessengerKey.currentState;
     if (messenger == null) return;
+    // The messenger sits inside the app's Localizations.
+    final l10n = AppLocalizations.of(messenger.context);
     messenger.showSnackBar(
       SnackBar(
         content: Text(body),
         duration: const Duration(seconds: 5),
-        action: route == null
+        action: route == null || l10n == null
             ? null
             : SnackBarAction(
-                label: '開く',
+                label: l10n.projectListOpenAction,
                 onPressed: () => appRouter.push(route),
               ),
       ),

@@ -540,17 +540,12 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
     final schedule = _scheduledPublishById[work.id];
     if (youtubePrivacy == 'private' && schedule != null) {
       final date = schedule.toLocal();
-      final stamp =
-          '${date.year}/'
-          '${date.month.toString().padLeft(2, '0')}/'
-          '${date.day.toString().padLeft(2, '0')} '
-          '${date.hour.toString().padLeft(2, '0')}:'
-          '${date.minute.toString().padLeft(2, '0')}';
       if (schedule.isAfter(DateTime.now())) {
-        return '予約公開中 • $stamp'
-            '${work.isNiarimPublished ? '' : ' • 作品広場は非公開'}';
+        return work.isNiarimPublished
+            ? l10n.communityMyWorksStatusScheduled(date)
+            : l10n.communityMyWorksStatusScheduledHidden(date);
       }
-      return '公開予定日時経過 • YouTubeの公開処理を確認中';
+      return l10n.communityMyWorksStatusSchedulePassed;
     }
     if (youtubePrivacy == 'private') {
       return work.isNiarimPublished

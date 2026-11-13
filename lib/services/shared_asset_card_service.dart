@@ -10,6 +10,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
+import '../l10n/app_localizations.dart';
 import '../models/brush.dart';
 import '../models/stamp.dart';
 import '../models/tone.dart';
@@ -23,51 +24,53 @@ import '../widgets/export_share_feedback.dart';
 /// One public sharing format for brushes, tones and stamps: a complete PNG.
 /// A ZIP is used only as an *in-memory* implementation of the compressed
 /// model+original-image payload; users never select or share that container.
+/// The picked card is for another asset list (brush, tone or stamp).
+class _WrongCardKind implements Exception {
+  const _WrongCardKind(this.kind);
+
+  /// The card's own kind: 'brush', 'tone' or 'stamp'.
+  final String kind;
+}
+
 class SharedAssetCardService {
   SharedAssetCardService._();
 
   static String exportMenuLabel(BuildContext context) =>
-      Localizations.localeOf(context).languageCode == 'ja'
-      ? '共有カードを書き出す'
-      : 'Export share card';
+      AppLocalizations.of(context)!.shareCardExportMenu;
 
   /// The card is created once. Save-as writes the original PNG bytes to a
   /// user-selected location; Share uses the same original file unchanged.
   static Future<void> showExportResult(BuildContext context, File card) async {
     if (!context.mounted) return;
-    final isJapanese = Localizations.localeOf(context).languageCode == 'ja';
+    final l10n = AppLocalizations.of(context)!;
     final action = await showDialog<String>(
       context: context,
       builder: (dialog) => AlertDialog(
-        title: Text(isJapanese ? '共有カードを作成しました' : 'Share card created'),
+        title: Text(l10n.shareCardCreatedTitle),
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Image.file(card, height: 310, fit: BoxFit.contain),
               const SizedBox(height: 12),
-              Text(
-                isJapanese
-                    ? '元のPNGファイルをそのまま保存・共有してください。SNSで画像を再保存すると復元データが失われる場合があります。'
-                    : 'Save or share the original PNG. Re-encoding the image can strip its import data.',
-              ),
+              Text(l10n.shareCardKeepOriginalNote),
             ],
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialog),
-            child: Text(isJapanese ? '閉じる' : 'Close'),
+            child: Text(l10n.commonClose),
           ),
           OutlinedButton.icon(
             onPressed: () => Navigator.pop(dialog, 'save'),
             icon: const Icon(Icons.save_alt),
-            label: Text(isJapanese ? '端末に保存' : 'Save'),
+            label: Text(l10n.shareCardSaveToDevice),
           ),
           FilledButton.icon(
             onPressed: () => Navigator.pop(dialog, 'share'),
             icon: const Icon(Icons.share_outlined),
-            label: Text(isJapanese ? '共有' : 'Share'),
+            label: Text(l10n.commonShare),
           ),
         ],
       ),
@@ -79,29 +82,21 @@ class SharedAssetCardService {
       try {
         final fileName = card.uri.pathSegments.last;
         final selected = await FilePicker.platform.saveFile(
-          dialogTitle: isJapanese ? '共有カードの保存先' : 'Save share card',
+          dialogTitle: l10n.shareCardSaveDialogTitle,
           fileName: fileName,
           type: FileType.custom,
           allowedExtensions: ['png'],
           bytes: await card.readAsBytes(),
         );
         if (selected != null && context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(isJapanese ? '共有カードを保存しました' : 'Share card saved'),
-            ),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(l10n.shareCardSavedSnackbar)));
         }
       } catch (error) {
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                isJapanese
-                    ? '保存できませんでした: $error'
-                    : 'Could not save card: $error',
-              ),
-            ),
+            SnackBar(content: Text(l10n.shareCardSaveFailedSnackbar('$error'))),
           );
         }
       }
@@ -196,21 +191,17 @@ class SharedAssetCardService {
         !context.mounted)
       return;
     final selected = File(pick.files.first.path!);
+    final l10n = AppLocalizations.of(context)!;
     try {
       final card = await inspect(selected);
       if (card.kind != expected) {
-        throw const FormatException('このカードは別の素材タブ用です');
+        throw _WrongCardKind(card.kind);
       }
       if (!context.mounted) return;
-      final kindName = switch (expected) {
-        'brush' => 'ブラシ',
-        'tone' => 'トーン',
-        _ => 'スタンプ',
-      };
       final confirm = await showDialog<bool>(
         context: context,
         builder: (dialogContext) => AlertDialog(
-          title: Text('$kindName を読み込みますか？'),
+          title: Text(l10n.shareCardImportConfirmTitle(expected)),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -224,11 +215,11 @@ class SharedAssetCardService {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(dialogContext, false),
-              child: const Text('キャンセル'),
+              child: Text(l10n.commonCancel),
             ),
             FilledButton(
               onPressed: () => Navigator.pop(dialogContext, true),
-              child: const Text('追加'),
+              child: Text(l10n.commonAdd),
             ),
           ],
         ),
@@ -242,14 +233,22 @@ class SharedAssetCardService {
       );
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('$kindName「${card.name}」を追加しました')),
+          SnackBar(
+            content: Text(l10n.shareCardAddedSnackbar(expected, card.name)),
+          ),
         );
       }
     } catch (error) {
       if (context.mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('共有カードを読み込めませんでした: $error')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              error is _WrongCardKind
+                  ? l10n.shareCardWrongKind(error.kind)
+                  : l10n.shareCardImportFailedSnackbar('$error'),
+            ),
+          ),
+        );
       }
     }
   }

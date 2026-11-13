@@ -237,10 +237,10 @@ class FontService extends ChangeNotifier {
           .get(Uri.parse(entry.sourceUrl))
           .timeout(const Duration(seconds: 30));
     } catch (_) {
-      throw FontDownloadException('ネットワークに接続できません。');
+      throw const FontDownloadException(FontDownloadFailure.network);
     }
     if (response.statusCode != 200 || response.bodyBytes.isEmpty) {
-      throw FontDownloadException('このフォントは読み込めません。');
+      throw const FontDownloadException(FontDownloadFailure.unavailable);
     }
     try {
       await importBundledFont(
@@ -250,12 +250,12 @@ class FontService extends ChangeNotifier {
         bytes: response.bodyBytes,
       );
     } catch (_) {
-      throw FontDownloadException('フォントが破損しています。');
+      throw const FontDownloadException(FontDownloadFailure.corrupted);
     }
     if (!isCatalogFontDownloaded(entry)) {
       // importBundledFont内部でパース失敗した場合は例外を投げず静かに
       // スキップされるため、登録できたかどうかをここで確認する。
-      throw FontDownloadException('フォントが破損しています。');
+      throw const FontDownloadException(FontDownloadFailure.corrupted);
     }
   }
 
@@ -326,7 +326,14 @@ class FontCorruptedException implements Exception {}
 
 /// 追加フリーフォントのダウンロードに失敗した場合の例外（[FontService.
 /// downloadCatalogFont]用）。[message]はそのままユーザーへ表示できる文言。
+/// Why a catalog font could not be downloaded. The screen shows the
+/// localized text for it (fontDownloadFailureText).
+enum FontDownloadFailure { network, unavailable, corrupted }
+
 class FontDownloadException implements Exception {
-  final String message;
-  const FontDownloadException(this.message);
+  final FontDownloadFailure failure;
+  const FontDownloadException(this.failure);
+
+  @override
+  String toString() => 'FontDownloadException(${failure.name})';
 }

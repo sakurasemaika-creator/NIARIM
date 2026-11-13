@@ -69,10 +69,13 @@ class _FontCatalogTabState extends State<FontCatalogTab>
             padding: const EdgeInsets.symmetric(horizontal: 12),
             children: [
               _categoryChip(null, l10n.fontCatalogAll),
-              for (final entry in kFontCategoryLabels.entries)
+              for (final category in kFontCategories)
                 Padding(
                   padding: const EdgeInsets.only(left: 6),
-                  child: _categoryChip(entry.key, entry.value),
+                  child: _categoryChip(
+                    category,
+                    fontCategoryLabel(l10n, category),
+                  ),
                 ),
             ],
           ),
@@ -103,7 +106,10 @@ class _FontCatalogTabState extends State<FontCatalogTab>
                         leading: const Icon(Icons.font_download_outlined),
                         title: Text(entry.displayName),
                         subtitle: Text(
-                          '${kFontCategoryLabels[entry.category] ?? entry.category} ・ ${entry.license}',
+                          l10n.fontCatalogEntrySubtitle(
+                            fontCategoryLabel(l10n, entry.category),
+                            entry.license,
+                          ),
                           style: TextStyle(
                             fontSize: 11,
                             color: scheme.onSurfaceVariant,
@@ -159,12 +165,37 @@ class _FontCatalogTabState extends State<FontCatalogTab>
       await context.read<FontService>().downloadCatalogFont(entry);
     } on FontDownloadException catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(e.message)));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              fontDownloadFailureText(AppLocalizations.of(context)!, e),
+            ),
+          ),
+        );
       }
     } finally {
       if (mounted) setState(() => _downloadingIds.remove(entry.id));
     }
   }
 }
+
+/// The name shown for a catalog [category] (the source's English id).
+String fontCategoryLabel(AppLocalizations l10n, String category) =>
+    switch (category) {
+      'SANS_SERIF' => l10n.fontCategorySansSerif,
+      'SERIF' => l10n.fontCategorySerif,
+      'DISPLAY' => l10n.fontCategoryDisplay,
+      'HANDWRITING' => l10n.fontCategoryHandwriting,
+      'MONOSPACE' => l10n.fontCategoryMonospace,
+      _ => category,
+    };
+
+/// The message for a catalog font that could not be downloaded.
+String fontDownloadFailureText(
+  AppLocalizations l10n,
+  FontDownloadException error,
+) => switch (error.failure) {
+  FontDownloadFailure.network => l10n.fontDownloadNetworkError,
+  FontDownloadFailure.unavailable => l10n.fontDownloadUnavailable,
+  FontDownloadFailure.corrupted => l10n.fontDownloadCorrupted,
+};

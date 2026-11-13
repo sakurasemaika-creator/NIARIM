@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../../services/community_service.dart';
 import '../../widgets/ad_banner_mock_widget.dart';
 import 'community_author_works_screen.dart';
@@ -83,13 +84,14 @@ class _CommunityFollowingListScreenState
         .where((entry) => !service.isFavoriteAuthor(entry.key))
         .toList();
     final isEmpty = ids.isEmpty && removed.isEmpty;
+    final l10n = AppLocalizations.of(context)!;
 
     Widget authorRow(String id, String name, {required bool following}) {
       return ListTile(
         key: Key('communityFollowingAuthor_$id'),
         leading: const CircleAvatar(child: Icon(Icons.person_outline)),
         title: Text(name),
-        subtitle: following ? null : const Text('フォロー解除済み'),
+        subtitle: following ? null : Text(l10n.communityUnfollowedLabel),
         onTap: () => Navigator.of(context).push(
           adMockMaterialPageRoute<void>(
             builder: (_) =>
@@ -103,13 +105,17 @@ class _CommunityFollowingListScreenState
                 : 'communityFollowingFollow_$id',
           ),
           onPressed: _togglingIds.contains(id) ? null : () => _toggle(id, name),
-          child: Text(following ? 'フォロー解除' : 'フォロー'),
+          child: Text(
+            following
+                ? l10n.communityUnfollowAction
+                : l10n.communityFavoriteAuthorFollow,
+          ),
         ),
       );
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text('フォロー中')),
+      appBar: AppBar(title: Text(l10n.communityTabFavoriteAuthors)),
       body: CommunityTopEdgeRefresh(
         key: const Key('communityOwnFollowingPullRefresh'),
         controller: _scrollController,
@@ -124,9 +130,9 @@ class _CommunityFollowingListScreenState
               : ids.length + (removed.isEmpty ? 0 : removed.length + 1),
           itemBuilder: (context, index) {
             if (isEmpty) {
-              return const Padding(
-                padding: EdgeInsets.all(32),
-                child: Center(child: Text('フォロー中のユーザーはいません')),
+              return Padding(
+                padding: const EdgeInsets.all(32),
+                child: Center(child: Text(l10n.communityFollowingListEmpty)),
               );
             }
             if (index < ids.length) {
@@ -138,9 +144,9 @@ class _CommunityFollowingListScreenState
               );
             }
             if (index == ids.length) {
-              return const Padding(
-                padding: EdgeInsets.fromLTRB(16, 16, 16, 8),
-                child: Text('最近フォローを解除したユーザー'),
+              return Padding(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                child: Text(l10n.communityRecentlyUnfollowedHeader),
               );
             }
             final user = removed[index - ids.length - 1];

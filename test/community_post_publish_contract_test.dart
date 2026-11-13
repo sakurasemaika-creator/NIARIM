@@ -84,8 +84,10 @@ void main() {
     () {
       expect(work, contains('_scheduledPublishById'));
       expect(work, contains("youtubePrivacy == 'private'"));
-      expect(work, contains('予約公開中'));
-      expect(work, contains('YouTubeの公開処理を確認中'));
+      // 予約公開中・公開予定日時経過の文はARBから引く（7言語）。
+      expect(work, contains('l10n.communityMyWorksStatusScheduled('));
+      expect(work, contains('l10n.communityMyWorksStatusScheduledHidden('));
+      expect(work, contains('l10n.communityMyWorksStatusSchedulePassed'));
       expect(api, contains("'/me/works/"));
       expect(detail, contains('_loadOwnerOnlyWorkIfNeeded'));
       expect(detail, contains('_ownerOnlyAccountId'));

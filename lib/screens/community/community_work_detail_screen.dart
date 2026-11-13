@@ -111,15 +111,27 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
     try {
       if (!await launchUrl(url, mode: LaunchMode.externalApplication) &&
           mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('YouTubeの動画を開けませんでした')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              AppLocalizations.of(
+                context,
+              )!.communityWorkDetailYoutubeOpenFailed,
+            ),
+          ),
+        );
       }
     } catch (_) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('YouTubeの動画を開けませんでした')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              AppLocalizations.of(
+                context,
+              )!.communityWorkDetailYoutubeOpenFailed,
+            ),
+          ),
+        );
       }
     }
   }

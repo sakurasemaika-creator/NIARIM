@@ -51,14 +51,15 @@ class DownloadableFontEntry {
       );
 }
 
-/// カテゴリ（原文英語）→フィルターチップ表示用の日本語ラベル。
-const kFontCategoryLabels = {
-  'SANS_SERIF': 'ゴシック',
-  'SERIF': '明朝・セリフ',
-  'DISPLAY': '装飾',
-  'HANDWRITING': '手書き風',
-  'MONOSPACE': '等幅',
-};
+/// 絞り込みのチップに並べるカテゴリ（配布元の英語の名前）。表示名は
+/// 画面側でARBから引く（fontCategoryLabel）。
+const kFontCategories = [
+  'SANS_SERIF',
+  'SERIF',
+  'DISPLAY',
+  'HANDWRITING',
+  'MONOSPACE',
+];
 
 /// `assets/font_catalog/font_catalog.json`を読み込み、
 /// [DownloadableFontEntry]のリストとして返す。

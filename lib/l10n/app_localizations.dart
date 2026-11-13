@@ -16916,6 +16916,438 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'適用'**
   String get commonApply;
+
+  /// 共有のボタン（共有のシートを開く）
+  ///
+  /// In ja, this message translates to:
+  /// **'共有'**
+  String get commonShare;
+
+  /// ブラシ・トーン・スタンプの…メニュー：共有カード（設定と使用画像を埋め込んだPNG）を書き出す
+  ///
+  /// In ja, this message translates to:
+  /// **'共有カードを書き出す'**
+  String get shareCardExportMenu;
+
+  /// 共有カードを書き出したあとのダイアログの見出し
+  ///
+  /// In ja, this message translates to:
+  /// **'共有カードを作成しました'**
+  String get shareCardCreatedTitle;
+
+  /// 共有カードは元のPNGのまま渡すよう知らせる注記
+  ///
+  /// In ja, this message translates to:
+  /// **'元のPNGファイルをそのまま保存・共有してください。SNSで画像を保存し直すと、読み込みに必要なデータが失われることがあります。'**
+  String get shareCardKeepOriginalNote;
+
+  /// 共有カードを端末に保存するボタン
+  ///
+  /// In ja, this message translates to:
+  /// **'端末に保存'**
+  String get shareCardSaveToDevice;
+
+  /// 共有カードの保存先を選ぶ画面の見出し
+  ///
+  /// In ja, this message translates to:
+  /// **'共有カードの保存先'**
+  String get shareCardSaveDialogTitle;
+
+  /// 共有カードを保存した
+  ///
+  /// In ja, this message translates to:
+  /// **'共有カードを保存しました'**
+  String get shareCardSavedSnackbar;
+
+  /// 共有カードを保存できなかった（errorは失敗の内容）
+  ///
+  /// In ja, this message translates to:
+  /// **'共有カードを保存できませんでした: {error}'**
+  String shareCardSaveFailedSnackbar(String error);
+
+  /// 共有カードを読み込む確認の見出し（kindは brush・tone・stamp）
+  ///
+  /// In ja, this message translates to:
+  /// **'{kind, select, brush{ブラシを読み込みますか？} tone{トーンを読み込みますか？} other{スタンプを読み込みますか？}}'**
+  String shareCardImportConfirmTitle(String kind);
+
+  /// 共有カードから素材を追加した（kindは brush・tone・stamp、nameは素材の名前）
+  ///
+  /// In ja, this message translates to:
+  /// **'{kind, select, brush{ブラシ「{name}」を追加しました} tone{トーン「{name}」を追加しました} other{スタンプ「{name}」を追加しました}}'**
+  String shareCardAddedSnackbar(String kind, String name);
+
+  /// 別の種類の素材の共有カードを選んだ（kindはカードの種類 brush・tone・stamp）
+  ///
+  /// In ja, this message translates to:
+  /// **'{kind, select, brush{これはブラシの共有カードです。ブラシの一覧から読み込んでください。} tone{これはトーンの共有カードです。トーンの一覧から読み込んでください。} other{これはスタンプの共有カードです。スタンプの一覧から読み込んでください。}}'**
+  String shareCardWrongKind(String kind);
+
+  /// 共有カードを読み込めなかった（errorは失敗の内容）
+  ///
+  /// In ja, this message translates to:
+  /// **'共有カードを読み込めませんでした: {error}'**
+  String shareCardImportFailedSnackbar(String error);
+
+  /// フォロー中の一覧：フォローをやめるボタン
+  ///
+  /// In ja, this message translates to:
+  /// **'フォロー解除'**
+  String get communityUnfollowAction;
+
+  /// フォロー中の一覧：最近フォローをやめた人の行の補足
+  ///
+  /// In ja, this message translates to:
+  /// **'フォロー解除済み'**
+  String get communityUnfollowedLabel;
+
+  /// フォロー中の一覧：だれもフォローしていない
+  ///
+  /// In ja, this message translates to:
+  /// **'フォロー中のユーザーはいません'**
+  String get communityFollowingListEmpty;
+
+  /// フォロー中の一覧：最近フォローをやめた人の見出し
+  ///
+  /// In ja, this message translates to:
+  /// **'最近フォローを解除したユーザー'**
+  String get communityRecentlyUnfollowedHeader;
+
+  /// 自分の投稿：予約公開を待っている作品（dateは公開予定の日時）
+  ///
+  /// In ja, this message translates to:
+  /// **'予約公開中 • {date}'**
+  String communityMyWorksStatusScheduled(DateTime date);
+
+  /// 自分の投稿：予約公開を待っていて、作品広場では非公開の作品
+  ///
+  /// In ja, this message translates to:
+  /// **'予約公開中 • {date} • 作品広場は非公開'**
+  String communityMyWorksStatusScheduledHidden(DateTime date);
+
+  /// 自分の投稿：予約の日時を過ぎたが、YouTubeでまだ公開になっていない
+  ///
+  /// In ja, this message translates to:
+  /// **'公開予定日時経過 • YouTubeの公開処理を確認中'**
+  String get communityMyWorksStatusSchedulePassed;
+
+  /// 作品の詳細：YouTubeで動画を開けなかった
+  ///
+  /// In ja, this message translates to:
+  /// **'YouTubeの動画を開けませんでした'**
+  String get communityWorkDetailYoutubeOpenFailed;
+
+  /// 埋め込みのプレーヤー：作品にYouTubeの動画が結び付いていない
+  ///
+  /// In ja, this message translates to:
+  /// **'YouTube動画が連携されていません'**
+  String get communityPlayerNotLinked;
+
+  /// 埋め込みのプレーヤー：再生できなかった
+  ///
+  /// In ja, this message translates to:
+  /// **'YouTube動画を再生できませんでした'**
+  String get communityPlayerPlaybackFailed;
+
+  /// 埋め込みのプレーヤー：表示の場所が小さすぎる（sizeは必要な幅・高さのpx）
+  ///
+  /// In ja, this message translates to:
+  /// **'動画を再生するには、縦横{size}px以上の表示の場所が必要です'**
+  String communityPlayerTooSmall(int size);
+
+  /// 再生の状態：動画が削除された
+  ///
+  /// In ja, this message translates to:
+  /// **'動画は削除済みです'**
+  String get communityPlaybackDeletedTitle;
+
+  /// 再生の状態：動画が削除された（説明）
+  ///
+  /// In ja, this message translates to:
+  /// **'この動画は削除されているため再生できません。'**
+  String get communityPlaybackDeletedBody;
+
+  /// 再生の状態：非公開
+  ///
+  /// In ja, this message translates to:
+  /// **'この動画は非公開です'**
+  String get communityPlaybackPrivateTitle;
+
+  /// 再生の状態：非公開（説明）
+  ///
+  /// In ja, this message translates to:
+  /// **'投稿者の公開設定により再生できません。'**
+  String get communityPlaybackPrivateBody;
+
+  /// 再生の状態：利用できない
+  ///
+  /// In ja, this message translates to:
+  /// **'この動画を利用できません'**
+  String get communityPlaybackUnavailableTitle;
+
+  /// 再生の状態：利用できない（説明）
+  ///
+  /// In ja, this message translates to:
+  /// **'削除または非公開の可能性があります。公開状態は確認できません。'**
+  String get communityPlaybackUnavailableBody;
+
+  /// 再生の状態：確認できなかった
+  ///
+  /// In ja, this message translates to:
+  /// **'再生状態を確認できません'**
+  String get communityPlaybackUnknownTitle;
+
+  /// 再生の状態：確認できなかった（説明）
+  ///
+  /// In ja, this message translates to:
+  /// **'通信や動画サービスの問題により確認できませんでした。'**
+  String get communityPlaybackUnknownBody;
+
+  /// 再生の状態：確認中
+  ///
+  /// In ja, this message translates to:
+  /// **'動画の状態を確認中'**
+  String get communityPlaybackCheckingTitle;
+
+  /// 再生の状態：確認中（説明）
+  ///
+  /// In ja, this message translates to:
+  /// **'再生できるか確認しています。'**
+  String get communityPlaybackCheckingBody;
+
+  /// 再生の状態：もう一度確かめるボタン
+  ///
+  /// In ja, this message translates to:
+  /// **'再確認'**
+  String get communityPlaybackRecheck;
+
+  /// 投稿の画面：サムネイルの欄の見出し
+  ///
+  /// In ja, this message translates to:
+  /// **'サムネイル'**
+  String get communityPostThumbnailHeading;
+
+  /// 投稿の画面：選んだサムネイルの画像を表示できない
+  ///
+  /// In ja, this message translates to:
+  /// **'画像を読み込めません。画像を選び直してください。'**
+  String get communityPostThumbnailUnreadable;
+
+  /// 投稿の画面：サムネイルをYouTubeへ設定し終えた
+  ///
+  /// In ja, this message translates to:
+  /// **'YouTubeへサムネイルを設定済み'**
+  String get communityPostThumbnailApplied;
+
+  /// 投稿の画面：サムネイルを選ばなかったとき
+  ///
+  /// In ja, this message translates to:
+  /// **'未指定の場合はYouTubeの自動サムネイルを使用します。'**
+  String get communityPostThumbnailAutoHint;
+
+  /// 投稿の画面：画像をサムネイルにするボタン
+  ///
+  /// In ja, this message translates to:
+  /// **'画像を指定'**
+  String get communityPostThumbnailPickImage;
+
+  /// 投稿の画面：動画の1コマをサムネイルにするボタン
+  ///
+  /// In ja, this message translates to:
+  /// **'動画のフレームを指定'**
+  String get communityPostThumbnailPickFrame;
+
+  /// 投稿の画面：選んだサムネイルをやめて自動に戻す
+  ///
+  /// In ja, this message translates to:
+  /// **'自動サムネイルに戻す'**
+  String get communityPostThumbnailUseAuto;
+
+  /// 投稿の画面：サムネイルにPNG・JPEG以外を選んだ
+  ///
+  /// In ja, this message translates to:
+  /// **'PNGまたはJPEGの画像を指定してください'**
+  String get communityPostThumbnailWrongFormat;
+
+  /// 投稿の画面：サムネイルの画像が大きすぎる（mbは上限のMB）
+  ///
+  /// In ja, this message translates to:
+  /// **'サムネイル画像は{mb}MB以内にしてください'**
+  String communityPostThumbnailTooLarge(int mb);
+
+  /// 投稿の画面：サムネイルの画像を選べなかった（errorは失敗の内容）
+  ///
+  /// In ja, this message translates to:
+  /// **'画像を選択できませんでした: {error}'**
+  String communityPostThumbnailPickFailed(String error);
+
+  /// 投稿の画面：サムネイルにする動画の位置を選ぶダイアログの見出し
+  ///
+  /// In ja, this message translates to:
+  /// **'サムネイルにするフレームを選択'**
+  String get communityPostFramePickerTitle;
+
+  /// 投稿の画面：選んでいる位置と動画の長さ（秒。小数1桁にした文字列）
+  ///
+  /// In ja, this message translates to:
+  /// **'{current} / {total} 秒'**
+  String communityPostFramePickerPosition(String current, String total);
+
+  /// 投稿の画面：選んだ位置をサムネイルにするボタン
+  ///
+  /// In ja, this message translates to:
+  /// **'このフレームを使う'**
+  String get communityPostFramePickerUse;
+
+  /// 投稿の画面：動画の長さを調べられなかった
+  ///
+  /// In ja, this message translates to:
+  /// **'動画の再生時間を取得できません'**
+  String get communityPostVideoLengthUnavailable;
+
+  /// 投稿の画面：動画から1コマを取り出せなかった
+  ///
+  /// In ja, this message translates to:
+  /// **'動画のフレームを取得できません'**
+  String get communityPostFrameUnavailable;
+
+  /// 投稿の画面：この端末では動画から1コマを取り出せない
+  ///
+  /// In ja, this message translates to:
+  /// **'この環境では動画のフレームを取り出せません。画像を選択してください。'**
+  String get communityPostFrameUnsupported;
+
+  /// 投稿の画面：動画の1コマを取り出す途中で失敗した（errorは失敗の内容）
+  ///
+  /// In ja, this message translates to:
+  /// **'フレームを取得できませんでした: {error}'**
+  String communityPostFrameFailed(String error);
+
+  /// 投稿の画面：予約の日時が近すぎる・過ぎている（minutesは最短の分数）
+  ///
+  /// In ja, this message translates to:
+  /// **'現在時刻から{minutes}分以上先の日時を指定してください'**
+  String communityPostScheduleTooSoon(int minutes);
+
+  /// 投稿の画面：公開範囲「非公開」
+  ///
+  /// In ja, this message translates to:
+  /// **'非公開'**
+  String get communityPostVisibilityPrivateTitle;
+
+  /// 投稿の画面：公開範囲「非公開」の説明
+  ///
+  /// In ja, this message translates to:
+  /// **'YouTubeにも作品広場にも一般公開されません。'**
+  String get communityPostVisibilityPrivateHelp;
+
+  /// 投稿の画面：公開範囲「日時を指定して予約公開」
+  ///
+  /// In ja, this message translates to:
+  /// **'日時を指定して予約公開'**
+  String get communityPostVisibilityScheduledTitle;
+
+  /// 投稿の画面：公開範囲「予約公開」の説明
+  ///
+  /// In ja, this message translates to:
+  /// **'指定日時まではYouTubeで非公開。公開後に作品広場にも反映します。'**
+  String get communityPostVisibilityScheduledHelp;
+
+  /// 投稿の画面：予約の日時をまだ選んでいない
+  ///
+  /// In ja, this message translates to:
+  /// **'公開日時が未設定です'**
+  String get communityPostScheduleUnset;
+
+  /// 投稿の画面：選んだ予約の日時
+  ///
+  /// In ja, this message translates to:
+  /// **'公開予定: {date}'**
+  String communityPostScheduleAt(DateTime date);
+
+  /// 投稿の画面：予約の日時を選ぶボタン
+  ///
+  /// In ja, this message translates to:
+  /// **'予約日時を選択'**
+  String get communityPostScheduleChoose;
+
+  /// 投稿の画面：予約の日時を変えるボタン
+  ///
+  /// In ja, this message translates to:
+  /// **'予約日時を変更'**
+  String get communityPostScheduleChange;
+
+  /// フォントのダウンロード：通信できない
+  ///
+  /// In ja, this message translates to:
+  /// **'ネットワークに接続できません。'**
+  String get fontDownloadNetworkError;
+
+  /// フォントのダウンロード：配布元から取得できない
+  ///
+  /// In ja, this message translates to:
+  /// **'このフォントは読み込めません。'**
+  String get fontDownloadUnavailable;
+
+  /// フォントのダウンロード：ファイルが壊れている
+  ///
+  /// In ja, this message translates to:
+  /// **'フォントが破損しています。'**
+  String get fontDownloadCorrupted;
+
+  /// フォントの種類：ゴシック体
+  ///
+  /// In ja, this message translates to:
+  /// **'ゴシック'**
+  String get fontCategorySansSerif;
+
+  /// フォントの種類：明朝体・セリフ体
+  ///
+  /// In ja, this message translates to:
+  /// **'明朝・セリフ'**
+  String get fontCategorySerif;
+
+  /// フォントの種類：装飾的な書体
+  ///
+  /// In ja, this message translates to:
+  /// **'装飾'**
+  String get fontCategoryDisplay;
+
+  /// フォントの種類：手書き風
+  ///
+  /// In ja, this message translates to:
+  /// **'手書き風'**
+  String get fontCategoryHandwriting;
+
+  /// フォントの種類：等幅
+  ///
+  /// In ja, this message translates to:
+  /// **'等幅'**
+  String get fontCategoryMonospace;
+
+  /// フォントの検索：各フォントの種類とライセンス
+  ///
+  /// In ja, this message translates to:
+  /// **'{category} ・ {license}'**
+  String fontCatalogEntrySubtitle(String category, String license);
+
+  /// ブラシの設定：紙の目・粒子の強さのスライダー
+  ///
+  /// In ja, this message translates to:
+  /// **'紙目・粒子'**
+  String get brushSettingsPaperGrain;
+
+  /// PC/DeXの色の窓の見出しにある、いまの色の見本（読み上げ）
+  ///
+  /// In ja, this message translates to:
+  /// **'現在の色'**
+  String get colorPickerCurrentColorLabel;
+
+  /// ヘルプ：ショートカット設定の説明
+  ///
+  /// In ja, this message translates to:
+  /// **'キーボードや左手デバイスのキーに、ツール（ブラシ・太さまで指定可）や、取り消し・やり直し・再生・コマ送り・全選択・コピー・切り取り・貼り付けなどの操作を割り当てる画面です。キャンバスとタイムラインの両方で使えます。すでにほかの操作に使っているキーの組み合わせを割り当てようとすると、置き換えてよいか確認します。'**
+  String get helpShortcutSettingsDesc;
 }
 
 class _AppLocalizationsDelegate

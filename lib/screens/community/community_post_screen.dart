@@ -51,7 +51,22 @@ enum _PostFailureKind {
   accountChanged,
   youtubePermissionDenied,
   noVideoId,
+  scheduleTooSoon,
 }
+
+/// Why a picked image or video frame can't be used as the thumbnail.
+enum _ThumbnailProblem implements Exception {
+  wrongFormat,
+  tooLarge,
+  videoLengthUnavailable,
+  frameUnavailable,
+}
+
+/// The shortest time from now to a scheduled publication.
+const _minimumScheduleLead = Duration(minutes: 2);
+
+/// The largest custom thumbnail YouTube accepts, in megabytes.
+const _maxThumbnailMegabytes = 10;
 
 /// A posting failure this screen detects itself; [email] names the Google
 /// account involved, when there is one.
@@ -325,11 +340,11 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
     if (!lower.endsWith('.png') &&
         !lower.endsWith('.jpg') &&
         !lower.endsWith('.jpeg')) {
-      throw ArgumentError('PNGまたはJPEGの画像を指定してください');
+      throw _ThumbnailProblem.wrongFormat;
     }
     final length = await source.length();
-    if (length == 0 || length > 10 * 1024 * 1024) {
-      throw ArgumentError('サムネイル画像は10MB以内にしてください');
+    if (length == 0 || length > _maxThumbnailMegabytes * 1024 * 1024) {
+      throw _ThumbnailProblem.tooLarge;
     }
     final base = await getApplicationSupportDirectory();
     final directory = Directory('${base.path}/post_thumbnails');
@@ -359,11 +374,19 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
     if (choice?.files.single.path case final String path) {
       try {
         await _storeThumbnail(File(path));
+      } on _ThumbnailProblem catch (problem) {
+        _showThumbnailProblem(problem);
       } on Object catch (error) {
         if (mounted) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text('画像を選択できませんでした: $error')));
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                AppLocalizations.of(
+                  context,
+                )!.communityPostThumbnailPickFailed('$error'),
+              ),
+            ),
+          );
         }
       }
     }
@@ -379,21 +402,24 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
       );
       if (!mounted) return;
       if (lengthMs == null || lengthMs < 1) {
-        throw StateError('動画の再生時間が取得できません');
+        throw _ThumbnailProblem.videoLengthUnavailable;
       }
       final duration = lengthMs / 1000.0;
       var selectedSeconds = 0.0;
+      final l10n = AppLocalizations.of(context)!;
       final result = await showDialog<double>(
         context: context,
         builder: (dialogContext) => StatefulBuilder(
           builder: (dialogContext, update) => AlertDialog(
-            title: const Text('サムネイルにするフレームを選択'),
+            title: Text(l10n.communityPostFramePickerTitle),
             content: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  '${selectedSeconds.toStringAsFixed(1)} / '
-                  '${duration.toStringAsFixed(1)} 秒',
+                  l10n.communityPostFramePickerPosition(
+                    selectedSeconds.toStringAsFixed(1),
+                    duration.toStringAsFixed(1),
+                  ),
                 ),
                 Slider(
                   key: const Key('communityPostFrameSlider'),
@@ -407,11 +433,11 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(dialogContext),
-                child: const Text('キャンセル'),
+                child: Text(l10n.commonCancel),
               ),
               FilledButton(
                 onPressed: () => Navigator.pop(dialogContext, selectedSeconds),
-                child: const Text('このフレームを使う'),
+                child: Text(l10n.communityPostFramePickerUse),
               ),
             ],
           ),
@@ -423,22 +449,52 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
         'timeMs': (result * 1000).round(),
       });
       if (path == null || path.isEmpty) {
-        throw StateError('動画フレームを取得できません');
+        throw _ThumbnailProblem.frameUnavailable;
       }
       await _storeThumbnail(File(path));
     } on MissingPluginException {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('この環境はフレーム抽出に非対応です。画像を選択してください。')),
+          SnackBar(
+            content: Text(
+              AppLocalizations.of(context)!.communityPostFrameUnsupported,
+            ),
+          ),
         );
       }
+    } on _ThumbnailProblem catch (problem) {
+      _showThumbnailProblem(problem);
     } on Object catch (error) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('フレーム取得に失敗しました: $error')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              AppLocalizations.of(context)!.communityPostFrameFailed('$error'),
+            ),
+          ),
+        );
       }
     }
+  }
+
+  void _showThumbnailProblem(_ThumbnailProblem problem) {
+    if (!mounted) return;
+    final l10n = AppLocalizations.of(context)!;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(switch (problem) {
+          _ThumbnailProblem.wrongFormat =>
+            l10n.communityPostThumbnailWrongFormat,
+          _ThumbnailProblem.tooLarge => l10n.communityPostThumbnailTooLarge(
+            _maxThumbnailMegabytes,
+          ),
+          _ThumbnailProblem.videoLengthUnavailable =>
+            l10n.communityPostVideoLengthUnavailable,
+          _ThumbnailProblem.frameUnavailable =>
+            l10n.communityPostFrameUnavailable,
+        }),
+      ),
+    );
   }
 
   Future<void> _pickSchedule() async {
@@ -465,10 +521,16 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
       time.hour,
       time.minute,
     );
-    if (!chosen.isAfter(DateTime.now().add(const Duration(minutes: 2)))) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('現在時刻から2分以上先の日時を指定してください')));
+    if (!chosen.isAfter(DateTime.now().add(_minimumScheduleLead))) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            AppLocalizations.of(
+              context,
+            )!.communityPostScheduleTooSoon(_minimumScheduleLead.inMinutes),
+          ),
+        ),
+      );
       return;
     }
     setState(() {
@@ -524,9 +586,11 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
         _youtubePrivacyStatus == 'scheduled' &&
         (_scheduledPublishAt == null ||
             !_scheduledPublishAt!.isAfter(
-              DateTime.now().add(const Duration(minutes: 2)),
+              DateTime.now().add(_minimumScheduleLead),
             ))) {
-      setState(() => _error = StateError('有効な未来の公開日時を指定してください'));
+      setState(
+        () => _error = const _PostFailure(_PostFailureKind.scheduleTooSoon),
+      );
       return;
     }
     if (_youtubeVideoId == null && file == null) {
@@ -843,6 +907,9 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
       _PostFailureKind.youtubePermissionDenied =>
         l10n.communityPostErrorYoutubePermission,
       _PostFailureKind.noVideoId => l10n.communityPostErrorNoVideoId,
+      _PostFailureKind.scheduleTooSoon => l10n.communityPostScheduleTooSoon(
+        _minimumScheduleLead.inMinutes,
+      ),
     };
   }
 
@@ -995,7 +1062,10 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
                   ),
                 ),
                 const SizedBox(height: 12),
-                Text('サムネイル', style: Theme.of(context).textTheme.titleSmall),
+                Text(
+                  l10n.communityPostThumbnailHeading,
+                  style: Theme.of(context).textTheme.titleSmall,
+                ),
                 const SizedBox(height: 6),
                 if (_thumbnailFile != null) ...[
                   ClipRRect(
@@ -1006,13 +1076,14 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
                       height: 155,
                       fit: BoxFit.contain,
                       errorBuilder: (_, _, _) =>
-                          const Text('画像を読み込めません。画像を選び直してください。'),
+                          Text(l10n.communityPostThumbnailUnreadable),
                     ),
                   ),
                   const SizedBox(height: 6),
-                  if (_thumbnailApplied) const Text('YouTubeへサムネイルを設定済み'),
+                  if (_thumbnailApplied)
+                    Text(l10n.communityPostThumbnailApplied),
                 ] else
-                  const Text('未指定の場合はYouTubeの自動サムネイルを使用します。'),
+                  Text(l10n.communityPostThumbnailAutoHint),
                 const SizedBox(height: 6),
                 Wrap(
                   spacing: 8,
@@ -1024,7 +1095,7 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
                           ? null
                           : _pickThumbnail,
                       icon: const Icon(Icons.image_outlined),
-                      label: const Text('画像を指定'),
+                      label: Text(l10n.communityPostThumbnailPickImage),
                     ),
                     OutlinedButton.icon(
                       key: const Key('communityPostChooseVideoFrame'),
@@ -1033,14 +1104,14 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
                           ? null
                           : _pickVideoFrame,
                       icon: const Icon(Icons.movie_filter_outlined),
-                      label: const Text('動画のフレームを指定'),
+                      label: Text(l10n.communityPostThumbnailPickFrame),
                     ),
                     if (_thumbnailFile != null && !_thumbnailApplied)
                       TextButton(
                         onPressed: _busy
                             ? null
                             : () => setState(() => _thumbnailFile = null),
-                        child: const Text('自動サムネイルに戻す'),
+                        child: Text(l10n.communityPostThumbnailUseAuto),
                       ),
                   ],
                 ),
@@ -1093,17 +1164,23 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
                             contentPadding: EdgeInsets.zero,
                             value: 'private',
                             enabled: canChange,
-                            title: const Text('非公開'),
-                            subtitle: const Text('YouTubeにも作品広場にも一般公開されません。'),
+                            title: Text(
+                              l10n.communityPostVisibilityPrivateTitle,
+                            ),
+                            subtitle: Text(
+                              l10n.communityPostVisibilityPrivateHelp,
+                            ),
                           ),
                           RadioListTile<String>(
                             key: const Key('communityPostYouTubeScheduled'),
                             contentPadding: EdgeInsets.zero,
                             value: 'scheduled',
                             enabled: canChange,
-                            title: const Text('日時を指定して予約公開'),
-                            subtitle: const Text(
-                              '指定日時まではYouTubeで非公開。公開後に作品広場にも反映します。',
+                            title: Text(
+                              l10n.communityPostVisibilityScheduledTitle,
+                            ),
+                            subtitle: Text(
+                              l10n.communityPostVisibilityScheduledHelp,
                             ),
                           ),
                           if (_youtubePrivacyStatus == 'scheduled')
@@ -1114,12 +1191,10 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
                                 children: [
                                   Text(
                                     _scheduledPublishAt == null
-                                        ? '公開日時が未設定です'
-                                        : '公開予定: ${_scheduledPublishAt!.toLocal().year}/'
-                                              '${_scheduledPublishAt!.toLocal().month.toString().padLeft(2, '0')}/'
-                                              '${_scheduledPublishAt!.toLocal().day.toString().padLeft(2, '0')} '
-                                              '${_scheduledPublishAt!.toLocal().hour.toString().padLeft(2, '0')}:'
-                                              '${_scheduledPublishAt!.toLocal().minute.toString().padLeft(2, '0')}',
+                                        ? l10n.communityPostScheduleUnset
+                                        : l10n.communityPostScheduleAt(
+                                            _scheduledPublishAt!.toLocal(),
+                                          ),
                                     key: const Key(
                                       'communityPostScheduleLabel',
                                     ),
@@ -1133,8 +1208,8 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
                                     icon: const Icon(Icons.schedule),
                                     label: Text(
                                       _scheduledPublishAt == null
-                                          ? '予約日時を選択'
-                                          : '予約日時を変更',
+                                          ? l10n.communityPostScheduleChoose
+                                          : l10n.communityPostScheduleChange,
                                     ),
                                   ),
                                 ],

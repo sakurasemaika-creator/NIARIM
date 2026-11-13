@@ -5346,5 +5346,380 @@
   "commonApply": "適用",
   "@commonApply": {
     "description": "ダイアログで選んだ内容を反映するボタン"
+  },
+  "commonShare": "共有",
+  "@commonShare": {
+    "description": "共有のボタン（共有のシートを開く）"
+  },
+  "shareCardExportMenu": "共有カードを書き出す",
+  "@shareCardExportMenu": {
+    "description": "ブラシ・トーン・スタンプの…メニュー：共有カード（設定と使用画像を埋め込んだPNG）を書き出す"
+  },
+  "shareCardCreatedTitle": "共有カードを作成しました",
+  "@shareCardCreatedTitle": {
+    "description": "共有カードを書き出したあとのダイアログの見出し"
+  },
+  "shareCardKeepOriginalNote": "元のPNGファイルをそのまま保存・共有してください。SNSで画像を保存し直すと、読み込みに必要なデータが失われることがあります。",
+  "@shareCardKeepOriginalNote": {
+    "description": "共有カードは元のPNGのまま渡すよう知らせる注記"
+  },
+  "shareCardSaveToDevice": "端末に保存",
+  "@shareCardSaveToDevice": {
+    "description": "共有カードを端末に保存するボタン"
+  },
+  "shareCardSaveDialogTitle": "共有カードの保存先",
+  "@shareCardSaveDialogTitle": {
+    "description": "共有カードの保存先を選ぶ画面の見出し"
+  },
+  "shareCardSavedSnackbar": "共有カードを保存しました",
+  "@shareCardSavedSnackbar": {
+    "description": "共有カードを保存した"
+  },
+  "shareCardSaveFailedSnackbar": "共有カードを保存できませんでした: {error}",
+  "@shareCardSaveFailedSnackbar": {
+    "description": "共有カードを保存できなかった（errorは失敗の内容）",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "shareCardImportConfirmTitle": "{kind, select, brush{ブラシを読み込みますか？} tone{トーンを読み込みますか？} other{スタンプを読み込みますか？}}",
+  "@shareCardImportConfirmTitle": {
+    "description": "共有カードを読み込む確認の見出し（kindは brush・tone・stamp）",
+    "placeholders": {
+      "kind": {
+        "type": "String"
+      }
+    }
+  },
+  "shareCardAddedSnackbar": "{kind, select, brush{ブラシ「{name}」を追加しました} tone{トーン「{name}」を追加しました} other{スタンプ「{name}」を追加しました}}",
+  "@shareCardAddedSnackbar": {
+    "description": "共有カードから素材を追加した（kindは brush・tone・stamp、nameは素材の名前）",
+    "placeholders": {
+      "kind": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "shareCardWrongKind": "{kind, select, brush{これはブラシの共有カードです。ブラシの一覧から読み込んでください。} tone{これはトーンの共有カードです。トーンの一覧から読み込んでください。} other{これはスタンプの共有カードです。スタンプの一覧から読み込んでください。}}",
+  "@shareCardWrongKind": {
+    "description": "別の種類の素材の共有カードを選んだ（kindはカードの種類 brush・tone・stamp）",
+    "placeholders": {
+      "kind": {
+        "type": "String"
+      }
+    }
+  },
+  "shareCardImportFailedSnackbar": "共有カードを読み込めませんでした: {error}",
+  "@shareCardImportFailedSnackbar": {
+    "description": "共有カードを読み込めなかった（errorは失敗の内容）",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "communityUnfollowAction": "フォロー解除",
+  "@communityUnfollowAction": {
+    "description": "フォロー中の一覧：フォローをやめるボタン"
+  },
+  "communityUnfollowedLabel": "フォロー解除済み",
+  "@communityUnfollowedLabel": {
+    "description": "フォロー中の一覧：最近フォローをやめた人の行の補足"
+  },
+  "communityFollowingListEmpty": "フォロー中のユーザーはいません",
+  "@communityFollowingListEmpty": {
+    "description": "フォロー中の一覧：だれもフォローしていない"
+  },
+  "communityRecentlyUnfollowedHeader": "最近フォローを解除したユーザー",
+  "@communityRecentlyUnfollowedHeader": {
+    "description": "フォロー中の一覧：最近フォローをやめた人の見出し"
+  },
+  "communityMyWorksStatusScheduled": "予約公開中 • {date}",
+  "@communityMyWorksStatusScheduled": {
+    "description": "自分の投稿：予約公開を待っている作品（dateは公開予定の日時）",
+    "placeholders": {
+      "date": {
+        "type": "DateTime",
+        "format": "yMd+jm"
+      }
+    }
+  },
+  "communityMyWorksStatusScheduledHidden": "予約公開中 • {date} • 作品広場は非公開",
+  "@communityMyWorksStatusScheduledHidden": {
+    "description": "自分の投稿：予約公開を待っていて、作品広場では非公開の作品",
+    "placeholders": {
+      "date": {
+        "type": "DateTime",
+        "format": "yMd+jm"
+      }
+    }
+  },
+  "communityMyWorksStatusSchedulePassed": "公開予定日時経過 • YouTubeの公開処理を確認中",
+  "@communityMyWorksStatusSchedulePassed": {
+    "description": "自分の投稿：予約の日時を過ぎたが、YouTubeでまだ公開になっていない"
+  },
+  "communityWorkDetailYoutubeOpenFailed": "YouTubeの動画を開けませんでした",
+  "@communityWorkDetailYoutubeOpenFailed": {
+    "description": "作品の詳細：YouTubeで動画を開けなかった"
+  },
+  "communityPlayerNotLinked": "YouTube動画が連携されていません",
+  "@communityPlayerNotLinked": {
+    "description": "埋め込みのプレーヤー：作品にYouTubeの動画が結び付いていない"
+  },
+  "communityPlayerPlaybackFailed": "YouTube動画を再生できませんでした",
+  "@communityPlayerPlaybackFailed": {
+    "description": "埋め込みのプレーヤー：再生できなかった"
+  },
+  "communityPlayerTooSmall": "動画を再生するには、縦横{size}px以上の表示の場所が必要です",
+  "@communityPlayerTooSmall": {
+    "description": "埋め込みのプレーヤー：表示の場所が小さすぎる（sizeは必要な幅・高さのpx）",
+    "placeholders": {
+      "size": {
+        "type": "int"
+      }
+    }
+  },
+  "communityPlaybackDeletedTitle": "動画は削除済みです",
+  "@communityPlaybackDeletedTitle": {
+    "description": "再生の状態：動画が削除された"
+  },
+  "communityPlaybackDeletedBody": "この動画は削除されているため再生できません。",
+  "@communityPlaybackDeletedBody": {
+    "description": "再生の状態：動画が削除された（説明）"
+  },
+  "communityPlaybackPrivateTitle": "この動画は非公開です",
+  "@communityPlaybackPrivateTitle": {
+    "description": "再生の状態：非公開"
+  },
+  "communityPlaybackPrivateBody": "投稿者の公開設定により再生できません。",
+  "@communityPlaybackPrivateBody": {
+    "description": "再生の状態：非公開（説明）"
+  },
+  "communityPlaybackUnavailableTitle": "この動画を利用できません",
+  "@communityPlaybackUnavailableTitle": {
+    "description": "再生の状態：利用できない"
+  },
+  "communityPlaybackUnavailableBody": "削除または非公開の可能性があります。公開状態は確認できません。",
+  "@communityPlaybackUnavailableBody": {
+    "description": "再生の状態：利用できない（説明）"
+  },
+  "communityPlaybackUnknownTitle": "再生状態を確認できません",
+  "@communityPlaybackUnknownTitle": {
+    "description": "再生の状態：確認できなかった"
+  },
+  "communityPlaybackUnknownBody": "通信や動画サービスの問題により確認できませんでした。",
+  "@communityPlaybackUnknownBody": {
+    "description": "再生の状態：確認できなかった（説明）"
+  },
+  "communityPlaybackCheckingTitle": "動画の状態を確認中",
+  "@communityPlaybackCheckingTitle": {
+    "description": "再生の状態：確認中"
+  },
+  "communityPlaybackCheckingBody": "再生できるか確認しています。",
+  "@communityPlaybackCheckingBody": {
+    "description": "再生の状態：確認中（説明）"
+  },
+  "communityPlaybackRecheck": "再確認",
+  "@communityPlaybackRecheck": {
+    "description": "再生の状態：もう一度確かめるボタン"
+  },
+  "communityPostThumbnailHeading": "サムネイル",
+  "@communityPostThumbnailHeading": {
+    "description": "投稿の画面：サムネイルの欄の見出し"
+  },
+  "communityPostThumbnailUnreadable": "画像を読み込めません。画像を選び直してください。",
+  "@communityPostThumbnailUnreadable": {
+    "description": "投稿の画面：選んだサムネイルの画像を表示できない"
+  },
+  "communityPostThumbnailApplied": "YouTubeへサムネイルを設定済み",
+  "@communityPostThumbnailApplied": {
+    "description": "投稿の画面：サムネイルをYouTubeへ設定し終えた"
+  },
+  "communityPostThumbnailAutoHint": "未指定の場合はYouTubeの自動サムネイルを使用します。",
+  "@communityPostThumbnailAutoHint": {
+    "description": "投稿の画面：サムネイルを選ばなかったとき"
+  },
+  "communityPostThumbnailPickImage": "画像を指定",
+  "@communityPostThumbnailPickImage": {
+    "description": "投稿の画面：画像をサムネイルにするボタン"
+  },
+  "communityPostThumbnailPickFrame": "動画のフレームを指定",
+  "@communityPostThumbnailPickFrame": {
+    "description": "投稿の画面：動画の1コマをサムネイルにするボタン"
+  },
+  "communityPostThumbnailUseAuto": "自動サムネイルに戻す",
+  "@communityPostThumbnailUseAuto": {
+    "description": "投稿の画面：選んだサムネイルをやめて自動に戻す"
+  },
+  "communityPostThumbnailWrongFormat": "PNGまたはJPEGの画像を指定してください",
+  "@communityPostThumbnailWrongFormat": {
+    "description": "投稿の画面：サムネイルにPNG・JPEG以外を選んだ"
+  },
+  "communityPostThumbnailTooLarge": "サムネイル画像は{mb}MB以内にしてください",
+  "@communityPostThumbnailTooLarge": {
+    "description": "投稿の画面：サムネイルの画像が大きすぎる（mbは上限のMB）",
+    "placeholders": {
+      "mb": {
+        "type": "int"
+      }
+    }
+  },
+  "communityPostThumbnailPickFailed": "画像を選択できませんでした: {error}",
+  "@communityPostThumbnailPickFailed": {
+    "description": "投稿の画面：サムネイルの画像を選べなかった（errorは失敗の内容）",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "communityPostFramePickerTitle": "サムネイルにするフレームを選択",
+  "@communityPostFramePickerTitle": {
+    "description": "投稿の画面：サムネイルにする動画の位置を選ぶダイアログの見出し"
+  },
+  "communityPostFramePickerPosition": "{current} / {total} 秒",
+  "@communityPostFramePickerPosition": {
+    "description": "投稿の画面：選んでいる位置と動画の長さ（秒。小数1桁にした文字列）",
+    "placeholders": {
+      "current": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "communityPostFramePickerUse": "このフレームを使う",
+  "@communityPostFramePickerUse": {
+    "description": "投稿の画面：選んだ位置をサムネイルにするボタン"
+  },
+  "communityPostVideoLengthUnavailable": "動画の再生時間を取得できません",
+  "@communityPostVideoLengthUnavailable": {
+    "description": "投稿の画面：動画の長さを調べられなかった"
+  },
+  "communityPostFrameUnavailable": "動画のフレームを取得できません",
+  "@communityPostFrameUnavailable": {
+    "description": "投稿の画面：動画から1コマを取り出せなかった"
+  },
+  "communityPostFrameUnsupported": "この環境では動画のフレームを取り出せません。画像を選択してください。",
+  "@communityPostFrameUnsupported": {
+    "description": "投稿の画面：この端末では動画から1コマを取り出せない"
+  },
+  "communityPostFrameFailed": "フレームを取得できませんでした: {error}",
+  "@communityPostFrameFailed": {
+    "description": "投稿の画面：動画の1コマを取り出す途中で失敗した（errorは失敗の内容）",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "communityPostScheduleTooSoon": "現在時刻から{minutes}分以上先の日時を指定してください",
+  "@communityPostScheduleTooSoon": {
+    "description": "投稿の画面：予約の日時が近すぎる・過ぎている（minutesは最短の分数）",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "communityPostVisibilityPrivateTitle": "非公開",
+  "@communityPostVisibilityPrivateTitle": {
+    "description": "投稿の画面：公開範囲「非公開」"
+  },
+  "communityPostVisibilityPrivateHelp": "YouTubeにも作品広場にも一般公開されません。",
+  "@communityPostVisibilityPrivateHelp": {
+    "description": "投稿の画面：公開範囲「非公開」の説明"
+  },
+  "communityPostVisibilityScheduledTitle": "日時を指定して予約公開",
+  "@communityPostVisibilityScheduledTitle": {
+    "description": "投稿の画面：公開範囲「日時を指定して予約公開」"
+  },
+  "communityPostVisibilityScheduledHelp": "指定日時まではYouTubeで非公開。公開後に作品広場にも反映します。",
+  "@communityPostVisibilityScheduledHelp": {
+    "description": "投稿の画面：公開範囲「予約公開」の説明"
+  },
+  "communityPostScheduleUnset": "公開日時が未設定です",
+  "@communityPostScheduleUnset": {
+    "description": "投稿の画面：予約の日時をまだ選んでいない"
+  },
+  "communityPostScheduleAt": "公開予定: {date}",
+  "@communityPostScheduleAt": {
+    "description": "投稿の画面：選んだ予約の日時",
+    "placeholders": {
+      "date": {
+        "type": "DateTime",
+        "format": "yMd+jm"
+      }
+    }
+  },
+  "communityPostScheduleChoose": "予約日時を選択",
+  "@communityPostScheduleChoose": {
+    "description": "投稿の画面：予約の日時を選ぶボタン"
+  },
+  "communityPostScheduleChange": "予約日時を変更",
+  "@communityPostScheduleChange": {
+    "description": "投稿の画面：予約の日時を変えるボタン"
+  },
+  "fontDownloadNetworkError": "ネットワークに接続できません。",
+  "@fontDownloadNetworkError": {
+    "description": "フォントのダウンロード：通信できない"
+  },
+  "fontDownloadUnavailable": "このフォントは読み込めません。",
+  "@fontDownloadUnavailable": {
+    "description": "フォントのダウンロード：配布元から取得できない"
+  },
+  "fontDownloadCorrupted": "フォントが破損しています。",
+  "@fontDownloadCorrupted": {
+    "description": "フォントのダウンロード：ファイルが壊れている"
+  },
+  "fontCategorySansSerif": "ゴシック",
+  "@fontCategorySansSerif": {
+    "description": "フォントの種類：ゴシック体"
+  },
+  "fontCategorySerif": "明朝・セリフ",
+  "@fontCategorySerif": {
+    "description": "フォントの種類：明朝体・セリフ体"
+  },
+  "fontCategoryDisplay": "装飾",
+  "@fontCategoryDisplay": {
+    "description": "フォントの種類：装飾的な書体"
+  },
+  "fontCategoryHandwriting": "手書き風",
+  "@fontCategoryHandwriting": {
+    "description": "フォントの種類：手書き風"
+  },
+  "fontCategoryMonospace": "等幅",
+  "@fontCategoryMonospace": {
+    "description": "フォントの種類：等幅"
+  },
+  "fontCatalogEntrySubtitle": "{category} ・ {license}",
+  "@fontCatalogEntrySubtitle": {
+    "description": "フォントの検索：各フォントの種類とライセンス",
+    "placeholders": {
+      "category": {
+        "type": "String"
+      },
+      "license": {
+        "type": "String"
+      }
+    }
+  },
+  "brushSettingsPaperGrain": "紙目・粒子",
+  "@brushSettingsPaperGrain": {
+    "description": "ブラシの設定：紙の目・粒子の強さのスライダー"
+  },
+  "colorPickerCurrentColorLabel": "現在の色",
+  "@colorPickerCurrentColorLabel": {
+    "description": "PC/DeXの色の窓の見出しにある、いまの色の見本（読み上げ）"
+  },
+  "helpShortcutSettingsDesc": "キーボードや左手デバイスのキーに、ツール（ブラシ・太さまで指定可）や、取り消し・やり直し・再生・コマ送り・全選択・コピー・切り取り・貼り付けなどの操作を割り当てる画面です。キャンバスとタイムラインの両方で使えます。すでにほかの操作に使っているキーの組み合わせを割り当てようとすると、置き換えてよいか確認します。",
+  "@helpShortcutSettingsDesc": {
+    "description": "ヘルプ：ショートカット設定の説明"
   }
 }

@@ -10233,4 +10233,313 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get commonApply => 'Appliquer';
+
+  @override
+  String get commonShare => 'Partager';
+
+  @override
+  String get shareCardExportMenu => 'Exporter une carte de partage';
+
+  @override
+  String get shareCardCreatedTitle => 'Carte de partage créée';
+
+  @override
+  String get shareCardKeepOriginalNote =>
+      'Enregistrez ou partagez le fichier PNG d’origine tel quel. Réenregistrer l’image depuis un réseau social peut effacer les données nécessaires à son import.';
+
+  @override
+  String get shareCardSaveToDevice => 'Enregistrer sur l’appareil';
+
+  @override
+  String get shareCardSaveDialogTitle => 'Enregistrer la carte de partage';
+
+  @override
+  String get shareCardSavedSnackbar => 'Carte de partage enregistrée';
+
+  @override
+  String shareCardSaveFailedSnackbar(String error) {
+    return 'Impossible d’enregistrer la carte : $error';
+  }
+
+  @override
+  String shareCardImportConfirmTitle(String kind) {
+    String _temp0 = intl.Intl.selectLogic(kind, {
+      'brush': 'Importer ce pinceau ?',
+      'tone': 'Importer cette trame ?',
+      'other': 'Importer ce tampon ?',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String shareCardAddedSnackbar(String kind, String name) {
+    String _temp0 = intl.Intl.selectLogic(kind, {
+      'brush': 'Pinceau « $name » ajouté',
+      'tone': 'Trame « $name » ajoutée',
+      'other': 'Tampon « $name » ajouté',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String shareCardWrongKind(String kind) {
+    String _temp0 = intl.Intl.selectLogic(kind, {
+      'brush':
+          'Ceci est une carte de pinceau. Importez-la depuis la liste des pinceaux.',
+      'tone':
+          'Ceci est une carte de trame. Importez-la depuis la liste des trames.',
+      'other':
+          'Ceci est une carte de tampon. Importez-la depuis la liste des tampons.',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String shareCardImportFailedSnackbar(String error) {
+    return 'Impossible d’importer la carte : $error';
+  }
+
+  @override
+  String get communityUnfollowAction => 'Ne plus suivre';
+
+  @override
+  String get communityUnfollowedLabel => 'Vous ne suivez plus';
+
+  @override
+  String get communityFollowingListEmpty => 'Vous ne suivez encore personne';
+
+  @override
+  String get communityRecentlyUnfollowedHeader => 'Plus suivis récemment';
+
+  @override
+  String communityMyWorksStatusScheduled(DateTime date) {
+    final intl.DateFormat dateDateFormat = intl.DateFormat.yMd(
+      localeName,
+    ).add_jm();
+    final String dateString = dateDateFormat.format(date);
+
+    return 'Programmé • $dateString';
+  }
+
+  @override
+  String communityMyWorksStatusScheduledHidden(DateTime date) {
+    final intl.DateFormat dateDateFormat = intl.DateFormat.yMd(
+      localeName,
+    ).add_jm();
+    final String dateString = dateDateFormat.format(date);
+
+    return 'Programmé • $dateString • Masqué sur la Place des œuvres';
+  }
+
+  @override
+  String get communityMyWorksStatusSchedulePassed =>
+      'Heure prévue dépassée • Vérification de la publication sur YouTube';
+
+  @override
+  String get communityWorkDetailYoutubeOpenFailed =>
+      'Impossible d’ouvrir la vidéo sur YouTube';
+
+  @override
+  String get communityPlayerNotLinked => 'Aucune vidéo YouTube n’est associée';
+
+  @override
+  String get communityPlayerPlaybackFailed =>
+      'Impossible de lire la vidéo YouTube';
+
+  @override
+  String communityPlayerTooSmall(int size) {
+    return 'La lecture de la vidéo nécessite un espace d’au moins $size × $size px';
+  }
+
+  @override
+  String get communityPlaybackDeletedTitle => 'Vidéo supprimée';
+
+  @override
+  String get communityPlaybackDeletedBody =>
+      'Cette vidéo a été supprimée et ne peut plus être lue.';
+
+  @override
+  String get communityPlaybackPrivateTitle => 'Vidéo privée';
+
+  @override
+  String get communityPlaybackPrivateBody =>
+      'Les paramètres de confidentialité empêchent sa lecture.';
+
+  @override
+  String get communityPlaybackUnavailableTitle => 'Vidéo indisponible';
+
+  @override
+  String get communityPlaybackUnavailableBody =>
+      'Elle a peut-être été supprimée ou rendue privée. Son statut ne peut pas être confirmé.';
+
+  @override
+  String get communityPlaybackUnknownTitle => 'Vérification impossible';
+
+  @override
+  String get communityPlaybackUnknownBody =>
+      'Un problème de connexion ou de service a empêché la vérification.';
+
+  @override
+  String get communityPlaybackCheckingTitle => 'Vérification en cours';
+
+  @override
+  String get communityPlaybackCheckingBody =>
+      'Vérification de la disponibilité de la vidéo.';
+
+  @override
+  String get communityPlaybackRecheck => 'Réessayer';
+
+  @override
+  String get communityPostThumbnailHeading => 'Miniature';
+
+  @override
+  String get communityPostThumbnailUnreadable =>
+      'Impossible de charger l’image. Choisissez-en une autre.';
+
+  @override
+  String get communityPostThumbnailApplied => 'Miniature définie sur YouTube';
+
+  @override
+  String get communityPostThumbnailAutoHint =>
+      'Sans choix de votre part, la miniature automatique de YouTube sera utilisée.';
+
+  @override
+  String get communityPostThumbnailPickImage => 'Choisir une image';
+
+  @override
+  String get communityPostThumbnailPickFrame => 'Choisir une image de la vidéo';
+
+  @override
+  String get communityPostThumbnailUseAuto =>
+      'Utiliser la miniature automatique';
+
+  @override
+  String get communityPostThumbnailWrongFormat =>
+      'Choisissez une image PNG ou JPEG';
+
+  @override
+  String communityPostThumbnailTooLarge(int mb) {
+    return 'L’image de la miniature ne doit pas dépasser $mb Mo';
+  }
+
+  @override
+  String communityPostThumbnailPickFailed(String error) {
+    return 'Impossible d’utiliser l’image : $error';
+  }
+
+  @override
+  String get communityPostFramePickerTitle =>
+      'Choisissez une image pour la miniature';
+
+  @override
+  String communityPostFramePickerPosition(String current, String total) {
+    return '$current / $total s';
+  }
+
+  @override
+  String get communityPostFramePickerUse => 'Utiliser cette image';
+
+  @override
+  String get communityPostVideoLengthUnavailable =>
+      'Impossible de lire la durée de la vidéo';
+
+  @override
+  String get communityPostFrameUnavailable =>
+      'Impossible d’extraire l’image de la vidéo';
+
+  @override
+  String get communityPostFrameUnsupported =>
+      'Impossible d’extraire des images de vidéos sur cet appareil. Choisissez plutôt une image.';
+
+  @override
+  String communityPostFrameFailed(String error) {
+    return 'Impossible d’extraire l’image : $error';
+  }
+
+  @override
+  String communityPostScheduleTooSoon(int minutes) {
+    String _temp0 = intl.Intl.pluralLogic(
+      minutes,
+      locale: localeName,
+      other: 'Choisissez une heure au moins $minutes minutes plus tard',
+      one: 'Choisissez une heure au moins $minutes minute plus tard',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get communityPostVisibilityPrivateTitle => 'Privé';
+
+  @override
+  String get communityPostVisibilityPrivateHelp =>
+      'Ni visible publiquement sur YouTube ni sur la Place des œuvres.';
+
+  @override
+  String get communityPostVisibilityScheduledTitle =>
+      'Programmer la publication';
+
+  @override
+  String get communityPostVisibilityScheduledHelp =>
+      'Privé sur YouTube jusqu’à l’heure choisie, puis visible aussi sur la Place des œuvres.';
+
+  @override
+  String get communityPostScheduleUnset =>
+      'Aucune heure de publication définie';
+
+  @override
+  String communityPostScheduleAt(DateTime date) {
+    final intl.DateFormat dateDateFormat = intl.DateFormat.yMd(
+      localeName,
+    ).add_jm();
+    final String dateString = dateDateFormat.format(date);
+
+    return 'Publication prévue : $dateString';
+  }
+
+  @override
+  String get communityPostScheduleChoose => 'Choisir l’heure';
+
+  @override
+  String get communityPostScheduleChange => 'Modifier l’heure';
+
+  @override
+  String get fontDownloadNetworkError =>
+      'Impossible de se connecter au réseau.';
+
+  @override
+  String get fontDownloadUnavailable =>
+      'Impossible de télécharger cette police.';
+
+  @override
+  String get fontDownloadCorrupted => 'Le fichier de police est endommagé.';
+
+  @override
+  String get fontCategorySansSerif => 'Sans empattement';
+
+  @override
+  String get fontCategorySerif => 'Avec empattement';
+
+  @override
+  String get fontCategoryDisplay => 'Décorative';
+
+  @override
+  String get fontCategoryHandwriting => 'Manuscrite';
+
+  @override
+  String get fontCategoryMonospace => 'Chasse fixe';
+
+  @override
+  String fontCatalogEntrySubtitle(String category, String license) {
+    return '$category · $license';
+  }
+
+  @override
+  String get brushSettingsPaperGrain => 'Grain du papier';
+
+  @override
+  String get colorPickerCurrentColorLabel => 'Couleur actuelle';
+
+  @override
+  String get helpShortcutSettingsDesc =>
+      'Attribuez des touches du clavier ou d’un périphérique main gauche à des outils (jusqu’à un pinceau et une taille précis) ou à des actions comme annuler, rétablir, lire, avancer image par image, tout sélectionner, copier, couper et coller. Les raccourcis fonctionnent sur le canevas comme dans la chronologie. Si une combinaison est déjà utilisée par une autre action, une confirmation vous est demandée avant de la remplacer.';
 }

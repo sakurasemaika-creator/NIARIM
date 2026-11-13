@@ -9458,4 +9458,286 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get commonApply => '適用';
+
+  @override
+  String get commonShare => '共有';
+
+  @override
+  String get shareCardExportMenu => '共有カードを書き出す';
+
+  @override
+  String get shareCardCreatedTitle => '共有カードを作成しました';
+
+  @override
+  String get shareCardKeepOriginalNote =>
+      '元のPNGファイルをそのまま保存・共有してください。SNSで画像を保存し直すと、読み込みに必要なデータが失われることがあります。';
+
+  @override
+  String get shareCardSaveToDevice => '端末に保存';
+
+  @override
+  String get shareCardSaveDialogTitle => '共有カードの保存先';
+
+  @override
+  String get shareCardSavedSnackbar => '共有カードを保存しました';
+
+  @override
+  String shareCardSaveFailedSnackbar(String error) {
+    return '共有カードを保存できませんでした: $error';
+  }
+
+  @override
+  String shareCardImportConfirmTitle(String kind) {
+    String _temp0 = intl.Intl.selectLogic(kind, {
+      'brush': 'ブラシを読み込みますか？',
+      'tone': 'トーンを読み込みますか？',
+      'other': 'スタンプを読み込みますか？',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String shareCardAddedSnackbar(String kind, String name) {
+    String _temp0 = intl.Intl.selectLogic(kind, {
+      'brush': 'ブラシ「$name」を追加しました',
+      'tone': 'トーン「$name」を追加しました',
+      'other': 'スタンプ「$name」を追加しました',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String shareCardWrongKind(String kind) {
+    String _temp0 = intl.Intl.selectLogic(kind, {
+      'brush': 'これはブラシの共有カードです。ブラシの一覧から読み込んでください。',
+      'tone': 'これはトーンの共有カードです。トーンの一覧から読み込んでください。',
+      'other': 'これはスタンプの共有カードです。スタンプの一覧から読み込んでください。',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String shareCardImportFailedSnackbar(String error) {
+    return '共有カードを読み込めませんでした: $error';
+  }
+
+  @override
+  String get communityUnfollowAction => 'フォロー解除';
+
+  @override
+  String get communityUnfollowedLabel => 'フォロー解除済み';
+
+  @override
+  String get communityFollowingListEmpty => 'フォロー中のユーザーはいません';
+
+  @override
+  String get communityRecentlyUnfollowedHeader => '最近フォローを解除したユーザー';
+
+  @override
+  String communityMyWorksStatusScheduled(DateTime date) {
+    final intl.DateFormat dateDateFormat = intl.DateFormat.yMd(
+      localeName,
+    ).add_jm();
+    final String dateString = dateDateFormat.format(date);
+
+    return '予約公開中 • $dateString';
+  }
+
+  @override
+  String communityMyWorksStatusScheduledHidden(DateTime date) {
+    final intl.DateFormat dateDateFormat = intl.DateFormat.yMd(
+      localeName,
+    ).add_jm();
+    final String dateString = dateDateFormat.format(date);
+
+    return '予約公開中 • $dateString • 作品広場は非公開';
+  }
+
+  @override
+  String get communityMyWorksStatusSchedulePassed =>
+      '公開予定日時経過 • YouTubeの公開処理を確認中';
+
+  @override
+  String get communityWorkDetailYoutubeOpenFailed => 'YouTubeの動画を開けませんでした';
+
+  @override
+  String get communityPlayerNotLinked => 'YouTube動画が連携されていません';
+
+  @override
+  String get communityPlayerPlaybackFailed => 'YouTube動画を再生できませんでした';
+
+  @override
+  String communityPlayerTooSmall(int size) {
+    return '動画を再生するには、縦横${size}px以上の表示の場所が必要です';
+  }
+
+  @override
+  String get communityPlaybackDeletedTitle => '動画は削除済みです';
+
+  @override
+  String get communityPlaybackDeletedBody => 'この動画は削除されているため再生できません。';
+
+  @override
+  String get communityPlaybackPrivateTitle => 'この動画は非公開です';
+
+  @override
+  String get communityPlaybackPrivateBody => '投稿者の公開設定により再生できません。';
+
+  @override
+  String get communityPlaybackUnavailableTitle => 'この動画を利用できません';
+
+  @override
+  String get communityPlaybackUnavailableBody =>
+      '削除または非公開の可能性があります。公開状態は確認できません。';
+
+  @override
+  String get communityPlaybackUnknownTitle => '再生状態を確認できません';
+
+  @override
+  String get communityPlaybackUnknownBody => '通信や動画サービスの問題により確認できませんでした。';
+
+  @override
+  String get communityPlaybackCheckingTitle => '動画の状態を確認中';
+
+  @override
+  String get communityPlaybackCheckingBody => '再生できるか確認しています。';
+
+  @override
+  String get communityPlaybackRecheck => '再確認';
+
+  @override
+  String get communityPostThumbnailHeading => 'サムネイル';
+
+  @override
+  String get communityPostThumbnailUnreadable => '画像を読み込めません。画像を選び直してください。';
+
+  @override
+  String get communityPostThumbnailApplied => 'YouTubeへサムネイルを設定済み';
+
+  @override
+  String get communityPostThumbnailAutoHint => '未指定の場合はYouTubeの自動サムネイルを使用します。';
+
+  @override
+  String get communityPostThumbnailPickImage => '画像を指定';
+
+  @override
+  String get communityPostThumbnailPickFrame => '動画のフレームを指定';
+
+  @override
+  String get communityPostThumbnailUseAuto => '自動サムネイルに戻す';
+
+  @override
+  String get communityPostThumbnailWrongFormat => 'PNGまたはJPEGの画像を指定してください';
+
+  @override
+  String communityPostThumbnailTooLarge(int mb) {
+    return 'サムネイル画像は${mb}MB以内にしてください';
+  }
+
+  @override
+  String communityPostThumbnailPickFailed(String error) {
+    return '画像を選択できませんでした: $error';
+  }
+
+  @override
+  String get communityPostFramePickerTitle => 'サムネイルにするフレームを選択';
+
+  @override
+  String communityPostFramePickerPosition(String current, String total) {
+    return '$current / $total 秒';
+  }
+
+  @override
+  String get communityPostFramePickerUse => 'このフレームを使う';
+
+  @override
+  String get communityPostVideoLengthUnavailable => '動画の再生時間を取得できません';
+
+  @override
+  String get communityPostFrameUnavailable => '動画のフレームを取得できません';
+
+  @override
+  String get communityPostFrameUnsupported =>
+      'この環境では動画のフレームを取り出せません。画像を選択してください。';
+
+  @override
+  String communityPostFrameFailed(String error) {
+    return 'フレームを取得できませんでした: $error';
+  }
+
+  @override
+  String communityPostScheduleTooSoon(int minutes) {
+    return '現在時刻から$minutes分以上先の日時を指定してください';
+  }
+
+  @override
+  String get communityPostVisibilityPrivateTitle => '非公開';
+
+  @override
+  String get communityPostVisibilityPrivateHelp => 'YouTubeにも作品広場にも一般公開されません。';
+
+  @override
+  String get communityPostVisibilityScheduledTitle => '日時を指定して予約公開';
+
+  @override
+  String get communityPostVisibilityScheduledHelp =>
+      '指定日時まではYouTubeで非公開。公開後に作品広場にも反映します。';
+
+  @override
+  String get communityPostScheduleUnset => '公開日時が未設定です';
+
+  @override
+  String communityPostScheduleAt(DateTime date) {
+    final intl.DateFormat dateDateFormat = intl.DateFormat.yMd(
+      localeName,
+    ).add_jm();
+    final String dateString = dateDateFormat.format(date);
+
+    return '公開予定: $dateString';
+  }
+
+  @override
+  String get communityPostScheduleChoose => '予約日時を選択';
+
+  @override
+  String get communityPostScheduleChange => '予約日時を変更';
+
+  @override
+  String get fontDownloadNetworkError => 'ネットワークに接続できません。';
+
+  @override
+  String get fontDownloadUnavailable => 'このフォントは読み込めません。';
+
+  @override
+  String get fontDownloadCorrupted => 'フォントが破損しています。';
+
+  @override
+  String get fontCategorySansSerif => 'ゴシック';
+
+  @override
+  String get fontCategorySerif => '明朝・セリフ';
+
+  @override
+  String get fontCategoryDisplay => '装飾';
+
+  @override
+  String get fontCategoryHandwriting => '手書き風';
+
+  @override
+  String get fontCategoryMonospace => '等幅';
+
+  @override
+  String fontCatalogEntrySubtitle(String category, String license) {
+    return '$category ・ $license';
+  }
+
+  @override
+  String get brushSettingsPaperGrain => '紙目・粒子';
+
+  @override
+  String get colorPickerCurrentColorLabel => '現在の色';
+
+  @override
+  String get helpShortcutSettingsDesc =>
+      'キーボードや左手デバイスのキーに、ツール（ブラシ・太さまで指定可）や、取り消し・やり直し・再生・コマ送り・全選択・コピー・切り取り・貼り付けなどの操作を割り当てる画面です。キャンバスとタイムラインの両方で使えます。すでにほかの操作に使っているキーの組み合わせを割り当てようとすると、置き換えてよいか確認します。';
 }
