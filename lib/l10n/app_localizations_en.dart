@@ -9068,7 +9068,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get rewardUnlockAllAds => 'Remove all ads';
 
   @override
-  String get rewardUnlockFullPremium => 'All benefits bundle';
+  String get rewardUnlockFullPremium => 'Complete Benefits Pack (same as Premium membership)';
 
   @override
   String get rewardUnlockChoose => 'Select';
