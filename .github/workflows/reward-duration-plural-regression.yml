@@ -6,6 +6,7 @@ on:
     paths:
       - '.github/workflows/reward-duration-plural-regression.yml'
       - 'test/reward_duration_plural_test.dart'
+      - 'test/reward_count_unit_text_test.dart'
       - 'test/reward_total_reference_note_test.dart'
       - 'lib/screens/rewards/reward_unlock_screen.dart'
       - 'lib/models/coin_benefit_price_proposal.dart'
@@ -24,6 +25,6 @@ jobs:
           channel: stable
       - run: flutter pub get --enforce-lockfile
       - name: Validate 7-language, 153-duration UI and note geometry
-        run: flutter test --no-pub test/reward_duration_plural_test.dart test/reward_total_reference_note_test.dart --reporter expanded
+        run: flutter test --no-pub test/reward_duration_plural_test.dart test/reward_total_reference_note_test.dart test/reward_count_unit_text_test.dart --reporter expanded
       - name: Analyze widget regression tests
-        run: flutter analyze --no-pub --no-fatal-infos test/reward_duration_plural_test.dart test/reward_total_reference_note_test.dart
+        run: flutter analyze --no-pub --no-fatal-infos test/reward_duration_plural_test.dart test/reward_total_reference_note_test.dart test/reward_count_unit_text_test.dart
