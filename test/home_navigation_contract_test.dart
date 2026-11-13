@@ -208,7 +208,9 @@ void main() {
       findsNothing,
       reason: 'project search must end when its results leave the screen',
     );
-    expect(find.byTooltip('検索'), findsNothing);
+    // Another tab may expose its own search affordance; only the previous
+    // Projects query and edit state must be scoped away.
+    expect(find.text('project query'), findsNothing);
     await tester.tap(find.byKey(const ValueKey('home_tab_0')));
     await settleHomeTab(tester);
     await tester.tap(find.byTooltip('検索'));
