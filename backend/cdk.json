@@ -31,13 +31,22 @@
     "rewardedAdReviewApproved": "true",
     "rewardedAdDailyLimit": "1",
     "coinFullPremiumMonthCoins": "55000",
-    "coinPriceVersion": "v3-final-annual550000",
+    "coinPriceVersion": "v4-min10-repriced-20261113",
     "coinRedemptionEnabled": "true",
-    "coinPremiumAnnualRedemptionEnabled": "true",
+    "coinPremiumAnnualRedemptionEnabled": "false",
     "coinIndividualRedemptionEnabled": "true",
     "coinFullPremiumYearCoins": "550000",
-    "coinRedemptionReviewApproved": "false",
+    "coinRedemptionReviewApproved": "true",
     "coinIndividualRedemptionReviewApproved": "false",
-    "coinIndividualRightsConsumersApproved": "false"
+    "coinIndividualRightsConsumersApproved": "false",
+    "creatorMissionClaimsEnabled": "true",
+    "creatorMissionClaimsReviewApproved": "true",
+    "creatorQualifiedWorkScanEnabled": "false",
+    "loginBonusClaimsEnabled": "true",
+    "loginBonusRewardsReviewApproved": "true",
+    "creatorGridPayoutsEnabled": "true",
+    "creatorGridRewardsReviewApproved": "true",
+    "recurringMissionPayoutsEnabled": "true",
+    "plazaMissionPayoutsEnabled": "true"
   }
 }
