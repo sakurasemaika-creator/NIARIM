@@ -8408,7 +8408,8 @@ class AppLocalizationsJa extends AppLocalizations {
   String get creatorMissionLoadError => '達成状況を取得できませんでした。';
 
   @override
-  String get creatorMissionTimeWarning => '制作時間は表示用の記録です。オパール対象にはサーバー側の検証が必要です。';
+  String get creatorMissionTimeWarning =>
+      '制作時間は表示用の記録です。オパール対象にはサーバー側の検証が必要です。';
 
   @override
   String get creatorMissionRankingWarning =>
