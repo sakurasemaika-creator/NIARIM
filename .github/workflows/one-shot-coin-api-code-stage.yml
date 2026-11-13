@@ -1,0 +1,81 @@
+# One-shot artifact staging on dev_branch. NO Lambda or CloudFormation mutation.
+# The ZIP is built from verified backend sources and uploaded to a private
+# account-owned S3 bucket for a separately audited, code-only release.
+name: One-shot Coin API Code Artifact Staging
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/one-shot-coin-api-code-stage.yml'
+  workflow_dispatch:
+permissions: {}
+concurrency:
+  group: coin-api-artifact-stage-dev
+  cancel-in-progress: false
+jobs:
+  stage:
+    if: github.ref == 'refs/heads/dev_branch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    permissions:
+      contents: read
+      id-token: write
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - run: npm ci
+      - name: Verify backend TypeScript and all tests
+        run: |
+          set -euo pipefail
+          npm run build
+          npm test
+          npx cdk synth --quiet -c googleClientId=ci-placeholder -c youtubeApiKey=ci-placeholder
+      - name: Bundle exact Node.js 22 API entrypoint, preserving Lambda handler
+        run: |
+          set -euo pipefail
+          mkdir -p .coin-api-build
+          npx esbuild src/api/handler.ts --bundle --platform=node --target=node22 --format=cjs --minify '--external:@aws-sdk/*' --outfile=.coin-api-build/index.js
+          (cd .coin-api-build && zip -q ../niarim-api-code-only.zip index.js)
+          unzip -l niarim-api-code-only.zip
+          test "$(unzip -Z1 niarim-api-code-only.zip)" = index.js
+          sha256sum niarim-api-code-only.zip
+      - name: Assume dev-branch-only GitHub OIDC role
+        uses: aws-actions/configure-aws-credentials@b47578312673ae6fa5b5096b330d9fbac3d116df # v4.2.1
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          role-session-name: niarim-coin-api-stage
+          aws-region: ap-northeast-1
+      - name: Assume CDK file-publishing role (no deploy permission)
+        uses: aws-actions/configure-aws-credentials@b47578312673ae6fa5b5096b330d9fbac3d116df # v4.2.1
+        with:
+          role-to-assume: arn:aws:iam::368601349794:role/cdk-hnb659fds-file-publishing-role-368601349794-ap-northeast-1
+          role-chaining: true
+          role-session-name: niarim-coin-api-file-upload
+          aws-region: ap-northeast-1
+      - name: Upload verified build to private NIARIM bucket (no deployment)
+        env:
+          ARTIFACT_BUCKET: cdk-hnb659fds-assets-368601349794-ap-northeast-1
+        run: |
+          set -euo pipefail
+          test "$(aws sts get-caller-identity --query Account --output text)" = 368601349794
+          key="niarim-code-only/dev_branch/${GITHUB_SHA}.zip"
+          aws s3 cp niarim-api-code-only.zip "s3://${ARTIFACT_BUCKET}/${key}" --only-show-errors
+          aws s3api head-object --bucket "${ARTIFACT_BUCKET}" --key "${key}" --query '[ContentLength,ETag]' --output text
+          echo "Artifact staged in private bucket for audited code-only deployment: ${key}"
+      - name: Preserve evidence ZIP for CI inspection
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: niarim-api-code-only-${{ github.sha }}
+          path: backend/niarim-api-code-only.zip
+          if-no-files-found: warn
+          retention-days: 7
