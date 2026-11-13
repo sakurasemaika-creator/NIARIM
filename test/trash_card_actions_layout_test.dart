@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -341,6 +342,108 @@ void main() {
       await tester.drag(find.byType(Scrollable).last, const Offset(0, 4000));
       await settle(tester, rounds: 1);
     }
+    expect(problems, isEmpty, reason: problems.join('\n'));
+    await tester.pumpWidget(const SizedBox.shrink());
+  });
+
+  testWidgets('under the name, every action label ends at the right edge of '
+      'its button, line by line when it wraps', (tester) async {
+    // 狭い幅・大きな文字で「完全削除」が2行に折れると、ボタンは右端まで
+    // 届くのに、文字は左に寄って描かれていた（英語・フランス語の360px・
+    // 文字2.0。「コピー」「復元」の文字は右端）。ボタンの四角ではなく、
+    // 描かれた字の右端を、行ごとにボタンの中の右端と比べる。
+    final (:cards, :settings) = await seed(tester);
+    final problems = <String>[];
+    var labels = 0;
+    var wrapped = 0;
+    for (final locale in AppLocalizations.supportedLocales) {
+      final code = locale.toLanguageTag().replaceAll('-', '_');
+      await tester.runAsync(() => settings.setLanguage(code));
+      for (final size in const [Size(320, 700), Size(360, 740)]) {
+        for (final scale in const [1.0, 1.3, 2.0]) {
+          tester.view.physicalSize = size;
+          tester.platformDispatcher.textScaleFactorTestValue = scale;
+          await settle(tester);
+          final where = '$code ${size.width.toInt()} x$scale';
+          final error = tester.takeException();
+          if (error != null) problems.add('$where: $error');
+          for (final MapEntry(key: kind, value: keys) in cards.entries) {
+            final delete = find.byKey(keys.last, skipOffstage: false);
+            await tester.scrollUntilVisible(
+              delete,
+              80,
+              scrollable: find.byType(Scrollable).last,
+            );
+            await settle(tester, rounds: 1);
+            final card = find
+                .ancestor(of: delete, matching: find.byType(Card))
+                .first;
+            final titleBottom = tester
+                .getRect(
+                  find.descendant(of: card, matching: find.text(titles[kind]!)),
+                )
+                .bottom;
+            for (final key in keys) {
+              final button = find.byKey(key, skipOffstage: false);
+              if (tester.getRect(button).top < titleBottom) {
+                problems.add('$where $kind $key: not under the name');
+                continue;
+              }
+              final paragraph = tester.renderObject<RenderParagraph>(
+                find.descendant(
+                  of: button,
+                  matching: find.byType(RichText),
+                  skipOffstage: false,
+                ),
+              );
+              // ボタンの中（余白の内側）の箱。
+              final content = paragraph.parent;
+              if (content is! RenderPositionedBox) {
+                problems.add('$where $kind $key: unexpected button content');
+                continue;
+              }
+              final contentRight = content
+                  .localToGlobal(Offset(content.size.width, 0))
+                  .dx;
+              final lines = ParagraphLines(paragraph);
+              final rights = <int, double>{};
+              for (var i = 0; i < lines.visible.length; i++) {
+                final line = lines.lineOf(i);
+                if (line == null || lines.visible[i].trim().isEmpty) continue;
+                for (final box in paragraph.getBoxesForSelection(
+                  lines.sourceSelection(i, i + 1),
+                )) {
+                  final right = paragraph
+                      .localToGlobal(Offset(box.right, box.top))
+                      .dx;
+                  rights[line] = math.max(rights[line] ?? right, right);
+                }
+              }
+              labels++;
+              if (rights.length > 1) wrapped++;
+              for (final MapEntry(key: line, value: right) in rights.entries) {
+                if ((contentRight - right).abs() > 2) {
+                  problems.add(
+                    '$where $kind: "${lines.lines[line]}" '
+                    '(line ${line + 1}/${rights.length}) ends at '
+                    'x=${right.toStringAsFixed(1)}, its button content at '
+                    'x=${contentRight.toStringAsFixed(1)}',
+                  );
+                }
+              }
+            }
+          }
+          await tester.drag(
+            find.byType(Scrollable).last,
+            const Offset(0, 4000),
+          );
+          await settle(tester, rounds: 1);
+        }
+      }
+    }
+    debugPrint('trash labels checked: $labels, wrapped: $wrapped');
+    // 折れる文字（「完全削除」の英語・フランス語等）を実際に見ている。
+    expect(wrapped, greaterThan(0));
     expect(problems, isEmpty, reason: problems.join('\n'));
     await tester.pumpWidget(const SizedBox.shrink());
   });

@@ -5020,6 +5020,10 @@ class _TrashTabState extends State<_TrashTab> {
           // 押せるように見える）。
           child: Text(
             l10n.homePermanentDelete,
+            // 名前の下に回して2行に折れても、行ごとに右端へそろえる（折れた
+            // 文字は段落の幅いっぱいを取り、左に寄って描かれた）。
+            textAlign: TextAlign.end,
+            textWidthBasis: TextWidthBasis.longestLine,
             style: unread
                 ? null
                 : TextStyle(color: Theme.of(context).colorScheme.error),
@@ -5135,6 +5139,9 @@ class _TrashTabState extends State<_TrashTab> {
             : () => _confirmPermanentDelete(project),
         child: Text(
           l10n.homePermanentDelete,
+          // 2行に折れても、行ごとに右端へそろえる（フォルダのカードと同じ）。
+          textAlign: TextAlign.end,
+          textWidthBasis: TextWidthBasis.longestLine,
           style: TextStyle(color: Theme.of(context).colorScheme.error),
         ),
       ),
@@ -5191,6 +5198,9 @@ class _TrashTabState extends State<_TrashTab> {
             : () => _deleteLocal(entry),
         child: Text(
           l10n.homePermanentDelete,
+          // 2行に折れても、行ごとに右端へそろえる（フォルダのカードと同じ）。
+          textAlign: TextAlign.end,
+          textWidthBasis: TextWidthBasis.longestLine,
           style: TextStyle(color: Theme.of(context).colorScheme.error),
         ),
       ),
