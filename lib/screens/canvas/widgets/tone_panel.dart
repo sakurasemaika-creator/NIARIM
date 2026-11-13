@@ -15,6 +15,7 @@ import 'creative_folder_sheets.dart';
 import '../../../widgets/docked_panel_scope.dart';
 import 'panel_close_bar.dart';
 import '../../../config/font_fallback.dart';
+import '../../../utils/duplicate_name.dart';
 import '../../../utils/reorder_index.dart';
 import 'asset_search_bar.dart';
 import 'asset_tag_dialog.dart';
@@ -424,7 +425,14 @@ class _TonePanelState extends State<TonePanel> {
       case 'edit':
         _showToneSettings(context, tone);
       case 'duplicate':
-        service.duplicateTone(tone.id);
+        // 言語に合わせた「名前 (コピー)」、同じ名前があれば番号を付ける
+        // （複製の複製も元の名前に番号。ブラシの一覧と同じ）。
+        service.duplicateTone(
+          tone.id,
+          name: numberedCopyName(l10n, tone.name, {
+            for (final t in service.tones) t.name,
+          }),
+        );
       case 'move':
         showMoveToCreativeFolderSheet(
           context,

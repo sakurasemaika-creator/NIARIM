@@ -60,9 +60,9 @@ class TransferCopyNames {
   /// [taken]と重ならない[name]の複製の名前（足す複製に付ける。[report]へ
   /// 書き留める）。[name]が既に複製の名前なら、元の名前の次の番号にする
   /// （「Gペン (コピー)」の複製は「Gペン (コピー 2)」。「(コピー) (コピー)」と
-  /// 重ねない）。
+  /// 重ねない。一覧の「複製」と同じ決まり：[numberedCopyName]）。
   String next(String name, Set<String> taken) {
-    final copy = numberedCopyName(l10n, copiedFrom(name) ?? name, taken);
+    final copy = numberedCopyName(l10n, name, taken);
     report?.addedCopies.add(copy);
     return copy;
   }

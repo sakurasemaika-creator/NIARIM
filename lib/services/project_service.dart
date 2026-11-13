@@ -32,6 +32,7 @@ import '../models/text_object.dart';
 import '../models/timeline_row_kind.dart';
 import '../engine/undo_manager.dart';
 import '../utils/app_error_reporter.dart';
+import '../utils/duplicate_name.dart';
 import '../utils/tolerant_preferences.dart';
 import '../utils/folder_persistence.dart';
 import '../utils/project_trash_guard.dart';
@@ -360,8 +361,9 @@ class ProjectService extends ChangeNotifier {
         _outgoingFavoritePrefsKey,
         _outgoingFavoritePaths.toList()..sort(),
       );
-      if (!persisted)
+      if (!persisted) {
         throw StateError('Could not save outgoing favorite state');
+      }
     } catch (error, stackTrace) {
       if (wasFavorite) {
         _outgoingFavoritePaths.add(path);
@@ -4518,15 +4520,10 @@ class ProjectService extends ChangeNotifier {
     if (heldBack.isNotEmpty) throw const TrashedFolderUnreadException();
   }
 
-  static String _nextCopyName(String original, Iterable<String> usedNames) {
-    final used = usedNames.toSet();
-    final first = '$original (コピー)';
-    if (!used.contains(first)) return first;
-    for (var n = 2; ; n++) {
-      final candidate = '$original (コピー $n)';
-      if (!used.contains(candidate)) return candidate;
-    }
-  }
+  /// 日本語の形の複製の名前。複製の複製も元の名前に番号を付ける
+  /// （[fallbackCopyName]。一覧の「複製」・設定の引き継ぎと同じ決まり）。
+  static String _nextCopyName(String original, Iterable<String> usedNames) =>
+      fallbackCopyName(original, usedNames);
 
   /// フォルダを中身（下の階層のフォルダ・作品）ごと複製して
   /// [targetParentId]（nullは一番上）に置く。いちばん上のフォルダだけ
@@ -4544,11 +4541,14 @@ class ProjectService extends ChangeNotifier {
         .where((f) => f.parentFolderId == targetParentId)
         .map((f) => f.name)
         .toSet();
-    var copyTopName = name;
+    // ホームの貼り付けが渡す既定の名前（「名前 (コピー)」）は、複製の複製でも
+    // 元の名前に空いている番号を付ける（「名前 (コピー) (コピー)」にしない。
+    // 並びに無い名前を返すので、下の番号付けは通らない）。
+    var copyTopName = name == '${top.name} (コピー)'
+        ? _nextCopyName(top.name, siblingNames)
+        : name;
     if (siblingNames.contains(copyTopName)) {
-      copyTopName = name == '${top.name} (コピー)'
-          ? _nextCopyName(top.name, siblingNames)
-          : uniqueFolderName(name, parentFolderId: targetParentId);
+      copyTopName = uniqueFolderName(name, parentFolderId: targetParentId);
     }
     // 写すものを先に決めておく（複製したフォルダ・作品を数え直さない）。
     final ids = folderSubtreeIds(folderId);

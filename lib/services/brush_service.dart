@@ -13,6 +13,7 @@ import '../engine/brush_texture_cache.dart';
 import '../models/asset_tags.dart';
 import '../models/brush.dart';
 import '../models/brush_presets_extension.dart';
+import '../utils/duplicate_name.dart';
 import '../utils/tolerant_preferences.dart';
 import '../utils/transfer_merge.dart';
 
@@ -1464,6 +1465,8 @@ class BrushService extends ChangeNotifier {
 
   /// [id]のブラシを複製して一覧の最後に足し、新しいIDを返す。名前は
   /// [name]（画面が「名前 (コピー 2)」のように言語と番号を付けて渡す）。
+  /// 省略すると日本語の形で、複製の複製も元の名前に番号を付ける
+  /// （[fallbackCopyName]）。
   String? duplicateBrush(String id, {String? name}) {
     final idx = _brushes.indexWhere((b) => b.id == id);
     if (idx < 0) return null;
@@ -1473,7 +1476,12 @@ class BrushService extends ChangeNotifier {
       newId = '${newId}_';
     }
     _brushes.add(
-      brush.copyWith(id: newId, name: name ?? '${brush.name} (コピー)'),
+      brush.copyWith(
+        id: newId,
+        name:
+            name ??
+            fallbackCopyName(brush.name, [for (final b in _brushes) b.name]),
+      ),
     );
     notifyListeners();
     _persist();

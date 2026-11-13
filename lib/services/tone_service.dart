@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/asset_tags.dart';
 import '../models/tone.dart';
+import '../utils/duplicate_name.dart';
 import '../utils/saved_list_reader.dart';
 import '../utils/tolerant_preferences.dart';
 import '../utils/transfer_merge.dart';
@@ -775,16 +776,20 @@ class ToneService extends ChangeNotifier {
     _persist();
   }
 
-  /// [id]のトーンを複製する（名前の末尾に「のコピー」を付けて追加）。
+  /// [id]のトーンを複製して一覧の最後に足す。名前は[name]（画面が
+  /// 「名前 (コピー 2)」のように言語と番号を付けて渡す）。省略すると日本語の
+  /// 形で、複製の複製も元の名前に番号を付ける（[fallbackCopyName]）。
   /// プリインストールのトーンも複製自体は可能（複製後の新しいIDは
   /// プリインストール扱いにならない）。
-  void duplicateTone(String id) {
+  void duplicateTone(String id, {String? name}) {
     final tone = _tones.firstWhere((t) => t.id == id);
     final newId = 'Tone${DateTime.now().millisecondsSinceEpoch}';
     _tones.add(
       tone.copyWith(
         id: newId,
-        name: '${tone.name} (コピー)',
+        name:
+            name ??
+            fallbackCopyName(tone.name, [for (final t in _tones) t.name]),
         patternName: tone.patternName ?? tone.name,
         isFavorite: false,
       ),

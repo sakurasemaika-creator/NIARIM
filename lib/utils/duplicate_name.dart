@@ -1,3 +1,5 @@
+import 'dart:ui' show Locale;
+
 import '../l10n/app_localizations.dart';
 import '../models/project.dart';
 import '../services/project_service.dart';
@@ -35,24 +37,51 @@ String duplicateFolderName(
 /// 複製の名前（「名前 (コピー)」）。[taken]に同じ名前があれば
 /// 「名前 (コピー 2)」…と番号を付ける。
 ///
-/// [taken]の中の、どの言語の形・以前の版の形（[copySourceName]）の[name]の
-/// 複製も、その番号を使っているものとして数える（以前の版で英語の
-/// 「Pen (Copy)」を作った人が複製すると、見分けにくい「Pen (copy)」ではなく
-/// 「Pen (copy 2)」になる）。
+/// 複製の複製も元の名前の複製にする：[name]が複製の名前（どの言語の形でも、
+/// 以前の版の形でも。[copySourceName]）なら、印を1つ外した元の名前に、
+/// [taken]の中で空いている一番小さい番号を付ける（「Gペン (コピー)」の複製は
+/// 「Gペン (コピー 2)」。「Gペン (コピー) (コピー)」と重ねない）。作品・
+/// フォルダ・ブラシ・トーン・スタンプ・テーマ・サイズ・自動塗りの複製も、
+/// 設定の引き継ぎで足す複製も、この決まりで名前を付ける。
+/// - 外す印は1つだけ。以前の版で重なった「Gペン (コピー) (コピー)」は
+///   「Gペン (コピー)」の複製として「Gペン (コピー) (コピー 2)」にする
+///   （引き継ぎが同じ物の名前と見なす範囲と同じ）。
+/// - 印だけの名前（「(コピー)」）は、元の名前が無いので複製の名前と見なさない
+///   （複製は「(コピー) (コピー)」）。
+/// - ほかの言語の印（日本語の画面の「Pen (copy)」）も複製の印として外す
+///   （表示の言語を変える前に作った複製と見分けられないため。複製は
+///   「Pen (コピー 2)」）。
+/// - 番号の付いた印の形の名前（「Sketch (copy 2019)」）も複製の名前として
+///   印を外す。利用者がそう名付けたのか複製で付いた番号なのかは名前から
+///   見分けられず、元の名前を消した後の複製（「Gペン (コピー 3)」だけが
+///   残っている）と同じに扱うため。複製は「Sketch (copy)」で、名前の中の
+///   番号は残らない（引き継ぎで足す複製も同じ）。
+///
+/// [taken]の中の、どの言語の形・以前の版の形の元の名前の複製も、その番号を
+/// 使っているものとして数える（以前の版で英語の「Pen (Copy)」を作った人が
+/// 複製すると、見分けにくい「Pen (copy)」ではなく「Pen (copy 2)」になる）。
 String numberedCopyName(AppLocalizations l10n, String name, Set<String> taken) {
+  final source = copySourceName(name) ?? name;
   final used = {
     for (final other in taken)
       for (final reading in _copyReadings(other))
-        if (reading.name == name) reading.number,
+        if (reading.name == source) reading.number,
   };
   for (var number = 1; ; number++) {
     if (used.contains(number)) continue;
     final copy = number == 1
-        ? l10n.projectDuplicateName(name)
-        : l10n.projectDuplicateNameNumbered(name, number);
+        ? l10n.projectDuplicateName(source)
+        : l10n.projectDuplicateNameNumbered(source, number);
     if (!taken.contains(copy)) return copy;
   }
 }
+
+/// 画面の言語を受け取らない所（サービスの既定の名前）で付ける複製の名前。
+/// 決まりは[numberedCopyName]と同じで、日本語の形（「名前 (コピー)」）。
+String fallbackCopyName(String name, Iterable<String> taken) =>
+    numberedCopyName(_japanese, name, taken.toSet());
+
+final AppLocalizations _japanese = lookupAppLocalizations(const Locale('ja'));
 
 /// [candidate]が複製の名前なら、複製元の名前（どの言語の形でも、以前の版の
 /// 形でも）。

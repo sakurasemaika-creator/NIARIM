@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/asset_tags.dart';
 import '../models/stamp.dart';
+import '../utils/duplicate_name.dart';
 import '../utils/saved_list_reader.dart';
 import '../utils/tolerant_preferences.dart';
 import '../utils/transfer_merge.dart';
@@ -437,14 +438,22 @@ class StampService extends ChangeNotifier {
     _persist();
   }
 
-  /// [id]のスタンプを複製する（名前の末尾に「のコピー」を付けて追加）。
+  /// [id]のスタンプを複製して一覧の最後に足す。名前は[name]（画面が
+  /// 「名前 (コピー 2)」のように言語と番号を付けて渡す）。省略すると日本語の
+  /// 形で、複製の複製も元の名前に番号を付ける（[fallbackCopyName]）。
   /// プリインストールのスタンプも複製自体は可能（複製後の新しいIDは
   /// プリインストール扱いにならない）。
-  void duplicateStamp(String id) {
+  void duplicateStamp(String id, {String? name}) {
     final stamp = _stamps.firstWhere((s) => s.id == id);
     final newId = 'Stamp${DateTime.now().millisecondsSinceEpoch}';
     _stamps.add(
-      stamp.copyWith(id: newId, name: '${stamp.name} (コピー)', isFavorite: false),
+      stamp.copyWith(
+        id: newId,
+        name:
+            name ??
+            fallbackCopyName(stamp.name, [for (final s in _stamps) s.name]),
+        isFavorite: false,
+      ),
     );
     notifyListeners();
     _persist();
