@@ -8767,7 +8767,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get rewardUnlockAllAds => '광고 모두 제거';
 
   @override
-  String get rewardUnlockFullPremium => '전체 혜택 묶음';
+  String get rewardUnlockFullPremium => '혜택 컴플리트 팩 (Premium 회원과 동일한 구성)';
 
   @override
   String get rewardUnlockChoose => '선택';
