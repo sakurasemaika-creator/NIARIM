@@ -8,14 +8,17 @@ import { ApiError, badRequest, conflict, forbidden, ok } from "../../lib/respons
 import { parseJsonObject } from "../../lib/request";
 import {
   PLAY_PACKAGE_NAME, PLAY_SUBSCRIPTION_PRODUCTS, evaluatePlaySubscription,
-  queryGooglePlaySubscription, type PlayProductId,
+  queryGooglePlaySubscription, playWorkloadIdentityConfig, type PlayProductId,
 } from "../../lib/playVerification";
 
 const VALIDATION_LEASE_MS = 15 * 60_000;
 /** The production purchase-verification path is disabled by default. */
 export function playVerificationEnabled(): boolean {
   return process.env.PLAY_PURCHASE_VERIFICATION_ENABLED === "true" &&
-    process.env.PLAY_ANDROID_PACKAGE_NAME === PLAY_PACKAGE_NAME;
+    process.env.PLAY_ANDROID_PACKAGE_NAME === PLAY_PACKAGE_NAME &&
+    // Never open an actual Play purchase UI while the AWS runtime lacks
+    // an authenticated, keyless Google Android Publisher API identity.
+    playWorkloadIdentityConfig() !== null;
 }
 
 /** A purchase must never open Billing when backend verification is off. */
