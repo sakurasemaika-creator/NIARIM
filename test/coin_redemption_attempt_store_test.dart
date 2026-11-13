@@ -118,7 +118,7 @@ void main() {
         store.redeem(
           api: api,
           accountId: 'account',
-          serverPriceVersion: 'v3-final-annual550000',
+          serverPriceVersion: 'v4-min10-repriced-20261113',
           months: 12,
         ),
         throwsA(isA<NiarimApiException>()),
@@ -127,7 +127,7 @@ void main() {
       final monthly = await store.redeem(
         api: api,
         accountId: 'account',
-        serverPriceVersion: 'v3-final-annual550000',
+        serverPriceVersion: 'v4-min10-repriced-20261113',
         months: 1,
       );
       expect(monthly['redeemed'], true);
@@ -135,7 +135,7 @@ void main() {
       final annual = await store.redeem(
         api: api,
         accountId: 'account',
-        serverPriceVersion: 'v3-final-annual550000',
+        serverPriceVersion: 'v4-min10-repriced-20261113',
         months: 12,
       );
       expect(annual['redeemed'], true);
@@ -151,7 +151,7 @@ void main() {
       store.redeem(
         api: api,
         accountId: 'account',
-        serverPriceVersion: 'v3-final-annual550000',
+        serverPriceVersion: 'v4-min10-repriced-20261113',
         duration: 'year',
         quantity: 1,
       ),
