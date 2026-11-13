@@ -13,6 +13,7 @@ import 'package:niarim/router.dart';
 import 'package:niarim/screens/home/home_screen.dart';
 import 'package:niarim/screens/home/widgets/project_list_widget.dart';
 import 'package:niarim/screens/home/widgets/exported_work_card.dart';
+import 'package:niarim/screens/home/widgets/home_selection_toolbar.dart';
 import 'package:niarim/services/local_file_trash_service.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:niarim/services/work_folder_service.dart';
@@ -370,5 +371,50 @@ void main() {
       findsOneWidget,
     );
     await shot('16_trash_folder_selected');
+
+    // Capture real paste controls in each tab after an actual copy action.
+    // The top-right paste icon is intentionally hidden until the clipboard
+    // contains an entry. Verify the visibility rather than injecting UI state.
+    Future<void> copyCurrentSelection() async {
+      final copyButton = find.descendant(
+        of: find.byType(HomeSelectionToolbar),
+        matching: find.byIcon(Icons.content_copy),
+      );
+      expect(copyButton, findsOneWidget);
+      await tester.tap(copyButton);
+      await settle();
+      expect(
+        find.byKey(const Key('homeCrossTabPasteButton')),
+        findsOneWidget,
+      );
+    }
+
+    await tab(0);
+    await tester.longPress(find.text('第1話 サンプルアニメ').first);
+    await settle();
+    await copyCurrentSelection();
+    await shot('17_projects_paste_ready');
+
+    await tab(1);
+    await tester.longPress(find.text('ANIME_EP01.png').first);
+    await settle();
+    await copyCurrentSelection();
+    await shot('18_works_paste_ready');
+
+    await tab(2);
+    await tester.longPress(find.text('第1話 サンプルアニメ').first);
+    await settle();
+    await copyCurrentSelection();
+    await shot('19_shared_paste_ready');
+
+    // Trash accepts a copied source from another tab as a move-to-Trash
+    // destination. A copied Trash item itself is restored via its source tab.
+    await tab(0);
+    await tester.longPress(find.text('第1話 サンプルアニメ').first);
+    await settle();
+    await copyCurrentSelection();
+    await tab(3);
+    expect(find.byKey(const Key('homeCrossTabPasteButton')), findsOneWidget);
+    await shot('20_trash_paste_ready');
   }, timeout: const Timeout(Duration(minutes: 5)));
 }
