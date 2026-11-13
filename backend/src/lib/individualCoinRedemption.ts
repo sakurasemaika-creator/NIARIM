@@ -224,6 +224,20 @@ export async function redeemIndividualCoins(
           },
         }},
         ...entitlementWrites,
+        // A Play verification or membership change can commit between the
+        // preflight getUser read and this transaction. Verify the user state
+        // atomically with the debit, rather than trusting the stale read.
+        {ConditionCheck:{
+          TableName:tableName(),
+          Key:Keys.user(niarimUserId),
+          ConditionExpression:
+            "itemType = :user AND membershipTier = :free AND " +
+            "(attribute_not_exists(playPremiumExpiresAtEpochMs) OR " +
+            "playPremiumExpiresAtEpochMs <= :now)",
+          ExpressionAttributeValues:{
+            ":user":"USER",":free":"free",":now":now,
+          },
+        }},
         // Guard against a concurrent fullPremium purchase that would grant
         // these rights at the same moment. The preflight read alone is not
         // sufficient to prevent a double charge.
