@@ -59,6 +59,7 @@ jobs:
         with:
           role-to-assume: arn:aws:iam::368601349794:role/cdk-hnb659fds-file-publishing-role-368601349794-ap-northeast-1
           role-chaining: true
+          role-skip-session-tagging: true
           role-session-name: niarim-coin-api-file-upload
           aws-region: ap-northeast-1
       - name: Upload verified build to private NIARIM bucket (no deployment)
