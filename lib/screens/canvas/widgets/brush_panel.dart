@@ -23,6 +23,7 @@ import 'brush_tip_settings.dart';
 import '../../../config/font_fallback.dart';
 import '../../../utils/duplicate_name.dart';
 import '../../../utils/reorder_index.dart';
+import 'asset_list_header_row.dart';
 import 'asset_search_bar.dart';
 import 'asset_tag_dialog.dart';
 import '../../../widgets/asset_tag_label.dart';
@@ -166,56 +167,26 @@ class _BrushPanelState extends State<BrushPanel> {
                 ],
               ),
             ),
-            Row(
-              children: [
-                if (!DockedPanelScope.of(context) &&
-                    !widget.dockedMode &&
-                    !widget.embedded)
-                  Text(
-                    l10n.penSubToolTabBrush,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontFamily: 'Kuramubon',
-                      fontFamilyFallback: kHeadingFontFallback,
-                    ),
-                  ),
-                Spacer(),
-                // お気に入りのみ表示
-                FilterChip(
-                  key: const ValueKey('asset-favorites-only'),
-                  avatar: Icon(
-                    _showFavoritesOnly ? Icons.star : Icons.star_outline,
-                    size: 16,
-                    color: _showFavoritesOnly
-                        ? ThemeService.activeColorScheme.tertiary
-                        : Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
-                  label: Text(
-                    l10n.customAutomationFavoritesOnly,
-                    style: const TextStyle(fontSize: 11),
-                  ),
-                  selected: _showFavoritesOnly,
-                  tooltip: l10n.creativePanelFavoritesOnlyTooltip,
-                  visualDensity: VisualDensity.compact,
-                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  onSelected: (selected) =>
-                      setState(() => _showFavoritesOnly = selected),
-                ),
-                IconButton(
-                  icon: Icon(
-                    _showSearch ? Icons.search_off : Icons.search,
-                    size: 16,
-                  ),
-                  onPressed: () => setState(() {
-                    _showSearch = !_showSearch;
-                    if (!_showSearch) {
-                      _searchQuery = '';
-                      _searchController.clear();
-                    }
-                  }),
-                  tooltip: l10n.creativePanelSearchTooltip,
-                ),
-              ],
+            // 一覧の名前・お気に入りのみ・検索。入らない幅では文字を縮めず、
+            // お気に入りを星だけにする（名前は吹き出しと読み上げ）。
+            AssetListHeaderRow(
+              title:
+                  !DockedPanelScope.of(context) &&
+                      !widget.dockedMode &&
+                      !widget.embedded
+                  ? l10n.penSubToolTabBrush
+                  : null,
+              favoritesOnly: _showFavoritesOnly,
+              onFavoritesOnlyChanged: (selected) =>
+                  setState(() => _showFavoritesOnly = selected),
+              searching: _showSearch,
+              onSearchPressed: () => setState(() {
+                _showSearch = !_showSearch;
+                if (!_showSearch) {
+                  _searchQuery = '';
+                  _searchController.clear();
+                }
+              }),
             ),
             // フォルダ管理・自作ブラシ・読み込み。
             // 【不具合修正】PC/DeXモードのドッキングパネルは既定幅

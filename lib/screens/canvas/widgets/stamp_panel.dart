@@ -17,6 +17,7 @@ import 'panel_close_bar.dart';
 import '../../../config/font_fallback.dart';
 import '../../../utils/duplicate_name.dart';
 import '../../../utils/reorder_index.dart';
+import 'asset_list_header_row.dart';
 import 'asset_search_bar.dart';
 import 'asset_tag_dialog.dart';
 import '../../../widgets/asset_tag_label.dart';
@@ -154,53 +155,21 @@ class _StampPanelState extends State<StampPanel> {
                 ],
               ),
             ),
-            Row(
-              children: [
-                if (!widget.embedded)
-                  Text(
-                    l10n.stampTitle,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontFamily: 'Kuramubon',
-                      fontFamilyFallback: kHeadingFontFallback,
-                    ),
-                  ),
-                Spacer(),
-                FilterChip(
-                  key: const ValueKey('asset-favorites-only'),
-                  avatar: Icon(
-                    _showFavoritesOnly ? Icons.star : Icons.star_outline,
-                    size: 16,
-                    color: _showFavoritesOnly
-                        ? ThemeService.activeColorScheme.tertiary
-                        : Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
-                  label: Text(
-                    l10n.customAutomationFavoritesOnly,
-                    style: const TextStyle(fontSize: 11),
-                  ),
-                  selected: _showFavoritesOnly,
-                  tooltip: l10n.creativePanelFavoritesOnlyTooltip,
-                  visualDensity: VisualDensity.compact,
-                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  onSelected: (selected) =>
-                      setState(() => _showFavoritesOnly = selected),
-                ),
-                IconButton(
-                  icon: Icon(
-                    _showSearch ? Icons.search_off : Icons.search,
-                    size: 16,
-                  ),
-                  onPressed: () => setState(() {
-                    _showSearch = !_showSearch;
-                    if (!_showSearch) {
-                      _searchQuery = '';
-                      _searchController.clear();
-                    }
-                  }),
-                  tooltip: l10n.creativePanelSearchTooltip,
-                ),
-              ],
+            // 一覧の名前・お気に入りのみ・検索。入らない幅では文字を縮めず、
+            // お気に入りを星だけにする（名前は吹き出しと読み上げ）。
+            AssetListHeaderRow(
+              title: !widget.embedded ? l10n.stampTitle : null,
+              favoritesOnly: _showFavoritesOnly,
+              onFavoritesOnlyChanged: (selected) =>
+                  setState(() => _showFavoritesOnly = selected),
+              searching: _showSearch,
+              onSearchPressed: () => setState(() {
+                _showSearch = !_showSearch;
+                if (!_showSearch) {
+                  _searchQuery = '';
+                  _searchController.clear();
+                }
+              }),
             ),
             // 【不具合修正】brush_panel.dartと同じ理由（PC/DeXモードの
             // ドッキングパネル既定幅ではボタン3つの自然幅が収まらず
