@@ -1,0 +1,50 @@
+# Full-tree style and analyzer gate, isolated from screenshot workflows.
+name: Postformat Flutter analyze and style
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - ".github/workflows/niarim-postformat-check.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: niarim-postformat-check-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  analyze:
+    if: github.ref == 'refs/heads/dev_branch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.47.2"
+          channel: stable
+          cache: true
+      - name: Resolve locked dependencies
+        run: flutter pub get --enforce-lockfile
+      - name: Whole-project canonical Dart format
+        shell: bash
+        run: |
+          set -o pipefail
+          mkdir -p verify-output
+          dart format --output=none --set-exit-if-changed lib test tool 2>&1 | tee verify-output/format.log
+      - name: Analyze all Flutter source and tests
+        if: always()
+        shell: bash
+        run: |
+          set -o pipefail
+          mkdir -p verify-output
+          flutter analyze --no-pub --no-fatal-infos 2>&1 | tee verify-output/analyze.log
+      - name: Save diagnostics (including failure)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: postformat-diagnostics-${{ github.sha }}
+          path: verify-output/
+          retention-days: 5
+          if-no-files-found: warn
