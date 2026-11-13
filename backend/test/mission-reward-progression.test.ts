@@ -79,6 +79,7 @@ describe("all 551 mission coins use strict five-coin steps",()=>{
     expect(CREATOR_MISSIONS).toHaveLength(55);
     for(const m of CREATOR_MISSIONS){
       denomination(m.coins);
+      expect(m.coins).toBeGreaterThanOrEqual(10);
       for(const pop of [0,1000,10000,100000,1000000])
         denomination(missionRewardCoins(m,pop));
     }
@@ -92,7 +93,7 @@ describe("all 551 mission coins use strict five-coin steps",()=>{
   });
   it("covers every grid row and both independent difficulty axes",()=>{
     expect(WORK_COUNT_MISSIONS).toHaveLength(480);
-    for(const m of WORK_COUNT_MISSIONS)denomination(m.coins);
+    for(const m of WORK_COUNT_MISSIONS){denomination(m.coins);expect(m.coins).toBeGreaterThanOrEqual(10);}
     for(const works of WORK_COUNT_GOALS)
       increasingFive(BOOKMARK_GOALS.map(bookmarks=>
         workCountMissionById(`works_${works}_x_${bookmarks}`)!.coins));
@@ -105,7 +106,10 @@ describe("all 551 mission coins use strict five-coin steps",()=>{
   it("covers all 16 recurring/time missions",()=>{
     expect(PLAZA_MISSIONS).toHaveLength(10);
     expect(RECURRING_MISSIONS).toHaveLength(6);
-    for(const m of [...PLAZA_MISSIONS,...RECURRING_MISSIONS])denomination(m.coins);
+    for(const m of [...PLAZA_MISSIONS,...RECURRING_MISSIONS]){
+      denomination(m.coins);
+      expect(m.coins).toBeGreaterThanOrEqual(10);
+    }
     for(const period of ["day","week","month"] as const)
       increasingFive(PLAZA_MISSIONS.filter(m=>m.period===period)
         .sort((a,b)=>a.requiredSeconds-b.requiredSeconds).map(m=>m.coins));
@@ -115,6 +119,7 @@ describe("all 551 mission coins use strict five-coin steps",()=>{
   });
   it("ensures ten-coin minimum while keeping the ad and monthly bundle reference stable",()=>{
     expect(DAILY_LOGIN_COINS).toBe(10);
+    expect(LOGIN_BONUS_MILESTONES.every(m=>m.coins>=10)).toBe(true);
     expect(INITIAL_REWARDED_COINS_PER_COMPLETION).toBe(10);
     expect(finalBenefitCoins("endCardEdit","hour")).toBe(500);
     expect(finalBenefitCoins("fullPremium","month")).toBe(55000);
