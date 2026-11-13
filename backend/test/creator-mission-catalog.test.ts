@@ -47,7 +47,7 @@ describe("creator missions with separate account and work scopes", () => {
     expect(byId("work_posted").required).toBe(0);
     expect(byId("work_bookmarks_1000").required).toBe(1000);
     expect(CREATOR_MISSIONS.some((m)=>m.id==="works_10000_x_20")).toBe(false);
-    expect(byId("edit_50h").coins).toBe(25);
+    expect(byId("edit_50h").coins).toBe(30);
     expect(CREATOR_MISSIONS.every(m => m.coins >= 1)).toBe(true);
     expect(byId("edit_50h").perWork).toBe(false);
     expect(byId("work_bookmarks_100").perWork).toBe(true);
@@ -58,19 +58,19 @@ describe("creator missions with separate account and work scopes", () => {
     expect([0, 100, 1000, 10000, 100000, 1000000]
       .map(rankingDifficultyMultiplier)).toEqual([1, 1, 2, 3, 4, 5]);
     const ranked = CREATOR_MISSIONS.find((m) => m.id === "bookmark_rank_1")!;
-    expect(missionRewardCoins(ranked, 100)).toBe(200);
-    expect(missionRewardCoins(ranked, 10000)).toBe(600);
-    expect(missionRewardCoins(ranked, 1000000)).toBe(1000);
+    expect(missionRewardCoins(ranked, 100)).toBe(205);
+    expect(missionRewardCoins(ranked, 10000)).toBe(615);
+    expect(missionRewardCoins(ranked, 1000000)).toBe(1025);
     const edited = CREATOR_MISSIONS.find((m) => m.id === "edit_100000h")!;
-    expect(missionRewardCoins(edited, 1000000)).toBe(75);
+    expect(missionRewardCoins(edited, 1000000)).toBe(80);
   });
 
   it("makes rare top rankings more valuable than ordinary bookmark goals", () => {
     const byId = (id: string) => CREATOR_MISSIONS.find((m) => m.id === id)!;
     const maxBookmarkReward = byId("work_bookmarks_1000").coins;
-    expect(maxBookmarkReward).toBe(120);
+    expect(maxBookmarkReward).toBe(125);
     const orderedRanks = [50, 10, 3, 1].map(rank => byId(`bookmark_rank_${rank}`));
-    expect(orderedRanks.map(m => m.coins)).toEqual([30, 75, 125, 200]);
+    expect(orderedRanks.map(m => m.coins)).toEqual([35, 80, 130, 205]);
     expect(orderedRanks[2].coins).toBeGreaterThan(maxBookmarkReward);
     expect(orderedRanks[3].coins).toBeGreaterThan(maxBookmarkReward);
     const populations = [0, 1000, 10000, 100000, 1000000];
@@ -80,7 +80,7 @@ describe("creator missions with separate account and work scopes", () => {
       expect(prizes.every((c, i) => i === 0 || c > prizes[i - 1])).toBe(true);
     }
     expect(orderedRanks.map(m => missionRewardCoins(m, 1000000)))
-      .toEqual([150, 375, 625, 1000]);
+      .toEqual([175, 400, 650, 1025]);
   });
 
   it("refuses trivial ranks in a tiny pool and requires real bookmark activity",()=>{
@@ -115,7 +115,7 @@ describe("creator missions with separate account and work scopes", () => {
     const early=RANKING_POPULATION_TIERS.filter(n=>n<=1000);
     expect(early).toEqual([100,150,250,400,600,800,1000]);
     expect(early.map(n=>missionRewardCoins(rank,n)))
-      .toEqual([30,35,40,45,50,55,60]);
+      .toEqual([35,45,50,55,60,65,70]);
     for(const threshold of RANKING_POPULATION_TIERS.slice(1)){
       expect(missionRewardCoins(rank,threshold))
         .toBeGreaterThan(missionRewardCoins(rank,threshold-1));
