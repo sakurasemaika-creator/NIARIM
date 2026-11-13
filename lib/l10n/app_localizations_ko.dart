@@ -9663,6 +9663,42 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
+  String get shareCardSampleHeading => '소재 견본·사용 이미지';
+
+  @override
+  String shareCardSourceImageCount(int count) {
+    return '원본 이미지 $count장';
+  }
+
+  @override
+  String shareCardSourceImageCountFirst(int count, int shown) {
+    return '원본 이미지 $count장(처음 $shown장 표시)';
+  }
+
+  @override
+  String get shareCardStrokeSample => '그리기 엔진으로 그린 스트로크 견본';
+
+  @override
+  String get shareCardBuiltInPattern => '내장 패턴 / 설정으로 생성';
+
+  @override
+  String get shareCardNoSourceImages => '사용하는 외부 이미지가 없습니다';
+
+  @override
+  String get shareCardCompleteTitle => '완전 공유 카드';
+
+  @override
+  String shareCardRestoreHint(String button) {
+    return '이 이미지를 NIARIM의 「$button」에서 선택하면 설정과 사용 이미지를 복원할 수 있습니다.';
+  }
+
+  @override
+  String get shareCardQrNote => 'QR은 카드 식별용입니다';
+
+  @override
+  String get shareCardQrCannotRestore => 'QR만으로는 소재를 복원할 수 없습니다';
+
+  @override
   String get communityUnfollowAction => '팔로우 취소';
 
   @override

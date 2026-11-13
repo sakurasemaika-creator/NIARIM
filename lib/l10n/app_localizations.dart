@@ -17049,6 +17049,66 @@ abstract class AppLocalizations {
   /// **'共有カードを読み込めませんでした: {error}'**
   String shareCardImportFailedSnackbar(String error);
 
+  /// 共有カードの画像：見本と使用画像の欄の見出し
+  ///
+  /// In ja, this message translates to:
+  /// **'素材の見本・使用画像'**
+  String get shareCardSampleHeading;
+
+  /// 共有カードの画像：カードに入れた元画像の枚数（countは枚数）
+  ///
+  /// In ja, this message translates to:
+  /// **'元画像 {count}枚'**
+  String shareCardSourceImageCount(int count);
+
+  /// 共有カードの画像：元画像が多く、先頭の何枚かだけを見本に出すとき（countは全部の枚数、shownは出した枚数）
+  ///
+  /// In ja, this message translates to:
+  /// **'元画像 {count}枚（先頭{shown}枚を表示）'**
+  String shareCardSourceImageCountFirst(int count, int shown);
+
+  /// 共有カードの画像：アプリの描画の仕組みで描いた線の見本の説明
+  ///
+  /// In ja, this message translates to:
+  /// **'描画エンジンによるストローク見本'**
+  String get shareCardStrokeSample;
+
+  /// 共有カードの画像：見本を描けなかったとき（組み込みの模様を設定から作る素材）の説明
+  ///
+  /// In ja, this message translates to:
+  /// **'内蔵パターン / 設定で生成'**
+  String get shareCardBuiltInPattern;
+
+  /// 共有カードの画像：外から読み込んだ画像を使っていない素材のときの注記
+  ///
+  /// In ja, this message translates to:
+  /// **'外部の使用画像はありません'**
+  String get shareCardNoSourceImages;
+
+  /// 共有カードの画像：設定と使用画像をすべて含むカードであることを示す見出し
+  ///
+  /// In ja, this message translates to:
+  /// **'完全共有カード'**
+  String get shareCardCompleteTitle;
+
+  /// 共有カードの画像：このカードを読み込む方法（buttonは一覧の読み込みのボタンの名前）
+  ///
+  /// In ja, this message translates to:
+  /// **'この画像をNIARIMの「{button}」から選ぶと、設定と使用画像を復元できます。'**
+  String shareCardRestoreHint(String button);
+
+  /// 共有カードの画像：QRコードの役目の注記
+  ///
+  /// In ja, this message translates to:
+  /// **'QRはカードの識別用です'**
+  String get shareCardQrNote;
+
+  /// 共有カードの画像：QRコードだけでは読み込めないことの注記
+  ///
+  /// In ja, this message translates to:
+  /// **'単独のQRでは素材を復元できません'**
+  String get shareCardQrCannotRestore;
+
   /// フォロー中の一覧：フォローをやめるボタン
   ///
   /// In ja, this message translates to:

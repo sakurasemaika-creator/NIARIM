@@ -522,12 +522,12 @@ class _TonePanelState extends State<TonePanel> {
     ToneService service,
     Tone tone,
   ) => ExportShareService.runExclusive(_exportKey(tone), () async {
+    final l10n = AppLocalizations.of(context)!;
     final File file;
     try {
-      file = await SharedAssetCardService.exportTone(service, tone);
+      file = await SharedAssetCardService.exportTone(service, tone, l10n: l10n);
     } catch (e) {
       if (!context.mounted) return;
-      final l10n = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(l10n.toneExportFailedSnackbar(e.toString()))),
       );

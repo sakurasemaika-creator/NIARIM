@@ -5495,6 +5495,64 @@
       }
     }
   },
+  "shareCardSampleHeading": "素材の見本・使用画像",
+  "@shareCardSampleHeading": {
+    "description": "共有カードの画像：見本と使用画像の欄の見出し"
+  },
+  "shareCardSourceImageCount": "元画像 {count}枚",
+  "@shareCardSourceImageCount": {
+    "description": "共有カードの画像：カードに入れた元画像の枚数（countは枚数）",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "shareCardSourceImageCountFirst": "元画像 {count}枚（先頭{shown}枚を表示）",
+  "@shareCardSourceImageCountFirst": {
+    "description": "共有カードの画像：元画像が多く、先頭の何枚かだけを見本に出すとき（countは全部の枚数、shownは出した枚数）",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "shown": {
+        "type": "int"
+      }
+    }
+  },
+  "shareCardStrokeSample": "描画エンジンによるストローク見本",
+  "@shareCardStrokeSample": {
+    "description": "共有カードの画像：アプリの描画の仕組みで描いた線の見本の説明"
+  },
+  "shareCardBuiltInPattern": "内蔵パターン / 設定で生成",
+  "@shareCardBuiltInPattern": {
+    "description": "共有カードの画像：見本を描けなかったとき（組み込みの模様を設定から作る素材）の説明"
+  },
+  "shareCardNoSourceImages": "外部の使用画像はありません",
+  "@shareCardNoSourceImages": {
+    "description": "共有カードの画像：外から読み込んだ画像を使っていない素材のときの注記"
+  },
+  "shareCardCompleteTitle": "完全共有カード",
+  "@shareCardCompleteTitle": {
+    "description": "共有カードの画像：設定と使用画像をすべて含むカードであることを示す見出し"
+  },
+  "shareCardRestoreHint": "この画像をNIARIMの「{button}」から選ぶと、設定と使用画像を復元できます。",
+  "@shareCardRestoreHint": {
+    "description": "共有カードの画像：このカードを読み込む方法（buttonは一覧の読み込みのボタンの名前）",
+    "placeholders": {
+      "button": {
+        "type": "String"
+      }
+    }
+  },
+  "shareCardQrNote": "QRはカードの識別用です",
+  "@shareCardQrNote": {
+    "description": "共有カードの画像：QRコードの役目の注記"
+  },
+  "shareCardQrCannotRestore": "単独のQRでは素材を復元できません",
+  "@shareCardQrCannotRestore": {
+    "description": "共有カードの画像：QRコードだけでは読み込めないことの注記"
+  },
   "communityUnfollowAction": "フォロー解除",
   "@communityUnfollowAction": {
     "description": "フォロー中の一覧：フォローをやめるボタン"

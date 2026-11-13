@@ -9516,6 +9516,42 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String get shareCardSampleHeading => '素材示例与使用的图片';
+
+  @override
+  String shareCardSourceImageCount(int count) {
+    return '原图 $count 张';
+  }
+
+  @override
+  String shareCardSourceImageCountFirst(int count, int shown) {
+    return '原图 $count 张（显示前 $shown 张）';
+  }
+
+  @override
+  String get shareCardStrokeSample => '由绘图引擎绘制的笔触示例';
+
+  @override
+  String get shareCardBuiltInPattern => '内置图案 / 由设置生成';
+
+  @override
+  String get shareCardNoSourceImages => '未使用外部图片';
+
+  @override
+  String get shareCardCompleteTitle => '完整分享卡片';
+
+  @override
+  String shareCardRestoreHint(String button) {
+    return '在NIARIM的“$button”中选择此图片，即可恢复设置和使用的图片。';
+  }
+
+  @override
+  String get shareCardQrNote => '二维码用于识别此卡片';
+
+  @override
+  String get shareCardQrCannotRestore => '仅凭二维码无法恢复素材';
+
+  @override
   String get communityUnfollowAction => '取消关注';
 
   @override
@@ -19352,6 +19388,42 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String shareCardImportFailedSnackbar(String error) {
     return '無法匯入分享卡片：$error';
   }
+
+  @override
+  String get shareCardSampleHeading => '素材範例與使用的圖片';
+
+  @override
+  String shareCardSourceImageCount(int count) {
+    return '原圖 $count 張';
+  }
+
+  @override
+  String shareCardSourceImageCountFirst(int count, int shown) {
+    return '原圖 $count 張（顯示前 $shown 張）';
+  }
+
+  @override
+  String get shareCardStrokeSample => '由繪圖引擎繪製的筆觸範例';
+
+  @override
+  String get shareCardBuiltInPattern => '內建圖案 / 由設定產生';
+
+  @override
+  String get shareCardNoSourceImages => '未使用外部圖片';
+
+  @override
+  String get shareCardCompleteTitle => '完整分享卡片';
+
+  @override
+  String shareCardRestoreHint(String button) {
+    return '在NIARIM的「$button」中選擇此圖片，即可還原設定和使用的圖片。';
+  }
+
+  @override
+  String get shareCardQrNote => 'QR碼用於識別此卡片';
+
+  @override
+  String get shareCardQrCannotRestore => '僅憑QR碼無法還原素材';
 
   @override
   String get communityUnfollowAction => '取消追蹤';

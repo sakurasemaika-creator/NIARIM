@@ -10,6 +10,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
+import '../config/font_fallback.dart';
 import '../l10n/app_localizations.dart';
 import '../models/brush.dart';
 import '../models/stamp.dart';
@@ -103,7 +104,13 @@ class SharedAssetCardService {
     }
   }
 
-  static Future<File> exportBrush(BrushService service, Brush brush) async {
+  /// The card's texts are drawn in [l10n]'s language (the app language at the
+  /// time the card is made).
+  static Future<File> exportBrush(
+    BrushService service,
+    Brush brush, {
+    required AppLocalizations l10n,
+  }) async {
     final paths = brush.resolvedCustomImagePaths;
     final settings = Map<String, dynamic>.from(brush.toJson())
       ..['folderId'] = null
@@ -123,39 +130,49 @@ class SharedAssetCardService {
         ArchiveFile('images/${i.toString().padLeft(3, '0')}.$ext', b.length, b),
       );
     }
-    return _createCard('brush', brush.name, _toZip(a));
+    return _createCard('brush', brush.name, _toZip(a), l10n);
   }
 
-  static Future<File> exportTone(ToneService service, Tone tone) async {
+  static Future<File> exportTone(
+    ToneService service,
+    Tone tone, {
+    required AppLocalizations l10n,
+  }) async {
     final settings = Map<String, dynamic>.from(tone.toJson())
       ..['folderId'] = null
       ..['texturePath'] = tone.texturePath == null ? null : 'image';
     final a = _assetArchive(settings);
     if (tone.texturePath != null) {
       final f = File(tone.texturePath!);
-      if (!await f.exists())
+      if (!await f.exists()) {
         throw const FormatException('Tone texture is missing');
+      }
       final b = await f.readAsBytes();
       final ext = tone.texturePath!.split('.').last;
       a.addFile(ArchiveFile('image.$ext', b.length, b));
     }
-    return _createCard('tone', tone.name, _toZip(a));
+    return _createCard('tone', tone.name, _toZip(a), l10n);
   }
 
-  static Future<File> exportStamp(StampService service, Stamp stamp) async {
+  static Future<File> exportStamp(
+    StampService service,
+    Stamp stamp, {
+    required AppLocalizations l10n,
+  }) async {
     final settings = Map<String, dynamic>.from(stamp.toJson())
       ..['folderId'] = null
       ..['imagePath'] = stamp.imagePath == null ? null : 'image';
     final a = _assetArchive(settings);
     if (stamp.imagePath != null) {
       final f = File(stamp.imagePath!);
-      if (!await f.exists())
+      if (!await f.exists()) {
         throw const FormatException('Stamp image is missing');
+      }
       final b = await f.readAsBytes();
       final ext = stamp.imagePath!.split('.').last;
       a.addFile(ArchiveFile('image.$ext', b.length, b));
     }
-    return _createCard('stamp', stamp.name, _toZip(a));
+    return _createCard('stamp', stamp.name, _toZip(a), l10n);
   }
 
   static Archive _assetArchive(Map<String, dynamic> model) {
@@ -188,8 +205,9 @@ class SharedAssetCardService {
     if (pick == null ||
         pick.files.isEmpty ||
         pick.files.first.path == null ||
-        !context.mounted)
+        !context.mounted) {
       return;
+    }
     final selected = File(pick.files.first.path!);
     final l10n = AppLocalizations.of(context)!;
     try {
@@ -490,6 +508,7 @@ class SharedAssetCardService {
     String kind,
     String name,
     Uint8List originalArchive,
+    AppLocalizations l10n,
   ) async {
     if (originalArchive.isEmpty ||
         originalArchive.length > SharedAssetCardCodec.maxAssetBytes) {
@@ -497,7 +516,13 @@ class SharedAssetCardService {
     }
     _validateZipEnvelope(originalArchive);
     final digest = sha256.convert(originalArchive).toString();
-    final rendered = await _renderCard(kind, name, originalArchive, digest);
+    final rendered = await _renderCard(
+      kind,
+      name,
+      originalArchive,
+      digest,
+      l10n,
+    );
     final cardBytes = SharedAssetCardCodec.embed(
       png: rendered,
       kind: kind,
@@ -530,6 +555,7 @@ class SharedAssetCardService {
     String name,
     Uint8List originalArchive,
     String digest,
+    AppLocalizations l10n,
   ) async {
     const width = 1200;
     const height = 1600;
@@ -547,48 +573,6 @@ class SharedAssetCardService {
     );
     final pink = Paint()..color = const Color(0xffed5475);
     canvas.drawRect(const Rect.fromLTWH(46, 46, 1108, 12), pink);
-    void label(
-      String text,
-      double x,
-      double y,
-      double size,
-      Color color, {
-      FontWeight weight = FontWeight.normal,
-      double maxWidth = 1040,
-    }) {
-      final tp = TextPainter(
-        text: TextSpan(
-          text: text,
-          style: TextStyle(
-            fontFamily: 'NotoSerifJP',
-            fontSize: size,
-            color: color,
-            fontWeight: weight,
-          ),
-        ),
-        textDirection: TextDirection.ltr,
-        maxLines: 3,
-        ellipsis: '…',
-      );
-      tp.layout(maxWidth: maxWidth);
-      tp.paint(canvas, Offset(x, y));
-    }
-
-    final displayKind = switch (kind) {
-      'brush' => 'ブラシ',
-      'tone' => 'トーン',
-      _ => 'スタンプ',
-    };
-    label(
-      'NIARIM  /  $displayKind',
-      90,
-      98,
-      44,
-      const Color(0xff343c55),
-      weight: FontWeight.bold,
-    );
-    label(name, 90, 177, 55, const Color(0xff171d30), weight: FontWeight.bold);
-    label('素材の見本・使用画像', 90, 295, 31, const Color(0xff5d687b));
     canvas.drawRRect(
       RRect.fromRectAndRadius(
         const Rect.fromLTWH(87, 355, 1025, 450),
@@ -598,6 +582,7 @@ class SharedAssetCardService {
     );
 
     final images = <ui.Image>[];
+    var strokeRendered = false;
     final archive = ZipDecoder().decodeBytes(originalArchive);
     final sourceEntries = archive.files
         .where(
@@ -640,16 +625,6 @@ class SharedAssetCardService {
         Rect.fromLTWH(0, 0, sx, sy),
         Rect.fromLTWH(600 - w / 2, 550 - h / 2, w, h),
         Paint()..filterQuality = FilterQuality.medium,
-      );
-      label(
-        '元画像 ' +
-            sourceEntries.length.toString() +
-            '枚' +
-            (sourceEntries.length > 4 ? '（先頭4枚を表示）' : ''),
-        105,
-        782,
-        22,
-        const Color(0xff445068),
       );
       for (var i = 0; i < images.length; i++) {
         final source = images[i];
@@ -713,72 +688,339 @@ class SharedAssetCardService {
           // Settings are independently validated when importing this card.
         }
       }
-      label(
-        rendered ? '描画エンジンによるストローク見本' : '内蔵パターン / 設定で生成',
-        260,
-        713,
-        28,
-        const Color(0xff4e5b6d),
-      );
-      label('外部の使用画像はありません', 310, 760, 22, const Color(0xff68758a));
+      strokeRendered = rendered;
     }
-    label(
-      '完全共有カード',
-      90,
-      927,
-      38,
-      const Color(0xff171d30),
-      weight: FontWeight.bold,
-    );
-    label(
-      'この画像をNIARIMの「読込」から選ぶと、設定と使用画像を復元できます。',
-      90,
-      998,
-      25,
-      const Color(0xff4a566a),
-      maxWidth: 1000,
-    );
     // QR is an identifying marker, not a standalone lightweight share mode.
     final qr = QrPainter(
       data: 'NIARIM:ASSET-CARD:1:$kind:${digest.substring(0, 24)}',
       version: QrVersions.auto,
-      color: Colors.black,
-      emptyColor: Colors.white,
+      // Drawn on the white paper, so no background of its own is needed.
+      eyeStyle: const QrEyeStyle(
+        eyeShape: QrEyeShape.square,
+        color: Colors.black,
+      ),
+      dataModuleStyle: const QrDataModuleStyle(
+        dataModuleShape: QrDataModuleShape.square,
+        color: Colors.black,
+      ),
       gapless: true,
     );
     canvas.save();
     canvas.translate(120, 1117);
     qr.paint(canvas, const Size(310, 310));
     canvas.restore();
-    label('QRはカードの識別用です', 505, 1160, 28, const Color(0xff454e62));
-    label('単独のQRでは素材を復元できません', 505, 1215, 24, const Color(0xff6b7488));
-    label(
-      'NIARIM ASSET CARD v1',
-      505,
-      1355,
-      30,
-      const Color(0xff3d455b),
-      weight: FontWeight.bold,
-    );
-    label(
-      'ID: ${digest.substring(0, 24)}',
-      505,
-      1415,
-      23,
-      const Color(0xff657083),
-    );
+    // Every text on the card, fitted into its box in the card's language.
+    for (final block in _cardTexts(
+      l10n,
+      kind: kind,
+      name: name,
+      sourceImageCount: sourceEntries.length,
+      shownImageCount: images.length,
+      strokeRendered: strokeRendered,
+      digest: digest,
+    )) {
+      final fitted = block.fit(l10n);
+      try {
+        fitted.painter.paint(canvas, fitted.offset);
+      } finally {
+        fitted.painter.dispose();
+      }
+    }
 
     final picture = recorder.endRecording();
     final image = await picture.toImage(width, height);
     picture.dispose();
     try {
       final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
-      if (bytes == null)
+      if (bytes == null) {
         throw const FormatException('Could not encode asset card image');
+      }
       return bytes.buffer.asUint8List();
     } finally {
       image.dispose();
-      for (final loaded in images) loaded.dispose();
+      for (final loaded in images) {
+        loaded.dispose();
+      }
     }
+  }
+
+  /// The texts drawn on a card, each fitted into its box (for tests: every
+  /// label must fit in every language without being cut off).
+  @visibleForTesting
+  static List<SharedAssetCardTextLayout> debugCardTextLayout(
+    AppLocalizations l10n, {
+    required String kind,
+    required String name,
+    required int sourceImageCount,
+    bool strokeRendered = true,
+  }) => [
+    for (final block in _cardTexts(
+      l10n,
+      kind: kind,
+      name: name,
+      sourceImageCount: sourceImageCount,
+      shownImageCount: sourceImageCount.clamp(0, 4),
+      strokeRendered: strokeRendered,
+      digest: '0' * 64,
+    ))
+      block.layoutOnly(l10n),
+  ];
+
+  /// Every text block of the card in [l10n]'s language. Boxes are in card
+  /// pixels (1200 × 1600); a block shrinks its type, down to its minimum, to
+  /// stay inside its box rather than being cut off.
+  static List<_CardText> _cardTexts(
+    AppLocalizations l10n, {
+    required String kind,
+    required String name,
+    required int sourceImageCount,
+    required int shownImageCount,
+    required bool strokeRendered,
+    required String digest,
+  }) {
+    final kindLabel = switch (kind) {
+      'brush' => l10n.penSubToolTabBrush,
+      'tone' => l10n.penSubToolTabTone,
+      _ => l10n.penSubToolTabStamp,
+    };
+    return [
+      _CardText(
+        'NIARIM  /  $kindLabel',
+        const Rect.fromLTWH(90, 92, 1020, 64),
+        44,
+        30,
+        const Color(0xff343c55),
+        bold: true,
+      ),
+      // The asset's own name is the user's text: it may end with an
+      // ellipsis after shrinking to the minimum (two lines).
+      _CardText(
+        name,
+        const Rect.fromLTWH(90, 166, 1020, 120),
+        55,
+        32,
+        const Color(0xff171d30),
+        bold: true,
+        userText: true,
+      ),
+      _CardText(
+        l10n.shareCardSampleHeading,
+        const Rect.fromLTWH(90, 292, 1020, 52),
+        31,
+        22,
+        const Color(0xff5d687b),
+      ),
+      if (sourceImageCount > 0)
+        _CardText(
+          sourceImageCount > shownImageCount
+              ? l10n.shareCardSourceImageCountFirst(
+                  sourceImageCount,
+                  shownImageCount,
+                )
+              : l10n.shareCardSourceImageCount(sourceImageCount),
+          const Rect.fromLTWH(105, 772, 990, 34),
+          22,
+          15,
+          const Color(0xff445068),
+        )
+      else ...[
+        _CardText(
+          strokeRendered
+              ? l10n.shareCardStrokeSample
+              : l10n.shareCardBuiltInPattern,
+          const Rect.fromLTWH(120, 690, 960, 48),
+          28,
+          18,
+          const Color(0xff4e5b6d),
+          center: true,
+        ),
+        _CardText(
+          l10n.shareCardNoSourceImages,
+          const Rect.fromLTWH(120, 742, 960, 42),
+          22,
+          15,
+          const Color(0xff68758a),
+          center: true,
+        ),
+      ],
+      _CardText(
+        l10n.shareCardCompleteTitle,
+        const Rect.fromLTWH(90, 920, 1020, 62),
+        38,
+        26,
+        const Color(0xff171d30),
+        bold: true,
+      ),
+      _CardText(
+        l10n.shareCardRestoreHint(l10n.creativePanelImportButton),
+        const Rect.fromLTWH(90, 990, 1020, 112),
+        25,
+        17,
+        const Color(0xff4a566a),
+      ),
+      _CardText(
+        l10n.shareCardQrNote,
+        const Rect.fromLTWH(505, 1142, 610, 98),
+        28,
+        18,
+        const Color(0xff454e62),
+      ),
+      _CardText(
+        l10n.shareCardQrCannotRestore,
+        const Rect.fromLTWH(505, 1246, 610, 94),
+        24,
+        16,
+        const Color(0xff6b7488),
+      ),
+      // The format marker and the identifier are the same in every language.
+      _CardText(
+        'NIARIM ASSET CARD v1',
+        const Rect.fromLTWH(505, 1352, 610, 50),
+        30,
+        20,
+        const Color(0xff3d455b),
+        bold: true,
+      ),
+      _CardText(
+        'ID: ${digest.substring(0, 24)}',
+        const Rect.fromLTWH(505, 1412, 610, 40),
+        23,
+        16,
+        const Color(0xff657083),
+      ),
+    ];
+  }
+}
+
+/// Where and how large a card text ended up (see
+/// [SharedAssetCardService.debugCardTextLayout]).
+@visibleForTesting
+class SharedAssetCardTextLayout {
+  const SharedAssetCardTextLayout({
+    required this.text,
+    required this.box,
+    required this.fontSize,
+    required this.size,
+    required this.fits,
+    required this.userText,
+  });
+
+  final String text;
+
+  /// The box the text must stay inside, in card pixels.
+  final Rect box;
+  final double fontSize;
+
+  /// The laid-out size of the text.
+  final Size size;
+
+  /// Whether the whole text is drawn inside [box] (no ellipsis).
+  final bool fits;
+
+  /// The asset's own name (may be shortened with an ellipsis).
+  final bool userText;
+}
+
+class _CardText {
+  const _CardText(
+    this.text,
+    this.box,
+    this.fontSize,
+    this.minFontSize,
+    this.color, {
+    this.bold = false,
+    this.center = false,
+    this.userText = false,
+  });
+
+  final String text;
+  final Rect box;
+  final double fontSize;
+  final double minFontSize;
+  final Color color;
+  final bool bold;
+  final bool center;
+  final bool userText;
+
+  static Locale _localeOf(AppLocalizations l10n) {
+    final parts = l10n.localeName.split('_');
+    return parts.length > 1 && parts[1].length == 4
+        ? Locale.fromSubtags(languageCode: parts[0], scriptCode: parts[1])
+        : Locale(parts.first);
+  }
+
+  TextPainter _painter(AppLocalizations l10n, double size, {int? maxLines}) =>
+      TextPainter(
+        text: TextSpan(
+          text: text,
+          style: TextStyle(
+            fontFamily: 'NotoSerifJP',
+            // Hangul and simplified Chinese come from the bundled subsets.
+            fontFamilyFallback: kBodyFontFallback,
+            fontSize: size,
+            color: color,
+            fontWeight: bold ? FontWeight.bold : FontWeight.normal,
+          ),
+        ),
+        textAlign: center ? TextAlign.center : TextAlign.start,
+        textDirection: TextDirection.ltr,
+        locale: _localeOf(l10n),
+        maxLines: maxLines,
+        ellipsis: maxLines == null ? null : '…',
+      )..layout(maxWidth: box.width);
+
+  /// Lays the text out at the largest size, from [fontSize] down to
+  /// [minFontSize], at which it fits in [box]. Only the user's own name is
+  /// ever shortened (with an ellipsis) when even the minimum does not fit.
+  ({TextPainter painter, Offset offset, double size, bool fits}) fit(
+    AppLocalizations l10n,
+  ) {
+    var size = fontSize;
+    while (true) {
+      final painter = _painter(l10n, size);
+      if (painter.height <= box.height + 0.5) {
+        return (
+          painter: painter,
+          offset: Offset(
+            center ? box.left + (box.width - painter.width) / 2 : box.left,
+            box.top,
+          ),
+          size: size,
+          fits: true,
+        );
+      }
+      if (size <= minFontSize) {
+        final lines = painter.computeLineMetrics();
+        final lineHeight = lines.isEmpty ? size : lines.first.height;
+        painter.dispose();
+        final shortened = _painter(
+          l10n,
+          size,
+          maxLines: (box.height / lineHeight).floor().clamp(1, 3),
+        );
+        return (
+          painter: shortened,
+          offset: Offset(box.left, box.top),
+          size: size,
+          fits: false,
+        );
+      }
+      painter.dispose();
+      size = (size * 0.94).clamp(minFontSize, fontSize);
+    }
+  }
+
+  SharedAssetCardTextLayout layoutOnly(AppLocalizations l10n) {
+    final fitted = fit(l10n);
+    final result = SharedAssetCardTextLayout(
+      text: text,
+      box: box,
+      fontSize: fitted.size,
+      size: fitted.painter.size,
+      fits: fitted.fits && !fitted.painter.didExceedMaxLines,
+      userText: userText,
+    );
+    fitted.painter.dispose();
+    return result;
   }
 }

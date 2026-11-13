@@ -1,8 +1,9 @@
 import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
+import 'dart:ui' show Locale;
 
 import 'package:flutter/services.dart';
+import 'package:niarim/l10n/app_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/models/stamp.dart';
 import 'package:niarim/models/tone.dart';
@@ -35,6 +36,8 @@ void main() {
     final originalImage = File('${directory.path}/source.png');
     await originalImage.writeAsBytes(pixels);
 
+    // The card's texts are drawn in the app language (Japanese here).
+    final l10n = lookupAppLocalizations(const Locale('ja'));
     final brushes = BrushService();
     await brushes.init();
     final base = brushes.brushes.first;
@@ -47,7 +50,11 @@ void main() {
       tags: ['my tag'],
     );
     brushes.addBrush(custom);
-    final brushPng = await SharedAssetCardService.exportBrush(brushes, custom);
+    final brushPng = await SharedAssetCardService.exportBrush(
+      brushes,
+      custom,
+      l10n: l10n,
+    );
     expect(brushPng.path, endsWith('.png'));
     await brushPng.copy('${screenshots.path}/brush_complete_share_card.png');
     final brushCard = await SharedAssetCardService.inspect(brushPng);
@@ -83,6 +90,7 @@ void main() {
     final multiPng = await SharedAssetCardService.exportBrush(
       brushes,
       multiBrush,
+      l10n: l10n,
     );
     final multiCard = await SharedAssetCardService.inspect(multiPng);
     await SharedAssetCardService.importCard(multiCard, brushService: brushes);
@@ -109,7 +117,11 @@ void main() {
       isFavorite: true,
     );
     tones.addTone(customTone);
-    final tonePng = await SharedAssetCardService.exportTone(tones, customTone);
+    final tonePng = await SharedAssetCardService.exportTone(
+      tones,
+      customTone,
+      l10n: l10n,
+    );
     await tonePng.copy('${screenshots.path}/tone_complete_share_card.png');
     final toneCard = await SharedAssetCardService.inspect(tonePng);
     await SharedAssetCardService.importCard(toneCard, toneService: tones);
@@ -137,6 +149,7 @@ void main() {
     final stampPng = await SharedAssetCardService.exportStamp(
       stamps,
       customStamp,
+      l10n: l10n,
     );
     await stampPng.copy('${screenshots.path}/stamp_complete_share_card.png');
     final stampCard = await SharedAssetCardService.inspect(stampPng);

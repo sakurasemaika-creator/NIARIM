@@ -9616,6 +9616,42 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
+  String get shareCardSampleHeading => '素材の見本・使用画像';
+
+  @override
+  String shareCardSourceImageCount(int count) {
+    return '元画像 $count枚';
+  }
+
+  @override
+  String shareCardSourceImageCountFirst(int count, int shown) {
+    return '元画像 $count枚（先頭$shown枚を表示）';
+  }
+
+  @override
+  String get shareCardStrokeSample => '描画エンジンによるストローク見本';
+
+  @override
+  String get shareCardBuiltInPattern => '内蔵パターン / 設定で生成';
+
+  @override
+  String get shareCardNoSourceImages => '外部の使用画像はありません';
+
+  @override
+  String get shareCardCompleteTitle => '完全共有カード';
+
+  @override
+  String shareCardRestoreHint(String button) {
+    return 'この画像をNIARIMの「$button」から選ぶと、設定と使用画像を復元できます。';
+  }
+
+  @override
+  String get shareCardQrNote => 'QRはカードの識別用です';
+
+  @override
+  String get shareCardQrCannotRestore => '単独のQRでは素材を復元できません';
+
+  @override
   String get communityUnfollowAction => 'フォロー解除';
 
   @override

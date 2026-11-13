@@ -10441,6 +10441,51 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
+  String get shareCardSampleHeading => 'Aperçu et images sources';
+
+  @override
+  String shareCardSourceImageCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count images sources',
+      one: '$count image source',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String shareCardSourceImageCountFirst(int count, int shown) {
+    return '$count images sources (les $shown premières sont affichées)';
+  }
+
+  @override
+  String get shareCardStrokeSample =>
+      'Trait d’exemple dessiné par le moteur de dessin';
+
+  @override
+  String get shareCardBuiltInPattern =>
+      'Motif intégré, généré à partir des réglages';
+
+  @override
+  String get shareCardNoSourceImages => 'Aucune image externe n’est utilisée';
+
+  @override
+  String get shareCardCompleteTitle => 'Carte de partage complète';
+
+  @override
+  String shareCardRestoreHint(String button) {
+    return 'Choisissez cette image depuis « $button » dans NIARIM pour restaurer ses réglages et ses images.';
+  }
+
+  @override
+  String get shareCardQrNote => 'Le code QR identifie cette carte';
+
+  @override
+  String get shareCardQrCannotRestore =>
+      'Le code QR seul ne suffit pas à restaurer cet élément';
+
+  @override
   String get communityUnfollowAction => 'Ne plus suivre';
 
   @override

@@ -523,12 +523,16 @@ class _StampPanelState extends State<StampPanel> {
     StampService service,
     Stamp stamp,
   ) => ExportShareService.runExclusive(_exportKey(stamp), () async {
+    final l10n = AppLocalizations.of(context)!;
     final File file;
     try {
-      file = await SharedAssetCardService.exportStamp(service, stamp);
+      file = await SharedAssetCardService.exportStamp(
+        service,
+        stamp,
+        l10n: l10n,
+      );
     } catch (e) {
       if (!context.mounted) return;
-      final l10n = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(l10n.stampExportFailedSnackbar(e.toString()))),
       );

@@ -611,7 +611,11 @@ class _BrushPanelState extends State<BrushPanel> {
     final l10n = AppLocalizations.of(context)!;
     final File file;
     try {
-      file = await SharedAssetCardService.exportBrush(service, brush);
+      file = await SharedAssetCardService.exportBrush(
+        service,
+        brush,
+        l10n: l10n,
+      );
     } catch (e) {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(

@@ -16,6 +16,8 @@ import 'community_no_hardcoded_text_test.dart' show stringLiterals;
 /// 見張るファイル。ここに足したファイルは、文をすべてARBから引くこと。
 const List<String> _guardedFiles = [
   'lib/screens/settings/theme_preview_gallery_screen.dart',
+  // 共有カードの画像へ焼き込む文。
+  'lib/services/shared_asset_card_service.dart',
 ];
 
 /// かな・漢字・ハングル・全角記号。
