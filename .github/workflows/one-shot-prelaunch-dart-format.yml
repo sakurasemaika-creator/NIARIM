@@ -30,6 +30,11 @@ jobs:
           flutter-version: '3.47.2'
           channel: stable
           cache: false
+      # Dart formatter must read .dart_tool/package_config.json so that it
+      # uses the project's declared Dart language version. Without pub get,
+      # a later CI run sees hundreds of false formatting differences.
+      - name: Restore locked dependencies before Dart formatting
+        run: flutter pub get --enforce-lockfile
       - name: Normalize tracked Dart sources without modifying application logic
         shell: bash
         run: |
