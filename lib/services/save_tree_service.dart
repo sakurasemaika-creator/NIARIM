@@ -94,6 +94,14 @@ class SaveTreeService extends ChangeNotifier {
   /// 書き直した名前を、前の起動の控えの古いメモで置き換えていた）。
   final Map<String, Map<int, DateTime>> _slotMemoTimes = {};
 
+  /// 控えを読めなかった保存（作品ごと、保存のID→拾ったときの保存）。一覧に
+  /// 無いファイルとして拾って見せるが、拾ったときのまま（利用者が名前を
+  /// 変える・動かす・そのスロットに名前を付ける等をしていない）なら一覧へ
+  /// 書かない。控えは消さないので、控えを読めたとき（次の起動を含む）に
+  /// スロットとコメントごと戻る（以前は拾った後に控えを消し、読めるように
+  /// なっても戻らなかった）。
+  final Map<String, Map<String, SaveNode>> _heldSaves = {};
+
   /// 保存先にあると分かっている控え（作品ごと、保存のID）。一覧を書けたら、
   /// 一覧に入った保存の控えを消す。
   final Map<String, Set<String>> _pendingIds = {};
@@ -258,7 +266,8 @@ class SaveTreeService extends ChangeNotifier {
     bool hasData(String id) => File('${dir.path}/$id.niapro').existsSync();
     // 前の起動で、一覧を読めない間にした保存の控え（[_writePendingSaves]）。
     // 古い順に、この起動の保存と同じく下で一覧へ重ねる。読めない控えは
-    // 使わない（保存は、これまでどおり一覧に無いファイルとして拾い直す）。
+    // 消さず、その保存は一覧に無いファイルとして拾うが、控えを読めるまで
+    // 拾った置き場所を一覧へ書かない（[_heldSaves]）。
     final pending = <SaveNode>[];
     final pendingArchived = <String>{};
     final pendingMemos = <String, String>{};
@@ -266,18 +275,37 @@ class SaveTreeService extends ChangeNotifier {
     final pendingMemoTimes = <String, DateTime>{};
     // 保存のある控え（一覧を書いたら消す）。
     var pendingOnDisk = false;
+    // 読めない控え（権限・入出力の失敗）の保存。控えは消さない。
+    final unreadNotes = <String>{};
     for (final file in files) {
       final name = file.uri.pathSegments.last;
       if (!name.endsWith(pendingSuffix)) continue;
       final id = name.substring(0, name.length - pendingSuffix.length);
-      _pendingIds.putIfAbsent(projectId, () => {}).add(id);
       if (!hasData(id)) continue;
       pendingOnDisk = true;
+      final Object? json;
+      try {
+        json = sessionIds.contains(id)
+            ? null
+            : jsonDecode(
+                utf8.decode(file.readAsBytesSync(), allowMalformed: true),
+              );
+      } on PathNotFoundException {
+        continue;
+      } on FileSystemException catch (error, stack) {
+        AppErrorReporter.record(error, stack);
+        unreadNotes.add(id);
+        continue;
+      } on FormatException catch (error, stack) {
+        // 壊れた控えは、読めるようになることが無いので消してよい。
+        AppErrorReporter.record(error, stack);
+        _pendingIds.putIfAbsent(projectId, () => {}).add(id);
+        continue;
+      }
+      // 読めた控え（一覧に入ったら消す）。
+      _pendingIds.putIfAbsent(projectId, () => {}).add(id);
       if (sessionIds.contains(id)) continue;
       try {
-        final json = jsonDecode(
-          utf8.decode(file.readAsBytesSync(), allowMalformed: true),
-        );
         if (json is! Map) continue;
         final node = SaveNode.fromJson(
           json['node'],
@@ -524,6 +552,16 @@ class SaveTreeService extends ChangeNotifier {
         );
       }
     }
+    // 控えを読めなかった保存は、拾ったときのまま一覧へ書かない（[_heldSaves]）。
+    final held = {
+      for (final n in [...nodes, ...archived])
+        if (unreadNotes.contains(n.id)) n.id: n,
+    };
+    if (held.isEmpty) {
+      _heldSaves.remove(projectId);
+    } else {
+      _heldSaves[projectId] = held;
+    }
     nodes.addAll(sessionNodes);
     archived.addAll(sessionArchived);
     _readProjects.add(projectId);
@@ -590,14 +628,16 @@ class SaveTreeService extends ChangeNotifier {
         return;
       }
       if (!dir.existsSync()) dir.createSync(recursive: true);
+      // 控えを読めなかった保存は、拾ったときのままなら書かない。
+      final held = _heldSaves[projectId] ?? const <String, SaveNode>{};
       final json = jsonEncode({
         'nodes': [
           for (final n in _nodesByProject[projectId] ?? const <SaveNode>[])
-            n.toJson(),
+            if (!identical(held[n.id], n)) n.toJson(),
         ],
         'archived': [
           for (final n in _archivedByProject[projectId] ?? const <SaveNode>[])
-            n.toJson(),
+            if (!identical(held[n.id], n)) n.toJson(),
         ],
         'slotMemos': {
           for (final entry
@@ -747,6 +787,9 @@ class SaveTreeService extends ChangeNotifier {
     }
     if (bySlot[slotIndex] == normalized) return true;
     bySlot[slotIndex] = normalized;
+    // 控えを読めなかった保存のスロットに名前を付けたら、その保存は今の
+    // スロットのまま一覧へ書く。
+    _heldSaves[projectId]?.removeWhere((_, n) => n.slotIndex == slotIndex);
     _slotMemoTimes.putIfAbsent(projectId, () => {})[slotIndex] = DateTime.now();
     notifyListeners();
     await _persist(projectId);
@@ -1054,7 +1097,8 @@ class SaveTreeService extends ChangeNotifier {
     try {
       await NiaproSerializer.deleteSaveTreeNode(projectId, nodeId);
       // 消した保存の控え（一覧を読めない間に書いたもの）も消す。
-      if (_pendingIds[projectId]?.remove(nodeId) ?? false) {
+      final heldNote = _heldSaves[projectId]?.remove(nodeId) != null;
+      if ((_pendingIds[projectId]?.remove(nodeId) ?? false) || heldNote) {
         try {
           final base = await NiaproSerializer.projectsBasePath();
           File('$base/$projectId/SaveTree/$nodeId$pendingSuffix').deleteSync();

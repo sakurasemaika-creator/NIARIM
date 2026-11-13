@@ -4305,6 +4305,65 @@ void main() {
     await fourth.init();
     expectRenamed(fourth);
   });
+
+  // 一覧を読めない起動の保存の控えだけが、次の起動で読めない（権限・
+  // 入出力の失敗）とき、保存は一覧に無いファイルとして拾われ、控えは
+  // 一度も読まないまま消えた。その次に読めても、保存はスロットもコメントも
+  // 戻らなかった。読めない控えは消さず、拾った保存は控えを読めるまで一覧へ
+  // 書かない（控えを読めたら、スロットとコメントごと戻る）。
+  test('a save note that cannot be read is kept, and its save gets its slot '
+      'and comment back once the note can be read', () async {
+    final (project, saves) = await _seedProjectWithSaves(comments: ['A', 'B']);
+    final folder = '${storage.projectsPath}/${project.id}/SaveTree';
+    final indexPath = '$folder/${SaveTreeService.indexFileName}';
+    storage.paths.blockReading(indexPath);
+    final first = SaveTreeService()..setSlotMax(5);
+    await first.init();
+    final e = await _saveToSlot(first, project, 0, 'セーブE');
+    await first.setSlotMemo(project.id, 0, 'セーブE');
+    first.dispose();
+    final note = '$folder/${e.id}${SaveTreeService.pendingSuffix}';
+    expect(File(note).existsSync(), isTrue);
+
+    storage.paths
+      ..clear()
+      ..watchDir(folder)
+      ..blockReading(note);
+    final second = SaveTreeService()..setSlotMax(5);
+    await second.init();
+    // 保存は見える（スロットとコメントは控えを読めるまで分からない）。
+    expect(second.getNodes(project.id).map((n) => n.id), contains(e.id));
+    expect(File(note).existsSync(), isTrue, reason: 'the note was deleted');
+    second.dispose();
+
+    storage.paths.clear();
+    void expectBack(SaveTreeService saveTree) {
+      final bySlot = {
+        for (final n in saveTree.getNodes(project.id)) n.slotIndex: n,
+      };
+      expect(bySlot.map((k, v) => MapEntry(k, v.id)), {
+        0: e.id,
+        1: saves[1].id,
+        2: saves[0].id,
+      });
+      expect(bySlot[0]!.comment, 'セーブE');
+      expect(
+        [for (var i = 0; i < 5; i++) saveTree.slotDisplayMemoOf(project.id, i)],
+        ['セーブE', 'B', 'A', null, null],
+      );
+    }
+
+    final third = SaveTreeService()..setSlotMax(5);
+    addTearDown(third.dispose);
+    await third.init();
+    expectBack(third);
+    // 一覧に書けたので、控えは残さない。
+    expect(File(note).existsSync(), isFalse);
+    final fourth = SaveTreeService()..setSlotMax(5);
+    addTearDown(fourth.dispose);
+    await fourth.init();
+    expectBack(fourth);
+  });
 }
 
 /// 実際のファイルを読む処理（ゴミ箱の一覧・読み直し）を実時間で待ちながら
@@ -4528,6 +4587,10 @@ final class _UnreadablePaths extends IOOverrides {
   void blockReading(String path) => unreadable.add(_watch(path));
   void blockEntering(String path) => inaccessible.add(_watch(path));
 
+  /// フォルダの一覧から得たファイルにも、読めないファイルの決まりを効かせる
+  /// （一覧から得たファイルは[createFile]を通らない）。
+  void watchDir(String path) => _watch(path);
+
   /// 作品のフォルダに入れない（chmod 000・入出力の失敗）：作品の保存
   /// （.niapro）も、手動の保存のフォルダ（SaveTree/）と一覧も見えない。
   void blockWork(String projectsPath, String projectId) {
@@ -4623,7 +4686,15 @@ class _GuardedDirectory implements Directory {
     bool followLinks = true,
   }) {
     if (_blocked) throw _denied(path, 'Directory listing failed');
-    return _real.listSync(recursive: recursive, followLinks: followLinks);
+    return [
+      for (final entity in _real.listSync(
+        recursive: recursive,
+        followLinks: followLinks,
+      ))
+        entity is File && _paths.unreadable.contains(entity.path)
+            ? _GuardedFile(entity, _paths)
+            : entity,
+    ];
   }
 
   @override
@@ -4696,6 +4767,19 @@ class _GuardedFile implements File {
 
   @override
   Future<Uint8List> readAsBytes() async => readAsBytesSync();
+
+  // 消す・名前を変えるは、端末と同じくフォルダの権限で決まるので、そのまま
+  // 行う。
+  @override
+  DateTime lastModifiedSync() => _real.lastModifiedSync();
+  @override
+  void deleteSync({bool recursive = false}) =>
+      _real.deleteSync(recursive: recursive);
+  @override
+  Future<FileSystemEntity> delete({bool recursive = false}) =>
+      _real.delete(recursive: recursive);
+  @override
+  File renameSync(String newPath) => _real.renameSync(newPath);
 
   @override
   String toString() => _real.toString();
