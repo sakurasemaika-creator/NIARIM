@@ -14,7 +14,7 @@ import {
 } from "../src/lib/individualCoinRedemption";
 
 const requestId="123e4567-e89b-12d3-a456-426614174000";
-const priceVersion="v3-final-annual550000";
+const priceVersion="v4-min10-repriced-20261113";
 const input=()=>({targets:["toneCurve","levelAdjustment"],duration:"week",
   quantity:1,priceVersion,requestId});
 const enable=()=>{
