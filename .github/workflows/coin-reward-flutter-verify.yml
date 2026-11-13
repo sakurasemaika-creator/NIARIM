@@ -5,6 +5,7 @@ on:
     branches: [dev_branch]
     paths:
       - '.github/workflows/coin-reward-flutter-verify.yml'
+      - 'lib/services/admob_provider.dart'
       - 'lib/services/advertising_service.dart'
       - 'lib/services/coin_redemption_attempt_store.dart'
       - 'lib/services/premium_service.dart'
@@ -79,9 +80,11 @@ jobs:
       - name: Analyze app reward and subscription integration
         run: |
           flutter analyze --no-pub --no-fatal-infos --no-fatal-warnings \
+            lib/services/admob_provider.dart \
             lib/services/advertising_service.dart \
             lib/services/coin_redemption_attempt_store.dart \
             lib/services/premium_service.dart \
+            test/ad_mock_layout_test.dart \
             test/monetization_campaign_removed_test.dart \
             lib/services/api/community_api.dart \
             lib/models/coin_benefit_price_proposal.dart \
