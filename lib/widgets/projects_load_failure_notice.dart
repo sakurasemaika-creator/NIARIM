@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../l10n/app_localizations.dart';
+import '../utils/line_break.dart';
 
 /// プロジェクトの保存先を読めなかったとき（`ProjectService.projectsLoadFailed`）
 /// の知らせと「再試行」。保存先から読む一覧（ホームのプロジェクト・共有の
@@ -66,6 +67,15 @@ class _ProjectsLoadFailureNoticeState extends State<ProjectsLoadFailureNotice> {
     super.dispose();
   }
 
+  /// 知らせの文。韓国語は語（空白で区切った単位）の途中で行を変えない
+  /// （「불러오지 못했습니 / 다」と切れていた）。描く文にだけ語結合子を
+  /// 入れ、読み上げと文での検索には元の文を渡す。
+  static Widget _message(String text) {
+    final shown = keepKoreanWordsTogether(text);
+    if (shown == text) return Text(text);
+    return Text.rich(TextSpan(text: shown, semanticsLabel: text));
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -93,7 +103,7 @@ class _ProjectsLoadFailureNoticeState extends State<ProjectsLoadFailureNotice> {
                     alignment: MainAxisAlignment.spaceBetween,
                     overflowAlignment: OverflowBarAlignment.start,
                     children: [
-                      Text(widget.message ?? l10n.homeProjectsLoadFailed),
+                      _message(widget.message ?? l10n.homeProjectsLoadFailed),
                       TextButton.icon(
                         onPressed: widget.onRetry,
                         icon: const Icon(Icons.refresh),

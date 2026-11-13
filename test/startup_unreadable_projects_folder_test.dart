@@ -26,6 +26,8 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'helpers/first_use_tooltips.dart';
+import 'helpers/load_app_fonts.dart';
+import 'helpers/paragraph_lines.dart';
 
 /// 作品の保存先（書類フォルダ/niarim/projects）はあるのに中を一覧できない
 /// （権限が無い・入出力の失敗）と、起動が「save_tree」の段で止まり、起動
@@ -4923,6 +4925,135 @@ void main() {
       await tester.pumpWidget(const SizedBox.shrink());
     });
   }
+
+  // 韓国語は語（空白で区切った単位）の途中で行を変えない。読めなかった
+  // 知らせの文が「생성한 공유 파일을 불러오지 못했습니 / 다」（幅320px）、
+  // 「…불 / 러오지 못했습니다」（幅360px・文字2倍）と語の途中で切れていた。
+  // ホームの3つの知らせ（プロジェクト・共有の受け取ったもの・自分が作成
+  // したもの）を、本物の同梱フォントで描いて確かめる（同梱フォントを読む
+  // ので、このファイルの最後に置く）。
+  testWidgets('Korean load-failure notices on Home break lines only between '
+      'words (320/360 px, text x1/x2)', (tester) async {
+    final semantics = tester.ensureSemantics();
+    await loadAppFonts(tester);
+    tester.view.physicalSize = const Size(1280, 800);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+    SharedPreferences.setMockInitialValues({
+      'first_launch': false,
+      'language': 'ko',
+      firstUseTooltipsSeenKey: kAllFirstUseTooltipKeys,
+    });
+    final l10n = lookupAppLocalizations(const Locale('ko'));
+    // 作品のフォルダを読めないと、3つの知らせがどれも出る（以前の版で
+    // 作品のフォルダに作った共有ファイルも読めないため）。
+    Directory(storage.projectsPath).createSync(recursive: true);
+    storage.paths.blockListing(storage.projectsPath);
+    appRouter.go('/home');
+    final providers = await tester.runAsync(buildAppProviders);
+    await tester.pumpWidget(
+      MultiProvider(providers: providers!, child: const NiarimApp()),
+    );
+    await _settleWithFiles(tester);
+
+    final problems = <String>[];
+    final drawn = <String>{};
+    Future<void> check(String place, Key key, String message) async {
+      for (final width in [320.0, 360.0]) {
+        for (final scale in [1.0, 2.0]) {
+          tester.view.physicalSize = Size(width, 800);
+          tester.platformDispatcher.textScaleFactorTestValue = scale;
+          await _settleWithFiles(tester, rounds: 3);
+          final where = '$place ${width.round()} x$scale';
+          final notice = find.byKey(key);
+          if (notice.evaluate().length != 1) {
+            problems.add('$where: no notice');
+            continue;
+          }
+          // 元の文のまま探せ、読み上げも元の文（語結合子は描くときだけ
+          // 入れる）。
+          if (find
+              .descendant(of: notice, matching: find.text(message))
+              .evaluate()
+              .isEmpty) {
+            problems.add('$where: "$message" not found');
+          }
+          if (find
+              .descendant(of: notice, matching: find.bySemanticsLabel(message))
+              .evaluate()
+              .isEmpty) {
+            problems.add('$where: not read as "$message"');
+          }
+          for (final element
+              in find
+                  .descendant(of: notice, matching: find.byType(RichText))
+                  .evaluate()) {
+            final lines = ParagraphLines(
+              element.renderObject! as RenderParagraph,
+            );
+            // アイコンも1字の段落として描かれる。
+            if (lines.visible.trim().length < 2) continue;
+            drawn.add(lines.visible);
+            for (var i = 1; i < lines.visible.length; i++) {
+              final before = lines.lineOf(i - 1);
+              final after = lines.lineOf(i);
+              if (before == null || after == null || before == after) continue;
+              if (lines.visible[i - 1].trim().isEmpty ||
+                  lines.visible[i].trim().isEmpty) {
+                continue;
+              }
+              problems.add('$where: ${lines.lines.join(' / ')}');
+              break;
+            }
+            for (final outside in lines.charsOutsideWidth()) {
+              problems.add('$where: $outside');
+            }
+          }
+          final error = tester.takeException();
+          if (error != null) problems.add('$where: $error');
+        }
+      }
+    }
+
+    await check(
+      'projects',
+      const Key('homeProjectsLoadFailed'),
+      l10n.homeProjectsLoadFailed,
+    );
+    tester.view.physicalSize = const Size(1280, 800);
+    tester.platformDispatcher.textScaleFactorTestValue = 1.0;
+    await _settleWithFiles(tester, rounds: 3);
+    await tester.tap(find.byKey(const ValueKey('home_tab_2')));
+    await _settleWithFiles(tester);
+    await check(
+      'shared received',
+      const Key('sharedProjectsLoadFailed'),
+      l10n.homeProjectsLoadFailed,
+    );
+    tester.view.physicalSize = const Size(1280, 800);
+    tester.platformDispatcher.textScaleFactorTestValue = 1.0;
+    await _settleWithFiles(tester, rounds: 3);
+    await tester.tap(find.byKey(const Key('sharedOutgoingFilter')));
+    await _settleWithFiles(tester);
+    await check(
+      'shared created',
+      const Key('outgoingSharesLoadFailed'),
+      l10n.homeOutgoingSharesLoadFailed,
+    );
+    expect(problems, isEmpty, reason: problems.join('\n'));
+    expect(
+      drawn,
+      containsAll([
+        l10n.homeProjectsLoadFailed,
+        l10n.homeOutgoingSharesLoadFailed,
+        l10n.communityRetry,
+      ]),
+    );
+    semantics.dispose();
+    await tester.pumpWidget(const SizedBox.shrink());
+  });
 }
 
 /// 実際のファイルを読む処理（ゴミ箱の一覧・読み直し）を実時間で待ちながら
