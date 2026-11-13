@@ -12,6 +12,7 @@ import '../../services/home_widget_refresh.dart';
 import '../../services/home_widget_service.dart';
 import '../../services/project_service.dart';
 import '../../services/theme_service.dart';
+import '../../widgets/projects_load_failure_notice.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/sort_mode_control.dart';
 import '../../widgets/stepped_slider.dart';
@@ -161,6 +162,15 @@ class _WidgetArtworkPickerScreenState extends State<WidgetArtworkPickerScreen> {
     final widgets = context.watch<HomeWidgetService>();
     final scheme = Theme.of(context).colorScheme;
     final hasAnyProjects = context.watch<ProjectService>().projects.isNotEmpty;
+    // 作品を読み込めなかった間は、作品が無いとは言わず、知らせて読み直せる
+    // ようにする（読めた作品があれば、知らせと一緒に並べる）。
+    final loadFailed = context.watch<ProjectService>().projectsLoadFailed;
+    final loadFailedNotice = loadFailed
+        ? ProjectsLoadFailureNotice(
+            key: const Key('widgetArtworkProjectsLoadFailed'),
+            onRetry: () => context.read<ProjectService>().retryLoadProjects(),
+          )
+        : null;
 
     return Scaffold(
       appBar: AppBar(
@@ -224,7 +234,9 @@ class _WidgetArtworkPickerScreenState extends State<WidgetArtworkPickerScreen> {
       ),
       body: desktopCentered(
         context,
-        !hasAnyProjects
+        !hasAnyProjects && loadFailedNotice != null
+            ? ListView(children: [loadFailedNotice])
+            : !hasAnyProjects
             ? Center(
                 child: Padding(
                   padding: const EdgeInsets.all(24),
@@ -291,6 +303,8 @@ class _WidgetArtworkPickerScreenState extends State<WidgetArtworkPickerScreen> {
                       showFavoritesOnly: _showFavoritesOnly,
                       searchQuery: _searchQuery,
                       showEmptyCreateHint: false,
+                      header: loadFailedNotice,
+                      hideEmptyState: loadFailed,
                       onPickProject: (id) =>
                           context.push('/settings/widget/artwork/$id'),
                     ),

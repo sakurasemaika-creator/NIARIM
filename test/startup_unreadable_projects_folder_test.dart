@@ -2025,6 +2025,135 @@ void main() {
     await tester.pumpWidget(const SizedBox.shrink());
   });
 
+  // 起動画面ウィジェットの作品選び（設定）も、作品を読み込めなかった間に
+  // 「まだ作品がありません。作品を作るとここで選べるようになります。」だけを
+  // 出していた（ホームのプロジェクトと同じ。知らせも「再試行」も無い）。
+  // 読み込めなかったことを知らせて読み直せるようにし、一部だけ読めたときは
+  // 読めた作品を知らせと一緒に並べる。
+  for (final partial in [false, true]) {
+    testWidgets('the widget artwork picker does not say there are no works '
+        'while they could not be read, and Retry lists them '
+        '(${partial ? 'one work unreadable' : 'folder unlistable'})', (
+      tester,
+    ) async {
+      tester.view.physicalSize = const Size(1280, 800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+      SharedPreferences.setMockInitialValues({
+        'first_launch': false,
+        'language': 'ja',
+        firstUseTooltipsSeenKey: kAllFirstUseTooltipKeys,
+      });
+      final l10n = lookupAppLocalizations(const Locale('ja'));
+      final seeded = await tester.runAsync(() async {
+        final read = await _seedProjectWithSaves(
+          name: '読めた作品',
+          comments: const [],
+        );
+        final unread = await _seedProjectWithSaves(
+          name: '開けない作品',
+          comments: const [],
+        );
+        return (read.$1, unread.$1);
+      });
+      final (_, unread) = seeded!;
+      if (partial) {
+        storage.paths.blockReading(
+          '${storage.projectsPath}/${unread.id}/${unread.id}.niapro',
+        );
+      } else {
+        storage.paths.blockListing(storage.projectsPath);
+      }
+      appRouter.go('/settings/widget/artwork');
+      final providers = await tester.runAsync(buildAppProviders);
+      await tester.pumpWidget(
+        MultiProvider(providers: providers!, child: const NiarimApp()),
+      );
+      await _settleWithFiles(tester);
+      final projects = tester
+          .element(find.byType(Scaffold).first)
+          .read<ProjectService>();
+      expect(projects.projectsLoadFailed, isTrue);
+      final notice = find.byKey(const Key('widgetArtworkProjectsLoadFailed'));
+      final retry = find.descendant(
+        of: notice,
+        matching: find.text(l10n.communityRetry),
+      );
+      for (final size in const [Size(320, 568), Size(1280, 800)]) {
+        for (final scale in [1.0, 2.0]) {
+          final where = '${size.width.toInt()}px x$scale';
+          tester.view.physicalSize = size;
+          tester.platformDispatcher.textScaleFactorTestValue = scale;
+          await _settleWithFiles(tester, rounds: 3);
+          expect(
+            find.text(l10n.widgetNoProjects),
+            findsNothing,
+            reason: '$where: said there are no works',
+          );
+          expect(notice, findsOneWidget, reason: where);
+          expect(
+            find.descendant(
+              of: notice,
+              matching: find.text(l10n.homeProjectsLoadFailed),
+            ),
+            findsOneWidget,
+            reason: where,
+          );
+          expect(find.text('読めた作品'), partial ? findsOneWidget : findsNothing);
+          expect(find.text('開けない作品'), findsNothing, reason: where);
+          expect(tester.takeException(), isNull, reason: where);
+        }
+      }
+
+      // 読めるようになって「再試行」：知らせが消え、2作品とも選べる。
+      tester.view.physicalSize = const Size(1280, 800);
+      tester.platformDispatcher.textScaleFactorTestValue = 1.0;
+      await _settleWithFiles(tester, rounds: 3);
+      storage.paths.clear();
+      await tester.tap(retry);
+      for (var i = 0; i < 40 && notice.evaluate().isNotEmpty; i++) {
+        await _settleWithFiles(tester, rounds: 2);
+      }
+      expect(notice, findsNothing);
+      expect(find.text('読めた作品'), findsOneWidget);
+      expect(find.text('開けない作品'), findsOneWidget);
+      expect(find.text(l10n.widgetNoProjects), findsNothing);
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox.shrink());
+    });
+  }
+
+  // 作品が本当に1つも無いときは、これまでどおり作品が無いと伝える。
+  testWidgets('the widget artwork picker still says there are no works when '
+      'the folder was read and is empty', (tester) async {
+    tester.view.physicalSize = const Size(1280, 800);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    SharedPreferences.setMockInitialValues({
+      'first_launch': false,
+      'language': 'ja',
+      firstUseTooltipsSeenKey: kAllFirstUseTooltipKeys,
+    });
+    final l10n = lookupAppLocalizations(const Locale('ja'));
+    Directory(storage.projectsPath).createSync(recursive: true);
+    appRouter.go('/settings/widget/artwork');
+    final providers = await tester.runAsync(buildAppProviders);
+    await tester.pumpWidget(
+      MultiProvider(providers: providers!, child: const NiarimApp()),
+    );
+    await _settleWithFiles(tester);
+    expect(find.text(l10n.widgetNoProjects), findsOneWidget);
+    expect(
+      find.byKey(const Key('widgetArtworkProjectsLoadFailed')),
+      findsNothing,
+    );
+    expect(tester.takeException(), isNull);
+    await tester.pumpWidget(const SizedBox.shrink());
+  });
+
   // 狭い画面・大きな文字でも、知らせを出したゴミ箱・共有・引き継ぎが
   // はみ出さない（知らせは一覧の先頭でスクロールする）。
   testWidgets('the notices fit a narrow screen with large text', (
