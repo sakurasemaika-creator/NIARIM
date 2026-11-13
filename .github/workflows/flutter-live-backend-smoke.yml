@@ -32,11 +32,12 @@ jobs:
       - name: Set up Flutter
         uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
         with:
+          flutter-version: '3.47.2'
           channel: stable
           cache: false
 
       - name: Resolve Flutter dependencies
-        run: flutter pub get
+        run: flutter pub get --enforce-lockfile
 
       - name: Execute actual Flutter Dart client against live AWS (GET only)
         run: |
