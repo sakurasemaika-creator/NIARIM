@@ -7886,6 +7886,17 @@ class AppLocalizationsJa extends AppLocalizations {
   String get projectListEmptyFolderTitle => 'このフォルダは空です';
 
   @override
+  String projectListNoFavoriteMatchTitle(String query) {
+    return '「$query」に一致するお気に入りはありません';
+  }
+
+  @override
+  String get projectListNoFavoritesInFolderTitle => 'このフォルダにお気に入りはありません';
+
+  @override
+  String get projectListNoFavoritesOutsideFoldersTitle => 'フォルダの外にお気に入りはありません';
+
+  @override
   String projectListUpdatedOn(DateTime date) {
     final intl.DateFormat dateDateFormat = intl.DateFormat.yMd(
       localeName,

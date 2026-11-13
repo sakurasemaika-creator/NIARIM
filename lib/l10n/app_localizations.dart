@@ -14319,6 +14319,24 @@ abstract class AppLocalizations {
   /// **'このフォルダは空です'**
   String get projectListEmptyFolderTitle;
 
+  /// ホームのプロジェクトタブ：「お気に入りだけ」で探したとき、検索に当たる作品はあるが、その中にお気に入りが無い（ほかのお気に入りはある）
+  ///
+  /// In ja, this message translates to:
+  /// **'「{query}」に一致するお気に入りはありません'**
+  String projectListNoFavoriteMatchTitle(String query);
+
+  /// ホームのプロジェクトタブ：フォルダの中で「お気に入りだけ」にしたとき、このフォルダにはお気に入りが無い（ほかの場所にはある）
+  ///
+  /// In ja, this message translates to:
+  /// **'このフォルダにお気に入りはありません'**
+  String get projectListNoFavoritesInFolderTitle;
+
+  /// ホームのプロジェクトタブの一番上で「お気に入りだけ」にしたとき、一番上にはお気に入りが無く、お気に入りはどれもフォルダの中にある
+  ///
+  /// In ja, this message translates to:
+  /// **'フォルダの外にお気に入りはありません'**
+  String get projectListNoFavoritesOutsideFoldersTitle;
+
   /// ホームの詳細表示の作品の行：作品を最後に保存した日時（その言語の日付と時刻の書き方）
   ///
   /// In ja, this message translates to:

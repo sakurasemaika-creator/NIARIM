@@ -3892,6 +3892,23 @@
   "projectListNoFavoritesHint": "作品やフォルダのメニューで「お気に入り登録」を選ぶと、ここに表示されます。",
   "projectListShowAll": "すべて表示",
   "projectListEmptyFolderTitle": "このフォルダは空です",
+  "projectListNoFavoriteMatchTitle": "「{query}」に一致するお気に入りはありません",
+  "@projectListNoFavoriteMatchTitle": {
+    "description": "ホームのプロジェクトタブ：「お気に入りだけ」で探したとき、検索に当たる作品はあるが、その中にお気に入りが無い（ほかのお気に入りはある）",
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
+  },
+  "projectListNoFavoritesInFolderTitle": "このフォルダにお気に入りはありません",
+  "@projectListNoFavoritesInFolderTitle": {
+    "description": "ホームのプロジェクトタブ：フォルダの中で「お気に入りだけ」にしたとき、このフォルダにはお気に入りが無い（ほかの場所にはある）"
+  },
+  "projectListNoFavoritesOutsideFoldersTitle": "フォルダの外にお気に入りはありません",
+  "@projectListNoFavoritesOutsideFoldersTitle": {
+    "description": "ホームのプロジェクトタブの一番上で「お気に入りだけ」にしたとき、一番上にはお気に入りが無く、お気に入りはどれもフォルダの中にある"
+  },
   "projectListUpdatedOn": "{date} 更新",
   "@projectListUpdatedOn": {
     "description": "ホームの詳細表示の作品の行：作品を最後に保存した日時（その言語の日付と時刻の書き方）",

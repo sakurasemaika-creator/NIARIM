@@ -7807,6 +7807,17 @@ class AppLocalizationsZh extends AppLocalizations {
   String get projectListEmptyFolderTitle => '此文件夹为空';
 
   @override
+  String projectListNoFavoriteMatchTitle(String query) {
+    return '没有与“$query”匹配的收藏';
+  }
+
+  @override
+  String get projectListNoFavoritesInFolderTitle => '此文件夹中没有收藏';
+
+  @override
+  String get projectListNoFavoritesOutsideFoldersTitle => '文件夹外没有收藏';
+
+  @override
   String projectListUpdatedOn(DateTime date) {
     final intl.DateFormat dateDateFormat = intl.DateFormat.yMd(
       localeName,
@@ -17551,6 +17562,17 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get projectListEmptyFolderTitle => '此資料夾是空的';
+
+  @override
+  String projectListNoFavoriteMatchTitle(String query) {
+    return '我的最愛中沒有與「$query」相符的項目';
+  }
+
+  @override
+  String get projectListNoFavoritesInFolderTitle => '此資料夾中沒有我的最愛';
+
+  @override
+  String get projectListNoFavoritesOutsideFoldersTitle => '資料夾外沒有我的最愛';
 
   @override
   String projectListUpdatedOn(DateTime date) {

@@ -8350,6 +8350,19 @@ class AppLocalizationsFr extends AppLocalizations {
   String get projectListEmptyFolderTitle => 'Ce dossier est vide';
 
   @override
+  String projectListNoFavoriteMatchTitle(String query) {
+    return 'Aucun favori ne correspond à « $query »';
+  }
+
+  @override
+  String get projectListNoFavoritesInFolderTitle =>
+      'Aucun favori dans ce dossier';
+
+  @override
+  String get projectListNoFavoritesOutsideFoldersTitle =>
+      'Aucun favori hors des dossiers';
+
+  @override
   String projectListUpdatedOn(DateTime date) {
     final intl.DateFormat dateDateFormat = intl.DateFormat.yMd(
       localeName,

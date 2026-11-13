@@ -8328,6 +8328,19 @@ class AppLocalizationsEs extends AppLocalizations {
   String get projectListEmptyFolderTitle => 'Esta carpeta está vacía';
 
   @override
+  String projectListNoFavoriteMatchTitle(String query) {
+    return 'Ningún favorito coincide con «$query»';
+  }
+
+  @override
+  String get projectListNoFavoritesInFolderTitle =>
+      'No hay favoritos en esta carpeta';
+
+  @override
+  String get projectListNoFavoritesOutsideFoldersTitle =>
+      'No hay favoritos fuera de las carpetas';
+
+  @override
   String projectListUpdatedOn(DateTime date) {
     final intl.DateFormat dateDateFormat = intl.DateFormat.yMd(
       localeName,

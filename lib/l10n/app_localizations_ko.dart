@@ -7923,6 +7923,17 @@ class AppLocalizationsKo extends AppLocalizations {
   String get projectListEmptyFolderTitle => '이 폴더는 비어 있습니다';
 
   @override
+  String projectListNoFavoriteMatchTitle(String query) {
+    return '「$query」에 해당하는 즐겨찾기가 없습니다';
+  }
+
+  @override
+  String get projectListNoFavoritesInFolderTitle => '이 폴더에는 즐겨찾기가 없습니다';
+
+  @override
+  String get projectListNoFavoritesOutsideFoldersTitle => '폴더 밖에는 즐겨찾기가 없습니다';
+
+  @override
   String projectListUpdatedOn(DateTime date) {
     final intl.DateFormat dateDateFormat = intl.DateFormat.yMd(
       localeName,

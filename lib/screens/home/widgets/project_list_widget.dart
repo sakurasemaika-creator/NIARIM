@@ -380,6 +380,12 @@ class ProjectListWidget extends StatelessWidget {
             searchQuery: searchQuery,
             searchByTag: searchByTag,
           ).isNotEmpty;
+      // 一覧のどこかにお気に入りがあるか（お気に入りだけで空のとき、登録の
+      // 仕方を出すのは1つも無いときだけ）。
+      final hasFavorites =
+          showFavoritesOnly &&
+          (source.any((p) => p.isFavorite) ||
+              allFolders.any((f) => f.isFavorite));
       if (hideEmptyState) {
         return CustomScrollView(
           controller: scrollController,
@@ -395,12 +401,20 @@ class ProjectListWidget extends StatelessWidget {
               // The empty-state layout uses LayoutBuilder, which cannot
               // provide intrinsic heights to the non-scrollable variant.
               hasScrollBody: true,
-              child: _emptyState(l10n, hiddenByFavorites: hiddenByFavorites),
+              child: _emptyState(
+                l10n,
+                hiddenByFavorites: hiddenByFavorites,
+                hasFavorites: hasFavorites,
+              ),
             ),
           ],
         );
       }
-      return _emptyState(l10n, hiddenByFavorites: hiddenByFavorites);
+      return _emptyState(
+        l10n,
+        hiddenByFavorites: hiddenByFavorites,
+        hasFavorites: hasFavorites,
+      );
     }
 
     if (viewMode == ProjectViewMode.detail) {
@@ -483,7 +497,11 @@ class ProjectListWidget extends StatelessWidget {
   /// 一覧が空のときの表示。検索・お気に入りの絞り込みで隠れているだけの
   /// ときは「プロジェクトがありません」と言わず、絞り込みを外すボタンを
   /// 出す。フォルダの中が空のときはそう言う。
-  Widget _emptyState(AppLocalizations l10n, {bool hiddenByFavorites = false}) {
+  Widget _emptyState(
+    AppLocalizations l10n, {
+    bool hiddenByFavorites = false,
+    bool hasFavorites = false,
+  }) {
     // ホームでは左下・右下に丸いボタンが浮くので、絞り込みを外すボタンが
     // その下に入らないよう、下にその分の余白を取る（選ぶ専用画面には無い）。
     Widget clearOfFloatingButtons(Widget child) => Padding(
@@ -510,13 +528,27 @@ class ProjectListWidget extends StatelessWidget {
       );
     }
     if (showFavoritesOnly) {
+      // お気に入りがほかの場所にあるのに「お気に入りの作品はありません」と
+      // 言わない（登録済みの利用者に登録を促していた）。探している言葉に
+      // 当たるお気に入りが無い・このフォルダに無い・フォルダの外に無い（どれも
+      // フォルダの中にある）のどれかを言う。
+      final title = query.isNotEmpty
+          ? l10n.projectListNoFavoriteMatchTitle(query)
+          : !hasFavorites
+          ? l10n.projectListNoFavoritesTitle
+          : currentFolderId != null
+          ? l10n.projectListNoFavoritesInFolderTitle
+          : l10n.projectListNoFavoritesOutsideFoldersTitle;
       return clearOfFloatingButtons(
         EmptyStatePlaceholder(
           icon: Icons.star_border,
-          title: l10n.projectListNoFavoritesTitle,
-          // 説明は作品・フォルダのメニューを指すので、カードにメニューの無い
-          // 選ぶ専用画面（[onPickProject]使用時）では出さない。
-          hint: onPickProject == null ? l10n.projectListNoFavoritesHint : null,
+          title: title,
+          // 登録の仕方は、お気に入りが1つも無いときだけ。作品・フォルダの
+          // メニューを指すので、カードにメニューの無い選ぶ専用画面
+          // （[onPickProject]使用時）では出さない。
+          hint: onPickProject == null && !hasFavorites
+              ? l10n.projectListNoFavoritesHint
+              : null,
           action: onShowAll == null
               ? null
               : OutlinedButton(

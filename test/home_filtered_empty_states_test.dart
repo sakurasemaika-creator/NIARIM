@@ -87,12 +87,17 @@ void main() {
     await tester.tap(find.widgetWithText(FilterChip, ja.homeFavoritesOnly));
     await tester.pumpAndSettle();
     await search(tester, 'apple');
-    // 「apple」は検索には当たるが、お気に入りではない。
+    // 「apple」は検索には当たるが、お気に入りではない（お気に入りはほかに
+    // あるので、登録の説明は出さない）。
     expect(
       inList(find.text(ja.projectListNoMatchTitle('apple'))),
       findsNothing,
     );
-    expect(inList(find.text(ja.projectListNoFavoritesTitle)), findsOneWidget);
+    expect(
+      inList(find.text(ja.projectListNoFavoriteMatchTitle('apple'))),
+      findsOneWidget,
+    );
+    expect(inList(find.text(ja.projectListNoFavoritesHint)), findsNothing);
     await tester.tap(inList(find.text(ja.projectListShowAll)));
     await tester.pumpAndSettle();
     expect(inList(find.text('apple')), findsOneWidget);
