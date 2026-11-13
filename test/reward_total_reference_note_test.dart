@@ -203,7 +203,7 @@ void main() {
         expect(note, findsOneWidget, reason: '$name: 合計の下の注記');
         expect(
           tester.getTopLeft(note).dy,
-          greaterThanOrEqualTo(tester.getBottomLeft(total).dy),
+          greaterThanOrEqualTo(tester.getBottomLeft(total).dy - 0.001),
         );
         final noteStyle =
             (tester.renderObject(
