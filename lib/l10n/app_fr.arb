@@ -3766,5 +3766,13 @@
   "fontCatalogEntrySubtitle": "{category} · {license}",
   "brushSettingsPaperGrain": "Grain du papier",
   "colorPickerCurrentColorLabel": "Couleur actuelle",
-  "helpShortcutSettingsDesc": "Attribuez des touches du clavier ou d’un périphérique main gauche à des outils (jusqu’à un pinceau et une taille précis) ou à des actions comme annuler, rétablir, lire, avancer image par image, tout sélectionner, copier, couper et coller. Les raccourcis fonctionnent sur le canevas comme dans la chronologie. Si une combinaison est déjà utilisée par une autre action, une confirmation vous est demandée avant de la remplacer."
+  "helpShortcutSettingsDesc": "Attribuez des touches du clavier ou d’un périphérique main gauche à des outils (jusqu’à un pinceau et une taille précis) ou à des actions comme annuler, rétablir, lire, avancer image par image, tout sélectionner, copier, couper et coller. Les raccourcis fonctionnent sur le canevas comme dans la chronologie. Si une combinaison est déjà utilisée par une autre action, une confirmation vous est demandée avant de la remplacer.",
+  "themePreviewCardTitle": "Aperçu des écrans",
+  "themePreviewCardSubtitle": "Exemple de liste des projets",
+  "themePreviewCardViewAll": "{count, plural, one{Touchez pour voir {count} écran} other{Touchez pour voir les {count} écrans}}",
+  "workspaceToolbarSizeLabel": "Taille des icônes d’outils",
+  "pcLayoutAutoFoldTitle": "Replier automatiquement les fenêtres d’outils",
+  "pcLayoutAutoFoldHelp": "Seulement si les fenêtres ne tiennent toujours pas une fois réduites, celles utilisées le moins récemment se replient temporairement. La fenêtre en cours reste ouverte et les fenêtres repliées reviennent dès que la place le permet. Désactivé, la colonne défile simplement.",
+  "pcLayoutResetWorkspace": "Réinitialiser l’espace de travail",
+  "pcLayoutInstruction": "Faites glisser le bord d’une fenêtre dans l’aperçu pour modifier sa largeur ou sa hauteur. Maintenez la poignée en haut à gauche pour la déplacer ou l’échanger avec une autre. Pincez pour zoomer."
 }

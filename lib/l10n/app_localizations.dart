@@ -17348,6 +17348,54 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'キーボードや左手デバイスのキーに、ツール（ブラシ・太さまで指定可）や、取り消し・やり直し・再生・コマ送り・全選択・コピー・切り取り・貼り付けなどの操作を割り当てる画面です。キャンバスとタイムラインの両方で使えます。すでにほかの操作に使っているキーの組み合わせを割り当てようとすると、置き換えてよいか確認します。'**
   String get helpShortcutSettingsDesc;
+
+  /// テーマ・外観：見本の一覧を開くカードの見出し
+  ///
+  /// In ja, this message translates to:
+  /// **'画面プレビュー'**
+  String get themePreviewCardTitle;
+
+  /// テーマ・外観：カードの小さな見本が何の画面か
+  ///
+  /// In ja, this message translates to:
+  /// **'プロジェクト一覧の見本'**
+  String get themePreviewCardSubtitle;
+
+  /// テーマ・外観：見本の一覧を開く案内（countは見本の画面の数）
+  ///
+  /// In ja, this message translates to:
+  /// **'タップして全{count}画面を見る'**
+  String themePreviewCardViewAll(int count);
+
+  /// ワークスペース設定：ツールバーのアイコンの大きさ
+  ///
+  /// In ja, this message translates to:
+  /// **'ツールの表示サイズ'**
+  String get workspaceToolbarSizeLabel;
+
+  /// PCレイアウト：ツールウィンドウを自動で収納するスイッチ
+  ///
+  /// In ja, this message translates to:
+  /// **'ツールウィンドウの自動収納'**
+  String get pcLayoutAutoFoldTitle;
+
+  /// PCレイアウト：自動収納のスイッチの説明
+  ///
+  /// In ja, this message translates to:
+  /// **'高さを縮めても収まらないときだけ、最近使っていないウィンドウを一時収納します。操作中のものは維持し、空きが戻ると復元します。OFFでは列内スクロールのみ使用します。'**
+  String get pcLayoutAutoFoldHelp;
+
+  /// PCレイアウト：配置を最初の状態に戻すボタン
+  ///
+  /// In ja, this message translates to:
+  /// **'ワークスペースを初期化'**
+  String get pcLayoutResetWorkspace;
+
+  /// PCレイアウト：見本の操作のしかた
+  ///
+  /// In ja, this message translates to:
+  /// **'プレビューのウィンドウ端をドラッグして幅・高さを変更し、左上のハンドルを長押しして移動・入れ替えできます。ピンチで拡大できます。'**
+  String get pcLayoutInstruction;
 }
 
 class _AppLocalizationsDelegate

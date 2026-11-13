@@ -10542,4 +10542,39 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get helpShortcutSettingsDesc =>
       'Attribuez des touches du clavier ou d’un périphérique main gauche à des outils (jusqu’à un pinceau et une taille précis) ou à des actions comme annuler, rétablir, lire, avancer image par image, tout sélectionner, copier, couper et coller. Les raccourcis fonctionnent sur le canevas comme dans la chronologie. Si une combinaison est déjà utilisée par une autre action, une confirmation vous est demandée avant de la remplacer.';
+
+  @override
+  String get themePreviewCardTitle => 'Aperçu des écrans';
+
+  @override
+  String get themePreviewCardSubtitle => 'Exemple de liste des projets';
+
+  @override
+  String themePreviewCardViewAll(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Touchez pour voir les $count écrans',
+      one: 'Touchez pour voir $count écran',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get workspaceToolbarSizeLabel => 'Taille des icônes d’outils';
+
+  @override
+  String get pcLayoutAutoFoldTitle =>
+      'Replier automatiquement les fenêtres d’outils';
+
+  @override
+  String get pcLayoutAutoFoldHelp =>
+      'Seulement si les fenêtres ne tiennent toujours pas une fois réduites, celles utilisées le moins récemment se replient temporairement. La fenêtre en cours reste ouverte et les fenêtres repliées reviennent dès que la place le permet. Désactivé, la colonne défile simplement.';
+
+  @override
+  String get pcLayoutResetWorkspace => 'Réinitialiser l’espace de travail';
+
+  @override
+  String get pcLayoutInstruction =>
+      'Faites glisser le bord d’une fenêtre dans l’aperçu pour modifier sa largeur ou sa hauteur. Maintenez la poignée en haut à gauche pour la déplacer ou l’échanger avec une autre. Pincez pour zoomer.';
 }

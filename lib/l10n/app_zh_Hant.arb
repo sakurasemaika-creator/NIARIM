@@ -3766,5 +3766,13 @@
   "fontCatalogEntrySubtitle": "{category} · {license}",
   "brushSettingsPaperGrain": "紙紋與顆粒",
   "colorPickerCurrentColorLabel": "目前的顏色",
-  "helpShortcutSettingsDesc": "可以為鍵盤或左手裝置的按鍵分配工具（可細到具體筆刷和粗細），或復原、取消復原、播放、逐格移動、全選、複製、剪下、貼上等操作。畫布和時間軸中都可以使用。如果要分配的組合鍵已用於其他操作，會先確認是否替換。"
+  "helpShortcutSettingsDesc": "可以為鍵盤或左手裝置的按鍵分配工具（可細到具體筆刷和粗細），或復原、取消復原、播放、逐格移動、全選、複製、剪下、貼上等操作。畫布和時間軸中都可以使用。如果要分配的組合鍵已用於其他操作，會先確認是否替換。",
+  "themePreviewCardTitle": "畫面預覽",
+  "themePreviewCardSubtitle": "專案列表範例",
+  "themePreviewCardViewAll": "點按查看全部{count}個畫面",
+  "workspaceToolbarSizeLabel": "工具顯示大小",
+  "pcLayoutAutoFoldTitle": "自動收起工具視窗",
+  "pcLayoutAutoFoldHelp": "僅在縮小高度後仍放不下時，暫時收起最近未使用的視窗。正在使用的視窗保持開啟，空間恢復後會重新展開。關閉後僅在欄內捲動。",
+  "pcLayoutResetWorkspace": "重設工作區",
+  "pcLayoutInstruction": "在預覽中拖曳視窗邊緣可調整寬度和高度，長按左上角的控點可移動視窗或與其他視窗交換。雙指縮放可放大。"
 }

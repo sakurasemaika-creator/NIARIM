@@ -3766,5 +3766,13 @@
   "fontCatalogEntrySubtitle": "{category} · {license}",
   "brushSettingsPaperGrain": "纸纹与颗粒",
   "colorPickerCurrentColorLabel": "当前颜色",
-  "helpShortcutSettingsDesc": "可以为键盘或左手设备的按键分配工具（可细到具体画笔和粗细），或撤销、重做、播放、逐帧移动、全选、复制、剪切、粘贴等操作。画布和时间轴中都可以使用。如果要分配的组合键已用于其他操作，会先确认是否替换。"
+  "helpShortcutSettingsDesc": "可以为键盘或左手设备的按键分配工具（可细到具体画笔和粗细），或撤销、重做、播放、逐帧移动、全选、复制、剪切、粘贴等操作。画布和时间轴中都可以使用。如果要分配的组合键已用于其他操作，会先确认是否替换。",
+  "themePreviewCardTitle": "画面预览",
+  "themePreviewCardSubtitle": "项目列表示例",
+  "themePreviewCardViewAll": "点按查看全部{count}个画面",
+  "workspaceToolbarSizeLabel": "工具显示大小",
+  "pcLayoutAutoFoldTitle": "自动收起工具窗口",
+  "pcLayoutAutoFoldHelp": "仅在缩小高度后仍放不下时，暂时收起最近未使用的窗口。正在使用的窗口保持打开，空间恢复后会重新展开。关闭后仅在列内滚动。",
+  "pcLayoutResetWorkspace": "重置工作区",
+  "pcLayoutInstruction": "在预览中拖动窗口边缘可调整宽度和高度，长按左上角的手柄可移动窗口或与其他窗口交换。双指缩放可放大。"
 }

@@ -9639,6 +9639,34 @@ class AppLocalizationsZh extends AppLocalizations {
   @override
   String get helpShortcutSettingsDesc =>
       '可以为键盘或左手设备的按键分配工具（可细到具体画笔和粗细），或撤销、重做、播放、逐帧移动、全选、复制、剪切、粘贴等操作。画布和时间轴中都可以使用。如果要分配的组合键已用于其他操作，会先确认是否替换。';
+
+  @override
+  String get themePreviewCardTitle => '画面预览';
+
+  @override
+  String get themePreviewCardSubtitle => '项目列表示例';
+
+  @override
+  String themePreviewCardViewAll(int count) {
+    return '点按查看全部$count个画面';
+  }
+
+  @override
+  String get workspaceToolbarSizeLabel => '工具显示大小';
+
+  @override
+  String get pcLayoutAutoFoldTitle => '自动收起工具窗口';
+
+  @override
+  String get pcLayoutAutoFoldHelp =>
+      '仅在缩小高度后仍放不下时，暂时收起最近未使用的窗口。正在使用的窗口保持打开，空间恢复后会重新展开。关闭后仅在列内滚动。';
+
+  @override
+  String get pcLayoutResetWorkspace => '重置工作区';
+
+  @override
+  String get pcLayoutInstruction =>
+      '在预览中拖动窗口边缘可调整宽度和高度，长按左上角的手柄可移动窗口或与其他窗口交换。双指缩放可放大。';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -19278,4 +19306,32 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   @override
   String get helpShortcutSettingsDesc =>
       '可以為鍵盤或左手裝置的按鍵分配工具（可細到具體筆刷和粗細），或復原、取消復原、播放、逐格移動、全選、複製、剪下、貼上等操作。畫布和時間軸中都可以使用。如果要分配的組合鍵已用於其他操作，會先確認是否替換。';
+
+  @override
+  String get themePreviewCardTitle => '畫面預覽';
+
+  @override
+  String get themePreviewCardSubtitle => '專案列表範例';
+
+  @override
+  String themePreviewCardViewAll(int count) {
+    return '點按查看全部$count個畫面';
+  }
+
+  @override
+  String get workspaceToolbarSizeLabel => '工具顯示大小';
+
+  @override
+  String get pcLayoutAutoFoldTitle => '自動收起工具視窗';
+
+  @override
+  String get pcLayoutAutoFoldHelp =>
+      '僅在縮小高度後仍放不下時，暫時收起最近未使用的視窗。正在使用的視窗保持開啟，空間恢復後會重新展開。關閉後僅在欄內捲動。';
+
+  @override
+  String get pcLayoutResetWorkspace => '重設工作區';
+
+  @override
+  String get pcLayoutInstruction =>
+      '在預覽中拖曳視窗邊緣可調整寬度和高度，長按左上角的控點可移動視窗或與其他視窗交換。雙指縮放可放大。';
 }

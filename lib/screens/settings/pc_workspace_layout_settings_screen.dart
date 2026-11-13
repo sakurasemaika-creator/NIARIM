@@ -30,49 +30,10 @@ class PcWorkspaceLayoutSettingsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
     final settings = context.watch<SettingsService>();
-    final locale = Localizations.localeOf(context).languageCode;
-    final autoTitle = switch (locale) {
-      'ja' => 'ツールウィンドウの自動収納',
-      'ko' => '도구 창 자동 접기',
-      'zh' => '自动折叠工具窗口',
-      'es' => 'Contraer ventanas automáticamente',
-      'fr' => 'Replier automatiquement les fenêtres',
-      _ => 'Automatically fold tool windows',
-    };
-    final autoHelp = switch (locale) {
-      'ja' =>
-        '高さを縮めても収まらないときだけ、最近使っていないウィンドウを一時収納します。操作中のものは維持し、空きが戻ると復元します。OFFでは列内スクロールのみ使用します。',
-      'ko' =>
-        '공간이 부족하면 사용하지 않는 창을 임시로 접습니다. 활성 창은 유지되며 공간이 생기면 복원됩니다. 끄면 스크롤만 사용합니다.',
-      'zh' => '空间不足时暂时折叠不常用窗口，保留正在使用的窗口，空间恢复后自动展开。关闭后仅滚动。',
-      'es' =>
-        'Si no caben, se pliegan temporalmente las ventanas menos usadas. La activa permanece abierta y se restauran al liberar espacio. Desactívalo para usar solo desplazamiento.',
-      'fr' =>
-        'En cas de manque de place, les fenêtres peu utilisées se replient temporairement. La fenêtre active reste ouverte et les autres reviennent quand la place le permet. Désactivez pour ne garder que le défilement.',
-      _ =>
-        'When windows no longer fit after shrinking, the least recently used fold temporarily. The active window stays open; folded windows restore when space returns. Turn off to use scrolling only.',
-    };
-    final resetWorkspaceTitle = switch (locale) {
-      'ja' => 'ワークスペースを初期化',
-      'ko' => '작업 공간 초기화',
-      'zh' => '重置工作区',
-      'es' => 'Restablecer espacio de trabajo',
-      'fr' => 'Réinitialiser l’espace de travail',
-      _ => 'Reset workspace',
-    };
-    final instruction = switch (locale) {
-      'ja' =>
-        'プレビューのウィンドウ端をドラッグして幅・高さを変更し、左上のハンドルを長押しして移動・入れ替えできます。ピンチで拡大できます。',
-      'ko' =>
-        '미리보기의 가장자리를 드래그하여 크기를 바꾸고, 창 손잡이를 길게 눌러 이동할 수 있습니다. 확대하려면 핀치하세요.',
-      'zh' => '拖动预览窗口边缘调整大小，长按窗口手柄并拖动以移动或交换位置。双指缩放可放大预览。',
-      'es' =>
-        'Arrastra los bordes para cambiar el tamaño y mantén pulsado el asa de cada ventana para moverla. Pellizca para ampliar.',
-      'fr' =>
-        'Faites glisser les bords pour redimensionner les fenêtres et maintenez leur poignée pour les déplacer. Pincez pour zoomer.',
-      _ =>
-        'Drag window edges to resize. Long-press and drag a window grip to reorder or move it between sides. Pinch to zoom.',
-    };
+    final autoTitle = l.pcLayoutAutoFoldTitle;
+    final autoHelp = l.pcLayoutAutoFoldHelp;
+    final resetWorkspaceTitle = l.pcLayoutResetWorkspace;
+    final instruction = l.pcLayoutInstruction;
     return Scaffold(
       appBar: AppBar(title: Text(l.pcWorkspaceLayoutScreenTitle)),
       body: SafeArea(

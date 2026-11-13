@@ -9740,4 +9740,32 @@ class AppLocalizationsJa extends AppLocalizations {
   @override
   String get helpShortcutSettingsDesc =>
       'キーボードや左手デバイスのキーに、ツール（ブラシ・太さまで指定可）や、取り消し・やり直し・再生・コマ送り・全選択・コピー・切り取り・貼り付けなどの操作を割り当てる画面です。キャンバスとタイムラインの両方で使えます。すでにほかの操作に使っているキーの組み合わせを割り当てようとすると、置き換えてよいか確認します。';
+
+  @override
+  String get themePreviewCardTitle => '画面プレビュー';
+
+  @override
+  String get themePreviewCardSubtitle => 'プロジェクト一覧の見本';
+
+  @override
+  String themePreviewCardViewAll(int count) {
+    return 'タップして全$count画面を見る';
+  }
+
+  @override
+  String get workspaceToolbarSizeLabel => 'ツールの表示サイズ';
+
+  @override
+  String get pcLayoutAutoFoldTitle => 'ツールウィンドウの自動収納';
+
+  @override
+  String get pcLayoutAutoFoldHelp =>
+      '高さを縮めても収まらないときだけ、最近使っていないウィンドウを一時収納します。操作中のものは維持し、空きが戻ると復元します。OFFでは列内スクロールのみ使用します。';
+
+  @override
+  String get pcLayoutResetWorkspace => 'ワークスペースを初期化';
+
+  @override
+  String get pcLayoutInstruction =>
+      'プレビューのウィンドウ端をドラッグして幅・高さを変更し、左上のハンドルを長押しして移動・入れ替えできます。ピンチで拡大できます。';
 }

@@ -10530,4 +10530,40 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get helpShortcutSettingsDesc =>
       'Asigna teclas del teclado o de un dispositivo de mano izquierda a herramientas (hasta un pincel y un tamaño concretos) o a acciones como deshacer, rehacer, reproducir, avanzar fotograma a fotograma, seleccionar todo, copiar, cortar y pegar. Los atajos funcionan en el lienzo y en la línea de tiempo. Si una combinación ya se usa para otra acción, se te pregunta antes de sustituirla.';
+
+  @override
+  String get themePreviewCardTitle => 'Vista previa de pantallas';
+
+  @override
+  String get themePreviewCardSubtitle => 'Muestra de la lista de proyectos';
+
+  @override
+  String themePreviewCardViewAll(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Toca para ver las $count pantallas',
+      one: 'Toca para ver $count pantalla',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get workspaceToolbarSizeLabel =>
+      'Tamaño de los iconos de herramientas';
+
+  @override
+  String get pcLayoutAutoFoldTitle =>
+      'Plegar automáticamente las ventanas de herramientas';
+
+  @override
+  String get pcLayoutAutoFoldHelp =>
+      'Solo cuando las ventanas no caben ni reduciendo su altura, se pliegan temporalmente las que llevan más tiempo sin usarse. La que estás usando sigue abierta y las plegadas vuelven cuando hay espacio. Si lo desactivas, la columna solo se desplaza.';
+
+  @override
+  String get pcLayoutResetWorkspace => 'Restablecer espacio de trabajo';
+
+  @override
+  String get pcLayoutInstruction =>
+      'Arrastra el borde de una ventana en la vista previa para cambiar su ancho o alto. Mantén pulsada el asa de arriba a la izquierda para moverla o intercambiarla con otra. Pellizca para ampliar.';
 }

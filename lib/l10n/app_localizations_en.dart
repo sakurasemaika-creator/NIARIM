@@ -10373,4 +10373,38 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get helpShortcutSettingsDesc =>
       'Assign keys on a keyboard or left-hand device to tools (down to a specific brush and size) or to actions such as undo, redo, play, frame stepping, select all, copy, cut and paste. Shortcuts work in both Canvas and Timeline. If a key combination is already used by another action, you’re asked before it’s replaced.';
+
+  @override
+  String get themePreviewCardTitle => 'Screen preview';
+
+  @override
+  String get themePreviewCardSubtitle => 'Project list sample';
+
+  @override
+  String themePreviewCardViewAll(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Tap to view all $count screens',
+      one: 'Tap to view $count screen',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get workspaceToolbarSizeLabel => 'Tool icon size';
+
+  @override
+  String get pcLayoutAutoFoldTitle => 'Fold tool windows automatically';
+
+  @override
+  String get pcLayoutAutoFoldHelp =>
+      'Only when windows still don’t fit after being shortened, the least recently used ones fold away for a while. The window you’re using stays open, and folded windows come back when there’s room again. When off, the column only scrolls.';
+
+  @override
+  String get pcLayoutResetWorkspace => 'Reset workspace';
+
+  @override
+  String get pcLayoutInstruction =>
+      'Drag a window’s edge in the preview to change its width or height. Press and hold the handle at its top left to move it or swap it with another window. Pinch to zoom.';
 }

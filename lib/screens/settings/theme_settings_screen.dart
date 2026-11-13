@@ -80,10 +80,9 @@ class ThemeSettingsScreen extends StatelessWidget {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Text(
-                                Localizations.localeOf(context).languageCode ==
-                                        'ja'
-                                    ? '画面プレビュー'
-                                    : 'Screen preview',
+                                AppLocalizations.of(
+                                  context,
+                                )!.themePreviewCardTitle,
                                 style: const TextStyle(
                                   fontSize: 15,
                                   fontWeight: FontWeight.bold,
@@ -93,10 +92,9 @@ class ThemeSettingsScreen extends StatelessWidget {
                               ),
                               const SizedBox(height: 8),
                               Text(
-                                Localizations.localeOf(context).languageCode ==
-                                        'ja'
-                                    ? 'プロジェクト一覧の見本'
-                                    : 'Project list sample',
+                                AppLocalizations.of(
+                                  context,
+                                )!.themePreviewCardSubtitle,
                                 style: TextStyle(
                                   fontSize: 12,
                                   color: Theme.of(
@@ -110,12 +108,11 @@ class ThemeSettingsScreen extends StatelessWidget {
                                 children: [
                                   Flexible(
                                     child: Text(
-                                      Localizations.localeOf(
-                                                context,
-                                              ).languageCode ==
-                                              'ja'
-                                          ? 'タップして全${themePreviewEntries.length}画面を見る'
-                                          : 'Tap to view all ${themePreviewEntries.length} screens',
+                                      AppLocalizations.of(
+                                        context,
+                                      )!.themePreviewCardViewAll(
+                                        themePreviewEntries.length,
+                                      ),
                                       style: TextStyle(
                                         fontSize: 12,
                                         fontWeight: FontWeight.w700,

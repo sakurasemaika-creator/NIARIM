@@ -73,9 +73,7 @@ class WorkspaceSettingsScreen extends StatelessWidget {
               children: [
                 Expanded(
                   child: Text(
-                    _toolbarSizeLabel(
-                      Localizations.localeOf(context).languageCode,
-                    ),
+                    _toolbarSizeLabel(AppLocalizations.of(context)!),
                     style: Theme.of(context).textTheme.titleSmall,
                   ),
                 ),
@@ -1034,16 +1032,8 @@ class _WorkspaceSaveDialogState extends State<_WorkspaceSaveDialog> {
 /// キャンバス画面の実際のツールバー（横並び）を模したプレビュー
 /// （設定のチェックボックス一覧だけでは仕上がりが分かり
 /// にくいため、非表示にしたツールが除かれた状態の並びをそのまま示す）。
-String _toolbarSizeLabel(String languageCode) => switch (languageCode) {
-  'ja' => 'ツールの表示サイズ',
-  'en' => 'Toolbar icon size',
-  'fr' => 'Taille des outils',
-  'de' => 'Werkzeuggröße',
-  'es' => 'Tamaño de herramientas',
-  'ko' => '도구 표시 크기',
-  'zh' => '工具显示大小',
-  _ => 'Toolbar icon size',
-};
+String _toolbarSizeLabel(AppLocalizations l10n) =>
+    l10n.workspaceToolbarSizeLabel;
 
 class _ToolbarPreview extends StatelessWidget {
   final List<ToolbarItemId> order;

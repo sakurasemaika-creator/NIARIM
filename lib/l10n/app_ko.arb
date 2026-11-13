@@ -3766,5 +3766,13 @@
   "fontCatalogEntrySubtitle": "{category} · {license}",
   "brushSettingsPaperGrain": "종이 결·입자",
   "colorPickerCurrentColorLabel": "현재 색상",
-  "helpShortcutSettingsDesc": "키보드나 왼손 장치의 키에 도구(브러시와 굵기까지 지정 가능)나 실행 취소, 다시 실행, 재생, 프레임 이동, 전체 선택, 복사, 잘라내기, 붙여넣기 같은 동작을 할당하는 화면입니다. 캔버스와 타임라인 모두에서 사용할 수 있습니다. 이미 다른 동작에 쓰고 있는 키 조합을 할당하려 하면 바꿔도 되는지 확인합니다."
+  "helpShortcutSettingsDesc": "키보드나 왼손 장치의 키에 도구(브러시와 굵기까지 지정 가능)나 실행 취소, 다시 실행, 재생, 프레임 이동, 전체 선택, 복사, 잘라내기, 붙여넣기 같은 동작을 할당하는 화면입니다. 캔버스와 타임라인 모두에서 사용할 수 있습니다. 이미 다른 동작에 쓰고 있는 키 조합을 할당하려 하면 바꿔도 되는지 확인합니다.",
+  "themePreviewCardTitle": "화면 미리보기",
+  "themePreviewCardSubtitle": "프로젝트 목록 예시",
+  "themePreviewCardViewAll": "탭하여 화면 {count}개 모두 보기",
+  "workspaceToolbarSizeLabel": "도구 표시 크기",
+  "pcLayoutAutoFoldTitle": "도구 창 자동 접기",
+  "pcLayoutAutoFoldHelp": "높이를 줄여도 들어가지 않을 때만 최근에 사용하지 않은 창을 잠시 접습니다. 사용 중인 창은 그대로 두고, 공간이 생기면 다시 펼칩니다. 끄면 열 안에서 스크롤만 합니다.",
+  "pcLayoutResetWorkspace": "작업 공간 초기화",
+  "pcLayoutInstruction": "미리보기에서 창 가장자리를 드래그해 너비와 높이를 바꾸고, 왼쪽 위의 손잡이를 길게 눌러 이동하거나 다른 창과 바꿀 수 있습니다. 핀치하면 확대됩니다."
 }
