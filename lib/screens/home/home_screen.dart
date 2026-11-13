@@ -31,6 +31,7 @@ import '../../services/storage_info_service.dart';
 import '../../services/work_folder_service.dart';
 import '../../models/shortcut_binding.dart';
 import '../../widgets/export_share_feedback.dart';
+import '../../widgets/action_beside_or_below.dart';
 import '../../widgets/ad_banner_mock_widget.dart';
 import '../../widgets/empty_state_placeholder.dart';
 import '../../widgets/sort_mode_control.dart';
@@ -4764,49 +4765,46 @@ class _TrashTabState extends State<_TrashTab> {
       grid: false,
       child: LayoutBuilder(
         builder: (context, constraints) {
-          final compact =
-              constraints.maxWidth <
-              600 * MediaQuery.textScalerOf(context).scale(1);
+          final textScaler = MediaQuery.textScalerOf(context);
+          final compact = constraints.maxWidth < 600 * textScaler.scale(1);
+          // 名前の右に並べるときに名前の行（ListTile）に残す幅：先頭の絵
+          // （48）と余白（16＋16＋24）に、名前の文字15字分。
+          final nameFont = Theme.of(context).textTheme.titleMedium?.fontSize;
+          final besideMinTile =
+              16 + 48 + 16 + 24 + textScaler.scale(nameFont ?? 16) * 15;
           return Card(
             margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             color: Theme.of(context).colorScheme.surfaceContainerLow,
             clipBehavior: Clip.antiAlias,
             child: surface(
-              compact
-                  ? Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        details,
-                        if (!selecting)
-                          Padding(
-                            padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
-                            child: OverflowBar(
-                              alignment: MainAxisAlignment.end,
-                              // 1行に入らず縦に並ぶときも右端にそろえる。
-                              overflowAlignment: OverflowBarAlignment.end,
-                              spacing: 8,
-                              overflowSpacing: 4,
-                              children: ownActions,
-                            ),
-                          ),
-                      ],
-                    )
-                  // 広いカードは名前の右・上下の真ん中に並べる（所有者の判断1。
-                  // 作品・フォルダ・ファイルのカードで同じ）。
-                  : Row(
-                      children: [
-                        Expanded(child: details),
-                        if (!selecting)
-                          Padding(
-                            padding: const EdgeInsetsDirectional.only(end: 8),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              spacing: 8,
-                              children: ownActions,
-                            ),
-                          ),
-                      ],
-                    ),
+              // 広いカードは名前の右・上下の真ん中に、狭いカードは名前の下の
+              // 右端に並べる（所有者の判断1。作品・フォルダ・ファイルの
+              // カードで同じ）。広いカードでも、右に並べると名前の欄が名前の
+              // 文字15字分より狭くなるときは下に回す（600×倍率を少し超えた
+              // 幅で、名前が数十pxの欄に押し込まれ「clip_001.m | p4」の
+              // ように折れた）。名前の長さでは決めないので、同じ一覧の
+              // カードは同じ並べ方になる。
+              ActionBesideOrBelow(
+                text: details,
+                action: selecting
+                    ? const SizedBox.shrink()
+                    : OverflowBar(
+                        // 1行に入らず縦に並ぶときも右端にそろえる。
+                        overflowAlignment: OverflowBarAlignment.end,
+                        spacing: 8,
+                        overflowSpacing: 4,
+                        children: ownActions,
+                      ),
+                gap: 0,
+                spacing: 0,
+                minTextWidth: compact ? double.infinity : besideMinTile,
+                besideActionPadding: selecting
+                    ? EdgeInsets.zero
+                    : const EdgeInsetsDirectional.only(end: 8),
+                belowActionPadding: selecting
+                    ? EdgeInsets.zero
+                    : const EdgeInsets.fromLTRB(12, 0, 12, 8),
+              ),
             ),
           );
         },

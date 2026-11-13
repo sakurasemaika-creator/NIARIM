@@ -593,6 +593,9 @@ void main() {
               );
               final workCentre =
                   tester.getRect(work).center.dy - card.center.dy;
+              final workBeside =
+                  tester.getRect(work).left >=
+                  tester.getRect(find.text('上の作品')).right;
               // フォルダのカードは一覧の上の方にあるので、戻して測る。
               await tester.drag(
                 find.byType(Scrollable).last,
@@ -605,9 +608,21 @@ void main() {
               );
               final folderCentre =
                   tester.getRect(folder).center.dy - folderCard.center.dy;
+              final folderBeside =
+                  tester.getRect(folder).left >=
+                  tester.getRect(find.text('親')).right;
               // 狭い画面・大きな文字では名前の下の右端の別の行、広い画面では
-              // 名前の右の上下の真ん中（どちらも作品とフォルダで同じ）。
+              // 名前の右の上下の真ん中（どちらも作品とフォルダで同じ）。広い
+              // 画面でも、名前の欄が名前の文字15字分残らない言語・文字の
+              // 大きさでは名前の下に回す。
+              expect(folderBeside, workBeside, reason: '$where laid out alike');
               if (card.width < 600 * scale) {
+                expect(workBeside, isFalse, reason: where);
+              }
+              if (code == 'ja' && size.width == 800 && scale == 1.0) {
+                expect(workBeside, isTrue, reason: where);
+              }
+              if (!workBeside) {
                 expect((a - b).distance, lessThan(0.5), reason: '$where $a $b');
               } else {
                 expect((a.dx - b.dx).abs(), lessThan(0.5), reason: where);

@@ -16,6 +16,10 @@ enum ActionBesideOrBelowSlot { text, action }
 ///
 /// [actionFirst]なら操作を文の前（左）に置き、横に並べられないときは文の
 /// 上へ回す（行の先頭のチェックボックス等。文は行の幅いっぱいを使える）。
+///
+/// [minTextWidth]を渡すと、文の中身を見ずに、文に残る幅だけで決める（一覧の
+/// カードのように、同じ幅・同じ操作の行が文の長さで並べ方を変えないように
+/// するとき）。
 class ActionBesideOrBelow
     extends
         SlottedMultiChildRenderObjectWidget<
@@ -30,6 +34,9 @@ class ActionBesideOrBelow
     this.spacing = 6,
     this.minTextFraction = 0.55,
     this.actionFirst = false,
+    this.minTextWidth,
+    this.besideActionPadding = EdgeInsets.zero,
+    this.belowActionPadding = EdgeInsets.zero,
   });
 
   /// 文。幅が足りなければ折り返してよいもの。
@@ -50,6 +57,17 @@ class ActionBesideOrBelow
   /// 操作を文の前（横に並べないときは上）に置くか。
   final bool actionFirst;
 
+  /// 横に並べるとき、文に残す幅の下限（論理px）。nullでなければ、横に並べる
+  /// かをこの幅が残るかだけで決め、[minTextFraction]と文の折り返しは見ない
+  /// （[double.infinity]ならいつも下へ回す）。
+  final double? minTextWidth;
+
+  /// 横に並べたときの、操作の周りの余白。
+  final EdgeInsetsGeometry besideActionPadding;
+
+  /// 下（[actionFirst]なら上）に回したときの、操作の周りの余白。
+  final EdgeInsetsGeometry belowActionPadding;
+
   @override
   Iterable<ActionBesideOrBelowSlot> get slots => ActionBesideOrBelowSlot.values;
 
@@ -66,6 +84,9 @@ class ActionBesideOrBelow
         spacing: spacing,
         minTextFraction: minTextFraction,
         actionFirst: actionFirst,
+        minTextWidth: minTextWidth,
+        besideActionPadding: besideActionPadding,
+        belowActionPadding: belowActionPadding,
         textDirection: Directionality.of(context),
       );
 
@@ -79,6 +100,9 @@ class ActionBesideOrBelow
       ..spacing = spacing
       ..minTextFraction = minTextFraction
       ..actionFirst = actionFirst
+      ..minTextWidth = minTextWidth
+      ..besideActionPadding = besideActionPadding
+      ..belowActionPadding = belowActionPadding
       ..textDirection = Directionality.of(context);
   }
 }
@@ -92,6 +116,9 @@ class RenderActionBesideOrBelow extends RenderBox
     required this._minTextFraction,
     required this._textDirection,
     this._actionFirst = false,
+    this._minTextWidth,
+    this._besideActionPadding = EdgeInsets.zero,
+    this._belowActionPadding = EdgeInsets.zero,
   });
 
   double get gap => _gap;
@@ -126,6 +153,33 @@ class RenderActionBesideOrBelow extends RenderBox
     markNeedsLayout();
   }
 
+  double? get minTextWidth => _minTextWidth;
+  double? _minTextWidth;
+  set minTextWidth(double? value) {
+    if (_minTextWidth == value) return;
+    _minTextWidth = value;
+    markNeedsLayout();
+  }
+
+  EdgeInsetsGeometry get besideActionPadding => _besideActionPadding;
+  EdgeInsetsGeometry _besideActionPadding;
+  set besideActionPadding(EdgeInsetsGeometry value) {
+    if (_besideActionPadding == value) return;
+    _besideActionPadding = value;
+    markNeedsLayout();
+  }
+
+  EdgeInsetsGeometry get belowActionPadding => _belowActionPadding;
+  EdgeInsetsGeometry _belowActionPadding;
+  set belowActionPadding(EdgeInsetsGeometry value) {
+    if (_belowActionPadding == value) return;
+    _belowActionPadding = value;
+    markNeedsLayout();
+  }
+
+  EdgeInsets get _besidePadding => _besideActionPadding.resolve(_textDirection);
+  EdgeInsets get _belowPadding => _belowActionPadding.resolve(_textDirection);
+
   TextDirection get textDirection => _textDirection;
   TextDirection _textDirection;
   set textDirection(TextDirection value) {
@@ -143,7 +197,12 @@ class RenderActionBesideOrBelow extends RenderBox
     final action = _action;
     if (text == null || action == null || !width.isFinite) return true;
     final textWidth =
-        width - gap - action.getMaxIntrinsicWidth(double.infinity);
+        width -
+        gap -
+        action.getMaxIntrinsicWidth(double.infinity) -
+        _besidePadding.horizontal;
+    final minTextWidth = this.minTextWidth;
+    if (minTextWidth != null) return textWidth >= minTextWidth;
     if (textWidth <= 0) return false;
     // 文が1行に収まるなら横に並べる。
     if (text.getMaxIntrinsicWidth(double.infinity) <= textWidth) return true;
@@ -171,7 +230,14 @@ class RenderActionBesideOrBelow extends RenderBox
       return (size: constraints.constrain(size), textTop: 0);
     }
     if (_beside(width)) {
-      final actionSize = measure(action, BoxConstraints(maxWidth: width));
+      final pad = _besidePadding;
+      // 操作の大きさは、周りの余白を含めて数える。
+      final actionSize = pad.inflateSize(
+        measure(
+          action,
+          BoxConstraints(maxWidth: math.max(0.0, width - pad.horizontal)),
+        ),
+      );
       final textMax = math.max(0.0, width - gap - actionSize.width);
       final textSize = measure(text, BoxConstraints(maxWidth: textMax));
       final fullWidth = width.isFinite
@@ -187,31 +253,42 @@ class RenderActionBesideOrBelow extends RenderBox
       place?.call(
         action,
         Offset(
-          actionFirst == ltr ? 0 : fullWidth - actionSize.width,
-          (height - actionSize.height) / 2,
-        ),
+              actionFirst == ltr ? 0 : fullWidth - actionSize.width,
+              (height - actionSize.height) / 2,
+            ) +
+            pad.topLeft,
       );
       return (
         size: constraints.constrain(Size(fullWidth, height)),
         textTop: textTop,
       );
     }
+    final pad = _belowPadding;
     final textSize = measure(text, BoxConstraints(maxWidth: width));
-    final actionSize = measure(action, BoxConstraints(maxWidth: width));
+    final actionSize = pad.inflateSize(
+      measure(
+        action,
+        BoxConstraints(maxWidth: math.max(0.0, width - pad.horizontal)),
+      ),
+    );
     final size = constraints.constrain(
       Size(width, textSize.height + spacing + actionSize.height),
     );
     if (actionFirst) {
       // 操作を上の行の始まりに、文をその下に行の幅いっぱいで。
       final textTop = actionSize.height + spacing;
-      place?.call(action, Offset(ltr ? 0 : width - actionSize.width, 0));
+      place?.call(
+        action,
+        Offset(ltr ? 0 : width - actionSize.width, 0) + pad.topLeft,
+      );
       place?.call(text, Offset(ltr ? 0 : width - textSize.width, textTop));
       return (size: size, textTop: textTop);
     }
     place?.call(text, Offset(ltr ? 0 : width - textSize.width, 0));
     place?.call(
       action,
-      Offset(ltr ? width - actionSize.width : 0, textSize.height + spacing),
+      Offset(ltr ? width - actionSize.width : 0, textSize.height + spacing) +
+          pad.topLeft,
     );
     return (size: size, textTop: 0);
   }
@@ -258,7 +335,10 @@ class RenderActionBesideOrBelow extends RenderBox
   @override
   double computeMinIntrinsicWidth(double height) => math.max(
     _text?.getMinIntrinsicWidth(double.infinity) ?? 0,
-    _action?.getMinIntrinsicWidth(double.infinity) ?? 0,
+    _action == null
+        ? 0
+        : _action!.getMinIntrinsicWidth(double.infinity) +
+              _belowPadding.horizontal,
   );
 
   @override
@@ -266,7 +346,7 @@ class RenderActionBesideOrBelow extends RenderBox
     final text = _text?.getMaxIntrinsicWidth(double.infinity) ?? 0;
     final action = _action?.getMaxIntrinsicWidth(double.infinity) ?? 0;
     return _text != null && _action != null
-        ? text + gap + action
+        ? text + gap + action + _besidePadding.horizontal
         : text + action;
   }
 
@@ -282,12 +362,17 @@ class RenderActionBesideOrBelow extends RenderBox
     }
     final actionWidth = action.getMaxIntrinsicWidth(double.infinity);
     if (_beside(width)) {
+      final pad = _besidePadding;
       return math.max(
-        height(text, math.max(0, width - gap - actionWidth)),
-        height(action, actionWidth),
+        height(text, math.max(0, width - gap - actionWidth - pad.horizontal)),
+        height(action, actionWidth) + pad.vertical,
       );
     }
-    return height(text, width) + spacing + height(action, width);
+    final pad = _belowPadding;
+    return height(text, width) +
+        spacing +
+        height(action, math.max(0, width - pad.horizontal)) +
+        pad.vertical;
   }
 
   @override

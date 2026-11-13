@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/app.dart';
@@ -2929,7 +2930,9 @@ void main() {
 
   // 所有者の判断1：読めていない作品を含むフォルダの行も、ほかのゴミ箱の
   // カードと同じく、広いカードでは操作を名前の右・上下の真ん中、狭い
-  // カードでは名前の下の右端に置く。
+  // カードでは名前の下の右端に置く。広いカードでも、右に並べると名前の欄が
+  // 名前の文字15字分より狭くなるときは名前の下に回す（このテストの字は
+  // 1字が文字の大きさと同じ幅なので、1280px・文字2倍では下に回る）。
   testWidgets('a held folder row puts its actions right of the name on a '
       'wide card and under it on a narrow card', (tester) async {
     tester.view.devicePixelRatio = 1.0;
@@ -2983,12 +2986,32 @@ void main() {
         find.ancestor(of: delete, matching: find.byType(Card)).first,
       );
       final title = tester.getRect(find.text('Trip'));
+      // 名前の右に並べたときに名前の欄に残る幅（下に回したときは、名前の欄
+      // からボタンの行と右の余白8pxを引いた幅）。フォルダのカードは先頭の
+      // 絵が作品のカードより12px小さく、並べ方は作品のカードにそろえる。
+      final row =
+          tester
+              .getRect(find.byKey(ValueKey('trashedFolderDelete_${folder.id}')))
+              .right -
+          tester
+              .getRect(find.byKey(ValueKey('trashCopyFolder_${folder.id}')))
+              .left;
+      final nameRoom = tester
+          .renderObject<RenderParagraph>(find.text('Trip'))
+          .constraints
+          .maxWidth;
+      final besideNow =
+          tester.getRect(delete).left >= title.right &&
+          tester.getRect(delete).top < title.bottom;
+      final roomBeside = besideNow ? nameRoom : nameRoom - row - 8;
+      final keepsName = roomBeside - 12 >= 16 * 15 * scale;
+      if (where == '1280 x1.0') expect(besideNow, isTrue, reason: where);
       for (final key in [
         ValueKey('trashedFolderRestore_${folder.id}'),
         ValueKey('trashedFolderDelete_${folder.id}'),
       ]) {
         final button = tester.getRect(find.byKey(key));
-        if (card.width >= 600 * scale) {
+        if (card.width >= 600 * scale && keepsName) {
           expect(button.left, greaterThanOrEqualTo(title.right), reason: where);
           expect(
             (button.center.dy - card.center.dy).abs(),
@@ -2997,7 +3020,11 @@ void main() {
           );
         } else {
           expect(button.top, greaterThanOrEqualTo(title.bottom), reason: where);
-          expect(card.right - button.right, lessThanOrEqualTo(24));
+          // 1行に並ぶときは「完全削除」が右端、縦に並ぶときはどれも右端。
+          if (key.value.startsWith('trashedFolderDelete_') ||
+              tester.getRect(delete).top > button.top) {
+            expect(card.right - button.right, lessThanOrEqualTo(24));
+          }
         }
       }
       await tester.drag(find.byType(Scrollable).last, const Offset(0, 4000));
