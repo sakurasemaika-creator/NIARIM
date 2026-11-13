@@ -85,4 +85,50 @@ describe("authenticated reward state", () => {
     expect(body.balanceCoins).toBe(0);
     expect(body.entitlements).toEqual([]);
   });
+
+  it("returns active owned rights only; expired, malformed and paused are not active", async () => {
+    const now = Date.now();
+    send.mockImplementation(async (command: unknown) => {
+      if (command instanceof GetCommand) {
+        return { Item: { itemType: "COIN_WALLET", balanceCoins: 900 } };
+      }
+      if (command instanceof QueryCommand) {
+        return { Items: [
+          { itemType: "REWARD_ENTITLEMENT", entitlement: "fullPremium",
+            status: "active", expiresAtEpochMs: now + 3600_000 },
+          { itemType: "REWARD_ENTITLEMENT", entitlement: "toneCurve",
+            status: "active", expiresAtEpochMs: now + 3600_000 },
+          { itemType: "REWARD_ENTITLEMENT", entitlement: "watermark",
+            status: "active", expiresAtEpochMs: now - 1 },
+          { itemType: "REWARD_ENTITLEMENT", entitlement: "canvasAds",
+            status: "paused", expiresAtEpochMs: now + 3600_000,
+            pausedRemainingSeconds: 120 },
+          { itemType: "REWARD_ENTITLEMENT", entitlement: "allAds",
+            status: "active", expiresAtEpochMs: "never" },
+          { itemType: "OTHER", entitlement: "projectListAds",
+            status: "active", expiresAtEpochMs: now + 3600_000 },
+        ] };
+      }
+      return {};
+    });
+    const response = await getMyRewardState(event);
+    const body = JSON.parse(response.body ?? "{}");
+    expect(body.balanceCoins).toBe(900);
+    expect(body.entitlements).toEqual(expect.arrayContaining([
+      { feature: "fullPremium", status: "active",
+        expiresAtEpochMs: now + 3600_000, pausedRemainingSeconds: null },
+      { feature: "toneCurve", status: "active",
+        expiresAtEpochMs: now + 3600_000, pausedRemainingSeconds: null },
+      { feature: "canvasAds", status: "paused",
+        expiresAtEpochMs: now + 3600_000, pausedRemainingSeconds: 120 },
+    ]));
+    expect(body.entitlements).toHaveLength(3);
+    const query = send.mock.calls
+      .map(([cmd]) => cmd)
+      .find((cmd) => cmd instanceof QueryCommand) as QueryCommand;
+    expect(query.input.ExpressionAttributeValues?.[":owner"])
+      .toBe("USER#NfromGoogleSub");
+    expect(query.input.ConsistentRead).toBe(true);
+  });
+
 });
