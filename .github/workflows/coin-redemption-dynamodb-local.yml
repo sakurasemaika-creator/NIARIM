@@ -13,6 +13,7 @@ on:
       - 'backend/src/lib/coinRedemptionCatalog.ts'
       - 'backend/src/lib/coinBenefitProposal.ts'
       - 'backend/test/coin-redemption-dynamodb-local.test.ts'
+      - 'backend/test/admob-ssv-dynamodb-local.test.ts'
   workflow_dispatch:
 permissions:
   contents: read
@@ -41,7 +42,7 @@ jobs:
       - run: npm ci
       - name: Type-check backend and DynamoDB Local integration suite
         run: npm run build
-      - name: Test atomic debit, Premium, expiry, rollback, account isolation and replay
+      - name: Test atomic redemptions and ECDSA-signed 10-coin ad credits
         env:
           NIARIM_DYNAMODB_LOCAL_TESTS: '1'
           AWS_EC2_METADATA_DISABLED: 'true'
@@ -51,4 +52,4 @@ jobs:
         run: |
           set -euo pipefail
           sleep 5
-          npx vitest run test/coin-redemption-dynamodb-local.test.ts --reporter verbose
+          npx vitest run test/coin-redemption-dynamodb-local.test.ts test/admob-ssv-dynamodb-local.test.ts --reporter verbose
