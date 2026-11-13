@@ -559,7 +559,7 @@ class _GameSaveSlotTile extends StatelessWidget {
               final stacked = constraints.maxWidth < 530;
               final details = Row(
                 children: [
-                  _SlotThumbnail(node: node, size: 58),
+                  _SlotThumbnail(node: node, size: 58, listUnread: listUnread),
                   const SizedBox(width: 14),
                   Expanded(
                     child: Column(
@@ -710,7 +710,15 @@ class _SlotThumbnail extends StatelessWidget {
   final SaveNode? node;
   final double size;
 
-  const _SlotThumbnail({required this.node, required this.size});
+  /// 保存の一覧を読めなかった：空に見えても保存があるかもしれないので、
+  /// 「＋」（ここへ保存）ではなく、読めなかった印を出す。
+  final bool listUnread;
+
+  const _SlotThumbnail({
+    required this.node,
+    required this.size,
+    this.listUnread = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -726,7 +734,9 @@ class _SlotThumbnail extends StatelessWidget {
       clipBehavior: Clip.antiAlias,
       child: path == null
           ? Icon(
-              node == null ? Icons.add : Icons.image_outlined,
+              node == null
+                  ? (listUnread ? Icons.folder_off_outlined : Icons.add)
+                  : Icons.image_outlined,
               color: scheme.onSurfaceVariant,
             )
           : Image.file(

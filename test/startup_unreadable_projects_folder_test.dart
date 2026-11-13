@@ -4562,6 +4562,63 @@ void main() {
       });
     }
   }
+
+  // 保存の画面：保存の一覧を読めない間、空に見えるスロットは「＋」（ここへ
+  // 保存）の絵で、保存のあるスロットも本当に空いているスロットと同じに
+  // 見えた。読めない間は「＋」を出さず、読めなかった印にする。
+  testWidgets('slots that look empty while the save list is unread do not '
+      'show the add picture', (tester) async {
+    tester.view.physicalSize = const Size(1280, 800);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    SharedPreferences.setMockInitialValues({
+      'first_launch': false,
+      'language': 'ja',
+      firstUseTooltipsSeenKey: kAllFirstUseTooltipKeys,
+    });
+    final seeded = await tester.runAsync(
+      () => _seedProjectWithSaves(name: '保存を読めない作品', comments: ['A', 'B']),
+    );
+    final (project, _) = seeded!;
+    storage.paths.blockReading(
+      '${storage.projectsPath}/${project.id}/SaveTree/'
+      '${SaveTreeService.indexFileName}',
+    );
+    appRouter.go('/home');
+    final providers = await tester.runAsync(buildAppProviders);
+    await tester.pumpWidget(
+      MultiProvider(providers: providers!, child: const NiarimApp()),
+    );
+    await _settleWithFiles(tester);
+    appRouter.push('/save-tree/${project.id}?entry=detail');
+    await _settleWithFiles(tester, rounds: 6);
+
+    Finder slot(int i) => find
+        .ancestor(of: find.text('スロット$i'), matching: find.byType(Material))
+        .first;
+    int icons(IconData icon) => [
+      for (var i = 1; i <= 5; i++)
+        find.descendant(of: slot(i), matching: find.byIcon(icon)),
+    ].fold(0, (sum, f) => sum + f.evaluate().length);
+    expect(icons(Icons.add), 0, reason: 'empty-looking slots invite adding');
+    expect(icons(Icons.folder_off_outlined), 5);
+
+    // 読めたら、本当に空いているスロットだけに「＋」。
+    storage.paths.clear();
+    final notice = find.byKey(const Key('saveListLoadFailed'));
+    await tester.tap(find.descendant(of: notice, matching: find.text('再試行')));
+    for (var i = 0; i < 60 && notice.evaluate().isNotEmpty; i++) {
+      await _settleWithFiles(tester, rounds: 1);
+    }
+    await _settleWithFiles(tester, rounds: 3);
+    expect(notice, findsNothing);
+    expect(icons(Icons.add), 3);
+    expect(icons(Icons.folder_off_outlined), 0);
+    expect(tester.takeException(), isNull);
+    await tester.pumpWidget(const SizedBox.shrink());
+    appRouter.go('/');
+  });
 }
 
 /// 実際のファイルを読む処理（ゴミ箱の一覧・読み直し）を実時間で待ちながら
