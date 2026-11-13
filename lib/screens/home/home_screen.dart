@@ -523,6 +523,36 @@ class _HomeScreenState extends State<HomeScreen>
   }
 
   ProjectSortMode _sortMode = ProjectSortMode.updatedDesc;
+  // 選んだ並び順は起動し直しても引き継ぐ（設定の引き継ぎにも入る）。
+  static const _projectSortModeKey = 'home.projectSortMode.v1';
+  bool _sortModeChosen = false;
+
+  Future<void> _loadProjectSortMode() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final saved = prefs.readString(_projectSortModeKey);
+      if (!mounted || saved == null || _sortModeChosen) return;
+      for (final mode in ProjectSortMode.values) {
+        if (mode.name == saved) {
+          setState(() => _sortMode = mode);
+          return;
+        }
+      }
+    } catch (error) {
+      debugPrint('Project sort preference could not be restored: $error');
+    }
+  }
+
+  Future<void> _saveProjectSortMode() async {
+    _sortModeChosen = true;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_projectSortModeKey, _sortMode.name);
+    } catch (error) {
+      debugPrint('Project sort preference could not be saved: $error');
+    }
+  }
+
   bool _isSelectionMode = false;
   final Set<String> _selectedIds = {};
   final Set<String> _visibleLibraryIds = {};
@@ -579,6 +609,7 @@ class _HomeScreenState extends State<HomeScreen>
       }
     });
     _loadProjectViewMode();
+    _loadProjectSortMode();
     _loadWorksViewMode();
     _loadSharedViewMode();
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -771,6 +802,7 @@ class _HomeScreenState extends State<HomeScreen>
                 ? ProjectSortMode.updatedAsc
                 : ProjectSortMode.updatedDesc);
     });
+    _saveProjectSortMode();
   }
 
   void _toggleSortDirection() {
@@ -782,6 +814,7 @@ class _HomeScreenState extends State<HomeScreen>
         ProjectSortMode.updatedDesc => ProjectSortMode.updatedAsc,
       };
     });
+    _saveProjectSortMode();
   }
 
   @override

@@ -237,6 +237,7 @@ class NiatraSerializer {
     'custom_save_mode',
     'custom_slot_count',
     'home.projectViewMode.v1',
+    'home.projectSortMode.v1',
     'home.worksViewMode.v1',
     'home.sharedViewMode.v1',
     'community.hideGenerativeAiImageVideo',
