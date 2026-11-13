@@ -8578,7 +8578,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get rewardUnlockBestValue => '最划算';
 
   @override
-  String get rewardUnlockBestExplain => '比逐项兑换全部权益更划算';
+  String get rewardUnlockBestExplain => '以组合优惠价使用与 Premium 会员相同的功能';
 
   @override
   String get rewardUnlockEarning => 'Premium 会员也可以积攒金币';
@@ -8632,7 +8632,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get rewardUnlockAllAds => '移除所有广告';
 
   @override
-  String get rewardUnlockFullPremium => '全部功能 + 无广告';
+  String get rewardUnlockFullPremium => '全部权益组合';
 
   @override
   String get rewardUnlockChoose => '选择';
@@ -17788,7 +17788,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get rewardUnlockBestValue => '最划算';
 
   @override
-  String get rewardUnlockBestExplain => '比逐項兌換全部權益更划算';
+  String get rewardUnlockBestExplain => '以組合優惠價使用與 Premium 會員相同的功能';
 
   @override
   String get rewardUnlockEarning => 'Premium 會員也可以累積金幣';
@@ -17842,7 +17842,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get rewardUnlockAllAds => '移除所有廣告';
 
   @override
-  String get rewardUnlockFullPremium => '全部功能 + 無廣告';
+  String get rewardUnlockFullPremium => '全部權益組合';
 
   @override
   String get rewardUnlockChoose => '選擇';
