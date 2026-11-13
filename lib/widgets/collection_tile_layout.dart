@@ -370,8 +370,10 @@ Widget collectionTileCaption(
   bool locationRow = false,
 }) {
   final shown = collectionTileDisplayName(context, name);
-  Widget nameText(String text) => Text(
-    text,
+  // 上限で切った字・語結合子を入れた字を描き、読み上げと文での検索
+  // （find.text 等）には名前の全部を渡す。
+  Widget nameText(String text) => Text.rich(
+    TextSpan(text: text, semanticsLabel: name),
     semanticsLabel: name,
     maxLines: kCollectionTileNameLines,
     overflow: TextOverflow.ellipsis,

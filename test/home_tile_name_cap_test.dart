@@ -44,6 +44,14 @@ void main() {
     ),
   );
 
+  // カードに描いた字（上限で切った名前。語結合子は除く）。名前の全部は
+  // 読み上げ（semanticsLabel）にある。
+  String displayed(Text text) =>
+      ((text.textSpan as TextSpan?)?.text ?? text.data)!.replaceAll(
+        '\u2060',
+        '',
+      );
+
   RenderParagraph paragraphOf(WidgetTester tester, String name) =>
       tester.renderObject<RenderParagraph>(
         find.descendant(of: caption(name), matching: find.byType(RichText)),
@@ -52,14 +60,14 @@ void main() {
   // 名前ごとの、カードに出した文（「…」で切った名前は「…」まで）。
   Map<String, String> shown(WidgetTester tester) => {
     for (final name in [...long, ...fourteen])
-      name: tester.widget<Text>(caption(name)).data!.replaceAll('⁠', ''),
+      name: displayed(tester.widget<Text>(caption(name))),
   };
 
   void expectCapFits(WidgetTester tester, String why) {
     expect(tester.takeException(), isNull, reason: why);
     for (final name in long) {
       final text = tester.widget<Text>(caption(name));
-      final data = text.data!.replaceAll('⁠', '');
+      final data = displayed(text);
       expect(data, endsWith('…'), reason: '$why $name');
       expect(
         name.startsWith(data.substring(0, data.length - 1).trimRight()),
@@ -76,7 +84,7 @@ void main() {
     }
     for (final name in fourteen) {
       expect(
-        tester.widget<Text>(caption(name)).data,
+        displayed(tester.widget<Text>(caption(name))),
         name,
         reason: '$why $name',
       );

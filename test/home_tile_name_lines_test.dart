@@ -64,17 +64,20 @@ void main() {
     }
     // 決めた長さを超える名前は、そこまでで「…」（全角は「…」と合わせて
     // 14文字分）。英語は語の途中で切らない。読み上げは名前の全部。
+    String displayed(Text text) =>
+        ((text.textSpan as TextSpan?)?.text ?? text.data)!;
     final ja = tester.widget<Text>(caption(longJa));
-    expect(ja.data, '${longJa.substring(0, 13)}…', reason: reason);
+    expect(displayed(ja), '${longJa.substring(0, 13)}…', reason: reason);
     expect(ja.semanticsLabel, longJa, reason: reason);
     final en = tester.widget<Text>(caption(longEn));
-    expect(en.data, endsWith('…'), reason: reason);
-    final enWords = en.data!.substring(0, en.data!.length - 1).split(' ');
+    final enShown = displayed(en);
+    expect(enShown, endsWith('…'), reason: reason);
+    final enWords = enShown.substring(0, enShown.length - 1).split(' ');
     expect(enWords, isNotEmpty, reason: reason);
     expect(
       longEn.startsWith(enWords.join(' ')),
       isTrue,
-      reason: '$reason ${en.data}',
+      reason: '$reason $enShown',
     );
     expect(longEn.split(' '), containsAll(enWords), reason: reason);
     expect(en.semanticsLabel, longEn, reason: reason);

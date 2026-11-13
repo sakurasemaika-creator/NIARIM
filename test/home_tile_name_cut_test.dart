@@ -35,7 +35,10 @@ void main() {
         ),
       ),
     );
-    return text.data!.replaceAll('⁠', '');
+    return ((text.textSpan as TextSpan?)?.text ?? text.data)!.replaceAll(
+      '\u2060',
+      '',
+    );
   }
 
   void expectCuts(WidgetTester tester, String why) {

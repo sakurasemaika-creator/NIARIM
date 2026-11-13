@@ -30,7 +30,8 @@ void main() {
   }
 
   // 改行しない空白を普通の空白にした文。
-  String plain(String text) => text.replaceAll('⁠', '').replaceAll(' ', ' ');
+  String plain(String text) =>
+      text.replaceAll('\u2060', '').replaceAll('\u00A0', ' ');
 
   bool isSpace(String char) => char.trim().isEmpty;
 
