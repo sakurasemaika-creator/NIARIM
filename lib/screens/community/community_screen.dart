@@ -98,7 +98,7 @@ class _CommunityScreenState extends State<CommunityScreen>
         !(ModalRoute.of(context)?.isCurrent ?? false)) {
       return;
     }
-    final owner = context.read<GoogleAuthService>().account?.id;
+    final owner = context.read<GoogleAuthService?>()?.account?.id;
     final api = context.read<CommunityService>().api;
     if (owner == null || api == null) return;
     _plazaPulseBusy = true;
@@ -107,7 +107,7 @@ class _CommunityScreenState extends State<CommunityScreen>
       if (!mounted ||
           !_plazaInForeground ||
           !(ModalRoute.of(context)?.isCurrent ?? false) ||
-          context.read<GoogleAuthService>().account?.id != owner ||
+          context.read<GoogleAuthService?>()?.account?.id != owner ||
           !identical(context.read<CommunityService>().api, api)) {
         return;
       }
@@ -134,7 +134,7 @@ class _CommunityScreenState extends State<CommunityScreen>
     _lastLoginVisitKey = key;
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (!mounted ||
-          context.read<GoogleAuthService>().account?.id != ownerId ||
+          context.read<GoogleAuthService?>()?.account?.id != ownerId ||
           !identical(context.read<CommunityService>().api, api)) {
         return;
       }
@@ -142,7 +142,7 @@ class _CommunityScreenState extends State<CommunityScreen>
         final visit = await api.visitLoginBonus();
         if (mounted &&
             (ModalRoute.of(context)?.isCurrent ?? false) &&
-            context.read<GoogleAuthService>().account?.id == ownerId) {
+            context.read<GoogleAuthService?>()?.account?.id == ownerId) {
           await showServerMissionCompletions(context, visit);
         }
       } catch (error) {
@@ -158,7 +158,7 @@ class _CommunityScreenState extends State<CommunityScreen>
       _plazaSession = _newPlazaSession();
       _pulsePlazaTime();
       _recordCumulativeLoginVisit(
-        context.read<GoogleAuthService>().account?.id,
+        context.read<GoogleAuthService?>()?.account?.id,
         context.read<CommunityService>().api,
       );
       if (_tabController.index == 1) {
@@ -1129,7 +1129,7 @@ class _CommunityScreenState extends State<CommunityScreen>
     final l10n = AppLocalizations.of(context)!;
     final communityService = context.watch<CommunityService>();
     _recordCumulativeLoginVisit(
-      context.watch<GoogleAuthService>().account?.id,
+      context.watch<GoogleAuthService?>()?.account?.id,
       communityService.api,
     );
     final currentAccount = communityService.currentUserId ?? 'guest';
