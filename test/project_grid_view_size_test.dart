@@ -5,15 +5,27 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/engine/export_engine.dart';
 import 'package:niarim/screens/home/widgets/project_list_widget.dart';
+import 'package:niarim/widgets/collection_action_controls.dart';
 
 import 'helpers/home_app_harness.dart';
+import 'helpers/load_app_fonts.dart';
 
 /// ホームの表示サイズ（大・中・小）は、どの幅でも列数が違う。基準の幅だけで
 /// 列数を決めると、スマホの幅では近い2つのサイズが同じ列数になり、選んでも
 /// 何も変わらなかった（360pxで大と中、390〜430pxで中と小）。スマホは
 /// 大1列・中2列・小3列。もともと違っていた幅（480px以上）は変えない。
+///
+/// 分割画面・ポップアップの窓・折りたたみ端末のカバー画面のような狭い窓
+/// でも、幅260pxまでは3つとも違う列数にする（小のカードが幅76px以上に
+/// なる間は小を3列にする）。それより狭いと3列のカードに右上のメニューと
+/// 左下の星が並ばないので、大と中が同じ1列になる。
 void main() {
   const widths = [
+    240.0,
+    250.0,
+    260.0,
+    280.0,
+    300.0,
     320.0,
     360.0,
     390.0,
@@ -26,6 +38,11 @@ void main() {
   ];
   // 幅ごとの[大, 中, 小]の列数。
   final expected = <double, List<int>>{
+    240: [1, 1, 2],
+    250: [1, 1, 2],
+    260: [1, 2, 3],
+    280: [1, 2, 3],
+    300: [1, 2, 3],
     320: [1, 2, 3],
     360: [1, 2, 3],
     390: [1, 2, 3],
@@ -80,6 +97,30 @@ void main() {
           reason: '$mode at $width',
         );
         expect(tester.takeException(), isNull, reason: '$mode at $width');
+        // 狭いカードでも、右上のメニューと左下の星が重ならない。
+        for (final card
+            in find
+                .descendant(
+                  of: find.byType(ProjectListWidget),
+                  matching: find.byType(Card),
+                )
+                .evaluate()) {
+          Rect rectOf(Type type) => tester.getRect(
+            find
+                .descendant(
+                  of: find.byElementPredicate((e) => e == card),
+                  matching: find.byType(type),
+                )
+                .first,
+          );
+          final menu = rectOf(CollectionActionFrame);
+          final star = rectOf(CollectionFavoriteButton);
+          expect(
+            menu.overlaps(star),
+            isFalse,
+            reason: '$mode at $width: $menu $star',
+          );
+        }
       }
       await home.close();
     });
@@ -119,4 +160,37 @@ void main() {
       await home.close();
     }
   });
+
+  // 小が3列になった狭い幅（260〜295px）でも、7言語・文字1倍/2倍でカードが
+  // はみ出さない（同梱の書体）。
+  for (final language in ['ja', 'en', 'es', 'fr', 'ko', 'zh', 'zh_Hant']) {
+    testWidgets('narrow small cards fit in $language', (tester) async {
+      await loadAppFonts(tester);
+      final home = HomeAppHarness.prepare(
+        tester,
+        language: language,
+        preferences: {'home.projectViewMode.v1': 'small'},
+      );
+      await home.open(
+        size: const Size(260, 1600),
+        seed: (service) async {
+          await service.createFolder('フォルダ');
+          for (final name in ['カット1', 'Morning walk', '애니메이션 연습']) {
+            await HomeAppHarness.work(service, name);
+          }
+        },
+      );
+      for (final width in [260.0, 280.0, 295.0]) {
+        for (final scale in [1.0, 2.0]) {
+          await home.resize(Size(width, 1600), textScale: scale);
+          expect(
+            tester.takeException(),
+            isNull,
+            reason: '$language $width x$scale',
+          );
+        }
+      }
+      await home.close();
+    });
+  }
 }

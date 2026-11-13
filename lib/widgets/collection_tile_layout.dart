@@ -5,6 +5,7 @@ import 'package:flutter/rendering.dart';
 
 import '../config/font_fallback.dart';
 import '../utils/line_break.dart';
+import 'collection_action_controls.dart';
 
 /// Projects, exported works, shared files and folders use the same grid
 /// geometry even when accessibility text scaling increases.
@@ -35,12 +36,17 @@ class CollectionTileGridDelegate
               childAspectRatio: childAspectRatio,
             ).getLayout(constraints)
             as SliverGridRegularTileLayout;
-    if (usual.childMainAxisExtent >= minHeight) return usual;
+    // 幅の狭いカード（右上のメニューと左下の星が左右に並ばない幅）は、
+    // 2つが上下にも重ならないよう、絵の欄を2つ分の高さにする。
+    final needed = usual.childCrossAxisExtent < _cornerActionsSpan
+        ? minHeight + _cornerActionsSpan - kCollectionTilePictureMinHeight
+        : minHeight;
+    if (usual.childMainAxisExtent >= needed) return usual;
     return SliverGridRegularTileLayout(
       crossAxisCount: usual.crossAxisCount,
-      mainAxisStride: minHeight + mainAxisSpacing,
+      mainAxisStride: needed + mainAxisSpacing,
       crossAxisStride: usual.crossAxisStride,
-      childMainAxisExtent: minHeight,
+      childMainAxisExtent: needed,
       childCrossAxisExtent: usual.childCrossAxisExtent,
       reverseCrossAxis: usual.reverseCrossAxis,
     );
@@ -56,16 +62,34 @@ const double kCollectionTileSmallExtent = 130;
 const double kCollectionTileMediumExtent = 170;
 const double kCollectionTileLargeExtent = 240;
 
+/// 小のカードを3列に並べてよい、カードの幅の下限。右上のメニューと左下の
+/// 星（どちらも[CollectionActionFrame.extent]）が置け、名前の帯に字が入る幅。
+const double kCollectionTileMinWidth = 76;
+
+/// カードの絵の欄の高さの下限（[collectionTileGridDelegate]）。
+const double kCollectionTilePictureMinHeight = 80;
+
+/// カードの絵の欄の隅に置く操作（右上のメニュー・左下の星）2つ分の長さ
+/// （端からの余白4pxを含む）。カードの幅がこれより狭いと2つが左右に並ばない。
+const double _cornerActionsSpan = 2 * (CollectionActionFrame.extent + 4);
+
 /// 基準の幅[maxExtent]のカードを幅[width]に並べるときの列数。
 ///
 /// 基準の幅だけで決めると、スマホの幅では近い2つの表示サイズが同じ列数に
 /// なり、選んでも何も変わらなかった（360pxで大と中、390〜430pxで中と小）。
 /// 小を基準に、中は小より、大は中より少なくとも1列少なくする（スマホは
 /// 大1列・中2列・小3列。広い画面ではもともと基準の幅どおりで差がある）。
+/// 分割画面・ポップアップの窓のように狭い幅でも、小のカードが
+/// [kCollectionTileMinWidth]以上の幅で3列に並ぶ間（幅244px以上、画面の
+/// 余白を含めて260px以上）は小を3列にして、3つとも違う列数にする。それより
+/// 狭いと、大と中が同じ1列になる。
 int collectionTileColumnCount(double maxExtent, double width) {
   int fit(double extent) => math.max(1, (width / (extent + 8)).ceil());
-  if (maxExtent <= kCollectionTileSmallExtent) return fit(maxExtent);
-  final small = fit(kCollectionTileSmallExtent);
+  if (maxExtent < kCollectionTileSmallExtent) return fit(maxExtent);
+  // 幅[kCollectionTileMinWidth]以上のカードが並ぶ列の数。
+  final roomy = ((width + 8) / (kCollectionTileMinWidth + 8)).floor();
+  final small = math.max(fit(kCollectionTileSmallExtent), math.min(3, roomy));
+  if (maxExtent <= kCollectionTileSmallExtent) return small;
   final medium = math.max(
     1,
     math.min(fit(kCollectionTileMediumExtent), small - 1),
@@ -92,7 +116,7 @@ CollectionTileGridDelegate collectionTileGridDelegate(
   bool locationRow = false,
 }) {
   final minimumHeight =
-      80 +
+      kCollectionTilePictureMinHeight +
       collectionTileNameHeight(context) +
       (locationRow ? collectionTileLocationHeight(context) : 0) +
       8;
