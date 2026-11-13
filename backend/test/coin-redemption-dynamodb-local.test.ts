@@ -102,7 +102,7 @@ describe.skipIf(process.env.NIARIM_DYNAMODB_LOCAL_TESTS !== "1")(
         ],
       }));
       await waitUntilTableExists({ client, maxWaitTime: 30 }, { TableName: table });
-      for (const [id, coins] of [[owner, 20000], [other, 200000]] as const) {
+      for (const [id, coins] of [[owner, 30000], [other, 200000]] as const) {
         await localDdb.send(new PutCommand({
           TableName: table,
           Item: { ...Keys.user(id), itemType: "USER", membershipTier: "free" },
@@ -133,9 +133,9 @@ describe.skipIf(process.env.NIARIM_DYNAMODB_LOCAL_TESTS !== "1")(
         ...({ costCoins: 1, accountId: other } as Record<string, unknown>),
       });
       expect(JSON.parse(reply.body ?? "{}")).toMatchObject({
-        redeemed: true, duplicate: false, costCoins: 16500,
+        redeemed: true, duplicate: false, costCoins: 24750,
       });
-      expect((await get(Keys.coinWallet(owner)))?.balanceCoins).toBe(3500);
+      expect((await get(Keys.coinWallet(owner)))?.balanceCoins).toBe(5250);
       expect((await get(Keys.coinWallet(other)))?.balanceCoins).toBe(200000);
       for (const feature of ["toneCurve", "levelAdjustment"]) {
         const right = await get(Keys.rewardEntitlement(owner, feature));
@@ -146,9 +146,9 @@ describe.skipIf(process.env.NIARIM_DYNAMODB_LOCAL_TESTS !== "1")(
       }
       const retry = await redeemIndividualCoins(owner, individualInput(requestId));
       expect(JSON.parse(retry.body ?? "{}")).toMatchObject({
-        redeemed: true, duplicate: true, costCoins: 16500,
+        redeemed: true, duplicate: true, costCoins: 24750,
       });
-      expect((await get(Keys.coinWallet(owner)))?.balanceCoins).toBe(3500);
+      expect((await get(Keys.coinWallet(owner)))?.balanceCoins).toBe(5250);
       const history = await localDdb.send(new QueryCommand({
         TableName: table,
         KeyConditionExpression: "pk = :owner AND begins_with(sk, :prefix)",
@@ -158,7 +158,7 @@ describe.skipIf(process.env.NIARIM_DYNAMODB_LOCAL_TESTS !== "1")(
         ConsistentRead: true,
       }));
       expect(history.Count).toBe(1);
-      expect(history.Items?.[0]?.deltaCoins).toBe(-16500);
+      expect(history.Items?.[0]?.deltaCoins).toBe(-24750);
     }, 30_000);
 
     it("insufficient funds leaves no receipt, debit, or partial entitlement", async () => {
@@ -170,7 +170,7 @@ describe.skipIf(process.env.NIARIM_DYNAMODB_LOCAL_TESTS !== "1")(
         .toBeUndefined();
       expect(await get(Keys.rewardEntitlement(owner, "watermark")))
         .toBeUndefined();
-      expect((await get(Keys.coinWallet(owner)))?.balanceCoins).toBe(3500);
+      expect((await get(Keys.coinWallet(owner)))?.balanceCoins).toBe(5250);
     }, 30_000);
 
     it("expired or paused rights are not returned as active rights", async () => {
@@ -211,7 +211,7 @@ describe.skipIf(process.env.NIARIM_DYNAMODB_LOCAL_TESTS !== "1")(
       });
       expect(result.expiresAtEpochMs).toBeGreaterThan(Date.now());
       expect((await get(Keys.coinWallet(other)))?.balanceCoins).toBe(145000);
-      expect((await get(Keys.coinWallet(owner)))?.balanceCoins).toBe(3500);
+      expect((await get(Keys.coinWallet(owner)))?.balanceCoins).toBe(5250);
       expect((await get(Keys.rewardEntitlement(other, "fullPremium")))?.expiresAtEpochMs)
         .toBe(result.expiresAtEpochMs);
       expect((await get(Keys.user(other)))?.coinPremiumExpiresAtEpochMs)
@@ -261,7 +261,7 @@ describe.skipIf(process.env.NIARIM_DYNAMODB_LOCAL_TESTS !== "1")(
         redeemed: true, duplicate: true, costCoins: 550000,
       });
       expect((await get(Keys.coinWallet(other)))?.balanceCoins).toBe(100000);
-      expect((await get(Keys.coinWallet(owner)))?.balanceCoins).toBe(3500);
+      expect((await get(Keys.coinWallet(owner)))?.balanceCoins).toBe(5250);
     }, 30_000);
 
   },
