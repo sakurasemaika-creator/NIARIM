@@ -17,15 +17,28 @@ class AdMobProvider implements AdProvider {
   /// notifyListenersと連動し、UI側の再描画をトリガーする）。
   final VoidCallback? onAdEvent;
 
-  static String get _bannerAdUnitId =>
-      defaultTargetPlatform == TargetPlatform.iOS
-      ? 'ca-app-pub-3940256099942544/2934735716' // Google公式テストID（iOSバナー）
-      : 'ca-app-pub-3940256099942544/6300978111'; // Google公式テストID（Androidバナー）
+  // Debug/widget tests use Google's safe demo IDs. Release builds must
+  // provide NIARIM-owned ad units through the signed build configuration;
+  // never silently monetize with Google's demo publisher account.
+  static const String _releaseAndroidBannerId = String.fromEnvironment(
+    'NIARIM_ADMOB_ANDROID_BANNER_AD_UNIT_ID',
+    defaultValue: '',
+  );
+  static const String _releaseAndroidRectangleId = String.fromEnvironment(
+    'NIARIM_ADMOB_ANDROID_RECTANGLE_AD_UNIT_ID',
+    defaultValue: '',
+  );
+  static String get _bannerAdUnitId => kReleaseMode
+      ? (defaultTargetPlatform == TargetPlatform.android
+          ? _releaseAndroidBannerId : '')
+      : (defaultTargetPlatform == TargetPlatform.iOS
+          ? 'ca-app-pub-3940256099942544/2934735716'
+          : 'ca-app-pub-3940256099942544/6300978111');
 
-  // 正方形（中型レクタングル）専用のテストIDはGoogleが公開していないため、
-  // バナーと同じテストAdUnitIDをAdSize.mediumRectangleでロードする。
-  // 本番運用時はAdMobコンソールで発行した専用AdUnitIDへ差し替える。
-  static String get _squareAdUnitId => _bannerAdUnitId;
+  static String get _squareAdUnitId => kReleaseMode
+      ? (defaultTargetPlatform == TargetPlatform.android
+          ? _releaseAndroidRectangleId : '')
+      : _bannerAdUnitId;
 
   /// Google-issued test IDs until production ad review is complete.
   static String get bannerAdUnitId => _bannerAdUnitId;
@@ -47,6 +60,8 @@ class AdMobProvider implements AdProvider {
 
   @override
   Future<void> showBanner(AdPosition position) async {
+    // Missing release IDs are treated as no ad, never as Google's test ad.
+    if (_bannerAdUnitId.isEmpty) return;
     final old = _bannerAd;
     final ad = BannerAd(
       adUnitId: _bannerAdUnitId,
@@ -68,6 +83,7 @@ class AdMobProvider implements AdProvider {
 
   @override
   Future<void> showSquareAd() async {
+    if (_squareAdUnitId.isEmpty) return;
     final old = _squareAd;
     final ad = BannerAd(
       adUnitId: _squareAdUnitId,
