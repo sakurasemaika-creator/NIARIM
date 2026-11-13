@@ -4745,6 +4745,20 @@ class _TrashTabState extends State<_TrashTab> {
           : () => selection.onLongPress(selectionId),
       child: child,
     );
+    // ボタンの上の長押し（ゆっくり押す・マウスで押し続ける）は、カードの
+    // 長押し（選択）にせず、そのボタンを押したことにする。カードが取ると、
+    // ボタンが消えて押した操作も行われなかった。押せないボタンの上では何も
+    // しない（ボタンの長押しはカードの長押しより先に受ける）。
+    final ownActions = [
+      for (final action in actions)
+        GestureDetector(
+          excludeFromSemantics: true,
+          onLongPress: action is ButtonStyleButton
+              ? action.onPressed ?? () {}
+              : () {},
+          child: action,
+        ),
+    ];
     return HomeCollectionSelectionSurface(
       selectionId: selectionId,
       grid: false,
@@ -4772,7 +4786,7 @@ class _TrashTabState extends State<_TrashTab> {
                               overflowAlignment: OverflowBarAlignment.end,
                               spacing: 8,
                               overflowSpacing: 4,
-                              children: actions,
+                              children: ownActions,
                             ),
                           ),
                       ],
@@ -4788,7 +4802,7 @@ class _TrashTabState extends State<_TrashTab> {
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               spacing: 8,
-                              children: actions,
+                              children: ownActions,
                             ),
                           ),
                       ],
