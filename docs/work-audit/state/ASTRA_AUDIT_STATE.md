@@ -1,5 +1,14 @@
 # NIARIM Audit Evidence
 
+## S38の続き — CLAUDE.mdのDISC074の記述を今のコードに合わせ、DISC099を登録（2026-11-13）
+
+この単位の実行入力はApp `0cb4b573`（dev_branch）。製品変更なし。両dev_branchだけ。current_idはA003のまま。
+
+- CLAUDE.mdの「2026-11-06の統合mergeが…落としている（DISC074）」の段落を、今のコードで1項目ずつ確かめて書き直した。戻っていたもの：起動時の端末の言語（`appLanguageCodeFor`）、Escで選択を終える（`_endProjectSelection`）、切り取り/コピー/貼り付けの知らせ・`NameEntryDialog`での名前の変更、タイムラインの「保存して戻る」（`savedSince`）、フォルダを中身ごとゴミ箱へ（`moveFolderToTrash`、フォルダのメニューの「削除」は判断2で未実装）。戻っていないもの：`_fabClearance`、初回の`AppTutorial`（今は`_FirstLaunchDialog`）、A004（並び順の保存・`name_collation`・列数）、ドックの下限、PC専用の作業画面、案Aの文字色の一部。
+- 「保存して戻る」の段落の「タイムラインはまだ常に一覧へ移る」を削除（2026-11-10の`68373314`で戻っている）。
+- タイムラインのプレビューの段落を今の作りに合わせた：2026-11-11の`ddda945e`（別のセッション、「Anchor timeline controls to band edges without shrinking picture for controls」）が、操作のために絵を縮めず、欄の端に固定して絵との重なりを許容する形へ変え、testも書き換えていた。所有者の指定かどうかがコミットに無いので、DISC099（A045）として登録し所有者に確認する（確認できるまでどちらへも戻さない）。
+- 検証：`verify_audit_route.py`・`verify_full_audit_state.py`・`verify_audit_delta.py`はok（Baseline 628 todo、current A003、Delta 37 todo、宣言101）。
+
 ## S38の続き — DISC083〜086（作品・保存を読めないときの残り）を公開、DISC094〜098を登録（2026-11-13）
 
 この単位の実行入力はApp `bbbfc30a`（1周目の基準）→`62124ccb`、公開時のdev_branch `ff8f5f8a`、公開後App `90f3c5fe`。Webは製品変更なし。両dev_branchだけ。current_idはA003のまま（doneではない）。
