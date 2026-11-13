@@ -64,42 +64,47 @@ void main() {
     Future<void> capture(String filename, {int minFabs = 1}) async {
       await advanceUi();
       final fabFinder = find.byType(FloatingActionButton);
-      expect(fabFinder, findsAtLeastNWidgets(minFabs), reason: filename);
-      final theme = Theme.of(tester.element(fabFinder.first));
-      expect(theme.floatingActionButtonTheme.elevation, 0, reason: filename);
-      expect(
-        theme.floatingActionButtonTheme.highlightElevation,
-        0,
-        reason: filename,
-      );
-      for (final button in tester.widgetList<FloatingActionButton>(fabFinder)) {
-        // Explicit zero elevation and theme-inherited zero elevation are
-        // equally flat; verify the effective value, not the implementation.
+      if (minFabs == 0) {
+        // A locked Premium-only page intentionally has no action button.
+        expect(fabFinder, findsNothing, reason: filename);
+      } else {
+        expect(fabFinder, findsAtLeastNWidgets(minFabs), reason: filename);
+        final theme = Theme.of(tester.element(fabFinder.first));
+        expect(theme.floatingActionButtonTheme.elevation, 0, reason: filename);
         expect(
-          button.elevation ?? theme.floatingActionButtonTheme.elevation,
+          theme.floatingActionButtonTheme.highlightElevation,
           0,
           reason: filename,
         );
-        expect(
-          button.highlightElevation ??
-              theme.floatingActionButtonTheme.highlightElevation,
-          0,
-          reason: filename,
-        );
-        final materials = tester
-            .widgetList<Material>(
-              find.descendant(
-                of: find.byWidget(button),
-                matching: find.byType(Material),
-              ),
-            )
-            .toList();
-        expect(materials, isNotEmpty, reason: filename);
-        expect(
-          materials.every((m) => m.elevation == 0),
-          isTrue,
-          reason: filename,
-        );
+        for (final button in tester.widgetList<FloatingActionButton>(fabFinder)) {
+          // Explicit zero elevation and theme-inherited zero elevation are
+          // equally flat; verify the effective value, not the implementation.
+          expect(
+            button.elevation ?? theme.floatingActionButtonTheme.elevation,
+            0,
+            reason: filename,
+          );
+          expect(
+            button.highlightElevation ??
+                theme.floatingActionButtonTheme.highlightElevation,
+            0,
+            reason: filename,
+          );
+          final materials = tester
+              .widgetList<Material>(
+                find.descendant(
+                  of: find.byWidget(button),
+                  matching: find.byType(Material),
+                ),
+              )
+              .toList();
+          expect(materials, isNotEmpty, reason: filename);
+          expect(
+            materials.every((m) => m.elevation == 0),
+            isTrue,
+            reason: filename,
+          );
+        }
       }
       expect(tester.takeException(), isNull, reason: filename);
       final boundary =
@@ -125,7 +130,7 @@ void main() {
       ('/shared', '03_shared_received_folder_fab', 1),
       ('/community', '04_community_two_fabs', 2),
       ('/autofill-presets', '05_autofill_presets_fab', 1),
-      ('/settings/watermark', '06_watermark_fab', 1),
+      ('/settings/watermark', '06_watermark_premium_lock', 0),
       ('/settings/shortcuts', '07_shortcuts_extended_fab', 1),
     ]) {
       appRouter.go(item.$1);
