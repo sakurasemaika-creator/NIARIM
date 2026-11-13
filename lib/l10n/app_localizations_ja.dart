@@ -8295,7 +8295,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get creatorMissionReviewing => '達成確認中';
 
   @override
-  String get creatorMissionCoinReward => 'コイン報酬';
+  String get creatorMissionCoinReward => 'オパール報酬';
 
   @override
   String get creatorMissionClaim => '受け取る';
@@ -8375,7 +8375,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get creatorMissionWorkListError => '作品別ミッションを読み込めませんでした。';
 
   @override
-  String get creatorMissionSubtitle => '制作・作品広場の達成でコインを獲得';
+  String get creatorMissionSubtitle => '制作・作品広場の達成でオパールを獲得';
 
   @override
   String get creatorMissionPerWork => '作品ごとに1回ずつ';
@@ -8408,7 +8408,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get creatorMissionLoadError => '達成状況を取得できませんでした。';
 
   @override
-  String get creatorMissionTimeWarning => '制作時間は表示用の記録です。コイン対象にはサーバー側の検証が必要です。';
+  String get creatorMissionTimeWarning => '制作時間は表示用の記録です。オパール対象にはサーバー側の検証が必要です。';
 
   @override
   String get creatorMissionRankingWarning =>
@@ -8451,7 +8451,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get loginBonusFailed => '受取を確認できませんでした';
 
   @override
-  String get loginBonusSuccess => 'コインの受取が確認できました';
+  String get loginBonusSuccess => 'オパールの受取が確認できました';
 
   @override
   String get loginBonusVisitMissing => '今日のログインを確認中です';
@@ -8460,16 +8460,16 @@ class AppLocalizationsJa extends AppLocalizations {
   String get rewardNavigationExchange => '特典交換';
 
   @override
-  String get rewardNavigationHub => 'コイン・特典';
+  String get rewardNavigationHub => 'オパール・特典';
 
   @override
-  String get rewardNavigationEarnTab => '広告を見てコインGET';
+  String get rewardNavigationEarnTab => '広告を見てオパールGET';
 
   @override
   String get rewardNavigationMissions => 'ミッション';
 
   @override
-  String get rewardNavigationEarn => '無料でコインを貯める';
+  String get rewardNavigationEarn => '無料でオパールを貯める';
 
   @override
   String get rewardNavigationMembership => '契約状態';
@@ -8490,7 +8490,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get rewardNavigationMembershipPlay => 'プレミアム会員';
 
   @override
-  String get rewardNavigationMembershipCoin => 'コインで解放中';
+  String get rewardNavigationMembershipCoin => 'オパールで解放中';
 
   @override
   String get rewardNavigationMembershipBenefit => '利用中の特典';
@@ -8519,7 +8519,7 @@ class AppLocalizationsJa extends AppLocalizations {
     ).add_jm();
     final String expiryString = expiryDateFormat.format(expiry);
 
-    return 'コインで解放中 · 利用期限：$expiryString';
+    return 'オパールで解放中 · 利用期限：$expiryString';
   }
 
   @override
@@ -8538,7 +8538,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get rewardNavigationPremiumPlans => '月額・年額プランを選ぶ';
 
   @override
-  String get rewardNavigationEarnDescription => '広告を見るとコインを獲得できます';
+  String get rewardNavigationEarnDescription => '広告を見るとオパールを獲得できます';
 
   @override
   String get rewardNavigationEarnUnavailable => '現在リワード広告は利用できません';
@@ -8550,7 +8550,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get rewardUnlockMissionTitle => 'ミッション';
 
   @override
-  String get rewardUnlockMissionSubtitle => '作品の投稿やブックマーク達成でコインを獲得';
+  String get rewardUnlockMissionSubtitle => '作品の投稿やブックマーク達成でオパールを獲得';
 
   @override
   String get rewardUnlockLoading => '残高を確認中…';
@@ -8563,7 +8563,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get rewardUnlockSubscriptionBenefit =>
-      'コインは広告視聴で無料で貯められます。広告視聴の時間を省きたい方には月額・年額Premiumが便利です。';
+      'オパールは広告視聴で無料で貯められます。広告視聴の時間を省きたい方には月額・年額Premiumが便利です。';
 
   @override
   String get rewardUnlockActive => '現在利用中の特典';
@@ -8575,7 +8575,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get rewardUnlockActiveCampaign => 'リリース記念キャンペーン：Premium特典を開放中';
 
   @override
-  String get rewardUnlockActiveUnavailable => 'コイン特典の利用状況はサーバー連携後に表示します';
+  String get rewardUnlockActiveUnavailable => 'オパール特典の利用状況はサーバー連携後に表示します';
 
   @override
   String get rewardUnlockDuration => '利用期間';
@@ -8587,31 +8587,31 @@ class AppLocalizationsJa extends AppLocalizations {
   String get rewardUnlockChooseBenefits => '特典を選択';
 
   @override
-  String get rewardUnlockPricePending => '必要コイン：未設定';
+  String get rewardUnlockPricePending => '必要オパール：未設定';
 
   @override
   String get rewardUnlockNotReady => '準備中';
 
   @override
-  String get rewardUnlockTotal => '合計必要コイン';
+  String get rewardUnlockTotal => '合計必要オパール';
 
   @override
   String get rewardUnlockUnavailable => '正式な交換価格は準備中です';
 
   @override
-  String get rewardUnlockBalancePending => 'コイン残高：サーバー連携準備中';
+  String get rewardUnlockBalancePending => 'オパール残高：サーバー連携準備中';
 
   @override
-  String get rewardUnlockGoal => 'このコイン枚数を目標にする';
+  String get rewardUnlockGoal => 'このオパール数を目標にする';
 
   @override
-  String get rewardUnlockRedeem => 'コインと引き換え';
+  String get rewardUnlockRedeem => 'オパールと引き換え';
 
   @override
-  String get rewardUnlockWatchRewardedAd => 'リワード広告を見てコインをためる';
+  String get rewardUnlockWatchRewardedAd => 'リワード広告を見てオパールをためる';
 
   @override
-  String get rewardUnlockRewardPending => '広告の確認待ちです。Googleの検証後にコインが反映されます。';
+  String get rewardUnlockRewardPending => '広告の確認待ちです。Googleの検証後にオパールが反映されます。';
 
   @override
   String get rewardUnlockRewardUnavailable =>
@@ -8639,7 +8639,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get rewardUnlockHistoryMission => 'ミッション';
 
   @override
-  String get rewardUnlockHistoryRedemption => 'コイン交換';
+  String get rewardUnlockHistoryRedemption => 'オパール交換';
 
   @override
   String get rewardUnlockHistoryOther => 'その他の取引';
@@ -8662,7 +8662,7 @@ class AppLocalizationsJa extends AppLocalizations {
       '交換状況を確認できませんでした。再試行時は同じ取引を確認します。';
 
   @override
-  String get rewardUnlockFreeOnly => '広告を見るだけでコインが貯まります（公開準備中）';
+  String get rewardUnlockFreeOnly => '広告を見るだけでオパールが貯まります（公開準備中）';
 
   @override
   String get rewardUnlockSubscribe => 'Premium（月額・年額）を見る';
@@ -8674,7 +8674,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get rewardUnlockBestExplain => 'プレミアム会員と同じ対象機能を、個別交換よりお得にまとめて使えます';
 
   @override
-  String get rewardUnlockEarning => 'Premium加入中もコインを貯められる予定です';
+  String get rewardUnlockEarning => 'Premium加入中もオパールを貯められる予定です';
 
   @override
   String get rewardUnlockHour => '時間';
@@ -8725,7 +8725,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get rewardUnlockAllAds => 'すべての広告なし';
 
   @override
-  String get rewardUnlockFullPremium => '特典コンプリートパック（プレミアム会員と同内容）';
+  String get rewardUnlockFullPremium => 'コンプリートパック（プレミアム会員と同内容）';
 
   @override
   String get rewardUnlockChoose => '選択';
@@ -8744,7 +8744,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String coinAmount(int count) {
-    return '$countコイン';
+    return '$countオパール';
   }
 
   @override
@@ -8871,7 +8871,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get creatorMissionDetailsTimeRule =>
-      '【制作時間の条件】端末の自己申告や端末に保存した制作時間は報酬対象ではありません。実際の制作を証明する仕組みが未完成のため、制作時間ミッションのコイン受取は現在できません。画面に表示される制作時間は参考値です。';
+      '【制作時間の条件】端末の自己申告や端末に保存した制作時間は報酬対象ではありません。実際の制作を証明する仕組みが未完成のため、制作時間ミッションのオパール受取は現在できません。画面に表示される制作時間は参考値です。';
 
   @override
   String get creatorMissionDetailsClaimRule =>
@@ -8930,7 +8930,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get creatorMissionEditTimeUnverified =>
-      '制作時間は端末側で偽装可能なため、現在コイン報酬の対象外です。計測した時間は参考値です。';
+      '制作時間は端末側で偽装可能なため、現在オパール報酬の対象外です。計測した時間は参考値です。';
 
   @override
   String creatorMissionRankBookmarkCurrent(int count) {
@@ -8943,7 +8943,7 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
-  String get creatorMissionRankNotLive => 'コイン支給は現在準備中です。条件を満たしても今は受け取れません。';
+  String get creatorMissionRankNotLive => 'オパール支給は現在準備中です。条件を満たしても今は受け取れません。';
 
   @override
   String creatorMissionVerifiedMinutes(int minutes) {
@@ -8967,7 +8967,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String loginBonusDailyCoins(int coins) {
-    return '毎日$coinsコイン';
+    return '毎日$coinsオパール';
   }
 
   @override
@@ -8982,14 +8982,14 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String rewardUnlockRewardQuotaRemaining(int count) {
-    return '本日のコイン獲得：残り$count回（UTC）';
+    return '本日のオパール獲得：残り$count回（UTC）';
   }
 
   @override
   String get rewardUnlockFixedPrice => '確定価格（交換準備中）';
 
   @override
-  String get missionCoinsReceived => 'コインを受け取りました';
+  String get missionCoinsReceived => 'オパールを受け取りました';
 
   @override
   String get missionClaimFailed => '受取に失敗しました';
@@ -9022,10 +9022,10 @@ class AppLocalizationsJa extends AppLocalizations {
   String get missionRefresh => '更新';
 
   @override
-  String get missionPayoutPending => 'コインの受取は準備中です';
+  String get missionPayoutPending => 'オパールの受取は準備中です';
 
   @override
-  String get recurringMissionsPayoutPending => 'コイン配布は準備中です';
+  String get recurringMissionsPayoutPending => 'オパール配布は準備中です';
 
   @override
   String missionDurationHours(int count) {
@@ -9081,7 +9081,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get missionDetailsGoalNotCompleted => 'まだ達成条件を満たしていません。';
 
   @override
-  String get missionDetailsPayoutUnavailable => 'コインの受取機能は現在準備中です。';
+  String get missionDetailsPayoutUnavailable => 'オパールの受取機能は現在準備中です。';
 
   @override
   String plazaMissionDetailsConditions(String period, String duration) {
@@ -9108,7 +9108,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String plazaMissionDetailsClaim(int coins) {
-    return '【受取】条件を満たすと$coinsコインを受け取れます。各ミッションの受取は同じ期間中に1回限りです。次の期間には再度挑戦できます。前の期間の報酬は期間終了後に受け取れません。';
+    return '【受取】条件を満たすと$coinsオパールを受け取れます。各ミッションの受取は同じ期間中に1回限りです。次の期間には再度挑戦できます。前の期間の報酬は期間終了後に受け取れません。';
   }
 
   @override
@@ -9138,7 +9138,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String recurringMissionDetailsClaim(int coins) {
-    return '【受取】条件を満たすと$coinsコインを受け取れます。同じ期間の同じ段階は1回限りです。新しい週・月には進捗がリセットされ、再度達成できます。期間終了後は前の期間の報酬を受け取れません。';
+    return '【受取】条件を満たすと$coinsオパールを受け取れます。同じ期間の同じ段階は1回限りです。新しい週・月には進捗がリセットされ、再度達成できます。期間終了後は前の期間の報酬を受け取れません。';
   }
 
   @override
@@ -9302,6 +9302,6 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String rewardUnlockReviewFixedTotal(String coins) {
-    return '確定単価による合計：$coins。単品特典・重複交換のコイン消費はまだサーバー未対応です。金額は確定済みですが、交換はサーバーが正式な見積もりを返す場合のみ可能です。正式な有効期限は交換直前のサーバー確認で決まります。';
+    return '確定単価による合計：$coins。単品特典・重複交換のオパール消費はまだサーバー未対応です。金額は確定済みですが、交換はサーバーが正式な見積もりを返す場合のみ可能です。正式な有効期限は交換直前のサーバー確認で決まります。';
   }
 }

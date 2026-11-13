@@ -8854,7 +8854,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get creatorMissionSubtitle =>
-      'Gagnez des pièces en créant et en atteignant des objectifs';
+      'Gagnez des opales en créant et en atteignant des objectifs';
 
   @override
   String get creatorMissionPerWork => 'Une fois par œuvre';
@@ -8889,7 +8889,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get creatorMissionTimeWarning =>
-      'Le temps local est indicatif. Les pièces exigent une validation serveur.';
+      'Le temps local est indicatif. Les opales exigent une validation serveur.';
 
   @override
   String get creatorMissionRankingWarning =>
@@ -8934,7 +8934,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get loginBonusFailed => 'Récompense non confirmée';
 
   @override
-  String get loginBonusSuccess => 'Pièces reçues';
+  String get loginBonusSuccess => 'opales reçues';
 
   @override
   String get loginBonusVisitMissing => 'Vérification de connexion';
@@ -8943,16 +8943,16 @@ class AppLocalizationsFr extends AppLocalizations {
   String get rewardNavigationExchange => 'Échanger des avantages';
 
   @override
-  String get rewardNavigationHub => 'Pièces et avantages';
+  String get rewardNavigationHub => 'opales et avantages';
 
   @override
-  String get rewardNavigationEarnTab => 'Voir des pubs pour des pièces';
+  String get rewardNavigationEarnTab => 'Voir des pubs pour des opales';
 
   @override
   String get rewardNavigationMissions => 'Missions';
 
   @override
-  String get rewardNavigationEarn => 'Gagner des pièces';
+  String get rewardNavigationEarn => 'Gagner des opales';
 
   @override
   String get rewardNavigationMembership => 'Statut d’adhésion';
@@ -8973,7 +8973,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get rewardNavigationMembershipPlay => 'Membre Premium';
 
   @override
-  String get rewardNavigationMembershipCoin => 'Débloqué avec pièces';
+  String get rewardNavigationMembershipCoin => 'Débloqué avec opales';
 
   @override
   String get rewardNavigationMembershipBenefit => 'Avantages actifs';
@@ -9002,7 +9002,7 @@ class AppLocalizationsFr extends AppLocalizations {
     ).add_jm();
     final String expiryString = expiryDateFormat.format(expiry);
 
-    return 'Débloqué avec des pièces · Valable jusqu’au $expiryString';
+    return 'Débloqué avec des opales · Valable jusqu’au $expiryString';
   }
 
   @override
@@ -9023,7 +9023,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get rewardNavigationEarnDescription =>
-      'Regardez des publicités facultatives pour gagner des pièces';
+      'Regardez des publicités facultatives pour gagner des opales';
 
   @override
   String get rewardNavigationEarnUnavailable => 'Publicités non disponibles';
@@ -9036,7 +9036,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get rewardUnlockMissionSubtitle =>
-      'Gagnez des pièces en publiant et en atteignant vos objectifs';
+      'Gagnez des opales en publiant et en atteignant vos objectifs';
 
   @override
   String get rewardUnlockLoading => 'Chargement du solde…';
@@ -9049,7 +9049,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get rewardUnlockSubscriptionBenefit =>
-      'Gagnez gratuitement des pièces via des publicités facultatives, ou gagnez du temps avec Premium.';
+      'Gagnez gratuitement des opales via des publicités facultatives, ou gagnez du temps avec Premium.';
 
   @override
   String get rewardUnlockActive => 'Avantages actifs';
@@ -9076,13 +9076,13 @@ class AppLocalizationsFr extends AppLocalizations {
   String get rewardUnlockChooseBenefits => 'Choisir des avantages';
 
   @override
-  String get rewardUnlockPricePending => 'Pièces : non défini';
+  String get rewardUnlockPricePending => 'opales : non défini';
 
   @override
   String get rewardUnlockNotReady => 'Bientôt disponible';
 
   @override
-  String get rewardUnlockTotal => 'Total des pièces';
+  String get rewardUnlockTotal => 'Total des opales';
 
   @override
   String get rewardUnlockUnavailable =>
@@ -9096,15 +9096,15 @@ class AppLocalizationsFr extends AppLocalizations {
   String get rewardUnlockGoal => 'Définir comme objectif';
 
   @override
-  String get rewardUnlockRedeem => 'Échanger les pièces';
+  String get rewardUnlockRedeem => 'Échanger les opales';
 
   @override
   String get rewardUnlockWatchRewardedAd =>
-      'Voir une publicité pour gagner des pièces';
+      'Voir une publicité pour gagner des opales';
 
   @override
   String get rewardUnlockRewardPending =>
-      'Vérification en attente. Les pièces seront ajoutées après confirmation.';
+      'Vérification en attente. Les opales seront ajoutées après confirmation.';
 
   @override
   String get rewardUnlockRewardUnavailable =>
@@ -9114,7 +9114,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get rewardUnlockRewardRefresh => 'Actualiser le solde';
 
   @override
-  String get rewardUnlockCoinHistory => 'Historique des pièces';
+  String get rewardUnlockCoinHistory => 'Historique des opales';
 
   @override
   String get rewardUnlockHistoryEmpty => 'Aucune transaction';
@@ -9132,7 +9132,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get rewardUnlockHistoryMission => 'Mission';
 
   @override
-  String get rewardUnlockHistoryRedemption => 'Échange de pièces';
+  String get rewardUnlockHistoryRedemption => 'Échange de opales';
 
   @override
   String get rewardUnlockHistoryOther => 'Autre transaction';
@@ -9159,7 +9159,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get rewardUnlockFreeOnly =>
-      'Gagnez des pièces avec des publicités facultatives (bientôt)';
+      'Gagnez des opales avec des publicités facultatives (bientôt)';
 
   @override
   String get rewardUnlockSubscribe => 'Voir Premium mensuel / annuel';
@@ -9173,7 +9173,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get rewardUnlockEarning =>
-      'Les abonnés Premium pourront aussi économiser des pièces';
+      'Les abonnés Premium pourront aussi économiser des opales';
 
   @override
   String get rewardUnlockHour => 'heures';
@@ -9249,8 +9249,8 @@ class AppLocalizationsFr extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count pièces',
-      one: '$count pièce',
+      other: '$count opales',
+      one: '$count opale',
     );
     return '$_temp0';
   }
@@ -9477,7 +9477,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get creatorMissionDetailsTimeRule =>
-      'TEMPS DE CRÉATION : Une durée déclarée localement ne peut pas créditer de pièces. Une preuve fiable de la création réelle n’est pas encore disponible. Cette récompense est donc inaccessible.';
+      'TEMPS DE CRÉATION : Une durée déclarée localement ne peut pas créditer de opales. Une preuve fiable de la création réelle n’est pas encore disponible. Cette récompense est donc inaccessible.';
 
   @override
   String get creatorMissionDetailsClaimRule =>
@@ -9542,7 +9542,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get creatorMissionEditTimeUnverified =>
-      'Le temps de création mesuré sur l’appareil peut être falsifié : il ne rapporte donc pas de pièces pour l’instant. Le temps affiché est indicatif.';
+      'Le temps de création mesuré sur l’appareil peut être falsifié : il ne rapporte donc pas de opales pour l’instant. Le temps affiché est indicatif.';
 
   @override
   String creatorMissionRankBookmarkCurrent(int count) {
@@ -9556,7 +9556,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get creatorMissionRankNotLive =>
-      'Le versement des pièces est en préparation ; les récompenses de classement ne peuvent pas encore être réclamées.';
+      'Le versement des opales est en préparation ; les récompenses de classement ne peuvent pas encore être réclamées.';
 
   @override
   String creatorMissionVerifiedMinutes(int minutes) {
@@ -9601,8 +9601,8 @@ class AppLocalizationsFr extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       coins,
       locale: localeName,
-      other: '$coins pièces',
-      one: '$coins pièce',
+      other: '$coins opales',
+      one: '$coins opale',
     );
     return '$_temp0 par jour';
   }
@@ -9639,7 +9639,7 @@ class AppLocalizationsFr extends AppLocalizations {
       'Prix définitif (échange pas encore disponible)';
 
   @override
-  String get missionCoinsReceived => 'Pièces reçues';
+  String get missionCoinsReceived => 'opales reçues';
 
   @override
   String get missionClaimFailed => 'Réclamation impossible';
@@ -9673,11 +9673,11 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get missionPayoutPending =>
-      'Le versement des pièces n’est pas encore disponible';
+      'Le versement des opales n’est pas encore disponible';
 
   @override
   String get recurringMissionsPayoutPending =>
-      'Le versement des pièces n’est pas encore disponible';
+      'Le versement des opales n’est pas encore disponible';
 
   @override
   String missionDurationHours(int count) {
@@ -9757,7 +9757,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get missionDetailsPayoutUnavailable =>
-      'Le versement des pièces est en préparation.';
+      'Le versement des opales est en préparation.';
 
   @override
   String plazaMissionDetailsConditions(String period, String duration) {
@@ -9787,8 +9787,8 @@ class AppLocalizationsFr extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       coins,
       locale: localeName,
-      other: '$coins pièces',
-      one: '$coins pièce',
+      other: '$coins opales',
+      one: '$coins opale',
     );
     return 'RÉCLAMATION : cet objectif rapporte $_temp0. Chaque mission se réclame une fois par période. Vous pourrez la réussir de nouveau à la période suivante, mais pas réclamer celle d’une période terminée.';
   }
@@ -9853,8 +9853,8 @@ class AppLocalizationsFr extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       coins,
       locale: localeName,
-      other: '$coins pièces',
-      one: '$coins pièce',
+      other: '$coins opales',
+      one: '$coins opale',
     );
     return 'RÉCLAMATION : l’objectif atteint rapporte $_temp0. Chaque palier ne se réclame qu’une fois par période. La progression repart à zéro à chaque nouvelle semaine ou nouveau mois ; les récompenses d’une période passée ne peuvent plus être réclamées.';
   }
@@ -10043,6 +10043,6 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String rewardUnlockReviewFixedTotal(String coins) {
-    return 'Total selon les prix unitaires définitifs : $coins. Le serveur ne permet pas encore de dépenser des pièces pour des avantages individuels ou des échanges en double. Le montant est définitif, mais l’échange n’est possible que si le serveur renvoie un devis officiel. L’expiration officielle est fixée par la vérification du serveur juste avant l’échange.';
+    return 'Total selon les prix unitaires définitifs : $coins. Le serveur ne permet pas encore de dépenser des opales pour des avantages individuels ou des échanges en double. Le montant est définitif, mais l’échange n’est possible que si le serveur renvoie un devis officiel. L’expiration officielle est fixée par la vérification du serveur juste avant l’échange.';
   }
 }

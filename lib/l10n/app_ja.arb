@@ -4106,7 +4106,7 @@
   "creatorMissionNotAchieved": "未達成",
   "creatorMissionDetailsTooltip": "内容を確認",
   "creatorMissionReviewing": "達成確認中",
-  "creatorMissionCoinReward": "コイン報酬",
+  "creatorMissionCoinReward": "オパール報酬",
   "creatorMissionClaim": "受け取る",
   "creatorMissionActivityTitle": "通知",
   "creatorMissionActivityObserved": "達成を確認した日",
@@ -4131,7 +4131,7 @@
   "creatorMissionNoAchievements": "このページに達成した作品ミッションはありません。",
   "creatorMissionLoadMore": "次の25作品を確認",
   "creatorMissionWorkListError": "作品別ミッションを読み込めませんでした。",
-  "creatorMissionSubtitle": "制作・作品広場の達成でコインを獲得",
+  "creatorMissionSubtitle": "制作・作品広場の達成でオパールを獲得",
   "creatorMissionPerWork": "作品ごとに1回ずつ",
   "creatorMissionClaimed": "獲得済み",
   "creatorMissionPending": "達成確認中",
@@ -4142,7 +4142,7 @@
   "creatorMissionRetry": "再読み込み",
   "creatorMissionLoading": "達成状況を確認中…",
   "creatorMissionLoadError": "達成状況を取得できませんでした。",
-  "creatorMissionTimeWarning": "制作時間は表示用の記録です。コイン対象にはサーバー側の検証が必要です。",
+  "creatorMissionTimeWarning": "制作時間は表示用の記録です。オパール対象にはサーバー側の検証が必要です。",
   "creatorMissionRankingWarning": "※順位報酬はNIARIM内のブックマークランキングが対象です。全体の公開作品数・対象作品のブックマーク数・順位・上位割合のすべてに条件があります。詳しくは各ミッションの「内容を確認」をご覧ください。",
   "creatorMissionBudget": "ミッション報酬はそれぞれ1回限りです。",
   "loginBonusTitle": "累計ログインボーナス",
@@ -4156,20 +4156,20 @@
   "loginBonusUtc": "日付は日本時間の午前0時に切替。休んでも累計日数は減りません。",
   "loginBonusRetry": "更新",
   "loginBonusFailed": "受取を確認できませんでした",
-  "loginBonusSuccess": "コインの受取が確認できました",
+  "loginBonusSuccess": "オパールの受取が確認できました",
   "loginBonusVisitMissing": "今日のログインを確認中です",
   "rewardNavigationExchange": "特典交換",
-  "rewardNavigationHub": "コイン・特典",
-  "rewardNavigationEarnTab": "広告を見てコインGET",
+  "rewardNavigationHub": "オパール・特典",
+  "rewardNavigationEarnTab": "広告を見てオパールGET",
   "rewardNavigationMissions": "ミッション",
-  "rewardNavigationEarn": "無料でコインを貯める",
+  "rewardNavigationEarn": "無料でオパールを貯める",
   "rewardNavigationMembership": "契約状態",
   "rewardNavigationMembershipDetail": "プレミアム会員について詳しく見る",
   "rewardNavigationMembershipFree": "無料会員",
   "rewardNavigationMembershipMonthly": "プレミアム（月額）",
   "rewardNavigationMembershipYearly": "プレミアム（年額）",
   "rewardNavigationMembershipPlay": "プレミアム会員",
-  "rewardNavigationMembershipCoin": "コインで解放中",
+  "rewardNavigationMembershipCoin": "オパールで解放中",
   "rewardNavigationMembershipBenefit": "利用中の特典",
   "rewardNavigationMembershipNoBenefit": "現在利用中の交換特典はありません",
   "rewardNavigationMembershipUpsell": "プレミアムでは機能制限を気にせず制作できます。内容や料金を確認してから登録できます。",
@@ -4183,9 +4183,9 @@
       }
     }
   },
-  "rewardNavigationMembershipCoinExpiresAt": "コインで解放中 · 利用期限：{expiry}",
+  "rewardNavigationMembershipCoinExpiresAt": "オパールで解放中 · 利用期限：{expiry}",
   "@rewardNavigationMembershipCoinExpiresAt": {
-    "description": "契約状態：コインで交換した全機能を利用中であることと、その利用期限（日時）",
+    "description": "契約状態：オパールで交換した全機能を利用中であることと、その利用期限（日時）",
     "placeholders": {
       "expiry": {
         "type": "DateTime",
@@ -4198,31 +4198,31 @@
   "rewardNavigationPremiumCompare": "プレミアム会員について詳しく見る",
   "rewardNavigationPremiumJoin": "プレミアム会員になる",
   "rewardNavigationPremiumPlans": "月額・年額プランを選ぶ",
-  "rewardNavigationEarnDescription": "広告を見るとコインを獲得できます",
+  "rewardNavigationEarnDescription": "広告を見るとオパールを獲得できます",
   "rewardNavigationEarnUnavailable": "現在リワード広告は利用できません",
   "rewardUnlockTitle": "報酬",
   "rewardUnlockMissionTitle": "ミッション",
-  "rewardUnlockMissionSubtitle": "作品の投稿やブックマーク達成でコインを獲得",
+  "rewardUnlockMissionSubtitle": "作品の投稿やブックマーク達成でオパールを獲得",
   "rewardUnlockLoading": "残高を確認中…",
   "rewardUnlockPaused": "保管中・残り秒数",
   "rewardUnlockActiveUntil": "利用期限",
-  "rewardUnlockSubscriptionBenefit": "コインは広告視聴で無料で貯められます。広告視聴の時間を省きたい方には月額・年額Premiumが便利です。",
+  "rewardUnlockSubscriptionBenefit": "オパールは広告視聴で無料で貯められます。広告視聴の時間を省きたい方には月額・年額Premiumが便利です。",
   "rewardUnlockActive": "現在利用中の特典",
   "rewardUnlockActivePremium": "Premium会員として全特典を利用中",
   "rewardUnlockActiveCampaign": "リリース記念キャンペーン：Premium特典を開放中",
-  "rewardUnlockActiveUnavailable": "コイン特典の利用状況はサーバー連携後に表示します",
+  "rewardUnlockActiveUnavailable": "オパール特典の利用状況はサーバー連携後に表示します",
   "rewardUnlockDuration": "利用期間",
   "rewardUnlockChooseDuration": "期間を選択",
   "rewardUnlockChooseBenefits": "特典を選択",
-  "rewardUnlockPricePending": "必要コイン：未設定",
+  "rewardUnlockPricePending": "必要オパール：未設定",
   "rewardUnlockNotReady": "準備中",
-  "rewardUnlockTotal": "合計必要コイン",
+  "rewardUnlockTotal": "合計必要オパール",
   "rewardUnlockUnavailable": "正式な交換価格は準備中です",
-  "rewardUnlockBalancePending": "コイン残高：サーバー連携準備中",
-  "rewardUnlockGoal": "このコイン枚数を目標にする",
-  "rewardUnlockRedeem": "コインと引き換え",
-  "rewardUnlockWatchRewardedAd": "リワード広告を見てコインをためる",
-  "rewardUnlockRewardPending": "広告の確認待ちです。Googleの検証後にコインが反映されます。",
+  "rewardUnlockBalancePending": "オパール残高：サーバー連携準備中",
+  "rewardUnlockGoal": "このオパール数を目標にする",
+  "rewardUnlockRedeem": "オパールと引き換え",
+  "rewardUnlockWatchRewardedAd": "リワード広告を見てオパールをためる",
+  "rewardUnlockRewardPending": "広告の確認待ちです。Googleの検証後にオパールが反映されます。",
   "rewardUnlockRewardUnavailable": "広告を表示できませんでした。しばらくしてから再試行してください。",
   "rewardUnlockRewardRefresh": "残高を更新",
   "rewardUnlockCoinHistory": "取引履歴",
@@ -4231,18 +4231,18 @@
   "rewardUnlockHistoryMore": "さらに読み込む",
   "rewardUnlockHistoryAd": "広告視聴",
   "rewardUnlockHistoryMission": "ミッション",
-  "rewardUnlockHistoryRedemption": "コイン交換",
+  "rewardUnlockHistoryRedemption": "オパール交換",
   "rewardUnlockHistoryOther": "その他の取引",
   "rewardUnlockRewardQuotaReached": "本日の獲得上限に達しました（UTC）",
   "rewardUnlockRewardQuotaUncapped": "NIARIM側の回数上限なし",
   "rewardUnlockRewardQuotaCaution": "広告の在庫・AdMobの表示制限により、再生できる回数は異なります。",
   "rewardUnlockRedemptionSuccess": "交換が完了しました。サーバーの利用期限を更新しました。",
   "rewardUnlockRedemptionUncertain": "交換状況を確認できませんでした。再試行時は同じ取引を確認します。",
-  "rewardUnlockFreeOnly": "広告を見るだけでコインが貯まります（公開準備中）",
+  "rewardUnlockFreeOnly": "広告を見るだけでオパールが貯まります（公開準備中）",
   "rewardUnlockSubscribe": "Premium（月額・年額）を見る",
   "rewardUnlockBestValue": "最もお得",
   "rewardUnlockBestExplain": "プレミアム会員と同じ対象機能を、個別交換よりお得にまとめて使えます",
-  "rewardUnlockEarning": "Premium加入中もコインを貯められる予定です",
+  "rewardUnlockEarning": "Premium加入中もオパールを貯められる予定です",
   "rewardUnlockHour": "時間",
   "rewardUnlockDay": "日",
   "rewardUnlockWeek": "週間",
@@ -4259,15 +4259,15 @@
   "rewardUnlockTimelineAds": "タイムラインの広告なし",
   "rewardUnlockProcessingAds": "処理中の広告なし",
   "rewardUnlockAllAds": "すべての広告なし",
-  "rewardUnlockFullPremium": "特典コンプリートパック（プレミアム会員と同内容）",
+  "rewardUnlockFullPremium": "コンプリートパック（プレミアム会員と同内容）",
   "rewardUnlockChoose": "選択",
   "sharedArchiveReceived": "受け取った",
   "sharedArchiveCreated": "作成した",
   "sharedArchiveShare": "共有する",
   "sharedArchiveEmpty": "作成した共有ファイルはまだありません",
-  "coinAmount": "{count}コイン",
+  "coinAmount": "{count}オパール",
   "@coinAmount": {
-    "description": "コインの枚数（報酬・交換・履歴・ミッション共通）。数と単位をまとめた1つの文言",
+    "description": "オパールの数（報酬・交換・履歴・ミッション共通）。数と単位をまとめた1つの文言",
     "placeholders": {
       "count": {
         "type": "int"
@@ -4493,7 +4493,7 @@
   "@creatorMissionDetailsFollowerRule": {
     "description": "ミッションの達成条件：フォロワーの決まり"
   },
-  "creatorMissionDetailsTimeRule": "【制作時間の条件】端末の自己申告や端末に保存した制作時間は報酬対象ではありません。実際の制作を証明する仕組みが未完成のため、制作時間ミッションのコイン受取は現在できません。画面に表示される制作時間は参考値です。",
+  "creatorMissionDetailsTimeRule": "【制作時間の条件】端末の自己申告や端末に保存した制作時間は報酬対象ではありません。実際の制作を証明する仕組みが未完成のため、制作時間ミッションのオパール受取は現在できません。画面に表示される制作時間は参考値です。",
   "@creatorMissionDetailsTimeRule": {
     "description": "ミッションの達成条件：制作時間の決まり"
   },
@@ -4590,9 +4590,9 @@
   "@creatorMissionRankCurrentUnknown": {
     "description": "ランキングのミッション：作品が今の上位50位に入っていないとき"
   },
-  "creatorMissionEditTimeUnverified": "制作時間は端末側で偽装可能なため、現在コイン報酬の対象外です。計測した時間は参考値です。",
+  "creatorMissionEditTimeUnverified": "制作時間は端末側で偽装可能なため、現在オパール報酬の対象外です。計測した時間は参考値です。",
   "@creatorMissionEditTimeUnverified": {
-    "description": "ミッション：制作時間がコインの対象にならない理由"
+    "description": "ミッション：制作時間がオパールの対象にならない理由"
   },
   "creatorMissionRankBookmarkCurrent": "対象作品のブックマーク：現在{count}件",
   "@creatorMissionRankBookmarkCurrent": {
@@ -4612,9 +4612,9 @@
       }
     }
   },
-  "creatorMissionRankNotLive": "コイン支給は現在準備中です。条件を満たしても今は受け取れません。",
+  "creatorMissionRankNotLive": "オパール支給は現在準備中です。条件を満たしても今は受け取れません。",
   "@creatorMissionRankNotLive": {
-    "description": "ランキングのミッション：コインの支給をまだ始めていないとき"
+    "description": "ランキングのミッション：オパールの支給をまだ始めていないとき"
   },
   "creatorMissionVerifiedMinutes": "サーバー時刻で検証した制作時間: {minutes}分",
   "@creatorMissionVerifiedMinutes": {
@@ -4655,9 +4655,9 @@
       }
     }
   },
-  "loginBonusDailyCoins": "毎日{coins}コイン",
+  "loginBonusDailyCoins": "毎日{coins}オパール",
   "@loginBonusDailyCoins": {
-    "description": "累計ログインボーナス：毎日受け取れるコインの枚数",
+    "description": "累計ログインボーナス：毎日受け取れるオパールの数",
     "placeholders": {
       "coins": {
         "type": "int"
@@ -4682,9 +4682,9 @@
       }
     }
   },
-  "rewardUnlockRewardQuotaRemaining": "本日のコイン獲得：残り{count}回（UTC）",
+  "rewardUnlockRewardQuotaRemaining": "本日のオパール獲得：残り{count}回（UTC）",
   "@rewardUnlockRewardQuotaRemaining": {
-    "description": "特典交換：今日あと何回リワード広告でコインを獲得できるか",
+    "description": "特典交換：今日あと何回リワード広告でオパールを獲得できるか",
     "placeholders": {
       "count": {
         "type": "int"
@@ -4695,9 +4695,9 @@
   "@rewardUnlockFixedPrice": {
     "description": "特典交換：価格は確定しているが、まだ交換できない特典の価格の前に付ける言葉（合計の下の注記にも使う）"
   },
-  "missionCoinsReceived": "コインを受け取りました",
+  "missionCoinsReceived": "オパールを受け取りました",
   "@missionCoinsReceived": {
-    "description": "ミッション：コインを受け取れたときの知らせ"
+    "description": "ミッション：オパールを受け取れたときの知らせ"
   },
   "missionClaimFailed": "受取に失敗しました",
   "@missionClaimFailed": {
@@ -4739,13 +4739,13 @@
   "@missionRefresh": {
     "description": "ミッション：達成状況を読み込み直すボタンの説明"
   },
-  "missionPayoutPending": "コインの受取は準備中です",
+  "missionPayoutPending": "オパールの受取は準備中です",
   "@missionPayoutPending": {
-    "description": "ミッション：作品広場の滞在ミッションの欄で、コインの受け取りがまだ始まっていないことの説明"
+    "description": "ミッション：作品広場の滞在ミッションの欄で、オパールの受け取りがまだ始まっていないことの説明"
   },
-  "recurringMissionsPayoutPending": "コイン配布は準備中です",
+  "recurringMissionsPayoutPending": "オパール配布は準備中です",
   "@recurringMissionsPayoutPending": {
-    "description": "ミッション：ウィークリー・マンスリーミッションの欄で、コインの配布がまだ始まっていないことの説明"
+    "description": "ミッション：ウィークリー・マンスリーミッションの欄で、オパールの配布がまだ始まっていないことの説明"
   },
   "missionDurationHours": "{count}時間",
   "@missionDurationHours": {
@@ -4830,9 +4830,9 @@
   "@missionDetailsGoalNotCompleted": {
     "description": "期間・作品広場のミッションの達成条件：まだ条件を満たしていないとき"
   },
-  "missionDetailsPayoutUnavailable": "コインの受取機能は現在準備中です。",
+  "missionDetailsPayoutUnavailable": "オパールの受取機能は現在準備中です。",
   "@missionDetailsPayoutUnavailable": {
-    "description": "期間・作品広場のミッションの達成条件：コインの受け取りをまだ始めていないとき"
+    "description": "期間・作品広場のミッションの達成条件：オパールの受け取りをまだ始めていないとき"
   },
   "plazaMissionDetailsConditions": "【達成条件】{period, select, day{デイリー} week{ウィークリー} other{マンスリー}}の期間中、NIARIMの作品広場を開いている時間の合計が{duration}以上になると達成です。動画を再生したり、画面を操作したりする必要はありません。",
   "@plazaMissionDetailsConditions": {
@@ -4866,9 +4866,9 @@
       }
     }
   },
-  "plazaMissionDetailsClaim": "【受取】条件を満たすと{coins}コインを受け取れます。各ミッションの受取は同じ期間中に1回限りです。次の期間には再度挑戦できます。前の期間の報酬は期間終了後に受け取れません。",
+  "plazaMissionDetailsClaim": "【受取】条件を満たすと{coins}オパールを受け取れます。各ミッションの受取は同じ期間中に1回限りです。次の期間には再度挑戦できます。前の期間の報酬は期間終了後に受け取れません。",
   "@plazaMissionDetailsClaim": {
-    "description": "作品広場の滞在ミッションの達成条件：受け取れるコインと回数",
+    "description": "作品広場の滞在ミッションの達成条件：受け取れるオパールと回数",
     "placeholders": {
       "coins": {
         "type": "int"
@@ -4923,9 +4923,9 @@
       }
     }
   },
-  "recurringMissionDetailsClaim": "【受取】条件を満たすと{coins}コインを受け取れます。同じ期間の同じ段階は1回限りです。新しい週・月には進捗がリセットされ、再度達成できます。期間終了後は前の期間の報酬を受け取れません。",
+  "recurringMissionDetailsClaim": "【受取】条件を満たすと{coins}オパールを受け取れます。同じ期間の同じ段階は1回限りです。新しい週・月には進捗がリセットされ、再度達成できます。期間終了後は前の期間の報酬を受け取れません。",
   "@recurringMissionDetailsClaim": {
-    "description": "ウィークリー・マンスリーのログインミッションの達成条件：受け取れるコインと回数",
+    "description": "ウィークリー・マンスリーのログインミッションの達成条件：受け取れるオパールと回数",
     "placeholders": {
       "coins": {
         "type": "int"
@@ -5038,7 +5038,7 @@
   },
   "rewardUnlockRedeemExtendNotice": "現在プレミアム特典を利用中です。交換すると有効期限が{expiry}まで延長される見込みです。よろしいですか？",
   "@rewardUnlockRedeemExtendNotice": {
-    "description": "特典交換の確認：コインの全機能を利用中に交換すると延長される見込みの期限",
+    "description": "特典交換の確認：オパールの全機能を利用中に交換すると延長される見込みの期限",
     "placeholders": {
       "expiry": {
         "type": "DateTime",
@@ -5072,7 +5072,7 @@
   },
   "rewardUnlockReviewCoinPremiumUntil": "現在プレミアム特典を利用中です（{expiry}まで）。",
   "@rewardUnlockReviewCoinPremiumUntil": {
-    "description": "重複・有効期限の確認：コインで交換した全機能の期限",
+    "description": "重複・有効期限の確認：オパールで交換した全機能の期限",
     "placeholders": {
       "expiry": {
         "type": "DateTime",
@@ -5124,9 +5124,9 @@
       }
     }
   },
-  "rewardUnlockReviewFixedTotal": "確定単価による合計：{coins}。単品特典・重複交換のコイン消費はまだサーバー未対応です。金額は確定済みですが、交換はサーバーが正式な見積もりを返す場合のみ可能です。正式な有効期限は交換直前のサーバー確認で決まります。",
+  "rewardUnlockReviewFixedTotal": "確定単価による合計：{coins}。単品特典・重複交換のオパール消費はまだサーバー未対応です。金額は確定済みですが、交換はサーバーが正式な見積もりを返す場合のみ可能です。正式な有効期限は交換直前のサーバー確認で決まります。",
   "@rewardUnlockReviewFixedTotal": {
-    "description": "重複・有効期限の確認：確定単価による合計（coinsはcoinAmountで作ったコインの枚数）",
+    "description": "重複・有効期限の確認：確定単価による合計（coinsはcoinAmountで作ったオパールの数）",
     "placeholders": {
       "coins": {
         "type": "String"

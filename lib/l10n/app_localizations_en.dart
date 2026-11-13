@@ -8613,7 +8613,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get creatorMissionReviewing => 'Verification pending';
 
   @override
-  String get creatorMissionCoinReward => 'Coin rewards';
+  String get creatorMissionCoinReward => 'Opal rewards';
 
   @override
   String get creatorMissionClaim => 'Claim';
@@ -8700,7 +8700,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get creatorMissionSubtitle =>
-      'Earn coins through creating and Work Plaza milestones';
+      'Earn opals through creating and Work Plaza milestones';
 
   @override
   String get creatorMissionPerWork => 'Once per work';
@@ -8735,7 +8735,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get creatorMissionTimeWarning =>
-      'Local editing time is for display only. Coin rewards require server verification.';
+      'Local editing time is for display only. Opal rewards require server verification.';
 
   @override
   String get creatorMissionRankingWarning =>
@@ -8780,7 +8780,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get loginBonusFailed => 'Could not confirm reward';
 
   @override
-  String get loginBonusSuccess => 'Coins claimed';
+  String get loginBonusSuccess => 'Opals claimed';
 
   @override
   String get loginBonusVisitMissing => 'Checking today’s visit';
@@ -8789,16 +8789,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get rewardNavigationExchange => 'Redeem benefits';
 
   @override
-  String get rewardNavigationHub => 'Coins & rewards';
+  String get rewardNavigationHub => 'Opals & rewards';
 
   @override
-  String get rewardNavigationEarnTab => 'Watch ads for coins';
+  String get rewardNavigationEarnTab => 'Watch ads for opals';
 
   @override
   String get rewardNavigationMissions => 'Missions';
 
   @override
-  String get rewardNavigationEarn => 'Earn free coins';
+  String get rewardNavigationEarn => 'Earn free opals';
 
   @override
   String get rewardNavigationMembership => 'Membership status';
@@ -8819,7 +8819,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get rewardNavigationMembershipPlay => 'Premium member';
 
   @override
-  String get rewardNavigationMembershipCoin => 'Unlocked with coins';
+  String get rewardNavigationMembershipCoin => 'Unlocked with opals';
 
   @override
   String get rewardNavigationMembershipBenefit => 'Active benefits';
@@ -8849,7 +8849,7 @@ class AppLocalizationsEn extends AppLocalizations {
     ).add_jm();
     final String expiryString = expiryDateFormat.format(expiry);
 
-    return 'Unlocked with coins · Expires: $expiryString';
+    return 'Unlocked with opals · Expires: $expiryString';
   }
 
   @override
@@ -8869,7 +8869,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get rewardNavigationEarnDescription =>
-      'Watch optional ads to earn coins';
+      'Watch optional ads to earn opals';
 
   @override
   String get rewardNavigationEarnUnavailable =>
@@ -8883,7 +8883,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get rewardUnlockMissionSubtitle =>
-      'Earn coins from work and bookmark milestones';
+      'Earn opals from work and bookmark milestones';
 
   @override
   String get rewardUnlockLoading => 'Loading balance…';
@@ -8896,7 +8896,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get rewardUnlockSubscriptionBenefit =>
-      'Earn coins for free by watching optional ads, or save time with Premium monthly / yearly.';
+      'Earn opals for free by watching optional ads, or save time with Premium monthly / yearly.';
 
   @override
   String get rewardUnlockActive => 'Currently active benefits';
@@ -8911,7 +8911,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get rewardUnlockActiveUnavailable =>
-      'Coin benefits will appear once the server is connected';
+      'Opal benefits will appear once the server is connected';
 
   @override
   String get rewardUnlockDuration => 'Usage period';
@@ -8923,13 +8923,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get rewardUnlockChooseBenefits => 'Choose benefits';
 
   @override
-  String get rewardUnlockPricePending => 'Coins: not set';
+  String get rewardUnlockPricePending => 'Opals: not set';
 
   @override
   String get rewardUnlockNotReady => 'Coming soon';
 
   @override
-  String get rewardUnlockTotal => 'Total coins required';
+  String get rewardUnlockTotal => 'Total opals required';
 
   @override
   String get rewardUnlockUnavailable =>
@@ -8937,20 +8937,20 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get rewardUnlockBalancePending =>
-      'Coin balance: server connection pending';
+      'Opal balance: server connection pending';
 
   @override
-  String get rewardUnlockGoal => 'Set this coin amount as my goal';
+  String get rewardUnlockGoal => 'Set this opal amount as my goal';
 
   @override
-  String get rewardUnlockRedeem => 'Redeem coins';
+  String get rewardUnlockRedeem => 'Redeem opals';
 
   @override
-  String get rewardUnlockWatchRewardedAd => 'Watch a rewarded ad to earn coins';
+  String get rewardUnlockWatchRewardedAd => 'Watch a rewarded ad to earn opals';
 
   @override
   String get rewardUnlockRewardPending =>
-      'Pending verification. Coins appear after Google\'s signed confirmation.';
+      'Pending verification. Opals appear after Google\'s signed confirmation.';
 
   @override
   String get rewardUnlockRewardUnavailable =>
@@ -8960,10 +8960,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get rewardUnlockRewardRefresh => 'Refresh balance';
 
   @override
-  String get rewardUnlockCoinHistory => 'Coin history';
+  String get rewardUnlockCoinHistory => 'Opal history';
 
   @override
-  String get rewardUnlockHistoryEmpty => 'No coin transactions yet';
+  String get rewardUnlockHistoryEmpty => 'No opal transactions yet';
 
   @override
   String get rewardUnlockHistoryError => 'Could not load history';
@@ -8978,7 +8978,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get rewardUnlockHistoryMission => 'Mission';
 
   @override
-  String get rewardUnlockHistoryRedemption => 'Coin redemption';
+  String get rewardUnlockHistoryRedemption => 'Opal redemption';
 
   @override
   String get rewardUnlockHistoryOther => 'Other transaction';
@@ -9003,7 +9003,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get rewardUnlockFreeOnly =>
-      'Earn coins by watching optional ads (coming soon)';
+      'Earn opals by watching optional ads (coming soon)';
 
   @override
   String get rewardUnlockSubscribe => 'View Premium monthly / yearly';
@@ -9017,7 +9017,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get rewardUnlockEarning =>
-      'Premium members will also be able to save up coins';
+      'Premium members will also be able to save up opals';
 
   @override
   String get rewardUnlockHour => 'hours';
@@ -9092,8 +9092,8 @@ class AppLocalizationsEn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count coins',
-      one: '$count coin',
+      other: '$count opals',
+      one: '$count opal',
     );
     return '$_temp0';
   }
@@ -9319,7 +9319,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get creatorMissionDetailsTimeRule =>
-      'EDITING TIME: Client-reported time and device-stored project duration cannot earn coins. A trustworthy proof of real editing activity is not yet available, so editing-time rewards cannot currently be claimed. Displayed time is informational.';
+      'EDITING TIME: Client-reported time and device-stored project duration cannot earn opals. A trustworthy proof of real editing activity is not yet available, so editing-time rewards cannot currently be claimed. Displayed time is informational.';
 
   @override
   String get creatorMissionDetailsClaimRule =>
@@ -9390,7 +9390,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get creatorMissionEditTimeUnverified =>
-      'Local editing activity can be spoofed, so editing-time coin rewards are unavailable. Time shown is informational.';
+      'Local editing activity can be spoofed, so editing-time opal rewards are unavailable. Time shown is informational.';
 
   @override
   String creatorMissionRankBookmarkCurrent(int count) {
@@ -9404,7 +9404,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get creatorMissionRankNotLive =>
-      'Coin payouts are being prepared; ranking rewards cannot be claimed yet.';
+      'Opal payouts are being prepared; ranking rewards cannot be claimed yet.';
 
   @override
   String creatorMissionVerifiedMinutes(int minutes) {
@@ -9449,8 +9449,8 @@ class AppLocalizationsEn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       coins,
       locale: localeName,
-      other: '$coins coins',
-      one: '$coins coin',
+      other: '$opals opals',
+      one: '$opals opal',
     );
     return '$_temp0 each day';
   }
@@ -9479,7 +9479,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String rewardUnlockRewardQuotaRemaining(int count) {
-    return 'Coin rewards left today: $count (UTC)';
+    return 'Opal rewards left today: $count (UTC)';
   }
 
   @override
@@ -9487,7 +9487,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Fixed price (redemption not yet available)';
 
   @override
-  String get missionCoinsReceived => 'Coins received';
+  String get missionCoinsReceived => 'Opals received';
 
   @override
   String get missionClaimFailed => 'Could not claim';
@@ -9520,11 +9520,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get missionRefresh => 'Refresh';
 
   @override
-  String get missionPayoutPending => 'Coin payouts are not yet enabled';
+  String get missionPayoutPending => 'Opal payouts are not yet enabled';
 
   @override
   String get recurringMissionsPayoutPending =>
-      'Coin payouts are not yet enabled';
+      'Opal payouts are not yet enabled';
 
   @override
   String missionDurationHours(int count) {
@@ -9603,7 +9603,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get missionDetailsPayoutUnavailable =>
-      'Coin payouts are currently unavailable.';
+      'Opal payouts are currently unavailable.';
 
   @override
   String plazaMissionDetailsConditions(String period, String duration) {
@@ -9633,8 +9633,8 @@ class AppLocalizationsEn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       coins,
       locale: localeName,
-      other: '$coins coins',
-      one: '$coins coin',
+      other: '$opals opals',
+      one: '$opals opal',
     );
     return 'CLAIM: Earn $_temp0 for this milestone. Each milestone pays once per period. You may earn it again in a new period, but cannot claim an expired period.';
   }
@@ -9699,8 +9699,8 @@ class AppLocalizationsEn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       coins,
       locale: localeName,
-      other: '$coins coins',
-      one: '$coins coin',
+      other: '$opals opals',
+      one: '$opals opal',
     );
     return 'CLAIM: Completing the goal grants $_temp0. Each milestone can pay only once per period. Progress resets in a new week/month; rewards from the previous period cannot be claimed later.';
   }
@@ -9888,6 +9888,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String rewardUnlockReviewFixedTotal(String coins) {
-    return 'Total at fixed unit prices: $coins. The server does not yet support spending coins on individual benefits or overlapping exchanges. The price is final, but you can exchange only when the server returns an official quote. The official expiry is set by the server check right before exchanging.';
+    return 'Total at fixed unit prices: $opals. The server does not yet support spending opals on individual benefits or overlapping exchanges. The price is final, but you can exchange only when the server returns an official quote. The official expiry is set by the server check right before exchanging.';
   }
 }

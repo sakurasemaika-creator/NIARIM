@@ -8338,7 +8338,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get creatorMissionReviewing => '확인 중';
 
   @override
-  String get creatorMissionCoinReward => '코인 보상';
+  String get creatorMissionCoinReward => '오팔 보상';
 
   @override
   String get creatorMissionClaim => '받기';
@@ -8417,7 +8417,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get creatorMissionWorkListError => '작품별 미션을 불러올 수 없습니다.';
 
   @override
-  String get creatorMissionSubtitle => '작품 제작과 작품 광장 활동으로 코인 획득';
+  String get creatorMissionSubtitle => '작품 제작과 작품 광장 활동으로 오팔 획득';
 
   @override
   String get creatorMissionPerWork => '작품마다 1회';
@@ -8451,7 +8451,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get creatorMissionTimeWarning =>
-      '기기 내 시간은 표시용이며 코인 보상에는 서버 검증이 필요합니다.';
+      '기기 내 시간은 표시용이며 오팔 보상에는 서버 검증이 필요합니다.';
 
   @override
   String get creatorMissionRankingWarning =>
@@ -8494,7 +8494,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get loginBonusFailed => '수령 확인 실패';
 
   @override
-  String get loginBonusSuccess => '코인 수령 완료';
+  String get loginBonusSuccess => '오팔 수령 완료';
 
   @override
   String get loginBonusVisitMissing => '오늘의 로그인 확인 중';
@@ -8503,16 +8503,16 @@ class AppLocalizationsKo extends AppLocalizations {
   String get rewardNavigationExchange => '특전 교환';
 
   @override
-  String get rewardNavigationHub => '코인·특전';
+  String get rewardNavigationHub => '오팔·특전';
 
   @override
-  String get rewardNavigationEarnTab => '광고 보고 코인 받기';
+  String get rewardNavigationEarnTab => '광고 보고 오팔 받기';
 
   @override
   String get rewardNavigationMissions => '미션';
 
   @override
-  String get rewardNavigationEarn => '무료 코인 모으기';
+  String get rewardNavigationEarn => '무료 오팔 모으기';
 
   @override
   String get rewardNavigationMembership => '계약 상태';
@@ -8533,7 +8533,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get rewardNavigationMembershipPlay => '프리미엄 회원';
 
   @override
-  String get rewardNavigationMembershipCoin => '코인으로 해제';
+  String get rewardNavigationMembershipCoin => '오팔으로 해제';
 
   @override
   String get rewardNavigationMembershipBenefit => '사용 중인 특전';
@@ -8561,7 +8561,7 @@ class AppLocalizationsKo extends AppLocalizations {
     ).add_jm();
     final String expiryString = expiryDateFormat.format(expiry);
 
-    return '코인으로 해제 · 이용 기한: $expiryString';
+    return '오팔으로 해제 · 이용 기한: $expiryString';
   }
 
   @override
@@ -8580,7 +8580,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get rewardNavigationPremiumPlans => '요금제 선택';
 
   @override
-  String get rewardNavigationEarnDescription => '광고 시청으로 코인 획득';
+  String get rewardNavigationEarnDescription => '광고 시청으로 오팔 획득';
 
   @override
   String get rewardNavigationEarnUnavailable => '보상 광고 준비 중';
@@ -8592,7 +8592,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get rewardUnlockMissionTitle => '미션';
 
   @override
-  String get rewardUnlockMissionSubtitle => '작품 게시와 북마크 달성으로 코인 획득';
+  String get rewardUnlockMissionSubtitle => '작품 게시와 북마크 달성으로 오팔 획득';
 
   @override
   String get rewardUnlockLoading => '잔액 확인 중…';
@@ -8605,7 +8605,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get rewardUnlockSubscriptionBenefit =>
-      '선택형 광고 시청으로 무료 코인을 모으거나 월간·연간 Premium으로 시간을 아낄 수 있습니다.';
+      '선택형 광고 시청으로 무료 오팔을 모으거나 월간·연간 Premium으로 시간을 아낄 수 있습니다.';
 
   @override
   String get rewardUnlockActive => '현재 이용 중인 혜택';
@@ -8617,7 +8617,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get rewardUnlockActiveCampaign => '출시 기념 캠페인: Premium 기능 이용 중';
 
   @override
-  String get rewardUnlockActiveUnavailable => '서버 연결 후 코인 혜택 정보가 표시됩니다';
+  String get rewardUnlockActiveUnavailable => '서버 연결 후 오팔 혜택 정보가 표시됩니다';
 
   @override
   String get rewardUnlockDuration => '이용 기간';
@@ -8629,31 +8629,31 @@ class AppLocalizationsKo extends AppLocalizations {
   String get rewardUnlockChooseBenefits => '혜택 선택';
 
   @override
-  String get rewardUnlockPricePending => '코인: 미설정';
+  String get rewardUnlockPricePending => '오팔: 미설정';
 
   @override
   String get rewardUnlockNotReady => '준비 중';
 
   @override
-  String get rewardUnlockTotal => '필요 코인';
+  String get rewardUnlockTotal => '필요 오팔';
 
   @override
   String get rewardUnlockUnavailable => '공식 교환 가격 준비 중';
 
   @override
-  String get rewardUnlockBalancePending => '코인 잔액: 서버 연결 준비 중';
+  String get rewardUnlockBalancePending => '오팔 잔액: 서버 연결 준비 중';
 
   @override
-  String get rewardUnlockGoal => '이 코인을 목표로 설정';
+  String get rewardUnlockGoal => '이 오팔을 목표로 설정';
 
   @override
-  String get rewardUnlockRedeem => '코인 교환';
+  String get rewardUnlockRedeem => '오팔 교환';
 
   @override
-  String get rewardUnlockWatchRewardedAd => '보상형 광고를 보고 코인 적립';
+  String get rewardUnlockWatchRewardedAd => '보상형 광고를 보고 오팔 적립';
 
   @override
-  String get rewardUnlockRewardPending => '검증 대기 중입니다. Google 확인 후 코인이 반영됩니다.';
+  String get rewardUnlockRewardPending => '검증 대기 중입니다. Google 확인 후 오팔이 반영됩니다.';
 
   @override
   String get rewardUnlockRewardUnavailable => '광고를 표시할 수 없습니다. 나중에 다시 시도하세요.';
@@ -8662,7 +8662,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get rewardUnlockRewardRefresh => '잔액 새로고침';
 
   @override
-  String get rewardUnlockCoinHistory => '코인 거래 내역';
+  String get rewardUnlockCoinHistory => '오팔 거래 내역';
 
   @override
   String get rewardUnlockHistoryEmpty => '아직 거래 내역이 없습니다';
@@ -8680,7 +8680,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get rewardUnlockHistoryMission => '미션';
 
   @override
-  String get rewardUnlockHistoryRedemption => '코인 교환';
+  String get rewardUnlockHistoryRedemption => '오팔 교환';
 
   @override
   String get rewardUnlockHistoryOther => '기타 거래';
@@ -8704,7 +8704,7 @@ class AppLocalizationsKo extends AppLocalizations {
       '교환을 확인할 수 없습니다. 다시 시도하면 동일한 거래를 조회합니다.';
 
   @override
-  String get rewardUnlockFreeOnly => '선택형 광고를 보고 무료 코인 적립 (준비 중)';
+  String get rewardUnlockFreeOnly => '선택형 광고를 보고 무료 오팔 적립 (준비 중)';
 
   @override
   String get rewardUnlockSubscribe => 'Premium 월간 / 연간 보기';
@@ -8717,7 +8717,7 @@ class AppLocalizationsKo extends AppLocalizations {
       'Premium 회원과 동일한 대상 기능을 묶음 할인으로 이용할 수 있어요';
 
   @override
-  String get rewardUnlockEarning => 'Premium 회원도 코인을 미리 모을 수 있습니다';
+  String get rewardUnlockEarning => 'Premium 회원도 오팔을 미리 모을 수 있습니다';
 
   @override
   String get rewardUnlockHour => '시간';
@@ -8787,7 +8787,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String coinAmount(int count) {
-    return '$count코인';
+    return '$count오팔';
   }
 
   @override
@@ -8915,7 +8915,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get creatorMissionDetailsTimeRule =>
-      '【제작 시간 조건】기기에서 신고한 제작 시간은 코인으로 인정되지 않습니다. 실제 제작을 신뢰할 수 있게 검증하는 시스템이 아직 없어 코인 수령은 불가합니다.';
+      '【제작 시간 조건】기기에서 신고한 제작 시간은 오팔으로 인정되지 않습니다. 실제 제작을 신뢰할 수 있게 검증하는 시스템이 아직 없어 오팔 수령은 불가합니다.';
 
   @override
   String get creatorMissionDetailsClaimRule =>
@@ -8975,7 +8975,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get creatorMissionEditTimeUnverified =>
-      '제작 시간은 기기에서 조작할 수 있어 현재 코인 보상 대상이 아닙니다. 측정한 시간은 참고용입니다.';
+      '제작 시간은 기기에서 조작할 수 있어 현재 오팔 보상 대상이 아닙니다. 측정한 시간은 참고용입니다.';
 
   @override
   String creatorMissionRankBookmarkCurrent(int count) {
@@ -8989,7 +8989,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get creatorMissionRankNotLive =>
-      '코인 지급은 현재 준비 중입니다. 조건을 충족해도 아직 받을 수 없습니다.';
+      '오팔 지급은 현재 준비 중입니다. 조건을 충족해도 아직 받을 수 없습니다.';
 
   @override
   String creatorMissionVerifiedMinutes(int minutes) {
@@ -9013,7 +9013,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String loginBonusDailyCoins(int coins) {
-    return '매일 $coins코인';
+    return '매일 $coins오팔';
   }
 
   @override
@@ -9028,14 +9028,14 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String rewardUnlockRewardQuotaRemaining(int count) {
-    return '오늘 코인 보상 잔여: $count회 (UTC)';
+    return '오늘 오팔 보상 잔여: $count회 (UTC)';
   }
 
   @override
   String get rewardUnlockFixedPrice => '확정 가격(교환 준비 중)';
 
   @override
-  String get missionCoinsReceived => '코인을 받았습니다';
+  String get missionCoinsReceived => '오팔을 받았습니다';
 
   @override
   String get missionClaimFailed => '받지 못했습니다';
@@ -9068,10 +9068,10 @@ class AppLocalizationsKo extends AppLocalizations {
   String get missionRefresh => '새로고침';
 
   @override
-  String get missionPayoutPending => '코인 지급은 준비 중입니다';
+  String get missionPayoutPending => '오팔 지급은 준비 중입니다';
 
   @override
-  String get recurringMissionsPayoutPending => '코인 지급은 준비 중입니다';
+  String get recurringMissionsPayoutPending => '오팔 지급은 준비 중입니다';
 
   @override
   String missionDurationHours(int count) {
@@ -9128,7 +9128,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get missionDetailsGoalNotCompleted => '아직 달성 조건을 충족하지 않았습니다.';
 
   @override
-  String get missionDetailsPayoutUnavailable => '코인 수령 기능은 현재 준비 중입니다.';
+  String get missionDetailsPayoutUnavailable => '오팔 수령 기능은 현재 준비 중입니다.';
 
   @override
   String plazaMissionDetailsConditions(String period, String duration) {
@@ -9155,7 +9155,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String plazaMissionDetailsClaim(int coins) {
-    return '【수령】조건을 충족하면 $coins코인을 받을 수 있습니다. 각 미션은 같은 기간에 한 번만 받을 수 있으며, 다음 기간에 다시 도전할 수 있습니다. 지난 기간의 보상은 기간이 끝난 뒤에는 받을 수 없습니다.';
+    return '【수령】조건을 충족하면 $coins오팔을 받을 수 있습니다. 각 미션은 같은 기간에 한 번만 받을 수 있으며, 다음 기간에 다시 도전할 수 있습니다. 지난 기간의 보상은 기간이 끝난 뒤에는 받을 수 없습니다.';
   }
 
   @override
@@ -9185,7 +9185,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String recurringMissionDetailsClaim(int coins) {
-    return '【수령】조건을 충족하면 $coins코인을 받을 수 있습니다. 같은 기간의 같은 단계는 한 번만 받을 수 있습니다. 새로운 주·달이 되면 진행 상황이 초기화되어 다시 달성할 수 있습니다. 기간이 끝나면 지난 기간의 보상은 받을 수 없습니다.';
+    return '【수령】조건을 충족하면 $coins오팔을 받을 수 있습니다. 같은 기간의 같은 단계는 한 번만 받을 수 있습니다. 새로운 주·달이 되면 진행 상황이 초기화되어 다시 달성할 수 있습니다. 기간이 끝나면 지난 기간의 보상은 받을 수 없습니다.';
   }
 
   @override
@@ -9349,6 +9349,6 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String rewardUnlockReviewFixedTotal(String coins) {
-    return '확정 단가 기준 합계: $coins. 개별 혜택·중복 교환의 코인 사용은 아직 서버에서 지원하지 않습니다. 금액은 확정되었지만, 서버가 정식 견적을 제공하는 경우에만 교환할 수 있습니다. 정식 만료일은 교환 직전에 서버에서 확인하여 정해집니다.';
+    return '확정 단가 기준 합계: $coins. 개별 혜택·중복 교환의 오팔 사용은 아직 서버에서 지원하지 않습니다. 금액은 확정되었지만, 서버가 정식 견적을 제공하는 경우에만 교환할 수 있습니다. 정식 만료일은 교환 직전에 서버에서 확인하여 정해집니다.';
   }
 }

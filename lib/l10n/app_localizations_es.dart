@@ -8830,7 +8830,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get creatorMissionSubtitle =>
-      'Gana monedas creando obras y logrando hitos';
+      'Gana ópalos creando obras y logrando hitos';
 
   @override
   String get creatorMissionPerWork => 'Una vez por obra';
@@ -8909,7 +8909,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get loginBonusFailed => 'No se pudo confirmar';
 
   @override
-  String get loginBonusSuccess => 'Monedas recibidas';
+  String get loginBonusSuccess => 'ópalos recibidas';
 
   @override
   String get loginBonusVisitMissing => 'Comprobando el acceso';
@@ -8918,16 +8918,16 @@ class AppLocalizationsEs extends AppLocalizations {
   String get rewardNavigationExchange => 'Canjear ventajas';
 
   @override
-  String get rewardNavigationHub => 'Monedas y recompensas';
+  String get rewardNavigationHub => 'ópalos y recompensas';
 
   @override
-  String get rewardNavigationEarnTab => 'Ver anuncios por monedas';
+  String get rewardNavigationEarnTab => 'Ver anuncios por ópalos';
 
   @override
   String get rewardNavigationMissions => 'Misiones';
 
   @override
-  String get rewardNavigationEarn => 'Ganar monedas gratis';
+  String get rewardNavigationEarn => 'Ganar ópalos gratis';
 
   @override
   String get rewardNavigationMembership => 'Estado de membresía';
@@ -8948,7 +8948,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get rewardNavigationMembershipPlay => 'Miembro Premium';
 
   @override
-  String get rewardNavigationMembershipCoin => 'Desbloqueado con monedas';
+  String get rewardNavigationMembershipCoin => 'Desbloqueado con ópalos';
 
   @override
   String get rewardNavigationMembershipBenefit => 'Ventajas activas';
@@ -8977,7 +8977,7 @@ class AppLocalizationsEs extends AppLocalizations {
     ).add_jm();
     final String expiryString = expiryDateFormat.format(expiry);
 
-    return 'Desbloqueado con monedas · Válido hasta el $expiryString';
+    return 'Desbloqueado con ópalos · Válido hasta el $expiryString';
   }
 
   @override
@@ -8998,7 +8998,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get rewardNavigationEarnDescription =>
-      'Mira anuncios opcionales para ganar monedas';
+      'Mira anuncios opcionales para ganar ópalos';
 
   @override
   String get rewardNavigationEarnUnavailable => 'Anuncios aún no disponibles';
@@ -9011,7 +9011,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get rewardUnlockMissionSubtitle =>
-      'Gana monedas al publicar y alcanzar objetivos';
+      'Gana ópalos al publicar y alcanzar objetivos';
 
   @override
   String get rewardUnlockLoading => 'Consultando saldo…';
@@ -9024,7 +9024,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get rewardUnlockSubscriptionBenefit =>
-      'Consigue monedas gratis viendo anuncios opcionales. Ahorra tiempo con Premium mensual o anual.';
+      'Consigue ópalos gratis viendo anuncios opcionales. Ahorra tiempo con Premium mensual o anual.';
 
   @override
   String get rewardUnlockActive => 'Ventajas activas';
@@ -9051,13 +9051,13 @@ class AppLocalizationsEs extends AppLocalizations {
   String get rewardUnlockChooseBenefits => 'Selecciona ventajas';
 
   @override
-  String get rewardUnlockPricePending => 'Monedas: pendiente';
+  String get rewardUnlockPricePending => 'ópalos: pendiente';
 
   @override
   String get rewardUnlockNotReady => 'Próximamente';
 
   @override
-  String get rewardUnlockTotal => 'Total de monedas';
+  String get rewardUnlockTotal => 'Total de ópalos';
 
   @override
   String get rewardUnlockUnavailable =>
@@ -9071,14 +9071,14 @@ class AppLocalizationsEs extends AppLocalizations {
   String get rewardUnlockGoal => 'Establecer como objetivo';
 
   @override
-  String get rewardUnlockRedeem => 'Canjear monedas';
+  String get rewardUnlockRedeem => 'Canjear ópalos';
 
   @override
-  String get rewardUnlockWatchRewardedAd => 'Ver un anuncio para ganar monedas';
+  String get rewardUnlockWatchRewardedAd => 'Ver un anuncio para ganar ópalos';
 
   @override
   String get rewardUnlockRewardPending =>
-      'Verificación pendiente. Las monedas se añadirán después de la confirmación.';
+      'Verificación pendiente. Las ópalos se añadirán después de la confirmación.';
 
   @override
   String get rewardUnlockRewardUnavailable =>
@@ -9088,7 +9088,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get rewardUnlockRewardRefresh => 'Actualizar saldo';
 
   @override
-  String get rewardUnlockCoinHistory => 'Historial de monedas';
+  String get rewardUnlockCoinHistory => 'Historial de ópalos';
 
   @override
   String get rewardUnlockHistoryEmpty => 'Aún no hay movimientos';
@@ -9106,7 +9106,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get rewardUnlockHistoryMission => 'Misión';
 
   @override
-  String get rewardUnlockHistoryRedemption => 'Canje de monedas';
+  String get rewardUnlockHistoryRedemption => 'Canje de ópalos';
 
   @override
   String get rewardUnlockHistoryOther => 'Otro movimiento';
@@ -9131,7 +9131,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get rewardUnlockFreeOnly =>
-      'Gana monedas con anuncios voluntarios (próximamente)';
+      'Gana ópalos con anuncios voluntarios (próximamente)';
 
   @override
   String get rewardUnlockSubscribe => 'Ver Premium mensual o anual';
@@ -9145,7 +9145,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get rewardUnlockEarning =>
-      'Los miembros Premium también podrán ahorrar monedas';
+      'Los miembros Premium también podrán ahorrar ópalos';
 
   @override
   String get rewardUnlockHour => 'horas';
@@ -9220,8 +9220,8 @@ class AppLocalizationsEs extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count monedas',
-      one: '$count moneda',
+      other: '$count ópalos',
+      one: '$count ópalo',
     );
     return '$_temp0';
   }
@@ -9449,7 +9449,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get creatorMissionDetailsTimeRule =>
-      'TIEMPO: El tiempo declarado por el dispositivo no genera monedas. Aún no hay una prueba fiable de la edición real y estas recompensas no se pueden reclamar.';
+      'TIEMPO: El tiempo declarado por el dispositivo no genera ópalos. Aún no hay una prueba fiable de la edición real y estas recompensas no se pueden reclamar.';
 
   @override
   String get creatorMissionDetailsClaimRule =>
@@ -9526,7 +9526,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get creatorMissionEditTimeUnverified =>
-      'El tiempo de edición del dispositivo se puede falsificar, por lo que ahora no da monedas. El tiempo mostrado es orientativo.';
+      'El tiempo de edición del dispositivo se puede falsificar, por lo que ahora no da ópalos. El tiempo mostrado es orientativo.';
 
   @override
   String creatorMissionRankBookmarkCurrent(int count) {
@@ -9540,7 +9540,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get creatorMissionRankNotLive =>
-      'El pago de monedas está en preparación; todavía no se pueden reclamar las recompensas de clasificación.';
+      'El pago de ópalos está en preparación; todavía no se pueden reclamar las recompensas de clasificación.';
 
   @override
   String creatorMissionVerifiedMinutes(int minutes) {
@@ -9591,8 +9591,8 @@ class AppLocalizationsEs extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       coins,
       locale: localeName,
-      other: '$coins monedas',
-      one: '$coins moneda',
+      other: '$coins ópalos',
+      one: '$coins ópalo',
     );
     return '$_temp0 al día';
   }
@@ -9629,7 +9629,7 @@ class AppLocalizationsEs extends AppLocalizations {
       'Precio definitivo (canje aún no disponible)';
 
   @override
-  String get missionCoinsReceived => 'Monedas recibidas';
+  String get missionCoinsReceived => 'ópalos recibidas';
 
   @override
   String get missionClaimFailed => 'No se pudo reclamar';
@@ -9663,11 +9663,11 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get missionPayoutPending =>
-      'El pago de monedas aún no está disponible';
+      'El pago de ópalos aún no está disponible';
 
   @override
   String get recurringMissionsPayoutPending =>
-      'El pago de monedas aún no está disponible';
+      'El pago de ópalos aún no está disponible';
 
   @override
   String missionDurationHours(int count) {
@@ -9748,7 +9748,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get missionDetailsPayoutUnavailable =>
-      'El cobro de monedas aún está en preparación.';
+      'El cobro de ópalos aún está en preparación.';
 
   @override
   String plazaMissionDetailsConditions(String period, String duration) {
@@ -9778,8 +9778,8 @@ class AppLocalizationsEs extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       coins,
       locale: localeName,
-      other: '$coins monedas',
-      one: '$coins moneda',
+      other: '$coins ópalos',
+      one: '$coins ópalo',
     );
     return 'COBRO: al cumplir el objetivo recibes $_temp0. Cada misión se cobra una vez por periodo. Puedes volver a lograrla en el siguiente periodo, pero no cobrar la de un periodo ya terminado.';
   }
@@ -9844,8 +9844,8 @@ class AppLocalizationsEs extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       coins,
       locale: localeName,
-      other: '$coins monedas',
-      one: '$coins moneda',
+      other: '$coins ópalos',
+      one: '$coins ópalo',
     );
     return 'COBRO: al cumplir el objetivo recibes $_temp0. Cada nivel se cobra solo una vez por periodo. El progreso se reinicia con cada nueva semana o mes; las recompensas de un periodo anterior no se pueden cobrar después.';
   }
@@ -10035,6 +10035,6 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String rewardUnlockReviewFixedTotal(String coins) {
-    return 'Total según los precios unitarios definitivos: $coins. El servidor aún no admite gastar monedas en ventajas sueltas ni en canjes que se solapan. El importe ya es definitivo, pero solo se puede canjear cuando el servidor devuelve una cotización oficial. La vigencia oficial la determina el servidor justo antes del canje.';
+    return 'Total según los precios unitarios definitivos: $coins. El servidor aún no admite gastar ópalos en ventajas sueltas ni en canjes que se solapan. El importe ya es definitivo, pero solo se puede canjear cuando el servidor devuelve una cotización oficial. La vigencia oficial la determina el servidor justo antes del canje.';
   }
 }
