@@ -4023,6 +4023,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get saveTreeDeleteFailedSnackbar => '保存データを削除できませんでした';
 
   @override
+  String get saveTreeMemoNotSavedSnackbar => 'メモを保存できませんでした。空き容量などを確認してください';
+
+  @override
   String saveTreeSaveFailedSnackbar(String error) {
     return '保存に失敗しました。空き容量などを確認してもう一度お試しください（$error）';
   }

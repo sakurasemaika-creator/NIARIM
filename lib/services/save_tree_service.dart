@@ -213,6 +213,16 @@ class SaveTreeService extends ChangeNotifier {
     return save;
   }
 
+  /// 保存の一覧（index.json）を最後に書こうとして書けなかった作品（空き
+  /// 容量が無い等）。書けるまで、メモ・名前の変更は次の起動に残らない。
+  final Set<String> _unwrittenLists = {};
+
+  /// [projectId]の保存の一覧を最後に書けなかったか。保存の画面は、メモ・
+  /// 名前を残せなかったことを知らせる（以前は書けなくても成功と言い、次の
+  /// 起動でメモ・名前が消えていた）。
+  bool saveListUnwritten(String projectId) =>
+      _unwrittenLists.contains(projectId);
+
   /// [projectId]の保存の一覧を読めなかったか。保存の画面は、空に見える
   /// スロットを「保存データなし」と言わず、読めなかったことと「再試行」
   /// （[retryReadList]）を出す。
@@ -750,10 +760,12 @@ class SaveTreeService extends ChangeNotifier {
       // 次からは書き換えてよい）。
       _readProjects.add(projectId);
       _unreadLists.remove(projectId);
+      _unwrittenLists.remove(projectId);
       _memosEditedUnread.remove(projectId);
       _deletePendingSaves(projectId, dir);
     } catch (error, stack) {
       AppErrorReporter.record(error, stack);
+      _unwrittenLists.add(projectId);
     }
   }
 
@@ -846,7 +858,8 @@ class SaveTreeService extends ChangeNotifier {
   /// save time or tree relationships. Retain empty memos as explicit clears.
   ///
   /// 戻り値は「メモを保存の一覧と一緒に残せるか」（スロットの番号が
-  /// 正しくなければfalse）。保存の一覧をまだ読めていない作品では、まず
+  /// 正しくない・一覧を書けなかったときはfalse。[saveListUnwritten]）。
+  /// 保存の一覧をまだ読めていない作品では、まず
   /// 一覧を読み直す：読めれば、それまでに書いたメモごと一覧へ重ねて書く
   /// （[_loadProject]）。読めなければ、メモはこの起動の間だけ持ってfalseを
   /// 返し（画面は保存データを読み込めなかったと知らせる）、一覧を読めた
@@ -873,9 +886,10 @@ class SaveTreeService extends ChangeNotifier {
         await _persist(projectId);
       }
       await _readListIfReadable(projectId);
-      return _readProjects.contains(projectId);
+      return _readProjects.contains(projectId) &&
+          !_unwrittenLists.contains(projectId);
     }
-    if (bySlot[slotIndex] == normalized) return true;
+    if (bySlot[slotIndex] == normalized) return _retryUnwritten(projectId);
     bySlot[slotIndex] = normalized;
     // 控えを読めなかった保存のスロットに名前を付けたら、その保存は今の
     // スロットのまま一覧へ書く。
@@ -883,7 +897,15 @@ class SaveTreeService extends ChangeNotifier {
     _slotMemoTimes.putIfAbsent(projectId, () => {})[slotIndex] = DateTime.now();
     notifyListeners();
     await _persist(projectId);
-    return true;
+    return !_unwrittenLists.contains(projectId);
+  }
+
+  /// 変えるものが無いメモ・名前の確定：前に一覧を書けなかったなら書き直し、
+  /// 書けたかを返す（保存の後に同じメモを確定したときも、一覧を書けなかった
+  /// ことを知らせる）。
+  Future<bool> _retryUnwritten(String projectId) async {
+    if (_unwrittenLists.contains(projectId)) await _persist(projectId);
+    return !_unwrittenLists.contains(projectId);
   }
 
   /// まだ一覧を読めていない作品の保存の一覧を、読めるようになっていれば
@@ -907,6 +929,7 @@ class SaveTreeService extends ChangeNotifier {
   /// capture time, thumbnail, parent link or slot position.
   ///
   /// Names are stored in the existing index.json so they survive app restarts.
+  /// 一覧を書けなかったときはfalse（[saveListUnwritten]）。
   Future<bool> renameSave(String projectId, String nodeId, String name) async {
     final normalized = name.trim();
     if (normalized.isEmpty) return false;
@@ -915,7 +938,7 @@ class SaveTreeService extends ChangeNotifier {
     final index = nodes.indexWhere((node) => node.id == nodeId);
     if (index < 0) return false;
     final old = nodes[index];
-    if (old.comment == normalized) return true;
+    if (old.comment == normalized) return _retryUnwritten(projectId);
     nodes[index] = SaveNode(
       id: old.id,
       projectId: old.projectId,
@@ -927,7 +950,7 @@ class SaveTreeService extends ChangeNotifier {
     );
     notifyListeners();
     await _persist(projectId);
-    return true;
+    return !_unwrittenLists.contains(projectId);
   }
 
   /// この作品の保存のうち一番新しいものの時刻（無ければnull）。保存の画面へ

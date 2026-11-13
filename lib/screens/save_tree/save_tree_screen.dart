@@ -22,6 +22,7 @@ import '../../widgets/dispose_on_unmount.dart';
 import '../../config/font_fallback.dart';
 import '../../config/accent_text_theme.dart';
 import 'widgets/save_delete_feedback.dart';
+import 'widgets/save_list_feedback.dart';
 import 'widgets/save_rename_button.dart';
 import 'widgets/save_screen_app_bar.dart';
 import 'widgets/save_thumbnail_capture.dart';
@@ -314,6 +315,14 @@ void _showTreeSaveDialog(
                         if (ctx.mounted &&
                             (ModalRoute.of(ctx)?.isCurrent ?? false)) {
                           Navigator.pop(ctx);
+                        }
+                        // 保存はできたが、保存の一覧（メモ）を書けなかった。
+                        if (service.saveListUnwritten(projectId)) {
+                          messenger.showSnackBar(
+                            SnackBar(
+                              content: Text(l10n.saveTreeMemoNotSavedSnackbar),
+                            ),
+                          );
                         }
                         if (context.mounted) {
                           await _warnIfSaveTreeSizeLarge(context, projectId);
@@ -671,7 +680,11 @@ class _SlotView extends StatelessWidget {
                 // 起動に残らないかもしれない（メモの欄と同じく知らせる）。
                 if (!kept && context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(l10n.saveTreeLoadFailedSnackbar)),
+                    SnackBar(
+                      content: Text(
+                        saveListProblemText(l10n, saveService, projectId),
+                      ),
+                    ),
                   );
                 }
               }),

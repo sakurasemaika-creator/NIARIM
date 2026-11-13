@@ -4229,6 +4229,10 @@ class AppLocalizationsFr extends AppLocalizations {
       'Impossible de supprimer les données de sauvegarde';
 
   @override
+  String get saveTreeMemoNotSavedSnackbar =>
+      'Impossible d\'enregistrer la note. Vérifiez l\'espace disponible';
+
+  @override
   String saveTreeSaveFailedSnackbar(String error) {
     return 'Échec de l\'enregistrement. Vérifiez l\'espace disponible et réessayez ($error)';
   }

@@ -20,6 +20,7 @@ import '../../widgets/responsive.dart';
 import 'save_tree_screen.dart';
 import 'widgets/save_thumbnail_capture.dart';
 import 'widgets/save_delete_feedback.dart';
+import 'widgets/save_list_feedback.dart';
 import 'widgets/save_rename_button.dart';
 import 'widgets/save_screen_app_bar.dart';
 import '../../config/font_fallback.dart';
@@ -337,7 +338,13 @@ class _GameStyleSlotScreen extends StatelessWidget {
                           if (!kept && context.mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
-                                content: Text(l10n.saveTreeLoadFailedSnackbar),
+                                content: Text(
+                                  saveListProblemText(
+                                    l10n,
+                                    saveService,
+                                    projectId,
+                                  ),
+                                ),
                               ),
                             );
                           }

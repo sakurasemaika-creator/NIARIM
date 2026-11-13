@@ -7395,6 +7395,12 @@ abstract class AppLocalizations {
   /// **'保存データを削除できませんでした'**
   String get saveTreeDeleteFailedSnackbar;
 
+  /// No description provided for @saveTreeMemoNotSavedSnackbar.
+  ///
+  /// In ja, this message translates to:
+  /// **'メモを保存できませんでした。空き容量などを確認してください'**
+  String get saveTreeMemoNotSavedSnackbar;
+
   /// No description provided for @saveTreeSaveFailedSnackbar.
   ///
   /// In ja, this message translates to:

@@ -4166,6 +4166,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get saveTreeDeleteFailedSnackbar => 'Couldn\'t delete the save data';
 
   @override
+  String get saveTreeMemoNotSavedSnackbar =>
+      'Couldn\'t save the memo. Check your free storage';
+
+  @override
   String saveTreeSaveFailedSnackbar(String error) {
     return 'Save failed. Check your free storage and try again ($error)';
   }

@@ -4045,6 +4045,10 @@ class AppLocalizationsKo extends AppLocalizations {
   String get saveTreeDeleteFailedSnackbar => '저장 데이터를 삭제하지 못했습니다';
 
   @override
+  String get saveTreeMemoNotSavedSnackbar =>
+      '메모를 저장하지 못했습니다. 남은 저장 공간을 확인해 주세요';
+
+  @override
   String saveTreeSaveFailedSnackbar(String error) {
     return '저장에 실패했습니다. 남은 저장 공간을 확인한 뒤 다시 시도해 주세요 ($error)';
   }

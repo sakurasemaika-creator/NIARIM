@@ -1604,6 +1604,7 @@
   "saveTreeCommentHint": "e.g. Background done",
   "saveTreeSizeWarningSnackbar": "Your save tree is getting large (about {mb}MB). We recommend deleting saves you no longer need.",
   "saveTreeDeleteFailedSnackbar": "Couldn't delete the save data",
+  "saveTreeMemoNotSavedSnackbar": "Couldn't save the memo. Check your free storage",
   "saveTreeSaveFailedSnackbar": "Save failed. Check your free storage and try again ({error})",
   "@saveTreeSizeWarningSnackbar": {
     "placeholders": {

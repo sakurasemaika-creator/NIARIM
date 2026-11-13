@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../models/save_node.dart';
 import '../../../services/save_tree_service.dart';
+import 'save_list_feedback.dart';
 
 /// Shared memo editor for empty slots, saved slots, and tree nodes.
 /// Editing this text must never rewrite a saved archive or its thumbnail.
@@ -146,11 +147,20 @@ class SaveSlotMemoButton extends StatelessWidget {
           slotIndex,
           memo,
         );
-        // 保存の一覧を読めていないので、メモは次に起動したときに残らない
-        // かもしれない（スロットに出ているだけで保存できたように見えた）。
+        // 保存の一覧を読めていない・書けなかったので、メモは次に起動した
+        // ときに残らないかもしれない（スロットに出ているだけで保存できた
+        // ように見えた）。
         if (!kept && context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(l10n.saveTreeLoadFailedSnackbar)),
+            SnackBar(
+              content: Text(
+                saveListProblemText(
+                  l10n,
+                  context.read<SaveTreeService>(),
+                  projectId,
+                ),
+              ),
+            ),
           );
         }
       },
@@ -197,7 +207,15 @@ class SaveRenameButton extends StatelessWidget {
         );
         if (!ok && context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(l10n.saveTreeLoadFailedSnackbar)),
+            SnackBar(
+              content: Text(
+                saveListProblemText(
+                  l10n,
+                  context.read<SaveTreeService>(),
+                  node.projectId,
+                ),
+              ),
+            ),
           );
         }
       },
