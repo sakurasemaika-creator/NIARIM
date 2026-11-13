@@ -88,6 +88,12 @@ class SaveTreeService extends ChangeNotifier {
   /// そのメモの名前で呼ばれた）。
   static const String pendingSuffix = '.pending.json';
 
+  /// スロットのメモを利用者が書いた時刻（作品ごと、[setSlotMemo]）。一覧
+  /// （`slotMemoTimes`）と控え（`memoAt`）にも書く。控えのメモは、一覧の
+  /// そのスロットのメモが控えより後に書かれていないときだけ使う（後の起動で
+  /// 書き直した名前を、前の起動の控えの古いメモで置き換えていた）。
+  final Map<String, Map<int, DateTime>> _slotMemoTimes = {};
+
   /// 保存先にあると分かっている控え（作品ごと、保存のID）。一覧を書けたら、
   /// 一覧に入った保存の控えを消す。
   final Map<String, Set<String>> _pendingIds = {};
@@ -256,6 +262,8 @@ class SaveTreeService extends ChangeNotifier {
     final pending = <SaveNode>[];
     final pendingArchived = <String>{};
     final pendingMemos = <String, String>{};
+    // 控えのメモを書いた時刻（古い控えは保存した時刻）。
+    final pendingMemoTimes = <String, DateTime>{};
     // 保存のある控え（一覧を書いたら消す）。
     var pendingOnDisk = false;
     for (final file in files) {
@@ -280,7 +288,13 @@ class SaveTreeService extends ChangeNotifier {
         pending.add(node);
         if (json['archived'] == true) pendingArchived.add(id);
         final memo = json['memo'];
-        if (memo is String) pendingMemos[id] = memo;
+        if (memo is String) {
+          pendingMemos[id] = memo;
+          final memoAt = json['memoAt'];
+          pendingMemoTimes[id] =
+              (memoAt is String ? DateTime.tryParse(memoAt) : null) ??
+              node.savedAt;
+        }
       } catch (error, stack) {
         AppErrorReporter.record(error, stack);
       }
@@ -294,6 +308,8 @@ class SaveTreeService extends ChangeNotifier {
     final displaced = <SaveNode>[];
     // 一覧にあったスロットのメモ（この起動で書いたメモを重ねる前）。
     final diskMemos = <int, String>{};
+    // 一覧にあったスロットのメモを書いた時刻（[_slotMemoTimes]）。
+    final diskMemoTimes = <int, DateTime>{};
     if (text != null) {
       try {
         final json = jsonDecode(text);
@@ -309,6 +325,16 @@ class SaveTreeService extends ChangeNotifier {
             diskMemos.addAll(memos);
             memos.addAll(editedMemos);
             if (memos.isNotEmpty) _slotMemosByProject[projectId] = memos;
+          }
+          final rawTimes = json['slotMemoTimes'];
+          if (rawTimes is Map) {
+            for (final entry in rawTimes.entries) {
+              final slot = int.tryParse(entry.key.toString());
+              final at = entry.value is String
+                  ? DateTime.tryParse(entry.value as String)
+                  : null;
+              if (slot != null && at != null) diskMemoTimes[slot] = at;
+            }
           }
           for (final (key, into) in [
             ('nodes', nodes),
@@ -387,12 +413,19 @@ class SaveTreeService extends ChangeNotifier {
       nodes.add(p);
       claimed[p.slotIndex] = p;
     }
+    // スロットのメモを書いた時刻：一覧の時刻に、この起動で書いたメモの時刻を
+    // 重ねる。
+    final memoTimes = {...diskMemoTimes, ...?_slotMemoTimes[projectId]};
     // 控えのメモ（その起動で書いたスロットのメモ）は、入ったスロットへ
-    // （この起動で書いたメモが勝つ）。
+    // （この起動で書いたメモと、一覧のそのスロットに控えより後に書いた
+    // メモが勝つ）。
     for (final MapEntry(key: slot, value: p) in claimed.entries) {
       final memo = pendingMemos[p.id];
       if (memo == null || editedMemos.containsKey(slot)) continue;
+      final at = pendingMemoTimes[p.id]!;
+      if (memoTimes[slot]?.isAfter(at) ?? false) continue;
       _slotMemosByProject.putIfAbsent(projectId, () => {})[slot] = memo;
+      memoTimes[slot] = at;
     }
     final pendingIds = {for (final p in pending) p.id};
     // 一覧に無い保存のファイルを古い順に拾い直す。
@@ -448,6 +481,14 @@ class SaveTreeService extends ChangeNotifier {
         if (moving && memo != null && memo.isNotEmpty && !labelled(free)) {
           final memos = _slotMemosByProject.putIfAbsent(projectId, () => {});
           memos[free] = memo;
+          final at = ownPending
+              ? pendingMemoTimes[orphan.id]
+              : diskMemoTimes[from];
+          if (at != null) {
+            memoTimes[free] = at;
+          } else {
+            memoTimes.remove(free);
+          }
           // コメントを空にして保存した（メモを書いていない）スロットには、
           // 譲った保存のメモを残さない（新しい保存がそのメモで呼ばれ、
           // 2つのスロットが同じ名前になった）。移せなかったメモは消さない。
@@ -467,6 +508,7 @@ class SaveTreeService extends ChangeNotifier {
               );
           if (!ownPending && !edited && blank && memos[from] == memo) {
             memos[from] = '';
+            memoTimes.remove(from);
           }
         }
         nodes.add(
@@ -486,6 +528,7 @@ class SaveTreeService extends ChangeNotifier {
     archived.addAll(sessionArchived);
     _readProjects.add(projectId);
     _unreadLists.remove(projectId);
+    _slotMemoTimes[projectId] = memoTimes;
     if (nodes.isEmpty && archived.isEmpty) {
       if (editedMemos.isNotEmpty) await _persist(projectId);
       return;
@@ -562,6 +605,11 @@ class SaveTreeService extends ChangeNotifier {
                   .entries)
             '${entry.key}': entry.value,
         },
+        if (_slotMemoTimes[projectId]?.isNotEmpty ?? false)
+          'slotMemoTimes': {
+            for (final entry in _slotMemoTimes[projectId]!.entries)
+              '${entry.key}': entry.value.toIso8601String(),
+          },
       });
       // 書き込みと置き換えは同期で行い、途中で別の書き込みが割り込まない
       // ようにする（作品の保存と同じ）。
@@ -596,6 +644,9 @@ class SaveTreeService extends ChangeNotifier {
       final memo = node.slotIndex >= 0 && edited.contains(node.slotIndex)
           ? memos[node.slotIndex]
           : null;
+      final memoAt = memo == null
+          ? null
+          : _slotMemoTimes[projectId]?[node.slotIndex];
       try {
         final file = File('${dir.path}/${node.id}$pendingSuffix');
         File('${file.path}.tmp')
@@ -604,6 +655,7 @@ class SaveTreeService extends ChangeNotifier {
               'node': node.toJson(),
               if (archived) 'archived': true,
               'memo': ?memo,
+              'memoAt': ?memoAt?.toIso8601String(),
             }),
             flush: true,
           )
@@ -684,6 +736,8 @@ class SaveTreeService extends ChangeNotifier {
           notifyListeners();
         }
         _memosEditedUnread.putIfAbsent(projectId, () => {}).add(slotIndex);
+        _slotMemoTimes.putIfAbsent(projectId, () => {})[slotIndex] =
+            DateTime.now();
         // この起動でそのスロットへ保存していれば、メモを保存の控えにも
         // 書く（次に一覧を読めたとき、次の起動でも保存と一緒に戻る）。
         await _persist(projectId);
@@ -693,6 +747,7 @@ class SaveTreeService extends ChangeNotifier {
     }
     if (bySlot[slotIndex] == normalized) return true;
     bySlot[slotIndex] = normalized;
+    _slotMemoTimes.putIfAbsent(projectId, () => {})[slotIndex] = DateTime.now();
     notifyListeners();
     await _persist(projectId);
     return true;

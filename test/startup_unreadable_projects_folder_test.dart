@@ -4245,6 +4245,66 @@ void main() {
       ['A', '枝'],
     );
   });
+
+  // 一覧を読めない起動でスロット2へ保存した（控えのメモ「セーブE」）後、
+  // 次の起動（一覧は読めたが保存のフォルダを一覧できず、控えは見えない）で
+  // 空に見えるスロット2の名前を「新しい名前」に書き直すと（保存できたと
+  // 出る）、その次に読めたとき控えの古いメモで置き換わり、「新しい名前」は
+  // どこにも残らなかった。控えのメモは、一覧のそのスロットのメモが控えより
+  // 後に書かれていないときだけ使う。
+  test('a slot memo written after a save note keeps its name when the note '
+      'is read', () async {
+    final (project, _) = await _seedProjectWithSaves(comments: ['A', 'B']);
+    final folder = '${storage.projectsPath}/${project.id}/SaveTree';
+    final indexPath = '$folder/${SaveTreeService.indexFileName}';
+    final seeder = SaveTreeService()..setSlotMax(5);
+    await seeder.init();
+    await seeder.setSlotMemo(project.id, 2, '次はここ');
+    seeder.dispose();
+    storage.paths.blockReading(indexPath);
+
+    final first = SaveTreeService()..setSlotMax(5);
+    await first.init();
+    final e = await _saveToSlot(first, project, 2, 'セーブE');
+    await first.setSlotMemo(project.id, 2, 'セーブE');
+    first.dispose();
+
+    storage.paths
+      ..clear()
+      ..blockListing(folder);
+    final second = SaveTreeService()..setSlotMax(5);
+    await second.init();
+    expect(second.slotDisplayMemoOf(project.id, 2), '次はここ');
+    expect(await second.setSlotMemo(project.id, 2, '新しい名前'), isTrue);
+    second.dispose();
+
+    storage.paths.clear();
+    void expectRenamed(SaveTreeService saveTree) {
+      final bySlot = {
+        for (final n in saveTree.getNodes(project.id)) n.slotIndex: n,
+      };
+      expect(bySlot[2]?.id, e.id);
+      expect(bySlot[2]!.comment, 'セーブE');
+      expect(
+        [for (var i = 0; i < 5; i++) saveTree.slotDisplayMemoOf(project.id, i)],
+        ['A', 'B', '新しい名前', null, null],
+        reason: 'the name written later was replaced by the note',
+      );
+    }
+
+    final third = SaveTreeService()..setSlotMax(5);
+    addTearDown(third.dispose);
+    await third.init();
+    expectRenamed(third);
+    expect(
+      (jsonDecode(File(indexPath).readAsStringSync()) as Map)['slotMemos'],
+      containsPair('2', '新しい名前'),
+    );
+    final fourth = SaveTreeService()..setSlotMax(5);
+    addTearDown(fourth.dispose);
+    await fourth.init();
+    expectRenamed(fourth);
+  });
 }
 
 /// 実際のファイルを読む処理（ゴミ箱の一覧・読み直し）を実時間で待ちながら
