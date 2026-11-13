@@ -202,27 +202,10 @@ class _WidgetArtworkPickerScreenState extends State<WidgetArtworkPickerScreen> {
               }),
             )
           else ...[
-            PopupMenuButton<ProjectViewMode>(
-              icon: const Icon(Icons.view_module),
-              onSelected: (mode) => setState(() => _viewMode = mode),
-              itemBuilder: (_) => [
-                PopupMenuItem(
-                  value: ProjectViewMode.large,
-                  child: Text(l10n.homeViewModeLarge),
-                ),
-                PopupMenuItem(
-                  value: ProjectViewMode.medium,
-                  child: Text(l10n.homeViewModeMedium),
-                ),
-                PopupMenuItem(
-                  value: ProjectViewMode.small,
-                  child: Text(l10n.homeViewModeSmall),
-                ),
-                PopupMenuItem(
-                  value: ProjectViewMode.detail,
-                  child: Text(l10n.homeViewModeDetail),
-                ),
-              ],
+            // ホームと同じメニュー（説明・今の表示の印・下に開く）。
+            ProjectViewModeMenu(
+              value: _viewMode,
+              onChanged: (mode) => setState(() => _viewMode = mode),
             ),
             IconButton(
               icon: const Icon(Icons.search),
@@ -307,6 +290,14 @@ class _WidgetArtworkPickerScreenState extends State<WidgetArtworkPickerScreen> {
                       hideEmptyState: loadFailed,
                       onPickProject: (id) =>
                           context.push('/settings/widget/artwork/$id'),
+                      // 絞り込みで空のときは、ホームと同じく外すボタンを出す。
+                      onClearSearch: () => setState(() {
+                        _isSearching = false;
+                        _searchQuery = '';
+                        _searchController.clear();
+                      }),
+                      onShowAll: () =>
+                          setState(() => _showFavoritesOnly = false),
                     ),
                   ),
                 ],
