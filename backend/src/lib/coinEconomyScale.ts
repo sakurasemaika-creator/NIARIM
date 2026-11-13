@@ -15,7 +15,7 @@
  * signed SSV callback, account binding, quota and non-replay.
  * Keep AdMob reward_amount and server offer version aligned.
  */
-export const FINAL_COIN_ECONOMY_VERSION = "economy-v2-min10-repriced-20261113" as const;
+export const FINAL_COIN_ECONOMY_VERSION = "economy-v3-shortterm-rebalanced-20261113" as const;
 export const INITIAL_REWARDED_COINS_PER_COMPLETION = 10 as const;
 export const INITIAL_REWARD_OFFER_VERSION = "launch-v1-10-coins" as const;
 export const REFERENCE_COINS_PER_YEN = 100 as const;

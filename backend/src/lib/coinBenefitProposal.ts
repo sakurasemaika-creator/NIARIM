@@ -1,5 +1,5 @@
 /**
- * Owner-approved, FIXED launch coin exchange unit-price catalog.
+ * Versioned exchange unit-price catalog: short periods rebalanced.
  * Economics is final, NOT an automatic offer or entitlement grant.
  * Each currently unsupported redemption remains disabled until its
  * authenticated, atomic server redemption path has been implemented.
@@ -16,7 +16,7 @@ import {
   PREMIUM_YEARLY_LIST_PRICE_YEN, REFERENCE_COINS_PER_YEN,
 } from "./coinEconomyScale";
 
-export const COIN_BENEFIT_PRICE_VERSION = "v4-min10-repriced-20261113" as const;
+export const COIN_BENEFIT_PRICE_VERSION = "v5-shortterm-rebalanced-20261113" as const;
 
 const month = {
   endCardEdit: 12_000,
@@ -50,15 +50,17 @@ export function finalBenefitCoins(
   // Full bundle is fixed by the owner; redemption activation remains
   // separately gated by a server-signed, revisioned quote.
   if (target === "fullPremium") {
-    return {hour:5_000,day:10_000,week:30_000}[duration];
+    return {hour:10_000,day:25_000,week:45_000}[duration];
   }
   // Round every unit price UP at the ones place to a multiple of 10.
-  const raw = {
-    hour: Math.ceil(perMonth / 24),
-    day: Math.ceil(perMonth / 10),
-    week: Math.ceil(perMonth / 2),
+  // Short use is deliberately more expensive than a proportional month:
+  // 1 hour ≈ 1/6 month, 1 day ≈ 1/3 month, 1 week ≈ 3/4 month.
+  // Round upward to 10 Opals with integer-safe arithmetic.
+  return {
+    hour: Math.ceil(perMonth / 60) * 10,
+    day: Math.ceil(perMonth / 30) * 10,
+    week: Math.ceil(perMonth * 3 / 40) * 10,
   }[duration];
-  return Math.ceil(raw / 10) * 10;
 }
 
 export const FINAL_PREMIUM_MONTHLY_COINS = month.fullPremium;

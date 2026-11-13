@@ -6,7 +6,7 @@ import 'coin_economy_scale.dart';
 /// activate unsupported benefits. A live purchase still requires an
 /// authenticated, approved, server-versioned quote and atomic redemption.
 abstract final class CoinBenefitPriceCatalog {
-  static const version = 'v4-min10-repriced-20261113';
+  static const version = 'v5-shortterm-rebalanced-20261113';
 
   /// Exactly the Japanese annual Premium plan price × 100 coins.
   static const yearlyPremiumCoins =
@@ -46,20 +46,20 @@ abstract final class CoinBenefitPriceCatalog {
     if (unit == CoinDurationUnit.month) return month;
     if (target == CoinUnlockTarget.fullPremium) {
       return switch (unit) {
-        CoinDurationUnit.hour => 5000,
-        CoinDurationUnit.day => 10000,
-        CoinDurationUnit.week => 30000,
+        CoinDurationUnit.hour => 10000,
+        CoinDurationUnit.day => 25000,
+        CoinDurationUnit.week => 45000,
         CoinDurationUnit.month => month,
       };
     }
-    final raw = switch (unit) {
-      CoinDurationUnit.hour => (month / 24).ceil(),
-      CoinDurationUnit.day => (month / 10).ceil(),
-      CoinDurationUnit.week => (month / 2).ceil(),
+    // One-hour, one-day and one-week uses a deliberate short-term premium
+    // over proportional monthly time, matching backend integer arithmetic.
+    return switch (unit) {
+      CoinDurationUnit.hour => ((month + 59) ~/ 60) * 10,
+      CoinDurationUnit.day => ((month + 29) ~/ 30) * 10,
+      CoinDurationUnit.week => ((month * 3 + 39) ~/ 40) * 10,
       CoinDurationUnit.month => month,
     };
-    // Round the ones digit UP so each unit quote is a multiple of 10.
-    return ((raw + 9) ~/ 10) * 10;
   }
 
   static int cost(CoinUnlockTarget target, CoinUnlockDuration duration) {

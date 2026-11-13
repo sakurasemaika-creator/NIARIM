@@ -31,7 +31,7 @@
     "rewardedAdReviewApproved": "true",
     "rewardedAdDailyLimit": "1",
     "coinFullPremiumMonthCoins": "55000",
-    "coinPriceVersion": "v4-min10-repriced-20261113",
+    "coinPriceVersion": "v5-shortterm-rebalanced-20261113",
     "coinRedemptionEnabled": "true",
     "coinPremiumAnnualRedemptionEnabled": "false",
     "coinIndividualRedemptionEnabled": "true",
