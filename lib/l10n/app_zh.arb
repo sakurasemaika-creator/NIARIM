@@ -1603,6 +1603,7 @@
   "saveTreeCommentLabel": "备注",
   "saveTreeCommentHint": "例：背景完成",
   "saveTreeSizeWarningSnackbar": "存档树的容量正在变大（约{mb}MB）。建议删除不需要的存档数据。",
+  "saveTreeDeleteFailedSnackbar": "存档数据删除失败",
   "saveTreeSaveFailedSnackbar": "保存失败。请检查剩余存储空间后重试（{error}）",
   "@saveTreeSizeWarningSnackbar": {
     "placeholders": {

@@ -4219,6 +4219,10 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
+  String get saveTreeDeleteFailedSnackbar =>
+      'No se pudieron eliminar los datos guardados';
+
+  @override
   String saveTreeSaveFailedSnackbar(String error) {
     return 'Error al guardar. Comprueba el espacio libre e inténtalo de nuevo ($error)';
   }

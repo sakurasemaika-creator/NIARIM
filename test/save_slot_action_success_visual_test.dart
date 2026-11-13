@@ -210,6 +210,9 @@ void main() {
       await settle();
       await tester.tap(find.widgetWithText(FilledButton, l10n.commonDelete));
       await waitForDialogToClose();
+      // 保存のファイルを消し終えてから一覧から外す（消せなかった保存を
+      // 一覧から外さない）ので、消し終えるまで待つ。
+      await settle();
       nodes = saveService.getNodes(project.id);
       expect(nodes.where((n) => n.slotIndex == 1), isEmpty);
       final currentLoads = buttons(l10n.saveTreeSlotLoadTooltip);

@@ -1603,6 +1603,7 @@
   "saveTreeCommentLabel": "Note",
   "saveTreeCommentHint": "ex. : Arrière-plan terminé",
   "saveTreeSizeWarningSnackbar": "Votre arbre de sauvegardes devient volumineux (environ {mb} Mo). Nous vous recommandons de supprimer les sauvegardes inutiles.",
+  "saveTreeDeleteFailedSnackbar": "Impossible de supprimer les données de sauvegarde",
   "saveTreeSaveFailedSnackbar": "Échec de l'enregistrement. Vérifiez l'espace disponible et réessayez ({error})",
   "@saveTreeSizeWarningSnackbar": {
     "placeholders": {

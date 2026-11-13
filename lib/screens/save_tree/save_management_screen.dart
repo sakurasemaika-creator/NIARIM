@@ -19,6 +19,7 @@ import '../../widgets/projects_load_failure_notice.dart';
 import '../../widgets/responsive.dart';
 import 'save_tree_screen.dart';
 import 'widgets/save_thumbnail_capture.dart';
+import 'widgets/save_delete_feedback.dart';
 import 'widgets/save_rename_button.dart';
 import 'widgets/save_screen_app_bar.dart';
 import '../../config/font_fallback.dart';
@@ -178,7 +179,8 @@ class _GameStyleSlotScreen extends StatelessWidget {
     )) {
       return;
     }
-    await saveService.deleteNode(projectId, node.id);
+    if (!context.mounted) return;
+    await deleteSaveWithFeedback(context, saveService, projectId, node.id);
   }
 
   void _showSaveDialog(

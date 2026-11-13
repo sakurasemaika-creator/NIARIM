@@ -1134,10 +1134,14 @@ class SaveTreeService extends ChangeNotifier {
     }
   }
 
+  /// 保存を消す。保存（.niapro）を消せなかったときは、一覧から外さずに
+  /// 投げる（保存の画面は消せなかったことを知らせる）。以前は先に一覧から
+  /// 外して知らせていたので、消せなかった保存が画面から消え、一覧も書かれず、
+  /// 次の起動で戻った。
   Future<void> deleteNode(String projectId, String nodeId) async {
+    await _deleteNodeFiles(projectId, nodeId);
     _nodesByProject[projectId]?.removeWhere((n) => n.id == nodeId);
     notifyListeners();
-    await _deleteNodeFiles(projectId, nodeId);
     await _persist(projectId);
   }
 
@@ -1159,7 +1163,13 @@ class SaveTreeService extends ChangeNotifier {
   /// [keepIds] 保持するノードID一覧
   /// [archive] true=アーカイブ、false=完全削除（実ファイルも削除する）
   /// [newSlotMax] スロット方式の場合の新スロット数（null=ツリー方式へ変更）
-  Future<void> applyModeChange({
+  ///
+  /// 先に残す保存を新しいスロットへ入れてから、選ばなかった保存を消す。
+  /// 消せなかった保存は、記録して退避に残す（ツリー方式へ戻すと出る）。
+  /// 選ばなかった保存をすべて消せた（退避するときはいつも）true。以前は1つ
+  /// 消せないと途中で投げ、先に消した保存が中身の無いまま一覧に残り、
+  /// 残すと選んだ保存はどのスロットにも入らなかった。
+  Future<bool> applyModeChange({
     required String projectId,
     required List<String> keepIds,
     required bool archive,
@@ -1173,11 +1183,6 @@ class SaveTreeService extends ChangeNotifier {
     if (archive) {
       _archivedByProject.putIfAbsent(projectId, () => []);
       _archivedByProject[projectId]!.addAll(discard);
-    } else {
-      // 完全削除：実データ（SaveTree/{nodeId}.niapro）も削除する
-      for (final n in discard) {
-        await _deleteNodeFiles(projectId, n.id);
-      }
     }
 
     // スロット方式の場合、選択ノードにスロット番号を再割り当て
@@ -1212,8 +1217,22 @@ class SaveTreeService extends ChangeNotifier {
 
     _nodesByProject[projectId] = newNodes;
     _isTreeMode = newIsTreeMode;
+    var allDone = true;
+    if (!archive) {
+      // 完全削除：実データ（SaveTree/{nodeId}.niapro）も削除する
+      for (final n in discard) {
+        try {
+          await _deleteNodeFiles(projectId, n.id);
+        } catch (error, stack) {
+          AppErrorReporter.record(error, stack);
+          _archivedByProject.putIfAbsent(projectId, () => []).add(n);
+          allDone = false;
+        }
+      }
+    }
     notifyListeners();
     await _persist(projectId);
+    return allDone;
   }
 
   /// スロット→ツリー方式へ変更した時にアーカイブを自動復元（外部呼び出し用）

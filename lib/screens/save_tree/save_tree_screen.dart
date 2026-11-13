@@ -21,6 +21,7 @@ import '../../utils/app_error_reporter.dart';
 import '../../widgets/dispose_on_unmount.dart';
 import '../../config/font_fallback.dart';
 import '../../config/accent_text_theme.dart';
+import 'widgets/save_delete_feedback.dart';
 import 'widgets/save_rename_button.dart';
 import 'widgets/save_screen_app_bar.dart';
 import 'widgets/save_thumbnail_capture.dart';
@@ -489,7 +490,13 @@ class _SlotView extends StatelessWidget {
                   if (!await confirmDelete(context, itemName: node.comment)) {
                     return;
                   }
-                  saveService.deleteNode(projectId, node.id);
+                  if (!context.mounted) return;
+                  await deleteSaveWithFeedback(
+                    context,
+                    saveService,
+                    projectId,
+                    node.id,
+                  );
                 }
               : null,
         );
@@ -1238,7 +1245,8 @@ class _TreeView extends StatelessWidget {
         )) {
           return;
         }
-        await saveService.deleteNode(projectId, node.id);
+        if (!context.mounted) return;
+        await deleteSaveWithFeedback(context, saveService, projectId, node.id);
         break;
     }
   }
@@ -1607,20 +1615,42 @@ class _SaveModeChangeScreenState extends State<_SaveModeChangeScreen> {
 
   void _showDiscardDialog(BuildContext context, List<SaveNode> nodes) {
     final discardCount = nodes.length - _selectedIds.length;
+    var applying = false;
     showDialog(
       context: context,
       builder: (ctx) => _DiscardChoiceDialog(
         discardCount: discardCount,
-        onConfirm: (archive) {
-          widget.saveService.applyModeChange(
-            projectId: widget.projectId,
-            keepIds: _selectedIds.toList(),
-            archive: archive,
-            newIsTreeMode: widget.newIsTreeMode,
-            newSlotMax: widget.newSlotMax,
-          );
-          Navigator.pop(ctx);
-          Navigator.pop(context);
+        onConfirm: (archive) async {
+          // 変え終えてから閉じる（以前は待たずに閉じ、選ばなかった保存を
+          // 消せなかったときの例外を誰も受けなかった）。二度押しで2回変えない。
+          if (applying) return;
+          applying = true;
+          final messenger = ScaffoldMessenger.of(context);
+          final failed = AppLocalizations.of(
+            context,
+          )!.saveTreeDeleteFailedSnackbar;
+          var done = false;
+          try {
+            done = await widget.saveService.applyModeChange(
+              projectId: widget.projectId,
+              keepIds: _selectedIds.toList(),
+              archive: archive,
+              newIsTreeMode: widget.newIsTreeMode,
+              newSlotMax: widget.newSlotMax,
+            );
+          } catch (error, stack) {
+            AppErrorReporter.record(error, stack);
+          }
+          // 閉じるのは自分のダイアログと変更の画面だけ（その間に戻る操作で
+          // 閉じていたら、下の画面を閉じない）。
+          if (ctx.mounted && (ModalRoute.of(ctx)?.isCurrent ?? false)) {
+            Navigator.pop(ctx);
+          }
+          if (context.mounted && (ModalRoute.of(context)?.isCurrent ?? false)) {
+            Navigator.pop(context);
+          }
+          // 消せなかった保存は退避に残した（ツリー方式へ戻すと出る）。
+          if (!done) messenger.showSnackBar(SnackBar(content: Text(failed)));
         },
         onBack: () => Navigator.pop(ctx),
       ),
