@@ -71,11 +71,18 @@ class SaveSlotMemoButton extends StatelessWidget {
       onPressed: () async {
         final memo = await _showMemoEditor(context, initialMemo);
         if (memo == null || !context.mounted) return;
-        await context.read<SaveTreeService>().setSlotMemo(
+        final kept = await context.read<SaveTreeService>().setSlotMemo(
           projectId,
           slotIndex,
           memo,
         );
+        // 保存の一覧を読めていないので、メモは次に起動したときに残らない
+        // かもしれない（スロットに出ているだけで保存できたように見えた）。
+        if (!kept && context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(l10n.saveTreeLoadFailedSnackbar)),
+          );
+        }
       },
     );
   }

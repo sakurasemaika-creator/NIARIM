@@ -110,11 +110,11 @@ class SaveTreeService extends ChangeNotifier {
     }
     for (final dir in folders) {
       final projectId = dir.path.split(RegExp(r'[\\/]')).last;
-      if (_readProjects.contains(projectId) ||
-          _nodesByProject.containsKey(projectId) ||
-          _archivedByProject.containsKey(projectId)) {
-        continue;
-      }
+      // この起動中に保存した作品も、一覧を読めていなければ読む（読んだ
+      // 一覧へこの起動の保存を重ねる。[_loadProject]）。読み直さないと、
+      // 前の保存が出ないまま、次の起動で新しい保存がスロットを移り、
+      // メモも消えた。
+      if (_readProjects.contains(projectId)) continue;
       try {
         await _loadProject(projectId, Directory('${dir.path}/SaveTree'));
       } catch (error, stack) {
@@ -136,6 +136,19 @@ class SaveTreeService extends ChangeNotifier {
     final editedMemos = <int, String>{
       for (final slot in _memosEditedUnread[projectId] ?? const <int>{})
         slot: ?_slotMemosByProject[projectId]?[slot],
+    };
+    // 一覧を読めていない間にこの起動で保存したもの。読んだ一覧へ重ねる：
+    // 保存したスロットはこの起動の保存のまま、同じスロットにあった一覧の
+    // 保存は（見えていなかったので）消さずに空いているスロットへ移す。
+    final sessionNodes = _nodesByProject[projectId] ?? const <SaveNode>[];
+    final sessionArchived = _archivedByProject[projectId] ?? const <SaveNode>[];
+    final sessionIds = {
+      for (final n in [...sessionNodes, ...sessionArchived]) n.id,
+    };
+    final sessionSlots = {
+      if (!_isTreeMode)
+        for (final n in sessionNodes)
+          if (n.slotIndex >= 0) n.slotIndex,
     };
     String? text;
     try {
@@ -160,7 +173,9 @@ class SaveTreeService extends ChangeNotifier {
       // 保存のフォルダが無い：保存の無い作品。
       if (text == null) {
         _readProjects.add(projectId);
-        if (editedMemos.isNotEmpty) await _persist(projectId);
+        if (editedMemos.isNotEmpty || sessionIds.isNotEmpty) {
+          await _persist(projectId);
+        }
         return;
       }
     } catch (error, stack) {
@@ -175,7 +190,10 @@ class SaveTreeService extends ChangeNotifier {
     bool hasData(String id) => File('${dir.path}/$id.niapro').existsSync();
     final nodes = <SaveNode>[];
     final archived = <SaveNode>[];
-    final known = <String>{};
+    // この起動の保存は、一覧からも、一覧に無いファイルとしても拾わない。
+    final known = <String>{...sessionIds};
+    // 一覧の保存のうち、この起動で保存したスロットにあったもの。
+    final displaced = <SaveNode>[];
     if (text != null) {
       try {
         final json = jsonDecode(text);
@@ -210,6 +228,11 @@ class SaveTreeService extends ChangeNotifier {
               );
               if (node == null) continue;
               known.add(id);
+              if (identical(into, nodes) &&
+                  sessionSlots.contains(node.slotIndex)) {
+                displaced.add(node);
+                continue;
+              }
               into.add(node);
             }
           }
@@ -241,10 +264,12 @@ class SaveTreeService extends ChangeNotifier {
       // スロット方式：空いているスロットへ入れ、入りきらない分は退避する
       // （ツリー方式へ変えると出る）。
       final used = {
+        ...sessionSlots,
         for (final n in nodes)
           if (n.slotIndex >= 0) n.slotIndex,
       };
-      for (final orphan in orphans) {
+      // この起動の保存にスロットを譲った一覧の保存も、同じように移す。
+      for (final orphan in [...displaced, ...orphans]) {
         int? free;
         for (var i = 0; i < _slotMax; i++) {
           if (!used.contains(i)) {
@@ -262,12 +287,16 @@ class SaveTreeService extends ChangeNotifier {
             id: orphan.id,
             projectId: projectId,
             savedAt: orphan.savedAt,
+            comment: orphan.comment,
             thumbnailPath: orphan.thumbnailPath,
+            parentId: orphan.parentId,
             slotIndex: free,
           ),
         );
       }
     }
+    nodes.addAll(sessionNodes);
+    archived.addAll(sessionArchived);
     _readProjects.add(projectId);
     if (nodes.isEmpty && archived.isEmpty) {
       if (editedMemos.isNotEmpty) await _persist(projectId);
@@ -275,7 +304,9 @@ class SaveTreeService extends ChangeNotifier {
     }
     _nodesByProject[projectId] = nodes;
     if (archived.isNotEmpty) _archivedByProject[projectId] = archived;
-    if (orphans.isNotEmpty || editedMemos.isNotEmpty) await _persist(projectId);
+    if (orphans.isNotEmpty || editedMemos.isNotEmpty || sessionIds.isNotEmpty) {
+      await _persist(projectId);
+    }
   }
 
   /// [file]が無いと確かめられるか（入れない・入出力の失敗で分からないときは
@@ -374,21 +405,53 @@ class SaveTreeService extends ChangeNotifier {
   /// Edits metadata only: never changes or deletes .niapro data, thumbnail,
   /// save time or tree relationships. Retain empty memos as explicit clears.
   ///
-  /// 戻り値は「メモを受け取ったか」（スロットの番号が正しくなければfalse）。
-  /// 保存の一覧をまだ読めていない作品では、メモはこの起動の間だけ持ち、
-  /// 一覧を読めたとき（[loadUnread]）にディスクのメモへ重ねて書く。
+  /// 戻り値は「メモを保存の一覧と一緒に残せるか」（スロットの番号が
+  /// 正しくなければfalse）。保存の一覧をまだ読めていない作品では、まず
+  /// 一覧を読み直す：読めれば、それまでに書いたメモごと一覧へ重ねて書く
+  /// （[_loadProject]）。読めなければ、メモはこの起動の間だけ持ってfalseを
+  /// 返し（画面は保存データを読み込めなかったと知らせる）、一覧を読めた
+  /// とき（[loadUnread]・次のメモ）に重ねて書く。
   Future<bool> setSlotMemo(String projectId, int slotIndex, String memo) async {
     if (slotIndex < 0) return false;
     final normalized = memo.trim();
     final bySlot = _slotMemosByProject.putIfAbsent(projectId, () => {});
+    if (!_readProjects.contains(projectId)) {
+      // 一覧を読めていない間は、保存してあるメモが欄に出ない（空で開く）。
+      // メモの無い（空の）スロットを空のまま確定しただけでは、見えて
+      // いなかったメモを消したことにしない。この起動で書いたメモを
+      // 消したときは、消したことにする。
+      if (normalized.isNotEmpty || (bySlot[slotIndex]?.isNotEmpty ?? false)) {
+        if (bySlot[slotIndex] != normalized) {
+          bySlot[slotIndex] = normalized;
+          notifyListeners();
+        }
+        _memosEditedUnread.putIfAbsent(projectId, () => {}).add(slotIndex);
+      }
+      await _readListIfReadable(projectId);
+      return _readProjects.contains(projectId);
+    }
     if (bySlot[slotIndex] == normalized) return true;
     bySlot[slotIndex] = normalized;
-    if (!_readProjects.contains(projectId)) {
-      _memosEditedUnread.putIfAbsent(projectId, () => {}).add(slotIndex);
-    }
     notifyListeners();
     await _persist(projectId);
     return true;
+  }
+
+  /// まだ一覧を読めていない作品の保存の一覧を、読めるようになっていれば
+  /// 読む（[loadUnread]の1作品分）。ホームの「再試行」が出ない場合
+  /// （保存の一覧だけを読めなかった等）も、メモを書いたときに読めるように
+  /// する。
+  Future<void> _readListIfReadable(String projectId) async {
+    final loading = _loadingUnread;
+    if (loading != null) await loading;
+    try {
+      final base = await NiaproSerializer.projectsBasePath();
+      if (_readProjects.contains(projectId)) return;
+      await _loadProject(projectId, Directory('$base/$projectId/SaveTree'));
+    } catch (error, stack) {
+      AppErrorReporter.record(error, stack);
+    }
+    notifyListeners();
   }
 
   /// Rename a save snapshot without rewriting the archive or changing its

@@ -379,9 +379,10 @@ void main() {
     expect(saveTree.getNodes(project.id), isEmpty);
     expect(saveTree.slotMemoOf(project.id, 0), isNull);
 
-    // 書き直す・新しく書く・消す。
+    // 書き直す・新しく書く・書いてから消す。
     await saveTree.setSlotMemo(project.id, 0, '書き直した');
     await saveTree.setSlotMemo(project.id, 2, '新しいメモ');
+    await saveTree.setSlotMemo(project.id, 3, '書いてから');
     await saveTree.setSlotMemo(project.id, 3, '');
     expect(saveTree.slotMemoOf(project.id, 0), '書き直した');
 
@@ -468,6 +469,289 @@ void main() {
       expectMemos(again);
     });
   }
+
+  // 保存の一覧だけを読めない起動（作品は開け、他に読めないものも無い）
+  // では、ホームに知らせも「再試行」も出ない。その間に書いたメモは、
+  // 「書けた」と返ってスロットに出たまま、次の起動で消えていた。書けて
+  // いない間は書けたと返さず、読めるようになった後は、次にメモを書いた
+  // ときに一覧を読んで、それまでのメモごと保存する。
+  test('a slot memo typed while only the save list is unreadable is not '
+      'reported as saved, and the next memo saves both once the list can '
+      'be read', () async {
+    final (project, saves) = await _seedProjectWithSaves(comments: ['A', 'B']);
+    final seeder = SaveTreeService()..setSlotMax(5);
+    await seeder.init();
+    await seeder.setSlotMemo(project.id, 3, '前のメモ');
+    seeder.dispose();
+    final indexPath =
+        '${storage.projectsPath}/${project.id}/SaveTree/'
+        '${SaveTreeService.indexFileName}';
+    final before = File(indexPath).readAsStringSync();
+    Map<String, dynamic> memosOnDisk() =>
+        (jsonDecode(File(indexPath).readAsStringSync()) as Map)['slotMemos']
+            as Map<String, dynamic>;
+    storage.paths.blockReading(indexPath);
+
+    final created = <ChangeNotifier>[];
+    await buildAppProviders(debugOnCreated: created.add);
+    addTearDown(() {
+      for (final service in created.reversed) {
+        service.dispose();
+      }
+    });
+    final projects = created.whereType<ProjectService>().single;
+    final saveTree = created.whereType<SaveTreeService>().single..setSlotMax(5);
+    expect(projects.projects.map((p) => p.id), [project.id]);
+    expect(projects.projectsLoadFailed, isFalse, reason: 'no Retry is shown');
+    expect(saveTree.getNodes(project.id), isEmpty);
+
+    expect(
+      await saveTree.setSlotMemo(project.id, 0, '書き直した'),
+      isFalse,
+      reason: 'the memo was reported as saved',
+    );
+    // この起動の間は、書いたメモを出しておく。
+    expect(saveTree.slotMemoOf(project.id, 0), '書き直した');
+
+    // 読めるようになった。「再試行」は無いが、次のメモで読んで保存する。
+    storage.paths.clear();
+    expect(File(indexPath).readAsStringSync(), before);
+    expect(await saveTree.setSlotMemo(project.id, 2, '新しいメモ'), isTrue);
+    void expectMemos(SaveTreeService service) {
+      expect(service.getNodes(project.id).map((n) => n.id), [
+        saves[0].id,
+        saves[1].id,
+      ]);
+      expect(service.slotMemoOf(project.id, 0), '書き直した');
+      expect(service.slotMemoOf(project.id, 1), 'B');
+      expect(service.slotMemoOf(project.id, 2), '新しいメモ');
+      expect(service.slotMemoOf(project.id, 3), '前のメモ');
+    }
+
+    expectMemos(saveTree);
+    expect(memosOnDisk(), {'0': '書き直した', '1': 'B', '2': '新しいメモ', '3': '前のメモ'});
+    final again = SaveTreeService()..setSlotMax(5);
+    addTearDown(again.dispose);
+    await again.init();
+    expectMemos(again);
+  });
+
+  // 一覧を読めていない間は、保存してあるメモが編集の欄に出ない（空で
+  // 開く）。何も打たずに確定しただけで「消した」ことにすると、読めた
+  // ときに、見えていなかったメモを空で上書きした。この起動で書いた
+  // メモを消したときだけ、消したことにする。
+  test('confirming an empty memo for a slot whose saved memo was not shown '
+      '(unread list) does not erase it', () async {
+    final (project, _) = await _seedProjectWithSaves(comments: ['A']);
+    final seeder = SaveTreeService()..setSlotMax(5);
+    await seeder.init();
+    await seeder.setSlotMemo(project.id, 2, '大事なメモ');
+    seeder.dispose();
+    final indexPath =
+        '${storage.projectsPath}/${project.id}/SaveTree/'
+        '${SaveTreeService.indexFileName}';
+    storage.paths.blockReading(indexPath);
+
+    final service = SaveTreeService()..setSlotMax(5);
+    addTearDown(service.dispose);
+    await service.init();
+    expect(service.slotMemoOf(project.id, 2), isNull);
+    // 空で開いた欄を、そのまま確定した。
+    await service.setSlotMemo(project.id, 2, '');
+    // この起動で書いたメモを、消した。
+    await service.setSlotMemo(project.id, 0, '下書き');
+    await service.setSlotMemo(project.id, 0, '');
+
+    storage.paths.clear();
+    await service.loadUnread();
+    void expectMemos(SaveTreeService saves) {
+      expect(saves.slotMemoOf(project.id, 2), '大事なメモ');
+      expect(saves.slotMemoOf(project.id, 0), '');
+    }
+
+    expectMemos(service);
+    final again = SaveTreeService()..setSlotMax(5);
+    addTearDown(again.dispose);
+    await again.init();
+    expectMemos(again);
+
+    // 読めるようになってから空のまま確定したとき（その場で読める）も同じ。
+    storage.paths.blockReading(indexPath);
+    final later = SaveTreeService()..setSlotMax(5);
+    addTearDown(later.dispose);
+    await later.init();
+    storage.paths.clear();
+    expect(await later.setSlotMemo(project.id, 2, ''), isTrue);
+    expect(later.slotMemoOf(project.id, 2), '大事なメモ');
+    expect(
+      (jsonDecode(File(indexPath).readAsStringSync()) as Map)['slotMemos'],
+      {'0': '', '2': '大事なメモ'},
+    );
+  });
+
+  // 一覧を読めていない間に保存すると、読み直し（「再試行」）はその作品を
+  // 飛ばし（この起動で保存した作品は読み直さない決まり）、前の保存は
+  // 出ないままだった。次の起動では、新しい保存は一覧に無いファイルとして
+  // 別のスロットへ入り、付けたメモも消えた。読めたときに、この起動の
+  // 保存とメモを読んだ一覧へ重ねる：保存したスロットはそのまま、同じ
+  // スロットにあった前の保存は消さずに空いているスロットへ移す。
+  test(
+    'saves made while the save list was unread keep their slots and '
+    'memos when Retry reads it, and the saves that were there stay',
+    () async {
+      final (project, saves) = await _seedProjectWithSaves(
+        name: '保存を読めない作品',
+        comments: ['A', 'B'],
+      );
+      final seeder = SaveTreeService()..setSlotMax(5);
+      await seeder.init();
+      await seeder.setSlotMemo(project.id, 3, '消すメモ');
+      seeder.dispose();
+      final folder = '${storage.projectsPath}/${project.id}/SaveTree';
+      final indexPath = '$folder/${SaveTreeService.indexFileName}';
+      final before = File(indexPath).readAsStringSync();
+      storage.paths.blockReading(indexPath);
+
+      final service = SaveTreeService()..setSlotMax(5);
+      addTearDown(service.dispose);
+      await service.init();
+      expect(service.getNodes(project.id), isEmpty);
+      // 保存の画面と同じ順：保存してから、打ったコメントをスロットのメモに
+      // する。
+      Future<SaveNode> save(int slot, String comment) async {
+        final node = await _saveToSlot(service, project, slot, comment);
+        await service.setSlotMemo(project.id, slot, comment);
+        return node;
+      }
+
+      final c = await save(3, 'セーブC');
+      // 空に見えるスロット0（前の保存「A」がある）へも保存する。
+      final d = await save(0, 'セーブD');
+
+      storage.paths.clear();
+      expect(File(indexPath).readAsStringSync(), before);
+      await service.loadUnread();
+      void expectMerged(SaveTreeService saveTree) {
+        final bySlot = {
+          for (final n in saveTree.getNodes(project.id)) n.slotIndex: n.id,
+        };
+        expect(bySlot, {
+          0: d.id,
+          1: saves[1].id,
+          // 「A」は消さず、空いているスロットへ。
+          2: saves[0].id,
+          3: c.id,
+        });
+        expect(saveTree.getArchivedNodes(project.id), isEmpty);
+        expect(
+          [
+            for (var i = 0; i < 4; i++)
+              saveTree.slotDisplayMemoOf(project.id, i),
+          ],
+          ['セーブD', 'B', 'A', 'セーブC'],
+        );
+      }
+
+      expectMerged(service);
+      for (final id in [saves[0].id, saves[1].id, c.id, d.id]) {
+        expect(File('$folder/$id.niapro').existsSync(), isTrue, reason: id);
+      }
+      // もう一度読み直しても変わらず、次の起動でも同じ。
+      final written = File(indexPath).readAsStringSync();
+      await service.loadUnread();
+      expectMerged(service);
+      expect(File(indexPath).readAsStringSync(), written);
+      final again = SaveTreeService()..setSlotMax(5);
+      addTearDown(again.dispose);
+      await again.init();
+      expectMerged(again);
+    },
+  );
+
+  // 保存の画面：一覧を読めていない間にメモを書いて「保存」を押すと、
+  // 何も言わずにメモがスロットへ出ていた（保存できたように見える）。
+  // 保存データを読み込めていないことを知らせる。読めるようになった後は、
+  // メモを書くと前の保存が出て、それまでのメモも保存される。
+  testWidgets('the slot memo editor says the save data could not be read '
+      'instead of looking saved, and saves once it can be read', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(420, 900);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    SharedPreferences.setMockInitialValues({
+      'first_launch': false,
+      'language': 'ja',
+      firstUseTooltipsSeenKey: kAllFirstUseTooltipKeys,
+    });
+    final seeded = await tester.runAsync(
+      () => _seedProjectWithSaves(name: '保存を読めない作品', comments: ['A', 'B']),
+    );
+    final (project, saves) = seeded!;
+    final indexPath =
+        '${storage.projectsPath}/${project.id}/SaveTree/'
+        '${SaveTreeService.indexFileName}';
+    final before = File(indexPath).readAsStringSync();
+    storage.paths.blockReading(indexPath);
+    appRouter.go('/home');
+    final providers = await tester.runAsync(buildAppProviders);
+    await tester.pumpWidget(
+      MultiProvider(providers: providers!, child: const NiarimApp()),
+    );
+    await _settleWithFiles(tester);
+    expect(find.byKey(const Key('homeProjectsLoadFailed')), findsNothing);
+    appRouter.push('/save-tree/${project.id}?entry=detail');
+    await _settleWithFiles(tester, rounds: 6);
+    final saveTree = tester
+        .element(find.byType(Scaffold).first)
+        .read<SaveTreeService>();
+    expect(saveTree.getNodes(project.id), isEmpty);
+
+    Future<void> typeMemo(int slot, String text) async {
+      final pencil = find.byKey(Key('saveSlotMemo_${project.id}_$slot'));
+      await tester.ensureVisible(pencil);
+      await tester.tap(pencil);
+      await _settleWithFiles(tester, rounds: 3);
+      await tester.enterText(find.byType(TextField), text);
+      await tester.tap(find.widgetWithText(FilledButton, '保存'));
+      await _settleWithFiles(tester, rounds: 4);
+    }
+
+    const failed = '保存データの読み込みに失敗しました';
+    await typeMemo(0, '書き直した');
+    expect(find.text('書き直した'), findsOneWidget);
+    expect(
+      find.descendant(of: find.byType(SnackBar), matching: find.text(failed)),
+      findsOneWidget,
+      reason: 'the memo looked saved',
+    );
+    storage.paths.clear();
+    expect(File(indexPath).readAsStringSync(), before);
+    ScaffoldMessenger.of(
+      tester.element(find.byType(Scaffold).first),
+    ).removeCurrentSnackBar();
+    await _settleWithFiles(tester, rounds: 3);
+    expect(find.byType(SnackBar), findsNothing);
+
+    // 読めるようになってから、別のスロットへ書く。
+    await typeMemo(2, '新しいメモ');
+    expect(find.byType(SnackBar), findsNothing);
+    expect(saveTree.getNodes(project.id).map((n) => n.id), [
+      saves[0].id,
+      saves[1].id,
+    ]);
+    expect(find.text('書き直した'), findsOneWidget);
+    expect(find.text('B'), findsOneWidget);
+    expect(find.text('新しいメモ'), findsOneWidget);
+    expect(
+      (jsonDecode(File(indexPath).readAsStringSync()) as Map)['slotMemos'],
+      {'0': '書き直した', '1': 'B', '2': '新しいメモ'},
+    );
+    expect(tester.takeException(), isNull);
+    await tester.pumpWidget(const SizedBox.shrink());
+    appRouter.go('/');
+  });
 
   // 作品の保存のフォルダ（SaveTree/）の中を一覧できないと、読めた一覧の
   // 保存まで出さず（作品ごと飛ばし）、次の保存でその一覧を上書きした。
