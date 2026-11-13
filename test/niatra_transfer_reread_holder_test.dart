@@ -148,8 +148,16 @@ TransferMergeRules<_Item> _rules(
 /// 太さが変わらないことと、同じ項目をもう一度合わせても何も変わらないこと
 /// （一覧・受け取った項目の中身を持つ項目・複製の記録・知らせ）を確かめる。
 /// 食い違いがあれば、そこまでの操作と食い違いを返す。[wide]は中身と名前の
-/// 種類を増やし、操作を長く続ける。
-String? _randomTransfers(Random random, {required bool wide}) {
+/// 種類を増やし、操作を長く続ける。[reorder]は、一覧の並びを変える操作も
+/// 混ぜ、渡すたびに、受け取った端末で並びを変えて1つの項目の太さを変えて
+/// から同じ項目をもう一度合わせても、受け取った項目の中身を持つ項目・複製の
+/// 記録・一覧が変わらないことも確かめる（太さは同じ項目どうしでは比べない
+/// 値で、キャンバスで描くだけで変わる）。
+String? _randomTransfers(
+  Random random, {
+  required bool wide,
+  bool reorder = false,
+}) {
   final names = wide
       ? ['Ink', 'Ink (コピー)', 'Ink (コピー 2)', 'Pen', 'Pen (コピー)']
       : ['Ink', 'Ink', 'Ink (コピー)', 'Pen'];
@@ -202,7 +210,7 @@ String? _randomTransfers(Random random, {required bool wide}) {
     final who = random.nextBool() ? 'A' : 'B';
     final other = who == 'A' ? 'B' : 'A';
     final mine = items[who]!;
-    final action = random.nextInt(13);
+    final action = random.nextInt(reorder ? 14 : 13);
     if (action <= 1 || mine.isEmpty) {
       final added = _Item(newId('${who}_'), pick(names), pick(contents));
       mine.add(added);
@@ -243,6 +251,12 @@ String? _randomTransfers(Random random, {required bool wide}) {
           );
       }
       log.add('$who changes $e (action $action) => $mine');
+      continue;
+    }
+    if (action == 13) {
+      final moved = mine.removeAt(random.nextInt(mine.length));
+      mine.insert(random.nextInt(mine.length + 1), moved);
+      log.add('$who reorders => $mine');
       continue;
     }
     // 渡す（前に書き出したファイルのこともある）。
@@ -293,6 +307,42 @@ String? _randomTransfers(Random random, {required bool wide}) {
     ];
     if (problems.isNotEmpty) {
       return '  ${log.join('\n  ')}\n  !! ${problems.join('\n  !! ')}';
+    }
+    if (!reorder) continue;
+    // 受け取った端末で並びを変え、1つの項目の太さを変えてから、同じ項目を
+    // もう一度合わせる。
+    theirs.shuffle(random);
+    if (theirs.isNotEmpty) {
+      final drawn = random.nextInt(theirs.length);
+      theirs[drawn] = changed(
+        theirs[drawn],
+        size: theirs[drawn].size == 17 ? 25 : 17,
+      );
+    }
+    final edited = '$theirs';
+    final againReport = TransferImportReport();
+    final againPlaced = <String, String>{};
+    final rewrittenAgain = mergeTransferredItems(
+      theirs,
+      file,
+      _rules(againReport, newId: () => newId('copy_')),
+      placed: againPlaced,
+      copies: record,
+    );
+    final afterReorder = [
+      if (rewrittenAgain) 'merging after a reorder reports a change',
+      if ('$theirs' != edited)
+        'merging after a reorder changed the list: $edited => $theirs',
+      if ('$againPlaced' != '$firstPlaced')
+        'merging after a reorder changed the holders: $againPlaced',
+      if (recorded(record) != firstRecord)
+        'merging after a reorder changed the record: ${recorded(record)}',
+      if (againReport.addedCopies.isNotEmpty)
+        'merging after a reorder reported ${againReport.addedCopies}',
+    ];
+    if (afterReorder.isNotEmpty) {
+      log.add('$other reorders and resizes => $edited');
+      return '  ${log.join('\n  ')}\n  !! ${afterReorder.join('\n  !! ')}';
     }
   }
   return null;
@@ -588,10 +638,11 @@ void main() {
     await settleTransfer();
     final savedA2 = await _snapshot();
 
-    // B：「Quill」をお気に入りにし、自分の「Ink」の太さを変える。
+    // B：「Quill」をお気に入りにし、自分の「Ink」の名前を変える（太さを
+    // 変えただけなら、Aのブラシが持ったままで届かない）。
     b = await _resume(savedB);
     b.brush.toggleFavoriteBrush('BrushA0');
-    b.brush.updateBrush(_brushOf(b, 'BrushB1').copyWith(size: 25));
+    b.brush.updateBrush(_brushOf(b, 'BrushB1').copyWith(name: 'Nib'));
     await settleTransfer();
     final file = await b.export();
 
@@ -599,8 +650,8 @@ void main() {
     p.check(_brushes(a), [
       'BrushA0|Ink|spacing 12|size 17.0|favorite false|tags []',
       '$copyId|Quill (コピー)|spacing 12|size 40.0|favorite true|tags []',
-      'BrushB1|Ink (コピー)|spacing 12|size 25.0|favorite false|tags []',
-    ], 'お気に入りは、Bの版を足した複製に付き、太さを変えて届いたBの「Ink」には付かない');
+      'BrushB1|Nib|spacing 12|size 17.0|favorite false|tags []',
+    ], 'お気に入りは、Bの版を足した複製に付き、名前を変えて届いたBの「Ink」には付かない');
     p.verify();
   });
 
@@ -663,6 +714,35 @@ void main() {
       for (final wide in [false, true]) {
         for (var seed = 0; seed < 20000; seed++) {
           final problem = _randomTransfers(Random(seed), wide: wide);
+          if (problem == null) continue;
+          failing++;
+          if (found.length < 4) {
+            found.add('seed $seed${wide ? ' (more names)' : ''}:\n$problem');
+          }
+        }
+      }
+      if (failing > 0) {
+        fail(
+          '$failing of 40000 runs with problems; the first '
+          '${found.length}:\n\n${found.join('\n\n')}',
+        );
+      }
+    });
+
+    test('after random edits, reorders and transfers between two devices, '
+        'merging the same items again after the receiving device reorders '
+        'its list and changes the size of one item keeps the same holders, '
+        'the same record and the same items (20,000 runs each with few and '
+        'with more names and contents)', () {
+      final found = <String>[];
+      var failing = 0;
+      for (final wide in [false, true]) {
+        for (var seed = 0; seed < 20000; seed++) {
+          final problem = _randomTransfers(
+            Random(seed),
+            wide: wide,
+            reorder: true,
+          );
           if (problem == null) continue;
           failing++;
           if (found.length < 4) {
@@ -823,8 +903,9 @@ void main() {
       }, 'linked in the same read');
 
       // 前の読み込みで、b1はこの端末のa0が持っていた（つなげただけ）。a0の
-      // 版はc0として足してあり、この端末でc0の太さを変えた。b1は太さが
-      // 変わって、今度は自分のIDで届く。
+      // 版はc0として足してあり、この端末でc0の太さを変えた。b1は名前が
+      // 変わって、今度は自分のIDで届く（太さが変わっただけなら、つないだ
+      // a0が持ったまま）。
       result = mergeTwice(
         p,
         'linked before, with a copy added for the item',
@@ -834,7 +915,7 @@ void main() {
         ],
         const [
           _Item('a0', 'Quill', 'ink', favorite: true),
-          _Item('b1', 'Ink', 'ink', size: 25),
+          _Item('b1', 'Nib', 'ink'),
         ],
         TransferCopyRecord.none()
           ..add('a0', 'c0')
@@ -843,7 +924,7 @@ void main() {
       p.check(result.items, [
         'a0|Ink|ink|size 17|favorite false|tags []',
         'c0|Quill (コピー)|ink|size 40|favorite true|tags []',
-        'b1|Ink (コピー)|ink|size 25|favorite false|tags []',
+        'b1|Nib|ink|size 17|favorite false|tags []',
       ], 'linked before, with a copy: 整理はa0の版を足した複製へ');
       p.check(result.placed, {
         'a0': 'c0',

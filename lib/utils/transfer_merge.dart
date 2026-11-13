@@ -104,13 +104,17 @@ class TransferCopyNames {
 ///   足した複製）。探すときは、前の読み込みでこのIDの版を足した複製
 ///   （`copies`に書き留めたもの）が[contentOf]で同じならそれを選ぶ（足した
 ///   後でこの端末で名前・太さを変えた複製も。この端末で作った、太さだけが
-///   違う自分の複製は選ばない）。無ければ[duplicateContentOf]まで同じ項目を
-///   選ぶ。書き留めた複製を先に見るのは、同じファイルを読み直しても同じ
-///   項目を選ぶため（前の読み込みが同じファイルから足した、同じ中身の別の
-///   項目は、読み直しでは読み込む前からある項目になる。そちらを選ぶと、
-///   整理がどちらの端末でも付けていない項目に付く）。IDがこの端末に無い
-///   項目も、その版を足した複製が同じ中身であれば足さない（この端末の版を
-///   消して、複製の方を残した）。
+///   違う自分の複製は選ばない）。次に、前の読み込みでこのIDの中身を持った
+///   項目（同じ中身だったのでつないだ項目、[TransferCopyRecord.holdersOf]）が
+///   [contentOf]で同じで、名前が同じか複製どうしならそれを選ぶ（この端末で
+///   一覧の並び・太さを変えていても）。無ければ[duplicateContentOf]まで同じ
+///   項目を一覧の順に選ぶ。記録した項目を先に見るのは、同じファイルを読み
+///   直しても同じ項目を選ぶため（前の読み込みが同じファイルから足した、
+///   同じ中身の別の項目は、読み直しでは読み込む前からある項目になる。
+///   この端末で一覧の並びを変えると、同じ中身の別の項目が前に来る。そちらを
+///   選ぶと、整理がどちらの端末でも付けていない項目に付く）。IDがこの端末に
+///   無い項目も、その版を足した複製・その中身を持った項目が同じ中身であれば
+///   足さない（この端末の版を消して、複製の方を残した）。
 /// - [keepsLocalOnConflict]のIDは、同じIDで中身が違っても複製を足さず、
 ///   この端末の中身のまま整理だけを合わせる（使うたびに変わる値しか
 ///   持たない項目）。
@@ -192,9 +196,10 @@ class TransferMergeRules<T> {
 /// だけを変えた複製を、読み直したときに見つけるため）。同じ中身の項目が
 /// 別のIDで既にあって足さなかったときは、その2つを同じ項目として書き留める
 /// （[TransferCopyRecord.link]。この端末でその項目を変えた後も、作品・
-/// 早替えツールなどが指す項目としては同じ項目とみなすため。足した複製には
-/// 数えない）。前に足してこの端末で消した複製が、もう1台の項目として同じIDで
-/// 届いて一覧に入ったときも、それからは足した複製に数えない
+/// 早替えツールなどが指す項目としては同じ項目とみなし、読み直しでは一覧の
+/// 並びによらずその項目を選ぶため。足した複製には数えない）。前に足して
+/// この端末で消した複製が、もう1台の項目として同じIDで届いて一覧に入った
+/// ときも、それからは足した複製に数えない
 /// （[TransferCopyRecord.arrivedAsItem]）。
 bool mergeTransferredItems<T>(
   List<T> local,
@@ -254,6 +259,29 @@ bool mergeTransferredItems<T>(
     return null;
   }
 
+  // 前の読み込みで[item]の中身を持った（同じ中身だったので足さなかった）
+  // この端末の項目（[TransferCopyRecord.link]）。中身（[contentOf]。太さなど
+  // 比べない値はこの端末で変えていても）と、名前が同じか複製どうしなら選ぶ
+  // （一覧の並びを変えた・太さを変えた後の読み直しで、同じ中身の別の項目へ
+  // 替えない。後でつないだ項目から）。
+  T? linkedBefore(T item) {
+    final holders = copies?.holdersOf(rules.idOf(item)) ?? const <String>[];
+    for (final holderId in holders.reversed) {
+      if (!before.contains(holderId) ||
+          (rules.organizationOnly?.call(holderId) ?? false)) {
+        continue;
+      }
+      for (final e in local) {
+        if (rules.idOf(e) == holderId &&
+            content(e) == content(item) &&
+            TransferCopyNames.related(rules.nameOf(e), rules.nameOf(item))) {
+          return e;
+        }
+      }
+    }
+    return null;
+  }
+
   var changed = false;
 
   // 足さなかった項目の整理（お気に入り・タグ・フォルダ）を、同じ中身の
@@ -271,11 +299,13 @@ bool mergeTransferredItems<T>(
   // 受け取った[id]の項目の中身を、この端末の[existing]が持つ（足さない）。
   // 別のIDの項目なら、2つを同じ項目として書き留める（この端末でその項目を
   // 変えた後も、作品・早替えツールなどが指す項目としては同じ項目とみなす。
-  // [TransferCopyRecord.origin]）。
-  void heldBy(String id, T existing) {
+  // [TransferCopyRecord.origin]）。記録からではなく一覧から見つけた
+  // （[found]）なら、記録で既に同じ項目でも[existing]が持ったことを書き
+  // 留める（読み直しで、一覧の並びによらず同じ項目を選ぶ）。
+  void heldBy(String id, T existing, {required bool found}) {
     final existingId = rules.idOf(existing);
     placed?[id] = existingId;
-    copies?.link(id, existingId);
+    copies?.link(id, existingId, asHolder: found);
   }
 
   var attempt = 0;
@@ -299,9 +329,10 @@ bool mergeTransferredItems<T>(
         (shipped != null && sameItem(shipped, item));
     if (index < 0) {
       if (organizationOnly || untouched) continue;
-      final existing = addedBefore(item) ?? alreadyThere(item, fullContent);
+      final recorded = addedBefore(item) ?? linkedBefore(item);
+      final existing = recorded ?? alreadyThere(item, fullContent);
       if (existing != null) {
-        heldBy(id, existing);
+        heldBy(id, existing, found: recorded == null);
         adoptOrganization(existing, item);
         continue;
       }
@@ -396,13 +427,15 @@ bool mergeTransferredItems<T>(
     }
 
     // 前に足した複製。前の読み込みでこのIDの版を足した複製（名前に番号を
-    // 付けて足したこの項目自身も）、無ければ利用者の変えた値（ブラシの
-    // 太さ）まで同じ項目（この端末で別に作った、太さだけが違う同じ名前の
-    // 複製は選ばない）。書き留めた複製を先に見る：前の読み込みが同じ
-    // ファイルから足した同じ中身の別の項目へ、読み直しで替えない。
-    final existing = addedBefore(item) ?? alreadyThere(item, fullContent);
+    // 付けて足したこの項目自身も）、次に前の読み込みでこのIDの中身を持った
+    // 項目、無ければ利用者の変えた値（ブラシの太さ）まで同じ項目（この端末で
+    // 別に作った、太さだけが違う同じ名前の複製は選ばない）。記録した項目を
+    // 先に見る：前の読み込みが同じファイルから足した同じ中身の別の項目や、
+    // 一覧で前にある同じ中身の別の項目へ、読み直しで替えない。
+    final recorded = addedBefore(item) ?? linkedBefore(item);
+    final existing = recorded ?? alreadyThere(item, fullContent);
     if (existing != null) {
-      heldBy(id, existing);
+      heldBy(id, existing, found: recorded == null);
       adoptOrganization(existing, item);
       continue;
     }
@@ -523,6 +556,13 @@ class TransferCopyRecord {
   /// 項目は入らない。
   List<String> copiesOf(String id) => List.unmodifiable(_copies[id] ?? []);
 
+  /// [link]で[id]とつないだ、[id]の中身を持っていたこの端末の項目のID
+  /// （書き留めた順）。足した複製（[copiesOf]）は入らない。
+  List<String> holdersOf(String id) => [
+    for (final entry in _links.entries)
+      if (entry.value.contains(id)) entry.key,
+  ];
+
   /// [copyId]を[id]の版を足した複製として書き留める。
   void add(String id, String copyId) {
     final added = _copies.putIfAbsent(id, () => []);
@@ -534,15 +574,24 @@ class TransferCopyRecord {
 
   /// 受け取った項目[id]と、その中身を別のIDで持っていたこの端末の項目
   /// [heldById]を、指す側（作品・早替えツールなど）から見て同じ項目として
-  /// 書き留める（[origin]）。既につながっていれば何も書かない。
+  /// 書き留める（[origin]）。既につながっていれば何も書かない。[asHolder]
+  /// なら、ほかの項目を通して既につながっていても、[heldById]が[id]の中身を
+  /// 持ったことを書き留める（[holdersOf]。既に書き留めていれば何も書かない）。
   ///
   /// この端末の項目は引き継ぎで足した複製ではないので、どちらの項目の複製
-  /// （[copiesOf]）にも入れない（この端末でその項目の名前・太さを変えた後の
-  /// 読み直しは、これまでどおりもう1台の項目を足す。受け取った項目が後で
-  /// この端末の一覧に入っても、つなげた項目の版を足した複製としては
-  /// 選ばない）。
-  void link(String id, String heldById) {
-    if (origin(id) == origin(heldById)) return;
+  /// （[copiesOf]）にも入れない（受け取った項目が後でこの端末の一覧に
+  /// 入っても、つなげた項目の版を足した複製としては選ばない）。読み直しでは、
+  /// 中身と名前が同じか複製どうしのうちは、つないだこの端末の項目
+  /// （[holdersOf]）が受け取った項目の中身を持つ（一覧の並びや、比べない値
+  /// 〔ブラシの太さ〕をこの端末で変えていても。中身や名前を変えた後の
+  /// 読み直しは、これまでどおりもう1台の項目を足すか、同じ中身の別の項目が
+  /// 持つ）。
+  void link(String id, String heldById, {bool asHolder = false}) {
+    if (asHolder
+        ? id == heldById || holdersOf(id).contains(heldById)
+        : origin(id) == origin(heldById)) {
+      return;
+    }
     _links.putIfAbsent(heldById, () => []).add(id);
     _sources = null;
     _changed = true;

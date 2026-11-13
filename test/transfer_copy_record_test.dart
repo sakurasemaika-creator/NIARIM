@@ -5,8 +5,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// 引き継ぎ（.niatra）で、受け取った項目と、その中身を別のIDで持っていた
 /// この端末の項目のつながり（[TransferCopyRecord.link]）：指す側（作品・
 /// 早替えツールなど）から見て同じ項目になるが、この端末の項目は引き継ぎで
-/// 足した複製には数えない（この端末で名前・太さを変えた後の読み直しは、
-/// これまでどおりもう1台の項目を足す）。
+/// 足した複製には数えない（この端末で名前・中身を変えた後の読み直しは、
+/// これまでどおりもう1台の項目を足す）。読み直しでは、つないだこの端末の
+/// 項目（[TransferCopyRecord.holdersOf]）を先に選ぶ。
 void main() {
   test('an item of this device linked to the item it was found to be counts '
       'as the same item, but not as a copy that a transfer added', () {
@@ -119,6 +120,42 @@ void main() {
       ..arrivedAsItem('a_copy_2');
     await unchanged.save();
     expect(prefs.getString(key), '$value ');
+  });
+
+  test('the item of this device that held an incoming item is its holder, '
+      'also when the record already made the two the same item through '
+      'another item; writing it again writes nothing, and the holders are '
+      'kept when the record is read again', () async {
+    SharedPreferences.setMockInitialValues({});
+    final record = await TransferCopyRecord.read(TransferCopyRecord.tones);
+    record
+      ..add('a', 'a_copy')
+      ..link('theirs', 'a');
+    expect(record.holdersOf('theirs'), ['a']);
+    expect(record.holdersOf('a'), isEmpty, reason: '逆向きは持った項目ではない');
+    expect(record.holdersOf('a_copy'), isEmpty, reason: '足した複製は入らない');
+
+    // 記録で既に同じ項目（aを通して）。つなぐだけなら何も書かない。
+    record.link('theirs', 'a_copy');
+    expect(record.holdersOf('theirs'), ['a']);
+    // 一覧から見つけたa_copyが持った：持ったことを書き留める。
+    record.link('theirs', 'a_copy', asHolder: true);
+    expect(record.holdersOf('theirs'), ['a', 'a_copy']);
+    await record.save();
+
+    final prefs = await SharedPreferences.getInstance();
+    final key = '${TransferCopyRecord.keyPrefix}${TransferCopyRecord.tones}';
+    final saved = prefs.getString(key);
+    await prefs.setString(key, '$saved ');
+    final read = await TransferCopyRecord.read(TransferCopyRecord.tones);
+    expect(read.holdersOf('theirs'), ['a', 'a_copy']);
+    expect(read.copiesOf('a'), ['a_copy'], reason: '足した複製とは分かれたまま');
+    read
+      ..link('theirs', 'a_copy', asHolder: true)
+      ..link('theirs', 'a', asHolder: true)
+      ..link('alone', 'alone', asHolder: true);
+    await read.save();
+    expect(prefs.getString(key), '$saved ', reason: '書き留めてあれば保存し直さない');
   });
 
   test('linking two IDs that are already the same item writes nothing', () {

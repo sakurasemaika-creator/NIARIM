@@ -141,6 +141,8 @@ void main() {
     // 渡されたキーをそのまま読み書きする所（キーは呼び出し側で集めている）。
     expect(found.unresolved, {
       'lib/engine/niatra_serializer.dart key',
+      // 期間と数でキーを選ぶ（どれもpending_coin_redemption_で始まる）。
+      'lib/services/coin_redemption_attempt_store.dart key',
       'lib/services/work_folder_service.dart key',
       'lib/utils/folder_persistence.dart key',
       "lib/screens/community/community_screen.dart '\$key.\$account'",

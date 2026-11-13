@@ -96,8 +96,9 @@ class NiatraSerializer {
   /// データでは移らない（作品はプロジェクトの項目で移す）ので、記録も
   /// 書き出さず、古いファイルに入っていても書かない（書くと、この端末の
   /// 作品のフォルダ分けやゴミ箱の中身・購入日・性能の判定が、もう1台の記録で
-  /// 置き換わる）。書き出した共有ファイルのお気に入りと、書き出した作品の
-  /// サムネイルの選び方は、この端末のファイルの場所で覚えている。
+  /// 置き換わる）。書き出した共有ファイルのお気に入り、書き出した作品の
+  /// サムネイルの選び方と、ホームの「作品」タブのお気に入りは、この端末の
+  /// ファイルの場所で覚えている。
   static const Set<String> deviceRecordKeys = {
     'project_folders',
     'trashed_projects',
@@ -108,6 +109,7 @@ class NiatraSerializer {
     'work_file_thumbnail_covers',
     'exported_work_thumbnail_overrides_v1',
     'niarim_outgoing_share_favorites',
+    'home.works.favoritePaths.v1',
     'user_fonts',
     'home_widget_config_v1',
     'custom_automation_offered_builtins_v1',
@@ -133,6 +135,7 @@ class NiatraSerializer {
     'creator_edit_pending_v1_',
     'creator_edit_unverified_seconds_v1_',
     'pending_coin_redemption_',
+    'pending_coin_individual_redemption_',
   ];
 
   /// 利用者が作った物の一覧（動いているサービスが覚えている）。端末保存
@@ -231,6 +234,8 @@ class NiatraSerializer {
     'custom_save_mode',
     'custom_slot_count',
     'home.projectViewMode.v1',
+    'home.worksViewMode.v1',
+    'home.sharedViewMode.v1',
     'community.hideGenerativeAiImageVideo',
     'community.rankingLayout.v1',
     'community.tileMinWidth.v1',
