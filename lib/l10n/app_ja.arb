@@ -3767,7 +3767,7 @@
     }
   },
   "homeUndoAction": "元に戻す",
-  "homeCutSnackbar": "{count}件を切り取りました。移動先を開いて、右上の貼り付けを押してください。",
+  "homeCutSnackbar": "{count}件を切り取りました。移動先を開いて、タブの下の貼り付けを押してください。",
   "@homeCutSnackbar": {
     "placeholders": {
       "count": {
@@ -3775,7 +3775,7 @@
       }
     }
   },
-  "homeCopiedSnackbar": "{count}件をコピーしました。貼り付けたい場所を開いて、右上の貼り付けを押してください。",
+  "homeCopiedSnackbar": "{count}件をコピーしました。貼り付けたい場所を開いて、タブの下の貼り付けを押してください。",
   "@homeCopiedSnackbar": {
     "placeholders": {
       "count": {
