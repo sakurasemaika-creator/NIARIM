@@ -115,6 +115,21 @@ class ScriptedStorage extends StorageInfoService {
     cacheClears++;
     return clearing?.future ?? 123;
   }
+
+  int erasures = 0;
+
+  /// nullでなければ、全データの削除はこれが終わるまで続く。
+  Completer<void>? erasing;
+
+  /// ファイルは消さない（本物は保存も消すので、前の内訳の見込みも忘れる）。
+  @override
+  Future<void> eraseAllData() async {
+    erasures++;
+    await erasing?.future;
+    invalidate();
+    rememberedCategories = null;
+    rememberedIncomplete = false;
+  }
 }
 
 /// 起動処理と同じProviderを作る（言語は日本語、スマホの配置）。

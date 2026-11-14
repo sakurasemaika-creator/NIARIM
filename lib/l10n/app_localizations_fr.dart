@@ -6669,6 +6669,10 @@ class AppLocalizationsFr extends AppLocalizations {
       'Certaines données n’ont pas pu être lues ; les totaux peuvent être inférieurs à l’utilisation réelle';
 
   @override
+  String get storageBreakdownEmpty =>
+      'Aucune donnée pour l’instant. La répartition s’affichera ici quand vous créerez un projet.';
+
+  @override
   String get storageDeviceSpaceUnavailable =>
       'Impossible de consulter le stockage de l’appareil';
 

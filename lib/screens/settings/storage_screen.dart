@@ -164,6 +164,28 @@ class _StorageScreenState extends State<StorageScreen> {
   /// 「集計中…」の高い方を取っておく（待ち切れの知らせは「集計中…」だけ）。
   bool _failureNoticeShown = false;
 
+  /// 中身の無い内訳の文（[_emptyBreakdownText]）の高さを取っておく。出した後は
+  /// 閉じるまで取っておく（後の集計で棒が出ても縮めない）。内訳が空になり
+  /// うるとき（[_mayEndEmpty]）は結果を待たずに取る：開いたとき・大きさを
+  /// 変える操作を確かめたとき（[_willEmpty]）・その後の集計し直しの始め。
+  /// 結果が届いてから取ると、文字が大きいと文が取っておいた棒より高く、
+  /// 指の下で操作の行が下へ動いた。
+  bool _emptyBreakdownReserved = false;
+
+  /// 最後に集計できた後の操作で、中身が無くなりうる分類（集計できたら空に
+  /// する）。集計し直す前に続けた操作の分も足していく。
+  final Set<StorageCategory> _emptiedSinceScan = {};
+
+  /// 走っている操作で中身が無くなりうる分類。操作は確かめた後に
+  /// [_willEmpty]でここへ足し、[_runAction]が集計し直すときに
+  /// [_emptiedSinceScan]へ移す（操作の途中で前の集計が届いて
+  /// [_emptiedSinceScan]を空にしても、なくさない）。
+  final Set<StorageCategory> _actionMayEmpty = {};
+
+  /// 全データを削除した：作品の一覧はメモリに古いまま残る（アプリの
+  /// 再起動を促す）ので、内訳が空になりうるかの見込みに使わない。
+  bool _projectListOutdated = false;
+
   // ── 端末の容量 ──
   DeviceSpaceInfo? _deviceSpace;
   bool _deviceWaiting = false;
@@ -244,7 +266,50 @@ class _StorageScreenState extends State<StorageScreen> {
         : _service.lastNonEmptyCategories != null &&
               _service.lastBreakdownIncomplete;
     _reservedNoticeBars = expectNotice ? _reservedBars : null;
+    _emptyBreakdownReserved = _isEmpty(shown) || _mayEndEmpty();
     _reload();
+  }
+
+  /// 内訳に出す棒が1本も無い（読めなかった分類も無い）。全データを削除した
+  /// 後など。
+  static bool _isEmpty(StorageBreakdown? breakdown) =>
+      breakdown != null &&
+      breakdown.nonEmptyCategoryCount == 0 &&
+      breakdown.incomplete.isEmpty;
+
+  /// 次の集計で内訳が空（中身の無い文）になりうるか：作品もゴミ箱の作品も
+  /// 無く（あれば作品データ・ゴミ箱の分が残る）、前の集計で中身のあった
+  /// 分類が、どれもキャッシュかその後の操作で無くなりうる分類
+  /// （[_emptiedSinceScan]）。前の集計を知らなければ、作品の有無だけで決める。
+  /// キャッシュはOSもひとりでに消すので、残るとは見ない：キャッシュだけの
+  /// 端末では開いたときから文の高さを取る（届いたキャッシュの棒1本の下は
+  /// 空くが、キャッシュを消したときに操作の行が動かない）。
+  bool _mayEndEmpty() {
+    if (!_projectListOutdated) {
+      final projects = context.read<ProjectService>();
+      if (projects.projects.isNotEmpty || projects.trash.isNotEmpty) {
+        return false;
+      }
+    }
+    final before =
+        _breakdown?.nonEmptyCategories ?? _service.lastNonEmptyCategories;
+    return before == null ||
+        before.every(
+          (c) =>
+              c == StorageCategory.cache ||
+              _emptiedSinceScan.contains(c) ||
+              _actionMayEmpty.contains(c),
+        );
+  }
+
+  /// 確かめた操作が[categories]の中身を無くしうる。それで内訳が空になり
+  /// うるなら、中身の無い文の高さをすぐ取る（確かめるダイアログが閉じる間に。
+  /// 消し終えてから取ると、消している間に押そうとした行が動く）。
+  void _willEmpty(Iterable<StorageCategory> categories) {
+    _actionMayEmpty.addAll(categories);
+    if (mounted && !_emptyBreakdownReserved && _mayEndEmpty()) {
+      setState(() => _emptyBreakdownReserved = true);
+    }
   }
 
   @override
@@ -326,6 +391,8 @@ class _StorageScreenState extends State<StorageScreen> {
             _reservedNoticeBars = math.max(noticeBars, expected);
           }
         }
+        // 操作で内訳が空になりうるなら、中身の無い文の高さも同じくここで取る。
+        if (_mayEndEmpty()) _emptyBreakdownReserved = true;
       }
     });
     // 待ち切れになった集計はサービスの側でも走ったままなので、分け合わずに
@@ -365,6 +432,8 @@ class _StorageScreenState extends State<StorageScreen> {
         _breakdownFailed = false;
         _breakdown = scanned;
         _sizesOutdated = false;
+        _emptiedSinceScan.clear();
+        if (_isEmpty(scanned)) _emptyBreakdownReserved = true;
         final bars = scanned.nonEmptyCategoryCount;
         _reservedBars = math.max(_reservedBars, bars);
         if (scanned.incomplete.isNotEmpty) {
@@ -725,6 +794,8 @@ class _StorageScreenState extends State<StorageScreen> {
               if (_failureNoticeShown)
                 _noticeSample(retryNoticeBars, l10n.storageBreakdownLoadFailed),
             ],
+            if (_emptyBreakdownReserved)
+              _emptyBreakdownText(l10n, sample: true),
           ],
           children: [
             if (breakdown != null)
@@ -781,13 +852,34 @@ class _StorageScreenState extends State<StorageScreen> {
         l10n.storageCategoryFree,
       ),
     ];
-    return _barsWithLabels(slices, barKeyPrefix: 'storageDeviceBar');
+    // 端末の容量はこの3つで全体なので、0の分も「0B」の棒として出し、いつも
+    // 3本にする（NIARIMの分が0になる全データの削除の後に2本になり、欄が
+    // 取っておいた3本分の高さの下に空白が残った）。
+    return _barsWithLabels(
+      slices,
+      barKeyPrefix: 'storageDeviceBar',
+      keepEmpty: true,
+    );
+  }
+
+  /// 内訳に出す棒が1本も無いときの文。[sample]なら高さの見本。
+  Widget _emptyBreakdownText(AppLocalizations l10n, {bool sample = false}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Text(
+        l10n.storageBreakdownEmpty,
+        key: sample ? null : const ValueKey('storageBreakdownEmpty'),
+        style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
+      ),
+    );
   }
 
   Widget _buildBreakdownChart(
     AppLocalizations l10n,
     StorageBreakdown breakdown,
   ) {
+    // 棒が1本も無いと、欄が文の無い空白になる（全データを削除した後）。
+    if (_isEmpty(breakdown)) return _emptyBreakdownText(l10n);
     final scheme = Theme.of(context).colorScheme;
     // アクセント色の色相・彩度を変えず、明度だけ6段階にした濃淡を使う。
     final colors = sliceColorsOf(scheme);
@@ -813,9 +905,11 @@ class _StorageScreenState extends State<StorageScreen> {
   /// Both groups have identical bars: category and bytes inside each bar.
   /// A full-width row gives long translated labels more space than the former
   /// pie + narrow side column. Each value is relative to the group's largest.
+  /// [keepEmpty]なら0の分も棒にする（無ければ0の分は出さない）。
   Widget _barsWithLabels(
     List<_StorageAmount> slices, {
     required String barKeyPrefix,
+    bool keepEmpty = false,
   }) {
     final largest = slices.fold<double>(
       0,
@@ -826,7 +920,7 @@ class _StorageScreenState extends State<StorageScreen> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         for (final slice in slices)
-          if (slice.value > 0)
+          if (keepEmpty || slice.value > 0)
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 4),
               child: _storageAmountBar(
@@ -1072,8 +1166,12 @@ class _StorageScreenState extends State<StorageScreen> {
         // 画面を閉じた後に終わった操作でも、覚えている結果は捨てる
         // （捨てないと、開き直した画面が操作の前の値・集計を使う）。
         _service.invalidate();
-        if (mounted) unawaited(_reload(restart: true));
+        if (mounted) {
+          _emptiedSinceScan.addAll(_actionMayEmpty);
+          unawaited(_reload(restart: true));
+        }
       }
+      _actionMayEmpty.clear();
     }
   }
 
@@ -1091,6 +1189,9 @@ class _StorageScreenState extends State<StorageScreen> {
 
   /// 作品を消す・ゴミ箱へ移すための行き先なので、戻ってきたら集計し直す。
   Future<void> _openProjects() => _runAction(() async {
+    // ホームでは作品（素材ごと）・書き出したファイルを消し、ゴミ箱を空に
+    // できるので、どの分類も無くなりうる。
+    _willEmpty(StorageCategory.values);
     await context.push('/home');
     return true;
   });
@@ -1102,6 +1203,7 @@ class _StorageScreenState extends State<StorageScreen> {
       itemName: l10n.storageCategoryCache,
     );
     if (!ok || !mounted) return false;
+    _willEmpty(const [StorageCategory.cache]);
     try {
       final freed = await _work(_service.clearCache);
       if (!mounted) return true;
@@ -1133,6 +1235,7 @@ class _StorageScreenState extends State<StorageScreen> {
       itemName: l10n.storageRemoveUnusedMaterialsButton,
     );
     if (!ok || !mounted) return false;
+    _willEmpty(const [StorageCategory.materials]);
     final ps = context.read<ProjectService>();
     final ms = context.read<MaterialService>();
     final removed = await _work(() async {
@@ -1200,6 +1303,7 @@ class _StorageScreenState extends State<StorageScreen> {
         ],
         onApply: () async {
           attempted = true;
+          _willEmpty(const [StorageCategory.trash]);
           // 読めていない作品を含むフォルダは中の読めた作品ごと残し、他を
           // 消し終えてから、空にし切れなかったことを知らせる（記録だけを
           // 消すと、中の作品は読めた後に1件ずつゴミ箱へ出る）。
@@ -1251,6 +1355,8 @@ class _StorageScreenState extends State<StorageScreen> {
       ),
     );
     if (confirmed != true || !mounted) return false;
+    _projectListOutdated = true;
+    _willEmpty(StorageCategory.values);
     // 実際の全データ削除は、他の全Serviceが保持するメモリ上の状態も
     // まとめて破棄する必要があり影響範囲が大きいため、ここでは
     // ディスク上のNIARIMデータ（プロジェクト・素材・書き出し・自作

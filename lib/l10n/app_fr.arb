@@ -2736,6 +2736,7 @@
   "storageCalculating": "Calcul en cours…",
   "storageBreakdownLoadFailed": "Impossible de calculer la répartition",
   "storageBreakdownIncomplete": "Certaines données n’ont pas pu être lues ; les totaux peuvent être inférieurs à l’utilisation réelle",
+  "storageBreakdownEmpty": "Aucune donnée pour l’instant. La répartition s’affichera ici quand vous créerez un projet.",
   "storageDeviceSpaceUnavailable": "Impossible de consulter le stockage de l’appareil",
   "storageCategoryNiarimTotal": "NIARIM",
   "storageCategoryOtherApps": "Autres",

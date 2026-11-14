@@ -3121,6 +3121,7 @@
   "storageCalculating": "集計中…",
   "storageBreakdownLoadFailed": "内訳を集計できませんでした",
   "storageBreakdownIncomplete": "一部のデータを読み取れなかったため、実際より少なく表示されている可能性があります",
+  "storageBreakdownEmpty": "まだデータはありません。プロジェクトを作ると、ここに内訳が出ます。",
   "storageDeviceSpaceUnavailable": "端末の容量を取得できませんでした",
   "storageCategoryNiarimTotal": "NIARIM",
   "storageCategoryOtherApps": "その他",

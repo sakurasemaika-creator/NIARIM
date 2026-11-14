@@ -2736,6 +2736,7 @@
   "storageCalculating": "Calculating…",
   "storageBreakdownLoadFailed": "Could not calculate the breakdown",
   "storageBreakdownIncomplete": "Some data could not be read, so the totals may be lower than the actual usage",
+  "storageBreakdownEmpty": "No data yet. When you create a project, the breakdown appears here.",
   "storageDeviceSpaceUnavailable": "Could not check device storage",
   "storageCategoryNiarimTotal": "NIARIM",
   "storageCategoryOtherApps": "Other",

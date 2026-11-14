@@ -6663,6 +6663,10 @@ class AppLocalizationsEs extends AppLocalizations {
       'No se pudieron leer algunos datos; los totales pueden ser inferiores al uso real';
 
   @override
+  String get storageBreakdownEmpty =>
+      'Todavía no hay datos. Cuando crees un proyecto, el desglose aparecerá aquí.';
+
+  @override
   String get storageDeviceSpaceUnavailable =>
       'No se pudo consultar el almacenamiento del dispositivo';
 

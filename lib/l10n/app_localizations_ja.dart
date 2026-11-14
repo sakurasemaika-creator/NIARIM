@@ -6333,6 +6333,9 @@ class AppLocalizationsJa extends AppLocalizations {
       '一部のデータを読み取れなかったため、実際より少なく表示されている可能性があります';
 
   @override
+  String get storageBreakdownEmpty => 'まだデータはありません。プロジェクトを作ると、ここに内訳が出ます。';
+
+  @override
   String get storageDeviceSpaceUnavailable => '端末の容量を取得できませんでした';
 
   @override

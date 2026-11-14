@@ -6365,6 +6365,10 @@ class AppLocalizationsKo extends AppLocalizations {
   String get storageBreakdownIncomplete => '일부 데이터를 읽지 못해 실제보다 적게 표시될 수 있습니다';
 
   @override
+  String get storageBreakdownEmpty =>
+      '아직 데이터가 없습니다. 프로젝트를 만들면 여기에 세부 내역이 표시됩니다.';
+
+  @override
   String get storageDeviceSpaceUnavailable => '기기 저장공간을 확인하지 못했습니다';
 
   @override

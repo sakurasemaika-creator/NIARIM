@@ -11559,6 +11559,12 @@ abstract class AppLocalizations {
   /// **'一部のデータを読み取れなかったため、実際より少なく表示されている可能性があります'**
   String get storageBreakdownIncomplete;
 
+  /// No description provided for @storageBreakdownEmpty.
+  ///
+  /// In ja, this message translates to:
+  /// **'まだデータはありません。プロジェクトを作ると、ここに内訳が出ます。'**
+  String get storageBreakdownEmpty;
+
   /// No description provided for @storageDeviceSpaceUnavailable.
   ///
   /// In ja, this message translates to:

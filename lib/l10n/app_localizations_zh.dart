@@ -6282,6 +6282,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get storageBreakdownIncomplete => '部分数据无法读取，显示的容量可能少于实际用量';
 
   @override
+  String get storageBreakdownEmpty => '还没有数据。创建项目后，这里会显示明细。';
+
+  @override
   String get storageDeviceSpaceUnavailable => '无法获取设备存储空间';
 
   @override
@@ -16193,6 +16196,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get storageBreakdownIncomplete => '部分資料無法讀取，顯示的容量可能少於實際用量';
+
+  @override
+  String get storageBreakdownEmpty => '還沒有資料。建立專案後，這裡會顯示明細。';
 
   @override
   String get storageDeviceSpaceUnavailable => '無法取得裝置儲存空間';

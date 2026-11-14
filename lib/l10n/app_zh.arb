@@ -2736,6 +2736,7 @@
   "storageCalculating": "正在计算…",
   "storageBreakdownLoadFailed": "无法计算明细",
   "storageBreakdownIncomplete": "部分数据无法读取，显示的容量可能少于实际用量",
+  "storageBreakdownEmpty": "还没有数据。创建项目后，这里会显示明细。",
   "storageDeviceSpaceUnavailable": "无法获取设备存储空间",
   "storageCategoryNiarimTotal": "NIARIM",
   "storageCategoryOtherApps": "其他",
