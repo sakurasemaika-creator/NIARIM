@@ -130,9 +130,10 @@ void main() {
         data.segmentedButtonTheme.style!.foregroundColor!.resolve(selected),
         const Color(0xFF44EE55),
       );
+      // 選んでいない側の下地はメニューの背景色なので、メニューの文字色。
       expect(
         data.segmentedButtonTheme.style!.foregroundColor!.resolve(unselected),
-        const Color(0xFF111111),
+        const Color(0xFF8844CC),
       );
       expect(
         data.segmentedButtonTheme.style!.backgroundColor!.resolve(selected),

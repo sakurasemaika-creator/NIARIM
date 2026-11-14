@@ -1210,8 +1210,11 @@ class ThemeService extends ChangeNotifier {
         ),
       ),
       // Selected labels/icons use a separate foreground *only* when their
-      // background is the user's selected-surface color. Unselected content
-      // continues to use the normal text token.
+      // background is the user's selected-surface color. Unselected segments
+      // are filled with the menu background, so their labels/icons use the
+      // menu text token (the same pair as unselected chips). The body text
+      // token on the menu background vanished in themes that pair a dark
+      // menu with dark body text.
       segmentedButtonTheme: SegmentedButtonThemeData(
         style: ButtonStyle(
           // 切り替えボタンのラベルも他のボタンと同じくくらむぼん。
@@ -1230,12 +1233,12 @@ class ThemeService extends ChangeNotifier {
           foregroundColor: WidgetStateProperty.resolveWith<Color?>(
             (states) => states.contains(WidgetState.selected)
                 ? preset.selectionTextColor
-                : preset.textColor,
+                : preset.menuTextColor,
           ),
           iconColor: WidgetStateProperty.resolveWith<Color?>(
             (states) => states.contains(WidgetState.selected)
                 ? preset.selectionTextColor
-                : preset.textColor,
+                : preset.menuTextColor,
           ),
         ),
       ),
