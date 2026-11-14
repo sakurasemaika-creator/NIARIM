@@ -8,7 +8,6 @@ import '../../services/google_auth_service.dart';
 import '../../utils/app_locale.dart';
 import '../../utils/coin_duration_label.dart';
 import '../../widgets/action_beside_or_below.dart';
-import '../../widgets/button_label_room.dart';
 import '../../widgets/keep_together_text.dart';
 import 'mission_panel_heading.dart';
 
@@ -179,14 +178,12 @@ class _PlazaMissionsPanelState extends State<PlazaMissionsPanel> {
                 onPressed: enabled && eligible && !_claiming.contains(id)
                     ? () => _claim(id)
                     : null,
-                child: ButtonLabelRoom(
-                  child: Text(
-                    !enabled && eligible
-                        ? _l10n.missionComingSoon
-                        : eligible
-                        ? _l10n.missionClaim
-                        : _l10n.missionNotYet,
-                  ),
+                child: Text(
+                  !enabled && eligible
+                      ? _l10n.missionComingSoon
+                      : eligible
+                      ? _l10n.missionClaim
+                      : _l10n.missionNotYet,
                 ),
               ),
       ),

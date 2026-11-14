@@ -7,7 +7,6 @@ import '../../services/community_service.dart';
 import '../../services/google_auth_service.dart';
 import '../../utils/app_locale.dart';
 import '../../widgets/action_beside_or_below.dart';
-import '../../widgets/button_label_room.dart';
 import '../../widgets/keep_together_text.dart';
 import 'mission_panel_heading.dart';
 
@@ -183,9 +182,7 @@ class _LoginBonusPanelState extends State<LoginBonusPanel> {
                               !_busy.contains('daily0')
                           ? () => _claim('daily', null)
                           : null,
-                      child: ButtonLabelRoom(
-                        child: Text(dailyClaimed ? t['claimed'] : t['claim']),
-                      ),
+                      child: Text(dailyClaimed ? t['claimed'] : t['claim']),
                     ),
                   ],
                 ),
@@ -242,10 +239,8 @@ class _LoginBonusPanelState extends State<LoginBonusPanel> {
                                         !_busy.contains('milestone$goal')
                                     ? () => _claim('milestone', goal)
                                     : null,
-                                child: ButtonLabelRoom(
-                                  child: Text(
-                                    eligible ? t['claim'] : t['notYet'],
-                                  ),
+                                child: Text(
+                                  eligible ? t['claim'] : t['notYet'],
                                 ),
                               ),
                       ),

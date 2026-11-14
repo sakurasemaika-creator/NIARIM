@@ -18,7 +18,6 @@ import '../../services/community_service.dart';
 import '../../services/google_auth_service.dart';
 import '../../utils/coin_duration_label.dart';
 import '../../widgets/action_beside_or_below.dart';
-import '../../widgets/button_label_room.dart';
 import '../../widgets/coin_history_sheet.dart';
 import '../../widgets/keep_together_text.dart';
 import '../../widgets/responsive.dart';
@@ -326,17 +325,11 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: Padding(
-              padding: buttonLabelRoom(ctx),
-              child: Text(MaterialLocalizations.of(ctx).cancelButtonLabel),
-            ),
+            child: Text(MaterialLocalizations.of(ctx).cancelButtonLabel),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: Padding(
-              padding: buttonLabelRoom(ctx),
-              child: Text(t['redeem']),
-            ),
+            child: Text(t['redeem']),
           ),
         ],
       ),
@@ -1037,7 +1030,6 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
         ? l10n.rewardUnlockRewardQuotaRemaining(rewardDailyRemaining)
         : t['rewardQuotaUncapped'];
     final nav = RewardNavigationLabels.of(context);
-    final labelRoom = buttonLabelRoom(context);
     final earn = widget.mode == RewardPageMode.earnCoins;
     return Scaffold(
       appBar: widget.embedded
@@ -1108,20 +1100,14 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
                 key: const Key('coinHistoryButton'),
                 icon: const Icon(Icons.receipt_long_outlined),
                 onPressed: _lastAccountId != null ? _showCoinHistory : null,
-                label: Padding(
-                  padding: labelRoom,
-                  child: Text(t['coinHistory']),
-                ),
+                label: Text(t['coinHistory']),
               ),
               TextButton.icon(
                 icon: const Icon(Icons.refresh),
                 onPressed: !_walletLoading && _lastAccountId != null
                     ? () => _loadWallet(_lastAccountId!)
                     : null,
-                label: Padding(
-                  padding: labelRoom,
-                  child: Text(t['rewardRefresh']),
-                ),
+                label: Text(t['rewardRefresh']),
               ),
             ],
             if (!earn) ...[
@@ -1208,10 +1194,7 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
                         onPressed: _selected.isNotEmpty
                             ? _reviewSelections
                             : null,
-                        label: Padding(
-                          padding: labelRoom,
-                          child: Text(l10n.rewardUnlockReviewButton),
-                        ),
+                        label: Text(l10n.rewardUnlockReviewButton),
                       ),
                       const SizedBox(height: 8),
                       // Once the authenticated quote/goal API is connected,
@@ -1220,10 +1203,7 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
                       FilledButton(
                         key: const Key('rewardSetGoalButton'),
                         onPressed: null,
-                        child: Padding(
-                          padding: labelRoom,
-                          child: Text(t['goal']),
-                        ),
+                        child: Text(t['goal']),
                       ),
                       const SizedBox(height: 8),
                       OutlinedButton(
@@ -1261,10 +1241,7 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
                                   !_redeemBusy
                             ? _redeemSelectedBenefits
                             : null,
-                        child: Padding(
-                          padding: labelRoom,
-                          child: Text(t['redeem']),
-                        ),
+                        child: Text(t['redeem']),
                       ),
                     ],
                   ),

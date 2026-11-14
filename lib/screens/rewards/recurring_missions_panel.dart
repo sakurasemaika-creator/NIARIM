@@ -6,7 +6,6 @@ import '../../services/community_service.dart';
 import '../../services/google_auth_service.dart';
 import '../../utils/app_locale.dart';
 import '../../widgets/action_beside_or_below.dart';
-import '../../widgets/button_label_room.dart';
 import '../../widgets/keep_together_text.dart';
 import 'mission_panel_heading.dart';
 
@@ -171,14 +170,12 @@ class _RecurringMissionsPanelState extends State<RecurringMissionsPanel> {
                 onPressed: enabled && achieved && !_busy.contains(id)
                     ? () => _claim(id)
                     : null,
-                child: ButtonLabelRoom(
-                  child: Text(
-                    !enabled && achieved
-                        ? l10n.missionComingSoon
-                        : achieved
-                        ? l10n.missionClaim
-                        : l10n.missionNotYet,
-                  ),
+                child: Text(
+                  !enabled && achieved
+                      ? l10n.missionComingSoon
+                      : achieved
+                      ? l10n.missionClaim
+                      : l10n.missionNotYet,
                 ),
               ),
       ),

@@ -10,6 +10,7 @@ import '../models/app_theme_preset.dart';
 import '../utils/color_contrast.dart';
 import '../utils/tolerant_preferences.dart';
 import '../utils/transfer_merge.dart';
+import '../widgets/button_label_room.dart';
 
 class ThemeService extends ChangeNotifier {
   static const _prefsPresetsKey = 'theme_presets';
@@ -1037,6 +1038,9 @@ class ThemeService extends ChangeNotifier {
         style: FilledButton.styleFrom(
           foregroundColor: scheme.onPrimary,
           minimumSize: const Size(64, 48),
+          // ラベルが折り返したら上下に余白を取ってボタンを伸ばす（くらむぼんの
+          // 字は行の外へ出るので、余白が0だと字が枠を越える）。
+          foregroundBuilder: buttonLabelRoomBuilder(minHeight: 48),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(radius),
           ),
@@ -1056,6 +1060,8 @@ class ThemeService extends ChangeNotifier {
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           foregroundColor: accentText,
+          // 最小の高さはMaterial 3の既定（40）。
+          foregroundBuilder: buttonLabelRoomBuilder(minHeight: 40),
           textStyle: textTheme.labelLarge?.copyWith(
             fontFamily: 'Kuramubon',
             fontFamilyFallback: kHeadingFontFallback,
@@ -1067,6 +1073,7 @@ class ThemeService extends ChangeNotifier {
         style: OutlinedButton.styleFrom(
           foregroundColor: accentText,
           minimumSize: const Size(64, 48),
+          foregroundBuilder: buttonLabelRoomBuilder(minHeight: 48),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(radius),
           ),
@@ -1081,6 +1088,7 @@ class ThemeService extends ChangeNotifier {
         style: TextButton.styleFrom(
           foregroundColor: accentText,
           minimumSize: const Size(48, 44),
+          foregroundBuilder: buttonLabelRoomBuilder(minHeight: 44),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(radius),
           ),

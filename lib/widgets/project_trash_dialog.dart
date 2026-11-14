@@ -24,15 +24,12 @@ String _failureText(AppLocalizations l10n, Object? failure) =>
 
 /// ゴミ箱へ移す・完全に削除する確認のボタンの文字。韓国語は語の途中で行を
 /// 変えない（320px・文字2倍で「휴지통으로 이 / 동」と切れた）。読み上げは
-/// 元の文。2行に折れたときも、字がボタンの上下の縁に付かないように少し
-/// 空ける（1行のときはボタンの高さの下限〔48〕の中に収まり、高さは
-/// 変わらない）。
+/// 元の文。2行以上に折れたときの上下の余白は、ボタンのテーマ（ラベルの
+/// 余白、`buttonLabelRoomBuilder`）が字の描かれる所から取る（ここでも空けると
+/// 二重になる）。1行のときはボタンの高さの下限（48）のまま。
 Widget trashConfirmLabelText(String label) {
   final shown = keepKoreanWordsTogether(label);
-  return Padding(
-    padding: const EdgeInsets.symmetric(vertical: 6),
-    child: Text(shown, semanticsLabel: plainSemanticsLabel(shown)),
-  );
+  return Text(shown, semanticsLabel: plainSemanticsLabel(shown));
 }
 
 /// [showProjectActionFailure]が出した失敗の知らせの印（閉じるときに、他の

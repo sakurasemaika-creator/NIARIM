@@ -58,6 +58,10 @@ class RulerPanel extends StatelessWidget {
                 if (activeRuler != null)
                   TextButton(
                     onPressed: () => onRulerChanged(null),
+                    // 上下の余白が0なので、行の外へ出る字（「Supprimer」の
+                    // p等）が面の縁にかかる。テーマのラベルの余白の仕組みで
+                    // 既定になる面の切り抜きをしない。
+                    clipBehavior: Clip.none,
                     style: TextButton.styleFrom(
                       foregroundColor: ThemeService.activeColorScheme.error,
                       padding: const EdgeInsets.symmetric(horizontal: 8),

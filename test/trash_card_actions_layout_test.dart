@@ -396,8 +396,13 @@ void main() {
                   skipOffstage: false,
                 ),
               );
-              // ボタンの中（余白の内側）の箱。
-              final content = paragraph.parent;
+              // ボタンの中（余白の内側）の箱。ラベルとの間にテーマの部品
+              // （折り返したラベルの上下の余白）が入るので、段落からいちばん
+              // 近いAlignの箱を取る。
+              RenderObject? content = paragraph.parent;
+              while (content != null && content is! RenderPositionedBox) {
+                content = content.parent;
+              }
               if (content is! RenderPositionedBox) {
                 problems.add('$where $kind $key: unexpected button content');
                 continue;

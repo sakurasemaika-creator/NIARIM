@@ -1379,6 +1379,12 @@ class _StorageScreenState extends State<StorageScreen> {
             style: FilledButton.styleFrom(
               backgroundColor: ThemeService.activeColorScheme.error,
               padding: _eraseButtonPadding(ctx),
+              // 名前が折れたときの上下の余白は_eraseButtonPaddingが取る（表示の
+              // 詰め方・高さの低い画面に合わせて）。テーマのラベルの余白
+              // （buttonLabelRoomBuilder）も取ると二重になり、高さの低い画面では
+              // ボタンの段がはみ出した。
+              foregroundBuilder: (context, states, child) =>
+                  child ?? const SizedBox.shrink(),
             ),
             onPressed: () => Navigator.pop(ctx, true),
             child: KeepTogetherText(

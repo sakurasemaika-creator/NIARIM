@@ -219,6 +219,12 @@ void _showTreeSaveDialog(
           // 小さい画面・大きな文字では、開いてすぐ出るキーボードの上に、
           // 打っている欄が見えるようにスクロールする。
           scrollable: true,
+          // キーボードが開いている間は、ダイアログの上下に余白を取らない（文字の
+          // 大きな小さい画面では、折り返して高くなったボタンの段と合わせて、
+          // 打っている欄がキーボードの上に入らなかった）。
+          insetPadding: MediaQuery.viewInsetsOf(ctx).bottom > 0
+              ? const EdgeInsets.symmetric(horizontal: 40)
+              : null,
           title: Text(l10n.commonSave),
           content: Column(
             mainAxisSize: MainAxisSize.min,
@@ -609,6 +615,12 @@ class _SlotView extends StatelessWidget {
           // 小さい画面・大きな文字では、開いてすぐ出るキーボードの上に、
           // 打っている欄が見えるようにスクロールする。
           scrollable: true,
+          // キーボードが開いている間は、ダイアログの上下に余白を取らない（文字の
+          // 大きな小さい画面では、折り返して高くなったボタンの段と合わせて、
+          // 打っている欄がキーボードの上に入らなかった）。
+          insetPadding: MediaQuery.viewInsetsOf(ctx).bottom > 0
+              ? const EdgeInsets.symmetric(horizontal: 40)
+              : null,
           title: Text(l10n.saveTreeSlotSaveDialogTitle(slotIndex + 1)),
           content: Column(
             mainAxisSize: MainAxisSize.min,

@@ -8,7 +8,6 @@ import '../../services/google_auth_service.dart';
 import '../../services/project_service.dart';
 import '../../utils/app_locale.dart';
 import '../../widgets/action_beside_or_below.dart';
-import '../../widgets/button_label_room.dart';
 import '../../widgets/keep_together_text.dart';
 import '../../widgets/responsive.dart';
 import 'login_bonus_panel.dart';
@@ -561,19 +560,17 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
                                   strokeWidth: 2,
                                 ),
                               )
-                            : ButtonLabelRoom(child: Text(t.get('claim'))),
+                            : Text(t.get('claim')),
                       )
                     else
                       OutlinedButton(
                         onPressed: null,
-                        child: ButtonLabelRoom(
-                          child: Text(
-                            !available
-                                ? t.get('upcoming')
-                                : pending
-                                ? t.get('reviewing')
-                                : t.get('notAchieved'),
-                          ),
+                        child: Text(
+                          !available
+                              ? t.get('upcoming')
+                              : pending
+                              ? t.get('reviewing')
+                              : t.get('notAchieved'),
                         ),
                       ),
                   ],
@@ -693,9 +690,7 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
                             child: CircularProgressIndicator(strokeWidth: 2),
                           )
                         : const Icon(Icons.inventory_2_outlined),
-                    label: ButtonLabelRoom(
-                      child: Text(l10n.creatorMissionClaimAll),
-                    ),
+                    label: Text(l10n.creatorMissionClaimAll),
                   ),
                 ),
                 if (widget.workId == null) ...[
@@ -750,13 +745,13 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
           if (cursor != null && rowIndex == rows.length) {
             return OutlinedButton(
               onPressed: _moreBusy ? null : () => _more(api, cursor),
-              child: ButtonLabelRoom(child: Text(t.get('loadMore'))),
+              child: Text(t.get('loadMore')),
             );
           }
           return TextButton.icon(
             onPressed: () => _refresh(api),
             icon: const Icon(Icons.refresh),
-            label: ButtonLabelRoom(child: Text(t.get('retry'))),
+            label: Text(t.get('retry')),
           );
         },
       ),
@@ -803,7 +798,7 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
                         Text(t.get('loadError')),
                         OutlinedButton(
                           onPressed: () => _refresh(api),
-                          child: ButtonLabelRoom(child: Text(t.get('retry'))),
+                          child: Text(t.get('retry')),
                         ),
                       ],
                     ),
