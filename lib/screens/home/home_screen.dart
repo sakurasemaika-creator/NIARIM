@@ -1240,10 +1240,12 @@ class _HomeScreenState extends State<HomeScreen>
             context.pop();
           }
         },
-        child: content,
+        child: FocusTraversalGroup(policy: _homeTraversal, child: content),
       ),
     );
   }
+
+  late final _homeTraversal = _HomeTraversalPolicy(_listAreaKey);
 
   // 選んでいる間は、どのタブでも「戻る」で選ぶのを終える（作品一覧・共有・
   // ゴミ箱でも長押しで選べる。以前はプロジェクトのタブだけを見ていて、ほかの
@@ -2785,6 +2787,72 @@ class _HomeScreenState extends State<HomeScreen>
 
 /// Responsive four-tab navigation: icons on compact phones and centered
 /// icon/label pairs once every translated label fits (same as Works Plaza).
+/// ホームのTabの順番：上部バー（戻る・表示・検索・メニュー・タブ）→一覧
+/// （先頭の絞り込み・並び順から行の順）→浮かぶボタン。
+///
+/// 読む順（ReadingOrderTraversalPolicy）は画面の位置だけで並べるので、一覧を
+/// スクロールして上部バーの裏へ隠れた行がタブと同じ高さに並び、タブの間に
+/// 見えない行が挟まった。一覧（[listArea]の中）の物はまとめて、一覧の上端の
+/// 位置に置く。移った先は、上下どちらへ隠れていても一覧の見える所へ送り出す
+/// （既定のTabは前へ進むとき下に隠れた物しか送り出さず、上へ隠れた行・並び順
+/// の見出しへ進むと、上部バーの裏の何も見えない所が光った）。
+class _HomeTraversalPolicy extends ReadingOrderTraversalPolicy {
+  _HomeTraversalPolicy(this.listArea)
+    : super(requestFocusCallback: _revealTraversedFocus);
+
+  final GlobalKey listArea;
+
+  @override
+  Iterable<FocusNode> sortDescendants(
+    Iterable<FocusNode> descendants,
+    FocusNode currentNode,
+  ) {
+    final sorted = super.sortDescendants(descendants, currentNode).toList();
+    final area = listArea.currentContext;
+    final box = area?.findRenderObject();
+    if (area == null || box is! RenderBox || !box.attached || !box.hasSize) {
+      return sorted;
+    }
+    final inside = <FocusNode>{};
+    for (final node in sorted) {
+      var found = false;
+      node.context?.visitAncestorElements((element) {
+        found = identical(element, area);
+        return !found;
+      });
+      if (found) inside.add(node);
+    }
+    if (inside.isEmpty) return sorted;
+    final top = box.localToGlobal(Offset.zero).dy;
+    // 上端が一覧より上の物（上部バー・タブ・操作バー、画面を包むノード）は
+    // 一覧の前、浮かぶボタンは後。
+    bool above(FocusNode node) => !inside.contains(node) && node.rect.top < top;
+    return [
+      ...sorted.where(above),
+      ...inside,
+      ...sorted.where((node) => !inside.contains(node) && !above(node)),
+    ];
+  }
+
+  static void _revealTraversedFocus(
+    FocusNode node, {
+    ScrollPositionAlignmentPolicy? alignmentPolicy,
+    double? alignment,
+    Duration? duration,
+    Curve? curve,
+  }) {
+    node.requestFocus();
+    final context = node.context;
+    if (context == null) return;
+    for (final policy in const [
+      ScrollPositionAlignmentPolicy.keepVisibleAtEnd,
+      ScrollPositionAlignmentPolicy.keepVisibleAtStart,
+    ]) {
+      Scrollable.ensureVisible(context, alignmentPolicy: policy);
+    }
+  }
+}
+
 class _HomeTabBar extends StatelessWidget {
   const _HomeTabBar({
     required this.controller,

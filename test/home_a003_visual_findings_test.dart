@@ -1014,4 +1014,49 @@ void main() {
     expect(stops, isEmpty, reason: 'Tab stopped on the invisible Home node');
     await home.close();
   });
+
+  testWidgets('一覧を下までスクロールした後のTabでも、移った先は画面に出す', (tester) async {
+    final home = _Home(tester);
+    await home.open(size: const Size(1280, 800));
+    for (var i = 0; i < 40; i++) {
+      await home.addProject('Tab ${i.toString().padLeft(2, '0')}');
+    }
+    final list = find
+        .descendant(
+          of: find.byType(ProjectListWidget),
+          matching: find.byType(Scrollable),
+        )
+        .first;
+    final position = tester.state<ScrollableState>(list).position;
+    position.jumpTo(position.maxScrollExtent);
+    await home.frames(6);
+    final hidden = <String>[];
+    for (var i = 0; i < 70; i++) {
+      await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+      await home.frames(4);
+      final context = FocusManager.instance.primaryFocus?.context;
+      if (context == null || !context.mounted) continue;
+      final inList = find
+          .descendant(of: list, matching: find.byWidget(context.widget))
+          .evaluate()
+          .isNotEmpty;
+      if (!inList) continue;
+      final box = context.findRenderObject()! as RenderBox;
+      final rect = box.localToGlobal(Offset.zero) & box.size;
+      final listBox = tester.renderObject<RenderBox>(list);
+      final viewport = listBox.localToGlobal(Offset.zero) & listBox.size;
+      if (rect.top < viewport.top - 0.5 ||
+          rect.bottom > viewport.bottom + 0.5) {
+        hidden.add(
+          'Tab #${i + 1} at ${rect.top.round()}..${rect.bottom.round()}',
+        );
+      }
+    }
+    expect(
+      hidden,
+      isEmpty,
+      reason: 'focus moved to a control scrolled out of the list viewport',
+    );
+    await home.close();
+  });
 }
