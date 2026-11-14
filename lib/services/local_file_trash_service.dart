@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 
 import '../utils/app_error_reporter.dart';
+import 'export_storage.dart';
 import 'work_folder_service.dart';
 
 /// Locally owned files are moved to a recoverable archive instead of being
@@ -48,6 +49,18 @@ class LocalTrashedFile {
 /// preserves the source. Restore never overwrites an existing file.
 abstract final class LocalFileTrashService {
   static final ValueNotifier<int> changes = ValueNotifier<int>(0);
+
+  /// Tells listeners that the Trash changed. [exports] is true when exported
+  /// works moved into or out of the exports directory: the cached list of
+  /// exported files is then dropped, so a Works list built later (the Works
+  /// tab after a restore from the Trash tab, a works folder) reads the files
+  /// again. A Works tab that was not on screen used to show the list from
+  /// before the restore until the app restarted: a restored folder looked
+  /// empty and a restored file was missing.
+  static void _changed({bool exports = false}) {
+    if (exports) ExportStorage.invalidate();
+    changes.value++;
+  }
 
   static Future<Directory> _root() async {
     final documents = await getApplicationDocumentsDirectory();
@@ -151,7 +164,7 @@ abstract final class LocalFileTrashService {
       }
       await _keepModifiedTime(source, saved);
       await source.delete();
-      changes.value++;
+      _changed(exports: kind == LocalTrashKind.exportedWork);
       return entry;
     } catch (_) {
       // If source removal failed it remains intact; do not display partial
@@ -185,7 +198,7 @@ abstract final class LocalFileTrashService {
     }
     await _keepModifiedTime(archived, copy);
     await archived.parent.delete(recursive: true);
-    changes.value++;
+    _changed(exports: entry.kind == LocalTrashKind.exportedWork);
   }
 
   /// Archive all actual export files before removing any source.
@@ -247,7 +260,7 @@ abstract final class LocalFileTrashService {
         await source.delete();
         removedAny = true;
       }
-      changes.value++;
+      _changed(exports: sources.isNotEmpty);
       return entry;
     } catch (_) {
       // Once a source has been removed, retain all archived bytes.
@@ -256,7 +269,7 @@ abstract final class LocalFileTrashService {
           await directory.delete(recursive: true);
         } catch (_) {}
       } else {
-        changes.value++;
+        _changed(exports: true);
       }
       rethrow;
     }
@@ -373,7 +386,7 @@ abstract final class LocalFileTrashService {
       await workFolders.moveFileToFolder(name, folderId);
     }
     await archive.parent.delete(recursive: true);
-    changes.value++;
+    _changed(exports: entry.fileNames.isNotEmpty);
   }
 
   /// Apply the configured retention period to exported works and saved
