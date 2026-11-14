@@ -23,8 +23,16 @@ class SharedDirectionSwitch extends StatelessWidget {
   /// 受け取ったもの（受信トレイへ入る）のアイコン。
   static const receivedIcon = Icons.move_to_inbox_outlined;
 
-  /// 自分が作成したもの（送信トレイから出す）のアイコン。
-  static const outgoingIcon = Icons.outbox_outlined;
+  /// 自分が作成したもの（作った共有用のファイル。ゴミ箱の「自分が作成した
+  /// 共有ファイル」の行と同じ印）のアイコン。受信トレイと送信トレイの組は
+  /// 同じ箱で矢印の向きだけが違い、小さいと見分けにくかったので、形の違う
+  /// 印にしてある。
+  static const outgoingIcon = Icons.file_present_outlined;
+
+  /// アイコンの大きさ（文字の倍率1倍のとき。区画の既定の大きさ）。文字の
+  /// 大きさの設定に合わせて大きくする（文字だけ大きくなり、アイコンは18pxの
+  /// ままだった）。
+  static const iconSize = 18.0;
 
   // 1つの区画の左右の余白（下のButtonStyleのpadding）。
   static const _segmentPadding = 20.0;
@@ -78,6 +86,7 @@ class SharedDirectionSwitch extends StatelessWidget {
             received,
             created,
           ], constraints.maxWidth);
+          final glyph = MediaQuery.textScalerOf(context).scale(iconSize);
           ButtonSegment<bool> segment(bool value, String name, IconData icon) {
             final key = Key(
               value ? 'sharedOutgoingFilter' : 'sharedReceivedFilter',
@@ -89,7 +98,12 @@ class SharedDirectionSwitch extends StatelessWidget {
                   )
                 : ButtonSegment<bool>(
                     value: value,
-                    icon: Icon(icon, key: key, semanticLabel: name),
+                    icon: Icon(
+                      icon,
+                      key: key,
+                      size: glyph,
+                      semanticLabel: name,
+                    ),
                     tooltip: name,
                   );
           }

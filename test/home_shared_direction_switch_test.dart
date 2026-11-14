@@ -11,6 +11,7 @@ import 'package:niarim/engine/export_engine.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/router.dart';
 import 'package:niarim/screens/home/home_screen.dart';
+import 'package:niarim/screens/home/widgets/shared_direction_switch.dart';
 import 'package:niarim/services/export_storage.dart';
 import 'package:niarim/services/settings_service.dart';
 import 'package:provider/provider.dart';
@@ -26,9 +27,9 @@ import 'helpers/load_app_fonts.dart';
 
 const _languages = ['ja', 'en', 'es', 'fr', 'ko', 'zh', 'zh_Hant'];
 
-// 受け取ったもの（受信トレイ）・自分が作成したもの（送信トレイ）。
-const _receivedIcon = Icons.move_to_inbox_outlined;
-const _outgoingIcon = Icons.outbox_outlined;
+// 受け取ったもの・自分が作成したもののアイコン。
+const _receivedIcon = SharedDirectionSwitch.receivedIcon;
+const _outgoingIcon = SharedDirectionSwitch.outgoingIcon;
 
 final _switch = find.byKey(const Key('sharedDirectionSegmentedControl'));
 
