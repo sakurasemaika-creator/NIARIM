@@ -2888,6 +2888,38 @@ class _HomeTabBar extends StatelessWidget {
 }
 
 /// 共有一覧。ホームタブと'/shared'直リンクで共用する。
+/// 作品一覧・共有・ゴミ箱の並び順・絞り込みを、タブを切り替えて戻っても
+/// 覚えておく。TabBarView は見えないタブの中身を破棄する（以前はタブを
+/// 切り替えるたびに「更新日時」順・絞り込みなしへ戻った。プロジェクトのタブは
+/// ホームの画面が覚えている）。破棄するときに画面（ルート）の PageStorage へ
+/// 置き、作り直すときに戻すので、ホームを開いている間だけ残る。
+mixin _RememberedListFilters<T extends StatefulWidget> on State<T> {
+  /// PageStorage の中でこの一覧の並び順・絞り込みを置く名前。
+  String get filtersId;
+
+  /// 今の並び順・絞り込み（後から変えても影響しない写し）。
+  Object get filters;
+
+  /// [filters]で置いた値を戻す。
+  void restoreFilters(Object saved);
+
+  PageStorageBucket? _filtersBucket;
+
+  @override
+  void initState() {
+    super.initState();
+    _filtersBucket = PageStorage.maybeOf(context);
+    final saved = _filtersBucket?.readState(context, identifier: filtersId);
+    if (saved != null) restoreFilters(saved);
+  }
+
+  @override
+  void dispose() {
+    _filtersBucket?.writeState(context, filters, identifier: filtersId);
+    super.dispose();
+  }
+}
+
 class SharedScreen extends StatefulWidget {
   const SharedScreen({
     super.key,
@@ -2921,7 +2953,20 @@ class SharedScreen extends StatefulWidget {
   State<SharedScreen> createState() => _SharedScreenState();
 }
 
-class _SharedScreenState extends State<SharedScreen> {
+class _SharedScreenState extends State<SharedScreen>
+    with _RememberedListFilters<SharedScreen> {
+  @override
+  String get filtersId => 'home-shared-filters';
+  @override
+  Object get filters => (_sortMode, _showFavoritesOnly);
+  @override
+  void restoreFilters(Object saved) {
+    if (saved case (final ProjectSortMode sort, final bool favourites)) {
+      _sortMode = sort;
+      _showFavoritesOnly = favourites;
+    }
+  }
+
   // Keep the received and locally exported snapshot collections distinct.
   late bool _showOutgoing = widget.initialOutgoing;
   ProjectViewMode? _standaloneViewMode;
@@ -3131,7 +3176,25 @@ class TrashScreen extends StatefulWidget {
   State<TrashScreen> createState() => _TrashScreenState();
 }
 
-class _TrashScreenState extends State<TrashScreen> {
+class _TrashScreenState extends State<TrashScreen>
+    with _RememberedListFilters<TrashScreen> {
+  @override
+  String get filtersId => 'home-trash-filters';
+  @override
+  Object get filters => (_sortMode, Set<TrashEntryKind>.of(_selectedKinds));
+  @override
+  void restoreFilters(Object saved) {
+    if (saved case (
+      final ProjectSortMode sort,
+      final Set<TrashEntryKind> kinds,
+    )) {
+      _sortMode = sort;
+      _selectedKinds
+        ..clear()
+        ..addAll(kinds);
+    }
+  }
+
   // 共有一覧・プロジェクトタブと同じ並び替え基準を、同じ見た目・操作性で
   // 提供する（ゴミ箱にお気に入りの概念はないため絞り込みは対象外）。
   ProjectSortMode _sortMode = ProjectSortMode.updatedDesc;
@@ -5572,7 +5635,20 @@ class _WorksTab extends StatefulWidget {
   State<_WorksTab> createState() => _WorksTabState();
 }
 
-class _WorksTabState extends State<_WorksTab> {
+class _WorksTabState extends State<_WorksTab>
+    with _RememberedListFilters<_WorksTab> {
+  @override
+  String get filtersId => 'home-works-filters';
+  @override
+  Object get filters => (_sortMode, _showFavoritesOnly);
+  @override
+  void restoreFilters(Object saved) {
+    if (saved case (final ProjectSortMode sort, final bool favourites)) {
+      _sortMode = sort;
+      _showFavoritesOnly = favourites;
+    }
+  }
+
   static const _favoritePathsKey = 'home.works.favoritePaths.v1';
   final Set<String> _favoritePaths = {};
   bool _showFavoritesOnly = false;

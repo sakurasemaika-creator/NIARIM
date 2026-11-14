@@ -22,6 +22,7 @@ import 'package:niarim/services/project_service.dart';
 import 'package:niarim/services/settings_service.dart';
 import 'package:niarim/services/theme_service.dart';
 import 'package:niarim/utils/color_contrast.dart';
+import 'package:niarim/widgets/sort_mode_control.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shared_preferences_platform_interface/shared_preferences_platform_interface.dart';
@@ -883,6 +884,78 @@ void main() {
     await tester.sendKeyEvent(LogicalKeyboardKey.escape);
     await home.frames(6);
     expect(find.byKey(const Key('homeSearchInput')), findsNothing);
+    await home.close();
+  });
+
+  testWidgets('タブを切り替えて戻っても、作品一覧・共有・ゴミ箱の並び順と絞り込みを覚えている', (tester) async {
+    final home = _Home(tester);
+    await home.open();
+    await home.addExports(const ['walk.mp4', 'run.gif']);
+    await home.trashProject('ゴミの作品');
+
+    SortModeControl sortIn(Type screen) => tester.widget<SortModeControl>(
+      find.descendant(
+        of: find.byType(screen),
+        matching: find.byType(SortModeControl),
+      ),
+    );
+    Finder worksSort() => find.ancestor(
+      of: find.byKey(const Key('worksFavoritesOnlyFilter')),
+      matching: find.byKey(const Key('homeCollectionSortHeader')),
+    );
+    SortModeControl sortUnder(Finder header) => tester.widget<SortModeControl>(
+      find.descendant(of: header, matching: find.byType(SortModeControl)),
+    );
+    FilterChip chip(Key key) => tester.widget<FilterChip>(find.byKey(key));
+
+    // 作品一覧：お気に入りだけ・名前の昇順。
+    await home.showTab(1);
+    await tester.tap(find.byKey(const Key('worksFavoritesOnlyFilter')));
+    await home.frames(4);
+    sortUnder(worksSort()).onSortByNameChanged(true);
+    await home.frames(4);
+    sortUnder(worksSort()).onToggleDirection();
+    await home.frames(4);
+    // 共有：お気に入りだけ・名前の降順。
+    await home.showTab(2);
+    await tester.tap(find.byKey(const Key('sharedFavoritesOnlyFilter')));
+    await home.frames(4);
+    sortIn(SharedScreen).onSortByNameChanged(true);
+    await home.frames(4);
+    // ゴミ箱：書き出した作品の種類を外す・名前の降順。
+    await home.showTab(3);
+    await tester.tap(
+      find.byKey(ValueKey('trashKind_${TrashEntryKind.exportedWork.name}')),
+    );
+    await home.frames(4);
+    sortIn(TrashScreen).onSortByNameChanged(true);
+    await home.frames(4);
+
+    // プロジェクトへ移ってから、それぞれのタブへ戻る。
+    await home.showTab(0);
+    final lost = <String>[];
+    await home.showTab(1);
+    if (!chip(const Key('worksFavoritesOnlyFilter')).selected) {
+      lost.add('works favourites');
+    }
+    final works = sortUnder(worksSort());
+    if (!works.sortByName || !works.sortAscending) lost.add('works sort');
+    await home.showTab(0);
+    await home.showTab(2);
+    if (!chip(const Key('sharedFavoritesOnlyFilter')).selected) {
+      lost.add('shared favourites');
+    }
+    final shared = sortIn(SharedScreen);
+    if (!shared.sortByName || shared.sortAscending) lost.add('shared sort');
+    await home.showTab(0);
+    await home.showTab(3);
+    if (chip(
+      ValueKey('trashKind_${TrashEntryKind.exportedWork.name}'),
+    ).selected) {
+      lost.add('trash kind filter');
+    }
+    if (!sortIn(TrashScreen).sortByName) lost.add('trash sort');
+    expect(lost, isEmpty, reason: 'reset by a tab switch');
     await home.close();
   });
 }
