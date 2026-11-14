@@ -1,8 +1,11 @@
 import 'dart:io';
 
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/models/watermark_asset.dart';
+import 'package:niarim/l10n/app_localizations.dart';
+import 'package:niarim/utils/file_size_label.dart';
 import 'package:niarim/services/premium_service.dart';
 import 'package:niarim/services/storage_info_service.dart';
 import 'package:niarim/services/watermark_service.dart';
@@ -202,11 +205,12 @@ void main() {
     test(
       'byte formatter and DeviceSpaceInfo clamping cover unit boundaries',
       () {
-        expect(formatStorageBytes(0), '0B');
-        expect(formatStorageBytes(1023), '1023B');
-        expect(formatStorageBytes(1024), '1.0KB');
-        expect(formatStorageBytes(1024 * 1024), '1.0MB');
-        expect(formatStorageBytes(1024 * 1024 * 1024), '1.0GB');
+        final ja = lookupAppLocalizations(const Locale('ja'));
+        expect(fileSizeLabel(ja, 0), '0B');
+        expect(fileSizeLabel(ja, 1023), '1023B');
+        expect(fileSizeLabel(ja, 1024), '1.0KB');
+        expect(fileSizeLabel(ja, 1024 * 1024), '1.0MB');
+        expect(fileSizeLabel(ja, 1024 * 1024 * 1024), '1.0GB');
         const info = DeviceSpaceInfo(totalBytes: 100, freeBytes: 40);
         expect(info.usedByOthersBytes, 60);
         const overFree = DeviceSpaceInfo(totalBytes: 100, freeBytes: 140);

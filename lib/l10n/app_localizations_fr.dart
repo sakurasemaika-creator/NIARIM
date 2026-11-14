@@ -4222,8 +4222,8 @@ class AppLocalizationsFr extends AppLocalizations {
   String get saveTreeCommentHint => 'ex. : Arrière-plan terminé';
 
   @override
-  String saveTreeSizeWarningSnackbar(String mb) {
-    return 'Votre arbre de sauvegardes devient volumineux (environ $mb Mo). Nous vous recommandons de supprimer les sauvegardes inutiles.';
+  String saveTreeSizeWarningSnackbar(String size) {
+    return 'Votre arbre de sauvegardes devient volumineux (environ $size). Nous vous recommandons de supprimer les sauvegardes inutiles.';
   }
 
   @override
@@ -6724,11 +6724,36 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get storageEraseAllButton =>
-      'Effacer toutes les données (réinitialiser)';
+      'Effacer toutes les données (remise à zéro)';
 
   @override
   String storageClearCacheDoneSnackbar(String size) {
     return '$size de cache libérés';
+  }
+
+  @override
+  String fileSizeBytes(String size) {
+    return '$size o';
+  }
+
+  @override
+  String fileSizeKilobytes(String size) {
+    return '$size Ko';
+  }
+
+  @override
+  String fileSizeMegabytes(String size) {
+    return '$size Mo';
+  }
+
+  @override
+  String fileSizeGigabytes(String size) {
+    return '$size Go';
+  }
+
+  @override
+  String fileSizeTerabytes(String size) {
+    return '$size To';
   }
 
   @override
@@ -6750,7 +6775,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get helpStorageDesc =>
-      'Consultez l’espace utilisé par NIARIM sur votre appareil, ainsi qu’une répartition de son contenu (projets, matériaux, fichiers exportés, brosses/trames/tampons/polices personnalisés, cache et corbeille) sous forme de graphiques circulaires. Vous pouvez vider le cache, supprimer les matériaux inutilisés dans tous les projets, vider la corbeille, organiser vos projets ou effacer toutes les données (réinitialiser).';
+      'Consultez l’espace utilisé par NIARIM sur votre appareil, ainsi qu’une répartition de son contenu (projets, matériaux, fichiers exportés, brosses/trames/tampons/polices personnalisés, cache et corbeille) sous forme de graphiques circulaires. Vous pouvez vider le cache, supprimer les matériaux inutilisés dans tous les projets, vider la corbeille, organiser vos projets ou effacer toutes les données (remise à zéro).';
 
   @override
   String get helpWidgetSettingsTitle => 'Widgets de l’écran d’accueil';

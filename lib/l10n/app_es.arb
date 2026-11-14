@@ -1603,13 +1603,13 @@
   "saveTreeSaveAsRootHint": "Se guardará como nodo raíz.",
   "saveTreeCommentLabel": "Nota",
   "saveTreeCommentHint": "ej.: Fondo terminado",
-  "saveTreeSizeWarningSnackbar": "El árbol de guardado está ocupando mucho espacio (unos {mb} MB). Te recomendamos eliminar los guardados que ya no necesites.",
+  "saveTreeSizeWarningSnackbar": "El árbol de guardado está ocupando mucho espacio (unos {size}). Te recomendamos eliminar los guardados que ya no necesites.",
   "saveTreeDeleteFailedSnackbar": "No se pudieron eliminar los datos guardados",
   "saveTreeMemoNotSavedSnackbar": "No se pudo guardar la nota. Comprueba el espacio libre",
   "saveTreeSaveFailedSnackbar": "Error al guardar. Comprueba el espacio libre e inténtalo de nuevo ({error})",
   "@saveTreeSizeWarningSnackbar": {
     "placeholders": {
-      "mb": {
+      "size": {
         "type": "String"
       }
     }
@@ -2755,6 +2755,46 @@
   "storageEraseAllButton": "Borrar todos los datos (restablecer)",
   "storageClearCacheDoneSnackbar": "Se liberaron {size} de caché",
   "@storageClearCacheDoneSnackbar": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "fileSizeBytes": "{size} B",
+  "@fileSizeBytes": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "fileSizeKilobytes": "{size} KB",
+  "@fileSizeKilobytes": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "fileSizeMegabytes": "{size} MB",
+  "@fileSizeMegabytes": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "fileSizeGigabytes": "{size} GB",
+  "@fileSizeGigabytes": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "fileSizeTerabytes": "{size} TB",
+  "@fileSizeTerabytes": {
     "placeholders": {
       "size": {
         "type": "String"

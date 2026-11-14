@@ -4219,8 +4219,8 @@ class AppLocalizationsEs extends AppLocalizations {
   String get saveTreeCommentHint => 'ej.: Fondo terminado';
 
   @override
-  String saveTreeSizeWarningSnackbar(String mb) {
-    return 'El árbol de guardado está ocupando mucho espacio (unos $mb MB). Te recomendamos eliminar los guardados que ya no necesites.';
+  String saveTreeSizeWarningSnackbar(String size) {
+    return 'El árbol de guardado está ocupando mucho espacio (unos $size). Te recomendamos eliminar los guardados que ya no necesites.';
   }
 
   @override
@@ -6722,6 +6722,31 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String storageClearCacheDoneSnackbar(String size) {
     return 'Se liberaron $size de caché';
+  }
+
+  @override
+  String fileSizeBytes(String size) {
+    return '$size B';
+  }
+
+  @override
+  String fileSizeKilobytes(String size) {
+    return '$size KB';
+  }
+
+  @override
+  String fileSizeMegabytes(String size) {
+    return '$size MB';
+  }
+
+  @override
+  String fileSizeGigabytes(String size) {
+    return '$size GB';
+  }
+
+  @override
+  String fileSizeTerabytes(String size) {
+    return '$size TB';
   }
 
   @override

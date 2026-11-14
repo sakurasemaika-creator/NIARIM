@@ -7392,8 +7392,8 @@ abstract class AppLocalizations {
   /// No description provided for @saveTreeSizeWarningSnackbar.
   ///
   /// In ja, this message translates to:
-  /// **'セーブツリーの容量が大きくなっています（約{mb}MB）。不要な保存データの削除をおすすめします。'**
-  String saveTreeSizeWarningSnackbar(String mb);
+  /// **'セーブツリーの容量が大きくなっています（約{size}）。不要な保存データの削除をおすすめします。'**
+  String saveTreeSizeWarningSnackbar(String size);
 
   /// No description provided for @saveTreeDeleteFailedSnackbar.
   ///
@@ -11666,6 +11666,36 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'{size}のキャッシュを削除しました'**
   String storageClearCacheDoneSnackbar(String size);
+
+  /// ファイルの大きさ（バイト）。sizeは表示の言語の書き方の数（例：512）
+  ///
+  /// In ja, this message translates to:
+  /// **'{size}B'**
+  String fileSizeBytes(String size);
+
+  /// ファイルの大きさ（キロバイト）。sizeは表示の言語の書き方の小数1桁の数（例：1.4。仏語は1,4）
+  ///
+  /// In ja, this message translates to:
+  /// **'{size}KB'**
+  String fileSizeKilobytes(String size);
+
+  /// ファイルの大きさ（メガバイト）。sizeは表示の言語の書き方の小数1桁の数
+  ///
+  /// In ja, this message translates to:
+  /// **'{size}MB'**
+  String fileSizeMegabytes(String size);
+
+  /// ファイルの大きさ（ギガバイト）。sizeは表示の言語の書き方の小数1桁の数
+  ///
+  /// In ja, this message translates to:
+  /// **'{size}GB'**
+  String fileSizeGigabytes(String size);
+
+  /// ファイルの大きさ（テラバイト）。sizeは表示の言語の書き方の小数1桁の数
+  ///
+  /// In ja, this message translates to:
+  /// **'{size}TB'**
+  String fileSizeTerabytes(String size);
 
   /// No description provided for @storageEraseAllConfirmTitle.
   ///

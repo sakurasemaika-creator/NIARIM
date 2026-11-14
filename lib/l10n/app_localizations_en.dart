@@ -4163,8 +4163,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get saveTreeCommentHint => 'e.g. Background done';
 
   @override
-  String saveTreeSizeWarningSnackbar(String mb) {
-    return 'Your save tree is getting large (about ${mb}MB). We recommend deleting saves you no longer need.';
+  String saveTreeSizeWarningSnackbar(String size) {
+    return 'Your save tree is getting large (about $size). We recommend deleting saves you no longer need.';
   }
 
   @override
@@ -6613,6 +6613,31 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String storageClearCacheDoneSnackbar(String size) {
     return 'Cleared $size of cache';
+  }
+
+  @override
+  String fileSizeBytes(String size) {
+    return '$size B';
+  }
+
+  @override
+  String fileSizeKilobytes(String size) {
+    return '$size KB';
+  }
+
+  @override
+  String fileSizeMegabytes(String size) {
+    return '$size MB';
+  }
+
+  @override
+  String fileSizeGigabytes(String size) {
+    return '$size GB';
+  }
+
+  @override
+  String fileSizeTerabytes(String size) {
+    return '$size TB';
   }
 
   @override

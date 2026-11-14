@@ -12,6 +12,7 @@ import 'package:niarim/router.dart';
 import 'package:niarim/screens/settings/storage_screen.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:niarim/services/storage_info_service.dart';
+import 'package:niarim/utils/file_size_label.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -211,7 +212,10 @@ void main() {
           find.byKey(Key('storageBreakdownBarValue_$label')),
         );
         expect(labelWidget.data, label);
-        expect(valueWidget.data, formatStorageBytes(values!.bytesOf(category)));
+        expect(
+          valueWidget.data,
+          fileSizeLabel(l10n, values!.bytesOf(category)),
+        );
         expect(labelWidget.style?.color, scheme.onSecondary);
         expect(valueWidget.style?.color, scheme.onSecondary);
         expect(labelWidget.style?.shadows?.length, 4);

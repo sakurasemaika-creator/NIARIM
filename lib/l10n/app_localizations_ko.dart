@@ -4042,8 +4042,8 @@ class AppLocalizationsKo extends AppLocalizations {
   String get saveTreeCommentHint => '예: 배경 완성';
 
   @override
-  String saveTreeSizeWarningSnackbar(String mb) {
-    return '세이브 트리의 용량이 커지고 있습니다(약 ${mb}MB). 불필요한 저장 데이터를 삭제하는 것을 권장합니다.';
+  String saveTreeSizeWarningSnackbar(String size) {
+    return '세이브 트리의 용량이 커지고 있습니다(약 $size). 불필요한 저장 데이터를 삭제하는 것을 권장합니다.';
   }
 
   @override
@@ -6421,6 +6421,31 @@ class AppLocalizationsKo extends AppLocalizations {
   @override
   String storageClearCacheDoneSnackbar(String size) {
     return '캐시 $size를 삭제했습니다';
+  }
+
+  @override
+  String fileSizeBytes(String size) {
+    return '${size}B';
+  }
+
+  @override
+  String fileSizeKilobytes(String size) {
+    return '${size}KB';
+  }
+
+  @override
+  String fileSizeMegabytes(String size) {
+    return '${size}MB';
+  }
+
+  @override
+  String fileSizeGigabytes(String size) {
+    return '${size}GB';
+  }
+
+  @override
+  String fileSizeTerabytes(String size) {
+    return '${size}TB';
   }
 
   @override

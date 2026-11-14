@@ -1603,13 +1603,13 @@
   "saveTreeSaveAsRootHint": "Sera enregistré comme nœud racine.",
   "saveTreeCommentLabel": "Note",
   "saveTreeCommentHint": "ex. : Arrière-plan terminé",
-  "saveTreeSizeWarningSnackbar": "Votre arbre de sauvegardes devient volumineux (environ {mb} Mo). Nous vous recommandons de supprimer les sauvegardes inutiles.",
+  "saveTreeSizeWarningSnackbar": "Votre arbre de sauvegardes devient volumineux (environ {size}). Nous vous recommandons de supprimer les sauvegardes inutiles.",
   "saveTreeDeleteFailedSnackbar": "Impossible de supprimer les données de sauvegarde",
   "saveTreeMemoNotSavedSnackbar": "Impossible d’enregistrer la note. Vérifiez l’espace disponible",
   "saveTreeSaveFailedSnackbar": "Échec de l’enregistrement. Vérifiez l’espace disponible et réessayez ({error})",
   "@saveTreeSizeWarningSnackbar": {
     "placeholders": {
-      "mb": {
+      "size": {
         "type": "String"
       }
     }
@@ -2752,9 +2752,49 @@
   "storageEmptyTrashButton": "Vider la corbeille",
   "storageEmptyTrashKeptUnreadFolders": "La corbeille n’a pas été vidée. Les dossiers contenant des projets impossibles à charger ne peuvent pas être supprimés tant qu’ils ne sont pas chargés. Appuyez sur « {retry} » sur l’écran d’accueil pour les recharger.",
   "storageOrganizeProjectsButton": "Organiser les projets",
-  "storageEraseAllButton": "Effacer toutes les données (réinitialiser)",
+  "storageEraseAllButton": "Effacer toutes les données (remise à zéro)",
   "storageClearCacheDoneSnackbar": "{size} de cache libérés",
   "@storageClearCacheDoneSnackbar": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "fileSizeBytes": "{size} o",
+  "@fileSizeBytes": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "fileSizeKilobytes": "{size} Ko",
+  "@fileSizeKilobytes": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "fileSizeMegabytes": "{size} Mo",
+  "@fileSizeMegabytes": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "fileSizeGigabytes": "{size} Go",
+  "@fileSizeGigabytes": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "fileSizeTerabytes": "{size} To",
+  "@fileSizeTerabytes": {
     "placeholders": {
       "size": {
         "type": "String"
@@ -2766,7 +2806,7 @@
   "storageEraseAllDoneSnackbar": "Toutes les données ont été effacées. Veuillez redémarrer l’application.",
   "homeDrawerStorage": "Libérer de l’espace",
   "helpStorageTitle": "Libérer de l’espace",
-  "helpStorageDesc": "Consultez l’espace utilisé par NIARIM sur votre appareil, ainsi qu’une répartition de son contenu (projets, matériaux, fichiers exportés, brosses/trames/tampons/polices personnalisés, cache et corbeille) sous forme de graphiques circulaires. Vous pouvez vider le cache, supprimer les matériaux inutilisés dans tous les projets, vider la corbeille, organiser vos projets ou effacer toutes les données (réinitialiser).",
+  "helpStorageDesc": "Consultez l’espace utilisé par NIARIM sur votre appareil, ainsi qu’une répartition de son contenu (projets, matériaux, fichiers exportés, brosses/trames/tampons/polices personnalisés, cache et corbeille) sous forme de graphiques circulaires. Vous pouvez vider le cache, supprimer les matériaux inutilisés dans tous les projets, vider la corbeille, organiser vos projets ou effacer toutes les données (remise à zéro).",
   "helpWidgetSettingsTitle": "Widgets de l’écran d’accueil",
   "helpWidgetSettingsDesc": "Réglages des trois types de widgets à placer sur l’écran d’accueil du téléphone : une image d’une œuvre (écran de démarrage), le widget de création et le widget de la place. Les widgets eux-mêmes s’ajoutent par appui long sur l’écran d’accueil, pas depuis l’application. « Choisir une œuvre » reprend le même tri, mode d’affichage, recherche et filtre des favoris que l’onglet des projets, puis permet de choisir l’image exacte à afficher dans un aperçu doté de commandes de lecture. Les widgets de création et de la place permettent de choisir si le fond suit le thème de l’application ou utilise une couleur définie par vous.",
   "colorPickerImportPaletteTooltip": "Importer une palette",

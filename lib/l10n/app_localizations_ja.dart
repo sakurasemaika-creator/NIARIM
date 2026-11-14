@@ -4020,8 +4020,8 @@ class AppLocalizationsJa extends AppLocalizations {
   String get saveTreeCommentHint => '例：背景完成';
 
   @override
-  String saveTreeSizeWarningSnackbar(String mb) {
-    return 'セーブツリーの容量が大きくなっています（約${mb}MB）。不要な保存データの削除をおすすめします。';
+  String saveTreeSizeWarningSnackbar(String size) {
+    return 'セーブツリーの容量が大きくなっています（約$size）。不要な保存データの削除をおすすめします。';
   }
 
   @override
@@ -6388,6 +6388,31 @@ class AppLocalizationsJa extends AppLocalizations {
   @override
   String storageClearCacheDoneSnackbar(String size) {
     return '$sizeのキャッシュを削除しました';
+  }
+
+  @override
+  String fileSizeBytes(String size) {
+    return '${size}B';
+  }
+
+  @override
+  String fileSizeKilobytes(String size) {
+    return '${size}KB';
+  }
+
+  @override
+  String fileSizeMegabytes(String size) {
+    return '${size}MB';
+  }
+
+  @override
+  String fileSizeGigabytes(String size) {
+    return '${size}GB';
+  }
+
+  @override
+  String fileSizeTerabytes(String size) {
+    return '${size}TB';
   }
 
   @override

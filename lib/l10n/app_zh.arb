@@ -1603,13 +1603,13 @@
   "saveTreeSaveAsRootHint": "将保存为根节点。",
   "saveTreeCommentLabel": "备注",
   "saveTreeCommentHint": "例：背景完成",
-  "saveTreeSizeWarningSnackbar": "存档树的容量正在变大（约{mb}MB）。建议删除不需要的存档数据。",
+  "saveTreeSizeWarningSnackbar": "存档树的容量正在变大（约{size}）。建议删除不需要的存档数据。",
   "saveTreeDeleteFailedSnackbar": "存档数据删除失败",
   "saveTreeMemoNotSavedSnackbar": "备注保存失败。请检查剩余存储空间",
   "saveTreeSaveFailedSnackbar": "保存失败。请检查剩余存储空间后重试（{error}）",
   "@saveTreeSizeWarningSnackbar": {
     "placeholders": {
-      "mb": {
+      "size": {
         "type": "String"
       }
     }
@@ -2755,6 +2755,46 @@
   "storageEraseAllButton": "删除全部数据（初始化）",
   "storageClearCacheDoneSnackbar": "已清除 {size} 缓存",
   "@storageClearCacheDoneSnackbar": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "fileSizeBytes": "{size} B",
+  "@fileSizeBytes": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "fileSizeKilobytes": "{size} KB",
+  "@fileSizeKilobytes": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "fileSizeMegabytes": "{size} MB",
+  "@fileSizeMegabytes": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "fileSizeGigabytes": "{size} GB",
+  "@fileSizeGigabytes": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "fileSizeTerabytes": "{size} TB",
+  "@fileSizeTerabytes": {
     "placeholders": {
       "size": {
         "type": "String"

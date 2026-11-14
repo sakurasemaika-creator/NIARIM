@@ -18,6 +18,7 @@ import '../../widgets/projects_load_failure_notice.dart';
 import '../../widgets/confirm_delete.dart';
 import '../../widgets/ad_banner_mock_widget.dart';
 import '../../utils/app_error_reporter.dart';
+import '../../utils/file_size_label.dart';
 import '../../widgets/dispose_on_unmount.dart';
 import '../../config/font_fallback.dart';
 import '../../config/accent_text_theme.dart';
@@ -374,10 +375,11 @@ Future<void> _warnIfSaveTreeSizeLarge(
   if (sizeBytes < _saveTreeSizeWarningThresholdBytes) return;
   if (!context.mounted) return;
   final l10n = AppLocalizations.of(context)!;
-  final mb = (sizeBytes / (1024 * 1024)).toStringAsFixed(0);
   ScaffoldMessenger.of(context).showSnackBar(
     SnackBar(
-      content: Text(l10n.saveTreeSizeWarningSnackbar(mb)),
+      content: Text(
+        l10n.saveTreeSizeWarningSnackbar(fileSizeLabel(l10n, sizeBytes)),
+      ),
       duration: const Duration(seconds: 5),
     ),
   );

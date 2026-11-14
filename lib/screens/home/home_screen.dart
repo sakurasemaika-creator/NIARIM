@@ -74,6 +74,7 @@ import '../../widgets/projects_load_failure_notice.dart';
 import '../../widgets/scrollable_sheet_body.dart';
 import '../../utils/app_error_reporter.dart';
 import '../../utils/duplicate_name.dart';
+import '../../utils/file_size_label.dart';
 import '../../utils/folder_persistence.dart';
 import '../../utils/responsive_tile_defaults.dart';
 import '../../utils/tolerant_preferences.dart';
@@ -3452,12 +3453,10 @@ String _trashKindLabel(BuildContext context, TrashEntryKind kind) {
   };
 }
 
-/// 作品一覧・共有の「自分が作成したもの」の行で出すファイルの大きさ。
-String _homeFileSizeLabel(int bytes) {
-  if (bytes < 1024) return '${bytes}B';
-  if (bytes < 1024 * 1024) return '${(bytes / 1024).toStringAsFixed(1)}KB';
-  return '${(bytes / (1024 * 1024)).toStringAsFixed(1)}MB';
-}
+/// 作品一覧・共有の「自分が作成したもの」の行で出すファイルの大きさ
+/// （表示の言語の書き方）。
+String _homeFileSizeLabel(AppLocalizations l10n, int bytes) =>
+    fileSizeLabel(l10n, bytes);
 
 /// ゴミ箱一覧。ホームタブと'/trash'直リンクで共用する。
 class TrashScreen extends StatefulWidget {
@@ -4360,7 +4359,7 @@ class _OutgoingSharesList extends StatelessWidget {
       // 作品一覧の行と同じ、その言語の日時と大きさの書き方。
       final subtitle = l10n.homeExportedWorkMetadata(
         entry.updatedAt,
-        _homeFileSizeLabel(entry.sizeBytes),
+        _homeFileSizeLabel(l10n, entry.sizeBytes),
       );
       final favoriteAction = CollectionFavoriteButton(
         itemId: entry.path,
@@ -6660,7 +6659,8 @@ class _WorkListItemState extends State<_WorkListItem> {
     }
   }
 
-  String _formatSize(int bytes) => _homeFileSizeLabel(bytes);
+  String _formatSize(int bytes) =>
+      _homeFileSizeLabel(AppLocalizations.of(context)!, bytes);
 
   @override
   Widget build(BuildContext context) {

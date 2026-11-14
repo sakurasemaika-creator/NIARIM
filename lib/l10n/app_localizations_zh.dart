@@ -4000,8 +4000,8 @@ class AppLocalizationsZh extends AppLocalizations {
   String get saveTreeCommentHint => '例：背景完成';
 
   @override
-  String saveTreeSizeWarningSnackbar(String mb) {
-    return '存档树的容量正在变大（约${mb}MB）。建议删除不需要的存档数据。';
+  String saveTreeSizeWarningSnackbar(String size) {
+    return '存档树的容量正在变大（约$size）。建议删除不需要的存档数据。';
   }
 
   @override
@@ -6337,6 +6337,31 @@ class AppLocalizationsZh extends AppLocalizations {
   @override
   String storageClearCacheDoneSnackbar(String size) {
     return '已清除 $size 缓存';
+  }
+
+  @override
+  String fileSizeBytes(String size) {
+    return '$size B';
+  }
+
+  @override
+  String fileSizeKilobytes(String size) {
+    return '$size KB';
+  }
+
+  @override
+  String fileSizeMegabytes(String size) {
+    return '$size MB';
+  }
+
+  @override
+  String fileSizeGigabytes(String size) {
+    return '$size GB';
+  }
+
+  @override
+  String fileSizeTerabytes(String size) {
+    return '$size TB';
   }
 
   @override
@@ -13915,8 +13940,8 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get saveTreeCommentHint => '例：背景完成';
 
   @override
-  String saveTreeSizeWarningSnackbar(String mb) {
-    return '存檔樹的容量正在變大（約${mb}MB）。建議刪除不需要的存檔資料。';
+  String saveTreeSizeWarningSnackbar(String size) {
+    return '存檔樹的容量正在變大（約$size）。建議刪除不需要的存檔資料。';
   }
 
   @override
@@ -16253,6 +16278,31 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   @override
   String storageClearCacheDoneSnackbar(String size) {
     return '已清除 $size 快取';
+  }
+
+  @override
+  String fileSizeBytes(String size) {
+    return '$size B';
+  }
+
+  @override
+  String fileSizeKilobytes(String size) {
+    return '$size KB';
+  }
+
+  @override
+  String fileSizeMegabytes(String size) {
+    return '$size MB';
+  }
+
+  @override
+  String fileSizeGigabytes(String size) {
+    return '$size GB';
+  }
+
+  @override
+  String fileSizeTerabytes(String size) {
+    return '$size TB';
   }
 
   @override

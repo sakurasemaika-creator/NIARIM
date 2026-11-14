@@ -28,6 +28,9 @@ const _sameEverywhere = {
 };
 
 /// 言語ごとに、英語と同じ綴りでよいもの（その言語でも同じ綴りの語・単位）。
+/// fileSize*（「{size} KB」等）は、スペイン語・中国語も英語と同じく数と単位の
+/// 間を改行しない空白で空けて同じ単位名で書く（日本語・韓国語は空けない、
+/// 仏語は o・Ko・Mo と書くので英語と違う）。
 const _sameInLocale = <String, Set<String>>{
   'es': {
     'assetTagManga',
@@ -44,6 +47,11 @@ const _sameInLocale = <String, Set<String>>{
     'communityVisibilityPublishedBadge',
     'customAutomationNo',
     'exportFpsLabel',
+    'fileSizeBytes',
+    'fileSizeGigabytes',
+    'fileSizeKilobytes',
+    'fileSizeMegabytes',
+    'fileSizeTerabytes',
     'filterInkPoolColor',
     'filterLevelsGamma',
     'helpPremiumEntryTitle',
@@ -122,8 +130,26 @@ const _sameInLocale = <String, Set<String>>{
   },
   // FPS は単位。Premium はプランの名前。
   'ko': {'exportFpsLabel', 'pcStatusFps'},
-  'zh': {'exportFpsLabel', 'pcStatusFps', 'helpPremiumEntryTitle'},
-  'zh_Hant': {'exportFpsLabel', 'pcStatusFps', 'helpPremiumEntryTitle'},
+  'zh': {
+    'exportFpsLabel',
+    'pcStatusFps',
+    'helpPremiumEntryTitle',
+    'fileSizeBytes',
+    'fileSizeGigabytes',
+    'fileSizeKilobytes',
+    'fileSizeMegabytes',
+    'fileSizeTerabytes',
+  },
+  'zh_Hant': {
+    'exportFpsLabel',
+    'pcStatusFps',
+    'helpPremiumEntryTitle',
+    'fileSizeBytes',
+    'fileSizeGigabytes',
+    'fileSizeKilobytes',
+    'fileSizeMegabytes',
+    'fileSizeTerabytes',
+  },
 };
 
 Map<String, String> _values(String locale) {

@@ -12,8 +12,10 @@ import '../../services/material_service.dart';
 import '../../services/project_service.dart';
 import '../../services/storage_info_service.dart';
 import '../../utils/app_error_reporter.dart';
+import '../../utils/file_size_label.dart';
 import '../../widgets/confirm_delete.dart';
 import '../../widgets/help_button.dart';
+import '../../widgets/keep_together_text.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/project_trash_dialog.dart';
 import '../../config/font_fallback.dart';
@@ -1014,7 +1016,7 @@ class _StorageScreenState extends State<StorageScreen> {
                 ),
                 const SizedBox(width: 5),
                 Text(
-                  formatStorageBytes(bytes),
+                  fileSizeLabel(AppLocalizations.of(context)!, bytes),
                   key: Key('storageBreakdownBarValue_$label'),
                   style: TextStyle(
                     color: foreground,
@@ -1053,7 +1055,7 @@ class _StorageScreenState extends State<StorageScreen> {
     if (bytes <= 0 && breakdown.incomplete.contains(category)) {
       return (subtitle: '', enabled: false);
     }
-    return (subtitle: formatStorageBytes(bytes), enabled: bytes > 0);
+    return (subtitle: fileSizeLabel(l10n, bytes), enabled: bytes > 0);
   }
 
   Widget _buildActions(
@@ -1121,7 +1123,12 @@ class _StorageScreenState extends State<StorageScreen> {
       child: ListTile(
         focusNode: focusNode,
         leading: Icon(icon, color: iconColor),
-        title: Text(title, style: TextStyle(color: titleColor)),
+        // 括弧の中（「（初期化）」等）は行の途中で切らない。
+        title: KeepTogetherText(
+          title,
+          keep: _bracketedWords(title),
+          style: TextStyle(color: titleColor),
+        ),
         subtitle: subtitle == null
             ? null
             : Text(
@@ -1210,7 +1217,7 @@ class _StorageScreenState extends State<StorageScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            l10n.storageClearCacheDoneSnackbar(formatStorageBytes(freed)),
+            l10n.storageClearCacheDoneSnackbar(fileSizeLabel(l10n, freed)),
           ),
         ),
       );
@@ -1331,6 +1338,30 @@ class _StorageScreenState extends State<StorageScreen> {
     return attempted;
   });
 
+  /// 「全データを削除」の確認のボタンの余白。文字が大きく名前が2行以上に
+  /// 折れたとき、上下に余白が無いと文字がボタンの縁に付いて見えた（既定の
+  /// 上下の余白は0）。ボタンは表示の詰め方（VisualDensity）の分だけ上下の
+  /// 余白を減らす（PC〔Linux 等〕の詰めた表示は8pxずつで、文字2倍では字と
+  /// 縁の間が2〜4pxになった）ので、減らされる分を足しておく。高さの低い
+  /// 画面（横向き・分割の窓）では、ボタンの段が画面に入る方を優先して上下の
+  /// 余白を足さない（ダイアログのボタンの段はスクロールしないので、足すと段が
+  /// はみ出した）。左右は既定と同じく文字の大きさで縮める。
+  EdgeInsetsGeometry _eraseButtonPadding(BuildContext context) {
+    final squeezed = math.max(
+      0.0,
+      -Theme.of(context).visualDensity.baseSizeAdjustment.dy,
+    );
+    final vertical = MediaQuery.sizeOf(context).height >= 480
+        ? 10 + squeezed
+        : 0.0;
+    return ButtonStyleButton.scaledPadding(
+      EdgeInsets.symmetric(horizontal: 24, vertical: vertical),
+      EdgeInsets.symmetric(horizontal: 12, vertical: vertical),
+      EdgeInsets.symmetric(horizontal: 6, vertical: vertical),
+      MediaQuery.textScalerOf(context).scale(14) / 14,
+    );
+  }
+
   Future<void> _confirmEraseAll() => _runAction(() async {
     final l10n = AppLocalizations.of(context)!;
     final confirmed = await showDialog<bool>(
@@ -1347,9 +1378,14 @@ class _StorageScreenState extends State<StorageScreen> {
           FilledButton(
             style: FilledButton.styleFrom(
               backgroundColor: ThemeService.activeColorScheme.error,
+              padding: _eraseButtonPadding(ctx),
             ),
             onPressed: () => Navigator.pop(ctx, true),
-            child: Text(l10n.storageEraseAllButton),
+            child: KeepTogetherText(
+              l10n.storageEraseAllButton,
+              keep: _bracketedWords(l10n.storageEraseAllButton),
+              textAlign: TextAlign.center,
+            ),
           ),
         ],
       ),
@@ -1448,6 +1484,16 @@ class _StorageNotice extends StatelessWidget {
     );
   }
 }
+
+/// 文の中の、括弧でくくった空白の無い語（「（初期化）」「(reset)」）。行の
+/// 途中で切らずに1つのかたまりにする（「全データを削除（初 / 期化）」と括弧の
+/// 中で折れた）。1行に入らない幅では[KeepTogetherText]がつながずに普通に
+/// 折る。空白を含む括弧の中（「(remise à zéro)」）はかたまりにしない（語の
+/// 間で折れる方が読める）。
+List<String> _bracketedWords(String text) => [
+  for (final match in RegExp(r'[（(][^（）()\s]+[）)]').allMatches(text))
+    match.group(0)!,
+];
 
 class _StorageAmount {
   final double value;

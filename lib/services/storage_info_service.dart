@@ -608,16 +608,3 @@ class _RunningScan {
       StorageInfoService.scanClock() - startedAt < storageScanShareLimit &&
       setEquals(this.trashedProjectIds, trashedProjectIds);
 }
-
-/// バイト数を「12.3MB」のような読みやすい文字列に整形する。
-String formatStorageBytes(num bytes) {
-  const units = ['B', 'KB', 'MB', 'GB', 'TB'];
-  double value = bytes.toDouble();
-  int unitIndex = 0;
-  while (value >= 1024 && unitIndex < units.length - 1) {
-    value /= 1024;
-    unitIndex++;
-  }
-  final decimals = unitIndex == 0 ? 0 : 1;
-  return '${value.toStringAsFixed(decimals)}${units[unitIndex]}';
-}

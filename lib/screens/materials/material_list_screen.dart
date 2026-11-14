@@ -9,6 +9,7 @@ import '../../l10n/app_localizations.dart';
 import '../../models/material_asset.dart';
 import '../../services/material_service.dart';
 import '../../services/project_service.dart';
+import '../../utils/file_size_label.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/help_button.dart';
 import '../../config/font_fallback.dart';
@@ -230,11 +231,8 @@ class _MaterialListScreenState extends State<MaterialListScreen> {
     );
   }
 
-  String _formatSize(int bytes) {
-    if (bytes < 1024) return '${bytes}B';
-    if (bytes < 1024 * 1024) return '${(bytes / 1024).toStringAsFixed(1)}KB';
-    return '${(bytes / (1024 * 1024)).toStringAsFixed(1)}MB';
-  }
+  String _formatSize(int bytes) =>
+      fileSizeLabel(AppLocalizations.of(context)!, bytes);
 
   String _formatDuration(Duration d) {
     final m = d.inMinutes;

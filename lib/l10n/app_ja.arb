@@ -1942,7 +1942,7 @@
   "saveTreeSaveAsRootHint": "ルートノードとして保存します。",
   "saveTreeCommentLabel": "メモ",
   "saveTreeCommentHint": "例：背景完成",
-  "saveTreeSizeWarningSnackbar": "セーブツリーの容量が大きくなっています（約{mb}MB）。不要な保存データの削除をおすすめします。",
+  "saveTreeSizeWarningSnackbar": "セーブツリーの容量が大きくなっています（約{size}）。不要な保存データの削除をおすすめします。",
   "saveTreeDeleteFailedSnackbar": "保存データを削除できませんでした",
   "saveTreeMemoNotSavedSnackbar": "メモを保存できませんでした。空き容量などを確認してください",
   "saveTreeSaveFailedSnackbar": "保存に失敗しました。空き容量などを確認してもう一度お試しください（{error}）",
@@ -1955,7 +1955,7 @@
   },
   "@saveTreeSizeWarningSnackbar": {
     "placeholders": {
-      "mb": {
+      "size": {
         "type": "String"
       }
     }
@@ -3147,6 +3147,51 @@
   "storageEraseAllButton": "全データを削除（初期化）",
   "storageClearCacheDoneSnackbar": "{size}のキャッシュを削除しました",
   "@storageClearCacheDoneSnackbar": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "fileSizeBytes": "{size}B",
+  "@fileSizeBytes": {
+    "description": "ファイルの大きさ（バイト）。sizeは表示の言語の書き方の数（例：512）",
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "fileSizeKilobytes": "{size}KB",
+  "@fileSizeKilobytes": {
+    "description": "ファイルの大きさ（キロバイト）。sizeは表示の言語の書き方の小数1桁の数（例：1.4。仏語は1,4）",
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "fileSizeMegabytes": "{size}MB",
+  "@fileSizeMegabytes": {
+    "description": "ファイルの大きさ（メガバイト）。sizeは表示の言語の書き方の小数1桁の数",
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "fileSizeGigabytes": "{size}GB",
+  "@fileSizeGigabytes": {
+    "description": "ファイルの大きさ（ギガバイト）。sizeは表示の言語の書き方の小数1桁の数",
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "fileSizeTerabytes": "{size}TB",
+  "@fileSizeTerabytes": {
+    "description": "ファイルの大きさ（テラバイト）。sizeは表示の言語の書き方の小数1桁の数",
     "placeholders": {
       "size": {
         "type": "String"

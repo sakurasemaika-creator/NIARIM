@@ -1603,13 +1603,13 @@
   "saveTreeSaveAsRootHint": "This will save as a root node.",
   "saveTreeCommentLabel": "Memo",
   "saveTreeCommentHint": "e.g. Background done",
-  "saveTreeSizeWarningSnackbar": "Your save tree is getting large (about {mb}MB). We recommend deleting saves you no longer need.",
+  "saveTreeSizeWarningSnackbar": "Your save tree is getting large (about {size}). We recommend deleting saves you no longer need.",
   "saveTreeDeleteFailedSnackbar": "Couldn't delete the save data",
   "saveTreeMemoNotSavedSnackbar": "Couldn't save the memo. Check your free storage",
   "saveTreeSaveFailedSnackbar": "Save failed. Check your free storage and try again ({error})",
   "@saveTreeSizeWarningSnackbar": {
     "placeholders": {
-      "mb": {
+      "size": {
         "type": "String"
       }
     }
@@ -2755,6 +2755,46 @@
   "storageEraseAllButton": "Erase all data (reset)",
   "storageClearCacheDoneSnackbar": "Cleared {size} of cache",
   "@storageClearCacheDoneSnackbar": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "fileSizeBytes": "{size} B",
+  "@fileSizeBytes": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "fileSizeKilobytes": "{size} KB",
+  "@fileSizeKilobytes": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "fileSizeMegabytes": "{size} MB",
+  "@fileSizeMegabytes": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "fileSizeGigabytes": "{size} GB",
+  "@fileSizeGigabytes": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "fileSizeTerabytes": "{size} TB",
+  "@fileSizeTerabytes": {
     "placeholders": {
       "size": {
         "type": "String"
