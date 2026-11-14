@@ -494,7 +494,7 @@
   "helpFolderTitle": "Dossier",
   "helpFolderDesc": "Une fonctionnalité pour regrouper et organiser vos projets (œuvres). Elle prend en charge plusieurs niveaux d’imbrication, vous pouvez donc aussi l’utiliser pour gérer ensemble plusieurs épisodes ou une série de la même œuvre (par exemple, en organisant les projets « Épisode 1 », « Épisode 2 », etc. dans un dossier nommé d’après l’œuvre). Si vous voulez diviser une seule vidéo en scènes distinctes, utilisez la fonctionnalité « Scène » de l’écran du canevas plutôt que des dossiers.",
   "helpTrashTitle": "Corbeille",
-  "helpTrashDesc": "L’endroit où les projets supprimés sont temporairement déplacés. Vous pouvez les restaurer d’ici jusqu’à ce qu’ils soient définitivement supprimés. Vous pouvez définir le nombre de jours avant la suppression automatique (désactivé/30/60/90 jours) dans les réglages.",
+  "helpTrashDesc": "L’endroit où les projets supprimés sont temporairement déplacés. Vous pouvez les restaurer d’ici jusqu’à ce qu’ils soient définitivement supprimés. Vous pouvez définir le nombre de jours avant la suppression automatique (désactivée/30/60/90 jours) dans les réglages.",
   "helpShareTitle": "Partage (.niashare)",
   "helpShareDesc": "Un format de fichier dédié pour remettre un projet à quelqu’un d’autre (ou à un autre appareil de vous-même). Lorsque le destinataire ouvre ce fichier, il est dupliqué et ajouté à sa propre liste de projets. Le fichier .niashare d’origine lui-même n’est pas modifié.",
   "helpTransferTitle": "Transfert (.niatra)",
@@ -1109,7 +1109,7 @@
   "brushSettingsBlurRadiusLabel": "Rayon de flou",
   "brushSettingsPixelModeTitle": "Mode pixel",
   "brushSettingsFadeModeTitle": "Fondu",
-  "brushSettingsFadeOff": "OFF",
+  "brushSettingsFadeOff": "Désactivé",
   "brushSettingsFadeWeak": "Faible",
   "brushSettingsFadeMedium": "Moyen",
   "brushSettingsFadeStrong": "Fort",
@@ -1176,7 +1176,7 @@
     }
   },
   "projectDetailTrashMenuItem": "Mettre à la corbeille",
-  "commonOff": "OFF",
+  "commonOff": "Désactivé",
   "perfSettingsScreenTitle": "Paramètres de performance",
   "perfSettingsQualitySection": "Paramètres de qualité",
   "perfSettingsQualityLow": "Faible",
@@ -1190,7 +1190,7 @@
   "perfSettingsCapacitySection": "Paramètres liés au stockage et aux performances",
   "perfSettingsUndoLimitTitle": "Nombre d’annulations",
   "perfSettingsUndoLimitSubtitle": "Plus il est élevé, plus il consomme de mémoire",
-  "perfSettingsUndoLimitValue": "{n} étapes",
+  "perfSettingsUndoLimitValue": "{n, plural, one{{n} étape} other{{n} étapes}}",
   "@perfSettingsUndoLimitValue": {
     "placeholders": {
       "n": {
@@ -1200,7 +1200,8 @@
   },
   "perfSettingsTrashAutoDeleteTitle": "Suppression automatique de la corbeille",
   "perfSettingsTrashAutoDeleteSubtitle": "Durée de conservation des projets supprimés",
-  "perfSettingsTrashAutoDeleteValue": "{n} jours",
+  "perfSettingsTrashAutoDeleteOff": "Désactivée",
+  "perfSettingsTrashAutoDeleteValue": "{n, plural, one{{n} jour} other{{n} jours}}",
   "@perfSettingsTrashAutoDeleteValue": {
     "placeholders": {
       "n": {
@@ -1210,9 +1211,11 @@
   },
   "perfSettingsCurrentSettingsSection": "Paramètres actuels",
   "perfSettingsTiltLabel": "Détection de l’inclinaison",
+  "perfSettingsTiltOn": "Activée",
+  "perfSettingsTiltOff": "Désactivée",
   "perfSettingsOnionPrevLabel": "Papier calque (avant)",
   "perfSettingsOnionNextLabel": "Papier calque (après)",
-  "perfSettingsOnionFrameCountValue": "{n} images",
+  "perfSettingsOnionFrameCountValue": "{n, plural, one{{n} image} other{{n} images}}",
   "@perfSettingsOnionFrameCountValue": {
     "placeholders": {
       "n": {
@@ -1222,7 +1225,7 @@
   },
   "perfSettingsSaveModeLabel": "Mode de sauvegarde",
   "perfSettingsSlotCountLabel": "Nombre d’emplacements",
-  "perfSettingsSlotCountValue": "{n} emplacements",
+  "perfSettingsSlotCountValue": "{n, plural, one{{n} emplacement} other{{n} emplacements}}",
   "@perfSettingsSlotCountValue": {
     "placeholders": {
       "n": {

@@ -494,7 +494,7 @@
   "helpFolderTitle": "Folder",
   "helpFolderDesc": "A feature for grouping and organizing your projects (works). It supports multiple levels of nesting, so you can also use it to manage multiple episodes or a series of the same work together (for example, arranging projects for “Episode 1,” “Episode 2,” and so on inside a folder named after the work). If you want to divide a single video into separate scenes, use the “Scene” feature on the canvas screen instead of folders.",
   "helpTrashTitle": "Trash",
-  "helpTrashDesc": "The place where deleted projects are temporarily moved. You can restore them from here until they're permanently deleted. You can set the number of days until automatic deletion (Off/30/60/90 days) in the settings.",
+  "helpTrashDesc": "The place where deleted projects are temporarily moved. You can restore them from here until they're permanently deleted. You can set the number of days until automatic deletion (OFF/30/60/90 days) in the settings.",
   "helpShareTitle": "Share (.niashare)",
   "helpShareDesc": "A dedicated file format for handing a project to someone else (or to another device of your own). When the recipient opens this file, it's duplicated and added to their own project list. The original .niashare file itself is not changed.",
   "helpTransferTitle": "Transfer (.niatra)",
@@ -1190,7 +1190,7 @@
   "perfSettingsCapacitySection": "Storage & performance settings",
   "perfSettingsUndoLimitTitle": "Undo steps",
   "perfSettingsUndoLimitSubtitle": "More steps use more memory",
-  "perfSettingsUndoLimitValue": "{n} steps",
+  "perfSettingsUndoLimitValue": "{n, plural, one{{n} step} other{{n} steps}}",
   "@perfSettingsUndoLimitValue": {
     "placeholders": {
       "n": {
@@ -1200,7 +1200,8 @@
   },
   "perfSettingsTrashAutoDeleteTitle": "Auto-delete trash",
   "perfSettingsTrashAutoDeleteSubtitle": "Retention period for deleted projects",
-  "perfSettingsTrashAutoDeleteValue": "{n} days",
+  "perfSettingsTrashAutoDeleteOff": "OFF",
+  "perfSettingsTrashAutoDeleteValue": "{n, plural, one{{n} day} other{{n} days}}",
   "@perfSettingsTrashAutoDeleteValue": {
     "placeholders": {
       "n": {
@@ -1210,9 +1211,11 @@
   },
   "perfSettingsCurrentSettingsSection": "Current settings",
   "perfSettingsTiltLabel": "Tilt detection",
+  "perfSettingsTiltOn": "ON",
+  "perfSettingsTiltOff": "OFF",
   "perfSettingsOnionPrevLabel": "Onion skin (previous)",
   "perfSettingsOnionNextLabel": "Onion skin (next)",
-  "perfSettingsOnionFrameCountValue": "{n} frames",
+  "perfSettingsOnionFrameCountValue": "{n, plural, one{{n} frame} other{{n} frames}}",
   "@perfSettingsOnionFrameCountValue": {
     "placeholders": {
       "n": {
@@ -1222,7 +1225,7 @@
   },
   "perfSettingsSaveModeLabel": "Save mode",
   "perfSettingsSlotCountLabel": "Slot count",
-  "perfSettingsSlotCountValue": "{n} slots",
+  "perfSettingsSlotCountValue": "{n, plural, one{{n} slot} other{{n} slots}}",
   "@perfSettingsSlotCountValue": {
     "placeholders": {
       "n": {
@@ -1773,7 +1776,7 @@
   "canvasSelectionSliderScale": "Scale",
   "canvasSelectionSliderRotate": "Rotate",
   "canvasApplyFilterButton": "Apply filter",
-  "canvasShapeOff": "Off (back to normal brush)",
+  "canvasShapeOff": "OFF (back to normal brush)",
   "canvasShapeLine": "Line",
   "canvasShapeRect": "Rectangle",
   "canvasShapeCircle": "Circle",

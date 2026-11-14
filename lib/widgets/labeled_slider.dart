@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'action_beside_or_below.dart';
 import 'editable_slider_value.dart';
 import 'stepped_slider.dart';
 
@@ -76,47 +77,50 @@ class LabeledSlider extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           // 1行目：項目名と値（値は右端。鉛筆マークは値の右へはみ出して
-          // 描かれるので、そのぶん右に余白を取る）。
+          // 描かれるので、そのぶん右に余白を取る）。並べると項目名が語の
+          // 途中で折れる（狭い幅・大きな文字・長い言語）ときは、値を項目名の
+          // 下（行の終わりの側）へ回す。
           Padding(
             padding: const EdgeInsetsDirectional.only(start: 4, end: 20),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Row(
-                    children: [
-                      Flexible(
-                        child: Text(
-                          label,
-                          style: labelStyle ?? const TextStyle(fontSize: 12),
-                        ),
-                      ),
-                      ?labelTrailing,
-                    ],
+            child: ActionBesideOrBelow(
+              minTextFraction: 0,
+              gap: 8,
+              spacing: 2,
+              text: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Flexible(
+                    child: Text(
+                      label,
+                      style: labelStyle ?? const TextStyle(fontSize: 12),
+                    ),
                   ),
-                ),
-                if (shown != null)
-                  editable && onChanged != null
-                      ? EditableSliderValue(
-                          text: shown,
-                          style: valueTextStyle,
-                          textAlign: TextAlign.right,
-                          title: label,
-                          value: value,
-                          min: min,
-                          max: max,
-                          isInt: isInt,
-                          onChanged: (v) {
-                            final next = v.toDouble().clamp(min, max);
-                            onChanged!(next);
-                            onChangeEnd?.call(next);
-                          },
-                        )
-                      : Text(
-                          shown,
-                          style: valueTextStyle,
-                          textAlign: TextAlign.right,
-                        ),
-              ],
+                  ?labelTrailing,
+                ],
+              ),
+              action: shown == null
+                  ? const SizedBox.shrink()
+                  : editable && onChanged != null
+                  ? EditableSliderValue(
+                      text: shown,
+                      style: valueTextStyle,
+                      textAlign: TextAlign.right,
+                      title: label,
+                      value: value,
+                      min: min,
+                      max: max,
+                      isInt: isInt,
+                      onChanged: (v) {
+                        final next = v.toDouble().clamp(min, max);
+                        onChanged!(next);
+                        onChangeEnd?.call(next);
+                      },
+                    )
+                  : Text(
+                      shown,
+                      style: valueTextStyle,
+                      textAlign: TextAlign.right,
+                    ),
             ),
           ),
           // 2行目：－・スライダー・＋だけで横幅いっぱいを使う。

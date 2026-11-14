@@ -19,8 +19,6 @@ const _sameEverywhere = {
   'exportFormatGif': 'ファイル形式の名前',
   'exportFormatAvi': 'ファイル形式の名前',
   'penSubToolBrushSizeOpacity': '単位（px・%）だけ',
-  'brushSettingsFadeOff': 'どの言語のUIでも「OFF」と書く',
-  'commonOff': 'どの言語のUIでも「OFF」と書く',
   'storageCategoryNiarimTotal': 'アプリ名',
   'helpCategoryPremium': 'プランの名前（Premium）',
   'premiumScreenTitle': 'プランの名前（Premium）',
@@ -129,7 +127,16 @@ const _sameInLocale = <String, Set<String>>{
     'timelineWatermarkAngleLabel',
   },
   // FPS は単位。Premium はプランの名前。
-  'ko': {'exportFpsLabel', 'pcStatusFps'},
+  'ko': {
+    'exportFpsLabel',
+    'pcStatusFps',
+    // 韓国語のUIでも「ON」「OFF」と書く（필압 ON/OFF・ON（고정）と同じ）。
+    'brushSettingsFadeOff',
+    'commonOff',
+    'perfSettingsTiltOn',
+    'perfSettingsTiltOff',
+    'perfSettingsTrashAutoDeleteOff',
+  },
   'zh': {
     'exportFpsLabel',
     'pcStatusFps',

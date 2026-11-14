@@ -3038,7 +3038,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get brushSettingsFadeModeTitle => '淡出';
 
   @override
-  String get brushSettingsFadeOff => 'OFF';
+  String get brushSettingsFadeOff => '关闭';
 
   @override
   String get brushSettingsFadeWeak => '弱';
@@ -3193,7 +3193,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get projectDetailTrashMenuItem => '移至回收站';
 
   @override
-  String get commonOff => 'OFF';
+  String get commonOff => '关闭';
 
   @override
   String get perfSettingsScreenTitle => '性能设置';
@@ -3246,6 +3246,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get perfSettingsTrashAutoDeleteSubtitle => '已删除项目的保留期限';
 
   @override
+  String get perfSettingsTrashAutoDeleteOff => '关闭';
+
+  @override
   String perfSettingsTrashAutoDeleteValue(int n) {
     return '$n天';
   }
@@ -3255,6 +3258,12 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get perfSettingsTiltLabel => '倾斜检测';
+
+  @override
+  String get perfSettingsTiltOn => '开启';
+
+  @override
+  String get perfSettingsTiltOff => '关闭';
 
   @override
   String get perfSettingsOnionPrevLabel => '洋葱皮（前）';
@@ -4270,7 +4279,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get canvasApplyFilterButton => '应用滤镜';
 
   @override
-  String get canvasShapeOff => 'OFF（返回普通画笔）';
+  String get canvasShapeOff => '关闭（返回普通画笔）';
 
   @override
   String get canvasShapeLine => '线条';
@@ -12978,7 +12987,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get brushSettingsFadeModeTitle => '淡出';
 
   @override
-  String get brushSettingsFadeOff => 'OFF';
+  String get brushSettingsFadeOff => '關閉';
 
   @override
   String get brushSettingsFadeWeak => '弱';
@@ -13133,7 +13142,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get projectDetailTrashMenuItem => '移至垃圾桶';
 
   @override
-  String get commonOff => 'OFF';
+  String get commonOff => '關閉';
 
   @override
   String get perfSettingsScreenTitle => '效能設定';
@@ -13186,6 +13195,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get perfSettingsTrashAutoDeleteSubtitle => '已刪除專案的保留期限';
 
   @override
+  String get perfSettingsTrashAutoDeleteOff => '關閉';
+
+  @override
   String perfSettingsTrashAutoDeleteValue(int n) {
     return '$n天';
   }
@@ -13195,6 +13207,12 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get perfSettingsTiltLabel => '傾斜偵測';
+
+  @override
+  String get perfSettingsTiltOn => '開啟';
+
+  @override
+  String get perfSettingsTiltOff => '關閉';
 
   @override
   String get perfSettingsOnionPrevLabel => '洋蔥皮（前）';
@@ -14210,7 +14228,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get canvasApplyFilterButton => '套用濾鏡';
 
   @override
-  String get canvasShapeOff => 'OFF（返回一般筆刷）';
+  String get canvasShapeOff => '關閉（返回一般筆刷）';
 
   @override
   String get canvasShapeLine => '線條';

@@ -11,6 +11,9 @@ import '../../services/settings_service.dart';
 import '../../widgets/labeled_slider.dart';
 import '../../widgets/responsive.dart';
 import '../save_tree/save_tree_screen.dart';
+import '../../utils/line_break.dart';
+import '../../widgets/action_beside_or_below.dart';
+import '../../widgets/fit_or_hide_title.dart';
 import '../../widgets/help_button.dart';
 import '../../config/font_fallback.dart';
 
@@ -130,289 +133,302 @@ class _PerformanceSettingsScreenState extends State<PerformanceSettingsScreen> {
       // HelpButtonのtopicはヘルプ画面側のトピックキーと一致させる必要があるため、
       // 翻訳対象外の内部識別子として日本語のまま維持する。
       appBar: AppBar(
-        title: Text(l10n.perfSettingsScreenTitle),
+        // 入らない幅では画面名を出さない（省略記号で切らない）。
+        title: FitOrHideTitle(l10n.perfSettingsScreenTitle),
         actions: const [HelpButton(topic: 'パフォーマンス設定')],
       ),
       body: desktopCentered(
         context,
-        ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
-            Text(
-              l10n.perfSettingsQualitySection,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                fontFamily: 'Kuramubon',
-                fontFamilyFallback: kHeadingFontFallback,
-              ),
+        LayoutBuilder(
+          builder: (context, box) => ListView(
+            // 見出しの1語が入らない幅（狭い幅・大きな文字・長い言語）では、
+            // 左右の余白を詰めてでも語の途中で折らない（8pxまで）。
+            padding: EdgeInsets.symmetric(
+              vertical: 16,
+              horizontal: _sideMargin(context, box.maxWidth, [
+                l10n.perfSettingsQualitySection,
+                l10n.perfSettingsCapacitySection,
+                l10n.perfSettingsCurrentSettingsSection,
+              ]),
             ),
-            const SizedBox(height: 8),
-            // 選択状態と変更通知はRadioGroupがまとめて持つ
-            // （各ラジオのgroupValue/onChangedはFlutter 3.32で非推奨）。
-            // spreadのままだとRadioGroupを祖先に置けないため、Columnで束ねる
-            // （ListViewの子としての並び方は spread と同じ）。
-            RadioGroup<QualityLevel>(
-              groupValue: perf.qualityLevel,
-              onChanged: (v) {
-                if (v != null) _onQualityChanged(v);
-              },
-              child: Column(
-                children: QualityLevel.values
-                    .map(
-                      (level) => RadioListTile<QualityLevel>(
-                        title: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(_qualityLabel(l10n, level)),
-                            // この端末の性能から判定した推奨プリセット（初回起動時に
-                            // 自動選択されたもの）を、後から手動で変更していても
-                            // 常にわかるようにする。
-                            if (level == perf.defaultPreset) ...[
-                              const SizedBox(width: 8),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                  vertical: 2,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: Theme.of(
-                                    context,
-                                  ).colorScheme.primaryContainer,
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Text(
-                                  l10n.premiumPlanRecommendedBadge,
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.bold,
-                                    fontFamily: 'Kuramubon',
-                                    fontFamilyFallback: kHeadingFontFallback,
-                                    color: Theme.of(
-                                      context,
-                                    ).colorScheme.onPrimaryContainer,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ],
-                        ),
-                        subtitle: Text(
-                          _qualityDesc(l10n, level),
-                          style: const TextStyle(fontSize: 12),
-                        ),
-                        value: level,
-                      ),
-                    )
-                    .toList(),
-              ),
-            ),
-            const Divider(height: 32),
-            // アプリの容量・重さに影響する設定（旧・設定画面「詳細」カテゴリから
-            // 移設。品質プリセットとは独立して常に変更可能）。
-            Text(
-              l10n.perfSettingsCapacitySection,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                fontFamily: 'Kuramubon',
-                fontFamilyFallback: kHeadingFontFallback,
-              ),
-            ),
-            SizedBox(height: 8),
-            Card(
-              elevation: 1,
-              shadowColor: ThemeService.activeColorScheme.shadow.withValues(
-                alpha: 0.15,
-              ),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(14),
-              ),
-              color: Theme.of(context).colorScheme.surfaceContainerLow,
-              child: Column(
-                children: [
-                  ListTile(
-                    title: Text(l10n.perfSettingsUndoLimitTitle),
-                    subtitle: Text(l10n.perfSettingsUndoLimitSubtitle),
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          l10n.perfSettingsUndoLimitValue(settings.undoLimit),
-                        ),
-                        const Icon(Icons.chevron_right),
-                      ],
-                    ),
-                    onTap: () => _showUndoLimitDialog(context, settings),
-                  ),
-                  const Divider(height: 1),
-                  ListTile(
-                    title: Text(l10n.perfSettingsTrashAutoDeleteTitle),
-                    subtitle: Text(l10n.perfSettingsTrashAutoDeleteSubtitle),
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          settings.trashAutoDeleteDays == 0
-                              ? l10n.commonOff
-                              : l10n.perfSettingsTrashAutoDeleteValue(
-                                  settings.trashAutoDeleteDays,
-                                ),
-                        ),
-                        const Icon(Icons.chevron_right),
-                      ],
-                    ),
-                    onTap: () => _showTrashAutoDeleteDialog(context, settings),
-                  ),
-                ],
-              ),
-            ),
-            const Divider(height: 32),
-            Text(
-              l10n.perfSettingsCurrentSettingsSection,
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-                fontFamily: 'Kuramubon',
-                fontFamilyFallback: kHeadingFontFallback,
-              ),
-            ),
-            const SizedBox(height: 8),
-            _infoTile(
-              l10n.perfSettingsTiltLabel,
-              perf.tiltEnabled ? 'ON' : l10n.commonOff,
-            ),
-            _infoTile(
-              l10n.perfSettingsOnionPrevLabel,
-              perf.showPrevOnion
-                  ? l10n.perfSettingsOnionFrameCountValue(
-                      perf.prevOnionSkinFrames,
-                    )
-                  : l10n.commonOff,
-            ),
-            _infoTile(
-              l10n.perfSettingsOnionNextLabel,
-              perf.showNextOnion
-                  ? l10n.perfSettingsOnionFrameCountValue(
-                      perf.nextOnionSkinFrames,
-                    )
-                  : l10n.commonOff,
-            ),
-            _infoTile(
-              l10n.perfSettingsSaveModeLabel,
-              _saveModeLabel(l10n, perf.saveMode),
-            ),
-            if (perf.saveMode == SaveMode.slot)
-              _infoTile(
-                l10n.perfSettingsSlotCountLabel,
-                l10n.perfSettingsSlotCountValue(perf.slotCount),
-              ),
-            if (perf.qualityLevel == QualityLevel.custom) ...[
-              const Divider(height: 32),
-              // カスタム操作ボタン行
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      icon: const Icon(Icons.restart_alt, size: 16),
-                      label: Text(
-                        l10n.perfSettingsResetButton,
-                        style: const TextStyle(fontSize: 12),
-                      ),
-                      onPressed: () => _showResetDialog(context, perf),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      icon: const Icon(Icons.copy, size: 16),
-                      label: Text(
-                        l10n.perfSettingsCopyPresetButton,
-                        style: const TextStyle(fontSize: 12),
-                      ),
-                      onPressed: () => _showCopyPresetDialog(context, perf),
-                    ),
-                  ),
-                ],
-              ),
-              SwitchListTile(
-                title: Text(l10n.perfSettingsTiltSwitchTitle),
-                value: perf.tiltEnabled,
-                onChanged: (v) => perf.setCustomTilt(v),
-              ),
+            children: [
+              Text(l10n.perfSettingsQualitySection, style: _sectionStyle),
               const SizedBox(height: 8),
-              SwitchListTile(
-                title: Text(l10n.perfSettingsShowPrevOnionTitle),
-                value: perf.showPrevOnion,
-                onChanged: (v) => perf.setCustomShowPrev(v),
-                dense: true,
-              ),
-              if (perf.showPrevOnion) ...[
-                _onionSlider(
-                  l10n: l10n,
-                  label: l10n.perfSettingsOnionCountPrevLabel,
-                  value: perf.prevOnionSkinFrames,
-                  onChanged: (v) => perf.setCustomOnionSkinPrev(v),
-                ),
-              ],
-              const SizedBox(height: 4),
-              SwitchListTile(
-                title: Text(l10n.perfSettingsShowNextOnionTitle),
-                value: perf.showNextOnion,
-                onChanged: (v) => perf.setCustomShowNext(v),
-                dense: true,
-              ),
-              if (perf.showNextOnion) ...[
-                _onionSlider(
-                  l10n: l10n,
-                  label: l10n.perfSettingsOnionCountNextLabel,
-                  value: perf.nextOnionSkinFrames,
-                  onChanged: (v) => perf.setCustomOnionSkinNext(v),
-                ),
-              ],
-              const SizedBox(height: 8),
-              Text(
-                l10n.perfSettingsSaveModeLabel,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'Kuramubon',
-                  fontFamilyFallback: kHeadingFontFallback,
-                ),
-              ),
               // 選択状態と変更通知はRadioGroupがまとめて持つ
               // （各ラジオのgroupValue/onChangedはFlutter 3.32で非推奨）。
-              RadioGroup<SaveMode>(
-                groupValue: perf.saveMode,
+              // spreadのままだとRadioGroupを祖先に置けないため、Columnで束ねる
+              // （ListViewの子としての並び方は spread と同じ）。
+              RadioGroup<QualityLevel>(
+                groupValue: perf.qualityLevel,
                 onChanged: (v) {
-                  if (v == null || v == perf.saveMode) return;
-                  _onCustomSaveModeChanged(context, v, perf);
+                  if (v != null) _onQualityChanged(v);
                 },
                 child: Column(
-                  children: SaveMode.values
+                  children: QualityLevel.values
                       .map(
-                        (mode) => RadioListTile<SaveMode>(
-                          title: Text(_saveModeLabel(l10n, mode)),
-                          value: mode,
-                          dense: true,
+                        (level) => _RadioRow<QualityLevel>(
+                          value: level,
+                          // 印は名前の後ろに並べ、入らなければ名前の下へ回す
+                          // （名前・印とも語の途中で折らない）。
+                          title: Wrap(
+                            spacing: 8,
+                            runSpacing: 4,
+                            crossAxisAlignment: WrapCrossAlignment.center,
+                            children: [
+                              _keepWords(_qualityLabel(l10n, level)),
+                              // この端末の性能から判定した推奨プリセット（初回起動時に
+                              // 自動選択されたもの）を、後から手動で変更していても
+                              // 常にわかるようにする。
+                              if (level == perf.defaultPreset)
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 2,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.primaryContainer,
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Text(
+                                    keepKoreanWordsTogether(
+                                      l10n.premiumPlanRecommendedBadge,
+                                    ),
+                                    semanticsLabel:
+                                        l10n.premiumPlanRecommendedBadge,
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.bold,
+                                      fontFamily: 'Kuramubon',
+                                      fontFamilyFallback: kHeadingFontFallback,
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.onPrimaryContainer,
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                          subtitle: Text(
+                            _qualityDesc(l10n, level),
+                            style: const TextStyle(fontSize: 12),
+                          ),
                         ),
                       )
                       .toList(),
                 ),
               ),
-              if (perf.saveMode == SaveMode.slot) ...[
-                const SizedBox(height: 8),
-                _SlotCountSlider(
-                  label: l10n.perfSettingsSlotCountLabel,
-                  value: perf.slotCount,
-                  onChangeEnd: (newCount) =>
-                      _onCustomSlotCountChanged(context, newCount, perf),
+              const Divider(height: 32),
+              // アプリの容量・重さに影響する設定（旧・設定画面「詳細」カテゴリから
+              // 移設。品質プリセットとは独立して常に変更可能）。
+              Text(l10n.perfSettingsCapacitySection, style: _sectionStyle),
+              SizedBox(height: 8),
+              Card(
+                elevation: 1,
+                shadowColor: ThemeService.activeColorScheme.shadow.withValues(
+                  alpha: 0.15,
                 ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                color: Theme.of(context).colorScheme.surfaceContainerLow,
+                child: Column(
+                  children: [
+                    _ValueTile(
+                      title: l10n.perfSettingsUndoLimitTitle,
+                      subtitle: l10n.perfSettingsUndoLimitSubtitle,
+                      value: l10n.perfSettingsUndoLimitValue(
+                        settings.undoLimit,
+                      ),
+                      onTap: () => _showUndoLimitDialog(context, settings),
+                    ),
+                    const Divider(height: 1),
+                    _ValueTile(
+                      title: l10n.perfSettingsTrashAutoDeleteTitle,
+                      subtitle: l10n.perfSettingsTrashAutoDeleteSubtitle,
+                      value: settings.trashAutoDeleteDays == 0
+                          ? l10n.perfSettingsTrashAutoDeleteOff
+                          : l10n.perfSettingsTrashAutoDeleteValue(
+                              settings.trashAutoDeleteDays,
+                            ),
+                      onTap: () =>
+                          _showTrashAutoDeleteDialog(context, settings),
+                    ),
+                  ],
+                ),
+              ),
+              const Divider(height: 32),
+              Text(
+                l10n.perfSettingsCurrentSettingsSection,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'Kuramubon',
+                  fontFamilyFallback: kHeadingFontFallback,
+                ),
+              ),
+              const SizedBox(height: 8),
+              _infoTile(
+                l10n.perfSettingsTiltLabel,
+                perf.tiltEnabled
+                    ? l10n.perfSettingsTiltOn
+                    : l10n.perfSettingsTiltOff,
+              ),
+              _infoTile(
+                l10n.perfSettingsOnionPrevLabel,
+                perf.showPrevOnion
+                    ? l10n.perfSettingsOnionFrameCountValue(
+                        perf.prevOnionSkinFrames,
+                      )
+                    : l10n.commonOff,
+              ),
+              _infoTile(
+                l10n.perfSettingsOnionNextLabel,
+                perf.showNextOnion
+                    ? l10n.perfSettingsOnionFrameCountValue(
+                        perf.nextOnionSkinFrames,
+                      )
+                    : l10n.commonOff,
+              ),
+              _infoTile(
+                l10n.perfSettingsSaveModeLabel,
+                _saveModeLabel(l10n, perf.saveMode),
+              ),
+              if (perf.saveMode == SaveMode.slot)
+                _infoTile(
+                  l10n.perfSettingsSlotCountLabel,
+                  l10n.perfSettingsSlotCountValue(perf.slotCount),
+                ),
+              if (perf.qualityLevel == QualityLevel.custom) ...[
+                const Divider(height: 32),
+                // カスタム操作ボタン行
+                // 並べて入らなければ下の行へ回す（ボタンの名前を語の途中で
+                // 折らない）。
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    OutlinedButton.icon(
+                      icon: const Icon(Icons.restart_alt, size: 16),
+                      label: _keepWords(
+                        l10n.perfSettingsResetButton,
+                        style: const TextStyle(fontSize: 12),
+                      ),
+                      onPressed: () => _showResetDialog(context, perf),
+                    ),
+                    OutlinedButton.icon(
+                      icon: const Icon(Icons.copy, size: 16),
+                      label: _keepWords(
+                        l10n.perfSettingsCopyPresetButton,
+                        style: const TextStyle(fontSize: 12),
+                      ),
+                      onPressed: () => _showCopyPresetDialog(context, perf),
+                    ),
+                  ],
+                ),
+                _SwitchRow(
+                  title: l10n.perfSettingsTiltSwitchTitle,
+                  value: perf.tiltEnabled,
+                  onChanged: (v) => perf.setCustomTilt(v),
+                ),
+                const SizedBox(height: 8),
+                _SwitchRow(
+                  title: l10n.perfSettingsShowPrevOnionTitle,
+                  value: perf.showPrevOnion,
+                  onChanged: (v) => perf.setCustomShowPrev(v),
+                ),
+                if (perf.showPrevOnion) ...[
+                  _onionSlider(
+                    l10n: l10n,
+                    label: l10n.perfSettingsOnionCountPrevLabel,
+                    value: perf.prevOnionSkinFrames,
+                    onChanged: (v) => perf.setCustomOnionSkinPrev(v),
+                  ),
+                ],
+                const SizedBox(height: 4),
+                _SwitchRow(
+                  title: l10n.perfSettingsShowNextOnionTitle,
+                  value: perf.showNextOnion,
+                  onChanged: (v) => perf.setCustomShowNext(v),
+                ),
+                if (perf.showNextOnion) ...[
+                  _onionSlider(
+                    l10n: l10n,
+                    label: l10n.perfSettingsOnionCountNextLabel,
+                    value: perf.nextOnionSkinFrames,
+                    onChanged: (v) => perf.setCustomOnionSkinNext(v),
+                  ),
+                ],
+                const SizedBox(height: 8),
+                Text(
+                  l10n.perfSettingsSaveModeLabel,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'Kuramubon',
+                    fontFamilyFallback: kHeadingFontFallback,
+                  ),
+                ),
+                // 選択状態と変更通知はRadioGroupがまとめて持つ
+                // （各ラジオのgroupValue/onChangedはFlutter 3.32で非推奨）。
+                RadioGroup<SaveMode>(
+                  groupValue: perf.saveMode,
+                  onChanged: (v) {
+                    if (v == null || v == perf.saveMode) return;
+                    _onCustomSaveModeChanged(context, v, perf);
+                  },
+                  child: Column(
+                    children: SaveMode.values
+                        .map(
+                          (mode) => _RadioRow<SaveMode>(
+                            value: mode,
+                            title: _keepWords(_saveModeLabel(l10n, mode)),
+                          ),
+                        )
+                        .toList(),
+                  ),
+                ),
+                if (perf.saveMode == SaveMode.slot) ...[
+                  const SizedBox(height: 8),
+                  _SlotCountSlider(
+                    label: l10n.perfSettingsSlotCountLabel,
+                    value: perf.slotCount,
+                    onChangeEnd: (newCount) =>
+                        _onCustomSlotCountChanged(context, newCount, perf),
+                  ),
+                ],
               ],
             ],
-          ],
+          ),
         ),
       ),
     );
+  }
+
+  /// 左右の余白：ふだんは16px。[headings]の1語が入らないときだけ、入るまで
+  /// 詰める（8pxまで）。
+  double _sideMargin(
+    BuildContext context,
+    double width,
+    List<String> headings,
+  ) {
+    var widest = 0.0;
+    for (final heading in headings) {
+      for (final word in heading.split(' ')) {
+        final painter = TextPainter(
+          text: TextSpan(
+            text: word,
+            style: DefaultTextStyle.of(context).style.merge(_sectionStyle),
+          ),
+          textDirection: Directionality.of(context),
+          textScaler: MediaQuery.textScalerOf(context),
+          maxLines: 1,
+        )..layout();
+        if (painter.width > widest) widest = painter.width;
+        painter.dispose();
+      }
+    }
+    return ((width - widest) / 2).clamp(8.0, 16.0);
   }
 
   void _showUndoLimitDialog(BuildContext context, SettingsService settings) {
@@ -470,7 +486,7 @@ class _PerformanceSettingsScreenState extends State<PerformanceSettingsScreen> {
   ) {
     final l10n = AppLocalizations.of(context)!;
     final options = {
-      0: l10n.commonOff,
+      0: l10n.perfSettingsTrashAutoDeleteOff,
       30: l10n.perfSettingsTrashAutoDeleteValue(30),
       60: l10n.perfSettingsTrashAutoDeleteValue(60),
       90: l10n.perfSettingsTrashAutoDeleteValue(90),
@@ -648,20 +664,24 @@ class _PerformanceSettingsScreenState extends State<PerformanceSettingsScreen> {
     );
   }
 
+  /// 項目名と値。並べると項目名が語の途中で折れるときは、値を項目名の
+  /// 下（行の終わりの側）へ回す。
   Widget _infoTile(String label, String value) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            label,
-            style: TextStyle(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
+      child: ActionBesideOrBelow(
+        minTextFraction: 0,
+        spacing: 2,
+        text: Text(
+          label,
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
-          Text(value, style: const TextStyle(fontWeight: FontWeight.w600)),
-        ],
+        ),
+        action: Text(
+          value,
+          style: const TextStyle(fontWeight: FontWeight.w600),
+        ),
       ),
     );
   }
@@ -689,6 +709,14 @@ class _PerformanceSettingsScreenState extends State<PerformanceSettingsScreen> {
     SaveMode.tree => l10n.perfSettingsSaveModeTree,
   };
 }
+
+/// 品質・容量の節の見出し。
+const _sectionStyle = TextStyle(
+  fontSize: 16,
+  fontWeight: FontWeight.bold,
+  fontFamily: 'Kuramubon',
+  fontFamilyFallback: kHeadingFontFallback,
+);
 
 /// スライダーの項目名（オニオンスキン枚数・スロット数）。他の小見出しと
 /// 同じ太字の見出しフォント。
@@ -743,6 +771,184 @@ class _SlotCountSliderState extends State<_SlotCountSlider> {
       valueText: l10n.perfSettingsSlotCountValue(_draft.round()),
       onChanged: (v) => setState(() => _draft = v),
       onChangeEnd: (v) => widget.onChangeEnd(v.round()),
+    );
+  }
+}
+
+/// 韓国語の語を途中で折らない文（見出しの書体の項目名・ボタン用。読み上げは
+/// 元の文）。
+Text _keepWords(String text, {TextStyle? style}) =>
+    Text(keepKoreanWordsTogether(text), semanticsLabel: text, style: style);
+
+/// 項目名・説明と今の値の行（押すと選ぶダイアログを開く）。値は右端に
+/// 置き、並べると項目名・説明が語の途中で折れるときは説明の下へ回す。
+class _ValueTile extends StatelessWidget {
+  const _ValueTile({
+    required this.title,
+    required this.subtitle,
+    required this.value,
+    required this.onTap,
+  });
+
+  final String title;
+  final String subtitle;
+  final String value;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final tileTheme = ListTileTheme.of(context);
+    final titleStyle =
+        tileTheme.titleTextStyle ??
+        theme.listTileTheme.titleTextStyle ??
+        theme.textTheme.bodyLarge;
+    final subtitleStyle =
+        tileTheme.subtitleTextStyle ??
+        theme.listTileTheme.subtitleTextStyle ??
+        theme.textTheme.bodyMedium?.copyWith(
+          color: theme.colorScheme.onSurfaceVariant,
+        );
+    // 押すと選ぶダイアログを開く行なので、読み上げではボタンとして伝える
+    // （ListTileと同じ）。
+    return MergeSemantics(
+      child: Semantics(
+        button: true,
+        child: InkWell(
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            child: ActionBesideOrBelow(
+              minTextFraction: 0,
+              text: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    keepKoreanWordsTogether(title),
+                    semanticsLabel: title,
+                    style: titleStyle,
+                  ),
+                  Text(subtitle, style: subtitleStyle),
+                ],
+              ),
+              action: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(value, style: theme.textTheme.labelLarge),
+                  const Icon(Icons.chevron_right),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// 項目名とスイッチの行。並べると項目名が語の途中で折れるときは、スイッチを
+/// 項目名の下（行の終わりの側）へ回す。行のどこを押しても切り替わる。
+class _SwitchRow extends StatelessWidget {
+  const _SwitchRow({
+    required this.title,
+    required this.value,
+    required this.onChanged,
+  });
+
+  final String title;
+  final bool value;
+  final ValueChanged<bool> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final titleStyle =
+        ListTileTheme.of(context).titleTextStyle ??
+        theme.listTileTheme.titleTextStyle ??
+        theme.textTheme.bodyLarge;
+    return MergeSemantics(
+      child: InkWell(
+        onTap: () => onChanged(!value),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          child: ActionBesideOrBelow(
+            minTextFraction: 0,
+            text: Text(
+              keepKoreanWordsTogether(title),
+              semanticsLabel: title,
+              style: titleStyle,
+            ),
+            // キーボードのTabは行（InkWell）に1か所だけ止まる
+            // （SwitchListTileと同じ。スイッチにも止まると2か所になる）。
+            action: ExcludeFocus(
+              child: Switch(value: value, onChanged: onChanged),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// 選択肢の行（[RadioGroup]の中に置く）。丸は名前の前に置き、並べると名前・
+/// 説明が語の途中で折れるときは名前の上へ回す。行のどこを押しても選べる。
+class _RadioRow<T> extends StatelessWidget {
+  const _RadioRow({required this.value, required this.title, this.subtitle});
+
+  final T value;
+  final Widget title;
+  final Widget? subtitle;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final titleStyle =
+        ListTileTheme.of(context).titleTextStyle ??
+        theme.listTileTheme.titleTextStyle ??
+        theme.textTheme.bodyLarge;
+    final subtitleStyle =
+        ListTileTheme.of(context).subtitleTextStyle ??
+        theme.listTileTheme.subtitleTextStyle ??
+        theme.textTheme.bodyMedium?.copyWith(
+          color: theme.colorScheme.onSurfaceVariant,
+        );
+    return MergeSemantics(
+      child: InkWell(
+        // キーボードのフォーカスは丸（Radio）が受ける。丸はRadioGroupの
+        // 一員なので、Tabはまとまりの選んだ丸に1か所だけ止まり、矢印で
+        // 選び直せる（行も止まると選択肢ごとに止まり、矢印が効かない）。
+        canRequestFocus: false,
+        onTap: () => RadioGroup.maybeOf<T>(context)?.onChanged(value),
+        child: Padding(
+          padding: const EdgeInsetsDirectional.fromSTEB(8, 6, 16, 6),
+          child: ActionBesideOrBelow(
+            actionFirst: true,
+            // 丸を名前の横に置くか上に置くかは、名前の文字12字分が残る幅か
+            // だけで決め、選択肢のどの行もそろえる（行ごとの文で決めると、
+            // 説明が折り返す行だけ丸が上へ回り、中国語では字の間の折り返しを
+            // 語の途中と取り違えて全部の行で上へ回った）。
+            minTextWidth:
+                MediaQuery.textScalerOf(
+                  context,
+                ).scale(titleStyle?.fontSize ?? 16) *
+                12,
+            gap: 8,
+            spacing: 0,
+            text: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                DefaultTextStyle.merge(style: titleStyle, child: title),
+                if (subtitle != null)
+                  DefaultTextStyle.merge(
+                    style: subtitleStyle,
+                    child: subtitle!,
+                  ),
+              ],
+            ),
+            action: Radio<T>(value: value),
+          ),
+        ),
+      ),
     );
   }
 }

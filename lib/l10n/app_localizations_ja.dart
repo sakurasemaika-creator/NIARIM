@@ -3264,6 +3264,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get perfSettingsTrashAutoDeleteSubtitle => '削除済みプロジェクトの保持期間';
 
   @override
+  String get perfSettingsTrashAutoDeleteOff => 'OFF';
+
+  @override
   String perfSettingsTrashAutoDeleteValue(int n) {
     return '$n日';
   }
@@ -3273,6 +3276,12 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get perfSettingsTiltLabel => '傾き検知';
+
+  @override
+  String get perfSettingsTiltOn => 'ON';
+
+  @override
+  String get perfSettingsTiltOff => 'OFF';
 
   @override
   String get perfSettingsOnionPrevLabel => 'オニオンスキン（前）';

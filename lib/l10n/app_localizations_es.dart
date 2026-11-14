@@ -1519,7 +1519,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get helpTrashDesc =>
-      'El lugar donde se mueven temporalmente los proyectos eliminados. Puedes restaurarlos desde aquí hasta que se eliminen permanentemente. Puedes establecer el número de días hasta la eliminación automática (desactivado/30/60/90 días) en los ajustes.';
+      'El lugar donde se mueven temporalmente los proyectos eliminados. Puedes restaurarlos desde aquí hasta que se eliminen permanentemente. Puedes establecer el número de días hasta la eliminación automática (desactivada/30/60/90 días) en los ajustes.';
 
   @override
   String get helpShareTitle => 'Compartir (.niashare)';
@@ -3213,7 +3213,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get brushSettingsFadeModeTitle => 'Desvanecido';
 
   @override
-  String get brushSettingsFadeOff => 'OFF';
+  String get brushSettingsFadeOff => 'Desactivado';
 
   @override
   String get brushSettingsFadeWeak => 'Débil';
@@ -3373,7 +3373,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get projectDetailTrashMenuItem => 'Mover a la papelera';
 
   @override
-  String get commonOff => 'OFF';
+  String get commonOff => 'Desactivado';
 
   @override
   String get perfSettingsScreenTitle => 'Ajustes de rendimiento';
@@ -3422,7 +3422,13 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String perfSettingsUndoLimitValue(int n) {
-    return '$n pasos';
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$n pasos',
+      one: '$n paso',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -3434,8 +3440,17 @@ class AppLocalizationsEs extends AppLocalizations {
       'Periodo de retención de proyectos eliminados';
 
   @override
+  String get perfSettingsTrashAutoDeleteOff => 'Desactivada';
+
+  @override
   String perfSettingsTrashAutoDeleteValue(int n) {
-    return '$n días';
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$n días',
+      one: '$n día',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -3445,6 +3460,12 @@ class AppLocalizationsEs extends AppLocalizations {
   String get perfSettingsTiltLabel => 'Detección de inclinación';
 
   @override
+  String get perfSettingsTiltOn => 'Activada';
+
+  @override
+  String get perfSettingsTiltOff => 'Desactivada';
+
+  @override
   String get perfSettingsOnionPrevLabel => 'Papel cebolla (anterior)';
 
   @override
@@ -3452,7 +3473,13 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String perfSettingsOnionFrameCountValue(int n) {
-    return '$n fotogramas';
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$n fotogramas',
+      one: '$n fotograma',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -3463,7 +3490,13 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String perfSettingsSlotCountValue(int n) {
-    return '$n ranuras';
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$n ranuras',
+      one: '$n ranura',
+    );
+    return '$_temp0';
   }
 
   @override

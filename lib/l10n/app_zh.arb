@@ -1109,7 +1109,7 @@
   "brushSettingsBlurRadiusLabel": "模糊半径",
   "brushSettingsPixelModeTitle": "像素模式",
   "brushSettingsFadeModeTitle": "淡出",
-  "brushSettingsFadeOff": "OFF",
+  "brushSettingsFadeOff": "关闭",
   "brushSettingsFadeWeak": "弱",
   "brushSettingsFadeMedium": "中",
   "brushSettingsFadeStrong": "强",
@@ -1176,7 +1176,7 @@
     }
   },
   "projectDetailTrashMenuItem": "移至回收站",
-  "commonOff": "OFF",
+  "commonOff": "关闭",
   "perfSettingsScreenTitle": "性能设置",
   "perfSettingsQualitySection": "画质设置",
   "perfSettingsQualityLow": "低画质",
@@ -1200,6 +1200,7 @@
   },
   "perfSettingsTrashAutoDeleteTitle": "回收站自动删除",
   "perfSettingsTrashAutoDeleteSubtitle": "已删除项目的保留期限",
+  "perfSettingsTrashAutoDeleteOff": "关闭",
   "perfSettingsTrashAutoDeleteValue": "{n}天",
   "@perfSettingsTrashAutoDeleteValue": {
     "placeholders": {
@@ -1210,6 +1211,8 @@
   },
   "perfSettingsCurrentSettingsSection": "当前设置",
   "perfSettingsTiltLabel": "倾斜检测",
+  "perfSettingsTiltOn": "开启",
+  "perfSettingsTiltOff": "关闭",
   "perfSettingsOnionPrevLabel": "洋葱皮（前）",
   "perfSettingsOnionNextLabel": "洋葱皮（后）",
   "perfSettingsOnionFrameCountValue": "{n}张",
@@ -1773,7 +1776,7 @@
   "canvasSelectionSliderScale": "缩放",
   "canvasSelectionSliderRotate": "旋转",
   "canvasApplyFilterButton": "应用滤镜",
-  "canvasShapeOff": "OFF（返回普通画笔）",
+  "canvasShapeOff": "关闭（返回普通画笔）",
   "canvasShapeLine": "线条",
   "canvasShapeRect": "矩形",
   "canvasShapeCircle": "圆形",

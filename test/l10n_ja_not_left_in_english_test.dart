@@ -25,6 +25,9 @@ const _sameAsEnglish = {
   'penSubToolBrushSizeOpacity': '単位（px・%）だけ',
   'brushSettingsFadeOff': '日本語のUIでも「OFF」と書く',
   'commonOff': '日本語のUIでも「OFF」と書く',
+  'perfSettingsTiltOn': '日本語のUIでも「ON」と書く',
+  'perfSettingsTiltOff': '日本語のUIでも「OFF」と書く',
+  'perfSettingsTrashAutoDeleteOff': '日本語のUIでも「OFF」と書く',
   'storageCategoryNiarimTotal': 'アプリ名',
 };
 

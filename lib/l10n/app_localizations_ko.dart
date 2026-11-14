@@ -1464,7 +1464,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get helpTrashDesc =>
-      '삭제한 프로젝트가 임시로 이동하는 곳입니다. 완전히 삭제되기 전까지는 여기서 복원할 수 있습니다. 설정에서 자동 삭제까지의 일수（끔/30일/60일/90일）를 지정할 수 있습니다.';
+      '삭제한 프로젝트가 임시로 이동하는 곳입니다. 완전히 삭제되기 전까지는 여기서 복원할 수 있습니다. 설정에서 자동 삭제까지의 일수（OFF/30일/60일/90일）를 지정할 수 있습니다.';
 
   @override
   String get helpShareTitle => '공유（.niashare）';
@@ -3279,6 +3279,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get perfSettingsTrashAutoDeleteSubtitle => '삭제된 프로젝트의 보관 기간';
 
   @override
+  String get perfSettingsTrashAutoDeleteOff => 'OFF';
+
+  @override
   String perfSettingsTrashAutoDeleteValue(int n) {
     return '$n일';
   }
@@ -3288,6 +3291,12 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get perfSettingsTiltLabel => '기울기 감지';
+
+  @override
+  String get perfSettingsTiltOn => 'ON';
+
+  @override
+  String get perfSettingsTiltOff => 'OFF';
 
   @override
   String get perfSettingsOnionPrevLabel => '어니언 스킨(앞)';

@@ -494,7 +494,7 @@
   "helpFolderTitle": "Carpeta",
   "helpFolderDesc": "Una función para agrupar y organizar tus proyectos (obras). Admite varios niveles de anidación, por lo que también puedes usarla para gestionar juntos varios episodios o una serie de la misma obra (por ejemplo, organizando los proyectos «Episodio 1», «Episodio 2», etc. dentro de una carpeta con el nombre de la obra). Si quieres dividir un solo vídeo en escenas separadas, usa la función «Escena» de la pantalla del lienzo en lugar de carpetas.",
   "helpTrashTitle": "Papelera",
-  "helpTrashDesc": "El lugar donde se mueven temporalmente los proyectos eliminados. Puedes restaurarlos desde aquí hasta que se eliminen permanentemente. Puedes establecer el número de días hasta la eliminación automática (desactivado/30/60/90 días) en los ajustes.",
+  "helpTrashDesc": "El lugar donde se mueven temporalmente los proyectos eliminados. Puedes restaurarlos desde aquí hasta que se eliminen permanentemente. Puedes establecer el número de días hasta la eliminación automática (desactivada/30/60/90 días) en los ajustes.",
   "helpShareTitle": "Compartir (.niashare)",
   "helpShareDesc": "Un formato de archivo dedicado para entregar un proyecto a otra persona (o a otro dispositivo tuyo). Cuando el destinatario abre este archivo, se duplica y se añade a su propia lista de proyectos. El archivo .niashare original en sí no se modifica.",
   "helpTransferTitle": "Transferencia (.niatra)",
@@ -1109,7 +1109,7 @@
   "brushSettingsBlurRadiusLabel": "Radio de desenfoque",
   "brushSettingsPixelModeTitle": "Modo píxel",
   "brushSettingsFadeModeTitle": "Desvanecido",
-  "brushSettingsFadeOff": "OFF",
+  "brushSettingsFadeOff": "Desactivado",
   "brushSettingsFadeWeak": "Débil",
   "brushSettingsFadeMedium": "Medio",
   "brushSettingsFadeStrong": "Fuerte",
@@ -1176,7 +1176,7 @@
     }
   },
   "projectDetailTrashMenuItem": "Mover a la papelera",
-  "commonOff": "OFF",
+  "commonOff": "Desactivado",
   "perfSettingsScreenTitle": "Ajustes de rendimiento",
   "perfSettingsQualitySection": "Ajustes de calidad",
   "perfSettingsQualityLow": "Baja",
@@ -1190,7 +1190,7 @@
   "perfSettingsCapacitySection": "Ajustes de almacenamiento y rendimiento",
   "perfSettingsUndoLimitTitle": "Pasos de deshacer",
   "perfSettingsUndoLimitSubtitle": "Cuantos más haya, más memoria se consume",
-  "perfSettingsUndoLimitValue": "{n} pasos",
+  "perfSettingsUndoLimitValue": "{n, plural, one{{n} paso} other{{n} pasos}}",
   "@perfSettingsUndoLimitValue": {
     "placeholders": {
       "n": {
@@ -1200,7 +1200,8 @@
   },
   "perfSettingsTrashAutoDeleteTitle": "Eliminación automática de la papelera",
   "perfSettingsTrashAutoDeleteSubtitle": "Periodo de retención de proyectos eliminados",
-  "perfSettingsTrashAutoDeleteValue": "{n} días",
+  "perfSettingsTrashAutoDeleteOff": "Desactivada",
+  "perfSettingsTrashAutoDeleteValue": "{n, plural, one{{n} día} other{{n} días}}",
   "@perfSettingsTrashAutoDeleteValue": {
     "placeholders": {
       "n": {
@@ -1210,9 +1211,11 @@
   },
   "perfSettingsCurrentSettingsSection": "Ajustes actuales",
   "perfSettingsTiltLabel": "Detección de inclinación",
+  "perfSettingsTiltOn": "Activada",
+  "perfSettingsTiltOff": "Desactivada",
   "perfSettingsOnionPrevLabel": "Papel cebolla (anterior)",
   "perfSettingsOnionNextLabel": "Papel cebolla (siguiente)",
-  "perfSettingsOnionFrameCountValue": "{n} fotogramas",
+  "perfSettingsOnionFrameCountValue": "{n, plural, one{{n} fotograma} other{{n} fotogramas}}",
   "@perfSettingsOnionFrameCountValue": {
     "placeholders": {
       "n": {
@@ -1222,7 +1225,7 @@
   },
   "perfSettingsSaveModeLabel": "Modo de guardado",
   "perfSettingsSlotCountLabel": "Número de ranuras",
-  "perfSettingsSlotCountValue": "{n} ranuras",
+  "perfSettingsSlotCountValue": "{n, plural, one{{n} ranura} other{{n} ranuras}}",
   "@perfSettingsSlotCountValue": {
     "placeholders": {
       "n": {

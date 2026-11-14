@@ -1492,7 +1492,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpTrashDesc =>
-      'The place where deleted projects are temporarily moved. You can restore them from here until they\'re permanently deleted. You can set the number of days until automatic deletion (Off/30/60/90 days) in the settings.';
+      'The place where deleted projects are temporarily moved. You can restore them from here until they\'re permanently deleted. You can set the number of days until automatic deletion (OFF/30/60/90 days) in the settings.';
 
   @override
   String get helpShareTitle => 'Share (.niashare)';
@@ -3374,7 +3374,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String perfSettingsUndoLimitValue(int n) {
-    return '$n steps';
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$n steps',
+      one: '$n step',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -3385,8 +3391,17 @@ class AppLocalizationsEn extends AppLocalizations {
       'Retention period for deleted projects';
 
   @override
+  String get perfSettingsTrashAutoDeleteOff => 'OFF';
+
+  @override
   String perfSettingsTrashAutoDeleteValue(int n) {
-    return '$n days';
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$n days',
+      one: '$n day',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -3396,6 +3411,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get perfSettingsTiltLabel => 'Tilt detection';
 
   @override
+  String get perfSettingsTiltOn => 'ON';
+
+  @override
+  String get perfSettingsTiltOff => 'OFF';
+
+  @override
   String get perfSettingsOnionPrevLabel => 'Onion skin (previous)';
 
   @override
@@ -3403,7 +3424,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String perfSettingsOnionFrameCountValue(int n) {
-    return '$n frames';
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$n frames',
+      one: '$n frame',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -3414,7 +3441,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String perfSettingsSlotCountValue(int n) {
-    return '$n slots';
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$n slots',
+      one: '$n slot',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -4449,7 +4482,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get canvasApplyFilterButton => 'Apply filter';
 
   @override
-  String get canvasShapeOff => 'Off (back to normal brush)';
+  String get canvasShapeOff => 'OFF (back to normal brush)';
 
   @override
   String get canvasShapeLine => 'Line';

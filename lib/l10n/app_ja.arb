@@ -1474,6 +1474,9 @@
   },
   "projectDetailTrashMenuItem": "ゴミ箱へ移動",
   "commonOff": "OFF",
+  "@commonOff": {
+    "description": "設定の今の状態の値（オフ）。オニオンスキンの行で使う。仏・西は男性形（Papier calque・Papel cebolla に合わせる）。女性名詞の項目は perfSettingsTiltOff・perfSettingsTrashAutoDeleteOff を使う。日本語のUIでも「OFF」と書く（筆圧OFF・フェードのOFFと同じ）。"
+  },
   "perfSettingsScreenTitle": "パフォーマンス設定",
   "perfSettingsQualitySection": "品質設定",
   "perfSettingsQualityLow": "低品質",
@@ -1497,6 +1500,10 @@
   },
   "perfSettingsTrashAutoDeleteTitle": "ゴミ箱の自動削除",
   "perfSettingsTrashAutoDeleteSubtitle": "削除済みプロジェクトの保持期間",
+  "perfSettingsTrashAutoDeleteOff": "OFF",
+  "@perfSettingsTrashAutoDeleteOff": {
+    "description": "ゴミ箱の自動削除の値・選択肢（オフ）。仏・西は女性名詞（Suppression・Eliminación）に合わせる。"
+  },
   "perfSettingsTrashAutoDeleteValue": "{n}日",
   "@perfSettingsTrashAutoDeleteValue": {
     "placeholders": {
@@ -1507,6 +1514,14 @@
   },
   "perfSettingsCurrentSettingsSection": "現在の設定",
   "perfSettingsTiltLabel": "傾き検知",
+  "perfSettingsTiltOn": "ON",
+  "@perfSettingsTiltOn": {
+    "description": "現在の設定の「傾き検知」の値（オン）。仏・西は女性名詞（Détection・Detección）に合わせる。"
+  },
+  "perfSettingsTiltOff": "OFF",
+  "@perfSettingsTiltOff": {
+    "description": "現在の設定の「傾き検知」の値（オフ）。仏・西は女性名詞（Détection・Detección）に合わせる。"
+  },
   "perfSettingsOnionPrevLabel": "オニオンスキン（前）",
   "perfSettingsOnionNextLabel": "オニオンスキン（後）",
   "perfSettingsOnionFrameCountValue": "{n}枚",

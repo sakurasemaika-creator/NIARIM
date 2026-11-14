@@ -5913,7 +5913,7 @@ abstract class AppLocalizations {
   /// **'ゴミ箱へ移動'**
   String get projectDetailTrashMenuItem;
 
-  /// No description provided for @commonOff.
+  /// 設定の今の状態の値（オフ）。オニオンスキンの行で使う。仏・西は男性形（Papier calque・Papel cebolla に合わせる）。女性名詞の項目は perfSettingsTiltOff・perfSettingsTrashAutoDeleteOff を使う。日本語のUIでも「OFF」と書く（筆圧OFF・フェードのOFFと同じ）。
   ///
   /// In ja, this message translates to:
   /// **'OFF'**
@@ -6015,6 +6015,12 @@ abstract class AppLocalizations {
   /// **'削除済みプロジェクトの保持期間'**
   String get perfSettingsTrashAutoDeleteSubtitle;
 
+  /// ゴミ箱の自動削除の値・選択肢（オフ）。仏・西は女性名詞（Suppression・Eliminación）に合わせる。
+  ///
+  /// In ja, this message translates to:
+  /// **'OFF'**
+  String get perfSettingsTrashAutoDeleteOff;
+
   /// No description provided for @perfSettingsTrashAutoDeleteValue.
   ///
   /// In ja, this message translates to:
@@ -6032,6 +6038,18 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'傾き検知'**
   String get perfSettingsTiltLabel;
+
+  /// 現在の設定の「傾き検知」の値（オン）。仏・西は女性名詞（Détection・Detección）に合わせる。
+  ///
+  /// In ja, this message translates to:
+  /// **'ON'**
+  String get perfSettingsTiltOn;
+
+  /// 現在の設定の「傾き検知」の値（オフ）。仏・西は女性名詞（Détection・Detección）に合わせる。
+  ///
+  /// In ja, this message translates to:
+  /// **'OFF'**
+  String get perfSettingsTiltOff;
 
   /// No description provided for @perfSettingsOnionPrevLabel.
   ///
