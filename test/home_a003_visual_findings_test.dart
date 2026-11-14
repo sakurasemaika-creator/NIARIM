@@ -720,4 +720,57 @@ void main() {
     );
     await home.close();
   });
+
+  testWidgets('初回の案内の文をスクロールしても、案内の角丸の外へ描かない', (tester) async {
+    final home = _Home(tester);
+    await home.open(
+      language: 'fr',
+      size: const Size(360, 260),
+      scale: 2,
+      firstLaunch: true,
+      rejectFirstLaunchSave: true,
+    );
+    await home.frames(10);
+    final start = find.widgetWithText(
+      FilledButton,
+      home.l10n.homeFirstLaunchStart,
+    );
+    expect(start, findsOneWidget);
+    await tester.tap(start);
+    await home.frames(6);
+    await home.settleIo(2);
+    await home.frames(6);
+    final dialog = find.byType(AlertDialog);
+    final scroll = find.descendant(
+      of: dialog,
+      matching: find.byType(Scrollable),
+    );
+    await tester.drag(scroll.first, const Offset(0, -60));
+    await home.frames(6);
+    // スクロールした文は、案内の面（角丸の形）で切り取る。切り取らないと、
+    // 余白の縮む大きな文字では、四隅の丸みの外（暗い幕の上）に文の端が出る。
+    final outside = <String>[];
+    for (final element
+        in find
+            .descendant(of: dialog, matching: find.byType(RichText))
+            .evaluate()) {
+      final paragraph = element.renderObject! as RenderParagraph;
+      // 文から外へたどった形（ボタンの形・案内の面の形）のどれかが切り
+      // 取っていればよい（ボタンの名前はボタンの形の中、本文は案内の面）。
+      final shapes = <RenderPhysicalShape>[];
+      RenderObject? node = paragraph.parent;
+      while (node != null) {
+        if (node is RenderPhysicalShape) shapes.add(node);
+        node = node.parent;
+      }
+      if (!shapes.any((shape) => shape.clipBehavior != Clip.none)) {
+        outside.add(
+          '"${paragraph.text.toPlainText()}" is not clipped to the '
+          'dialog shape (${shapes.map((s) => s.clipBehavior).toList()})',
+        );
+      }
+    }
+    expect(outside, isEmpty);
+    await home.close();
+  });
 }

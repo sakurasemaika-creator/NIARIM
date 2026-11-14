@@ -6521,6 +6521,10 @@ class _FirstLaunchDialogState extends State<_FirstLaunchDialog> {
         insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
         constraints: const BoxConstraints(minWidth: 280, maxWidth: 560),
         scrollable: true,
+        // スクロールした文を案内の角丸の形で切り取る（既定の Clip.none
+        // では、文字の大きいときに余白が縮み、四隅の丸みの外に文の端が
+        // 出うる）。
+        clipBehavior: Clip.antiAlias,
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
