@@ -12,6 +12,7 @@ import '../../widgets/responsive.dart';
 import '../canvas/widgets/color_picker_panel.dart';
 import 'widget_artwork_picker_screen.dart';
 import '../../config/accent_text_theme.dart';
+import '../../widgets/fit_or_hide_title.dart';
 
 /// 背景色の選び方（テーマに合わせる／色を指定する）の2択。
 enum _ColorMode { theme, custom }
@@ -45,7 +46,7 @@ class WidgetSettingsScreen extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.widgetSettingsTitle)),
+      appBar: AppBar(title: FitOrHideTitle(l10n.widgetSettingsTitle)),
       body: desktopCentered(
         context,
         ListView(

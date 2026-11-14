@@ -8,6 +8,7 @@ import '../../widgets/responsive.dart';
 import '../../widgets/help_button.dart';
 import '../../config/font_fallback.dart';
 import '../../config/accent_text_theme.dart';
+import '../../widgets/fit_or_hide_title.dart';
 
 /// プレミアム画面。ユーザー作品そのものを除くUI色はColorSchemeへ集約する。
 class PremiumScreen extends StatefulWidget {
@@ -28,7 +29,7 @@ class _PremiumScreenState extends State<PremiumScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(l10n.premiumScreenTitle),
+        title: FitOrHideTitle(l10n.premiumScreenTitle),
         actions: const [HelpButton(topic: 'プレミアム')],
       ),
       body: desktopCentered(

@@ -12,6 +12,7 @@ import '../../utils/duplicate_name.dart';
 import '../../utils/reorder_index.dart';
 import '../../widgets/name_entry_dialog.dart';
 import '../../config/accent_text_theme.dart';
+import '../../widgets/fit_or_hide_title.dart';
 
 /// 保存済みカスタムキャンバスサイズプリセットの一覧管理画面。
 /// ドラッグでの並べ替え・編集・複製・名前変更・削除ができる。
@@ -24,7 +25,9 @@ class CanvasSizePresetManageScreen extends StatelessWidget {
     final settings = context.watch<SettingsService>();
     final presets = settings.customSizePresets;
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.canvasSizePresetManageScreenTitle)),
+      appBar: AppBar(
+        title: FitOrHideTitle(l10n.canvasSizePresetManageScreenTitle),
+      ),
       body: SafeArea(
         child: presets.isEmpty
             ? Center(

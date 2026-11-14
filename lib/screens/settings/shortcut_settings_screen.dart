@@ -15,6 +15,7 @@ import '../../widgets/responsive.dart';
 import '../../widgets/stepped_slider.dart';
 import '../../config/font_fallback.dart';
 import '../../widgets/scrollable_sheet_body.dart';
+import '../../widgets/fit_or_hide_title.dart';
 
 /// キーボード・左手デバイス用ショートカットの設定画面。
 /// ツール選択（早替えツールと同じ粒度：ツール＋ブラシ＋太さ）と、
@@ -62,7 +63,7 @@ class ShortcutSettingsScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(l10n.shortcutSettingsTitle),
+        title: FitOrHideTitle(l10n.shortcutSettingsTitle),
         actions: const [HelpButton(topic: 'ショートカット設定')],
       ),
       body: desktopCentered(

@@ -9,6 +9,7 @@ import '../../services/api/community_api.dart';
 import '../../services/community_service.dart';
 import '../../services/google_auth_service.dart';
 import '../../widgets/responsive.dart';
+import '../../widgets/fit_or_hide_title.dart';
 
 /// The plaza bell shows durable, server-owned mission achievements.
 /// Existing local follower milestones are retained as an offline fallback.
@@ -232,7 +233,7 @@ class _CommunityFollowNotificationsScreenState
     final scheme = Theme.of(context).colorScheme;
     return Scaffold(
       appBar: AppBar(
-        title: Text(t.get('activityTitle')),
+        title: FitOrHideTitle(t.get('activityTitle')),
         actions: [
           if (api != null && _accountId != null)
             IconButton(

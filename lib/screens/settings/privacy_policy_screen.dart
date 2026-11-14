@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../../l10n/app_localizations.dart';
 import '../../services/advertising_service.dart';
 import '../../config/font_fallback.dart';
+import '../../widgets/fit_or_hide_title.dart';
 
 /// プライバシーポリシー画面。
 ///
@@ -19,7 +20,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.privacyPolicyScreenTitle)),
+      appBar: AppBar(title: FitOrHideTitle(l10n.privacyPolicyScreenTitle)),
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.all(16),

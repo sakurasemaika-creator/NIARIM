@@ -21,6 +21,7 @@ import '../../widgets/action_beside_or_below.dart';
 import '../../widgets/coin_history_sheet.dart';
 import '../../widgets/keep_together_text.dart';
 import '../../widgets/responsive.dart';
+import '../../widgets/fit_or_hide_title.dart';
 
 enum RewardPageMode { exchange, earnCoins }
 
@@ -1034,7 +1035,7 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
     return Scaffold(
       appBar: widget.embedded
           ? null
-          : AppBar(title: Text(earn ? nav['earn'] : nav['exchange'])),
+          : AppBar(title: FitOrHideTitle(earn ? nav['earn'] : nav['exchange'])),
       body: desktopCentered(
         context,
         ListView(

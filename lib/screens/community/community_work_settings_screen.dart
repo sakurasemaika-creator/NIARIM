@@ -8,6 +8,7 @@ import '../../models/community_work.dart';
 import '../../services/community_service.dart';
 import '../../widgets/responsive.dart';
 import 'community_error_text.dart';
+import '../../widgets/fit_or_hide_title.dart';
 
 /// Per-work owner settings. The YouTube editor is an external destination;
 /// NIARIM visibility and AI disclosure use the authenticated NIARIM API.
@@ -423,7 +424,7 @@ class _CommunityWorkSettingsScreenState
     final ownWork = work != null && service.isOwnWork(work);
     final cannotPublish = widget.youtubePrivacyStatus == 'deleted';
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.communityMyWorksSettingsTitle)),
+      appBar: AppBar(title: FitOrHideTitle(l10n.communityMyWorksSettingsTitle)),
       body: desktopCentered(
         context,
         work == null

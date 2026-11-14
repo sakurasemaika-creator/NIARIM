@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../l10n/app_localizations.dart';
+import 'fit_or_hide_title.dart';
 
 /// ゴミ箱へ移した・消した作品や、古いリンク・存在しないIDから開いたときの
 /// 画面。戻る先が無くてもプロジェクトの一覧へ戻れるようにする。
@@ -15,7 +16,7 @@ class ProjectNotFoundView extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.projectDetailNotFoundTitle)),
+      appBar: AppBar(title: FitOrHideTitle(l10n.projectDetailNotFoundTitle)),
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(24),

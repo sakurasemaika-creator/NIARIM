@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../l10n/app_localizations.dart';
 import '../tips/tips_screen.dart';
 import 'help_screen.dart';
+import '../../widgets/fit_or_hide_title.dart';
 
 /// A common shell for the help and tips deep links.
 /// 引き出しの項目と、この画面の題名。
@@ -27,7 +28,7 @@ class GuideHubScreen extends StatelessWidget {
       initialIndex: initialTab,
       child: Scaffold(
         appBar: AppBar(
-          title: Text(guideHubTitle(context)),
+          title: FitOrHideTitle(guideHubTitle(context)),
           bottom: TabBar(
             tabs: [
               Tab(text: l10n.tipsScreenTitle),

@@ -6,6 +6,7 @@ import 'tip_diagrams.dart';
 import '../../config/font_fallback.dart';
 import '../../config/accent_text_theme.dart';
 import '../../utils/name_collation.dart';
+import '../../widgets/fit_or_hide_title.dart';
 
 /// ヘルプ（機能の説明）とは別に、「こうすると便利」という活用方法を
 /// 紹介するTipsページ。ホーム画面のハンバーガーメニューから開く。
@@ -73,7 +74,7 @@ class _TipsScreenState extends State<TipsScreen> {
     return Scaffold(
       appBar: widget.embedded
           ? null
-          : AppBar(title: Text(l10n.tipsScreenTitle)),
+          : AppBar(title: FitOrHideTitle(l10n.tipsScreenTitle)),
       body: SafeArea(
         child: Column(
           children: [

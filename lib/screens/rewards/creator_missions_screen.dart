@@ -13,6 +13,7 @@ import '../../widgets/responsive.dart';
 import 'login_bonus_panel.dart';
 import 'recurring_missions_panel.dart';
 import 'plaza_missions_panel.dart';
+import '../../widgets/fit_or_hide_title.dart';
 
 /// Display-only policy. The server must independently verify every request.
 bool missionClaimActionAllowed({
@@ -774,7 +775,9 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
       _future = owner != null && api != null ? _fetch(api) : null;
     }
     return Scaffold(
-      appBar: widget.embedded ? null : AppBar(title: Text(t.get('title'))),
+      appBar: widget.embedded
+          ? null
+          : AppBar(title: FitOrHideTitle(t.get('title'))),
       body: owner == null
           ? Center(child: Text(t.get('login')))
           : api == null

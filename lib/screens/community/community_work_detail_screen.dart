@@ -22,6 +22,7 @@ import 'widgets/community_work_card.dart';
 import '../../config/font_fallback.dart';
 import '../../config/accent_text_theme.dart';
 import 'package:intl/intl.dart';
+import '../../widgets/fit_or_hide_title.dart';
 
 /// 作品詳細画面（別ルート、`/community/work/:id`）。
 /// 横画面フローティングプレビューの「詳細へ」と縦画面の詳細情報アイコンは
@@ -370,7 +371,7 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
       final hiddenByViewer =
           work != null && work.isNiarimPublished && !work.isUnavailable;
       return Scaffold(
-        appBar: AppBar(title: Text(l10n.communityWorkDetailTitle)),
+        appBar: AppBar(title: FitOrHideTitle(l10n.communityWorkDetailTitle)),
         body: hiddenByViewer
             ? Center(
                 child: Padding(
@@ -393,7 +394,7 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
     // Owners can still manage their own private uploads.
     if (!isOwner && _playbackStatus != CommunityPlaybackStatus.available) {
       return Scaffold(
-        appBar: AppBar(title: Text(l10n.communityWorkDetailTitle)),
+        appBar: AppBar(title: FitOrHideTitle(l10n.communityWorkDetailTitle)),
         body: Center(
           child: CommunityPlaybackStatusView(
             status: _playbackStatus,
@@ -418,7 +419,7 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
     );
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.communityWorkDetailTitle)),
+      appBar: AppBar(title: FitOrHideTitle(l10n.communityWorkDetailTitle)),
       body: desktopCentered(
         context,
         SingleChildScrollView(

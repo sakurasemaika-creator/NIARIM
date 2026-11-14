@@ -3435,7 +3435,7 @@ class _ThemeSampleScreen extends StatelessWidget {
   Widget _myWorks(ColorScheme c) => Scaffold(
     backgroundColor: c.surface,
     appBar: AppBar(
-      title: Text(l.communityMyWorksTitle),
+      title: FitOrHideTitle(l.communityMyWorksTitle),
       actions: [
         Icon(Icons.refresh, color: c.onSurface),
         const SizedBox(width: 16),

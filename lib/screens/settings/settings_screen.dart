@@ -13,6 +13,7 @@ import '../../widgets/help_button.dart';
 import '../../config/font_fallback.dart';
 import '../../config/accent_text_theme.dart';
 import '../../utils/name_collation.dart';
+import '../../widgets/fit_or_hide_title.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -207,7 +208,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   border: InputBorder.none,
                 ),
               )
-            : Text(l10n.settingsScreenTitle),
+            : FitOrHideTitle(l10n.settingsScreenTitle),
         actions: [
           const HelpButton(),
           IconButton(

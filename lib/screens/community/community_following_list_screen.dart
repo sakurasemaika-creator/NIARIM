@@ -7,6 +7,7 @@ import '../../widgets/ad_banner_mock_widget.dart';
 import 'community_author_works_screen.dart';
 import 'community_edit_feedback.dart';
 import 'widgets/community_top_edge_refresh.dart';
+import '../../widgets/fit_or_hide_title.dart';
 
 /// Private, owner-only directory of authors the current viewer follows.
 /// The public author page never offers a link to somebody else's follow list.
@@ -115,7 +116,7 @@ class _CommunityFollowingListScreenState
     }
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.communityTabFavoriteAuthors)),
+      appBar: AppBar(title: FitOrHideTitle(l10n.communityTabFavoriteAuthors)),
       body: CommunityTopEdgeRefresh(
         key: const Key('communityOwnFollowingPullRefresh'),
         controller: _scrollController,

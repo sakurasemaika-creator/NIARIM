@@ -22,6 +22,7 @@ import '../../widgets/labeled_slider.dart';
 import '../canvas/widgets/color_picker_panel.dart';
 import '../../config/font_fallback.dart';
 import '../../config/accent_text_theme.dart';
+import '../../widgets/fit_or_hide_title.dart';
 
 /// ウォーターマーク登録・管理画面（プレミアム限定）。
 /// 「設定項目：画像選択 / 文字入力 / …」のうち、画像・文字それぞれの
@@ -40,7 +41,7 @@ class WatermarkSettingsScreen extends StatelessWidget {
       PremiumFeature.watermark,
     )) {
       return Scaffold(
-        appBar: AppBar(title: Text(l10n.settingsWatermarkTitle)),
+        appBar: AppBar(title: FitOrHideTitle(l10n.settingsWatermarkTitle)),
         body: Center(
           child: PremiumLockWidget(
             feature: PremiumFeature.watermark,
@@ -66,7 +67,7 @@ class WatermarkSettingsScreen extends StatelessWidget {
       // topic: 'ウォーターマーク' はhelp_screen.dart側の項目タイトル（日本語固定の
       // 内部検索キー）と一致させる必要があるため、翻訳対象から除外している。
       appBar: AppBar(
-        title: Text(l10n.settingsWatermarkTitle),
+        title: FitOrHideTitle(l10n.settingsWatermarkTitle),
         actions: const [HelpButton(topic: 'ウォーターマーク')],
       ),
       floatingActionButton: FloatingActionButton(

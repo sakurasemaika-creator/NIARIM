@@ -5,6 +5,7 @@ import '../../l10n/app_localizations.dart';
 import '../../models/canvas_dock_panel.dart';
 import '../../services/settings_service.dart';
 import 'widgets/pc_workspace_layout_preview.dart';
+import '../../widgets/fit_or_hide_title.dart';
 
 /// PC専用ワークスペースUIのドッキングパネルの並び順・幅を調整する設定画面。
 class PcWorkspaceLayoutSettingsScreen extends StatefulWidget {
@@ -51,7 +52,7 @@ class _PcWorkspaceLayoutSettingsScreenState
     final resetWorkspaceTitle = l.pcLayoutResetWorkspace;
     final instruction = l.pcLayoutInstruction;
     return Scaffold(
-      appBar: AppBar(title: Text(l.pcWorkspaceLayoutScreenTitle)),
+      appBar: AppBar(title: FitOrHideTitle(l.pcWorkspaceLayoutScreenTitle)),
       // ボタンの段は本文ではなく画面の下の段（bottomNavigationBar）に置く。
       // 本文の列の最後に置いていた頃は、前の画面（ワークスペースの設定）で
       // 出た知らせが付いてきて段の上に重なり、出ている間押せなかった。

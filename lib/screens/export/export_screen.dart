@@ -21,6 +21,7 @@ import '../../config/font_fallback.dart';
 import '../home/widgets/exported_work_thumbnail_dialog.dart';
 import 'widgets/export_preset_selector.dart';
 import '../../models/export_preset.dart';
+import '../../widgets/fit_or_hide_title.dart';
 export '../../models/export_preset.dart';
 
 class ExportScreen extends StatefulWidget {
@@ -58,7 +59,7 @@ class _ExportScreenState extends State<ExportScreen> {
     final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: Text(l10n.exportScreenTitle),
+        title: FitOrHideTitle(l10n.exportScreenTitle),
         actions: const [HelpButton(topic: '動画書き出し（MP4）')],
       ),
       body: _buildSettings(l10n),

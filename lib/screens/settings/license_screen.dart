@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../l10n/app_localizations.dart';
 import '../../config/font_fallback.dart';
+import '../../widgets/fit_or_hide_title.dart';
 
 /// 利用規約・ライセンス画面。
 ///
@@ -100,7 +101,7 @@ class LicenseScreen extends StatelessWidget {
     return Scaffold(
       // 規約・ライセンス本文自体が説明そのものであり、対応する専用の
       // ヘルプ項目が存在しないため、ヘルプアイコンは表示しない。
-      appBar: AppBar(title: Text(l10n.licenseScreenTitle)),
+      appBar: AppBar(title: FitOrHideTitle(l10n.licenseScreenTitle)),
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.all(16),

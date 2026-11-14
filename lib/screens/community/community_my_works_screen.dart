@@ -18,6 +18,8 @@ import 'community_author_works_screen.dart';
 import 'community_post_screen.dart';
 import 'community_work_settings_screen.dart';
 import 'widgets/community_top_edge_refresh.dart';
+import '../../widgets/first_that_fits.dart';
+import '../../widgets/fit_or_hide_title.dart';
 
 /// Owner hub opened from the community square.
 ///
@@ -604,11 +606,11 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          _selectionMode
-              ? l10n.homeSelectionCount(_selectedIds.length)
-              : l10n.communityMyWorksTitle,
-        ),
+        // 選んでいる間の題は選んだ件数（画面名ではなく、ここにしか出ない
+        // 情報）なので、入らない幅でも隠さず短い形で出す。
+        title: _selectionMode
+            ? _SelectionCountTitle(_selectedIds.length)
+            : FitOrHideTitle(l10n.communityMyWorksTitle),
         actions: [
           IconButton(
             tooltip: l10n.communityReloadTooltip,
@@ -1018,6 +1020,41 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
               ),
             )
           : null,
+    );
+  }
+}
+
+/// 選んでいる間の上部バーの題（選んだ件数）。入る幅では「4件選択中」、
+/// 入らなければチェックの印と数、それも入らなければ数だけを出す（字は
+/// 縮めない）。短い形の全文は吹き出し（長押し・ホバー）と読み上げに残す。
+class _SelectionCountTitle extends StatelessWidget {
+  const _SelectionCountTitle(this.count);
+
+  final int count;
+
+  @override
+  Widget build(BuildContext context) {
+    final text = AppLocalizations.of(context)!.homeSelectionCount(count);
+    Widget short(Widget child) => Tooltip(
+      message: text,
+      excludeFromSemantics: true,
+      child: Semantics(label: text, excludeSemantics: true, child: child),
+    );
+    return FirstThatFits(
+      children: [
+        Text(text, maxLines: 1, softWrap: false),
+        short(
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.check_box_outlined),
+              const SizedBox(width: 4),
+              Text('$count', maxLines: 1, softWrap: false),
+            ],
+          ),
+        ),
+        short(Text('$count', maxLines: 1, softWrap: false)),
+      ],
     );
   }
 }

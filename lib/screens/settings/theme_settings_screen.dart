@@ -20,6 +20,7 @@ import '../../utils/reorder_index.dart';
 import '../../widgets/theme_rescue_button.dart';
 import 'theme_preview_gallery_screen.dart';
 import '../../config/accent_text_theme.dart';
+import '../../widgets/fit_or_hide_title.dart';
 
 class ThemeSettingsScreen extends StatelessWidget {
   const ThemeSettingsScreen({super.key});
@@ -33,7 +34,7 @@ class ThemeSettingsScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(l10n.themeSettingsTitle),
+        title: FitOrHideTitle(l10n.themeSettingsTitle),
         actions: [
           const HelpButton(topic: 'テーマ設定'),
           if (themeService.needsThemeRescue)

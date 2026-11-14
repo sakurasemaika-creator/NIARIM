@@ -9,6 +9,7 @@ import '../../widgets/responsive.dart';
 import '../../widgets/help_button.dart';
 import '../../widgets/stepped_slider.dart';
 import '../../config/font_fallback.dart';
+import '../../widgets/fit_or_hide_title.dart';
 
 /// バケツ塗り詳細設定（許容誤差・拡張px・線の下まで潜る）。
 /// ここでの設定はバケツツール使用時に常に適用される（プロジェクト単位では
@@ -25,7 +26,7 @@ class BucketFillSettingsScreen extends StatelessWidget {
       // topicはヘルプ画面側の項目タイトル（日本語固定）と一致させるための
       // 内部検索キーであり、UI表示文字列ではないため翻訳しない。
       appBar: AppBar(
-        title: Text(l10n.bucketSettingsTitle),
+        title: FitOrHideTitle(l10n.bucketSettingsTitle),
         actions: const [HelpButton(topic: 'バケツ塗り詳細設定')],
       ),
       body: desktopCentered(

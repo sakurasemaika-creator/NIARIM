@@ -29,6 +29,7 @@ import '../../widgets/qr_share_dialog.dart';
 import 'pc_workspace_layout_settings_screen.dart';
 import '../../config/font_fallback.dart';
 import '../../widgets/scrollable_sheet_body.dart';
+import '../../widgets/fit_or_hide_title.dart';
 
 class WorkspaceSettingsScreen extends StatelessWidget {
   const WorkspaceSettingsScreen({super.key});
@@ -41,7 +42,7 @@ class WorkspaceSettingsScreen extends StatelessWidget {
     final premium = context.watch<PremiumService>();
     return Scaffold(
       appBar: AppBar(
-        title: Text(l10n.workspaceScreenTitle),
+        title: FitOrHideTitle(l10n.workspaceScreenTitle),
         actions: const [HelpButton(topic: 'ワークスペース設定')],
       ),
       body: desktopCentered(

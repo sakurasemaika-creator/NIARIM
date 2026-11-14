@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../l10n/reward_navigation_labels.dart';
 import 'reward_unlock_screen.dart';
 import 'creator_missions_screen.dart';
+import '../../widgets/fit_or_hide_title.dart';
 
 /// Unifies redemption, missions and rewarded ads without mixing their state.
 class CoinBenefitsScreen extends StatelessWidget {
@@ -19,7 +20,7 @@ class CoinBenefitsScreen extends StatelessWidget {
       initialIndex: initialTab,
       child: Scaffold(
         appBar: AppBar(
-          title: Text(nav['hub']),
+          title: FitOrHideTitle(nav['hub']),
           bottom: TabBar(
             isScrollable: true,
             tabAlignment: TabAlignment.center,

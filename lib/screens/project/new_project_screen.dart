@@ -26,6 +26,7 @@ import 'canvas_size_preset_manage_screen.dart';
 import '../canvas/widgets/canvas_icon_button.dart';
 import '../../config/font_fallback.dart';
 import '../../utils/app_error_reporter.dart';
+import '../../widgets/fit_or_hide_title.dart';
 
 class NewProjectScreen extends StatefulWidget {
   const NewProjectScreen({super.key});
@@ -306,7 +307,7 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
     final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: Text(l10n.newProjectScreenTitle),
+        title: FitOrHideTitle(l10n.newProjectScreenTitle),
         actions: const [HelpButton(topic: '新規プロジェクト作成')],
       ),
       body: desktopCentered(

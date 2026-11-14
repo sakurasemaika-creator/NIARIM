@@ -5,6 +5,7 @@ import '../../l10n/app_localizations.dart';
 import '../../utils/app_error_reporter.dart';
 import '../../widgets/empty_state_placeholder.dart';
 import '../../widgets/responsive.dart';
+import '../../widgets/fit_or_hide_title.dart';
 
 /// 設定の「エラーの記録」。アプリを閉じるまでに起きたエラー
 /// （[AppErrorReporter.recentErrors]）を新しい順に見せ、不具合を知らせる
@@ -34,7 +35,7 @@ class _ErrorLogScreenState extends State<ErrorLogScreen> {
     final scheme = Theme.of(context).colorScheme;
     final errors = List<String>.of(AppErrorReporter.recentErrors);
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.settingsErrorLogTitle)),
+      appBar: AppBar(title: FitOrHideTitle(l10n.settingsErrorLogTitle)),
       body: desktopCentered(
         context,
         errors.isEmpty

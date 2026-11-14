@@ -21,6 +21,7 @@ import 'widgets/community_post_copy_button.dart';
 import '../../widgets/responsive.dart';
 import 'community_error_text.dart';
 import '../../utils/tolerant_preferences.dart';
+import '../../widgets/fit_or_hide_title.dart';
 
 /// Where posting stands, shown under the form.
 enum _PostStatus {
@@ -932,7 +933,7 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
     return PopScope(
       canPop: !_busy,
       child: Scaffold(
-        appBar: AppBar(title: Text(l10n.communityPostButton)),
+        appBar: AppBar(title: FitOrHideTitle(l10n.communityPostButton)),
         body: desktopCentered(
           context,
           SingleChildScrollView(

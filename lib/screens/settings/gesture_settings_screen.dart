@@ -12,6 +12,7 @@ import '../../widgets/responsive.dart';
 import '../../widgets/help_button.dart';
 import '../../config/font_fallback.dart';
 import '../../config/accent_text_theme.dart';
+import '../../widgets/fit_or_hide_title.dart';
 
 class GestureSettingsScreen extends StatelessWidget {
   const GestureSettingsScreen({super.key});
@@ -23,7 +24,7 @@ class GestureSettingsScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(l10n.gestureSettingsTitle),
+        title: FitOrHideTitle(l10n.gestureSettingsTitle),
         actions: const [HelpButton(topic: 'ジェスチャー設定')],
       ),
       body: desktopCentered(

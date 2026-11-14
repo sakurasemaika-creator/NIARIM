@@ -10,6 +10,7 @@ import '../../services/google_auth_service.dart';
 import '../../services/premium_service.dart';
 import '../../utils/app_locale.dart';
 import '../../widgets/responsive.dart';
+import '../../widgets/fit_or_hide_title.dart';
 
 /// Current entitlements are read from the authenticated server; plan details
 /// are shown only when Google Play verification is still valid.
@@ -90,7 +91,7 @@ class _MembershipBenefitsScreenState extends State<MembershipBenefitsScreen> {
         : t['membershipFree'];
     final coinExpiry = premium.activeCoinPremiumExpiry;
     return Scaffold(
-      appBar: AppBar(title: Text(t['membership'])),
+      appBar: AppBar(title: FitOrHideTitle(t['membership'])),
       body: desktopCentered(
         context,
         ListView(

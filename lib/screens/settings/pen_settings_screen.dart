@@ -10,6 +10,7 @@ import 'widgets/pressure_curve_graph.dart';
 import 'widgets/pressure_curve_try_draw.dart';
 import '../../config/font_fallback.dart';
 import '../../config/accent_text_theme.dart';
+import '../../widgets/fit_or_hide_title.dart';
 
 /// ペン入力設定。
 /// 筆圧の「無効／サイズ／不透明度／両方」反映モードはブラシ個別設定のため、
@@ -39,7 +40,7 @@ class PenSettingsScreen extends StatelessWidget {
       // topicはヘルプ画面側の項目タイトル（日本語固定）と一致させるための
       // 内部検索キーであり、UI表示文字列ではないため翻訳しない。
       appBar: AppBar(
-        title: Text(l10n.penSettingsTitle),
+        title: FitOrHideTitle(l10n.penSettingsTitle),
         actions: const [HelpButton(topic: 'ペン設定')],
       ),
       body: desktopCentered(

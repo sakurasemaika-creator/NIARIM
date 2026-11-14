@@ -14,6 +14,7 @@ import '../../widgets/responsive.dart';
 import '../../widgets/help_button.dart';
 import '../../config/font_fallback.dart';
 import '../../config/accent_text_theme.dart';
+import '../../widgets/fit_or_hide_title.dart';
 
 /// 素材一覧画面。
 /// サムネイル・種類アイコン・ファイル名・容量等を一覧表示し、
@@ -69,7 +70,7 @@ class _MaterialListScreenState extends State<MaterialListScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(l10n.materialListTitle),
+        title: FitOrHideTitle(l10n.materialListTitle),
         actions: [
           const HelpButton(topic: '素材一覧'),
           if (unusedCount > 0)

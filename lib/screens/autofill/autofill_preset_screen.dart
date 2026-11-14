@@ -35,6 +35,7 @@ import '../canvas/widgets/color_picker_panel.dart';
 import '../../config/font_fallback.dart';
 import '../../widgets/scrollable_sheet_body.dart';
 import '../../config/accent_text_theme.dart';
+import '../../widgets/fit_or_hide_title.dart';
 
 /// [taken]と重ならない複製の名前を付け、[taken]に加える（まとめて複製する
 /// ときに、同じ名前の複製を並べない）。
@@ -236,7 +237,7 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
                 ),
                 onChanged: (v) => setState(() => _searchQuery = v),
               )
-            : Text(l10n.autofillPresetScreenTitle),
+            : FitOrHideTitle(l10n.autofillPresetScreenTitle),
         actions: [
           const HelpButton(topic: '自動塗り'),
           IconButton(

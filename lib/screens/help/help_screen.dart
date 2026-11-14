@@ -6,6 +6,7 @@ import '../../config/font_fallback.dart';
 import '../../config/accent_text_theme.dart';
 import '../../widgets/app_tutorial.dart';
 import '../../utils/name_collation.dart';
+import '../../widgets/fit_or_hide_title.dart';
 
 class HelpScreen extends StatefulWidget {
   // 各画面のヘルプボタンから「この画面に関連する項目」を指定して開いた
@@ -622,7 +623,7 @@ class _HelpScreenState extends State<HelpScreen> {
     return Scaffold(
       appBar: widget.embedded
           ? null
-          : AppBar(title: Text(l10n.helpScreenTitle)),
+          : AppBar(title: FitOrHideTitle(l10n.helpScreenTitle)),
       body: SafeArea(
         child: Column(
           children: [
