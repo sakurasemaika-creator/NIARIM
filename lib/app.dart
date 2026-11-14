@@ -160,7 +160,8 @@ class _NiarimAppState extends State<NiarimApp> with WidgetsBindingObserver {
     return MaterialApp.router(
       title: 'NIARIM',
       debugShowCheckedModeBanner: false,
-      theme: themeService.themeData,
+      // 本文の書体の列は表示言語で変わる（中国語はNoto Serif SCを主に）。
+      theme: themeService.themeDataFor(localeFromLanguageCode(language)),
       scrollBehavior: const AppScrollBehavior(),
       routerConfig: appRouter,
       locale: localeFromLanguageCode(language),

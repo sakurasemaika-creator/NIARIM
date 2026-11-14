@@ -43,6 +43,8 @@
 /// システムフォントが受け持つ（現状と同じ挙動のため後退は無い）。
 library;
 
+import 'dart:ui' show Locale;
+
 /// 本文用フォント（白光明朝）の代替フォント列。
 ///
 /// - `DelaGothicOne`：白光明朝に無い拡張ラテン254文字（Ą ć Č İ 等）を補う。
@@ -74,3 +76,30 @@ const List<String> kHeadingFontFallback = <String>[
   'NotoSansKRBlackSubset',
   'NotoSansSCBlackSubset',
 ];
+
+/// 中国語（簡体字・繁体字）の画面の本文の代替フォント列。主フォントは
+/// [bodyFontFamilyFor]が返すNoto Serif SC（サブセット）。
+const List<String> kChineseBodyFontFallback = <String>[
+  'HakkouMincho',
+  'DelaGothicOne',
+  'NotoSerifJP',
+  'NotoSerifKRSubset',
+];
+
+/// 表示言語[locale]の本文の主フォント。
+///
+/// 白光明朝の漢字はどれも字幅0.65em（縦長の明朝）の日本の字形なので、
+/// 中国語の文では白光明朝にある字（示・收・藏…）だけが細い日本の字形で、
+/// 無い字（仅・显…）は全角の Noto Serif SC になり、1語の中で字幅と字形が
+/// 混ざって詰まって見えた（「仅显示收藏」）。中国語は Noto Serif SC
+/// （白光明朝と同じ Source Han Serif 系の明朝）を主にし、字幅をそろえる。
+/// 繁体字も同じ Noto Serif SC（簡体字の地域の字形）で描く（繁体字用の
+/// 書体は同梱していない）。サブセットには、ARBの字に加えて lib 配下の
+/// 手書きの文字列（組み込みのブラシ・トーン等の名前）の漢字・かな・全角の
+/// 字と空白も入れてある（tool/build_fallback_fonts.py）。
+String bodyFontFamilyFor(Locale? locale) =>
+    locale?.languageCode == 'zh' ? 'NotoSerifSCSubset' : 'HakkouMincho';
+
+/// 表示言語[locale]の本文の代替フォント列（[bodyFontFamilyFor]と組で使う）。
+List<String> bodyFontFallbackFor(Locale? locale) =>
+    locale?.languageCode == 'zh' ? kChineseBodyFontFallback : kBodyFontFallback;

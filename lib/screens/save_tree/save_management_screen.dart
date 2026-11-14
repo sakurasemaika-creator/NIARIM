@@ -629,8 +629,15 @@ class _GameSaveSlotTile extends StatelessWidget {
                                         : listUnread
                                         ? ''
                                         : l10n.saveTreeNoDataLabel),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
+                                // 利用者のメモは1行で省略する。アプリの文（「保存
+                                // データなし」等）は切らずに折り返す（中国語の
+                                // 字の広い書体・大きな文字で「…」と切れた）。
+                                maxLines: givenSaveName(memo) != null
+                                    ? 1
+                                    : null,
+                                overflow: givenSaveName(memo) != null
+                                    ? TextOverflow.ellipsis
+                                    : null,
                                 style: TextStyle(
                                   color: hasData
                                       ? scheme.onSurface

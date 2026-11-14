@@ -19,6 +19,7 @@ import '../../services/theme_service.dart';
 import '../../widgets/autofill_preset_selection_sheet.dart';
 import '../../widgets/dispose_on_unmount.dart';
 import '../../widgets/frame_preview_background.dart';
+import '../../widgets/label_value_row.dart';
 import '../../widgets/moved_to_trash_snack_bar.dart';
 import '../../widgets/name_entry_dialog.dart';
 import '../../widgets/project_not_found_view.dart';
@@ -1015,33 +1016,19 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
     Project project,
   ) => createAndShareProjectNiashare(context, service, project);
 
+  /// 値の数（解像度・数と単位・大きさ・日付・時刻）は途中で折り返さない。
   Widget _infoRow(String label, String value) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
-      // ラベル・値とも、OSの文字サイズ設定（textScaler）を大きくすると
-      // 行幅を超えてRenderFlexオーバーフローになっていたため、両方を
-      // Flexibleにして折り返し・省略できるようにする。
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Flexible(
-            child: Text(
-              label,
-              style: TextStyle(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
-            ),
-          ),
-          const SizedBox(width: 8),
-          Flexible(
-            child: Text(
-              value,
-              textAlign: TextAlign.end,
-              style: const TextStyle(fontWeight: FontWeight.w600),
-            ),
-          ),
-        ],
+      // 項目名を1行で置いた残りに値の数が入らなければ、値を項目名の下の行へ
+      // 回す（半分ずつの列だと、字の広い書体・大きな文字で数の途中で切れた）。
+      child: LabelValueRow(
+        label: label,
+        value: value,
+        labelStyle: TextStyle(
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
+        ),
+        valueStyle: const TextStyle(fontWeight: FontWeight.w600),
       ),
     );
   }

@@ -94,7 +94,8 @@ Future<void> _walk(
             locale: locale,
             supportedLocales: AppLocalizations.supportedLocales,
             localizationsDelegates: AppLocalizations.localizationsDelegates,
-            theme: context.watch<ThemeService>().themeData,
+            // 本物のアプリと同じ、表示言語のテーマ（中国語は本文の書体が違う）。
+            theme: context.watch<ThemeService>().themeDataFor(locale),
             builder: (context, child) => MediaQuery(
               data: MediaQuery.of(
                 context,

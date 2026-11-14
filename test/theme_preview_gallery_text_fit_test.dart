@@ -96,7 +96,8 @@ Future<void> _walkGallery(
           locale: locale,
           supportedLocales: AppLocalizations.supportedLocales,
           localizationsDelegates: AppLocalizations.localizationsDelegates,
-          theme: themeService.themeData,
+          // 本物のアプリと同じ、表示言語のテーマ（中国語は本文の書体が違う）。
+          theme: themeService.themeDataFor(locale),
           builder: (context, child) => MediaQuery(
             data: MediaQuery.of(
               context,

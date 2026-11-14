@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
 import '../../config/accent_text_theme.dart';
@@ -396,8 +398,28 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                     // ChoiceChipはWrap内で自身の自然幅を要求するため、長い
                     // ローカライズ文言（特に9:16縦型）が狭いスマホ幅より長いと
                     // 例外を出さず画面端で文字だけ不自然に切れる。各チップを
-                    // 親幅以下へ制約し、最大2行+ellipsisで情報を保ちながら収める。
+                    // 親幅以下へ制約し、入らない名前は行を増やして全部出す
+                    // （「…」で切らない）。
                     final maxChipWidth = constraints.maxWidth;
+                    // ChoiceChipの既定の選んだ印（チェック）は名前の高さと
+                    // 同じ幅を取るので、2行・3行の名前では選んだとたんに名前の
+                    // 幅が縮み、チップの高さに入らない最後の行が切れた（字の
+                    // 広い中国語の本文の書体で、文字1.3倍から）。印は決まった
+                    // 大きさで名前の前に出し、名前の幅は印・余白の分を先に
+                    // 引いて決める（選ぶ前後で折り返しが変わらない）。印は
+                    // チップの中身の最も低い高さ（32 − 上下の余白16）に収まる
+                    // 16px（より大きいと、1行の名前の低いチップで印が中身から
+                    // はみ出す）。
+                    const chipPadding = EdgeInsets.all(8);
+                    const labelPadding = EdgeInsets.symmetric(horizontal: 8);
+                    const checkSize = 16.0;
+                    final labelMaxWidth = math.max(
+                      0.0,
+                      maxChipWidth -
+                          chipPadding.horizontal -
+                          labelPadding.horizontal -
+                          checkSize,
+                    );
 
                     Widget sizeChip({
                       required String text,
@@ -407,11 +429,41 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                       return ConstrainedBox(
                         constraints: BoxConstraints(maxWidth: maxChipWidth),
                         child: ChoiceChip(
-                          label: Text(
-                            text,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            textAlign: TextAlign.center,
+                          padding: chipPadding,
+                          labelPadding: labelPadding,
+                          // 1行ではテーマのピル形と同じ丸み、2行以上でも
+                          // 楕円にならない角丸。
+                          shape: const RoundedRectangleBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(20)),
+                          ),
+                          showCheckmark: false,
+                          avatar: selected
+                              ? Icon(
+                                  Icons.check,
+                                  size: checkSize,
+                                  color: Theme.of(
+                                    context,
+                                  ).chipTheme.checkmarkColor,
+                                )
+                              : null,
+                          avatarBoxConstraints: const BoxConstraints.tightFor(
+                            width: checkSize,
+                            height: checkSize,
+                          ),
+                          // チップは名前を1行で描く（DefaultTextStyleの
+                          // maxLines: 1・softWrap: false）ので、その決まりを
+                          // 外して行を増やせるようにする。
+                          label: ConstrainedBox(
+                            constraints: BoxConstraints(
+                              maxWidth: labelMaxWidth,
+                            ),
+                            child: Builder(
+                              builder: (context) => DefaultTextStyle(
+                                style: DefaultTextStyle.of(context).style,
+                                textAlign: TextAlign.center,
+                                child: Text(text),
+                              ),
+                            ),
                           ),
                           selected: selected,
                           onSelected: (s) {

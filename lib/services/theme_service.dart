@@ -86,8 +86,12 @@ class ThemeService extends ChangeNotifier {
     await _persist();
   }
 
-  ThemeData get themeData {
-    final data = _buildTheme(_current);
+  ThemeData get themeData => themeDataFor(null);
+
+  /// 表示言語[locale]の画面に使うテーマ。本文の書体の列だけが言語で変わる
+  /// （中国語は Noto Serif SC を主にする。[bodyFontFamilyFor]）。
+  ThemeData themeDataFor(Locale? locale) {
+    final data = _buildTheme(_current, locale: locale);
     activeColorScheme = data.colorScheme;
     activeAccentText =
         data.extension<AccentTextTheme>()?.color ?? data.colorScheme.primary;
@@ -806,7 +810,8 @@ class ThemeService extends ChangeNotifier {
   /// ポップなフラットデザインのThemeDataを構築する。
   /// Material標準の角丸・階調をそのまま使わず、フラット・大きめタップ領域・
   /// 丸みの強い形状で統一し、スマホでの誤タップを減らす。
-  ThemeData _buildTheme(AppThemePreset preset) {
+  ThemeData _buildTheme(AppThemePreset preset, {Locale? locale}) {
+    final bodyFont = bodyFontFamilyFor(locale);
     // 明暗（Brightness）は、以前は独立した「ベーステーマ」設定から決めて
     // いたが、プリセット自身の文字色・背景色と噛み合わない組み合わせを
     // 選べてしまい、暗い文字が暗い背景に埋もれて読めなくなる不具合の
@@ -935,11 +940,11 @@ class ThemeService extends ChangeNotifier {
     final bodyTextTheme = _boldenForReadability(
       _withFontFallback(
         baseTextTheme.apply(
-          fontFamily: 'HakkouMincho',
+          fontFamily: bodyFont,
           bodyColor: preset.textColor,
           displayColor: preset.textColor,
         ),
-        kBodyFontFallback,
+        bodyFontFallbackFor(locale),
       ),
     );
     // フォントの使い分け：項目名・見出しなど文字サイズが
@@ -953,7 +958,7 @@ class ThemeService extends ChangeNotifier {
       useMaterial3: true,
       brightness: brightness,
       colorScheme: scheme,
-      fontFamily: 'HakkouMincho',
+      fontFamily: bodyFont,
       textTheme: textTheme,
       extensions: [AccentTextTheme(accentText)],
       primaryTextTheme: textTheme,

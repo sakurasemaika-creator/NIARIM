@@ -241,8 +241,12 @@ class _FirstUseCard extends StatelessWidget {
                         color: scheme.onPrimary,
                         fontSize: 17,
                         height: 1.5,
-                        fontFamily: 'HakkouMincho',
-                        fontFamilyFallback: kBodyFontFallback,
+                        fontFamily: bodyFontFamilyFor(
+                          Localizations.maybeLocaleOf(context),
+                        ),
+                        fontFamilyFallback: bodyFontFallbackFor(
+                          Localizations.maybeLocaleOf(context),
+                        ),
                       ),
                     ),
                     const SizedBox(height: 14),
@@ -267,8 +271,12 @@ class _FirstUseCard extends StatelessWidget {
                         color: scheme.onPrimary.withValues(alpha: 0.92),
                         fontSize: 15,
                         height: 1.5,
-                        fontFamily: 'HakkouMincho',
-                        fontFamilyFallback: kBodyFontFallback,
+                        fontFamily: bodyFontFamilyFor(
+                          Localizations.maybeLocaleOf(context),
+                        ),
+                        fontFamilyFallback: bodyFontFallbackFor(
+                          Localizations.maybeLocaleOf(context),
+                        ),
                       ),
                     ),
                     const SizedBox(height: 14),

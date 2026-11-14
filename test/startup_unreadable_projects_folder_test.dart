@@ -4707,8 +4707,25 @@ void main() {
           if (screen == 'save tree') {
             await tester.tap(find.byIcon(Icons.save));
           } else {
-            final write = find.byTooltip(l10n.saveTreeSlotWriteTooltip).at(1);
+            // 2つ目のスロット（空）の書き込みのボタン。ensureVisibleは
+            // スクロールの位置を変えるだけなので、並べ直してから押す（並べ
+            // 直す前の位置は画面の外のことがある）。一覧は画面の外へ出た
+            // 行を捨てるので、数え直さずに同じボタンを押す。
+            final second = find
+                .byTooltip(l10n.saveTreeSlotWriteTooltip)
+                .at(1)
+                .evaluate()
+                .single;
+            final write = find.byElementPredicate(
+              (element) => identical(element, second),
+            );
             await tester.ensureVisible(write);
+            await tester.pump();
+            expect(
+              write.hitTestable(),
+              findsOneWidget,
+              reason: 'the write button of the second slot cannot be pressed',
+            );
             await tester.tap(write);
           }
           await _settleWithFiles(tester, rounds: 3);

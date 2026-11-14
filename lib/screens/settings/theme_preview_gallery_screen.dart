@@ -424,6 +424,10 @@ class _ThemeSampleScreen extends StatelessWidget {
     required this.l,
     required this.accentText,
   });
+
+  /// The app language (its body face depends on it).
+  Locale get _locale => Locale(l.localeName.split('_').first);
+
   Widget _cta(ColorScheme c, String label, {IconData icon = Icons.check}) =>
       Container(
         // Grows for a second line instead of overflowing (large text, long
@@ -3375,8 +3379,8 @@ class _ThemeSampleScreen extends StatelessWidget {
                             label,
                             style: TextStyle(
                               fontSize: 11,
-                              fontFamily: 'HakkouMincho',
-                              fontFamilyFallback: kBodyFontFallback,
+                              fontFamily: bodyFontFamilyFor(_locale),
+                              fontFamilyFallback: bodyFontFallbackFor(_locale),
                               color: c.onSurfaceVariant,
                             ),
                           ),

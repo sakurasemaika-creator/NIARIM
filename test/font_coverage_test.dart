@@ -192,6 +192,19 @@ List<File> handWrittenL10nFiles() =>
         .toList()
       ..sort((a, b) => a.path.compareTo(b.path));
 
+/// 中国語の本文の主フォント（Noto Serif SCのサブセット）が持つべき字の範囲：
+/// 漢字・かな・CJKの記号と約物・全角の字。ハングルは除く（Noto Serif SCに
+/// 無く、中国語の本文の代替列のNoto Serif KRが受け持つ）。
+/// tool/build_fallback_fonts.py の is_cjk と同じ範囲。
+bool _isChineseBodyCjk(int r) =>
+    (r >= 0x2E80 && r <= 0x312F) ||
+    (r >= 0x31A0 && r <= 0x4DBF) ||
+    (r >= 0x4E00 && r <= 0x9FFF) ||
+    (r >= 0xF900 && r <= 0xFAFF) ||
+    (r >= 0xFE30 && r <= 0xFE4F) ||
+    (r >= 0xFF00 && r <= 0xFFEF) ||
+    (r >= 0x20000 && r <= 0x3FFFF);
+
 /// lib配下の手書きのDartファイル（lib/l10nの生成物を除く）すべて。
 List<File> handWrittenLibFiles() =>
     Directory('lib')
@@ -434,8 +447,10 @@ void main() {
     // lib/l10nの外にも、7言語の文を手で書いた表があった（プライバシー
     // ポリシーの「学習データとして利用しない」条項。ハングルの「델」「학」、
     // 簡体字の「训」「练」がどの同梱フォントにも無かった）。
-    // 文言はARBへ移すこと（tool/build_fallback_fonts.py はARBとlib/l10nだけを
-    // 読むので、ほかの場所の字はサブセットに入らない）。
+    // 文言はARBへ移すこと（tool/build_fallback_fonts.py はARBとlib/l10nの
+    // 字でサブセットを作る。ほかの場所の字は、中国語の本文の主フォント
+    // 〔Noto Serif SC〕に漢字・かな・全角の字だけを足し、ハングル等は
+    // 入らない）。
     final missing = <String>[];
     for (final file in handWrittenLibFiles()) {
       final chars = handWrittenL10nCharsOf(file)
@@ -454,6 +469,36 @@ void main() {
       reason:
           '${missing.join('\n')}\n'
           '文言はARB（lib/l10n/app_*.arb）へ移し、'
+          'tool/build_fallback_fonts.py でフォントを再生成してください',
+    );
+  });
+
+  test('中国語の本文の主フォントは、ASCII（空白も）と、zh・zh_HantのARBと'
+      'lib配下の手書きの文字列の漢字・かな・全角の字をすべて持つ', () {
+    // 中国語の画面の本文はNoto Serif SC（サブセット）が主で、そこに無い字は
+    // 白光明朝（漢字は字幅0.65emの日本の字形）へ落ちる。組み込みの名前
+    // （ブラシ・トーン・スタンプ等。今は日本語のまま中国語の画面にも出る）の
+    // 「八角形」の「八」、「鉛筆」の「鉛」、「吹き出し」の「吹」などが細い字に
+    // なり、1語の中で字幅と字形が混ざっていた。
+    expect(bodyFontFamilyFor(const ui.Locale('zh')), 'NotoSerifSCSubset');
+    final primary = cmapCodePoints(_fontFiles['NotoSerifSCSubset']!);
+    final needed = <int>{for (var c = 0x20; c < 0x7F; c++) c, 0x3000};
+    for (final arb in arbs) {
+      final name = arb.uri.pathSegments.last;
+      if (name != 'app_zh.arb' && name != 'app_zh_Hant.arb') continue;
+      needed.addAll(uiCharsOf(arb).where(_isChineseBodyCjk));
+    }
+    for (final file in handWrittenLibFiles()) {
+      needed.addAll(handWrittenL10nCharsOf(file).where(_isChineseBodyCjk));
+    }
+    final missing = needed.difference(primary)
+      ..removeAll(symbolsHandledBySystem);
+    expect(
+      missing,
+      isEmpty,
+      reason:
+          '中国語の本文の主フォントに無い字（${missing.length}字）: '
+          '${String.fromCharCodes(missing.toList()..sort())}\n'
           'tool/build_fallback_fonts.py でフォントを再生成してください',
     );
   });

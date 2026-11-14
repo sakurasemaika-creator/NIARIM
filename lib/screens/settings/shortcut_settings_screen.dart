@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -96,28 +98,50 @@ class ShortcutSettingsScreen extends StatelessWidget {
                             horizontal: 12,
                             vertical: 4,
                           ),
-                          child: ListTile(
-                            leading: _keyChip(context, b.comboLabel),
-                            title: Text(
-                              shortcutDisplayLabel(l10n, b),
-                              style: const TextStyle(
-                                fontFamily: 'Kuramubon',
-                                fontFamilyFallback: kHeadingFontFallback,
-                              ),
-                            ),
-                            trailing: IconButton(
-                              icon: const Icon(Icons.delete_outline),
-                              tooltip: l10n.commonDelete,
-                              onPressed: () async {
-                                if (!await confirmDelete(
-                                  context,
-                                  itemName: shortcutDisplayLabel(l10n, b),
-                                )) {
-                                  return;
-                                }
-                                service.removeBinding(b.id);
-                              },
-                            ),
+                          // キーのチップが1行で項目名の前に入らない幅（大きな
+                          // 文字・字の広い言語）では、項目名の上に置く（「…」で
+                          // 切らない）。
+                          child: LayoutBuilder(
+                            builder: (context, box) {
+                              final chip = _KeyChip(b.comboLabel);
+                              final beside =
+                                  _KeyChip.widthOf(context, b.comboLabel) <=
+                                  math.max(120, box.maxWidth * 0.4);
+                              final name = Text(
+                                shortcutDisplayLabel(l10n, b),
+                                style: const TextStyle(
+                                  fontFamily: 'Kuramubon',
+                                  fontFamilyFallback: kHeadingFontFallback,
+                                ),
+                              );
+                              return ListTile(
+                                leading: beside ? chip : null,
+                                title: beside
+                                    ? name
+                                    : Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          chip,
+                                          const SizedBox(height: 6),
+                                          name,
+                                        ],
+                                      ),
+                                trailing: IconButton(
+                                  icon: const Icon(Icons.delete_outline),
+                                  tooltip: l10n.commonDelete,
+                                  onPressed: () async {
+                                    if (!await confirmDelete(
+                                      context,
+                                      itemName: shortcutDisplayLabel(l10n, b),
+                                    )) {
+                                      return;
+                                    }
+                                    service.removeBinding(b.id);
+                                  },
+                                ),
+                              );
+                            },
                           ),
                         );
                       },
@@ -134,31 +158,6 @@ class ShortcutSettingsScreen extends StatelessWidget {
         // カプセル形状（StadiumBorder）へ上書きする（community_screen.dart
         // の投稿ボタンと同じ理由）。
         shape: const StadiumBorder(),
-      ),
-    );
-  }
-
-  /// ショートカットのキー組み合わせ（例：Ctrl + Shift + Z）を表示する
-  /// 小さなチップ。ListTileのleadingへ渡すため、横幅を必ず制限する。
-  /// 無制限のままだと、OSの文字サイズ設定（textScaler）を大きくした端末で
-  /// チップがタイル幅を丸ごと専有し、ListTileが
-  /// 「Leading widget consumes the entire tile width」アサーションで
-  /// レイアウト自体に失敗する（画面が真っ白になる）。
-  Widget _keyChip(BuildContext context, String label) {
-    return ConstrainedBox(
-      constraints: const BoxConstraints(maxWidth: 120),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surfaceContainerHighest,
-          borderRadius: BorderRadius.circular(6),
-        ),
-        child: Text(
-          label,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-        ),
       ),
     );
   }
@@ -619,6 +618,92 @@ class _KeyCaptureDialogState extends State<_KeyCaptureDialog> {
           child: Text(l10n.commonCancel),
         ),
       ],
+    );
+  }
+}
+
+/// ショートカットのキー組み合わせ（例：Ctrl+Shift+Z）を表示する小さな
+/// チップ。一覧の行では項目名の前（ListTileのleading）に置き、1行で入らない
+/// ときは項目名の上に置く（[widthOf]で決める）。以前はleadingの中で幅120pxに
+/// 抑えて1行で「…」と切っていて、字の広い中国語の本文の書体・大きな文字で
+/// 「Ctrl+S…」になっていた。項目名の上でも入らない幅では「+」の後で次の行へ
+/// 折り返す（キーの名前の途中では折らない）。
+class _KeyChip extends StatelessWidget {
+  const _KeyChip(this.label);
+
+  final String label;
+
+  static const _padding = EdgeInsets.symmetric(horizontal: 8, vertical: 6);
+
+  /// チップの文の書式。leadingの既定（labelSmall・onSurfaceVariant）に太さと
+  /// 大きさを足したもの。項目名の上に置いても同じに描く。
+  static TextStyle _style(BuildContext context) {
+    final theme = Theme.of(context);
+    final base =
+        theme.listTileTheme.leadingAndTrailingTextStyle ??
+        theme.textTheme.labelSmall?.copyWith(
+          color: theme.colorScheme.onSurfaceVariant,
+        ) ??
+        const TextStyle();
+    return base.copyWith(fontSize: 12, fontWeight: FontWeight.bold);
+  }
+
+  /// [label]のチップを1行で描いたときの幅。
+  static double widthOf(BuildContext context, String label) {
+    final painter = TextPainter(
+      text: TextSpan(text: label, style: _style(context)),
+      textDirection: Directionality.of(context),
+      textScaler: MediaQuery.textScalerOf(context),
+      locale: Localizations.maybeLocaleOf(context),
+      maxLines: 1,
+    )..layout();
+    final width = painter.width + _padding.horizontal;
+    painter.dispose();
+    return width;
+  }
+
+  /// キー組み合わせの文[label]（[ShortcutBinding.comboLabel]：修飾キーを
+  /// Ctrl・Shift・Alt・Metaの順に「+」でつなぎ、最後にキーの名前）を、修飾
+  /// キーの後の「+」の後ろだけで折り返せるようにした文。キーの名前の中
+  /// （「Arrow Left」の空白）では折り返さない。キーが「+」のときは、その前
+  /// （最後の修飾キーの「+」の後）でも折り返さない（「Ctrl+」の次の行に「+」
+  /// だけが来ると、キーかつなぎの「+」か見分けられない）。
+  static String _breakable(String label) {
+    var rest = label;
+    final modifiers = <String>[];
+    for (final modifier in const ['Ctrl', 'Shift', 'Alt', 'Meta']) {
+      if (!rest.startsWith('$modifier+')) continue;
+      modifiers.add(modifier);
+      rest = rest.substring(modifier.length + 1);
+    }
+    final out = StringBuffer();
+    for (var i = 0; i < modifiers.length; i++) {
+      final keepWithKey = i == modifiers.length - 1 && rest.startsWith('+');
+      // 幅の無い空白（U+200B）：ここで折り返せる。語結合子（U+2060）：
+      // 折り返さない。
+      out
+        ..write('${modifiers[i]}+')
+        ..write(keepWithKey ? '\u2060' : '\u200b');
+    }
+    // キーの名前の空白は改行しない空白（U+00A0）にし、そこでは折り返さない。
+    out.write(rest.replaceAll(' ', '\u00A0'));
+    return out.toString();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: _padding,
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(6),
+      ),
+      // 修飾キーの後の「+」の後だけで折り返す（読み上げは元の文）。
+      child: Text(
+        _breakable(label),
+        semanticsLabel: label,
+        style: _style(context),
+      ),
     );
   }
 }

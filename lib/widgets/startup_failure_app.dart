@@ -38,7 +38,14 @@ class StartupFailureApp extends StatelessWidget {
     return MaterialApp(
       title: 'NIARIM',
       debugShowCheckedModeBanner: false,
-      theme: _defaultTheme(),
+      theme: _defaultTheme(
+        localeFromLanguageCode(
+          code ??
+              appLanguageCodeFor(
+                WidgetsBinding.instance.platformDispatcher.locales,
+              ),
+        ),
+      ),
       locale: code == null ? null : localeFromLanguageCode(code),
       // 設定を読む前に失敗したときは、アプリ本体と同じ決まりで端末の
       // 言語から選ぶ（台湾・香港の中国語は繁体字、対応外は英語）。
@@ -57,10 +64,10 @@ class StartupFailureApp extends StatelessWidget {
     );
   }
 
-  static ThemeData _defaultTheme() {
+  static ThemeData _defaultTheme(Locale locale) {
     final themes = ThemeService();
     try {
-      return themes.themeData;
+      return themes.themeDataFor(locale);
     } finally {
       themes.dispose();
     }

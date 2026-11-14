@@ -106,8 +106,12 @@ class _InfoIconTooltipState extends State<InfoIconTooltip> {
                             style: TextStyle(
                               color: Theme.of(ctx).colorScheme.onPrimary,
                               fontSize: 12,
-                              fontFamily: 'HakkouMincho',
-                              fontFamilyFallback: kBodyFontFallback,
+                              fontFamily: bodyFontFamilyFor(
+                                Localizations.maybeLocaleOf(ctx),
+                              ),
+                              fontFamilyFallback: bodyFontFallbackFor(
+                                Localizations.maybeLocaleOf(ctx),
+                              ),
                             ),
                           ),
                         ),

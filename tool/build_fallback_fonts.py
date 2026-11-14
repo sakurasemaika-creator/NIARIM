@@ -29,6 +29,15 @@ UIの文言（lib/l10n/*.arb、およびlib/l10nに手で書いたDartファイ�
 文字列）を増やしたあとは、このスクリプトを再実行してフォントを作り直すこと。作り直しを忘れると、増やした文字だけシステム
 フォントで表示されて見た目が揃わなくなる。
 test/font_coverage_test.dart がその取りこぼしを検出する。
+
+中国語（簡体字・繁体字）の画面では、本文の主フォントがNoto Serif SC
+（このサブセット）になる（lib/config/font_fallback.dart の
+bodyFontFamilyFor）。そこに無い字は白光明朝（漢字は字幅0.65emの日本の
+字形）へ落ち、1語の中で字幅と字形が混ざる。そのため NotoSerifSCSubset には、
+lib配下の手書きのDartファイルの文字列に出る漢字・かな・全角の字（組み込みの
+ブラシ・トーン・スタンプ等の名前。今は日本語のまま中国語の画面にも出る）と、
+空白（U+0020・U+3000）も入れる。ほかの3つは主フォントにならない（本文・
+見出しの代替）ので、今までどおりARBとlib/l10nの字だけ。
 """
 
 import json
@@ -41,13 +50,58 @@ REPO = pathlib.Path(__file__).resolve().parent.parent
 L10N = REPO / "lib" / "l10n"
 OUT = REPO / "assets" / "fonts"
 
-# 生成するフォント： (出力名, 元フォント, 太さ)
+# 生成するフォント： (出力名, 元フォント, 太さ, 中国語の本文の主フォントか)
 TARGETS = [
-    ("NotoSerifKRSubset", "NotoSerifKR.ttf", 400),
-    ("NotoSerifSCSubset", "NotoSerifSC.ttf", 400),
-    ("NotoSansKRBlackSubset", "NotoSansKR.ttf", 900),
-    ("NotoSansSCBlackSubset", "NotoSansSC.ttf", 900),
+    ("NotoSerifKRSubset", "NotoSerifKR.ttf", 400, False),
+    ("NotoSerifSCSubset", "NotoSerifSC.ttf", 400, True),
+    ("NotoSansKRBlackSubset", "NotoSansKR.ttf", 900, False),
+    ("NotoSansSCBlackSubset", "NotoSansSC.ttf", 900, False),
 ]
+
+
+def _string_literals(path: pathlib.Path):
+    """Dartファイルの文字列リテラルの中身（行全体のコメントは除く）。
+
+    test/font_coverage_test.dart の handWrittenL10nCharsOf と同じ読み方。
+    """
+    code = "\n".join(
+        line
+        for line in path.read_text(encoding="utf-8").splitlines()
+        if not line.lstrip().startswith("//")
+    )
+    for literal in re.findall(r"'(?:[^'\\\n]|\\.)*'|\"(?:[^\"\\\n]|\\.)*\"", code):
+        text = re.sub(r"\{[^}]*\}", "", literal[1:-1])
+        yield re.sub(r"\\.", "", text)
+
+
+def is_cjk(c: str) -> bool:
+    """漢字・かな・CJKの記号・全角の字（ハングルは除く：Noto Serif SCに無く、
+    中国語の本文の代替列のNoto Serif KRが受け持つ）。
+
+    test/font_coverage_test.dart の _isChineseBodyCjk と同じ範囲。
+    """
+    o = ord(c)
+    return (
+        0x2E80 <= o <= 0x312F  # 部首・CJKの記号と約物・かな・注音
+        or 0x31A0 <= o <= 0x4DBF  # 注音拡張・CJKの画・カタカナ拡張・拡張A
+        or 0x4E00 <= o <= 0x9FFF  # CJK統合漢字
+        or 0xF900 <= o <= 0xFAFF  # CJK互換漢字
+        or 0xFE30 <= o <= 0xFE4F  # CJK互換形
+        or 0xFF00 <= o <= 0xFFEF  # 半角・全角形
+        or 0x20000 <= o <= 0x3FFFF  # 拡張B以降
+    )
+
+
+def chinese_body_chars() -> set:
+    """中国語の本文の主フォントにだけ足す字（lib配下の手書きの文字列の
+    漢字・かな・全角の字と、空白）。"""
+    chars = {" ", "\u3000"}
+    for path in sorted((REPO / "lib").rglob("*.dart")):
+        if path.name.startswith("app_localizations"):
+            continue
+        for text in _string_literals(path):
+            chars.update(c for c in text if is_cjk(c))
+    return chars
 
 
 def required_chars() -> set:
@@ -71,16 +125,8 @@ def required_chars() -> set:
     for path in sorted(L10N.glob("*.dart")):
         if path.name.startswith("app_localizations"):
             continue
-        code = "\n".join(
-            line
-            for line in path.read_text(encoding="utf-8").splitlines()
-            if not line.lstrip().startswith("//")
-        )
-        for literal in re.findall(
-            r"'(?:[^'\\\n]|\\.)*'|\"(?:[^\"\\\n]|\\.)*\"", code
-        ):
-            text = re.sub(r"\{[^}]*\}", "", literal[1:-1])
-            chars.update(re.sub(r"\\.", "", text))
+        for text in _string_literals(path):
+            chars.update(text)
     chars.update(chr(c) for c in range(0x20, 0x7F))
     chars.update("、。「」『』（）〜・…—‐±×÷％＋－／：；！？　")
     return {c for c in chars if c.strip()}
@@ -91,11 +137,12 @@ def build(src_dir: pathlib.Path) -> int:
     from fontTools.varLib import instancer
 
     chars = required_chars()
-    text = "".join(sorted(chars))
-    print(f"UIに出る文字：{len(chars)}字")
+    extra = chinese_body_chars() - chars
+    print(f"UIに出る文字：{len(chars)}字（中国語の本文の主フォントは+{len(extra)}字）")
     OUT.mkdir(parents=True, exist_ok=True)
 
-    for out_name, src_name, weight in TARGETS:
+    for out_name, src_name, weight, chinese_body in TARGETS:
+        text = "".join(sorted(chars | extra if chinese_body else chars))
         src = src_dir / src_name
         if not src.exists():
             print(f"  × {src} が無い（上記URLから取得してください）")
