@@ -87,8 +87,17 @@ class SortModeControl extends StatelessWidget {
           );
         }
         // Keep the complete translated label, or use its named icon.
+        // 描くときと同じ書式（まわりの既定の書式〔字の間隔等〕と太字の設定を
+        // 合わせたもの）で測る。fieldStyle だけで測ると、描いた名前が数px
+        // 広く、入らない幅で「Updat…」と省略記号で切れた。
+        var drawnStyle = DefaultTextStyle.of(context).style.merge(fieldStyle);
+        if (MediaQuery.boldTextOf(context)) {
+          drawnStyle = drawnStyle.merge(
+            const TextStyle(fontWeight: FontWeight.bold),
+          );
+        }
         final labelPainter = TextPainter(
-          text: TextSpan(text: fieldLabel, style: fieldStyle),
+          text: TextSpan(text: fieldLabel, style: drawnStyle),
           textDirection: Directionality.of(context),
           textScaler: MediaQuery.textScalerOf(context),
           locale: Localizations.localeOf(context),

@@ -551,4 +551,24 @@ void main() {
       await home.close();
     }
   });
+
+  testWidgets('並び順の名前は、省略記号で切らずに全部出すか印だけにする（英語・320・文字1.3倍）', (tester) async {
+    final home = _Home(tester);
+    await home.open(language: 'en', size: const Size(320, 844), scale: 1.3);
+    await home.addProject('Walk cycle');
+    for (final tab in [0, 1, 2]) {
+      if (tab != 0) await home.showTab(tab);
+      final label = find.text(home.l10n.homeSortFieldUpdated);
+      for (final element in label.evaluate()) {
+        final paragraph = element.renderObject;
+        if (paragraph is! RenderParagraph || !paragraph.attached) continue;
+        expect(
+          paragraph.didExceedMaxLines,
+          isFalse,
+          reason: 'tab $tab: sort label cut to "Updat…"',
+        );
+      }
+    }
+    await home.close();
+  });
 }
