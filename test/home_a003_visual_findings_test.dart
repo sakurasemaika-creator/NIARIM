@@ -340,4 +340,43 @@ void main() {
       await home.close();
     }
   });
+
+  testWidgets('お気に入りでないカードの星が、丸い下地の上で見える', (tester) async {
+    final home = _Home(tester);
+    await home.open(size: const Size(390, 844));
+    await home.addProject('星なし');
+    await home.addProject('星あり', favourite: true);
+    await home.applyTheme(_customTheme);
+    final faint = <String>[];
+    for (final element
+        in find
+            .byWidgetPredicate(
+              (w) =>
+                  w is Icon &&
+                  w.icon == Icons.star &&
+                  w.size != null &&
+                  w.size! <= 16,
+            )
+            .evaluate()) {
+      final icon = element.widget as Icon;
+      Color? fill;
+      element.visitAncestorElements((a) {
+        final w = a.widget;
+        if (w is DecoratedBox &&
+            w.decoration is BoxDecoration &&
+            (w.decoration as BoxDecoration).shape == BoxShape.circle) {
+          fill = (w.decoration as BoxDecoration).color;
+          return false;
+        }
+        return true;
+      });
+      final under = opaqueOver(fill!, _customTheme.panelBgColor);
+      final ratio = contrastRatio(opaqueOver(icon.color!, under), under);
+      if (ratio < 3) {
+        faint.add('${icon.color} on $fill (${ratio.toStringAsFixed(2)}:1)');
+      }
+    }
+    expect(faint, isEmpty, reason: 'favourite stars not visible');
+    await home.close();
+  });
 }

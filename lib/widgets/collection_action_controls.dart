@@ -37,6 +37,11 @@ class CollectionActionFrame extends StatelessWidget {
 
 /// The empty state is a visible, neutral star (the same tone as the save/load
 /// action icons), never a blank button. The whole circle is tappable.
+///
+/// The circle is filled with the card surface (the menu background), so the
+/// empty star uses the menu text colour like the card's name and its "⋮"
+/// menu, at the muted strength of [ColorScheme.onSurfaceVariant]. The body
+/// text colour vanished on themes that pair a dark menu with dark body text.
 class CollectionFavoriteButton extends StatelessWidget {
   const CollectionFavoriteButton({
     super.key,
@@ -53,7 +58,9 @@ class CollectionFavoriteButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final ink = theme.popupMenuTheme.iconColor ?? scheme.onSurface;
     return CollectionActionFrame(
       key: itemId == null ? null : Key('collectionFavorite_$itemId'),
       child: IconButton(
@@ -68,7 +75,7 @@ class CollectionFavoriteButton extends StatelessWidget {
         ),
         icon: Icon(
           Icons.star,
-          color: favorite ? scheme.primary : scheme.onSurfaceVariant,
+          color: favorite ? scheme.primary : ink.withValues(alpha: ink.a * 0.7),
           size: CollectionActionFrame.glyphSize,
         ),
       ),
