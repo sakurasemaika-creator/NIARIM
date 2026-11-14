@@ -476,4 +476,79 @@ void main() {
     expect(find.byKey(const Key('homeScrollToTopFab')), findsOneWidget);
     await home.close();
   });
+
+  testWidgets('状態バー・ボタンの帯のある低い画面・文字2倍でも、作り方の案内が浮かぶボタンに隠れない', (tester) async {
+    final home = _Home(tester);
+    for (final language in const ['ja', 'en', 'es', 'fr', 'ko']) {
+      await home.open(
+        language: language,
+        size: const Size(320, 568),
+        scale: 2,
+        top: 24,
+        bottom: 48,
+      );
+      final hint = find.text(home.l10n.projectListEmptyHint);
+      expect(hint, findsOneWidget, reason: language);
+      final hintRect = tester.getRect(hint);
+      // 案内は、一覧の見える所（スクロールの枠）の中に全部見えている。
+      final viewport = tester.getRect(
+        find.ancestor(of: hint, matching: find.byType(Scrollable)).first,
+      );
+      expect(
+        hintRect.bottom,
+        lessThanOrEqualTo(viewport.bottom + 0.5),
+        reason: '$language hint $hintRect cut by $viewport',
+      );
+      for (final fab in find.byType(FloatingActionButton).evaluate()) {
+        final fabRect = tester.getRect(find.byWidget(fab.widget));
+        expect(
+          hintRect.overlaps(fabRect),
+          isFalse,
+          reason: '$language hint $hintRect under a FAB $fabRect',
+        );
+      }
+      await home.close();
+    }
+  });
+
+  testWidgets('横向きの低い画面（640x360）でも、空の表示の見出しを途中で切らない', (tester) async {
+    final home = _Home(tester);
+    for (final language in const ['en', 'fr', 'ko']) {
+      await home.open(language: language, size: const Size(640, 360));
+      final l10n = home.l10n;
+      for (final (tab, title) in [
+        (2, l10n.homeSharedEmpty),
+        (3, l10n.homeTrashEmpty),
+      ]) {
+        await home.showTab(tab);
+        // 描いた段落（Text.richの読み上げの名前でも探せる）のうち、画面の中の
+        // もの（タブを送る前の隣のタブは画面の外）。
+        final shown = find
+            .text(title, findRichText: true)
+            .evaluate()
+            .where((e) => e.widget is RichText)
+            .where((e) {
+              final rect = tester.getRect(find.byWidget(e.widget));
+              return rect.left >= 0 && rect.right <= 640;
+            })
+            .toList();
+        expect(shown, hasLength(1), reason: '$language tab $tab');
+        final rect = tester.getRect(find.byWidget(shown.single.widget));
+        final viewport = tester.getRect(
+          find
+              .ancestor(
+                of: find.byWidget(shown.single.widget),
+                matching: find.byType(Scrollable),
+              )
+              .first,
+        );
+        expect(
+          rect.bottom,
+          lessThanOrEqualTo(viewport.bottom + 0.5),
+          reason: '$language tab $tab: "$title" $rect cut by $viewport',
+        );
+      }
+      await home.close();
+    }
+  });
 }

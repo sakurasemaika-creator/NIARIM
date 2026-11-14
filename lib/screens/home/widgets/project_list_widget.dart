@@ -506,29 +506,27 @@ class ProjectListWidget extends StatelessWidget {
     bool hiddenByFavorites = false,
     bool hasFavorites = false,
   }) {
-    // ホームでは左下・右下に丸いボタンが浮くので、絞り込みを外すボタンが
-    // その下に入らないよう、下にその分の余白を取る（選ぶ専用画面には無い）。
-    Widget clearOfFloatingButtons(Widget child) => Padding(
-      padding: EdgeInsets.only(bottom: onPickProject == null ? 88 : 0),
-      child: child,
-    );
+    // ホームでは左下・右下に丸いボタンが浮くので、絞り込みを外すボタンや
+    // 作り方の案内がその下に入らないよう、下にその分を空ける（選ぶ専用
+    // 画面には無い）。空けるのはスクロールする中身の下なので、低い画面でも
+    // 見える所は狭くならない（EmptyStatePlaceholder.clearFloatingButtons）。
+    final clearFloatingButtons = onPickProject == null;
     final query = searchQuery.trim();
     if (query.isNotEmpty && !hiddenByFavorites) {
-      return clearOfFloatingButtons(
-        EmptyStatePlaceholder(
-          icon: Icons.search_off,
-          title: l10n.projectListNoMatchTitle(query),
-          hint: searchByTag
-              ? l10n.projectListNoMatchTagHint
-              : l10n.projectListNoMatchNameHint,
-          action: onClearSearch == null
-              ? null
-              : OutlinedButton.icon(
-                  onPressed: onClearSearch,
-                  icon: const Icon(Icons.close),
-                  label: Text(l10n.projectListClearSearch),
-                ),
-        ),
+      return EmptyStatePlaceholder(
+        clearFloatingButtons: clearFloatingButtons,
+        icon: Icons.search_off,
+        title: l10n.projectListNoMatchTitle(query),
+        hint: searchByTag
+            ? l10n.projectListNoMatchTagHint
+            : l10n.projectListNoMatchNameHint,
+        action: onClearSearch == null
+            ? null
+            : OutlinedButton.icon(
+                onPressed: onClearSearch,
+                icon: const Icon(Icons.close),
+                label: Text(l10n.projectListClearSearch),
+              ),
       );
     }
     if (showFavoritesOnly) {
@@ -543,27 +541,27 @@ class ProjectListWidget extends StatelessWidget {
           : currentFolderId != null
           ? l10n.projectListNoFavoritesInFolderTitle
           : l10n.projectListNoFavoritesOutsideFoldersTitle;
-      return clearOfFloatingButtons(
-        EmptyStatePlaceholder(
-          icon: Icons.star_border,
-          title: title,
-          // 登録の仕方は、お気に入りが1つも無いときだけ。作品・フォルダの
-          // メニューを指すので、カードにメニューの無い選ぶ専用画面
-          // （[onPickProject]使用時）では出さない。
-          hint: onPickProject == null && !hasFavorites
-              ? l10n.projectListNoFavoritesHint
-              : null,
-          action: onShowAll == null
-              ? null
-              : OutlinedButton(
-                  onPressed: onShowAll,
-                  child: Text(l10n.projectListShowAll),
-                ),
-        ),
+      return EmptyStatePlaceholder(
+        clearFloatingButtons: clearFloatingButtons,
+        icon: Icons.star_border,
+        title: title,
+        // 登録の仕方は、お気に入りが1つも無いときだけ。作品・フォルダの
+        // メニューを指すので、カードにメニューの無い選ぶ専用画面
+        // （[onPickProject]使用時）では出さない。
+        hint: onPickProject == null && !hasFavorites
+            ? l10n.projectListNoFavoritesHint
+            : null,
+        action: onShowAll == null
+            ? null
+            : OutlinedButton(
+                onPressed: onShowAll,
+                child: Text(l10n.projectListShowAll),
+              ),
       );
     }
     final inFolder = currentFolderId != null;
     return EmptyStatePlaceholder(
+      clearFloatingButtons: clearFloatingButtons,
       icon: inFolder ? Icons.folder_open : Icons.movie_creation_outlined,
       title: inFolder
           ? l10n.projectListEmptyFolderTitle
