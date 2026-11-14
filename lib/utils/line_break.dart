@@ -218,3 +218,52 @@ String keepPhraseTogether(String text, String phrase) {
 /// [keepKoreanWordsTogether]を通した文を出すときは必ず添えること。
 String? plainSemanticsLabel(String shown) =>
     shown.contains(_wordJoiner) ? shown.replaceAll(_wordJoiner, '') : null;
+
+/// 行の始めに来てはいけない字（日本語の行頭禁則）：長音符「ー」、小さいかな、
+/// 閉じ括弧・句読点。
+///
+/// ーぁぃぅぇぉっゃゅょゎゕゖァィゥェォッャュョヮヵヶ
+/// ㇰㇱㇲㇳㇴㇵㇶㇷㇸㇹㇺㇻㇼㇽㇾㇿ
+/// 、。，．・：；？！）」』】〕〉》〙〗］｝’”)]},.:;?!
+///
+/// 字を照らし合わせるためのもので画面には出さないので、同梱の書体に無い字
+/// （小さいかなの一部・アイヌ語の小書きのカタカナ等）も入れられるよう、
+/// 逃がし文字で書く。[_noLineStart]（長音・小書きの仮名だけ）より広い。
+const String _noLineStartOrClosing =
+    '\u30FC\u3041\u3043\u3045\u3047\u3049\u3063\u3083\u3085\u3087'
+    '\u308E\u3095\u3096\u30A1\u30A3\u30A5\u30A7\u30A9\u30C3\u30E3'
+    '\u30E5\u30E7\u30EE\u30F5\u30F6\u31F0\u31F1\u31F2\u31F3\u31F4'
+    '\u31F5\u31F6\u31F7\u31F8\u31F9\u31FA\u31FB\u31FC\u31FD\u31FE'
+    '\u31FF\u3001\u3002\uFF0C\uFF0E\u30FB\uFF1A\uFF1B\uFF1F\uFF01'
+    '\uFF09\u300D\u300F\u3011\u3015\u3009\u300B\u3019\u3017\uFF3D'
+    '\uFF5D\u2019\u201D)]},.:;?!';
+
+/// 文[text]の中の、行の始めに来てはいけない字（長音符・小さいかな・閉じ
+/// 括弧・句読点）の続きと、そのすぐ前の字を合わせた部分（「カリグラフィー」の
+/// 「フィー」）。`KeepTogetherText`の`keep`に渡すと、その字の前で行を変え
+/// ない（Flutterは長音符・小さいかなの前でも行を変え、「カリグラフィ / ー」
+/// と長音符で始まる行ができた）。文の始め・空白の後の字は数えない。
+List<String> lineStartKeepParts(String text) {
+  final parts = <String>[];
+  var i = 1;
+  while (i < text.length) {
+    if (!_noLineStartOrClosing.contains(text[i]) || _isBreakable(text[i - 1])) {
+      i++;
+      continue;
+    }
+    // すぐ前の字（サロゲートペアなら2単位）から、禁則の字の続きの終わりまで。
+    var start = i - 1;
+    if (start > 0 &&
+        text.codeUnitAt(start) >= 0xDC00 &&
+        text.codeUnitAt(start) <= 0xDFFF) {
+      start--;
+    }
+    var end = i + 1;
+    while (end < text.length && _noLineStartOrClosing.contains(text[end])) {
+      end++;
+    }
+    parts.add(text.substring(start, end));
+    i = end;
+  }
+  return parts;
+}

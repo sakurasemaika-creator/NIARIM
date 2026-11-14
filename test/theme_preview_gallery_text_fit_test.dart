@@ -173,20 +173,18 @@ void main() {
         for (final scale in const [1.0, 1.3, 2.0]) {
           await _walkGallery(tester, locale, size, scale, problems, (i, where) {
             // タイムラインのクリップに出る素材の名前（クリップの長さで
-            // 切れる、本物と同じ）と、新規作成の大きさのチップ（本物の
-            // 新規作成の画面と同じ部品の作り。2行で切る）は、データとして
-            // 切れていても問わない（語の途中の折り返しは見る）。
+            // 切れる、本物と同じ）は、データとして切れていても問わない
+            // （語の途中の折り返しは見る）。新規作成の大きさのチップは、
+            // 本物と同じく「…」で切らずに全部出すので、切れていれば問う。
             final clips = tester
                 .renderObjectList<RenderParagraph>(
                   find.descendant(
                     of: find.byWidgetPredicate(
                       (w) =>
                           w.key is ValueKey<String> &&
-                          ((w.key! as ValueKey<String>).value.startsWith(
-                                'themePreviewTrackClip',
-                              ) ||
-                              (w.key! as ValueKey<String>).value ==
-                                  'themePreviewMockSizes'),
+                          (w.key! as ValueKey<String>).value.startsWith(
+                            'themePreviewTrackClip',
+                          ),
                     ),
                     matching: find.byType(RichText),
                   ),

@@ -129,6 +129,28 @@ class KeepTogetherText extends Text {
     return ranges;
   }
 
+  /// [style]の書式で、どの部分もつないだ文（描く部品がすべての部分をつないで
+  /// 並べるときと同じ文。部品の外で、折り返した幅を測るため）。
+  InlineSpan joinedSpan(TextStyle style) => _partsFor(style).allJoinedSpan;
+
+  /// [data]の中で途中で切らない部分（[keep]に挙げた部分と、数と単位。描く
+  /// 部品と同じく字の境目まで広げ、つないでも変わらない1字は除く）を、前後の
+  /// 離せない字（前の開き括弧・数の前の記号、後ろの閉じ括弧・読点）まで広げた
+  /// もの。描く部品は、これが欄の1行に入らない部分をつながずに折る。部品の外で
+  /// いちばん広いかたまりを測るため（Flutterの最小の固有幅は、語結合子で
+  /// つないだ日本語の字の間でも折れるものとして数えることがある）。
+  List<String> keptParts() => _partsFor(const TextStyle()).attachedParts;
+
+  /// 描く部品と同じ部分の分け方（並べる設定は使わない）。
+  _KeptParts _partsFor(TextStyle style) {
+    final text = data!;
+    return _KeptParts.joinedOnly(
+      text: text,
+      ranges: _keptRanges(text),
+      style: style,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final text = data!;
@@ -229,6 +251,24 @@ class _KeptParts {
     required this.textWidthBasis,
     required this.textHeightBehavior,
   });
+
+  /// すべての部分をつないだ文と、部分の広がりだけを使うためのもの（部品の外で
+  /// 幅を測る[KeepTogetherText.joinedSpan]・[KeepTogetherText.keptParts]）。
+  /// 並べる設定は既定のまま使わない。
+  _KeptParts.joinedOnly({
+    required this.text,
+    required this.ranges,
+    required this.style,
+  }) : tails = const [],
+       textAlign = TextAlign.start,
+       textDirection = TextDirection.ltr,
+       softWrap = true,
+       overflow = TextOverflow.clip,
+       textScaler = TextScaler.noScaling,
+       maxLines = null,
+       locale = null,
+       textWidthBasis = TextWidthBasis.parent,
+       textHeightBehavior = null;
 
   final String text;
 
@@ -340,6 +380,17 @@ class _KeptParts {
 
   /// すべての部分をつないだ文の、最も狭い幅と1行に並べた幅。
   (double, double)? _joinedWidths;
+
+  /// すべての部分をつなぎ、どの閉じ括弧も送らない文（[minIntrinsicWidth]を
+  /// 測る文と同じ）。
+  InlineSpan get allJoinedSpan => _variant(_allJoined.$1, _allJoined.$2).span;
+
+  /// 部分ごとの、前後の離せない字まで広げた文（[_attached]。[_choose]は、これが
+  /// 欄の1行に入らない部分をつながない）。
+  List<String> get attachedParts => [
+    for (var i = 0; i < ranges.length; i++)
+      text.substring(_attached(i).$1, _attached(i).$2),
+  ];
 
   /// 並べて測るための[TextPainter]（[dispose]で捨てる）。段落の形を作り直さ
   /// ないよう使い回す。

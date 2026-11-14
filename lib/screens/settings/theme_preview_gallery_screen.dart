@@ -1868,16 +1868,18 @@ class _ThemeSampleScreen extends StatelessWidget {
               children: [
                 _mockTool(c, Icons.arrow_back),
                 _mockTool(c, Icons.palette_outlined),
+                // 本物のタイムラインと同じ書式・同じ決まり（1行に入らない
+                // 作品名は「…」）。
                 Expanded(
                   child: Text(
                     l.themePreviewSampleProjectName,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
-                      fontSize: 15,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
                       fontFamily: 'Kuramubon',
                       fontFamilyFallback: kHeadingFontFallback,
-                      fontWeight: FontWeight.bold,
                     ),
                   ),
                 ),
@@ -2526,14 +2528,40 @@ class _ThemeSampleScreen extends StatelessWidget {
               (l.newProjectPresetPortrait, '1080×1350'),
               (l.newProjectPresetAnalog, '1440×1080'),
             ].asMap().entries)
+              // 本物の新規作成の画面と同じ作り：名前は「…」で切らず、入らな
+              // ければ行を増やして全部出す。選んだ印は決まった大きさで名前の
+              // 前に出す（選ぶ前後で折り返しが変わらない）。
               ConstrainedBox(
                 constraints: BoxConstraints(maxWidth: box.maxWidth),
                 child: ChoiceChip(
-                  label: Text(
-                    '${item.value.$1} (${item.value.$2})',
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    textAlign: TextAlign.center,
+                  padding: const EdgeInsets.all(8),
+                  labelPadding: const EdgeInsets.symmetric(horizontal: 8),
+                  shape: const RoundedRectangleBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(20)),
+                  ),
+                  showCheckmark: false,
+                  avatar: item.key == 0
+                      ? Icon(
+                          Icons.check,
+                          size: 16,
+                          color: Theme.of(context).chipTheme.checkmarkColor,
+                        )
+                      : null,
+                  avatarBoxConstraints: const BoxConstraints.tightFor(
+                    width: 16,
+                    height: 16,
+                  ),
+                  label: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      maxWidth: math.max(0.0, box.maxWidth - 16 - 16 - 16),
+                    ),
+                    child: Builder(
+                      builder: (context) => DefaultTextStyle(
+                        style: DefaultTextStyle.of(context).style,
+                        textAlign: TextAlign.center,
+                        child: Text('${item.value.$1} (${item.value.$2})'),
+                      ),
+                    ),
                   ),
                   selected: item.key == 0,
                   onSelected: (_) {},
