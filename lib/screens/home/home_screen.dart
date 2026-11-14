@@ -47,6 +47,7 @@ import '../../widgets/home_collection_selection_scope.dart';
 import '../../widgets/secondary_click_menu.dart';
 import '../../widgets/share_project_file_action.dart';
 import '../../widgets/mission_completion_dialog.dart';
+import '../../widgets/moved_to_trash_snack_bar.dart';
 import '../../widgets/typing_aware_shortcuts.dart';
 import '../../widgets/fit_or_hide_title.dart';
 import 'widgets/project_list_widget.dart';
@@ -1770,10 +1771,10 @@ class _HomeScreenState extends State<HomeScreen>
                   coveredFolderIds.contains(p.folderId)),
         );
     if (includesFavorite()) {
-      final messenger = ScaffoldMessenger.of(context);
-      messenger.hideCurrentSnackBar();
-      messenger.showSnackBar(
-        SnackBar(content: Text(l10n.commonFavoriteDeleteBlocked)),
+      // 出ているゴミ箱の知らせの「元に戻す」等を閉じずに、後ろに並べる。
+      showTrashRefusedSnackBar(
+        ScaffoldMessenger.of(context),
+        l10n.commonFavoriteDeleteBlocked,
       );
       return;
     }
@@ -1824,36 +1825,14 @@ class _HomeScreenState extends State<HomeScreen>
             _selectedIds.removeAll({...rootFolderIds, ...directProjectIds});
             _isSelectionMode = _selectedIds.isNotEmpty;
           });
-          final messenger = ScaffoldMessenger.of(context);
-          messenger.hideCurrentSnackBar();
-          messenger.showSnackBar(
-            SnackBar(
-              content: Text(l10n.homeMovedToTrashSnackbar(count)),
-              // 操作ボタンの付いたSnackBarは、既定では時間で消えない
-              // （次の画面まで付いてきて下のボタンに重なる）。
-              persist: false,
-              duration: const Duration(seconds: 5),
-              action: SnackBarAction(
-                label: l10n.homeUndoAction,
-                onPressed: () async {
-                  try {
-                    for (final id in rootFolderIds) {
-                      await service.restoreTrashedFolder(id);
-                    }
-                    for (final id in directProjectIds) {
-                      await service.restoreProject(id);
-                    }
-                  } catch (error, stackTrace) {
-                    AppErrorReporter.record(error, stackTrace);
-                    if (mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text(l10n.homeTrashOperationFailed)),
-                      );
-                    }
-                  }
-                },
-              ),
-            ),
+          // 作品のメニューから移したときと同じ知らせ（続けて移したときは
+          // 前に移したものもまとめて戻せる。他の機能の知らせは閉じない）。
+          showMovedToTrashSnackBar(
+            ScaffoldMessenger.of(context),
+            l10n,
+            service,
+            directProjectIds,
+            folderIds: rootFolderIds,
           );
         },
       ),
@@ -3897,9 +3876,11 @@ Widget _receivedShareMenu(
           }
         case 'delete':
           if (project.isFavorite) {
+            // 前の断りだけを取り下げて出す（続けて押しても積み重ならない）。
             if (context.mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(l10n.commonFavoriteDeleteBlocked)),
+              showTrashRefusedSnackBar(
+                ScaffoldMessenger.of(context),
+                l10n.commonFavoriteDeleteBlocked,
               );
             }
             return;

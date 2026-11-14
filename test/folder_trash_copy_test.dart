@@ -444,7 +444,8 @@ void main() {
       await waitFor(tester, () => service.folders.isEmpty);
       expect(service.folders, isEmpty);
       expect(service.projects.map((p) => p.name), ['上の作品']);
-      expect(find.text('1件をゴミ箱へ移動しました'), findsOneWidget);
+      // フォルダを1つだけ移したときは、フォルダの名前で知らせる。
+      expect(find.text('「親」をゴミ箱へ移動しました'), findsOneWidget);
       await tester.tap(find.text('元に戻す'));
       await waitFor(tester, () => service.projects.length == 4);
       // 作品は一覧に戻った後もファイルから読み直しているので、戻し終わる

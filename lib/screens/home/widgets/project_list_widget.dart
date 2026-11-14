@@ -1268,9 +1268,10 @@ class ProjectListWidget extends StatelessWidget {
   ) async {
     final l10n = AppLocalizations.of(context)!;
     if (project.isFavorite) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(l10n.commonFavoriteDeleteBlocked)));
+      showTrashRefusedSnackBar(
+        ScaffoldMessenger.of(context),
+        l10n.commonFavoriteDeleteBlocked,
+      );
       return;
     }
     if (!await runProjectTrashAction(
@@ -1341,9 +1342,10 @@ class ProjectListWidget extends StatelessWidget {
     // いる他の機能の知らせ（ゴミ箱へ移した知らせの「元に戻す」等）を閉じず
     // に後へ並べる（作品のメニューの断りと同じ）。
     if (includesFavorite()) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(l10n.commonFavoriteDeleteBlocked)));
+      showTrashRefusedSnackBar(
+        ScaffoldMessenger.of(context),
+        l10n.commonFavoriteDeleteBlocked,
+      );
       return;
     }
     final counts = service.folderContentCounts(folder.id);

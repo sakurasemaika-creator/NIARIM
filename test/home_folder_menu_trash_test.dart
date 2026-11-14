@@ -193,12 +193,13 @@ void main() {
     expect(service.trashedFolders.single.folder.name, '親');
     expect(service.trashedFolders.single.projectIds, hasLength(3));
 
-    // 「元に戻す」で中身ごと戻る。
+    // 「元に戻す」で中身ごと戻る。フォルダを1つだけ移したときは、
+    // フォルダの名前で知らせる。
     final snack = find.byType(SnackBar);
     expect(
       find.descendant(
         of: snack,
-        matching: find.text(l10n.homeMovedToTrashSnackbar(1)),
+        matching: find.text(l10n.homeFolderMovedToTrashSnackbar('親')),
       ),
       findsOneWidget,
     );

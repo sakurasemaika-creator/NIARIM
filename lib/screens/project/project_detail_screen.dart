@@ -343,10 +343,13 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                 case 'materials':
                   context.push('/materials/${widget.projectId}');
                 case 'delete':
-                  // お気に入り登録中は削除できない。
+                  // お気に入り登録中は削除できない。断りは前の断りだけを
+                  // 取り下げて出す（続けて押しても積み重ならない。ホームの
+                  // メニューと同じ）。
                   if (project.isFavorite) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text(l10n.commonFavoriteDeleteBlocked)),
+                    showTrashRefusedSnackBar(
+                      ScaffoldMessenger.of(context),
+                      l10n.commonFavoriteDeleteBlocked,
                     );
                   } else {
                     if (_movingToTrash) return;

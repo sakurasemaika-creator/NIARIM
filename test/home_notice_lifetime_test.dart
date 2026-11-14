@@ -18,6 +18,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'helpers/first_use_tooltips.dart';
+import 'helpers/home_clipboard_harness.dart';
 
 // ホームの知らせ（SnackBar）がいつ消えるか。「元に戻す」の付いた知らせは
 // 既定では時間で消えず、次の画面まで付いてきて下のボタンに重なる。
@@ -275,6 +276,401 @@ void main() {
       );
       await waitForSnack(tester, l10n.homeFolderMovedToTrashSnackbar('scenes'));
       await expectGoneWithinFiveSeconds(tester);
+      expect(tester.takeException(), isNull);
+      await close(tester);
+    });
+  });
+
+  // フォルダを1つだけゴミ箱へ移したときは、そのフォルダの名前で知らせる
+  // （「フォルダ「scenes」をゴミ箱へ移動しました」）。以前はフォルダの知らせ
+  // （showFolderMovedToTrashSnackBar）がどこからも呼ばれず、メニューからも
+  // 選んで移したときも「1件をゴミ箱へ移動しました」だった。
+  group('one folder moved to the Trash is named', () {
+    for (final via in ['menu', 'selection']) {
+      testWidgets('from the $via', (tester) async {
+        final service = await openHome(tester, names: ['apple']);
+        final l10n = l10nOf(tester);
+        final folder = (await tester.runAsync(
+          () => service.createFolder('scenes'),
+        ))!;
+        await settleIo(tester);
+        if (via == 'menu') {
+          await tester.tap(card('scenes'), buttons: kSecondaryMouseButton);
+          await settle(tester);
+          await tester.tap(find.text(l10n.homeMoveToTrash).last);
+        } else {
+          await tester.longPress(card('scenes'));
+          await settle(tester);
+          await tester.tap(find.byTooltip(l10n.homeMoveToTrash));
+        }
+        await settle(tester);
+        await tester.tap(find.byKey(const Key('trash-dialog-confirm')));
+        await waitFor(
+          tester,
+          () => service.trashedFolders.any((t) => t.folder.id == folder.id),
+        );
+        await waitFor(tester, () => snackText(tester) != null);
+        expect(
+          snackText(tester),
+          l10n.homeFolderMovedToTrashSnackbar('scenes'),
+        );
+        // 「元に戻す」でフォルダが戻る。
+        await tester.tap(find.text(l10n.homeUndoAction));
+        await waitFor(
+          tester,
+          () => service.folders.any((f) => f.id == folder.id),
+        );
+        expect(tester.takeException(), isNull);
+        await close(tester);
+      });
+    }
+  });
+
+  // お気に入りを移そうとして断られたときの知らせは、ほかの断りと同じく
+  // 前の断りだけを取り下げる（showTrashRefusedSnackBar）。プロジェクト詳細と
+  // 受け取ったもののメニューは素のshowSnackBarで、続けて押すと断りが
+  // 順番待ちに積み重なり、5秒ずつ何度も出続けた。
+  group('a refused favourite does not pile up notices', () {
+    Future<void> pressThrice(
+      WidgetTester tester,
+      Future<void> Function() press,
+    ) async {
+      for (var i = 0; i < 3; i++) {
+        await press();
+        await settle(tester);
+      }
+    }
+
+    Future<void> expectOneRefusal(WidgetTester tester, String text) async {
+      expect(snackText(tester), text);
+      // 出ている断りが消えた後に、積み重なった断りが続けて出ない（8秒の間
+      // 少しずつ時計を進める。知らせは出切ってから5秒以内に消える）。
+      for (var i = 0; i < 16; i++) {
+        await tester.pump(const Duration(milliseconds: 500));
+      }
+      expect(snackText(tester), isNull, reason: 'refusals were queued');
+    }
+
+    testWidgets('from Project Detail', (tester) async {
+      final service = await openHome(tester, names: ['apple']);
+      final l10n = l10nOf(tester);
+      final apple = service.projects.single;
+      await tester.runAsync(() => service.setFavorite(apple.id, true));
+      await settleIo(tester);
+      await tester.tap(card('apple'));
+      await waitFor(
+        tester,
+        () =>
+            find.byType(AppBar).evaluate().length >= 2 ||
+            appRouter.routerDelegate.currentConfiguration.uri.path.startsWith(
+              '/project/',
+            ),
+      );
+      await settleIo(tester);
+      await pressThrice(tester, () async {
+        await tester.tap(
+          find
+              .descendant(
+                of: find.byType(AppBar).last,
+                matching: find.byIcon(Icons.more_vert),
+              )
+              .last,
+        );
+        await settle(tester);
+        await tester.tap(find.text(l10n.projectDetailTrashMenuItem).last);
+      });
+      await expectOneRefusal(tester, l10n.commonFavoriteDeleteBlocked);
+      expect(service.trash, isEmpty);
+      expect(tester.takeException(), isNull);
+      await close(tester);
+    });
+
+    testWidgets('from a received work\'s menu', (tester) async {
+      final home = await HomeClipboardHarness.open(tester);
+      final gift = await home.addReceived('gift');
+      await tester.runAsync(() => home.projects.setFavorite(gift.id, true));
+      await home.settleIo(2);
+      await home.showTab(2);
+      final l10n = home.l10n;
+      await pressThrice(tester, () async {
+        await tester.tap(
+          find.text('gift').first,
+          buttons: kSecondaryMouseButton,
+        );
+        await settle(tester);
+        await tester.tap(find.text(l10n.projectDetailTrashMenuItem).last);
+      });
+      await expectOneRefusal(tester, l10n.commonFavoriteDeleteBlocked);
+      expect(home.projects.trash, isEmpty);
+      expect(tester.takeException(), isNull);
+      await home.close();
+    });
+  });
+
+  // 続けてゴミ箱へ移しても、前に移したものの「元に戻す」を失わない
+  // （DISC092の残り）。前の知らせが出ている・待っている間に次を移すと、
+  // 前の知らせは取り下げ、新しい知らせが両方の件数を伝え、その「元に戻す」で
+  // 両方を戻す。ほかの機能の知らせ（出ている・待っている）は閉じない。
+  group('moving to Trash again while the earlier notice is up', () {
+    Future<void> bulkTrash(WidgetTester tester, List<String> names) async {
+      final l10n = l10nOf(tester);
+      await tester.longPress(card(names.first));
+      await settle(tester);
+      for (final name in names.skip(1)) {
+        await tester.tap(card(name));
+        await settle(tester);
+      }
+      await tester.tap(find.byTooltip(l10n.homeMoveToTrash));
+      await settle(tester);
+      await tester.tap(find.widgetWithText(FilledButton, l10n.commonMove));
+    }
+
+    testWidgets('two card-menu moves: one notice, Undo brings back both', (
+      tester,
+    ) async {
+      final service = await openHome(
+        tester,
+        names: ['apple', 'banana', 'cherry'],
+      );
+      final l10n = l10nOf(tester);
+      await trashFromMenu(tester, 'apple');
+      await tester.tap(card('banana'), buttons: kSecondaryMouseButton);
+      await settle(tester);
+      await tester.tap(find.text(l10n.projectDetailTrashMenuItem));
+      await waitFor(
+        tester,
+        () => snackText(tester) == l10n.homeMovedToTrashSnackbar(2),
+      );
+      await settle(tester);
+      expect(find.text(l10n.homeUndoAction), findsOneWidget);
+      await tester.tap(find.text(l10n.homeUndoAction));
+      await waitFor(tester, () => service.projects.length == 3);
+      expect(service.trash, isEmpty);
+      expect(tester.takeException(), isNull);
+      await close(tester);
+    });
+
+    testWidgets('a bulk move after a card-menu move: Undo brings back all', (
+      tester,
+    ) async {
+      final service = await openHome(
+        tester,
+        names: ['apple', 'banana', 'cherry', 'damson'],
+      );
+      final l10n = l10nOf(tester);
+      await trashFromMenu(tester, 'apple');
+      await bulkTrash(tester, ['banana', 'cherry']);
+      await waitFor(
+        tester,
+        () => snackText(tester) == l10n.homeMovedToTrashSnackbar(3),
+      );
+      await settle(tester);
+      await tester.tap(find.text(l10n.homeUndoAction));
+      await waitFor(tester, () => service.projects.length == 4);
+      expect(service.trash, isEmpty);
+      expect(tester.takeException(), isNull);
+      await close(tester);
+    });
+
+    // 前の知らせが時間で消えた後に移したときは、合わせない（前の5秒は
+    // もう過ぎている）。
+    testWidgets('after the earlier notice has gone, the counts start over', (
+      tester,
+    ) async {
+      final service = await openHome(
+        tester,
+        names: ['apple', 'banana', 'cherry'],
+      );
+      final l10n = l10nOf(tester);
+      await trashFromMenu(tester, 'apple');
+      await tester.pump(const Duration(seconds: 7));
+      await settle(tester);
+      expect(find.byType(SnackBar), findsNothing);
+      await trashFromMenu(tester, 'banana');
+      expect(snackText(tester), l10n.homeMovedToTrashSnackbar(1));
+      await tester.tap(find.text(l10n.homeUndoAction));
+      await waitFor(tester, () => service.projects.length == 2);
+      expect(service.trash.map((p) => p.name), ['apple']);
+      expect(tester.takeException(), isNull);
+      await close(tester);
+    });
+
+    // 前の知らせが出ている間に、そこで移したものをゴミ箱のタブから戻した・
+    // 完全に削除した・戻してまた移したときは、新しい知らせはいまゴミ箱に
+    // あるものだけを1回ずつ数える（以前は前の移動をそのまま足し、
+    // 「2件をゴミ箱へ移動しました」と1件のゴミ箱について言っていた）。
+    Future<void> trashAgainFromMenu(WidgetTester tester, String name) async {
+      final service = tester
+          .element(find.byType(HomeScreen))
+          .read<ProjectService>();
+      await tester.tap(card(name), buttons: kSecondaryMouseButton);
+      await settle(tester);
+      await tester.tap(find.text(l10nOf(tester).projectDetailTrashMenuItem));
+      await waitFor(tester, () => service.trash.any((p) => p.name == name));
+      // 前の知らせが薄くなって下がり、新しい知らせが出切るまで。
+      await settle(tester);
+      await settle(tester);
+    }
+
+    for (final (label, change)
+        in <(String, Future<void> Function(ProjectService, String))>[
+          (
+            'restored from the Trash tab',
+            (service, id) => service.restoreProject(id),
+          ),
+          ('deleted for good', (service, id) => service.permanentDelete(id)),
+        ]) {
+      testWidgets('the earlier work was $label: the next notice counts only '
+          'what is in the Trash', (tester) async {
+        final service = await openHome(
+          tester,
+          names: ['apple', 'banana', 'cherry'],
+        );
+        final l10n = l10nOf(tester);
+        final apple = service.projects.firstWhere((p) => p.name == 'apple');
+        await trashFromMenu(tester, 'apple');
+        await tester.runAsync(() => change(service, apple.id));
+        await settleIo(tester);
+        expect(service.trash, isEmpty);
+        await trashAgainFromMenu(tester, 'banana');
+        expect(service.trash.map((p) => p.name), ['banana']);
+        expect(find.byType(SnackBar), findsOneWidget);
+        expect(snackText(tester), l10n.homeMovedToTrashSnackbar(1));
+        await tester.tap(find.text(l10n.homeUndoAction));
+        await waitFor(tester, () => service.trash.isEmpty);
+        await settleIo(tester);
+        expect(
+          service.projects.map((p) => p.name).toSet(),
+          label == 'deleted for good'
+              ? {'banana', 'cherry'}
+              : {'apple', 'banana', 'cherry'},
+        );
+        expect(tester.takeException(), isNull);
+        await close(tester);
+      });
+    }
+
+    testWidgets('a work restored from the Trash tab and moved again is '
+        'counted once, and Undo brings it back', (tester) async {
+      final service = await openHome(tester, names: ['apple', 'banana']);
+      final l10n = l10nOf(tester);
+      final apple = service.projects.firstWhere((p) => p.name == 'apple');
+      await trashFromMenu(tester, 'apple');
+      await tester.runAsync(() => service.restoreProject(apple.id));
+      await settleIo(tester);
+      await trashAgainFromMenu(tester, 'apple');
+      expect(service.trash.map((p) => p.name), ['apple']);
+      expect(find.byType(SnackBar), findsOneWidget);
+      expect(snackText(tester), l10n.homeMovedToTrashSnackbar(1));
+      await tester.tap(find.text(l10n.homeUndoAction));
+      await waitFor(tester, () => service.trash.isEmpty);
+      await settleIo(tester);
+      expect(service.projects.map((p) => p.name).toSet(), {'apple', 'banana'});
+      expect(tester.takeException(), isNull);
+      await close(tester);
+    });
+
+    // フォルダも同じ：戻してまた移したときは、そのフォルダの知らせ
+    // （「フォルダ「scenes」をゴミ箱へ移動しました」）。
+    testWidgets('a folder restored from the Trash tab and moved again is '
+        'named once', (tester) async {
+      final service = await openHome(tester, names: ['apple']);
+      final l10n = l10nOf(tester);
+      final folder = (await tester.runAsync(
+        () => service.createFolder('scenes'),
+      ))!;
+      final messenger = ScaffoldMessenger.of(
+        tester.element(find.byType(HomeScreen)),
+      );
+      await tester.runAsync(() => service.moveFolderToTrash(folder.id));
+      showFolderMovedToTrashSnackBar(messenger, l10n, service, folder);
+      await waitFor(
+        tester,
+        () =>
+            snackText(tester) == l10n.homeFolderMovedToTrashSnackbar('scenes'),
+      );
+      await tester.runAsync(() => service.restoreTrashedFolder(folder.id));
+      await settleIo(tester);
+      await tester.runAsync(() => service.moveFolderToTrash(folder.id));
+      showFolderMovedToTrashSnackBar(messenger, l10n, service, folder);
+      await settle(tester);
+      await settle(tester);
+      expect(service.trashedFolders.map((t) => t.folder.name), ['scenes']);
+      expect(find.byType(SnackBar), findsOneWidget);
+      expect(snackText(tester), l10n.homeFolderMovedToTrashSnackbar('scenes'));
+      expect(tester.takeException(), isNull);
+      await close(tester);
+    });
+
+    // ほかの機能の知らせが出ていて、その後ろでもう1つ待っているときに
+    // ゴミ箱へ移しても、出ている知らせを途中で閉じず、待っている知らせも
+    // 下げない。ゴミ箱の知らせはその後ろに出る。
+    testWidgets('leaves another feature\'s shown and waiting notices', (
+      tester,
+    ) async {
+      await openHome(tester, names: ['apple', 'banana']);
+      final l10n = l10nOf(tester);
+      ScaffoldMessenger.of(tester.element(find.byType(HomeScreen)))
+        ..showSnackBar(const SnackBar(content: Text('first notice')))
+        ..showSnackBar(const SnackBar(content: Text('waiting notice')));
+      await settle(tester);
+      expect(snackText(tester), 'first notice');
+      await tester.tap(card('apple'), buttons: kSecondaryMouseButton);
+      await settle(tester);
+      await tester.tap(find.text(l10n.projectDetailTrashMenuItem));
+      await settleIo(tester);
+      const frame = Duration(milliseconds: 16);
+      final seen = <String?>[];
+      var elapsed = Duration.zero;
+      var firstShownFor = Duration.zero;
+      while (elapsed < const Duration(seconds: 16) &&
+          (seen.isEmpty || find.byType(SnackBar).evaluate().isNotEmpty)) {
+        await tester.pump(frame);
+        elapsed += frame;
+        final text = snackText(tester);
+        if (text == 'first notice') firstShownFor += frame;
+        if (seen.isEmpty || seen.last != text) seen.add(text);
+      }
+      debugPrint(
+        'notices in order $seen; first notice ${firstShownFor.inMilliseconds} ms more',
+      );
+      expect(seen, [
+        'first notice',
+        'waiting notice',
+        l10n.homeMovedToTrashSnackbar(1),
+        null,
+      ]);
+      expect(
+        firstShownFor,
+        greaterThan(const Duration(seconds: 2)),
+        reason: 'the trash move closed the notice that was on screen',
+      );
+      expect(tester.takeException(), isNull);
+      await close(tester);
+    });
+
+    // お気に入りを含む選択をゴミ箱へ移そうとして断られても、出ている
+    // ゴミ箱の知らせの「元に戻す」は消さない（断りの知らせは後ろに並ぶ）。
+    testWidgets('a refused bulk move keeps the earlier Undo', (tester) async {
+      final service = await openHome(
+        tester,
+        names: ['apple', 'banana', 'cherry'],
+      );
+      final l10n = l10nOf(tester);
+      final banana = service.projects.firstWhere((p) => p.name == 'banana');
+      await tester.runAsync(() => service.setFavorite(banana.id, true));
+      await settleIo(tester);
+      await trashFromMenu(tester, 'apple');
+      final moved = l10n.homeMovedToTrashSnackbar(1);
+      await tester.longPress(card('banana'));
+      await settle(tester);
+      await tester.tap(find.byTooltip(l10n.homeMoveToTrash));
+      await settle(tester);
+      expect(snackText(tester), moved);
+      expect(find.text(l10n.homeUndoAction), findsOneWidget);
+      await tester.tap(find.text(l10n.homeUndoAction));
+      await waitFor(tester, () => service.trash.isEmpty);
+      expect(service.projects.length, 3);
       expect(tester.takeException(), isNull);
       await close(tester);
     });
