@@ -688,4 +688,36 @@ void main() {
     expect(problems, isEmpty);
     await home.close();
   });
+
+  testWidgets('折り返した欧文の名前（見出しの書体）は、行どうしが重ならない行の高さ', (tester) async {
+    final home = _Home(tester);
+    const name = 'Une très longue séquence d’animation pour le festival d’été';
+    await home.open(
+      language: 'fr',
+      size: const Size(360, 844),
+      prefs: const {'home.projectViewMode.v1': 'detail'},
+    );
+    await home.addProject(name);
+    final paragraph = _paragraph(tester, find.text(name).first);
+    final lines = ParagraphLines(paragraph);
+    final count =
+        [
+          for (var i = 0; i < lines.visible.length; i++) ?lines.lineOf(i),
+        ].reduce((a, b) => a > b ? a : b) +
+        1;
+    expect(count, greaterThan(1));
+    // 書式に大きさが無いときは、文字の既定の大きさ（14）で描かれる。
+    final fontSize = paragraph.textScaler.scale(
+      _style(paragraph).fontSize ?? 14,
+    );
+    final perLine = paragraph.size.height / count;
+    expect(
+      perLine / fontSize,
+      greaterThanOrEqualTo(1.2),
+      reason:
+          '$count lines of ${fontSize}px in ${paragraph.size.height}px: '
+          'accents touch the line above',
+    );
+    await home.close();
+  });
 }

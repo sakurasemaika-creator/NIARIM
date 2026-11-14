@@ -668,8 +668,12 @@ class ProjectListWidget extends StatelessWidget {
                 child: _thumbnail(context, project, displayWidth: 48),
               ),
             ),
-      // 韓国語の名前は語の途中で行を変えない。
-      title: KoreanWordsText(project.name),
+      // 韓国語の名前は語の途中で行を変えない。折り返した行どうしが重ならない
+      // 行の高さ。
+      title: KoreanWordsText(
+        project.name,
+        style: const TextStyle(height: kWrappedNameLineHeight),
+      ),
       // 2行目は最後に保存した日時（その言語の日付と時刻の書き方）。検索の
       // 結果には、入っているフォルダを添える。
       subtitle: DateLineText(
@@ -736,6 +740,7 @@ class ProjectListWidget extends StatelessWidget {
           fontWeight: FontWeight.w600,
           fontFamily: 'Kuramubon',
           fontFamilyFallback: kHeadingFontFallback,
+          height: kWrappedNameLineHeight,
         ),
       ),
       // フォルダを作った日時（「更新日時」の並びでフォルダに使う日時）。

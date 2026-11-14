@@ -3465,6 +3465,7 @@ Widget _receivedShareProjectTile(
   final captionStyle = const TextStyle(
     fontFamily: 'Kuramubon',
     fontFamilyFallback: kHeadingFontFallback,
+    height: kWrappedNameLineHeight,
   );
   Widget cover() {
     final thumbnailPath = project.thumbnailPath;
@@ -4090,6 +4091,7 @@ class _OutgoingSharesList extends StatelessWidget {
               style: const TextStyle(
                 fontFamily: 'Kuramubon',
                 fontFamilyFallback: kHeadingFontFallback,
+                height: kWrappedNameLineHeight,
               ),
             ),
             subtitle: Text(subtitle),
@@ -5262,6 +5264,7 @@ class _TrashTabState extends State<_TrashTab> {
         style: const TextStyle(
           fontFamily: 'Kuramubon',
           fontFamilyFallback: kHeadingFontFallback,
+          height: kWrappedNameLineHeight,
         ),
       ),
       subtitle: subtitleDate == null || !containsHangul(subtitle)

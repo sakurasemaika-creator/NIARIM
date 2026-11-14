@@ -80,6 +80,7 @@ class ExportedWorkCard extends StatelessWidget {
       color: foreground,
       fontFamily: 'Kuramubon',
       fontFamilyFallback: kHeadingFontFallback,
+      height: kWrappedNameLineHeight,
     );
     final detailStyle = theme.textTheme.bodySmall!.copyWith(
       fontSize: 11,
