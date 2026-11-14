@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 
+import '../utils/app_error_reporter.dart';
 import 'work_folder_service.dart';
 
 /// Locally owned files are moved to a recoverable archive instead of being
@@ -148,6 +149,7 @@ abstract final class LocalFileTrashService {
       if (await saved.length() != await source.length()) {
         throw FileSystemException('Incomplete archive copy', source.path);
       }
+      await _keepModifiedTime(source, saved);
       await source.delete();
       changes.value++;
       return entry;
@@ -181,6 +183,7 @@ abstract final class LocalFileTrashService {
       await copy.delete();
       throw FileSystemException('Incomplete restored copy', original.path);
     }
+    await _keepModifiedTime(archived, copy);
     await archived.parent.delete(recursive: true);
     changes.value++;
   }
@@ -233,6 +236,7 @@ abstract final class LocalFileTrashService {
         if (await copy.length() != await source.length()) {
           throw FileSystemException('Incomplete folder archive', source.path);
         }
+        await _keepModifiedTime(source, copy);
       }
       // Commit the manifest only after all bytes have been verified.
       // A crash during staging must not expose an incomplete Trash item.
@@ -255,6 +259,20 @@ abstract final class LocalFileTrashService {
         changes.value++;
       }
       rethrow;
+    }
+  }
+
+  /// Give [copy] the modification time of [source]. Copying a file stamps
+  /// the copy with the current time, so a file moved to the Trash and back
+  /// showed the restore time in the Works list and jumped to the top of the
+  /// "last modified" order. The archive keeps the original time, and a
+  /// restore gives it back. A file system that cannot set the time leaves the
+  /// copy's own time: the file itself is intact.
+  static Future<void> _keepModifiedTime(File source, File copy) async {
+    try {
+      await copy.setLastModified(await source.lastModified());
+    } on FileSystemException catch (error, stackTrace) {
+      AppErrorReporter.record(error, stackTrace);
     }
   }
 
@@ -345,6 +363,9 @@ abstract final class LocalFileTrashService {
           name,
         );
       }
+      // An interrupted earlier restore may have left the copy with the time
+      // of that copy, so the time is applied to a reused file as well.
+      await _keepModifiedTime(source, destination);
       if (restored.add(name)) {
         meta['restoredFiles'] = restored.toList();
         await metaFile.writeAsString(jsonEncode(meta), flush: true);
