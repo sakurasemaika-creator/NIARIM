@@ -103,22 +103,33 @@ class NiaproSerializer {
   /// 再書き込みし、未変更タイルは前回保存分をそのまま引き継ぐ）差分保存を行う。
   static final Map<String, Future<void>> _pendingSaves = {};
 
+  /// [updatedAt]を渡すと、マニフェストの最終保存の日時をその値にする
+  /// （渡さなければ今。作品を変えずに書くだけの保存〔ゴミ箱へ移す前〕で、
+  /// 並び順に使う日時を変えないため）。
   static Future<File> save({
     required Project project,
     required List<Scene> scenes,
     required TileManager tileManager,
+    DateTime? updatedAt,
   }) {
     return _queueSave(project.id, () async {
       final dir = await _projectDir(project.id);
       final filePath = '${dir.path}/${project.id}.niapro';
       return File(filePath).existsSync()
-          ? _writeArchiveDiff(filePath, project, scenes, tileManager)
+          ? _writeArchiveDiff(
+              filePath,
+              project,
+              scenes,
+              tileManager,
+              updatedAt: updatedAt,
+            )
           : _writeArchive(
               filePath,
               project,
               scenes,
               tileManager,
               clearDirty: true,
+              updatedAt: updatedAt,
             );
     });
   }
@@ -463,13 +474,16 @@ class NiaproSerializer {
     String? materialsManifest,
     Map<String, Uint8List>? fontFiles,
     String? fontsManifest,
+    DateTime? updatedAt,
   }) async {
     return _writeArchiveAtomically(filePath, (encoder) {
       encoder.addArchiveFile(
         ArchiveFile(
           _manifestFile,
           0,
-          utf8.encode(jsonEncode(_serializeManifest(project))),
+          utf8.encode(
+            jsonEncode(_serializeManifest(project, updatedAt: updatedAt)),
+          ),
         ),
       );
 
@@ -558,8 +572,9 @@ class NiaproSerializer {
     String filePath,
     Project project,
     List<Scene> scenes,
-    TileManager tileManager,
-  ) async {
+    TileManager tileManager, {
+    DateTime? updatedAt,
+  }) async {
     final oldBytes = await File(filePath).readAsBytes();
     final oldArchive = ZipDecoder().decodeBytes(oldBytes);
     final oldFilesByName = {for (final f in oldArchive.files) f.name: f};
@@ -569,7 +584,9 @@ class NiaproSerializer {
         ArchiveFile(
           _manifestFile,
           0,
-          utf8.encode(jsonEncode(_serializeManifest(project))),
+          utf8.encode(
+            jsonEncode(_serializeManifest(project, updatedAt: updatedAt)),
+          ),
         ),
       );
 
@@ -901,7 +918,10 @@ class NiaproSerializer {
     return true;
   }
 
-  static Map<String, dynamic> _serializeManifest(Project p) => {
+  static Map<String, dynamic> _serializeManifest(
+    Project p, {
+    DateTime? updatedAt,
+  }) => {
     'id': p.id,
     'name': p.name,
     'fps': p.fps,
@@ -911,7 +931,7 @@ class NiaproSerializer {
     'exportHeight': p.exportHeight,
     'drawingAreaScale': p.drawingAreaScale,
     'createdAt': p.createdAt.toIso8601String(),
-    'updatedAt': DateTime.now().toIso8601String(),
+    'updatedAt': (updatedAt ?? DateTime.now()).toIso8601String(),
     'totalWorkSeconds': p.totalWorkSeconds,
     'appVersion': currentAppVersion,
     // お気に入り登録・フォルダ管理・タグはホーム画面の永続状態の

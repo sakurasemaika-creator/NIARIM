@@ -400,14 +400,26 @@ class ProjectListWidget extends StatelessWidget {
           controller: scrollController,
           slivers: [
             SliverToBoxAdapter(child: header!),
-            SliverFillRemaining(
-              // The empty-state layout uses LayoutBuilder, which cannot
-              // provide intrinsic heights to the non-scrollable variant.
-              hasScrollBody: true,
-              child: _emptyState(
-                l10n,
-                hiddenByFavorites: hiddenByFavorites,
-                hasFavorites: hasFavorites,
+            // 残りの高さを埋めるだけにする（中身の方が高いときだけその分
+            // スクロールする）。スクロールする中身として置くと、見出しの
+            // 高さの分だけ一覧がスクロールでき、何も無いのに画面いっぱいの
+            // つまみが出ていた。丸い印は、自分でスクロールするときと同じく
+            // 残りの高さに入る大きさにする（低い画面・大きな文字で、作り方の
+            // 案内が浮かぶボタンの下へ押し出されない）。
+            SliverLayoutBuilder(
+              builder: (context, constraints) => SliverFillRemaining(
+                hasScrollBody: false,
+                child: _emptyState(
+                  l10n,
+                  hiddenByFavorites: hiddenByFavorites,
+                  hasFavorites: hasFavorites,
+                  scrollable: false,
+                  fitIn: Size(
+                    constraints.crossAxisExtent,
+                    constraints.viewportMainAxisExtent -
+                        constraints.precedingScrollExtent,
+                  ),
+                ),
               ),
             ),
           ],
@@ -507,6 +519,8 @@ class ProjectListWidget extends StatelessWidget {
     AppLocalizations l10n, {
     bool hiddenByFavorites = false,
     bool hasFavorites = false,
+    bool scrollable = true,
+    Size? fitIn,
   }) {
     // ホームでは左下・右下に丸いボタンが浮くので、絞り込みを外すボタンや
     // 作り方の案内がその下に入らないよう、下にその分を空ける（選ぶ専用
@@ -517,6 +531,8 @@ class ProjectListWidget extends StatelessWidget {
     if (query.isNotEmpty && !hiddenByFavorites) {
       return EmptyStatePlaceholder(
         clearFloatingButtons: clearFloatingButtons,
+        scrollable: scrollable,
+        fitIn: fitIn,
         icon: Icons.search_off,
         title: l10n.projectListNoMatchTitle(query),
         hint: searchByTag
@@ -545,6 +561,8 @@ class ProjectListWidget extends StatelessWidget {
           : l10n.projectListNoFavoritesOutsideFoldersTitle;
       return EmptyStatePlaceholder(
         clearFloatingButtons: clearFloatingButtons,
+        scrollable: scrollable,
+        fitIn: fitIn,
         icon: Icons.star_border,
         title: title,
         // 登録の仕方は、お気に入りが1つも無いときだけ。作品・フォルダの
@@ -564,6 +582,8 @@ class ProjectListWidget extends StatelessWidget {
     final inFolder = currentFolderId != null;
     return EmptyStatePlaceholder(
       clearFloatingButtons: clearFloatingButtons,
+      scrollable: scrollable,
+      fitIn: fitIn,
       icon: inFolder ? Icons.folder_open : Icons.movie_creation_outlined,
       title: inFolder
           ? l10n.projectListEmptyFolderTitle

@@ -3344,7 +3344,19 @@ class ProjectService extends ChangeNotifier {
   Future<void> saveProject(String projectId) =>
       _queueProjectSave(projectId, () => _writeProjectFile(projectId));
 
-  Future<void> _writeProjectFile(String projectId) async {
+  /// ゴミ箱へ移す前の保存（書き終わるまで待ち、読める作品だけをゴミ箱へ
+  /// 移す）。ゴミ箱へ移すのは作品の変更ではないので、最終保存の日時
+  /// （「更新日時」の並びに使う）は変えない。以前は移すたびに今の日時に
+  /// なり、「元に戻す」で戻した作品が一覧の先頭へ動いた。
+  Future<void> _saveBeforeTrash(String projectId) => _queueProjectSave(
+    projectId,
+    () => _writeProjectFile(projectId, keepUpdatedAt: true),
+  );
+
+  Future<void> _writeProjectFile(
+    String projectId, {
+    bool keepUpdatedAt = false,
+  }) async {
     final project = _projects.where((p) => p.id == projectId).firstOrNull;
     final scenes = _scenes[projectId];
     final tm = _tileManagers[projectId];
@@ -3353,6 +3365,7 @@ class ProjectService extends ChangeNotifier {
       project: project,
       scenes: scenes,
       tileManager: tm,
+      updatedAt: keepUpdatedAt ? project.updatedAt : null,
     );
     // 容量と最終保存の時刻は、ファイルに書いたものに合わせる。保存は
     // 描いている間にも走るので、通知はせず次に画面を作るときに使われる
@@ -3362,7 +3375,7 @@ class ProjectService extends ChangeNotifier {
     if (i >= 0) {
       _projects[i] = _projects[i].copyWith(
         sizeBytes: size,
-        updatedAt: DateTime.now(),
+        updatedAt: keepUpdatedAt ? null : DateTime.now(),
       );
     }
   }
@@ -3405,7 +3418,7 @@ class ProjectService extends ChangeNotifier {
   Future<void> deleteProject(String id) async {
     // Trash cannot be restorable if a newly created project has not yet
     // completed its queued first save. Fail before changing Trash membership.
-    await saveProject(id);
+    await _saveBeforeTrash(id);
     await _queueTrash(id, () async {
       final idx = _projects.indexWhere((p) => p.id == id);
       if (idx >= 0) {
@@ -4394,7 +4407,7 @@ class ProjectService extends ChangeNotifier {
     // Do not archive a folder until all of its projects are readable
     // on disk. This also waits for any queued autosaves to complete.
     for (final projectId in record.projectIds) {
-      await saveProject(projectId);
+      await _saveBeforeTrash(projectId);
     }
     // ゴミ箱のフォルダの記録→作品のゴミ箱の記録→フォルダの一覧の順に
     // 保存し、途中で失敗したら保存済みのものを戻して何も変えない。

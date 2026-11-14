@@ -26,6 +26,12 @@ class EmptyStatePlaceholder extends StatelessWidget {
   /// スクロールして浮かぶボタンの上へ出せる）。
   final bool clearFloatingButtons;
 
+  /// 自分でスクロールしない（[scrollable]が偽の）ときに、丸い印を選ぶ大きさ
+  /// （外の一覧の残りの幅と高さ）。渡すと、自分でスクロールするときと同じく
+  /// 入る大きさの印にする（低い画面・大きな文字で、案内が浮かぶボタンの下へ
+  /// 押し出されない）。
+  final Size? fitIn;
+
   const EmptyStatePlaceholder({
     super.key,
     required this.icon,
@@ -34,6 +40,7 @@ class EmptyStatePlaceholder extends StatelessWidget {
     this.action,
     this.scrollable = true,
     this.clearFloatingButtons = false,
+    this.fitIn,
   });
 
   /// 浮かぶボタンの分（ボタン56・下の余白16・間16）と、ボタンが上に浮く
@@ -167,9 +174,19 @@ class EmptyStatePlaceholder extends StatelessWidget {
     final screenBadge = _short(context) ? 56.0 : 88.0;
     final clearance = _floatingButtonsClearance(context);
     if (!scrollable) {
+      var badge = screenBadge;
+      if (fitIn case final size?) {
+        final fits = _badgeThatFits(
+          context,
+          size.width,
+          size.height - clearance,
+          scheme,
+        );
+        if (fits < badge) badge = fits;
+      }
       return Padding(
         padding: EdgeInsets.only(bottom: clearance),
-        child: _content(context, scheme, screenBadge),
+        child: _content(context, scheme, badge),
       );
     }
     return LayoutBuilder(

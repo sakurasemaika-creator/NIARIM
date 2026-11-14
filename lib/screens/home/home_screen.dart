@@ -4590,14 +4590,18 @@ class _FolderableList<T> extends StatelessWidget {
                 SliverToBoxAdapter(child: _folderChips(context, countByFolder)),
                 const SliverToBoxAdapter(child: Divider(height: 1)),
               ],
-              SliverPadding(
-                padding: EdgeInsets.only(
-                  bottom: reserveForFloatingActions
-                      ? 88 + MediaQuery.paddingOf(context).bottom
-                      : 0,
-                ),
-                sliver: SliverFillRemaining(
-                  hasScrollBody: false,
+              // 下に浮くボタンの分の余白は、空の表示の中に取る（残りの高さを
+              // 埋めるだけで、中身の方が高いときだけスクロールする）。外に
+              // 足すと、何も無いのにその分スクロールでき、画面いっぱいに
+              // 近いスクロールバーのつまみが出ていた。
+              SliverFillRemaining(
+                hasScrollBody: false,
+                child: Padding(
+                  padding: EdgeInsets.only(
+                    bottom: reserveForFloatingActions
+                        ? 88 + MediaQuery.paddingOf(context).bottom
+                        : 0,
+                  ),
                   child: emptyState!,
                 ),
               ),
