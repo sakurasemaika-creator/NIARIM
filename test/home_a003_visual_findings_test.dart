@@ -958,4 +958,45 @@ void main() {
     expect(lost, isEmpty, reason: 'reset by a tab switch');
     await home.close();
   });
+
+  testWidgets('自作テーマ（暗いメニュー）のメニューの項目は、メニューの文字色で書く', (tester) async {
+    final home = _Home(tester);
+    await home.open();
+    await home.addProject('メニューの作品');
+    await home.applyTheme(_customTheme);
+    final wrong = <String>[];
+    Future<void> check(Finder button, String label) async {
+      await tester.tap(button);
+      await home.frames(10);
+      final item = find.descendant(
+        of: find.byWidgetPredicate((w) => w is PopupMenuItem),
+        matching: find.text(label),
+      );
+      expect(item, findsOneWidget, reason: 'menu item "$label" not open');
+      final color = _style(_paragraph(tester, item)).color;
+      if (color != _customTheme.menuTextColor) wrong.add('"$label" $color');
+      await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+      await home.frames(10);
+    }
+
+    await check(
+      find.byKey(const Key('homeCollectionViewModeMenu')),
+      home.l10n.homeViewModeLarge,
+    );
+    await check(
+      find
+          .descendant(
+            of: find.byType(ProjectListWidget),
+            matching: find.byIcon(Icons.more_vert),
+          )
+          .first,
+      home.l10n.projectListOpenAction,
+    );
+    expect(
+      wrong,
+      isEmpty,
+      reason: 'menu items not in menuTextColor ${_customTheme.menuTextColor}',
+    );
+    await home.close();
+  });
 }

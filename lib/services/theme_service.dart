@@ -1002,6 +1002,17 @@ class ThemeService extends ChangeNotifier {
         color: popupColor,
         surfaceTintColor: popupColor,
         textStyle: textTheme.bodyMedium?.copyWith(color: menuForeground),
+        // Material 3 のメニューの項目は textStyle ではなく labelTextStyle を
+        // 見る。指定しないと項目名が本文の文字色（onSurface）で書かれ、
+        // メニューの文字色を本文と分けたテーマ（暗いメニュー）で読めなかった。
+        // 書体・大きさは今までどおり labelLarge。
+        labelTextStyle: WidgetStateProperty.resolveWith<TextStyle?>(
+          (states) => textTheme.labelLarge?.copyWith(
+            color: states.contains(WidgetState.disabled)
+                ? menuForeground.withValues(alpha: 0.38)
+                : menuForeground,
+          ),
+        ),
         iconColor: menuForeground,
       ),
       // カードはカラーピッカー等のダイアログの本体にも使う（Dialog側は透明に
