@@ -2,6 +2,9 @@ import 'dart:math';
 
 import 'package:intl/intl.dart';
 
+import '../l10n/app_localizations.dart';
+import '../utils/work_time_label.dart';
+
 /// この画面には実際のログイン・ユーザー識別基盤（バックエンド未実装、
 /// `29_動画投稿・ランキング機能仕様.md`4章のNIARIM User ID）が無いため、
 /// 「投稿者のみタグをロックできる」という挙動をUI上で確認するための
@@ -240,11 +243,10 @@ String formatCompactCount(int value, String languageCode) {
   return '$value';
 }
 
-/// 制作時間を作品広場用の短い表記へ整形する。
-String formatProjectWorkTime(int totalSeconds) {
+/// 制作時間を作品広場用の短い表記へ、表示言語の書き方で整形する
+/// （プロジェクト詳細と同じ文：「6時間40分」「6h 40m」。ちょうどの時間は
+/// 「1時間」）。0以下なら空。
+String formatProjectWorkTime(AppLocalizations l10n, int totalSeconds) {
   if (totalSeconds <= 0) return '';
-  final hours = totalSeconds ~/ 3600;
-  final minutes = (totalSeconds % 3600) ~/ 60;
-  if (hours > 0) return '${hours}h ${minutes}m';
-  return '${max(1, minutes)}m';
+  return workTimeLabel(l10n, totalSeconds);
 }

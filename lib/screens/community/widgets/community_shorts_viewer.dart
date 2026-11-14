@@ -17,6 +17,7 @@ import '../../../services/api/community_api.dart';
 import '../community_edit_feedback.dart';
 import '../../../utils/tolerant_preferences.dart';
 import '../../../config/accent_text_theme.dart';
+import 'package:intl/intl.dart';
 
 enum CommunityShortsEndBehavior { loopCurrent, autoAdvance }
 
@@ -388,11 +389,9 @@ class _ShortsPage extends StatelessWidget {
     return '$minutes:${remain.toString().padLeft(2, '0')}';
   }
 
-  String _formatDate(DateTime date) {
-    final month = date.month.toString().padLeft(2, '0');
-    final day = date.day.toString().padLeft(2, '0');
-    return '${date.year}/$month/$day';
-  }
+  /// 日付は表示言語の書き方（アプリのほかの日付と同じ`yMd`）。
+  String _formatDate(BuildContext context, DateTime date) =>
+      DateFormat.yMd(AppLocalizations.of(context)!.localeName).format(date);
 
   void _openAuthorWorks(BuildContext context) {
     Navigator.of(context).push(
@@ -410,7 +409,7 @@ class _ShortsPage extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final scheme = Theme.of(context).colorScheme;
     final languageCode = Localizations.localeOf(context).languageCode;
-    final workTime = formatProjectWorkTime(work.projectWorkSeconds);
+    final workTime = formatProjectWorkTime(l10n, work.projectWorkSeconds);
 
     return SafeArea(
       top: false,
@@ -571,11 +570,11 @@ class _ShortsPage extends StatelessWidget {
                       if (work.projectCreatedAt != null)
                         _InfoItem(
                           icon: Icons.edit_calendar_outlined,
-                          text: _formatDate(work.projectCreatedAt!),
+                          text: _formatDate(context, work.projectCreatedAt!),
                         ),
                       _InfoItem(
                         icon: Icons.calendar_today_outlined,
-                        text: _formatDate(work.postedAt),
+                        text: _formatDate(context, work.postedAt),
                       ),
                       _InfoItem(
                         icon: Icons.play_arrow_rounded,

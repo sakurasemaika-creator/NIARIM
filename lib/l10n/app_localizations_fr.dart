@@ -3033,7 +3033,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String newProjectDurationSeconds(int n) {
-    return '$n s';
+    return '$n s';
   }
 
   @override
@@ -3041,27 +3041,27 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String newProjectDurationHms(int h, int m, int s) {
-    return '$h h $m min $s s';
+    return '$h h $m min $s s';
   }
 
   @override
   String newProjectDurationHm(int h, int m) {
-    return '$h h $m min';
+    return '$h h $m min';
   }
 
   @override
   String newProjectDurationH(int h) {
-    return '$h h';
+    return '$h h';
   }
 
   @override
   String newProjectDurationMs(int m, int s) {
-    return '$m min $s s';
+    return '$m min $s s';
   }
 
   @override
   String newProjectDurationM(int m) {
-    return '$m min';
+    return '$m min';
   }
 
   @override

@@ -13,6 +13,10 @@
 //     （U+00A0）、「;」「?」「!」の前は細い改行しない空白（U+202F）。
 //     U+202F は本文・見出しの代替フォント（DelaGothicOne）にあり、同梱の
 //     フォントだけで描ける（font_coverage_test）。
+// （7）長さ・制作時間（「1 h 25 min」：新規作成の長さと、プロジェクト詳細・
+//     作品広場・見本一覧の制作時間〔workTimeLabel〕が同じ文を使う）は、数と
+//     単位の間が普通の空白で、「1」と「h」の間で折り返せた。数と単位の間は
+//     改行しない空白（U+00A0）。
 import 'dart:convert';
 import 'dart:io';
 
@@ -283,5 +287,73 @@ void main() {
       isEmpty,
       reason: '${offenders.length}件:\n${offenders.take(30).join('\n')}',
     );
+  });
+
+  testWidgets('（7）仏語の長さ・制作時間は、数と単位の間を U+00A0 にし、そこで'
+      '折り返さない', (tester) async {
+    await loadAppFonts(tester);
+    const keys = [
+      'newProjectDurationSeconds',
+      'newProjectDurationHms',
+      'newProjectDurationHm',
+      'newProjectDurationH',
+      'newProjectDurationMs',
+      'newProjectDurationM',
+    ];
+    final offenders = <String>[
+      for (final key in keys)
+        for (final match in RegExp(r'\}(.)(h|min|s)\b').allMatches(fr[key]!))
+          if (match.group(1) != _nbsp) '$key: ${fr[key]}',
+    ];
+    final l = lookupAppLocalizations(const Locale('fr'));
+    final samples = [
+      l.newProjectDurationSeconds(30),
+      l.newProjectDurationHms(1, 25, 30),
+      l.newProjectDurationHm(1, 25),
+      l.newProjectDurationH(2),
+      l.newProjectDurationMs(25, 30),
+      l.newProjectDurationM(25),
+    ];
+    for (final text in samples) {
+      for (final family in ['HakkouMincho', 'Kuramubon']) {
+        final style = TextStyle(
+          fontFamily: family,
+          fontFamilyFallback: family == 'Kuramubon'
+              ? kHeadingFontFallback
+              : kBodyFontFallback,
+          fontSize: 14,
+        );
+        TextPainter paint(String s, [double width = double.infinity]) =>
+            TextPainter(
+              text: TextSpan(text: s, style: style),
+              textDirection: TextDirection.ltr,
+              locale: const Locale('fr'),
+            )..layout(maxWidth: width);
+        // 数と単位のひとかたまり（「25 min」）が入る幅から、全部が入る幅まで。
+        final chunks = text.split(' ').map((c) {
+          final painter = paint(c);
+          final width = painter.width;
+          painter.dispose();
+          return width;
+        });
+        final narrowest = chunks.reduce((a, b) => a > b ? a : b).ceil() + 1;
+        for (var width = narrowest.toDouble(); width <= 200; width += 2) {
+          final painter = paint(text, width);
+          for (final line in painter.computeLineMetrics().skip(1)) {
+            final start = painter
+                .getPositionForOffset(
+                  Offset(0, line.baseline - line.ascent + 1),
+                )
+                .offset;
+            if (RegExp(r'^(h|min|s)\b').hasMatch(text.substring(start))) {
+              offenders.add('«$text»（$family、${width.round()}px）が単位の前で折り返す');
+              break;
+            }
+          }
+          painter.dispose();
+        }
+      }
+    }
+    expect(offenders, isEmpty, reason: offenders.join('\n'));
   });
 }

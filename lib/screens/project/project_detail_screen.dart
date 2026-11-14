@@ -6,6 +6,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import '../../engine/layer_compositor.dart';
@@ -32,6 +33,7 @@ import '../../config/font_fallback.dart';
 import '../../utils/duplicate_name.dart';
 import '../../utils/file_size_label.dart';
 import '../../utils/folder_tree.dart';
+import '../../utils/work_time_label.dart';
 import '../../widgets/share_project_file_action.dart';
 import '../home/widgets/project_list_widget.dart' show niashareKey;
 
@@ -565,14 +567,12 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                       ),
                       _infoRow(
                         l10n.projectDetailInfoWorkTime,
-                        l10n.newProjectDurationHm(
-                          project.totalWorkSeconds ~/ 3600,
-                          (project.totalWorkSeconds % 3600) ~/ 60,
-                        ),
+                        workTimeLabel(l10n, project.totalWorkSeconds),
                       ),
                       _infoRow(
                         l10n.projectDetailInfoLastSaved,
-                        _formatDateTime(project.updatedAt),
+                        _formatDateTime(l10n, project.updatedAt),
+                        when: project.updatedAt,
                       ),
                       _infoRow(
                         l10n.projectDetailInfoSize,
@@ -1016,8 +1016,10 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
     Project project,
   ) => createAndShareProjectNiashare(context, service, project);
 
-  /// 値の数（解像度・数と単位・大きさ・日付・時刻）は途中で折り返さない。
-  Widget _infoRow(String label, String value) {
+  /// [when]を渡すと、値（その日時を含む文）を日付・時刻の途中で折り返さない。
+  /// 値の数（解像度・数と単位・大きさ）も途中で折り返さない。
+  Widget _infoRow(String label, String value, {DateTime? when}) {
+    final localeName = AppLocalizations.of(context)!.localeName;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       // 項目名を1行で置いた残りに値の数が入らなければ、値を項目名の下の行へ
@@ -1029,6 +1031,12 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
           color: Theme.of(context).colorScheme.onSurfaceVariant,
         ),
         valueStyle: const TextStyle(fontWeight: FontWeight.w600),
+        keep: [
+          if (when != null) ...[
+            DateFormat.yMd(localeName).format(when),
+            DateFormat.jm(localeName).format(when),
+          ],
+        ],
       ),
     );
   }
@@ -1036,8 +1044,9 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
   String _formatSize(int bytes) =>
       fileSizeLabel(AppLocalizations.of(context)!, bytes);
 
-  String _formatDateTime(DateTime dt) =>
-      '${dt.year}/${dt.month.toString().padLeft(2, '0')}/${dt.day.toString().padLeft(2, '0')} ${dt.hour}:${dt.minute.toString().padLeft(2, '0')}';
+  /// 日時は表示言語の書き方（ホームの詳細表示と同じ日付`yMd`と時刻`jm`）。
+  String _formatDateTime(AppLocalizations l10n, DateTime dt) =>
+      DateFormat.yMd(l10n.localeName).add_jm().format(dt);
 
   void _showRenameDialog(BuildContext context, String currentName) {
     final l10n = AppLocalizations.of(context)!;

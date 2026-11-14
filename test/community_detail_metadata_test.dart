@@ -51,7 +51,14 @@ void main() {
       findsOneWidget,
     );
     expect(
-      find.text(formatProjectWorkTime(work.projectWorkSeconds)),
+      find.text(
+        formatProjectWorkTime(
+          AppLocalizations.of(
+            tester.element(find.byType(CommunityWorkDetailScreen)),
+          )!,
+          work.projectWorkSeconds,
+        ),
+      ),
       findsOneWidget,
     );
   });

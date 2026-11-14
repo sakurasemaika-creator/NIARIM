@@ -940,7 +940,7 @@
       }
     }
   },
-  "newProjectDurationSeconds": "{n} s",
+  "newProjectDurationSeconds": "{n} s",
   "@newProjectDurationSeconds": {
     "placeholders": {
       "n": {
@@ -949,7 +949,7 @@
     }
   },
   "newProjectDurationUnit": "s",
-  "newProjectDurationHms": "{h} h {m} min {s} s",
+  "newProjectDurationHms": "{h} h {m} min {s} s",
   "@newProjectDurationHms": {
     "placeholders": {
       "h": {
@@ -963,7 +963,7 @@
       }
     }
   },
-  "newProjectDurationHm": "{h} h {m} min",
+  "newProjectDurationHm": "{h} h {m} min",
   "@newProjectDurationHm": {
     "placeholders": {
       "h": {
@@ -974,7 +974,7 @@
       }
     }
   },
-  "newProjectDurationH": "{h} h",
+  "newProjectDurationH": "{h} h",
   "@newProjectDurationH": {
     "placeholders": {
       "h": {
@@ -982,7 +982,7 @@
       }
     }
   },
-  "newProjectDurationMs": "{m} min {s} s",
+  "newProjectDurationMs": "{m} min {s} s",
   "@newProjectDurationMs": {
     "placeholders": {
       "m": {
@@ -993,7 +993,7 @@
       }
     }
   },
-  "newProjectDurationM": "{m} min",
+  "newProjectDurationM": "{m} min",
   "@newProjectDurationM": {
     "placeholders": {
       "m": {

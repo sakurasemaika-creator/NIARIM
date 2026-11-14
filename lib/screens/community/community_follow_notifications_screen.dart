@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import '../../l10n/app_localizations.dart';
@@ -170,13 +171,15 @@ class _CommunityFollowNotificationsScreenState
     };
   }
 
+  /// 日付は表示言語の書き方（作品広場のほかの日付と同じ`yMd`）。
+  String _dateText(DateTime date) =>
+      DateFormat.yMd(AppLocalizations.of(context)!.localeName).format(date);
+
   String _date(CreatorMissionLabels t, Map<String, dynamic> event) {
     final raw = event['occurredAt'];
     final date = raw is String ? DateTime.tryParse(raw)?.toLocal() : null;
     if (date == null) return t.get('reviewing');
-    final stamp =
-        '${date.year}/${date.month.toString().padLeft(2, '0')}/'
-        '${date.day.toString().padLeft(2, '0')}';
+    final stamp = _dateText(date);
     return event['dateIsObserved'] == true
         ? '$stamp · ${t.get('activityObserved')}'
         : stamp;
@@ -215,10 +218,7 @@ class _CommunityFollowNotificationsScreenState
             color: scheme.primary,
           ),
           title: Text(message),
-          subtitle: Text(
-            '${time.year}/${time.month.toString().padLeft(2, '0')}/'
-            '${time.day.toString().padLeft(2, '0')}',
-          ),
+          subtitle: Text(_dateText(time)),
           onTap: _openMissions,
         );
       },

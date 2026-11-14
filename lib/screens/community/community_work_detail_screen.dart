@@ -21,6 +21,7 @@ import 'community_edit_feedback.dart';
 import 'widgets/community_work_card.dart';
 import '../../config/font_fallback.dart';
 import '../../config/accent_text_theme.dart';
+import 'package:intl/intl.dart';
 
 /// 作品詳細画面（別ルート、`/community/work/:id`）。
 /// 横画面フローティングプレビューの「詳細へ」と縦画面の詳細情報アイコンは
@@ -342,11 +343,9 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
     );
   }
 
-  String _formatDate(DateTime d) {
-    final mo = d.month.toString().padLeft(2, '0');
-    final dd = d.day.toString().padLeft(2, '0');
-    return '${d.year}/$mo/$dd';
-  }
+  /// 日付は表示言語の書き方（アプリのほかの日付と同じ`yMd`）。
+  String _formatDate(DateTime d) =>
+      DateFormat.yMd(AppLocalizations.of(context)!.localeName).format(d);
 
   @override
   Widget build(BuildContext context) {
@@ -762,16 +761,11 @@ class _ProjectMetadataCard extends StatelessWidget {
 
   const _ProjectMetadataCard({required this.work});
 
-  String _formatDate(DateTime date) {
-    final month = date.month.toString().padLeft(2, '0');
-    final day = date.day.toString().padLeft(2, '0');
-    return '${date.year}/$month/$day';
-  }
-
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final workTime = formatProjectWorkTime(work.projectWorkSeconds);
+    final l10n = AppLocalizations.of(context)!;
+    final workTime = formatProjectWorkTime(l10n, work.projectWorkSeconds);
     return Material(
       color: scheme.surfaceContainerLow,
       borderRadius: BorderRadius.circular(12),
@@ -823,7 +817,10 @@ class _ProjectMetadataCard extends StatelessWidget {
                 if (work.projectCreatedAt != null)
                   _ProjectMetaItem(
                     icon: Icons.edit_calendar_outlined,
-                    text: _formatDate(work.projectCreatedAt!),
+                    // 日付は表示言語の書き方。
+                    text: DateFormat.yMd(
+                      l10n.localeName,
+                    ).format(work.projectCreatedAt!),
                   ),
               ],
             ),

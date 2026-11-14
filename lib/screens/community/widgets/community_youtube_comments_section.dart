@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import '../../../l10n/community_youtube_comment_labels.dart';
 import '../../../services/community_service.dart';
+import '../../../utils/app_locale.dart';
 
 /// View-only YouTube comments. A collapsed section issues NO YouTube requests.
 /// Comment text is held in widget memory only; never persisted to DynamoDB.
@@ -85,9 +87,12 @@ class _CommunityYoutubeCommentsSectionState
     final avatar = data['avatar'] as String? ?? '';
     final body = data['text'] as String? ?? '';
     final publishedAt = DateTime.tryParse(data['publishedAt'] as String? ?? '');
+    // 日付は表示言語の書き方（作品の詳細の投稿日と同じ`yMd`）。
     final stamp = publishedAt == null
         ? ''
-        : '${publishedAt.toLocal().year}/${publishedAt.toLocal().month}/${publishedAt.toLocal().day}';
+        : DateFormat.yMd(
+            appLocalizationsOf(context).localeName,
+          ).format(publishedAt.toLocal());
     return Padding(
       padding: EdgeInsets.only(left: reply ? 28 : 0, top: 10, bottom: 10),
       child: Row(

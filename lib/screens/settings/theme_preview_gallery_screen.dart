@@ -13,7 +13,9 @@ import '../../config/font_fallback.dart';
 import '../canvas/widgets/canvas_icon_button.dart';
 import '../../utils/color_contrast.dart';
 import '../../utils/line_break.dart';
+import '../../utils/work_time_label.dart';
 import '../../widgets/fit_or_hide_title.dart';
+import 'package:intl/intl.dart';
 
 /// Lightweight preview of main creation and community screens only.
 /// Tab variants, settings/management pages, menus and floating panels are
@@ -424,6 +426,9 @@ class _ThemeSampleScreen extends StatelessWidget {
     required this.l,
     required this.accentText,
   });
+
+  /// A sample date in the app language's own way (like the real screens).
+  String _date(DateTime date) => DateFormat.yMd(l.localeName).format(date);
 
   /// The app language (its body face depends on it).
   Locale get _locale => Locale(l.localeName.split('_').first);
@@ -2685,8 +2690,14 @@ class _ThemeSampleScreen extends StatelessWidget {
                 ('FPS', '12'),
                 (l.projectDetailInfoExportSize, '320×180'),
                 (l.projectDetailInfoTotalFrames, '12'),
-                (l.projectDetailInfoWorkTime, l.newProjectDurationHm(0, 0)),
-                (l.projectDetailInfoLastSaved, '2026/10/23 10:00'),
+                // Same wording as the real project detail.
+                (l.projectDetailInfoWorkTime, workTimeLabel(l, 5100)),
+                (
+                  l.projectDetailInfoLastSaved,
+                  DateFormat.yMd(
+                    l.localeName,
+                  ).add_jm().format(DateTime(2026, 10, 23, 10)),
+                ),
                 (l.projectDetailInfoSize, '0B'),
               ])
                 Padding(
@@ -2880,7 +2891,7 @@ class _ThemeSampleScreen extends StatelessWidget {
       itemBuilder: (_, i) => ListTile(
         leading: Icon(items[i].$1, color: accentText),
         title: _keepWords(items[i].$2),
-        subtitle: Text('2026/10/2${3 - i}'),
+        subtitle: Text(_date(DateTime(2026, 10, 23 - i))),
       ),
     );
   }
@@ -3117,7 +3128,7 @@ class _ThemeSampleScreen extends StatelessWidget {
       ),
       const SizedBox(height: 12),
       Text(
-        l.communityWorkDetailPostedLabel('2026/10/14'),
+        l.communityWorkDetailPostedLabel(_date(DateTime(2026, 10, 14))),
         style: TextStyle(fontSize: 11, color: c.onSurfaceVariant),
       ),
       const SizedBox(height: 12),
@@ -3147,8 +3158,8 @@ class _ThemeSampleScreen extends StatelessWidget {
                   '2400f',
                   '24fps',
                   '1920×1080',
-                  '6h 40m',
-                  '2026/10/13',
+                  workTimeLabel(l, 6 * 3600 + 40 * 60),
+                  _date(DateTime(2026, 10, 13)),
                 ])
                   Text(
                     x,
