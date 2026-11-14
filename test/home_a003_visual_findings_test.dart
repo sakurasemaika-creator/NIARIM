@@ -999,4 +999,19 @@ void main() {
     );
     await home.close();
   });
+
+  testWidgets('Tabで回っても、見えない「ホームの画面」に止まらない', (tester) async {
+    final home = _Home(tester);
+    await home.open(size: const Size(1280, 900));
+    await home.addProject('Tabの作品');
+    final stops = <String>[];
+    for (var i = 0; i < 40; i++) {
+      await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+      await home.frames(2);
+      final focus = FocusManager.instance.primaryFocus;
+      if (focus?.debugLabel == 'Home') stops.add('Tab #${i + 1}');
+    }
+    expect(stops, isEmpty, reason: 'Tab stopped on the invisible Home node');
+    await home.close();
+  });
 }

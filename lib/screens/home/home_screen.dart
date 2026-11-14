@@ -584,7 +584,9 @@ class _HomeScreenState extends State<HomeScreen>
   final _searchFocus = FocusNode();
   // 画面全体のショートカット（全選択・コピー等）を受けるフォーカス。
   // 検索欄から抜けたら（Enter・閉じる・タブの切り替え）ここへ戻す。
-  final _homeFocus = FocusNode(debugLabel: 'Home');
+  // Tabでは止まらない（以前は＋の浮かぶボタンと戻る矢印の間に、何も
+  // 光らない止まり先が1つあった）。
+  final _homeFocus = FocusNode(debugLabel: 'Home', skipTraversal: true);
   StreamSubscription<String>? _sharedFileSub;
   // 現在開いているフォルダ（フォルダは複数階層に対応・
   // パンくずリストで現在位置を表示）。nullはルート直下。
