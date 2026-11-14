@@ -100,12 +100,15 @@ class _HomeDrawerState extends State<HomeDrawer> {
                     ),
                   ),
                   const SizedBox(height: 12),
+                  // アプリ名は見出しなので、ほかの見出し・引き出しの項目と同じ
+                  // くらむぼん（以前は、今は無いホームの上部バーの「NIARIM」に
+                  // そろえた明朝だった）。
                   Text(
                     'NIARIM',
                     style: TextStyle(
                       color: scheme.onPrimary,
-                      fontFamily: 'HakkouMincho',
-                      fontFamilyFallback: const ['NotoSerifJP'],
+                      fontFamily: 'Kuramubon',
+                      fontFamilyFallback: kHeadingFontFallback,
                       fontSize: 22,
                       fontWeight: FontWeight.w800,
                       letterSpacing: 1.5,

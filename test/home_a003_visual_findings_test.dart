@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/app.dart';
 import 'package:niarim/app_bootstrap.dart';
+import 'package:niarim/config/font_fallback.dart';
 import 'package:niarim/engine/export_engine.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/models/app_theme_preset.dart';
@@ -266,6 +267,24 @@ class _Home {
   }
 }
 
+/// [finder]の描いた段落（Text・Text.richの中のRenderParagraph）。
+RenderParagraph _paragraph(WidgetTester tester, Finder finder) {
+  final element = finder.evaluate().single;
+  RenderParagraph? found;
+  void visit(Element e) {
+    if (found != null) return;
+    final render = e.renderObject;
+    if (render is RenderParagraph) {
+      found = render;
+      return;
+    }
+    e.visitChildElements(visit);
+  }
+
+  visit(element);
+  return found!;
+}
+
 /// 描いた段落の根の書式（Text が DefaultTextStyle と合わせた書式）。
 TextStyle _style(RenderParagraph paragraph) => paragraph.text.style!;
 
@@ -377,6 +396,18 @@ void main() {
       }
     }
     expect(faint, isEmpty, reason: 'favourite stars not visible');
+    await home.close();
+  });
+
+  testWidgets('引き出しの見出しのアプリ名は見出しの書体（くらむぼん）', (tester) async {
+    final home = _Home(tester);
+    await home.open(size: const Size(390, 844));
+    final menu = find.byIcon(Icons.menu);
+    await tester.tap(menu.last);
+    await home.frames(10);
+    final paragraph = _paragraph(tester, find.text('NIARIM').last);
+    expect(_style(paragraph).fontFamily, 'Kuramubon');
+    expect(_style(paragraph).fontFamilyFallback, kHeadingFontFallback);
     await home.close();
   });
 }
