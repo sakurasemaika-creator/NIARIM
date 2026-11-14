@@ -180,8 +180,11 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
         Row(
           mainAxisSize: MainAxisSize.min,
           children: [
+            // 件数は操作のアイコンどうし（24px）より離し、別のまとまりに
+            // 見せる（すぐ後ろに置くと複製のアイコンに接して見えた）。前は
+            // 全選択・全解除との間が行の残りで空くので、余白を足さない。
             Padding(
-              padding: const EdgeInsetsDirectional.only(start: 8),
+              padding: const EdgeInsetsDirectional.only(end: 14),
               child: count,
             ),
             ...actions,
