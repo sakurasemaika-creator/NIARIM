@@ -19,6 +19,7 @@ import '../../../widgets/export_share_feedback.dart';
 import '../../../widgets/labeled_slider.dart';
 import '../../../widgets/qr_import_dialog.dart';
 import '../../../widgets/qr_share_dialog.dart';
+import '../../../widgets/scrollable_sheet_body.dart';
 import 'hsv_color_wheel.dart';
 import '../../../widgets/docked_panel_scope.dart';
 import 'panel_close_bar.dart';
@@ -604,7 +605,7 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
   ) {
     showModalBottomSheet(
       context: context,
-      builder: (ctx) => SafeArea(
+      builder: (ctx) => ScrollableSheetBody(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [

@@ -3126,7 +3126,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
     final l10n = AppLocalizations.of(context)!;
     showModalBottomSheet(
       context: context,
-      builder: (ctx) => SafeArea(
+      builder: (ctx) => ScrollableSheetBody(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [

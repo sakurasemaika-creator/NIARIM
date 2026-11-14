@@ -4068,7 +4068,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
     final l10n = AppLocalizations.of(context)!;
     showModalBottomSheet(
       context: context,
-      builder: (ctx) => SafeArea(
+      builder: (ctx) => ScrollableSheetBody(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [

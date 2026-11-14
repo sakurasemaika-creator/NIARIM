@@ -84,6 +84,55 @@ void main() {
           '${offenders.join('\n')}',
     );
   });
+  // 件数が固定のシートでも、行が多いと低い画面で入りきらない。シートは画面の
+  // 高さの9/16までしか取らないので、横向きのスマホ（640x360で約202px）・
+  // 低い画面（360x440で約247px）・大きな文字では、1行56px以上の行が4つで
+  // 入りきらなくなる。実際に、レイヤーの追加のシート（6行）が360x440で
+  // 105pxはみ出し、下の「選択レイヤー」を選べなかった。
+  test('行が4つ以上あるボトムシートは、件数が固定でもスクロールできる', () {
+    final offenders = <String>[];
+    final rowPattern = RegExp(
+      r'\b(ListTile|SwitchListTile|CheckboxListTile|RadioListTile|'
+      r'ExpansionTile)(<[^>()]*>)?\(',
+    );
+    for (final file
+        in Directory('lib')
+            .listSync(recursive: true)
+            .whereType<File>()
+            .where((f) => f.path.endsWith('.dart'))) {
+      final source = file.readAsStringSync();
+      var searchFrom = 0;
+      while (true) {
+        final start = source.indexOf('showModalBottomSheet', searchFrom);
+        if (start < 0) break;
+        searchFrom = start + 1;
+        final open = source.indexOf('(', start);
+        if (open < 0) break;
+        final call = _balancedCall(source, open);
+        if (call == null) continue;
+        final rows = rowPattern.allMatches(call).length;
+        if (rows < 4) continue;
+        final scrollable =
+            call.contains('ScrollableSheetBody') ||
+            call.contains('SingleChildScrollView') ||
+            call.contains('ListView') ||
+            call.contains('CustomScrollView') ||
+            call.contains('DraggableScrollableSheet');
+        if (scrollable) continue;
+        final line = '\n'.allMatches(source.substring(0, start)).length + 1;
+        offenders.add('${file.path}:$line（行$rows）');
+      }
+    }
+    expect(
+      offenders,
+      isEmpty,
+      reason:
+          '行が4つ以上あるのにスクロールできないボトムシートがある。\n'
+          'ScrollableSheetBodyで包むこと（低い画面で下の行が選べなくなる）:\n'
+          '${offenders.join('\n')}',
+    );
+  });
+
   testWidgets(
     'folder move wrapper reaches the last of 50 destinations at a compact height',
     (tester) async {
@@ -134,4 +183,39 @@ void main() {
       expect(tester.takeException(), isNull);
     },
   );
+}
+
+/// [source]の[open]（開き括弧）から対応する閉じ括弧までの文字列。文字列の
+/// 中・注釈の中の括弧は数えない。閉じていなければnull。
+String? _balancedCall(String source, int open) {
+  var depth = 0;
+  var i = open;
+  while (i < source.length) {
+    final c = source[i];
+    if (c == '/' && i + 1 < source.length && source[i + 1] == '/') {
+      final end = source.indexOf('\n', i);
+      if (end < 0) return null;
+      i = end + 1;
+      continue;
+    }
+    if (c == "'" || c == '"') {
+      final triple =
+          i + 2 < source.length && source.substring(i, i + 3) == c * 3;
+      final quote = triple ? c * 3 : c;
+      var j = i + quote.length;
+      while (j < source.length && !source.startsWith(quote, j)) {
+        if (source[j] == r'\') j++;
+        j++;
+      }
+      i = j + quote.length;
+      continue;
+    }
+    if (c == '(') depth++;
+    if (c == ')') {
+      depth--;
+      if (depth == 0) return source.substring(open, i + 1);
+    }
+    i++;
+  }
+  return null;
 }
