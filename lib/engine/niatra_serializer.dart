@@ -184,6 +184,7 @@ class NiatraSerializer {
     'default_docked_panels',
     'desktop_collapsed_docks',
     'pen_pressure_custom_points',
+    'home.trashHiddenKinds.v1',
   };
 
   /// 1つの値の設定として、そのまま移す保存。ここに無い1つの値（この端末の
@@ -238,8 +239,14 @@ class NiatraSerializer {
     'custom_slot_count',
     'home.projectViewMode.v1',
     'home.projectSortMode.v1',
+    'home.projectFavoritesOnly.v1',
     'home.worksViewMode.v1',
+    'home.worksSortMode.v1',
+    'home.worksFavoritesOnly.v1',
     'home.sharedViewMode.v1',
+    'home.sharedSortMode.v1',
+    'home.sharedFavoritesOnly.v1',
+    'home.trashSortMode.v1',
     'community.hideGenerativeAiImageVideo',
     'community.rankingLayout.v1',
     'community.tileMinWidth.v1',

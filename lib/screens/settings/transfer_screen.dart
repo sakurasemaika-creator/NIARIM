@@ -492,6 +492,10 @@ class _TransferScreenState extends State<TransferScreen> {
       if (!mounted) return;
       await context.read<CommunityService>().reloadLocalContentFilters();
       if (!mounted) return;
+      // ホームの一覧の並び順・絞り込みも読み込んだ値にする（開いている
+      // 一覧にもすぐ当てる）。
+      await context.read<SettingsService>().reloadHomeListFilters();
+      if (!mounted) return;
       // プロジェクトの復元はファイルI/Oを伴う非同期処理のため、他項目の
       // 同期的なapplyTo()とは別にawaitする。同じ中身の作品は足さず、同じ
       // 名前の別の作品は複製の名前で足して知らせる。

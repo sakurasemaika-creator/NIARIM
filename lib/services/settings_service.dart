@@ -8,7 +8,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/canvas_dock_panel.dart';
 import '../models/canvas_size_preset.dart';
+import '../models/home_list_filters.dart';
 import '../models/toolbar_item.dart';
+import '../utils/app_error_reporter.dart';
 import '../utils/app_locale.dart';
 import '../utils/saved_list_reader.dart';
 import '../utils/tolerant_preferences.dart';
@@ -1041,6 +1043,7 @@ class SettingsService extends ChangeNotifier {
       prefs.readString('pen_button_2'),
       GestureAction.eyedropper,
     );
+    _readHomeListFilters(prefs);
   }
 
   GestureAction _gestureActionFromName(String? name, GestureAction fallback) {
@@ -1248,7 +1251,164 @@ class SettingsService extends ChangeNotifier {
     }
     notifyListeners();
   }
+
+  // ─── ホームの一覧の並び順・絞り込み ────────────────────────────────────
+  // プロジェクト・作品一覧・共有・ゴミ箱で選んだ並び順・向き・絞り込みを
+  // 起動し直しても残す（設定の引き継ぎにも入る）。一覧はタブを離れると
+  // 作り直されるので、作るときにここから同期で読む（最初のフレームから
+  // 選んだ並びで出る）。選び直したときはホームの一覧のほかに聞き手は
+  // いないので知らせない（引き継ぎで読み直したときだけ
+  // [homeListFiltersReloaded]で知らせる）。
+  final Map<HomeList, HomeListFilters> _homeListFilters = {};
+
+  // 保存できなかった項目（次にその一覧で選び直したときに書き直す）。
+  final Map<HomeList, Set<_HomeListField>> _unsavedHomeListFields = {};
+
+  final ValueNotifier<int> _homeListFiltersReloads = ValueNotifier(0);
+
+  /// 設定の引き継ぎを読み込んで[homeListFilters]を読み直したとき。開いて
+  /// いる一覧は、これを聞いて読み込んだ並び順・絞り込みにする。
+  Listenable get homeListFiltersReloaded => _homeListFiltersReloads;
+
+  /// [list]で選んである並び順・絞り込み（選んでいなければ既定）。
+  HomeListFilters homeListFilters(HomeList list) =>
+      _homeListFilters[list] ?? const HomeListFilters();
+
+  /// [list]で選び直した並び順・絞り込みを覚えて保存する。渡した項目だけを
+  /// 変える（null の項目は今のまま。読めない保存の値は、その項目を選び
+  /// 直したときにだけ書き換わる）。前に保存できなかった項目も書き直す。
+  Future<void> updateHomeListFilters(
+    HomeList list, {
+    String? sort,
+    bool? favoritesOnly,
+    Set<String>? hiddenKinds,
+  }) async {
+    final before = homeListFilters(list);
+    final next = HomeListFilters(
+      sort: sort ?? before.sort,
+      favoritesOnly: favoritesOnly ?? before.favoritesOnly,
+      hiddenKinds: hiddenKinds ?? before.hiddenKinds,
+    );
+    _homeListFilters[list] = next;
+    final fields = {
+      ...?_unsavedHomeListFields.remove(list),
+      if (next.sort != before.sort) _HomeListField.sort,
+      if (next.favoritesOnly != before.favoritesOnly)
+        _HomeListField.favoritesOnly,
+      if (!setEquals(next.hiddenKinds, before.hiddenKinds))
+        _HomeListField.hiddenKinds,
+    };
+    if (fields.isEmpty) return;
+    // 保存できなくても、開いている間は選んだ並び・絞り込みのまま。一覧の
+    // 操作は止めず、エラーの記録へ残して、次に選び直したときに書き直す
+    // （書けたことにしない）。
+    final unsaved = <_HomeListField>{};
+    SharedPreferences? prefs;
+    try {
+      prefs = await SharedPreferences.getInstance();
+    } catch (error, stack) {
+      unsaved.addAll(fields);
+      AppErrorReporter.record(error, stack);
+    }
+    if (prefs != null) {
+      for (final field in fields) {
+        try {
+          if (!await _writeHomeListFilter(prefs, list, field, next)) {
+            throw StateError(
+              'Home list ${list.name} ${field.name} was not saved',
+            );
+          }
+        } catch (error, stack) {
+          unsaved.add(field);
+          AppErrorReporter.record(error, stack);
+        }
+      }
+    }
+    if (unsaved.isNotEmpty) {
+      (_unsavedHomeListFields[list] ??= {}).addAll(unsaved);
+    }
+  }
+
+  /// 設定の引き継ぎで書き換わった保存から、ホームの一覧の並び順・絞り込みを
+  /// 読み直し、開いている一覧に知らせる。
+  Future<void> reloadHomeListFilters() async {
+    final prefs = await SharedPreferences.getInstance();
+    _readHomeListFilters(prefs);
+    _unsavedHomeListFields.clear();
+    _homeListFiltersReloads.value++;
+  }
+
+  // [list]の[field]を[filters]の値で保存する（その一覧に無い項目は何も
+  // しない）。
+  Future<bool> _writeHomeListFilter(
+    SharedPreferences prefs,
+    HomeList list,
+    _HomeListField field,
+    HomeListFilters filters,
+  ) async {
+    final sort = filters.sort;
+    switch (field) {
+      case _HomeListField.sort:
+        if (sort == null) return true;
+        return switch (list) {
+          HomeList.projects => prefs.setString('home.projectSortMode.v1', sort),
+          HomeList.works => prefs.setString('home.worksSortMode.v1', sort),
+          HomeList.shared => prefs.setString('home.sharedSortMode.v1', sort),
+          HomeList.trash => prefs.setString('home.trashSortMode.v1', sort),
+        };
+      case _HomeListField.favoritesOnly:
+        final value = filters.favoritesOnly;
+        return switch (list) {
+          HomeList.projects => prefs.setBool(
+            'home.projectFavoritesOnly.v1',
+            value,
+          ),
+          HomeList.works => prefs.setBool('home.worksFavoritesOnly.v1', value),
+          HomeList.shared => prefs.setBool(
+            'home.sharedFavoritesOnly.v1',
+            value,
+          ),
+          HomeList.trash => true,
+        };
+      case _HomeListField.hiddenKinds:
+        if (list != HomeList.trash) return true;
+        return prefs.setStringList(
+          'home.trashHiddenKinds.v1',
+          filters.hiddenKinds.toList()..sort(),
+        );
+    }
+  }
+
+  void _readHomeListFilters(SharedPreferences prefs) {
+    _homeListFilters
+      ..clear()
+      ..[HomeList.projects] = HomeListFilters(
+        sort: prefs.readString('home.projectSortMode.v1'),
+        favoritesOnly: prefs.readBool('home.projectFavoritesOnly.v1') ?? false,
+      )
+      ..[HomeList.works] = HomeListFilters(
+        sort: prefs.readString('home.worksSortMode.v1'),
+        favoritesOnly: prefs.readBool('home.worksFavoritesOnly.v1') ?? false,
+      )
+      ..[HomeList.shared] = HomeListFilters(
+        sort: prefs.readString('home.sharedSortMode.v1'),
+        favoritesOnly: prefs.readBool('home.sharedFavoritesOnly.v1') ?? false,
+      )
+      ..[HomeList.trash] = HomeListFilters(
+        sort: prefs.readString('home.trashSortMode.v1'),
+        hiddenKinds: {...?prefs.readStringList('home.trashHiddenKinds.v1')},
+      );
+  }
+
+  @override
+  void dispose() {
+    _homeListFiltersReloads.dispose();
+    super.dispose();
+  }
 }
+
+/// ホームの一覧で覚える項目（保存のキーは一覧ごと）。
+enum _HomeListField { sort, favoritesOnly, hiddenKinds }
 
 enum GestureType {
   twoFingerTap,

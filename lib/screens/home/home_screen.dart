@@ -3,6 +3,7 @@ import 'package:niarim/services/theme_service.dart';
 import 'dart:async';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart' show setEquals;
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -15,6 +16,7 @@ import 'package:video_player/video_player.dart';
 import '../../engine/export_engine.dart';
 import '../../engine/niapro_serializer.dart';
 import '../../l10n/app_localizations.dart';
+import '../../models/home_list_filters.dart';
 import '../../models/project.dart';
 import '../../services/community_service.dart';
 import '../../services/google_auth_service.dart';
@@ -527,35 +529,37 @@ class _HomeScreenState extends State<HomeScreen>
     }
   }
 
+  // 選んだ並び順と「お気に入りのみ」は起動し直しても引き継ぐ（作品一覧・
+  // 共有・ゴミ箱と同じく設定に残す。設定の引き継ぎにも入る）。initState で
+  // 設定から同期で戻すので、最初のフレームから選んだ並びで出る。
   ProjectSortMode _sortMode = ProjectSortMode.updatedDesc;
-  // 選んだ並び順は起動し直しても引き継ぐ（設定の引き継ぎにも入る）。
-  static const _projectSortModeKey = 'home.projectSortMode.v1';
-  bool _sortModeChosen = false;
+  SettingsService? _listFilterSettings;
 
-  Future<void> _loadProjectSortMode() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final saved = prefs.readString(_projectSortModeKey);
-      if (!mounted || saved == null || _sortModeChosen) return;
-      for (final mode in ProjectSortMode.values) {
-        if (mode.name == saved) {
-          setState(() => _sortMode = mode);
-          return;
-        }
-      }
-    } catch (error) {
-      debugPrint('Project sort preference could not be restored: $error');
-    }
+  void _restoreProjectFilters() {
+    final saved = _listFilterSettings!.homeListFilters(HomeList.projects);
+    _sortMode = _savedSortMode(saved.sort);
+    _showFavoritesOnly = saved.favoritesOnly;
   }
 
-  Future<void> _saveProjectSortMode() async {
-    _sortModeChosen = true;
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString(_projectSortModeKey, _sortMode.name);
-    } catch (error) {
-      debugPrint('Project sort preference could not be saved: $error');
-    }
+  // 設定の引き継ぎで読み込んだ並び順・絞り込みを、開いている一覧にも当てる
+  // （絞り込みが変わったら、手で切り替えたときと同じく選ぶのを終える）。
+  void _onListFiltersReloaded() {
+    if (!mounted) return;
+    final favouritesBefore = _showFavoritesOnly;
+    setState(() {
+      _restoreProjectFilters();
+      if (_showFavoritesOnly != favouritesBefore) {
+        _selectedIds.clear();
+        _isSelectionMode = false;
+      }
+    });
+  }
+
+  void _rememberProjectSort() {
+    _listFilterSettings?.updateHomeListFilters(
+      HomeList.projects,
+      sort: _sortMode.name,
+    );
   }
 
   bool _isSelectionMode = false;
@@ -616,7 +620,9 @@ class _HomeScreenState extends State<HomeScreen>
       }
     });
     _loadProjectViewMode();
-    _loadProjectSortMode();
+    _listFilterSettings = context.read<SettingsService>()
+      ..homeListFiltersReloaded.addListener(_onListFiltersReloaded);
+    _restoreProjectFilters();
     _loadWorksViewMode();
     _loadSharedViewMode();
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -674,6 +680,9 @@ class _HomeScreenState extends State<HomeScreen>
     _coveredBy?.removeStatusListener(_onCoveredChanged);
     _closeClipboardNotice();
     WidgetsBinding.instance.removeObserver(this);
+    _listFilterSettings?.homeListFiltersReloaded.removeListener(
+      _onListFiltersReloaded,
+    );
     _tabController.dispose();
     _searchController.dispose();
     _searchFocus.dispose();
@@ -809,7 +818,7 @@ class _HomeScreenState extends State<HomeScreen>
                 ? ProjectSortMode.updatedAsc
                 : ProjectSortMode.updatedDesc);
     });
-    _saveProjectSortMode();
+    _rememberProjectSort();
   }
 
   void _toggleSortDirection() {
@@ -821,7 +830,7 @@ class _HomeScreenState extends State<HomeScreen>
         ProjectSortMode.updatedDesc => ProjectSortMode.updatedAsc,
       };
     });
-    _saveProjectSortMode();
+    _rememberProjectSort();
   }
 
   @override
@@ -1857,6 +1866,10 @@ class _HomeScreenState extends State<HomeScreen>
       _selectedIds.clear();
       _isSelectionMode = false;
     });
+    _listFilterSettings?.updateHomeListFilters(
+      HomeList.projects,
+      favoritesOnly: _showFavoritesOnly,
+    );
   }
 
   void _resetProjectSearch() {
@@ -2957,39 +2970,119 @@ class _HomeTabBar extends StatelessWidget {
   }
 }
 
-/// 共有一覧。ホームタブと'/shared'直リンクで共用する。
-/// 作品一覧・共有・ゴミ箱の並び順・絞り込みを、タブを切り替えて戻っても
-/// 覚えておく。TabBarView は見えないタブの中身を破棄する（以前はタブを
-/// 切り替えるたびに「更新日時」順・絞り込みなしへ戻った。プロジェクトのタブは
-/// ホームの画面が覚えている）。破棄するときに画面（ルート）の PageStorage へ
-/// 置き、作り直すときに戻すので、ホームを開いている間だけ残る。
+/// 作品一覧・共有・ゴミ箱の並び順・絞り込みを、タブを切り替えて戻っても、
+/// アプリを起動し直しても覚えておく（所有者の判断：プロジェクトと同じく
+/// 起動し直しても残す。設定の引き継ぎにも入る）。TabBarView は見えない
+/// タブの中身を破棄するので、作るときに設定（[SettingsService]）から戻し、
+/// 変わったらすぐ設定へ書く（破棄のときに書くと、アプリを閉じる・落ちる
+/// ときに残らない）。並び順（名前／更新日時と向き）を変える操作もここに
+/// まとめる。
 mixin _RememberedListFilters<T extends StatefulWidget> on State<T> {
-  /// PageStorage の中でこの一覧の並び順・絞り込みを置く名前。
-  String get filtersId;
+  /// 設定の中でこの一覧の並び順・絞り込みを覚える区分。
+  HomeList get filtersList;
 
   /// 今の並び順・絞り込み（後から変えても影響しない写し）。
-  Object get filters;
+  HomeListFilters get filters;
 
-  /// [filters]で置いた値を戻す。
-  void restoreFilters(Object saved);
+  /// 覚えていた並び順・絞り込みを戻す（読めない・知らない名前は既定のまま）。
+  void restoreFilters(HomeListFilters saved);
 
-  PageStorageBucket? _filtersBucket;
+  /// この一覧の並び順（[ProjectSortMode]の4つ）。
+  ProjectSortMode get _sortMode;
+  set _sortMode(ProjectSortMode mode);
+
+  SettingsService? _filterSettings;
+  late HomeListFilters _rememberedFilters;
 
   @override
   void initState() {
     super.initState();
-    _filtersBucket = PageStorage.maybeOf(context);
-    final saved = _filtersBucket?.readState(context, identifier: filtersId);
+    _filterSettings = context.read<SettingsService?>();
+    final saved = _filterSettings?.homeListFilters(filtersList);
     if (saved != null) restoreFilters(saved);
+    _rememberedFilters = filters;
+    _filterSettings?.homeListFiltersReloaded.addListener(_reloadFilters);
   }
 
   @override
   void dispose() {
-    _filtersBucket?.writeState(context, filters, identifier: filtersId);
+    _filterSettings?.homeListFiltersReloaded.removeListener(_reloadFilters);
     super.dispose();
+  }
+
+  // 設定の引き継ぎで読み込んだ並び順・絞り込みを、開いている一覧にも当てる
+  // （読み込んだ値なので書き戻さない）。
+  void _reloadFilters() {
+    final saved = _filterSettings?.homeListFilters(filtersList);
+    if (saved == null || !mounted) return;
+    restoreFilters(saved);
+    _rememberedFilters = filters;
+    super.setState(() {});
+  }
+
+  // 並び順・絞り込みを変える操作はどれも setState を通るので、ここで見て、
+  // 変わった項目だけを設定へ書く。
+  @override
+  void setState(VoidCallback fn) {
+    super.setState(fn);
+    final before = _rememberedFilters;
+    final now = filters;
+    if (now == before) return;
+    _rememberedFilters = now;
+    _filterSettings?.updateHomeListFilters(
+      filtersList,
+      sort: now.sort == before.sort ? null : now.sort,
+      favoritesOnly: now.favoritesOnly == before.favoritesOnly
+          ? null
+          : now.favoritesOnly,
+      hiddenKinds: setEquals(now.hiddenKinds, before.hiddenKinds)
+          ? null
+          : now.hiddenKinds,
+    );
+  }
+
+  // 現在の並び替えが名前基準かどうか（項目自体は4値のままだが、UI上は
+  // 「項目（名前／更新日時）」と「昇順/降順」を別々の操作にする）。
+  bool get _sortByName =>
+      _sortMode == ProjectSortMode.nameAsc ||
+      _sortMode == ProjectSortMode.nameDesc;
+  bool get _sortAscending =>
+      _sortMode == ProjectSortMode.nameAsc ||
+      _sortMode == ProjectSortMode.updatedAsc;
+
+  void _setSortByName(bool byName) => _chooseSort(
+    byName
+        ? (_sortAscending ? ProjectSortMode.nameAsc : ProjectSortMode.nameDesc)
+        : (_sortAscending
+              ? ProjectSortMode.updatedAsc
+              : ProjectSortMode.updatedDesc),
+  );
+
+  void _toggleSortDirection() => _chooseSort(switch (_sortMode) {
+    ProjectSortMode.nameAsc => ProjectSortMode.nameDesc,
+    ProjectSortMode.nameDesc => ProjectSortMode.nameAsc,
+    ProjectSortMode.updatedAsc => ProjectSortMode.updatedDesc,
+    ProjectSortMode.updatedDesc => ProjectSortMode.updatedAsc,
+  });
+
+  /// [mode]をこの一覧の並び順にする。この一覧から開いたフォルダの中で
+  /// 選んだときも（プロジェクトのフォルダと同じく、フォルダの中と外で同じ
+  /// 並び順。戻ったときもその並びで出し、起動し直しても残る）。
+  void _chooseSort(ProjectSortMode mode) {
+    if (mounted) {
+      setState(() => _sortMode = mode);
+    } else {
+      _filterSettings?.updateHomeListFilters(filtersList, sort: mode.name);
+    }
   }
 }
 
+/// 保存した並び順の名前（[ProjectSortMode]）。読めない・知らない名前は
+/// 既定の「更新日時」の新しい順。
+ProjectSortMode _savedSortMode(String? name) =>
+    ProjectSortMode.values.asNameMap()[name] ?? ProjectSortMode.updatedDesc;
+
+/// 共有一覧。ホームタブと'/shared'直リンクで共用する。
 class SharedScreen extends StatefulWidget {
   const SharedScreen({
     super.key,
@@ -3026,15 +3119,14 @@ class SharedScreen extends StatefulWidget {
 class _SharedScreenState extends State<SharedScreen>
     with _RememberedListFilters<SharedScreen> {
   @override
-  String get filtersId => 'home-shared-filters';
+  HomeList get filtersList => HomeList.shared;
   @override
-  Object get filters => (_sortMode, _showFavoritesOnly);
+  HomeListFilters get filters =>
+      HomeListFilters(sort: _sortMode.name, favoritesOnly: _showFavoritesOnly);
   @override
-  void restoreFilters(Object saved) {
-    if (saved case (final ProjectSortMode sort, final bool favourites)) {
-      _sortMode = sort;
-      _showFavoritesOnly = favourites;
-    }
+  void restoreFilters(HomeListFilters saved) {
+    _sortMode = _savedSortMode(saved.sort);
+    _showFavoritesOnly = saved.favoritesOnly;
   }
 
   // Keep the received and locally exported snapshot collections distinct.
@@ -3080,38 +3172,9 @@ class _SharedScreenState extends State<SharedScreen>
 
   // プロジェクトタブと同じ並び替え基準・お気に入り絞り込みを、共有一覧にも
   // 同じ見た目・操作性で提供する。
+  @override
   ProjectSortMode _sortMode = ProjectSortMode.updatedDesc;
   bool _showFavoritesOnly = false;
-
-  bool get _sortByName =>
-      _sortMode == ProjectSortMode.nameAsc ||
-      _sortMode == ProjectSortMode.nameDesc;
-  bool get _sortAscending =>
-      _sortMode == ProjectSortMode.nameAsc ||
-      _sortMode == ProjectSortMode.updatedAsc;
-
-  void _setSortByName(bool byName) {
-    setState(() {
-      _sortMode = byName
-          ? (_sortAscending
-                ? ProjectSortMode.nameAsc
-                : ProjectSortMode.nameDesc)
-          : (_sortAscending
-                ? ProjectSortMode.updatedAsc
-                : ProjectSortMode.updatedDesc);
-    });
-  }
-
-  void _toggleSortDirection() {
-    setState(() {
-      _sortMode = switch (_sortMode) {
-        ProjectSortMode.nameAsc => ProjectSortMode.nameDesc,
-        ProjectSortMode.nameDesc => ProjectSortMode.nameAsc,
-        ProjectSortMode.updatedAsc => ProjectSortMode.updatedDesc,
-        ProjectSortMode.updatedDesc => ProjectSortMode.updatedAsc,
-      };
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -3249,56 +3312,31 @@ class TrashScreen extends StatefulWidget {
 class _TrashScreenState extends State<TrashScreen>
     with _RememberedListFilters<TrashScreen> {
   @override
-  String get filtersId => 'home-trash-filters';
+  HomeList get filtersList => HomeList.trash;
   @override
-  Object get filters => (_sortMode, Set<TrashEntryKind>.of(_selectedKinds));
+  HomeListFilters get filters => HomeListFilters(
+    sort: _sortMode.name,
+    hiddenKinds: {
+      for (final kind in TrashEntryKind.values)
+        if (!_selectedKinds.contains(kind)) kind.name,
+    },
+  );
   @override
-  void restoreFilters(Object saved) {
-    if (saved case (
-      final ProjectSortMode sort,
-      final Set<TrashEntryKind> kinds,
-    )) {
-      _sortMode = sort;
-      _selectedKinds
-        ..clear()
-        ..addAll(kinds);
-    }
+  void restoreFilters(HomeListFilters saved) {
+    _sortMode = _savedSortMode(saved.sort);
+    _selectedKinds
+      ..clear()
+      ..addAll([
+        for (final kind in TrashEntryKind.values)
+          if (!saved.hiddenKinds.contains(kind.name)) kind,
+      ]);
   }
 
   // 共有一覧・プロジェクトタブと同じ並び替え基準を、同じ見た目・操作性で
   // 提供する（ゴミ箱にお気に入りの概念はないため絞り込みは対象外）。
+  @override
   ProjectSortMode _sortMode = ProjectSortMode.updatedDesc;
   final Set<TrashEntryKind> _selectedKinds = {...TrashEntryKind.values};
-
-  bool get _sortByName =>
-      _sortMode == ProjectSortMode.nameAsc ||
-      _sortMode == ProjectSortMode.nameDesc;
-  bool get _sortAscending =>
-      _sortMode == ProjectSortMode.nameAsc ||
-      _sortMode == ProjectSortMode.updatedAsc;
-
-  void _setSortByName(bool byName) {
-    setState(() {
-      _sortMode = byName
-          ? (_sortAscending
-                ? ProjectSortMode.nameAsc
-                : ProjectSortMode.nameDesc)
-          : (_sortAscending
-                ? ProjectSortMode.updatedAsc
-                : ProjectSortMode.updatedDesc);
-    });
-  }
-
-  void _toggleSortDirection() {
-    setState(() {
-      _sortMode = switch (_sortMode) {
-        ProjectSortMode.nameAsc => ProjectSortMode.nameDesc,
-        ProjectSortMode.nameDesc => ProjectSortMode.nameAsc,
-        ProjectSortMode.updatedAsc => ProjectSortMode.updatedDesc,
-        ProjectSortMode.updatedDesc => ProjectSortMode.updatedAsc,
-      };
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -3547,6 +3585,7 @@ class _SharedTab extends StatelessWidget {
                 folderName: folderName,
                 viewMode: viewMode,
                 onViewModeChanged: onViewModeChanged,
+                sortMode: sortMode,
                 showFavoritesOnly:
                     showFavoritesOnly &&
                     !service.sharedFolders.any(
@@ -4285,6 +4324,10 @@ class _SharedFolderScreen extends StatefulWidget {
   final String folderName;
   final ProjectViewMode viewMode;
   final ValueChanged<ProjectViewMode> onViewModeChanged;
+
+  /// 共有の一覧の並び順（「お気に入りのみ」と同じく、フォルダの中にも
+  /// 当てる）。
+  final ProjectSortMode sortMode;
   final bool showFavoritesOnly;
   final String searchQuery;
   final ValueChanged<HomeClipboardEntry>? onCopyEntry;
@@ -4294,6 +4337,7 @@ class _SharedFolderScreen extends StatefulWidget {
     required this.folderName,
     required this.viewMode,
     required this.onViewModeChanged,
+    required this.sortMode,
     required this.showFavoritesOnly,
     required this.searchQuery,
     this.onCopyEntry,
@@ -4315,16 +4359,19 @@ class _SharedFolderScreenState extends State<_SharedFolderScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final query = foldName(widget.searchQuery).trim();
-    final items = context
-        .watch<ProjectService>()
-        .shared
-        .where(
-          (p) =>
-              p.sharedFolderId == widget.folderId &&
-              (!widget.showFavoritesOnly || p.isFavorite) &&
-              (query.isEmpty || nameMatches(p.name, query)),
-        )
-        .toList();
+    final items = _sortProjects(
+      context
+          .watch<ProjectService>()
+          .shared
+          .where(
+            (p) =>
+                p.sharedFolderId == widget.folderId &&
+                (!widget.showFavoritesOnly || p.isFavorite) &&
+                (query.isEmpty || nameMatches(p.name, query)),
+          )
+          .toList(),
+      widget.sortMode,
+    );
     Widget card(BuildContext ctx, int i, bool grid) =>
         _receivedShareProjectTile(
           ctx,
@@ -5708,21 +5755,21 @@ class _WorksTab extends StatefulWidget {
 class _WorksTabState extends State<_WorksTab>
     with _RememberedListFilters<_WorksTab> {
   @override
-  String get filtersId => 'home-works-filters';
+  HomeList get filtersList => HomeList.works;
   @override
-  Object get filters => (_sortMode, _showFavoritesOnly);
+  HomeListFilters get filters =>
+      HomeListFilters(sort: _sortMode.name, favoritesOnly: _showFavoritesOnly);
   @override
-  void restoreFilters(Object saved) {
-    if (saved case (final ProjectSortMode sort, final bool favourites)) {
-      _sortMode = sort;
-      _showFavoritesOnly = favourites;
-    }
+  void restoreFilters(HomeListFilters saved) {
+    _sortMode = _savedSortMode(saved.sort);
+    _showFavoritesOnly = saved.favoritesOnly;
   }
 
   static const _favoritePathsKey = 'home.works.favoritePaths.v1';
   final Set<String> _favoritePaths = {};
   bool _showFavoritesOnly = false;
   late Future<List<File>> _future;
+  @override
   ProjectSortMode _sortMode = ProjectSortMode.updatedDesc;
 
   Future<void> _loadFavoritePaths() async {
@@ -5754,29 +5801,6 @@ class _WorksTabState extends State<_WorksTab>
       debugPrint('Works favorites could not be saved: $error');
     }
   }
-
-  bool get _sortByName =>
-      _sortMode == ProjectSortMode.nameAsc ||
-      _sortMode == ProjectSortMode.nameDesc;
-  bool get _sortAscending =>
-      _sortMode == ProjectSortMode.nameAsc ||
-      _sortMode == ProjectSortMode.updatedAsc;
-
-  void _setSortByName(bool byName) => setState(() {
-    _sortMode = byName
-        ? (_sortAscending ? ProjectSortMode.nameAsc : ProjectSortMode.nameDesc)
-        : (_sortAscending
-              ? ProjectSortMode.updatedAsc
-              : ProjectSortMode.updatedDesc);
-  });
-  void _toggleSortDirection() => setState(() {
-    _sortMode = switch (_sortMode) {
-      ProjectSortMode.nameAsc => ProjectSortMode.nameDesc,
-      ProjectSortMode.nameDesc => ProjectSortMode.nameAsc,
-      ProjectSortMode.updatedAsc => ProjectSortMode.updatedDesc,
-      ProjectSortMode.updatedDesc => ProjectSortMode.updatedAsc,
-    };
-  });
 
   @override
   void initState() {
@@ -5929,6 +5953,7 @@ class _WorksTabState extends State<_WorksTab>
                       folderName: folderName,
                       viewMode: widget.viewMode,
                       initialSortMode: _sortMode,
+                      onSortModeChanged: _chooseSort,
                       searchQuery: nameMatches(folderName, query)
                           ? ''
                           : widget.searchQuery,
@@ -6028,6 +6053,10 @@ class _WorksFolderScreen extends StatefulWidget {
   final ValueChanged<HomeClipboardEntry>? onCopyEntry;
   final ProjectViewMode viewMode;
   final ProjectSortMode initialSortMode;
+
+  /// フォルダの中で選んだ並び順（作品一覧の並び順にする。プロジェクトの
+  /// フォルダと同じく、フォルダの中と外で同じ並び順）。
+  final ValueChanged<ProjectSortMode> onSortModeChanged;
   final ValueChanged<ProjectViewMode> onViewModeChanged;
   final String searchQuery;
   final bool favoritesOnly;
@@ -6038,6 +6067,7 @@ class _WorksFolderScreen extends StatefulWidget {
     required this.folderName,
     required this.viewMode,
     required this.initialSortMode,
+    required this.onSortModeChanged,
     required this.searchQuery,
     required this.favoritesOnly,
     required this.favoritePaths,
@@ -6070,21 +6100,25 @@ class _WorksFolderScreenState extends State<_WorksFolderScreen> {
   bool get _sortAscending =>
       _sortMode == ProjectSortMode.nameAsc ||
       _sortMode == ProjectSortMode.updatedAsc;
-  void _setSortByName(bool byName) => setState(() {
-    _sortMode = byName
+  void _setSortByName(bool byName) => _chooseSort(
+    byName
         ? (_sortAscending ? ProjectSortMode.nameAsc : ProjectSortMode.nameDesc)
         : (_sortAscending
               ? ProjectSortMode.updatedAsc
-              : ProjectSortMode.updatedDesc);
+              : ProjectSortMode.updatedDesc),
+  );
+  void _toggleSortDirection() => _chooseSort(switch (_sortMode) {
+    ProjectSortMode.nameAsc => ProjectSortMode.nameDesc,
+    ProjectSortMode.nameDesc => ProjectSortMode.nameAsc,
+    ProjectSortMode.updatedAsc => ProjectSortMode.updatedDesc,
+    ProjectSortMode.updatedDesc => ProjectSortMode.updatedAsc,
   });
-  void _toggleSortDirection() => setState(() {
-    _sortMode = switch (_sortMode) {
-      ProjectSortMode.nameAsc => ProjectSortMode.nameDesc,
-      ProjectSortMode.nameDesc => ProjectSortMode.nameAsc,
-      ProjectSortMode.updatedAsc => ProjectSortMode.updatedDesc,
-      ProjectSortMode.updatedDesc => ProjectSortMode.updatedAsc,
-    };
-  });
+
+  // 作品一覧の並び順にする（覚えて、戻ったときもその並びで出す）。
+  void _chooseSort(ProjectSortMode mode) {
+    setState(() => _sortMode = mode);
+    widget.onSortModeChanged(mode);
+  }
 
   void _selectViewMode(ProjectViewMode mode) {
     setState(() => _viewMode = mode);
