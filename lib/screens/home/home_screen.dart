@@ -36,6 +36,7 @@ import '../../widgets/ad_banner_mock_widget.dart';
 import '../../widgets/app_toast_messenger.dart';
 import '../../widgets/empty_state_placeholder.dart';
 import '../../widgets/date_line_text.dart';
+import '../../widgets/korean_words_text.dart';
 import '../../widgets/sort_mode_control.dart';
 import '../../widgets/project_trash_dialog.dart';
 import '../../widgets/collection_action_controls.dart';
@@ -3564,7 +3565,7 @@ Widget _receivedShareProjectTile(
       color: theme.colorScheme.surfaceContainerLow,
       child: ListTile(
         leading: SizedBox(width: 56, height: 56, child: cover()),
-        title: Text(project.name, style: captionStyle),
+        title: KoreanWordsText(project.name, style: captionStyle),
         subtitle: DateLineText(
           '${l10n.homeProjectMeta(project.fps, project.durationSeconds)}\n'
           '${l10n.projectListUpdatedOn(project.updatedAt)}',
@@ -5167,6 +5168,7 @@ class _TrashTabState extends State<_TrashTab> {
       ),
       title: project.name,
       subtitle: subtitle,
+      subtitleDate: deleted,
       actions: actions,
     );
   }
@@ -5229,6 +5231,7 @@ class _TrashTabState extends State<_TrashTab> {
         _trashKindLabel(context, kind),
         _deletedLabel(entry.deletedAt, l10n),
       ].join(' · '),
+      subtitleDate: entry.deletedAt,
       actions: actions,
     );
   }
@@ -5240,20 +5243,31 @@ class _TrashTabState extends State<_TrashTab> {
     required String subtitle,
     required List<Widget> actions,
     Key? detailsKey,
+    DateTime? subtitleDate,
   }) {
     final selection = HomeCollectionSelectionScope.maybeOf(context);
     final selecting = selection?.active ?? false;
     final details = ListTile(
       key: detailsKey,
       leading: leading,
-      title: Text(
+      // 韓国語の名前・2行目は語の途中で、日付は日付の途中で行を変えない
+      // （「삭제 / 됨」「2026. 11. / 14.」と切れた）。日付の中に空白がある
+      // （行を変えうる）のは韓国語の書き方だけなので、ほかの言語の2行目は
+      // 普通の文のまま。
+      title: KoreanWordsText(
         title,
         style: const TextStyle(
           fontFamily: 'Kuramubon',
           fontFamilyFallback: kHeadingFontFallback,
         ),
       ),
-      subtitle: Text(subtitle),
+      subtitle: subtitleDate == null || !containsHangul(subtitle)
+          ? KoreanWordsText(subtitle)
+          : DateLineText(
+              subtitle,
+              when: subtitleDate,
+              localeName: AppLocalizations.of(context)!.localeName,
+            ),
     );
     // カードを押す・長押しする所とマウスを載せた色は、カード全体（ボタンの
     // 行も含む）。名前の行（ListTile）だけに付けていた頃は、ボタンの行の

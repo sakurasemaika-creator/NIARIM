@@ -325,6 +325,8 @@ List<String> _breaksInsideWords(
   return found;
 }
 
+final _hangulSyllable = RegExp(r'[가-힣]');
+bool _isHangul(String c) => _hangulSyllable.hasMatch(c);
 bool _isLatinLetter(String c) => RegExp(r'[A-Za-zÀ-ÿ]').hasMatch(c);
 
 void main() {
@@ -588,6 +590,61 @@ void main() {
       findsOneWidget,
       reason: 'works failure is drawn differently from the other tabs',
     );
+    await home.close();
+  });
+
+  testWidgets('韓国語：ゴミ箱の「삭제됨」・日付、詳細表示の名前、作品一覧の読めなかった知らせ', (tester) async {
+    final home = _Home(tester);
+    final problems = <String>[];
+    for (final width in const [320.0, 360.0, 390.0]) {
+      await home.open(
+        language: 'ko',
+        size: Size(width, 844),
+        scale: 1.3,
+        prefs: const {'home.projectViewMode.v1': 'detail'},
+      );
+      await home.addProject('애니메이션 연습 장면과 표정 연습 모음');
+      for (final element
+          in find
+              .text('애니메이션 연습 장면과 표정 연습 모음', findRichText: true)
+              .evaluate()) {
+        final render = element.renderObject;
+        if (render is! RenderParagraph) continue;
+        problems.addAll(
+          _breaksInsideWords(render, _isHangul).map((b) => '$width name: $b'),
+        );
+      }
+      await home.trashProject('오래된 초안');
+      await home.showTab(3);
+      for (final element
+          in find.textContaining('삭제됨', findRichText: true).evaluate()) {
+        final render = element.renderObject;
+        if (render is! RenderParagraph) continue;
+        problems.addAll(
+          _breaksInsideWords(
+            render,
+            (c) => _isHangul(c) || RegExp(r'[0-9.]').hasMatch(c),
+          ).map((b) => '$width trash: $b'),
+        );
+      }
+      await home.close();
+    }
+    await home.open(
+      language: 'ko',
+      size: const Size(320, 844),
+      scale: 2,
+      failing: true,
+    );
+    await home.showTab(1);
+    for (final element
+        in find.textContaining('불러오지', findRichText: true).evaluate()) {
+      final render = element.renderObject;
+      if (render is! RenderParagraph) continue;
+      problems.addAll(
+        _breaksInsideWords(render, _isHangul).map((b) => 'works: $b'),
+      );
+    }
+    expect(problems, isEmpty);
     await home.close();
   });
 }

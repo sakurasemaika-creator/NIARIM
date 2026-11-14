@@ -21,6 +21,7 @@ import '../home_screen.dart';
 import '../../../config/font_fallback.dart';
 import '../../../widgets/checked_menu_item.dart';
 import '../../../widgets/empty_state_placeholder.dart';
+import '../../../widgets/korean_words_text.dart';
 import '../../../widgets/export_share_feedback.dart';
 import '../../../widgets/frame_preview_background.dart';
 import '../../../widgets/project_trash_dialog.dart';
@@ -667,7 +668,8 @@ class ProjectListWidget extends StatelessWidget {
                 child: _thumbnail(context, project, displayWidth: 48),
               ),
             ),
-      title: Text(project.name),
+      // 韓国語の名前は語の途中で行を変えない。
+      title: KoreanWordsText(project.name),
       // 2行目は最後に保存した日時（その言語の日付と時刻の書き方）。検索の
       // 結果には、入っているフォルダを添える。
       subtitle: DateLineText(
@@ -728,7 +730,7 @@ class ProjectListWidget extends StatelessWidget {
                 defaultImagePath: _projectFolderCoverPath(context, folder),
               ),
             ),
-      title: Text(
+      title: KoreanWordsText(
         folder.name,
         style: const TextStyle(
           fontWeight: FontWeight.w600,
