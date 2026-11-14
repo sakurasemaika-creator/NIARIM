@@ -23,6 +23,8 @@ import '../../config/font_fallback.dart';
 import '../../config/accent_text_theme.dart';
 import 'package:intl/intl.dart';
 import '../../widgets/fit_or_hide_title.dart';
+import '../../widgets/button_row_or_stack.dart';
+import '../../widgets/first_that_fits.dart';
 
 /// 作品詳細画面（別ルート、`/community/work/:id`）。
 /// 横画面フローティングプレビューの「詳細へ」と縦画面の詳細情報アイコンは
@@ -406,6 +408,14 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
     final scheme = Theme.of(context).colorScheme;
     final languageCode = Localizations.localeOf(context).languageCode;
     final isBookmarked = communityService.isBookmarked(work.id);
+    final bookmarkIcon = isBookmarked ? Icons.bookmark : Icons.bookmark_border;
+    final bookmarkLabel = isBookmarked
+        ? l10n.communityWorkDetailBookmarkRemove
+        : l10n.communityWorkDetailBookmarkAdd;
+    void toggleBookmark() => _reportFailedEdit(
+      communityService,
+      communityService.toggleBookmark(work.id),
+    );
     final isAuthorSelf = isOwner;
     final isReposted = communityService.isRepostedBySelf(work.id);
     final canAddTag = work.tags.length < CommunityService.maxTagsPerWork;
@@ -670,29 +680,44 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
                 workId: work.id,
               ),
               const SizedBox(height: 20),
-              Row(
+              // 2つのボタンは、名前の幅のまま1行に入るなら並べ（「YouTubeで
+              // 見る」を広げる）、入らなければ1つずつの行に分ける（狭い幅・
+              // 大きな文字で「YouTubeで見る」が押しつぶされ、名前が語の途中で
+              // 折れた）。行の幅いっぱいでも名前が1行に入らなければアイコン
+              // （名前は吹き出しと読み上げ）。
+              ButtonRowOrStack(
                 children: [
-                  Expanded(
-                    child: FilledButton.icon(
-                      onPressed: () => _openYoutubeIfAvailable(work.id),
-                      icon: const Icon(Icons.smart_display_outlined),
-                      label: Text(l10n.communityWorkDetailViewOnYoutube),
-                    ),
+                  FirstThatFits(
+                    children: [
+                      FilledButton.icon(
+                        onPressed: () => _openYoutubeIfAvailable(work.id),
+                        icon: const Icon(Icons.smart_display_outlined),
+                        label: Text(l10n.communityWorkDetailViewOnYoutube),
+                      ),
+                      Tooltip(
+                        message: l10n.communityWorkDetailViewOnYoutube,
+                        child: FilledButton(
+                          onPressed: () => _openYoutubeIfAvailable(work.id),
+                          child: const Icon(Icons.smart_display_outlined),
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(width: 8),
-                  OutlinedButton.icon(
-                    onPressed: () => _reportFailedEdit(
-                      communityService,
-                      communityService.toggleBookmark(work.id),
-                    ),
-                    icon: Icon(
-                      isBookmarked ? Icons.bookmark : Icons.bookmark_border,
-                    ),
-                    label: Text(
-                      isBookmarked
-                          ? l10n.communityWorkDetailBookmarkRemove
-                          : l10n.communityWorkDetailBookmarkAdd,
-                    ),
+                  FirstThatFits(
+                    children: [
+                      OutlinedButton.icon(
+                        onPressed: toggleBookmark,
+                        icon: Icon(bookmarkIcon),
+                        label: Text(bookmarkLabel),
+                      ),
+                      Tooltip(
+                        message: bookmarkLabel,
+                        child: OutlinedButton(
+                          onPressed: toggleBookmark,
+                          child: Icon(bookmarkIcon),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
