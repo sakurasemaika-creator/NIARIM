@@ -1148,6 +1148,16 @@ onTap: ...)`だったために
   （`lib/widgets/project_not_found_view.dart`）：古いリンク・ゴミ箱へ移した後に
   プロジェクト詳細・キャンバスを開くと、空の画面を出さずに一覧へ戻す道を出す。
   作品IDを受け取る画面を新しく足すときもこれを使うこと。
+- **ホームの4つの一覧の並び順・絞り込みは起動し直しても残す（所有者の判断、2026-11-14）**：
+  プロジェクト・作品一覧・共有・ゴミ箱の並び順と向き・お気に入りだけ・ゴミ箱の種類の
+  絞り込みは`SettingsService.homeListFilters`（`lib/models/home_list_filters.dart`）に持ち、
+  一覧のStateの`setState`で変わった項目だけをすぐ保存する（`dispose`では保存しない。
+  強制終了で失われる）。最初のフレームから保存した値で出すため、読み込みは`init`で
+  同期に済ませる。作品一覧のフォルダの中で選んだ並び順は作品一覧の並び順、受け取った
+  フォルダの中は共有の並び順。検索・選択・開いているフォルダは残さない。設定の引き継ぎ
+  （.niatra）にも入り、読み込むと開いている一覧へすぐ当てる（`reloadHomeListFilters`）。
+  絞り込みを足すときは`HomeListFilters`・設定のキー・`niatra_serializer`の分類に足すこと
+  （`test/home_list_filters_persist_test.dart`）。
 - **作品・フォルダの名前で並べる・探すときは`lib/utils/name_collation.dart`**：
   `String.compareTo`だと「作品10」が「作品2」より前、大文字が小文字より前、
   全角英字・半角カナが最後になる。並べるときは`NameSortKey`で名前ごとに
