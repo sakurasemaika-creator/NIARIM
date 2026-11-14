@@ -8336,6 +8336,14 @@ class AppLocalizationsFr extends AppLocalizations {
       'Dans la corbeille, les éléments se copient un par un. Sélectionnez-en un seul.';
 
   @override
+  String get homeShareFileNameTaken =>
+      'Un fichier partagé porte déjà ce nom. Choisissez un autre nom.';
+
+  @override
+  String get homeShareFileRenameFailed =>
+      'Impossible de renommer le fichier. Réessayez.';
+
+  @override
   String get homeDrawerTutorial => 'Mode d’emploi';
 
   @override

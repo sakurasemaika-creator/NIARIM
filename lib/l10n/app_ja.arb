@@ -3914,6 +3914,14 @@
   "@homeTrashCopyOneAtATime": {
     "description": "ゴミ箱のタブで2つ以上選んだとき、コピーが押せない理由（吹き出し・読み上げ・押したときの知らせ）"
   },
+  "homeShareFileNameTaken": "同じ名前の共有ファイルがあります。別の名前にしてください。",
+  "@homeShareFileNameTaken": {
+    "description": "共有の「自分が作成したもの」の名前を、すでにある共有ファイルと同じ名前に変えようとしたとき（名前の変更のダイアログの中）"
+  },
+  "homeShareFileRenameFailed": "名前を変更できませんでした。もう一度お試しください。",
+  "@homeShareFileRenameFailed": {
+    "description": "共有の「自分が作成したもの」の名前を変更できなかったとき（名前の変更のダイアログの中）"
+  },
   "homeDrawerTutorial": "使い方",
   "themeColorAccentText": "アクセントの文字・アイコン色",
   "@themeColorAccentText": {

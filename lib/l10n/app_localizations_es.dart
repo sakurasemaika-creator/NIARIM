@@ -8321,6 +8321,14 @@ class AppLocalizationsEs extends AppLocalizations {
       'En la papelera, los elementos se copian de uno en uno. Selecciona solo uno.';
 
   @override
+  String get homeShareFileNameTaken =>
+      'Ya existe un archivo compartido con este nombre. Elige otro nombre.';
+
+  @override
+  String get homeShareFileRenameFailed =>
+      'No se pudo cambiar el nombre. Inténtalo de nuevo.';
+
+  @override
   String get homeDrawerTutorial => 'Cómo se usa';
 
   @override

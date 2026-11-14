@@ -3265,6 +3265,8 @@
   "homeSelectionOneAtATime": "On this tab, items are cut or copied one at a time. Select just one.",
   "homeTrashCutUnavailable": "Items in the Trash can’t be cut. To put an item back where it was, press “{restore}”.",
   "homeTrashCopyOneAtATime": "In the Trash, items are copied one at a time. Select just one.",
+  "homeShareFileNameTaken": "A shared file with this name already exists. Choose a different name.",
+  "homeShareFileRenameFailed": "Couldn’t rename the file. Please try again.",
   "homeDrawerTutorial": "How to use",
   "themeColorAccentText": "Accent text & icon color",
   "projectDetailNotFoundBackToList": "Go to projects",

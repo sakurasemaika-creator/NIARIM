@@ -8193,6 +8193,14 @@ class AppLocalizationsEn extends AppLocalizations {
       'In the Trash, items are copied one at a time. Select just one.';
 
   @override
+  String get homeShareFileNameTaken =>
+      'A shared file with this name already exists. Choose a different name.';
+
+  @override
+  String get homeShareFileRenameFailed =>
+      'Couldn’t rename the file. Please try again.';
+
+  @override
   String get homeDrawerTutorial => 'How to use';
 
   @override

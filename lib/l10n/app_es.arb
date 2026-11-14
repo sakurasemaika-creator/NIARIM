@@ -3258,6 +3258,8 @@
   "homeSelectionOneAtATime": "En esta pestaña, los elementos se cortan o se copian de uno en uno. Selecciona solo uno.",
   "homeTrashCutUnavailable": "Los elementos de la papelera no se pueden cortar. Para devolver un elemento a su lugar, pulsa «{restore}».",
   "homeTrashCopyOneAtATime": "En la papelera, los elementos se copian de uno en uno. Selecciona solo uno.",
+  "homeShareFileNameTaken": "Ya existe un archivo compartido con este nombre. Elige otro nombre.",
+  "homeShareFileRenameFailed": "No se pudo cambiar el nombre. Inténtalo de nuevo.",
   "homeDrawerTutorial": "Cómo se usa",
   "themeColorAccentText": "Color del texto y los iconos de acento",
   "projectDetailNotFoundBackToList": "Ir a los proyectos",

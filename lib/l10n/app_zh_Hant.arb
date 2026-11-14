@@ -3258,6 +3258,8 @@
   "homeSelectionOneAtATime": "在此分頁中，一次只能剪下或複製一項。請只選擇一項。",
   "homeTrashCutUnavailable": "垃圾桶中的項目無法剪下。要將項目放回原位置，請點擊「{restore}」。",
   "homeTrashCopyOneAtATime": "在垃圾桶中，一次只能複製一項。請只選擇一項。",
+  "homeShareFileNameTaken": "已有同名的共享檔案。請換一個名稱。",
+  "homeShareFileRenameFailed": "無法重新命名。請再試一次。",
   "homeDrawerTutorial": "使用方法",
   "themeColorAccentText": "強調文字與圖示顏色",
   "projectDetailNotFoundBackToList": "前往專案列表",

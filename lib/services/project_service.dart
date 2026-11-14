@@ -381,6 +381,39 @@ class ProjectService extends ChangeNotifier {
     }
   }
 
+  /// 作成した共有ファイル[path]の名前を変えて[newPath]にする。お気に入りは
+  /// ファイルの場所で覚えているので、新しい場所へ移して保存する（移さないと
+  /// 名前を変えただけでお気に入りが外れ、保存した設定に古い場所が残った）。
+  /// お気に入りを保存できなければ名前を元に戻して投げる。
+  Future<void> renameOutgoingShare(String path, String newPath) async {
+    await File(path).rename(newPath);
+    if (_outgoingFavoritePaths.remove(path)) {
+      _outgoingFavoritePaths.add(newPath);
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        final persisted = await prefs.setStringList(
+          _outgoingFavoritePrefsKey,
+          _outgoingFavoritePaths.toList()..sort(),
+        );
+        if (!persisted) {
+          throw StateError('Could not save outgoing favorite state');
+        }
+      } catch (_) {
+        _outgoingFavoritePaths
+          ..remove(newPath)
+          ..add(path);
+        try {
+          await File(newPath).rename(path);
+        } catch (error, stackTrace) {
+          AppErrorReporter.record(error, stackTrace);
+        }
+        await refreshOutgoingShares();
+        rethrow;
+      }
+    }
+    await refreshOutgoingShares();
+  }
+
   /// 前回の[refreshOutgoingShares]で、作成した共有ファイルの置き場所（の
   /// どれか）を読めなかったか。読めなかったときは、一覧が空でも「まだ
   /// ありません」と言わず、読めなかったことを知らせる。

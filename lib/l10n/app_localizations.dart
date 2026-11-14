@@ -14295,6 +14295,18 @@ abstract class AppLocalizations {
   /// **'ゴミ箱では、コピーは1件ずつです。1件だけ選んでください。'**
   String get homeTrashCopyOneAtATime;
 
+  /// 共有の「自分が作成したもの」の名前を、すでにある共有ファイルと同じ名前に変えようとしたとき（名前の変更のダイアログの中）
+  ///
+  /// In ja, this message translates to:
+  /// **'同じ名前の共有ファイルがあります。別の名前にしてください。'**
+  String get homeShareFileNameTaken;
+
+  /// 共有の「自分が作成したもの」の名前を変更できなかったとき（名前の変更のダイアログの中）
+  ///
+  /// In ja, this message translates to:
+  /// **'名前を変更できませんでした。もう一度お試しください。'**
+  String get homeShareFileRenameFailed;
+
   /// No description provided for @homeDrawerTutorial.
   ///
   /// In ja, this message translates to:

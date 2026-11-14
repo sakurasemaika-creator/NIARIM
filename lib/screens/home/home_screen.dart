@@ -49,6 +49,7 @@ import '../../widgets/secondary_click_menu.dart';
 import '../../widgets/share_project_file_action.dart';
 import '../../widgets/mission_completion_dialog.dart';
 import '../../widgets/moved_to_trash_snack_bar.dart';
+import '../../widgets/name_entry_dialog.dart';
 import '../../widgets/copy_name_text.dart';
 import '../../widgets/keep_together_text.dart';
 import '../../widgets/project_duplicated_snack_bar.dart';
@@ -76,6 +77,11 @@ import '../../utils/duplicate_name.dart';
 import '../../utils/folder_persistence.dart';
 import '../../utils/responsive_tile_defaults.dart';
 import '../../utils/tolerant_preferences.dart';
+
+/// 共有ファイルの名前を、すでにある共有ファイルと同じ名前に変えようとした。
+class _ShareNameTaken implements Exception {
+  const _ShareNameTaken();
+}
 
 class _ClipboardSourceMissing implements Exception {
   const _ClipboardSourceMissing();
@@ -1243,6 +1249,7 @@ class _HomeScreenState extends State<HomeScreen>
                           _isSelectionMode = false;
                         }),
                         onCopyEntry: _copyLibraryEntry,
+                        onOutgoingRenamed: _followRenamedShare,
                       ),
                       TrashScreen(
                         key: const PageStorageKey('home-trash'),
@@ -2282,6 +2289,29 @@ class _HomeScreenState extends State<HomeScreen>
       _clipboardFolderIds.isNotEmpty ||
       _otherClipboard != null;
 
+  /// 作成した共有ファイルの名前を変えたら、コピーしたもの（クリップボード）
+  /// も新しい名前のファイルにする（前の場所のままだと、貼り付けで「元が
+  /// 見つからない」になった）。
+  void _followRenamedShare(String oldPath, String newPath, String newName) {
+    final entry = _otherClipboard;
+    if (entry == null ||
+        entry.source != HomePasteArea.outgoing ||
+        entry.id != oldPath ||
+        !mounted) {
+      return;
+    }
+    setState(() {
+      _otherClipboard = HomeClipboardEntry(
+        source: entry.source,
+        id: newPath,
+        name: newName,
+        isFolder: entry.isFolder,
+        isCut: entry.isCut,
+        originalArea: entry.originalArea,
+      );
+    });
+  }
+
   void _copyLibraryEntry(HomeClipboardEntry entry) {
     setState(() {
       _clipboardProjectIds.clear();
@@ -3221,6 +3251,7 @@ class SharedScreen extends StatefulWidget {
     this.embedded = false,
     this.onDirectionChanged,
     this.onCopyEntry,
+    this.onOutgoingRenamed,
     this.screenFocus,
     this.viewMode,
     this.onViewModeChanged,
@@ -3239,6 +3270,11 @@ class SharedScreen extends StatefulWidget {
   final String searchQuery;
   final ValueChanged<bool>? onDirectionChanged;
   final ValueChanged<HomeClipboardEntry>? onCopyEntry;
+
+  /// 「作成したもの」の名前を変えたとき（ホームのコピーしたものを新しい
+  /// 名前のファイルにする）。
+  final void Function(String oldPath, String newPath, String newName)?
+  onOutgoingRenamed;
 
   /// ホームの画面のフォーカス（保存先を読めなかった知らせが消えたとき、
   /// フォーカスを戻す先）。
@@ -3366,6 +3402,7 @@ class _SharedScreenState extends State<SharedScreen>
               header: header,
               screenFocus: widget.screenFocus,
               onCopyEntry: widget.onCopyEntry,
+              onRenamed: widget.onOutgoingRenamed,
               viewMode: _effectiveViewMode(context),
               sortMode: _sortMode,
               showFavoritesOnly: _showFavoritesOnly,
@@ -3984,39 +4021,24 @@ Widget _receivedShareMenu(
             ),
           );
         case 'rename':
-          final controller = TextEditingController(text: project.name);
-          try {
-            final name = await showDialog<String>(
-              context: context,
-              builder: (ctx) => AlertDialog(
-                title: Text(l10n.commonRename),
-                content: TextField(
-                  controller: controller,
-                  autofocus: true,
-                  onSubmitted: (name) => Navigator.pop(ctx, name),
-                ),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(ctx),
-                    child: Text(l10n.commonCancel),
-                  ),
-                  FilledButton(
-                    onPressed: () => Navigator.pop(ctx, controller.text),
-                    child: Text(l10n.commonSave),
-                  ),
-                ],
-              ),
-            );
-            if (name != null && name.trim().isNotEmpty) {
-              await service.renameProject(project.id, name.trim());
-            }
-          } finally {
-            // Dialog's exit animation may still be unwinding; the controller
-            // belongs to this action rather than a long-lived screen.
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              controller.dispose();
-            });
-          }
+          // 作品の一覧・プロジェクト詳細の名前の変更と同じダイアログ（空白
+          // だけの名前は確定させない・確定のボタンは「変更」・入力欄は
+          // ダイアログが持って破棄する）。以前は自前のダイアログで、空白だけの
+          // 名前は黙って閉じ、入力欄を閉じる動きの途中に破棄していた。
+          await showDialog<void>(
+            context: context,
+            builder: (_) => NameEntryDialog(
+              title: l10n.commonRename,
+              confirmLabel: l10n.commonChange,
+              cancelLabel: l10n.commonCancel,
+              initialName: project.name,
+              onSubmit: (name) async {
+                if (name != project.name) {
+                  await service.renameProject(project.id, name);
+                }
+              },
+            ),
+          );
         case 'thumbnail':
           if (context.mounted) {
             await showProjectThumbnailDialog(
@@ -4125,8 +4147,9 @@ Widget _receivedShareMenu(
 Future<void> _outgoingShareAction(
   BuildContext context,
   SavedOutgoingShare entry,
-  String action,
-) async {
+  String action, {
+  _OutgoingShareRenamed? onRenamed,
+}) async {
   final l10n = AppLocalizations.of(context)!;
   final service = context.read<ProjectService>();
   final file = File(entry.path);
@@ -4135,56 +4158,50 @@ Future<void> _outgoingShareAction(
       case 'share':
         await shareSavedNiashare(context, entry.path);
       case 'rename':
-        final controller = TextEditingController(text: entry.name);
-        String? value;
-        try {
-          value = await showDialog<String>(
-            context: context,
-            builder: (ctx) => AlertDialog(
-              title: Text(l10n.commonRename),
-              content: TextField(
-                autofocus: true,
-                controller: controller,
-                onSubmitted: (v) => Navigator.pop(ctx, v),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(ctx),
-                  child: Text(l10n.commonCancel),
-                ),
-                FilledButton(
-                  onPressed: () => Navigator.pop(ctx, controller.text),
-                  child: Text(l10n.commonSave),
-                ),
-              ],
-            ),
-          );
-        } finally {
-          WidgetsBinding.instance.addPostFrameCallback(
-            (_) => controller.dispose(),
-          );
-        }
-        if (value == null || value.trim() == entry.name) return;
-        final name = value.trim().replaceAll(RegExp(r'[\\/]'), '_');
-        if (name.isEmpty || name == '.' || name == '..') return;
-        final target = File('${file.parent.path}/$name.niashare');
-        if (await target.exists()) {
-          throw FileSystemException(
-            'Share filename already exists',
-            target.path,
-          );
-        }
-        await file.rename(target.path);
-        await service.refreshOutgoingShares();
+        // 作品・フォルダと同じ名前の入力（空白だけの名前は確定させない・
+        // 失敗したら中に理由を出して開いたまま・入力欄はダイアログが持つ）。
+        // 以前は空の名前を黙って無視し、同じ名前があると閉じてから後ろに
+        // 別の失敗の文を出した。
+        await showDialog<void>(
+          context: context,
+          builder: (_) => NameEntryDialog(
+            title: l10n.commonRename,
+            confirmLabel: l10n.commonChange,
+            cancelLabel: l10n.commonCancel,
+            initialName: entry.name,
+            failureText: (error) => error is _ShareNameTaken
+                ? l10n.homeShareFileNameTaken
+                : l10n.homeShareFileRenameFailed,
+            onSubmit: (value) async {
+              final name = value.replaceAll(RegExp(r'[\\/]'), '_');
+              if (name == entry.name) return;
+              if (name == '.' || name == '..') {
+                throw FileSystemException('Invalid share filename', name);
+              }
+              final target = File('${file.parent.path}/$name.niashare');
+              if (await target.exists()) throw const _ShareNameTaken();
+              // お気に入り・コピーしたものも新しい名前のファイルへ移す。
+              await service.renameOutgoingShare(entry.path, target.path);
+              onRenamed?.call(entry.path, target.path, name);
+            },
+          ),
+        );
       case 'duplicate':
-        var index = 1;
-        File target;
-        do {
-          target = File('${file.parent.path}/${entry.name} ($index).niashare');
-          index++;
-        } while (await target.exists());
+        // 作品・書き出したファイルの複製と同じく、画面の言語の「(コピー)」と
+        // 番号を付け（拡張子はそのまま）、できた複製の名前を知らせる。以前は
+        // どの言語でも「名前 (1).niashare」だった。
+        final messenger = ScaffoldMessenger.of(context);
+        final target = await _copyFileDestination(l10n, file);
         await file.copy(target.path);
         await service.refreshOutgoingShares();
+        final copyName = target.uri.pathSegments.last;
+        showProjectDuplicatedSnackBar(
+          messenger,
+          l10n,
+          copyName.endsWith('.niashare')
+              ? copyName.substring(0, copyName.length - '.niashare'.length)
+              : copyName,
+        );
       case 'delete':
         // 作品・フォルダ・書き出したファイルと同じ確認（名前を出し、移せ
         // なかったときはダイアログの中に理由を出して開いたまま）。以前は
@@ -4233,17 +4250,23 @@ Future<void> _outgoingShareAction(
   }
 }
 
+/// 作成した共有ファイルの名前を変えたとき（前の場所・新しい場所・新しい名前）。
+typedef _OutgoingShareRenamed =
+    void Function(String oldPath, String newPath, String newName);
+
 class _OutgoingSharesList extends StatelessWidget {
   const _OutgoingSharesList({
     required this.header,
     this.screenFocus,
     this.onCopyEntry,
+    this.onRenamed,
     required this.viewMode,
     required this.sortMode,
     required this.showFavoritesOnly,
     required this.searchQuery,
   });
   final ValueChanged<HomeClipboardEntry>? onCopyEntry;
+  final _OutgoingShareRenamed? onRenamed;
   final ProjectViewMode viewMode;
   final ProjectSortMode sortMode;
   final bool showFavoritesOnly;
@@ -4369,7 +4392,12 @@ class _OutgoingSharesList extends StatelessWidget {
                 ),
               );
             } else {
-              _outgoingShareAction(context, entry, action);
+              _outgoingShareAction(
+                context,
+                entry,
+                action,
+                onRenamed: onRenamed,
+              );
             }
           },
           itemBuilder: (_) => [

@@ -3258,6 +3258,8 @@
   "homeSelectionOneAtATime": "Dans cet onglet, les éléments se coupent ou se copient un par un. Sélectionnez-en un seul.",
   "homeTrashCutUnavailable": "Les éléments de la corbeille ne peuvent pas être coupés. Pour remettre un élément à sa place, appuyez sur « {restore} ».",
   "homeTrashCopyOneAtATime": "Dans la corbeille, les éléments se copient un par un. Sélectionnez-en un seul.",
+  "homeShareFileNameTaken": "Un fichier partagé porte déjà ce nom. Choisissez un autre nom.",
+  "homeShareFileRenameFailed": "Impossible de renommer le fichier. Réessayez.",
   "homeDrawerTutorial": "Mode d’emploi",
   "themeColorAccentText": "Couleur du texte et des icônes d’accent",
   "projectDetailNotFoundBackToList": "Aller aux projets",

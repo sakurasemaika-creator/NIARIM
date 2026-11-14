@@ -7801,6 +7801,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get homeTrashCopyOneAtATime => '在回收站中，一次只能复制一项。请只选择一项。';
 
   @override
+  String get homeShareFileNameTaken => '已有同名的共享文件。请换一个名称。';
+
+  @override
+  String get homeShareFileRenameFailed => '无法重命名。请重试。';
+
+  @override
   String get homeDrawerTutorial => '使用方法';
 
   @override
@@ -17711,6 +17717,12 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get homeTrashCopyOneAtATime => '在垃圾桶中，一次只能複製一項。請只選擇一項。';
+
+  @override
+  String get homeShareFileNameTaken => '已有同名的共享檔案。請換一個名稱。';
+
+  @override
+  String get homeShareFileRenameFailed => '無法重新命名。請再試一次。';
 
   @override
   String get homeDrawerTutorial => '使用方法';

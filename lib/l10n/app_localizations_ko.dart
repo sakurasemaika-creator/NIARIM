@@ -7917,6 +7917,12 @@ class AppLocalizationsKo extends AppLocalizations {
       '휴지통에서는 한 번에 하나씩만 복사할 수 있습니다. 하나만 선택해 주세요.';
 
   @override
+  String get homeShareFileNameTaken => '같은 이름의 공유 파일이 있습니다. 다른 이름을 입력해 주세요.';
+
+  @override
+  String get homeShareFileRenameFailed => '이름을 바꾸지 못했습니다. 다시 시도해 주세요.';
+
+  @override
   String get homeDrawerTutorial => '사용법';
 
   @override

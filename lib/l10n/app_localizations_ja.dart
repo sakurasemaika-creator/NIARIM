@@ -7878,6 +7878,12 @@ class AppLocalizationsJa extends AppLocalizations {
   String get homeTrashCopyOneAtATime => 'ゴミ箱では、コピーは1件ずつです。1件だけ選んでください。';
 
   @override
+  String get homeShareFileNameTaken => '同じ名前の共有ファイルがあります。別の名前にしてください。';
+
+  @override
+  String get homeShareFileRenameFailed => '名前を変更できませんでした。もう一度お試しください。';
+
+  @override
   String get homeDrawerTutorial => '使い方';
 
   @override
