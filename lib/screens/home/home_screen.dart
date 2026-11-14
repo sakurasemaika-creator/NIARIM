@@ -1243,9 +1243,14 @@ class _HomeScreenState extends State<HomeScreen>
     );
   }
 
+  // 選んでいる間は、どのタブでも「戻る」で選ぶのを終える（作品一覧・共有・
+  // ゴミ箱でも長押しで選べる。以前はプロジェクトのタブだけを見ていて、ほかの
+  // タブでは選んだまま起動画面へ戻った）。フォルダを上がるのはプロジェクトの
+  // タブだけ。
   bool get _hasLocalBackScope =>
       _isSearching ||
-      (_currentTabIndex == 0 && (_isSelectionMode || _currentFolderId != null));
+      _isSelectionMode ||
+      (_currentTabIndex == 0 && _currentFolderId != null);
 
   bool _handleLocalBack() {
     // A dialog or pushed page owns Back until it closes.

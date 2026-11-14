@@ -13,6 +13,8 @@ import 'package:niarim/models/app_theme_preset.dart';
 import 'package:niarim/models/project.dart';
 import 'package:niarim/router.dart';
 import 'package:niarim/screens/home/home_screen.dart';
+import 'package:niarim/screens/home/widgets/home_selection_toolbar.dart';
+import 'package:niarim/screens/splash/splash_screen.dart';
 import 'package:niarim/services/export_storage.dart';
 import 'package:niarim/services/local_file_trash_service.dart';
 import 'package:niarim/services/project_service.dart';
@@ -771,6 +773,46 @@ void main() {
       }
     }
     expect(outside, isEmpty);
+    await home.close();
+  });
+  // ---- 実操作（Linux）で見つかった、タブ・戻る・Esc・フォーカスの見張り ----
+
+  /// ゴミ箱のタブを開き、ゴミ箱の作品を長押しして選ぶ。
+  Future<void> selectInTrash(_Home home, String name) async {
+    await home.trashProject(name);
+    await home.showTab(3);
+    final card = find.descendant(
+      of: find.byType(TrashScreen),
+      matching: find.text(name),
+    );
+    expect(card, findsWidgets, reason: 'trash card "$name" not listed');
+    await home.tester.longPress(card.first);
+    await home.frames(6);
+    expect(find.byType(HomeSelectionToolbar), findsOneWidget);
+  }
+
+  testWidgets('ゴミ箱のタブで選んでいる間の「戻る」は、選ぶのを終えるだけ（起動画面へ戻らない）', (tester) async {
+    final home = _Home(tester);
+    await home.open();
+    await selectInTrash(home, 'ゴミの作品');
+    await tester.binding.handlePopRoute();
+    await home.frames(20);
+    expect(
+      find.byType(SplashScreen),
+      findsNothing,
+      reason: 'Back left Home while a trash item was selected',
+    );
+    expect(find.byType(HomeScreen), findsOneWidget);
+    expect(find.byType(HomeSelectionToolbar), findsNothing);
+    expect(
+      tester.widget<TabBarView>(find.byType(TabBarView)).controller!.index,
+      3,
+      reason: 'Back changed the tab',
+    );
+    // 何も開いていなければ、次の「戻る」で起動画面へ戻る。
+    await tester.binding.handlePopRoute();
+    await home.frames(20);
+    expect(find.byType(SplashScreen), findsOneWidget);
     await home.close();
   });
 }
