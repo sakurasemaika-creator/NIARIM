@@ -815,4 +815,32 @@ void main() {
     expect(find.byType(SplashScreen), findsOneWidget);
     await home.close();
   });
+
+  testWidgets('作品一覧・共有・ゴミ箱のタブでも、Escで選ぶのを終え、入力を終えた検索を閉じる', (tester) async {
+    final home = _Home(tester);
+    await home.open();
+    await selectInTrash(home, 'ゴミの作品');
+    await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+    await home.frames(6);
+    expect(
+      find.byType(HomeSelectionToolbar),
+      findsNothing,
+      reason: 'Esc did not end the selection on the Trash tab',
+    );
+
+    await tester.tap(find.byKey(const Key('homeSearchButton')));
+    await home.frames(6);
+    await tester.enterText(find.byKey(const Key('homeSearchInput')), 'ゴミ');
+    await tester.testTextInput.receiveAction(TextInputAction.done);
+    await home.frames(6);
+    expect(find.byKey(const Key('homeSearchInput')), findsOneWidget);
+    await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+    await home.frames(6);
+    expect(
+      find.byKey(const Key('homeSearchInput')),
+      findsNothing,
+      reason: 'Esc after Enter did not close the search on the Trash tab',
+    );
+    await home.close();
+  });
 }

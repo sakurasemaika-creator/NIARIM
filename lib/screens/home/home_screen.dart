@@ -1917,7 +1917,6 @@ class _HomeScreenState extends State<HomeScreen>
     BuildContext context,
   ) {
     final bindings = context.watch<ShortcutService>().bindings;
-    if (_currentTabIndex != 0) return {};
     // 引き出しが開いている間は、その後ろの一覧（押せない）を全選択・
     // 貼り付け等で操作しない。Escは引き出しだけを閉じる。
     if (_scaffoldKey.currentState?.isEndDrawerOpen ?? false) {
@@ -1926,6 +1925,11 @@ class _HomeScreenState extends State<HomeScreen>
     // 検索中は全選択・コピー等を効かせない（検索で隠れた作品を操作しない）。
     // Escは検索を閉じる（Enterで入力を終えた後も）。
     if (_isSearching) return {_escapeOnce: _closeProjectSearch};
+    // 作品一覧・共有・ゴミ箱のタブでは全選択・コピー等を効かせない。Escは
+    // どのタブでも選ぶのを終える（以前はこれらのタブでEscが何もしなかった）。
+    if (_currentTabIndex != 0) {
+      return {if (_isSelectionMode) _escapeOnce: _endProjectSelection};
+    }
     final result = <ShortcutActivator, VoidCallback>{};
     for (final b in bindings) {
       if (b.isToolAction) continue;
