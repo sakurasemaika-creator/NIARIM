@@ -100,10 +100,23 @@ void main() {
     await open(tester);
     appRouter.push('/settings/theme');
     await tester.pumpAndSettle();
-    // 設定の縮小見本（プロジェクト一覧）：選択中のタブ名。
+    // 設定の縮小見本（プロジェクト一覧）：選択中のタブ（本物のホームと
+    // 同じく、名前が入らない幅ではアイコンだけ）。
     final thumbnail = find.byType(ThemePreviewThumbnail);
-    final tab = find.descendant(of: thumbnail, matching: find.text('プロジェクト'));
-    expect(textColor(tester, tab.first), accentText);
+    final tab = find.descendant(
+      of: thumbnail,
+      matching: find.byKey(const Key('themePreviewHomeTab0')),
+    );
+    expect(
+      tester
+          .widget<Icon>(find.descendant(of: tab, matching: find.byType(Icon)))
+          .color,
+      accentText,
+    );
+    final tabName = find.descendant(of: tab, matching: find.text('プロジェクト'));
+    if (tabName.evaluate().isNotEmpty) {
+      expect(textColor(tester, tabName.first), accentText);
+    }
 
     await tester.tap(find.byKey(const Key('themePreviewOpen')));
     await tester.pumpAndSettle();

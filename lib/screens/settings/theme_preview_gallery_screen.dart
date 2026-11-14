@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -11,6 +13,7 @@ import '../../config/font_fallback.dart';
 import '../canvas/widgets/canvas_icon_button.dart';
 import '../../utils/color_contrast.dart';
 import '../../utils/line_break.dart';
+import '../../widgets/fit_or_hide_title.dart';
 
 /// Lightweight preview of main creation and community screens only.
 /// Tab variants, settings/management pages, menus and floating panels are
@@ -462,7 +465,7 @@ class _ThemeSampleScreen extends StatelessWidget {
     if (entry.layout == 'author') return _author(c);
     if (entry.layout == 'mine') return _myWorks(c);
     if (entry.layout == 'canvas') return _canvas(c);
-    if (entry.layout == 'timeline') return _timeline(c);
+    if (entry.layout == 'timeline') return _timeline(context, c);
     if (entry.layout == 'complete') return _complete(c);
     const helpScreens = <String>{
       'new',
@@ -498,7 +501,13 @@ class _ThemeSampleScreen extends StatelessWidget {
             }.contains(entry.id)
             ? null
             : const Icon(Icons.arrow_back),
-        title: Text(appTitle, maxLines: 1, overflow: TextOverflow.ellipsis),
+        // Like the real screens: a screen name that does not fit is left out
+        // (read out and shown on hover), never cut. The project detail title
+        // is the project's name (data, not a screen name): the real screen
+        // always shows it, so the sample does too.
+        title: entry.id == 'detail'
+            ? Text(appTitle, maxLines: 1, overflow: TextOverflow.ellipsis)
+            : FitOrHideTitle(appTitle),
         actions: [
           if (helpScreens.contains(entry.id))
             const Padding(
@@ -677,8 +686,12 @@ class _ThemeSampleScreen extends StatelessWidget {
       fontFamilyFallback: kHeadingFontFallback,
       color: color,
     );
-    const tileWidth = 150.0;
-    const tilePadding = 14.0;
+    // Like the real splash tiles: they widen with the text size (up to
+    // twice), so a long word such as "Animation" stays on one line.
+    final tileWidth =
+        150.0 * MediaQuery.textScalerOf(context).scale(1).clamp(1.0, 2.0);
+    const tilePadding = EdgeInsets.symmetric(horizontal: 14, vertical: 16);
+    const iconGap = 12.0;
     double textHeight(String text, TextStyle style) {
       final base = Theme.of(context).textTheme.bodyMedium ?? const TextStyle();
       final painter = TextPainter(
@@ -686,17 +699,18 @@ class _ThemeSampleScreen extends StatelessWidget {
         textAlign: TextAlign.center,
         textDirection: Directionality.of(context),
         textScaler: MediaQuery.textScalerOf(context),
+        locale: Localizations.localeOf(context),
         maxLines: 3,
-      )..layout(maxWidth: tileWidth - tilePadding * 2);
+      )..layout(maxWidth: tileWidth - tilePadding.horizontal);
       final height = painter.height;
       painter.dispose();
       return height;
     }
 
     final tileHeight = [
-      166.0,
+      tileWidth,
       60 +
-          10 +
+          iconGap +
           textHeight(
             keepKoreanWordsTogether(l.splashCommunityButtonTitle),
             titleStyle(foreground),
@@ -705,14 +719,14 @@ class _ThemeSampleScreen extends StatelessWidget {
             keepKoreanWordsTogether(l.splashCommunityButtonSubtitle),
             subtitleStyle(foreground),
           ) +
-          tilePadding * 2,
+          tilePadding.vertical,
       60 +
-          10 +
+          iconGap +
           textHeight(
             keepKoreanWordsTogether(l.splashCreateButton),
             titleStyle(foreground),
           ) +
-          tilePadding * 2,
+          tilePadding.vertical,
     ].reduce((a, b) => a > b ? a : b);
     Widget action(
       IconData icon,
@@ -723,7 +737,7 @@ class _ThemeSampleScreen extends StatelessWidget {
     ) => Container(
       width: tileWidth,
       height: tileHeight,
-      padding: const EdgeInsets.all(tilePadding),
+      padding: tilePadding,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(24),
         gradient: LinearGradient(
@@ -736,7 +750,7 @@ class _ThemeSampleScreen extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(icon, size: 60, color: foreground),
-          const SizedBox(height: 10),
+          const SizedBox(height: iconGap),
           // Korean breaks only between words, as on the real splash.
           Text(
             keepKoreanWordsTogether(title),
@@ -837,6 +851,189 @@ class _ThemeSampleScreen extends StatelessWidget {
     );
   }
 
+  /// A heading-face label whose Korean words are never broken in the
+  /// middle (read out without the joiners).
+  Widget _keepWords(String text) =>
+      Text(keepKoreanWordsTogether(text), semanticsLabel: text);
+
+  /// The width of the widest space-separated word of [text] in [style]
+  /// (merged onto the inherited style), with the current text size.
+  double _widestWord(BuildContext context, String text, [TextStyle? style]) {
+    final merged = DefaultTextStyle.of(context).style.merge(style);
+    var widest = 0.0;
+    for (final word in text.split(RegExp(r'\s+'))) {
+      if (word.isEmpty) continue;
+      final painter = TextPainter(
+        text: TextSpan(text: word, style: merged),
+        textDirection: Directionality.of(context),
+        textScaler: MediaQuery.textScalerOf(context),
+        locale: Localizations.localeOf(context),
+        maxLines: 1,
+      )..layout();
+      widest = math.max(widest, painter.width);
+      painter.dispose();
+    }
+    return widest;
+  }
+
+  /// A label and its value on one line, or the value under the label when
+  /// a word of the label would not fit beside it (never broken inside a
+  /// word, never cut).
+  Widget _labelValueRow(
+    String label,
+    String value,
+    TextStyle labelStyle,
+    TextStyle valueStyle,
+  ) => LayoutBuilder(
+    builder: (context, box) {
+      final valuePainter = TextPainter(
+        text: TextSpan(
+          text: value,
+          style: DefaultTextStyle.of(context).style.merge(valueStyle),
+        ),
+        textDirection: Directionality.of(context),
+        textScaler: MediaQuery.textScalerOf(context),
+        maxLines: 1,
+      )..layout();
+      final valueWidth = valuePainter.width;
+      valuePainter.dispose();
+      if (_widestWord(context, label, labelStyle) <=
+          box.maxWidth - 8 - valueWidth) {
+        return Row(
+          children: [
+            Expanded(child: Text(label, style: labelStyle)),
+            const SizedBox(width: 8),
+            Text(value, style: valueStyle),
+          ],
+        );
+      }
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(label, style: labelStyle),
+          Text(value, style: valueStyle, textAlign: TextAlign.end),
+        ],
+      );
+    },
+  );
+
+  /// Like the real Home tab bar: four equal tabs with an icon and the name
+  /// when every name fits its tab on one line, otherwise only the icons
+  /// (the name is in the tooltip and read out). Names are never cut or
+  /// shrunk, and the choice follows the measured width.
+  Widget _homeTabs(
+    BuildContext context,
+    ColorScheme c,
+    Color tabBackground,
+    ColorScheme tabScheme,
+  ) {
+    final tabs = [
+      (Icons.movie_creation_outlined, l.homeTabProjects),
+      (Icons.video_library_outlined, l.homeTabWorks),
+      (Icons.share_outlined, l.homeTabShared),
+      (Icons.delete_outline, l.homeTabTrash),
+    ];
+    const labelStyle = TextStyle(
+      fontSize: 14,
+      fontWeight: FontWeight.w600,
+      fontFamily: 'Kuramubon',
+      fontFamilyFallback: kHeadingFontFallback,
+    );
+    const iconSize = 24.0;
+    const gap = 8.0;
+    const breathingRoom = 16.0;
+    return SizedBox(
+      key: const Key('themePreviewHomeTabs'),
+      height: 48,
+      child: LayoutBuilder(
+        builder: (context, box) {
+          final cellWidth = box.maxWidth / tabs.length;
+          final showLabels = tabs.every((tab) {
+            final painter = TextPainter(
+              text: TextSpan(text: tab.$2, style: labelStyle),
+              textDirection: Directionality.of(context),
+              textScaler: MediaQuery.textScalerOf(context),
+              locale: Localizations.localeOf(context),
+              maxLines: 1,
+            )..layout();
+            final fits =
+                iconSize + gap + painter.width + breathingRoom <= cellWidth;
+            painter.dispose();
+            return fits;
+          });
+          return Row(
+            children: [
+              for (var i = 0; i < tabs.length; i++)
+                Expanded(
+                  child: Semantics(
+                    key: Key('themePreviewHomeTab$i'),
+                    button: true,
+                    selected: i == 0,
+                    label: tabs[i].$2,
+                    child: Tooltip(
+                      message: tabs[i].$2,
+                      excludeFromSemantics: true,
+                      child: ExcludeSemantics(
+                        child: Column(
+                          children: [
+                            Expanded(
+                              child: Center(
+                                child: Builder(
+                                  builder: (context) {
+                                    final color = i == 0
+                                        ? accentText
+                                        : c.onSurfaceVariant;
+                                    final shadows = i == 0
+                                        ? CanvasIconButton.actionShadows(
+                                            accentText,
+                                            tabBackground,
+                                            tabScheme,
+                                          )
+                                        : null;
+                                    final icon = Icon(
+                                      tabs[i].$1,
+                                      size: iconSize,
+                                      color: color,
+                                      shadows: shadows,
+                                    );
+                                    if (!showLabels) return icon;
+                                    return Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        icon,
+                                        const SizedBox(width: gap),
+                                        Text(
+                                          tabs[i].$2,
+                                          maxLines: 1,
+                                          softWrap: false,
+                                          style: labelStyle.copyWith(
+                                            color: color,
+                                            shadows: shadows,
+                                          ),
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                ),
+                              ),
+                            ),
+                            Container(
+                              height: 2,
+                              color: i == 0 ? c.primary : Colors.transparent,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
   Widget _projects(BuildContext context, ColorScheme c) {
     final theme = Theme.of(context);
     final tabBackground = opaqueOver(
@@ -880,54 +1077,8 @@ class _ThemeSampleScreen extends StatelessWidget {
           const SizedBox(width: 12),
         ],
         bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(45),
-          child: SizedBox(
-            height: 45,
-            child: Row(
-              children: [
-                for (final tab in [
-                  l.homeTabProjects,
-                  l.homeTabWorks,
-                  l.homeTabBookmarked,
-                ])
-                  Expanded(
-                    child: Column(
-                      children: [
-                        Expanded(
-                          child: Center(
-                            child: Text(
-                              tab,
-                              style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.bold,
-                                fontFamily: 'Kuramubon',
-                                fontFamilyFallback: kHeadingFontFallback,
-                                color: tab == l.homeTabProjects
-                                    ? accentText
-                                    : c.onSurfaceVariant,
-                                shadows: tab == l.homeTabProjects
-                                    ? CanvasIconButton.actionShadows(
-                                        accentText,
-                                        tabBackground,
-                                        tabScheme,
-                                      )
-                                    : null,
-                              ),
-                            ),
-                          ),
-                        ),
-                        Container(
-                          height: 2,
-                          color: tab == l.homeTabProjects
-                              ? c.primary
-                              : Colors.transparent,
-                        ),
-                      ],
-                    ),
-                  ),
-              ],
-            ),
-          ),
+          preferredSize: const Size.fromHeight(48),
+          child: _homeTabs(context, c, tabBackground, tabScheme),
         ),
       ),
       body: Stack(
@@ -1697,7 +1848,7 @@ class _ThemeSampleScreen extends StatelessWidget {
     ),
   );
 
-  Widget _timeline(ColorScheme c) => Scaffold(
+  Widget _timeline(BuildContext context, ColorScheme c) => Scaffold(
     backgroundColor: c.surface,
     body: SafeArea(
       child: Column(
@@ -1729,51 +1880,59 @@ class _ThemeSampleScreen extends StatelessWidget {
               ],
             ),
           ),
+          // Like the real preview band, the preview takes at most part of
+          // the height (a wide window would otherwise push the tracks off
+          // the screen), keeping its 16:9 shape.
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(3),
-              child: AspectRatio(
-                key: const Key('themePreviewTimelinePaper'),
-                aspectRatio: 16 / 9,
-                child: Stack(
-                  children: [
-                    const Positioned.fill(
-                      child: ColoredBox(color: Colors.white),
-                    ),
-                    Positioned(
-                      top: 4,
-                      right: 4,
-                      child: Icon(
-                        Icons.fullscreen,
-                        size: 18,
-                        color: c.onSurfaceVariant,
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                maxWidth: MediaQuery.sizeOf(context).height * .4 * 16 / 9,
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(3),
+                child: AspectRatio(
+                  key: const Key('themePreviewTimelinePaper'),
+                  aspectRatio: 16 / 9,
+                  child: Stack(
+                    children: [
+                      const Positioned.fill(
+                        child: ColoredBox(color: Colors.white),
                       ),
-                    ),
-                    Positioned(
-                      bottom: 6,
-                      left: 8,
-                      child: Text(
-                        '10/100',
-                        key: const Key('themePreviewFrameCounter'),
-                        style: TextStyle(
-                          color: c.onSurface,
-                          fontSize: 11,
-                          fontWeight: FontWeight.w700,
+                      Positioned(
+                        top: 4,
+                        right: 4,
+                        child: Icon(
+                          Icons.fullscreen,
+                          size: 18,
+                          color: c.onSurfaceVariant,
                         ),
                       ),
-                    ),
-                    Positioned(
-                      bottom: 2,
-                      right: 4,
-                      child: Icon(
-                        Icons.repeat,
-                        key: const Key('themePreviewLoopButton'),
-                        size: 24,
-                        color: accentText,
+                      Positioned(
+                        bottom: 6,
+                        left: 8,
+                        child: Text(
+                          '10/100',
+                          key: const Key('themePreviewFrameCounter'),
+                          style: TextStyle(
+                            color: c.onSurface,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
                       ),
-                    ),
-                  ],
+                      Positioned(
+                        bottom: 2,
+                        right: 4,
+                        child: Icon(
+                          Icons.repeat,
+                          key: const Key('themePreviewLoopButton'),
+                          size: 24,
+                          color: accentText,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -1871,7 +2030,7 @@ class _ThemeSampleScreen extends StatelessWidget {
             ),
           ),
           Container(
-            height: 40,
+            constraints: const BoxConstraints(minHeight: 40),
             padding: const EdgeInsets.symmetric(horizontal: 8),
             color: c.surfaceContainerLow,
             child: Row(
@@ -1915,26 +2074,20 @@ class _ThemeSampleScreen extends StatelessWidget {
           ),
           Container(
             key: const Key('themePreviewTimelineTracks'),
-            height: 44,
+            constraints: const BoxConstraints(minHeight: 44),
             color: c.surface,
             child: Row(
               children: [
-                SizedBox(
+                _trackName(
+                  context,
                   width: 100,
-                  child: Row(
-                    children: [
-                      _mockTool(c, Icons.movie_filter_outlined),
-                      Expanded(
-                        child: Text(
-                          l.timelineFrameTrackLabel,
-                          style: const TextStyle(
-                            fontSize: 10,
-                            fontFamily: 'Kuramubon',
-                            fontFamilyFallback: kHeadingFontFallback,
-                          ),
-                        ),
-                      ),
-                    ],
+                  icon: _mockTool(c, Icons.movie_filter_outlined),
+                  iconWidth: 28,
+                  label: l.timelineFrameTrackLabel,
+                  style: const TextStyle(
+                    fontSize: 10,
+                    fontFamily: 'Kuramubon',
+                    fontFamilyFallback: kHeadingFontFallback,
                   ),
                 ),
                 ...List.generate(
@@ -1969,54 +2122,63 @@ class _ThemeSampleScreen extends StatelessWidget {
                 child: Column(
                   children: [
                     _previewMaterialTrack(
+                      context,
                       c,
                       Icons.layers_outlined,
                       l.layerPanelCommonLayerLabel,
                       0,
                     ),
                     _previewMaterialTrack(
+                      context,
                       c,
                       Icons.text_fields,
                       l.timelineMaterialText,
                       1,
                     ),
                     _previewMaterialTrack(
+                      context,
                       c,
                       Icons.image_outlined,
                       l.projectListMaterialImage,
                       2,
                     ),
                     _previewMaterialTrack(
+                      context,
                       c,
                       Icons.movie_outlined,
                       l.projectListMaterialVideo,
                       3,
                     ),
                     _previewMaterialTrack(
+                      context,
                       c,
                       Icons.music_note,
                       l.projectListMaterialAudio,
                       4,
                     ),
                     _previewMaterialTrack(
+                      context,
                       c,
                       Icons.camera_outlined,
                       l.timelineCameraTrackLabel,
                       5,
                     ),
                     _previewMaterialTrack(
+                      context,
                       c,
                       Icons.more_time,
                       l.timelineMarkerTrackLabel,
                       6,
                     ),
                     _previewMaterialTrack(
+                      context,
                       c,
                       Icons.auto_fix_high,
                       l.timelineEffectFilterLabel,
                       7,
                     ),
                     _previewMaterialTrack(
+                      context,
                       c,
                       Icons.movie_filter_outlined,
                       l.timelineEndCardTrackLabel,
@@ -2032,76 +2194,138 @@ class _ThemeSampleScreen extends StatelessWidget {
     ),
   );
 
+  /// A timeline track's name beside its icon when it fits on one line in
+  /// [width]; otherwise only the icon, with the name in the tooltip and read
+  /// out (names are never cut or shrunk, like the narrow Home tabs).
+  Widget _trackName(
+    BuildContext context, {
+    required double width,
+    required Widget icon,
+    required double iconWidth,
+    required String label,
+    required TextStyle style,
+  }) {
+    final base = DefaultTextStyle.of(context).style;
+    final painter = TextPainter(
+      text: TextSpan(text: label, style: base.merge(style)),
+      textDirection: Directionality.of(context),
+      textScaler: MediaQuery.textScalerOf(context),
+      locale: Localizations.localeOf(context),
+      maxLines: 1,
+    )..layout();
+    final fits = iconWidth + painter.width <= width;
+    painter.dispose();
+    return SizedBox(
+      width: width,
+      child: Semantics(
+        label: label,
+        child: Tooltip(
+          message: label,
+          excludeFromSemantics: true,
+          child: ExcludeSemantics(
+            child: Row(
+              children: [
+                icon,
+                if (fits)
+                  Flexible(
+                    child: Text(
+                      label,
+                      maxLines: 1,
+                      softWrap: false,
+                      style: style,
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _previewMaterialTrack(
+    BuildContext context,
     ColorScheme c,
     IconData icon,
     String label,
     int index,
-  ) => SizedBox(
-    key: Key('themePreviewMaterialTrack$index'),
-    height: 18,
-    child: Row(
-      children: [
-        SizedBox(
-          width: 112,
-          child: Row(
-            children: [
-              const SizedBox(width: 6),
-              Icon(icon, size: 11, color: c.onSurfaceVariant),
-              const SizedBox(width: 3),
-              Expanded(
-                child: Text(
-                  label,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 8,
-                    fontFamily: 'Kuramubon',
-                    fontFamilyFallback: kHeadingFontFallback,
-                    color: c.onSurface,
-                  ),
+  ) {
+    final labelStyle = TextStyle(
+      fontSize: 8,
+      fontFamily: 'Kuramubon',
+      fontFamilyFallback: kHeadingFontFallback,
+      color: c.onSurface,
+    );
+    // The rows grow with the text size instead of clipping the names.
+    final line = TextPainter(
+      text: TextSpan(
+        text: label,
+        style: DefaultTextStyle.of(context).style.merge(labelStyle),
+      ),
+      textDirection: Directionality.of(context),
+      textScaler: MediaQuery.textScalerOf(context),
+      maxLines: 1,
+    )..layout();
+    final height = math.max(18.0, line.height + 4);
+    line.dispose();
+    return SizedBox(
+      key: Key('themePreviewMaterialTrack$index'),
+      height: height,
+      child: Row(
+        children: [
+          const SizedBox(width: 6),
+          _trackName(
+            context,
+            width: 106,
+            icon: Padding(
+              padding: const EdgeInsets.only(right: 3),
+              child: Icon(icon, size: 11, color: c.onSurfaceVariant),
+            ),
+            iconWidth: 14,
+            label: label,
+            style: labelStyle,
+          ),
+          Expanded(
+            child: Container(
+              // The clip shows its material's name cut by the clip's length,
+              // as on the real timeline.
+              key: Key('themePreviewTrackClip$index'),
+              margin: const EdgeInsets.symmetric(vertical: 1, horizontal: 2),
+              decoration: BoxDecoration(
+                color: index.isEven ? c.primaryContainer : c.tertiaryContainer,
+                borderRadius: BorderRadius.circular(3),
+                border: Border.all(color: c.outlineVariant),
+              ),
+              alignment: Alignment.centerLeft,
+              padding: const EdgeInsets.only(left: 5),
+              child: Text(
+                index == 4
+                    ? '♪ sample.wav'
+                    : index == 2
+                    ? 'sample.png'
+                    : index == 3
+                    ? 'sample.mp4'
+                    : label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 8,
+                  color: index.isEven
+                      ? c.onPrimaryContainer
+                      : c.onTertiaryContainer,
                 ),
               ),
-            ],
-          ),
-        ),
-        Expanded(
-          child: Container(
-            margin: const EdgeInsets.symmetric(vertical: 1, horizontal: 2),
-            decoration: BoxDecoration(
-              color: index.isEven ? c.primaryContainer : c.tertiaryContainer,
-              borderRadius: BorderRadius.circular(3),
-              border: Border.all(color: c.outlineVariant),
-            ),
-            alignment: Alignment.centerLeft,
-            padding: const EdgeInsets.only(left: 5),
-            child: Text(
-              index == 4
-                  ? '♪ sample.wav'
-                  : index == 2
-                  ? 'sample.png'
-                  : index == 3
-                  ? 'sample.mp4'
-                  : label,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontSize: 8,
-                color: index.isEven
-                    ? c.onPrimaryContainer
-                    : c.onTertiaryContainer,
-              ),
             ),
           ),
-        ),
-      ],
-    ),
-  );
+        ],
+      ),
+    );
+  }
 
   Widget _complete(ColorScheme c) => Scaffold(
     backgroundColor: c.surface,
     appBar: AppBar(
-      title: Text(l.exportScreenTitle),
+      title: FitOrHideTitle(l.exportScreenTitle),
       actions: [Icon(Icons.help_outline, color: c.onSurface)],
     ),
     body: Stack(
@@ -2111,96 +2335,122 @@ class _ThemeSampleScreen extends StatelessWidget {
           child: ColoredBox(color: Colors.black.withValues(alpha: .46)),
         ),
         // Like the real AlertDialog: the dialog scrolls when its text is
-        // taller than the screen (large text, long languages).
+        // taller than the screen (large text, long languages). The title is
+        // never broken inside a word: the dialog takes more of the width
+        // when a word needs it, and when even that is not enough the title
+        // is left out (read out; the text under it says the same).
         Center(
-          child: SingleChildScrollView(
-            physics: const NeverScrollableScrollPhysics(),
-            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
-            child: Material(
-              elevation: 0,
-              color: c.surfaceContainerHigh,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(28),
-                side: BorderSide.none,
-              ),
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(24, 24, 24, 20),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      l.exportCompleteTitle,
-                      style: const TextStyle(
-                        fontSize: 21,
-                        fontFamily: 'Kuramubon',
-                        fontFamilyFallback: kHeadingFontFallback,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    const SizedBox(height: 18),
-                    Text(
-                      l.exportCompleteFramesBody(48),
-                      style: const TextStyle(fontSize: 14),
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      l.exportSaveLocationLabel('animation.mp4'),
-                      style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 5),
-                    Text(
-                      l.exportSaveLocationHint,
-                      style: TextStyle(fontSize: 11, color: c.onSurfaceVariant),
-                    ),
-                    const SizedBox(height: 20),
-                    // Like the real dialog's buttons: side by side, or one
-                    // under the other when they do not fit.
-                    OverflowBar(
-                      alignment: MainAxisAlignment.end,
-                      overflowAlignment: OverflowBarAlignment.end,
-                      spacing: 14,
-                      overflowSpacing: 10,
+          child: LayoutBuilder(
+            builder: (context, box) {
+              const titleStyle = TextStyle(
+                fontSize: 21,
+                fontFamily: 'Kuramubon',
+                fontFamilyFallback: kHeadingFontFallback,
+                fontWeight: FontWeight.w700,
+              );
+              final title = keepKoreanWordsTogether(l.exportCompleteTitle);
+              final word = _widestWord(context, title, titleStyle);
+              final margin = ((box.maxWidth - 48 - word) / 2).clamp(8.0, 32.0);
+              final showTitle = word <= box.maxWidth - 48 - margin * 2;
+              return SingleChildScrollView(
+                physics: const NeverScrollableScrollPhysics(),
+                padding: EdgeInsets.symmetric(horizontal: margin, vertical: 24),
+                child: Material(
+                  elevation: 0,
+                  color: c.surfaceContainerHigh,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(28),
+                    side: BorderSide.none,
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(24, 24, 24, 20),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 10),
-                          child: Text(
-                            l.exportBackToProjectsButton,
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontFamily: 'Kuramubon',
-                              fontFamilyFallback: kHeadingFontFallback,
-                              color: accentText,
-                            ),
+                        if (showTitle) ...[
+                          Text(
+                            title,
+                            semanticsLabel: l.exportCompleteTitle,
+                            style: titleStyle,
+                          ),
+                          const SizedBox(height: 18),
+                        ] else
+                          Semantics(
+                            header: true,
+                            label: l.exportCompleteTitle,
+                            child: const SizedBox.shrink(),
+                          ),
+                        Text(
+                          l.exportCompleteFramesBody(48),
+                          style: const TextStyle(fontSize: 14),
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          l.exportSaveLocationLabel('animation.mp4'),
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 17,
-                            vertical: 10,
+                        const SizedBox(height: 5),
+                        Text(
+                          l.exportSaveLocationHint,
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: c.onSurfaceVariant,
                           ),
-                          decoration: BoxDecoration(
-                            color: c.primary,
-                            borderRadius: BorderRadius.circular(24),
-                          ),
-                          child: Text(
-                            l.commonShare,
-                            style: TextStyle(
-                              fontFamily: 'Kuramubon',
-                              fontFamilyFallback: kHeadingFontFallback,
-                              color: c.onPrimary,
+                        ),
+                        const SizedBox(height: 20),
+                        // Like the real dialog's buttons: side by side, or one
+                        // under the other when they do not fit.
+                        OverflowBar(
+                          alignment: MainAxisAlignment.end,
+                          overflowAlignment: OverflowBarAlignment.end,
+                          spacing: 14,
+                          overflowSpacing: 10,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 10),
+                              child: Text(
+                                keepKoreanWordsTogether(
+                                  l.exportBackToProjectsButton,
+                                ),
+                                semanticsLabel: l.exportBackToProjectsButton,
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontFamily: 'Kuramubon',
+                                  fontFamilyFallback: kHeadingFontFallback,
+                                  color: accentText,
+                                ),
+                              ),
                             ),
-                          ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 17,
+                                vertical: 10,
+                              ),
+                              decoration: BoxDecoration(
+                                color: c.primary,
+                                borderRadius: BorderRadius.circular(24),
+                              ),
+                              child: Text(
+                                l.commonShare,
+                                style: TextStyle(
+                                  fontFamily: 'Kuramubon',
+                                  fontFamilyFallback: kHeadingFontFallback,
+                                  color: c.onPrimary,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
-                  ],
+                  ),
                 ),
-              ),
-            ),
+              );
+            },
           ),
         ),
       ],
@@ -2437,20 +2687,11 @@ class _ThemeSampleScreen extends StatelessWidget {
               ])
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 5),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          item.$1,
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: c.onSurfaceVariant,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Text(item.$2, style: const TextStyle(fontSize: 11)),
-                    ],
+                  child: _labelValueRow(
+                    item.$1,
+                    item.$2,
+                    TextStyle(fontSize: 11, color: c.onSurfaceVariant),
+                    const TextStyle(fontSize: 11),
                   ),
                 ),
             ],
@@ -2520,14 +2761,11 @@ class _ThemeSampleScreen extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 3),
+                    // A description, so the body face (the real screen's
+                    // radio tiles use it too).
                     Text(
                       option.value.$2,
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: c.onSurfaceVariant,
-                        fontFamily: 'Kuramubon',
-                        fontFamilyFallback: kHeadingFontFallback,
-                      ),
+                      style: TextStyle(fontSize: 11, color: c.onSurfaceVariant),
                     ),
                   ],
                 ),
@@ -2554,8 +2792,9 @@ class _ThemeSampleScreen extends StatelessWidget {
         child: const SizedBox(height: 20),
       ),
       const SizedBox(height: 20),
-      SizedBox(
-        height: 43,
+      ConstrainedBox(
+        // Grows for a second line with large text, like a real button.
+        constraints: const BoxConstraints(minHeight: 43),
         child: OutlinedButton.icon(
           onPressed: () {},
           icon: const Icon(Icons.video_file_outlined),
@@ -2567,13 +2806,13 @@ class _ThemeSampleScreen extends StatelessWidget {
         contentPadding: EdgeInsets.zero,
         value: false,
         onChanged: (_) {},
-        title: Text(l.communityPostAsShort),
+        title: _keepWords(l.communityPostAsShort),
       ),
       SwitchListTile(
         contentPadding: EdgeInsets.zero,
         value: false,
         onChanged: (_) {},
-        title: Text(l.communityContainsGenerativeAiImageVideo),
+        title: _keepWords(l.communityContainsGenerativeAiImageVideo),
         subtitle: Text(
           l.communityContainsGenerativeAiImageVideoHelp,
           style: const TextStyle(fontSize: 11),
@@ -2583,7 +2822,7 @@ class _ThemeSampleScreen extends StatelessWidget {
         contentPadding: EdgeInsets.zero,
         value: true,
         onChanged: (_) {},
-        title: Text(l.communityPostShowInPlaza),
+        title: _keepWords(l.communityPostShowInPlaza),
         subtitle: Text(
           l.communityPostShowInPlazaHelp,
           style: const TextStyle(fontSize: 11),
@@ -2636,7 +2875,7 @@ class _ThemeSampleScreen extends StatelessWidget {
       separatorBuilder: (_, _) => const Divider(height: 1),
       itemBuilder: (_, i) => ListTile(
         leading: Icon(items[i].$1, color: accentText),
-        title: Text(items[i].$2),
+        title: _keepWords(items[i].$2),
         subtitle: Text('2026/10/2${3 - i}'),
       ),
     );
@@ -2662,9 +2901,10 @@ class _ThemeSampleScreen extends StatelessWidget {
                 borderRadius: BorderRadius.circular(14),
               ),
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-              child: Row(
-                children: [
-                  Container(
+              child: LayoutBuilder(
+                builder: (context, box) {
+                  const labelStyle = TextStyle(fontWeight: FontWeight.w700);
+                  final thumbnail = Container(
                     height: 58,
                     width: 58,
                     decoration: BoxDecoration(
@@ -2673,40 +2913,72 @@ class _ThemeSampleScreen extends StatelessWidget {
                     ),
                     alignment: Alignment.center,
                     child: Icon(Icons.add, color: c.onSurfaceVariant),
-                  ),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          l.saveTreeSlotLabel(i + 1),
-                          style: const TextStyle(fontWeight: FontWeight.w700),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          l.saveTreeNoDataLabel,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(color: c.onSurfaceVariant),
-                        ),
-                      ],
+                  );
+                  final text = Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(l.saveTreeSlotLabel(i + 1), style: labelStyle),
+                      const SizedBox(height: 4),
+                      Text(
+                        l.saveTreeNoDataLabel,
+                        style: TextStyle(color: c.onSurfaceVariant),
+                      ),
+                    ],
+                  );
+                  final actions = Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.edit_note, color: accentText),
+                      const SizedBox(width: 18),
+                      Icon(
+                        Icons.book_outlined,
+                        color: c.onSurfaceVariant.withValues(alpha: .6),
+                      ),
+                      const SizedBox(width: 18),
+                      Icon(
+                        Icons.delete_outline,
+                        color: c.onSurfaceVariant.withValues(alpha: .6),
+                      ),
+                    ],
+                  );
+                  // The names stay whole: when a word would not fit beside
+                  // the actions, the actions go under the text.
+                  const actionsWidth = 4 + 24 * 3 + 18 * 2;
+                  final words = math.max(
+                    _widestWord(
+                      context,
+                      l.saveTreeSlotLabel(i + 1),
+                      labelStyle,
                     ),
-                  ),
-                  const SizedBox(width: 4),
-                  Icon(Icons.edit_note, color: accentText),
-                  const SizedBox(width: 18),
-                  Icon(
-                    Icons.book_outlined,
-                    color: c.onSurfaceVariant.withValues(alpha: .6),
-                  ),
-                  const SizedBox(width: 18),
-                  Icon(
-                    Icons.delete_outline,
-                    color: c.onSurfaceVariant.withValues(alpha: .6),
-                  ),
-                ],
+                    _widestWord(context, l.saveTreeNoDataLabel),
+                  );
+                  if (words <= box.maxWidth - 58 - 14 - actionsWidth) {
+                    return Row(
+                      children: [
+                        thumbnail,
+                        const SizedBox(width: 14),
+                        Expanded(child: text),
+                        const SizedBox(width: 4),
+                        actions,
+                      ],
+                    );
+                  }
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Row(
+                        children: [
+                          thumbnail,
+                          const SizedBox(width: 14),
+                          Expanded(child: text),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      actions,
+                    ],
+                  );
+                },
               ),
             ),
           ),
@@ -3182,8 +3454,6 @@ class _ThemeSampleScreen extends StatelessWidget {
                         child: Text(
                           l.communityMyWorksAccountNotConnected,
                           style: const TextStyle(fontWeight: FontWeight.w600),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
                     ],
@@ -3201,7 +3471,7 @@ class _ThemeSampleScreen extends StatelessWidget {
                       OutlinedButton.icon(
                         onPressed: () {},
                         icon: const Icon(Icons.account_circle_outlined),
-                        label: Text(l.communityMyWorksAddAccount),
+                        label: _keepWords(l.communityMyWorksAddAccount),
                       ),
                     ],
                   ),
