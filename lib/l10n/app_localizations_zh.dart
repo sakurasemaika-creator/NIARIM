@@ -7738,10 +7738,18 @@ class AppLocalizationsZh extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '有$count项是已收藏的作品（或含有已收藏作品的文件夹），因此未移至回收站。请先取消收藏，再重新粘贴。',
+      other: '有$count项是已收藏的作品或文件夹（或含有它们的文件夹），因此未移至回收站。请先取消收藏，再重新粘贴。',
     );
     return '$_temp0';
   }
+
+  @override
+  String get homePasteToTrashKeepsFavorites =>
+      '以下是已收藏的作品或文件夹（或含有它们的文件夹），因此不会移至回收站：';
+
+  @override
+  String get homeTrashFolderHoldsFavorite =>
+      '含有已收藏作品或文件夹的文件夹无法移至回收站。请先取消其中项目的收藏。';
 
   @override
   String homePasteSkippedFailed(int count) {
@@ -17626,10 +17634,18 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '有$count項是已收藏的作品（或含有已收藏作品的資料夾），因此未移至垃圾桶。請先取消收藏，再重新貼上。',
+      other: '有$count項是已收藏的作品或資料夾（或含有它們的資料夾），因此未移至垃圾桶。請先取消收藏，再重新貼上。',
     );
     return '$_temp0';
   }
+
+  @override
+  String get homePasteToTrashKeepsFavorites =>
+      '以下是已收藏的作品或資料夾（或含有它們的資料夾），因此不會移至垃圾桶：';
+
+  @override
+  String get homeTrashFolderHoldsFavorite =>
+      '含有已收藏作品或資料夾的資料夾無法移至垃圾桶。請先取消其中項目的收藏。';
 
   @override
   String homePasteSkippedFailed(int count) {

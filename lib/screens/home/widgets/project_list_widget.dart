@@ -30,6 +30,7 @@ import '../../../widgets/name_entry_dialog.dart';
 import '../../../widgets/collection_action_controls.dart';
 import '../../../widgets/collection_tile_layout.dart';
 import '../../../widgets/date_line_text.dart';
+import '../../../widgets/keep_together_text.dart';
 import '../../../widgets/secondary_click_menu.dart';
 import '../../../utils/app_error_reporter.dart';
 import '../../../utils/duplicate_name.dart';
@@ -685,6 +686,10 @@ class ProjectListWidget extends StatelessWidget {
         ].join('\n'),
         when: project.updatedAt,
         localeName: l10n.localeName,
+        // 「12fps · 10秒」の数と単位も途中で折り返さない。
+        keep: numberUnitParts(
+          l10n.homeProjectMeta(project.fps, project.durationSeconds),
+        ),
       ),
       trailing: (isSelectionMode || onPickProject != null)
           ? null
@@ -1333,8 +1338,10 @@ class ProjectListWidget extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final service = context.read<ProjectService>();
     final subtree = service.folderSubtreeIds(folder.id);
+    // 下の階層のお気に入りのフォルダも見る（以前は一番上のフォルダしか
+    // 見ず、中のお気に入りのフォルダを確かめずにゴミ箱へ移した）。
     bool includesFavorite() =>
-        service.folders.any((f) => f.id == folder.id && f.isFavorite) ||
+        service.folders.any((f) => subtree.contains(f.id) && f.isFavorite) ||
         service.projects.any(
           (p) => p.isFavorite && subtree.contains(p.folderId),
         );
@@ -1342,9 +1349,17 @@ class ProjectListWidget extends StatelessWidget {
     // いる他の機能の知らせ（ゴミ箱へ移した知らせの「元に戻す」等）を閉じず
     // に後へ並べる（作品のメニューの断りと同じ）。
     if (includesFavorite()) {
+      // フォルダ自身ではなく中の作品・フォルダがお気に入りなら、それが
+      // 理由だと言う（「お気に入り登録中は削除できません」だけでは、どれが
+      // お気に入りか分からなかった）。
+      final folderIsFavorite = service.folders.any(
+        (f) => f.id == folder.id && f.isFavorite,
+      );
       showTrashRefusedSnackBar(
         ScaffoldMessenger.of(context),
-        l10n.commonFavoriteDeleteBlocked,
+        folderIsFavorite
+            ? l10n.commonFavoriteDeleteBlocked
+            : l10n.homeTrashFolderHoldsFavorite,
       );
       return;
     }

@@ -283,7 +283,9 @@ void main() {
     await tester.tap(find.byTooltip('ゴミ箱へ移動'));
     await settle(tester);
     expect(find.byType(AlertDialog), findsNothing);
-    expect(snackText(tester), contains('お気に入り登録中は削除できません'));
+    // 選んだフォルダの中の作品がお気に入りなら、それが理由だと言う
+    // （DISC124の（4））。
+    expect(snackText(tester), contains('お気に入りの作品・フォルダが入っているフォルダ'));
     expect(service.projects, hasLength(3));
     expect(service.folders, hasLength(1));
   });

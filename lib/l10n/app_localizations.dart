@@ -14223,11 +14223,23 @@ abstract class AppLocalizations {
   /// **'{count, plural, other{{count}件は、元の作品・フォルダが見つからないため貼り付けられませんでした（ゴミ箱へ移動・削除済み）。}}'**
   String homePasteSkippedMissing(int count);
 
-  /// ゴミ箱への貼り付けで、お気に入りの作品（またはそれを含むフォルダ）だったため移さなかった件数
+  /// ゴミ箱への貼り付けで、お気に入りの作品・フォルダ（またはそれが入っているフォルダ）だったため移さなかった件数
   ///
   /// In ja, this message translates to:
-  /// **'{count, plural, other{{count}件は、お気に入りの作品（またはそれを含むフォルダ）のため、ゴミ箱へ移さずに残しました。お気に入りを外してから貼り付けてください。}}'**
+  /// **'{count, plural, other{{count}件は、お気に入りの作品・フォルダ（またはそれが入っているフォルダ）のため、ゴミ箱へ移さずに残しました。お気に入りを外してから貼り付けてください。}}'**
   String homePasteSkippedFavorite(int count);
+
+  /// ゴミ箱への貼り付けの確認で、お気に入りの作品・フォルダ（またはそれが入っているフォルダ）のため移さないものの並びの前に出す文
+  ///
+  /// In ja, this message translates to:
+  /// **'次のものは、お気に入りの作品・フォルダ（またはそれが入っているフォルダ）のため、ゴミ箱へ移さずに残します：'**
+  String get homePasteToTrashKeepsFavorites;
+
+  /// 中にお気に入りの作品・フォルダ（下の階層を含む）があるフォルダをゴミ箱へ移せないときの知らせ（フォルダ自身がお気に入りのときは commonFavoriteDeleteBlocked）
+  ///
+  /// In ja, this message translates to:
+  /// **'お気に入りの作品・フォルダが入っているフォルダは、ゴミ箱へ移動できません。中のお気に入りを外してから移動してください。'**
+  String get homeTrashFolderHoldsFavorite;
 
   /// 保存の失敗などで貼り付けられなかった件数（クリップボードに残る）
   ///

@@ -14,12 +14,12 @@ import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/models/project.dart';
 import 'package:niarim/router.dart';
 import 'package:niarim/screens/home/home_screen.dart';
-import 'package:niarim/screens/home/widgets/folder_delete_dialog.dart';
 import 'package:niarim/screens/home/widgets/project_list_widget.dart';
 import 'package:niarim/services/export_storage.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:niarim/services/settings_service.dart';
 import 'package:niarim/services/work_folder_service.dart';
+import 'package:niarim/widgets/project_trash_dialog.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -245,10 +245,18 @@ void main() {
     await rightClick(tester, find.text(name).first);
     await tester.tap(find.text(text.homeMoveToTrash).last);
     await settle(tester);
-    expect(find.byType(FolderDeleteDialog), findsOneWidget);
-    expect(find.text(text.homeMoveToTrashConfirm(1)), findsOneWidget);
+    // ほかのゴミ箱へ移す確認と同じ形（フォルダの名前を出す）。
+    expect(find.byType(ProjectTrashDialog), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byType(ProjectTrashDialog),
+        matching: find.text(name),
+      ),
+      findsOneWidget,
+    );
+    expect(find.textContaining(text.homeMoveToTrashConfirm(1)), findsOneWidget);
     await closeMenu(tester);
-    expect(find.byType(FolderDeleteDialog), findsNothing);
+    expect(find.byType(ProjectTrashDialog), findsNothing);
     expect(find.text(name), findsWidgets, reason: 'the folder was removed');
     await rightClick(tester, find.text(name).first);
     await tester.tap(find.text(text.thumbnailChangeAction).last);

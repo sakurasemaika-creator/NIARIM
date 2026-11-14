@@ -124,8 +124,19 @@ void main() {
         ),
       );
 
-  double top(WidgetTester tester, String text) =>
-      tester.getTopLeft(find.textContaining(text)).dy;
+  // 詳細表示の2行目は数と単位（「1秒」）を語結合子でつないで描くので、
+  // 語結合子を除いた文で探す（どの行かは同じく文の中身で決める）。
+  double top(WidgetTester tester, String text) => tester
+      .getTopLeft(
+        find.byWidgetPredicate(
+          (widget) =>
+              widget is Text &&
+              (widget.data ?? widget.textSpan?.toPlainText() ?? '')
+                  .replaceAll('\u2060', '')
+                  .contains(text),
+        ),
+      )
+      .dy;
 
   testWidgets('equal names or times keep a fixed order', (tester) async {
     // 名前が同じなら新しい方が先（一覧の元の並びは古い方が先）。

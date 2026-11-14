@@ -7852,10 +7852,18 @@ class AppLocalizationsKo extends AppLocalizations {
       count,
       locale: localeName,
       other:
-          '$count개 항목은 즐겨찾기한 작품(또는 그 작품이 있는 폴더)이라 휴지통으로 옮기지 않고 남겨 두었습니다. 즐겨찾기를 해제한 뒤 다시 붙여넣어 주세요.',
+          '$count개 항목은 즐겨찾기한 작품이나 폴더(또는 그것이 들어 있는 폴더)라 휴지통으로 옮기지 않고 남겨 두었습니다. 즐겨찾기를 해제한 뒤 다시 붙여넣어 주세요.',
     );
     return '$_temp0';
   }
+
+  @override
+  String get homePasteToTrashKeepsFavorites =>
+      '다음 항목은 즐겨찾기한 작품이나 폴더(또는 그것이 들어 있는 폴더)라 휴지통으로 옮기지 않고 남겨 둡니다:';
+
+  @override
+  String get homeTrashFolderHoldsFavorite =>
+      '즐겨찾기한 작품이나 폴더가 들어 있는 폴더는 휴지통으로 옮길 수 없습니다. 먼저 안에 있는 항목의 즐겨찾기를 해제해 주세요.';
 
   @override
   String homePasteSkippedFailed(int count) {

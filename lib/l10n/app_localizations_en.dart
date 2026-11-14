@@ -8122,12 +8122,20 @@ class AppLocalizationsEn extends AppLocalizations {
       count,
       locale: localeName,
       other:
-          '$count items are favorite works (or folders holding them), so they stayed out of the Trash. Remove them from favorites, then paste again.',
+          '$count items are favorite works or folders (or folders holding them), so they stayed out of the Trash. Remove them from favorites, then paste again.',
       one:
-          '$count item is a favorite work (or a folder holding one), so it stayed out of the Trash. Remove it from favorites, then paste again.',
+          '$count item is a favorite work or folder (or a folder holding one), so it stayed out of the Trash. Remove it from favorites, then paste again.',
     );
     return '$_temp0';
   }
+
+  @override
+  String get homePasteToTrashKeepsFavorites =>
+      'These are favorite works or folders (or folders holding them), so they will stay out of the Trash:';
+
+  @override
+  String get homeTrashFolderHoldsFavorite =>
+      'A folder that holds a favorite work or folder can’t be moved to the Trash. Remove the items inside from favorites first.';
 
   @override
   String homePasteSkippedFailed(int count) {

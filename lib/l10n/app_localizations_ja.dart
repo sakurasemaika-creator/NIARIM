@@ -7815,10 +7815,18 @@ class AppLocalizationsJa extends AppLocalizations {
       count,
       locale: localeName,
       other:
-          '$count件は、お気に入りの作品（またはそれを含むフォルダ）のため、ゴミ箱へ移さずに残しました。お気に入りを外してから貼り付けてください。',
+          '$count件は、お気に入りの作品・フォルダ（またはそれが入っているフォルダ）のため、ゴミ箱へ移さずに残しました。お気に入りを外してから貼り付けてください。',
     );
     return '$_temp0';
   }
+
+  @override
+  String get homePasteToTrashKeepsFavorites =>
+      '次のものは、お気に入りの作品・フォルダ（またはそれが入っているフォルダ）のため、ゴミ箱へ移さずに残します：';
+
+  @override
+  String get homeTrashFolderHoldsFavorite =>
+      'お気に入りの作品・フォルダが入っているフォルダは、ゴミ箱へ移動できません。中のお気に入りを外してから移動してください。';
 
   @override
   String homePasteSkippedFailed(int count) {

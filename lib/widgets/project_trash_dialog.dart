@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import '../l10n/app_localizations.dart';
 import '../services/project_service.dart'
     show FavoriteProjectDeleteException, TrashedFolderUnreadException;
+import '../utils/folder_persistence.dart' show FolderSaveException;
 import 'app_toast_messenger.dart';
+import 'keep_together_text.dart';
 
 // 読めていない作品があって断られたときは、読み込めていないことを伝える
 // （「保存先を確認して、もう一度」では、何度やり直しても同じ）。
@@ -12,6 +14,10 @@ String _failureText(AppLocalizations l10n, Object? failure) =>
     ? l10n.commonFavoriteDeleteBlocked
     : failure is TrashedFolderUnreadException
     ? l10n.homeProjectsLoadFailed
+    // フォルダの一覧の保存が途中までだった（作品一覧のフォルダ）：何が
+    // 残ったかを伝える文。
+    : failure is FolderSaveException && failure.partiallySaved
+    ? l10n.folderChangesPartiallySaved
     : l10n.homeTrashOperationFailed;
 
 /// [showProjectActionFailure]が出した失敗の知らせの印（閉じるときに、他の
@@ -214,7 +220,9 @@ class _ProjectTrashDialogState extends State<ProjectTrashDialog> {
                   softWrap: true,
                 ),
               ),
-            Text(widget.pendingMessage?.call() ?? widget.message),
+            // 数と単位（「プロジェクト2件」「2 items」）は行の途中で切らない
+            // （「…プロジェクト2 / 件も一緒に移動します。」と切れていた）。
+            countText(widget.pendingMessage?.call() ?? widget.message),
             if (_failed)
               Padding(
                 padding: const EdgeInsets.only(top: 12),

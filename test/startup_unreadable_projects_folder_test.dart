@@ -3202,7 +3202,8 @@ void main() {
         for (final text in tester.widgetList<Text>(
           find.descendant(
             of: find.byType(AlertDialog),
-            matching: find.byType(Text),
+            // 数と単位を途中で切らない本文（KeepTogetherText、Textを継承）も。
+            matching: find.byWidgetPredicate((widget) => widget is Text),
           ),
         ))
           text.data ?? '',

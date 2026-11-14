@@ -8263,12 +8263,20 @@ class AppLocalizationsFr extends AppLocalizations {
       count,
       locale: localeName,
       other:
-          '$count éléments sont des œuvres favorites (ou des dossiers qui en contiennent), ils n’ont donc pas été mis à la corbeille. Retirez-les des favoris, puis collez à nouveau.',
+          '$count éléments sont des favoris (œuvres ou dossiers) ou des dossiers qui en contiennent, ils n’ont donc pas été mis à la corbeille. Retirez-les des favoris, puis collez à nouveau.',
       one:
-          '$count élément est une œuvre favorite (ou un dossier qui en contient), il n’a donc pas été mis à la corbeille. Retirez-le des favoris, puis collez à nouveau.',
+          '$count élément est un favori (œuvre ou dossier) ou un dossier qui en contient, il n’a donc pas été mis à la corbeille. Retirez-le des favoris, puis collez à nouveau.',
     );
     return '$_temp0';
   }
+
+  @override
+  String get homePasteToTrashKeepsFavorites =>
+      'Ces éléments sont des favoris (œuvres ou dossiers) ou des dossiers qui en contiennent, ils ne seront donc pas mis à la corbeille :';
+
+  @override
+  String get homeTrashFolderHoldsFavorite =>
+      'Un dossier qui contient un favori (œuvre ou dossier) ne peut pas être mis à la corbeille. Retirez d’abord des favoris les éléments qu’il contient.';
 
   @override
   String homePasteSkippedFailed(int count) {

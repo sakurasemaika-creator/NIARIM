@@ -151,7 +151,8 @@ void main() {
     for (final text in tester.widgetList<Text>(
       find.descendant(
         of: find.byType(AlertDialog),
-        matching: find.byType(Text),
+        // 数と単位を途中で切らない本文（KeepTogetherText、Textを継承）も。
+        matching: find.byWidgetPredicate((widget) => widget is Text),
       ),
     ))
       text.data ?? text.textSpan!.toPlainText(),
@@ -242,10 +243,11 @@ void main() {
 
     await trashFromMenu(tester, '親');
     expect(find.byKey(const Key('trash-dialog-confirm')), findsNothing);
+    // 断る理由は中のお気に入り（DISC124の（4））。
     expect(
       find.descendant(
         of: find.byType(SnackBar),
-        matching: find.text(l10n.commonFavoriteDeleteBlocked),
+        matching: find.text(l10n.homeTrashFolderHoldsFavorite),
       ),
       findsOneWidget,
     );

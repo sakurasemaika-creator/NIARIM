@@ -2,8 +2,9 @@ import 'package:flutter/widgets.dart';
 
 import '../utils/line_break.dart';
 
-/// 日時（[when]を日付`yMd`と時刻`jm`の書き方で含む文）を、日付・時刻と
-/// 韓国語の語の途中で折り返さずに描く[Text]（詳細表示の行の2行目など）。
+/// 日時（[when]を日付`yMd`と時刻`jm`の書き方で含む文）を、日付・時刻・
+/// [keep]（数と単位「10秒」など）と韓国語の語の途中で折り返さずに描く
+/// [Text]（詳細表示の行の2行目など）。
 ///
 /// 狭い行・大きな文字で、「2026. 11. 13. 오 / 후 6:19」のように午後（오후）の
 /// 途中で切れていた。この行の幅に入る日付・時刻・語だけをかたまりにし、
@@ -15,6 +16,7 @@ class DateLineText extends StatelessWidget {
     super.key,
     required this.when,
     required this.localeName,
+    this.keep = const [],
   });
 
   /// 描く文（改行を含んでよい）。
@@ -25,6 +27,11 @@ class DateLineText extends StatelessWidget {
 
   /// [data]の日時を書いた言語（`AppLocalizations.localeName`）。
   final String localeName;
+
+  /// 日時のほかに、行の途中で切らない部分（数と単位など。行の幅に入るときだけ
+  /// かたまりにする）。作品・フォルダの名前は入れない（名前の中の「第1話」等を
+  /// かたまりにしない）。
+  final List<String> keep;
 
   @override
   Widget build(BuildContext context) => LayoutBuilder(
@@ -38,16 +45,19 @@ class DateLineText extends StatelessWidget {
         textDirection: Directionality.of(context),
         locale: Localizations.maybeLocaleOf(context),
       );
-      final shown = keepDateTimeTogether(
-        data,
-        when,
-        localeName,
-        fits: (part) {
-          painter
-            ..text = TextSpan(text: part, style: style)
-            ..layout();
-          return painter.width <= constraints.maxWidth;
-        },
+      bool fits(String part) {
+        painter
+          ..text = TextSpan(text: part, style: style)
+          ..layout();
+        return painter.width <= constraints.maxWidth;
+      }
+
+      // [keep]（「12fps · 10秒」の「10秒」）も行の途中で切らない（ja
+      // 360pxで「10 / 秒」と切れていた）。
+      final shown = keepPartsTogether(
+        keepDateTimeTogether(data, when, localeName, fits: fits),
+        keep,
+        fits: fits,
       );
       painter.dispose();
       return Text(shown, semanticsLabel: data);

@@ -164,6 +164,18 @@ void main() {
     );
   }
 
+  /// [target]まで一覧をスクロールする。一覧の上の方にあって作られていない
+  /// （先に下の方を見た後で、文字を大きくしてカードが高くなった）ときは、
+  /// 一番上へ戻してから下へ探す（下へしか探さないと見つからない）。
+  Future<void> scrollTo(WidgetTester tester, Finder target) async {
+    final list = find.byType(Scrollable).last;
+    if (target.evaluate().isEmpty) {
+      tester.state<ScrollableState>(list).position.jumpTo(0);
+      await tester.pump();
+    }
+    await tester.scrollUntilVisible(target, 80, scrollable: list);
+  }
+
   const titles = {'work': '海辺のスケッチ', 'folder': '旅行', 'file': 'clip_001.mp4'};
 
   /// いまの幅・文字の倍率で3種のカードを見て、決まりに合わない所を返す。
@@ -182,11 +194,7 @@ void main() {
     final beside = <String, bool>{};
     for (final MapEntry(key: kind, value: keys) in cards.entries) {
       final delete = find.byKey(keys.last, skipOffstage: false);
-      await tester.scrollUntilVisible(
-        delete,
-        80,
-        scrollable: find.byType(Scrollable).last,
-      );
+      await scrollTo(tester, delete);
       await settle(tester, rounds: 1);
       final cardFinder = find
           .ancestor(of: delete, matching: find.byType(Card))
@@ -330,11 +338,7 @@ void main() {
       tester.platformDispatcher.textScaleFactorTestValue = 1.0;
       await settle(tester);
       final delete = find.byKey(cards['work']!.last, skipOffstage: false);
-      await tester.scrollUntilVisible(
-        delete,
-        80,
-        scrollable: find.byType(Scrollable).last,
-      );
+      await scrollTo(tester, delete);
       final title = find.text(titles['work']!);
       if (tester.getRect(delete).left < tester.getRect(title).right) {
         problems.add('$code 1280 x1.0: the buttons are not beside the name');
@@ -369,11 +373,7 @@ void main() {
           if (error != null) problems.add('$where: $error');
           for (final MapEntry(key: kind, value: keys) in cards.entries) {
             final delete = find.byKey(keys.last, skipOffstage: false);
-            await tester.scrollUntilVisible(
-              delete,
-              80,
-              scrollable: find.byType(Scrollable).last,
-            );
+            await scrollTo(tester, delete);
             await settle(tester, rounds: 1);
             final card = find
                 .ancestor(of: delete, matching: find.byType(Card))

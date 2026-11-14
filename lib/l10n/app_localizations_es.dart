@@ -8248,12 +8248,20 @@ class AppLocalizationsEs extends AppLocalizations {
       count,
       locale: localeName,
       other:
-          '$count elementos son obras favoritas (o carpetas que las contienen), así que no se movieron a la papelera. Quítalos de favoritos y vuelve a pegar.',
+          '$count elementos son obras o carpetas favoritas (o carpetas que las contienen), así que no se movieron a la papelera. Quítalos de favoritos y vuelve a pegar.',
       one:
-          '$count elemento es una obra favorita (o una carpeta que la contiene), así que no se movió a la papelera. Quítalo de favoritos y vuelve a pegar.',
+          '$count elemento es una obra o carpeta favorita (o una carpeta que la contiene), así que no se movió a la papelera. Quítalo de favoritos y vuelve a pegar.',
     );
     return '$_temp0';
   }
+
+  @override
+  String get homePasteToTrashKeepsFavorites =>
+      'Estos elementos son obras o carpetas favoritas (o carpetas que las contienen), así que no se moverán a la papelera:';
+
+  @override
+  String get homeTrashFolderHoldsFavorite =>
+      'Una carpeta que contiene una obra o carpeta favorita no se puede mover a la papelera. Quita primero de favoritos los elementos que contiene.';
 
   @override
   String homePasteSkippedFailed(int count) {

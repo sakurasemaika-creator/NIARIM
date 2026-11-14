@@ -8,6 +8,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart' show DateFormat;
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -48,6 +49,7 @@ import '../../widgets/secondary_click_menu.dart';
 import '../../widgets/share_project_file_action.dart';
 import '../../widgets/mission_completion_dialog.dart';
 import '../../widgets/moved_to_trash_snack_bar.dart';
+import '../../widgets/keep_together_text.dart';
 import '../../widgets/typing_aware_shortcuts.dart';
 import '../../widgets/fit_or_hide_title.dart';
 import 'widgets/project_list_widget.dart';
@@ -59,7 +61,6 @@ import 'widgets/home_drawer.dart';
 import 'widgets/exported_work_card.dart';
 import 'widgets/exported_work_thumbnail_dialog.dart';
 import 'widgets/exported_work_preview_layout.dart';
-import 'widgets/folder_delete_dialog.dart';
 import 'widgets/work_folder_move_sheet.dart';
 import 'home_clipboard_policy.dart';
 import '../../config/font_fallback.dart';
@@ -1315,7 +1316,11 @@ class _HomeScreenState extends State<HomeScreen>
 
   HomeClipboardEntry? _singleLibrarySelection({bool cut = false}) {
     if (_selectedIds.length != 1) return null;
-    final id = _selectedIds.first;
+    return _libraryEntry(_selectedIds.first, cut: cut);
+  }
+
+  /// 作品一覧・共有の選択のID[id]の項目（名前・元の場所）。無ければnull。
+  HomeClipboardEntry? _libraryEntry(String id, {bool cut = false}) {
     final ps = context.read<ProjectService>();
     final ws = context.read<WorkFolderService>();
     if (id.startsWith('work_file:')) {
@@ -1451,81 +1456,117 @@ class _HomeScreenState extends State<HomeScreen>
     if (_selectedIds.isEmpty) return;
     final selected = _selectedIds.toList(growable: false);
     final l10n = AppLocalizations.of(context)!;
-    final confirm = await showDialog<bool>(
-      context: context,
-      builder: (dialog) => AlertDialog(
-        title: Text(l10n.homeMoveToTrash),
-        content: Text(l10n.homeMoveToTrashConfirm(selected.length)),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialog, false),
-            child: Text(l10n.commonCancel),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(dialog, true),
-            child: Text(l10n.commonMove),
-          ),
-        ],
-      ),
-    );
-    if (confirm != true || !mounted) return;
     final ps = context.read<ProjectService>();
     final ws = context.read<WorkFolderService>();
-    try {
-      for (final id in selected) {
-        if (id.startsWith('work_file:')) {
-          final path = id.substring('work_file:'.length);
-          await LocalFileTrashService.move(
-            File(path),
-            LocalTrashKind.exportedWork,
-          );
-        } else if (id.startsWith('work_folder:')) {
-          final folderId = id.substring('work_folder:'.length);
-          final folder = ws.folders.where((f) => f.id == folderId).firstOrNull;
-          if (folder == null) continue;
-          final exports = await ExportEngine.listExportedFiles(
-            forceRefresh: true,
-          );
-          final files = exports
-              .where(
-                (file) => ws.folderIdOf(file.uri.pathSegments.last) == folderId,
-              )
-              .toList();
-          await LocalFileTrashService.moveWorkFolder(
-            folderName: folder.name,
-            files: files,
-          );
-          await ws.deleteFolder(folderId);
-        } else if (id.startsWith('shared_file:')) {
-          final projectId = id.substring('shared_file:'.length);
-          final project = ps.shared.where((p) => p.id == projectId).firstOrNull;
-          if (project != null && !project.isFavorite) {
-            await ps.deleteProject(projectId);
+    // 受け取ったもののお気に入り（とそれを含むフォルダ）はゴミ箱へ移さない。
+    // プロジェクトのタブの選択と同じく、黙って飛ばさずに理由を出す（以前は
+    // 確認で数に入れたまま、お気に入りだけ黙って残していた）。
+    bool favouriteFile(String id) =>
+        id.startsWith('shared_file:') &&
+        ps.shared.any(
+          (p) => p.id == id.substring('shared_file:'.length) && p.isFavorite,
+        );
+    bool favouriteFolder(String id) =>
+        id.startsWith('shared_folder:') &&
+        ps.sharedFolders.any(
+          (f) => f.id == id.substring('shared_folder:'.length) && f.isFavorite,
+        );
+    bool holdsFavourite(String id) =>
+        id.startsWith('shared_folder:') &&
+        ps.shared.any(
+          (p) =>
+              p.isFavorite &&
+              p.sharedFolderId == id.substring('shared_folder:'.length),
+        );
+    if (selected.any((id) => favouriteFile(id) || favouriteFolder(id))) {
+      showTrashRefusedSnackBar(
+        ScaffoldMessenger.of(context),
+        l10n.commonFavoriteDeleteBlocked,
+      );
+      return;
+    }
+    if (selected.any(holdsFavourite)) {
+      showTrashRefusedSnackBar(
+        ScaffoldMessenger.of(context),
+        l10n.homeTrashFolderHoldsFavorite,
+      );
+      return;
+    }
+    // 作品・フォルダ・書き出したファイルを1件ずつ移す確認と同じ形（移す
+    // ものの名前を出し、移せなかったときは中に理由を出して開いたまま）。
+    final names = [
+      for (final id in selected)
+        if (_libraryEntry(id) case final entry?) entry.name,
+    ];
+    await showDialog<bool>(
+      context: context,
+      builder: (_) => ProjectTrashDialog(
+        title: l10n.homeMoveToTrash,
+        message: l10n.homeMoveToTrashConfirm(selected.length),
+        confirmLabel: l10n.commonMove,
+        itemNames: names,
+        onApply: () async {
+          try {
+            await _moveLibraryToTrash(selected, ps, ws);
+          } catch (error, stackTrace) {
+            AppErrorReporter.record(error, stackTrace);
+            rethrow;
+          } finally {
+            StorageInfoService().invalidate();
           }
-        } else if (id.startsWith('shared_folder:')) {
-          final folderId = id.substring('shared_folder:'.length);
-          final folder = ps.sharedFolders
-              .where((f) => f.id == folderId)
-              .firstOrNull;
-          if (folder != null && !folder.isFavorite) {
-            await ps.moveFolderToTrash(folderId, shared: true);
-          }
-        } else if (id.startsWith('outgoing_file:')) {
-          await LocalFileTrashService.move(
-            File(id.substring('outgoing_file:'.length)),
-            LocalTrashKind.outgoingShare,
-          );
-          await ps.refreshOutgoingShares();
+          if (mounted) _endProjectSelection();
+        },
+      ),
+    );
+  }
+
+  /// 選んだ作品一覧・共有の項目（[selected]の選択のID）をゴミ箱へ移す。
+  Future<void> _moveLibraryToTrash(
+    List<String> selected,
+    ProjectService ps,
+    WorkFolderService ws,
+  ) async {
+    for (final id in selected) {
+      if (id.startsWith('work_file:')) {
+        final path = id.substring('work_file:'.length);
+        await LocalFileTrashService.move(
+          File(path),
+          LocalTrashKind.exportedWork,
+        );
+      } else if (id.startsWith('work_folder:')) {
+        final folderId = id.substring('work_folder:'.length);
+        final folder = ws.folders.where((f) => f.id == folderId).firstOrNull;
+        if (folder == null) continue;
+        final exports = await ExportEngine.listExportedFiles(
+          forceRefresh: true,
+        );
+        final files = exports
+            .where(
+              (file) => ws.folderIdOf(file.uri.pathSegments.last) == folderId,
+            )
+            .toList();
+        await LocalFileTrashService.moveWorkFolder(
+          folderName: folder.name,
+          files: files,
+        );
+        await ws.deleteFolder(folderId);
+      } else if (id.startsWith('shared_file:')) {
+        final projectId = id.substring('shared_file:'.length);
+        if (ps.shared.any((p) => p.id == projectId)) {
+          await ps.deleteProject(projectId);
         }
+      } else if (id.startsWith('shared_folder:')) {
+        final folderId = id.substring('shared_folder:'.length);
+        if (ps.sharedFolders.any((f) => f.id == folderId)) {
+          await ps.moveFolderToTrash(folderId, shared: true);
+        }
+      } else if (id.startsWith('outgoing_file:')) {
+        await LocalFileTrashService.move(
+          File(id.substring('outgoing_file:'.length)),
+          LocalTrashKind.outgoingShare,
+        );
+        await ps.refreshOutgoingShares();
       }
-      StorageInfoService().invalidate();
-      if (mounted) _endProjectSelection();
-    } catch (error, stackTrace) {
-      AppErrorReporter.record(error, stackTrace);
-      if (mounted)
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(l10n.homeTrashOperationFailed)));
     }
   }
 
@@ -1537,7 +1578,9 @@ class _HomeScreenState extends State<HomeScreen>
       context: context,
       builder: (dialog) => AlertDialog(
         title: Text(l10n.commonRestore),
-        content: Text(l10n.homeTrashRestoreSelectedConfirm(selected.length)),
+        content: countText(
+          l10n.homeTrashRestoreSelectedConfirm(selected.length),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialog, false),
@@ -1760,9 +1803,10 @@ class _HomeScreenState extends State<HomeScreen>
         .toList();
     final count = rootFolderIds.length + directProjectIds.length;
     if (count == 0) return;
+    // 選んだフォルダの下の階層のお気に入りのフォルダも見る。
     bool includesFavorite() =>
         service.folders.any(
-          (f) => rootFolderIds.contains(f.id) && f.isFavorite,
+          (f) => coveredFolderIds.contains(f.id) && f.isFavorite,
         ) ||
         service.projects.any(
           (p) =>
@@ -1771,10 +1815,21 @@ class _HomeScreenState extends State<HomeScreen>
                   coveredFolderIds.contains(p.folderId)),
         );
     if (includesFavorite()) {
-      // 出ているゴミ箱の知らせの「元に戻す」等を閉じずに、後ろに並べる。
+      // 選んだもの自身がお気に入りならその断り、選んだフォルダの中の作品
+      // だけがお気に入りなら、中のお気に入りが理由だと言う。出ているゴミ箱の
+      // 知らせの「元に戻す」等を閉じずに、後ろに並べる。
+      final selectedFavorite =
+          service.folders.any(
+            (f) => rootFolderIds.contains(f.id) && f.isFavorite,
+          ) ||
+          service.projects.any(
+            (p) => p.isFavorite && directProjectIds.contains(p.id),
+          );
       showTrashRefusedSnackBar(
         ScaffoldMessenger.of(context),
-        l10n.commonFavoriteDeleteBlocked,
+        selectedFavorite
+            ? l10n.commonFavoriteDeleteBlocked
+            : l10n.homeTrashFolderHoldsFavorite,
       );
       return;
     }
@@ -2208,7 +2263,10 @@ class _HomeScreenState extends State<HomeScreen>
     );
   }
 
-  Future<bool> _confirmPasteToTrash(List<String> names) async {
+  Future<bool> _confirmPasteToTrash(
+    List<String> names, {
+    List<String> kept = const [],
+  }) async {
     final days = context.read<SettingsService>().trashAutoDeleteDays;
     final l10n = AppLocalizations.of(context)!;
     return await showDialog<bool>(
@@ -2223,8 +2281,13 @@ class _HomeScreenState extends State<HomeScreen>
                 children: [
                   Text(l10n.homePasteToTrashQuestion),
                   for (final name in names) Text(l10n.commonBulletItem(name)),
+                  if (kept.isNotEmpty) ...[
+                    const SizedBox(height: 12),
+                    Text(l10n.homePasteToTrashKeepsFavorites),
+                    for (final name in kept) Text(l10n.commonBulletItem(name)),
+                  ],
                   const SizedBox(height: 12),
-                  Text(
+                  countText(
                     days > 0
                         ? l10n.homeTrashAutoDeleteNotice(days)
                         : l10n.homeTrashAutoDeleteOffNotice,
@@ -2302,14 +2365,38 @@ class _HomeScreenState extends State<HomeScreen>
       return;
     }
     if (target == HomePasteArea.trash) {
-      final names = [
-        for (final id in projectIds)
-          ...service.projects.where((p) => p.id == id).map((p) => p.name),
-        for (final id in folderIds)
-          ...service.folders.where((f) => f.id == id).map((f) => f.name),
-      ];
-      if (names.isEmpty || !await _confirmPasteToTrash(names) || !mounted)
+      // お気に入りの作品と、それを含むフォルダはゴミ箱へ移さない（貼り付けの
+      // 結果で断る）。確かめるときに分けて出し、移すものが無ければ確かめない
+      // （以前は後で断るお気に入りも、移すものと同じ並びに出していた）。
+      // お気に入りのフォルダ自身も（メニュー・選んで移すときと同じく）移さない。
+      // 下の階層のお気に入りのフォルダも（中身として移さない）。
+      bool holdsFavorite(String folderId) {
+        final subtree = service.folderSubtreeIds(folderId);
+        return service.folders.any(
+              (f) => subtree.contains(f.id) && f.isFavorite,
+            ) ||
+            service.projects.any(
+              (p) => p.isFavorite && subtree.contains(p.folderId),
+            );
+      }
+
+      final names = <String>[];
+      final kept = <String>[];
+      for (final id in projectIds) {
+        for (final p in service.projects.where((p) => p.id == id)) {
+          (p.isFavorite ? kept : names).add(p.name);
+        }
+      }
+      for (final id in folderIds) {
+        for (final f in service.folders.where((f) => f.id == id)) {
+          (holdsFavorite(f.id) ? kept : names).add(f.name);
+        }
+      }
+      if (names.isEmpty && kept.isEmpty) return;
+      if (names.isNotEmpty &&
+          (!await _confirmPasteToTrash(names, kept: kept) || !mounted)) {
         return;
+      }
     }
     final l10n = AppLocalizations.of(context)!;
     final namer = _copyNamer(context);
@@ -3526,6 +3613,7 @@ class _SharedTab extends StatelessWidget {
     return _FolderableList<Project>(
       reserveForFloatingActions: true,
       allItems: shared,
+      everyItem: service.shared,
       folders: visibleFolders,
       viewMode: viewMode,
       gridItemBuilder: (context, project) => _receivedShareProjectTile(
@@ -3737,6 +3825,9 @@ Widget _receivedShareProjectTile(
           '${l10n.projectListUpdatedOn(project.updatedAt)}',
           when: project.updatedAt,
           localeName: l10n.localeName,
+          keep: numberUnitParts(
+            l10n.homeProjectMeta(project.fps, project.durationSeconds),
+          ),
         ),
         onTap: selectedTap,
         onLongPress: selectedLongPress,
@@ -3998,27 +4089,32 @@ Future<void> _outgoingShareAction(
         await file.copy(target.path);
         await service.refreshOutgoingShares();
       case 'delete':
-        final confirmed = await showDialog<bool>(
+        // 作品・フォルダ・書き出したファイルと同じ確認（名前を出し、移せ
+        // なかったときはダイアログの中に理由を出して開いたまま）。以前は
+        // 名前の無い別のダイアログで、失敗は後ろの知らせだった。
+        final moved = await showDialog<bool>(
           context: context,
-          builder: (ctx) => AlertDialog(
-            title: Text(l10n.homeMoveToTrash),
-            content: Text(l10n.homeMoveToTrashConfirm(1)),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(ctx, false),
-                child: Text(l10n.commonCancel),
-              ),
-              FilledButton(
-                onPressed: () => Navigator.pop(ctx, true),
-                child: Text(l10n.commonMove),
-              ),
-            ],
+          builder: (_) => ProjectTrashDialog(
+            title: l10n.homeMoveToTrash,
+            message: l10n.homeMoveToTrashConfirm(1),
+            confirmLabel: l10n.commonMove,
+            itemNames: [entry.name],
+            onApply: () async {
+              try {
+                await LocalFileTrashService.move(
+                  file,
+                  LocalTrashKind.outgoingShare,
+                );
+              } catch (error, stackTrace) {
+                AppErrorReporter.record(error, stackTrace);
+                rethrow;
+              }
+              StorageInfoService().invalidate();
+            },
           ),
         );
-        if (confirmed != true) return;
-        await LocalFileTrashService.move(file, LocalTrashKind.outgoingShare);
+        if (moved != true) return;
         await service.refreshOutgoingShares();
-        StorageInfoService().invalidate();
     }
   } catch (error, stackTrace) {
     AppErrorReporter.record(error, stackTrace);
@@ -4419,6 +4515,11 @@ class _FolderableList<T> extends StatelessWidget {
   final ValueChanged<ProjectFolder>? onCopyFolder;
   final ValueChanged<ProjectFolder>? onToggleFolderFavorite;
   final List<T> allItems;
+
+  /// 絞り込み（お気に入りだけ・検索）の前の全部の項目。フォルダをゴミ箱へ
+  /// 移す確認で中身を数え、お気に入りを探すのに使う（絞り込んだ一覧で
+  /// 数えると、見えていない中身を数えない）。省けば[allItems]。
+  final List<T>? everyItem;
   final List<ProjectFolder> folders;
   final String? Function(T) folderIdOf;
   final void Function(String folderId, String folderName, List<T> itemsInFolder)
@@ -4444,6 +4545,7 @@ class _FolderableList<T> extends StatelessWidget {
   const _FolderableList({
     super.key,
     required this.allItems,
+    this.everyItem,
     required this.folders,
     required this.folderIdOf,
     required this.onEnterFolder,
@@ -4864,16 +4966,7 @@ class _FolderableList<T> extends StatelessWidget {
               ),
               onTap: () {
                 Navigator.pop(ctx);
-                showDialog(
-                  context: context,
-                  builder: (_) => FolderDeleteDialog(
-                    folderName: folder.name,
-                    title: l10n.homeMoveToTrash,
-                    body: l10n.homeMoveToTrashConfirm(1),
-                    confirmLabel: l10n.homeMoveToTrash,
-                    onDelete: () => onDeleteFolder(folder.id),
-                  ),
-                );
+                _confirmFolderTrash(context, folder);
               },
             ),
           ],
@@ -4930,17 +5023,48 @@ class _FolderableList<T> extends StatelessWidget {
           (name) => onRenameFolder(folder.id, name),
         );
       case 'delete':
-        showDialog(
-          context: context,
-          builder: (_) => FolderDeleteDialog(
-            folderName: folder.name,
-            title: l10n.homeMoveToTrash,
-            body: l10n.homeMoveToTrashConfirm(1),
-            confirmLabel: l10n.homeMoveToTrash,
-            onDelete: () => onDeleteFolder(folder.id),
-          ),
-        );
+        _confirmFolderTrash(context, folder);
     }
+  }
+
+  /// フォルダをゴミ箱へ移す確認。プロジェクトのフォルダ・作品・書き出した
+  /// ファイルと同じ形（名前と中身の数を出し、「移動」は差し色、移せな
+  /// かったときは中に理由を出して開いたまま）。以前は名前の無い別の
+  /// ダイアログで、ボタンが危険の赤だった。
+  void _confirmFolderTrash(BuildContext context, ProjectFolder folder) {
+    final l10n = AppLocalizations.of(context)!;
+    // 受け取ったもののお気に入りのフォルダ・お気に入りを含むフォルダは
+    // 移さない（プロジェクトのフォルダのメニューと同じく、開く前に断る）。
+    final inside = [
+      for (final item in everyItem ?? allItems)
+        if (folderIdOf(item) == folder.id) item,
+    ];
+    if (T == Project) {
+      final holdsFavorite = inside.any((e) => (e as Project).isFavorite);
+      if (folder.isFavorite || holdsFavorite) {
+        showTrashRefusedSnackBar(
+          ScaffoldMessenger.of(context),
+          folder.isFavorite
+              ? l10n.commonFavoriteDeleteBlocked
+              : l10n.homeTrashFolderHoldsFavorite,
+        );
+        return;
+      }
+    }
+    final count = inside.length;
+    final contents = count == 0
+        ? ''
+        : '\n${l10n.homeMoveToTrashFolderContents(T == File ? l10n.homeWorkFolderContents(count) : l10n.homeFolderContents(count, 0))}';
+    showDialog<void>(
+      context: context,
+      builder: (_) => ProjectTrashDialog(
+        title: l10n.homeMoveToTrash,
+        message: l10n.homeMoveToTrashConfirm(1) + contents,
+        confirmLabel: l10n.commonMove,
+        itemNames: [folder.name],
+        onApply: () => onDeleteFolder(folder.id),
+      ),
+    );
   }
 }
 
@@ -5171,12 +5295,19 @@ class _TrashTabState extends State<_TrashTab> {
         : projectNames.isNotEmpty
         ? projectNames.join(l10n.commonListSeparator)
         : l10n.homeFolderContents(0, record.subfolders.length);
+    // 1行目は作品・ファイルの行と同じく、ゴミ箱へ移した日。種類の名前
+    // （「作成したプロジェクト」「受け取った共有ファイル」）は付けない
+    // （フォルダを1つの作品・ファイルと言ってしまう。種類は絞り込みの
+    // チップで分ける）。
+    final heading = _deletedLabel(record.deletedAt, l10n);
     return _trashCard(
       selectionId: 'trash_folder:$id',
       detailsKey: ValueKey('trashedFolder_$id'),
       leading: const Icon(Icons.folder_delete_outlined, size: 36),
       title: record.folder.name,
-      subtitle: subtitle,
+      subtitle: heading,
+      detail: subtitle,
+      subtitleDate: record.deletedAt,
       actions: [
         if (widget.onCopyEntry != null)
           TextButton(
@@ -5224,36 +5355,29 @@ class _TrashTabState extends State<_TrashTab> {
   Future<void> _deleteLocal(LocalTrashedFile entry) async {
     if (_pending.contains(entry.id)) return;
     final l10n = AppLocalizations.of(context)!;
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        scrollable: true,
-        title: Text(l10n.homePermanentDeleteConfirmTitle),
-        content: Text(l10n.homePermanentDeleteConfirmBody),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: Text(l10n.commonCancel),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: Text(l10n.commonDelete),
-          ),
-        ],
-      ),
-    );
-    if (confirmed != true || !mounted) return;
     setState(() => _pending.add(entry.id));
     try {
-      await LocalFileTrashService.deleteForever(entry);
-      StorageInfoService().invalidate();
-    } catch (error, stackTrace) {
-      AppErrorReporter.record(error, stackTrace);
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(l10n.homeTrashOperationFailed)));
-      }
+      // 作品・フォルダの完全削除と同じ確認（名前を出し、消せなかったときは
+      // 中に理由を出して開いたまま）。以前は名前の無い別のダイアログで、
+      // 消せなかったことは後ろの知らせだった。
+      await showDialog<bool>(
+        context: context,
+        builder: (_) => ProjectTrashDialog(
+          title: l10n.homePermanentDeleteConfirmTitle,
+          message: l10n.homePermanentDeleteConfirmBody,
+          confirmLabel: l10n.commonDelete,
+          itemNames: [entry.fileName],
+          onApply: () async {
+            try {
+              await LocalFileTrashService.deleteForever(entry);
+            } catch (error, stackTrace) {
+              AppErrorReporter.record(error, stackTrace);
+              rethrow;
+            }
+            StorageInfoService().invalidate();
+          },
+        ),
+      );
     } finally {
       if (mounted) setState(() => _pending.remove(entry.id));
     }
@@ -5420,6 +5544,7 @@ class _TrashTabState extends State<_TrashTab> {
     required String title,
     required String subtitle,
     required List<Widget> actions,
+    String? detail,
     Key? detailsKey,
     DateTime? subtitleDate,
   }) {
@@ -5442,13 +5567,35 @@ class _TrashTabState extends State<_TrashTab> {
           height: kWrappedNameLineHeight,
         ),
       ),
-      subtitle: subtitleDate == null || !containsHangul(subtitle)
-          ? KoreanWordsText(subtitle)
-          : DateLineText(
+      // 狭い幅・大きな文字でも、移した日・数と単位（「10秒」）の途中で
+      // 折り返さない（「12fps · 10 / 秒」と切れていた）。韓国語の2行目は
+      // 語の途中でも折り返さない。
+      subtitle: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (!containsHangul(subtitle))
+            KeepTogetherText(
+              subtitle,
+              keep: [
+                if (subtitleDate != null)
+                  DateFormat.yMd(
+                    AppLocalizations.of(context)!.localeName,
+                  ).format(subtitleDate),
+              ],
+            )
+          else if (subtitleDate == null)
+            KoreanWordsText(subtitle)
+          else
+            DateLineText(
               subtitle,
               when: subtitleDate,
               localeName: AppLocalizations.of(context)!.localeName,
             ),
+          // フォルダの中身（作品の名前・件数）は次の行に。
+          if (detail != null) KoreanWordsText(detail),
+        ],
+      ),
     );
     // カードを押す・長押しする所とマウスを載せた色は、カード全体（ボタンの
     // 行も含む）。名前の行（ListTile）だけに付けていた頃は、ボタンの行の
@@ -5662,6 +5809,17 @@ class _TrashTabState extends State<_TrashTab> {
 List<File> _sortExportedFiles(List<File> files, ProjectSortMode mode) {
   final sorted = List<File>.of(files);
   final byName = nameComparator<File>((file) => file.uri.pathSegments.last);
+  // 更新日時はファイルごとに1回だけ読む。読み直す前の一覧に、ゴミ箱へ
+  // 移した直後のファイルが残っていても止まらない（以前は無いファイルの
+  // 日時を読んで、作品一覧のタブの組み立てが例外になった）。
+  final modified = <String, DateTime>{};
+  DateTime modifiedOf(File file) => modified[file.path] ??= () {
+    try {
+      return file.lastModifiedSync();
+    } on FileSystemException {
+      return DateTime.fromMillisecondsSinceEpoch(0);
+    }
+  }();
   int compare(File a, File b) {
     switch (mode) {
       case ProjectSortMode.nameAsc:
@@ -5669,9 +5827,9 @@ List<File> _sortExportedFiles(List<File> files, ProjectSortMode mode) {
       case ProjectSortMode.nameDesc:
         return byName(b, a);
       case ProjectSortMode.updatedAsc:
-        return a.lastModifiedSync().compareTo(b.lastModifiedSync());
+        return modifiedOf(a).compareTo(modifiedOf(b));
       case ProjectSortMode.updatedDesc:
-        return b.lastModifiedSync().compareTo(a.lastModifiedSync());
+        return modifiedOf(b).compareTo(modifiedOf(a));
     }
   }
 
@@ -5923,6 +6081,7 @@ class _WorksTabState extends State<_WorksTab>
                   )
                 : null,
             allItems: files,
+            everyItem: snapshot.data!,
             folders: folders,
             folderIdOf: (f) =>
                 workFolders.folderIdOf(f.path.split(RegExp(r'[\\/]')).last),
@@ -6415,48 +6574,30 @@ class _WorkListItemState extends State<_WorkListItem> {
     );
   }
 
-  void _confirmDelete(BuildContext context) {
+  /// 作品・フォルダと同じ確認（名前を出し、「移動」は差し色。移せなかった
+  /// ときはダイアログの中に理由を出し、開いたまま）。以前は名前が無く、
+  /// 「移動」が危険な操作の赤だった。
+  Future<void> _confirmDelete(BuildContext context) async {
     final l10n = AppLocalizations.of(context)!;
-    showDialog(
+    final moved = await showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        scrollable: true,
-        insetPadding: const EdgeInsets.all(16),
-        title: Text(l10n.homeMoveToTrash),
-        content: Text(l10n.homeMoveToTrashConfirm(1)),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(l10n.commonCancel),
-          ),
-          FilledButton(
-            style: FilledButton.styleFrom(
-              backgroundColor: ThemeService.activeColorScheme.error,
-            ),
-            onPressed: () async {
-              try {
-                await LocalFileTrashService.move(
-                  file,
-                  LocalTrashKind.exportedWork,
-                );
-                StorageInfoService().invalidate();
-                if (!ctx.mounted) return;
-                Navigator.pop(ctx);
-                widget.onDeleted();
-              } catch (error, stackTrace) {
-                AppErrorReporter.record(error, stackTrace);
-                if (ctx.mounted) {
-                  ScaffoldMessenger.of(ctx).showSnackBar(
-                    SnackBar(content: Text(l10n.homeTrashOperationFailed)),
-                  );
-                }
-              }
-            },
-            child: Text(l10n.commonMove),
-          ),
-        ],
+      builder: (_) => ProjectTrashDialog(
+        title: l10n.homeMoveToTrash,
+        message: l10n.homeMoveToTrashConfirm(1),
+        confirmLabel: l10n.commonMove,
+        itemNames: [file.path.split(RegExp(r'[\\/]')).last],
+        onApply: () async {
+          try {
+            await LocalFileTrashService.move(file, LocalTrashKind.exportedWork);
+          } catch (error, stackTrace) {
+            AppErrorReporter.record(error, stackTrace);
+            rethrow;
+          }
+          StorageInfoService().invalidate();
+        },
       ),
     );
+    if (moved == true && mounted) widget.onDeleted();
   }
 }
 

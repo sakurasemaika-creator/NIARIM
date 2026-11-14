@@ -4381,10 +4381,14 @@ class ProjectService extends ChangeNotifier {
       unreadUnlisted: _projectsListingFailed,
     );
     // お気に入りの作品は、保護を外すまでゴミ箱へ移さない（作品の一括の
-    // 削除と同じ。フォルダごとでも迂回させない）。
-    if (_projects.any(
-      (p) => record.projectIds.contains(p.id) && p.isFavorite,
-    )) {
+    // 削除と同じ。フォルダごとでも迂回させない）。お気に入りのフォルダ
+    // 自身も同じ（メニュー・選んで移すときは断っていたが、ゴミ箱への
+    // 貼り付けはここを通って移していた）。下の階層のお気に入りのフォルダも
+    // 中身として移さない（以前は一番上のフォルダしか見ていなかった）。
+    if (folders.any((f) => ids.contains(f.id) && f.isFavorite) ||
+        _projects.any(
+          (p) => record.projectIds.contains(p.id) && p.isFavorite,
+        )) {
       throw const FavoriteProjectDeleteException();
     }
     // Do not archive a folder until all of its projects are readable

@@ -166,3 +166,27 @@ class KeepTogetherText extends Text {
     );
   }
 }
+
+/// 数とそのすぐ後の単位を行の途中で切らずに[text]を描く（確認の文の
+/// 「プロジェクト2件」「2 items」「2 elementos」）。漢字・かな・ハングルの
+/// 単位は[KeepTogetherText]がもともとつなぐので、空白を挟む言語の「数＋次の
+/// 語」だけを足す。数の無い文は普通の[Text]。
+Widget countText(String text, {Key? key, TextStyle? style}) {
+  final parts = [for (final m in _spacedCount.allMatches(text)) m[0]!];
+  if (!text.contains(RegExp(r'\d'))) return Text(text, key: key, style: style);
+  return KeepTogetherText(text, key: key, keep: parts, style: style);
+}
+
+/// 数と、空白を1つ挟んで続く語（「2 items」「1 élément」）。
+final RegExp _spacedCount = RegExp(
+  r"(?<!\d)\d+(?:[.,]\d+)*[  ]\p{L}[\p{L}\p{M}'’-]*",
+  unicode: true,
+);
+
+/// [text]の中の、数とそのすぐ後に空白なしで続く単位（漢字・かな・ハングル。
+/// 「10秒」「10초」「2件」）。[KeepTogetherText]が自分でつなぐのと同じもの。
+/// [Text]のまま行の途中で切らずに描くところ（`keepPartsTogether`）で使う。
+List<String> numberUnitParts(String text) => [
+  for (final match in KeepTogetherText._numberWithUnit.allMatches(text))
+    match[0]!,
+];
