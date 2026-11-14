@@ -1140,6 +1140,10 @@ class ThemeService extends ChangeNotifier {
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
         ),
+        // 中身をシートの形で切り抜く（既定は切り抜かない）。切り抜かないと、
+        // スクロールして上の縁まで来た中身（トーンの四角い枠・色の付いた行）の
+        // 角が、上の角の丸みの外に描かれた。
+        clipBehavior: Clip.antiAlias,
       ),
       snackBarTheme: SnackBarThemeData(
         behavior: SnackBarBehavior.floating,
