@@ -256,7 +256,9 @@ void main() {
     });
   }
 
-  testWidgets('the favorites chip by keyboard: the focus stays on Home', (
+  // 絞り込みは押した後も画面に残るので、フォーカスは絞り込みに残る
+  // （DISC125の（b）。続けて押すと絞り込みを外す）。
+  testWidgets('the favorites chip by keyboard: the focus stays on the chip', (
     tester,
   ) async {
     await boot(tester);
@@ -268,7 +270,9 @@ void main() {
     await tester.sendKeyEvent(LogicalKeyboardKey.space);
     await settle(tester);
     expect(tester.widget<FilterChip>(chip).selected, isTrue);
-    await expectEnterIsHarmless(tester, 'favorites chip');
+    expect(focusInside(chip), isTrue, reason: describeFocus());
+    await expectEnterIsHarmless(tester, 'favorites chip', orInside: chip);
+    expect(tester.widget<FilterChip>(chip).selected, isFalse);
   });
 
   testWidgets('the breadcrumb by keyboard: the focus stays on Home', (

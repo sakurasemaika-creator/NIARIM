@@ -58,6 +58,7 @@ import 'widgets/folder_thumbnail.dart';
 import 'widgets/project_thumbnail_dialog.dart';
 import 'widgets/home_selection_toolbar.dart';
 import 'widgets/home_drawer.dart';
+import 'widgets/chip_focus_ring.dart';
 import 'widgets/exported_work_card.dart';
 import 'widgets/exported_work_thumbnail_dialog.dart';
 import 'widgets/exported_work_preview_layout.dart';
@@ -642,6 +643,15 @@ class _HomeScreenState extends State<HomeScreen>
   // タブの一覧（上のバー・貼り付けの欄・選択中の操作バーの下）。
   final GlobalKey _listAreaKey = GlobalKey();
 
+  // プロジェクトの一覧の見出し（お気に入りの絞り込み・並び順・パンくず）。
+  // 一覧は見る範囲（お気に入りだけ・フォルダ・検索）ごとに作り直してスクロール
+  // 位置を覚えるが、見出しはこのキーで作り直さずに移す。作り直すと、
+  // キーボードで押した「お気に入り」の絞り込みからフォーカスが外れて画面の
+  // 根へ戻り、もう一度押して戻すのにTabを何度も押し直すことになった。
+  final GlobalKey _projectListHeaderKey = GlobalKey(
+    debugLabel: 'homeProjectListHeader',
+  );
+
   // コピー・切り取り・貼り付けの知らせを広げてよい上端（画面の座標）：
   // タブの一覧の上端（上のバー・貼り付けの欄は覆わない）。ホームの上に別の
   // 画面を積んでいる間は、知らせはその画面に出るので分からない（null）。
@@ -1078,6 +1088,7 @@ class _HomeScreenState extends State<HomeScreen>
                       ProjectListWidget(
                         scrollController: _projectScrollController,
                         header: Column(
+                          key: _projectListHeaderKey,
                           children: [
                             // 保存先を読めなかったときは、空の一覧に見えて
                             // 作品が消えたと思わないよう知らせ、読み直せる
@@ -1093,28 +1104,31 @@ class _HomeScreenState extends State<HomeScreen>
                                 screenFocus: _homeFocus,
                               ),
                             _HomeCollectionSortHeader(
-                              leading: FilterChip(
-                                label: Text(
-                                  l10n.homeFavoritesOnly,
-                                  style: TextStyle(
-                                    fontFamily: 'Kuramubon',
-                                    fontFamilyFallback: kHeadingFontFallback,
-                                    color: _showFavoritesOnly
-                                        ? Theme.of(
-                                            context,
-                                          ).colorScheme.onPrimary
-                                        : null,
+                              leading: ChipFocusRing(
+                                builder: (context, focusSide) => FilterChip(
+                                  side: focusSide,
+                                  label: Text(
+                                    l10n.homeFavoritesOnly,
+                                    style: TextStyle(
+                                      fontFamily: 'Kuramubon',
+                                      fontFamilyFallback: kHeadingFontFallback,
+                                      color: _showFavoritesOnly
+                                          ? Theme.of(
+                                              context,
+                                            ).colorScheme.onPrimary
+                                          : null,
+                                    ),
                                   ),
-                                ),
-                                selectedColor: Theme.of(
-                                  context,
-                                ).colorScheme.primary,
-                                checkmarkColor: Theme.of(
-                                  context,
-                                ).colorScheme.onPrimary,
-                                selected: _showFavoritesOnly,
-                                onSelected: (v) => _changeProjectScope(
-                                  () => _showFavoritesOnly = v,
+                                  selectedColor: Theme.of(
+                                    context,
+                                  ).colorScheme.primary,
+                                  checkmarkColor: Theme.of(
+                                    context,
+                                  ).colorScheme.onPrimary,
+                                  selected: _showFavoritesOnly,
+                                  onSelected: (v) => _changeProjectScope(
+                                    () => _showFavoritesOnly = v,
+                                  ),
                                 ),
                               ),
                               sortByName: _sortByName,
@@ -3267,22 +3281,25 @@ class _SharedScreenState extends State<SharedScreen>
             sortAscending: _sortAscending,
             onSortByNameChanged: _setSortByName,
             onToggleDirection: _toggleSortDirection,
-            leading: FilterChip(
-              key: const Key('sharedFavoritesOnlyFilter'),
-              label: Text(
-                l10n.homeFavoritesOnly,
-                style: TextStyle(
-                  fontFamily: 'Kuramubon',
-                  fontFamilyFallback: kHeadingFontFallback,
-                  color: _showFavoritesOnly
-                      ? Theme.of(context).colorScheme.onPrimary
-                      : null,
+            leading: ChipFocusRing(
+              builder: (context, focusSide) => FilterChip(
+                key: const Key('sharedFavoritesOnlyFilter'),
+                side: focusSide,
+                label: Text(
+                  l10n.homeFavoritesOnly,
+                  style: TextStyle(
+                    fontFamily: 'Kuramubon',
+                    fontFamilyFallback: kHeadingFontFallback,
+                    color: _showFavoritesOnly
+                        ? Theme.of(context).colorScheme.onPrimary
+                        : null,
+                  ),
                 ),
+                selectedColor: Theme.of(context).colorScheme.primary,
+                checkmarkColor: Theme.of(context).colorScheme.onPrimary,
+                selected: _showFavoritesOnly,
+                onSelected: (v) => setState(() => _showFavoritesOnly = v),
               ),
-              selectedColor: Theme.of(context).colorScheme.primary,
-              checkmarkColor: Theme.of(context).colorScheme.onPrimary,
-              selected: _showFavoritesOnly,
-              onSelected: (v) => setState(() => _showFavoritesOnly = v),
             ),
           ),
         ],
@@ -3422,17 +3439,20 @@ class _TrashScreenState extends State<TrashScreen>
                 runSpacing: 0,
                 children: [
                   for (final kind in TrashEntryKind.values)
-                    FilterChip(
-                      key: ValueKey('trashKind_${kind.name}'),
-                      label: Text(_trashKindLabel(context, kind)),
-                      selected: _selectedKinds.contains(kind),
-                      onSelected: (selected) => setState(() {
-                        if (selected) {
-                          _selectedKinds.add(kind);
-                        } else {
-                          _selectedKinds.remove(kind);
-                        }
-                      }),
+                    ChipFocusRing(
+                      builder: (context, focusSide) => FilterChip(
+                        key: ValueKey('trashKind_${kind.name}'),
+                        side: focusSide,
+                        label: Text(_trashKindLabel(context, kind)),
+                        selected: _selectedKinds.contains(kind),
+                        onSelected: (selected) => setState(() {
+                          if (selected) {
+                            _selectedKinds.add(kind);
+                          } else {
+                            _selectedKinds.remove(kind);
+                          }
+                        }),
+                      ),
                     ),
                 ],
               ),
@@ -6051,23 +6071,26 @@ class _WorksTabState extends State<_WorksTab>
           child: _FolderableList<File>(
             key: ValueKey(('works-list', widget.viewMode)),
             header: _HomeCollectionSortHeader(
-              leading: FilterChip(
-                key: const Key('worksFavoritesOnlyFilter'),
-                label: Text(
-                  l10n.homeFavoritesOnly,
-                  style: TextStyle(
-                    fontFamily: 'Kuramubon',
-                    fontFamilyFallback: kHeadingFontFallback,
-                    color: _showFavoritesOnly
-                        ? Theme.of(context).colorScheme.onPrimary
-                        : null,
+              leading: ChipFocusRing(
+                builder: (context, focusSide) => FilterChip(
+                  key: const Key('worksFavoritesOnlyFilter'),
+                  side: focusSide,
+                  label: Text(
+                    l10n.homeFavoritesOnly,
+                    style: TextStyle(
+                      fontFamily: 'Kuramubon',
+                      fontFamilyFallback: kHeadingFontFallback,
+                      color: _showFavoritesOnly
+                          ? Theme.of(context).colorScheme.onPrimary
+                          : null,
+                    ),
                   ),
+                  selectedColor: Theme.of(context).colorScheme.primary,
+                  checkmarkColor: Theme.of(context).colorScheme.onPrimary,
+                  selected: _showFavoritesOnly,
+                  onSelected: (value) =>
+                      setState(() => _showFavoritesOnly = value),
                 ),
-                selectedColor: Theme.of(context).colorScheme.primary,
-                checkmarkColor: Theme.of(context).colorScheme.onPrimary,
-                selected: _showFavoritesOnly,
-                onSelected: (value) =>
-                    setState(() => _showFavoritesOnly = value),
               ),
               sortByName: _sortByName,
               sortAscending: _sortAscending,
