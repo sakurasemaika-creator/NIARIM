@@ -132,7 +132,12 @@ class _NameEntryDialogState extends State<NameEntryDialog> {
       child: MediaQuery.removeViewInsets(
         context: context,
         removeBottom: true,
-        child: _buildAlert(context),
+        // マウス・ペンでは、欄の隣のボタンを押しても「欄の外」を押したことに
+        // なり、欄のフォーカスが外れる。名前が空で押せない「変更」・確定
+        // できなかったボタン・ダイアログの空いた所を押した後も続けて打てる
+        // よう、ダイアログ全体を欄の内側として扱う（以前は続けて打った字が
+        // どこにも入らなかった）。
+        child: TextFieldTapRegion(child: _buildAlert(context)),
       ),
     );
   }
