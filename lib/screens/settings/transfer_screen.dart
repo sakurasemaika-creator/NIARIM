@@ -89,6 +89,71 @@ class _TransferScreenState extends State<TransferScreen> {
         title: Text(l10n.transferScreenTitle),
         actions: const [HelpButton(topic: '引き継ぎ（.niatra）')],
       ),
+      // ボタンの段は本文ではなく画面の下の段（bottomNavigationBar）に置く。
+      // 本文の列の最後に置いていた頃は、浮かぶ知らせ（読み込みの結果等）が
+      // 段の上に重なり、出ている間「書き出し」等を押せなかった。Scaffoldは
+      // 知らせをこの段の上へ浮かべる。
+      bottomNavigationBar: SafeArea(
+        top: false,
+        child: Align(
+          heightFactor: 1,
+          child: ConstrainedBox(
+            // PC/DeXでは本文（desktopCentered）と同じ幅にそろえる。
+            constraints: BoxConstraints(
+              maxWidth: isWideScreen(context) ? 720 : double.infinity,
+            ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              // OSの文字サイズ設定（textScaler）を大きくすると、4つの
+              // ボタンが1行に収まらずRenderFlexオーバーフローになっていた
+              // ため、Wrapで折り返せるようにする（Spacerは使えないので、
+              // 「読み込み」とそれ以外の間隔はspacingで表現する）。
+              child: Wrap(
+                alignment: WrapAlignment.end,
+                spacing: 8,
+                runSpacing: 4,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: [
+                  TextButton(
+                    onPressed: _isBusy ? null : _import,
+                    child: Text(l10n.transferImport),
+                  ),
+                  TextButton(
+                    onPressed: _isBusy
+                        ? null
+                        : () =>
+                              setState(() => _items.updateAll((_, _) => true)),
+                    child: Text(l10n.homeSelectionAllSelect),
+                  ),
+                  TextButton(
+                    onPressed: _isBusy
+                        ? null
+                        : () =>
+                              setState(() => _items.updateAll((_, _) => false)),
+                    child: Text(l10n.homeSelectionAllDeselect),
+                  ),
+                  FilledButton.icon(
+                    onPressed:
+                        (!_isBusy &&
+                            (_items.values.any((v) => v) ||
+                                _selectedProjectIds.isNotEmpty))
+                        ? _export
+                        : null,
+                    icon: _isBusy
+                        ? const SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.file_upload),
+                    label: Text(l10n.transferExport),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
       body: desktopCentered(
         context,
         Column(
@@ -226,55 +291,6 @@ class _TransferScreenState extends State<TransferScreen> {
                         ),
                       );
                     },
-                  ),
-                ],
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              // OSの文字サイズ設定（textScaler）を大きくすると、4つの
-              // ボタンが1行に収まらずRenderFlexオーバーフローになっていた
-              // ため、Wrapで折り返せるようにする（Spacerは使えないので、
-              // 「読み込み」とそれ以外の間隔はspacingで表現する）。
-              child: Wrap(
-                alignment: WrapAlignment.end,
-                spacing: 8,
-                runSpacing: 4,
-                crossAxisAlignment: WrapCrossAlignment.center,
-                children: [
-                  TextButton(
-                    onPressed: _isBusy ? null : _import,
-                    child: Text(l10n.transferImport),
-                  ),
-                  TextButton(
-                    onPressed: _isBusy
-                        ? null
-                        : () =>
-                              setState(() => _items.updateAll((_, _) => true)),
-                    child: Text(l10n.homeSelectionAllSelect),
-                  ),
-                  TextButton(
-                    onPressed: _isBusy
-                        ? null
-                        : () =>
-                              setState(() => _items.updateAll((_, _) => false)),
-                    child: Text(l10n.homeSelectionAllDeselect),
-                  ),
-                  FilledButton.icon(
-                    onPressed:
-                        (!_isBusy &&
-                            (_items.values.any((v) => v) ||
-                                _selectedProjectIds.isNotEmpty))
-                        ? _export
-                        : null,
-                    icon: _isBusy
-                        ? const SizedBox(
-                            width: 16,
-                            height: 16,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : const Icon(Icons.file_upload),
-                    label: Text(l10n.transferExport),
                   ),
                 ],
               ),

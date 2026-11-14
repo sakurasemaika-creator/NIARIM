@@ -16,11 +16,26 @@ import '../../../utils/desktop_dock_column_fit.dart';
 class PcWorkspaceLayoutPreview extends StatefulWidget {
   final String Function(CanvasDockPanel) labelOf;
 
-  const PcWorkspaceLayoutPreview({super.key, required this.labelOf});
+  /// 「全体を表示」（見本を枠に合わせ直す）の頼み。渡したときは、見本の
+  /// 中にボタンを置かない（画面がボタンを置く。見本の右下は画面の下の段の
+  /// すぐ上なので、見本の中に重ねると画面の知らせに隠れる）。
+  final PcWorkspaceFitRequests? fitRequests;
+
+  const PcWorkspaceLayoutPreview({
+    super.key,
+    required this.labelOf,
+    this.fitRequests,
+  });
 
   @override
   State<PcWorkspaceLayoutPreview> createState() =>
       _PcWorkspaceLayoutPreviewState();
+}
+
+/// [PcWorkspaceLayoutPreview]の外に置いた「全体を表示」のボタンから、見本を
+/// 枠に合わせ直すよう頼む。
+class PcWorkspaceFitRequests extends ChangeNotifier {
+  void request() => notifyListeners();
 }
 
 class _PcWorkspaceLayoutPreviewState extends State<PcWorkspaceLayoutPreview> {
@@ -78,7 +93,28 @@ class _PcWorkspaceLayoutPreviewState extends State<PcWorkspaceLayoutPreview> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    widget.fitRequests?.addListener(_fitRequested);
+  }
+
+  @override
+  void didUpdateWidget(PcWorkspaceLayoutPreview oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.fitRequests != widget.fitRequests) {
+      oldWidget.fitRequests?.removeListener(_fitRequested);
+      widget.fitRequests?.addListener(_fitRequested);
+    }
+  }
+
+  void _fitRequested() {
+    final viewport = _lastViewportSize;
+    if (viewport != null) _fit(viewport);
+  }
+
+  @override
   void dispose() {
+    widget.fitRequests?.removeListener(_fitRequested);
     _transform.dispose();
     super.dispose();
   }
@@ -202,16 +238,17 @@ class _PcWorkspaceLayoutPreviewState extends State<PcWorkspaceLayoutPreview> {
                 ),
               ),
             ),
-            Positioned(
-              right: 8,
-              bottom: 8,
-              child: IconButton.filledTonal(
-                key: const Key('pcWorkspaceFitPreview'),
-                tooltip: l.pcWorkspaceLayoutScreenTitle,
-                onPressed: () => _fit(viewport),
-                icon: const Icon(Icons.fit_screen),
+            if (widget.fitRequests == null)
+              Positioned(
+                right: 8,
+                bottom: 8,
+                child: IconButton.filledTonal(
+                  key: const Key('pcWorkspaceFitPreview'),
+                  tooltip: l.pcViewFit,
+                  onPressed: () => _fit(viewport),
+                  icon: const Icon(Icons.fit_screen),
+                ),
               ),
-            ),
           ],
         );
       },
