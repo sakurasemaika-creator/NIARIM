@@ -276,9 +276,10 @@ String collectionTileDisplayName(BuildContext context, String name) {
   bool fits(String text) {
     painter
       ..text = TextSpan(
-        // カードと同じく、ハングルの語は途中で折り返さずに測る。
+        // カードと同じく、ハングルの語は途中で折り返さず、ファイル名は
+        // 区切りの記号の前で折り返して測る。
         text: _keepKoreanWordsWithin(
-          text,
+          breakableAtFileSeparators(text),
           style: style,
           textScaler: TextScaler.noScaling,
           textDirection: key.$3,
@@ -391,7 +392,8 @@ Widget collectionTileCaption(
   // 上限で切った字・語結合子を入れた字を描き、読み上げと文での検索
   // （find.text 等）には名前の全部を渡す。
   Widget nameText(String text) => Text.rich(
-    TextSpan(text: text, semanticsLabel: name),
+    // ファイル名は区切りの記号の前で折り返す（字の途中で切らない）。
+    TextSpan(text: breakableAtFileSeparators(text), semanticsLabel: name),
     semanticsLabel: name,
     maxLines: kCollectionTileNameLines,
     overflow: TextOverflow.ellipsis,

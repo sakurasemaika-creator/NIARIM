@@ -96,6 +96,23 @@ String keepDateTimeTogether(
 /// [text]にハングルが入っているか。
 bool containsHangul(String text) => _hangul.hasMatch(text);
 
+/// ファイル名の区切りの記号（「_」「.」「-」）。
+final RegExp _fileNameSeparators = RegExp(r'[_.-]');
+
+/// 空白の無いファイル名（「walk_cycle_loop.gif」等）に、区切りの記号
+/// （「_」「.」「-」）の前で行を変えてよい印（幅の無い空白 U+200B）を入れる。
+///
+/// 印が無いと、行に入らない名前は入る所までの字で切れ、
+/// 「walk_cycle_loop.gi / f」「discarded_take_03.m / p4」のように最後の字だけ
+/// 次の行へ送られた。書き出した作品の詳細の行（ExportedWorkCard）と同じ
+/// 決まり。表示する文にだけ入れ、読み上げ・文での検索には元の名前を渡す。
+/// ハングルを含む名前はそのまま返す（語の途中で折り返さない処理
+/// 〔[keepKoreanWordsTogetherWhere]〕に任せる）。
+String breakableAtFileSeparators(String name) {
+  if (containsHangul(name)) return name;
+  return name.replaceAllMapped(_fileNameSeparators, (m) => '\u200B${m[0]}');
+}
+
 /// [keepKoreanWordsTogether]と同じく韓国語の語の途中で折り返さないように
 /// するが、[fits]が偽を返す語（1行に入らない長い語）はそのままにする（語の
 /// 途中で折り返せないと、行からはみ出す）。作品名のように長さの決まって

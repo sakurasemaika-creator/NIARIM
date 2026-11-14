@@ -11,7 +11,12 @@ import '../utils/line_break.dart';
 /// 字の間で折り返す。読み上げと文での検索には元の文を渡す。ハングルの無い
 /// 文は普通の[Text]。
 class KoreanWordsText extends StatelessWidget {
-  const KoreanWordsText(this.data, {super.key, this.style});
+  const KoreanWordsText(
+    this.data, {
+    super.key,
+    this.style,
+    this.breakAtFileSeparators = false,
+  });
 
   /// 描く文。
   final String data;
@@ -19,9 +24,22 @@ class KoreanWordsText extends StatelessWidget {
   /// [Text.style]と同じ。
   final TextStyle? style;
 
+  /// ファイル名として、区切りの記号（「_」「.」「-」）の前で行を変えて
+  /// よいようにするか（[breakableAtFileSeparators]）。ハングルの無い名前だけ。
+  final bool breakAtFileSeparators;
+
   @override
   Widget build(BuildContext context) {
-    if (!containsHangul(data)) return Text(data, style: style);
+    if (!containsHangul(data)) {
+      final shown = breakAtFileSeparators
+          ? breakableAtFileSeparators(data)
+          : data;
+      if (shown == data) return Text(data, style: style);
+      return Text.rich(
+        TextSpan(text: shown, semanticsLabel: data),
+        style: style,
+      );
+    }
     return LayoutBuilder(
       builder: (context, constraints) {
         var drawn = DefaultTextStyle.of(context).style.merge(style);

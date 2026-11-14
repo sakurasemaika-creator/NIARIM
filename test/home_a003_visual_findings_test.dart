@@ -327,6 +327,7 @@ List<String> _breaksInsideWords(
 
 final _hangulSyllable = RegExp(r'[가-힣]');
 bool _isHangul(String c) => _hangulSyllable.hasMatch(c);
+bool _isAlnum(String c) => RegExp(r'[A-Za-z0-9]').hasMatch(c);
 bool _isLatinLetter(String c) => RegExp(r'[A-Za-zÀ-ÿ]').hasMatch(c);
 
 void main() {
@@ -644,6 +645,46 @@ void main() {
         _breaksInsideWords(render, _isHangul).map((b) => 'works: $b'),
       );
     }
+    expect(problems, isEmpty);
+    await home.close();
+  });
+
+  testWidgets('ファイル名：「_」の後・拡張子の前で折り返し、字の途中では切らない', (tester) async {
+    final home = _Home(tester);
+    final problems = <String>[];
+    await home.open(size: const Size(760, 900));
+    await home.setPc(true);
+    await home.addExports(const [
+      'walk_cycle_loop.gif',
+      'festival_teaser_vertical.webm',
+    ]);
+    await home.showTab(1);
+    for (final name in const [
+      'walk_cycle_loop.gif',
+      'festival_teaser_vertical.webm',
+    ]) {
+      final paragraph = _paragraph(
+        tester,
+        find.text(name, findRichText: true).first,
+      );
+      problems.addAll(
+        _breaksInsideWords(paragraph, _isAlnum).map((b) => 'works 760: $b'),
+      );
+    }
+    await home.close();
+    await home.open(language: 'en', size: const Size(320, 844), scale: 1.3);
+    await home.addExports(
+      const ['discarded_take_03.mp4'],
+      trash: const ['discarded_take_03.mp4'],
+    );
+    await home.showTab(3);
+    final paragraph = _paragraph(
+      tester,
+      find.text('discarded_take_03.mp4', findRichText: true).first,
+    );
+    problems.addAll(
+      _breaksInsideWords(paragraph, _isAlnum).map((b) => 'trash 320: $b'),
+    );
     expect(problems, isEmpty);
     await home.close();
   });

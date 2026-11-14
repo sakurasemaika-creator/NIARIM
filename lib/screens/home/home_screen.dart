@@ -4084,8 +4084,9 @@ class _OutgoingSharesList extends StatelessWidget {
           color: scheme.surfaceContainerLow,
           child: ListTile(
             leading: const Icon(Icons.insert_drive_file_outlined, size: 36),
-            title: Text(
+            title: KoreanWordsText(
               entry.name,
+              breakAtFileSeparators: true,
               style: const TextStyle(
                 fontFamily: 'Kuramubon',
                 fontFamilyFallback: kHeadingFontFallback,
@@ -5256,6 +5257,8 @@ class _TrashTabState extends State<_TrashTab> {
       // 普通の文のまま。
       title: KoreanWordsText(
         title,
+        // ファイル名は区切りの記号の前で折り返す（「.m / p4」と切らない）。
+        breakAtFileSeparators: true,
         style: const TextStyle(
           fontFamily: 'Kuramubon',
           fontFamilyFallback: kHeadingFontFallback,
