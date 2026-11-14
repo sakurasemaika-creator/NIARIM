@@ -25,6 +25,7 @@ import 'package:shared_preferences_platform_interface/shared_preferences_platfor
 
 import 'helpers/first_use_tooltips.dart';
 import 'helpers/load_app_fonts.dart';
+import 'helpers/paragraph_lines.dart';
 
 // ホームの表示マトリクス・初回の案内・幅の連続変更（A003）の画像を見比べて
 // 見つかった見た目の不具合の見張り。本物のアプリ（buildAppProviders＋
@@ -302,6 +303,30 @@ Color? _materialColorAround(Element element) {
   return color;
 }
 
+/// 2つの字の間で行が変わっている所のうち、[inWord]が両方の字に真を返す所
+/// （語の途中での折り返し）。
+List<String> _breaksInsideWords(
+  RenderParagraph paragraph,
+  bool Function(String char) inWord,
+) {
+  final lines = ParagraphLines(paragraph);
+  final text = lines.visible;
+  final found = <String>[];
+  for (var i = 1; i < text.length; i++) {
+    final a = lines.lineOf(i - 1);
+    final b = lines.lineOf(i);
+    if (a == null || b == null || a == b) continue;
+    if (inWord(text[i - 1]) && inWord(text[i])) {
+      found.add(
+        '${text.substring(0, i)} / ${text.substring(i)}'.replaceAll('\n', ' '),
+      );
+    }
+  }
+  return found;
+}
+
+bool _isLatinLetter(String c) => RegExp(r'[A-Za-zÀ-ÿ]').hasMatch(c);
+
 void main() {
   testWidgets('共有の切り替えの選んでいない側の名前・印が、その下地の上で読める', (tester) async {
     final home = _Home(tester);
@@ -408,6 +433,36 @@ void main() {
     final paragraph = _paragraph(tester, find.text('NIARIM').last);
     expect(_style(paragraph).fontFamily, 'Kuramubon');
     expect(_style(paragraph).fontFamilyFallback, kHeadingFontFallback);
+    await home.close();
+  });
+
+  testWidgets('文字2倍の狭い画面では列を減らし、カードの名前を語の途中で切らない', (tester) async {
+    final home = _Home(tester);
+    await home.open(size: const Size(320, 844), scale: 2);
+    await home.addFolder('Archive of finished commissions');
+    for (var i = 1; i <= 4; i++) {
+      await home.addProject('カット0$i');
+    }
+    final grid = tester.renderObject<RenderSliverGrid>(
+      find.byType(SliverGrid).first,
+    );
+    final layout =
+        grid.gridDelegate.getLayout(grid.constraints)
+            as SliverGridRegularTileLayout;
+    final name = _paragraph(
+      tester,
+      find.text('Archive of finished commissions', findRichText: true),
+    );
+    expect(
+      _breaksInsideWords(name, _isLatinLetter),
+      isEmpty,
+      reason: 'card width ${layout.childCrossAxisExtent}',
+    );
+    expect(
+      layout.crossAxisCount,
+      lessThanOrEqualTo(2),
+      reason: 'card width ${layout.childCrossAxisExtent} at text x2 on 320',
+    );
     await home.close();
   });
 }

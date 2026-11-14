@@ -299,9 +299,25 @@ void main() {
           );
           await tester.pumpAndSettle();
           expect(find.byType(PopupMenuButton<String>), findsNothing);
-          expect(find.byIcon(Icons.star), findsNWidgets(2));
+          expect(
+            find.byIcon(Icons.star, skipOffstage: false),
+            findsNWidgets(2),
+          );
           selected.clear();
           for (final name in ['Folder', 'Project']) {
+            // 文字の大きい低い画面では列が減り（collectionTileColumnCount）、
+            // カードの星が画面の下にあることがあるので、見える所へ送って
+            // から測る。
+            await tester.ensureVisible(
+              find.descendant(
+                of: find.ancestor(
+                  of: find.text(name, skipOffstage: false),
+                  matching: find.byType(Card),
+                ),
+                matching: find.byIcon(Icons.star, skipOffstage: false),
+              ),
+            );
+            await tester.pumpAndSettle();
             final star = find.descendant(
               of: _card(name),
               matching: find.byIcon(Icons.star),

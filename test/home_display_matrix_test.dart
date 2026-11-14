@@ -2089,11 +2089,15 @@ class _HomeMatrix {
     }
     final extent = grid.constraints.crossAxisExtent;
     final columns = _gridColumns();
-    final want = collectionTileColumnCount(_targetExtent(expected), extent);
+    final want = collectionTileColumnCount(
+      _targetExtent(expected),
+      extent,
+      textScale: textScale,
+    );
     if (columns != want) {
       problems.add(
         'grid has $columns columns, collectionTileColumnCount(${expected.name}, '
-        '${extent.toStringAsFixed(1)}) = $want',
+        '${extent.toStringAsFixed(1)}, x$textScale) = $want',
       );
     }
     return problems;

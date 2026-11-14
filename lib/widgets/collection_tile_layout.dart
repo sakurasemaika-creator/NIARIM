@@ -14,6 +14,7 @@ class CollectionTileGridDelegate
   const CollectionTileGridDelegate({
     required double maxExtent,
     required this.minHeight,
+    this.textScale = 1,
   }) : super(
          maxCrossAxisExtent: maxExtent,
          crossAxisSpacing: 8,
@@ -23,6 +24,9 @@ class CollectionTileGridDelegate
 
   final double minHeight;
 
+  /// 文字の倍率（[collectionTileColumnCount]）。
+  final double textScale;
+
   @override
   SliverGridLayout getLayout(SliverConstraints constraints) {
     final usual =
@@ -30,6 +34,7 @@ class CollectionTileGridDelegate
               crossAxisCount: collectionTileColumnCount(
                 maxCrossAxisExtent,
                 constraints.crossAxisExtent,
+                textScale: textScale,
               ),
               crossAxisSpacing: crossAxisSpacing,
               mainAxisSpacing: mainAxisSpacing,
@@ -54,7 +59,9 @@ class CollectionTileGridDelegate
 
   @override
   bool shouldRelayout(covariant CollectionTileGridDelegate oldDelegate) =>
-      minHeight != oldDelegate.minHeight || super.shouldRelayout(oldDelegate);
+      minHeight != oldDelegate.minHeight ||
+      textScale != oldDelegate.textScale ||
+      super.shouldRelayout(oldDelegate);
 }
 
 /// 表示サイズ（小・中・大）のカードの基準の幅。
@@ -83,7 +90,17 @@ const double _cornerActionsSpan = 2 * (CollectionActionFrame.extent + 4);
 /// [kCollectionTileMinWidth]以上の幅で3列に並ぶ間（幅244px以上、画面の
 /// 余白を含めて260px以上）は小を3列にして、3つとも違う列数にする。それより
 /// 狭いと、大と中が同じ1列になる。
-int collectionTileColumnCount(double maxExtent, double width) {
+///
+/// 文字を大きくしている端末（[textScale]が1より大きい）では、幅を文字の
+/// 倍率で割った幅で決める。カードの名前の字も大きくなるので、列数が同じ
+/// ままだと名前の帯に入る字の数が減り、文字2倍の幅320pxでは1行に4〜5字しか
+/// 入らず、名前が「Archi / ve」「書き出 / しフ…」のように語の途中で切れた。
+int collectionTileColumnCount(
+  double maxExtent,
+  double width, {
+  double textScale = 1,
+}) {
+  if (textScale > 1) width /= textScale;
   int fit(double extent) => math.max(1, (width / (extent + 8)).ceil());
   if (maxExtent < kCollectionTileSmallExtent) return fit(maxExtent);
   // 幅[kCollectionTileMinWidth]以上のカードが並ぶ列の数。
@@ -123,6 +140,7 @@ CollectionTileGridDelegate collectionTileGridDelegate(
   return CollectionTileGridDelegate(
     maxExtent: maxExtent,
     minHeight: minimumHeight,
+    textScale: MediaQuery.textScalerOf(context).scale(1),
   );
 }
 
