@@ -1657,19 +1657,18 @@
       }
     }
   },
-  "saveTreeSlotFallbackName": "Slot {n}",
-  "@saveTreeSlotFallbackName": {
-    "placeholders": {
-      "n": {
-        "type": "int"
-      }
-    }
-  },
   "saveTreeNoDataLabel": "No save data",
   "saveTreeEmptyTitle": "No save data",
   "saveTreeEmptyHint": "Tap the “Save” button at the top to create the first node",
   "saveTreeNodeDefaultTitle": "Save",
-  "saveTreeNodeDefaultName": "Save data",
+  "saveTreeNodeDatedName": "Save from {date}",
+  "@saveTreeNodeDatedName": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
   "saveTreeChangeDataTitle": "Change Save Data",
   "saveTreeChangeDataTitleWithProject": "Change Save Data ({name})",
   "@saveTreeChangeDataTitleWithProject": {

@@ -1657,19 +1657,18 @@
       }
     }
   },
-  "saveTreeSlotFallbackName": "Emplacement {n}",
-  "@saveTreeSlotFallbackName": {
-    "placeholders": {
-      "n": {
-        "type": "int"
-      }
-    }
-  },
   "saveTreeNoDataLabel": "Aucune donnée de sauvegarde",
   "saveTreeEmptyTitle": "Aucune donnée de sauvegarde",
   "saveTreeEmptyHint": "Appuyez sur le bouton « Enregistrer » en haut pour créer le premier nœud",
   "saveTreeNodeDefaultTitle": "Sauvegarde",
-  "saveTreeNodeDefaultName": "Données de sauvegarde",
+  "saveTreeNodeDatedName": "Sauvegarde du {date}",
+  "@saveTreeNodeDatedName": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
   "saveTreeChangeDataTitle": "Modifier les données de sauvegarde",
   "saveTreeChangeDataTitleWithProject": "Modifier les données de sauvegarde ({name})",
   "@saveTreeChangeDataTitleWithProject": {

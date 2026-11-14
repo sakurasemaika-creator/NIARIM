@@ -4295,11 +4295,6 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
-  String saveTreeSlotFallbackName(int n) {
-    return 'Ranura $n';
-  }
-
-  @override
   String get saveTreeNoDataLabel => 'Sin datos guardados';
 
   @override
@@ -4313,7 +4308,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get saveTreeNodeDefaultTitle => 'Guardado';
 
   @override
-  String get saveTreeNodeDefaultName => 'Datos guardados';
+  String saveTreeNodeDatedName(String date) {
+    return 'Guardado del $date';
+  }
 
   @override
   String get saveTreeChangeDataTitle => 'Cambiar datos guardados';

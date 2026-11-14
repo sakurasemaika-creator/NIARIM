@@ -1963,7 +1963,7 @@
   "saveTreeSlotWriteTooltip": "このスロットへ保存",
   "saveTreeSlotLoadTooltip": "このスロットから読み込む",
   "saveTreeSlotDeleteTooltip": "このスロットを削除",
-  "saveTreeSlotSaveDialogTitle": "スロット {n} に保存",
+  "saveTreeSlotSaveDialogTitle": "スロット{n}に保存",
   "@saveTreeSlotSaveDialogTitle": {
     "placeholders": {
       "n": {
@@ -2003,19 +2003,18 @@
       }
     }
   },
-  "saveTreeSlotFallbackName": "スロット {n}",
-  "@saveTreeSlotFallbackName": {
-    "placeholders": {
-      "n": {
-        "type": "int"
-      }
-    }
-  },
   "saveTreeNoDataLabel": "保存データなし",
   "saveTreeEmptyTitle": "保存データがありません",
   "saveTreeEmptyHint": "上部の「保存」ボタンで最初のノードを作成できます",
   "saveTreeNodeDefaultTitle": "保存",
-  "saveTreeNodeDefaultName": "保存データ",
+  "saveTreeNodeDatedName": "{date}の保存",
+  "@saveTreeNodeDatedName": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
   "saveTreeChangeDataTitle": "保存データ変更",
   "saveTreeChangeDataTitleWithProject": "保存データ変更（{name}）",
   "@saveTreeChangeDataTitleWithProject": {

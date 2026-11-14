@@ -4069,7 +4069,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String saveTreeSlotSaveDialogTitle(int n) {
-    return '슬롯 $n에 저장';
+    return '슬롯$n에 저장';
   }
 
   @override
@@ -4115,11 +4115,6 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
-  String saveTreeSlotFallbackName(int n) {
-    return '슬롯 $n';
-  }
-
-  @override
   String get saveTreeNoDataLabel => '저장 데이터 없음';
 
   @override
@@ -4132,7 +4127,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get saveTreeNodeDefaultTitle => '저장';
 
   @override
-  String get saveTreeNodeDefaultName => '저장 데이터';
+  String saveTreeNodeDatedName(String date) {
+    return '$date 저장';
+  }
 
   @override
   String get saveTreeChangeDataTitle => '저장 데이터 변경';

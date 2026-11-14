@@ -4046,7 +4046,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String saveTreeSlotSaveDialogTitle(int n) {
-    return 'スロット $n に保存';
+    return 'スロット$nに保存';
   }
 
   @override
@@ -4092,11 +4092,6 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
-  String saveTreeSlotFallbackName(int n) {
-    return 'スロット $n';
-  }
-
-  @override
   String get saveTreeNoDataLabel => '保存データなし';
 
   @override
@@ -4109,7 +4104,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get saveTreeNodeDefaultTitle => '保存';
 
   @override
-  String get saveTreeNodeDefaultName => '保存データ';
+  String saveTreeNodeDatedName(String date) {
+    return '$dateの保存';
+  }
 
   @override
   String get saveTreeChangeDataTitle => '保存データ変更';

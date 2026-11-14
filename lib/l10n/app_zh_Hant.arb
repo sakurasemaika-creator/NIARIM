@@ -486,9 +486,9 @@
   "helpEndCardTitle": "片尾卡（片尾標誌）",
   "helpEndCardDesc": "匯出影片時，會在正片結尾自動加入的NIARIM標誌短片（約5秒）。免費版無法隱藏或刪除，但成為Premium會員後可以開關顯示・變更長度・進行替換。",
   "helpAutoSaveTitle": "自動儲存",
-  "helpAutoSaveDesc": "專用於當機或檔案損毀時復原的儲存。每次繪圖等發生變更時都會自動儲存，最多保留3份，依由舊到新的順序覆寫。它與手動儲存（儲存槽・儲存樹）完全分開管理，不能取代一般儲存。僅在App異常結束後重新啟動時，才會詢問是否要復原。",
-  "helpSaveSlotTitle": "儲存槽",
-  "helpSaveSlotDesc": "在固定數量的儲存位（槽）中，由自己選擇儲存位置進行儲存的方式。槽位數量由設定決定（低畫質5個・中畫質10個）。由於每次都需要自己選擇要覆寫的槽位，適合「想保留這個時間點的狀態」這類管理方式。",
+  "helpAutoSaveDesc": "專用於當機或檔案損毀時復原的儲存。每次繪圖等發生變更時都會自動儲存，最多保留3份，依由舊到新的順序覆寫。它與手動儲存（存檔槽・儲存樹）完全分開管理，不能取代一般儲存。僅在App異常結束後重新啟動時，才會詢問是否要復原。",
+  "helpSaveSlotTitle": "存檔槽",
+  "helpSaveSlotDesc": "在固定數量的存檔槽中，由自己選擇儲存位置進行儲存的方式。存檔槽的數量由設定決定（低畫質5個・中畫質10個）。由於每次都需要自己選擇要覆寫的存檔槽，適合「想保留這個時間點的狀態」這類管理方式。",
   "helpSaveTreeTitle": "儲存樹",
   "helpSaveTreeDesc": "每次儲存都會建立一個新的儲存點，並可以從過去的儲存點分支出另一段歷史（分叉）的儲存方式。沒有數量上限，適合「想回到那個版本後再嘗試另一種發展」這類用法。畫面上儲存點會以從下往上生長的樹狀圖形式顯示。",
   "helpFolderTitle": "資料夾",
@@ -1183,8 +1183,8 @@
   "perfSettingsQualityMedium": "中畫質",
   "perfSettingsQualityHigh": "高畫質",
   "perfSettingsQualityCustom": "自訂",
-  "perfSettingsQualityDescLow": "適合想要更輕量運作的裝置（前後各1張洋蔥皮・5個儲存槽）",
-  "perfSettingsQualityDescMedium": "適合一般裝置（前後各3張洋蔥皮・10個儲存槽）",
+  "perfSettingsQualityDescLow": "適合想要更輕量運作的裝置（前後各1張洋蔥皮・5個存檔槽）",
+  "perfSettingsQualityDescMedium": "適合一般裝置（前後各3張洋蔥皮・10個存檔槽）",
   "perfSettingsQualityDescHigh": "適合效能較充裕的裝置（前後各5張洋蔥皮・樹狀存檔）",
   "perfSettingsQualityDescCustom": "個別設定各項目",
   "perfSettingsCapacitySection": "容量與運作相關設定",
@@ -1221,7 +1221,7 @@
     }
   },
   "perfSettingsSaveModeLabel": "存檔方式",
-  "perfSettingsSlotCountLabel": "儲存槽數量",
+  "perfSettingsSlotCountLabel": "存檔槽數量",
   "perfSettingsSlotCountValue": "{n}個",
   "@perfSettingsSlotCountValue": {
     "placeholders": {
@@ -1237,7 +1237,7 @@
   "perfSettingsOnionCountPrevLabel": "洋蔥皮張數（前）",
   "perfSettingsShowNextOnionTitle": "顯示後一格",
   "perfSettingsOnionCountNextLabel": "洋蔥皮張數（後）",
-  "perfSettingsSaveModeSlot": "儲存槽方式",
+  "perfSettingsSaveModeSlot": "存檔槽方式",
   "perfSettingsSaveModeTree": "樹狀方式",
   "perfSettingsResetDialogTitle": "要將自訂畫質設定恢復為初始值嗎？",
   "perfSettingsResetDialogBody": "初始值將恢復為首次啟動時依裝置效能自動判定的「{preset}」設定。",
@@ -1614,10 +1614,10 @@
       }
     }
   },
-  "saveTreeSlotWriteTooltip": "儲存到此存檔位",
-  "saveTreeSlotLoadTooltip": "從此存檔位讀取",
-  "saveTreeSlotDeleteTooltip": "刪除此存檔位",
-  "saveTreeSlotSaveDialogTitle": "儲存到儲存槽 {n}",
+  "saveTreeSlotWriteTooltip": "儲存到此存檔槽",
+  "saveTreeSlotLoadTooltip": "從此存檔槽讀取",
+  "saveTreeSlotDeleteTooltip": "刪除此存檔槽",
+  "saveTreeSlotSaveDialogTitle": "儲存到存檔槽{n}",
   "@saveTreeSlotSaveDialogTitle": {
     "placeholders": {
       "n": {
@@ -1639,7 +1639,7 @@
   "saveTreeOverwriteConfirmBody": "該時間點的存檔資料將會消失，確定嗎？",
   "saveTreeResumeFromHereAction": "從此處繼續",
   "saveTreeResumeConfirmBody": "要從這份存檔繼續作業嗎？\n\n目前的資料將被覆寫。如果需要保留目前內容，請先儲存。",
-  "saveTreeProjectDetailResumeBody": "要從這份存檔繼續作業嗎？\n\n目前資料將被覆蓋。如需保留，請先取消，再儲存到其他存檔欄位（樹狀模式下儲存到其他分支）。",
+  "saveTreeProjectDetailResumeBody": "要從這份存檔繼續作業嗎？\n\n目前資料將被覆蓋。如需保留，請先取消，再儲存到其他存檔槽（樹狀模式下儲存到其他分支）。",
   "saveTreeLoadFailedSnackbar": "存檔資料讀取失敗",
   "saveTreeRestoredSnackbar": "已讀取存檔資料（{name}）",
   "@saveTreeRestoredSnackbar": {
@@ -1649,16 +1649,8 @@
       }
     }
   },
-  "saveTreeSlotLabel": "儲存槽{n}",
+  "saveTreeSlotLabel": "存檔槽{n}",
   "@saveTreeSlotLabel": {
-    "placeholders": {
-      "n": {
-        "type": "int"
-      }
-    }
-  },
-  "saveTreeSlotFallbackName": "儲存槽 {n}",
-  "@saveTreeSlotFallbackName": {
     "placeholders": {
       "n": {
         "type": "int"
@@ -1669,7 +1661,14 @@
   "saveTreeEmptyTitle": "沒有存檔資料",
   "saveTreeEmptyHint": "點擊上方的「保存」按鈕即可建立第一個節點",
   "saveTreeNodeDefaultTitle": "存檔",
-  "saveTreeNodeDefaultName": "存檔資料",
+  "saveTreeNodeDatedName": "{date}的存檔",
+  "@saveTreeNodeDatedName": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
   "saveTreeChangeDataTitle": "變更存檔資料",
   "saveTreeChangeDataTitleWithProject": "變更存檔資料（{name}）",
   "@saveTreeChangeDataTitleWithProject": {

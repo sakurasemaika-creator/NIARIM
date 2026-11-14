@@ -1657,19 +1657,18 @@
       }
     }
   },
-  "saveTreeSlotFallbackName": "Ranura {n}",
-  "@saveTreeSlotFallbackName": {
-    "placeholders": {
-      "n": {
-        "type": "int"
-      }
-    }
-  },
   "saveTreeNoDataLabel": "Sin datos guardados",
   "saveTreeEmptyTitle": "No hay datos guardados",
   "saveTreeEmptyHint": "Toca el botón «Guardar» de arriba para crear el primer nodo",
   "saveTreeNodeDefaultTitle": "Guardado",
-  "saveTreeNodeDefaultName": "Datos guardados",
+  "saveTreeNodeDatedName": "Guardado del {date}",
+  "@saveTreeNodeDatedName": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
   "saveTreeChangeDataTitle": "Cambiar datos guardados",
   "saveTreeChangeDataTitleWithProject": "Cambiar datos guardados ({name})",
   "@saveTreeChangeDataTitleWithProject": {

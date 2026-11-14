@@ -7434,7 +7434,7 @@ abstract class AppLocalizations {
   /// No description provided for @saveTreeSlotSaveDialogTitle.
   ///
   /// In ja, this message translates to:
-  /// **'スロット {n} に保存'**
+  /// **'スロット{n}に保存'**
   String saveTreeSlotSaveDialogTitle(int n);
 
   /// No description provided for @saveTreeSlotOverwriteWarning.
@@ -7503,12 +7503,6 @@ abstract class AppLocalizations {
   /// **'スロット{n}'**
   String saveTreeSlotLabel(int n);
 
-  /// No description provided for @saveTreeSlotFallbackName.
-  ///
-  /// In ja, this message translates to:
-  /// **'スロット {n}'**
-  String saveTreeSlotFallbackName(int n);
-
   /// No description provided for @saveTreeNoDataLabel.
   ///
   /// In ja, this message translates to:
@@ -7533,11 +7527,11 @@ abstract class AppLocalizations {
   /// **'保存'**
   String get saveTreeNodeDefaultTitle;
 
-  /// No description provided for @saveTreeNodeDefaultName.
+  /// No description provided for @saveTreeNodeDatedName.
   ///
   /// In ja, this message translates to:
-  /// **'保存データ'**
-  String get saveTreeNodeDefaultName;
+  /// **'{date}の保存'**
+  String saveTreeNodeDatedName(String date);
 
   /// No description provided for @saveTreeChangeDataTitle.
   ///

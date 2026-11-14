@@ -488,7 +488,7 @@
   "helpAutoSaveTitle": "自动保存",
   "helpAutoSaveDesc": "专用于崩溃或文件损坏时恢复的保存。每次绘图等发生变更时都会自动保存，最多保留3份，按从旧到新的顺序覆盖。它与手动保存（存档槽・存档树）完全分开管理，不能替代常规保存。仅在应用异常退出后重新启动时，才会询问是否要恢复。",
   "helpSaveSlotTitle": "存档槽",
-  "helpSaveSlotDesc": "在固定数量的存档位（槽）中，由自己选择保存位置进行保存的方式。槽位数量由设置决定（低画质5个・中画质10个）。由于每次都需要自己选择要覆盖的槽位，适合“想保留这个时间点的状态”这类管理方式。",
+  "helpSaveSlotDesc": "在固定数量的存档槽中，由自己选择保存位置进行保存的方式。存档槽的数量由设置决定（低画质5个・中画质10个）。由于每次都需要自己选择要覆盖的存档槽，适合“想保留这个时间点的状态”这类管理方式。",
   "helpSaveTreeTitle": "存档树",
   "helpSaveTreeDesc": "每次保存都会创建一个新的存档点，并可以从过去的存档点分支出另一段历史（分叉）的保存方式。没有数量上限，适合“想回到那个版本后再尝试另一种展开”这类用法。画面上存档点会以从下往上生长的树状图形式显示。",
   "helpFolderTitle": "文件夹",
@@ -1183,8 +1183,8 @@
   "perfSettingsQualityMedium": "中画质",
   "perfSettingsQualityHigh": "高画质",
   "perfSettingsQualityCustom": "自定义",
-  "perfSettingsQualityDescLow": "适合想要更轻量运行的设备（前后各1张洋葱皮・5个存储槽）",
-  "perfSettingsQualityDescMedium": "适合一般设备（前后各3张洋葱皮・10个存储槽）",
+  "perfSettingsQualityDescLow": "适合想要更轻量运行的设备（前后各1张洋葱皮・5个存档槽）",
+  "perfSettingsQualityDescMedium": "适合一般设备（前后各3张洋葱皮・10个存档槽）",
   "perfSettingsQualityDescHigh": "适合性能有余裕的设备（前后各5张洋葱皮・树状存档）",
   "perfSettingsQualityDescCustom": "分别设置各项目",
   "perfSettingsCapacitySection": "容量与运行相关设置",
@@ -1221,7 +1221,7 @@
     }
   },
   "perfSettingsSaveModeLabel": "存档方式",
-  "perfSettingsSlotCountLabel": "存储槽数量",
+  "perfSettingsSlotCountLabel": "存档槽数量",
   "perfSettingsSlotCountValue": "{n}个",
   "@perfSettingsSlotCountValue": {
     "placeholders": {
@@ -1237,7 +1237,7 @@
   "perfSettingsOnionCountPrevLabel": "洋葱皮张数（前）",
   "perfSettingsShowNextOnionTitle": "显示后一帧",
   "perfSettingsOnionCountNextLabel": "洋葱皮张数（后）",
-  "perfSettingsSaveModeSlot": "存储槽方式",
+  "perfSettingsSaveModeSlot": "存档槽方式",
   "perfSettingsSaveModeTree": "树状方式",
   "perfSettingsResetDialogTitle": "要将自定义画质设置恢复为初始值吗？",
   "perfSettingsResetDialogBody": "初始值将恢复为首次启动时根据设备性能自动判定的“{preset}”设置。",
@@ -1614,10 +1614,10 @@
       }
     }
   },
-  "saveTreeSlotWriteTooltip": "保存到此存档位",
-  "saveTreeSlotLoadTooltip": "从此存档位读取",
-  "saveTreeSlotDeleteTooltip": "删除此存档位",
-  "saveTreeSlotSaveDialogTitle": "保存到存储槽 {n}",
+  "saveTreeSlotWriteTooltip": "保存到此存档槽",
+  "saveTreeSlotLoadTooltip": "从此存档槽读取",
+  "saveTreeSlotDeleteTooltip": "删除此存档槽",
+  "saveTreeSlotSaveDialogTitle": "保存到存档槽{n}",
   "@saveTreeSlotSaveDialogTitle": {
     "placeholders": {
       "n": {
@@ -1639,7 +1639,7 @@
   "saveTreeOverwriteConfirmBody": "该时间点的存档数据将会消失，确定吗？",
   "saveTreeResumeFromHereAction": "从此处继续",
   "saveTreeResumeConfirmBody": "要从这份存档继续作业吗？\n\n当前数据将被覆盖。如果需要保留当前内容，请先保存。",
-  "saveTreeProjectDetailResumeBody": "要从这份存档继续作业吗？\n\n当前数据将被覆盖。如需保留，请先取消，再保存到其他存档槽位（树状模式下保存到其他分支）。",
+  "saveTreeProjectDetailResumeBody": "要从这份存档继续作业吗？\n\n当前数据将被覆盖。如需保留，请先取消，再保存到其他存档槽（树状模式下保存到其他分支）。",
   "saveTreeLoadFailedSnackbar": "存档数据读取失败",
   "saveTreeRestoredSnackbar": "已读取存档数据（{name}）",
   "@saveTreeRestoredSnackbar": {
@@ -1649,16 +1649,8 @@
       }
     }
   },
-  "saveTreeSlotLabel": "存储槽{n}",
+  "saveTreeSlotLabel": "存档槽{n}",
   "@saveTreeSlotLabel": {
-    "placeholders": {
-      "n": {
-        "type": "int"
-      }
-    }
-  },
-  "saveTreeSlotFallbackName": "存储槽 {n}",
-  "@saveTreeSlotFallbackName": {
     "placeholders": {
       "n": {
         "type": "int"
@@ -1669,7 +1661,14 @@
   "saveTreeEmptyTitle": "没有存档数据",
   "saveTreeEmptyHint": "点击上方的“保存”按钮即可创建第一个节点",
   "saveTreeNodeDefaultTitle": "存档",
-  "saveTreeNodeDefaultName": "存档数据",
+  "saveTreeNodeDatedName": "{date}的存档",
+  "@saveTreeNodeDatedName": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
   "saveTreeChangeDataTitle": "更改存档数据",
   "saveTreeChangeDataTitleWithProject": "更改存档数据（{name}）",
   "@saveTreeChangeDataTitleWithProject": {

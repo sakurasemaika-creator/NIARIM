@@ -20,6 +20,7 @@ import '../../widgets/responsive.dart';
 import 'save_tree_screen.dart';
 import 'widgets/save_thumbnail_capture.dart';
 import 'widgets/save_delete_feedback.dart';
+import 'widgets/save_display_name.dart';
 import 'widgets/save_list_feedback.dart';
 import 'widgets/save_rename_button.dart';
 import 'widgets/save_screen_app_bar.dart';
@@ -176,7 +177,11 @@ class _GameStyleSlotScreen extends StatelessWidget {
   ) async {
     if (!await confirmDelete(
       context,
-      itemName: saveService.slotDisplayMemoOf(projectId, node.slotIndex),
+      itemName: slotSaveName(
+        AppLocalizations.of(context)!,
+        saveService.slotDisplayMemoOf(projectId, node.slotIndex),
+        node.slotIndex,
+      ),
     )) {
       return;
     }
@@ -192,7 +197,9 @@ class _GameStyleSlotScreen extends StatelessWidget {
   ) {
     final l10n = AppLocalizations.of(context)!;
     final commentController = TextEditingController(
-      text: saveService.slotDisplayMemoOf(projectId, slotIndex) ?? '',
+      text:
+          givenSaveName(saveService.slotDisplayMemoOf(projectId, slotIndex)) ??
+          '',
     );
     var saving = false;
     String? failure;
@@ -315,9 +322,7 @@ class _GameStyleSlotScreen extends StatelessWidget {
                             project: project,
                             scenes: ps.scenesOf(projectId),
                             tileManager: ps.tileManagerOf(projectId),
-                            comment: commentController.text.isEmpty
-                                ? null
-                                : commentController.text,
+                            comment: givenSaveName(commentController.text),
                             thumbnailPngBytes: thumbnail,
                             intent: slotSave,
                           );
@@ -436,8 +441,11 @@ class _GameStyleSlotScreen extends StatelessWidget {
       SnackBar(
         content: Text(
           l10n.saveTreeRestoredSnackbar(
-            saveService.slotDisplayMemoOf(projectId, node.slotIndex) ??
-                l10n.saveTreeSlotFallbackName(node.slotIndex + 1),
+            slotSaveName(
+              l10n,
+              saveService.slotDisplayMemoOf(projectId, node.slotIndex),
+              node.slotIndex,
+            ),
           ),
         ),
         // Shared SnackBarThemeData already removes the thick shadow.
@@ -481,11 +489,14 @@ class _SlotConfirmationSummary extends StatelessWidget {
                 ),
                 const SizedBox(height: 3),
                 Text(
-                  context.watch<SaveTreeService>().slotDisplayMemoOf(
-                        node.projectId,
-                        slotIndex,
-                      ) ??
-                      l10n.saveTreeSlotFallbackName(slotIndex + 1),
+                  slotSaveName(
+                    l10n,
+                    context.watch<SaveTreeService>().slotDisplayMemoOf(
+                      node.projectId,
+                      slotIndex,
+                    ),
+                    slotIndex,
+                  ),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -610,15 +621,14 @@ class _GameSaveSlotTile extends StatelessWidget {
                             Flexible(
                               fit: FlexFit.loose,
                               child: Text(
-                                memo?.isNotEmpty == true
-                                    ? memo!
-                                    : (hasData
-                                          ? l10n.saveTreeSlotFallbackName(
-                                              slotIndex + 1,
-                                            )
-                                          : listUnread
-                                          ? ''
-                                          : l10n.saveTreeNoDataLabel),
+                                // 空白だけのメモ（前の版で付けたもの）は
+                                // メモが無いのと同じに出す。
+                                givenSaveName(memo) ??
+                                    (hasData
+                                        ? l10n.saveTreeSlotLabel(slotIndex + 1)
+                                        : listUnread
+                                        ? ''
+                                        : l10n.saveTreeNoDataLabel),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: TextStyle(
@@ -633,7 +643,7 @@ class _GameSaveSlotTile extends StatelessWidget {
                               child: SaveSlotMemoButton(
                                 projectId: projectId,
                                 slotIndex: slotIndex,
-                                initialMemo: memo ?? '',
+                                initialMemo: givenSaveName(memo) ?? '',
                               ),
                             ),
                           ],

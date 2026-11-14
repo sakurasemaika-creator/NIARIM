@@ -22,6 +22,7 @@ import '../../widgets/dispose_on_unmount.dart';
 import '../../config/font_fallback.dart';
 import '../../config/accent_text_theme.dart';
 import 'widgets/save_delete_feedback.dart';
+import 'widgets/save_display_name.dart';
 import 'widgets/save_list_feedback.dart';
 import 'widgets/save_rename_button.dart';
 import 'widgets/save_screen_app_bar.dart';
@@ -292,9 +293,7 @@ void _showTreeSaveDialog(
                       // 知らせられるように、画面の知らせの出し先を先に取る。
                       final messenger = ScaffoldMessenger.of(context);
                       try {
-                        final comment = commentController.text.isEmpty
-                            ? null
-                            : commentController.text;
+                        final comment = givenSaveName(commentController.text);
                         final scenes = ps.scenesOf(projectId);
                         final tileManager = ps.tileManagerOf(projectId);
                         final thumb = await _generateSaveNodeThumbnail(
@@ -406,7 +405,7 @@ Future<void> _handleSaveNodeRestore(
 }) async {
   assert(entryMode != SaveTreeEntryMode.quickSave);
   final l10n = AppLocalizations.of(context)!;
-  final nodeTitle = node.comment ?? l10n.saveTreeNodeDefaultTitle;
+  final nodeTitle = saveNameOf(l10n, context.read<SaveTreeService>(), node);
   if (entryMode == SaveTreeEntryMode.timeline) {
     final choice = await showDialog<_SaveNodeChoice>(
       context: context,
@@ -528,7 +527,14 @@ class _SlotView extends StatelessWidget {
               : null,
           onDelete: node != null
               ? () async {
-                  if (!await confirmDelete(context, itemName: node.comment)) {
+                  if (!await confirmDelete(
+                    context,
+                    itemName: slotSaveName(
+                      AppLocalizations.of(context)!,
+                      saveService.slotDisplayMemoOf(projectId, slotIndex),
+                      slotIndex,
+                    ),
+                  )) {
                     return;
                   }
                   if (!context.mounted) return;
@@ -552,7 +558,9 @@ class _SlotView extends StatelessWidget {
   ) {
     final l10n = AppLocalizations.of(context)!;
     final commentController = TextEditingController(
-      text: saveService.slotDisplayMemoOf(projectId, slotIndex) ?? '',
+      text:
+          givenSaveName(saveService.slotDisplayMemoOf(projectId, slotIndex)) ??
+          '',
     );
     // メモの欄のEnterで押す「保存」ボタン。
     final saveButton = GlobalKey();
@@ -654,9 +662,7 @@ class _SlotView extends StatelessWidget {
                   Navigator.pop(ctx);
                   return;
                 }
-                final comment = commentController.text.isEmpty
-                    ? null
-                    : commentController.text;
+                final comment = givenSaveName(commentController.text);
                 final scenes = ps.scenesOf(projectId);
                 final tileManager = ps.tileManagerOf(projectId);
                 final thumb = await _generateSaveNodeThumbnail(ps, projectId);
@@ -722,7 +728,11 @@ class _SlotView extends StatelessWidget {
       SnackBar(
         content: Text(
           l10n.saveTreeRestoredSnackbar(
-            node.comment ?? l10n.saveTreeSlotFallbackName(node.slotIndex + 1),
+            slotSaveName(
+              l10n,
+              saveService.slotDisplayMemoOf(projectId, node.slotIndex),
+              node.slotIndex,
+            ),
           ),
         ),
         // Shared SnackBarThemeData already removes the thick shadow.
@@ -900,15 +910,16 @@ class _SlotTile extends StatelessWidget {
                             Flexible(
                               fit: FlexFit.loose,
                               child: Text(
-                                memo?.isNotEmpty == true
-                                    ? memo!
-                                    : (node == null
-                                          ? (listUnread
-                                                ? ''
-                                                : l10n.saveTreeNoDataLabel)
-                                          : l10n.saveTreeSlotFallbackName(
-                                              slotIndex + 1,
-                                            )),
+                                // 空白だけのメモ（前の版で付けたもの）は
+                                // メモが無いのと同じに出す。
+                                givenSaveName(memo) ??
+                                    (node == null
+                                        ? (listUnread
+                                              ? ''
+                                              : l10n.saveTreeNoDataLabel)
+                                        : l10n.saveTreeSlotLabel(
+                                            slotIndex + 1,
+                                          )),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),
@@ -918,7 +929,7 @@ class _SlotTile extends StatelessWidget {
                               child: SaveSlotMemoButton(
                                 projectId: projectId,
                                 slotIndex: slotIndex,
-                                initialMemo: memo ?? '',
+                                initialMemo: givenSaveName(memo) ?? '',
                               ),
                             ),
                           ],
@@ -1224,7 +1235,8 @@ class _TreeView extends StatelessWidget {
                 Flexible(
                   fit: FlexFit.loose,
                   child: Text(
-                    node.comment ?? l10n.saveTreeNodeDefaultTitle,
+                    givenSaveName(node.comment) ??
+                        l10n.saveTreeNodeDefaultTitle,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -1284,10 +1296,7 @@ class _TreeView extends StatelessWidget {
       case 'delete':
         // A tree node contains a complete historical archive. Never delete it
         // directly from a popup menu without confirming the chosen save.
-        if (!await confirmDelete(
-          context,
-          itemName: node.comment ?? l10n.saveTreeNodeDefaultTitle,
-        )) {
+        if (!await confirmDelete(context, itemName: treeSaveName(l10n, node))) {
           return;
         }
         if (!context.mounted) return;
@@ -1317,11 +1326,7 @@ class _TreeView extends StatelessWidget {
     if (!context.mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(
-          l10n.saveTreeRestoredSnackbar(
-            node.comment ?? l10n.saveTreeNodeDefaultName,
-          ),
-        ),
+        content: Text(l10n.saveTreeRestoredSnackbar(treeSaveName(l10n, node))),
         // Shared SnackBarThemeData already removes the thick shadow.
         // Keep this intentionally smaller corner radius.
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -1623,6 +1628,8 @@ class _SaveModeChangeScreenState extends State<_SaveModeChangeScreen> {
                   onToggle: _toggleNode,
                 )
               : _SelectableSlotView(
+                  projectId: widget.projectId,
+                  saveService: widget.saveService,
                   nodes: nodes,
                   slotMax: widget.saveService.slotMax,
                   selectedIds: _selectedIds,
@@ -1723,6 +1730,8 @@ class _SaveModeChangeScreenState extends State<_SaveModeChangeScreen> {
 
 // ─── 選択可能スロットビュー ───
 class _SelectableSlotView extends StatelessWidget {
+  final String projectId;
+  final SaveTreeService saveService;
   final List<SaveNode> nodes;
   final int slotMax;
   final Set<String> selectedIds;
@@ -1730,6 +1739,8 @@ class _SelectableSlotView extends StatelessWidget {
   final ValueChanged<String> onToggle;
 
   const _SelectableSlotView({
+    required this.projectId,
+    required this.saveService,
     required this.nodes,
     required this.slotMax,
     required this.selectedIds,
@@ -1754,8 +1765,14 @@ class _SelectableSlotView extends StatelessWidget {
             value: isSelected,
             onChanged: isDisabled ? null : (_) => onToggle(node.id),
           ),
+          // スロットの行・確認・知らせと同じ名前（鉛筆で変えた・消した
+          // スロットのメモ。保存したときの名前ではない）。
           title: Text(
-            node.comment ?? l10n.saveTreeSlotFallbackName(slotIndex + 1),
+            slotSaveName(
+              l10n,
+              saveService.slotDisplayMemoOf(projectId, slotIndex),
+              slotIndex,
+            ),
             style: TextStyle(
               color: isDisabled
                   ? Theme.of(context).colorScheme.onSurfaceVariant
@@ -1838,7 +1855,7 @@ class _SelectableTreeView extends StatelessWidget {
           onChanged: isDisabled ? null : (_) => onToggle(node.id),
         ),
         title: Text(
-          node.comment ?? l10n.saveTreeNodeDefaultTitle,
+          givenSaveName(node.comment) ?? l10n.saveTreeNodeDefaultTitle,
           style: TextStyle(
             color: isDisabled
                 ? Theme.of(context).colorScheme.onSurfaceVariant

@@ -1425,7 +1425,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get helpSaveSlotDesc =>
-      '在固定数量的存档位（槽）中，由自己选择保存位置进行保存的方式。槽位数量由设置决定（低画质5个・中画质10个）。由于每次都需要自己选择要覆盖的槽位，适合“想保留这个时间点的状态”这类管理方式。';
+      '在固定数量的存档槽中，由自己选择保存位置进行保存的方式。存档槽的数量由设置决定（低画质5个・中画质10个）。由于每次都需要自己选择要覆盖的存档槽，适合“想保留这个时间点的状态”这类管理方式。';
 
   @override
   String get helpSaveTreeTitle => '存档树';
@@ -3214,10 +3214,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get perfSettingsQualityCustom => '自定义';
 
   @override
-  String get perfSettingsQualityDescLow => '适合想要更轻量运行的设备（前后各1张洋葱皮・5个存储槽）';
+  String get perfSettingsQualityDescLow => '适合想要更轻量运行的设备（前后各1张洋葱皮・5个存档槽）';
 
   @override
-  String get perfSettingsQualityDescMedium => '适合一般设备（前后各3张洋葱皮・10个存储槽）';
+  String get perfSettingsQualityDescMedium => '适合一般设备（前后各3张洋葱皮・10个存档槽）';
 
   @override
   String get perfSettingsQualityDescHigh => '适合性能有余裕的设备（前后各5张洋葱皮・树状存档）';
@@ -3271,7 +3271,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get perfSettingsSaveModeLabel => '存档方式';
 
   @override
-  String get perfSettingsSlotCountLabel => '存储槽数量';
+  String get perfSettingsSlotCountLabel => '存档槽数量';
 
   @override
   String perfSettingsSlotCountValue(int n) {
@@ -3300,7 +3300,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get perfSettingsOnionCountNextLabel => '洋葱皮张数（后）';
 
   @override
-  String get perfSettingsSaveModeSlot => '存储槽方式';
+  String get perfSettingsSaveModeSlot => '存档槽方式';
 
   @override
   String get perfSettingsSaveModeTree => '树状方式';
@@ -4016,17 +4016,17 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get saveTreeSlotWriteTooltip => '保存到此存档位';
+  String get saveTreeSlotWriteTooltip => '保存到此存档槽';
 
   @override
-  String get saveTreeSlotLoadTooltip => '从此存档位读取';
+  String get saveTreeSlotLoadTooltip => '从此存档槽读取';
 
   @override
-  String get saveTreeSlotDeleteTooltip => '删除此存档位';
+  String get saveTreeSlotDeleteTooltip => '删除此存档槽';
 
   @override
   String saveTreeSlotSaveDialogTitle(int n) {
-    return '保存到存储槽 $n';
+    return '保存到存档槽$n';
   }
 
   @override
@@ -4056,7 +4056,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get saveTreeProjectDetailResumeBody =>
-      '要从这份存档继续作业吗？\n\n当前数据将被覆盖。如需保留，请先取消，再保存到其他存档槽位（树状模式下保存到其他分支）。';
+      '要从这份存档继续作业吗？\n\n当前数据将被覆盖。如需保留，请先取消，再保存到其他存档槽（树状模式下保存到其他分支）。';
 
   @override
   String get saveTreeLoadFailedSnackbar => '存档数据读取失败';
@@ -4068,12 +4068,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String saveTreeSlotLabel(int n) {
-    return '存储槽$n';
-  }
-
-  @override
-  String saveTreeSlotFallbackName(int n) {
-    return '存储槽 $n';
+    return '存档槽$n';
   }
 
   @override
@@ -4089,7 +4084,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get saveTreeNodeDefaultTitle => '存档';
 
   @override
-  String get saveTreeNodeDefaultName => '存档数据';
+  String saveTreeNodeDatedName(String date) {
+    return '$date的存档';
+  }
 
   @override
   String get saveTreeChangeDataTitle => '更改存档数据';
@@ -11334,14 +11331,14 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get helpAutoSaveDesc =>
-      '專用於當機或檔案損毀時復原的儲存。每次繪圖等發生變更時都會自動儲存，最多保留3份，依由舊到新的順序覆寫。它與手動儲存（儲存槽・儲存樹）完全分開管理，不能取代一般儲存。僅在App異常結束後重新啟動時，才會詢問是否要復原。';
+      '專用於當機或檔案損毀時復原的儲存。每次繪圖等發生變更時都會自動儲存，最多保留3份，依由舊到新的順序覆寫。它與手動儲存（存檔槽・儲存樹）完全分開管理，不能取代一般儲存。僅在App異常結束後重新啟動時，才會詢問是否要復原。';
 
   @override
-  String get helpSaveSlotTitle => '儲存槽';
+  String get helpSaveSlotTitle => '存檔槽';
 
   @override
   String get helpSaveSlotDesc =>
-      '在固定數量的儲存位（槽）中，由自己選擇儲存位置進行儲存的方式。槽位數量由設定決定（低畫質5個・中畫質10個）。由於每次都需要自己選擇要覆寫的槽位，適合「想保留這個時間點的狀態」這類管理方式。';
+      '在固定數量的存檔槽中，由自己選擇儲存位置進行儲存的方式。存檔槽的數量由設定決定（低畫質5個・中畫質10個）。由於每次都需要自己選擇要覆寫的存檔槽，適合「想保留這個時間點的狀態」這類管理方式。';
 
   @override
   String get helpSaveTreeTitle => '儲存樹';
@@ -13129,10 +13126,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get perfSettingsQualityCustom => '自訂';
 
   @override
-  String get perfSettingsQualityDescLow => '適合想要更輕量運作的裝置（前後各1張洋蔥皮・5個儲存槽）';
+  String get perfSettingsQualityDescLow => '適合想要更輕量運作的裝置（前後各1張洋蔥皮・5個存檔槽）';
 
   @override
-  String get perfSettingsQualityDescMedium => '適合一般裝置（前後各3張洋蔥皮・10個儲存槽）';
+  String get perfSettingsQualityDescMedium => '適合一般裝置（前後各3張洋蔥皮・10個存檔槽）';
 
   @override
   String get perfSettingsQualityDescHigh => '適合效能較充裕的裝置（前後各5張洋蔥皮・樹狀存檔）';
@@ -13186,7 +13183,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get perfSettingsSaveModeLabel => '存檔方式';
 
   @override
-  String get perfSettingsSlotCountLabel => '儲存槽數量';
+  String get perfSettingsSlotCountLabel => '存檔槽數量';
 
   @override
   String perfSettingsSlotCountValue(int n) {
@@ -13215,7 +13212,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get perfSettingsOnionCountNextLabel => '洋蔥皮張數（後）';
 
   @override
-  String get perfSettingsSaveModeSlot => '儲存槽方式';
+  String get perfSettingsSaveModeSlot => '存檔槽方式';
 
   @override
   String get perfSettingsSaveModeTree => '樹狀方式';
@@ -13931,17 +13928,17 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   }
 
   @override
-  String get saveTreeSlotWriteTooltip => '儲存到此存檔位';
+  String get saveTreeSlotWriteTooltip => '儲存到此存檔槽';
 
   @override
-  String get saveTreeSlotLoadTooltip => '從此存檔位讀取';
+  String get saveTreeSlotLoadTooltip => '從此存檔槽讀取';
 
   @override
-  String get saveTreeSlotDeleteTooltip => '刪除此存檔位';
+  String get saveTreeSlotDeleteTooltip => '刪除此存檔槽';
 
   @override
   String saveTreeSlotSaveDialogTitle(int n) {
-    return '儲存到儲存槽 $n';
+    return '儲存到存檔槽$n';
   }
 
   @override
@@ -13971,7 +13968,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get saveTreeProjectDetailResumeBody =>
-      '要從這份存檔繼續作業嗎？\n\n目前資料將被覆蓋。如需保留，請先取消，再儲存到其他存檔欄位（樹狀模式下儲存到其他分支）。';
+      '要從這份存檔繼續作業嗎？\n\n目前資料將被覆蓋。如需保留，請先取消，再儲存到其他存檔槽（樹狀模式下儲存到其他分支）。';
 
   @override
   String get saveTreeLoadFailedSnackbar => '存檔資料讀取失敗';
@@ -13983,12 +13980,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String saveTreeSlotLabel(int n) {
-    return '儲存槽$n';
-  }
-
-  @override
-  String saveTreeSlotFallbackName(int n) {
-    return '儲存槽 $n';
+    return '存檔槽$n';
   }
 
   @override
@@ -14004,7 +13996,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get saveTreeNodeDefaultTitle => '存檔';
 
   @override
-  String get saveTreeNodeDefaultName => '存檔資料';
+  String saveTreeNodeDatedName(String date) {
+    return '$date的存檔';
+  }
 
   @override
   String get saveTreeChangeDataTitle => '變更存檔資料';

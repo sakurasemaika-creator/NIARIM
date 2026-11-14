@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../models/save_node.dart';
 import '../../../services/save_tree_service.dart';
+import 'save_display_name.dart';
 import 'save_list_feedback.dart';
 
 /// Shared memo editor for empty slots, saved slots, and tree nodes.
@@ -193,7 +194,7 @@ class SaveRenameButton extends StatelessWidget {
       onPressed: () async {
         final memo = await _showMemoEditor(
           context,
-          node.comment ?? fallbackName,
+          givenSaveName(node.comment) ?? fallbackName,
           allowBlank: false,
         );
         if (memo == null || !context.mounted) return;
