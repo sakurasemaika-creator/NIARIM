@@ -76,6 +76,7 @@ import '../../models/canvas_dock_panel.dart';
 import '../../models/ruler.dart';
 import '../../widgets/responsive.dart';
 import '../../config/font_fallback.dart';
+import '../../widgets/list_ink_clip.dart';
 import '../../widgets/scrollable_sheet_body.dart';
 import '../../widgets/custom_automation_manager_sheet.dart';
 import '../../widgets/custom_automation_draft_sheet.dart';
@@ -1177,7 +1178,9 @@ class _CanvasScreenState extends State<CanvasScreen> {
                 ),
             ],
           ),
-        ),
+          // 行を押したときの色をスクロールの中に限る（シートの面へ描くと、
+          // 半分隠れた行の色が下の余白〔ナビゲーションバーの下〕へはみ出す）。
+        ).clipListInk(),
       ),
     );
   }

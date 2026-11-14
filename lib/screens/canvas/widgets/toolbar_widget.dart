@@ -14,6 +14,7 @@ import '../../../widgets/responsive.dart';
 import '../canvas_screen.dart';
 import 'canvas_icon_button.dart';
 import '../../../config/font_fallback.dart';
+import '../../../widgets/list_ink_clip.dart';
 import 'pen_sub_tool_panel.dart' show LassoFillToneSheet;
 
 class ToolbarWidget extends StatelessWidget {
@@ -413,6 +414,9 @@ class ToolbarWidget extends StatelessWidget {
               constraints: BoxConstraints(
                 maxHeight: MediaQuery.sizeOf(ctx).height * 0.85,
               ),
+              // 行を押したときの色・選んだ行の色をスクロールの中に限る（シートの
+              // 面へ描くと、半分隠れた行の色が下の余白〔ナビゲーションバーの
+              // 下〕へはみ出す）。
               child: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -584,7 +588,7 @@ class ToolbarWidget extends StatelessWidget {
                     ),
                   ],
                 ),
-              ),
+              ).clipListInk(),
             ),
           );
         },

@@ -46,6 +46,7 @@ import 'panel_close_bar.dart';
 import '../../../engine/premultiplied.dart';
 import '../../../engine/tone_curve.dart';
 import '../../../config/accent_text_theme.dart';
+import '../../../widgets/list_ink_clip.dart';
 
 enum FilterColorEyedropperTarget { inkPool, outline }
 
@@ -946,6 +947,8 @@ class _FilterPanelState extends State<FilterPanel> {
     return LayoutBuilder(
       builder: (context, constraints) {
         final columns = constraints.maxWidth >= 320 ? 3 : 2;
+        // カードを押したときの色を一覧の中に限る（パネルの面へ描くと、
+        // スクロールで半分隠れたカードの色が一覧の上下へはみ出す）。
         return GridView.builder(
           key: const ValueKey('filter-tile-grid'),
           scrollDirection: Axis.vertical,
@@ -1028,7 +1031,7 @@ class _FilterPanelState extends State<FilterPanel> {
                 ? PremiumLockWidget(feature: premium, child: child)
                 : child;
           },
-        );
+        ).clipListInk();
       },
     );
   }
@@ -1109,7 +1112,10 @@ class _FilterPanelState extends State<FilterPanel> {
       onPointerUp: (e) => _editPointerUp(e.pointer),
       onPointerCancel: (e) => _editPointerUp(e.pointer),
       // The app's scroll behaviour shows the scrollbar on the right; the
-      // padding keeps the controls clear of it.
+      // padding keeps the controls clear of it. 行（ノイズの種類・スイッチ）を
+      // 押したときの色は設定の欄の中に限る（パネルの面へ描くと、半分隠れた
+      // 行の色が見出しや下のボタンの段へはみ出す）。透明な面なので、何も無い
+      // 所のタッチは下へ通る。
       child: SingleChildScrollView(
         hitTestBehavior: HitTestBehavior.deferToChild,
         padding: const EdgeInsets.only(right: 10),
@@ -1189,7 +1195,7 @@ class _FilterPanelState extends State<FilterPanel> {
             _buildControls(l10n, service, current),
           ],
         ),
-      ),
+      ).clipListInk(),
     );
   }
 

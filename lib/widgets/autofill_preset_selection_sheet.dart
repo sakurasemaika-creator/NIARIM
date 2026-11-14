@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../l10n/app_localizations.dart';
 import '../models/autofill_preset.dart';
 import '../config/font_fallback.dart';
+import 'list_ink_clip.dart';
 
 /// パーツ割り当てUIに表示するプリセットを、プロジェクトの選択状態で絞り込む。
 /// nullは「現在および今後の全プリセット」を意味する。
@@ -89,7 +90,9 @@ Future<AutofillPresetSelectionResult> showAutofillPresetSelectionSheet(
                     ? Center(child: Text(l10n.autofillPresetEmpty))
                     // チェックを1つ付け外しするたびに全プリセットぶんの
                     // CheckboxListTileを作り直さないよう、行はbuilderで
-                    // 遅延生成する。
+                    // 遅延生成する。行を押したときの色は一覧の中に限る
+                    // （シートの面へ描くと、半分隠れた行の色が上の見出し・
+                    // 下のOKボタンへはみ出す）。
                     : ListView.builder(
                         itemCount: allPresets.length,
                         itemBuilder: (context, i) {
@@ -111,7 +114,7 @@ Future<AutofillPresetSelectionResult> showAutofillPresetSelectionSheet(
                             }),
                           );
                         },
-                      ),
+                      ).clipListInk(),
               ),
               Padding(
                 padding: const EdgeInsets.all(12),

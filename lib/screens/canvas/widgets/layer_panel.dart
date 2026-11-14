@@ -1454,6 +1454,8 @@ class _LayerPanelState extends State<LayerPanel> {
           content: RadioGroup<model.LayerRangeMode>(
             groupValue: mode,
             onChanged: (v) => setS(() => mode = v!),
+            // 選択肢を押したときの色をスクロールの中に限る（ダイアログの面へ
+            // 描くと、半分隠れた選択肢の色が見出し・ボタンの段へはみ出す）。
             child: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -1546,7 +1548,7 @@ class _LayerPanelState extends State<LayerPanel> {
                   ),
                 ],
               ),
-            ),
+            ).clipListInk(),
           ),
           actions: [
             TextButton(
@@ -1805,6 +1807,8 @@ class _LayerPanelState extends State<LayerPanel> {
       context: context,
       isScrollControlled: true,
       builder: (ctx) => SafeArea(
+        // 行を押したときの色をスクロールの中に限る（シートの面へ描くと、
+        // 半分隠れた行の色が下の余白〔ナビゲーションバーの下〕へはみ出す）。
         child: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -2120,7 +2124,7 @@ class _LayerPanelState extends State<LayerPanel> {
                 ),
             ],
           ),
-        ),
+        ).clipListInk(),
       ),
     );
   }

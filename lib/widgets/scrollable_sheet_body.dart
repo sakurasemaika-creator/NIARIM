@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'list_ink_clip.dart';
+
 /// `showModalBottomSheet`の中身を**必ずスクロールできる**形にするラッパー。
 ///
 /// `showModalBottomSheet`は既定で画面高の**9/16**（360x760の端末で約427dp）
@@ -14,6 +16,11 @@ import 'package:flutter/material.dart';
 ///
 /// 件数が固定の短いシートでも、あとから項目が増えたときに同じことが起きる
 /// （組み込みブラシは実際に増やされた）。シートの中身はこれで包むこと。
+///
+/// 行を押したとき・重ねたときの色はスクロールの中に限る（[ListInkClip]）。
+/// 行の色は一番近い[Material]＝シートの面へ描かれ、シートの面は画面の下の
+/// ナビゲーションバーの余白（SafeAreaの外）まで続くので、スクロールで半分
+/// 隠れた行の色がその余白へはみ出して描かれた。
 class ScrollableSheetBody extends StatelessWidget {
   const ScrollableSheetBody({super.key, required this.child});
 
@@ -21,5 +28,5 @@ class ScrollableSheetBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) =>
-      SafeArea(child: SingleChildScrollView(child: child));
+      SafeArea(child: SingleChildScrollView(child: child).clipListInk());
 }
