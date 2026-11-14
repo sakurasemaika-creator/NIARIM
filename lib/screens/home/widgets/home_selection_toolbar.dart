@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 
 import '../../../l10n/app_localizations.dart';
+import '../../../widgets/app_toast_messenger.dart';
+
+/// 押せない切り取り・コピーを押したときの知らせの印（続けて押しても
+/// 積み重ならないよう、前の同じ知らせだけを取り下げる）。
+class _UnavailableActionKey extends UniqueKey {}
 
 /// Keep the same actions reachable when translated or enlarged labels no
 /// longer fit. Width decisions use the actual button and count text styles.
@@ -15,6 +20,8 @@ class HomeSelectionToolbar extends StatelessWidget {
     this.onTrash,
     this.primaryActionLabel,
     this.primaryActionIcon = Icons.delete,
+    this.cutUnavailableReason,
+    this.copyUnavailableReason,
   });
 
   final int selectedCount;
@@ -25,6 +32,13 @@ class HomeSelectionToolbar extends StatelessWidget {
   final VoidCallback? onTrash;
   final String? primaryActionLabel;
   final IconData primaryActionIcon;
+
+  /// 切り取り・コピーが押せない（[onCut]・[onCopy]がnull）理由。あれば、
+  /// 押せない見た目のまま、長押し・ホバーの吹き出しと読み上げで理由を伝え、
+  /// 押したら理由を知らせる（説明なしに押せないと、なぜ押せないか分からな
+  /// かった）。
+  final String? cutUnavailableReason;
+  final String? copyUnavailableReason;
 
   @override
   Widget build(BuildContext context) {
@@ -56,23 +70,65 @@ class HomeSelectionToolbar extends StatelessWidget {
       IconData icon,
       VoidCallback? action, {
       Color? color,
-    }) => SizedBox.square(
-      dimension: 48,
-      child: IconButton(
-        tooltip: label,
-        icon: Icon(icon),
-        onPressed: action,
-        style: IconButton.styleFrom(
-          foregroundColor: color ?? foreground,
-          disabledForegroundColor: (color ?? foreground).withValues(
-            alpha: 0.38,
+      String? unavailable,
+    }) {
+      final ink = color ?? foreground;
+      if (action == null && unavailable != null) {
+        void explain() {
+          final messenger = ScaffoldMessenger.of(context);
+          if (messenger is AppToastMessengerState) {
+            messenger.withdrawSnackBars(
+              (snackBar) => snackBar.key is _UnavailableActionKey,
+            );
+          }
+          messenger.showSnackBar(
+            SnackBar(key: _UnavailableActionKey(), content: Text(unavailable)),
+          );
+        }
+
+        // 押せない見た目（押せないボタンと同じ薄さ）のまま、理由を吹き出し・
+        // 読み上げで伝え、押したら知らせる。読み上げ（TalkBack・スイッチ
+        // 操作）で押したときも同じ知らせを出す（中のボタンの読み上げを
+        // 外すので、押す操作はここに付ける。付けないと「ボタン」と読むのに
+        // 押しても何も起きなかった）。
+        return SizedBox.square(
+          dimension: 48,
+          child: Semantics(
+            label: label,
+            hint: unavailable,
+            button: true,
+            onTap: explain,
+            excludeSemantics: true,
+            child: IconButton(
+              tooltip: unavailable,
+              icon: Icon(icon),
+              onPressed: explain,
+              style: IconButton.styleFrom(
+                foregroundColor: ink.withValues(alpha: 0.38),
+                minimumSize: const Size(48, 48),
+                visualDensity: VisualDensity.standard,
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
+            ),
           ),
-          minimumSize: const Size(48, 48),
-          visualDensity: VisualDensity.standard,
-          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        );
+      }
+      return SizedBox.square(
+        dimension: 48,
+        child: IconButton(
+          tooltip: label,
+          icon: Icon(icon),
+          onPressed: action,
+          style: IconButton.styleFrom(
+            foregroundColor: ink,
+            disabledForegroundColor: ink.withValues(alpha: 0.38),
+            minimumSize: const Size(48, 48),
+            visualDensity: VisualDensity.standard,
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          ),
         ),
-      ),
-    );
+      );
+    }
 
     Widget textButton(String label, VoidCallback action) => Tooltip(
       message: label,
@@ -102,8 +158,18 @@ class HomeSelectionToolbar extends StatelessWidget {
         builder: (context, constraints) {
           final compact = constraints.maxWidth < widest * 3 + 48 * 3 + 2;
           final actions = [
-            iconButton(l10n.commonCut, Icons.content_cut, onCut),
-            iconButton(l10n.commonCopy, Icons.content_copy, onCopy),
+            iconButton(
+              l10n.commonCut,
+              Icons.content_cut,
+              onCut,
+              unavailable: cutUnavailableReason,
+            ),
+            iconButton(
+              l10n.commonCopy,
+              Icons.content_copy,
+              onCopy,
+              unavailable: copyUnavailableReason,
+            ),
             iconButton(
               primaryActionLabel ?? l10n.homeMoveToTrash,
               primaryActionIcon,
@@ -185,7 +251,6 @@ class HomeSelectionToolbar extends StatelessWidget {
     );
   }
 }
-
 
 /// Copy/cut state sits immediately below the four tabs, in the same
 /// visual system and 48px action height as [HomeSelectionToolbar].

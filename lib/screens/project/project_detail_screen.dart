@@ -24,6 +24,7 @@ import '../../widgets/name_entry_dialog.dart';
 import '../../widgets/project_not_found_view.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/help_button.dart';
+import '../../widgets/project_duplicated_snack_bar.dart';
 import '../../widgets/project_trash_dialog.dart';
 import '../../widgets/stepped_slider.dart';
 import '../../config/font_fallback.dart';
@@ -328,8 +329,11 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                 case 'duplicate':
                   // 画面の言語の「(コピー)」。同じ名前の複製があれば番号を付ける。
                   // 名前は複製を一覧へ加える直前の一覧で決める（素材を写して
-                  // いる間にもう一度押しても同じ名前にしない）。
-                  projectService.duplicateProject(
+                  // いる間にもう一度押しても同じ名前にしない）。この画面に
+                  // 残るので、できた複製の名前を知らせる（ホームの複製と同じ）。
+                  await duplicateProjectWithNotice(
+                    context,
+                    projectService,
                     widget.projectId,
                     namer: (name, _) => duplicateProjectName(
                       l10n,

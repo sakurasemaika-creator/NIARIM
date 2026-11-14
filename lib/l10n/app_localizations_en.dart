@@ -8175,6 +8175,24 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String projectDuplicatedSnackbar(String name) {
+    return 'Duplicate created: $name';
+  }
+
+  @override
+  String get homeSelectionOneAtATime =>
+      'On this tab, items are cut or copied one at a time. Select just one.';
+
+  @override
+  String homeTrashCutUnavailable(String restore) {
+    return 'Items in the Trash can’t be cut. To put an item back where it was, press “$restore”.';
+  }
+
+  @override
+  String get homeTrashCopyOneAtATime =>
+      'In the Trash, items are copied one at a time. Select just one.';
+
+  @override
   String get homeDrawerTutorial => 'How to use';
 
   @override

@@ -8318,6 +8318,24 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
+  String projectDuplicatedSnackbar(String name) {
+    return 'Copie créée : $name';
+  }
+
+  @override
+  String get homeSelectionOneAtATime =>
+      'Dans cet onglet, les éléments se coupent ou se copient un par un. Sélectionnez-en un seul.';
+
+  @override
+  String homeTrashCutUnavailable(String restore) {
+    return 'Les éléments de la corbeille ne peuvent pas être coupés. Pour remettre un élément à sa place, appuyez sur « $restore ».';
+  }
+
+  @override
+  String get homeTrashCopyOneAtATime =>
+      'Dans la corbeille, les éléments se copient un par un. Sélectionnez-en un seul.';
+
+  @override
   String get homeDrawerTutorial => 'Mode d’emploi';
 
   @override

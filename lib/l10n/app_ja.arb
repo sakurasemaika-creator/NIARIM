@@ -3888,6 +3888,32 @@
       }
     }
   },
+  "projectDuplicatedSnackbar": "複製を作りました：{name}",
+  "@projectDuplicatedSnackbar": {
+    "description": "作品を複製したときの知らせ（プロジェクト詳細・ホームのメニューの「複製」）。nameはできた複製の名前",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "homeSelectionOneAtATime": "このタブでは、切り取り・コピーは1件ずつです。1件だけ選んでください。",
+  "@homeSelectionOneAtATime": {
+    "description": "作品一覧・共有・ゴミ箱のタブで2つ以上選んだとき、切り取り・コピーが押せない理由（吹き出し・読み上げ・押したときの知らせ）"
+  },
+  "homeTrashCutUnavailable": "ゴミ箱からは切り取れません。元の場所へ戻すときは「{restore}」を押してください。",
+  "@homeTrashCutUnavailable": {
+    "description": "ゴミ箱のタブで項目を選んだとき、切り取りが押せない理由（吹き出し・読み上げ・押したときの知らせ）。{restore}は「復元」ボタンの名前",
+    "placeholders": {
+      "restore": {
+        "type": "String"
+      }
+    }
+  },
+  "homeTrashCopyOneAtATime": "ゴミ箱では、コピーは1件ずつです。1件だけ選んでください。",
+  "@homeTrashCopyOneAtATime": {
+    "description": "ゴミ箱のタブで2つ以上選んだとき、コピーが押せない理由（吹き出し・読み上げ・押したときの知らせ）"
+  },
   "homeDrawerTutorial": "使い方",
   "themeColorAccentText": "アクセントの文字・アイコン色",
   "@themeColorAccentText": {

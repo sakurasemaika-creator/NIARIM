@@ -14271,6 +14271,30 @@ abstract class AppLocalizations {
   /// **'{name} (コピー {number})'**
   String projectDuplicateNameNumbered(String name, int number);
 
+  /// 作品を複製したときの知らせ（プロジェクト詳細・ホームのメニューの「複製」）。nameはできた複製の名前
+  ///
+  /// In ja, this message translates to:
+  /// **'複製を作りました：{name}'**
+  String projectDuplicatedSnackbar(String name);
+
+  /// 作品一覧・共有・ゴミ箱のタブで2つ以上選んだとき、切り取り・コピーが押せない理由（吹き出し・読み上げ・押したときの知らせ）
+  ///
+  /// In ja, this message translates to:
+  /// **'このタブでは、切り取り・コピーは1件ずつです。1件だけ選んでください。'**
+  String get homeSelectionOneAtATime;
+
+  /// ゴミ箱のタブで項目を選んだとき、切り取りが押せない理由（吹き出し・読み上げ・押したときの知らせ）。{restore}は「復元」ボタンの名前
+  ///
+  /// In ja, this message translates to:
+  /// **'ゴミ箱からは切り取れません。元の場所へ戻すときは「{restore}」を押してください。'**
+  String homeTrashCutUnavailable(String restore);
+
+  /// ゴミ箱のタブで2つ以上選んだとき、コピーが押せない理由（吹き出し・読み上げ・押したときの知らせ）
+  ///
+  /// In ja, this message translates to:
+  /// **'ゴミ箱では、コピーは1件ずつです。1件だけ選んでください。'**
+  String get homeTrashCopyOneAtATime;
+
   /// No description provided for @homeDrawerTutorial.
   ///
   /// In ja, this message translates to:

@@ -7899,6 +7899,24 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
+  String projectDuplicatedSnackbar(String name) {
+    return '복제본을 만들었습니다: $name';
+  }
+
+  @override
+  String get homeSelectionOneAtATime =>
+      '이 탭에서는 한 번에 하나씩만 잘라내거나 복사할 수 있습니다. 하나만 선택해 주세요.';
+
+  @override
+  String homeTrashCutUnavailable(String restore) {
+    return '휴지통의 항목은 잘라낼 수 없습니다. 원래 위치로 되돌리려면 「$restore」 버튼을 눌러 주세요.';
+  }
+
+  @override
+  String get homeTrashCopyOneAtATime =>
+      '휴지통에서는 한 번에 하나씩만 복사할 수 있습니다. 하나만 선택해 주세요.';
+
+  @override
   String get homeDrawerTutorial => '사용법';
 
   @override

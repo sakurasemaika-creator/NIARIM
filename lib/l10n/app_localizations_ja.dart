@@ -7862,6 +7862,22 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
+  String projectDuplicatedSnackbar(String name) {
+    return '複製を作りました：$name';
+  }
+
+  @override
+  String get homeSelectionOneAtATime => 'このタブでは、切り取り・コピーは1件ずつです。1件だけ選んでください。';
+
+  @override
+  String homeTrashCutUnavailable(String restore) {
+    return 'ゴミ箱からは切り取れません。元の場所へ戻すときは「$restore」を押してください。';
+  }
+
+  @override
+  String get homeTrashCopyOneAtATime => 'ゴミ箱では、コピーは1件ずつです。1件だけ選んでください。';
+
+  @override
   String get homeDrawerTutorial => '使い方';
 
   @override

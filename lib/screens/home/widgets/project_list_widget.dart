@@ -26,6 +26,7 @@ import '../../../widgets/export_share_feedback.dart';
 import '../../../widgets/frame_preview_background.dart';
 import '../../../widgets/project_trash_dialog.dart';
 import '../../../widgets/moved_to_trash_snack_bar.dart';
+import '../../../widgets/project_duplicated_snack_bar.dart';
 import '../../../widgets/name_entry_dialog.dart';
 import '../../../widgets/collection_action_controls.dart';
 import '../../../widgets/collection_tile_layout.dart';
@@ -1269,7 +1270,10 @@ class ProjectListWidget extends StatelessWidget {
         showProjectThumbnailDialog(context, project: project, service: service);
       case 'duplicate':
         final l10n = AppLocalizations.of(context)!;
-        service.duplicateProject(
+        // プロジェクト詳細の「複製」と同じく、できた複製の名前を知らせる。
+        duplicateProjectWithNotice(
+          context,
+          service,
           project.id,
           namer: (name, taken) => numberedCopyName(l10n, name, taken),
         );

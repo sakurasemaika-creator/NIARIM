@@ -50,6 +50,7 @@ import '../../widgets/share_project_file_action.dart';
 import '../../widgets/mission_completion_dialog.dart';
 import '../../widgets/moved_to_trash_snack_bar.dart';
 import '../../widgets/keep_together_text.dart';
+import '../../widgets/project_duplicated_snack_bar.dart';
 import '../../widgets/typing_aware_shortcuts.dart';
 import '../../widgets/fit_or_hide_title.dart';
 import 'widgets/project_list_widget.dart';
@@ -1057,6 +1058,22 @@ class _HomeScreenState extends State<HomeScreen>
                   primaryActionIcon: _currentTabIndex == 3
                       ? Icons.restore
                       : Icons.delete,
+                  // 作品一覧・共有・ゴミ箱は1件ずつ切り取り・コピーする。2件
+                  // 以上選んだときは、押せない理由を伝える。ゴミ箱からは
+                  // 切り取れないので、切り取りはいつも理由（戻すときは
+                  // 「復元」）を伝える（以前は説明なしに押せなかった）。
+                  cutUnavailableReason: _currentTabIndex == 3
+                      ? l10n.homeTrashCutUnavailable(l10n.commonRestore)
+                      : (_currentTabIndex == 1 || _currentTabIndex == 2) &&
+                            _selectedIds.length > 1
+                      ? l10n.homeSelectionOneAtATime
+                      : null,
+                  copyUnavailableReason:
+                      _currentTabIndex != 0 && _selectedIds.length > 1
+                      ? (_currentTabIndex == 3
+                            ? l10n.homeTrashCopyOneAtATime
+                            : l10n.homeSelectionOneAtATime)
+                      : null,
                 ),
               Expanded(
                 child: HomeCollectionSelectionScope(
@@ -3961,10 +3978,15 @@ Widget _receivedShareMenu(
             );
           }
         case 'duplicate':
-          await service.duplicateProject(
-            project.id,
-            namer: _copyNamer(context),
-          );
+          // 作品のメニューの「複製」と同じく、できた複製の名前を知らせる。
+          if (context.mounted) {
+            await duplicateProjectWithNotice(
+              context,
+              service,
+              project.id,
+              namer: _copyNamer(context),
+            );
+          }
         case 'share':
           if (context.mounted) {
             await createAndShareProjectNiashare(context, service, project);

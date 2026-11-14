@@ -8303,6 +8303,24 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
+  String projectDuplicatedSnackbar(String name) {
+    return 'Copia creada: $name';
+  }
+
+  @override
+  String get homeSelectionOneAtATime =>
+      'En esta pestaña, los elementos se cortan o se copian de uno en uno. Selecciona solo uno.';
+
+  @override
+  String homeTrashCutUnavailable(String restore) {
+    return 'Los elementos de la papelera no se pueden cortar. Para devolver un elemento a su lugar, pulsa «$restore».';
+  }
+
+  @override
+  String get homeTrashCopyOneAtATime =>
+      'En la papelera, los elementos se copian de uno en uno. Selecciona solo uno.';
+
+  @override
   String get homeDrawerTutorial => 'Cómo se usa';
 
   @override

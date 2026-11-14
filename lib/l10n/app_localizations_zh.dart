@@ -7785,6 +7785,22 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String projectDuplicatedSnackbar(String name) {
+    return '已创建副本：$name';
+  }
+
+  @override
+  String get homeSelectionOneAtATime => '在此标签页中，一次只能剪切或复制一项。请只选择一项。';
+
+  @override
+  String homeTrashCutUnavailable(String restore) {
+    return '回收站中的项目无法剪切。要将项目放回原位置，请点击“$restore”。';
+  }
+
+  @override
+  String get homeTrashCopyOneAtATime => '在回收站中，一次只能复制一项。请只选择一项。';
+
+  @override
   String get homeDrawerTutorial => '使用方法';
 
   @override
@@ -17679,6 +17695,22 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String projectDuplicateNameNumbered(String name, int number) {
     return '$name（副本 $number）';
   }
+
+  @override
+  String projectDuplicatedSnackbar(String name) {
+    return '已建立副本：$name';
+  }
+
+  @override
+  String get homeSelectionOneAtATime => '在此分頁中，一次只能剪下或複製一項。請只選擇一項。';
+
+  @override
+  String homeTrashCutUnavailable(String restore) {
+    return '垃圾桶中的項目無法剪下。要將項目放回原位置，請點擊「$restore」。';
+  }
+
+  @override
+  String get homeTrashCopyOneAtATime => '在垃圾桶中，一次只能複製一項。請只選擇一項。';
 
   @override
   String get homeDrawerTutorial => '使用方法';
