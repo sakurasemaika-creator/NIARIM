@@ -10,6 +10,7 @@ import 'package:niarim/router.dart';
 import 'package:niarim/screens/home/home_screen.dart';
 import 'package:niarim/screens/home/widgets/project_list_widget.dart';
 import 'package:niarim/services/project_service.dart';
+import 'package:niarim/widgets/korean_words_text.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -125,9 +126,12 @@ class HomeAppHarness {
     final names = <(Offset, String)>[];
     String? nameOf(Text text) => text.semanticsLabel ?? text.data;
     for (final element in inProjects(find.byType(ListTile)).evaluate()) {
-      final title = (element.widget as ListTile).title;
-      if (title is! Text) continue;
-      final name = nameOf(title);
+      // 詳細表示の名前は、韓国語の語を途中で折り返さない KoreanWordsText。
+      final name = switch ((element.widget as ListTile).title) {
+        final Text title => nameOf(title),
+        final KoreanWordsText title => title.data,
+        _ => null,
+      };
       if (name == null) continue;
       final box = element.renderObject! as RenderBox;
       names.add((box.localToGlobal(Offset.zero), name));
