@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 
 import '../../../config/font_fallback.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../utils/duplicate_name.dart';
+import '../../../utils/line_break.dart' show keepJapaneseLineStartsAttached;
 import '../../../widgets/collection_action_controls.dart';
 import '../../../widgets/collection_tile_layout.dart';
 import '../../../widgets/home_collection_selection_scope.dart';
@@ -87,20 +89,49 @@ class ExportedWorkCard extends StatelessWidget {
       color: foreground,
     );
     // Allow natural filename breaks without changing the saved/accessibility name.
-    final displayName = name.replaceAllMapped(
-      _filenameSeparators,
-      (match) => '\u200B${match[0]}',
+    // 長音・小書きの仮名は行の頭に来ない（「ファーストショ / ット」）。
+    String breakable(String text) => keepJapaneseLineStartsAttached(
+      text.replaceAllMapped(
+        _filenameSeparators,
+        (match) => '\u200B${match[0]}',
+      ),
     );
-    Widget title() => Text(
-      displayName,
-      key: const Key('exportedWorkTitle'),
-      semanticsLabel: name,
-      // A very long filename at 2x text size must not grow beyond the
-      // screen-height card; the original full name remains in semantics and
-      // in the file detail view.
-      maxLines: 8,
-      overflow: TextOverflow.ellipsis,
-      style: titleStyle,
+    // 複製の印と拡張子（「（副本）.png」）は途中で折り返さない（「clip_4（副」
+    // 「本）.png」と折れていた）。欄に入らないほど長いときは、印の字の間で
+    // だけ折り返す（かたまりのままだと「(コピー 12).gi / f」とどこかで切れた）。
+    final copy = copyMarkSplit(name);
+    Widget title() => LayoutBuilder(
+      builder: (context, constraints) {
+        final textScaler = MediaQuery.textScalerOf(context);
+        final direction = Directionality.of(context);
+        final locale = Localizations.maybeLocaleOf(context);
+        // かたまりがどれも欄の1行に入るか。
+        bool fits(String text) {
+          final painter = TextPainter(
+            text: TextSpan(text: text, style: titleStyle),
+            textScaler: textScaler,
+            textDirection: direction,
+            locale: locale,
+          )..layout();
+          final fits = painter.minIntrinsicWidth <= constraints.maxWidth;
+          painter.dispose();
+          return fits;
+        }
+
+        return Text(
+          copy == null
+              ? breakable(name)
+              : breakable(copy.head) + copyMarkLineText(copy.tail, fits),
+          key: const Key('exportedWorkTitle'),
+          semanticsLabel: name,
+          // A very long filename at 2x text size must not grow beyond the
+          // screen-height card; the original full name remains in semantics
+          // and in the file detail view.
+          maxLines: 8,
+          overflow: TextOverflow.ellipsis,
+          style: titleStyle,
+        );
+      },
     );
     Widget details() => Text(
       metadata,

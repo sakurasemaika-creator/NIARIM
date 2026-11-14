@@ -5,6 +5,7 @@ import '../services/project_service.dart'
     show FavoriteProjectDeleteException, TrashedFolderUnreadException;
 import '../utils/folder_persistence.dart' show FolderSaveException;
 import 'app_toast_messenger.dart';
+import 'copy_name_text.dart';
 import 'keep_together_text.dart';
 
 // 読めていない作品があって断られたときは、読み込めていないことを伝える
@@ -214,10 +215,11 @@ class _ProjectTrashDialogState extends State<ProjectTrashDialog> {
             for (var i = 0; i < names.length; i++)
               Padding(
                 padding: const EdgeInsets.only(bottom: 8),
-                child: Text(
+                // 複製の名前の印（「(コピー 2)」）は途中で折り返さない。
+                child: copyNameText(
                   names[i],
                   key: ValueKey('trash-dialog-target-$i'),
-                  softWrap: true,
+                  name: names[i],
                 ),
               ),
             // 数と単位（「プロジェクト2件」「2 items」）は行の途中で切らない

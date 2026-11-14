@@ -4,6 +4,7 @@ import '../l10n/app_localizations.dart';
 import '../services/project_service.dart';
 import '../utils/app_error_reporter.dart';
 import 'app_toast_messenger.dart';
+import 'copy_name_text.dart';
 import 'project_trash_dialog.dart' show showProjectActionFailure;
 
 /// 1回のゴミ箱への移動で移したもの（「元に戻す」で戻すもの）。
@@ -137,10 +138,13 @@ void _showTrashNotice(
   final controller = messenger.showSnackBar(
     SnackBar(
       key: key,
-      content: Text(
+      // フォルダの名前が複製の名前なら、印（「(コピー 2)」）を途中で折り
+      // 返さない。
+      content: copyNameText(
         carried.isEmpty && folderName != null
             ? l10n.homeFolderMovedToTrashSnackbar(folderName)
             : l10n.homeMovedToTrashSnackbar(total),
+        name: folderName ?? '',
       ),
       persist: false,
       duration: const Duration(seconds: 5),

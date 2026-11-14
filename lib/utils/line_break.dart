@@ -93,6 +93,39 @@ String keepDateTimeTogether(
   fits ?? (_) => true,
 );
 
+/// 行の頭に置かない字（長音・小書きの仮名）。前の字と同じ行に残す
+/// （日本語の行頭禁則）。
+const String _noLineStart = 'ーぁぃぅぇぉっゃゅょゎァィゥェォッャュョヮヵヶ';
+
+/// [char]が、行の頭に置かない字（長音・小書きの仮名）か。
+bool isNoLineStartCharacter(String char) =>
+    char.isNotEmpty && _noLineStart.contains(char);
+
+/// 文[text]の長音（ー）・小書きの仮名（ッ・ョ等）を、前の字と同じ行に残す
+/// （前に単語結合子を挟む）。Flutterの行分けはこれらの前でも行を変える
+/// ので、名前が「(コピ / ー 2)」「ファーストショ / ット」のように長音・
+/// 小書きの仮名から始まる行に折れた。表示する文にだけ入れ、読み上げ・
+/// 文での検索には元の文を渡す（[plainSemanticsLabel]）。
+String keepJapaneseLineStartsAttached(String text) {
+  if (!text.runes.any((rune) => _noLineStart.runes.contains(rune))) {
+    return text;
+  }
+  final out = StringBuffer();
+  String? previous;
+  for (final rune in text.runes) {
+    final char = String.fromCharCode(rune);
+    if (previous != null &&
+        _noLineStart.contains(char) &&
+        previous.trim().isNotEmpty &&
+        previous != _wordJoiner) {
+      out.write(_wordJoiner);
+    }
+    out.write(char);
+    previous = char;
+  }
+  return out.toString();
+}
+
 /// [text]にハングルが入っているか。
 bool containsHangul(String text) => _hangul.hasMatch(text);
 

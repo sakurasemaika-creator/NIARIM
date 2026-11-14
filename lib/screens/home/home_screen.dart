@@ -49,6 +49,7 @@ import '../../widgets/secondary_click_menu.dart';
 import '../../widgets/share_project_file_action.dart';
 import '../../widgets/mission_completion_dialog.dart';
 import '../../widgets/moved_to_trash_snack_bar.dart';
+import '../../widgets/copy_name_text.dart';
 import '../../widgets/keep_together_text.dart';
 import '../../widgets/project_duplicated_snack_bar.dart';
 import '../../widgets/typing_aware_shortcuts.dart';
@@ -2311,11 +2312,13 @@ class _HomeScreenState extends State<HomeScreen>
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(l10n.homePasteToTrashQuestion),
-                  for (final name in names) Text(l10n.commonBulletItem(name)),
+                  for (final name in names)
+                    copyNameText(l10n.commonBulletItem(name), name: name),
                   if (kept.isNotEmpty) ...[
                     const SizedBox(height: 12),
                     Text(l10n.homePasteToTrashKeepsFavorites),
-                    for (final name in kept) Text(l10n.commonBulletItem(name)),
+                    for (final name in kept)
+                      copyNameText(l10n.commonBulletItem(name), name: name),
                   ],
                   const SizedBox(height: 12),
                   countText(
@@ -2654,9 +2657,10 @@ class _HomeScreenState extends State<HomeScreen>
         builder: (ctx) => AlertDialog(
           key: const Key('homePasteRestoreDialog'),
           title: Text(l10n.homeRestoreFromTrashTitle),
-          content: Text(
+          content: copyNameText(
             '${l10n.homeRestoreFromTrashQuestion}\n'
             '${l10n.commonBulletItem(entry.name)}',
+            name: entry.name,
           ),
           actions: [
             TextButton(
@@ -3856,7 +3860,12 @@ Widget _receivedShareProjectTile(
       color: theme.colorScheme.surfaceContainerLow,
       child: ListTile(
         leading: SizedBox(width: 56, height: 56, child: cover()),
-        title: KoreanWordsText(project.name, style: captionStyle),
+        title: KoreanWordsText(
+          project.name,
+          copyMarks: copyMarkParts(project.name),
+          keepJapaneseLineStarts: true,
+          style: captionStyle,
+        ),
         subtitle: DateLineText(
           '${l10n.homeProjectMeta(project.fps, project.durationSeconds)}\n'
           '${l10n.projectListUpdatedOn(project.updatedAt)}',
@@ -4393,6 +4402,8 @@ class _OutgoingSharesList extends StatelessWidget {
             title: KoreanWordsText(
               entry.name,
               breakAtFileSeparators: true,
+              copyMarks: copyMarkParts(entry.name),
+              keepJapaneseLineStarts: true,
               style: const TextStyle(
                 fontFamily: 'Kuramubon',
                 fontFamilyFallback: kHeadingFontFallback,
@@ -4902,7 +4913,7 @@ class _FolderableList<T> extends StatelessWidget {
                     choices: _folderCoverChoices(folder.id),
                   ),
                 ),
-                title: Text(folder.name),
+                title: copyNameText(folder.name, name: folder.name),
                 // 作品のフォルダは書き出した作品の数、共有のフォルダは
                 // プロジェクトのフォルダと同じ書き方（中は1階層だけ）。
                 subtitle: Text(
@@ -5180,7 +5191,7 @@ class _TrashTabState extends State<_TrashTab> {
               children: [
                 Text(l10n.homeRestoreFromTrashQuestion),
                 const SizedBox(height: 8),
-                Text(l10n.commonBulletItem(name)),
+                copyNameText(l10n.commonBulletItem(name), name: name),
               ],
             ),
             actions: [
@@ -5346,6 +5357,11 @@ class _TrashTabState extends State<_TrashTab> {
     // （フォルダを1つの作品・ファイルと言ってしまう。種類は絞り込みの
     // チップで分ける）。
     final heading = _deletedLabel(record.deletedAt, l10n);
+    // 中の作品の名前が複製の名前なら、その印（「(コピー 12)」）も途中で
+    // 折り返さない。
+    final detailKeep = {
+      for (final name in projectNames) ...copyMarkParts(name),
+    }.toList();
     return _trashCard(
       selectionId: 'trash_folder:$id',
       detailsKey: ValueKey('trashedFolder_$id'),
@@ -5353,6 +5369,7 @@ class _TrashTabState extends State<_TrashTab> {
       title: record.folder.name,
       subtitle: heading,
       detail: subtitle,
+      detailKeep: detailKeep,
       subtitleDate: record.deletedAt,
       actions: [
         if (widget.onCopyEntry != null)
@@ -5591,6 +5608,7 @@ class _TrashTabState extends State<_TrashTab> {
     required String subtitle,
     required List<Widget> actions,
     String? detail,
+    List<String> detailKeep = const [],
     Key? detailsKey,
     DateTime? subtitleDate,
   }) {
@@ -5602,11 +5620,14 @@ class _TrashTabState extends State<_TrashTab> {
       // 韓国語の名前・2行目は語の途中で、日付は日付の途中で行を変えない
       // （「삭제 / 됨」「2026. 11. / 14.」と切れた）。日付の中に空白がある
       // （行を変えうる）のは韓国語の書き方だけなので、ほかの言語の2行目は
-      // 普通の文のまま。
+      // 普通の文のまま。複製の名前の印（「(コピー 2)」）は印の途中で
+      // 行を変えない。
       title: KoreanWordsText(
         title,
         // ファイル名は区切りの記号の前で折り返す（「.m / p4」と切らない）。
         breakAtFileSeparators: true,
+        copyMarks: copyMarkParts(title),
+        keepJapaneseLineStarts: true,
         style: const TextStyle(
           fontFamily: 'Kuramubon',
           fontFamilyFallback: kHeadingFontFallback,
@@ -5638,8 +5659,9 @@ class _TrashTabState extends State<_TrashTab> {
               when: subtitleDate,
               localeName: AppLocalizations.of(context)!.localeName,
             ),
-          // フォルダの中身（作品の名前・件数）は次の行に。
-          if (detail != null) KoreanWordsText(detail),
+          // フォルダの中身（作品の名前・件数）は次の行に。中の作品の複製の
+          // 名前の印（[detailKeep]）は途中で折り返さない。
+          if (detail != null) KoreanWordsText(detail, copyMarks: detailKeep),
         ],
       ),
     );

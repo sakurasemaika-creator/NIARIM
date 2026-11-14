@@ -3,6 +3,7 @@ import 'dart:ui' show Locale;
 import '../l10n/app_localizations.dart';
 import '../models/project.dart';
 import '../services/project_service.dart';
+import 'line_break.dart';
 
 /// 複製した作品の名前。複製先のフォルダに同じ名前の複製が既にあれば番号を
 /// 付ける（「作品1 (コピー)」「作品1 (コピー 2)」…）。番号が無いと、同じ
@@ -101,6 +102,47 @@ String? copySourceName(String candidate) =>
   final parts = copyNameParts(candidate);
   if (parts == null || !candidate.startsWith(parts.name)) return null;
   return (name: parts.name, mark: candidate.substring(parts.name.length));
+}
+
+/// [name]を、元の名前（[head]）と、後ろに付いた複製の印とその後ろの拡張子
+/// （[tail]。「 (コピー 2)」「（副本）.png」）に分ける。書き出したファイルの
+/// 複製は拡張子の前に印が付く。複製の名前でなければnull。
+({String head, String tail})? copyMarkSplit(String name) {
+  final whole = copyNameMark(name);
+  if (whole != null) return (head: whole.name, tail: whole.mark);
+  final dot = name.lastIndexOf('.');
+  if (dot <= 0 || name.length - dot > 6) return null;
+  final mark = copyNameMark(name.substring(0, dot));
+  if (mark == null) return null;
+  return (head: mark.name, tail: mark.mark + name.substring(dot));
+}
+
+/// 描く文[text]の中の、複製の名前[name]（省けば[text]そのもの）の印と拡張子
+/// （「(コピー 2)」「（副本）.png」）を、行の途中で切らないひとかたまりにする。
+/// 番号が印から離れて「(コピー」「2)」、「clip_4（副」「本）.png」と折れて
+/// いた。保存する名前は変えず、描く文だけを変える（読み上げ・検索には元の文を
+/// 使うこと。[plainSemanticsLabel]）。[fits]は[keepPartsTogether]と同じ
+/// （1行に入らないかたまりはそのまま）。
+String keepCopyMarkTogether(
+  String text, {
+  String? name,
+  bool Function(String part)? fits,
+}) {
+  final split = copyMarkSplit(name ?? text);
+  if (split == null) return text;
+  final mark = split.tail.trimLeft();
+  if (mark.isEmpty) return text;
+  final at = text.lastIndexOf(mark);
+  if (at < 0) return text;
+  final kept = keepPartsTogether(mark, [mark], fits: fits);
+  return text.replaceRange(at, at + mark.length, kept);
+}
+
+/// [name]の複製の印と拡張子（「(コピー 2)」「（副本）.png」）を、
+/// `KeepTogetherText`の`keep`に渡す形で（複製の名前でなければ空）。
+List<String> copyMarkParts(String name) {
+  final mark = copyMarkSplit(name)?.tail.trimLeft() ?? '';
+  return mark.isEmpty ? const [] : [mark];
 }
 
 /// [name]の[number]番目の複製の名前を、画面の言語（[l10n]）で（1番目は

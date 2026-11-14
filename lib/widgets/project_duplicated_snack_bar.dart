@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../l10n/app_localizations.dart';
 import '../services/project_service.dart';
 import 'app_toast_messenger.dart';
+import 'copy_name_text.dart';
 import 'project_trash_dialog.dart' show runProjectAction;
 
 /// 作品の複製の知らせの印（続けて複製したとき、前の知らせだけを取り下げる）。
@@ -24,7 +25,8 @@ void showProjectDuplicatedSnackBar(
   messenger.showSnackBar(
     SnackBar(
       key: _ProjectDuplicatedKey(),
-      content: Text(l10n.projectDuplicatedSnackbar(name)),
+      // 複製の印（「(コピー 2)」）は途中で折り返さない。
+      content: copyNameText(l10n.projectDuplicatedSnackbar(name), name: name),
     ),
   );
 }

@@ -196,9 +196,11 @@ class HomeClipboardHarness {
   /// いま出ている知らせ（SnackBar）の本文。無ければnull。韓国語の語の
   /// 途中で折り返さないために入れた語結合子（U+2060）は除く。
   String? snackText() {
+    // 行の途中で切らない部分を持つ文（KeepTogetherText、Textを継承）も、
+    // 元の文で読む。
     final texts = find.descendant(
       of: find.byType(SnackBar),
-      matching: find.byType(Text),
+      matching: find.byWidgetPredicate((widget) => widget is Text),
     );
     if (texts.evaluate().isEmpty) return null;
     return (texts.evaluate().first.widget as Text).data?.replaceAll(

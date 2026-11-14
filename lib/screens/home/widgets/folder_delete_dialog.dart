@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../../utils/app_error_reporter.dart';
+import '../../../widgets/copy_name_text.dart';
 import 'folder_save_feedback.dart';
 
 class FolderDeleteDialog extends StatefulWidget {
@@ -68,9 +69,10 @@ class _FolderDeleteDialogState extends State<FolderDeleteDialog> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
+            copyNameText(
               widget.body ??
                   l10n.homeDeleteFolderKeepContents(widget.folderName),
+              name: widget.folderName,
             ),
             if (_error != null) ...[
               const SizedBox(height: 12),

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 
 import '../config/font_fallback.dart';
+import '../utils/duplicate_name.dart';
 import '../utils/line_break.dart';
 import 'collection_action_controls.dart';
 
@@ -189,6 +190,7 @@ void _forgetMeasurementsWhenFontsChange() {
     _locationHeights.clear();
     _displayNames.clear();
     _koreanWords.clear();
+    _copyCaptions.clear();
   });
 }
 
@@ -282,19 +284,48 @@ String collectionTileDisplayName(BuildContext context, String name) {
     textDirection: key.$3,
     locale: key.$4,
   );
+  String korean(String text) => _keepKoreanWordsWithin(
+    text,
+    style: style,
+    textScaler: TextScaler.noScaling,
+    textDirection: key.$3,
+    locale: key.$4,
+    maxWidth: kCollectionTileNameReferenceWidth,
+  );
+  final copy = copyMarkSplit(name);
+  // 印と拡張子（「(コピー 12).mp4」）が上限の幅の1行に入らないときは、
+  // カード（[_captionText]）と同じく、入る最初の段階（拡張子の前→番号の前→
+  // 印の語の中）で折り返して測る。かたまりのまま測ると、頭をどれだけ
+  // 縮めても2行に入らず、後ろを切って番号と拡張子を落とした（384pxの
+  // カードでも「Hotel (コピー…」）。
+  final markLine = copy == null
+      ? null
+      : _markAtFirstFittingLevel(
+          copy.tail,
+          (part) => _fitsOneLine(
+            part,
+            style: style,
+            textScaler: TextScaler.noScaling,
+            textDirection: key.$3,
+            locale: key.$4,
+            maxWidth: kCollectionTileNameReferenceWidth,
+            wholeWidth: false,
+          ),
+        );
   bool fits(String text) {
     painter
       ..text = TextSpan(
-        // カードと同じく、ハングルの語は途中で折り返さず、ファイル名は
-        // 区切りの記号の前で折り返して測る。
-        text: _keepKoreanWordsWithin(
-          breakableAtFileSeparators(text),
-          style: style,
-          textScaler: TextScaler.noScaling,
-          textDirection: key.$3,
-          locale: key.$4,
-          maxWidth: kCollectionTileNameReferenceWidth,
-        ),
+        // カードと同じく、ハングルの語・複製の印は途中で折り返さず、ファイル
+        // 名は区切りの記号の前で折り返して測る（印と拡張子のかたまりの中は
+        // 除く）。
+        text: copy != null && text.endsWith(copy.tail)
+            ? korean(
+                    _nameHead(
+                      text.substring(0, text.length - copy.tail.length),
+                    ),
+                  ) +
+                  markLine!
+            : korean(_nameHead(text)),
         style: style,
       )
       ..layout(maxWidth: kCollectionTileNameReferenceWidth);
@@ -302,7 +333,17 @@ String collectionTileDisplayName(BuildContext context, String name) {
   }
 
   var shown = name;
-  if (!fits(name)) {
+  // 複製の名前は、印（「(コピー 2)」）を残したまま元の名前の頭を縮める
+  // （後ろを切ると、どの複製か分からなくなる）。
+  final keepingMark = fits(name) ? null : _shortenKeepingCopyMark(name, fits);
+  if (keepingMark != null) {
+    shown = keepingMark;
+  } else if (copy != null && !fits(name)) {
+    // 頭の1字と印でも上限に入らない複製の名前も、印・番号・拡張子は残し、
+    // 頭だけを1字と「…」にする（実際の幅での折り返しは[_captionText]）。
+    final head = copy.head.characters;
+    shown = head.length < 2 ? name : '${head.first}…${copy.tail}';
+  } else if (!fits(name)) {
     final characters = name.characters.toList();
     // 「…」を付けて入る、一番長い名前の頭（字の数で二分探索）。
     var low = 0;
@@ -333,6 +374,367 @@ String collectionTileDisplayName(BuildContext context, String name) {
 }
 
 final _displayNames = <(String, TextStyle, TextDirection, Locale?), String>{};
+
+/// [text]を1行に並べたときの幅が[maxWidth]以下か。
+///
+/// [wholeWidth]が偽なら、途中で切れない部分がどれも1行に入るか（行を変えて
+/// よい所で折り返した最も広い部分の幅）。
+bool _fitsOneLine(
+  String text, {
+  required TextStyle style,
+  required TextScaler textScaler,
+  required TextDirection textDirection,
+  required Locale? locale,
+  required double maxWidth,
+  bool wholeWidth = true,
+}) {
+  final painter = TextPainter(
+    text: TextSpan(text: text, style: style),
+    textScaler: textScaler,
+    textDirection: textDirection,
+    locale: locale,
+  )..layout();
+  final fits =
+      (wholeWidth ? painter.width : painter.minIntrinsicWidth) <= maxWidth;
+  painter.dispose();
+  return fits;
+}
+
+/// 複製の名前の後ろの印と拡張子[tail]（「 (copy 12).mp4」）を、名前の
+/// 欄に描く文にする。[fits]は、渡した文の途中で切れない部分（かたまり）が
+/// どれも欄の1行に入るか。印・番号・拡張子が1行に入るなら1つのかたまり、
+/// 入らなければ[_MarkBreaks]の順（閉じ括弧と拡張子の間→印の語と番号の間→
+/// 印の語の中で両側に2字以上）に、入る最初の段階まで折り返せる所を足す。
+/// かたまりのままだと、欄より広いかたまりは途中のどこかで切れた
+/// （「(コピー 12).gi / f」「(copy / 12).mp4」）。印の語の中を先に折り返すと、
+/// 文字2倍の360pxで「Hotel (c / op / y).mp4」と1字ずつに切れた。
+String copyMarkLineText(String tail, bool Function(String text) fits) =>
+    _markAtFirstFittingLevel(tail, fits);
+
+/// 複製の印の中で行を変えてよい所の段階（少ない順）。印・番号・拡張子が
+/// 1行に入らないときだけ、入る最初の段階まで進める。
+enum _MarkBreaks {
+  /// 印・番号・拡張子を1つのかたまりにする（名前と印の間では行を変えて
+  /// よい）。
+  none,
+
+  /// 閉じ括弧と拡張子の間（「(copy 2) / .mp4」。拡張子の中では折り返さない）。
+  beforeExtension,
+
+  /// それと、印の語と番号の間（「(copy / 2).mp4」）。
+  beforeNumber,
+
+  /// それと、印の語の中。両側に2字以上残し（「(co / py 2)」。「(c / opy」
+  /// 「(cop / y」にしない）、長音・小書きの仮名の前では行を変えない。
+  insideWord,
+
+  /// 語の中で両側に2字以上残して折っても、印の部分が1行に入らないほど狭い
+  /// ときの最後の手段：印の語の字の間ならどこでも（長音・小書きの仮名の前を
+  /// 除く。「(コ / ピー)」）。これが無いと、行に入らない部分を段落が字の途中で
+  /// 切り、閉じ括弧だけが次の行へ落ちる（文字2倍・320pxの作品一覧の行で
+  /// 「(コピー / )」「（副本 / ）」）。
+  anywhereInWord,
+}
+
+/// 印と拡張子[tail]を、段階[level]まで折り返せるようにした描く文。
+/// 折り返さない字の間には単語結合子、印の中の空白は改行しない空白、
+/// 折り返してよい所は幅の無い空白（番号の前の空白はそのまま）にする。
+/// 前の空白（名前と印の間）はそのまま残す。
+String _markWithBreaks(String tail, _MarkBreaks level) {
+  final lead = tail.length - tail.trimLeft().length;
+  final chars = tail.substring(lead).characters.toList();
+  final close = chars.lastIndexWhere((char) => char == ')' || char == '）');
+  bool allows(_MarkBreaks needed) => level.index >= needed.index;
+  final out = StringBuffer(tail.substring(0, lead));
+  for (var i = 0; i < chars.length; i++) {
+    final char = chars[i];
+    if (char == ' ') {
+      // 番号の前の空白でだけ行を変えてよい。
+      final beforeNumber =
+          i + 1 < chars.length && _digit.hasMatch(chars[i + 1]);
+      out.write(
+        beforeNumber && allows(_MarkBreaks.beforeNumber) ? ' ' : '\u00a0',
+      );
+      continue;
+    }
+    if (i > 0 && chars[i - 1] != ' ') {
+      final previous = chars[i - 1];
+      final bool breaks;
+      if (close >= 0 && i == close + 1) {
+        breaks = allows(_MarkBreaks.beforeExtension);
+      } else if (close >= 0 && i > close) {
+        breaks = false;
+      } else if (_letter.hasMatch(previous) && _digit.hasMatch(char)) {
+        breaks = allows(_MarkBreaks.beforeNumber);
+      } else if (allows(_MarkBreaks.insideWord) &&
+          _letter.hasMatch(previous) &&
+          _letter.hasMatch(char) &&
+          !isNoLineStartCharacter(char)) {
+        var start = i - 1;
+        while (start > 0 && _letter.hasMatch(chars[start - 1])) {
+          start--;
+        }
+        var end = i + 1;
+        while (end < chars.length && _letter.hasMatch(chars[end])) {
+          end++;
+        }
+        breaks =
+            level == _MarkBreaks.anywhereInWord ||
+            (i - start >= 2 && end - i >= 2);
+      } else {
+        breaks = false;
+      }
+      // 幅の無い空白（ZERO WIDTH SPACE）：ここで行を変えてよい。
+      out.write(breaks ? '\u200b' : '\u2060');
+    }
+    out.write(char);
+  }
+  return out.toString();
+}
+
+final _letter = RegExp(r'^\p{L}$', unicode: true);
+final _digit = RegExp(r'^\d$');
+
+/// [_MarkBreaks]の段階（[from]から）ごとの、印と拡張子[tail]の描く文
+/// （前の段階と同じになる段階は除く。拡張子・番号の無い印、短い語の印）。
+List<(_MarkBreaks, String)> _markLevels(
+  String tail, {
+  _MarkBreaks from = _MarkBreaks.none,
+}) {
+  final levels = <(_MarkBreaks, String)>[];
+  for (final level in _MarkBreaks.values.skip(from.index)) {
+    final text = _markWithBreaks(tail, level);
+    if (levels.isEmpty || levels.last.$2 != text) levels.add((level, text));
+  }
+  return levels;
+}
+
+/// 印と拡張子[tail]を、[fits]（途中で切れない部分がどれも1行に入るか）が
+/// 真になる最初の段階で折り返せるようにした描く文と、その段階。どの段階
+/// でも入らないときは、いちばん折り返せる形。
+(_MarkBreaks, String) _firstFittingMarkLevel(
+  String tail,
+  bool Function(String) fits,
+) {
+  final levels = _markLevels(tail);
+  return levels.firstWhere(
+    (level) => fits(level.$2),
+    orElse: () => levels.last,
+  );
+}
+
+/// [_firstFittingMarkLevel]の描く文。
+String _markAtFirstFittingLevel(String tail, bool Function(String) fits) =>
+    tail.trim().isEmpty ? tail : _firstFittingMarkLevel(tail, fits).$2;
+
+/// 複製の名前[name]を、後ろの印と拡張子（「 (copy 2)」「（副本）.png」）を
+/// 残したまま、元の名前の頭を「…」で縮めて[fits]に入るようにする
+/// （「Bravo Char… (copy 2)」）。頭は少なくとも1字残す（「… (copy 2)」だけ
+/// では、どの名前の複製か分からない）。語を空白で区切る字の語の途中で切れる
+/// ときは、[collectionTileDisplayName]と同じくその語を出さない。複製の名前
+/// でない・頭の1字と印でも入らないときはnull。
+String? _shortenKeepingCopyMark(String name, bool Function(String) fits) {
+  final split = copyMarkSplit(name);
+  if (split == null) return null;
+  var head = split.head;
+  // 一度縮めた名前（「Bravo…」）をさらに縮めるときは、前の「…」を外す。
+  if (head.endsWith('…')) head = head.substring(0, head.length - 1);
+  final characters = head.characters.toList();
+  String candidate(String start) => '${start.trimRight()}…${split.tail}';
+  // 頭が1字なら縮められない（「H… (copy 2)」は何も省いていない）。
+  if (characters.length < 2 || !fits(candidate(characters.first))) {
+    return null;
+  }
+  var low = 1;
+  var high = characters.length - 1;
+  while (low < high) {
+    final middle = (low + high + 1) ~/ 2;
+    if (fits(candidate(characters.take(middle).join()))) {
+      low = middle;
+    } else {
+      high = middle - 1;
+    }
+  }
+  var text = characters.take(low).join();
+  if (low > 0 &&
+      low < characters.length &&
+      _inSpacedWord(characters[low - 1]) &&
+      _inSpacedWord(characters[low])) {
+    final space = text.lastIndexOf(RegExp(r'\s'));
+    if (space >= text.length ~/ 2) text = text.substring(0, space);
+  }
+  return candidate(text);
+}
+
+/// カードの名前の帯に描く文。複製の名前は印を1つのかたまりにし、帯の幅
+/// （[maxWidth]）の2行に入らなければ、印を残したまま頭を縮める（文の
+/// 終わりで切ると、印が「(co…」と切れた）。ハングルの語は途中で折り返さない。
+/// 長音・小書きの仮名は行の頭に来ない。
+///
+/// 印・番号・拡張子が帯の1行に入らない（狭いカード・大きな文字）ときは、
+/// [_MarkBreaks]の順（閉じ括弧と拡張子の間→印の語と番号の間→印の語の中で
+/// 両側に2字以上）に、印の部分がどれも1行に入る最初の段階で折り返し、
+/// 頭を1字と「…」まで縮める（「H… (copy 2) / .mp4」）。その段階では頭を
+/// 1字も残せないときだけ、次の段階へ進めて頭を残す（「Hotel (copy / 2).mp4」）。
+/// 以前は先に印の語の中で折り返し、「Hotel (copi / e).mp4」「Hotel (cop /
+/// y 2).mp4」と1字だけを残し、日本語は「(コピ / ー 2)」と長音が行の頭に
+/// 来た。その前は頭を縮めるのを諦めて元の名前に戻り、行の数の上限で
+/// 「Hotel / (cop…」と番号ごと切れた。
+String _captionText(
+  BuildContext context,
+  String name,
+  String shown,
+  double maxWidth,
+) {
+  final style = _nameTextStyle(context);
+  final textScaler = MediaQuery.textScalerOf(context);
+  final textDirection = Directionality.of(context);
+  final locale = Localizations.maybeLocaleOf(context);
+  // 印が帯の1行に入るか（[whole]が偽なら、途中で切れない部分がどれも入るか）。
+  bool markFits(String part, {bool whole = true}) => _fitsOneLine(
+    part,
+    style: style,
+    textScaler: textScaler,
+    textDirection: textDirection,
+    locale: locale,
+    maxWidth: maxWidth,
+    wholeWidth: whole,
+  );
+
+  String korean(String text) => _keepKoreanWordsWithin(
+    text,
+    style: style,
+    textScaler: textScaler,
+    textDirection: textDirection,
+    locale: locale,
+    maxWidth: maxWidth,
+  );
+  final split = copyMarkSplit(shown);
+  // ファイル名は区切りの記号の前で折り返す（印と拡張子のかたまりの中は
+  // 除く。かたまりの中で折り返せると「(コピー 12) / .mp4」と切れる）。
+  String separated(String text) => split != null && text.endsWith(split.tail)
+      ? _nameHead(text.substring(0, text.length - split.tail.length)) +
+            split.tail
+      : _nameHead(text);
+  String prepared(String text) =>
+      korean(keepCopyMarkTogether(separated(text), name: text, fits: markFits));
+  if (split == null) return prepared(shown);
+  final key = (name, shown, style, textScaler, textDirection, locale, maxWidth);
+  final cached = _copyCaptions[key];
+  if (cached != null) return cached;
+  final painter = TextPainter(
+    maxLines: kCollectionTileNameLines,
+    textScaler: textScaler,
+    textDirection: textDirection,
+    locale: locale,
+  );
+  bool fitsAs(String Function(String) prepare, String text) {
+    painter
+      ..text = TextSpan(text: prepare(text), style: style)
+      ..layout(maxWidth: maxWidth);
+    return !painter.didExceedMaxLines;
+  }
+
+  String result;
+  final mark = split.tail.trimLeft();
+  if (markFits(keepPartsTogether(mark, [mark]))) {
+    bool fits(String text) => fitsAs(prepared, text);
+    result = prepared(
+      fits(shown) ? shown : _shortenKeepingCopyMark(name, fits) ?? shown,
+    );
+  } else {
+    // 印の中で折り返す：頭は語のまま（ハングルの語は途中で折り返さない）、
+    // 印は、印の部分がどれも帯の1行に入る最初の段階から折り返せるように
+    // する。その段階で名前の頭を1字も残せない（「… (copy 2) / .mp4」）とき
+    // だけ、次の段階へ進めて頭を残す（「Hotel (copy / 2).mp4」。「…」だけ
+    // では、どの名前の複製か分からない）。
+    final tail = split.tail;
+    final (first, _) = _firstFittingMarkLevel(
+      tail,
+      (text) => markFits(text, whole: false),
+    );
+    // 語の中のどこでも折る段階は、印の部分が1行に入らないときだけ（頭を
+    // 残すために1字だけを行に残さない）。
+    List<(_MarkBreaks, String)> levelsOf(String text) => [
+      for (final level in _markLevels(text, from: first))
+        if (level.$1 != _MarkBreaks.anywhereInWord ||
+            first == _MarkBreaks.anywhereInWord)
+          level,
+    ];
+    final levels = levelsOf(tail);
+    String? withHead;
+    for (final (_, marked) in levels) {
+      String breakable(String text) =>
+          korean(_nameHead(text.substring(0, text.length - tail.length))) +
+          marked;
+      bool fits(String text) => fitsAs(breakable, text);
+      if (fits(shown)) {
+        withHead = breakable(shown);
+      } else if (_shortenKeepingCopyMark(name, fits) case final shorter?) {
+        withHead = breakable(shorter);
+      } else if (_squeezedHead(name, marked) case final squeezed?
+          when fitsAs((_) => squeezed, squeezed)) {
+        // 印の前の空白を詰めれば頭の1字が入る（「H…(copy 2) / .mp4」）。
+        withHead = squeezed;
+      }
+      if (withHead != null) break;
+    }
+    // 頭の1字も入らないほど狭いときは、頭を「…」にする。
+    final ellipsis = [
+      for (final (_, marked) in levels)
+        if (fitsAs((_) => '…$marked', '…$marked')) '…$marked',
+    ].firstOrNull;
+    if (withHead ?? ellipsis case final fitting?) {
+      result = fitting;
+    } else {
+      // それでも2行に入らないときは、印だけを出す（名前は読み上げと
+      // 長押し・ホバーの吹き出しで分かる）。2行に入らなければ次の段階でも
+      // 折り返すが、番号は失わない。
+      final markOnly = tail.trimLeft();
+      String? fitting(String text) {
+        for (final (_, candidate) in levelsOf(text)) {
+          if (fitsAs((_) => candidate, text)) return candidate;
+        }
+        return null;
+      }
+
+      // 拡張子まで2行に入らない（文字2倍の小さいカード）ときは、番号
+      // （閉じ括弧）までを出して拡張子を「…」にする（行の数の上限で
+      // 切ると「(コピ / ー 1」と番号の途中で切れた）。
+      final close = markOnly.lastIndexOf(RegExp('[)）]')) + 1;
+      result =
+          fitting(markOnly) ??
+          (close > 0 && close < markOnly.length
+              ? fitting('${markOnly.substring(0, close)}…')
+              : null) ??
+          levelsOf(markOnly).last.$2;
+    }
+  }
+  painter.dispose();
+  if (_copyCaptions.length > 512) _copyCaptions.clear();
+  return _copyCaptions[key] = result;
+}
+
+/// 複製の名前[name]の頭の1字と「…」に、前の空白を詰めた印（描く文
+/// [marked]。[_markWithBreaks]の形）を続けた描く文。頭が1字だけの名前は
+/// その字のまま。
+String? _squeezedHead(String name, String marked) {
+  final head = copyMarkSplit(name)?.head.characters;
+  if (head == null || head.isEmpty) return null;
+  return '${head.first}${head.length > 1 ? '…' : ''}${marked.trimLeft()}';
+}
+
+/// 名前の頭（複製の印の前）を描く文にする：ファイル名は区切りの記号
+/// （「_」「.」「-」）の前で折り返し、長音・小書きの仮名は行の頭に来ない
+/// ようにする。
+String _nameHead(String text) =>
+    keepJapaneseLineStartsAttached(breakableAtFileSeparators(text));
+
+final _copyCaptions =
+    <
+      (String, String, TextStyle, TextScaler, TextDirection, Locale?, double),
+      String
+    >{};
 
 /// [text]のハングルの語のうち、幅[maxWidth]の1行に入る語を途中で折り返さない
 /// ようにする（[keepKoreanWordsTogetherWhere]。Flutterはハングルのどの字の
@@ -401,8 +803,7 @@ Widget collectionTileCaption(
   // 上限で切った字・語結合子を入れた字を描き、読み上げと文での検索
   // （find.text 等）には名前の全部を渡す。
   Widget nameText(String text) => Text.rich(
-    // ファイル名は区切りの記号の前で折り返す（字の途中で切らない）。
-    TextSpan(text: breakableAtFileSeparators(text), semanticsLabel: name),
+    TextSpan(text: text, semanticsLabel: name),
     semanticsLabel: name,
     maxLines: kCollectionTileNameLines,
     overflow: TextOverflow.ellipsis,
@@ -417,20 +818,17 @@ Widget collectionTileCaption(
         triggerMode: TooltipTriggerMode.manual,
         excludeFromSemantics: true,
         // ハングルの語は、カードの幅の1行に入る語なら途中で折り返さない。
-        child: containsHangul(shown)
+        // 複製の名前は、印（「(コピー 2)」）を途中で折り返さず、入らなければ
+        // 印を残して頭を縮める。
+        child: containsHangul(shown) || copyMarkSplit(shown) != null
             ? LayoutBuilder(
                 builder: (context, constraints) => nameText(
-                  _keepKoreanWordsWithin(
-                    shown,
-                    style: _nameTextStyle(context),
-                    textScaler: MediaQuery.textScalerOf(context),
-                    textDirection: Directionality.of(context),
-                    locale: Localizations.maybeLocaleOf(context),
-                    maxWidth: constraints.maxWidth,
-                  ),
+                  _captionText(context, name, shown, constraints.maxWidth),
                 ),
               )
-            : nameText(shown),
+            // ファイル名は区切りの記号の前で折り返す（字の途中で切らない）。
+            // 長音・小書きの仮名は行の頭に来ない。
+            : nameText(_nameHead(shown)),
       ),
     ),
   );

@@ -690,10 +690,12 @@ class ProjectListWidget extends StatelessWidget {
                 child: _thumbnail(context, project, displayWidth: 48),
               ),
             ),
-      // 韓国語の名前は語の途中で行を変えない。折り返した行どうしが重ならない
-      // 行の高さ。
+      // 韓国語の名前は語の途中で、複製の名前の印（「(コピー 2)」）は印の
+      // 途中で行を変えない。折り返した行どうしが重ならない行の高さ。
       title: KoreanWordsText(
         project.name,
+        copyMarks: copyMarkParts(project.name),
+        keepJapaneseLineStarts: true,
         style: const TextStyle(height: kWrappedNameLineHeight),
       ),
       // 2行目は最後に保存した日時（その言語の日付と時刻の書き方）。検索の
@@ -762,6 +764,8 @@ class ProjectListWidget extends StatelessWidget {
             ),
       title: KoreanWordsText(
         folder.name,
+        copyMarks: copyMarkParts(folder.name),
+        keepJapaneseLineStarts: true,
         style: const TextStyle(
           fontWeight: FontWeight.w600,
           fontFamily: 'Kuramubon',
