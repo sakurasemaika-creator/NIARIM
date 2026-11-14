@@ -880,7 +880,7 @@ class _HomeScreenState extends State<HomeScreen>
                         ),
                       Expanded(
                         child: CallbackShortcuts(
-                          bindings: {_escapeOnce: _closeProjectSearch},
+                          bindings: {_escapeOnce: _escapeInSearch},
                           child: TextField(
                             key: const Key('homeSearchInput'),
                             controller: _searchController,
@@ -1872,6 +1872,11 @@ class _HomeScreenState extends State<HomeScreen>
     _changeProjectScope(_resetProjectSearch);
   }
 
+  // 検索中のEsc。検索の結果を選んでいる間は、まず選ぶのを終える（「戻る」と
+  // 同じ順。以前は1回のEscで検索語・結果・選んだものがまとめて消えた）。
+  void _escapeInSearch() =>
+      _isSelectionMode ? _endProjectSelection() : _closeProjectSearch();
+
   void _openProjectFolder(String id) {
     if (_isSearching) _homeFocus.requestFocus();
     _changeProjectScope(() {
@@ -1924,7 +1929,7 @@ class _HomeScreenState extends State<HomeScreen>
     }
     // 検索中は全選択・コピー等を効かせない（検索で隠れた作品を操作しない）。
     // Escは検索を閉じる（Enterで入力を終えた後も）。
-    if (_isSearching) return {_escapeOnce: _closeProjectSearch};
+    if (_isSearching) return {_escapeOnce: _escapeInSearch};
     // 作品一覧・共有・ゴミ箱のタブでは全選択・コピー等を効かせない。Escは
     // どのタブでも選ぶのを終える（以前はこれらのタブでEscが何もしなかった）。
     if (_currentTabIndex != 0) {

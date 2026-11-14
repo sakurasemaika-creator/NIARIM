@@ -14,6 +14,7 @@ import 'package:niarim/models/project.dart';
 import 'package:niarim/router.dart';
 import 'package:niarim/screens/home/home_screen.dart';
 import 'package:niarim/screens/home/widgets/home_selection_toolbar.dart';
+import 'package:niarim/screens/home/widgets/project_list_widget.dart';
 import 'package:niarim/screens/splash/splash_screen.dart';
 import 'package:niarim/services/export_storage.dart';
 import 'package:niarim/services/local_file_trash_service.dart';
@@ -841,6 +842,47 @@ void main() {
       findsNothing,
       reason: 'Esc after Enter did not close the search on the Trash tab',
     );
+    await home.close();
+  });
+
+  testWidgets('検索の結果を選んでいる間のEscは、まず選ぶのを終える（「戻る」と同じ順）', (tester) async {
+    final home = _Home(tester);
+    await home.open();
+    await home.addProject('検索の作品A');
+    await home.addProject('検索の作品B');
+    await tester.tap(find.byKey(const Key('homeSearchButton')));
+    await home.frames(6);
+    await tester.enterText(find.byKey(const Key('homeSearchInput')), '検索');
+    await tester.testTextInput.receiveAction(TextInputAction.done);
+    await home.frames(6);
+    await tester.longPress(
+      find
+          .descendant(
+            of: find.byType(ProjectListWidget),
+            matching: find.text('検索の作品A'),
+          )
+          .first,
+    );
+    await home.frames(6);
+    expect(find.byType(HomeSelectionToolbar), findsOneWidget);
+    await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+    await home.frames(6);
+    expect(find.byType(HomeSelectionToolbar), findsNothing);
+    expect(
+      find.byKey(const Key('homeSearchInput')),
+      findsOneWidget,
+      reason: 'one Esc closed the search together with the selection',
+    );
+    expect(
+      tester
+          .widget<TextField>(find.byKey(const Key('homeSearchInput')))
+          .controller!
+          .text,
+      '検索',
+    );
+    await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+    await home.frames(6);
+    expect(find.byKey(const Key('homeSearchInput')), findsNothing);
     await home.close();
   });
 }
