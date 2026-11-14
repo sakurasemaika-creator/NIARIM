@@ -26,6 +26,7 @@ import 'package:niarim/services/project_service.dart';
 import 'package:niarim/services/settings_service.dart';
 import 'package:niarim/services/theme_service.dart';
 import 'package:niarim/services/work_folder_service.dart';
+import 'package:niarim/widgets/collection_action_controls.dart';
 import 'package:niarim/widgets/collection_tile_layout.dart';
 import 'package:niarim/widgets/empty_state_placeholder.dart';
 import 'package:niarim/widgets/sort_mode_control.dart';
@@ -57,7 +58,8 @@ import 'helpers/load_app_fonts.dart';
 /// 4. 読み込み中（作品一覧・ゴミ箱）。
 /// 5. 文字の大きさ1.3・2.0倍（320/360/390/760）の全タブと、320の引き出し。
 /// 6. 低い画面（320x568・640x360・1280x600）の全タブと引き出し。
-/// 7. ダークの組み込みテーマ・メニューが暗い自作テーマ（390・1280）。
+/// 7. ダークの組み込みテーマ・メニューが暗い自作テーマ（390・1280）の
+///    全タブと引き出し。
 /// 8. 検索で見つからない・お気に入りだけで空・選択中の操作バー・引き出し
 ///    （320/559/560/760/1280）。
 /// 9. 表示サイズ（大・中・小・詳細）を選んだとき（360/390/430/1280）。
@@ -71,7 +73,8 @@ import 'helpers/load_app_fonts.dart';
 /// 各セルで必ずある操作（上部バー・浮かぶボタン・絞り込み・並び替え・共有の
 /// 切り替え・ゴミ箱の種類）がちょうど1つずつあって押せること、プロジェクトの
 /// 列数が表示サイズ（選んでいなければ幅で決まる大きさ）どおりであることも
-/// 確かめる。
+/// 確かめる。カードの丸い「⋮」（メニュー）がどのカードでもメニューの
+/// 文字色で描かれていることも、全セルで確かめる。
 ///
 /// 以前の既知の不具合（ゴミ箱へ移したフォルダ、保存先を読めないときに
 /// 「空です」と出るだけの共有・ゴミ箱、その言語でないラベル、選んでいない
@@ -182,7 +185,10 @@ void main() {
             for (final (w, pc) in const [(390, false), (1280, true)]) {
               await m.setPc(pc);
               await m.resize(Size(w.toDouble(), pc ? _pcHeight : _phoneHeight));
-              await m.cell('theme', _View.projects);
+              for (final view in _View.values) {
+                await m.cell('theme', view);
+              }
+              await m.show(_View.projects);
               await m.drawerCell('theme');
             }
           }
@@ -424,6 +430,8 @@ const _obsTrashedFolderLoose =
     'with restore/delete';
 const _obsForeignLabels = 'labels not in this language: ';
 const _obsTabContrast = 'unselected tab icons have ';
+const _obsMenuGlyphRole =
+    'a card\'s round menu button is not in the menu text colour: ';
 const _obsShrunkSwitch = 'shared received/created switch drawn at ';
 const _obsTitleCut = 'app bar title cut ';
 
@@ -1675,6 +1683,7 @@ class _HomeMatrix {
       ],
       ..._foreignLabels(),
       ..._tabContrast(),
+      ..._menuGlyphRoles(),
       ..._shrunkSharedSwitch(),
     ];
   }
@@ -1781,6 +1790,31 @@ class _HomeMatrix {
         '$_obsTabContrast${worst.toStringAsFixed(2)}:1 contrast '
             'on the app bar',
     ];
+  }
+
+  /// カードの丸い操作のうち「⋮」（メニュー）は、どのカードでもメニューの
+  /// 文字色（上部バー・メニューの項目と同じ役目）で描く。1か所だけ本文の
+  /// 文字色で描くと、本文とメニューで色を分けたテーマでそのカードの「⋮」
+  /// だけ色が違い、メニューが暗い自作テーマでは見えなくなった。
+  List<String> _menuGlyphRoles() {
+    final wrong = <String>{};
+    for (final e in find.byIcon(Icons.more_vert).evaluate()) {
+      var inFrame = false;
+      e.visitAncestorElements((a) {
+        inFrame = a.widget is CollectionActionFrame;
+        return !inFrame;
+      });
+      if (!inFrame) continue;
+      final drawn = (e.widget as Icon).color ?? IconTheme.of(e).color;
+      final menu = Theme.of(e).popupMenuTheme.iconColor;
+      if (drawn != menu) {
+        wrong.add(
+          '0x${drawn?.toARGB32().toRadixString(16)} instead of '
+          '0x${menu?.toARGB32().toRadixString(16)}',
+        );
+      }
+    }
+    return [if (wrong.isNotEmpty) '$_obsMenuGlyphRole${wrong.join(', ')}'];
   }
 
   static double _contrast(Color a, Color b) {

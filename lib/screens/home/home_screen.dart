@@ -4448,9 +4448,11 @@ class _FolderableList<T> extends StatelessWidget {
           CollectionActionFrame(
             child: IconButton(
               key: ValueKey('collectionFolderMenu_${folder.id}'),
-              icon: const Icon(
+              // ほかのカードの「⋮」（PopupMenuButton）と同じメニューの文字色。
+              icon: Icon(
                 Icons.more_vert,
                 size: CollectionActionFrame.glyphSize,
+                color: Theme.of(context).popupMenuTheme.iconColor,
               ),
               tooltip: AppLocalizations.of(context)!.homeFolderMenuTooltip,
               padding: EdgeInsets.zero,
