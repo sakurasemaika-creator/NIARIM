@@ -12,6 +12,7 @@ import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/models/app_theme_preset.dart';
 import 'package:niarim/router.dart';
 import 'package:niarim/screens/home/home_screen.dart';
+import 'package:niarim/services/project_service.dart';
 import 'package:niarim/services/theme_service.dart';
 import 'package:niarim/screens/community/community_screen.dart';
 import 'package:niarim/widgets/app_tutorial.dart';
@@ -387,6 +388,21 @@ void main() {
     final backFinder = find.byKey(const Key('homeBackToSplashButton'));
     final scrollFinder = find.byKey(const Key('homeScrollToTopFab'));
     expect(backFinder, findsOneWidget);
+    // 空の一覧では「一番上へ」を出さない（送る先が無い）。作品を1つ作って
+    // から、左下の「一番上へ」と右下の＋の並びを確かめる。
+    expect(scrollFinder, findsNothing);
+    final projects = tester
+        .element(find.byType(HomeScreen))
+        .read<ProjectService>();
+    await tester.runAsync(
+      () => projects.createProject(
+        name: 'Layout',
+        fps: 12,
+        durationSeconds: 1,
+        backgroundColor: 0xFFFFFFFF,
+      ),
+    );
+    await tester.pumpAndSettle();
     expect(scrollFinder, findsOneWidget);
     expect(find.text(l10n.homeFavoritesOnly), findsOneWidget);
     final fabs = find.byType(FloatingActionButton);

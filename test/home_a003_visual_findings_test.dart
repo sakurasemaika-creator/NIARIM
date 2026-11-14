@@ -465,4 +465,15 @@ void main() {
     );
     await home.close();
   });
+
+  testWidgets('一覧が空なら「一番上へ」は出さない（送る先が無い）', (tester) async {
+    final home = _Home(tester);
+    await home.open(size: const Size(390, 844));
+    expect(find.byKey(const Key('homeScrollToTopFab')), findsNothing);
+    for (var i = 1; i <= 12; i++) {
+      await home.addProject('カット$i');
+    }
+    expect(find.byKey(const Key('homeScrollToTopFab')), findsOneWidget);
+    await home.close();
+  });
 }

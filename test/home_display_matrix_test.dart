@@ -1929,6 +1929,19 @@ class _HomeMatrix {
     final list = find.byType(ProjectListWidget);
     final shared = find.byType(SharedScreen);
     final trash = find.byType(TrashScreen);
+    // プロジェクトの一覧が空（空の表示・読めなかった知らせだけ）のときは、
+    // 送る先が無いので「一番上へ」を出さない。
+    final projectsEmpty =
+        currentView == _View.projects &&
+        (projects.projectsLoadFailed ||
+            find
+                .descendant(
+                  of: list,
+                  matching: find.byType(EmptyStatePlaceholder),
+                )
+                .evaluate()
+                .isNotEmpty);
+    final scrollToTop = fab('home-scroll-to-top', l10n.communityScrollToTop);
     final controls = <String, Finder>{
       'back': find.byKey(const Key('homeBackToSplashButton')),
       'drawer': find.byKey(const Key('homeMenuButton')),
@@ -1955,10 +1968,7 @@ class _HomeMatrix {
           ),
           if (!selecting) ...{
             'add': fab('home-add-project', l10n.commonAdd),
-            'scroll to top': fab(
-              'home-scroll-to-top',
-              l10n.communityScrollToTop,
-            ),
+            if (!projectsEmpty) 'scroll to top': scrollToTop,
           },
         },
         _View.works => {
@@ -2004,6 +2014,8 @@ class _HomeMatrix {
     return [
       for (final MapEntry(key: name, value: finder) in controls.entries)
         ?_operableProblem('required control "$name"', finder),
+      if (projectsEmpty && scrollToTop.evaluate().isNotEmpty)
+        'scroll-to-top button shown on an empty project list',
     ];
   }
 

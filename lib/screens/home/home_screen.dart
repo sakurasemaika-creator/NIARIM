@@ -1612,30 +1612,37 @@ class _HomeScreenState extends State<HomeScreen>
     // The footer and the scrollable tab body have separate hit regions.
     final projects = _currentTabIndex == 0;
     final shared = _currentTabIndex == 2;
+    // 一覧が空（空の表示・読み込めなかった知らせだけ）のときは、送る先が
+    // 無いので「一番上へ」を出さない（押しても何も起きず、空の表示の案内に
+    // 重なった）。作成の＋は右下に残す。
+    final scrollToTop =
+        projects &&
+        _visibleProjectIds(context.watch<ProjectService>()).isNotEmpty;
     return SafeArea(
       top: false,
       minimum: EdgeInsets.fromLTRB(16, 0, 16, compact ? 8 : 16),
       child: Row(
-        mainAxisAlignment: projects
+        mainAxisAlignment: scrollToTop
             ? MainAxisAlignment.spaceBetween
             : MainAxisAlignment.end,
         children: [
           if (projects) ...[
-            _buildHomeAction(
-              compact: compact,
-              key: const Key('homeScrollToTopFab'),
-              heroTag: 'home-scroll-to-top',
-              tooltip: l10n.communityScrollToTop,
-              onPressed: () {
-                if (!_projectScrollController.hasClients) return;
-                _projectScrollController.animateTo(
-                  0,
-                  duration: const Duration(milliseconds: 300),
-                  curve: Curves.easeOutCubic,
-                );
-              },
-              icon: Icons.arrow_upward,
-            ),
+            if (scrollToTop)
+              _buildHomeAction(
+                compact: compact,
+                key: const Key('homeScrollToTopFab'),
+                heroTag: 'home-scroll-to-top',
+                tooltip: l10n.communityScrollToTop,
+                onPressed: () {
+                  if (!_projectScrollController.hasClients) return;
+                  _projectScrollController.animateTo(
+                    0,
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeOutCubic,
+                  );
+                },
+                icon: Icons.arrow_upward,
+              ),
             _buildHomeAction(
               compact: compact,
               heroTag: 'home-add-project',
