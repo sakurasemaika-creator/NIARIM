@@ -18,6 +18,7 @@ import '../../../config/font_fallback.dart';
 import '../../../utils/duplicate_name.dart';
 import '../../../utils/reorder_index.dart';
 import 'asset_list_header_row.dart';
+import 'asset_panel_actions.dart';
 import 'asset_search_bar.dart';
 import 'asset_tag_dialog.dart';
 import '../../../widgets/asset_tag_label.dart';
@@ -105,54 +106,13 @@ class _TonePanelState extends State<TonePanel> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (!widget.embedded) PanelCenterCloseBar(onClose: widget.onClose),
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: [
-                  TextButton.icon(
-                    icon: const Icon(Icons.folder_outlined, size: 15),
-                    label: Text(
-                      l10n.creativePanelFolderButton,
-                      style: const TextStyle(
-                        fontSize: 11,
-                        fontFamily: 'Kuramubon',
-                        fontFamilyFallback: kHeadingFontFallback,
-                      ),
-                    ),
-                    onPressed: () =>
-                        _openFolderManagement(context, toneService),
-                  ),
-                  TextButton.icon(
-                    icon: const Icon(
-                      Icons.add_photo_alternate_outlined,
-                      size: 15,
-                    ),
-                    label: Text(
-                      l10n.creativePanelCreateButton,
-                      style: const TextStyle(
-                        fontSize: 11,
-                        fontFamily: 'Kuramubon',
-                        fontFamilyFallback: kHeadingFontFallback,
-                      ),
-                    ),
-                    onPressed: () => _createFromImage(context, toneService),
-                  ),
-                  TextButton.icon(
-                    icon: const Icon(Icons.file_upload_outlined, size: 15),
-                    label: Text(
-                      l10n.creativePanelImportButton,
-                      style: const TextStyle(
-                        fontSize: 11,
-                        fontFamily: 'Kuramubon',
-                        fontFamilyFallback: kHeadingFontFallback,
-                      ),
-                    ),
-                    onPressed: () => SharedAssetCardService.pickAndImport(
-                      context,
-                      toneService: toneService,
-                    ),
-                  ),
-                ],
+            // 入らない幅ではアイコンだけ（名前は吹き出しと読み上げ）。
+            AssetPanelActions(
+              onFolder: () => _openFolderManagement(context, toneService),
+              onCreate: () => _createFromImage(context, toneService),
+              onImport: () => SharedAssetCardService.pickAndImport(
+                context,
+                toneService: toneService,
               ),
             ),
             // 一覧の名前・お気に入りのみ・検索。入らない幅では文字を縮めず、

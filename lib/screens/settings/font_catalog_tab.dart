@@ -49,6 +49,8 @@ class _FontCatalogTabState extends State<FontCatalogTab>
           child: TextField(
             decoration: InputDecoration(
               hintText: l10n.fontCatalogSearchHint(catalog.length),
+              // 入らないヒントは行を増やして全部出す（「…」で切らない）。
+              hintMaxLines: 4,
               prefixIcon: const Icon(Icons.search),
               filled: true,
               fillColor: Theme.of(context).colorScheme.surfaceContainerLow,
@@ -62,11 +64,12 @@ class _FontCatalogTabState extends State<FontCatalogTab>
           ),
         ),
         const SizedBox(height: 8),
-        SizedBox(
-          height: 36,
-          child: ListView(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 12),
+        // 分類のチップの行。高さはチップに合わせる（36pxに決めていた頃は、
+        // 大きな文字でチップの上下が切れた）。
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          child: Row(
             children: [
               _categoryChip(null, l10n.fontCatalogAll),
               for (final category in kFontCategories)

@@ -13,6 +13,7 @@ import '../canvas_screen.dart';
 import 'brush_panel.dart';
 import 'tone_panel.dart';
 import 'stamp_panel.dart';
+import '../../../widgets/fit_or_icon_tab_bar.dart';
 
 /// The ONLY entry point for pen subtools and their catalogue management.
 /// Each tab hosts the actual full-featured management panel, not a duplicate
@@ -106,20 +107,33 @@ class _PenSubToolPanelState extends State<PenSubToolPanel>
           Row(
             children: [
               Expanded(
-                child: TabBar(
+                // 名前が全部入らない幅ではアイコンだけ（名前は吹き出しと
+                // 読み上げ。文字は縮めず、切らない）。
+                child: FitOrIconTabBar(
                   controller: _tabs,
                   labelStyle: const TextStyle(fontSize: 11),
                   tabs: [
-                    Tab(text: l10n.penSubToolTabBrush),
-                    FirstUseTooltip(
-                      tooltipKey: 'pen_subtool_tone',
-                      message: l10n.penSubToolToneTooltipMessage,
-                      child: Tab(text: l10n.penSubToolTabTone),
+                    FitOrIconTab(
+                      icon: Icons.brush_outlined,
+                      label: l10n.penSubToolTabBrush,
                     ),
-                    FirstUseTooltip(
-                      tooltipKey: 'pen_subtool_stamp',
-                      message: l10n.penSubToolStampTooltipMessage,
-                      child: Tab(text: l10n.penSubToolTabStamp),
+                    FitOrIconTab(
+                      icon: Icons.gradient_outlined,
+                      label: l10n.penSubToolTabTone,
+                      wrap: (tab) => FirstUseTooltip(
+                        tooltipKey: 'pen_subtool_tone',
+                        message: l10n.penSubToolToneTooltipMessage,
+                        child: tab,
+                      ),
+                    ),
+                    FitOrIconTab(
+                      icon: Icons.auto_fix_high_outlined,
+                      label: l10n.penSubToolTabStamp,
+                      wrap: (tab) => FirstUseTooltip(
+                        tooltipKey: 'pen_subtool_stamp',
+                        message: l10n.penSubToolStampTooltipMessage,
+                        child: tab,
+                      ),
                     ),
                   ],
                 ),

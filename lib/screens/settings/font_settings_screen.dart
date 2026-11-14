@@ -9,6 +9,10 @@ import '../../services/font_service.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/confirm_delete.dart';
 import '../../widgets/dispose_on_unmount.dart';
+import '../../utils/line_break.dart';
+import '../../widgets/fit_or_hide_title.dart';
+import '../../widgets/first_that_fits.dart';
+import '../../widgets/fit_or_icon_tab_bar.dart';
 import '../../widgets/help_button.dart';
 import 'font_catalog_tab.dart';
 import '../../config/font_fallback.dart';
@@ -31,14 +35,25 @@ class FontSettingsScreen extends StatelessWidget {
       length: 3,
       child: Scaffold(
         appBar: AppBar(
-          title: Text(l10n.settingsFontTitle),
+          // 入らない幅では画面名を出さない（省略記号で切らない）。
+          title: FitOrHideTitle(l10n.settingsFontTitle),
           // ヘルプ項目「フォント管理」はテキストツールの説明へ統合済み。
           actions: const [HelpButton(topic: 'テキストツール')],
-          bottom: TabBar(
+          // 名前が全部入らない幅ではアイコンだけ（名前は吹き出しと読み上げ）。
+          bottom: FitOrIconTabBar(
             tabs: [
-              Tab(text: l10n.fontSettingsTabDownloaded),
-              Tab(text: l10n.fontSettingsTabSearch),
-              Tab(text: l10n.fontSettingsTabImport),
+              FitOrIconTab(
+                icon: Icons.download_done_outlined,
+                label: l10n.fontSettingsTabDownloaded,
+              ),
+              FitOrIconTab(
+                icon: Icons.travel_explore_outlined,
+                label: l10n.fontSettingsTabSearch,
+              ),
+              FitOrIconTab(
+                icon: Icons.upload_file_outlined,
+                label: l10n.fontSettingsTabImport,
+              ),
             ],
           ),
         ),
@@ -90,39 +105,66 @@ class _DownloadedFontsTabState extends State<_DownloadedFontsTab>
       children: [
         Padding(
           padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
-          child: Row(
-            children: [
-              Expanded(
-                child: TextField(
-                  decoration: InputDecoration(
-                    hintText: l10n.fontDownloadedSearchHint,
-                    prefixIcon: const Icon(Icons.search),
-                    filled: true,
-                    fillColor: Theme.of(
-                      context,
-                    ).colorScheme.surfaceContainerLow,
-                    isDense: true,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(14),
-                      borderSide: BorderSide.none,
+          // 「お気に入りのみ」は名前つきのチップが行の4割に入るときだけ
+          // 名前を出し、入らなければ星だけにする（判断3：文字は縮めない。
+          // 名前は長押し・ホバーの吹き出しと読み上げ）。名前つきのままだと、
+          // 大きな文字で検索欄が細くなり、ヒントが語の途中で折れて切れた。
+          child: LayoutBuilder(
+            builder: (context, box) => Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    decoration: InputDecoration(
+                      hintText: l10n.fontDownloadedSearchHint,
+                      // 入らないヒントは行を増やして全部出す（「…」で切らない）。
+                      hintMaxLines: 4,
+                      prefixIcon: const Icon(Icons.search),
+                      filled: true,
+                      fillColor: Theme.of(
+                        context,
+                      ).colorScheme.surfaceContainerLow,
+                      isDense: true,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: BorderSide.none,
+                      ),
                     ),
-                  ),
-                  onChanged: (v) => setState(() => _query = v),
-                ),
-              ),
-              const SizedBox(width: 8),
-              FilterChip(
-                label: Text(
-                  l10n.homeFavoritesOnly,
-                  style: const TextStyle(
-                    fontFamily: 'Kuramubon',
-                    fontFamilyFallback: kHeadingFontFallback,
+                    onChanged: (v) => setState(() => _query = v),
                   ),
                 ),
-                selected: _favoritesOnly,
-                onSelected: (v) => setState(() => _favoritesOnly = v),
-              ),
-            ],
+                const SizedBox(width: 8),
+                ConstrainedBox(
+                  constraints: BoxConstraints(maxWidth: box.maxWidth * 0.4),
+                  child: FirstThatFits(
+                    children: [
+                      FilterChip(
+                        label: Text(
+                          l10n.homeFavoritesOnly,
+                          style: const TextStyle(
+                            fontFamily: 'Kuramubon',
+                            fontFamilyFallback: kHeadingFontFallback,
+                          ),
+                        ),
+                        selected: _favoritesOnly,
+                        onSelected: (v) => setState(() => _favoritesOnly = v),
+                      ),
+                      FilterChip(
+                        label: Icon(
+                          _favoritesOnly ? Icons.star : Icons.star_outline,
+                          size: 18,
+                          semanticLabel: l10n.homeFavoritesOnly,
+                        ),
+                        labelPadding: const EdgeInsets.symmetric(horizontal: 2),
+                        showCheckmark: false,
+                        tooltip: l10n.homeFavoritesOnly,
+                        selected: _favoritesOnly,
+                        onSelected: (v) => setState(() => _favoritesOnly = v),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
         Expanded(
@@ -130,40 +172,47 @@ class _DownloadedFontsTabState extends State<_DownloadedFontsTab>
             context,
             sorted.isEmpty
                 ? Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Container(
-                          width: 88,
-                          height: 88,
-                          decoration: BoxDecoration(
-                            color: scheme.primaryContainer,
-                            shape: BoxShape.circle,
+                    // 画面の端に文を接しさせない。
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Container(
+                            width: 88,
+                            height: 88,
+                            decoration: BoxDecoration(
+                              color: scheme.primaryContainer,
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              Icons.font_download_outlined,
+                              size: 40,
+                              color: AccentTextTheme.of(context),
+                            ),
                           ),
-                          child: Icon(
-                            Icons.font_download_outlined,
-                            size: 40,
-                            color: AccentTextTheme.of(context),
+                          const SizedBox(height: 16),
+                          Text(
+                            keepKoreanWordsTogether(l10n.fontEmptyTitle),
+                            semanticsLabel: l10n.fontEmptyTitle,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontFamily: 'Kuramubon',
+                              fontFamilyFallback: kHeadingFontFallback,
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          l10n.fontEmptyTitle,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontFamily: 'Kuramubon',
-                            fontFamilyFallback: kHeadingFontFallback,
+                          const SizedBox(height: 4),
+                          Text(
+                            l10n.fontEmptyHint,
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: scheme.onSurfaceVariant,
+                              fontSize: 12,
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          l10n.fontEmptyHint,
-                          style: TextStyle(
-                            color: scheme.onSurfaceVariant,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   )
                 : ListView.builder(
@@ -347,7 +396,10 @@ class _ImportFontTab extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               Text(
-                l10n.fontImportTitle,
+                // 韓国語の見出しは語の途中で折らない（読み上げは元の文）。
+                keepKoreanWordsTogether(l10n.fontImportTitle),
+                semanticsLabel: l10n.fontImportTitle,
+                textAlign: TextAlign.center,
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   fontFamily: 'Kuramubon',
@@ -357,12 +409,24 @@ class _ImportFontTab extends StatelessWidget {
               const SizedBox(height: 4),
               Text(
                 l10n.fontImportFormats,
+                textAlign: TextAlign.center,
                 style: TextStyle(color: scheme.onSurfaceVariant, fontSize: 12),
               ),
               const SizedBox(height: 24),
               FilledButton.icon(
+                // 大きな文字で2行になっても、文字がボタンの縁に届かない
+                // よう上下に余白を取る（既定は文字の倍率に合わせて0まで減る）。
+                style: FilledButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 10,
+                  ),
+                ),
                 icon: const Icon(Icons.add),
-                label: Text(l10n.fontSelectFileButton),
+                label: Text(
+                  l10n.fontSelectFileButton,
+                  textAlign: TextAlign.center,
+                ),
                 onPressed: () => _addFont(context),
               ),
             ],
