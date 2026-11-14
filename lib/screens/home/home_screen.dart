@@ -1530,6 +1530,7 @@ class _HomeScreenState extends State<HomeScreen>
       for (final id in selected)
         if (_libraryEntry(id) case final entry?) entry.name,
     ];
+    final messenger = ScaffoldMessenger.of(context);
     await showDialog<bool>(
       context: context,
       builder: (_) => ProjectTrashDialog(
@@ -1538,13 +1539,28 @@ class _HomeScreenState extends State<HomeScreen>
         confirmLabel: l10n.commonMove,
         itemNames: names,
         onApply: () async {
+          // 移したものは、途中で失敗しても作品と同じく知らせて戻せる。
+          final moved = (
+            projects: <String>[],
+            folders: <String>[],
+            files: <LocalTrashedFile>[],
+          );
           try {
-            await _moveLibraryToTrash(selected, ps, ws);
+            await _moveLibraryToTrash(selected, ps, ws, moved);
           } catch (error, stackTrace) {
             AppErrorReporter.record(error, stackTrace);
             rethrow;
           } finally {
             StorageInfoService().invalidate();
+            showMovedToTrashSnackBar(
+              messenger,
+              l10n,
+              ps,
+              moved.projects,
+              folderIds: moved.folders,
+              files: moved.files,
+              workFolders: ws,
+            );
           }
           if (mounted) _endProjectSelection();
         },
@@ -1552,18 +1568,27 @@ class _HomeScreenState extends State<HomeScreen>
     );
   }
 
-  /// 選んだ作品一覧・共有の項目（[selected]の選択のID）をゴミ箱へ移す。
+  /// 選んだ作品一覧・共有の項目（[selected]の選択のID）をゴミ箱へ移し、
+  /// 移したものを[moved]に足す。
   Future<void> _moveLibraryToTrash(
     List<String> selected,
     ProjectService ps,
     WorkFolderService ws,
+    ({
+      List<String> projects,
+      List<String> folders,
+      List<LocalTrashedFile> files,
+    })
+    moved,
   ) async {
     for (final id in selected) {
       if (id.startsWith('work_file:')) {
         final path = id.substring('work_file:'.length);
-        await LocalFileTrashService.move(
-          File(path),
-          LocalTrashKind.exportedWork,
+        moved.files.add(
+          await LocalFileTrashService.move(
+            File(path),
+            LocalTrashKind.exportedWork,
+          ),
         );
       } else if (id.startsWith('work_folder:')) {
         final folderId = id.substring('work_folder:'.length);
@@ -1577,25 +1602,31 @@ class _HomeScreenState extends State<HomeScreen>
               (file) => ws.folderIdOf(file.uri.pathSegments.last) == folderId,
             )
             .toList();
-        await LocalFileTrashService.moveWorkFolder(
-          folderName: folder.name,
-          files: files,
+        moved.files.add(
+          await LocalFileTrashService.moveWorkFolder(
+            folderName: folder.name,
+            files: files,
+          ),
         );
         await ws.deleteFolder(folderId);
       } else if (id.startsWith('shared_file:')) {
         final projectId = id.substring('shared_file:'.length);
         if (ps.shared.any((p) => p.id == projectId)) {
           await ps.deleteProject(projectId);
+          moved.projects.add(projectId);
         }
       } else if (id.startsWith('shared_folder:')) {
         final folderId = id.substring('shared_folder:'.length);
-        if (ps.sharedFolders.any((f) => f.id == folderId)) {
-          await ps.moveFolderToTrash(folderId, shared: true);
+        if (ps.sharedFolders.any((f) => f.id == folderId) &&
+            await ps.moveFolderToTrash(folderId, shared: true) != null) {
+          moved.folders.add(folderId);
         }
       } else if (id.startsWith('outgoing_file:')) {
-        await LocalFileTrashService.move(
-          File(id.substring('outgoing_file:'.length)),
-          LocalTrashKind.outgoingShare,
+        moved.files.add(
+          await LocalFileTrashService.move(
+            File(id.substring('outgoing_file:'.length)),
+            LocalTrashKind.outgoingShare,
+          ),
         );
         await ps.refreshOutgoingShares();
       }
@@ -3709,9 +3740,17 @@ class _SharedTab extends StatelessWidget {
       onRenameFolder: (id, name) =>
           context.read<ProjectService>().renameSharedFolder(id, name),
       onDeleteFolder: (id) async {
-        await context.read<ProjectService>().moveFolderToTrash(
-          id,
-          shared: true,
+        final messenger = ScaffoldMessenger.of(context);
+        final l10n = AppLocalizations.of(context)!;
+        final projects = context.read<ProjectService>();
+        if (await projects.moveFolderToTrash(id, shared: true) == null) return;
+        // プロジェクトのフォルダと同じく、フォルダの名前で知らせて戻せる。
+        showMovedToTrashSnackBar(
+          messenger,
+          l10n,
+          projects,
+          const [],
+          folderIds: [id],
         );
       },
       onSetFolderThumbnail: (id, {required mode, sourceId, imagePath}) =>
@@ -4028,6 +4067,8 @@ Widget _receivedShareMenu(
             return;
           }
           if (context.mounted) {
+            // 移したら作品と同じく知らせ、その場で戻せるようにする。
+            final messenger = ScaffoldMessenger.of(context);
             await showDialog<void>(
               context: context,
               builder: (_) => ProjectTrashDialog(
@@ -4035,7 +4076,12 @@ Widget _receivedShareMenu(
                 message: l10n.homeMoveToTrashConfirm(1),
                 confirmLabel: l10n.commonMove,
                 itemNames: [project.name],
-                onApply: () => service.deleteProject(project.id),
+                onApply: () async {
+                  await service.deleteProject(project.id);
+                  showMovedToTrashSnackBar(messenger, l10n, service, [
+                    project.id,
+                  ]);
+                },
               ),
             );
           }
@@ -4143,6 +4189,8 @@ Future<void> _outgoingShareAction(
         // 作品・フォルダ・書き出したファイルと同じ確認（名前を出し、移せ
         // なかったときはダイアログの中に理由を出して開いたまま）。以前は
         // 名前の無い別のダイアログで、失敗は後ろの知らせだった。
+        // 移したら作品と同じく知らせ、その場で戻せるようにする。
+        final messenger = ScaffoldMessenger.of(context);
         final moved = await showDialog<bool>(
           context: context,
           builder: (_) => ProjectTrashDialog(
@@ -4151,8 +4199,9 @@ Future<void> _outgoingShareAction(
             confirmLabel: l10n.commonMove,
             itemNames: [entry.name],
             onApply: () async {
+              final LocalTrashedFile trashed;
               try {
-                await LocalFileTrashService.move(
+                trashed = await LocalFileTrashService.move(
                   file,
                   LocalTrashKind.outgoingShare,
                 );
@@ -4161,6 +4210,13 @@ Future<void> _outgoingShareAction(
                 rethrow;
               }
               StorageInfoService().invalidate();
+              showMovedToTrashSnackBar(
+                messenger,
+                l10n,
+                service,
+                const [],
+                files: [trashed],
+              );
             },
           ),
         );
@@ -6190,6 +6246,9 @@ class _WorksTabState extends State<_WorksTab>
                   .where((f) => f.id == id)
                   .firstOrNull;
               if (folder == null) return;
+              final messenger = ScaffoldMessenger.of(context);
+              final projects = context.read<ProjectService>();
+              final l10n = AppLocalizations.of(context)!;
               final exports = await ExportEngine.listExportedFiles(
                 forceRefresh: true,
               );
@@ -6200,12 +6259,21 @@ class _WorksTabState extends State<_WorksTab>
                         id,
                   )
                   .toList();
-              await LocalFileTrashService.moveWorkFolder(
+              final entry = await LocalFileTrashService.moveWorkFolder(
                 folderName: folder.name,
                 files: members,
               );
               await workFolders.deleteFolder(id);
               StorageInfoService().invalidate();
+              // 作品のフォルダと同じく、フォルダの名前で知らせて戻せる。
+              showMovedToTrashSnackBar(
+                messenger,
+                l10n,
+                projects,
+                const [],
+                files: [entry],
+                workFolders: workFolders,
+              );
             },
             onSetFolderThumbnail: (id, {required mode, sourceId, imagePath}) =>
                 workFolders.setFolderThumbnail(
@@ -6650,6 +6718,11 @@ class _WorkListItemState extends State<_WorkListItem> {
   /// 「移動」が危険な操作の赤だった。
   Future<void> _confirmDelete(BuildContext context) async {
     final l10n = AppLocalizations.of(context)!;
+    // 移したら作品と同じく知らせ、その場で戻せるようにする（以前は何も
+    // 出なかった）。カードは移すと一覧から消えるので、出し先は先に取る。
+    final messenger = ScaffoldMessenger.of(context);
+    final projects = context.read<ProjectService>();
+    final workFolders = context.read<WorkFolderService>();
     final moved = await showDialog<bool>(
       context: context,
       builder: (_) => ProjectTrashDialog(
@@ -6658,13 +6731,25 @@ class _WorkListItemState extends State<_WorkListItem> {
         confirmLabel: l10n.commonMove,
         itemNames: [file.path.split(RegExp(r'[\\/]')).last],
         onApply: () async {
+          final LocalTrashedFile entry;
           try {
-            await LocalFileTrashService.move(file, LocalTrashKind.exportedWork);
+            entry = await LocalFileTrashService.move(
+              file,
+              LocalTrashKind.exportedWork,
+            );
           } catch (error, stackTrace) {
             AppErrorReporter.record(error, stackTrace);
             rethrow;
           }
           StorageInfoService().invalidate();
+          showMovedToTrashSnackBar(
+            messenger,
+            l10n,
+            projects,
+            const [],
+            files: [entry],
+            workFolders: workFolders,
+          );
         },
       ),
     );

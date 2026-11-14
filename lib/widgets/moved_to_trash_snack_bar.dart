@@ -1,7 +1,12 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 
 import '../l10n/app_localizations.dart';
+import '../services/local_file_trash_service.dart';
 import '../services/project_service.dart';
+import '../services/storage_info_service.dart';
+import '../services/work_folder_service.dart';
 import '../utils/app_error_reporter.dart';
 import 'app_toast_messenger.dart';
 import 'copy_name_text.dart';
@@ -12,11 +17,20 @@ class _TrashMove {
   _TrashMove({
     required this.projectIds,
     required this.folderIds,
+    this.files = const [],
+    this.workFolders,
     _RestoreMark? mark,
   }) : _mark = mark ?? _RestoreMark();
 
   final List<String> projectIds;
   final List<String> folderIds;
+
+  /// 作品一覧・共有の、書き出したファイル・そのフォルダ・作成した共有
+  /// ファイル（[LocalFileTrashService]のゴミ箱）。
+  final List<LocalTrashedFile> files;
+
+  /// 書き出したファイルのフォルダを戻す先（[files]にフォルダがあるとき）。
+  final WorkFolderService? workFolders;
   final _RestoreMark _mark;
 
   /// 戻し始めた（同じものを二度戻さない。取り下げた前の知らせが薄くなって
@@ -25,11 +39,20 @@ class _TrashMove {
   bool get restoring => _mark.started;
   set restoring(bool value) => _mark.started = value;
 
-  int get count => projectIds.length + folderIds.length;
+  int get count => projectIds.length + folderIds.length + files.length;
 
-  /// この移動のうち、[projectIds]・[folderIds]だけを戻すもの。
-  _TrashMove narrowedTo(List<String> projectIds, List<String> folderIds) =>
-      _TrashMove(projectIds: projectIds, folderIds: folderIds, mark: _mark);
+  /// この移動のうち、[projectIds]・[folderIds]・[files]だけを戻すもの。
+  _TrashMove narrowedTo(
+    List<String> projectIds,
+    List<String> folderIds,
+    List<LocalTrashedFile> files,
+  ) => _TrashMove(
+    projectIds: projectIds,
+    folderIds: folderIds,
+    files: files,
+    workFolders: workFolders,
+    mark: _mark,
+  );
 }
 
 class _RestoreMark {
@@ -83,21 +106,37 @@ void showMovedToTrashSnackBar(
   ProjectService service,
   List<String> projectIds, {
   List<String> folderIds = const [],
+  List<LocalTrashedFile> files = const [],
+  WorkFolderService? workFolders,
 }) {
+  if (projectIds.isEmpty && folderIds.isEmpty && files.isEmpty) return;
   // フォルダを1つだけ移したときは、件数ではなくそのフォルダの名前で伝える
   // （[showFolderMovedToTrashSnackBar]と同じ。以前はメニューからも選んで
-  // 移したときも「1件をゴミ箱へ移動しました」だった）。
-  final single = projectIds.isEmpty && folderIds.length == 1
+  // 移したときも「1件をゴミ箱へ移動しました」だった）。書き出したファイルの
+  // フォルダも同じ。
+  final single = projectIds.isEmpty && folderIds.length == 1 && files.isEmpty
       ? service.trashedFolders
             .where((t) => t.folder.id == folderIds.single)
             .firstOrNull
+            ?.folder
+            .name
+      : projectIds.isEmpty &&
+            folderIds.isEmpty &&
+            files.length == 1 &&
+            files.single.isFolder
+      ? files.single.folderName
       : null;
   _showTrashNotice(
     messenger,
     l10n,
     service,
-    _TrashMove(projectIds: [...projectIds], folderIds: [...folderIds]),
-    folderName: single?.folder.name,
+    _TrashMove(
+      projectIds: [...projectIds],
+      folderIds: [...folderIds],
+      files: [...files],
+      workFolders: workFolders,
+    ),
+    folderName: single,
   );
 }
 
@@ -170,6 +209,8 @@ void _showTrashNotice(
                 () => service.restoreTrashedFolder(id),
               for (final id in item.projectIds)
                 () => service.restoreProject(id),
+              for (final file in item.files)
+                () => _restoreFile(file, service, item.workFolders),
             ]);
           }
           _undo(messenger, l10n, restores);
@@ -201,6 +242,7 @@ List<_TrashMove> _stillInTrash(
   final trashedFolders = {for (final t in service.trashedFolders) t.folder.id};
   final seenProjects = {...newer.projectIds};
   final seenFolders = {...newer.folderIds};
+  final seenFiles = {for (final file in newer.files) file.id};
   final kept = <_TrashMove>[];
   for (final previous in moves.reversed) {
     if (previous.restoring) continue;
@@ -212,10 +254,42 @@ List<_TrashMove> _stillInTrash(
       for (final id in previous.folderIds)
         if (trashedFolders.contains(id) && seenFolders.add(id)) id,
     ];
-    if (projectIds.isEmpty && folderIds.isEmpty) continue;
-    kept.insert(0, previous.narrowedTo(projectIds, folderIds));
+    // 書き出したファイル・共有ファイルは、ゴミ箱に控えがまだあるものだけ
+    // （ゴミ箱のタブから戻した・完全に削除したものは控えが無い）。
+    final files = [
+      for (final file in previous.files)
+        if (_stillArchived(file) && seenFiles.add(file.id)) file,
+    ];
+    if (projectIds.isEmpty && folderIds.isEmpty && files.isEmpty) continue;
+    kept.insert(0, previous.narrowedTo(projectIds, folderIds, files));
   }
   return kept;
+}
+
+/// [file]の控えがゴミ箱にまだあるか。
+bool _stillArchived(LocalTrashedFile file) => file.isFolder
+    ? Directory(file.archivedPath).existsSync()
+    : File(file.archivedPath).existsSync();
+
+/// 「元に戻す」で、書き出したファイル・そのフォルダ・作成した共有ファイルを
+/// 元の場所へ戻す（ゴミ箱のタブの「復元」と同じ）。
+Future<void> _restoreFile(
+  LocalTrashedFile file,
+  ProjectService service,
+  WorkFolderService? workFolders,
+) async {
+  if (file.isFolder) {
+    if (workFolders == null) {
+      throw StateError('No work folders to restore ${file.fileName}');
+    }
+    await LocalFileTrashService.restoreWorkFolder(file, workFolders);
+  } else {
+    await LocalFileTrashService.restore(file);
+  }
+  StorageInfoService().invalidate();
+  if (file.kind == LocalTrashKind.outgoingShare) {
+    await service.refreshOutgoingShares();
+  }
 }
 
 /// 前のゴミ箱の知らせを取り下げる（出ていれば薄くして閉じ、順番を待って
