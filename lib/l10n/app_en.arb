@@ -236,7 +236,7 @@
   "commonSearch": "Search",
   "autofillPresetSelectionTitle": "Autofill settings to use",
   "autofillPresetSelectionHint": "Choosing only the autofill settings used in this project keeps the part-assignment list shorter and easier to browse.",
-  "autofillPresetSelectionPartCount": "{count} parts",
+  "autofillPresetSelectionPartCount": "{count, plural, one{{count} part} other{{count} parts}}",
   "@autofillPresetSelectionPartCount": {
     "placeholders": {
       "count": {
@@ -1408,7 +1408,7 @@
   "autofillPresetEmptyFavorites": "No favorite settings",
   "autofillPresetEmpty": "No settings yet",
   "autofillPresetEmptyHint": "Tap + in the bottom right to create one",
-  "autofillPresetPartsCount": "{count} parts",
+  "autofillPresetPartsCount": "{count, plural, one{{count} part} other{{count} parts}}",
   "@autofillPresetPartsCount": {
     "placeholders": {
       "count": {

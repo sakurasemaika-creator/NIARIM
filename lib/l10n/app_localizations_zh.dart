@@ -719,7 +719,12 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String autofillPresetSelectionPartCount(int count) {
-    return '$count个部件';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count个部件',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -3690,7 +3695,12 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String autofillPresetPartsCount(int count) {
-    return '$count个部件';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count个部件',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -10669,7 +10679,12 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String autofillPresetSelectionPartCount(int count) {
-    return '$count個部件';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count個部件',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -13639,7 +13654,12 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String autofillPresetPartsCount(int count) {
-    return '$count個部件';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count個部件',
+    );
+    return '$_temp0';
   }
 
   @override

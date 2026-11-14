@@ -236,7 +236,7 @@
   "commonSearch": "Rechercher",
   "autofillPresetSelectionTitle": "Réglages de remplissage auto à utiliser",
   "autofillPresetSelectionHint": "Ne sélectionner que les réglages de remplissage automatique utilisés dans ce projet garde la liste d’attribution des parties plus courte et plus lisible.",
-  "autofillPresetSelectionPartCount": "{count} parties",
+  "autofillPresetSelectionPartCount": "{count, plural, one{{count} partie} other{{count} parties}}",
   "@autofillPresetSelectionPartCount": {
     "placeholders": {
       "count": {
@@ -1408,7 +1408,7 @@
   "autofillPresetEmptyFavorites": "Aucun réglage favori",
   "autofillPresetEmpty": "Aucun réglage",
   "autofillPresetEmptyHint": "Appuyez sur + en bas à droite pour en créer un",
-  "autofillPresetPartsCount": "{count} parties",
+  "autofillPresetPartsCount": "{count, plural, one{{count} partie} other{{count} parties}}",
   "@autofillPresetPartsCount": {
     "placeholders": {
       "count": {

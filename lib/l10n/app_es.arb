@@ -236,7 +236,7 @@
   "commonSearch": "Buscar",
   "autofillPresetSelectionTitle": "Ajustes de relleno automático a usar",
   "autofillPresetSelectionHint": "Elegir solo los ajustes de relleno automático usados en este proyecto mantiene la lista de asignación de partes más corta y fácil de revisar.",
-  "autofillPresetSelectionPartCount": "{count} partes",
+  "autofillPresetSelectionPartCount": "{count, plural, one{{count} parte} other{{count} partes}}",
   "@autofillPresetSelectionPartCount": {
     "placeholders": {
       "count": {
@@ -1408,7 +1408,7 @@
   "autofillPresetEmptyFavorites": "No hay ajustes favoritos",
   "autofillPresetEmpty": "No hay ajustes",
   "autofillPresetEmptyHint": "Toca + en la parte inferior derecha para crear uno",
-  "autofillPresetPartsCount": "{count} partes",
+  "autofillPresetPartsCount": "{count, plural, one{{count} parte} other{{count} partes}}",
   "@autofillPresetPartsCount": {
     "placeholders": {
       "count": {

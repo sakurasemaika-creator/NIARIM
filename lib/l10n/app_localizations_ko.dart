@@ -731,7 +731,12 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String autofillPresetSelectionPartCount(int count) {
-    return '$count개 부위';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count개 부위',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -3726,7 +3731,12 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String autofillPresetPartsCount(int count) {
-    return '$count개 부위';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count개 부위',
+    );
+    return '$_temp0';
   }
 
   @override

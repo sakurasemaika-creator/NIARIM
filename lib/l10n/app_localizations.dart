@@ -1404,7 +1404,7 @@ abstract class AppLocalizations {
   /// No description provided for @autofillPresetSelectionPartCount.
   ///
   /// In ja, this message translates to:
-  /// **'{count}パーツ'**
+  /// **'{count, plural, other{{count}パーツ}}'**
   String autofillPresetSelectionPartCount(int count);
 
   /// No description provided for @autofillPresetSelectionButton.
@@ -6864,7 +6864,7 @@ abstract class AppLocalizations {
   /// No description provided for @autofillPresetPartsCount.
   ///
   /// In ja, this message translates to:
-  /// **'{count}パーツ'**
+  /// **'{count, plural, other{{count}パーツ}}'**
   String autofillPresetPartsCount(int count);
 
   /// No description provided for @autofillPresetNewDialogTitle.

@@ -361,7 +361,7 @@
   "commonSearch": "検索",
   "autofillPresetSelectionTitle": "使用する自動塗り設定",
   "autofillPresetSelectionHint": "このプロジェクトで使う自動塗り設定だけを選ぶと、パーツ割り当て時に一覧が見やすくなります。",
-  "autofillPresetSelectionPartCount": "{count}パーツ",
+  "autofillPresetSelectionPartCount": "{count, plural, other{{count}パーツ}}",
   "@autofillPresetSelectionPartCount": {
     "placeholders": {
       "count": {
@@ -1716,7 +1716,7 @@
   "autofillPresetEmptyFavorites": "お気に入りの設定がありません",
   "autofillPresetEmpty": "設定がありません",
   "autofillPresetEmptyHint": "右下の＋から作成できます",
-  "autofillPresetPartsCount": "{count}パーツ",
+  "autofillPresetPartsCount": "{count, plural, other{{count}パーツ}}",
   "@autofillPresetPartsCount": {
     "placeholders": {
       "count": {

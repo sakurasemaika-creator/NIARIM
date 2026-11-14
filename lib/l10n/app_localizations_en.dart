@@ -750,7 +750,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String autofillPresetSelectionPartCount(int count) {
-    return '$count parts';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count parts',
+      one: '$count part',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -3865,7 +3871,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String autofillPresetPartsCount(int count) {
-    return '$count parts';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count parts',
+      one: '$count part',
+    );
+    return '$_temp0';
   }
 
   @override

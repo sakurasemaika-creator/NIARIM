@@ -236,7 +236,7 @@
   "commonSearch": "搜尋",
   "autofillPresetSelectionTitle": "要使用的自動上色設定",
   "autofillPresetSelectionHint": "只選擇本專案中使用的自動上色設定，可以讓分配部位時的清單更簡潔、更易於檢視。",
-  "autofillPresetSelectionPartCount": "{count}個部件",
+  "autofillPresetSelectionPartCount": "{count, plural, other{{count}個部件}}",
   "@autofillPresetSelectionPartCount": {
     "placeholders": {
       "count": {
@@ -1408,7 +1408,7 @@
   "autofillPresetEmptyFavorites": "沒有收藏的設定",
   "autofillPresetEmpty": "沒有設定",
   "autofillPresetEmptyHint": "點擊右下角的「＋」建立",
-  "autofillPresetPartsCount": "{count}個部件",
+  "autofillPresetPartsCount": "{count, plural, other{{count}個部件}}",
   "@autofillPresetPartsCount": {
     "placeholders": {
       "count": {
