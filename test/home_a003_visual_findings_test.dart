@@ -571,4 +571,23 @@ void main() {
     }
     await home.close();
   });
+
+  testWidgets('作品一覧を読めなかったときも、ほかのタブと同じ知らせと「再試行」', (tester) async {
+    final home = _Home(tester);
+    await home.open(language: 'en', size: const Size(390, 844), failing: true);
+    await home.showTab(1);
+    final message = find.text(home.l10n.homeWorksLoadFailed);
+    expect(message, findsOneWidget);
+    expect(
+      find.ancestor(
+        of: message,
+        matching: find.byWidgetPredicate(
+          (w) => w.runtimeType.toString() == 'ProjectsLoadFailureNotice',
+        ),
+      ),
+      findsOneWidget,
+      reason: 'works failure is drawn differently from the other tabs',
+    );
+    await home.close();
+  });
 }

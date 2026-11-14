@@ -5820,33 +5820,22 @@ class _WorksTabState extends State<_WorksTab> {
 class _WorksLoadFailure extends StatelessWidget {
   const _WorksLoadFailure({required this.onRetry});
 
-  final VoidCallback onRetry;
+  final Future<void> Function() onRetry;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    return Center(
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              Icons.folder_off_outlined,
-              size: 48,
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
-            const SizedBox(height: 16),
-            Text(l10n.homeWorksLoadFailed, textAlign: TextAlign.center),
-            const SizedBox(height: 16),
-            FilledButton.icon(
-              onPressed: onRetry,
-              icon: const Icon(Icons.refresh),
-              label: Text(l10n.communityRetry),
-            ),
-          ],
+    // ほかのタブ（プロジェクト・共有・ゴミ箱）と同じ、一覧の上の知らせと
+    // 「再試行」。以前は中央の大きな印と塗りのボタンで、同じ「読めなかった」
+    // がタブによって違う見た目だった（韓国語の文も語の途中で折れた）。
+    return ListView(
+      padding: EdgeInsets.zero,
+      children: [
+        ProjectsLoadFailureNotice(
+          message: l10n.homeWorksLoadFailed,
+          onRetry: onRetry,
         ),
-      ),
+      ],
     );
   }
 }
