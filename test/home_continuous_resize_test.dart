@@ -136,11 +136,22 @@ bool _crossesViewSizeEdge(int a, int b) => _viewSizeEdges.any(
 );
 
 /// カードの列数（gridWidthは一覧の幅＝画面の幅から左右8pxずつ引いたもの）。
-/// 基準の幅（小130・中170・大240、間隔8）で並ぶ数を切り上げ、中は小より、
-/// 大は中より少なくとも1列少なくする（どの幅でも大・中・小が違って見える）。
-int _expectedColumns(ProjectViewMode mode, double gridWidth) {
-  int fit(double extent) => math.max(1, (gridWidth / (extent + 8)).ceil());
-  final small = fit(130);
+/// 文字を大きくしているとき（[textScale]が1より大きい）は、幅を文字の倍率で
+/// 割った幅で決める（名前の字が大きくなる分、カードを広くする）。基準の幅
+/// （小130・中170・大240、間隔8）で並ぶ数を切り上げ、小は幅76px以上の
+/// カードが3列並ぶ間は3列、中は小より、大は中より少なくとも1列少なくする
+/// （どの幅でも大・中・小が違って見える）。
+int _expectedColumns(
+  ProjectViewMode mode,
+  double gridWidth, [
+  double textScale = 1,
+]) {
+  final width = textScale > 1 ? gridWidth / textScale : gridWidth;
+  int fit(double extent) => math.max(1, (width / (extent + 8)).ceil());
+  final small = math.max(
+    fit(130),
+    math.min(3, ((width + 8) / (76 + 8)).floor()),
+  );
   final medium = math.max(1, math.min(fit(170), small - 1));
   final large = math.max(1, math.min(fit(240), medium - 1));
   return switch (mode) {
@@ -897,7 +908,7 @@ Future<void> _sweep(
           found.add('view size ${layout.viewMode!.name}');
         }
         final columns = columnsOf(scan);
-        final expected = _expectedColumns(mode, w - 16);
+        final expected = _expectedColumns(mode, w - 16, scale);
         if (columns != expected) found.add('columns $columns != $expected');
         if (from != null &&
             _crossesViewSizeEdge(from, width) &&
