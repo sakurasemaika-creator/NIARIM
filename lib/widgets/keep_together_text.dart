@@ -4,6 +4,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 
+import 'action_beside_or_below.dart'
+    show ReportsWidestWord, widestUnbreakableWidth;
+
 /// 文の中の[keep]に挙げた部分（数と単位など）を、行の途中で切らずに1つの
 /// かたまりとして描く[Text]。
 ///
@@ -372,6 +375,7 @@ class _KeptParts {
   void forgetLayouts() {
     _choices.clear();
     _joinedWidths = null;
+    _minWidth = null;
     _measurer?.markNeedsLayout();
   }
 
@@ -558,8 +562,41 @@ class _KeptParts {
   /// つないだ部分は1語として数えるので、尋ねる親（ActionBesideOrBelow）は
   /// 部分が入らない幅を「語の途中で折れる幅」と見て、文の横に操作を置かない。
   /// これより狭い欄に置かれても、入らない部分はつながずに折るので、字は欄の
-  /// 外へ出ない。
-  double get minIntrinsicWidth => _joinedIntrinsicWidths.$1;
+  /// 外へ出ない。中国語・日本語の字を含む文は、字の間で折り返せる分を入れて
+  /// 数え直す（[widestUnbreakableWidth]。Flutterは文全体の幅を答えることが
+  /// あり、ActionBesideOrBelowは中の段落を測り直さない）。
+  double get minIntrinsicWidth => _minWidth ??= _widestJoinedWord();
+
+  /// [minIntrinsicWidth]（1回測って覚えておく）。
+  double? _minWidth;
+
+  double _widestJoinedWord() {
+    final reported = _joinedIntrinsicWidths.$1;
+    if (!softWrap) return reported;
+    final painter = _painter;
+    final (joined, sent) = _allJoined;
+    // 行の数の上限・省略記号を外して、文全体を並べる。
+    final lines = painter.maxLines;
+    final ellipsis = painter.ellipsis;
+    painter
+      ..text = _variant(joined, sent).span
+      ..maxLines = null
+      ..ellipsis = null;
+    final width = widestUnbreakableWidth(
+      painter,
+      reported: reported,
+      onLayout: () {
+        assert(() {
+          KeepTogetherText.debugLayoutCount++;
+          return true;
+        }());
+      },
+    );
+    painter
+      ..maxLines = lines
+      ..ellipsis = ellipsis;
+    return width;
+  }
 
   /// 1行に並べた幅（1行に並べるときは、どの部分もつなぐ）。
   double get maxIntrinsicWidth => _joinedIntrinsicWidths.$2;
@@ -627,7 +664,8 @@ class _RenderKeepTogether extends RenderBox
         RenderObjectWithChildMixin<RenderBox>,
         RenderObjectWithLayoutCallbackMixin,
         RenderAbstractLayoutBuilderMixin<InlineSpan, RenderBox>,
-        RelayoutWhenSystemFontsChangeMixin {
+        RelayoutWhenSystemFontsChangeMixin
+    implements ReportsWidestWord {
   _RenderKeepTogether(this._parts);
 
   /// 同じ文・書式の間は同じものを使い続ける（決めたつなぎ方・測った幅・

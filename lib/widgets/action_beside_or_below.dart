@@ -3,6 +3,80 @@ import 'dart:math' as math;
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 
+/// 字の間で折り返せる中国語・日本語の字（かな・漢字）。
+final RegExp _cjk = RegExp(
+  r'[\u3040-\u30FF\u3400-\u4DBF\u4E00-\u9FFF\uF900-\uFAFF]',
+);
+
+/// 自分で、中国語・日本語の字の間の折り返しも入れた最小の固有幅を答える文の
+/// 描画（`KeepTogetherText`）。[ActionBesideOrBelow]は、この中の段落を測り
+/// 直さない（中の段落は欄の幅ごとに描く文を変え、並べる前は無いので、測り
+/// 直すと並べるたびに答えが変わる）。
+abstract interface class ReportsWidestWord {}
+
+/// 文を入れた[painter]の、折り返せないいちばん広いかたまり（語）の幅。
+/// [reported]はFlutterの答え（幅の制限なしで並べた最小の固有幅）。
+///
+/// Flutter（SkParagraph）は、中国語・日本語の文が1つの書体で描けて途中に
+/// 空白が無いと、字の間で折り返せることを最小の固有幅に入れず、文全体の幅を
+/// 返す（中国語の本文の書体〔Noto Serif SC〕の文で起きた）。中国語・日本語の
+/// 字を含む文は、[painter]を1pxの幅で並べ直して数え直す（並べ直したら
+/// [onLayout]を呼ぶ）。1pxの幅では、SkParagraphはどの字の間でも折り返し、
+/// 欧文の語・数と単位は1つのまま数える（幅0では語も1字ずつ数える）が、
+/// 語結合子（U+2060）でつないだ字の間でも折り返すので、つないだ字の続きは
+/// 並べた字の幅を足して1つのかたまりとして数える。
+double widestUnbreakableWidth(
+  TextPainter painter, {
+  required double reported,
+  VoidCallback? onLayout,
+}) {
+  final text = painter.plainText;
+  if (!_cjk.hasMatch(text)) return reported;
+  painter.layout(maxWidth: 1);
+  onLayout?.call();
+  var widest = painter.minIntrinsicWidth;
+  for (final (start, end) in _wordJoinedRuns(text)) {
+    var width = 0.0;
+    for (final box in painter.getBoxesForSelection(
+      TextSelection(baseOffset: start, extentOffset: end),
+    )) {
+      width += box.right - box.left;
+    }
+    widest = math.max(widest, width);
+  }
+  return math.min(reported, widest);
+}
+
+/// [text]の中の、語結合子（U+2060）でつないだ字（書記素）の続きの位置
+/// （始まりと終わり）。
+Iterable<(int, int)> _wordJoinedRuns(String text) sync* {
+  const wordJoiner = '\u2060';
+  if (!text.contains(wordJoiner)) return;
+  var offset = 0;
+  int? start;
+  int? lastStart;
+  var lastEnd = 0;
+  var joined = false;
+  for (final char in text.characters) {
+    if (char == wordJoiner) {
+      joined = lastStart != null;
+      offset += char.length;
+      continue;
+    }
+    if (joined) {
+      start ??= lastStart;
+    } else if (start != null) {
+      yield (start, lastEnd);
+      start = null;
+    }
+    joined = false;
+    lastStart = offset;
+    offset += char.length;
+    lastEnd = offset;
+  }
+  if (start != null) yield (start, lastEnd);
+}
+
 /// [ActionBesideOrBelow]の子の置き場所。
 enum ActionBesideOrBelowSlot { text, action }
 
@@ -208,7 +282,65 @@ class RenderActionBesideOrBelow extends RenderBox
     if (text.getMaxIntrinsicWidth(double.infinity) <= textWidth) return true;
     // 折り返すなら、十分な幅が残り、どの単語も途中で切れないときだけ。
     return textWidth >= width * minTextFraction &&
-        text.getMinIntrinsicWidth(double.infinity) <= textWidth;
+        _widestWord(text) <= textWidth;
+  }
+
+  /// 文[text]の中で、折り返せないいちばん広いかたまり（語）の幅。
+  ///
+  /// 文の最小の固有幅で数える。ただしFlutter（SkParagraph）は、中国語・日本語の
+  /// 文が1つの書体で描けて途中に空白が無いと、字の間で折り返せることを最小の
+  /// 固有幅に入れず、文全体の幅を返す（中国語の本文の書体〔Noto Serif SC〕の
+  /// 文で起きた）。中国語・日本語は字の間で折り返してよいので、文の中の段落を
+  /// 折り返す幅で並べ直して測った本当のいちばん広い語で数え直す（文の幅から、
+  /// いちばん広い段落の測り違いの分を引く。[widestUnbreakableWidth]）。
+  /// 自分で数え直した幅を答える文（[ReportsWidestWord]）の中は測り直さない。
+  double _widestWord(RenderBox text) {
+    final reported = text.getMinIntrinsicWidth(double.infinity);
+    var widestReported = 0.0;
+    var widestActual = 0.0;
+    void visit(RenderObject child) {
+      if (child is ReportsWidestWord) return;
+      if (child is RenderParagraph) {
+        widestReported = math.max(
+          widestReported,
+          child.getMinIntrinsicWidth(double.infinity),
+        );
+        widestActual = math.max(widestActual, _paragraphWidestWord(child));
+        return;
+      }
+      child.visitChildren(visit);
+    }
+
+    visit(text);
+    if (widestActual >= widestReported) return reported;
+    return math.max(widestActual, reported - (widestReported - widestActual));
+  }
+
+  /// 段落[p]の、折り返せないいちばん広いかたまりの幅（[_widestWord]）。
+  static double _paragraphWidestWord(RenderParagraph p) {
+    final reported = p.getMinIntrinsicWidth(double.infinity);
+    final text = p.text.toPlainText(includePlaceholders: false);
+    var placeholders = false;
+    p.text.visitChildren((span) {
+      if (span is PlaceholderSpan) placeholders = true;
+      return !placeholders;
+    });
+    // 測り違えるのは中国語・日本語の字を含む文だけ。折り返さない段落・部品を
+    // 挟む段落は、測り直さない。
+    if (!_cjk.hasMatch(text) || !p.softWrap || placeholders) return reported;
+    final painter = TextPainter(
+      text: p.text,
+      textDirection: p.textDirection,
+      textAlign: p.textAlign,
+      textScaler: p.textScaler,
+      locale: p.locale,
+      strutStyle: p.strutStyle,
+      textWidthBasis: p.textWidthBasis,
+      textHeightBehavior: p.textHeightBehavior,
+    );
+    final actual = widestUnbreakableWidth(painter, reported: reported);
+    painter.dispose();
+    return actual;
   }
 
   /// 子の大きさと位置を決める。[place]がnullなら大きさだけを求める
