@@ -213,6 +213,11 @@ class HomeClipboardHarness {
   Future<void> select(Iterable<String> names) async {
     var first = true;
     for (final name in names) {
+      // 文字の大きい画面ではカードの列が減り（collectionTileColumnCount）、
+      // 押すカードが一覧の下の浮かぶボタンの下にあることがある。一覧を
+      // 送って見える所へ出してから押す。
+      await tester.ensureVisible(card(name).first);
+      await settle();
       if (first) {
         await tester.longPress(card(name).first);
         first = false;
