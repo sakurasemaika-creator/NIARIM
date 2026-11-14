@@ -403,7 +403,9 @@ void main() {
     await tester.pumpAndSettle();
     for (var i = 1; i <= 3; i++) {
       final folder = find.text('AUDIT $i');
-      await tester.ensureVisible(folder);
+      // 文字2倍の幅320pxではカードが2列になり（collectionTileColumnCount）、
+      // 3つ目のフォルダは画面の外の行にある。作ってある行を探して送る。
+      await tester.ensureVisible(find.text('AUDIT $i', skipOffstage: false));
       await tester.pumpAndSettle();
       await tester.tap(folder);
       await tester.pumpAndSettle();
