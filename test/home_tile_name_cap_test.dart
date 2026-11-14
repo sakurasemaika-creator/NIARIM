@@ -44,13 +44,13 @@ void main() {
     ),
   );
 
-  // カードに描いた字（上限で切った名前。語結合子は除く）。名前の全部は
-  // 読み上げ（semanticsLabel）にある。
+  // カードに描いた字（上限で切った名前。語結合子と、ファイル名の区切りの
+  // 前で折り返す印〔幅の無い空白〕は除く）。名前の全部は読み上げ
+  // （semanticsLabel）にある。
   String displayed(Text text) =>
-      ((text.textSpan as TextSpan?)?.text ?? text.data)!.replaceAll(
-        '\u2060',
-        '',
-      );
+      ((text.textSpan as TextSpan?)?.text ?? text.data)!
+          .replaceAll('\u2060', '')
+          .replaceAll('\u200B', '');
 
   RenderParagraph paragraphOf(WidgetTester tester, String name) =>
       tester.renderObject<RenderParagraph>(
