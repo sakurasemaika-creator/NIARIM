@@ -3190,7 +3190,7 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get projectDetailTrashMenuItem => '移到回收站';
+  String get projectDetailTrashMenuItem => '移至回收站';
 
   @override
   String get commonOff => 'OFF';
@@ -13099,7 +13099,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   }
 
   @override
-  String get projectDetailTrashMenuItem => '移到垃圾桶';
+  String get projectDetailTrashMenuItem => '移至垃圾桶';
 
   @override
   String get commonOff => 'OFF';

@@ -3681,7 +3681,7 @@
   "homePasteNestedFolders": "이 폴더에는 하위 폴더가 있습니다. 붙여넣을 위치는 폴더 안에 폴더를 둘 수 없어, 구조가 흐트러지지 않도록 붙여넣기를 중단했습니다.",
   "homePasteFolderUnreadable": "폴더 내용을 확인하지 못했습니다. 데이터를 보호하기 위해 붙여넣기를 중단했습니다.",
   "homePasteFolderNotTrashable": "이 유형의 폴더는 휴지통으로 옮길 수 없습니다.",
-  "homePasteToTrashQuestion": "다음 작품과 폴더를 휴지통으로 옮기시겠습니까?",
+  "homePasteToTrashQuestion": "다음 작품과 폴더를 휴지통으로 이동하시겠습니까?",
   "homeTrashAutoDeleteNotice": "휴지통으로 옮긴 파일은 {days}일 후에 완전히 삭제됩니다.",
   "homeTrashAutoDeleteOffNotice": "휴지통 자동 삭제가 꺼져 있습니다. 직접 삭제할 때까지 보관됩니다.",
   "homeRestoreFromTrashTitle": "휴지통에서 복원",

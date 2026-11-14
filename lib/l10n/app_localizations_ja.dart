@@ -9472,7 +9472,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get homePasteFolderNotTrashable => 'この種類のフォルダはゴミ箱に入れられません。';
 
   @override
-  String get homePasteToTrashQuestion => '以下の作品・フォルダをゴミ箱に捨てますか？';
+  String get homePasteToTrashQuestion => '以下の作品・フォルダをゴミ箱へ移動しますか？';
 
   @override
   String homeTrashAutoDeleteNotice(int days) {

@@ -3325,7 +3325,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get projectDetailTrashMenuItem => 'Move to trash';
+  String get projectDetailTrashMenuItem => 'Move to Trash';
 
   @override
   String get commonOff => 'OFF';
@@ -10104,7 +10104,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get homePasteToTrashQuestion =>
-      'Move the following works and folders to the Trash?';
+      'Move the following works and folders to the trash?';
 
   @override
   String homeTrashAutoDeleteNotice(int days) {

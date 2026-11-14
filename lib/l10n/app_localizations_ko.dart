@@ -9520,7 +9520,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get homePasteFolderNotTrashable => '이 유형의 폴더는 휴지통으로 옮길 수 없습니다.';
 
   @override
-  String get homePasteToTrashQuestion => '다음 작품과 폴더를 휴지통으로 옮기시겠습니까?';
+  String get homePasteToTrashQuestion => '다음 작품과 폴더를 휴지통으로 이동하시겠습니까?';
 
   @override
   String homeTrashAutoDeleteNotice(int days) {

@@ -16836,7 +16836,7 @@ abstract class AppLocalizations {
   /// ゴミ箱のタブへ貼り付けたときの確認。下に名前を1行ずつ並べる
   ///
   /// In ja, this message translates to:
-  /// **'以下の作品・フォルダをゴミ箱に捨てますか？'**
+  /// **'以下の作品・フォルダをゴミ箱へ移動しますか？'**
   String get homePasteToTrashQuestion;
 
   /// ゴミ箱へ移す確認の注記：自動で完全に削除されるまでの日数（daysは1以上）

@@ -809,7 +809,7 @@ void main() {
     await tester.tap(find.byKey(const Key('homeCrossTabPasteButton')));
     await settle(tester);
     expect(find.byKey(const Key('homePasteToTrashDialog')), findsOneWidget);
-    expect(find.textContaining('以下の作品・フォルダをゴミ箱に捨てますか'), findsOneWidget);
+    expect(find.textContaining('以下の作品・フォルダをゴミ箱へ移動しますか'), findsOneWidget);
     expect(find.textContaining('30日後に完全削除'), findsOneWidget);
     await captureClipboardScreen(
       tester,

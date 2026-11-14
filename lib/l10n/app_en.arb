@@ -1175,7 +1175,7 @@
       }
     }
   },
-  "projectDetailTrashMenuItem": "Move to trash",
+  "projectDetailTrashMenuItem": "Move to Trash",
   "commonOff": "OFF",
   "perfSettingsScreenTitle": "Performance Settings",
   "perfSettingsQualitySection": "Quality settings",
@@ -3688,7 +3688,7 @@
   "homePasteNestedFolders": "This folder contains subfolders. The destination doesn’t support folders inside folders, so pasting was canceled to keep its structure intact.",
   "homePasteFolderUnreadable": "Couldn’t check the folder’s contents. Pasting was canceled to protect your data.",
   "homePasteFolderNotTrashable": "This kind of folder can’t be moved to the Trash.",
-  "homePasteToTrashQuestion": "Move the following works and folders to the Trash?",
+  "homePasteToTrashQuestion": "Move the following works and folders to the trash?",
   "homeTrashAutoDeleteNotice": "{days, plural, one{Items in the Trash are permanently deleted after {days} day.} other{Items in the Trash are permanently deleted after {days} days.}}",
   "homeTrashAutoDeleteOffNotice": "Automatic deletion in the Trash is off. Items stay until you delete them.",
   "homeRestoreFromTrashTitle": "Restore from Trash",

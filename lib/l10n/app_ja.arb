@@ -5309,7 +5309,7 @@
   "@homePasteFolderNotTrashable": {
     "description": "ゴミ箱へ入れられない種類のフォルダをゴミ箱へ貼り付けようとしたときの説明"
   },
-  "homePasteToTrashQuestion": "以下の作品・フォルダをゴミ箱に捨てますか？",
+  "homePasteToTrashQuestion": "以下の作品・フォルダをゴミ箱へ移動しますか？",
   "@homePasteToTrashQuestion": {
     "description": "ゴミ箱のタブへ貼り付けたときの確認。下に名前を1行ずつ並べる"
   },
