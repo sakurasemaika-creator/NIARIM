@@ -1220,6 +1220,21 @@ onTap: ...)`だったために
   （.niatra）にも入り、読み込むと開いている一覧へすぐ当てる（`reloadHomeListFilters`）。
   絞り込みを足すときは`HomeListFilters`・設定のキー・`niatra_serializer`の分類に足すこと
   （`test/home_list_filters_persist_test.dart`）。
+- **ホームのキーボードの順・空の表示（DISC138〜140・175〜177・179、2026-11-15）**：
+  `_HomeTraversalPolicy`は一覧（`_listAreaKey`）の中と外を**別々に**読む順に並べる
+  （まとめると浮かぶボタンの高さの帯が行を割り、同じ︙に2回止まった）。Tabで進んだ
+  一覧の部品は浮かぶボタンの並び（`_floatingActionsKey`）の16px上まで送る。マウス・
+  指でタブを替えたら、一覧にあったフォーカスを選んだタブへ移す（隠れたページは
+  フォーカスがある間残り、次のTabで前のタブへ戻った）。浮かぶボタンのフォーカスは
+  外側の輪（`_HomeFloatingAction`、キーボード操作中だけ）。作品一覧・共有・ゴミ箱の
+  タブも検索・絞り込みで全部隠れたときは「ありません」と言わず外す道を出す
+  （`_filteredLibraryEmptyState`、ゴミ箱は種類のチップも）。パンくずは本当に探して
+  いる間だけ消す（`ProjectListWidget.searchesEverywhere`）。ゴミ箱の読み込み中の印は
+  動かない砂時計の行（回る印は偽の時計で止まらず、`pumpAndSettle`のtestが終わらない）。
+  見張りは`home_tab_order_once_test`・`home_focus_above_fabs_test`・
+  `home_tab_switch_focus_test`・`home_fab_focus_ring_test`・
+  `home_tab_filtered_empty_states_test`ほか。Shift+Tabで作られていない下の行へ
+  戻れない・フォルダの中の画面の空の表示等はまだ（DISC200〜205）。
 - **作品・フォルダの名前で並べる・探すときは`lib/utils/name_collation.dart`**：
   `String.compareTo`だと「作品10」が「作品2」より前、大文字が小文字より前、
   全角英字・半角カナが最後になる。並べるときは`NameSortKey`で名前ごとに
