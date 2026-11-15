@@ -12,6 +12,7 @@ import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/models/app_theme_preset.dart';
 import 'package:niarim/router.dart';
 import 'package:niarim/screens/home/home_screen.dart';
+import 'package:niarim/screens/home/widgets/project_list_widget.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:niarim/services/theme_service.dart';
 import 'package:niarim/screens/community/community_screen.dart';
@@ -394,17 +395,34 @@ void main() {
     final projects = tester
         .element(find.byType(HomeScreen))
         .read<ProjectService>();
-    await tester.runAsync(
-      () => projects.createProject(
-        name: 'Layout',
-        fps: 12,
-        durationSeconds: 1,
-        backgroundColor: 0xFFFFFFFF,
-      ),
-    );
+    // 「一番上へ」は一覧を上へ戻せるときだけ出す（一番上・スクロールできない
+    // 一覧では出さない。DISC181）ので、送れるだけ作ってから送る。
+    await tester.runAsync(() async {
+      for (var i = 0; i < 16; i++) {
+        await projects.createProject(
+          name: 'Layout $i',
+          fps: 12,
+          durationSeconds: 1,
+          backgroundColor: 0xFFFFFFFF,
+        );
+      }
+    });
+    await tester.pumpAndSettle();
+    expect(scrollFinder, findsNothing);
+    expect(find.text(l10n.homeFavoritesOnly), findsOneWidget);
+    tester
+        .state<ScrollableState>(
+          find
+              .descendant(
+                of: find.byType(ProjectListWidget),
+                matching: find.byType(Scrollable),
+              )
+              .first,
+        )
+        .position
+        .jumpTo(200);
     await tester.pumpAndSettle();
     expect(scrollFinder, findsOneWidget);
-    expect(find.text(l10n.homeFavoritesOnly), findsOneWidget);
     final fabs = find.byType(FloatingActionButton);
     expect(fabs, findsNWidgets(2));
     final scrollFab = tester.widget<FloatingActionButton>(scrollFinder);

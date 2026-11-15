@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/screens/home/home_screen.dart';
+import 'package:niarim/screens/home/widgets/project_list_widget.dart';
 
 import 'helpers/color_channels.dart';
 import 'helpers/home_keyboard_harness.dart';
@@ -37,10 +38,34 @@ void main() {
       final home = await HomeKeyboardHarness.open(
         tester,
         size: size,
-        works: 4,
+        works: 24,
         prefs: {'theme_current_json': ?theme},
       );
       final l10n = home.l10n;
+      // 「一番上へ」は一覧を上へ戻せるときだけ出るので、一覧を一番下まで送り、
+      // 一覧の最後の作品の︙にフォーカスを置いてから（そこからTabで浮かぶ
+      // ボタンへ進む。一番上からTabで回ると、一覧が一番上へ戻って「一番上へ」
+      // が消える）。
+      final list = tester.state<ScrollableState>(
+        find
+            .descendant(
+              of: find.byType(ProjectListWidget),
+              matching: find.byType(Scrollable),
+            )
+            .first,
+      );
+      list.position.jumpTo(list.position.maxScrollExtent);
+      await home.settle();
+      final last = home.projects.projects.firstWhere((p) => p.name == 'Work 0');
+      Focus.of(
+        tester.element(
+          find.descendant(
+            of: find.byKey(Key('collectionMenu_${last.id}')),
+            matching: find.byIcon(Icons.more_vert),
+          ),
+        ),
+      ).requestFocus();
+      await home.settle();
       final fabs = {
         l10n.communityScrollToTop: find.byKey(const Key('homeScrollToTopFab')),
         l10n.commonAdd: find.byWidgetPredicate(

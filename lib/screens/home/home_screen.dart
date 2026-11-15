@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart' show setEquals;
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart' show SchedulerBinding, SchedulerPhase;
 import 'package:flutter/semantics.dart' show SemanticsBinding;
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
@@ -409,6 +410,33 @@ class _HomeScreenState extends State<HomeScreen>
   final _projectScrollController = ScrollController();
   late _HomeTabController _tabController;
 
+  // プロジェクトの一覧を一番上から送ってあるか（左下の「↑」は、上へ戻せる
+  // ときだけ出す。以前は一番上でも、スクロールできない短いフォルダでも出て、
+  // 左下のカードの名前を隠した）。
+  bool _projectsCanGoUp = false;
+
+  /// 一覧を送ったとき（コントローラーの知らせ）と、ホームを組み立て直した
+  /// 後（フォルダを替えた・絞り込んだ・窓の大きさを変えた：一覧が作り
+  /// 直され、送った位置が知らせなしに変わる）に、[_projectsCanGoUp]を
+  /// 合わせる。
+  void _syncProjectsCanGoUp() {
+    if (!mounted) return;
+    if (SchedulerBinding.instance.schedulerPhase ==
+        SchedulerPhase.persistentCallbacks) {
+      // 組み立て・並べている途中の知らせは、そのフレームの後で合わせる。
+      WidgetsBinding.instance.addPostFrameCallback(
+        (_) => _syncProjectsCanGoUp(),
+      );
+      return;
+    }
+    final canGoUp = _projectScrollController.positions.any(
+      (p) => p.hasPixels && p.pixels > p.minScrollExtent + 0.5,
+    );
+    if (canGoUp != _projectsCanGoUp) {
+      setState(() => _projectsCanGoUp = canGoUp);
+    }
+  }
+
   // 引き出し（画面の外へ出たかを見る）と、閉じた引き出しを1フレームだけ
   // 外している間（[_releaseClosedEndDrawer]）。
   final _endDrawerKey = GlobalKey(debugLabel: 'homeEndDrawer');
@@ -655,6 +683,7 @@ class _HomeScreenState extends State<HomeScreen>
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _tabController = _HomeTabController(length: 4, vsync: this);
+    _projectScrollController.addListener(_syncProjectsCanGoUp);
     _tabController.addListener(() {
       if (_tabController.index != _currentTabIndex) {
         final wasSearching = _isSearching;
@@ -946,6 +975,7 @@ class _HomeScreenState extends State<HomeScreen>
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     _tabController.reduceMotion = MediaQuery.disableAnimationsOf(context);
+    WidgetsBinding.instance.addPostFrameCallback((_) => _syncProjectsCanGoUp());
     _maybeRecordLogin(
       context.watch<GoogleAuthService>().account?.id,
       context.read<CommunityService>().api,
@@ -1861,9 +1891,11 @@ class _HomeScreenState extends State<HomeScreen>
     final shared = _currentTabIndex == 2;
     // 一覧が空（空の表示・読み込めなかった知らせだけ）のときは、送る先が
     // 無いので「一番上へ」を出さない（押しても何も起きず、空の表示の案内に
-    // 重なった）。作成の＋は右下に残す。
+    // 重なった）。一覧の一番上にいるとき・スクロールできない短い一覧でも
+    // 出さない（上へ戻る先が無い）。作成の＋は右下に残す。
     final scrollToTop =
         projects &&
+        _projectsCanGoUp &&
         _visibleProjectIds(context.watch<ProjectService>()).isNotEmpty;
     // 浮かぶボタンの所では Scaffold が画面の左右の安全な領域を外すので、
     // 横向きの左右の切り欠き・3ボタンの帯は、ホームの画面の値で避ける

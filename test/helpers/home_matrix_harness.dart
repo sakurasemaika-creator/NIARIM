@@ -1768,6 +1768,16 @@ class HomeMatrix {
                 .evaluate()
                 .isNotEmpty);
     final scrollToTop = fab('home-scroll-to-top', l10n.communityScrollToTop);
+    // 「一番上へ」は一覧を上へ戻せるとき（一番上から送ってあるとき）だけ
+    // 出す。一番上・スクロールできない短い一覧では出さない（DISC181）。
+    final projectsScroll = currentView == HomeView.projects
+        ? _projectsScrollable()
+        : null;
+    final projectsCanGoUp =
+        projectsScroll != null &&
+        projectsScroll.position.hasPixels &&
+        projectsScroll.position.pixels >
+            projectsScroll.position.minScrollExtent + 0.5;
     final controls = <String, Finder>{
       'back': find.byKey(const Key('homeBackToSplashButton')),
       'drawer': find.byKey(const Key('homeMenuButton')),
@@ -1794,7 +1804,7 @@ class HomeMatrix {
           ),
           if (!selecting) ...{
             'add': fab('home-add-project', l10n.commonAdd),
-            if (!projectsEmpty) 'scroll to top': scrollToTop,
+            if (!projectsEmpty && projectsCanGoUp) 'scroll to top': scrollToTop,
           },
         },
         HomeView.works => {
@@ -1842,6 +1852,10 @@ class HomeMatrix {
         ?_operableProblem('required control "$name"', finder),
       if (projectsEmpty && scrollToTop.evaluate().isNotEmpty)
         'scroll-to-top button shown on an empty project list',
+      if (!projectsEmpty &&
+          !projectsCanGoUp &&
+          scrollToTop.evaluate().isNotEmpty)
+        'scroll-to-top button shown where the list cannot go up',
     ];
   }
 

@@ -524,6 +524,20 @@ void main() {
     for (var i = 1; i <= 12; i++) {
       await home.addProject('カット$i');
     }
+    // 一覧の一番上では出さず（上へ戻る先が無い。DISC181）、送ると出る。
+    expect(find.byKey(const Key('homeScrollToTopFab')), findsNothing);
+    tester
+        .state<ScrollableState>(
+          find
+              .descendant(
+                of: find.byType(ProjectListWidget),
+                matching: find.byType(Scrollable),
+              )
+              .first,
+        )
+        .position
+        .jumpTo(200);
+    await home.frames(2);
     expect(find.byKey(const Key('homeScrollToTopFab')), findsOneWidget);
     await home.close();
   });
