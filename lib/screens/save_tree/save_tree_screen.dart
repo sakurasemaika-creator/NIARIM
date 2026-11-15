@@ -20,6 +20,8 @@ import '../../widgets/ad_banner_mock_widget.dart';
 import '../../utils/app_error_reporter.dart';
 import '../../utils/file_size_label.dart';
 import '../../widgets/dispose_on_unmount.dart';
+import '../../widgets/keep_together_text.dart';
+import '../../widgets/typing_dialog_inset.dart';
 import '../../config/font_fallback.dart';
 import '../../config/accent_text_theme.dart';
 import 'widgets/save_delete_feedback.dart';
@@ -219,19 +221,17 @@ void _showTreeSaveDialog(
           // 小さい画面・大きな文字では、開いてすぐ出るキーボードの上に、
           // 打っている欄が見えるようにスクロールする。
           scrollable: true,
-          // キーボードが開いている間は、ダイアログの上下に余白を取らない（文字の
-          // 大きな小さい画面では、折り返して高くなったボタンの段と合わせて、
-          // 打っている欄がキーボードの上に入らなかった）。
-          insetPadding: MediaQuery.viewInsetsOf(ctx).bottom > 0
-              ? const EdgeInsets.symmetric(horizontal: 40)
-              : null,
+          // キーボードが開いている間は、ダイアログの上下に余白を取らない。
+          // 狭い画面では左右の空きを縮め、題・ボタンの語を途中で折らない。
+          insetPadding: typingDialogInsetPadding(ctx),
           title: Text(l10n.commonSave),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Padding(
                 padding: const EdgeInsets.only(bottom: 8),
-                child: Text(
+                // 韓国語の語は、1行に入れば途中で折らない。
+                child: messageText(
                   parentId != null
                       ? l10n.saveTreeSaveAsChildHint
                       : l10n.saveTreeSaveAsRootHint,
@@ -615,12 +615,9 @@ class _SlotView extends StatelessWidget {
           // 小さい画面・大きな文字では、開いてすぐ出るキーボードの上に、
           // 打っている欄が見えるようにスクロールする。
           scrollable: true,
-          // キーボードが開いている間は、ダイアログの上下に余白を取らない（文字の
-          // 大きな小さい画面では、折り返して高くなったボタンの段と合わせて、
-          // 打っている欄がキーボードの上に入らなかった）。
-          insetPadding: MediaQuery.viewInsetsOf(ctx).bottom > 0
-              ? const EdgeInsets.symmetric(horizontal: 40)
-              : null,
+          // キーボードが開いている間は、ダイアログの上下に余白を取らない。
+          // 狭い画面では左右の空きを縮め、題・ボタンの語を途中で折らない。
+          insetPadding: typingDialogInsetPadding(ctx),
           title: Text(l10n.saveTreeSlotSaveDialogTitle(slotIndex + 1)),
           content: Column(
             mainAxisSize: MainAxisSize.min,

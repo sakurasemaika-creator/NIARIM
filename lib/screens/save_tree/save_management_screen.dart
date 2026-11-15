@@ -17,6 +17,7 @@ import '../../widgets/dispose_on_unmount.dart';
 import '../../widgets/help_button.dart';
 import '../../widgets/projects_load_failure_notice.dart';
 import '../../widgets/responsive.dart';
+import '../../widgets/typing_dialog_inset.dart';
 import 'save_tree_screen.dart';
 import 'widgets/save_thumbnail_capture.dart';
 import 'widgets/save_delete_feedback.dart';
@@ -216,12 +217,9 @@ class _GameStyleSlotScreen extends StatelessWidget {
             // 小さい画面・大きな文字では、開いてすぐ出るキーボードの上に、
             // 打っている欄が見えるようにスクロールする。
             scrollable: true,
-            // キーボードが開いている間は、ダイアログの上下に余白を取らない（文字の
-            // 大きな小さい画面では、折り返して高くなったボタンの段と合わせて、
-            // 打っている欄がキーボードの上に入らなかった）。
-            insetPadding: MediaQuery.viewInsetsOf(ctx).bottom > 0
-                ? const EdgeInsets.symmetric(horizontal: 40)
-                : null,
+            // キーボードが開いている間は、ダイアログの上下に余白を取らない。
+            // 狭い画面では左右の空きを縮め、題・ボタンの語を途中で折らない。
+            insetPadding: typingDialogInsetPadding(ctx),
             title: Text(l10n.saveTreeSlotSaveDialogTitle(slotIndex + 1)),
             content: Column(
               mainAxisSize: MainAxisSize.min,
