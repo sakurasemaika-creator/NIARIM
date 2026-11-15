@@ -300,9 +300,16 @@
   打つ欄のあるダイアログは`lib/widgets/typing_dialog_inset.dart`の
   `typingDialogInsetPadding`を`insetPadding`に渡す（キーボードが開いている間は
   上下の空きも取らない）。打つ欄の無い確認のダイアログは同じファイルの
-  `dialogInsetPadding`（左右の空きの決め方は同じ、上下は既定のまま。キャンバス・
-  タイムラインの「戻る」の確認とゴミ箱の確認が使う。ほかの確認のダイアログは
-  まだ既定の空き、DISC211）。メモの欄のような1行の`TextField`のヒントは
+  `dialogInsetPadding`（左右の空きの決め方は同じ、上下は既定のまま）。空きを
+  渡していないダイアログも、画面から開けば`menu_surface.dart`の画面ごとの印が
+  `NarrowDialogInset`で包み、360px未満ではテーマの`dialogTheme.insetPadding`に
+  `dialogInsetPadding`を入れる（DISC211。360px以上と自分で空きを渡したものは
+  そのまま。幅で包む・包まないを変えると開いているダイアログの中身が作り直され
+  打った字が消えるので、いつも`Theme`で包む）。自分の`Theme`でダイアログを包む
+  所（救済のダイアログ、DISC221）と`MaterialApp.router`の`builder`層から開く
+  ダイアログには届かない。打つ欄のあるダイアログは、キーボードの間の上下の空きの
+  ために`typingDialogInsetPadding`をやはり渡すこと（まだの所はDISC222）。
+  メモの欄のような1行の`TextField`のヒントは
   `hintMaxLines`を付けないと1行で「…」と切れる（DISC192）。
 - **フォントの代替列（fontFamilyFallback）は本文用と見出し用で別物**：
   `lib/config/font_fallback.dart`に`kBodyFontFallback`（明朝系）と
