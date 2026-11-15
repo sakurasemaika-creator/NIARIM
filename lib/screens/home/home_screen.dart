@@ -3097,30 +3097,37 @@ class _HomeTraversalPolicy extends ReadingOrderTraversalPolicy {
     Iterable<FocusNode> descendants,
     FocusNode currentNode,
   ) {
-    final sorted = super.sortDescendants(descendants, currentNode).toList();
     final area = listArea.currentContext;
     final box = area?.findRenderObject();
     if (area == null || box is! RenderBox || !box.attached || !box.hasSize) {
-      return sorted;
+      return super.sortDescendants(descendants, currentNode);
     }
-    final inside = <FocusNode>{};
-    for (final node in sorted) {
+    final inside = <FocusNode>[];
+    final others = <FocusNode>[];
+    for (final node in descendants) {
       var found = false;
       node.context?.visitAncestorElements((element) {
         found = identical(element, area);
         return !found;
       });
-      if (found) inside.add(node);
+      (found ? inside : others).add(node);
     }
-    if (inside.isEmpty) return sorted;
+    if (inside.isEmpty) return super.sortDescendants(descendants, currentNode);
+    // 一覧の物は一覧の物だけで、それ以外はそれ以外だけで読む順に並べる。
+    // まとめて並べると、一覧の上に浮かぶボタン（「一番上へ」・＋）が同じ
+    // 高さの行の並びに混ざり、その高さに入った行の︙だけが同じ行の星より先に
+    // 並んだ。Tabで進んで一覧がスクロールするたびに並びが変わり、同じ︙に
+    // 2回止まる・星を飛ばすことがあった。
+    final list = super.sortDescendants(inside, currentNode);
+    final rest = super.sortDescendants(others, currentNode).toList();
     final top = box.localToGlobal(Offset.zero).dy;
     // 上端が一覧より上の物（上部バー・タブ・操作バー、画面を包むノード）は
     // 一覧の前、浮かぶボタンは後。
-    bool above(FocusNode node) => !inside.contains(node) && node.rect.top < top;
+    bool above(FocusNode node) => node.rect.top < top;
     return [
-      ...sorted.where(above),
-      ...inside,
-      ...sorted.where((node) => !inside.contains(node) && !above(node)),
+      ...rest.where(above),
+      ...list,
+      ...rest.where((node) => !above(node)),
     ];
   }
 

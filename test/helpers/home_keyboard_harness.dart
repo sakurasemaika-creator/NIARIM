@@ -123,23 +123,27 @@ class HomeKeyboardHarness {
 
   FocusNode? get focus => FocusManager.instance.primaryFocus;
 
-  /// フォーカスのある部品の名前（ツールチップ・作品のカードの部品のキー）。
+  /// フォーカスのある部品の名前。作品のカードの部品（︙・星）はそのキー
+  /// （スクロールで作り直されても同じ名前）、ほかはツールチップとフォーカスの
+  /// ノードそのもの（同じ部品なら同じ名前）。
   String describeFocus() {
-    final context = focus?.context;
+    final node = focus;
+    final context = node?.context;
     if (context == null) return 'none';
-    String? key;
+    String? item;
     String? tip;
     context.visitAncestorElements((element) {
       final widget = element.widget;
       if (tip == null && widget is Tooltip) tip = widget.message;
       if (tip == null && widget is FloatingActionButton) tip = widget.tooltip;
-      final k = widget.key;
-      if (key == null && k is ValueKey && '${k.value}'.contains('_')) {
-        key = '${k.value}';
+      final key = widget.key;
+      if (key is ValueKey<String> && key.value.startsWith('collection')) {
+        item = key.value;
+        return false;
       }
-      return key == null;
+      return true;
     });
-    return key ?? tip ?? focus.toString();
+    return item ?? '${tip ?? node!.debugLabel}#${identityHashCode(node)}';
   }
 
   /// フォーカスが[finder]の中にあるか。
