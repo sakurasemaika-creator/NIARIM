@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 
 import '../l10n/app_localizations.dart';
 import '../services/theme_service.dart';
+import 'keep_together_text.dart';
+import 'typing_dialog_inset.dart';
 
 /// 起動画面と「テーマ・外観」設定で共通利用する復旧ボタン。
 /// 通常UIと違い、復旧経路だけ黒・白の固定色を使う。
@@ -23,7 +25,14 @@ class ThemeRescueButton extends StatelessWidget {
       builder: (dialogContext) => Theme(
         data: ThemeService.rescueThemeData,
         child: AlertDialog(
-          title: Text(l10n.themeResetConfirmTitle),
+          // 救済のテーマで包むと、画面の印がテーマに入れる狭い画面の空き
+          // （NarrowDialogInset）が隠れ、320pxの画面では最小の幅より狭い
+          // 240pxになっていた。空きは色を持たないので、ここで直に渡す
+          // （360px以上は null＝今までどおり）。
+          insetPadding: dialogInsetPadding(dialogContext),
+          // 題の韓国語の語は、1行に入れば途中で折らない（普通のTextでは
+          // 「초기화하시겠습니 / 까?」と折れた）。
+          title: messageText(l10n.themeResetConfirmTitle),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(dialogContext).pop(false),
