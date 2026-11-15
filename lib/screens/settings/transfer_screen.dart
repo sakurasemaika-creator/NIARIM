@@ -547,7 +547,11 @@ class _TransferScreenState extends State<TransferScreen> {
               if (shortcuts.isNotEmpty)
                 l10n.transferImportShortcutsNotAddedSnackbar(
                   shortcuts.length,
-                  shortcutDisplayLabel(l10n, shortcuts.first),
+                  shortcutDisplayLabel(
+                    l10n,
+                    shortcuts.first,
+                    brushes: context.read<BrushService>().brushes,
+                  ),
                   shortcuts.first.comboLabel,
                 ),
             ].join('\n'),

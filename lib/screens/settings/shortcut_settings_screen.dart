@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import '../../l10n/app_localizations.dart';
+import '../../models/brush.dart';
 import '../../models/shortcut_binding.dart';
 import '../../services/brush_service.dart';
 import '../../services/shortcut_service.dart';
@@ -55,19 +56,33 @@ Map<ShortcutCommand, String> shortcutCommandLabels(AppLocalizations l10n) => {
 /// ときの言語のまま残った。前の版で保存した割り当ても、保存した種類から
 /// 読み直す。保存の形（`label`）は前の版が読めるよう今までどおり残す。
 ///
-/// ブラシの割り当ての名前（ブラシの名前と太さ）は利用者のデータなので、
-/// 保存したまま出す。
-String shortcutDisplayLabel(AppLocalizations l10n, ShortcutBinding binding) {
+/// ブラシの割り当ての名前は、[brushes]の中のそのブラシの今の名前（利用者の
+/// データなので訳さない）と決めた太さで作る（足したときのブラシの名前を
+/// 保存したまま出すと、ブラシの名前を変えても古い名前のままだった）。
+/// ブラシが無くなっていれば（[brushes]を渡さなければ）保存した名前。
+String shortcutDisplayLabel(
+  AppLocalizations l10n,
+  ShortcutBinding binding, {
+  Iterable<Brush> brushes = const [],
+}) {
   final command = binding.command;
   if (command != null) {
     return shortcutCommandLabels(l10n)[command] ?? binding.label;
   }
-  return switch (binding.toolKey) {
-    'eraser' => l10n.quickToolEraser,
-    'eyedropper' => l10n.quickToolEyedropper,
-    'bucket' => l10n.quickToolBucket,
-    _ => binding.label,
-  };
+  switch (binding.toolKey) {
+    case 'eraser':
+      return l10n.quickToolEraser;
+    case 'eyedropper':
+      return l10n.quickToolEyedropper;
+    case 'bucket':
+      return l10n.quickToolBucket;
+    case 'pen':
+      final brush = brushes.where((b) => b.id == binding.brushId).firstOrNull;
+      if (brush == null) return binding.label;
+      final size = binding.sizeOverride;
+      return size == null ? brush.name : '${brush.name} ${size.round()}px';
+  }
+  return binding.label;
 }
 
 class ShortcutSettingsScreen extends StatelessWidget {
@@ -82,6 +97,9 @@ class ShortcutSettingsScreen extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final service = context.watch<ShortcutService>();
     final bindings = service.bindings;
+    // ブラシの名前を変えたら、ブラシの割り当ての名前も変わる（ブラシの一覧が
+    // 無ければ保存した名前）。
+    final brushes = context.watch<BrushService?>()?.brushes ?? const [];
 
     return Scaffold(
       appBar: AppBar(
@@ -138,7 +156,11 @@ class ShortcutSettingsScreen extends StatelessWidget {
                           child: LayoutBuilder(
                             builder: (context, box) {
                               final chip = _KeyChip(b.comboLabel);
-                              final label = shortcutDisplayLabel(l10n, b);
+                              final label = shortcutDisplayLabel(
+                                l10n,
+                                b,
+                                brushes: brushes,
+                              );
                               // 韓国語の語は、1行に入れば途中で折らない。
                               final name = messageText(
                                 label,
@@ -610,7 +632,11 @@ class ShortcutSettingsScreen extends StatelessWidget {
           content: Text(
             l10n.shortcutConflictBody(
               binding.comboLabel,
-              shortcutDisplayLabel(l10n, conflict),
+              shortcutDisplayLabel(
+                l10n,
+                conflict,
+                brushes: context.read<BrushService?>()?.brushes ?? const [],
+              ),
             ),
           ),
           actions: [
