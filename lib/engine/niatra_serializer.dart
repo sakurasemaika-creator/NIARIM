@@ -331,9 +331,16 @@ class NiatraSerializer {
         if (value is String ||
             value is bool ||
             value is int ||
-            value is double ||
-            value is List<String>) {
+            value is double) {
           local[key] = value;
+        } else if (value is List) {
+          // 端末の保存は、起動時に読んだ一覧を`List<Object?>`のまま渡し、
+          // その一覧を書き直すまで`List<String>`にならない（以前は型で選んで
+          // いたので、この起動で変えていない一覧が書き出しから落ちた）。
+          // アプリの読み込みと同じく、文字列でない項目を含む一覧は読めない
+          // 一覧として記録し、書き出さない。
+          final strings = prefs.readStringList(key);
+          if (strings != null) local[key] = strings;
         }
       }
       data['localPreferences'] = local;
