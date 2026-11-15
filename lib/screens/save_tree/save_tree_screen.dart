@@ -257,6 +257,9 @@ void _showTreeSaveDialog(
                 decoration: InputDecoration(
                   labelText: l10n.saveTreeCommentLabel,
                   hintText: l10n.saveTreeCommentHint,
+                  // 入らないヒントは行を増やして全部出す（1行の欄のままだと、
+                  // 仏語・文字2倍で「ex. : Arrière-plan…」と切れた）。
+                  hintMaxLines: 4,
                 ),
               ),
               if (failure != null)
@@ -625,7 +628,8 @@ class _SlotView extends StatelessWidget {
               if (existing != null)
                 Padding(
                   padding: EdgeInsets.only(bottom: 8),
-                  child: Text(
+                  // 韓国語の語は、1行に入れば途中で折らない。
+                  child: messageText(
                     l10n.saveTreeSlotOverwriteWarning(
                       _formatDate(existing.savedAt),
                     ),
@@ -652,6 +656,9 @@ class _SlotView extends StatelessWidget {
                 decoration: InputDecoration(
                   labelText: l10n.saveTreeCommentLabel,
                   hintText: l10n.saveTreeCommentHint,
+                  // 入らないヒントは行を増やして全部出す（1行の欄のままだと、
+                  // 仏語・文字2倍で「ex. : Arrière-plan…」と切れた）。
+                  hintMaxLines: 4,
                 ),
               ),
               _SlotSaveFailureText(key: failureText),
