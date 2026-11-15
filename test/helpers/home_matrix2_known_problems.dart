@@ -20,15 +20,6 @@ final kHomeMatrix2KnownProblems = <HomeMatrixKnownProblem>[
     RegExp(r'^tap target 40x40 \(card\): '),
   ),
   HomeMatrixKnownProblem(
-    'DISC213',
-    '動きを減らす設定（端末の「アニメーションを削除」＝disableAnimations）'
-        'でも、タブを切り替えると本文が約300ms（19〜20フレーム）かけて横に'
-        '滑る。TabBarの切り替えはページのスクロールのアニメーションで、'
-        'この設定を見ていない（引き出しは2フレーム、知らせは1フレームで'
-        '終わる）。',
-    RegExp(r'^tab switch takes \d+ frames with reduced motion'),
-  ),
-  HomeMatrixKnownProblem(
     'DISC214',
     '動きを減らす設定で引き出しを閉じると、引き出しは2フレームで画面の外へ'
         '出て見えなくなるが、その後さらに約24フレーム（約0.4秒）、ホームの'

@@ -405,7 +405,7 @@ class _HomeScreenState extends State<HomeScreen>
   }
 
   final _projectScrollController = ScrollController();
-  late TabController _tabController;
+  late _HomeTabController _tabController;
   static const _projectViewModeKey = 'home.projectViewMode.v1';
   static const _worksViewModeKey = 'home.worksViewMode.v1';
   ProjectViewMode? _userViewMode;
@@ -614,7 +614,7 @@ class _HomeScreenState extends State<HomeScreen>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _tabController = TabController(length: 4, vsync: this);
+    _tabController = _HomeTabController(length: 4, vsync: this);
     _tabController.addListener(() {
       if (_tabController.index != _currentTabIndex) {
         final wasSearching = _isSearching;
@@ -905,6 +905,7 @@ class _HomeScreenState extends State<HomeScreen>
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    _tabController.reduceMotion = MediaQuery.disableAnimationsOf(context);
     _maybeRecordLogin(
       context.watch<GoogleAuthService>().account?.id,
       context.read<CommunityService>().api,
@@ -3040,6 +3041,31 @@ class _HomeScreenState extends State<HomeScreen>
 /// 輪の色は、絞り込みのチップの輪（[ChipFocusRing]）と同じ地の上の文字の
 /// 色で、ボタンの塗りとも地とも分かれる。マウス・指で操作しているとき
 /// （[FocusHighlightMode.touch]）は出さない。
+/// ホームのタブ。動きを減らす設定（端末の「アニメーションを削除」）では、
+/// タブを替えると本文がその場で次のタブになる（TabBarViewは
+/// [animationDuration]が0なら横に滑らせずにページを替え、TabBarは選んだ
+/// タブを[animateTo]で選ぶ）。以前は設定を見ずに約300ms横に滑った。設定が
+/// オフなら既定のまま。
+class _HomeTabController extends TabController {
+  _HomeTabController({required super.length, required super.vsync});
+
+  /// 動きを減らす設定（組み立てのたびにホームが合わせる）。
+  bool reduceMotion = false;
+
+  @override
+  Duration get animationDuration =>
+      reduceMotion ? Duration.zero : super.animationDuration;
+
+  @override
+  void animateTo(int value, {Duration? duration, Curve curve = Curves.ease}) {
+    super.animateTo(
+      value,
+      duration: duration ?? animationDuration,
+      curve: curve,
+    );
+  }
+}
+
 class _HomeFloatingAction extends StatefulWidget {
   const _HomeFloatingAction({
     this.fabKey,

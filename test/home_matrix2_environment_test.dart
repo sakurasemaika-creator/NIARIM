@@ -180,7 +180,6 @@ final _run = HomeMatrixRun(
   Directory('build/home-matrix2/environment'),
   knownProblems: homeMatrix2Known(const [
     'DISC212',
-    'DISC213',
     'DISC214',
     'DISC215',
     'DISC216',
