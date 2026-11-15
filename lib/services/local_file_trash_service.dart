@@ -6,6 +6,7 @@ import 'package:path_provider/path_provider.dart';
 
 import '../utils/app_error_reporter.dart';
 import 'export_storage.dart';
+import 'storage_info_service.dart';
 import 'work_folder_service.dart';
 
 /// Locally owned files are moved to a recoverable archive instead of being
@@ -47,6 +48,8 @@ class LocalTrashedFile {
 /// A directory per item means large videos do not enter preferences or RAM.
 /// Metadata is written AFTER the copy is complete and BEFORE deleting the
 /// source; an interrupted copy preserves the source and lists nothing.
+/// A folder left without metadata (the app stopped during a move, a restore or
+/// a permanent delete) is removed at start-up by [sweepExpired].
 /// Restore never overwrites an existing file.
 abstract final class LocalFileTrashService {
   static final ValueNotifier<int> changes = ValueNotifier<int>(0);
@@ -158,6 +161,7 @@ abstract final class LocalFileTrashService {
       archivedPath: '${directory.path}/data',
       deletedAt: DateTime.now(),
     );
+    var recorded = false;
     try {
       final saved = await source.copy(entry.archivedPath);
       if (await saved.length() != await source.length()) {
@@ -169,13 +173,18 @@ abstract final class LocalFileTrashService {
       // during the copy showed a half-copied file, and a failed or killed
       // copy showed a broken item beside the untouched source.
       await _replaceMeta(File('${directory.path}/meta.json'), entry.toJson());
+      recorded = true;
       await source.delete();
       _changed(exports: kind == LocalTrashKind.exportedWork);
       return entry;
     } catch (_) {
       // If source removal failed it remains intact; do not display partial
-      // trash entries. A complete archive is never deleted without its source.
-      if (await source.exists()) {
+      // trash entries. A recorded archive is never deleted without its source.
+      // A copy without its record is removed even when the source is gone:
+      // the source can vanish outside the app during the copy (another app,
+      // the same file moved twice), and nothing lists an unrecorded copy, so
+      // it could never be restored or deleted and only used storage.
+      if (!recorded || await source.exists()) {
         try {
           await directory.delete(recursive: true);
         } catch (_) {}
@@ -424,7 +433,11 @@ abstract final class LocalFileTrashService {
   /// Apply the configured retention period to exported works and saved
   /// outgoing archives, including complete exported-work folders. Native
   /// projects are swept separately by ProjectService.
+  ///
+  /// Called at start-up, it first removes the folders that have no record
+  /// ([_removeUnrecorded]), whatever the retention period.
   static Future<void> sweepExpired(int days) async {
+    await _removeUnrecorded();
     if (days <= 0) return;
     final now = DateTime.now();
     for (final entry in await list()) {
@@ -447,6 +460,77 @@ abstract final class LocalFileTrashService {
         // must never prevent app startup or delete an incomplete recovery.
       }
     }
+  }
+
+  /// How long a Trash folder without a record must have been left untouched
+  /// before [_removeUnrecorded] removes it. A move writes the record only once
+  /// its copy is complete, so the folder of a move that is still running (in
+  /// another window of the app) has no record either: its name (the time the
+  /// move started) or the file being copied is newer than this.
+  static const _unrecordedGrace = Duration(hours: 1);
+
+  /// The folder names [move] and [moveWorkFolder] create (a time in
+  /// microseconds). Anything else in the Trash folder is left alone.
+  static final _itemFolderName = RegExp(r'^[0-9]+$');
+
+  /// Remove the Trash folders that have no record. A move, a restore or a
+  /// permanent delete stopped half way (the app was closed, the device turned
+  /// off) leaves such a folder: [list] never shows it, so it could not be
+  /// restored or deleted, and the half-copied file kept using storage.
+  /// A folder with a record is kept even when the record cannot be read, and
+  /// links are not followed. Errors are recorded and never stop start-up.
+  static Future<void> _removeUnrecorded() async {
+    var removed = false;
+    try {
+      final root = await _root();
+      if (!await root.exists()) return;
+      final cutoff = DateTime.now().subtract(_unrecordedGrace);
+      await for (final entity in root.list(followLinks: false)) {
+        if (entity is! Directory) continue;
+        final name = entity.uri.pathSegments.where((p) => p.isNotEmpty).last;
+        final seed = _itemFolderName.hasMatch(name) ? int.tryParse(name) : null;
+        if (seed == null) continue;
+        try {
+          final meta = await FileSystemEntity.type(
+            '${entity.path}/meta.json',
+            followLinks: false,
+          );
+          if (meta != FileSystemEntityType.notFound) continue;
+          if (!await _untouchedSince(entity, seed, cutoff)) continue;
+          await entity.delete(recursive: true);
+          removed = true;
+        } on PathNotFoundException {
+          // Removed meanwhile (a permanent delete finishing).
+        } catch (error, stackTrace) {
+          AppErrorReporter.record(error, stackTrace);
+        }
+      }
+    } catch (error, stackTrace) {
+      AppErrorReporter.record(error, stackTrace);
+    } finally {
+      if (removed) StorageInfoService().invalidate();
+    }
+  }
+
+  /// Whether nothing in [folder] has been written since [cutoff]: neither the
+  /// folder itself (its name is the time its move started) nor a file in it.
+  static Future<bool> _untouchedSince(
+    Directory folder,
+    int seed,
+    DateTime cutoff,
+  ) async {
+    if (DateTime.fromMicrosecondsSinceEpoch(seed).isAfter(cutoff)) {
+      return false;
+    }
+    await for (final entity in folder.list(
+      recursive: true,
+      followLinks: false,
+    )) {
+      if (entity is File && (await entity.stat()).modified.isAfter(cutoff)) {
+        return false;
+      }
+    }
+    return true;
   }
 
   static Future<void> deleteForever(LocalTrashedFile entry) async {
