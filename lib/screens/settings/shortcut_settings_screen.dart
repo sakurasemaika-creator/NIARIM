@@ -224,8 +224,17 @@ class ShortcutSettingsScreen extends StatelessWidget {
           children: [
             Padding(
               padding: const EdgeInsets.all(12),
+              // 題の中のキーの組も、一覧のチップと同じく修飾キーの「+」の後
+              // だけで折り返す（普通の文のままだと「要为Ctrl+Shift+Alt+ /
+              // +分配什么？」とキーの「+」が行の頭に来て、「Ctrl+S / hift」と
+              // 修飾キーの名前の途中でも折れた）。読み上げは元の文。
               child: Text(
-                l10n.shortcutChooseActionTitle(captured.comboLabel),
+                l10n.shortcutChooseActionTitle(
+                  _KeyChip._breakable(captured.comboLabel),
+                ),
+                semanticsLabel: l10n.shortcutChooseActionTitle(
+                  captured.comboLabel,
+                ),
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   fontFamily: 'Kuramubon',
