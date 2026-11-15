@@ -759,6 +759,23 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
     );
   }
 
+  /// ログイン・接続の案内（[text]）と、あれば操作（[action]）を画面の中央に
+  /// 出す。画面の端から余白を取り、中央にそろえて折り返す（余白の無い
+  /// `Center`の`Text`だった頃は、長い文が画面の左端〔x=0〕から始まった）。
+  /// 韓国語の語は途中で折らない。大きな文字でも縦にはみ出さない。
+  Widget _notice(String text, {Widget? action}) => Center(
+    child: SingleChildScrollView(
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          messageText(text, textAlign: TextAlign.center),
+          if (action != null) ...[const SizedBox(height: 12), action],
+        ],
+      ),
+    ),
+  );
+
   @override
   Widget build(BuildContext context) {
     final t = CreatorMissionLabels.of(context);
@@ -779,9 +796,9 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
           ? null
           : AppBar(title: FitOrHideTitle(t.get('title'))),
       body: owner == null
-          ? Center(child: Text(t.get('login')))
+          ? _notice(t.get('login'))
           : api == null
-          ? Center(child: Text(t.get('offline')))
+          ? _notice(t.get('offline'))
           : FutureBuilder<Map<String, dynamic>>(
               future: _future,
               builder: (context, snapshot) {
@@ -794,16 +811,11 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
                   );
                 }
                 if (snapshot.hasError || !snapshot.hasData) {
-                  return Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(t.get('loadError')),
-                        OutlinedButton(
-                          onPressed: () => _refresh(api),
-                          child: Text(t.get('retry')),
-                        ),
-                      ],
+                  return _notice(
+                    t.get('loadError'),
+                    action: OutlinedButton(
+                      onPressed: () => _refresh(api),
+                      child: Text(t.get('retry')),
                     ),
                   );
                 }
