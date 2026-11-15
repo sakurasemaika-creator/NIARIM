@@ -3,6 +3,12 @@
 /// （DrawingTool.values.byNameで復元する）。
 class QuickToolEntry {
   final String id;
+
+  /// 足したときの名前（最初からあるものは日本語）。画面ではこれを出さず、
+  /// 表示のたびに名前を作る（`quickToolDisplayLabel`）：消しゴム・スポイト・
+  /// バケツは種類から今の言語で、ブラシは[brushId]のブラシの今の名前と
+  /// [sizeOverride]の太さで（ブラシが無ければこの名前）。保存の形を変えない
+  /// よう（前の版・引き継ぎで読めるよう）残している。
   final String label;
   final String toolKey;
   // toolKeyが'pen'の場合のみ使用

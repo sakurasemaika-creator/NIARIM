@@ -25,9 +25,11 @@ class ShortcutBinding {
   final String id;
 
   /// 足したときの名前（足したときの表示言語の文。既定のものは英語）。
-  /// 操作と消しゴム・スポイト・バケツの割り当ては、画面ではこれを出さず、
-  /// 種類から今の言語で名前を作る（`shortcutDisplayLabel`）。保存の形を
-  /// 変えないよう（前の版・引き継ぎで読めるよう）残している。
+  /// 画面ではこれを出さず、表示のたびに名前を作る（`shortcutDisplayLabel`）：
+  /// 操作と消しゴム・スポイト・バケツは種類から今の言語で、ブラシは
+  /// [brushId]のブラシの今の名前と[sizeOverride]の太さで（ブラシが無ければ
+  /// この名前）。保存の形を変えないよう（前の版・引き継ぎで読めるよう）
+  /// 残している。
   final String label;
   final int keyId; // LogicalKeyboardKey.keyId
   final bool control;
