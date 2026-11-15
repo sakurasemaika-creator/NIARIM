@@ -1268,6 +1268,22 @@ onTap: ...)`だったために
   `theme_service.dart`の`popupMenuTheme.labelTextStyle`を`labelLarge`＋メニュー
   文字色にしてある。メニューの項目に色を直接渡すときも、本文の色ではなく
   メニュー文字色を使うこと。
+- **ダイアログ・シート・知らせ・入力欄の中身もメニューの文字色（DISC173・174、
+  2026-11-15）**：下地はどれもメニューの背景色。本文とメニューの文字色が違う
+  自作テーマでは、`ThemeService`がメニューの面のテーマ（`MenuSurfaceTheme`、
+  `lib/widgets/menu_surface.dart`。組み込みの28テーマではnull）を作り、
+  `ThemeData.pageTransitionsTheme`が画面ごとに置く印（`InheritedTheme`）を
+  `showDialog`・`showModalBottomSheet`が写して中身を包む。呼び出し側は何も
+  しなくてよい（画面より上の`MaterialApp.router`の`builder`層から開くと包まれ
+  ない。ページを`MaterialPage`以外で作るときも印が入らない）。ポップアップ
+  メニュー・ドロップダウンは包まない。入力欄の打った字は`textTheme.bodyLarge`
+  （メニューの文字色）なので、**画面の色で塗った入力欄は本文の文字色を自分で
+  渡す**（ヘルプ・活用Tips・フォントの検索欄が実例）。危ない操作のメニューの
+  項目はエラーの色にせず`MenuActionLabel`（`lib/widgets/menu_action_label.dart`、
+  印のアイコン＋メニューの文字色）。メニューの項目を`Text`として読むテストは
+  `MenuActionLabel`も読むこと。カード・浮いた名前・ドロップダウンの値・
+  メニューの中のアイコン・タブ・ほかの画面の危ない操作・救済ボタンの判定は
+  まだ（DISC193〜199）。
 - **知らせ（SnackBar）は5秒以内に、少しずつ薄くなって消える（所有者の判断7、
   2026-11-11）**：アプリの知らせはすべて`lib/widgets/app_toast_messenger.dart`の
   `AppToastMessenger`（`MaterialApp.router`の`builder`と起動失敗画面で、画面を包む
