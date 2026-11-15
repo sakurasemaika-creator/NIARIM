@@ -141,6 +141,9 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
+  String get homeTrashLoadingFiles => '書き出した作品と、作成した共有ファイルを読み込み中…';
+
+  @override
   String get homeTrashEmpty => 'ゴミ箱は空です';
 
   @override

@@ -40,6 +40,7 @@
   "homeSortDirectionDescTooltip": "Descendente (toca para cambiar a ascendente)",
   "homeSharedEmpty": "No hay proyectos compartidos",
   "homeProjectMeta": "{fps}fps · {duration}s",
+  "homeTrashLoadingFiles": "Cargando obras exportadas y archivos compartidos que creaste…",
   "homeTrashEmpty": "La papelera está vacía",
   "homeTrashNoMatchTitle": "Nada en la papelera coincide con «{query}»",
   "homeTrashNoKindTitle": "No hay nada de los tipos seleccionados en la papelera",

@@ -140,6 +140,9 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String get homeTrashLoadingFiles => '正在加载导出的作品和我创建的共享文件…';
+
+  @override
   String get homeTrashEmpty => '回收站是空的';
 
   @override
@@ -10111,6 +10114,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String homeProjectMeta(int fps, int duration) {
     return '${fps}fps · $duration秒';
   }
+
+  @override
+  String get homeTrashLoadingFiles => '正在載入匯出的作品和我建立的共享檔案…';
 
   @override
   String get homeTrashEmpty => '垃圾桶是空的';

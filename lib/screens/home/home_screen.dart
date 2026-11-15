@@ -6268,6 +6268,13 @@ class _TrashTabState extends State<_TrashTab> {
             !loadFailed) {
           return const Center(child: CircularProgressIndicator());
         }
+        // 書き出した作品・作成した共有ファイルの控えをまだ読んでいる間は、
+        // 読めた行（作品）は出したまま、一覧の先頭に読み込み中の印を出す
+        // （控えが多いと数十秒かかり、作品の行だけを全部のように出していた）。
+        final loadingFiles =
+            snapshot.connectionState != ConnectionState.done &&
+            (widget.selectedKinds.contains(TrashEntryKind.createdShare) ||
+                widget.selectedKinds.contains(TrashEntryKind.exportedWork));
         if (rows.isEmpty && !loadFailed) {
           // 種類の絞り込み・検索で隠れているだけのときは「ゴミ箱は空です」と
           // 言わず、外すボタンを出す（プロジェクトのタブと同じ）。
@@ -6298,8 +6305,9 @@ class _TrashTabState extends State<_TrashTab> {
             title: l10n.homeTrashEmpty,
           );
         }
+        final loadingRow = loadingFiles ? 1 : 0;
         return ListView.builder(
-          itemCount: lead + rows.length,
+          itemCount: lead + loadingRow + rows.length,
           padding: const EdgeInsets.only(bottom: 100),
           itemBuilder: (context, position) {
             if (position < lead) {
@@ -6309,7 +6317,10 @@ class _TrashTabState extends State<_TrashTab> {
                 screenFocus: widget.screenFocus,
               );
             }
-            final row = rows[position - lead];
+            if (position < lead + loadingRow) {
+              return _TrashFilesLoading(text: l10n.homeTrashLoadingFiles);
+            }
+            final row = rows[position - lead - loadingRow];
             if (row.project != null) {
               return _projectRow(row.project!, row.kind, l10n);
             }
@@ -6320,6 +6331,40 @@ class _TrashTabState extends State<_TrashTab> {
           },
         );
       },
+    );
+  }
+}
+
+/// ゴミ箱の一覧の先頭に出す、控え（書き出した作品・作成した共有ファイル）を
+/// 読み込み中の印。回る印にはしない：控えの読み込みは数が多いと数十秒かかり、
+/// その間ずっと画面を描き直し続ける（読み込みの邪魔をし、「落ち着くまで
+/// 待つ」テストも終わらなくなる）。砂時計の印と文で、まだ読んでいることを
+/// 伝える。
+class _TrashFilesLoading extends StatelessWidget {
+  const _TrashFilesLoading({required this.text});
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = Theme.of(context).colorScheme.onSurfaceVariant;
+    return Padding(
+      key: const Key('trashFilesLoading'),
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+      child: Row(
+        children: [
+          Icon(Icons.hourglass_top, size: 16, color: color),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              text,
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(color: color),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

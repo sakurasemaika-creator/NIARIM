@@ -152,6 +152,10 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get homeTrashLoadingFiles =>
+      'Loading exported works and shared files you created…';
+
+  @override
   String get homeTrashEmpty => 'Trash is empty';
 
   @override

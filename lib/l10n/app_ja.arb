@@ -78,6 +78,10 @@
       }
     }
   },
+  "homeTrashLoadingFiles": "書き出した作品と、作成した共有ファイルを読み込み中…",
+  "@homeTrashLoadingFiles": {
+    "description": "ホームのゴミ箱のタブ：作品の行を出したまま、書き出した作品・作成した共有ファイルの控えをまだ読み込んでいる間、一覧の先頭に出す文"
+  },
   "homeTrashEmpty": "ゴミ箱は空です",
   "homeTrashNoMatchTitle": "ゴミ箱に「{query}」に一致するものはありません",
   "@homeTrashNoMatchTitle": {

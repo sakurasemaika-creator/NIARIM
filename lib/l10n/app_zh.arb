@@ -40,6 +40,7 @@
   "homeSortDirectionDescTooltip": "降序（点击切换为升序）",
   "homeSharedEmpty": "没有共享项目",
   "homeProjectMeta": "{fps}fps · {duration}秒",
+  "homeTrashLoadingFiles": "正在加载导出的作品和我创建的共享文件…",
   "homeTrashEmpty": "回收站是空的",
   "homeTrashNoMatchTitle": "回收站中没有与“{query}”匹配的项目",
   "homeTrashNoKindTitle": "回收站中没有所选类型的项目",

@@ -142,6 +142,9 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
+  String get homeTrashLoadingFiles => '내보낸 작품과 내가 만든 공유 파일을 불러오는 중…';
+
+  @override
   String get homeTrashEmpty => '휴지통이 비어 있습니다';
 
   @override

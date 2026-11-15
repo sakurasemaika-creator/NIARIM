@@ -40,6 +40,7 @@
   "homeSortDirectionDescTooltip": "Décroissant (appuyez pour passer en croissant)",
   "homeSharedEmpty": "Aucun projet partagé",
   "homeProjectMeta": "{fps}ips · {duration}s",
+  "homeTrashLoadingFiles": "Chargement des œuvres exportées et des fichiers partagés que vous avez créés…",
   "homeTrashEmpty": "La corbeille est vide",
   "homeTrashNoMatchTitle": "Rien dans la corbeille ne correspond à « {query} »",
   "homeTrashNoKindTitle": "La corbeille ne contient rien des types sélectionnés",

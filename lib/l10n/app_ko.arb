@@ -40,6 +40,7 @@
   "homeSortDirectionDescTooltip": "내림차순（탭하면 오름차순으로 전환）",
   "homeSharedEmpty": "공유된 프로젝트가 없습니다",
   "homeProjectMeta": "{fps}fps · {duration}초",
+  "homeTrashLoadingFiles": "내보낸 작품과 내가 만든 공유 파일을 불러오는 중…",
   "homeTrashEmpty": "휴지통이 비어 있습니다",
   "homeTrashNoMatchTitle": "휴지통에 「{query}」에 해당하는 항목이 없습니다",
   "homeTrashNoKindTitle": "휴지통에 선택한 종류의 항목이 없습니다",

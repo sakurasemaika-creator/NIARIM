@@ -40,6 +40,7 @@
   "homeSortDirectionDescTooltip": "Descending (tap to switch to ascending)",
   "homeSharedEmpty": "No shared projects",
   "homeProjectMeta": "{fps}fps · {duration}s",
+  "homeTrashLoadingFiles": "Loading exported works and shared files you created…",
   "homeTrashEmpty": "Trash is empty",
   "homeTrashNoMatchTitle": "Nothing in the Trash matches “{query}”",
   "homeTrashNoKindTitle": "Nothing of the selected types is in the Trash",

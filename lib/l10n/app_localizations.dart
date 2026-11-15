@@ -347,6 +347,12 @@ abstract class AppLocalizations {
   /// **'{fps}fps · {duration}秒'**
   String homeProjectMeta(int fps, int duration);
 
+  /// ホームのゴミ箱のタブ：作品の行を出したまま、書き出した作品・作成した共有ファイルの控えをまだ読み込んでいる間、一覧の先頭に出す文
+  ///
+  /// In ja, this message translates to:
+  /// **'書き出した作品と、作成した共有ファイルを読み込み中…'**
+  String get homeTrashLoadingFiles;
+
   /// No description provided for @homeTrashEmpty.
   ///
   /// In ja, this message translates to:

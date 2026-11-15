@@ -153,6 +153,10 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
+  String get homeTrashLoadingFiles =>
+      'Chargement des œuvres exportées et des fichiers partagés que vous avez créés…';
+
+  @override
   String get homeTrashEmpty => 'La corbeille est vide';
 
   @override

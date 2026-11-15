@@ -153,6 +153,10 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
+  String get homeTrashLoadingFiles =>
+      'Cargando obras exportadas y archivos compartidos que creaste…';
+
+  @override
   String get homeTrashEmpty => 'La papelera está vacía';
 
   @override
