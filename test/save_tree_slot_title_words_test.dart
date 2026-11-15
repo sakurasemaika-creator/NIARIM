@@ -11,9 +11,15 @@
 // メモあり）・空のスロット・メモだけのスロットのカードの文が、カードの幅に
 // 入る語を途中で折らないこと（韓国語の語も）、題が1行に入る幅では1行（語と
 // 番号が同じ行）であること、はみ出さないことを見張る。
+//
+// メモの行のアプリの文（「保存データなし」・スロットの題）は、1行で「…」と
+// 切らずに折り返して全部出す（DISC220。320/360px・文字2倍で「Aucune
+// donnée…」「저장 데이터 …」と切れていた）。利用者のメモは1行で省略する。
 import 'dart:io';
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/app.dart';
@@ -38,11 +44,24 @@ const _height = 740.0;
 /// カードの中身の左右の余白。
 const _cardInset = 2 * 14.0;
 
+/// 利用者が付けたメモ（[openSlots]で付けるもの）。
+const _userMemos = {'Background done', 'Idea'};
+
+/// 描いた文から、幅の無い字（語結合子・幅の無い空白）を除き、改行しない
+/// 空白を普通の空白にしたもの。
+String _plain(String text) => text
+    .replaceAll('\u2060', '')
+    .replaceAll('\u200B', '')
+    .replaceAll('\u00A0', ' ')
+    .replaceAll('\u202F', ' ');
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   const pathChannel = MethodChannel('plugins.flutter.io/path_provider');
   late Directory tempDir;
   var fontsLoaded = false;
+  final shots = Platform.environment['NIARIM_SET1_SHOTS'];
+  final rootKey = GlobalKey();
 
   setUp(() {
     tempDir = Directory.systemTemp.createTempSync('niarim_tree_slot_words_');
@@ -122,14 +141,17 @@ void main() {
       MultiProvider(
         providers: providers,
         child: Builder(
-          builder: (context) => MaterialApp(
-            locale: locale,
-            theme: context.watch<ThemeService>().themeDataFor(locale),
-            localizationsDelegates: AppLocalizations.localizationsDelegates,
-            supportedLocales: AppLocalizations.supportedLocales,
-            home: SaveTreeScreen(
-              projectId: project.id,
-              entryMode: SaveTreeEntryMode.projectDetail,
+          builder: (context) => RepaintBoundary(
+            key: rootKey,
+            child: MaterialApp(
+              locale: locale,
+              theme: context.watch<ThemeService>().themeDataFor(locale),
+              localizationsDelegates: AppLocalizations.localizationsDelegates,
+              supportedLocales: AppLocalizations.supportedLocales,
+              home: SaveTreeScreen(
+                projectId: project.id,
+                entryMode: SaveTreeEntryMode.projectDetail,
+              ),
             ),
           ),
         ),
@@ -191,6 +213,51 @@ void main() {
                     '$tag $at slot $slot: wider than the line (DISC155): $wide',
                   );
                 }
+              }
+              // メモの行のアプリの文（「保存データなし」・スロットの題）は
+              // 1行で「…」と切らず、折り返して全部出す（DISC220）。利用者の
+              // メモは1行で省略する。
+              for (final paragraph in textParagraphsIn(card)) {
+                final shown = _plain(
+                  paragraph.text.toPlainText(includeSemanticsLabels: false),
+                );
+                if (shown == _plain(l10n.saveTreeNoDataLabel) ||
+                    shown == _plain(label)) {
+                  if (paragraph.didExceedMaxLines) {
+                    problems.add(
+                      '$at slot $slot: the app text「$shown」is cut short: '
+                      '${ParagraphLines(paragraph).lines.join(' / ')}',
+                    );
+                  }
+                  if (paragraph.maxLines != null) {
+                    problems.add(
+                      '$at slot $slot: the app text「$shown」is limited to '
+                      '${paragraph.maxLines} line(s)',
+                    );
+                  }
+                } else if (_userMemos.contains(shown) &&
+                    (paragraph.maxLines != 1 ||
+                        paragraph.overflow != TextOverflow.ellipsis)) {
+                  problems.add(
+                    '$at slot $slot: the memo「$shown」is not one line with '
+                    'an ellipsis',
+                  );
+                }
+              }
+              if (shots != null && slot == 3 && scale == 2.0 && width < 400) {
+                await tester.runAsync(() async {
+                  final boundary =
+                      rootKey.currentContext!.findRenderObject()!
+                          as RenderRepaintBoundary;
+                  final image = await boundary.toImage(pixelRatio: 1);
+                  final data = await image.toByteData(
+                    format: ui.ImageByteFormat.png,
+                  );
+                  await File(
+                    '$shots/DISC220-${tag}_${width.toInt()}_x2.png',
+                  ).writeAsBytes(data!.buffer.asUint8List(), flush: true);
+                  image.dispose();
+                });
               }
               // 題は、語と番号をつないだ幅がカードに入るなら1行。
               final paragraph = textParagraphsIn(title).single;

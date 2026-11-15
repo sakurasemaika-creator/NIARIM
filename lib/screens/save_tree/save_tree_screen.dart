@@ -943,18 +943,28 @@ class _SlotTile extends StatelessWidget {
                       children: [
                         Flexible(
                           fit: FlexFit.loose,
-                          child: Text(
-                            // 空白だけのメモ（前の版で付けたもの）は
-                            // メモが無いのと同じに出す。
-                            givenSaveName(memo) ??
-                                (node == null
-                                    ? (listUnread
-                                          ? ''
-                                          : l10n.saveTreeNoDataLabel)
-                                    : l10n.saveTreeSlotLabel(slotIndex + 1)),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
+                          // 空白だけのメモ（前の版で付けたもの）は
+                          // メモが無いのと同じに出す。
+                          child: givenSaveName(memo) != null
+                              // 利用者のメモは1行で省略する。
+                              ? Text(
+                                  givenSaveName(memo)!,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                )
+                              // アプリの文（「保存データなし」・スロットの題）は
+                              // 切らずに折り返す（320/360px・文字2倍で
+                              // 「Aucune donnée…」と切れた）。韓国語の語は、
+                              // 1行に入れば途中で折らない。スロットの題は語と
+                              // 番号を離さない（題の行と同じ）。
+                              : node == null
+                              ? messageText(
+                                  listUnread ? '' : l10n.saveTreeNoDataLabel,
+                                )
+                              : KeepTogetherText(
+                                  l10n.saveTreeSlotLabel(slotIndex + 1),
+                                  keep: [l10n.saveTreeSlotLabel(slotIndex + 1)],
+                                ),
                         ),
                         Padding(
                           padding: const EdgeInsets.only(left: 2),
@@ -975,7 +985,7 @@ class _SlotTile extends StatelessWidget {
                         ),
                       )
                     else if (memo?.isNotEmpty == true && !listUnread)
-                      Text(
+                      messageText(
                         l10n.saveTreeNoDataLabel,
                         style: TextStyle(
                           fontSize: 12,
