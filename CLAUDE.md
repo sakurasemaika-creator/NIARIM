@@ -299,8 +299,11 @@
   ダイアログが最小の幅280pxより狭くなり、ボタン・題の1語が入らず折れるので、
   打つ欄のあるダイアログは`lib/widgets/typing_dialog_inset.dart`の
   `typingDialogInsetPadding`を`insetPadding`に渡す（キーボードが開いている間は
-  上下の空きも取らない）。キャンバスの「戻る」の確認・ゴミ箱の確認はまだ既定の
-  空き（DISC189）。
+  上下の空きも取らない）。打つ欄の無い確認のダイアログは同じファイルの
+  `dialogInsetPadding`（左右の空きの決め方は同じ、上下は既定のまま。キャンバス・
+  タイムラインの「戻る」の確認とゴミ箱の確認が使う。ほかの確認のダイアログは
+  まだ既定の空き、DISC211）。メモの欄のような1行の`TextField`のヒントは
+  `hintMaxLines`を付けないと1行で「…」と切れる（DISC192）。
 - **フォントの代替列（fontFamilyFallback）は本文用と見出し用で別物**：
   `lib/config/font_fallback.dart`に`kBodyFontFallback`（明朝系）と
   `kHeadingFontFallback`（ゴシック系）の2本がある。**見出し用には明朝を
