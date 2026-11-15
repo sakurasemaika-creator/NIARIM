@@ -231,11 +231,14 @@ Widget countText(String text, {Key? key, TextStyle? style}) =>
 /// [keepLineStarts]が真なら、長音符・小さいかな・閉じ括弧・句読点で行を
 /// 始めない（[lineStartKeepParts]。Flutterは長音符・小さいかなの前でも行を
 /// 変え、活用Tipsの題が「パ / ーツ」と長音符で始まる行に折れた）。
+///
+/// [textAlign]は[Text.textAlign]と同じ（中央にそろえる説明の文など）。
 Widget messageText(
   String text, {
   Key? key,
   TextStyle? style,
   bool keepLineStarts = false,
+  TextAlign? textAlign,
 }) {
   final keep = [
     for (final m in _spacedCount.allMatches(text)) m[0]!,
@@ -243,9 +246,15 @@ Widget messageText(
     if (keepLineStarts) ...lineStartKeepParts(text),
   ];
   if (keep.isEmpty && !text.contains(RegExp(r'\d'))) {
-    return Text(text, key: key, style: style);
+    return Text(text, key: key, style: style, textAlign: textAlign);
   }
-  return KeepTogetherText(text, key: key, keep: keep, style: style);
+  return KeepTogetherText(
+    text,
+    key: key,
+    keep: keep,
+    style: style,
+    textAlign: textAlign,
+  );
 }
 
 /// [text]の中の、ハングルを含む語（空白で区切った単位。付いている記号・数・

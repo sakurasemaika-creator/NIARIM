@@ -281,23 +281,35 @@ class ShortcutSettingsScreen extends StatelessWidget {
         math.max(deleteButton + gap, 32);
   }
 
-  /// 足すシートの題（キーの組[combo]を埋めた文）。
+  /// 足すシートの題（キーの組[combo]を埋めた文。[_sentenceWithCombo]）。
+  static Widget _chooseActionTitle(AppLocalizations l10n, String combo) =>
+      _sentenceWithCombo(
+        l10n.shortcutChooseActionTitle,
+        combo,
+        style: const TextStyle(
+          fontWeight: FontWeight.bold,
+          fontFamily: 'Kuramubon',
+          fontFamilyFallback: kHeadingFontFallback,
+        ),
+      );
+
+  /// キーの組[combo]を埋めた文（[sentence]で作る。足すシートの題・すでに
+  /// 割り当てられているときの確かめの本文）。
   ///
   /// キーの組は、一覧のチップと同じく修飾キーの「+」の後だけで折り返す
   /// （普通の文のままだと「要为Ctrl+Shift+Alt+ / +分配什么？」とキーの「+」が
-  /// 行の頭に来て、「Ctrl+S / hift」と修飾キーの名前の途中でも折れた）。
-  /// 韓国語の語は、1行に入れば途中で折らない（「무 / 엇을」「할당하시겠습 /
-  /// 니까?」と折れた）。キーの組の後に続く助詞（「Arrow Left에」の「에」）は
-  /// キーの名前から離さない。読み上げは元の文。
-  static Widget _chooseActionTitle(AppLocalizations l10n, String combo) {
-    const style = TextStyle(
-      fontWeight: FontWeight.bold,
-      fontFamily: 'Kuramubon',
-      fontFamilyFallback: kHeadingFontFallback,
-    );
+  /// 行の頭に来て、「Ctrl+S / hift」「Arrow / Left」と修飾キー・キーの名前の
+  /// 途中でも折れた）。韓国語の語は、1行に入れば途中で折らない（「무 /
+  /// 엇을」「할당하시겠습 / 니까?」と折れた）。キーの組の後に続く助詞
+  /// （「Arrow Left에」の「에」）はキーの名前から離さない。読み上げは元の文。
+  static Widget _sentenceWithCombo(
+    String Function(String combo) sentence,
+    String combo, {
+    TextStyle? style,
+  }) {
     final shownCombo = _KeyChip._breakable(combo);
-    final shown = l10n.shortcutChooseActionTitle(shownCombo);
-    final semantics = l10n.shortcutChooseActionTitle(combo);
+    final shown = sentence(shownCombo);
+    final semantics = sentence(combo);
     // キーの組と重なる語は、ここで決めたキーの名前と助詞だけをつなぐ（組の
     // 中の修飾キーの「+」の後では折り返せるままにする）。
     final keep = [
@@ -416,7 +428,9 @@ class ShortcutSettingsScreen extends StatelessWidget {
             for (final brush in brushService.brushes)
               ListTile(
                 leading: const Icon(Icons.brush),
-                title: Text(brush.name),
+                // 韓国語の語・数と単位は、1行に入れば途中で折らない（以下の
+                // 行・ダイアログも同じ）。
+                title: messageText(brush.name),
                 onTap: () {
                   Navigator.pop(ctx);
                   _showSizeDialog(
@@ -431,7 +445,7 @@ class ShortcutSettingsScreen extends StatelessWidget {
               ),
             ListTile(
               leading: const Icon(Icons.auto_fix_high),
-              title: Text(l10n.quickToolEraser),
+              title: messageText(l10n.quickToolEraser),
               onTap: () => _saveToolBinding(
                 context,
                 service,
@@ -442,7 +456,7 @@ class ShortcutSettingsScreen extends StatelessWidget {
             ),
             ListTile(
               leading: const Icon(Icons.colorize),
-              title: Text(l10n.quickToolEyedropper),
+              title: messageText(l10n.quickToolEyedropper),
               onTap: () => _saveToolBinding(
                 context,
                 service,
@@ -453,7 +467,7 @@ class ShortcutSettingsScreen extends StatelessWidget {
             ),
             ListTile(
               leading: const Icon(Icons.format_color_fill),
-              title: Text(l10n.quickToolBucket),
+              title: messageText(l10n.quickToolBucket),
               onTap: () => _saveToolBinding(
                 context,
                 service,
@@ -482,7 +496,7 @@ class ShortcutSettingsScreen extends StatelessWidget {
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setS) => AlertDialog(
-          title: Text(l10n.quickToolSizeDialogTitle(brushName)),
+          title: messageText(l10n.quickToolSizeDialogTitle(brushName)),
           // 項目名はダイアログのタイトルが兼ねるので、値だけを上の行の
           // 右端へ置き、スライダーは下の行で横幅いっぱいを使う。
           content: Column(
@@ -555,7 +569,7 @@ class ShortcutSettingsScreen extends StatelessWidget {
           children: [
             for (final entry in commands.entries)
               ListTile(
-                title: Text(entry.value),
+                title: messageText(entry.value),
                 onTap: () {
                   Navigator.pop(ctx);
                   _saveCommandBinding(
@@ -628,16 +642,19 @@ class ShortcutSettingsScreen extends StatelessWidget {
       final overwrite = await showDialog<bool>(
         context: context,
         builder: (ctx) => AlertDialog(
-          title: Text(l10n.shortcutConflictTitle),
-          content: Text(
-            l10n.shortcutConflictBody(
-              binding.comboLabel,
+          title: messageText(l10n.shortcutConflictTitle),
+          // キーの組は修飾キーの「+」の後だけで折り、韓国語の語は途中で
+          // 折らない（[_sentenceWithCombo]）。
+          content: _sentenceWithCombo(
+            (combo) => l10n.shortcutConflictBody(
+              combo,
               shortcutDisplayLabel(
                 l10n,
                 conflict,
                 brushes: context.read<BrushService?>()?.brushes ?? const [],
               ),
             ),
+            binding.comboLabel,
           ),
           actions: [
             TextButton(
@@ -755,7 +772,9 @@ class _KeyCaptureDialogState extends State<_KeyCaptureDialog> {
   Widget build(BuildContext context) {
     final l10n = widget.l10n;
     return AlertDialog(
-      title: Text(l10n.shortcutCaptureTitle),
+      // 韓国語の語は、1行に入れば途中で折らない（説明の「함 / 께」
+      // 「있습니 / 다）」「눌러주세 / 요」と折れた）。
+      title: messageText(l10n.shortcutCaptureTitle),
       content: Focus(
         focusNode: _focusNode,
         autofocus: true,
@@ -767,7 +786,7 @@ class _KeyCaptureDialogState extends State<_KeyCaptureDialog> {
             children: [
               const Icon(Icons.keyboard, size: 40),
               const SizedBox(height: 12),
-              Text(
+              messageText(
                 l10n.shortcutCaptureHint,
                 textAlign: TextAlign.center,
                 style: const TextStyle(fontSize: 12),
