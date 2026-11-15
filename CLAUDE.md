@@ -1429,6 +1429,14 @@ onTap: ...)`だったために
   0.5px薄くなった）。ブラシ・トーン・スタンプ・レイヤー・定規・オニオンスキンが
   この形。ほかのパネル・シート（フィルター・カラーピッカー等）はまだ確かめていない
   （DISC117）。`test/canvas_panel_selected_row_clip_test.dart`が見張る。
+- **ゴミ箱へ移して戻しても、書き出したファイル・共有ファイルの更新日時は変えない**：
+  `LocalFileTrashService`はゴミ箱へ写すときと戻すときに元の更新日時を付け直す
+  （`_keepModifiedTime`。付けないと戻した時刻になり、更新日時の並びで位置が変わった）。
+  書き出した作品がゴミ箱へ出入りしたら`ExportStorage.invalidate`で一覧の覚えを捨てること
+  （捨てないと、ゴミ箱のタブから戻したフォルダが起動し直すまで空に見えた）。
+  複製の名前（「名前 (コピー 2).mp4」）は印・番号・拡張子を1つのかたまりにして折り、
+  日本語の名前は「ー」・小さいかなで行を始めない（`collection_tile_layout.dart`の
+  `copyMarkLineText`、`KoreanWordsText(keepJapaneseLineStarts:)`）。
 - **フォルダのゴミ箱は中身ごと（ユーザー指定）**：フォルダをゴミ箱へ移すと
   下の階層のフォルダ・作品も一緒に移り（`ProjectService.moveFolderToTrash`、
   記録は`TrashedFolder`で保存キー`trashed_project_folders`）、ゴミ箱でフォルダを
