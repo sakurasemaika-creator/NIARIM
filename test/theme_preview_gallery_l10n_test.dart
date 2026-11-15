@@ -41,8 +41,9 @@ const Set<String> _sameInEveryLanguage = {
 };
 
 /// 数と単位の記号だけのもの（本物の画面の表記：再生位置の「0.1s」、作品広場の
-/// 「2400f」「24fps」、容量の「0B」）。
-final RegExp _numberWithUnit = RegExp(r'^\d+(\.\d+)?(s|f|fps|B)$');
+/// 「2400f」「24fps」、容量の「0B」「0 B」〔`fileSizeLabel`。数と単位の間は
+/// 改行しない空白で、ja・ko以外は空白を入れる〕）。
+final RegExp _numberWithUnit = RegExp(r'^\d+(\.\d+)?\u00a0?(s|f|fps|B)$');
 
 Set<String> _arbValues(String locale) {
   final json =

@@ -11,6 +11,7 @@ import '../../services/theme_service.dart';
 import '../../config/accent_text_theme.dart';
 import '../../config/font_fallback.dart';
 import '../canvas/widgets/canvas_icon_button.dart';
+import '../../utils/file_size_label.dart';
 import '../../utils/color_contrast.dart';
 import '../../utils/line_break.dart';
 import '../../utils/work_time_label.dart';
@@ -2726,7 +2727,7 @@ class _ThemeSampleScreen extends StatelessWidget {
                     l.localeName,
                   ).add_jm().format(DateTime(2026, 10, 23, 10)),
                 ),
-                (l.projectDetailInfoSize, '0B'),
+                (l.projectDetailInfoSize, fileSizeLabel(l, 0)),
               ])
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 5),

@@ -9,6 +9,7 @@ import '../../services/font_service.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/confirm_delete.dart';
 import '../../widgets/dispose_on_unmount.dart';
+import '../../utils/file_size_label.dart';
 import '../../utils/line_break.dart';
 import '../../widgets/fit_or_hide_title.dart';
 import '../../widgets/first_that_fits.dart';
@@ -249,7 +250,7 @@ class _DownloadedFontsTabState extends State<_DownloadedFontsTab>
                             ),
                           ),
                           subtitle: Text(
-                            '${f.extension} ・ ${_formatSize(f.sizeBytes)}',
+                            '${f.extension} ・ ${fileSizeLabel(AppLocalizations.of(context)!, f.sizeBytes)}',
                             style: TextStyle(
                               fontSize: 11,
                               color: scheme.onSurfaceVariant,
@@ -307,12 +308,6 @@ class _DownloadedFontsTabState extends State<_DownloadedFontsTab>
         ),
       ],
     );
-  }
-
-  String _formatSize(int bytes) {
-    if (bytes < 1024) return '${bytes}B';
-    if (bytes < 1024 * 1024) return '${(bytes / 1024).toStringAsFixed(1)}KB';
-    return '${(bytes / (1024 * 1024)).toStringAsFixed(1)}MB';
   }
 
   void _showRenameDialog(BuildContext context, FontAsset font) {

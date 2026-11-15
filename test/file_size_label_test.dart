@@ -75,12 +75,6 @@ void main() {
   });
 
   test('lib does not write byte units by hand (one helper for every size)', () {
-    // フォントの画面・テーマの見本一覧（模型の「0B」）は別の作業（DISC128）が
-    // 作り直し中で、まだ自前の書き方。
-    const pending = {
-      'lib/screens/settings/font_settings_screen.dart',
-      'lib/screens/settings/theme_preview_gallery_screen.dart',
-    };
     // 「'${bytes}B'」「toStringAsFixed(1)}KB'」「'0B'」「['B', 'KB', …]」の
     // ような手書きの単位（'B'だけの文字列は色の青〔RGBのB〕にも使うので見ない）。
     final unit = RegExp(r"""(\}|\d)(B|KB|MB|GB|TB)'|'(KB|MB|GB|TB)'""");
@@ -91,7 +85,6 @@ void main() {
             .whereType<File>()
             .where((f) => f.path.endsWith('.dart'))
             .where((f) => !f.path.contains('lib/l10n/'))) {
-      if (pending.contains(file.path)) continue;
       final lines = file.readAsLinesSync();
       for (var i = 0; i < lines.length; i++) {
         final line = lines[i].trimLeft();
