@@ -13,6 +13,7 @@ import 'dart:io';
 import 'dart:math' as math;
 import 'dart:ui' as ui;
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
@@ -27,6 +28,7 @@ import 'package:niarim/models/app_theme_preset.dart';
 import 'package:niarim/router.dart';
 import 'package:niarim/screens/home/home_screen.dart';
 import 'package:niarim/screens/home/widgets/exported_work_card.dart';
+import 'package:niarim/screens/home/widgets/folder_thumbnail.dart';
 import 'package:niarim/screens/home/widgets/home_selection_toolbar.dart';
 import 'package:niarim/screens/home/widgets/project_list_widget.dart';
 import 'package:niarim/services/export_storage.dart';
@@ -35,9 +37,11 @@ import 'package:niarim/services/project_service.dart';
 import 'package:niarim/services/settings_service.dart';
 import 'package:niarim/services/theme_service.dart';
 import 'package:niarim/services/work_folder_service.dart';
+import 'package:niarim/utils/color_contrast.dart';
 import 'package:niarim/widgets/collection_action_controls.dart';
 import 'package:niarim/widgets/collection_tile_layout.dart';
 import 'package:niarim/widgets/empty_state_placeholder.dart';
+import 'package:niarim/widgets/frame_preview_background.dart';
 import 'package:niarim/widgets/sort_mode_control.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -46,16 +50,29 @@ import 'package:shared_preferences_platform_interface/types.dart';
 
 import 'first_use_tooltips.dart';
 import 'load_app_fonts.dart';
+import 'paragraph_lines.dart';
+
+part 'home_matrix_checks.dart';
 
 /// 1つのテストファイルの、撮った画像の置き場所と全セルの結果。
 class HomeMatrixRun {
-  HomeMatrixRun(this.out, {this.knownDefects = const []});
+  HomeMatrixRun(
+    this.out, {
+    this.knownDefects = const [],
+    this.knownProblems = const [],
+  });
 
   /// 画像と`manifest.json`を書き出す所。
   final Directory out;
 
   /// 直していない既知の不具合（観察の文で見込む）。
   final List<HomeMatrixKnownDefect> knownDefects;
+
+  /// 直していない既知の不具合（続きのマトリクスの問題の文で見込む）。
+  final List<HomeMatrixKnownProblem> knownProblems;
+
+  /// 見込んだ不具合ごとの、出たセルの数。
+  final knownProblemHits = <String, int>{};
 
   /// 全セルの結果（`manifest.json`の`results`）。
   final results = <Map<String, Object?>>[];
@@ -87,8 +104,27 @@ class HomeMatrixRun {
                   .length,
             },
         },
+        if (knownProblems.isNotEmpty)
+          'knownProblems': {
+            for (final k in knownProblems)
+              k.id: {'reason': k.reason, 'cells': knownProblemHits[k.id] ?? 0},
+          },
         'results': results,
       }),
+    );
+  }
+
+  /// 見込んだ不具合が、どれも少なくとも1つのセルで出た（出なくなった
+  /// ものは、直った・作りが変わったので表を直す）。
+  void expectKnownProblemsSeen() {
+    final unseen = [
+      for (final k in knownProblems)
+        if ((knownProblemHits[k.id] ?? 0) == 0) k.id,
+    ];
+    expect(
+      unseen,
+      isEmpty,
+      reason: 'known problems that no cell showed any more: $unseen',
     );
   }
 }
@@ -296,6 +332,21 @@ class HomeMatrix {
   ProjectViewMode? chosenViewMode;
   late _FirstLaunchStore _firstLaunchStore;
   final failures = <String>[];
+
+  /// 続きのマトリクスの確かめ（[HomeMatrixChecks]）も行う。
+  bool extended = false;
+
+  /// [extended]のとき、各セルでTabを回してフォーカスの順を確かめる。
+  bool walkFocus = true;
+
+  /// [extended]のとき、押せる大きさ（48×48）を確かめる。
+  bool checkTapTargets = true;
+
+  /// [extended]の確かめが撮った証拠の画像（次に記録するセルに付ける）。
+  final _evidence = <String>[];
+
+  /// [extended]のとき、問題の文で見込む直していない既知の不具合。
+  List<HomeMatrixKnownProblem> get knownProblems => run.knownProblems;
 
   AppLocalizations get l10n =>
       AppLocalizations.of(tester.element(find.byType(HomeScreen)))!;
@@ -751,6 +802,9 @@ class HomeMatrix {
     final end = await _scrollEnd(name, capture: captureEnd);
     problems.addAll(end.problems);
     if (end.image != null) images.add(end.image!);
+    if (extended && walkFocus) problems.addAll(await _focusProblems(name));
+    images.addAll(_evidence);
+    _evidence.clear();
     record(
       name,
       group,
@@ -771,6 +825,16 @@ class HomeMatrix {
     List<String> observations, {
     List<String> knownDefects = const [],
   }) {
+    final known = extended
+        ? _knownIn(what, problems)
+        : const <String, String>{};
+    if (known.isNotEmpty) {
+      problems = [
+        for (final p in problems)
+          if (!known.containsKey(p)) p,
+      ];
+      knownDefects = {...knownDefects, ...known.values}.toList()..sort();
+    }
     run.results.add({
       'cell': name,
       'group': group,
@@ -787,6 +851,10 @@ class HomeMatrix {
       'problems': problems,
       'observations': observations,
       'knownDefects': knownDefects,
+      if (known.isNotEmpty)
+        'knownProblems': [
+          for (final MapEntry(key: p, value: id) in known.entries) '$id: $p',
+        ],
     });
     if (problems.isNotEmpty) failures.add('$name: ${problems.join(' | ')}');
   }
@@ -804,8 +872,9 @@ class HomeMatrix {
       final image = await render.toImage(pixelRatio: 0.5);
       final png = await image.toByteData(format: ui.ImageByteFormat.png);
       image.dispose();
-      File('${run.out.path}/$name.png')
-          .writeAsBytesSync(png!.buffer.asUint8List());
+      File(
+        '${run.out.path}/$name.png',
+      ).writeAsBytesSync(png!.buffer.asUint8List());
     });
   }
 
@@ -992,6 +1061,11 @@ class HomeMatrix {
       problems.addAll(inspect(drawer: true));
       await capture('${name}_end');
       images.add('${name}_end.png');
+    }
+    if (extended && walkFocus) {
+      problems.addAll(await _focusProblems(name, drawer: true));
+      images.addAll(_evidence);
+      _evidence.clear();
     }
     record(name, group, 'drawer', images, problems.toList(), const []);
     final drawer = find.byType(Drawer);
@@ -1257,9 +1331,9 @@ class HomeMatrix {
   /// のぞいたままになる。）
   Future<void> _reveal(Finder finder) async {
     final element = finder.evaluate().first;
-    final scrollable = _scrollAncestors(element)
-        .where((s) => s.position.axis == Axis.vertical)
-        .firstOrNull;
+    final scrollable = _scrollAncestors(
+      element,
+    ).where((s) => s.position.axis == Axis.vertical).firstOrNull;
     if (scrollable != null) {
       await scrollable.position.ensureVisible(
         element.renderObject!,
@@ -1610,6 +1684,9 @@ class HomeMatrix {
       problems.addAll(
         _actionProblems(find.byType(Drawer), screen, fabRule: false),
       );
+      if (extended) {
+        problems.addAll(_extendedProblems(drawer: true, atEnd: false));
+      }
       return problems;
     }
     problems.addAll(_tabProblems(screen));
@@ -1622,6 +1699,9 @@ class HomeMatrix {
     } else {
       problems.addAll(_requiredControlProblems());
       problems.addAll(_gridProblems());
+    }
+    if (extended) {
+      problems.addAll(_extendedProblems(drawer: false, atEnd: atEnd));
     }
     return problems;
   }
