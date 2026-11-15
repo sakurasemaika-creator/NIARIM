@@ -76,9 +76,11 @@ Widget _folderNameDialog(
     cancelLabel: l10n.commonCancel,
     labelText: l10n.folderNameLabel,
     initialName: initialName,
+    // 韓国語の語は途中で行を変えない（普通のTextだと「정리하 / 는」と
+    // 切れた）。
     hint: rename
         ? null
-        : Text(
+        : messageText(
             l10n.projectListFolderHint,
             style: const TextStyle(fontSize: 11),
           ),

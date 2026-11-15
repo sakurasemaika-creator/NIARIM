@@ -40,14 +40,6 @@ final kHomeMatrix2KnownProblems = <HomeMatrixKnownProblem>[
     where: _sideInsets,
   ),
   HomeMatrixKnownProblem(
-    'DISC217',
-    '新しいフォルダの名前のダイアログの説明（projectListFolderHint、'
-        'project_list_widget.dartの_folderNameDialog）が、韓国語で語の途中'
-        'で折り返す（幅320で「정리하 / 는」）。ほかの韓国語の文が使う'
-        '語結合子（messageText・KoreanWordsText）を通していない。',
-    RegExp(r'^word split: "[가-힣]+" in .*\[AlertDialog\]$'),
-  ),
-  HomeMatrixKnownProblem(
     'DISC218',
     '共有の「受け取ったもの」で、絵の無い作品のカードの表紙は作品の用紙の色'
         '（Color(project.backgroundColor)）に、テーマのアイコンの色の'
