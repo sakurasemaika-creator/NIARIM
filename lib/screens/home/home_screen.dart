@@ -5457,6 +5457,8 @@ class _TrashTabState extends State<_TrashTab> {
       subtitle: heading,
       detail: subtitle,
       detailKeep: detailKeep,
+      // 名前を並べないときの2行目は件数（「プロジェクト2件・フォルダ1件」）。
+      detailIsCount: unread || projectNames.isEmpty,
       subtitleDate: record.deletedAt,
       actions: [
         if (widget.onCopyEntry != null)
@@ -5698,6 +5700,7 @@ class _TrashTabState extends State<_TrashTab> {
     required List<Widget> actions,
     String? detail,
     List<String> detailKeep = const [],
+    bool detailIsCount = false,
     Key? detailsKey,
     DateTime? subtitleDate,
   }) {
@@ -5749,8 +5752,13 @@ class _TrashTabState extends State<_TrashTab> {
               localeName: AppLocalizations.of(context)!.localeName,
             ),
           // フォルダの中身（作品の名前・件数）は次の行に。中の作品の複製の
-          // 名前の印（[detailKeep]）は途中で折り返さない。
-          if (detail != null) KoreanWordsText(detail, copyMarks: detailKeep),
+          // 名前の印（[detailKeep]）は途中で折り返さない。件数は数と単位の
+          // 間で折り返さない（文字2倍のja 360pxで「…フォルダ1 / 件」、en
+          // 320pxで「…and 1 / folder」と切れた。韓国語は語ごとにつなぐ）。
+          if (detail != null)
+            detailIsCount && !containsHangul(detail)
+                ? countText(detail)
+                : KoreanWordsText(detail, copyMarks: detailKeep),
         ],
       ),
     );

@@ -33,7 +33,8 @@ class HomeClipboardHarness {
   final ProjectService projects;
 
   /// ホームを開く。[language]は表示の言語（'zh_Hant'等）。[exports]の名前の
-  /// ファイルを書き出し済みの作品として置いてから起動する。
+  /// ファイルを書き出し済みの作品として置いてから起動する。[beforeBoot]は
+  /// 起動の前に、書類フォルダへ保存（読めない作品など）を置く。
   static Future<HomeClipboardHarness> open(
     WidgetTester tester, {
     String language = 'ja',
@@ -42,6 +43,7 @@ class HomeClipboardHarness {
     bool realFonts = false,
     List<String> exports = const [],
     Map<String, Object> prefs = const {},
+    void Function(Directory documents)? beforeBoot,
   }) async {
     if (realFonts) await loadAppFonts(tester);
     SharedPreferences.setMockInitialValues({
@@ -87,6 +89,7 @@ class HomeClipboardHarness {
     await tester.runAsync(
       () => ExportEngine.listExportedFiles(forceRefresh: true),
     );
+    beforeBoot?.call(dir);
     appRouter.go('/home');
     final providers = await tester.runAsync(buildAppProviders);
     await tester.pumpWidget(
