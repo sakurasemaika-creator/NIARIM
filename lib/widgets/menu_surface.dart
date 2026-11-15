@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'typing_dialog_inset.dart';
+
 /// メニューの面（メニューの背景色で塗るダイアログ・ボトムシート）の中身に
 /// 使うテーマ。
 ///
@@ -60,8 +62,9 @@ class MenuSurface extends StatelessWidget {
 /// ダイアログ（`showDialog`）・ボトムシート（`showModalBottomSheet`）は、
 /// 開いた所から画面までの [InheritedTheme] を写して中身を包む
 /// （[InheritedTheme.capture]）。画面ごとに置いたこの印も写り、開いた
-/// ダイアログ・シートの中身をメニューの面のテーマで描く。呼び出し側
-/// （lib配下に約250か所）は何も変えずに、今後足すダイアログ・シートにも効く。
+/// ダイアログ・シートの中身をメニューの面のテーマで描く。ダイアログは、狭い
+/// 画面の左右の空きも決める（[NarrowDialogInset]）。呼び出し側（lib配下に
+/// 約250か所）は何も変えずに、今後足すダイアログ・シートにも効く。
 class MenuSurfacePageTransitionsBuilder extends PageTransitionsBuilder {
   const MenuSurfacePageTransitionsBuilder(this.delegate);
 
@@ -108,7 +111,8 @@ final PageTransitionsTheme menuSurfacePageTransitionsTheme =
     );
 
 /// 画面に置く印。画面そのものの見た目は変えず、そこから開いたダイアログ・
-/// ボトムシートへ写ったときだけ中身をメニューの面のテーマで包む。
+/// ボトムシートへ写ったときだけ中身をメニューの面のテーマで包む（ダイアログは
+/// 狭い画面の左右の空きも[NarrowDialogInset]で決める）。
 ///
 /// ポップアップメニュー・ドロップダウンの一覧も同じように写るが、包まない：
 /// ポップアップメニューの項目名はテーマ（`popupMenuTheme.labelTextStyle`）で
@@ -133,7 +137,11 @@ class _RouteMenuSurface extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final route = ModalRoute.of(context);
-    if (route is RawDialogRoute || route is ModalBottomSheetRoute) {
+    if (route is RawDialogRoute) {
+      // メニューの面のテーマ（あれば）の上で、狭い画面の空きを決める。
+      return MenuSurface(child: NarrowDialogInset(child: child));
+    }
+    if (route is ModalBottomSheetRoute) {
       return MenuSurface(child: child);
     }
     return child;

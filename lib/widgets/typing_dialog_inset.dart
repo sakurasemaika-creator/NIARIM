@@ -1,4 +1,4 @@
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 
 /// Materialのダイアログの最小の幅。
 const double _minDialogWidth = 280;
@@ -55,4 +55,42 @@ EdgeInsets? dialogInsetPadding(BuildContext context) {
     horizontal: horizontal,
     vertical: _usualVerticalInset,
   );
+}
+
+/// 画面から開いたダイアログの中身を包み、左右の空き（`insetPadding`）を渡して
+/// いないダイアログ（`AlertDialog`・`Dialog`・`SimpleDialog`）も、狭い画面では
+/// [dialogInsetPadding]の空きにする（テーマの`dialogTheme.insetPadding`として
+/// [child]へ渡す）。自分で空きを渡したダイアログは、その空きのまま。
+///
+/// 320pxの画面では、既定の左右の空き（40px）でダイアログがMaterialの最小の幅
+/// （280px）より狭い240pxになり、文字の大きな画面で題・ボタンの1つの語が
+/// 1行に入らなかった（ホームの「貼り付けたものをゴミ箱へ」「ゴミ箱から戻す」
+/// 等）。ダイアログはlib配下に約140か所あり、1つずつ空きを渡すと渡し忘れが
+/// 残るので、画面ごとの印（`MenuSurfacePageTransitionsBuilder`）から開いた
+/// ダイアログをまとめて包む。最小の幅が取れる画面（360px以上）の空きは
+/// 今までどおり。
+///
+/// 画面の幅によって包む・包まないを変えると、開いているダイアログの中身が
+/// 作り直され、打った文字・状態が消える（向きを変えて360pxをまたいだとき）。
+/// いつも[Theme]で包み、空きを変えないときは今のテーマをそのまま渡す。
+class NarrowDialogInset extends StatelessWidget {
+  const NarrowDialogInset({super.key, required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final inset = theme.dialogTheme.insetPadding == null
+        ? dialogInsetPadding(context)
+        : null;
+    return Theme(
+      data: inset == null
+          ? theme
+          : theme.copyWith(
+              dialogTheme: theme.dialogTheme.copyWith(insetPadding: inset),
+            ),
+      child: child,
+    );
+  }
 }
