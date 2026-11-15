@@ -1162,9 +1162,16 @@ class _HomeScreenState extends State<HomeScreen>
                               onSortByNameChanged: _setSortByName,
                               onToggleDirection: _toggleSortDirection,
                             ),
-                            // フォルダ内移動時のパンくずリスト。検索中は
-                            // 全体から検索するため非表示にする。
-                            if (!_isSearching) _buildBreadcrumb(),
+                            // フォルダ内移動時のパンくずリスト。言葉を入れて
+                            // 探している間は全体から探すため出さない（検索を
+                            // 開いただけで入力が空の間は、フォルダの中身を
+                            // 出しているので残す）。
+                            if (!_isSearching ||
+                                !ProjectListWidget.searchesEverywhere(
+                                  _searchQuery,
+                                  searchByTag: _searchByTag,
+                                ))
+                              _buildBreadcrumb(),
                           ],
                         ),
                         // 読み込めなかった間は、上の知らせだけを出す（「プロ

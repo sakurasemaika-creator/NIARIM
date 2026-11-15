@@ -5,7 +5,6 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart' hide MaterialType;
-import 'package:flutter/rendering.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
@@ -261,6 +260,23 @@ class ProjectListWidget extends StatelessWidget {
     searchByTag: searchByTag,
   ).map((entry) => entry.id).toSet();
 
+  /// 探す言葉（大文字・小文字、全角・半角、カタカナ・ひらがなの違いを
+  /// そろえ、タグで探すときの先頭の`#`を除いたもの）。
+  static String _effectiveQuery(String searchQuery, bool searchByTag) {
+    final rawQuery = foldName(searchQuery).trim();
+    // Accept both `tag` and `#tag` input in tag mode.
+    return searchByTag && rawQuery.startsWith('#')
+        ? rawQuery.substring(1).trimLeft()
+        : rawQuery;
+  }
+
+  /// 一覧がフォルダの外も含めて全体から探しているか。入力が空・空白だけ・
+  /// タグの印だけのときは、今いるフォルダの中身を出している。
+  static bool searchesEverywhere(
+    String searchQuery, {
+    required bool searchByTag,
+  }) => _effectiveQuery(searchQuery, searchByTag).isNotEmpty;
+
   static List<_Entry> _visibleEntries({
     required List<Project> source,
     required List<ProjectFolder> allFolders,
@@ -271,11 +287,7 @@ class ProjectListWidget extends StatelessWidget {
   }) {
     final folderIds = allFolders.map((f) => f.id).toSet();
     // 大文字・小文字、全角・半角、カタカナ・ひらがなの違いを区別せずに探す。
-    final rawQuery = foldName(searchQuery).trim();
-    // Accept both `tag` and `#tag` input in tag mode.
-    final query = searchByTag && rawQuery.startsWith('#')
-        ? rawQuery.substring(1).trimLeft()
-        : rawQuery;
+    final query = _effectiveQuery(searchQuery, searchByTag);
 
     List<_Entry> entries;
     if (query.isNotEmpty) {
