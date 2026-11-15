@@ -4,7 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 
-import '../utils/line_break.dart' show containsHangul;
+import '../utils/line_break.dart' show containsHangul, lineStartKeepParts;
 import 'action_beside_or_below.dart'
     show ReportsWidestWord, widestUnbreakableWidth;
 
@@ -226,10 +226,20 @@ Widget countText(String text, {Key? key, TextStyle? style}) =>
 /// （[KeepTogetherText]）。漢字・かな・ハングルの単位は[KeepTogetherText]が
 /// もともとつなぐので、空白を挟む言語の「数＋次の語」を足す。`Text.data`・
 /// 読み上げは元の文のまま。数もハングルも無い文は普通の[Text]。
-Widget messageText(String text, {Key? key, TextStyle? style}) {
+///
+/// [keepLineStarts]が真なら、長音符・小さいかな・閉じ括弧・句読点で行を
+/// 始めない（[lineStartKeepParts]。Flutterは長音符・小さいかなの前でも行を
+/// 変え、活用Tipsの題が「パ / ーツ」と長音符で始まる行に折れた）。
+Widget messageText(
+  String text, {
+  Key? key,
+  TextStyle? style,
+  bool keepLineStarts = false,
+}) {
   final keep = [
     for (final m in _spacedCount.allMatches(text)) m[0]!,
     ...koreanWordParts(text),
+    if (keepLineStarts) ...lineStartKeepParts(text),
   ];
   if (keep.isEmpty && !text.contains(RegExp(r'\d'))) {
     return Text(text, key: key, style: style);

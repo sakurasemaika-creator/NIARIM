@@ -806,8 +806,12 @@ class _TipListTile extends StatelessWidget {
                 ),
                 const SizedBox(width: 10),
                 Expanded(
-                  child: Text(
+                  // 韓国語の語は、1行に入れば途中で折らない（「부 / 위별로」と
+                  // 折れた）。長音符・小さいかな・閉じ括弧で行を始めない
+                  // （「パ / ーツ」と長音符で始まる行に折れた）。
+                  child: messageText(
                     tip.title,
+                    keepLineStarts: true,
                     style: const TextStyle(
                       fontFamily: 'Kuramubon',
                       fontFamilyFallback: kHeadingFontFallback,
