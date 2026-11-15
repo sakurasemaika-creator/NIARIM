@@ -33,6 +33,7 @@ import '../../widgets/background_color_picker.dart';
 import '../../widgets/project_not_found_view.dart';
 import '../../widgets/dispose_on_unmount.dart';
 import '../../widgets/editable_slider_value.dart';
+import '../../widgets/first_that_fits.dart';
 import '../../widgets/keep_together_text.dart';
 import '../../widgets/labeled_slider.dart';
 import '../../widgets/stepped_slider.dart';
@@ -4005,62 +4006,111 @@ class _CanvasScreenState extends State<CanvasScreen> {
 
   /// フレーム複数選択モード時のアクションバー（大量処理実行時の
   /// フィルター一括適用）。全選択・全解除・フィルター一括適用・キャンセルを提供する。
+  ///
+  /// 件数の文と4つの操作を1行に並べ、名前のボタンが1行に入らない幅・文字の
+  /// 大きさでは名前の代わりにアイコンのボタン（名前は長押し・ホバーの吹き
+  /// 出しと読み上げ。所有者の判断3）、アイコンでも1行に入らなければ件数の文を
+  /// 上の行、操作を下の行に分ける（[FirstThatFits]）。1つの`Row`に並べていた
+  /// 頃は、日本語360px・文字2倍で253px、文字1倍でも約34pxはみ出し、右の
+  /// 「フィルター適用」が画面の外へ切れて押せなかった。どの形でも同じ4つの
+  /// 操作を同じ順に置く（形が替わってもキーボードのフォーカスが同じ操作に
+  /// 移る）。
   Widget _buildFrameMultiSelectBar() {
     final l10n = AppLocalizations.of(context)!;
     final total = context.watch<ProjectService>().frameCount(
       widget.projectId,
       _currentSceneId,
     );
+    const labelStyle = TextStyle(fontSize: 12);
+    // 件数の文（韓国語の語・数と単位は途中で折らない）。
+    final count = messageText(
+      l10n.canvasFrameSelectedCount(_selectedFrameIndices.length, total),
+      style: labelStyle,
+    );
+    void selectAll() => setState(
+      () => _selectedFrameIndices = {for (int i = 0; i < total; i++) i},
+    );
+    void deselectAll() => setState(() => _selectedFrameIndices = {});
+    final VoidCallback? applyFilter = _selectedFrameIndices.isEmpty
+        ? null
+        : () {
+            setState(() => _filterBulkFrames = _selectedFrameIndices);
+            _setDesktopPanelVisible(CanvasDockPanel.filter, true);
+          };
+    void cancel() => setState(() {
+      _frameMultiSelectMode = false;
+      _selectedFrameIndices = {};
+    });
+    final close = IconButton(
+      icon: const Icon(Icons.close, size: 18),
+      tooltip: l10n.commonCancel,
+      onPressed: cancel,
+    );
+    final labelled = Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        TextButton(
+          onPressed: selectAll,
+          child: Text(l10n.canvasSelectAllButton, style: labelStyle),
+        ),
+        TextButton(
+          onPressed: deselectAll,
+          child: Text(l10n.canvasDeselectAllButton, style: labelStyle),
+        ),
+        FilledButton.icon(
+          onPressed: applyFilter,
+          icon: const Icon(Icons.blur_on, size: 14),
+          label: Text(l10n.canvasApplyFilterButton, style: labelStyle),
+          style: FilledButton.styleFrom(
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            minimumSize: Size.zero,
+          ),
+        ),
+        close,
+      ],
+    );
+    final icons = Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        IconButton(
+          icon: const Icon(Icons.select_all, size: 20),
+          tooltip: l10n.canvasSelectAllButton,
+          onPressed: selectAll,
+        ),
+        IconButton(
+          icon: const Icon(Icons.deselect, size: 20),
+          tooltip: l10n.canvasDeselectAllButton,
+          onPressed: deselectAll,
+        ),
+        IconButton.filled(
+          icon: const Icon(Icons.blur_on, size: 20),
+          tooltip: l10n.canvasApplyFilterButton,
+          onPressed: applyFilter,
+        ),
+        close,
+      ],
+    );
     return Container(
+      key: const ValueKey('frameMultiSelectBar'),
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       color: Theme.of(context).colorScheme.surfaceContainerHigh,
-      child: Row(
+      child: FirstThatFits(
         children: [
-          Text(
-            l10n.canvasFrameSelectedCount(_selectedFrameIndices.length, total),
-            style: const TextStyle(fontSize: 12),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [count, const SizedBox(width: 8), labelled],
           ),
-          const Spacer(),
-          TextButton(
-            onPressed: () => setState(
-              () => _selectedFrameIndices = {for (int i = 0; i < total; i++) i},
-            ),
-            child: Text(
-              l10n.canvasSelectAllButton,
-              style: const TextStyle(fontSize: 12),
-            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [count, const SizedBox(width: 8), icons],
           ),
-          TextButton(
-            onPressed: () => setState(() => _selectedFrameIndices = {}),
-            child: Text(
-              l10n.canvasDeselectAllButton,
-              style: const TextStyle(fontSize: 12),
-            ),
-          ),
-          FilledButton.icon(
-            onPressed: _selectedFrameIndices.isEmpty
-                ? null
-                : () {
-                    setState(() => _filterBulkFrames = _selectedFrameIndices);
-                    _setDesktopPanelVisible(CanvasDockPanel.filter, true);
-                  },
-            icon: const Icon(Icons.blur_on, size: 14),
-            label: Text(
-              l10n.canvasApplyFilterButton,
-              style: const TextStyle(fontSize: 12),
-            ),
-            style: FilledButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-              minimumSize: Size.zero,
-            ),
-          ),
-          IconButton(
-            icon: const Icon(Icons.close, size: 18),
-            tooltip: l10n.commonCancel,
-            onPressed: () => setState(() {
-              _frameMultiSelectMode = false;
-              _selectedFrameIndices = {};
-            }),
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(padding: const EdgeInsets.only(top: 4), child: count),
+              Align(alignment: AlignmentDirectional.centerEnd, child: icons),
+            ],
           ),
         ],
       ),
