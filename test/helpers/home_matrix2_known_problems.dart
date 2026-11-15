@@ -4,15 +4,14 @@ import 'home_matrix_harness.dart';
 /// まだ直していない不具合。番号・理由・問題の文に当てる式・出るセル。
 ///
 /// 番号は監査の台帳（docs/work-audit/state/AUDIT_ROUTE.md）のDISC番号。
-/// まだ台帳に載っていないものは仮の番号（NEW-n）で、台帳に載せたら
-/// DISC番号へ書き換える。
+/// 新しく見つけたものは台帳に載せてから、その番号で足す。
 ///
 /// 各テストファイルは、自分のセルで出るものだけを[homeMatrix2Known]で
 /// 選んで見込む。見込んだのに一度も出なかったもの（直った・作りが
 /// 変わった）は、そのファイルの最後に失敗になる。
 final kHomeMatrix2KnownProblems = <HomeMatrixKnownProblem>[
   HomeMatrixKnownProblem(
-    'NEW-1',
+    'DISC212',
     'カードの丸い操作（星・メニュー・フォルダのメニュー）の押せる大きさが'
         '40×40で、Androidの決まり（48×48）より小さい。'
         'CollectionActionFrame.extent = 40（lib/widgets/'
@@ -21,7 +20,7 @@ final kHomeMatrix2KnownProblems = <HomeMatrixKnownProblem>[
     RegExp(r'^tap target 40x40 \(card\): '),
   ),
   HomeMatrixKnownProblem(
-    'NEW-2',
+    'DISC213',
     '動きを減らす設定（端末の「アニメーションを削除」＝disableAnimations）'
         'でも、タブを切り替えると本文が約300ms（19〜20フレーム）かけて横に'
         '滑る。TabBarの切り替えはページのスクロールのアニメーションで、'
@@ -30,7 +29,7 @@ final kHomeMatrix2KnownProblems = <HomeMatrixKnownProblem>[
     RegExp(r'^tab switch takes \d+ frames with reduced motion'),
   ),
   HomeMatrixKnownProblem(
-    'NEW-3',
+    'DISC214',
     '動きを減らす設定で引き出しを閉じると、引き出しは2フレームで画面の外へ'
         '出て見えなくなるが、その後さらに約24フレーム（約0.4秒）、ホームの'
         'タブを押しても届かない（設定がオフなら、引き出しが出切った次の'
@@ -47,7 +46,7 @@ final kHomeMatrix2KnownProblems = <HomeMatrixKnownProblem>[
     ),
   ),
   HomeMatrixKnownProblem(
-    'NEW-4',
+    'DISC215',
     '画面の下にジェスチャーの帯（34px）・3ボタンの帯（48px）がある縦の'
         'スマホ（390x844）で、プロジェクトの一覧を一番下まで送っても、右下の'
         '＋が最後の行の右のカードの名前の下の端に重なる（浮かぶボタンは帯の'
@@ -57,7 +56,7 @@ final kHomeMatrix2KnownProblems = <HomeMatrixKnownProblem>[
     where: _bottomInsetOnly,
   ),
   HomeMatrixKnownProblem(
-    'NEW-5',
+    'DISC216',
     '横向きのスマホ（844x390）で左にカメラの切り欠き（安全な領域の左47px）'
         '・右に3ボタンの帯（右48px）があるとき、上部バーと引き出しは避けるが、'
         'タブの本文（お気に入り・並び順・ゴミ箱の種類・カードの星・名前・'
@@ -67,7 +66,7 @@ final kHomeMatrix2KnownProblems = <HomeMatrixKnownProblem>[
     where: _sideInsets,
   ),
   HomeMatrixKnownProblem(
-    'NEW-6',
+    'DISC217',
     '新しいフォルダの名前のダイアログの説明（projectListFolderHint、'
         'project_list_widget.dartの_folderNameDialog）が、韓国語で語の途中'
         'で折り返す（幅320で「정리하 / 는」）。ほかの韓国語の文が使う'
@@ -75,7 +74,7 @@ final kHomeMatrix2KnownProblems = <HomeMatrixKnownProblem>[
     RegExp(r'^word split: "[가-힣]+" in .*\[AlertDialog\]$'),
   ),
   HomeMatrixKnownProblem(
-    'NEW-7',
+    'DISC218',
     '共有の「受け取ったもの」で、絵の無い作品のカードの表紙は作品の用紙の色'
         '（Color(project.backgroundColor)）に、テーマのアイコンの色の'
         'movie_creation_outlinedを置く（home_screen.dartの'
@@ -87,7 +86,7 @@ final kHomeMatrix2KnownProblems = <HomeMatrixKnownProblem>[
     RegExp(r'^unreadable: "\u{F1F3}" .*\[home-shared\]$', unicode: true),
   ),
   HomeMatrixKnownProblem(
-    'NEW-8',
+    'DISC219',
     '作品一覧のカード（ExportedWorkCard）で、絵を出さない作品の表紙'
         '（exportedWorkThumbnailArea）は用紙側の色'
         '（colorScheme.surfaceContainerHighest：パネルの背景色を本文の'

@@ -179,12 +179,12 @@ void main() {
 final _run = HomeMatrixRun(
   Directory('build/home-matrix2/environment'),
   knownProblems: homeMatrix2Known(const [
-    'NEW-1',
-    'NEW-2',
-    'NEW-3',
-    'NEW-4',
-    'NEW-5',
-    'NEW-6',
+    'DISC212',
+    'DISC213',
+    'DISC214',
+    'DISC215',
+    'DISC216',
+    'DISC217',
   ]),
 );
 

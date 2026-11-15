@@ -1146,7 +1146,7 @@ class HomeMatrixKnownProblem {
     this.where,
   });
 
-  /// 不具合の番号（台帳のDISC番号か、まだ載っていないものはNEW-n）。
+  /// 不具合の番号（台帳のDISC番号）。
   final String id;
 
   /// 何が・なぜ不具合か（記録に残す）。

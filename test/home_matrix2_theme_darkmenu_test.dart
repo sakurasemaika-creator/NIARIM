@@ -31,5 +31,5 @@ void main() {
 
 final _run = HomeMatrixRun(
   Directory('build/home-matrix2/theme-darkmenu'),
-  knownProblems: homeMatrix2Known(const ['NEW-1', 'NEW-8']),
+  knownProblems: homeMatrix2Known(const ['DISC212', 'DISC219']),
 );

@@ -93,5 +93,5 @@ void main() {
 
 final _run = HomeMatrixRun(
   Directory('build/home-matrix2/loading'),
-  knownProblems: homeMatrix2Known(const ['NEW-1']),
+  knownProblems: homeMatrix2Known(const ['DISC212']),
 );
