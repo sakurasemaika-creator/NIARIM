@@ -61,6 +61,7 @@ import '../../services/watermark_service.dart';
 import '../canvas/widgets/canvas_icon_button.dart';
 import '../canvas/widgets/color_picker_panel.dart';
 import '../../widgets/confirm_delete.dart';
+import '../../widgets/keep_together_text.dart';
 import '../../widgets/dispose_on_unmount.dart';
 import '../../widgets/labeled_slider.dart';
 import '../../widgets/stepped_slider.dart';
@@ -3211,7 +3212,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(l10n.timelineSceneDeleteConfirmTitle(scene.displayName)),
-        content: Text(l10n.timelineSceneDeleteConfirmBody),
+        content: messageText(l10n.timelineSceneDeleteConfirmBody),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
@@ -3243,7 +3244,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(l10n.timelineSceneMultiDeleteConfirmTitle(count)),
-        content: Text(l10n.timelineSceneDeleteConfirmBody),
+        content: messageText(l10n.timelineSceneDeleteConfirmBody),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
@@ -5167,11 +5168,15 @@ class _TimelineScreenState extends State<TimelineScreen> {
                   home,
                   angle: angle,
                   scale: scale,
-                )) return;
+                )) {
+                  return;
+                }
                 if (!mounted ||
                     !context.read<PremiumService>().isFeatureAvailable(
                       PremiumFeature.watermark,
-                    )) return;
+                    )) {
+                  return;
+                }
                 ps.updateLayer(
                   projectId: widget.projectId,
                   sceneId: home.sceneId,

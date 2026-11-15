@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 
+import '../utils/line_break.dart' show containsHangul;
 import 'action_beside_or_below.dart'
     show ReportsWidestWord, widestUnbreakableWidth;
 
@@ -209,13 +210,53 @@ class KeepTogetherText extends Text {
 }
 
 /// 数とそのすぐ後の単位を行の途中で切らずに[text]を描く（確認の文の
-/// 「プロジェクト2件」「2 items」「2 elementos」）。漢字・かな・ハングルの
-/// 単位は[KeepTogetherText]がもともとつなぐので、空白を挟む言語の「数＋次の
-/// 語」だけを足す。数の無い文は普通の[Text]。
-Widget countText(String text, {Key? key, TextStyle? style}) {
-  final parts = [for (final m in _spacedCount.allMatches(text)) m[0]!];
-  if (!text.contains(RegExp(r'\d'))) return Text(text, key: key, style: style);
-  return KeepTogetherText(text, key: key, keep: parts, style: style);
+/// 「プロジェクト2件」「2 items」「2 elementos」）。韓国語の語も途中で切らない
+/// （[messageText]と同じ）。
+Widget countText(String text, {Key? key, TextStyle? style}) =>
+    messageText(text, key: key, style: style);
+
+/// 確認・知らせの文[text]を描く。数とそのすぐ後の単位（「プロジェクト2件」
+/// 「2 items」「2 elementos」）と、韓国語の語（空白で区切った単位）を行の途中で
+/// 切らない。
+///
+/// 韓国語は語を空白で区切って書き、折り返しも空白の所で行うが、Flutterは
+/// ハングルのどの字の間でも行を変えるので、ゴミ箱へ移す確認が「1개 항목을
+/// 휴지통 / 으로 이동하시겠 / 습니까?」と語の途中で切れた（320px・文字2倍）。
+/// 欄の1行に入らない長い語だけは、普通の[Text]と同じに字の間で折る
+/// （[KeepTogetherText]）。漢字・かな・ハングルの単位は[KeepTogetherText]が
+/// もともとつなぐので、空白を挟む言語の「数＋次の語」を足す。`Text.data`・
+/// 読み上げは元の文のまま。数もハングルも無い文は普通の[Text]。
+Widget messageText(String text, {Key? key, TextStyle? style}) {
+  final keep = [
+    for (final m in _spacedCount.allMatches(text)) m[0]!,
+    ...koreanWordParts(text),
+  ];
+  if (keep.isEmpty && !text.contains(RegExp(r'\d'))) {
+    return Text(text, key: key, style: style);
+  }
+  return KeepTogetherText(text, key: key, keep: keep, style: style);
+}
+
+/// [text]の中の、ハングルを含む語（空白で区切った単位。付いている記号・数・
+/// 助詞も含めて）。[KeepTogetherText]の`keep`に渡すと、欄の1行に入る語は
+/// 途中で行を変えない。[except]（複製の名前の印など、ほかに途中で切らない
+/// 部分）と重なる語は除く（重なる所は[except]の側でつなぐ）。
+List<String> koreanWordParts(
+  String text, {
+  Iterable<String> except = const [],
+}) {
+  if (!containsHangul(text)) return const [];
+  final taken = [
+    for (final part in except)
+      if (part.isNotEmpty)
+        for (final match in part.allMatches(text)) (match.start, match.end),
+  ];
+  return [
+    for (final word in RegExp(r'\S+').allMatches(text))
+      if (containsHangul(word[0]!) &&
+          !taken.any((t) => t.$1 < word.end && word.start < t.$2))
+        word[0]!,
+  ];
 }
 
 /// 数と、空白を1つ挟んで続く語（「2 items」「1 élément」）。

@@ -218,7 +218,9 @@ class _ProjectTrashDialogState extends State<ProjectTrashDialog> {
       canPop: !_working,
       child: AlertDialog(
         scrollable: true,
-        title: Text(widget.title),
+        // 題と本文は、韓国語の語・数と単位を1行に入れば途中で折らない
+        // （本文が「휴지통 / 으로」、題が「삭제하시겠습니 / 까?」と切れた）。
+        title: messageText(widget.title),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -235,7 +237,7 @@ class _ProjectTrashDialogState extends State<ProjectTrashDialog> {
               ),
             // 数と単位（「プロジェクト2件」「2 items」）は行の途中で切らない
             // （「…プロジェクト2 / 件も一緒に移動します。」と切れていた）。
-            countText(widget.pendingMessage?.call() ?? widget.message),
+            messageText(widget.pendingMessage?.call() ?? widget.message),
             if (_failed)
               Padding(
                 padding: const EdgeInsets.only(top: 12),

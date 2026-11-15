@@ -23,6 +23,7 @@ import '../../../services/layer_clipboard_service.dart';
 import '../../../services/tone_service.dart';
 import '../../../widgets/blend_mode_preview.dart';
 import '../../../widgets/confirm_delete.dart';
+import '../../../widgets/keep_together_text.dart';
 import '../../../widgets/autofill_preset_selection_sheet.dart';
 import '../../../widgets/dispose_on_unmount.dart';
 import '../../../widgets/first_use_tooltip.dart';
@@ -1141,7 +1142,7 @@ class _LayerPanelState extends State<LayerPanel> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(l10n.layerPanelCommonDeleteMidDialogTitle(layer.name)),
-        content: Text(l10n.layerPanelCommonDeleteMidDialogBody),
+        content: messageText(l10n.layerPanelCommonDeleteMidDialogBody),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
@@ -1174,7 +1175,7 @@ class _LayerPanelState extends State<LayerPanel> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(l10n.layerPanelDeleteConfirmTitle(layer.name)),
-        content: Text(l10n.layerPanelDeleteConfirmBody),
+        content: messageText(l10n.layerPanelDeleteConfirmBody),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),

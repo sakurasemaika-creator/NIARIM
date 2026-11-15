@@ -130,11 +130,13 @@ void main() {
     return (saves: service, projects: projects, project: project, nav: navKey);
   }
 
+  // 確認の文は、数と単位・韓国語の語を途中で切らないTextの仲間
+  // （KeepTogetherText）でも描くので、型の同じものだけでなく仲間も読む。
   String dialogText(WidgetTester tester) => [
     for (final t in tester.widgetList<Text>(
       find.descendant(
         of: find.byType(AlertDialog),
-        matching: find.byType(Text),
+        matching: find.byWidgetPredicate((widget) => widget is Text),
       ),
     ))
       t.data ?? t.textSpan?.toPlainText() ?? '',

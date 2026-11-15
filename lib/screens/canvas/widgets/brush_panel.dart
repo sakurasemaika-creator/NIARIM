@@ -12,6 +12,7 @@ import '../../../services/export_share_service.dart';
 import '../../../services/shared_asset_card_service.dart';
 import '../../../services/settings_service.dart';
 import '../../../widgets/labeled_slider.dart';
+import '../../../widgets/keep_together_text.dart';
 import '../../../widgets/preset_stroke_row.dart';
 import '../../../widgets/pixel_color_mode_selector.dart';
 import 'creative_folder_sheets.dart';
@@ -461,7 +462,7 @@ class _BrushPanelState extends State<BrushPanel> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(l10n.brushPanelDeleteConfirmTitle(brush.name)),
-        content: Text(l10n.brushPanelDeleteConfirmBody),
+        content: messageText(l10n.brushPanelDeleteConfirmBody),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),

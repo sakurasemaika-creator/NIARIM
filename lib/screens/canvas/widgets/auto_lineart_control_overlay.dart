@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import '../../../engine/auto_lineart_engine.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../widgets/grab_pan_gesture_recognizer.dart';
+import '../../../widgets/keep_together_text.dart';
 
 enum AutoLineartControlMode { move, add, delete }
 
@@ -189,7 +190,7 @@ class _AutoLineartControlOverlayState extends State<AutoLineartControlOverlay> {
         final l10n = AppLocalizations.of(context)!;
         return AlertDialog(
           title: Text(l10n.filterAutoLineartDeletePointTooltip),
-          content: Text(l10n.filterAutoLineartDeletePointConfirm),
+          content: messageText(l10n.filterAutoLineartDeletePointConfirm),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),

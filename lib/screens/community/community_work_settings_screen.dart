@@ -9,6 +9,7 @@ import '../../services/community_service.dart';
 import '../../widgets/responsive.dart';
 import 'community_error_text.dart';
 import '../../widgets/fit_or_hide_title.dart';
+import '../../widgets/keep_together_text.dart';
 
 /// Per-work owner settings. The YouTube editor is an external destination;
 /// NIARIM visibility and AI disclosure use the authenticated NIARIM API.
@@ -356,7 +357,7 @@ class _CommunityWorkSettingsScreenState
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: Text(l10n.communityMyWorksDeleteConfirmTitle),
-        content: Text(l10n.communityMyWorksDeleteConfirmBody),
+        content: messageText(l10n.communityMyWorksDeleteConfirmBody),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, false),

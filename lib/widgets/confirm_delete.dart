@@ -2,6 +2,7 @@ import 'package:niarim/services/theme_service.dart';
 import 'package:flutter/material.dart';
 
 import '../l10n/app_localizations.dart';
+import 'keep_together_text.dart';
 
 /// ゴミ箱アイコンタップ時に一発で削除せず、確認ダイアログを挟む共通ヘルパー
 /// （アプリ全体で誤操作による削除を防止する）。[itemName]を
@@ -13,7 +14,8 @@ Future<bool> confirmDelete(BuildContext context, {String? itemName}) async {
     context: context,
     builder: (ctx) => AlertDialog(
       title: Text(l10n.commonDelete),
-      content: Text(
+      // 韓国語の語・数と単位は、1行に入れば途中で折らない。
+      content: messageText(
         itemName == null
             ? l10n.confirmDeleteGenericBody
             : l10n.confirmDeleteNamedBody(itemName),

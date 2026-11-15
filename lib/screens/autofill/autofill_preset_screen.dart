@@ -23,6 +23,7 @@ import '../../services/tone_service.dart';
 import '../../widgets/confirm_delete.dart';
 import '../../widgets/ad_banner_mock_widget.dart';
 import '../../widgets/editable_slider_value.dart';
+import '../../widgets/keep_together_text.dart';
 import '../../widgets/export_share_feedback.dart';
 import '../../widgets/first_that_fits.dart';
 import '../../widgets/stepped_slider.dart';
@@ -829,7 +830,7 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(l10n.autofillThumbnailDeleteConfirmTitle),
-        content: Text(l10n.autofillThumbnailDeleteConfirmBody),
+        content: messageText(l10n.autofillThumbnailDeleteConfirmBody),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),

@@ -12,6 +12,7 @@ import '../../services/project_service.dart';
 import '../../utils/file_size_label.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/help_button.dart';
+import '../../widgets/keep_together_text.dart';
 import '../../config/font_fallback.dart';
 import '../../config/accent_text_theme.dart';
 import '../../widgets/fit_or_hide_title.dart';
@@ -284,7 +285,7 @@ class _MaterialListScreenState extends State<MaterialListScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(l10n.materialRemoveUnusedConfirmTitle),
-        content: Text(l10n.materialRemoveUnusedConfirmBody),
+        content: messageText(l10n.materialRemoveUnusedConfirmBody),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),

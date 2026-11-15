@@ -1369,7 +1369,7 @@ class _StorageScreenState extends State<StorageScreen> {
       builder: (ctx) => AlertDialog(
         scrollable: true,
         title: Text(l10n.storageEraseAllConfirmTitle),
-        content: Text(l10n.storageEraseAllConfirmBody),
+        content: messageText(l10n.storageEraseAllConfirmBody),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
