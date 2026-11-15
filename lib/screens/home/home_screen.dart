@@ -651,6 +651,11 @@ class _HomeScreenState extends State<HomeScreen>
   // タブの一覧（上のバー・貼り付けの欄・選択中の操作バーの下）。
   final GlobalKey _listAreaKey = GlobalKey();
 
+  // 一覧の下に浮かぶボタンの並び（Tabで進んだ部品をこの上まで送り出す）。
+  final GlobalKey _floatingActionsKey = GlobalKey(
+    debugLabel: 'homeFloatingActions',
+  );
+
   // プロジェクトの一覧の見出し（お気に入りの絞り込み・並び順・パンくず）。
   // 一覧は見る範囲（お気に入りだけ・フォルダ・検索）ごとに作り直してスクロール
   // 位置を覚えるが、見出しはこのキーで作り直さずに移す。作り直すと、
@@ -1307,7 +1312,10 @@ class _HomeScreenState extends State<HomeScreen>
     );
   }
 
-  late final _homeTraversal = _HomeTraversalPolicy(_listAreaKey);
+  late final _homeTraversal = _HomeTraversalPolicy(
+    _listAreaKey,
+    floatingActions: _floatingActionsKey,
+  );
 
   // 選んでいる間は、どのタブでも「戻る」で選ぶのを終える（作品一覧・共有・
   // ゴミ箱でも長押しで選べる。以前はプロジェクトのタブだけを見ていて、ほかの
@@ -1767,6 +1775,7 @@ class _HomeScreenState extends State<HomeScreen>
       top: false,
       minimum: EdgeInsets.fromLTRB(16, 0, 16, compact ? 8 : 16),
       child: Row(
+        key: _floatingActionsKey,
         mainAxisAlignment: scrollToTop
             ? MainAxisAlignment.spaceBetween
             : MainAxisAlignment.end,
@@ -3066,12 +3075,22 @@ class _HomeFloatingActionState extends State<_HomeFloatingAction> {
 /// 見えない行が挟まった。一覧（[listArea]の中）の物はまとめて、一覧の上端の
 /// 位置に置く。移った先は、上下どちらへ隠れていても一覧の見える所へ送り出す
 /// （既定のTabは前へ進むとき下に隠れた物しか送り出さず、上へ隠れた行・並び順
-/// の見出しへ進むと、上部バーの裏の何も見えない所が光った）。
+/// の見出しへ進むと、上部バーの裏の何も見えない所が光った）。下へ送り出す
+/// ときは、一覧の下に浮かぶボタン（[floatingActions]）の上まで送る（一覧の
+/// 下端までしか送らないと、一番下の行の右の︙が＋の下に隠れた）。
 class _HomeTraversalPolicy extends ReadingOrderTraversalPolicy {
-  _HomeTraversalPolicy(this.listArea)
-    : super(requestFocusCallback: _revealTraversedFocus);
+  _HomeTraversalPolicy(this.listArea, {required GlobalKey floatingActions})
+    : super(
+        requestFocusCallback:
+            (node, {alignmentPolicy, alignment, duration, curve}) =>
+                _revealTraversedFocus(node, listArea, floatingActions),
+      );
 
   final GlobalKey listArea;
+
+  /// 浮かぶボタンの上に空ける間（一覧の下に浮かぶボタンの分として空けた
+  /// 余白88＝ボタン56・画面の下の余白16・この間16と同じ）。
+  static const double _floatingActionsGap = 16;
 
   @override
   Iterable<FocusNode> sortDescendants(
@@ -3106,21 +3125,70 @@ class _HomeTraversalPolicy extends ReadingOrderTraversalPolicy {
   }
 
   static void _revealTraversedFocus(
-    FocusNode node, {
-    ScrollPositionAlignmentPolicy? alignmentPolicy,
-    double? alignment,
-    Duration? duration,
-    Curve? curve,
-  }) {
+    FocusNode node,
+    GlobalKey listArea,
+    GlobalKey floatingActions,
+  ) {
     node.requestFocus();
     final context = node.context;
     if (context == null) return;
+    _keepAboveFloatingActions(context, listArea, floatingActions);
     for (final policy in const [
       ScrollPositionAlignmentPolicy.keepVisibleAtEnd,
       ScrollPositionAlignmentPolicy.keepVisibleAtStart,
     ]) {
       Scrollable.ensureVisible(context, alignmentPolicy: policy);
     }
+  }
+
+  /// タブの一覧（[listArea]）の中の部品を、一覧の見える所のうち浮かぶ
+  /// ボタンより上へ送り出す（入らないほど高い部品は上端をそろえる）。浮かぶ
+  /// ボタンが無い（ゴミ箱のタブ・選んでいる間）ときは一覧の下端まで。続けて
+  /// 呼ぶ[Scrollable.ensureVisible]は、もう見えているので縦には動かさない。
+  /// 一覧の外（引き出し等）は浮かぶボタンの下に入らないので送らない。
+  static void _keepAboveFloatingActions(
+    BuildContext context,
+    GlobalKey listArea,
+    GlobalKey floatingActions,
+  ) {
+    final area = listArea.currentContext;
+    var inList = false;
+    context.visitAncestorElements((element) {
+      inList = identical(element, area);
+      return !inList;
+    });
+    if (!inList) return;
+    final target = context.findRenderObject();
+    final scrollable = Scrollable.maybeOf(context, axis: Axis.vertical);
+    final view = scrollable?.context.findRenderObject();
+    if (target is! RenderBox ||
+        !target.attached ||
+        !target.hasSize ||
+        view is! RenderBox ||
+        !view.attached ||
+        !view.hasSize ||
+        scrollable!.position.axisDirection != AxisDirection.down) {
+      return;
+    }
+    final shown = view.localToGlobal(Offset.zero) & view.size;
+    var bottom = shown.bottom;
+    final actions = floatingActions.currentContext?.findRenderObject();
+    if (actions is RenderBox && actions.attached && actions.hasSize) {
+      final top = actions.localToGlobal(Offset.zero).dy - _floatingActionsGap;
+      if (top < bottom) bottom = top;
+    }
+    final rect = target.localToGlobal(Offset.zero) & target.size;
+    var delta = 0.0;
+    if (rect.bottom > bottom) delta = rect.bottom - bottom;
+    if (rect.top - delta < shown.top) delta = rect.top - shown.top;
+    if (delta.abs() < 0.5) return;
+    final position = scrollable.position;
+    position.jumpTo(
+      (position.pixels + delta).clamp(
+        position.minScrollExtent,
+        position.maxScrollExtent,
+      ),
+    );
   }
 }
 
