@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
@@ -27,6 +28,7 @@ import '../../services/settings_service.dart';
 import '../../services/shortcut_service.dart';
 import '../../models/shortcut_binding.dart';
 import '../../models/custom_automation.dart';
+import '../../widgets/action_beside_or_below.dart';
 import '../../widgets/background_color_picker.dart';
 import '../../widgets/project_not_found_view.dart';
 import '../../widgets/dispose_on_unmount.dart';
@@ -945,10 +947,30 @@ class _CanvasScreenState extends State<CanvasScreen> {
                         if (painter.width > widest) widest = painter.width;
                         painter.dispose();
                       }
+                      // 項目名の、折り返せないいちばん広い語（右に置くと項目名の
+                      // 欄が狭くなり、西語で「Vista de com / probación」と語の
+                      // 途中で折れた）。
+                      final titlePainter = TextPainter(
+                        text: TextSpan(
+                          text: l10n.canvasAutofillCheckView,
+                          style: style,
+                        ),
+                        textDirection: Directionality.of(ctx),
+                        textScaler: scaler,
+                      )..layout();
+                      final titleWord = widestUnbreakableWidth(
+                        titlePainter,
+                        reported: titlePainter.minIntrinsicWidth,
+                      );
+                      titlePainter.dispose();
                       // 選択肢の幅（▼を含む）＋先頭のアイコン・余白・項目名に
-                      // 残したい最小の幅。
+                      // 残したい最小の幅（語が途中で折れない幅）。
                       final fitsBeside =
-                          widest + 32 + 56 + 32 + scaler.scale(96) <=
+                          widest +
+                              32 +
+                              56 +
+                              32 +
+                              math.max(scaler.scale(96), titleWord) <=
                           constraints.maxWidth;
                       if (fitsBeside) {
                         return ListTile(
@@ -1075,13 +1097,23 @@ class _CanvasScreenState extends State<CanvasScreen> {
                       ? null
                       : Theme.of(context).colorScheme.outline,
                 ),
-                title: Text(l10n.customAutomationTitle),
-                trailing:
+                // 鍵の印は、項目名の横に置くと語の途中で折れる幅では項目名の
+                // 下へ回す（行の右に置いたままだと、仏語・360px・文字2倍で
+                // 「Automatisation / s」と折れた）。
+                title:
                     context.read<PremiumService>().isFeatureAvailable(
                       PremiumFeature.customAutomation,
                     )
-                    ? null
-                    : const Icon(Icons.lock_outline, size: 18),
+                    ? Text(l10n.customAutomationTitle)
+                    : ActionBesideOrBelow(
+                        gap: 16,
+                        text: Text(l10n.customAutomationTitle),
+                        action: Icon(
+                          Icons.lock_outline,
+                          size: 18,
+                          color: ListTileTheme.of(ctx).iconColor,
+                        ),
+                      ),
                 onTap: () {
                   Navigator.pop(ctx);
                   _showCustomAutomationManager();
