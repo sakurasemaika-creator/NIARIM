@@ -267,3 +267,39 @@ List<String> lineStartKeepParts(String text) {
   }
   return parts;
 }
+
+/// ひらがな。
+final RegExp _hiragana = RegExp(r'[ぁ-ゟ]');
+
+/// 日本語の語（文節）の始まりになる字：漢字・カタカナ・英数字・開き括弧。
+final RegExp _phraseHead = RegExp(
+  r'[゠-ヿ㐀-䶿一-鿿豈-﫿'
+  r'A-Za-z0-9０-９Ａ-Ｚａ-ｚ（「『【]',
+);
+
+/// 字（文字・数字）。句読点・括弧・空白は数えない。
+final RegExp _letter = RegExp(r'[\p{L}\p{N}]', unicode: true);
+
+/// 日本語の文[text]の最後の語（ひらがなの後で漢字・カタカナ・英数字が
+/// 始まる所から文の終わりまで）。最後の語が[minLetters]字より短いときは、
+/// その前の語の始まりまで広げる（「見る」→「詳しく見る」）。
+/// `KeepTogetherText`の`keep`に渡すと、最後の行へ送る字を語の途中から
+/// 取らない（欄の1行に入らなければ普通に折る）。
+///
+/// 日本語は字と字の間のどこでも行を変えるので、ボタンの名前が1字分だけ
+/// 欄に入らないと「プレミアム会員について詳しく見 / る」と最後の1字だけが
+/// 次の行に出た。最後の語をつなぐと、「プレミアム会員について / 詳しく
+/// 見る」と語の境目で折る。ひらがなの無い文（中国語など）・語の境目の無い
+/// 文・最後の語が文の中にほかにもある文は何もしない（空のリスト）。
+List<String> japaneseLastPhraseParts(String text, {int minLetters = 3}) {
+  if (!_hiragana.hasMatch(text)) return const [];
+  for (var i = text.length - 1; i > 0; i--) {
+    if (!_hiragana.hasMatch(text[i - 1]) || !_phraseHead.hasMatch(text[i])) {
+      continue;
+    }
+    final tail = text.substring(i);
+    if (_letter.allMatches(tail).length < minLetters) continue;
+    return text.indexOf(tail) == i ? [tail] : const [];
+  }
+  return const [];
+}

@@ -9,6 +9,7 @@ import '../../services/community_service.dart';
 import '../../services/google_auth_service.dart';
 import '../../services/premium_service.dart';
 import '../../utils/app_locale.dart';
+import '../../widgets/keep_together_text.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/fit_or_hide_title.dart';
 
@@ -192,7 +193,10 @@ class _MembershipBenefitsScreenState extends State<MembershipBenefitsScreen> {
                 key: const Key('membershipLearnPremiumButton'),
                 icon: const Icon(Icons.info_outline),
                 onPressed: () => context.push('/premium'),
-                label: Text(t['membershipDetail']),
+                // 1字だけの行を作らない：日本語は最後の語（「詳しく見る」）を
+                // 途中で折らず（320pxで「…詳しく見 / る」と折れた）、韓国語の
+                // 語も途中で折らない（「보 / 기」）。
+                label: messageText(t['membershipDetail'], keepLastPhrase: true),
               ),
             ],
           ],

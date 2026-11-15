@@ -4,7 +4,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 
-import '../utils/line_break.dart' show containsHangul, lineStartKeepParts;
+import '../utils/line_break.dart'
+    show containsHangul, japaneseLastPhraseParts, lineStartKeepParts;
 import 'action_beside_or_below.dart'
     show ReportsWidestWord, widestUnbreakableWidth;
 
@@ -233,17 +234,23 @@ Widget countText(String text, {Key? key, TextStyle? style}) =>
 /// 変え、活用Tipsの題が「パ / ーツ」と長音符で始まる行に折れた）。
 ///
 /// [textAlign]は[Text.textAlign]と同じ（中央にそろえる説明の文など）。
+///
+/// [keepLastPhrase]が真なら、日本語の最後の語を途中で折らない
+/// （[japaneseLastPhraseParts]。ボタンの名前が「…詳しく見 / る」と最後の
+/// 1字だけの行に折れた）。
 Widget messageText(
   String text, {
   Key? key,
   TextStyle? style,
   bool keepLineStarts = false,
   TextAlign? textAlign,
+  bool keepLastPhrase = false,
 }) {
   final keep = [
     for (final m in _spacedCount.allMatches(text)) m[0]!,
     ...koreanWordParts(text),
     if (keepLineStarts) ...lineStartKeepParts(text),
+    if (keepLastPhrase) ...japaneseLastPhraseParts(text),
   ];
   if (keep.isEmpty && !text.contains(RegExp(r'\d'))) {
     return Text(text, key: key, style: style, textAlign: textAlign);
