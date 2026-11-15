@@ -243,20 +243,14 @@ void main() {
 
   // ほかの画面の削除の確認も、本文を普通のTextにしない（韓国語の語の途中で
   // 折れる）。確認の文のキー（削除・ゴミ箱の確認の本文）を、普通のTextに
-  // 渡している所を探す。ホームの2つ（ゴミ箱へ貼り付ける・ゴミ箱から戻す
-  // 確認の問いの1行目）は、ホームを作り直している別の作業に任せる。
+  // 渡している所を探す（ホームのゴミ箱へ貼り付ける・ゴミ箱から戻す確認の
+  // 問いも。DISC188）。
   test('no delete or trash question body is a plain Text', () {
     final keys = RegExp(
       r'\bText\(\s*l10n\.(\w*(?:Delete|Trash|Remove|Erase)\w*'
       r'(?:Confirm|Question|DialogBody)\w*'
       r'|\w*Confirm\w*(?:Delete|Trash|Remove|Erase)\w*)\b',
     );
-    const leftToHome = {
-      'lib/screens/home/home_screen.dart': {
-        'homePasteToTrashQuestion',
-        'homeRestoreFromTrashQuestion',
-      },
-    };
     final found = <String>[];
     for (final file in Directory('lib').listSync(recursive: true)) {
       if (file is! File || !file.path.endsWith('.dart')) continue;
@@ -270,7 +264,6 @@ void main() {
           match.start,
         );
         if (before.contains('title:')) continue;
-        if (leftToHome[file.path]?.contains(key) ?? false) continue;
         final line = '\n'.allMatches(source.substring(0, match.start)).length;
         found.add('${file.path}:${line + 1} $key');
       }

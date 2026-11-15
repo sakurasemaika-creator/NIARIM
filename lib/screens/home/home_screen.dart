@@ -2440,12 +2440,14 @@ class _HomeScreenState extends State<HomeScreen>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(l10n.homePasteToTrashQuestion),
+                  // 韓国語の語は、1行に入れば途中で折らない（ほかのゴミ箱へ
+                  // 移す確認と同じ）。
+                  messageText(l10n.homePasteToTrashQuestion),
                   for (final name in names)
                     copyNameText(l10n.commonBulletItem(name), name: name),
                   if (kept.isNotEmpty) ...[
                     const SizedBox(height: 12),
-                    Text(l10n.homePasteToTrashKeepsFavorites),
+                    messageText(l10n.homePasteToTrashKeepsFavorites),
                     for (final name in kept)
                       copyNameText(l10n.commonBulletItem(name), name: name),
                   ],
@@ -5601,7 +5603,8 @@ class _TrashTabState extends State<_TrashTab> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(l10n.homeRestoreFromTrashQuestion),
+                // 韓国語の語は、1行に入れば途中で折らない。
+                messageText(l10n.homeRestoreFromTrashQuestion),
                 const SizedBox(height: 8),
                 copyNameText(l10n.commonBulletItem(name), name: name),
               ],
