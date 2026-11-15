@@ -23,6 +23,7 @@ import '../models/layer_keyframe.dart';
 import '../models/scene.dart';
 import '../services/hw_video_encoder.dart';
 import '../services/export_storage.dart';
+import '../utils/app_error_reporter.dart';
 
 typedef ExportProgressCallback =
     void Function(int currentFrame, int totalFrames);
@@ -402,6 +403,33 @@ class ExportEngine {
     );
   }
 
+  /// Remove the temporary folder of frame PNGs a video export wrote, whether
+  /// the export finished, failed or was cancelled. A folder that cannot be
+  /// removed is emptied by the next export of the same kind; it must not turn
+  /// a finished export into a failure.
+  static void _removeFrames(Directory frames) {
+    try {
+      if (frames.existsSync()) frames.deleteSync(recursive: true);
+    } on FileSystemException catch (error, stackTrace) {
+      AppErrorReporter.record(error, stackTrace);
+    }
+  }
+
+  /// Remove the video an encoder (MediaCodec, FFmpeg) left half written when
+  /// the export failed. Left in the exports folder, it was listed in the Works
+  /// list as a broken work.
+  static Future<void> _discardPartialVideo(String path) async {
+    try {
+      final file = File(path);
+      if (await file.exists()) {
+        await file.delete();
+        ExportStorage.invalidate();
+      }
+    } on FileSystemException catch (error, stackTrace) {
+      AppErrorReporter.record(error, stackTrace);
+    }
+  }
+
   /// MP4書き出し。Android標準のハードウェアH.264エンコーダー
   /// （MediaCodec、android/app側のネイティブ実装）を使う。FFmpeg/libx264
   /// （GPLライセンス）は使わないことで、コピーレフト・H.264特許
@@ -426,86 +454,92 @@ class ExportEngine {
     final framesDir = Directory('${tmpDir.path}/export_frames');
     if (framesDir.existsSync()) framesDir.deleteSync(recursive: true);
     framesDir.createSync();
+    String? partialOutput;
+    try {
+      int globalIndex = 0;
+      int totalFrames = scenes.fold(0, (sum, s) => sum + s.frames.length);
+      // 共通・タイムライン素材・ウォーターマークレイヤーの表示範囲を反映するため、
+      // 書き出しジョブ開始時に一度だけホーム位置インデックスを構築する。
+      final layerHomes = buildLayerHomeIndex(scenes);
+      final framePaths = <String>[];
 
-    int globalIndex = 0;
-    int totalFrames = scenes.fold(0, (sum, s) => sum + s.frames.length);
-    // 共通・タイムライン素材・ウォーターマークレイヤーの表示範囲を反映するため、
-    // 書き出しジョブ開始時に一度だけホーム位置インデックスを構築する。
-    final layerHomes = buildLayerHomeIndex(scenes);
-    final framePaths = <String>[];
-
-    for (final scene in scenes) {
-      for (final frame in scene.frames) {
-        if (cancelToken?.isCancelled == true) {
-          framesDir.deleteSync(recursive: true);
-          throw const ExportCancelledException();
-        }
-        final rgba = await renderFrame(
-          layers: resolveFrameLayers(
-            scenes,
-            layerHomes,
-            scene.id,
-            frame.index,
-            frame.layers,
-          ),
-          tileManager: tileManager,
-          sceneId: scene.id,
-          scene: scene,
-          frameIndex: frame.index,
-          drawingWidth: drawingWidth,
-          drawingHeight: drawingHeight,
-          width: width,
-          height: height,
-          backgroundColor: backgroundColor,
-          cameraKeyframes: scene.cameraKeyframes,
-          effectFilters: scene.effectFilters,
-          layerHomes: layerHomes,
-          groups: scene.groups,
-        );
-        final pngBytes = img.encodePng(
-          img.Image.fromBytes(
+      for (final scene in scenes) {
+        for (final frame in scene.frames) {
+          if (cancelToken?.isCancelled == true) {
+            throw const ExportCancelledException();
+          }
+          final rgba = await renderFrame(
+            layers: resolveFrameLayers(
+              scenes,
+              layerHomes,
+              scene.id,
+              frame.index,
+              frame.layers,
+            ),
+            tileManager: tileManager,
+            sceneId: scene.id,
+            scene: scene,
+            frameIndex: frame.index,
+            drawingWidth: drawingWidth,
+            drawingHeight: drawingHeight,
             width: width,
             height: height,
-            bytes: rgba.buffer,
-            numChannels: 4,
-          ),
-        );
-        final file = File(
-          '${framesDir.path}/frame_${globalIndex.toString().padLeft(6, '0')}.png',
-        );
-        await file.writeAsBytes(pngBytes);
-        framePaths.add(file.path);
-        onProgress?.call(globalIndex + 1, totalFrames);
-        globalIndex++;
+            backgroundColor: backgroundColor,
+            cameraKeyframes: scene.cameraKeyframes,
+            effectFilters: scene.effectFilters,
+            layerHomes: layerHomes,
+            groups: scene.groups,
+          );
+          final pngBytes = img.encodePng(
+            img.Image.fromBytes(
+              width: width,
+              height: height,
+              bytes: rgba.buffer,
+              numChannels: 4,
+            ),
+          );
+          final file = File(
+            '${framesDir.path}/frame_${globalIndex.toString().padLeft(6, '0')}.png',
+          );
+          await file.writeAsBytes(pngBytes);
+          framePaths.add(file.path);
+          onProgress?.call(globalIndex + 1, totalFrames);
+          globalIndex++;
+        }
       }
-    }
 
-    if (appendEndCard) {
-      final endCardBytes = await _renderEndCardPng(
+      if (appendEndCard) {
+        final endCardBytes = await _renderEndCardPng(
+          width: width,
+          height: height,
+        );
+        final endCardFile = File('${framesDir.path}/endcard.png');
+        await endCardFile.writeAsBytes(endCardBytes);
+        for (int i = 0; i < fps * 5; i++) {
+          framePaths.add(endCardFile.path);
+        }
+      }
+
+      final exportsDir = await ExportEngine.exportsDir();
+      final outputPath =
+          '${exportsDir.path}/niarim_${DateTime.now().millisecondsSinceEpoch}.mp4';
+      partialOutput = outputPath;
+      await HardwareVideoEncoder.encodeMp4(
+        framePaths: framePaths,
+        fps: fps,
         width: width,
         height: height,
+        outputPath: outputPath,
       );
-      final endCardFile = File('${framesDir.path}/endcard.png');
-      await endCardFile.writeAsBytes(endCardBytes);
-      for (int i = 0; i < fps * 5; i++) {
-        framePaths.add(endCardFile.path);
-      }
+      // 作品一覧が覚えている一覧を捨て、書き出した作品を次の一覧に入れる。
+      ExportStorage.invalidate();
+      return outputPath;
+    } catch (_) {
+      if (partialOutput != null) await _discardPartialVideo(partialOutput);
+      rethrow;
+    } finally {
+      _removeFrames(framesDir);
     }
-
-    final exportsDir = await ExportEngine.exportsDir();
-    final outputPath =
-        '${exportsDir.path}/niarim_${DateTime.now().millisecondsSinceEpoch}.mp4';
-    await HardwareVideoEncoder.encodeMp4(
-      framePaths: framePaths,
-      fps: fps,
-      width: width,
-      height: height,
-      outputPath: outputPath,
-    );
-    framesDir.deleteSync(recursive: true);
-    // 作品一覧が覚えている一覧を捨て、書き出した作品を次の一覧に入れる。
-    ExportStorage.invalidate();
-    return outputPath;
   }
 
   Future<String> exportGif({
@@ -603,84 +637,90 @@ class ExportEngine {
     final framesDir = Directory('${tmpDir.path}/export_webm_frames');
     if (framesDir.existsSync()) framesDir.deleteSync(recursive: true);
     framesDir.createSync();
+    String? partialOutput;
+    try {
+      int globalIndex = 0;
+      int totalFrames = scenes.fold(0, (sum, s) => sum + s.frames.length);
+      final layerHomes = buildLayerHomeIndex(scenes);
 
-    int globalIndex = 0;
-    int totalFrames = scenes.fold(0, (sum, s) => sum + s.frames.length);
-    final layerHomes = buildLayerHomeIndex(scenes);
-
-    for (final scene in scenes) {
-      for (final frame in scene.frames) {
-        if (cancelToken?.isCancelled == true) {
-          framesDir.deleteSync(recursive: true);
-          throw const ExportCancelledException();
-        }
-        final rgba = await renderFrame(
-          layers: resolveFrameLayers(
-            scenes,
-            layerHomes,
-            scene.id,
-            frame.index,
-            frame.layers,
-          ),
-          tileManager: tileManager,
-          sceneId: scene.id,
-          scene: scene,
-          frameIndex: frame.index,
-          drawingWidth: drawingWidth,
-          drawingHeight: drawingHeight,
-          width: width,
-          height: height,
-          backgroundColor: backgroundColor,
-          cameraKeyframes: scene.cameraKeyframes,
-          effectFilters: scene.effectFilters,
-          layerHomes: layerHomes,
-          groups: scene.groups,
-        );
-        final pngBytes = img.encodePng(
-          img.Image.fromBytes(
+      for (final scene in scenes) {
+        for (final frame in scene.frames) {
+          if (cancelToken?.isCancelled == true) {
+            throw const ExportCancelledException();
+          }
+          final rgba = await renderFrame(
+            layers: resolveFrameLayers(
+              scenes,
+              layerHomes,
+              scene.id,
+              frame.index,
+              frame.layers,
+            ),
+            tileManager: tileManager,
+            sceneId: scene.id,
+            scene: scene,
+            frameIndex: frame.index,
+            drawingWidth: drawingWidth,
+            drawingHeight: drawingHeight,
             width: width,
             height: height,
-            bytes: rgba.buffer,
-            numChannels: 4,
-          ),
-        );
-        final file = File(
-          '${framesDir.path}/frame_${globalIndex.toString().padLeft(6, '0')}.png',
-        );
-        await file.writeAsBytes(pngBytes);
-        onProgress?.call(globalIndex + 1, totalFrames);
-        globalIndex++;
+            backgroundColor: backgroundColor,
+            cameraKeyframes: scene.cameraKeyframes,
+            effectFilters: scene.effectFilters,
+            layerHomes: layerHomes,
+            groups: scene.groups,
+          );
+          final pngBytes = img.encodePng(
+            img.Image.fromBytes(
+              width: width,
+              height: height,
+              bytes: rgba.buffer,
+              numChannels: 4,
+            ),
+          );
+          final file = File(
+            '${framesDir.path}/frame_${globalIndex.toString().padLeft(6, '0')}.png',
+          );
+          await file.writeAsBytes(pngBytes);
+          onProgress?.call(globalIndex + 1, totalFrames);
+          globalIndex++;
+        }
       }
-    }
 
-    if (appendEndCard) {
-      final endCardBytes = await _renderEndCardPng(
-        width: width,
-        height: height,
+      if (appendEndCard) {
+        final endCardBytes = await _renderEndCardPng(
+          width: width,
+          height: height,
+        );
+        for (int i = 0; i < fps * 5; i++) {
+          final file = File(
+            '${framesDir.path}/frame_${globalIndex.toString().padLeft(6, '0')}.png',
+          );
+          await file.writeAsBytes(endCardBytes);
+          globalIndex++;
+        }
+      }
+
+      final exportsDir = await ExportEngine.exportsDir();
+      final outputPath =
+          '${exportsDir.path}/niarim_${DateTime.now().millisecondsSinceEpoch}.webm';
+      partialOutput = outputPath;
+      final session = await FFmpegKit.execute(
+        '-y -framerate $fps -i "${framesDir.path}/frame_%06d.png" '
+        '-c:v libvpx-vp9 -pix_fmt yuva420p "$outputPath"',
       );
-      for (int i = 0; i < fps * 5; i++) {
-        final file = File(
-          '${framesDir.path}/frame_${globalIndex.toString().padLeft(6, '0')}.png',
-        );
-        await file.writeAsBytes(endCardBytes);
-        globalIndex++;
+      final rc = await session.getReturnCode();
+      if (!ReturnCode.isSuccess(rc)) {
+        throw Exception('FFmpeg failed: ${await session.getOutput()}');
       }
+      ExportStorage.invalidate();
+      return outputPath;
+    } catch (_) {
+      if (partialOutput != null) await _discardPartialVideo(partialOutput);
+      rethrow;
+    } finally {
+      _removeFrames(framesDir);
     }
-
-    final exportsDir = await ExportEngine.exportsDir();
-    final outputPath =
-        '${exportsDir.path}/niarim_${DateTime.now().millisecondsSinceEpoch}.webm';
-    final session = await FFmpegKit.execute(
-      '-y -framerate $fps -i "${framesDir.path}/frame_%06d.png" '
-      '-c:v libvpx-vp9 -pix_fmt yuva420p "$outputPath"',
-    );
-    final rc = await session.getReturnCode();
-    if (!ReturnCode.isSuccess(rc)) {
-      throw Exception('FFmpeg failed: ${await session.getOutput()}');
-    }
-    framesDir.deleteSync(recursive: true);
-    ExportStorage.invalidate();
-    return outputPath;
   }
 
   /// AVI書き出し（Motion JPEG）。コーデックにはFFmpeg本体が内蔵する
@@ -710,85 +750,91 @@ class ExportEngine {
     final framesDir = Directory('${tmpDir.path}/export_avi_frames');
     if (framesDir.existsSync()) framesDir.deleteSync(recursive: true);
     framesDir.createSync();
+    String? partialOutput;
+    try {
+      int globalIndex = 0;
+      int totalFrames = scenes.fold(0, (sum, s) => sum + s.frames.length);
+      final layerHomes = buildLayerHomeIndex(scenes);
 
-    int globalIndex = 0;
-    int totalFrames = scenes.fold(0, (sum, s) => sum + s.frames.length);
-    final layerHomes = buildLayerHomeIndex(scenes);
-
-    for (final scene in scenes) {
-      for (final frame in scene.frames) {
-        if (cancelToken?.isCancelled == true) {
-          framesDir.deleteSync(recursive: true);
-          throw const ExportCancelledException();
-        }
-        final rgba = await renderFrame(
-          layers: resolveFrameLayers(
-            scenes,
-            layerHomes,
-            scene.id,
-            frame.index,
-            frame.layers,
-          ),
-          tileManager: tileManager,
-          sceneId: scene.id,
-          scene: scene,
-          frameIndex: frame.index,
-          drawingWidth: drawingWidth,
-          drawingHeight: drawingHeight,
-          width: width,
-          height: height,
-          backgroundColor: backgroundColor,
-          cameraKeyframes: scene.cameraKeyframes,
-          effectFilters: scene.effectFilters,
-          layerHomes: layerHomes,
-          groups: scene.groups,
-        );
-        final pngBytes = img.encodePng(
-          img.Image.fromBytes(
+      for (final scene in scenes) {
+        for (final frame in scene.frames) {
+          if (cancelToken?.isCancelled == true) {
+            throw const ExportCancelledException();
+          }
+          final rgba = await renderFrame(
+            layers: resolveFrameLayers(
+              scenes,
+              layerHomes,
+              scene.id,
+              frame.index,
+              frame.layers,
+            ),
+            tileManager: tileManager,
+            sceneId: scene.id,
+            scene: scene,
+            frameIndex: frame.index,
+            drawingWidth: drawingWidth,
+            drawingHeight: drawingHeight,
             width: width,
             height: height,
-            bytes: rgba.buffer,
-            numChannels: 4,
-          ),
-        );
-        final file = File(
-          '${framesDir.path}/frame_${globalIndex.toString().padLeft(6, '0')}.png',
-        );
-        await file.writeAsBytes(pngBytes);
-        onProgress?.call(globalIndex + 1, totalFrames);
-        globalIndex++;
+            backgroundColor: backgroundColor,
+            cameraKeyframes: scene.cameraKeyframes,
+            effectFilters: scene.effectFilters,
+            layerHomes: layerHomes,
+            groups: scene.groups,
+          );
+          final pngBytes = img.encodePng(
+            img.Image.fromBytes(
+              width: width,
+              height: height,
+              bytes: rgba.buffer,
+              numChannels: 4,
+            ),
+          );
+          final file = File(
+            '${framesDir.path}/frame_${globalIndex.toString().padLeft(6, '0')}.png',
+          );
+          await file.writeAsBytes(pngBytes);
+          onProgress?.call(globalIndex + 1, totalFrames);
+          globalIndex++;
+        }
       }
-    }
 
-    if (appendEndCard) {
-      final endCardBytes = await _renderEndCardPng(
-        width: width,
-        height: height,
+      if (appendEndCard) {
+        final endCardBytes = await _renderEndCardPng(
+          width: width,
+          height: height,
+        );
+        for (int i = 0; i < fps * 5; i++) {
+          final file = File(
+            '${framesDir.path}/frame_${globalIndex.toString().padLeft(6, '0')}.png',
+          );
+          await file.writeAsBytes(endCardBytes);
+          globalIndex++;
+        }
+      }
+
+      final exportsDir = await ExportEngine.exportsDir();
+      final outputPath =
+          '${exportsDir.path}/niarim_${DateTime.now().millisecondsSinceEpoch}.avi';
+      partialOutput = outputPath;
+      // mjpegはアルファ非対応のため、透過を破棄してbackgroundColorで合成済みの
+      // RGBを不透明のyuvj420pへ変換する（yuva420p等は指定しない）。
+      final session = await FFmpegKit.execute(
+        '-y -framerate $fps -i "${framesDir.path}/frame_%06d.png" '
+        '-c:v mjpeg -pix_fmt yuvj420p -q:v 3 "$outputPath"',
       );
-      for (int i = 0; i < fps * 5; i++) {
-        final file = File(
-          '${framesDir.path}/frame_${globalIndex.toString().padLeft(6, '0')}.png',
-        );
-        await file.writeAsBytes(endCardBytes);
-        globalIndex++;
+      final rc = await session.getReturnCode();
+      if (!ReturnCode.isSuccess(rc)) {
+        throw Exception('FFmpeg failed: ${await session.getOutput()}');
       }
+      ExportStorage.invalidate();
+      return outputPath;
+    } catch (_) {
+      if (partialOutput != null) await _discardPartialVideo(partialOutput);
+      rethrow;
+    } finally {
+      _removeFrames(framesDir);
     }
-
-    final exportsDir = await ExportEngine.exportsDir();
-    final outputPath =
-        '${exportsDir.path}/niarim_${DateTime.now().millisecondsSinceEpoch}.avi';
-    // mjpegはアルファ非対応のため、透過を破棄してbackgroundColorで合成済みの
-    // RGBを不透明のyuvj420pへ変換する（yuva420p等は指定しない）。
-    final session = await FFmpegKit.execute(
-      '-y -framerate $fps -i "${framesDir.path}/frame_%06d.png" '
-      '-c:v mjpeg -pix_fmt yuvj420p -q:v 3 "$outputPath"',
-    );
-    final rc = await session.getReturnCode();
-    if (!ReturnCode.isSuccess(rc)) {
-      throw Exception('FFmpeg failed: ${await session.getOutput()}');
-    }
-    framesDir.deleteSync(recursive: true);
-    ExportStorage.invalidate();
-    return outputPath;
   }
 }
