@@ -312,6 +312,32 @@ abstract final class LocalFileTrashService {
     }
   }
 
+  static int _stagingSeed = 0;
+
+  /// Replace the record of a listed Trash item in one step. Rewriting
+  /// meta.json in place empties it first, so a [list] that read it during the
+  /// write skipped the item: a works folder being restored vanished from the
+  /// Trash for a moment (and a restore killed during the write lost the item
+  /// for good, its files left unlisted). The new record is finished beside it
+  /// and renamed over it, so a reader sees either the old or the new record.
+  static Future<void> _replaceMeta(File meta, Map<String, dynamic> json) async {
+    final staging = File(
+      '${meta.path}.${DateTime.now().microsecondsSinceEpoch}-'
+      '${_stagingSeed++}.tmp',
+    );
+    try {
+      await staging.writeAsString(jsonEncode(json), flush: true);
+      await staging.rename(meta.path);
+    } catch (_) {
+      try {
+        if (await staging.exists()) await staging.delete();
+      } catch (_) {
+        // The leftover is removed with its Trash item.
+      }
+      rethrow;
+    }
+  }
+
   /// Resumes an interrupted restore without overwriting unrelated files.
   /// A verified copy is checkpointed before updating its folder membership.
   static Future<void> restoreWorkFolder(
@@ -358,7 +384,7 @@ abstract final class LocalFileTrashService {
           )).id;
     if (!known) {
       meta['restoreFolderId'] = folderId;
-      await metaFile.writeAsString(jsonEncode(meta), flush: true);
+      await _replaceMeta(metaFile, meta);
     }
     for (final name in entry.fileNames) {
       final source = File('${archive.path}/$name');
@@ -381,7 +407,7 @@ abstract final class LocalFileTrashService {
       await _keepModifiedTime(source, destination);
       if (restored.add(name)) {
         meta['restoredFiles'] = restored.toList();
-        await metaFile.writeAsString(jsonEncode(meta), flush: true);
+        await _replaceMeta(metaFile, meta);
       }
       await workFolders.moveFileToFolder(name, folderId);
     }
