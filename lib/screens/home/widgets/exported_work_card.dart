@@ -8,6 +8,7 @@ import '../../../utils/line_break.dart' show keepJapaneseLineStartsAttached;
 import '../../../widgets/collection_action_controls.dart';
 import '../../../widgets/collection_tile_layout.dart';
 import '../../../widgets/home_collection_selection_scope.dart';
+import '../../../widgets/menu_action_label.dart';
 import 'folder_thumbnail.dart';
 
 /// A saved export keeps its complete identity visible, including large text.
@@ -217,9 +218,10 @@ class ExportedWorkCard extends StatelessWidget {
             PopupMenuItem(
               value: 'delete',
               enabled: onDelete != null,
-              child: Text(
-                deleteLabel,
-                style: TextStyle(color: theme.colorScheme.error),
+              // メニューの文字色のまま、印のアイコンと文で知らせる。
+              child: MenuActionLabel(
+                icon: Icons.delete_outline,
+                label: deleteLabel,
               ),
             ),
           ];

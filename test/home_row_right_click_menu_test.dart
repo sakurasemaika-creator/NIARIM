@@ -19,6 +19,7 @@ import 'package:niarim/services/export_storage.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:niarim/services/settings_service.dart';
 import 'package:niarim/services/work_folder_service.dart';
+import 'package:niarim/widgets/menu_action_label.dart';
 import 'package:niarim/widgets/project_trash_dialog.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -32,6 +33,14 @@ import 'helpers/paragraph_lines.dart';
 /// プロジェクトだけで、一覧表示の行・共有の受け取ったもの・作成したもの・
 /// 共有と作品のフォルダでは何も起きなかった。作品の書き出したファイルの
 /// 右クリック（選ぶ）は変えない。本物のNiarimAppを起動処理から組み立てる。
+/// メニューの項目名（文字だけの項目と、印のアイコンを付けた項目
+/// 〔MenuActionLabel：「ゴミ箱へ移動」〕）。
+String? _itemLabel(Widget? child) => switch (child) {
+  final Text t => t.data ?? '',
+  final MenuActionLabel m => m.label,
+  _ => null,
+};
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -178,8 +187,9 @@ void main() {
     );
     return [
       for (final element in items.evaluate())
-        if ((element.widget as PopupMenuItem<String>).child case final Text t)
-          t.data ?? '',
+        if (_itemLabel((element.widget as PopupMenuItem<String>).child)
+            case final String label)
+          label,
     ];
   }
 
@@ -397,9 +407,9 @@ void main() {
           );
           final items = [
             for (final element in entries.evaluate())
-              if ((element.widget as PopupMenuItem<String>).child
-                  case final Text t)
-                t.data ?? '',
+              if (_itemLabel((element.widget as PopupMenuItem<String>).child)
+                  case final String label)
+                label,
           ];
           if (items.length != 3 || !items.contains(text.commonRename)) {
             problems.add('$where: menu $items');

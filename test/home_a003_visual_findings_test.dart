@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
@@ -13,6 +14,7 @@ import 'package:niarim/models/app_theme_preset.dart';
 import 'package:niarim/models/project.dart';
 import 'package:niarim/router.dart';
 import 'package:niarim/screens/home/home_screen.dart';
+import 'package:niarim/screens/home/widgets/exported_work_card.dart';
 import 'package:niarim/screens/home/widgets/home_selection_toolbar.dart';
 import 'package:niarim/screens/home/widgets/project_list_widget.dart';
 import 'package:niarim/screens/splash/splash_screen.dart';
@@ -1191,6 +1193,125 @@ void main() {
       wrong,
       isEmpty,
       reason: 'text on menu surfaces not in menuTextColor $ink',
+    );
+    await home.close();
+  });
+
+  testWidgets('自作テーマ（暗いメニュー）の「ゴミ箱へ移動」は、メニューの文字色で書いて印のアイコンを付ける', (tester) async {
+    final home = _Home(tester);
+    await home.open(size: const Size(1280, 900));
+    await home.addProject('ゴミ箱の作品');
+    await home.addFolder('ゴミ箱のフォルダ');
+    await home.addExports(['movie.png']);
+    await tester.runAsync(() => home.projects.createSharedFolder('受け取り'));
+    await home.frames(4);
+    await home.settleIo();
+    await home.applyTheme(_customTheme);
+    final ink = _customTheme.menuTextColor;
+    final l10n = home.l10n;
+    final wrong = <String>[];
+    Color? painted(Finder finder) => tester
+        .renderObject<RenderParagraph>(
+          find
+              .descendant(
+                of: finder,
+                matching: find.byType(RichText),
+                matchRoot: true,
+              )
+              .first,
+        )
+        .text
+        .style
+        ?.color;
+
+    /// 開いたポップアップメニューの「ゴミ箱へ移動」の項目：文字と印の
+    /// アイコンがメニューの文字色。
+    Future<void> checkMenu(
+      String where,
+      Finder opener, {
+      int buttons = kPrimaryButton,
+    }) async {
+      await tester.tap(opener, buttons: buttons, kind: PointerDeviceKind.mouse);
+      await home.frames(20);
+      final label =
+          find.text(l10n.projectDetailTrashMenuItem).evaluate().isNotEmpty
+          ? l10n.projectDetailTrashMenuItem
+          : l10n.homeMoveToTrash;
+      final item = find.ancestor(
+        of: find.text(label),
+        matching: find.byWidgetPredicate((w) => w is PopupMenuItem),
+      );
+      expect(item, findsOneWidget, reason: '$where: "$label" not open');
+      final text = painted(find.text(label));
+      if (text != ink) wrong.add('$where: label $text');
+      final icon = find.descendant(
+        of: item,
+        matching: find.byIcon(Icons.delete_outline),
+      );
+      if (icon.evaluate().isEmpty) {
+        wrong.add('$where: no delete icon');
+      } else if (painted(icon) != ink) {
+        wrong.add('$where: icon ${painted(icon)}');
+      }
+      await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+      await home.frames(20);
+    }
+
+    final cardMenus = find.descendant(
+      of: find.byType(ProjectListWidget),
+      matching: find.byIcon(Icons.more_vert),
+    );
+    expect(cardMenus, findsNWidgets(2), reason: 'a folder and a project');
+    for (var i = 0; i < 2; i++) {
+      await checkMenu('projects card #$i', cardMenus.at(i));
+    }
+
+    // 共有のフォルダの「︙」のシートと、右クリックのメニュー。
+    await home.showTab(2);
+    final folder = home.projects.sharedFolders.single;
+    await tester.tap(find.byKey(ValueKey('collectionFolderMenu_${folder.id}')));
+    await home.frames(20);
+    final row = find.descendant(
+      of: find.byType(BottomSheet),
+      matching: find.widgetWithText(ListTile, l10n.homeMoveToTrash),
+    );
+    expect(row, findsOneWidget);
+    final rowText = painted(
+      find.descendant(of: row, matching: find.text(l10n.homeMoveToTrash)),
+    );
+    if (rowText != ink) wrong.add('shared folder sheet: label $rowText');
+    final rowIcon = find.descendant(
+      of: row,
+      matching: find.byIcon(Icons.delete_outline),
+    );
+    expect(rowIcon, findsOneWidget);
+    if (painted(rowIcon) != _customTheme.effectiveAccentTextColor) {
+      wrong.add('shared folder sheet: icon ${painted(rowIcon)}');
+    }
+    await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+    await home.frames(20);
+    await checkMenu(
+      'shared folder right click',
+      find.byKey(ValueKey('collectionFolder_${folder.id}')),
+      buttons: kSecondaryMouseButton,
+    );
+
+    // 作品一覧（書き出したファイル）のカードの「︙」。
+    await home.showTab(1);
+    await checkMenu(
+      'works card',
+      find
+          .descendant(
+            of: find.byType(ExportedWorkCard),
+            matching: find.byIcon(Icons.more_vert),
+          )
+          .first,
+    );
+
+    expect(
+      wrong,
+      isEmpty,
+      reason: 'move-to-trash items must use the menu text colour $ink',
     );
     await home.close();
   });

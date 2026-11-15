@@ -26,6 +26,7 @@ import '../../widgets/name_entry_dialog.dart';
 import '../../widgets/project_not_found_view.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/help_button.dart';
+import '../../widgets/menu_action_label.dart';
 import '../../widgets/project_duplicated_snack_bar.dart';
 import '../../widgets/project_trash_dialog.dart';
 import '../../widgets/stepped_slider.dart';
@@ -396,9 +397,10 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
               ),
               PopupMenuItem(
                 value: 'delete',
-                child: Text(
-                  l10n.projectDetailTrashMenuItem,
-                  style: TextStyle(color: ThemeService.activeColorScheme.error),
+                // メニューの文字色のまま、印のアイコンと文で知らせる。
+                child: MenuActionLabel(
+                  icon: Icons.delete_outline,
+                  label: l10n.projectDetailTrashMenuItem,
                 ),
               ),
             ],

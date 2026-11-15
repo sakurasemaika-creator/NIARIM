@@ -1,5 +1,3 @@
-import 'package:niarim/services/theme_service.dart';
-
 import 'dart:async';
 import 'dart:io';
 
@@ -55,6 +53,7 @@ import '../../widgets/keep_together_text.dart';
 import '../../widgets/project_duplicated_snack_bar.dart';
 import '../../widgets/typing_aware_shortcuts.dart';
 import '../../widgets/fit_or_hide_title.dart';
+import '../../widgets/menu_action_label.dart';
 import 'widgets/project_list_widget.dart';
 import 'widgets/shared_direction_switch.dart';
 import 'widgets/folder_thumbnail.dart';
@@ -4135,9 +4134,10 @@ Widget _receivedShareMenu(
       ),
       PopupMenuItem(
         value: 'delete',
-        child: Text(
-          l10n.projectDetailTrashMenuItem,
-          style: TextStyle(color: ThemeService.activeColorScheme.error),
+        // メニューの文字色のまま、印のアイコンと文で知らせる。
+        child: MenuActionLabel(
+          icon: Icons.delete_outline,
+          label: l10n.projectDetailTrashMenuItem,
         ),
       ),
     ],
@@ -4414,9 +4414,9 @@ class _OutgoingSharesList extends StatelessWidget {
             ),
             PopupMenuItem(
               value: 'delete',
-              child: Text(
-                l10n.projectDetailTrashMenuItem,
-                style: TextStyle(color: scheme.error),
+              child: MenuActionLabel(
+                icon: Icons.delete_outline,
+                label: l10n.projectDetailTrashMenuItem,
               ),
             ),
           ],
@@ -5098,15 +5098,11 @@ class _FolderableList<T> extends StatelessWidget {
                 );
               },
             ),
+            // ほかの行と同じ色（メニューの文字色と差し色のアイコン）のまま、
+            // 印のアイコンと文で知らせる。
             ListTile(
-              leading: Icon(
-                Icons.delete_outline,
-                color: ThemeService.activeColorScheme.error,
-              ),
-              title: Text(
-                l10n.homeMoveToTrash,
-                style: TextStyle(color: ThemeService.activeColorScheme.error),
-              ),
+              leading: const Icon(Icons.delete_outline),
+              title: Text(l10n.homeMoveToTrash),
               onTap: () {
                 Navigator.pop(ctx);
                 _confirmFolderTrash(context, folder);
@@ -5138,9 +5134,9 @@ class _FolderableList<T> extends StatelessWidget {
           PopupMenuItem(value: 'rename', child: Text(l10n.commonRename)),
           PopupMenuItem(
             value: 'delete',
-            child: Text(
-              l10n.homeMoveToTrash,
-              style: TextStyle(color: ThemeService.activeColorScheme.error),
+            child: MenuActionLabel(
+              icon: Icons.delete_outline,
+              label: l10n.homeMoveToTrash,
             ),
           ),
         ]);

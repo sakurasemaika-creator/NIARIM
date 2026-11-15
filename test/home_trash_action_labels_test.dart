@@ -1,10 +1,12 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/screens/home/widgets/exported_work_card.dart';
 import 'package:niarim/router.dart';
 import 'package:niarim/screens/project/project_detail_screen.dart';
+import 'package:niarim/widgets/menu_action_label.dart';
 
 import 'helpers/home_clipboard_harness.dart';
 
@@ -14,7 +16,8 @@ import 'helpers/home_clipboard_harness.dart';
 /// 「Move to Trash」「移至回收站」「移至垃圾桶」と、言語によって2通りあった。
 /// 完全に削除する：ゴミ箱のカードのボタンは「完全削除」なのに、確かめる
 /// ダイアログのボタンは「削除」だった。メニューの「ゴミ箱へ移動」の色は、
-/// どのメニューでも作品のカードのメニューと同じ（危険の色）。7言語。
+/// どのメニューでも作品のカードのメニューと同じ（メニューの文字色と印の
+/// アイコン。危険の色〔colorScheme.error〕は暗いメニューで読めなかった）。7言語。
 /// ゴミ箱へ移すか確かめる文も、どの確認でも同じ言葉：ゴミ箱のタブへ貼り
 /// 付けるときの確認だけが「ゴミ箱に捨てますか？」（韓国語「옮기시겠습니까」、
 /// 英語は「the Trash」）で、見出しの「ゴミ箱へ移動」・ほかの確認の「ゴミ箱へ
@@ -28,12 +31,23 @@ void main() {
       (text.data ?? text.textSpan?.toPlainText() ?? '').replaceAll('⁠', '');
 
   /// いま開いているメニューの、最後の項目（どのメニューも「ゴミ箱へ移動」が
-  /// 最後）の文字と色。
+  /// 最後）の文字と、描いた色（項目名は MenuActionLabel で印のアイコンを
+  /// 付け、色はメニューの項目の書式で決まる）。
   (String, Color?) lastMenuItem(WidgetTester tester) {
     final items = find.byWidgetPredicate((w) => w is PopupMenuItem<String>);
     final item = tester.widget<PopupMenuItem<String>>(items.last);
-    final text = item.child! as Text;
-    return (plain(text), text.style?.color);
+    final label = switch (item.child) {
+      final MenuActionLabel m => m.label,
+      final child => plain(child! as Text),
+    };
+    final painted = tester
+        .renderObject<RenderParagraph>(
+          find.descendant(of: items.last, matching: find.byType(RichText)).last,
+        )
+        .text
+        .style
+        ?.color;
+    return (label.replaceAll('⁠', ''), painted);
   }
 
   /// [language]で、ゴミ箱へ移すか確かめる文が使う言葉（作品・フォルダを

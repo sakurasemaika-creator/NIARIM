@@ -32,6 +32,7 @@ import '../../../widgets/collection_action_controls.dart';
 import '../../../widgets/collection_tile_layout.dart';
 import '../../../widgets/date_line_text.dart';
 import '../../../widgets/keep_together_text.dart';
+import '../../../widgets/menu_action_label.dart';
 import '../../../widgets/secondary_click_menu.dart';
 import '../../../utils/app_error_reporter.dart';
 import '../../../utils/duplicate_name.dart';
@@ -1143,9 +1144,10 @@ class ProjectListWidget extends StatelessWidget {
       ),
       PopupMenuItem(
         value: 'delete',
-        child: Text(
-          l10n.projectDetailTrashMenuItem,
-          style: TextStyle(color: ThemeService.activeColorScheme.error),
+        // メニューの文字色のまま、印のアイコンと文で知らせる。
+        child: MenuActionLabel(
+          icon: Icons.delete_outline,
+          label: l10n.projectDetailTrashMenuItem,
         ),
       ),
     ];
@@ -1176,9 +1178,9 @@ class ProjectListWidget extends StatelessWidget {
       ),
       PopupMenuItem(
         value: 'delete',
-        child: Text(
-          l10n.homeMoveToTrash,
-          style: TextStyle(color: ThemeService.activeColorScheme.error),
+        child: MenuActionLabel(
+          icon: Icons.delete_outline,
+          label: l10n.homeMoveToTrash,
         ),
       ),
     ];
