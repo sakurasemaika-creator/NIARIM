@@ -232,13 +232,18 @@ class ExportedWorkCard extends StatelessWidget {
     // The whole left edge of the card is its cover. Keeping the title and
     // metadata in a separate column avoids moving them above the thumbnail
     // when filenames wrap or accessibility text size increases.
+    // 表紙の面は用紙側の色（パネルの背景色を本文の文字色へ寄せた色）なので、
+    // 種類の印はその面の文字色（本文の文字色）で描く。カードの名前・日付は
+    // カードの面（メニューの背景色）の上なのでメニューの文字色のまま
+    // （印までメニューの文字色にすると、メニューを暗く・メニューの文字を
+    // 明るくしたテーマで見えなかった）。
     Widget thumbnail() {
       final path = thumbnailPath ?? originalMediaPath;
       return ColoredBox(
         key: const Key('exportedWorkThumbnailArea'),
         color: theme.colorScheme.surfaceContainerHighest,
         child: thumbnailHidden || path == null
-            ? Center(child: Icon(icon, color: foreground))
+            ? Center(child: Icon(icon, color: theme.colorScheme.onSurface))
             : FolderCoverMedia(path: path, cacheWidth: 256),
       );
     }

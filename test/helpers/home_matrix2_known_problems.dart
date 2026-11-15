@@ -39,19 +39,6 @@ final kHomeMatrix2KnownProblems = <HomeMatrixKnownProblem>[
     RegExp(r'(outside the safe area|under the display cutout)'),
     where: _sideInsets,
   ),
-  HomeMatrixKnownProblem(
-    'DISC219',
-    '作品一覧のカード（ExportedWorkCard）で、絵を出さない作品の表紙'
-        '（exportedWorkThumbnailArea）は用紙側の色'
-        '（colorScheme.surfaceContainerHighest：パネルの背景色を本文の'
-        '文字色へ寄せた色）で塗るのに、種類の印（movie_outlined・'
-        'movie_filter_outlined）はメニューの文字色で描く'
-        '（exported_work_card.dartのthumbnail()とforeground）。メニューを'
-        '暗く・メニューの文字を明るくした自作テーマ（customdark：#EDEFF2 on '
-        '#E2E0D9、Lc -7.5）で印が見えない。DISC193（カードの中の文字が本文の'
-        '文字色）とは向きが逆の組み合わせ。',
-    RegExp(r'^unreadable: .*\[exportedWorkThumbnailArea\]$'),
-  ),
 ];
 
 bool _bottomInsetOnly(HomeMatrix m, String what) =>
