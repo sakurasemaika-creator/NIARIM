@@ -1426,6 +1426,15 @@ onTap: ...)`だったために
   `test/home_display_matrix_test.dart`のように`false`にして撮り、**テスト本体の
   最後で`true`へ戻す**こと（`addTearDown`では終了時の検査の後になり
   「debug variable was changed」で落ちる）。
+- **ホームの表示マトリクスは直していない不具合を見込みの表で持つ**
+  （`test/helpers/home_matrix2_known_problems.dart`、番号は台帳のDISC番号）：
+  続きのマトリクス（`test/home_matrix2_*_test.dart`、道具は
+  `test/helpers/home_matrix_harness.dart`・`home_matrix_checks.dart`）は、
+  各セルで文の切れ・語の途中の折れ・読める色・押せる大きさ48×48・浮かぶ
+  ボタンの下・安全な領域・Tabの順を確かめ、表の不具合だけを見込む。
+  **見込んだのに一度も出なかった不具合はそのファイルの最後に失敗になる**
+  ので、ホームの不具合を直したら表とテストの`homeMatrix2Known([...])`から
+  その番号を外し、そのマトリクスを流し直すこと。1本10〜14分（`-j 1`）。
 - **`flutter test`環境での既知の制約**：
   - `path_provider`はデフォルトで未登録。ディスクI/Oを伴うテストは
     `test/app_smoke_test.dart`の`mockPathProvider`ヘルパーを使うこと。
