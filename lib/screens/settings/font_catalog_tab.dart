@@ -47,11 +47,18 @@ class _FontCatalogTabState extends State<FontCatalogTab>
         Padding(
           padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
           child: TextField(
+            // 画面の色で塗る欄なので、打った字・ヒント・アイコンは本文の
+            // 文字色（テーマの入力欄はメニューの色で塗りメニューの文字色）。
+            style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
             decoration: InputDecoration(
               hintText: l10n.fontCatalogSearchHint(catalog.length),
+              hintStyle: TextStyle(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
               // 入らないヒントは行を増やして全部出す（「…」で切らない）。
               hintMaxLines: 4,
               prefixIcon: const Icon(Icons.search),
+              prefixIconColor: Theme.of(context).colorScheme.onSurfaceVariant,
               filled: true,
               fillColor: Theme.of(context).colorScheme.surfaceContainerLow,
               isDense: true,

@@ -11,6 +11,7 @@ import '../utils/color_contrast.dart';
 import '../utils/tolerant_preferences.dart';
 import '../utils/transfer_merge.dart';
 import '../widgets/button_label_room.dart';
+import '../widgets/menu_surface.dart';
 
 class ThemeService extends ChangeNotifier {
   static const _prefsPresetsKey = 'theme_presets';
@@ -808,6 +809,25 @@ class ThemeService extends ChangeNotifier {
     }
   }
 
+  /// ダイアログ・ボトムシートの中身（メニューの面）のテーマを作る配色：
+  /// 本文の文字色をメニューの文字色に、用紙をメニューの背景色（[popupColor]、
+  /// 実際に見えている不透明な色）にする。面・線・明暗もメニューの背景色から
+  /// 作るので、シートの中の入れ物も暗い面の上で読める。差し色・選択色は
+  /// 画面と同じ色に見えるよう、画面の用紙（[panelColor]）の上で平たくして
+  /// おく（ユーザーの選んだ色を差し替えない）。
+  static AppThemePreset _menuSurfacePreset(
+    AppThemePreset preset,
+    Color panelColor,
+    Color popupColor,
+  ) => preset.copyWith(
+    textColor: preset.menuTextColor,
+    panelBgColor: popupColor,
+    menuBgColor: popupColor,
+    accentColor: opaqueOver(preset.accentColor, panelColor),
+    accentTextColor: opaqueOver(preset.effectiveAccentTextColor, panelColor),
+    selectionColor: opaqueOver(preset.selectionColor, panelColor),
+  );
+
   /// ポップなフラットデザインのThemeDataを構築する。
   /// Material標準の角丸・階調をそのまま使わず、フラット・大きめタップ領域・
   /// 丸みの強い形状で統一し、スマホでの誤タップを減らす。
@@ -953,7 +973,31 @@ class ThemeService extends ChangeNotifier {
     // それ以外の説明文・通常サイズの文字（body/label）はすべて白光明朝、
     // という切り分けに変更した（従来はくらむぼんをチュートリアル説明の
     // 吹き出し専用にしていたが、それは廃止しこの規則へ統一する）。
-    final textTheme = _applyHeadingFont(bodyTextTheme, 'Kuramubon');
+    final headingTextTheme = _applyHeadingFont(bodyTextTheme, 'Kuramubon');
+    // 入力欄に打った文字（Material 3 の TextField は bodyLarge で書く）。
+    // 入力欄はメニューの背景色で塗る（inputDecorationTheme）ので、メニューの
+    // 文字色で書く。本文の文字色のままだと、メニューを暗く・本文の文字を
+    // 暗くしたテーマで打った字が読めなかった。lib配下で bodyLarge を画面の
+    // 文に使っている所は無い（一覧の行の名前は listTileTheme の titleMedium）。
+    // 画面の色で塗った入力欄（ヘルプ・活用Tips・フォントの検索）は、欄の
+    // 側で本文の文字色を渡している。
+    final textTheme = headingTextTheme.copyWith(
+      bodyLarge: headingTextTheme.bodyLarge?.copyWith(color: menuForeground),
+    );
+    // メニューの背景色で塗る入力欄の中の薄い文字・アイコン（Material 3 の
+    // onSurfaceVariant と、押せないときの onSurface の38%に当たる色）。
+    Color fieldInk(Set<WidgetState> states) =>
+        states.contains(WidgetState.disabled)
+        ? menuForeground.withValues(alpha: 0.38)
+        : menuForeground.withValues(alpha: 0.7);
+    // ダイアログ・ボトムシートの中身のテーマ（[MenuSurfaceTheme]）。本文と
+    // メニューの文字色が同じテーマ（組み込みのテーマ）では要らない。
+    final menuSurface = preset.textColor == preset.menuTextColor
+        ? null
+        : _buildTheme(
+            _menuSurfacePreset(preset, panelColor, popupColor),
+            locale: locale,
+          );
 
     return ThemeData(
       useMaterial3: true,
@@ -961,7 +1005,10 @@ class ThemeService extends ChangeNotifier {
       colorScheme: scheme,
       fontFamily: bodyFont,
       textTheme: textTheme,
-      extensions: [AccentTextTheme(accentText)],
+      extensions: [AccentTextTheme(accentText), MenuSurfaceTheme(menuSurface)],
+      // 画面から開いたダイアログ・ボトムシートの中身を、メニューの面の
+      // テーマ（上の menuSurface）で描く。動きは Flutter の既定のまま。
+      pageTransitionsTheme: menuSurfacePageTransitionsTheme,
       primaryTextTheme: textTheme,
       iconTheme: IconThemeData(color: preset.textColor),
       scaffoldBackgroundColor: preset.panelBgColor,
@@ -1126,6 +1173,31 @@ class ThemeService extends ChangeNotifier {
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: preset.menuBgColor,
+        // 欄の中のヒント（前後の文字もヒントの書式）・名前・アイコンも、
+        // メニューの背景色の上に書くのでメニューの文字色（薄さ・押せない時・
+        // 入力中・誤りの色は Material 3 の既定と同じ）。欄の下の補足・文字数は
+        // 欄の外なので既定のまま。
+        hintStyle: WidgetStateTextStyle.resolveWith(
+          (states) => TextStyle(color: fieldInk(states)),
+        ),
+        labelStyle: WidgetStateTextStyle.resolveWith(
+          (states) =>
+              !states.contains(WidgetState.disabled) &&
+                  (states.contains(WidgetState.focused) ||
+                      states.contains(WidgetState.error))
+              ? const TextStyle()
+              : TextStyle(color: fieldInk(states)),
+        ),
+        prefixIconColor: WidgetStateColor.resolveWith(fieldInk),
+        suffixIconColor: WidgetStateColor.resolveWith(
+          (states) =>
+              states.contains(WidgetState.error) &&
+                  !states.contains(WidgetState.disabled)
+              ? (states.contains(WidgetState.hovered)
+                    ? scheme.onErrorContainer
+                    : scheme.error)
+              : fieldInk(states),
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(radius),
           borderSide: BorderSide.none,
@@ -1145,7 +1217,12 @@ class ThemeService extends ChangeNotifier {
         backgroundColor: popupColor,
         elevation: 0,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
-        titleTextStyle: textTheme.titleLarge?.copyWith(color: preset.textColor),
+        // 題はダイアログの下地（メニューの背景色）の上に書くので、メニューの
+        // 文字色。本文（contentTextStyle）は既定のまま：既定は言語ごとの字の
+        // 大きさ・行の高さを持った bodyMedium で、ここで書くとそれが外れて
+        // 行の高さが変わる。本文の色は MenuSurfaceTheme（中身全体のテーマ）で
+        // メニューの文字色になる。
+        titleTextStyle: textTheme.titleLarge?.copyWith(color: menuForeground),
       ),
       bottomSheetTheme: BottomSheetThemeData(
         backgroundColor: popupColor,
@@ -1173,9 +1250,11 @@ class ThemeService extends ChangeNotifier {
         // （textTheme.bodyMedium＝白光明朝）を土台にして色だけ上書きする。
         // 操作ボタン（「元に戻す」等）はlabelLargeで描かれ、小さく、
         // くらむぼんの太字だと潰れるので白光明朝のまま（ユーザー指定）。
-        contentTextStyle: textTheme.bodyMedium?.copyWith(
-          color: preset.textColor,
-        ),
+        // 下地はポップアップの色（メニューの背景色）なので、文はメニューの
+        // 文字色（本文の文字色だと、メニューを暗く・本文の文字を暗くした
+        // テーマで読めなかった）。閉じるボタンも同じ。
+        contentTextStyle: textTheme.bodyMedium?.copyWith(color: menuForeground),
+        closeIconColor: menuForeground,
         // 操作ボタン（「元に戻す」等）の色。Material3の既定は暗い下地向けの
         // inversePrimaryで、このアプリのSnackBarは下地がポップアップの色
         // （明るいテーマでは白に近い）なので、ほとんど見えなかった。

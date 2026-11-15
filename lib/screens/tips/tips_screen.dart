@@ -82,9 +82,14 @@ class _TipsScreenState extends State<TipsScreen> {
               padding: const EdgeInsets.fromLTRB(12, 12, 12, 4),
               child: TextField(
                 controller: _searchController,
+                // 画面の色で塗る欄なので、打った字・ヒント・アイコンは本文の
+                // 文字色（テーマの入力欄はメニューの色で塗りメニューの文字色）。
+                style: TextStyle(color: scheme.onSurface),
                 decoration: InputDecoration(
                   hintText: l10n.tipsSearchHint,
+                  hintStyle: TextStyle(color: scheme.onSurfaceVariant),
                   prefixIcon: const Icon(Icons.search),
+                  prefixIconColor: scheme.onSurfaceVariant,
                   filled: true,
                   fillColor: scheme.surfaceContainerLow,
                   border: OutlineInputBorder(

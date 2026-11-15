@@ -631,9 +631,20 @@ class _HelpScreenState extends State<HelpScreen> {
               padding: const EdgeInsets.fromLTRB(12, 12, 12, 4),
               child: TextField(
                 controller: _searchController,
+                // 画面の色で塗る欄なので、打った字・ヒント・アイコンは本文の
+                // 文字色（テーマの入力欄はメニューの色で塗りメニューの文字色）。
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
                 decoration: InputDecoration(
                   hintText: l10n.helpSearchHint,
+                  hintStyle: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
                   prefixIcon: const Icon(Icons.search),
+                  prefixIconColor: Theme.of(
+                    context,
+                  ).colorScheme.onSurfaceVariant,
                   filled: true,
                   fillColor: Theme.of(context).colorScheme.surfaceContainerLow,
                   border: OutlineInputBorder(

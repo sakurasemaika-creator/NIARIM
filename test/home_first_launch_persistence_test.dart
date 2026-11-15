@@ -403,17 +403,19 @@ void main() {
         contains(c.l10n.homeFirstLaunchStart),
       );
       final scheme = Theme.of(tester.element(notice)).colorScheme;
-      expect(preset.textColor, isNot(scheme.error));
+      // ダイアログの下地はメニューの背景色なので、ダイアログの文字色は
+      // メニューの文字色（本文の文字色と分けたテーマでも読める色）。
+      expect(preset.menuTextColor, isNot(scheme.error));
       expect(
         tester.renderObject<RenderParagraph>(notice).text.style!.color,
-        preset.textColor,
+        preset.menuTextColor,
       );
       final icon = find.descendant(
         of: find.ancestor(of: notice, matching: find.byType(Row)).first,
         matching: find.byIcon(Icons.error_outline),
       );
       expect(icon, findsOneWidget);
-      expect(tester.widget<Icon>(icon).color, preset.textColor);
+      expect(tester.widget<Icon>(icon).color, preset.menuTextColor);
       expect(find.text(c.l10n.homeFirstLaunchMessage), findsOneWidget);
       expect(tester.takeException(), isNull);
       await tester.pumpWidget(const SizedBox.shrink());

@@ -293,6 +293,48 @@ RenderParagraph _paragraph(WidgetTester tester, Finder finder) {
 /// 描いた段落の根の書式（Text が DefaultTextStyle と合わせた書式）。
 TextStyle _style(RenderParagraph paragraph) => paragraph.text.style!;
 
+/// [scope]の中の文字（ボタンの名前とアイコンを除く）と入力欄の文字のうち、
+/// [ink]で書いていないもの（不透明度は見ない。ヒントは薄くしてよい）。
+/// 差し色（[accents]：入力中の欄の名前など）で書く文字は数えない。
+List<String> _notInInk(
+  Finder scope,
+  Color ink, {
+  Set<Color> accents = const {},
+}) {
+  bool same(Color? color, Color other) =>
+      color != null && color.withAlpha(255) == other.withAlpha(255);
+  bool inButtonOrIcon(Element element) {
+    var found = false;
+    element.visitAncestorElements((a) {
+      found = a.widget is ButtonStyleButton || a.widget is Icon;
+      return !found;
+    });
+    return found;
+  }
+
+  final wrong = <String>[];
+  for (final element
+      in find
+          .descendant(of: scope, matching: find.byType(RichText))
+          .evaluate()) {
+    if (inButtonOrIcon(element)) continue;
+    final paragraph = element.renderObject! as RenderParagraph;
+    final color = _style(paragraph).color;
+    if (same(color, ink) || accents.any((a) => same(color, a))) continue;
+    wrong.add('"${paragraph.text.toPlainText()}" $color');
+  }
+  for (final element
+      in find
+          .descendant(of: scope, matching: find.byType(EditableText))
+          .evaluate()) {
+    final editable = element.widget as EditableText;
+    if (!same(editable.style.color, ink)) {
+      wrong.add('field "${editable.controller.text}" ${editable.style.color}');
+    }
+  }
+  return wrong;
+}
+
 /// [element]から外へたどって最初に出会う[Material]の色。
 Color? _materialColorAround(Element element) {
   Color? color;
@@ -1056,6 +1098,99 @@ void main() {
       hidden,
       isEmpty,
       reason: 'focus moved to a control scrolled out of the list viewport',
+    );
+    await home.close();
+  });
+
+  testWidgets('自作テーマ（暗いメニュー）のシート・ダイアログ・知らせ・入力欄の文字は、メニューの文字色で書く', (
+    tester,
+  ) async {
+    final home = _Home(tester);
+    await home.open();
+    await home.addProject('知らせの作品');
+    await tester.runAsync(() => home.projects.createSharedFolder('受け取り'));
+    await home.frames(4);
+    await home.settleIo();
+    await home.applyTheme(_customTheme);
+    final ink = _customTheme.menuTextColor;
+    final l10n = home.l10n;
+    final wrong = <String, List<String>>{};
+    void check(String what, Finder scope) {
+      expect(scope, findsWidgets, reason: '$what not open');
+      final found = _notInInk(
+        scope.first,
+        ink,
+        accents: {
+          _customTheme.accentColor,
+          _customTheme.effectiveAccentTextColor,
+        },
+      );
+      if (found.isNotEmpty) wrong[what] = found;
+    }
+
+    // プロジェクトの「＋」のシートと、そこから開く新しいフォルダの名前。
+    await tester.tap(find.byTooltip(l10n.commonAdd).last);
+    await home.frames(10);
+    check('+ sheet', find.byType(BottomSheet));
+    await tester.tap(find.text(l10n.homeAddSheetNewFolder));
+    await home.frames(10);
+    await tester.enterText(find.byType(TextField).last, 'あたらしい');
+    await home.frames(4);
+    check('new folder dialog', find.byType(Dialog));
+    await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+    await home.frames(10);
+
+    // 共有のフォルダの「︙」のシート（名前の変更）と、名前の変更のダイアログ。
+    await home.showTab(2);
+    final folder = home.projects.sharedFolders.single;
+    await tester.tap(find.byKey(ValueKey('collectionFolderMenu_${folder.id}')));
+    await home.frames(10);
+    check(
+      'folder sheet: rename',
+      find.descendant(
+        of: find.byType(BottomSheet),
+        matching: find.widgetWithText(ListTile, l10n.commonRename),
+      ),
+    );
+    await tester.tap(find.text(l10n.commonRename));
+    await home.frames(10);
+    check('rename dialog', find.byType(Dialog));
+    await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+    await home.frames(10);
+
+    // メニューの色の上部バーに出る検索の入力欄。
+    await home.showTab(0);
+    await tester.tap(find.byKey(const Key('homeSearchButton')));
+    await home.frames(10);
+    check('search hint', find.byKey(const Key('homeSearchInput')));
+    await tester.enterText(find.byKey(const Key('homeSearchInput')), '知らせ');
+    await home.frames(6);
+    check('search field', find.byKey(const Key('homeSearchInput')));
+    await tester.tap(find.byKey(const Key('homeSearchCloseButton')));
+    await home.frames(10);
+
+    // カードの「︙」からゴミ箱へ移したときの知らせ。
+    await tester.tap(
+      find
+          .descendant(
+            of: find.byType(ProjectListWidget),
+            matching: find.byIcon(Icons.more_vert),
+          )
+          .first,
+    );
+    await home.frames(20);
+    await tester.tap(find.text(l10n.projectDetailTrashMenuItem));
+    for (var i = 0; i < 20 && find.byType(SnackBar).evaluate().isEmpty; i++) {
+      await home.settleIo();
+      await home.frames(4);
+    }
+    await home.frames(10);
+    check('trash notice', find.byType(SnackBar));
+
+    expect(
+      wrong,
+      isEmpty,
+      reason: 'text on menu surfaces not in menuTextColor $ink',
     );
     await home.close();
   });
