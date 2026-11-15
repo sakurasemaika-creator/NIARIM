@@ -5972,19 +5972,24 @@ class _TrashTabState extends State<_TrashTab> {
 /// Reuse the Projects collection's four sort modes for exported media.
 /// The source files are never renamed or modified by a view preference.
 List<File> _sortExportedFiles(List<File> files, ProjectSortMode mode) {
-  final sorted = List<File>.of(files);
-  final byName = nameComparator<File>((file) => file.uri.pathSegments.last);
   // 更新日時はファイルごとに1回だけ読む。読み直す前の一覧に、ゴミ箱へ
-  // 移した直後のファイルが残っていても止まらない（以前は無いファイルの
-  // 日時を読んで、作品一覧のタブの組み立てが例外になった）。
+  // 移した直後のファイル・アプリの外で消えたファイルが残っていても止まらない
+  // （以前は無いファイルの日時を読んで、作品一覧のタブの組み立てが例外に
+  // なった）。読めない（もう無い）ファイルは、書き出したファイルの一覧・
+  // フォルダの表紙の候補と同じく一覧に出さない（1970年の日時・-1 Bの、
+  // 開けも移せもしないカードが残った）。
   final modified = <String, DateTime>{};
-  DateTime modifiedOf(File file) => modified[file.path] ??= () {
+  final sorted = <File>[];
+  for (final file in files) {
     try {
-      return file.lastModifiedSync();
+      modified[file.path] = file.lastModifiedSync();
+      sorted.add(file);
     } on FileSystemException {
-      return DateTime.fromMillisecondsSinceEpoch(0);
+      // もう無い（アプリの外で消えた・ゴミ箱へ移した直後）。
     }
-  }();
+  }
+  final byName = nameComparator<File>((file) => file.uri.pathSegments.last);
+  DateTime modifiedOf(File file) => modified[file.path]!;
   int compare(File a, File b) {
     switch (mode) {
       case ProjectSortMode.nameAsc:
