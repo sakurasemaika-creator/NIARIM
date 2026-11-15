@@ -66,3 +66,38 @@ Iterable<RenderParagraph> textParagraphsIn(Finder scope) sync* {
     yield paragraph;
   }
 }
+
+/// 描かれた段落[p]の中で、[fitWidth]（省けば段落の欄の幅）より広いために
+/// 途中で行を変えている語（どう並べても1行に入らない語）。
+///
+/// [wordsBrokenThatFit]はこの語を数えない。1つの語が行より広いときの決まりは
+/// 所有者の判断を待っている（DISC118・145・155）ので、テストは数えずに名前を
+/// 出しておく。
+List<String> wordsWiderThanLine(RenderParagraph p, {double? fitWidth}) {
+  final lines = ParagraphLines(p);
+  final text = lines.visible;
+  final limit = fitWidth ?? p.constraints.maxWidth;
+  final out = <String>[];
+  void check(int start, int end) {
+    if (lines.breaksWithin(start, end).isEmpty) return;
+    final width = p
+        .getBoxesForSelection(lines.sourceSelection(start, end))
+        .fold<double>(0, (sum, box) => sum + box.right - box.left);
+    if (width <= limit + 0.5) return;
+    out.add(
+      '「${text.substring(start, end)}」（${width.toStringAsFixed(0)}px、'
+      '入る幅${limit.toStringAsFixed(0)}px）',
+    );
+  }
+
+  for (final token in _token.allMatches(text)) {
+    if (_hangul.hasMatch(token[0]!)) {
+      check(token.start, token.end);
+      continue;
+    }
+    for (final run in _latinRun.allMatches(token[0]!)) {
+      check(token.start + run.start, token.start + run.end);
+    }
+  }
+  return out;
+}

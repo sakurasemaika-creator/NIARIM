@@ -145,12 +145,17 @@ class _GameStyleSlotScreen extends StatelessWidget {
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
+        // 狭い画面では左右の空きを縮め、スロットの題の語を途中で折らない。
+        // サムネイルを題の上に置くと高くなるので、入らなければスクロールする。
+        insetPadding: dialogInsetPadding(ctx),
+        scrollable: true,
         title: Text(l10n.saveTreeOverwriteAction),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(l10n.saveTreeOverwriteConfirmBody),
+            // 韓国語の語は、1行に入れば途中で折らない。
+            messageText(l10n.saveTreeOverwriteConfirmBody),
             const SizedBox(height: 14),
             _SlotConfirmationSummary(slotIndex: slotIndex, node: node),
           ],
@@ -412,12 +417,18 @@ class _GameStyleSlotScreen extends StatelessWidget {
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
+        // 狭い画面では左右の空きを縮め、スロットの題の語を途中で折らない。
+        // 大きな文字の低い画面では入らないので、スクロールする（文字2倍の
+        // 320pxで、中身が最大295pxはみ出していた）。
+        insetPadding: dialogInsetPadding(ctx),
+        scrollable: true,
         title: Text(l10n.saveTreeRestoreAction),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(l10n.saveTreeProjectDetailResumeBody),
+            // 韓国語の語は、1行に入れば途中で折らない。
+            messageText(l10n.saveTreeProjectDetailResumeBody),
             const SizedBox(height: 14),
             _SlotConfirmationSummary(slotIndex: node.slotIndex, node: node),
           ],
@@ -485,43 +496,43 @@ class _SlotConfirmationSummary extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: scheme.outlineVariant),
       ),
-      child: Row(
-        children: [
-          _SlotThumbnail(node: node, size: 68),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  l10n.saveTreeSlotLabel(slotIndex + 1),
-                  style: const TextStyle(fontWeight: FontWeight.w700),
-                ),
-                const SizedBox(height: 3),
-                Text(
-                  slotSaveName(
-                    l10n,
-                    context.watch<SaveTreeService>().slotDisplayMemoOf(
-                      node.projectId,
-                      slotIndex,
-                    ),
-                    slotIndex,
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  _formatDate(node.savedAt),
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: scheme.onSurfaceVariant,
-                  ),
-                ),
-              ],
+      // スロットの題は語と番号を1つのかたまりにし、題・メモの語がサムネイルの
+      // 横に入らない幅では、サムネイルを上に置いて題・メモ・日時を要約の幅
+      // いっぱいで出す（横のままだと、仏語・320px・文字2倍で「Emplacemen /
+      // t 1」と折れた）。1つの保存の要約なので、出す文の語で決める。
+      child: ActionBesideOrBelow(
+        actionFirst: true,
+        gap: 12,
+        spacing: 10,
+        action: _SlotThumbnail(node: node, size: 68),
+        text: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            KeepTogetherText(
+              l10n.saveTreeSlotLabel(slotIndex + 1),
+              keep: [l10n.saveTreeSlotLabel(slotIndex + 1)],
+              style: const TextStyle(fontWeight: FontWeight.w700),
             ),
-          ),
-        ],
+            const SizedBox(height: 3),
+            Text(
+              slotSaveName(
+                l10n,
+                context.watch<SaveTreeService>().slotDisplayMemoOf(
+                  node.projectId,
+                  slotIndex,
+                ),
+                slotIndex,
+              ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(height: 4),
+            Text(
+              _formatDate(node.savedAt),
+              style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
+            ),
+          ],
+        ),
       ),
     );
   }
