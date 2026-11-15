@@ -9,8 +9,11 @@
 // 7言語×320/360/412px×文字1.0/1.3/2.0で、保存したスロット（メモなし・
 // メモあり）と空のスロットのカードの文が、カードの幅に入る語を途中で折らない
 // こと、題が1行に入る幅では1行（語と番号が同じ行）であること、はみ出さない
-// ことを見張る。韓国語の語が音節の間で折れるのは、アプリ全体の決まりを
-// 待っている別の件（DISC111）なので数えない。
+// ことを見張る。
+//
+// 空のスロットの「保存データなし」は普通の`Text`で、韓国語・360px・文字2倍で
+// 「저장 데이터 없 / 음」と語の途中で折れていた（DISC208）。韓国語の語も、
+// 入る幅では途中で折らないことを見張る。
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -32,8 +35,6 @@ import 'helpers/paragraph_lines.dart';
 import 'helpers/word_breaks.dart';
 
 const _height = 740.0;
-
-final RegExp _hangul = RegExp(r'[\uAC00-\uD7A3\u1100-\u11FF\u3130-\u318F]');
 
 /// カードの中身の左右の余白と枠。
 const _cardInset = 2 * 14.0 + 2 * 1.0;
@@ -71,7 +72,8 @@ void main() {
   }
 
   /// [language]のアプリで作品を1つ作り、スロット1（メモなし）・スロット2
-  /// （メモあり）へ保存してから、保存の管理の画面を開く。
+  /// （メモあり）へ保存し、スロット4にはメモだけを付けてから、保存の管理の
+  /// 画面を開く。
   Future<void> openSlots(WidgetTester tester, String language) async {
     if (!fontsLoaded) {
       await loadAppFonts(tester);
@@ -115,6 +117,8 @@ void main() {
         ),
       );
     }
+    // 保存の無いスロットのメモ（メモの下に「保存データなし」が出る）。
+    await tester.runAsync(() => saves.setSlotMemo(project.id, 3, 'Idea'));
     appRouter.push('/save-tree/${project.id}');
     await settleIo(tester, 6);
   }
@@ -140,8 +144,9 @@ void main() {
             await tester.pump();
             await tester.pump(const Duration(milliseconds: 300));
             final at = '${width.toInt()}px x$scale';
-            // スロット1（保存・メモなし）・2（保存・メモあり）・3（空）。
-            for (final slot in [1, 2, 3]) {
+            // スロット1（保存・メモなし）・2（保存・メモあり）・3（空）・
+            // 4（メモだけ）。
+            for (final slot in [1, 2, 3, 4]) {
               final label = l10n.saveTreeSlotLabel(slot);
               await tester.ensureVisible(
                 find.text(label, skipOffstage: false).first,
@@ -159,12 +164,6 @@ void main() {
                       ? inner
                       : paragraph.constraints.maxWidth,
                 )) {
-                  // 韓国語の語が音節の間で折れるのは、アプリ全体の決まりを
-                  // 待っている別の件（DISC111）。ここでは数えない。
-                  final word = RegExp(
-                    r'「([^」]*)」',
-                  ).firstMatch(broken)?.group(1);
-                  if (_hangul.hasMatch(word ?? '')) continue;
                   problems.add('$at slot $slot: $broken');
                 }
               }

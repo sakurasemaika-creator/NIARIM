@@ -646,32 +646,39 @@ class _GameSaveSlotTile extends StatelessWidget {
                             children: [
                               Flexible(
                                 fit: FlexFit.loose,
-                                child: Text(
-                                  // 空白だけのメモ（前の版で付けたもの）は
-                                  // メモが無いのと同じに出す。
-                                  givenSaveName(memo) ??
-                                      (hasData
-                                          ? l10n.saveTreeSlotLabel(
-                                              slotIndex + 1,
-                                            )
-                                          : listUnread
-                                          ? ''
-                                          : l10n.saveTreeNoDataLabel),
-                                  // 利用者のメモは1行で省略する。アプリの文（「保存
-                                  // データなし」等）は切らずに折り返す（中国語の
-                                  // 字の広い書体・大きな文字で「…」と切れた）。
-                                  maxLines: givenSaveName(memo) != null
-                                      ? 1
-                                      : null,
-                                  overflow: givenSaveName(memo) != null
-                                      ? TextOverflow.ellipsis
-                                      : null,
-                                  style: TextStyle(
-                                    color: hasData
-                                        ? scheme.onSurface
-                                        : scheme.onSurfaceVariant,
-                                  ),
-                                ),
+                                // 空白だけのメモ（前の版で付けたもの）は
+                                // メモが無いのと同じに出す。
+                                child: givenSaveName(memo) != null
+                                    // 利用者のメモは1行で省略する。
+                                    ? Text(
+                                        givenSaveName(memo)!,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                          color: hasData
+                                              ? scheme.onSurface
+                                              : scheme.onSurfaceVariant,
+                                        ),
+                                      )
+                                    // アプリの文（「保存データなし」等）は切らずに
+                                    // 折り返す（中国語の字の広い書体・大きな文字で
+                                    // 「…」と切れた）。韓国語の語は、1行に入れば
+                                    // 途中で折らない（「저장 데이터 없 / 음」と
+                                    // 折れた）。
+                                    : messageText(
+                                        hasData
+                                            ? l10n.saveTreeSlotLabel(
+                                                slotIndex + 1,
+                                              )
+                                            : listUnread
+                                            ? ''
+                                            : l10n.saveTreeNoDataLabel,
+                                        style: TextStyle(
+                                          color: hasData
+                                              ? scheme.onSurface
+                                              : scheme.onSurfaceVariant,
+                                        ),
+                                      ),
                               ),
                               Padding(
                                 padding: const EdgeInsets.only(left: 2),
@@ -695,7 +702,7 @@ class _GameSaveSlotTile extends StatelessWidget {
                           ] else if (memo?.isNotEmpty == true &&
                               !listUnread) ...[
                             const SizedBox(height: 3),
-                            Text(
+                            messageText(
                               l10n.saveTreeNoDataLabel,
                               style: TextStyle(
                                 fontSize: 12,
