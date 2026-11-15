@@ -1721,15 +1721,13 @@ class _HomeScreenState extends State<HomeScreen>
     required VoidCallback onPressed,
     required IconData icon,
   }) {
-    return FloatingActionButton(
-      key: key,
+    return _HomeFloatingAction(
+      fabKey: key,
       heroTag: heroTag,
-      mini: compact,
-      materialTapTargetSize: MaterialTapTargetSize.padded,
       tooltip: tooltip,
-      // ThemeService provides the common shape, colors and zero shadow.
+      compact: compact,
       onPressed: onPressed,
-      child: Icon(icon),
+      icon: icon,
     );
   }
 
@@ -2973,6 +2971,87 @@ class _HomeScreenState extends State<HomeScreen>
           ],
         ),
       ),
+    );
+  }
+}
+
+/// ホームの浮かぶボタン（「一番上へ」・＋・新しいフォルダ）。キーボードで
+/// フォーカスしている間は、ボタンの外側に輪を描いて示す（フォーカスの
+/// 見える化、WCAG 2.4.7）。テーマのフォーカスの印は塗りが少し暗くなる
+/// だけ（既定の差し色で約1.15:1）で、どのボタンにいるか分からなかった。
+/// 輪の色は、絞り込みのチップの輪（[ChipFocusRing]）と同じ地の上の文字の
+/// 色で、ボタンの塗りとも地とも分かれる。マウス・指で操作しているとき
+/// （[FocusHighlightMode.touch]）は出さない。
+class _HomeFloatingAction extends StatefulWidget {
+  const _HomeFloatingAction({
+    this.fabKey,
+    required this.heroTag,
+    required this.tooltip,
+    required this.compact,
+    required this.onPressed,
+    required this.icon,
+  });
+
+  /// 浮かぶボタン（[FloatingActionButton]）そのものに付けるキー。
+  final Key? fabKey;
+  final String heroTag;
+  final String tooltip;
+  final bool compact;
+  final VoidCallback onPressed;
+  final IconData icon;
+
+  @override
+  State<_HomeFloatingAction> createState() => _HomeFloatingActionState();
+}
+
+class _HomeFloatingActionState extends State<_HomeFloatingAction> {
+  final _focusNode = FocusNode(debugLabel: 'homeFloatingAction');
+
+  @override
+  void initState() {
+    super.initState();
+    _focusNode.addListener(_changed);
+    FocusManager.instance.addHighlightModeListener(_highlightModeChanged);
+  }
+
+  @override
+  void dispose() {
+    FocusManager.instance.removeHighlightModeListener(_highlightModeChanged);
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  void _changed() {
+    if (mounted) setState(() {});
+  }
+
+  void _highlightModeChanged(FocusHighlightMode mode) => _changed();
+
+  @override
+  Widget build(BuildContext context) {
+    final ring =
+        _focusNode.hasPrimaryFocus &&
+        FocusManager.instance.highlightMode == FocusHighlightMode.traditional;
+    return FloatingActionButton(
+      key: widget.fabKey,
+      focusNode: _focusNode,
+      heroTag: widget.heroTag,
+      mini: widget.compact,
+      materialTapTargetSize: MaterialTapTargetSize.padded,
+      tooltip: widget.tooltip,
+      // ThemeService provides the common shape, colors and zero shadow.
+      // 輪は縁の外側に描く（内側に描くと塗りとアイコンが縁の分だけ狭まる）。
+      shape: ring
+          ? CircleBorder(
+              side: BorderSide(
+                color: Theme.of(context).colorScheme.onSurface,
+                width: 3,
+                strokeAlign: BorderSide.strokeAlignOutside,
+              ),
+            )
+          : null,
+      onPressed: widget.onPressed,
+      child: Icon(widget.icon),
     );
   }
 }
