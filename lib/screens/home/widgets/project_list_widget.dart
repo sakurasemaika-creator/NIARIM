@@ -624,12 +624,11 @@ class ProjectListWidget extends StatelessWidget {
       child: FramePreviewBackground(
         backgroundColor: project.backgroundColor,
         checkerSize: 8,
+        // 用紙は作品の色（テーマの色ではない）なので、印も用紙で読める色。
         child: Center(
           child: Icon(
             Icons.image,
-            color: ThemeService.activeColorScheme.onSurface.withValues(
-              alpha: 0.38,
-            ),
+            color: paperMarkColor(project.backgroundColor),
           ),
         ),
       ),

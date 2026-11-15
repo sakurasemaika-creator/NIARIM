@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../utils/color_contrast.dart';
+
 /// The two grey squares the canvas uses to show transparency.
 const Color kTransparencyCheckerLight = Color.fromARGB(255, 242, 242, 242);
 const Color kTransparencyCheckerDark = Color.fromARGB(255, 167, 167, 167);
@@ -53,6 +55,86 @@ class FramePreviewBackground extends StatelessWidget {
     }
     return layered;
   }
+}
+
+/// The colour of a mark drawn on a project's paper where its picture would
+/// be (a cover before the project has a thumbnail). The paper is the
+/// project's own background colour, chosen per project rather than taken
+/// from the theme, so a theme colour can vanish on it (light theme text on
+/// white paper, dark text on black paper). The mark is a neutral ink chosen
+/// for the paper instead: black on light paper, white on dark, at the muted
+/// strength of a placeholder (60% / 70%). Where that is too faint (strongly
+/// coloured paper, or as seen with protanopia, deuteranopia or tritanopia)
+/// the ink is made stronger until it reaches APCA |Lc| 45, the guide for
+/// icons with fine detail. Transparent paper shows the checkerboard, so the
+/// ink must read on both of its squares.
+Color paperMarkColor(int backgroundColor, {bool showTransparency = false}) =>
+    _paperMarks.putIfAbsent((
+      backgroundColor,
+      showTransparency,
+    ), () => _paperMark(backgroundColor, showTransparency: showTransparency));
+
+final _paperMarks = <(int, bool), Color>{};
+
+const double _kPaperMarkLc = 45;
+
+Color _paperMark(int backgroundColor, {required bool showTransparency}) {
+  final paper = Color(backgroundColor);
+  final under = showTransparency || paper.a == 0
+      ? const [kTransparencyCheckerLight, kTransparencyCheckerDark]
+      : paper.a >= 1
+      ? [paper]
+      : [
+          Color.alphaBlend(paper, kTransparencyCheckerLight),
+          Color.alphaBlend(paper, kTransparencyCheckerDark),
+        ];
+  double weakest(Color ink) {
+    var lc = double.infinity;
+    for (final surface in under) {
+      final drawn = Color.alphaBlend(ink, surface);
+      lc = [
+        lc,
+        apcaContrast(drawn, surface).abs(),
+        for (final type in const [
+          ColorVisionType.protanopia,
+          ColorVisionType.deuteranopia,
+          ColorVisionType.tritanopia,
+        ])
+          apcaContrast(
+            simulateColorVision(drawn, type),
+            simulateColorVision(surface, type),
+          ).abs(),
+      ].reduce((a, b) => a < b ? a : b);
+    }
+    return lc;
+  }
+
+  // Each ink starts muted and grows in small steps; the one that reads with
+  // the lighter touch wins (or, if neither reaches the guide, the clearer).
+  ({Color ink, double lc})? best;
+  for (final (base, muted) in const [
+    (Colors.black, 0.6),
+    (Colors.white, 0.7),
+  ]) {
+    var alpha = muted;
+    var ink = base.withValues(alpha: alpha);
+    var lc = weakest(ink);
+    while (lc < _kPaperMarkLc && alpha < 1) {
+      alpha = (alpha + 0.04).clamp(0.0, 1.0);
+      ink = base.withValues(alpha: alpha);
+      lc = weakest(ink);
+    }
+    final current = best;
+    final reaches = lc >= _kPaperMarkLc;
+    final bestReaches = current != null && current.lc >= _kPaperMarkLc;
+    if (current == null ||
+        (reaches && !bestReaches) ||
+        (reaches && bestReaches && ink.a < current.ink.a) ||
+        (!reaches && !bestReaches && lc > current.lc)) {
+      best = (ink: ink, lc: lc);
+    }
+  }
+  return best!.ink;
 }
 
 /// The canvas's transparency checkerboard, in squares of [size].

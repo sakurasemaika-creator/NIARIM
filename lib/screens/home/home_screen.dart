@@ -54,6 +54,7 @@ import '../../widgets/keep_together_text.dart';
 import '../../widgets/project_duplicated_snack_bar.dart';
 import '../../widgets/typing_aware_shortcuts.dart';
 import '../../widgets/fit_or_hide_title.dart';
+import '../../widgets/frame_preview_background.dart';
 import '../../widgets/menu_action_label.dart';
 import 'widgets/project_list_widget.dart';
 import 'widgets/shared_direction_switch.dart';
@@ -4164,22 +4165,27 @@ Widget _receivedShareProjectTile(
     fontFamilyFallback: kHeadingFontFallback,
     height: kWrappedNameLineHeight,
   );
+  // 絵の無い作品の表紙は、プロジェクトのタブと同じく作品の用紙（透明なら
+  // 市松模様）に、用紙で読める色の印を置く。用紙は作品の色なので、テーマの
+  // アイコンの色だと消えることがあった（ダークテーマの白い用紙）。
+  Widget paper() => FramePreviewBackground(
+    backgroundColor: project.backgroundColor,
+    checkerSize: 8,
+    child: Center(
+      child: Icon(
+        Icons.movie_creation_outlined,
+        color: paperMarkColor(project.backgroundColor),
+      ),
+    ),
+  );
   Widget cover() {
     final thumbnailPath = project.thumbnailPath;
-    if (thumbnailPath == null || thumbnailPath.isEmpty) {
-      return ColoredBox(
-        color: Color(project.backgroundColor),
-        child: const Center(child: Icon(Icons.movie_creation_outlined)),
-      );
-    }
+    if (thumbnailPath == null || thumbnailPath.isEmpty) return paper();
     return Image.file(
       File(thumbnailPath),
       fit: BoxFit.cover,
       cacheWidth: 320,
-      errorBuilder: (context, error, stack) => ColoredBox(
-        color: Color(project.backgroundColor),
-        child: const Center(child: Icon(Icons.movie_creation_outlined)),
-      ),
+      errorBuilder: (context, error, stack) => paper(),
     );
   }
 

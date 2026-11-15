@@ -40,18 +40,6 @@ final kHomeMatrix2KnownProblems = <HomeMatrixKnownProblem>[
     where: _sideInsets,
   ),
   HomeMatrixKnownProblem(
-    'DISC218',
-    '共有の「受け取ったもの」で、絵の無い作品のカードの表紙は作品の用紙の色'
-        '（Color(project.backgroundColor)）に、テーマのアイコンの色の'
-        'movie_creation_outlinedを置く（home_screen.dartの'
-        '_receivedShareProjectTileのcover）。組み込みのダークテーマでは'
-        'アイコンが#F5F1F0、白い用紙の上で見えず（Lc 0）、カードが白い板に'
-        'なる。プロジェクトのタブの同じ表紙（FramePreviewBackground、'
-        'onSurfaceの38%）も同じ見た目だが、このマトリクスの確かめは用紙の'
-        '見本（FramePreviewBackground）の上の印を飾りとして見ない。',
-    RegExp(r'^unreadable: "\u{F1F3}" .*\[home-shared\]$', unicode: true),
-  ),
-  HomeMatrixKnownProblem(
     'DISC219',
     '作品一覧のカード（ExportedWorkCard）で、絵を出さない作品の表紙'
         '（exportedWorkThumbnailArea）は用紙側の色'
