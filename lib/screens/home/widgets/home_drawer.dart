@@ -81,7 +81,15 @@ class _HomeDrawerState extends State<HomeDrawer> {
           padding: EdgeInsets.zero,
           children: [
             Container(
-              padding: const EdgeInsets.fromLTRB(20, 56, 20, 20),
+              // 横向きで画面の端にボタンの帯・切り欠きがあるときも、見出しの
+              // 字は帯の下に描かない（色の帯は端まで。下の行はListTileが
+              // 避ける）。帯が無ければ今までどおり。
+              padding: EdgeInsets.fromLTRB(
+                20 + MediaQuery.paddingOf(context).left,
+                56,
+                20 + MediaQuery.paddingOf(context).right,
+                20,
+              ),
               decoration: BoxDecoration(color: scheme.primary),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,

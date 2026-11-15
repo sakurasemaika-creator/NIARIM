@@ -19,20 +19,7 @@ final kHomeMatrix2KnownProblems = <HomeMatrixKnownProblem>[
         'すべてのカードで、どの幅・言語・テーマ・文字の大きさでも同じ。',
     RegExp(r'^tap target 40x40 \(card\): '),
   ),
-  HomeMatrixKnownProblem(
-    'DISC216',
-    '横向きのスマホ（844x390）で左にカメラの切り欠き（安全な領域の左47px）'
-        '・右に3ボタンの帯（右48px）があるとき、上部バーと引き出しは避けるが、'
-        'タブの本文（お気に入り・並び順・ゴミ箱の種類・カードの星・名前・'
-        'メニュー・ゴミ箱の操作）と右下の浮かぶボタンが、切り欠きと帯の下に'
-        '描かれる（本文が左右の安全な領域を見ていない）。',
-    RegExp(r'(outside the safe area|under the display cutout)'),
-    where: _sideInsets,
-  ),
 ];
-
-bool _sideInsets(HomeMatrix m, String what) =>
-    m.tester.view.padding.left > 0 || m.tester.view.padding.right > 0;
 
 /// [ids]の不具合（[kHomeMatrix2KnownProblems]の番号）。
 List<HomeMatrixKnownProblem> homeMatrix2Known(List<String> ids) => [

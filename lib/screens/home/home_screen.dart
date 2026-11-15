@@ -1128,7 +1128,7 @@ class _HomeScreenState extends State<HomeScreen>
                   isPasting: _pasting,
                   onPaste: _pasteClipboard,
                   onClear: _clearHomeClipboard,
-                ),
+                ).insideSideSafeArea(band: true),
               if (_isSelectionMode)
                 HomeSelectionToolbar(
                   selectedCount: _selectedIds.length,
@@ -1181,7 +1181,7 @@ class _HomeScreenState extends State<HomeScreen>
                             ? l10n.homeTrashCopyOneAtATime
                             : l10n.homeSelectionOneAtATime)
                       : null,
-                ),
+                ).insideSideSafeArea(band: true),
               Expanded(
                 child: HomeCollectionSelectionScope(
                   key: _listAreaKey,
@@ -1373,7 +1373,7 @@ class _HomeScreenState extends State<HomeScreen>
                       ),
                     ],
                   ),
-                ),
+                ).insideSideSafeArea(),
               ),
             ],
           ),
@@ -1865,9 +1865,18 @@ class _HomeScreenState extends State<HomeScreen>
     final scrollToTop =
         projects &&
         _visibleProjectIds(context.watch<ProjectService>()).isNotEmpty;
+    // 浮かぶボタンの所では Scaffold が画面の左右の安全な領域を外すので、
+    // 横向きの左右の切り欠き・3ボタンの帯は、ホームの画面の値で避ける
+    // （以前は帯の下に描いた。縦向きでは0で、今までどおり）。
+    final sides = MediaQuery.paddingOf(context);
     return SafeArea(
       top: false,
-      minimum: EdgeInsets.fromLTRB(16, 0, 16, compact ? 8 : 16),
+      minimum: EdgeInsets.fromLTRB(
+        16 + sides.left,
+        0,
+        16 + sides.right,
+        compact ? 8 : 16,
+      ),
       child: Row(
         key: _floatingActionsKey,
         mainAxisAlignment: scrollToTop
@@ -3087,6 +3096,74 @@ class _HomeScreenState extends State<HomeScreen>
 /// 輪の色は、絞り込みのチップの輪（[ChipFocusRing]）と同じ地の上の文字の
 /// 色で、ボタンの塗りとも地とも分かれる。マウス・指で操作しているとき
 /// （[FocusHighlightMode.touch]）は出さない。
+/// 横向きで左右にカメラの切り欠き・3ボタンの帯がある端末でも、ホームの本文
+/// （タブの中身と、上部バーの続きの帯）を左右の安全な領域に置く（上部バー・
+/// 引き出しと同じ。以前は本文が帯と切り欠きの下に描かれた）。左右の帯が無い
+/// 縦向きでは何も足さない（見た目は変わらない）。
+extension _HomeSideSafeArea on Widget {
+  /// [band]は上部バーの続きの帯（貼り付け・選択中の操作）：帯の色は上部バーと
+  /// 同じく端まで塗り、中身（ボタン・文字）だけを安全な領域に置く。
+  Widget insideSideSafeArea({bool band = false}) =>
+      _SideSafeArea(band: band, child: this);
+}
+
+class _SideSafeArea extends StatelessWidget {
+  const _SideSafeArea({required this.band, required this.child});
+
+  final bool band;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final sides = MediaQuery.paddingOf(context);
+    if (sides.left == 0 && sides.right == 0) return child;
+    final inside = SafeArea(top: false, bottom: false, child: child);
+    if (!band) return inside;
+    final theme = Theme.of(context);
+    return CustomPaint(
+      painter: _SideStripsPainter(
+        // 帯（HomeClipboardToolbar・HomeSelectionToolbar）と同じ色。
+        color: theme.appBarTheme.backgroundColor ?? theme.colorScheme.surface,
+        left: sides.left,
+        right: sides.right,
+      ),
+      child: inside,
+    );
+  }
+}
+
+/// 左右の安全な領域の外（[left]・[right]の幅）だけを塗る（帯の中は帯自身が
+/// 塗るので、透明度のある色を二重に重ねない）。
+class _SideStripsPainter extends CustomPainter {
+  const _SideStripsPainter({
+    required this.color,
+    required this.left,
+    required this.right,
+  });
+
+  final Color color;
+  final double left;
+  final double right;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()..color = color;
+    if (left > 0) {
+      canvas.drawRect(Rect.fromLTWH(0, 0, left, size.height), paint);
+    }
+    if (right > 0) {
+      canvas.drawRect(
+        Rect.fromLTWH(size.width - right, 0, right, size.height),
+        paint,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(_SideStripsPainter old) =>
+      old.color != color || old.left != left || old.right != right;
+}
+
 /// ホームのタブ。動きを減らす設定（端末の「アニメーションを削除」）では、
 /// タブを替えると本文がその場で次のタブになる（TabBarViewは
 /// [animationDuration]が0なら横に滑らせずにページを替え、TabBarは選んだ
