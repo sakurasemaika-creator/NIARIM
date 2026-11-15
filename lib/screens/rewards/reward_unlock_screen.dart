@@ -376,14 +376,16 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
     if (_redeemBusy ||
         _selected.length != 1 ||
         !_selected.contains(CoinUnlockTarget.fullPremium) ||
-        _rewardState?['redemptionEnabled'] != true)
+        _rewardState?['redemptionEnabled'] != true) {
       return;
+    }
     final accountId = context.read<GoogleAuthService>().account?.id;
     final api = context.read<CommunityService>().api;
     if (accountId == null ||
         api == null ||
-        context.read<PremiumService>().hasVerifiedPlayPremium)
+        context.read<PremiumService>().hasVerifiedPlayPremium) {
       return;
+    }
     final currentDuration = _duration;
     final unit = currentDuration.unit.name;
     final quantity = currentDuration.amount;
@@ -400,8 +402,9 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
         quantity: quantity,
       );
       if (!mounted ||
-          context.read<GoogleAuthService>().account?.id != accountId)
+          context.read<GoogleAuthService>().account?.id != accountId) {
         return;
+      }
       final amount = quote['priceCoins'];
       final version = quote['priceVersion'];
       final balance = _rewardState?['balanceCoins'];
@@ -450,8 +453,9 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
       );
       if (confirmed != true ||
           !mounted ||
-          context.read<GoogleAuthService>().account?.id != accountId)
+          context.read<GoogleAuthService>().account?.id != accountId) {
         return;
+      }
       final response = await const CoinRedemptionAttemptStore().redeem(
         api: api,
         accountId: accountId,
@@ -460,8 +464,9 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
         quantity: quantity,
       );
       if (!mounted ||
-          context.read<GoogleAuthService>().account?.id != accountId)
+          context.read<GoogleAuthService>().account?.id != accountId) {
         return;
+      }
       if (response['redeemed'] == true) {
         await _loadWallet(accountId);
         if (!mounted) return;
@@ -514,8 +519,9 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
         quantity: count,
       );
       if (!mounted ||
-          context.read<GoogleAuthService>().account?.id != accountId)
+          context.read<GoogleAuthService>().account?.id != accountId) {
         return;
+      }
       final price = quote['priceCoins'];
       final version = quote['priceVersion'];
       final wallet = _rewardState?['balanceCoins'];
@@ -556,8 +562,9 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
       );
       if (confirm != true ||
           !mounted ||
-          context.read<GoogleAuthService>().account?.id != accountId)
+          context.read<GoogleAuthService>().account?.id != accountId) {
         return;
+      }
       final result = await const IndividualCoinRedemptionAttemptStore().redeem(
         api: api,
         accountId: accountId,
@@ -567,8 +574,9 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
         serverPriceVersion: version,
       );
       if (!mounted ||
-          context.read<GoogleAuthService>().account?.id != accountId)
+          context.read<GoogleAuthService>().account?.id != accountId) {
         return;
+      }
       if (result['redeemed'] == true) {
         await _loadWallet(accountId);
         if (!mounted) return;
@@ -1153,10 +1161,15 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
                       ),
                       const SizedBox(height: 8),
                       if (_selected.isEmpty)
-                        Text(
+                        // 準備中であることの説明なので、合計の数の見出しの
+                        // 大きな字ではなく本文の書体・大きさで出す（見出しの
+                        // 字では、長い言語・大きな文字で1つの語が欄より広く
+                        // なり、「conver / sion」「disponibl / es」と語の途中で
+                        // 折れた）。韓国語の語も途中で折らない。
+                        messageText(
                           t['unavailable'],
                           key: const Key('rewardTotalCoins'),
-                          style: Theme.of(context).textTheme.headlineSmall,
+                          style: Theme.of(context).textTheme.bodyLarge,
                         )
                       else
                         // 合計の数＋単位は1行に収め、入りきらなければ字を
