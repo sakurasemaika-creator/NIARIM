@@ -253,6 +253,41 @@
   この決まりに従うこと（ボタンのラベルを白光明朝にしない、説明文を
   くらむぼんにしない）。
   `test/theme_button_font_test.dart`が実際に描かれた書体で見張る。
+  **中国語（簡体字・繁体字）の表示では、本文の主フォントはNoto Serif SC**
+  （`font_fallback.dart`の`bodyFontFamilyFor`・`bodyFontFallbackFor`、テーマは
+  `ThemeService.themeDataFor(locale)`。白光明朝の漢字とNoto Serif SCの漢字が
+  1語の中で混ざり、字幅・字形がそろわなかった。DISC132）。本文の書体を
+  `fontFamily: 'HakkouMincho'`と直に書くと中国語でまた混ざるので、テーマの
+  書式を使うか、言語で`bodyFontFamilyFor`を引くこと。
+- **ボタンのラベルが折り返したときの上下の余白はテーマが取る**
+  （`lib/widgets/button_label_room.dart`の`buttonLabelRoomBuilder`、塗り・枠・
+  文字・浮きのボタンの`foregroundBuilder`。DISC128〜135、2026-11-15）：1行の
+  ラベルでは何もせず高さも変わらない。くらむぼんの字は行の外へはみ出すので、
+  字の描かれる所から8px（文字が2倍より大きければ広げる）を上下に取る。
+  **ボタンの子に自分で上下の`Padding`を足さないこと**（二重になり、ゴミ箱の
+  確認のボタンが12px高くなっていた）。自分で余白を決めるボタン（容量削減の
+  「全データを削除」の確認）は`foregroundBuilder: (c, s, child) => child ??
+  const SizedBox.shrink()`でテーマの余白を外す（`button_label_room_test`）。
+- **上部バーの画面名は`FitOrHideTitle`**（判断4をアプリ全体へ、`9a653575`）：
+  入らなければ出さない（省略記号で切らない）。データの題（作者名・作品名・
+  プリセット名・プロジェクト名）は隠さず1行で「…」。作品広場は題を3行まで
+  折る作り。容量削減の画面名はまだ「…」（DISC122）。新しい画面を足すときも
+  画面名はこれで包むこと。タブは`lib/widgets/fit_or_icon_tab_bar.dart`の
+  `FitOrIconTabBar`（名前が全部入るときだけ名前、1つでも入らなければどのタブも
+  アイコン。名前は吹き出しと読み上げ）、並べたボタンは
+  `lib/widgets/button_row_or_stack.dart`の`ButtonRowOrStack`（1行に入らなければ
+  1つずつの行）、項目名と値の行は`lib/widgets/label_value_row.dart`の
+  `LabelValueRow`（並べると語の途中で折れるときは値を下へ）。
+- **中国語・日本語を含む文の「いちばん広い語」はFlutterの最小の固有幅を信じない**：
+  SkParagraphは文全体の幅を答えることがあり、逆に1pxの幅で並べ直すと語結合子
+  （U+2060）でつないだ字の間でも折る。`action_beside_or_below.dart`の
+  `widestUnbreakableWidth`（1pxで並べ直し、つないだ字の続きは足して1つの
+  かたまりとして数える）を使うこと。自分で測り直した幅を答える描画
+  （`KeepTogetherText`の`_RenderKeepTogether`）は`ReportsWidestWord`を実装し、
+  `ActionBesideOrBelow`はその中を測り直さない（測り直すと`KeepTogetherText`の
+  描き直しが3400回に増えた）。行の始めに来てはいけない字（長音符・小さいかな・
+  閉じ括弧・句読点）の続きをその前の字とつなぐ部分は`line_break.dart`の
+  `lineStartKeepParts`（ブラシ・トーン・スタンプの名前で「ー」が行頭に来ていた）。
 - **フォントの代替列（fontFamilyFallback）は本文用と見出し用で別物**：
   `lib/config/font_fallback.dart`に`kBodyFontFallback`（明朝系）と
   `kHeadingFontFallback`（ゴシック系）の2本がある。**見出し用には明朝を
@@ -270,7 +305,9 @@
   いる。`lib/l10n/app_*.arb`に新しい文言を足すと、増えた文字がサブセットに
   入っていないためその字だけシステムフォントで表示され、見た目が崩れる。
   `python3 tool/build_fallback_fonts.py <元フォントのディレクトリ>`で
-  作り直すこと。`test/font_coverage_test.dart`が取りこぼしを検出する
+  作り直すこと。中国語の本文の主フォント（Noto Serif SCのサブセット）には、
+  ARBの字に加えてlib配下の手書きの文字列の字と空白も入れてあるので、lib配下に
+  新しい漢字・かなの文字列を足したときも作り直すこと。`test/font_coverage_test.dart`が取りこぼしを検出する
   （実際に「객」1字の欠落をこれで検出した）。
   ★フォントのcmapを自前で解析する処理を書く場合、**platformID 1
   （Macintosh）のサブテーブルは絶対にUnicodeとして数えないこと**。
@@ -780,7 +817,11 @@ replaceLayerPixels`はタイル差分のUndo（プリズムの合成モード変
   ファイルの大きさは`fileSizeLabel`（`lib/utils/file_size_label.dart`、
   言語の書き方：en「1.4 KB」・fr「1,4 Ko」、改行しない空白）を使うこと。
   描き直しの回数は`KeepTogetherText.debugLayoutCount`で見張る
-  （`keep_together_text_relayout_cost_test`）。
+  （`keep_together_text_relayout_cost_test`）。部品の外で同じ折り方の幅を
+  測るときは`joinedSpan`（描く部品が全部つないで並べる文）と`keptParts`
+  （描く部品が「欄の1行に入らなければつながない」と決める範囲）を使う。
+  フォントの画面と見本一覧の模型のファイルの大きさはまだ`fileSizeLabel`を
+  通していない（DISC130の残り）。
 - **2026-11-06の統合merge（eb92cc3c）が、監査済みの修正を画面ごと落としている
   （DISC074）**：mergeはホーム・作品一覧・引き出し・プロジェクト詳細・キャンバス・
   タイムライン・設定等15ファイルをdev_branch側の版で丸ごと採り、サービス・部品・
