@@ -211,7 +211,9 @@
   すべて端末標準フォント**だった（テーマ一覧の操作をPNGへ焼いて目視した
   ところ豆腐＝フォント未指定と分かり発覚）。
   `test/theme_button_font_test.dart`がボタン系4テーマ＋snackBarThemeを
-  機械的に見張っている。`theme_service.dart`の
+  機械的に見張っている（文字つきの浮かぶボタンのラベルも同じ罠で、
+  `floatingActionButtonTheme.extendedTextStyle`が無く本文の書体だった。
+  DISC224で足し、同じtestが見張る）。`theme_service.dart`の
   `listTileTheme`・`dialogTheme`は既に修正済みだが、新しくMaterialの
   テーマ系クラス（`XxxThemeData`）を触る／新設する際は同じ罠が無いか
   必ず確認すること。
@@ -292,7 +294,8 @@
   （DISC171・172、2026-11-15）：Flutterはハングルのどの字の間でも行を変えるので、
   韓国語の確認の文が「휴지통 / 으로」と語の途中で切れた。`keep_together_text.dart`の
   `messageText`は韓国語の語と「数＋単位」を`KeepTogetherText`でつなぐ（欄の1行に
-  入らない語だけは字の間で折る、`Text.data`・読み上げは元の文）。ゴミ箱へ移す・
+  入らない語だけは字の間で折る、`Text.data`・読み上げは元の文。`keepLineStarts: true`で
+  長音符・小さいかな・閉じ括弧でも行を始めない〔活用Tipsの題、DISC225〕）。ゴミ箱へ移す・
   削除する確認の文を手書きの`Text`で書くと`trash_confirm_korean_words_test`の
   走査が落ちる。`KoreanWordsText`は`LayoutBuilder`なので`AlertDialog`の
   `IntrinsicWidth`の中では使えない。320pxの画面では既定の左右の空き（40px）で
