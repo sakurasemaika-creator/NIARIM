@@ -13,9 +13,12 @@
 // ダイアログはMaterialの最小の幅（280px）を、画面の左右に16pxずつ残せる限り
 // 取る。7言語×320/360/412px×文字1.0/1.3/2.0で、その幅に入る語が途中で
 // 折れないこと、はみ出さないことを見張る。広い画面（360px以上）では、
-// ダイアログの左右の空きは今までどおり（40px）。「プロジェクト一覧へ戻る」の
-// 確認の題・本文・ボタンは普通の`Text`で、韓国語の語は音節の間で折れる
-// （アプリ全体の決まりを待っている別の件、DISC111）ので、そこだけは数えない。
+// ダイアログの左右の空きは今までどおり（40px）。
+//
+// 「プロジェクト一覧へ戻る」の確認の題・本文・ボタンは普通の`Text`で、韓国語の
+// 語が音節の間で折れていた（412pxでも「프로젝트 목록으로 돌아가 / 기」、
+// DISC206）。韓国語の語も、入る幅では途中で折らないことを見張る（読み上げは
+// 元の文のまま）。
 import 'dart:io';
 import 'dart:math' as math;
 
@@ -37,6 +40,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'helpers/first_use_tooltips.dart';
 import 'helpers/load_app_fonts.dart';
+import 'helpers/paragraph_lines.dart';
 import 'helpers/word_breaks.dart';
 
 const _height = 740.0;
@@ -67,17 +71,9 @@ double _dialogWidth(WidgetTester tester) => tester
     )
     .width;
 
-final RegExp _hangul = RegExp(r'[\uAC00-\uD7A3\u1100-\u11FF\u3130-\u318F]');
-
 /// 開いているダイアログを、幅と文字の大きさを変えながら調べる。ダイアログが
 /// 取れる幅より狭く描かれているときは、その差だけ広い欄で入る語を数える。
-/// [korean]が偽なら、韓国語の語が音節の間で折れるのは数えない（普通の`Text`の
-/// 文。アプリ全体の決まりを待っている別の件、DISC111）。
-Future<List<String>> _sweep(
-  WidgetTester tester,
-  String where, {
-  bool korean = true,
-}) async {
+Future<List<String>> _sweep(WidgetTester tester, String where) async {
   final problems = <String>[];
   final errors = <String>[];
   final onError = FlutterError.onError;
@@ -101,8 +97,6 @@ Future<List<String>> _sweep(
             paragraph,
             fitWidth: paragraph.constraints.maxWidth + missing,
           )) {
-            final word = RegExp(r'「([^」]*)」').firstMatch(broken)?.group(1);
-            if (!korean && _hangul.hasMatch(word ?? '')) continue;
             problems.add('$at: $broken');
           }
         }
@@ -246,9 +240,7 @@ void main() {
           ),
           findsOneWidget,
         );
-        // 題・本文・ボタンは普通のTextなので、韓国語の語の音節の間の折り返しは
-        // 数えない（DISC111）。
-        final problems = await _sweep(tester, name, korean: false);
+        final problems = await _sweep(tester, name);
         await closeDialog(tester, l10n);
         report(problems);
         await tester.pumpWidget(const SizedBox.shrink());
@@ -310,6 +302,60 @@ void main() {
         expect(find.byType(AlertDialog), findsNothing);
       }
       report(problems);
+    });
+  }
+
+  // 韓国語の「プロジェクト一覧へ戻る」の確認は、描く文では語をつなぐが、
+  // 読み上げは元の文のまま（語をつなぐ字を読まない）。
+  for (final (name, route) in [
+    ('canvas', '/canvas/'),
+    ('timeline', '/timeline/'),
+  ]) {
+    testWidgets('the Korean $name back-to-projects question is read as the '
+        'plain sentences', (tester) async {
+      final handle = tester.ensureSemantics();
+      await openProject(tester, 'ko', route);
+      final l10n = lookupAppLocalizations(const Locale('ko'));
+      tester.view.physicalSize = const Size(320, _height);
+      tester.platformDispatcher.textScaleFactorTestValue = 2;
+      await tester.pump();
+      await tester.tap(
+        find.byTooltip(l10n.timelineBackToProjectListTooltip).first,
+      );
+      await settle(tester, 3);
+      final dialog = find.byType(AlertDialog);
+      expect(dialog, findsOneWidget);
+      // 描く文では、語が途中で折れていない（題は2行以上に折れている）。
+      final title = textParagraphsIn(dialog).firstWhere(
+        (p) =>
+            ParagraphLines(p).visible ==
+            l10n.timelineBackToProjectListDialogTitle,
+      );
+      expect(ParagraphLines(title).lines.length, greaterThan(1));
+      for (final paragraph in textParagraphsIn(dialog)) {
+        expect(wordsBrokenThatFit(paragraph), isEmpty);
+      }
+      for (final label in [
+        l10n.timelineBackToProjectListDialogBody,
+        l10n.timelineBackToProjectListSaveButton,
+        l10n.timelineBackToProjectListDiscardButton,
+      ]) {
+        expect(find.bySemanticsLabel(label), findsOneWidget, reason: label);
+      }
+      expect(
+        find.bySemanticsLabel(l10n.timelineBackToProjectListDialogTitle),
+        findsWidgets,
+      );
+      expect(
+        find.bySemanticsLabel(RegExp(wordJoiner)),
+        findsNothing,
+        reason: 'a screen reader would read the word joiners',
+      );
+      tester.platformDispatcher.clearTextScaleFactorTestValue();
+      await closeDialog(tester, l10n);
+      handle.dispose();
+      await tester.pumpWidget(const SizedBox.shrink());
+      appRouter.go('/');
     });
   }
 

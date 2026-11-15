@@ -33,6 +33,7 @@ import '../../widgets/background_color_picker.dart';
 import '../../widgets/project_not_found_view.dart';
 import '../../widgets/dispose_on_unmount.dart';
 import '../../widgets/editable_slider_value.dart';
+import '../../widgets/keep_together_text.dart';
 import '../../widgets/labeled_slider.dart';
 import '../../widgets/stepped_slider.dart';
 import '../../widgets/typing_dialog_inset.dart';
@@ -3959,8 +3960,10 @@ class _CanvasScreenState extends State<CanvasScreen> {
       builder: (ctx) => AlertDialog(
         // 狭い画面では左右の空きを縮め、ボタンの語を途中で折らない。
         insetPadding: dialogInsetPadding(ctx),
-        title: Text(l10n.timelineBackToProjectListDialogTitle),
-        content: Text(l10n.timelineBackToProjectListDialogBody),
+        // 題・本文・ボタンの韓国語の語は、1行に入れば途中で折らない（普通の
+        // Textでは「프로젝트 목록으로 돌아가 / 기」と折れた）。
+        title: messageText(l10n.timelineBackToProjectListDialogTitle),
+        content: messageText(l10n.timelineBackToProjectListDialogBody),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
@@ -3968,11 +3971,11 @@ class _CanvasScreenState extends State<CanvasScreen> {
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, 'discard'),
-            child: Text(l10n.timelineBackToProjectListDiscardButton),
+            child: messageText(l10n.timelineBackToProjectListDiscardButton),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, 'save'),
-            child: Text(l10n.timelineBackToProjectListSaveButton),
+            child: messageText(l10n.timelineBackToProjectListSaveButton),
           ),
         ],
       ),

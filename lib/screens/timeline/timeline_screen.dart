@@ -7046,8 +7046,10 @@ class _TimelineScreenState extends State<TimelineScreen> {
       builder: (ctx) => AlertDialog(
         // 狭い画面では左右の空きを縮め、ボタンの語を途中で折らない。
         insetPadding: dialogInsetPadding(ctx),
-        title: Text(l10n.timelineBackToProjectListDialogTitle),
-        content: Text(l10n.timelineBackToProjectListDialogBody),
+        // 題・本文・ボタンの韓国語の語は、1行に入れば途中で折らない（普通の
+        // Textでは「프로젝트 목록으로 돌아가 / 기」と折れた）。
+        title: messageText(l10n.timelineBackToProjectListDialogTitle),
+        content: messageText(l10n.timelineBackToProjectListDialogBody),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
@@ -7055,11 +7057,11 @@ class _TimelineScreenState extends State<TimelineScreen> {
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, 'discard'),
-            child: Text(l10n.timelineBackToProjectListDiscardButton),
+            child: messageText(l10n.timelineBackToProjectListDiscardButton),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, 'save'),
-            child: Text(l10n.timelineBackToProjectListSaveButton),
+            child: messageText(l10n.timelineBackToProjectListSaveButton),
           ),
         ],
       ),
