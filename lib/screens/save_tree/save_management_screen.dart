@@ -27,6 +27,7 @@ import 'widgets/save_display_name.dart';
 import 'widgets/save_list_feedback.dart';
 import 'widgets/save_rename_button.dart';
 import 'widgets/save_screen_app_bar.dart';
+import 'widgets/save_slot_title.dart';
 import '../../config/font_fallback.dart';
 import '../../config/accent_text_theme.dart';
 
@@ -631,11 +632,9 @@ class _GameSaveSlotTile extends StatelessWidget {
                       actionFirst: true,
                       gap: 14,
                       spacing: 10,
-                      minTextWidth: _slotTitleWidth(
+                      minTextWidth: widestSlotTitleWidth(
                         context,
-                        l10n.saveTreeSlotLabel(
-                          context.read<SaveTreeService>().slotMax,
-                        ),
+                        _slotTitleStyle,
                       ),
                       action: _SlotThumbnail(
                         node: node,
@@ -856,21 +855,6 @@ const _slotTitleStyle = TextStyle(
   fontFamily: 'Kuramubon',
   fontFamilyFallback: kHeadingFontFallback,
 );
-
-/// スロットの題[label]を、語と番号をつないで1行に並べた幅（[context]の
-/// 書式と文字の大きさで）。
-double _slotTitleWidth(BuildContext context, String label) {
-  final style = DefaultTextStyle.of(context).style.merge(_slotTitleStyle);
-  final painter = TextPainter(
-    text: KeepTogetherText(label, keep: [label]).joinedSpan(style),
-    textDirection: Directionality.of(context),
-    textScaler: MediaQuery.textScalerOf(context),
-    locale: Localizations.maybeLocaleOf(context),
-  )..layout();
-  final width = painter.width;
-  painter.dispose();
-  return width;
-}
 
 String _formatDate(DateTime dt) =>
     '${dt.year}/${dt.month.toString().padLeft(2, '0')}/${dt.day.toString().padLeft(2, '0')} '

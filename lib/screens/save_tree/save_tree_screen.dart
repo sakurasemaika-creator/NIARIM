@@ -12,6 +12,7 @@ import '../../l10n/app_localizations.dart';
 import '../../services/project_service.dart';
 import '../../services/save_tree_service.dart';
 import '../../models/save_node.dart';
+import '../../widgets/action_beside_or_below.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/help_button.dart';
 import '../../widgets/projects_load_failure_notice.dart';
@@ -29,6 +30,7 @@ import 'widgets/save_display_name.dart';
 import 'widgets/save_list_feedback.dart';
 import 'widgets/save_rename_button.dart';
 import 'widgets/save_screen_app_bar.dart';
+import 'widgets/save_slot_title.dart';
 import 'widgets/save_thumbnail_capture.dart';
 
 /// セーブツリー（SaveTree/）の合計容量がこれを超えた場合にユーザーへ通知する
@@ -857,6 +859,13 @@ class _SlotSaveFailureTextState extends State<_SlotSaveFailureText> {
   }
 }
 
+/// スロットの表示の、スロットの題の書式（見出しの書体）。
+const _slotTileTitleStyle = TextStyle(
+  fontWeight: FontWeight.w600,
+  fontFamily: 'Kuramubon',
+  fontFamilyFallback: kHeadingFontFallback,
+);
+
 class _SlotTile extends StatelessWidget {
   final String projectId;
   final int slotIndex;
@@ -901,77 +910,80 @@ class _SlotTile extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Row(
-                children: [
-                  _SaveNodeThumbnail(
-                    node: node,
-                    size: 58,
-                    listUnread: listUnread,
-                  ),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+              // スロットの題（語と番号を1つのかたまりにした「Emplacement 1」）が
+              // サムネイルの横に入らない幅では、サムネイルを上に置き、題・
+              // メモ・日時を行の幅いっぱいで出す（横のままだと、仏語・320px・
+              // 文字2倍で「Emplacement / 1」と番号だけ次の行へ落ちた）。どの
+              // スロットも同じ並べ方になるよう、いちばん大きい番号の題の幅で
+              // 決める（保存の管理の画面のカードと同じ）。
+              ActionBesideOrBelow(
+                actionFirst: true,
+                gap: 14,
+                spacing: 10,
+                minTextWidth: widestSlotTitleWidth(
+                  context,
+                  _slotTileTitleStyle,
+                ),
+                action: _SaveNodeThumbnail(
+                  node: node,
+                  size: 58,
+                  listUnread: listUnread,
+                ),
+                text: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    KeepTogetherText(
+                      l10n.saveTreeSlotLabel(slotIndex + 1),
+                      keep: [l10n.saveTreeSlotLabel(slotIndex + 1)],
+                      style: _slotTileTitleStyle,
+                    ),
+                    const SizedBox(height: 4),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text(
-                          l10n.saveTreeSlotLabel(slotIndex + 1),
-                          style: const TextStyle(
-                            fontWeight: FontWeight.w600,
-                            fontFamily: 'Kuramubon',
-                            fontFamilyFallback: kHeadingFontFallback,
+                        Flexible(
+                          fit: FlexFit.loose,
+                          child: Text(
+                            // 空白だけのメモ（前の版で付けたもの）は
+                            // メモが無いのと同じに出す。
+                            givenSaveName(memo) ??
+                                (node == null
+                                    ? (listUnread
+                                          ? ''
+                                          : l10n.saveTreeNoDataLabel)
+                                    : l10n.saveTreeSlotLabel(slotIndex + 1)),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
-                        const SizedBox(height: 4),
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Flexible(
-                              fit: FlexFit.loose,
-                              child: Text(
-                                // 空白だけのメモ（前の版で付けたもの）は
-                                // メモが無いのと同じに出す。
-                                givenSaveName(memo) ??
-                                    (node == null
-                                        ? (listUnread
-                                              ? ''
-                                              : l10n.saveTreeNoDataLabel)
-                                        : l10n.saveTreeSlotLabel(
-                                            slotIndex + 1,
-                                          )),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.only(left: 2),
-                              child: SaveSlotMemoButton(
-                                projectId: projectId,
-                                slotIndex: slotIndex,
-                                initialMemo: givenSaveName(memo) ?? '',
-                              ),
-                            ),
-                          ],
-                        ),
-                        if (node != null)
-                          Text(
-                            _formatDate(node!.savedAt),
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: scheme.onSurfaceVariant,
-                            ),
-                          )
-                        else if (memo?.isNotEmpty == true && !listUnread)
-                          Text(
-                            l10n.saveTreeNoDataLabel,
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: scheme.onSurfaceVariant,
-                            ),
+                        Padding(
+                          padding: const EdgeInsets.only(left: 2),
+                          child: SaveSlotMemoButton(
+                            projectId: projectId,
+                            slotIndex: slotIndex,
+                            initialMemo: givenSaveName(memo) ?? '',
                           ),
+                        ),
                       ],
                     ),
-                  ),
-                ],
+                    if (node != null)
+                      Text(
+                        _formatDate(node!.savedAt),
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: scheme.onSurfaceVariant,
+                        ),
+                      )
+                    else if (memo?.isNotEmpty == true && !listUnread)
+                      Text(
+                        l10n.saveTreeNoDataLabel,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: scheme.onSurfaceVariant,
+                        ),
+                      ),
+                  ],
+                ),
               ),
               const SizedBox(height: 10),
               Align(
