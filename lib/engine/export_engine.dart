@@ -86,15 +86,28 @@ class ExportEngine {
         _cachedStorageGeneration == generation) {
       return _cachedExportedFiles!;
     }
-    final files = await ExportStorage.listFiles();
-    files.sort(
-      (a, b) => b.statSync().modified.compareTo(a.statSync().modified),
-    );
+    final files = await _newestFirst(await ExportStorage.listFiles());
     if (generation == ExportStorage.generation) {
       _cachedExportedFiles = files;
       _cachedStorageGeneration = generation;
     }
     return files;
+  }
+
+  /// [files]を更新日時の新しい順に並べる。日時はファイルごとに1回だけ
+  /// 読む（比べるたびに読むと、ファイルの数nに対してn log n回ディスクへ
+  /// 問い合わせ、並べる間に消えたファイルは1970年として末尾に残った）。
+  /// 読めない（一覧を読んだ後に消えた）ファイルは、作品一覧の並べ替えと
+  /// 同じく一覧に入れない。
+  static Future<List<File>> _newestFirst(List<File> files) async {
+    final stats = await Future.wait([for (final file in files) file.stat()]);
+    final dated = [
+      for (final (i, file) in files.indexed)
+        if (stats[i].type != FileSystemEntityType.notFound)
+          (file: file, modified: stats[i].modified),
+    ];
+    dated.sort((a, b) => b.modified.compareTo(a.modified));
+    return [for (final entry in dated) entry.file];
   }
 
   /// フレームを合成して乗算済みRGBAのUint8Listを返す。
@@ -271,7 +284,7 @@ class ExportEngine {
     final outputPath =
         '${dir.path}/niarim_frame_${DateTime.now().millisecondsSinceEpoch}.$ext';
     await File(outputPath).writeAsBytes(bytes);
-    _cachedExportedFiles = null;
+    ExportStorage.invalidate();
     return outputPath;
   }
 
@@ -490,6 +503,8 @@ class ExportEngine {
       outputPath: outputPath,
     );
     framesDir.deleteSync(recursive: true);
+    // 作品一覧が覚えている一覧を捨て、書き出した作品を次の一覧に入れる。
+    ExportStorage.invalidate();
     return outputPath;
   }
 
@@ -560,6 +575,7 @@ class ExportEngine {
     final outputPath =
         '${exportsDir.path}/niarim_${DateTime.now().millisecondsSinceEpoch}.gif';
     await File(outputPath).writeAsBytes(gifBytes);
+    ExportStorage.invalidate();
     return outputPath;
   }
 
@@ -663,6 +679,7 @@ class ExportEngine {
       throw Exception('FFmpeg failed: ${await session.getOutput()}');
     }
     framesDir.deleteSync(recursive: true);
+    ExportStorage.invalidate();
     return outputPath;
   }
 
@@ -771,6 +788,7 @@ class ExportEngine {
       throw Exception('FFmpeg failed: ${await session.getOutput()}');
     }
     framesDir.deleteSync(recursive: true);
+    ExportStorage.invalidate();
     return outputPath;
   }
 }
