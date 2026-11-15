@@ -1,5 +1,9 @@
 # NIARIM Audit Evidence
 
+## S39 — App正式テーマ・お気に入りの書込み保護、Webオパール比較表の公開（2026-11-16）
+
+[検証の原本・再開位置・実行bundle](A003_S39_20261116_EVIDENCE.md)。App 221PASS/既存3FAIL（同一baselineで再現）、変更部analyze 0。PC FRの正式色pixel/再起動とSP EN dark/短画面/取消、お気に入り拒否の原本とハッシュ。Web7言語・5幅のsmokeとCI4run、Appグラフ専用CI PASS。DISC029/068/165/193/198を追記しDISC236〜238とD001.65を登録。先頭ID・Baseline定義・状態は保持。
+
 ## S38の続き — A003（ホーム・初回の案内・引き出し）の3回目：Vの欠けを埋める表示マトリクスを公開、見つけた不具合をDISC212〜219として登録（2026-11-15）
 
 この単位の実行入力はApp `3a9200db`・`b84c3c44`（`wt-a003r3`、途中で止まった単位）→`f190c558`へ載せ直して仕上げ（`348a5af9`・`4732d1f8`）→`6a494cd5`へ載せ直し、公開後App `b8aa28a8`。Webは製品変更なし。両dev_branchだけ。current_idはA003のまま（**doneではない**。下の「判定」）。
