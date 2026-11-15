@@ -618,6 +618,7 @@ class _HomeScreenState extends State<HomeScreen>
     _tabController.addListener(() {
       if (_tabController.index != _currentTabIndex) {
         final wasSearching = _isSearching;
+        final focusInPage = _focusIsInListArea();
         setState(() {
           _currentTabIndex = _tabController.index;
           _selectedIds.clear();
@@ -627,6 +628,8 @@ class _HomeScreenState extends State<HomeScreen>
         });
         if (wasSearching && _currentTabIndex != 0) {
           _homeFocus.requestFocus();
+        } else if (focusInPage) {
+          _focusSelectedTab();
         }
       }
     });
@@ -650,6 +653,47 @@ class _HomeScreenState extends State<HomeScreen>
 
   // タブの一覧（上のバー・貼り付けの欄・選択中の操作バーの下）。
   final GlobalKey _listAreaKey = GlobalKey();
+
+  // タブの見出し（タブを替えたとき、前のタブの中身にあったフォーカスを移す先）。
+  final GlobalKey _tabBarKey = GlobalKey(debugLabel: 'homeTabBar');
+
+  /// キーボードのフォーカスがタブの中身（一覧・その見出し）にあるか。
+  bool _focusIsInListArea() {
+    final area = _listAreaKey.currentContext;
+    final focused = FocusManager.instance.primaryFocus?.context;
+    if (area == null || focused == null) return false;
+    var found = false;
+    focused.visitAncestorElements((element) {
+      found = identical(element, area);
+      return !found;
+    });
+    return found;
+  }
+
+  /// 選んだタブ（見出し）へフォーカスを移す。マウス・指でタブを替えると、
+  /// フォーカスは前のタブの中身に残り（隠れたページは、フォーカスがある間
+  /// 破棄されない）、次のTabで前のタブへスクロールして戻った。キーボードで
+  /// タブを選んだときと同じく、次のTabで新しいタブの中身へ進む。
+  void _focusSelectedTab() {
+    final tabs = _tabBarKey.currentContext;
+    if (tabs == null) return;
+    final key = ValueKey('home_tab_${_tabController.index}');
+    Element? tab;
+    void visit(Element element) {
+      if (tab != null) return;
+      if (element.widget.key == key) {
+        tab = element;
+        return;
+      }
+      element.visitChildElements(visit);
+    }
+
+    tabs.visitChildElements(visit);
+    final node = tab == null
+        ? null
+        : Focus.maybeOf(tab!, createDependency: false);
+    (node ?? _homeFocus).requestFocus();
+  }
 
   // 一覧の下に浮かぶボタンの並び（Tabで進んだ部品をこの上まで送り出す）。
   final GlobalKey _floatingActionsKey = GlobalKey(
@@ -1004,15 +1048,18 @@ class _HomeScreenState extends State<HomeScreen>
             // スワイプ連動はそのまま維持される）。
             bottom: PreferredSize(
               preferredSize: const Size.fromHeight(48),
-              child: _HomeTabBar(
-                controller: _tabController,
-                currentIndex: _currentTabIndex,
-                labels: [
-                  l10n.homeTabProjects,
-                  l10n.homeTabWorks,
-                  l10n.homeTabShared,
-                  l10n.homeTabTrash,
-                ],
+              child: KeyedSubtree(
+                key: _tabBarKey,
+                child: _HomeTabBar(
+                  controller: _tabController,
+                  currentIndex: _currentTabIndex,
+                  labels: [
+                    l10n.homeTabProjects,
+                    l10n.homeTabWorks,
+                    l10n.homeTabShared,
+                    l10n.homeTabTrash,
+                  ],
+                ),
               ),
             ),
           ),
