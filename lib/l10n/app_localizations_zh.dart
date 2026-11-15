@@ -143,6 +143,19 @@ class AppLocalizationsZh extends AppLocalizations {
   String get homeTrashEmpty => '回收站是空的';
 
   @override
+  String homeTrashNoMatchTitle(String query) {
+    return '回收站中没有与“$query”匹配的项目';
+  }
+
+  @override
+  String get homeTrashNoKindTitle => '回收站中没有所选类型的项目';
+
+  @override
+  String homeTrashNoKindMatchTitle(String query) {
+    return '所选类型中没有与“$query”匹配的项目';
+  }
+
+  @override
   String homeTrashDeletedOn(DateTime date) {
     final intl.DateFormat dateDateFormat = intl.DateFormat.yMd(localeName);
     final String dateString = dateDateFormat.format(date);
@@ -10101,6 +10114,19 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get homeTrashEmpty => '垃圾桶是空的';
+
+  @override
+  String homeTrashNoMatchTitle(String query) {
+    return '垃圾桶中沒有與「$query」相符的項目';
+  }
+
+  @override
+  String get homeTrashNoKindTitle => '垃圾桶中沒有所選類型的項目';
+
+  @override
+  String homeTrashNoKindMatchTitle(String query) {
+    return '所選類型中沒有與「$query」相符的項目';
+  }
 
   @override
   String homeTrashDeletedOn(DateTime date) {

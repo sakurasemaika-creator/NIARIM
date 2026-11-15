@@ -1021,7 +1021,8 @@ class _HomeScreenState extends State<HomeScreen>
             children: [
               if (!_isSelectionMode && _hasClipboard)
                 HomeClipboardToolbar(
-                  itemCount: _clipboardProjectIds.length +
+                  itemCount:
+                      _clipboardProjectIds.length +
                       _clipboardFolderIds.length +
                       (_otherClipboard == null ? 0 : 1),
                   isCut: _clipboardIsCut,
@@ -1100,8 +1101,9 @@ class _HomeScreenState extends State<HomeScreen>
                     };
                     if (prefix.isEmpty ||
                         (ids.isNotEmpty &&
-                            ids.any((id) => !id.startsWith(prefix))))
+                            ids.any((id) => !id.startsWith(prefix)))) {
                       return;
+                    }
                     _visibleLibraryIds
                       ..clear()
                       ..addAll(ids);
@@ -1230,6 +1232,7 @@ class _HomeScreenState extends State<HomeScreen>
                         searchQuery: _currentTabIndex == 1 && _isSearching
                             ? _searchQuery
                             : '',
+                        onClearSearch: _closeProjectSearch,
                         onCopyEntry: _copyLibraryEntry,
                       ),
                       SharedScreen(
@@ -1242,6 +1245,7 @@ class _HomeScreenState extends State<HomeScreen>
                         searchQuery: _currentTabIndex == 2 && _isSearching
                             ? _searchQuery
                             : '',
+                        onClearSearch: _closeProjectSearch,
                         onDirectionChanged: (outgoing) => setState(() {
                           _sharedOutgoing = outgoing;
                           _selectedIds.clear();
@@ -1257,6 +1261,7 @@ class _HomeScreenState extends State<HomeScreen>
                         searchQuery: _currentTabIndex == 3 && _isSearching
                             ? _searchQuery
                             : '',
+                        onClearSearch: _closeProjectSearch,
                         screenFocus: _homeFocus,
                         onCopyEntry: _copyLibraryEntry,
                       ),
@@ -1688,10 +1693,11 @@ class _HomeScreenState extends State<HomeScreen>
       if (mounted) _endProjectSelection();
     } catch (error, stackTrace) {
       AppErrorReporter.record(error, stackTrace);
-      if (mounted)
+      if (mounted) {
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text(l10n.homeTrashOperationFailed)));
+      }
     }
   }
 
@@ -1738,8 +1744,9 @@ class _HomeScreenState extends State<HomeScreen>
   Widget? _buildHomeActions(BuildContext context, AppLocalizations l10n) {
     if (_isSelectionMode ||
         _currentTabIndex == 3 ||
-        (_currentTabIndex == 2 && _sharedOutgoing))
+        (_currentTabIndex == 2 && _sharedOutgoing)) {
       return null;
+    }
     final compact = MediaQuery.sizeOf(context).height < 400;
 
     // The footer and the scrollable tab body have separate hit regions.
@@ -3259,6 +3266,7 @@ class SharedScreen extends StatefulWidget {
     this.viewMode,
     this.onViewModeChanged,
     this.searchQuery = '',
+    this.onClearSearch,
     this.initialOutgoing = false,
   });
 
@@ -3271,6 +3279,9 @@ class SharedScreen extends StatefulWidget {
   final ProjectViewMode? viewMode;
   final ValueChanged<ProjectViewMode>? onViewModeChanged;
   final String searchQuery;
+
+  /// 検索に当たるものが無いときの「検索をやめる」（ホームの検索を閉じる）。
+  final VoidCallback? onClearSearch;
   final ValueChanged<bool>? onDirectionChanged;
   final ValueChanged<HomeClipboardEntry>? onCopyEntry;
 
@@ -3347,6 +3358,9 @@ class _SharedScreenState extends State<SharedScreen>
   ProjectSortMode _sortMode = ProjectSortMode.updatedDesc;
   bool _showFavoritesOnly = false;
 
+  /// 「お気に入りだけ」を外す（当たるものが無いときの「すべて表示」）。
+  void _showAll() => setState(() => _showFavoritesOnly = false);
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -3410,6 +3424,8 @@ class _SharedScreenState extends State<SharedScreen>
               sortMode: _sortMode,
               showFavoritesOnly: _showFavoritesOnly,
               searchQuery: widget.searchQuery,
+              onClearSearch: widget.onClearSearch,
+              onShowAll: _showAll,
             )
           : _SharedTab(
               header: header,
@@ -3418,6 +3434,8 @@ class _SharedScreenState extends State<SharedScreen>
               sortMode: _sortMode,
               showFavoritesOnly: _showFavoritesOnly,
               searchQuery: widget.searchQuery,
+              onClearSearch: widget.onClearSearch,
+              onShowAll: _showAll,
               onCopyEntry: widget.onCopyEntry,
               screenFocus: widget.screenFocus,
             ),
@@ -3468,10 +3486,14 @@ class TrashScreen extends StatefulWidget {
     this.onCopyEntry,
     this.screenFocus,
     this.searchQuery = '',
+    this.onClearSearch,
   });
 
   final bool embedded;
   final String searchQuery;
+
+  /// 検索に当たるものが無いときの「検索をやめる」（ホームの検索を閉じる）。
+  final VoidCallback? onClearSearch;
   final ValueChanged<HomeClipboardEntry>? onCopyEntry;
 
   /// ホームの画面のフォーカス（保存先を読めなかった知らせが消えたとき、
@@ -3562,6 +3584,10 @@ class _TrashScreenState extends State<TrashScreen>
                 sortMode: _sortMode,
                 selectedKinds: _selectedKinds,
                 searchQuery: widget.searchQuery,
+                onClearSearch: widget.onClearSearch,
+                onShowAllKinds: () => setState(
+                  () => _selectedKinds.addAll(TrashEntryKind.values),
+                ),
                 onCopyEntry: widget.onCopyEntry,
                 screenFocus: widget.screenFocus,
               ),
@@ -3670,6 +3696,8 @@ class _SharedTab extends StatelessWidget {
   final ProjectSortMode sortMode;
   final bool showFavoritesOnly;
   final String searchQuery;
+  final VoidCallback? onClearSearch;
+  final VoidCallback? onShowAll;
   final ValueChanged<HomeClipboardEntry>? onCopyEntry;
   final FocusNode? screenFocus;
 
@@ -3680,6 +3708,8 @@ class _SharedTab extends StatelessWidget {
     required this.sortMode,
     required this.showFavoritesOnly,
     required this.searchQuery,
+    this.onClearSearch,
+    this.onShowAll,
     this.onCopyEntry,
     this.screenFocus,
   });
@@ -3746,11 +3776,26 @@ class _SharedTab extends StatelessWidget {
       ),
       emptyState: loadFailed
           ? null
-          : EmptyStatePlaceholder(
-              icon: Icons.share_outlined,
-              title: l10n.homeSharedEmpty,
-              scrollable: false,
-            ),
+          : _filteredLibraryEmptyState(
+                  context,
+                  searchQuery: searchQuery,
+                  favoritesOnly: showFavoritesOnly,
+                  // 検索には当たるが、お気に入りで隠れているだけか。
+                  hiddenByFavorites:
+                      query.isNotEmpty &&
+                      (service.shared.any((p) => nameMatches(p.name, query)) ||
+                          service.sharedFolders.any(
+                            (f) => nameMatches(f.name, query),
+                          )),
+                  searchHint: l10n.projectListNoMatchNameHint,
+                  onClearSearch: onClearSearch,
+                  onShowAll: onShowAll,
+                ) ??
+                EmptyStatePlaceholder(
+                  icon: Icons.share_outlined,
+                  title: l10n.homeSharedEmpty,
+                  scrollable: false,
+                ),
       folderIdOf: (p) => folders.any((f) => f.id == p.sharedFolderId)
           ? p.sharedFolderId
           : null,
@@ -4266,8 +4311,12 @@ class _OutgoingSharesList extends StatelessWidget {
     required this.sortMode,
     required this.showFavoritesOnly,
     required this.searchQuery,
+    this.onClearSearch,
+    this.onShowAll,
   });
   final ValueChanged<HomeClipboardEntry>? onCopyEntry;
+  final VoidCallback? onClearSearch;
+  final VoidCallback? onShowAll;
   final _OutgoingShareRenamed? onRenamed;
   final ProjectViewMode viewMode;
   final ProjectSortMode sortMode;
@@ -4337,11 +4386,24 @@ class _OutgoingSharesList extends StatelessWidget {
           if (!loadFailed)
             SliverFillRemaining(
               hasScrollBody: false,
-              child: EmptyStatePlaceholder(
-                icon: Icons.file_present_outlined,
-                title: _shareCollectionEmptyText(context),
-                scrollable: false,
-              ),
+              child:
+                  _filteredLibraryEmptyState(
+                    context,
+                    searchQuery: searchQuery,
+                    favoritesOnly: showFavoritesOnly,
+                    hiddenByFavorites:
+                        query.isNotEmpty &&
+                        service.outgoingShares.any(
+                          (entry) => nameMatches(entry.name, query),
+                        ),
+                    onClearSearch: onClearSearch,
+                    onShowAll: onShowAll,
+                  ) ??
+                  EmptyStatePlaceholder(
+                    icon: Icons.file_present_outlined,
+                    title: _shareCollectionEmptyText(context),
+                    scrollable: false,
+                  ),
             ),
         ],
       );
@@ -4533,6 +4595,56 @@ class _OutgoingSharesList extends StatelessWidget {
 
 String _shareCollectionEmptyText(BuildContext context) =>
     AppLocalizations.of(context)!.sharedArchiveEmpty;
+
+/// 当たるものが無いときの「検索をやめる」（プロジェクトのタブと同じ）。
+Widget? _clearSearchButton(AppLocalizations l10n, VoidCallback? onPressed) =>
+    onPressed == null
+    ? null
+    : OutlinedButton.icon(
+        onPressed: onPressed,
+        icon: const Icon(Icons.close),
+        label: Text(l10n.projectListClearSearch),
+      );
+
+/// 作品一覧・共有のタブで、検索・「お気に入り」の絞り込みに当たるものが
+/// 無いときの表示（プロジェクトのタブと同じ文と、絞り込みを外すボタン）。
+/// 絞り込んでいなければnull（その一覧が空のときの文を出す）。
+/// [hiddenByFavorites]は、検索には当たるがお気に入りで隠れているだけのとき。
+Widget? _filteredLibraryEmptyState(
+  BuildContext context, {
+  required String searchQuery,
+  required bool favoritesOnly,
+  required bool hiddenByFavorites,
+  String? searchHint,
+  VoidCallback? onClearSearch,
+  VoidCallback? onShowAll,
+}) {
+  final l10n = AppLocalizations.of(context)!;
+  final query = searchQuery.trim();
+  if (query.isNotEmpty && !(favoritesOnly && hiddenByFavorites)) {
+    return EmptyStatePlaceholder(
+      icon: Icons.search_off,
+      title: l10n.projectListNoMatchTitle(query),
+      hint: searchHint,
+      scrollable: false,
+      action: _clearSearchButton(l10n, onClearSearch),
+    );
+  }
+  if (!favoritesOnly) return null;
+  return EmptyStatePlaceholder(
+    icon: Icons.star_border,
+    title: query.isNotEmpty
+        ? l10n.projectListNoFavoriteMatchTitle(query)
+        : l10n.projectListNoFavoritesTitle,
+    scrollable: false,
+    action: onShowAll == null
+        ? null
+        : OutlinedButton(
+            onPressed: onShowAll,
+            child: Text(l10n.projectListShowAll),
+          ),
+  );
+}
 
 /// 共有タブのフォルダ内表示（共有タブへのフォルダ新規追加機能）。
 class _SharedFolderScreen extends StatefulWidget {
@@ -4835,8 +4947,9 @@ class _FolderableList<T> extends StatelessWidget {
           'webm',
           'mkv',
           'avi',
-        }.contains(extension))
+        }.contains(extension)) {
           continue;
+        }
         try {
           result.add(
             FolderThumbnailChoice(
@@ -5043,10 +5156,11 @@ class _FolderableList<T> extends StatelessWidget {
                   final id = T == File
                       ? 'work_folder:${folder.id}'
                       : 'shared_folder:${folder.id}';
-                  if (selection == null)
+                  if (selection == null) {
                     _showFolderMenu(context, folder);
-                  else
+                  } else {
                     selection.onLongPress(id);
+                  }
                 },
               ),
             ),
@@ -5213,6 +5327,8 @@ class _TrashTab extends StatefulWidget {
     required this.sortMode,
     required this.selectedKinds,
     this.searchQuery = '',
+    this.onClearSearch,
+    this.onShowAllKinds,
     this.onCopyEntry,
     this.screenFocus,
   });
@@ -5220,6 +5336,12 @@ class _TrashTab extends StatefulWidget {
   final ProjectSortMode sortMode;
   final Set<TrashEntryKind> selectedKinds;
   final String searchQuery;
+
+  /// 検索に当たるものが無いときの「検索をやめる」。
+  final VoidCallback? onClearSearch;
+
+  /// 種類の絞り込みで隠れているときの「すべて表示」（すべての種類を選ぶ）。
+  final VoidCallback? onShowAllKinds;
   final ValueChanged<HomeClipboardEntry>? onCopyEntry;
   final FocusNode? screenFocus;
 
@@ -5298,8 +5420,9 @@ class _TrashTabState extends State<_TrashTab> {
     final project = service.trash.where((p) => p.id == id).firstOrNull;
     if (project == null ||
         !await _confirmRestoreFromTrash(project.name) ||
-        !mounted)
+        !mounted) {
       return;
+    }
     setState(() {
       _pending.add(id);
       _restoring.add(id);
@@ -5319,8 +5442,9 @@ class _TrashTabState extends State<_TrashTab> {
   Future<void> _restoreLocal(LocalTrashedFile entry) async {
     if (_pending.contains(entry.id) ||
         !await _confirmRestoreFromTrash(entry.fileName) ||
-        !mounted)
+        !mounted) {
       return;
+    }
     setState(() => _pending.add(entry.id));
     try {
       if (entry.isFolder) {
@@ -5360,8 +5484,9 @@ class _TrashTabState extends State<_TrashTab> {
         .firstOrNull;
     if (folder == null ||
         !await _confirmRestoreFromTrash(folder.folder.name) ||
-        !mounted)
+        !mounted) {
       return;
+    }
     setState(() => _pending.add(id));
     try {
       await runProjectTrashAction(
@@ -5858,7 +5983,6 @@ class _TrashTabState extends State<_TrashTab> {
           final kind = project.isSharedImport
               ? TrashEntryKind.receivedShare
               : TrashEntryKind.createdProject;
-          if (!widget.selectedKinds.contains(kind)) continue;
           rows.add((
             kind: kind,
             project: project,
@@ -5874,7 +5998,6 @@ class _TrashTabState extends State<_TrashTab> {
           final kind = folder.isShared
               ? TrashEntryKind.receivedShare
               : TrashEntryKind.createdProject;
-          if (!widget.selectedKinds.contains(kind)) continue;
           rows.add((
             kind: kind,
             project: null,
@@ -5888,7 +6011,6 @@ class _TrashTabState extends State<_TrashTab> {
           final kind = local.kind == LocalTrashKind.outgoingShare
               ? TrashEntryKind.createdShare
               : TrashEntryKind.exportedWork;
-          if (!widget.selectedKinds.contains(kind)) continue;
           rows.add((
             kind: kind,
             project: null,
@@ -5906,6 +6028,11 @@ class _TrashTabState extends State<_TrashTab> {
                 !nameMatches(_trashKindLabel(context, row.kind), query),
           );
         }
+        // 選んでいない種類に、探したもの（探していなければ何か）があるか。
+        final hiddenByKinds = rows.any(
+          (row) => !widget.selectedKinds.contains(row.kind),
+        );
+        rows.removeWhere((row) => !widget.selectedKinds.contains(row.kind));
         final byName = nameComparator<String>((name) => name);
         rows.sort(
           (a, b) => switch (widget.sortMode) {
@@ -5934,6 +6061,30 @@ class _TrashTabState extends State<_TrashTab> {
           return const Center(child: CircularProgressIndicator());
         }
         if (rows.isEmpty && !loadFailed) {
+          // 種類の絞り込み・検索で隠れているだけのときは「ゴミ箱は空です」と
+          // 言わず、外すボタンを出す（プロジェクトのタブと同じ）。
+          final shownQuery = widget.searchQuery.trim();
+          if (hiddenByKinds) {
+            return EmptyStatePlaceholder(
+              icon: Icons.filter_alt_off,
+              title: shownQuery.isEmpty
+                  ? l10n.homeTrashNoKindTitle
+                  : l10n.homeTrashNoKindMatchTitle(shownQuery),
+              action: widget.onShowAllKinds == null
+                  ? null
+                  : OutlinedButton(
+                      onPressed: widget.onShowAllKinds,
+                      child: Text(l10n.projectListShowAll),
+                    ),
+            );
+          }
+          if (query.isNotEmpty) {
+            return EmptyStatePlaceholder(
+              icon: Icons.search_off,
+              title: l10n.homeTrashNoMatchTitle(shownQuery),
+              action: _clearSearchButton(l10n, widget.onClearSearch),
+            );
+          }
           return EmptyStatePlaceholder(
             icon: Icons.delete_outline,
             title: l10n.homeTrashEmpty,
@@ -6046,11 +6197,15 @@ class _WorksTab extends StatefulWidget {
     required this.viewMode,
     required this.onViewModeChanged,
     this.searchQuery = '',
+    this.onClearSearch,
     this.onCopyEntry,
   });
   final ProjectViewMode viewMode;
   final ValueChanged<ProjectViewMode> onViewModeChanged;
   final String searchQuery;
+
+  /// 検索に当たるものが無いときの「検索をやめる」（ホームの検索を閉じる）。
+  final VoidCallback? onClearSearch;
   final ValueChanged<HomeClipboardEntry>? onCopyEntry;
 
   @override
@@ -6081,12 +6236,13 @@ class _WorksTabState extends State<_WorksTab>
     try {
       final prefs = await SharedPreferences.getInstance();
       final stored = prefs.getStringList(_favoritePathsKey) ?? const <String>[];
-      if (mounted)
+      if (mounted) {
         setState(() {
           _favoritePaths
             ..clear()
             ..addAll(stored);
         });
+      }
     } catch (error) {
       debugPrint('Works favorites could not be loaded: $error');
     }
@@ -6242,12 +6398,33 @@ class _WorksTabState extends State<_WorksTab>
             viewMode: widget.viewMode,
             gridItemBuilder: (context, file) => buildWork(context, file, true),
             emptyState: files.isEmpty && folders.isEmpty
-                ? EmptyStatePlaceholder(
-                    icon: Icons.video_library_outlined,
-                    title: l10n.homeWorksEmpty,
-                    hint: l10n.homeWorksEmptyHint,
-                    scrollable: false,
-                  )
+                ? _filteredLibraryEmptyState(
+                        context,
+                        searchQuery: widget.searchQuery,
+                        favoritesOnly: _showFavoritesOnly,
+                        // 検索には当たるが、お気に入りで隠れているだけか。
+                        hiddenByFavorites:
+                            query.isNotEmpty &&
+                            (snapshot.data!.any(
+                                  (file) => nameMatches(
+                                    file.uri.pathSegments.last,
+                                    query,
+                                  ),
+                                ) ||
+                                workFolders.folders.any(
+                                  (folder) => nameMatches(folder.name, query),
+                                )),
+                        searchHint: l10n.projectListNoMatchNameHint,
+                        onClearSearch: widget.onClearSearch,
+                        onShowAll: () =>
+                            setState(() => _showFavoritesOnly = false),
+                      ) ??
+                      EmptyStatePlaceholder(
+                        icon: Icons.video_library_outlined,
+                        title: l10n.homeWorksEmpty,
+                        hint: l10n.homeWorksEmptyHint,
+                        scrollable: false,
+                      )
                 : null,
             allItems: files,
             everyItem: snapshot.data!,
@@ -6623,10 +6800,11 @@ class _WorkListItemState extends State<_WorkListItem> {
   }
 
   void _refreshCover() {
-    if (mounted)
+    if (mounted) {
       setState(() {
         _coverSetting = ExportedWorkCoverStore.ensureCached(widget.file);
       });
+    }
   }
 
   Future<void> _share() async {

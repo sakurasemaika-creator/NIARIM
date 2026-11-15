@@ -156,6 +156,20 @@ class AppLocalizationsEs extends AppLocalizations {
   String get homeTrashEmpty => 'La papelera está vacía';
 
   @override
+  String homeTrashNoMatchTitle(String query) {
+    return 'Nada en la papelera coincide con «$query»';
+  }
+
+  @override
+  String get homeTrashNoKindTitle =>
+      'No hay nada de los tipos seleccionados en la papelera';
+
+  @override
+  String homeTrashNoKindMatchTitle(String query) {
+    return 'Nada de los tipos seleccionados coincide con «$query»';
+  }
+
+  @override
   String homeTrashDeletedOn(DateTime date) {
     final intl.DateFormat dateDateFormat = intl.DateFormat.yMd(localeName);
     final String dateString = dateDateFormat.format(date);

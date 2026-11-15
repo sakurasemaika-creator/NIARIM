@@ -353,6 +353,24 @@ abstract class AppLocalizations {
   /// **'ゴミ箱は空です'**
   String get homeTrashEmpty;
 
+  /// ホームのゴミ箱のタブ：探した言葉に当たるものが無い（種類の絞り込みで隠れているのではない）
+  ///
+  /// In ja, this message translates to:
+  /// **'ゴミ箱に「{query}」に一致するものはありません'**
+  String homeTrashNoMatchTitle(String query);
+
+  /// ホームのゴミ箱のタブ：選んだ種類には何も無いが、選んでいない種類にはある
+  ///
+  /// In ja, this message translates to:
+  /// **'選んだ種類のものはゴミ箱にありません'**
+  String get homeTrashNoKindTitle;
+
+  /// ホームのゴミ箱のタブ：探した言葉に当たるものは、選んでいない種類にだけある
+  ///
+  /// In ja, this message translates to:
+  /// **'選んだ種類に「{query}」に一致するものはありません'**
+  String homeTrashNoKindMatchTitle(String query);
+
   /// ゴミ箱の行の補足：ゴミ箱へ移した日（作品一覧の日付と同じ、その言語の書き方）
   ///
   /// In ja, this message translates to:

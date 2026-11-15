@@ -144,6 +144,19 @@ class AppLocalizationsJa extends AppLocalizations {
   String get homeTrashEmpty => 'ゴミ箱は空です';
 
   @override
+  String homeTrashNoMatchTitle(String query) {
+    return 'ゴミ箱に「$query」に一致するものはありません';
+  }
+
+  @override
+  String get homeTrashNoKindTitle => '選んだ種類のものはゴミ箱にありません';
+
+  @override
+  String homeTrashNoKindMatchTitle(String query) {
+    return '選んだ種類に「$query」に一致するものはありません';
+  }
+
+  @override
   String homeTrashDeletedOn(DateTime date) {
     final intl.DateFormat dateDateFormat = intl.DateFormat.yMd(localeName);
     final String dateString = dateDateFormat.format(date);

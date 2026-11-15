@@ -145,6 +145,19 @@ class AppLocalizationsKo extends AppLocalizations {
   String get homeTrashEmpty => '휴지통이 비어 있습니다';
 
   @override
+  String homeTrashNoMatchTitle(String query) {
+    return '휴지통에 「$query」에 해당하는 항목이 없습니다';
+  }
+
+  @override
+  String get homeTrashNoKindTitle => '휴지통에 선택한 종류의 항목이 없습니다';
+
+  @override
+  String homeTrashNoKindMatchTitle(String query) {
+    return '선택한 종류 중 「$query」에 해당하는 항목이 없습니다';
+  }
+
+  @override
   String homeTrashDeletedOn(DateTime date) {
     final intl.DateFormat dateDateFormat = intl.DateFormat.yMd(localeName);
     final String dateString = dateDateFormat.format(date);

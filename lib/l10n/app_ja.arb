@@ -79,6 +79,28 @@
     }
   },
   "homeTrashEmpty": "ゴミ箱は空です",
+  "homeTrashNoMatchTitle": "ゴミ箱に「{query}」に一致するものはありません",
+  "@homeTrashNoMatchTitle": {
+    "description": "ホームのゴミ箱のタブ：探した言葉に当たるものが無い（種類の絞り込みで隠れているのではない）",
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
+  },
+  "homeTrashNoKindTitle": "選んだ種類のものはゴミ箱にありません",
+  "@homeTrashNoKindTitle": {
+    "description": "ホームのゴミ箱のタブ：選んだ種類には何も無いが、選んでいない種類にはある"
+  },
+  "homeTrashNoKindMatchTitle": "選んだ種類に「{query}」に一致するものはありません",
+  "@homeTrashNoKindMatchTitle": {
+    "description": "ホームのゴミ箱のタブ：探した言葉に当たるものは、選んでいない種類にだけある",
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
+  },
   "homeTrashDeletedOn": "{date} 削除",
   "@homeTrashDeletedOn": {
     "description": "ゴミ箱の行の補足：ゴミ箱へ移した日（作品一覧の日付と同じ、その言語の書き方）",

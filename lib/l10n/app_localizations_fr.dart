@@ -156,6 +156,20 @@ class AppLocalizationsFr extends AppLocalizations {
   String get homeTrashEmpty => 'La corbeille est vide';
 
   @override
+  String homeTrashNoMatchTitle(String query) {
+    return 'Rien dans la corbeille ne correspond à « $query »';
+  }
+
+  @override
+  String get homeTrashNoKindTitle =>
+      'La corbeille ne contient rien des types sélectionnés';
+
+  @override
+  String homeTrashNoKindMatchTitle(String query) {
+    return 'Rien parmi les types sélectionnés ne correspond à « $query »';
+  }
+
+  @override
   String homeTrashDeletedOn(DateTime date) {
     final intl.DateFormat dateDateFormat = intl.DateFormat.yMd(localeName);
     final String dateString = dateDateFormat.format(date);

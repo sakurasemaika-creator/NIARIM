@@ -155,6 +155,20 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeTrashEmpty => 'Trash is empty';
 
   @override
+  String homeTrashNoMatchTitle(String query) {
+    return 'Nothing in the Trash matches “$query”';
+  }
+
+  @override
+  String get homeTrashNoKindTitle =>
+      'Nothing of the selected types is in the Trash';
+
+  @override
+  String homeTrashNoKindMatchTitle(String query) {
+    return 'Nothing of the selected types matches “$query”';
+  }
+
+  @override
   String homeTrashDeletedOn(DateTime date) {
     final intl.DateFormat dateDateFormat = intl.DateFormat.yMd(localeName);
     final String dateString = dateDateFormat.format(date);
