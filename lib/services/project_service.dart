@@ -3909,17 +3909,31 @@ class ProjectService extends ChangeNotifier {
       if (project == null) return;
       final value = requestedValue ?? !project.isFavorite;
       if (value == project.isFavorite) return;
-      final scenes = _scenes[id];
-      final tileManager = _tileManagers[id];
       try {
-        if (scenes == null || tileManager == null) {
-          throw StateError('Project content is unavailable for saving');
+        // お気に入りは作品の変更ではないので、保存の印だけを書き換え、最終
+        // 保存の日時（「更新日時」の並び・詳細の「最終保存」）と作品の中身は
+        // そのまま残す。以前は作品を保存し直し、起動し直すと最終保存が星を
+        // 付けた時刻になって、一覧の並びで位置が変わった。
+        await NiaproSerializer.saveFavorite(projectId: id, isFavorite: value);
+      } on PathNotFoundException {
+        // 保存のファイルが無い（アプリの外で消えた）ときは、作品を書き直して
+        // 残す（最終保存の日時は前のまま）。
+        final scenes = _scenes[id];
+        final tileManager = _tileManagers[id];
+        try {
+          if (scenes == null || tileManager == null) {
+            throw StateError('Project content is unavailable for saving');
+          }
+          await NiaproSerializer.save(
+            project: project.copyWith(isFavorite: value),
+            scenes: scenes,
+            tileManager: tileManager,
+            updatedAt: project.updatedAt,
+          );
+        } catch (error, stackTrace) {
+          AppErrorReporter.record(error, stackTrace);
+          rethrow;
         }
-        await NiaproSerializer.save(
-          project: project.copyWith(isFavorite: value),
-          scenes: scenes,
-          tileManager: tileManager,
-        );
       } catch (error, stackTrace) {
         AppErrorReporter.record(error, stackTrace);
         rethrow;

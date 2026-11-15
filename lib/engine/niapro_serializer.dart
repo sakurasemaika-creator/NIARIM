@@ -156,7 +156,22 @@ class NiaproSerializer {
     required String projectId,
     required String? folderId,
     bool shared = false,
-  }) => _queueSave(projectId, () async {
+  }) => _saveManifestFields(projectId, {
+    shared ? 'sharedFolderId' : 'folderId': folderId,
+  });
+
+  /// お気に入りの印だけを変える（[saveFolderMembership]と同じ書き方）。
+  /// お気に入りは作品の変更ではないので、最終保存の日時（ホームの「更新日時」の
+  /// 並び・プロジェクト詳細の「最終保存」）も作品の中身もそのまま残す。
+  static Future<void> saveFavorite({
+    required String projectId,
+    required bool isFavorite,
+  }) => _saveManifestFields(projectId, {'isFavorite': isFavorite});
+
+  static Future<void> _saveManifestFields(
+    String projectId,
+    Map<String, Object?> fields,
+  ) => _queueSave(projectId, () async {
     final dir = await _projectDir(projectId);
     final path = '${dir.path}/$projectId.niapro';
     final source = File(path);
@@ -172,7 +187,7 @@ class NiaproSerializer {
     if (json['id'] != projectId) {
       throw const FormatException('Project ID mismatch');
     }
-    json[shared ? 'sharedFolderId' : 'folderId'] = folderId;
+    json.addAll(fields);
     _writeArchiveAtomically(path, (encoder) {
       for (final entry in archive.files) {
         encoder.addArchiveFile(
