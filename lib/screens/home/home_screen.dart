@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart' show setEquals;
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart' show SemanticsBinding;
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart' show DateFormat;
@@ -406,6 +407,44 @@ class _HomeScreenState extends State<HomeScreen>
 
   final _projectScrollController = ScrollController();
   late _HomeTabController _tabController;
+
+  // 引き出し（画面の外へ出たかを見る）と、閉じた引き出しを1フレームだけ
+  // 外している間（[_releaseClosedEndDrawer]）。
+  final _endDrawerKey = GlobalKey(debugLabel: 'homeEndDrawer');
+  bool _endDrawerReleased = false;
+
+  /// 動きを減らす設定（端末の「アニメーションを削除」）で引き出しを閉じると、
+  /// DrawerControllerは閉じる動き（AnimationController.fling）を速さ200倍の
+  /// ばねで動かす。引き出しは1〜2フレームで画面の外へ出るが、ばねが落ち
+  /// 着くまでの約0.4秒（24フレーム）は「閉じている途中」のままで、ホームの
+  /// 上に透明な幕（閉じるためのGestureDetector・BlockSemantics）を残し、
+  /// タブを押しても届かなかった。引き出しが画面の外へ出たフレームの後、
+  /// 引き出しを1フレームだけ外してDrawerControllerを作り直す（閉じた状態で
+  /// 作られ、幕を持たない）。指で引いている間は、画面の外へ出るまで待つ
+  /// （途中で消さない）。設定がオフなら何もしない（閉じる動きの終わりで
+  /// 幕も消える）。
+  void _releaseClosedEndDrawer() {
+    if (!SemanticsBinding.instance.disableAnimations) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || _endDrawerReleased) return;
+      if (_scaffoldKey.currentState?.isEndDrawerOpen ?? true) return;
+      final drawer = _endDrawerKey.currentContext?.findRenderObject();
+      // 閉じ終えたDrawerControllerは引き出しを作らない（幕も無い）。
+      if (drawer is! RenderBox || !drawer.attached || !drawer.hasSize) return;
+      final shown = (drawer.localToGlobal(Offset.zero) & drawer.size).intersect(
+        Offset.zero & MediaQuery.sizeOf(context),
+      );
+      if (shown.width > 0.5 && shown.height > 0.5) {
+        _releaseClosedEndDrawer();
+        return;
+      }
+      setState(() => _endDrawerReleased = true);
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) setState(() => _endDrawerReleased = false);
+      });
+    });
+  }
+
   static const _projectViewModeKey = 'home.projectViewMode.v1';
   static const _worksViewModeKey = 'home.worksViewMode.v1';
   ProjectViewMode? _userViewMode;
@@ -1064,11 +1103,17 @@ class _HomeScreenState extends State<HomeScreen>
               ),
             ),
           ),
-          endDrawer: HomeDrawer(refreshToken: _missionDrawerRefreshToken),
+          endDrawer: _endDrawerReleased
+              ? null
+              : HomeDrawer(
+                  key: _endDrawerKey,
+                  refreshToken: _missionDrawerRefreshToken,
+                ),
           // 引き出しの開閉で画面のショートカットを組み替える
           // （_buildShortcutBindings）。
-          onEndDrawerChanged: (_) {
+          onEndDrawerChanged: (open) {
             if (mounted) setState(() {});
+            if (!open) _releaseClosedEndDrawer();
           },
           body: Column(
             children: [

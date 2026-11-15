@@ -20,23 +20,6 @@ final kHomeMatrix2KnownProblems = <HomeMatrixKnownProblem>[
     RegExp(r'^tap target 40x40 \(card\): '),
   ),
   HomeMatrixKnownProblem(
-    'DISC214',
-    '動きを減らす設定で引き出しを閉じると、引き出しは2フレームで画面の外へ'
-        '出て見えなくなるが、その後さらに約24フレーム（約0.4秒）、ホームの'
-        'タブを押しても届かない（設定がオフなら、引き出しが出切った次の'
-        'フレームで届く）。その間、画面の外の引き出しとDrawerControllerの'
-        '透明な幕（BlockSemantics・閉じるためのGestureDetector・ColoredBox）'
-        'が残っていて、押した所に当たる（一時的な調べのテストで確かめた）。'
-        '見込み：'
-        '設定がオンのときAnimationController.flingは速さを200倍にしたばねで'
-        '動き、値は0で止まって見えても、ばねが落ち着くまで状態が「閉じた」に'
-        'ならない。',
-    RegExp(
-      r'^drawer leaves an invisible barrier for \d+ frames after closing '
-      r'with reduced motion',
-    ),
-  ),
-  HomeMatrixKnownProblem(
     'DISC215',
     '画面の下にジェスチャーの帯（34px）・3ボタンの帯（48px）がある縦の'
         'スマホ（390x844）で、プロジェクトの一覧を一番下まで送っても、右下の'

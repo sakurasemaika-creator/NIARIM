@@ -21,7 +21,9 @@ void main() {
   test('the home menu opens from the right (end drawer)', () {
     final source = File('lib/screens/home/home_screen.dart').readAsStringSync();
     expect(
-      RegExp(r'\bendDrawer:\s*(const\s+)?HomeDrawer\(').hasMatch(source),
+      // 動きを減らす設定で閉じた引き出しを1フレームだけ外す条件
+      // （endDrawer: _endDrawerReleased ? null : HomeDrawer(...)）も許す。
+      RegExp(r'\bendDrawer:[^,;]*\bHomeDrawer\(').hasMatch(source),
       isTrue,
       reason: 'the guide text below says the menu is at the top right',
     );
