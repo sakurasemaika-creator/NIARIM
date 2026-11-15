@@ -7,6 +7,7 @@ import '../../l10n/app_localizations.dart';
 import '../../models/font_asset.dart';
 import '../../services/font_service.dart';
 import '../../widgets/responsive.dart';
+import '../../widgets/action_beside_or_below.dart';
 import '../../widgets/confirm_delete.dart';
 import '../../widgets/dispose_on_unmount.dart';
 import '../../utils/file_size_label.dart';
@@ -221,6 +222,9 @@ class _DownloadedFontsTabState extends State<_DownloadedFontsTab>
                     itemCount: sorted.length,
                     itemBuilder: (context, index) {
                       final f = sorted[index];
+                      final subtitleStyle =
+                          ListTileTheme.of(context).subtitleTextStyle ??
+                          Theme.of(context).textTheme.bodyMedium!;
                       return Card(
                         elevation: 1,
                         shadowColor: ThemeService.activeColorScheme.shadow
@@ -243,62 +247,89 @@ class _DownloadedFontsTabState extends State<_DownloadedFontsTab>
                               ),
                             ),
                           ),
-                          title: Text(
-                            f.displayName,
-                            style: TextStyle(
-                              fontFamily: service.familyNameOf(f),
+                          // 名前が語の途中で折れる幅では、4つの操作を名前の
+                          // 下（行の終わりの側）へ回す。行の右に並べたままだと、
+                          // スマホの幅では名前の欄が0〜30pxしか残らず、
+                          // 「Sampl / e / Font」と語の途中・1字ずつで折れた。
+                          title: ActionBesideOrBelow(
+                            text: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  f.displayName,
+                                  style: TextStyle(
+                                    fontFamily: service.familyNameOf(f),
+                                  ),
+                                ),
+                                // 2行目は、ListTileの2行目と同じ本文の書体。
+                                DefaultTextStyle(
+                                  style: subtitleStyle,
+                                  child: Text(
+                                    '${f.extension} ・ ${fileSizeLabel(AppLocalizations.of(context)!, f.sizeBytes)}',
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      color: scheme.onSurfaceVariant,
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
-                          ),
-                          subtitle: Text(
-                            '${f.extension} ・ ${fileSizeLabel(AppLocalizations.of(context)!, f.sizeBytes)}',
-                            style: TextStyle(
-                              fontSize: 11,
-                              color: scheme.onSurfaceVariant,
+                            action: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                // ピクセルモード：ON時は
+                                // このフォントで追加するテキストのアンチエイリアスを
+                                // 除去する（ドットフォントをにじませずくっきり表示）。
+                                IconButton(
+                                  icon: Icon(
+                                    f.pixelMode
+                                        ? Icons.grid_on
+                                        : Icons.grid_off,
+                                    size: 18,
+                                    color: f.pixelMode
+                                        ? AccentTextTheme.of(context)
+                                        : null,
+                                  ),
+                                  tooltip: l10n.fontPixelModeTooltip,
+                                  onPressed: () =>
+                                      service.togglePixelMode(f.id),
+                                ),
+                                IconButton(
+                                  icon: Icon(
+                                    f.isFavorite
+                                        ? Icons.star
+                                        : Icons.star_border,
+                                    size: 18,
+                                    color: f.isFavorite
+                                        ? ThemeService
+                                              .activeColorScheme
+                                              .tertiary
+                                        : null,
+                                  ),
+                                  tooltip: l10n.commonFavoriteToggle,
+                                  onPressed: () => service.toggleFavorite(f.id),
+                                ),
+                                IconButton(
+                                  icon: const Icon(
+                                    Icons.edit_outlined,
+                                    size: 18,
+                                  ),
+                                  tooltip: l10n.commonRename,
+                                  onPressed: () =>
+                                      _showRenameDialog(context, f),
+                                ),
+                                IconButton(
+                                  icon: Icon(
+                                    Icons.delete_outline,
+                                    size: 18,
+                                    color: ThemeService.activeColorScheme.error,
+                                  ),
+                                  tooltip: l10n.commonDelete,
+                                  onPressed: () => _confirmDelete(context, f),
+                                ),
+                              ],
                             ),
-                          ),
-                          trailing: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              // ピクセルモード：ON時は
-                              // このフォントで追加するテキストのアンチエイリアスを
-                              // 除去する（ドットフォントをにじませずくっきり表示）。
-                              IconButton(
-                                icon: Icon(
-                                  f.pixelMode ? Icons.grid_on : Icons.grid_off,
-                                  size: 18,
-                                  color: f.pixelMode
-                                      ? AccentTextTheme.of(context)
-                                      : null,
-                                ),
-                                tooltip: l10n.fontPixelModeTooltip,
-                                onPressed: () => service.togglePixelMode(f.id),
-                              ),
-                              IconButton(
-                                icon: Icon(
-                                  f.isFavorite ? Icons.star : Icons.star_border,
-                                  size: 18,
-                                  color: f.isFavorite
-                                      ? ThemeService.activeColorScheme.tertiary
-                                      : null,
-                                ),
-                                tooltip: l10n.commonFavoriteToggle,
-                                onPressed: () => service.toggleFavorite(f.id),
-                              ),
-                              IconButton(
-                                icon: const Icon(Icons.edit_outlined, size: 18),
-                                tooltip: l10n.commonRename,
-                                onPressed: () => _showRenameDialog(context, f),
-                              ),
-                              IconButton(
-                                icon: Icon(
-                                  Icons.delete_outline,
-                                  size: 18,
-                                  color: ThemeService.activeColorScheme.error,
-                                ),
-                                tooltip: l10n.commonDelete,
-                                onPressed: () => _confirmDelete(context, f),
-                              ),
-                            ],
                           ),
                         ),
                       );
