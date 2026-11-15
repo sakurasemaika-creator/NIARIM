@@ -269,6 +269,66 @@ void main() {
   );
 
   test(
+    'refused favorite Trash keeps unsaved pixels in memory without writing',
+    () async {
+      final project = await create('PROTECTED INK');
+      await service.setFavorite(project.id, true);
+      final file = await archive(project.id);
+      final original = file.readAsBytesSync();
+      final savedAt = service.projects.single.updatedAt;
+      final prefs = await store.getAll();
+      const layer = 'Scene0001#0#Layer0001';
+      const ink = [21, 79, 77, 255];
+      final manager = service.tileManagerOf(project.id);
+      manager.getOrCreateTile(layer, 0, 0).setRange(0, 4, ink);
+      manager.markDirty(layer, 0, 0);
+
+      await expectLater(
+        service.deleteProject(project.id),
+        throwsA(isA<FavoriteProjectDeleteException>()),
+      );
+      expect(file.readAsBytesSync(), original);
+      expect(service.projects.single.updatedAt, savedAt);
+      expect(await store.getAll(), prefs);
+      expect(manager.exportAll()[layer]?['0,0']?.take(4), ink);
+      expect(service.trash, isEmpty);
+    },
+  );
+
+  test(
+    'allowed Trash waits for unsaved pixels and can restore them after restart',
+    () async {
+      final project = await create('UNSAVED INK');
+      final file = await archive(project.id);
+      const layer = 'Scene0001#0#Layer0001';
+      const ink = [21, 79, 77, 255];
+      final manager = service.tileManagerOf(project.id);
+      manager.getOrCreateTile(layer, 0, 0).setRange(0, 4, ink);
+      manager.markDirty(layer, 0, 0);
+      final held = holdNextSave();
+      final moving = service.deleteProject(project.id);
+      await held.started;
+      expect(service.projects.single.id, project.id);
+      expect(service.trash, isEmpty);
+      held.release.complete();
+      await moving;
+
+      final loaded = await cold();
+      expect(loaded.projects, isEmpty);
+      expect(loaded.trash.single.id, project.id);
+      await loaded.restoreProject(project.id);
+      expect(
+        loaded.tileManagerOf(project.id).exportAll()[layer]?['0,0']?.take(4),
+        ink,
+      );
+      expect(
+        (await NiaproSerializer.load(file.path)).project.updatedAt,
+        service.trash.single.updatedAt,
+      );
+    },
+  );
+
+  test(
     'favorite is checked when queued deletion runs, not when it is requested',
     () async {
       final first = await create('FIRST');

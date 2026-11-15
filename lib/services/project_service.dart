@@ -3454,32 +3454,27 @@ class ProjectService extends ChangeNotifier {
     }
   });
 
-  Future<void> deleteProject(String id) async {
-    // Trash cannot be restorable if a newly created project has not yet
-    // completed its queued first save. Fail before changing Trash membership.
-    await _saveBeforeTrash(id);
-    await _queueTrash(id, () async {
-      final idx = _projects.indexWhere((p) => p.id == id);
-      if (idx >= 0) {
-        final project = _projects[idx];
-        // Check inside both queues: a project may become a favorite while a
-        // previous save or Trash operation is still awaiting acknowledgement.
-        if (project.isFavorite) throw const FavoriteProjectDeleteException();
-        final next = {..._trashDeletedAt, id: DateTime.now()};
-        await _persistTrashState(next);
-        _projects.removeAt(idx);
-        _trash.add(project);
-        _scenes.remove(id);
-        _layerIdCounters.remove(id);
-        _layerHomes.remove(id);
-        _tileManagers.remove(id)?.dispose();
-        _trashDeletedAt
-          ..clear()
-          ..addAll(next);
-        _notifyFolders();
+  Future<void> deleteProject(String id) => _queueTrash(id, () async {
+    final idx = _projects.indexWhere((p) => p.id == id);
+    if (idx >= 0) {
+      // Check inside both queues: a project may become a favorite while a
+      // previous save or Trash operation is still awaiting acknowledgement.
+      if (_projects[idx].isFavorite) {
+        throw const FavoriteProjectDeleteException();
       }
-    });
-  }
+      // Save the latest work before changing membership. The project save
+      // queue is already held; enqueueing _saveBeforeTrash here would wait
+      // for this operation itself. A refused move must never write a file.
+      await _writeProjectFile(id, keepUpdatedAt: true);
+      final next = {..._trashDeletedAt, id: DateTime.now()};
+      await _persistTrashState(next);
+      _moveProjectToTrash(_projects.indexWhere((p) => p.id == id));
+      _trashDeletedAt
+        ..clear()
+        ..addAll(next);
+      _notifyFolders();
+    }
+  });
 
   /// [index]の作品をゴミ箱へ移す（ゴミ箱の記録の保存と通知は呼び出し側）。
   void _moveProjectToTrash(int index) {
