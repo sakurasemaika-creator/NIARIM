@@ -8,6 +8,7 @@ import '../utils/line_break.dart';
 import 'app_toast_messenger.dart';
 import 'copy_name_text.dart';
 import 'keep_together_text.dart';
+import 'typing_dialog_inset.dart';
 
 // 読めていない作品があって断られたときは、読み込めていないことを伝える
 // （「保存先を確認して、もう一度」では、何度やり直しても同じ）。
@@ -218,6 +219,8 @@ class _ProjectTrashDialogState extends State<ProjectTrashDialog> {
       canPop: !_working,
       child: AlertDialog(
         scrollable: true,
+        // 狭い画面では左右の空きを縮め、題・ボタンの語を途中で折らない。
+        insetPadding: dialogInsetPadding(context),
         // 題と本文は、韓国語の語・数と単位を1行に入れば途中で折らない
         // （本文が「휴지통 / 으로」、題が「삭제하시겠습니 / 까?」と切れた）。
         title: messageText(widget.title),

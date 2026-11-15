@@ -33,6 +33,7 @@ import '../../widgets/dispose_on_unmount.dart';
 import '../../widgets/editable_slider_value.dart';
 import '../../widgets/labeled_slider.dart';
 import '../../widgets/stepped_slider.dart';
+import '../../widgets/typing_dialog_inset.dart';
 import '../../utils/immersive_mode.dart';
 import '../../utils/custom_automation_labels.dart';
 import '../../utils/filter_display_name.dart';
@@ -3924,6 +3925,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
     final choice = await showDialog<String>(
       context: context,
       builder: (ctx) => AlertDialog(
+        // 狭い画面では左右の空きを縮め、ボタンの語を途中で折らない。
+        insetPadding: dialogInsetPadding(ctx),
         title: Text(l10n.timelineBackToProjectListDialogTitle),
         content: Text(l10n.timelineBackToProjectListDialogBody),
         actions: [

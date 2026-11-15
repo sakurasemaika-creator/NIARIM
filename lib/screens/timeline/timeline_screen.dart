@@ -78,6 +78,7 @@ import '../../widgets/scrollable_sheet_body.dart';
 import '../../widgets/custom_automation_manager_sheet.dart';
 import '../../widgets/custom_automation_draft_sheet.dart';
 import '../../widgets/typing_aware_shortcuts.dart';
+import '../../widgets/typing_dialog_inset.dart';
 import 'widgets/material_edit_panel.dart';
 import 'widgets/material_gizmo.dart';
 import 'widgets/stack_order_panel.dart';
@@ -7043,6 +7044,8 @@ class _TimelineScreenState extends State<TimelineScreen> {
     final choice = await showDialog<String>(
       context: context,
       builder: (ctx) => AlertDialog(
+        // 狭い画面では左右の空きを縮め、ボタンの語を途中で折らない。
+        insetPadding: dialogInsetPadding(ctx),
         title: Text(l10n.timelineBackToProjectListDialogTitle),
         content: Text(l10n.timelineBackToProjectListDialogBody),
         actions: [
