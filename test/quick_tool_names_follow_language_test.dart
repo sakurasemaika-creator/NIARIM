@@ -178,16 +178,27 @@ void main() {
       position.jumpTo(0);
       await tester.pump();
       while (true) {
-        for (final tile in tester.widgetList<ListTile>(
-          find.descendant(
-            of: find.byType(QuickToolPanel),
-            matching: find.byType(ListTile),
-          ),
-        )) {
-          names[(tile.key! as ValueKey<String>).value] = switch (tile.title) {
-            final Text text => text.data,
-            _ => null,
-          };
+        // 名前は、行の中の番号でない文（名前が番号と操作の間に入らない行は、
+        // 番号と操作の行の下に名前を置く。DISC234）。
+        for (final tile
+            in find
+                .descendant(
+                  of: find.byType(QuickToolPanel),
+                  matching: find.byType(ListTile),
+                )
+                .evaluate()) {
+          final texts = tester
+              .widgetList<Widget>(
+                find.descendant(
+                  of: find.byElementPredicate((e) => e == tile),
+                  // KeepTogetherText（Textの子の型）も名前。
+                  matching: find.byWidgetPredicate((w) => w is Text),
+                ),
+              )
+              .map((t) => (t as Text).data)
+              .where((d) => d != null && int.tryParse(d) == null);
+          names[((tile.widget as ListTile).key! as ValueKey<String>).value] =
+              texts.length == 1 ? texts.single : null;
         }
         // 行の名前の欄より広い1語（どう並べても途中で折れる語。DISC155と
         // 同じ種類）は、数えずに名前を出す。
