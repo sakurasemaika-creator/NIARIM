@@ -47,14 +47,52 @@ void main() {
     }
   });
 
-  test('利用者が付けた名前はそのまま出す', () async {
-    final l10n = await AppLocalizations.delegate.load(const Locale('ja'));
-    const custom = ShortcutBinding(
-      id: 'user_1234',
-      label: 'わたしのショートカット',
-      keyId: 0x00000061,
-      command: ShortcutCommand.undo,
+  // 利用者が足した操作・ツールの割り当ても、保存した名前（足したときの言語の
+  // 文）ではなく今の言語の名前で出す（DISC157。簡体字で足した「后退1帧
+  // （时间轴）」が、繁体字に切り替えても簡体字のまま出ていた）。ブラシの
+  // 割り当ての名前（ブラシの名前と太さ）は利用者のデータなのでそのまま。
+  test('利用者が足した操作・ツールの名前も表示言語に追従し、ブラシの名前はそのまま', () async {
+    final zh = await AppLocalizations.delegate.load(const Locale('zh'));
+    final added = [
+      ShortcutBinding(
+        id: 'sc_1234',
+        label: zh.shortcutCommandPreviousFrame,
+        keyId: 0x00000071,
+        command: ShortcutCommand.previousFrame,
+      ),
+      for (final (tool, label) in [
+        ('eraser', zh.quickToolEraser),
+        ('eyedropper', zh.quickToolEyedropper),
+        ('bucket', zh.quickToolBucket),
+      ])
+        ShortcutBinding(
+          id: 'sc_$tool',
+          label: label,
+          keyId: 0x00000065,
+          toolKey: tool,
+        ),
+    ];
+    const pen = ShortcutBinding(
+      id: 'sc_pen',
+      label: 'Gペン 12px',
+      keyId: 0x00000067,
+      toolKey: 'pen',
+      brushId: 'g_pen',
+      sizeOverride: 12,
     );
-    expect(shortcutDisplayLabel(l10n, custom), 'わたしのショートカット');
+    for (final locale in AppLocalizations.supportedLocales) {
+      final l10n = await AppLocalizations.delegate.load(locale);
+      expect(
+        [for (final b in added) shortcutDisplayLabel(l10n, b)],
+        [
+          l10n.shortcutCommandPreviousFrame,
+          l10n.quickToolEraser,
+          l10n.quickToolEyedropper,
+          l10n.quickToolBucket,
+        ],
+        reason: '$locale',
+      );
+      expect(shortcutDisplayLabel(l10n, pen), 'Gペン 12px', reason: '$locale');
+    }
   });
 }

@@ -27,7 +27,8 @@ import '../../widgets/fit_or_hide_title.dart';
 /// 初回起動時に英語のラベル（'Undo'等）を保存してしまうため、そのまま
 /// 表示すると**日本語UIの中に英語だけが並ぶ**
 /// （`build/all-route-screenshots/21_settings_shortcuts.png`で発覚）。
-/// 一覧では、既定のものはこの表の名前で表示する。
+/// 一覧では、操作の割り当て（既定のものも利用者が足したものも）はこの表の
+/// 名前で表示する（[shortcutDisplayLabel]）。
 Map<ShortcutCommand, String> shortcutCommandLabels(AppLocalizations l10n) => {
   ShortcutCommand.undo: l10n.shortcutCommandUndo,
   ShortcutCommand.redo: l10n.shortcutCommandRedo,
@@ -41,15 +42,29 @@ Map<ShortcutCommand, String> shortcutCommandLabels(AppLocalizations l10n) => {
   ShortcutCommand.paste: l10n.shortcutCommandPaste,
 };
 
-/// 一覧に出すショートカット名。既定のもの（idが`default_`で始まる）は
-/// 保存済みの英語ラベルではなく、表示言語の名前を使う。
-/// 利用者が自分で追加したものは、付けた名前をそのまま出す。
+/// 一覧・確認・引き継ぎの知らせに出すショートカット名。
+///
+/// 操作（取り消し・コマ送り等）と、消しゴム・スポイト・バケツの割り当ては、
+/// 保存した名前（[ShortcutBinding.label]）ではなく、操作・ツールの種類から
+/// 表示のたびに今の言語で作る。保存した名前は足したときの言語の文
+/// （既定のものは英語の「Undo」、利用者が足したものはそのときの表示言語の
+/// 「后退1帧（时间轴）」等）なので、そのまま出すと、言語を切り替えても足した
+/// ときの言語のまま残った。前の版で保存した割り当ても、保存した種類から
+/// 読み直す。保存の形（`label`）は前の版が読めるよう今までどおり残す。
+///
+/// ブラシの割り当ての名前（ブラシの名前と太さ）は利用者のデータなので、
+/// 保存したまま出す。
 String shortcutDisplayLabel(AppLocalizations l10n, ShortcutBinding binding) {
   final command = binding.command;
-  if (command == null || !binding.id.startsWith('default_')) {
-    return binding.label;
+  if (command != null) {
+    return shortcutCommandLabels(l10n)[command] ?? binding.label;
   }
-  return shortcutCommandLabels(l10n)[command] ?? binding.label;
+  return switch (binding.toolKey) {
+    'eraser' => l10n.quickToolEraser,
+    'eyedropper' => l10n.quickToolEyedropper,
+    'bucket' => l10n.quickToolBucket,
+    _ => binding.label,
+  };
 }
 
 class ShortcutSettingsScreen extends StatelessWidget {

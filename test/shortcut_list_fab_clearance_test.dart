@@ -41,6 +41,17 @@ void main() {
     binding.platformDispatcher.clearTextScaleFactorTestValue();
   });
 
+  /// 一覧を本当の最後までスクロールする（行の高さがそろっていないと、1回の
+  /// ドラッグでは見込みの最後で止まり、残りの行を並べると最後が先へ延びる）。
+  Future<void> scrollToEnd(WidgetTester tester, Finder list) async {
+    for (var i = 0; i < 10; i++) {
+      await tester.drag(list, const Offset(0, -20000));
+      await tester.pumpAndSettle();
+      final position = tester.state<ScrollableState>(list).position;
+      if (position.pixels >= position.maxScrollExtent - 0.5) return;
+    }
+  }
+
   /// 既定の7つに足す割り当て（どの幅・文字の大きさでも一覧がスクロールする
   /// だけの行数にする）。
   final extra = [
@@ -124,8 +135,7 @@ void main() {
                     matching: find.byType(Scrollable),
                   )
                   .first;
-              await tester.drag(list, const Offset(0, -20000));
-              await tester.pumpAndSettle();
+              await scrollToEnd(tester, list);
 
               final deletes = find.byIcon(Icons.delete_outline);
               final last = deletes.last;
@@ -185,8 +195,7 @@ void main() {
             matching: find.byType(Scrollable),
           )
           .first;
-      await tester.drag(list, const Offset(0, -20000));
-      await tester.pumpAndSettle();
+      await scrollToEnd(tester, list);
       await tester.tap(
         find.byIcon(Icons.delete_outline).last,
         warnIfMissed: false,
