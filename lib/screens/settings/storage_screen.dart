@@ -1,5 +1,3 @@
-import 'package:niarim/services/theme_service.dart';
-
 import 'dart:async';
 import 'dart:math' as math;
 
@@ -21,7 +19,7 @@ import '../../widgets/project_trash_dialog.dart';
 import '../../config/font_fallback.dart';
 
 /// 容量削減画面（ホーム画面ハンバーガーメニューから遷移）。
-/// 端末容量に対するNIARIMの使用量・NIARIM内部のデータ内訳を2つの円
+/// 端末容量に対するNIARIMの使用量・NIARIM内部のデータ内訳を2つの棒
 /// グラフで可視化し、キャッシュ削除・未使用素材の一括削除（全プロジェクト
 /// 横断）・ゴミ箱を空にする・プロジェクト整理（作品一覧への案内）・
 /// 全データ削除（初期化）の各操作を提供する。
@@ -1094,9 +1092,7 @@ class _StorageScreenState extends State<StorageScreen> {
         Divider(height: 24),
         _actionTile(
           icon: Icons.warning_amber_outlined,
-          iconColor: ThemeService.activeColorScheme.error,
           title: l10n.storageEraseAllButton,
-          titleColor: ThemeService.activeColorScheme.error,
           onTap: _confirmEraseAll,
         ),
       ],
@@ -1107,28 +1103,36 @@ class _StorageScreenState extends State<StorageScreen> {
     required IconData icon,
     required String title,
     String? subtitle,
-    Color? iconColor,
-    Color? titleColor,
     FocusNode? focusNode,
     VoidCallback? onTap,
   }) {
+    // Card uses the menu background. Match the menu's foreground and its
+    // disabled state for both the text and the icons on that surface.
+    final theme = Theme.of(context);
+    final menu = theme.popupMenuTheme;
+    final fallback = menu.textStyle?.color ?? theme.colorScheme.onSurface;
+    final foreground = WidgetStateColor.resolveWith(
+      (states) =>
+          menu.labelTextStyle?.resolve(states)?.color ??
+          (states.contains(WidgetState.disabled)
+              ? fallback.withValues(alpha: fallback.a * 0.38)
+              : fallback),
+    );
     // 行の下の文は「集計中…」・大きさ（数字）・空と入れ替わる。行の高さを
     // 文の字で変えない（韓国語・中国語の「集計中…」は補う書体で数字より
     // 1〜2px高く、結果が届くと下の行が動いた）。
     final subtitleStyle =
         ListTileTheme.of(context).subtitleTextStyle ??
-        Theme.of(context).textTheme.bodyMedium;
+        theme.textTheme.bodyMedium;
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 4),
       child: ListTile(
         focusNode: focusNode,
-        leading: Icon(icon, color: iconColor),
+        leading: Icon(icon),
+        iconColor: foreground,
+        textColor: foreground,
         // 括弧の中（「（初期化）」等）は行の途中で切らない。
-        title: KeepTogetherText(
-          title,
-          keep: _bracketedWords(title),
-          style: TextStyle(color: titleColor),
-        ),
+        title: KeepTogetherText(title, keep: _bracketedWords(title)),
         subtitle: subtitle == null
             ? null
             : Text(
@@ -1377,7 +1381,6 @@ class _StorageScreenState extends State<StorageScreen> {
           ),
           FilledButton(
             style: FilledButton.styleFrom(
-              backgroundColor: ThemeService.activeColorScheme.error,
               padding: _eraseButtonPadding(ctx),
               // 名前が折れたときの上下の余白は_eraseButtonPaddingが取る（表示の
               // 詰め方・高さの低い画面に合わせて）。テーマのラベルの余白

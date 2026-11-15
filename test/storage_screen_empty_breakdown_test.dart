@@ -578,7 +578,8 @@ void main() {
       await tester.tap(storageTile(l10n.storageEmptyTrashButton));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 400));
-      await tester.tap(find.widgetWithText(FilledButton, l10n.commonDelete));
+      // The Korean label can be carried by a RichText span for line breaking.
+      await tester.tap(find.byKey(const Key('trash-dialog-confirm')));
       // ゴミ箱の作品を本当に消す（ファイルの削除は実時間で進む。重い端末でも
       // 待てるよう、最大5秒）。
       for (var i = 0; i < 250 && service.scans.length < 2; i++) {

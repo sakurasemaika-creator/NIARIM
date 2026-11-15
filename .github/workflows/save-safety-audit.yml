@@ -16,6 +16,13 @@ on:
       - "test/export_storage_ownership_test.dart"
       - "test/home_static_export_preview_test.dart"
       - "test/storage_reset_dialog_layout_test.dart"
+      - "test/storage_screen_empty_breakdown_test.dart"
+      - "test/storage_size_and_erase_label_test.dart"
+      - "test/storage_action_theme_test.dart"
+      - "test/storage_screen_states_test.dart"
+      - "test/storage_outside_changes_test.dart"
+      - "test/helpers/storage_screen_harness.dart"
+      - "lib/widgets/confirm_delete.dart"
       - "test/direct_service_coverage_batch08_test.dart"
       - "test/export_transparent_frame_test.dart"
       - "lib/screens/settings/storage_screen.dart"
@@ -214,6 +221,13 @@ jobs:
         test/export_storage_ownership_test.dart
         test/home_static_export_preview_test.dart
         test/storage_reset_dialog_layout_test.dart
+        test/storage_screen_empty_breakdown_test.dart
+        test/storage_size_and_erase_label_test.dart
+        test/storage_action_theme_test.dart
+        test/storage_screen_states_test.dart
+        test/storage_outside_changes_test.dart
+        test/helpers/storage_screen_harness.dart
+        lib/widgets/confirm_delete.dart
         test/direct_service_coverage_batch08_test.dart
         test/export_transparent_frame_test.dart
     steps:
@@ -234,7 +248,7 @@ jobs:
         run: |
           mkdir -p artifacts/storage-cache
           set -o pipefail
-          flutter test --no-pub --reporter expanded test/storage_cache_isolation_test.dart test/storage_info_service_test.dart test/export_storage_ownership_test.dart test/home_static_export_preview_test.dart test/storage_reset_dialog_layout_test.dart test/export_transparent_frame_test.dart 2>&1 | tee artifacts/storage-cache/regressions.log
+          flutter test --no-pub --reporter expanded test/storage_cache_isolation_test.dart test/storage_info_service_test.dart test/export_storage_ownership_test.dart test/home_static_export_preview_test.dart test/storage_reset_dialog_layout_test.dart test/storage_size_and_erase_label_test.dart test/storage_screen_empty_breakdown_test.dart test/storage_action_theme_test.dart test/storage_screen_states_test.dart test/storage_outside_changes_test.dart test/export_transparent_frame_test.dart 2>&1 | tee artifacts/storage-cache/regressions.log
       - name: Verify direct storage accounting and reset regressions
         shell: bash
         run: |

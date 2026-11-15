@@ -1,4 +1,3 @@
-import 'package:niarim/services/theme_service.dart';
 import 'package:flutter/material.dart';
 
 import '../l10n/app_localizations.dart';
@@ -26,9 +25,6 @@ Future<bool> confirmDelete(BuildContext context, {String? itemName}) async {
           child: Text(l10n.commonCancel),
         ),
         FilledButton(
-          style: FilledButton.styleFrom(
-            backgroundColor: ThemeService.activeColorScheme.error,
-          ),
           onPressed: () => Navigator.pop(ctx, true),
           child: Text(l10n.commonDelete),
         ),

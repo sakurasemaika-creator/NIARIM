@@ -175,10 +175,10 @@ void main() {
       return (data!, width);
     }))!;
     final fill = tester
-        .widget<FilledButton>(button)
-        .style!
-        .backgroundColor!
-        .resolve(const {})!;
+        .widget<Material>(
+          find.descendant(of: button, matching: find.byType(Material)),
+        )
+        .color!;
     double distance(int x, int y) {
       final i = (y * width + x) * 4;
       final r = bytes.getUint8(i) - fill.r * 255;

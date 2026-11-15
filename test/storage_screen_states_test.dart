@@ -348,7 +348,12 @@ void main() {
     // （やり直すたびに欄が出入りして下が動かないように）、棒は出さない。
     expect(find.text(l10n.storageDeviceChartTitle), findsOneWidget);
     expect(find.text(l10n.storageCategoryFree), findsNothing);
-    expect(find.byIcon(Icons.donut_large), findsOneWidget);
+    expect(find.byIcon(Icons.donut_large), findsNothing);
+    expect(
+      tester.getSize(find.byKey(const ValueKey('storageDeviceSection'))).height,
+      greaterThanOrEqualTo(3 * 42),
+      reason: 'Keep the three device bars reserved while the breakdown fails.',
+    );
     // 大きさが分からないので、数字も「集計中」も出さず、押せない。
     final clearCache = tile(tester, l10n.storageClearCacheButton);
     expect(clearCache.enabled, isFalse);

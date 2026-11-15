@@ -13,6 +13,7 @@ import 'package:niarim/router.dart';
 import 'package:niarim/screens/home/home_screen.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:niarim/services/storage_info_service.dart';
+import 'package:niarim/widgets/project_trash_dialog.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -90,12 +91,25 @@ void main() {
     // 消す前から走っている集計（実時間を進めていないので、まだ終わらない）。
     final running = StorageInfoService().computeBreakdown({});
 
-    final delete = find.byTooltip('${l10n.commonDelete}: AUDIT_delete.png');
-    await tester.ensureVisible(delete);
+    final menu = find.byKey(const Key('exportedWorkMoreMenu'));
+    await tester.ensureVisible(menu);
     await tester.pumpAndSettle();
-    await tester.tap(delete);
+    await tester.tap(menu);
     await tester.pumpAndSettle();
-    await tester.tap(find.widgetWithText(FilledButton, l10n.commonDelete));
+    await tester.tap(
+      find.byWidgetPredicate(
+        (widget) => widget is PopupMenuItem<String> && widget.value == 'delete',
+      ),
+    );
+    await tester.pumpAndSettle();
+    final confirmation = find.byType(ProjectTrashDialog);
+    expect(confirmation, findsOneWidget);
+    await tester.tap(
+      find.descendant(
+        of: confirmation,
+        matching: find.widgetWithText(FilledButton, l10n.homeMoveToTrash),
+      ),
+    );
     // 作品はゴミ箱へ移される（本物のファイル操作なので、実時間を進めて待つ）。
     for (var i = 0; i < 30 && file.existsSync(); i++) {
       await pumpRealAsync(tester, const Duration(milliseconds: 100));
