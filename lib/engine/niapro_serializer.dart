@@ -491,7 +491,7 @@ class NiaproSerializer {
     String? fontsManifest,
     DateTime? updatedAt,
   }) async {
-    return _writeArchiveAtomically(filePath, (encoder) {
+    return _writeArchiveAtomically(filePath, modified: updatedAt, (encoder) {
       encoder.addArchiveFile(
         ArchiveFile(
           _manifestFile,
@@ -594,7 +594,7 @@ class NiaproSerializer {
     final oldArchive = ZipDecoder().decodeBytes(oldBytes);
     final oldFilesByName = {for (final f in oldArchive.files) f.name: f};
 
-    return _writeArchiveAtomically(filePath, (encoder) {
+    return _writeArchiveAtomically(filePath, modified: updatedAt, (encoder) {
       encoder.addArchiveFile(
         ArchiveFile(
           _manifestFile,
@@ -641,16 +641,22 @@ class NiaproSerializer {
   /// Finish a ZIP beside its destination before replacing the last good save.
   /// Synchronous close/rename/dirty acknowledgement form one uninterrupted
   /// step: newer drawing changes cannot be acknowledged without being saved.
+  ///
+  /// [modified]を渡すと、保存の中の全項目の更新日時をその値にする（渡さな
+  /// ければ項目ごとに今）。作品の保存では最終保存の日時を渡し、同じ作品を
+  /// 書き直したら同じファイルになるようにする（zipの日時は2秒刻みなので、
+  /// 今の日時では書き直すたびにファイルが変わった）。
   static File _writeArchiveAtomically(
     String filePath,
     void Function(ZipFileEncoder encoder) write, {
     TileManager? savedTiles,
+    DateTime? modified,
   }) {
     final temporary = File(filePath).parent.createTempSync('.niarim-save-');
     try {
       final staging = File('${temporary.path}/archive.tmp');
       final encoder = ZipFileEncoder();
-      encoder.create(staging.path);
+      encoder.create(staging.path, modified: modified);
       try {
         write(encoder);
       } finally {

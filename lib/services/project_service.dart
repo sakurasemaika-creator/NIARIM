@@ -3287,6 +3287,8 @@ class ProjectService extends ChangeNotifier {
         project: project,
         scenes: scenes,
         tileManager: tileManager,
+        // 一覧に出す作品と同じ最終保存の日時をファイルへ書く。
+        updatedAt: project.updatedAt,
       );
     } catch (_) {
       tileManager.dispose();
@@ -3394,11 +3396,15 @@ class ProjectService extends ChangeNotifier {
     final scenes = _scenes[projectId];
     final tm = _tileManagers[projectId];
     if (project == null || scenes == null || tm == null) return;
+    // 最終保存の日時は1回だけ読み、ファイルと一覧の両方へ同じ値を書く
+    // （別々に読むと数ミリ秒ずれ、ゴミ箱へ移す前の保存〔一覧の値を書く〕が
+    // 作品を変えていないのにファイルを書き換えた）。
+    final updatedAt = keepUpdatedAt ? project.updatedAt : DateTime.now();
     final saved = await NiaproSerializer.save(
       project: project,
       scenes: scenes,
       tileManager: tm,
-      updatedAt: keepUpdatedAt ? project.updatedAt : null,
+      updatedAt: updatedAt,
     );
     // 容量と最終保存の時刻は、ファイルに書いたものに合わせる。保存は
     // 描いている間にも走るので、通知はせず次に画面を作るときに使われる
@@ -3408,7 +3414,7 @@ class ProjectService extends ChangeNotifier {
     if (i >= 0) {
       _projects[i] = _projects[i].copyWith(
         sizeBytes: size,
-        updatedAt: keepUpdatedAt ? null : DateTime.now(),
+        updatedAt: keepUpdatedAt ? null : updatedAt,
       );
     }
   }
