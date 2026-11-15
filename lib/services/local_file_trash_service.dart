@@ -45,8 +45,9 @@ class LocalTrashedFile {
 }
 
 /// A directory per item means large videos do not enter preferences or RAM.
-/// Metadata is written BEFORE deleting the source; an interrupted copy
-/// preserves the source. Restore never overwrites an existing file.
+/// Metadata is written AFTER the copy is complete and BEFORE deleting the
+/// source; an interrupted copy preserves the source and lists nothing.
+/// Restore never overwrites an existing file.
 abstract final class LocalFileTrashService {
   static final ValueNotifier<int> changes = ValueNotifier<int>(0);
 
@@ -155,14 +156,16 @@ abstract final class LocalFileTrashService {
       deletedAt: DateTime.now(),
     );
     try {
-      await File(
-        '${directory.path}/meta.json',
-      ).writeAsString(jsonEncode(entry.toJson()), flush: true);
       final saved = await source.copy(entry.archivedPath);
       if (await saved.length() != await source.length()) {
         throw FileSystemException('Incomplete archive copy', source.path);
       }
       await _keepModifiedTime(source, saved);
+      // The record makes the item appear in [list]: write it only once the
+      // copy is complete, in one step. Written before the copy, a list read
+      // during the copy showed a half-copied file, and a failed or killed
+      // copy showed a broken item beside the untouched source.
+      await _replaceMeta(File('${directory.path}/meta.json'), entry.toJson());
       await source.delete();
       _changed(exports: kind == LocalTrashKind.exportedWork);
       return entry;
@@ -253,9 +256,7 @@ abstract final class LocalFileTrashService {
       }
       // Commit the manifest only after all bytes have been verified.
       // A crash during staging must not expose an incomplete Trash item.
-      await File(
-        '${directory.path}/meta.json',
-      ).writeAsString(jsonEncode(entry.toJson()), flush: true);
+      await _replaceMeta(File('${directory.path}/meta.json'), entry.toJson());
       for (final source in sources) {
         await source.delete();
         removedAny = true;
