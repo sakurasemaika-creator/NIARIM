@@ -89,6 +89,9 @@ class _TipsScreenState extends State<TipsScreen> {
                 decoration: InputDecoration(
                   hintText: l10n.tipsSearchHint,
                   hintStyle: TextStyle(color: scheme.onSurfaceVariant),
+                  // 入らないヒントは行を増やして全部出す（1行の欄のままだと、
+                  // 仏語・文字2倍で「Rechercher une a…」と切れた）。
+                  hintMaxLines: 4,
                   prefixIcon: const Icon(Icons.search),
                   prefixIconColor: scheme.onSurfaceVariant,
                   filled: true,
