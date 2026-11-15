@@ -151,9 +151,8 @@ void main() {
         .name;
     final problems = <String>[];
     final tooWide = <String>{};
-    // パネルの見出しの行（見出しとSpacerの行）は、パネルの幅に入らない見出し
-    // （西語「Ajustes de herramientas rápidas」）ではみ出す。この変更の前からの
-    // 別の不具合なので、そのはみ出しだけは数えずに名前を出す。
+    // パネルの見出しは、パネルの幅で折り返す（DISC233。以前は西語の見出しが
+    // 行からはみ出したので、そのはみ出しだけは数えずに名前を出していた）。
     final errors = <String>[];
     final onError = FlutterError.onError;
     FlutterError.onError = (d) => errors.add(d.exceptionAsString());
@@ -161,29 +160,8 @@ void main() {
     for (final locale in AppLocalizations.supportedLocales) {
       language.value = locale;
       await tester.pumpAndSettle();
-      final title = lookupAppLocalizations(locale).quickToolPanelTitle;
-      final titleRow = tester.getSize(
-        find.ancestor(of: find.text(title), matching: find.byType(Row)).first,
-      );
-      final titleWidth = tester
-          .renderObject<RenderParagraph>(
-            find.descendant(
-              of: find.text(title),
-              matching: find.byType(RichText),
-            ),
-          )
-          .getMaxIntrinsicWidth(double.infinity);
       for (final error in errors) {
-        if (error.startsWith('A RenderFlex overflowed') &&
-            titleWidth > titleRow.width) {
-          debugPrint(
-            '${locale.toLanguageTag()}: the panel title「$title」'
-            '(${titleWidth.toStringAsFixed(0)}px) overflows its row '
-            '(${titleRow.width.toStringAsFixed(0)}px): $error',
-          );
-        } else {
-          problems.add('${locale.toLanguageTag()}: $error');
-        }
+        problems.add('${locale.toLanguageTag()}: $error');
       }
       errors.clear();
       final l10n = lookupAppLocalizations(locale);

@@ -8,6 +8,7 @@ import '../../../models/quick_tool_entry.dart';
 import '../../../services/brush_service.dart';
 import '../../../services/quick_tool_service.dart';
 import '../../../widgets/editable_slider_value.dart';
+import '../../../widgets/keep_together_text.dart';
 import '../../../widgets/stepped_slider.dart';
 import '../canvas_screen.dart' show DrawingTool;
 import '../../../widgets/docked_panel_scope.dart';
@@ -87,18 +88,16 @@ class QuickToolPanel extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             PanelCenterCloseBar(onClose: onClose),
-            Row(
-              children: [
-                Text(
-                  l10n.quickToolPanelTitle,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'Kuramubon',
-                    fontFamilyFallback: kHeadingFontFallback,
-                  ),
-                ),
-                const Spacer(),
-              ],
+            // 題はパネルの幅で折り返す（`Text`＋`Spacer`の行に置いていた頃は
+            // 折り返さず、西語「Ajustes de herramientas rápidas」が行から
+            // はみ出した）。韓国語の語は、1行に入れば途中で折らない。
+            messageText(
+              l10n.quickToolPanelTitle,
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontFamily: 'Kuramubon',
+                fontFamilyFallback: kHeadingFontFallback,
+              ),
             ),
             const Divider(),
             Expanded(
