@@ -7,6 +7,7 @@ import '../../config/font_fallback.dart';
 import '../../config/accent_text_theme.dart';
 import '../../utils/name_collation.dart';
 import '../../widgets/fit_or_hide_title.dart';
+import '../../widgets/keep_together_text.dart';
 
 /// ヘルプ（機能の説明）とは別に、「こうすると便利」という活用方法を
 /// 紹介するTipsページ。ホーム画面のハンバーガーメニューから開く。
@@ -127,14 +128,21 @@ class _TipsScreenState extends State<TipsScreen> {
                                     color: AccentTextTheme.of(context),
                                   ),
                                   const SizedBox(width: 6),
-                                  Text(
-                                    category.title,
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.bold,
-                                      fontFamily: 'Kuramubon',
-                                      fontFamilyFallback: kHeadingFontFallback,
-                                      color: AccentTextTheme.of(context),
+                                  // 1行に入らない名前（仏語・西語・大きな文字）は
+                                  // 折り返す（幅を決めずに並べていたので、行が
+                                  // 画面の外へはみ出していた）。韓国語の語は、
+                                  // 1行に入れば途中で折らない。
+                                  Flexible(
+                                    child: messageText(
+                                      category.title,
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.bold,
+                                        fontFamily: 'Kuramubon',
+                                        fontFamilyFallback:
+                                            kHeadingFontFallback,
+                                        color: AccentTextTheme.of(context),
+                                      ),
                                     ),
                                   ),
                                 ],
