@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../l10n/app_localizations.dart';
+import '../../../models/brush.dart';
 import '../../../models/quick_tool_entry.dart';
 import '../../../services/brush_service.dart';
 import '../../../services/quick_tool_service.dart';
@@ -14,6 +15,41 @@ import 'panel_close_bar.dart';
 import '../../../config/font_fallback.dart';
 import '../../../utils/reorder_index.dart';
 import '../../../widgets/scrollable_sheet_body.dart';
+
+/// 早替えツールの一覧に出す名前。
+///
+/// 保存した名前（[QuickToolEntry.label]）ではなく、ツールの種類から表示の
+/// たびに今の言語で作る。保存した名前は足したときの言語の文（最初からある
+/// ものは日本語の「消しゴム」「Gペン 細」）なので、そのまま出すと、言語を
+/// 切り替えても足したときの言語のまま残った。
+///
+/// - 消しゴム・スポイト・バケツは、今の言語のツールの名前。
+/// - ブラシのツールは、[brushes]の中のそのブラシの今の名前（利用者のデータ
+///   なので訳さない。名前を変えれば新しい名前）と、決めた太さ。ブラシが
+///   無くなっていれば保存した名前。
+///
+/// 保存の形（`label`）は、前の版・引き継ぎ（.niatra）が読めるよう今までどおり
+/// 残す。
+String quickToolDisplayLabel(
+  AppLocalizations l10n,
+  QuickToolEntry entry,
+  Iterable<Brush> brushes,
+) {
+  switch (entry.toolKey) {
+    case 'eraser':
+      return l10n.quickToolEraser;
+    case 'eyedropper':
+      return l10n.quickToolEyedropper;
+    case 'bucket':
+      return l10n.quickToolBucket;
+    case 'pen':
+      final brush = brushes.where((b) => b.id == entry.brushId).firstOrNull;
+      if (brush == null) return entry.label;
+      final size = entry.sizeOverride;
+      return size == null ? brush.name : '${brush.name} ${size.round()}px';
+  }
+  return entry.label;
+}
 
 /// 早替えツール設定ポップアップ。
 /// ↺ボタンの長押しで表示する。ドラッグで順番変更・削除・追加ができる。
@@ -39,6 +75,8 @@ class QuickToolPanel extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final service = context.watch<QuickToolService>();
     final entries = service.entries;
+    // ブラシの名前を変えたら、一覧の名前も変わる。
+    final brushes = context.watch<BrushService>().brushes;
 
     return PanelSurface(
       width: 260,
@@ -94,7 +132,7 @@ class QuickToolPanel extends StatelessWidget {
                             style: const TextStyle(fontSize: 12),
                           ),
                           title: Text(
-                            e.label,
+                            quickToolDisplayLabel(l10n, e, brushes),
                             style: const TextStyle(
                               fontSize: 13,
                               fontFamily: 'Kuramubon',
