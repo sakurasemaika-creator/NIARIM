@@ -178,7 +178,7 @@ void main() {
 
 final _run = HomeMatrixRun(
   Directory('build/home-matrix2/environment'),
-  knownProblems: homeMatrix2Known(const ['DISC212', 'DISC215', 'DISC216']),
+  knownProblems: homeMatrix2Known(const ['DISC212', 'DISC216']),
 );
 
 // ─── キーボード ───────────────────────────────────────────────────────

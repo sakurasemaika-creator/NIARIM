@@ -465,7 +465,14 @@ class ProjectListWidget extends StatelessWidget {
                 ),
               ),
             ),
-            const SliverToBoxAdapter(child: SizedBox(height: 104)),
+            // 浮かぶボタンは画面の下の帯（ジェスチャー・3ボタン）の分だけ
+            // 上がるので、末尾の余白にも帯の分を足す（足さないと、一番下
+            // まで送っても最後の行の名前が＋の下に入った）。
+            SliverToBoxAdapter(
+              child: SizedBox(
+                height: 104 + MediaQuery.paddingOf(context).bottom,
+              ),
+            ),
           ],
         );
       }
@@ -511,7 +518,10 @@ class ProjectListWidget extends StatelessWidget {
               ),
             ),
           ),
-          const SliverToBoxAdapter(child: SizedBox(height: 104)),
+          // 画面の下の帯の分も空ける（詳細の一覧と同じ）。
+          SliverToBoxAdapter(
+            child: SizedBox(height: 104 + MediaQuery.paddingOf(context).bottom),
+          ),
         ],
       );
     }

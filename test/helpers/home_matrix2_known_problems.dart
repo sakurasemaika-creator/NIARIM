@@ -20,16 +20,6 @@ final kHomeMatrix2KnownProblems = <HomeMatrixKnownProblem>[
     RegExp(r'^tap target 40x40 \(card\): '),
   ),
   HomeMatrixKnownProblem(
-    'DISC215',
-    '画面の下にジェスチャーの帯（34px）・3ボタンの帯（48px）がある縦の'
-        'スマホ（390x844）で、プロジェクトの一覧を一番下まで送っても、右下の'
-        '＋が最後の行の右のカードの名前の下の端に重なる（浮かぶボタンは帯の'
-        '分だけ上がるが、一覧の末尾の余白は帯の分を足していない）。'
-        'DISC181（一覧の途中で左下の名前が「↑」に隠れる）とは別。',
-    RegExp(r'^text under a floating button: '),
-    where: _bottomInsetOnly,
-  ),
-  HomeMatrixKnownProblem(
     'DISC216',
     '横向きのスマホ（844x390）で左にカメラの切り欠き（安全な領域の左47px）'
         '・右に3ボタンの帯（右48px）があるとき、上部バーと引き出しは避けるが、'
@@ -40,11 +30,6 @@ final kHomeMatrix2KnownProblems = <HomeMatrixKnownProblem>[
     where: _sideInsets,
   ),
 ];
-
-bool _bottomInsetOnly(HomeMatrix m, String what) =>
-    m.tester.view.padding.bottom > 0 &&
-    m.tester.view.padding.left == 0 &&
-    m.tester.view.padding.right == 0;
 
 bool _sideInsets(HomeMatrix m, String what) =>
     m.tester.view.padding.left > 0 || m.tester.view.padding.right > 0;

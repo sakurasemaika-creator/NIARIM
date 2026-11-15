@@ -4860,7 +4860,14 @@ class _OutgoingSharesList extends StatelessWidget {
         slivers: [
           SliverToBoxAdapter(child: top),
           SliverPadding(
-            padding: const EdgeInsets.fromLTRB(8, 0, 8, 100),
+            // 画面の下の帯（ジェスチャー・3ボタン）の分も空ける（ほかの
+            // 一覧と同じ）。
+            padding: EdgeInsets.fromLTRB(
+              8,
+              0,
+              8,
+              100 + MediaQuery.paddingOf(context).bottom,
+            ),
             sliver: SliverGrid.builder(
               gridDelegate: _worksGridDelegate(context, viewMode),
               itemCount: saved.length,
@@ -4872,7 +4879,9 @@ class _OutgoingSharesList extends StatelessWidget {
     }
     return ListView.builder(
       key: const PageStorageKey('outgoing-niashares'),
-      padding: const EdgeInsets.only(bottom: 100),
+      padding: EdgeInsets.only(
+        bottom: 100 + MediaQuery.paddingOf(context).bottom,
+      ),
       itemCount: saved.length + 1,
       itemBuilder: (context, i) =>
           i == 0 ? top : card(context, saved[i - 1], false),
@@ -6388,7 +6397,10 @@ class _TrashTabState extends State<_TrashTab> {
         final loadingRow = loadingFiles ? 1 : 0;
         return ListView.builder(
           itemCount: lead + loadingRow + rows.length,
-          padding: const EdgeInsets.only(bottom: 100),
+          // 画面の下の帯（ジェスチャー・3ボタン）の分も空ける。
+          padding: EdgeInsets.only(
+            bottom: 100 + MediaQuery.paddingOf(context).bottom,
+          ),
           itemBuilder: (context, position) {
             if (position < lead) {
               return ProjectsLoadFailureNotice(
