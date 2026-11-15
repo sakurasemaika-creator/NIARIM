@@ -740,8 +740,8 @@ class ProjectListWidget extends StatelessWidget {
       ),
       trailing: (isSelectionMode || onPickProject != null)
           ? null
-          : Row(
-              mainAxisSize: MainAxisSize.min,
+          // 星と︙の押せる所（48×48）が重ならないよう、隙間を分け合う。
+          : CollectionActionRow(
               children: [
                 CollectionFavoriteButton(
                   itemId: project.id,
@@ -756,7 +756,6 @@ class ProjectListWidget extends StatelessWidget {
                     ),
                   ),
                 ),
-                const SizedBox(width: 4),
                 CollectionActionFrame(child: _projectMenu(context, project)),
               ],
             ),
@@ -766,7 +765,9 @@ class ProjectListWidget extends StatelessWidget {
           ? () => onPickProject!(project.id)
           : () => context.push('/project/${project.id}'),
       onLongPress: () => onLongPress(project.id),
-    );
+      // 行の︙の押せる所は行の右の余白へも届く（ListTileは余白の内側に
+      // trailingを置き、その外を押しても届かないため）。
+    ).withCollectionActionReach();
   }
 
   Widget _folderDetailTile(BuildContext context, ProjectFolder folder) {
@@ -812,8 +813,7 @@ class ProjectListWidget extends StatelessWidget {
         localeName: AppLocalizations.of(context)!.localeName,
       ),
       trailing: (!isSelectionMode && onPickProject == null)
-          ? Row(
-              mainAxisSize: MainAxisSize.min,
+          ? CollectionActionRow(
               children: [
                 CollectionFavoriteButton(
                   itemId: folder.id,
@@ -824,7 +824,6 @@ class ProjectListWidget extends StatelessWidget {
                   onPressed: () =>
                       _handleFolderAction(context, 'favorite', folder),
                 ),
-                const SizedBox(width: 4),
                 CollectionActionFrame(child: _folderMenu(context, folder)),
               ],
             )
@@ -835,7 +834,7 @@ class ProjectListWidget extends StatelessWidget {
           ? () => onSelectionChanged(folder.id)
           : () => onOpenFolder(folder.id),
       onLongPress: () => onLongPress(folder.id),
-    );
+    ).withCollectionActionReach();
   }
 
   Widget _gridCard(BuildContext context, _Entry entry) {

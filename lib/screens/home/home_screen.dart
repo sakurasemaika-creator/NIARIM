@@ -4398,7 +4398,8 @@ Widget _receivedShareProjectTile(
         trailing: selecting
             ? null
             : _sharedProjectActions(context, project, onCopyEntry: onCopyEntry),
-      ),
+        // 行の︙の押せる所（48×48）は、行の右の余白へも届く。
+      ).withCollectionActionReach(),
     ),
   );
 }
@@ -4413,8 +4414,8 @@ Widget _sharedProjectActions(
   bool showMenu = true,
 }) {
   final l10n = AppLocalizations.of(context)!;
-  return Row(
-    mainAxisSize: MainAxisSize.min,
+  // 星と︙の押せる所（48×48）は、丸の外へも届き、隣どうしは隙間を分け合う。
+  return CollectionActionRow(
     children: [
       if (showFavorite)
         CollectionFavoriteButton(
@@ -4428,7 +4429,6 @@ Widget _sharedProjectActions(
             () => context.read<ProjectService>().toggleFavorite(project.id),
           ),
         ),
-      if (showFavorite && showMenu) const SizedBox(width: 4),
       if (showMenu)
         CollectionActionFrame(
           key: Key('collectionMenu_${project.id}'),
@@ -4880,9 +4880,8 @@ class _OutgoingSharesList extends StatelessWidget {
           ],
         ),
       );
-      final actions = Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [favoriteAction, const SizedBox(width: 4), menuAction],
+      final actions = CollectionActionRow(
+        children: [favoriteAction, menuAction],
       );
       if (grid) {
         return HomeCollectionSelectionSurface(
@@ -4958,7 +4957,8 @@ class _OutgoingSharesList extends StatelessWidget {
             onTap: onTap,
             onLongPress: onLongPress,
             trailing: selecting ? null : actions,
-          ),
+            // 行の︙の押せる所（48×48）は、行の右の余白へも届く。
+          ).withCollectionActionReach(),
         ),
       );
     }
@@ -5379,10 +5379,9 @@ class _FolderableList<T> extends StatelessWidget {
     bool showMenu = true,
   }) {
     final l10n = AppLocalizations.of(context)!;
-    return Row(
-      mainAxisSize: MainAxisSize.min,
+    return CollectionActionRow(
       children: [
-        if (showFavorite && onToggleFolderFavorite != null) ...[
+        if (showFavorite && onToggleFolderFavorite != null)
           CollectionFavoriteButton(
             itemId: folder.id,
             favorite: folder.isFavorite,
@@ -5391,8 +5390,6 @@ class _FolderableList<T> extends StatelessWidget {
                 : l10n.colorPickerFavoriteAdd,
             onPressed: () => onToggleFolderFavorite!(folder),
           ),
-          if (showMenu) const SizedBox(width: 4),
-        ],
         if (showMenu)
           CollectionActionFrame(
             child: IconButton(
@@ -5567,7 +5564,8 @@ class _FolderableList<T> extends StatelessWidget {
                     selection.onLongPress(id);
                   }
                 },
-              ),
+                // 行の︙の押せる所（48×48）は、行の右の余白へも届く。
+              ).withCollectionActionReach(),
             ),
           ),
       ],

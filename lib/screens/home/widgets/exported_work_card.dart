@@ -248,6 +248,63 @@ class ExportedWorkCard extends StatelessWidget {
       );
     }
 
+    // 詳細の行の名前・日付と、右上の星・︙。星・︙は名前の行の右に置いて
+    // いた所（行の上・欄の右の余白の内側）に重ねて描き、押せる所（48×48）が
+    // 名前の行の外（上の余白・右の余白）へ届くようにする（行の中に置くと、
+    // 行の外の所を押しても届かない）。名前の欄は今までどおり星・︙の幅を
+    // 空けて折り返す。
+    Widget detailBody() {
+      final actions = [
+        if (!selectionActive && onToggleFavorite != null) favorite(),
+        if (!selectionActive) menu(),
+      ];
+      final actionsWidth = actions.isEmpty
+          ? 0.0
+          : actions.length * CollectionActionFrame.extent +
+                (actions.length - 1) * CollectionActionRow.gap;
+      const inset = EdgeInsets.fromLTRB(0, 8, 8, 8);
+      final rtl = Directionality.of(context) == TextDirection.rtl;
+      return Stack(
+        children: [
+          Padding(
+            padding: inset,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(child: title()),
+                    const SizedBox(width: 4),
+                    SizedBox(
+                      width: actionsWidth,
+                      height: actions.isEmpty
+                          ? 0
+                          : CollectionActionFrame.extent,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                details(),
+                if (shareError != null) ...[
+                  const SizedBox(height: 8),
+                  shareFeedback(),
+                ],
+              ],
+            ),
+          ),
+          if (actions.isNotEmpty)
+            Positioned(
+              top: inset.top,
+              right: rtl ? null : inset.right,
+              left: rtl ? inset.left : null,
+              child: CollectionActionRow(children: actions),
+            ),
+        ],
+      );
+    }
+
     if (gridTile) {
       return HomeCollectionSelectionSurface(
         selectionId: selectionId ?? name,
@@ -339,34 +396,7 @@ class ExportedWorkCard extends StatelessWidget {
                         const SizedBox.shrink(),
                         TableCell(
                           verticalAlignment: TableCellVerticalAlignment.top,
-                          child: Padding(
-                            padding: const EdgeInsets.fromLTRB(0, 8, 8, 8),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Row(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Expanded(child: title()),
-                                    const SizedBox(width: 4),
-                                    if (!selectionActive &&
-                                        onToggleFavorite != null) ...[
-                                      favorite(),
-                                      const SizedBox(width: 4),
-                                    ],
-                                    if (!selectionActive) menu(),
-                                  ],
-                                ),
-                                const SizedBox(height: 4),
-                                details(),
-                                if (shareError != null) ...[
-                                  const SizedBox(height: 8),
-                                  shareFeedback(),
-                                ],
-                              ],
-                            ),
-                          ),
+                          child: detailBody(),
                         ),
                       ],
                     ),

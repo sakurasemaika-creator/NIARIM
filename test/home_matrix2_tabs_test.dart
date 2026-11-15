@@ -68,5 +68,5 @@ void main() {
 
 final _run = HomeMatrixRun(
   Directory('build/home-matrix2/tabs'),
-  knownProblems: homeMatrix2Known(const ['DISC212']),
+  knownProblems: homeMatrix2Known(const []),
 );
