@@ -288,6 +288,19 @@
   描き直しが3400回に増えた）。行の始めに来てはいけない字（長音符・小さいかな・
   閉じ括弧・句読点）の続きをその前の字とつなぐ部分は`line_break.dart`の
   `lineStartKeepParts`（ブラシ・トーン・スタンプの名前で「ー」が行頭に来ていた）。
+- **確認・知らせの文は`messageText`、打つ欄のあるダイアログは`typingDialogInsetPadding`**
+  （DISC171・172、2026-11-15）：Flutterはハングルのどの字の間でも行を変えるので、
+  韓国語の確認の文が「휴지통 / 으로」と語の途中で切れた。`keep_together_text.dart`の
+  `messageText`は韓国語の語と「数＋単位」を`KeepTogetherText`でつなぐ（欄の1行に
+  入らない語だけは字の間で折る、`Text.data`・読み上げは元の文）。ゴミ箱へ移す・
+  削除する確認の文を手書きの`Text`で書くと`trash_confirm_korean_words_test`の
+  走査が落ちる。`KoreanWordsText`は`LayoutBuilder`なので`AlertDialog`の
+  `IntrinsicWidth`の中では使えない。320pxの画面では既定の左右の空き（40px）で
+  ダイアログが最小の幅280pxより狭くなり、ボタン・題の1語が入らず折れるので、
+  打つ欄のあるダイアログは`lib/widgets/typing_dialog_inset.dart`の
+  `typingDialogInsetPadding`を`insetPadding`に渡す（キーボードが開いている間は
+  上下の空きも取らない）。キャンバスの「戻る」の確認・ゴミ箱の確認はまだ既定の
+  空き（DISC189）。
 - **フォントの代替列（fontFamilyFallback）は本文用と見出し用で別物**：
   `lib/config/font_fallback.dart`に`kBodyFontFallback`（明朝系）と
   `kHeadingFontFallback`（ゴシック系）の2本がある。**見出し用には明朝を
