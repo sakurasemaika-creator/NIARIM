@@ -161,7 +161,7 @@ void main() {
       await settle(tester);
       await tester.tap(find.byTooltip(l10n.homeMoveToTrash));
       await settle(tester);
-      await tester.tap(find.widgetWithText(FilledButton, l10n.commonMove));
+      await tester.tap(find.widgetWithText(FilledButton, l10n.homeMoveToTrash));
       await waitFor(
         tester,
         () => snackText(tester) == l10n.homeMovedToTrashSnackbar(1),
@@ -255,7 +255,7 @@ void main() {
       await settle(tester);
       await tester.tap(find.byTooltip(l10n.homeMoveToTrash));
       await settle(tester);
-      await tester.tap(find.widgetWithText(FilledButton, l10n.commonMove));
+      await tester.tap(find.widgetWithText(FilledButton, l10n.homeMoveToTrash));
       await waitForSnack(tester, l10n.homeMovedToTrashSnackbar(1));
       await expectGoneWithinFiveSeconds(tester);
       expect(tester.takeException(), isNull);
@@ -422,7 +422,7 @@ void main() {
       }
       await tester.tap(find.byTooltip(l10n.homeMoveToTrash));
       await settle(tester);
-      await tester.tap(find.widgetWithText(FilledButton, l10n.commonMove));
+      await tester.tap(find.widgetWithText(FilledButton, l10n.homeMoveToTrash));
     }
 
     testWidgets('two card-menu moves: one notice, Undo brings back both', (

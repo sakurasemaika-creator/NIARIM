@@ -1544,7 +1544,7 @@ class _HomeScreenState extends State<HomeScreen>
       builder: (_) => ProjectTrashDialog(
         title: l10n.homeMoveToTrash,
         message: l10n.homeMoveToTrashConfirm(selected.length),
-        confirmLabel: l10n.commonMove,
+        confirmLabel: l10n.homeMoveToTrash,
         itemNames: names,
         onApply: () async {
           // 移したものは、途中で失敗しても作品と同じく知らせて戻せる。
@@ -1935,7 +1935,7 @@ class _HomeScreenState extends State<HomeScreen>
         title: l10n.homeMoveToTrash,
         message:
             l10n.homeMoveToTrashConfirm(count) + descendantText + unreadText,
-        confirmLabel: l10n.commonMove,
+        confirmLabel: l10n.homeMoveToTrash,
         itemNames: names,
         onApply: () async {
           // Recheck protection before changing anything, not just on dialog open.
@@ -2399,7 +2399,10 @@ class _HomeScreenState extends State<HomeScreen>
               FilledButton(
                 key: const Key('homePasteTrashConfirmButton'),
                 onPressed: () => Navigator.pop(ctx, true),
-                child: Text(l10n.commonMove),
+                // ほかのゴミ箱へ移す確認と同じ、見出しと同じ動詞（以前は
+                // 「移動」で、仏語は見出しが「Mettre à la corbeille」なのに
+                // ボタンは「Déplacer」だった）。
+                child: trashConfirmLabelText(l10n.homeMoveToTrash),
               ),
             ],
           ),
@@ -4095,7 +4098,7 @@ Widget _receivedShareMenu(
               builder: (_) => ProjectTrashDialog(
                 title: l10n.homeMoveToTrash,
                 message: l10n.homeMoveToTrashConfirm(1),
-                confirmLabel: l10n.commonMove,
+                confirmLabel: l10n.homeMoveToTrash,
                 itemNames: [project.name],
                 onApply: () async {
                   await service.deleteProject(project.id);
@@ -4212,7 +4215,7 @@ Future<void> _outgoingShareAction(
           builder: (_) => ProjectTrashDialog(
             title: l10n.homeMoveToTrash,
             message: l10n.homeMoveToTrashConfirm(1),
-            confirmLabel: l10n.commonMove,
+            confirmLabel: l10n.homeMoveToTrash,
             itemNames: [entry.name],
             onApply: () async {
               final LocalTrashedFile trashed;
@@ -5168,7 +5171,7 @@ class _FolderableList<T> extends StatelessWidget {
   }
 
   /// フォルダをゴミ箱へ移す確認。プロジェクトのフォルダ・作品・書き出した
-  /// ファイルと同じ形（名前と中身の数を出し、「移動」は差し色、移せな
+  /// ファイルと同じ形（名前と中身の数を出し、「ゴミ箱へ移動」は差し色、移せな
   /// かったときは中に理由を出して開いたまま）。以前は名前の無い別の
   /// ダイアログで、ボタンが危険の赤だった。
   void _confirmFolderTrash(BuildContext context, ProjectFolder folder) {
@@ -5200,7 +5203,7 @@ class _FolderableList<T> extends StatelessWidget {
       builder: (_) => ProjectTrashDialog(
         title: l10n.homeMoveToTrash,
         message: l10n.homeMoveToTrashConfirm(1) + contents,
-        confirmLabel: l10n.commonMove,
+        confirmLabel: l10n.homeMoveToTrash,
         itemNames: [folder.name],
         onApply: () => onDeleteFolder(folder.id),
       ),
@@ -6744,7 +6747,7 @@ class _WorkListItemState extends State<_WorkListItem> {
     );
   }
 
-  /// 作品・フォルダと同じ確認（名前を出し、「移動」は差し色。移せなかった
+  /// 作品・フォルダと同じ確認（名前を出し、「ゴミ箱へ移動」は差し色。移せなかった
   /// ときはダイアログの中に理由を出し、開いたまま）。以前は名前が無く、
   /// 「移動」が危険な操作の赤だった。
   Future<void> _confirmDelete(BuildContext context) async {
@@ -6759,7 +6762,7 @@ class _WorkListItemState extends State<_WorkListItem> {
       builder: (_) => ProjectTrashDialog(
         title: l10n.homeMoveToTrash,
         message: l10n.homeMoveToTrashConfirm(1),
-        confirmLabel: l10n.commonMove,
+        confirmLabel: l10n.homeMoveToTrash,
         itemNames: [file.path.split(RegExp(r'[\\/]')).last],
         onApply: () async {
           final LocalTrashedFile entry;

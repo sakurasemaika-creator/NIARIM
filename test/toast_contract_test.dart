@@ -667,7 +667,7 @@ void main() {
             await tester.tap(find.byTooltip(l10n.homeMoveToTrash));
             await settle(tester);
             await tester.tap(
-              find.widgetWithText(FilledButton, l10n.commonMove),
+              find.widgetWithText(FilledButton, l10n.homeMoveToTrash),
             );
           }
           final moved = l10n.homeMovedToTrashSnackbar(1);

@@ -385,7 +385,9 @@ void main() {
       expect(find.byType(ProjectTrashDialog), findsOneWidget);
       await tester.runAsync(() => favorite(kept.id));
       await tester.runAsync(() async {
-        await tester.tap(find.widgetWithText(FilledButton, l10n.commonMove));
+        await tester.tap(
+          find.widgetWithText(FilledButton, l10n.homeMoveToTrash),
+        );
         await Future<void>.delayed(const Duration(milliseconds: 100));
       });
       await tester.pumpAndSettle();

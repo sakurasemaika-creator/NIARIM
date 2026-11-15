@@ -64,7 +64,7 @@ void main() {
             builder: (_) => ProjectTrashDialog(
               title: l10n.homeMoveToTrash,
               message: message,
-              confirmLabel: l10n.commonMove,
+              confirmLabel: l10n.homeMoveToTrash,
               itemNames: const ['旅行'],
               onApply: () async {},
             ),

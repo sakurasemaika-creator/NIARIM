@@ -4,6 +4,7 @@ import '../l10n/app_localizations.dart';
 import '../services/project_service.dart'
     show FavoriteProjectDeleteException, TrashedFolderUnreadException;
 import '../utils/folder_persistence.dart' show FolderSaveException;
+import '../utils/line_break.dart';
 import 'app_toast_messenger.dart';
 import 'copy_name_text.dart';
 import 'keep_together_text.dart';
@@ -20,6 +21,19 @@ String _failureText(AppLocalizations l10n, Object? failure) =>
     : failure is FolderSaveException && failure.partiallySaved
     ? l10n.folderChangesPartiallySaved
     : l10n.homeTrashOperationFailed;
+
+/// ゴミ箱へ移す・完全に削除する確認のボタンの文字。韓国語は語の途中で行を
+/// 変えない（320px・文字2倍で「휴지통으로 이 / 동」と切れた）。読み上げは
+/// 元の文。2行に折れたときも、字がボタンの上下の縁に付かないように少し
+/// 空ける（1行のときはボタンの高さの下限〔48〕の中に収まり、高さは
+/// 変わらない）。
+Widget trashConfirmLabelText(String label) {
+  final shown = keepKoreanWordsTogether(label);
+  return Padding(
+    padding: const EdgeInsets.symmetric(vertical: 6),
+    child: Text(shown, semanticsLabel: plainSemanticsLabel(shown)),
+  );
+}
 
 /// [showProjectActionFailure]が出した失敗の知らせの印（閉じるときに、他の
 /// 機能の知らせと見分ける）。知らせごとに別のキーになる。
@@ -271,7 +285,9 @@ class _ProjectTrashDialogState extends State<ProjectTrashDialog> {
                       color: scheme.onSurface,
                     ),
                   ),
-                Text(_working ? l10n.homeTrashWorking : widget.confirmLabel),
+                trashConfirmLabelText(
+                  _working ? l10n.homeTrashWorking : widget.confirmLabel,
+                ),
               ],
             ),
           ),

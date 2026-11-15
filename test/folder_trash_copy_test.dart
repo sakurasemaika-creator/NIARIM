@@ -425,11 +425,12 @@ void main() {
       await tester.tap(find.text('ゴミ箱へ移動').last);
       await settle(tester);
       // 選んでゴミ箱へ移すときと同じ確かめるダイアログ（所有者の判断2）：
-      // 移すフォルダの名前と、移す件数の行が1つの文で出る。
+      // 移すフォルダの名前と、移す件数の行が1つの文で出る。見出しと
+      // ボタンは同じ「ゴミ箱へ移動」。
       final dialog = find.byType(AlertDialog);
       expect(
         find.descendant(of: dialog, matching: find.text('ゴミ箱へ移動')),
-        findsOneWidget,
+        findsNWidgets(2),
       );
       expect(
         find.descendant(of: dialog, matching: find.text('親')),
@@ -439,7 +440,7 @@ void main() {
         find.text('1件をゴミ箱へ移動しますか？\nフォルダの中のプロジェクト3件・フォルダ2件も一緒に移動します。'),
         findsOneWidget,
       );
-      await tester.tap(find.widgetWithText(FilledButton, '移動'));
+      await tester.tap(find.widgetWithText(FilledButton, 'ゴミ箱へ移動'));
       // 中の作品を保存し終えてから移すので、移し終わるまで待つ。
       await waitFor(tester, () => service.folders.isEmpty);
       expect(service.folders, isEmpty);

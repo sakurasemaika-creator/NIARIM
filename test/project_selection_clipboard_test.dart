@@ -217,7 +217,7 @@ void main() {
       findsOneWidget,
     );
     await captureClipboardScreen(tester, '23_bulk_folder_trash_confirmation');
-    await tester.tap(find.widgetWithText(FilledButton, '移動'));
+    await tester.tap(find.widgetWithText(FilledButton, 'ゴミ箱へ移動'));
     await waitFor(tester, () => snackText(tester) != null);
     expect(service.projects.map((p) => p.name), ['banana']);
     expect(service.folders, isEmpty);

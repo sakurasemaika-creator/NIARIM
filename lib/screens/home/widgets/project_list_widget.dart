@@ -1409,7 +1409,7 @@ class ProjectListWidget extends StatelessWidget {
       builder: (_) => ProjectTrashDialog(
         title: l10n.homeMoveToTrash,
         message: l10n.homeMoveToTrashConfirm(1) + descendantText + unreadText,
-        confirmLabel: l10n.commonMove,
+        confirmLabel: l10n.homeMoveToTrash,
         itemNames: [folder.name],
         onApply: () async {
           // 開いた後にお気に入りにした場合も、何も変える前に断る。
