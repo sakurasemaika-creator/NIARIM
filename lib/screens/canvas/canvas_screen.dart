@@ -930,7 +930,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                         ? Icons.palette_outlined
                         : Icons.contrast,
                   );
-                  final title = Text(l10n.canvasAutofillCheckView);
+                  final title = messageText(l10n.canvasAutofillCheckView);
                   return LayoutBuilder(
                     builder: (ctx, constraints) {
                       // 選択肢は、項目名の右に入るときだけ右のドロップダウンに
@@ -950,12 +950,12 @@ class _CanvasScreenState extends State<CanvasScreen> {
                       }
                       // 項目名の、折り返せないいちばん広い語（右に置くと項目名の
                       // 欄が狭くなり、西語で「Vista de com / probación」と語の
-                      // 途中で折れた）。
+                      // 途中で折れた）。韓国語の語は、描く文と同じくつないで測る。
                       final titlePainter = TextPainter(
-                        text: TextSpan(
-                          text: l10n.canvasAutofillCheckView,
-                          style: style,
-                        ),
+                        text: KeepTogetherText(
+                          l10n.canvasAutofillCheckView,
+                          keep: koreanWordParts(l10n.canvasAutofillCheckView),
+                        ).joinedSpan(style ?? const TextStyle()),
                         textDirection: Directionality.of(ctx),
                         textScaler: scaler,
                       )..layout();
@@ -984,7 +984,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                               for (final entry in labels.entries)
                                 DropdownMenuItem(
                                   value: entry.key,
-                                  child: Text(entry.value),
+                                  child: messageText(entry.value),
                                 ),
                             ],
                             onChanged: choose,
@@ -1007,7 +1007,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                                 for (final entry in labels.entries)
                                   RadioListTile<AutofillCheckMode>(
                                     value: entry.key,
-                                    title: Text(entry.value),
+                                    title: messageText(entry.value),
                                     contentPadding:
                                         const EdgeInsetsDirectional.only(
                                           start: 56,
@@ -1025,8 +1025,10 @@ class _CanvasScreenState extends State<CanvasScreen> {
               ),
               ListTile(
                 leading: const Icon(Icons.auto_fix_high_outlined),
-                title: Text(l10n.canvasEditMenuAutofillPresets),
-                subtitle: Text(l10n.canvasEditMenuAutofillPresetsSubtitle),
+                title: messageText(l10n.canvasEditMenuAutofillPresets),
+                subtitle: messageText(
+                  l10n.canvasEditMenuAutofillPresetsSubtitle,
+                ),
                 onTap: () {
                   Navigator.pop(ctx);
                   _runAutomationBlockedAction(
@@ -1040,8 +1042,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
                       ? Icons.check_box_outline_blank
                       : Icons.grid_4x4,
                 ),
-                title: Text(l10n.canvasEditMenuBackgroundToggle),
-                subtitle: Text(
+                title: messageText(l10n.canvasEditMenuBackgroundToggle),
+                subtitle: messageText(
                   _canvasBackground == CanvasBackground.white
                       ? l10n.canvasEditMenuBackgroundCurrentColor
                       : l10n.canvasEditMenuBackgroundCurrentTransparent,
@@ -1072,8 +1074,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
                     ),
                   ),
                 ),
-                title: Text(l10n.newProjectBackgroundColorLabel),
-                subtitle: Text(l10n.canvasBackgroundColorChoices),
+                title: messageText(l10n.newProjectBackgroundColorLabel),
+                subtitle: messageText(l10n.canvasBackgroundColorChoices),
                 onTap: () {
                   Navigator.pop(ctx);
                   _showBackgroundColorPicker(context);
@@ -1081,8 +1083,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
               ),
               ListTile(
                 leading: const Icon(Icons.layers_outlined),
-                title: Text(l10n.onionSkinTitle),
-                subtitle: Text(l10n.canvasEditMenuOnionSkinSubtitle),
+                title: messageText(l10n.onionSkinTitle),
+                subtitle: messageText(l10n.canvasEditMenuOnionSkinSubtitle),
                 onTap: () {
                   Navigator.pop(ctx);
                   _toggleOnionSkinPanel();
@@ -1105,10 +1107,10 @@ class _CanvasScreenState extends State<CanvasScreen> {
                     context.read<PremiumService>().isFeatureAvailable(
                       PremiumFeature.customAutomation,
                     )
-                    ? Text(l10n.customAutomationTitle)
+                    ? messageText(l10n.customAutomationTitle)
                     : ActionBesideOrBelow(
                         gap: 16,
-                        text: Text(l10n.customAutomationTitle),
+                        text: messageText(l10n.customAutomationTitle),
                         action: Icon(
                           Icons.lock_outline,
                           size: 18,
@@ -1122,8 +1124,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
               ),
               ListTile(
                 leading: const Icon(Icons.blur_on),
-                title: Text(l10n.filterPanelTitle),
-                subtitle: Text(l10n.canvasEditMenuFilterSubtitle),
+                title: messageText(l10n.filterPanelTitle),
+                subtitle: messageText(l10n.canvasEditMenuFilterSubtitle),
                 onTap: () {
                   Navigator.pop(ctx);
                   _toggleFilterPanel();
@@ -1133,8 +1135,10 @@ class _CanvasScreenState extends State<CanvasScreen> {
                 leading: Icon(
                   _frameMultiSelectMode ? Icons.checklist_rtl : Icons.checklist,
                 ),
-                title: Text(l10n.canvasEditMenuFrameMultiSelect),
-                subtitle: Text(l10n.canvasEditMenuFrameMultiSelectSubtitle),
+                title: messageText(l10n.canvasEditMenuFrameMultiSelect),
+                subtitle: messageText(
+                  l10n.canvasEditMenuFrameMultiSelectSubtitle,
+                ),
                 onTap: () {
                   _toggleFrameMultiSelect();
                   Navigator.pop(ctx);
@@ -1145,8 +1149,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
               // ため、どちらから開いても同じ値を編集することになる）。
               ListTile(
                 leading: const Icon(Icons.gesture),
-                title: Text(l10n.canvasEditMenuPressureCurve),
-                subtitle: Text(l10n.canvasEditMenuPressureCurveSubtitle),
+                title: messageText(l10n.canvasEditMenuPressureCurve),
+                subtitle: messageText(l10n.canvasEditMenuPressureCurveSubtitle),
                 onTap: () {
                   Navigator.pop(ctx);
                   _runAutomationBlockedAction(
@@ -1159,8 +1163,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
               // 自由に動かせる。
               ListTile(
                 leading: const Icon(Icons.crop_free),
-                title: Text(l10n.canvasEditMenuMeshTransform),
-                subtitle: Text(l10n.canvasEditMenuMeshTransformSubtitle),
+                title: messageText(l10n.canvasEditMenuMeshTransform),
+                subtitle: messageText(l10n.canvasEditMenuMeshTransformSubtitle),
                 onTap: () {
                   Navigator.pop(ctx);
                   _openMeshTransformPanel();
@@ -1171,7 +1175,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
               // フィルターへ新規フィルターとして追加できる。
               ListTile(
                 leading: const Icon(Icons.tune),
-                title: Text(l10n.canvasColorAdjustMenuTitle),
+                title: messageText(l10n.canvasColorAdjustMenuTitle),
                 onTap: () {
                   Navigator.pop(ctx);
                   _toggleDesktopOrMobileDockPanel(CanvasDockPanel.colorAdjust);
@@ -1186,8 +1190,10 @@ class _CanvasScreenState extends State<CanvasScreen> {
                       ? Icons.dashboard_customize
                       : Icons.dashboard_customize_outlined,
                 ),
-                title: Text(l10n.canvasEditMenuReferenceWindow),
-                subtitle: Text(l10n.canvasEditMenuReferenceWindowSubtitle),
+                title: messageText(l10n.canvasEditMenuReferenceWindow),
+                subtitle: messageText(
+                  l10n.canvasEditMenuReferenceWindowSubtitle,
+                ),
                 onTap: () {
                   Navigator.pop(ctx);
                   setState(() => _showReferenceWindow = !_showReferenceWindow);
@@ -1200,8 +1206,10 @@ class _CanvasScreenState extends State<CanvasScreen> {
                   leading: Icon(
                     _showCanvasPreviewPanel ? Icons.map : Icons.map_outlined,
                   ),
-                  title: Text(l10n.canvasEditMenuPreviewNavigator),
-                  subtitle: Text(l10n.canvasEditMenuPreviewNavigatorSubtitle),
+                  title: messageText(l10n.canvasEditMenuPreviewNavigator),
+                  subtitle: messageText(
+                    l10n.canvasEditMenuPreviewNavigatorSubtitle,
+                  ),
                   onTap: () {
                     Navigator.pop(ctx);
                     _setDesktopPanelVisible(

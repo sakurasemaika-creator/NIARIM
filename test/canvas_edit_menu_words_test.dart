@@ -15,8 +15,11 @@
 // 出ていることを見張る。その幅より広い1つの語（320px・文字2倍の仏語
 // 「Automatisations」、320・360px・文字2倍の西語「Automatizaciones」）は、
 // どう並べても途中で折れるので数えない（所有者の決まりを待っている、
-// DISC118・145・155）。韓国語の語が音節の間で折れるのも、アプリ全体の決まりを
-// 待っている別の件（DISC111）なので数えない。
+// DISC118・145・155）。
+//
+// 項目名・説明（subtitle）は普通の`Text`で、韓国語の語が音節の間で折れていた
+// （320・360px・文字2倍、DISC207）。韓国語の語も、入る幅では途中で折らない
+// ことを見張る。
 import 'dart:io';
 import 'dart:math' as math;
 
@@ -40,12 +43,6 @@ import 'helpers/load_app_fonts.dart';
 import 'helpers/word_breaks.dart';
 
 const _height = 740.0;
-
-final RegExp _hangul = RegExp(r'[\uAC00-\uD7A3\u1100-\u11FF\u3130-\u318F]');
-
-/// [wordsBrokenThatFit]の1件の、折れた語。
-String _brokenWord(String problem) =>
-    RegExp(r'「([^」]*)」').firstMatch(problem)?.group(1) ?? '';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -193,9 +190,6 @@ void main() {
                   paragraph,
                   fitWidth: math.max(room, paragraph.constraints.maxWidth),
                 )) {
-                  // 韓国語の語が音節の間で折れるのは、アプリ全体の決まりを
-                  // 待っている別の件（DISC111）。ここでは数えない。
-                  if (_hangul.hasMatch(_brokenWord(broken))) continue;
                   seen.add('$at: $broken');
                 }
               }
