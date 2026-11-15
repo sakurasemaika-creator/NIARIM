@@ -55,6 +55,10 @@ String shortcutDisplayLabel(AppLocalizations l10n, ShortcutBinding binding) {
 class ShortcutSettingsScreen extends StatelessWidget {
   const ShortcutSettingsScreen({super.key});
 
+  /// 一覧の下端に取る、浮かぶボタンの分の余白（ボタン56・ボタンの下の
+  /// 余白16・ボタンとの間16。ホームの一覧・空の表示と同じ）。
+  static const double _floatingButtonClearance = 88;
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -91,6 +95,14 @@ class ShortcutSettingsScreen extends StatelessWidget {
                       ),
                     )
                   : ListView.builder(
+                      // 一覧の下端に「追加」の浮かぶボタンの分の余白を取る
+                      // （取らないと、最後までスクロールしても最後の行の削除の
+                      // ボタンが浮かぶボタンの下に入ったまま押せなかった）。
+                      // 画面の下の帯（ジェスチャーの帯）の分は、一覧を包む
+                      // SafeArea（desktopCentered）が一覧の外に取る。
+                      padding: const EdgeInsets.only(
+                        bottom: _floatingButtonClearance,
+                      ),
                       itemCount: bindings.length,
                       itemBuilder: (context, index) {
                         final b = bindings[index];
