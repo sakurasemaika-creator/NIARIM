@@ -1380,6 +1380,15 @@ class ThemeService extends ChangeNotifier {
         // 完全な円形：角丸四角より親しみやすく、LINE等の日本製アプリで
         // 定番のFAB形状。
         shape: const CircleBorder(),
+        // 文字つきの浮かぶボタン（FloatingActionButton.extended）のラベルも
+        // ほかのボタンと同じくくらむぼん。指定しないとMaterialの既定の
+        // labelLarge（本文の書体の白光明朝）で描かれた。大きさは labelLarge の
+        // まま、色はボタンが前景色で上書きする。
+        extendedTextStyle: textTheme.labelLarge?.copyWith(
+          fontFamily: 'Kuramubon',
+          fontFamilyFallback: kHeadingFontFallback,
+          fontWeight: FontWeight.w700,
+        ),
       ),
       tabBarTheme: TabBarThemeData(
         indicatorColor: scheme.primary,

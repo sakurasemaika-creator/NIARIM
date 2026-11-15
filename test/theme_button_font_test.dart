@@ -1,7 +1,15 @@
+import 'dart:io';
+import 'dart:ui' as ui;
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/config/font_fallback.dart';
+import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/services/theme_service.dart';
+
+import 'helpers/load_app_fonts.dart';
 
 /// テーマが各ボタンへ与えるラベル書式に、**必ずアプリ同梱フォントが
 /// 指定されている**ことを検証する。
@@ -33,6 +41,10 @@ void main() {
       'textButtonTheme': theme.textButtonTheme.style?.textStyle?.resolve(
         <WidgetState>{},
       ),
+      // 文字つきの浮かぶボタン（FloatingActionButton.extended）のラベル。
+      // 指定しないとMaterialの既定（labelLarge＝白光明朝）になる（DISC224）。
+      'floatingActionButtonTheme.extendedTextStyle':
+          theme.floatingActionButtonTheme.extendedTextStyle,
     };
 
     for (final button in const [
@@ -40,6 +52,7 @@ void main() {
       'elevatedButtonTheme',
       'outlinedButtonTheme',
       'textButtonTheme',
+      'floatingActionButtonTheme.extendedTextStyle',
     ]) {
       expect(
         targets[button]?.fontFamily,
@@ -104,6 +117,11 @@ void main() {
               );
             },
           ),
+          floatingActionButton: FloatingActionButton.extended(
+            onPressed: () {},
+            icon: const Icon(Icons.add),
+            label: const Text('文字つきの浮き'),
+          ),
         ),
       ),
     );
@@ -122,7 +140,7 @@ void main() {
       return null;
     }
 
-    for (final label in ['塗り', '文字', '枠', '浮き']) {
+    for (final label in ['塗り', '文字', '枠', '浮き', '文字つきの浮き']) {
       final style = spanStyle(label);
       expect(style, isNotNull, reason: '$labelのラベルが見つからない');
       expect(style!.fontFamily, 'Kuramubon', reason: '$labelのボタン');
@@ -166,4 +184,100 @@ void main() {
       accent,
     );
   });
+
+  // 文字つきの浮かぶボタン（「Ajouter」「追加」「新增」）のラベルも、ほかの
+  // ボタンと同じくくらむぼん（DISC224）。テーマに extendedTextStyle が無く、
+  // Materialの既定（labelLarge＝本文の書体の白光明朝。中国語は Noto Serif SC）
+  // で描かれていた。言語ごとのテーマ（themeDataFor）で本物のボタンを描き、
+  // ラベルの書体・代替の列と、ボタンの色・高さ・形が変わらないことを見る。
+  final shots = Platform.environment['NIARIM_SET2_SHOTS'];
+  for (final locale in AppLocalizations.supportedLocales) {
+    final tag = locale.toLanguageTag();
+    testWidgets('extended floating action button labels use the button font '
+        '($tag)', (tester) async {
+      await loadAppFonts(tester);
+      tester.view.physicalSize = const Size(360, 240);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      final l10n = lookupAppLocalizations(locale);
+      final theme = ThemeService().themeDataFor(locale);
+      final rootKey = GlobalKey();
+      await tester.pumpWidget(
+        RepaintBoundary(
+          key: rootKey,
+          child: MaterialApp(
+            locale: locale,
+            theme: theme,
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: Scaffold(
+              body: const SizedBox.expand(),
+              floatingActionButton: FloatingActionButton.extended(
+                onPressed: () {},
+                icon: const Icon(Icons.add),
+                label: Text(l10n.commonAdd),
+                shape: const StadiumBorder(),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final label = tester.widget<RichText>(
+        find.descendant(
+          of: find.byType(FloatingActionButton),
+          matching: find.byWidgetPredicate(
+            (w) => w is RichText && w.text.toPlainText() == l10n.commonAdd,
+          ),
+        ),
+      );
+      final style = label.text.style!;
+      final problems = <String>[
+        if (style.fontFamily != 'Kuramubon')
+          '「${l10n.commonAdd}」is drawn in ${style.fontFamily}',
+        if (!listEquals(style.fontFamilyFallback, kHeadingFontFallback))
+          '「${l10n.commonAdd}」falls back to ${style.fontFamilyFallback}',
+        // ラベルの色・大きさはボタンの決まりのまま（色は前景色、大きさは
+        // labelLarge と同じ）。
+        if (style.color != theme.colorScheme.onPrimary)
+          'label colour ${style.color} is not onPrimary',
+        if (style.fontSize != theme.textTheme.labelLarge!.fontSize)
+          'label size ${style.fontSize} is not labelLarge',
+      ];
+      final material = tester.widget<Material>(
+        find
+            .descendant(
+              of: find.byType(FloatingActionButton),
+              matching: find.byType(Material),
+            )
+            .first,
+      );
+      if (material.color != theme.colorScheme.primary) {
+        problems.add('button colour ${material.color} is not primary');
+      }
+      if (material.elevation != 0) {
+        problems.add('button elevation ${material.elevation}');
+      }
+      final size = tester.getSize(find.byType(FloatingActionButton));
+      if (size.height != 56) problems.add('button height ${size.height}');
+      debugPrint(
+        '$tag「${l10n.commonAdd}」 ${style.fontFamily} '
+        '${size.width.toStringAsFixed(1)}x${size.height}',
+      );
+      if (shots != null) {
+        await tester.runAsync(() async {
+          final boundary =
+              rootKey.currentContext!.findRenderObject()!
+                  as RenderRepaintBoundary;
+          final image = await boundary.toImage(pixelRatio: 2);
+          final data = await image.toByteData(format: ui.ImageByteFormat.png);
+          await File(
+            '$shots/DISC224-$tag.png',
+          ).writeAsBytes(data!.buffer.asUint8List(), flush: true);
+          image.dispose();
+        });
+      }
+      expect(problems, isEmpty, reason: problems.join('\n'));
+    });
+  }
 }
