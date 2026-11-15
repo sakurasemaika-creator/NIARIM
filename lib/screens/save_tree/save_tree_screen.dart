@@ -1274,12 +1274,17 @@ class _TreeView extends StatelessWidget {
               children: [
                 Flexible(
                   fit: FlexFit.loose,
-                  child: Text(
-                    givenSaveName(node.comment) ??
-                        l10n.saveTreeNodeDefaultTitle,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
+                  child: givenSaveName(node.comment) != null
+                      // 利用者の名前は1行で省略する。
+                      ? Text(
+                          givenSaveName(node.comment)!,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        )
+                      // 名前の無い保存の題（アプリの文）は切らずに折り返す
+                      // （320/360px・文字2倍で「Sauvega…」と切れた）。韓国語の
+                      // 語は、1行に入れば途中で折らない。
+                      : messageText(l10n.saveTreeNodeDefaultTitle),
                 ),
                 SaveRenameButton(
                   node: node,
