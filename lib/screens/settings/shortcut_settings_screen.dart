@@ -8,9 +8,12 @@ import '../../l10n/app_localizations.dart';
 import '../../models/shortcut_binding.dart';
 import '../../services/brush_service.dart';
 import '../../services/shortcut_service.dart';
+import '../../utils/line_break.dart' show containsHangul;
+import '../../widgets/action_beside_or_below.dart' show widestUnbreakableWidth;
 import '../../widgets/confirm_delete.dart';
 import '../../widgets/editable_slider_value.dart';
 import '../../widgets/help_button.dart';
+import '../../widgets/keep_together_text.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/stepped_slider.dart';
 import '../../config/font_fallback.dart';
@@ -91,7 +94,8 @@ class ShortcutSettingsScreen extends StatelessWidget {
           children: [
             Padding(
               padding: const EdgeInsets.all(16),
-              child: Text(
+              // 韓国語の語は、1行に入れば途中で折らない（「도 / 구」と折れた）。
+              child: messageText(
                 l10n.shortcutSettingsHint,
                 style: TextStyle(
                   fontSize: 11,
@@ -128,20 +132,31 @@ class ShortcutSettingsScreen extends StatelessWidget {
                           ),
                           // キーのチップが1行で項目名の前に入らない幅（大きな
                           // 文字・字の広い言語）では、項目名の上に置く（「…」で
-                          // 切らない）。
+                          // 切らない）。チップが入っても、残りの名前の欄に名前の
+                          // いちばん広い語が入らないときも上に置く（英語320px・
+                          // 文字2倍で「Re / do」と語の途中で折れた）。
                           child: LayoutBuilder(
                             builder: (context, box) {
                               final chip = _KeyChip(b.comboLabel);
-                              final beside =
-                                  _KeyChip.widthOf(context, b.comboLabel) <=
-                                  math.max(120, box.maxWidth * 0.4);
-                              final name = Text(
-                                shortcutDisplayLabel(l10n, b),
-                                style: const TextStyle(
-                                  fontFamily: 'Kuramubon',
-                                  fontFamilyFallback: kHeadingFontFallback,
-                                ),
+                              final label = shortcutDisplayLabel(l10n, b);
+                              // 韓国語の語は、1行に入れば途中で折らない。
+                              final name = messageText(
+                                label,
+                                style: _nameStyle,
                               );
+                              final chipWidth = _KeyChip.widthOf(
+                                context,
+                                b.comboLabel,
+                              );
+                              final beside =
+                                  chipWidth <=
+                                      math.max(120, box.maxWidth * 0.4) &&
+                                  _widestWordOf(context, name, label) <=
+                                      _nameWidthBeside(
+                                        context,
+                                        box.maxWidth,
+                                        chipWidth,
+                                      );
                               return ListTile(
                                 leading: beside ? chip : null,
                                 title: beside
@@ -161,7 +176,7 @@ class ShortcutSettingsScreen extends StatelessWidget {
                                   onPressed: () async {
                                     if (!await confirmDelete(
                                       context,
-                                      itemName: shortcutDisplayLabel(l10n, b),
+                                      itemName: label,
                                     )) {
                                       return;
                                     }
@@ -187,6 +202,106 @@ class ShortcutSettingsScreen extends StatelessWidget {
         // の投稿ボタンと同じ理由）。
         shape: const StadiumBorder(),
       ),
+    );
+  }
+
+  /// 一覧の行の名前の書式（行の題の書式に重ねる）。
+  static const _nameStyle = TextStyle(
+    fontFamily: 'Kuramubon',
+    fontFamilyFallback: kHeadingFontFallback,
+  );
+
+  /// 一覧の行の名前[name]（文は[label]）の、折り返せないいちばん広い語の幅
+  /// （行の題の書式で）。
+  static double _widestWordOf(BuildContext context, Widget name, String label) {
+    final style =
+        (ListTileTheme.of(context).titleTextStyle ??
+                Theme.of(context).textTheme.titleMedium ??
+                const TextStyle())
+            .merge(_nameStyle);
+    final painter = TextPainter(
+      text: name is KeepTogetherText
+          ? name.joinedSpan(style)
+          : TextSpan(text: label, style: style),
+      textDirection: Directionality.of(context),
+      textScaler: MediaQuery.textScalerOf(context),
+      locale: Localizations.maybeLocaleOf(context),
+    )..layout();
+    final widest = widestUnbreakableWidth(
+      painter,
+      reported: painter.minIntrinsicWidth,
+    );
+    painter.dispose();
+    return widest;
+  }
+
+  /// 幅[rowWidth]の行で、キーのチップ（幅[chipWidth]）を名前の前に置いたときの
+  /// 名前の欄の幅（ListTileの並べ方：左右の余白、先頭のチップと間、削除の
+  /// ボタンと間を除いた幅）。
+  static double _nameWidthBeside(
+    BuildContext context,
+    double rowWidth,
+    double chipWidth,
+  ) {
+    final tileTheme = ListTileTheme.of(context);
+    final padding =
+        (tileTheme.contentPadding ??
+                const EdgeInsetsDirectional.only(start: 16, end: 24))
+            .resolve(Directionality.of(context));
+    final gap = tileTheme.horizontalTitleGap ?? 16;
+    final leading = math.max(tileTheme.minLeadingWidth ?? 24, chipWidth);
+    // 削除のボタン（押せる大きさの最小、48）。
+    const deleteButton = kMinInteractiveDimension;
+    return rowWidth -
+        padding.horizontal -
+        leading -
+        gap -
+        math.max(deleteButton + gap, 32);
+  }
+
+  /// 足すシートの題（キーの組[combo]を埋めた文）。
+  ///
+  /// キーの組は、一覧のチップと同じく修飾キーの「+」の後だけで折り返す
+  /// （普通の文のままだと「要为Ctrl+Shift+Alt+ / +分配什么？」とキーの「+」が
+  /// 行の頭に来て、「Ctrl+S / hift」と修飾キーの名前の途中でも折れた）。
+  /// 韓国語の語は、1行に入れば途中で折らない（「무 / 엇을」「할당하시겠습 /
+  /// 니까?」と折れた）。キーの組の後に続く助詞（「Arrow Left에」の「에」）は
+  /// キーの名前から離さない。読み上げは元の文。
+  static Widget _chooseActionTitle(AppLocalizations l10n, String combo) {
+    const style = TextStyle(
+      fontWeight: FontWeight.bold,
+      fontFamily: 'Kuramubon',
+      fontFamilyFallback: kHeadingFontFallback,
+    );
+    final shownCombo = _KeyChip._breakable(combo);
+    final shown = l10n.shortcutChooseActionTitle(shownCombo);
+    final semantics = l10n.shortcutChooseActionTitle(combo);
+    // キーの組と重なる語は、ここで決めたキーの名前と助詞だけをつなぐ（組の
+    // 中の修飾キーの「+」の後では折り返せるままにする）。
+    final keep = [
+      ...koreanWordParts(shown, except: [shownCombo]),
+    ];
+    final at = shown.indexOf(shownCombo);
+    if (at >= 0) {
+      final end = at + shownCombo.length;
+      var tail = end;
+      while (tail < shown.length && shown[tail].trim().isNotEmpty) {
+        tail++;
+      }
+      if (containsHangul(shown.substring(end, tail))) {
+        keep.add(
+          shown.substring(at + shownCombo.lastIndexOf('\u200b') + 1, tail),
+        );
+      }
+    }
+    if (keep.isEmpty) {
+      return Text(shown, semanticsLabel: semantics, style: style);
+    }
+    return KeepTogetherText(
+      shown,
+      keep: keep,
+      semanticsLabel: semantics,
+      style: style,
     );
   }
 
@@ -224,23 +339,9 @@ class ShortcutSettingsScreen extends StatelessWidget {
           children: [
             Padding(
               padding: const EdgeInsets.all(12),
-              // 題の中のキーの組も、一覧のチップと同じく修飾キーの「+」の後
-              // だけで折り返す（普通の文のままだと「要为Ctrl+Shift+Alt+ /
-              // +分配什么？」とキーの「+」が行の頭に来て、「Ctrl+S / hift」と
-              // 修飾キーの名前の途中でも折れた）。読み上げは元の文。
-              child: Text(
-                l10n.shortcutChooseActionTitle(
-                  _KeyChip._breakable(captured.comboLabel),
-                ),
-                semanticsLabel: l10n.shortcutChooseActionTitle(
-                  captured.comboLabel,
-                ),
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'Kuramubon',
-                  fontFamilyFallback: kHeadingFontFallback,
-                ),
-              ),
+              // 題の中のキーの組は修飾キーの「+」の後だけで折り返し、韓国語の
+              // 語は途中で折らない（[_chooseActionTitle]）。
+              child: _chooseActionTitle(l10n, captured.comboLabel),
             ),
             const Divider(height: 1),
             ListTile(

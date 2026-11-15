@@ -51,6 +51,7 @@ class KeepTogetherText extends Text {
     super.key,
     super.style,
     super.textAlign,
+    super.semanticsLabel,
   });
 
   /// [data]の中で、途中で行を変えない部分。現れる所はすべて対象（ただし、

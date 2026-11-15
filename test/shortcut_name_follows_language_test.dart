@@ -153,11 +153,15 @@ void main() {
     return (shortcuts, language);
   }
 
-  /// 一覧の行に出ている名前（キーのチップを除く、行の題の文）。
+  /// 一覧の行に出ている名前（キーのチップを除く、行の題の文）。名前は
+  /// 韓国語の語・数をつなぐ`KeepTogetherText`（`Text`の仲間）でも描く。
   List<String> shownNames(WidgetTester tester) => [
     for (final tile in tester.widgetList<ListTile>(find.byType(ListTile)))
       ...find
-          .descendant(of: find.byWidget(tile), matching: find.byType(Text))
+          .descendant(
+            of: find.byWidget(tile),
+            matching: find.byWidgetPredicate((w) => w is Text),
+          )
           .evaluate()
           .map((e) => e.widget as Text)
           // キーのチップ（読み上げに元のキーの組を添えている）は除く。
