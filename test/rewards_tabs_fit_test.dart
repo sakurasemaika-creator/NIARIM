@@ -9,9 +9,11 @@
 //   省略記号で切らない。
 // - ミッションのタブのログインの案内（「Connectez-vous avec Google…」）は
 //   余白の無い`Center`の`Text`で、画面の左端（x=0）から始まっていた。
-// - ページの中の文はどれも画面の端から8px以上の余白を取る。ログイン・接続の
-//   案内は行に入る語を途中で折らない。ほかの文の語の途中の折れ（韓国語の
-//   ミッション・特典の文など）は、この単位の外なので数えずに名前を出す。
+// - ページの中の文はどれも画面の端から8px以上の余白を取る。どの文も行に
+//   入る語を途中で折らない（DISC243：韓国語のミッション・特典の文などが
+//   「혜택 컴플리트 / 팩」のように語の途中で折れていた。以前はログイン・接続の
+//   案内だけを見ていた）。行より広い1語は所有者の判断待ち（DISC155）なので
+//   数えずに名前を出す。
 //
 // 7言語×320/360/412px×文字1.0/1.3/2.0。
 import 'dart:convert';
@@ -194,7 +196,6 @@ void main() {
       final semantics = tester.ensureSemantics();
       final problems = <String>{};
       final tooWide = <String>{};
-      final otherBreaks = <String>{};
       final notices = {
         l10n.creatorMissionLogin,
         l10n.creatorMissionOffline,
@@ -230,13 +231,13 @@ void main() {
               '${rect.right.toStringAsFixed(0)})',
             );
           }
-          // ログイン・接続の案内は、行に入る語を途中で折らない。ほかの文の
-          // 語の途中の折れ（韓国語の語など）は、この単位の外なので数えずに
-          // 名前を出しておく。
+          // どの文も、行に入る語（韓国語の語・数と単位など）を途中で折らない
+          // （DISC243。以前はログイン・接続の案内だけを見て、ほかの文の折れ
+          // は名前を出すだけだった）。
           final broken = brokenWordUnits(p);
           final notice = notices.contains(shown);
           for (final word in broken.fits) {
-            (notice ? problems : otherBreaks).add('$at「$shown」: $word');
+            problems.add('$at「$shown」${notice ? ' (notice)' : ''}: $word');
           }
           tooWide.addAll(broken.tooWide.map((w) => '$at $w'));
           for (final c in ParagraphLines(p).charsOutsideWidth()) {
@@ -376,9 +377,6 @@ void main() {
       }
       for (final word in tooWide) {
         debugPrint('$tag wider than the line (DISC155): $word');
-      }
-      for (final word in otherBreaks) {
-        debugPrint('$tag other text breaks a word (not this unit): $word');
       }
       for (final problem in problems) {
         debugPrint('$tag $problem');

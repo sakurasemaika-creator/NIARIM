@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../utils/line_break.dart';
 import '../../widgets/action_beside_or_below.dart';
 
 /// ミッション画面の欄（作品広場の滞在・ウィークリー／マンスリー・累計ログイン
@@ -35,7 +36,9 @@ class MissionPanelHeading extends StatelessWidget {
               child: Icon(icon, color: iconColor),
             ),
           ),
-          TextSpan(text: title),
+          // 韓国語の題は語の途中で折らない（「누적 로그인 / 보너스」の所で
+          // だけ折る）。読み上げは元の題のまま。
+          TextSpan(text: keepKoreanWordsTogether(title), semanticsLabel: title),
         ],
       ),
       style: Theme.of(context).textTheme.titleMedium,

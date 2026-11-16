@@ -319,7 +319,7 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
         scrollable: true,
         title: Text(t['redeem']),
         // 期間と数＋単位は途中で行を変えない（「55000코」「인」と切れた）。
-        content: KeepTogetherText(
+        content: keepTogetherWords(
           '${t['fullPremium']} · $period · $amount\n\n$overlapMessage',
           keep: [period, amount],
         ),
@@ -435,7 +435,7 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
         builder: (dialog) => AlertDialog(
           scrollable: true,
           title: Text(t['redeem']),
-          content: KeepTogetherText(
+          content: keepTogetherWords(
             '${t['fullPremium']} · $period · $cost\n\n$overlapMessage',
             keep: [period, cost],
           ),
@@ -544,7 +544,7 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
         builder: (dialog) => AlertDialog(
           scrollable: true,
           title: Text(labels['redeem']),
-          content: KeepTogetherText(
+          content: keepTogetherWords(
             '${targets.length} · $period · $amount',
             keep: [period, amount],
           ),
@@ -768,7 +768,7 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
       builder: (ctx) => AlertDialog(
         scrollable: true,
         title: Text(l10n.rewardUnlockReviewTitle),
-        content: KeepTogetherText(lines.join('\n\n'), keep: [total]),
+        content: keepTogetherWords(lines.join('\n\n'), keep: [total]),
         actions: [
           FilledButton(
             key: const Key('rewardOverlapReviewClose'),
@@ -827,7 +827,7 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
                     horizontal: 20,
                     vertical: 8,
                   ),
-                  child: Text(
+                  child: messageText(
                     t['chooseDuration'],
                     style: Theme.of(sheetContext).textTheme.titleLarge,
                   ),
@@ -913,13 +913,13 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
     final bodySmall = theme.textTheme.bodySmall;
     final Widget price;
     if (!enabled) {
-      price = Text(t['notReady'], style: bodySmall);
+      price = messageText(t['notReady'], style: bodySmall);
     } else if (officialPrice != null) {
       price = Text(l10n.coinAmount(officialPrice), style: bodySmall);
     } else {
       // 数＋単位は途中で行を変えない（「…・70コ」「イン」と切れた）。
       final amount = l10n.coinAmount(referencePrice!);
-      price = KeepTogetherText(
+      price = keepTogetherWords(
         '${l10n.rewardUnlockFixedPrice} · $amount'
         '${hasSubscription ? ' · ${t['activePremium']}' : ''}',
         keep: [amount],
@@ -965,7 +965,7 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
             children: [
               // 名前の中の数と単位（「1作品」「1개」「1篇」「2時間」）は
               // 途中で行を変えない。
-              KeepTogetherText(t[target.name], keep: const []),
+              keepTogetherWords(t[target.name], keep: const []),
               DefaultTextStyle(style: priceStyle, child: price),
             ],
           ),
@@ -1049,12 +1049,12 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
         ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            Text(
+            messageText(
               earn ? nav['earnDescription'] : nav['exchange'],
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 16),
-            Text(
+            messageText(
               _rewardState != null && _rewardState!['balanceCoins'] is int
                   ? l10n.coinAmount(_rewardState!['balanceCoins'] as int)
                   : _walletLoading
@@ -1082,7 +1082,7 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(t['watchRewardedAd']),
-                    Text(
+                    messageText(
                       rewardQuotaLabel,
                       style: Theme.of(context).textTheme.labelSmall,
                       textAlign: TextAlign.center,
@@ -1092,7 +1092,7 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
               ),
               Padding(
                 padding: const EdgeInsets.only(top: 6),
-                child: Text(
+                child: messageText(
                   t['rewardQuotaCaution'],
                   style: Theme.of(context).textTheme.bodySmall,
                   textAlign: TextAlign.center,
@@ -1102,7 +1102,7 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
             if (earn && _rewardState?['rewardEarningEnabled'] != true)
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 16),
-                child: Text(nav['earnUnavailable']),
+                child: messageText(nav['earnUnavailable']),
               ),
             if (!earn && _rewardState != null) ...[
               TextButton.icon(
@@ -1122,7 +1122,7 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
             if (!earn) ...[
               const SizedBox(height: 16),
               // Shared duration goes BEFORE the list of checkboxes.
-              Text(
+              messageText(
                 t['duration'],
                 style: Theme.of(context).textTheme.titleMedium,
               ),
@@ -1134,7 +1134,7 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
                 onPressed: () => _chooseDuration(t),
               ),
               const SizedBox(height: 18),
-              Text(
+              messageText(
                 t['chooseBenefits'],
                 style: Theme.of(context).textTheme.titleMedium,
               ),
@@ -1155,7 +1155,7 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      Text(
+                      messageText(
                         t['total'],
                         style: Theme.of(context).textTheme.titleMedium,
                       ),
@@ -1196,7 +1196,7 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
                       if (serverPrice == null &&
                           quote == null &&
                           _selected.isNotEmpty)
-                        Text(
+                        messageText(
                           l10n.rewardUnlockFixedPrice,
                           key: const Key('rewardTotalReferenceNote'),
                           style: Theme.of(context).textTheme.bodySmall,
@@ -1262,12 +1262,12 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
                 ),
               ),
               const SizedBox(height: 16),
-              Text(
+              messageText(
                 t['freeOnly'],
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodySmall,
               ),
-              Text(
+              messageText(
                 t['earning'],
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodySmall,

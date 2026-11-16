@@ -441,7 +441,9 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(t.get('detailsTitle')),
-        content: SingleChildScrollView(child: Text(details.join('\n\n'))),
+        content: SingleChildScrollView(
+          child: messageText(details.join('\n\n')),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
@@ -513,12 +515,12 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
                 text: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    KeepTogetherText(
+                    keepTogetherWords(
                       _goal(t, row),
                       keep: _goalKeep(row),
                       style: theme.textTheme.bodyMedium,
                     ),
-                    Text(status, style: theme.textTheme.bodySmall),
+                    messageText(status, style: theme.textTheme.bodySmall),
                   ],
                 ),
                 action: Column(
@@ -708,35 +710,35 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
                   ),
                   const SizedBox(height: 12),
                 ],
-                Text(
+                messageText(
                   t.get('subtitle'),
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
                 const SizedBox(height: 8),
-                Text(t.get('budget')),
+                messageText(t.get('budget')),
                 const SizedBox(height: 8),
                 // 時間の数と単位（「0시간」「10 hours」）は途中で行を変えない。
-                KeepTogetherText(
+                keepTogetherWords(
                   l10n.creatorMissionLocalTime(localSeconds ~/ 3600),
                   keep: [l10n.missionDurationHours(localSeconds ~/ 3600)],
                 ),
-                Text(
+                messageText(
                   account['editTimeVerificationReady'] == true
                       ? t.get('timeWarning')
                       : t.get('editTimeUnverified'),
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
-                KeepTogetherText(
+                keepTogetherWords(
                   l10n.creatorMissionCandidateMinutes(candidateMinutes),
                   keep: [l10n.missionDurationMinutes(candidateMinutes)],
                 ),
-                KeepTogetherText(
+                keepTogetherWords(
                   l10n.creatorMissionVerifiedMinutes(verifiedMinutes),
                   keep: [l10n.missionDurationMinutes(verifiedMinutes)],
                 ),
                 if (account['enabled'] != true &&
                     grid?['rewardEnabled'] != true)
-                  Text(t.get('upcoming')),
+                  messageText(t.get('upcoming')),
                 const SizedBox(height: 16),
               ],
             );

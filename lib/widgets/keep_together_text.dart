@@ -238,6 +238,10 @@ Widget countText(String text, {Key? key, TextStyle? style}) =>
 /// [keepLastPhrase]が真なら、日本語の最後の語を途中で折らない
 /// （[japaneseLastPhraseParts]。ボタンの名前が「…詳しく見 / る」と最後の
 /// 1字だけの行に折れた）。
+///
+/// [keep]は、ほかに途中で切らない部分（[KeepTogetherText.keep]と同じ。
+/// 「2時間」「1,500オパール」など、組み立てた文の中の数と単位）。韓国語の語は
+/// それと重ならない所だけをつなぐ。
 Widget messageText(
   String text, {
   Key? key,
@@ -245,24 +249,48 @@ Widget messageText(
   bool keepLineStarts = false,
   TextAlign? textAlign,
   bool keepLastPhrase = false,
+  List<String> keep = const [],
 }) {
-  final keep = [
+  final parts = [
+    ...keep,
     for (final m in _spacedCount.allMatches(text)) m[0]!,
-    ...koreanWordParts(text),
+    ...koreanWordParts(text, except: keep),
     if (keepLineStarts) ...lineStartKeepParts(text),
     if (keepLastPhrase) ...japaneseLastPhraseParts(text),
   ];
-  if (keep.isEmpty && !text.contains(RegExp(r'\d'))) {
+  if (parts.isEmpty && !text.contains(RegExp(r'\d'))) {
     return Text(text, key: key, style: style, textAlign: textAlign);
   }
   return KeepTogetherText(
     text,
     key: key,
-    keep: keep,
+    keep: parts,
     style: style,
     textAlign: textAlign,
   );
 }
+
+/// [KeepTogetherText]と同じく[text]を描き、[keep]に加えて韓国語の語
+/// （[keep]と重ならないもの）も途中で切らない（[messageText]と同じ決まり）。
+/// 組み立てた文の中の数と単位（[keep]）を挙げる所で、韓国語の語も語の途中で
+/// 折らないために使う（オパールの画面の「혜택 컴플리트 / 팩」が語の途中で
+/// 折れた）。欄の1行に入らない語だけは字の間で折る。
+KeepTogetherText keepTogetherWords(
+  String text, {
+  required List<String> keep,
+  Key? key,
+  TextStyle? style,
+  TextAlign? textAlign,
+}) => KeepTogetherText(
+  text,
+  key: key,
+  keep: [
+    ...keep,
+    ...koreanWordParts(text, except: keep),
+  ],
+  style: style,
+  textAlign: textAlign,
+);
 
 /// [text]の中の、ハングルを含む語（空白で区切った単位。付いている記号・数・
 /// 助詞も含めて）。[KeepTogetherText]の`keep`に渡すと、欄の1行に入る語は

@@ -114,7 +114,7 @@ class _RecurringMissionsPanelState extends State<RecurringMissionsPanel> {
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: Text(l10n.missionDetailsTitle),
-        content: SingleChildScrollView(child: Text(details)),
+        content: SingleChildScrollView(child: messageText(details)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
@@ -151,7 +151,7 @@ class _RecurringMissionsPanelState extends State<RecurringMissionsPanel> {
         ),
       ),
       // 日数・コインの数と単位（「3日」「4金幣」）は途中で行を変えない。
-      title: KeepTogetherText(
+      title: keepTogetherWords(
         raw['period'] == 'week'
             ? l10n.recurringMissionGoalWeek(requiredDays)
             : l10n.recurringMissionGoalMonth(requiredDays),
@@ -159,7 +159,7 @@ class _RecurringMissionsPanelState extends State<RecurringMissionsPanel> {
       ),
       // 受け取るボタンは説明の横か下に置き、題には行の幅をすべて使わせる。
       subtitle: ActionBesideOrBelow(
-        text: KeepTogetherText(
+        text: keepTogetherWords(
           '$progress · $coinAmount',
           keep: [progress, coinAmount],
         ),
@@ -202,7 +202,9 @@ class _RecurringMissionsPanelState extends State<RecurringMissionsPanel> {
             if (snapshot.hasError || !snapshot.hasData) {
               return Row(
                 children: [
-                  Expanded(child: Text(l10n.recurringMissionsUnavailable)),
+                  Expanded(
+                    child: messageText(l10n.recurringMissionsUnavailable),
+                  ),
                   IconButton(
                     onPressed: () => setState(() => _future = _load(_api!)),
                     icon: const Icon(Icons.refresh),
@@ -226,18 +228,18 @@ class _RecurringMissionsPanelState extends State<RecurringMissionsPanel> {
                     icon: const Icon(Icons.refresh),
                   ),
                 ),
-                Text(
+                messageText(
                   l10n.recurringMissionsNote,
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
                 if (!enabled)
-                  Text(
+                  messageText(
                     l10n.recurringMissionsPayoutPending,
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
                 for (final period in ['week', 'month']) ...[
                   const SizedBox(height: 8),
-                  Text(
+                  messageText(
                     period == 'week'
                         ? l10n.missionPeriodWeekly
                         : l10n.missionPeriodMonthly,

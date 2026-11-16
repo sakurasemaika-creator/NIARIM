@@ -126,7 +126,7 @@ class _PlazaMissionsPanelState extends State<PlazaMissionsPanel> {
       builder: (dialogContext) => AlertDialog(
         key: ValueKey('plazaMissionDetailsDialog_$id'),
         title: Text(_l10n.missionDetailsTitle),
-        content: SingleChildScrollView(child: Text(details)),
+        content: SingleChildScrollView(child: messageText(details)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
@@ -161,13 +161,13 @@ class _PlazaMissionsPanelState extends State<PlazaMissionsPanel> {
       ),
       // 時間・コインの数と単位（「15分」「1コイン」「40小時」）は途中で
       // 行を変えない。
-      title: KeepTogetherText(
+      title: keepTogetherWords(
         _l10n.plazaMissionGoal(_goal(goal)),
         keep: [_goal(goal)],
       ),
       // 受け取るボタンは説明の横か下に置き、題には行の幅をすべて使わせる。
       subtitle: ActionBesideOrBelow(
-        text: KeepTogetherText(
+        text: keepTogetherWords(
           '${_goal(progress)} / ${_goal(goal)} · ${_l10n.coinAmount(coins)}',
           keep: [_goal(progress), _goal(goal), _l10n.coinAmount(coins)],
         ),
@@ -204,7 +204,9 @@ class _PlazaMissionsPanelState extends State<PlazaMissionsPanel> {
               if (snapshot.hasError) {
                 return Row(
                   children: [
-                    Expanded(child: Text(_l10n.plazaMissionsUnavailable)),
+                    Expanded(
+                      child: messageText(_l10n.plazaMissionsUnavailable),
+                    ),
                     IconButton(
                       onPressed: () =>
                           setState(() => _state = _api!.myPlazaMissions()),
@@ -233,18 +235,18 @@ class _PlazaMissionsPanelState extends State<PlazaMissionsPanel> {
                     icon: const Icon(Icons.refresh),
                   ),
                 ),
-                Text(
+                messageText(
                   _l10n.plazaMissionsNote,
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
                 if (!enabled)
-                  Text(
+                  messageText(
                     _l10n.missionPayoutPending,
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
                 for (final period in ['day', 'week', 'month']) ...[
                   const SizedBox(height: 8),
-                  Text(
+                  messageText(
                     _period(period),
                     style: Theme.of(context).textTheme.titleSmall,
                   ),

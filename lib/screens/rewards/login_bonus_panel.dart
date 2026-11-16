@@ -113,7 +113,7 @@ class _LoginBonusPanelState extends State<LoginBonusPanel> {
             if (snapshot.hasError || !snapshot.hasData) {
               return Row(
                 children: [
-                  Expanded(child: Text(t['unknown'])),
+                  Expanded(child: messageText(t['unknown'])),
                   IconButton(
                     onPressed: () => setState(() => _future = _load(_api!)),
                     icon: const Icon(Icons.refresh),
@@ -154,7 +154,7 @@ class _LoginBonusPanelState extends State<LoginBonusPanel> {
                 ),
                 // 日数・コインの数と単位（「31日」「1코인」）は途中で行を
                 // 変えない。
-                KeepTogetherText(l10n.loginBonusDays(days), keep: const []),
+                keepTogetherWords(l10n.loginBonusDays(days), keep: const []),
                 const SizedBox(height: 8),
                 Row(
                   children: [
@@ -162,8 +162,8 @@ class _LoginBonusPanelState extends State<LoginBonusPanel> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(t['daily']),
-                          KeepTogetherText(
+                          messageText(t['daily']),
+                          keepTogetherWords(
                             l10n.loginBonusDailyCoins(amount),
                             keep: [l10n.coinAmount(amount)],
                             style: Theme.of(context).textTheme.bodySmall,
@@ -187,20 +187,23 @@ class _LoginBonusPanelState extends State<LoginBonusPanel> {
                   ],
                 ),
                 if (!visited)
-                  Text(
+                  messageText(
                     t['visitMissing'],
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
                 if (!enabled)
-                  Text(
+                  messageText(
                     t['unavailable'],
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
                 const SizedBox(height: 8),
-                Text(t['utc'], style: Theme.of(context).textTheme.bodySmall),
+                messageText(
+                  t['utc'],
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
                 ExpansionTile(
                   key: const Key('loginMilestoneExpansion'),
-                  title: Text(t['milestones']),
+                  title: messageText(t['milestones']),
                   children: milestones.map((m) {
                     final goal = (m['days'] as num?)?.toInt() ?? 0;
                     final coins = (m['coins'] as num?)?.toInt() ?? 0;
@@ -216,14 +219,14 @@ class _LoginBonusPanelState extends State<LoginBonusPanel> {
                             ? scheme.primary
                             : scheme.onSurfaceVariant,
                       ),
-                      title: KeepTogetherText(
+                      title: keepTogetherWords(
                         l10n.loginBonusMilestone(goal),
                         keep: const [],
                       ),
                       // 受け取るボタンはコインの横か下に置き、題には行の幅を
                       // すべて使わせる。
                       subtitle: ActionBesideOrBelow(
-                        text: KeepTogetherText(
+                        text: keepTogetherWords(
                           l10n.coinAmount(coins),
                           keep: [l10n.coinAmount(coins)],
                         ),
