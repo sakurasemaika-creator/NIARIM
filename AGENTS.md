@@ -39,11 +39,11 @@
 
 独立タスクの起点でユーザーが「NIARIMの全面監査を再開」「前回の全面監査・改善作業を再開」「NIARIMの全面監査を実行」等、**全面監査そのものを明示した場合だけ**監査モードを有効化する。実行場所がWorkか通常Chatか、担当モデルがAstra/Sol/その他かは起動条件にしない。
 
-監査モードでは `docs/work-audit/policy/ASTRA_WORK.md` を入口とし、そこに従って `AUDIT_ROUTE.md`、`ASTRA_CONTINUATION.md`、`ASTRA_AUDIT_STATE.md` を使用する。これらのファイル名は既存参照を壊さないため当面維持するが、**全面監査モード用であって特定モデル専用ではない**。Route/Progress/Evidenceのread/writeはこの全面監査モードに限定する。
+監査モードでは `docs/work-audit/FULL_AUDIT_ENTRYPOINT.md` と `docs/work-audit/policy/ASTRA_WORK.md` に従い、`AUDIT_ROUTE.md`、`ASTRA_CONTINUATION.md`、`ASTRA_AUDIT_STATE.md` を使用する。
 
-通常Chatでも、ユーザーが明示的に全面監査を依頼したセッションではSol等がRouteを正本として監査を継続し、検証済みEvidence/Progressを更新してよい。逆に、同じSolでも通常タスクではSection 1に従い監査Route/Stateへアクセスしない。
+**Claudeは一巡目の判定・記録と、独立したGPTセッションによる修正・確認後の二巡目の全件判定を担当する。** 製品修正の実行・委任・取り込みはGPTの修正工程に限る。進行中は安全なチェックポイントで進捗と差分を保存し、最新Policyを読み直して続ける。
 
-**今回のユーザー指示 / Policy / Route / Stateを混同しない。** 通常タスクや別セッションの変更・話題・テスト結果を、そのままRouteのdoneや監査Evidenceへ昇格させない。
+GPTはユーザーから監査指摘の修正を明示された場合に限り、Appの修正引継ぎ台帳とそこから参照される指摘・証跡の必要箇所を読み、台帳に修正と確認の結果を追記できる。Claudeが正式なRoute/Progress/Evidenceの更新とdone判定を行う。通常タスクの結果をそのまま監査済み扱いしない。
 
 ## 3. 監査システム保守
 
