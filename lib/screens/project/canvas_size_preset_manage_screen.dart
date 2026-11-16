@@ -13,6 +13,7 @@ import '../../utils/reorder_index.dart';
 import '../../widgets/name_entry_dialog.dart';
 import '../../config/accent_text_theme.dart';
 import '../../widgets/fit_or_hide_title.dart';
+import '../../widgets/typing_dialog_inset.dart';
 
 /// 保存済みカスタムキャンバスサイズプリセットの一覧管理画面。
 /// ドラッグでの並べ替え・編集・複製・名前変更・削除ができる。
@@ -316,6 +317,7 @@ class _PresetSizeDialogState extends State<_PresetSizeDialog> {
           errorMaxLines: 3,
         );
     return AlertDialog(
+      insetPadding: typingDialogInsetPadding(context),
       title: Text(l10n.canvasSizePresetEditDialogTitle),
       content: Row(
         crossAxisAlignment: CrossAxisAlignment.start,

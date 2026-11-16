@@ -13,6 +13,7 @@ import '../canvas/widgets/color_picker_panel.dart';
 import 'widget_artwork_picker_screen.dart';
 import '../../config/accent_text_theme.dart';
 import '../../widgets/fit_or_hide_title.dart';
+import '../../widgets/typing_dialog_inset.dart';
 
 /// 背景色の選び方（テーマに合わせる／色を指定する）の2択。
 enum _ColorMode { theme, custom }
@@ -300,7 +301,10 @@ class WidgetSettingsScreen extends StatelessWidget {
       context: context,
       builder: (ctx) => Dialog(
         backgroundColor: Colors.transparent,
-        insetPadding: const EdgeInsets.all(16),
+        insetPadding: typingDialogInsetPadding(
+          ctx,
+          usual: const EdgeInsets.all(16),
+        ),
         child: ColorPickerPanel(
           currentColor: Color(current),
           onColorChanged: (c) => foreground

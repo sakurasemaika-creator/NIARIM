@@ -47,6 +47,7 @@ import '../../../engine/premultiplied.dart';
 import '../../../engine/tone_curve.dart';
 import '../../../config/accent_text_theme.dart';
 import '../../../widgets/list_ink_clip.dart';
+import '../../../widgets/typing_dialog_inset.dart';
 
 enum FilterColorEyedropperTarget { inkPool, outline }
 
@@ -2817,6 +2818,7 @@ class _FilterPanelState extends State<FilterPanel> {
                 await showDialog(
                   context: context,
                   builder: (ctx) => Dialog(
+                    insetPadding: typingDialogInsetPadding(ctx),
                     backgroundColor: Colors.transparent,
                     child: ColorPickerPanel(
                       currentColor: Color(value),

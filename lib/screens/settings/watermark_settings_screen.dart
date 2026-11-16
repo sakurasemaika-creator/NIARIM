@@ -23,6 +23,7 @@ import '../canvas/widgets/color_picker_panel.dart';
 import '../../config/font_fallback.dart';
 import '../../config/accent_text_theme.dart';
 import '../../widgets/fit_or_hide_title.dart';
+import '../../widgets/typing_dialog_inset.dart';
 
 /// ウォーターマーク登録・管理画面（プレミアム限定）。
 /// 「設定項目：画像選択 / 文字入力 / …」のうち、画像・文字それぞれの
@@ -238,6 +239,7 @@ class WatermarkSettingsScreen extends StatelessWidget {
         controller: controller,
         builder: (ctx) => StatefulBuilder(
           builder: (ctx, setS) => AlertDialog(
+            insetPadding: typingDialogInsetPadding(ctx),
             title: Text(
               existing == null
                   ? l10n.watermarkTextDialogTitle
@@ -306,7 +308,10 @@ class WatermarkSettingsScreen extends StatelessWidget {
                           context: ctx,
                           builder: (pctx) => Dialog(
                             backgroundColor: Colors.transparent,
-                            insetPadding: const EdgeInsets.all(16),
+                            insetPadding: typingDialogInsetPadding(
+                              pctx,
+                              usual: const EdgeInsets.all(16),
+                            ),
                             child: ColorPickerPanel(
                               currentColor: selected,
                               onColorChanged: (c) => setS(() => selected = c),
@@ -411,6 +416,7 @@ class WatermarkSettingsScreen extends StatelessWidget {
         controller: nameController,
         builder: (ctx) => StatefulBuilder(
           builder: (ctx, setS) => AlertDialog(
+            insetPadding: typingDialogInsetPadding(ctx),
             title: Text(l10n.commonEdit),
             content: SingleChildScrollView(
               child: Column(
@@ -552,7 +558,10 @@ class WatermarkSettingsScreen extends StatelessWidget {
               context: context,
               builder: (pctx) => Dialog(
                 backgroundColor: Colors.transparent,
-                insetPadding: const EdgeInsets.all(16),
+                insetPadding: typingDialogInsetPadding(
+                  pctx,
+                  usual: const EdgeInsets.all(16),
+                ),
                 child: ColorPickerPanel(
                   currentColor: color,
                   onColorChanged: onChanged,

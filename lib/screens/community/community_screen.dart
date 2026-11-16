@@ -35,6 +35,7 @@ import 'widgets/video_type_filter.dart';
 import '../../config/font_fallback.dart';
 import '../../utils/color_contrast.dart';
 import '../../utils/responsive_tile_defaults.dart';
+import '../../widgets/typing_dialog_inset.dart';
 
 enum _RankingPeriod { allTime, yearly, monthly, weekly, daily }
 
@@ -649,6 +650,7 @@ class _CommunityScreenState extends State<CommunityScreen>
     final name = await showDialog<String>(
       context: context,
       builder: (dialogContext) => AlertDialog(
+        insetPadding: typingDialogInsetPadding(dialogContext),
         title: Text(l10n.communitySaveSearch),
         content: TextField(
           key: const Key('communitySavedSearchName'),
@@ -2477,7 +2479,10 @@ class _ContentFilterDialogState extends State<_ContentFilterDialog> {
       theme.scaffoldBackgroundColor,
     );
     return AlertDialog(
-      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+      insetPadding: typingDialogInsetPadding(
+        context,
+        usual: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+      ),
       title: Text(
         widget.muteOnly
             ? CommunityPlazaLabels.of(context).muteSettings

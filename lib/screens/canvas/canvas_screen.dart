@@ -4406,6 +4406,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
       await showDialog<void>(
         context: dialogContext,
         builder: (pickerContext) => Dialog(
+          insetPadding: typingDialogInsetPadding(pickerContext),
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 520, maxHeight: 720),
             child: ColorPickerPanel(
@@ -4429,9 +4430,9 @@ class _CanvasScreenState extends State<CanvasScreen> {
           builder: (ctx, setS) => AlertDialog(
             // スライダーを画面の横幅いっぱいに使えるよう、ダイアログを
             // 既定（左右40px空け、内容が狭ければ幅280）より広く取る。
-            insetPadding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 24,
+            insetPadding: typingDialogInsetPadding(
+              ctx,
+              usual: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
             ),
             title: Text(
               existingLayerId == null

@@ -37,6 +37,7 @@ import '../../utils/folder_tree.dart';
 import '../../utils/work_time_label.dart';
 import '../../widgets/share_project_file_action.dart';
 import '../home/widgets/project_list_widget.dart' show niashareKey;
+import '../../widgets/typing_dialog_inset.dart';
 
 class ProjectDetailScreen extends StatefulWidget {
   final String projectId;
@@ -953,6 +954,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
             }
 
             return AlertDialog(
+              insetPadding: typingDialogInsetPadding(ctx),
               // タグが多くても、欄と保存のボタンがはみ出さない。
               scrollable: true,
               title: Text(l10n.projectDetailTagsQuickAction),

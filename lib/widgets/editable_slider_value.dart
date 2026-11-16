@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../l10n/app_localizations.dart';
+import 'typing_dialog_inset.dart';
 
 /// スライダーの数値表示部分をタップすると、直接テキスト入力で値を変更
 /// できるようにする共通ウィジェット。既存のSlider横に置いているTextを
@@ -178,6 +179,7 @@ class _NumberInputDialogState extends State<_NumberInputDialog> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return AlertDialog(
+      insetPadding: typingDialogInsetPadding(context),
       title: widget.title != null ? Text(widget.title!) : null,
       content: TextField(
         controller: _controller,

@@ -38,6 +38,7 @@ import '../../config/font_fallback.dart';
 import '../../widgets/scrollable_sheet_body.dart';
 import '../../config/accent_text_theme.dart';
 import '../../widgets/fit_or_hide_title.dart';
+import '../../widgets/typing_dialog_inset.dart';
 
 /// [taken]と重ならない複製の名前を付け、[taken]に加える（まとめて複製する
 /// ときに、同じ名前の複製を並べない）。
@@ -601,6 +602,7 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
+        insetPadding: typingDialogInsetPadding(ctx),
         title: Text(l10n.autofillPresetNewDialogTitle),
         content: TextField(
           controller: nameCtrl,
@@ -645,6 +647,7 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
+        insetPadding: typingDialogInsetPadding(ctx),
         title: Text(l10n.autofillPresetRenameDialogTitle),
         content: TextField(
           controller: nameCtrl,
@@ -1416,6 +1419,7 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
+        insetPadding: typingDialogInsetPadding(ctx),
         title: Text(l10n.autofillPartAddDialogTitle),
         content: TextField(
           controller: nameCtrl,
@@ -1462,6 +1466,7 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
+        insetPadding: typingDialogInsetPadding(ctx),
         title: Text(l10n.autofillPartRenameDialogTitle),
         content: TextField(
           controller: nameCtrl,
@@ -2919,7 +2924,10 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
       context: context,
       builder: (ctx) => Dialog(
         backgroundColor: Colors.transparent,
-        insetPadding: const EdgeInsets.all(16),
+        insetPadding: typingDialogInsetPadding(
+          ctx,
+          usual: const EdgeInsets.all(16),
+        ),
         child: ColorPickerPanel(
           currentColor: initial,
           onColorChanged: onChanged,
@@ -2946,7 +2954,10 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
       context: context,
       builder: (ctx) => Dialog(
         backgroundColor: Colors.transparent,
-        insetPadding: const EdgeInsets.all(16),
+        insetPadding: typingDialogInsetPadding(
+          ctx,
+          usual: const EdgeInsets.all(16),
+        ),
         // ColorPickerPanel自体は最大680px・内部スクロール済みだが、下に
         // 「キャンセル・適用」ボタンのCardを追加した分だけ通常のカラー
         // ピッカーより全体が縦に長くなり、画面の低い端末（横画面や

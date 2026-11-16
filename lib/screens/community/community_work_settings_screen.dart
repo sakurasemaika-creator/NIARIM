@@ -10,6 +10,7 @@ import '../../widgets/responsive.dart';
 import 'community_error_text.dart';
 import '../../widgets/fit_or_hide_title.dart';
 import '../../widgets/keep_together_text.dart';
+import '../../widgets/typing_dialog_inset.dart';
 
 /// Per-work owner settings. The YouTube editor is an external destination;
 /// NIARIM visibility and AI disclosure use the authenticated NIARIM API.
@@ -107,6 +108,7 @@ class _CommunityWorkSettingsScreenState
         final saved = await _showOwnerDialog<Map<String, String>>(
           context: context,
           builder: (dialogContext) => AlertDialog(
+            insetPadding: typingDialogInsetPadding(dialogContext),
             title: Text(labels.edit),
             content: SizedBox(
               width: 460,
@@ -203,6 +205,7 @@ class _CommunityWorkSettingsScreenState
     final tag = await _showOwnerDialog<String>(
       context: context,
       builder: (dialogContext) => AlertDialog(
+        insetPadding: typingDialogInsetPadding(dialogContext),
         title: Text(
           original == null
               ? l10n.communityAddTagDialogTitle

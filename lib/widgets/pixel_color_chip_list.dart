@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../l10n/app_localizations.dart';
 import '../screens/canvas/widgets/color_picker_panel.dart';
+import 'typing_dialog_inset.dart';
 
 /// 「色を指定する」モード共通の色チップ編集UI。
 /// 各色はチップ（タップでカラーピッカーを開いて変更）＋隣接するゴミ箱
@@ -23,6 +24,7 @@ class PixelColorChipList extends StatelessWidget {
     showDialog(
       context: context,
       builder: (ctx) => Dialog(
+        insetPadding: typingDialogInsetPadding(ctx),
         backgroundColor: Colors.transparent,
         child: ColorPickerPanel(
           currentColor: Color(colors[index]),

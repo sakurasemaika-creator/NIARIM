@@ -24,6 +24,7 @@ import 'hsv_color_wheel.dart';
 import '../../../widgets/docked_panel_scope.dart';
 import 'panel_close_bar.dart';
 import '../../../config/font_fallback.dart';
+import '../../../widgets/typing_dialog_inset.dart';
 
 /// カラーピッカーパネル。
 /// カラーピッカー（HSV/RGB/HEX）・最近使った色・パレットの3セクション構成。
@@ -568,6 +569,7 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
       builder: (ctx) => DisposeOnUnmount(
         controller: ctrl,
         builder: (ctx) => AlertDialog(
+          insetPadding: typingDialogInsetPadding(ctx),
           title: Text(l10n.colorPickerNewPaletteTooltip),
           content: TextField(
             controller: ctrl,
@@ -635,6 +637,7 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
                   builder: (dctx) => DisposeOnUnmount(
                     controller: ctrl,
                     builder: (dctx) => AlertDialog(
+                      insetPadding: typingDialogInsetPadding(dctx),
                       title: Text(l10n.commonRename),
                       content: TextField(
                         controller: ctrl,

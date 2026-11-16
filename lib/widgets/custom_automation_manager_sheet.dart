@@ -10,6 +10,7 @@ import '../models/custom_automation.dart';
 import '../services/custom_automation_service.dart';
 import '../utils/custom_automation_labels.dart';
 import 'scrollable_sheet_body.dart';
+import 'typing_dialog_inset.dart';
 
 class CustomAutomationManagerSheet extends StatelessWidget {
   final CustomAutomationSurface surface;
@@ -38,6 +39,7 @@ class CustomAutomationManagerSheet extends StatelessWidget {
     final name = await showDialog<String>(
       context: context,
       builder: (dialogContext) => AlertDialog(
+        insetPadding: typingDialogInsetPadding(dialogContext),
         title: Text(l10n.customAutomationNewTitle),
         content: TextField(
           autofocus: true,
@@ -89,6 +91,7 @@ class CustomAutomationManagerSheet extends StatelessWidget {
       context: context,
       builder: (dialogContext) => StatefulBuilder(
         builder: (context, setState) => AlertDialog(
+          insetPadding: typingDialogInsetPadding(context),
           title: Text(l10n.customAutomationRunConfirmTitle),
           content: Column(
             mainAxisSize: MainAxisSize.min,
@@ -216,6 +219,7 @@ class CustomAutomationManagerSheet extends StatelessWidget {
     final value = await showDialog<String>(
       context: context,
       builder: (dialogContext) => AlertDialog(
+        insetPadding: typingDialogInsetPadding(dialogContext),
         title: Text(l10n.customAutomationRenameTitle),
         content: TextFormField(
           initialValue: draftName,

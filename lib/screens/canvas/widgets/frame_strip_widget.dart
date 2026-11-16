@@ -13,6 +13,7 @@ import '../../../widgets/dispose_on_unmount.dart';
 import '../../../widgets/frame_preview_background.dart';
 import 'canvas_icon_button.dart';
 import '../../../config/accent_text_theme.dart';
+import '../../../widgets/typing_dialog_inset.dart';
 
 class FrameStripWidget extends StatefulWidget {
   final int currentFrame;
@@ -181,9 +182,9 @@ class _FrameStripWidgetState extends State<FrameStripWidget> {
             return AlertDialog(
               // スライダーを画面の横幅いっぱいに使えるよう、ダイアログを
               // 既定（左右40px空け、内容が狭ければ幅280）より広く取る。
-              insetPadding: const EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 24,
+              insetPadding: typingDialogInsetPadding(
+                ctx,
+                usual: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
               ),
               title: Row(
                 children: [

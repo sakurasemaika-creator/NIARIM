@@ -39,6 +39,7 @@ import '../../../config/font_fallback.dart';
 import '../../../utils/blend_mode_label.dart';
 import '../../../utils/reorder_index.dart';
 import '../../../config/accent_text_theme.dart';
+import '../../../widgets/typing_dialog_inset.dart';
 
 class LayerPanel extends StatefulWidget {
   final VoidCallback onClose;
@@ -987,6 +988,7 @@ class _LayerPanelState extends State<LayerPanel> {
       builder: (ctx) => DisposeOnUnmount(
         controller: nameCtrl,
         builder: (ctx) => AlertDialog(
+          insetPadding: typingDialogInsetPadding(ctx),
           title: Text(l10n.layerPanelGroupTooltip),
           content: TextField(controller: nameCtrl, autofocus: true),
           actions: [
@@ -1407,6 +1409,7 @@ class _LayerPanelState extends State<LayerPanel> {
       builder: (ctx) => DisposeOnUnmount(
         controller: nameCtrl,
         builder: (ctx) => AlertDialog(
+          insetPadding: typingDialogInsetPadding(ctx),
           title: Text(l10n.commonRename),
           content: TextField(
             controller: nameCtrl,
@@ -1478,6 +1481,7 @@ class _LayerPanelState extends State<LayerPanel> {
           controller: endCtrl,
           builder: (ctx) => StatefulBuilder(
             builder: (ctx, setS) => AlertDialog(
+              insetPadding: typingDialogInsetPadding(ctx),
               title: Text(title ?? l10n.layerPanelRangeDialogTitle),
               // 選択状態と変更通知はRadioGroupがまとめて持つ
               // （groupValue/onChangedはFlutter 3.32で非推奨）。

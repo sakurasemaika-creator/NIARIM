@@ -4,6 +4,7 @@ import '../../../config/font_fallback.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../models/asset_tags.dart';
 import '../../../widgets/dispose_on_unmount.dart';
+import '../../../widgets/typing_dialog_inset.dart';
 
 /// ブラシ・トーン・スタンプへ分類タグを付け外しするダイアログ。
 ///
@@ -35,6 +36,7 @@ Future<void> showAssetTagDialog(
         builder: (ctx, setDialogState) {
           final entered = splitTagInput(controller.text);
           return AlertDialog(
+            insetPadding: typingDialogInsetPadding(ctx),
             title: Text(
               l10n.creativePanelTagsLabel,
               style: const TextStyle(

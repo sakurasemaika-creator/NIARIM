@@ -30,6 +30,7 @@ import 'pc_workspace_layout_settings_screen.dart';
 import '../../config/font_fallback.dart';
 import '../../widgets/scrollable_sheet_body.dart';
 import '../../widgets/fit_or_hide_title.dart';
+import '../../widgets/typing_dialog_inset.dart';
 
 class WorkspaceSettingsScreen extends StatelessWidget {
   const WorkspaceSettingsScreen({super.key});
@@ -812,6 +813,7 @@ class WorkspaceSettingsScreen extends StatelessWidget {
       builder: (ctx) => DisposeOnUnmount(
         controller: controller,
         builder: (ctx) => AlertDialog(
+          insetPadding: typingDialogInsetPadding(ctx),
           title: Text(l10n.commonRename),
           content: TextField(
             controller: controller,
@@ -985,6 +987,7 @@ class _WorkspaceSaveDialogState extends State<_WorkspaceSaveDialog> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return AlertDialog(
+      insetPadding: typingDialogInsetPadding(context),
       title: Text(l10n.workspaceSaveDialogTitle),
       content: Column(
         mainAxisSize: MainAxisSize.min,

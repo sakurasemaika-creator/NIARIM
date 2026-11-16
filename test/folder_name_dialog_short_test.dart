@@ -59,7 +59,13 @@ void main() {
           await tester.ensureVisible(field);
           await tester.pumpAndSettle();
           final rect = tester.getRect(field);
-          expect(rect.top, greaterThanOrEqualTo(16));
+          // キーボードが開いている間、打つ欄のあるダイアログは上下の空きを
+          // 取らない（DISC222）ので、欄は画面の上端まで使える。
+          expect(
+            rect.top,
+            greaterThanOrEqualTo(0),
+            reason: '$locale/$size name field is clipped',
+          );
           expect(
             rect.bottom,
             lessThanOrEqualTo(size.height - keyboard - 16),

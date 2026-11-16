@@ -21,6 +21,7 @@ import '../../widgets/theme_rescue_button.dart';
 import 'theme_preview_gallery_screen.dart';
 import '../../config/accent_text_theme.dart';
 import '../../widgets/fit_or_hide_title.dart';
+import '../../widgets/typing_dialog_inset.dart';
 
 class ThemeSettingsScreen extends StatelessWidget {
   const ThemeSettingsScreen({super.key});
@@ -507,7 +508,10 @@ class ThemeSettingsScreen extends StatelessWidget {
       context: context,
       builder: (ctx) => Dialog(
         backgroundColor: Colors.transparent,
-        insetPadding: const EdgeInsets.all(16),
+        insetPadding: typingDialogInsetPadding(
+          ctx,
+          usual: const EdgeInsets.all(16),
+        ),
         child: ColorPickerPanel(
           currentColor: initialColor,
           onColorChanged: (c) =>
@@ -631,6 +635,7 @@ class ThemeSettingsScreen extends StatelessWidget {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
+        insetPadding: typingDialogInsetPadding(ctx),
         title: Text(l10n.commonRename),
         content: TextField(controller: controller, autofocus: true),
         actions: [
@@ -656,6 +661,7 @@ class ThemeSettingsScreen extends StatelessWidget {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
+        insetPadding: typingDialogInsetPadding(ctx),
         title: Text(l10n.themePresetNameDialogTitle),
         content: TextField(controller: controller, autofocus: true),
         actions: [

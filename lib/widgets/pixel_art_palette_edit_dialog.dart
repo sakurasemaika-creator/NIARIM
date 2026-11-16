@@ -5,6 +5,7 @@ import '../l10n/app_localizations.dart';
 import '../models/color_palette.dart';
 import '../services/pixel_art_palette_service.dart';
 import 'pixel_color_chip_list.dart';
+import 'typing_dialog_inset.dart';
 
 /// ドット絵専用パレットの新規作成・編集ダイアログ。
 /// パレット名（未入力ならエラー表示して保存を拒否する）と、色チップの
@@ -63,6 +64,7 @@ class _PixelArtPaletteEditDialogState extends State<PixelArtPaletteEditDialog> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return AlertDialog(
+      insetPadding: typingDialogInsetPadding(context),
       title: Text(
         widget.existing != null
             ? l10n.pixelArtPaletteEditTitle

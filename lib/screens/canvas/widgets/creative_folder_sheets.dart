@@ -7,6 +7,7 @@ import '../../../widgets/dispose_on_unmount.dart';
 import '../../../config/font_fallback.dart';
 import '../../../utils/reorder_index.dart';
 import '../../../widgets/scrollable_sheet_body.dart';
+import '../../../widgets/typing_dialog_inset.dart';
 
 /// ブラシ・トーン・スタンプで共通のフォルダ管理UI。
 /// 各サービス（BrushService/ToneService/StampService）の型が異なるため、
@@ -182,6 +183,7 @@ Future<String?> _promptFolderName(
     builder: (ctx) => DisposeOnUnmount(
       controller: controller,
       builder: (ctx) => AlertDialog(
+        insetPadding: typingDialogInsetPadding(ctx),
         title: Text(title),
         content: TextField(
           controller: controller,
@@ -271,6 +273,7 @@ Future<String?> promptCreativeAssetName(
     builder: (ctx) => DisposeOnUnmount(
       controller: controller,
       builder: (ctx) => AlertDialog(
+        insetPadding: typingDialogInsetPadding(ctx),
         title: Text(title),
         content: TextField(
           controller: controller,

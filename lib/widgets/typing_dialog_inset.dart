@@ -31,9 +31,24 @@ double _horizontalInset(double width) => ((width - _minDialogWidth) / 2).clamp(
 /// 画面では、折り返して高くなったボタンの段と合わせて、打っている欄が
 /// キーボードの上に入らなかった）。どちらも既定のままなら null（テーマの
 /// 既定）。
-EdgeInsets? typingDialogInsetPadding(BuildContext context) {
-  final horizontal = _horizontalInset(MediaQuery.sizeOf(context).width);
+///
+/// 自分で空きを決めるダイアログ（スライダーを広く使うために左右を16pxに
+/// するもの等）は、その空きを[usual]に渡す。キーボードの間は、その左右の
+/// 空きのまま上下の空きだけを外す。
+///
+/// [context]はダイアログの中（`showDialog`の`builder`が受け取るもの、または
+/// ダイアログ自身の`build`）のものを渡すこと。画面の`Scaffold`の中の
+/// contextはキーボードの分を取り除いた`MediaQuery`を見るので、キーボードが
+/// 開いても空きが変わらない。
+EdgeInsets? typingDialogInsetPadding(
+  BuildContext context, {
+  EdgeInsets? usual,
+}) {
   final keyboard = MediaQuery.viewInsetsOf(context).bottom > 0;
+  if (usual != null) {
+    return keyboard ? usual.copyWith(top: 0, bottom: 0) : usual;
+  }
+  final horizontal = _horizontalInset(MediaQuery.sizeOf(context).width);
   if (!keyboard && horizontal >= _usualHorizontalInset) return null;
   return EdgeInsets.symmetric(
     horizontal: horizontal,

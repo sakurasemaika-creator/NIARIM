@@ -19,6 +19,7 @@ import '../../widgets/help_button.dart';
 import 'font_catalog_tab.dart';
 import '../../config/font_fallback.dart';
 import '../../config/accent_text_theme.dart';
+import '../../widgets/typing_dialog_inset.dart';
 
 /// フォント管理画面（設定 → フォント管理）。
 /// 3つのタブで構成する。
@@ -359,6 +360,7 @@ class _DownloadedFontsTabState extends State<_DownloadedFontsTab>
       builder: (ctx) => DisposeOnUnmount(
         controller: controller,
         builder: (ctx) => AlertDialog(
+          insetPadding: typingDialogInsetPadding(ctx),
           title: Text(l10n.fontRenameDialogTitle),
           content: TextField(controller: controller, autofocus: true),
           actions: [

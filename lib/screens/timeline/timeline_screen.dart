@@ -3281,6 +3281,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
       builder: (ctx) => DisposeOnUnmount(
         controller: controller,
         builder: (ctx) => AlertDialog(
+          insetPadding: typingDialogInsetPadding(ctx),
           title: Text(l10n.timelineSceneRenameTitle),
           content: TextField(
             controller: controller,
@@ -4211,6 +4212,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
+        insetPadding: typingDialogInsetPadding(ctx),
         title: Text(l10n.timelineTrackRowRenameTitle),
         content: TextField(
           controller: ctrl,
@@ -4965,6 +4967,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setS) => AlertDialog(
+          insetPadding: typingDialogInsetPadding(ctx),
           title: Text(l10n.layerPanelRangeDialogTitle),
           // 選択状態と変更通知はRadioGroupがまとめて持つ
           // （groupValue/onChangedはFlutter 3.32で非推奨）。
@@ -5501,6 +5504,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
       builder: (ctx) => DisposeOnUnmount(
         controller: ctrl,
         builder: (ctx) => AlertDialog(
+          insetPadding: typingDialogInsetPadding(ctx),
           title: Text(l10n.timelineMarkerAddDialogTitle(_currentFrame + 1)),
           content: TextField(
             controller: ctrl,
@@ -5542,6 +5546,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
       builder: (ctx) => DisposeOnUnmount(
         controller: ctrl,
         builder: (ctx) => AlertDialog(
+          insetPadding: typingDialogInsetPadding(ctx),
           title: Text(l10n.timelineMarkerEditDialogTitle(m.frameIndex + 1)),
           content: TextField(
             controller: ctrl,
@@ -5857,9 +5862,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
         controller: ctrl,
         builder: (ctx) => StatefulBuilder(
           builder: (ctx, setS) => AlertDialog(
-            insetPadding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 24,
+            insetPadding: typingDialogInsetPadding(
+              ctx,
+              usual: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
             ),
             title: Text(l10n.timelineAddTextDialogTitle),
             content: SizedBox(
@@ -6076,6 +6081,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
         controller: labelCtrl,
         builder: (ctx) => StatefulBuilder(
           builder: (ctx, setS) => AlertDialog(
+            insetPadding: typingDialogInsetPadding(ctx),
             title: Text(l10n.timelineAddClipDialogTitle(trackName)),
             content: Column(
               mainAxisSize: MainAxisSize.min,
@@ -7179,6 +7185,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setS) => AlertDialog(
+          insetPadding: typingDialogInsetPadding(ctx),
           title: Text(l10n.timelineDurationChangeMenuItem),
           content: Column(
             mainAxisSize: MainAxisSize.min,
@@ -8778,6 +8785,7 @@ class _EffectFilterSheet extends StatelessWidget {
     showDialog(
       context: context,
       builder: (ctx) => Dialog(
+        insetPadding: typingDialogInsetPadding(ctx),
         backgroundColor: Colors.transparent,
         child: ColorPickerPanel(
           currentColor: e.fadeColor,
@@ -9103,6 +9111,7 @@ class _EffectFilterSheet extends StatelessWidget {
     showDialog(
       context: context,
       builder: (ctx) => Dialog(
+        insetPadding: typingDialogInsetPadding(ctx),
         backgroundColor: Colors.transparent,
         child: ColorPickerPanel(
           currentColor: e.fadeColor,

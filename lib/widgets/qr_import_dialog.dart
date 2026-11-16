@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../l10n/app_localizations.dart';
+import 'typing_dialog_inset.dart';
 
 /// QRコードで共有されたテキスト（[QrShareDialog]が表示したペイロード）を
 /// 貼り付けて取り込むダイアログ。標準カメラアプリ等でQRコードを
@@ -68,6 +69,7 @@ class _QrImportDialogState extends State<QrImportDialog> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return AlertDialog(
+      insetPadding: typingDialogInsetPadding(context),
       title: Text(widget.title),
       content: SingleChildScrollView(
         child: Column(

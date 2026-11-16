@@ -20,6 +20,7 @@ import '../../../widgets/labeled_slider.dart';
 import '../../../widgets/layer_mask_editor.dart';
 import '../../canvas/widgets/color_picker_panel.dart';
 import '../../../config/accent_text_theme.dart';
+import '../../../widgets/typing_dialog_inset.dart';
 
 enum _Section { text, transform, mask, video }
 
@@ -232,6 +233,7 @@ class _TimelineMaterialEditPanelState extends State<TimelineMaterialEditPanel> {
     await showDialog<void>(
       context: context,
       builder: (ctx) => Dialog(
+        insetPadding: typingDialogInsetPadding(ctx),
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 520, maxHeight: 720),
           child: ColorPickerPanel(

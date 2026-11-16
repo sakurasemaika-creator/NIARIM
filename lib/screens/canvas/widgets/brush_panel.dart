@@ -30,6 +30,7 @@ import 'asset_search_bar.dart';
 import 'asset_tag_dialog.dart';
 import '../../../widgets/asset_tag_label.dart';
 import '../../../widgets/list_ink_clip.dart';
+import '../../../widgets/typing_dialog_inset.dart';
 
 class BrushPanel extends StatefulWidget {
   final VoidCallback onClose;
@@ -597,7 +598,10 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
     await showDialog<void>(
       context: context,
       builder: (dialogContext) => Dialog(
-        insetPadding: const EdgeInsets.all(16),
+        insetPadding: typingDialogInsetPadding(
+          dialogContext,
+          usual: const EdgeInsets.all(16),
+        ),
         child: ColorPickerPanel(
           currentColor: Color(_brush.outlineColor),
           onColorChanged: (color) {

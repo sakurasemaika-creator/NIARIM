@@ -7,6 +7,7 @@ import '../../../models/save_node.dart';
 import '../../../services/save_tree_service.dart';
 import 'save_display_name.dart';
 import 'save_list_feedback.dart';
+import '../../../widgets/typing_dialog_inset.dart';
 
 /// Shared memo editor for empty slots, saved slots, and tree nodes.
 /// Editing this text must never rewrite a saved archive or its thumbnail.
@@ -83,6 +84,7 @@ class _MemoEditorDialogState extends State<_MemoEditorDialog> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return AlertDialog(
+      insetPadding: typingDialogInsetPadding(context),
       title: Text(l10n.saveTreeCommentLabel),
       content: TextField(
         controller: _controller,

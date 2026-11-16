@@ -4,6 +4,7 @@ import '../config/accent_text_theme.dart';
 import '../screens/canvas/widgets/canvas_icon_button.dart';
 
 import '../utils/app_error_reporter.dart';
+import 'typing_dialog_inset.dart';
 
 /// 名前を1つ入力するダイアログ（フォルダの作成・作品やフォルダの名前の
 /// 変更）。入力欄のコントローラーはこのダイアログ自身が持ち、閉じ終えて
@@ -127,6 +128,9 @@ class _NameEntryDialogState extends State<NameEntryDialog> {
     // その時点の大きさで見える所までスクロールするので、ダイアログ自身に
     // 任せる（100msかけて縮む）と、縮み終える間に欄がまた見えない所へ
     // 押し出された。
+    // キーボードの間は上下の空きも取らない。中ではキーボードの分を取り
+    // 除くので、空きはここ（キーボードの見えるcontext）で決める。
+    final inset = typingDialogInsetPadding(context);
     return Padding(
       padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
       child: MediaQuery.removeViewInsets(
@@ -137,13 +141,14 @@ class _NameEntryDialogState extends State<NameEntryDialog> {
         // できなかったボタン・ダイアログの空いた所を押した後も続けて打てる
         // よう、ダイアログ全体を欄の内側として扱う（以前は続けて打った字が
         // どこにも入らなかった）。
-        child: TextFieldTapRegion(child: _buildAlert(context)),
+        child: TextFieldTapRegion(child: _buildAlert(context, inset)),
       ),
     );
   }
 
-  Widget _buildAlert(BuildContext context) {
+  Widget _buildAlert(BuildContext context, EdgeInsets? inset) {
     return AlertDialog(
+      insetPadding: inset,
       // 横向きでキーボードが開くと高さが足りない。スクロールしないと、入力欄が
       // 高さ0の並びの中で描かれず、見えない名前を打つことになった。
       scrollable: true,
