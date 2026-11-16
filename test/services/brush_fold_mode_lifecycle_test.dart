@@ -47,6 +47,8 @@ Brush _foldBrush(HairFoldMode mode, {String? imagePath}) => Brush(
   foldCrescentDepthThreshold: .35,
   foldLengthRatio: 0.74,
   foldEndTaperRatio: 0.46,
+  foldTaperTip: false,
+  presetColor: 0xffdb424b,
 );
 
 void _expectFoldSettings(Brush actual, Brush expected) {
@@ -70,6 +72,8 @@ void _expectFoldSettings(Brush actual, Brush expected) {
   );
   expect(actual.foldLengthRatio, expected.foldLengthRatio);
   expect(actual.foldEndTaperRatio, expected.foldEndTaperRatio);
+  expect(actual.foldTaperTip, expected.foldTaperTip);
+  expect(actual.presetColor, expected.presetColor);
 }
 
 Future<BrushService> _loadBrushService() async {
@@ -139,7 +143,12 @@ void main() {
   for (final mode in HairFoldMode.values) {
     test('${mode.name} custom edit survives saved JSON and restart', () async {
       final service = await _loadBrushService();
-      final original = _foldBrush(mode);
+      // An explicit texture preserves the selected ink mode. A chain tip
+      // without a texture is independently migrated to an alpha mask.
+      final original = _foldBrush(
+        mode,
+        imagePath: (await writeImage(mode.name)).path,
+      );
       service.addBrush(
         original.copyWith(
           foldMode: mode == HairFoldMode.waveTopView
@@ -165,7 +174,10 @@ void main() {
 
     test('${mode.name} duplicate survives restart independently', () async {
       final service = await _loadBrushService();
-      final original = _foldBrush(mode);
+      final original = _foldBrush(
+        mode,
+        imagePath: (await writeImage(mode.name)).path,
+      );
       service.addBrush(original);
       service.duplicateBrush(original.id);
       final duplicate = service.brushes.singleWhere(
