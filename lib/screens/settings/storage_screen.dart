@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../l10n/app_localizations.dart';
+import '../../services/local_file_trash_service.dart';
 import '../../services/material_service.dart';
 import '../../services/project_service.dart';
 import '../../services/storage_info_service.dart';
@@ -936,9 +937,7 @@ class _StorageScreenState extends State<StorageScreen> {
     );
   }
 
-  /// One labeled bar per legend row. Its remainder uses the exact same
-  /// theme text color as the surrounding border, rather than an arbitrary
-  /// gray. The foreground token matches selected (active) controls.
+  /// Use a solid label surface so the text stays readable at every fill ratio.
   Widget _storageAmountBar({
     required Key key,
     required Color color,
@@ -948,18 +947,16 @@ class _StorageScreenState extends State<StorageScreen> {
     required ColorScheme scheme,
   }) {
     final outline = scheme.onSurface;
-    final foreground = scheme.onSecondary;
-    // Keep the requested active button text color. A subtle outline in the
-    // theme's surface-ink color preserves readability on very light bars.
-    final foregroundShadows = [
-      for (final offset in const [
-        Offset(-0.7, -0.7),
-        Offset(0.7, -0.7),
-        Offset(-0.7, 0.7),
-        Offset(0.7, 0.7),
-      ])
-        Shadow(color: outline, offset: offset, blurRadius: 0.3),
-    ];
+    Widget labelSurface(Widget child) => DecoratedBox(
+      decoration: BoxDecoration(
+        color: scheme.surface,
+        borderRadius: BorderRadius.circular(3),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+        child: child,
+      ),
+    );
     final amount = ratio.clamp(0.0, 1.0);
     return SizedBox(
       key: key,
@@ -999,28 +996,33 @@ class _StorageScreenState extends State<StorageScreen> {
             child: Row(
               children: [
                 Expanded(
-                  child: Text(
-                    label,
-                    key: Key('storageBreakdownBarLabel_$label'),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      color: foreground,
-                      fontSize: 12,
-                      shadows: foregroundShadows,
-                      fontWeight: FontWeight.w600,
+                  child: Align(
+                    alignment: AlignmentDirectional.centerStart,
+                    child: labelSurface(
+                      Text(
+                        label,
+                        key: Key('storageBreakdownBarLabel_$label'),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: outline,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
                     ),
                   ),
                 ),
                 const SizedBox(width: 5),
-                Text(
-                  fileSizeLabel(AppLocalizations.of(context)!, bytes),
-                  key: Key('storageBreakdownBarValue_$label'),
-                  style: TextStyle(
-                    color: foreground,
-                    fontSize: 12,
-                    shadows: foregroundShadows,
-                    fontWeight: FontWeight.bold,
+                labelSurface(
+                  Text(
+                    fileSizeLabel(AppLocalizations.of(context)!, bytes),
+                    key: Key('storageBreakdownBarValue_$label'),
+                    style: TextStyle(
+                      color: outline,
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ],
@@ -1282,7 +1284,27 @@ class _StorageScreenState extends State<StorageScreen> {
     // 残すフォルダしか無いときは、何も並ばないダイアログを出さず（「削除」を
     // 押しても何も消えずに閉じた）、ゴミ箱を空にしなかったこと・その理由・
     // ホームの「再試行」で読み直せることを知らせる。
-    if (folderTargets.isEmpty && ps.looseTrash.isEmpty && holdsUnread()) {
+    final List<LocalTrashedFile> localTargets;
+    try {
+      localTargets = await LocalFileTrashService.list();
+    } catch (error, stack) {
+      AppErrorReporter.record(error, stack);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              l10n.storageEmptyTrashKeptUnreadFolders(l10n.communityRetry),
+            ),
+          ),
+        );
+      }
+      return false;
+    }
+    if (!mounted) return false;
+    if (folderTargets.isEmpty &&
+        ps.looseTrash.isEmpty &&
+        localTargets.isEmpty &&
+        holdsUnread()) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
@@ -1311,6 +1333,7 @@ class _StorageScreenState extends State<StorageScreen> {
             if (folderTargets.contains(t.folder.id)) t.folder.name,
           for (final p in ps.looseTrash)
             if (targets.contains(p.id)) p.name,
+          for (final entry in localTargets) entry.fileName,
         ],
         onApply: () async {
           attempted = true;
@@ -1333,6 +1356,11 @@ class _StorageScreenState extends State<StorageScreen> {
             }
             if (ps.trash.any((p) => p.id == id)) {
               await ps.permanentDelete(id);
+            }
+          }
+          for (final entry in localTargets) {
+            if (!await LocalFileTrashService.deleteUnlessRestoring(entry)) {
+              heldBack ??= const TrashedFolderUnreadException();
             }
           }
           if (heldBack != null) throw heldBack;
@@ -1371,6 +1399,7 @@ class _StorageScreenState extends State<StorageScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
+        constraints: const BoxConstraints(maxWidth: 560),
         scrollable: true,
         title: Text(l10n.storageEraseAllConfirmTitle),
         content: messageText(l10n.storageEraseAllConfirmBody),

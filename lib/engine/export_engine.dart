@@ -322,8 +322,7 @@ class ExportEngine {
     final ext = asJpeg ? 'jpg' : 'png';
     final outputPath =
         '${dir.path}/niarim_frame_${DateTime.now().millisecondsSinceEpoch}.$ext';
-    await File(outputPath).writeAsBytes(bytes);
-    ExportStorage.invalidate();
+    await _publishImageExport(outputPath, bytes);
     return outputPath;
   }
 
@@ -646,9 +645,25 @@ class ExportEngine {
     final exportsDir = await ExportEngine.exportsDir();
     final outputPath =
         '${exportsDir.path}/niarim_${DateTime.now().millisecondsSinceEpoch}.gif';
-    await File(outputPath).writeAsBytes(gifBytes);
-    ExportStorage.invalidate();
+    await _publishImageExport(outputPath, gifBytes);
     return outputPath;
+  }
+
+  Future<void> _publishImageExport(String path, List<int> bytes) async {
+    final destination = File(path);
+    final staging = await destination.parent.createTemp('.export-');
+    try {
+      final partial = File('${staging.path}/image.part');
+      await partial.writeAsBytes(bytes, flush: true);
+      await partial.rename(path);
+      ExportStorage.invalidate();
+    } finally {
+      try {
+        await staging.delete(recursive: true);
+      } on FileSystemException catch (error, stack) {
+        AppErrorReporter.record(error, stack);
+      }
+    }
   }
 
   /// WebM書き出し（VP9）。libvpxはBSDライセンスかつVP9自体が

@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/services/local_file_trash_service.dart';
+import 'package:niarim/utils/app_error_reporter.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -78,5 +79,41 @@ void main() {
       throwsA(isA<FileSystemException>()),
     );
     expect(await LocalFileTrashService.list(), isEmpty);
+  });
+
+  test(
+    'two concurrent moves of the same source leave only one archive',
+    () async {
+      final source = File('${directory.path}/clip.png');
+      await source.writeAsBytes([1, 2, 3]);
+      final first = LocalFileTrashService.move(
+        source,
+        LocalTrashKind.exportedWork,
+      );
+      await expectLater(
+        LocalFileTrashService.move(
+          File('${directory.path}/./clip.png'),
+          LocalTrashKind.exportedWork,
+        ),
+        throwsA(isA<FileSystemException>()),
+      );
+      final saved = await first;
+      expect((await LocalFileTrashService.list()).single.id, saved.id);
+      expect(await File(saved.archivedPath).readAsBytes(), [1, 2, 3]);
+    },
+  );
+
+  test('unavailable documents cannot interrupt startup cleanup', () async {
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(pathChannel, (_) async {
+          throw PlatformException(code: 'trash_unavailable_test');
+        });
+    await LocalFileTrashService.sweepExpired(30);
+    expect(
+      AppErrorReporter.recentErrors.any(
+        (entry) => entry.toString().contains('trash_unavailable_test'),
+      ),
+      isTrue,
+    );
   });
 }

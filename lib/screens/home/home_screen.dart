@@ -1944,6 +1944,10 @@ class _HomeScreenState extends State<HomeScreen>
                 tooltip: l10n.communityScrollToTop,
                 onPressed: () {
                   if (!_projectScrollController.hasClients) return;
+                  if (MediaQuery.disableAnimationsOf(context)) {
+                    _projectScrollController.jumpTo(0);
+                    return;
+                  }
                   _projectScrollController.animateTo(
                     0,
                     duration: const Duration(milliseconds: 300),

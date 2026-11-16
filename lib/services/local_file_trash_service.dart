@@ -53,6 +53,7 @@ class LocalTrashedFile {
 /// Restore never overwrites an existing file.
 abstract final class LocalFileTrashService {
   static final ValueNotifier<int> changes = ValueNotifier<int>(0);
+  static final Set<String> _movingPaths = {};
 
   /// Tells listeners that the Trash changed. [exports] is true when exported
   /// works moved into or out of the exports directory: the cached list of
@@ -63,6 +64,7 @@ abstract final class LocalFileTrashService {
   /// empty and a restored file was missing.
   static void _changed({bool exports = false}) {
     if (exports) ExportStorage.invalidate();
+    StorageInfoService().invalidate();
     changes.value++;
   }
 
@@ -142,6 +144,21 @@ abstract final class LocalFileTrashService {
     if (kind == LocalTrashKind.exportedWorkFolder) {
       throw ArgumentError('Use moveWorkFolder for a folder');
     }
+    final path = source.absolute.uri.normalizePath().toFilePath();
+    if (!_movingPaths.add(path)) {
+      throw FileSystemException('File is already being moved', path);
+    }
+    try {
+      return await _moveFile(source, kind);
+    } finally {
+      _movingPaths.remove(path);
+    }
+  }
+
+  static Future<LocalTrashedFile> _moveFile(
+    File source,
+    LocalTrashKind kind,
+  ) async {
     if (!await source.exists()) {
       throw FileSystemException('File missing', source.path);
     }
@@ -439,27 +456,36 @@ abstract final class LocalFileTrashService {
   static Future<void> sweepExpired(int days) async {
     await _removeUnrecorded();
     if (days <= 0) return;
+    final List<LocalTrashedFile> entries;
+    try {
+      entries = await list();
+    } catch (error, stack) {
+      AppErrorReporter.record(error, stack);
+      return;
+    }
     final now = DateTime.now();
-    for (final entry in await list()) {
+    for (final entry in entries) {
       if (now.difference(entry.deletedAt).inDays < days) continue;
       try {
-        if (entry.isFolder) {
-          final metadata = File(
-            '${Directory(entry.archivedPath).parent.path}/meta.json',
-          );
-          final decoded = jsonDecode(await metadata.readAsString());
-          if (decoded is Map && decoded['restoreFolderId'] != null) {
-            // A partially restored directory may still be the only safe copy
-            // of some files. Do not expire it until restore completes.
-            continue;
-          }
-        }
-        await deleteForever(entry);
+        await deleteUnlessRestoring(entry);
       } catch (_) {
         // A locked or unreadable entry stays available for retry. Cleanup
         // must never prevent app startup or delete an incomplete recovery.
       }
     }
+  }
+
+  /// Bulk cleanup leaves a partially restored folder available for retry.
+  static Future<bool> deleteUnlessRestoring(LocalTrashedFile entry) async {
+    if (entry.isFolder) {
+      final metadata = File(
+        '${Directory(entry.archivedPath).parent.path}/meta.json',
+      );
+      final decoded = jsonDecode(await metadata.readAsString());
+      if (decoded is Map && decoded['restoreFolderId'] != null) return false;
+    }
+    await deleteForever(entry);
+    return true;
   }
 
   /// How long a Trash folder without a record must have been left untouched
@@ -545,6 +571,6 @@ abstract final class LocalFileTrashService {
         await archive.parent.delete(recursive: true);
       }
     }
-    changes.value++;
+    _changed();
   }
 }

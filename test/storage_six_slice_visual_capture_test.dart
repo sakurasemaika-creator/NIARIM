@@ -123,6 +123,8 @@ void main() {
       fileWithSize('$base/projects/$activeId/project-fixture.bin', 150 * kib);
       fileWithSize('$base/projects/$deletedId/trash-fixture.bin', 25 * kib);
       fileWithSize('$base/exports/fixture.png', 110 * kib);
+      fileWithSize('$base/shared/outgoing/snapshot.niashare', 11 * kib);
+      fileWithSize('$base/trash/files/123/data', 7 * kib);
       fileWithSize('$base/Brushes/fixture-brush.bin', 75 * kib);
       fileWithSize('${cache.path}/cache-fixture.bin', 50 * kib);
 
@@ -130,8 +132,13 @@ void main() {
         () => StorageInfoService().computeBreakdown({deleted.id}),
       );
       expect(values, isNotNull);
+      expect(values!.bytesOf(StorageCategory.exports), 121 * kib);
+      expect(
+        values.bytesOf(StorageCategory.trash),
+        greaterThanOrEqualTo(32 * kib),
+      );
       for (final category in StorageCategory.values) {
-        expect(values!.bytesOf(category), greaterThan(0), reason: '$category');
+        expect(values.bytesOf(category), greaterThan(0), reason: '$category');
       }
 
       appRouter.go('/storage');
@@ -190,7 +197,7 @@ void main() {
         (StorageCategory.trash, l10n.storageCategoryTrash),
       ];
       final largest = entries
-          .map((entry) => values!.bytesOf(entry.$1))
+          .map((entry) => values.bytesOf(entry.$1))
           .reduce((a, b) => a > b ? a : b);
       // In the same 390px phone all six bars occupy the section width.
       final breakdownSection = find.byKey(
@@ -212,14 +219,23 @@ void main() {
           find.byKey(Key('storageBreakdownBarValue_$label')),
         );
         expect(labelWidget.data, label);
-        expect(
-          valueWidget.data,
-          fileSizeLabel(l10n, values!.bytesOf(category)),
-        );
-        expect(labelWidget.style?.color, scheme.onSecondary);
-        expect(valueWidget.style?.color, scheme.onSecondary);
-        expect(labelWidget.style?.shadows?.length, 4);
-        expect(valueWidget.style?.shadows?.length, 4);
+        expect(valueWidget.data, fileSizeLabel(l10n, values.bytesOf(category)));
+        expect(labelWidget.style?.color, scheme.onSurface);
+        expect(valueWidget.style?.color, scheme.onSurface);
+        for (final prefix in [
+          'storageBreakdownBarLabel_',
+          'storageBreakdownBarValue_',
+        ]) {
+          final surface = tester.widget<DecoratedBox>(
+            find
+                .ancestor(
+                  of: find.byKey(Key('$prefix$label')),
+                  matching: find.byType(DecoratedBox),
+                )
+                .first,
+          );
+          expect((surface.decoration as BoxDecoration).color, scheme.surface);
+        }
         expect(
           find.descendant(of: bar, matching: find.text(label)),
           findsOneWidget,
@@ -238,13 +254,12 @@ void main() {
               find.descendant(of: bar, matching: find.byType(DecoratedBox)),
             )
             .toList();
-        expect(boxes.length, 3);
+        expect(boxes.length, 5);
         expect(
           (boxes.first.decoration as BoxDecoration).color,
           expectedOutline,
         );
-        final border =
-            (boxes.last.decoration as BoxDecoration).border as Border;
+        final border = (boxes[2].decoration as BoxDecoration).border as Border;
         expect(
           border.top.color,
           expectedOutline,

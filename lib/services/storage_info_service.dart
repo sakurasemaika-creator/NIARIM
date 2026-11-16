@@ -20,11 +20,10 @@ enum StorageCategory {
   /// ゴミ箱に入っているプロジェクトは含まない（[trash]で別集計する）。
   projectData,
 
-  /// ゴミ箱（削除済みだが自動削除待ちのプロジェクト。Materials込みの
-  /// フォルダ丸ごとのサイズ）。
+  /// ゴミ箱（プロジェクトと、移動済みの書き出し・共有ファイル）。
   trash,
 
-  /// アプリ管理の書き出し済み動画・GIF・画像（niarim/exports/）。
+  /// アプリ管理の書き出し済み動画・GIF・画像と共有ファイル。
   exports,
 
   /// 自作ブラシ・トーン・スタンプ・フォント（niarim/Brushes・Tones・
@@ -382,6 +381,13 @@ class StorageInfoService {
         ExportStorage.managedDirectoryIn(docs),
         const [StorageCategory.exports],
       );
+      exportsBytes += await sizeOf(
+        Directory('${niarimDir.path}/shared/outgoing'),
+        const [StorageCategory.exports],
+      );
+      trash += await sizeOf(Directory('${niarimDir.path}/trash/files'), const [
+        StorageCategory.trash,
+      ]);
 
       for (final name in ['Brushes', 'Tones', 'Stamps', 'Fonts']) {
         customAssets += await sizeOf(

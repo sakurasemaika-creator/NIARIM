@@ -456,6 +456,7 @@ class ProjectService extends ChangeNotifier {
       fontFiles: fontFiles,
       fontsManifest: fontsManifest,
     );
+    StorageInfoService().invalidate();
     await refreshOutgoingShares();
     return archive;
   }

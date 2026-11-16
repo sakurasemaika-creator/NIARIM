@@ -2141,12 +2141,17 @@ class _CanvasScreenState extends State<CanvasScreen> {
                     ),
                   ),
                 if (_showColorPicker && !isDesktop)
-                  _sidedPanel(
-                    anchorLeft: true,
-                    leftHanded: leftHanded,
-                    top: null,
+                  Positioned(
+                    left: 16,
+                    right: 16,
+                    top: 0,
                     bottom: 16,
-                    child: _colorPickerPanel(),
+                    child: Align(
+                      alignment: leftHanded
+                          ? Alignment.bottomRight
+                          : Alignment.bottomLeft,
+                      child: _colorPickerPanel(),
+                    ),
                   ),
                 if (_showBrushPanel && !isDesktop)
                   _sidedPanel(

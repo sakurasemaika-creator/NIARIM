@@ -9,6 +9,67 @@ import 'package:provider/provider.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
+  testWidgets('HSV and RGB expose separate selectable buttons', (tester) async {
+    final theme = ThemeService();
+    addTearDown(theme.dispose);
+    var hsv = true;
+    await tester.pumpWidget(
+      ChangeNotifierProvider.value(
+        value: theme,
+        child: MaterialApp(
+          home: Scaffold(
+            body: StatefulBuilder(
+              builder: (context, setState) => HsvColorWheel(
+                size: 236,
+                controlsWidth: 288,
+                hue: 0,
+                saturation: 0.6,
+                value: 0.8,
+                onHueChanged: (_) {},
+                onSvChanged: (_, _) {},
+                showHsvSliders: hsv,
+                onSliderModeChanged: (value) => setState(() => hsv = value),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    final hsvControl = find.byKey(const ValueKey('color-slider-mode-hsv'));
+    final rgbControl = find.byKey(const ValueKey('color-slider-mode-rgb'));
+    expect(
+      tester.getSemantics(hsvControl),
+      containsSemantics(
+        label: 'HSV',
+        isButton: true,
+        isSelected: true,
+        hasTapAction: true,
+        hasSelectedState: true,
+      ),
+    );
+    expect(
+      tester.getSemantics(rgbControl),
+      containsSemantics(
+        label: 'RGB',
+        isButton: true,
+        hasTapAction: true,
+        hasSelectedState: true,
+      ),
+    );
+    await tester.tap(rgbControl);
+    await tester.pump();
+    expect(
+      tester.getSemantics(rgbControl),
+      containsSemantics(
+        label: 'RGB',
+        isButton: true,
+        isSelected: true,
+        hasTapAction: true,
+        hasSelectedState: true,
+      ),
+    );
+  }, semanticsEnabled: true);
+
   for (final panelWidth in <double>[236, 264, 288]) {
     testWidgets(
       'Wheel corners do not overlap hue ring or clip RGB at $panelWidth dp',

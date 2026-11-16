@@ -154,6 +154,48 @@ void main() {
     return tileManager;
   }
 
+  for (final format in ['gif', 'png', 'jpg']) {
+    test('an interrupted $format write never publishes the output', () async {
+      final tiles = paintedTiles();
+      final engine = ExportEngine();
+      final generation = ExportStorage.generation;
+      final failure = _FailImageWrite();
+      await expectLater(
+        IOOverrides.runWithIOOverrides(
+          () => format == 'gif'
+              ? engine.exportGif(
+                  scenes: scenes,
+                  tileManager: tiles,
+                  fps: 1,
+                  drawingWidth: w,
+                  drawingHeight: h,
+                  width: w,
+                  height: h,
+                  backgroundColor: 0xFFFFFFFF,
+                )
+              : engine.exportFrameImage(
+                  scenes: scenes,
+                  tileManager: tiles,
+                  sceneId: scenes.single.id,
+                  frameIndex: 0,
+                  drawingWidth: w,
+                  drawingHeight: h,
+                  width: w,
+                  height: h,
+                  backgroundColor: 0xFFFFFFFF,
+                  asJpeg: format == 'jpg',
+                ),
+          failure,
+        ),
+        throwsA(isA<FileSystemException>()),
+      );
+      expect(failure.wrotePartialBytes, isTrue);
+      expect(await exportsDir().list().toList(), isEmpty);
+      expect(await ExportEngine.listExportedFiles(forceRefresh: true), isEmpty);
+      expect(ExportStorage.generation, generation);
+    });
+  }
+
   final formats =
       <
         (
@@ -281,3 +323,34 @@ void main() {
 
 final _fullVideo = Uint8List.fromList([for (var i = 0; i < 64; i++) i]);
 final _halfVideo = Uint8List.fromList([for (var i = 0; i < 16; i++) i]);
+
+final class _FailImageWrite extends IOOverrides {
+  bool wrotePartialBytes = false;
+
+  @override
+  File createFile(String path) {
+    final file = super.createFile(path);
+    return path.endsWith('image.part') ? _PartialImageFile(file, this) : file;
+  }
+}
+
+class _PartialImageFile implements File {
+  _PartialImageFile(this.file, this.probe);
+
+  final File file;
+  final _FailImageWrite probe;
+
+  @override
+  Future<File> writeAsBytes(
+    List<int> bytes, {
+    FileMode mode = FileMode.write,
+    bool flush = false,
+  }) async {
+    await file.writeAsBytes(bytes.take(4).toList(), mode: mode, flush: flush);
+    probe.wrotePartialBytes = true;
+    throw FileSystemException('simulated full disk', file.path);
+  }
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}

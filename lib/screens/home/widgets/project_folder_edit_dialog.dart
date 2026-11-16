@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../services/project_service.dart' show ProjectFolder;
 import '../../../utils/app_error_reporter.dart';
+import '../../../widgets/typing_dialog_inset.dart';
 import 'folder_save_feedback.dart';
 
 class ProjectFolderEditDialog extends StatefulWidget {
@@ -74,7 +75,10 @@ class _ProjectFolderEditDialogState extends State<ProjectFolderEditDialog> {
       canPop: !_saving,
       child: AlertDialog(
         scrollable: true,
-        insetPadding: const EdgeInsets.all(16),
+        insetPadding: typingDialogInsetPadding(
+          context,
+          usual: const EdgeInsets.all(16),
+        ),
         title: Text(l10n.projectListEditFolderTooltip),
         content: Column(
           mainAxisSize: MainAxisSize.min,

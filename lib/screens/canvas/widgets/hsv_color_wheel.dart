@@ -413,7 +413,8 @@ class _SliderModePill extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     final radius = BorderRadius.circular(segment.height / 2 + 1);
     return Semantics(
-      label: 'HSV / RGB',
+      container: true,
+      explicitChildNodes: true,
       child: Container(
         height: segment.height + 2,
         decoration: BoxDecoration(
@@ -439,24 +440,34 @@ class _SliderModePill extends StatelessWidget {
     BorderRadius radius,
   ) {
     final selected = showHsv == hsv;
-    return InkWell(
+    void select() => onChanged(hsv);
+    return Semantics(
       key: ValueKey('color-slider-mode-${hsv ? 'hsv' : 'rgb'}'),
-      borderRadius: radius,
-      onTap: () => onChanged(hsv),
-      child: Container(
-        width: segment.width,
-        height: segment.height,
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: selected ? scheme.primary : Colors.transparent,
-          borderRadius: radius,
-        ),
-        child: Text(
-          label,
-          maxLines: 1,
-          softWrap: false,
-          style: _labelStyle.copyWith(
-            color: selected ? scheme.onPrimary : scheme.onSurface,
+      button: true,
+      selected: selected,
+      label: label,
+      onTap: select,
+      child: InkWell(
+        excludeFromSemantics: true,
+        borderRadius: radius,
+        onTap: select,
+        child: Container(
+          width: segment.width,
+          height: segment.height,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: selected ? scheme.primary : Colors.transparent,
+            borderRadius: radius,
+          ),
+          child: ExcludeSemantics(
+            child: Text(
+              label,
+              maxLines: 1,
+              softWrap: false,
+              style: _labelStyle.copyWith(
+                color: selected ? scheme.onPrimary : scheme.onSurface,
+              ),
+            ),
           ),
         ),
       ),
