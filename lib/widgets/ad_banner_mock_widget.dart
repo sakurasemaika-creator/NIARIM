@@ -14,8 +14,9 @@ String? coinAdBenefitForRoute(String route) {
   if (route == '/home' ||
       route == '/shared' ||
       route == '/trash' ||
-      route.startsWith('/home/'))
+      route.startsWith('/home/')) {
     return 'projectListAds';
+  }
   if (route == '/canvas' || route.startsWith('/canvas/')) return 'canvasAds';
   if (route == '/timeline' || route.startsWith('/timeline/')) {
     return 'timelineAds';

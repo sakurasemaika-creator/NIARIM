@@ -134,7 +134,7 @@ class SaveSlotMemoButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return IconButton(
-      key: Key('saveSlotMemo_${projectId}_${slotIndex}'),
+      key: Key('saveSlotMemo_${projectId}_$slotIndex'),
       tooltip: l10n.saveTreeCommentLabel,
       icon: const Icon(Icons.edit_outlined, size: 17),
       visualDensity: VisualDensity.compact,

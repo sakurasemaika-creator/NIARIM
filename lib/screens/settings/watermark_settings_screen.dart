@@ -160,7 +160,9 @@ class WatermarkSettingsScreen extends StatelessWidget {
     if (!context.mounted) return false;
     if (context.read<PremiumService>().isFeatureAvailable(
       PremiumFeature.watermark,
-    )) return true;
+    )) {
+      return true;
+    }
     showPremiumBanner(context);
     return false;
   }

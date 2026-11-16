@@ -87,8 +87,7 @@ class AssetSearchBar extends StatelessWidget {
         children: [
           CallbackShortcuts(
             bindings: {
-              if (onClose != null)
-                const SingleActivator(LogicalKeyboardKey.escape): onClose!,
+              const SingleActivator(LogicalKeyboardKey.escape): ?onClose,
             },
             child: TextField(
               key: const ValueKey('asset-search-input'),

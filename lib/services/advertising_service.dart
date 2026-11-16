@@ -175,8 +175,9 @@ class AdvertisingService extends ChangeNotifier {
 
   void _onPremiumChanged() {
     if (premiumService.isPremium ||
-        premiumService.isServerCoinBenefitActive("allAds"))
+        premiumService.isServerCoinBenefitActive("allAds")) {
       hideAllAds();
+    }
     notifyListeners();
   }
 
@@ -187,8 +188,9 @@ class AdvertisingService extends ChangeNotifier {
 
   Future<void> showSquareAd() async {
     if (!shouldShowAds ||
-        premiumService.isServerCoinBenefitActive("processingAds"))
+        premiumService.isServerCoinBenefitActive("processingAds")) {
       return;
+    }
     await _provider.showSquareAd();
   }
 

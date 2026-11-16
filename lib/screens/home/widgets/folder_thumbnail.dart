@@ -589,8 +589,10 @@ Future<void> showFolderThumbnailDialog(
                                           type: FileType.image,
                                           withData: true,
                                         );
-                                    if (result == null || result.files.isEmpty)
+                                    if (result == null ||
+                                        result.files.isEmpty) {
                                       return;
+                                    }
                                     final picked = result.files.first;
                                     final bytes =
                                         picked.bytes ??

@@ -109,8 +109,10 @@ class ExportedWorkCoverStore {
     return output.path;
   }
 
-  static String _quote(String path) =>
-      '"' + path.replaceAll('\\', '\\\\').replaceAll('"', '\\"') + '"';
+  static String _quote(String path) {
+    final escaped = path.replaceAll('\\', '\\\\').replaceAll('"', '\\"');
+    return '"$escaped"';
+  }
 
   static Future<String> extractVideoFrame(File file, int frame) async {
     // Opaque video frames: compact JPEG. WebM/GIF: PNG retains possible alpha.
@@ -188,13 +190,15 @@ class ExportedWorkCoverStore {
     final current = await read(file);
     if (current['mode'] == 'none' ||
         current['mode'] == 'custom' ||
-        _failedInSession.contains(file.path))
+        _failedInSession.contains(file.path)) {
       return current;
+    }
     final previous = current['imagePath'];
     if (previous is String &&
         previous.isNotEmpty &&
-        await File(previous).exists())
+        await File(previous).exists()) {
       return current;
+    }
     if (!_isRaster(file) && !_isVideo(file)) return current;
     final original = await file.stat();
     String? generated;
@@ -288,8 +292,9 @@ class ExportedWorkCoverStore {
     }
     // Image files can always use their original bytes as a cover.
     final suffix = file.path.split('.').last.toLowerCase();
-    if (const {'png', 'jpg', 'jpeg', 'webp', 'gif', 'bmp'}.contains(suffix))
+    if (const {'png', 'jpg', 'jpeg', 'webp', 'gif', 'bmp'}.contains(suffix)) {
       return file.path;
+    }
     return null;
   }
 }
@@ -362,8 +367,9 @@ class _ExportedWorkThumbnailDialogState
       final setting = await ExportedWorkCoverStore.read(widget.file);
       final choice = setting['mode'];
       if (choice is String &&
-          const {'latest', 'frame', 'custom', 'none'}.contains(choice))
+          const {'latest', 'frame', 'custom', 'none'}.contains(choice)) {
         mode = choice;
+      }
       existingCover = setting['imagePath'] is String
           ? setting['imagePath'] as String
           : null;
@@ -403,12 +409,13 @@ class _ExportedWorkThumbnailDialogState
       }
       if (mounted) setState(() => ready = true);
     } catch (_) {
-      if (mounted)
+      if (mounted) {
         setState(() {
           ready = true;
           supportedFrames = false;
           failure = l10n.thumbnailVideoInfoFailed;
         });
+      }
     }
   }
 
@@ -532,11 +539,12 @@ class _ExportedWorkThumbnailDialogState
           // The previous cover is still referenced by persisted settings.
         }
       }
-      if (mounted)
+      if (mounted) {
         setState(() {
           busy = false;
           failure = l10n.thumbnailSaveFailed;
         });
+      }
     }
   }
 

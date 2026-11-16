@@ -39,7 +39,7 @@ class LocalTrashedFile {
     'kind': kind.name,
     'originalPath': originalPath,
     'deletedAt': deletedAt.toIso8601String(),
-    if (folderName != null) 'folderName': folderName!,
+    'folderName': ?folderName,
     if (isFolder) 'fileNames': fileNames,
   };
 }
@@ -98,15 +98,17 @@ abstract final class LocalFileTrashService {
         final isFolder = kind == LocalTrashKind.exportedWorkFolder;
         if (isFolder
             ? !await Directory(archive).exists()
-            : !await File(archive).exists())
+            : !await File(archive).exists()) {
           continue;
+        }
         final names = (meta['fileNames'] as List<dynamic>? ?? const [])
             .whereType<String>()
             .toList();
         if (isFolder &&
             (meta['folderName'] is! String ||
-                names.any((name) => !_safeFileName(name))))
+                names.any((name) => !_safeFileName(name)))) {
           continue;
+        }
         entries.add(
           LocalTrashedFile(
             id: id,
@@ -137,8 +139,9 @@ abstract final class LocalFileTrashService {
     if (kind == LocalTrashKind.exportedWorkFolder) {
       throw ArgumentError('Use moveWorkFolder for a folder');
     }
-    if (!await source.exists())
+    if (!await source.exists()) {
       throw FileSystemException('File missing', source.path);
+    }
     final root = await _root();
     await root.create(recursive: true);
     var seed = DateTime.now().microsecondsSinceEpoch;
@@ -184,8 +187,9 @@ abstract final class LocalFileTrashService {
   static Future<void> restore(LocalTrashedFile entry) async {
     if (entry.isFolder) throw ArgumentError('Use restoreWorkFolder');
     final archived = File(entry.archivedPath);
-    if (!await archived.exists())
+    if (!await archived.exists()) {
       throw FileSystemException('Trash entry missing', entry.archivedPath);
+    }
     final original = File(entry.originalPath);
     if (await original.exists()) {
       throw FileSystemException(
@@ -296,8 +300,9 @@ abstract final class LocalFileTrashService {
   static Future<bool> _sameFileContents(File a, File b) async {
     if (!await a.exists() ||
         !await b.exists() ||
-        await a.length() != await b.length())
+        await a.length() != await b.length()) {
       return false;
+    }
     final left = await a.open();
     final right = await b.open();
     try {
