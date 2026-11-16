@@ -1578,6 +1578,12 @@ onTap: ...)`だったために
   複製の名前（「名前 (コピー 2).mp4」）は印・番号・拡張子を1つのかたまりにして折り、
   日本語の名前は「ー」・小さいかなで行を始めない（`collection_tile_layout.dart`の
   `copyMarkLineText`、`KoreanWordsText(keepJapaneseLineStarts:)`）。
+  ゴミ箱の控えの一覧（`LocalFileTrashService.list`）は記録を`Isolate.run`の中で同期に読む
+  （画面のisolateで1件ずつ非同期に読むと2万件で十数秒かかった）。同じファイルを移している間は
+  `_movingPaths`で2回目を断る（`moveFile`・`moveWorkFolder`の両方。戻す処理はまだ入らない）。
+  容量削減の「ゴミ箱」はゴミ箱の作品と、ゴミ箱に出る控えだけ（`listedSize`）を数え、空にすれば0
+  （所有者の判断、2026-11-16。写しの途中・記録の読めないフォルダは数えない）。共有で作った
+  ファイルは「書き出し済みファイル」。
 - **フォルダのゴミ箱は中身ごと（ユーザー指定）**：フォルダをゴミ箱へ移すと
   下の階層のフォルダ・作品も一緒に移り（`ProjectService.moveFolderToTrash`、
   記録は`TrashedFolder`で保存キー`trashed_project_folders`）、ゴミ箱でフォルダを
