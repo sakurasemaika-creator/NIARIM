@@ -8,7 +8,7 @@
 
 ### 1.1 監査と修正の分担
 
-一巡目の実操作と指摘、別担当による原因特定・修正・回帰、監査担当による二巡目の実操作を [実行Policy](../policy/ASTRA_WORK.md) に従って進める。正式doneは既存の証拠条件とVerifierの整合を満たした時点で記録する。
+**Claudeは一巡目の判定・記録と、独立したGPTセッションによる修正・確認後の二巡目の全件判定を担当する。** 製品修正の実行・委任・取り込みはGPTの修正工程に限る。進行中は安全なチェックポイントで進捗と差分を保存し、最新Policyを読み直して続ける。 役割、引継ぎ、既存Verifierを満たす正式doneの条件は[実行Policy](../policy/ASTRA_WORK.md#一巡目修正二巡目の担当分離2026-11-16ユーザー指定)に従う。本書にある製品改修・製品用テスト追加はGPTの修正工程に適用する。Claudeは実操作・判定・監査記録を担当する。
 
 ## 2. 全通り
 ユーザーが到達・操作できる固有の画面、control、状態、分岐、入力方式、離散preset/選択肢は全件実操作する。数値はdefault、min/max、boundary、代表中間、empty/large/invalid、相互作用を確認する。success/error/loading/offline、apply/cancel/back/close、double execution、rapid input、interruption、revisit、undo/redo、save/load/import/export、permission、Free/Premium等も該当する場合は確認する。
@@ -52,7 +52,7 @@ cold/warm startup、route transition、filter/brush apply、drawing、slider/dra
 
 
 ## 12. ブラッシュアップ
-明確な改善余地があれば、root cause→fix→targeted test/analyze→同じ実操作→Visual再確認→関連regressionまで行う。refactor/rewrite/redesignを妨げない。機能削除は、目的、入力、出力、精度、UX、速度、自由度、保存互換性、undo/redo、share/export、Free/Premium差を確認して判断する。
+明確な改善余地はClaudeが記録する。GPTが原因特定・修正・関連テスト・実操作と回帰を確認し、Claudeが二巡目で同じ操作とVisualを確認する。refactor/rewrite/redesignを妨げない。機能削除は、目的、入力、出力、精度、UX、速度、自由度、保存互換性、undo/redo、share/export、Free/Premium差を確認して判断する。
 
 ## 13. Evidence / Visual closure
 Audit ID、target、precondition、procedure、expected、actual、environment、PC/SP、viewport、language、theme、preset/mode、settings、test/visual result、regression、evidence location、未確認理由を追跡可能にする。Visual evidenceはBEFORE/SETTINGS/AFTER、feature、preset/mode、主要設定を識別可能にし、captureしただけでPASSにしない。最新HEADで最終Visual closureを再生成し、全ページrender＋実画像目視を行う。
@@ -72,7 +72,7 @@ Audit ID、target、precondition、procedure、expected、actual、environment�
 全面監査の最終状態では、implementation-pending = 0 を必須とし、human-action-pendingは「外部サービス側でしか実行できない操作」に限定する。監査後の人間作業は最終報告に一括して提示し、ユーザーがそのまま実行できる粒度まで具体化する。
 
 ## 14. 完了gate
-Baseline incomplete、Discovery incomplete、Delta incomplete、unregistered Discovery、advisor-pending、required evidence/regression incompleteを0にする。重大な機能・安定性・データ損失・security・legal/IP問題を残さない。見送る改善は理由と残余リスクをEvidenceに残す。
+Claudeの二巡目で全対象IDのOKを確認し、Baseline incomplete、Discovery incomplete、Delta incomplete、unregistered Discovery、advisor-pending、required evidence/regression incompleteを0にする。重大な機能・安定性・データ損失・security・legal/IP問題を残さない。見送る改善は理由と残余リスクをEvidenceに残す。
 
 
 ## 初心者向け導線・チュートリアル・隠れ操作の発見性監査
