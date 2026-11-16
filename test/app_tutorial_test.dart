@@ -21,9 +21,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'helpers/first_use_tooltips.dart';
 import 'helpers/load_app_fonts.dart';
 
-/// 使い方（図つきの数ページ）：初回起動で出て、スキップ・最後の
-/// 「はじめる」・戻る操作のどれで閉じても次からは出ない。ホームのメニュー
-/// （ヘルプ・活用Tipsの並び）とヘルプから見直せ、設定から機能の説明
+/// 初回起動の案内は「はじめる」で完了する。図つきの使い方は
+/// ホームのメニューから「使い方」→ヘルプで開け、設定から機能の説明
 /// （吹き出し）をもう一度出せる。どの言語・
 /// 文字の大きさ・画面の形でも、ボタンが画面に収まり手順を読み切れる。
 void main() {
@@ -63,16 +62,16 @@ void main() {
 
   final ja = lookupAppLocalizations(const Locale('ja'));
 
-  testWidgets('first launch: skipping closes the guide for good', (
+  testWidgets('first launch: confirming the notice closes it for good', (
     tester,
   ) async {
     await openApp(tester, firstLaunch: true);
-    expect(find.byType(AppTutorial), findsOneWidget);
-    expect(find.text(ja.tutorialPage1Title), findsOneWidget);
-    expect(find.text(ja.homeFirstLaunchMessage), findsOneWidget);
-    await tester.tap(find.byKey(const Key('tutorialSkip')));
+    final notice = find.byType(AlertDialog);
+    expect(notice, findsOneWidget);
+    expect(find.bySemanticsLabel(ja.homeFirstLaunchMessage), findsOneWidget);
+    await tester.tap(find.text(ja.homeFirstLaunchStart));
     await tester.pumpAndSettle();
-    expect(find.byType(AppTutorial), findsNothing);
+    expect(notice, findsNothing);
     expect(
       (await SharedPreferences.getInstance()).getBool('first_launch'),
       isFalse,
@@ -82,22 +81,21 @@ void main() {
     appRouter.go('/home');
     await tester.pumpAndSettle();
     expect(find.byType(HomeScreen), findsOneWidget);
-    expect(find.byType(AppTutorial), findsNothing);
+    expect(notice, findsNothing);
     await tester.pumpWidget(const SizedBox.shrink());
   });
 
-  testWidgets('first launch: the back button also closes it for good', (
-    tester,
-  ) async {
+  testWidgets('first launch: Back does not skip the notice', (tester) async {
     await openApp(tester, firstLaunch: true);
-    expect(find.byType(AppTutorial), findsOneWidget);
+    final notice = find.byType(AlertDialog);
+    expect(notice, findsOneWidget);
     await tester.binding.handlePopRoute();
     await tester.pumpAndSettle();
-    expect(find.byType(AppTutorial), findsNothing);
+    expect(notice, findsOneWidget);
     expect(find.byType(HomeScreen), findsOneWidget);
     expect(
       (await SharedPreferences.getInstance()).getBool('first_launch'),
-      isFalse,
+      isTrue,
     );
     await tester.pumpWidget(const SizedBox.shrink());
   });
@@ -106,7 +104,9 @@ void main() {
     tester,
   ) async {
     final semantics = tester.ensureSemantics();
-    await openApp(tester, firstLaunch: true);
+    await openApp(tester, firstLaunch: false, route: '/help');
+    await tester.tap(find.byKey(const Key('helpTutorialButton')));
+    await tester.pumpAndSettle();
     final titles = [
       ja.tutorialPage1Title,
       ja.tutorialPage2Title,
@@ -154,31 +154,32 @@ void main() {
     await tester.pumpWidget(const SizedBox.shrink());
   });
 
-  testWidgets('the home menu reopens the guide next to Help and Tips', (
+  testWidgets('the home menu opens the guide through the Help tab', (
     tester,
   ) async {
     await openApp(tester, firstLaunch: false);
     // メニューは右上のボタンから開く。
     await tester.tap(find.byKey(const Key('homeMenuButton')));
     await tester.pumpAndSettle();
-    final entry = find.byKey(const Key('homeDrawerTutorial'));
+    final entry = find.byKey(const Key('homeGuideMenuItem'));
     expect(entry, findsOneWidget);
     expect(
       find.descendant(of: entry, matching: find.text(ja.homeDrawerTutorial)),
       findsOneWidget,
     );
-    // ヘルプ・活用Tipsのすぐ上に並ぶ。
-    final help = tester.getRect(find.text(ja.homeDrawerHelp));
-    final tipsRow = tester.getRect(find.text(ja.homeDrawerTips));
-    expect(tester.getRect(entry).bottom, lessThanOrEqualTo(help.top + 1));
-    expect(help.bottom, lessThanOrEqualTo(tipsRow.top + 1));
     await tester.tap(entry);
     await tester.pumpAndSettle();
     expect(find.byType(Drawer), findsNothing);
+    expect(find.widgetWithText(Tab, ja.helpScreenTitle), findsOneWidget);
+    expect(find.widgetWithText(Tab, ja.tipsScreenTitle), findsOneWidget);
+    await tester.tap(find.byKey(const Key('helpTutorialButton')));
+    await tester.pumpAndSettle();
     expect(find.byType(AppTutorial), findsOneWidget);
     await tester.tap(find.byKey(const Key('tutorialSkip')));
     await tester.pumpAndSettle();
     expect(find.byType(AppTutorial), findsNothing);
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
     expect(find.byType(HomeScreen), findsOneWidget);
     await tester.pumpWidget(const SizedBox.shrink());
   });

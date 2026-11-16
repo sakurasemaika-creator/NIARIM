@@ -190,54 +190,28 @@ void main() {
       await tester.tap(find.byKey(const ValueKey('color-slider-mode-rgb')));
       await shot('02_pc_large_color_wheel_rgb_edge_controls');
 
-      // Capture every tab of the shared two-row subtool chooser.
+      // Capture each management palette from the shared docked subtool panel.
       await settings.setDefaultDockedPanels({CanvasDockPanel.penSubTool});
+      await settings.setDesktopDockHeight(CanvasDockPanel.penSubTool, 620);
       await navigate('/home');
       await navigate('/canvas/${demo.id}');
       expect(find.byType(PenSubToolPanel), findsOneWidget);
+      expect(find.byType(BrushPanel), findsOneWidget);
       await shot('02a_pc_pen_subtool_brush_tab_waves');
+      await shot('11_pc_brush_management_all_controls');
       final subtool = find.byType(PenSubToolPanel);
       await tester.tap(
         find.descendant(of: subtool, matching: find.text('トーン')).first,
       );
       await shot('02b_pc_pen_subtool_tone_tab_waves');
+      expect(find.byType(TonePanel), findsOneWidget);
+      await shot('12_pc_tone_management_all_controls');
       await tester.tap(
         find.descendant(of: subtool, matching: find.text('スタンプ')).first,
       );
       await shot('02c_pc_pen_subtool_stamp_tab_waves');
-
-      // Real desktop tool management panels: two-row names/waves and the
-      // favorite / overflow / drag controls at the right of every row.
-      for (final caseItem in [
-        (
-          panel: CanvasDockPanel.brush,
-          file: '11_pc_brush_management_all_controls',
-        ),
-        (
-          panel: CanvasDockPanel.tone,
-          file: '12_pc_tone_management_all_controls',
-        ),
-        (
-          panel: CanvasDockPanel.stamp,
-          file: '13_pc_stamp_management_all_controls',
-        ),
-      ]) {
-        await settings.setDefaultDockedPanels({caseItem.panel});
-        await settings.setDesktopDockHeight(caseItem.panel, 620);
-        await navigate('/home');
-        await navigate('/canvas/${demo.id}');
-        final managed = switch (caseItem.panel) {
-          CanvasDockPanel.brush => find.byType(BrushPanel),
-          CanvasDockPanel.tone => find.byType(TonePanel),
-          _ => find.byType(StampPanel),
-        };
-        expect(
-          managed,
-          findsOneWidget,
-          reason: 'Management palette must be real production UI',
-        );
-        await shot(caseItem.file);
-      }
+      expect(find.byType(StampPanel), findsOneWidget);
+      await shot('13_pc_stamp_management_all_controls');
 
       // The mini preview of an individual raster layer opens an actual
       // fullscreen layer-only viewer, with pan/zoom and close controls.

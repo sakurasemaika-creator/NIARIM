@@ -131,7 +131,7 @@ void main() {
     expect(find.byKey(const Key('homeEarnCoinsMenuItem')), findsNothing);
     expect(find.byKey(const Key('homeCreatorMissionsMenuItem')), findsNothing);
     expect(find.text('使い方'), findsOneWidget);
-    expect(find.text('コイン・特典'), findsOneWidget);
+    expect(find.text('オパール・特典'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
