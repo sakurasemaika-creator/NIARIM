@@ -65,9 +65,9 @@ List<Brush> brushExtensionPresets() => <Brush>[
       outlineWidth: _strandOutlineWidth,
       outlineColor: 0xff7d2024,
       presetColor: 0xffdb424b,
-      foldAngleRatio: .72,
-      foldLengthRatio: .68,
-      foldCurveStartRatio: .48,
+      foldAngleRatio: .92,
+      foldLengthRatio: .90,
+      foldCurveStartRatio: .62,
       foldCrescentDepthThreshold: .65,
       tags: const [AssetTagKeys.clothing, AssetTagKeys.decoration],
     ),
@@ -309,7 +309,7 @@ List<Brush> brushExtensionPresets() => <Brush>[
     opacity: 100,
     outlineEnabled: true,
     outlineKeepOverlap: false,
-    outlineWidth: 1.8,
+    outlineWidth: 1,
     outlineColor: 0xff50647e,
   ),
 ];
@@ -342,7 +342,7 @@ const _cloud = Brush(
   tags: [AssetTagKeys.background, AssetTagKeys.texture, AssetTagKeys.paint],
 );
 
-const _strandOutlineWidth = 1.1;
+const _strandOutlineWidth = 1.0;
 
 const _hair = Brush(
   id: 'Brush0023',

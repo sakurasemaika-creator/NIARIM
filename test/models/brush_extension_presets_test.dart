@@ -42,7 +42,7 @@ void main() {
       expect(hair.name, 'ウェーブヘア（俯瞰）');
       expect(hair.outlineEnabled, isTrue);
       expect(hair.outlineColor, 0xff000000);
-      expect(hair.outlineWidth, 1.1);
+      expect(hair.outlineWidth, 1);
       expect(hair.foldEnabled, isTrue);
       expect(hair.foldTriggerAngle, 60);
       expect(hair.foldCurveStartRatio, .16);
@@ -111,10 +111,10 @@ void main() {
         expect(restored.pressureOn.size.enabled, isFalse);
         expect(restored.pressureOn.opacity.enabled, isFalse);
         expect(restored.presetColor, 0xffdb424b);
-        expect(restored.outlineWidth, 1.1);
-        expect(restored.foldLengthRatio, .68);
-        expect(restored.foldAngleRatio, .72);
-        expect(restored.foldCurveStartRatio, .48);
+        expect(restored.outlineWidth, 1);
+        expect(restored.foldLengthRatio, .90);
+        expect(restored.foldAngleRatio, .92);
+        expect(restored.foldCurveStartRatio, .62);
       }
     },
   );
@@ -131,6 +131,7 @@ void main() {
     expect(flat.name, '雲（ベタ塗り）');
     expect(flat.resolvedCustomImagePaths, cloud.resolvedCustomImagePaths);
     expect(flat.outlineEnabled, isTrue);
+    expect(flat.outlineWidth, 1);
     expect(flat.presetColor, isNull);
     expect(
       Brush.fromJson(flat.toJson()).imageInkMode,

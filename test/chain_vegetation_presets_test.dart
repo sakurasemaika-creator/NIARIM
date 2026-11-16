@@ -176,16 +176,26 @@ void main() {
           flat,
           color: const ui.Color(0xff205bb8),
         );
+        final smaller = await generateBuiltInStampTexture(
+          flat,
+          renderedSize: 64,
+          color: const ui.Color(0xffe9396a),
+        );
         var fills = 0, outlines = 0;
+        var smallerOutlinePixels = 0;
         for (var i = 0; i < red.length; i += 4) {
           expect(red[i + 3], blue[i + 3]);
           if (red[i + 3] == 255 && red[i] == 0xe9 && blue[i] == 0x20) fills++;
-          if (red[i + 3] == 255 && red[i] == 0x23 && blue[i] == 0x23) {
+          if (red[i + 3] > 0 &&
+              red[i] == blue[i] &&
+              red[i + 2] == blue[i + 2]) {
             outlines++;
           }
+          if (red[i + 3] == 0 && smaller[i + 3] > 0) smallerOutlinePixels++;
         }
         expect(fills, greaterThan(900));
         expect(outlines, greaterThan(25));
+        expect(smallerOutlinePixels, greaterThan(25));
       }
     },
   );

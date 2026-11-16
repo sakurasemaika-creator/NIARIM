@@ -6,15 +6,17 @@ import 'dart:typed_data';
 int silhouetteAlpha(int alpha) => ((alpha - 18) * 255 ~/ 32).clamp(0, 255);
 
 const silhouetteDistanceUnits = 8;
+const silhouetteDistanceLimit = 255;
 
 /// Approximate distance to the silhouette, in eighths of a source texel.
 Uint8List silhouetteDistance(Uint8List mask, int size) {
-  const far = 255;
   final length = size * size;
   final distance = Uint8List(length);
   for (var p = 0; p < length; p++) {
     final alpha = mask[p * 4 + 3];
-    distance[p] = alpha == 0 ? far : (255 - alpha) * 8 ~/ 255;
+    distance[p] = alpha == 0
+        ? silhouetteDistanceLimit
+        : (255 - alpha) * 8 ~/ 255;
   }
   for (var y = 0; y < size; y++) {
     for (var x = 0; x < size; x++) {

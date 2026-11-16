@@ -224,9 +224,11 @@ class _StrokeSamplePreviewState extends State<StrokeSamplePreview> {
     }
 
     final activeStamp = stamp!;
+    const stampSize = 23.0;
     final texture = await generateBuiltInStampTexture(
       activeStamp,
       size: 48,
+      renderedSize: stampSize,
       color: color,
     );
     final result = StampEngine().stampAlongPath(
@@ -236,9 +238,9 @@ class _StrokeSamplePreviewState extends State<StrokeSamplePreview> {
       texture: texture,
       texSize: 48,
       points: _wavePoints(),
-      stampSize: 23,
+      stampSize: stampSize,
       rotation: activeStamp.rotation,
-      scatter: activeStamp.scatter * 23,
+      scatter: activeStamp.scatter * stampSize,
       density: activeStamp.density,
       // The source texture has already had its opacity applied.
       opacity: 100,

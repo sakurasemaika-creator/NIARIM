@@ -135,9 +135,11 @@ class SharedAssetCardPreview {
           'Image stamp needs original source texture',
         );
       }
+      const stampSize = 23.0;
       final texture = await generateBuiltInStampTexture(
         stamp,
         size: 48,
+        renderedSize: stampSize,
         color: color,
       );
       final pixels = StampEngine().stampAlongPath(
@@ -147,9 +149,9 @@ class SharedAssetCardPreview {
         texture: texture,
         texSize: 48,
         points: _wave(),
-        stampSize: 23,
+        stampSize: stampSize,
         rotation: stamp.rotation,
-        scatter: stamp.scatter * 23,
+        scatter: stamp.scatter * stampSize,
         density: stamp.density,
         opacity: 100,
         premultiplied: true,

@@ -2280,10 +2280,12 @@ class _CanvasAreaState extends State<CanvasArea> {
     img.dispose();
     if (byteData == null || !mounted) return;
     final canvasData = byteData.buffer.asUint8List();
-    const texSize = 128;
+    // Keep enough samples for a one-pixel outline even on a large stamp.
+    final texSize = stamp.flatFill ? stampSize.ceil().clamp(128, 500) : 128;
     final texture = await generateBuiltInStampTexture(
       stamp,
       size: texSize,
+      renderedSize: stampSize,
       color: color,
     );
     if (!mounted) return;

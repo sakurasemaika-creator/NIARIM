@@ -527,6 +527,7 @@ void _fillDotPattern(Uint8List data, int size, double density) {
 Future<Uint8List> generateBuiltInStampTexture(
   Stamp stamp, {
   int size = 128,
+  double? renderedSize,
   ui.Color color = const ui.Color(0xff000000),
 }) async {
   final path = stamp.imagePath;
@@ -552,7 +553,12 @@ Future<Uint8List> generateBuiltInStampTexture(
     texture = byteData!.buffer.asUint8List();
   }
   if (stamp.flatFill) {
-    texture = _flatStampTexture(texture, size, color);
+    texture = _flatStampTexture(
+      texture,
+      size,
+      renderedSize ?? size.toDouble(),
+      color,
+    );
   }
   if (stamp.pixelMode) {
     texture = FilterEngine().applyPixelate(texture, size, size, dither: false);
@@ -568,19 +574,26 @@ Future<Uint8List> generateBuiltInStampTexture(
   return texture;
 }
 
-Uint8List _flatStampTexture(Uint8List source, int size, ui.Color color) {
+Uint8List _flatStampTexture(
+  Uint8List source,
+  int size,
+  double renderedSize,
+  ui.Color color,
+) {
   final result = Uint8List(source.length);
   for (var i = 3; i < source.length; i += 4) {
     result[i] = silhouetteAlpha(source[i]);
   }
   final distance = silhouetteDistance(result, size);
   const ink = ui.Color(0xff23302a);
-  final outlineWidth = size * .015;
+  // One document pixel expressed in the texture's resampled coordinates.
+  final texelsPerPixel = size / math.max(.5, renderedSize);
   for (var p = 0; p < distance.length; p++) {
     final i = p * 4;
+    if (distance[p] == silhouetteDistanceLimit) continue;
     final fill = result[i + 3] / 255 * color.a;
     final outline =
-        (outlineWidth + .5 - distance[p] / silhouetteDistanceUnits).clamp(
+        (1.5 - distance[p] / silhouetteDistanceUnits / texelsPerPixel).clamp(
           0.0,
           1.0,
         ) *
