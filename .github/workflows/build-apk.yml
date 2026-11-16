@@ -15,7 +15,7 @@ on:
           - release
         default: debug
       connect_backend:
-        description: "デバッグAPKを開発用AWSバックエンドへ接続する（実データ利用・既定オフ）"
+        description: "デバッグAPKをNIARIMの稼働中AWS APIへ接続する（実データ利用・既定オフ）"
         required: true
         type: boolean
         default: false
@@ -30,6 +30,10 @@ on:
 concurrency:
   group: build-apk-${{ github.ref }}
   cancel-in-progress: true
+
+env:
+  # Public Function URL of niarim-api in ap-northeast-1.
+  NIARIM_API_BASE_URL: https://ibjfhyoqvfanle62ltokgz6sry0fjqfh.lambda-url.ap-northeast-1.on.aws/
 
 jobs:
   build:
@@ -110,8 +114,6 @@ jobs:
         env:
           NIARIM_DEBUG_KEYSTORE_PATH: ${{ runner.temp }}/niarim-ci-debug.jks
           NIARIM_DEBUG_STORE_PASSWORD: ${{ secrets.NIARIM_DEBUG_STORE_PASSWORD }}
-          # The Lambda Function URL is a public API endpoint, NOT a secret.
-          NIARIM_DEV_API_BASE_URL: https://ibjfhyoqvfanle62ltokgz6sry0fjqfh.lambda-url.ap-northeast-1.on.aws/
           CONNECT_BACKEND: ${{ inputs.connect_backend }}
           CONNECT_GOOGLE_AUTH: ${{ inputs.connect_google_auth }}
           NIARIM_GOOGLE_WEB_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
@@ -124,10 +126,10 @@ jobs:
           args=(--debug)
           if [[ "$CONNECT_BACKEND" == "true" ]]; then
             if [[ "${{ github.ref }}" != "refs/heads/dev_branch" ]]; then
-              echo "::error::開発用APIへの接続は dev_branch のデバッグAPKに限定します"
+              echo "::error::稼働中APIに接続するデバッグAPKは dev_branch に限定します"
               exit 1
             fi
-            args+=(--dart-define="NIARIM_API_BASE_URL=$NIARIM_DEV_API_BASE_URL")
+            args+=(--dart-define="NIARIM_API_BASE_URL=$NIARIM_API_BASE_URL")
           fi
           if [[ "$CONNECT_GOOGLE_AUTH" == "true" ]]; then
             if [[ ! "$NIARIM_GOOGLE_WEB_CLIENT_ID" =~ ^[a-zA-Z0-9-]+[.]apps[.]googleusercontent[.]com$ ]]; then
@@ -139,8 +141,7 @@ jobs:
           fi
           flutter build apk "${args[@]}"
 
-      # 本番配布APKに開発用AWS URLを誤混入させない。
-      - name: 開発用APIへのリリース接続を禁止
+      - name: リリースでデバッグ接続オプションを拒否
         if: ${{ inputs.build-type == 'release' && (inputs.connect_backend || inputs.connect_google_auth) }}
         run: |
           echo "::error::リリースAPKではconnect_backendをオフにしてください"
@@ -149,20 +150,14 @@ jobs:
       - name: 本番用バックエンド・Google認証の接続設定を検証
         if: ${{ inputs.build-type == 'release' }}
         env:
-          RELEASE_API_BASE_URL: ${{ vars.NIARIM_PRODUCTION_API_BASE_URL }}
           GOOGLE_WEB_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           RELEASE_BANNER_ID: ${{ vars.NIARIM_ANDROID_BANNER_AD_UNIT_ID }}
           RELEASE_RECTANGLE_ID: ${{ vars.NIARIM_ANDROID_RECTANGLE_AD_UNIT_ID }}
         shell: bash
         run: |
           set -euo pipefail
-          # Do not accidentally ship a release that silently uses mock data.
-          if [[ ! "$RELEASE_API_BASE_URL" =~ ^https://[a-z0-9.-]+/$ ]]; then
-            echo "::error::NIARIM_PRODUCTION_API_BASE_URL must be a verified HTTPS API root."
-            exit 1
-          fi
-          if [[ "$RELEASE_API_BASE_URL" == *"ibjfhyoqvfanle62ltokgz6sry0fjqfh.lambda-url.ap-northeast-1.on.aws"* ]]; then
-            echo "::error::The development Lambda URL is not a production release endpoint."
+          if [[ ! "$NIARIM_API_BASE_URL" =~ ^https://[a-z0-9]+[.]lambda-url[.]ap-northeast-1[.]on[.]aws/$ ]]; then
+            echo "::error::NIARIM_API_BASE_URL must be a Tokyo Lambda Function URL."
             exit 1
           fi
           if [[ ! "$GOOGLE_WEB_CLIENT_ID" =~ ^[A-Za-z0-9-]+[.]apps[.]googleusercontent[.]com$ ]]; then
@@ -184,7 +179,6 @@ jobs:
         env:
           NIARIM_UPLOAD_KEYSTORE_PATH: ${{ runner.temp }}/niarim-upload.jks
           NIARIM_UPLOAD_STORE_PASSWORD: ${{ secrets.NIARIM_UPLOAD_STORE_PASSWORD }}
-          RELEASE_API_BASE_URL: ${{ vars.NIARIM_PRODUCTION_API_BASE_URL }}
           GOOGLE_WEB_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           RELEASE_BANNER_ID: ${{ vars.NIARIM_ANDROID_BANNER_AD_UNIT_ID }}
           RELEASE_RECTANGLE_ID: ${{ vars.NIARIM_ANDROID_RECTANGLE_AD_UNIT_ID }}
@@ -192,7 +186,7 @@ jobs:
         run: |
           set -euo pipefail
           flutter build apk --release \
-            --dart-define="NIARIM_API_BASE_URL=$RELEASE_API_BASE_URL" \
+            --dart-define="NIARIM_API_BASE_URL=$NIARIM_API_BASE_URL" \
             --dart-define="NIARIM_GOOGLE_CLIENT_ID=$GOOGLE_WEB_CLIENT_ID" \
             --dart-define="NIARIM_ADMOB_ANDROID_BANNER_AD_UNIT_ID=$RELEASE_BANNER_ID" \
             --dart-define="NIARIM_ADMOB_ANDROID_RECTANGLE_AD_UNIT_ID=$RELEASE_RECTANGLE_ID"
