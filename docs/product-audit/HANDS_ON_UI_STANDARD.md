@@ -2,6 +2,8 @@
 
 この文書は全面監査における実操作・実画面確認の必須基準。QUALITY_STANDARD.mdと併用する。
 
+本書にある製品改修・製品用テスト追加はGPTの修正工程に適用する。Claudeは実操作・判定・監査記録を担当する。 [実行Policy](../work-audit/policy/ASTRA_WORK.md#一巡目修正二巡目の担当分離2026-11-16ユーザー指定)を参照する。
+
 ## 必須範囲
 
 App/Web双方について、通常利用で到達可能な全画面、route、dialog、sheet、popover、menu、context menu、toolbar、sidebar、panel、tab、設定、onboarding、およびempty/loading/error/disabled/offline等の主要状態をinventory化し、実際に起動した製品または本番相当環境で到達して実画面を目視確認する。
@@ -30,7 +32,7 @@ save schema/versionを変更・移行する場合、legacy/current/unknown/newer
 
 ## ブラッシュアップ
 
-機能が動くだけで満足せず、導線、発見可能性、操作手数、feedback、視覚階層、spacing、typography、contrast、accessibility、PC/SP最適化、theme一貫性、制作効率まで評価する。明確な改善余地は遠慮なく修正し、修正後は同じ実操作とvisual/regressionを再実行する。
+機能が動くだけで満足せず、導線、発見可能性、操作手数、feedback、視覚階層、spacing、typography、contrast、accessibility、PC/SP最適化、theme一貫性、制作効率まで評価する。明確な改善余地をClaudeが記録し、GPTが修正と回帰確認を行う。Claudeは二巡目で同じ実操作と見た目を再確認する。
 
 ## 画面ごとの大きさの比率・余白の釣り合い
 
