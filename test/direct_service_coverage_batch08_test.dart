@@ -221,7 +221,7 @@ void main() {
 
   group('PremiumService local/non-store coverage', () {
     test(
-      'init campaign/local purchase metadata and renewal estimates persist',
+      'local metadata persists without granting an unverified purchase',
       () async {
         final service = PremiumService();
         await service.init();
@@ -240,7 +240,9 @@ void main() {
           purchaseDate: monthlyStart,
           productId: PremiumService.monthlyProductId,
         );
-        expect(service.hasPurchasedPremium, isTrue);
+        expect(service.hasPurchasedPremium, isFalse);
+        expect(service.isPremium, isFalse);
+        expect(service.verifiedSubscriptionProductId, isNull);
         expect(service.purchaseDate, monthlyStart);
         expect(service.nextRenewalDateEstimate, isNotNull);
         expect(
@@ -250,7 +252,9 @@ void main() {
 
         final restoredMonthly = PremiumService();
         await restoredMonthly.init();
-        expect(restoredMonthly.hasPurchasedPremium, isTrue);
+        expect(restoredMonthly.hasPurchasedPremium, isFalse);
+        expect(restoredMonthly.isPremium, isFalse);
+        expect(restoredMonthly.verifiedSubscriptionProductId, isNull);
         expect(
           restoredMonthly.purchaseDate?.millisecondsSinceEpoch,
           monthlyStart.millisecondsSinceEpoch,
@@ -263,6 +267,7 @@ void main() {
           purchaseDate: yearlyStart,
           productId: PremiumService.yearlyProductId,
         );
+        expect(restoredMonthly.hasPurchasedPremium, isFalse);
         expect(restoredMonthly.nextRenewalDateEstimate, isNotNull);
         expect(
           restoredMonthly.nextRenewalDateEstimate!.isAfter(DateTime.now()),

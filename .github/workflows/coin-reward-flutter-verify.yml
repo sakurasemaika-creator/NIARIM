@@ -46,6 +46,7 @@ on:
       - 'lib/models/coin_benefit_price_proposal.dart'
       - 'test/coin_benefit_price_proposal_test.dart'
       - 'test/premium_play_verification_policy_test.dart'
+      - 'test/direct_service_coverage_batch08_test.dart'
       - 'test/premium_coin_account_isolation_test.dart'
       - 'test/coin_authenticated_client_contract_test.dart'
       - 'test/monetization_campaign_removed_test.dart'
@@ -119,6 +120,11 @@ jobs:
             test/coin_authenticated_client_contract_test.dart \
             test/coin_authenticated_client_contract_test.dart \
             test/premium_play_verification_policy_test.dart
+      - name: Verify that local purchase metadata cannot grant Premium
+        run: |
+          flutter test --no-pub --reporter expanded \
+            --plain-name 'PremiumService local/non-store coverage' \
+            test/direct_service_coverage_batch08_test.dart
       - name: Reward idempotency and pricing widget tests
         run: |
           flutter test --no-pub --reporter expanded \
