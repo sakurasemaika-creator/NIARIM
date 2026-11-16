@@ -1,6 +1,6 @@
 # NIARIM Full Audit — execution policy
 
-> このpolicyは、独立タスクの起点でユーザーがNIARIMの全面監査/全面監査再開を明示した場合だけ有効化する。進行中の作業への補足・許可・継続指示の扱いは `AGENTS.md` Section 0に従う。通常タスクはこのpolicy/state領域を実行指示として使わない。実行場所がWorkか通常Chatか、担当モデルの種類・世代・名称は問わない。
+> このpolicyは、独立タスクの起点でユーザーがNIARIMの全面監査/全面監査再開を明示した場合だけ有効化する。進行中の作業への補足・許可・継続指示の扱いは `AGENTS.md` Section 0に従う。通常タスクはこのpolicy/state領域を実行指示として使わない。本書にある製品改修・製品用テスト追加はGPTの修正工程に適用する。Claudeは実操作・判定・監査記録を担当する。
 
 > 起動判定は明示トリガー制。「監査」「PNG監査」「最終green」等の語、作業範囲の広さ、前回作業の継続だけから全面監査へ昇格しない。独立した新タスクでは「以下の会話の続きから」「引き続き」「前回の続き」だけを全面監査トリガーにしない。既に明示起動した作業への追加指示で、その作業や承認を解除しない。
 
@@ -149,13 +149,13 @@ PC版の制作UI設計を検討する際は、CLIP STUDIO PAINT、ibisPaint、Me
 9. 現在のUIを維持すること自体が品質向上を妨げていないか。
 10. 変更後の見た目を実機・実画面キャプチャで確認し、フォント、余白、密度、階層、整列、色、アイコン、プレビュー、レスポンスまで総合評価したか。
 
-全面監査の実行順は、**Appの監査・必要な改修・実画面検証・regressionを先に完了させ、その後にWeb監査へ進む**ことを原則とする。App監査が未完了の状態で、Webの通常監査を先行して消化してはならない。
+各巡は**App本体 → Help/Tips → Web**の順で確認する。一巡目は確認時点のAppを基準に判定し、Appの修正待ちに依存するHelp/Tips・Web項目は依存する監査IDと再開条件を記録する。二巡目は修正後のAppを基準とする。
 
-App本体の監査・改修が完了した後、**HelpページとTipsをAppの最終仕様に対する徹底した追随監査対象として実施する。** ここでは文章だけでなく、各説明の正誤、現行UI/導線との一致、過不足、古い仕様・旧名称・旧操作の残存、無料/Premium差分、7言語の翻訳品質、検索/発見性、スクリーンショット・図・図解・アイコン・注釈・キャプチャの内容、解像度、トリミング、配置、テーマ/画面幅への適合、情報階層、視認性、アクセシビリティ、デザインの古さや不整合まで実画面と照合する。
+App本体の各巡の確認後、**HelpページとTipsをその時点のApp仕様に照らして確認する。** ここでは文章だけでなく、各説明の正誤、現行UI/導線との一致、過不足、古い仕様・旧名称・旧操作の残存、無料/Premium差分、7言語の翻訳品質、検索/発見性、スクリーンショット・図・図解・アイコン・注釈・キャプチャの内容、解像度、トリミング、配置、テーマ/画面幅への適合、情報階層、視認性、アクセシビリティ、デザインの古さや不整合まで実画面と照合する。
 
 Help/Tipsの監査で説明不足・誤解を招く表現・不要な重複・古いキャプチャ・分かりにくい図が見つかった場合は、文章修正だけに限定せず、**図の作り直し、キャプチャの撮り直し、レイアウト/デザイン変更、導線変更、説明対象の追加・削除**まで必要に応じて実施する。アプリ本体の仕様とHelp/Tipsが一致した状態を確認してからApp監査完了とする。
 
-Web監査開始条件は、AppのBaseline/Discovery/delta、必要な改修・regression、Help/Tips全面監査が完了し、重大な未解決問題が残っていないこととする。Webはその後、固定Route順に監査する。
+WebはAppとHelp/Tipsの各巡の記録を基に、固定Route順で確認する。二巡目の最終判定には、修正後のApp・Help/Tips・Webの整合と関連する回帰を含める。
 
 ## 0. 正本と分離
 
@@ -181,12 +181,13 @@ Web監査開始条件は、AppのBaseline/Discovery/delta、必要な改修・re
 
 ### 一巡目・修正・二巡目の担当分離（2026-11-16ユーザー指定）
 
-1. **監査担当**は最新dev_branchの製品をRouteの順序で実操作し、一巡目の確認結果と指摘を記録する。合格、要修正、未確認の根拠を残し、修正を待たず次の独立した項目へ進む。担当するのは再現・証跡・判定・二巡目での確認。製品コードの原因追究、実装修正、修正用の回帰テスト作成には別の修正担当と別の作業枠を使う。
-2. **修正担当**は受け取った指摘を共通原因・変更箇所で束ね、原因特定、修正、必要なtest/analyze・自分の再現確認、dev_branchへの反映を担当する。引継ぎはID、対象・確認SHA、再現条件と手順、期待と実際、既存証跡への参照、分かっている依存関係を箇条書きで書けば足りる。既存証跡を転記し直す必要はない。修正後はID、コミット、検証結果、影響先、未確認を監査担当へ返す。
-3. **二巡目**は修正箇所・共通部品の影響先・一巡目で未確認だった条件を監査担当が実操作と目視で判定する。対象外の既存証跡は関連ソースと条件が有効なら再利用する。再現した指摘は修正担当へ返し、監査担当は別の確認を進める。
-4. 現在は[A003の修正引継ぎ](A003_REPAIR_HANDOFF.md)を修正担当へ回し、監査担当は既存証跡を使ってA004以降の一巡目を進める。以後、通常の指摘は一巡目の一覧を修正担当へ渡す。データ消失・権限漏れ・後続操作を阻む問題は優先して渡し、依存しない項目の監査を続ける。別の作業枠が空くまで修正依頼を記録して保持する。
-5. 正式な `current_id` は先頭未完了IDとして維持し、一巡目の再開位置とは分ける。一巡目の実操作済み、修正待ち／修正済み、二巡目の再確認済み、正式doneを区別して進捗に示す。正式doneへの昇格は既存の証拠条件とVerifierに従う。Baseline/Discovery/DeltaのID・定義・順序と最終完了条件は維持する。
-6. 各担当は開始HEAD、対象と依存、未確認、次の操作を残す。同じファイルや共有fixtureの編集競合は事前に避ける。正式Route・Progress・Evidenceへの反映は統合担当が最新dev_branchを確認し一元化する。
+**Claudeの一巡目（監査・記録）→ 別のGPTセッション（修正・確認）→ Claudeの二巡目（全件再監査）** の順で進める。GPTの修正はユーザーが別に依頼して開始する。Claudeの監査セッションから自身、サブエージェント、Agent Team、別のClaudeセッション、ワークフロー、バックグラウンドタスクのいずれにも修正を割り当てない。
+
+1. **Claudeの一巡目。** 既存製品を固定Route順に実操作し、対象IDごとに `OK` / `要修正` / `未確認` を記録する。OKは判定と証跡参照を簡潔に記録する。未確認は条件、理由、再開に必要な確認を残す。要修正は[App・Web共通の修正引継ぎ台帳](https://github.com/sakurasemaika-creator/NIARIM/blob/dev_branch/docs/work-audit/state/AUDIT_REPAIR_HANDOFF.md)に追記して、修正を待たず次の独立IDへ進む。危険度が高い指摘や後続を阻むものは、優先度と影響を明記する。判定の根拠が揃ったら次へ進む。Claudeが行うのは再現、既存コード・テストの参照や確認、判定、監査記録・証跡の保存まで。原因追究、実装修正、製品のコード・テスト・資料の変更、修正パッチの新規作成、修正の取り込みとpushはGPTの修正工程で行う。Claudeは監査記録と証跡を保存・pushできる。
+2. **引継ぎとGPTの修正。** Claudeは一巡目の対象範囲・判定・残る未確認・台帳の場所を報告する。要修正ごとに監査ID、対象repoと確認SHA、画面・操作入口、端末・幅・言語・設定・データなどの再現条件、再現手順、期待と実際、利用者への影響、証跡参照、既知の依存を残す。既存証跡・[A003の引継ぎ](A003_REPAIR_HANDOFF.md)は参照でつなぐ。GPTはユーザーが別途起動した修正セッションで台帳を読み、最新 `dev_branch` で再現と既存修正を照合する。必要な原因調査、修正、関連テストと回帰・実操作確認を行って反映し、台帳の該当項目に修正コミット、確認SHA、実施した確認と結果、影響先、未確認を追記する。既に解消している場合は、確認したSHAと結果を記録する。
+3. **Claudeの二巡目。** GPTの修正・確認結果が揃った後、修正を含む最新 `dev_branch` のApp/Web SHAを記録する。Baseline・Discovery・Deltaの**全対象ID**を固定Route順に辿る。一巡目がOKだった項目と移行前にdoneとなった項目も含め、各IDの実操作、結果の目視、適用条件を再確認して判定する。修正箇所、共通部品の影響先、一巡目の未確認条件を含める。既存証跡は比較・再開に利用する。要修正が残る場合や新たに見つかった場合は同じ台帳でGPTへ返し、再修正後に該当IDと影響先を再確認する。検証できない条件は未確認として残す。二巡目で全対象がOKとなり、既存Verifier・最終Visual・coverageの条件を満たした時点で全面監査を完了する。
+4. **進行中の切替。** セッションは継続する。起動・再開時と、進行中の次の安全なチェックポイントで、最新 `dev_branch` のPolicyを読み直す。作業ツリーに差分がある場合はリモート上の資料を直接参照できる。実行中の処理は結果と差分を回収できる安全な区切りまで進め、進捗、ログ、証跡、変更ファイル、対応HEADと次の操作を保存する。反映済みの修正はコミットを記録し、未反映差分は現在の作業ツリー・既存worktreeに保持する。必要に応じ、取得済みの差分を再取得できるWIPとして保管し、残作業と保管場所をGPTへ引き継ぐ。強制停止、reset、巻き戻し、未回収のworktree削除、未検証WIPの統合・pushを避ける。新たな修正には着手せず、同じClaudeセッションで次の未判定IDから監査を続ける。
+5. **正式進捗。** `current_id` はVerifierが示す先頭未完了IDとして維持する。一巡目・二巡目の再開位置と判定、修正待ち／確認済み、正式doneはそれぞれ記録する。既存のID・定義・順序・進捗・証跡を保持する。Claudeが正式Route・Progress・Evidenceとdoneを既存条件に沿って更新する。GPTの修正セッションは台帳とそこから参照される指摘・証跡の必要箇所を読める。修正確認結果は台帳へ追記する。
 
 **Route lockはBaseline TODOのID・順序・coverage基準を固定するものであり、実監査で新たに実証された監査対象の追加を禁止しない。** 静的coverageが通っていても、実操作・実画面・実データ・組合せ検証で初めて判明する画面、状態、操作、分岐、入力条件、回帰条件、品質リスク等はあり得る。発見した対象を「628件にないから」等の理由で無視・既存項目へ無理に包含してはならない。
 
@@ -195,21 +196,21 @@ Web監査開始条件は、AppのBaseline/Discovery/delta、必要な改修・re
 1. 既存Baseline IDの意味・順序・完了済み状態を変更せず、`DISC001`, `DISC002`... の安定したDiscovery TODOとして `AUDIT_ROUTE.md` のDiscovery section末尾へ追記する。`D###` はlock後delta route専用に予約する。
 2. Discoveryには `discovered_from`（発見元Baseline/Discovery ID）、対象、再現/前提、必要な検証、期待結果、証拠条件、statusを記録する。同一対象の重複DISC-IDは作らない。
 3. 現在IDの完了や後続の確認を妨げる問題、security/data-loss/privacy等の重大リスクは修正担当へ優先して渡す。その他はDiscovery backlogに残し、監査担当は独立した次のIDの一巡目を継続する。
-4. Baseline全件完了後、DISC-IDを番号順に全件消化する。Discovery監査中にさらに未想定対象を発見した場合も次のDISC-IDを末尾へ追加する。
+4. 各巡でBaselineの確認を終えた後、DISC-IDを番号順に確認する。Discovery監査中にさらに未想定対象を発見した場合も次のDISC-IDを末尾へ追加する。
 5. Discovery TODOが追加されてもBaseline Routeを再bootstrap/relockせず、既存IDをrenumber/reorderしない。
 
 新規画面/機能がroute lock後の製品変更として追加された場合も既存Baselineを並べ替えず、変更差分回帰フェーズの対象として追跡する。巡回中の実監査から自然に発見された未想定状態等は上記Discoveryへ入れる。
 
 ### lock後deltaの正式正本
-route lock後の製品変更と、全面監査開始時点で明示的に追加された監査対象は `docs/work-audit/state/AUDIT_DELTA_ROUTE.md` を正式なD-series delta routeとして使う。`AUDIT_ROUTE.md` のlocked A/W rowsへA105等を追加しない。D-seriesはBaselineの代用品ではなく、Baseline完了後に番号順で消化する。D002の全フィルターinventory、D026/D027のpreset inventory等で最新HEADから対象数が変わった場合、D-series内の末尾へ対象名付き子TODOを追加する。
+route lock後の製品変更と、全面監査開始時点で明示的に追加された監査対象は `docs/work-audit/state/AUDIT_DELTA_ROUTE.md` を正式なD-series delta routeとして使う。`AUDIT_ROUTE.md` のlocked A/W rowsへA105等を追加しない。D-seriesは各巡でBaselineとDiscoveryの確認後に番号順で確認する。D002の全フィルターinventory、D026/D027のpreset inventory等で最新HEADから対象数が変わった場合、D-series内の末尾へ対象名付き子TODOを追加する。
 
 ## 3. 最短再開手順
 
 1. 両repoの最新 `dev_branch` と現在HEADを確認し、安全に追従する。
-2. `AUDIT_ROUTE.md` を読む。bootstrap-requiredならSection 1だけを行う。lockedなら `ASTRA_CONTINUATION.md` の `current_id` と一巡目の最新checkpointを読む。
-3. 担当役割に沿って再開する。監査担当は一巡目の最新checkpointから、修正担当は引継ぎから再開する。今回の一巡目の開始位置はA004。正式なBaseline・DISC・Deltaの再開位置は既存Verifierに従う。
+2. `AUDIT_ROUTE.md` を読む。bootstrap-requiredならSection 1だけを行う。lockedなら `ASTRA_CONTINUATION.md` の `current_id`、現在の巡、その巡の最新checkpointを読む。
+3. Claudeは現在の巡の最新チェックポイントから再開する。旧手順で修正が進行中なら、担当分離の手順に従って差分を保存して切り替える。GPTは別の修正依頼で引継ぎ台帳から着手する。
 4. checkpoint後のremote差分は現在IDの前提を壊すかだけscope-boundedに確認する。全commit・全CIを網羅的に再調査してStateを再構築しない。
-5. 一巡目で実操作と指摘を記録し、修正担当の反映後に影響箇所を二巡目で再確認する。必要な全証拠を満たし既存Verifierと整合するIDだけ正式doneにする。各担当の再開位置を保存する。
+5. Claudeは一巡目の判定を完了してGPTへ引き継ぐ。GPTの修正・確認後、Claudeが全対象IDを二巡目で判定し、必要な全証拠を満たすIDを既存Verifierに従って正式doneとする。
 
 開始時刻記録だけのcommit/push、理由のない再監査・重いsuite再実行、復元のためだけの広範な履歴探索をしない。
 
@@ -254,7 +255,7 @@ NIARIMを世界最高水準の商用製品へ仕上げることを優先し、Ap
 
 ### 5.1 主担当と上位advisorの役割
 
-- 特定のモデルを必須としない。監査担当は実操作・再現・証跡・Route進行と二巡目の判定を担当する。修正の設計、実装、関連テストは別セッションまたは別エージェントへ割り当てる。
+- Claudeは一巡目と二巡目の実操作・再現・判定・証跡・Route進行を担当する。修正の設計・実装・検証はユーザーが別に起動するGPTの修正セッションが担当する。
 - 上位モデルを使う場合も、Baseline/Discovery IDを丸ごと委譲してはならない。`A001全部を上位モデルへ` のような委譲は禁止する。
 - 上位モデルは、高価な専門advisor/reviewerとして、現在の担当モデルだけでは十分な確度を得にくい**最小の判断単位**に限定して使う。例: 重大securityの攻撃成立性、複雑なrace/concurrencyの安全性、不可逆なarchitecture trade-off、複数回の合理的試行でもroot causeを確定できない難問、独立frontier reviewに明確な価値がある箇所。
 - 単なるコード読解、通常のバグ修正、一般的なテスト失敗、UI確認、翻訳、反復検証等を「念のため」で上位モデルへ送らない。
@@ -295,15 +296,17 @@ advisorは原則read-onlyで、ファイル編集、Route/Progress/Evidenceの�
 
 ### 5.5 サブエージェント一般
 
+監査セッションでサブエージェントを使う場合は、監査対象の確認、証跡確認、判定の補助に限る。各子エージェントに実装修正や回帰テストの作成・取り込みを割り当てない。
+
 サブエージェントは品質/総合効率が明確に上がる独立作業または独立レビューだけ必要最小限。Codex系では原則 `fork_turns:"none"`、必要でも1〜2、`all`は使わない。子から子を増やさない。wait既定値を設定できる場合120秒、個別wait/timeoutは予想実行時間の約2倍を一度に指定する。
 
 ## 6. State更新と完了条件
 
-Route/Progress/Evidenceは**明示的な全面監査モードで実際に検証した事実だけ**更新する。Workか通常Chatか、モデルの種類・世代・名称ではなく、現在の依頼が全面監査モードかどうかで権限を決める。通常タスクの成果だけでTODOをdoneにしない。
+Route/Progress/Evidenceは**明示的に起動されたClaudeの監査セッションで実際に確認した事実**を記録する。GPTは引継ぎ台帳に修正結果を返す。
 
 State更新commitには `[audit-state]`、policy/guard変更にはユーザーの明示依頼のもと `[audit-policy-approved]` を使う。
 
-全面監査completeには、少なくとも **Baseline未完了=0、Discovery（DISC）未完了=0、Delta（D）未完了=0、advisor-pending=0、現在認識している未登録Discovery=0** を満たし、`current_id=complete`、かつDiscovery/Deltaの再開位置も完了状態であることを満たし、各品質正本の完了条件と最終回帰フェーズも完了していることが必要。Baseline coverageの通過だけを「これ以上発見対象はない」「監査complete」の根拠にしてはならない。
+全面監査completeには、**Claudeの二巡目で全対象IDがOK**、Baseline・Discovery・Delta未完了=0、advisor-pending=0、未登録Discovery=0、`current_id=complete`、Discovery/Deltaの再開位置も完了、各品質正本の完了条件と最終回帰フェーズの完了が必要。
 
 ## 7. 「NIARIMの全面監査をしてください」だけで起動できる実行契約
 
@@ -312,10 +315,10 @@ State更新commitには `[audit-state]`、policy/guard変更にはユーザー�
 1. App sakurasemaika-creator/NIARIM と Web sakurasemaika-creator/NIARIM-web の dev_branch 最新HEADを取得し、作業開始SHAをEvidenceへ記録する。
 2. AGENTS.md → 本Policy → locked Baseline AUDIT_ROUTE.md → ASTRA_CONTINUATION.md / ASTRA_AUDIT_STATE.md → AUDIT_DELTA_ROUTE.md の順に読み、Baseline/Progress/Evidence/Deltaの役割を混同しない。
 3. Baseline verifierとDelta verifierを先に実行し、lock integrity、mirror、current_id、delta route integrityを確認する。違反があればstate構造を修正してから製品監査へ進む。
-4. 一巡目の再開位置から番号順に実操作・記録を進め、正式なcurrent_idはAUDIT_ROUTE verifierと一致させる。
-5. 途中で未登録の画面・状態・操作・分岐・品質リスクを発見したらDISC-IDとして追加する。確認を妨げるものは修正担当へ優先して渡す。
-6. Baseline完了後、DISC backlogを消化し、その後D001からD037までDeltaを順番に消化する。D002の全フィルターinventory、D026/D027のpreset inventoryで対象数が変わる場合、子TODOを最新HEADへ合わせる。
-7. 修正担当が原因特定・修正・testを担当し、監査担当は二巡目に実画面と影響先を再確認する。外部依存・実機不足等で実行できない条件は証跡と再開条件を残す。
+4. 現在の巡の再開位置から番号順に実操作と記録を進め、正式なcurrent_idはAUDIT_ROUTE verifierと一致させる。
+5. 途中で未登録の画面・状態・操作・分岐・品質リスクを発見したらDISC-IDとして追加する。確認を妨げるものは修正引継ぎ台帳に優先度と影響を記録する。
+6. 各巡でBaseline、Discovery、Deltaを固定Route順に確認する。D002とD026/D027のinventory変更は子TODOに反映する。
+7. Claudeの一巡目の後、別に起動されたGPTが修正・確認結果を返す。Claudeは最新HEADで全対象の二巡目を行い、要修正はGPTへ返す。未確認には証跡と再開条件を残す。
 8. Visual closureは最新HEADで再生成する。旧PDF・旧CI・旧sessionは補助証拠に留め、今回の最終closureを代替しない。画像には機能名、BEFORE/SETTINGS/AFTER、preset/mode、主要設定値を焼き込み、PDF全ページrenderと実画像目視を行う。
 9. 完了宣言前にD037の最終closure gateを通し、Baseline/DISC/Delta全ての未完了、advisor-pending、未登録Discovery、必須証拠のqueued/runningを0へ収束させる。できないものは完了と宣言せず、blocking reasonをEvidenceへ残す。
 
@@ -507,7 +510,7 @@ Helpは困ったときの辞書として必要項目を幅広く追加・維持�
 ### 保存先の使い分け
 - **ソースコード・テスト・監査ポリシー:** Gitを正本とし、論理的に完了して検証した単位ごとに小さくcommitする。リモートpushが可能なら適切なタイミングでpushし、remoteに存在することを確認する。
 - **途中だが消失させられない修正:** 不完全な変更を完成扱いで通常commitしない一方、消失させたままにもしてはならない。repoの運用に適したローカルWIP commitやpatch(diff)ファイル等で永続化し、`WIP`・未検証・残作業を明記する。保存したpatchのパスと対応HEADをstateに残す。
-- **再開位置・短い状況:** `ASTRA_CONTINUATION.md` に正式current ID、一巡目の再開位置、直近の完了点、次の具体的操作を保存する。
+- **再開位置・短い状況:** `ASTRA_CONTINUATION.md` に正式current ID、各巡の再開位置、直近の完了点、次の具体的操作を保存する。
 - **詳細な状態・監査証跡:** `ASTRA_AUDIT_STATE.md` と各Evidenceに、判断根拠、再現条件、コマンドと実出力、テスト結果、変更ファイル、未解決事項、判定と証拠を保存する。stateだけ更新してコードが未保存、またはコードだけ保存して再開情報がない、という片手落ちを防ぐ。
 - **大型バイナリ証跡:** 画像、動画、PDF、manifest、比較結果は利用可能な監査用Google Drive等へ保管する。外部保存できなければ `backup-pending` と明記し、どこまで保存できたかを残す。バックアップ失敗を成功と記録しない。
 
