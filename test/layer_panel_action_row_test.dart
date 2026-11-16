@@ -98,8 +98,13 @@ void main() {
       l10n.layerPanelAddTooltip,
       l10n.layerPanelImportImageButton,
     ]) {
+      // 名前が全部1行に入らない幅では、どのボタンもアイコンだけになり、名前は
+      // 吹き出しと読み上げで伝える（DISC148、所有者の判断3）。
       final finder = find.text(label);
-      if (finder.evaluate().isEmpty) continue;
+      if (finder.evaluate().isEmpty) {
+        if (find.byTooltip(label).evaluate().isNotEmpty) checked++;
+        continue;
+      }
       checked++;
       final size = tester.getSize(finder.first);
       // fontSize 11 なので1行なら高さは20px程度。2行以上になっていれば
@@ -112,7 +117,7 @@ void main() {
             '（折り返している）',
       );
     }
-    expect(checked, 4, reason: '4つのボタンラベルが見つからない');
+    expect(checked, 4, reason: '4つのボタン（名前かアイコン）が見つからない');
 
     // レイヤー名も同じ理由で縦積みになっていた（既定名「レイヤー1」が
     // 1文字ずつ4行に積まれ、行の高さが3倍になっていた）。ListTileの

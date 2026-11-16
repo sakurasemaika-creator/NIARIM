@@ -21,6 +21,7 @@ import '../../../services/frame_thumbnail_renderer.dart';
 import '../../../services/project_service.dart';
 import '../../../services/layer_clipboard_service.dart';
 import '../../../services/tone_service.dart';
+import '../../../widgets/first_that_fits.dart';
 import '../../../widgets/blend_mode_preview.dart';
 import '../../../widgets/confirm_delete.dart';
 import '../../../widgets/keep_together_text.dart';
@@ -90,43 +91,65 @@ class _LayerPanelState extends State<LayerPanel> {
     tapTargetSize: MaterialTapTargetSize.shrinkWrap,
   );
 
-  /// レイヤーパネル上部のショートカットボタン1つぶん。
-  /// 4ボタンをExpandedで等分するため、標準的な端末幅（360dp、パネルは
-  /// 約250dp）では1ボタンあたり約58dpしか無い。日本語ラベルは
-  /// 折り返さず省略記号で止める（`test/layer_panel_action_row_test.dart`が
-  /// 縦積みへの逆戻りを監視）。
-  Widget _shortcutButton({
-    required IconData icon,
-    required String label,
-    required VoidCallback onPressed,
-  }) {
-    // 幅が足りないとラベルは省略されるので、全文はツールチップで出す。
-    return Expanded(
-      child: Tooltip(
-        message: label,
-        child: TextButton(
-          style: _shortcutButtonStyle,
-          onPressed: onPressed,
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(icon, size: 13),
-              const SizedBox(width: 3),
-              Flexible(
-                child: Text(
-                  label,
-                  style: const TextStyle(fontSize: 10),
-                  maxLines: 1,
-                  softWrap: false,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ],
-          ),
-        ),
+  /// レイヤーパネル上部のショートカットボタン（新規レイヤー・新規フォルダ・
+  /// 追加・画像読込）の段。
+  ///
+  /// 名前が全部1行に入る幅では、アイコンと名前のボタンを並べる。1つでも
+  /// 入らない幅（狭いドック・大きな文字・名前の長い言語）では、どのボタンも
+  /// アイコンだけにする（名前は長押し・ホバーの吹き出しと読み上げ。所有者の
+  /// 判断3）。以前は4つをExpandedで等分して名前を1行で「…」と切っていて、
+  /// 簡体字のドック200pxでは「新…」「导…」と1字しか読めなかった。文字は
+  /// 縮めない・省略記号で切らない（`test/layer_panel_action_row_test.dart`・
+  /// `test/canvas_pc_dock_labels_fit_test.dart`）。
+  Widget _shortcutRow(
+    List<({IconData icon, String label, VoidCallback onPressed})> items,
+  ) {
+    Widget button(
+      ({IconData icon, String label, VoidCallback onPressed}) item, {
+      required bool labelled,
+    }) => Tooltip(
+      message: item.label,
+      // 名前つきのボタンは名前を読み上げる（吹き出しの文を重ねて読まない）。
+      excludeFromSemantics: labelled,
+      child: TextButton(
+        style: labelled ? _shortcutButtonStyle : _shortcutIconButtonStyle,
+        onPressed: item.onPressed,
+        child: labelled
+            ? Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(item.icon, size: 13),
+                  const SizedBox(width: 3),
+                  Text(
+                    item.label,
+                    style: const TextStyle(fontSize: 10),
+                    maxLines: 1,
+                    softWrap: false,
+                  ),
+                ],
+              )
+            : Icon(item.icon, size: 16),
       ),
     );
+    return FirstThatFits(
+      children: [
+        for (final labelled in [true, false])
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              for (final item in items) button(item, labelled: labelled),
+            ],
+          ),
+      ],
+    );
   }
+
+  /// アイコンだけのショートカットボタン（押せる所を名前つきより少し広く）。
+  static final ButtonStyle _shortcutIconButtonStyle = TextButton.styleFrom(
+    minimumSize: Size.zero,
+    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+  );
 
   int _selectedIndex = 0;
   // widget.currentLayerIdに基づく_selectedIndexの初回同期が済んだか
@@ -397,41 +420,39 @@ class _LayerPanelState extends State<LayerPanel> {
           // Rowにして、段の高さをおおよそ半分にしている。
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-            child: Row(
-              children: [
-                _shortcutButton(
-                  icon: Icons.add,
-                  label: l10n.layerPanelNewLayerButton,
-                  onPressed: () => _addLayer(
-                    context,
-                    model.LayerType.normal,
-                    (n) => l10n.layerPanelDefaultLayerName(n),
-                  ),
+            child: _shortcutRow([
+              (
+                icon: Icons.add,
+                label: l10n.layerPanelNewLayerButton,
+                onPressed: () => _addLayer(
+                  context,
+                  model.LayerType.normal,
+                  (n) => l10n.layerPanelDefaultLayerName(n),
                 ),
-                _shortcutButton(
-                  icon: Icons.folder,
-                  label: l10n.layerPanelNewFolderButton,
-                  onPressed: () => _addLayer(
-                    context,
-                    model.LayerType.folder,
-                    (n) => l10n.layerPanelDefaultFolderName(n),
-                  ),
+              ),
+              (
+                icon: Icons.folder,
+                label: l10n.layerPanelNewFolderButton,
+                onPressed: () => _addLayer(
+                  context,
+                  model.LayerType.folder,
+                  (n) => l10n.layerPanelDefaultFolderName(n),
                 ),
-                // 共通レイヤー・自動塗り線画・自動塗りレイヤー等の
-                // その他種別を選ぶメニュー。新規レイヤーボタンとアイコンが
-                // 被らないようlibrary_addを使用。
-                _shortcutButton(
-                  icon: Icons.library_add,
-                  label: l10n.layerPanelAddTooltip,
-                  onPressed: () => _showAddLayerMenu(context),
-                ),
-                _shortcutButton(
-                  icon: Icons.photo,
-                  label: l10n.layerPanelImportImageButton,
-                  onPressed: () => _importImage(context),
-                ),
-              ],
-            ),
+              ),
+              // 共通レイヤー・自動塗り線画・自動塗りレイヤー等の
+              // その他種別を選ぶメニュー。新規レイヤーボタンとアイコンが
+              // 被らないようlibrary_addを使用。
+              (
+                icon: Icons.library_add,
+                label: l10n.layerPanelAddTooltip,
+                onPressed: () => _showAddLayerMenu(context),
+              ),
+              (
+                icon: Icons.photo,
+                label: l10n.layerPanelImportImageButton,
+                onPressed: () => _importImage(context),
+              ),
+            ]),
           ),
           const Divider(height: 1),
           // 選んだ行の背景を一覧の外（上のボタン）へはみ出させない

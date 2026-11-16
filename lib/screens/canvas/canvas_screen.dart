@@ -2352,6 +2352,51 @@ class _CanvasScreenState extends State<CanvasScreen> {
     };
   }
 
+  /// ドックの窓[panel]の見出しの、題の所（幅[width]）に置くもの。題が1行で
+  /// 入れば題、入らなければ窓のアイコン（題は吹き出しと読み上げ。所有者の
+  /// 判断3）。アイコンも入らない幅では何も置かない（null）。色の窓は、今の
+  /// 色の見本に24pxを残す。
+  Widget? _dockTitleSlot(
+    BuildContext context,
+    CanvasDockPanel panel,
+    String title,
+    double width,
+  ) {
+    final colorPicker = panel == CanvasDockPanel.colorPicker;
+    if (_dockTitleFits(context, title, width - (colorPicker ? 8 + 24 : 0))) {
+      return Text(title, maxLines: 1, softWrap: false);
+    }
+    const iconSize = 18.0;
+    if (width < iconSize + (colorPicker ? 8 : 0)) return null;
+    return Tooltip(
+      message: title,
+      excludeFromSemantics: true,
+      child: Semantics(
+        label: title,
+        child: Icon(
+          _dockCollapsedIcon(panel),
+          size: iconSize,
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
+        ),
+      ),
+    );
+  }
+
+  /// ドックの窓の題[title]が、幅[width]に1行で入るか（見出しの文の書式・
+  /// 文字の大きさで測る）。
+  bool _dockTitleFits(BuildContext context, String title, double width) {
+    final painter = TextPainter(
+      text: TextSpan(text: title, style: DefaultTextStyle.of(context).style),
+      textDirection: Directionality.of(context),
+      textScaler: MediaQuery.textScalerOf(context),
+      locale: Localizations.maybeLocaleOf(context),
+      maxLines: 1,
+    )..layout();
+    final fits = painter.width <= width;
+    painter.dispose();
+    return fits;
+  }
+
   IconData _dockCollapsedIcon(CanvasDockPanel panel) => switch (panel) {
     CanvasDockPanel.brush => Icons.brush_outlined,
     CanvasDockPanel.colorPicker => Icons.palette_outlined,
@@ -2579,49 +2624,60 @@ class _CanvasScreenState extends State<CanvasScreen> {
                                 ),
                               ),
                               Expanded(
-                                child: Row(
-                                  children: [
-                                    Flexible(
-                                      child: Text(
-                                        title,
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ),
-                                    if (p == CanvasDockPanel.colorPicker) ...[
-                                      const SizedBox(width: 8),
-                                      Expanded(
-                                        child: IgnorePointer(
-                                          child: Semantics(
-                                            label:
-                                                l.colorPickerCurrentColorLabel,
-                                            child: ClipRRect(
-                                              borderRadius:
-                                                  BorderRadius.circular(3),
-                                              child: SizedBox(
-                                                key: const ValueKey(
-                                                  'pc-color-picker-current-chip',
-                                                ),
-                                                height: 20,
-                                                child: Stack(
-                                                  fit: StackFit.expand,
-                                                  children: [
-                                                    ColoredBox(
-                                                      color: scheme
-                                                          .surfaceContainerHighest,
+                                // 窓の題は「…」で切らない：入らない幅では窓の
+                                // アイコンを出し、題は吹き出しと読み上げで伝える
+                                // （所有者の判断3。簡体字のドック200pxで色の窓の
+                                // 題が「取…」と切れた）。色の窓は、今の色の
+                                // 見本に24pxを残す。
+                                child: LayoutBuilder(
+                                  builder: (context, box) {
+                                    final slot = _dockTitleSlot(
+                                      context,
+                                      p,
+                                      title,
+                                      box.maxWidth,
+                                    );
+                                    return Row(
+                                      children: [
+                                        ?slot,
+                                        if (p ==
+                                            CanvasDockPanel.colorPicker) ...[
+                                          if (slot != null)
+                                            const SizedBox(width: 8),
+                                          Expanded(
+                                            child: IgnorePointer(
+                                              child: Semantics(
+                                                label: l
+                                                    .colorPickerCurrentColorLabel,
+                                                child: ClipRRect(
+                                                  borderRadius:
+                                                      BorderRadius.circular(3),
+                                                  child: SizedBox(
+                                                    key: const ValueKey(
+                                                      'pc-color-picker-current-chip',
                                                     ),
-                                                    ColoredBox(
-                                                      color: _currentColor,
+                                                    height: 20,
+                                                    child: Stack(
+                                                      fit: StackFit.expand,
+                                                      children: [
+                                                        ColoredBox(
+                                                          color: scheme
+                                                              .surfaceContainerHighest,
+                                                        ),
+                                                        ColoredBox(
+                                                          color: _currentColor,
+                                                        ),
+                                                      ],
                                                     ),
-                                                  ],
+                                                  ),
                                                 ),
                                               ),
                                             ),
                                           ),
-                                        ),
-                                      ),
-                                    ],
-                                  ],
+                                        ],
+                                      ],
+                                    );
+                                  },
                                 ),
                               ),
                               IconButton(
