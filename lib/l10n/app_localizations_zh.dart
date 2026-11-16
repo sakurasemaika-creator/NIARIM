@@ -1582,7 +1582,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get helpThemeSettingsDesc =>
-      '可以从主题列表中选择应用整体的配色，也可以自由自定义强调色。标题・项目名称用字体与说明文字用字体是分开的，能在保持可读性的同时享受换装乐趣。';
+      '可以从主题列表中选择应用的整体配色。你可以调整六种基础颜色，也可以在高级颜色设置中单独设置菜单文字、选中状态等颜色。标题・项目名称用字体与说明文字用字体是分开的，能在保持可读性的同时享受换装乐趣。';
 
   @override
   String get helpWorkspaceSettingsTitle => '工作区设置';
@@ -2567,7 +2567,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get themeColorText => '正文及普通文字颜色';
 
   @override
-  String get themeColorButtonText => '按钮文字与图标颜色';
+  String get themeColorButtonText => '有色背景上的文字与图标颜色';
+
+  @override
+  String get themeAdvancedColors => '高级颜色设置';
+
+  @override
+  String get themeAdvancedColorsHint => '与基础颜色相同的颜色会随它一起改变。你也可以单独设置这些颜色。';
 
   @override
   String get themeColorMenuText => '菜单和顶部栏文字颜色';
@@ -11558,7 +11564,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get helpThemeSettingsDesc =>
-      '可以從主題清單中選擇App整體的配色，也可以自由自訂強調色。標題・項目名稱用字型與說明文字用字型是分開的，能在保持可讀性的同時享受換裝樂趣。';
+      '可以從主題清單選擇 App 的整體配色。你可以調整六種基本色，也可以在進階色彩設定中個別設定選單文字、選取狀態等色彩。標題・項目名稱用字型與說明文字用字型是分開的，能在保持可讀性的同時享受換裝樂趣。';
 
   @override
   String get helpWorkspaceSettingsTitle => '工作區設定';
@@ -12543,7 +12549,13 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get themeColorText => '內文及一般文字顏色';
 
   @override
-  String get themeColorButtonText => '按鈕文字與圖示顏色';
+  String get themeColorButtonText => '有色背景上的文字與圖示顏色';
+
+  @override
+  String get themeAdvancedColors => '進階色彩設定';
+
+  @override
+  String get themeAdvancedColorsHint => '與基本色相同的色彩會隨基本色一起變更。你也可以個別設定這些色彩。';
 
   @override
   String get themeColorMenuText => '選單與頂端列文字顏色';

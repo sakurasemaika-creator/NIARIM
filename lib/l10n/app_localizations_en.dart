@@ -1632,7 +1632,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpThemeSettingsDesc =>
-      'Choose the app\'s overall color scheme from the theme list, or freely customize the accent color. Headings/labels and body text use separate fonts, so you can enjoy re-skinning the app while keeping it readable.';
+      'Choose the app’s overall color scheme from the theme list. Customize six basic colors, or use Advanced color settings to set colors such as menu text and selection separately. Headings/labels and body text use separate fonts, so you can enjoy re-skinning the app while keeping it readable.';
 
   @override
   String get helpWorkspaceSettingsTitle => 'Workspace settings';
@@ -2689,7 +2689,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get themeColorText => 'Body & regular text color';
 
   @override
-  String get themeColorButtonText => 'Button text & icon color';
+  String get themeColorButtonText => 'Text & icon color on colored surfaces';
+
+  @override
+  String get themeAdvancedColors => 'Advanced color settings';
+
+  @override
+  String get themeAdvancedColorsHint =>
+      'Colors that match a basic color change along with it. You can also set them individually.';
 
   @override
   String get themeColorMenuText => 'Menu & app bar text color';

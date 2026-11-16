@@ -1,14 +1,14 @@
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/config/accent_text_theme.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/models/app_theme_preset.dart';
+import 'package:niarim/screens/canvas/widgets/color_picker_panel.dart';
 import 'package:niarim/screens/settings/theme_settings_screen.dart';
+import 'package:niarim/services/palette_service.dart';
+import 'package:niarim/services/settings_service.dart';
 import 'package:niarim/services/theme_service.dart';
 import 'package:niarim/utils/color_contrast.dart';
 import 'package:provider/provider.dart';
@@ -108,23 +108,29 @@ void main() {
     );
   });
 
-  testWidgets('the theme settings list it next to the accent and save it', (
+  testWidgets('six basic colors update linked colors and preserve overrides', (
     tester,
   ) async {
+    tester.view.physicalSize = const Size(360, 740);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
     SharedPreferences.setMockInitialValues({});
-    const channel = MethodChannel('plugins.flutter.io/path_provider');
-    final tempDir = Directory.systemTemp.createTempSync('niarim_accent_text_');
-    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-        .setMockMethodCallHandler(channel, (call) async => tempDir.path);
-    addTearDown(() {
-      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-          .setMockMethodCallHandler(channel, null);
-      if (tempDir.existsSync()) tempDir.deleteSync(recursive: true);
-    });
-    final providers = await tester.runAsync(buildAppProviders);
+    final service = ThemeService();
+    final palette = PaletteService();
+    final settings = SettingsService();
+    addTearDown(service.dispose);
+    addTearDown(palette.dispose);
+    addTearDown(settings.dispose);
+    await service.init();
+    await palette.init();
     await tester.pumpWidget(
       MultiProvider(
-        providers: providers!,
+        providers: [
+          ChangeNotifierProvider.value(value: service),
+          ChangeNotifierProvider.value(value: palette),
+          ChangeNotifierProvider.value(value: settings),
+        ],
         child: MaterialApp(
           locale: const Locale('ja'),
           localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -134,44 +140,113 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    final service = tester
-        .element(find.byType(ThemeSettingsScreen))
-        .read<ThemeService>();
     final l10n = lookupAppLocalizations(const Locale('ja'));
 
-    final tile = find.byKey(const Key('themeAccentTextColorTile'));
-    expect(tile, findsOneWidget);
-    expect(find.text(l10n.themeColorAccentText), findsOneWidget);
-    // 差し色のすぐ下に並ぶ。
-    expect(
-      tester.getTopLeft(tile).dy,
-      greaterThan(tester.getTopLeft(find.text(l10n.themeColorAccent)).dy),
-    );
-    expect(
-      tester.getTopLeft(tile).dy,
-      lessThan(tester.getTopLeft(find.text(l10n.themeColorText)).dy),
-    );
+    final scrollable = find.byType(Scrollable).first;
+    Future<void> show(Finder tile, {double step = 140}) async {
+      await tester.scrollUntilVisible(tile, step, scrollable: scrollable);
+      await tester.pumpAndSettle();
+      expect(tile.hitTestable(), findsOneWidget);
+    }
 
-    await tester.tap(tile);
-    await tester.pumpAndSettle();
-    service.previewCurrent(service.current.copyWith(accentTextColor: darkRed));
-    await tester.pumpAndSettle();
-    await tester.tap(find.byIcon(Icons.close).last);
+    Future<void> tap(Finder tile, {double step = 140}) async {
+      await show(tile, step: step);
+      await tester.tap(tile);
+      await tester.pumpAndSettle();
+    }
+
+    Future<void> enterHex(String hex) async {
+      final field = find.descendant(
+        of: find.byType(ColorPickerPanel),
+        matching: find.byType(TextField),
+      );
+      await tester.enterText(field, hex);
+      await tester.testTextInput.receiveAction(TextInputAction.done);
+      await tester.pumpAndSettle();
+    }
+
+    Future<void> closePicker() async {
+      await tester.tap(find.byIcon(Icons.close).last);
+      await tester.pumpAndSettle();
+    }
+
+    Future<void> pick(String label, String hex, {double step = 140}) async {
+      await tap(find.text(label), step: step);
+      await enterHex(hex);
+      await closePicker();
+    }
+
+    final basics = [
+      l10n.themeColorAccent,
+      l10n.themeColorText,
+      l10n.themeColorButtonText,
+      l10n.themeColorPanelBg,
+      l10n.themeColorMenuBg,
+      l10n.themeColorUpdateMark,
+    ];
+    final advanced = [
+      l10n.themeColorAccentText,
+      l10n.themeColorMenuText,
+      l10n.themeColorSelection,
+      l10n.themeColorSelectionText,
+    ];
+    for (final label in basics) {
+      await show(find.text(label));
+    }
+    final disclosure = find.text(l10n.themeAdvancedColors);
+    await show(disclosure);
+    for (final label in advanced) {
+      expect(find.text(label), findsNothing);
+    }
+    await tester.drag(scrollable, const Offset(0, 550));
     await tester.pumpAndSettle();
 
+    await pick(l10n.themeColorAccent, '126047');
+    expect(service.current.effectiveAccentTextColor, const Color(0xFF126047));
+    expect(service.current.selectionColor, const Color(0xFF126047));
+    await pick(l10n.themeColorText, '231830');
+    expect(service.current.menuTextColor, const Color(0xFF231830));
+    await pick(l10n.themeColorButtonText, 'FDEEDC');
+    expect(service.current.selectionTextColor, const Color(0xFFFDEEDC));
+    await pick(l10n.themeColorPanelBg, 'F8F6EC');
+    expect(service.current.panelBgColor, const Color(0xFFF8F6EC));
+    expect(
+      service.current.menuBgColor,
+      AppThemePreset.defaultLight.menuBgColor,
+    );
+    await pick(l10n.themeColorMenuBg, 'FFF5E4');
+    expect(service.current.menuBgColor, const Color(0xFFFFF5E4));
+    expect(service.current.panelBgColor, const Color(0xFFF8F6EC));
+    await pick(l10n.themeColorUpdateMark, 'FA9C24');
+    expect(service.current.updateMarkColor, const Color(0xFFFA9C24));
+
+    await tap(disclosure);
+    for (final label in advanced) {
+      await show(find.text(label));
+    }
+    await pick(l10n.themeColorAccentText, '8A1538', step: -140);
+    await pick(l10n.themeColorMenuText, '572E73');
+    await pick(l10n.themeColorSelection, '8A1538');
+    await pick(l10n.themeColorSelectionText, 'F6F6AA');
+    await tap(disclosure, step: -140);
+
+    await tap(find.text(l10n.themeColorAccent), step: -140);
+    // Passing through the override during a live edit must not make it follow.
+    await enterHex('8A1538');
+    await enterHex('2E5173');
+    await closePicker();
+    await pick(l10n.themeColorText, '31312A');
+    await pick(l10n.themeColorButtonText, 'ECFDF6');
+    expect(service.current.accentColor, const Color(0xFF2E5173));
     expect(service.current.accentTextColor, darkRed);
-    // 差し色はそのまま。
-    expect(
-      service.current.accentColor,
-      AppThemePreset.defaultLight.accentColor,
-    );
+    expect(service.current.selectionColor, darkRed);
+    expect(service.current.menuTextColor, const Color(0xFF572E73));
+    expect(service.current.selectionTextColor, const Color(0xFFF6F6AA));
+
     final prefs = await SharedPreferences.getInstance();
     expect(
-      AppThemePreset.fromJson(
-        jsonDecode(prefs.getString('theme_current_json')!)
-            as Map<String, dynamic>,
-      ).accentTextColor,
-      darkRed,
+      jsonDecode(prefs.getString('theme_current_json')!),
+      service.current.toJson(),
     );
   });
 }

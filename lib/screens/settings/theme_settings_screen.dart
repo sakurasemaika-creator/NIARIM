@@ -158,22 +158,22 @@ class ThemeSettingsScreen extends StatelessWidget {
               onTap: () => _showColorPickerDialog(
                 context,
                 themeService,
-                (p, c) => p.copyWith(accentColor: c),
+                (p, c) => p.copyWith(
+                  accentColor: c,
+                  accentTextColor:
+                      current.accentTextColor != null &&
+                          _sameColor(
+                            current.effectiveAccentTextColor,
+                            current.accentColor,
+                          )
+                      ? c
+                      : current.accentTextColor,
+                  selectionColor:
+                      _sameColor(current.selectionColor, current.accentColor)
+                      ? c
+                      : null,
+                ),
                 current.accentColor,
-              ),
-            ),
-            // 差し色で背景の上に直接描く文字・アイコン（選択中のタブ名・枠や
-            // 文字のボタン等）の色。未指定なら差し色と同じ。明るい差し色の
-            // ときに、読める色を自分で選べるようにする（自動では決めない）。
-            _ColorCustomizeTile(
-              key: const Key('themeAccentTextColorTile'),
-              label: l10n.themeColorAccentText,
-              color: current.effectiveAccentTextColor,
-              onTap: () => _showColorPickerDialog(
-                context,
-                themeService,
-                (p, c) => p.copyWith(accentTextColor: c),
-                current.effectiveAccentTextColor,
               ),
             ),
             _ColorCustomizeTile(
@@ -182,13 +182,16 @@ class ThemeSettingsScreen extends StatelessWidget {
               onTap: () => _showColorPickerDialog(
                 context,
                 themeService,
-                (p, c) => p.copyWith(textColor: c),
+                (p, c) => p.copyWith(
+                  textColor: c,
+                  menuTextColor:
+                      _sameColor(current.menuTextColor, current.textColor)
+                      ? c
+                      : null,
+                ),
                 current.textColor,
               ),
             ),
-            // 文字の役割別指定。各前景色を分けることで、本文を暗色、
-            // 塗りつぶしボタンの文字だけ白にする設定が可能。
-            // すべてのプリセットで4つの文字色を必ず明示的に保持する。
             _ColorCustomizeTile(
               key: const Key('themeButtonTextColorTile'),
               label: l10n.themeColorButtonText,
@@ -196,30 +199,17 @@ class ThemeSettingsScreen extends StatelessWidget {
               onTap: () => _showColorPickerDialog(
                 context,
                 themeService,
-                (p, c) => p.copyWith(buttonTextColor: c),
+                (p, c) => p.copyWith(
+                  buttonTextColor: c,
+                  selectionTextColor:
+                      _sameColor(
+                        current.selectionTextColor,
+                        current.buttonTextColor,
+                      )
+                      ? c
+                      : null,
+                ),
                 current.buttonTextColor,
-              ),
-            ),
-            _ColorCustomizeTile(
-              key: const Key('themeMenuTextColorTile'),
-              label: l10n.themeColorMenuText,
-              color: current.menuTextColor,
-              onTap: () => _showColorPickerDialog(
-                context,
-                themeService,
-                (p, c) => p.copyWith(menuTextColor: c),
-                current.menuTextColor,
-              ),
-            ),
-            _ColorCustomizeTile(
-              key: const Key('themeSelectionTextColorTile'),
-              label: l10n.themeColorSelectionText,
-              color: current.selectionTextColor,
-              onTap: () => _showColorPickerDialog(
-                context,
-                themeService,
-                (p, c) => p.copyWith(selectionTextColor: c),
-                current.selectionTextColor,
               ),
             ),
             _ColorCustomizeTile(
@@ -243,16 +233,6 @@ class ThemeSettingsScreen extends StatelessWidget {
               ),
             ),
             _ColorCustomizeTile(
-              label: l10n.themeColorSelection,
-              color: current.selectionColor,
-              onTap: () => _showColorPickerDialog(
-                context,
-                themeService,
-                (p, c) => p.copyWith(selectionColor: c),
-                current.selectionColor,
-              ),
-            ),
-            _ColorCustomizeTile(
               label: l10n.themeColorUpdateMark,
               color: current.updateMarkColor,
               onTap: () => _showColorPickerDialog(
@@ -261,6 +241,62 @@ class ThemeSettingsScreen extends StatelessWidget {
                 (p, c) => p.copyWith(updateMarkColor: c),
                 current.updateMarkColor,
               ),
+            ),
+            ExpansionTile(
+              key: const PageStorageKey('themeAdvancedColors'),
+              title: Text(l10n.themeAdvancedColors),
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                  child: Text(
+                    l10n.themeAdvancedColorsHint,
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                ),
+                _ColorCustomizeTile(
+                  key: const Key('themeAccentTextColorTile'),
+                  label: l10n.themeColorAccentText,
+                  color: current.effectiveAccentTextColor,
+                  onTap: () => _showColorPickerDialog(
+                    context,
+                    themeService,
+                    (p, c) => p.copyWith(accentTextColor: c),
+                    current.effectiveAccentTextColor,
+                  ),
+                ),
+                _ColorCustomizeTile(
+                  key: const Key('themeMenuTextColorTile'),
+                  label: l10n.themeColorMenuText,
+                  color: current.menuTextColor,
+                  onTap: () => _showColorPickerDialog(
+                    context,
+                    themeService,
+                    (p, c) => p.copyWith(menuTextColor: c),
+                    current.menuTextColor,
+                  ),
+                ),
+                _ColorCustomizeTile(
+                  label: l10n.themeColorSelection,
+                  color: current.selectionColor,
+                  onTap: () => _showColorPickerDialog(
+                    context,
+                    themeService,
+                    (p, c) => p.copyWith(selectionColor: c),
+                    current.selectionColor,
+                  ),
+                ),
+                _ColorCustomizeTile(
+                  key: const Key('themeSelectionTextColorTile'),
+                  label: l10n.themeColorSelectionText,
+                  color: current.selectionTextColor,
+                  onTap: () => _showColorPickerDialog(
+                    context,
+                    themeService,
+                    (p, c) => p.copyWith(selectionTextColor: c),
+                    current.selectionTextColor,
+                  ),
+                ),
+              ],
             ),
             const Divider(),
             // テーマ一覧（ドラッグで並び替え可能）
@@ -449,6 +485,10 @@ class ThemeSettingsScreen extends StatelessWidget {
       ),
     );
   }
+
+  // 保存時と同じ精度で比較する。ピッカーを開いた時点の色を比較し、
+  // プレビュー中に一時的に同じ色を通過しても個別設定を保持する。
+  static bool _sameColor(Color a, Color b) => a.toARGB32() == b.toARGB32();
 
   /// カラーピッカーダイアログを表示する（カラーカスタマイズ）。
   /// ドラッグ中は `ThemeService.previewCurrent()` でアプリ全体へ即時反映し、

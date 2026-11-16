@@ -2988,7 +2988,7 @@ abstract class AppLocalizations {
   /// No description provided for @helpThemeSettingsDesc.
   ///
   /// In ja, this message translates to:
-  /// **'アプリ全体の配色をテーマ一覧から選んだり、差し色を自由にカスタマイズしたりできる画面です。見出し・項目名用フォントと説明文用フォントが分かれており、視認性を保ちながら着せ替えを楽しめます。'**
+  /// **'テーマ一覧からアプリ全体の配色を選べます。カラーカスタマイズでは6つの基本色を調整でき、色の詳細設定ではメニューや選択中の色などを個別に指定できます。見出し・項目名用フォントと説明文用フォントが分かれており、視認性を保ちながら着せ替えを楽しめます。'**
   String get helpThemeSettingsDesc;
 
   /// No description provided for @helpWorkspaceSettingsTitle.
@@ -4764,8 +4764,20 @@ abstract class AppLocalizations {
   /// No description provided for @themeColorButtonText.
   ///
   /// In ja, this message translates to:
-  /// **'ボタン内の文字・アイコン色'**
+  /// **'色付き面の文字・アイコン色'**
   String get themeColorButtonText;
+
+  /// No description provided for @themeAdvancedColors.
+  ///
+  /// In ja, this message translates to:
+  /// **'色の詳細設定'**
+  String get themeAdvancedColors;
+
+  /// No description provided for @themeAdvancedColorsHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'基本色と同じ項目は、基本色を変えると一緒に変わります。個別の色を選ぶこともできます。'**
+  String get themeAdvancedColorsHint;
 
   /// No description provided for @themeColorMenuText.
   ///

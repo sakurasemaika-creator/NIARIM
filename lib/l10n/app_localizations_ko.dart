@@ -1600,7 +1600,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get helpThemeSettingsDesc =>
-      '앱 전체의 색상 배합을 테마 목록에서 고르거나, 포인트 컬러를 자유롭게 커스터마이즈할 수 있는 화면입니다. 제목・항목명용 폰트와 설명문용 폰트가 나뉘어 있어, 가독성을 유지하면서 꾸미기를 즐길 수 있습니다.';
+      '테마 목록에서 앱 전체의 색 구성을 선택할 수 있습니다. 기본 색 6개를 조정하거나 색상 상세 설정에서 메뉴 글자와 선택 표시 등의 색을 따로 지정할 수 있습니다.제목・항목명용 폰트와 설명문용 폰트가 나뉘어 있어, 가독성을 유지하면서 꾸미기를 즐길 수 있습니다.';
 
   @override
   String get helpWorkspaceSettingsTitle => '워크스페이스 설정';
@@ -2594,7 +2594,14 @@ class AppLocalizationsKo extends AppLocalizations {
   String get themeColorText => '본문 및 일반 글자 색';
 
   @override
-  String get themeColorButtonText => '버튼 글자·아이콘 색';
+  String get themeColorButtonText => '색이 있는 배경 위의 글자·아이콘 색';
+
+  @override
+  String get themeAdvancedColors => '색상 상세 설정';
+
+  @override
+  String get themeAdvancedColorsHint =>
+      '기본 색과 같은 색은 기본 색을 바꾸면 함께 바뀝니다. 항목별로 색을 지정할 수도 있습니다.';
 
   @override
   String get themeColorMenuText => '메뉴·상단 바 글자 색';

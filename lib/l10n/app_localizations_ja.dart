@@ -1595,7 +1595,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get helpThemeSettingsDesc =>
-      'アプリ全体の配色をテーマ一覧から選んだり、差し色を自由にカスタマイズしたりできる画面です。見出し・項目名用フォントと説明文用フォントが分かれており、視認性を保ちながら着せ替えを楽しめます。';
+      'テーマ一覧からアプリ全体の配色を選べます。カラーカスタマイズでは6つの基本色を調整でき、色の詳細設定ではメニューや選択中の色などを個別に指定できます。見出し・項目名用フォントと説明文用フォントが分かれており、視認性を保ちながら着せ替えを楽しめます。';
 
   @override
   String get helpWorkspaceSettingsTitle => 'ワークスペース設定';
@@ -2584,7 +2584,14 @@ class AppLocalizationsJa extends AppLocalizations {
   String get themeColorText => '本文・通常の文字色';
 
   @override
-  String get themeColorButtonText => 'ボタン内の文字・アイコン色';
+  String get themeColorButtonText => '色付き面の文字・アイコン色';
+
+  @override
+  String get themeAdvancedColors => '色の詳細設定';
+
+  @override
+  String get themeAdvancedColorsHint =>
+      '基本色と同じ項目は、基本色を変えると一緒に変わります。個別の色を選ぶこともできます。';
 
   @override
   String get themeColorMenuText => 'メニュー・上部バーの文字色';

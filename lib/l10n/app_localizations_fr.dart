@@ -1655,7 +1655,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get helpThemeSettingsDesc =>
-      'Choisissez la palette de couleurs globale de l’app dans la liste des thèmes, ou personnalisez librement la couleur d’accent. Les titres/libellés et le texte courant utilisent des polices distinctes, ce qui permet de changer l’apparence de l’app tout en gardant une bonne lisibilité.';
+      'Choisissez la palette de l’application dans la liste des thèmes. Personnalisez six couleurs de base ou utilisez les réglages avancés pour définir séparément la couleur du texte des menus, de la sélection et d’autres éléments. Les titres/libellés et le texte courant utilisent des polices distinctes, ce qui permet de changer l’apparence de l’app tout en gardant une bonne lisibilité.';
 
   @override
   String get helpWorkspaceSettingsTitle => 'Réglages de l’espace de travail';
@@ -2722,7 +2722,14 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get themeColorButtonText =>
-      'Couleur du texte et des icônes des boutons';
+      'Couleur du texte et des icônes sur fond coloré';
+
+  @override
+  String get themeAdvancedColors => 'Réglages avancés des couleurs';
+
+  @override
+  String get themeAdvancedColorsHint =>
+      'Les couleurs identiques à une couleur de base évoluent avec celle-ci. Vous pouvez aussi les régler séparément.';
 
   @override
   String get themeColorMenuText =>
