@@ -3,10 +3,27 @@ import 'package:flutter/foundation.dart';
 import 'tile_manager.dart';
 
 class UndoManager extends ChangeNotifier {
-  final List<UndoAction> _undoStack = [];
-  final List<UndoAction> _redoStack = [];
-  final List<List<UndoAction>> _recordingGroups = [];
+  final Map<String?, _UndoStacks> _projectStacks = {};
+  String? _projectId;
+  final List<({String? projectId, List<UndoAction> actions})> _recordingGroups =
+      [];
   int _maxUndoCount = 50;
+
+  _UndoStacks _stacksFor(String? projectId) =>
+      _projectStacks.putIfAbsent(projectId, _UndoStacks.new);
+  List<UndoAction> get _undoStack => _stacksFor(_projectId).undo;
+  List<UndoAction> get _redoStack => _stacksFor(_projectId).redo;
+
+  void selectProject(String projectId) {
+    if (_projectId == projectId) return;
+    _projectId = projectId;
+  }
+
+  void discardProject(String projectId) {
+    if (_projectStacks.remove(projectId) != null && _projectId == projectId) {
+      notifyListeners();
+    }
+  }
 
   int get undoCount => _undoStack.length;
   int get redoCount => _redoStack.length;
@@ -16,20 +33,27 @@ class UndoManager extends ChangeNotifier {
   void setMaxUndoCount(int count) {
     // 負の数だと、空の履歴からさらに取り除こうとして例外になる。
     _maxUndoCount = count < 0 ? 0 : count;
-    while (_undoStack.length > _maxUndoCount) {
-      _undoStack.removeAt(0);
+    for (final history in _projectStacks.values) {
+      if (history.undo.length > _maxUndoCount) {
+        history.undo.removeRange(0, history.undo.length - _maxUndoCount);
+      }
     }
   }
 
-  void push(UndoAction action) {
-    if (_recordingGroups.isNotEmpty) {
-      _recordingGroups.last.add(action);
+  void push(UndoAction action, {String? projectId}) {
+    final id = projectId ?? _projectId;
+    _projectId ??= id;
+    if (_recordingGroups.isNotEmpty &&
+        (_recordingGroups.last.projectId == id ||
+            _recordingGroups.last.projectId == null)) {
+      _recordingGroups.last.actions.add(action);
       return;
     }
-    _undoStack.add(action);
-    _redoStack.clear();
-    if (_undoStack.length > _maxUndoCount) _undoStack.removeAt(0);
-    notifyListeners();
+    final history = _stacksFor(id);
+    history.undo.add(action);
+    history.redo.clear();
+    if (history.undo.length > _maxUndoCount) history.undo.removeAt(0);
+    if (id == _projectId) notifyListeners();
   }
 
   /// Records a serialized operation as one history entry. Partial changes remain
@@ -40,30 +64,37 @@ class UndoManager extends ChangeNotifier {
     bool Function(UndoAction action)? shouldUndoAction,
   }) async {
     final actions = <UndoAction>[];
-    _recordingGroups.add(actions);
+    final projectId = _projectId;
+    final group = (projectId: projectId, actions: actions);
+    _recordingGroups.add(group);
     try {
       return await operation();
     } finally {
-      _recordingGroups.removeLast();
+      _recordingGroups.remove(group);
       if (actions.isNotEmpty) {
-        push(_GroupedUndoAction(description, actions, shouldUndoAction));
+        push(
+          _GroupedUndoAction(description, actions, shouldUndoAction),
+          projectId: projectId,
+        );
       }
     }
   }
 
   void undo() {
     if (!canUndo) return;
-    final action = _undoStack.removeLast();
+    final history = _stacksFor(_projectId);
+    final action = history.undo.removeLast();
     action.undo();
-    _redoStack.add(action);
+    history.redo.add(action);
     notifyListeners();
   }
 
   void redo() {
     if (!canRedo) return;
-    final action = _redoStack.removeLast();
+    final history = _stacksFor(_projectId);
+    final action = history.redo.removeLast();
     action.redo();
-    _undoStack.add(action);
+    history.undo.add(action);
     notifyListeners();
   }
 
@@ -72,6 +103,11 @@ class UndoManager extends ChangeNotifier {
     _redoStack.clear();
     notifyListeners();
   }
+}
+
+class _UndoStacks {
+  final List<UndoAction> undo = [];
+  final List<UndoAction> redo = [];
 }
 
 abstract class UndoAction {

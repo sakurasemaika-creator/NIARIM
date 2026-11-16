@@ -2133,6 +2133,7 @@ class _CanvasAreaState extends State<CanvasArea> {
           if (mounted) _scheduleComposite();
         },
       ),
+      projectId: projectId,
     );
     // Only real tile edits that reached Undo become mission candidates.
     // Pan, eyedropper, selection preview, taps and scrubbing are excluded.

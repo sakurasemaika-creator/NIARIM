@@ -1342,6 +1342,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
       _panelsBeforePhoneLayout = null;
     }
     _projectServiceForDispose = context.read<ProjectService>();
+    context.read<UndoManager>().selectProject(widget.projectId);
     // PerformanceServiceをlistenerで監視（依存差し替えに対応）
     final newPerf = context.read<PerformanceService>();
     if (newPerf != _perf) {

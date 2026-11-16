@@ -61,6 +61,46 @@ void main() {
   }
 
   test(
+    'switching between open projects keeps their undo and redo separate',
+    () async {
+      final ps = ProjectService();
+      final history = UndoManager();
+      addTearDown(history.dispose);
+      addTearDown(ps.dispose);
+      await ps.init();
+      ps.setUndoManager(history);
+      Future<String> create(String name) async => (await ps.createProject(
+        name: name,
+        fps: 1,
+        durationSeconds: 1,
+        backgroundColor: 0xFFFFFFFF,
+      )).id;
+      final a = await create('First');
+      final b = await create('Second');
+      final sceneA = ps.scenesOf(a).first.id;
+      final sceneB = ps.scenesOf(b).first.id;
+      history.selectProject(a);
+      ps.addFrame(a, sceneA);
+      history.undo();
+      expect(history.canRedo, isTrue);
+      history.selectProject(b);
+      expect(history.canUndo, isFalse);
+      expect(history.canRedo, isFalse);
+      ps.addFrame(b, sceneB);
+      history.selectProject(a);
+      history.redo();
+      expect(ps.frameCount(a, sceneA), 2);
+      expect(ps.frameCount(b, sceneB), 2);
+      history.selectProject(b);
+      history.undo();
+      expect(ps.frameCount(a, sceneA), 2);
+      expect(ps.frameCount(b, sceneB), 1);
+      await ps.saveProject(a);
+      await ps.saveProject(b);
+    },
+  );
+
+  test(
     'audio clip history restores ranges, duplicates and removed rows',
     () async {
       final ps = ProjectService();

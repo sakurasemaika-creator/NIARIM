@@ -256,7 +256,8 @@ class ProjectService extends ChangeNotifier {
   // プロジェクトIDをキーにシーンリストを管理
   final Map<String, List<Scene>> _scenes = {};
   // 削除済みレイヤーの一時保持（Undo用）
-  final Map<String, Layer> _removedLayers = {};
+  final Map<String, Map<({String scene, int frame, String id}), Layer>>
+  _removedLayers = {};
   // レイヤーIDカウンター（プロジェクトIDをキー）
   final Map<String, int> _layerIdCounters = {};
 
@@ -387,6 +388,7 @@ class ProjectService extends ChangeNotifier {
         () => _restoreTimeline(projectId, before, oldLayers),
         () => _restoreTimeline(projectId, after, newLayers),
       ),
+      projectId: projectId,
     );
   }
 
@@ -1782,7 +1784,12 @@ class ProjectService extends ChangeNotifier {
     String layerId,
     int insertIndex,
   ) {
-    final layer = _removedLayers[layerId];
+    final layer =
+        _removedLayers[projectId]?[(
+          scene: sceneId,
+          frame: frameIndex,
+          id: layerId,
+        )];
     if (layer == null) return;
     _applyLayerInsert(projectId, sceneId, frameIndex, layer, insertIndex);
     _registerHomeIfNeeded(projectId, sceneId, frameIndex, layer);
@@ -1804,7 +1811,12 @@ class ProjectService extends ChangeNotifier {
     final layerIdx = frame.layers.indexWhere((l) => l.id == layerId);
     if (layerIdx < 0) return;
     final removed = frame.layers[layerIdx];
-    _removedLayers[layerId] = removed;
+    (_removedLayers[projectId] ??= {})[(
+          scene: sceneId,
+          frame: frameIndex,
+          id: layerId,
+        )] =
+        removed;
     final newLayers = List<Layer>.from(frame.layers)..removeAt(layerIdx);
     _applyFrameUpdate(projectId, sceneIdx, frameIndex, newLayers);
     _layerHomes[projectId]?.remove(layerId);
@@ -1883,6 +1895,7 @@ class ProjectService extends ChangeNotifier {
         doAdd: _insertLayerById,
         doRemove: _removeLayerById,
       ),
+      projectId: projectId,
     );
     return layer;
   }
@@ -1922,6 +1935,7 @@ class ProjectService extends ChangeNotifier {
         doAdd: _insertLayerById,
         doRemove: _removeLayerById,
       ),
+      projectId: projectId,
     );
     return layer;
   }
@@ -1975,6 +1989,7 @@ class ProjectService extends ChangeNotifier {
         doAdd: _insertLayerById,
         doRemove: _removeLayerById,
       ),
+      projectId: projectId,
     );
     return copy;
   }
@@ -2017,6 +2032,7 @@ class ProjectService extends ChangeNotifier {
         doAdd: _insertLayerById,
         doRemove: _removeLayerById,
       ),
+      projectId: projectId,
     );
     return copy;
   }
@@ -2036,7 +2052,6 @@ class ProjectService extends ChangeNotifier {
     final layers = layersOf(projectId, home.sceneId, home.frameIndex);
     final removedIndex = layers.indexWhere((l) => l.id == layerId);
     if (removedIndex < 0) return;
-    _removedLayers[layerId] = layers[removedIndex];
     _removeLayerById(projectId, home.sceneId, home.frameIndex, layerId);
 
     (_recordingTimelineEdit ? null : _undoManager)?.push(
@@ -2049,6 +2064,7 @@ class ProjectService extends ChangeNotifier {
         doAdd: _insertLayerById,
         doRemove: _removeLayerById,
       ),
+      projectId: projectId,
     );
   }
 
@@ -2156,6 +2172,7 @@ class ProjectService extends ChangeNotifier {
         layerBefore: layerChanged ? layerBefore : null,
         layerAfter: layerChanged ? updatedLayer : null,
       ),
+      projectId: projectId,
     );
     if (updatedLayer == null) {
       _notifyProjectPixelsChanged(projectId);
@@ -4086,6 +4103,8 @@ class ProjectService extends ChangeNotifier {
       }
       _trash.removeAt(idx);
       _trashDeletedAt.remove(id);
+      _undoManager?.discardProject(id);
+      _removedLayers.remove(id);
       _scenes.remove(id);
       _layerFolderExpansion.remove(id);
       _layerHomes.remove(id);

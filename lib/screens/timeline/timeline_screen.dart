@@ -549,6 +549,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
 
     // 制作時間カウント（タイムラインモードのみカウント）
     _projectService = context.read<ProjectService>();
+    context.read<UndoManager>().selectProject(widget.projectId);
     _workTrackingLease = _projectService.beginWorkTracking(widget.projectId);
   }
 
@@ -6860,6 +6861,21 @@ class _TimelineScreenState extends State<TimelineScreen> {
     if (!stillExists) return; // 削除済みなら何もしない
     final projectService = context.read<ProjectService>();
     if (clip.trackType == _ClipTrackType.audio) {
+      final saved = projectService
+          .audioClipsOf(widget.projectId, sceneId)
+          .where((item) => item.id == clip.id)
+          .firstOrNull;
+      if (saved == null ||
+          saved.label == clip.label &&
+              saved.startFrame == clip.startFrame &&
+              saved.lengthFrames == clip.lengthFrames &&
+              saved.volume == clip.volume &&
+              saved.fadeIn == clip.fadeIn &&
+              saved.fadeOut == clip.fadeOut &&
+              saved.sourceStartFrame == clip.useStart &&
+              saved.trackRow == clip.trackRow) {
+        return;
+      }
       projectService.updateAudioClip(
         widget.projectId,
         sceneId,
@@ -6893,6 +6909,10 @@ class _TimelineScreenState extends State<TimelineScreen> {
       // 見た目上は移動・リサイズできても永続化されない不具合があった）。
       // 素材ごと動かしたときは、配置のキーフレームも一緒にずらす。
       final oldStart = (layer.rangeStart ?? 1) - 1;
+      if (layer.rangeStart == clip.startFrame + 1 &&
+          layer.rangeEnd == clip.startFrame + clip.lengthFrames) {
+        return;
+      }
       final shift = moved ? clip.startFrame - oldStart : 0;
       projectService.updateLayer(
         projectId: widget.projectId,
