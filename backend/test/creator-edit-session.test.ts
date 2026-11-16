@@ -43,6 +43,24 @@ describe("edit session pilot: no coins or verified time issued", () => {
     expect(send).not.toHaveBeenCalled();
   });
 
+  it("rejects malformed pilot input before any DynamoDB read", async () => {
+    process.env.CREATOR_EDIT_SESSION_PILOT_ENABLED = "true";
+    await expect(editSessionAction(event({
+      action: "start", startNonce: "invalid",
+    }))).rejects.toMatchObject({ code: "EDIT_SESSION_INVALID_ID" });
+    const checkpoint = {
+      action: "checkpoint", sessionId: id, sequence: 1,
+      activeSeconds: 1, meaningfulMutations: 1, stop: false,
+    };
+    await expect(editSessionAction(event({
+      ...checkpoint, activeSeconds: 3601,
+    }))).rejects.toMatchObject({ code: "EDIT_SESSION_INVALID_COUNT" });
+    await expect(editSessionAction(event({
+      ...checkpoint, stop: "false",
+    }))).rejects.toMatchObject({ code: "EDIT_SESSION_INVALID_STOP" });
+    expect(send).not.toHaveBeenCalled();
+  });
+
   it("creates one user-scoped short session without uploading strokes", async () => {
     process.env.CREATOR_EDIT_SESSION_PILOT_ENABLED = "true";
     const result = await editSessionAction(event({

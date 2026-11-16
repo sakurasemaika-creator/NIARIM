@@ -73,6 +73,21 @@ export async function editSessionAction(event: APIGatewayProxyEventV2) {
     badRequest("actionはstartまたはcheckpointを指定してください",
       "EDIT_SESSION_INVALID_ACTION");
   }
+  // Validate transport input before using the per-account DynamoDB read budget.
+  const request = action === "start"
+    ? { action, nonce: requiredUuid(body.startNonce, "startNonce") } as const
+    : { action,
+        sessionId: requiredUuid(body.sessionId, "sessionId"),
+        sequence: requiredInt(body.sequence, "sequence", 1_000_000_000),
+        activeSeconds: requiredInt(body.activeSeconds, "activeSeconds", 3600),
+        meaningfulMutations: requiredInt(
+          body.meaningfulMutations, "meaningfulMutations", 100000,
+        ),
+        stop: body.stop,
+      } as const;
+  if (request.action === "checkpoint" && typeof request.stop !== "boolean") {
+    badRequest("stopは真偽値で指定してください", "EDIT_SESSION_INVALID_STOP");
+  }
   const now = Date.now();
   const key = sessionKey(auth.niarimUserId);
   const result = await ddb.send(new GetCommand({
@@ -83,9 +98,9 @@ export async function editSessionAction(event: APIGatewayProxyEventV2) {
   const active = validEditSession(state?.editSession)
     ? state!.editSession as CandidateEditSession : null;
 
-  if (action === "start") {
+  if (request.action === "start") {
     // User supplied nonce enables safe retry after a lost start response.
-    const nonce = requiredUuid(body.startNonce, "startNonce");
+    const { nonce } = request;
     if (active && now >= active.lastAtMs &&
         now - active.lastAtMs <= EDIT_CHECKPOINT_MAX_GAP_SECONDS * 1000) {
       if (state?.editSessionStartNonce === nonce) {
@@ -134,20 +149,12 @@ export async function editSessionAction(event: APIGatewayProxyEventV2) {
     });
   }
 
-  const sessionId = requiredUuid(body.sessionId, "sessionId");
-  const sequence = requiredInt(body.sequence, "sequence", 1_000_000_000);
-  const activeSeconds = requiredInt(body.activeSeconds, "activeSeconds", 3600);
-  const meaningfulMutations = requiredInt(
-    body.meaningfulMutations, "meaningfulMutations", 100000,
-  );
-  if (typeof body.stop !== "boolean") {
-    badRequest("stopは真偽値で指定してください", "EDIT_SESSION_INVALID_STOP");
-  }
+  const { sessionId, sequence, activeSeconds, meaningfulMutations, stop } = request;
   if (!active || active.id !== sessionId) {
     // An acknowledged stop may have been applied even if its HTTP response
     // was lost. Keep only one tiny completion receipt, not a session log.
     const closed = state?.lastEditStop;
-    if (body.stop === true && closed && typeof closed === "object" &&
+    if (stop === true && closed && typeof closed === "object" &&
         (closed as Record<string, unknown>).id === sessionId &&
         (closed as Record<string, unknown>).sequence === sequence) {
       return ok({
@@ -198,7 +205,6 @@ export async function editSessionAction(event: APIGatewayProxyEventV2) {
   const nextSession: CandidateEditSession = {
     ...active, lastAtMs: now, lastSequence: sequence,
   };
-  const stop = body.stop;
   try {
     await ddb.send(new UpdateCommand({
       TableName: tableName(),
