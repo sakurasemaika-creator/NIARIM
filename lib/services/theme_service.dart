@@ -995,6 +995,15 @@ class ThemeService extends ChangeNotifier {
     final textTheme = headingTextTheme.copyWith(
       bodyLarge: headingTextTheme.bodyLarge?.copyWith(color: menuForeground),
     );
+    // Kuramubon's accented capitals and descenders extend beyond its 1em
+    // metrics. Give wrapped action labels room between their baselines.
+    final buttonLabelStyle = (textTheme.labelLarge ?? const TextStyle())
+        .copyWith(
+          fontFamily: 'Kuramubon',
+          fontFamilyFallback: kHeadingFontFallback,
+          fontWeight: FontWeight.w700,
+          height: 1.4,
+        );
     // メニューの背景色で塗る入力欄の中の薄い文字・アイコン（Material 3 の
     // onSurfaceVariant と、押せないときの onSurface の38%に当たる色）。
     Color fieldInk(Set<WidgetState> states) =>
@@ -1102,17 +1111,7 @@ class ThemeService extends ChangeNotifier {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(radius),
           ),
-          textStyle:
-              textTheme.labelLarge?.copyWith(
-                fontFamily: 'Kuramubon',
-                fontFamilyFallback: kHeadingFontFallback,
-                fontWeight: FontWeight.w700,
-              ) ??
-              const TextStyle(
-                fontFamily: 'Kuramubon',
-                fontFamilyFallback: kHeadingFontFallback,
-                fontWeight: FontWeight.w700,
-              ),
+          textStyle: buttonLabelStyle,
         ),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
@@ -1120,11 +1119,7 @@ class ThemeService extends ChangeNotifier {
           foregroundColor: accentText,
           // 最小の高さはMaterial 3の既定（40）。
           foregroundBuilder: buttonLabelRoomBuilder(minHeight: 40),
-          textStyle: textTheme.labelLarge?.copyWith(
-            fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback,
-            fontWeight: FontWeight.w700,
-          ),
+          textStyle: buttonLabelStyle,
         ),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
@@ -1135,11 +1130,7 @@ class ThemeService extends ChangeNotifier {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(radius),
           ),
-          textStyle: textTheme.labelLarge?.copyWith(
-            fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback,
-            fontWeight: FontWeight.w700,
-          ),
+          textStyle: buttonLabelStyle,
         ),
       ),
       textButtonTheme: TextButtonThemeData(
@@ -1150,11 +1141,7 @@ class ThemeService extends ChangeNotifier {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(radius),
           ),
-          textStyle: textTheme.labelLarge?.copyWith(
-            fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback,
-            fontWeight: FontWeight.w700,
-          ),
+          textStyle: buttonLabelStyle,
         ),
       ),
       iconButtonTheme: IconButtonThemeData(
