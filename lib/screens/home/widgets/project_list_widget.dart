@@ -28,6 +28,7 @@ import '../../../widgets/moved_to_trash_snack_bar.dart';
 import '../../../widgets/project_duplicated_snack_bar.dart';
 import '../../../widgets/name_entry_dialog.dart';
 import '../../../widgets/collection_action_controls.dart';
+import '../../../widgets/collection_card_keys.dart';
 import '../../../widgets/collection_tile_layout.dart';
 import '../../../widgets/date_line_text.dart';
 import '../../../widgets/keep_together_text.dart';
@@ -778,8 +779,17 @@ class ProjectListWidget extends StatelessWidget {
       onLongPress: () => onLongPress(project.id),
       // 行の︙の押せる所は行の右の余白へも届く（ListTileは余白の内側に
       // trailingを置き、その外を押しても届かないため）。
-    ).withCollectionActionReach();
+    ).withCollectionActionReach().cardKeyboard(
+      onSelect: _selectByKey(project.id),
+    );
   }
+
+  /// キーボードのSpaceで[id]の項目を選ぶ（長押しと同じ。選んでいる間は
+  /// 選ぶ・外すの切り替え）。選ぶ専用画面（[onPickProject]）には選ぶ操作が
+  /// 無いので null（SpaceはEnterと同じく開く）。
+  VoidCallback? _selectByKey(String id) => onPickProject != null
+      ? null
+      : () => isSelectionMode ? onSelectionChanged(id) : onLongPress(id);
 
   Widget _folderDetailTile(BuildContext context, ProjectFolder folder) {
     final isSelected = selectedIds.contains(folder.id);
@@ -845,7 +855,9 @@ class ProjectListWidget extends StatelessWidget {
           ? () => onSelectionChanged(folder.id)
           : () => onOpenFolder(folder.id),
       onLongPress: () => onLongPress(folder.id),
-    ).withCollectionActionReach();
+    ).withCollectionActionReach().cardKeyboard(
+      onSelect: _selectByKey(folder.id),
+    );
   }
 
   Widget _gridCard(BuildContext context, _Entry entry) {
@@ -855,17 +867,18 @@ class ProjectListWidget extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     final selectionColor = scheme.secondary;
     final selectionForeground = scheme.onSecondary;
+    final open = isSelectionMode
+        ? () => onSelectionChanged(project.id)
+        : onPickProject != null
+        ? () => onPickProject!(project.id)
+        : () => context.push('/project/${project.id}');
     return GestureDetector(
       onSecondaryTapDown: (details) {
         if (!isSelectionMode && onPickProject == null) {
           _showProjectSecondaryMenu(context, project, details.globalPosition);
         }
       },
-      onTap: isSelectionMode
-          ? () => onSelectionChanged(project.id)
-          : onPickProject != null
-          ? () => onPickProject!(project.id)
-          : () => context.push('/project/${project.id}'),
+      onTap: open,
       // 選ぶ専用画面ではダブルタップでのキャンバス直接起動は不要（誤操作の
       // もとになる）ため無効化する。
       onDoubleTap: (isSelectionMode || onPickProject != null)
@@ -959,6 +972,12 @@ class ProjectListWidget extends StatelessWidget {
           ),
         ),
       ),
+      // カードの本体もTabで止まり、Enterで開き、Spaceで選ぶ（以前は星と︙に
+      // しか止まらず、キーボードだけではカードを開けず、選べなかった）。
+    ).focusableCard(
+      onActivate: open,
+      onSelect: _selectByKey(project.id),
+      borderRadius: BorderRadius.circular(14),
     );
   }
 
@@ -1003,15 +1022,16 @@ class ProjectListWidget extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     final selectionColor = scheme.secondary;
     final selectionForeground = scheme.onSecondary;
+    final open = isSelectionMode
+        ? () => onSelectionChanged(folder.id)
+        : () => onOpenFolder(folder.id);
     return GestureDetector(
       onSecondaryTapDown: (details) {
         if (!isSelectionMode && onPickProject == null) {
           _showFolderSecondaryMenu(context, folder, details.globalPosition);
         }
       },
-      onTap: isSelectionMode
-          ? () => onSelectionChanged(folder.id)
-          : () => onOpenFolder(folder.id),
+      onTap: open,
       onLongPress: () => onLongPress(folder.id),
       child: AnimatedContainer(
         duration: Duration(milliseconds: 150),
@@ -1096,6 +1116,11 @@ class ProjectListWidget extends StatelessWidget {
           ),
         ),
       ),
+      // 作品のカードと同じく、本体もTabで止まり、Enterで開き、Spaceで選ぶ。
+    ).focusableCard(
+      onActivate: open,
+      onSelect: _selectByKey(folder.id),
+      borderRadius: BorderRadius.circular(14),
     );
   }
 

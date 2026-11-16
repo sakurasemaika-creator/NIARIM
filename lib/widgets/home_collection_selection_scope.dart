@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'collection_card_keys.dart';
 import 'secondary_click_menu.dart';
 
 /// One selection state shared by the four embedded Home collections.
@@ -55,16 +56,44 @@ class HomeCollectionSelectionSurface extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scope = HomeCollectionSelectionScope.maybeOf(context);
-    // 選んでいないときは、右クリックで行の︙と同じメニューを開く。
-    if (scope == null || !scope.active) {
-      return SecondaryClickMenu(openMenuAt: onSecondaryClick, child: child);
+    final active = scope?.active ?? false;
+    // カードの本体にキーボードのフォーカスがあるときは、Spaceで選び（長押しと
+    // 同じ。選んでいる間は選ぶ・外すの切り替え。Enterは今までどおり開く）、
+    // キーボードで操作している間は外側に輪を描く。
+    // 選ぶ前と選んでいる間で木の形を変えない（変えるとカードが作り直され、
+    // Spaceで選んだとたんにキーボードのフォーカスが外れた）。
+    final body = GestureDetector(
+      // 選んでいないときは、右クリックで行の︙と同じメニューを開く。
+      onSecondaryTapUp: active
+          ? null
+          : (details) {
+              final open = onSecondaryClick;
+              if (open != null) {
+                open(details.globalPosition);
+              } else {
+                SecondaryClickMenu.openAt(context, details.globalPosition);
+              }
+            },
+      child: CollectionCardKeyboard(
+        onSelect: scope == null ? null : () => scope.onToggle(selectionId),
+        borderRadius: BorderRadius.circular(grid ? 14 : 12),
+        child: child,
+      ),
+    );
+    if (!active) {
+      return Stack(
+        clipBehavior: Clip.none,
+        fit: StackFit.passthrough,
+        children: [body],
+      );
     }
-    final checked = scope.selected(selectionId);
+    final checked = scope!.selected(selectionId);
     final scheme = Theme.of(context).colorScheme;
     return Stack(
       clipBehavior: Clip.none,
+      fit: StackFit.passthrough,
       children: [
-        child,
+        body,
         if (checked)
           Positioned.fill(
             child: IgnorePointer(
