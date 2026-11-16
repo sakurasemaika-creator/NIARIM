@@ -1047,7 +1047,7 @@ class _HomeScreenState extends State<HomeScreen>
               icon: const Icon(Icons.arrow_back),
               tooltip: l10n.homeBackToSplashTooltip,
               onPressed: () => context.go('/'),
-            ),
+            ).tooltipsBelowTabs(),
             title: _isSearching
                 ? Row(
                     children: [
@@ -1093,7 +1093,7 @@ class _HomeScreenState extends State<HomeScreen>
                         ),
                       ),
                     ],
-                  )
+                  ).tooltipsBelowTabs()
                 // 入らない幅では題を出さない（省略記号で切らない）。
                 : FitOrHideTitle(switch (_currentTabIndex) {
                     1 => l10n.homeTabWorks,
@@ -1108,7 +1108,7 @@ class _HomeScreenState extends State<HomeScreen>
                   icon: const Icon(Icons.close),
                   tooltip: l10n.commonClose,
                   onPressed: _closeProjectSearch,
-                )
+                ).tooltipsBelowTabs()
               else ...[
                 if (_currentTabIndex <= 2)
                   // 開いているタブの今の表示サイズに印を付ける。
@@ -1129,13 +1129,13 @@ class _HomeScreenState extends State<HomeScreen>
                           _selectSharedViewMode(mode);
                       }
                     },
-                  ),
+                  ).tooltipsBelowTabs(),
                 IconButton(
                   key: const Key('homeSearchButton'),
                   icon: const Icon(Icons.search),
                   tooltip: l10n.commonSearch,
                   onPressed: _openProjectSearch,
-                ),
+                ).tooltipsBelowTabs(),
               ],
               IconButton(
                 key: const Key('homeMenuButton'),
@@ -1147,7 +1147,7 @@ class _HomeScreenState extends State<HomeScreen>
                   setState(() => _missionDrawerRefreshToken++);
                   _scaffoldKey.currentState?.openEndDrawer();
                 },
-              ),
+              ).tooltipsBelowTabs(),
             ],
             // 標準のTabBarは項目名の文字数に関わらず均等4分割になるため、
             // 「プロジェクト」のように長い項目名が「共有」等の短い項目名と
@@ -1156,7 +1156,7 @@ class _HomeScreenState extends State<HomeScreen>
             // 差し替える（TabControllerは共通のまま、TabBarViewとの
             // スワイプ連動はそのまま維持される）。
             bottom: PreferredSize(
-              preferredSize: const Size.fromHeight(48),
+              preferredSize: const Size.fromHeight(_kHomeTabBarHeight),
               child: KeyedSubtree(
                 key: _tabBarKey,
                 child: _HomeTabBar(
@@ -3171,6 +3171,33 @@ class _HomeScreenState extends State<HomeScreen>
       ),
     );
   }
+}
+
+/// ホームの上部バーの下のタブの列の高さ。
+const double _kHomeTabBarHeight = 48;
+
+/// ホームの上部バーのボタン（戻る・表示サイズ・検索・メニュー・検索中の
+/// 切り替えと閉じる）の吹き出しは、すぐ下のタブの列の下に出す。吹き出しの
+/// 既定の位置（ボタンの真ん中から24px下）はタブの列の上で、検索を閉じる
+/// ボタンの「閉じる」がゴミ箱のタブのアイコンを隠した。
+extension _HomeTopBarTooltips on Widget {
+  Widget tooltipsBelowTabs() => _TooltipsBelowTabs(child: this);
+}
+
+class _TooltipsBelowTabs extends StatelessWidget {
+  const _TooltipsBelowTabs({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => TooltipTheme(
+    data: TooltipTheme.of(context).copyWith(
+      preferBelow: true,
+      // ボタンは上部バーの縦の真ん中にあり、その下にタブの列が続く。
+      verticalOffset: kToolbarHeight / 2 + _kHomeTabBarHeight + 8,
+    ),
+    child: child,
+  );
 }
 
 /// 横向きで左右にカメラの切り欠き・3ボタンの帯がある端末でも、ホームの本文
