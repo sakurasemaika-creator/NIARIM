@@ -251,8 +251,10 @@ class CommunityWorkCard extends StatelessWidget {
                     },
                   ),
                 ),
+                // 右の余白は、︙の押せる所（丸の外へ6px）がカードの中に
+                // 収まる幅（狭いと、端の帯を押してもカードの外で届かない）。
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(10, 8, 2, 10),
+                  padding: const EdgeInsets.fromLTRB(10, 8, 6, 10),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -368,74 +370,91 @@ class CommunityWorkCard extends StatelessWidget {
                               )
                             else
                               const Spacer(),
-                            if (!obscured)
-                              Semantics(
-                                button: true,
-                                label: isBookmarked
-                                    ? l10n.communityWorkDetailBookmarkRemove
-                                    : l10n.communityWorkDetailBookmarkAdd,
-                                toggled: isBookmarked,
-                                child: CollectionActionFrame(
-                                  child: IconButton(
-                                    key: ValueKey(
-                                      'community-bookmark-${work.id}',
-                                    ),
-                                    tooltip: isBookmarked
-                                        ? l10n.communityWorkDetailBookmarkRemove
-                                        : l10n.communityWorkDetailBookmarkAdd,
-                                    constraints: const BoxConstraints.tightFor(
-                                      width: CollectionActionFrame.extent,
-                                      height: CollectionActionFrame.extent,
-                                    ),
-                                    iconSize: CollectionActionFrame.glyphSize,
-                                    padding: EdgeInsets.zero,
-                                    onPressed: onBookmarkToggle,
-                                    icon: Icon(
-                                      isBookmarked
-                                          ? Icons.bookmark
-                                          : Icons.bookmark_border,
-                                      color: detailColor,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            if (onMuteToggle != null)
-                              CollectionActionFrame(
-                                child: PopupMenuButton<String>(
-                                  key: ValueKey('communityMuteMenu-${work.id}'),
-                                  padding: EdgeInsets.zero,
-                                  iconSize: CollectionActionFrame.glyphSize,
-                                  tooltip: isMuted
-                                      ? CommunityPlazaLabels.of(
-                                          context,
-                                        ).unmuteWork
-                                      : CommunityPlazaLabels.of(
-                                          context,
-                                        ).muteWork,
-                                  icon: Icon(Icons.more_vert, color: textColor),
-                                  onSelected: (_) => onMuteToggle!(),
-                                  itemBuilder: (_) => [
-                                    PopupMenuItem(
-                                      value: isMuted ? 'unmute' : 'mute',
-                                      child: Text(
-                                        isMuted
-                                            ? CommunityPlazaLabels.of(
-                                                context,
-                                              ).unmuteWork
-                                            : CommunityPlazaLabels.of(
-                                                context,
-                                              ).muteWork,
+                            // ブックマークと︙は押せる所（48×48）が重ならず、
+                            // 行の外（上下の帯）も押せる並び。
+                            CollectionActionRow(
+                              children: [
+                                // 読み上げの名前は丸の中に置く（丸の外に箱を
+                                // 置くと、その箱が丸の外の帯を押しても断る）。
+                                if (!obscured)
+                                  CollectionActionFrame(
+                                    child: Semantics(
+                                      button: true,
+                                      label: isBookmarked
+                                          ? l10n.communityWorkDetailBookmarkRemove
+                                          : l10n.communityWorkDetailBookmarkAdd,
+                                      toggled: isBookmarked,
+                                      child: IconButton(
+                                        key: ValueKey(
+                                          'community-bookmark-${work.id}',
+                                        ),
+                                        tooltip: isBookmarked
+                                            ? l10n.communityWorkDetailBookmarkRemove
+                                            : l10n.communityWorkDetailBookmarkAdd,
+                                        constraints:
+                                            const BoxConstraints.tightFor(
+                                              width:
+                                                  CollectionActionFrame.extent,
+                                              height:
+                                                  CollectionActionFrame.extent,
+                                            ),
+                                        iconSize:
+                                            CollectionActionFrame.glyphSize,
+                                        padding: EdgeInsets.zero,
+                                        onPressed: onBookmarkToggle,
+                                        icon: Icon(
+                                          isBookmarked
+                                              ? Icons.bookmark
+                                              : Icons.bookmark_border,
+                                          color: detailColor,
+                                        ),
                                       ),
                                     ),
-                                  ],
-                                ),
-                              ),
+                                  ),
+                                if (onMuteToggle != null)
+                                  CollectionActionFrame(
+                                    child: PopupMenuButton<String>(
+                                      key: ValueKey(
+                                        'communityMuteMenu-${work.id}',
+                                      ),
+                                      padding: EdgeInsets.zero,
+                                      iconSize: CollectionActionFrame.glyphSize,
+                                      tooltip: isMuted
+                                          ? CommunityPlazaLabels.of(
+                                              context,
+                                            ).unmuteWork
+                                          : CommunityPlazaLabels.of(
+                                              context,
+                                            ).muteWork,
+                                      icon: Icon(
+                                        Icons.more_vert,
+                                        color: textColor,
+                                      ),
+                                      onSelected: (_) => onMuteToggle!(),
+                                      itemBuilder: (_) => [
+                                        PopupMenuItem(
+                                          value: isMuted ? 'unmute' : 'mute',
+                                          child: Text(
+                                            isMuted
+                                                ? CommunityPlazaLabels.of(
+                                                    context,
+                                                  ).unmuteWork
+                                                : CommunityPlazaLabels.of(
+                                                    context,
+                                                  ).muteWork,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                              ],
+                            ),
                           ],
                         ),
                       ],
                     ],
                   ),
-                ),
+                ).withCollectionActionReach(),
               ],
             ),
           ),

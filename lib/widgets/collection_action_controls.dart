@@ -58,14 +58,27 @@ class CollectionActionFrame extends StatelessWidget {
 /// overlap its neighbour's: the gap is split in the middle and the rest of
 /// each target reaches outwards. Replaces a [Row] of frames, which would
 /// refuse taps outside its own bounds.
+///
+/// With [direction] [Axis.vertical] the circles are stacked instead (the
+/// "⋮" above the bookmark of a ranking row), with the same rules up and down.
 class CollectionActionRow extends StatelessWidget {
-  const CollectionActionRow({super.key, required this.children});
+  const CollectionActionRow({
+    super.key,
+    required this.children,
+    this.direction = Axis.horizontal,
+  });
 
   /// The drawn space between two circles.
   static const double gap = 4;
 
-  /// [CollectionActionFrame]s (directly or inside another widget).
+  /// [CollectionActionFrame]s, directly or inside widgets that add no box of
+  /// their own (a [StatelessWidget] that returns the frame). A box around a
+  /// frame ([Semantics], [SizedBox]…) would refuse the taps beyond the circle:
+  /// put such a widget inside the frame instead.
   final List<Widget> children;
+
+  /// Which way the circles are lined up.
+  final Axis direction;
 
   @override
   Widget build(BuildContext context) {
@@ -73,18 +86,25 @@ class CollectionActionRow extends StatelessWidget {
     const spare =
         CollectionActionFrame.targetExtent - CollectionActionFrame.extent;
     const inner = gap / 2;
+    const across = spare / 2;
     final count = children.length;
     // The two ends reach outwards so that each end target is 48 across.
     final outer = count == 1 ? spare / 2 : spare - inner;
-    final rtl = Directionality.of(context) == TextDirection.rtl;
-    EdgeInsets reachAt(int visual) => EdgeInsets.fromLTRB(
-      visual == 0 ? outer : inner,
-      spare / 2,
-      visual == count - 1 ? outer : inner,
-      spare / 2,
-    );
+    final vertical = direction == Axis.vertical;
+    final rtl = !vertical && Directionality.of(context) == TextDirection.rtl;
+    EdgeInsets reachAt(int visual) {
+      final before = visual == 0 ? outer : inner;
+      final after = visual == count - 1 ? outer : inner;
+      return vertical
+          ? EdgeInsets.fromLTRB(across, before, across, after)
+          : EdgeInsets.fromLTRB(before, across, after, across);
+    }
+
     return _ActionRow(
-      reach: EdgeInsets.fromLTRB(outer, spare / 2, outer, spare / 2),
+      reach: vertical
+          ? EdgeInsets.fromLTRB(across, outer, across, outer)
+          : EdgeInsets.fromLTRB(outer, across, outer, across),
+      direction: direction,
       registry: _ReachScope.of(context),
       children: [
         for (var i = 0; i < count; i++)
@@ -274,12 +294,9 @@ class _ActionRow extends Flex {
   const _ActionRow({
     required this.reach,
     required this.registry,
+    required super.direction,
     required super.children,
-  }) : super(
-         direction: Axis.horizontal,
-         mainAxisSize: MainAxisSize.min,
-         spacing: CollectionActionRow.gap,
-       );
+  }) : super(mainAxisSize: MainAxisSize.min, spacing: CollectionActionRow.gap);
 
   final EdgeInsets reach;
 

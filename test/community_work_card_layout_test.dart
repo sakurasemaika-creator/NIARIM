@@ -151,9 +151,12 @@ void main() {
                 );
                 expect(menu, findsOneWidget, reason: scope);
                 final menuRect = tester.getRect(menu);
+                // ︙はカードの右端に寄せる。押せる所（丸の外へ6px）がカードの
+                // 中に収まる分だけ離す（DISC240：カードの余白4px＋右の余白
+                // 6px＋ボタンと丸の差4px）。
                 expect(
                   tile.right - menuRect.right,
-                  lessThanOrEqualTo(10),
+                  lessThanOrEqualTo(14),
                   reason: scope,
                 );
                 expect(

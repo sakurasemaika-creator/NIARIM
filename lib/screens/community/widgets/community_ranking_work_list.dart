@@ -228,8 +228,9 @@ class CommunityRankingWorkCard extends StatelessWidget {
               ),
             ),
           ),
+        // 絵の角から4px：︙の押せる所（丸の外へ4px）が絵の中に収まる。
         if (withMenu && onVisibilityToggle != null && !isUnavailable)
-          Positioned(right: 2, top: 2, child: _menu(context)),
+          Positioned(right: 4, top: 4, child: _menu(context)),
       ],
     );
   }
@@ -387,7 +388,7 @@ class CommunityRankingWorkCard extends StatelessWidget {
           const SizedBox(width: 10),
           Expanded(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(0, 8, 3, 8),
+              padding: const EdgeInsets.fromLTRB(0, 8, 4, 8),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -413,17 +414,13 @@ class CommunityRankingWorkCard extends StatelessWidget {
                       ],
                     ),
                   ),
+                  // ︙とブックマークは押せる所（48×48）が重ならない縦の並び。
                   SizedBox(
                     width: 40,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
+                    child: CollectionActionRow(
+                      direction: Axis.vertical,
                       children: [
-                        if (onVisibilityToggle != null)
-                          SizedBox(
-                            width: 40,
-                            height: 40,
-                            child: _menu(context),
-                          ),
+                        if (onVisibilityToggle != null) _menu(context),
                         if (!_obscured) _bookmark(context),
                       ],
                     ),
@@ -470,7 +467,9 @@ class CommunityRankingWorkCard extends StatelessWidget {
                         child: _counts(context),
                       ),
                     ),
-                    _bookmark(context, large: true),
+                    CollectionActionRow(
+                      children: [_bookmark(context, large: true)],
+                    ),
                   ],
                 ),
               ],
@@ -493,12 +492,13 @@ class CommunityRankingWorkCard extends StatelessWidget {
         surfaceTintColor: Colors.transparent,
         clipBehavior: Clip.antiAlias,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        // 丸い操作の押せる所は、丸の外の帯（並びの箱の外）も押せる。
         child: InkWell(
           onTap: _obscured ? null : onTap,
           child: layout == CommunityRankingLayout.horizontal
               ? _horizontal(context, box.maxWidth)
               : _largeThumbnail(context),
-        ),
+        ).withCollectionActionReach(),
       ),
     );
   }
