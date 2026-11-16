@@ -224,7 +224,11 @@ class _StrokeSamplePreviewState extends State<StrokeSamplePreview> {
     }
 
     final activeStamp = stamp!;
-    final texture = await generateBuiltInStampTexture(activeStamp, size: 48);
+    final texture = await generateBuiltInStampTexture(
+      activeStamp,
+      size: 48,
+      color: color,
+    );
     final result = StampEngine().stampAlongPath(
       canvasData: Uint8List(_width * _height * 4),
       width: _width,

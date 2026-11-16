@@ -153,8 +153,6 @@ class BrushService extends ChangeNotifier {
     'Brush0039',
     'Brush0040',
   };
-  static String canonicalBrushId(String id) =>
-      id == 'Brush0033' ? 'Brush0023' : id;
 
   static const _hairVariantIds = {
     'Brush0031',
@@ -1005,7 +1003,7 @@ class BrushService extends ChangeNotifier {
           final brush = Brush.fromJson(
             jsonDecode(entry) as Map<String, dynamic>,
           );
-          if (canonicalBrushId(brush.id) != brush.id || !seen.add(brush.id)) {
+          if (!seen.add(brush.id)) {
             dropped = true;
             continue;
           }
@@ -1138,13 +1136,11 @@ class BrushService extends ChangeNotifier {
       }
     }
     final currentId = prefs.readString(_currentIdKey);
-    final resolvedId = currentId == null ? null : canonicalBrushId(currentId);
     _currentBrush =
-        _brushes.where((b) => b.id == resolvedId).firstOrNull ??
+        _brushes.where((b) => b.id == currentId).firstOrNull ??
         _brushes.firstOrNull;
     final presetColor = _currentBrush?.presetColor;
     if (presetColor != null) _currentColor = Color(presetColor);
-    if (resolvedId != currentId) await _persistCurrent();
     // The first stroke after selecting a bundled tip must already have its
     // image, even if the brush list has never been opened.
     await Future.wait([
@@ -1214,9 +1210,7 @@ class BrushService extends ChangeNotifier {
   }
 
   void selectBrush(String id) {
-    final brush = _brushes
-        .where((b) => b.id == canonicalBrushId(id))
-        .firstOrNull;
+    final brush = _brushes.where((b) => b.id == id).firstOrNull;
     if (brush == null) return;
     // ignore: unawaited_futures
     commitRememberedValues();
@@ -1343,11 +1337,9 @@ class BrushService extends ChangeNotifier {
     if (decoded is! Map) throw const FormatException('not a map');
     final result = <String, ({double? size, int? opacity})>{};
     for (final entry in decoded.entries) {
-      final storedId = entry.key;
+      final id = entry.key;
       final value = entry.value;
-      if (storedId is! String || value is! Map) continue;
-      final id = canonicalBrushId(storedId);
-      if (!isBuiltIn(id)) continue;
+      if (id is! String || !isBuiltIn(id) || value is! Map) continue;
       final rawSize = value['size'];
       final rawOpacity = value['opacity'];
       final size = rawSize is num && rawSize.isFinite && rawSize > 0
@@ -1357,16 +1349,7 @@ class BrushService extends ChangeNotifier {
           ? rawOpacity.round().clamp(0, 100)
           : null;
       if (size == null && opacity == null) continue;
-      final previous = result[id];
-      result[id] = storedId == id
-          ? (
-              size: size ?? previous?.size,
-              opacity: opacity ?? previous?.opacity,
-            )
-          : (
-              size: previous?.size ?? size,
-              opacity: previous?.opacity ?? opacity,
-            );
+      result[id] = (size: size, opacity: opacity);
     }
     return result;
   }
@@ -1478,10 +1461,6 @@ class BrushService extends ChangeNotifier {
     final resolved = <Brush>[];
     var workingChanged = false;
     for (final brush in incoming) {
-      if (canonicalBrushId(brush.id) != brush.id) {
-        placed?[brush.id] = canonicalBrushId(brush.id);
-        continue;
-      }
       final definition = _builtInDefinitions[brush.id];
       if (definition != null) {
         final theirs = remembered != null
@@ -1587,7 +1566,7 @@ class BrushService extends ChangeNotifier {
     final chosenId = transferredBrushId(currentBrushId, where);
     final chosen = chosenId == null
         ? null
-        : _brushes.where((b) => b.id == canonicalBrushId(chosenId)).firstOrNull;
+        : _brushes.where((b) => b.id == chosenId).firstOrNull;
     if (chosen != null && chosen.id != _currentBrush?.id) {
       _currentBrush = chosen;
       _preloadTextureIfNeeded(chosen);

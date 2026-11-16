@@ -3262,7 +3262,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
     if (brushId != null) {
       brushes.selectBrush(brushId);
       // 登録したブラシが消されていたら、太さだけを別のブラシへ当てない。
-      if (brushes.currentBrush?.id != BrushService.canonicalBrushId(brushId)) {
+      if (brushes.currentBrush?.id != brushId) {
         return;
       }
     }

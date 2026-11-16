@@ -42,13 +42,15 @@ void main() {
       expect(hair.name, 'ウェーブヘア（俯瞰）');
       expect(hair.outlineEnabled, isTrue);
       expect(hair.outlineColor, 0xff000000);
-      expect(hair.outlineWidth, 1.5);
+      expect(hair.outlineWidth, 1.1);
       expect(hair.foldEnabled, isTrue);
       expect(hair.foldTriggerAngle, 60);
       expect(hair.foldCurveStartRatio, .16);
       expect(hair.foldAngleRatio, .5);
-      expect(hair.foldLengthRatio, .44);
+      expect(hair.foldLengthRatio, .70);
       expect(hair.foldEndTaperRatio, .35);
+      expect(hair.fadeIn, FadeEndpointSettings.full);
+      expect(hair.fadeOut.rangePx, 165);
       expect(hair.toJson().containsKey('fillColor'), isFalse);
     },
   );
@@ -104,11 +106,15 @@ void main() {
       for (final ribbon in ribbons) {
         final restored = Brush.fromJson(ribbon.toJson());
         expect(restored.foldEnabled, isTrue);
-        expect(restored.foldTaperTip, isFalse);
+        expect(restored.foldFlatEnds, isTrue);
         expect(restored.fadeMode, FadeMode.off);
         expect(restored.pressureOn.size.enabled, isFalse);
         expect(restored.pressureOn.opacity.enabled, isFalse);
         expect(restored.presetColor, 0xffdb424b);
+        expect(restored.outlineWidth, 1.1);
+        expect(restored.foldLengthRatio, .68);
+        expect(restored.foldAngleRatio, .72);
+        expect(restored.foldCurveStartRatio, .48);
       }
     },
   );
@@ -118,6 +124,18 @@ void main() {
       (brush) => brush.id == 'Brush0030',
     );
     expect(cloud.resolvedCustomImagePaths, hasLength(8));
+    final flat = brushExtensionPresets().singleWhere(
+      (b) => b.id == 'Brush0041',
+    );
+    expect(cloud.name, '雲');
+    expect(flat.name, '雲（ベタ塗り）');
+    expect(flat.resolvedCustomImagePaths, cloud.resolvedCustomImagePaths);
+    expect(flat.outlineEnabled, isTrue);
+    expect(flat.presetColor, isNull);
+    expect(
+      Brush.fromJson(flat.toJson()).imageInkMode,
+      BrushImageInkMode.silhouette,
+    );
     expect(
       Brush.fromJson(cloud.toJson()).customImageSelectionMode,
       BrushImageSelectionMode.randomPerStamp,

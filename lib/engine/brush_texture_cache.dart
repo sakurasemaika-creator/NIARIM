@@ -3,6 +3,7 @@ import 'dart:ui' as ui;
 
 import '../models/brush.dart';
 import '../utils/creative_image_source.dart';
+import 'texture_silhouette.dart';
 
 /// 自作ブラシ画像（[Brush.customImagePath]、「ブラシ画像からの
 /// ブラシ作成」）のデコード結果キャッシュ。
@@ -18,6 +19,10 @@ import '../utils/creative_image_source.dart';
 const int brushTextureSize = 128;
 
 final Map<(String, BrushImageInkMode), Uint8List> _brushTextureCache = {};
+final Map<String, Uint8List> _silhouetteDistances = {};
+
+Uint8List? getCachedSilhouetteDistance(String path) =>
+    _silhouetteDistances[path];
 
 /// キャッシュ済みのブラシテクスチャ（brushTextureSize×brushTextureSize、
 /// RGBA・RGB=0でalphaのみ意味を持つ）を返す。未読み込みならnull。
@@ -68,10 +73,15 @@ Future<void> preloadBrushTexture(
       final sourceInk = switch (mode) {
         BrushImageInkMode.dark => 255 - luminance,
         BrushImageInkMode.light => luminance,
-        BrushImageInkMode.alpha => 255.0,
+        BrushImageInkMode.alpha || BrushImageInkMode.silhouette => 255.0,
       };
       final ink = (sourceInk * rgba[i + 3] / 255).round();
-      mask[i + 3] = ink.clamp(0, 255);
+      mask[i + 3] = mode == BrushImageInkMode.silhouette
+          ? silhouetteAlpha(ink)
+          : ink.clamp(0, 255);
+    }
+    if (mode == BrushImageInkMode.silhouette) {
+      _silhouetteDistances[path] = silhouetteDistance(mask, brushTextureSize);
     }
     _brushTextureCache[(path, mode)] = mask;
   } catch (_) {

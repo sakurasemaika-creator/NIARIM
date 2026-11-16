@@ -2,7 +2,7 @@ import 'asset_tags.dart';
 import 'brush_extension_defaults.dart';
 import 'pixel_color_mode.dart';
 
-enum BrushImageInkMode { dark, light, alpha }
+enum BrushImageInkMode { dark, light, alpha, silhouette }
 
 enum HairFoldMode { waveTopView, waveLowAngle, curlRight, curlLeft, crescent }
 
@@ -83,7 +83,9 @@ class Brush {
   /// The initial palette color when selecting this preset, if provided.
   final int? presetColor;
   final bool foldEnabled;
-  final bool foldTaperTip;
+
+  /// Cut perpendicular to the stroke at both ends of the folded ribbon.
+  final bool foldFlatEnds;
   final double foldTriggerAngle;
   final double foldCurveStartRatio;
   final double foldAngleRatio;
@@ -141,7 +143,7 @@ class Brush {
     this.outlineAccentWidth = 4.0,
     this.presetColor,
     this.foldEnabled = false,
-    this.foldTaperTip = true,
+    this.foldFlatEnds = false,
     this.foldTriggerAngle = 90.0,
     this.foldCurveStartRatio = BrushExtensionDefaults.foldCurveStartRatio,
     this.foldAngleRatio = BrushExtensionDefaults.foldAngleRatio,
@@ -220,7 +222,7 @@ class Brush {
     double? outlineAccentWidth,
     int? presetColor,
     bool? foldEnabled,
-    bool? foldTaperTip,
+    bool? foldFlatEnds,
     double? foldTriggerAngle,
     double? foldCurveStartRatio,
     double? foldAngleRatio,
@@ -286,7 +288,7 @@ class Brush {
     outlineAccentWidth: outlineAccentWidth ?? this.outlineAccentWidth,
     presetColor: presetColor ?? this.presetColor,
     foldEnabled: foldEnabled ?? this.foldEnabled,
-    foldTaperTip: foldTaperTip ?? this.foldTaperTip,
+    foldFlatEnds: foldFlatEnds ?? this.foldFlatEnds,
     foldTriggerAngle: foldTriggerAngle ?? this.foldTriggerAngle,
     foldCurveStartRatio: clampFoldRatio(
       foldCurveStartRatio ?? this.foldCurveStartRatio,
@@ -359,7 +361,7 @@ class Brush {
     'outlineAccentWidth': outlineAccentWidth,
     if (presetColor != null) 'presetColor': presetColor,
     'foldEnabled': foldEnabled,
-    if (!foldTaperTip) 'foldTaperTip': false,
+    if (foldFlatEnds) 'foldFlatEnds': true,
     'foldTriggerAngle': foldTriggerAngle,
     'foldCurveStartRatio': clampFoldRatio(
       foldCurveStartRatio,
@@ -473,7 +475,7 @@ class Brush {
     outlineAccentWidth: (j['outlineAccentWidth'] as num?)?.toDouble() ?? 4,
     presetColor: (j['presetColor'] as num?)?.toInt(),
     foldEnabled: j['foldEnabled'] as bool? ?? false,
-    foldTaperTip: j['foldTaperTip'] as bool? ?? true,
+    foldFlatEnds: j['foldFlatEnds'] as bool? ?? false,
     foldTriggerAngle: (j['foldTriggerAngle'] as num?)?.toDouble() ?? 90,
     foldCurveStartRatio: clampFoldRatio(
       (j['foldCurveStartRatio'] as num?)?.toDouble() ??

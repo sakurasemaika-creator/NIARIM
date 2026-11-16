@@ -5,6 +5,7 @@ import 'dart:ui' as ui;
 import '../models/brush.dart';
 import '../models/brush_pressure_resolver.dart';
 import 'brush_texture_cache.dart';
+import 'texture_silhouette.dart';
 import 'brush_texture_selector.dart';
 import 'brush_render_plan.dart';
 import 'hair_fold_raster.dart';
@@ -336,7 +337,9 @@ class DrawingEngine {
       taperEnd: finalize,
       brush: brush,
       fillColor: currentColor,
-      texture: texture == null
+      texture:
+          texture == null ||
+              (brush.foldFlatEnds && texture == 'assets/brushes/round_tip.png')
           ? null
           : getCachedBrushTexture(texture, mode: brush.imageInkMode),
     );
@@ -674,6 +677,11 @@ class DrawingEngine {
     final customTexture = texturePath != null
         ? getCachedBrushTexture(texturePath, mode: brush.imageInkMode)
         : null;
+    final silhouetteDistanceMap =
+        texturePath != null &&
+            brush.imageInkMode == BrushImageInkMode.silhouette
+        ? getCachedSilhouetteDistance(texturePath)
+        : null;
     final extensionPlan = buildBrushStampPlan(
       brush: brush,
       center: ui.Offset(stampX, stampY),
@@ -720,6 +728,10 @@ class DrawingEngine {
           colorOverride: ui.Color(brush.outlineColor),
           coverageNamespace: 'outline',
           behindExisting: !brush.outlineKeepOverlap,
+          silhouetteDistanceMap: !isEraser && extensionPlan.fillRadius > 0
+              ? silhouetteDistanceMap
+              : null,
+          silhouetteOutlineWidth: outlineRadius - extensionPlan.fillRadius,
           // A tip finer than a pixel covers only its own width of it.
           coverageCap: brush.pixelMode ? 1.0 : math.min(1.0, outlineRadius * 2),
         );
@@ -822,6 +834,8 @@ class DrawingEngine {
     String coverageNamespace = 'legacy',
     double coverageCap = 1.0,
     bool behindExisting = false,
+    Uint8List? silhouetteDistanceMap,
+    double silhouetteOutlineWidth = 0,
   }) {
     final paintColor = colorOverride ?? currentColor;
     final r = paintColor.r;
@@ -921,7 +935,25 @@ class DrawingEngine {
             final dist = math.sqrt(ux * ux + uy * uy);
 
             double pixelAlpha;
-            if (customTexture != null) {
+            if (silhouetteDistanceMap != null) {
+              final imageRadius = radius - silhouetteOutlineWidth;
+              final texelScale = brushTextureSize / (2 * imageRadius);
+              final texelCenter = (brushTextureSize - 1) / 2;
+              final maskX = ux * cosParticle - uy * sinParticle;
+              final maskY = ux * sinParticle + uy * cosParticle;
+              final distance =
+                  sampleSilhouetteDistance(
+                    silhouetteDistanceMap,
+                    brushTextureSize,
+                    maskX * texelScale + texelCenter,
+                    maskY * texelScale + texelCenter,
+                  ) /
+                  texelScale;
+              pixelAlpha = (silhouetteOutlineWidth + .5 - distance).clamp(
+                0.0,
+                1.0,
+              );
+            } else if (customTexture != null) {
               final imageRadius = radius + (pixelMode ? 0 : blur);
               var maskX = ux * cosParticle - uy * sinParticle;
               var maskY = ux * sinParticle + uy * cosParticle;

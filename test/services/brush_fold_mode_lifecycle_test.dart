@@ -47,7 +47,7 @@ Brush _foldBrush(HairFoldMode mode, {String? imagePath}) => Brush(
   foldCrescentDepthThreshold: .35,
   foldLengthRatio: 0.74,
   foldEndTaperRatio: 0.46,
-  foldTaperTip: false,
+  foldFlatEnds: true,
   presetColor: 0xffdb424b,
 );
 
@@ -72,7 +72,7 @@ void _expectFoldSettings(Brush actual, Brush expected) {
   );
   expect(actual.foldLengthRatio, expected.foldLengthRatio);
   expect(actual.foldEndTaperRatio, expected.foldEndTaperRatio);
-  expect(actual.foldTaperTip, expected.foldTaperTip);
+  expect(actual.foldFlatEnds, expected.foldFlatEnds);
   expect(actual.presetColor, expected.presetColor);
 }
 

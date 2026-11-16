@@ -117,64 +117,79 @@ class StampService extends ChangeNotifier {
     final definitions = {
       for (final stamp in _stampDefinitions) stamp.id: stamp,
     };
-    return [
-      for (final id in _presetOrder)
-        definitions[id]!.copyWith(imagePath: 'assets/stamps/$id.png'),
-    ];
+    return [for (final id in _presetOrder) definitions[id]!];
   }
 
-  static final _stampDefinitions = <Stamp>[
-    const Stamp(id: 'Stamp0001', name: '三角形', tags: [AssetTagKeys.shape]),
-    const Stamp(id: 'Stamp0002', name: '五角形', tags: [AssetTagKeys.shape]),
-    const Stamp(id: 'Stamp0003', name: '六角形', tags: [AssetTagKeys.shape]),
-    const Stamp(
+  static final _stampDefinitions = [
+    for (final stamp in _originalStamps)
+      stamp.copyWith(imagePath: 'assets/stamps/${stamp.id}.png'),
+    for (final (id, sourceId, name) in const [
+      ('Stamp0027', 'Stamp0025', '葉っぱ（ベタ塗り）'),
+      ('Stamp0028', 'Stamp0026', '草（ベタ塗り）'),
+    ])
+      _originalStamps
+          .firstWhere((stamp) => stamp.id == sourceId)
+          .copyWith(
+            id: id,
+            name: name,
+            imagePath: 'assets/stamps/$sourceId.png',
+            flatFill: true,
+            opacity: 100,
+          ),
+  ];
+
+  static const _originalStamps = <Stamp>[
+    Stamp(id: 'Stamp0001', name: '三角形', tags: [AssetTagKeys.shape]),
+    Stamp(id: 'Stamp0002', name: '五角形', tags: [AssetTagKeys.shape]),
+    Stamp(id: 'Stamp0003', name: '六角形', tags: [AssetTagKeys.shape]),
+    Stamp(
       id: 'Stamp0004',
       name: '星',
       tags: [AssetTagKeys.decoration, AssetTagKeys.effect],
     ),
-    const Stamp(id: 'Stamp0005', name: 'ハート', tags: [AssetTagKeys.decoration]),
-    const Stamp(
+    Stamp(id: 'Stamp0005', name: 'ハート', tags: [AssetTagKeys.decoration]),
+    Stamp(
       id: 'Stamp0006',
       name: '吹き出し',
       tags: [AssetTagKeys.symbol, AssetTagKeys.manga],
     ),
-    const Stamp(id: 'Stamp0007', name: '矢印', tags: [AssetTagKeys.symbol]),
+    Stamp(id: 'Stamp0007', name: '矢印', tags: [AssetTagKeys.symbol]),
     // ── ここから下は定番図形の追加分。既製品の素材は使わず、
     // procedural_texture.dartの_shapePathForName()が数式から生成する。
-    const Stamp(id: 'Stamp0008', name: '円', tags: [AssetTagKeys.shape]),
-    const Stamp(id: 'Stamp0009', name: '四角形', tags: [AssetTagKeys.shape]),
-    const Stamp(id: 'Stamp0010', name: '丸角四角', tags: [AssetTagKeys.shape]),
-    const Stamp(id: 'Stamp0011', name: '菱形', tags: [AssetTagKeys.shape]),
-    const Stamp(id: 'Stamp0012', name: '八角形', tags: [AssetTagKeys.shape]),
-    const Stamp(id: 'Stamp0013', name: 'ドーナツ', tags: [AssetTagKeys.shape]),
-    const Stamp(
+    Stamp(id: 'Stamp0008', name: '円', tags: [AssetTagKeys.shape]),
+    Stamp(id: 'Stamp0009', name: '四角形', tags: [AssetTagKeys.shape]),
+    Stamp(id: 'Stamp0010', name: '丸角四角', tags: [AssetTagKeys.shape]),
+    Stamp(id: 'Stamp0011', name: '菱形', tags: [AssetTagKeys.shape]),
+    Stamp(id: 'Stamp0012', name: '八角形', tags: [AssetTagKeys.shape]),
+    Stamp(id: 'Stamp0013', name: 'ドーナツ', tags: [AssetTagKeys.shape]),
+    Stamp(
       id: 'Stamp0015',
       name: '四芒星',
       tags: [AssetTagKeys.decoration, AssetTagKeys.effect],
     ),
-    const Stamp(
+    Stamp(
       id: 'Stamp0018',
       name: 'キラキラ',
       tags: [AssetTagKeys.decoration, AssetTagKeys.effect],
     ),
-    const Stamp(
+    Stamp(
       id: 'Stamp0020',
       name: '雲',
       tags: [AssetTagKeys.background, AssetTagKeys.decoration],
     ),
-    const Stamp(
+    Stamp(
       id: 'Stamp0021',
       name: '稲妻',
       tags: [AssetTagKeys.effect, AssetTagKeys.decoration],
     ),
-    const Stamp(id: 'Stamp0022', name: '花', tags: [AssetTagKeys.decoration]),
-    const Stamp(id: 'Stamp0023', name: 'チェックマーク', tags: [AssetTagKeys.symbol]),
-    const Stamp(id: 'Stamp0024', name: '両矢印', tags: [AssetTagKeys.symbol]),
+    Stamp(id: 'Stamp0022', name: '花', tags: [AssetTagKeys.decoration]),
+    Stamp(id: 'Stamp0023', name: 'チェックマーク', tags: [AssetTagKeys.symbol]),
+    Stamp(id: 'Stamp0024', name: '両矢印', tags: [AssetTagKeys.symbol]),
     // 背景をストローク1本で埋めるための連続スタンプ。単発の葉アイコンではなく、
     // 内部テクスチャ自体が複数の葉・色を持つ小さな植生クラスター。
-    const Stamp(
+    Stamp(
       id: 'Stamp0025',
-      name: '葉っぱ（リアル調）',
+      name: '葉っぱ',
       rotation: true,
       density: 2.3,
       scatter: 0.22,
@@ -185,29 +200,14 @@ class StampService extends ChangeNotifier {
         AssetTagKeys.decoration,
       ],
     ),
-    const Stamp(
+    Stamp(
       id: 'Stamp0026',
-      name: '草（リアル調）',
+      name: '草',
       rotation: false,
       density: 2.8,
       scatter: 0.18,
       opacity: 96,
       tags: [AssetTagKeys.background, AssetTagKeys.texture],
-    ),
-    const Stamp(
-      id: 'Stamp0027',
-      name: '葉っぱ（アニメ調）',
-      rotation: true,
-      density: 1.6,
-      scatter: .14,
-      tags: [AssetTagKeys.background, AssetTagKeys.decoration],
-    ),
-    const Stamp(
-      id: 'Stamp0028',
-      name: '草（アニメ調）',
-      density: 1.6,
-      scatter: .14,
-      tags: [AssetTagKeys.background, AssetTagKeys.decoration],
     ),
   ];
 
@@ -255,23 +255,26 @@ class StampService extends ChangeNotifier {
       }
       final stock = {for (final stamp in _defaultStamps()) stamp.id: stamp};
       for (var i = 0; i < _stamps.length; i++) {
-        var saved = _stamps[i];
-        final name = stock[saved.id]?.name;
-        if (name != null &&
-            saved.name != name &&
-            (saved.id == 'Stamp0025' || saved.id == 'Stamp0026')) {
-          saved = saved.copyWith(name: name);
-          _stamps[i] = saved;
-          changed = true;
+        final saved = _stamps[i];
+        final definition = stock[saved.id];
+        if (definition != null) {
+          final current = definition.copyWith(
+            isFavorite: saved.isFavorite,
+            folderId: saved.folderId,
+            tags: saved.tags,
+          );
+          if (jsonEncode(current.toJson()) != jsonEncode(saved.toJson())) {
+            _stamps[i] = current;
+            changed = true;
+          }
+          continue;
         }
         final existing = saved.imagePath;
         final originalName = copySourceName(saved.name) ?? saved.name;
-        final bundledPath =
-            stock[saved.id]?.imagePath ??
-            stock.values
-                .where((item) => item.name == originalName)
-                .firstOrNull
-                ?.imagePath;
+        final bundledPath = stock.values
+            .where((item) => item.name == originalName)
+            .firstOrNull
+            ?.imagePath;
         final path = existing == null
             ? bundledPath ?? await _bakeLegacyImage(saved)
             : await migrateCreativeImage(existing);

@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../../models/stamp.dart';
+import '../../../services/brush_service.dart';
 import '../../../services/export_share_service.dart';
 import '../../../services/shared_asset_card_service.dart';
 import '../../../services/stamp_service.dart';
@@ -63,6 +64,9 @@ class _StampPanelState extends State<StampPanel> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final stampService = context.watch<StampService>();
+    final drawingColor = context.select<BrushService?, Color?>(
+      (brushes) => brushes?.currentColor,
+    );
     final allStamps = stampService.stamps;
     final folders = stampService.folders;
     var stamps = _showFavoritesOnly
@@ -223,7 +227,9 @@ class _StampPanelState extends State<StampPanel> {
                         return PresetStrokeRow(
                           key: ValueKey(stamp.id),
                           name: stamp.name,
-                          color: Theme.of(context).colorScheme.onSurface,
+                          color:
+                              drawingColor ??
+                              Theme.of(context).colorScheme.onSurface,
                           stamp: stamp,
                           selected: isSelected,
                           trailing: Row(

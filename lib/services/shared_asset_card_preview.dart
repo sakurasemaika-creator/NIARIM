@@ -135,7 +135,11 @@ class SharedAssetCardPreview {
           'Image stamp needs original source texture',
         );
       }
-      final texture = await generateBuiltInStampTexture(stamp, size: 48);
+      final texture = await generateBuiltInStampTexture(
+        stamp,
+        size: 48,
+        color: color,
+      );
       final pixels = StampEngine().stampAlongPath(
         canvasData: Uint8List(width * height * 4),
         width: width,

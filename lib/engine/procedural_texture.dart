@@ -6,6 +6,7 @@ import '../models/stamp.dart';
 import '../models/tone.dart';
 import '../utils/creative_image_source.dart';
 import 'filter_engine.dart';
+import 'texture_silhouette.dart';
 
 /// 画像ファイルを読み込み、size×sizeのRGBAバイト列にデコードする。
 /// 失敗した場合はnullを返す。
@@ -526,6 +527,7 @@ void _fillDotPattern(Uint8List data, int size, double density) {
 Future<Uint8List> generateBuiltInStampTexture(
   Stamp stamp, {
   int size = 128,
+  ui.Color color = const ui.Color(0xff000000),
 }) async {
   final path = stamp.imagePath;
   Uint8List? texture;
@@ -549,6 +551,9 @@ Future<Uint8List> generateBuiltInStampTexture(
     img.dispose();
     texture = byteData!.buffer.asUint8List();
   }
+  if (stamp.flatFill) {
+    texture = _flatStampTexture(texture, size, color);
+  }
   if (stamp.pixelMode) {
     texture = FilterEngine().applyPixelate(texture, size, size, dither: false);
   }
@@ -561,6 +566,31 @@ Future<Uint8List> generateBuiltInStampTexture(
     texture = adjusted;
   }
   return texture;
+}
+
+Uint8List _flatStampTexture(Uint8List source, int size, ui.Color color) {
+  final result = Uint8List(source.length);
+  for (var i = 3; i < source.length; i += 4) {
+    result[i] = silhouetteAlpha(source[i]);
+  }
+  final distance = silhouetteDistance(result, size);
+  const ink = ui.Color(0xff23302a);
+  final outlineWidth = size * .015;
+  for (var p = 0; p < distance.length; p++) {
+    final i = p * 4;
+    final fill = result[i + 3] / 255 * color.a;
+    final outline =
+        (outlineWidth + .5 - distance[p] / silhouetteDistanceUnits).clamp(
+          0.0,
+          1.0,
+        ) *
+        (1 - result[i + 3] / 255);
+    result[i] = ((fill * color.r + outline * ink.r) * 255).round();
+    result[i + 1] = ((fill * color.g + outline * ink.g) * 255).round();
+    result[i + 2] = ((fill * color.b + outline * ink.b) * 255).round();
+    result[i + 3] = ((fill + outline) * 255).round();
+  }
+  return result;
 }
 
 void _drawLeafCluster(ui.Canvas canvas, double s) {

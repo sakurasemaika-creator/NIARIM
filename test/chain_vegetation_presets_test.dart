@@ -82,8 +82,8 @@ void main() {
       await service.init();
       final leaf = service.stamps.firstWhere((s) => s.id == 'Stamp0025');
       final grass = service.stamps.firstWhere((s) => s.id == 'Stamp0026');
-      expect(leaf.name, '葉っぱ（リアル調）');
-      expect(grass.name, '草（リアル調）');
+      expect(leaf.name, '葉っぱ');
+      expect(grass.name, '草');
       expect(leaf.density, greaterThan(2));
       expect(grass.density, greaterThan(2));
       expect(leaf.scatter, greaterThan(0));
@@ -145,6 +145,48 @@ void main() {
       await migratedStamps.init();
       expect(migratedStamps.stamps.any((s) => s.id == 'Stamp0025'), isTrue);
       expect(migratedStamps.stamps.any((s) => s.id == 'Stamp0026'), isTrue);
+    },
+  );
+
+  test(
+    'flat vegetation reuses the original art and uses the current color',
+    () async {
+      final service = StampService();
+      addTearDown(service.dispose);
+      await service.init();
+      for (final (id, sourceId) in [
+        ('Stamp0027', 'Stamp0025'),
+        ('Stamp0028', 'Stamp0026'),
+      ]) {
+        final source = service.stamps.singleWhere(
+          (stamp) => stamp.id == sourceId,
+        );
+        final flat = service.stamps.singleWhere((stamp) => stamp.id == id);
+        expect(flat.name, '${source.name}（ベタ塗り）');
+        expect(flat.imagePath, source.imagePath);
+        expect(flat.density, source.density);
+        expect(flat.scatter, source.scatter);
+        expect(flat.rotation, source.rotation);
+        expect(flat.flatFill, isTrue);
+        final red = await generateBuiltInStampTexture(
+          flat,
+          color: const ui.Color(0xffe9396a),
+        );
+        final blue = await generateBuiltInStampTexture(
+          flat,
+          color: const ui.Color(0xff205bb8),
+        );
+        var fills = 0, outlines = 0;
+        for (var i = 0; i < red.length; i += 4) {
+          expect(red[i + 3], blue[i + 3]);
+          if (red[i + 3] == 255 && red[i] == 0xe9 && blue[i] == 0x20) fills++;
+          if (red[i + 3] == 255 && red[i] == 0x23 && blue[i] == 0x23) {
+            outlines++;
+          }
+        }
+        expect(fills, greaterThan(900));
+        expect(outlines, greaterThan(25));
+      }
     },
   );
 }

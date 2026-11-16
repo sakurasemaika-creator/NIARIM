@@ -2259,7 +2259,7 @@ class _CanvasAreaState extends State<CanvasArea> {
     _finishTileUndo();
   }
 
-  /// スタンプ描画を確定する（色情報はスタンプ自身が保持・
+  /// スタンプ描画を確定する（ベタ塗りは描画色を使用・
   /// ブラシサイズ連動・回転／密度／散布対応）。
   Future<void> _commitStampStroke() async {
     // Capture the input before pointer-up clears the live stroke preview.
@@ -2270,6 +2270,7 @@ class _CanvasAreaState extends State<CanvasArea> {
     if (stamp == null) return;
     final bs = context.read<BrushService>();
     final stampSize = bs.currentBrush?.size ?? 40;
+    final color = bs.currentColor;
     _beginTileUndo();
     final key = _tileKeyFor(_layerId);
     final w = _tileManager.canvasWidth;
@@ -2280,7 +2281,11 @@ class _CanvasAreaState extends State<CanvasArea> {
     if (byteData == null || !mounted) return;
     final canvasData = byteData.buffer.asUint8List();
     const texSize = 128;
-    final texture = await generateBuiltInStampTexture(stamp, size: texSize);
+    final texture = await generateBuiltInStampTexture(
+      stamp,
+      size: texSize,
+      color: color,
+    );
     if (!mounted) return;
 
     // 低スペック端末でのUIスレッドブロックを避けるため、フルキャンバスの

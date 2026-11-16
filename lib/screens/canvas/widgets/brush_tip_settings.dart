@@ -86,6 +86,7 @@ class BrushTipSettings extends StatelessWidget {
       BrushImageInkMode.dark: l.brushImageInkDark,
       BrushImageInkMode.light: l.brushImageInkLight,
       BrushImageInkMode.alpha: l.brushImageInkAlpha,
+      BrushImageInkMode.silhouette: l.toolbarBucketFlatFill,
     };
     final paths = brush.resolvedCustomImagePaths;
     final usesStandardShape = paths.every(_isStandardShape);

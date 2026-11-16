@@ -1,6 +1,6 @@
 import 'asset_tags.dart';
 
-/// スタンプモデル。色情報をスタンプ画像自体が保持する。
+/// ベタ塗りを有効にしたスタンプは、画像の形を描画色で塗る。
 class Stamp {
   final String id;
   final String name;
@@ -19,6 +19,7 @@ class Stamp {
   // テクスチャをドット絵風（モザイク低解像度化＋色数削減）に加工してから
   // 描画する（procedural_texture.dartのgenerateBuiltInStampTexture参照）。
   final bool pixelMode;
+  final bool flatFill;
   // 分類用の自由入力タグ。お気に入り・フォルダとは別軸で、1つの素材へ
   // 複数の観点（用途・雰囲気・案件名など）を付けて絞り込めるようにする。
   // 一覧画面の検索欄は「キーワード検索」と「タグ検索」を切り替えられる。
@@ -35,6 +36,7 @@ class Stamp {
     this.scatter = 0.0,
     this.opacity = 100,
     this.pixelMode = false,
+    this.flatFill = false,
     this.tags = const [],
   });
 
@@ -49,6 +51,7 @@ class Stamp {
     double? scatter,
     int? opacity,
     bool? pixelMode,
+    bool? flatFill,
     List<String>? tags,
   }) {
     return Stamp(
@@ -62,6 +65,7 @@ class Stamp {
       scatter: scatter ?? this.scatter,
       opacity: opacity ?? this.opacity,
       pixelMode: pixelMode ?? this.pixelMode,
+      flatFill: flatFill ?? this.flatFill,
       tags: tags ?? this.tags,
     );
   }
@@ -77,6 +81,7 @@ class Stamp {
     'scatter': scatter,
     'opacity': opacity,
     'pixelMode': pixelMode,
+    if (flatFill) 'flatFill': true,
     'tags': tags,
   };
 
@@ -97,6 +102,7 @@ class Stamp {
     scatter: _readScatter(j['scatter']),
     opacity: (j['opacity'] as num?)?.round().clamp(1, 100) ?? 100,
     pixelMode: j['pixelMode'] as bool? ?? false,
+    flatFill: j['flatFill'] as bool? ?? false,
     tags: parseTags(j['tags']),
   );
 }

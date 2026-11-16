@@ -46,10 +46,7 @@ String quickToolDisplayLabel(
     case 'bucket':
       return l10n.quickToolBucket;
     case 'pen':
-      final savedId = entry.brushId;
-      final id = savedId == null
-          ? null
-          : BrushService.canonicalBrushId(savedId);
+      final id = entry.brushId;
       final brush = brushes.where((b) => b.id == id).firstOrNull;
       if (brush == null) return entry.label;
       final size = entry.sizeOverride;

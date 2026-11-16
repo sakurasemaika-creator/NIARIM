@@ -152,7 +152,9 @@ class HairFoldRaster {
   /// stamps. A crescent only takes over once its curve is deep enough.
   bool get replacesStroke =>
       _active &&
-      (_cachedBrush?.foldMode != HairFoldMode.crescent || _crescentActive);
+      (_cachedBrush?.foldMode != HairFoldMode.crescent ||
+          _crescentActive ||
+          _cachedBrush?.foldFlatEnds == true);
 
   _MaskTile _blankMask() =>
       _spareMasks.isEmpty ? _MaskTile() : (_spareMasks.removeLast()..reset());
@@ -195,12 +197,13 @@ class HairFoldRaster {
       brush.foldTriggerAngle.clamp(30.0, 170.0) * math.pi / 180,
       anyCurl: brush.foldMode == HairFoldMode.crescent,
     );
-    final shouldTaperTip = taperEnd && brush.foldTaperTip;
+    final flatEnds = brush.foldFlatEnds;
+    final shouldTaperTip = taperEnd && !flatEnds;
     final plainTail =
         shouldTaperTip &&
         brush.foldMode != HairFoldMode.crescent &&
         bends.isEmpty;
-    if (bends.isEmpty && !plainTail && !_active) return;
+    if (bends.isEmpty && !plainTail && !flatEnds && !_active) return;
     if (plainTail) {
       // Even a straight wave/curl stroke gets a pointed tip. Insert only
       // collinear samples so sparse input does not taper the whole segment.
@@ -278,6 +281,7 @@ class HairFoldRaster {
     if (indices.length < 3 &&
         brush.foldMode != HairFoldMode.crescent &&
         !taperEnd &&
+        !flatEnds &&
         !_active) {
       return;
     }
@@ -345,7 +349,8 @@ class HairFoldRaster {
       spacing: brush.lateralRepeatSpacing.clamp(0.0, 4.0).toDouble(),
     );
     // Lateral repeats offset every section, so they recomposite in full.
-    final incremental = repeats.length == 1 && _active;
+    final incremental =
+        repeats.length == 1 && _active && !(flatEnds && taperEnd);
     // A full composite starts the kept surfaces afresh, so the following
     // incremental moves see every tile (fold lines query its coverage).
     if (!incremental) _surfaces.clear();
@@ -553,8 +558,8 @@ class HairFoldRaster {
             }
             deepEnough = depth >= width * threshold;
           }
-          if (!deepEnough) return;
-          _crescentActive = true;
+          if (!deepEnough && !flatEnds) return;
+          _crescentActive = deepEnough;
         }
         final transitionTurn = math.max(
           .15,
@@ -562,7 +567,7 @@ class HairFoldRaster {
         );
         for (var index = 0; index < points.length; index++) {
           final t = (turns[index] / transitionTurn).clamp(0.0, 1.0);
-          crescentBlend[index] = t * t * (3 - 2 * t);
+          crescentBlend[index] = _crescentActive ? t * t * (3 - 2 * t) : 0;
         }
       }
       runs.sort((a, b) {
@@ -729,7 +734,7 @@ class HairFoldRaster {
                   endpointBlend *= transition(brush.fadeOut, fromEnd);
                 }
               }
-              if (taperEnd && !brush.foldTaperTip) {
+              if (taperEnd && flatEnds) {
                 final remaining = lengths.last - lengths[index];
                 final t = (remaining / (brush.size * 2)).clamp(0.0, 1.0);
                 endpointBlend *= t * t * (3 - 2 * t);
@@ -1038,7 +1043,16 @@ class HairFoldRaster {
           for (final (run, mask, _, _) in built) {
             final m = mask[key];
             if (m != null) {
-              _composite(surface, key, m, run, points, brush, hidden);
+              _composite(
+                surface,
+                key,
+                m,
+                run,
+                points,
+                brush,
+                hidden,
+                cutEnd: flatEnds && taperEnd,
+              );
             }
           }
         }
@@ -1637,8 +1651,9 @@ class HairFoldRaster {
     _RibbonRun run,
     List<HairRibbonPoint> points,
     Brush brush,
-    Map<int, double> hidden,
-  ) {
+    Map<int, double> hidden, {
+    required bool cutEnd,
+  }) {
     final originX = (key % tiles.tilesX) * _size.toDouble();
     final originY = (key ~/ tiles.tilesX) * _size.toDouble();
     final start = points[run.start].position, end = points[run.end].position;
@@ -1657,6 +1672,17 @@ class HairFoldRaster {
         .toDouble();
     final crescent = brush.foldMode == HairFoldMode.crescent;
     final afterStart = run.start > 0, beforeEnd = run.end < points.length - 1;
+    final cutStart = brush.foldFlatEnds && !afterStart;
+    final cutStop = cutEnd && !beforeEnd;
+    final startAxis = cutStart ? _unit(startTangent) : Offset.zero;
+    final endAxis = cutStop ? _unit(endTangent) : Offset.zero;
+    final startBand = points[run.start].outlineOr(brush.outlineWidth);
+    final endBand = points[run.end].outlineOr(brush.outlineWidth);
+    final startCapRadius =
+        points[run.start].outerRadius(brush.outlineWidth) + 1;
+    final endCapRadius = points[run.end].outerRadius(brush.outlineWidth) + 1;
+    final startCapReach = startCapRadius * startCapRadius;
+    final endCapReach = endCapRadius * endCapRadius;
     final outer = m.outer, fills = m.fill, opacities = m.opacity;
     final shape = surface.shape, covers = surface.cover;
     final surfaceOuter = surface.outer, surfaceFill = surface.fill;
@@ -1666,9 +1692,26 @@ class HairFoldRaster {
       final atY = originY + (row + .5);
       final last = row * _size + m.right[row];
       for (var p = row * _size + m.left[row]; p <= last; p++) {
-        final cover = outer[p];
+        var cover = outer[p];
         if (cover <= 0) continue;
-        final fill = fills[p];
+        var fill = fills[p];
+        final atX = originX + (p % _size + .5);
+        final fromStartX = atX - startX, fromStartY = atY - startY;
+        final fromEndX = atX - endX, fromEndY = atY - endY;
+        if (cutStart &&
+            fromStartX * fromStartX + fromStartY * fromStartY < startCapReach) {
+          final distance =
+              fromStartX * startAxis.dx + fromStartY * startAxis.dy;
+          cover = math.min(cover, (distance + .5).clamp(0.0, 1.0));
+          fill = math.min(fill, (distance + .5 - startBand).clamp(0.0, 1.0));
+        }
+        if (cutStop &&
+            fromEndX * fromEndX + fromEndY * fromEndY < endCapReach) {
+          final distance = -fromEndX * endAxis.dx - fromEndY * endAxis.dy;
+          cover = math.min(cover, (distance + .5).clamp(0.0, 1.0));
+          fill = math.min(fill, (distance + .5 - endBand).clamp(0.0, 1.0));
+        }
+        if (cover <= 0) continue;
         final opacity = opacities[p];
         final ink = cover * opacity;
         if (ink <= 0) continue;
@@ -1685,9 +1728,6 @@ class HairFoldRaster {
           edge = 1.0;
         }
         if (edge > 0 && !crescent) {
-          final atX = originX + (p % _size + .5);
-          final fromStartX = atX - startX, fromStartY = atY - startY;
-          final fromEndX = atX - endX, fromEndY = atY - endY;
           if ((afterStart && fromStartX * startTX + fromStartY * startTY < 0) ||
               (beforeEnd && fromEndX * endTX + fromEndY * endTY > 0)) {
             edge = 0;
