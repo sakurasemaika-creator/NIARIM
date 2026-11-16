@@ -121,6 +121,9 @@ class _StrokeSamplePreviewState extends State<StrokeSamplePreview> {
       int scaledBlur(int original) => (original * scale).round().clamp(0, 100);
       final previewBrush = brush.copyWith(
         size: math.max(0.5, brush.size * scale),
+        // Keep the gap-to-tip ratio when compressing large tips into the list.
+        // Ratio-based tips already scale their spacing with size in the engine.
+        spacing: math.max(1, (brush.spacing * scale).round()),
         pressureOff: brush.pressureOff.copyWith(
           blur: offBlur.copyWith(value: scaledBlur(offBlur.value)),
         ),

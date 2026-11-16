@@ -258,11 +258,10 @@ class _DownloadedFontsTabState extends State<_DownloadedFontsTab>
                               ),
                             ),
                           ),
-                          // 名前が語の途中で折れる幅では、4つの操作を名前の
-                          // 下（行の終わりの側）へ回す。行の右に並べたままだと、
-                          // スマホの幅では名前の欄が0〜30pxしか残らず、
-                          // 「Sampl / e / Font」と語の途中・1字ずつで折れた。
+                          // 狭い一覧では、すべてのカードで名前と操作を
+                          // 上下に揃える。短い名前にも同じ幅を確保する。
                           title: ActionBesideOrBelow(
+                            minTextWidth: 200,
                             text: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               mainAxisSize: MainAxisSize.min,
@@ -286,8 +285,8 @@ class _DownloadedFontsTabState extends State<_DownloadedFontsTab>
                                 ),
                               ],
                             ),
-                            action: Row(
-                              mainAxisSize: MainAxisSize.min,
+                            action: Wrap(
+                              alignment: WrapAlignment.end,
                               children: [
                                 // ピクセルモード：ON時は
                                 // このフォントで追加するテキストのアンチエイリアスを

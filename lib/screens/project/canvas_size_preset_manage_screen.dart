@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import '../../l10n/app_localizations.dart';
 import '../../models/canvas_size_preset.dart';
 import '../../services/settings_service.dart';
+import '../../widgets/action_beside_or_below.dart';
 import '../../widgets/confirm_delete.dart';
 import '../../config/font_fallback.dart';
 import '../../utils/duplicate_name.dart';
@@ -109,65 +110,79 @@ class _PresetTile extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 8),
       child: ListTile(
         leading: const Icon(Icons.aspect_ratio),
-        title: Text(
-          preset.name,
-          style: const TextStyle(
-            fontFamily: 'Kuramubon',
-            fontFamilyFallback: kHeadingFontFallback,
+        title: ActionBesideOrBelow(
+          minTextWidth: 180,
+          text: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                preset.name,
+                style: const TextStyle(
+                  fontFamily: 'Kuramubon',
+                  fontFamilyFallback: kHeadingFontFallback,
+                ),
+              ),
+              Text(
+                '${preset.width}×${preset.height}',
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+            ],
           ),
-        ),
-        subtitle: Text('${preset.width}×${preset.height}'),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            PopupMenuButton<String>(
-              onSelected: (v) {
-                switch (v) {
-                  case 'edit':
-                    _showEditDialog(context, settings, preset);
-                  case 'rename':
-                    _showRenameDialog(context, settings, preset);
-                  case 'duplicate':
-                    // 名前は作品・フォルダの複製と同じ「(コピー)」「(コピー 2)」…
-                    settings.duplicateCustomSizePreset(
-                      preset.id,
-                      numberedCopyName(l10n, preset.name, {
-                        for (final p in settings.customSizePresets) p.name,
-                      }),
-                    );
-                  case 'delete':
-                    _confirmDelete(context, settings, preset);
-                }
-              },
-              itemBuilder: (_) => [
-                PopupMenuItem(
-                  value: 'edit',
-                  child: Text(l10n.canvasSizePresetEditDialogTitle),
-                ),
-                PopupMenuItem(value: 'rename', child: Text(l10n.commonRename)),
-                PopupMenuItem(
-                  value: 'duplicate',
-                  child: Text(l10n.commonDuplicate),
-                ),
-                PopupMenuItem(
-                  value: 'delete',
-                  child: Text(
-                    l10n.commonDelete,
-                    style: TextStyle(
-                      color: ThemeService.activeColorScheme.error,
+          action: Wrap(
+            alignment: WrapAlignment.end,
+            children: [
+              PopupMenuButton<String>(
+                onSelected: (v) {
+                  switch (v) {
+                    case 'edit':
+                      _showEditDialog(context, settings, preset);
+                    case 'rename':
+                      _showRenameDialog(context, settings, preset);
+                    case 'duplicate':
+                      // 名前は作品・フォルダの複製と同じ「(コピー)」「(コピー 2)」…
+                      settings.duplicateCustomSizePreset(
+                        preset.id,
+                        numberedCopyName(l10n, preset.name, {
+                          for (final p in settings.customSizePresets) p.name,
+                        }),
+                      );
+                    case 'delete':
+                      _confirmDelete(context, settings, preset);
+                  }
+                },
+                itemBuilder: (_) => [
+                  PopupMenuItem(
+                    value: 'edit',
+                    child: Text(l10n.canvasSizePresetEditDialogTitle),
+                  ),
+                  PopupMenuItem(
+                    value: 'rename',
+                    child: Text(l10n.commonRename),
+                  ),
+                  PopupMenuItem(
+                    value: 'duplicate',
+                    child: Text(l10n.commonDuplicate),
+                  ),
+                  PopupMenuItem(
+                    value: 'delete',
+                    child: Text(
+                      l10n.commonDelete,
+                      style: TextStyle(
+                        color: ThemeService.activeColorScheme.error,
+                      ),
                     ),
                   ),
-                ),
-              ],
-            ),
-            ReorderableDragStartListener(
-              index: dragIndex,
-              child: const Padding(
-                padding: EdgeInsets.only(left: 4),
-                child: Icon(Icons.drag_handle),
+                ],
               ),
-            ),
-          ],
+              ReorderableDragStartListener(
+                index: dragIndex,
+                child: const Padding(
+                  padding: EdgeInsets.only(left: 4),
+                  child: Icon(Icons.drag_handle),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

@@ -500,6 +500,24 @@ class DrawingEngine {
     if (factor > 0) {
       return math.max(1.0, brush.size * factor / safeDensity);
     }
+    final pressureSize = brush.pressureOn.size;
+    final minPressureScale = pressureEnabled && pressureSize.enabled
+        ? math.min(pressureSize.weak, pressureSize.strong) / 100.0
+        : 1.0;
+    // A one-pixel gap between dab centers is still visible on the edge of a
+    // fine or tapered stroke. Sample those continuous strokes at half-pixels.
+    // Wider explicit gaps and shaped/texture tips keep their stamp rhythm.
+    if (brush.spacing == 1 &&
+        safeDensity >= 1 &&
+        !brush.pixelMode &&
+        brush.tipShape == BrushTipShape.round &&
+        brush.scatter == 0 &&
+        brush.customImagePaths.isEmpty &&
+        (brush.customImagePath?.isEmpty ?? true) &&
+        (brush.size * minPressureScale <= 2 ||
+            brush.fadeMode != FadeMode.off)) {
+      return 0.5;
+    }
     return math.max(1.0, brush.spacing.toDouble() / safeDensity);
   }
 

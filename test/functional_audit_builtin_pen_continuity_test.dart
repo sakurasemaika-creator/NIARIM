@@ -60,30 +60,58 @@ void main() {
     }
   });
 
-  test('旧版に保存済みの標準Pen/Gペンの点線spacingを起動時に1へ移行する', () async {
+  test('混色ブラシは弱い筆圧でも濃さが周期的に落ち込まない', () {
+    final brush = BrushService.builtInBrushes.firstWhere(
+      (brush) => brush.id == 'Brush0004',
+    );
+    final tm = TileManager(canvasWidth: 120, canvasHeight: 80);
+    addTearDown(tm.dispose);
+    final engine = DrawingEngine(tileManager: tm)..currentBrush = brush;
+    engine.beginStroke(
+      const StrokePoint(x: 12.5, y: 40.5, pressure: 0.4),
+      'paint',
+    );
+    engine.continueStroke(
+      const StrokePoint(x: 107.5, y: 40.5, pressure: 0.4),
+      'paint',
+    );
+    engine.endStroke();
+    final tile = tm.getTile('paint', 0, 0)!;
+    final alphas = [
+      for (var x = 25; x <= 95; x++)
+        tile[(40 * TileManager.tileSize + x) * 4 + 3],
+    ]..sort();
+    expect(alphas.first, greaterThan(0));
+    expect(alphas.last - alphas.first, lessThanOrEqualTo(3));
+  });
+
+  test('旧版に保存済みの標準ペンと混色ブラシの間隔を起動時に1へ移行する', () async {
     final seed = BrushService();
     await seed.init();
-    final old = seed.brushes
-        .map((b) {
-          if (b.id == 'Brush0001') return b.copyWith(spacing: 10);
-          if (b.id == 'Brush0002') return b.copyWith(spacing: 5);
-          return b;
-        })
+    const oldSpacings = {'Brush0001': 10, 'Brush0002': 5, 'Brush0004': 8};
+    final custom = seed.brushes
+        .firstWhere((b) => b.id == 'Brush0004')
+        .copyWith(id: 'custom-mixer', spacing: 8);
+    final old = [...seed.brushes, custom]
+        .map((b) => b.copyWith(spacing: oldSpacings[b.id]))
         .map((b) => jsonEncode(b.toJson()))
         .toList();
     SharedPreferences.setMockInitialValues({'brushes': old});
 
     final migrated = BrushService();
     await migrated.init();
-    expect(migrated.brushes.firstWhere((b) => b.id == 'Brush0001').spacing, 1);
-    expect(migrated.brushes.firstWhere((b) => b.id == 'Brush0002').spacing, 1);
 
     final prefs = await SharedPreferences.getInstance();
     final persisted = prefs
         .getStringList('brushes')!
         .map((s) => jsonDecode(s) as Map<String, dynamic>)
         .toList();
-    expect(persisted.firstWhere((j) => j['id'] == 'Brush0001')['spacing'], 1);
-    expect(persisted.firstWhere((j) => j['id'] == 'Brush0002')['spacing'], 1);
+    for (final (id, spacing) in [
+      for (final id in oldSpacings.keys) (id, 1),
+      (custom.id, custom.spacing),
+    ]) {
+      expect(migrated.brushes.firstWhere((b) => b.id == id).spacing, spacing);
+      expect(persisted.firstWhere((j) => j['id'] == id)['spacing'], spacing);
+    }
   });
 }

@@ -11,6 +11,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/l10n/app_localizations.dart';
+import 'package:niarim/models/autofill_preset.dart';
 import 'package:niarim/screens/autofill/autofill_preset_screen.dart';
 import 'package:niarim/services/autofill_preset_service.dart';
 import 'package:niarim/services/theme_service.dart';
@@ -23,6 +24,66 @@ import 'helpers/load_app_fonts.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+
+  testWidgets('a narrow part row gives the name room above its actions', (
+    tester,
+  ) async {
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(320, 740);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetPhysicalSize);
+    SharedPreferences.setMockInitialValues({
+      'first_launch': false,
+      firstUseTooltipsSeenKey: kAllFirstUseTooltipKeys,
+    });
+    const preset = AutofillPreset(
+      id: 'part-layout',
+      name: 'Layout preset',
+      parts: [
+        AutofillPart(
+          id: 'long-part',
+          name: 'Long animation part name',
+          color: 0xFF52678F,
+        ),
+      ],
+    );
+    final providers = (await tester.runAsync(buildAppProviders))!;
+    await tester.pumpWidget(
+      MultiProvider(
+        providers: providers,
+        child: MaterialApp(
+          locale: const Locale('en'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: const AutofillPresetScreen(),
+        ),
+      ),
+    );
+    final service = tester
+        .element(find.byType(AutofillPresetScreen))
+        .read<AutofillPresetService>();
+    await service.addPreset(preset);
+    await tester.pumpAndSettle();
+
+    // Filter the preset list so the fixture is visible before opening it.
+    final l10n = lookupAppLocalizations(const Locale('en'));
+    await tester.tap(find.byTooltip(l10n.commonSearch));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField), preset.name);
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(ListTile, preset.name));
+    await tester.pumpAndSettle();
+
+    final name = find.text(preset.parts.single.name);
+    final edit = find.byTooltip(l10n.commonEdit);
+    final delete = find.byTooltip(l10n.commonDelete);
+    expect(tester.getRect(edit).top, greaterThan(tester.getRect(name).bottom));
+    expect(delete.hitTestable(), findsOneWidget);
+    await tester.tap(edit);
+    await tester.pumpAndSettle();
+    expect(find.byType(AlertDialog), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
 
   testWidgets('7言語×320〜412px×文字1.0/2.0で、選択中の操作の行がはみ出さず、'
       '6つの操作がどれも画面の中で押せる', (tester) async {

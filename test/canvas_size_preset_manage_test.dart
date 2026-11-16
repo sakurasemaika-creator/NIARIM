@@ -104,7 +104,11 @@ void main() {
     tester,
   ) async {
     final settings = await open(tester, presets: [wide]);
+    tester.view.physicalSize = const Size(320, 740);
     await openManager(tester);
+    final name = tester.getRect(find.text('横長'));
+    final menuButton = tester.getRect(find.byIcon(Icons.more_vert).first);
+    expect(menuButton.top, greaterThan(name.bottom));
     await menu(tester, '名前変更');
     final field = find.descendant(
       of: find.byType(AlertDialog),

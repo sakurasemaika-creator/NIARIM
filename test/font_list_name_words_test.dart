@@ -133,6 +133,10 @@ void main() {
                 continue;
               }
               final box = tester.getRect(button);
+              final nameBox = tester.getRect(find.text(name));
+              if (box.top < nameBox.bottom - 0.5) {
+                problems.add('$at $name: 「$action」 overlaps the name row');
+              }
               final card = tester.getRect(row);
               if (box.left < card.left - 0.5 ||
                   box.right > card.right + 0.5 ||

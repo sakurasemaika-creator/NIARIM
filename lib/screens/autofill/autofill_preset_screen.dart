@@ -20,6 +20,7 @@ import '../../services/autofill_preset_service.dart';
 import '../../services/export_share_service.dart';
 import '../../services/project_service.dart';
 import '../../services/tone_service.dart';
+import '../../widgets/action_beside_or_below.dart';
 import '../../widgets/confirm_delete.dart';
 import '../../widgets/ad_banner_mock_widget.dart';
 import '../../widgets/editable_slider_value.dart';
@@ -1261,10 +1262,12 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
         // ReorderableListViewを使う（フィルタ中はインデックスが元リストとずれるため）
         : _partSearchQuery.isNotEmpty
         ? ListView.builder(
+            padding: const EdgeInsets.only(bottom: 80),
             itemCount: _filteredParts.length,
             itemBuilder: (context, index) => _partTile(_filteredParts[index]),
           )
         : ReorderableListView.builder(
+            padding: const EdgeInsets.only(bottom: 80),
             // ドラッグハンドルを行末に明示アイコンとして置くため、
             // 既定のドラッグハンドル（行全体の長押しで開始・ハンドル
             // アイコンなし）は無効化する。他の並べ替え可能な一覧
@@ -1345,57 +1348,64 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
           ],
         ),
       ),
-      title: Text(part.name),
-      // 設定完了チェックアイコン（保存チェック用）
-      subtitle: part.isConfigured
-          ? null
-          : Text(
-              l10n.autofillPartToneUnselected,
-              style: TextStyle(
-                fontSize: 10,
+      title: ActionBesideOrBelow(
+        minTextWidth: 180,
+        text: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(part.name),
+            if (!part.isConfigured)
+              Text(
+                l10n.autofillPartToneUnselected,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  fontSize: 10,
+                  color: ThemeService.activeColorScheme.error,
+                ),
+              ),
+          ],
+        ),
+        action: Wrap(
+          alignment: WrapAlignment.end,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: [
+            Icon(
+              part.isConfigured ? Icons.check_circle : Icons.error_outline,
+              size: 16,
+              color: part.isConfigured
+                  ? ThemeService.activeColorScheme.secondary
+                  : ThemeService.activeColorScheme.error,
+            ),
+            // パーツ単位のお気に入りは不要（プリセット一覧側の
+            // お気に入り機能に一本化したため削除）。
+            IconButton(
+              icon: Icon(Icons.edit, size: 18),
+              tooltip: l10n.commonEdit,
+              onPressed: () => _showEditPartDialog(part),
+            ),
+            IconButton(
+              icon: Icon(
+                Icons.delete,
+                size: 18,
                 color: ThemeService.activeColorScheme.error,
               ),
+              tooltip: l10n.commonDelete,
+              onPressed: () async {
+                if (!await confirmDelete(context, itemName: part.name)) return;
+                final parts = List<AutofillPart>.from(_preset.parts)
+                  ..removeWhere((p) => p.id == part.id);
+                _save(_preset.copyWith(parts: parts), changedPartId: part.id);
+              },
             ),
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            part.isConfigured ? Icons.check_circle : Icons.error_outline,
-            size: 16,
-            color: part.isConfigured
-                ? ThemeService.activeColorScheme.secondary
-                : ThemeService.activeColorScheme.error,
-          ),
-          // パーツ単位のお気に入りは不要（プリセット一覧側の
-          // お気に入り機能に一本化したため削除）。
-          IconButton(
-            icon: Icon(Icons.edit, size: 18),
-            tooltip: l10n.commonEdit,
-            onPressed: () => _showEditPartDialog(part),
-          ),
-          IconButton(
-            icon: Icon(
-              Icons.delete,
-              size: 18,
-              color: ThemeService.activeColorScheme.error,
-            ),
-            tooltip: l10n.commonDelete,
-            onPressed: () async {
-              if (!await confirmDelete(context, itemName: part.name)) return;
-              final parts = List<AutofillPart>.from(_preset.parts)
-                ..removeWhere((p) => p.id == part.id);
-              _save(_preset.copyWith(parts: parts), changedPartId: part.id);
-            },
-          ),
-          if (dragIndex != null)
-            ReorderableDragStartListener(
-              index: dragIndex,
-              child: const Padding(
-                padding: EdgeInsets.only(left: 4),
-                child: Icon(Icons.drag_handle, size: 18),
+            if (dragIndex != null)
+              ReorderableDragStartListener(
+                index: dragIndex,
+                child: const Padding(
+                  padding: EdgeInsets.only(left: 4),
+                  child: Icon(Icons.drag_handle, size: 18),
+                ),
               ),
-            ),
-        ],
+          ],
+        ),
       ),
     );
   }

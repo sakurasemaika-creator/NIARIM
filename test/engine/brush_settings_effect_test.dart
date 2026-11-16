@@ -28,7 +28,7 @@ void main() {
     await service.init();
     base = service.brushes
         .firstWhere((b) => b.id == 'Brush0001')
-        .copyWith(id: 'base', size: 12, opacity: 100, spacing: 10);
+        .copyWith(id: 'base', size: 12, opacity: 100);
   });
 
   ({
@@ -106,6 +106,17 @@ void main() {
     final reference = draw(base);
     expect(reference.inked, greaterThan(1000));
     expect(reference.invalid, 0);
+    for (var x = 26; x < 395; x++) {
+      final center = (70 + 30 * math.sin((x - 20) / 30)).round();
+      expect(
+        [
+          for (var y = center - 2; y <= center + 2; y++)
+            reference.rgba[(y * _w + x) * 4 + 3],
+        ].reduce(math.max),
+        255,
+        reason: 'The standard pen should paint a solid core at x=$x',
+      );
+    }
     await save('00_base', reference.rgba);
 
     final off = base.pressureOff;
@@ -131,9 +142,14 @@ void main() {
       'fade_weak': base.copyWith(fadeMode: FadeMode.weak),
       'fade_medium': base.copyWith(fadeMode: FadeMode.medium),
       'fade_strong': base.copyWith(fadeMode: FadeMode.strong),
-      'square_tip': base.copyWith(tipShape: BrushTipShape.hollowSquare),
+      // Shape-tip comparisons leave a gap so each square's hole is visible.
+      'square_tip': base.copyWith(
+        tipShape: BrushTipShape.hollowSquare,
+        spacing: 16,
+      ),
       'square_tip_rotation': base.copyWith(
         tipShape: BrushTipShape.hollowSquare,
+        spacing: 16,
         rotation: true,
       ),
       'density_02': base.copyWith(
