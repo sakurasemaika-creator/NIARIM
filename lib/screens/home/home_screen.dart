@@ -1446,7 +1446,12 @@ class _HomeScreenState extends State<HomeScreen>
               ? null
               : _buildHomeActions(context, l10n),
           bottomNavigationBar: useProjectFooter
-              ? _buildHomeActions(context, l10n)
+              ? HeroMode(
+                  enabled: false,
+                  child:
+                      _buildHomeActions(context, l10n, inFooter: true) ??
+                      const SizedBox.shrink(),
+                )
               : null,
         ),
       ),
@@ -1916,7 +1921,11 @@ class _HomeScreenState extends State<HomeScreen>
     icon: Icons.create_new_folder_outlined,
   );
 
-  Widget? _buildHomeActions(BuildContext context, AppLocalizations l10n) {
+  Widget? _buildHomeActions(
+    BuildContext context,
+    AppLocalizations l10n, {
+    bool inFooter = false,
+  }) {
     if (_isSelectionMode ||
         _currentTabIndex == 3 ||
         (_currentTabIndex == 2 && _sharedOutgoing)) {
@@ -1924,7 +1933,6 @@ class _HomeScreenState extends State<HomeScreen>
     }
     final compact = MediaQuery.sizeOf(context).height < 400;
 
-    // The footer and the scrollable tab body have separate hit regions.
     final projects = _currentTabIndex == 0;
     final shared = _currentTabIndex == 2;
     // 一覧が空（空の表示・読み込めなかった知らせだけ）のときは、送る先が
@@ -1948,7 +1956,7 @@ class _HomeScreenState extends State<HomeScreen>
         compact ? 8 : 16,
       ),
       child: Row(
-        key: _floatingActionsKey,
+        key: inFooter ? null : _floatingActionsKey,
         mainAxisAlignment: scrollToTop
             ? MainAxisAlignment.spaceBetween
             : MainAxisAlignment.end,
