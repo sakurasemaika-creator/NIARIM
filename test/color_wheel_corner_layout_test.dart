@@ -39,7 +39,7 @@ void main() {
     final rgbControl = find.byKey(const ValueKey('color-slider-mode-rgb'));
     expect(
       tester.getSemantics(hsvControl),
-      containsSemantics(
+      isSemantics(
         label: 'HSV',
         isButton: true,
         isSelected: true,
@@ -49,7 +49,7 @@ void main() {
     );
     expect(
       tester.getSemantics(rgbControl),
-      containsSemantics(
+      isSemantics(
         label: 'RGB',
         isButton: true,
         hasTapAction: true,
@@ -60,7 +60,7 @@ void main() {
     await tester.pump();
     expect(
       tester.getSemantics(rgbControl),
-      containsSemantics(
+      isSemantics(
         label: 'RGB',
         isButton: true,
         isSelected: true,
