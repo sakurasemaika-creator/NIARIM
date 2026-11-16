@@ -175,6 +175,8 @@ void main() {
     final brush = BrushService.builtInBrushes.firstWhere(
       (brush) => brush.id == 'Brush0009',
     );
+    expect(brush.calligraphyAngle, isNull);
+    expect(brush.resolvedCustomImagePaths, hasLength(1));
     await tester.pumpWidget(
       MaterialApp(
         home: Scaffold(

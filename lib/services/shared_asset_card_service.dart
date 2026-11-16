@@ -15,6 +15,7 @@ import '../l10n/app_localizations.dart';
 import '../models/brush.dart';
 import '../models/stamp.dart';
 import '../models/tone.dart';
+import '../utils/brush_image_source.dart';
 import 'brush_service.dart';
 import 'stamp_service.dart';
 import 'tone_service.dart';
@@ -120,11 +121,10 @@ class SharedAssetCardService {
       ];
     final a = _assetArchive(settings);
     for (var i = 0; i < paths.length; i++) {
-      final f = File(paths[i]);
-      if (!await f.exists()) {
+      final b = await readBrushImageSource(paths[i]);
+      if (b == null) {
         throw FormatException('Brush source image is missing: ${paths[i]}');
       }
-      final b = await f.readAsBytes();
       final ext = paths[i].split('.').last;
       a.addFile(
         ArchiveFile('images/${i.toString().padLeft(3, '0')}.$ext', b.length, b),

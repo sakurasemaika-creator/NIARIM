@@ -18,6 +18,7 @@ import '../services/stamp_service.dart';
 import '../services/tone_service.dart';
 import '../services/watermark_service.dart';
 import '../utils/app_error_reporter.dart';
+import '../utils/brush_image_source.dart';
 import '../utils/transfer_merge.dart';
 import 'archive_security.dart';
 import 'niatra_serializer.dart';
@@ -84,11 +85,15 @@ class NiatraAssetBundle {
           await _embedImage(
             output,
             json,
-            sourcePath: model.customImagePath,
+            sourcePath: imagePaths.firstOrNull,
             category: 'Brushes',
             index: i,
             pathKey: 'customImagePath',
+            readSource: readBrushImageSource,
           );
+          if (json.containsKey(_embeddedImageKey)) {
+            json['customImagePaths'] = <String>[];
+          }
         }
         items.add(json);
       }
@@ -485,9 +490,8 @@ class NiatraAssetBundle {
     for (var imageIndex = 0; imageIndex < sourcePaths.length; imageIndex++) {
       final sourcePath = sourcePaths[imageIndex];
       try {
-        final source = File(sourcePath);
-        if (!await source.exists()) continue;
-        final bytes = await source.readAsBytes();
+        final bytes = await readBrushImageSource(sourcePath);
+        if (bytes == null) continue;
         final ext = _safeExtension(sourcePath);
         final archivePath =
             'CreativeAssets/Brushes/$index/${imageIndex.toString().padLeft(3, '0')}.$ext';
@@ -550,12 +554,18 @@ class NiatraAssetBundle {
     required String category,
     required int index,
     required String pathKey,
+    Future<Uint8List?> Function(String path)? readSource,
   }) async {
     if (sourcePath == null || sourcePath.isEmpty) return;
     try {
-      final source = File(sourcePath);
-      if (!await source.exists()) return;
-      final bytes = await source.readAsBytes();
+      final Uint8List? bytes;
+      if (readSource != null) {
+        bytes = await readSource(sourcePath);
+      } else {
+        final source = File(sourcePath);
+        bytes = await source.exists() ? await source.readAsBytes() : null;
+      }
+      if (bytes == null) return;
       final ext = _safeExtension(sourcePath);
       final archivePath = 'CreativeAssets/$category/$index.$ext';
       archive.addFile(ArchiveFile(archivePath, bytes.length, bytes));

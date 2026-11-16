@@ -13,6 +13,7 @@ import '../engine/brush_texture_cache.dart';
 import '../models/asset_tags.dart';
 import '../models/brush.dart';
 import '../models/brush_presets_extension.dart';
+import '../utils/brush_image_source.dart';
 import '../utils/duplicate_name.dart';
 import '../utils/tolerant_preferences.dart';
 import '../utils/transfer_merge.dart';
@@ -219,17 +220,11 @@ class BrushService extends ChangeNotifier {
       strokeDecay: false,
       tags: [AssetTagKeys.paint, AssetTagKeys.mixing],
     ),
-    // マーカーペン：チゼル（斜め切り）先端の太めの半透明ペン先
-    // （重ね塗りで色が濃くなる）。calligraphyAngle: 0（ペン先の扁平な
-    // 向きを水平に固定）により、横に引くと細く・縦に引くと太くなる
-    // 実物のチゼルマーカー特有の見た目を再現する。あわせて、実物の
-    // マーカーのようにインクがだんだん掠れて薄くなっていく様子を、
-    // ストローク減衰機能（strokeDecay）で表現する。フェルトペンは
-    // 筆圧の影響をほぼ受けないため、筆圧反映はOFFにする。
+    // マーカーペン：横長の画像ペン先とストローク減衰でチゼルマーカーを再現。
     const Brush(
       id: 'Brush0005',
       name: 'マーカーペン',
-      size: 20,
+      size: 52,
       opacity: 65,
       spacing: 1,
       stabilization: false,
@@ -239,7 +234,7 @@ class BrushService extends ChangeNotifier {
         size: PressureRangeSetting(enabled: false, weak: 50, strong: 100),
         opacity: PressureRangeSetting(enabled: false, weak: 50, strong: 100),
         blur: PressureRangeSetting(enabled: false, weak: 0, strong: 0),
-        edgeJitter: PressureRangeSetting(enabled: true, weak: 50, strong: 50),
+        edgeJitter: PressureRangeSetting(enabled: false, weak: 50, strong: 50),
         mixing: PressureMixingOnSetting(
           enabled: true,
           mode: BrushMixingMode.oil,
@@ -249,7 +244,7 @@ class BrushService extends ChangeNotifier {
       ),
       pressureOff: BrushPressureOffSettings(
         blur: FixedBrushSetting(enabled: false, value: 0),
-        edgeJitter: FixedBrushSetting(enabled: true, value: 50),
+        edgeJitter: FixedBrushSetting(enabled: false, value: 50),
         mixing: PressureMixingOffSetting(
           enabled: true,
           mode: BrushMixingMode.oil,
@@ -258,15 +253,15 @@ class BrushService extends ChangeNotifier {
       ),
       fadeMode: FadeMode.off,
       strokeDecay: true,
-      calligraphyAngle: 0.0,
+      customImagePaths: ['assets/brushes/marker_tip.png'],
+      imageInkMode: BrushImageInkMode.alpha,
       tags: [AssetTagKeys.paint, AssetTagKeys.analog],
     ),
-    // カリグラフィー：扁平なペン先を水平から15度に固定し、
-    // 横方向の線を細く、縦方向の線を太く描く。
+    // カリグラフィー：水平から15度の細長い形を画像ペン先に含める。
     const Brush(
       id: 'Brush0006',
       name: 'カリグラフィー',
-      size: 14,
+      size: 36,
       opacity: 100,
       spacing: 1,
       stabilization: true,
@@ -295,7 +290,8 @@ class BrushService extends ChangeNotifier {
       ),
       fadeMode: FadeMode.off,
       strokeDecay: false,
-      calligraphyAngle: 15.0,
+      customImagePaths: ['assets/brushes/calligraphy_tip.png'],
+      imageInkMode: BrushImageInkMode.alpha,
       tags: [AssetTagKeys.lineArt, AssetTagKeys.decoration],
     ),
     // ── ここから下は、よくあるイラスト制作ソフトに入っている定番の
@@ -375,12 +371,11 @@ class BrushService extends ChangeNotifier {
       strokeDecay: false,
       tags: [AssetTagKeys.lineArt, AssetTagKeys.mainLine],
     ),
-    // 平筆：ペン先を90度に固定した扁平ブラシ。縦に引くと細く・横に引くと
-    // 太くなる（カリグラフィーの角度違い）。塗りの面を作るのに向く。
+    // 平筆：縦長の画像ペン先。画像のアルファで縁を柔らかく描く。
     const Brush(
       id: 'Brush0009',
       name: '平筆',
-      size: 26,
+      size: 68,
       opacity: 90,
       spacing: 1,
       stabilization: false,
@@ -389,7 +384,7 @@ class BrushService extends ChangeNotifier {
       pressureOn: BrushPressureOnSettings(
         size: PressureRangeSetting(enabled: false, weak: 50, strong: 100),
         opacity: PressureRangeSetting(enabled: true, weak: 40, strong: 100),
-        blur: PressureRangeSetting(enabled: true, weak: 5, strong: 5),
+        blur: PressureRangeSetting(enabled: false, weak: 0, strong: 0),
         edgeJitter: PressureRangeSetting(enabled: false, weak: 50, strong: 50),
         mixing: PressureMixingOnSetting(
           enabled: true,
@@ -399,7 +394,7 @@ class BrushService extends ChangeNotifier {
         ),
       ),
       pressureOff: BrushPressureOffSettings(
-        blur: FixedBrushSetting(enabled: true, value: 5),
+        blur: FixedBrushSetting(enabled: false, value: 0),
         edgeJitter: FixedBrushSetting(enabled: false, value: 50),
         mixing: PressureMixingOffSetting(
           enabled: true,
@@ -409,7 +404,8 @@ class BrushService extends ChangeNotifier {
       ),
       fadeMode: FadeMode.off,
       strokeDecay: false,
-      calligraphyAngle: 90.0,
+      customImagePaths: ['assets/brushes/flat_brush_tip.png'],
+      imageInkMode: BrushImageInkMode.alpha,
       tags: [AssetTagKeys.paint, AssetTagKeys.analog],
     ),
     // 水彩：水彩風混色。透明な絵の具が重なるほど深くなり、乾くと縁に
@@ -997,6 +993,20 @@ class BrushService extends ChangeNotifier {
     _currentBrush =
         _brushes.where((b) => b.id == currentId).firstOrNull ??
         _brushes.firstOrNull;
+    // The first stroke after selecting a bundled tip must already have its
+    // image, even if the brush list has never been opened.
+    await Future.wait([
+      for (final brush in _brushes)
+        if (brush.resolvedCustomImagePaths.any(
+          (path) => path.startsWith('assets/'),
+        ))
+          preloadBrushTextures(
+            brush.resolvedCustomImagePaths.where(
+              (path) => path.startsWith('assets/'),
+            ),
+            mode: brush.imageInkMode,
+          ),
+    ]);
     _preloadTextureIfNeeded(_currentBrush);
   }
 
@@ -1310,9 +1320,9 @@ class BrushService extends ChangeNotifier {
       final json = brush.toJson();
       if (!folderIds.contains(brush.folderId)) json['folderId'] = null;
       if (local != null &&
-          !_hasImageFile(brush) &&
-          _hasImageFile(local) &&
-          definition == null) {
+          definition == null &&
+          !await _hasImageFile(brush) &&
+          await _hasImageFile(local)) {
         json['customImagePath'] = local.customImagePath;
         json['customImagePaths'] = local.customImagePaths;
       }
@@ -1412,11 +1422,17 @@ class BrushService extends ChangeNotifier {
   }
 
   /// 画像を使うブラシで、その画像のファイルがこの端末にあるか。
-  static bool _hasImageFile(Brush brush) {
+  static Future<bool> _hasImageFile(Brush brush) async {
     final paths = brush.resolvedCustomImagePaths;
     if (paths.isEmpty) return false;
     try {
-      return paths.every((path) => File(path).existsSync());
+      for (final path in paths) {
+        final exists = path.startsWith('assets/')
+            ? await readBrushImageSource(path) != null
+            : await File(path).exists();
+        if (!exists) return false;
+      }
+      return true;
     } on UnsupportedError {
       return false;
     } on FileSystemException {
@@ -1801,8 +1817,8 @@ class BrushService extends ChangeNotifier {
     final imagePaths = brush.resolvedCustomImagePaths;
     for (var index = 0; index < imagePaths.length; index++) {
       final imagePath = imagePaths[index];
-      if (!File(imagePath).existsSync()) continue;
-      final bytes = await File(imagePath).readAsBytes();
+      final bytes = await readBrushImageSource(imagePath);
+      if (bytes == null) continue;
       final ext = imagePath.split('.').last;
       final name = 'images/${index.toString().padLeft(3, '0')}.$ext';
       encoder.addArchiveFile(ArchiveFile(name, bytes.length, bytes));

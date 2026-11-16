@@ -2,10 +2,14 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:ui' as ui;
 
+import 'package:flutter/foundation.dart' show listEquals;
 import 'package:flutter_test/flutter_test.dart';
+import 'package:niarim/engine/brush_texture_cache.dart';
 import 'package:niarim/engine/drawing_engine.dart';
 import 'package:niarim/engine/tile_manager.dart';
+import 'package:niarim/models/brush.dart';
 import 'package:niarim/services/brush_service.dart';
+import 'package:niarim/utils/brush_image_source.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
@@ -85,15 +89,17 @@ void main() {
     expect(alphas.last - alphas.first, lessThanOrEqualTo(3));
   });
 
-  test('カリグラフィーは縦線より細い横線を描く', () {
-    final brush = BrushService.builtInBrushes.firstWhere(
-      (brush) => brush.id == 'Brush0006',
-    );
-    int width({required double angle, required bool horizontal}) {
+  test('画像ペン先は初回から描け、ユーザーブラシとして再現できる', () async {
+    final service = BrushService();
+    addTearDown(service.dispose);
+    await service.init();
+    final temp = await Directory.systemTemp.createTemp('niarim-image-tips-');
+    addTearDown(() => temp.delete(recursive: true));
+
+    List<int> pixels(Brush brush, {required bool horizontal}) {
       final tiles = TileManager(canvasWidth: 112, canvasHeight: 112);
       try {
-        final engine = DrawingEngine(tileManager: tiles)
-          ..currentBrush = brush.copyWith(calligraphyAngle: angle);
+        final engine = DrawingEngine(tileManager: tiles)..currentBrush = brush;
         StrokePoint point(double along) => StrokePoint(
           x: horizontal ? along : 56,
           y: horizontal ? 56 : along,
@@ -104,22 +110,62 @@ void main() {
           engine.continueStroke(point(along), 'paint');
         }
         engine.endStroke();
-        final tile = tiles.getTile('paint', 0, 0)!;
-        int alpha(int x, int y) => tile[(y * TileManager.tileSize + x) * 4 + 3];
-        return [
-          for (var across = 25; across <= 88; across++)
-            horizontal ? alpha(56, across) : alpha(across, 56),
-        ].where((alpha) => alpha >= 128).length;
+        return tiles.getTile('paint', 0, 0)!.toList();
       } finally {
         tiles.dispose();
       }
     }
 
-    final angle = brush.calligraphyAngle!;
-    final horizontal = width(angle: angle, horizontal: true);
-    expect(horizontal, greaterThan(0));
-    expect(horizontal, lessThan(width(angle: 45, horizontal: true)));
-    expect(width(angle: angle, horizontal: false), greaterThan(horizontal * 2));
+    int width(List<int> tile, {required bool horizontal}) {
+      int alpha(int x, int y) => tile[(y * TileManager.tileSize + x) * 4 + 3];
+      return [
+        for (var across = 20; across <= 92; across++)
+          horizontal ? alpha(56, across) : alpha(across, 56),
+      ].where((alpha) => alpha >= 64).length;
+    }
+
+    for (final id in ['Brush0005', 'Brush0006', 'Brush0009']) {
+      service.selectBrush(id);
+      final preset = service.currentBrush!;
+      final asset = preset.resolvedCustomImagePaths.single;
+      expect(preset.calligraphyAngle, isNull);
+      expect(
+        getCachedBrushTexture(asset, mode: preset.imageInkMode),
+        isNotNull,
+      );
+
+      final originalHorizontal = pixels(preset, horizontal: true);
+      final originalVertical = pixels(preset, horizontal: false);
+      final bundle = await service.exportBrushToPath(
+        id,
+        '${temp.path}/$id.niabrush',
+      );
+      final custom = await service.importBrushFile(
+        bundle.path,
+        imagesDirectory: '${temp.path}/$id',
+      );
+      final path = custom.resolvedCustomImagePaths.single;
+      expect(await File(path).readAsBytes(), await readBrushImageSource(asset));
+      await preloadBrushTexture(path, mode: custom.imageInkMode);
+      expect(
+        listEquals(originalHorizontal, pixels(custom, horizontal: true)),
+        isTrue,
+      );
+      expect(
+        listEquals(originalVertical, pixels(custom, horizontal: false)),
+        isTrue,
+      );
+
+      final horizontal = width(originalHorizontal, horizontal: true);
+      final vertical = width(originalVertical, horizontal: false);
+      expect(horizontal, greaterThan(0));
+      expect(vertical, greaterThan(0));
+      if (id == 'Brush0009') {
+        expect(horizontal, greaterThan(vertical * 2));
+      } else {
+        expect(vertical, greaterThan(horizontal * 2));
+      }
+    }
   });
 
   test('旧版に保存済みの標準ペンと混色ブラシの間隔を起動時に1へ移行する', () async {

@@ -1,9 +1,8 @@
-import 'dart:io';
+import 'dart:typed_data';
 import 'dart:ui' as ui;
 
-import 'package:flutter/services.dart';
-
 import '../models/brush.dart';
+import '../utils/brush_image_source.dart';
 
 /// 自作ブラシ画像（[Brush.customImagePath]、「ブラシ画像からの
 /// ブラシ作成」）のデコード結果キャッシュ。
@@ -47,15 +46,8 @@ Future<void> preloadBrushTexture(
 }) async {
   if (_brushTextureCache.containsKey((path, mode))) return;
   try {
-    final Uint8List bytes;
-    if (path.startsWith('assets/')) {
-      final data = await rootBundle.load(path);
-      bytes = data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
-    } else {
-      final file = File(path);
-      if (!await file.exists()) return;
-      bytes = await file.readAsBytes();
-    }
+    final bytes = await readBrushImageSource(path);
+    if (bytes == null) return;
     final codec = await ui.instantiateImageCodec(
       bytes,
       targetWidth: brushTextureSize,

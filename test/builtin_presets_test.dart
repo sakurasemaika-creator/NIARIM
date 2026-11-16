@@ -220,7 +220,10 @@ void main() {
         chalk.pressureOff.edgeJitter.value,
         greaterThan(pencil.pressureOff.edgeJitter.value),
       );
-      expect(marker.calligraphyAngle, isNotNull);
+      expect(marker.calligraphyAngle, isNull);
+      expect(marker.resolvedCustomImagePaths, [
+        'assets/brushes/marker_tip.png',
+      ]);
       expect(pixel.pixelMode, isTrue);
       expect(glitter.tipShape, BrushTipShape.hexagon);
       expect(spray.scatter, greaterThan(0));
