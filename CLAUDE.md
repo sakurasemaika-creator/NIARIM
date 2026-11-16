@@ -1252,8 +1252,16 @@ onTap: ...)`だったために
   動かない砂時計の行（回る印は偽の時計で止まらず、`pumpAndSettle`のtestが終わらない）。
   見張りは`home_tab_order_once_test`・`home_focus_above_fabs_test`・
   `home_tab_switch_focus_test`・`home_fab_focus_ring_test`・
-  `home_tab_filtered_empty_states_test`ほか。Shift+Tabで作られていない下の行へ
-  戻れない・フォルダの中の画面の空の表示等はまだ（DISC200〜205）。
+  `home_tab_filtered_empty_states_test`ほか。2026-11-16（DISC142・143・154・200〜202・
+  204・205・257）：一覧の外からTabで入るときは先に端までスクロールしてからフォーカスを
+  移す（作られていない行にも止まる）。見えない間も残す作品一覧のページは`ExcludeFocus`で
+  Tabの順に入れない（入ると`ensureVisible`が例外）。カードはTab・Enter（開く）・Space
+  （選ぶ）、印の輪はキーボードのときだけ（`lib/widgets/collection_card_keys.dart`）。
+  フォルダの中の画面も絞り込みで全部隠れたら外す道を出し、受け取ったフォルダの中にも
+  並び順。上部バーの吹き出しはタブの列の下（`.tooltipsBelowTabs()`）。引き出しの幅は
+  `min(304, 画面の幅 − 56)`。**検索欄のヒントはタブごとの文で、いつもの大きさで1行に
+  入るときだけ字、入らなければ探す物の印（読み上げはヒントの文）。字を縮めない・
+  折り返さない（所有者の判断、2026-11-16）**。
 - **ホームのカードの丸い操作・画面の帯・動きを減らす設定（DISC181・212〜219、
   2026-11-16）**：星・︙の丸は描く大きさ40のまま、押せる所と読み上げは48×48
   （`collection_action_controls.dart`の`_ActionTarget`。丸の外を押すと丸の中心へ
