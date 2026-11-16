@@ -81,38 +81,54 @@ class QuickToolPanel extends StatelessWidget {
     // ブラシの名前を変えたら、一覧の名前も変わる。
     final brushes = context.watch<BrushService>().brushes;
 
+    final height = _floatingHeight(context);
+    // 浮かぶパネルが置ける場所より低くなるとき（横向きのスマホ）は、題を
+    // 一覧と一緒にスクロールさせる（題を固定すると、大きな文字では題が
+    // 3行になり、一覧が数pxに押しつぶされた）。
+    final compact =
+        !DockedPanelScope.of(context) &&
+        height < _preferredFloatingHeight(context);
+    // 題はパネルの幅で折り返す（`Text`＋`Spacer`の行に置いていた頃は
+    // 折り返さず、西語「Ajustes de herramientas rápidas」が行から
+    // はみ出した）。韓国語の語は、1行に入れば途中で折らない。
+    final heading = Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        messageText(
+          l10n.quickToolPanelTitle,
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback,
+          ),
+        ),
+        const Divider(),
+      ],
+    );
+    final empty = Text(
+      l10n.quickToolEmpty,
+      style: TextStyle(
+        color: Theme.of(context).colorScheme.onSurfaceVariant,
+        fontSize: 12,
+      ),
+    );
+
     return PanelSurface(
       width: 260,
-      height: _floatingHeight(context),
+      height: height,
       child: Padding(
         padding: const EdgeInsets.all(12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             PanelCenterCloseBar(onClose: onClose),
-            // 題はパネルの幅で折り返す（`Text`＋`Spacer`の行に置いていた頃は
-            // 折り返さず、西語「Ajustes de herramientas rápidas」が行から
-            // はみ出した）。韓国語の語は、1行に入れば途中で折らない。
-            messageText(
-              l10n.quickToolPanelTitle,
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                fontFamily: 'Kuramubon',
-                fontFamilyFallback: kHeadingFontFallback,
-              ),
-            ),
-            const Divider(),
+            if (!compact) heading,
             Expanded(
               child: entries.isEmpty
-                  ? Center(
-                      child: Text(
-                        l10n.quickToolEmpty,
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
-                          fontSize: 12,
-                        ),
-                      ),
-                    )
+                  ? compact
+                        ? ListView(children: [heading, empty])
+                        : Center(child: empty)
                   // 行の幅（一覧の幅）で、名前を番号と操作の間に置くか、番号と
                   // 操作の行の下に置くかを決める（[_QuickToolRows]）。
                   : LayoutBuilder(
@@ -127,6 +143,7 @@ class QuickToolPanel extends StatelessWidget {
                           // ままだと行の長押しでしか並べ替えを開始できず、
                           // 可視の目印が無いままだった）。
                           buildDefaultDragHandles: false,
+                          header: compact ? heading : null,
                           itemCount: entries.length,
                           onReorderItem: (oldIndex, newIndex) =>
                               service.reorder(
@@ -162,18 +179,27 @@ class QuickToolPanel extends StatelessWidget {
   /// スマホの浮かぶパネルの高さ。文字の大きさに合わせて高くし（文字2倍では
   /// 題が3行になり、名前を番号と操作の下に回した行も高くなるので、360pxの
   /// ままでは一覧に1行しか見えなかった）、画面の上の帯（56px）と上下の空き
-  /// （16px）を残した高さまでにする。360pxより低くはしない（今までと同じ）。
+  /// （16px）を残した高さまでにする。360pxは置ける場所があるときの下限で、
+  /// 横向きのスマホ（高さ360〜400px）のように場所が足りなければ、置ける
+  /// 高さまで低くする（一覧はその中でスクロールする。以前は360pxより低く
+  /// しなかったので、パネルの上の端が画面の外へ切れた）。
   static double _floatingHeight(BuildContext context) {
-    const base = 360.0;
     final available =
         MediaQuery.sizeOf(context).height -
         MediaQuery.paddingOf(context).vertical -
         56 -
         16 * 2;
-    return math.max(
-      base,
-      math.min(MediaQuery.textScalerOf(context).scale(base), available),
+    return math.min(
+      _preferredFloatingHeight(context),
+      math.max(0.0, available),
     );
+  }
+
+  /// 場所が足りるときの浮かぶパネルの高さ（360pxを文字の大きさに合わせて
+  /// 高くしたもの）。
+  static double _preferredFloatingHeight(BuildContext context) {
+    const base = 360.0;
+    return math.max(base, MediaQuery.textScalerOf(context).scale(base));
   }
 
   void _showAddDialog(BuildContext context, QuickToolService service) {
