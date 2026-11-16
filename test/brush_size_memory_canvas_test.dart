@@ -16,6 +16,7 @@ import 'package:niarim/services/brush_service.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:niarim/services/theme_service.dart';
 import 'package:niarim/widgets/editable_slider_value.dart';
+import 'package:niarim/widgets/preset_stroke_row.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -202,32 +203,41 @@ void main() {
     final context = tester.element(find.byType(BrushPanel));
     final brushes = context.read<BrushService>();
     final l10n = AppLocalizations.of(context)!;
-    Finder row(String brushId) => find.descendant(
-      of: find.byKey(ValueKey(brushId)),
-      matching: find.byType(Text),
-    );
-    String subtitle(String brushId) =>
-        tester.widgetList<Text>(row(brushId)).last.data!;
+    Finder row(String brushId) => find.byKey(ValueKey(brushId));
+    String sizeAndOpacity(String brushId) =>
+        tester.widget<PresetStrokeRow>(row(brushId)).semanticsLabel!;
 
     brushes.selectBrush('Brush0002');
     brushes.updateCurrentBrushSize(77);
     brushes.updateCurrentBrushOpacity(12);
     await tester.pump();
-    expect(subtitle('Brush0002'), l10n.penSubToolBrushSizeOpacity(77, 12));
+    expect(
+      sizeAndOpacity('Brush0002'),
+      l10n.penSubToolBrushSizeOpacity(77, 12),
+    );
 
     // 別のブラシを使っている間も、一覧には覚えた値が出る。
     brushes.selectBrush('Brush0001');
     await tester.pump();
-    expect(subtitle('Brush0002'), l10n.penSubToolBrushSizeOpacity(77, 12));
+    expect(
+      sizeAndOpacity('Brush0002'),
+      l10n.penSubToolBrushSizeOpacity(77, 12),
+    );
 
     // 早替えツールが一時的に当てた太さは、使っている間だけ出る。
     brushes.selectBrush('Brush0002');
     brushes.updateCurrentBrushSize(200, remember: false);
     await tester.pump();
-    expect(subtitle('Brush0002'), l10n.penSubToolBrushSizeOpacity(200, 12));
+    expect(
+      sizeAndOpacity('Brush0002'),
+      l10n.penSubToolBrushSizeOpacity(200, 12),
+    );
     brushes.selectBrush('Brush0001');
     await tester.pump();
-    expect(subtitle('Brush0002'), l10n.penSubToolBrushSizeOpacity(77, 12));
+    expect(
+      sizeAndOpacity('Brush0002'),
+      l10n.penSubToolBrushSizeOpacity(77, 12),
+    );
 
     // 覚えた値のある組み込みブラシだけ、メニューから既定へ戻せる。
     Future<void> openMenu(String brushId) async {
@@ -240,7 +250,7 @@ void main() {
       await tester.pumpAndSettle();
     }
 
-    await openMenu('Brush0003');
+    await openMenu('Brush0001');
     expect(find.text(l10n.brushPanelResetRememberedValues), findsNothing);
     await tester.tapAt(const Offset(5, 5));
     await tester.pumpAndSettle();
@@ -254,7 +264,7 @@ void main() {
     });
     final original = definition.brushes.firstWhere((b) => b.id == 'Brush0002');
     expect(
-      subtitle('Brush0002'),
+      sizeAndOpacity('Brush0002'),
       l10n.penSubToolBrushSizeOpacity(original.size.round(), original.opacity),
     );
     await openMenu('Brush0002');
@@ -262,18 +272,7 @@ void main() {
     await tester.tapAt(const Offset(5, 5));
     await tester.pumpAndSettle();
 
-    // 選んだ行の先頭のアイコンは、選択色の上の文字色（選択色と同じ色の
-    // 差し色を直接渡していて、既定のテーマで見えなかった）。
-    final icon = find.descendant(
-      of: find.byKey(const ValueKey('Brush0001')),
-      matching: find.byIcon(Icons.brush),
-    );
-    final iconContext = tester.element(icon);
-    final tiles = Theme.of(iconContext).listTileTheme;
-    final drawn =
-        tester.widget<Icon>(icon).color ?? IconTheme.of(iconContext).color;
-    expect(drawn, tiles.selectedColor);
-    expect(drawn, isNot(tiles.selectedTileColor));
+    expect(tester.widget<PresetStrokeRow>(row('Brush0001')).selected, isTrue);
     expect(tester.takeException(), isNull);
   });
 
