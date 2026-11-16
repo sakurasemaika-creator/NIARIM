@@ -39,9 +39,10 @@ class CustomAutomationExecutor {
     required String? currentLayerId,
     required AutomationToolHandler handleCanvasStateCommand,
     GeneratedLayerNamer? layerName,
-  }) => projectService.runWithGroupedUndo(
-    description: automation.name,
-    operation: () => _executeCanvasSteps(
+  }) => projectService.editProjectWithAutomation(
+    projectId,
+    automation.name,
+    () => _executeCanvasSteps(
       automation: automation,
       scope: scope,
       projectService: projectService,
@@ -297,8 +298,11 @@ class CustomAutomationExecutor {
                 layer.id,
               );
               if (step.command == 'canvas.brightnessToAlpha') {
-                await tm.applyBrightnessToAlpha(
-                  key,
+                await projectService.applyBrightnessToAlpha(
+                  projectId: projectId,
+                  sceneId: sceneId,
+                  frameIndex: frameIndex,
+                  layerId: layer.id,
                   grayMode: step.args['grayMode'] == true,
                 );
               } else {
@@ -310,9 +314,12 @@ class CustomAutomationExecutor {
                 if (bytes == null) {
                   throw StateError('Could not read color trace source');
                 }
-                tm.replaceLayerPixels(
-                  key,
-                  applyColorTraceAdjust(
+                projectService.replaceLayerPixels(
+                  projectId: projectId,
+                  sceneId: sceneId,
+                  frameIndex: frameIndex,
+                  layerId: layer.id,
+                  pixels: applyColorTraceAdjust(
                     bytes.buffer.asUint8List(),
                     hueShift: (step.args['hue'] as num?)?.toDouble() ?? -10,
                     saturationShift:
@@ -322,12 +329,6 @@ class CustomAutomationExecutor {
                   ),
                 );
               }
-              projectService.updateLayer(
-                projectId: projectId,
-                sceneId: sceneId,
-                frameIndex: frameIndex,
-                layer: layer,
-              );
             case 'canvas.selectFrame':
               final target = (step.args['frame'] as num?)?.toInt();
               if (target == null || target < 0 || target >= totalFrames) {

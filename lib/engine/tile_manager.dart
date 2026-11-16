@@ -568,17 +568,27 @@ class TileManager {
     String layerId, {
     required bool grayMode,
   }) async {
+    final transformed = await brightnessToAlphaPixels(
+      layerId,
+      grayMode: grayMode,
+    );
+    if (transformed != null) replaceLayerPixels(layerId, transformed);
+  }
+
+  Future<Uint8List?> brightnessToAlphaPixels(
+    String layerId, {
+    required bool grayMode,
+  }) async {
     final composite = await compositeLayerToImage(layerId);
     final byteData = await composite.toByteData(
       format: ui.ImageByteFormat.rawRgba,
     );
     composite.dispose();
-    if (byteData == null) return;
-    final transformed = await compute(
+    if (byteData == null) return null;
+    return compute(
       runBrightnessToAlphaInIsolate,
       BrightnessToAlphaParams(byteData.buffer.asUint8List(), grayMode),
     );
-    replaceLayerPixels(layerId, transformed);
   }
 
   /// 「色調調整」（キャンバス上部バーの設定/編集メニュー）：彩度・明度・
@@ -904,6 +914,9 @@ class TileManager {
       removeLayer(entry.key);
       final tiles = entry.value;
       if (tiles == null) continue;
+      for (final tile in tiles.values) {
+        _sharedTiles[tile] = true;
+      }
       _tiles[entry.key] = Map.of(tiles);
       for (final key in tiles.keys) {
         _dirtyTiles.add('${entry.key}:$key');

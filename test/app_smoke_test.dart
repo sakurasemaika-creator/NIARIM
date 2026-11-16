@@ -989,11 +989,8 @@ void main() {
     final canvasFinder = find.byType(CanvasArea);
     expect(canvasFinder, findsOneWidget);
 
-    // 直線定規の新規作成自体が1件のUndoActionとして登録される
-    // （RulerPanelからの選択・削除はcanvas_screen.dartの
-    // _setActiveRulerWithUndoが担当）。
     final undoManager = tester.element(canvasFinder).read<engine.UndoManager>();
-    expect(undoManager.canUndo, isTrue, reason: '定規新規作成がUndo履歴に積まれるはず');
+    expect(undoManager.canUndo, isFalse, reason: '定規は作品の履歴に入らない');
 
     // 直線定規の「move」ハンドルは定規のposition（既定でキャンバス
     // 中央）と一致する（_rulerHandlePositions参照）。キャンバス中央は
@@ -1019,20 +1016,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 200));
     expect(tester.takeException(), isNull, reason: '定規の移動ハンドルドラッグで例外');
 
-    // ハンドルドラッグ確定時（_handleRulerUp）にもう1件UndoActionが
-    // 積まれるはず。undo()を2回呼んで「ドラッグ操作の巻き戻し」
-    // 「定規新規作成の巻き戻し」の両方が例外なく完了し、最終的に
-    // Undo履歴が空になることを確認することで、ドラッグが実際に
-    // 1件のUndoActionとして機能したことを検証する
-    // （単なる例外の有無だけでなく、Undo履歴の件数という実際の
-    // 効果を確認する）。
-    expect(undoManager.canUndo, isTrue, reason: 'ハンドルドラッグがUndo履歴に積まれるはず');
-    undoManager.undo();
-    expect(tester.takeException(), isNull, reason: 'ドラッグの巻き戻しで例外');
-    expect(undoManager.canUndo, isTrue, reason: '定規新規作成の分がまだ残っているはず');
-    undoManager.undo();
-    expect(tester.takeException(), isNull, reason: '定規新規作成の巻き戻しで例外');
-    expect(undoManager.canUndo, isFalse, reason: 'ドラッグと新規作成の2件のみ積まれていたはず');
+    expect(undoManager.canUndo, isFalse, reason: '定規を移動しても作品の履歴は増えない');
   }, timeout: const Timeout(Duration(seconds: 60)));
 
   testWidgets('起動→新規プロジェクト作成→キャンバス：定規ツールの回転ハンドル'
@@ -1066,7 +1050,7 @@ void main() {
     final canvasFinder = find.byType(CanvasArea);
     expect(canvasFinder, findsOneWidget);
     final undoManager = tester.element(canvasFinder).read<engine.UndoManager>();
-    expect(undoManager.canUndo, isTrue, reason: '定規新規作成がUndo履歴に積まれるはず');
+    expect(undoManager.canUndo, isFalse, reason: '定規は作品の履歴に入らない');
 
     // 直線定規の「rotate」ハンドルは、既定の回転角0（rad）のとき
     // position（キャンバス中央）からX軸正方向へ220（キャンバス
@@ -1099,12 +1083,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 200));
     expect(tester.takeException(), isNull, reason: '定規の回転ハンドルドラッグで例外');
 
-    expect(undoManager.canUndo, isTrue, reason: '回転ハンドルドラッグがUndo履歴に積まれるはず');
-    undoManager.undo();
-    expect(tester.takeException(), isNull, reason: '回転の巻き戻しで例外');
-    undoManager.undo();
-    expect(tester.takeException(), isNull, reason: '定規新規作成の巻き戻しで例外');
-    expect(undoManager.canUndo, isFalse, reason: '回転と新規作成の2件のみ積まれていたはず');
+    expect(undoManager.canUndo, isFalse, reason: '定規を回転しても作品の履歴は増えない');
   }, timeout: const Timeout(Duration(seconds: 60)));
 
   testWidgets('起動→新規プロジェクト作成→キャンバス：定規ツール（楕円定規）の'
@@ -1139,7 +1118,7 @@ void main() {
     final canvasFinder = find.byType(CanvasArea);
     expect(canvasFinder, findsOneWidget);
     final undoManager = tester.element(canvasFinder).read<engine.UndoManager>();
-    expect(undoManager.canUndo, isTrue, reason: '定規新規作成がUndo履歴に積まれるはず');
+    expect(undoManager.canUndo, isFalse, reason: '定規は作品の履歴に入らない');
 
     // 楕円定規の「resizeX」ハンドルは、既定の回転角0（rad）のとき
     // position（キャンバス中央）からX軸正方向へradiusX（既定200×
@@ -1169,12 +1148,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 200));
     expect(tester.takeException(), isNull, reason: '楕円定規のサイズ変更ハンドルドラッグで例外');
 
-    expect(undoManager.canUndo, isTrue, reason: 'サイズ変更ハンドルドラッグがUndo履歴に積まれるはず');
-    undoManager.undo();
-    expect(tester.takeException(), isNull, reason: 'サイズ変更の巻き戻しで例外');
-    undoManager.undo();
-    expect(tester.takeException(), isNull, reason: '定規新規作成の巻き戻しで例外');
-    expect(undoManager.canUndo, isFalse, reason: 'サイズ変更と新規作成の2件のみ積まれていたはず');
+    expect(undoManager.canUndo, isFalse, reason: '定規をサイズ変更しても作品の履歴は増えない');
   }, timeout: const Timeout(Duration(seconds: 60)));
 
   testWidgets('起動→新規プロジェクト作成→キャンバス（PC/DeXモード）：ドッキング'

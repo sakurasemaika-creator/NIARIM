@@ -3608,7 +3608,6 @@ class _CanvasAreaState extends State<CanvasArea> {
   // vanishingPoint と同じ、export解像度基準）で計算する。
 
   String? _rulerHandleId;
-  Ruler? _rulerDragStartRuler;
 
   // ─── フィルターのキャンバス上のつまみ ─────────────────────────────────
 
@@ -4001,7 +4000,6 @@ class _CanvasAreaState extends State<CanvasArea> {
     }
     if (bestId == null) return false;
     _rulerHandleId = bestId;
-    _rulerDragStartRuler = ruler;
     return true;
   }
 
@@ -4013,20 +4011,7 @@ class _CanvasAreaState extends State<CanvasArea> {
   }
 
   void _handleRulerUp() {
-    final handleId = _rulerHandleId;
-    final before = _rulerDragStartRuler;
     _rulerHandleId = null;
-    _rulerDragStartRuler = null;
-    if (handleId == null || before == null) return;
-    final after = widget.activeRuler;
-    if (after == null || identical(before, after)) return;
-    context.read<app_undo.UndoManager>().push(
-      app_undo.RulerUndoAction(
-        before: before,
-        after: after,
-        onApply: (ruler) => widget.onRulerChanged?.call(ruler),
-      ),
-    );
   }
 
   // ─── 座標変換 ─────────────────────────────────────────────────────────

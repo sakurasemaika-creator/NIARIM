@@ -98,72 +98,76 @@ Future<AutofillBatchResult> runAutofillForLayer({
   ));
   if (result == null) return AutofillBatchResult.skipped;
 
-  if (autofillLayer == null) {
-    final created = projectService.addLayer(
-      projectId: projectId,
-      sceneId: sceneId,
-      frameIndex: frameIndex,
-      type: LayerType.autoFill,
-      name: '${part.name}（自動塗り）',
-    );
-    layers = projectService.layersOf(projectId, sceneId, frameIndex);
-    final createdIdx = layers.indexWhere((l) => l.id == created.id);
-    final targetIdx = layers.indexWhere((l) => l.id == lineartLayer.id) + 1;
-    if (createdIdx >= 0 && targetIdx >= 0 && createdIdx != targetIdx) {
-      projectService.reorderLayer(
-        projectId: projectId,
-        sceneId: sceneId,
-        frameIndex: frameIndex,
-        oldIndex: createdIdx,
-        newIndex: targetIdx,
-      );
-    }
-    autofillLayer = created.copyWith(partId: part.id);
-  }
-
-  tileManager.replaceLayerPixels(
-    frameLayerKey(sceneId, frameIndex, autofillLayer.id),
-    result,
-  );
-  projectService.updateLayer(
-    projectId: projectId,
-    sceneId: sceneId,
-    frameIndex: frameIndex,
-    layer: autofillLayer.copyWith(
-      partId: part.id,
-      needsAutofillUpdate: false,
-      opacity: part.opacity,
-      blendMode: part.blendMode,
-      opacityLocked: effectiveMode == AutofillMode.colorUpdate
-          ? true
-          : autofillLayer.opacityLocked,
-    ),
-  );
-
   // 線画色設定（指定色／塗り色と同じ／色トレス・線画馴染ませ）を線画レイヤーへ
   // 反映する。指定色が既定の黒のままなら変更不要なので処理自体をスキップする。
   final lineartUnchanged =
       part.lineColorMode == AutofillLineColorMode.specified &&
       part.lineColor == 0xFF000000;
-  if (!lineartUnchanged) {
-    final recoloredLineart = await compute(runRecolorLineartInIsolate, (
-      lineartData: lineartBytes,
-      width: w,
-      height: h,
-      part: part,
-    ));
-    tileManager.replaceLayerPixels(lineartKey, recoloredLineart);
-  }
-  projectService.updateLayer(
-    projectId: projectId,
-    sceneId: sceneId,
-    frameIndex: frameIndex,
-    layer: lineartLayer.copyWith(
-      opacity: part.lineOpacity,
-      blendMode: part.blendMode,
-    ),
-  );
+  final recoloredLineart = lineartUnchanged
+      ? null
+      : await compute(runRecolorLineartInIsolate, (
+          lineartData: lineartBytes,
+          width: w,
+          height: h,
+          part: part,
+        ));
+  projectService.editTimeline(projectId, 'Apply auto fill', () {
+    if (autofillLayer == null) {
+      final created = projectService.addLayer(
+        projectId: projectId,
+        sceneId: sceneId,
+        frameIndex: frameIndex,
+        type: LayerType.autoFill,
+        name: '${part.name}（自動塗り）',
+      );
+      layers = projectService.layersOf(projectId, sceneId, frameIndex);
+      final createdIdx = layers.indexWhere((l) => l.id == created.id);
+      final targetIdx = layers.indexWhere((l) => l.id == lineartLayer.id) + 1;
+      if (createdIdx >= 0 && targetIdx >= 0 && createdIdx != targetIdx) {
+        projectService.reorderLayer(
+          projectId: projectId,
+          sceneId: sceneId,
+          frameIndex: frameIndex,
+          oldIndex: createdIdx,
+          newIndex: targetIdx,
+        );
+      }
+      autofillLayer = created.copyWith(partId: part.id);
+    }
 
+    final fillLayer = autofillLayer!;
+    tileManager.replaceLayerPixels(
+      frameLayerKey(sceneId, frameIndex, fillLayer.id),
+      result,
+    );
+    projectService.updateLayer(
+      projectId: projectId,
+      sceneId: sceneId,
+      frameIndex: frameIndex,
+      layer: fillLayer.copyWith(
+        partId: part.id,
+        needsAutofillUpdate: false,
+        opacity: part.opacity,
+        blendMode: part.blendMode,
+        opacityLocked: effectiveMode == AutofillMode.colorUpdate
+            ? true
+            : fillLayer.opacityLocked,
+      ),
+    );
+
+    if (recoloredLineart != null) {
+      tileManager.replaceLayerPixels(lineartKey, recoloredLineart);
+    }
+    projectService.updateLayer(
+      projectId: projectId,
+      sceneId: sceneId,
+      frameIndex: frameIndex,
+      layer: lineartLayer.copyWith(
+        opacity: part.lineOpacity,
+        blendMode: part.blendMode,
+      ),
+    );
+  });
   return AutofillBatchResult.applied;
 }
 
@@ -206,12 +210,13 @@ Future<AutofillBatchResult> runAutofillForOrphanedLayer({
     toneHeight: _toneSize,
   ));
 
-  tileManager.replaceLayerPixels(key, result);
-  projectService.updateLayer(
+  projectService.replaceLayerPixels(
     projectId: projectId,
     sceneId: sceneId,
     frameIndex: frameIndex,
-    layer: autofillLayer.copyWith(
+    layerId: autofillLayer.id,
+    pixels: result,
+    updatedLayer: autofillLayer.copyWith(
       partId: part.id,
       needsAutofillUpdate: false,
       opacityLocked: true,

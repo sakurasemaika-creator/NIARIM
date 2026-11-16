@@ -11,10 +11,11 @@ import 'dart:ui' as ui;
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart' show RenderRepaintBoundary;
-import 'package:flutter/services.dart';
+import 'package:flutter/services.dart' hide UndoManager;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/app.dart';
 import 'package:niarim/app_bootstrap.dart';
+import 'package:niarim/engine/undo_manager.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/models/bundled_fonts.dart';
 import 'package:niarim/models/layer.dart';
@@ -165,6 +166,11 @@ void main() {
     ];
 
     Future<void> addText(String text) async {
+      final history = tester
+          .element(find.byType(Scaffold).last)
+          .read<UndoManager>();
+      final before = history.undoCount;
+      final priorTextIds = texts().map((layer) => layer.id).toList();
       // 素材を追加 → ＋テキスト.
       final button = find.byTooltip(l10n.timelineAddMaterialTooltip);
       await tester.ensureVisible(button);
@@ -177,6 +183,13 @@ void main() {
       await tester.tap(find.widgetWithText(FilledButton, l10n.commonAdd));
       // Drawing the letters is real async work (Picture.toImage).
       await pumpRealAsync(tester, const Duration(milliseconds: 600));
+      expect(history.undoCount, before + 1);
+      final addedIds = texts().map((layer) => layer.id).toList();
+      expect(addedIds.length, priorTextIds.length + 1);
+      history.undo();
+      expect(texts().map((layer) => layer.id), orderedEquals(priorTextIds));
+      history.redo();
+      expect(texts().map((layer) => layer.id), orderedEquals(addedIds));
       // The edit panel opens on the text: choose the bundled 源ノ明朝 (the
       // test has no system fonts, so the captures show the letters).
       await tester.tap(find.byType(DropdownButtonFormField<String>));
@@ -199,12 +212,54 @@ void main() {
     await capture('01_text_added_edit_panel');
     final tm = ps.tileManagerOf(project.id);
     final home = ps.homeOf(project.id, title.id)!;
-    final bounds = tm.contentBounds(
-      ps.tileKeyFor(project.id, home.sceneId, home.frameIndex, title.id),
+    final textKey = ps.tileKeyFor(
+      project.id,
+      home.sceneId,
+      home.frameIndex,
+      title.id,
     );
+    final bounds = tm.contentBounds(textKey);
     expect(bounds, isNotNull);
     expect(bounds!.center.dx, closeTo(tm.canvasWidth / 2, 3));
     expect(bounds.center.dy, closeTo(tm.canvasHeight / 2, 3));
+
+    final originalPixels = tm
+        .exportAll()[textKey]!
+        .values
+        .expand((t) => t)
+        .toList();
+    final field = find
+        .descendant(
+          of: find.byType(TimelineMaterialEditPanel),
+          matching: find.byType(TextField),
+        )
+        .first;
+    await tester.enterText(field, '長いタイトルに更新');
+    await pumpRealAsync(tester, const Duration(milliseconds: 650));
+    expect(texts().single.textObject?.text, '長いタイトルに更新');
+    final updatedPixels = tm
+        .exportAll()[textKey]!
+        .values
+        .expand((t) => t)
+        .toList();
+    expect(updatedPixels, isNot(orderedEquals(originalPixels)));
+    final undo = tester
+        .element(find.byType(TimelineMaterialEditPanel))
+        .read<UndoManager>();
+    undo.undo();
+    expect(texts().single.textObject?.text, 'タイトル');
+    expect(
+      tm.exportAll()[textKey]!.values.expand((t) => t),
+      orderedEquals(originalPixels),
+    );
+    undo.redo();
+    expect(texts().single.textObject?.text, '長いタイトルに更新');
+    expect(
+      tm.exportAll()[textKey]!.values.expand((t) => t),
+      orderedEquals(updatedPixels),
+    );
+    undo.undo();
+    await tester.pump();
 
     // ── Position: the Y turn slider and a drag on the preview ──
     await tester.tap(

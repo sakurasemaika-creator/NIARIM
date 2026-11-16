@@ -205,21 +205,24 @@ class _TimelineMaterialEditPanelState extends State<TimelineMaterialEditPanel> {
               h,
               pixelMode: _fonts?.pixelModeForFamily(text.fontFamily) ?? false,
             );
-      tm.replaceLayerPixels(
-        _projects.tileKeyFor(
-          widget.projectId,
-          found.home.sceneId,
-          found.home.frameIndex,
-          widget.layerId,
-        ),
-        bytes ?? Uint8List(w * h * 4),
-      );
-      _update(
-        (l) => l.copyWith(
+      // The raster and the editable text must be restored together.
+      final current = _find();
+      if (current != null && identical(_draft, text)) {
+        final updated = current.layer.copyWith(
           textObject: text,
           name: timelineTextName(text.text, _fallbackName),
-        ),
-      );
+        );
+        _projects.replaceLayerPixels(
+          projectId: widget.projectId,
+          sceneId: current.home.sceneId,
+          frameIndex: current.home.frameIndex,
+          layerId: widget.layerId,
+          pixels: bytes ?? Uint8List(w * h * 4),
+          updatedLayer: updated,
+        );
+        _draft = null;
+        if (mounted) widget.onLayerChanged?.call(updated);
+      }
     } finally {
       _rasterizing = false;
     }
@@ -785,6 +788,15 @@ class _TimelineMaterialEditPanelState extends State<TimelineMaterialEditPanel> {
     final found = _find();
     if (found == null) return const SizedBox.shrink();
     final layer = found.layer;
+    final restoredText = layer.textObject?.text;
+    if (_draft == null &&
+        restoredText != null &&
+        _textCtrl.text != restoredText) {
+      _textCtrl.value = TextEditingValue(
+        text: restoredText,
+        selection: TextSelection.collapsed(offset: restoredText.length),
+      );
+    }
     final isText = layer.type == LayerType.timelineText;
     final isVideo = layer.type == LayerType.timelineVideo;
     final sections = [

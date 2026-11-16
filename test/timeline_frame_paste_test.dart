@@ -4,9 +4,11 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:niarim/engine/filter_engine.dart';
 import 'package:niarim/engine/undo_manager.dart';
+import 'package:niarim/models/audio_clip.dart';
 import 'package:niarim/models/camera_keyframe.dart';
 import 'package:niarim/models/effect_filter_instance.dart';
 import 'package:niarim/models/layer.dart';
+import 'package:niarim/models/timeline_row_kind.dart';
 import 'package:niarim/services/project_service.dart';
 
 /// タイムラインのフレーム複数貼り付け（Ctrl+V）で使うインデックス補正式
@@ -57,6 +59,90 @@ void main() {
         ps.layersOf(projectId, sceneId, i).first.name,
     ];
   }
+
+  test(
+    'audio clip history restores ranges, duplicates and removed rows',
+    () async {
+      final ps = ProjectService();
+      final history = UndoManager();
+      addTearDown(history.dispose);
+      addTearDown(ps.dispose);
+      await ps.init();
+      ps.setUndoManager(history);
+      final project = await ps.createProject(
+        name: 'Audio clip history',
+        fps: 12,
+        durationSeconds: 1,
+        backgroundColor: 0xFFFFFFFF,
+      );
+      final id = project.id;
+      final scene = ps.scenesOf(id).first.id;
+      const rowKind = TimelineRowKind.audio;
+      const clip = AudioClip(
+        id: 'source',
+        label: 'Audio',
+        materialId: 'sound',
+        startFrame: 0,
+        lengthFrames: 4,
+        trackRow: 1,
+      );
+      List<AudioClip> current() => ps.audioClipsOf(id, scene);
+      int rows() => ps.rowNamesOf(id, scene, rowKind).length;
+
+      ps.editTimeline(id, 'Add clip and row', () {
+        ps.addTrackRow(id, scene, rowKind);
+        ps.addAudioClip(id, scene, clip);
+      }, changesTiles: false);
+      expect(history.undoCount, 1);
+      expect(rows(), 2);
+      history.undo();
+      expect(current(), isEmpty);
+      expect(rows(), 1);
+      history.redo();
+
+      final moved = clip.copyWith(
+        startFrame: 2,
+        lengthFrames: 3,
+        sourceStartFrame: 1,
+      );
+      ps.updateAudioClip(id, scene, moved);
+      expect(current().single, moved);
+      history.undo();
+      expect(current().single, clip);
+      history.redo();
+      expect(current().single, moved);
+
+      const duplicate = AudioClip(
+        id: 'duplicate',
+        label: 'Audio',
+        materialId: 'sound',
+        startFrame: 6,
+        lengthFrames: 3,
+        sourceStartFrame: 1,
+        trackRow: 1,
+      );
+      ps.addAudioClip(id, scene, duplicate);
+      history.undo();
+      expect(current(), [moved]);
+      history.redo();
+      expect(current(), [moved, duplicate]);
+
+      ps.editTimeline(id, 'Delete clips and empty row', () {
+        ps.removeAudioClip(id, scene, moved.id);
+        ps.removeAudioClip(id, scene, duplicate.id);
+        ps.removeTrackRow(id, scene, rowKind, 1);
+      }, changesTiles: false);
+      expect(current(), isEmpty);
+      expect(rows(), 1);
+      history.undo();
+      expect(current(), [moved, duplicate]);
+      expect(rows(), 2);
+      history.redo();
+      expect(current(), isEmpty);
+      expect(rows(), 1);
+      await ps.saveProject(id);
+    },
+  );
 
   test(
     'timeline frame, camera and filter edits share one ordered history',

@@ -467,13 +467,15 @@ class _TimelineStackOrderPanelState extends State<TimelineStackOrderPanel> {
       kStackFrame,
     });
     void apply(List<String> next) {
-      for (final s in targets) {
-        ps.updateSceneStack(
-          widget.projectId,
-          s.id,
-          s.stack.copyWith(order: next),
-        );
-      }
+      ps.editTimeline(widget.projectId, 'Change scene stack order', () {
+        for (final s in targets) {
+          ps.updateSceneStack(
+            widget.projectId,
+            s.id,
+            s.stack.copyWith(order: next),
+          );
+        }
+      }, changesTiles: false);
     }
 
     return [

@@ -300,7 +300,7 @@ class ProjectService extends ChangeNotifier {
   }) {
     final undo = _undoManager;
     if (undo == null || _recordingTimelineEdit) return edit();
-    final manager = changesTiles ? _tileManagers[projectId] : null;
+    final manager = changesTiles ? tileManagerOf(projectId) : null;
     final beforeTiles = manager?.structuralSnapshot() ?? const {};
     final before = _captureTimeline(projectId);
     _recordingTimelineEdit = true;
@@ -308,34 +308,78 @@ class ProjectService extends ChangeNotifier {
       return edit();
     } finally {
       _recordingTimelineEdit = false;
-      final after = _captureTimeline(projectId);
-      final afterTiles =
-          (manager ?? (changesTiles ? _tileManagers[projectId] : null))
-              ?.structuralSnapshot() ??
-          const {};
-      if (projectId.isNotEmpty &&
-          (!listEquals(before.scenes, after.scenes) ||
-              before.endCard != after.endCard ||
-              before.background != after.background)) {
-        final oldLayers = <String, Map<String, Uint8List>?>{};
-        final newLayers = <String, Map<String, Uint8List>?>{};
-        for (final key in {...beforeTiles.keys, ...afterTiles.keys}) {
-          if (mapEquals(beforeTiles[key], afterTiles[key])) continue;
-          oldLayers[key] = beforeTiles[key];
-          newLayers[key] = afterTiles[key];
-        }
-        final tiles = _tileManagers[projectId];
-        tiles?.protectHistoryTiles(oldLayers);
-        tiles?.protectHistoryTiles(newLayers);
-        undo.push(
-          ProjectEditUndoAction(
-            description,
-            () => _restoreTimeline(projectId, before, oldLayers),
-            () => _restoreTimeline(projectId, after, newLayers),
-          ),
-        );
-      }
+      _commitProjectEdit(
+        undo,
+        projectId,
+        description,
+        before,
+        beforeTiles,
+        manager,
+      );
     }
+  }
+
+  /// A recipe has a single result even when intermediate layers are merged
+  /// away. Only the state before and after that recipe belongs in history.
+  Future<T> editProjectWithAutomation<T>(
+    String projectId,
+    String description,
+    Future<T> Function() run,
+  ) async {
+    final undo = _undoManager;
+    if (undo == null || _recordingTimelineEdit) return run();
+    final manager = tileManagerOf(projectId);
+    final beforeTiles = manager.structuralSnapshot();
+    manager.protectHistoryTiles(beforeTiles);
+    final before = _captureTimeline(projectId);
+    _recordingTimelineEdit = true;
+    try {
+      return await run();
+    } finally {
+      _recordingTimelineEdit = false;
+      _commitProjectEdit(
+        undo,
+        projectId,
+        description,
+        before,
+        beforeTiles,
+        manager,
+      );
+    }
+  }
+
+  void _commitProjectEdit(
+    UndoManager undo,
+    String projectId,
+    String description,
+    _TimelineEditState before,
+    Map<String, Map<String, Uint8List>> beforeTiles,
+    TileManager? manager,
+  ) {
+    final after = _captureTimeline(projectId);
+    final afterTiles = manager?.structuralSnapshot() ?? const {};
+    final oldLayers = <String, Map<String, Uint8List>?>{};
+    final newLayers = <String, Map<String, Uint8List>?>{};
+    for (final key in {...beforeTiles.keys, ...afterTiles.keys}) {
+      if (mapEquals(beforeTiles[key], afterTiles[key])) continue;
+      oldLayers[key] = beforeTiles[key];
+      newLayers[key] = afterTiles[key];
+    }
+    if (before.project == null ||
+        identical(before.project, after.project) &&
+            listEquals(before.scenes, after.scenes) &&
+            oldLayers.isEmpty) {
+      return;
+    }
+    manager?.protectHistoryTiles(oldLayers);
+    manager?.protectHistoryTiles(newLayers);
+    undo.push(
+      ProjectEditUndoAction(
+        description,
+        () => _restoreTimeline(projectId, before, oldLayers),
+        () => _restoreTimeline(projectId, after, newLayers),
+      ),
+    );
   }
 
   _TimelineEditState _captureTimeline(String projectId) {
@@ -343,8 +387,7 @@ class ProjectService extends ChangeNotifier {
     return _TimelineEditState(
       scenesOf(projectId),
       Map.of(_layerHomes[projectId] ?? const {}),
-      project?.hideEndCard,
-      project?.backgroundColor,
+      project,
     );
   }
 
@@ -358,10 +401,20 @@ class ProjectService extends ChangeNotifier {
     _scenes[projectId] = List.of(state.scenes);
     _layerHomes[projectId] = Map.of(state.homes);
     _tileManagers[projectId]?.restoreStructuralLayers(tiles);
-    _projects[index] = _projects[index].copyWith(
-      hideEndCard: state.endCard,
-      backgroundColor: state.background,
-    );
+    final snapshot = state.project;
+    if (snapshot != null) {
+      _projects[index] = _projects[index].copyWith(
+        name: snapshot.name,
+        fps: snapshot.fps,
+        durationSeconds: snapshot.durationSeconds,
+        hideEndCard: snapshot.hideEndCard,
+        backgroundColor: snapshot.backgroundColor,
+        exportWidth: snapshot.exportWidth,
+        exportHeight: snapshot.exportHeight,
+        drawingAreaScale: snapshot.drawingAreaScale,
+        enabledAutofillPresetIds: snapshot.enabledAutofillPresetIds,
+      );
+    }
     _syncDurationToFrameCount(projectId);
     _saveAsync(projectId);
     notifyListeners();
@@ -1773,8 +1826,9 @@ class ProjectService extends ChangeNotifier {
     String projectId,
     int sceneIdx,
     int frameIndex,
-    List<Layer> newLayers,
-  ) {
+    List<Layer> newLayers, {
+    bool contentChanged = true,
+  }) {
     final scenes = _scenes[projectId]!;
     final scene = scenes[sceneIdx];
     final newFrames = List<Frame>.from(scene.frames);
@@ -1782,7 +1836,7 @@ class ProjectService extends ChangeNotifier {
       layers: newLayers,
     );
     scenes[sceneIdx] = scene.copyWith(frames: newFrames);
-    recordConfirmedEdit(projectId);
+    if (contentChanged) recordConfirmedEdit(projectId);
     notifyListeners();
   }
 
@@ -2000,6 +2054,7 @@ class ProjectService extends ChangeNotifier {
     required int frameIndex,
     required Layer layer,
     bool recordUndo = true,
+    bool contentChanged = true,
   }) {
     if (recordUndo &&
         _layersAddedInGroup?.contains('$projectId/${layer.id}') != true &&
@@ -2014,6 +2069,7 @@ class ProjectService extends ChangeNotifier {
           frameIndex: frameIndex,
           layer: layer,
           recordUndo: false,
+          contentChanged: contentChanged,
         ),
         changesTiles: false,
       );
@@ -2032,7 +2088,13 @@ class ProjectService extends ChangeNotifier {
     final layerIdx = frame.layers.indexWhere((l) => l.id == layer.id);
     if (layerIdx < 0) return;
     final newLayers = List<Layer>.from(frame.layers)..[layerIdx] = layer;
-    _applyFrameUpdate(projectId, sceneIdx, home.frameIndex, newLayers);
+    _applyFrameUpdate(
+      projectId,
+      sceneIdx,
+      home.frameIndex,
+      newLayers,
+      contentChanged: contentChanged,
+    );
   }
 
   /// Replaces a layer's pixels in one go (a filter applied in place) as a
@@ -2058,6 +2120,7 @@ class ProjectService extends ChangeNotifier {
     // transform) has open on this tile manager.
     final record =
         _undoManager != null &&
+        !_recordingTimelineEdit &&
         tm.recordingTouchedTiles == null &&
         !(_layersAddedInGroup?.contains('$projectId/$layerId') ?? false);
     if (record) tm.beginUndoRecording(key);
@@ -2094,6 +2157,44 @@ class ProjectService extends ChangeNotifier {
         layerBefore: layerChanged ? layerBefore : null,
         layerAfter: layerChanged ? updatedLayer : null,
       ),
+    );
+    if (updatedLayer == null) {
+      _notifyProjectPixelsChanged(projectId);
+    }
+  }
+
+  void _notifyProjectPixelsChanged(String projectId) {
+    _saveAsync(projectId);
+    notifyListeners();
+  }
+
+  Future<void> applyBrightnessToAlpha({
+    required String projectId,
+    required String sceneId,
+    required int frameIndex,
+    required String layerId,
+    required bool grayMode,
+  }) async {
+    final manager = tileManagerOf(projectId);
+    final key = tileKeyFor(projectId, sceneId, frameIndex, layerId);
+    final pixels = await manager.brightnessToAlphaPixels(
+      key,
+      grayMode: grayMode,
+    );
+    if (pixels == null ||
+        !layersOf(
+          projectId,
+          sceneId,
+          frameIndex,
+        ).any((layer) => layer.id == layerId)) {
+      return;
+    }
+    replaceLayerPixels(
+      projectId: projectId,
+      sceneId: sceneId,
+      frameIndex: frameIndex,
+      layerId: layerId,
+      pixels: pixels,
     );
   }
 
@@ -2183,6 +2284,14 @@ class ProjectService extends ChangeNotifier {
   /// 自動保存データを既存プロジェクトへ復元する（クラッシュ復元専用）。
   /// プロジェクトIDは維持したまま、シーン・タイルの内容のみ自動保存時点へ戻す。
   void restoreFromAutosave(String projectId, NiaproData data) {
+    if (!_recordingTimelineEdit && _undoManager != null) {
+      editTimeline(
+        projectId,
+        'Restore saved project',
+        () => restoreFromAutosave(projectId, data),
+      );
+      return;
+    }
     final idx = _projects.indexWhere((p) => p.id == projectId);
     if (idx < 0) return;
     final live = _projects[idx];
@@ -2208,7 +2317,10 @@ class ProjectService extends ChangeNotifier {
       ),
     );
     tm.importAll(data.tileData);
-    _layerIdCounters[projectId] = _maxLayerCounter(data.scenes);
+    _layerIdCounters[projectId] = math.max(
+      _layerIdCounters[projectId] ?? 1,
+      _maxLayerCounter(data.scenes),
+    );
     notifyListeners();
   }
 
@@ -2233,6 +2345,7 @@ class ProjectService extends ChangeNotifier {
           sceneId: sceneId,
           frameIndex: frameIndex,
           layer: target.copyWith(needsAutofillUpdate: true),
+          recordUndo: false,
         );
       }
     }
@@ -3413,27 +3526,23 @@ class ProjectService extends ChangeNotifier {
     final selectedLayers = indices.map((i) => layers[i]).toList();
 
     final tm = _tileManagers[projectId];
+    Uint8List? mergedPixels;
     if (tm != null) {
       final mergedImage = await LayerCompositor.composite(
         tm,
         selectedLayers,
-        (l) => frameLayerKey(sceneId, frameIndex, l.id),
+        (layer) => frameLayerKey(sceneId, frameIndex, layer.id),
         tm.canvasWidth,
         tm.canvasHeight,
       );
-      final byteData = await mergedImage.toByteData(
-        format: ui.ImageByteFormat.rawRgba,
-      );
-      mergedImage.dispose();
-      if (byteData != null) {
-        tm.replaceLayerPixels(
-          frameLayerKey(sceneId, frameIndex, bottomLayer.id),
-          byteData.buffer.asUint8List(),
+      try {
+        final data = await mergedImage.toByteData(
+          format: ui.ImageByteFormat.rawRgba,
         );
-      }
-      for (final layer in selectedLayers) {
-        if (layer.id == bottomLayer.id) continue;
-        tm.removeLayer(frameLayerKey(sceneId, frameIndex, layer.id));
+        if (data == null) return;
+        mergedPixels = Uint8List.sublistView(data);
+      } finally {
+        mergedImage.dispose();
       }
     }
 
@@ -3445,20 +3554,35 @@ class ProjectService extends ChangeNotifier {
     if (sceneIdx < 0) return;
     final scene = scenes[sceneIdx];
     if (frameIndex >= scene.frames.length) return;
-    final latestLayers = List<Layer>.from(scene.frames[frameIndex].layers);
-    final removeIds = selectedLayers
-        .map((l) => l.id)
-        .where((id) => id != bottomLayer.id)
-        .toSet();
-    latestLayers.removeWhere((l) => removeIds.contains(l.id));
-    final insertAt = latestLayers.indexWhere((l) => l.id == bottomLayer.id);
-    if (insertAt < 0) return;
-    latestLayers[insertAt] = bottomLayer.copyWith(
-      type: LayerType.normal,
-      partId: null,
-      needsAutofillUpdate: false,
-    );
-    _applyFrameUpdate(projectId, sceneIdx, frameIndex, latestLayers);
+    final current = scene.frames[frameIndex].layers;
+    if (!selectedLayers.every(current.contains)) return;
+    editTimeline(projectId, 'Merge layers', () {
+      if (tm != null && mergedPixels != null) {
+        tm.replaceLayerPixels(
+          frameLayerKey(sceneId, frameIndex, bottomLayer.id),
+          mergedPixels,
+        );
+        for (final layer in selectedLayers) {
+          if (layer.id != bottomLayer.id) {
+            tm.removeLayer(frameLayerKey(sceneId, frameIndex, layer.id));
+          }
+        }
+      }
+      final removeIds = selectedLayers
+          .map((layer) => layer.id)
+          .where((id) => id != bottomLayer.id)
+          .toSet();
+      final latestLayers = current
+          .where((layer) => !removeIds.contains(layer.id))
+          .toList();
+      final insertAt = latestLayers.indexOf(bottomLayer);
+      latestLayers[insertAt] = bottomLayer.copyWith(
+        type: LayerType.normal,
+        partId: null,
+        needsAutofillUpdate: false,
+      );
+      _applyFrameUpdate(projectId, sceneIdx, frameIndex, latestLayers);
+    });
   }
 
   /// 通常レイヤーを共通レイヤーへ変換する（共通レイヤー化ダイアログ
@@ -3474,23 +3598,25 @@ class ProjectService extends ChangeNotifier {
     required int rangeEnd,
     String? rangeSceneId,
   }) {
-    updateLayer(
-      projectId: projectId,
-      sceneId: sceneId,
-      frameIndex: frameIndex,
-      layer: layer.copyWith(
-        type: LayerType.common,
-        rangeMode: rangeMode,
-        rangeStart: rangeStart,
-        rangeEnd: rangeEnd,
-        rangeSceneId: rangeSceneId,
-      ),
-    );
-    (_layerHomes[projectId] ??= {})[layer.id] = (
-      sceneId: sceneId,
-      frameIndex: frameIndex,
-    );
-    notifyListeners();
+    editTimeline(projectId, 'Convert layer to common', () {
+      updateLayer(
+        projectId: projectId,
+        sceneId: sceneId,
+        frameIndex: frameIndex,
+        layer: layer.copyWith(
+          type: LayerType.common,
+          rangeMode: rangeMode,
+          rangeStart: rangeStart,
+          rangeEnd: rangeEnd,
+          rangeSceneId: rangeSceneId,
+        ),
+      );
+      (_layerHomes[projectId] ??= {})[layer.id] = (
+        sceneId: sceneId,
+        frameIndex: frameIndex,
+      );
+      notifyListeners();
+    }, changesTiles: false);
   }
 
   /// 表示中の全レイヤーを1枚に統合し、新しい共通レイヤーとして追加する
@@ -3522,29 +3648,32 @@ class ProjectService extends ChangeNotifier {
     flattened.dispose();
     if (byteData == null) return;
 
-    final visible = layers.where((l) => l.parentFolderId == null).length;
-    final created = addLayer(
-      projectId: projectId,
-      sceneId: sceneId,
-      frameIndex: frameIndex,
-      type: LayerType.common,
-      name: '共通${visible + 1}',
-    );
-    tm.replaceLayerPixels(
-      frameLayerKey(sceneId, frameIndex, created.id),
-      byteData.buffer.asUint8List(),
-    );
-    updateLayer(
-      projectId: projectId,
-      sceneId: sceneId,
-      frameIndex: frameIndex,
-      layer: created.copyWith(
-        rangeMode: rangeMode,
-        rangeStart: rangeStart,
-        rangeEnd: rangeEnd,
-        rangeSceneId: rangeSceneId,
-      ),
-    );
+    if (frameIndex >= frameCount(projectId, sceneId)) return;
+    editTimeline(projectId, 'Add flattened common layer', () {
+      final visible = layers.where((l) => l.parentFolderId == null).length;
+      final created = addLayer(
+        projectId: projectId,
+        sceneId: sceneId,
+        frameIndex: frameIndex,
+        type: LayerType.common,
+        name: '共通${visible + 1}',
+      );
+      tm.replaceLayerPixels(
+        frameLayerKey(sceneId, frameIndex, created.id),
+        byteData.buffer.asUint8List(),
+      );
+      updateLayer(
+        projectId: projectId,
+        sceneId: sceneId,
+        frameIndex: frameIndex,
+        layer: created.copyWith(
+          rangeMode: rangeMode,
+          rangeStart: rangeStart,
+          rangeEnd: rangeEnd,
+          rangeSceneId: rangeSceneId,
+        ),
+      );
+    });
   }
 
   // ─── Project CRUD ─────────────────────────────────────────────────────
@@ -3997,12 +4126,14 @@ class ProjectService extends ChangeNotifier {
   }
 
   Future<void> renameProject(String id, String newName) async {
-    final idx = _projects.indexWhere((p) => p.id == id);
-    if (idx >= 0) {
-      _projects[idx] = _projects[idx].copyWith(name: newName);
-      _saveAsync(id);
-      notifyListeners();
-    }
+    editTimeline(id, 'Rename project', () {
+      final idx = _projects.indexWhere((p) => p.id == id);
+      if (idx >= 0 && _projects[idx].name != newName) {
+        _projects[idx] = _projects[idx].copyWith(name: newName);
+        _saveAsync(id);
+        notifyListeners();
+      }
+    }, changesTiles: false);
   }
 
   void setProjectEndCardHidden(String projectId, bool hidden) {
@@ -5285,6 +5416,9 @@ class _LayerPixelsUndoAction extends UndoAction {
         recordUndo: false,
       );
     }
+    if (layer == null && tiles.isNotEmpty) {
+      projects._notifyProjectPixelsChanged(projectId);
+    }
   }
 
   @override
@@ -5298,15 +5432,9 @@ class _LayerPixelsUndoAction extends UndoAction {
 }
 
 class _TimelineEditState {
-  const _TimelineEditState(
-    this.scenes,
-    this.homes,
-    this.endCard,
-    this.background,
-  );
+  const _TimelineEditState(this.scenes, this.homes, this.project);
 
   final List<Scene> scenes;
   final Map<String, LayerHome> homes;
-  final bool? endCard;
-  final int? background;
+  final Project? project;
 }

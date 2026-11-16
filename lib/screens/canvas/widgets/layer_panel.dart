@@ -516,6 +516,8 @@ class _LayerPanelState extends State<LayerPanel> {
                                   layer: layer.copyWith(
                                     isExpanded: !layer.isExpanded,
                                   ),
+                                  recordUndo: false,
+                                  contentChanged: false,
                                 ),
                             child: Icon(
                               layer.isExpanded
@@ -1759,6 +1761,7 @@ class _LayerPanelState extends State<LayerPanel> {
             rangeEnd: end,
             rangeSceneId: rangeSceneId,
           ),
+          recordUndo: false,
         );
         setState(() => _selectedIndex = 0);
         widget.onLayerSelected?.call(created.id);
@@ -2170,9 +2173,11 @@ class _LayerPanelState extends State<LayerPanel> {
     required bool grayMode,
   }) async {
     final projectService = context.read<ProjectService>();
-    final tileManager = projectService.tileManagerOf(widget.projectId);
-    await tileManager.applyBrightnessToAlpha(
-      frameLayerKey(widget.sceneId, widget.frameIndex, layer.id),
+    await projectService.applyBrightnessToAlpha(
+      projectId: widget.projectId,
+      sceneId: widget.sceneId,
+      frameIndex: widget.frameIndex,
+      layerId: layer.id,
       grayMode: grayMode,
     );
     if (!mounted) return;
@@ -2750,20 +2755,12 @@ class _LayerPanelState extends State<LayerPanel> {
     rendered.dispose();
     if (byteData == null || !context.mounted) return;
 
-    tileManager.replaceLayerPixels(
-      projectService.tileKeyFor(
-        widget.projectId,
-        widget.sceneId,
-        widget.frameIndex,
-        layer.id,
-      ),
-      byteData.buffer.asUint8List(),
-    );
-    projectService.updateLayer(
+    projectService.replaceLayerPixels(
       projectId: widget.projectId,
       sceneId: widget.sceneId,
       frameIndex: widget.frameIndex,
-      layer: layer,
+      layerId: layer.id,
+      pixels: byteData.buffer.asUint8List(),
     );
     if (!context.mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
@@ -2843,6 +2840,7 @@ class _LayerPanelState extends State<LayerPanel> {
       sceneId: widget.sceneId,
       frameIndex: widget.frameIndex,
       layer: layer,
+      recordUndo: false,
     );
     setState(() => _selectedIndex = 0);
     if (!context.mounted) return;

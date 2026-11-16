@@ -828,22 +828,12 @@ class _CanvasScreenState extends State<CanvasScreen> {
             .where((value) => value.id == layerId)
             .firstOrNull;
         if (layer == null) throw StateError('No active layer');
-        await projectService
-            .tileManagerOf(widget.projectId)
-            .applyBrightnessToAlpha(
-              projectService.tileKeyFor(
-                widget.projectId,
-                _currentSceneId,
-                targetFrame,
-                layerId,
-              ),
-              grayMode: step.args['grayMode'] == true,
-            );
-        projectService.updateLayer(
+        await projectService.applyBrightnessToAlpha(
           projectId: widget.projectId,
           sceneId: _currentSceneId,
           frameIndex: targetFrame,
-          layer: layer,
+          layerId: layerId,
+          grayMode: step.args['grayMode'] == true,
         );
         if (mounted) setState(() {});
       case 'canvas.selectFrame':
@@ -2953,34 +2943,16 @@ class _CanvasScreenState extends State<CanvasScreen> {
     );
     return RulerPanel(
       activeRuler: _activeRuler,
-      onRulerChanged: _setActiveRulerWithUndo,
+      onRulerChanged: _setActiveRulerLive,
       onClose: () => _setDesktopPanelVisible(CanvasDockPanel.ruler, false),
       canvasWidth: tileManager.canvasWidth,
       canvasHeight: tileManager.canvasHeight,
     );
   }
 
-  /// CanvasArea側のハンドルドラッグによるライブ更新・Undo/Redoの巻き戻し反映用。
-  /// ドラッグ確定時のUndo登録自体はcanvas_area.dart側（_handleRulerUp）が
-  /// 1回だけ行うため、ここでは単純にstateを反映するのみでUndoは登録しない
-  /// （毎フレーム登録するとUndoスタックが埋まってしまうため）。
+  /// 定規は作業中のガイド。定規に沿って描いたストロークは描画履歴に残る。
   void _setActiveRulerLive(Ruler? r) {
     setState(() => _activeRuler = r);
-  }
-
-  /// 定規パネルからの選択・削除など、1回で完結する変更をUndoへ登録しつつ反映する
-  /// （Undo通常対応）。
-  void _setActiveRulerWithUndo(Ruler? newRuler) {
-    final old = _activeRuler;
-    if (identical(old, newRuler)) return;
-    setState(() => _activeRuler = newRuler);
-    context.read<UndoManager>().push(
-      RulerUndoAction(
-        before: old,
-        after: newRuler,
-        onApply: _setActiveRulerLive,
-      ),
-    );
   }
 
   /// Whether the filter panel is working on the canvas — always, while it is
@@ -4760,91 +4732,96 @@ class _CanvasScreenState extends State<CanvasScreen> {
                   }
                   final ps = context.read<ProjectService>();
                   final sceneId = _currentSceneId;
-                  model.Layer layer;
-                  model.TextObject textObject;
-                  if (existingLayerId != null && existing != null) {
-                    final current = ps
-                        .layersOf(widget.projectId, sceneId, _currentFrame)
-                        .where((l) => l.id == existingLayerId)
-                        .firstOrNull;
-                    if (current == null) {
-                      Navigator.pop(ctx);
-                      return;
-                    }
-                    layer = current;
-                    textObject = existing.copyWith(
-                      text: controller.text,
-                      fontSize: fontSize,
-                      color: Color(color),
-                      isBold: isBold,
-                      isItalic: isItalic,
-                      fontFamily: fontFamily,
-                      lineHeight: lineHeight,
-                      letterSpacing: letterSpacing,
-                      align: textAlign,
-                      direction: direction,
-                      outline: model.TextOutline(
-                        enabled: outlineEnabled,
-                        color: Color(outlineColor),
-                        width: outlineWidth,
-                      ),
-                    );
-                  } else {
-                    layer = ps.addTextLayer(
-                      projectId: widget.projectId,
-                      sceneId: sceneId,
-                      frameIndex: _currentFrame,
-                      text: controller.text,
-                      position: position,
-                    );
-                    textObject =
-                        (layer.textObject ??
-                                model.TextObject(
-                                  id: layer.id,
-                                  text: controller.text,
-                                  position: position,
-                                ))
-                            .copyWith(
-                              fontSize: fontSize,
-                              color: Color(color),
-                              isBold: isBold,
-                              isItalic: isItalic,
-                              fontFamily: fontFamily,
-                              lineHeight: lineHeight,
-                              letterSpacing: letterSpacing,
-                              align: textAlign,
-                              direction: direction,
-                              outline: model.TextOutline(
-                                enabled: outlineEnabled,
-                                color: Color(outlineColor),
-                                width: outlineWidth,
-                              ),
-                            );
+                  final frameIndex = _currentFrame;
+                  final current = existingLayerId == null
+                      ? null
+                      : ps
+                            .layersOf(widget.projectId, sceneId, frameIndex)
+                            .where((layer) => layer.id == existingLayerId)
+                            .firstOrNull;
+                  if (existingLayerId != null && current == null) {
+                    Navigator.pop(ctx);
+                    return;
                   }
-                  final tileManager = ps.tileManagerOf(widget.projectId);
+                  final textObject =
+                      (existing ??
+                              current?.textObject ??
+                              model.TextObject(
+                                id: '',
+                                text: controller.text,
+                                position: position,
+                              ))
+                          .copyWith(
+                            text: controller.text,
+                            fontSize: fontSize,
+                            color: Color(color),
+                            isBold: isBold,
+                            isItalic: isItalic,
+                            fontFamily: fontFamily,
+                            lineHeight: lineHeight,
+                            letterSpacing: letterSpacing,
+                            align: textAlign,
+                            direction: direction,
+                            outline: model.TextOutline(
+                              enabled: outlineEnabled,
+                              color: Color(outlineColor),
+                              width: outlineWidth,
+                            ),
+                          );
+                  final tiles = ps.tileManagerOf(widget.projectId);
                   final bytes = await rasterizeTextObject(
                     textObject,
-                    tileManager.canvasWidth,
-                    tileManager.canvasHeight,
+                    tiles.canvasWidth,
+                    tiles.canvasHeight,
                     pixelMode: fontService.pixelModeForFamily(fontFamily),
                   );
-                  if (bytes != null) {
-                    tileManager.replaceLayerPixels(
-                      ps.tileKeyFor(
-                        widget.projectId,
-                        sceneId,
-                        _currentFrame,
-                        layer.id,
-                      ),
-                      bytes,
-                    );
+                  if (!mounted ||
+                      !ctx.mounted ||
+                      bytes == null ||
+                      frameIndex >= ps.frameCount(widget.projectId, sceneId)) {
+                    return;
                   }
-                  ps.updateLayer(
-                    projectId: widget.projectId,
-                    sceneId: sceneId,
-                    frameIndex: _currentFrame,
-                    layer: layer.copyWith(textObject: textObject),
-                  );
+                  if (current != null) {
+                    final stillCurrent = ps
+                        .layersOf(widget.projectId, sceneId, frameIndex)
+                        .contains(current);
+                    if (!stillCurrent) return;
+                    ps.replaceLayerPixels(
+                      projectId: widget.projectId,
+                      sceneId: sceneId,
+                      frameIndex: frameIndex,
+                      layerId: current.id,
+                      pixels: bytes,
+                      updatedLayer: current.copyWith(textObject: textObject),
+                    );
+                  } else {
+                    ps.editTimeline(widget.projectId, 'Add text layer', () {
+                      final layer = ps.addTextLayer(
+                        projectId: widget.projectId,
+                        sceneId: sceneId,
+                        frameIndex: frameIndex,
+                        text: textObject.text,
+                        position: position,
+                      );
+                      tiles.replaceLayerPixels(
+                        ps.tileKeyFor(
+                          widget.projectId,
+                          sceneId,
+                          frameIndex,
+                          layer.id,
+                        ),
+                        bytes,
+                      );
+                      ps.updateLayer(
+                        projectId: widget.projectId,
+                        sceneId: sceneId,
+                        frameIndex: frameIndex,
+                        layer: layer.copyWith(
+                          textObject: textObject.copyWith(id: layer.id),
+                        ),
+                      );
+                    });
+                  }
                   if (ctx.mounted) Navigator.pop(ctx);
                 },
                 child: Text(l10n.commonOk),

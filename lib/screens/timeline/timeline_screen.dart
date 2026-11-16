@@ -1321,30 +1321,32 @@ class _TimelineScreenState extends State<TimelineScreen> {
     final ps = context.read<ProjectService>();
     final found = _editingMaterial(ps);
     if (found == null || found.layer.id != layerId) return;
-    final kind = _rowKindOf(clip.trackType);
-    final rows = ps.rowNamesOf(widget.projectId, sceneId, kind).length;
-    var target = row;
-    if (target >= rows) {
-      ps.addTrackRow(widget.projectId, sceneId, kind);
-      target = rows;
-    }
-    final oldRow = clip.trackRow;
-    ps.updateLayer(
-      projectId: widget.projectId,
-      sceneId: found.home.sceneId,
-      frameIndex: found.home.frameIndex,
-      layer: found.layer.copyWith(trackRow: target),
-    );
-    setState(() => clip.trackRow = target);
-    final stillUsed = _clipsOfType(
-      clip.trackType,
-    ).any((c) => c.trackRow == oldRow);
-    if (oldRow > 0 &&
-        !stillUsed &&
-        ps.removeTrackRow(widget.projectId, sceneId, kind, oldRow)) {
-      // The rows after it moved up one.
-      _loadClipsFromProject(sceneId);
-    }
+    ps.editTimeline(widget.projectId, 'Move material to row', () {
+      final kind = _rowKindOf(clip.trackType);
+      final rows = ps.rowNamesOf(widget.projectId, sceneId, kind).length;
+      var target = row;
+      if (target >= rows) {
+        ps.addTrackRow(widget.projectId, sceneId, kind);
+        target = rows;
+      }
+      final oldRow = clip.trackRow;
+      ps.updateLayer(
+        projectId: widget.projectId,
+        sceneId: found.home.sceneId,
+        frameIndex: found.home.frameIndex,
+        layer: found.layer.copyWith(trackRow: target),
+      );
+      setState(() => clip.trackRow = target);
+      final stillUsed = _clipsOfType(
+        clip.trackType,
+      ).any((c) => c.trackRow == oldRow);
+      if (oldRow > 0 &&
+          !stillUsed &&
+          ps.removeTrackRow(widget.projectId, sceneId, kind, oldRow)) {
+        // The rows after it moved up one.
+        _loadClipsFromProject(sceneId);
+      }
+    }, changesTiles: false);
   }
 
   /// The drag handles over the preview for the material being edited at
@@ -2297,32 +2299,34 @@ class _TimelineScreenState extends State<TimelineScreen> {
       return;
     }
 
-    final layer = projectService.addLayer(
-      projectId: widget.projectId,
-      sceneId: sceneId,
-      frameIndex: _currentFrame,
-      type: LayerType.watermark,
-      name: asset.name,
-    );
-    tileManager.replaceLayerPixels(
-      frameLayerKey(sceneId, _currentFrame, layer.id),
-      pixels,
-    );
-    // 既定は「常時表示」（全フレーム）。表示範囲・角度・大きさ・不透明度は
-    // タイムラインの共通レイヤートラックでウォーターマークをタップすれば
-    // いつでも変更できる（常時表示／エンドカード／任意フレーム
-    // のみ表示はすべて表示範囲設定で実現する）。
-    projectService.updateLayer(
-      projectId: widget.projectId,
-      sceneId: sceneId,
-      frameIndex: _currentFrame,
-      layer: layer.copyWith(
-        rangeMode: LayerRangeMode.allFrames,
-        watermarkAssetId: asset.id,
-        watermarkAngle: defaultAngle,
-        watermarkScale: defaultScale,
-      ),
-    );
+    projectService.editTimeline(widget.projectId, 'Add watermark', () {
+      final layer = projectService.addLayer(
+        projectId: widget.projectId,
+        sceneId: sceneId,
+        frameIndex: _currentFrame,
+        type: LayerType.watermark,
+        name: asset.name,
+      );
+      tileManager.replaceLayerPixels(
+        frameLayerKey(sceneId, _currentFrame, layer.id),
+        pixels,
+      );
+      // 既定は「常時表示」（全フレーム）。表示範囲・角度・大きさ・不透明度は
+      // タイムラインの共通レイヤートラックでウォーターマークをタップすれば
+      // いつでも変更できる（常時表示／エンドカード／任意フレーム
+      // のみ表示はすべて表示範囲設定で実現する）。
+      projectService.updateLayer(
+        projectId: widget.projectId,
+        sceneId: sceneId,
+        frameIndex: _currentFrame,
+        layer: layer.copyWith(
+          rangeMode: LayerRangeMode.allFrames,
+          watermarkAssetId: asset.id,
+          watermarkAngle: defaultAngle,
+          watermarkScale: defaultScale,
+        ),
+      );
+    });
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(l10n.timelineWatermarkAddedSnackbar(asset.name))),
@@ -2331,9 +2335,8 @@ class _TimelineScreenState extends State<TimelineScreen> {
 
   /// [layer]の角度・大きさ・不透明度の変更をピクセルへ反映し直す
   /// （タイムラインでウォーターマークをタップして編集した際に呼ばれる）。
-  Future<bool> _reRasterizeWatermark(
-    Layer layer,
-    LayerHome home, {
+  Future<Uint8List?> _rasterizeWatermarkForEdit(
+    Layer layer, {
     required double angle,
     required double scale,
   }) async {
@@ -2342,18 +2345,18 @@ class _TimelineScreenState extends State<TimelineScreen> {
           PremiumFeature.watermark,
         )) {
       if (mounted) showPremiumBanner(context);
-      return false;
+      return null;
     }
     final watermarkService = context.read<WatermarkService>();
     final asset = watermarkService.assets
         .where((a) => a.id == layer.watermarkAssetId)
         .firstOrNull;
-    if (asset == null || !mounted) return false;
+    if (asset == null || !mounted) return null;
     final projectService = context.read<ProjectService>();
     final tileManager = projectService.tileManagerOf(widget.projectId);
     final w = tileManager.canvasWidth;
     final h = tileManager.canvasHeight;
-    var pixels = asset.type == WatermarkAssetType.text
+    final pixels = asset.type == WatermarkAssetType.text
         ? await _rasterizeTextWatermark(asset, w, h, angle: angle, scale: scale)
         : await _rasterizeImageWatermark(
             asset,
@@ -2362,24 +2365,14 @@ class _TimelineScreenState extends State<TimelineScreen> {
             angle: angle,
             scale: scale,
           );
-    if (pixels == null || !mounted) return false;
+    if (pixels == null || !mounted) return null;
     if (!context.read<PremiumService>().isFeatureAvailable(
       PremiumFeature.watermark,
     )) {
       showPremiumBanner(context);
-      return false;
+      return null;
     }
-    pixels = _applyWatermarkEffects(pixels, w, h, asset);
-    tileManager.replaceLayerPixels(
-      projectService.tileKeyFor(
-        widget.projectId,
-        home.sceneId,
-        home.frameIndex,
-        layer.id,
-      ),
-      pixels,
-    );
-    return true;
+    return _applyWatermarkEffects(pixels, w, h, asset);
   }
 
   /// ウォーターマークのドロップシャドウ・縁取りを適用する。ウォーターマーク
@@ -4874,7 +4867,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
       height: 26,
       child: GestureDetector(
         onTap: () => layer.type == LayerType.watermark
-            ? _showWatermarkEditDialog(layer, home)
+            ? _showWatermarkEditDialog(layer)
             : _showCommonLayerRangeDialog(layer, home),
         child: Container(
           decoration: BoxDecoration(
@@ -5133,7 +5126,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
   /// まとめて編集するダイアログ。タイムラインの共通レイヤートラックで
   /// ウォーターマークをタップすると開く。登録時だけでなく実際に
   /// プロジェクト内で使うときにいつでも変更できるようにしている。
-  void _showWatermarkEditDialog(Layer layer, LayerHome home) {
+  void _showWatermarkEditDialog(Layer layer) {
     final l10n = AppLocalizations.of(context)!;
     final ps = context.read<ProjectService>();
     double angle = layer.watermarkAngle;
@@ -5201,25 +5194,30 @@ class _TimelineScreenState extends State<TimelineScreen> {
             FilledButton(
               onPressed: () async {
                 Navigator.pop(ctx);
-                if (!await _reRasterizeWatermark(
+                final pixels = await _rasterizeWatermarkForEdit(
                   layer,
-                  home,
                   angle: angle,
                   scale: scale,
-                )) {
-                  return;
-                }
-                if (!mounted ||
-                    !context.read<PremiumService>().isFeatureAvailable(
-                      PremiumFeature.watermark,
-                    )) {
-                  return;
-                }
-                ps.updateLayer(
+                );
+                if (pixels == null || !mounted) return;
+                final currentHome = ps.homeOf(widget.projectId, layer.id);
+                if (currentHome == null) return;
+                final current = ps
+                    .layersOf(
+                      widget.projectId,
+                      currentHome.sceneId,
+                      currentHome.frameIndex,
+                    )
+                    .where((item) => item.id == layer.id)
+                    .firstOrNull;
+                if (current == null) return;
+                ps.replaceLayerPixels(
                   projectId: widget.projectId,
-                  sceneId: home.sceneId,
-                  frameIndex: home.frameIndex,
-                  layer: layer.copyWith(
+                  sceneId: currentHome.sceneId,
+                  frameIndex: currentHome.frameIndex,
+                  layerId: layer.id,
+                  pixels: pixels,
+                  updatedLayer: current.copyWith(
                     watermarkAngle: angle,
                     watermarkScale: scale,
                     opacity: (opacity * 100).round(),
@@ -5988,17 +5986,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
     final ps = context.read<ProjectService>();
     final tm = ps.tileManagerOf(widget.projectId);
     final home = _currentFrame;
-    final row = _freeRowFor(_ClipTrackType.text, start, length);
     final name = timelineTextName(text, l10n.timelineMaterialText);
-    final layer = ps.addLayer(
-      projectId: widget.projectId,
-      sceneId: sceneId,
-      frameIndex: home,
-      type: LayerType.timelineText,
-      name: name,
-    );
     final textObject = newTimelineText(
-      id: layer.id,
+      id: '',
       text: text,
       canvasWidth: tm.canvasWidth,
       canvasHeight: tm.canvasHeight,
@@ -6008,25 +5998,41 @@ class _TimelineScreenState extends State<TimelineScreen> {
       tm.canvasWidth,
       tm.canvasHeight,
     );
-    if (!mounted) return;
-    if (bytes != null) {
-      tm.replaceLayerPixels(
-        ps.tileKeyFor(widget.projectId, sceneId, home, layer.id),
-        bytes,
-      );
+    if (!mounted ||
+        _selectedSceneId != sceneId ||
+        home >= ps.frameCount(widget.projectId, sceneId)) {
+      return;
     }
-    ps.updateLayer(
-      projectId: widget.projectId,
-      sceneId: sceneId,
-      frameIndex: home,
-      layer: layer.copyWith(
-        rangeMode: LayerRangeMode.frameRange,
-        rangeStart: start + 1,
-        rangeEnd: start + length,
-        textObject: textObject,
-        trackRow: row,
-      ),
-    );
+    late int row;
+    final layer = ps.editTimeline(widget.projectId, 'Add text clip', () {
+      row = _freeRowFor(_ClipTrackType.text, start, length);
+      final layer = ps.addLayer(
+        projectId: widget.projectId,
+        sceneId: sceneId,
+        frameIndex: home,
+        type: LayerType.timelineText,
+        name: name,
+      );
+      if (bytes != null) {
+        tm.replaceLayerPixels(
+          ps.tileKeyFor(widget.projectId, sceneId, home, layer.id),
+          bytes,
+        );
+      }
+      ps.updateLayer(
+        projectId: widget.projectId,
+        sceneId: sceneId,
+        frameIndex: home,
+        layer: layer.copyWith(
+          rangeMode: LayerRangeMode.frameRange,
+          rangeStart: start + 1,
+          rangeEnd: start + length,
+          textObject: textObject.copyWith(id: layer.id),
+          trackRow: row,
+        ),
+      );
+      return layer;
+    });
     setState(() {
       _textClips.add(
         _TrackClip(
@@ -6213,34 +6219,41 @@ class _TimelineScreenState extends State<TimelineScreen> {
     required MaterialAsset asset,
   }) async {
     final projectService = context.read<ProjectService>();
-    // 同じ時間に重なる素材があれば、空いている行（無ければ新しい行）へ置く。
-    final row = _freeRowFor(trackType, startFrame, lengthFrames);
+    final home = _currentFrame;
 
     if (trackType == _ClipTrackType.audio) {
-      final id = 'audio_${DateTime.now().microsecondsSinceEpoch}';
-      projectService.addAudioClip(
+      return projectService.editTimeline(
         widget.projectId,
-        sceneId,
-        AudioClip(
-          id: id,
-          label: label,
-          materialId: asset.id,
-          startFrame: startFrame,
-          lengthFrames: lengthFrames,
-          trackRow: row,
-        ),
-      );
-      return _TrackClip(
-        id: id,
-        label: label,
-        startFrame: startFrame,
-        lengthFrames: lengthFrames,
-        color: color,
-        trackType: trackType,
-        filePath: filePath,
-        materialId: asset.id,
-        useEnd: lengthFrames - 1,
-        trackRow: row,
+        'Add audio clip',
+        () {
+          final row = _freeRowFor(trackType, startFrame, lengthFrames);
+          final id = 'audio_${DateTime.now().microsecondsSinceEpoch}';
+          projectService.addAudioClip(
+            widget.projectId,
+            sceneId,
+            AudioClip(
+              id: id,
+              label: label,
+              materialId: asset.id,
+              startFrame: startFrame,
+              lengthFrames: lengthFrames,
+              trackRow: row,
+            ),
+          );
+          return _TrackClip(
+            id: id,
+            label: label,
+            startFrame: startFrame,
+            lengthFrames: lengthFrames,
+            color: color,
+            trackType: trackType,
+            filePath: filePath,
+            materialId: asset.id,
+            useEnd: lengthFrames - 1,
+            trackRow: row,
+          );
+        },
+        changesTiles: false,
       );
     }
 
@@ -6253,55 +6266,62 @@ class _TimelineScreenState extends State<TimelineScreen> {
     final bytes = trackType == _ClipTrackType.image && filePath != null
         ? await _rasterizeImageFile(filePath, w, h)
         : await _placeholderVideoFrame(w, h);
-    if (bytes == null || !mounted) return null;
+    if (bytes == null ||
+        !mounted ||
+        _selectedSceneId != sceneId ||
+        home >= projectService.frameCount(widget.projectId, sceneId)) {
+      return null;
+    }
 
-    final layer = projectService.addLayer(
-      projectId: widget.projectId,
-      sceneId: sceneId,
-      frameIndex: _currentFrame,
-      type: trackType == _ClipTrackType.video
-          ? LayerType.timelineVideo
-          : LayerType.timelineImage,
-      name: label,
-    );
-    final tileManager = projectService.tileManagerOf(widget.projectId);
-    tileManager.replaceLayerPixels(
-      projectService.tileKeyFor(
-        widget.projectId,
-        sceneId,
-        _currentFrame,
-        layer.id,
-      ),
-      bytes,
-    );
-    projectService.updateLayer(
-      projectId: widget.projectId,
-      sceneId: sceneId,
-      frameIndex: _currentFrame,
-      layer: layer.copyWith(
-        rangeMode: LayerRangeMode.frameRange,
-        rangeStart: startFrame + 1,
-        rangeEnd: startFrame + lengthFrames,
-        materialId: asset.id,
-        trackRow: row,
-        sourceTrimStart: trackType == _ClipTrackType.video ? 0 : null,
-        sourceTrimEnd: trackType == _ClipTrackType.video
-            ? lengthFrames - 1
-            : null,
-      ),
-    );
+    return projectService.editTimeline(
+      widget.projectId,
+      'Add material clip',
+      () {
+        final row = _freeRowFor(trackType, startFrame, lengthFrames);
+        final layer = projectService.addLayer(
+          projectId: widget.projectId,
+          sceneId: sceneId,
+          frameIndex: home,
+          type: trackType == _ClipTrackType.video
+              ? LayerType.timelineVideo
+              : LayerType.timelineImage,
+          name: label,
+        );
+        final tileManager = projectService.tileManagerOf(widget.projectId);
+        tileManager.replaceLayerPixels(
+          projectService.tileKeyFor(widget.projectId, sceneId, home, layer.id),
+          bytes,
+        );
+        projectService.updateLayer(
+          projectId: widget.projectId,
+          sceneId: sceneId,
+          frameIndex: home,
+          layer: layer.copyWith(
+            rangeMode: LayerRangeMode.frameRange,
+            rangeStart: startFrame + 1,
+            rangeEnd: startFrame + lengthFrames,
+            materialId: asset.id,
+            trackRow: row,
+            sourceTrimStart: trackType == _ClipTrackType.video ? 0 : null,
+            sourceTrimEnd: trackType == _ClipTrackType.video
+                ? lengthFrames - 1
+                : null,
+          ),
+        );
 
-    return _TrackClip(
-      id: layer.id,
-      label: label,
-      startFrame: startFrame,
-      lengthFrames: lengthFrames,
-      color: color,
-      trackType: trackType,
-      filePath: filePath,
-      materialId: asset.id,
-      useEnd: lengthFrames - 1,
-      trackRow: row,
+        return _TrackClip(
+          id: layer.id,
+          label: label,
+          startFrame: startFrame,
+          lengthFrames: lengthFrames,
+          color: color,
+          trackType: trackType,
+          filePath: filePath,
+          materialId: asset.id,
+          useEnd: lengthFrames - 1,
+          trackRow: row,
+        );
+      },
     );
   }
 
@@ -6371,45 +6391,50 @@ class _TimelineScreenState extends State<TimelineScreen> {
 
   void _deletePersistedClip(_TrackClip clip, String sceneId) {
     final projectService = context.read<ProjectService>();
-    if (clip.trackType == _ClipTrackType.audio) {
-      projectService.removeAudioClip(widget.projectId, sceneId, clip.id);
-    } else {
-      projectService.removeLayer(
-        projectId: widget.projectId,
-        sceneId: sceneId,
-        frameIndex: _currentFrame,
-        layerId: clip.id,
-      );
-    }
-    // 使用中の列だけを表示する方針：追加専用の行（2行目以降）が
-    // 空になったら自動で畳む（構造ごと削除して行番号を詰め直す）。1行目は
-    // 常に存在する既定行なので畳まず、中身がなければ表示だけを省く。
-    if (clip.trackRow > 0) {
-      final remaining = switch (clip.trackType) {
-        _ClipTrackType.audio => _audioClips,
-        _ClipTrackType.video => _videoClips,
-        _ClipTrackType.image => _imageClips,
-        _ClipTrackType.text => _textClips,
-      };
-      final stillUsed = remaining.any((c) => c.trackRow == clip.trackRow);
-      if (!stillUsed &&
-          projectService.removeTrackRow(
-            widget.projectId,
-            sceneId,
-            _rowKindOf(clip.trackType),
-            clip.trackRow,
-          )) {
-        // The rows after it moved up one: read the clips' rows again.
-        _loadClipsFromProject(sceneId);
+    projectService.editTimeline(widget.projectId, 'Delete clip', () {
+      if (clip.trackType == _ClipTrackType.audio) {
+        projectService.removeAudioClip(widget.projectId, sceneId, clip.id);
+      } else {
+        projectService.removeLayer(
+          projectId: widget.projectId,
+          sceneId: sceneId,
+          frameIndex: _currentFrame,
+          layerId: clip.id,
+        );
       }
-    }
+      // 使用中の列だけを表示する方針：追加専用の行（2行目以降）が
+      // 空になったら自動で畳む（構造ごと削除して行番号を詰め直す）。1行目は
+      // 常に存在する既定行なので畳まず、中身がなければ表示だけを省く。
+      if (clip.trackRow > 0) {
+        final remaining = switch (clip.trackType) {
+          _ClipTrackType.audio => _audioClips,
+          _ClipTrackType.video => _videoClips,
+          _ClipTrackType.image => _imageClips,
+          _ClipTrackType.text => _textClips,
+        };
+        final stillUsed = remaining.any((c) => c.trackRow == clip.trackRow);
+        if (!stillUsed &&
+            projectService.removeTrackRow(
+              widget.projectId,
+              sceneId,
+              _rowKindOf(clip.trackType),
+              clip.trackRow,
+            )) {
+          // The rows after it moved up one: read the clips' rows again.
+          _loadClipsFromProject(sceneId);
+        }
+      }
+    }, changesTiles: false);
   }
 
   /// 素材クリップ（画像・動画・音声）を複製し、元クリップの直後へ配置する。
-  Future<void> _duplicateClip(_TrackClip clip) async {
+  void _duplicateClip(_TrackClip clip) {
     final maxStart = (_totalFrames - clip.lengthFrames).clamp(0, 1 << 30);
     final newStart = (clip.startFrame + clip.lengthFrames).clamp(0, maxStart);
-    await _duplicateClipAt(clip, newStart);
+    final projects = context.read<ProjectService>();
+    projects.editTimeline(widget.projectId, 'Duplicate clip', () {
+      _duplicateClipAt(clip, newStart);
+    });
   }
 
   /// 素材クリップ（画像・動画・音声）を複製し、指定の開始フレーム
@@ -6418,11 +6443,11 @@ class _TimelineScreenState extends State<TimelineScreen> {
   /// 両方から使う共通処理。音声はAudioClipとして、画像・動画は元レイヤーの
   /// ピクセルデータを新規レイヤーへコピーした上で表示範囲を複製先の位置へ
   /// ずらして追加する。
-  Future<void> _duplicateClipAt(
+  void _duplicateClipAt(
     _TrackClip clip,
     int newStart, {
     int? overrideTrackRow,
-  }) async {
+  }) {
     final sceneId = _selectedSceneId;
     if (sceneId == null) return;
     final projectService = context.read<ProjectService>();
@@ -6646,15 +6671,22 @@ class _TimelineScreenState extends State<TimelineScreen> {
     final targets = _allClips
         .where((c) => _selectedClipIds.contains(c.id))
         .toList();
-    for (final clip in targets) {
-      setState(() {
-        _videoClips.remove(clip);
-        _audioClips.remove(clip);
-        _imageClips.remove(clip);
-        _textClips.remove(clip);
-      });
-      _deletePersistedClip(clip, sceneId);
-    }
+    context.read<ProjectService>().editTimeline(
+      widget.projectId,
+      'Delete clips',
+      () {
+        for (final clip in targets) {
+          setState(() {
+            _videoClips.remove(clip);
+            _audioClips.remove(clip);
+            _imageClips.remove(clip);
+            _textClips.remove(clip);
+          });
+          _deletePersistedClip(clip, sceneId);
+        }
+      },
+      changesTiles: false,
+    );
     setState(() {
       _selectedClipIds.clear();
       _isClipMultiSelect = false;
@@ -6708,68 +6740,74 @@ class _TimelineScreenState extends State<TimelineScreen> {
     String strategy = 'keep';
     if (conflicts.isNotEmpty) {
       final chosen = await _showClipOverlapDialog();
-      if (chosen == null || !mounted) return; // キャンセル
+      if (chosen == null || !mounted || _selectedSceneId != sceneId) return;
       strategy = chosen;
     }
 
-    int? beforeShift, afterShift;
-    final newRowForType = <_ClipTrackType, int>{};
-    if (strategy == 'before') {
-      final earliestConflictStart = conflicts
-          .map((c) => c.start)
-          .reduce((a, b) => a < b ? a : b);
-      final batchMaxEnd = clipboard.clips
-          .map((c) => targets[c.id]! + c.lengthFrames)
-          .reduce((a, b) => a > b ? a : b);
-      beforeShift = earliestConflictStart - batchMaxEnd;
-    } else if (strategy == 'after') {
-      final latestConflictEnd = conflicts
-          .map((c) => c.end)
-          .reduce((a, b) => a > b ? a : b);
-      final batchMinStart = clipboard.clips
-          .map((c) => targets[c.id]!)
-          .reduce((a, b) => a < b ? a : b);
-      afterShift = latestConflictEnd - batchMinStart;
-    } else if (strategy == 'newRow') {
-      final ps = context.read<ProjectService>();
-      final conflictingTypes = clipboard.clips
-          .where((c) => conflictingClipIds.contains(c.id))
-          .map((c) => c.trackType)
-          .toSet();
-      for (final type in conflictingTypes) {
-        final rowKind = _rowKindOf(type);
-        ps.addTrackRow(widget.projectId, sceneId, rowKind);
-        newRowForType[type] =
-            ps.rowNamesOf(widget.projectId, sceneId, rowKind).length - 1;
-      }
-    }
+    context.read<ProjectService>().editTimeline(
+      widget.projectId,
+      'Paste clips',
+      () {
+        int? beforeShift, afterShift;
+        final newRowForType = <_ClipTrackType, int>{};
+        if (strategy == 'before') {
+          final earliestConflictStart = conflicts
+              .map((c) => c.start)
+              .reduce((a, b) => a < b ? a : b);
+          final batchMaxEnd = clipboard.clips
+              .map((c) => targets[c.id]! + c.lengthFrames)
+              .reduce((a, b) => a > b ? a : b);
+          beforeShift = earliestConflictStart - batchMaxEnd;
+        } else if (strategy == 'after') {
+          final latestConflictEnd = conflicts
+              .map((c) => c.end)
+              .reduce((a, b) => a > b ? a : b);
+          final batchMinStart = clipboard.clips
+              .map((c) => targets[c.id]!)
+              .reduce((a, b) => a < b ? a : b);
+          afterShift = latestConflictEnd - batchMinStart;
+        } else if (strategy == 'newRow') {
+          final ps = context.read<ProjectService>();
+          final conflictingTypes = clipboard.clips
+              .where((c) => conflictingClipIds.contains(c.id))
+              .map((c) => c.trackType)
+              .toSet();
+          for (final type in conflictingTypes) {
+            final rowKind = _rowKindOf(type);
+            ps.addTrackRow(widget.projectId, sceneId, rowKind);
+            newRowForType[type] =
+                ps.rowNamesOf(widget.projectId, sceneId, rowKind).length - 1;
+          }
+        }
 
-    for (final c in clipboard.clips) {
-      var start = targets[c.id]!;
-      int? overrideRow;
-      if (strategy == 'before' && beforeShift != null) {
-        start = (start + beforeShift).clamp(0, 1 << 30);
-      } else if (strategy == 'after' && afterShift != null) {
-        start = (start + afterShift).clamp(0, 1 << 30);
-      } else if (strategy == 'newRow' && conflictingClipIds.contains(c.id)) {
-        overrideRow = newRowForType[c.trackType];
-      }
-      await _duplicateClipAt(c, start, overrideTrackRow: overrideRow);
-      if (!mounted) return;
-    }
+        for (final c in clipboard.clips) {
+          var start = targets[c.id]!;
+          int? overrideRow;
+          if (strategy == 'before' && beforeShift != null) {
+            start = (start + beforeShift).clamp(0, 1 << 30);
+          } else if (strategy == 'after' && afterShift != null) {
+            start = (start + afterShift).clamp(0, 1 << 30);
+          } else if (strategy == 'newRow' &&
+              conflictingClipIds.contains(c.id)) {
+            overrideRow = newRowForType[c.trackType];
+          }
+          _duplicateClipAt(c, start, overrideTrackRow: overrideRow);
+        }
 
-    if (clipboard.isCut) {
-      for (final c in clipboard.clips) {
-        setState(() {
-          _videoClips.removeWhere((x) => x.id == c.id);
-          _audioClips.removeWhere((x) => x.id == c.id);
-          _imageClips.removeWhere((x) => x.id == c.id);
-          _textClips.removeWhere((x) => x.id == c.id);
-        });
-        _deletePersistedClip(c, sceneId);
-      }
-      setState(() => _clipClipboard = null);
-    }
+        if (clipboard.isCut) {
+          for (final c in clipboard.clips) {
+            setState(() {
+              _videoClips.removeWhere((x) => x.id == c.id);
+              _audioClips.removeWhere((x) => x.id == c.id);
+              _imageClips.removeWhere((x) => x.id == c.id);
+              _textClips.removeWhere((x) => x.id == c.id);
+            });
+            _deletePersistedClip(c, sceneId);
+          }
+          setState(() => _clipClipboard = null);
+        }
+      },
+    );
     setState(() {
       _isClipMultiSelect = false;
       _selectedClipIds.clear();
