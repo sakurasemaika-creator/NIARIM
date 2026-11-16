@@ -61,7 +61,7 @@ class _RecurringMissionsPanelState extends State<RecurringMissionsPanel> {
       final l10n = appLocalizationsOf(context);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
+          content: messageText(
             result['claimed'] == true
                 ? l10n.missionCoinsReceived
                 : l10n.missionClaimUnconfirmed,
@@ -72,7 +72,9 @@ class _RecurringMissionsPanelState extends State<RecurringMissionsPanel> {
       if (mounted && owner == _owner && identical(api, _api)) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(appLocalizationsOf(context).missionClaimUnconfirmed),
+            content: messageText(
+              appLocalizationsOf(context).missionClaimUnconfirmed,
+            ),
           ),
         );
       }

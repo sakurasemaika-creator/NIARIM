@@ -456,6 +456,11 @@ class ThemeService extends ChangeNotifier {
     ),
   ];
 
+  /// A renamed preset keeps its user-supplied name in every language.
+  static bool usesBuiltInName(AppThemePreset preset) => _builtInPresets.any(
+    (original) => original.id == preset.id && original.name == preset.name,
+  );
+
   Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
     _transferCopies = TransferCopyRecord.readFrom(
@@ -518,7 +523,10 @@ class ThemeService extends ChangeNotifier {
         final stored = _presets[i];
         final original = originalBuiltIns[stored.id];
         if (original != null) {
-          _presets[i] = original.copyWith(isFavorite: stored.isFavorite);
+          _presets[i] = original.copyWith(
+            name: stored.name,
+            isFavorite: stored.isFavorite,
+          );
         }
       }
     }
@@ -549,7 +557,10 @@ class ThemeService extends ChangeNotifier {
           : null;
       _current = original == null
           ? restoredCurrent
-          : original.copyWith(isFavorite: restoredCurrent.isFavorite);
+          : original.copyWith(
+              name: restoredCurrent.name,
+              isFavorite: restoredCurrent.isFavorite,
+            );
     } else if (_presets.isNotEmpty) {
       _current = _presets.first;
     }

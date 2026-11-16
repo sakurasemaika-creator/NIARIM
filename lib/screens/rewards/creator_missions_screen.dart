@@ -102,7 +102,7 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
           : t.get('claimFailed');
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text(message)));
+      ).showSnackBar(SnackBar(content: messageText(message)));
       _refresh(api);
     } catch (_) {
       if (mounted &&
@@ -110,7 +110,9 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
           identical(_api, api)) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(CreatorMissionLabels.of(context).get('claimFailed')),
+            content: messageText(
+              CreatorMissionLabels.of(context).get('claimFailed'),
+            ),
           ),
         );
         _refresh(api);
@@ -214,7 +216,7 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
       if (mounted && sameOwner()) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(
+            content: messageText(
               appLocalizationsOf(
                 context,
               ).creatorMissionClaimAllResult(received, failed),
@@ -226,7 +228,7 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
       if (mounted && context.read<GoogleAuthService>().account?.id == owner) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(
+            content: messageText(
               appLocalizationsOf(context).creatorMissionClaimAllLoadFailed,
             ),
           ),
@@ -268,7 +270,7 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
       if (mounted && context.read<GoogleAuthService>().account?.id == owner) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(
+            content: messageText(
               CreatorMissionLabels.of(context).get('workListError'),
             ),
           ),
@@ -693,7 +695,7 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
                             child: CircularProgressIndicator(strokeWidth: 2),
                           )
                         : const Icon(Icons.inventory_2_outlined),
-                    label: Text(l10n.creatorMissionClaimAll),
+                    label: messageText(l10n.creatorMissionClaimAll),
                   ),
                 ),
                 if (widget.workId == null) ...[
@@ -748,13 +750,13 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
           if (cursor != null && rowIndex == rows.length) {
             return OutlinedButton(
               onPressed: _moreBusy ? null : () => _more(api, cursor),
-              child: Text(t.get('loadMore')),
+              child: messageText(t.get('loadMore')),
             );
           }
           return TextButton.icon(
             onPressed: () => _refresh(api),
             icon: const Icon(Icons.refresh),
-            label: Text(t.get('retry')),
+            label: messageText(t.get('retry')),
           );
         },
       ),
@@ -817,7 +819,7 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
                     t.get('loadError'),
                     action: OutlinedButton(
                       onPressed: () => _refresh(api),
-                      child: Text(t.get('retry')),
+                      child: messageText(t.get('retry')),
                     ),
                   );
                 }

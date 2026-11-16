@@ -70,13 +70,17 @@ class _LoginBonusPanelState extends State<LoginBonusPanel> {
       final t = LoginBonusLabels.of(context);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(result['claimed'] == true ? t['success'] : t['failed']),
+          content: messageText(
+            result['claimed'] == true ? t['success'] : t['failed'],
+          ),
         ),
       );
     } catch (_) {
       if (mounted && owner == _owner && identical(api, _api)) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(LoginBonusLabels.of(context)['failed'])),
+          SnackBar(
+            content: messageText(LoginBonusLabels.of(context)['failed']),
+          ),
         );
       }
     } finally {
@@ -182,7 +186,9 @@ class _LoginBonusPanelState extends State<LoginBonusPanel> {
                               !_busy.contains('daily0')
                           ? () => _claim('daily', null)
                           : null,
-                      child: Text(dailyClaimed ? t['claimed'] : t['claim']),
+                      child: messageText(
+                        dailyClaimed ? t['claimed'] : t['claim'],
+                      ),
                     ),
                   ],
                 ),

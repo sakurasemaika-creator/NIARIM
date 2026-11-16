@@ -148,7 +148,12 @@ Finder _option(CoinUnlockDuration duration) => find.byKey(
 );
 
 String _textIn(WidgetTester tester, Finder owner) => tester
-    .widget<Text>(find.descendant(of: owner, matching: find.byType(Text)))
+    .widget<Text>(
+      find.descendant(
+        of: owner,
+        matching: find.byWidgetPredicate((widget) => widget is Text),
+      ),
+    )
     .data!;
 
 String _buttonLabel(WidgetTester tester) => _textIn(tester, _durationButton);
@@ -315,7 +320,10 @@ void main() {
           find.descendant(
             of: toneCurve,
             matching: find.textContaining(
-              RegExp(r'(?<![0-9])' '${_expectedToneCurveCoins(duration)}(?![0-9])'),
+              RegExp(
+                r'(?<![0-9])'
+                '${_expectedToneCurveCoins(duration)}(?![0-9])',
+              ),
             ),
           ),
           findsOneWidget,

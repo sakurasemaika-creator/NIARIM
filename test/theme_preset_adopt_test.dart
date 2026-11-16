@@ -6,6 +6,8 @@
 // メニューの「編集」からのみ行う。
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:niarim/l10n/app_localizations.dart';
+import 'package:niarim/l10n/theme_preset_labels.dart';
 import 'package:niarim/services/theme_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -18,6 +20,37 @@ void main() {
     await service.init();
     return service;
   }
+
+  test('組み込みテーマ名だけを表示言語に合わせる', () async {
+    final service = await newService();
+    final dark = service.presets.firstWhere((p) => p.id == 'default_dark');
+    final renamed = dark.copyWith(name: '夜の作業用');
+    final custom = dark.copyWith(id: 'theme_my_copy');
+    for (final locale in AppLocalizations.supportedLocales) {
+      final labels = service.presets.map((p) => themePresetLabel(p, locale));
+      expect(labels.toSet(), hasLength(service.presets.length));
+      expect(themePresetLabel(renamed, locale), renamed.name);
+      expect(themePresetLabel(custom, locale), custom.name);
+      if (locale.languageCode != 'ja') {
+        for (final preset in service.presets) {
+          expect(themePresetLabel(preset, locale), isNot(preset.name));
+        }
+      }
+    }
+    expect(themePresetLabel(dark, const Locale('en')), 'Red (Dark)');
+    expect(themePresetLabel(dark, const Locale('ja')), 'レッド（ダーク）');
+
+    service.applyPreset(dark.id);
+    service.savePreset(renamed);
+    await Future<void>.delayed(Duration.zero);
+    final restored = await newService();
+    expect(restored.current.id, dark.id);
+    expect(restored.current.accentColor, dark.accentColor);
+    expect(
+      themePresetLabel(restored.current, const Locale('en')),
+      renamed.name,
+    );
+  });
 
   test('タップ（配色の取り込み）では、色を変えても元のテーマは変わらない', () async {
     final service = await newService();

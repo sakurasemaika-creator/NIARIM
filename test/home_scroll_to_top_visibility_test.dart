@@ -115,6 +115,21 @@ void main() {
             problems.add('still shown after going back to the top');
           }
 
+          tester.platformDispatcher.accessibilityFeaturesTestValue =
+              const FakeAccessibilityFeatures(disableAnimations: true);
+          try {
+            list.position.jumpTo(120);
+            await m.frames(2);
+            await tester.tap(arrow);
+            expect(
+              list.position.pixels,
+              0,
+              reason: 'reduced motion jumps immediately',
+            );
+          } finally {
+            tester.platformDispatcher.clearAccessibilityFeaturesTestValue();
+          }
+
           // 送ってからスクロールできない2件のフォルダへ入る：一番上から
           // 始まり、出さない。
           list.position.jumpTo(list.position.maxScrollExtent);

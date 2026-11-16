@@ -7,6 +7,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 
 import '../../l10n/app_localizations.dart';
+import '../../l10n/theme_preset_labels.dart';
 import '../../services/export_share_service.dart';
 import '../../services/theme_service.dart';
 import '../../models/app_theme_preset.dart';
@@ -32,6 +33,7 @@ class ThemeSettingsScreen extends StatelessWidget {
     final themeService = context.watch<ThemeService>();
     final presets = themeService.presets;
     final current = themeService.current;
+    final locale = Localizations.localeOf(context);
 
     return Scaffold(
       appBar: AppBar(
@@ -358,7 +360,9 @@ class ThemeSettingsScreen extends StatelessWidget {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: Text(
-                                l10n.themeAdoptColorsSnackbar(entry.value.name),
+                                l10n.themeAdoptColorsSnackbar(
+                                  themePresetLabel(entry.value, locale),
+                                ),
                               ),
                             ),
                           );
@@ -374,7 +378,7 @@ class ThemeSettingsScreen extends StatelessWidget {
                               const SizedBox(width: 14),
                               Expanded(
                                 child: Text(
-                                  entry.value.name,
+                                  themePresetLabel(entry.value, locale),
                                   style: const TextStyle(
                                     fontWeight: FontWeight.w600,
                                     fontSize: 14,
@@ -532,6 +536,8 @@ class ThemeSettingsScreen extends StatelessWidget {
     ThemeService service,
   ) {
     final l10n = AppLocalizations.of(context)!;
+    final locale = Localizations.localeOf(context);
+    final name = themePresetLabel(preset, locale);
     switch (action) {
       // このテーマ自体を編集対象にする（一覧でチェックが付き、以後の
       // カラーカスタマイズの変更はこのテーマへ上書き保存される）。
@@ -539,7 +545,7 @@ class ThemeSettingsScreen extends StatelessWidget {
       case 'edit':
         service.applyPreset(preset.id);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.themeEditPresetSnackbar(preset.name))),
+          SnackBar(content: Text(l10n.themeEditPresetSnackbar(name))),
         );
       case 'rename':
         _showRenameDialog(context, preset, service);
@@ -548,8 +554,8 @@ class ThemeSettingsScreen extends StatelessWidget {
         // あれば番号を付ける）。
         final copy = preset.copyWith(
           id: 'theme_${DateTime.now().millisecondsSinceEpoch}',
-          name: numberedCopyName(l10n, preset.name, {
-            for (final p in service.presets) p.name,
+          name: numberedCopyName(l10n, name, {
+            for (final p in service.presets) themePresetLabel(p, locale),
           }),
         );
         service.savePreset(copy);
@@ -631,7 +637,8 @@ class ThemeSettingsScreen extends StatelessWidget {
     ThemeService service,
   ) {
     final l10n = AppLocalizations.of(context)!;
-    final controller = TextEditingController(text: preset.name);
+    final name = themePresetLabel(preset, Localizations.localeOf(context));
+    final controller = TextEditingController(text: name);
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -645,7 +652,9 @@ class ThemeSettingsScreen extends StatelessWidget {
           ),
           FilledButton(
             onPressed: () {
-              service.savePreset(preset.copyWith(name: controller.text));
+              if (controller.text != name) {
+                service.savePreset(preset.copyWith(name: controller.text));
+              }
               Navigator.pop(ctx);
             },
             child: Text(l10n.commonSave),

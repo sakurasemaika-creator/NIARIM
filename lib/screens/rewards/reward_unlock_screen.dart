@@ -215,7 +215,7 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
       final t = RewardUnlockLabels.of(context);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
+          content: messageText(
             completed ? t['rewardPending'] : t['rewardUnavailable'],
           ),
         ),
@@ -260,7 +260,9 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(RewardUnlockLabels.of(context)['rewardUnavailable']),
+            content: messageText(
+              RewardUnlockLabels.of(context)['rewardUnavailable'],
+            ),
           ),
         );
       }
@@ -330,7 +332,7 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
           ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: Text(t['redeem']),
+            child: messageText(t['redeem']),
           ),
         ],
       ),
@@ -357,13 +359,13 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
         if (!mounted) return;
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text(t['redemptionSuccess'])));
+        ).showSnackBar(SnackBar(content: messageText(t['redemptionSuccess'])));
       }
     } catch (_) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(t['redemptionUncertain'])));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: messageText(t['redemptionUncertain'])),
+        );
       }
     } finally {
       if (mounted) setState(() => _redeemBusy = false);
@@ -415,9 +417,9 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
           version != CoinBenefitPriceCatalog.version ||
           balance is! int ||
           balance < amount) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(t['redemptionUncertain'])));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: messageText(t['redemptionUncertain'])),
+        );
         return;
       }
       final period = coinUnlockDurationLabel(l10n, currentDuration);
@@ -446,7 +448,7 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
             ),
             FilledButton(
               onPressed: () => Navigator.pop(dialog, true),
-              child: Text(t['redeem']),
+              child: messageText(t['redeem']),
             ),
           ],
         ),
@@ -472,13 +474,13 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
         if (!mounted) return;
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text(t['redemptionSuccess'])));
+        ).showSnackBar(SnackBar(content: messageText(t['redemptionSuccess'])));
       }
     } catch (_) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(t['redemptionUncertain'])));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: messageText(t['redemptionUncertain'])),
+        );
       }
     } finally {
       if (mounted) setState(() => _redeemBusy = false);
@@ -532,9 +534,9 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
           version != CoinBenefitPriceCatalog.version ||
           wallet is! int ||
           wallet < price) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(labels['redemptionUncertain'])));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: messageText(labels['redemptionUncertain'])),
+        );
         return;
       }
       final period = coinUnlockDurationLabel(l10n, _duration);
@@ -555,7 +557,7 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
             ),
             FilledButton(
               onPressed: () => Navigator.pop(dialog, true),
-              child: Text(labels['redeem']),
+              child: messageText(labels['redeem']),
             ),
           ],
         ),
@@ -580,15 +582,15 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
       if (result['redeemed'] == true) {
         await _loadWallet(accountId);
         if (!mounted) return;
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(labels['redemptionSuccess'])));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: messageText(labels['redemptionSuccess'])),
+        );
       }
     } catch (_) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(labels['redemptionUncertain'])));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: messageText(labels['redemptionUncertain'])),
+        );
       }
     } finally {
       if (mounted) setState(() => _redeemBusy = false);
@@ -1109,14 +1111,14 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
                 key: const Key('coinHistoryButton'),
                 icon: const Icon(Icons.receipt_long_outlined),
                 onPressed: _lastAccountId != null ? _showCoinHistory : null,
-                label: Text(t['coinHistory']),
+                label: messageText(t['coinHistory']),
               ),
               TextButton.icon(
                 icon: const Icon(Icons.refresh),
                 onPressed: !_walletLoading && _lastAccountId != null
                     ? () => _loadWallet(_lastAccountId!)
                     : null,
-                label: Text(t['rewardRefresh']),
+                label: messageText(t['rewardRefresh']),
               ),
             ],
             if (!earn) ...[
@@ -1208,7 +1210,7 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
                         onPressed: _selected.isNotEmpty
                             ? _reviewSelections
                             : null,
-                        label: Text(l10n.rewardUnlockReviewButton),
+                        label: messageText(l10n.rewardUnlockReviewButton),
                       ),
                       const SizedBox(height: 8),
                       // Once the authenticated quote/goal API is connected,
@@ -1217,7 +1219,7 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
                       FilledButton(
                         key: const Key('rewardSetGoalButton'),
                         onPressed: null,
-                        child: Text(t['goal']),
+                        child: messageText(t['goal']),
                       ),
                       const SizedBox(height: 8),
                       OutlinedButton(
@@ -1255,7 +1257,7 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
                                   !_redeemBusy
                             ? _redeemSelectedBenefits
                             : null,
-                        child: Text(t['redeem']),
+                        child: messageText(t['redeem']),
                       ),
                     ],
                   ),
@@ -1281,7 +1283,7 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
               OutlinedButton.icon(
                 onPressed: () => context.push('/rewards'),
                 icon: const Icon(Icons.redeem_outlined),
-                label: Text(nav['exchange']),
+                label: messageText(nav['exchange']),
               ),
           ],
         ),

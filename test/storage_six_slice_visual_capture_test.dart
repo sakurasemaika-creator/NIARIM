@@ -12,6 +12,8 @@ import 'package:niarim/router.dart';
 import 'package:niarim/screens/settings/storage_screen.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:niarim/services/storage_info_service.dart';
+import 'package:niarim/services/theme_service.dart';
+import 'package:niarim/utils/color_contrast.dart';
 import 'package:niarim/utils/file_size_label.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -302,6 +304,31 @@ void main() {
       debugPrint(
         'STORAGE SIX SLICES CAPTURE: ${dir.path}/storage_ja_six_categories.png',
       );
+
+      final themes = tester
+          .element(find.byType(StorageScreen))
+          .read<ThemeService>();
+      themes.applyPreset('default_dark');
+      await tester.pumpAndSettle();
+      for (final (_, label) in entries) {
+        for (final prefix in [
+          'storageBreakdownBarLabel_',
+          'storageBreakdownBarValue_',
+        ]) {
+          final ink = find.byKey(Key('$prefix$label'));
+          final background = tester.widget<DecoratedBox>(
+            find.ancestor(of: ink, matching: find.byType(DecoratedBox)).first,
+          );
+          expect(
+            contrastRatio(
+              tester.widget<Text>(ink).style!.color!,
+              (background.decoration as BoxDecoration).color!,
+            ),
+            greaterThanOrEqualTo(4.5),
+            reason: 'dark: $label',
+          );
+        }
+      }
     },
   );
 }

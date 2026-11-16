@@ -291,6 +291,41 @@ void main() {
 
   // 書体の読み込み（1回に約40MB）を言語ごとに1回にするため、幅・文字の
   // 大きさ・詰め方は1つのテストの中で回す。
+  testWidgets('the French reset confirmation has a readable width on PC', (
+    tester,
+  ) async {
+    final providers = await bootstrapStorageScreen(tester);
+    final service = ScriptedStorage();
+    final l10n = await showStorageScreen(
+      tester,
+      providers,
+      service,
+      size: const Size(1440, 900),
+      language: 'fr',
+    );
+    service.scans.last.complete(storageBreakdownOf());
+    service.deviceQueries.last.complete(storageTestDevice);
+    await tester.pumpAndSettle();
+    final erase = find.text(l10n.storageEraseAllButton);
+    await tester.scrollUntilVisible(erase, 120);
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(erase);
+    await tester.pumpAndSettle();
+    await tester.tap(erase);
+    await tester.pumpAndSettle();
+    final alert = find.byType(AlertDialog);
+    final dialog = find.descendant(of: alert, matching: find.byType(Dialog));
+    final surface = find.descendant(
+      of: dialog,
+      matching: find.byType(Material),
+    );
+    expect(tester.getSize(surface.first).width, lessThanOrEqualTo(560));
+    expect(find.text(l10n.storageEraseAllConfirmBody), findsOneWidget);
+    await tester.tap(find.text(l10n.commonCancel));
+    await tester.pumpAndSettle();
+    expect(alert, findsNothing);
+  });
+
   for (final language in ['ja', 'en', 'es', 'fr', 'ko', 'zh', 'zh_Hant']) {
     testWidgets('$language: the storage row titles and the erase-all button '
         'wrap without splitting a bracket and keep the button padding '

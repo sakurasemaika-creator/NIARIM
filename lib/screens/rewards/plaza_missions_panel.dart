@@ -68,7 +68,7 @@ class _PlazaMissionsPanelState extends State<PlazaMissionsPanel> {
       }
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
+          content: messageText(
             result['claimed'] == true
                 ? _l10n.missionCoinsReceived
                 : _l10n.missionClaimFailed,
@@ -77,9 +77,9 @@ class _PlazaMissionsPanelState extends State<PlazaMissionsPanel> {
       );
     } catch (_) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(_l10n.missionClaimFailed)));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: messageText(_l10n.missionClaimFailed)),
+        );
       }
     } finally {
       if (mounted && identical(_api, api) && _owner == owner) {
