@@ -771,7 +771,12 @@ class _HomeScreenState extends State<HomeScreen>
   );
 
   void _syncProjectActionsClearance() {
-    if (!mounted || _currentTabIndex != 0 || _isSelectionMode) return;
+    if (!mounted ||
+        _currentTabIndex != 0 ||
+        _isSelectionMode ||
+        _usesProjectFooter(context)) {
+      return;
+    }
     final view = _listAreaKey.currentContext?.findRenderObject();
     final actions = _floatingActionsKey.currentContext?.findRenderObject();
     if (view is! RenderBox ||
@@ -790,6 +795,9 @@ class _HomeScreenState extends State<HomeScreen>
       setState(() => _projectActionsClearance = clearance);
     }
   }
+
+  bool _usesProjectFooter(BuildContext context) =>
+      _currentTabIndex == 0 && MediaQuery.sizeOf(context).height <= 400;
 
   // プロジェクトの一覧の見出し（お気に入りの絞り込み・並び順・パンくず）。
   // 一覧は見る範囲（お気に入りだけ・フォルダ・検索）ごとに作り直してスクロール
@@ -996,6 +1004,9 @@ class _HomeScreenState extends State<HomeScreen>
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    // On very short viewports the floating add button can cover most of the
+    // trailing card's menu. Reserve a footer so their hit areas stay separate.
+    final useProjectFooter = _usesProjectFooter(context);
     _tabController.reduceMotion = MediaQuery.disableAnimationsOf(context);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _syncProjectsCanGoUp();
@@ -1260,7 +1271,9 @@ class _HomeScreenState extends State<HomeScreen>
                     children: [
                       ProjectListWidget(
                         scrollController: _projectScrollController,
-                        bottomClearance: _projectActionsClearance,
+                        bottomClearance: useProjectFooter
+                            ? 0
+                            : _projectActionsClearance,
                         header: Column(
                           key: _projectListHeaderKey,
                           children: [
@@ -1429,7 +1442,12 @@ class _HomeScreenState extends State<HomeScreen>
           ),
           floatingActionButtonLocation:
               FloatingActionButtonLocation.centerFloat,
-          floatingActionButton: _buildHomeActions(context, l10n),
+          floatingActionButton: useProjectFooter
+              ? null
+              : _buildHomeActions(context, l10n),
+          bottomNavigationBar: useProjectFooter
+              ? _buildHomeActions(context, l10n)
+              : null,
         ),
       ),
     );
@@ -3434,9 +3452,8 @@ class _HomeTraversalPolicy extends ReadingOrderTraversalPolicy {
     var bottom = shown.bottom;
     final actions = floatingActions.currentContext?.findRenderObject();
     if (actions is RenderBox && actions.attached && actions.hasSize) {
-      final top =
-          actions.localToGlobal(Offset.zero).dy - _homeFloatingActionsGap;
-      if (top < bottom) bottom = top;
+      final top = actions.localToGlobal(Offset.zero).dy;
+      if (top < bottom) bottom = top - _homeFloatingActionsGap;
     }
     final rect = target.localToGlobal(Offset.zero) & target.size;
     var delta = 0.0;

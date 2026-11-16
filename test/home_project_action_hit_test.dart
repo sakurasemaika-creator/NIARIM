@@ -85,15 +85,12 @@ void main() {
       );
       final listBounds = tester.getRect(viewport);
       final clearBottom = tester.getTopLeft(add).dy;
-      final position = tester.state<ScrollableState>(viewport).position;
-      position.jumpTo(position.maxScrollExtent);
-      await tester.pumpAndSettle();
-      final listEnd = find.byKey(const Key('homeProjectListEndClearance'));
       expect(
-        tester.getTopLeft(listEnd).dy,
-        lessThan(clearBottom),
-        reason: 'The final row must scroll clear of Add at $size.',
+        listBounds.bottom,
+        lessThanOrEqualTo(clearBottom),
+        reason: 'The list must end before the Add hit area at $size.',
       );
+      final position = tester.state<ScrollableState>(viewport).position;
       Finder? target;
       for (var attempt = 0; target == null && attempt <= 24; attempt++) {
         position.jumpTo(position.maxScrollExtent * (1 - attempt / 24));
