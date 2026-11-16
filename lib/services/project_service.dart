@@ -2397,7 +2397,12 @@ class ProjectService extends ChangeNotifier {
   }
 
   /// フレームを削除する（最低1フレームは残す）
-  void removeFrame(String projectId, String sceneId, int frameIndex) {
+  void removeFrame(
+    String projectId,
+    String sceneId,
+    int frameIndex, {
+    bool recordUndo = true,
+  }) {
     final scenes = _scenes[projectId];
     if (scenes == null) return;
     final sceneIdx = scenes.indexWhere((s) => s.id == sceneId);
@@ -2411,7 +2416,21 @@ class ProjectService extends ChangeNotifier {
     // いるため、indexの変更に合わせてタイルデータも付け替える（先頭側から
     // 順に処理することで、まだ移動していない位置への上書きを避ける）。
     final tm = _tileManagers[projectId];
+    final removed = scene.frames[frameIndex];
+    final undo = recordUndo ? _undoManager : null;
+    final savedTiles = <String, Map<String, Uint8List>>{};
     if (tm != null) {
+      final tiles = tm.exportAll();
+      for (final layer in removed.layers) {
+        final key = frameLayerKey(sceneId, frameIndex, layer.id);
+        final source = tiles[key];
+        if (undo != null && source != null) {
+          savedTiles[key] = source.map(
+            (key, bytes) => MapEntry(key, Uint8List.fromList(bytes)),
+          );
+        }
+        tm.removeLayer(key);
+      }
       for (int i = frameIndex + 1; i < scene.frames.length; i++) {
         for (final layer in scene.frames[i].layers) {
           tm.renameKey(
@@ -2435,6 +2454,7 @@ class ProjectService extends ChangeNotifier {
     // インデックスから除去し、それより後ろのフレームがホームだったレイヤーは
     // インデックスを1つ前へ詰める。
     final homes = _layerHomes[projectId];
+    final removedHomes = <String>{};
     if (homes != null) {
       final toRemove = <String>[];
       final toShift = <String>[];
@@ -2446,12 +2466,74 @@ class ProjectService extends ChangeNotifier {
           toShift.add(layerId);
         }
       });
+      removedHomes.addAll(toRemove);
       for (final id in toRemove) {
         homes.remove(id);
       }
       for (final id in toShift) {
         final h = homes[id]!;
         homes[id] = (sceneId: h.sceneId, frameIndex: h.frameIndex - 1);
+      }
+    }
+    if (undo != null) {
+      undo.push(
+        FrameRemovalUndoAction(
+          restore: () => _restoreRemovedFrame(
+            projectId,
+            sceneId,
+            removed,
+            savedTiles,
+            removedHomes,
+          ),
+          remove: () =>
+              removeFrame(projectId, sceneId, frameIndex, recordUndo: false),
+        ),
+      );
+    }
+    _syncDurationToFrameCount(projectId);
+    notifyListeners();
+  }
+
+  void _restoreRemovedFrame(
+    String projectId,
+    String sceneId,
+    Frame frame,
+    Map<String, Map<String, Uint8List>> tiles,
+    Set<String> removedHomes,
+  ) {
+    final scenes = _scenes[projectId];
+    if (scenes == null) return;
+    final sceneIndex = scenes.indexWhere((scene) => scene.id == sceneId);
+    if (sceneIndex < 0) return;
+    final scene = scenes[sceneIndex];
+    final at = frame.index.clamp(0, scene.frames.length);
+    final tm = _tileManagers[projectId];
+    if (tm != null) {
+      for (var i = scene.frames.length - 1; i >= at; i--) {
+        for (final layer in scene.frames[i].layers) {
+          tm.renameKey(
+            frameLayerKey(sceneId, i, layer.id),
+            frameLayerKey(sceneId, i + 1, layer.id),
+          );
+        }
+      }
+      tiles.forEach(tm.applyTileSnapshot);
+    }
+    final frames = [...scene.frames]..insert(at, frame);
+    scenes[sceneIndex] = scene.copyWith(
+      frames: [
+        for (final (index, item) in frames.indexed) item.copyWith(index: index),
+      ],
+    );
+    final homes = _layerHomes[projectId];
+    if (homes != null) {
+      homes.updateAll(
+        (_, home) => home.sceneId == sceneId && home.frameIndex >= at
+            ? (sceneId: sceneId, frameIndex: home.frameIndex + 1)
+            : home,
+      );
+      for (final id in removedHomes) {
+        homes[id] = (sceneId: sceneId, frameIndex: at);
       }
     }
     _syncDurationToFrameCount(projectId);
@@ -2514,7 +2596,12 @@ class ProjectService extends ChangeNotifier {
       addFrame(projectId, sceneId);
     }
     while (scenes[sceneIdx].frames.length > clamped) {
-      removeFrame(projectId, sceneId, scenes[sceneIdx].frames.length - 1);
+      removeFrame(
+        projectId,
+        sceneId,
+        scenes[sceneIdx].frames.length - 1,
+        recordUndo: false,
+      );
     }
   }
 

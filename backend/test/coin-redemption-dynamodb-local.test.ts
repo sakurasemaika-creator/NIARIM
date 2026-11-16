@@ -87,8 +87,8 @@ describe.skipIf(process.env.NIARIM_DYNAMODB_LOCAL_TESTS !== "1")(
       process.env.COIN_INDIVIDUAL_RIGHTS_CONSUMERS_APPROVED = "true";
       process.env.COIN_REDEMPTION_ENABLED = "true";
       process.env.COIN_REDEMPTION_REVIEW_APPROVED = "true";
-      process.env.COIN_FULL_PREMIUM_MONTH_COINS = "44000";
-      process.env.COIN_FULL_PREMIUM_YEAR_COINS = "440000";
+      process.env.COIN_FULL_PREMIUM_MONTH_COINS = "55000";
+      process.env.COIN_FULL_PREMIUM_YEAR_COINS = "550000";
       process.env.COIN_PREMIUM_ANNUAL_REDEMPTION_ENABLED = "true";
       await client.send(new CreateTableCommand({
         TableName: table, BillingMode: "PAY_PER_REQUEST",
@@ -207,7 +207,7 @@ describe.skipIf(process.env.NIARIM_DYNAMODB_LOCAL_TESTS !== "1")(
       const reply = await redeemCoins(event("other", body));
       const result = JSON.parse(reply.body ?? "{}");
       expect(result).toMatchObject({
-        redeemed: true, duplicate: false, costCoins: 44000,
+        redeemed: true, duplicate: false, costCoins: 55000,
       });
       expect(result.expiresAtEpochMs).toBeGreaterThan(Date.now());
       expect((await get(Keys.coinWallet(other)))?.balanceCoins).toBe(156000);
@@ -218,7 +218,7 @@ describe.skipIf(process.env.NIARIM_DYNAMODB_LOCAL_TESTS !== "1")(
         .toBe(result.expiresAtEpochMs);
       const retry = await redeemCoins(event("other", body));
       expect(JSON.parse(retry.body ?? "{}")).toMatchObject({
-        redeemed: true, duplicate: true, costCoins: 44000,
+        redeemed: true, duplicate: true, costCoins: 55000,
       });
       expect((await get(Keys.coinWallet(other)))?.balanceCoins).toBe(156000);
       const reward = await getMyRewardState(event("other"));
@@ -249,7 +249,7 @@ describe.skipIf(process.env.NIARIM_DYNAMODB_LOCAL_TESTS !== "1")(
       const response = await redeemCoins(event("other", body));
       const result = JSON.parse(response.body ?? "{}");
       expect(result).toMatchObject({
-        redeemed: true, duplicate: false, costCoins: 440000,
+        redeemed: true, duplicate: false, costCoins: 550000,
       });
       expect(result.expiresAtEpochMs)
         .toBeGreaterThan(previousExpiry + 360 * 86400_000);
@@ -258,7 +258,7 @@ describe.skipIf(process.env.NIARIM_DYNAMODB_LOCAL_TESTS !== "1")(
         .toBe(result.expiresAtEpochMs);
       const retry = await redeemCoins(event("other", body));
       expect(JSON.parse(retry.body ?? "{}")).toMatchObject({
-        redeemed: true, duplicate: true, costCoins: 440000,
+        redeemed: true, duplicate: true, costCoins: 550000,
       });
       expect((await get(Keys.coinWallet(other)))?.balanceCoins).toBe(210000);
       expect((await get(Keys.coinWallet(owner)))?.balanceCoins).toBe(1890);

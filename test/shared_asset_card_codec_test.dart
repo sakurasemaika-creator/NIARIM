@@ -9,8 +9,8 @@ void main() {
   final png = base64Decode(
     'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4nGP4////fwAJ+wP9KobjigAAAABJRU5ErkJggg==',
   );
-  test('all three kinds are round-tripped losslessly in one PNG', () {
-    for (final kind in ['brush', 'tone', 'stamp']) {
+  test('all supported kinds are round-tripped losslessly in one PNG', () {
+    for (final kind in SharedAssetCardCodec.supportedKinds) {
       final original = Uint8List.fromList(
         List<int>.generate(1024, (i) => i % 255),
       );

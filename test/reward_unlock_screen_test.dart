@@ -9,7 +9,7 @@ import 'package:niarim/services/premium_service.dart';
 import 'package:niarim/services/settings_service.dart';
 
 void main() {
-  testWidgets('12-month full Premium shows 440000 opals and cannot redeem '
+  testWidgets('12-month full Premium shows 550000 opals and cannot redeem '
       'without a server wallet and quote', (tester) async {
     final premium = PremiumService();
     final settings = SettingsService();
@@ -52,7 +52,7 @@ void main() {
     await tester.pumpAndSettle();
     final price = find.descendant(
       of: full,
-      matching: find.textContaining('440000 opals'),
+      matching: find.textContaining('550000 opals'),
     );
     expect(price, findsOneWidget);
     expect(find.textContaining('528000 opals'), findsNothing);
@@ -64,7 +64,7 @@ void main() {
       scrollable: find.byType(Scrollable).first,
     );
     await tester.pumpAndSettle();
-    expect(tester.widget<Text>(total).data, contains('440000 opals'));
+    expect(tester.widget<Text>(total).data, contains('550000 opals'));
     expect(
       tester
           .widget<OutlinedButton>(find.byKey(const Key('rewardRedeemButton')))
@@ -120,11 +120,14 @@ void main() {
       );
       expect(before.dy, lessThan(after.dy));
 
-      // The injected 110-coin quote is stale. Show the owner-final 1080-Opal
+      // The injected 110-coin quote is stale. Show the owner-final 1350-Opal
       // hourly price instead; a stale quote must never authorize spending.
       final toneCurve = find.byKey(const Key('rewardFeature_toneCurve'));
       expect(
-        find.descendant(of: toneCurve, matching: find.textContaining('1080 opals')),
+        find.descendant(
+          of: toneCurve,
+          matching: find.textContaining('1350 opals'),
+        ),
         findsOneWidget,
       );
       expect(find.textContaining('110 opals'), findsNothing);
@@ -138,10 +141,13 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(day2);
       await tester.pumpAndSettle();
-      // Two days use the owner-final day price (2160 x 2), not the
+      // Two days use the owner-final day price (2700 x 2), not the
       // injected stale 470-coin day rate.
       expect(
-        find.descendant(of: toneCurve, matching: find.textContaining('4320 opals')),
+        find.descendant(
+          of: toneCurve,
+          matching: find.textContaining('5400 opals'),
+        ),
         findsOneWidget,
       );
       expect(find.textContaining('940 opals'), findsNothing);

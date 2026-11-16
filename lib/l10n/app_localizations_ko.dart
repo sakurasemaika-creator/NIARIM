@@ -1533,6 +1533,13 @@ class AppLocalizationsKo extends AppLocalizations {
       '최대 길이 혜택이 유효하면 작품 길이를 2시간까지 늘릴 수 있습니다. 만료 후에도 만든 작품과 적용한 색 보정을 그대로 내보낼 수 있습니다. 엔드 마크는 내보내기 시작 시의 혜택에 따라 결정됩니다.';
 
   @override
+  String get helpPremiumExpiryTitle => '혜택이 만료되면';
+
+  @override
+  String get helpPremiumExpiryDesc =>
+      '이미 만든 긴 작품은 90초를 넘어도 모든 프레임을 내보낼 수 있습니다. 프레임 추가·복제에는 90초 제한이 적용됩니다. 편집 기록이 남아 있으면 실행 취소와 다시 실행으로 삭제한 프레임을 복구할 수 있습니다. 엔드 마크 혜택 만료 후 새로 내보내는 MP4·WebM·AVI 끝에는 5초간 NIARIM 로고가 표시됩니다. GIF와 이미 내보낸 파일에는 영향이 없습니다. 내보내기 시작 시의 조건이 완료될 때까지 적용됩니다. 배치한 워터마크, 적용한 색 보정, 자동 작업의 결과는 남습니다. 저장한 자동 작업을 다시 실행하려면 유효한 혜택이 필요합니다.';
+
+  @override
   String get helpPerformanceSettingsTitle => '성능 설정';
 
   @override

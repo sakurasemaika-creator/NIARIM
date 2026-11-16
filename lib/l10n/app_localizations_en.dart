@@ -1564,6 +1564,13 @@ class AppLocalizationsEn extends AppLocalizations {
       'The longer-duration benefit lets you extend a project up to two hours. Existing long projects and applied color corrections can still be exported after expiry. The end mark depends on the benefit active when export starts.';
 
   @override
+  String get helpPremiumExpiryTitle => 'When benefits expire';
+
+  @override
+  String get helpPremiumExpiryDesc =>
+      'You can still export all frames of an existing long project, including projects over 90 seconds. Adding or duplicating frames is limited to 90 seconds. While edit history is available, Undo and Redo can restore deleted frames. Once the end mark benefit expires, new MP4, WebM, and AVI exports include a five-second NIARIM logo at the end. GIFs and previously exported files are unaffected. The conditions at the start of an export apply until it finishes. Placed watermarks, applied color corrections, and the results of automations remain. Running a saved automation again requires an active benefit.';
+
+  @override
   String get helpPerformanceSettingsTitle => 'Performance Settings';
 
   @override

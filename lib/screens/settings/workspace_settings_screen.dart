@@ -1,3 +1,4 @@
+import '../../services/shared_asset_card_service.dart';
 import 'package:niarim/services/theme_service.dart';
 
 import 'dart:convert';
@@ -583,23 +584,41 @@ class WorkspaceSettingsScreen extends StatelessWidget {
                     enabled: !ExportShareService.isRunning(_shareKey(preset)),
                     leading: const Icon(Icons.dashboard_customize),
                     title: Text(preset.name),
-                    trailing: IconButton(
-                      icon: const Icon(Icons.qr_code_2),
-                      tooltip: qrAvailable
-                          ? l10n.colorPickerShareViaQr
-                          : l10n.qrShareTooLargeHint,
-                      onPressed: qrAvailable
-                          ? () {
-                              Navigator.pop(ctx);
-                              showDialog(
-                                context: context,
-                                builder: (_) => QrShareDialog(
-                                  title: preset.name,
-                                  payload: payload,
-                                ),
-                              );
-                            }
-                          : null,
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.image_outlined),
+                          tooltip: l10n.shareCardExportMenu,
+                          onPressed: () {
+                            Navigator.pop(ctx);
+                            SharedAssetCardService.exportSettings(
+                              context,
+                              kind: 'workspace',
+                              name: preset.name,
+                              settings: preset.toJson(),
+                            );
+                          },
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.qr_code_2),
+                          tooltip: qrAvailable
+                              ? l10n.colorPickerShareViaQr
+                              : l10n.qrShareTooLargeHint,
+                          onPressed: qrAvailable
+                              ? () {
+                                  Navigator.pop(ctx);
+                                  showDialog(
+                                    context: context,
+                                    builder: (_) => QrShareDialog(
+                                      title: preset.name,
+                                      payload: payload,
+                                    ),
+                                  );
+                                }
+                              : null,
+                        ),
+                      ],
                     ),
                     onTap: () {
                       Navigator.pop(ctx);
@@ -700,7 +719,7 @@ class WorkspaceSettingsScreen extends StatelessWidget {
     Future<void> importFromFile() async {
       final result = await FilePicker.platform.pickFiles(
         type: FileType.custom,
-        allowedExtensions: ['niaworkspace'],
+        allowedExtensions: ['niaworkspace', 'png'],
       );
       if (result == null ||
           result.files.isEmpty ||
@@ -708,7 +727,12 @@ class WorkspaceSettingsScreen extends StatelessWidget {
         return;
       }
       try {
-        await presetService.importPresetFile(result.files.first.path!);
+        await presetService.importPresetJson(
+          await SharedAssetCardService.readSettingsFile(
+            result.files.first.path!,
+            kind: 'workspace',
+          ),
+        );
       } catch (e) {
         if (!context.mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(

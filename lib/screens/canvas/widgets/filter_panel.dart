@@ -1,3 +1,4 @@
+import '../../../services/shared_asset_card_service.dart';
 import 'dart:async';
 import 'dart:math' as math;
 import 'dart:typed_data';
@@ -6,6 +7,8 @@ import 'dart:ui' as ui;
 import 'package:flutter/foundation.dart' show compute;
 import 'package:flutter/gestures.dart' show DragStartBehavior;
 import 'package:flutter/material.dart';
+import 'package:file_picker/file_picker.dart';
+import 'dart:convert';
 import 'package:provider/provider.dart';
 
 import '../../../config/font_fallback.dart';
@@ -921,9 +924,53 @@ class _FilterPanelState extends State<FilterPanel> {
           icon: const Icon(Icons.search, size: 18),
           onPressed: () => setState(() => _showSearch = !_showSearch),
         ),
+        IconButton(
+          visualDensity: VisualDensity.compact,
+          icon: const Icon(Icons.file_open_outlined, size: 18),
+          tooltip: l10n.creativePanelImportButton,
+          onPressed: _importFilterCard,
+        ),
         if (withClose) PanelCenterCloseBar(onClose: widget.onClose),
       ],
     );
+  }
+
+  Future<void> _importFilterCard() async {
+    final l10n = AppLocalizations.of(context)!;
+    try {
+      final selection = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['png'],
+      );
+      final path = selection?.files.firstOrNull?.path;
+      if (path == null || !mounted) return;
+      final data =
+          jsonDecode(
+                await SharedAssetCardService.readSettingsFile(
+                  path,
+                  kind: 'filter',
+                ),
+              )
+              as Map<String, dynamic>;
+      if (!FilterDef.hasKnownKind(data)) {
+        throw const FormatException('Unknown filter');
+      }
+      final filter = FilterDef.fromJson(data).copyWith(
+        id: 'custom_${DateTime.now().microsecondsSinceEpoch}',
+        isFavorite: false,
+      );
+      if (mounted) {
+        final service = context.read<FilterService>();
+        service.addFilter(filter);
+        service.clearCurrentFilter();
+      }
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.shareCardImportFailedSnackbar('$error'))),
+        );
+      }
+    }
   }
 
   Widget _searchField(AppLocalizations l10n, FilterService service) =>
@@ -1017,12 +1064,30 @@ class _FilterPanelState extends State<FilterPanel> {
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(fontSize: 9),
                     ),
-                    InkWell(
-                      onTap: () => service.toggleFavorite(filter.id),
-                      child: Icon(
-                        filter.isFavorite ? Icons.star : Icons.star_outline,
-                        size: 15,
-                      ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        InkWell(
+                          onTap: () => service.toggleFavorite(filter.id),
+                          child: Icon(
+                            filter.isFavorite ? Icons.star : Icons.star_outline,
+                            size: 15,
+                          ),
+                        ),
+                        if (!service.isBuiltIn(filter.id))
+                          InkWell(
+                            onTap: () => SharedAssetCardService.exportSettings(
+                              context,
+                              kind: 'filter',
+                              name: filterDisplayName(l10n, filter),
+                              settings: filter.toJson(),
+                            ),
+                            child: Tooltip(
+                              message: l10n.shareCardExportMenu,
+                              child: const Icon(Icons.image_outlined, size: 17),
+                            ),
+                          ),
+                      ],
                     ),
                   ],
                 ),
@@ -1069,6 +1134,18 @@ class _FilterPanelState extends State<FilterPanel> {
               fontFamily: 'Kuramubon',
               fontFamilyFallback: kHeadingFontFallback,
             ),
+          ),
+        ),
+        IconButton(
+          icon: const Icon(Icons.image_outlined, size: 18),
+          tooltip: l10n.shareCardExportMenu,
+          visualDensity: VisualDensity.compact,
+          padding: EdgeInsets.zero,
+          onPressed: () => SharedAssetCardService.exportSettings(
+            context,
+            kind: 'filter',
+            name: filterDisplayName(l10n, current),
+            settings: current.toJson(),
           ),
         ),
         if (!DockedPanelScope.of(context) && !_isInstantColorInvert(current))

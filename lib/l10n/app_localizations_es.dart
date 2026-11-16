@@ -1592,6 +1592,13 @@ class AppLocalizationsEs extends AppLocalizations {
       'El beneficio de duración permite alargar un proyecto hasta dos horas. Al caducar se pueden seguir exportando los proyectos y ajustes aplicados. El logo final depende del beneficio activo al iniciar la exportación.';
 
   @override
+  String get helpPremiumExpiryTitle => 'Cuando vencen las ventajas';
+
+  @override
+  String get helpPremiumExpiryDesc =>
+      'Puedes seguir exportando todos los fotogramas de los proyectos existentes, incluidos los que superan 90 segundos. Al añadir o duplicar fotogramas se aplica el límite de 90 segundos. Mientras se conserve el historial, puedes usar Deshacer y Rehacer para restaurar fotogramas eliminados. Al vencer la ventaja de la marca final, las nuevas exportaciones MP4, WebM y AVI incluyen cinco segundos con el logotipo de NIARIM. Los GIF y los archivos ya exportados se conservan. La exportación conserva las condiciones del inicio hasta terminar. Se mantienen las marcas de agua colocadas, las correcciones aplicadas y los resultados de las automatizaciones. Para volver a ejecutar una automatización guardada necesitas una ventaja activa.';
+
+  @override
   String get helpPerformanceSettingsTitle => 'Ajustes de rendimiento';
 
   @override

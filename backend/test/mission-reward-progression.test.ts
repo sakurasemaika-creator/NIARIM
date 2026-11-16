@@ -121,8 +121,8 @@ describe("all 551 mission coins use strict five-coin steps",()=>{
     expect(DAILY_LOGIN_COINS).toBe(10);
     expect(LOGIN_BONUS_MILESTONES.every(m=>m.coins>=10)).toBe(true);
     expect(INITIAL_REWARDED_COINS_PER_COMPLETION).toBe(10);
-    expect(finalBenefitCoins("endCardEdit","hour")).toBe(720);
-    expect(finalBenefitCoins("fullPremium","month")).toBe(44000);
+    expect(finalBenefitCoins("endCardEdit","hour")).toBe(900);
+    expect(finalBenefitCoins("fullPremium","month")).toBe(55000);
   });
 });
 
@@ -141,32 +141,32 @@ describe("subscription-aligned exchange rates",()=>{
         expect(cost%10).toBe(0);
       }
     }
-    expect(finalBenefitCoins("endCardEdit","hour")).toBe(720);
-    expect(finalBenefitCoins("endCardEdit","day")).toBe(1440);
-    expect(finalBenefitCoins("endCardEdit","week")).toBe(3240);
-    expect(finalBenefitCoins("endCardEdit","month")).toBe(4310);
-    expect(finalBenefitCoins("fullPremium","month")).toBe(44000);
-    expect(FINAL_PREMIUM_YEARLY_COINS).toBe(440000);
-    expect(finalBenefitCostCoins("fullPremium","month",12)).toBe(440000);
-    expect(finalBenefitCostCoins("fullPremium","month",13)).toBe(484000);
-    expect(finalBenefitCostCoins("fullPremium","month",24)).toBe(880000);
-    expect(finalBenefitCostCoins("fullPremium","month",11)).toBe(484000);
-    expect(finalBenefitCostCoins("toneCurve","month",12)).toBe(64700);
+    expect(finalBenefitCoins("endCardEdit","hour")).toBe(900);
+    expect(finalBenefitCoins("endCardEdit","day")).toBe(1800);
+    expect(finalBenefitCoins("endCardEdit","week")).toBe(4050);
+    expect(finalBenefitCoins("endCardEdit","month")).toBe(5390);
+    expect(finalBenefitCoins("fullPremium","month")).toBe(55000);
+    expect(FINAL_PREMIUM_YEARLY_COINS).toBe(550000);
+    expect(finalBenefitCostCoins("fullPremium","month",12)).toBe(550000);
+    expect(finalBenefitCostCoins("fullPremium","month",13)).toBe(605000);
+    expect(finalBenefitCostCoins("fullPremium","month",24)).toBe(1100000);
+    expect(finalBenefitCostCoins("fullPremium","month",11)).toBe(605000);
+    expect(finalBenefitCostCoins("toneCurve","month",12)).toBe(80900);
     expect(isBundledPremiumCheaperForAllDurations()).toBe(true);
     // Freeze the complete 12 × 4 launch rate card, not just 4 examples.
     const fixed: readonly (readonly [typeof targets[number],readonly number[]])[] = [
-      ["endCardEdit",[720,1440,3240,4310]],
-      ["watermark",[1080,2160,4860,6470]],
-      ["toneCurve",[1080,2160,4860,6470]],
-      ["levelAdjustment",[900,1800,4050,5390]],
-      ["unlimitedDuration",[1500,3000,6750,8990]],
-      ["customAutomation",[1500,3000,6750,8990]],
-      ["projectListAds",[720,1440,3240,4310]],
-      ["canvasAds",[1200,2400,5400,7190]],
-      ["timelineAds",[960,1920,4320,5750]],
-      ["processingAds",[600,1200,2700,3590]],
-      ["allAds",[2400,4800,10790,14380]],
-      ["fullPremium",[7340,14690,33040,44000]]
+      ["endCardEdit",[900, 1800, 4050, 5390]],
+      ["watermark",[1350, 2700, 6070, 8090]],
+      ["toneCurve",[1350, 2700, 6070, 8090]],
+      ["levelAdjustment",[1130, 2250, 5060, 6740]],
+      ["unlimitedDuration",[1880, 3750, 8430, 11240]],
+      ["customAutomation",[1880, 3750, 8430, 11240]],
+      ["projectListAds",[900, 1800, 4050, 5390]],
+      ["canvasAds",[1500, 3000, 6750, 8990]],
+      ["timelineAds",[1200, 2400, 5400, 7190]],
+      ["processingAds",[750, 1500, 3370, 4490]],
+      ["allAds",[3000, 5990, 13470, 17960]],
+      ["fullPremium",[9190, 18350, 41260, 55000]]
     ];
     for(const [target,amounts] of fixed){
       expect(durations.map(d=>finalBenefitCoins(target,d))).toEqual(amounts);
@@ -180,9 +180,9 @@ describe("subscription-aligned exchange rates",()=>{
     ] as const;
     expect(durations.map(duration => comparison.reduce(
       (sum, target) => sum + finalBenefitCostCoins(target, duration, 1), 0,
-    ))).toEqual([9180, 18360, 41300, 55000]);
+    ))).toEqual([11490, 22940, 51580, 68750]);
     expect(comparison.reduce(
       (sum, target) => sum + finalBenefitCostCoins(target, "month", 12), 0,
-    )).toBe(550000);
+    )).toBe(687500);
   });
 });

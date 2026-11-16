@@ -1,3 +1,4 @@
+import '../services/shared_asset_card_service.dart';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math' as math;
@@ -143,6 +144,19 @@ class _PixelArtPalettePickerDialogState
               },
             ),
             ListTile(
+              leading: const Icon(Icons.image_outlined),
+              title: Text(l10n.shareCardExportMenu),
+              onTap: () {
+                Navigator.pop(ctx);
+                SharedAssetCardService.exportSettings(
+                  context,
+                  kind: 'pixelPalette',
+                  name: palette.name,
+                  settings: palette.toJson(),
+                );
+              },
+            ),
+            ListTile(
               leading: const Icon(Icons.qr_code_2),
               title: Text(l10n.colorPickerShareViaQr),
               subtitle: qrAvailable ? null : Text(l10n.qrShareTooLargeHint),
@@ -181,12 +195,17 @@ class _PixelArtPalettePickerDialogState
                 Navigator.pop(ctx);
                 final result = await FilePicker.platform.pickFiles(
                   type: FileType.custom,
-                  allowedExtensions: ['niapixelpalette'],
+                  allowedExtensions: ['niapixelpalette', 'png'],
                 );
                 final path = result?.files.firstOrNull?.path;
                 if (path == null) return;
                 try {
-                  await service.importPaletteFile(path);
+                  await service.importPaletteJson(
+                    await SharedAssetCardService.readSettingsFile(
+                      path,
+                      kind: 'pixelPalette',
+                    ),
+                  );
                 } catch (e) {
                   if (!mounted) return;
                   ScaffoldMessenger.of(context).showSnackBar(

@@ -512,6 +512,8 @@
   "helpWatermarkEntryDesc": "Add your own signature or logo with text or an image. Adding or editing a watermark requires the benefit. Placed watermarks can still be exported after expiry.",
   "helpPremiumEntryTitle": "Premium",
   "helpPremiumEntryDesc": "The longer-duration benefit lets you extend a project up to two hours. Existing long projects and applied color corrections can still be exported after expiry. The end mark depends on the benefit active when export starts.",
+  "helpPremiumExpiryTitle": "When benefits expire",
+  "helpPremiumExpiryDesc": "You can still export all frames of an existing long project, including projects over 90 seconds. Adding or duplicating frames is limited to 90 seconds. While edit history is available, Undo and Redo can restore deleted frames. Once the end mark benefit expires, new MP4, WebM, and AVI exports include a five-second NIARIM logo at the end. GIFs and previously exported files are unaffected. The conditions at the start of an export apply until it finishes. Placed watermarks, applied color corrections, and the results of automations remain. Running a saved automation again requires an active benefit.",
   "helpPerformanceSettingsTitle": "Performance Settings",
   "helpPerformanceSettingsDesc": "Choose from low, medium, or high quality presets based on your device's capability, or configure each item individually (custom). In addition to save method, performance, onion skin, and tilt detection, settings that affect app size and how heavy it runs — such as undo history length and automatic trash deletion — are also gathered here.",
   "helpMaterialClipTitle": "Material clips (text / image / video / audio)",

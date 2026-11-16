@@ -489,6 +489,12 @@ class _HelpScreenState extends State<HelpScreen> {
       description: l10n.helpPremiumEntryDesc,
       category: l10n.helpCategoryPremium,
     ),
+    _HelpEntry(
+      topicKey: '特典の期限が切れたら',
+      title: l10n.helpPremiumExpiryTitle,
+      description: l10n.helpPremiumExpiryDesc,
+      category: l10n.helpCategoryPremium,
+    ),
 
     // ── プロジェクト管理 ──────────────────────────────────────
     _HelpEntry(

@@ -4,53 +4,53 @@ import 'package:niarim/models/coin_unlock_quote.dart';
 
 void main() {
   test('final owner-approved price model never implies a live redemption', () {
-    expect(CoinBenefitPriceCatalog.version, 'v6-subscription-aligned-20261116');
+    expect(CoinBenefitPriceCatalog.version, 'v7-complete-pack-anchor-20261116');
     expect(
       CoinBenefitPriceCatalog.cost(
         CoinUnlockTarget.fullPremium,
         const CoinUnlockDuration(1, CoinDurationUnit.month),
       ),
-      44000,
+      55000,
     );
   });
 
   test('12-month blocks cost ten monthly units for every benefit', () {
-    expect(CoinBenefitPriceCatalog.yearlyPremiumCoins, 440000);
+    expect(CoinBenefitPriceCatalog.yearlyPremiumCoins, 550000);
     const month = CoinDurationUnit.month;
     expect(
       CoinBenefitPriceCatalog.cost(
         CoinUnlockTarget.fullPremium,
         const CoinUnlockDuration(12, month),
       ),
-      440000,
+      550000,
     );
     expect(
       CoinBenefitPriceCatalog.cost(
         CoinUnlockTarget.fullPremium,
         const CoinUnlockDuration(13, month),
       ),
-      484000,
+      605000,
     );
     expect(
       CoinBenefitPriceCatalog.cost(
         CoinUnlockTarget.fullPremium,
         const CoinUnlockDuration(24, month),
       ),
-      880000,
+      1100000,
     );
     expect(
       CoinBenefitPriceCatalog.cost(
         CoinUnlockTarget.fullPremium,
         const CoinUnlockDuration(11, month),
       ),
-      484000,
+      605000,
     );
     expect(
       CoinBenefitPriceCatalog.cost(
         CoinUnlockTarget.toneCurve,
         const CoinUnlockDuration(12, month),
       ),
-      64700,
+      80900,
     );
   });
 
@@ -67,45 +67,45 @@ void main() {
         CoinUnlockTarget.endCardEdit,
         CoinDurationUnit.hour,
       ),
-      720,
+      900,
     );
     expect(
       CoinBenefitPriceCatalog.unitCoins(
         CoinUnlockTarget.endCardEdit,
         CoinDurationUnit.day,
       ),
-      1440,
+      1800,
     );
     expect(
       CoinBenefitPriceCatalog.unitCoins(
         CoinUnlockTarget.endCardEdit,
         CoinDurationUnit.week,
       ),
-      3240,
+      4050,
     );
     expect(
       CoinBenefitPriceCatalog.unitCoins(
         CoinUnlockTarget.fullPremium,
         CoinDurationUnit.month,
       ),
-      44000,
+      55000,
     );
   });
 
   test('all 48 final benefit rates match the approved launch tariff', () {
     const rates = <CoinUnlockTarget, List<int>>{
-      CoinUnlockTarget.endCardEdit: [720, 1440, 3240, 4310],
-      CoinUnlockTarget.watermark: [1080, 2160, 4860, 6470],
-      CoinUnlockTarget.toneCurve: [1080, 2160, 4860, 6470],
-      CoinUnlockTarget.levelAdjustment: [900, 1800, 4050, 5390],
-      CoinUnlockTarget.unlimitedDuration: [1500, 3000, 6750, 8990],
-      CoinUnlockTarget.customAutomation: [1500, 3000, 6750, 8990],
-      CoinUnlockTarget.projectListAds: [720, 1440, 3240, 4310],
-      CoinUnlockTarget.canvasAds: [1200, 2400, 5400, 7190],
-      CoinUnlockTarget.timelineAds: [960, 1920, 4320, 5750],
-      CoinUnlockTarget.processingAds: [600, 1200, 2700, 3590],
-      CoinUnlockTarget.allAds: [2400, 4800, 10790, 14380],
-      CoinUnlockTarget.fullPremium: [7340, 14690, 33040, 44000],
+      CoinUnlockTarget.endCardEdit: [900, 1800, 4050, 5390],
+      CoinUnlockTarget.watermark: [1350, 2700, 6070, 8090],
+      CoinUnlockTarget.toneCurve: [1350, 2700, 6070, 8090],
+      CoinUnlockTarget.levelAdjustment: [1130, 2250, 5060, 6740],
+      CoinUnlockTarget.unlimitedDuration: [1880, 3750, 8430, 11240],
+      CoinUnlockTarget.customAutomation: [1880, 3750, 8430, 11240],
+      CoinUnlockTarget.projectListAds: [900, 1800, 4050, 5390],
+      CoinUnlockTarget.canvasAds: [1500, 3000, 6750, 8990],
+      CoinUnlockTarget.timelineAds: [1200, 2400, 5400, 7190],
+      CoinUnlockTarget.processingAds: [750, 1500, 3370, 4490],
+      CoinUnlockTarget.allAds: [3000, 5990, 13470, 17960],
+      CoinUnlockTarget.fullPremium: [9190, 18350, 41260, 55000],
     };
     for (final row in rates.entries) {
       expect(
@@ -134,21 +134,24 @@ void main() {
     }
   });
 
-  test('six production features plus All Ads match the subscription basis', () {
-    expect(
-      CoinDurationUnit.values.map(
-        (unit) =>
-            CoinBenefitPriceCatalog.singleTotal(CoinUnlockDuration(1, unit)),
-      ),
-      [9180, 18360, 41300, 55000],
-    );
-    expect(
-      CoinBenefitPriceCatalog.singleTotal(
-        const CoinUnlockDuration(12, CoinDurationUnit.month),
-      ),
-      550000,
-    );
-  });
+  test(
+    'six production features plus All Ads match the individual-price comparison',
+    () {
+      expect(
+        CoinDurationUnit.values.map(
+          (unit) =>
+              CoinBenefitPriceCatalog.singleTotal(CoinUnlockDuration(1, unit)),
+        ),
+        [11490, 22940, 51580, 68750],
+      );
+      expect(
+        CoinBenefitPriceCatalog.singleTotal(
+          const CoinUnlockDuration(12, CoinDurationUnit.month),
+        ),
+        687500,
+      );
+    },
+  );
 
   test('all-ads bundle is cheaper than buying separate ad removals', () {
     for (final unit in CoinDurationUnit.values) {

@@ -12,6 +12,19 @@ import 'package:crypto/crypto.dart';
 class SharedAssetCardCodec {
   SharedAssetCardCodec._();
 
+  static const supportedKinds = {
+    'brush',
+    'tone',
+    'stamp',
+    'theme',
+    'filter',
+    'automation',
+    'palette',
+    'pixelPalette',
+    'workspace',
+    'autofill',
+  };
+
   static const int version = 1;
   static const int maxPngBytes = 40 * 1024 * 1024;
   static const int maxAssetBytes = 32 * 1024 * 1024;
@@ -27,7 +40,7 @@ class SharedAssetCardCodec {
     required String name,
     required Uint8List data,
   }) {
-    if (!const {'brush', 'tone', 'stamp'}.contains(kind)) {
+    if (!supportedKinds.contains(kind)) {
       throw const FormatException('Unsupported asset card kind');
     }
     if (data.isEmpty || data.length > maxAssetBytes) {
@@ -93,7 +106,7 @@ class SharedAssetCardCodec {
     if (decoded is! Map<String, dynamic> ||
         decoded['format'] != 'niarim.asset-card' ||
         decoded['version'] != version ||
-        !const {'brush', 'tone', 'stamp'}.contains(decoded['kind']) ||
+        !supportedKinds.contains(decoded['kind']) ||
         decoded['name'] is! String ||
         decoded['sha256'] is! String ||
         decoded['length'] is! int) {

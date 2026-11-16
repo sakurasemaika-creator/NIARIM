@@ -1,3 +1,4 @@
+import '../../services/shared_asset_card_service.dart';
 import 'dart:convert';
 import 'dart:io';
 
@@ -433,6 +434,10 @@ class ThemeSettingsScreen extends StatelessWidget {
                                     child: Text(l10n.themeDuplicateAction),
                                   ),
                                   PopupMenuItem(
+                                    value: 'exportCard',
+                                    child: Text(l10n.shareCardExportMenu),
+                                  ),
+                                  PopupMenuItem(
                                     value: 'export',
                                     // 書き出しと共有が終わるまで、同じ
                                     // テーマをもう一度は書き出さない。
@@ -570,6 +575,13 @@ class ThemeSettingsScreen extends StatelessWidget {
         }
       case 'export':
         _exportTheme(context, preset);
+      case 'exportCard':
+        SharedAssetCardService.exportSettings(
+          context,
+          kind: 'theme',
+          name: name,
+          settings: preset.toJson(),
+        );
     }
   }
 
@@ -602,7 +614,7 @@ class ThemeSettingsScreen extends StatelessWidget {
   Future<void> _importTheme(BuildContext context, ThemeService service) async {
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
-      allowedExtensions: ['niatheme'],
+      allowedExtensions: ['niatheme', 'png'],
     );
     if (result == null ||
         result.files.isEmpty ||
@@ -612,7 +624,10 @@ class ThemeSettingsScreen extends StatelessWidget {
     if (!context.mounted) return;
     final l10n = AppLocalizations.of(context)!;
     try {
-      final content = await File(result.files.first.path!).readAsString();
+      final content = await SharedAssetCardService.readSettingsFile(
+        result.files.first.path!,
+        kind: 'theme',
+      );
       final json = jsonDecode(content) as Map<String, dynamic>;
       final preset = AppThemePreset.fromJson(
         json,

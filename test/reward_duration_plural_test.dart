@@ -50,7 +50,7 @@ http.Response _reply(Object body) => http.Response(
   headers: {'content-type': 'application/json; charset=utf-8'},
 );
 
-/// 残高60000オパール・全機能1か月が44000オパールで交換できるサーバー。
+/// 残高60000オパール・全機能1か月が55000オパールで交換できるサーバー。
 /// 交換そのもの（POST）が呼ばれたら[redeemCalls]に数える。
 CommunityService _redeemableServer(List<String> redeemCalls) =>
     CommunityService(
@@ -72,8 +72,8 @@ CommunityService _redeemableServer(List<String> redeemCalls) =>
               }),
               '/me/rewards/quote' => _reply({
                 'enabled': true,
-                'priceCoins': 44000,
-                'priceVersion': 'v6-subscription-aligned-20261116',
+                'priceCoins': 55000,
+                'priceVersion': 'v7-complete-pack-anchor-20261116',
               }),
               _ => _reply(<String, Object>{}),
             };
@@ -83,21 +83,21 @@ CommunityService _redeemableServer(List<String> redeemCalls) =>
     );
 
 const _toneCurvePrices = CoinUnlockUnitPrices(
-  perHour: 1080,
-  perDay: 2160,
-  perWeek: 4860,
-  perMonth: 6470,
+  perHour: 1350,
+  perDay: 2700,
+  perWeek: 6070,
+  perMonth: 8090,
 );
 
 /// [_toneCurvePrices]で[duration]を選んだときの必要オパール（モデルを通さず、
 /// 短期は単価×数、月単位は12か月ごとに10か月分の価格で計算する）。
 int _expectedToneCurveCoins(CoinUnlockDuration duration) =>
     switch (duration.unit) {
-      CoinDurationUnit.hour => 1080 * duration.amount,
-      CoinDurationUnit.day => 2160 * duration.amount,
-      CoinDurationUnit.week => 4860 * duration.amount,
+      CoinDurationUnit.hour => 1350 * duration.amount,
+      CoinDurationUnit.day => 2700 * duration.amount,
+      CoinDurationUnit.week => 6070 * duration.amount,
       CoinDurationUnit.month =>
-        64700 * (duration.amount ~/ 12) + 6470 * (duration.amount % 12),
+        80900 * (duration.amount ~/ 12) + 8090 * (duration.amount % 12),
     };
 
 Future<void> _pumpScreen(

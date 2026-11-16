@@ -664,8 +664,11 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                 builder: (context) {
                   // 長さの上限：無料会員は最大90秒、プレミアム会員は
                   // 最大2時間（7200秒）。
-                  final isPremium = context.watch<PremiumService>().isPremium;
-                  final maxDuration = isPremium ? 7200 : 90;
+                  final premium = context.watch<PremiumService>();
+                  final hasLongDuration = premium.isFeatureAvailable(
+                    PremiumFeature.unlimitedDuration,
+                  );
+                  final maxDuration = premium.maxProjectDurationSeconds;
                   if (_durationSeconds > maxDuration) {
                     WidgetsBinding.instance.addPostFrameCallback((_) {
                       if (mounted) {
@@ -690,7 +693,7 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                         children: [
                           Expanded(
                             child: Text(
-                              isPremium
+                              hasLongDuration
                                   ? l10n.newProjectDurationLabel(
                                       maxDurationText,
                                     )
@@ -950,6 +953,10 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
   Future<void> _createProject() async {
     if (_creating) return;
     // 作るのは欄に見えている値（範囲に収めた値）にそろえてから。
+    final maxDuration = context
+        .read<PremiumService>()
+        .maxProjectDurationSeconds;
+    _durationSeconds = _durationSeconds.clamp(1, maxDuration);
     _commitNumberFields();
     setState(() {
       _creating = true;

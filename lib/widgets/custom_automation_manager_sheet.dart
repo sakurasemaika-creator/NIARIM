@@ -1,3 +1,4 @@
+import '../services/shared_asset_card_service.dart';
 import 'dart:convert';
 import 'dart:typed_data';
 
@@ -296,7 +297,7 @@ class CustomAutomationManagerSheet extends StatelessWidget {
       dialogTitle: name,
       fileName: '$name.niarim-action.json',
       type: FileType.custom,
-      allowedExtensions: const ['json'],
+      allowedExtensions: const ['json', 'png'],
       bytes: bytes,
     );
   }
@@ -304,7 +305,7 @@ class CustomAutomationManagerSheet extends StatelessWidget {
   Future<void> _import(BuildContext context) async {
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
-      allowedExtensions: const ['json'],
+      allowedExtensions: const ['json', 'png'],
       allowMultiple: false,
       withData: true,
     );
@@ -316,10 +317,15 @@ class CustomAutomationManagerSheet extends StatelessWidget {
     }
     if (bytes == null || !context.mounted) return;
     try {
-      await context.read<CustomAutomationService>().importJson(
-        utf8.decode(bytes),
-      );
-    } on FormatException {
+      final service = context.read<CustomAutomationService>();
+      final content = file.extension?.toLowerCase() == 'png'
+          ? SharedAssetCardService.decodeSettingsCard(
+              bytes,
+              kind: 'automation',
+            ).$1
+          : utf8.decode(bytes);
+      if (context.mounted) await service.importJson(content);
+    } catch (_) {
       if (!context.mounted) return;
       final l10n = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -329,6 +335,7 @@ class CustomAutomationManagerSheet extends StatelessWidget {
   }
 
   void _rerecord(BuildContext context, CustomAutomation item) {
+    if (!_canStart(context)) return;
     final service = context.read<CustomAutomationService>();
     service.editExisting(item.id);
     service.resumeRecording(surface);
@@ -382,6 +389,19 @@ class CustomAutomationManagerSheet extends StatelessWidget {
               onTap: () {
                 Navigator.pop(sheetContext);
                 _rename(context, item);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.image_outlined),
+              title: Text(l10n.shareCardExportMenu),
+              onTap: () {
+                Navigator.pop(sheetContext);
+                SharedAssetCardService.exportSettings(
+                  context,
+                  kind: 'automation',
+                  name: customAutomationDisplayName(l10n, item.name),
+                  settings: item.toJson(),
+                );
               },
             ),
             ListTile(

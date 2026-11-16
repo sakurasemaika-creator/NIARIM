@@ -2,21 +2,21 @@ import 'coin_unlock_quote.dart';
 
 /// Versioned Opal exchange prices for display and server quote checks.
 abstract final class CoinBenefitPriceCatalog {
-  static const version = 'v6-subscription-aligned-20261116';
+  static const version = 'v7-complete-pack-anchor-20261116';
 
-  // v5 monthly weights scaled to 55,000 Opals for the six tools and All Ads.
+  // Individual rates follow the existing weights with a monthly comparison total of 68,750 Opals.
   static const _monthlyCoins = <CoinUnlockTarget, int>{
-    CoinUnlockTarget.endCardEdit: 4_310,
-    CoinUnlockTarget.watermark: 6_470,
-    CoinUnlockTarget.toneCurve: 6_470,
-    CoinUnlockTarget.levelAdjustment: 5_390,
-    CoinUnlockTarget.unlimitedDuration: 8_990,
-    CoinUnlockTarget.customAutomation: 8_990,
-    CoinUnlockTarget.projectListAds: 4_310,
-    CoinUnlockTarget.canvasAds: 7_190,
-    CoinUnlockTarget.timelineAds: 5_750,
-    CoinUnlockTarget.processingAds: 3_590,
-    CoinUnlockTarget.allAds: 14_380,
+    CoinUnlockTarget.endCardEdit: 5_390,
+    CoinUnlockTarget.watermark: 8_090,
+    CoinUnlockTarget.toneCurve: 8_090,
+    CoinUnlockTarget.levelAdjustment: 6_740,
+    CoinUnlockTarget.unlimitedDuration: 11_240,
+    CoinUnlockTarget.customAutomation: 11_240,
+    CoinUnlockTarget.projectListAds: 5_390,
+    CoinUnlockTarget.canvasAds: 8_990,
+    CoinUnlockTarget.timelineAds: 7_190,
+    CoinUnlockTarget.processingAds: 4_490,
+    CoinUnlockTarget.allAds: 17_960,
   };
 
   static const _productionTargets = <CoinUnlockTarget>[
@@ -65,12 +65,13 @@ abstract final class CoinBenefitPriceCatalog {
     if (target != CoinUnlockTarget.fullPremium) {
       return _individualUnitCoins(target, unit);
     }
+    if (unit == CoinDurationUnit.month) return 55_000;
     final total = _comparisonTargets.fold<int>(
       0,
       (sum, target) => sum + _individualUnitCoins(target, unit),
     );
-    // Give the Complete Pack a 20% discount, rounded to the nearest 10 Opals.
-    return ((total * 4 + 25) ~/ 50) * 10;
+    // Round down to a whole ten so the pack saves at least 20%.
+    return ((total * 4) ~/ 50) * 10;
   }
 
   static int cost(CoinUnlockTarget target, CoinUnlockDuration duration) {

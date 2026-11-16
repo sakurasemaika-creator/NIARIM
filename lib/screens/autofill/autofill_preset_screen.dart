@@ -1,3 +1,4 @@
+import '../../services/shared_asset_card_service.dart';
 import 'package:niarim/services/theme_service.dart';
 
 import 'dart:convert';
@@ -347,6 +348,19 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
                           onDelete: () => _confirmDelete(preset),
                           onSetThumbnail: () => _showThumbnailDialog(preset),
                           onExport: () => _exportPresets([preset]),
+                          onExportCard: () =>
+                              SharedAssetCardService.exportSettings(
+                                context,
+                                kind: 'autofill',
+                                name: preset.name,
+                                settings: {
+                                  ...preset.toJson(),
+                                  'thumbnailPath': preset.thumbnailPath == null
+                                      ? null
+                                      : 'image',
+                                },
+                                sourceImagePath: preset.thumbnailPath,
+                              ),
                           onLongPress: () => setState(() {
                             _isSelectionMode = true;
                             _selectedIds.add(preset.id);
@@ -554,7 +568,7 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
     final l10n = AppLocalizations.of(context)!;
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
-      allowedExtensions: ['niafill'],
+      allowedExtensions: ['niafill', 'png'],
       allowMultiple: true,
       withData: true,
     );
@@ -565,15 +579,21 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
     String? lastError;
     for (final picked in result.files) {
       try {
-        final content = picked.bytes != null
-            ? utf8.decode(picked.bytes!)
-            : await File(picked.path!).readAsString();
+        final bytes = picked.bytes ?? await picked.xFile.readAsBytes();
+        final (content, thumbnail) = picked.extension?.toLowerCase() == 'png'
+            ? SharedAssetCardService.decodeSettingsCard(bytes, kind: 'autofill')
+            : (utf8.decode(bytes), null);
+
         final json = jsonDecode(content) as Map<String, dynamic>;
         final preset = AutofillPreset.fromJson(json).copyWith(
           id: 'p_${DateTime.now().microsecondsSinceEpoch}_$imported',
+          thumbnailPath: null,
           isFavorite: false,
         );
         await service.addPreset(preset);
+        if (thumbnail != null) {
+          await service.setPresetThumbnailBytes(preset.id, thumbnail);
+        }
         imported++;
       } catch (e) {
         lastError = e.toString();
@@ -891,6 +911,7 @@ class _PresetCard extends StatelessWidget {
   final VoidCallback onDelete;
   final VoidCallback onSetThumbnail;
   final VoidCallback onExport;
+  final VoidCallback onExportCard;
   final VoidCallback onLongPress;
   final VoidCallback onTap;
 
@@ -903,6 +924,7 @@ class _PresetCard extends StatelessWidget {
     required this.onDelete,
     required this.onSetThumbnail,
     required this.onExport,
+    required this.onExportCard,
     required this.onLongPress,
     required this.onTap,
   });
@@ -994,6 +1016,7 @@ class _PresetCard extends StatelessWidget {
                       if (v == 'edit') onEdit();
                       if (v == 'thumbnail') onSetThumbnail();
                       if (v == 'export') onExport();
+                      if (v == 'exportCard') onExportCard();
                       if (v == 'delete') onDelete();
                     },
                     itemBuilder: (_) => [
@@ -1012,6 +1035,10 @@ class _PresetCard extends StatelessWidget {
                           _niafillExportKey,
                         ),
                         child: Text(l10n.autofillPresetExportMenuItem),
+                      ),
+                      PopupMenuItem(
+                        value: 'exportCard',
+                        child: Text(l10n.shareCardExportMenu),
                       ),
                       PopupMenuItem(
                         value: 'delete',

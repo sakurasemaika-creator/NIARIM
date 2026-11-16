@@ -542,7 +542,7 @@
   "premiumFeatureDrawing": "アニメ制作・描画機能",
   "premiumFeatureTimeline": "タイムライン",
   "premiumFeatureExport": "動画書き出し",
-  "premiumFeatureMaxDuration": "最大尺",
+  "premiumFeatureMaxDuration": "作成・延長できる尺",
   "premiumFeatureEndLogo": "公式エンドロゴ",
   "premiumFeatureWatermark": "ウォーターマーク",
   "premiumFeatureToneCurve": "トーンカーブ",
@@ -553,7 +553,7 @@
   "premiumValueNo": "なし",
   "premiumValueRemovable": "削除可",
   "premiumValueDuration2Hours": "2時間",
-  "premiumValueDuration90Sec": "1.5分",
+  "premiumValueDuration90Sec": "90秒",
   "premiumValueUploadFree": "1本",
   "premiumValueUploadPremium": "3本",
   "premiumPlanRecommendedBadge": "おすすめ",
@@ -680,6 +680,8 @@
   "helpWatermarkEntryDesc": "画像や文字で自分の署名やロゴを作品に追加できます。追加や再編集にはウォーターマーク特典が必要です。配置済みのウォーターマークは期限後も書き出せます。",
   "helpPremiumEntryTitle": "プレミアム",
   "helpPremiumEntryDesc": "最大尺の特典が有効な間は、最大2時間まで尺を伸ばせます。制作済みの長尺作品や適用済みの色補正は、期限後もそのまま書き出せます。エンドマークの表示は書き出し開始時に有効な特典で決まります。",
+  "helpPremiumExpiryTitle": "特典の期限が切れたら",
+  "helpPremiumExpiryDesc": "制作済みの長尺作品は、90秒を超えていても全編を書き出せます。フレームの新規追加・複製は90秒までです。編集履歴が残っていれば、取り消し・やり直しで削除したフレームを復元できます。エンドマーク特典の期限後に新しく書き出すMP4・WebM・AVIには、末尾にNIARIMロゴが5秒付きます。GIFと書き出し済みのファイルには影響しません。書き出し開始時の条件が最後まで適用されます。配置済みのウォーターマーク、適用済みの色補正、自動操作の結果は残ります。保存した自動操作をもう一度実行するには、有効な特典が必要です。",
   "helpPerformanceSettingsTitle": "パフォーマンス設定",
   "helpPerformanceSettingsDesc": "端末の性能に応じて、低品質・中品質・高品質のプリセットから選ぶか、各項目を個別に設定（カスタム）できます。保存方式・動作の軽さ・オニオンスキン・傾き検知に加えて、Undo回数やゴミ箱の自動削除などアプリの容量・動作の重さに影響する設定もここにまとまっています。",
   "helpMaterialClipTitle": "素材クリップ（テキスト・画像・動画・音声）",
@@ -1265,7 +1267,7 @@
       }
     }
   },
-  "newProjectDurationLabelWithPremiumHint": "長さ（最大{max}・プレミアムなら最大2時間）",
+  "newProjectDurationLabelWithPremiumHint": "長さ（最大{max}・最大尺の特典で2時間）",
   "@newProjectDurationLabelWithPremiumHint": {
     "placeholders": {
       "max": {

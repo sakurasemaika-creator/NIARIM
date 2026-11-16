@@ -1,19 +1,19 @@
 /** Opal exchange prices anchored to the Japanese subscription list prices. */
-export const COIN_BENEFIT_PRICE_VERSION = "v6-subscription-aligned-20261116" as const;
+export const COIN_BENEFIT_PRICE_VERSION = "v7-complete-pack-anchor-20261116" as const;
 
-// v5 monthly weights scaled to 55,000 Opals for the six tools and All Ads.
+// Individual rates follow the existing weights with a monthly comparison total of 68,750 Opals.
 const monthlyCoins = {
-  endCardEdit: 4_310,
-  watermark: 6_470,
-  toneCurve: 6_470,
-  levelAdjustment: 5_390,
-  unlimitedDuration: 8_990,
-  customAutomation: 8_990,
-  projectListAds: 4_310,
-  canvasAds: 7_190,
-  timelineAds: 5_750,
-  processingAds: 3_590,
-  allAds: 14_380,
+  endCardEdit: 5_390,
+  watermark: 8_090,
+  toneCurve: 8_090,
+  levelAdjustment: 6_740,
+  unlimitedDuration: 11_240,
+  customAutomation: 11_240,
+  projectListAds: 5_390,
+  canvasAds: 8_990,
+  timelineAds: 7_190,
+  processingAds: 4_490,
+  allAds: 17_960,
 } as const;
 
 type IndividualBenefit = keyof typeof monthlyCoins;
@@ -59,8 +59,9 @@ export function finalBenefitCoins(
   target: BenefitPriceTarget, duration: BenefitDuration,
 ): number {
   if (target !== "fullPremium") return individualUnitCoins(target, duration);
-  // Give the Complete Pack a 20% discount, rounded to the nearest 10 Opals.
-  return Math.round(comparableBenefitsUnitCoins(duration) * 4 / 50) * 10;
+  if (duration === "month") return 55_000;
+  // Round down to a whole ten so the pack saves at least 20% of the individual total.
+  return Math.floor(comparableBenefitsUnitCoins(duration) * 4 / 50) * 10;
 }
 
 export const FINAL_PREMIUM_MONTHLY_COINS = finalBenefitCoins("fullPremium", "month");

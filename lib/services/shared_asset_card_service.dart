@@ -13,6 +13,8 @@ import 'package:qr_flutter/qr_flutter.dart';
 import '../config/font_fallback.dart';
 import '../l10n/app_localizations.dart';
 import '../models/brush.dart';
+import '../models/filter_def.dart';
+import '../widgets/filter_sample_preview.dart';
 import '../models/stamp.dart';
 import '../models/tone.dart';
 import '../utils/creative_image_source.dart';
@@ -23,7 +25,7 @@ import 'shared_asset_card_codec.dart';
 import 'shared_asset_card_preview.dart';
 import '../widgets/export_share_feedback.dart';
 
-/// One public sharing format for brushes, tones and stamps: a complete PNG.
+/// Self-contained PNG sharing for creative assets.
 /// A ZIP is used only as an *in-memory* implementation of the compressed
 /// model+original-image payload; users never select or share that container.
 /// The picked card is for another asset list (brush, tone or stamp).
@@ -173,6 +175,67 @@ class SharedAssetCardService {
     return _createCard('stamp', stamp.name, _toZip(a), l10n);
   }
 
+  static Future<void> exportSettings(
+    BuildContext context, {
+    required String kind,
+    required String name,
+    required Map<String, dynamic> settings,
+    String? sourceImagePath,
+  }) async {
+    final l10n = AppLocalizations.of(context)!;
+    try {
+      final archive = _assetArchive({...settings, 'isFavorite': false});
+      if (sourceImagePath != null) {
+        final bytes = await readCreativeImageSource(sourceImagePath);
+        if (bytes == null) throw const FormatException('Missing source image');
+        archive.addFile(ArchiveFile('image.png', bytes.length, bytes));
+      }
+      final card = await _createCard(kind, name, _toZip(archive), l10n);
+      if (context.mounted) await showExportResult(context, card);
+    } catch (error) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.shareCardSaveFailedSnackbar('$error'))),
+        );
+      }
+    }
+  }
+
+  /// Keeps the existing asset file importers, with the PNG acting as a transport.
+  static Future<String> readSettingsFile(
+    String path, {
+    required String kind,
+  }) async {
+    if (!path.toLowerCase().endsWith('.png')) return File(path).readAsString();
+    final (settings, _) = await readSettingsCard(File(path), kind: kind);
+    return settings;
+  }
+
+  static Future<(String, Uint8List?)> readSettingsCard(
+    File file, {
+    required String kind,
+  }) async {
+    if (await file.length() > SharedAssetCardCodec.maxPngBytes) {
+      throw const FormatException('Asset share card exceeds the size limit');
+    }
+    return decodeSettingsCard(await file.readAsBytes(), kind: kind);
+  }
+
+  static (String, Uint8List?) decodeSettingsCard(
+    Uint8List bytes, {
+    required String kind,
+  }) {
+    final card = _inspectBytes(bytes);
+    if (card.kind != kind) throw const FormatException('Wrong asset type');
+    final archive = ZipDecoder().decodeBytes(card.data);
+    final data = archive.findFile('data.json')!;
+    final image = archive.findFile('image.png');
+    return (
+      utf8.decode(data.content as List<int>),
+      image == null ? null : Uint8List.fromList(image.content as List<int>),
+    );
+  }
+
   static Archive _assetArchive(Map<String, dynamic> model) {
     final json = utf8.encode(jsonEncode(model));
     return Archive()..addFile(ArchiveFile('data.json', json.length, json));
@@ -270,7 +333,13 @@ class SharedAssetCardService {
   }
 
   static Future<SharedAssetCardPayload> inspect(File file) async {
-    final bytes = await file.readAsBytes();
+    if (await file.length() > SharedAssetCardCodec.maxPngBytes) {
+      throw const FormatException('Asset share card exceeds the size limit');
+    }
+    return _inspectBytes(await file.readAsBytes());
+  }
+
+  static SharedAssetCardPayload _inspectBytes(Uint8List bytes) {
     final card = SharedAssetCardCodec.extract(bytes);
     // Validate ZIP sizes and paths before expanding the archive.
     _validateZipEnvelope(card.data);
@@ -311,7 +380,13 @@ class SharedAssetCardService {
               : obj['customImagePath'] != null
               ? 1
               : 0)
-        : (obj[card.kind == 'tone' ? 'texturePath' : 'imagePath'] != null
+        : (obj[switch (card.kind) {
+                    'tone' => 'texturePath',
+                    'stamp' => 'imagePath',
+                    'autofill' => 'thumbnailPath',
+                    _ => '',
+                  }] !=
+                  null
               ? 1
               : 0);
     if (sourceFiles != expectedCount) {
@@ -326,6 +401,17 @@ class SharedAssetCardService {
         break;
       case 'tone':
         Tone.fromJson(obj);
+        break;
+      case 'theme':
+      case 'filter':
+      case 'automation':
+      case 'palette':
+      case 'pixelPalette':
+      case 'workspace':
+      case 'autofill':
+        if (obj['id'] is! String || obj['name'] is! String) {
+          throw const FormatException('Missing shared settings name or ID');
+        }
         break;
       case 'stamp':
         final stamp = Stamp.fromJson(obj);
@@ -664,7 +750,10 @@ class SharedAssetCardService {
         try {
           final data = jsonDecode(utf8.decode(settings.content as List<int>));
           if (data is Map<String, dynamic>) {
-            final sample = await SharedAssetCardPreview.render(kind, data);
+            final isFilter = kind == 'filter';
+            final sample = isFilter
+                ? await filterSampleImage(FilterDef.fromJson(data))
+                : await SharedAssetCardPreview.render(kind, data);
             try {
               canvas.drawImageRect(
                 sample,
@@ -674,12 +763,14 @@ class SharedAssetCardService {
                   sample.width.toDouble(),
                   sample.height.toDouble(),
                 ),
-                const Rect.fromLTWH(120, 470, 960, 192),
+                isFilter
+                    ? const Rect.fromLTWH(380, 415, 440, 280)
+                    : const Rect.fromLTWH(120, 470, 960, 192),
                 Paint()..filterQuality = FilterQuality.medium,
               );
               rendered = true;
             } finally {
-              sample.dispose();
+              if (!isFilter) sample.dispose();
             }
           }
         } catch (_) {
@@ -687,6 +778,61 @@ class SharedAssetCardService {
         }
       }
       strokeRendered = rendered;
+      if (!rendered && !const {'brush', 'tone', 'stamp'}.contains(kind)) {
+        final settings =
+            jsonDecode(
+                  utf8.decode(
+                    archive.findFile('data.json')!.content as List<int>,
+                  ),
+                )
+                as Map<String, dynamic>;
+        final colors = [
+          if (settings['colors'] case final List colors)
+            ...colors.whereType<int>(),
+          for (final key in [
+            'accentColor',
+            'panelBgColor',
+            'menuBgColor',
+            'selectionColor',
+            'textColor',
+          ])
+            if (settings[key] case final int color) color,
+          if (settings['parts'] case final List parts)
+            for (final part in parts.whereType<Map>())
+              if (part['color'] case final int color) color,
+        ].take(10).toList();
+        if (colors.isNotEmpty) {
+          final width = 900 / colors.length;
+          for (final (index, color) in colors.indexed) {
+            canvas.drawRRect(
+              RRect.fromRectAndRadius(
+                Rect.fromLTWH(150 + index * width, 488, width - 9, 188),
+                const Radius.circular(14),
+              ),
+              Paint()..color = Color(color),
+            );
+          }
+        } else {
+          final details = [
+            if (settings['steps'] case final List steps)
+              ...steps.whereType<Map>().take(5).map((step) => step['label']),
+            if (settings['toolbarOrder'] case final List tools)
+              ...tools.take(6),
+          ].whereType<String>().join('   /   ');
+          final sample = TextPainter(
+            text: TextSpan(
+              text: details.isEmpty ? name : details,
+              style: const TextStyle(color: Color(0xff343c55), fontSize: 38),
+            ),
+            textDirection: TextDirection.ltr,
+            textAlign: TextAlign.center,
+            maxLines: 4,
+            ellipsis: '…',
+          )..layout(minWidth: 860, maxWidth: 860);
+          sample.paint(canvas, Offset(170, 580 - sample.height / 2));
+          sample.dispose();
+        }
+      }
     }
     // QR is an identifying marker, not a standalone lightweight share mode.
     final qr = QrPainter(
@@ -779,6 +925,12 @@ class SharedAssetCardService {
     final kindLabel = switch (kind) {
       'brush' => l10n.penSubToolTabBrush,
       'tone' => l10n.penSubToolTabTone,
+      'theme' => l10n.themeSettingsTitle,
+      'filter' => l10n.filterPanelTitle,
+      'automation' => l10n.customAutomationTitle,
+      'palette' || 'pixelPalette' => l10n.colorPickerPaletteLabel,
+      'workspace' => l10n.workspaceScreenTitle,
+      'autofill' => l10n.autofillPresetScreenTitle,
       _ => l10n.penSubToolTabStamp,
     };
     return [
@@ -802,7 +954,9 @@ class SharedAssetCardService {
         userText: true,
       ),
       _CardText(
-        l10n.shareCardSampleHeading,
+        const {'brush', 'tone', 'stamp'}.contains(kind)
+            ? l10n.shareCardSampleHeading
+            : kindLabel,
         const Rect.fromLTWH(90, 292, 1020, 52),
         31,
         22,
@@ -821,7 +975,7 @@ class SharedAssetCardService {
           15,
           const Color(0xff445068),
         )
-      else ...[
+      else if (const {'brush', 'tone', 'stamp'}.contains(kind)) ...[
         _CardText(
           strokeRendered
               ? l10n.shareCardStrokeSample

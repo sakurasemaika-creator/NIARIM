@@ -512,6 +512,8 @@
   "helpWatermarkEntryDesc": "可以添加自己的签名或标志。添加或编辑需要水印权益。到期后仍可导出已放置的水印。",
   "helpPremiumEntryTitle": "Premium",
   "helpPremiumEntryDesc": "时长权益有效时可以将作品延长到 2 小时。到期后仍可导出已有的长作品及已应用的调色。片尾标志取决于开始导出时有效的权益。",
+  "helpPremiumExpiryTitle": "权益到期后",
+  "helpPremiumExpiryDesc": "已有的长作品即使超过 90 秒，也可以导出全部帧。添加和复制帧时适用 90 秒上限。编辑记录仍在时，可以通过撤销与重做恢复已删除的帧。片尾标志权益到期后，新导出的 MP4、WebM 和 AVI 末尾会添加 5 秒 NIARIM 标志。GIF 和已导出的文件不受影响。导出开始时的条件适用到处理结束。已放置的水印、已应用的调色和自动操作结果都会保留。再次运行已保存的自动操作需要有效权益。",
   "helpPerformanceSettingsTitle": "性能设置",
   "helpPerformanceSettingsDesc": "可根据设备性能从低画质・中画质・高画质预设中选择，也可逐项单独设置（自定义）。除保存方式・运行速度・洋葱皮・倾斜检测外，撤销次数、回收站自动删除等影响应用容量与运行负载的设置也都集中在这里。",
   "helpMaterialClipTitle": "素材片段（文字・图片・视频・音频）",

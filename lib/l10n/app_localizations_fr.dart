@@ -1586,6 +1586,13 @@ class AppLocalizationsFr extends AppLocalizations {
       'L’avantage de durée permet de prolonger un projet jusqu’à deux heures. Les projets longs et les corrections appliquées restent exportables après expiration. Le logo final dépend du droit actif au début de l’export.';
 
   @override
+  String get helpPremiumExpiryTitle => 'À l’expiration des avantages';
+
+  @override
+  String get helpPremiumExpiryDesc =>
+      'Vous pouvez toujours exporter toutes les images d’un projet existant, même au-delà de 90 secondes. La limite de 90 secondes s’applique à l’ajout ou à la duplication d’images. Tant que l’historique est disponible, Annuler et Rétablir permettent de récupérer des images supprimées. Après expiration de l’avantage du logo de fin, les nouvelles exportations MP4, WebM et AVI se terminent par cinq secondes de logo NIARIM. Les GIF et les fichiers déjà exportés sont préservés. Les conditions de départ s’appliquent jusqu’à la fin de l’exportation. Les filigranes posés, les corrections appliquées et les résultats des automatisations sont conservés. Un avantage actif est nécessaire pour relancer une automatisation enregistrée.';
+
+  @override
   String get helpPerformanceSettingsTitle => 'Réglages de performance';
 
   @override

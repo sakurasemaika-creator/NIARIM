@@ -80,7 +80,7 @@ class _ExportScreenState extends State<ExportScreen> {
     return Scaffold(
       appBar: AppBar(
         title: FitOrHideTitle(l10n.exportScreenTitle),
-        actions: const [HelpButton(topic: '動画書き出し（MP4）')],
+        actions: const [HelpButton(topic: '特典の期限が切れたら')],
       ),
       body: _buildSettings(l10n),
     );

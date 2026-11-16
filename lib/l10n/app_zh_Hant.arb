@@ -512,6 +512,8 @@
   "helpWatermarkEntryDesc": "可新增自己的簽名或標誌。新增或編輯需要浮水印權益。到期後仍可匯出已放置的浮水印。",
   "helpPremiumEntryTitle": "Premium",
   "helpPremiumEntryDesc": "片長權益有效時可將作品延長至 2 小時。到期後仍可匯出已有的長作品及已套用的調色。片尾標誌視開始匯出時有效的權益而定。",
+  "helpPremiumExpiryTitle": "權益到期後",
+  "helpPremiumExpiryDesc": "已有的長作品即使超過 90 秒，也可以匯出全部影格。新增和複製影格時適用 90 秒上限。編輯記錄仍在時，可以透過復原與重做還原已刪除的影格。片尾標誌權益到期後，新匯出的 MP4、WebM 和 AVI 末尾會加上 5 秒 NIARIM 標誌。GIF 和已匯出的檔案不受影響。匯出開始時的條件適用到處理結束。已放置的浮水印、已套用的調色和自動操作結果都會保留。再次執行已儲存的自動操作需要有效權益。",
   "helpPerformanceSettingsTitle": "效能設定",
   "helpPerformanceSettingsDesc": "可依裝置效能從低畫質・中畫質・高畫質預設中選擇，也可逐項單獨設定（自訂）。除儲存方式・運作速度・洋蔥皮・傾斜偵測外，復原次數、垃圾桶自動刪除等影響App容量與運作負擔的設定也都集中在這裡。",
   "helpMaterialClipTitle": "素材片段（文字・圖片・影片・音訊）",

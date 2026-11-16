@@ -14,7 +14,7 @@ import {
 } from "../src/lib/individualCoinRedemption";
 
 const requestId="123e4567-e89b-12d3-a456-426614174000";
-const priceVersion="v6-subscription-aligned-20261116";
+const priceVersion="v7-complete-pack-anchor-20261116";
 const input=()=>({targets:["toneCurve","levelAdjustment"],duration:"week",
   quantity:1,priceVersion,requestId});
 const enable=()=>{
@@ -64,7 +64,7 @@ describe("fail closed individual benefit redemption",()=>{
       ...input(), ...({costCoins:1,accountId:"attacker"} as Record<string,unknown>),
     });
     expect(JSON.parse(result.body??"{}")).toMatchObject({
-      redeemed:true,costCoins:8910,duplicate:false,
+      redeemed:true,costCoins:11130,duplicate:false,
     });
     const tx=send.mock.calls.find(([cmd])=>cmd instanceof TransactWriteCommand)?.[0] as TransactWriteCommand;
     expect(tx).toBeInstanceOf(TransactWriteCommand);
@@ -72,7 +72,7 @@ describe("fail closed individual benefit redemption",()=>{
     expect(rows).toHaveLength(7);
     expect(rows[0].Put?.Item?.selectionKey).toBe("toneCurve,levelAdjustment");
     expect(rows[1].Update?.Key?.pk).toBe("USER#Naccount");
-    expect(rows[1].Update?.ExpressionAttributeValues?.[":minus"]).toBe(-8910);
+    expect(rows[1].Update?.ExpressionAttributeValues?.[":minus"]).toBe(-11130);
     expect(rows[2].Update?.Key?.sk).toBe("ENTITLEMENT#toneCurve");
     expect(rows[3].Update?.Key?.sk).toBe("ENTITLEMENT#levelAdjustment");
     // The membership and Play term are checked in the SAME transaction as
@@ -87,7 +87,7 @@ describe("fail closed individual benefit redemption",()=>{
     expect(rows[4].ConditionCheck?.ExpressionAttributeValues?.[":free"])
       .toBe("free");
     expect(rows[5].ConditionCheck?.Key?.sk).toBe("ENTITLEMENT#fullPremium");
-    expect(rows[6].Put?.Item?.deltaCoins).toBe(-8910);
+    expect(rows[6].Put?.Item?.deltaCoins).toBe(-11130);
     expect(rows[2].Update?.ConditionExpression).toContain("attribute_not_exists(expiresAtEpochMs)");
   });
   it("rejects price tampering, overlapping ad rights and duplicate targets",async()=>{

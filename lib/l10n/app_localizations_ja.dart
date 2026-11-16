@@ -1075,7 +1075,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get premiumFeatureExport => '動画書き出し';
 
   @override
-  String get premiumFeatureMaxDuration => '最大尺';
+  String get premiumFeatureMaxDuration => '作成・延長できる尺';
 
   @override
   String get premiumFeatureEndLogo => '公式エンドロゴ';
@@ -1108,7 +1108,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get premiumValueDuration2Hours => '2時間';
 
   @override
-  String get premiumValueDuration90Sec => '1.5分';
+  String get premiumValueDuration90Sec => '90秒';
 
   @override
   String get premiumValueUploadFree => '1本';
@@ -1526,6 +1526,13 @@ class AppLocalizationsJa extends AppLocalizations {
   @override
   String get helpPremiumEntryDesc =>
       '最大尺の特典が有効な間は、最大2時間まで尺を伸ばせます。制作済みの長尺作品や適用済みの色補正は、期限後もそのまま書き出せます。エンドマークの表示は書き出し開始時に有効な特典で決まります。';
+
+  @override
+  String get helpPremiumExpiryTitle => '特典の期限が切れたら';
+
+  @override
+  String get helpPremiumExpiryDesc =>
+      '制作済みの長尺作品は、90秒を超えていても全編を書き出せます。フレームの新規追加・複製は90秒までです。編集履歴が残っていれば、取り消し・やり直しで削除したフレームを復元できます。エンドマーク特典の期限後に新しく書き出すMP4・WebM・AVIには、末尾にNIARIMロゴが5秒付きます。GIFと書き出し済みのファイルには影響しません。書き出し開始時の条件が最後まで適用されます。配置済みのウォーターマーク、適用済みの色補正、自動操作の結果は残ります。保存した自動操作をもう一度実行するには、有効な特典が必要です。';
 
   @override
   String get helpPerformanceSettingsTitle => 'パフォーマンス設定';
@@ -2933,7 +2940,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String newProjectDurationLabelWithPremiumHint(String max) {
-    return '長さ（最大$max・プレミアムなら最大2時間）';
+    return '長さ（最大$max・最大尺の特典で2時間）';
   }
 
   @override

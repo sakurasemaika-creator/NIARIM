@@ -1515,6 +1515,13 @@ class AppLocalizationsZh extends AppLocalizations {
       '时长权益有效时可以将作品延长到 2 小时。到期后仍可导出已有的长作品及已应用的调色。片尾标志取决于开始导出时有效的权益。';
 
   @override
+  String get helpPremiumExpiryTitle => '权益到期后';
+
+  @override
+  String get helpPremiumExpiryDesc =>
+      '已有的长作品即使超过 90 秒，也可以导出全部帧。添加和复制帧时适用 90 秒上限。编辑记录仍在时，可以通过撤销与重做恢复已删除的帧。片尾标志权益到期后，新导出的 MP4、WebM 和 AVI 末尾会添加 5 秒 NIARIM 标志。GIF 和已导出的文件不受影响。导出开始时的条件适用到处理结束。已放置的水印、已应用的调色和自动操作结果都会保留。再次运行已保存的自动操作需要有效权益。';
+
+  @override
   String get helpPerformanceSettingsTitle => '性能设置';
 
   @override
@@ -11524,6 +11531,13 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   @override
   String get helpPremiumEntryDesc =>
       '片長權益有效時可將作品延長至 2 小時。到期後仍可匯出已有的長作品及已套用的調色。片尾標誌視開始匯出時有效的權益而定。';
+
+  @override
+  String get helpPremiumExpiryTitle => '權益到期後';
+
+  @override
+  String get helpPremiumExpiryDesc =>
+      '已有的長作品即使超過 90 秒，也可以匯出全部影格。新增和複製影格時適用 90 秒上限。編輯記錄仍在時，可以透過復原與重做還原已刪除的影格。片尾標誌權益到期後，新匯出的 MP4、WebM 和 AVI 末尾會加上 5 秒 NIARIM 標誌。GIF 和已匯出的檔案不受影響。匯出開始時的條件適用到處理結束。已放置的浮水印、已套用的調色和自動操作結果都會保留。再次執行已儲存的自動操作需要有效權益。';
 
   @override
   String get helpPerformanceSettingsTitle => '效能設定';

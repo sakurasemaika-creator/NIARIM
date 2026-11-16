@@ -2046,7 +2046,7 @@ abstract class AppLocalizations {
   /// No description provided for @premiumFeatureMaxDuration.
   ///
   /// In ja, this message translates to:
-  /// **'最大尺'**
+  /// **'作成・延長できる尺'**
   String get premiumFeatureMaxDuration;
 
   /// No description provided for @premiumFeatureEndLogo.
@@ -2112,7 +2112,7 @@ abstract class AppLocalizations {
   /// No description provided for @premiumValueDuration90Sec.
   ///
   /// In ja, this message translates to:
-  /// **'1.5分'**
+  /// **'90秒'**
   String get premiumValueDuration90Sec;
 
   /// No description provided for @premiumValueUploadFree.
@@ -2870,6 +2870,18 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'最大尺の特典が有効な間は、最大2時間まで尺を伸ばせます。制作済みの長尺作品や適用済みの色補正は、期限後もそのまま書き出せます。エンドマークの表示は書き出し開始時に有効な特典で決まります。'**
   String get helpPremiumEntryDesc;
+
+  /// No description provided for @helpPremiumExpiryTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'特典の期限が切れたら'**
+  String get helpPremiumExpiryTitle;
+
+  /// No description provided for @helpPremiumExpiryDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'制作済みの長尺作品は、90秒を超えていても全編を書き出せます。フレームの新規追加・複製は90秒までです。編集履歴が残っていれば、取り消し・やり直しで削除したフレームを復元できます。エンドマーク特典の期限後に新しく書き出すMP4・WebM・AVIには、末尾にNIARIMロゴが5秒付きます。GIFと書き出し済みのファイルには影響しません。書き出し開始時の条件が最後まで適用されます。配置済みのウォーターマーク、適用済みの色補正、自動操作の結果は残ります。保存した自動操作をもう一度実行するには、有効な特典が必要です。'**
+  String get helpPremiumExpiryDesc;
 
   /// No description provided for @helpPerformanceSettingsTitle.
   ///
@@ -5400,7 +5412,7 @@ abstract class AppLocalizations {
   /// No description provided for @newProjectDurationLabelWithPremiumHint.
   ///
   /// In ja, this message translates to:
-  /// **'長さ（最大{max}・プレミアムなら最大2時間）'**
+  /// **'長さ（最大{max}・最大尺の特典で2時間）'**
   String newProjectDurationLabelWithPremiumHint(String max);
 
   /// No description provided for @newProjectDurationSeconds.

@@ -1,3 +1,4 @@
+import '../../../services/shared_asset_card_service.dart';
 import 'package:niarim/services/theme_service.dart';
 
 import 'dart:convert';
@@ -744,6 +745,19 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
               },
             ),
             ListTile(
+              leading: const Icon(Icons.image_outlined),
+              title: Text(l10n.shareCardExportMenu),
+              onTap: () {
+                Navigator.pop(ctx);
+                SharedAssetCardService.exportSettings(
+                  context,
+                  kind: 'palette',
+                  name: palette.name,
+                  settings: palette.toJson(),
+                );
+              },
+            ),
+            ListTile(
               leading: const Icon(Icons.qr_code_2),
               title: Text(l10n.colorPickerShareViaQr),
               subtitle: qrAvailable ? null : Text(l10n.qrShareTooLargeHint),
@@ -817,12 +831,17 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
                 Navigator.pop(ctx);
                 final result = await FilePicker.platform.pickFiles(
                   type: FileType.custom,
-                  allowedExtensions: ['niapalette'],
+                  allowedExtensions: ['niapalette', 'png'],
                 );
                 final path = result?.files.firstOrNull?.path;
                 if (path == null) return;
                 try {
-                  await paletteService.importPaletteFile(path);
+                  await paletteService.importPaletteJson(
+                    await SharedAssetCardService.readSettingsFile(
+                      path,
+                      kind: 'palette',
+                    ),
+                  );
                 } catch (e) {
                   if (!context.mounted) return;
                   ScaffoldMessenger.of(context).showSnackBar(

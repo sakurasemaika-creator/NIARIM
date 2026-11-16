@@ -1,6 +1,7 @@
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import '../../../widgets/project_duration_limit_dialog.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
@@ -122,34 +123,7 @@ class _FrameStripWidgetState extends State<FrameStripWidget> {
       frameDelta: count,
     );
     if (projected <= maxSeconds) return true;
-    final l10n = AppLocalizations.of(context)!;
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        // popup-standard-close: タイトル行の右端へ寄せた閉じるボタン。
-        // AlertDialogの`icon:`スロットへ入れると、Flutterが
-        // タイトルを強制的に中央寄せにするため（dialog.dartの
-        // `textAlign: icon == null ? TextAlign.start : TextAlign.center`）、
-        // 他のダイアログと不揃いになる。タイトル行へ直接置くこと。
-        title: Row(
-          children: [
-            Expanded(child: Text(l10n.timelineDurationLimitTitle)),
-            IconButton(
-              visualDensity: VisualDensity.compact,
-              iconSize: 18,
-              tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
-              onPressed: () => Navigator.of(context, rootNavigator: true).pop(),
-              icon: const Icon(Icons.close),
-            ),
-          ],
-        ),
-        content: Text(
-          isPremium
-              ? l10n.timelineDurationLimitBodyPremium
-              : l10n.timelineDurationLimitBodyFree,
-        ),
-      ),
-    );
+    showProjectDurationLimit(context, hasUnlimitedDuration: isPremium);
     return false;
   }
 

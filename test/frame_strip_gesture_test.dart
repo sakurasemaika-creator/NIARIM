@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:flutter/services.dart' hide UndoManager;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:niarim/services/google_auth_service.dart';
@@ -10,6 +10,7 @@ import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/screens/canvas/widgets/frame_strip_widget.dart';
 import 'package:niarim/services/project_service.dart';
+import 'package:niarim/engine/undo_manager.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -243,6 +244,74 @@ void main() {
     setEnd(DateTime.now().subtract(const Duration(seconds: 1)));
     await tester.tap(addCell);
     await tester.pumpAndSettle();
+    expect(project.frameCount(ctx.projectId, ctx.sceneId), 91);
+    final l10n = AppLocalizations.of(element)!;
+    expect(find.text(l10n.premiumComparisonPremium), findsOneWidget);
+    expect(find.text(l10n.rewardNavigationExchange), findsOneWidget);
+    await tester.tap(find.text(l10n.commonClose));
+    await tester.pumpAndSettle();
+
+    final undo = element.read<UndoManager>();
+    final frames = project.scenesOf(ctx.projectId).first.frames;
+    final layerId = frames[0].layers.first.id;
+    final tileManager = project.tileManagerOf(ctx.projectId);
+    final removedKey = project.tileKeyFor(
+      ctx.projectId,
+      ctx.sceneId,
+      0,
+      layerId,
+    );
+    final neighborKey = project.tileKeyFor(
+      ctx.projectId,
+      ctx.sceneId,
+      1,
+      layerId,
+    );
+    tileManager.setPixel(
+      tileManager.getOrCreateTile(removedKey, 0, 0),
+      0,
+      0,
+      255,
+      0,
+      0,
+      255,
+    );
+    tileManager.setPixel(
+      tileManager.getOrCreateTile(neighborKey, 0, 0),
+      0,
+      0,
+      0,
+      255,
+      0,
+      255,
+    );
+
+    project.removeFrame(ctx.projectId, ctx.sceneId, 0);
+    expect(project.frameCount(ctx.projectId, ctx.sceneId), 90);
+    expect(tileManager.exportAll()[removedKey]!.values.first.take(4), [
+      0,
+      255,
+      0,
+      255,
+    ]);
+    undo.undo();
+    expect(project.frameCount(ctx.projectId, ctx.sceneId), 91);
+    expect(tileManager.exportAll()[removedKey]!.values.first.take(4), [
+      255,
+      0,
+      0,
+      255,
+    ]);
+    expect(tileManager.exportAll()[neighborKey]!.values.first.take(4), [
+      0,
+      255,
+      0,
+      255,
+    ]);
+    expect(find.byType(AlertDialog), findsNothing);
+    undo.redo();
+    expect(project.frameCount(ctx.projectId, ctx.sceneId), 90);
+    undo.undo();
     expect(project.frameCount(ctx.projectId, ctx.sceneId), 91);
     premium.dispose();
     await tester.pumpWidget(const SizedBox.shrink());

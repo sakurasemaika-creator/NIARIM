@@ -15,6 +15,7 @@ import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
 
 import '../../utils/immersive_mode.dart';
+import '../../widgets/project_duration_limit_dialog.dart';
 import '../../services/shortcut_service.dart';
 import '../../models/shortcut_binding.dart';
 import '../../engine/audio_waveform_service.dart';
@@ -3863,33 +3864,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
       frameDelta: count,
     );
     if (projected <= maxSeconds) return true;
-    final l10n = AppLocalizations.of(context)!;
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        // popup-standard-close: タイトル行の右端へ寄せた閉じるボタン。
-        // AlertDialogの`icon:`スロットへ入れると、Flutterが
-        // タイトルを強制的に中央寄せにするため（dialog.dartの
-        // `textAlign: icon == null ? TextAlign.start : TextAlign.center`）、
-        // 他のダイアログと不揃いになる。タイトル行へ直接置くこと。
-        title: Row(
-          children: [
-            Expanded(child: Text(l10n.timelineDurationLimitTitle)),
-            IconButton(
-              visualDensity: VisualDensity.compact,
-              iconSize: 18,
-              tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
-              onPressed: () => Navigator.of(context, rootNavigator: true).pop(),
-              icon: const Icon(Icons.close),
-            ),
-          ],
-        ),
-        content: Text(
-          hasUnlimitedDuration
-              ? l10n.timelineDurationLimitBodyPremium
-              : l10n.timelineDurationLimitBodyFree,
-        ),
-      ),
+    showProjectDurationLimit(
+      context,
+      hasUnlimitedDuration: hasUnlimitedDuration,
     );
     return false;
   }
@@ -3993,7 +3970,14 @@ class _TimelineScreenState extends State<TimelineScreen> {
     final targetSceneId = _selectedSceneId;
     if (targetSceneId == null) return;
     final sortedSourceIndices = List<int>.from(clip.indices)..sort();
-    if (!_canAddFrames(sortedSourceIndices.length)) return;
+    final movingFrames =
+        clip.isCut &&
+        context.read<ProjectService>().frameCount(
+              widget.projectId,
+              clip.sceneId,
+            ) >
+            sortedSourceIndices.length;
+    if (!movingFrames && !_canAddFrames(sortedSourceIndices.length)) return;
     final ps = context.read<ProjectService>();
     final insertAt = _frameMoveCursorPos.clamp(0, _totalFrames);
     var insertedSoFar = 0;
@@ -4027,7 +4011,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
               .toList()
             ..sort();
       for (final idx in currentPositions.reversed) {
-        ps.removeFrame(widget.projectId, clip.sceneId, idx);
+        ps.removeFrame(widget.projectId, clip.sceneId, idx, recordUndo: false);
       }
     }
     setState(() {
@@ -7296,6 +7280,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
                   );
                   if (confirmed != true) return;
                 }
+                if (!mounted || !ctx.mounted) return;
+                final added = frames - ps.frameCount(widget.projectId, sceneId);
+                if (added > 0 && !_canAddFrames(added)) return;
                 ps.setSceneFrameCount(widget.projectId, sceneId, frames);
                 if (ctx.mounted) Navigator.pop(ctx);
               },
