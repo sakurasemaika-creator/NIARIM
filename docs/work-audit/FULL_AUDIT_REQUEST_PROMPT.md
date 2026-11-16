@@ -2,7 +2,7 @@
 
 以下をそのまま全面監査担当AIへ渡して、NIARIMのApp/Webを全面監査してください。
 
-あなたはNIARIMの全面監査の主担当実行者です。今回の依頼は、単なるテスト実行・バグ探し・コードレビューではありません。最新製品を実際に操作し、全画面・全機能・全操作・全状態・全プリセットを確認したうえで、機能、意図した挙動、見た目、操作性、情報設計、性能、アクセシビリティ、国際化、セキュリティ、保存互換性、法務/IP、商用品質まで監査し、問題があれば修正して再検証してください。
+あなたはNIARIMの全面監査の主担当実行者です。今回の依頼は、単なるテスト実行・バグ探し・コードレビューではありません。最新製品を実際に操作し、全画面・全機能・全操作・全状態・全プリセットを確認したうえで、機能、意図した挙動、見た目、操作性、情報設計、性能、アクセシビリティ、国際化、セキュリティ、保存互換性、法務/IP、商用品質まで監査し、問題があれば再現条件と証跡を記録し、修正担当へ渡して二巡目で再検証してください。
 
 ## 開始
 最新dev_branchのApp/Web HEADと開始SHAを記録してください。次を現在HEADから確認してください。
@@ -50,8 +50,9 @@ PC/SPを別設計として確認してください。width matrixは320/360/375/
 ## Performance / Accessibility / Security / Legal
 startup、route transition、filter/brush、drawing、slider/drag、undo/redo、save/load、import/export、search/list、share/publish、heavy canvas/large asset/projectを測定し、可能ならp50/p95、jank/frame drop、UI freeze、memory spikeを記録してください。Accessibility、auth/authz、validation、API abuse、race/concurrency、resource lifecycle、PII/token/secret、OSS/license、copyright、trademark、patent/utility model、GUI design rights、privacy、consumer/contractも各Standardに従って確認してください。法務はAIで保証せず、不確実事項を専門家確認候補として記録してください。
 
-## 修正
-問題は列挙だけで終わらせず、可能ならroot cause→fix→targeted test/analyze→同じ実操作→Visual確認→related regressionまで行ってください。refactor/rewrite/redesignを妨げません。機能削除は目的、入力、出力、精度、UX、速度、自由度、保存互換性、undo/redo、share/export、Free/Premium差を確認して判断してください。
+## 修正担当への引継ぎ
+
+監査担当は製品の修正を担当せず、実操作で得た指摘と証跡を修正担当へ渡してください。A003は [残件一覧](policy/A003_REPAIR_HANDOFF.md) を修正担当に渡し、監査担当はA004以降の一巡目を進めてください。修正担当は原因特定・コード修正・関連テストを行い、対象ID・修正コミット・結果・影響先を返してください。監査担当は二巡目に変更箇所、影響先、一巡目で未確認だった条件を実操作で確認してください。
 
 ## Evidence
 Audit ID、target、precondition、procedure、expected、actual、environment、PC/SP、viewport、language、theme、preset/mode、settings、test/visual result、regression、evidence location、未確認理由を残してください。Visual evidenceはBEFORE/SETTINGS/AFTER、feature、preset/mode、主要設定を識別可能にしてください。captureしただけでVisual PASSにしないでください。バイナリ証拠は長期保管先へバックアップし、失敗時はbackup-pendingとして記録してください。
