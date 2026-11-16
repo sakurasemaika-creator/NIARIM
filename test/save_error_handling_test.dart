@@ -48,7 +48,9 @@ void main() {
             GlobalCupertinoLocalizations.delegate,
           ],
           home: Builder(
-            builder: (context) => throw StateError('セーブツリー保存の再現用エラー'),
+            builder: (context) => throw StateError(
+              'セーブツリー保存の再現用エラー for private@example.com',
+            ),
           ),
         ),
       );
@@ -67,8 +69,13 @@ void main() {
 
       // flutter_testはテスト本体を抜ける前にErrorWidget.builderが元へ
       // 戻っていることを検証するため、expectより先に必ず復帰させる。
+      final privateCount = find
+          .textContaining('private@example.com')
+          .evaluate()
+          .length;
       ErrorWidget.builder = originalBuilder;
 
+      expect(privateCount, 0);
       expect(headingCount, 1, reason: '説明文の見出しが表示されていない');
       expect(bodyCount, 1, reason: '説明文が表示されていない');
       expect(detailCount, 1, reason: 'エラー内容が表示されていない');

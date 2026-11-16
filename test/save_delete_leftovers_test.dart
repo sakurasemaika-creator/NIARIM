@@ -138,7 +138,8 @@ void main() {
   }
 
   bool recorded(String path) =>
-      AppErrorReporter.recentErrors.any((entry) => entry.contains(path));
+      AppErrorReporter.recentErrors.any((entry) => entry.contains('[path]')) &&
+      AppErrorReporter.recentErrors.every((entry) => !entry.contains(path));
 
   testWidgets('overwriting a save whose note cannot be deleted still saves '
       'and lists the new save, and the leftover note brings nothing back', (

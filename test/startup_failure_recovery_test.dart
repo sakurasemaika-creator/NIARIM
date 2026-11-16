@@ -221,7 +221,8 @@ void main() {
     }) async {
       await tester.pumpWidget(
         StartupFailureApp(
-          details: 'step: brush\nerror: Bad state: boom',
+          details: 'step: brush\nerror: Bad state: boom '
+              'private@example.com "/home/Artist/private sketch.niapro"',
           languageCode: languageCode,
           onRetry: onRetry,
         ),
@@ -334,11 +335,17 @@ void main() {
       await tester.tap(find.text(l10n.startupFailedCopyDetails));
       await tester.pumpAndSettle();
       expect(copied, contains('step: brush'));
+      expect(copied, contains('[email]'));
+      expect(copied, contains('[path]'));
+      expect(copied, isNot(contains('private@example.com')));
+      expect(copied, isNot(contains('private sketch')));
       expect(find.text(l10n.startupFailedDetailsCopied), findsOneWidget);
 
       await tester.tap(find.text(l10n.startupFailedDetails));
       await tester.pumpAndSettle();
       expect(find.textContaining('Bad state: boom'), findsOneWidget);
+      expect(find.textContaining('private@example.com'), findsNothing);
+      expect(find.textContaining('private sketch'), findsNothing);
     });
   });
 

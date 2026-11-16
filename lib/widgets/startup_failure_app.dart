@@ -4,6 +4,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 
 import '../l10n/app_localizations.dart';
 import '../services/theme_service.dart';
+import '../utils/app_error_reporter.dart';
 import '../utils/app_locale.dart';
 import '../utils/line_break.dart';
 import 'app_toast_messenger.dart';
@@ -100,8 +101,8 @@ class _StartupFailureScreenState extends State<StartupFailureScreen> {
     }
   }
 
-  Future<void> _copyDetails(AppLocalizations l10n) async {
-    await Clipboard.setData(ClipboardData(text: widget.details));
+  Future<void> _copyDetails(AppLocalizations l10n, String details) async {
+    await Clipboard.setData(ClipboardData(text: details));
     if (!mounted) return;
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
@@ -115,6 +116,7 @@ class _StartupFailureScreenState extends State<StartupFailureScreen> {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
+    final details = AppErrorReporter.maskPersonalDetails(widget.details);
     return Scaffold(
       body: SafeArea(
         child: Center(
@@ -162,7 +164,7 @@ class _StartupFailureScreenState extends State<StartupFailureScreen> {
                   ),
                   const SizedBox(height: 8),
                   TextButton.icon(
-                    onPressed: () => _copyDetails(l10n),
+                    onPressed: () => _copyDetails(l10n, details),
                     icon: const Icon(Icons.copy_rounded),
                     label: _KeptKoreanText(l10n.startupFailedCopyDetails),
                   ),
@@ -182,7 +184,7 @@ class _StartupFailureScreenState extends State<StartupFailureScreen> {
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: SelectableText(
-                          widget.details,
+                          details,
                           style: theme.textTheme.bodySmall?.copyWith(
                             fontFamily: 'monospace',
                             fontFamilyFallback: const ['monospace'],

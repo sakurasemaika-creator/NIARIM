@@ -45,6 +45,29 @@ void main() {
     );
   });
 
+  test('structured credentials, paths and phone numbers are masked', () {
+    final masked = AppErrorReporter.maskPersonalDetails(
+      r'{"refreshToken":"refresh-private","displayName":"Art User"}'
+      '\nCookie: session=private-cookie; other=also-private'
+      '\nphone: +819012345678'
+      '\nhttps://demo:private-userinfo@example.com/status?page=3'
+      '\n'
+      r'"C:\Users\Artist\my private sketch.niapro"',
+    );
+    for (final value in [
+      'refresh-private',
+      'Art User',
+      'private-cookie',
+      'also-private',
+      '+819012345678',
+      'demo:private-userinfo',
+      'my private sketch',
+    ]) {
+      expect(masked, isNot(contains(value)), reason: value);
+    }
+    expect(masked, contains('example.com/status?page=3'));
+  });
+
   test('entries carry the time and are kept short', () {
     AppErrorReporter.record('x' * 5000, null);
     final entry = AppErrorReporter.recentErrors.single;
@@ -83,7 +106,13 @@ void main() {
           .setMockMethodCallHandler(SystemChannels.platform, null),
     );
     AppErrorReporter.record(StateError('older problem'), null);
-    AppErrorReporter.record(StateError('newer problem'), null);
+    AppErrorReporter.record(
+      StateError('newer problem: "/home/sample/Private Project.niapro"'),
+      StackTrace.fromString(
+        '#0 load (package:niarim/test.dart:2:1) user_id=sample-account\n'
+        '#1 failure (file:///home/sample/Private.dart:5:1)',
+      ),
+    );
     await tester.pumpWidget(screen(const Locale('ja')));
     final l10n = lookupAppLocalizations(const Locale('ja'));
     final newer = find.textContaining('newer problem');
@@ -97,6 +126,12 @@ void main() {
     await tester.pump();
     expect(copied, contains('newer problem'));
     expect(copied, contains('older problem'));
+    expect(copied, contains('package:niarim/test.dart:2:1'));
+    expect(copied, contains('[path]'));
+    expect(copied, isNot(contains('sample-account')));
+    expect(copied, isNot(contains('Private Project')));
+    expect(find.textContaining('sample-account'), findsNothing);
+    expect(find.textContaining('Private Project'), findsNothing);
     expect(find.text(l10n.errorLogCopied), findsOneWidget);
 
     await tester.tap(find.byKey(const Key('errorLogClear')));
