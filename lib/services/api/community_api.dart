@@ -319,10 +319,15 @@ class CommunityApi {
   Future<Map<String, dynamic>> myMissionActivity({
     String? cursor,
     int limit = 30,
+    bool includeCommunity = false,
   }) => _client.getJson(
     '/me/missions/activity',
     authenticated: true,
-    query: {'cursor': ?cursor, 'limit': '$limit'},
+    query: {
+      'cursor': ?cursor,
+      'limit': '$limit',
+      if (includeCommunity) 'includeCommunity': 'true',
+    },
   );
 
   /// Owner-scoped, bounded discovery of historical achievements on bell open.
@@ -681,10 +686,16 @@ class CommunityApi {
     String userId, {
     required String token,
     required String platform,
+    bool enabled = true,
   }) async {
     final json = await _client.putJson(
       '/users/${Uri.encodeComponent(userId)}/push-token',
-      body: {'token': token, 'platform': platform},
+      body: {
+        'token': token,
+        'platform': platform,
+        'enabled': enabled,
+        'localizedNotifications': true,
+      },
     );
     return json['registered'] == true;
   }

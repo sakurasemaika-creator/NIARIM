@@ -1,17 +1,37 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/services/push_notification_service.dart';
+import 'package:niarim/services/settings_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
+  test('device push opt-out survives reopening the app', () async {
+    SharedPreferences.setMockInitialValues({});
+    final initial = SettingsService();
+    await initial.init();
+    expect(initial.pushNotificationsEnabled, isTrue);
+    await initial.setPushNotificationsEnabled(false);
+    initial.dispose();
+    final reopened = SettingsService();
+    await reopened.init();
+    expect(reopened.pushNotificationsEnabled, isFalse);
+    await reopened.setPushNotificationsEnabled(true);
+    reopened.dispose();
+    final restored = SettingsService();
+    await restored.init();
+    expect(restored.pushNotificationsEnabled, isTrue);
+    restored.dispose();
+  });
+
   test('simulated FCM delivery accepts only NIARIM-owned deep links', () {
     // Data and notification fields are constructed with the real Firebase
     // Messaging model, but never deliver a production push or register a token.
     final mission = RemoteMessage(
       messageId: 'simulated-mission',
       data: const {'targetRoute': '/creator-missions'},
-      notification: RemoteNotification(
-        title: 'ミッション達成', body: 'アプリ内の内容を確認',
-      ),
+      notification: RemoteNotification(title: 'ミッション達成', body: 'アプリ内の内容を確認'),
     );
     final work = RemoteMessage(
       messageId: 'simulated-work',
@@ -21,12 +41,24 @@ void main() {
       messageId: 'simulated-invalid-link',
       data: const {'targetRoute': '/community/work/Ab_12345678?admin=true'},
     );
-    expect(PushNotificationService.routeForData(mission.data),
-        '/creator-missions');
-    expect(PushNotificationService.routeForData(work.data),
-        '/community/work/Ab_12345678');
+    expect(
+      PushNotificationService.routeForData(mission.data),
+      '/creator-missions',
+    );
+    expect(
+      PushNotificationService.routeForData(work.data),
+      '/community/work/Ab_12345678',
+    );
     expect(PushNotificationService.routeForData(hostile.data), isNull);
+    expect(
+      PushNotificationService.routeForData({
+        'targetRoute': '/community/notifications',
+      }),
+      '/community/notifications',
+    );
     for (final disallowed in [
+      '/community/notifications?account=other',
+      '/community/notifications/extra',
       'https://example.invalid/creator-missions',
       '//example.invalid',
       '/community/work/../admin',
@@ -34,11 +66,12 @@ void main() {
       '/settings',
       '',
     ]) {
-      final message = RemoteMessage(
-        data: {'targetRoute': disallowed},
+      final message = RemoteMessage(data: {'targetRoute': disallowed});
+      expect(
+        PushNotificationService.routeForData(message.data),
+        isNull,
+        reason: 'Rejected unsafe or unknown FCM route: $disallowed',
       );
-      expect(PushNotificationService.routeForData(message.data), isNull,
-          reason: 'Rejected unsafe or unknown FCM route: $disallowed');
     }
   });
 

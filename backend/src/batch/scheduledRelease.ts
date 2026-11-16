@@ -73,6 +73,7 @@ async function releaseWork(work: WorkItem): Promise<void> {
     "youtubePrivacyStatus = :public",
     "postedAt = :releasedAt",
     "gsi3AllSk = :releasedAt",
+    "scheduledReleaseConfirmedAt = :confirmedAt",
   ];
   const removes = ["gsi6pk", "gsi6sk"];
   const values: Record<string, unknown> = {
@@ -82,6 +83,7 @@ async function releaseWork(work: WorkItem): Promise<void> {
     ":scheduled": schedule,
     ":published": visible,
     ":releasedAt": schedule,
+    ":confirmedAt": new Date().toISOString(),
     ":bookmarkCount": work.bookmarkCount,
   };
   if (visible) {

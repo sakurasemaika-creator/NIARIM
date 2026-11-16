@@ -201,7 +201,7 @@ backend/
 FCMはFirestoreとは無関係です。Flutter端末がFCMトークンを取得し、認証済み
 `PUT /users/{id}/push-token` でDynamoDBに保存します。ミッション達成時の
 永続通知が記録された場合のみ、`sendPushToUser` がFCM HTTP v1へ送信します。
-個別フォロー・ブックマーク操作すべてが即時通知を送る仕様ではありません。
+交流・予約公開の通知はDynamoDB Streamsで処理します。通知条件と実機確認は [FCM運用手順](../docs/FCM_プッシュ通知_導入・実機確認.md) を参照してください。
 
 AWS Lambdaでは長期秘密鍵を発行しません。Google Cloud
 `niarim-513201` の WIF `niarim-aws-fcm/niarim-aws-lambda` を使用し、

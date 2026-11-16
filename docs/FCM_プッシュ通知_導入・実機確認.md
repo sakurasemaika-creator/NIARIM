@@ -1,48 +1,31 @@
 # NIARIM FCM プッシュ通知: 運用・実機確認
 
-2026-11-07 / dev_branch
+作品広場のベルと端末のプッシュは同じ通知を使う。端末への送信に失敗しても、保存済みの履歴や操作結果は残る。
 
-## 統合した構成
+| 通知のきっかけ | 受け取る人 | 通知を開いたとき |
+| --- | --- | --- |
+| フォローの追加 | フォローされた側 | 作品広場の通知 |
+| 公開作品のブックマーク・リポストの追加 | 作品の作者 | 作品詳細 |
+| 予約動画がYouTubeで公開され、NIARIMでも掲載される | 投稿者 | 作品詳細 |
+| 新しいミッション達成（既存の達成条件に準拠） | 達成した本人 | ミッション画面 |
 
-- Firebase Cloud Messaging（Android）は無料で利用。Firestore / Firebase Storage / Firebase Authには依存しない。
-- `android/app/google-services.json` はプロジェクト `niarim-513201`、Android `com.niarim.niarim`。
-- `lib/main.dart` がFirebase初期化。Firebase未設定のローカル編集やFlutterテストを塞がない。
-- `lib/services/push_notification_service.dart` がGoogleログイン後にFCMトークンを取得し、
-  既存の認証済み `PUT /users/{id}/push-token` へ登録する。別アカウント移行では既存トークンを失効。
-- FCMプッシュの配信はAWS Lambda `niarim-api` が担当、トークン/通知履歴はDynamoDB。
-- 認証はGoogle Cloud Workload Identity Federation（AWS provider `niarim-aws-lambda`）と
-  `niarim-fcm-sender` サービスアカウントの短期トークンを利用し、JSON秘密鍵を使わない。
-- ミッション達成の **新規** 永続通知記録を作成した場合のみFCMを送る。フォロー操作ごと、
-  ブックマーク操作ごとの個別通知は現在のバックエンド仕様では送らない。
-- 既存の投稿完了通知は端末ローカル通知で、FCMとは独立する。
-- プッシュ通知タップの遷移先は `/creator-missions` と
-  `/community/work/<正しいYouTube動画ID>` のみ許可。画面起動中はスナックバーに表示。
+フォロー等を取り消したとき、自分の作品に操作したとき、ブロック関係のある相手は通知しない。同じ相手・操作・作品の通知は24時間抑制し、操作した人の名前やIDを履歴やFCMに出さない。予約時刻だけでは公開済みと扱わない。作品広場の通知履歴は本人専用で、交流と予約公開の通知は30日で期限切れ、達成履歴は従来どおり残す。既存の書き出し・投稿完了の端末内通知は別機能。
 
-## 反映されたファイルと検証
+「設定 → この端末のプッシュ通知」で、同じアカウントの他端末に影響せず受信を切り替える。オフにすると新規登録を止め、可能なら登録を解除してFirebaseトークンを無効化する。通信できない場合は再開時に再試行する。アプリ内の履歴は引き続き読める。Android側の通知許可も必要。
 
-- `backend/src/lib/push.ts`、`backend/src/lib/missionNotifications.ts`、
-  `backend/lib/niarim-backend-stack.ts`
-- `lib/services/push_notification_service.dart`、`lib/main.dart`、`lib/app.dart`
-- `pubspec.yaml`、`pubspec.lock`、Android Gradle設定、`android/app/google-services.json`
-- `test/push_notification_service_test.dart` で遷移先の許可範囲を検証。
-- AWSのFCM対応は既存Lambdaを単独更新し、DynamoDB/CloudFormationの変更を避けた。
-  GitHub Actionsの一時的なLambda更新権限は反映後に削除した。
+## AWS と Firebase
 
-## 人間が行う実機検証
+- AWS 東京リージョンの `niarim-api` が DynamoDB Streams から確定したイベントを処理する。通知履歴を先に保存し、通知行の条件付き更新で同じ配信の重複試行を防ぐ。履歴を記録する段階の一時的なエラーは再試行する。FCM送信を始めた後は結果不明でも再送しない。
+- 予約公開LambdaはYouTubeで公開を確認したデータだけを更新する。送信は既存の `niarim-api` の実行ロールで行い、公開LambdaへFirebase権限を追加しない。
+- Google CloudのWorkload Identity Federationと送信用サービスアカウントを使う。秘密鍵ファイルは不要。新しい端末登録は最新のアカウントへ結び直し、古いAPKには通知文を直接送り、新しいAPKではAndroidの文字列リソースを使用する。
+- `backend` の型検査・テスト・CDK合成とデプロイ差分を確認してから、`dev_branch` の Backend CI のデプロイ手順を使う。稼働中の特典・料金・Google/SNS設定をデプロイで戻さない。テーブル名と実行ロールは既存リソースを維持する。
+- デプロイ後は、既存テーブルの `NEW_AND_OLD_IMAGES`、イベントソースの稼働、ワーカー有効フラグ、FCM認証エラーの有無を確認する。設定が揃っていることはGoogle認証や端末への配信成功を意味しない。
 
-1. GitHub Actionsの **FCM Android smoke APK (dev_branch only)** の成功した実行から
-   `niarim-fcm-dev-android-apk` を取得する。成果物の保持期間は1日。
-   必要なら標準 `Build APK` で `debug`、`connect_backend=true`、
-   `connect_google_auth=true` として再ビルドする。
-2. GalaxyでAPKをインストール（既存の同じアプリIDのAPKは署名鍵が同じなら上書き）。
-3. Googleログインし、通知の許可ダイアログで「許可」を選択する。
-4. DynamoDBで生成される **新規ミッション達成通知** でFCM実配送を確認する。
-   通知が見えない場合は、まず `niarim-api` CloudWatch logsで
-   `FCMアクセストークンの取得に失敗しました` または送信失敗を探す。
-   ログは利用者のGoogle IDトークン、FCMトークン、APIキー、個人情報を転載しない。
-5. アプリ終了時・バックグラウンド時の通知表示と、通知タップから
-   `/creator-missions` への遷移を確認する。
+## Galaxyでの最終確認
 
-注記：Google Cloud側のWIFユーザー権限とFCM API Adminロールについて、
-実際のIAM設定をプログラムから取得して照合したわけではない。
-Lambdaの稼働確認はFCM送信の実配送成功を意味しない。
+最新の `dev_branch` APKをテスト端末に入れ、通知許可をオンにして受け手と操作側の別テストアカウントを使う。個人情報、FCMトークン、Google認証情報を画面やログへ残さない。
+
+1. 受け手をログイン状態でバックグラウンドへ。別アカウントでフォロー、公開作品のブックマーク、リポストをそれぞれ新規に行い、OS通知・プラザの履歴・タップ先を照合する。解除と24時間以内の再操作、自己操作、ブロックでは通知が増えないことを確認する。
+2. 予約作品で公開前は通知が出ず、YouTubeで公開されてから作者に届くことを確認する。ミッションでは新規達成一件だけを使って既存のタップ先も再確認する。
+3. 端末の通知設定をオフにし、別の新規イベントでOS通知が増えず、履歴だけが増えることを確認する。再度オンにした新規イベントと、アプリ終了状態からのタップも確認する。
+4. 受信しないときは Android許可・端末登録・履歴作成・AWSからGoogleの認証・FCM受付・OS表示の段階を分け、実際に通った段階だけを記録する。

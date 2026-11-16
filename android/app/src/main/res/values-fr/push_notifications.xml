@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="push_new_follower">Vous avez un nouvel abonné</string>
+    <string name="push_new_bookmark">Une de vos œuvres a été ajoutée aux favoris</string>
+    <string name="push_new_repost">Une de vos œuvres a été repartagée</string>
+    <string name="push_scheduled_release">Votre œuvre programmée a été publiée</string>
+    <string name="push_mission_achievement">Vous avez accompli un nouvel objectif de mission</string>
+</resources>

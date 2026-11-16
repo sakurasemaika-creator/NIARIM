@@ -27,7 +27,7 @@ import '../../widgets/mission_completion_dialog.dart';
 import 'community_edit_feedback.dart';
 import 'community_bookmarked_tab.dart';
 import 'community_author_works_screen.dart';
-import 'community_follow_notifications_screen.dart';
+import '../../services/community_notice.dart';
 import 'community_my_works_screen.dart';
 import 'widgets/community_shorts_viewer.dart';
 import 'widgets/community_work_card.dart';
@@ -1606,11 +1606,7 @@ class _CommunityScreenState extends State<CommunityScreen>
               child: const Icon(Icons.notifications_outlined),
             ),
             tooltip: l10n.communityFollowNotificationsTooltip,
-            onPressed: () => Navigator.of(context).push(
-              adMockMaterialPageRoute<void>(
-                builder: (_) => const CommunityFollowNotificationsScreen(),
-              ),
-            ),
+            onPressed: () => context.push(communityNotificationsRoute),
           ),
           IconButton(
             key: const Key('communityMuteSettingsButton'),

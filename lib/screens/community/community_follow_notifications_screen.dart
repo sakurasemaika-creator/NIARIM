@@ -7,6 +7,7 @@ import '../../l10n/app_localizations.dart';
 import '../../l10n/creator_mission_labels.dart';
 import '../../services/api/community_api.dart';
 import '../../services/community_service.dart';
+import '../../services/community_notice.dart';
 import '../../services/google_auth_service.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/fit_or_hide_title.dart';
@@ -66,7 +67,7 @@ class _CommunityFollowNotificationsScreenState
       // A failed catch-up scan must never hide previously saved history.
       debugPrint('Mission activity backfill unavailable: $error');
     }
-    final result = await api.myMissionActivity();
+    final result = await api.myMissionActivity(includeCommunity: true);
     return {...result, 'sync': sync};
   }
 
@@ -84,7 +85,10 @@ class _CommunityFollowNotificationsScreenState
     final owner = _accountId;
     setState(() => _loadingMore = true);
     try {
-      final data = await api.myMissionActivity(cursor: cursor);
+      final data = await api.myMissionActivity(
+        cursor: cursor,
+        includeCommunity: true,
+      );
       if (!mounted || owner != _accountId || !identical(api, _api)) return;
       setState(() {
         _extra.addAll(
@@ -115,7 +119,7 @@ class _CommunityFollowNotificationsScreenState
     setState(() => _scanningMore = true);
     try {
       final sync = await api.syncMyMissionActivity(workCursor: _nextScanCursor);
-      final page = await api.myMissionActivity();
+      final page = await api.myMissionActivity(includeCommunity: true);
       if (!mounted || owner != _accountId || !identical(api, _api)) return;
       setState(() {
         _nextScanCursor = sync['nextWorkCursor'] as String?;
@@ -141,6 +145,8 @@ class _CommunityFollowNotificationsScreenState
 
   String _message(CreatorMissionLabels t, Map<String, dynamic> event) {
     final l10n = AppLocalizations.of(context)!;
+    final community = communityNoticeText(l10n, event['kind']);
+    if (community != null) return community;
     final required = event['required'] is num
         ? (event['required'] as num).toInt()
         : 0;
@@ -187,9 +193,7 @@ class _CommunityFollowNotificationsScreenState
   }
 
   void _openMissions() {
-    final router = GoRouter.of(context);
-    Navigator.of(context).pop();
-    router.push('/creator-missions');
+    context.push('/creator-missions');
   }
 
   Widget _offlineFallback() {
@@ -288,7 +292,7 @@ class _CommunityFollowNotificationsScreenState
                         .map((x) => Map<String, dynamic>.from(x)),
                     ..._extra,
                   ];
-                  if (items.isEmpty && !_scanHasMore) {
+                  if (items.isEmpty && !_scanHasMore && _nextPage == null) {
                     return Center(child: Text(t.get('activityEmpty')));
                   }
                   return ListView.separated(
@@ -317,6 +321,10 @@ class _CommunityFollowNotificationsScreenState
                       }
                       final event = items[index];
                       final icon = switch (event['kind']) {
+                        'newFollower' => Icons.person_add_outlined,
+                        'newBookmark' => Icons.bookmark_outline,
+                        'newRepost' => Icons.repeat,
+                        'scheduledRelease' => Icons.schedule_outlined,
                         'workPublished' => Icons.movie_creation_outlined,
                         'workBookmarks' => Icons.bookmarks_outlined,
                         'qualifiedWorks' => Icons.emoji_events_outlined,
@@ -324,13 +332,18 @@ class _CommunityFollowNotificationsScreenState
                         'loginMilestone' => Icons.calendar_month_outlined,
                         _ => Icons.flag_outlined,
                       };
+                      final route = notificationRoute(event['targetRoute']);
+                      final canOpen =
+                          route != null && route != communityNotificationsRoute;
                       return ListTile(
                         key: ValueKey('missionActivity_${event['eventId']}'),
                         leading: Icon(icon, color: scheme.primary),
                         title: Text(_message(t, event)),
                         subtitle: Text(_date(t, event)),
-                        trailing: const Icon(Icons.chevron_right),
-                        onTap: _openMissions,
+                        trailing: canOpen
+                            ? const Icon(Icons.chevron_right)
+                            : null,
+                        onTap: canOpen ? () => context.push(route) : null,
                       );
                     },
                   );

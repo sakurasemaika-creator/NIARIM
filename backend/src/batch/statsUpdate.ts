@@ -191,6 +191,7 @@ async function updateWorkStats(
     // Newly discoverable works are ordered by their real release time,
     // not the date the private video was first uploaded.
     setParts.push("postedAt = :actualPostedAt", "gsi3AllSk = :actualPostedAt");
+    setParts.push("scheduledReleaseConfirmedAt = :now");
     values[":actualPostedAt"] = actualPostedAt;
   }
   // The hourly/daily stats sync may observe YouTube's scheduled release before

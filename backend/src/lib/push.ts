@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { GoogleAuth } from "google-auth-library";
-import { DeleteCommand, PutCommand, QueryCommand } from "@aws-sdk/lib-dynamodb";
+import { DeleteCommand, GetCommand, QueryCommand, TransactWriteCommand } from "@aws-sdk/lib-dynamodb";
 import { ddb, tableName, Keys } from "./dynamo";
 import type { DeviceTokenItem } from "./types";
 import { TABLE_ITEM_TYPE } from "./types";
@@ -19,16 +19,9 @@ import { TABLE_ITEM_TYPE } from "./types";
  *
  * ## 認証情報
  *
- * FCM HTTP v1はサービスアカウントのOAuth2アクセストークンを要求する。
- * `FCM_WIF_AUDIENCE`環境変数（サービスアカウントJSONそのもの）と
- * `FCM_PROJECT_ID`を読む。**未設定の場合は何もしない**（ログだけ出す）。
- * これはアプリ側のmonetization_gate.dartと同じ考え方で、鍵が用意できて
- * いない段階でもデプロイ・動作するようにするため。Firebaseコンソールで
- * サービスアカウント鍵を発行してから設定すればそのまま有効になる。
- *
- * $0方針との関係：FCM自体は無料。Secrets Managerは月額課金が発生する
- * ため、YOUTUBE_API_KEYと同じくLambda環境変数（AWS管理キーで暗号化）に
- * 留めている。
+ * AWS Lambdaの実行ロールをWorkload Identity Federationで認証し、
+ * Firebase Adminの長期秘密鍵を置かずにHTTP v1へ送る。
+ * Project、WIF audience、送信用サービスアカウントが揃う場合のみ有効。
  */
 
 const TOKEN_TTL_DAYS = 180;
@@ -44,17 +37,29 @@ export async function registerDeviceToken(
   niarimUserId: string,
   token: string,
   platform: "android" | "ios",
+  localizedNotifications = false,
 ): Promise<void> {
+  const hash = hashDeviceToken(token);
   const item: DeviceTokenItem = {
     itemType: TABLE_ITEM_TYPE.DeviceToken,
-    ...Keys.deviceToken(niarimUserId, hashDeviceToken(token)),
+    ...Keys.deviceToken(niarimUserId, hash),
     niarimUserId,
     token,
     platform,
+    localizedNotifications,
     updatedAt: new Date().toISOString(),
     ttl: Math.floor(Date.now() / 1000) + TOKEN_TTL_DAYS * 24 * 60 * 60,
   };
-  await ddb.send(new PutCommand({ TableName: tableName(), Item: item }));
+  const table = tableName();
+  // A signed-in device can be reused by a different account after a restart.
+  // Atomically bind the token to its latest owner, without copying user data.
+  await ddb.send(new TransactWriteCommand({ TransactItems: [
+    { Put: { TableName: table, Item: item } },
+    { Put: { TableName: table, Item: {
+      ...Keys.deviceOwner(hash), itemType: "DEVICE_OWNER_V1",
+      owner: niarimUserId, ttl: item.ttl,
+    } } },
+  ] }));
 }
 
 /** 端末トークンを削除する（ログアウト・通知オフ時）。 */
@@ -83,7 +88,17 @@ async function listDeviceTokens(
       },
     }),
   );
-  return (result.Items ?? []) as DeviceTokenItem[];
+  const now = Math.floor(Date.now() / 1000);
+  const active = ((result.Items ?? []) as DeviceTokenItem[]).filter((item) => item.ttl > now);
+  const matches = await Promise.all(active.map(async (item) => {
+    const { Item: binding } = await ddb.send(new GetCommand({
+      TableName: tableName(), Key: Keys.deviceOwner(hashDeviceToken(item.token)),
+      ConsistentRead: true,
+    }));
+    // Existing registrations without a reverse binding remain usable.
+    return !binding || binding.owner === niarimUserId;
+  }));
+  return active.filter((_, index) => matches[index]);
 }
 
 // External-account credentials contain only non-secret WIF metadata. AWS Lambda
@@ -130,6 +145,7 @@ export interface PushMessage {
   body: string;
   /** アプリ側で遷移先を決めるための付随データ（値は文字列のみ、FCMの仕様）。 */
   data?: Record<string, string>;
+  androidBodyLocKey?: string;
 }
 
 /**
@@ -150,7 +166,7 @@ export async function sendPushToUser(
   try {
     tokens = await listDeviceTokens(niarimUserId);
   } catch (err) {
-    console.error("端末トークンの取得に失敗しました", err);
+    console.error("端末トークンの取得に失敗しました", err instanceof Error ? err.name : "UnknownError");
     return;
   }
   if (tokens.length === 0) return;
@@ -159,7 +175,7 @@ export async function sendPushToUser(
   try {
     accessToken = (await client.client.getAccessToken()).token;
   } catch (err) {
-    console.error("FCMアクセストークンの取得に失敗しました", err);
+    console.error("FCMアクセストークンの取得に失敗しました", err instanceof Error ? err.name : "UnknownError");
     return;
   }
   if (!accessToken) return;
@@ -188,16 +204,30 @@ export function invalidFcmRegistration(status: number, body: string): boolean {
   const error = parsed.error;
   if (typeof error !== "object" || error === null ||
       !("status" in error)) return false;
-  if (status === 404) return error.status === "UNREGISTERED";
-  if (status !== 400 || error.status !== "INVALID_ARGUMENT" ||
-      !("details" in error) || !Array.isArray(error.details)) return false;
-  return error.details.some((detail: unknown) => {
-    if (typeof detail !== "object" || detail === null) return false;
-    const d = detail as Record<string, unknown>;
-    return d["@type"] ===
-      "type.googleapis.com/google.firebase.fcm.v1.FcmError" &&
-      d.errorCode === "INVALID_ARGUMENT";
-  });
+  const typed = (code: string) => "details" in error &&
+    Array.isArray(error.details) && error.details.some((detail: unknown) => {
+      if (typeof detail !== "object" || detail === null) return false;
+      const d = detail as Record<string, unknown>;
+      return d["@type"] === "type.googleapis.com/google.firebase.fcm.v1.FcmError" &&
+        d.errorCode === code;
+    });
+  return (status === 404 && (error.status === "UNREGISTERED" ||
+      (error.status === "NOT_FOUND" && typed("UNREGISTERED")))) ||
+    (status === 400 && error.status === "INVALID_ARGUMENT" && typed("INVALID_ARGUMENT"));
+}
+
+export function fcmNotificationForDevice(device: DeviceTokenItem, message: PushMessage) {
+  const localKey = device.platform === "android" && device.localizedNotifications
+    ? message.androidBodyLocKey : undefined;
+  return {
+    token: device.token,
+    notification: { title: message.title, ...(!localKey ? { body: message.body } : {}) },
+    ...(message.data ? { data: message.data } : {}),
+    android: {
+      priority: "HIGH",
+      notification: { visibility: "PRIVATE", ...(localKey ? { body_loc_key: localKey } : {}) },
+    },
+  };
 }
 
 async function sendOne(
@@ -209,21 +239,18 @@ async function sendOne(
   try {
     const response = await fetch(endpoint, {
       method: "POST",
+      signal: AbortSignal.timeout(4_000),
       headers: {
         Authorization: `Bearer ${accessToken}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        message: {
-          token: device.token,
-          notification: { title: message.title, body: message.body },
-          ...(message.data ? { data: message.data } : {}),
-          android: { priority: "HIGH" },
-        },
-      }),
+      body: JSON.stringify({ message: fcmNotificationForDevice(device, message) }),
     });
 
-    if (response.ok) return;
+    if (response.ok) {
+      await response.body?.cancel();
+      return;
+    }
 
     const body = await response.text().catch(() => "");
     if (invalidFcmRegistration(response.status, body)) {
@@ -241,6 +268,6 @@ async function sendOne(
       `FCM送信に失敗しました（HTTP ${response.status}）`,
     );
   } catch (err) {
-    console.error("FCM送信で例外が発生しました", err);
+    console.error("FCM送信で例外が発生しました", err instanceof Error ? err.name : "UnknownError");
   }
 }

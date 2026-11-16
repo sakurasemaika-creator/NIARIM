@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="push_new_follower">新しいフォロワーが増えました</string>
+    <string name="push_new_bookmark">作品がブックマークされました</string>
+    <string name="push_new_repost">作品がリポストされました</string>
+    <string name="push_scheduled_release">予約していた作品が公開されました</string>
+    <string name="push_mission_achievement">新しいミッション達成通知があります</string>
+</resources>

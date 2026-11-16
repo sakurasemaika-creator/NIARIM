@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { hashDeviceToken, invalidFcmRegistration } from "../src/lib/push";
+import { hashDeviceToken, invalidFcmRegistration, fcmNotificationForDevice } from "../src/lib/push";
 
 describe("hashDeviceToken", () => {
   it("同じトークンからは同じハッシュになる（再登録が上書きになる）", () => {
@@ -36,6 +36,7 @@ describe("FCM token cleanup guards", () => {
     expect(invalidFcmRegistration(404,
       JSON.stringify({ error: { status: "NOT_FOUND" } }))).toBe(false);
     expect(invalidFcmRegistration(404, "")).toBe(false);
+    expect(invalidFcmRegistration(404, errorBody("NOT_FOUND", fcmType, "UNREGISTERED"))).toBe(true);
   });
 
   it("deletes only a typed invalid registration token 400", () => {
@@ -67,5 +68,22 @@ describe("FCM token cleanup guards", () => {
       JSON.stringify({ error: { status: "SENDER_ID_MISMATCH" } }))).toBe(false);
     expect(invalidFcmRegistration(500,
       JSON.stringify({ error: { status: "INTERNAL" } }))).toBe(false);
+  });
+});
+
+describe("FCM Android payload compatibility", () => {
+  const device = { pk: "USER#test", sk: "DEVICE#test", itemType: "DEVICE_TOKEN",
+    niarimUserId: "test", token: "synthetic-token", platform: "android",
+    updatedAt: "2026-11-16T04:20:00Z", ttl: 2_000_000_000 } as Parameters<typeof fcmNotificationForDevice>[0];
+  const notice = { title: "NIARIM", body: "Fallback", androidBodyLocKey: "push_new_bookmark",
+    data: { type: "newBookmark", targetRoute: "/community/work/Ab_12345678" } };
+
+  it("uses a resource only for an APK that registered localization support", () => {
+    const modern = fcmNotificationForDevice({ ...device, localizedNotifications: true }, notice);
+    expect(modern.notification).toEqual({ title: "NIARIM" });
+    expect(modern.android.notification).toEqual({ body_loc_key: "push_new_bookmark", visibility: "PRIVATE" });
+    const older = fcmNotificationForDevice(device, notice);
+    expect(older.notification).toEqual({ title: "NIARIM", body: "Fallback" });
+    expect(older.android.notification).not.toHaveProperty("body_loc_key");
   });
 });

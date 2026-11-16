@@ -1,6 +1,8 @@
 import type {
   APIGatewayProxyEventV2,
   APIGatewayProxyStructuredResultV2,
+  DynamoDBBatchResponse,
+  DynamoDBStreamEvent,
 } from "aws-lambda";
 import {
   badRequest,
@@ -8,6 +10,7 @@ import {
   json,
   payloadTooLarge,
 } from "../lib/response";
+import { handleNotificationStream } from "../lib/communityNotifications";
 import { getRanking, getRankingVisibility } from "./routes/ranking";
 import { refreshMyYoutubeChannel } from "./routes/youtubeChannelRefresh";
 import { getLatestWorks } from "./routes/worksLatest";
@@ -162,9 +165,14 @@ const routes: Route[] = [
   route("PUT", "/users/{id}/push-token", (e, p) => putPushToken(e, p.id)),
 ];
 
+export function handler(event: APIGatewayProxyEventV2): Promise<APIGatewayProxyStructuredResultV2>;
+export function handler(event: DynamoDBStreamEvent): Promise<DynamoDBBatchResponse>;
 export async function handler(
-  event: APIGatewayProxyEventV2,
-): Promise<APIGatewayProxyStructuredResultV2> {
+  event: APIGatewayProxyEventV2 | DynamoDBStreamEvent,
+): Promise<APIGatewayProxyStructuredResultV2 | DynamoDBBatchResponse> {
+  // Lambda URL wraps an HTTP body as a string; only the AWS stream invocation
+  // supplies top-level Records. Never dispatch a parsed client body here.
+  if ("Records" in event) return handleNotificationStream(event.Records);
   try {
     const normalizedEvent = normalizeRequestBody(event);
     const method = event.requestContext.http.method.toUpperCase();

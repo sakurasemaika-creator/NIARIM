@@ -364,6 +364,7 @@ export interface DeviceTokenItem {
   sk: string;
   niarimUserId: string;
   token: string;
+  localizedNotifications?: boolean;
   platform: "android" | "ios";
   updatedAt: string;
   ttl: number; // 長期間更新されない端末は自動失効させる（180日）

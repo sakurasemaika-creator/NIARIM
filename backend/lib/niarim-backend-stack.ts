@@ -10,6 +10,7 @@ import * as dynamodb from "aws-cdk-lib/aws-dynamodb";
 import * as lambda from "aws-cdk-lib/aws-lambda";
 import * as events from "aws-cdk-lib/aws-events";
 import * as targets from "aws-cdk-lib/aws-events-targets";
+import { DynamoEventSource } from "aws-cdk-lib/aws-lambda-event-sources";
 import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
 import * as path from "path";
 import {
@@ -92,7 +93,8 @@ export class NiarimBackendStack extends Stack {
       billingMode: dynamodb.BillingMode.PROVISIONED,
       readCapacity: CAPACITY_PLAN.table.read,
       writeCapacity: CAPACITY_PLAN.table.write,
-      timeToLiveAttribute: "ttl", // DailyCounterItem・FollowNotificationItem共通
+      timeToLiveAttribute: "ttl",
+      stream: dynamodb.StreamViewType.NEW_AND_OLD_IMAGES,
       removalPolicy: RemovalPolicy.RETAIN, // 誤ってスタックを消しても作品データを失わない
       pointInTimeRecoverySpecification: { pointInTimeRecoveryEnabled: false }, // 追加コスト回避（$0方針）
     });
@@ -206,6 +208,7 @@ export class NiarimBackendStack extends Stack {
       // 予約同時実行10を改めて設定・検証すること。
       environment: {
         ...commonEnvironment,
+        NOTIFICATION_STREAM_ENABLED: "true",
         // Default-off. ADC must be provisioned using a Google-to-AWS
         // workload identity federation or equivalent secure credential source.
         PLAY_PURCHASE_VERIFICATION_ENABLED:
@@ -322,6 +325,33 @@ export class NiarimBackendStack extends Stack {
       bundling: { minify: true, sourceMap: false },
     });
     table.grantReadWriteData(apiFunction);
+
+    // Reuse the already federated API role for FCM. The worker receives only
+    // committed DynamoDB changes; an HTTP client cannot trigger this handler.
+    apiFunction.addEventSource(new DynamoEventSource(table, {
+      startingPosition: lambda.StartingPosition.TRIM_HORIZON,
+      batchSize: 1,
+      maxRecordAge: Duration.minutes(15),
+      retryAttempts: 4,
+      reportBatchItemFailures: true,
+      filters: [
+        lambda.FilterCriteria.filter({ dynamodb: { NewImage: {
+          itemType: { S: ["FOLLOWER_RECORD", "BOOKMARK", "REPOST"] },
+        } } }),
+        lambda.FilterCriteria.filter({ dynamodb: {
+          OldImage: { youtubePrivacyStatus: { S: ["private"] } },
+          NewImage: {
+            itemType: { S: ["WORK"] },
+            youtubePrivacyStatus: { S: ["public"] },
+            scheduledReleaseConfirmedAt: { S: [{ exists: true }] },
+          },
+        } }),
+        lambda.FilterCriteria.filter({ dynamodb: { NewImage: {
+          itemType: { S: ["MISSION_ACTIVITY_V1", "COMMUNITY_ACTIVITY_V1"] },
+          pushPending: { BOOL: [true] },
+        } } }),
+      ],
+    }));
 
     // Lambda Function URL（AuthType: NONE、16章）。
     const functionUrl = apiFunction.addFunctionUrl({

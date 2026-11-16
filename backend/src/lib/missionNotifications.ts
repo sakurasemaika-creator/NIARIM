@@ -62,6 +62,7 @@ export async function recordMissionAchievement(
   const marker = Keys.missionNoticeDedupe(userId, id);
   const entry = Keys.missionActivity(userId, epochMs, id);
   const now = new Date().toISOString();
+  const useStream = process.env.NOTIFICATION_STREAM_ENABLED === "true";
   try {
     await ddb.send(new TransactWriteCommand({
       TransactItems: [
@@ -88,6 +89,7 @@ export async function recordMissionAchievement(
             dateIsObserved: event.dateIsObserved === true,
             targetRoute: "/creator-missions",
             read: false,
+            ...(useStream ? { pushPending: true } : {}),
           },
           ConditionExpression: "attribute_not_exists(pk)",
         }},
@@ -95,7 +97,7 @@ export async function recordMissionAchievement(
     }));
     // The durable event has already been committed. Push failure must not
     // roll back the achievement or mint any rewards.
-    await sendPushToUser(userId, {
+    if (!useStream) await sendPushToUser(userId, {
       title: "NIARIM",
       body: "新しいミッション達成通知があります",
       data: {

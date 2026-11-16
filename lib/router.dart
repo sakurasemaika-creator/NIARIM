@@ -3,6 +3,8 @@ import 'package:go_router/go_router.dart';
 import 'services/ad_modal_visibility_observer.dart';
 import 'screens/splash/splash_screen.dart';
 import 'screens/community/community_screen.dart';
+import 'screens/community/community_follow_notifications_screen.dart';
+import 'services/community_notice.dart';
 import 'screens/community/community_work_detail_screen.dart';
 import 'screens/home/home_screen.dart';
 import 'screens/project/new_project_screen.dart';
@@ -61,6 +63,11 @@ final appRouter = GoRouter(
       builder: (context, state) => AdMockPageFrame(
         child: CommunityScreen(initialTagFilter: state.extra as String?),
       ),
+    ),
+    GoRoute(
+      path: communityNotificationsRoute,
+      builder: (context, state) =>
+          const AdMockPageFrame(child: CommunityFollowNotificationsScreen()),
     ),
     GoRoute(
       path: '/community/work/:id',

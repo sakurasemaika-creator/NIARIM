@@ -27,6 +27,17 @@ class SettingsService extends ChangeNotifier {
   int _undoLimit = 50;
   int _trashAutoDeleteDays = 0;
   String _language = 'ja';
+  bool _pushNotificationsEnabled = true;
+  bool get pushNotificationsEnabled => _pushNotificationsEnabled;
+
+  Future<void> setPushNotificationsEnabled(bool value) async {
+    if (_pushNotificationsEnabled == value) return;
+    _pushNotificationsEnabled = value;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('push_notifications_enabled', value);
+  }
+
   // 描画領域初期値（ホーム画面設定）
   bool _defaultDrawingAreaEnabled = false;
   double _defaultDrawingAreaScale = 2.0;
@@ -816,6 +827,8 @@ class SettingsService extends ChangeNotifier {
   Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
     _defaultFps = prefs.readInt('default_fps') ?? 12;
+    _pushNotificationsEnabled =
+        prefs.readBool('push_notifications_enabled') ?? true;
     // 0以下は取り消しの上限として使えない（負の数は起動を止めていた）。
     // 未設定と同じに扱い、保存は書き換えない。
     final savedUndoLimit = prefs.readInt('undo_limit');

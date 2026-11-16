@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../../l10n/app_localizations.dart';
 import '../../services/settings_service.dart';
+import '../../services/community_notice.dart';
 import '../../services/first_use_tooltip_service.dart';
 import '../../services/premium_service.dart';
 import '../../widgets/labeled_slider.dart';
@@ -52,6 +53,31 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ..hideCurrentSnackBar()
       ..showSnackBar(SnackBar(content: Text(l10n.settingsTipsResetDone)));
   }
+
+  Future<void> _showPushSettings() => showDialog<void>(
+    context: context,
+    builder: (context) {
+      final l10n = AppLocalizations.of(context)!;
+      final settings = context.watch<SettingsService>();
+      return AlertDialog(
+        title: Text(devicePushLabel(l10n)),
+        scrollable: true,
+        content: SwitchListTile(
+          key: const Key('pushNotificationsOnDevice'),
+          contentPadding: EdgeInsets.zero,
+          title: Text(devicePushDescription(l10n)),
+          value: settings.pushNotificationsEnabled,
+          onChanged: settings.setPushNotificationsEnabled,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text(l10n.commonClose),
+          ),
+        ],
+      );
+    },
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -143,6 +169,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
         subtitle: l10n.settingsThemeSubtitle,
         keywords: 'テーマ 配色 ベースカラー アクセントカラー theme color',
         onTap: () => context.push('/settings/theme'),
+        accent: Theme.of(context).colorScheme.primary,
+      ),
+      (
+        icon: Icons.notifications_outlined,
+        title: devicePushLabel(l10n),
+        subtitle: devicePushDescription(l10n),
+        keywords: '通知 プッシュ push notifications',
+        onTap: _showPushSettings,
         accent: Theme.of(context).colorScheme.primary,
       ),
       // 無料会員はMaterialのlockアイコンで表示

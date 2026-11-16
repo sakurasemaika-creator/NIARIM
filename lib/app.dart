@@ -92,6 +92,7 @@ class _NiarimAppState extends State<NiarimApp> with WidgetsBindingObserver {
         _pushNotifications = PushNotificationService(
           auth: context.read<GoogleAuthService>(),
           community: context.read<CommunityService>(),
+          settings: context.read<SettingsService>(),
         )..start();
       }
     });
@@ -110,6 +111,7 @@ class _NiarimAppState extends State<NiarimApp> with WidgetsBindingObserver {
       context.read<BrushService?>()?.commitRememberedValues();
     } else if (state == AppLifecycleState.resumed) {
       projects.resumeWorkTracking();
+      _pushNotifications?.resync();
       final premium = context.read<PremiumService?>();
       if (premium != null) unawaited(premium.refreshBenefits());
     }

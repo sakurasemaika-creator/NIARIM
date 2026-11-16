@@ -146,6 +146,9 @@ export const Keys = {
     sk: "META",
   }),
   /** 22.7節：プッシュ通知の端末トークン。1ユーザーに複数端末ぶら下がる。 */
+  deviceOwner: (tokenHash: string) => ({
+    pk: `DEVICE_OWNER#${tokenHash}`, sk: "META",
+  }),
   deviceToken: (niarimUserId: string, tokenHash: string) => ({
     pk: `USER#${niarimUserId}`,
     sk: `DEVICE#${tokenHash}`,
