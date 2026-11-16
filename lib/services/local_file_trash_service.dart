@@ -69,10 +69,20 @@ abstract final class LocalFileTrashService {
     changes.value++;
   }
 
-  static Future<Directory> _root() async {
-    final documents = await getApplicationDocumentsDirectory();
-    return Directory('${documents.path}/niarim/trash/files');
-  }
+  static Future<Directory> _root() async =>
+      _rootIn(await getApplicationDocumentsDirectory());
+
+  static Directory _rootIn(Directory documents) =>
+      Directory('${documents.path}/niarim/trash/files');
+
+  /// Whether the Trash held file items when it was last read in this process
+  /// ([list], [listedSize], the start-up clean-up) or an item was moved in
+  /// since; null when not known yet. Removing an item does not change it (it
+  /// may stay true until the next read). The storage screen uses it to keep
+  /// room for the Trash bar before its scan arrives (the rows below moved
+  /// down when the bar came).
+  static bool? get hasItems => _hasItems;
+  static bool? _hasItems;
 
   /// The Trash items, newest first.
   ///
@@ -85,19 +95,86 @@ abstract final class LocalFileTrashService {
   /// order and the items skipped (unreadable record, copy not finished) are
   /// the same as reading the records one by one.
   static Future<List<LocalTrashedFile>> list() async {
-    final root = await _root();
-    if (!await root.exists()) return const [];
-    final folders = <String>[
-      await for (final entity in root.list(followLinks: false))
-        if (entity is Directory) entity.path,
-    ];
-    if (folders.isEmpty) return [];
+    final folders = await _itemFolders();
+    if (folders.isEmpty) {
+      _hasItems = false;
+      return [];
+    }
     final entries = await Isolate.run(
       () => _readItems(folders),
       debugName: 'Trash list',
     );
+    _hasItems = entries.isNotEmpty;
     entries.sort((a, b) => b.deletedAt.compareTo(a.deletedAt));
     return entries;
+  }
+
+  /// The folders directly in the Trash folder (each item has one), listed on
+  /// this isolate. Empty when there is no Trash folder yet. [documents] is
+  /// the documents folder when the caller already has it.
+  static Future<List<String>> _itemFolders([Directory? documents]) async {
+    final root = documents == null ? await _root() : _rootIn(documents);
+    if (!await root.exists()) return const [];
+    return [
+      await for (final entity in root.list(followLinks: false))
+        if (entity is Directory) entity.path,
+    ];
+  }
+
+  /// The bytes used by the items [list] shows (each item's copy and record),
+  /// and the first error met while measuring them (that part is not counted).
+  /// The storage screen counts them in its Trash category. A folder [list]
+  /// does not show (a move still copying, an unreadable record) is not part
+  /// of the Trash the person sees and cannot be emptied from it, so it is not
+  /// counted: emptying the Trash brings the Trash to 0. Measured in a
+  /// background isolate like [list]; throws when the Trash folder cannot be
+  /// read, like [list]. [documents] is the documents folder when the caller
+  /// already has it.
+  static Future<({int bytes, Object? error})> listedSize({
+    Directory? documents,
+  }) async {
+    final folders = await _itemFolders(documents);
+    if (folders.isEmpty) {
+      _hasItems = false;
+      return (bytes: 0, error: null);
+    }
+    final size = await Isolate.run(
+      () => _measureItems(folders),
+      debugName: 'Trash size',
+    );
+    _hasItems = size.items > 0;
+    return (bytes: size.bytes, error: size.error);
+  }
+
+  static ({int items, int bytes, Object? error}) _measureItems(
+    List<String> folders,
+  ) {
+    var items = 0;
+    var bytes = 0;
+    Object? error;
+    for (final folder in folders) {
+      if (_readItem(folder) == null) continue;
+      items++;
+      try {
+        for (final entity in Directory(
+          folder,
+        ).listSync(recursive: true, followLinks: false)) {
+          if (entity is! File) continue;
+          try {
+            bytes += entity.lengthSync();
+          } on PathNotFoundException {
+            // Removed meanwhile (a restore or a permanent delete).
+          } catch (failure) {
+            error ??= failure;
+          }
+        }
+      } on PathNotFoundException {
+        // Removed meanwhile.
+      } catch (failure) {
+        error ??= failure;
+      }
+    }
+    return (items: items, bytes: bytes, error: error);
   }
 
   /// The Trash items of [folders], in the order of [folders].
@@ -215,6 +292,7 @@ abstract final class LocalFileTrashService {
       // during the copy showed a half-copied file, and a failed or killed
       // copy showed a broken item beside the untouched source.
       await _replaceMeta(File('${directory.path}/meta.json'), entry.toJson());
+      _hasItems = true;
       recorded = true;
       await source.delete();
       _changed(exports: kind == LocalTrashKind.exportedWork);
@@ -336,6 +414,7 @@ abstract final class LocalFileTrashService {
       // Commit the manifest only after all bytes have been verified.
       // A crash during staging must not expose an incomplete Trash item.
       await _replaceMeta(File('${directory.path}/meta.json'), entry.toJson());
+      _hasItems = true;
       for (final source in sources) {
         await source.delete();
         removedAny = true;
@@ -558,8 +637,13 @@ abstract final class LocalFileTrashService {
     var removed = false;
     try {
       final root = await _root();
-      if (!await root.exists()) return;
+      if (!await root.exists()) {
+        _hasItems = false;
+        return;
+      }
       final cutoff = DateTime.now().subtract(_unrecordedGrace);
+      // Whether a folder with a record (an item [list] may show) is left.
+      var recorded = false;
       await for (final entity in root.list(followLinks: false)) {
         if (entity is! Directory) continue;
         final name = entity.uri.pathSegments.where((p) => p.isNotEmpty).last;
@@ -570,16 +654,22 @@ abstract final class LocalFileTrashService {
             '${entity.path}/meta.json',
             followLinks: false,
           );
-          if (meta != FileSystemEntityType.notFound) continue;
+          if (meta != FileSystemEntityType.notFound) {
+            recorded = true;
+            continue;
+          }
           if (!await _untouchedSince(entity, seed, cutoff)) continue;
           await entity.delete(recursive: true);
           removed = true;
         } on PathNotFoundException {
           // Removed meanwhile (a permanent delete finishing).
         } catch (error, stackTrace) {
+          // Not known: counted as left (the screen keeps room for the bar).
+          recorded = true;
           AppErrorReporter.record(error, stackTrace);
         }
       }
+      _hasItems = recorded;
     } catch (error, stackTrace) {
       AppErrorReporter.record(error, stackTrace);
     } finally {

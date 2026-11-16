@@ -576,7 +576,15 @@ void main() {
       await tester.pump();
 
       await tester.tap(storageTile(l10n.storageEmptyTrashButton));
-      await tester.pump();
+      // The Trash's file items are read before the confirmation opens (real
+      // file access).
+      final confirmButton = find.byKey(const Key('trash-dialog-confirm'));
+      for (var i = 0; i < 250 && confirmButton.evaluate().isEmpty; i++) {
+        await tester.runAsync(
+          () => Future<void>.delayed(const Duration(milliseconds: 20)),
+        );
+        await tester.pump();
+      }
       await tester.pump(const Duration(milliseconds: 400));
       // The Korean label can be carried by a RichText span for line breaking.
       await tester.tap(find.byKey(const Key('trash-dialog-confirm')));

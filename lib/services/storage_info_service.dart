@@ -9,6 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../utils/app_error_reporter.dart';
 import '../utils/tolerant_preferences.dart';
 import 'export_storage.dart';
+import 'local_file_trash_service.dart';
 
 /// 容量削減画面（ホーム画面ハンバーガーメニュー）で表示するNIARIMの
 /// 内部データ内訳カテゴリ。
@@ -385,9 +386,22 @@ class StorageInfoService {
         Directory('${niarimDir.path}/shared/outgoing'),
         const [StorageCategory.exports],
       );
-      trash += await sizeOf(Directory('${niarimDir.path}/trash/files'), const [
-        StorageCategory.trash,
-      ]);
+      // Only the Trash items the Trash shows are counted
+      // ([LocalFileTrashService.listedSize]): a folder of a move still copying
+      // or with an unreadable record cannot be emptied from the Trash, and kept
+      // the Trash above 0 after it was emptied.
+      try {
+        final files = await LocalFileTrashService.listedSize(documents: docs);
+        trash += files.bytes;
+        final error = files.error;
+        if (error != null) {
+          unreadable(const [StorageCategory.trash], error, null);
+        }
+      } catch (error, stack) {
+        if (!_vanished(error)) {
+          unreadable(const [StorageCategory.trash], error, stack);
+        }
+      }
 
       for (final name in ['Brushes', 'Tones', 'Stamps', 'Fonts']) {
         customAssets += await sizeOf(

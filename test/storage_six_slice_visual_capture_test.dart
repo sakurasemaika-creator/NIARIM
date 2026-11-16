@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'dart:ui' as ui;
 
@@ -127,6 +128,16 @@ void main() {
       fileWithSize('$base/exports/fixture.png', 110 * kib);
       fileWithSize('$base/shared/outgoing/snapshot.niashare', 11 * kib);
       fileWithSize('$base/trash/files/123/data', 7 * kib);
+      // A Trash item has its record: a folder without one is not in the Trash
+      // (a move still copying) and is not counted.
+      File('$base/trash/files/123/meta.json').writeAsStringSync(
+        jsonEncode({
+          'id': '123',
+          'kind': 'exportedWork',
+          'originalPath': '$base/exports/old.png',
+          'deletedAt': DateTime(2026, 11, 1).toIso8601String(),
+        }),
+      );
       fileWithSize('$base/Brushes/fixture-brush.bin', 75 * kib);
       fileWithSize('${cache.path}/cache-fixture.bin', 50 * kib);
 

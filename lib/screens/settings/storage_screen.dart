@@ -315,7 +315,10 @@ class _StorageScreenState extends State<StorageScreen> {
   int? _expectedBars() {
     final projects = context.read<ProjectService>();
     return _service.expectedBarCount(
-      hasTrash: projects.trash.isNotEmpty,
+      // The Trash bar also counts the exported works and share files in the
+      // Trash.
+      hasTrash:
+          projects.trash.isNotEmpty || LocalFileTrashService.hasItems == true,
       hasLiveProjects: projects.projects.isNotEmpty,
     );
   }
@@ -1291,6 +1294,8 @@ class _StorageScreenState extends State<StorageScreen> {
     }
     // 途中で失敗してから閉じた場合も、消せた分だけ大きさは変わっている。
     var attempted = false;
+    // 消し終えた控え（ダイアログに残さない）。
+    final removedFiles = <String>{};
     await showDialog<bool>(
       context: context,
       builder: (_) => ProjectTrashDialog(
@@ -1308,7 +1313,8 @@ class _StorageScreenState extends State<StorageScreen> {
             if (folderTargets.contains(t.folder.id)) t.folder.name,
           for (final p in ps.looseTrash)
             if (targets.contains(p.id)) p.name,
-          for (final entry in localTargets) entry.fileName,
+          for (final entry in localTargets)
+            if (!removedFiles.contains(entry.id)) entry.fileName,
         ],
         onApply: () async {
           attempted = true;
@@ -1333,12 +1339,24 @@ class _StorageScreenState extends State<StorageScreen> {
               await ps.permanentDelete(id);
             }
           }
+          // 控えは1つ消せなくても残りを消し、消せなかったものはダイアログに
+          // 残して理由を出す（1つの失敗で残りが消えずに残っていた）。
+          Object? fileFailure;
           for (final entry in localTargets) {
-            if (!await LocalFileTrashService.deleteUnlessRestoring(entry)) {
-              heldBack ??= const TrashedFolderUnreadException();
+            if (removedFiles.contains(entry.id)) continue;
+            try {
+              if (await LocalFileTrashService.deleteUnlessRestoring(entry)) {
+                removedFiles.add(entry.id);
+              } else {
+                heldBack ??= const TrashedFolderUnreadException();
+              }
+            } catch (error, stackTrace) {
+              AppErrorReporter.record(error, stackTrace);
+              fileFailure ??= error;
             }
           }
           if (heldBack != null) throw heldBack;
+          if (fileFailure != null) throw fileFailure;
         },
       ),
     );
