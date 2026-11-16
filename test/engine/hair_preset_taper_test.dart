@@ -9,6 +9,46 @@ import 'package:niarim/models/brush_presets_extension.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+  test('five ribbon presets ignore changes in stylus pressure', () async {
+    for (final ribbon in brushExtensionPresets().where(
+      (brush) => brush.name.startsWith('リボン'),
+    )) {
+      Future<List<int>> draw(bool varyPressure) async {
+        final tiles = TileManager(canvasWidth: 240, canvasHeight: 160);
+        final engine = DrawingEngine(tileManager: tiles)
+          ..pressureEnabled = true
+          ..currentBrush = ribbon
+          ..currentColor = ui.Color(ribbon.presetColor!);
+        final points = [
+          for (var i = 0; i <= 40; i++)
+            StrokePoint(
+              x: 20.0 + i * 5,
+              y: 50.0 + (i - 20).abs() * 3,
+              pressure: varyPressure ? .15 + (i % 5) * .15 : 1,
+            ),
+        ];
+        engine.beginStroke(points.first, 'ribbon');
+        for (final point in points.skip(1)) {
+          engine.continueStroke(point, 'ribbon');
+        }
+        engine.endStroke();
+        final image = await tiles.compositeLayerToImage('ribbon');
+        try {
+          final data = await image.toByteData(
+            format: ui.ImageByteFormat.rawRgba,
+          );
+          return data!.buffer.asUint8List();
+        } finally {
+          image.dispose();
+          tiles.dispose();
+        }
+      }
+
+      final steady = await draw(false);
+      expect(steady.any((byte) => byte > 0), isTrue, reason: ribbon.name);
+      expect(await draw(true), steady, reason: ribbon.name);
+    }
+  });
   for (final id in ['Brush0023']) {
     for (final multiplier in [1.0, 2.0]) {
       for (final mode in <HairFoldMode?>[

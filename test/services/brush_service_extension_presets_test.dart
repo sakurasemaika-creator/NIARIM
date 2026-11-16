@@ -23,7 +23,7 @@ void main() {
     expect(byId.containsKey('Brush0022'), isTrue);
     expect(byId.containsKey('Brush0023'), isTrue);
     expect(byId['Brush0022']!.name, 'ネット');
-    expect(byId['Brush0023']!.name, '髪の毛');
+    expect(byId['Brush0023']!.name, 'ウェーブヘア（俯瞰）');
     expect(service.isBuiltIn('Brush0022'), isTrue);
     expect(service.isBuiltIn('Brush0023'), isTrue);
     expect(byId.containsKey('Brush0024'), isTrue);
@@ -104,6 +104,31 @@ void main() {
       restored.dispose();
     },
   );
+
+  test('the old duplicate resolves to the remaining wave preset', () async {
+    final original = BrushService.builtInBrushes.singleWhere(
+      (b) => b.id == 'Brush0023',
+    );
+    SharedPreferences.setMockInitialValues({
+      'brushes': [
+        jsonEncode(original.toJson()),
+        jsonEncode(original.copyWith(id: 'Brush0033').toJson()),
+      ],
+      'brushes_current_id': 'Brush0033',
+      'brush_builtin_working_values': '{"Brush0033":{"size":57}}',
+    });
+    final service = BrushService();
+    addTearDown(service.dispose);
+    await service.init();
+    expect(service.brushes.where((b) => b.name == 'ウェーブヘア（俯瞰）'), hasLength(1));
+    expect(service.brushes.any((b) => b.id == 'Brush0033'), isFalse);
+    expect(service.currentBrush?.id, 'Brush0023');
+    expect(service.currentBrush?.size, 57);
+    service.selectBrush('Brush0036');
+    expect(service.currentColor.toARGB32(), 0xffdb424b);
+    service.selectBrush('Brush0033');
+    expect(service.currentBrush?.id, 'Brush0023');
+  });
 
   test(
     'duplicate and persistence preserve multiple texture settings',

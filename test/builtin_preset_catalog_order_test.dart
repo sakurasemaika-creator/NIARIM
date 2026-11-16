@@ -30,11 +30,16 @@ void main() {
       'Brush0023',
       'Brush0031',
       'Brush0032',
-      'Brush0033',
       'Brush0034',
       'Brush0035',
       'Brush0024',
+      'Brush0036',
+      'Brush0037',
+      'Brush0038',
+      'Brush0039',
+      'Brush0040',
       'Brush0030',
+      'Brush0041',
     ]);
     final firstPixel = tones.tones.indexWhere((tone) => tone.pixelMode);
     expect(firstPixel, greaterThan(0));
@@ -53,7 +58,7 @@ void main() {
       ),
       isTrue,
     );
-    expect(stamps.stamps, hasLength(22));
+    expect(stamps.stamps, hasLength(24));
     expect(stamps.stamps.take(4).map((stamp) => stamp.id), [
       'Stamp0001',
       'Stamp0009',

@@ -95,7 +95,9 @@ class StampService extends ChangeNotifier {
     // Scenery.
     'Stamp0020',
     'Stamp0025',
+    'Stamp0027',
     'Stamp0026',
+    'Stamp0028',
   ];
   static const _retiredBuiltInIds = {
     'Stamp0014',
@@ -172,7 +174,7 @@ class StampService extends ChangeNotifier {
     // 内部テクスチャ自体が複数の葉・色を持つ小さな植生クラスター。
     const Stamp(
       id: 'Stamp0025',
-      name: '葉っぱ（背景）',
+      name: '葉っぱ（リアル調）',
       rotation: true,
       density: 2.3,
       scatter: 0.22,
@@ -185,12 +187,27 @@ class StampService extends ChangeNotifier {
     ),
     const Stamp(
       id: 'Stamp0026',
-      name: '草（背景）',
+      name: '草（リアル調）',
       rotation: false,
       density: 2.8,
       scatter: 0.18,
       opacity: 96,
       tags: [AssetTagKeys.background, AssetTagKeys.texture],
+    ),
+    const Stamp(
+      id: 'Stamp0027',
+      name: '葉っぱ（アニメ調）',
+      rotation: true,
+      density: 1.6,
+      scatter: .14,
+      tags: [AssetTagKeys.background, AssetTagKeys.decoration],
+    ),
+    const Stamp(
+      id: 'Stamp0028',
+      name: '草（アニメ調）',
+      density: 1.6,
+      scatter: .14,
+      tags: [AssetTagKeys.background, AssetTagKeys.decoration],
     ),
   ];
 
@@ -223,12 +240,30 @@ class StampService extends ChangeNotifier {
       );
       var changed = _stamps.length != savedCount;
       if (missing.isNotEmpty) {
-        _stamps.addAll(missing);
+        for (final stamp in missing) {
+          final source = switch (stamp.id) {
+            'Stamp0027' => 'Stamp0025',
+            'Stamp0028' => 'Stamp0026',
+            _ => null,
+          };
+          final index = _stamps.indexWhere(
+            (item) => item.id == source && item.folderId == null,
+          );
+          _stamps.insert(index < 0 ? _stamps.length : index + 1, stamp);
+        }
         changed = true;
       }
       final stock = {for (final stamp in _defaultStamps()) stamp.id: stamp};
       for (var i = 0; i < _stamps.length; i++) {
-        final saved = _stamps[i];
+        var saved = _stamps[i];
+        final name = stock[saved.id]?.name;
+        if (name != null &&
+            saved.name != name &&
+            (saved.id == 'Stamp0025' || saved.id == 'Stamp0026')) {
+          saved = saved.copyWith(name: name);
+          _stamps[i] = saved;
+          changed = true;
+        }
         final existing = saved.imagePath;
         final originalName = copySourceName(saved.name) ?? saved.name;
         final bundledPath =

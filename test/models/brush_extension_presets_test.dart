@@ -34,26 +34,26 @@ void main() {
   });
 
   test(
-    'hair preset uses current fill, outline, straight fold and 30% endpoint wave',
+    'wave hair uses the tuned fold defaults and the current palette fill',
     () {
       final hair = brushExtensionPresets().singleWhere(
         (b) => b.id == 'Brush0023',
       );
-      expect(hair.name, '髪の毛');
+      expect(hair.name, 'ウェーブヘア（俯瞰）');
       expect(hair.outlineEnabled, isTrue);
       expect(hair.outlineColor, 0xff000000);
       expect(hair.outlineWidth, 1.5);
       expect(hair.foldEnabled, isTrue);
-      expect(hair.foldTriggerAngle, 90);
-      expect(hair.foldCurveStartRatio, 0);
+      expect(hair.foldTriggerAngle, 60);
+      expect(hair.foldCurveStartRatio, .16);
       expect(hair.foldAngleRatio, .5);
-      expect(hair.foldLengthRatio, .5);
+      expect(hair.foldLengthRatio, .44);
       expect(hair.foldEndTaperRatio, .35);
       expect(hair.toJson().containsKey('fillColor'), isFalse);
     },
   );
 
-  test('bangs has symmetric tips without end taper or automatic folds', () {
+  test('bangs has asymmetric tips without taper or automatic folds', () {
     final bangs = brushExtensionPresets().singleWhere(
       (b) => b.id == 'Brush0024',
     );
@@ -72,7 +72,7 @@ void main() {
       (brush) => const {
         'Brush0031',
         'Brush0032',
-        'Brush0033',
+        'Brush0023',
         'Brush0034',
         'Brush0035',
       }.contains(brush.id),
@@ -89,6 +89,29 @@ void main() {
       expect(restored.foldMode, brush.foldMode);
     }
   });
+
+  test(
+    'ribbons offer every fold mode with flat pressure and red as their start color',
+    () {
+      final ribbons = brushExtensionPresets().where(
+        (brush) => brush.name.startsWith('リボン'),
+      );
+      expect(ribbons, hasLength(5));
+      expect(
+        ribbons.map((brush) => brush.foldMode).toSet(),
+        HairFoldMode.values.toSet(),
+      );
+      for (final ribbon in ribbons) {
+        final restored = Brush.fromJson(ribbon.toJson());
+        expect(restored.foldEnabled, isTrue);
+        expect(restored.foldTaperTip, isFalse);
+        expect(restored.fadeMode, FadeMode.off);
+        expect(restored.pressureOn.size.enabled, isFalse);
+        expect(restored.pressureOn.opacity.enabled, isFalse);
+        expect(restored.presetColor, 0xffdb424b);
+      }
+    },
+  );
 
   test('cloud changes tip within the stroke after save and reload', () {
     final cloud = brushExtensionPresets().singleWhere(

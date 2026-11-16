@@ -163,7 +163,9 @@ class _StrokeSamplePreviewState extends State<StrokeSamplePreview> {
       final tiles = TileManager(canvasWidth: _width, canvasHeight: _height);
       try {
         final engine = DrawingEngine(tileManager: tiles)
-          ..currentColor = color
+          ..currentColor = brush.presetColor == null
+              ? color
+              : Color(brush.presetColor!)
           ..currentBrush = previewBrush
           // Simulate a stylus moving with variable pressure, so G pens,
           // pencils and user-configured pressure-sensitive brushes also

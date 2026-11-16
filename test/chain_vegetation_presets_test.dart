@@ -82,8 +82,8 @@ void main() {
       await service.init();
       final leaf = service.stamps.firstWhere((s) => s.id == 'Stamp0025');
       final grass = service.stamps.firstWhere((s) => s.id == 'Stamp0026');
-      expect(leaf.name, '葉っぱ（背景）');
-      expect(grass.name, '草（背景）');
+      expect(leaf.name, '葉っぱ（リアル調）');
+      expect(grass.name, '草（リアル調）');
       expect(leaf.density, greaterThan(2));
       expect(grass.density, greaterThan(2));
       expect(leaf.scatter, greaterThan(0));

@@ -890,6 +890,9 @@ class DrawingEngine {
                 return alpha;
               })
             : null;
+        final previousFill = base == null
+            ? null
+            : _strokeCoverageByTile['fill:$layerId:$tx:$ty'];
 
         // タイル内の影響ピクセル範囲
         final localMinX = math.max(0, (cx - totalRadius - tileOriginX).floor());
@@ -1092,9 +1095,13 @@ class DrawingEngine {
               continue;
             }
             if (base != null && !isEraser) {
-              // Behind what the layer already showed before this stroke.
+              // Keep this outline behind the existing layer and this stroke's fill.
               incrementalAlpha =
                   incrementalAlpha * (255 - base[coveragePos]) ~/ 255;
+              if (previousFill != null) {
+                incrementalAlpha =
+                    incrementalAlpha * (255 - previousFill[coveragePos]) ~/ 255;
+              }
             }
             if (incrementalAlpha <= 0) continue;
 

@@ -79,7 +79,11 @@ class Brush {
   /// outline pen's outline gets its own rhythm.
   final bool outlineAccentEnabled;
   final double outlineAccentWidth;
+
+  /// The initial palette color when selecting this preset, if provided.
+  final int? presetColor;
   final bool foldEnabled;
+  final bool foldTaperTip;
   final double foldTriggerAngle;
   final double foldCurveStartRatio;
   final double foldAngleRatio;
@@ -135,7 +139,9 @@ class Brush {
     this.outlineKeepOverlap = true,
     this.outlineAccentEnabled = false,
     this.outlineAccentWidth = 4.0,
+    this.presetColor,
     this.foldEnabled = false,
+    this.foldTaperTip = true,
     this.foldTriggerAngle = 90.0,
     this.foldCurveStartRatio = BrushExtensionDefaults.foldCurveStartRatio,
     this.foldAngleRatio = BrushExtensionDefaults.foldAngleRatio,
@@ -212,7 +218,9 @@ class Brush {
     bool? outlineKeepOverlap,
     bool? outlineAccentEnabled,
     double? outlineAccentWidth,
+    int? presetColor,
     bool? foldEnabled,
+    bool? foldTaperTip,
     double? foldTriggerAngle,
     double? foldCurveStartRatio,
     double? foldAngleRatio,
@@ -276,7 +284,9 @@ class Brush {
     outlineKeepOverlap: outlineKeepOverlap ?? this.outlineKeepOverlap,
     outlineAccentEnabled: outlineAccentEnabled ?? this.outlineAccentEnabled,
     outlineAccentWidth: outlineAccentWidth ?? this.outlineAccentWidth,
+    presetColor: presetColor ?? this.presetColor,
     foldEnabled: foldEnabled ?? this.foldEnabled,
+    foldTaperTip: foldTaperTip ?? this.foldTaperTip,
     foldTriggerAngle: foldTriggerAngle ?? this.foldTriggerAngle,
     foldCurveStartRatio: clampFoldRatio(
       foldCurveStartRatio ?? this.foldCurveStartRatio,
@@ -347,7 +357,9 @@ class Brush {
     'outlineKeepOverlap': outlineKeepOverlap,
     'outlineAccentEnabled': outlineAccentEnabled,
     'outlineAccentWidth': outlineAccentWidth,
+    if (presetColor != null) 'presetColor': presetColor,
     'foldEnabled': foldEnabled,
+    if (!foldTaperTip) 'foldTaperTip': false,
     'foldTriggerAngle': foldTriggerAngle,
     'foldCurveStartRatio': clampFoldRatio(
       foldCurveStartRatio,
@@ -459,7 +471,9 @@ class Brush {
     outlineKeepOverlap: j['outlineKeepOverlap'] as bool? ?? true,
     outlineAccentEnabled: j['outlineAccentEnabled'] as bool? ?? false,
     outlineAccentWidth: (j['outlineAccentWidth'] as num?)?.toDouble() ?? 4,
+    presetColor: (j['presetColor'] as num?)?.toInt(),
     foldEnabled: j['foldEnabled'] as bool? ?? false,
+    foldTaperTip: j['foldTaperTip'] as bool? ?? true,
     foldTriggerAngle: (j['foldTriggerAngle'] as num?)?.toDouble() ?? 90,
     foldCurveStartRatio: clampFoldRatio(
       (j['foldCurveStartRatio'] as num?)?.toDouble() ??

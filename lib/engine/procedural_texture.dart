@@ -535,9 +535,9 @@ Future<Uint8List> generateBuiltInStampTexture(
   if (texture == null) {
     final recorder = ui.PictureRecorder();
     final canvas = ui.Canvas(recorder);
-    if (stamp.name.contains('葉っぱ（背景）')) {
+    if (stamp.id == 'Stamp0025' || stamp.name.contains('葉っぱ（背景）')) {
       _drawLeafCluster(canvas, size.toDouble());
-    } else if (stamp.name.contains('草（背景）')) {
+    } else if (stamp.id == 'Stamp0026' || stamp.name.contains('草（背景）')) {
       _drawGrassCluster(canvas, size.toDouble());
     } else {
       final paint = ui.Paint()..color = const ui.Color(0xFF222222);

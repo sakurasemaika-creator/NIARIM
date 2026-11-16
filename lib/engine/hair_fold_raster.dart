@@ -195,8 +195,11 @@ class HairFoldRaster {
       brush.foldTriggerAngle.clamp(30.0, 170.0) * math.pi / 180,
       anyCurl: brush.foldMode == HairFoldMode.crescent,
     );
+    final shouldTaperTip = taperEnd && brush.foldTaperTip;
     final plainTail =
-        taperEnd && brush.foldMode != HairFoldMode.crescent && bends.isEmpty;
+        shouldTaperTip &&
+        brush.foldMode != HairFoldMode.crescent &&
+        bends.isEmpty;
     if (bends.isEmpty && !plainTail && !_active) return;
     if (plainTail) {
       // Even a straight wave/curl stroke gets a pointed tip. Insert only
@@ -310,7 +313,7 @@ class HairFoldRaster {
     final last = points.last;
     // A brush taper or pen lift that already ends the strand at a point is
     // the user's own taper, drawn exactly like the ordinary outline pen.
-    if (taperEnd &&
+    if (shouldTaperTip &&
         brush.foldMode != HairFoldMode.crescent &&
         last.outerRadius(outlineWidth) > .5) {
       // Folded wave/curl strands finish at a point. This is shared mode
@@ -622,6 +625,7 @@ class HairFoldRaster {
             ? <Object>[
                 crescentApices[run.start]!,
                 crescentSides[run.start]!,
+                if (taperEnd) lengths.last,
                 if (run.start == 0) crescentCurveStart,
                 for (var index = run.start; index <= run.end; index++)
                   (
@@ -697,7 +701,7 @@ class HairFoldRaster {
             ({HairRibbonPoint point, Offset outer, Offset inner, double angle})
             edgeAt(int index) {
               final point = points[index];
-              final blend = crescentBlend[index]!;
+              final crescent = crescentBlend[index]!;
               final tangent = crescentTangents[index]!;
               final normal =
                   Offset(-tangent.dy, tangent.dx) * -crescentSides[run.start]!;
@@ -707,7 +711,30 @@ class HairFoldRaster {
                         .clamp(0.0, 1.0);
               final outerProfile = math.pow(bow, 1 - strength * .2).toDouble();
               final innerProfile = math.pow(bow, innerPower).toDouble();
-              // Preserve the ordinary pen until it starts turning.
+              // Return to a symmetric, pressure-resolved cross-section at a
+              // tapered endpoint. Otherwise the displaced crescent sides can
+              // continue bulging while the ordinary taper is narrowing.
+              var endpointBlend = 1.0;
+              if (brush.fadeMode == FadeMode.custom) {
+                final fromStart = lengths[index];
+                final fromEnd = lengths.last - fromStart;
+                double transition(FadeEndpointSettings fade, double distance) {
+                  if (fade.value == 100 || fade.rangePx <= 0) return 1;
+                  final t = (distance / fade.rangePx).clamp(0.0, 1.0);
+                  return t * t * (3 - 2 * t);
+                }
+
+                endpointBlend = transition(brush.fadeIn, fromStart);
+                if (taperEnd) {
+                  endpointBlend *= transition(brush.fadeOut, fromEnd);
+                }
+              }
+              if (taperEnd && !brush.foldTaperTip) {
+                final remaining = lengths.last - lengths[index];
+                final t = (remaining / (brush.size * 2)).clamp(0.0, 1.0);
+                endpointBlend *= t * t * (3 - 2 * t);
+              }
+              final blend = crescent * endpointBlend;
               var ordinary = normal * point.width / 2 * (1 - blend);
               if (run.start == 0 && index > leadIndex && leadSpan > 1e-6) {
                 final q =
@@ -802,6 +829,18 @@ class HairFoldRaster {
                   after.inner,
                   t,
                 );
+                var currentOuter = outer;
+                var currentInner = inner;
+                if (brush.fadeMode == FadeMode.custom) {
+                  final maximum = math.max(a.width, b.width);
+                  final across = outer - inner;
+                  if (across.distance > maximum) {
+                    final center = (outer + inner) / 2;
+                    final half = across * (maximum / (2 * across.distance));
+                    currentOuter = center + half;
+                    currentInner = center - half;
+                  }
+                }
                 final current = HairRibbonPoint(
                   Offset.lerp(a.position, b.position, t)!,
                   a.width + (b.width - a.width) * t,
@@ -818,8 +857,8 @@ class HairFoldRaster {
                   previous.outlineOr(brush.outlineWidth),
                 );
                 final to = _insetEdges(
-                  outer,
-                  inner,
+                  currentOuter,
+                  currentInner,
                   current.scale,
                   current.outlineOr(brush.outlineWidth),
                 );
@@ -842,8 +881,8 @@ class HairFoldRaster {
                       previous.outline,
                     ),
                     HairRibbonPoint(
-                      (outer + inner) / 2,
-                      (outer - inner).distance,
+                      (currentOuter + currentInner) / 2,
+                      (currentOuter - currentInner).distance,
                       current.opacity,
                       current.scale,
                       current.outline,
@@ -852,8 +891,8 @@ class HairFoldRaster {
                   );
                 }
                 previous = current;
-                previousOuter = outer;
-                previousInner = inner;
+                previousOuter = currentOuter;
+                previousInner = currentInner;
               }
             }
           }

@@ -110,7 +110,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
   PenSubTool _currentSubTool = PenSubTool.brush;
   double _brushSize = 5;
   int _brushOpacity = 100;
-  Color _currentColor = Colors.black;
+  Color get _currentColor => context.read<BrushService>().currentColor;
   int _currentFrame = 0;
   AutofillCheckMode _autofillCheckMode = AutofillCheckMode.normal;
   bool _showLayerPanel = false;
@@ -545,7 +545,6 @@ class _CanvasScreenState extends State<CanvasScreen> {
       setState(() => _filterColorEyedropperTarget = null);
       return;
     }
-    setState(() => _currentColor = color);
     context.read<BrushService>().setCurrentColor(color);
   }
 
@@ -801,7 +800,6 @@ class _CanvasScreenState extends State<CanvasScreen> {
         final argb = (step.args['argb'] as num?)?.toInt();
         if (argb == null) throw StateError('Missing color');
         final color = Color(argb);
-        setState(() => _currentColor = color);
         context.read<BrushService>().setCurrentColor(color);
       case 'canvas.filter':
       case 'canvas.filterApply':
@@ -1525,6 +1523,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
 
   @override
   Widget build(BuildContext context) {
+    context.select<BrushService, Color>((brushes) => brushes.currentColor);
     final project = context
         .watch<ProjectService>()
         .projects
@@ -2895,7 +2894,6 @@ class _CanvasScreenState extends State<CanvasScreen> {
     showCloseBar: !isWideScreen(context),
     currentColor: _currentColor,
     onColorChanged: (color) {
-      setState(() => _currentColor = color);
       context.read<BrushService>().setCurrentColor(color);
       _recordCanvasAutomation(
         'canvas.color',
@@ -3280,7 +3278,9 @@ class _CanvasScreenState extends State<CanvasScreen> {
     if (brushId != null) {
       brushes.selectBrush(brushId);
       // 登録したブラシが消されていたら、太さだけを別のブラシへ当てない。
-      if (brushes.currentBrush?.id != brushId) return;
+      if (brushes.currentBrush?.id != BrushService.canonicalBrushId(brushId)) {
+        return;
+      }
     }
     if (sizeOverride != null) {
       // 早替えツールの太さはそのツールの設定。ブラシが覚えている太さは
