@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart' show setEquals;
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart' show KeepAliveParentDataMixin;
 import 'package:flutter/scheduler.dart' show SchedulerBinding, SchedulerPhase;
 import 'package:flutter/semantics.dart' show SemanticsBinding;
 import 'package:flutter/services.dart';
@@ -3269,6 +3270,12 @@ class _HomeScreenState extends State<HomeScreen>
   }
 }
 
+/// 作ったまま残すタブのページを、見えている間だけフォーカスを持てるようにする。
+extension _HiddenPageFocus on Widget {
+  Widget focusableOnlyWhen(bool shown) =>
+      ExcludeFocus(excluding: !shown, child: this);
+}
+
 /// Tab・Shift+Tabの1回の移動の、移る前の所と向き（[_HomeTraversalPolicy]）。
 class _TraversalStep {
   _HomeTraversalPolicy? policy;
@@ -3667,6 +3674,9 @@ class _HomeTraversalPolicy extends ReadingOrderTraversalPolicy {
     node.requestFocus();
     final context = node.context;
     if (context == null) return;
+    // 作ったまま残している見えないページ・行（並べていない所）は送り出せない
+    // （送り出そうとすると、並べていない所の位置を求めて例外になった）。
+    if (!_laidOutInScrollables(context.findRenderObject())) return;
     _keepAboveFloatingActions(context, listArea, floatingActions);
     for (final policy in const [
       ScrollPositionAlignmentPolicy.keepVisibleAtEnd,
@@ -3674,6 +3684,17 @@ class _HomeTraversalPolicy extends ReadingOrderTraversalPolicy {
     ]) {
       Scrollable.ensureVisible(context, alignmentPolicy: policy);
     }
+  }
+
+  /// [target]が、スクロールする所の中で今並べてある所にあるか（作ったまま
+  /// 残しているだけの見えないページ・行〔AutomaticKeepAlive〕の中ではないか）。
+  static bool _laidOutInScrollables(RenderObject? target) {
+    if (target == null || !target.attached) return false;
+    for (RenderObject? node = target; node != null; node = node.parent) {
+      final data = node.parentData;
+      if (data is KeepAliveParentDataMixin && data.keptAlive) return false;
+    }
+    return true;
   }
 
   /// タブの一覧（[listArea]）の中の部品を、一覧の見える所のうち浮かぶ
@@ -7479,7 +7500,10 @@ class _WorksTabState extends State<_WorksTab>
           ),
         );
       },
-    );
+      // ほかのタブにいる間も作ったまま残すので（開き直しで読み直さない）、
+      // 見えない間は中の部品にフォーカスを渡さない（Tabが見えないページの
+      // カードに止まり、見せようとして例外になった）。
+    ).focusableOnlyWhen(widget.active);
   }
 }
 
