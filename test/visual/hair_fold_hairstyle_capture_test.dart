@@ -49,6 +49,7 @@ Brush _brush(Brush base, HairFoldMode mode, double width) => base.copyWith(
   opacity: 100,
   stabilization: false,
   fadeMode: FadeMode.off,
+  foldEnabled: true,
   foldMode: mode,
   foldTriggerAngle: 30,
   outlineWidth: 2.4,

@@ -3,8 +3,8 @@ import 'brush.dart';
 import 'brush_extension_defaults.dart';
 
 /// Approved extension presets. BrushService appends these to its built-ins.
-List<Brush> brushExtensionPresets() => const <Brush>[
-  Brush(
+List<Brush> brushExtensionPresets() => <Brush>[
+  const Brush(
     id: 'Brush0022',
     name: 'ネット',
     size: 12,
@@ -39,48 +39,16 @@ List<Brush> brushExtensionPresets() => const <Brush>[
     imageInkMode: BrushImageInkMode.alpha,
     tags: <String>[AssetTagKeys.decoration, AssetTagKeys.background],
   ),
-  Brush(
-    id: 'Brush0023',
-    name: '髪の毛',
-    size: 22,
-    opacity: 100,
-    spacing: 1,
-    stabilization: true,
-    stabilizationStrength: 45,
-    pixelMode: false,
-    pressureOn: BrushPressureOnSettings(
-      size: PressureRangeSetting(enabled: true, weak: 20, strong: 100),
-      opacity: PressureRangeSetting(enabled: false, weak: 100, strong: 100),
-      blur: PressureRangeSetting(enabled: false, weak: 0, strong: 0),
-      edgeJitter: PressureRangeSetting(enabled: false, weak: 0, strong: 0),
-      mixing: PressureMixingOnSetting(
-        enabled: false,
-        mode: BrushMixingMode.oil,
-        weakRate: 0,
-        strongRate: 0,
-      ),
-    ),
-    fadeMode: FadeMode.custom,
-    fadeIn: FadeEndpointSettings(value: 55, rangePx: 18),
-    fadeOut: FadeEndpointSettings(value: 0, rangePx: 80),
-    strokeDecay: false,
-    rotation: false,
-    density: 1,
-    scatter: 0,
-    outlineEnabled: true,
-    outlineWidth: BrushExtensionDefaults.outlineWidth,
-    outlineColor: BrushExtensionDefaults.outlineColor,
-    foldEnabled: true,
-    foldTriggerAngle: BrushExtensionDefaults.foldTriggerAngle,
-    foldCurveStartRatio: BrushExtensionDefaults.foldCurveStartRatio,
-    foldAngleRatio: BrushExtensionDefaults.foldAngleRatio,
-    foldCrescentDepthThreshold:
-        BrushExtensionDefaults.foldCrescentDepthThreshold,
-    foldLengthRatio: BrushExtensionDefaults.foldLengthRatio,
-    foldEndTaperRatio: BrushExtensionDefaults.foldEndTaperRatio,
-    tags: <String>[AssetTagKeys.clothing],
-  ),
-  Brush(
+  _hair,
+  for (final (id, name, mode) in const [
+    ('Brush0031', '右巻きヘア', HairFoldMode.curlRight),
+    ('Brush0032', '左巻きヘア', HairFoldMode.curlLeft),
+    ('Brush0033', 'ウェーブヘア（俯瞰）', HairFoldMode.waveTopView),
+    ('Brush0034', 'ウェーブヘア（煽り）', HairFoldMode.waveLowAngle),
+    ('Brush0035', '三日月カールヘア', HairFoldMode.crescent),
+  ])
+    _hair.copyWith(id: id, name: name, foldMode: mode, foldTriggerAngle: 60),
+  const Brush(
     id: 'Brush0024',
     imageInkMode: BrushImageInkMode.alpha,
     name: '前髪',
@@ -102,35 +70,25 @@ List<Brush> brushExtensionPresets() => const <Brush>[
         strongRate: 0,
       ),
     ),
-    fadeMode: FadeMode.custom,
-    fadeIn: FadeEndpointSettings(value: 60, rangePx: 16),
-    fadeOut: FadeEndpointSettings(value: 0, rangePx: 55),
+    fadeMode: FadeMode.off,
     strokeDecay: false,
     rotation: true,
     density: 1,
     scatter: 0,
     customImagePaths: <String>[
-      'assets/brushes/bangs_strands_01.png',
-      'assets/brushes/bangs_strands_02.png',
-      'assets/brushes/bangs_strands_03.png',
-      'assets/brushes/bangs_strands_04.png',
-      'assets/brushes/bangs_strands_05.png',
+      'assets/brushes/bangs_solid_01.png',
+      'assets/brushes/bangs_solid_02.png',
+      'assets/brushes/bangs_solid_03.png',
+      'assets/brushes/bangs_solid_04.png',
+      'assets/brushes/bangs_solid_05.png',
     ],
     customImageSelectionMode: BrushImageSelectionMode.random,
     outlineEnabled: true,
     outlineWidth: BrushExtensionDefaults.outlineWidth,
     outlineColor: BrushExtensionDefaults.outlineColor,
-    foldEnabled: true,
-    foldTriggerAngle: BrushExtensionDefaults.foldTriggerAngle,
-    foldCurveStartRatio: BrushExtensionDefaults.foldCurveStartRatio,
-    foldAngleRatio: BrushExtensionDefaults.foldAngleRatio,
-    foldCrescentDepthThreshold:
-        BrushExtensionDefaults.foldCrescentDepthThreshold,
-    foldLengthRatio: BrushExtensionDefaults.foldLengthRatio,
-    foldEndTaperRatio: BrushExtensionDefaults.foldEndTaperRatio,
     tags: <String>[AssetTagKeys.clothing],
   ),
-  Brush(
+  const Brush(
     id: 'Brush0025',
     name: '四コマ漫画',
     size: 80,
@@ -167,7 +125,7 @@ List<Brush> brushExtensionPresets() => const <Brush>[
   // Traditional rough media. The raster engine uses each preset's
   // grainStrength as a stable paper-tooth mask, so these do not merely carry
   // analog names on ordinary solid round pens.
-  Brush(
+  const Brush(
     id: 'Brush0026',
     name: '木炭（粗目）',
     size: 18,
@@ -204,7 +162,7 @@ List<Brush> brushExtensionPresets() => const <Brush>[
     strokeDecay: false,
     tags: <String>[AssetTagKeys.paint, AssetTagKeys.rough, AssetTagKeys.analog],
   ),
-  Brush(
+  const Brush(
     id: 'Brush0027',
     name: 'ガッシュ（不透明水彩）',
     size: 28,
@@ -241,7 +199,7 @@ List<Brush> brushExtensionPresets() => const <Brush>[
     strokeDecay: false,
     tags: <String>[AssetTagKeys.paint, AssetTagKeys.rough, AssetTagKeys.analog],
   ),
-  Brush(
+  const Brush(
     id: 'Brush0028',
     name: '鉛筆（4B）',
     size: 7,
@@ -282,7 +240,7 @@ List<Brush> brushExtensionPresets() => const <Brush>[
       AssetTagKeys.analog,
     ],
   ),
-  Brush(
+  const Brush(
     id: 'Brush0029',
     name: 'パステル（粉）',
     size: 25,
@@ -319,13 +277,13 @@ List<Brush> brushExtensionPresets() => const <Brush>[
     strokeDecay: false,
     tags: <String>[AssetTagKeys.paint, AssetTagKeys.rough, AssetTagKeys.analog],
   ),
-  Brush(
+  const Brush(
     id: 'Brush0030',
     name: '雲',
     size: 92,
     opacity: 85,
     spacing: 30,
-    tipSpacingFactor: .40,
+    tipSpacingFactor: .31,
     stabilization: false,
     stabilizationStrength: 0,
     pixelMode: false,
@@ -334,11 +292,57 @@ List<Brush> brushExtensionPresets() => const <Brush>[
       'assets/brushes/cloud_tip_01.png',
       'assets/brushes/cloud_tip_02.png',
       'assets/brushes/cloud_tip_03.png',
+      'assets/brushes/cloud_tip_04.png',
+      'assets/brushes/cloud_tip_05.png',
+      'assets/brushes/cloud_tip_06.png',
+      'assets/brushes/cloud_tip_07.png',
+      'assets/brushes/cloud_tip_08.png',
     ],
-    customImageSelectionMode: BrushImageSelectionMode.sequential,
+    customImageSelectionMode: BrushImageSelectionMode.randomPerStamp,
     fadeMode: FadeMode.off,
     strokeDecay: false,
-    scatter: .12,
+    scatter: .20,
     tags: [AssetTagKeys.background, AssetTagKeys.texture, AssetTagKeys.paint],
   ),
 ];
+
+const _hair = Brush(
+  id: 'Brush0023',
+  name: '髪の毛',
+  size: 22,
+  opacity: 100,
+  spacing: 1,
+  stabilization: true,
+  stabilizationStrength: 45,
+  pixelMode: false,
+  pressureOn: BrushPressureOnSettings(
+    size: PressureRangeSetting(enabled: true, weak: 20, strong: 100),
+    opacity: PressureRangeSetting(enabled: false, weak: 100, strong: 100),
+    blur: PressureRangeSetting(enabled: false, weak: 0, strong: 0),
+    edgeJitter: PressureRangeSetting(enabled: false, weak: 0, strong: 0),
+    mixing: PressureMixingOnSetting(
+      enabled: false,
+      mode: BrushMixingMode.oil,
+      weakRate: 0,
+      strongRate: 0,
+    ),
+  ),
+  fadeMode: FadeMode.custom,
+  fadeIn: FadeEndpointSettings(value: 55, rangePx: 18),
+  fadeOut: FadeEndpointSettings(value: 0, rangePx: 80),
+  strokeDecay: false,
+  rotation: false,
+  density: 1,
+  scatter: 0,
+  outlineEnabled: true,
+  outlineWidth: BrushExtensionDefaults.outlineWidth,
+  outlineColor: BrushExtensionDefaults.outlineColor,
+  foldEnabled: true,
+  foldTriggerAngle: BrushExtensionDefaults.foldTriggerAngle,
+  foldCurveStartRatio: BrushExtensionDefaults.foldCurveStartRatio,
+  foldAngleRatio: BrushExtensionDefaults.foldAngleRatio,
+  foldCrescentDepthThreshold: BrushExtensionDefaults.foldCrescentDepthThreshold,
+  foldLengthRatio: BrushExtensionDefaults.foldLengthRatio,
+  foldEndTaperRatio: BrushExtensionDefaults.foldEndTaperRatio,
+  tags: <String>[AssetTagKeys.clothing],
+);

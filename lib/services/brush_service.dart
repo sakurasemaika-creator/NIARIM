@@ -137,9 +137,21 @@ class BrushService extends ChangeNotifier {
     'Brush0025',
     // Hair and scenery.
     'Brush0023',
+    'Brush0031',
+    'Brush0032',
+    'Brush0033',
+    'Brush0034',
+    'Brush0035',
     'Brush0024',
     'Brush0030',
   ];
+  static const _hairVariantIds = {
+    'Brush0031',
+    'Brush0032',
+    'Brush0033',
+    'Brush0034',
+    'Brush0035',
+  };
   static const _groupedPresetsKey = 'brush_grouped_presets_v1';
 
   static List<Brush> _defaultBrushes() {
@@ -996,11 +1008,21 @@ class BrushService extends ChangeNotifier {
       // 既存ユーザーにも新規追加した初期ブラシ（マーカーペン・カリグラフィー）を
       // 反映する（既に同じIDのブラシが存在する場合は追加しない）。
       final existingIds = _brushes.map((b) => b.id).toSet();
-      final missing = _defaultBrushes().where(
-        (b) => !existingIds.contains(b.id),
-      );
-      bool needsPersist = dropped;
+      final missing = _defaultBrushes()
+          .where((b) => !existingIds.contains(b.id))
+          .toList();
+      var needsPersist = dropped;
       if (missing.isNotEmpty) {
+        final hairIndex = _brushes.indexWhere(
+          (brush) => brush.id == 'Brush0023' && brush.folderId == null,
+        );
+        if (hairIndex >= 0) {
+          final newHair = missing.where(
+            (brush) => _hairVariantIds.contains(brush.id),
+          );
+          _brushes.insertAll(hairIndex + 1, newHair);
+          missing.removeWhere((brush) => _hairVariantIds.contains(brush.id));
+        }
         _brushes.addAll(missing);
         needsPersist = true;
       }

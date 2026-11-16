@@ -3002,6 +3002,7 @@
   "brushImageOrderLabel": "Sélection des images",
   "brushImageOrderRandom": "Aléatoire",
   "brushImageOrderSequential": "Dans l’ordre",
+  "brushImageOrderRandomPerStamp": "Aléatoire à chaque empreinte",
   "brushImageMoveUp": "Monter",
   "brushImageMoveDown": "Descendre",
   "brushImageRemove": "Retirer l’image",

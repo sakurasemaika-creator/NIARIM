@@ -3002,6 +3002,7 @@
   "brushImageOrderLabel": "Selección de imagen",
   "brushImageOrderRandom": "Aleatoria",
   "brushImageOrderSequential": "En orden",
+  "brushImageOrderRandomPerStamp": "Aleatoria en cada toque",
   "brushImageMoveUp": "Subir",
   "brushImageMoveDown": "Bajar",
   "brushImageRemove": "Quitar imagen",

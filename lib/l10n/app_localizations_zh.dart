@@ -6924,6 +6924,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get brushImageOrderSequential => '按顺序';
 
   @override
+  String get brushImageOrderRandomPerStamp => '每次落点随机';
+
+  @override
   String get brushImageMoveUp => '上移';
 
   @override
@@ -16944,6 +16947,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get brushImageOrderSequential => '依順序';
+
+  @override
+  String get brushImageOrderRandomPerStamp => '每次落點隨機';
 
   @override
   String get brushImageMoveUp => '上移';

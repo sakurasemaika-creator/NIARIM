@@ -13,7 +13,10 @@ void main() {
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
-    var brush = brushExtensionPresets().first.copyWith(id: 'my-tip');
+    var brush = brushExtensionPresets().first.copyWith(
+      id: 'my-tip',
+      tipSpacingFactor: 0,
+    );
     await tester.pumpWidget(
       MaterialApp(
         locale: const Locale('ja'),

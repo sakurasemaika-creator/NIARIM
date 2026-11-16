@@ -255,6 +255,10 @@ class BrushTipSettings extends StatelessWidget {
                 value: BrushImageSelectionMode.sequential,
                 child: Text(l.brushImageOrderSequential),
               ),
+              DropdownMenuItem(
+                value: BrushImageSelectionMode.randomPerStamp,
+                child: Text(l.brushImageOrderRandomPerStamp),
+              ),
             ],
             onChanged: (value) {
               if (value != null) {

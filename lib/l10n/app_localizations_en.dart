@@ -7250,6 +7250,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get brushImageOrderSequential => 'In order';
 
   @override
+  String get brushImageOrderRandomPerStamp => 'Random for each dab';
+
+  @override
   String get brushImageMoveUp => 'Move up';
 
   @override

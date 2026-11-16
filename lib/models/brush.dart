@@ -932,7 +932,7 @@ enum FadeMode { off, weak, medium, strong, custom }
 
 enum BrushTipShape { round, hollowSquare, hexagon, chainLink, ballChain }
 
-enum BrushImageSelectionMode { random, sequential }
+enum BrushImageSelectionMode { random, sequential, randomPerStamp }
 
 class FadeEndpointSettings {
   final double value;

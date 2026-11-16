@@ -120,6 +120,46 @@ void main() {
     expect(pixel(engine, 56, 64)[3], greaterThan(0));
   });
 
+  test('a single net stroke draws four connected rows of cells', () async {
+    final net = brushExtensionPresets().singleWhere(
+      (brush) => brush.id == 'Brush0022',
+    );
+    await preloadBrushTextures(
+      net.resolvedCustomImagePaths,
+      mode: net.imageInkMode,
+    );
+
+    for (final vertical in [false, true]) {
+      final engine = engineFor(net.copyWith(size: 20, stabilization: false));
+      Offset orient(Offset point) =>
+          vertical ? Offset(point.dy, point.dx) : point;
+      StrokePoint sample(Offset point) {
+        final position = orient(point);
+        return StrokePoint(x: position.dx, y: position.dy);
+      }
+
+      engine.beginStroke(sample(const Offset(32, 64)), 'layer');
+      engine.continueStroke(sample(const Offset(105, 64)), 'layer');
+      engine.endStroke();
+
+      int alphaAt(double x, double y) {
+        final position = orient(Offset(x, y));
+        return pixel(engine, position.dx.round(), position.dy.round())[3];
+      }
+
+      for (final column in [32.0, 51.0, 70.0, 88.0]) {
+        for (final row in [36.0, 55.0, 73.0, 92.0]) {
+          expect(alphaAt(column, row), 0);
+          expect(alphaAt(column + 9, row), greaterThan(0));
+        }
+        for (final crossing in [45.0, 64.0, 83.0]) {
+          expect(alphaAt(column, crossing), greaterThan(0));
+        }
+      }
+      engine.tileManager.dispose();
+    }
+  });
+
   test(
     'four-panel manga keeps a thin frame and scales the gap with brush size',
     () async {

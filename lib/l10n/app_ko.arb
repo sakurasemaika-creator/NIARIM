@@ -3002,6 +3002,7 @@
   "brushImageOrderLabel": "소재 선택 방식",
   "brushImageOrderRandom": "무작위",
   "brushImageOrderSequential": "등록 순서",
+  "brushImageOrderRandomPerStamp": "찍을 때마다 무작위",
   "brushImageMoveUp": "위로 이동",
   "brushImageMoveDown": "아래로 이동",
   "brushImageRemove": "소재 제거",

@@ -11,7 +11,6 @@ import '../../services/material_service.dart';
 import '../../services/project_service.dart';
 import '../../services/storage_info_service.dart';
 import '../../utils/app_error_reporter.dart';
-import '../../utils/color_contrast.dart';
 import '../../utils/file_size_label.dart';
 import '../../widgets/confirm_delete.dart';
 import '../../widgets/help_button.dart';
@@ -913,7 +912,7 @@ class _StorageScreenState extends State<StorageScreen> {
     );
   }
 
-  /// The category uses its bar color as the glyph outline.
+  /// Use a solid label surface so the text stays readable at every fill ratio.
   Widget _storageAmountBar({
     required Key key,
     required Color color,
@@ -923,7 +922,7 @@ class _StorageScreenState extends State<StorageScreen> {
     required ColorScheme scheme,
   }) {
     final outline = scheme.onSurface;
-    Widget valueSurface(Widget child) => DecoratedBox(
+    Widget labelSurface(Widget child) => DecoratedBox(
       decoration: BoxDecoration(
         color: scheme.surface,
         borderRadius: BorderRadius.circular(3),
@@ -933,8 +932,6 @@ class _StorageScreenState extends State<StorageScreen> {
         child: child,
       ),
     );
-    const labelStyle = TextStyle(fontSize: 12, fontWeight: FontWeight.w600);
-    final labelInk = contrastingForeground(color, outline);
     final amount = ratio.clamp(0.0, 1.0);
     return SizedBox(
       key: key,
@@ -976,36 +973,23 @@ class _StorageScreenState extends State<StorageScreen> {
                 Expanded(
                   child: Align(
                     alignment: AlignmentDirectional.centerStart,
-                    child: Stack(
-                      children: [
-                        ExcludeSemantics(
-                          child: Text.rich(
-                            TextSpan(text: label),
-                            key: Key('storageBarLabelOutline_$label'),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: labelStyle.copyWith(
-                              foreground: Paint()
-                                ..color = color
-                                ..style = PaintingStyle.stroke
-                                ..strokeJoin = StrokeJoin.round
-                                ..strokeWidth = 2.6,
-                            ),
-                          ),
+                    child: labelSurface(
+                      Text(
+                        label,
+                        key: Key('storageBreakdownBarLabel_$label'),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: outline,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
                         ),
-                        Text(
-                          label,
-                          key: Key('storageBreakdownBarLabel_$label'),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: labelStyle.copyWith(color: labelInk),
-                        ),
-                      ],
+                      ),
                     ),
                   ),
                 ),
                 const SizedBox(width: 5),
-                valueSurface(
+                labelSurface(
                   Text(
                     fileSizeLabel(AppLocalizations.of(context)!, bytes),
                     key: Key('storageBreakdownBarValue_$label'),

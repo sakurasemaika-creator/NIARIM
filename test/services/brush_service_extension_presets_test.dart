@@ -90,7 +90,7 @@ void main() {
       expect(updated.tags, ['my-hair-tag']);
       expect(
         restored.brushes.singleWhere((b) => b.id == bangs.id).fadeMode,
-        FadeMode.custom,
+        FadeMode.off,
       );
       expect(
         restored.brushes.singleWhere((b) => b.id == hair.id).isFavorite,

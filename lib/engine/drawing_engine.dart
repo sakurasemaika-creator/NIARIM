@@ -105,6 +105,8 @@ class DrawingEngine {
       );
     } else if (brush == null) {
       _brushTextureSelector.endStroke();
+    } else {
+      _brushTextureSelector.rewindDabs();
     }
     _foldRaster =
         brush != null && brush.outlineEnabled && brush.foldEnabled && !isEraser
@@ -668,7 +670,7 @@ class DrawingEngine {
     // 自作ブラシ（ブラシ画像からのブラシ作成）が選択され、
     // 事前読み込み済みの場合はその形状を、それ以外は円形（またはピクセル
     // モード）でスタンプする。
-    final texturePath = _brushTextureSelector.activePath;
+    final texturePath = _brushTextureSelector.nextDabPath();
     final customTexture = texturePath != null
         ? getCachedBrushTexture(texturePath, mode: brush.imageInkMode)
         : null;

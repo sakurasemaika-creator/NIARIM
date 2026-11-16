@@ -12735,6 +12735,12 @@ abstract class AppLocalizations {
   /// **'登録順'**
   String get brushImageOrderSequential;
 
+  /// No description provided for @brushImageOrderRandomPerStamp.
+  ///
+  /// In ja, this message translates to:
+  /// **'ランダム（描画中も切り替え）'**
+  String get brushImageOrderRandomPerStamp;
+
   /// No description provided for @brushImageMoveUp.
   ///
   /// In ja, this message translates to:

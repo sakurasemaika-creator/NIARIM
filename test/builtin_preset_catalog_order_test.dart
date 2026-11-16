@@ -28,6 +28,11 @@ void main() {
       'Brush0022',
       'Brush0025',
       'Brush0023',
+      'Brush0031',
+      'Brush0032',
+      'Brush0033',
+      'Brush0034',
+      'Brush0035',
       'Brush0024',
       'Brush0030',
     ]);

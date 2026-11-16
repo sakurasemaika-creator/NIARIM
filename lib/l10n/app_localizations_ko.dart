@@ -7017,6 +7017,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get brushImageOrderSequential => '등록 순서';
 
   @override
+  String get brushImageOrderRandomPerStamp => '찍을 때마다 무작위';
+
+  @override
   String get brushImageMoveUp => '위로 이동';
 
   @override

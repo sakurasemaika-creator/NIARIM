@@ -53,21 +53,53 @@ void main() {
     },
   );
 
-  test(
-    'bangs preset uses multiple random textures and keeps wave disabled',
-    () {
-      final bangs = brushExtensionPresets().singleWhere(
-        (b) => b.id == 'Brush0024',
-      );
-      expect(bangs.name, '前髪');
-      expect(bangs.customImagePaths.length, greaterThanOrEqualTo(4));
-      expect(bangs.customImageSelectionMode, BrushImageSelectionMode.random);
-      expect(bangs.outlineEnabled, isTrue);
-      expect(bangs.foldEnabled, isTrue);
-      expect(bangs.pressureOn.size.enabled, isTrue);
-      expect(bangs.toJson().containsKey('fillColor'), isFalse);
-    },
-  );
+  test('bangs has symmetric tips without end taper or automatic folds', () {
+    final bangs = brushExtensionPresets().singleWhere(
+      (b) => b.id == 'Brush0024',
+    );
+    expect(bangs.name, '前髪');
+    expect(bangs.customImagePaths.length, greaterThanOrEqualTo(4));
+    expect(bangs.customImageSelectionMode, BrushImageSelectionMode.random);
+    expect(bangs.outlineEnabled, isTrue);
+    expect(bangs.foldEnabled, isFalse);
+    expect(bangs.fadeMode, FadeMode.off);
+    expect(bangs.pressureOn.size.enabled, isTrue);
+    expect(bangs.toJson().containsKey('fillColor'), isFalse);
+  });
+
+  test('the five dedicated hair presets keep their fold mode when saved', () {
+    final variants = brushExtensionPresets().where(
+      (brush) => const {
+        'Brush0031',
+        'Brush0032',
+        'Brush0033',
+        'Brush0034',
+        'Brush0035',
+      }.contains(brush.id),
+    );
+    expect(variants, hasLength(5));
+    expect(
+      variants.map((brush) => brush.foldMode).toSet(),
+      HairFoldMode.values.toSet(),
+    );
+    for (final brush in variants) {
+      final restored = Brush.fromJson(brush.toJson());
+      expect(restored.foldEnabled, isTrue);
+      expect(restored.outlineEnabled, isTrue);
+      expect(restored.foldMode, brush.foldMode);
+    }
+  });
+
+  test('cloud changes tip within the stroke after save and reload', () {
+    final cloud = brushExtensionPresets().singleWhere(
+      (brush) => brush.id == 'Brush0030',
+    );
+    expect(cloud.resolvedCustomImagePaths, hasLength(8));
+    expect(
+      Brush.fromJson(cloud.toJson()).customImageSelectionMode,
+      BrushImageSelectionMode.randomPerStamp,
+    );
+  });
 
   test('multiple texture selection survives brush json round trip', () {
     final brush = _baseBrush(

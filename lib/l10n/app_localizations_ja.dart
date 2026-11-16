@@ -6980,6 +6980,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get brushImageOrderSequential => '登録順';
 
   @override
+  String get brushImageOrderRandomPerStamp => 'ランダム（描画中も切り替え）';
+
+  @override
   String get brushImageMoveUp => '上へ移動';
 
   @override

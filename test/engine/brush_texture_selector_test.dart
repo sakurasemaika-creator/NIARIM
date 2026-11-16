@@ -76,6 +76,26 @@ void main() {
     expect(selector.activePath, isNull);
   });
 
+  test('per-dab randomization avoids consecutive repeats and can replay', () {
+    final selector = BrushTextureSelector(randomSeed: 17);
+    const paths = ['a.png', 'b.png', 'c.png'];
+    final initial = selector.beginStroke(
+      brushId: 'cloud',
+      paths: paths,
+      mode: BrushImageSelectionMode.randomPerStamp,
+    );
+    final drawn = List.generate(24, (_) => selector.nextDabPath());
+    expect(drawn.first, initial);
+    expect(drawn.toSet(), paths.toSet());
+    for (var i = 1; i < drawn.length; i++) {
+      expect(drawn[i], isNot(drawn[i - 1]));
+    }
+    selector.rewindDabs();
+    expect(List.generate(24, (_) => selector.nextDabPath()), drawn);
+    selector.endStroke();
+    expect(selector.nextDabPath(), isNull);
+  });
+
   test('sequential cursors are independent per brush', () {
     final selector = BrushTextureSelector();
     const paths = ['a.png', 'b.png'];

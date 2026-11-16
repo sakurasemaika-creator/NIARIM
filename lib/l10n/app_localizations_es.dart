@@ -7365,6 +7365,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get brushImageOrderSequential => 'En orden';
 
   @override
+  String get brushImageOrderRandomPerStamp => 'Aleatoria en cada toque';
+
+  @override
   String get brushImageMoveUp => 'Subir';
 
   @override

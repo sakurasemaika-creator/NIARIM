@@ -3009,6 +3009,7 @@
   "brushImageOrderLabel": "Image selection",
   "brushImageOrderRandom": "Random",
   "brushImageOrderSequential": "In order",
+  "brushImageOrderRandomPerStamp": "Random for each dab",
   "brushImageMoveUp": "Move up",
   "brushImageMoveDown": "Move down",
   "brushImageRemove": "Remove image",

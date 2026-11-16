@@ -211,10 +211,7 @@ void main() {
       expect(tester.getRect(firstBar).width, greaterThan(300));
       expect(tester.getRect(firstBar).left, lessThan(20));
       for (final (category, label) in entries) {
-        expect(
-          find.byKey(Key('storageBreakdownBarLabel_$label')),
-          findsOneWidget,
-        );
+        expect(find.text(label), findsOneWidget, reason: label);
         final bar = find.byKey(Key('storageBreakdownBar_$label'));
         expect(bar, findsOneWidget, reason: 'Missing bar for $label');
         final labelWidget = tester.widget<Text>(
@@ -225,23 +222,25 @@ void main() {
         );
         expect(labelWidget.data, label);
         expect(valueWidget.data, fileSizeLabel(l10n, values.bytesOf(category)));
+        expect(labelWidget.style?.color, scheme.onSurface);
         expect(valueWidget.style?.color, scheme.onSurface);
-        final ink = tester
-            .widget<Text>(find.byKey(Key('storageBarLabelOutline_$label')))
-            .style!
-            .foreground!;
-        expect(ink.style, PaintingStyle.stroke);
-        expect(ink.strokeWidth, greaterThan(0));
+        for (final prefix in [
+          'storageBreakdownBarLabel_',
+          'storageBreakdownBarValue_',
+        ]) {
+          final surface = tester.widget<DecoratedBox>(
+            find
+                .ancestor(
+                  of: find.byKey(Key('$prefix$label')),
+                  matching: find.byType(DecoratedBox),
+                )
+                .first,
+          );
+          expect((surface.decoration as BoxDecoration).color, scheme.surface);
+        }
         expect(
-          contrastRatio(labelWidget.style!.color!, ink.color),
-          greaterThanOrEqualTo(4.5),
-        );
-        expect(
-          find.ancestor(
-            of: find.byKey(Key('storageBreakdownBarLabel_$label')),
-            matching: find.byType(DecoratedBox),
-          ),
-          findsNothing,
+          find.descendant(of: bar, matching: find.text(label)),
+          findsOneWidget,
         );
         final fill = tester.widget<FractionallySizedBox>(
           find.descendant(of: bar, matching: find.byType(FractionallySizedBox)),
@@ -257,7 +256,7 @@ void main() {
               find.descendant(of: bar, matching: find.byType(DecoratedBox)),
             )
             .toList();
-        expect(boxes.length, 4);
+        expect(boxes.length, 5);
         expect(
           (boxes.first.decoration as BoxDecoration).color,
           expectedOutline,
@@ -356,13 +355,6 @@ void main() {
               ((fill.child as DecoratedBox).decoration as BoxDecoration).color,
               colors[i],
             );
-            final outline = tester
-                .widget<Text>(
-                  find.byKey(Key('storageBarLabelOutline_${labels[i]}')),
-                )
-                .style!
-                .foreground!;
-            expect(outline.color.toARGB32(), colors[i].toARGB32());
           }
         }
         await tester.runAsync(() async {
@@ -378,15 +370,23 @@ void main() {
       themes.applyPreset('default_dark');
       await tester.pumpAndSettle();
       for (final (_, label) in entries) {
-        final ink = tester
-            .widget<Text>(find.byKey(Key('storageBreakdownBarLabel_$label')))
-            .style!
-            .color!;
-        final stroke = tester
-            .widget<Text>(find.byKey(Key('storageBarLabelOutline_$label')))
-            .style!
-            .foreground!;
-        expect(contrastRatio(ink, stroke.color), greaterThanOrEqualTo(4.5));
+        for (final prefix in [
+          'storageBreakdownBarLabel_',
+          'storageBreakdownBarValue_',
+        ]) {
+          final ink = find.byKey(Key('$prefix$label'));
+          final background = tester.widget<DecoratedBox>(
+            find.ancestor(of: ink, matching: find.byType(DecoratedBox)).first,
+          );
+          expect(
+            contrastRatio(
+              tester.widget<Text>(ink).style!.color!,
+              (background.decoration as BoxDecoration).color!,
+            ),
+            greaterThanOrEqualTo(4.5),
+            reason: 'dark: $label',
+          );
+        }
       }
     },
   );

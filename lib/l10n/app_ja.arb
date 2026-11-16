@@ -3442,6 +3442,7 @@
   "brushImageOrderLabel": "素材の切り替え",
   "brushImageOrderRandom": "ランダム",
   "brushImageOrderSequential": "登録順",
+  "brushImageOrderRandomPerStamp": "ランダム（描画中も切り替え）",
   "brushImageMoveUp": "上へ移動",
   "brushImageMoveDown": "下へ移動",
   "brushImageRemove": "素材を外す",
