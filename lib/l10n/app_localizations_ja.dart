@@ -56,6 +56,15 @@ class AppLocalizationsJa extends AppLocalizations {
   String get homeSearchHint => 'プロジェクト名で検索';
 
   @override
+  String get homeSearchHintWorks => '作品名で検索';
+
+  @override
+  String get homeSearchHintShared => '共有ファイル名で検索';
+
+  @override
+  String get homeSearchHintTrash => 'ゴミ箱の中を名前で検索';
+
+  @override
   String get homeBackToSplashTooltip => '起動画面に戻る';
 
   @override

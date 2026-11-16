@@ -59,6 +59,15 @@ class AppLocalizationsEs extends AppLocalizations {
   String get homeSearchHint => 'Buscar por nombre de proyecto';
 
   @override
+  String get homeSearchHintWorks => 'Buscar por nombre de obra';
+
+  @override
+  String get homeSearchHintShared => 'Buscar por nombre de archivo compartido';
+
+  @override
+  String get homeSearchHintTrash => 'Buscar en la papelera por nombre';
+
+  @override
   String get homeBackToSplashTooltip => 'Volver a la pantalla de arranque';
 
   @override

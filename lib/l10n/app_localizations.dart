@@ -197,6 +197,24 @@ abstract class AppLocalizations {
   /// **'プロジェクト名で検索'**
   String get homeSearchHint;
 
+  /// No description provided for @homeSearchHintWorks.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品名で検索'**
+  String get homeSearchHintWorks;
+
+  /// No description provided for @homeSearchHintShared.
+  ///
+  /// In ja, this message translates to:
+  /// **'共有ファイル名で検索'**
+  String get homeSearchHintShared;
+
+  /// No description provided for @homeSearchHintTrash.
+  ///
+  /// In ja, this message translates to:
+  /// **'ゴミ箱の中を名前で検索'**
+  String get homeSearchHintTrash;
+
   /// No description provided for @homeBackToSplashTooltip.
   ///
   /// In ja, this message translates to:

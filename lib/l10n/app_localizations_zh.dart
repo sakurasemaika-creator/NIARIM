@@ -55,6 +55,15 @@ class AppLocalizationsZh extends AppLocalizations {
   String get homeSearchHint => '按项目名称搜索';
 
   @override
+  String get homeSearchHintWorks => '按作品名称搜索';
+
+  @override
+  String get homeSearchHintShared => '按共享文件名称搜索';
+
+  @override
+  String get homeSearchHintTrash => '按名称搜索回收站';
+
+  @override
   String get homeBackToSplashTooltip => '返回启动画面';
 
   @override
@@ -10097,6 +10106,15 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get homeSearchHint => '依專案名稱搜尋';
+
+  @override
+  String get homeSearchHintWorks => '依作品名稱搜尋';
+
+  @override
+  String get homeSearchHintShared => '依共享檔案名稱搜尋';
+
+  @override
+  String get homeSearchHintTrash => '依名稱搜尋垃圾桶';
 
   @override
   String get homeBackToSplashTooltip => '返回啟動畫面';

@@ -58,6 +58,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeSearchHint => 'Search by project name';
 
   @override
+  String get homeSearchHintWorks => 'Search by work name';
+
+  @override
+  String get homeSearchHintShared => 'Search by shared file name';
+
+  @override
+  String get homeSearchHintTrash => 'Search the trash by name';
+
+  @override
   String get homeBackToSplashTooltip => 'Back to launch screen';
 
   @override

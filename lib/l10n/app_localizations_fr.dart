@@ -59,6 +59,15 @@ class AppLocalizationsFr extends AppLocalizations {
   String get homeSearchHint => 'Rechercher par nom de projet';
 
   @override
+  String get homeSearchHintWorks => 'Rechercher par nom d’œuvre';
+
+  @override
+  String get homeSearchHintShared => 'Rechercher par nom de fichier partagé';
+
+  @override
+  String get homeSearchHintTrash => 'Rechercher dans la corbeille par nom';
+
+  @override
   String get homeBackToSplashTooltip => 'Retour à l’écran de lancement';
 
   @override

@@ -1070,24 +1070,70 @@ class _HomeScreenState extends State<HomeScreen>
                       Expanded(
                         child: CallbackShortcuts(
                           bindings: {_escapeOnce: _escapeInSearch},
-                          child: TextField(
-                            key: const Key('homeSearchInput'),
-                            controller: _searchController,
-                            focusNode: _searchFocus,
-                            decoration: InputDecoration(
-                              hintText: _currentTabIndex == 0 && _searchByTag
-                                  ? l10n.projectDetailTagsQuickAction
-                                  : l10n.homeSearchHint,
-                              border: InputBorder.none,
-                            ),
-                            onChanged: (v) =>
-                                _changeProjectScope(() => _searchQuery = v),
-                            onEditingComplete: _homeFocus.requestFocus,
-                            onTapOutside: (event) {
-                              if (event.kind != PointerDeviceKind.touch &&
-                                  _searchFocus.hasFocus) {
-                                _homeFocus.requestFocus();
-                              }
+                          child: LayoutBuilder(
+                            builder: (context, constraints) {
+                              final hint = _searchHint(l10n);
+                              // 塗った入力欄は、左右の余白にさらに4pxずつ
+                              // 空ける（Materialの入力欄の決まり）。
+                              final fit = _fitSearchHint(
+                                context,
+                                hint,
+                                constraints.maxWidth - 8,
+                              );
+                              final themeHint = Theme.of(
+                                context,
+                              ).inputDecorationTheme.hintStyle;
+                              return TextField(
+                                key: const Key('homeSearchInput'),
+                                controller: _searchController,
+                                focusNode: _searchFocus,
+                                // 入力の行もヒントと同じ行の高さにする（ヒントの
+                                // 1行目は入力の文字の並びにそろって下がるので、
+                                // 入力の行が高いと3行のヒントが下へはみ出す）。
+                                style: const TextStyle(
+                                  height: _searchHintLineHeight,
+                                ),
+                                textAlignVertical: TextAlignVertical.center,
+                                decoration: InputDecoration(
+                                  hintText: hint,
+                                  // ヒントは折り返して全部出す（狭い画面では
+                                  // 1行に入らず「…」で切れた）。上部バーの高さに
+                                  // 入る行数・大きさで（_fitSearchHint）。
+                                  hintMaxLines: fit.lines,
+                                  // 渡したヒントの書式はテーマのもの（メニューの
+                                  // 文字色）に置き換わるので、テーマの書式に
+                                  // 大きさ・行の高さだけを足す。
+                                  hintStyle: WidgetStateTextStyle.resolveWith(
+                                    (states) =>
+                                        (WidgetStateProperty.resolveAs(
+                                                  themeHint,
+                                                  states,
+                                                ) ??
+                                                const TextStyle())
+                                            .copyWith(
+                                              fontSize: fit.fontSize,
+                                              height: _searchHintLineHeight,
+                                            ),
+                                  ),
+                                  // 打ち始めたら、折り返したヒントの高さを
+                                  // 残さない（残すと、打った字の行がヒントの
+                                  // 1行目の高さ〔上部バーの上寄り〕に残り、
+                                  // 隣のボタンと縦がそろわなかった）。
+                                  maintainHintSize: false,
+                                  isDense: true,
+                                  contentPadding: EdgeInsets.zero,
+                                  border: InputBorder.none,
+                                ),
+                                onChanged: (v) =>
+                                    _changeProjectScope(() => _searchQuery = v),
+                                onEditingComplete: _homeFocus.requestFocus,
+                                onTapOutside: (event) {
+                                  if (event.kind != PointerDeviceKind.touch &&
+                                      _searchFocus.hasFocus) {
+                                    _homeFocus.requestFocus();
+                                  }
+                                },
+                              );
                             },
                           ),
                         ),
@@ -1479,6 +1525,56 @@ class _HomeScreenState extends State<HomeScreen>
         child: FocusTraversalGroup(policy: _homeTraversal, child: content),
       ),
     );
+  }
+
+  /// 検索欄のヒント：開いているタブで何を探すか（以前は作品一覧・共有・
+  /// ゴミ箱のタブでも「プロジェクト名で検索」と出た）。折り返すときに
+  /// 韓国語の語の途中・長音や小さいかなの前で行を変えない。
+  String _searchHint(AppLocalizations l10n) => keepJapaneseLineStartsAttached(
+    keepKoreanWordsTogether(switch (_currentTabIndex) {
+      0 when _searchByTag => l10n.projectDetailTagsQuickAction,
+      1 => l10n.homeSearchHintWorks,
+      2 => l10n.homeSearchHintShared,
+      3 => l10n.homeSearchHintTrash,
+      _ => l10n.homeSearchHint,
+    }),
+  );
+
+  // 検索欄のヒントの行の高さ（折り返した行を上部バーに収める）。
+  static const double _searchHintLineHeight = 1.2;
+
+  /// 検索欄のヒント[hint]を、幅[width]の中で切らずに出せる字の大きさと
+  /// 行数。いつもの大きさ（16）で上部バーの高さに入る行数に収まればその
+  /// まま、入らなければ14・13へ小さくする（13でも入らない文字の大きさの
+  /// 端末では、入る行数の後を「…」にする）。
+  ({double fontSize, int lines}) _fitSearchHint(
+    BuildContext context,
+    String hint,
+    double width,
+  ) {
+    final scaler = MediaQuery.textScalerOf(context);
+    final base = Theme.of(context).textTheme.bodyLarge ?? const TextStyle();
+    late ({double fontSize, int lines}) fit;
+    for (final size in const [16.0, 14.0, 13.0]) {
+      final line = scaler.scale(size * _searchHintLineHeight);
+      // 上下に4pxずつ空ける。
+      final lines = ((kToolbarHeight - 8) / line).floor().clamp(1, 3);
+      fit = (fontSize: size, lines: lines);
+      final painter = TextPainter(
+        text: TextSpan(
+          text: hint,
+          style: base.copyWith(fontSize: size, height: _searchHintLineHeight),
+        ),
+        textDirection: Directionality.of(context),
+        textScaler: scaler,
+        locale: Localizations.localeOf(context),
+        maxLines: lines,
+      )..layout(maxWidth: width < 0 ? 0 : width);
+      final fits = !painter.didExceedMaxLines;
+      painter.dispose();
+      if (fits) break;
+    }
+    return fit;
   }
 
   late final _homeTraversal = _HomeTraversalPolicy(

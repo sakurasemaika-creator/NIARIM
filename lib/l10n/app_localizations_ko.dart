@@ -57,6 +57,15 @@ class AppLocalizationsKo extends AppLocalizations {
   String get homeSearchHint => '프로젝트 이름으로 검색';
 
   @override
+  String get homeSearchHintWorks => '작품 이름으로 검색';
+
+  @override
+  String get homeSearchHintShared => '공유 파일 이름으로 검색';
+
+  @override
+  String get homeSearchHintTrash => '휴지통에서 이름으로 검색';
+
+  @override
   String get homeBackToSplashTooltip => '시작 화면으로 돌아가기';
 
   @override
