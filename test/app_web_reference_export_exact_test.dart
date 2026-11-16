@@ -7,6 +7,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:niarim/app.dart';
@@ -15,12 +16,27 @@ import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/router.dart';
 import 'package:niarim/screens/canvas/canvas_screen.dart';
 import 'package:niarim/screens/canvas/widgets/canvas_icon_button.dart';
+import 'package:niarim/services/google_auth_service.dart';
+import 'package:niarim/services/premium_service.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:niarim/widgets/ad_banner_widget.dart';
 import 'package:niarim/screens/export/export_screen.dart';
 import 'package:niarim/screens/timeline/timeline_screen.dart';
 
 import 'helpers/load_app_fonts.dart';
+
+class _CaptureAccount implements GoogleSignInAccount {
+  @override
+  String get id => 'export-capture';
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+class _CaptureAuth extends GoogleAuthService {
+  @override
+  final GoogleSignInAccount account = _CaptureAccount();
+}
 
 class _FakeFilePicker extends FilePicker {
   @override
@@ -46,7 +62,7 @@ void main() {
   late Directory tempDir;
 
   setUp(() {
-    SharedPreferences.setMockInitialValues({'is_premium': true});
+    SharedPreferences.setMockInitialValues({});
     appRouter.go('/');
     FilePicker.platform = _FakeFilePicker();
     tempDir = Directory.systemTemp.createTempSync('niarim_export_exact_');
@@ -93,6 +109,16 @@ void main() {
       ),
     );
     await tester.pump(const Duration(milliseconds: 500));
+    final premium = tester
+        .element(find.byType(NiarimApp))
+        .read<PremiumService>();
+    final auth = _CaptureAuth();
+    addTearDown(auth.dispose);
+    premium.bindGoogleAuth(auth);
+    premium.applyServerCoinPremiumExpiry(
+      DateTime.now().add(const Duration(hours: 1)),
+      accountId: auth.account.id,
+    );
 
     await tester.tap(find.byIcon(Icons.brush_outlined));
     await tester.pump(const Duration(milliseconds: 650));
@@ -202,5 +228,6 @@ void main() {
     tester.view.physicalSize = const Size(960, 1707);
     await tester.pump(const Duration(milliseconds: 500));
     await capture(tester);
+    premium.applyServerCoinPremiumExpiry(null);
   }, timeout: const Timeout(Duration(seconds: 180)));
 }
