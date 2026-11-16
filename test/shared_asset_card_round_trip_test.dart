@@ -7,6 +7,7 @@ import 'package:niarim/l10n/app_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/models/stamp.dart';
 import 'package:niarim/models/tone.dart';
+import 'package:niarim/models/workspace_preset.dart';
 import 'package:niarim/services/brush_service.dart';
 import 'package:niarim/services/stamp_service.dart';
 import 'package:niarim/services/tone_service.dart';
@@ -50,6 +51,41 @@ void main() {
       tags: ['my tag'],
     );
     brushes.addBrush(custom);
+    final workspace = WorkspacePreset(
+      id: 'source-workspace',
+      name: 'ワークスペース',
+      isLeftHanded: true,
+      quickToolEntries: [
+        {'brushId': custom.id, 'sizeOverride': 10},
+        {'brushId': base.id},
+      ],
+    );
+    final workspaceCard = await SharedAssetCardService.makeWorkspaceCard(
+      workspace,
+      brushes,
+      l10n: l10n,
+    );
+    final workspaceJson = await SharedAssetCardService.readWorkspaceCard(
+      workspaceCard.path,
+      brushes,
+    );
+    final importedWorkspace = WorkspacePreset.fromJson(
+      jsonDecode(workspaceJson) as Map<String, dynamic>,
+    );
+    final restoredWorkspaceBrush = brushes.brushes.last;
+    expect(importedWorkspace.isLeftHanded, isTrue);
+    expect(restoredWorkspaceBrush.id, isNot(custom.id));
+    expect(importedWorkspace.quickToolEntries.first, {
+      'brushId': restoredWorkspaceBrush.id,
+      'sizeOverride': 10,
+    });
+    expect(importedWorkspace.quickToolEntries.last['brushId'], base.id);
+    expect(
+      await File(
+        restoredWorkspaceBrush.resolvedCustomImagePaths.single,
+      ).readAsBytes(),
+      pixels,
+    );
     final brushPng = await SharedAssetCardService.exportBrush(
       brushes,
       custom,

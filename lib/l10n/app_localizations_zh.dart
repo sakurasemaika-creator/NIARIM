@@ -1007,13 +1007,14 @@ class AppLocalizationsZh extends AppLocalizations {
   String get premiumHeroTitle => '开通高级版，创作更自由';
 
   @override
-  String get premiumHeroSubtitle => '时长最长2小时、无水印、色调曲线／色阶校正等功能全部解锁';
+  String get premiumHeroSubtitle =>
+      '最长可制作2小时动画，可编辑 NIARIM 片尾标志，并使用色调曲线和色阶校正绘图滤镜。';
 
   @override
   String get premiumHeroHighlightDuration => '时长最长2小时';
 
   @override
-  String get premiumHeroHighlightWatermark => '无水印';
+  String get premiumHeroHighlightWatermark => '编辑 NIARIM 片尾标志';
 
   @override
   String get premiumHeroHighlightGrading => '色调曲线 /\n色阶调整';
@@ -1064,19 +1065,22 @@ class AppLocalizationsZh extends AppLocalizations {
   String get premiumFeatureExport => '视频导出';
 
   @override
+  String get premiumDurationExportNote => '可以创建或延长至90秒。已制作的长作品可以完整导出。';
+
+  @override
   String get premiumFeatureMaxDuration => '最大时长';
 
   @override
   String get premiumFeatureEndLogo => '官方片尾标志';
 
   @override
-  String get premiumFeatureWatermark => '水印';
+  String get premiumFeatureWatermark => '添加和编辑自定义水印';
 
   @override
-  String get premiumFeatureToneCurve => '色调曲线';
+  String get premiumFeatureToneCurve => '色调曲线（绘图）';
 
   @override
-  String get premiumFeatureLevelCorrection => '色阶校正';
+  String get premiumFeatureLevelCorrection => '色阶校正（绘图）';
 
   @override
   String get premiumFeatureAds => '广告';
@@ -8830,7 +8834,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get rewardUnlockEndCardEdit => '编辑或移除片尾卡';
 
   @override
-  String get rewardUnlockWatermark => '自定义水印';
+  String get rewardUnlockWatermark => '添加和编辑自定义水印';
 
   @override
   String get rewardUnlockToneCurve => '色调曲线';
@@ -11025,13 +11029,14 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get premiumHeroTitle => '開通進階版，創作更自由';
 
   @override
-  String get premiumHeroSubtitle => '時長最長2小時、無浮水印、色調曲線／色階校正等功能全部解鎖';
+  String get premiumHeroSubtitle =>
+      '最長可製作2小時動畫，可編輯 NIARIM 片尾標誌，並使用色調曲線和色階校正繪圖濾鏡。';
 
   @override
   String get premiumHeroHighlightDuration => '時長最長2小時';
 
   @override
-  String get premiumHeroHighlightWatermark => '無水印';
+  String get premiumHeroHighlightWatermark => '編輯 NIARIM 片尾標誌';
 
   @override
   String get premiumHeroHighlightGrading => '色調曲線 /\n階調調整';
@@ -11082,19 +11087,22 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get premiumFeatureExport => '影片匯出';
 
   @override
+  String get premiumDurationExportNote => '可以建立或延長至90秒。已製作的長作品可以完整匯出。';
+
+  @override
   String get premiumFeatureMaxDuration => '最長長度';
 
   @override
   String get premiumFeatureEndLogo => '官方片尾標誌';
 
   @override
-  String get premiumFeatureWatermark => '浮水印';
+  String get premiumFeatureWatermark => '新增和編輯自訂浮水印';
 
   @override
-  String get premiumFeatureToneCurve => '色調曲線';
+  String get premiumFeatureToneCurve => '色調曲線（繪圖）';
 
   @override
-  String get premiumFeatureLevelCorrection => '色階校正';
+  String get premiumFeatureLevelCorrection => '色階校正（繪圖）';
 
   @override
   String get premiumFeatureAds => '廣告';
@@ -18850,7 +18858,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get rewardUnlockEndCardEdit => '編輯或移除片尾卡';
 
   @override
-  String get rewardUnlockWatermark => '自訂浮水印';
+  String get rewardUnlockWatermark => '新增和編輯自訂浮水印';
 
   @override
   String get rewardUnlockToneCurve => '色調曲線';

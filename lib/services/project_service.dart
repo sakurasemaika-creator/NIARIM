@@ -2418,6 +2418,12 @@ class ProjectService extends ChangeNotifier {
     final tm = _tileManagers[projectId];
     final removed = scene.frames[frameIndex];
     final undo = recordUndo ? _undoManager : null;
+    final next = undo == null
+        ? null
+        : scene.frames.elementAtOrNull(frameIndex + 1)?.historyIdentity;
+    final previous = undo == null || frameIndex == 0
+        ? null
+        : scene.frames[frameIndex - 1].historyIdentity;
     final savedTiles = <String, Map<String, Uint8List>>{};
     if (tm != null) {
       final tiles = tm.exportAll();
@@ -2425,7 +2431,7 @@ class ProjectService extends ChangeNotifier {
         final key = frameLayerKey(sceneId, frameIndex, layer.id);
         final source = tiles[key];
         if (undo != null && source != null) {
-          savedTiles[key] = source.map(
+          savedTiles[layer.id] = source.map(
             (key, bytes) => MapEntry(key, Uint8List.fromList(bytes)),
           );
         }
@@ -2476,6 +2482,7 @@ class ProjectService extends ChangeNotifier {
       }
     }
     if (undo != null) {
+      final identity = removed.historyIdentity;
       undo.push(
         FrameRemovalUndoAction(
           restore: () => _restoreRemovedFrame(
@@ -2484,9 +2491,17 @@ class ProjectService extends ChangeNotifier {
             removed,
             savedTiles,
             removedHomes,
+            next: next,
+            previous: previous,
           ),
-          remove: () =>
-              removeFrame(projectId, sceneId, frameIndex, recordUndo: false),
+          remove: () {
+            final frames = sceneOf(projectId, sceneId)?.frames;
+            if (frames == null) return;
+            final index = frames.indexWhere(
+              (frame) => identical(frame.historyIdentity, identity),
+            );
+            removeFrame(projectId, sceneId, index, recordUndo: false);
+          },
         ),
       );
     }
@@ -2499,14 +2514,29 @@ class ProjectService extends ChangeNotifier {
     String sceneId,
     Frame frame,
     Map<String, Map<String, Uint8List>> tiles,
-    Set<String> removedHomes,
-  ) {
+    Set<String> removedHomes, {
+    required Object? next,
+    required Object? previous,
+  }) {
     final scenes = _scenes[projectId];
     if (scenes == null) return;
     final sceneIndex = scenes.indexWhere((scene) => scene.id == sceneId);
     if (sceneIndex < 0) return;
     final scene = scenes[sceneIndex];
-    final at = frame.index.clamp(0, scene.frames.length);
+    var at = frame.index.clamp(0, scene.frames.length);
+    final nextIndex = next == null
+        ? -1
+        : scene.frames.indexWhere((f) => identical(f.historyIdentity, next));
+    final previousIndex = previous == null
+        ? -1
+        : scene.frames.indexWhere(
+            (f) => identical(f.historyIdentity, previous),
+          );
+    if (nextIndex >= 0) {
+      at = nextIndex;
+    } else if (previousIndex >= 0) {
+      at = previousIndex + 1;
+    }
     final tm = _tileManagers[projectId];
     if (tm != null) {
       for (var i = scene.frames.length - 1; i >= at; i--) {
@@ -2517,7 +2547,10 @@ class ProjectService extends ChangeNotifier {
           );
         }
       }
-      tiles.forEach(tm.applyTileSnapshot);
+      tiles.forEach(
+        (id, snapshot) =>
+            tm.applyTileSnapshot(frameLayerKey(sceneId, at, id), snapshot),
+      );
     }
     final frames = [...scene.frames]..insert(at, frame);
     scenes[sceneIndex] = scene.copyWith(

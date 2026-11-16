@@ -17,6 +17,7 @@ import '../models/filter_def.dart';
 import '../widgets/filter_sample_preview.dart';
 import '../models/stamp.dart';
 import '../models/tone.dart';
+import '../models/workspace_preset.dart';
 import '../utils/creative_image_source.dart';
 import 'brush_service.dart';
 import 'stamp_service.dart';
@@ -114,6 +115,10 @@ class SharedAssetCardService {
     Brush brush, {
     required AppLocalizations l10n,
   }) async {
+    return _createCard('brush', brush.name, await _brushArchive(brush), l10n);
+  }
+
+  static Future<Uint8List> _brushArchive(Brush brush) async {
     final paths = brush.resolvedCustomImagePaths;
     final settings = Map<String, dynamic>.from(brush.toJson())
       ..['folderId'] = null
@@ -132,7 +137,7 @@ class SharedAssetCardService {
         ArchiveFile('images/${i.toString().padLeft(3, '0')}.$ext', b.length, b),
       );
     }
-    return _createCard('brush', brush.name, _toZip(a), l10n);
+    return _toZip(a);
   }
 
   static Future<File> exportTone(
@@ -182,15 +187,104 @@ class SharedAssetCardService {
     required Map<String, dynamic> settings,
     String? sourceImagePath,
   }) async {
-    final l10n = AppLocalizations.of(context)!;
-    try {
+    await _showSettingsCard(context, (l10n) async {
       final archive = _assetArchive({...settings, 'isFavorite': false});
       if (sourceImagePath != null) {
         final bytes = await readCreativeImageSource(sourceImagePath);
         if (bytes == null) throw const FormatException('Missing source image');
         archive.addFile(ArchiveFile('image.png', bytes.length, bytes));
       }
-      final card = await _createCard(kind, name, _toZip(archive), l10n);
+      return _createCard(kind, name, _toZip(archive), l10n);
+    });
+  }
+
+  static Future<void> exportWorkspace(
+    BuildContext context,
+    WorkspacePreset preset,
+    BrushService brushes,
+  ) => _showSettingsCard(
+    context,
+    (l10n) => makeWorkspaceCard(preset, brushes, l10n: l10n),
+  );
+
+  static Future<File> makeWorkspaceCard(
+    WorkspacePreset preset,
+    BrushService brushes, {
+    required AppLocalizations l10n,
+  }) async {
+    final ids = {
+      for (final entry in preset.quickToolEntries)
+        if (entry['brushId'] is String) entry['brushId'] as String,
+    };
+    final archive = _assetArchive({
+      ...preset.toJson(),
+      'quickToolBrushes': {
+        for (final brush in brushes.brushes)
+          if (ids.contains(brush.id) && !brushes.isBuiltIn(brush.id))
+            brush.id: base64Encode(await _brushArchive(brush)),
+      },
+    });
+    return _createCard('workspace', preset.name, _toZip(archive), l10n);
+  }
+
+  static Future<String> readWorkspaceCard(
+    String path,
+    BrushService brushes,
+  ) async {
+    final raw = await readSettingsFile(path, kind: 'workspace');
+    if (!path.toLowerCase().endsWith('.png')) return raw;
+    final settings = jsonDecode(raw) as Map<String, dynamic>;
+    final preset = WorkspacePreset.fromJson(settings);
+    final attachments = settings['quickToolBrushes'];
+    if (attachments == null) return raw;
+    if (attachments is! Map<String, dynamic>) {
+      throw const FormatException('Invalid workspace brush attachments');
+    }
+    final archives = <String, Uint8List>{};
+    for (final entry in preset.quickToolEntries) {
+      final id = entry['brushId'];
+      if (id is! String || archives.containsKey(id)) continue;
+      final encoded = attachments[id];
+      if (encoded == null || brushes.isBuiltIn(id)) continue;
+      if (encoded is! String) {
+        throw const FormatException('Invalid workspace brush attachment');
+      }
+      final bytes = base64Decode(encoded);
+      _validateZipEnvelope(bytes);
+      archives[id] = bytes;
+    }
+    if (archives.isEmpty) return raw;
+    final temp = await (await getTemporaryDirectory()).createTemp('workspace-');
+    final remappedIds = <String, String>{};
+    try {
+      final file = File('${temp.path}/brush.niabrush');
+      for (final entry in archives.entries) {
+        await file.writeAsBytes(entry.value, flush: true);
+        final brush = await brushes.importBrushFile(file.path);
+        remappedIds[entry.key] = brush.id;
+      }
+    } finally {
+      await temp.delete(recursive: true);
+    }
+    return jsonEncode({
+      ...preset.toJson(),
+      'quickToolEntries': [
+        for (final entry in preset.quickToolEntries)
+          {
+            ...entry,
+            'brushId': remappedIds[entry['brushId']] ?? entry['brushId'],
+          },
+      ],
+    });
+  }
+
+  static Future<void> _showSettingsCard(
+    BuildContext context,
+    Future<File> Function(AppLocalizations) makeCard,
+  ) async {
+    final l10n = AppLocalizations.of(context)!;
+    try {
+      final card = await makeCard(l10n);
       if (context.mounted) await showExportResult(context, card);
     } catch (error) {
       if (context.mounted) {

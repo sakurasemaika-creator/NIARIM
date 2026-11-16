@@ -1932,7 +1932,7 @@ abstract class AppLocalizations {
   /// No description provided for @premiumHeroSubtitle.
   ///
   /// In ja, this message translates to:
-  /// **'最大尺2時間・透かしなし・トーンカーブ／レベル補正など、制作の幅を広げる機能がすべて解放されます'**
+  /// **'最大尺2時間・公式エンドマーク編集・描画フィルターのトーンカーブ／レベル補正などが使えます'**
   String get premiumHeroSubtitle;
 
   /// No description provided for @premiumHeroHighlightDuration.
@@ -1944,7 +1944,7 @@ abstract class AppLocalizations {
   /// No description provided for @premiumHeroHighlightWatermark.
   ///
   /// In ja, this message translates to:
-  /// **'透かしなし'**
+  /// **'公式エンドマーク編集'**
   String get premiumHeroHighlightWatermark;
 
   /// No description provided for @premiumHeroHighlightGrading.
@@ -2043,6 +2043,12 @@ abstract class AppLocalizations {
   /// **'動画書き出し'**
   String get premiumFeatureExport;
 
+  /// No description provided for @premiumDurationExportNote.
+  ///
+  /// In ja, this message translates to:
+  /// **'作成・延長は90秒まで。制作済みの長尺作品は全編を書き出せます。'**
+  String get premiumDurationExportNote;
+
   /// No description provided for @premiumFeatureMaxDuration.
   ///
   /// In ja, this message translates to:
@@ -2058,19 +2064,19 @@ abstract class AppLocalizations {
   /// No description provided for @premiumFeatureWatermark.
   ///
   /// In ja, this message translates to:
-  /// **'ウォーターマーク'**
+  /// **'自分のウォーターマークを追加・編集'**
   String get premiumFeatureWatermark;
 
   /// No description provided for @premiumFeatureToneCurve.
   ///
   /// In ja, this message translates to:
-  /// **'トーンカーブ'**
+  /// **'トーンカーブ（描画）'**
   String get premiumFeatureToneCurve;
 
   /// No description provided for @premiumFeatureLevelCorrection.
   ///
   /// In ja, this message translates to:
-  /// **'レベル補正'**
+  /// **'レベル補正（描画）'**
   String get premiumFeatureLevelCorrection;
 
   /// No description provided for @premiumFeatureAds.
@@ -16116,7 +16122,7 @@ abstract class AppLocalizations {
   /// No description provided for @rewardUnlockWatermark.
   ///
   /// In ja, this message translates to:
-  /// **'ウォーターマーク'**
+  /// **'自分のウォーターマークを追加・編集'**
   String get rewardUnlockWatermark;
 
   /// No description provided for @rewardUnlockToneCurve.

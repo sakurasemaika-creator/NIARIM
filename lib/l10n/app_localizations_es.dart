@@ -1070,13 +1070,13 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get premiumHeroSubtitle =>
-      'Hasta 2 horas de duración, sin marca de agua, curva de tonos y corrección de niveles, y mucho más.';
+      'Crea animaciones de hasta 2 horas, edita la marca final de NIARIM y usa los filtros de dibujo Curva de tonos y Corrección de niveles.';
 
   @override
   String get premiumHeroHighlightDuration => 'Hasta 2 horas';
 
   @override
-  String get premiumHeroHighlightWatermark => 'Sin marca de agua';
+  String get premiumHeroHighlightWatermark => 'Editar la marca final de NIARIM';
 
   @override
   String get premiumHeroHighlightGrading => 'Curva de tonos /\nniveles';
@@ -1129,19 +1129,24 @@ class AppLocalizationsEs extends AppLocalizations {
   String get premiumFeatureExport => 'Exportación de vídeo';
 
   @override
+  String get premiumDurationExportNote =>
+      'Puedes crear o ampliar proyectos de hasta 90 segundos y exportar completos los que ya hayas creado.';
+
+  @override
   String get premiumFeatureMaxDuration => 'Duración máx.';
 
   @override
   String get premiumFeatureEndLogo => 'Logotipo final oficial';
 
   @override
-  String get premiumFeatureWatermark => 'Marca de agua';
+  String get premiumFeatureWatermark =>
+      'Añadir y editar tu propia marca de agua';
 
   @override
-  String get premiumFeatureToneCurve => 'Curva de tonos';
+  String get premiumFeatureToneCurve => 'Curva de tonos (dibujo)';
 
   @override
-  String get premiumFeatureLevelCorrection => 'Corrección de niveles';
+  String get premiumFeatureLevelCorrection => 'Corrección de niveles (dibujo)';
 
   @override
   String get premiumFeatureAds => 'Anuncios';
@@ -9481,7 +9486,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get rewardUnlockEndCardEdit => 'Editar o quitar la tarjeta final';
 
   @override
-  String get rewardUnlockWatermark => 'Marca de agua personalizada';
+  String get rewardUnlockWatermark => 'Añadir y editar tu propia marca de agua';
 
   @override
   String get rewardUnlockToneCurve => 'Curva de tonos';

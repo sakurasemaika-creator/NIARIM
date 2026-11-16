@@ -313,6 +313,25 @@ void main() {
     expect(project.frameCount(ctx.projectId, ctx.sceneId), 90);
     undo.undo();
     expect(project.frameCount(ctx.projectId, ctx.sceneId), 91);
+    project.reorderFrames(ctx.projectId, ctx.sceneId, [
+      ...List<int>.generate(90, (i) => i + 1),
+      0,
+    ]);
+    undo.redo();
+    expect(project.frameCount(ctx.projectId, ctx.sceneId), 90);
+    expect(tileManager.exportAll()[removedKey]!.values.first.take(4), [
+      0,
+      255,
+      0,
+      255,
+    ]);
+    undo.undo();
+    expect(tileManager.exportAll()[removedKey]!.values.first.take(4), [
+      255,
+      0,
+      0,
+      255,
+    ]);
     premium.dispose();
     await tester.pumpWidget(const SizedBox.shrink());
   });

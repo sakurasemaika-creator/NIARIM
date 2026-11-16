@@ -1067,13 +1067,13 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get premiumHeroSubtitle =>
-      'Jusqu’à 2 heures de durée, sans filigrane, courbe de tons et correction des niveaux, et bien plus.';
+      'Créez des animations de 2 heures maximum, modifiez le logo de fin NIARIM et utilisez les filtres de dessin Courbe de tons et Correction des niveaux.';
 
   @override
   String get premiumHeroHighlightDuration => 'Jusqu’à 2 heures';
 
   @override
-  String get premiumHeroHighlightWatermark => 'Sans filigrane';
+  String get premiumHeroHighlightWatermark => 'Modifier le logo de fin NIARIM';
 
   @override
   String get premiumHeroHighlightGrading => 'Courbe de tons /\nniveaux';
@@ -1126,19 +1126,24 @@ class AppLocalizationsFr extends AppLocalizations {
   String get premiumFeatureExport => 'Export vidéo';
 
   @override
+  String get premiumDurationExportNote =>
+      'Créez ou prolongez vos projets jusqu’à 90 secondes. Vous pouvez exporter en entier les projets déjà créés.';
+
+  @override
   String get premiumFeatureMaxDuration => 'Durée max.';
 
   @override
   String get premiumFeatureEndLogo => 'Logo de fin officiel';
 
   @override
-  String get premiumFeatureWatermark => 'Filigrane';
+  String get premiumFeatureWatermark =>
+      'Ajouter et modifier votre propre filigrane';
 
   @override
-  String get premiumFeatureToneCurve => 'Courbe de tons';
+  String get premiumFeatureToneCurve => 'Courbe de tons (dessin)';
 
   @override
-  String get premiumFeatureLevelCorrection => 'Correction des niveaux';
+  String get premiumFeatureLevelCorrection => 'Correction des niveaux (dessin)';
 
   @override
   String get premiumFeatureAds => 'Publicités';
@@ -9502,7 +9507,8 @@ class AppLocalizationsFr extends AppLocalizations {
   String get rewardUnlockEndCardEdit => 'Modifier / retirer la carte de fin';
 
   @override
-  String get rewardUnlockWatermark => 'Filigrane personnalisé';
+  String get rewardUnlockWatermark =>
+      'Ajouter et modifier votre propre filigrane';
 
   @override
   String get rewardUnlockToneCurve => 'Courbe de tons';

@@ -1931,7 +1931,11 @@ class BrushService extends ChangeNotifier {
         jsonDecode(utf8.decode(dataFile.content as List<int>))
             as Map<String, dynamic>;
     final imported = Brush.fromJson(json);
-    final id = 'Brush${DateTime.now().millisecondsSinceEpoch}';
+    var epoch = DateTime.now().microsecondsSinceEpoch;
+    var id = 'Brush$epoch';
+    while (_brushes.any((brush) => brush.id == id)) {
+      id = 'Brush${++epoch}';
+    }
     final variantFiles =
         archive.files
             .where((f) => f.isFile && f.name.startsWith('images/'))

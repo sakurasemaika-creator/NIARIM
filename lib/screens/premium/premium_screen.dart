@@ -109,6 +109,11 @@ class _PremiumScreenState extends State<PremiumScreen> {
               ),
               const SizedBox(height: 16),
               _comparisonTable(context, l10n),
+              const SizedBox(height: 8),
+              Text(
+                l10n.premiumDurationExportNote,
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
               if (!premium.hasPurchasedPremium) ...[
                 const SizedBox(height: 16),
                 FilledButton.icon(

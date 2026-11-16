@@ -1047,13 +1047,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get premiumHeroSubtitle =>
-      'Up to 2 hours, no watermark, tone curve and level correction, and more — unlock Premium features.';
+      'Create up to 2 hours of animation, edit the NIARIM end mark, and use Tone Curve and Level Correction drawing filters.';
 
   @override
   String get premiumHeroHighlightDuration => 'Up to 2 hours';
 
   @override
-  String get premiumHeroHighlightWatermark => 'No watermark';
+  String get premiumHeroHighlightWatermark => 'Edit the NIARIM end mark';
 
   @override
   String get premiumHeroHighlightGrading => 'Tone curve /\nlevels';
@@ -1106,19 +1106,23 @@ class AppLocalizationsEn extends AppLocalizations {
   String get premiumFeatureExport => 'Video Export';
 
   @override
+  String get premiumDurationExportNote =>
+      'Create or extend projects up to 90 seconds. You can export the full length of projects you have already made.';
+
+  @override
   String get premiumFeatureMaxDuration => 'Max Duration';
 
   @override
   String get premiumFeatureEndLogo => 'Official End Logo';
 
   @override
-  String get premiumFeatureWatermark => 'Watermark';
+  String get premiumFeatureWatermark => 'Add and edit your own watermark';
 
   @override
-  String get premiumFeatureToneCurve => 'Tone Curve';
+  String get premiumFeatureToneCurve => 'Tone Curve (drawing)';
 
   @override
-  String get premiumFeatureLevelCorrection => 'Level Correction';
+  String get premiumFeatureLevelCorrection => 'Level Correction (drawing)';
 
   @override
   String get premiumFeatureAds => 'Ads';
@@ -9349,7 +9353,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get rewardUnlockEndCardEdit => 'Edit / remove end card';
 
   @override
-  String get rewardUnlockWatermark => 'Custom watermark';
+  String get rewardUnlockWatermark => 'Add and edit your own watermark';
 
   @override
   String get rewardUnlockToneCurve => 'Tone curve';

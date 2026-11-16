@@ -1018,13 +1018,13 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get premiumHeroSubtitle =>
-      '最大尺2時間・透かしなし・トーンカーブ／レベル補正など、制作の幅を広げる機能がすべて解放されます';
+      '最大尺2時間・公式エンドマーク編集・描画フィルターのトーンカーブ／レベル補正などが使えます';
 
   @override
   String get premiumHeroHighlightDuration => '尺は最大2時間';
 
   @override
-  String get premiumHeroHighlightWatermark => '透かしなし';
+  String get premiumHeroHighlightWatermark => '公式エンドマーク編集';
 
   @override
   String get premiumHeroHighlightGrading => 'トーンカーブ／\nレベル補正';
@@ -1075,19 +1075,22 @@ class AppLocalizationsJa extends AppLocalizations {
   String get premiumFeatureExport => '動画書き出し';
 
   @override
+  String get premiumDurationExportNote => '作成・延長は90秒まで。制作済みの長尺作品は全編を書き出せます。';
+
+  @override
   String get premiumFeatureMaxDuration => '作成・延長できる尺';
 
   @override
   String get premiumFeatureEndLogo => '公式エンドロゴ';
 
   @override
-  String get premiumFeatureWatermark => 'ウォーターマーク';
+  String get premiumFeatureWatermark => '自分のウォーターマークを追加・編集';
 
   @override
-  String get premiumFeatureToneCurve => 'トーンカーブ';
+  String get premiumFeatureToneCurve => 'トーンカーブ（描画）';
 
   @override
-  String get premiumFeatureLevelCorrection => 'レベル補正';
+  String get premiumFeatureLevelCorrection => 'レベル補正（描画）';
 
   @override
   String get premiumFeatureAds => '広告';
@@ -8929,7 +8932,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get rewardUnlockEndCardEdit => 'エンドカード編集・削除';
 
   @override
-  String get rewardUnlockWatermark => 'ウォーターマーク';
+  String get rewardUnlockWatermark => '自分のウォーターマークを追加・編集';
 
   @override
   String get rewardUnlockToneCurve => 'トーンカーブ';

@@ -1021,13 +1021,13 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get premiumHeroSubtitle =>
-      '길이 최대 2시간・워터마크 없음・톤 커브／레벨 보정 등 제작의 폭을 넓히는 기능이 모두 해제됩니다';
+      '최대 2시간 길이로 만들고 NIARIM 엔드마크를 편집하며 톤 커브와 레벨 보정 그리기 필터를 사용할 수 있습니다.';
 
   @override
   String get premiumHeroHighlightDuration => '길이 최대 2시간';
 
   @override
-  String get premiumHeroHighlightWatermark => '워터마크 없음';
+  String get premiumHeroHighlightWatermark => 'NIARIM 엔드마크 편집';
 
   @override
   String get premiumHeroHighlightGrading => '톤 커브 /\n레벨 보정';
@@ -1079,19 +1079,23 @@ class AppLocalizationsKo extends AppLocalizations {
   String get premiumFeatureExport => '동영상 내보내기';
 
   @override
+  String get premiumDurationExportNote =>
+      '90초까지 만들거나 늘릴 수 있습니다. 이미 만든 긴 작품은 전체를 내보낼 수 있습니다.';
+
+  @override
   String get premiumFeatureMaxDuration => '최대 길이';
 
   @override
   String get premiumFeatureEndLogo => '공식 엔드 로고';
 
   @override
-  String get premiumFeatureWatermark => '워터마크';
+  String get premiumFeatureWatermark => '내 워터마크 추가 및 편집';
 
   @override
-  String get premiumFeatureToneCurve => '톤 커브';
+  String get premiumFeatureToneCurve => '톤 커브(그리기)';
 
   @override
-  String get premiumFeatureLevelCorrection => '레벨 보정';
+  String get premiumFeatureLevelCorrection => '레벨 보정(그리기)';
 
   @override
   String get premiumFeatureAds => '광고';
@@ -8976,7 +8980,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get rewardUnlockEndCardEdit => '엔드 카드 편집 및 삭제';
 
   @override
-  String get rewardUnlockWatermark => '사용자 워터마크';
+  String get rewardUnlockWatermark => '내 워터마크 추가 및 편집';
 
   @override
   String get rewardUnlockToneCurve => '톤 커브';

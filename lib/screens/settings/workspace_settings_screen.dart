@@ -14,6 +14,7 @@ import '../../models/quick_tool_entry.dart';
 import '../../models/toolbar_item.dart';
 import '../../models/workspace_preset.dart';
 import '../../services/export_share_service.dart';
+import '../../services/brush_service.dart';
 import '../../services/premium_service.dart';
 import '../../services/quick_tool_service.dart';
 import '../../services/settings_service.dart';
@@ -592,11 +593,10 @@ class WorkspaceSettingsScreen extends StatelessWidget {
                           tooltip: l10n.shareCardExportMenu,
                           onPressed: () {
                             Navigator.pop(ctx);
-                            SharedAssetCardService.exportSettings(
+                            SharedAssetCardService.exportWorkspace(
                               context,
-                              kind: 'workspace',
-                              name: preset.name,
-                              settings: preset.toJson(),
+                              preset,
+                              context.read<BrushService>(),
                             );
                           },
                         ),
@@ -717,6 +717,7 @@ class WorkspaceSettingsScreen extends StatelessWidget {
     }
 
     Future<void> importFromFile() async {
+      final brushes = context.read<BrushService>();
       final result = await FilePicker.platform.pickFiles(
         type: FileType.custom,
         allowedExtensions: ['niaworkspace', 'png'],
@@ -728,9 +729,9 @@ class WorkspaceSettingsScreen extends StatelessWidget {
       }
       try {
         await presetService.importPresetJson(
-          await SharedAssetCardService.readSettingsFile(
+          await SharedAssetCardService.readWorkspaceCard(
             result.files.first.path!,
-            kind: 'workspace',
+            brushes,
           ),
         );
       } catch (e) {
