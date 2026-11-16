@@ -8,6 +8,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/app.dart';
 import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/router.dart';
+import 'package:niarim/screens/home/home_screen.dart';
+import 'package:niarim/services/project_service.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -76,7 +78,9 @@ void main() {
           0,
           reason: filename,
         );
-        for (final button in tester.widgetList<FloatingActionButton>(fabFinder)) {
+        for (final button in tester.widgetList<FloatingActionButton>(
+          fabFinder,
+        )) {
           // Explicit zero elevation and theme-inherited zero elevation are
           // equally flat; verify the effective value, not the implementation.
           expect(
@@ -123,6 +127,23 @@ void main() {
       );
     }
 
+    final scrollToTop = find.byKey(const Key('homeScrollToTopFab'));
+    expect(scrollToTop, findsNothing);
+    final projects = tester
+        .element(find.byType(HomeScreen))
+        .read<ProjectService>();
+    await tester.runAsync(
+      () => projects.createProject(
+        name: 'サンプル作品',
+        fps: 12,
+        durationSeconds: 1,
+        backgroundColor: 0xFFFFFFFF,
+        exportWidth: 320,
+        exportHeight: 180,
+      ),
+    );
+    await advanceUi();
+    expect(scrollToTop, findsOneWidget);
     await capture('01_home_projects_two_fabs', minFabs: 2);
     await tester.tap(find.byKey(const ValueKey('home_tab_1')));
     await capture('02_home_exported_works_fab');

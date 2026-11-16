@@ -8,6 +8,7 @@ on:
     branches: [dev_branch]
     paths:
       - ".github/workflows/flutter-complete-sharded-tests.yml"
+      - "test/floating_action_button_visual_capture_test.dart"
   workflow_dispatch:
 permissions:
   contents: read
