@@ -41,8 +41,9 @@ Future<Uint8List> encodeCreativePng(Uint8List bytes) async {
       final rgba = await frame.image.toByteData(
         format: ui.ImageByteFormat.rawStraightRgba,
       );
-      if (rgba == null)
+      if (rgba == null) {
         throw const FormatException('Image could not be decoded');
+      }
       return creativePngFromRgba(
         rgba.buffer.asUint8List(rgba.offsetInBytes, rgba.lengthInBytes),
         frame.image.width,
