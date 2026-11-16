@@ -3269,6 +3269,13 @@ class _HomeScreenState extends State<HomeScreen>
   }
 }
 
+/// Tab・Shift+Tabの1回の移動の、移る前の所と向き（[_HomeTraversalPolicy]）。
+class _TraversalStep {
+  _HomeTraversalPolicy? policy;
+  FocusNode? from;
+  bool forward = true;
+}
+
 /// ホームの上部バーの下のタブの列の高さ。
 const double _kHomeTabBarHeight = 48;
 
@@ -3487,14 +3494,131 @@ const double _homeFloatingActionsGap = 16;
 /// ときは、一覧の下に浮かぶボタン（[floatingActions]）の上まで送る（一覧の
 /// 下端までしか送らないと、一番下の行の右の︙が＋の下に隠れた）。
 class _HomeTraversalPolicy extends ReadingOrderTraversalPolicy {
-  _HomeTraversalPolicy(this.listArea, {required GlobalKey floatingActions})
+  _HomeTraversalPolicy(GlobalKey listArea, {required GlobalKey floatingActions})
+    : this._(listArea, floatingActions, _TraversalStep());
+
+  _HomeTraversalPolicy._(this.listArea, this.floatingActions, this._step)
     : super(
         requestFocusCallback:
             (node, {alignmentPolicy, alignment, duration, curve}) =>
-                _revealTraversedFocus(node, listArea, floatingActions),
-      );
+                _step.policy!._moveTo(node),
+      ) {
+    _step.policy = this;
+  }
 
   final GlobalKey listArea;
+  final GlobalKey floatingActions;
+
+  /// 今のTab・Shift+Tabがどこから・どちら向きか（[next]・[previous]の間だけ）。
+  final _TraversalStep _step;
+
+  @override
+  bool next(FocusNode currentNode) =>
+      _stepFrom(currentNode, forward: true, () => super.next(currentNode));
+
+  @override
+  bool previous(FocusNode currentNode) =>
+      _stepFrom(currentNode, forward: false, () => super.previous(currentNode));
+
+  bool _stepFrom(
+    FocusNode from,
+    bool Function() step, {
+    required bool forward,
+  }) {
+    _step
+      ..from = from
+      ..forward = forward;
+    try {
+      return step();
+    } finally {
+      _step.from = null;
+    }
+  }
+
+  /// Tabで[node]へ移る。一覧の外から一覧（タブの中のスクロールする所）へ入る
+  /// ときは、進むなら一覧の一番上、戻るなら一番下まで送ってから、その端の
+  /// 止まり先へ移す。一覧の行は見える所の近くだけを作るので、送らずに移すと、
+  /// 一番上からShift+Tabで戻ったとき浮かぶボタンの次が作ってある一番下の行に
+  /// なり、まだ作っていない下の行（ko 360・24件で「Work 0〜2」）には後ろ向き
+  /// では行けなかった。
+  void _moveTo(FocusNode node) {
+    final from = _step.from;
+    final list = _listScrollableOf(node.context);
+    if (from != null && list != null && !_inside(from.context, list)) {
+      final position = list.position;
+      final end = _step.forward
+          ? position.minScrollExtent
+          : position.maxScrollExtent;
+      if ((position.pixels - end).abs() > 0.5) {
+        _enterAtEnd(list, node, forward: _step.forward);
+        return;
+      }
+    }
+    _revealTraversedFocus(node, listArea, floatingActions);
+  }
+
+  /// [context]を囲む、タブの一覧（[listArea]）の中の縦のスクロール。
+  ScrollableState? _listScrollableOf(BuildContext? context) {
+    if (context == null) return null;
+    final list = Scrollable.maybeOf(context, axis: Axis.vertical);
+    final area = listArea.currentContext;
+    if (list == null || area == null) return null;
+    return _inside(list.context, area) ? list : null;
+  }
+
+  static bool _inside(BuildContext? context, Object ancestor) {
+    final target = ancestor is ScrollableState ? ancestor.context : ancestor;
+    if (context == null) return false;
+    if (identical(context, target)) return true;
+    var found = false;
+    context.visitAncestorElements((element) {
+      found = identical(element, target);
+      return !found;
+    });
+    return found;
+  }
+
+  /// 一覧[list]を端まで送り、作った行のうち端の止まり先へ移す（一覧の長さが
+  /// 見積もりで、送った後に延びたら、もう一度送る）。止まり先が無ければ
+  /// [fallback]へ。
+  void _enterAtEnd(
+    ScrollableState list,
+    FocusNode fallback, {
+    required bool forward,
+    int tries = 4,
+  }) {
+    final scope = fallback.nearestScope;
+    final position = list.position;
+    position.jumpTo(
+      forward ? position.minScrollExtent : position.maxScrollExtent,
+    );
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!list.mounted) return;
+      final now = list.position;
+      final end = forward ? now.minScrollExtent : now.maxScrollExtent;
+      if ((now.pixels - end).abs() > 0.5 && tries > 0) {
+        _enterAtEnd(list, fallback, forward: forward, tries: tries - 1);
+        return;
+      }
+      final nodes = [
+        for (final candidate in scope?.traversalDescendants ?? <FocusNode>[])
+          if (_inside(candidate.context, list)) candidate,
+      ];
+      if (nodes.isEmpty) {
+        if (fallback.context != null) {
+          _revealTraversedFocus(fallback, listArea, floatingActions);
+        }
+        return;
+      }
+      final sorted = sortDescendants(nodes, nodes.first).toList();
+      _revealTraversedFocus(
+        forward ? sorted.first : sorted.last,
+        listArea,
+        floatingActions,
+      );
+    });
+    SchedulerBinding.instance.scheduleFrame();
+  }
 
   @override
   Iterable<FocusNode> sortDescendants(
