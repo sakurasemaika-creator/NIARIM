@@ -3997,6 +3997,7 @@ class _SharedScreenState extends State<SharedScreen>
               viewMode: _effectiveViewMode(context),
               onViewModeChanged: _selectViewMode,
               sortMode: _sortMode,
+              onSortModeChanged: _chooseSort,
               showFavoritesOnly: _showFavoritesOnly,
               searchQuery: widget.searchQuery,
               onClearSearch: widget.onClearSearch,
@@ -4259,6 +4260,9 @@ class _SharedTab extends StatelessWidget {
   final ProjectViewMode viewMode;
   final ValueChanged<ProjectViewMode> onViewModeChanged;
   final ProjectSortMode sortMode;
+
+  /// 受け取ったフォルダの中で選んだ並び順（共有のタブの並び順にする）。
+  final ValueChanged<ProjectSortMode> onSortModeChanged;
   final bool showFavoritesOnly;
   final String searchQuery;
   final VoidCallback? onClearSearch;
@@ -4271,6 +4275,7 @@ class _SharedTab extends StatelessWidget {
     required this.viewMode,
     required this.onViewModeChanged,
     required this.sortMode,
+    required this.onSortModeChanged,
     required this.showFavoritesOnly,
     required this.searchQuery,
     this.onClearSearch,
@@ -4376,6 +4381,7 @@ class _SharedTab extends StatelessWidget {
                 viewMode: viewMode,
                 onViewModeChanged: onViewModeChanged,
                 sortMode: sortMode,
+                onSortModeChanged: onSortModeChanged,
                 showFavoritesOnly:
                     showFavoritesOnly &&
                     !service.sharedFolders.any(
@@ -5249,6 +5255,10 @@ class _SharedFolderScreen extends StatefulWidget {
   /// 共有の一覧の並び順（「お気に入りのみ」と同じく、フォルダの中にも
   /// 当てる）。
   final ProjectSortMode sortMode;
+
+  /// フォルダの中で選んだ並び順（共有のタブの並び順にする。作品一覧の
+  /// フォルダと同じく、フォルダの中と外で同じ並び順）。
+  final ValueChanged<ProjectSortMode> onSortModeChanged;
   final bool showFavoritesOnly;
   final String searchQuery;
   final ValueChanged<HomeClipboardEntry>? onCopyEntry;
@@ -5259,6 +5269,7 @@ class _SharedFolderScreen extends StatefulWidget {
     required this.viewMode,
     required this.onViewModeChanged,
     required this.sortMode,
+    required this.onSortModeChanged,
     required this.showFavoritesOnly,
     required this.searchQuery,
     this.onCopyEntry,
@@ -5274,6 +5285,34 @@ class _SharedFolderScreenState extends State<_SharedFolderScreen> {
   // 「検索をやめる」「すべて表示」は、このフォルダの中だけで外す。
   late String _searchQuery = widget.searchQuery;
   late bool _favoritesOnly = widget.showFavoritesOnly;
+
+  // 並び順（共有のタブの並び順。変えたら共有のタブの並び順にする）。
+  late ProjectSortMode _sortMode = widget.sortMode;
+
+  bool get _sortByName =>
+      _sortMode == ProjectSortMode.nameAsc ||
+      _sortMode == ProjectSortMode.nameDesc;
+  bool get _sortAscending =>
+      _sortMode == ProjectSortMode.nameAsc ||
+      _sortMode == ProjectSortMode.updatedAsc;
+  void _setSortByName(bool byName) => _chooseSort(
+    byName
+        ? (_sortAscending ? ProjectSortMode.nameAsc : ProjectSortMode.nameDesc)
+        : (_sortAscending
+              ? ProjectSortMode.updatedAsc
+              : ProjectSortMode.updatedDesc),
+  );
+  void _toggleSortDirection() => _chooseSort(switch (_sortMode) {
+    ProjectSortMode.nameAsc => ProjectSortMode.nameDesc,
+    ProjectSortMode.nameDesc => ProjectSortMode.nameAsc,
+    ProjectSortMode.updatedAsc => ProjectSortMode.updatedDesc,
+    ProjectSortMode.updatedDesc => ProjectSortMode.updatedAsc,
+  });
+
+  void _chooseSort(ProjectSortMode mode) {
+    setState(() => _sortMode = mode);
+    widget.onSortModeChanged(mode);
+  }
 
   @override
   void initState() {
@@ -5298,7 +5337,7 @@ class _SharedFolderScreenState extends State<_SharedFolderScreen> {
                 (query.isEmpty || nameMatches(p.name, query)),
           )
           .toList(),
-      widget.sortMode,
+      _sortMode,
     );
     Widget card(BuildContext ctx, int i, bool grid) =>
         _receivedShareProjectTile(
@@ -5340,39 +5379,59 @@ class _SharedFolderScreenState extends State<_SharedFolderScreen> {
           ),
         ],
       ),
-      body: items.isEmpty
-          // 中身があるのに絞り込みで全部隠れたときは、タブと同じ文と外す
-          // ボタン（以前は「このフォルダには共有プロジェクトがありません」
-          // と言い、外す道が無かった）。
-          ? (inFolder.isEmpty
-                    ? null
-                    : _filteredLibraryEmptyState(
-                        context,
-                        searchQuery: _searchQuery,
-                        favoritesOnly: _favoritesOnly,
-                        hiddenByFavorites:
-                            query.isNotEmpty &&
-                            inFolder.any((p) => nameMatches(p.name, query)),
-                        inFolder: true,
-                        scrollable: true,
-                        onClearSearch: () => setState(() => _searchQuery = ''),
-                        onShowAll: () => setState(() => _favoritesOnly = false),
-                      )) ??
-                EmptyStatePlaceholder(
-                  icon: Icons.folder_open_outlined,
-                  title: l10n.homeSharedFolderEmpty,
-                )
-          : _viewMode != ProjectViewMode.detail
-          ? GridView.builder(
-              padding: const EdgeInsets.all(8),
-              gridDelegate: _worksGridDelegate(context, _viewMode),
-              itemCount: items.length,
-              itemBuilder: (ctx, i) => card(ctx, i, true),
-            )
-          : ListView.builder(
-              itemCount: items.length,
-              itemBuilder: (ctx, i) => card(ctx, i, false),
+      // 作品一覧のフォルダと同じ並び順の切り替え（今の並び順は共有の
+      // タブの並び順。以前は表示も切り替えも無かった）。
+      body: Column(
+        children: [
+          _LibraryListControls(
+            sort: SortModeControl(
+              sortByName: _sortByName,
+              sortAscending: _sortAscending,
+              onSortByNameChanged: _setSortByName,
+              onToggleDirection: _toggleSortDirection,
             ),
+          ),
+          Expanded(
+            child: items.isEmpty
+                // 中身があるのに絞り込みで全部隠れたときは、タブと同じ文と外す
+                // ボタン（以前は「このフォルダには共有プロジェクトがありません」
+                // と言い、外す道が無かった）。
+                ? (inFolder.isEmpty
+                          ? null
+                          : _filteredLibraryEmptyState(
+                              context,
+                              searchQuery: _searchQuery,
+                              favoritesOnly: _favoritesOnly,
+                              hiddenByFavorites:
+                                  query.isNotEmpty &&
+                                  inFolder.any(
+                                    (p) => nameMatches(p.name, query),
+                                  ),
+                              inFolder: true,
+                              scrollable: true,
+                              onClearSearch: () =>
+                                  setState(() => _searchQuery = ''),
+                              onShowAll: () =>
+                                  setState(() => _favoritesOnly = false),
+                            )) ??
+                      EmptyStatePlaceholder(
+                        icon: Icons.folder_open_outlined,
+                        title: l10n.homeSharedFolderEmpty,
+                      )
+                : _viewMode != ProjectViewMode.detail
+                ? GridView.builder(
+                    padding: const EdgeInsets.all(8),
+                    gridDelegate: _worksGridDelegate(context, _viewMode),
+                    itemCount: items.length,
+                    itemBuilder: (ctx, i) => card(ctx, i, true),
+                  )
+                : ListView.builder(
+                    itemCount: items.length,
+                    itemBuilder: (ctx, i) => card(ctx, i, false),
+                  ),
+          ),
+        ],
+      ),
     );
   }
 }
