@@ -49,6 +49,12 @@ class HsvColorWheel extends StatelessWidget {
     this.onSliderModeChanged,
   });
 
+  /// Where the transparent-colour button sits (its left edge, its top edge
+  /// above the wheel's bottom, and its size).
+  static const double _transparentLeft = 2;
+  static const double _transparentBottomGap = 31;
+  static const double _transparentSize = 26;
+
   double get _ringThickness => size * 0.14;
   // Leave a subtle but definite gap between the ring and SV square at
   // every picker width, including compact PC docks and mobile.
@@ -72,22 +78,37 @@ class HsvColorWheel extends StatelessWidget {
     // Only 2px of clearance remains; its 28px hit target never overlaps
     // the wheel, even in the narrowest supported color-picker dock.
     final radius = size / 2;
-    const pillWidth = 66.0; // Two 32px segments and the 1px borders.
+    // The pill is measured at the current text size (its names are never
+    // shrunk): a fixed 66×28 pill grew with large text, cut into the ring
+    // and ran over the sliders below in a narrow PC dock.
+    final segment = _SliderModePill.segmentSize(context);
+    final pill = _SliderModePill.sizeFor(segment);
     const pillRight = 6.0; // Keep clear of the scroll bar on phones.
-    final pillLeft = width - pillRight - pillWidth;
+    final pillLeft = width - pillRight - pill.width;
     final horizontalDistance = pillLeft - width / 2;
-    final modeTop =
-        radius +
-        math.sqrt(
-          math.max(
-            0.0,
-            radius * radius - horizontalDistance * horizontalDistance,
-          ),
-        ) +
-        2;
+    // A pill wider than the right half of the ring moves below the ring
+    // (its own row) instead of cutting into it.
+    var modeTop = horizontalDistance <= 0
+        ? 2 * radius + 2
+        : radius +
+              math.sqrt(
+                math.max(
+                  0.0,
+                  radius * radius - horizontalDistance * horizontalDistance,
+                ),
+              ) +
+              2;
+    // Nor does it cover the transparent-colour button at the lower left.
+    if (onToggleTransparent != null &&
+        pillLeft < _transparentLeft + _transparentSize + 4) {
+      modeTop = math.max(
+        modeTop,
+        size - _transparentBottomGap + _transparentSize + 4,
+      );
+    }
     return SizedBox(
       width: width,
-      height: math.max(size, modeTop + 28),
+      height: math.max(size, modeTop + pill.height),
       child: Stack(
         alignment: Alignment.topCenter,
         clipBehavior: Clip.none,
@@ -176,8 +197,8 @@ class HsvColorWheel extends StatelessWidget {
             ),
           if (onToggleTransparent != null)
             Positioned(
-              left: 2,
-              top: size - 31,
+              left: _transparentLeft,
+              top: size - _transparentBottomGap,
               child: _TransparentToggleButton(
                 isActive: isTransparent,
                 onTap: onToggleTransparent!,
@@ -190,6 +211,7 @@ class HsvColorWheel extends StatelessWidget {
               child: _SliderModePill(
                 showHsv: showHsvSliders,
                 onChanged: onSliderModeChanged!,
+                segment: segment,
               ),
             ),
         ],
@@ -302,8 +324,8 @@ class _TransparentToggleButton extends StatelessWidget {
       key: const ValueKey('color-picker-transparent-toggle'),
       onTap: onTap,
       child: Container(
-        width: 26,
-        height: 26,
+        width: HsvColorWheel._transparentSize,
+        height: HsvColorWheel._transparentSize,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           border: Border.all(
@@ -334,54 +356,106 @@ class _TransparentToggleButton extends StatelessWidget {
 
 /// 左下の透明色トグルと右下位置が対称になるように配置する。
 /// 選択中のモードだけを強調し、タップしたモードの3スライダーを表示する。
+///
+/// 区画の大きさは、今の文字の大きさで名前（HSV・RGB）が入る大きさ（少なくとも
+/// 32×26）。名前は縮めない（[HsvColorWheel]がこの大きさで置き場所を決める）。
 class _SliderModePill extends StatelessWidget {
-  const _SliderModePill({required this.showHsv, required this.onChanged});
+  const _SliderModePill({
+    required this.showHsv,
+    required this.onChanged,
+    required this.segment,
+  });
 
   final bool showHsv;
   final ValueChanged<bool> onChanged;
 
+  /// 1つの区画の大きさ（[segmentSize]）。
+  final Size segment;
+
+  static const _labels = ['HSV', 'RGB'];
+  static const _labelStyle = TextStyle(
+    fontSize: 10,
+    fontWeight: FontWeight.bold,
+  );
+
+  /// 1つの区画の大きさ：長い方の名前が今の文字の大きさで入り、左右に4px・
+  /// 上下に2pxの余白が残る大きさ（少なくとも32×26）。
+  static Size segmentSize(BuildContext context) {
+    final painter = TextPainter(
+      textDirection: Directionality.of(context),
+      textScaler: MediaQuery.textScalerOf(context),
+      locale: Localizations.maybeLocaleOf(context),
+      maxLines: 1,
+    );
+    var width = 0.0;
+    var height = 0.0;
+    final style = DefaultTextStyle.of(context).style.merge(_labelStyle);
+    for (final label in _labels) {
+      painter
+        ..text = TextSpan(text: label, style: style)
+        ..layout();
+      width = math.max(width, painter.width);
+      height = math.max(height, painter.height);
+    }
+    painter.dispose();
+    return Size(
+      math.max(32, (width + 8).ceilToDouble()),
+      math.max(26, (height + 4).ceilToDouble()),
+    );
+  }
+
+  /// 2つの区画と枠（1px）を合わせたピルの大きさ。
+  static Size sizeFor(Size segment) =>
+      Size(segment.width * 2 + 2, segment.height + 2);
+
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final radius = BorderRadius.circular(segment.height / 2 + 1);
     return Semantics(
       label: 'HSV / RGB',
       child: Container(
-        height: 28,
+        height: segment.height + 2,
         decoration: BoxDecoration(
           color: scheme.surfaceContainerHigh,
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: radius,
           border: Border.all(color: scheme.outlineVariant),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            _segment('HSV', true, scheme),
-            _segment('RGB', false, scheme),
+            _segment('HSV', true, scheme, radius),
+            _segment('RGB', false, scheme, radius),
           ],
         ),
       ),
     );
   }
 
-  Widget _segment(String label, bool hsv, ColorScheme scheme) {
+  Widget _segment(
+    String label,
+    bool hsv,
+    ColorScheme scheme,
+    BorderRadius radius,
+  ) {
     final selected = showHsv == hsv;
     return InkWell(
       key: ValueKey('color-slider-mode-${hsv ? 'hsv' : 'rgb'}'),
-      borderRadius: BorderRadius.circular(14),
+      borderRadius: radius,
       onTap: () => onChanged(hsv),
       child: Container(
-        constraints: const BoxConstraints(minWidth: 32),
-        height: 26,
+        width: segment.width,
+        height: segment.height,
         alignment: Alignment.center,
         decoration: BoxDecoration(
           color: selected ? scheme.primary : Colors.transparent,
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: radius,
         ),
         child: Text(
           label,
-          style: TextStyle(
-            fontSize: 10,
-            fontWeight: FontWeight.bold,
+          maxLines: 1,
+          softWrap: false,
+          style: _labelStyle.copyWith(
             color: selected ? scheme.onPrimary : scheme.onSurface,
           ),
         ),
