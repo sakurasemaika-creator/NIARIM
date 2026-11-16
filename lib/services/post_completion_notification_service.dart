@@ -9,14 +9,14 @@ class PostCompletionNotificationService {
 
   static Future<void> notifySuccess({
     required String workId,
-    required String title,
+    required String owner,
     required bool scheduled,
   }) async {
     if (!RegExp(r'^[A-Za-z0-9_-]{11}$').hasMatch(workId)) return;
     try {
       await _channel.invokeMethod<void>('showSuccess', {
         'workId': workId,
-        'title': title,
+        'owner': owner,
         'scheduled': scheduled,
       });
     } on MissingPluginException {

@@ -687,6 +687,7 @@ class CommunityApi {
     required String token,
     required String platform,
     bool enabled = true,
+    bool deviceHandledNotices = false,
   }) async {
     final json = await _client.putJson(
       '/users/${Uri.encodeComponent(userId)}/push-token',
@@ -695,6 +696,7 @@ class CommunityApi {
         'platform': platform,
         'enabled': enabled,
         'localizedNotifications': true,
+        if (deviceHandledNotices) 'deviceHandledNotices': true,
       },
     );
     return json['registered'] == true;

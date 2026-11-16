@@ -543,6 +543,7 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
   Future<void> _finishRegistration(
     CommunityService community,
     String registeredVideoId, {
+    required String owner,
     bool recovered = false,
   }) async {
     // The POST /works response already confirmed success. Never let a
@@ -551,7 +552,7 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
     await _clearPendingUpload();
     await PostCompletionNotificationService.notifySuccess(
       workId: registeredVideoId,
-      title: _titleController.text.trim(),
+      owner: owner,
       scheduled: _scheduledPublishAt != null,
     );
     try {
@@ -693,7 +694,12 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
               isNiarimPublished: _isNiarimPublished,
             );
           }
-          await _finishRegistration(community, videoId, recovered: true);
+          await _finishRegistration(
+            community,
+            videoId,
+            owner: work.authorId,
+            recovered: true,
+          );
           return;
         }
       }
@@ -834,7 +840,11 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
         );
       }
 
-      await _finishRegistration(community, registeredVideoId);
+      await _finishRegistration(
+        community,
+        registeredVideoId,
+        owner: registeredWork.authorId,
+      );
     } catch (error) {
       // 未登録の保留動画がYouTubeから消されている場合、バックエンドは
       // VIDEO_NOT_FOUNDを返す。この状態は時間や再認証では直らないため、

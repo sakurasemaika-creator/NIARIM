@@ -54,31 +54,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ..showSnackBar(SnackBar(content: Text(l10n.settingsTipsResetDone)));
   }
 
-  Future<void> _showPushSettings() => showDialog<void>(
-    context: context,
-    builder: (context) {
-      final l10n = AppLocalizations.of(context)!;
-      final settings = context.watch<SettingsService>();
-      return AlertDialog(
-        title: Text(devicePushLabel(l10n)),
-        scrollable: true,
-        content: SwitchListTile(
-          key: const Key('pushNotificationsOnDevice'),
-          contentPadding: EdgeInsets.zero,
-          title: Text(devicePushDescription(l10n)),
-          value: settings.pushNotificationsEnabled,
-          onChanged: settings.setPushNotificationsEnabled,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text(l10n.commonClose),
-          ),
-        ],
-      );
-    },
-  );
-
   @override
   Widget build(BuildContext context) {
     final isPremium = context.watch<PremiumService>().isPremium;
@@ -176,7 +151,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         title: devicePushLabel(l10n),
         subtitle: devicePushDescription(l10n),
         keywords: '通知 プッシュ push notifications',
-        onTap: _showPushSettings,
+        onTap: () => context.push(communityNotificationSettingsRoute),
         accent: Theme.of(context).colorScheme.primary,
       ),
       // 無料会員はMaterialのlockアイコンで表示

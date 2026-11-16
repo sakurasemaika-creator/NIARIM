@@ -346,6 +346,16 @@ export class NiarimBackendStack extends Stack {
             scheduledReleaseConfirmedAt: { S: [{ exists: true }] },
           },
         } }),
+        lambda.FilterCriteria.filter({ eventName: ["INSERT"], dynamodb: {
+          NewImage: { itemType: { S: ["WORK"] } },
+        } }),
+        lambda.FilterCriteria.filter({ dynamodb: {
+          OldImage: { isNiarimPublished: { BOOL: [false] } },
+          NewImage: {
+            itemType: { S: ["WORK"] }, isNiarimPublished: { BOOL: [true] },
+            plazaPublicationConfirmedAt: { S: [{ exists: true }] },
+          },
+        } }),
         lambda.FilterCriteria.filter({ dynamodb: { NewImage: {
           itemType: { S: ["MISSION_ACTIVITY_V1", "COMMUNITY_ACTIVITY_V1"] },
           pushPending: { BOOL: [true] },

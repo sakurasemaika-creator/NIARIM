@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../../config/accent_text_theme.dart';
@@ -194,6 +196,10 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
           auth.account?.id != requestedAccountId ||
           page == null) {
         return;
+      }
+      final ownerId = community.currentUserId;
+      if (ownerId != null) {
+        unawaited(community.refreshFollowerCount(ownerId));
       }
       final works = page.works;
       final converted = works.map((w) => w.toCommunityWork()).toList()
@@ -590,6 +596,9 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
     // but each row shows the store's copy, so an edit made anywhere (a
     // tag, the AI image/video flag, the visibility) shows here too.
     final hasCurrentOwnerState = _ownerStateAccountId == account?.id;
+    final ownerId = usingBackendOwnerList && hasCurrentOwnerState
+        ? communityService.currentUserId
+        : null;
     final works = usingBackendOwnerList
         ? [
             for (final w
@@ -677,6 +686,26 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
                           ),
                         ],
                       ),
+                      if (ownerId != null) ...[
+                        const SizedBox(height: 8),
+                        Wrap(
+                          key: const Key('communityMyWorksSocialCounts'),
+                          spacing: 16,
+                          runSpacing: 4,
+                          children: [
+                            Text(
+                              l10n.communityAuthorFollowerCount(
+                                communityService.followerCountOf(ownerId),
+                              ),
+                            ),
+                            Text(
+                              l10n.communityAuthorFollowingCount(
+                                communityService.followingCountOf(ownerId),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                       const SizedBox(height: 12),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,

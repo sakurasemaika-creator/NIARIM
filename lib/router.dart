@@ -6,6 +6,8 @@ import 'screens/community/community_screen.dart';
 import 'screens/community/community_follow_notifications_screen.dart';
 import 'services/community_notice.dart';
 import 'screens/community/community_work_detail_screen.dart';
+import 'screens/community/community_my_works_screen.dart';
+import 'screens/settings/community_notification_settings_screen.dart';
 import 'screens/home/home_screen.dart';
 import 'screens/project/new_project_screen.dart';
 import 'screens/project/project_detail_screen.dart';
@@ -68,6 +70,16 @@ final appRouter = GoRouter(
       path: communityNotificationsRoute,
       builder: (context, state) =>
           const AdMockPageFrame(child: CommunityFollowNotificationsScreen()),
+    ),
+    GoRoute(
+      path: communityMyWorksRoute,
+      builder: (context, state) =>
+          const AdMockPageFrame(child: CommunityMyWorksScreen()),
+    ),
+    GoRoute(
+      path: communityNotificationSettingsRoute,
+      builder: (context, state) =>
+          const AdMockPageFrame(child: CommunityNotificationSettingsScreen()),
     ),
     GoRoute(
       path: '/community/work/:id',

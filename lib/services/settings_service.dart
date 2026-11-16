@@ -1,3 +1,4 @@
+import 'community_notice.dart';
 import 'dart:convert';
 import 'dart:math' as math;
 import 'dart:ui' show Locale, PlatformDispatcher;
@@ -29,6 +30,25 @@ class SettingsService extends ChangeNotifier {
   String _language = 'ja';
   bool _pushNotificationsEnabled = true;
   bool get pushNotificationsEnabled => _pushNotificationsEnabled;
+  final _disabledPushCategories = <CommunityPushCategory>{};
+
+  bool pushEnabledFor(CommunityPushCategory category) =>
+      !_disabledPushCategories.contains(category);
+
+  Future<void> setPushCategory(
+    CommunityPushCategory category,
+    bool value,
+  ) async {
+    if (value == pushEnabledFor(category)) return;
+    if (value) {
+      _disabledPushCategories.remove(category);
+    } else {
+      _disabledPushCategories.add(category);
+    }
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(category.preferenceKey, value);
+  }
 
   Future<void> setPushNotificationsEnabled(bool value) async {
     if (_pushNotificationsEnabled == value) return;
@@ -829,6 +849,13 @@ class SettingsService extends ChangeNotifier {
     _defaultFps = prefs.readInt('default_fps') ?? 12;
     _pushNotificationsEnabled =
         prefs.readBool('push_notifications_enabled') ?? true;
+    _disabledPushCategories
+      ..clear()
+      ..addAll(
+        CommunityPushCategory.values.where(
+          (category) => prefs.readBool(category.preferenceKey) == false,
+        ),
+      );
     // 0以下は取り消しの上限として使えない（負の数は起動を止めていた）。
     // 未設定と同じに扱い、保存は書き換えない。
     final savedUndoLimit = prefs.readInt('undo_limit');

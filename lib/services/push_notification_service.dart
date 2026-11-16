@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../l10n/app_localizations.dart';
 import '../router.dart';
@@ -36,6 +38,10 @@ class PushNotificationService {
   bool _started = false;
   bool _disposed = false;
   bool _syncing = false;
+  Future<void> _ownerSync = Future<void>.value();
+  static const _historyChannel = MethodChannel(
+    'com.niarim.niarim/activity_notice_history',
+  );
   bool _needsSync = false;
   bool _permissionPrompted = false;
   bool? _autoInitEnabled;
@@ -87,7 +93,8 @@ class PushNotificationService {
   }
 
   void _showForeground(RemoteMessage message) {
-    if (_disposed ||
+    if (message.data['niarimNoticeVersion'] == '1' ||
+        _disposed ||
         !_settings.pushNotificationsEnabled ||
         _auth.account == null) {
       return;
@@ -135,6 +142,12 @@ class PushNotificationService {
 
   void _scheduleSync() {
     if (_disposed) return;
+    _ownerSync = _ownerSync
+        .then((_) => _bindNotificationOwner())
+        .catchError(
+          (Object error) =>
+              debugPrint('FCM owner binding unavailable: ${error.runtimeType}'),
+        );
     _needsSync = true;
     if (!_syncing) unawaited(_syncLoop());
   }
@@ -163,7 +176,32 @@ class PushNotificationService {
     _autoInitEnabled = value;
   }
 
+  Future<void> _bindNotificationOwner() async {
+    final prefs = await SharedPreferences.getInstance();
+    final noticeOwner =
+        !_disposed &&
+            _settings.pushNotificationsEnabled &&
+            _auth.account != null &&
+            _community.api != null
+        ? _community.currentUserId
+        : null;
+    if (prefs.getString('push_notice_owner') == noticeOwner) return;
+    if (noticeOwner == null) {
+      await prefs.remove('push_notice_owner');
+    } else {
+      await prefs.setString('push_notice_owner', noticeOwner);
+    }
+    try {
+      await _historyChannel.invokeMethod<void>('clearOtherAccounts', {
+        'owner': noticeOwner,
+      });
+    } on MissingPluginException {
+      // The hosted Android notification receiver is not loaded in Dart tests.
+    }
+  }
+
   Future<void> _syncOnce() async {
+    await _ownerSync;
     final owner = _community.currentUserId;
     final account = _auth.account?.id;
     final api = _community.api;
@@ -246,6 +284,7 @@ class PushNotificationService {
       owner,
       token: token,
       platform: 'android',
+      deviceHandledNotices: true,
     );
     if (!accepted) return;
     if (_auth.account?.id != account || _community.currentUserId != owner) {

@@ -8,13 +8,12 @@ import '../../l10n/creator_mission_labels.dart';
 import '../../services/api/community_api.dart';
 import '../../services/community_service.dart';
 import '../../services/community_notice.dart';
+import '../../services/community_notice_history.dart';
 import '../../services/google_auth_service.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/fit_or_hide_title.dart';
 
-/// The plaza bell shows durable, server-owned mission achievements.
-/// Existing local follower milestones are retained as an offline fallback.
-/// A tap opens the mission claim screen; notifications NEVER mint coins.
+/// Shows the plaza activity history and mission achievements.
 class CommunityFollowNotificationsScreen extends StatefulWidget {
   const CommunityFollowNotificationsScreen({super.key});
 
@@ -26,10 +25,12 @@ class CommunityFollowNotificationsScreen extends StatefulWidget {
 class _CommunityFollowNotificationsScreenState
     extends State<CommunityFollowNotificationsScreen> {
   String? _accountId;
+  String? _ownerId;
   CommunityApi? _api;
   Future<Map<String, dynamic>>? _feedFuture;
   final List<Map<String, dynamic>> _extra = [];
   String? _nextPage;
+  bool _pageInitialized = false;
   String? _nextScanCursor;
   bool _scanHasMore = false;
   bool _loadingMore = false;
@@ -47,19 +48,30 @@ class _CommunityFollowNotificationsScreenState
   void didChangeDependencies() {
     super.didChangeDependencies();
     final accountId = context.watch<GoogleAuthService>().account?.id;
-    final api = context.read<CommunityService>().api;
-    if (accountId != _accountId || !identical(api, _api)) {
+    final community = context.watch<CommunityService>();
+    final api = community.api;
+    final ownerId = accountId == null ? null : community.currentUserId;
+    if (accountId != _accountId ||
+        ownerId != _ownerId ||
+        !identical(api, _api)) {
       _accountId = accountId;
+      _ownerId = ownerId;
       _api = api;
       _extra.clear();
       _nextPage = null;
+      _pageInitialized = false;
       _nextScanCursor = null;
       _scanHasMore = false;
-      _feedFuture = accountId != null && api != null ? _loadFirst(api) : null;
+      _feedFuture = accountId != null && api != null
+          ? _loadFirst(api, _ownerId)
+          : null;
     }
   }
 
-  Future<Map<String, dynamic>> _loadFirst(CommunityApi api) async {
+  Future<Map<String, dynamic>> _loadFirst(
+    CommunityApi api,
+    String? owner,
+  ) async {
     Map<String, dynamic>? sync;
     try {
       sync = await api.syncMyMissionActivity();
@@ -68,28 +80,35 @@ class _CommunityFollowNotificationsScreenState
       debugPrint('Mission activity backfill unavailable: $error');
     }
     final result = await api.myMissionActivity(includeCommunity: true);
-    return {...result, 'sync': sync};
+    return CommunityNoticeHistory.filter({...result, 'sync': sync}, owner);
   }
 
   void _refresh(CommunityApi api) => setState(() {
     _extra.clear();
     _nextPage = null;
+    _pageInitialized = false;
     _scanHasMore = false;
     _nextScanCursor = null;
-    _feedFuture = _loadFirst(api);
+    _feedFuture = _loadFirst(api, _ownerId);
   });
 
   Future<void> _more(CommunityApi api) async {
     final cursor = _nextPage;
     if (_loadingMore || cursor == null) return;
     final owner = _accountId;
+    final noticeOwner = _ownerId;
     setState(() => _loadingMore = true);
     try {
-      final data = await api.myMissionActivity(
-        cursor: cursor,
-        includeCommunity: true,
+      final data = await CommunityNoticeHistory.filter(
+        await api.myMissionActivity(cursor: cursor, includeCommunity: true),
+        noticeOwner,
       );
-      if (!mounted || owner != _accountId || !identical(api, _api)) return;
+      if (!mounted ||
+          owner != _accountId ||
+          noticeOwner != _ownerId ||
+          !identical(api, _api)) {
+        return;
+      }
       setState(() {
         _extra.addAll(
           (data['events'] as List? ?? const []).whereType<Map>().map(
@@ -116,16 +135,26 @@ class _CommunityFollowNotificationsScreenState
   Future<void> _scanMore(CommunityApi api) async {
     if (_scanningMore) return;
     final owner = _accountId;
+    final noticeOwner = _ownerId;
     setState(() => _scanningMore = true);
     try {
       final sync = await api.syncMyMissionActivity(workCursor: _nextScanCursor);
-      final page = await api.myMissionActivity(includeCommunity: true);
-      if (!mounted || owner != _accountId || !identical(api, _api)) return;
+      final page = await CommunityNoticeHistory.filter(
+        await api.myMissionActivity(includeCommunity: true),
+        noticeOwner,
+      );
+      if (!mounted ||
+          owner != _accountId ||
+          noticeOwner != _ownerId ||
+          !identical(api, _api)) {
+        return;
+      }
       setState(() {
         _nextScanCursor = sync['nextWorkCursor'] as String?;
         _scanHasMore = sync['hadMore'] == true;
         _extra.clear();
         _nextPage = page['nextCursor'] as String?;
+        _pageInitialized = true;
         _feedFuture = Future.value({...page, 'sync': sync});
       });
     } catch (error) {
@@ -178,9 +207,10 @@ class _CommunityFollowNotificationsScreenState
     };
   }
 
-  /// 日付は表示言語の書き方（作品広場のほかの日付と同じ`yMd`）。
-  String _dateText(DateTime date) =>
-      DateFormat.yMd(AppLocalizations.of(context)!.localeName).format(date);
+  /// 端末の現地時刻を表示言語の書き方で表示する。
+  String _dateText(DateTime date) => DateFormat.yMd(
+    AppLocalizations.of(context)!.localeName,
+  ).add_jm().format(date);
 
   String _date(CreatorMissionLabels t, Map<String, dynamic> event) {
     final raw = event['occurredAt'];
@@ -245,6 +275,12 @@ class _CommunityFollowNotificationsScreenState
               icon: const Icon(Icons.refresh),
               onPressed: () => _refresh(api),
             ),
+          IconButton(
+            key: const Key('plazaNotificationSettings'),
+            tooltip: devicePushLabel(AppLocalizations.of(context)!),
+            icon: const Icon(Icons.settings_outlined),
+            onPressed: () => context.push(communityNotificationSettingsRoute),
+          ),
         ],
       ),
       body: desktopCentered(
@@ -283,8 +319,9 @@ class _CommunityFollowNotificationsScreenState
                     _scanHasMore = sync['hadMore'] == true;
                     _nextScanCursor = sync['nextWorkCursor'] as String?;
                   }
-                  if (_nextPage == null && _extra.isEmpty) {
+                  if (!_pageInitialized) {
                     _nextPage = page['nextCursor'] as String?;
+                    _pageInitialized = true;
                   }
                   final items = [
                     ...(page['events'] as List? ?? const [])
@@ -325,6 +362,8 @@ class _CommunityFollowNotificationsScreenState
                         'newBookmark' => Icons.bookmark_outline,
                         'newRepost' => Icons.repeat,
                         'scheduledRelease' => Icons.schedule_outlined,
+                        'workPosted' ||
+                        'workPublicationConfirmed' ||
                         'workPublished' => Icons.movie_creation_outlined,
                         'workBookmarks' => Icons.bookmarks_outlined,
                         'qualifiedWorks' => Icons.emoji_events_outlined,

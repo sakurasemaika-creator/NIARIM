@@ -54,6 +54,7 @@ export async function getMyMissionActivity(event: APIGatewayProxyEventV2) {
     ConsistentRead:true,
   }));
   return ok({
+    ...(includeCommunity ? { noticeOwner: auth.niarimUserId } : {}),
     events: (result.Items ?? []).flatMap((x): Record<string, unknown>[] => {
       if (x.itemType === "MISSION_ACTIVITY_V1") return [{
         eventId: x.eventId, kind: x.kind, missionId: x.missionId,
@@ -67,6 +68,8 @@ export async function getMyMissionActivity(event: APIGatewayProxyEventV2) {
       return [{
         eventId: x.eventId, kind: x.kind, occurredAt: x.occurredAt,
         targetRoute: communityTarget(x.kind, x.workId),
+        ...(typeof x.firstKey === "string" && /^[a-f0-9]{64}$/.test(x.firstKey)
+          ? { firstKey: x.firstKey } : {}),
       }];
     }),
     nextCursor:result.LastEvaluatedKey

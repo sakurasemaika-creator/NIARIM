@@ -13,7 +13,7 @@ vi.mock("../src/lib/dynamo", async (base) => ({
 vi.mock("../src/lib/push", () => ({ sendPushToUser: push }));
 vi.mock("../src/lib/auth", () => ({ authenticate }));
 
-import { handleNotificationStream } from "../src/lib/communityNotifications";
+import { communityTarget, handleNotificationStream } from "../src/lib/communityNotifications";
 import { getMyMissionActivity } from "../src/api/routes/creatorMissionActivity";
 import { recordMissionAchievement } from "../src/lib/missionNotifications";
 
@@ -32,8 +32,8 @@ function record(values: Record<string, unknown>, eventName: DynamoDBRecord["even
     SequenceNumber: "1234", NewImage: image(values), ...(old ? { OldImage: image(old) } : {}),
   } };
 }
-const follow = () => record({
-  itemType: "FOLLOWER_RECORD", followerId: actor, targetId: owner, followedAt: now,
+const follow = (day = now) => record({
+  itemType: "FOLLOWER_RECORD", followerId: actor, targetId: owner, followedAt: day,
 });
 const bookmark = () => record({
   itemType: "BOOKMARK", niarimUserId: actor, workId: work, bookmarkedAt: now,
@@ -45,7 +45,10 @@ beforeEach(() => {
   vi.stubEnv("TABLE_NAME", "test");
   send.mockReset();
   send.mockImplementation(async (command) => command instanceof GetCommand
-    ? { Item: publicWork } : {});
+    ? { Item: command.input.Key?.pk === "SYSTEM#COMMUNITY_NOTICE_FINGERPRINT"
+        ? { secret: "ab".repeat(32) }
+        : publicWork }
+    : {});
   push.mockReset().mockResolvedValue(undefined);
   authenticate.mockReset().mockResolvedValue({ niarimUserId: owner });
 });
@@ -55,7 +58,7 @@ afterEach(() => {
 });
 
 function lastStored() {
-  const write = send.mock.calls.find(([cmd]) => cmd instanceof TransactWriteCommand);
+  const write = send.mock.calls.slice().reverse().find(([cmd]) => cmd instanceof TransactWriteCommand);
   expect(write).toBeDefined();
   const items = (write![0] as TransactWriteCommand).input.TransactItems!;
   return { items, marker: items.at(-2)!.Put!, event: items.at(-1)!.Put!.Item! };
@@ -104,16 +107,69 @@ describe("committed activity to private history", () => {
     });
   });
 
+  it("keeps the same opaque key across days and separates people, works, and action kinds", async () => {
+    await handleNotificationStream([follow()]);
+    const first = lastStored().event;
+    const nextDay = new Date(Date.parse(now) + 2 * 86_400_000).toISOString();
+    vi.setSystemTime(new Date(nextDay));
+    await handleNotificationStream([follow(nextDay)]);
+    expect(lastStored().event).toMatchObject({ firstKey: first.firstKey });
+    expect(lastStored().event.eventId).not.toBe(first.eventId);
+    expect(first.firstKey).toMatch(/^[a-f0-9]{64}$/);
+    expect(communityTarget("newFollower")).toBe("/community/my-works");
+
+    const action = async (kind: "BOOKMARK" | "REPOST", by: string, video: string) => {
+      await handleNotificationStream([record({ itemType: kind, niarimUserId: by,
+        workId: video, [kind === "BOOKMARK" ? "bookmarkedAt" : "repostedAt"]: new Date().toISOString() })]);
+      return lastStored().event.firstKey;
+    };
+    const bookmark = await action("BOOKMARK", actor, work);
+    const repost = await action("REPOST", actor, work);
+    expect(await action("REPOST", "N" + "c".repeat(32), work)).not.toBe(repost);
+    expect(await action("BOOKMARK", actor, "OtherWork01")).not.toBe(bookmark);
+    vi.setSystemTime(new Date(Date.parse(nextDay) + 2 * 86_400_000));
+    expect(await action("BOOKMARK", actor, work)).toBe(bookmark);
+    expect(await action("REPOST", actor, work)).toBe(repost);
+    expect(new Set([first.firstKey, bookmark, repost]).size).toBe(3);
+  });
+
+  it("distinguishes ordinary registration, visible publication, and a pending reservation", async () => {
+    const hidden = { ...publicWork, isNiarimPublished: false, createdAt: now };
+    await handleNotificationStream([record(hidden)]);
+    expect(lastStored().event).toMatchObject({ kind: "workPosted", displayKey: "post:" + work,
+      occurredAt: now });
+    await handleNotificationStream([record({ ...hidden, isNiarimPublished: true })]);
+    expect(lastStored().event).toMatchObject({ kind: "workPublicationConfirmed",
+      displayKey: "post:" + work });
+    send.mockClear();
+    await handleNotificationStream([record({ ...hidden, youtubePrivacyStatus: "private",
+      scheduledPublishAt: "2026-11-17T00:00:00Z" })]);
+    expect(send).not.toHaveBeenCalled();
+    await handleNotificationStream([record(
+      { ...publicWork, plazaPublicationConfirmedAt: now }, "MODIFY", hidden,
+    )]);
+    expect(lastStored().event.kind).toBe("workPublicationConfirmed");
+    expect(lastStored().event.displayKey).not.toBe("post:" + work);
+  });
+
   it("records only a verified scheduled release transition for a visible work", async () => {
     const transition = { ...publicWork, scheduledReleaseConfirmedAt: now };
     await handleNotificationStream([
       record(publicWork, "MODIFY", { youtubePrivacyStatus: "private" }),
-      record({ ...transition, isNiarimPublished: false }, "MODIFY", { youtubePrivacyStatus: "private" }),
       record(transition, "MODIFY", { youtubePrivacyStatus: "public" }),
     ]);
     expect(send).not.toHaveBeenCalled();
     await handleNotificationStream([record(transition, "MODIFY", { youtubePrivacyStatus: "private" })]);
     expect(lastStored().event).toMatchObject({ kind: "scheduledRelease", workId: work });
+    // The author also receives confirmation if the scheduled video is public
+    // on YouTube but disabled in the NIARIM plaza.
+    await handleNotificationStream([record(
+      { ...transition, isNiarimPublished: false }, "MODIFY",
+      { youtubePrivacyStatus: "private", isNiarimPublished: false },
+    )]);
+    expect(lastStored().event.kind).toBe("scheduledRelease");
+    expect(lastStored().items[0]?.ConditionCheck?.ConditionExpression)
+      .not.toContain("isNiarimPublished");
   });
 });
 
@@ -124,7 +180,9 @@ describe("delivery from stored activity", () => {
     expect(await handleNotificationStream([activity])).toEqual({ batchItemFailures: [] });
     expect(push).toHaveBeenCalledWith(owner, expect.objectContaining({
       androidBodyLocKey: "push_new_bookmark",
-      data: { targetRoute: "/community/work/" + work, type: "newBookmark" },
+      data: expect.objectContaining({ targetRoute: "/community/work/" + work, type: "newBookmark",
+        occurredAt: now, firstKey: expect.stringMatching(/^[a-f0-9]{64}$/) }),
+      deviceHandled: true,
     }));
     expect(send.mock.calls.some(([cmd]) => cmd instanceof UpdateCommand &&
       cmd.input.ConditionExpression === "pushPending = :pending")).toBe(true);
@@ -150,7 +208,8 @@ describe("delivery from stored activity", () => {
     expect(event.pushPending).toBe(true);
     await handleNotificationStream([record(event)]);
     expect(push).toHaveBeenCalledWith(owner, expect.objectContaining({
-      data: { targetRoute: "/creator-missions", type: "mission_achievement" },
+      data: expect.objectContaining({ targetRoute: "/creator-missions", type: "mission_achievement", occurredAt: now }),
+      allowLegacy: true,
     }));
   });
 

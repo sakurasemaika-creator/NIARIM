@@ -38,6 +38,7 @@ export async function registerDeviceToken(
   token: string,
   platform: "android" | "ios",
   localizedNotifications = false,
+  deviceHandledNotices = false,
 ): Promise<void> {
   const hash = hashDeviceToken(token);
   const item: DeviceTokenItem = {
@@ -47,6 +48,7 @@ export async function registerDeviceToken(
     token,
     platform,
     localizedNotifications,
+    deviceHandledNotices,
     updatedAt: new Date().toISOString(),
     ttl: Math.floor(Date.now() / 1000) + TOKEN_TTL_DAYS * 24 * 60 * 60,
   };
@@ -146,6 +148,8 @@ export interface PushMessage {
   /** アプリ側で遷移先を決めるための付随データ（値は文字列のみ、FCMの仕様）。 */
   data?: Record<string, string>;
   androidBodyLocKey?: string;
+  deviceHandled?: boolean;
+  allowLegacy?: boolean;
 }
 
 /**
@@ -182,7 +186,9 @@ export async function sendPushToUser(
 
   const endpoint = `https://fcm.googleapis.com/v1/projects/${client.projectId}/messages:send`;
   await Promise.all(
-    tokens.map((device) => sendOne(endpoint, accessToken!, device, message)),
+    tokens.filter((device) => !message.deviceHandled || message.allowLegacy ||
+      (device.platform === "android" && device.deviceHandledNotices))
+      .map((device) => sendOne(endpoint, accessToken!, device, message)),
   );
 }
 
@@ -217,12 +223,19 @@ export function invalidFcmRegistration(status: number, body: string): boolean {
 }
 
 export function fcmNotificationForDevice(device: DeviceTokenItem, message: PushMessage) {
+  if (message.deviceHandled && device.platform === "android" && device.deviceHandledNotices) {
+    return { token: device.token, data: message.data ?? {},
+      android: { priority: "HIGH", ttl: "86400s" } };
+  }
+  if (message.deviceHandled && !message.allowLegacy) return undefined;
   const localKey = device.platform === "android" && device.localizedNotifications
     ? message.androidBodyLocKey : undefined;
   return {
     token: device.token,
     notification: { title: message.title, ...(!localKey ? { body: message.body } : {}) },
-    ...(message.data ? { data: message.data } : {}),
+    ...(message.data ? { data: message.deviceHandled
+      ? { targetRoute: message.data.targetRoute, type: message.data.type }
+      : message.data } : {}),
     android: {
       priority: "HIGH",
       notification: { visibility: "PRIVATE", ...(localKey ? { body_loc_key: localKey } : {}) },
@@ -237,6 +250,8 @@ async function sendOne(
   message: PushMessage,
 ): Promise<void> {
   try {
+    const payload = fcmNotificationForDevice(device, message);
+    if (!payload) return;
     const response = await fetch(endpoint, {
       method: "POST",
       signal: AbortSignal.timeout(4_000),
@@ -244,7 +259,7 @@ async function sendOne(
         Authorization: `Bearer ${accessToken}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ message: fcmNotificationForDevice(device, message) }),
+      body: JSON.stringify({ message: payload }),
     });
 
     if (response.ok) {

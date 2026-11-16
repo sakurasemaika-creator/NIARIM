@@ -101,6 +101,12 @@ export async function updateWork(
           ":postedAt": work.postedAt,
           ":latestPk": "LATEST",
         });
+        if (!work.isNiarimPublished && (work.youtubePrivacyStatus === "public" || work.youtubePrivacyStatus === "unlisted")) {
+          updates.push("plazaPublicationConfirmedAt = :confirmedAt");
+          conditions.push("isNiarimPublished = :wasPublished");
+          values[":wasPublished"] = false;
+          values[":confirmedAt"] = new Date().toISOString();
+        }
         // ブックマーク変更と公開状態変更の競合は防止する。
         conditions.push("bookmarkCount = :bookmarkCount");
         values[":bookmarkCount"] = work.bookmarkCount;

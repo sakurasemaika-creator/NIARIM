@@ -124,6 +124,6 @@ export async function putPushToken(
   }
 
   const platform = body.platform === "ios" ? "ios" : "android";
-  await registerDeviceToken(targetId, token, platform, body.localizedNotifications === true);
+  await registerDeviceToken(targetId, token, platform, body.localizedNotifications === true, body.deviceHandledNotices === true);
   return ok({ registered: true, platform });
 }

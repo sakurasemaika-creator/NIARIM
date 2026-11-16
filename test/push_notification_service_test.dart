@@ -33,6 +33,12 @@ void main() {
       data: const {'targetRoute': '/creator-missions'},
       notification: RemoteNotification(title: 'ミッション達成', body: 'アプリ内の内容を確認'),
     );
+    expect(
+      PushNotificationService.routeForData({
+        'targetRoute': '/community/my-works',
+      }),
+      '/community/my-works',
+    );
     final work = RemoteMessage(
       messageId: 'simulated-work',
       data: const {'targetRoute': '/community/work/Ab_12345678'},

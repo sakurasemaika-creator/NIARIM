@@ -370,7 +370,9 @@ void main() {
       );
       await tester.pumpAndSettle();
       final l = lookupAppLocalizations(locale);
-      final expected = DateFormat.yMd(l.localeName).format(event.createdAt);
+      final expected = DateFormat.yMd(
+        l.localeName,
+      ).add_jm().format(event.createdAt);
       if (!_shownTexts(tester).contains(_plain(expected))) {
         problems.add('$tag：通知の日付「$expected」が出ていない');
       }

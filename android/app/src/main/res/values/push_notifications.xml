@@ -5,4 +5,8 @@
     <string name="push_new_repost">A work was reposted</string>
     <string name="push_scheduled_release">Your scheduled work was published</string>
     <string name="push_mission_achievement">You have a new mission achievement</string>
+    <string name="push_work_posted">Your work was posted</string>
+    <string name="push_work_published">Your work was published</string>
+    <string name="push_work_reserved">Your scheduled post was accepted</string>
+    <string name="push_activity_channel">Plaza and mission notifications</string>
 </resources>

@@ -5,4 +5,8 @@
     <string name="push_new_repost">작품이 리포스트되었습니다</string>
     <string name="push_scheduled_release">예약한 작품이 공개되었습니다</string>
     <string name="push_mission_achievement">새 미션 달성 알림이 있습니다</string>
+    <string name="push_work_posted">작품이 게시되었습니다</string>
+    <string name="push_work_published">작품이 공개되었습니다</string>
+    <string name="push_work_reserved">예약 게시가 접수되었습니다</string>
+    <string name="push_activity_channel">작품 광장 및 미션 알림</string>
 </resources>

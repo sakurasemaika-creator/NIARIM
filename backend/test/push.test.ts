@@ -79,11 +79,25 @@ describe("FCM Android payload compatibility", () => {
     data: { type: "newBookmark", targetRoute: "/community/work/Ab_12345678" } };
 
   it("uses a resource only for an APK that registered localization support", () => {
-    const modern = fcmNotificationForDevice({ ...device, localizedNotifications: true }, notice);
-    expect(modern.notification).toEqual({ title: "NIARIM" });
+    const modern = fcmNotificationForDevice({ ...device, localizedNotifications: true }, notice)!;
+    expect(modern).toHaveProperty("notification");
+    expect("notification" in modern && modern.notification).toEqual({ title: "NIARIM" });
     expect(modern.android.notification).toEqual({ body_loc_key: "push_new_bookmark", visibility: "PRIVATE" });
-    const older = fcmNotificationForDevice(device, notice);
-    expect(older.notification).toEqual({ title: "NIARIM", body: "Fallback" });
+    const older = fcmNotificationForDevice(device, notice)!;
+    expect("notification" in older && older.notification).toEqual({ title: "NIARIM", body: "Fallback" });
     expect(older.android.notification).not.toHaveProperty("body_loc_key");
+  });
+
+  it("sends only data to APKs that can apply local history and switches", () => {
+    const data = { ...notice.data, niarimNoticeVersion: "1", firstKey: "a".repeat(64) };
+    const input = { ...notice, data, deviceHandled: true };
+    const capable = fcmNotificationForDevice({ ...device, deviceHandledNotices: true }, input);
+    expect(capable).toEqual({ token: device.token, data,
+      android: { priority: "HIGH", ttl: "86400s" } });
+    expect(fcmNotificationForDevice(device, input)).toBeUndefined();
+    const legacy = fcmNotificationForDevice(device, { ...input, allowLegacy: true });
+    expect(legacy).toMatchObject({ data: notice.data });
+    expect(legacy?.data).not.toHaveProperty("firstKey");
+    expect(legacy?.data).not.toHaveProperty("niarimNoticeVersion");
   });
 });

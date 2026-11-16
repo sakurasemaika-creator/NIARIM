@@ -1,10 +1,6 @@
 package com.niarim.niarim
 
 import android.Manifest
-import android.app.Notification
-import android.app.NotificationChannel
-import android.app.NotificationManager
-import android.app.PendingIntent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.media.MediaMetadataRetriever
@@ -32,7 +28,6 @@ class MainActivity : FlutterActivity() {
     private val hwVideoEncoderChannelName = "com.niarim.niarim/hw_video_encoder"
     private val postChannelName = "com.niarim.niarim/post_notification"
     private val videoFrameChannelName = "com.niarim.niarim/video_frame"
-    private val notificationChannelId = "niarim_post_complete"
     private var pendingPostNotification: Triple<String, String, Boolean>? = null
     private var methodChannel: MethodChannel? = null
     private var widgetChannel: MethodChannel? = null
@@ -47,7 +42,7 @@ class MainActivity : FlutterActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         pendingUri = extractUri(intent)
-        pendingWidgetRoute = intent?.getStringExtra(WIDGET_ROUTE_EXTRA)
+        pendingWidgetRoute = CommunityNotices.tappedRoute(this, intent)
     }
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
@@ -138,14 +133,37 @@ class MainActivity : FlutterActivity() {
                 when (call.method) {
                     "showSuccess" -> {
                         val videoId = call.argument<String>("workId")
-                        val title = call.argument<String>("title") ?: ""
+                        val owner = call.argument<String>("owner")
                         val scheduled = call.argument<Boolean>("scheduled") ?: false
                         if (videoId == null || !Regex("^[A-Za-z0-9_-]{11}$").matches(videoId)) {
                             result.error("BAD_WORK_ID", "Invalid work ID", null)
                         } else {
-                            showPostNotification(videoId, title, scheduled)
+                            if (owner != null) showPostNotification(owner, videoId, scheduled)
                             result.success(null)
                         }
+                    }
+                    else -> result.notImplemented()
+                }
+            }
+
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "com.niarim.niarim/activity_notice_history")
+            .setMethodCallHandler { call, result ->
+                when (call.method) {
+                    "filter" -> {
+                        val owner = call.argument<String>("owner") ?: ""
+                        val receipts = call.argument<List<Map<String, String>>>("receipts").orEmpty()
+                        thread(name = "notice-history") {
+                            try {
+                                val filtered = CommunityNotices.filter(applicationContext, owner, receipts)
+                                mainHandler.post { result.success(filtered) }
+                            } catch (_: Exception) {
+                                mainHandler.post { result.error("HISTORY_UNAVAILABLE", null, null) }
+                            }
+                        }
+                    }
+                    "clearOtherAccounts" -> {
+                        CommunityNotices.clearOtherAccounts(this, call.argument<String>("owner"))
+                        result.success(null)
                     }
                     else -> result.notImplemented()
                 }
@@ -221,16 +239,17 @@ class MainActivity : FlutterActivity() {
         if (uri != null) {
             methodChannel?.invokeMethod("onSharedFile", uri)
         }
-        val route = intent.getStringExtra(WIDGET_ROUTE_EXTRA)
+        val route = CommunityNotices.tappedRoute(this, intent)
         if (route != null) {
             widgetChannel?.invokeMethod("onWidgetRoute", route)
         }
     }
 
     private fun showPostNotification(
-        workId: String, title: String, scheduled: Boolean
+        owner: String, workId: String, scheduled: Boolean
     ) {
-        val record = Triple(workId, title, scheduled)
+        if (!CommunityNotices.publicationEnabled(this)) return
+        val record = Triple(owner, workId, scheduled)
         if (Build.VERSION.SDK_INT >= 33 &&
             checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) !=
                 PackageManager.PERMISSION_GRANTED) {
@@ -255,42 +274,14 @@ class MainActivity : FlutterActivity() {
     }
 
     private fun postConfirmedNotification(item: Triple<String, String, Boolean>) {
-        val (workId, title, scheduled) = item
-        val manager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
-        if (Build.VERSION.SDK_INT >= 26) {
-            manager.createNotificationChannel(
-                NotificationChannel(
-                    notificationChannelId, "作品投稿の完了",
-                    NotificationManager.IMPORTANCE_DEFAULT
-                )
-            )
+        val (owner, workId, scheduled) = item
+        thread(name = "post-notification") {
+            try {
+                CommunityNotices.showPost(applicationContext, owner, workId, scheduled)
+            } catch (error: Exception) {
+                android.util.Log.w("CommunityNotices", "Post notification unavailable: ${error.javaClass.simpleName}")
+            }
         }
-        val route = "/community/work/$workId"
-        val intent = Intent(this, MainActivity::class.java).apply {
-            putExtra(WIDGET_ROUTE_EXTRA, route)
-            flags = Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP
-        }
-        val pendingIntent = PendingIntent.getActivity(
-            this, workId.hashCode(), intent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
-        )
-        val message = if (scheduled) {
-            "予約投稿を受け付けました。タップして作品詳細を開きます。"
-        } else {
-            "作品広場への投稿が完了しました。タップして詳細を開きます。"
-        }
-        val builder = if (Build.VERSION.SDK_INT >= 26)
-            Notification.Builder(this, notificationChannelId)
-        else @Suppress("DEPRECATION") Notification.Builder(this)
-        manager.notify(
-            workId.hashCode(),
-            builder.setSmallIcon(R.mipmap.ic_launcher)
-                .setContentTitle(if (title.isBlank()) "NIARIM 投稿完了" else title)
-                .setContentText(message)
-                .setAutoCancel(true)
-                .setContentIntent(pendingIntent)
-                .build(),
-        )
     }
 
     private fun extractUri(intent: Intent?): String? {
