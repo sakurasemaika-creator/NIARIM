@@ -103,6 +103,37 @@ class EmptyStatePlaceholder extends StatelessWidget {
     double maxHeight,
     ColorScheme scheme,
   ) {
+    final texts = _textsHeight(context, maxWidth, scheme);
+    for (final badge in const [88.0, 56.0]) {
+      if (_padding(badge).vertical + badge + _badgeGap(badge) + texts <=
+          maxHeight) {
+        return badge;
+      }
+    }
+    return 0;
+  }
+
+  /// 印を出さなくても、見出し・案内・操作のボタンが高さ[maxHeight]に入らない
+  /// か。入らないときは、操作のボタンを見出しのすぐ下（案内の上）に置く
+  /// （案内の後に置くと、大きな文字で「検索をやめる」が画面の下・浮かぶ
+  /// ボタンの下へ押し出され、スクロールしないと押せなかった）。
+  bool _actionFirst(
+    BuildContext context,
+    double maxWidth,
+    double maxHeight,
+    ColorScheme scheme,
+  ) =>
+      action != null &&
+      hint != null &&
+      _padding(0).vertical + _textsHeight(context, maxWidth, scheme) >
+          maxHeight;
+
+  /// 見出し・案内・操作のボタンを並べた高さ（幅[maxWidth]、印は除く）。
+  double _textsHeight(
+    BuildContext context,
+    double maxWidth,
+    ColorScheme scheme,
+  ) {
     final base = DefaultTextStyle.of(context).style;
     final painter = TextPainter(
       textAlign: TextAlign.center,
@@ -123,50 +154,62 @@ class EmptyStatePlaceholder extends StatelessWidget {
     final texts =
         heightOf(title, _titleStyle(scheme)) +
         (hint == null ? 0 : 8 + heightOf(hint!, _hintStyle(scheme))) +
-        // 操作のボタン（高さ48の押せる所）の分。
+        // 操作のボタン（高さ48の押せる所）の分。大きな文字（1.5倍より上）
+        // では、ボタンの名前が2行に折れることがある（仏語の「Effacer la
+        // recherche」）ので2行分と見る。
         (action == null
             ? 0
-            : 16 + MediaQuery.textScalerOf(context).scale(20) + 28);
+            : 16 +
+                  MediaQuery.textScalerOf(context).scale(20) *
+                      (MediaQuery.textScalerOf(context).scale(1) > 1.5
+                          ? 2
+                          : 1) +
+                  28);
     painter.dispose();
-    for (final badge in const [88.0, 56.0]) {
-      if (_padding(badge).vertical + badge + _badgeGap(badge) + texts <=
-          maxHeight) {
-        return badge;
-      }
-    }
-    return 0;
+    return texts;
   }
 
-  Widget _content(BuildContext context, ColorScheme scheme, double badge) =>
-      Padding(
-        padding: _padding(badge),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            if (badge > 0)
-              Container(
-                width: badge,
-                height: badge,
-                decoration: BoxDecoration(
-                  color: scheme.primaryContainer,
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  icon,
-                  size: badge * 40 / 88,
-                  color: AccentTextTheme.of(context),
-                ),
-              ),
-            SizedBox(height: _badgeGap(badge)),
-            _centredText(title, _titleStyle(scheme)),
-            if (hint != null) ...[
-              const SizedBox(height: 8),
-              _centredText(hint!, _hintStyle(scheme)),
-            ],
-            if (action != null) ...[const SizedBox(height: 16), action!],
-          ],
-        ),
-      );
+  Widget _content(
+    BuildContext context,
+    ColorScheme scheme,
+    double badge, {
+    bool actionFirst = false,
+  }) => Padding(
+    padding: _padding(badge),
+    child: Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        if (badge > 0)
+          Container(
+            width: badge,
+            height: badge,
+            decoration: BoxDecoration(
+              color: scheme.primaryContainer,
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              icon,
+              size: badge * 40 / 88,
+              color: AccentTextTheme.of(context),
+            ),
+          ),
+        SizedBox(height: _badgeGap(badge)),
+        _centredText(title, _titleStyle(scheme)),
+        if (actionFirst && action != null) ...[
+          const SizedBox(height: 16),
+          action!,
+        ],
+        if (hint != null) ...[
+          SizedBox(height: actionFirst ? 16 : 8),
+          _centredText(hint!, _hintStyle(scheme)),
+        ],
+        if (!actionFirst && action != null) ...[
+          const SizedBox(height: 16),
+          action!,
+        ],
+      ],
+    ),
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -175,6 +218,7 @@ class EmptyStatePlaceholder extends StatelessWidget {
     final clearance = _floatingButtonsClearance(context);
     if (!scrollable) {
       var badge = screenBadge;
+      var actionFirst = false;
       if (fitIn case final size?) {
         final fits = _badgeThatFits(
           context,
@@ -183,10 +227,16 @@ class EmptyStatePlaceholder extends StatelessWidget {
           scheme,
         );
         if (fits < badge) badge = fits;
+        actionFirst = _actionFirst(
+          context,
+          size.width,
+          size.height - clearance,
+          scheme,
+        );
       }
       return Padding(
         padding: EdgeInsets.only(bottom: clearance),
-        child: _content(context, scheme, badge),
+        child: _content(context, scheme, badge, actionFirst: actionFirst),
       );
     }
     return LayoutBuilder(

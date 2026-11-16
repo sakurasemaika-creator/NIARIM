@@ -4341,8 +4341,10 @@ class _SharedTab extends StatelessWidget {
       ),
       emptyState: loadFailed
           ? null
-          : _filteredLibraryEmptyState(
+          : (fitIn) =>
+                _filteredLibraryEmptyState(
                   context,
+                  fitIn: fitIn,
                   searchQuery: searchQuery,
                   favoritesOnly: showFavoritesOnly,
                   // 検索には当たるが、お気に入りで隠れているだけか。
@@ -4360,6 +4362,7 @@ class _SharedTab extends StatelessWidget {
                   icon: Icons.share_outlined,
                   title: l10n.homeSharedEmpty,
                   scrollable: false,
+                  fitIn: fitIn,
                 ),
       folderIdOf: (p) => folders.any((f) => f.id == p.sharedFolderId)
           ? p.sharedFolderId
@@ -5189,6 +5192,7 @@ Widget? _clearSearchButton(AppLocalizations l10n, VoidCallback? onPressed) =>
 /// 無いときの表示（プロジェクトのタブと同じ文と、絞り込みを外すボタン）。
 /// 絞り込んでいなければnull（その一覧が空のときの文を出す）。
 /// [hiddenByFavorites]は、検索には当たるがお気に入りで隠れているだけのとき。
+/// [fitIn]は表示に使える幅と高さ（[EmptyStatePlaceholder.fitIn]）。
 Widget? _filteredLibraryEmptyState(
   BuildContext context, {
   required String searchQuery,
@@ -5197,6 +5201,7 @@ Widget? _filteredLibraryEmptyState(
   String? searchHint,
   VoidCallback? onClearSearch,
   VoidCallback? onShowAll,
+  Size? fitIn,
 }) {
   final l10n = AppLocalizations.of(context)!;
   final query = searchQuery.trim();
@@ -5206,6 +5211,7 @@ Widget? _filteredLibraryEmptyState(
       title: l10n.projectListNoMatchTitle(query),
       hint: searchHint,
       scrollable: false,
+      fitIn: fitIn,
       action: _clearSearchButton(l10n, onClearSearch),
     );
   }
@@ -5216,6 +5222,7 @@ Widget? _filteredLibraryEmptyState(
         ? l10n.projectListNoFavoriteMatchTitle(query)
         : l10n.projectListNoFavoritesTitle,
     scrollable: false,
+    fitIn: fitIn,
     action: onShowAll == null
         ? null
         : OutlinedButton(
@@ -5368,7 +5375,12 @@ class _FolderableList<T> extends StatelessWidget {
   final Widget Function(BuildContext, T) itemBuilder;
   final Widget Function(BuildContext, T)? gridItemBuilder;
   final ProjectViewMode? viewMode;
-  final Widget? emptyState;
+
+  /// 一覧が空のときの表示。[fitIn]には表示に使える幅と高さ（一覧の残りから
+  /// 浮かぶボタンの分を除いたもの）を渡す。空の表示はその中に入る大きさの
+  /// 丸い印にする（大きな文字で、「検索をやめる」が浮かぶボタンの下に
+  /// 押し出されない）。
+  final Widget Function(Size fitIn)? emptyState;
   final bool reserveForFloatingActions;
 
   /// 一覧の先頭（フォルダより上）に出し、一覧と一緒にスクロールするもの。
@@ -5439,16 +5451,26 @@ class _FolderableList<T> extends StatelessWidget {
               // 埋めるだけで、中身の方が高いときだけスクロールする）。外に
               // 足すと、何も無いのにその分スクロールでき、画面いっぱいに
               // 近いスクロールバーのつまみが出ていた。
-              SliverFillRemaining(
-                hasScrollBody: false,
-                child: Padding(
-                  padding: EdgeInsets.only(
-                    bottom: reserveForFloatingActions
-                        ? 88 + MediaQuery.paddingOf(context).bottom
-                        : 0,
-                  ),
-                  child: emptyState!,
-                ),
+              SliverLayoutBuilder(
+                builder: (context, constraints) {
+                  final reserve = reserveForFloatingActions
+                      ? 88 + MediaQuery.paddingOf(context).bottom
+                      : 0.0;
+                  return SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: Padding(
+                      padding: EdgeInsets.only(bottom: reserve),
+                      child: emptyState!(
+                        Size(
+                          constraints.crossAxisExtent,
+                          constraints.viewportMainAxisExtent -
+                              constraints.precedingScrollExtent -
+                              reserve,
+                        ),
+                      ),
+                    ),
+                  );
+                },
               ),
             ],
           );
@@ -7120,8 +7142,10 @@ class _WorksTabState extends State<_WorksTab>
             viewMode: widget.viewMode,
             gridItemBuilder: (context, file) => buildWork(context, file, true),
             emptyState: files.isEmpty && folders.isEmpty
-                ? _filteredLibraryEmptyState(
+                ? (fitIn) =>
+                      _filteredLibraryEmptyState(
                         context,
+                        fitIn: fitIn,
                         searchQuery: widget.searchQuery,
                         favoritesOnly: _showFavoritesOnly,
                         // 検索には当たるが、お気に入りで隠れているだけか。
@@ -7146,6 +7170,7 @@ class _WorksTabState extends State<_WorksTab>
                         title: l10n.homeWorksEmpty,
                         hint: l10n.homeWorksEmptyHint,
                         scrollable: false,
+                        fitIn: fitIn,
                       )
                 : null,
             allItems: files,
