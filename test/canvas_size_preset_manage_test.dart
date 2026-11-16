@@ -104,11 +104,24 @@ void main() {
     tester,
   ) async {
     final settings = await open(tester, presets: [wide]);
-    tester.view.physicalSize = const Size(320, 740);
     await openManager(tester);
-    final name = tester.getRect(find.text('横長'));
-    final menuButton = tester.getRect(find.byIcon(Icons.more_vert).first);
-    expect(menuButton.top, greaterThan(name.bottom));
+    for (final width in [320.0, 700.0]) {
+      tester.view.physicalSize = Size(width, 740);
+      await tester.pumpAndSettle();
+      final name = tester.getRect(find.text('横長'));
+      final menuIcon = tester.getRect(find.byIcon(Icons.more_vert).first);
+      final dragIcon = tester.getRect(find.byIcon(Icons.drag_handle).first);
+      final card = tester.getRect(
+        find.ancestor(of: find.text('横長'), matching: find.byType(Card)),
+      );
+      expect(menuIcon.center.dy, closeTo(dragIcon.center.dy, 0.01));
+      expect(menuIcon.center.dx, greaterThan(name.right));
+      expect(dragIcon.center.dx, greaterThan(menuIcon.center.dx));
+      expect(dragIcon.center.dx, greaterThan(card.right - 40));
+      expect(dragIcon.center.dy, lessThan(card.top + 40));
+    }
+    tester.view.physicalSize = const Size(320, 740);
+    await tester.pumpAndSettle();
     await menu(tester, '名前変更');
     final field = find.descendant(
       of: find.byType(AlertDialog),

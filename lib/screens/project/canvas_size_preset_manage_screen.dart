@@ -6,7 +6,6 @@ import 'package:provider/provider.dart';
 import '../../l10n/app_localizations.dart';
 import '../../models/canvas_size_preset.dart';
 import '../../services/settings_service.dart';
-import '../../widgets/action_beside_or_below.dart';
 import '../../widgets/confirm_delete.dart';
 import '../../config/font_fallback.dart';
 import '../../utils/duplicate_name.dart';
@@ -108,30 +107,44 @@ class _PresetTile extends StatelessWidget {
     final settings = context.read<SettingsService>();
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
-      child: ListTile(
-        leading: const Icon(Icons.aspect_ratio),
-        title: ActionBesideOrBelow(
-          minTextWidth: 180,
-          text: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                preset.name,
-                style: const TextStyle(
-                  fontFamily: 'Kuramubon',
-                  fontFamilyFallback: kHeadingFontFallback,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 8, 8, 8),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(
+              height: kMinInteractiveDimension,
+              child: Icon(
+                Icons.aspect_ratio,
+                color: Theme.of(context).listTileTheme.iconColor,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.only(top: 6, right: 4),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      preset.name,
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                        fontFamily: 'Kuramubon',
+                        fontFamilyFallback: kHeadingFontFallback,
+                      ),
+                    ),
+                    Text(
+                      '${preset.width}×${preset.height}',
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
+                  ],
                 ),
               ),
-              Text(
-                '${preset.width}×${preset.height}',
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
-            ],
-          ),
-          action: Wrap(
-            alignment: WrapAlignment.end,
-            children: [
-              PopupMenuButton<String>(
+            ),
+            SizedBox.square(
+              dimension: kMinInteractiveDimension,
+              child: PopupMenuButton<String>(
+                icon: const Icon(Icons.more_vert),
                 onSelected: (v) {
                   switch (v) {
                     case 'edit':
@@ -174,15 +187,23 @@ class _PresetTile extends StatelessWidget {
                   ),
                 ],
               ),
-              ReorderableDragStartListener(
-                index: dragIndex,
-                child: const Padding(
-                  padding: EdgeInsets.only(left: 4),
-                  child: Icon(Icons.drag_handle),
+            ),
+            ReorderableDragStartListener(
+              index: dragIndex,
+              child: SizedBox.square(
+                dimension: kMinInteractiveDimension,
+                child: ColoredBox(
+                  color: Colors.transparent,
+                  child: Center(
+                    child: Icon(
+                      Icons.drag_handle,
+                      color: Theme.of(context).listTileTheme.iconColor,
+                    ),
+                  ),
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

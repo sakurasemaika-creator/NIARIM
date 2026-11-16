@@ -261,9 +261,8 @@ class BrushService extends ChangeNotifier {
       calligraphyAngle: 0.0,
       tags: [AssetTagKeys.paint, AssetTagKeys.analog],
     ),
-    // カリグラフィー：ペン先の角度を45度に固定した扁平ブラシ
-    // （calligraphyAngle）。進行方向によって線の太さが変わる
-    // カリグラフィーペン特有の見た目になる。
+    // カリグラフィー：扁平なペン先を水平から15度に固定し、
+    // 横方向の線を細く、縦方向の線を太く描く。
     const Brush(
       id: 'Brush0006',
       name: 'カリグラフィー',
@@ -296,7 +295,7 @@ class BrushService extends ChangeNotifier {
       ),
       fadeMode: FadeMode.off,
       strokeDecay: false,
-      calligraphyAngle: 45.0,
+      calligraphyAngle: 15.0,
       tags: [AssetTagKeys.lineArt, AssetTagKeys.decoration],
     ),
     // ── ここから下は、よくあるイラスト制作ソフトに入っている定番の

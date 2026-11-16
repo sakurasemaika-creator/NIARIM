@@ -85,6 +85,43 @@ void main() {
     expect(alphas.last - alphas.first, lessThanOrEqualTo(3));
   });
 
+  test('カリグラフィーは縦線より細い横線を描く', () {
+    final brush = BrushService.builtInBrushes.firstWhere(
+      (brush) => brush.id == 'Brush0006',
+    );
+    int width({required double angle, required bool horizontal}) {
+      final tiles = TileManager(canvasWidth: 112, canvasHeight: 112);
+      try {
+        final engine = DrawingEngine(tileManager: tiles)
+          ..currentBrush = brush.copyWith(calligraphyAngle: angle);
+        StrokePoint point(double along) => StrokePoint(
+          x: horizontal ? along : 56,
+          y: horizontal ? 56 : along,
+          pressure: 1,
+        );
+        engine.beginStroke(point(20), 'paint');
+        for (var along = 24.0; along <= 92; along += 4) {
+          engine.continueStroke(point(along), 'paint');
+        }
+        engine.endStroke();
+        final tile = tiles.getTile('paint', 0, 0)!;
+        int alpha(int x, int y) => tile[(y * TileManager.tileSize + x) * 4 + 3];
+        return [
+          for (var across = 25; across <= 88; across++)
+            horizontal ? alpha(56, across) : alpha(across, 56),
+        ].where((alpha) => alpha >= 128).length;
+      } finally {
+        tiles.dispose();
+      }
+    }
+
+    final angle = brush.calligraphyAngle!;
+    final horizontal = width(angle: angle, horizontal: true);
+    expect(horizontal, greaterThan(0));
+    expect(horizontal, lessThan(width(angle: 45, horizontal: true)));
+    expect(width(angle: angle, horizontal: false), greaterThan(horizontal * 2));
+  });
+
   test('旧版に保存済みの標準ペンと混色ブラシの間隔を起動時に1へ移行する', () async {
     final seed = BrushService();
     await seed.init();

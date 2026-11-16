@@ -169,6 +169,45 @@ void main() {
     },
   );
 
+  testWidgets('flat brush preview leaves a margin around the entire wave', (
+    tester,
+  ) async {
+    final brush = BrushService.builtInBrushes.firstWhere(
+      (brush) => brush.id == 'Brush0009',
+    );
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: StrokeSamplePreview(brush: brush, color: Colors.black),
+        ),
+      ),
+    );
+    for (
+      var attempt = 0;
+      attempt < 40 && !tester.any(find.byType(RawImage));
+      attempt++
+    ) {
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 50)),
+      );
+      await tester.pump();
+    }
+    final img = tester.widget<RawImage>(find.byType(RawImage)).image!;
+    final data = (await tester.runAsync(
+      () => img.toByteData(format: ui.ImageByteFormat.rawRgba),
+    ))!;
+    int alpha(int x, int y) => data.getUint8((y * img.width + x) * 4 + 3);
+    expect(alpha(img.width ~/ 2, img.height ~/ 2), greaterThan(128));
+    for (var x = 0; x < img.width; x++) {
+      expect(alpha(x, 0), 0);
+      expect(alpha(x, img.height - 1), 0);
+    }
+    for (var y = 0; y < img.height; y++) {
+      expect(alpha(0, y), 0);
+      expect(alpha(img.width - 1, y), 0);
+    }
+  });
+
   testWidgets('Airbrush and blur presets actually contain soft alpha halos', (
     tester,
   ) async {

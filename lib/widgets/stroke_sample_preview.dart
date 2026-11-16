@@ -45,6 +45,8 @@ class StrokeSamplePreview extends StatefulWidget {
 class _StrokeSamplePreviewState extends State<StrokeSamplePreview> {
   static const int _width = 240;
   static const int _height = 48;
+  static const int _waveInset = 12;
+  static const int _waveAmplitude = 9;
   ui.Image? _sample;
   int _revision = 0;
 
@@ -72,11 +74,13 @@ class _StrokeSamplePreviewState extends State<StrokeSamplePreview> {
     super.dispose();
   }
 
-  static List<ui.Offset> _wavePoints() => [
-    for (var x = 12; x <= _width - 12; x += 2)
+  static List<ui.Offset> _wavePoints([int inset = _waveInset]) => [
+    for (var x = inset; x <= _width - inset; x += 2)
       ui.Offset(
         x.toDouble(),
-        _height / 2 + 9 * math.sin((x - 12) / (_width - 24) * math.pi * 4),
+        _height / 2 +
+            _waveAmplitude *
+                math.sin((x - inset) / (_width - 2 * inset) * math.pi * 4),
       ),
   ];
 
@@ -114,9 +118,31 @@ class _StrokeSamplePreviewState extends State<StrokeSamplePreview> {
         onBlur.enabled ? math.max(onBlur.weak, onBlur.strong) : 0,
       );
       final extent = brush.size / 2 + maxBlur;
+      // The drawing engine stretches fixed-angle tips before rotating them.
+      // Project that ellipse onto the preview axes to leave room for its halo.
+      final angle = brush.calligraphyAngle;
+      var horizontalScale = 1.0;
+      var verticalScale = 1.0;
+      if (angle != null) {
+        final radians = angle * math.pi / 180;
+        final cos = math.cos(radians);
+        final sin = math.sin(radians);
+        final longAxisSquared = kCalligraphyNibAspect * kCalligraphyNibAspect;
+        horizontalScale = brush.rotation
+            ? kCalligraphyNibAspect
+            : math.sqrt(longAxisSquared * cos * cos + sin * sin);
+        verticalScale = brush.rotation
+            ? kCalligraphyNibAspect
+            : math.sqrt(longAxisSquared * sin * sin + cos * cos);
+      }
+      final verticalRoom = _height / 2 - _waveAmplitude - 2;
       final scale = math.min(
         1.0,
-        math.min(19.0 / math.max(brush.size, 1), 16.0 / math.max(extent, 1)),
+        math.min(
+          19.0 / math.max(brush.size, 1),
+          (angle == null ? 16.0 : verticalRoom / verticalScale - 1) /
+              math.max(extent, 1),
+        ),
       );
       int scaledBlur(int original) => (original * scale).round().clamp(0, 100);
       final previewBrush = brush.copyWith(
@@ -143,7 +169,16 @@ class _StrokeSamplePreviewState extends State<StrokeSamplePreview> {
           // pencils and user-configured pressure-sensitive brushes also
           // show their characteristic thickness and opacity.
           ..pressureEnabled = true;
-        final points = _wavePoints();
+        final inset = angle == null
+            ? _waveInset
+            : math.max(
+                _waveInset,
+                ((previewBrush.size / 2 + scaledBlur(maxBlur) + 0.5) *
+                            horizontalScale)
+                        .ceil() +
+                    2,
+              );
+        final points = _wavePoints(inset);
         StrokePoint samplePoint(ui.Offset p, int index) {
           final t = index / (points.length - 1);
           return StrokePoint(
