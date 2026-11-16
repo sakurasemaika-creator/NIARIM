@@ -190,14 +190,46 @@ class NiaproSerializer {
     json.addAll(fields);
     _writeArchiveAtomically(path, (encoder) {
       for (final entry in archive.files) {
+        // Every entry, the rewritten manifest too, keeps the date it had.
+        final stored = _storedModTime(entry);
         encoder.addArchiveFile(
           entry.name == _manifestFile
-              ? ArchiveFile(_manifestFile, 0, utf8.encode(jsonEncode(json)))
-              : entry,
+              ? (ArchiveFile(_manifestFile, 0, utf8.encode(jsonEncode(json)))
+                  ..lastModTime = stored)
+              : (entry..lastModTime = stored),
         );
       }
     });
   });
+
+  /// The date a read zip entry was stored with, in the form the zip encoder
+  /// writes ([ArchiveFile.lastModTime] as seconds since 1970, local time).
+  /// Reading a zip leaves the date in that field as the zip stores it (the
+  /// DOS date and time packed into one number), and the encoder reads the
+  /// field as seconds: an entry copied as it was got a date years away, so a
+  /// rewrite that only changed a manifest field changed every entry's date.
+  /// A stored value that is not a date (some writers leave it zero) becomes
+  /// 1980-01-01, the first date a zip can hold.
+  static int _storedModTime(ArchiveFile entry) {
+    final date = (entry.lastModTime >> 16) & 0xffff;
+    final time = entry.lastModTime & 0xffff;
+    final month = (date >> 5) & 0x0f;
+    final day = date & 0x1f;
+    final hour = time >> 11;
+    final minute = (time >> 5) & 0x3f;
+    final second = (time & 0x1f) * 2;
+    final valid =
+        month >= 1 &&
+        month <= 12 &&
+        day >= 1 &&
+        hour < 24 &&
+        minute < 60 &&
+        second < 60;
+    final stored = valid
+        ? DateTime((date >> 9) + 1980, month, day, hour, minute, second)
+        : DateTime(1980);
+    return stored.millisecondsSinceEpoch ~/ 1000;
+  }
 
   /// テスト・明示的な書き出し先向けに、通常の.niaproと同じ内容を指定パスへ保存する。
   /// path_providerを経由しないため、serializerの実round-tripを独立して検証できる。
