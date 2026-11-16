@@ -233,7 +233,7 @@ void main() {
       await tester.tap(find.text(l10n.commonClose));
       await tester.pumpAndSettle();
       brushes.dispose();
-      print('Captured $kind');
+      debugPrint('Captured $kind');
     }
     showPremiumBanner(
       screen,

@@ -210,7 +210,7 @@ describe.skipIf(process.env.NIARIM_DYNAMODB_LOCAL_TESTS !== "1")(
         redeemed: true, duplicate: false, costCoins: 55000,
       });
       expect(result.expiresAtEpochMs).toBeGreaterThan(Date.now());
-      expect((await get(Keys.coinWallet(other)))?.balanceCoins).toBe(156000);
+      expect((await get(Keys.coinWallet(other)))?.balanceCoins).toBe(145000);
       expect((await get(Keys.coinWallet(owner)))?.balanceCoins).toBe(1890);
       expect((await get(Keys.rewardEntitlement(other, "fullPremium")))?.expiresAtEpochMs)
         .toBe(result.expiresAtEpochMs);
@@ -220,7 +220,7 @@ describe.skipIf(process.env.NIARIM_DYNAMODB_LOCAL_TESTS !== "1")(
       expect(JSON.parse(retry.body ?? "{}")).toMatchObject({
         redeemed: true, duplicate: true, costCoins: 55000,
       });
-      expect((await get(Keys.coinWallet(other)))?.balanceCoins).toBe(156000);
+      expect((await get(Keys.coinWallet(other)))?.balanceCoins).toBe(145000);
       const reward = await getMyRewardState(event("other"));
       expect(JSON.parse(reward.body ?? "{}").entitlements).toEqual(
         expect.arrayContaining([
@@ -231,7 +231,7 @@ describe.skipIf(process.env.NIARIM_DYNAMODB_LOCAL_TESTS !== "1")(
         ]),
       );
     }, 30_000);
-    it("discounted annual Premium extends the existing expiry once at 440,000 Opals", async () => {
+    it("discounted annual Premium extends the existing expiry once at 550,000 Opals", async () => {
       const before = await get(Keys.rewardEntitlement(other, "fullPremium"));
       const previousExpiry = before?.expiresAtEpochMs as number;
       expect(previousExpiry).toBeGreaterThan(Date.now());
@@ -253,14 +253,14 @@ describe.skipIf(process.env.NIARIM_DYNAMODB_LOCAL_TESTS !== "1")(
       });
       expect(result.expiresAtEpochMs)
         .toBeGreaterThan(previousExpiry + 360 * 86400_000);
-      expect((await get(Keys.coinWallet(other)))?.balanceCoins).toBe(210000);
+      expect((await get(Keys.coinWallet(other)))?.balanceCoins).toBe(100000);
       expect((await get(Keys.rewardEntitlement(other, "fullPremium")))?.expiresAtEpochMs)
         .toBe(result.expiresAtEpochMs);
       const retry = await redeemCoins(event("other", body));
       expect(JSON.parse(retry.body ?? "{}")).toMatchObject({
         redeemed: true, duplicate: true, costCoins: 550000,
       });
-      expect((await get(Keys.coinWallet(other)))?.balanceCoins).toBe(210000);
+      expect((await get(Keys.coinWallet(other)))?.balanceCoins).toBe(100000);
       expect((await get(Keys.coinWallet(owner)))?.balanceCoins).toBe(1890);
     }, 30_000);
 

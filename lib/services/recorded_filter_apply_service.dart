@@ -186,6 +186,7 @@ class RecordedFilterApplyService {
       projectId: projectId,
       sceneId: sceneId,
       frameIndex: frameIndex,
+      recordUndo: false,
       layer: sourceIndex < 0
           ? created
           : generatedLayerFitted(

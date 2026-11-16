@@ -3400,6 +3400,7 @@ class _FilterPanelState extends State<FilterPanel> {
       projectId: widget.projectId,
       sceneId: widget.sceneId,
       frameIndex: frameIndex,
+      recordUndo: false,
       layer: sourceLayer == null
           ? created
           : generatedLayerFitted(created, sourceLayer, before, insertIndex),

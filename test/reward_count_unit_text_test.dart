@@ -853,7 +853,7 @@ void main() {
       final review = find.byKey(const Key('rewardOverlapPreviewButton'));
       final buttonLabel = tester
           .widget<Text>(
-            find.descendant(of: review, matching: find.byType(Text)),
+            find.descendant(of: review, matching: _anyText),
           )
           .data!;
       expect(foreign.hasMatch(buttonLabel), isFalse, reason: buttonLabel);
