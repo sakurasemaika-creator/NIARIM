@@ -1986,10 +1986,12 @@ class ProjectService extends ChangeNotifier {
     bool isSharedImport = true,
   }) async {
     final newId = _nextId('proj');
+    // 作成と最終保存は同じ1回の時刻（別々に読むと数マイクロ秒ずれる）。
+    final now = DateTime.now();
     final project = data.project.copyWith(
       id: newId,
-      createdAt: DateTime.now(),
-      updatedAt: DateTime.now(),
+      createdAt: now,
+      updatedAt: now,
       isSharedImport: isSharedImport,
     );
     _projects.add(project);
@@ -3245,14 +3247,17 @@ class ProjectService extends ChangeNotifier {
     List<String>? enabledAutofillPresetIds,
   }) async {
     final projectId = _nextId('proj');
+    // 作成と最終保存は同じ1回の時刻（別々に読むと数マイクロ秒ずれ、その値が
+    // 初めての保存でファイルにも書かれた）。
+    final now = DateTime.now();
     final project = Project(
       id: projectId,
       name: name,
       fps: fps,
       durationSeconds: durationSeconds,
       backgroundColor: backgroundColor,
-      createdAt: DateTime.now(),
-      updatedAt: DateTime.now(),
+      createdAt: now,
+      updatedAt: now,
       totalWorkSeconds: 0,
       exportWidth: exportWidth,
       exportHeight: exportHeight,
@@ -3764,11 +3769,13 @@ class ProjectService extends ChangeNotifier {
             for (final p in _projects)
               if (p.isSharedImport == original.isSharedImport) p.name,
           });
+      // 作成と最終保存は同じ1回の時刻（最終保存は直後の保存の時刻になる）。
+      final now = DateTime.now();
       final copy = original.copyWith(
         id: newId,
         name: copyName,
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
+        createdAt: now,
+        updatedAt: now,
         folderId: useTargetFolder ? targetFolderId : original.folderId,
         sharedFolderId: useTargetSharedFolder
             ? targetSharedFolderId
