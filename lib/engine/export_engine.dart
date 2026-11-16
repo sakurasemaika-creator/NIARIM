@@ -48,6 +48,14 @@ class ExportCancelledException implements Exception {
   String toString() => 'ExportCancelledException: 書き出しがキャンセルされました';
 }
 
+/// An export listing and the metadata read during the same storage scan.
+class ExportedFileListing {
+  ExportedFileListing._(this.files, this.stats);
+
+  final List<File> files;
+  final Map<File, FileStat> stats;
+}
+
 class ExportEngine {
   final CameraEngine _cameraEngine = CameraEngine();
   final LayerKeyframeEngine _layerKeyframeEngine = LayerKeyframeEngine();
@@ -71,8 +79,10 @@ class ExportEngine {
   // 直近の一覧結果のキャッシュ。スプラッシュ表示中に先読みしておいた結果を
   // 「作品一覧」タブが再利用することで、タブ表示時のディスクアクセス待ちを
   // 省略できる。
-  static List<File>? _cachedExportedFiles;
+  static ExportedFileListing? _cachedExportedFiles;
   static int _cachedStorageGeneration = -1;
+  static Future<ExportedFileListing>? _exportListingInFlight;
+  static int _exportListingInFlightGeneration = -1;
 
   /// 作品一覧タブ用：exportsフォルダ内の書き出し済みファイル一覧を
   /// 更新日時の新しい順で返す。[forceRefresh]がfalse（既定）かつキャッシュが
@@ -80,35 +90,63 @@ class ExportEngine {
   /// 呼び出す。
   static Future<List<File>> listExportedFiles({
     bool forceRefresh = false,
+  }) async =>
+      (await listExportedFileMetadata(forceRefresh: forceRefresh)).files;
+
+  static Future<ExportedFileListing> listExportedFileMetadata({
+    bool forceRefresh = false,
   }) async {
     final generation = ExportStorage.generation;
+    final pending = _exportListingInFlight;
+    if (!forceRefresh &&
+        pending != null &&
+        _exportListingInFlightGeneration == generation) {
+      return pending;
+    }
     if (!forceRefresh &&
         _cachedExportedFiles != null &&
         _cachedStorageGeneration == generation) {
       return _cachedExportedFiles!;
     }
-    final files = await _newestFirst(await ExportStorage.listFiles());
-    if (generation == ExportStorage.generation) {
-      _cachedExportedFiles = files;
-      _cachedStorageGeneration = generation;
+    final scan = _readExportListing();
+    _exportListingInFlight = scan;
+    _exportListingInFlightGeneration = generation;
+    try {
+      final listing = await scan;
+      if (identical(_exportListingInFlight, scan) &&
+          generation == ExportStorage.generation) {
+        _cachedExportedFiles = listing;
+        _cachedStorageGeneration = generation;
+      }
+      return listing;
+    } finally {
+      if (identical(_exportListingInFlight, scan)) {
+        _exportListingInFlight = null;
+      }
     }
-    return files;
   }
 
-  /// [files]を更新日時の新しい順に並べる。日時はファイルごとに1回だけ
-  /// 読む（比べるたびに読むと、ファイルの数nに対してn log n回ディスクへ
-  /// 問い合わせ、並べる間に消えたファイルは1970年として末尾に残った）。
-  /// 読めない（一覧を読んだ後に消えた）ファイルは、作品一覧の並べ替えと
-  /// 同じく一覧に入れない。
-  static Future<List<File>> _newestFirst(List<File> files) async {
-    final stats = await Future.wait([for (final file in files) file.stat()]);
-    final dated = [
-      for (final (i, file) in files.indexed)
-        if (stats[i].type != FileSystemEntityType.notFound)
-          (file: file, modified: stats[i].modified),
-    ];
-    dated.sort((a, b) => b.modified.compareTo(a.modified));
-    return [for (final entry in dated) entry.file];
+  static Future<ExportedFileListing> _readExportListing() async {
+    final files = await ExportStorage.listFiles();
+    // Bound pending OS requests and yield to the UI between batches.
+    const batchSize = 256;
+    final stats = Map<File, FileStat>.identity();
+    for (var start = 0; start < files.length; start += batchSize) {
+      final batch = files.skip(start).take(batchSize).toList();
+      final results = await Future.wait(batch.map((file) => file.stat()));
+      for (final (i, stat) in results.indexed) {
+        if (stat.type == FileSystemEntityType.file) stats[batch[i]] = stat;
+      }
+    }
+    final sorted = files.where(stats.containsKey).toList()
+      ..sort((a, b) {
+        final byTime = stats[b]!.modified.compareTo(stats[a]!.modified);
+        return byTime == 0 ? a.path.compareTo(b.path) : byTime;
+      });
+    return ExportedFileListing._(
+      List.unmodifiable(sorted),
+      Map.unmodifiable(stats),
+    );
   }
 
   /// フレームを合成して乗算済みRGBAのUint8Listを返す。

@@ -63,6 +63,7 @@ class ExportedWorkCard extends StatelessWidget {
   final String? selectionId;
 
   static final _filenameSeparators = RegExp(r'([_.-])');
+  static const gridNameLines = 3;
 
   @override
   Widget build(BuildContext context) {
@@ -101,36 +102,89 @@ class ExportedWorkCard extends StatelessWidget {
     // 「本）.png」と折れていた）。欄に入らないほど長いときは、印の字の間で
     // だけ折り返す（かたまりのままだと「(コピー 12).gi / f」とどこかで切れた）。
     final copy = copyMarkSplit(name);
-    Widget title() => LayoutBuilder(
+    Widget title({bool grid = false}) => LayoutBuilder(
       builder: (context, constraints) {
         final textScaler = MediaQuery.textScalerOf(context);
         final direction = Directionality.of(context);
         final locale = Localizations.maybeLocaleOf(context);
-        // かたまりがどれも欄の1行に入るか。
-        bool fits(String text) {
-          final painter = TextPainter(
-            text: TextSpan(text: text, style: titleStyle),
-            textScaler: textScaler,
-            textDirection: direction,
-            locale: locale,
-          )..layout();
-          final fits = painter.minIntrinsicWidth <= constraints.maxWidth;
-          painter.dispose();
-          return fits;
+        final captionStyle = grid
+            ? collectionTileCaptionStyle(context)
+            : titleStyle;
+        final measuredStyle = DefaultTextStyle.of(context).style
+            .merge(captionStyle)
+            .copyWith(
+              fontWeight: MediaQuery.boldTextOf(context)
+                  ? FontWeight.bold
+                  : captionStyle.fontWeight,
+            );
+        final painter = TextPainter(
+          maxLines: grid ? gridNameLines : null,
+          textDirection: direction,
+          textScaler: textScaler,
+          locale: locale,
+        );
+        void layout(String text, {double width = double.infinity}) {
+          painter
+            ..text = TextSpan(text: text, style: measuredStyle)
+            ..layout(maxWidth: width);
         }
 
+        bool fitsPart(String text) {
+          layout(text);
+          return painter.minIntrinsicWidth <= constraints.maxWidth;
+        }
+
+        final extensionAt = name.lastIndexOf('.');
+        final extension = extensionAt > 0 ? name.substring(extensionAt) : '';
+        final head =
+            copy?.head ??
+            (extensionAt > 0 ? name.substring(0, extensionAt) : name);
+        final tail = copy == null
+            ? extension
+            : copyMarkLineText(copy.tail, fitsPart);
+        String render(String stem) =>
+            breakable(stem) +
+            (copy == null && tail.isNotEmpty ? '\u200B' : '') +
+            tail;
+        var shown = render(head);
+        if (grid) {
+          bool fits(String text) {
+            layout(text, width: constraints.maxWidth);
+            return !painter.didExceedMaxLines;
+          }
+
+          if (!fits(shown)) {
+            // Keep the name ending and extension visible, even for exports
+            // with a common stem and a distinguishing take number at the end.
+            final letters = head.characters.toList();
+            var low = 0;
+            var high = letters.length - 1;
+            while (low < high) {
+              final middle = (low + high + 1) ~/ 2;
+              final candidate = render(
+                '${letters.first}…${letters.skip(letters.length - middle).join()}',
+              );
+              if (fits(candidate)) {
+                low = middle;
+              } else {
+                high = middle - 1;
+              }
+            }
+            if (letters.isNotEmpty) {
+              shown = render(
+                '${letters.first}…${letters.skip(letters.length - low).join()}',
+              );
+            }
+          }
+        }
+        painter.dispose();
         return Text(
-          copy == null
-              ? breakable(name)
-              : breakable(copy.head) + copyMarkLineText(copy.tail, fits),
+          shown,
           key: const Key('exportedWorkTitle'),
           semanticsLabel: name,
-          // A very long filename at 2x text size must not grow beyond the
-          // screen-height card; the original full name remains in semantics
-          // and in the file detail view.
-          maxLines: 8,
-          overflow: TextOverflow.ellipsis,
-          style: titleStyle,
+          maxLines: grid ? gridNameLines : null,
+          overflow: grid ? TextOverflow.ellipsis : TextOverflow.clip,
+          style: captionStyle,
         );
       },
     );
@@ -248,12 +302,7 @@ class ExportedWorkCard extends StatelessWidget {
       );
     }
 
-    // 詳細の行の名前・日付と、右上の星・︙。星・︙は名前の行の右に置いて
-    // いた所（行の上・欄の右の余白の内側）に重ねて描き、押せる所（48×48）が
-    // 名前の行の外（上の余白・右の余白）へ届くようにする（行の中に置くと、
-    // 行の外の所を押しても届かない）。名前の欄は今までどおり星・︙の幅を
-    // 空けて折り返す。
-    Widget detailBody() {
+    Widget detailBody(double width) {
       final actions = [
         if (!selectionActive && onToggleFavorite != null) favorite(),
         if (!selectionActive) menu(),
@@ -263,6 +312,29 @@ class ExportedWorkCard extends StatelessWidget {
           : actions.length * CollectionActionFrame.extent +
                 (actions.length - 1) * CollectionActionRow.gap;
       const inset = EdgeInsets.fromLTRB(0, 8, 8, 8);
+      final textScale = MediaQuery.textScalerOf(context).scale(16) / 16;
+      if (width - inset.horizontal - actionsWidth < 180 * textScale &&
+          actions.isNotEmpty) {
+        return Padding(
+          padding: inset,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              title(),
+              const SizedBox(height: 4),
+              details(),
+              if (shareError != null) ...[
+                const SizedBox(height: 8),
+                shareFeedback(),
+              ],
+              Align(
+                alignment: AlignmentDirectional.centerEnd,
+                child: CollectionActionRow(children: actions),
+              ),
+            ],
+          ),
+        );
+      }
       final rtl = Directionality.of(context) == TextDirection.rtl;
       return Stack(
         children: [
@@ -347,7 +419,22 @@ class ExportedWorkCard extends StatelessWidget {
                       ],
                     ),
                   ),
-                  collectionTileCaption(context, name),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 4,
+                    ),
+                    child: SizedBox(
+                      height: collectionTileNameHeight(
+                        context,
+                        lines: gridNameLines,
+                      ),
+                      child: Align(
+                        alignment: AlignmentDirectional.topStart,
+                        child: title(grid: true),
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -396,7 +483,9 @@ class ExportedWorkCard extends StatelessWidget {
                         const SizedBox.shrink(),
                         TableCell(
                           verticalAlignment: TableCellVerticalAlignment.top,
-                          child: detailBody(),
+                          child: detailBody(
+                            constraints.maxWidth - coverWidth - 12,
+                          ),
                         ),
                       ],
                     ),

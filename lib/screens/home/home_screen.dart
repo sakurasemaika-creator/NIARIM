@@ -414,6 +414,7 @@ class _HomeScreenState extends State<HomeScreen>
   // ときだけ出す。以前は一番上でも、スクロールできない短いフォルダでも出て、
   // 左下のカードの名前を隠した）。
   bool _projectsCanGoUp = false;
+  double? _projectActionsClearance;
 
   /// 一覧を送ったとき（コントローラーの知らせ）と、ホームを組み立て直した
   /// 後（フォルダを替えた・絞り込んだ・窓の大きさを変えた：一覧が作り
@@ -643,7 +644,7 @@ class _HomeScreenState extends State<HomeScreen>
 
   bool _isSelectionMode = false;
   final Set<String> _selectedIds = {};
-  final Set<String> _visibleLibraryIds = {};
+  Set<String> _visibleLibraryIds = const {};
   // 複数選択モードの切り取り・コピー・貼り付け。フォルダ間の移動を手軽に
   // するための内部クリップボード（アプリを離れると保持しない、
   // セッション内のみのUI状態）。_clipboardIsCutがtrueなら切り取り（貼り付け
@@ -691,7 +692,7 @@ class _HomeScreenState extends State<HomeScreen>
         setState(() {
           _currentTabIndex = _tabController.index;
           _selectedIds.clear();
-          _visibleLibraryIds.clear();
+          _visibleLibraryIds = const {};
           _isSelectionMode = false;
           _resetProjectSearch();
         });
@@ -768,6 +769,27 @@ class _HomeScreenState extends State<HomeScreen>
   final GlobalKey _floatingActionsKey = GlobalKey(
     debugLabel: 'homeFloatingActions',
   );
+
+  void _syncProjectActionsClearance() {
+    if (!mounted || _currentTabIndex != 0 || _isSelectionMode) return;
+    final view = _listAreaKey.currentContext?.findRenderObject();
+    final actions = _floatingActionsKey.currentContext?.findRenderObject();
+    if (view is! RenderBox ||
+        actions is! RenderBox ||
+        !view.hasSize ||
+        !actions.hasSize) {
+      return;
+    }
+    final listEnd = view.localToGlobal(Offset(0, view.size.height)).dy;
+    final actionsTop = actions.localToGlobal(Offset.zero).dy;
+    final clearance = (listEnd - actionsTop + _homeFloatingActionsGap).clamp(
+      0.0,
+      view.size.height,
+    );
+    if (_projectActionsClearance != clearance) {
+      setState(() => _projectActionsClearance = clearance);
+    }
+  }
 
   // プロジェクトの一覧の見出し（お気に入りの絞り込み・並び順・パンくず）。
   // 一覧は見る範囲（お気に入りだけ・フォルダ・検索）ごとに作り直してスクロール
@@ -975,7 +997,10 @@ class _HomeScreenState extends State<HomeScreen>
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     _tabController.reduceMotion = MediaQuery.disableAnimationsOf(context);
-    WidgetsBinding.instance.addPostFrameCallback((_) => _syncProjectsCanGoUp());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _syncProjectsCanGoUp();
+      _syncProjectActionsClearance();
+    });
     _maybeRecordLogin(
       context.watch<GoogleAuthService>().account?.id,
       context.read<CommunityService>().api,
@@ -1219,29 +1244,23 @@ class _HomeScreenState extends State<HomeScreen>
                   selectedIds: Set<String>.of(_selectedIds),
                   onLongPress: _longPressLibraryEntry,
                   onToggle: _toggleLibraryEntry,
-                  onVisibleIds: (ids) {
+                  onVisibleIds: (prefix, ids) {
                     // TabBarView may prebuild adjacent off-screen tabs. Only
                     // the active collection can supply the Select All set.
-                    final prefix = switch (_currentTabIndex) {
-                      1 => 'work_',
-                      2 => _sharedOutgoing ? 'outgoing_' : 'shared_',
-                      3 => 'trash_',
+                    final activePrefix = switch (_currentTabIndex) {
+                      1 => 'work',
+                      2 => _sharedOutgoing ? 'outgoing' : 'shared',
+                      3 => 'trash',
                       _ => '',
                     };
-                    if (prefix.isEmpty ||
-                        (ids.isNotEmpty &&
-                            ids.any((id) => !id.startsWith(prefix)))) {
-                      return;
-                    }
-                    _visibleLibraryIds
-                      ..clear()
-                      ..addAll(ids);
+                    if (prefix == activePrefix) _visibleLibraryIds = ids;
                   },
                   child: TabBarView(
                     controller: _tabController,
                     children: [
                       ProjectListWidget(
                         scrollController: _projectScrollController,
+                        bottomClearance: _projectActionsClearance,
                         header: Column(
                           key: _projectListHeaderKey,
                           children: [
@@ -1364,6 +1383,7 @@ class _HomeScreenState extends State<HomeScreen>
                       _WorksTab(
                         key: const PageStorageKey('home-works'),
                         viewMode: _effectiveWorksViewMode(context),
+                        active: _currentTabIndex == 1,
                         onViewModeChanged: _selectWorksViewMode,
                         searchQuery: _currentTabIndex == 1 && _isSearching
                             ? _searchQuery
@@ -1385,7 +1405,7 @@ class _HomeScreenState extends State<HomeScreen>
                         onDirectionChanged: (outgoing) => setState(() {
                           _sharedOutgoing = outgoing;
                           _selectedIds.clear();
-                          _visibleLibraryIds.clear();
+                          _visibleLibraryIds = const {};
                           _isSelectionMode = false;
                         }),
                         onCopyEntry: _copyLibraryEntry,
@@ -3295,6 +3315,9 @@ class _HomeFloatingActionState extends State<_HomeFloatingAction> {
   }
 }
 
+// Space between the visible end of the list and the floating controls.
+const double _homeFloatingActionsGap = 16;
+
 /// Responsive four-tab navigation: icons on compact phones and centered
 /// icon/label pairs once every translated label fits (same as Works Plaza).
 /// ホームのTabの順番：上部バー（戻る・表示・検索・メニュー・タブ）→一覧
@@ -3317,10 +3340,6 @@ class _HomeTraversalPolicy extends ReadingOrderTraversalPolicy {
       );
 
   final GlobalKey listArea;
-
-  /// 浮かぶボタンの上に空ける間（一覧の下に浮かぶボタンの分として空けた
-  /// 余白88＝ボタン56・画面の下の余白16・この間16と同じ）。
-  static const double _floatingActionsGap = 16;
 
   @override
   Iterable<FocusNode> sortDescendants(
@@ -3411,7 +3430,8 @@ class _HomeTraversalPolicy extends ReadingOrderTraversalPolicy {
     var bottom = shown.bottom;
     final actions = floatingActions.currentContext?.findRenderObject();
     if (actions is RenderBox && actions.attached && actions.hasSize) {
-      final top = actions.localToGlobal(Offset.zero).dy - _floatingActionsGap;
+      final top =
+          actions.localToGlobal(Offset.zero).dy - _homeFloatingActionsGap;
       if (top < bottom) bottom = top;
     }
     final rect = target.localToGlobal(Offset.zero) & target.size;
@@ -4130,7 +4150,7 @@ class _SharedTab extends StatelessWidget {
                   shared.any((p) => p.sharedFolderId == folder.id)),
         )
         .toList();
-    HomeCollectionSelectionScope.maybeOf(context)?.onVisibleIds({
+    HomeCollectionSelectionScope.maybeOf(context)?.onVisibleIds('shared', {
       for (final folder in visibleFolders) 'shared_folder:${folder.id}',
       for (final project in shared)
         if (project.sharedFolderId == null ||
@@ -4772,9 +4792,9 @@ class _OutgoingSharesList extends StatelessWidget {
       };
       return n == 0 ? a.path.compareTo(b.path) : n;
     });
-    HomeCollectionSelectionScope.maybeOf(
-      context,
-    )?.onVisibleIds({for (final entry in saved) 'outgoing_file:${entry.path}'});
+    HomeCollectionSelectionScope.maybeOf(context)?.onVisibleIds('outgoing', {
+      for (final entry in saved) 'outgoing_file:${entry.path}',
+    });
     if (saved.isEmpty) {
       return CustomScrollView(
         slivers: [
@@ -5176,6 +5196,8 @@ class _FolderableList<T> extends StatelessWidget {
   /// 移す確認で中身を数え、お気に入りを探すのに使う（絞り込んだ一覧で
   /// 数えると、見えていない中身を数えない）。省けば[allItems]。
   final List<T>? everyItem;
+  final Map<File, FileStat>? exportStats;
+  final ({List<T> root, Map<String, List<T>> folders})? groupedItems;
   final List<ProjectFolder> folders;
   final String? Function(T) folderIdOf;
   final void Function(String folderId, String folderName, List<T> itemsInFolder)
@@ -5202,6 +5224,8 @@ class _FolderableList<T> extends StatelessWidget {
     super.key,
     required this.allItems,
     this.everyItem,
+    this.exportStats,
+    this.groupedItems,
     required this.folders,
     required this.folderIdOf,
     required this.onEnterFolder,
@@ -5220,13 +5244,24 @@ class _FolderableList<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final rootItems = allItems.where((e) => folderIdOf(e) == null).toList();
     // フォルダごとの件数を1回の走査で数える。フォルダの数だけallItemsを
     // whereで舐め直すと、作品数×フォルダ数の走査が毎buildで走っていた。
+    final grouped = groupedItems;
+    final rootItems = grouped?.root ?? <T>[];
     final countByFolder = <String, int>{};
-    for (final e in allItems) {
-      final id = folderIdOf(e);
-      if (id != null) countByFolder[id] = (countByFolder[id] ?? 0) + 1;
+    if (grouped == null) {
+      for (final e in allItems) {
+        final id = folderIdOf(e);
+        if (id == null) {
+          rootItems.add(e);
+        } else {
+          countByFolder[id] = (countByFolder[id] ?? 0) + 1;
+        }
+      }
+    } else {
+      for (final entry in grouped.folders.entries) {
+        countByFolder[entry.key] = entry.value.length;
+      }
     }
     final hasHeader = folders.isNotEmpty;
     final lead = header == null ? 0 : 1;
@@ -5273,7 +5308,13 @@ class _FolderableList<T> extends StatelessWidget {
               SliverPadding(
                 padding: const EdgeInsets.all(8),
                 sliver: SliverGrid.builder(
-                  gridDelegate: _worksGridDelegate(context, viewMode!),
+                  gridDelegate: _worksGridDelegate(
+                    context,
+                    viewMode!,
+                    nameLines: T == File
+                        ? ExportedWorkCard.gridNameLines
+                        : kCollectionTileNameLines,
+                  ),
                   itemCount: folders.length + rootItems.length,
                   itemBuilder: (context, index) => index < folders.length
                       ? _folderGridTile(
@@ -5321,8 +5362,12 @@ class _FolderableList<T> extends StatelessWidget {
 
   List<FolderThumbnailChoice> _folderCoverChoices(String folderId) {
     final result = <FolderThumbnailChoice>[];
-    for (final entry in allItems) {
-      if (folderIdOf(entry) != folderId) continue;
+    final members =
+        groupedItems?.folders[folderId] ??
+        (groupedItems == null
+            ? allItems.where((item) => folderIdOf(item) == folderId)
+            : Iterable<T>.empty());
+    for (final entry in members) {
       if (entry is Project) {
         final path = entry.thumbnailPath;
         if (path != null && path.isNotEmpty) {
@@ -5355,18 +5400,16 @@ class _FolderableList<T> extends StatelessWidget {
         }.contains(extension)) {
           continue;
         }
-        try {
-          result.add(
-            FolderThumbnailChoice(
-              id: file.path,
-              name: file.uri.pathSegments.last,
-              imagePath: file.path,
-              updatedAt: file.lastModifiedSync(),
-            ),
-          );
-        } on FileSystemException {
-          // A file removed outside the app must not crash the folder list.
-        }
+        final stat = exportStats?[file];
+        if (stat == null) continue;
+        result.add(
+          FolderThumbnailChoice(
+            id: file.path,
+            name: file.uri.pathSegments.last,
+            imagePath: file.path,
+            updatedAt: stat.modified,
+          ),
+        );
       }
     }
     return result;
@@ -6446,7 +6489,7 @@ class _TrashTabState extends State<_TrashTab> {
             ProjectSortMode.updatedDesc => b.deletedAt.compareTo(a.deletedAt),
           },
         );
-        HomeCollectionSelectionScope.maybeOf(context)?.onVisibleIds({
+        HomeCollectionSelectionScope.maybeOf(context)?.onVisibleIds('trash', {
           for (final row in rows)
             if (row.project != null)
               'trash_project:${row.project!.id}'
@@ -6570,40 +6613,24 @@ class _TrashFilesLoading extends StatelessWidget {
 
 /// Reuse the Projects collection's four sort modes for exported media.
 /// The source files are never renamed or modified by a view preference.
-List<File> _sortExportedFiles(List<File> files, ProjectSortMode mode) {
-  // 更新日時はファイルごとに1回だけ読む。読み直す前の一覧に、ゴミ箱へ
-  // 移した直後のファイル・アプリの外で消えたファイルが残っていても止まらない
-  // （以前は無いファイルの日時を読んで、作品一覧のタブの組み立てが例外に
-  // なった）。読めない（もう無い）ファイルは、書き出したファイルの一覧・
-  // フォルダの表紙の候補と同じく一覧に出さない（1970年の日時・-1 Bの、
-  // 開けも移せもしないカードが残った）。
-  final modified = <String, DateTime>{};
-  final sorted = <File>[];
-  for (final file in files) {
-    try {
-      modified[file.path] = file.lastModifiedSync();
-      sorted.add(file);
-    } on FileSystemException {
-      // もう無い（アプリの外で消えた・ゴミ箱へ移した直後）。
-    }
-  }
+List<File> _sortExportedFiles(
+  Iterable<File> files,
+  ProjectSortMode mode,
+  Map<File, FileStat> stats,
+) {
+  // The scan already orders by newest first with a deterministic path tie-break.
+  final sorted = files.toList();
+  if (mode == ProjectSortMode.updatedDesc) return sorted;
   final byName = nameComparator<File>((file) => file.uri.pathSegments.last);
-  DateTime modifiedOf(File file) => modified[file.path]!;
-  int compare(File a, File b) {
-    switch (mode) {
-      case ProjectSortMode.nameAsc:
-        return byName(a, b);
-      case ProjectSortMode.nameDesc:
-        return byName(b, a);
-      case ProjectSortMode.updatedAsc:
-        return modifiedOf(a).compareTo(modifiedOf(b));
-      case ProjectSortMode.updatedDesc:
-        return modifiedOf(b).compareTo(modifiedOf(a));
-    }
-  }
-
   sorted.sort((a, b) {
-    final order = compare(a, b);
+    final order = switch (mode) {
+      ProjectSortMode.nameAsc => byName(a, b),
+      ProjectSortMode.nameDesc => byName(b, a),
+      ProjectSortMode.updatedAsc => stats[a]!.modified.compareTo(
+        stats[b]!.modified,
+      ),
+      ProjectSortMode.updatedDesc => 0,
+    };
     return order == 0 ? a.path.compareTo(b.path) : order;
   });
   return sorted;
@@ -6632,15 +6659,16 @@ List<ProjectFolder> _sortWorkFolders(
 /// Reuse the exact Projects 16:12 grid and minimum caption allowance.
 SliverGridDelegate _worksGridDelegate(
   BuildContext context,
-  ProjectViewMode mode,
-) {
+  ProjectViewMode mode, {
+  int nameLines = kCollectionTileNameLines,
+}) {
   final extent = switch (mode) {
     ProjectViewMode.small => 130.0,
     ProjectViewMode.medium => 170.0,
     ProjectViewMode.large => 240.0,
     ProjectViewMode.detail => 240.0,
   };
-  return collectionTileGridDelegate(context, extent);
+  return collectionTileGridDelegate(context, extent, nameLines: nameLines);
 }
 
 class _WorksTab extends StatefulWidget {
@@ -6648,11 +6676,13 @@ class _WorksTab extends StatefulWidget {
     super.key,
     required this.viewMode,
     required this.onViewModeChanged,
+    required this.active,
     this.searchQuery = '',
     this.onClearSearch,
     this.onCopyEntry,
   });
   final ProjectViewMode viewMode;
+  final bool active;
   final ValueChanged<ProjectViewMode> onViewModeChanged;
   final String searchQuery;
 
@@ -6665,7 +6695,13 @@ class _WorksTab extends StatefulWidget {
 }
 
 class _WorksTabState extends State<_WorksTab>
-    with _RememberedListFilters<_WorksTab> {
+    with
+        WidgetsBindingObserver,
+        AutomaticKeepAliveClientMixin<_WorksTab>,
+        _RememberedListFilters<_WorksTab> {
+  @override
+  bool get wantKeepAlive => true;
+
   @override
   HomeList get filtersList => HomeList.works;
   @override
@@ -6680,7 +6716,87 @@ class _WorksTabState extends State<_WorksTab>
   static const _favoritePathsKey = 'home.works.favoritePaths.v1';
   final Set<String> _favoritePaths = {};
   bool _showFavoritesOnly = false;
-  late Future<List<File>> _future;
+  int _favoritesRevision = 0;
+  ({
+    ExportedFileListing listing,
+    WorkFolderService folders,
+    int folderRevision,
+    String query,
+    bool favoritesOnly,
+    int favoritesRevision,
+    ProjectSortMode sort,
+  })?
+  _viewInputs;
+  late List<File> _shownFiles;
+  late List<ProjectFolder> _shownFolders;
+  late Set<String> _shownIds;
+  late Map<File, String?> _folderByFile;
+  late ({List<File> root, Map<String, List<File>> folders}) _groupedFiles;
+
+  void _updateView(
+    ExportedFileListing listing,
+    WorkFolderService folders,
+    String query,
+  ) {
+    final inputs = (
+      listing: listing,
+      folders: folders,
+      folderRevision: folders.revision,
+      query: query,
+      favoritesOnly: _showFavoritesOnly,
+      favoritesRevision: _favoritesRevision,
+      sort: _sortMode,
+    );
+    if (_viewInputs == inputs) return;
+
+    // Changing the selection or view size does not change this file listing.
+    if (_viewInputs?.listing != listing ||
+        _viewInputs?.folders != folders ||
+        _viewInputs?.folderRevision != folders.revision) {
+      _folderByFile = {
+        for (final file in listing.files)
+          file: folders.folderIdOf(file.uri.pathSegments.last),
+      };
+    }
+    _viewInputs = inputs;
+    _shownFiles = _sortExportedFiles(
+      listing.files.where(
+        (file) =>
+            (!_showFavoritesOnly || _favoritePaths.contains(file.path)) &&
+            (query.isEmpty || nameMatches(file.uri.pathSegments.last, query)),
+      ),
+      _sortMode,
+      listing.stats,
+    );
+    final root = <File>[];
+    final byFolder = <String, List<File>>{};
+    for (final file in _shownFiles) {
+      final id = _folderByFile[file];
+      if (id == null) {
+        root.add(file);
+      } else {
+        byFolder.putIfAbsent(id, () => []).add(file);
+      }
+    }
+    _groupedFiles = (root: root, folders: byFolder);
+    _shownFolders = _sortWorkFolders(
+      folders.folders
+          .where(
+            (folder) =>
+                byFolder.containsKey(folder.id) ||
+                ((!_showFavoritesOnly || folder.isFavorite) &&
+                    (query.isEmpty || nameMatches(folder.name, query))),
+          )
+          .toList(),
+      _sortMode,
+    );
+    _shownIds = {
+      for (final folder in _shownFolders) 'work_folder:${folder.id}',
+      for (final file in root) 'work_file:${file.path}',
+    };
+  }
+
+  late Future<ExportedFileListing> _future;
   @override
   ProjectSortMode _sortMode = ProjectSortMode.updatedDesc;
 
@@ -6688,11 +6804,12 @@ class _WorksTabState extends State<_WorksTab>
     try {
       final prefs = await SharedPreferences.getInstance();
       final stored = prefs.getStringList(_favoritePathsKey) ?? const <String>[];
-      if (mounted) {
+      if (mounted && !setEquals(_favoritePaths, stored.toSet())) {
         setState(() {
           _favoritePaths
             ..clear()
             ..addAll(stored);
+          _favoritesRevision++;
         });
       }
     } catch (error) {
@@ -6703,6 +6820,7 @@ class _WorksTabState extends State<_WorksTab>
   Future<void> _toggleFavorite(String path) async {
     setState(() {
       if (!_favoritePaths.add(path)) _favoritePaths.remove(path);
+      _favoritesRevision++;
     });
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -6718,27 +6836,48 @@ class _WorksTabState extends State<_WorksTab>
   @override
   void initState() {
     super.initState();
-    _future = ExportEngine.listExportedFiles();
+    _future = ExportEngine.listExportedFileMetadata();
     _loadFavoritePaths();
+    WidgetsBinding.instance.addObserver(this);
     LocalFileTrashService.changes.addListener(_onLocalFilesChanged);
   }
 
   @override
+  void didUpdateWidget(covariant _WorksTab oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.active &&
+        !oldWidget.active &&
+        (_viewInputs != null || _loadFailed)) {
+      // Recheck external file changes on return without blocking the tab.
+      _reload();
+    }
+  }
+
+  @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     LocalFileTrashService.changes.removeListener(_onLocalFilesChanged);
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed && widget.active) _reload();
   }
 
   void _onLocalFilesChanged() {
     if (mounted) _reload();
   }
 
+  bool _loadFailed = false;
+
   Future<void> _reload() async {
+    final request = ExportEngine.listExportedFileMetadata(forceRefresh: true);
     setState(() {
-      _future = ExportEngine.listExportedFiles(forceRefresh: true);
+      _future = request;
     });
     try {
-      await _future;
+      await request;
     } catch (error, stackTrace) {
       AppErrorReporter.record(error, stackTrace);
     }
@@ -6746,62 +6885,33 @@ class _WorksTabState extends State<_WorksTab>
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     final l10n = AppLocalizations.of(context)!;
-    return FutureBuilder<List<File>>(
+    final selection = HomeCollectionSelectionScope.maybeOf(context);
+    return FutureBuilder<ExportedFileListing>(
       future: _future,
       builder: (context, snapshot) {
+        _loadFailed = snapshot.hasError;
         if (snapshot.hasError) {
+          selection?.onVisibleIds('work', const {});
           return _WorksLoadFailure(onRetry: _reload);
         }
         if (!snapshot.hasData) {
+          selection?.onVisibleIds('work', const {});
           return const Center(child: CircularProgressIndicator());
         }
+        final listing = snapshot.data!;
         final query = foldName(widget.searchQuery).trim();
-        final files = _sortExportedFiles(
-          snapshot.data!
-              .where(
-                (file) =>
-                    (!_showFavoritesOnly ||
-                        _favoritePaths.contains(file.path)) &&
-                    (query.isEmpty ||
-                        nameMatches(file.uri.pathSegments.last, query)),
-              )
-              .toList(),
-          _sortMode,
-        );
         final workFolders = context.watch<WorkFolderService>();
-        final folders = _sortWorkFolders(
-          workFolders.folders
-              .where(
-                (folder) =>
-                    (!_showFavoritesOnly ||
-                        folder.isFavorite ||
-                        files.any(
-                          (f) =>
-                              workFolders.folderIdOf(f.uri.pathSegments.last) ==
-                              folder.id,
-                        )) &&
-                    (query.isEmpty ||
-                        nameMatches(folder.name, query) ||
-                        files.any(
-                          (f) =>
-                              workFolders.folderIdOf(f.uri.pathSegments.last) ==
-                              folder.id,
-                        )),
-              )
-              .toList(),
-          _sortMode,
-        );
-        HomeCollectionSelectionScope.maybeOf(context)?.onVisibleIds({
-          for (final folder in folders) 'work_folder:${folder.id}',
-          for (final file in files)
-            if (workFolders.folderIdOf(file.uri.pathSegments.last) == null)
-              'work_file:${file.path}',
-        });
+        _updateView(listing, workFolders, query);
+        final files = _shownFiles;
+        final folders = _shownFolders;
+        selection?.onVisibleIds('work', _shownIds);
         Widget buildWork(BuildContext context, File file, bool grid) =>
             _WorkListItem(
               key: ValueKey(file.path),
               file: file,
+              stat: listing.stats[file]!,
               gridTile: grid,
               isFavorite: _favoritePaths.contains(file.path),
               onToggleFavorite: () => _toggleFavorite(file.path),
@@ -6844,8 +6954,14 @@ class _WorksTabState extends State<_WorksTab>
               ),
               sortByName: _sortByName,
               sortAscending: _sortAscending,
-              onSortByNameChanged: _setSortByName,
-              onToggleDirection: _toggleSortDirection,
+              onSortByNameChanged: (value) {
+                _setSortByName(value);
+                _reload();
+              },
+              onToggleDirection: () {
+                _toggleSortDirection();
+                _reload();
+              },
             ),
             viewMode: widget.viewMode,
             gridItemBuilder: (context, file) => buildWork(context, file, true),
@@ -6857,7 +6973,7 @@ class _WorksTabState extends State<_WorksTab>
                         // 検索には当たるが、お気に入りで隠れているだけか。
                         hiddenByFavorites:
                             query.isNotEmpty &&
-                            (snapshot.data!.any(
+                            (listing.files.any(
                                   (file) => nameMatches(
                                     file.uri.pathSegments.last,
                                     query,
@@ -6879,10 +6995,11 @@ class _WorksTabState extends State<_WorksTab>
                       )
                 : null,
             allItems: files,
-            everyItem: snapshot.data!,
+            everyItem: listing.files,
+            exportStats: listing.stats,
+            groupedItems: _groupedFiles,
             folders: folders,
-            folderIdOf: (f) =>
-                workFolders.folderIdOf(f.path.split(RegExp(r'[\\/]')).last),
+            folderIdOf: (file) => _folderByFile[file],
             onEnterFolder: (folderId, folderName, itemsInFolder) =>
                 Navigator.of(context).push(
                   adMockMaterialPageRoute(
@@ -6905,6 +7022,7 @@ class _WorksTabState extends State<_WorksTab>
                       onToggleFavorite: _toggleFavorite,
                       onViewModeChanged: widget.onViewModeChanged,
                       onDeleted: _reload,
+                      listing: listing,
                       onCopyEntry: widget.onCopyEntry,
                     ),
                   ),
@@ -6998,6 +7116,7 @@ class _WorksLoadFailure extends StatelessWidget {
 /// 作品一覧タブのフォルダ内表示。
 class _WorksFolderScreen extends StatefulWidget {
   final String folderId;
+  final ExportedFileListing listing;
   final String folderName;
   final VoidCallback onDeleted;
   final ValueChanged<HomeClipboardEntry>? onCopyEntry;
@@ -7014,6 +7133,7 @@ class _WorksFolderScreen extends StatefulWidget {
   final ValueChanged<String> onToggleFavorite;
   const _WorksFolderScreen({
     required this.folderId,
+    required this.listing,
     required this.folderName,
     required this.viewMode,
     required this.initialSortMode,
@@ -7032,7 +7152,7 @@ class _WorksFolderScreen extends StatefulWidget {
 }
 
 class _WorksFolderScreenState extends State<_WorksFolderScreen> {
-  late Future<List<File>> _future;
+  late Future<ExportedFileListing> _future;
   late ProjectViewMode _viewMode;
   late ProjectSortMode _sortMode;
 
@@ -7041,7 +7161,7 @@ class _WorksFolderScreenState extends State<_WorksFolderScreen> {
     super.initState();
     _viewMode = widget.viewMode;
     _sortMode = widget.initialSortMode;
-    _future = ExportEngine.listExportedFiles();
+    _future = ExportEngine.listExportedFileMetadata(forceRefresh: true);
   }
 
   bool get _sortByName =>
@@ -7077,14 +7197,13 @@ class _WorksFolderScreenState extends State<_WorksFolderScreen> {
 
   Future<void> _reload() async {
     setState(() {
-      _future = ExportEngine.listExportedFiles(forceRefresh: true);
+      _future = ExportEngine.listExportedFileMetadata(forceRefresh: true);
     });
     try {
       await _future;
     } catch (error, stackTrace) {
       AppErrorReporter.record(error, stackTrace);
     }
-    widget.onDeleted();
   }
 
   @override
@@ -7132,33 +7251,26 @@ class _WorksFolderScreenState extends State<_WorksFolderScreen> {
             ),
           ),
           Expanded(
-            child: FutureBuilder<List<File>>(
+            child: FutureBuilder<ExportedFileListing>(
               future: _future,
               builder: (context, snapshot) {
                 if (snapshot.hasError) {
                   return _WorksLoadFailure(onRetry: _reload);
                 }
-                if (!snapshot.hasData) {
-                  return const Center(child: CircularProgressIndicator());
-                }
+                final listing = snapshot.data ?? widget.listing;
+                final query = foldName(widget.searchQuery).trim();
                 final items = _sortExportedFiles(
-                  snapshot.data!
-                      .where(
-                        (f) =>
-                            workFolders.folderIdOf(
-                                  f.path.split(RegExp(r'[\\/]')).last,
-                                ) ==
-                                widget.folderId &&
-                            (!widget.favoritesOnly ||
-                                widget.favoritePaths.contains(f.path)) &&
-                            (widget.searchQuery.trim().isEmpty ||
-                                nameMatches(
-                                  f.uri.pathSegments.last,
-                                  foldName(widget.searchQuery).trim(),
-                                )),
-                      )
-                      .toList(),
+                  listing.files.where(
+                    (f) =>
+                        workFolders.folderIdOf(f.uri.pathSegments.last) ==
+                            widget.folderId &&
+                        (!widget.favoritesOnly ||
+                            widget.favoritePaths.contains(f.path)) &&
+                        (query.isEmpty ||
+                            nameMatches(f.uri.pathSegments.last, query)),
+                  ),
                   _sortMode,
+                  listing.stats,
                 );
                 if (items.isEmpty) {
                   return EmptyStatePlaceholder(
@@ -7171,6 +7283,7 @@ class _WorksFolderScreenState extends State<_WorksFolderScreen> {
                   return _WorkListItem(
                     key: ValueKey(file.path),
                     file: file,
+                    stat: listing.stats[file]!,
                     gridTile: grid,
                     isFavorite: widget.favoritePaths.contains(file.path),
                     onToggleFavorite: () => widget.onToggleFavorite(file.path),
@@ -7183,7 +7296,10 @@ class _WorksFolderScreenState extends State<_WorksFolderScreen> {
                               name: file.uri.pathSegments.last,
                             ),
                           ),
-                    onDeleted: _reload,
+                    onDeleted: () {
+                      _reload();
+                      widget.onDeleted();
+                    },
                   );
                 }
 
@@ -7191,7 +7307,11 @@ class _WorksFolderScreenState extends State<_WorksFolderScreen> {
                   return GridView.builder(
                     key: ValueKey(('works-folder-grid', _viewMode)),
                     padding: const EdgeInsets.all(8),
-                    gridDelegate: _worksGridDelegate(context, _viewMode),
+                    gridDelegate: _worksGridDelegate(
+                      context,
+                      _viewMode,
+                      nameLines: ExportedWorkCard.gridNameLines,
+                    ),
                     itemCount: items.length,
                     itemBuilder: (context, index) => item(context, index, true),
                   );
@@ -7212,6 +7332,7 @@ class _WorksFolderScreenState extends State<_WorksFolderScreen> {
 
 class _WorkListItem extends StatefulWidget {
   final File file;
+  final FileStat stat;
   final VoidCallback onDeleted;
   final VoidCallback? onCopy;
   final bool gridTile;
@@ -7220,6 +7341,7 @@ class _WorkListItem extends StatefulWidget {
   const _WorkListItem({
     super.key,
     required this.file,
+    required this.stat,
     required this.onDeleted,
     this.onCopy,
     this.gridTile = false,
@@ -7306,7 +7428,7 @@ class _WorkListItemState extends State<_WorkListItem> {
 
   @override
   Widget build(BuildContext context) {
-    final stat = file.statSync();
+    final stat = widget.stat;
     final l10n = AppLocalizations.of(context)!;
     return FutureBuilder<Map<String, dynamic>>(
       future: _coverSetting,
@@ -7587,6 +7709,7 @@ class _WorkPreviewState extends State<_WorkPreview> {
     }
     return ExportedWorkPreviewLayout(
       content: content,
+      fileName: widget.file.uri.pathSegments.last,
       contentAspectRatio: _isImage
           ? _imageAspectRatio ?? 16 / 9
           : _controller?.value.isInitialized == true

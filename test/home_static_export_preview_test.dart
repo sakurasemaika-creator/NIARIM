@@ -49,7 +49,10 @@ void main() {
               .setMockMethodCallHandler(channel, null);
           dir.deleteSync(recursive: true);
         });
-        final names = ['AUDIT_static_frame.$format'];
+        final names = [
+          for (final take in ['01', '02'])
+            'AUDIT_static_frame_take_$take.${format.toUpperCase()}',
+        ];
         final exports = Directory('${dir.path}/exports')..createSync();
         for (final name in names) {
           File('${exports.path}/$name').writeAsBytesSync(
@@ -96,7 +99,9 @@ void main() {
             isFalse,
             reason: 'The distinguishing filename must be visible: $name',
           );
-          expect(paragraph.text.toPlainText().replaceAll('\u200B', ''), name);
+          final visible = paragraph.text.toPlainText().replaceAll('\u200B', '');
+          expect(visible, endsWith(name.substring(name.lastIndexOf('_'))));
+          if (!visible.contains('…')) expect(visible, name);
           expect(paragraph.text.style?.color, palette.menuTextColor);
           final card = tester.widget<Card>(
             find.ancestor(of: label, matching: find.byType(Card)).first,
@@ -108,6 +113,14 @@ void main() {
         await tester.pumpAndSettle();
         await tester.tap(previewName);
         await tester.pumpAndSettle();
+        expect(
+          tester
+              .widget<SelectableText>(
+                find.byKey(const Key('exportedWorkPreviewName')),
+              )
+              .data,
+          names.first,
+        );
         expect(
           tester.takeException(),
           isNull,
@@ -139,6 +152,21 @@ void main() {
         await tester.tap(close);
         await tester.pumpAndSettle();
         expect(find.byType(Dialog), findsNothing);
+
+        final modes = find.byKey(const Key('homeCollectionViewModeMenu'));
+        await tester.tap(modes);
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Détails').last);
+        await tester.pumpAndSettle();
+        for (final name in names) {
+          final label = findExportedWorkName(name);
+          await tester.ensureVisible(label);
+          final paragraph = tester.renderObject<RenderParagraph>(
+            find.descendant(of: label, matching: find.byType(RichText)),
+          );
+          expect(paragraph.didExceedMaxLines, isFalse);
+          expect(paragraph.text.toPlainText().replaceAll('\u200B', ''), name);
+        }
         expect(tester.takeException(), isNull);
       },
     );

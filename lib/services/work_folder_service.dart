@@ -51,6 +51,9 @@ class WorkFolderService extends ChangeNotifier {
   final Map<String, WorkFileCover> _fileCovers = {};
   Future<void>? _pending;
   bool _disposed = false;
+  int _revision = 0;
+
+  int get revision => _revision;
 
   List<ProjectFolder> get folders => List.unmodifiable(_folders);
 
@@ -334,7 +337,9 @@ class WorkFolderService extends ChangeNotifier {
       });
 
   void _notify() {
-    if (!_disposed) notifyListeners();
+    if (_disposed) return;
+    _revision++;
+    notifyListeners();
   }
 
   @override

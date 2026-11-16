@@ -190,6 +190,9 @@ class ProjectListWidget extends StatelessWidget {
   final ValueChanged<String> onOpenFolder;
   final ScrollController? scrollController;
 
+  /// Space below the final result so it can scroll past Home's controls.
+  final double? bottomClearance;
+
   /// Optional controls that scroll away with the project list rather than
   /// remaining pinned above its viewport.
   final Widget? header;
@@ -233,6 +236,7 @@ class ProjectListWidget extends StatelessWidget {
     required this.currentFolderId,
     required this.onOpenFolder,
     this.scrollController,
+    this.bottomClearance,
     this.header,
     this.projects,
     this.showFavoritesOnly = false,
@@ -470,7 +474,10 @@ class ProjectListWidget extends StatelessWidget {
             // まで送っても最後の行の名前が＋の下に入った）。
             SliverToBoxAdapter(
               child: SizedBox(
-                height: 104 + MediaQuery.paddingOf(context).bottom,
+                key: const Key('homeProjectListEndClearance'),
+                height:
+                    bottomClearance ??
+                    104 + MediaQuery.paddingOf(context).bottom,
               ),
             ),
           ],
@@ -520,7 +527,11 @@ class ProjectListWidget extends StatelessWidget {
           ),
           // 画面の下の帯の分も空ける（詳細の一覧と同じ）。
           SliverToBoxAdapter(
-            child: SizedBox(height: 104 + MediaQuery.paddingOf(context).bottom),
+            child: SizedBox(
+              key: const Key('homeProjectListEndClearance'),
+              height:
+                  bottomClearance ?? 104 + MediaQuery.paddingOf(context).bottom,
+            ),
           ),
         ],
       );

@@ -88,6 +88,20 @@ void main() {
           list.position.jumpTo(list.position.maxScrollExtent);
           await m.frames(2);
           if (arrow.evaluate().isEmpty) problems.add('not shown at the end');
+          final controls = find.byType(FloatingActionButton);
+          final buttonTop = tester.getTopLeft(arrow).dy;
+          final viewport = list.context.findRenderObject()! as RenderBox;
+          final bottom = viewport
+              .localToGlobal(Offset(0, viewport.size.height))
+              .dy;
+          final tail = find.byKey(const Key('homeProjectListEndClearance'));
+          expect(controls, findsNWidgets(2));
+          expect(
+            tester.getSize(tail).height,
+            closeTo(bottom - buttonTop + 16, 0.5),
+            reason: 'use the actual button clearance',
+          );
+          expect(tester.getTopLeft(tail).dy, lessThan(buttonTop));
           await m.capture('${tag}_end');
 
           // 押すと一番上へ戻り、戻ったら消える。

@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:niarim/engine/export_engine.dart';
 import 'package:niarim/screens/home/home_screen.dart';
 import 'package:niarim/screens/home/widgets/exported_work_card.dart';
 import 'package:niarim/services/work_folder_service.dart';
@@ -15,11 +16,8 @@ import 'helpers/home_clipboard_harness.dart';
 /// 出さない（書き出したファイルの一覧〔`ExportStorage.listFiles`〕にも、
 /// フォルダの表紙の候補にも、消えたファイルは入らない）。
 ///
-/// 並べ替えが`lastModifiedSync()`で更新日時を読むので、消えたファイルで
-/// `PathNotFoundException`になり作品一覧の組み立てが止まった。その後、読めない
-/// ファイルを1970年の日時として扱うようになったが、消えたファイルが
-/// 「1970/01/01・-1 B」のカードとして一覧の端に残り、開く・共有する・
-/// ゴミ箱へ移すのどれもできなかった。
+/// 外部の変更を非同期で読み直す入口（並べ替え、タブへの戻り、
+/// フォルダを開く）から消えたファイルが取り除かれることを確認する。
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -56,6 +54,9 @@ void main() {
       exports: ['a.gif', 'b.gif', 'c.gif'],
     );
     stamp(home);
+    await tester.runAsync(
+      () => ExportEngine.listExportedFiles(forceRefresh: true),
+    );
     await home.showTab(1);
     expect(shown(tester), ['c.gif', 'b.gif', 'a.gif']);
 
@@ -63,9 +64,10 @@ void main() {
     File('${home.dir.path}/exports/b.gif').deleteSync();
 
     // 新しい順（既定）→名前の降順→名前の昇順→古い順。どれも作品一覧が
-    // 覚えている一覧で組み立て直す。
+    // 覚えている一覧を使ってすぐ描画し、ファイルの変更は非同期で反映する。
     final orders = <String, List<String>>{};
     Future<void> record(String label) async {
+      await home.waitFor(() => !shown(tester).contains('b.gif'));
       await home.settle();
       expect(tester.takeException(), isNull, reason: label);
       orders[label] = shown(tester);
@@ -114,7 +116,10 @@ void main() {
     await home.showTab(1);
     File('${home.dir.path}/exports/b.gif').deleteSync();
     await tester.tap(find.byKey(ValueKey('collectionFolder_${clips.id}')));
-    await home.settleIo(3);
+    await home.waitFor(() {
+      final names = shown(tester);
+      return names.contains('a.gif') && !names.contains('b.gif');
+    });
     await home.settle();
     expect(tester.takeException(), isNull);
     expect(shown(tester), ['a.gif']);

@@ -132,10 +132,11 @@ CollectionTileGridDelegate collectionTileGridDelegate(
   BuildContext context,
   double maxExtent, {
   bool locationRow = false,
+  int nameLines = kCollectionTileNameLines,
 }) {
   final minimumHeight =
       kCollectionTilePictureMinHeight +
-      collectionTileNameHeight(context) +
+      collectionTileNameHeight(context, lines: nameLines) +
       (locationRow ? collectionTileLocationHeight(context) : 0) +
       8;
   return CollectionTileGridDelegate(
@@ -198,7 +199,10 @@ var _watchingFonts = false;
 
 /// 名前の帯（[kCollectionTileNameLines]行分）の高さ。名前が1行でも2行
 /// でも同じ高さにして、同じ行のカードの絵の高さをそろえる。
-double collectionTileNameHeight(BuildContext context) {
+double collectionTileNameHeight(
+  BuildContext context, {
+  int lines = kCollectionTileNameLines,
+}) {
   _forgetMeasurementsWhenFontsChange();
   final style = _nameTextStyle(context);
   final key = (
@@ -206,15 +210,13 @@ double collectionTileNameHeight(BuildContext context) {
     MediaQuery.textScalerOf(context),
     Directionality.of(context),
     Localizations.maybeLocaleOf(context),
+    lines,
   );
   final cached = _nameHeights[key];
   if (cached != null) return cached;
   // 欧文・漢字・ハングルの代わりの書体の行の高さも含めて測る。
   final painter = TextPainter(
-    text: TextSpan(
-      text: List.filled(kCollectionTileNameLines, 'Ag国한').join('\n'),
-      style: style,
-    ),
+    text: TextSpan(text: List.filled(lines, 'Ag国한').join('\n'), style: style),
     textScaler: key.$2,
     textDirection: key.$3,
     locale: key.$4,
@@ -226,7 +228,7 @@ double collectionTileNameHeight(BuildContext context) {
 }
 
 final _nameHeights =
-    <(TextStyle, TextScaler, TextDirection, Locale?), double>{};
+    <(TextStyle, TextScaler, TextDirection, Locale?, int), double>{};
 
 /// 場所の行の字。名前と同じ面（カードの帯）の上にあるので、名前と同じ
 /// 文字色から作る（ページの文字色だと、帯だけ暗いテーマで溶けた）。

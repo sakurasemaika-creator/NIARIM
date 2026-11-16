@@ -11,6 +11,7 @@ class ExportedWorkPreviewLayout extends StatelessWidget {
     required this.closeLabel,
     required this.onShare,
     required this.onClose,
+    this.fileName,
     this.contentAspectRatio = 16 / 9,
     this.shareBusy = false,
     this.shareError,
@@ -21,6 +22,7 @@ class ExportedWorkPreviewLayout extends StatelessWidget {
   final String closeLabel;
   final VoidCallback? onShare;
   final VoidCallback onClose;
+  final String? fileName;
   final double contentAspectRatio;
   final bool shareBusy;
   final String? shareError;
@@ -44,6 +46,14 @@ class ExportedWorkPreviewLayout extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              if (fileName != null) ...[
+                SelectableText(
+                  fileName!,
+                  key: const Key('exportedWorkPreviewName'),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8),
+              ],
               SizedBox(width: width, height: height, child: content),
               const SizedBox(height: 8),
               if (shareError != null) ...[

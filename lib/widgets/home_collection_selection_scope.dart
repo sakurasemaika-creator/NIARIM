@@ -22,7 +22,7 @@ class HomeCollectionSelectionScope extends InheritedWidget {
   final Set<String> selectedIds;
   final ValueChanged<String> onLongPress;
   final ValueChanged<String> onToggle;
-  final ValueChanged<Set<String>> onVisibleIds;
+  final void Function(String collection, Set<String> ids) onVisibleIds;
 
   static HomeCollectionSelectionScope? maybeOf(BuildContext context) => context
       .dependOnInheritedWidgetOfExactType<HomeCollectionSelectionScope>();
