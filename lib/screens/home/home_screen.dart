@@ -796,8 +796,10 @@ class _HomeScreenState extends State<HomeScreen>
     }
   }
 
-  bool _usesProjectFooter(BuildContext context) =>
-      _currentTabIndex == 0 && MediaQuery.sizeOf(context).height <= 400;
+  bool _usesProjectFooter(BuildContext context) {
+    final size = MediaQuery.sizeOf(context);
+    return _currentTabIndex == 0 && size.width < 600 && size.height <= 400;
+  }
 
   // プロジェクトの一覧の見出し（お気に入りの絞り込み・並び順・パンくず）。
   // 一覧は見る範囲（お気に入りだけ・フォルダ・検索）ごとに作り直してスクロール
