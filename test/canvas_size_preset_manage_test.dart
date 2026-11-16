@@ -114,11 +114,11 @@ void main() {
       final card = tester.getRect(
         find.ancestor(of: find.text('横長'), matching: find.byType(Card)),
       );
-      expect(menuIcon.center.dy, closeTo(dragIcon.center.dy, 0.01));
+      expect(menuIcon.center.dx, closeTo(dragIcon.center.dx, 0.01));
       expect(menuIcon.center.dx, greaterThan(name.right));
-      expect(dragIcon.center.dx, greaterThan(menuIcon.center.dx));
+      expect(dragIcon.top, greaterThan(menuIcon.bottom));
       expect(dragIcon.center.dx, greaterThan(card.right - 40));
-      expect(dragIcon.center.dy, lessThan(card.top + 40));
+      expect(menuIcon.center.dy, lessThan(card.top + 40));
     }
     tester.view.physicalSize = const Size(320, 740);
     await tester.pumpAndSettle();

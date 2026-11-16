@@ -142,67 +142,73 @@ class _PresetTile extends StatelessWidget {
                 ),
               ),
             ),
-            SizedBox.square(
-              dimension: kMinInteractiveDimension,
-              child: PopupMenuButton<String>(
-                icon: const Icon(Icons.more_vert),
-                onSelected: (v) {
-                  switch (v) {
-                    case 'edit':
-                      _showEditDialog(context, settings, preset);
-                    case 'rename':
-                      _showRenameDialog(context, settings, preset);
-                    case 'duplicate':
-                      // 名前は作品・フォルダの複製と同じ「(コピー)」「(コピー 2)」…
-                      settings.duplicateCustomSizePreset(
-                        preset.id,
-                        numberedCopyName(l10n, preset.name, {
-                          for (final p in settings.customSizePresets) p.name,
-                        }),
-                      );
-                    case 'delete':
-                      _confirmDelete(context, settings, preset);
-                  }
-                },
-                itemBuilder: (_) => [
-                  PopupMenuItem(
-                    value: 'edit',
-                    child: Text(l10n.canvasSizePresetEditDialogTitle),
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SizedBox.square(
+                  dimension: kMinInteractiveDimension,
+                  child: PopupMenuButton<String>(
+                    icon: const Icon(Icons.more_vert),
+                    onSelected: (v) {
+                      switch (v) {
+                        case 'edit':
+                          _showEditDialog(context, settings, preset);
+                        case 'rename':
+                          _showRenameDialog(context, settings, preset);
+                        case 'duplicate':
+                          // 名前は作品・フォルダの複製と同じ「(コピー)」「(コピー 2)」…
+                          settings.duplicateCustomSizePreset(
+                            preset.id,
+                            numberedCopyName(l10n, preset.name, {
+                              for (final p in settings.customSizePresets)
+                                p.name,
+                            }),
+                          );
+                        case 'delete':
+                          _confirmDelete(context, settings, preset);
+                      }
+                    },
+                    itemBuilder: (_) => [
+                      PopupMenuItem(
+                        value: 'edit',
+                        child: Text(l10n.canvasSizePresetEditDialogTitle),
+                      ),
+                      PopupMenuItem(
+                        value: 'rename',
+                        child: Text(l10n.commonRename),
+                      ),
+                      PopupMenuItem(
+                        value: 'duplicate',
+                        child: Text(l10n.commonDuplicate),
+                      ),
+                      PopupMenuItem(
+                        value: 'delete',
+                        child: Text(
+                          l10n.commonDelete,
+                          style: TextStyle(
+                            color: ThemeService.activeColorScheme.error,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                  PopupMenuItem(
-                    value: 'rename',
-                    child: Text(l10n.commonRename),
-                  ),
-                  PopupMenuItem(
-                    value: 'duplicate',
-                    child: Text(l10n.commonDuplicate),
-                  ),
-                  PopupMenuItem(
-                    value: 'delete',
-                    child: Text(
-                      l10n.commonDelete,
-                      style: TextStyle(
-                        color: ThemeService.activeColorScheme.error,
+                ),
+                ReorderableDragStartListener(
+                  index: dragIndex,
+                  child: SizedBox.square(
+                    dimension: kMinInteractiveDimension,
+                    child: ColoredBox(
+                      color: Colors.transparent,
+                      child: Center(
+                        child: Icon(
+                          Icons.drag_handle,
+                          color: Theme.of(context).listTileTheme.iconColor,
+                        ),
                       ),
                     ),
                   ),
-                ],
-              ),
-            ),
-            ReorderableDragStartListener(
-              index: dragIndex,
-              child: SizedBox.square(
-                dimension: kMinInteractiveDimension,
-                child: ColoredBox(
-                  color: Colors.transparent,
-                  child: Center(
-                    child: Icon(
-                      Icons.drag_handle,
-                      color: Theme.of(context).listTileTheme.iconColor,
-                    ),
-                  ),
                 ),
-              ),
+              ],
             ),
           ],
         ),

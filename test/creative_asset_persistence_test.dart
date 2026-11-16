@@ -2,6 +2,8 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:image/image.dart' as img;
+import 'package:path_provider_platform_interface/path_provider_platform_interface.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:niarim/services/brush_service.dart';
 import 'package:niarim/services/tone_service.dart';
@@ -10,6 +12,13 @@ import 'package:niarim/services/filter_service.dart';
 import 'package:niarim/models/brush.dart';
 import 'package:niarim/models/tone.dart';
 import 'package:niarim/models/stamp.dart';
+
+class _MaterialTestPaths extends PathProviderPlatform {
+  _MaterialTestPaths(this.path);
+  final String path;
+  @override
+  Future<String?> getApplicationDocumentsPath() async => path;
+}
 
 /// Task#83：ブラシ・トーン・スタンプ・フィルターの状態が再起動で消えるバグの
 /// 修正を検証する。従来はインメモリのみで、SharedPreferencesへの永続化が
@@ -22,6 +31,50 @@ void main() {
 
   setUp(() {
     SharedPreferences.setMockInitialValues({});
+  });
+
+  test('user materials import and migrate to PNG with alpha', () async {
+    final dir = await Directory.systemTemp.createTemp('niarim-png-');
+    final originalPaths = PathProviderPlatform.instance;
+    PathProviderPlatform.instance = _MaterialTestPaths(dir.path);
+    addTearDown(() async {
+      PathProviderPlatform.instance = originalPaths;
+      await dir.delete(recursive: true);
+    });
+    final image = img.Image(width: 2, height: 2, numChannels: 3);
+    image.setPixelRgb(0, 0, 216, 57, 91);
+    final jpeg = await File(
+      '${dir.path}/import.jpg',
+    ).writeAsBytes(img.encodeJpg(image));
+    final brushes = BrushService();
+    final tones = ToneService();
+    final stamps = StampService();
+    final tone = await tones.createToneFromImage(jpeg.path);
+    final stamp = await stamps.createStampFromImage(jpeg.path);
+    final brush = await brushes.createBrushFromImage(jpeg.path);
+    for (final path in [
+      tone.texturePath!,
+      stamp.imagePath!,
+      brush.resolvedCustomImagePaths.single,
+    ]) {
+      expect(path, endsWith('.png'));
+      final restored = img.decodePng(await File(path).readAsBytes())!;
+      expect(restored.numChannels, 4);
+      expect(restored.getPixel(0, 0).a, 255);
+    }
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList('tones', [
+      '{"id":"legacyTone","name":"旧トーン","texturePath":"${jpeg.path}"}',
+    ]);
+    final restarted = ToneService();
+    await restarted.init();
+    final migrated = restarted.tones.singleWhere((t) => t.id == 'legacyTone');
+    expect(migrated.texturePath, endsWith('.png'));
+    expect(await jpeg.exists(), isTrue);
+    restarted.dispose();
+    brushes.dispose();
+    tones.dispose();
+    stamps.dispose();
   });
 
   group('BrushService', () {

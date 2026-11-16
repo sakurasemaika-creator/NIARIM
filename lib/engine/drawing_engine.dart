@@ -512,8 +512,6 @@ class DrawingEngine {
         !brush.pixelMode &&
         brush.tipShape == BrushTipShape.round &&
         brush.scatter == 0 &&
-        brush.customImagePaths.isEmpty &&
-        (brush.customImagePath?.isEmpty ?? true) &&
         (brush.size * minPressureScale <= 2 ||
             brush.fadeMode != FadeMode.off)) {
       return 0.5;
@@ -759,6 +757,39 @@ class DrawingEngine {
     }
   }
 
+  double _sampleTipAlpha(
+    Uint8List texture,
+    double x,
+    double y,
+    bool pixelMode,
+  ) {
+    if (x.abs() > 1 || y.abs() > 1) return 0;
+    const last = brushTextureSize - 1;
+    final tx = ((x + 1) * brushTextureSize / 2 - 0.5).clamp(
+      0.0,
+      last.toDouble(),
+    );
+    final ty = ((y + 1) * brushTextureSize / 2 - 0.5).clamp(
+      0.0,
+      last.toDouble(),
+    );
+    if (pixelMode) {
+      final alpha =
+          texture[(ty.round() * brushTextureSize + tx.round()) * 4 + 3];
+      return alpha >= 128 ? 1.0 : 0.0;
+    }
+    final left = tx.floor(), top = ty.floor();
+    final right = math.min(left + 1, last), bottom = math.min(top + 1, last);
+    final fx = tx - left, fy = ty - top;
+    final topLeft = texture[(top * brushTextureSize + left) * 4 + 3];
+    final topRight = texture[(top * brushTextureSize + right) * 4 + 3];
+    final bottomLeft = texture[(bottom * brushTextureSize + left) * 4 + 3];
+    final bottomRight = texture[(bottom * brushTextureSize + right) * 4 + 3];
+    final upper = topLeft + (topRight - topLeft) * fx;
+    final lower = bottomLeft + (bottomRight - bottomLeft) * fx;
+    return (upper + (lower - upper) * fy) / 255;
+  }
+
   void _renderCircleStamp(
     double cx,
     double cy,
@@ -801,7 +832,15 @@ class DrawingEngine {
     // 影響範囲のタイルを特定
     final effectiveRadius = radius * math.max(tilt.scaleX, tilt.scaleY);
     final blur = blurRadius.toDouble();
-    final totalRadius = effectiveRadius + blur;
+    // The image's square can extend past the circular fallback once rotated.
+    final textureReach = customTexture == null ? 1.0 : math.sqrt2;
+    final totalRadius =
+        (effectiveRadius + blur) * textureReach +
+        (edgeJitter ? edgeJitterStrength / 40.0 : 0.0);
+    final cosA = math.cos(-tilt.angle);
+    final sinA = math.sin(-tilt.angle);
+    final cosParticle = math.cos(-particleRotation);
+    final sinParticle = math.sin(-particleRotation);
     // Precompute falloff constants once per tip, not for every raster pixel.
     final softSigma = math.max(0.5, (radius + blur) / 3.3);
     final softnessMix = blur > 0
@@ -867,8 +906,6 @@ class DrawingEngine {
             final dy = worldY - cy;
 
             // 傾き変形を適用した楕円距離
-            final cosA = math.cos(-tilt.angle);
-            final sinA = math.sin(-tilt.angle);
             final rdx = dx * cosA - dy * sinA;
             final rdy = dx * sinA + dy * cosA;
             final ux = rdx / tilt.scaleX;
@@ -877,61 +914,47 @@ class DrawingEngine {
 
             double pixelAlpha;
             if (customTexture != null) {
-              // 自作ブラシ画像：楕円内をテクスチャのアルファでサンプリング
-              if (dist > radius) {
-                pixelAlpha = 0.0;
-              } else {
-                final nx = (ux / radius).clamp(-1.0, 1.0);
-                final ny = (uy / radius).clamp(-1.0, 1.0);
-                final texX = (((nx + 1) / 2) * (brushTextureSize - 1))
-                    .round()
-                    .clamp(0, brushTextureSize - 1);
-                final texY = (((ny + 1) / 2) * (brushTextureSize - 1))
-                    .round()
-                    .clamp(0, brushTextureSize - 1);
-                final texIdx = (texY * brushTextureSize + texX) * 4;
-                pixelAlpha = customTexture[texIdx + 3] / 255.0;
+              final imageRadius = radius + (pixelMode ? 0 : blur);
+              var maskX = ux * cosParticle - uy * sinParticle;
+              var maskY = ux * sinParticle + uy * cosParticle;
+              if (!pixelMode &&
+                  blur == 0 &&
+                  edgeJitter &&
+                  dist > radius - 1.5 &&
+                  dist > 0) {
+                final maxJitter = edgeJitterStrength / 100.0 * 2.5;
+                final jitter = (_jitterRng.nextDouble() - 0.5) * maxJitter * 2;
+                final scale = math.max(0.0, (dist - jitter) / dist);
+                maskX *= scale;
+                maskY *= scale;
               }
-            } else if (hollowSquare) {
-              final outerDistance = math.max(ux.abs(), uy.abs());
-              final innerRadius =
-                  radius * hollowSquareInnerRatio.clamp(0.0, 0.95).toDouble();
-              final outerAa = (radius + 0.5 - outerDistance).clamp(0.0, 1.0);
-              final innerAa = (outerDistance - innerRadius + 0.5).clamp(
-                0.0,
-                1.0,
-              );
-              pixelAlpha = math.min(outerAa, innerAa);
-            } else if (hollowSquare) {
-              final outerDistance = math.max(ux.abs(), uy.abs());
-              final innerRadius =
-                  radius * hollowSquareInnerRatio.clamp(0.0, 0.95).toDouble();
-              final outerAa = (radius + 0.5 - outerDistance).clamp(0.0, 1.0);
-              final innerAa = (outerDistance - innerRadius + 0.5).clamp(
-                0.0,
-                1.0,
-              );
-              pixelAlpha = math.min(outerAa, innerAa);
-            } else if (hollowSquare) {
-              final outerDistance = math.max(ux.abs(), uy.abs());
-              final innerRadius =
-                  radius * hollowSquareInnerRatio.clamp(0.0, 0.95).toDouble();
-              final outerAa = (radius + 0.5 - outerDistance).clamp(0.0, 1.0);
-              final innerAa = (outerDistance - innerRadius + 0.5).clamp(
-                0.0,
-                1.0,
-              );
-              pixelAlpha = math.min(outerAa, innerAa);
-            } else if (hollowSquare) {
-              final outerDistance = math.max(ux.abs(), uy.abs());
-              final innerRadius =
-                  radius * hollowSquareInnerRatio.clamp(0.0, 0.95).toDouble();
-              final outerAa = (radius + 0.5 - outerDistance).clamp(0.0, 1.0);
-              final innerAa = (outerDistance - innerRadius + 0.5).clamp(
-                0.0,
-                1.0,
-              );
-              pixelAlpha = math.min(outerAa, innerAa);
+              final nx = maskX / imageRadius;
+              final ny = maskY / imageRadius;
+              pixelAlpha = _sampleTipAlpha(customTexture, nx, ny, pixelMode);
+              // Small dabs cover fractions of a canvas pixel even when the
+              // source PNG edge spans less than a texel at canvas scale.
+              if (!pixelMode && imageRadius < brushTextureSize / 2) {
+                final offset = 0.35 / imageRadius;
+                pixelAlpha =
+                    (_sampleTipAlpha(customTexture, nx - offset, ny, false) +
+                        _sampleTipAlpha(customTexture, nx + offset, ny, false) +
+                        _sampleTipAlpha(customTexture, nx, ny - offset, false) +
+                        _sampleTipAlpha(
+                          customTexture,
+                          nx,
+                          ny + offset,
+                          false,
+                        )) /
+                    4;
+              }
+              if (!pixelMode && blur > 0 && pixelAlpha > 0) {
+                final t = math.max(0.0, (dist - radius) / blur);
+                final classic = math.max(0.0, 1.0 - t * t);
+                final ratio = dist / softSigma;
+                final soft = math.exp(-0.5 * ratio * ratio);
+                pixelAlpha *=
+                    classic * (1.0 - softnessMix) + soft * softnessMix;
+              }
             } else if (hollowSquare) {
               final outerDistance = math.max(ux.abs(), uy.abs());
               final innerRadius =
@@ -946,10 +969,8 @@ class DrawingEngine {
               // 中抜き楕円リンク。接線座標へ揃えたあと、リンク固有の交互角度
               // だけ回す。outer/innerの楕円距離差で肉厚を作るため、拡縮しても
               // リングの穴が潰れずチェーンとして読める。
-              final cosL = math.cos(-particleRotation);
-              final sinL = math.sin(-particleRotation);
-              final lx = ux * cosL - uy * sinL;
-              final ly = ux * sinL + uy * cosL;
+              final lx = ux * cosParticle - uy * sinParticle;
+              final ly = ux * sinParticle + uy * cosParticle;
               final outerX = radius;
               final outerY = radius * chainAspect;
               final wall = radius * chainThickness;
@@ -967,10 +988,8 @@ class DrawingEngine {
             } else if (hexagon) {
               // グリッターフレーク：正六角形。傾き変形後のローカル座標を
               // 粒固有の角度だけ回転し、六角形の符号付き近似距離でAAする。
-              final cosH = math.cos(-particleRotation);
-              final sinH = math.sin(-particleRotation);
-              final hx = ux * cosH - uy * sinH;
-              final hy = ux * sinH + uy * cosH;
+              final hx = ux * cosParticle - uy * sinParticle;
+              final hy = ux * sinParticle + uy * cosParticle;
               final ax = hx.abs();
               final ay = hy.abs();
               const sqrt3 = 1.7320508075688772;

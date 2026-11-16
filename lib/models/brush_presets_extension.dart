@@ -34,6 +34,8 @@ List<Brush> brushExtensionPresets() => const <Brush>[
     lateralRepeatCount: 4,
     lateralRepeatSpacing: BrushExtensionDefaults.lateralRepeatSpacing,
     tipShape: BrushTipShape.hollowSquare,
+    customImagePaths: ['assets/brushes/square_tip.png'],
+    imageInkMode: BrushImageInkMode.alpha,
     tags: <String>[AssetTagKeys.decoration, AssetTagKeys.background],
   ),
   Brush(
@@ -78,7 +80,7 @@ List<Brush> brushExtensionPresets() => const <Brush>[
   ),
   Brush(
     id: 'Brush0024',
-    imageInkMode: BrushImageInkMode.light,
+    imageInkMode: BrushImageInkMode.alpha,
     name: '前髪',
     size: 32,
     opacity: 100,
@@ -104,11 +106,11 @@ List<Brush> brushExtensionPresets() => const <Brush>[
     density: 1,
     scatter: 0,
     customImagePaths: <String>[
-      'assets/brushes/bangs_01.png',
-      'assets/brushes/bangs_02.png',
-      'assets/brushes/bangs_03.png',
-      'assets/brushes/bangs_04.png',
-      'assets/brushes/bangs_05.png',
+      'assets/brushes/bangs_alpha_01.png',
+      'assets/brushes/bangs_alpha_02.png',
+      'assets/brushes/bangs_alpha_03.png',
+      'assets/brushes/bangs_alpha_04.png',
+      'assets/brushes/bangs_alpha_05.png',
     ],
     customImageSelectionMode: BrushImageSelectionMode.random,
     outlineEnabled: true,
@@ -153,6 +155,8 @@ List<Brush> brushExtensionPresets() => const <Brush>[
     lateralRepeatEnabled: false,
     lateralRepeatCount: 1,
     tipShape: BrushTipShape.hollowSquare,
+    customImagePaths: ['assets/brushes/square_tip.png'],
+    imageInkMode: BrushImageInkMode.alpha,
     tags: <String>[AssetTagKeys.decoration],
   ),
   // Traditional rough media. The raster engine uses each preset's

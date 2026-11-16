@@ -30,7 +30,7 @@ class TonePreviewThumb extends StatefulWidget {
 }
 
 class _TonePreviewThumbState extends State<TonePreviewThumb> {
-  static const int _textureSize = 32;
+  static const int _textureSize = 64;
   ui.Image? _image;
 
   @override

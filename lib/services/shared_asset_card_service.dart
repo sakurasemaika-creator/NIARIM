@@ -15,7 +15,7 @@ import '../l10n/app_localizations.dart';
 import '../models/brush.dart';
 import '../models/stamp.dart';
 import '../models/tone.dart';
-import '../utils/brush_image_source.dart';
+import '../utils/creative_image_source.dart';
 import 'brush_service.dart';
 import 'stamp_service.dart';
 import 'tone_service.dart';
@@ -121,7 +121,7 @@ class SharedAssetCardService {
       ];
     final a = _assetArchive(settings);
     for (var i = 0; i < paths.length; i++) {
-      final b = await readBrushImageSource(paths[i]);
+      final b = await readCreativeImageSource(paths[i]);
       if (b == null) {
         throw FormatException('Brush source image is missing: ${paths[i]}');
       }
@@ -143,11 +143,10 @@ class SharedAssetCardService {
       ..['texturePath'] = tone.texturePath == null ? null : 'image';
     final a = _assetArchive(settings);
     if (tone.texturePath != null) {
-      final f = File(tone.texturePath!);
-      if (!await f.exists()) {
+      final b = await readCreativeImageSource(tone.texturePath!);
+      if (b == null) {
         throw const FormatException('Tone texture is missing');
       }
-      final b = await f.readAsBytes();
       final ext = tone.texturePath!.split('.').last;
       a.addFile(ArchiveFile('image.$ext', b.length, b));
     }
@@ -164,11 +163,10 @@ class SharedAssetCardService {
       ..['imagePath'] = stamp.imagePath == null ? null : 'image';
     final a = _assetArchive(settings);
     if (stamp.imagePath != null) {
-      final f = File(stamp.imagePath!);
-      if (!await f.exists()) {
+      final b = await readCreativeImageSource(stamp.imagePath!);
+      if (b == null) {
         throw const FormatException('Stamp image is missing');
       }
-      final b = await f.readAsBytes();
       final ext = stamp.imagePath!.split('.').last;
       a.addFile(ArchiveFile('image.$ext', b.length, b));
     }

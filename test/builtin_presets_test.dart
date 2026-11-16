@@ -1,12 +1,14 @@
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:image/image.dart' as img;
 import 'package:niarim/engine/procedural_texture.dart';
 import 'package:niarim/models/asset_tags.dart';
 import 'package:niarim/models/brush.dart';
 import 'package:niarim/services/brush_service.dart';
 import 'package:niarim/services/stamp_service.dart';
 import 'package:niarim/services/tone_service.dart';
+import 'package:niarim/utils/creative_image_source.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// alphaが立っている画素の割合（0.0〜1.0）。
@@ -31,10 +33,39 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   setUp(() => SharedPreferences.setMockInitialValues({}));
 
+  test('every preset uses a bundled PNG with transparent pixels', () async {
+    final brushes = BrushService();
+    final tones = ToneService();
+    final stamps = StampService();
+    await brushes.init();
+    await tones.init();
+    await stamps.init();
+    for (final brush in brushes.brushes) {
+      expect(brush.resolvedCustomImagePaths, isNotEmpty, reason: brush.name);
+    }
+    final paths = {
+      for (final brush in brushes.brushes) ...brush.resolvedCustomImagePaths,
+      for (final tone in tones.tones) tone.texturePath,
+      for (final stamp in stamps.stamps) stamp.imagePath,
+    };
+    for (final path in paths) {
+      expect(path, endsWith('.png'));
+      final png = await readCreativeImageSource(path!);
+      final image = img.decodePng(png!);
+      expect(image, isNotNull, reason: path);
+      expect(image!.any((pixel) => pixel.a == 0), isTrue, reason: path);
+      expect(image.any((pixel) => pixel.a > 0), isTrue, reason: path);
+    }
+    brushes.dispose();
+    tones.dispose();
+    stamps.dispose();
+  });
+
   group('組み込みトーン', () {
     test('すべて描画され、白紙にも塗りつぶしにもならない', () async {
       final service = ToneService();
       await service.init();
+      await Future.wait(service.tones.map(ensureToneTextureLoaded));
       expect(service.tones.length, greaterThanOrEqualTo(62));
 
       for (final tone in service.tones) {
@@ -71,9 +102,10 @@ void main() {
       key(['ピクセル市松（1px）', 'ピクセルディザ 50%（4×4）']),
     };
 
-    test('名前の判定順序が正しく、別々の模様になっている', () async {
+    test('素材画像がそれぞれ別の模様になっている', () async {
       final service = ToneService();
       await service.init();
+      await Future.wait(service.tones.map(ensureToneTextureLoaded));
       // 「ピクセルディザ」は「ピクセル」を、「ピクセル格子」は「格子」を
       // 含む、といった包含関係があるため、判定順序を間違えると別のトーンが
       // 同じ模様になる。全件の模様を突き合わせ、上記の既知の一致を除いて
@@ -92,12 +124,13 @@ void main() {
           .where((g) => !knownIdenticalPairs.contains(key(g)))
           .map((g) => g.join(' == '))
           .toList();
-      expect(unexpected, isEmpty, reason: '同じ模様になっているトーンがある（名前の判定順序を確認すること）');
+      expect(unexpected, isEmpty, reason: '同じ模様になっているトーンがある');
     });
 
     test('模様は毎回同じ（砂目系が乱数で変わらない）', () async {
       final service = ToneService();
       await service.init();
+      await Future.wait(service.tones.map(ensureToneTextureLoaded));
       for (final tone in service.tones.where((t) => t.name.contains('砂目'))) {
         final a = _alphaSignature(generateBuiltInToneTexture(tone));
         final b = _alphaSignature(generateBuiltInToneTexture(tone));
@@ -108,6 +141,7 @@ void main() {
     test('網点は指定した割合が濃いほどインクが増える', () async {
       final service = ToneService();
       await service.init();
+      await Future.wait(service.tones.map(ensureToneTextureLoaded));
       final dots = service.tones.where((t) => t.name.startsWith('網点')).toList();
       expect(dots.length, greaterThanOrEqualTo(9));
       final ratios = [
@@ -131,6 +165,7 @@ void main() {
     test('ピクセルディザは指定した割合とインク量がおおむね一致する', () async {
       final service = ToneService();
       await service.init();
+      await Future.wait(service.tones.map(ensureToneTextureLoaded));
       for (final tone in service.tones.where(
         (t) => t.name.contains('ピクセルディザ'),
       )) {

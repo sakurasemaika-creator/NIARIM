@@ -65,6 +65,13 @@ class BrushTipSettings extends StatelessWidget {
     _setImages(paths);
   }
 
+  bool _isStandardShape(String path) =>
+      path == 'assets/brushes/round_tip.png' ||
+      path == 'assets/brushes/square_tip.png' ||
+      path == 'assets/brushes/hexagon_tip.png' ||
+      path.startsWith('assets/brushes/chain_') ||
+      path.split('/').last.startsWith('chain_tip_');
+
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
@@ -81,6 +88,7 @@ class BrushTipSettings extends StatelessWidget {
       BrushImageInkMode.alpha: l.brushImageInkAlpha,
     };
     final paths = brush.resolvedCustomImagePaths;
+    final usesStandardShape = paths.every(_isStandardShape);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -93,7 +101,14 @@ class BrushTipSettings extends StatelessWidget {
               DropdownMenuItem(value: entry.key, child: Text(entry.value)),
           ],
           onChanged: (value) {
-            if (value != null) onChanged(brush.copyWith(tipShape: value));
+            if (value == null) return;
+            onChanged(
+              brush.copyWith(
+                tipShape: value,
+                clearCustomImages:
+                    value != brush.tipShape && paths.every(_isStandardShape),
+              ),
+            );
           },
         ),
         SwitchListTile(
@@ -111,20 +126,24 @@ class BrushTipSettings extends StatelessWidget {
             400,
             (v) => onChanged(brush.copyWith(tipSpacingFactor: v / 100)),
           ),
-        if (brush.tipShape == BrushTipShape.chainLink) ...[
+        if (brush.tipShape == BrushTipShape.chainLink && usesStandardShape) ...[
           _number(
             l.brushChainAspect,
             brush.chainAspect * 100,
             10,
             100,
-            (v) => onChanged(brush.copyWith(chainAspect: v / 100)),
+            (v) => onChanged(
+              brush.copyWith(chainAspect: v / 100, clearCustomImages: true),
+            ),
           ),
           _number(
             l.brushChainThickness,
             brush.chainThickness * 100,
             5,
             90,
-            (v) => onChanged(brush.copyWith(chainThickness: v / 100)),
+            (v) => onChanged(
+              brush.copyWith(chainThickness: v / 100, clearCustomImages: true),
+            ),
           ),
         ],
         SwitchListTile(

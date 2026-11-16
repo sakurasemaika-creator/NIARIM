@@ -918,8 +918,11 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
           ),
           const SizedBox(height: 16),
           FilledButton(
-            onPressed: () {
-              context.read<BrushService>().updateBrush(_brush);
+            onPressed: () async {
+              final service = context.read<BrushService>();
+              final brush = await service.prepareBrushTip(_brush);
+              if (!context.mounted) return;
+              service.updateBrush(brush);
               Navigator.pop(context);
             },
             child: Text(l10n.commonSave),

@@ -2,7 +2,7 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import '../models/brush.dart';
-import '../utils/brush_image_source.dart';
+import '../utils/creative_image_source.dart';
 
 /// 自作ブラシ画像（[Brush.customImagePath]、「ブラシ画像からの
 /// ブラシ作成」）のデコード結果キャッシュ。
@@ -46,7 +46,7 @@ Future<void> preloadBrushTexture(
 }) async {
   if (_brushTextureCache.containsKey((path, mode))) return;
   try {
-    final bytes = await readBrushImageSource(path);
+    final bytes = await readCreativeImageSource(path);
     if (bytes == null) return;
     final codec = await ui.instantiateImageCodec(
       bytes,

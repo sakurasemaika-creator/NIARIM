@@ -18,7 +18,7 @@ import '../services/stamp_service.dart';
 import '../services/tone_service.dart';
 import '../services/watermark_service.dart';
 import '../utils/app_error_reporter.dart';
-import '../utils/brush_image_source.dart';
+import '../utils/creative_image_source.dart';
 import '../utils/transfer_merge.dart';
 import 'archive_security.dart';
 import 'niatra_serializer.dart';
@@ -89,7 +89,6 @@ class NiatraAssetBundle {
             category: 'Brushes',
             index: i,
             pathKey: 'customImagePath',
-            readSource: readBrushImageSource,
           );
           if (json.containsKey(_embeddedImageKey)) {
             json['customImagePaths'] = <String>[];
@@ -468,11 +467,7 @@ class NiatraAssetBundle {
 
   static Future<bool> _sameBytes(String path, List<int> bytes) async {
     try {
-      final file = File(path);
-      if (!await file.exists() || await file.length() != bytes.length) {
-        return false;
-      }
-      return listEquals(await file.readAsBytes(), bytes);
+      return listEquals(await readCreativeImageSource(path), bytes);
     } on UnsupportedError {
       return false;
     } on FileSystemException {
@@ -490,7 +485,7 @@ class NiatraAssetBundle {
     for (var imageIndex = 0; imageIndex < sourcePaths.length; imageIndex++) {
       final sourcePath = sourcePaths[imageIndex];
       try {
-        final bytes = await readBrushImageSource(sourcePath);
+        final bytes = await readCreativeImageSource(sourcePath);
         if (bytes == null) continue;
         final ext = _safeExtension(sourcePath);
         final archivePath =
@@ -531,12 +526,16 @@ class NiatraAssetBundle {
       final embeddedPath = embedded[index];
       final entry = data.archive.findFile(embeddedPath);
       if (entry == null) continue;
+      final (bytes, extension) = await normalizeRestoredCreativeImage(
+        entry.content as List<int>,
+        _safeExtension(embeddedPath),
+      );
       restored.add(
         await _writeOrReuse(
-          entry.content as List<int>,
+          bytes,
           dir,
           stem: '${stem}_${index.toString().padLeft(3, '0')}',
-          ext: _safeExtension(embeddedPath),
+          ext: extension,
           written: written,
           existingPath: index < existingPaths.length
               ? existingPaths[index]
@@ -554,17 +553,10 @@ class NiatraAssetBundle {
     required String category,
     required int index,
     required String pathKey,
-    Future<Uint8List?> Function(String path)? readSource,
   }) async {
     if (sourcePath == null || sourcePath.isEmpty) return;
     try {
-      final Uint8List? bytes;
-      if (readSource != null) {
-        bytes = await readSource(sourcePath);
-      } else {
-        final source = File(sourcePath);
-        bytes = await source.exists() ? await source.readAsBytes() : null;
-      }
+      final bytes = await readCreativeImageSource(sourcePath);
       if (bytes == null) return;
       final ext = _safeExtension(sourcePath);
       final archivePath = 'CreativeAssets/$category/$index.$ext';
@@ -596,11 +588,19 @@ class NiatraAssetBundle {
       if (entry == null) return null;
       final dir = Directory('$basePath/niarim/$category');
       if (!await dir.exists()) await dir.create(recursive: true);
+      final extension = _safeExtension(embeddedPath);
+      final source = entry.content as List<int>;
+      final (
+        bytes,
+        restoredExtension,
+      ) = category == 'Brushes' || category == 'Tones' || category == 'Stamps'
+          ? await normalizeRestoredCreativeImage(source, extension)
+          : (source, extension);
       return _writeOrReuse(
-        entry.content as List<int>,
+        bytes,
         dir,
         stem: stem,
-        ext: _safeExtension(embeddedPath),
+        ext: restoredExtension,
         written: written,
         existingPath: existingPath,
       );

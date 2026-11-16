@@ -1,25 +1,18 @@
-import 'dart:io';
 import 'dart:math' as math;
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import '../models/stamp.dart';
 import '../models/tone.dart';
+import '../utils/creative_image_source.dart';
 import 'filter_engine.dart';
-
-/// [Tone.texturePath] / [Stamp.imagePath] が未設定（アプリ組み込みの初期
-/// トーン・スタンプにはテクスチャ画像が同梱されていない）の場合に、名前から
-/// 簡易的な代替テクスチャを生成するユーティリティ。
-/// ユーザーが画像を登録した場合（自作トーン・自作スタンプ）は、そちらの
-/// 画像を読み込んで使用し、このパターン生成はフォールバックとして使う。
 
 /// 画像ファイルを読み込み、size×sizeのRGBAバイト列にデコードする。
 /// 失敗した場合はnullを返す。
 Future<Uint8List?> _loadImageRgba(String path, int size) async {
-  final file = File(path);
-  if (!await file.exists()) return null;
   try {
-    final bytes = await file.readAsBytes();
+    final bytes = await readCreativeImageSource(path);
+    if (bytes == null) return null;
     final codec = await ui.instantiateImageCodec(
       bytes,
       targetWidth: size,
@@ -71,9 +64,8 @@ Future<void> ensureToneTextureLoaded(Tone tone, {int size = 64}) async {
   if (rgba != null) _toneImageCache[key] = _toToneAlphaMask(rgba);
 }
 
-/// トーンのテクスチャを取得する。自作トーン（[Tone.texturePath]が設定済み）
-/// で[ensureToneTextureLoaded]済みの場合はその画像由来のパターンを、
-/// それ以外は組み込みトーン向けの簡易パターン（網点／ライン）を返す。
+/// 事前読み込みした画像のパターンを返す。旧データに画像がない場合や
+/// 画像が読めない場合は名前から代替パターンを生成する。
 Uint8List generateBuiltInToneTexture(Tone tone, {int size = 64}) {
   final path = tone.texturePath;
   if (path != null) {

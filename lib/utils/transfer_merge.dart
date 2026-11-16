@@ -7,7 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../l10n/app_localizations.dart';
 import '../models/shortcut_binding.dart';
 import 'app_error_reporter.dart';
-import 'brush_image_source.dart';
+import 'creative_image_source.dart';
 import 'duplicate_name.dart';
 import 'tolerant_preferences.dart';
 
@@ -698,7 +698,7 @@ class TransferImageDigests {
     for (final path in paths) {
       if (path == null || path.isEmpty || digests.containsKey(path)) continue;
       try {
-        final bytes = await readBrushImageSource(path);
+        final bytes = await readCreativeImageSource(path);
         if (bytes == null) continue;
         digests[path] =
             '${bytes.length}:${getCrc32(bytes)}:${getAdler32(bytes)}';

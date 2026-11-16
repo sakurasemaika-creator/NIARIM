@@ -9,7 +9,7 @@ import 'package:niarim/engine/drawing_engine.dart';
 import 'package:niarim/engine/tile_manager.dart';
 import 'package:niarim/models/brush.dart';
 import 'package:niarim/services/brush_service.dart';
-import 'package:niarim/utils/brush_image_source.dart';
+import 'package:niarim/utils/creative_image_source.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
@@ -145,7 +145,10 @@ void main() {
         imagesDirectory: '${temp.path}/$id',
       );
       final path = custom.resolvedCustomImagePaths.single;
-      expect(await File(path).readAsBytes(), await readBrushImageSource(asset));
+      expect(
+        await File(path).readAsBytes(),
+        await readCreativeImageSource(asset),
+      );
       await preloadBrushTexture(path, mode: custom.imageInkMode);
       expect(
         listEquals(originalHorizontal, pixels(custom, horizontal: true)),

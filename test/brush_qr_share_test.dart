@@ -7,7 +7,7 @@ void main() {
 
   setUp(() => SharedPreferences.setMockInitialValues({}));
 
-  test('Small image-free brush round-trips all settings through QR', () async {
+  test('A brush using the shared round tip round-trips through QR', () async {
     final service = BrushService();
     await service.init();
     final original = service.brushes.firstWhere((b) => b.id == 'Brush0001');
@@ -24,7 +24,10 @@ void main() {
     expect(imported.grainStrength, original.grainStrength);
     expect(imported.pressureOn.toJson(), original.pressureOn.toJson());
     expect(imported.customImagePath, isNull);
-    expect(imported.customImagePaths, isEmpty);
+    expect(
+      imported.resolvedCustomImagePaths,
+      original.resolvedCustomImagePaths,
+    );
     expect(service.brushes.any((b) => b.id == imported.id), isTrue);
     expect(service.exportBrushQrPayload(original.id, maxChars: 10), isNull);
     service.dispose();
@@ -38,7 +41,7 @@ void main() {
       original.copyWith(
         id: 'custom_image_test',
         name: '画像ブラシ',
-        customImagePath: '/nonexistent-test-brush.png',
+        customImagePaths: const ['/nonexistent-test-brush.png'],
       ),
     );
     expect(service.exportBrushQrPayload('custom_image_test'), isNull);

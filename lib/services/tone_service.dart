@@ -2,12 +2,15 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:archive/archive_io.dart';
+import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../engine/procedural_texture.dart';
 import '../models/asset_tags.dart';
 import '../models/tone.dart';
+import '../utils/creative_image_source.dart';
 import '../utils/duplicate_name.dart';
 import '../utils/saved_list_reader.dart';
 import '../utils/tolerant_preferences.dart';
@@ -86,7 +89,11 @@ class ToneService extends ChangeNotifier {
     notifyListeners();
   }
 
-  static List<Tone> _defaultTones() => [
+  static List<Tone> _defaultTones() => _toneDefinitions
+      .map((tone) => tone.copyWith(texturePath: 'assets/tones/${tone.id}.png'))
+      .toList();
+
+  static final _toneDefinitions = <Tone>[
     const Tone(
       id: 'Tone0001',
       name: '網点 10%',
@@ -510,6 +517,26 @@ class ToneService extends ChangeNotifier {
           changed = true;
         }
       }
+      for (var i = 0; i < _tones.length; i++) {
+        final saved = _tones[i];
+        final existing = saved.texturePath;
+        final originalName = copySourceName(saved.name) ?? saved.name;
+        final bundledPath =
+            defaults[saved.id]?.texturePath ??
+            defaults.values
+                .where(
+                  (item) => item.name == (saved.patternName ?? originalName),
+                )
+                .firstOrNull
+                ?.texturePath;
+        final path = existing == null
+            ? bundledPath ?? await _bakeLegacyImage(saved)
+            : await migrateCreativeImage(existing);
+        if (path != null && path != existing) {
+          _tones[i] = saved.copyWith(texturePath: path);
+          changed = true;
+        }
+      }
       // 既定タグを日本語リテラルで保存していた版からの移行。
       for (int i = 0; i < _tones.length; i++) {
         final migrated = migrateLegacyTags(_tones[i].tags);
@@ -736,7 +763,7 @@ class ToneService extends ChangeNotifier {
   static bool _fileExists(String? path) {
     if (path == null || path.isEmpty) return false;
     try {
-      return File(path).existsSync();
+      return path.startsWith('assets/') || File(path).existsSync();
     } on UnsupportedError {
       return false;
     } on FileSystemException {
@@ -866,12 +893,26 @@ class ToneService extends ChangeNotifier {
     return dir;
   }
 
+  Future<String?> _bakeLegacyImage(Tone asset) async {
+    try {
+      final directory = await _tonesDir();
+      const size = 64;
+      final rgba = generateBuiltInToneTexture(asset, size: size);
+      final png = creativePngFromRgba(rgba, size, size);
+      final digest = sha256.convert(png);
+      final file = File('${directory.path}/legacy_$digest.png');
+      if (!await file.exists()) await file.writeAsBytes(png, flush: true);
+      return file.path;
+    } catch (_) {
+      return null;
+    }
+  }
+
   Future<Tone> createToneFromImage(String sourcePath, {String? name}) async {
     final id = 'Tone${DateTime.now().millisecondsSinceEpoch}';
-    final ext = sourcePath.split('.').last;
     final dir = await _tonesDir();
-    final destPath = '${dir.path}/$id.$ext';
-    await File(sourcePath).copy(destPath);
+    final destPath = '${dir.path}/$id.png';
+    await copyCreativeImageAsPng(sourcePath, destPath);
     final tone = Tone(
       id: id,
       name: name?.trim().isNotEmpty == true ? name!.trim() : '自作トーン',
@@ -896,8 +937,10 @@ class ToneService extends ChangeNotifier {
       ArchiveFile(_bundleDataFile, 0, utf8.encode(jsonEncode(tone.toJson()))),
     );
     final texturePath = tone.texturePath;
-    if (texturePath != null && File(texturePath).existsSync()) {
-      final bytes = await File(texturePath).readAsBytes();
+    final bytes = texturePath == null
+        ? null
+        : await readCreativeImageSource(texturePath);
+    if (texturePath != null && bytes != null) {
       final ext = texturePath.split('.').last;
       encoder.addArchiveFile(ArchiveFile('image.$ext', bytes.length, bytes));
     }
@@ -922,17 +965,23 @@ class ToneService extends ChangeNotifier {
     if (imageFile != null) {
       final ext = imageFile.name.split('.').last;
       final dir = await _tonesDir();
-      newTexturePath = '${dir.path}/$id.$ext';
-      await File(newTexturePath).writeAsBytes(imageFile.content as List<int>);
+      newTexturePath = await restoreCreativeImage(
+        imageFile.content as List<int>,
+        '${dir.path}/$id',
+        ext,
+      );
     }
+    newTexturePath ??= await _bakeLegacyImage(imported);
     // texturePathは元端末のパスをそのまま引き継げないため、copyWith（??で
     // nullを無視する実装）を使わず、常にnewTexturePath（nullなら未設定）で
     // 明示的に上書きする。
     final tone = Tone(
       id: id,
       name: imported.name,
+      patternName: imported.patternName,
       texturePath: newTexturePath,
       isFavorite: imported.isFavorite,
+      tags: imported.tags,
     );
     addTone(tone);
     return tone;

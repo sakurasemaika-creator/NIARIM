@@ -76,6 +76,7 @@ Future<AutofillBatchResult> runAutofillForLayer({
         .where((t) => t.id == part.toneId)
         .firstOrNull;
     if (tone != null) {
+      await ensureToneTextureLoaded(tone, size: _toneSize);
       toneTexture = generateBuiltInToneTexture(tone, size: _toneSize);
     }
   }

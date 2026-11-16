@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math' as math;
 
 import 'package:archive/archive_io.dart';
 import 'package:flutter/foundation.dart';
@@ -13,7 +14,7 @@ import '../engine/brush_texture_cache.dart';
 import '../models/asset_tags.dart';
 import '../models/brush.dart';
 import '../models/brush_presets_extension.dart';
-import '../utils/brush_image_source.dart';
+import '../utils/creative_image_source.dart';
 import '../utils/duplicate_name.dart';
 import '../utils/tolerant_preferences.dart';
 import '../utils/transfer_merge.dart';
@@ -83,7 +84,27 @@ class BrushService extends ChangeNotifier {
   /// Read-only definitions used for preset-fidelity regression tests.
   static List<Brush> get builtInBrushes => List.unmodifiable(_defaultBrushes());
 
-  static List<Brush> _defaultBrushes() => [
+  static const _roundTip = 'assets/brushes/round_tip.png';
+
+  static Brush _withDefaultTip(Brush brush) {
+    if (brush.resolvedCustomImagePaths.isNotEmpty) return brush;
+    final path = switch (brush.tipShape) {
+      BrushTipShape.round || BrushTipShape.ballChain => _roundTip,
+      BrushTipShape.hexagon => 'assets/brushes/hexagon_tip.png',
+      BrushTipShape.hollowSquare => 'assets/brushes/square_tip.png',
+      BrushTipShape.chainLink => null,
+    };
+    if (path == null) return brush;
+    return brush.copyWith(
+      customImagePaths: [path],
+      imageInkMode: BrushImageInkMode.alpha,
+    );
+  }
+
+  static List<Brush> _defaultBrushes() =>
+      _brushDefinitions.map(_withDefaultTip).toList();
+
+  static final _brushDefinitions = <Brush>[
     const Brush(
       id: 'Brush0001',
       name: 'ペン',
@@ -634,6 +655,8 @@ class BrushService extends ChangeNotifier {
     const Brush(
       id: 'Brush0016',
       tipShape: BrushTipShape.hexagon,
+      customImagePaths: ['assets/brushes/hexagon_tip.png'],
+      imageInkMode: BrushImageInkMode.alpha,
       name: 'グリッターペン',
       size: 14,
       opacity: 90,
@@ -711,6 +734,8 @@ class BrushService extends ChangeNotifier {
     const Brush(
       id: 'Brush0018',
       tipShape: BrushTipShape.chainLink,
+      customImagePaths: ['assets/brushes/chain_thick_tip.png'],
+      imageInkMode: BrushImageInkMode.alpha,
       tipSpacingFactor: .68,
       chainAspect: .64,
       chainThickness: .25,
@@ -758,6 +783,8 @@ class BrushService extends ChangeNotifier {
     const Brush(
       id: 'Brush0019',
       tipShape: BrushTipShape.chainLink,
+      customImagePaths: ['assets/brushes/chain_medium_tip.png'],
+      imageInkMode: BrushImageInkMode.alpha,
       tipSpacingFactor: .72,
       chainAspect: .56,
       chainThickness: .19,
@@ -800,6 +827,8 @@ class BrushService extends ChangeNotifier {
     const Brush(
       id: 'Brush0020',
       tipShape: BrushTipShape.chainLink,
+      customImagePaths: ['assets/brushes/chain_thin_tip.png'],
+      imageInkMode: BrushImageInkMode.alpha,
       tipSpacingFactor: .76,
       chainAspect: .50,
       chainThickness: .14,
@@ -933,7 +962,14 @@ class BrushService extends ChangeNotifier {
       final defaults = {for (final b in _defaultBrushes()) b.id: b};
       for (var i = 0; i < _brushes.length; i++) {
         final stored = _brushes[i], definition = defaults[_brushes[i].id];
-        if (definition == null) continue;
+        if (definition == null) {
+          final updated = await _migrateUserBrushImages(stored);
+          if (!identical(stored, updated)) {
+            _brushes[i] = updated;
+            needsPersist = true;
+          }
+          continue;
+        }
         final current = _withWorkingValues(
           definition.copyWith(
             isFavorite: stored.isFavorite,
@@ -996,18 +1032,27 @@ class BrushService extends ChangeNotifier {
     // The first stroke after selecting a bundled tip must already have its
     // image, even if the brush list has never been opened.
     await Future.wait([
-      for (final brush in _brushes)
-        if (brush.resolvedCustomImagePaths.any(
-          (path) => path.startsWith('assets/'),
-        ))
-          preloadBrushTextures(
-            brush.resolvedCustomImagePaths.where(
-              (path) => path.startsWith('assets/'),
-            ),
-            mode: brush.imageInkMode,
-          ),
+      for (final mode in BrushImageInkMode.values)
+        preloadBrushTextures(
+          _brushes
+              .where((brush) => brush.imageInkMode == mode)
+              .expand((brush) => brush.resolvedCustomImagePaths)
+              .where((path) => path.startsWith('assets/')),
+          mode: mode,
+        ),
     ]);
     _preloadTextureIfNeeded(_currentBrush);
+  }
+
+  Future<Brush> _migrateUserBrushImages(Brush brush) async {
+    final existing = brush.resolvedCustomImagePaths;
+    if (existing.isEmpty) return prepareBrushTip(brush);
+    final migrated = await Future.wait(existing.map(migrateCreativeImage));
+    if (listEquals(existing, migrated)) return brush;
+    final json = brush.toJson()
+      ..['customImagePath'] = migrated.length == 1 ? migrated.first : null
+      ..['customImagePaths'] = migrated;
+    return Brush.fromJson(json);
   }
 
   /// 自作ブラシ画像（[Brush.customImagePath]）を事前デコードしてキャッシュへ
@@ -1238,8 +1283,9 @@ class BrushService extends ChangeNotifier {
   bool isBuiltIn(String id) => _builtInDefinitions.containsKey(id);
 
   void addBrush(Brush brush) {
-    _brushes.add(brush);
-    _preloadTextureIfNeeded(brush);
+    final saved = _withDefaultTip(brush);
+    _brushes.add(saved);
+    _preloadTextureIfNeeded(saved);
     notifyListeners();
     _persist();
   }
@@ -1326,7 +1372,7 @@ class BrushService extends ChangeNotifier {
         json['customImagePath'] = local.customImagePath;
         json['customImagePaths'] = local.customImagePaths;
       }
-      resolved.add(Brush.fromJson(json));
+      resolved.add(await prepareBrushTip(Brush.fromJson(json)));
     }
 
     final before = List<Brush>.of(_brushes);
@@ -1428,7 +1474,7 @@ class BrushService extends ChangeNotifier {
     try {
       for (final path in paths) {
         final exists = path.startsWith('assets/')
-            ? await readBrushImageSource(path) != null
+            ? await readCreativeImageSource(path) != null
             : await File(path).exists();
         if (!exists) return false;
       }
@@ -1561,9 +1607,10 @@ class BrushService extends ChangeNotifier {
     if (isBuiltIn(brush.id)) return;
     final idx = _brushes.indexWhere((b) => b.id == brush.id);
     if (idx >= 0) {
-      _brushes[idx] = brush;
-      if (_currentBrush?.id == brush.id) _currentBrush = brush;
-      _preloadTextureIfNeeded(brush);
+      final saved = _withDefaultTip(brush);
+      _brushes[idx] = saved;
+      if (_currentBrush?.id == brush.id) _currentBrush = saved;
+      _preloadTextureIfNeeded(saved);
       notifyListeners();
       _persist();
     }
@@ -1638,19 +1685,60 @@ class BrushService extends ChangeNotifier {
     return dir;
   }
 
+  // Older chain brushes stored editable ring dimensions without a source
+  // image. Convert that shape once into an ordinary custom tip.
+  Future<Brush> prepareBrushTip(Brush brush) async {
+    if (brush.tipShape != BrushTipShape.chainLink ||
+        brush.resolvedCustomImagePaths.isNotEmpty) {
+      return _withDefaultTip(brush);
+    }
+    try {
+      final directory = await _brushesDir();
+      final aspect = brush.chainAspect.clamp(.1, 1.0);
+      final wall = brush.chainThickness.clamp(.05, .9);
+      final file = File('${directory.path}/chain_tip_${aspect}_$wall.png');
+      if (!await file.exists()) {
+        const size = brushTextureSize;
+        const radius = size / 2;
+        final rgba = Uint8List(size * size * 4);
+        final innerX = math.max(.5 / radius, 1 - wall);
+        final innerY = math.max(.5 / radius, aspect - wall);
+        for (var y = 0; y < size; y++) {
+          for (var x = 0; x < size; x++) {
+            final dx = (x + .5) / radius - 1;
+            final dy = (y + .5) / radius - 1;
+            final outer = math.sqrt(dx * dx + dy * dy / (aspect * aspect));
+            final inner = math.sqrt(
+              dx * dx / (innerX * innerX) + dy * dy / (innerY * innerY),
+            );
+            final coverage = math.min(1 - outer, inner - 1) * radius + .7;
+            rgba[(y * size + x) * 4 + 3] = (255 * coverage.clamp(0.0, 1.0))
+                .round();
+          }
+        }
+        await file.writeAsBytes(
+          creativePngFromRgba(rgba, size, size),
+          flush: true,
+        );
+      }
+      return brush.copyWith(
+        customImagePaths: [file.path],
+        imageInkMode: BrushImageInkMode.alpha,
+      );
+    } on Exception {
+      return brush;
+    }
+  }
+
   /// Copy user-selected materials into the brush storage before saving paths.
   Future<List<String>> importBrushImages(Iterable<String> sourcePaths) async {
     final directory = await _brushesDir();
     final prefix = DateTime.now().microsecondsSinceEpoch;
     final result = <String>[];
     for (final source in sourcePaths) {
-      final extension = source
-          .split('.')
-          .last
-          .replaceAll(RegExp(r'[^a-zA-Z0-9]'), '');
       final destination =
-          '${directory.path}/material_${prefix}_${result.length}.$extension';
-      await File(source).copy(destination);
+          '${directory.path}/material_${prefix}_${result.length}.png';
+      await copyCreativeImageAsPng(source, destination);
       result.add(destination);
     }
     return result;
@@ -1659,10 +1747,9 @@ class BrushService extends ChangeNotifier {
   /// [sourcePath]の画像ファイルを取り込み、新規ブラシとして追加する。
   Future<Brush> createBrushFromImage(String sourcePath, {String? name}) async {
     final id = 'Brush${DateTime.now().millisecondsSinceEpoch}';
-    final ext = sourcePath.split('.').last;
     final dir = await _brushesDir();
-    final destPath = '${dir.path}/$id.$ext';
-    await File(sourcePath).copy(destPath);
+    final destPath = '${dir.path}/$id.png';
+    await copyCreativeImageAsPng(sourcePath, destPath);
     final brush = Brush(
       id: id,
       name: name?.trim().isNotEmpty == true ? name!.trim() : '自作ブラシ',
@@ -1739,7 +1826,9 @@ class BrushService extends ChangeNotifier {
   /// ZIP-style file export remains the lossless route for all brushes.
   String? exportBrushQrPayload(String id, {int maxChars = 900}) {
     final brush = _brushes.firstWhere((b) => b.id == id);
-    if (brush.resolvedCustomImagePaths.isNotEmpty) return null;
+    if (brush.resolvedCustomImagePaths.any((path) => path != _roundTip)) {
+      return null;
+    }
     final data = Map<String, dynamic>.from(brush.toJson())
       ..['id'] = ''
       ..['folderId'] = null
@@ -1780,13 +1869,15 @@ class BrushService extends ChangeNotifier {
     while (_brushes.any((b) => b.id == id)) {
       id = '${id}_';
     }
-    final imported = Brush.fromJson(
-      Map<String, dynamic>.from(incoming.toJson())
-        ..['id'] = id
-        ..['folderId'] = null
-        ..['isFavorite'] = false
-        ..['customImagePath'] = null
-        ..['customImagePaths'] = <String>[],
+    final imported = _withDefaultTip(
+      Brush.fromJson(
+        Map<String, dynamic>.from(incoming.toJson())
+          ..['id'] = id
+          ..['folderId'] = null
+          ..['isFavorite'] = false
+          ..['customImagePath'] = null
+          ..['customImagePaths'] = <String>[],
+      ),
     );
     addBrush(imported);
     return imported;
@@ -1817,7 +1908,7 @@ class BrushService extends ChangeNotifier {
     final imagePaths = brush.resolvedCustomImagePaths;
     for (var index = 0; index < imagePaths.length; index++) {
       final imagePath = imagePaths[index];
-      final bytes = await readBrushImageSource(imagePath);
+      final bytes = await readCreativeImageSource(imagePath);
       if (bytes == null) continue;
       final ext = imagePath.split('.').last;
       final name = 'images/${index.toString().padLeft(3, '0')}.$ext';
@@ -1863,9 +1954,13 @@ class BrushService extends ChangeNotifier {
         final suffix = imageFiles.length == 1
             ? ''
             : '_${index.toString().padLeft(3, '0')}';
-        final newImagePath = '${dir.path}/$id$suffix.$ext';
-        await File(newImagePath).writeAsBytes(imageFile.content as List<int>);
-        newImagePaths.add(newImagePath);
+        newImagePaths.add(
+          await restoreCreativeImage(
+            imageFile.content as List<int>,
+            '${dir.path}/$id$suffix',
+            ext,
+          ),
+        );
       }
     }
     // 元端末固有のID・フォルダ・画像パスだけ差し替え、それ以外の
@@ -1877,7 +1972,7 @@ class BrushService extends ChangeNotifier {
           ? newImagePaths.first
           : null
       ..['customImagePaths'] = newImagePaths;
-    final brush = Brush.fromJson(restoredJson);
+    final brush = await prepareBrushTip(Brush.fromJson(restoredJson));
     addBrush(brush);
     return brush;
   }
