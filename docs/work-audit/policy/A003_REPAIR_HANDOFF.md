@@ -9,4 +9,4 @@
 - DISC178/182 — 書き出し済みファイル約2万件でタブ切替・長押し選択・全選択の応答時間を同じfixtureで修正前後比較する。
 - 返却は「対象ID、変更コミット、確認結果、影響する共通部品・画面、未確認」だけでよい。容量削減のグラフ／初期化確認はA069の作業。ホームからの往復はA003の確認に含む。
 
-監査担当はA004から一巡目を進める。A003の二巡目では、修正箇所と影響先、[最新の証跡](../state/ASTRA_AUDIT_STATE.md)に残る表示・入力条件を確認する。
+この文書の指摘と証跡を[修正引継ぎ台帳](https://github.com/sakurasemaika-creator/NIARIM/blob/dev_branch/docs/work-audit/state/AUDIT_REPAIR_HANDOFF.md)から参照する。Claudeは最新チェックポイントから監査を続け、二巡目ではA003を含む全対象を確認する。
