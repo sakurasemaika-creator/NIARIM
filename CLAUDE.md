@@ -310,7 +310,10 @@
   打った字が消えるので、いつも`Theme`で包む）。自分の`Theme`でダイアログを包む
   所（救済のダイアログ、DISC221）と`MaterialApp.router`の`builder`層から開く
   ダイアログには届かない。打つ欄のあるダイアログは、キーボードの間の上下の空きの
-  ために`typingDialogInsetPadding`をやはり渡すこと（まだの所はDISC222）。
+  ために`typingDialogInsetPadding`をやはり渡すこと（自分で空きを決めるダイアログは
+  `usual:`にその空きを渡すとキーボードの間だけ上下を外す。`NameEntryDialog`は
+  キーボードを取り除く前に決める。ホームの外は全部渡した〔DISC222〕、ホームの
+  フォルダの編集のダイアログはDISC252）。
   メモの欄のような1行の`TextField`のヒントは
   `hintMaxLines`を付けないと1行で「…」と切れる（DISC192）。
 - **フォントの代替列（fontFamilyFallback）は本文用と見出し用で別物**：
@@ -1253,7 +1256,11 @@ onTap: ...)`だったために
   届ける）。丸を並べるときは`Row`ではなく`CollectionActionRow`（隙間を分け合い
   隣と重ならない）、`ListTile`の`trailing`に置くときは行を
   `.withCollectionActionReach()`で包む（包まないと︙の右の余白を押しても届かない）。
-  丸はカードの端から4px以上離す（親の箱の外は押せない）。一覧の末尾の余白には下の
+  丸はカードの端から4px以上離し、丸の外側に`Semantics`・`SizedBox`等の箱を置かない
+  （親の箱の外は押せない。縦に積むときは`CollectionActionRow(direction:
+  Axis.vertical)`、作品広場もこの形、DISC240）。丸の外側の1pxの輪
+  （`CollectionActionFrame.haloColor`、縁と反対のテーマの色）は、作品の用紙の
+  上でも丸を見分けるためのもの（DISC241）。一覧の末尾の余白には下の
   帯（`MediaQuery.paddingOf(context).bottom`）を足し、横向きの左右の切り欠き・帯は
   本文を`insideSideSafeArea()`で避ける（Scaffoldは浮かぶボタンの所の余白を外すので、
   浮かぶボタンの行と引き出しの見出しは左右の値を自分で足す）。動きを減らす設定
