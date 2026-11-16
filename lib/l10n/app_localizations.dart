@@ -2730,7 +2730,7 @@ abstract class AppLocalizations {
   /// No description provided for @helpEndCardDesc.
   ///
   /// In ja, this message translates to:
-  /// **'動画書き出し時、本編の終わりに自動で追加されるNIARIMロゴの短い動画（約5秒）です。無料版では非表示・削除ができませんが、プレミアム会員になると表示のON/OFF・長さ変更・差し替えができるようになります。'**
+  /// **'NIARIMのエンドマークは、MP4・WebM・AVIの本編末尾に付く5秒のロゴです。エンドマーク特典が有効な間は、作品ごとに表示を切り替えられます。期限後も作品の設定は保存されます。GIFには付きません。'**
   String get helpEndCardDesc;
 
   /// No description provided for @helpAutoSaveTitle.
@@ -2826,7 +2826,7 @@ abstract class AppLocalizations {
   /// No description provided for @helpVideoExportDesc.
   ///
   /// In ja, this message translates to:
-  /// **'作品を汎用的なMP4動画として書き出します。無料版は書き出せる長さに上限（90秒）があり、動画の最後にエンドカード（アプリロゴ）が自動で追加されます。 アルファチャンネル（背景の透明部分）を保持したまま書き出せる動画形式です。対応する再生環境でのみ透過再生されます。他のアプリの素材として重ねて使いたい場合などに向いています。 アニメーションGIFとして書き出します。自動でループ再生される形式のため、SNSへの投稿など気軽に共有したい場面に向いています。 互換性を重視したい場合はAVI（Motion JPEG）としても書き出せます。アルファチャンネル（透過）には対応せず、端末によってはアプリ内プレビューが利用できない場合があります（その場合も「共有」から外部プレイヤーで再生できます）。 無料会員はプロジェクトの長さに90秒までの上限があります（プレミアム会員は2時間）。フレーム追加・複製によって上限を超えそうな場合は、ボタンをタップした時点で注意ダイアログが表示され、実際に90秒を超えることはありません。'**
+  /// **'MP4・WebM・GIF・AVIで書き出せます。無料版で尺を伸ばせるのは90秒までです。制作済みの長尺作品は全編を書き出せます。書き出す前に本編の長さとエンドマークの有無を確認できます。'**
   String get helpVideoExportDesc;
 
   /// No description provided for @helpTransparentWebmTitle.
@@ -2856,7 +2856,7 @@ abstract class AppLocalizations {
   /// No description provided for @helpWatermarkEntryDesc.
   ///
   /// In ja, this message translates to:
-  /// **'書き出した動画・画像に、自分の署名やロゴを透かしとして入れられるプレミアム限定機能です。位置・大きさ・不透明度を調整できます。タイムラインの共通レイヤートラックに配置したウォーターマークをタップすると、角度・大きさ・不透明度・表示範囲（ループ表示）をいつでも再編集できます。登録時だけでなく、実際にプロジェクト内で使うタイミングで細かく調整できます。 追加するには、タイムラインの「素材を追加」メニューから「＋ウォーターマーク」を選びます。'**
+  /// **'画像や文字で自分の署名やロゴを作品に追加できます。追加や再編集にはウォーターマーク特典が必要です。配置済みのウォーターマークは期限後も書き出せます。'**
   String get helpWatermarkEntryDesc;
 
   /// No description provided for @helpPremiumEntryTitle.
@@ -2868,7 +2868,7 @@ abstract class AppLocalizations {
   /// No description provided for @helpPremiumEntryDesc.
   ///
   /// In ja, this message translates to:
-  /// **'プレミアム会員になると、無料版で90秒までに制限されている動画の尺が最大2時間まで拡大され、動画の最後に自動追加されるエンドカード（アプリロゴ）を削除できます。広告も非表示になり、ウォーターマーク・トーンカーブ・レベル補正機能も利用できるようになります。'**
+  /// **'最大尺の特典が有効な間は、最大2時間まで尺を伸ばせます。制作済みの長尺作品や適用済みの色補正は、期限後もそのまま書き出せます。エンドマークの表示は書き出し開始時に有効な特典で決まります。'**
   String get helpPremiumEntryDesc;
 
   /// No description provided for @helpPerformanceSettingsTitle.
@@ -3204,7 +3204,7 @@ abstract class AppLocalizations {
   /// No description provided for @helpWatermarkEditDesc.
   ///
   /// In ja, this message translates to:
-  /// **'タイムラインの共通レイヤートラックに配置したウォーターマークをタップすると、角度・大きさ・不透明度・表示範囲（ループ表示）をいつでも再編集できます。登録時だけでなく、実際にプロジェクト内で使うタイミングで細かく調整できます。'**
+  /// **'タイムラインの共通レイヤートラックから角度・大きさ・不透明度・表示範囲を調整できます。特典が終了しても配置済みのウォーターマークは作品や書き出しに残ります。設定の変更には有効な特典が必要です。'**
   String get helpWatermarkEditDesc;
 
   /// No description provided for @helpAudioClipTitle.
@@ -5078,6 +5078,60 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'書き出し開始'**
   String get exportStartButton;
+
+  /// No description provided for @timelineHideEndCard.
+  ///
+  /// In ja, this message translates to:
+  /// **'エンドマークを非表示'**
+  String get timelineHideEndCard;
+
+  /// No description provided for @timelineShowEndCard.
+  ///
+  /// In ja, this message translates to:
+  /// **'エンドマークを表示'**
+  String get timelineShowEndCard;
+
+  /// No description provided for @exportCurrentConditions.
+  ///
+  /// In ja, this message translates to:
+  /// **'現在の条件で書き出す'**
+  String get exportCurrentConditions;
+
+  /// No description provided for @exportRetryBenefits.
+  ///
+  /// In ja, this message translates to:
+  /// **'特典を再確認'**
+  String get exportRetryBenefits;
+
+  /// No description provided for @exportBenefitsUnavailable.
+  ///
+  /// In ja, this message translates to:
+  /// **'特典を確認できませんでした。再確認するか、表示中の条件で書き出せます。'**
+  String get exportBenefitsUnavailable;
+
+  /// No description provided for @exportBenefitsChecking.
+  ///
+  /// In ja, this message translates to:
+  /// **'特典を確認中です。'**
+  String get exportBenefitsChecking;
+
+  /// No description provided for @exportLongProjectNote.
+  ///
+  /// In ja, this message translates to:
+  /// **'制作済みの長尺作品は全編を書き出せます。無料版で尺を伸ばせるのは90秒までです。'**
+  String get exportLongProjectNote;
+
+  /// No description provided for @exportOutputWithoutEndCard.
+  ///
+  /// In ja, this message translates to:
+  /// **'本編 {duration}（エンドマークなし）'**
+  String exportOutputWithoutEndCard(String duration);
+
+  /// No description provided for @exportOutputWithEndCard.
+  ///
+  /// In ja, this message translates to:
+  /// **'本編 {duration} ＋ NIARIMエンドマーク（5秒）'**
+  String exportOutputWithEndCard(String duration);
 
   /// No description provided for @exportProjectNotFoundError.
   ///
@@ -9156,13 +9210,13 @@ abstract class AppLocalizations {
   /// No description provided for @timelineDurationLimitBodyFree.
   ///
   /// In ja, this message translates to:
-  /// **'無料会員は動画の長さが最大90秒までです。これ以上フレームを追加・複製すると90秒を超えてしまうため、実行できません。プレミアム会員になると最大2時間まで作成できます。'**
+  /// **'無料版で尺を伸ばせるのは90秒までです。最大尺の特典を使うと2時間まで伸ばせます。'**
   String get timelineDurationLimitBodyFree;
 
   /// No description provided for @timelineDurationLimitBodyPremium.
   ///
   /// In ja, this message translates to:
-  /// **'プレミアム会員の上限（最大2時間）を超えてしまうため、これ以上フレームを追加・複製できません。'**
+  /// **'最大尺の特典で伸ばせるのは2時間までです。'**
   String get timelineDurationLimitBodyPremium;
 
   /// No description provided for @timelineSceneDeleteConfirmTitle.
@@ -10074,13 +10128,13 @@ abstract class AppLocalizations {
   /// No description provided for @workspaceEndCardHint.
   ///
   /// In ja, this message translates to:
-  /// **'エンドカードは動画の最後に自動で表示されるアプリ側のロゴです。無料会員は操作できません。プレミアム会員限定で、ここをONにすると次にタイムラインを開いた時点から最初からエンドカードが非表示（削除済み）の状態になります。プレミアム権限が切れると、この設定は自動的にOFFへ戻ります。'**
+  /// **'作品ごとの表示設定がない場合に使う設定です。エンドマーク特典が有効な間に適用され、期限後も設定は保存されます。'**
   String get workspaceEndCardHint;
 
   /// No description provided for @workspaceEndCardDefaultHiddenTitle.
   ///
   /// In ja, this message translates to:
-  /// **'エンドカードを最初から非表示にする（プレミアム限定）'**
+  /// **'エンドマークをデフォルトで非表示にする'**
   String get workspaceEndCardDefaultHiddenTitle;
 
   /// No description provided for @tipsTransparentColorTitle.

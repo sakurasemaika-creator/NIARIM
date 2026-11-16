@@ -939,6 +939,7 @@ class NiaproSerializer {
       'exportHeight': d.project.exportHeight,
       'drawingAreaScale': d.project.drawingAreaScale,
       'enabledAutofillPresetIds': d.project.enabledAutofillPresetIds,
+      if (d.project.hideEndCard != null) 'hideEndCard': d.project.hideEndCard,
       'scenes': [
         for (final scene in [
           ...d.scenes,
@@ -994,6 +995,7 @@ class NiaproSerializer {
     'sharedFolderId': p.sharedFolderId,
     'isSharedImport': p.isSharedImport,
     'enabledAutofillPresetIds': p.enabledAutofillPresetIds,
+    if (p.hideEndCard != null) 'hideEndCard': p.hideEndCard,
     'tags': p.tags,
     'thumbnailPath': p.thumbnailPath,
     'thumbnailMode': p.thumbnailMode,
@@ -1136,6 +1138,7 @@ class NiaproSerializer {
   static Project _deserializeManifest(Map<String, dynamic> j) => Project(
     id: j['id'] as String,
     name: j['name'] as String,
+    hideEndCard: j['hideEndCard'] is bool ? j['hideEndCard'] as bool : null,
     fps: j['fps'] as int,
     durationSeconds: j['durationSeconds'] as int,
     backgroundColor: j['backgroundColor'] as int,

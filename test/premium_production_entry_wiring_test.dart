@@ -36,22 +36,22 @@ void main() {
     );
   });
 
-  test('export enforces unlimited duration and end-card Premium gates', () {
-    final source = File(
-      'lib/screens/export/export_screen.dart',
-    ).readAsStringSync();
+  test(
+    'export describes long projects and uses the shared end-card policy',
+    () {
+      final source = File(
+        'lib/screens/export/export_screen.dart',
+      ).readAsStringSync();
 
-    expect(
-      source,
-      contains('isFeatureAvailable(PremiumFeature.unlimitedDuration)'),
-    );
-    expect(
-      source,
-      contains('seconds > premiumService.maxProjectDurationSeconds'),
-    );
-    expect(source, contains('isFeatureAvailable(PremiumFeature.endCardEdit)'));
-    expect(source, contains('appendEndCard: shouldAppendEndCard'));
-  });
+      expect(
+        source,
+        contains('isFeatureAvailable(PremiumFeature.unlimitedDuration)'),
+      );
+      expect(source, contains('exportLongProjectNote'));
+      expect(source, contains('shouldAppendOfficialEndCard('));
+      expect(source, contains('appendEndCard: shouldAppendEndCard'));
+    },
+  );
 
   test('custom automation production entry remains gated before manager', () {
     final source = File(
@@ -95,5 +95,4 @@ void main() {
     );
     expect(source, contains('if (mounted) showPremiumBanner(context);'));
   });
-
 }

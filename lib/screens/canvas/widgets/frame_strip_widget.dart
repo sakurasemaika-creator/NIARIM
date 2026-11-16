@@ -112,8 +112,11 @@ class _FrameStripWidgetState extends State<FrameStripWidget> {
   }
 
   bool _canAddFrames(BuildContext context, ProjectService service, int count) {
-    final isPremium = context.read<PremiumService>().isPremium;
-    final maxSeconds = isPremium ? 7200 : 90;
+    final premium = context.read<PremiumService>();
+    final maxSeconds = premium.maxProjectDurationSeconds;
+    final isPremium = premium.isFeatureAvailable(
+      PremiumFeature.unlimitedDuration,
+    );
     final projected = service.projectedDurationSeconds(
       widget.projectId,
       frameDelta: count,

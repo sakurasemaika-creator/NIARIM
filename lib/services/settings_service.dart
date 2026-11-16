@@ -638,12 +638,8 @@ class SettingsService extends ChangeNotifier {
   }
 
   // ─── エンドカードのプレミアム既定設定 ─────────────────────────────────
-  // プレミアム会員限定：ONにすると、以後タイムラインを開いた時点で
-  // エンドカードが最初から非表示（削除済み）の状態になる。無料会員には
-  // 一切関係がなく、プレミアム権限が切れて無料会員に戻った時点でこの設定
-  // 自体も自動でOFFへリセットする（main.dartでPremiumServiceの状態変化を
-  // 監視して呼び出す）。
-  bool _endCardDefaultHiddenForPremium = false;
+  // 作品に個別設定がない場合の既定値。有効な特典がある間に適用する。
+  bool _endCardDefaultHiddenForPremium = true;
 
   bool get endCardDefaultHiddenForPremium => _endCardDefaultHiddenForPremium;
 
@@ -960,7 +956,7 @@ class SettingsService extends ChangeNotifier {
       }
     }
     _endCardDefaultHiddenForPremium =
-        prefs.readBool('endcard_default_hidden_for_premium') ?? false;
+        prefs.readBool('endcard_default_hidden_for_premium') ?? true;
     _toolbarSizeLevel = (prefs.readInt('toolbar_size_level') ?? 3).clamp(1, 5);
     final toolbarOrderNames = prefs.readStringList('toolbar_order');
     if (toolbarOrderNames != null && toolbarOrderNames.isNotEmpty) {

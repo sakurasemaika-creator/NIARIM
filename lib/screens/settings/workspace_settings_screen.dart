@@ -417,7 +417,8 @@ class WorkspaceSettingsScreen extends StatelessWidget {
               ),
               color: Theme.of(context).colorScheme.surfaceContainerLow,
               child: SwitchListTile(
-                secondary: premium.isPremium
+                secondary:
+                    premium.isFeatureAvailable(PremiumFeature.endCardEdit)
                     ? null
                     : Icon(
                         Icons.lock,
@@ -425,9 +426,10 @@ class WorkspaceSettingsScreen extends StatelessWidget {
                       ),
                 title: Text(l10n.workspaceEndCardDefaultHiddenTitle),
                 value:
-                    premium.isPremium &&
+                    premium.isFeatureAvailable(PremiumFeature.endCardEdit) &&
                     settings.endCardDefaultHiddenForPremium,
-                onChanged: premium.isPremium
+                onChanged:
+                    premium.isFeatureAvailable(PremiumFeature.endCardEdit)
                     ? (v) => settings.setEndCardDefaultHiddenForPremium(v)
                     : (_) => showPremiumBanner(context),
               ),

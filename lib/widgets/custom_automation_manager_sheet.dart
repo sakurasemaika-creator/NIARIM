@@ -8,6 +8,8 @@ import 'package:provider/provider.dart';
 import '../l10n/app_localizations.dart';
 import '../models/custom_automation.dart';
 import '../services/custom_automation_service.dart';
+import '../services/premium_service.dart';
+import 'premium_lock_widget.dart';
 import '../utils/custom_automation_labels.dart';
 import 'scrollable_sheet_body.dart';
 import 'typing_dialog_inset.dart';
@@ -32,6 +34,16 @@ class CustomAutomationManagerSheet extends StatelessWidget {
     this.recordingStartFrame,
     this.frameCount,
   });
+
+  bool _canStart(BuildContext context) {
+    final premium = context.read<PremiumService?>();
+    if (premium == null ||
+        premium.isFeatureAvailable(PremiumFeature.customAutomation)) {
+      return true;
+    }
+    showPremiumBanner(context);
+    return false;
+  }
 
   Future<void> _startNew(BuildContext context) async {
     final l10n = AppLocalizations.of(context)!;
@@ -62,7 +74,9 @@ class CustomAutomationManagerSheet extends StatelessWidget {
           FilledButton(
             onPressed: () {
               final value = draftName.trim();
-              if (value.isNotEmpty) Navigator.pop(dialogContext, value);
+              if (value.isNotEmpty && _canStart(dialogContext)) {
+                Navigator.pop(dialogContext, value);
+              }
             },
             child: Text(l10n.customAutomationStartRecording),
           ),
@@ -174,7 +188,11 @@ class CustomAutomationManagerSheet extends StatelessWidget {
               child: Text(l10n.customAutomationNo),
             ),
             FilledButton(
-              onPressed: () => Navigator.pop(dialogContext, true),
+              onPressed: () {
+                if (_canStart(dialogContext)) {
+                  Navigator.pop(dialogContext, true);
+                }
+              },
               child: Text(l10n.customAutomationYes),
             ),
           ],

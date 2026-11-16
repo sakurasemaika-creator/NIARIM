@@ -1450,7 +1450,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get helpEndCardDesc =>
-      '동영상 내보내기 시, 본편이 끝난 후 자동으로 추가되는 NIARIM 로고의 짧은 영상（약 5초）입니다. 무료판에서는 숨기거나 삭제할 수 없지만, 프리미엄 회원이 되면 표시 ON/OFF・길이 변경・교체가 가능해집니다.';
+      'NIARIM 엔드 마크는 MP4, WebM, AVI 끝에 붙는 5초 로고입니다. 혜택이 유효하면 작품별로 표시 여부를 바꿀 수 있습니다. 만료 후에도 설정이 저장되며 GIF에는 붙지 않습니다.';
 
   @override
   String get helpAutoSaveTitle => '자동 저장';
@@ -1506,7 +1506,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get helpVideoExportDesc =>
-      '작품을 범용 MP4 동영상으로 내보냅니다. 무료 버전은 내보낼 수 있는 길이에 제한(90초)이 있으며, 동영상 끝에 엔드카드(앱 로고)가 자동으로 추가됩니다. 알파 채널（배경의 투명 부분）을 유지한 채 내보낼 수 있는 동영상 형식입니다. 지원하는 재생 환경에서만 투명하게 재생됩니다. 다른 앱의 소재로 겹쳐서 사용하고 싶을 때 적합합니다. 애니메이션 GIF로 내보냅니다. 자동으로 반복 재생되는 형식이라 SNS 공유 등 가볍게 공유하고 싶을 때 적합합니다. 호환성을 중시한다면 AVI（Motion JPEG）로도 내보낼 수 있습니다. 알파 채널（투명）은 지원하지 않으며, 기기에 따라 앱 내 미리보기가 되지 않을 수 있습니다（그 경우에도 「공유」에서 외부 플레이어로 재생할 수 있습니다）. 무료 회원은 프로젝트 길이에 90초까지의 상한이 있습니다（프리미엄 회원은 2시간）. 프레임 추가・복제로 상한을 넘어설 것 같으면 버튼을 탭한 순간 주의 대화상자가 표시되어, 실제로 90초를 넘지 않도록 되어 있습니다.';
+      'MP4, WebM, GIF, AVI로 내보낼 수 있습니다. 무료 버전에서 작품 길이를 90초까지 늘릴 수 있습니다. 이미 만든 긴 작품은 전체를 내보낼 수 있습니다. 내보내기 전에 길이와 엔드 마크를 확인할 수 있습니다.';
 
   @override
   String get helpTransparentWebmTitle => '투명 WebM';
@@ -1523,14 +1523,14 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get helpWatermarkEntryDesc =>
-      '내보낸 동영상・이미지에 자신의 서명이나 로고를 워터마크로 넣을 수 있는 프리미엄 전용 기능입니다. 위치・크기・불투명도를 조정할 수 있습니다. 타임라인의 공통 레이어 트랙에 배치한 워터마크를 탭하면 각도・크기・불투명도・표시 범위（루프 표시）를 언제든지 다시 편집할 수 있습니다. 등록할 때뿐 아니라 실제로 프로젝트에서 사용할 때도 세세하게 조정할 수 있습니다. 워터마크를 추가하려면 타임라인의 \'소재 추가\' 메뉴에서 \'＋워터마크\'를 선택하세요.';
+      '이미지나 텍스트로 서명 또는 로고를 넣을 수 있습니다. 추가와 편집에는 혜택이 필요하며 배치한 워터마크는 만료 후에도 내보낼 수 있습니다.';
 
   @override
   String get helpPremiumEntryTitle => '프리미엄';
 
   @override
   String get helpPremiumEntryDesc =>
-      '프리미엄 회원이 되면 무료 버전에서 90초로 제한된 동영상 길이가 최대 2시간까지 늘어나고, 모든 동영상 끝에 자동 추가되는 엔드카드(앱 로고)를 삭제할 수 있습니다. 광고도 숨겨지며, 워터마크, 톤 커브, 레벨 보정 기능도 사용할 수 있게 됩니다.';
+      '최대 길이 혜택이 유효하면 작품 길이를 2시간까지 늘릴 수 있습니다. 만료 후에도 만든 작품과 적용한 색 보정을 그대로 내보낼 수 있습니다. 엔드 마크는 내보내기 시작 시의 혜택에 따라 결정됩니다.';
 
   @override
   String get helpPerformanceSettingsTitle => '성능 설정';
@@ -1726,7 +1726,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get helpWatermarkEditDesc =>
-      '타임라인의 공통 레이어 트랙에 배치한 워터마크를 탭하면 각도・크기・불투명도・표시 범위（루프 표시）를 언제든지 다시 편집할 수 있습니다. 등록할 때뿐 아니라 실제로 프로젝트 안에서 사용할 때 세밀하게 조정할 수 있습니다.';
+      '공통 레이어 트랙에서 각도, 크기, 불투명도, 표시 범위를 조정합니다. 만료 후에도 배치한 워터마크는 작품과 내보내기 결과에 남습니다. 설정을 변경하려면 활성 혜택이 필요합니다.';
 
   @override
   String get helpAudioClipTitle => '음량 조절';
@@ -2764,6 +2764,39 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get exportStartButton => '내보내기 시작';
+
+  @override
+  String get timelineHideEndCard => '엔드 마크 숨기기';
+
+  @override
+  String get timelineShowEndCard => '엔드 마크 표시';
+
+  @override
+  String get exportCurrentConditions => '현재 조건으로 내보내기';
+
+  @override
+  String get exportRetryBenefits => '혜택 다시 확인';
+
+  @override
+  String get exportBenefitsUnavailable =>
+      '혜택을 확인할 수 없습니다. 다시 확인하거나 표시된 조건으로 내보낼 수 있습니다.';
+
+  @override
+  String get exportBenefitsChecking => '혜택을 확인하는 중입니다.';
+
+  @override
+  String get exportLongProjectNote =>
+      '이미 만든 긴 작품은 전체를 내보낼 수 있습니다. 무료 버전에서는 작품 길이를 90초까지 늘릴 수 있습니다.';
+
+  @override
+  String exportOutputWithoutEndCard(String duration) {
+    return '본편 $duration(엔드 마크 없음)';
+  }
+
+  @override
+  String exportOutputWithEndCard(String duration) {
+    return '본편 $duration + NIARIM 엔드 마크(5초)';
+  }
 
   @override
   String get exportProjectNotFoundError => '프로젝트를 찾을 수 없습니다';
@@ -5056,11 +5089,11 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get timelineDurationLimitBodyFree =>
-      '무료 회원은 동영상 길이가 최대 90초까지입니다. 프레임을 더 추가하거나 복제하면 90초를 초과하게 되어 실행할 수 없습니다. 프리미엄 회원이 되면 최대 2시간까지 제작할 수 있습니다.';
+      '무료 버전에서는 작품을 최대 90초까지 늘릴 수 있습니다. 최대 길이 혜택을 사용하면 최대 2시간까지 늘릴 수 있습니다.';
 
   @override
   String get timelineDurationLimitBodyPremium =>
-      '프리미엄 회원 상한(최대 2시간)을 초과하게 되어 더 이상 프레임을 추가하거나 복제할 수 없습니다.';
+      '최대 길이 혜택으로 작품을 최대 2시간까지 늘릴 수 있습니다.';
 
   @override
   String timelineSceneDeleteConfirmTitle(String name) {
@@ -5573,10 +5606,10 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get workspaceEndCardHint =>
-      '엔드카드는 모든 동영상 끝에 자동으로 표시되는 앱 자체 로고입니다. 무료 회원은 조작할 수 없습니다. 프리미엄 회원 전용: 이 항목을 켜면 다음에 타임라인을 열 때부터 엔드카드가 처음부터 숨김(삭제) 상태로 시작됩니다. 프리미엄 권한이 만료되면 이 설정은 자동으로 꺼집니다.';
+      '작품별 설정이 없고 엔드 마크 혜택이 유효할 때 적용되는 기본값입니다. 혜택이 만료되어도 설정은 저장됩니다.';
 
   @override
-  String get workspaceEndCardDefaultHiddenTitle => '엔드카드를 기본적으로 숨기기（프리미엄 전용）';
+  String get workspaceEndCardDefaultHiddenTitle => '기본적으로 엔드 마크 숨기기';
 
   @override
   String get tipsTransparentColorTitle => '투명색은 단순한 지우개가 아니라 펜처럼 쓸 수 있다';

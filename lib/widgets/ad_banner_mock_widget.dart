@@ -68,6 +68,7 @@ Size? bannerSizeForViewport({
 /// 従来どおり単独のレイアウト検証ができる。
 class AdPersistentRootFrame extends StatelessWidget {
   final Widget child;
+  final String? route;
   final bool allowBanner;
   final String? coinPlacementKey;
 
@@ -75,6 +76,7 @@ class AdPersistentRootFrame extends StatelessWidget {
     super.key,
     required this.child,
     this.allowBanner = true,
+    this.route,
     this.coinPlacementKey,
   });
 
@@ -82,6 +84,7 @@ class AdPersistentRootFrame extends StatelessWidget {
   Widget build(BuildContext context) {
     return AdMockPageFrame(
       allowBanner: allowBanner,
+      route: route,
       coinPlacementKey: coinPlacementKey,
       child: _PersistentAdRootMarker(child: child),
     );
@@ -102,8 +105,9 @@ class _PersistentAdRootMarker extends InheritedWidget {
 /// 画面最上部のステータスバー／切り欠き領域は[SafeArea]で避け、ページ側
 /// からは上部paddingを取り除いて二重の余白が生じないようにする。
 /// 実機ではGoogleテスト広告を使い、widget testにはモックを残す。
-class AdMockPageFrame extends StatelessWidget {
+class AdMockPageFrame extends StatefulWidget {
   final Widget child;
+  final String? route;
   final bool allowBanner;
   final String? coinPlacementKey;
 
@@ -111,8 +115,17 @@ class AdMockPageFrame extends StatelessWidget {
     super.key,
     required this.child,
     this.allowBanner = true,
+    this.route,
     this.coinPlacementKey,
   });
+
+  @override
+  State<AdMockPageFrame> createState() => _AdMockPageFrameState();
+}
+
+class _AdMockPageFrameState extends State<AdMockPageFrame> {
+  String? _lastRoute;
+  bool _wasAdFree = false;
 
   @override
   Widget build(BuildContext context) {
@@ -121,13 +134,24 @@ class AdMockPageFrame extends StatelessWidget {
     // tests and legacy call sites, but must not create duplicate ads.
     if (context.dependOnInheritedWidgetOfExactType<_PersistentAdRootMarker>() !=
         null) {
-      return child;
+      return widget.child;
     }
     final premium = context.watch<PremiumService>();
-    final isPremium =
+    final adFree =
         premium.isPremium ||
-        (coinPlacementKey != null &&
-            premium.isServerCoinBenefitActive(coinPlacementKey!));
+        premium.isServerCoinBenefitActive('allAds') ||
+        (widget.coinPlacementKey != null &&
+            premium.isServerCoinBenefitActive(widget.coinPlacementKey!));
+    final route = widget.route;
+    if (route != _lastRoute) {
+      _lastRoute = route;
+      _wasAdFree = false;
+    }
+    // Once the editor has no banner, a right expiring must not move its canvas.
+    final editing =
+        route != null &&
+        (route.startsWith('/canvas/') || route.startsWith('/timeline/'));
+    _wasAdFree = editing && (_wasAdFree || adFree);
     // Standalone widget tests omit AdvertisingService; production always
     // provides it, and canRequestAds gates real SDK requests.
     final ads = context.watch<AdvertisingService?>();
@@ -145,8 +169,9 @@ class AdMockPageFrame extends StatelessWidget {
         // A keyboard, accessibility IME or other system input surface can
         // put an ad beside rapidly touched text/controls; suppress it.
         final showSlot =
-            allowBanner &&
-            !isPremium &&
+            widget.allowBanner &&
+            !adFree &&
+            !_wasAdFree &&
             media.viewInsets.bottom <= 0 &&
             (ads == null || ads.shouldShowAds || kNiarimAdSnapshotPreview) &&
             bannerSize != null;
@@ -163,7 +188,7 @@ class AdMockPageFrame extends StatelessWidget {
               child: MediaQuery.removePadding(
                 context: context,
                 removeTop: showSlot,
-                child: child,
+                child: widget.child,
               ),
             ),
           ],
@@ -270,16 +295,28 @@ class AdBannerMockWidget extends StatelessWidget {
 
 /// 書き出し・フィルター等の処理中画面に置く中型レクタングル広告モック。
 /// 実際のAdSize.mediumRectangleと同じ300×250dpで、縮小せずに表示する。
-class AdMediumRectangleMockWidget extends StatelessWidget {
+class AdMediumRectangleMockWidget extends StatefulWidget {
   const AdMediumRectangleMockWidget({super.key});
+
+  @override
+  State<AdMediumRectangleMockWidget> createState() =>
+      _AdMediumRectangleMockWidgetState();
+}
+
+class _AdMediumRectangleMockWidgetState
+    extends State<AdMediumRectangleMockWidget> {
+  bool _wasAdFree = false;
 
   @override
   Widget build(BuildContext context) {
     final ads = context.watch<AdvertisingService?>();
     final premium = context.watch<PremiumService>();
-    if (premium.isPremium ||
+    _wasAdFree =
+        _wasAdFree ||
+        premium.isPremium ||
         premium.isServerCoinBenefitActive('allAds') ||
-        premium.isServerCoinBenefitActive('processingAds') ||
+        premium.isServerCoinBenefitActive('processingAds');
+    if (_wasAdFree ||
         (ads != null && !ads.shouldShowAds && !kNiarimAdSnapshotPreview)) {
       return const SizedBox.shrink();
     }

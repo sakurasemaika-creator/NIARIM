@@ -1481,7 +1481,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpEndCardDesc =>
-      'A short video (about 5 seconds) with the NIARIM logo, automatically added to the end of the main content when exporting a video. The free version cannot hide or remove it, but Premium members can turn it on/off, change its length, or replace it.';
+      'The NIARIM end mark is a five-second logo appended to MP4, WebM, and AVI exports. While the benefit is active, you can show or hide it per project. Project preferences are kept after expiry. GIFs do not include it.';
 
   @override
   String get helpAutoSaveTitle => 'Auto Save';
@@ -1537,7 +1537,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpVideoExportDesc =>
-      'Exports your work as a standard MP4 video. The free version has a length limit (90 seconds) and automatically adds an end card (app logo) at the end of the video. A video format that can be exported while keeping the alpha channel (the transparent parts of the background). Transparent playback only works in compatible playback environments. Good for layering as material in other apps. Exports as an animated GIF. Since it loops automatically, it works well for casual sharing on social media. If compatibility matters most, you can also export as AVI (Motion JPEG). It doesn\'t support the alpha channel (transparency), and in-app preview may not work on every device (you can still play it in an external player via Share in that case). Free accounts are capped at a 90-second project length (Premium accounts get 2 hours). If adding or duplicating frames would push you past the limit, a warning dialog appears the moment you tap the button, so you never actually go over 90 seconds.';
+      'Export in MP4, WebM, GIF, or AVI. The free plan lets you extend a project up to 90 seconds. Existing long projects can be exported in full. Check the main video duration and end mark before exporting.';
 
   @override
   String get helpTransparentWebmTitle => 'Transparent WebM';
@@ -1554,14 +1554,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpWatermarkEntryDesc =>
-      'A premium-only feature that lets you add your own signature or logo as a watermark on exported videos and images. You can adjust its position, size, and opacity. Tap the watermark placed on the common-layer track in the timeline to re-edit its angle, size, opacity, and visible range (looping) at any time — not just when you first register it, but whenever you use it in a project. To add a watermark, open “Add material” in the timeline and choose “+ Watermark”.';
+      'Add your own signature or logo with text or an image. Adding or editing a watermark requires the benefit. Placed watermarks can still be exported after expiry.';
 
   @override
   String get helpPremiumEntryTitle => 'Premium';
 
   @override
   String get helpPremiumEntryDesc =>
-      'Premium membership extends the 90-second video length limit of the free version up to 2 hours and lets you remove the end card (app logo) automatically added at the end of every video. Ads are also hidden, and you gain access to the watermark, tone curve, and level correction features.';
+      'The longer-duration benefit lets you extend a project up to two hours. Existing long projects and applied color corrections can still be exported after expiry. The end mark depends on the benefit active when export starts.';
 
   @override
   String get helpPerformanceSettingsTitle => 'Performance Settings';
@@ -1759,7 +1759,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpWatermarkEditDesc =>
-      'Tapping a watermark placed on the timeline\'s common-layer track lets you re-edit its angle, size, opacity, and display range (loop) at any time. You can fine-tune it not just when registering it, but whenever you\'re actually using it in a project.';
+      'Adjust angle, size, opacity, and display range from the shared-layer track in the timeline. Placed watermarks stay in projects and exports after expiry. An active benefit is required to change these settings.';
 
   @override
   String get helpAudioClipTitle => 'Volume';
@@ -2861,6 +2861,39 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get exportStartButton => 'Start Export';
+
+  @override
+  String get timelineHideEndCard => 'Hide end mark';
+
+  @override
+  String get timelineShowEndCard => 'Show end mark';
+
+  @override
+  String get exportCurrentConditions => 'Export with current conditions';
+
+  @override
+  String get exportRetryBenefits => 'Check benefits again';
+
+  @override
+  String get exportBenefitsUnavailable =>
+      'Benefits could not be verified. Retry or export with the conditions shown.';
+
+  @override
+  String get exportBenefitsChecking => 'Checking benefits…';
+
+  @override
+  String get exportLongProjectNote =>
+      'Existing long projects can be exported in full. On the free plan you can extend a project up to 90 seconds.';
+
+  @override
+  String exportOutputWithoutEndCard(String duration) {
+    return 'Main video $duration (no end mark)';
+  }
+
+  @override
+  String exportOutputWithEndCard(String duration) {
+    return 'Main video $duration + NIARIM end mark (5 seconds)';
+  }
 
   @override
   String get exportProjectNotFoundError => 'Project not found';
@@ -5232,11 +5265,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get timelineDurationLimitBodyFree =>
-      'Free members are limited to 90 seconds of video. Adding or duplicating more frames would exceed this limit, so the action can\'t be completed. Upgrade to Premium for up to 2 hours.';
+      'The free plan lets you extend a project up to 90 seconds. The longer-duration benefit raises the limit to two hours.';
 
   @override
   String get timelineDurationLimitBodyPremium =>
-      'This would exceed the Premium limit (up to 2 hours), so no more frames can be added or duplicated.';
+      'The longer-duration benefit lets you extend a project up to two hours.';
 
   @override
   String timelineSceneDeleteConfirmTitle(String name) {
@@ -5764,11 +5797,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get workspaceEndCardHint =>
-      'The end card is the app\'s own logo shown automatically at the end of every video. Free members can\'t change this. Premium members only: turning this on makes the end card start out hidden (removed) the next time you open the timeline. This setting automatically turns back off if your premium subscription lapses.';
+      'This default applies while the end mark benefit is active, for projects without their own setting. Your preference is saved after expiry.';
 
   @override
   String get workspaceEndCardDefaultHiddenTitle =>
-      'Hide the end card by default (Premium only)';
+      'Hide the end mark by default';
 
   @override
   String get tipsTransparentColorTitle =>

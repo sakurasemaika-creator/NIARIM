@@ -11,9 +11,9 @@ import '../../engine/export_engine.dart';
 import '../../l10n/app_localizations.dart';
 import '../../services/premium_service.dart';
 import '../../services/project_service.dart';
+import '../../services/settings_service.dart';
 import '../../widgets/export_share_feedback.dart';
 import '../../widgets/labeled_slider.dart';
-import '../../widgets/premium_lock_widget.dart';
 import '../../widgets/progress_dialog.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/help_button.dart';
@@ -36,6 +36,7 @@ class _ExportScreenState extends State<ExportScreen> {
   ExportFormat _format = ExportFormat.mp4;
   ExportPreset _preset = ExportPreset.standard;
   bool _isExporting = false;
+  bool _startingExport = false;
   double _progress = 0;
   String? _error;
   void Function(void Function())? _progressDialogSetState;
@@ -55,6 +56,25 @@ class _ExportScreenState extends State<ExportScreen> {
   };
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) unawaited(context.read<PremiumService>().refreshBenefits());
+    });
+  }
+
+  bool _appendEndCard(
+    PremiumService premium,
+    bool? projectHidden,
+    bool defaultHidden,
+  ) =>
+      _format != ExportFormat.gif &&
+      premium.shouldAppendOfficialEndCard(
+        projectHidden: projectHidden,
+        defaultHidden: defaultHidden,
+      );
+
+  @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return Scaffold(
@@ -67,6 +87,29 @@ class _ExportScreenState extends State<ExportScreen> {
   }
 
   Widget _buildSettings(AppLocalizations l10n) {
+    final premium = context.watch<PremiumService>();
+    final projects = context.watch<ProjectService>();
+    final settings = context.watch<SettingsService?>();
+    final project = projects.projects
+        .where((p) => p.id == widget.projectId)
+        .firstOrNull;
+    final frameCount = projects
+        .scenesOf(widget.projectId)
+        .fold(0, (sum, scene) => sum + scene.frames.length);
+    final seconds = frameCount / _fps;
+    final wholeSeconds = seconds.floor();
+    final time = MaterialLocalizations.of(context);
+    final duration = [
+      if (wholeSeconds >= 3600) time.formatDecimal(wholeSeconds ~/ 3600),
+      time.formatDecimal(wholeSeconds ~/ 60 % 60).padLeft(2, '0'),
+      time.formatDecimal(wholeSeconds % 60).padLeft(2, '0'),
+    ].join(':');
+    final appendEndCard = _appendEndCard(
+      premium,
+      project?.hideEndCard,
+      settings?.endCardDefaultHiddenForPremium ?? true,
+    );
+    final verificationUnavailable = premium.benefitsVerificationUnavailable;
     return desktopCentered(
       context,
       SingleChildScrollView(
@@ -223,10 +266,38 @@ class _ExportScreenState extends State<ExportScreen> {
               ),
             ),
             const SizedBox(height: 24),
+            Text(
+              appendEndCard
+                  ? l10n.exportOutputWithEndCard(duration)
+                  : l10n.exportOutputWithoutEndCard(duration),
+            ),
+            if (seconds > 90 &&
+                !premium.isFeatureAvailable(PremiumFeature.unlimitedDuration))
+              Text(l10n.exportLongProjectNote),
+            if (premium.isCheckingBenefits)
+              Text(l10n.exportBenefitsChecking)
+            else if (verificationUnavailable) ...[
+              Text(l10n.exportBenefitsUnavailable),
+              Align(
+                alignment: AlignmentDirectional.centerStart,
+                child: TextButton(
+                  onPressed: _isExporting ? null : premium.refreshBenefits,
+                  child: Text(l10n.exportRetryBenefits),
+                ),
+              ),
+            ],
+            const SizedBox(height: 12),
             FilledButton.icon(
-              onPressed: _isExporting ? null : _startExport,
+              onPressed:
+                  _isExporting || _startingExport || premium.isCheckingBenefits
+                  ? null
+                  : _startExport,
               icon: const Icon(Icons.file_download),
-              label: Text(l10n.exportStartButton),
+              label: Text(
+                verificationUnavailable
+                    ? l10n.exportCurrentConditions
+                    : l10n.exportStartButton,
+              ),
               style: FilledButton.styleFrom(
                 minimumSize: const Size.fromHeight(48),
               ),
@@ -242,29 +313,22 @@ class _ExportScreenState extends State<ExportScreen> {
     final projectService = context.read<ProjectService>();
     final premiumService = context.read<PremiumService>();
 
-    // 自動塗り未更新警告（書き出し前の未更新警告）
+    if (_startingExport || _isExporting || premiumService.isCheckingBenefits) {
+      return;
+    }
     if (projectService.hasOutdatedAutofillLayers(widget.projectId)) {
+      setState(() => _startingExport = true);
       final proceed = await _confirmOutdatedAutofill();
-      if (proceed != true) return;
+      if (!mounted) return;
+      setState(() => _startingExport = false);
+      if (proceed != true || premiumService.isCheckingBenefits) return;
     }
 
-    // 無料版の最大動画尺チェック
-    if (!premiumService.isFeatureAvailable(PremiumFeature.unlimitedDuration)) {
-      final scenesPreview = projectService.scenesOf(widget.projectId);
-      final totalFramesPreview = scenesPreview.fold(
-        0,
-        (sum, s) => sum + s.frames.length,
-      );
-      final seconds = totalFramesPreview / _fps;
-      if (seconds > premiumService.maxProjectDurationSeconds) {
-        final proceed = await _confirmDurationExceeded(
-          seconds,
-          premiumService.maxProjectDurationSeconds,
-        );
-        if (proceed != true) return;
-      }
-    }
-
+    final format = _format;
+    final fps = _fps;
+    final defaultHidden =
+        context.read<SettingsService?>()?.endCardDefaultHiddenForPremium ??
+        true;
     final cancelToken = ExportCancelToken();
     _cancelToken = cancelToken;
     setState(() {
@@ -292,22 +356,20 @@ class _ExportScreenState extends State<ExportScreen> {
         _progressDialogSetState?.call(() {});
       }
 
-      // 無料版：書き出し時にエンドカード（NIARIMロゴ・約5秒）を本編末尾へ
-      // 自動追加する。mp4/webmとも、動画の結合ではなく
-      // フレーム生成の段階で末尾へ焼き込む（endcard_frame参照）。
-      final shouldAppendEndCard =
-          !premiumService.isFeatureAvailable(PremiumFeature.endCardEdit) &&
-          (_format == ExportFormat.mp4 ||
-              _format == ExportFormat.webm ||
-              _format == ExportFormat.avi);
+      // Capture the output conditions once before rendering the first frame.
+      final shouldAppendEndCard = _appendEndCard(
+        premiumService,
+        project.hideEndCard,
+        defaultHidden,
+      );
 
       String outputPath;
-      switch (_format) {
+      switch (format) {
         case ExportFormat.mp4:
           outputPath = await engine.exportMp4(
             scenes: scenes,
             tileManager: tileManager,
-            fps: _fps,
+            fps: fps,
             drawingWidth: project.drawingWidth,
             drawingHeight: project.drawingHeight,
             width: project.exportWidth,
@@ -321,7 +383,7 @@ class _ExportScreenState extends State<ExportScreen> {
           outputPath = await engine.exportGif(
             scenes: scenes,
             tileManager: tileManager,
-            fps: _fps,
+            fps: fps,
             drawingWidth: project.drawingWidth,
             drawingHeight: project.drawingHeight,
             width: project.exportWidth,
@@ -334,7 +396,7 @@ class _ExportScreenState extends State<ExportScreen> {
           outputPath = await engine.exportWebm(
             scenes: scenes,
             tileManager: tileManager,
-            fps: _fps,
+            fps: fps,
             drawingWidth: project.drawingWidth,
             drawingHeight: project.drawingHeight,
             width: project.exportWidth,
@@ -348,7 +410,7 @@ class _ExportScreenState extends State<ExportScreen> {
           outputPath = await engine.exportAvi(
             scenes: scenes,
             tileManager: tileManager,
-            fps: _fps,
+            fps: fps,
             drawingWidth: project.drawingWidth,
             drawingHeight: project.drawingHeight,
             width: project.exportWidth,
@@ -455,36 +517,6 @@ class _ExportScreenState extends State<ExportScreen> {
           FilledButton(
             onPressed: () => Navigator.pop(ctx, true),
             child: Text(l10n.exportContinueButton),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Future<bool?> _confirmDurationExceeded(double seconds, int maxSeconds) {
-    final l10n = AppLocalizations.of(context)!;
-    return showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(l10n.exportDurationExceededTitle),
-        content: Text(
-          l10n.exportDurationExceededBody(maxSeconds, seconds.round()),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: Text(l10n.commonCancel),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(ctx, false);
-              showPremiumBanner(context);
-            },
-            child: Text(l10n.exportViewPremiumButton),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: Text(l10n.exportContinueAnywayButton),
           ),
         ],
       ),

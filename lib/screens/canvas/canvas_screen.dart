@@ -683,6 +683,12 @@ class _CanvasScreenState extends State<CanvasScreen> {
     CustomAutomationExecutionScope scope,
     List<int>? targetFrames,
   ) async {
+    if (!context.read<PremiumService>().isFeatureAvailable(
+      PremiumFeature.customAutomation,
+    )) {
+      showPremiumBanner(context);
+      return;
+    }
     if (_customAutomationRunning) return;
     _customAutomationRunning = true;
     final navigator = Navigator.of(context);

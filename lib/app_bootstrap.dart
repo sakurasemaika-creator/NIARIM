@@ -141,12 +141,6 @@ Future<List<SingleChildWidget>> _buildAppProviders(
   await enter('premium');
   final premiumService = own(PremiumService());
   await premiumService.init();
-  premiumService.addListener(() {
-    if (!premiumService.isPremium &&
-        settingsService.endCardDefaultHiddenForPremium) {
-      settingsService.setEndCardDefaultHiddenForPremium(false);
-    }
-  });
 
   await enter('advertising');
   final advertisingService = own(
@@ -300,12 +294,12 @@ Future<List<SingleChildWidget>> _buildAppProviders(
   // The remembered poster id is restored first so their own works and
   // settings are theirs from the start; GET /me/works then confirms it, and
   // their bookmarks, follows and reposts follow.
-  Future<void> refreshCoinPremium(String accountId) async {
+  Future<bool> refreshCoinPremium(String accountId) async {
     final api = communityService.api;
-    if (api == null) return;
+    if (api == null) return true;
     try {
       final state = await api.myRewardState();
-      if (googleAuthService.account?.id != accountId) return;
+      if (googleAuthService.account?.id != accountId) return false;
       DateTime? expiresAt;
       for (final raw in (state['entitlements'] as List? ?? const [])) {
         if (raw is Map &&
@@ -326,11 +320,15 @@ Future<List<SingleChildWidget>> _buildAppProviders(
         state['entitlements'] as List<dynamic>?,
         accountId: accountId,
       );
+      return true;
     } catch (error) {
       // Offline projects remain usable; never invent a successful coin grant.
       debugPrint('Coin Premium entitlement read unavailable: $error');
+      return false;
     }
   }
+
+  premiumService.bindCoinRefresher(refreshCoinPremium);
 
   Future<void> learnPoster(String accountId) async {
     try {
@@ -356,7 +354,7 @@ Future<List<SingleChildWidget>> _buildAppProviders(
     communityService.forgetOwner();
     if (accountId != null && communityService.isBackendConnected) {
       editReporter.retryPendingAfterSignIn();
-      unawaited(refreshCoinPremium(accountId));
+      unawaited(premiumService.refreshBenefits());
       learnPoster(accountId);
     }
   }
@@ -365,7 +363,7 @@ Future<List<SingleChildWidget>> _buildAppProviders(
   if (signedInAccountId case final accountId?
       when communityService.isBackendConnected) {
     editReporter.retryPendingAfterSignIn();
-    unawaited(refreshCoinPremium(accountId));
+    unawaited(premiumService.refreshBenefits());
     learnPoster(accountId);
   }
 
@@ -376,7 +374,7 @@ Future<List<SingleChildWidget>> _buildAppProviders(
     (_) {
       final accountId = googleAuthService.account?.id;
       if (accountId != null && communityService.isBackendConnected) {
-        unawaited(refreshCoinPremium(accountId));
+        unawaited(premiumService.refreshBenefits());
       }
     },
   );

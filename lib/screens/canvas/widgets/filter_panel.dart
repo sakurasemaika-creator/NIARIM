@@ -3058,7 +3058,13 @@ class _FilterPanelState extends State<FilterPanel> {
   Future<void> _applyFilter() async {
     final layerId = widget.layerId;
     final filter = context.read<FilterService>().currentFilter;
-    if (layerId == null || filter == null) return;
+    if (layerId == null || filter == null || _applying) return;
+    final feature = _premiumFeatureFor(filter.kind);
+    if (feature != null &&
+        !context.read<PremiumService>().isFeatureAvailable(feature)) {
+      showPremiumBanner(context);
+      return;
+    }
     setState(() => _applying = true);
     try {
       final ps = context.read<ProjectService>();

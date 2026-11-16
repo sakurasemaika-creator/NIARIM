@@ -36,6 +36,77 @@ class PremiumService extends ChangeNotifier {
   Future<Map<String, dynamic>> Function(String, String)? _playVerifier;
   Future<bool> Function()? _playPreflight;
 
+  Future<bool> Function(String)? _coinRefresher;
+  Future<void>? _refreshInFlight;
+  String? _refreshOwner;
+  Object? _refreshMarker;
+  Completer<bool>? _playRefreshCompletion;
+  Timer? _coinFeatureExpiryTimer;
+  bool _disposed = false;
+  var _verificationUnavailable = false;
+
+  bool get isCheckingBenefits => _refreshInFlight != null;
+  bool get benefitsVerificationUnavailable => _verificationUnavailable;
+
+  void bindCoinRefresher(Future<bool> Function(String) refresh) {
+    _coinRefresher = refresh;
+  }
+
+  Future<void> refreshBenefits() {
+    final owner = _boundGoogleAuth?.account?.id;
+    if (_disposed || owner == null) return Future.value();
+    if (_refreshOwner == owner && _refreshInFlight != null) {
+      return _refreshInFlight!;
+    }
+    _refreshOwner = owner;
+    final marker = Object();
+    _refreshMarker = marker;
+    final refresh = Future.microtask(() async {
+      try {
+        final refreshCoin = _coinRefresher;
+        final results = await Future.wait([
+          if (refreshCoin != null) refreshCoin(owner),
+          if (_storeAvailable && _playVerifier != null) _refreshVerifiedPlay(),
+        ]).timeout(const Duration(seconds: 8));
+        if (identical(_refreshMarker, marker)) {
+          _verificationUnavailable = results.contains(false);
+        }
+      } catch (_) {
+        if (identical(_refreshMarker, marker)) {
+          _verificationUnavailable = true;
+        }
+      }
+    });
+    final operation = refresh.whenComplete(() {
+      if (!identical(_refreshMarker, marker) || _disposed) return;
+      _refreshMarker = null;
+      _refreshInFlight = null;
+      _refreshOwner = null;
+      notifyListeners();
+    });
+    _refreshInFlight = operation;
+    notifyListeners();
+    return operation;
+  }
+
+  Future<bool> _refreshVerifiedPlay() async {
+    if (_playRefreshCompletion != null) return _playRefreshCompletion!.future;
+    final completion = Completer<bool>();
+    _playRefreshCompletion = completion;
+    try {
+      return await Future.wait([
+            restorePurchases().then((_) => true),
+            completion.future,
+          ], eagerError: true)
+          .timeout(const Duration(seconds: 7))
+          .then((results) => results.every((value) => value));
+    } finally {
+      if (identical(_playRefreshCompletion, completion)) {
+        _playRefreshCompletion = null;
+      }
+    }
+  }
+
   /// The caller uses the NIARIM authenticated API, never a local purchase flag.
   void bindPlayVerifier(
     Future<Map<String, dynamic>> Function(
@@ -127,6 +198,9 @@ class PremiumService extends ChangeNotifier {
       remaining > Duration.zero ? remaining : Duration.zero,
       () {
         if (_playVerifiedOwner == ownerId && _playVerifiedUntil == until) {
+          final paidTermStillActive =
+              _verifiedExpiryDate?.isAfter(DateTime.now()) == true;
+          _verificationUnavailable |= paidTermStillActive;
           _invalidatePlayPremium();
         }
       },
@@ -168,6 +242,10 @@ class PremiumService extends ChangeNotifier {
     final current = _boundGoogleAuth?.account?.id;
     if (current == _lastGoogleAccountId) return;
     _lastGoogleAccountId = current;
+    _refreshOwner = null;
+    _refreshMarker = null;
+    _refreshInFlight = null;
+    _verificationUnavailable = false;
     applyServerCoinPremiumExpiry(null);
     _clearServerCoinBenefits();
     _invalidatePlayPremium();
@@ -222,6 +300,7 @@ class PremiumService extends ChangeNotifier {
   };
 
   void _clearServerCoinBenefits() {
+    _coinFeatureExpiryTimer?.cancel();
     _coinBenefitsLeaseTimer?.cancel();
     _coinBenefitsLeaseTimer = null;
     _serverCoinBenefitExpiries.clear();
@@ -257,10 +336,35 @@ class PremiumService extends ChangeNotifier {
       final expiry = DateTime.fromMillisecondsSinceEpoch(millis);
       _serverCoinBenefitExpiries[name] = expiry;
     }
+    _scheduleCoinFeatureExpiry();
     _coinBenefitsLeaseTimer = Timer(const Duration(minutes: 15), () {
+      if (_serverCoinBenefitExpiries.values.any(
+        (d) => d.isAfter(DateTime.now()),
+      )) {
+        _verificationUnavailable = true;
+      }
       _clearServerCoinBenefits();
     });
     notifyListeners();
+  }
+
+  void _scheduleCoinFeatureExpiry() {
+    _coinFeatureExpiryTimer?.cancel();
+    final now = DateTime.now();
+    final next = _serverCoinBenefitExpiries.values
+        .where((date) => date.isAfter(now))
+        .fold<DateTime?>(
+          null,
+          (earliest, date) =>
+              earliest == null || date.isBefore(earliest) ? date : earliest,
+        );
+    if (next == null || !next.isBefore(_serverCoinBenefitsVerifiedUntil!)) {
+      return;
+    }
+    _coinFeatureExpiryTimer = Timer(next.difference(now), () {
+      _scheduleCoinFeatureExpiry();
+      notifyListeners();
+    });
   }
 
   /// A server grant is for one account, one known feature and one bounded
@@ -407,7 +511,22 @@ class PremiumService extends ChangeNotifier {
     if (!_storeAvailable) return;
 
     _subscription = _iap.purchaseStream.listen(
-      _onPurchaseUpdate,
+      (purchases) async {
+        final completion = _playRefreshCompletion;
+        try {
+          final verified = await _onPurchaseUpdate(purchases);
+          if (completion != null &&
+              !completion.isCompleted &&
+              (purchases.isEmpty ||
+                  purchases.any((p) => p.status == PurchaseStatus.restored))) {
+            completion.complete(verified);
+          }
+        } catch (_) {
+          if (completion != null && !completion.isCompleted) {
+            completion.complete(false);
+          }
+        }
+      },
       onDone: () => _subscription?.cancel(),
       onError: (_) {},
     );
@@ -471,7 +590,8 @@ class PremiumService extends ChangeNotifier {
     await _iap.restorePurchases();
   }
 
-  Future<void> _onPurchaseUpdate(List<PurchaseDetails> purchases) async {
+  Future<bool> _onPurchaseUpdate(List<PurchaseDetails> purchases) async {
+    var checked = true;
     for (final purchase in purchases) {
       bool verifiedAndReadyToAcknowledge = false;
       switch (purchase.status) {
@@ -489,12 +609,13 @@ class PremiumService extends ChangeNotifier {
               accountId == null ||
               purchaseToken.isEmpty ||
               !_productIds.contains(purchase.productID)) {
+            checked = false;
             _purchaseError = '購入をサーバーで検証できません';
             break;
           }
           try {
             final result = await verifier(purchase.productID, purchaseToken);
-            if (_boundGoogleAuth?.account?.id != accountId) break;
+            if (_disposed || _boundGoogleAuth?.account?.id != accountId) break;
             if (!isValidPlayVerification(
               result,
               purchase.productID,
@@ -520,6 +641,9 @@ class PremiumService extends ChangeNotifier {
               productId: purchase.productID,
             );
           } catch (_) {
+            if (_disposed || _boundGoogleAuth?.account?.id != accountId) break;
+            checked = false;
+            _verificationUnavailable = true;
             _purchaseError = '購入検証に失敗しました。購入を復元して再確認してください';
             // Leave purchase unacknowledged for a verified retry.
           }
@@ -536,7 +660,8 @@ class PremiumService extends ChangeNotifier {
         await _iap.completePurchase(purchase);
       }
     }
-    notifyListeners();
+    if (!_disposed) notifyListeners();
+    return checked;
   }
 
   Future<void> setPremium(
@@ -574,11 +699,20 @@ class PremiumService extends ChangeNotifier {
   int get maxProjectDurationSeconds =>
       isFeatureAvailable(PremiumFeature.unlimitedDuration) ? 7200 : 90;
 
+  bool shouldAppendOfficialEndCard({
+    required bool? projectHidden,
+    required bool defaultHidden,
+  }) =>
+      !isFeatureAvailable(PremiumFeature.endCardEdit) ||
+      !(projectHidden ?? defaultHidden);
+
   bool isFeatureAvailable(PremiumFeature feature) =>
       isPremium || isServerCoinBenefitActive(feature.name);
 
   @override
   void dispose() {
+    _disposed = true;
+    _coinFeatureExpiryTimer?.cancel();
     _boundGoogleAuth?.removeListener(_onGoogleAccountChanged);
     _coinPremiumExpiryTimer?.cancel();
     _coinBenefitsLeaseTimer?.cancel();

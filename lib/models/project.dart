@@ -16,6 +16,7 @@ class Project {
   final DateTime createdAt;
   final DateTime updatedAt;
   final int totalWorkSeconds;
+  final bool? hideEndCard;
   final String? folderId;
   // 共有タブ内でのフォルダ整理用（プロジェクト一覧タブの folderId とは
   // 独立した、共有タブ専用のフォルダ階層。仕様：ホーム画面「共有」タブへの
@@ -59,6 +60,7 @@ class Project {
     required this.createdAt,
     required this.updatedAt,
     required this.totalWorkSeconds,
+    this.hideEndCard,
     this.folderId,
     this.sharedFolderId,
     this.isSharedImport = false,
@@ -93,6 +95,7 @@ class Project {
     DateTime? createdAt,
     DateTime? updatedAt,
     int? totalWorkSeconds,
+    bool? hideEndCard,
     Object? folderId = _projectSentinel,
     Object? sharedFolderId = _projectSentinel,
     bool? isSharedImport,
@@ -119,6 +122,7 @@ class Project {
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       totalWorkSeconds: totalWorkSeconds ?? this.totalWorkSeconds,
+      hideEndCard: hideEndCard ?? this.hideEndCard,
       folderId: folderId == _projectSentinel
           ? this.folderId
           : folderId as String?,

@@ -1508,7 +1508,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get helpEndCardDesc =>
-      'Un vídeo corto (unos 5 segundos) con el logotipo de NIARIM, añadido automáticamente al final del contenido principal al exportar un vídeo. La versión gratuita no puede ocultarlo ni eliminarlo, pero los miembros Premium pueden activarlo/desactivarlo, cambiar su duración o reemplazarlo.';
+      'El logo final de NIARIM dura cinco segundos y se añade a MP4, WebM y AVI. Puedes ocultarlo por proyecto mientras el beneficio esté activo. El ajuste se conserva al caducar. Los GIF no lo incluyen.';
 
   @override
   String get helpAutoSaveTitle => 'Guardado automático';
@@ -1565,7 +1565,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get helpVideoExportDesc =>
-      'Exporta tu obra como un video MP4 estandar. La version gratuita tiene un limite de duracion (90 segundos) y anade automaticamente una tarjeta final (logotipo de la app) al final del video. Un formato de vídeo que se puede exportar conservando el canal alfa (las partes transparentes del fondo). La reproducción transparente solo funciona en entornos de reproducción compatibles. Ideal para superponer como material en otras aplicaciones. Exporta como GIF animado. Como se reproduce en bucle automaticamente, es ideal para compartir de forma casual en redes sociales. Si la compatibilidad es lo más importante, también puedes exportar como AVI (Motion JPEG). No admite canal alfa (transparencia), y la vista previa dentro de la app puede no funcionar en todos los dispositivos (aun así puedes reproducirlo con un reproductor externo mediante Compartir). Las cuentas gratuitas tienen un límite de 90 segundos de duración de proyecto (las cuentas Premium tienen 2 horas). Si añadir o duplicar fotogramas te haría superar el límite, aparece un aviso justo al tocar el botón, así que nunca llegas a superar los 90 segundos.';
+      'Exporta en MP4, WebM, GIF o AVI. El plan gratuito permite alargar un proyecto hasta 90 segundos. Los proyectos largos existentes se pueden exportar completos. Comprueba la duración y el logo antes de exportar.';
 
   @override
   String get helpTransparentWebmTitle => 'WebM transparente';
@@ -1582,14 +1582,14 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get helpWatermarkEntryDesc =>
-      'Una función exclusiva de la versión premium que te permite añadir tu propia firma o logotipo como marca de agua en los vídeos e imágenes exportados. Puedes ajustar su posición, tamaño y opacidad. Toca la marca de agua colocada en la pista de capa común de la línea de tiempo para reeditar en cualquier momento su ángulo, tamaño, opacidad y rango visible (bucle), no solo al registrarla, sino cada vez que la uses en un proyecto. Para añadir una marca de agua, abre «Añadir material» en la línea de tiempo y elige «+ Marca de agua».';
+      'Añade una firma o un logo de texto o imagen. Necesitas el beneficio para añadirlo o editarlo. Las marcas ya colocadas se pueden seguir exportando.';
 
   @override
   String get helpPremiumEntryTitle => 'Premium';
 
   @override
   String get helpPremiumEntryDesc =>
-      'La membresia premium amplia hasta 2 horas el limite de 90 segundos de duracion de video de la version gratuita y te permite quitar la tarjeta final (logotipo de la app) que se anade automaticamente al final de cada video. Tambien se ocultan los anuncios y obtienes acceso a la marca de agua, la curva de tonos y la correccion de niveles.';
+      'El beneficio de duración permite alargar un proyecto hasta dos horas. Al caducar se pueden seguir exportando los proyectos y ajustes aplicados. El logo final depende del beneficio activo al iniciar la exportación.';
 
   @override
   String get helpPerformanceSettingsTitle => 'Ajustes de rendimiento';
@@ -1789,7 +1789,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get helpWatermarkEditDesc =>
-      'Tocar una marca de agua colocada en la pista de capa común de la línea de tiempo permite reeditar en cualquier momento su ángulo, tamaño, opacidad y rango de visualización (bucle). Puedes ajustarla con precisión no solo al registrarla, sino siempre que la estés usando en un proyecto.';
+      'Ajusta el ángulo, tamaño, opacidad e intervalo en la pista de capas compartidas. Las marcas ya colocadas se conservan en el proyecto y las exportaciones. Se requiere un beneficio activo para cambiar estos ajustes.';
 
   @override
   String get helpAudioClipTitle => 'Volumen';
@@ -2900,6 +2900,39 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get exportStartButton => 'Iniciar exportación';
+
+  @override
+  String get timelineHideEndCard => 'Ocultar logo final';
+
+  @override
+  String get timelineShowEndCard => 'Mostrar logo final';
+
+  @override
+  String get exportCurrentConditions => 'Exportar con estas condiciones';
+
+  @override
+  String get exportRetryBenefits => 'Volver a comprobar';
+
+  @override
+  String get exportBenefitsUnavailable =>
+      'No se han podido verificar los beneficios. Reintenta o exporta con las condiciones que se muestran.';
+
+  @override
+  String get exportBenefitsChecking => 'Comprobando beneficios…';
+
+  @override
+  String get exportLongProjectNote =>
+      'Los proyectos largos existentes se pueden exportar completos. El plan gratuito permite alargar un proyecto hasta 90 segundos.';
+
+  @override
+  String exportOutputWithoutEndCard(String duration) {
+    return 'Vídeo principal $duration (sin logo final)';
+  }
+
+  @override
+  String exportOutputWithEndCard(String duration) {
+    return 'Vídeo principal $duration + logo final de NIARIM (5 segundos)';
+  }
 
   @override
   String get exportProjectNotFoundError => 'No se encontró el proyecto';
@@ -5304,11 +5337,11 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get timelineDurationLimitBodyFree =>
-      'Los miembros gratuitos están limitados a 90 segundos de vídeo. Añadir o duplicar más fotogramas superaría ese límite, por lo que no se puede realizar la acción. Actualiza a Premium para llegar hasta 2 horas.';
+      'El plan gratuito permite ampliar un proyecto hasta 90 segundos. La ventaja de duración ampliada eleva el límite a dos horas.';
 
   @override
   String get timelineDurationLimitBodyPremium =>
-      'Esto superaría el límite Premium (hasta 2 horas), por lo que no se pueden añadir ni duplicar más fotogramas.';
+      'La ventaja de duración ampliada permite extender un proyecto hasta dos horas.';
 
   @override
   String timelineSceneDeleteConfirmTitle(String name) {
@@ -5849,11 +5882,11 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get workspaceEndCardHint =>
-      'La tarjeta final es el logotipo propio de la app que aparece automáticamente al final de cada vídeo. Los miembros gratuitos no pueden cambiar esto. Solo para miembros premium: al activarlo, la tarjeta final aparecerá oculta (eliminada) desde el principio la próxima vez que abras la línea de tiempo. Este ajuste vuelve a desactivarse automáticamente si tu suscripción premium caduca.';
+      'Este ajuste se aplica a los proyectos sin una configuración propia mientras esté activa la ventaja de la marca final. La preferencia se guarda al vencer la ventaja.';
 
   @override
   String get workspaceEndCardDefaultHiddenTitle =>
-      'Ocultar la tarjeta final de forma predeterminada (solo Premium)';
+      'Ocultar la marca final de forma predeterminada';
 
   @override
   String get tipsTransparentColorTitle =>

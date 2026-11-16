@@ -320,11 +320,6 @@ class _TimelineScreenState extends State<TimelineScreen> {
   final Map<String, VideoPlayerController> _videoControllers = {};
 
   // エンドカードトラック：差し替え不可・アプリが無料会員に
-  // 強制表示するロゴ。プレミアム会員が削除（非表示）した場合のみtrue。
-  // セッション中のみの状態で、次回プロジェクトを開くと「プレミアム会員は
-  // デフォルトで削除する」設定（SettingsService）に従い直す。
-  bool _endCardManuallyDeleted = false;
-
   // フレーム幅（px）。フレーム同士は隙間なく詰めて表示するため
   // 左右マージンは0にしている。ピンチイン・ピンチアウトで
   // _frameWidthScaleが変化し、フレーム一覧・各トラックが連動して
@@ -2229,9 +2224,10 @@ class _TimelineScreenState extends State<TimelineScreen> {
   /// デフォルトで全フレーム＝常時表示。以後の表示範囲・不透明度・差し替えは
   /// レイヤーパネルから調整できる）。
   Future<void> _addWatermarkLayer(WatermarkAsset asset) async {
-    if (!mounted || !context.read<PremiumService>().isFeatureAvailable(
-      PremiumFeature.watermark,
-    )) {
+    if (!mounted ||
+        !context.read<PremiumService>().isFeatureAvailable(
+          PremiumFeature.watermark,
+        )) {
       if (mounted) showPremiumBanner(context);
       return;
     }
@@ -2309,9 +2305,10 @@ class _TimelineScreenState extends State<TimelineScreen> {
     required double angle,
     required double scale,
   }) async {
-    if (!mounted || !context.read<PremiumService>().isFeatureAvailable(
-      PremiumFeature.watermark,
-    )) {
+    if (!mounted ||
+        !context.read<PremiumService>().isFeatureAvailable(
+          PremiumFeature.watermark,
+        )) {
       if (mounted) showPremiumBanner(context);
       return false;
     }
@@ -3045,6 +3042,12 @@ class _TimelineScreenState extends State<TimelineScreen> {
     CustomAutomationExecutionScope scope,
     List<int>? targetFrames,
   ) async {
+    if (!context.read<PremiumService>().isFeatureAvailable(
+      PremiumFeature.customAutomation,
+    )) {
+      showPremiumBanner(context);
+      return;
+    }
     if (targetFrames != null) {
       throw StateError(
         'Timeline automation cannot run with explicit target frames',
@@ -3849,11 +3852,12 @@ class _TimelineScreenState extends State<TimelineScreen> {
   /// 中止する）。プレミアム会員は上限が2時間（7200秒）と大きいため事実上
   /// ブロックされない。
   bool _canAddFrames(int count) {
-    final hasUnlimitedDuration = context
-        .read<PremiumService>()
-        .isFeatureAvailable(PremiumFeature.unlimitedDuration);
+    final premium = context.read<PremiumService>();
+    final hasUnlimitedDuration = premium.isFeatureAvailable(
+      PremiumFeature.unlimitedDuration,
+    );
     final ps = context.read<ProjectService>();
-    final maxSeconds = hasUnlimitedDuration ? 7200 : 90;
+    final maxSeconds = premium.maxProjectDurationSeconds;
     final projected = ps.projectedDurationSeconds(
       widget.projectId,
       frameDelta: count,
@@ -5690,12 +5694,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
     );
   }
 
-  /// エンドカードトラック。エンドカードは差し替え不可・アプリが無料会員に
-  /// 強制表示するロゴで、無料会員はタップした瞬間にプレミアム誘導のみ
-  /// （それ以外の操作は一切できない）。プレミアム会員は削除（非表示）
-  /// できるだけで、差し替えや長さ変更はできない。「プレミアム会員は
-  /// デフォルトで削除する」設定（設定画面）がONの場合、この画面を開いた
-  /// 時点で最初から非表示になる。
+  /// 作品ごとのエンドマーク表示を切り替えるトラック。
   Widget _buildEndCardTrack() {
     return Consumer2<PremiumService, SettingsService>(
       builder: (context, premium, settings, _) {
@@ -5703,9 +5702,14 @@ class _TimelineScreenState extends State<TimelineScreen> {
         final canEditEndCard = premium.isFeatureAvailable(
           PremiumFeature.endCardEdit,
         );
-        final defaultHidden =
-            canEditEndCard && settings.endCardDefaultHiddenForPremium;
-        final hidden = _endCardManuallyDeleted || defaultHidden;
+        final projects = context.watch<ProjectService>();
+        final project = projects.projects
+            .where((project) => project.id == widget.projectId)
+            .firstOrNull;
+        final hidden = !premium.shouldAppendOfficialEndCard(
+          projectHidden: project?.hideEndCard,
+          defaultHidden: settings.endCardDefaultHiddenForPremium,
+        );
         return GestureDetector(
           // 無料会員：トラックのどこをタップしてもプレミアム誘導へ（仕様：
           // 「一切操作できずタップした瞬間に有料会員へ誘導される」）。
@@ -5755,21 +5759,29 @@ class _TimelineScreenState extends State<TimelineScreen> {
                     ),
                   ),
                   const SizedBox(width: 4),
-                  if (!hidden)
-                    IconButton(
-                      icon: Icon(
-                        Icons.delete,
-                        size: 14,
-                        color: ThemeService.activeColorScheme.error,
-                      ),
-                      onPressed: () async {
-                        if (!await confirmDelete(context)) return;
-                        setState(() => _endCardManuallyDeleted = true);
-                      },
-                      tooltip: l10n.commonDelete,
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(),
+                  IconButton(
+                    icon: Icon(
+                      hidden ? Icons.visibility : Icons.visibility_off,
+                      size: 14,
                     ),
+                    onPressed: () {
+                      if (!premium.isFeatureAvailable(
+                        PremiumFeature.endCardEdit,
+                      )) {
+                        showPremiumBanner(context);
+                        return;
+                      }
+                      projects.setProjectEndCardHidden(
+                        widget.projectId,
+                        !hidden,
+                      );
+                    },
+                    tooltip: hidden
+                        ? l10n.timelineShowEndCard
+                        : l10n.timelineHideEndCard,
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                  ),
                 ],
               ],
             ),

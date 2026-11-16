@@ -3,12 +3,28 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:niarim/services/google_auth_service.dart';
+import 'package:niarim/services/premium_service.dart';
 import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/screens/canvas/widgets/frame_strip_widget.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+class _FrameStripTestAccount implements GoogleSignInAccount {
+  @override
+  String get id => 'frame-strip-test';
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+class _FrameStripTestAuth extends GoogleAuthService {
+  @override
+  final GoogleSignInAccount account = _FrameStripTestAccount();
+}
 
 /// キャンバス下部のフレーム一覧（[FrameStripWidget]）の独自ジェスチャーを
 /// 検証する。
@@ -68,6 +84,7 @@ void main() {
     WidgetTester tester, {
     int frameCount = 10,
     int currentFrame = 0,
+    int durationSeconds = 1,
   }) async {
     SharedPreferences.setMockInitialValues({});
     mockPathProvider();
@@ -93,7 +110,7 @@ void main() {
         name: 'frame-strip-test',
         // fps×秒数がフレーム数になる。
         fps: frameCount,
-        durationSeconds: 1,
+        durationSeconds: durationSeconds,
         backgroundColor: 0xFFFFFFFF,
         exportWidth: 64,
         exportHeight: 64,
@@ -191,6 +208,44 @@ void main() {
     expect(ctx.selected.last, expectedIndex);
     // 通知を受けた側がcurrentFrameを更新した結果、位置もそのコマへ揃う。
     expect(stripOffset(tester), closeTo(expectedIndex * itemExtent, 0.5));
+  });
+
+  testWidgets('最大尺の単品特典がある間だけ90秒からフレームを増やせる', (tester) async {
+    final ctx = await pumpStrip(
+      tester,
+      frameCount: 1,
+      durationSeconds: 90,
+      currentFrame: 89,
+    );
+    final element = tester.element(find.byType(FrameStripWidget));
+    final project = element.read<ProjectService>();
+    final premium = element.read<PremiumService>();
+    final auth = _FrameStripTestAuth();
+    addTearDown(auth.dispose);
+    premium.bindGoogleAuth(auth);
+
+    void setEnd(DateTime end) {
+      premium.applyServerCoinBenefitEntitlements([
+        {
+          'feature': PremiumFeature.unlimitedDuration.name,
+          'status': 'active',
+          'expiresAtEpochMs': end.millisecondsSinceEpoch,
+        },
+      ], accountId: auth.account.id);
+    }
+
+    setEnd(DateTime.now().add(const Duration(minutes: 1)));
+    final addCell = find.byKey(const ValueKey('frameStripAddCell'));
+    await tester.tap(addCell);
+    await tester.pump();
+    expect(project.frameCount(ctx.projectId, ctx.sceneId), 91);
+
+    setEnd(DateTime.now().subtract(const Duration(seconds: 1)));
+    await tester.tap(addCell);
+    await tester.pumpAndSettle();
+    expect(project.frameCount(ctx.projectId, ctx.sceneId), 91);
+    premium.dispose();
+    await tester.pumpWidget(const SizedBox.shrink());
   });
 
   testWidgets('末尾の「＋」セルをタップするとフレームが1コマ増える', (tester) async {

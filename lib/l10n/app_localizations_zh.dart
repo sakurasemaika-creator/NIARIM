@@ -1432,7 +1432,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get helpEndCardDesc =>
-      '导出视频时，会在正片结尾自动添加的NIARIM标志短片（约5秒）。免费版无法隐藏或删除，但成为Premium会员后可以开关显示・更改时长・进行替换。';
+      'NIARIM 片尾标志是 MP4、WebM 和 AVI 末尾的 5 秒标志。权益有效时可按作品切换显示。到期后仍保留设置。GIF 不添加标志。';
 
   @override
   String get helpAutoSaveTitle => '自动保存';
@@ -1488,7 +1488,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get helpVideoExportDesc =>
-      '将作品导出为通用MP4视频。免费版可导出的时长有上限（90秒），且会在视频结尾自动添加片尾卡（应用Logo）。 可在保留Alpha通道（背景透明部分）的情况下导出的视频格式。仅在支持的播放环境中才能透明播放。适合作为素材叠加到其他应用中使用。 导出为动图GIF。由于会自动循环播放，适合在社交媒体上轻松分享的场景。 如果更看重兼容性，也可以导出为AVI（Motion JPEG）。不支持Alpha通道（透明），部分设备上应用内预览可能无法使用（此时仍可通过“分享”用外部播放器播放）。 免费会员的项目长度上限为90秒（付费会员为2小时）。如果新增或复制帧会超过上限，在点击按钮的瞬间就会显示提示对话框，因此实际上不会超过90秒。';
+      '支持导出 MP4、WebM、GIF 和 AVI。免费版可将作品延长到 90 秒。已制作的长作品仍可完整导出，导出前可查看时长和片尾标志。';
 
   @override
   String get helpTransparentWebmTitle => '透明WebM';
@@ -1505,14 +1505,14 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get helpWatermarkEntryDesc =>
-      '可以在导出的视频・图片上加入自己签名或Logo作为水印的高级会员专属功能。可以调整位置、大小、不透明度。点击时间轴共通图层轨道上放置的水印，随时都能重新编辑其角度、大小、不透明度、显示范围（循环显示）——不仅是首次设置时，在项目中实际使用时也能随时细致调整。 添加水印时，请在时间轴的“添加素材”菜单中选择“＋水印”。';
+      '可以添加自己的签名或标志。添加或编辑需要水印权益。到期后仍可导出已放置的水印。';
 
   @override
   String get helpPremiumEntryTitle => 'Premium';
 
   @override
   String get helpPremiumEntryDesc =>
-      '成为高级会员后，免费版限制的90秒视频时长将延长至最长2小时，并可移除每个视频结尾自动添加的片尾卡（应用Logo）。同时广告也会隐藏，还可使用水印、色调曲线、色阶校正功能。';
+      '时长权益有效时可以将作品延长到 2 小时。到期后仍可导出已有的长作品及已应用的调色。片尾标志取决于开始导出时有效的权益。';
 
   @override
   String get helpPerformanceSettingsTitle => '性能设置';
@@ -1708,7 +1708,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get helpWatermarkEditDesc =>
-      '点击放置在时间轴共同图层轨道上的水印，随时可以重新编辑其角度、大小、不透明度、显示范围（循环显示）。不仅在登记时，在项目中实际使用时也能随时细致调整。';
+      '可在时间轴的共用图层轨道调整角度、大小、不透明度及显示范围。到期后，已放置的水印仍会保留在作品及导出文件中。更改设置需要有效权益。';
 
   @override
   String get helpAudioClipTitle => '音量调整';
@@ -2736,6 +2736,37 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get exportStartButton => '开始导出';
+
+  @override
+  String get timelineHideEndCard => '隐藏片尾标志';
+
+  @override
+  String get timelineShowEndCard => '显示片尾标志';
+
+  @override
+  String get exportCurrentConditions => '按当前条件导出';
+
+  @override
+  String get exportRetryBenefits => '重新确认权益';
+
+  @override
+  String get exportBenefitsUnavailable => '暂时无法确认权益。请重试，或按当前显示的条件导出。';
+
+  @override
+  String get exportBenefitsChecking => '正在确认权益…';
+
+  @override
+  String get exportLongProjectNote => '已制作的长作品可以完整导出。免费版可将作品延长到 90 秒。';
+
+  @override
+  String exportOutputWithoutEndCard(String duration) {
+    return '正片 $duration（无片尾标志）';
+  }
+
+  @override
+  String exportOutputWithEndCard(String duration) {
+    return '正片 $duration ＋ NIARIM 片尾标志（5 秒）';
+  }
 
   @override
   String get exportProjectNotFoundError => '未找到项目';
@@ -4984,11 +5015,10 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get timelineDurationLimitBodyFree =>
-      '免费会员的视频长度最长为90秒。继续添加或复制帧会超过90秒，因此无法执行。升级为高级会员后最长可制作2小时。';
+      '免费版可将作品延长至 90 秒。时长权益可将上限提高到 2 小时。';
 
   @override
-  String get timelineDurationLimitBodyPremium =>
-      '这会超过高级会员的上限（最长2小时），因此无法继续添加或复制帧。';
+  String get timelineDurationLimitBodyPremium => '时长权益可将作品延长至 2 小时。';
 
   @override
   String timelineSceneDeleteConfirmTitle(String name) {
@@ -5499,11 +5529,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get workspaceEndCardSection => '片尾卡';
 
   @override
-  String get workspaceEndCardHint =>
-      '片尾卡是应用自动显示在每个视频结尾的自带Logo，免费会员无法操作。仅限高级会员：开启后，下次打开时间轴时片尾卡会默认隐藏（已删除）。高级会员资格到期后，此设置会自动恢复为关闭。';
+  String get workspaceEndCardHint => '片尾标志权益有效且作品没有单独设置时，使用此默认设置。权益到期后仍会保留此设置。';
 
   @override
-  String get workspaceEndCardDefaultHiddenTitle => '默认隐藏片尾卡（仅限高级会员）';
+  String get workspaceEndCardDefaultHiddenTitle => '默认隐藏片尾标志';
 
   @override
   String get tipsTransparentColorTitle => '透明色不只是橡皮擦，可以像画笔一样使用';
@@ -11414,7 +11443,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get helpEndCardDesc =>
-      '匯出影片時，會在正片結尾自動加入的NIARIM標誌短片（約5秒）。免費版無法隱藏或刪除，但成為Premium會員後可以開關顯示・變更長度・進行替換。';
+      'NIARIM 片尾標誌是 MP4、WebM 和 AVI 末尾的 5 秒標誌。權益有效時可依作品切換顯示。到期後仍保留設定。GIF 不會加上標誌。';
 
   @override
   String get helpAutoSaveTitle => '自動儲存';
@@ -11470,7 +11499,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get helpVideoExportDesc =>
-      '將作品匯出為通用MP4影片。免費版可匯出的長度有上限（90秒），且會在影片結尾自動加入片尾卡（應用程式Logo）。 可在保留Alpha色版（背景透明部分）的情況下匯出的影片格式。僅在支援的播放環境中才能透明播放。適合作為素材疊加到其他App中使用。 匯出為動畫GIF。由於會自動循環播放，適合在社群媒體上輕鬆分享的場景。 如果更重視相容性，也可以匯出為AVI（Motion JPEG）。不支援Alpha色版（透明），部分裝置上App內預覽可能無法使用（此時仍可透過「分享」用外部播放器播放）。 免費會員的專案長度上限為90秒（付費會員為2小時）。如果新增或複製影格會超過上限，在點擊按鈕的瞬間就會顯示提示對話框，因此實際上不會超過90秒。';
+      '支援匯出 MP4、WebM、GIF 和 AVI。免費版可將作品延長至 90 秒。已製作的長作品仍可完整匯出，匯出前可查看片長及片尾標誌。';
 
   @override
   String get helpTransparentWebmTitle => '透明WebM';
@@ -11487,14 +11516,14 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get helpWatermarkEntryDesc =>
-      '可以在匯出的影片・圖片上加入自己簽名或Logo作為浮水印的進階會員專屬功能。可以調整位置、大小、不透明度。點擊時間軸共用圖層軌道上放置的浮水印，隨時都能重新編輯其角度、大小、不透明度、顯示範圍（循環顯示）——不僅是首次設定時，在專案中實際使用時也能隨時細緻調整。 新增浮水印時，請在時間軸的「新增素材」選單中選取「＋浮水印」。';
+      '可新增自己的簽名或標誌。新增或編輯需要浮水印權益。到期後仍可匯出已放置的浮水印。';
 
   @override
   String get helpPremiumEntryTitle => 'Premium';
 
   @override
   String get helpPremiumEntryDesc =>
-      '成為進階會員後，免費版限制的90秒影片長度將延長至最長2小時，並可移除每支影片結尾自動加入的片尾卡（應用程式Logo）。同時廣告也會隱藏，還可使用浮水印、色調曲線、色階校正功能。';
+      '片長權益有效時可將作品延長至 2 小時。到期後仍可匯出已有的長作品及已套用的調色。片尾標誌視開始匯出時有效的權益而定。';
 
   @override
   String get helpPerformanceSettingsTitle => '效能設定';
@@ -11690,7 +11719,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get helpWatermarkEditDesc =>
-      '點擊放置在時間軸共用圖層軌道上的浮水印，隨時可以重新編輯其角度、大小、不透明度、顯示範圍（循環顯示）。不僅在登記時，在專案中實際使用時也能隨時細部調整。';
+      '可在時間軸的共用圖層軌道調整角度、大小、不透明度及顯示範圍。到期後，已放置的浮水印仍保留在作品與匯出檔案中。更改設定需要有效權益。';
 
   @override
   String get helpAudioClipTitle => '音量調整';
@@ -12718,6 +12747,37 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get exportStartButton => '開始匯出';
+
+  @override
+  String get timelineHideEndCard => '隱藏片尾標誌';
+
+  @override
+  String get timelineShowEndCard => '顯示片尾標誌';
+
+  @override
+  String get exportCurrentConditions => '依目前條件匯出';
+
+  @override
+  String get exportRetryBenefits => '重新確認權益';
+
+  @override
+  String get exportBenefitsUnavailable => '暫時無法確認權益。請重試，或依目前顯示的條件匯出。';
+
+  @override
+  String get exportBenefitsChecking => '正在確認權益…';
+
+  @override
+  String get exportLongProjectNote => '已製作的長作品可以完整匯出。免費版可將作品延長至 90 秒。';
+
+  @override
+  String exportOutputWithoutEndCard(String duration) {
+    return '正片 $duration（無片尾標誌）';
+  }
+
+  @override
+  String exportOutputWithEndCard(String duration) {
+    return '正片 $duration ＋ NIARIM 片尾標誌（5 秒）';
+  }
 
   @override
   String get exportProjectNotFoundError => '找不到專案';
@@ -14966,11 +15026,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get timelineDurationLimitBodyFree =>
-      '免費會員的影片長度最長為90秒。繼續新增或複製畫格會超過90秒，因此無法執行。升級為進階會員後最長可製作2小時。';
+      '免費版可將作品延長至 90 秒。時長權益可將上限提高到 2 小時。';
 
   @override
-  String get timelineDurationLimitBodyPremium =>
-      '這會超過進階會員的上限（最長2小時），因此無法繼續新增或複製畫格。';
+  String get timelineDurationLimitBodyPremium => '時長權益可將作品延長至 2 小時。';
 
   @override
   String timelineSceneDeleteConfirmTitle(String name) {
@@ -15481,11 +15540,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get workspaceEndCardSection => '片尾卡';
 
   @override
-  String get workspaceEndCardHint =>
-      '片尾卡是應用程式自動顯示在每支影片結尾的自帶Logo，免費會員無法操作。僅限進階會員：開啟後，下次開啟時間軸時片尾卡會預設隱藏（已刪除）。進階會員資格到期後，此設定會自動恢復為關閉。';
+  String get workspaceEndCardHint => '片尾標誌權益有效且作品沒有個別設定時，會套用此預設。權益到期後仍會保留設定。';
 
   @override
-  String get workspaceEndCardDefaultHiddenTitle => '預設隱藏片尾卡（僅限進階會員）';
+  String get workspaceEndCardDefaultHiddenTitle => '預設隱藏片尾標誌';
 
   @override
   String get tipsTransparentColorTitle => '透明色不只是橡皮擦，可以像畫筆一樣使用';

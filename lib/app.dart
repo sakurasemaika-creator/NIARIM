@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kReleaseMode;
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -13,6 +15,7 @@ import 'services/ad_placement_policy.dart';
 import 'services/ad_modal_visibility_observer.dart';
 import 'services/brush_service.dart';
 import 'services/project_service.dart';
+import 'services/premium_service.dart';
 import 'services/google_auth_service.dart';
 import 'services/community_service.dart';
 import 'services/push_notification_service.dart';
@@ -107,6 +110,8 @@ class _NiarimAppState extends State<NiarimApp> with WidgetsBindingObserver {
       context.read<BrushService?>()?.commitRememberedValues();
     } else if (state == AppLifecycleState.resumed) {
       projects.resumeWorkTracking();
+      final premium = context.read<PremiumService?>();
+      if (premium != null) unawaited(premium.refreshBenefits());
     }
   }
 
@@ -210,6 +215,7 @@ class _NiarimAppState extends State<NiarimApp> with WidgetsBindingObserver {
               };
               return AdPersistentRootFrame(
                 coinPlacementKey: coinAdBenefitForRoute(route),
+                route: route,
                 allowBanner:
                     isBannerEligibleRoute(
                       route,

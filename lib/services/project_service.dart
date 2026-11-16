@@ -3693,6 +3693,14 @@ class ProjectService extends ChangeNotifier {
     }
   }
 
+  void setProjectEndCardHidden(String projectId, bool hidden) {
+    final index = _projects.indexWhere((project) => project.id == projectId);
+    if (index < 0 || _projects[index].hideEndCard == hidden) return;
+    _projects[index] = _projects[index].copyWith(hideEndCard: hidden);
+    _saveAsync(projectId);
+    notifyListeners();
+  }
+
   /// プロジェクトの背景色を変更する（キャンバス設定メニューから）。
   void updateProjectBackgroundColor(String projectId, int color) {
     final idx = _projects.indexWhere((p) => p.id == projectId);
