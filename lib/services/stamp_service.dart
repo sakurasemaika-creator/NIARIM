@@ -148,7 +148,7 @@ class StampService extends ChangeNotifier {
       name: '葉っぱ（背景）',
       rotation: true,
       density: 2.3,
-      scatter: 22,
+      scatter: 0.22,
       opacity: 94,
       tags: [
         AssetTagKeys.background,
@@ -161,7 +161,7 @@ class StampService extends ChangeNotifier {
       name: '草（背景）',
       rotation: false,
       density: 2.8,
-      scatter: 18,
+      scatter: 0.18,
       opacity: 96,
       tags: [AssetTagKeys.background, AssetTagKeys.texture],
     ),

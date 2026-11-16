@@ -1,6 +1,8 @@
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
+import 'premultiplied.dart';
+
 /// トーン自由描画の確定処理（低スペック端末でのUIスレッドブロック防止のため
 /// compute()経由のバックグラウンドisolateで実行する想定のトップレベル関数）。
 Uint8List runToneStrokeInIsolate(
@@ -69,10 +71,11 @@ class ToneEngine {
     if (points.isEmpty) return canvasData;
     final result = Uint8List.fromList(canvasData);
     final radius = (brushSize / 2).round();
-    final opacityFactor = (opacity.clamp(0, 100)) / 100.0;
-    final srcR = color.r;
-    final srcG = color.g;
-    final srcB = color.b;
+    final toneOpacity = (color.a * opacity.clamp(0, 100) * 255 / 100).round();
+    final srcR = (color.r * 255).round();
+    final srcG = (color.g * 255).round();
+    final srcB = (color.b * 255).round();
+    final covered = Uint8List(canvasWidth * canvasHeight);
 
     for (final point in points) {
       final cx = point.dx.round();
@@ -94,31 +97,21 @@ class ToneEngine {
           final tx = px % toneWidth;
           final ty = py % toneHeight;
           final toneIdx = (ty * toneWidth + tx) * 4;
-          final toneAlpha = toneTexture[toneIdx + 3] / 255.0;
-          if (toneAlpha <= 0) continue;
+          final coverage = toneTexture[toneIdx + 3];
+          if (coverage == 0) continue;
 
-          final canvasIdx = (py * canvasWidth + px) * 4;
-          final srcA = (color.a * opacityFactor * toneAlpha).clamp(0.0, 1.0);
-          if (srcA <= 0) continue;
-          final dstA = result[canvasIdx + 3] / 255.0;
-          final outA = srcA + dstA * (1.0 - srcA);
-          if (outA <= 0) continue;
-
-          final dstR = result[canvasIdx] / 255.0;
-          final dstG = result[canvasIdx + 1] / 255.0;
-          final dstB = result[canvasIdx + 2] / 255.0;
-          final keep = dstA * (1.0 - srcA);
-
-          result[canvasIdx] = ((srcR * srcA + dstR * keep) / outA * 255)
-              .round()
-              .clamp(0, 255);
-          result[canvasIdx + 1] = ((srcG * srcA + dstG * keep) / outA * 255)
-              .round()
-              .clamp(0, 255);
-          result[canvasIdx + 2] = ((srcB * srcA + dstB * keep) / outA * 255)
-              .round()
-              .clamp(0, 255);
-          result[canvasIdx + 3] = (outA * 255).round().clamp(0, 255);
+          final pos = py * canvasWidth + px;
+          if (covered[pos] != 0) continue;
+          covered[pos] = 1;
+          compositeMaskedColor(
+            result,
+            pos * 4,
+            srcR,
+            srcG,
+            srcB,
+            toneOpacity,
+            coverage,
+          );
         }
       }
     }
@@ -141,6 +134,7 @@ class ToneEngine {
   }) {
     final result = Uint8List.fromList(canvasData);
     final radius = (brushSize / 2).round();
+    final covered = Uint8List(canvasWidth * canvasHeight);
 
     for (final point in points) {
       final cx = point.dx.round();
@@ -165,14 +159,13 @@ class ToneEngine {
           final eraseStrength = toneTexture[toneIdx + 3] / 255.0;
           if (eraseStrength <= 0) continue;
 
-          final canvasIdx = (py * canvasWidth + px) * 4;
-          final oldA = result[canvasIdx + 3];
-          final newA = (oldA * (1.0 - eraseStrength)).round().clamp(0, 255);
-          result[canvasIdx + 3] = newA;
-          if (newA == 0) {
-            result[canvasIdx] = 0;
-            result[canvasIdx + 1] = 0;
-            result[canvasIdx + 2] = 0;
+          final pos = py * canvasWidth + px;
+          if (covered[pos] != 0) continue;
+          covered[pos] = 1;
+          final canvasIdx = pos * 4;
+          for (var channel = 0; channel < 4; channel++) {
+            final index = canvasIdx + channel;
+            result[index] = (result[index] * (1.0 - eraseStrength)).round();
           }
         }
       }

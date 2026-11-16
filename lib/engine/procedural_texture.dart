@@ -9,7 +9,11 @@ import 'filter_engine.dart';
 
 /// 画像ファイルを読み込み、size×sizeのRGBAバイト列にデコードする。
 /// 失敗した場合はnullを返す。
-Future<Uint8List?> _loadImageRgba(String path, int size) async {
+Future<Uint8List?> _loadImageRgba(
+  String path,
+  int size, {
+  ui.ImageByteFormat format = ui.ImageByteFormat.rawRgba,
+}) async {
   try {
     final bytes = await readCreativeImageSource(path);
     if (bytes == null) return null;
@@ -20,9 +24,7 @@ Future<Uint8List?> _loadImageRgba(String path, int size) async {
     );
     final frame = await codec.getNextFrame();
     codec.dispose();
-    final byteData = await frame.image.toByteData(
-      format: ui.ImageByteFormat.rawRgba,
-    );
+    final byteData = await frame.image.toByteData(format: format);
     frame.image.dispose();
     return byteData?.buffer.asUint8List();
   } catch (_) {
@@ -30,9 +32,7 @@ Future<Uint8List?> _loadImageRgba(String path, int size) async {
   }
 }
 
-/// トーンは自身の色を持たず、現在色×パターンの2値マスクとして扱われる
-/// （autofill_engine.dart等はalphaチャンネルの有無のみを見る）。読み込んだ
-/// 画像は輝度が低い（暗い）ほど「インクあり」とみなし、alphaへ変換する。
+/// トーン画像では暗さと元の透明度からインクのalphaを作る。
 Uint8List _toToneAlphaMask(Uint8List rgba) {
   final out = Uint8List(rgba.length);
   for (int i = 0; i < rgba.length; i += 4) {
@@ -60,7 +60,11 @@ Future<void> ensureToneTextureLoaded(Tone tone, {int size = 64}) async {
   if (path == null) return;
   final key = _toneCacheKey(path, size);
   if (_toneImageCache.containsKey(key)) return;
-  final rgba = await _loadImageRgba(path, size);
+  final rgba = await _loadImageRgba(
+    path,
+    size,
+    format: ui.ImageByteFormat.rawStraightRgba,
+  );
   if (rgba != null) _toneImageCache[key] = _toToneAlphaMask(rgba);
 }
 
@@ -548,7 +552,7 @@ Future<Uint8List> generateBuiltInStampTexture(
   final opacityScale = stamp.opacity.clamp(1, 100) / 100.0;
   if (opacityScale < 1.0) {
     final adjusted = Uint8List.fromList(texture);
-    for (int i = 3; i < adjusted.length; i += 4) {
+    for (int i = 0; i < adjusted.length; i++) {
       adjusted[i] = (adjusted[i] * opacityScale).round().clamp(0, 255);
     }
     texture = adjusted;

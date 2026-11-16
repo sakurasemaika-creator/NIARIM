@@ -259,7 +259,7 @@ class AutofillEngine {
           final ty = y % toneHeight;
           final toneIdx = (ty * toneWidth + tx) * 4;
           if (toneTexture[toneIdx + 3] == 0) {
-            result[i + 3] = 0;
+            result.fillRange(i, i + 4, 0);
             continue;
           }
         }
@@ -495,9 +495,7 @@ class AutofillEngine {
     int toneHeight = 64,
   }) {
     final gradient = part.gradient;
-    final fr = (part.color >> 16) & 0xFF;
-    final fg = (part.color >> 8) & 0xFF;
-    final fb = part.color & 0xFF;
+    final solidColor = 0xFF000000 | (part.color & 0xFFFFFF);
     final useTone = part.useTone && toneTexture != null;
 
     final visited = List<bool>.filled(width * height, false);
@@ -517,30 +515,21 @@ class AutofillEngine {
       while (queue.isNotEmpty) {
         final (cx, cy) = queue.removeAt(0);
         final idx = (cy * width + cx) * 4;
-        bool paint = true;
+        var coverage = 255;
         if (useTone) {
           final tx = cx % toneWidth;
           final ty = cy % toneHeight;
-          final toneIdx = (ty * toneWidth + tx) * 4;
-          paint = toneTexture[toneIdx + 3] > 0;
+          coverage = toneTexture[(ty * toneWidth + tx) * 4 + 3];
         }
-        if (paint) {
-          if (gradient != null) {
-            // グラデーションは色ごとに不透明度を持てるため、そのままアルファも
-            // 書き込む（塗り色の不透明度は100%固定だが、グラデーション
-            // の各色は個別に不透明度を設定できる）。
-            final argb = _gradientColorAt(gradient, cx, cy, width, height);
-            final a = (argb >> 24) & 0xFF;
-            outputData[idx] = premultipliedChannel((argb >> 16) & 0xFF, a);
-            outputData[idx + 1] = premultipliedChannel((argb >> 8) & 0xFF, a);
-            outputData[idx + 2] = premultipliedChannel(argb & 0xFF, a);
-            outputData[idx + 3] = a;
-          } else {
-            outputData[idx] = fr;
-            outputData[idx + 1] = fg;
-            outputData[idx + 2] = fb;
-            outputData[idx + 3] = 255;
-          }
+        if (coverage > 0) {
+          final argb = gradient == null
+              ? solidColor
+              : _gradientColorAt(gradient, cx, cy, width, height);
+          final a = premultipliedChannel((argb >> 24) & 0xFF, coverage);
+          outputData[idx] = premultipliedChannel((argb >> 16) & 0xFF, a);
+          outputData[idx + 1] = premultipliedChannel((argb >> 8) & 0xFF, a);
+          outputData[idx + 2] = premultipliedChannel(argb & 0xFF, a);
+          outputData[idx + 3] = a;
         }
         for (final (nx, ny) in [
           (cx - 1, cy),

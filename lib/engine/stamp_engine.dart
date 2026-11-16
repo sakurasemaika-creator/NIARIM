@@ -32,6 +32,7 @@ Uint8List runStampStrokeInIsolate(
     scatter: args.scatter,
     density: args.density,
     opacity: args.opacity,
+    premultiplied: true,
   );
 }
 
@@ -47,6 +48,7 @@ class StampEngine {
   ///
   /// 入力イベント数によって見た目が変わらないよう、OSから届いた各点へ直接
   /// スタンプするのではなく、パス長に沿った一定距離で再サンプリングする。
+  /// Pass [premultiplied] for canvas tiles and decoded preset textures.
   Uint8List stampAlongPath({
     required Uint8List canvasData,
     required int width,
@@ -60,6 +62,7 @@ class StampEngine {
     double density = 1.0,
     int opacity = 100,
     int seed = 0,
+    bool premultiplied = false,
   }) {
     final result = Uint8List.fromList(canvasData);
     if (points.isEmpty || stampSize <= 0) return result;
@@ -95,6 +98,7 @@ class StampEngine {
         stampSize,
         stampAngle,
         opacity,
+        premultiplied,
       );
     }
     return result;
@@ -171,15 +175,17 @@ class StampEngine {
     double size,
     double angle,
     int opacity,
+    bool premultiplied,
   ) {
     if (size <= 0) return;
     final half = size / 2;
-    final minX = (cx - half).floor().clamp(0, w - 1);
-    final maxX = (cx + half).ceil().clamp(0, w - 1);
-    final minY = (cy - half).floor().clamp(0, h - 1);
-    final maxY = (cy + half).ceil().clamp(0, h - 1);
     final cosA = math.cos(-angle);
     final sinA = math.sin(-angle);
+    final extent = half * (cosA.abs() + sinA.abs());
+    final minX = (cx - extent).floor().clamp(0, w - 1);
+    final maxX = (cx + extent).ceil().clamp(0, w - 1);
+    final minY = (cy - extent).floor().clamp(0, h - 1);
+    final maxY = (cy + extent).ceil().clamp(0, h - 1);
     for (int y = minY; y <= maxY; y++) {
       for (int x = minX; x <= maxX; x++) {
         final dx = x - cx;
@@ -199,17 +205,25 @@ class StampEngine {
         final dstA = dst[dIdx + 3] / 255.0;
         final outA = srcA + dstA * (1 - srcA);
         if (outA <= 0) continue;
-        dst[dIdx] = ((tex[tIdx] * srcA + dst[dIdx] * dstA * (1 - srcA)) / outA)
-            .round()
-            .clamp(0, 255);
-        dst[dIdx + 1] =
-            ((tex[tIdx + 1] * srcA + dst[dIdx + 1] * dstA * (1 - srcA)) / outA)
-                .round()
-                .clamp(0, 255);
-        dst[dIdx + 2] =
-            ((tex[tIdx + 2] * srcA + dst[dIdx + 2] * dstA * (1 - srcA)) / outA)
-                .round()
-                .clamp(0, 255);
+        if (premultiplied) {
+          final srcOpacity = ta / tex[tIdx + 3];
+          for (var channel = 0; channel < 3; channel++) {
+            dst[dIdx + channel] =
+                (tex[tIdx + channel] * srcOpacity +
+                        dst[dIdx + channel] * (1 - srcA))
+                    .round()
+                    .clamp(0, 255);
+          }
+        } else {
+          for (var channel = 0; channel < 3; channel++) {
+            dst[dIdx + channel] =
+                ((tex[tIdx + channel] * srcA +
+                            dst[dIdx + channel] * dstA * (1 - srcA)) /
+                        outA)
+                    .round()
+                    .clamp(0, 255);
+          }
+        }
         dst[dIdx + 3] = (outA * 255).round().clamp(0, 255);
       }
     }

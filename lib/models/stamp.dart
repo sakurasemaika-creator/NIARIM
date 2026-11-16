@@ -9,6 +9,8 @@ class Stamp {
   final String? folderId;
   final bool rotation;
   final double density;
+
+  /// Maximum sideways offset as a ratio of the stamp size (0–1).
   final double scatter;
   // スタンプ全体の不透明度（1〜100%）。画像自身のalphaへ乗算して描画する。
   // 旧データにはこのキーが存在しないため、fromJsonでは100を既定値にする。
@@ -78,6 +80,12 @@ class Stamp {
     'tags': tags,
   };
 
+  static double _readScatter(Object? stored) {
+    final value = stored is num ? stored.toDouble() : 0.0;
+    // Early vegetation presets saved a percent although the editor used ratios.
+    return (value > 1 ? value / 100 : value).clamp(0.0, 1.0);
+  }
+
   factory Stamp.fromJson(Map<String, dynamic> j) => Stamp(
     id: j['id'] as String,
     name: j['name'] as String,
@@ -86,7 +94,7 @@ class Stamp {
     folderId: j['folderId'] as String?,
     rotation: j['rotation'] as bool? ?? false,
     density: (j['density'] as num?)?.toDouble() ?? 1.0,
-    scatter: (j['scatter'] as num?)?.toDouble() ?? 0.0,
+    scatter: _readScatter(j['scatter']),
     opacity: (j['opacity'] as num?)?.round().clamp(1, 100) ?? 100,
     pixelMode: j['pixelMode'] as bool? ?? false,
     tags: parseTags(j['tags']),

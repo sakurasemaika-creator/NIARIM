@@ -1,6 +1,8 @@
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
+import 'premultiplied.dart';
+
 /// 投げ縄塗りの確定処理（低スペック端末でのUIスレッドブロック防止のため
 /// compute()経由のバックグラウンドisolateで実行する想定のトップレベル関数）。
 Uint8List runLassoFillInIsolate(
@@ -62,6 +64,10 @@ class LassoFillEngine {
     if (points.length < 3) return canvasData;
     final result = Uint8List.fromList(canvasData);
     final isEraser = color.a == 0;
+    final r = (color.r * 255).round();
+    final g = (color.g * 255).round();
+    final b = (color.b * 255).round();
+    final a = (color.a * 255).round();
 
     for (int y = 0; y < height; y++) {
       for (int x = 0; x < width; x++) {
@@ -82,17 +88,20 @@ class LassoFillEngine {
           final tx = x % toneTextureWidth;
           final ty = y % toneTextureHeight;
           final toneIdx = (ty * toneTextureWidth + tx) * 4;
-          if (toneTexture[toneIdx + 3] > 0) {
-            result[idx] = (color.r * 255).round();
-            result[idx + 1] = (color.g * 255).round();
-            result[idx + 2] = (color.b * 255).round();
-            result[idx + 3] = (color.a * 255).round();
-          }
+          compositeMaskedColor(
+            result,
+            idx,
+            r,
+            g,
+            b,
+            a,
+            toneTexture[toneIdx + 3],
+          );
         } else {
-          result[idx] = (color.r * 255).round();
-          result[idx + 1] = (color.g * 255).round();
-          result[idx + 2] = (color.b * 255).round();
-          result[idx + 3] = (color.a * 255).round();
+          result[idx] = r;
+          result[idx + 1] = g;
+          result[idx + 2] = b;
+          result[idx + 3] = a;
         }
       }
     }
@@ -181,12 +190,7 @@ class LassoFillEngine {
           final tx = (pos % width) % toneTextureWidth;
           final ty = (pos ~/ width) % toneTextureHeight;
           final toneIdx = (ty * toneTextureWidth + tx) * 4;
-          if (toneTexture[toneIdx + 3] > 0) {
-            result[i] = r;
-            result[i + 1] = g;
-            result[i + 2] = b;
-            result[i + 3] = a;
-          }
+          compositeMaskedColor(result, i, r, g, b, a, toneTexture[toneIdx + 3]);
         } else {
           result[i] = r;
           result[i + 1] = g;

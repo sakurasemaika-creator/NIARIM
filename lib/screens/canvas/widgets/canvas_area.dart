@@ -2153,7 +2153,8 @@ class _CanvasAreaState extends State<CanvasArea> {
   /// 投げ縄塗りを確定する。囲って塗るモードON/OFF・ベタ/トーン・透明色=消しゴム
   /// の判定は LassoFillEngine 側で行う。
   Future<void> _commitLassoFill() async {
-    if (_lassoPoints.length < 3) return;
+    final points = _lassoPoints.toList(growable: false);
+    if (points.length < 3) return;
     _syncBrushAndColor();
     _beginTileUndo();
     final key = _tileKeyFor(_layerId);
@@ -2178,7 +2179,6 @@ class _CanvasAreaState extends State<CanvasArea> {
       }
     }
 
-    final points = _lassoPoints.map((p) => ui.Offset(p.dx, p.dy)).toList();
     // 低スペック端末でのUIスレッドブロックを避けるため、フルキャンバスの
     // 塗りつぶし処理はバックグラウンドisolateで実行する。
     final result = await compute(runLassoFillInIsolate, (
@@ -2206,7 +2206,8 @@ class _CanvasAreaState extends State<CanvasArea> {
   /// 回転なし・密度なし・散布なし）。ドラッグ中はプレビューのみで、
   /// 指を離した時点でまとめてタイルへ反映する。
   Future<void> _commitToneStroke() async {
-    if (_subToolStrokePoints.isEmpty) return;
+    final points = _subToolStrokePoints.toList(growable: false);
+    if (points.isEmpty) return;
     final toneService = context.read<ToneService>();
     final tone = toneService.currentTone;
     if (tone == null) return;
@@ -2232,9 +2233,6 @@ class _CanvasAreaState extends State<CanvasArea> {
       (c.g * 255).round().clamp(0, 255),
       (c.b * 255).round().clamp(0, 255),
     );
-    final points = _subToolStrokePoints
-        .map((p) => ui.Offset(p.dx, p.dy))
-        .toList();
     // 低スペック端末でのUIスレッドブロックを避けるため、フルキャンバスの
     // 描画処理はバックグラウンドisolateで実行する。
     final result = await compute(runToneStrokeInIsolate, (
@@ -2260,7 +2258,9 @@ class _CanvasAreaState extends State<CanvasArea> {
   /// スタンプ描画を確定する（色情報はスタンプ自身が保持・
   /// ブラシサイズ連動・回転／密度／散布対応）。
   Future<void> _commitStampStroke() async {
-    if (_subToolStrokePoints.isEmpty) return;
+    // Capture the input before pointer-up clears the live stroke preview.
+    final stampPoints = _subToolStrokePoints.toList(growable: false);
+    if (stampPoints.isEmpty) return;
     final stampService = context.read<StampService>();
     final stamp = stampService.currentStamp;
     if (stamp == null) return;
@@ -2279,13 +2279,6 @@ class _CanvasAreaState extends State<CanvasArea> {
     final texture = await generateBuiltInStampTexture(stamp, size: texSize);
     if (!mounted) return;
 
-    // StampEngine側でパス長に沿った再サンプリングを行うため、ここでは
-    // 生の入力点を保持する。事前に間引くと短い折れ返し・曲線が失われ、
-    // 入力イベント密度によってスタンプ形状が変化してしまう。
-    final stampPoints = _subToolStrokePoints
-        .map((p) => ui.Offset(p.dx, p.dy))
-        .toList(growable: false);
-
     // 低スペック端末でのUIスレッドブロックを避けるため、フルキャンバスの
     // スタンプ合成処理はバックグラウンドisolateで実行する。
     final result = await compute(runStampStrokeInIsolate, (
@@ -2299,7 +2292,7 @@ class _CanvasAreaState extends State<CanvasArea> {
       rotation: stamp.rotation,
       scatter: stamp.scatter * stampSize,
       density: stamp.density,
-      opacity: stamp.opacity,
+      opacity: 100, // Already applied by generateBuiltInStampTexture.
     ));
     if (!mounted) return;
     _tileManager.replaceLayerPixels(key, result);

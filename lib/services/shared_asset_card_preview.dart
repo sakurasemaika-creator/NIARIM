@@ -145,9 +145,10 @@ class SharedAssetCardPreview {
         points: _wave(),
         stampSize: 23,
         rotation: stamp.rotation,
-        scatter: stamp.scatter,
+        scatter: stamp.scatter * 23,
         density: stamp.density,
         opacity: 100,
+        premultiplied: true,
         seed: 0,
       );
       return _decode(pixels);

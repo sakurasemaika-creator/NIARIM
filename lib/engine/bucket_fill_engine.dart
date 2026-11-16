@@ -1,6 +1,8 @@
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
+import 'premultiplied.dart';
+
 /// バケツ塗りエンジン
 /// 仕様：03_描画エンジン.md / 17_ブラシ仕様.md
 class BucketFillEngine {
@@ -137,6 +139,10 @@ class BucketFillEngine {
       return canvasData;
     }
     final result = Uint8List.fromList(canvasData);
+    final toneColorR = (toneColor.r * 255).round();
+    final toneColorG = (toneColor.g * 255).round();
+    final toneColorB = (toneColor.b * 255).round();
+    final toneColorA = (toneColor.a * 255).round();
     final startIdx = (startY * width + startX) * 4;
     final targetR = result[startIdx];
     final targetG = result[startIdx + 1];
@@ -178,12 +184,15 @@ class BucketFillEngine {
       final tx = x % toneWidth;
       final ty = y % toneHeight;
       final toneIdx = (ty * toneWidth + tx) * 4;
-      if (toneTexture[toneIdx + 3] > 0) {
-        result[idx] = (toneColor.r * 255).round();
-        result[idx + 1] = (toneColor.g * 255).round();
-        result[idx + 2] = (toneColor.b * 255).round();
-        result[idx + 3] = (toneColor.a * 255).round();
-      }
+      compositeMaskedColor(
+        result,
+        idx,
+        toneColorR,
+        toneColorG,
+        toneColorB,
+        toneColorA,
+        toneTexture[toneIdx + 3],
+      );
       // 透明部分でも隣接ピクセルへ伝播（塗らないが領域は走査する）
 
       void tryAdd(int newPos) {
@@ -202,10 +211,6 @@ class BucketFillEngine {
     if (expandPx > 0) {
       // トーン塗りの拡張分は境界に最も近いトーン色（塗り開始色）をそのまま
       // ベタで広げる（拡張部分だけトーン柄が途切れると不自然なため）。
-      final toneColorR = (toneColor.r * 255).round();
-      final toneColorG = (toneColor.g * 255).round();
-      final toneColorB = (toneColor.b * 255).round();
-      final toneColorA = (toneColor.a * 255).round();
       _expandFill(
         result: result,
         matched: matched,

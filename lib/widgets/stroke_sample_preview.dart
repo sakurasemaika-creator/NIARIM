@@ -232,10 +232,11 @@ class _StrokeSamplePreviewState extends State<StrokeSamplePreview> {
       points: _wavePoints(),
       stampSize: 23,
       rotation: activeStamp.rotation,
-      scatter: activeStamp.scatter,
+      scatter: activeStamp.scatter * 23,
       density: activeStamp.density,
       // The source texture has already had its opacity applied.
       opacity: 100,
+      premultiplied: true,
       seed: 0,
     );
     return _decode(result);

@@ -5,6 +5,7 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 
+import '../engine/premultiplied.dart';
 import '../engine/procedural_texture.dart';
 import '../models/tone.dart';
 
@@ -66,9 +67,9 @@ class _TonePreviewThumbState extends State<TonePreviewThumb> {
     final g = (widget.color.g * 255).round();
     final b = (widget.color.b * 255).round();
     for (int i = 0; i < mask.length; i += 4) {
-      rgba[i] = r;
-      rgba[i + 1] = g;
-      rgba[i + 2] = b;
+      rgba[i] = premultipliedChannel(r, mask[i + 3]);
+      rgba[i + 1] = premultipliedChannel(g, mask[i + 3]);
+      rgba[i + 2] = premultipliedChannel(b, mask[i + 3]);
       rgba[i + 3] = mask[i + 3];
     }
     ui.decodeImageFromPixels(

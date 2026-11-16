@@ -23,6 +23,29 @@ int premultipliedChannel(int value, int alpha) {
   return (value * alpha + 127) ~/ 255;
 }
 
+/// Fills one pixel using mask coverage, preserving the destination under the
+/// partially covered edges of a tone.
+void compositeMaskedColor(
+  Uint8List pixels,
+  int i,
+  int r,
+  int g,
+  int b,
+  int alpha,
+  int coverage,
+) {
+  final a = premultipliedChannel(alpha, coverage);
+  if (a == 0) return;
+  final keep = 255 - a;
+  pixels[i] =
+      premultipliedChannel(r, a) + premultipliedChannel(pixels[i], keep);
+  pixels[i + 1] =
+      premultipliedChannel(g, a) + premultipliedChannel(pixels[i + 1], keep);
+  pixels[i + 2] =
+      premultipliedChannel(b, a) + premultipliedChannel(pixels[i + 2], keep);
+  pixels[i + 3] = a + premultipliedChannel(pixels[i + 3], keep);
+}
+
 /// [data] with each pixel's straight red, green and blue looked up in
 /// [red], [green] and [blue] (256 entries each), alpha unchanged.
 /// Fully transparent pixels stay `0, 0, 0, 0`.
