@@ -2120,6 +2120,8 @@ class _CanvasAreaState extends State<CanvasArea> {
     final layerKey = _undoRecordingLayerKey;
     _undoRecordingLayerKey = null;
     if (snapshot.before.isEmpty || layerKey == null) return;
+    final projectId = widget.project?.id;
+    final projects = projectId == null ? null : context.read<ProjectService>();
     context.read<app_undo.UndoManager>().push(
       app_undo.TileUndoAction(
         tileManager: _tileManager,
@@ -2127,6 +2129,7 @@ class _CanvasAreaState extends State<CanvasArea> {
         before: snapshot.before,
         after: snapshot.after,
         onApply: () {
+          if (projectId != null) projects?.refreshDrawingHistory(projectId);
           if (mounted) _scheduleComposite();
         },
       ),

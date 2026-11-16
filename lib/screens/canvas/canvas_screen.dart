@@ -2971,7 +2971,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
     if (_showFilterPanel && filters.currentFilter != null) {
       filters.undoFilterEdit();
     } else {
-      context.read<UndoManager>().undo();
+      _applyArtworkHistory(redo: false);
     }
   }
 
@@ -2980,8 +2980,19 @@ class _CanvasScreenState extends State<CanvasScreen> {
     if (_showFilterPanel && filters.currentFilter != null) {
       filters.redoFilterEdit();
     } else {
-      context.read<UndoManager>().redo();
+      _applyArtworkHistory(redo: true);
     }
+  }
+
+  void _applyArtworkHistory({required bool redo}) {
+    final history = context.read<UndoManager>();
+    if (redo ? !history.canRedo : !history.canUndo) return;
+    if (redo) {
+      history.redo();
+    } else {
+      history.undo();
+    }
+    setState(() => _canvasContentRevision++);
   }
 
   /// Whether the filter's UI has the screen, so the selection's own editing
@@ -3866,13 +3877,13 @@ class _CanvasScreenState extends State<CanvasScreen> {
           _topBarIconButton(
             context,
             Icons.undo,
-            onPressed: () => context.read<UndoManager>().undo(),
+            onPressed: () => _applyArtworkHistory(redo: false),
             tooltip: l10n.commonUndo,
           ),
           _topBarIconButton(
             context,
             Icons.redo,
-            onPressed: () => context.read<UndoManager>().redo(),
+            onPressed: () => _applyArtworkHistory(redo: true),
             tooltip: l10n.commonRedo,
           ),
           if (isWideScreen(context)) ...[

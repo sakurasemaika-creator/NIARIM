@@ -289,6 +289,14 @@ class ProjectService extends ChangeNotifier {
   }
 
   bool _recordingTimelineEdit = false;
+  final Map<String, Map<String, bool>> _layerFolderExpansion = {};
+
+  bool isLayerFolderExpanded(String projectId, Layer layer) =>
+      _layerFolderExpansion[projectId]?[layer.id] ?? layer.isExpanded;
+
+  void setLayerFolderExpanded(String projectId, Layer layer, bool expanded) {
+    (_layerFolderExpansion[projectId] ??= {})[layer.id] = expanded;
+  }
 
   /// A single editing command, including commands that call several model
   /// operations. Selection and panel settings live outside the project model.
@@ -1826,9 +1834,8 @@ class ProjectService extends ChangeNotifier {
     String projectId,
     int sceneIdx,
     int frameIndex,
-    List<Layer> newLayers, {
-    bool contentChanged = true,
-  }) {
+    List<Layer> newLayers,
+  ) {
     final scenes = _scenes[projectId]!;
     final scene = scenes[sceneIdx];
     final newFrames = List<Frame>.from(scene.frames);
@@ -1836,7 +1843,7 @@ class ProjectService extends ChangeNotifier {
       layers: newLayers,
     );
     scenes[sceneIdx] = scene.copyWith(frames: newFrames);
-    if (contentChanged) recordConfirmedEdit(projectId);
+    recordConfirmedEdit(projectId);
     notifyListeners();
   }
 
@@ -2054,7 +2061,6 @@ class ProjectService extends ChangeNotifier {
     required int frameIndex,
     required Layer layer,
     bool recordUndo = true,
-    bool contentChanged = true,
   }) {
     if (recordUndo &&
         _layersAddedInGroup?.contains('$projectId/${layer.id}') != true &&
@@ -2069,7 +2075,6 @@ class ProjectService extends ChangeNotifier {
           frameIndex: frameIndex,
           layer: layer,
           recordUndo: false,
-          contentChanged: contentChanged,
         ),
         changesTiles: false,
       );
@@ -2088,13 +2093,7 @@ class ProjectService extends ChangeNotifier {
     final layerIdx = frame.layers.indexWhere((l) => l.id == layer.id);
     if (layerIdx < 0) return;
     final newLayers = List<Layer>.from(frame.layers)..[layerIdx] = layer;
-    _applyFrameUpdate(
-      projectId,
-      sceneIdx,
-      home.frameIndex,
-      newLayers,
-      contentChanged: contentChanged,
-    );
+    _applyFrameUpdate(projectId, sceneIdx, home.frameIndex, newLayers);
   }
 
   /// Replaces a layer's pixels in one go (a filter applied in place) as a
@@ -2166,6 +2165,13 @@ class ProjectService extends ChangeNotifier {
   void _notifyProjectPixelsChanged(String projectId) {
     _saveAsync(projectId);
     notifyListeners();
+  }
+
+  /// A stroke can be reversed after its canvas widget has been disposed.
+  void refreshDrawingHistory(String projectId) {
+    if (_projects.any((project) => project.id == projectId)) {
+      _notifyProjectPixelsChanged(projectId);
+    }
   }
 
   Future<void> applyBrightnessToAlpha({
@@ -3929,6 +3935,7 @@ class ProjectService extends ChangeNotifier {
     final id = project.id;
     _trash.add(project);
     _scenes.remove(id);
+    _layerFolderExpansion.remove(id);
     _layerIdCounters.remove(id);
     _layerHomes.remove(id);
     _tileManagers.remove(id)?.dispose();
@@ -4080,6 +4087,7 @@ class ProjectService extends ChangeNotifier {
       _trash.removeAt(idx);
       _trashDeletedAt.remove(id);
       _scenes.remove(id);
+      _layerFolderExpansion.remove(id);
       _layerHomes.remove(id);
       _layerIdCounters.remove(id);
       _tileManagers.remove(id)?.dispose();

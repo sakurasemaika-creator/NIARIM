@@ -240,7 +240,12 @@ class _LayerPanelState extends State<LayerPanel> {
     while (pid != null) {
       final parent = byId[pid];
       if (parent == null) break;
-      if (!parent.isExpanded) return true;
+      if (!context.read<ProjectService>().isLayerFolderExpanded(
+        widget.projectId,
+        parent,
+      )) {
+        return true;
+      }
       pid = parent.parentFolderId;
     }
     return false;
@@ -508,19 +513,25 @@ class _LayerPanelState extends State<LayerPanel> {
                         if (depth > 0) SizedBox(width: depth * 12.0),
                         if (layer.type == model.LayerType.folder)
                           GestureDetector(
-                            onTap: () =>
-                                context.read<ProjectService>().updateLayer(
-                                  projectId: widget.projectId,
-                                  sceneId: widget.sceneId,
-                                  frameIndex: widget.frameIndex,
-                                  layer: layer.copyWith(
-                                    isExpanded: !layer.isExpanded,
-                                  ),
-                                  recordUndo: false,
-                                  contentChanged: false,
+                            onTap: () {
+                              final projects = context.read<ProjectService>();
+                              projects.setLayerFolderExpanded(
+                                widget.projectId,
+                                layer,
+                                !projects.isLayerFolderExpanded(
+                                  widget.projectId,
+                                  layer,
                                 ),
+                              );
+                              setState(() {});
+                            },
                             child: Icon(
-                              layer.isExpanded
+                              context
+                                      .read<ProjectService>()
+                                      .isLayerFolderExpanded(
+                                        widget.projectId,
+                                        layer,
+                                      )
                                   ? Icons.expand_more
                                   : Icons.chevron_right,
                               size: 16,
