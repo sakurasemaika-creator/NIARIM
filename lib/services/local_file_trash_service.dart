@@ -265,6 +265,30 @@ abstract final class LocalFileTrashService {
     required List<File> files,
   }) async {
     final sources = files.map((f) => File(f.absolute.path)).toList();
+    // Claim the files like [move]. A file moved on its own while its works
+    // folder was being moved (or the reverse) was copied by both; the move
+    // that removed the file second could not, kept its recorded copy because
+    // the file was gone, and the Trash showed the file twice.
+    final paths = {
+      for (final file in sources)
+        file.absolute.uri.normalizePath().toFilePath(),
+    };
+    final busy = paths.where(_movingPaths.contains).firstOrNull;
+    if (busy != null) {
+      throw FileSystemException('File is already being moved', busy);
+    }
+    _movingPaths.addAll(paths);
+    try {
+      return await _moveWorkFolder(folderName, sources);
+    } finally {
+      _movingPaths.removeAll(paths);
+    }
+  }
+
+  static Future<LocalTrashedFile> _moveWorkFolder(
+    String folderName,
+    List<File> sources,
+  ) async {
     final names = <String>[];
     for (final file in sources) {
       if (!await file.exists()) {
