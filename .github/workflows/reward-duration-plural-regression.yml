@@ -6,6 +6,7 @@ on:
     paths:
       - '.github/workflows/reward-duration-plural-regression.yml'
       - 'test/reward_duration_plural_test.dart'
+      - 'test/helpers/reward_duration_oracle.dart'
       - 'test/reward_count_unit_text_test.dart'
       - 'lib/l10n/app_fr.arb'
       - 'lib/l10n/app_localizations_fr.dart'
