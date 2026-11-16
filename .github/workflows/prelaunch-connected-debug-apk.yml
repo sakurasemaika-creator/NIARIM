@@ -9,6 +9,8 @@ on:
       - '.github/workflows/prelaunch-connected-debug-apk.yml'
       - 'test/coin_authenticated_client_contract_test.dart'
       - 'lib/services/api/niarim_api_client.dart'
+      - 'lib/services/push_notification_service.dart'
+      - 'android/app/src/main/res/values*/push_notifications.xml'
       - 'lib/models/coin_benefit_price_proposal.dart'
       - 'lib/l10n/*.arb'
       - 'test/reward_unlock_screen_test.dart'
