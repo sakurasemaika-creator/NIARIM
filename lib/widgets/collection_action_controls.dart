@@ -25,6 +25,29 @@ class CollectionActionFrame extends StatelessWidget {
 
   final Widget child;
 
+  /// The opacity of the outer ring (see [haloColor]).
+  static const double haloOpacity = 0.8;
+
+  /// The width of the outer ring, drawn just outside the circle.
+  static const double haloWidth = 1;
+
+  /// The outer ring around the circle's own outline: the theme's other
+  /// extreme (its text colour where the outline is the surface colour, and
+  /// the other way round), at [haloOpacity]. The circle sits on whatever is
+  /// under it (a card, or a project's cover: its own paper colour or
+  /// picture, not a theme colour), so its card-coloured fill and outline
+  /// alone vanished on a white paper in light themes (|Lc| 0). With a light
+  /// and a dark ring one of them always separates the circle from the
+  /// cover. The theme colours themselves are not changed.
+  static Color haloColor(ColorScheme scheme) {
+    final outline = CanvasIconButton.outlineColor(
+      scheme.onSurfaceVariant,
+      scheme,
+    );
+    final other = outline == scheme.surface ? scheme.onSurface : scheme.surface;
+    return other.withValues(alpha: other.a * haloOpacity);
+  }
+
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
@@ -35,18 +58,29 @@ class CollectionActionFrame extends StatelessWidget {
       child: SizedBox.square(
         dimension: extent,
         child: DecoratedBox(
+          // Drawn outside the circle, so the layout and the tap target stay.
           decoration: BoxDecoration(
-            color: Theme.of(context).cardTheme.color ?? scheme.surface,
             shape: BoxShape.circle,
             border: Border.all(
-              color: CanvasIconButton.outlineColor(
-                scheme.onSurfaceVariant,
-                scheme,
-              ),
-              width: 1.25,
+              color: haloColor(scheme),
+              width: haloWidth,
+              strokeAlign: BorderSide.strokeAlignOutside,
             ),
           ),
-          child: ClipOval(child: child),
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              color: Theme.of(context).cardTheme.color ?? scheme.surface,
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: CanvasIconButton.outlineColor(
+                  scheme.onSurfaceVariant,
+                  scheme,
+                ),
+                width: 1.25,
+              ),
+            ),
+            child: ClipOval(child: child),
+          ),
         ),
       ),
     );
