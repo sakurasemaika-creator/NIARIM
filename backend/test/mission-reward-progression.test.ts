@@ -121,7 +121,7 @@ describe("all 551 mission coins use strict five-coin steps",()=>{
     expect(DAILY_LOGIN_COINS).toBe(10);
     expect(LOGIN_BONUS_MILESTONES.every(m=>m.coins>=10)).toBe(true);
     expect(INITIAL_REWARDED_COINS_PER_COMPLETION).toBe(10);
-    expect(finalBenefitCoins("endCardEdit","hour")).toBe(900);
+    expect(finalBenefitCoins("endCardEdit","hour")).toBe(1440);
     expect(finalBenefitCoins("fullPremium","month")).toBe(55000);
   });
 });
@@ -141,31 +141,31 @@ describe("subscription-aligned exchange rates",()=>{
         expect(cost%10).toBe(0);
       }
     }
-    expect(finalBenefitCoins("endCardEdit","hour")).toBe(900);
-    expect(finalBenefitCoins("endCardEdit","day")).toBe(1800);
-    expect(finalBenefitCoins("endCardEdit","week")).toBe(4050);
-    expect(finalBenefitCoins("endCardEdit","month")).toBe(5390);
+    expect(finalBenefitCoins("endCardEdit","hour")).toBe(1440);
+    expect(finalBenefitCoins("endCardEdit","day")).toBe(2880);
+    expect(finalBenefitCoins("endCardEdit","week")).toBe(6470);
+    expect(finalBenefitCoins("endCardEdit","month")).toBe(8620);
     expect(finalBenefitCoins("fullPremium","month")).toBe(55000);
     expect(FINAL_PREMIUM_YEARLY_COINS).toBe(550000);
     expect(finalBenefitCostCoins("fullPremium","month",12)).toBe(550000);
     expect(finalBenefitCostCoins("fullPremium","month",13)).toBe(605000);
     expect(finalBenefitCostCoins("fullPremium","month",24)).toBe(1100000);
     expect(finalBenefitCostCoins("fullPremium","month",11)).toBe(605000);
-    expect(finalBenefitCostCoins("toneCurve","month",12)).toBe(80900);
+    expect(finalBenefitCostCoins("toneCurve","month",12)).toBe(129400);
     expect(isBundledPremiumCheaperForAllDurations()).toBe(true);
     // Freeze the complete 12 × 4 launch rate card, not just 4 examples.
     const fixed: readonly (readonly [typeof targets[number],readonly number[]])[] = [
-      ["endCardEdit",[900, 1800, 4050, 5390]],
-      ["watermark",[1350, 2700, 6070, 8090]],
-      ["toneCurve",[1350, 2700, 6070, 8090]],
-      ["levelAdjustment",[1130, 2250, 5060, 6740]],
-      ["unlimitedDuration",[1880, 3750, 8430, 11240]],
-      ["customAutomation",[1880, 3750, 8430, 11240]],
-      ["projectListAds",[900, 1800, 4050, 5390]],
-      ["canvasAds",[1500, 3000, 6750, 8990]],
-      ["timelineAds",[1200, 2400, 5400, 7190]],
-      ["processingAds",[750, 1500, 3370, 4490]],
-      ["allAds",[3000, 5990, 13470, 17960]],
+      ["endCardEdit",[1440, 2880, 6470, 8620]],
+      ["watermark",[2160, 4320, 9710, 12940]],
+      ["toneCurve",[2160, 4320, 9710, 12940]],
+      ["levelAdjustment",[1800, 3600, 8090, 10780]],
+      ["unlimitedDuration",[3000, 6000, 13490, 17980]],
+      ["customAutomation",[3000, 6000, 13490, 17980]],
+      ["projectListAds",[1440, 2880, 6470, 8620]],
+      ["canvasAds",[2400, 4800, 10790, 14380]],
+      ["timelineAds",[1920, 3840, 8630, 11500]],
+      ["processingAds",[1200, 2400, 5390, 7180]],
+      ["allAds",[4820, 9580, 21560, 28760]],
       ["fullPremium",[9190, 18350, 41260, 55000]]
     ];
     for(const [target,amounts] of fixed){
@@ -180,9 +180,9 @@ describe("subscription-aligned exchange rates",()=>{
     ] as const;
     expect(durations.map(duration => comparison.reduce(
       (sum, target) => sum + finalBenefitCostCoins(target, duration, 1), 0,
-    ))).toEqual([11490, 22940, 51580, 68750]);
+    ))).toEqual([18380, 36700, 82520, 110000]);
     expect(comparison.reduce(
       (sum, target) => sum + finalBenefitCostCoins(target, "month", 12), 0,
-    )).toBe(687500);
+    )).toBe(1100000);
   });
 });

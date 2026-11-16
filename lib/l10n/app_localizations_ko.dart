@@ -1080,7 +1080,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get premiumDurationExportNote =>
-      '90초까지 만들거나 늘릴 수 있습니다. 이미 만든 긴 작품은 전체를 내보낼 수 있습니다.';
+      '90초가 넘는 작품 전체를 내보내려면 프리미엄이나 길이 연장 혜택이 필요합니다. 처음 90초를 내보낼 수도 있습니다.';
 
   @override
   String get premiumFeatureMaxDuration => '최대 길이';
@@ -1510,7 +1510,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get helpVideoExportDesc =>
-      'MP4, WebM, GIF, AVI로 내보낼 수 있습니다. 무료 버전에서 작품 길이를 90초까지 늘릴 수 있습니다. 이미 만든 긴 작품은 전체를 내보낼 수 있습니다. 내보내기 전에 길이와 엔드 마크를 확인할 수 있습니다.';
+      'MP4, WebM, GIF, AVI로 내보낼 수 있습니다. 90초가 넘는 작품 전체를 내보내려면 프리미엄이나 길이 연장 혜택이 필요합니다. 처음 90초를 내보낼 수도 있습니다. 내보내기 FPS를 바꿔도 재생 시간은 유지됩니다. 내보내기 전에 길이와 엔드 마크를 확인할 수 있습니다.';
 
   @override
   String get helpTransparentWebmTitle => '투명 WebM';
@@ -1534,14 +1534,14 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get helpPremiumEntryDesc =>
-      '최대 길이 혜택이 유효하면 작품 길이를 2시간까지 늘릴 수 있습니다. 만료 후에도 만든 작품과 적용한 색 보정을 그대로 내보낼 수 있습니다. 엔드 마크는 내보내기 시작 시의 혜택에 따라 결정됩니다.';
+      '길이 연장 혜택이 유효하면 최대 2시간까지 만들고 내보낼 수 있습니다. 만료 후에도 작품은 남으며 적용한 색 보정을 포함해 처음 90초를 내보낼 수 있습니다. 엔드마크는 내보내기 시작 시의 혜택에 따라 결정됩니다.';
 
   @override
   String get helpPremiumExpiryTitle => '혜택이 만료되면';
 
   @override
   String get helpPremiumExpiryDesc =>
-      '이미 만든 긴 작품은 90초를 넘어도 모든 프레임을 내보낼 수 있습니다. 프레임 추가·복제에는 90초 제한이 적용됩니다. 편집 기록이 남아 있으면 실행 취소와 다시 실행으로 삭제한 프레임을 복구할 수 있습니다. 엔드 마크 혜택 만료 후 새로 내보내는 MP4·WebM·AVI 끝에는 5초간 NIARIM 로고가 표시됩니다. GIF와 이미 내보낸 파일에는 영향이 없습니다. 내보내기 시작 시의 조건이 완료될 때까지 적용됩니다. 배치한 워터마크, 적용한 색 보정, 자동 작업의 결과는 남습니다. 저장한 자동 작업을 다시 실행하려면 유효한 혜택이 필요합니다.';
+      '90초가 넘는 작품 전체를 내보내려면 프리미엄이나 길이 연장 혜택이 필요합니다. 처음 90초를 내보낼 수도 있습니다. 프레임 추가·복제에는 90초 제한이 적용됩니다. 편집 기록이 남아 있으면 실행 취소와 다시 실행으로 삭제한 프레임을 복구할 수 있습니다. 엔드 마크 혜택 만료 후 새로 내보내는 MP4·WebM·AVI 끝에는 5초간 NIARIM 로고가 표시됩니다. GIF와 이미 내보낸 파일에는 영향이 없습니다. 내보내기 시작 시의 조건이 완료될 때까지 적용됩니다. 배치한 워터마크, 적용한 색 보정, 자동 작업의 결과는 남습니다. 저장한 자동 작업을 다시 실행하려면 유효한 혜택이 필요합니다.';
 
   @override
   String get helpPerformanceSettingsTitle => '성능 설정';
@@ -2796,8 +2796,28 @@ class AppLocalizationsKo extends AppLocalizations {
   String get exportBenefitsChecking => '혜택을 확인하는 중입니다.';
 
   @override
+  String get exportFirst90Seconds => '처음 90초 내보내기';
+
+  @override
+  String get premiumBannerHeadline => '최대 2시간 제작 및 내보내기';
+
+  @override
+  String get premiumBannerBenefits =>
+      '긴 작품을 만들고 여러 도구로 마무리하세요. 오팔로도 혜택을 이용할 수 있습니다.';
+
+  @override
+  String get premiumPackHalfPrice => '컴플리트 팩은 단품 합계의 절반';
+
+  @override
+  String get premiumPackPriceBasis =>
+      '같은 기간의 단품 설정 가격과 비교한 값입니다. 단품 교환은 준비 중입니다.';
+
+  @override
+  String get exportKeepsPlaybackTime => '내보내기 FPS를 바꿔도 재생 시간은 유지됩니다.';
+
+  @override
   String get exportLongProjectNote =>
-      '이미 만든 긴 작품은 전체를 내보낼 수 있습니다. 무료 버전에서는 작품 길이를 90초까지 늘릴 수 있습니다.';
+      '90초가 넘는 작품 전체를 내보내려면 프리미엄이나 길이 연장 혜택이 필요합니다. 처음 90초를 내보낼 수도 있습니다.';
 
   @override
   String exportOutputWithoutEndCard(String duration) {

@@ -81,20 +81,19 @@ abstract class UndoAction {
   String get description;
 }
 
-class FrameRemovalUndoAction extends UndoAction {
-  FrameRemovalUndoAction({required this.restore, required this.remove});
-
-  final VoidCallback restore;
-  final VoidCallback remove;
+class ProjectEditUndoAction extends UndoAction {
+  ProjectEditUndoAction(this.description, this.before, this.after);
 
   @override
-  String get description => 'Remove frame';
+  final String description;
+  final VoidCallback before;
+  final VoidCallback after;
 
   @override
-  void undo() => restore();
+  void undo() => before();
 
   @override
-  void redo() => remove();
+  void redo() => after();
 }
 
 class _GroupedUndoAction extends UndoAction {

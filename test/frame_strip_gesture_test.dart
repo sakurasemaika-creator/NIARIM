@@ -248,8 +248,12 @@ void main() {
     final l10n = AppLocalizations.of(element)!;
     expect(find.text(l10n.premiumComparisonPremium), findsOneWidget);
     expect(find.text(l10n.rewardNavigationExchange), findsOneWidget);
-    await tester.tap(find.text(l10n.commonClose));
+    final close = find.text(l10n.commonClose);
+    await tester.ensureVisible(close);
     await tester.pumpAndSettle();
+    await tester.tap(close);
+    await tester.pumpAndSettle();
+    expect(find.text(l10n.premiumComparisonPremium), findsNothing);
 
     final undo = element.read<UndoManager>();
     final frames = project.scenesOf(ctx.projectId).first.frames;
@@ -317,18 +321,19 @@ void main() {
       ...List<int>.generate(90, (i) => i + 1),
       0,
     ]);
-    undo.redo();
-    expect(project.frameCount(ctx.projectId, ctx.sceneId), 90);
+    expect(undo.canRedo, isFalse);
+    undo.undo(); // Undo the reorder, then the restored frame is back at index 0.
+    expect(project.frameCount(ctx.projectId, ctx.sceneId), 91);
     expect(tileManager.exportAll()[removedKey]!.values.first.take(4), [
-      0,
       255,
+      0,
       0,
       255,
     ]);
-    undo.undo();
+    undo.redo();
     expect(tileManager.exportAll()[removedKey]!.values.first.take(4), [
-      255,
       0,
+      255,
       0,
       255,
     ]);

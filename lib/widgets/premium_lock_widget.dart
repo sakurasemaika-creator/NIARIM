@@ -84,129 +84,134 @@ class PremiumLockState extends StatelessWidget {
   }
 }
 
-/// Premium限定機能から共通して表示するバナーダイアログ。
-void showPremiumBanner(BuildContext context) {
-  showDialog(
+/// Shared offer for locked features. A limited export is an explicit choice.
+Future<bool> showPremiumBanner(
+  BuildContext context, {
+  String? reason,
+  String? continueLabel,
+}) async {
+  final choice = await showDialog<String>(
     context: context,
-    builder: (ctx) => _PremiumBannerDialog(
-      onClose: () => Navigator.pop(ctx),
-      onRegister: () {
-        Navigator.pop(ctx);
-        // Premium画面（実際の購入処理はPremiumService.buyで行う）へ遷移。
-        // ctx ではなく呼び出し元の context を使う（ダイアログ close 後も有効）。
-        // go()だとナビゲーション履歴が丸ごと置き換わり、キャンバス編集中
-        // など画面の奥深くから開いた場合に戻る手段が無くなってしまう
-        // （home_drawer.dart側の通常導線はpush()）ため、こちらもpush()に
-        // 揃える。
-        context.push('/premium');
-      },
+    builder: (dialog) => _PremiumBannerDialog(
+      reason: reason,
+      continueLabel: continueLabel,
+      onChoose: (value) => Navigator.pop(dialog, value),
     ),
   );
+  if (!context.mounted) return false;
+  if (choice == 'premium') context.push('/premium');
+  if (choice == 'rewards') context.push('/rewards');
+  return choice == 'continue';
 }
 
 class _PremiumBannerDialog extends StatelessWidget {
-  final VoidCallback onClose;
-  final VoidCallback onRegister;
+  const _PremiumBannerDialog({
+    this.reason,
+    this.continueLabel,
+    required this.onChoose,
+  });
 
-  const _PremiumBannerDialog({required this.onClose, required this.onRegister});
+  final String? reason;
+  final String? continueLabel;
+  final ValueChanged<String> onChoose;
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
+    final labels = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
     return Dialog(
-      insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
-      child: Stack(
-        children: [
-          Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Premium紹介バナー画像（タップでPremium登録画面へ）
-              GestureDetector(
-                onTap: onRegister,
-                child: ClipRRect(
-                  borderRadius: const BorderRadius.vertical(
-                    top: Radius.circular(12),
-                  ),
-                  child: Image.asset(
-                    'assets/images/premium_banner.webp',
-                    width: double.infinity,
-                    fit: BoxFit.fitWidth,
-                    errorBuilder: (context, error, stackTrace) => Container(
-                      height: 200,
-                      color: ThemeService.activeColorScheme.onSurfaceVariant,
-                      child: Center(
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.star,
-                              color: ThemeService.activeColorScheme.tertiary,
-                              size: 48,
-                            ),
-                            SizedBox(height: 8),
-                            Text(
-                              'NIARIM Premium',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                fontFamily: 'Kuramubon',
-                                fontFamilyFallback: kHeadingFontFallback,
-                              ),
-                            ),
-                            SizedBox(height: 4),
-                            Text(
-                              'premium_banner.webp',
-                              style: TextStyle(
-                                fontSize: 11,
-                                color: ThemeService
-                                    .activeColorScheme
-                                    .onSurfaceVariant,
-                              ),
-                            ),
-                          ],
+      constraints: const BoxConstraints(maxWidth: 460),
+      clipBehavior: Clip.antiAlias,
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Container(
+              color: colors.primaryContainer,
+              padding: const EdgeInsets.fromLTRB(24, 18, 16, 22),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.workspace_premium_rounded,
+                        color: colors.onPrimaryContainer,
+                        size: 32,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'NIARIM Premium',
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            color: colors.onPrimaryContainer,
+                          ),
                         ),
                       ),
+                      IconButton(
+                        tooltip: MaterialLocalizations.of(
+                          context,
+                        ).closeButtonTooltip,
+                        onPressed: () => onChoose('close'),
+                        icon: Icon(
+                          Icons.close,
+                          color: colors.onPrimaryContainer,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    labels.premiumBannerHeadline,
+                    style: theme.textTheme.headlineSmall?.copyWith(
+                      color: colors.onPrimaryContainer,
+                      fontFamily: 'Kuramubon',
+                      fontFamilyFallback: kHeadingFontFallback,
                     ),
                   ),
-                ),
-              ),
-              // Primary action only; closing is handled by the compact top-right X.
-              Padding(
-                padding: const EdgeInsets.all(12),
-                child: SizedBox(
-                  width: double.infinity,
-                  child: FilledButton(
-                    onPressed: onRegister,
-                    child: Text(l10n.premiumBannerRegisterButton),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          // このダイアログの×は**バナー画像の上**に重なる。素のIconButtonだと
-          // 画像の絵柄しだいでほとんど見えなくなる（実際に、画像が読めない
-          // ときのプレースホルダー上でほぼ判別できない状態だった）。
-          // 画像に左右されないよう、surface/onSurfaceの組み合わせの丸い
-          // 下地を必ず敷く（ポップアップの一部なので透かさない）。
-          Positioned(
-            right: 4,
-            top: 4,
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: ThemeService.activeColorScheme.surface,
-              ),
-              child: IconButton(
-                visualDensity: VisualDensity.compact,
-                iconSize: 18,
-                color: ThemeService.activeColorScheme.onSurface,
-                tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
-                onPressed: onClose,
-                icon: const Icon(Icons.close),
+                ],
               ),
             ),
-          ),
-        ],
+            Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(reason ?? labels.premiumBannerBenefits),
+                  const SizedBox(height: 14),
+                  Text(
+                    labels.premiumPackHalfPrice,
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      color: colors.primary,
+                    ),
+                  ),
+                  Text(
+                    labels.premiumPackPriceBasis,
+                    style: theme.textTheme.bodySmall,
+                  ),
+                  const SizedBox(height: 16),
+                  FilledButton.icon(
+                    icon: const Icon(Icons.workspace_premium_outlined),
+                    onPressed: () => onChoose('premium'),
+                    label: Text(labels.premiumComparisonPremium),
+                  ),
+                  OutlinedButton.icon(
+                    icon: const Icon(Icons.diamond_outlined),
+                    onPressed: () => onChoose('rewards'),
+                    label: Text(labels.rewardNavigationExchange),
+                  ),
+                  TextButton(
+                    onPressed: () =>
+                        onChoose(continueLabel == null ? 'close' : 'continue'),
+                    child: Text(continueLabel ?? labels.commonClose),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

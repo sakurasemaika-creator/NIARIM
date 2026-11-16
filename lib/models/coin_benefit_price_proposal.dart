@@ -2,21 +2,22 @@ import 'coin_unlock_quote.dart';
 
 /// Versioned Opal exchange prices for display and server quote checks.
 abstract final class CoinBenefitPriceCatalog {
-  static const version = 'v7-complete-pack-anchor-20261116';
+  static const version = 'v8-complete-pack-half-20261116';
 
-  // Individual rates follow the existing weights with a monthly comparison total of 68,750 Opals.
-  static const _monthlyCoins = <CoinUnlockTarget, int>{
-    CoinUnlockTarget.endCardEdit: 5_390,
-    CoinUnlockTarget.watermark: 8_090,
-    CoinUnlockTarget.toneCurve: 8_090,
-    CoinUnlockTarget.levelAdjustment: 6_740,
-    CoinUnlockTarget.unlimitedDuration: 11_240,
-    CoinUnlockTarget.customAutomation: 11_240,
-    CoinUnlockTarget.projectListAds: 5_390,
-    CoinUnlockTarget.canvasAds: 8_990,
-    CoinUnlockTarget.timelineAds: 7_190,
-    CoinUnlockTarget.processingAds: 4_490,
-    CoinUnlockTarget.allAds: 17_960,
+  // Exchange prices in hour, day, week, and month order.
+  static const _unitPrices = <CoinUnlockTarget, (int, int, int, int)>{
+    CoinUnlockTarget.endCardEdit: (1_440, 2_880, 6_470, 8_620),
+    CoinUnlockTarget.watermark: (2_160, 4_320, 9_710, 12_940),
+    CoinUnlockTarget.toneCurve: (2_160, 4_320, 9_710, 12_940),
+    CoinUnlockTarget.levelAdjustment: (1_800, 3_600, 8_090, 10_780),
+    CoinUnlockTarget.unlimitedDuration: (3_000, 6_000, 13_490, 17_980),
+    CoinUnlockTarget.customAutomation: (3_000, 6_000, 13_490, 17_980),
+    CoinUnlockTarget.projectListAds: (1_440, 2_880, 6_470, 8_620),
+    CoinUnlockTarget.canvasAds: (2_400, 4_800, 10_790, 14_380),
+    CoinUnlockTarget.timelineAds: (1_920, 3_840, 8_630, 11_500),
+    CoinUnlockTarget.processingAds: (1_200, 2_400, 5_390, 7_180),
+    CoinUnlockTarget.allAds: (4_820, 9_580, 21_560, 28_760),
+    CoinUnlockTarget.fullPremium: (9_190, 18_350, 41_260, 55_000),
   };
 
   static const _productionTargets = <CoinUnlockTarget>[
@@ -46,32 +47,15 @@ abstract final class CoinBenefitPriceCatalog {
     const CoinUnlockDuration(12, CoinDurationUnit.month),
   );
 
-  static int _individualUnitCoins(
-    CoinUnlockTarget target,
-    CoinDurationUnit unit,
-  ) {
-    final month = _monthlyCoins[target];
-    if (month == null) throw StateError('No reference price for $target');
-    // Round each short-period tariff up to 10 Opals.
-    return switch (unit) {
-      CoinDurationUnit.hour => ((month + 59) ~/ 60) * 10,
-      CoinDurationUnit.day => ((month + 29) ~/ 30) * 10,
-      CoinDurationUnit.week => ((month * 3 + 39) ~/ 40) * 10,
-      CoinDurationUnit.month => month,
-    };
-  }
-
   static int unitCoins(CoinUnlockTarget target, CoinDurationUnit unit) {
-    if (target != CoinUnlockTarget.fullPremium) {
-      return _individualUnitCoins(target, unit);
-    }
-    if (unit == CoinDurationUnit.month) return 55_000;
-    final total = _comparisonTargets.fold<int>(
-      0,
-      (sum, target) => sum + _individualUnitCoins(target, unit),
-    );
-    // Round down to a whole ten so the pack saves at least 20%.
-    return ((total * 4) ~/ 50) * 10;
+    final price = _unitPrices[target];
+    if (price == null) throw StateError('No reference price for $target');
+    return switch (unit) {
+      CoinDurationUnit.hour => price.$1,
+      CoinDurationUnit.day => price.$2,
+      CoinDurationUnit.week => price.$3,
+      CoinDurationUnit.month => price.$4,
+    };
   }
 
   static int cost(CoinUnlockTarget target, CoinUnlockDuration duration) {

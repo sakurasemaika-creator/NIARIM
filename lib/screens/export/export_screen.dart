@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import '../../widgets/premium_lock_widget.dart';
 import '../../engine/export_engine.dart';
 import '../../l10n/app_localizations.dart';
 import '../../services/premium_service.dart';
@@ -93,11 +94,17 @@ class _ExportScreenState extends State<ExportScreen> {
     final project = projects.projects
         .where((p) => p.id == widget.projectId)
         .firstOrNull;
-    final frameCount = projects
-        .scenesOf(widget.projectId)
-        .fold(0, (sum, scene) => sum + scene.frames.length);
-    final seconds = frameCount / _fps;
-    final wholeSeconds = seconds.floor();
+    final scenes = projects.scenesOf(widget.projectId);
+    final sourceFps = project?.fps ?? _fps;
+    final needsLongExport =
+        ExportTiming.sourceFrames(scenes) > 90 * sourceFps &&
+        !premium.isFeatureAvailable(PremiumFeature.unlimitedDuration);
+    final timing = ExportTiming(
+      sourceFps: sourceFps,
+      outputFps: _fps,
+      maxSeconds: needsLongExport ? 90 : null,
+    );
+    final wholeSeconds = timing.outputFrames(scenes) ~/ _fps;
     final time = MaterialLocalizations.of(context);
     final duration = [
       if (wholeSeconds >= 3600) time.formatDecimal(wholeSeconds ~/ 3600),
@@ -271,9 +278,8 @@ class _ExportScreenState extends State<ExportScreen> {
                   ? l10n.exportOutputWithEndCard(duration)
                   : l10n.exportOutputWithoutEndCard(duration),
             ),
-            if (seconds > 90 &&
-                !premium.isFeatureAvailable(PremiumFeature.unlimitedDuration))
-              Text(l10n.exportLongProjectNote),
+            Text(l10n.exportKeepsPlaybackTime),
+            if (needsLongExport) Text(l10n.exportLongProjectNote),
             if (premium.isCheckingBenefits)
               Text(l10n.exportBenefitsChecking)
             else if (verificationUnavailable) ...[
@@ -324,6 +330,29 @@ class _ExportScreenState extends State<ExportScreen> {
       if (proceed != true || premiumService.isCheckingBenefits) return;
     }
 
+    final project = projectService.projects
+        .where((p) => p.id == widget.projectId)
+        .firstOrNull;
+    if (project == null) {
+      setState(() => _error = l10n.exportProjectNotFoundError);
+      return;
+    }
+    final scenes = projectService.scenesOf(widget.projectId);
+    final needsLongExport =
+        ExportTiming.sourceFrames(scenes) > 90 * project.fps &&
+        !premiumService.isFeatureAvailable(PremiumFeature.unlimitedDuration);
+    if (needsLongExport) {
+      setState(() => _startingExport = true);
+      final proceed = await showPremiumBanner(
+        context,
+        reason: l10n.exportLongProjectNote,
+        continueLabel: l10n.exportFirst90Seconds,
+      );
+      if (!mounted) return;
+      setState(() => _startingExport = false);
+      if (!proceed) return;
+    }
+    final maxSeconds = needsLongExport ? 90 : null;
     final format = _format;
     final fps = _fps;
     final defaultHidden =
@@ -339,16 +368,14 @@ class _ExportScreenState extends State<ExportScreen> {
     _showProgressDialog();
 
     try {
-      final project = projectService.projects
-          .where((p) => p.id == widget.projectId)
-          .firstOrNull;
-      if (project == null) throw Exception(l10n.exportProjectNotFoundError);
-
-      final scenes = projectService.scenesOf(widget.projectId);
       final tileManager = projectService.tileManagerOf(widget.projectId);
       final engine = ExportEngine();
 
-      final totalFrames = scenes.fold(0, (sum, s) => sum + s.frames.length);
+      final totalFrames = ExportTiming(
+        sourceFps: project.fps,
+        outputFps: fps,
+        maxSeconds: maxSeconds,
+      ).outputFrames(scenes);
 
       void onProgress(int current, int total) {
         if (!mounted) return;
@@ -370,6 +397,8 @@ class _ExportScreenState extends State<ExportScreen> {
             scenes: scenes,
             tileManager: tileManager,
             fps: fps,
+            sourceFps: project.fps,
+            maxSeconds: maxSeconds,
             drawingWidth: project.drawingWidth,
             drawingHeight: project.drawingHeight,
             width: project.exportWidth,
@@ -384,6 +413,8 @@ class _ExportScreenState extends State<ExportScreen> {
             scenes: scenes,
             tileManager: tileManager,
             fps: fps,
+            sourceFps: project.fps,
+            maxSeconds: maxSeconds,
             drawingWidth: project.drawingWidth,
             drawingHeight: project.drawingHeight,
             width: project.exportWidth,
@@ -397,6 +428,8 @@ class _ExportScreenState extends State<ExportScreen> {
             scenes: scenes,
             tileManager: tileManager,
             fps: fps,
+            sourceFps: project.fps,
+            maxSeconds: maxSeconds,
             drawingWidth: project.drawingWidth,
             drawingHeight: project.drawingHeight,
             width: project.exportWidth,
@@ -411,6 +444,8 @@ class _ExportScreenState extends State<ExportScreen> {
             scenes: scenes,
             tileManager: tileManager,
             fps: fps,
+            sourceFps: project.fps,
+            maxSeconds: maxSeconds,
             drawingWidth: project.drawingWidth,
             drawingHeight: project.drawingHeight,
             width: project.exportWidth,

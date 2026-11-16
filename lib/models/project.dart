@@ -95,7 +95,7 @@ class Project {
     DateTime? createdAt,
     DateTime? updatedAt,
     int? totalWorkSeconds,
-    bool? hideEndCard,
+    Object? hideEndCard = _projectSentinel,
     Object? folderId = _projectSentinel,
     Object? sharedFolderId = _projectSentinel,
     bool? isSharedImport,
@@ -122,7 +122,9 @@ class Project {
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       totalWorkSeconds: totalWorkSeconds ?? this.totalWorkSeconds,
-      hideEndCard: hideEndCard ?? this.hideEndCard,
+      hideEndCard: identical(hideEndCard, _projectSentinel)
+          ? this.hideEndCard
+          : hideEndCard as bool?,
       folderId: folderId == _projectSentinel
           ? this.folderId
           : folderId as String?,

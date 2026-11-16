@@ -791,6 +791,33 @@ class _TimelineScreenState extends State<TimelineScreen> {
     }
   }
 
+  void _applyHistory({required bool redo}) {
+    final history = context.read<UndoManager>();
+    if (redo ? !history.canRedo : !history.canUndo) return;
+    if (redo) {
+      history.redo();
+    } else {
+      history.undo();
+    }
+    final projects = context.read<ProjectService>();
+    final scenes = projects.scenesOf(widget.projectId);
+    final scene =
+        scenes.where((item) => item.id == _selectedSceneId).firstOrNull ??
+        scenes.firstOrNull;
+    if (scene == null) return;
+    setState(() {
+      _selectedSceneId = scene.id;
+      _currentFrame = _currentFrame.clamp(
+        0,
+        math.max(0, scene.frames.length - 1),
+      );
+      _clipsLoadedForSceneId = null;
+      _selectedFrameIndices.removeWhere(
+        (index) => index >= scene.frames.length,
+      );
+    });
+  }
+
   /// 設定画面「ショートカット設定」の割り当て一覧から、タイムライン
   /// モードで有効なキー割り当てのマップを組み立てる。ツール選択の
   /// 割り当てはキャンバスモード専用の概念のためここでは無視する。
@@ -803,9 +830,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
       if (b.isToolAction) continue;
       switch (b.command) {
         case ShortcutCommand.undo:
-          result[b.activator] = () => context.read<UndoManager>().undo();
+          result[b.activator] = () => _applyHistory(redo: false);
         case ShortcutCommand.redo:
-          result[b.activator] = () => context.read<UndoManager>().redo();
+          result[b.activator] = () => _applyHistory(redo: true);
         case ShortcutCommand.playPause:
           result[b.activator] = _togglePlay;
         case ShortcutCommand.previousFrame:
@@ -1452,12 +1479,16 @@ class _TimelineScreenState extends State<TimelineScreen> {
           IconButton(
             icon: const Icon(Icons.undo),
             tooltip: l10n.commonUndo,
-            onPressed: undoManager.canUndo ? undoManager.undo : null,
+            onPressed: undoManager.canUndo
+                ? () => _applyHistory(redo: false)
+                : null,
           ),
           IconButton(
             icon: const Icon(Icons.redo),
             tooltip: l10n.commonRedo,
-            onPressed: undoManager.canRedo ? undoManager.redo : null,
+            onPressed: undoManager.canRedo
+                ? () => _applyHistory(redo: true)
+                : null,
           ),
           // 三点メニュー（保存ボタン・プロジェクト保存ボタンはセーブツリー
           // （設定によってはセーブスロット）と役割が被っていた
@@ -2868,13 +2899,15 @@ class _TimelineScreenState extends State<TimelineScreen> {
     final targets = scenes
         .where((s) => _selectedSceneIds.contains(s.id))
         .toList();
-    for (final scene in targets) {
-      ps.duplicateScene(
-        widget.projectId,
-        scene.id,
-        name: l10n.layerPanelCopySuffix(scene.displayName),
-      );
-    }
+    ps.editTimeline(widget.projectId, 'Duplicate scenes', () {
+      for (final scene in targets) {
+        ps.duplicateScene(
+          widget.projectId,
+          scene.id,
+          name: l10n.layerPanelCopySuffix(scene.displayName),
+        );
+      }
+    });
     setState(() {
       _selectedSceneIds.clear();
       _isSceneMultiSelect = false;
@@ -2962,21 +2995,23 @@ class _TimelineScreenState extends State<TimelineScreen> {
     }
     final originalOrderIds = scenesBefore.map((s) => s.id).toList();
     final insertPos = _moveCursorPos.clamp(0, originalOrderIds.length);
-    final newIds = <String>[];
-    for (final scene in sourceScenes) {
-      final duplicated = ps.duplicateScene(
-        widget.projectId,
-        scene.id,
-        name: l10n.layerPanelCopySuffix(scene.displayName),
-      );
-      if (duplicated != null) newIds.add(duplicated.id);
-    }
-    final finalOrder = List<String>.from(originalOrderIds)
-      ..insertAll(insertPos, newIds);
-    ps.reorderScenesByIds(widget.projectId, finalOrder);
-    if (clip.isCut) {
-      ps.removeScenes(widget.projectId, clip.ids);
-    }
+    ps.editTimeline(widget.projectId, 'Paste scenes', () {
+      final newIds = <String>[];
+      for (final scene in sourceScenes) {
+        final duplicated = ps.duplicateScene(
+          widget.projectId,
+          scene.id,
+          name: l10n.layerPanelCopySuffix(scene.displayName),
+        );
+        if (duplicated != null) newIds.add(duplicated.id);
+      }
+      final finalOrder = List<String>.from(originalOrderIds)
+        ..insertAll(insertPos, newIds);
+      ps.reorderScenesByIds(widget.projectId, finalOrder);
+      if (clip.isCut) {
+        ps.removeScenes(widget.projectId, clip.ids);
+      }
+    });
     setState(() {
       _isScenePasteMode = false;
       _sceneClipboard = null;
@@ -3879,9 +3914,11 @@ class _TimelineScreenState extends State<TimelineScreen> {
     if (!_canAddFrames(_selectedFrameIndices.length)) return;
     final ps = context.read<ProjectService>();
     final sorted = _selectedFrameIndices.toList()..sort();
-    for (final idx in sorted.reversed) {
-      ps.duplicateFrame(widget.projectId, sceneId, idx);
-    }
+    ps.editTimeline(widget.projectId, 'Duplicate frames', () {
+      for (final idx in sorted.reversed) {
+        ps.duplicateFrame(widget.projectId, sceneId, idx);
+      }
+    });
     setState(() {
       _selectedFrameIndices.clear();
       _isFrameMultiSelect = false;
@@ -3896,9 +3933,11 @@ class _TimelineScreenState extends State<TimelineScreen> {
     if (sceneId == null) return;
     final ps = context.read<ProjectService>();
     final sorted = _selectedFrameIndices.toList()..sort();
-    for (final idx in sorted.reversed) {
-      ps.removeFrame(widget.projectId, sceneId, idx);
-    }
+    ps.editTimeline(widget.projectId, 'Delete frames', () {
+      for (final idx in sorted.reversed) {
+        ps.removeFrame(widget.projectId, sceneId, idx);
+      }
+    });
     setState(() {
       _selectedFrameIndices.clear();
       _isFrameMultiSelect = false;
@@ -3980,40 +4019,47 @@ class _TimelineScreenState extends State<TimelineScreen> {
     if (!movingFrames && !_canAddFrames(sortedSourceIndices.length)) return;
     final ps = context.read<ProjectService>();
     final insertAt = _frameMoveCursorPos.clamp(0, _totalFrames);
-    var insertedSoFar = 0;
-    for (final originalIdx in sortedSourceIndices) {
-      final sameScene = clip.sceneId == targetSceneId;
-      final effectiveSrcIdx = (sameScene && originalIdx >= insertAt)
-          ? originalIdx + insertedSoFar
-          : originalIdx;
-      ps.insertDuplicatedFrame(
-        projectId: widget.projectId,
-        sourceSceneId: clip.sceneId,
-        sourceFrameIndex: effectiveSrcIdx,
-        targetSceneId: targetSceneId,
-        insertAt: insertAt + insertedSoFar,
-      );
-      insertedSoFar++;
-    }
-    if (clip.isCut) {
-      // 貼り付けによって挿入された分だけ、切り取り元より後ろにあった
-      // 元フレームのインデックスが後ろへずれているため、削除前に
-      // 実際の位置へ補正し、降順に削除する。
-      final sameScene = clip.sceneId == targetSceneId;
-      final m = sortedSourceIndices.length;
-      final currentPositions =
-          sortedSourceIndices
-              .map(
-                (originalIdx) => (sameScene && originalIdx >= insertAt)
-                    ? originalIdx + m
-                    : originalIdx,
-              )
-              .toList()
-            ..sort();
-      for (final idx in currentPositions.reversed) {
-        ps.removeFrame(widget.projectId, clip.sceneId, idx, recordUndo: false);
+    ps.editTimeline(widget.projectId, 'Paste frames', () {
+      var insertedSoFar = 0;
+      for (final originalIdx in sortedSourceIndices) {
+        final sameScene = clip.sceneId == targetSceneId;
+        final effectiveSrcIdx = (sameScene && originalIdx >= insertAt)
+            ? originalIdx + insertedSoFar
+            : originalIdx;
+        ps.insertDuplicatedFrame(
+          projectId: widget.projectId,
+          sourceSceneId: clip.sceneId,
+          sourceFrameIndex: effectiveSrcIdx,
+          targetSceneId: targetSceneId,
+          insertAt: insertAt + insertedSoFar,
+        );
+        insertedSoFar++;
       }
-    }
+      if (clip.isCut) {
+        // 貼り付けによって挿入された分だけ、切り取り元より後ろにあった
+        // 元フレームのインデックスが後ろへずれているため、削除前に
+        // 実際の位置へ補正し、降順に削除する。
+        final sameScene = clip.sceneId == targetSceneId;
+        final m = sortedSourceIndices.length;
+        final currentPositions =
+            sortedSourceIndices
+                .map(
+                  (originalIdx) => (sameScene && originalIdx >= insertAt)
+                      ? originalIdx + m
+                      : originalIdx,
+                )
+                .toList()
+              ..sort();
+        for (final idx in currentPositions.reversed) {
+          ps.removeFrame(
+            widget.projectId,
+            clip.sceneId,
+            idx,
+            recordUndo: false,
+          );
+        }
+      }
+    });
     setState(() {
       _isFramePasteMode = false;
       _frameClipboard = null;
@@ -6931,7 +6977,14 @@ class _TimelineScreenState extends State<TimelineScreen> {
       }
     }
 
-    if (!mounted) return;
+    if (!mounted ||
+        _selectedSceneId != sceneId ||
+        !identical(projectService.sceneOf(widget.projectId, sceneId), scene)) {
+      if (mounted && _clipsLoadedForSceneId == sceneId) {
+        setState(() => _clipsLoadedForSceneId = null);
+      }
+      return;
+    }
     setState(() {
       _audioClips
         ..clear()

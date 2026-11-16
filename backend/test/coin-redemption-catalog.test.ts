@@ -12,7 +12,7 @@ describe("authenticated catalog preview contract", () => {
         catalogPriceCoins:price,
         enabled:false,priceCoins:null,
         reason:"REDEMPTION_NOT_IMPLEMENTED",
-        priceVersion:"v7-complete-pack-anchor-20261116",
+        priceVersion:"v8-complete-pack-half-20261116",
       });
     }
   });
@@ -20,7 +20,7 @@ describe("authenticated catalog preview contract", () => {
     const quote = catalogRedemptionQuote({
       target:"toneCurve",duration:"week",quantity:"3",
     });
-    expect(quote.catalogPriceCoins).toBe(18210);
+    expect(quote.catalogPriceCoins).toBe(29130);
     expect(quote.enabled).toBe(false);
     expect(quote.priceCoins).toBeNull();
   });
@@ -51,7 +51,7 @@ describe("multiple benefit comparisons are server-authoritative and non-spendabl
       targets:"toneCurve,levelAdjustment",duration:"week",
     });
     expect(result).toMatchObject({
-      enabled:false,priceCoins:null,catalogPriceCoins:11130,
+      enabled:false,priceCoins:null,catalogPriceCoins:17800,
       duration:"week",quantity:1,
     });
     expect(result.items).toHaveLength(2);

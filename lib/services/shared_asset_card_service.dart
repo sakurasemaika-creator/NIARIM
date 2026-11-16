@@ -916,10 +916,16 @@ class SharedAssetCardService {
           final sample = TextPainter(
             text: TextSpan(
               text: details.isEmpty ? name : details,
-              style: const TextStyle(color: Color(0xff343c55), fontSize: 38),
+              style: const TextStyle(
+                color: Color(0xff343c55),
+                fontSize: 38,
+                fontFamily: 'NotoSerifJP',
+                fontFamilyFallback: kBodyFontFallback,
+              ),
             ),
             textDirection: TextDirection.ltr,
             textAlign: TextAlign.center,
+            locale: _CardText._localeOf(l10n),
             maxLines: 4,
             ellipsis: '…',
           )..layout(minWidth: 860, maxWidth: 860);

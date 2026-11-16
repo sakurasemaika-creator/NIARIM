@@ -1107,7 +1107,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get premiumDurationExportNote =>
-      'Create or extend projects up to 90 seconds. You can export the full length of projects you have already made.';
+      'Exporting all of a project longer than 90 seconds requires Premium or the extended duration benefit. You can export the first 90 seconds.';
 
   @override
   String get premiumFeatureMaxDuration => 'Max Duration';
@@ -1541,7 +1541,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpVideoExportDesc =>
-      'Export in MP4, WebM, GIF, or AVI. The free plan lets you extend a project up to 90 seconds. Existing long projects can be exported in full. Check the main video duration and end mark before exporting.';
+      'Export in MP4, WebM, GIF, or AVI. Exporting all of a project longer than 90 seconds requires Premium or the extended duration benefit. You can export the first 90 seconds. Changing the export FPS preserves the original play time. Check the main video duration and end mark before exporting.';
 
   @override
   String get helpTransparentWebmTitle => 'Transparent WebM';
@@ -1565,14 +1565,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpPremiumEntryDesc =>
-      'The longer-duration benefit lets you extend a project up to two hours. Existing long projects and applied color corrections can still be exported after expiry. The end mark depends on the benefit active when export starts.';
+      'The extended duration benefit lets you create and export up to two hours. After it expires, your project remains available. You can export its first 90 seconds with applied corrections. The end mark depends on the benefit active when export starts.';
 
   @override
   String get helpPremiumExpiryTitle => 'When benefits expire';
 
   @override
   String get helpPremiumExpiryDesc =>
-      'You can still export all frames of an existing long project, including projects over 90 seconds. Adding or duplicating frames is limited to 90 seconds. While edit history is available, Undo and Redo can restore deleted frames. Once the end mark benefit expires, new MP4, WebM, and AVI exports include a five-second NIARIM logo at the end. GIFs and previously exported files are unaffected. The conditions at the start of an export apply until it finishes. Placed watermarks, applied color corrections, and the results of automations remain. Running a saved automation again requires an active benefit.';
+      'Exporting all of a project longer than 90 seconds requires Premium or the extended duration benefit. You can export the first 90 seconds. Adding or duplicating frames is limited to 90 seconds. While edit history is available, Undo and Redo can restore deleted frames. Once the end mark benefit expires, new MP4, WebM, and AVI exports include a five-second NIARIM logo at the end. GIFs and previously exported files are unaffected. The conditions at the start of an export apply until it finishes. Placed watermarks, applied color corrections, and the results of automations remain. Running a saved automation again requires an active benefit.';
 
   @override
   String get helpPerformanceSettingsTitle => 'Performance Settings';
@@ -2893,8 +2893,30 @@ class AppLocalizationsEn extends AppLocalizations {
   String get exportBenefitsChecking => 'Checking benefits…';
 
   @override
+  String get exportFirst90Seconds => 'Export first 90 seconds';
+
+  @override
+  String get premiumBannerHeadline => 'Create and export up to 2 hours';
+
+  @override
+  String get premiumBannerBenefits =>
+      'Create longer projects and use more tools to finish them. You can also unlock benefits with Opals.';
+
+  @override
+  String get premiumPackHalfPrice =>
+      'Complete Pack for half the individual total';
+
+  @override
+  String get premiumPackPriceBasis =>
+      'Compared with the listed individual prices for the same period. Individual redemption is coming later.';
+
+  @override
+  String get exportKeepsPlaybackTime =>
+      'Changing the export FPS preserves the original play time.';
+
+  @override
   String get exportLongProjectNote =>
-      'Existing long projects can be exported in full. On the free plan you can extend a project up to 90 seconds.';
+      'Exporting all of a project longer than 90 seconds requires Premium or the extended duration benefit. You can export the first 90 seconds.';
 
   @override
   String exportOutputWithoutEndCard(String duration) {

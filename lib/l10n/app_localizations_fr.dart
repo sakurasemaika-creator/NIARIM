@@ -1127,7 +1127,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get premiumDurationExportNote =>
-      'Créez ou prolongez vos projets jusqu’à 90 secondes. Vous pouvez exporter en entier les projets déjà créés.';
+      'L’export intégral d’un projet de plus de 90 secondes nécessite Premium ou l’avantage de durée étendue. Vous pouvez exporter les 90 premières secondes.';
 
   @override
   String get premiumFeatureMaxDuration => 'Durée max.';
@@ -1564,7 +1564,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get helpVideoExportDesc =>
-      'Exportez en MP4, WebM, GIF ou AVI. La version gratuite permet de prolonger un projet jusqu’à 90 secondes. Les longs projets existants restent exportables en entier. Vérifiez la durée et le logo final avant l’export.';
+      'Exportez en MP4, WebM, GIF ou AVI. L’export intégral d’un projet de plus de 90 secondes nécessite Premium ou l’avantage de durée étendue. Vous pouvez exporter les 90 premières secondes. Changer la cadence d’export conserve la durée de lecture. Vérifiez la durée et le logo final avant l’export.';
 
   @override
   String get helpTransparentWebmTitle => 'WebM transparent';
@@ -1588,14 +1588,14 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get helpPremiumEntryDesc =>
-      'L’avantage de durée permet de prolonger un projet jusqu’à deux heures. Les projets longs et les corrections appliquées restent exportables après expiration. Le logo final dépend du droit actif au début de l’export.';
+      'L’avantage de durée permet de créer et d’exporter jusqu’à deux heures. À l’expiration, le projet est conservé et ses 90 premières secondes peuvent être exportées avec les corrections appliquées. Le logo final dépend du droit actif au début de l’export.';
 
   @override
   String get helpPremiumExpiryTitle => 'À l’expiration des avantages';
 
   @override
   String get helpPremiumExpiryDesc =>
-      'Vous pouvez toujours exporter toutes les images d’un projet existant, même au-delà de 90 secondes. La limite de 90 secondes s’applique à l’ajout ou à la duplication d’images. Tant que l’historique est disponible, Annuler et Rétablir permettent de récupérer des images supprimées. Après expiration de l’avantage du logo de fin, les nouvelles exportations MP4, WebM et AVI se terminent par cinq secondes de logo NIARIM. Les GIF et les fichiers déjà exportés sont préservés. Les conditions de départ s’appliquent jusqu’à la fin de l’exportation. Les filigranes posés, les corrections appliquées et les résultats des automatisations sont conservés. Un avantage actif est nécessaire pour relancer une automatisation enregistrée.';
+      'L’export intégral d’un projet de plus de 90 secondes nécessite Premium ou l’avantage de durée étendue. Vous pouvez exporter les 90 premières secondes. La limite de 90 secondes s’applique à l’ajout ou à la duplication d’images. Tant que l’historique est disponible, Annuler et Rétablir permettent de récupérer des images supprimées. Après expiration de l’avantage du logo de fin, les nouvelles exportations MP4, WebM et AVI se terminent par cinq secondes de logo NIARIM. Les GIF et les fichiers déjà exportés sont préservés. Les conditions de départ s’appliquent jusqu’à la fin de l’exportation. Les filigranes posés, les corrections appliquées et les résultats des automatisations sont conservés. Un avantage actif est nécessaire pour relancer une automatisation enregistrée.';
 
   @override
   String get helpPerformanceSettingsTitle => 'Réglages de performance';
@@ -2930,8 +2930,30 @@ class AppLocalizationsFr extends AppLocalizations {
   String get exportBenefitsChecking => 'Vérification des avantages…';
 
   @override
+  String get exportFirst90Seconds => 'Exporter les 90 premières secondes';
+
+  @override
+  String get premiumBannerHeadline => 'Créez et exportez jusqu’à 2 heures';
+
+  @override
+  String get premiumBannerBenefits =>
+      'Créez des projets plus longs et accédez à plus d’outils de finition. Les opales permettent aussi de débloquer ces avantages.';
+
+  @override
+  String get premiumPackHalfPrice =>
+      'Pack complet à la moitié du total à l’unité';
+
+  @override
+  String get premiumPackPriceBasis =>
+      'Comparaison avec les prix à l’unité pour la même durée. L’échange à l’unité sera disponible ultérieurement.';
+
+  @override
+  String get exportKeepsPlaybackTime =>
+      'Changer la cadence d’export conserve la durée de lecture.';
+
+  @override
   String get exportLongProjectNote =>
-      'Les projets longs existants peuvent être exportés en entier. La version gratuite permet de prolonger un projet jusqu’à 90 secondes.';
+      'L’export intégral d’un projet de plus de 90 secondes nécessite Premium ou l’avantage de durée étendue. Vous pouvez exporter les 90 premières secondes.';
 
   @override
   String exportOutputWithoutEndCard(String duration) {

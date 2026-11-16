@@ -1141,6 +1141,11 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
                 style: Theme.of(context).textTheme.titleMedium,
               ),
               const SizedBox(height: 8),
+              Text(
+                AppLocalizations.of(context)!.premiumPackHalfPrice,
+                style: Theme.of(context).textTheme.titleSmall,
+              ),
+              Text(AppLocalizations.of(context)!.premiumPackPriceBasis),
               _targetTile(context, t, CoinUnlockTarget.fullPremium),
               Divider(color: scheme.outlineVariant),
               for (final target in _standardTargets)

@@ -1075,7 +1075,8 @@ class AppLocalizationsJa extends AppLocalizations {
   String get premiumFeatureExport => '動画書き出し';
 
   @override
-  String get premiumDurationExportNote => '作成・延長は90秒まで。制作済みの長尺作品は全編を書き出せます。';
+  String get premiumDurationExportNote =>
+      '90秒を超える作品の全編書き出しにはプレミアムまたは最大尺の特典が必要です。先頭の90秒を書き出すこともできます。';
 
   @override
   String get premiumFeatureMaxDuration => '作成・延長できる尺';
@@ -1504,7 +1505,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get helpVideoExportDesc =>
-      'MP4・WebM・GIF・AVIで書き出せます。無料版で尺を伸ばせるのは90秒までです。制作済みの長尺作品は全編を書き出せます。書き出す前に本編の長さとエンドマークの有無を確認できます。';
+      'MP4・WebM・GIF・AVIで書き出せます。無料版で尺を伸ばせるのは90秒までです。90秒を超える作品の全編書き出しにはプレミアムまたは最大尺の特典が必要です。先頭の90秒を書き出すこともできます。 書き出しFPSを変えても作品の再生時間を維持します。書き出す前に本編の長さとエンドマークの有無を確認できます。';
 
   @override
   String get helpTransparentWebmTitle => '透過WebM';
@@ -1528,14 +1529,14 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get helpPremiumEntryDesc =>
-      '最大尺の特典が有効な間は、最大2時間まで尺を伸ばせます。制作済みの長尺作品や適用済みの色補正は、期限後もそのまま書き出せます。エンドマークの表示は書き出し開始時に有効な特典で決まります。';
+      '最大尺の特典が有効な間は、最大2時間まで制作・書き出しできます。期限後でも作品は残り、色補正などを反映した先頭90秒を書き出せます。エンドマークは書き出し開始時の特典で決まります。';
 
   @override
   String get helpPremiumExpiryTitle => '特典の期限が切れたら';
 
   @override
   String get helpPremiumExpiryDesc =>
-      '制作済みの長尺作品は、90秒を超えていても全編を書き出せます。フレームの新規追加・複製は90秒までです。編集履歴が残っていれば、取り消し・やり直しで削除したフレームを復元できます。エンドマーク特典の期限後に新しく書き出すMP4・WebM・AVIには、末尾にNIARIMロゴが5秒付きます。GIFと書き出し済みのファイルには影響しません。書き出し開始時の条件が最後まで適用されます。配置済みのウォーターマーク、適用済みの色補正、自動操作の結果は残ります。保存した自動操作をもう一度実行するには、有効な特典が必要です。';
+      '90秒を超える作品を全編書き出すには、プレミアムまたは最大尺の特典が必要です。期限後でも先頭90秒を書き出せます。作品データは保存されたままです。 フレームの新規追加・複製は90秒までです。編集履歴が残っていれば、取り消し・やり直しで削除したフレームを復元できます。エンドマーク特典の期限後に新しく書き出すMP4・WebM・AVIには、末尾にNIARIMロゴが5秒付きます。GIFと書き出し済みのファイルには影響しません。書き出し開始時の条件が最後まで適用されます。配置済みのウォーターマーク、適用済みの色補正、自動操作の結果は残ります。保存した自動操作をもう一度実行するには、有効な特典が必要です。';
 
   @override
   String get helpPerformanceSettingsTitle => 'パフォーマンス設定';
@@ -2784,8 +2785,26 @@ class AppLocalizationsJa extends AppLocalizations {
   String get exportBenefitsChecking => '特典を確認中です。';
 
   @override
+  String get exportFirst90Seconds => '先頭90秒を書き出す';
+
+  @override
+  String get premiumBannerHeadline => '最大2時間の制作・全編書き出し';
+
+  @override
+  String get premiumBannerBenefits => '長尺作品をつくる、仕上げを調整する。必要な機能はオパールでも使えます。';
+
+  @override
+  String get premiumPackHalfPrice => 'コンプリートパックなら単品合計の半額';
+
+  @override
+  String get premiumPackPriceBasis => '同じ期間の単品設定価格との比較。単品交換は準備中です。';
+
+  @override
+  String get exportKeepsPlaybackTime => '書き出しFPSを変えても作品の再生時間を維持します。';
+
+  @override
   String get exportLongProjectNote =>
-      '制作済みの長尺作品は全編を書き出せます。無料版で尺を伸ばせるのは90秒までです。';
+      '90秒を超える作品の全編書き出しにはプレミアムまたは最大尺の特典が必要です。先頭の90秒を書き出すこともできます。';
 
   @override
   String exportOutputWithoutEndCard(String duration) {

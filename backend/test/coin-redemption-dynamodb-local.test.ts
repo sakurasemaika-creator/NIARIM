@@ -102,7 +102,7 @@ describe.skipIf(process.env.NIARIM_DYNAMODB_LOCAL_TESTS !== "1")(
         ],
       }));
       await waitUntilTableExists({ client, maxWaitTime: 30 }, { TableName: table });
-      for (const [id, coins] of [[owner, 10800], [other, 200000]] as const) {
+      for (const [id, coins] of [[owner, 19690], [other, 200000]] as const) {
         await localDdb.send(new PutCommand({
           TableName: table,
           Item: { ...Keys.user(id), itemType: "USER", membershipTier: "free" },
@@ -133,7 +133,7 @@ describe.skipIf(process.env.NIARIM_DYNAMODB_LOCAL_TESTS !== "1")(
         ...({ costCoins: 1, accountId: other } as Record<string, unknown>),
       });
       expect(JSON.parse(reply.body ?? "{}")).toMatchObject({
-        redeemed: true, duplicate: false, costCoins: 8910,
+        redeemed: true, duplicate: false, costCoins: 17800,
       });
       expect((await get(Keys.coinWallet(owner)))?.balanceCoins).toBe(1890);
       expect((await get(Keys.coinWallet(other)))?.balanceCoins).toBe(200000);
@@ -146,7 +146,7 @@ describe.skipIf(process.env.NIARIM_DYNAMODB_LOCAL_TESTS !== "1")(
       }
       const retry = await redeemIndividualCoins(owner, individualInput(requestId));
       expect(JSON.parse(retry.body ?? "{}")).toMatchObject({
-        redeemed: true, duplicate: true, costCoins: 8910,
+        redeemed: true, duplicate: true, costCoins: 17800,
       });
       expect((await get(Keys.coinWallet(owner)))?.balanceCoins).toBe(1890);
       const history = await localDdb.send(new QueryCommand({
@@ -158,7 +158,7 @@ describe.skipIf(process.env.NIARIM_DYNAMODB_LOCAL_TESTS !== "1")(
         ConsistentRead: true,
       }));
       expect(history.Count).toBe(1);
-      expect(history.Items?.[0]?.deltaCoins).toBe(-8910);
+      expect(history.Items?.[0]?.deltaCoins).toBe(-17800);
     }, 30_000);
 
     it("insufficient funds leaves no receipt, debit, or partial entitlement", async () => {

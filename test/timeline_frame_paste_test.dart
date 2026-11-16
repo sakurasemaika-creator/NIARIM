@@ -2,6 +2,10 @@ import 'helpers/project_storage.dart';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:niarim/engine/filter_engine.dart';
+import 'package:niarim/engine/undo_manager.dart';
+import 'package:niarim/models/camera_keyframe.dart';
+import 'package:niarim/models/effect_filter_instance.dart';
 import 'package:niarim/models/layer.dart';
 import 'package:niarim/services/project_service.dart';
 
@@ -53,6 +57,67 @@ void main() {
         ps.layersOf(projectId, sceneId, i).first.name,
     ];
   }
+
+  test(
+    'timeline frame, camera and filter edits share one ordered history',
+    () async {
+      final ps = ProjectService();
+      final history = UndoManager();
+      addTearDown(history.dispose);
+      addTearDown(ps.dispose);
+      await ps.init();
+      ps.setUndoManager(history);
+      final project = await ps.createProject(
+        name: 'Timeline history',
+        fps: 12,
+        durationSeconds: 1,
+        backgroundColor: 0xFFFFFFFF,
+      );
+      final id = project.id;
+      final scene = ps.scenesOf(id).first.id;
+      final count = ps.frameCount(id, scene);
+      const filter = EffectFilterInstance(
+        id: 'test-blur',
+        type: EffectFilterType.gaussianBlur,
+        startFrame: 0,
+        endFrame: 5,
+      );
+
+      ps.addFrame(id, scene);
+      ps.insertDuplicatedFrame(
+        projectId: id,
+        sourceSceneId: scene,
+        sourceFrameIndex: 0,
+        targetSceneId: scene,
+        insertAt: 1,
+      );
+      ps.addCameraKeyframe(
+        id,
+        scene,
+        const CameraKeyframe(frameIndex: 1, x: 30),
+      );
+      ps.addEffectFilter(id, scene, filter);
+      expect(history.undoCount, 4);
+      expect(ps.frameCount(id, scene), count + 2);
+
+      history.undo();
+      expect(ps.effectFiltersOf(id, scene), isEmpty);
+      history.undo();
+      expect(ps.cameraKeyframesOf(id, scene), isEmpty);
+      history.undo();
+      expect(ps.frameCount(id, scene), count + 1);
+      history.undo();
+      expect(ps.frameCount(id, scene), count);
+
+      for (var i = 0; i < 4; i++) {
+        history.redo();
+      }
+      expect(ps.frameCount(id, scene), count + 2);
+      expect(ps.cameraKeyframesOf(id, scene).single.x, 30);
+      expect(ps.effectFiltersOf(id, scene).single, filter);
+      await ps.saveProject(id);
+    },
+  );
 
   test('同一シーン内・複数フレーム貼り付けのインデックス補正が正しい', () async {
     final ps = ProjectService();

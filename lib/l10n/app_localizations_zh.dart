@@ -1065,7 +1065,8 @@ class AppLocalizationsZh extends AppLocalizations {
   String get premiumFeatureExport => '视频导出';
 
   @override
-  String get premiumDurationExportNote => '可以创建或延长至90秒。已制作的长作品可以完整导出。';
+  String get premiumDurationExportNote =>
+      '完整导出超过90秒的作品需要高级会员或时长延长权益。你也可以导出开头90秒。';
 
   @override
   String get premiumFeatureMaxDuration => '最大时长';
@@ -1492,7 +1493,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get helpVideoExportDesc =>
-      '支持导出 MP4、WebM、GIF 和 AVI。免费版可将作品延长到 90 秒。已制作的长作品仍可完整导出，导出前可查看时长和片尾标志。';
+      '支持导出 MP4、WebM、GIF 和 AVI。完整导出超过90秒的作品需要高级会员或时长延长权益。你也可以导出开头90秒。 更改导出帧率会保留原播放时长。 ';
 
   @override
   String get helpTransparentWebmTitle => '透明WebM';
@@ -1516,14 +1517,14 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get helpPremiumEntryDesc =>
-      '时长权益有效时可以将作品延长到 2 小时。到期后仍可导出已有的长作品及已应用的调色。片尾标志取决于开始导出时有效的权益。';
+      '时长延长权益有效时，最长可制作和导出2小时。到期后作品仍会保留，可导出保留调色的开头90秒。片尾标志取决于开始导出时有效的权益。';
 
   @override
   String get helpPremiumExpiryTitle => '权益到期后';
 
   @override
   String get helpPremiumExpiryDesc =>
-      '已有的长作品即使超过 90 秒，也可以导出全部帧。添加和复制帧时适用 90 秒上限。编辑记录仍在时，可以通过撤销与重做恢复已删除的帧。片尾标志权益到期后，新导出的 MP4、WebM 和 AVI 末尾会添加 5 秒 NIARIM 标志。GIF 和已导出的文件不受影响。导出开始时的条件适用到处理结束。已放置的水印、已应用的调色和自动操作结果都会保留。再次运行已保存的自动操作需要有效权益。';
+      '完整导出超过90秒的作品需要高级会员或时长延长权益。你也可以导出开头90秒。 添加和复制帧时适用 90 秒上限。编辑记录仍在时，可以通过撤销与重做恢复已删除的帧。片尾标志权益到期后，新导出的 MP4、WebM 和 AVI 末尾会添加 5 秒 NIARIM 标志。GIF 和已导出的文件不受影响。导出开始时的条件适用到处理结束。已放置的水印、已应用的调色和自动操作结果都会保留。再次运行已保存的自动操作需要有效权益。';
 
   @override
   String get helpPerformanceSettingsTitle => '性能设置';
@@ -2767,7 +2768,25 @@ class AppLocalizationsZh extends AppLocalizations {
   String get exportBenefitsChecking => '正在确认权益…';
 
   @override
-  String get exportLongProjectNote => '已制作的长作品可以完整导出。免费版可将作品延长到 90 秒。';
+  String get exportFirst90Seconds => '导出开头90秒';
+
+  @override
+  String get premiumBannerHeadline => '最长可制作和导出2小时';
+
+  @override
+  String get premiumBannerBenefits => '制作更长的作品，使用更多工具完成细节。也可以用欧泊解锁权益。';
+
+  @override
+  String get premiumPackHalfPrice => '全功能组合包是单项合计的一半';
+
+  @override
+  String get premiumPackPriceBasis => '与相同期限的单项标价相比。单项兑换暂未开放。';
+
+  @override
+  String get exportKeepsPlaybackTime => '更改导出帧率会保留原播放时长。';
+
+  @override
+  String get exportLongProjectNote => '完整导出超过90秒的作品需要高级会员或时长延长权益。你也可以导出开头90秒。';
 
   @override
   String exportOutputWithoutEndCard(String duration) {
@@ -11090,7 +11109,8 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get premiumFeatureExport => '影片匯出';
 
   @override
-  String get premiumDurationExportNote => '可以建立或延長至90秒。已製作的長作品可以完整匯出。';
+  String get premiumDurationExportNote =>
+      '完整匯出超過90秒的作品需要高級會員或延長片長權益。你也可以匯出開頭90秒。';
 
   @override
   String get premiumFeatureMaxDuration => '最長長度';
@@ -11517,7 +11537,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get helpVideoExportDesc =>
-      '支援匯出 MP4、WebM、GIF 和 AVI。免費版可將作品延長至 90 秒。已製作的長作品仍可完整匯出，匯出前可查看片長及片尾標誌。';
+      '支援匯出 MP4、WebM、GIF 和 AVI。完整匯出超過90秒的作品需要高級會員或延長片長權益。你也可以匯出開頭90秒。 變更匯出影格率會保留原播放時間。 ';
 
   @override
   String get helpTransparentWebmTitle => '透明WebM';
@@ -11541,14 +11561,14 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get helpPremiumEntryDesc =>
-      '片長權益有效時可將作品延長至 2 小時。到期後仍可匯出已有的長作品及已套用的調色。片尾標誌視開始匯出時有效的權益而定。';
+      '延長片長權益有效時，最長可製作和匯出2小時。到期後作品仍會保留，可匯出保留調色的開頭90秒。片尾標誌取決於開始匯出時有效的權益。';
 
   @override
   String get helpPremiumExpiryTitle => '權益到期後';
 
   @override
   String get helpPremiumExpiryDesc =>
-      '已有的長作品即使超過 90 秒，也可以匯出全部影格。新增和複製影格時適用 90 秒上限。編輯記錄仍在時，可以透過復原與重做還原已刪除的影格。片尾標誌權益到期後，新匯出的 MP4、WebM 和 AVI 末尾會加上 5 秒 NIARIM 標誌。GIF 和已匯出的檔案不受影響。匯出開始時的條件適用到處理結束。已放置的浮水印、已套用的調色和自動操作結果都會保留。再次執行已儲存的自動操作需要有效權益。';
+      '完整匯出超過90秒的作品需要高級會員或延長片長權益。你也可以匯出開頭90秒。 新增和複製影格時適用 90 秒上限。編輯記錄仍在時，可以透過復原與重做還原已刪除的影格。片尾標誌權益到期後，新匯出的 MP4、WebM 和 AVI 末尾會加上 5 秒 NIARIM 標誌。GIF 和已匯出的檔案不受影響。匯出開始時的條件適用到處理結束。已放置的浮水印、已套用的調色和自動操作結果都會保留。再次執行已儲存的自動操作需要有效權益。';
 
   @override
   String get helpPerformanceSettingsTitle => '效能設定';
@@ -12792,7 +12812,25 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get exportBenefitsChecking => '正在確認權益…';
 
   @override
-  String get exportLongProjectNote => '已製作的長作品可以完整匯出。免費版可將作品延長至 90 秒。';
+  String get exportFirst90Seconds => '匯出開頭90秒';
+
+  @override
+  String get premiumBannerHeadline => '最長可製作和匯出2小時';
+
+  @override
+  String get premiumBannerBenefits => '製作更長的作品，使用更多工具完成細節。也可以用歐泊解鎖權益。';
+
+  @override
+  String get premiumPackHalfPrice => '全功能組合包是單項合計的一半';
+
+  @override
+  String get premiumPackPriceBasis => '與相同期限的單項標價相比。單項兌換暫未開放。';
+
+  @override
+  String get exportKeepsPlaybackTime => '變更匯出影格率會保留原播放時間。';
+
+  @override
+  String get exportLongProjectNote => '完整匯出超過90秒的作品需要高級會員或延長片長權益。你也可以匯出開頭90秒。';
 
   @override
   String exportOutputWithoutEndCard(String duration) {

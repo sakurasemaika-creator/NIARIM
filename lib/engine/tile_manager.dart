@@ -178,7 +178,7 @@ class TileManager {
 
   // Copy-on-Write：copyLayerで参照共有されたタイルバッファの集合。
   // 実際に書き込みが発生するまで複製しない。
-  final Set<Uint8List> _sharedTiles = {};
+  Expando<bool> _sharedTiles = Expando<bool>();
 
   // Undo記録：1回の描画操作（ストローク・バケツ・投げ縄・変形等）で実際に
   // 触れたタイルのみを差分記録する（スパースタイル方式に合わせ、
@@ -232,7 +232,7 @@ class TileManager {
       layerMap[key] = fresh;
       return fresh;
     }
-    if (_sharedTiles.contains(existing)) {
+    if (_sharedTiles[existing] == true) {
       final materialized = Uint8List.fromList(existing);
       layerMap[key] = materialized;
       return materialized;
@@ -499,7 +499,7 @@ class TileManager {
     if (source == null) return;
     final target = <String, Uint8List>{};
     for (final e in source.entries) {
-      _sharedTiles.add(e.value);
+      _sharedTiles[e.value] = true;
       target[e.key] = e.value;
       _dirtyTiles.add('$targetLayerId:${e.key}');
     }
@@ -885,6 +885,33 @@ class TileManager {
     _invalidateCache(layerId);
   }
 
+  /// Records the layer maps for a structural edit without copying pixel bytes.
+  Map<String, Map<String, Uint8List>> structuralSnapshot() => {
+    for (final entry in _tiles.entries) entry.key: Map.of(entry.value),
+  };
+
+  void protectHistoryTiles(Map<String, Map<String, Uint8List>?> layers) {
+    for (final tiles in layers.values) {
+      if (tiles == null) continue;
+      for (final tile in tiles.values) {
+        _sharedTiles[tile] = true;
+      }
+    }
+  }
+
+  void restoreStructuralLayers(Map<String, Map<String, Uint8List>?> layers) {
+    for (final entry in layers.entries) {
+      removeLayer(entry.key);
+      final tiles = entry.value;
+      if (tiles == null) continue;
+      _tiles[entry.key] = Map.of(tiles);
+      for (final key in tiles.keys) {
+        _dirtyTiles.add('${entry.key}:$key');
+      }
+      _invalidateCache(entry.key);
+    }
+  }
+
   /// 全タイルデータをシリアライズ（保存用）
   Map<String, Map<String, Uint8List>> exportAll() => Map.unmodifiable(_tiles);
 
@@ -894,7 +921,7 @@ class TileManager {
     final changed = {..._tiles.keys, ...data.keys};
     _tiles.clear();
     _dirtyTiles.clear();
-    _sharedTiles.clear();
+    _sharedTiles = Expando<bool>();
     for (final layerEntry in data.entries) {
       _tiles[layerEntry.key] = {
         for (final tileEntry in layerEntry.value.entries)

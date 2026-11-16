@@ -95,8 +95,6 @@ class Scene {
 const Object _sentinel = Object();
 
 class Frame {
-  static final _historyIdentities = Expando<Object>();
-
   final int index;
   final List<Layer> layers;
 
@@ -105,16 +103,11 @@ class Frame {
 
   const Frame({required this.index, this.layers = const [], this.hold = 1});
 
-  /// Identity for an open editing session. Frame indices change when editing.
-  Object get historyIdentity => _historyIdentities[this] ??= Object();
-
   Frame copyWith({int? index, List<Layer>? layers, int? hold}) {
-    final copy = Frame(
+    return Frame(
       index: index ?? this.index,
       layers: layers ?? this.layers,
       hold: hold ?? this.hold,
     );
-    _historyIdentities[copy] = _historyIdentities[this];
-    return copy;
   }
 }

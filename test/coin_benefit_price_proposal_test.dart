@@ -4,7 +4,7 @@ import 'package:niarim/models/coin_unlock_quote.dart';
 
 void main() {
   test('final owner-approved price model never implies a live redemption', () {
-    expect(CoinBenefitPriceCatalog.version, 'v7-complete-pack-anchor-20261116');
+    expect(CoinBenefitPriceCatalog.version, 'v8-complete-pack-half-20261116');
     expect(
       CoinBenefitPriceCatalog.cost(
         CoinUnlockTarget.fullPremium,
@@ -50,7 +50,7 @@ void main() {
         CoinUnlockTarget.toneCurve,
         const CoinUnlockDuration(12, month),
       ),
-      80900,
+      129400,
     );
   });
 
@@ -67,21 +67,21 @@ void main() {
         CoinUnlockTarget.endCardEdit,
         CoinDurationUnit.hour,
       ),
-      900,
+      1440,
     );
     expect(
       CoinBenefitPriceCatalog.unitCoins(
         CoinUnlockTarget.endCardEdit,
         CoinDurationUnit.day,
       ),
-      1800,
+      2880,
     );
     expect(
       CoinBenefitPriceCatalog.unitCoins(
         CoinUnlockTarget.endCardEdit,
         CoinDurationUnit.week,
       ),
-      4050,
+      6470,
     );
     expect(
       CoinBenefitPriceCatalog.unitCoins(
@@ -94,17 +94,17 @@ void main() {
 
   test('all 48 final benefit rates match the approved launch tariff', () {
     const rates = <CoinUnlockTarget, List<int>>{
-      CoinUnlockTarget.endCardEdit: [900, 1800, 4050, 5390],
-      CoinUnlockTarget.watermark: [1350, 2700, 6070, 8090],
-      CoinUnlockTarget.toneCurve: [1350, 2700, 6070, 8090],
-      CoinUnlockTarget.levelAdjustment: [1130, 2250, 5060, 6740],
-      CoinUnlockTarget.unlimitedDuration: [1880, 3750, 8430, 11240],
-      CoinUnlockTarget.customAutomation: [1880, 3750, 8430, 11240],
-      CoinUnlockTarget.projectListAds: [900, 1800, 4050, 5390],
-      CoinUnlockTarget.canvasAds: [1500, 3000, 6750, 8990],
-      CoinUnlockTarget.timelineAds: [1200, 2400, 5400, 7190],
-      CoinUnlockTarget.processingAds: [750, 1500, 3370, 4490],
-      CoinUnlockTarget.allAds: [3000, 5990, 13470, 17960],
+      CoinUnlockTarget.endCardEdit: [1440, 2880, 6470, 8620],
+      CoinUnlockTarget.watermark: [2160, 4320, 9710, 12940],
+      CoinUnlockTarget.toneCurve: [2160, 4320, 9710, 12940],
+      CoinUnlockTarget.levelAdjustment: [1800, 3600, 8090, 10780],
+      CoinUnlockTarget.unlimitedDuration: [3000, 6000, 13490, 17980],
+      CoinUnlockTarget.customAutomation: [3000, 6000, 13490, 17980],
+      CoinUnlockTarget.projectListAds: [1440, 2880, 6470, 8620],
+      CoinUnlockTarget.canvasAds: [2400, 4800, 10790, 14380],
+      CoinUnlockTarget.timelineAds: [1920, 3840, 8630, 11500],
+      CoinUnlockTarget.processingAds: [1200, 2400, 5390, 7180],
+      CoinUnlockTarget.allAds: [4820, 9580, 21560, 28760],
       CoinUnlockTarget.fullPremium: [9190, 18350, 41260, 55000],
     };
     for (final row in rates.entries) {
@@ -142,13 +142,13 @@ void main() {
           (unit) =>
               CoinBenefitPriceCatalog.singleTotal(CoinUnlockDuration(1, unit)),
         ),
-        [11490, 22940, 51580, 68750],
+        [18380, 36700, 82520, 110000],
       );
       expect(
         CoinBenefitPriceCatalog.singleTotal(
           const CoinUnlockDuration(12, CoinDurationUnit.month),
         ),
-        687500,
+        1100000,
       );
     },
   );

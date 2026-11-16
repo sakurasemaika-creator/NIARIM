@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
@@ -54,6 +55,56 @@ class ExportedFileListing {
 
   final List<File> files;
   final Map<File, FileStat> stats;
+}
+
+/// Samples the existing timeline at the output frame rate. Frame indices used
+/// for effects and the camera always belong to the original scene.
+class ExportTiming {
+  const ExportTiming({
+    required this.sourceFps,
+    required this.outputFps,
+    this.maxSeconds,
+  });
+
+  final int sourceFps;
+  final int outputFps;
+  final int? maxSeconds;
+
+  static int sourceFrames(List<Scene> scenes) =>
+      scenes.fold(0, (total, scene) => total + scene.frames.length);
+
+  int outputFrames(List<Scene> scenes) {
+    final total = sourceFrames(scenes);
+    final limit = maxSeconds;
+    final capped = limit == null ? total : math.min(total, limit * sourceFps);
+    return capped == 0
+        ? 0
+        : math.max(1, (capped * outputFps / sourceFps).round());
+  }
+
+  Iterable<({Scene scene, Frame frame})> samples(List<Scene> scenes) sync* {
+    final count = outputFrames(scenes);
+    var outputIndex = 0;
+    var end = 0;
+    for (final scene in scenes) {
+      for (final frame in scene.frames) {
+        end++;
+        while (outputIndex < count &&
+            outputIndex * sourceFps < end * outputFps) {
+          yield (scene: scene, frame: frame);
+          outputIndex++;
+        }
+        if (outputIndex == count) return;
+      }
+    }
+  }
+
+  /// GIF stores delays in centiseconds. Round cumulative time so individual
+  /// frame quantization does not accumulate over the length of the project.
+  int gifDelayMs(int index) =>
+      ((index * 100 / outputFps).round() -
+          ((index - 1) * 100 / outputFps).round()) *
+      10;
 }
 
 class ExportEngine {
@@ -478,6 +529,8 @@ class ExportEngine {
     required List<Scene> scenes,
     required TileManager tileManager,
     required int fps,
+    int? sourceFps,
+    int? maxSeconds,
     required int drawingWidth,
     required int drawingHeight,
     required int width,
@@ -494,17 +547,27 @@ class ExportEngine {
     String? partialOutput;
     try {
       int globalIndex = 0;
-      int totalFrames = scenes.fold(0, (sum, s) => sum + s.frames.length);
+      final timing = ExportTiming(
+        sourceFps: sourceFps ?? fps,
+        outputFps: fps,
+        maxSeconds: maxSeconds,
+      );
+      final totalFrames = timing.outputFrames(scenes);
       // 共通・タイムライン素材・ウォーターマークレイヤーの表示範囲を反映するため、
       // 書き出しジョブ開始時に一度だけホーム位置インデックスを構築する。
       final layerHomes = buildLayerHomeIndex(scenes);
       final framePaths = <String>[];
 
-      for (final scene in scenes) {
-        for (final frame in scene.frames) {
-          if (cancelToken?.isCancelled == true) {
-            throw const ExportCancelledException();
-          }
+      Scene? lastScene;
+      Frame? lastFrame;
+      Uint8List? lastPng;
+      for (final (:scene, :frame) in timing.samples(scenes)) {
+        if (cancelToken?.isCancelled == true) {
+          throw const ExportCancelledException();
+        }
+        if (!identical(lastScene, scene) ||
+            !identical(lastFrame, frame) ||
+            lastPng == null) {
           final rgba = await renderFrame(
             layers: resolveFrameLayers(
               scenes,
@@ -527,7 +590,7 @@ class ExportEngine {
             layerHomes: layerHomes,
             groups: scene.groups,
           );
-          final pngBytes = img.encodePng(
+          lastPng = img.encodePng(
             img.Image.fromBytes(
               width: width,
               height: height,
@@ -535,14 +598,16 @@ class ExportEngine {
               numChannels: 4,
             ),
           );
-          final file = File(
-            '${framesDir.path}/frame_${globalIndex.toString().padLeft(6, '0')}.png',
-          );
-          await file.writeAsBytes(pngBytes);
-          framePaths.add(file.path);
-          onProgress?.call(globalIndex + 1, totalFrames);
-          globalIndex++;
+          lastScene = scene;
+          lastFrame = frame;
         }
+        final file = File(
+          '${framesDir.path}/frame_${globalIndex.toString().padLeft(6, '0')}.png',
+        );
+        await file.writeAsBytes(lastPng);
+        framePaths.add(file.path);
+        onProgress?.call(globalIndex + 1, totalFrames);
+        globalIndex++;
       }
 
       if (appendEndCard) {
@@ -583,6 +648,8 @@ class ExportEngine {
     required List<Scene> scenes,
     required TileManager tileManager,
     required int fps,
+    int? sourceFps,
+    int? maxSeconds,
     required int drawingWidth,
     required int drawingHeight,
     required int width,
@@ -593,52 +660,54 @@ class ExportEngine {
   }) async {
     // image v4: アニメーションGIFはimg.Imageにフレームを追加する
     img.Image? gifImage;
-    int totalFrames = scenes.fold(0, (sum, s) => sum + s.frames.length);
+    final timing = ExportTiming(
+      sourceFps: sourceFps ?? fps,
+      outputFps: fps,
+      maxSeconds: maxSeconds,
+    );
+    final totalFrames = timing.outputFrames(scenes);
     int index = 0;
-    final delayMs = (1000 / fps).round();
     final layerHomes = buildLayerHomeIndex(scenes);
 
-    for (final scene in scenes) {
-      for (final frame in scene.frames) {
-        if (cancelToken?.isCancelled == true) {
-          throw const ExportCancelledException();
-        }
-        final rgba = await renderFrame(
-          layers: resolveFrameLayers(
-            scenes,
-            layerHomes,
-            scene.id,
-            frame.index,
-            frame.layers,
-          ),
-          tileManager: tileManager,
-          sceneId: scene.id,
-          scene: scene,
-          frameIndex: frame.index,
-          drawingWidth: drawingWidth,
-          drawingHeight: drawingHeight,
-          width: width,
-          height: height,
-          backgroundColor: backgroundColor,
-          cameraKeyframes: scene.cameraKeyframes,
-          effectFilters: scene.effectFilters,
-          layerHomes: layerHomes,
-          groups: scene.groups,
-        );
-        final imgFrame = img.Image.fromBytes(
-          width: width,
-          height: height,
-          bytes: rgba.buffer,
-          numChannels: 4,
-        );
-        imgFrame.frameDuration = delayMs;
-        if (gifImage == null) {
-          gifImage = imgFrame;
-        } else {
-          gifImage.addFrame(imgFrame);
-        }
-        onProgress?.call(++index, totalFrames);
+    for (final (:scene, :frame) in timing.samples(scenes)) {
+      if (cancelToken?.isCancelled == true) {
+        throw const ExportCancelledException();
       }
+      final rgba = await renderFrame(
+        layers: resolveFrameLayers(
+          scenes,
+          layerHomes,
+          scene.id,
+          frame.index,
+          frame.layers,
+        ),
+        tileManager: tileManager,
+        sceneId: scene.id,
+        scene: scene,
+        frameIndex: frame.index,
+        drawingWidth: drawingWidth,
+        drawingHeight: drawingHeight,
+        width: width,
+        height: height,
+        backgroundColor: backgroundColor,
+        cameraKeyframes: scene.cameraKeyframes,
+        effectFilters: scene.effectFilters,
+        layerHomes: layerHomes,
+        groups: scene.groups,
+      );
+      final imgFrame = img.Image.fromBytes(
+        width: width,
+        height: height,
+        bytes: rgba.buffer,
+        numChannels: 4,
+      );
+      imgFrame.frameDuration = timing.gifDelayMs(index + 1);
+      if (gifImage == null) {
+        gifImage = imgFrame;
+      } else {
+        gifImage.addFrame(imgFrame);
+      }
+      onProgress?.call(++index, totalFrames);
     }
 
     final gifBytes = img.encodeGif(gifImage!);
@@ -677,6 +746,8 @@ class ExportEngine {
     required List<Scene> scenes,
     required TileManager tileManager,
     required int fps,
+    int? sourceFps,
+    int? maxSeconds,
     required int drawingWidth,
     required int drawingHeight,
     required int width,
@@ -693,14 +764,24 @@ class ExportEngine {
     String? partialOutput;
     try {
       int globalIndex = 0;
-      int totalFrames = scenes.fold(0, (sum, s) => sum + s.frames.length);
+      final timing = ExportTiming(
+        sourceFps: sourceFps ?? fps,
+        outputFps: fps,
+        maxSeconds: maxSeconds,
+      );
+      final totalFrames = timing.outputFrames(scenes);
       final layerHomes = buildLayerHomeIndex(scenes);
 
-      for (final scene in scenes) {
-        for (final frame in scene.frames) {
-          if (cancelToken?.isCancelled == true) {
-            throw const ExportCancelledException();
-          }
+      Scene? lastScene;
+      Frame? lastFrame;
+      Uint8List? lastPng;
+      for (final (:scene, :frame) in timing.samples(scenes)) {
+        if (cancelToken?.isCancelled == true) {
+          throw const ExportCancelledException();
+        }
+        if (!identical(lastScene, scene) ||
+            !identical(lastFrame, frame) ||
+            lastPng == null) {
           final rgba = await renderFrame(
             layers: resolveFrameLayers(
               scenes,
@@ -723,7 +804,7 @@ class ExportEngine {
             layerHomes: layerHomes,
             groups: scene.groups,
           );
-          final pngBytes = img.encodePng(
+          lastPng = img.encodePng(
             img.Image.fromBytes(
               width: width,
               height: height,
@@ -731,13 +812,15 @@ class ExportEngine {
               numChannels: 4,
             ),
           );
-          final file = File(
-            '${framesDir.path}/frame_${globalIndex.toString().padLeft(6, '0')}.png',
-          );
-          await file.writeAsBytes(pngBytes);
-          onProgress?.call(globalIndex + 1, totalFrames);
-          globalIndex++;
+          lastScene = scene;
+          lastFrame = frame;
         }
+        final file = File(
+          '${framesDir.path}/frame_${globalIndex.toString().padLeft(6, '0')}.png',
+        );
+        await file.writeAsBytes(lastPng);
+        onProgress?.call(globalIndex + 1, totalFrames);
+        globalIndex++;
       }
 
       if (appendEndCard) {
@@ -790,6 +873,8 @@ class ExportEngine {
     required List<Scene> scenes,
     required TileManager tileManager,
     required int fps,
+    int? sourceFps,
+    int? maxSeconds,
     required int drawingWidth,
     required int drawingHeight,
     required int width,
@@ -806,14 +891,24 @@ class ExportEngine {
     String? partialOutput;
     try {
       int globalIndex = 0;
-      int totalFrames = scenes.fold(0, (sum, s) => sum + s.frames.length);
+      final timing = ExportTiming(
+        sourceFps: sourceFps ?? fps,
+        outputFps: fps,
+        maxSeconds: maxSeconds,
+      );
+      final totalFrames = timing.outputFrames(scenes);
       final layerHomes = buildLayerHomeIndex(scenes);
 
-      for (final scene in scenes) {
-        for (final frame in scene.frames) {
-          if (cancelToken?.isCancelled == true) {
-            throw const ExportCancelledException();
-          }
+      Scene? lastScene;
+      Frame? lastFrame;
+      Uint8List? lastPng;
+      for (final (:scene, :frame) in timing.samples(scenes)) {
+        if (cancelToken?.isCancelled == true) {
+          throw const ExportCancelledException();
+        }
+        if (!identical(lastScene, scene) ||
+            !identical(lastFrame, frame) ||
+            lastPng == null) {
           final rgba = await renderFrame(
             layers: resolveFrameLayers(
               scenes,
@@ -836,7 +931,7 @@ class ExportEngine {
             layerHomes: layerHomes,
             groups: scene.groups,
           );
-          final pngBytes = img.encodePng(
+          lastPng = img.encodePng(
             img.Image.fromBytes(
               width: width,
               height: height,
@@ -844,13 +939,15 @@ class ExportEngine {
               numChannels: 4,
             ),
           );
-          final file = File(
-            '${framesDir.path}/frame_${globalIndex.toString().padLeft(6, '0')}.png',
-          );
-          await file.writeAsBytes(pngBytes);
-          onProgress?.call(globalIndex + 1, totalFrames);
-          globalIndex++;
+          lastScene = scene;
+          lastFrame = frame;
         }
+        final file = File(
+          '${framesDir.path}/frame_${globalIndex.toString().padLeft(6, '0')}.png',
+        );
+        await file.writeAsBytes(lastPng);
+        onProgress?.call(globalIndex + 1, totalFrames);
+        globalIndex++;
       }
 
       if (appendEndCard) {

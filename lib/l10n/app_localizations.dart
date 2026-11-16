@@ -2046,7 +2046,7 @@ abstract class AppLocalizations {
   /// No description provided for @premiumDurationExportNote.
   ///
   /// In ja, this message translates to:
-  /// **'作成・延長は90秒まで。制作済みの長尺作品は全編を書き出せます。'**
+  /// **'90秒を超える作品の全編書き出しにはプレミアムまたは最大尺の特典が必要です。先頭の90秒を書き出すこともできます。'**
   String get premiumDurationExportNote;
 
   /// No description provided for @premiumFeatureMaxDuration.
@@ -2832,7 +2832,7 @@ abstract class AppLocalizations {
   /// No description provided for @helpVideoExportDesc.
   ///
   /// In ja, this message translates to:
-  /// **'MP4・WebM・GIF・AVIで書き出せます。無料版で尺を伸ばせるのは90秒までです。制作済みの長尺作品は全編を書き出せます。書き出す前に本編の長さとエンドマークの有無を確認できます。'**
+  /// **'MP4・WebM・GIF・AVIで書き出せます。無料版で尺を伸ばせるのは90秒までです。90秒を超える作品の全編書き出しにはプレミアムまたは最大尺の特典が必要です。先頭の90秒を書き出すこともできます。 書き出しFPSを変えても作品の再生時間を維持します。書き出す前に本編の長さとエンドマークの有無を確認できます。'**
   String get helpVideoExportDesc;
 
   /// No description provided for @helpTransparentWebmTitle.
@@ -2874,7 +2874,7 @@ abstract class AppLocalizations {
   /// No description provided for @helpPremiumEntryDesc.
   ///
   /// In ja, this message translates to:
-  /// **'最大尺の特典が有効な間は、最大2時間まで尺を伸ばせます。制作済みの長尺作品や適用済みの色補正は、期限後もそのまま書き出せます。エンドマークの表示は書き出し開始時に有効な特典で決まります。'**
+  /// **'最大尺の特典が有効な間は、最大2時間まで制作・書き出しできます。期限後でも作品は残り、色補正などを反映した先頭90秒を書き出せます。エンドマークは書き出し開始時の特典で決まります。'**
   String get helpPremiumEntryDesc;
 
   /// No description provided for @helpPremiumExpiryTitle.
@@ -2886,7 +2886,7 @@ abstract class AppLocalizations {
   /// No description provided for @helpPremiumExpiryDesc.
   ///
   /// In ja, this message translates to:
-  /// **'制作済みの長尺作品は、90秒を超えていても全編を書き出せます。フレームの新規追加・複製は90秒までです。編集履歴が残っていれば、取り消し・やり直しで削除したフレームを復元できます。エンドマーク特典の期限後に新しく書き出すMP4・WebM・AVIには、末尾にNIARIMロゴが5秒付きます。GIFと書き出し済みのファイルには影響しません。書き出し開始時の条件が最後まで適用されます。配置済みのウォーターマーク、適用済みの色補正、自動操作の結果は残ります。保存した自動操作をもう一度実行するには、有効な特典が必要です。'**
+  /// **'90秒を超える作品を全編書き出すには、プレミアムまたは最大尺の特典が必要です。期限後でも先頭90秒を書き出せます。作品データは保存されたままです。 フレームの新規追加・複製は90秒までです。編集履歴が残っていれば、取り消し・やり直しで削除したフレームを復元できます。エンドマーク特典の期限後に新しく書き出すMP4・WebM・AVIには、末尾にNIARIMロゴが5秒付きます。GIFと書き出し済みのファイルには影響しません。書き出し開始時の条件が最後まで適用されます。配置済みのウォーターマーク、適用済みの色補正、自動操作の結果は残ります。保存した自動操作をもう一度実行するには、有効な特典が必要です。'**
   String get helpPremiumExpiryDesc;
 
   /// No description provided for @helpPerformanceSettingsTitle.
@@ -5133,10 +5133,46 @@ abstract class AppLocalizations {
   /// **'特典を確認中です。'**
   String get exportBenefitsChecking;
 
+  /// No description provided for @exportFirst90Seconds.
+  ///
+  /// In ja, this message translates to:
+  /// **'先頭90秒を書き出す'**
+  String get exportFirst90Seconds;
+
+  /// No description provided for @premiumBannerHeadline.
+  ///
+  /// In ja, this message translates to:
+  /// **'最大2時間の制作・全編書き出し'**
+  String get premiumBannerHeadline;
+
+  /// No description provided for @premiumBannerBenefits.
+  ///
+  /// In ja, this message translates to:
+  /// **'長尺作品をつくる、仕上げを調整する。必要な機能はオパールでも使えます。'**
+  String get premiumBannerBenefits;
+
+  /// No description provided for @premiumPackHalfPrice.
+  ///
+  /// In ja, this message translates to:
+  /// **'コンプリートパックなら単品合計の半額'**
+  String get premiumPackHalfPrice;
+
+  /// No description provided for @premiumPackPriceBasis.
+  ///
+  /// In ja, this message translates to:
+  /// **'同じ期間の単品設定価格との比較。単品交換は準備中です。'**
+  String get premiumPackPriceBasis;
+
+  /// No description provided for @exportKeepsPlaybackTime.
+  ///
+  /// In ja, this message translates to:
+  /// **'書き出しFPSを変えても作品の再生時間を維持します。'**
+  String get exportKeepsPlaybackTime;
+
   /// No description provided for @exportLongProjectNote.
   ///
   /// In ja, this message translates to:
-  /// **'制作済みの長尺作品は全編を書き出せます。無料版で尺を伸ばせるのは90秒までです。'**
+  /// **'90秒を超える作品の全編書き出しにはプレミアムまたは最大尺の特典が必要です。先頭の90秒を書き出すこともできます。'**
   String get exportLongProjectNote;
 
   /// No description provided for @exportOutputWithoutEndCard.

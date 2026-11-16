@@ -1,24 +1,26 @@
 /** Opal exchange prices anchored to the Japanese subscription list prices. */
-export const COIN_BENEFIT_PRICE_VERSION = "v7-complete-pack-anchor-20261116" as const;
+export const COIN_BENEFIT_PRICE_VERSION = "v8-complete-pack-half-20261116" as const;
 
-// Individual rates follow the existing weights with a monthly comparison total of 68,750 Opals.
-const monthlyCoins = {
-  endCardEdit: 5_390,
-  watermark: 8_090,
-  toneCurve: 8_090,
-  levelAdjustment: 6_740,
-  unlimitedDuration: 11_240,
-  customAutomation: 11_240,
-  projectListAds: 5_390,
-  canvasAds: 8_990,
-  timelineAds: 7_190,
-  processingAds: 4_490,
-  allAds: 17_960,
+// Exchange prices in hour, day, week, and month order.
+const unitPrices = {
+  endCardEdit: [1_440, 2_880, 6_470, 8_620],
+  watermark: [2_160, 4_320, 9_710, 12_940],
+  toneCurve: [2_160, 4_320, 9_710, 12_940],
+  levelAdjustment: [1_800, 3_600, 8_090, 10_780],
+  unlimitedDuration: [3_000, 6_000, 13_490, 17_980],
+  customAutomation: [3_000, 6_000, 13_490, 17_980],
+  projectListAds: [1_440, 2_880, 6_470, 8_620],
+  canvasAds: [2_400, 4_800, 10_790, 14_380],
+  timelineAds: [1_920, 3_840, 8_630, 11_500],
+  processingAds: [1_200, 2_400, 5_390, 7_180],
+  allAds: [4_820, 9_580, 21_560, 28_760],
+  fullPremium: [9_190, 18_350, 41_260, 55_000],
 } as const;
 
-type IndividualBenefit = keyof typeof monthlyCoins;
-export type BenefitPriceTarget = IndividualBenefit | "fullPremium";
+export type BenefitPriceTarget = keyof typeof unitPrices;
+type IndividualBenefit = Exclude<BenefitPriceTarget, "fullPremium">;
 export type BenefitDuration = "hour" | "day" | "week" | "month";
+const durationIndex = { hour: 0, day: 1, week: 2, month: 3 } as const;
 
 const adPlacements = [
   "projectListAds", "canvasAds", "timelineAds", "processingAds",
@@ -36,32 +38,16 @@ export const INDIVIDUAL_BENEFITS: readonly IndividualBenefit[] = [
   ...productionBenefits, ...adPlacements,
 ];
 
-function individualUnitCoins(
-  target: IndividualBenefit, duration: BenefitDuration,
-): number {
-  const month = monthlyCoins[target];
-  // Round each short-period tariff up to 10 Opals.
-  switch (duration) {
-    case "hour": return Math.ceil(month / 60) * 10;
-    case "day": return Math.ceil(month / 30) * 10;
-    case "week": return Math.ceil(month * 3 / 40) * 10;
-    case "month": return month;
-  }
-}
-
 export function comparableBenefitsUnitCoins(duration: BenefitDuration): number {
   return comparableBenefits.reduce(
-    (sum, target) => sum + individualUnitCoins(target, duration), 0,
+    (sum, target) => sum + finalBenefitCoins(target, duration), 0,
   );
 }
 
 export function finalBenefitCoins(
   target: BenefitPriceTarget, duration: BenefitDuration,
 ): number {
-  if (target !== "fullPremium") return individualUnitCoins(target, duration);
-  if (duration === "month") return 55_000;
-  // Round down to a whole ten so the pack saves at least 20% of the individual total.
-  return Math.floor(comparableBenefitsUnitCoins(duration) * 4 / 50) * 10;
+  return unitPrices[target][durationIndex[duration]];
 }
 
 export const FINAL_PREMIUM_MONTHLY_COINS = finalBenefitCoins("fullPremium", "month");

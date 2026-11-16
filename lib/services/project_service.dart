@@ -288,6 +288,85 @@ class ProjectService extends ChangeNotifier {
     _undoManager = undoManager;
   }
 
+  bool _recordingTimelineEdit = false;
+
+  /// A single editing command, including commands that call several model
+  /// operations. Selection and panel settings live outside the project model.
+  T editTimeline<T>(
+    String projectId,
+    String description,
+    T Function() edit, {
+    bool changesTiles = true,
+  }) {
+    final undo = _undoManager;
+    if (undo == null || _recordingTimelineEdit) return edit();
+    final manager = changesTiles ? _tileManagers[projectId] : null;
+    final beforeTiles = manager?.structuralSnapshot() ?? const {};
+    final before = _captureTimeline(projectId);
+    _recordingTimelineEdit = true;
+    try {
+      return edit();
+    } finally {
+      _recordingTimelineEdit = false;
+      final after = _captureTimeline(projectId);
+      final afterTiles =
+          (manager ?? (changesTiles ? _tileManagers[projectId] : null))
+              ?.structuralSnapshot() ??
+          const {};
+      if (projectId.isNotEmpty &&
+          (!listEquals(before.scenes, after.scenes) ||
+              before.endCard != after.endCard ||
+              before.background != after.background)) {
+        final oldLayers = <String, Map<String, Uint8List>?>{};
+        final newLayers = <String, Map<String, Uint8List>?>{};
+        for (final key in {...beforeTiles.keys, ...afterTiles.keys}) {
+          if (mapEquals(beforeTiles[key], afterTiles[key])) continue;
+          oldLayers[key] = beforeTiles[key];
+          newLayers[key] = afterTiles[key];
+        }
+        final tiles = _tileManagers[projectId];
+        tiles?.protectHistoryTiles(oldLayers);
+        tiles?.protectHistoryTiles(newLayers);
+        undo.push(
+          ProjectEditUndoAction(
+            description,
+            () => _restoreTimeline(projectId, before, oldLayers),
+            () => _restoreTimeline(projectId, after, newLayers),
+          ),
+        );
+      }
+    }
+  }
+
+  _TimelineEditState _captureTimeline(String projectId) {
+    final project = _projects.where((p) => p.id == projectId).firstOrNull;
+    return _TimelineEditState(
+      scenesOf(projectId),
+      Map.of(_layerHomes[projectId] ?? const {}),
+      project?.hideEndCard,
+      project?.backgroundColor,
+    );
+  }
+
+  void _restoreTimeline(
+    String projectId,
+    _TimelineEditState state,
+    Map<String, Map<String, Uint8List>?> tiles,
+  ) {
+    final index = _projects.indexWhere((p) => p.id == projectId);
+    if (index < 0) return;
+    _scenes[projectId] = List.of(state.scenes);
+    _layerHomes[projectId] = Map.of(state.homes);
+    _tileManagers[projectId]?.restoreStructuralLayers(tiles);
+    _projects[index] = _projects[index].copyWith(
+      hideEndCard: state.endCard,
+      backgroundColor: state.background,
+    );
+    _syncDurationToFrameCount(projectId);
+    _saveAsync(projectId);
+    notifyListeners();
+  }
+
   /// Groups a serialized automation's existing Undo actions without changing
   /// the pixel lifetime or the behavior of standalone layer operations.
   Future<T> runWithGroupedUndo<T>({
@@ -1303,6 +1382,14 @@ class ProjectService extends ChangeNotifier {
 
   /// シーンを末尾に追加する。通常レイヤー1枚・1フレームで初期化する。
   Scene addScene(String projectId) {
+    if (!_recordingTimelineEdit && _undoManager != null) {
+      return editTimeline(
+        projectId,
+        "addScene",
+        () => addScene(projectId),
+        changesTiles: false,
+      );
+    }
     final scenes = _scenes.putIfAbsent(projectId, () => []);
     final n = _nextSceneIndex(projectId);
     final sceneId = 'Scene${n.toString().padLeft(4, '0')}';
@@ -1330,6 +1417,14 @@ class ProjectService extends ChangeNotifier {
   /// ないため除外する（duplicateFrame()と同じ方針）。カメラキーフレーム・
   /// 演出フィルター・音声クリップは実体を持たない設定値のためそのまま複製する。
   Scene? duplicateScene(String projectId, String sceneId, {String? name}) {
+    if (!_recordingTimelineEdit && _undoManager != null) {
+      return editTimeline(
+        projectId,
+        "duplicateScene",
+        () => duplicateScene(projectId, sceneId, name: name),
+        changesTiles: true,
+      );
+    }
     final scenes = _scenes[projectId];
     if (scenes == null) return null;
     final sourceIdx = scenes.indexWhere((s) => s.id == sceneId);
@@ -1387,11 +1482,20 @@ class ProjectService extends ChangeNotifier {
 
   /// 複数シーンを一括削除する（最低1シーンは残す）。
   void removeScenes(String projectId, List<String> sceneIds) {
+    if (!_recordingTimelineEdit && _undoManager != null) {
+      editTimeline(
+        projectId,
+        "removeScenes",
+        () => removeScenes(projectId, sceneIds),
+        changesTiles: true,
+      );
+      return;
+    }
     final scenes = _scenes[projectId];
     if (scenes == null) return;
     final idsToRemove = sceneIds.toSet();
     final remaining = scenes.where((s) => !idsToRemove.contains(s.id)).toList();
-    if (remaining.isEmpty) return; // 全シーン削除は不可
+    if (remaining.isEmpty || remaining.length == scenes.length) return;
     final tm = _tileManagers[projectId];
     for (final id in idsToRemove) {
       tm?.removeSceneTiles(id);
@@ -1410,10 +1514,20 @@ class ProjectService extends ChangeNotifier {
 
   /// シーン名を変更する（シーン名変更ダイアログ）。
   void renameScene(String projectId, String sceneId, String newName) {
+    if (!_recordingTimelineEdit && _undoManager != null) {
+      editTimeline(
+        projectId,
+        "renameScene",
+        () => renameScene(projectId, sceneId, newName),
+        changesTiles: false,
+      );
+      return;
+    }
     final scenes = _scenes[projectId];
     if (scenes == null) return;
     final idx = scenes.indexWhere((s) => s.id == sceneId);
     if (idx < 0) return;
+    if (scenes[idx].name == newName) return;
     scenes[idx] = scenes[idx].copyWith(name: newName);
     notifyListeners();
   }
@@ -1421,6 +1535,15 @@ class ProjectService extends ChangeNotifier {
   /// シーンを指定した順序（IDのリスト）へ並び替える（カーソル固定方式）。
   /// sceneIdはそのまま・indexのみ新しい並び順に合わせて振り直す。
   void reorderScenesByIds(String projectId, List<String> orderedSceneIds) {
+    if (!_recordingTimelineEdit && _undoManager != null) {
+      editTimeline(
+        projectId,
+        "reorderScenesByIds",
+        () => reorderScenesByIds(projectId, orderedSceneIds),
+        changesTiles: false,
+      );
+      return;
+    }
     final scenes = _scenes[projectId];
     if (scenes == null) return;
     final byId = {for (final s in scenes) s.id: s};
@@ -1499,6 +1622,15 @@ class ProjectService extends ChangeNotifier {
 
   /// シーンの重なり順とフレーム（イラスト）のマスクを置き換える。
   void updateSceneStack(String projectId, String sceneId, SceneStack stack) {
+    if (!_recordingTimelineEdit && _undoManager != null) {
+      editTimeline(
+        projectId,
+        "updateSceneStack",
+        () => updateSceneStack(projectId, sceneId, stack),
+        changesTiles: false,
+      );
+      return;
+    }
     final scenes = _scenes[projectId];
     if (scenes == null) return;
     final idx = scenes.indexWhere((s) => s.id == sceneId);
@@ -1680,7 +1812,7 @@ class ProjectService extends ChangeNotifier {
     );
     _applyLayerInsert(projectId, sceneId, frameIndex, layer, 0);
 
-    _undoManager?.push(
+    (_recordingTimelineEdit ? null : _undoManager)?.push(
       LayerAddUndoAction(
         projectId: projectId,
         sceneId: sceneId,
@@ -1719,7 +1851,7 @@ class ProjectService extends ChangeNotifier {
     _applyLayerInsert(projectId, sceneId, frameIndex, layer, targetIndex);
     _registerHomeIfNeeded(projectId, sceneId, frameIndex, layer);
 
-    _undoManager?.push(
+    (_recordingTimelineEdit ? null : _undoManager)?.push(
       LayerAddUndoAction(
         projectId: projectId,
         sceneId: sceneId,
@@ -1772,7 +1904,7 @@ class ProjectService extends ChangeNotifier {
         projectId,
       ).replaceLayerPixels(targetKey, Uint8List.fromList(pixels));
     }
-    _undoManager?.push(
+    (_recordingTimelineEdit ? null : _undoManager)?.push(
       LayerAddUndoAction(
         projectId: projectId,
         sceneId: sceneId,
@@ -1814,7 +1946,7 @@ class ProjectService extends ChangeNotifier {
     final targetKey = tileKeyFor(projectId, sceneId, frameIndex, newId);
     tileManagerOf(projectId).copyLayer(sourceKey, targetKey);
 
-    _undoManager?.push(
+    (_recordingTimelineEdit ? null : _undoManager)?.push(
       LayerAddUndoAction(
         projectId: projectId,
         sceneId: sceneId,
@@ -1846,7 +1978,7 @@ class ProjectService extends ChangeNotifier {
     _removedLayers[layerId] = layers[removedIndex];
     _removeLayerById(projectId, home.sceneId, home.frameIndex, layerId);
 
-    _undoManager?.push(
+    (_recordingTimelineEdit ? null : _undoManager)?.push(
       LayerRemoveUndoAction(
         projectId: projectId,
         sceneId: home.sceneId,
@@ -1867,7 +1999,26 @@ class ProjectService extends ChangeNotifier {
     required String sceneId,
     required int frameIndex,
     required Layer layer,
+    bool recordUndo = true,
   }) {
+    if (recordUndo &&
+        _layersAddedInGroup?.contains('$projectId/${layer.id}') != true &&
+        !_recordingTimelineEdit &&
+        _undoManager != null) {
+      editTimeline(
+        projectId,
+        'Update layer',
+        () => updateLayer(
+          projectId: projectId,
+          sceneId: sceneId,
+          frameIndex: frameIndex,
+          layer: layer,
+          recordUndo: false,
+        ),
+        changesTiles: false,
+      );
+      return;
+    }
     final home =
         _layerHomes[projectId]?[layer.id] ??
         (sceneId: sceneId, frameIndex: frameIndex);
@@ -1927,6 +2078,7 @@ class ProjectService extends ChangeNotifier {
         sceneId: sceneId,
         frameIndex: frameIndex,
         layer: updatedLayer,
+        recordUndo: false,
       );
     }
     if (!record || (snapshot.before.isEmpty && !layerChanged)) return;
@@ -1956,6 +2108,21 @@ class ProjectService extends ChangeNotifier {
     required int oldIndex,
     required int newIndex,
   }) {
+    if (!_recordingTimelineEdit && _undoManager != null) {
+      editTimeline(
+        projectId,
+        "reorderLayer",
+        () => reorderLayer(
+          projectId: projectId,
+          sceneId: sceneId,
+          frameIndex: frameIndex,
+          oldIndex: oldIndex,
+          newIndex: newIndex,
+        ),
+        changesTiles: false,
+      );
+      return;
+    }
     final scenes = _scenes[projectId];
     if (scenes == null) return;
     final sceneIdx = scenes.indexWhere((s) => s.id == sceneId);
@@ -2201,16 +2368,25 @@ class ProjectService extends ChangeNotifier {
     int frameIndex,
     int hold,
   ) {
+    if (!_recordingTimelineEdit && _undoManager != null) {
+      editTimeline(
+        projectId,
+        "setFrameHold",
+        () => setFrameHold(projectId, sceneId, frameIndex, hold),
+        changesTiles: false,
+      );
+      return;
+    }
     final scenes = _scenes[projectId];
     if (scenes == null) return;
     final sceneIdx = scenes.indexWhere((s) => s.id == sceneId);
     if (sceneIdx < 0) return;
     final scene = scenes[sceneIdx];
-    if (frameIndex >= scene.frames.length) return;
+    if (frameIndex < 0 || frameIndex >= scene.frames.length) return;
+    final value = hold.clamp(1, 99);
+    if (scene.frames[frameIndex].hold == value) return;
     final newFrames = List<Frame>.from(scene.frames);
-    newFrames[frameIndex] = scene.frames[frameIndex].copyWith(
-      hold: hold.clamp(1, 99),
-    );
+    newFrames[frameIndex] = scene.frames[frameIndex].copyWith(hold: value);
     scenes[sceneIdx] = scene.copyWith(frames: newFrames);
     notifyListeners();
   }
@@ -2256,6 +2432,15 @@ class ProjectService extends ChangeNotifier {
 
   /// フレームを末尾に追加する
   void addFrame(String projectId, String sceneId) {
+    if (!_recordingTimelineEdit && _undoManager != null) {
+      editTimeline(
+        projectId,
+        "addFrame",
+        () => addFrame(projectId, sceneId),
+        changesTiles: false,
+      );
+      return;
+    }
     final scenes = _scenes[projectId];
     if (scenes == null) return;
     final sceneIdx = scenes.indexWhere((s) => s.id == sceneId);
@@ -2308,6 +2493,21 @@ class ProjectService extends ChangeNotifier {
     required String targetSceneId,
     required int insertAt,
   }) {
+    if (!_recordingTimelineEdit && _undoManager != null) {
+      editTimeline(
+        projectId,
+        "insertDuplicatedFrame",
+        () => insertDuplicatedFrame(
+          projectId: projectId,
+          sourceSceneId: sourceSceneId,
+          sourceFrameIndex: sourceFrameIndex,
+          targetSceneId: targetSceneId,
+          insertAt: insertAt,
+        ),
+        changesTiles: true,
+      );
+      return;
+    }
     final scenes = _scenes[projectId];
     if (scenes == null) return;
     final sourceSceneIdx = scenes.indexWhere((s) => s.id == sourceSceneId);
@@ -2403,6 +2603,14 @@ class ProjectService extends ChangeNotifier {
     int frameIndex, {
     bool recordUndo = true,
   }) {
+    if (recordUndo && !_recordingTimelineEdit && _undoManager != null) {
+      editTimeline(
+        projectId,
+        'Remove frame',
+        () => removeFrame(projectId, sceneId, frameIndex, recordUndo: false),
+      );
+      return;
+    }
     final scenes = _scenes[projectId];
     if (scenes == null) return;
     final sceneIdx = scenes.indexWhere((s) => s.id == sceneId);
@@ -2417,24 +2625,9 @@ class ProjectService extends ChangeNotifier {
     // 順に処理することで、まだ移動していない位置への上書きを避ける）。
     final tm = _tileManagers[projectId];
     final removed = scene.frames[frameIndex];
-    final undo = recordUndo ? _undoManager : null;
-    final next = undo == null
-        ? null
-        : scene.frames.elementAtOrNull(frameIndex + 1)?.historyIdentity;
-    final previous = undo == null || frameIndex == 0
-        ? null
-        : scene.frames[frameIndex - 1].historyIdentity;
-    final savedTiles = <String, Map<String, Uint8List>>{};
     if (tm != null) {
-      final tiles = tm.exportAll();
       for (final layer in removed.layers) {
         final key = frameLayerKey(sceneId, frameIndex, layer.id);
-        final source = tiles[key];
-        if (undo != null && source != null) {
-          savedTiles[layer.id] = source.map(
-            (key, bytes) => MapEntry(key, Uint8List.fromList(bytes)),
-          );
-        }
         tm.removeLayer(key);
       }
       for (int i = frameIndex + 1; i < scene.frames.length; i++) {
@@ -2460,7 +2653,6 @@ class ProjectService extends ChangeNotifier {
     // インデックスから除去し、それより後ろのフレームがホームだったレイヤーは
     // インデックスを1つ前へ詰める。
     final homes = _layerHomes[projectId];
-    final removedHomes = <String>{};
     if (homes != null) {
       final toRemove = <String>[];
       final toShift = <String>[];
@@ -2472,101 +2664,12 @@ class ProjectService extends ChangeNotifier {
           toShift.add(layerId);
         }
       });
-      removedHomes.addAll(toRemove);
       for (final id in toRemove) {
         homes.remove(id);
       }
       for (final id in toShift) {
         final h = homes[id]!;
         homes[id] = (sceneId: h.sceneId, frameIndex: h.frameIndex - 1);
-      }
-    }
-    if (undo != null) {
-      final identity = removed.historyIdentity;
-      undo.push(
-        FrameRemovalUndoAction(
-          restore: () => _restoreRemovedFrame(
-            projectId,
-            sceneId,
-            removed,
-            savedTiles,
-            removedHomes,
-            next: next,
-            previous: previous,
-          ),
-          remove: () {
-            final frames = sceneOf(projectId, sceneId)?.frames;
-            if (frames == null) return;
-            final index = frames.indexWhere(
-              (frame) => identical(frame.historyIdentity, identity),
-            );
-            removeFrame(projectId, sceneId, index, recordUndo: false);
-          },
-        ),
-      );
-    }
-    _syncDurationToFrameCount(projectId);
-    notifyListeners();
-  }
-
-  void _restoreRemovedFrame(
-    String projectId,
-    String sceneId,
-    Frame frame,
-    Map<String, Map<String, Uint8List>> tiles,
-    Set<String> removedHomes, {
-    required Object? next,
-    required Object? previous,
-  }) {
-    final scenes = _scenes[projectId];
-    if (scenes == null) return;
-    final sceneIndex = scenes.indexWhere((scene) => scene.id == sceneId);
-    if (sceneIndex < 0) return;
-    final scene = scenes[sceneIndex];
-    var at = frame.index.clamp(0, scene.frames.length);
-    final nextIndex = next == null
-        ? -1
-        : scene.frames.indexWhere((f) => identical(f.historyIdentity, next));
-    final previousIndex = previous == null
-        ? -1
-        : scene.frames.indexWhere(
-            (f) => identical(f.historyIdentity, previous),
-          );
-    if (nextIndex >= 0) {
-      at = nextIndex;
-    } else if (previousIndex >= 0) {
-      at = previousIndex + 1;
-    }
-    final tm = _tileManagers[projectId];
-    if (tm != null) {
-      for (var i = scene.frames.length - 1; i >= at; i--) {
-        for (final layer in scene.frames[i].layers) {
-          tm.renameKey(
-            frameLayerKey(sceneId, i, layer.id),
-            frameLayerKey(sceneId, i + 1, layer.id),
-          );
-        }
-      }
-      tiles.forEach(
-        (id, snapshot) =>
-            tm.applyTileSnapshot(frameLayerKey(sceneId, at, id), snapshot),
-      );
-    }
-    final frames = [...scene.frames]..insert(at, frame);
-    scenes[sceneIndex] = scene.copyWith(
-      frames: [
-        for (final (index, item) in frames.indexed) item.copyWith(index: index),
-      ],
-    );
-    final homes = _layerHomes[projectId];
-    if (homes != null) {
-      homes.updateAll(
-        (_, home) => home.sceneId == sceneId && home.frameIndex >= at
-            ? (sceneId: sceneId, frameIndex: home.frameIndex + 1)
-            : home,
-      );
-      for (final id in removedHomes) {
-        homes[id] = (sceneId: sceneId, frameIndex: at);
       }
     }
     _syncDurationToFrameCount(projectId);
@@ -2620,6 +2723,15 @@ class ProjectService extends ChangeNotifier {
   }
 
   void setSceneFrameCount(String projectId, String sceneId, int targetCount) {
+    if (!_recordingTimelineEdit && _undoManager != null) {
+      editTimeline(
+        projectId,
+        "setSceneFrameCount",
+        () => setSceneFrameCount(projectId, sceneId, targetCount),
+        changesTiles: true,
+      );
+      return;
+    }
     final scenes = _scenes[projectId];
     if (scenes == null) return;
     final sceneIdx = scenes.indexWhere((s) => s.id == sceneId);
@@ -2646,6 +2758,15 @@ class ProjectService extends ChangeNotifier {
     String sceneId,
     List<int> oldIndicesInNewOrder,
   ) {
+    if (!_recordingTimelineEdit && _undoManager != null) {
+      editTimeline(
+        projectId,
+        "reorderFrames",
+        () => reorderFrames(projectId, sceneId, oldIndicesInNewOrder),
+        changesTiles: true,
+      );
+      return;
+    }
     final scenes = _scenes[projectId];
     if (scenes == null) return;
     final sceneIdx = scenes.indexWhere((s) => s.id == sceneId);
@@ -2711,6 +2832,15 @@ class ProjectService extends ChangeNotifier {
     String sceneId,
     List<CameraKeyframe> keyframes,
   ) {
+    if (!_recordingTimelineEdit && _undoManager != null) {
+      editTimeline(
+        projectId,
+        "_updateSceneCameraKeyframes",
+        () => _updateSceneCameraKeyframes(projectId, sceneId, keyframes),
+        changesTiles: false,
+      );
+      return;
+    }
     final scenes = _scenes[projectId];
     if (scenes == null) return;
     final idx = scenes.indexWhere((s) => s.id == sceneId);
@@ -2781,6 +2911,15 @@ class ProjectService extends ChangeNotifier {
     String sceneId,
     List<LayerGroup> groups,
   ) {
+    if (!_recordingTimelineEdit && _undoManager != null) {
+      editTimeline(
+        projectId,
+        "_updateSceneGroups",
+        () => _updateSceneGroups(projectId, sceneId, groups),
+        changesTiles: false,
+      );
+      return;
+    }
     final scenes = _scenes[projectId];
     if (scenes == null) return;
     final idx = scenes.indexWhere((s) => s.id == sceneId);
@@ -2842,6 +2981,15 @@ class ProjectService extends ChangeNotifier {
     String sceneId,
     List<TimelineMarker> markers,
   ) {
+    if (!_recordingTimelineEdit && _undoManager != null) {
+      editTimeline(
+        projectId,
+        "_updateSceneMarkers",
+        () => _updateSceneMarkers(projectId, sceneId, markers),
+        changesTiles: false,
+      );
+      return;
+    }
     final scenes = _scenes[projectId];
     if (scenes == null) return;
     final idx = scenes.indexWhere((s) => s.id == sceneId);
@@ -2902,6 +3050,15 @@ class ProjectService extends ChangeNotifier {
     String sceneId,
     List<EffectFilterInstance> filters,
   ) {
+    if (!_recordingTimelineEdit && _undoManager != null) {
+      editTimeline(
+        projectId,
+        "_updateSceneEffectFilters",
+        () => _updateSceneEffectFilters(projectId, sceneId, filters),
+        changesTiles: false,
+      );
+      return;
+    }
     final scenes = _scenes[projectId];
     if (scenes == null) return;
     final idx = scenes.indexWhere((s) => s.id == sceneId);
@@ -2970,6 +3127,15 @@ class ProjectService extends ChangeNotifier {
     String sceneId,
     List<AudioClip> clips,
   ) {
+    if (!_recordingTimelineEdit && _undoManager != null) {
+      editTimeline(
+        projectId,
+        "_updateSceneAudioClips",
+        () => _updateSceneAudioClips(projectId, sceneId, clips),
+        changesTiles: false,
+      );
+      return;
+    }
     final scenes = _scenes[projectId];
     if (scenes == null) return;
     final idx = scenes.indexWhere((s) => s.id == sceneId);
@@ -3060,6 +3226,15 @@ class ProjectService extends ChangeNotifier {
   }
 
   void addTrackRow(String projectId, String sceneId, TimelineRowKind type) {
+    if (!_recordingTimelineEdit && _undoManager != null) {
+      editTimeline(
+        projectId,
+        "addTrackRow",
+        () => addTrackRow(projectId, sceneId, type),
+        changesTiles: false,
+      );
+      return;
+    }
     final scenes = _scenes[projectId];
     if (scenes == null) return;
     final idx = scenes.indexWhere((s) => s.id == sceneId);
@@ -3078,6 +3253,14 @@ class ProjectService extends ChangeNotifier {
     TimelineRowKind type,
     int rowIndex,
   ) {
+    if (!_recordingTimelineEdit && _undoManager != null) {
+      return editTimeline(
+        projectId,
+        "removeTrackRow",
+        () => removeTrackRow(projectId, sceneId, type, rowIndex),
+        changesTiles: true,
+      );
+    }
     final names = rowNamesOf(projectId, sceneId, type);
     if (rowIndex <= 0 || rowIndex >= names.length) return false;
     final layerType = type.layerType;
@@ -3168,6 +3351,15 @@ class ProjectService extends ChangeNotifier {
     int rowIndex,
     String? name,
   ) {
+    if (!_recordingTimelineEdit && _undoManager != null) {
+      editTimeline(
+        projectId,
+        "renameTrackRow",
+        () => renameTrackRow(projectId, sceneId, type, rowIndex, name),
+        changesTiles: false,
+      );
+      return;
+    }
     final scenes = _scenes[projectId];
     if (scenes == null) return;
     final idx = scenes.indexWhere((s) => s.id == sceneId);
@@ -3814,6 +4006,15 @@ class ProjectService extends ChangeNotifier {
   }
 
   void setProjectEndCardHidden(String projectId, bool hidden) {
+    if (!_recordingTimelineEdit && _undoManager != null) {
+      editTimeline(
+        projectId,
+        "setProjectEndCardHidden",
+        () => setProjectEndCardHidden(projectId, hidden),
+        changesTiles: false,
+      );
+      return;
+    }
     final index = _projects.indexWhere((project) => project.id == projectId);
     if (index < 0 || _projects[index].hideEndCard == hidden) return;
     _projects[index] = _projects[index].copyWith(hideEndCard: hidden);
@@ -3823,6 +4024,15 @@ class ProjectService extends ChangeNotifier {
 
   /// プロジェクトの背景色を変更する（キャンバス設定メニューから）。
   void updateProjectBackgroundColor(String projectId, int color) {
+    if (!_recordingTimelineEdit && _undoManager != null) {
+      editTimeline(
+        projectId,
+        "updateProjectBackgroundColor",
+        () => updateProjectBackgroundColor(projectId, color),
+        changesTiles: false,
+      );
+      return;
+    }
     final idx = _projects.indexWhere((p) => p.id == projectId);
     if (idx < 0) return;
     _projects[idx] = _projects[idx].copyWith(backgroundColor: color);
@@ -5072,6 +5282,7 @@ class _LayerPixelsUndoAction extends UndoAction {
         sceneId: sceneId,
         frameIndex: frameIndex,
         layer: layer,
+        recordUndo: false,
       );
     }
   }
@@ -5084,4 +5295,18 @@ class _LayerPixelsUndoAction extends UndoAction {
 
   @override
   String get description => 'Filter on $layerKey';
+}
+
+class _TimelineEditState {
+  const _TimelineEditState(
+    this.scenes,
+    this.homes,
+    this.endCard,
+    this.background,
+  );
+
+  final List<Scene> scenes;
+  final Map<String, LayerHome> homes;
+  final bool? endCard;
+  final int? background;
 }

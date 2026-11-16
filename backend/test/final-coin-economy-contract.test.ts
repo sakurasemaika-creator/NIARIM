@@ -568,7 +568,7 @@ describe("versioned coin economy v2 remains exact across all reward categories",
 
   it("locks rewarded-ad, 1-month Premium and 1-year Premium tariffs",()=>{
     expect(INITIAL_REWARDED_COINS_PER_COMPLETION).toBe(10);
-    expect(COIN_BENEFIT_PRICE_VERSION).toBe("v7-complete-pack-anchor-20261116");
+    expect(COIN_BENEFIT_PRICE_VERSION).toBe("v8-complete-pack-half-20261116");
     expect(FINAL_PREMIUM_MONTHLY_COINS).toBe(55000);
     expect(finalBenefitCoins("fullPremium","month")).toBe(55000);
     expect(FINAL_PREMIUM_YEARLY_COINS).toBe(550000);

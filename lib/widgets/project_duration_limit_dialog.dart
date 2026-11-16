@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
+import 'premium_lock_widget.dart';
 
 import '../l10n/app_localizations.dart';
 
@@ -8,36 +8,20 @@ void showProjectDurationLimit(
   required bool hasUnlimitedDuration,
 }) {
   final l10n = AppLocalizations.of(context)!;
+  if (!hasUnlimitedDuration) {
+    showPremiumBanner(context, reason: l10n.timelineDurationLimitBodyFree);
+    return;
+  }
   showDialog<void>(
     context: context,
     builder: (dialog) => AlertDialog(
       title: Text(l10n.timelineDurationLimitTitle),
-      content: Text(
-        hasUnlimitedDuration
-            ? l10n.timelineDurationLimitBodyPremium
-            : l10n.timelineDurationLimitBodyFree,
-      ),
+      content: Text(l10n.timelineDurationLimitBodyPremium),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(dialog),
           child: Text(l10n.commonClose),
         ),
-        if (!hasUnlimitedDuration) ...[
-          TextButton(
-            onPressed: () {
-              Navigator.pop(dialog);
-              context.push('/premium');
-            },
-            child: Text(l10n.premiumComparisonPremium),
-          ),
-          FilledButton(
-            onPressed: () {
-              Navigator.pop(dialog);
-              context.push('/rewards');
-            },
-            child: Text(l10n.rewardNavigationExchange),
-          ),
-        ],
       ],
     ),
   );
