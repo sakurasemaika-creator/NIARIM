@@ -9,9 +9,11 @@ import 'package:image/image.dart' as img;
 import 'helpers/home_keyboard_harness.dart';
 
 /// ホームの検索欄のヒントは、開いているタブで何を探すかを言う（プロジェクト・
-/// 書き出した作品・共有ファイル・ゴミ箱の中）。どの言語でも、320・360の幅で
-/// 「…」で切れず、上部バーの中に収まる（タブの列に重ならない）。文字2倍でも
-/// 上部バーからはみ出さない。
+/// 書き出した作品・共有ファイル・ゴミ箱の中）。どの言語・幅・文字の大きさでも、
+/// いつもの大きさのまま1行に入るときだけ字を出し、入らないときは字を縮めず
+/// 「…」で切らず、探す物の印（読み上げはヒントの文）だけにする（所有者の判断、
+/// 2026-11-16）。字も印も上部バーの中に収まる（タブの列に重ならない）。PCの
+/// 幅ではどの言語も字が出る。
 ///
 /// 以前は作品一覧・共有・ゴミ箱のタブでも「プロジェクト名で検索」と出た
 /// （DISC201）。仏語の360ではゴミ箱のタブでも「Rechercher par nom …」と切れた。
@@ -31,9 +33,16 @@ void main() {
           as String?;
 
   for (final language in languages) {
-    for (final (width, scale) in const [(320, 1.0), (360, 1.0), (360, 2.0)]) {
+    for (final (width, scale) in const [
+      (320, 1.0),
+      (360, 1.0),
+      (360, 2.0),
+      (1280, 1.0),
+    ]) {
       testWidgets('$language $width x$scale: the search hint names what each '
-          'tab searches and is not cut', (tester) async {
+          'tab searches, at full size or as an icon, never cut', (
+        tester,
+      ) async {
         final home = await HomeKeyboardHarness.open(
           tester,
           language: language,
@@ -41,6 +50,7 @@ void main() {
           textScale: scale,
           works: 1,
         );
+        final semantics = tester.ensureSemantics();
         final problems = <String>[];
         final hints = <String>[];
         for (var tab = 0; tab < 4; tab++) {
@@ -51,55 +61,70 @@ void main() {
           final field = tester.widget<TextField>(
             find.byKey(const Key('homeSearchInput')),
           );
-          final shownHint = field.decoration?.hintText ?? '';
-          // 折り返しを止める語結合子（U+2060）は文の一部ではない。
-          final hint = shownHint.replaceAll('\u2060', '');
-          hints.add(hint);
+          final decoration = field.decoration!;
+          final hintText = decoration.hintText;
+          final hintIcon = decoration.hint;
+          // 字のときはその字、印のときは読み上げの文がヒント。
+          final hint =
+              hintText ?? (hintIcon is Icon ? hintIcon.semanticLabel : null);
+          hints.add(hint ?? '');
           final expected = arb(language, keys[tab]);
           if (expected == null) {
             problems.add('tab $tab: no ARB text ${keys[tab]}');
           } else if (hint != expected) {
             problems.add('tab $tab: hint "$hint", expected "$expected"');
           }
-          final shown = find.descendant(
-            of: find.byType(AppBar),
-            matching: find.text(shownHint),
-          );
-          if (shown.evaluate().isEmpty) {
-            problems.add('tab $tab: hint "$hint" not drawn');
-          } else {
-            final paragraph = tester.renderObject<RenderParagraph>(
-              find.descendant(of: shown, matching: find.byType(RichText)),
+          // 字を縮めない（大きさは渡さない）。
+          final hintSize = decoration.hintStyle?.fontSize;
+          if (hintSize != null) {
+            problems.add('tab $tab: hint font size changed to $hintSize');
+          }
+          // PCの幅では字が出る（印だけになるのは入らない幅だけ）。
+          if (width >= 1280 && hintText == null) {
+            problems.add('tab $tab: only an icon at $width');
+          }
+          final tabs = tester.getRect(find.byType(TabBar));
+          if (hintText != null) {
+            final shown = find.descendant(
+              of: find.byType(AppBar),
+              matching: find.text(hintText),
             );
-            final rect = tester.getRect(shown);
-            final tabs = tester.getRect(find.byType(TabBar));
-            // 文字1倍では切らない。2倍でも上部バーからはみ出さない。
-            if (scale == 1.0 && paragraph.didExceedMaxLines) {
-              problems.add('tab $tab: hint "$hint" cut at $rect');
-            }
-            if (rect.bottom > tabs.top + 2 || rect.top < 0) {
-              problems.add('tab $tab: hint $rect leaves the bar (tabs $tabs)');
-            }
-            // 韓国語は語（空白で区切った所）の途中で行を変えない。
-            if (language == 'ko') {
-              final text = paragraph.text.toPlainText();
-              int? previous;
-              double? previousTop;
-              for (var i = 0; i < text.length; i++) {
-                if (text[i] == ' ' || text[i] == '\u2060') continue;
-                final boxes = paragraph.getBoxesForSelection(
-                  TextSelection(baseOffset: i, extentOffset: i + 1),
-                );
-                if (boxes.isEmpty) continue;
-                final top = boxes.first.top;
-                if (previous != null &&
-                    top > previousTop! + 1 &&
-                    !text.substring(previous, i).contains(' ')) {
-                  problems.add('tab $tab: "$hint" breaks a word at $i');
-                }
-                previous = i;
-                previousTop = top;
+            if (shown.evaluate().isEmpty) {
+              problems.add('tab $tab: hint "$hint" not drawn');
+            } else {
+              final paragraph = tester.renderObject<RenderParagraph>(
+                find.descendant(of: shown, matching: find.byType(RichText)),
+              );
+              final rect = tester.getRect(shown);
+              // 字を出すときは1行に全部入る（「…」で切らない）。
+              if (paragraph.didExceedMaxLines) {
+                problems.add('tab $tab: hint "$hint" cut at $rect');
               }
+              if (rect.bottom > tabs.top + 2 || rect.top < 0) {
+                problems.add(
+                  'tab $tab: hint $rect leaves the bar (tabs $tabs)',
+                );
+              }
+            }
+          } else if (hintIcon is! Icon) {
+            problems.add('tab $tab: neither hint text nor an icon');
+          } else {
+            final shown = find.descendant(
+              of: find.byKey(const Key('homeSearchInput')),
+              matching: find.byIcon(hintIcon.icon!),
+            );
+            if (shown.evaluate().isEmpty) {
+              problems.add('tab $tab: hint icon not drawn');
+            } else {
+              final rect = tester.getRect(shown.first);
+              if (rect.bottom > tabs.top + 2 || rect.top < 0) {
+                problems.add(
+                  'tab $tab: hint icon $rect leaves the bar (tabs $tabs)',
+                );
+              }
+            }
+            if (find.bySemanticsLabel(expected ?? '').evaluate().isEmpty) {
+              problems.add('tab $tab: the icon does not read "$expected"');
             }
           }
           // 打ち始めたら、打った字の行は隣のボタン（検索を閉じる）と縦の
@@ -152,6 +177,7 @@ void main() {
         }
         expect(problems, isEmpty, reason: problems.join('\n'));
         expect(tester.takeException(), isNull);
+        semantics.dispose();
         await home.close();
       });
     }
