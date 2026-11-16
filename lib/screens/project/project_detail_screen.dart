@@ -4,12 +4,13 @@ import 'dart:async';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:flutter/services.dart' hide UndoManager;
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import '../../engine/layer_compositor.dart';
+import '../../engine/undo_manager.dart';
 import '../../l10n/app_localizations.dart';
 import '../../models/project.dart';
 import '../../services/autofill_preset_service.dart';
@@ -212,6 +213,10 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
       );
     }
 
+    final history = context.watch<UndoManager?>();
+    final canUndo = history?.canUndoFor(project.id) ?? false;
+    final canRedo = history?.canRedoFor(project.id) ?? false;
+
     // この作品の共有ファイルを作成・共有している途中か（どの画面から始めても）。
     final sharing = ExportShareService.isRunning(niashareKey(project.id));
     final flat = _flatten(projectService);
@@ -324,6 +329,28 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
       appBar: AppBar(
         title: Text(project.name),
         actions: [
+          if (history != null && (canUndo || canRedo)) ...[
+            IconButton(
+              icon: const Icon(Icons.undo),
+              tooltip: l10n.commonUndo,
+              onPressed: canUndo
+                  ? () {
+                      history.undo(projectId: project.id);
+                      _renderFrame(projectService, flat);
+                    }
+                  : null,
+            ),
+            IconButton(
+              icon: const Icon(Icons.redo),
+              tooltip: l10n.commonRedo,
+              onPressed: canRedo
+                  ? () {
+                      history.redo(projectId: project.id);
+                      _renderFrame(projectService, flat);
+                    }
+                  : null,
+            ),
+          ],
           const HelpButton(topic: 'プロジェクト詳細画面'),
           PopupMenuButton<String>(
             enabled: !_movingToTrash,

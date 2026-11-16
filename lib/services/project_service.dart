@@ -289,7 +289,7 @@ class ProjectService extends ChangeNotifier {
     _undoManager = undoManager;
   }
 
-  bool _recordingTimelineEdit = false;
+  final Set<String> _recordingTimelineEdits = {};
   final Map<String, Map<String, bool>> _layerFolderExpansion = {};
 
   bool isLayerFolderExpanded(String projectId, Layer layer) =>
@@ -308,15 +308,17 @@ class ProjectService extends ChangeNotifier {
     bool changesTiles = true,
   }) {
     final undo = _undoManager;
-    if (undo == null || _recordingTimelineEdit) return edit();
+    if (undo == null || _recordingTimelineEdits.contains(projectId)) {
+      return edit();
+    }
     final manager = changesTiles ? tileManagerOf(projectId) : null;
     final beforeTiles = manager?.structuralSnapshot() ?? const {};
     final before = _captureTimeline(projectId);
-    _recordingTimelineEdit = true;
+    _recordingTimelineEdits.add(projectId);
     try {
       return edit();
     } finally {
-      _recordingTimelineEdit = false;
+      _recordingTimelineEdits.remove(projectId);
       _commitProjectEdit(
         undo,
         projectId,
@@ -336,16 +338,18 @@ class ProjectService extends ChangeNotifier {
     Future<T> Function() run,
   ) async {
     final undo = _undoManager;
-    if (undo == null || _recordingTimelineEdit) return run();
+    if (undo == null || _recordingTimelineEdits.contains(projectId)) {
+      return run();
+    }
     final manager = tileManagerOf(projectId);
     final beforeTiles = manager.structuralSnapshot();
     manager.protectHistoryTiles(beforeTiles);
     final before = _captureTimeline(projectId);
-    _recordingTimelineEdit = true;
+    _recordingTimelineEdits.add(projectId);
     try {
       return await run();
     } finally {
-      _recordingTimelineEdit = false;
+      _recordingTimelineEdits.remove(projectId);
       _commitProjectEdit(
         undo,
         projectId,
@@ -387,6 +391,9 @@ class ProjectService extends ChangeNotifier {
         description,
         () => _restoreTimeline(projectId, before, oldLayers),
         () => _restoreTimeline(projectId, after, newLayers),
+        retainedMaterialIds: _materialIdsIn(
+          before.scenes,
+        ).followedBy(_materialIdsIn(after.scenes)),
       ),
       projectId: projectId,
     );
@@ -423,6 +430,7 @@ class ProjectService extends ChangeNotifier {
         exportHeight: snapshot.exportHeight,
         drawingAreaScale: snapshot.drawingAreaScale,
         enabledAutofillPresetIds: snapshot.enabledAutofillPresetIds,
+        tags: snapshot.tags,
       );
     }
     _syncDurationToFrameCount(projectId);
@@ -1195,17 +1203,23 @@ class ProjectService extends ChangeNotifier {
   /// タイムライン画像・動画レイヤーのmaterialId、および各シーンの
   /// 音声クリップのmaterialIdを対象に走査する。
   bool isMaterialUsed(String projectId, String materialId) {
-    for (final scene in _scenes[projectId] ?? const <Scene>[]) {
+    if (_undoManager?.retainsMaterial(projectId, materialId) ?? false) {
+      return true;
+    }
+    return _materialIdsIn(scenesOf(projectId)).contains(materialId);
+  }
+
+  Iterable<String> _materialIdsIn(Iterable<Scene> scenes) sync* {
+    for (final scene in scenes) {
       for (final clip in scene.audioClips) {
-        if (clip.materialId == materialId) return true;
+        if (clip.materialId case final id?) yield id;
       }
       for (final frame in scene.frames) {
         for (final layer in frame.layers) {
-          if (layer.materialId == materialId) return true;
+          if (layer.materialId case final id?) yield id;
         }
       }
     }
-    return false;
   }
 
   // ─── 制作時間カウント（描画モード・タイムラインモードのみカウント、
@@ -1445,7 +1459,7 @@ class ProjectService extends ChangeNotifier {
 
   /// シーンを末尾に追加する。通常レイヤー1枚・1フレームで初期化する。
   Scene addScene(String projectId) {
-    if (!_recordingTimelineEdit && _undoManager != null) {
+    if (!_recordingTimelineEdits.contains(projectId) && _undoManager != null) {
       return editTimeline(
         projectId,
         "addScene",
@@ -1480,7 +1494,7 @@ class ProjectService extends ChangeNotifier {
   /// ないため除外する（duplicateFrame()と同じ方針）。カメラキーフレーム・
   /// 演出フィルター・音声クリップは実体を持たない設定値のためそのまま複製する。
   Scene? duplicateScene(String projectId, String sceneId, {String? name}) {
-    if (!_recordingTimelineEdit && _undoManager != null) {
+    if (!_recordingTimelineEdits.contains(projectId) && _undoManager != null) {
       return editTimeline(
         projectId,
         "duplicateScene",
@@ -1545,7 +1559,7 @@ class ProjectService extends ChangeNotifier {
 
   /// 複数シーンを一括削除する（最低1シーンは残す）。
   void removeScenes(String projectId, List<String> sceneIds) {
-    if (!_recordingTimelineEdit && _undoManager != null) {
+    if (!_recordingTimelineEdits.contains(projectId) && _undoManager != null) {
       editTimeline(
         projectId,
         "removeScenes",
@@ -1577,7 +1591,7 @@ class ProjectService extends ChangeNotifier {
 
   /// シーン名を変更する（シーン名変更ダイアログ）。
   void renameScene(String projectId, String sceneId, String newName) {
-    if (!_recordingTimelineEdit && _undoManager != null) {
+    if (!_recordingTimelineEdits.contains(projectId) && _undoManager != null) {
       editTimeline(
         projectId,
         "renameScene",
@@ -1598,7 +1612,7 @@ class ProjectService extends ChangeNotifier {
   /// シーンを指定した順序（IDのリスト）へ並び替える（カーソル固定方式）。
   /// sceneIdはそのまま・indexのみ新しい並び順に合わせて振り直す。
   void reorderScenesByIds(String projectId, List<String> orderedSceneIds) {
-    if (!_recordingTimelineEdit && _undoManager != null) {
+    if (!_recordingTimelineEdits.contains(projectId) && _undoManager != null) {
       editTimeline(
         projectId,
         "reorderScenesByIds",
@@ -1685,7 +1699,7 @@ class ProjectService extends ChangeNotifier {
 
   /// シーンの重なり順とフレーム（イラスト）のマスクを置き換える。
   void updateSceneStack(String projectId, String sceneId, SceneStack stack) {
-    if (!_recordingTimelineEdit && _undoManager != null) {
+    if (!_recordingTimelineEdits.contains(projectId) && _undoManager != null) {
       editTimeline(
         projectId,
         "updateSceneStack",
@@ -1885,7 +1899,7 @@ class ProjectService extends ChangeNotifier {
     );
     _applyLayerInsert(projectId, sceneId, frameIndex, layer, 0);
 
-    (_recordingTimelineEdit ? null : _undoManager)?.push(
+    (_recordingTimelineEdits.contains(projectId) ? null : _undoManager)?.push(
       LayerAddUndoAction(
         projectId: projectId,
         sceneId: sceneId,
@@ -1925,7 +1939,7 @@ class ProjectService extends ChangeNotifier {
     _applyLayerInsert(projectId, sceneId, frameIndex, layer, targetIndex);
     _registerHomeIfNeeded(projectId, sceneId, frameIndex, layer);
 
-    (_recordingTimelineEdit ? null : _undoManager)?.push(
+    (_recordingTimelineEdits.contains(projectId) ? null : _undoManager)?.push(
       LayerAddUndoAction(
         projectId: projectId,
         sceneId: sceneId,
@@ -1979,13 +1993,14 @@ class ProjectService extends ChangeNotifier {
         projectId,
       ).replaceLayerPixels(targetKey, Uint8List.fromList(pixels));
     }
-    (_recordingTimelineEdit ? null : _undoManager)?.push(
+    (_recordingTimelineEdits.contains(projectId) ? null : _undoManager)?.push(
       LayerAddUndoAction(
         projectId: projectId,
         sceneId: sceneId,
         frameIndex: frameIndex,
         layerId: newId,
         insertIndex: targetIndex,
+        materialId: copy.materialId,
         doAdd: _insertLayerById,
         doRemove: _removeLayerById,
       ),
@@ -2022,13 +2037,14 @@ class ProjectService extends ChangeNotifier {
     final targetKey = tileKeyFor(projectId, sceneId, frameIndex, newId);
     tileManagerOf(projectId).copyLayer(sourceKey, targetKey);
 
-    (_recordingTimelineEdit ? null : _undoManager)?.push(
+    (_recordingTimelineEdits.contains(projectId) ? null : _undoManager)?.push(
       LayerAddUndoAction(
         projectId: projectId,
         sceneId: sceneId,
         frameIndex: frameIndex,
         layerId: newId,
         insertIndex: index,
+        materialId: copy.materialId,
         doAdd: _insertLayerById,
         doRemove: _removeLayerById,
       ),
@@ -2054,13 +2070,14 @@ class ProjectService extends ChangeNotifier {
     if (removedIndex < 0) return;
     _removeLayerById(projectId, home.sceneId, home.frameIndex, layerId);
 
-    (_recordingTimelineEdit ? null : _undoManager)?.push(
+    (_recordingTimelineEdits.contains(projectId) ? null : _undoManager)?.push(
       LayerRemoveUndoAction(
         projectId: projectId,
         sceneId: home.sceneId,
         frameIndex: home.frameIndex,
         layerId: layerId,
         removedIndex: removedIndex,
+        materialId: layers[removedIndex].materialId,
         doAdd: _insertLayerById,
         doRemove: _removeLayerById,
       ),
@@ -2080,7 +2097,7 @@ class ProjectService extends ChangeNotifier {
   }) {
     if (recordUndo &&
         _layersAddedInGroup?.contains('$projectId/${layer.id}') != true &&
-        !_recordingTimelineEdit &&
+        !_recordingTimelineEdits.contains(projectId) &&
         _undoManager != null) {
       editTimeline(
         projectId,
@@ -2135,7 +2152,7 @@ class ProjectService extends ChangeNotifier {
     // transform) has open on this tile manager.
     final record =
         _undoManager != null &&
-        !_recordingTimelineEdit &&
+        !_recordingTimelineEdits.contains(projectId) &&
         tm.recordingTouchedTiles == null &&
         !(_layersAddedInGroup?.contains('$projectId/$layerId') ?? false);
     if (record) tm.beginUndoRecording(key);
@@ -2232,7 +2249,7 @@ class ProjectService extends ChangeNotifier {
     required int oldIndex,
     required int newIndex,
   }) {
-    if (!_recordingTimelineEdit && _undoManager != null) {
+    if (!_recordingTimelineEdits.contains(projectId) && _undoManager != null) {
       editTimeline(
         projectId,
         "reorderLayer",
@@ -2307,7 +2324,7 @@ class ProjectService extends ChangeNotifier {
   /// 自動保存データを既存プロジェクトへ復元する（クラッシュ復元専用）。
   /// プロジェクトIDは維持したまま、シーン・タイルの内容のみ自動保存時点へ戻す。
   void restoreFromAutosave(String projectId, NiaproData data) {
-    if (!_recordingTimelineEdit && _undoManager != null) {
+    if (!_recordingTimelineEdits.contains(projectId) && _undoManager != null) {
       editTimeline(
         projectId,
         'Restore saved project',
@@ -2504,7 +2521,7 @@ class ProjectService extends ChangeNotifier {
     int frameIndex,
     int hold,
   ) {
-    if (!_recordingTimelineEdit && _undoManager != null) {
+    if (!_recordingTimelineEdits.contains(projectId) && _undoManager != null) {
       editTimeline(
         projectId,
         "setFrameHold",
@@ -2568,7 +2585,7 @@ class ProjectService extends ChangeNotifier {
 
   /// フレームを末尾に追加する
   void addFrame(String projectId, String sceneId) {
-    if (!_recordingTimelineEdit && _undoManager != null) {
+    if (!_recordingTimelineEdits.contains(projectId) && _undoManager != null) {
       editTimeline(
         projectId,
         "addFrame",
@@ -2629,7 +2646,7 @@ class ProjectService extends ChangeNotifier {
     required String targetSceneId,
     required int insertAt,
   }) {
-    if (!_recordingTimelineEdit && _undoManager != null) {
+    if (!_recordingTimelineEdits.contains(projectId) && _undoManager != null) {
       editTimeline(
         projectId,
         "insertDuplicatedFrame",
@@ -2739,7 +2756,9 @@ class ProjectService extends ChangeNotifier {
     int frameIndex, {
     bool recordUndo = true,
   }) {
-    if (recordUndo && !_recordingTimelineEdit && _undoManager != null) {
+    if (recordUndo &&
+        !_recordingTimelineEdits.contains(projectId) &&
+        _undoManager != null) {
       editTimeline(
         projectId,
         'Remove frame',
@@ -2859,7 +2878,7 @@ class ProjectService extends ChangeNotifier {
   }
 
   void setSceneFrameCount(String projectId, String sceneId, int targetCount) {
-    if (!_recordingTimelineEdit && _undoManager != null) {
+    if (!_recordingTimelineEdits.contains(projectId) && _undoManager != null) {
       editTimeline(
         projectId,
         "setSceneFrameCount",
@@ -2894,7 +2913,7 @@ class ProjectService extends ChangeNotifier {
     String sceneId,
     List<int> oldIndicesInNewOrder,
   ) {
-    if (!_recordingTimelineEdit && _undoManager != null) {
+    if (!_recordingTimelineEdits.contains(projectId) && _undoManager != null) {
       editTimeline(
         projectId,
         "reorderFrames",
@@ -2968,7 +2987,7 @@ class ProjectService extends ChangeNotifier {
     String sceneId,
     List<CameraKeyframe> keyframes,
   ) {
-    if (!_recordingTimelineEdit && _undoManager != null) {
+    if (!_recordingTimelineEdits.contains(projectId) && _undoManager != null) {
       editTimeline(
         projectId,
         "_updateSceneCameraKeyframes",
@@ -3047,7 +3066,7 @@ class ProjectService extends ChangeNotifier {
     String sceneId,
     List<LayerGroup> groups,
   ) {
-    if (!_recordingTimelineEdit && _undoManager != null) {
+    if (!_recordingTimelineEdits.contains(projectId) && _undoManager != null) {
       editTimeline(
         projectId,
         "_updateSceneGroups",
@@ -3117,7 +3136,7 @@ class ProjectService extends ChangeNotifier {
     String sceneId,
     List<TimelineMarker> markers,
   ) {
-    if (!_recordingTimelineEdit && _undoManager != null) {
+    if (!_recordingTimelineEdits.contains(projectId) && _undoManager != null) {
       editTimeline(
         projectId,
         "_updateSceneMarkers",
@@ -3186,7 +3205,7 @@ class ProjectService extends ChangeNotifier {
     String sceneId,
     List<EffectFilterInstance> filters,
   ) {
-    if (!_recordingTimelineEdit && _undoManager != null) {
+    if (!_recordingTimelineEdits.contains(projectId) && _undoManager != null) {
       editTimeline(
         projectId,
         "_updateSceneEffectFilters",
@@ -3263,7 +3282,7 @@ class ProjectService extends ChangeNotifier {
     String sceneId,
     List<AudioClip> clips,
   ) {
-    if (!_recordingTimelineEdit && _undoManager != null) {
+    if (!_recordingTimelineEdits.contains(projectId) && _undoManager != null) {
       editTimeline(
         projectId,
         "_updateSceneAudioClips",
@@ -3362,7 +3381,7 @@ class ProjectService extends ChangeNotifier {
   }
 
   void addTrackRow(String projectId, String sceneId, TimelineRowKind type) {
-    if (!_recordingTimelineEdit && _undoManager != null) {
+    if (!_recordingTimelineEdits.contains(projectId) && _undoManager != null) {
       editTimeline(
         projectId,
         "addTrackRow",
@@ -3389,7 +3408,7 @@ class ProjectService extends ChangeNotifier {
     TimelineRowKind type,
     int rowIndex,
   ) {
-    if (!_recordingTimelineEdit && _undoManager != null) {
+    if (!_recordingTimelineEdits.contains(projectId) && _undoManager != null) {
       return editTimeline(
         projectId,
         "removeTrackRow",
@@ -3487,7 +3506,7 @@ class ProjectService extends ChangeNotifier {
     int rowIndex,
     String? name,
   ) {
-    if (!_recordingTimelineEdit && _undoManager != null) {
+    if (!_recordingTimelineEdits.contains(projectId) && _undoManager != null) {
       editTimeline(
         projectId,
         "renameTrackRow",
@@ -4164,7 +4183,7 @@ class ProjectService extends ChangeNotifier {
   }
 
   void setProjectEndCardHidden(String projectId, bool hidden) {
-    if (!_recordingTimelineEdit && _undoManager != null) {
+    if (!_recordingTimelineEdits.contains(projectId) && _undoManager != null) {
       editTimeline(
         projectId,
         "setProjectEndCardHidden",
@@ -4182,7 +4201,7 @@ class ProjectService extends ChangeNotifier {
 
   /// プロジェクトの背景色を変更する（キャンバス設定メニューから）。
   void updateProjectBackgroundColor(String projectId, int color) {
-    if (!_recordingTimelineEdit && _undoManager != null) {
+    if (!_recordingTimelineEdits.contains(projectId) && _undoManager != null) {
       editTimeline(
         projectId,
         "updateProjectBackgroundColor",
@@ -4192,7 +4211,7 @@ class ProjectService extends ChangeNotifier {
       return;
     }
     final idx = _projects.indexWhere((p) => p.id == projectId);
-    if (idx < 0) return;
+    if (idx < 0 || _projects[idx].backgroundColor == color) return;
     _projects[idx] = _projects[idx].copyWith(backgroundColor: color);
     _saveAsync(projectId);
     notifyListeners();
@@ -4469,12 +4488,19 @@ class ProjectService extends ChangeNotifier {
     String projectId,
     List<String>? ids,
   ) async {
-    final idx = _projects.indexWhere((p) => p.id == projectId);
-    if (idx >= 0) {
-      _projects[idx] = _projects[idx].copyWith(enabledAutofillPresetIds: ids);
+    editTimeline(projectId, 'Choose project autofill presets', () {
+      final idx = _projects.indexWhere((p) => p.id == projectId);
+      if (idx < 0 || listEquals(_projects[idx].enabledAutofillPresetIds, ids)) {
+        return;
+      }
+      _projects[idx] = _projects[idx].copyWith(
+        enabledAutofillPresetIds: ids == null
+            ? null
+            : List<String>.unmodifiable(ids),
+      );
       _saveAsync(projectId);
       notifyListeners();
-    }
+    }, changesTiles: false);
   }
 
   Future<void> moveToFolder(String projectId, String? folderId) =>
@@ -4492,12 +4518,13 @@ class ProjectService extends ChangeNotifier {
 
   /// プロジェクトのタグ一覧を置き換える（詳細情報画面のタグ機能）。
   Future<void> setProjectTags(String projectId, List<String> tags) async {
-    final idx = _projects.indexWhere((p) => p.id == projectId);
-    if (idx >= 0) {
-      _projects[idx] = _projects[idx].copyWith(tags: tags);
+    editTimeline(projectId, 'Edit project tags', () {
+      final idx = _projects.indexWhere((p) => p.id == projectId);
+      if (idx < 0 || listEquals(_projects[idx].tags, tags)) return;
+      _projects[idx] = _projects[idx].copyWith(tags: List.unmodifiable(tags));
       _saveAsync(projectId);
       notifyListeners();
-    }
+    }, changesTiles: false);
   }
 
   /// プロジェクト一覧カード表示用のサムネイルを生成し、Project.thumbnailPathへ反映する

@@ -229,6 +229,12 @@ void main() {
     expect(find.byType(NameEntryDialog), findsNothing);
     expect(s.service.projects.singleWhere((p) => p.id == s.id).name, '新しい名前');
     expect(find.text('新しい名前'), findsWidgets);
+    await tester.tap(find.byTooltip('取り消し'));
+    await settleIo(tester);
+    expect(s.service.projects.singleWhere((p) => p.id == s.id).name, '詳細の作品');
+    await tester.tap(find.byTooltip('やり直し'));
+    await settleIo(tester);
+    expect(s.service.projects.singleWhere((p) => p.id == s.id).name, '新しい名前');
     expect(tester.takeException(), isNull);
   });
 

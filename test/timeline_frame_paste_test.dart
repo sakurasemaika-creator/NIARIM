@@ -1,5 +1,7 @@
 import 'helpers/project_storage.dart';
 
+import 'dart:async';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:niarim/engine/filter_engine.dart';
@@ -8,6 +10,7 @@ import 'package:niarim/models/audio_clip.dart';
 import 'package:niarim/models/camera_keyframe.dart';
 import 'package:niarim/models/effect_filter_instance.dart';
 import 'package:niarim/models/layer.dart';
+import 'package:niarim/models/project.dart';
 import 'package:niarim/models/timeline_row_kind.dart';
 import 'package:niarim/services/project_service.dart';
 
@@ -59,6 +62,62 @@ void main() {
         ps.layersOf(projectId, sceneId, i).first.name,
     ];
   }
+
+  test(
+    'project settings and changes during a different project automation remain undoable',
+    () async {
+      final ps = ProjectService();
+      final history = UndoManager();
+      addTearDown(history.dispose);
+      addTearDown(ps.dispose);
+      await ps.init();
+      ps.setUndoManager(history);
+      Future<String> create(String name) async => (await ps.createProject(
+        name: name,
+        fps: 1,
+        durationSeconds: 1,
+        backgroundColor: 0xFFFFFFFF,
+      )).id;
+      final first = await create('First');
+      final second = await create('Second');
+      final scene = ps.scenesOf(first).first.id;
+      final finish = Completer<void>();
+      final automation = ps.editProjectWithAutomation(
+        first,
+        'Recipe',
+        () async {
+          await finish.future;
+          ps.addFrame(first, scene);
+        },
+      );
+      final tags = ['Test'];
+      await ps.setProjectTags(second, tags);
+      tags.clear();
+      await ps.setEnabledAutofillPresetIds(second, ['preset']);
+      await ps.setEnabledAutofillPresetIds(second, ['preset']);
+      finish.complete();
+      await automation;
+
+      Project project() => ps.projects.firstWhere((p) => p.id == second);
+      expect(project().tags, ['Test']);
+      history.undo(projectId: second);
+      expect(project().enabledAutofillPresetIds, isNull);
+      expect(project().tags, ['Test']);
+      history.undo(projectId: second);
+      expect(project().tags, isEmpty);
+      expect(history.canUndoFor(second), isFalse);
+      history.redo(projectId: second);
+      history.redo(projectId: second);
+      expect(project().tags, ['Test']);
+      expect(project().enabledAutofillPresetIds, ['preset']);
+      expect(ps.frameCount(first, scene), 2);
+      history.undo(projectId: first);
+      expect(ps.frameCount(first, scene), 1);
+      expect(project().tags, ['Test']);
+      await ps.saveProject(first);
+      await ps.saveProject(second);
+    },
+  );
 
   test(
     'switching between open projects keeps their undo and redo separate',
@@ -138,6 +197,7 @@ void main() {
       history.undo();
       expect(current(), isEmpty);
       expect(rows(), 1);
+      expect(ps.isMaterialUsed(id, 'sound'), isTrue);
       history.redo();
 
       final moved = clip.copyWith(
@@ -174,10 +234,13 @@ void main() {
       }, changesTiles: false);
       expect(current(), isEmpty);
       expect(rows(), 1);
+      expect(ps.isMaterialUsed(id, 'sound'), isTrue);
       history.undo();
       expect(current(), [moved, duplicate]);
       expect(rows(), 2);
       history.redo();
+      history.clear();
+      expect(ps.isMaterialUsed(id, 'sound'), isFalse);
       expect(current(), isEmpty);
       expect(rows(), 1);
       await ps.saveProject(id);

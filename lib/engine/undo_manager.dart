@@ -20,7 +20,7 @@ class UndoManager extends ChangeNotifier {
   }
 
   void discardProject(String projectId) {
-    if (_projectStacks.remove(projectId) != null && _projectId == projectId) {
+    if (_projectStacks.remove(projectId) != null) {
       notifyListeners();
     }
   }
@@ -29,6 +29,27 @@ class UndoManager extends ChangeNotifier {
   int get redoCount => _redoStack.length;
   bool get canUndo => _undoStack.isNotEmpty;
   bool get canRedo => _redoStack.isNotEmpty;
+
+  bool canUndoFor(String projectId) =>
+      _projectStacks[projectId]?.undo.isNotEmpty ?? false;
+
+  bool canRedoFor(String projectId) =>
+      _projectStacks[projectId]?.redo.isNotEmpty ?? false;
+
+  bool retainsMaterial(String projectId, String materialId) {
+    final history = _projectStacks[projectId];
+    if (history == null) return false;
+    bool needsMaterial(UndoAction action) => switch (action) {
+      ProjectEditUndoAction() => action.retainedMaterialIds.contains(
+        materialId,
+      ),
+      LayerAddUndoAction() => action.materialId == materialId,
+      LayerRemoveUndoAction() => action.materialId == materialId,
+      _GroupedUndoAction() => action._actions.any(needsMaterial),
+      _ => false,
+    };
+    return history.undo.any(needsMaterial) || history.redo.any(needsMaterial);
+  }
 
   void setMaxUndoCount(int count) {
     // 負の数だと、空の履歴からさらに取り除こうとして例外になる。
@@ -53,7 +74,7 @@ class UndoManager extends ChangeNotifier {
     history.undo.add(action);
     history.redo.clear();
     if (history.undo.length > _maxUndoCount) history.undo.removeAt(0);
-    if (id == _projectId) notifyListeners();
+    notifyListeners();
   }
 
   /// Records a serialized operation as one history entry. Partial changes remain
@@ -80,18 +101,18 @@ class UndoManager extends ChangeNotifier {
     }
   }
 
-  void undo() {
-    if (!canUndo) return;
-    final history = _stacksFor(_projectId);
+  void undo({String? projectId}) {
+    final history = _stacksFor(projectId ?? _projectId);
+    if (history.undo.isEmpty) return;
     final action = history.undo.removeLast();
     action.undo();
     history.redo.add(action);
     notifyListeners();
   }
 
-  void redo() {
-    if (!canRedo) return;
-    final history = _stacksFor(_projectId);
+  void redo({String? projectId}) {
+    final history = _stacksFor(projectId ?? _projectId);
+    if (history.redo.isEmpty) return;
     final action = history.redo.removeLast();
     action.redo();
     history.undo.add(action);
@@ -117,12 +138,18 @@ abstract class UndoAction {
 }
 
 class ProjectEditUndoAction extends UndoAction {
-  ProjectEditUndoAction(this.description, this.before, this.after);
+  ProjectEditUndoAction(
+    this.description,
+    this.before,
+    this.after, {
+    this.retainedMaterialIds = const {},
+  });
 
   @override
   final String description;
   final VoidCallback before;
   final VoidCallback after;
+  final Iterable<String> retainedMaterialIds;
 
   @override
   void undo() => before();
@@ -202,6 +229,7 @@ class LayerAddUndoAction extends UndoAction {
   final int frameIndex;
   final String layerId;
   final int insertIndex;
+  final String? materialId;
   final void Function(
     String projectId,
     String sceneId,
@@ -224,6 +252,7 @@ class LayerAddUndoAction extends UndoAction {
     required this.frameIndex,
     required this.layerId,
     required this.insertIndex,
+    this.materialId,
     required this._doAdd,
     required this._doRemove,
   });
@@ -246,6 +275,7 @@ class LayerRemoveUndoAction extends UndoAction {
   final int frameIndex;
   final String layerId;
   final int removedIndex;
+  final String? materialId;
   final void Function(
     String projectId,
     String sceneId,
@@ -268,6 +298,7 @@ class LayerRemoveUndoAction extends UndoAction {
     required this.frameIndex,
     required this.layerId,
     required this.removedIndex,
+    this.materialId,
     required this._doAdd,
     required this._doRemove,
   });

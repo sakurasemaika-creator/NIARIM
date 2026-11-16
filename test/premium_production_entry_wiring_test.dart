@@ -87,8 +87,16 @@ void main() {
     ).readAsStringSync();
 
     expect(source, contains('Future<void> _addWatermarkLayer('));
-    expect(source, contains('Future<bool> _reRasterizeWatermark('));
-    expect(source, contains('if (!await _reRasterizeWatermark('));
+    expect(source, contains('Future<Uint8List?> _rasterizeWatermarkForEdit('));
+    final edit = source.substring(
+      source.indexOf('final pixels = await _rasterizeWatermarkForEdit('),
+    );
+    final stopOnFailure = edit.indexOf(
+      'if (pixels == null || !mounted) return;',
+    );
+    final write = edit.indexOf('ps.replaceLayerPixels(');
+    expect(stopOnFailure, greaterThanOrEqualTo(0));
+    expect(write, greaterThan(stopOnFailure));
     expect(
       RegExp(r'PremiumFeature\.watermark').allMatches(source).length,
       greaterThanOrEqualTo(6),
