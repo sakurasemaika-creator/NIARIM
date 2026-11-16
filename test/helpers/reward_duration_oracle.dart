@@ -129,7 +129,7 @@ const rewardDurationLanguages = <RewardDurationLanguage>[
       'hour_1': '1 heure',
     },
     redeemConfirmation:
-        'Pack complet d\'avantages (comme l\'abonnement Premium) · 1 mois · 44000 opales',
+        'Pack complet d’avantages (comme l’abonnement Premium) · 1 mois · 44000 opales',
   ),
   RewardDurationLanguage(
     code: 'ko',
