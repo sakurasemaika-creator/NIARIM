@@ -10,6 +10,7 @@ import '../../../l10n/reward_navigation_labels.dart';
 import '../../../l10n/creator_mission_labels.dart';
 import '../../help/guide_hub_screen.dart';
 import '../../../config/font_fallback.dart';
+import '../../../utils/line_break.dart';
 import '../../canvas/widgets/canvas_icon_button.dart';
 
 /// Server status alone controls the mission drawer exclamation mark.
@@ -18,6 +19,15 @@ bool missionDrawerNeedsAttention(Map<String, dynamic>? result) =>
 
 class HomeDrawer extends StatefulWidget {
   const HomeDrawer({super.key, this.refreshToken = 0});
+
+  /// 画面の幅[screenWidth]での引き出しの幅。外側（押して閉じる幕）に少なく
+  /// とも上部バーの高さ（56px）を残す。普通のスマホ（360px以上）とPCは
+  /// Materialの既定の304px（以前は320pxの画面でも304pxのままで、外側が約16px
+  /// しか残らず、外を押して閉じにくかった）。
+  static double widthFor(double screenWidth) {
+    final roomy = screenWidth - kToolbarHeight;
+    return roomy < 304 ? (roomy < 0 ? 0 : roomy) : 304;
+  }
 
   /// Increment when the hamburger menu opens, to refresh achievements after
   /// posting a work or returning from the mission claim screen.
@@ -68,6 +78,7 @@ class _HomeDrawerState extends State<HomeDrawer> {
         Icon(icon, color: scheme.primary, shadows: iconShadows);
     final l10n = AppLocalizations.of(context)!;
     return Drawer(
+      width: HomeDrawer.widthFor(MediaQuery.sizeOf(context).width),
       backgroundColor: drawerBackground,
       child: ListTileTheme(
         data: theme.listTileTheme.copyWith(
@@ -124,8 +135,13 @@ class _HomeDrawerState extends State<HomeDrawer> {
                     ),
                   ),
                   const SizedBox(height: 2),
-                  Text(
-                    l10n.homeDrawerAppTagline,
+                  // 韓国語は語の途中で行を変えない（引き出しが狭い画面では
+                  // 「제 / 작」と切れた）。読み上げは元の文。
+                  Text.rich(
+                    TextSpan(
+                      text: keepKoreanWordsTogether(l10n.homeDrawerAppTagline),
+                      semanticsLabel: l10n.homeDrawerAppTagline,
+                    ),
                     style: TextStyle(color: scheme.onPrimary, fontSize: 12),
                   ),
                 ],
