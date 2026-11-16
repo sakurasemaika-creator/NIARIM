@@ -1645,7 +1645,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get helpToneFillDesc =>
-      'Cambiar el ajuste de la herramienta de cubo de relleno sólido a relleno con tramas permite rellenar con una trama de semitonos o líneas elegida. También hay tramas de damero y cuadrícula exclusivas del modo píxel, para rellenos que combinan con una textura pixel art. Ideal para volantes, tejidos de punto, medias y otros patrones finos tediosos de dibujar a mano. También puedes crear y añadir tus propias tramas personalizadas, o compartirlas con otros usuarios.';
+      'Cambiar el ajuste de la herramienta de cubo de relleno sólido a relleno con tramas permite rellenar con una trama de semitonos o líneas elegida. También hay tramas de damero y cuadrícula exclusivas del modo píxel, para rellenos que combinan con una textura pixel art. Ideal para volantes, tejidos de punto, medias y otros patrones finos tediosos de dibujar a mano. También puedes crear y añadir tus propias tramas personalizadas, o compartirlas con otros usuarios. La lista agrupa los semitonos, las líneas, los tejidos y los patrones de píxeles. El nombre de cada trama de píxeles indica el tamaño del grano, el de la matriz y la cobertura.';
 
   @override
   String get helpPixelModeTitle => 'Modo píxel';
@@ -7288,7 +7288,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get tipsFourPanelBrushDesc =>
-      'El preajuste «Manga de cuatro viñetas» no repite en dirección transversal al trazo. Coloca marcos cuadrados a intervalos regulares a lo largo del trazo. Activa la regla recta y dibuja una línea para crear fácilmente viñetas alineadas.';
+      'El pincel Manga de cuatro viñetas coloca marcos cuadrados de línea fina a lo largo del trazo. El tamaño del pincel controla el tamaño de las viñetas y su separación. Activa la regla recta para alinearlas en horizontal o en vertical.';
 
   @override
   String get canvasSelectionReferenceWorkingLayer => 'Solo capa de trabajo';

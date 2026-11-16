@@ -10,6 +10,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../engine/procedural_texture.dart';
 import '../models/asset_tags.dart';
 import '../models/tone.dart';
+import '../utils/built_in_preset_order.dart';
 import '../utils/creative_image_source.dart';
 import '../utils/duplicate_name.dart';
 import '../utils/saved_list_reader.dart';
@@ -89,14 +90,89 @@ class ToneService extends ChangeNotifier {
     notifyListeners();
   }
 
-  static List<Tone> _defaultTones() => _toneDefinitions
-      .map(
-        (tone) => tone.copyWith(
-          texturePath: 'assets/tones/${tone.id}.png',
-          pixelMode: tone.name.startsWith('ピクセル'),
+  static const _presetOrder = [
+    // Halftone dots by coverage.
+    'Tone0001',
+    'Tone0026',
+    'Tone0002',
+    'Tone0027',
+    'Tone0003',
+    'Tone0028',
+    'Tone0004',
+    'Tone0029',
+    'Tone0030',
+    // Lines, hatches and grids.
+    'Tone0005',
+    'Tone0006',
+    'Tone0031',
+    'Tone0032',
+    'Tone0033',
+    'Tone0034',
+    'Tone0035',
+    'Tone0036',
+    'Tone0037',
+    'Tone0038',
+    'Tone0039',
+    'Tone0046',
+    'Tone0047',
+    // Grain and background patterns.
+    'Tone0040',
+    'Tone0041',
+    'Tone0042',
+    'Tone0043',
+    'Tone0044',
+    'Tone0045',
+    // Fabric patterns.
+    'Tone0010',
+    'Tone0011',
+    'Tone0012',
+    'Tone0013',
+    'Tone0014',
+    'Tone0015',
+    // Pixel patterns and pixel grain.
+    'Tone0007',
+    'Tone0008',
+    'Tone0065',
+    'Tone0009',
+    'Tone0048',
+    'Tone0049',
+    'Tone0050',
+    'Tone0054',
+    'Tone0051',
+    'Tone0052',
+    'Tone0053',
+    // Dither by matrix size and coverage.
+    'Tone0023',
+    'Tone0024',
+    'Tone0025',
+    'Tone0016',
+    'Tone0017',
+    'Tone0018',
+    'Tone0019',
+    'Tone0020',
+    'Tone0021',
+    'Tone0022',
+    'Tone0055',
+    'Tone0056',
+    'Tone0057',
+    'Tone0058',
+    'Tone0059',
+    'Tone0060',
+    'Tone0061',
+    'Tone0062',
+  ];
+  static const _groupedPresetsKey = 'tone_grouped_presets_v1';
+
+  static List<Tone> _defaultTones() {
+    final definitions = {for (final tone in _toneDefinitions) tone.id: tone};
+    return [
+      for (final id in _presetOrder)
+        definitions[id]!.copyWith(
+          texturePath: 'assets/tones/$id.png',
+          pixelMode: definitions[id]!.name.startsWith('ピクセル'),
         ),
-      )
-      .toList();
+    ];
+  }
 
   static final _toneDefinitions = <Tone>[
     const Tone(
@@ -197,52 +273,52 @@ class ToneService extends ChangeNotifier {
     // うち代表的な3段階）の2系統を用意する。
     const Tone(
       id: 'Tone0016',
-      name: 'ピクセルディザ 12%（4×4）',
+      name: 'ピクセルディザ（標準・4×4・12%）',
       tags: [AssetTagKeys.pixelArt, AssetTagKeys.gradient],
     ),
     const Tone(
       id: 'Tone0017',
-      name: 'ピクセルディザ 25%（4×4）',
+      name: 'ピクセルディザ（標準・4×4・25%）',
       tags: [AssetTagKeys.pixelArt, AssetTagKeys.gradient],
     ),
     const Tone(
       id: 'Tone0018',
-      name: 'ピクセルディザ 37%（4×4）',
+      name: 'ピクセルディザ（標準・4×4・37%）',
       tags: [AssetTagKeys.pixelArt, AssetTagKeys.gradient],
     ),
     const Tone(
       id: 'Tone0019',
-      name: 'ピクセルディザ 50%（4×4）',
+      name: 'ピクセルディザ（標準・4×4・50%）',
       tags: [AssetTagKeys.pixelArt, AssetTagKeys.gradient],
     ),
     const Tone(
       id: 'Tone0020',
-      name: 'ピクセルディザ 62%（4×4）',
+      name: 'ピクセルディザ（標準・4×4・62%）',
       tags: [AssetTagKeys.pixelArt, AssetTagKeys.gradient],
     ),
     const Tone(
       id: 'Tone0021',
-      name: 'ピクセルディザ 75%（4×4）',
+      name: 'ピクセルディザ（標準・4×4・75%）',
       tags: [AssetTagKeys.pixelArt, AssetTagKeys.gradient],
     ),
     const Tone(
       id: 'Tone0022',
-      name: 'ピクセルディザ 87%（4×4）',
+      name: 'ピクセルディザ（標準・4×4・87%）',
       tags: [AssetTagKeys.pixelArt, AssetTagKeys.gradient],
     ),
     const Tone(
       id: 'Tone0023',
-      name: 'ピクセルディザ(粗) 25%（2×2）',
+      name: 'ピクセルディザ（粗目・2×2・25%）',
       tags: [AssetTagKeys.pixelArt, AssetTagKeys.gradient],
     ),
     const Tone(
       id: 'Tone0024',
-      name: 'ピクセルディザ(粗) 50%（2×2）',
+      name: 'ピクセルディザ（粗目・2×2・50%）',
       tags: [AssetTagKeys.pixelArt, AssetTagKeys.gradient],
     ),
     const Tone(
       id: 'Tone0025',
-      name: 'ピクセルディザ(粗) 75%（2×2）',
+      name: 'ピクセルディザ（粗目・2×2・75%）',
       tags: [AssetTagKeys.pixelArt, AssetTagKeys.gradient],
     ),
     // ── ここから下は「よくあるイラスト制作ソフトなら入っている定番」を
@@ -405,42 +481,42 @@ class ToneService extends ChangeNotifier {
     // なだらかなグラデーションをドット絵として落とし込める。
     const Tone(
       id: 'Tone0055',
-      name: 'ピクセルディザ(細) 6%（8×8）',
+      name: 'ピクセルディザ（細目・8×8・6%）',
       tags: [AssetTagKeys.pixelArt, AssetTagKeys.gradient],
     ),
     const Tone(
       id: 'Tone0056',
-      name: 'ピクセルディザ(細) 19%（8×8）',
+      name: 'ピクセルディザ（細目・8×8・19%）',
       tags: [AssetTagKeys.pixelArt, AssetTagKeys.gradient],
     ),
     const Tone(
       id: 'Tone0057',
-      name: 'ピクセルディザ(細) 31%（8×8）',
+      name: 'ピクセルディザ（細目・8×8・31%）',
       tags: [AssetTagKeys.pixelArt, AssetTagKeys.gradient],
     ),
     const Tone(
       id: 'Tone0058',
-      name: 'ピクセルディザ(細) 44%（8×8）',
+      name: 'ピクセルディザ（細目・8×8・44%）',
       tags: [AssetTagKeys.pixelArt, AssetTagKeys.gradient],
     ),
     const Tone(
       id: 'Tone0059',
-      name: 'ピクセルディザ(細) 56%（8×8）',
+      name: 'ピクセルディザ（細目・8×8・56%）',
       tags: [AssetTagKeys.pixelArt, AssetTagKeys.gradient],
     ),
     const Tone(
       id: 'Tone0060',
-      name: 'ピクセルディザ(細) 69%（8×8）',
+      name: 'ピクセルディザ（細目・8×8・69%）',
       tags: [AssetTagKeys.pixelArt, AssetTagKeys.gradient],
     ),
     const Tone(
       id: 'Tone0061',
-      name: 'ピクセルディザ(細) 81%（8×8）',
+      name: 'ピクセルディザ（細目・8×8・81%）',
       tags: [AssetTagKeys.pixelArt, AssetTagKeys.gradient],
     ),
     const Tone(
       id: 'Tone0062',
-      name: 'ピクセルディザ(細) 94%（8×8）',
+      name: 'ピクセルディザ（細目・8×8・94%）',
       tags: [AssetTagKeys.pixelArt, AssetTagKeys.gradient],
     ),
     // 反転格子（旧 Tone0063）は散らし（Tone0009）と重複するため退役済み。
@@ -460,7 +536,10 @@ class ToneService extends ChangeNotifier {
       _tones.addAll(_defaultTones());
       // 読めない型の値が入っているときは、既定の内容で動かすだけで
       // 保存は書き換えない。
-      if (!prefs.containsKey(_prefsKey)) await _persist();
+      if (!prefs.containsKey(_prefsKey)) {
+        await _persist();
+        await prefs.setBool(_groupedPresetsKey, true);
+      }
     } else {
       var intact = true;
       _tones.addAll(
@@ -507,6 +586,15 @@ class ToneService extends ChangeNotifier {
         final oldName = originalStripeNames[_tones[i].id];
         if (oldName != null && _tones[i].name == oldName) {
           _tones[i] = _tones[i].copyWith(name: defaults[_tones[i].id]!.name);
+          changed = true;
+        }
+      }
+      // Older built-ins used separate spellings for each dither matrix.
+      for (var i = 0; i < _tones.length; i++) {
+        final saved = _tones[i];
+        final name = defaults[saved.id]?.name;
+        if (name != null && name.startsWith('ピクセルディザ（') && saved.name != name) {
+          _tones[i] = saved.copyWith(name: name);
           changed = true;
         }
       }
@@ -569,7 +657,20 @@ class ToneService extends ChangeNotifier {
       // 読めない項目があった保存は、起動では書き換えない（後の版でなら
       // 読めるかもしれない自作の内容を、起動しただけで消さない。その一覧を
       // 次に変えたときに、読めた分だけで保存し直される）。
+      if (prefs.getBool(_groupedPresetsKey) != true) {
+        if (groupUnfiledBuiltIns(
+          _tones,
+          _presetOrder,
+          idOf: (preset) => preset.id,
+          folderOf: (preset) => preset.folderId,
+        )) {
+          changed = true;
+        }
+      }
       if (changed && intact) await _persist();
+      if (intact && prefs.getBool(_groupedPresetsKey) != true) {
+        await prefs.setBool(_groupedPresetsKey, true);
+      }
     }
     final foldersRaw = prefs.readStringList(_foldersKey);
     _folders.clear();

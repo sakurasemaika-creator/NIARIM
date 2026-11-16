@@ -1565,7 +1565,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get helpToneFillDesc =>
-      '在填充工具的设置中把纯色填充切换为网点填充，就能用选中的网点、线条等网点图案进行填充。还提供像素模式专用的方格纹、格子纹网点，可以做出符合像素画质感的上色效果。荷叶边、针织纹理、连裤袜等手绘起来很费工夫的细致花纹也能轻松画出。还可以自制原创网点并添加使用，或与其他用户分享。';
+      '在填充工具的设置中把纯色填充切换为网点填充，就能用选中的网点、线条等网点图案进行填充。还提供像素模式专用的方格纹、格子纹网点，可以做出符合像素画质感的上色效果。荷叶边、针织纹理、连裤袜等手绘起来很费工夫的细致花纹也能轻松画出。还可以自制原创网点并添加使用，或与其他用户分享。 色调列表按网点、线条、织物图案和像素图案分组。像素抖动的名称会显示颗粒粗细、矩阵大小和覆盖率。';
 
   @override
   String get helpPixelModeTitle => '像素模式';
@@ -6849,7 +6849,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get tipsFourPanelBrushDesc =>
-      '预设“四格漫画”画笔不会在笔画的横向重复，而是沿笔画前进方向以固定间隔排列方形边框。开启直线尺后画一条直线，就能轻松绘制整齐的四格漫画分格。';
+      '四格漫画画笔沿笔画排列细线方框。画笔大小同时控制分格大小与间距。打开直线尺即可绘制水平或垂直的整齐分格。';
 
   @override
   String get canvasSelectionReferenceWorkingLayer => '仅工作图层';
@@ -11587,7 +11587,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get helpToneFillDesc =>
-      '在填色工具的設定中把純色填滿切換為網點填滿，就能用選中的網點、線條等網點圖案進行填滿。還提供像素模式專用的方格紋、格子紋網點，可以做出符合像素畫質感的上色效果。荷葉邊、針織紋理、褲襪等手繪起來很費工夫的細緻花紋也能輕鬆畫出。還可以自製原創網點並新增使用，或與其他使用者分享。';
+      '在填色工具的設定中把純色填滿切換為網點填滿，就能用選中的網點、線條等網點圖案進行填滿。還提供像素模式專用的方格紋、格子紋網點，可以做出符合像素畫質感的上色效果。荷葉邊、針織紋理、褲襪等手繪起來很費工夫的細緻花紋也能輕鬆畫出。還可以自製原創網點並新增使用，或與其他使用者分享。 網點素材清單將網點、線條、織物與像素圖案分組。像素抖動的名稱會顯示顆粒粗細、矩陣大小與覆蓋率。';
 
   @override
   String get helpPixelModeTitle => '像素模式';
@@ -16871,7 +16871,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get tipsFourPanelBrushDesc =>
-      '預設「四格漫畫」筆刷不會在筆畫的橫向重複，而是沿筆畫前進方向以固定間隔排列方形邊框。開啟直線尺後畫一條直線，就能輕鬆繪製整齊的四格漫畫分格。';
+      '四格漫畫筆刷沿筆畫排列細線方框。筆刷大小同時控制分格大小與間距。開啟直線尺即可畫出水平或垂直的整齊分格。';
 
   @override
   String get canvasSelectionReferenceWorkingLayer => '僅工作圖層';

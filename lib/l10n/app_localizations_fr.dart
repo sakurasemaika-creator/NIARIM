@@ -1639,7 +1639,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get helpToneFillDesc =>
-      'Passer le réglage de l’outil seau du remplissage uni au remplissage en trame permet de remplir avec une trame de demi-teintes ou de lignes choisie. Des trames en damier et en grille réservées au mode pixel sont aussi disponibles, pour des remplissages assortis à une texture pixel art. Idéal pour les volants, le tricot, les collants et autres motifs fins fastidieux à dessiner à la main. Vous pouvez aussi créer et ajouter vos propres trames personnalisées, ou les partager avec d’autres utilisateurs.';
+      'Passer le réglage de l’outil seau du remplissage uni au remplissage en trame permet de remplir avec une trame de demi-teintes ou de lignes choisie. Des trames en damier et en grille réservées au mode pixel sont aussi disponibles, pour des remplissages assortis à une texture pixel art. Idéal pour les volants, le tricot, les collants et autres motifs fins fastidieux à dessiner à la main. Vous pouvez aussi créer et ajouter vos propres trames personnalisées, ou les partager avec d’autres utilisateurs. La liste regroupe les trames, les lignes, les motifs textiles et les motifs pixel. Le nom des trames de dithering indique le grain, la taille de la matrice et la couverture.';
 
   @override
   String get helpPixelModeTitle => 'Mode pixel';
@@ -7295,7 +7295,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get tipsFourPanelBrushDesc =>
-      'Le préréglage « Manga quatre cases » ne se répète pas transversalement au trait. Il place des cadres carrés à intervalles réguliers dans le sens du trait. Activez la règle droite et tracez une ligne pour créer facilement des cases de manga bien alignées.';
+      'Le pinceau Manga quatre cases place des cadres carrés aux traits fins le long du tracé. La taille du pinceau règle à la fois la taille des cases et leur espacement. Activez la règle droite pour les aligner à l’horizontale ou à la verticale.';
 
   @override
   String get canvasSelectionReferenceWorkingLayer =>

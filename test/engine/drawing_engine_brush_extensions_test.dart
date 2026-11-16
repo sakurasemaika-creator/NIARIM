@@ -1,12 +1,14 @@
 import 'dart:ui';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:niarim/engine/brush_texture_cache.dart';
 import 'package:niarim/engine/drawing_engine.dart';
 import 'package:niarim/engine/tile_manager.dart';
 import 'package:niarim/models/brush.dart';
 import 'package:niarim/models/brush_presets_extension.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
   Brush brush({
     bool lateral = false,
     int count = 1,
@@ -119,47 +121,40 @@ void main() {
   });
 
   test(
-    'four-panel manga preset stamps hollow squares only along stroke direction',
-    () {
+    'four-panel manga keeps a thin frame and scales the gap with brush size',
+    () async {
       final preset = brushExtensionPresets().singleWhere(
         (b) => b.id == 'Brush0025',
       );
-      final engine =
-          DrawingEngine(
-              tileManager: TileManager(canvasWidth: 512, canvasHeight: 256),
-            )
-            ..currentBrush = preset
-            ..currentColor = const Color(0xFF000000);
-
-      engine.beginStroke(
-        const StrokePoint(x: 80, y: 128, pressure: 1, tiltX: 0, tiltY: 0),
-        'layer',
+      await preloadBrushTextures(
+        preset.resolvedCustomImagePaths,
+        mode: preset.imageInkMode,
       );
-      for (var x = 100.0; x <= 420; x += 20) {
-        engine.continueStroke(
-          StrokePoint(x: x, y: 128, pressure: 1, tiltX: 0, tiltY: 0),
-          'layer',
+      for (final size in [40.0, 80.0]) {
+        final engine =
+            DrawingEngine(
+                tileManager: TileManager(canvasWidth: 256, canvasHeight: 256),
+              )
+              ..currentBrush = preset.copyWith(size: size, stabilization: false)
+              ..currentColor = const Color(0xFF000000);
+
+        engine.beginStroke(const StrokePoint(x: 64, y: 128), 'layer');
+        engine.continueStroke(StrokePoint(x: 64 + 1.3 * size, y: 128), 'layer');
+        engine.endStroke();
+
+        final frameLeft = (64 - size * .47).round();
+        final nextFrame = (64 + 1.15 * size).round();
+        expect(pixel(engine, 64, 128)[3], 0);
+        expect(pixel(engine, frameLeft, 128)[3], greaterThan(0));
+        expect(pixel(engine, frameLeft + (size * .08).ceil(), 128)[3], 0);
+        expect(pixel(engine, (64 + size * .55).round(), 128)[3], 0);
+        expect(pixel(engine, nextFrame, 128)[3], 0);
+        expect(
+          pixel(engine, nextFrame, (128 - size * .47).round())[3],
+          greaterThan(0),
         );
+        expect(pixel(engine, 64, (128 - size).round())[3], 0);
       }
-      engine.endStroke();
-
-      // The hollow-square center remains empty while its frame is inked.
-      expect(pixel(engine, 80, 128)[3], 0);
-      expect(pixel(engine, 40, 128)[3], greaterThan(0));
-
-      // With lateral repetition disabled there must be no parallel rows one
-      // brush-width above or below the stroke.
-      expect(pixel(engine, 80, 48)[3], 0);
-      expect(pixel(engine, 80, 208)[3], 0);
-
-      // A later frame is stamped along the stroke direction, not just at start.
-      var laterFrameInk = 0;
-      for (var y = 88; y <= 168; y++) {
-        for (var x = 160; x <= 420; x++) {
-          if (pixel(engine, x, y)[3] > 0) laterFrameInk++;
-        }
-      }
-      expect(laterFrameInk, greaterThan(0));
     },
   );
 

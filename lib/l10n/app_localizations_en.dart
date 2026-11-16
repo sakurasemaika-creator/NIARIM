@@ -1615,7 +1615,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpToneFillDesc =>
-      'Switching the bucket tool\'s setting from solid fill to screentone fill lets you fill with a chosen halftone or line-pattern screentone. Pixel-mode-only checker and grid patterns are also available, for fills that fit a pixel-art texture. Great for frills, knitwear, tights, and other fine patterns that are tedious to draw by hand. You can also create and add your own custom screentones, or share them with other users.';
+      'Switching the bucket tool\'s setting from solid fill to screentone fill lets you fill with a chosen halftone or line-pattern screentone. Pixel-mode-only checker and grid patterns are also available, for fills that fit a pixel-art texture. Great for frills, knitwear, tights, and other fine patterns that are tedious to draw by hand. You can also create and add your own custom screentones, or share them with other users. The tone list groups halftones, lines, fabric patterns, and pixel patterns. Pixel dither names show the grain size, matrix size, and coverage.';
 
   @override
   String get helpPixelModeTitle => 'Pixel mode';
@@ -7174,7 +7174,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tipsFourPanelBrushDesc =>
-      'The “Four-panel Manga” preset does not repeat across the stroke. It places square frames at regular intervals along the stroke direction. Turn on the Line Ruler and draw a straight stroke to quickly create evenly aligned four-panel comic frames.';
+      'The Four-panel Manga brush places thin square frames along the stroke. Brush size controls both the frame size and the gap. Turn on the Line Ruler to draw straight horizontal or vertical rows.';
 
   @override
   String get canvasSelectionReferenceWorkingLayer => 'Working layer only';

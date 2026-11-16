@@ -14,6 +14,7 @@ import '../engine/brush_texture_cache.dart';
 import '../models/asset_tags.dart';
 import '../models/brush.dart';
 import '../models/brush_presets_extension.dart';
+import '../utils/built_in_preset_order.dart';
 import '../utils/creative_image_source.dart';
 import '../utils/duplicate_name.dart';
 import '../utils/tolerant_preferences.dart';
@@ -101,8 +102,52 @@ class BrushService extends ChangeNotifier {
     );
   }
 
-  static List<Brush> _defaultBrushes() =>
-      _brushDefinitions.map(_withDefaultTip).toList();
+  static const _presetOrder = [
+    // Linework and flat tips.
+    'Brush0001',
+    'Brush0002',
+    'Brush0008',
+    'Brush0015',
+    'Brush0006',
+    'Brush0009',
+    'Brush0005',
+    // Dry and wet media.
+    'Brush0007',
+    'Brush0028',
+    'Brush0012',
+    'Brush0026',
+    'Brush0029',
+    'Brush0010',
+    'Brush0027',
+    'Brush0004',
+    // Airbrush, spray and blending.
+    'Brush0003',
+    'Brush0013',
+    'Brush0011',
+    // Pixel drawing.
+    'Brush0014',
+    // Decorations and grids.
+    'Brush0016',
+    'Brush0017',
+    'Brush0018',
+    'Brush0019',
+    'Brush0020',
+    'Brush0021',
+    'Brush0022',
+    'Brush0025',
+    // Hair and scenery.
+    'Brush0023',
+    'Brush0024',
+    'Brush0030',
+  ];
+  static const _groupedPresetsKey = 'brush_grouped_presets_v1';
+
+  static List<Brush> _defaultBrushes() {
+    final definitions = {
+      for (final brush in _brushDefinitions) brush.id: brush,
+    };
+    return [for (final id in _presetOrder) _withDefaultTip(definitions[id]!)];
+  }
 
   static final _brushDefinitions = <Brush>[
     const Brush(
@@ -922,7 +967,10 @@ class BrushService extends ChangeNotifier {
       // 既定の内容で動かすだけで、保存は書き換えない（自作のブラシが
       // 入っているかもしれない保存を、起動しただけで消さない）。
       _brushes.addAll(_defaultBrushes().map(_withWorkingValues));
-      if (!prefs.containsKey(_prefsKey)) await _persist();
+      if (!prefs.containsKey(_prefsKey)) {
+        await _persist();
+        await prefs.setBool(_groupedPresetsKey, true);
+      }
     } else {
       // 1件ずつ読む。壊れた1件（途中で切れた・項目の欠けた保存）で全体を
       // 読めなくすると、起動の初期化が毎回同じ所で失敗して二度と起動
@@ -1006,8 +1054,21 @@ class BrushService extends ChangeNotifier {
           needsPersist = true;
         }
       }
+      if (prefs.getBool(_groupedPresetsKey) != true) {
+        if (groupUnfiledBuiltIns(
+          _brushes,
+          _presetOrder,
+          idOf: (preset) => preset.id,
+          folderOf: (preset) => preset.folderId,
+        )) {
+          needsPersist = true;
+        }
+      }
       if (needsPersist) {
         await _persist();
+      }
+      if (prefs.getBool(_groupedPresetsKey) != true) {
+        await prefs.setBool(_groupedPresetsKey, true);
       }
     }
     final foldersRaw = prefs.readStringList(_foldersKey);

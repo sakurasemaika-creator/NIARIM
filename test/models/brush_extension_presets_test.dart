@@ -27,7 +27,7 @@ void main() {
   test('net preset uses lateral repetition and hollow square tip', () {
     final net = brushExtensionPresets().singleWhere((b) => b.id == 'Brush0022');
     expect(net.name, 'ネット');
-    expect(net.spacing, 100);
+    expect(net.tipSpacingFactor, .94);
     expect(net.lateralRepeatEnabled, isTrue);
     expect(net.lateralRepeatCount, 4);
     expect(net.tipShape, BrushTipShape.hollowSquare);

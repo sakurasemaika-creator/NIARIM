@@ -7,8 +7,7 @@ enum BrushImageInkMode { dark, light, alpha }
 enum HairFoldMode { waveTopView, waveLowAngle, curlRight, curlLeft, crescent }
 
 /// The widest stamp spacing (canvas px) the brush settings offer. Built-in
-/// brushes stay within it so a copy of any of them can be reproduced there
-/// (the four-panel comic brush spaces its frames 125 px apart).
+/// brushes stay within it so their settings can be reproduced in a copy.
 const int kBrushSpacingMax = 200;
 
 /// 保存した整数の項目を読む。同じ値の小数（80.0）で保存されていても読む

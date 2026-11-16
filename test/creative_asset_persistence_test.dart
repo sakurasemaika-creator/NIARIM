@@ -178,14 +178,14 @@ void main() {
       final source = s1.brushes.firstWhere((b) => b.id == 'Brush0025');
       expect(source.tipShape, BrushTipShape.hollowSquare);
       expect(source.rotation, isTrue);
-      expect(source.spacing, 125);
+      expect(source.tipSpacingFactor, 1.15);
       expect(source.size, 80);
 
       s1.duplicateBrush(source.id);
       final duplicate = s1.brushes.last;
       expect(duplicate.tipShape, BrushTipShape.hollowSquare);
       expect(duplicate.rotation, isTrue);
-      expect(duplicate.spacing, 125);
+      expect(duplicate.tipSpacingFactor, 1.15);
       expect(duplicate.size, 80);
 
       final s2 = BrushService();
@@ -193,7 +193,7 @@ void main() {
       final restored = s2.brushes.firstWhere((b) => b.id == duplicate.id);
       expect(restored.tipShape, BrushTipShape.hollowSquare);
       expect(restored.rotation, isTrue);
-      expect(restored.spacing, 125);
+      expect(restored.tipSpacingFactor, 1.15);
       expect(restored.size, 80);
     });
 
@@ -217,7 +217,7 @@ void main() {
 
         expect(imported.tipShape, BrushTipShape.hollowSquare);
         expect(imported.rotation, isTrue);
-        expect(imported.spacing, 125);
+        expect(imported.tipSpacingFactor, 1.15);
         expect(imported.size, 80);
         expect(imported.lateralRepeatEnabled, isFalse);
         expect(imported.lateralRepeatCount, 1);

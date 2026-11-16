@@ -10,6 +10,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../engine/procedural_texture.dart';
 import '../models/asset_tags.dart';
 import '../models/stamp.dart';
+import '../utils/built_in_preset_order.dart';
 import '../utils/creative_image_source.dart';
 import '../utils/duplicate_name.dart';
 import '../utils/saved_list_reader.dart';
@@ -68,11 +69,57 @@ class StampService extends ChangeNotifier {
   List<StampFolder> get folders => List.unmodifiable(_folders);
   Stamp? get currentStamp => _currentStamp;
 
-  static List<Stamp> _defaultStamps() => _stampDefinitions
-      .map(
-        (stamp) => stamp.copyWith(imagePath: 'assets/stamps/${stamp.id}.png'),
-      )
-      .toList();
+  static const _presetOrder = [
+    // Geometric shapes.
+    'Stamp0001',
+    'Stamp0009',
+    'Stamp0010',
+    'Stamp0011',
+    'Stamp0002',
+    'Stamp0003',
+    'Stamp0012',
+    'Stamp0008',
+    'Stamp0013',
+    // Comic and annotation symbols.
+    'Stamp0006',
+    'Stamp0007',
+    'Stamp0024',
+    'Stamp0023',
+    // Decorative and lighting shapes.
+    'Stamp0004',
+    'Stamp0015',
+    'Stamp0018',
+    'Stamp0005',
+    'Stamp0022',
+    'Stamp0021',
+    // Scenery.
+    'Stamp0020',
+    'Stamp0025',
+    'Stamp0026',
+  ];
+  static const _retiredBuiltInIds = {
+    'Stamp0014',
+    'Stamp0016',
+    'Stamp0017',
+    'Stamp0019',
+  };
+  static const _groupedPresetsKey = 'stamp_grouped_presets_v1';
+
+  static bool _usesRetiredBuiltIn(Stamp stamp) =>
+      _retiredBuiltInIds.contains(stamp.id) ||
+      _retiredBuiltInIds.any(
+        (id) => stamp.imagePath == 'assets/stamps/$id.png',
+      );
+
+  static List<Stamp> _defaultStamps() {
+    final definitions = {
+      for (final stamp in _stampDefinitions) stamp.id: stamp,
+    };
+    return [
+      for (final id in _presetOrder)
+        definitions[id]!.copyWith(imagePath: 'assets/stamps/$id.png'),
+    ];
+  }
 
   static final _stampDefinitions = <Stamp>[
     const Stamp(id: 'Stamp0001', name: '三角形', tags: [AssetTagKeys.shape]),
@@ -99,34 +146,14 @@ class StampService extends ChangeNotifier {
     const Stamp(id: 'Stamp0012', name: '八角形', tags: [AssetTagKeys.shape]),
     const Stamp(id: 'Stamp0013', name: 'ドーナツ', tags: [AssetTagKeys.shape]),
     const Stamp(
-      id: 'Stamp0014',
-      name: '十字',
-      tags: [AssetTagKeys.shape, AssetTagKeys.symbol],
-    ),
-    const Stamp(
       id: 'Stamp0015',
       name: '四芒星',
-      tags: [AssetTagKeys.decoration, AssetTagKeys.effect],
-    ),
-    const Stamp(
-      id: 'Stamp0016',
-      name: '六芒星',
-      tags: [AssetTagKeys.decoration, AssetTagKeys.effect],
-    ),
-    const Stamp(
-      id: 'Stamp0017',
-      name: '八芒星',
       tags: [AssetTagKeys.decoration, AssetTagKeys.effect],
     ),
     const Stamp(
       id: 'Stamp0018',
       name: 'キラキラ',
       tags: [AssetTagKeys.decoration, AssetTagKeys.effect],
-    ),
-    const Stamp(
-      id: 'Stamp0019',
-      name: '三日月',
-      tags: [AssetTagKeys.background, AssetTagKeys.decoration],
     ),
     const Stamp(
       id: 'Stamp0020',
@@ -175,7 +202,10 @@ class StampService extends ChangeNotifier {
       _stamps.addAll(_defaultStamps());
       // 読めない型の値が入っているときは、既定の内容で動かすだけで
       // 保存は書き換えない。
-      if (!prefs.containsKey(_prefsKey)) await _persist();
+      if (!prefs.containsKey(_prefsKey)) {
+        await _persist();
+        await prefs.setBool(_groupedPresetsKey, true);
+      }
     } else {
       var intact = true;
       _stamps.addAll(
@@ -185,11 +215,13 @@ class StampService extends ChangeNotifier {
       // （同じIDが既にあれば追加しない）。BrushService・ToneServiceは
       // 以前から同じマージをしていたが、StampServiceだけ抜けており、
       // プリセットを増やしても新規インストール時にしか出てこなかった。
+      final savedCount = _stamps.length;
+      _stamps.removeWhere(_usesRetiredBuiltIn);
       final existingIds = _stamps.map((e) => e.id).toSet();
       final missing = _defaultStamps().where(
         (e) => !existingIds.contains(e.id),
       );
-      var changed = false;
+      var changed = _stamps.length != savedCount;
       if (missing.isNotEmpty) {
         _stamps.addAll(missing);
         changed = true;
@@ -238,7 +270,20 @@ class StampService extends ChangeNotifier {
       // 読めない項目があった保存は、起動では書き換えない（後の版でなら
       // 読めるかもしれない自作の内容を、起動しただけで消さない。その一覧を
       // 次に変えたときに、読めた分だけで保存し直される）。
+      if (prefs.getBool(_groupedPresetsKey) != true) {
+        if (groupUnfiledBuiltIns(
+          _stamps,
+          _presetOrder,
+          idOf: (preset) => preset.id,
+          folderOf: (preset) => preset.folderId,
+        )) {
+          changed = true;
+        }
+      }
       if (changed && intact) await _persist();
+      if (intact && prefs.getBool(_groupedPresetsKey) != true) {
+        await prefs.setBool(_groupedPresetsKey, true);
+      }
     }
     final foldersRaw = prefs.readStringList(_foldersKey);
     _folders.clear();
@@ -361,12 +406,13 @@ class StampService extends ChangeNotifier {
     final folderIds = {for (final f in _folders) f.id};
     final resolved = <Stamp>[
       for (final item in incoming)
-        Stamp.fromJson({
-          ...item.toJson(),
-          if (!folderIds.contains(item.folderId)) 'folderId': null,
-          if (!_fileExists(item.imagePath))
-            'imagePath': _workingLocalImage(item.id) ?? item.imagePath,
-        }),
+        if (!_usesRetiredBuiltIn(item))
+          Stamp.fromJson({
+            ...item.toJson(),
+            if (!folderIds.contains(item.folderId)) 'folderId': null,
+            if (!_fileExists(item.imagePath))
+              'imagePath': _workingLocalImage(item.id) ?? item.imagePath,
+          }),
     ];
     // 画像は置いた場所ではなく中身で比べる。
     final images = await TransferImageDigests.read([
@@ -633,6 +679,9 @@ class StampService extends ChangeNotifier {
         jsonDecode(utf8.decode(dataFile.content as List<int>))
             as Map<String, dynamic>;
     final imported = Stamp.fromJson(json);
+    if (_usesRetiredBuiltIn(imported)) {
+      throw const FormatException('This bundled stamp has been retired.');
+    }
     final id = 'Stamp${DateTime.now().millisecondsSinceEpoch}';
     final imageFile = archive.files
         .where((f) => f.name.startsWith('image.'))

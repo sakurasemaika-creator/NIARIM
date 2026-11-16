@@ -2958,7 +2958,7 @@ abstract class AppLocalizations {
   /// No description provided for @helpToneFillDesc.
   ///
   /// In ja, this message translates to:
-  /// **'バケツツールの設定でベタ塗りからトーン塗りへ切り替えると、選択した網点・ライン柄などのトーンパターンで塗りつぶせます。ピクセルモード専用の市松模様・格子柄トーンも用意されており、ドット絵の質感を活かした塗りができます。フリルやニット、タイツなど、手描きでは手間のかかる細かい柄も簡単に描けます。オリジナルのトーンを自作して追加したり、ほかの人と共有したりすることも可能です。'**
+  /// **'バケツツールの設定でベタ塗りからトーン塗りへ切り替えると、選択した網点・ライン柄などのトーンパターンで塗りつぶせます。ピクセルモード専用の市松模様・格子柄トーンも用意されており、ドット絵の質感を活かした塗りができます。フリルやニット、タイツなど、手描きでは手間のかかる細かい柄も簡単に描けます。オリジナルのトーンを自作して追加したり、ほかの人と共有したりすることも可能です。 トーン一覧では網点・ライン・布柄・ピクセル柄をまとめて表示します。ピクセルディザの名前には目の細かさ、マス目の大きさ、濃度を表示します。'**
   String get helpToneFillDesc;
 
   /// No description provided for @helpPixelModeTitle.
@@ -12588,7 +12588,7 @@ abstract class AppLocalizations {
   /// No description provided for @tipsFourPanelBrushDesc.
   ///
   /// In ja, this message translates to:
-  /// **'プリセットの「四コマ漫画」ブラシは横方向の繰り返しを使わず、ストロークの進行方向に沿って四角い枠を一定間隔で並べます。直線定規をONにしてまっすぐ引くと、四コマ漫画のコマ枠を簡単に揃えて描けます。'**
+  /// **'プリセットの「四コマ漫画」ブラシは、ストロークに沿って細い線の四角い枠を並べます。ブラシサイズでコマの大きさと間隔が一緒に変わります。直線定規をオンにして、横や縦へまっすぐ引いてください。'**
   String get tipsFourPanelBrushDesc;
 
   /// No description provided for @canvasSelectionReferenceWorkingLayer.

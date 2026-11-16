@@ -34,7 +34,7 @@ void main() {
     expect(byId['Brush0025']!.tipShape, BrushTipShape.hollowSquare);
     expect(byId['Brush0025']!.lateralRepeatEnabled, isFalse);
     expect(byId['Brush0025']!.lateralRepeatCount, 1);
-    expect(byId['Brush0025']!.spacing, greaterThan(100));
+    expect(byId['Brush0025']!.tipSpacingFactor, greaterThan(1));
     expect(service.isBuiltIn('Brush0025'), isTrue);
   });
 
@@ -61,7 +61,7 @@ void main() {
   );
 
   test(
-    'saved hair preset receives minimum exit while bangs and custom copies keep their settings',
+    'saved hair presets receive updated tapers while custom copies keep their settings',
     () async {
       final first = BrushService();
       await first.init();
@@ -90,7 +90,7 @@ void main() {
       expect(updated.tags, ['my-hair-tag']);
       expect(
         restored.brushes.singleWhere((b) => b.id == bangs.id).fadeMode,
-        FadeMode.weak,
+        FadeMode.custom,
       );
       expect(
         restored.brushes.singleWhere((b) => b.id == hair.id).isFavorite,
