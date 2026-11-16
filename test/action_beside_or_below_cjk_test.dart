@@ -9,6 +9,7 @@
 // 名前の上に出た）。語が本当に入らない欧文は、今までどおり下へ回す。
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:niarim/config/font_fallback.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/services/theme_service.dart';
 import 'package:niarim/widgets/action_beside_or_below.dart';
@@ -59,6 +60,40 @@ Future<bool> _beside(
 }
 
 void main() {
+  testWidgets('和文に混ざる 3px の幅は途中で分けずに測る', (tester) async {
+    await loadAppFonts(tester);
+    for (final (family, fallback) in [
+      ('Kuramubon', kHeadingFontFallback),
+      ('HakkouMincho', kBodyFontFallback),
+    ]) {
+      final style = TextStyle(
+        fontFamily: family,
+        fontFamilyFallback: fallback,
+        fontSize: 32,
+      );
+      TextPainter measure(String text) => TextPainter(
+        text: TextSpan(text: text, style: style),
+        textDirection: TextDirection.ltr,
+      )..layout();
+      final unit = measure('3px');
+      final mixed = measure('Gペン 3px');
+      final japanese = measure('エアブラシ');
+      expect(
+        widestUnbreakableWidth(mixed, reported: mixed.minIntrinsicWidth),
+        closeTo(unit.width, 0.5),
+        reason: family,
+      );
+      expect(
+        widestUnbreakableWidth(japanese, reported: japanese.minIntrinsicWidth),
+        inInclusiveRange(5, japanese.width / 2),
+        reason: family,
+      );
+      unit.dispose();
+      mixed.dispose();
+      japanese.dispose();
+    }
+  });
+
   testWidgets('中国語・日本語の文は、折り返すだけなら操作を横に置く', (tester) async {
     await loadAppFonts(tester);
     final problems = <String>[];

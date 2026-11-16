@@ -7,6 +7,8 @@ import 'package:flutter/widgets.dart';
 final RegExp _cjk = RegExp(
   r'[\u3040-\u30FF\u3400-\u4DBF\u4E00-\u9FFF\uF900-\uFAFF]',
 );
+final RegExp _breakableSpace = RegExp(r'[\s\u200B]');
+const _noBreakSpaces = {'\u00A0', '\u202F'};
 
 /// 自分で、中国語・日本語の字の間の折り返しも入れた最小の固有幅を答える文の
 /// 描画（`KeepTogetherText`）。[ActionBesideOrBelow]は、この中の段落を測り
@@ -20,11 +22,8 @@ abstract interface class ReportsWidestWord {}
 /// Flutter（SkParagraph）は、中国語・日本語の文が1つの書体で描けて途中に
 /// 空白が無いと、字の間で折り返せることを最小の固有幅に入れず、文全体の幅を
 /// 返す（中国語の本文の書体〔Noto Serif SC〕の文で起きた）。中国語・日本語の
-/// 字を含む文は、[painter]を1pxの幅で並べ直して数え直す（並べ直したら
-/// [onLayout]を呼ぶ）。1pxの幅では、SkParagraphはどの字の間でも折り返し、
-/// 欧文の語・数と単位は1つのまま数える（幅0では語も1字ずつ数える）が、
-/// 語結合子（U+2060）でつないだ字の間でも折り返すので、つないだ字の続きは
-/// 並べた字の幅を足して1つのかたまりとして数える。
+/// 字を含む文は、折り返す前に組んだ段落から、折り返せない部分の幅を測る。
+/// 極端に細い幅で並べ直すと「3px」も途中で切れて測定幅が足りなくなる。
 double widestUnbreakableWidth(
   TextPainter painter, {
   required double reported,
@@ -32,10 +31,10 @@ double widestUnbreakableWidth(
 }) {
   final text = painter.plainText;
   if (!_cjk.hasMatch(text)) return reported;
-  painter.layout(maxWidth: 1);
+  painter.layout();
   onLayout?.call();
-  var widest = painter.minIntrinsicWidth;
-  for (final (start, end) in _wordJoinedRuns(text)) {
+  var widest = 0.0;
+  for (final (start, end) in _unbreakableRuns(text)) {
     var width = 0.0;
     for (final box in painter.getBoxesForSelection(
       TextSelection(baseOffset: start, extentOffset: end),
@@ -44,37 +43,37 @@ double widestUnbreakableWidth(
     }
     widest = math.max(widest, width);
   }
-  return math.min(reported, widest);
+  return widest > 0 ? widest : reported;
 }
 
-/// [text]の中の、語結合子（U+2060）でつないだ字（書記素）の続きの位置
-/// （始まりと終わり）。
-Iterable<(int, int)> _wordJoinedRuns(String text) sync* {
+/// 中国語・日本語の字の間と空白で区切る。欧文の語・数と単位・語結合子や
+/// 分割しない空白でつないだ部分はひとまとまりにする。
+Iterable<(int, int)> _unbreakableRuns(String text) sync* {
   const wordJoiner = '\u2060';
-  if (!text.contains(wordJoiner)) return;
   var offset = 0;
   int? start;
-  int? lastStart;
-  var lastEnd = 0;
+  var previousCjk = false;
   var joined = false;
   for (final char in text.characters) {
     if (char == wordJoiner) {
-      joined = lastStart != null;
+      joined = start != null;
       offset += char.length;
       continue;
     }
-    if (joined) {
-      start ??= lastStart;
-    } else if (start != null) {
-      yield (start, lastEnd);
+    final cjk = _cjk.hasMatch(char);
+    final noBreakSpace = _noBreakSpaces.contains(char);
+    final space = !noBreakSpace && _breakableSpace.hasMatch(char);
+    if (start != null &&
+        (space || (!joined && !noBreakSpace && (cjk || previousCjk)))) {
+      yield (start, offset);
       start = null;
     }
-    joined = false;
-    lastStart = offset;
+    if (!space) start ??= offset;
+    joined = noBreakSpace;
+    previousCjk = cjk;
     offset += char.length;
-    lastEnd = offset;
   }
-  if (start != null) yield (start, lastEnd);
+  if (start != null) yield (start, offset);
 }
 
 /// [ActionBesideOrBelow]の子の置き場所。

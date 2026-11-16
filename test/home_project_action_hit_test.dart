@@ -83,31 +83,29 @@ void main() {
       final add = find.byWidgetPredicate(
         (w) => w is FloatingActionButton && w.heroTag == 'home-add-project',
       );
-      expect(
-        tester.getRect(viewport).bottom,
-        lessThanOrEqualTo(tester.getTopLeft(add).dy),
-        reason: 'The list must end before the Add hit area at $size.',
-      );
       final listBounds = tester.getRect(viewport);
+      final clearBottom = tester.getTopLeft(add).dy;
+      final position = tester.state<ScrollableState>(viewport).position;
+      position.jumpTo(position.maxScrollExtent);
+      await tester.pumpAndSettle();
+      final listEnd = find.byKey(const Key('homeProjectListEndClearance'));
+      expect(
+        tester.getTopLeft(listEnd).dy,
+        lessThan(clearBottom),
+        reason: 'The final row must scroll clear of Add at $size.',
+      );
       Finder? target;
-      for (var attempt = 0; target == null && attempt < 12; attempt++) {
+      for (var attempt = 0; target == null && attempt <= 24; attempt++) {
+        position.jumpTo(position.maxScrollExtent * (1 - attempt / 24));
+        await tester.pumpAndSettle();
         for (final item in menus.evaluate().toList()) {
           final control = find.byWidget(item.widget);
           final bounds = tester.getRect(control);
           if (bounds.top >= listBounds.top &&
-              bounds.bottom <= listBounds.bottom &&
+              bounds.bottom <= clearBottom &&
               control.hitTestable().evaluate().isNotEmpty) {
             target = control;
           }
-        }
-        if (target == null) {
-          await tester.sendEventToBinding(
-            PointerScrollEvent(
-              position: listBounds.center,
-              scrollDelta: const Offset(0, 12),
-            ),
-          );
-          await tester.pumpAndSettle();
         }
       }
       expect(
