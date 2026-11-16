@@ -25,19 +25,17 @@
 
 ## 監査担当と修正担当の分担（2026-11-16指定）
 
-監査担当は実操作・記録・二巡目の判定を担当する。原因特定、コード修正、回帰テストは別の修正担当へ渡す。現在は[A003の残件](policy/A003_REPAIR_HANDOFF.md)を修正担当へ回し、監査担当はA004以降の一巡目を進める。
-
-一巡目の再開位置は正式な先頭未完了ID `current_id` と区別して記録する。詳しい引継ぎと合格判定は[実行Policy](policy/ASTRA_WORK.md#一巡目修正二巡目の担当分離2026-11-16ユーザー指定)に従う。
+**Claudeは一巡目の判定・記録と、独立したGPTセッションによる修正・確認後の二巡目の全件判定を担当する。** 製品修正の実行・委任・取り込みはGPTの修正工程に限る。進行中は安全なチェックポイントで進捗と差分を保存し、最新Policyを読み直して続ける。 [実行Policy](policy/ASTRA_WORK.md#一巡目修正二巡目の担当分離2026-11-16ユーザー指定)を参照する。
 
 ## 実行順
 
 1. 最新HEADを取得し、実装inventoryと開始SHAを記録する。
 2. baseline verifier / delta verifier / full-audit state preflightを実行し、State整合性を確認する。
-3. 監査担当は一巡目の再開位置から実操作を続け、修正担当は引継ぎから着手する。正式Routeの順番・先頭未完了IDは維持する。
+3. Claudeは一巡目の再開位置から実操作・判定を行う。要修正は[修正引継ぎ台帳](state/AUDIT_REPAIR_HANDOFF.md)へ記録する。正式な先頭未完了ID `current_id` と各巡の再開位置は個別に追跡する。
 4. 実行中に新規画面・状態・操作・分岐・品質リスクを発見したらDiscoveryへ登録する。
-5. Baseline完了後、Discoveryを番号順に消化し、その後Deltaを番号順に消化する。
+5. 各巡でBaseline、Discovery、Deltaを固定Route順に確認する。
 6. Deltaでは最新HEADから、全フィルター、質感変更/質感偏光、Brush Custom、縁取りペン、Hair Fold、髪/前髪preset、Community/API、Help/Tips、保存/export、native/backend連携等を再inventoryし、漏れなく追跡する。
-7. 修正担当は原因特定・修正・targeted test・回帰を行う。監査担当は二巡目に修正箇所と影響先を実操作・目視で確認する。
+7. 一巡目の後、別のGPTセッションが台帳の指摘を修正・確認し、結果を返す。ClaudeはGPTの修正・確認後、最新HEADで一巡目のOKを含む全対象IDを二巡目で再判定する。
 8. 全画面・全visible control・全固有操作を実際に操作する。機能結果、意図挙動、見た目、継続性、製品品質を別々に判定する。
 9. PC/SP、対応7言語、指定responsive widths、theme/appearance、入力方式、権限/free/Premium等の条件差を、該当する全機能で確認する。
 10. 最終Visual closureは最新HEADから再生成し、BEFORE/SETTINGS/AFTER、機能名、preset/mode、主要設定を識別可能にし、全ページrender＋実画像目視を行う。
@@ -71,6 +69,7 @@
 
 ## 完了条件
 
+- Claudeの二巡目で全対象IDがOK。残る要修正はGPTの再修正とClaudeの再確認を経て解消する。
 - Baseline incomplete = 0
 - Discovery incomplete = 0
 - Delta incomplete = 0
