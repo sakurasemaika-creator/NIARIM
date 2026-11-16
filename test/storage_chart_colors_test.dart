@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/screens/settings/storage_screen.dart';
 import 'package:niarim/services/theme_service.dart';
+import 'package:niarim/utils/color_contrast.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'helpers/color_channels.dart';
@@ -108,4 +109,26 @@ void main() {
     }
     expect(checked, greaterThan(5), reason: '組み込みテーマが読めていない');
   });
+
+  test(
+    'all built-in palettes provide readable ink on the chart label surface',
+    () async {
+      SharedPreferences.setMockInitialValues({});
+      final service = ThemeService();
+      await service.init();
+      addTearDown(service.dispose);
+      for (final preset in service.presets) {
+        service.applyPreset(preset.id);
+        final scheme = service.themeData.colorScheme;
+        expect(
+          contrastRatio(
+            Color.alphaBlend(scheme.onSurface, scheme.surface),
+            scheme.surface,
+          ),
+          greaterThanOrEqualTo(4.5),
+          reason: preset.id,
+        );
+      }
+    },
+  );
 }

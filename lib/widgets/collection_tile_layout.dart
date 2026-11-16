@@ -270,7 +270,11 @@ final _locationHeights =
 /// [kCollectionTileNameLines]行分、文字の倍率1倍）までにする。それより長い
 /// 名前は、「…」を付けてその長さに入るところまでにする。単語を空白で
 /// 区切る言語では、途中で切れる単語を出さない。
-String collectionTileDisplayName(BuildContext context, String name) {
+String collectionTileDisplayName(
+  BuildContext context,
+  String name, {
+  bool keepFileSuffix = false,
+}) {
   _forgetMeasurementsWhenFontsChange();
   final style = _nameTextStyle(context);
   final key = (
@@ -278,6 +282,7 @@ String collectionTileDisplayName(BuildContext context, String name) {
     style,
     Directionality.of(context),
     Localizations.maybeLocaleOf(context),
+    keepFileSuffix,
   );
   final cached = _displayNames[key];
   if (cached != null) return cached;
@@ -337,15 +342,22 @@ String collectionTileDisplayName(BuildContext context, String name) {
   var shown = name;
   // 複製の名前は、印（「(コピー 2)」）を残したまま元の名前の頭を縮める
   // （後ろを切ると、どの複製か分からなくなる）。
-  final keepingMark = fits(name) ? null : _shortenKeepingCopyMark(name, fits);
-  if (keepingMark != null) {
-    shown = keepingMark;
-  } else if (copy != null && !fits(name)) {
+  final fullFits = fits(name);
+  final keepingEnd = fullFits
+      ? null
+      : copy != null
+      ? _shortenKeepingCopyMark(name, fits)
+      : keepFileSuffix
+      ? _shortenKeepingFileSuffix(name, fits)
+      : null;
+  if (keepingEnd != null) {
+    shown = keepingEnd;
+  } else if (copy != null && !fullFits) {
     // 頭の1字と印でも上限に入らない複製の名前も、印・番号・拡張子は残し、
     // 頭だけを1字と「…」にする（実際の幅での折り返しは[_captionText]）。
     final head = copy.head.characters;
     shown = head.length < 2 ? name : '${head.first}…${copy.tail}';
-  } else if (!fits(name)) {
+  } else if (!fullFits) {
     final characters = name.characters.toList();
     // 「…」を付けて入る、一番長い名前の頭（字の数で二分探索）。
     var low = 0;
@@ -375,7 +387,55 @@ String collectionTileDisplayName(BuildContext context, String name) {
   return _displayNames[key] = shown;
 }
 
-final _displayNames = <(String, TextStyle, TextDirection, Locale?), String>{};
+final _displayNames =
+    <(String, TextStyle, TextDirection, Locale?, bool), String>{};
+
+/// Keep an export's extension and, when possible, the last short component
+/// of its stem (e.g. `_08` in `scene_08.png`). Cutting from the end made
+/// neighboring exports with different numbers or formats look identical.
+String? _shortenKeepingFileSuffix(
+  String name,
+  bool Function(String text) fits,
+) {
+  final dot = name.lastIndexOf('.');
+  if (dot <= 0 || dot == name.length - 1) return null;
+  final stem = name.substring(0, dot);
+  final extension = name.substring(dot);
+  final lastPart = RegExp(r'[_.\s-][^_.\s-]+$').firstMatch(stem)?.group(0);
+  final number = RegExp(r'[0-9]+$').firstMatch(stem)?.group(0);
+  // The app's own export names end in a long millisecond timestamp. If the
+  // full number cannot fit, keep its last digits rather than dropping it.
+  final endings = {
+    if (lastPart != null && lastPart.characters.length <= 7) lastPart,
+    if (number != null) ...[
+      number,
+      number.substring(math.max(0, number.length - 6)),
+      number.substring(math.max(0, number.length - 4)),
+    ],
+    '',
+  };
+  String? endingOnly;
+  for (final ending in endings) {
+    final tail = '$ending$extension';
+    if (!fits('…$tail')) continue;
+    final head = stem.substring(0, stem.length - ending.length).characters;
+    var low = 0;
+    var high = head.length;
+    String candidate(int count) =>
+        '${head.take(count).string.trimRight()}…$tail';
+    while (low < high) {
+      final middle = (low + high + 1) ~/ 2;
+      if (fits(candidate(middle))) {
+        low = middle;
+      } else {
+        high = middle - 1;
+      }
+    }
+    if (low > 0) return candidate(low);
+    endingOnly ??= candidate(0);
+  }
+  return endingOnly;
+}
 
 /// [text]を1行に並べたときの幅が[maxWidth]以下か。
 ///
@@ -586,8 +646,9 @@ String _captionText(
   BuildContext context,
   String name,
   String shown,
-  double maxWidth,
-) {
+  double maxWidth, {
+  bool keepFileSuffix = false,
+}) {
   final style = _nameTextStyle(context);
   final textScaler = MediaQuery.textScalerOf(context);
   final textDirection = Directionality.of(context);
@@ -620,7 +681,7 @@ String _captionText(
       : _nameHead(text);
   String prepared(String text) =>
       korean(keepCopyMarkTogether(separated(text), name: text, fits: markFits));
-  if (split == null) return prepared(shown);
+  if (split == null && !keepFileSuffix) return prepared(shown);
   final key = (name, shown, style, textScaler, textDirection, locale, maxWidth);
   final cached = _copyCaptions[key];
   if (cached != null) return cached;
@@ -638,8 +699,13 @@ String _captionText(
   }
 
   String result;
-  final mark = split.tail.trimLeft();
-  if (markFits(keepPartsTogether(mark, [mark]))) {
+  final mark = split?.tail.trimLeft();
+  if (split == null) {
+    bool fits(String text) => fitsAs(prepared, text);
+    result = prepared(
+      fits(shown) ? shown : _shortenKeepingFileSuffix(name, fits) ?? shown,
+    );
+  } else if (markFits(keepPartsTogether(mark!, [mark]))) {
     bool fits(String text) => fitsAs(prepared, text);
     result = prepared(
       fits(shown) ? shown : _shortenKeepingCopyMark(name, fits) ?? shown,
@@ -800,8 +866,13 @@ Widget collectionTileCaption(
   String name, {
   String? location,
   bool locationRow = false,
+  bool keepFileSuffix = false,
 }) {
-  final shown = collectionTileDisplayName(context, name);
+  final shown = collectionTileDisplayName(
+    context,
+    name,
+    keepFileSuffix: keepFileSuffix,
+  );
   // 上限で切った字・語結合子を入れた字を描き、読み上げと文での検索
   // （find.text 等）には名前の全部を渡す。
   Widget nameText(String text) => Text.rich(
@@ -822,10 +893,19 @@ Widget collectionTileCaption(
         // ハングルの語は、カードの幅の1行に入る語なら途中で折り返さない。
         // 複製の名前は、印（「(コピー 2)」）を途中で折り返さず、入らなければ
         // 印を残して頭を縮める。
-        child: containsHangul(shown) || copyMarkSplit(shown) != null
+        child:
+            keepFileSuffix ||
+                containsHangul(shown) ||
+                copyMarkSplit(shown) != null
             ? LayoutBuilder(
                 builder: (context, constraints) => nameText(
-                  _captionText(context, name, shown, constraints.maxWidth),
+                  _captionText(
+                    context,
+                    name,
+                    shown,
+                    constraints.maxWidth,
+                    keepFileSuffix: keepFileSuffix,
+                  ),
                 ),
               )
             // ファイル名は区切りの記号の前で折り返す（字の途中で切らない）。

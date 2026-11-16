@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -63,7 +65,7 @@ class ExportedWorkCard extends StatelessWidget {
   final String? selectionId;
 
   static final _filenameSeparators = RegExp(r'([_.-])');
-  static const gridNameLines = 3;
+  static const gridNameLines = kCollectionTileNameLines;
 
   @override
   Widget build(BuildContext context) {
@@ -102,91 +104,38 @@ class ExportedWorkCard extends StatelessWidget {
     // 「本）.png」と折れていた）。欄に入らないほど長いときは、印の字の間で
     // だけ折り返す（かたまりのままだと「(コピー 12).gi / f」とどこかで切れた）。
     final copy = copyMarkSplit(name);
-    Widget title({bool grid = false}) => LayoutBuilder(
-      builder: (context, constraints) {
-        final textScaler = MediaQuery.textScalerOf(context);
-        final direction = Directionality.of(context);
-        final locale = Localizations.maybeLocaleOf(context);
-        final captionStyle = grid
-            ? collectionTileCaptionStyle(context)
-            : titleStyle;
-        final measuredStyle = DefaultTextStyle.of(context).style
-            .merge(captionStyle)
-            .copyWith(
-              fontWeight: MediaQuery.boldTextOf(context)
-                  ? FontWeight.bold
-                  : captionStyle.fontWeight,
-            );
-        final painter = TextPainter(
-          maxLines: grid ? gridNameLines : null,
-          textDirection: direction,
-          textScaler: textScaler,
-          locale: locale,
-        );
-        void layout(String text, {double width = double.infinity}) {
-          painter
-            ..text = TextSpan(text: text, style: measuredStyle)
-            ..layout(maxWidth: width);
-        }
-
-        bool fitsPart(String text) {
-          layout(text);
-          return painter.minIntrinsicWidth <= constraints.maxWidth;
-        }
-
-        final extensionAt = name.lastIndexOf('.');
-        final extension = extensionAt > 0 ? name.substring(extensionAt) : '';
-        final head =
-            copy?.head ??
-            (extensionAt > 0 ? name.substring(0, extensionAt) : name);
-        final tail = copy == null
-            ? extension
-            : copyMarkLineText(copy.tail, fitsPart);
-        String render(String stem) =>
-            breakable(stem) +
-            (copy == null && tail.isNotEmpty ? '\u200B' : '') +
-            tail;
-        var shown = render(head);
-        if (grid) {
-          bool fits(String text) {
-            layout(text, width: constraints.maxWidth);
-            return !painter.didExceedMaxLines;
-          }
-
-          if (!fits(shown)) {
-            // Keep the name ending and extension visible, even for exports
-            // with a common stem and a distinguishing take number at the end.
-            final letters = head.characters.toList();
-            var low = 0;
-            var high = letters.length - 1;
-            while (low < high) {
-              final middle = (low + high + 1) ~/ 2;
-              final candidate = render(
-                '${letters.first}…${letters.skip(letters.length - middle).join()}',
-              );
-              if (fits(candidate)) {
-                low = middle;
-              } else {
-                high = middle - 1;
-              }
-            }
-            if (letters.isNotEmpty) {
-              shown = render(
-                '${letters.first}…${letters.skip(letters.length - low).join()}',
-              );
-            }
-          }
-        }
+    final measuredTitleStyle = DefaultTextStyle.of(
+      context,
+    ).style.merge(titleStyle);
+    TextPainter measureName(String text, {int? maxLines}) => TextPainter(
+      text: TextSpan(
+        text: text,
+        style: MediaQuery.boldTextOf(context)
+            ? measuredTitleStyle.copyWith(fontWeight: FontWeight.bold)
+            : measuredTitleStyle,
+      ),
+      textScaler: MediaQuery.textScalerOf(context),
+      textDirection: Directionality.of(context),
+      locale: Localizations.maybeLocaleOf(context),
+      maxLines: maxLines,
+    );
+    String nameAtWidth(double width) {
+      if (copy == null) return breakable(name);
+      bool fits(String text) {
+        final painter = measureName(text)..layout();
+        final fits = painter.minIntrinsicWidth <= width;
         painter.dispose();
-        return Text(
-          shown,
-          key: const Key('exportedWorkTitle'),
-          semanticsLabel: name,
-          maxLines: grid ? gridNameLines : null,
-          overflow: grid ? TextOverflow.ellipsis : TextOverflow.clip,
-          style: captionStyle,
-        );
-      },
+        return fits;
+      }
+
+      return breakable(copy.head) + copyMarkLineText(copy.tail, fits);
+    }
+
+    Widget title(String displayName) => Text(
+      displayName,
+      key: const Key('exportedWorkTitle'),
+      semanticsLabel: name,
+      style: titleStyle,
     );
     Widget details() => Text(
       metadata,
@@ -302,7 +251,10 @@ class ExportedWorkCard extends StatelessWidget {
       );
     }
 
-    Widget detailBody(double width) {
+    // Keep actions at the top right when the name fits beside them. When
+    // they would push the name past two lines, use the full text column and
+    // move the actions below. The scrollable detail list exposes the full name.
+    Widget detailBody() {
       final actions = [
         if (!selectionActive && onToggleFavorite != null) favorite(),
         if (!selectionActive) menu(),
@@ -312,68 +264,66 @@ class ExportedWorkCard extends StatelessWidget {
           : actions.length * CollectionActionFrame.extent +
                 (actions.length - 1) * CollectionActionRow.gap;
       const inset = EdgeInsets.fromLTRB(0, 8, 8, 8);
-      final textScale = MediaQuery.textScalerOf(context).scale(16) / 16;
-      if (width - inset.horizontal - actionsWidth < 180 * textScale &&
-          actions.isNotEmpty) {
-        return Padding(
-          padding: inset,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              title(),
-              const SizedBox(height: 4),
-              details(),
-              if (shareError != null) ...[
-                const SizedBox(height: 8),
-                shareFeedback(),
-              ],
-              Align(
-                alignment: AlignmentDirectional.centerEnd,
-                child: CollectionActionRow(children: actions),
-              ),
-            ],
-          ),
-        );
-      }
+      const actionGap = 6.0;
       final rtl = Directionality.of(context) == TextDirection.rtl;
-      return Stack(
-        children: [
-          Padding(
-            padding: inset,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Row(
+      return LayoutBuilder(
+        builder: (context, constraints) {
+          final width = math.max(0.0, constraints.maxWidth - inset.horizontal);
+          final inlineWidth = math.max(0.0, width - actionsWidth - actionGap);
+          var displayName = nameAtWidth(actions.isEmpty ? width : inlineWidth);
+          var actionsBelow = false;
+          if (actions.isNotEmpty) {
+            final painter = measureName(displayName, maxLines: 2)
+              ..layout(maxWidth: inlineWidth);
+            actionsBelow = inlineWidth == 0 || painter.didExceedMaxLines;
+            painter.dispose();
+            if (actionsBelow) displayName = nameAtWidth(width);
+          }
+          return Stack(
+            children: [
+              Padding(
+                padding: inset,
+                child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Expanded(child: title()),
-                    const SizedBox(width: 4),
-                    SizedBox(
-                      width: actionsWidth,
-                      height: actions.isEmpty
-                          ? 0
-                          : CollectionActionFrame.extent,
-                    ),
+                    if (actions.isEmpty || actionsBelow)
+                      title(displayName)
+                    else
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(child: title(displayName)),
+                          SizedBox(
+                            width: actionsWidth + actionGap,
+                            height: CollectionActionFrame.extent,
+                          ),
+                        ],
+                      ),
+                    const SizedBox(height: 4),
+                    details(),
+                    if (shareError != null) ...[
+                      const SizedBox(height: 8),
+                      shareFeedback(),
+                    ],
+                    if (actionsBelow)
+                      const SizedBox(height: CollectionActionFrame.extent + 10),
                   ],
                 ),
-                const SizedBox(height: 4),
-                details(),
-                if (shareError != null) ...[
-                  const SizedBox(height: 8),
-                  shareFeedback(),
-                ],
-              ],
-            ),
-          ),
-          if (actions.isNotEmpty)
-            Positioned(
-              top: inset.top,
-              right: rtl ? null : inset.right,
-              left: rtl ? inset.left : null,
-              child: CollectionActionRow(children: actions),
-            ),
-        ],
+              ),
+              if (actions.isNotEmpty)
+                Positioned(
+                  // The stack, including its insets, holds the touch target
+                  // outside the drawn circles in either position.
+                  top: actionsBelow ? null : inset.top,
+                  bottom: actionsBelow ? inset.bottom + 4 : null,
+                  right: rtl ? null : inset.right,
+                  left: rtl ? inset.left : null,
+                  child: CollectionActionRow(children: actions),
+                ),
+            ],
+          );
+        },
       );
     }
 
@@ -419,22 +369,7 @@ class ExportedWorkCard extends StatelessWidget {
                       ],
                     ),
                   ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 6,
-                      vertical: 4,
-                    ),
-                    child: SizedBox(
-                      height: collectionTileNameHeight(
-                        context,
-                        lines: gridNameLines,
-                      ),
-                      child: Align(
-                        alignment: AlignmentDirectional.topStart,
-                        child: title(grid: true),
-                      ),
-                    ),
-                  ),
+                  collectionTileCaption(context, name, keepFileSuffix: true),
                 ],
               ),
             ),
@@ -483,9 +418,7 @@ class ExportedWorkCard extends StatelessWidget {
                         const SizedBox.shrink(),
                         TableCell(
                           verticalAlignment: TableCellVerticalAlignment.top,
-                          child: detailBody(
-                            constraints.maxWidth - coverWidth - 12,
-                          ),
+                          child: detailBody(),
                         ),
                       ],
                     ),

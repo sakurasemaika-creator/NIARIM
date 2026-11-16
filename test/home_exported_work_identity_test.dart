@@ -34,6 +34,7 @@ void main() {
       'first_launch': false,
       'language': 'fr',
       'force_pc_mode': 0,
+      'home.worksViewMode.v1': 'detail',
       'theme_current_json': jsonEncode(palette.toJson()),
       firstUseTooltipsSeenKey: kAllFirstUseTooltipKeys,
     });
