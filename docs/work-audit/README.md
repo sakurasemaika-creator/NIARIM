@@ -56,5 +56,5 @@
 3. lock後に追加された画面・状態・操作・機能・品質リスクはDelta/Discoveryへ登録する。
 4. 自動テスト、snapshot、DOM/source reviewだけでは実操作PASSにしない。
 5. 機能・意図挙動・見た目・継続性・製品品質を独立判定する。
-6. 監査担当は改善の根拠を記録し、別の修正担当へ渡す。修正後は監査担当が影響箇所を再確認する。
+6. Claudeは一巡目の要修正を[App・Web共通の修正引継ぎ台帳](state/AUDIT_REPAIR_HANDOFF.md)に記録する。別のGPTセッションが修正・確認を終えた後、Claudeが全対象を二巡目で判定する。
 7. 最終完了は、未完了Baseline/Discovery/Delta、未登録Discovery、advisor-pending、必要証拠がすべて0になってからとする。
