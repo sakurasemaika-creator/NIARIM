@@ -33,23 +33,24 @@ Future<Uint8List?> _loadImageRgba(
 }
 
 /// トーン画像では暗さと元の透明度からインクのalphaを作る。
-Uint8List _toToneAlphaMask(Uint8List rgba) {
+Uint8List _toToneAlphaMask(Uint8List rgba, {required bool pixelMode}) {
   final out = Uint8List(rgba.length);
   for (int i = 0; i < rgba.length; i += 4) {
     final luminance =
         rgba[i] * 0.299 + rgba[i + 1] * 0.587 + rgba[i + 2] * 0.114;
     final ink = ((255 - luminance) * rgba[i + 3] / 255).round();
-    out[i + 3] = ink.clamp(0, 255);
+    out[i + 3] = pixelMode ? (ink >= 128 ? 255 : 0) : ink.clamp(0, 255);
   }
   return out;
 }
 
-/// トーン画像のデコード結果キャッシュ（`texturePath#size`をキーにする）。
+/// トーン画像のデコード結果キャッシュ（`texturePath#size#pixelMode`をキーにする）。
 /// バケツ塗りのドラッグ中（_bucketFillAt）は同期処理のため、事前に
 /// [ensureToneTextureLoaded] で読み込みを済ませておく必要がある。
 final Map<String, Uint8List> _toneImageCache = {};
 
-String _toneCacheKey(String path, int size) => '$path#$size';
+String _toneCacheKey(String path, int size, bool pixelMode) =>
+    '$path#$size#$pixelMode';
 
 /// [tone.texturePath] が指す画像を事前読み込みし、キャッシュへ格納する。
 /// トーンを使った描画（投げ縄塗り・トーン自由描画・バケツ塗り等）の
@@ -58,14 +59,16 @@ String _toneCacheKey(String path, int size) => '$path#$size';
 Future<void> ensureToneTextureLoaded(Tone tone, {int size = 64}) async {
   final path = tone.texturePath;
   if (path == null) return;
-  final key = _toneCacheKey(path, size);
+  final key = _toneCacheKey(path, size, tone.pixelMode);
   if (_toneImageCache.containsKey(key)) return;
   final rgba = await _loadImageRgba(
     path,
     size,
     format: ui.ImageByteFormat.rawStraightRgba,
   );
-  if (rgba != null) _toneImageCache[key] = _toToneAlphaMask(rgba);
+  if (rgba != null) {
+    _toneImageCache[key] = _toToneAlphaMask(rgba, pixelMode: tone.pixelMode);
+  }
 }
 
 /// 事前読み込みした画像のパターンを返す。旧データに画像がない場合や
@@ -73,7 +76,7 @@ Future<void> ensureToneTextureLoaded(Tone tone, {int size = 64}) async {
 Uint8List generateBuiltInToneTexture(Tone tone, {int size = 64}) {
   final path = tone.texturePath;
   if (path != null) {
-    final cached = _toneImageCache[_toneCacheKey(path, size)];
+    final cached = _toneImageCache[_toneCacheKey(path, size, tone.pixelMode)];
     if (cached != null) return cached;
   }
   final data = Uint8List(size * size * 4);

@@ -81,6 +81,41 @@ void main() {
     });
   });
 
+  test(
+    'tone pixel mode thresholds the same PNG without mutating the normal mask',
+    () async {
+      const normal = Tone(
+        id: 'normal',
+        name: 'Stocking',
+        texturePath: 'assets/tones/Tone0011.png',
+      );
+      final pixel = normal.copyWith(pixelMode: true);
+      await Future.wait([
+        ensureToneTextureLoaded(normal),
+        ensureToneTextureLoaded(pixel),
+      ]);
+      final antialiased = generateBuiltInToneTexture(normal);
+      final thresholded = generateBuiltInToneTexture(pixel);
+      var foundIntermediate = false;
+      for (var i = 3; i < antialiased.length; i += 4) {
+        final alpha = antialiased[i];
+        if (alpha != 0 && alpha != 255) foundIntermediate = true;
+        expect(thresholded[i], alpha >= 128 ? 255 : 0);
+      }
+      expect(foundIntermediate, isTrue);
+      expect(Tone.fromJson(pixel.toJson()).pixelMode, isTrue);
+      expect(Tone.fromJson(normal.toJson()).pixelMode, isFalse);
+      expect(
+        Tone.fromJson({
+          'id': 'old',
+          'name': 'My mesh',
+          'patternName': 'ピクセル斜め格子（1px）',
+        }).pixelMode,
+        isTrue,
+      );
+    },
+  );
+
   group('generateBuiltInToneTexture（自作トーン画像）', () {
     test('texturePath読み込み前は組み込みパターン（黒白混在）が返る', () {
       const tone = Tone(id: 't1', name: 'カスタム');

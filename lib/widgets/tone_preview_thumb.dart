@@ -45,6 +45,7 @@ class _TonePreviewThumbState extends State<TonePreviewThumb> {
     super.didUpdateWidget(old);
     if (old.tone?.id != widget.tone?.id ||
         old.tone?.texturePath != widget.tone?.texturePath ||
+        old.tone?.pixelMode != widget.tone?.pixelMode ||
         old.color != widget.color) {
       _load();
     }

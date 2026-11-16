@@ -404,6 +404,7 @@ class _TonePanelState extends State<TonePanel> {
   void _showToneSettings(BuildContext context, Tone tone) {
     showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
       builder: (ctx) => _ToneSettingsSheet(tone: tone),
     );
   }
@@ -477,10 +478,14 @@ class _ToneSettingsSheet extends StatefulWidget {
 
 class _ToneSettingsSheetState extends State<_ToneSettingsSheet> {
   late final TextEditingController _nameController;
+  late Tone _draft;
+  bool _saving = false;
+  String? _replacementPath;
 
   @override
   void initState() {
     super.initState();
+    _draft = widget.tone;
     _nameController = TextEditingController(text: widget.tone.name);
   }
 
@@ -493,10 +498,14 @@ class _ToneSettingsSheetState extends State<_ToneSettingsSheet> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    // トーンの編集可能項目は名前・テクスチャ画像のみ
     return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
+      child: SingleChildScrollView(
+        padding: EdgeInsets.fromLTRB(
+          16,
+          16,
+          16,
+          16 + MediaQuery.viewInsetsOf(context).bottom,
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -519,41 +528,73 @@ class _ToneSettingsSheetState extends State<_ToneSettingsSheet> {
               ),
             ),
             const SizedBox(height: 8),
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              title: Text(l10n.brushSettingsPixelModeTitle),
+              value: _draft.pixelMode,
+              onChanged: _saving
+                  ? null
+                  : (value) => setState(
+                      () => _draft = _draft.copyWith(pixelMode: value),
+                    ),
+            ),
             OutlinedButton.icon(
               icon: const Icon(Icons.image_outlined, size: 16),
               label: Text(l10n.toneChangeTextureButton),
-              onPressed: () async {
-                final result = await FilePicker.platform.pickFiles(
-                  type: FileType.image,
-                );
-                if (result == null ||
-                    result.files.isEmpty ||
-                    result.files.first.path == null) {
-                  return;
-                }
-                if (!context.mounted) return;
-                final service = context.read<ToneService>();
-                await service.createToneFromImage(
-                  result.files.first.path!,
-                  name: _nameController.text,
-                );
-                service.deleteTone(widget.tone.id);
-                if (context.mounted) Navigator.pop(context);
-              },
+              onPressed: _saving
+                  ? null
+                  : () async {
+                      final result = await FilePicker.platform.pickFiles(
+                        type: FileType.image,
+                      );
+                      final path = result?.files.firstOrNull?.path;
+                      if (!mounted || path == null) return;
+                      setState(() => _replacementPath = path);
+                    },
             ),
+            if (_replacementPath != null)
+              Text(
+                _replacementPath!.split(RegExp(r'[/\\]')).last,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
             const SizedBox(height: 16),
             FilledButton(
-              onPressed: () {
-                context.read<ToneService>().updateTone(
-                  widget.tone.copyWith(
-                    name: _nameController.text,
-                    patternName: widget.tone.texturePath == null
-                        ? (widget.tone.patternName ?? widget.tone.name)
-                        : null,
-                  ),
-                );
-                Navigator.pop(context);
-              },
+              onPressed: _saving
+                  ? null
+                  : () async {
+                      final service = context.read<ToneService>();
+                      var draft = _draft.copyWith(
+                        name: _nameController.text,
+                        patternName: _draft.texturePath == null
+                            ? (_draft.patternName ?? _draft.name)
+                            : null,
+                      );
+                      final replacement = _replacementPath;
+                      if (replacement != null) {
+                        setState(() => _saving = true);
+                        try {
+                          draft = await service.withReplacementTexture(
+                            draft,
+                            replacement,
+                          );
+                        } catch (error) {
+                          if (!context.mounted) return;
+                          setState(() => _saving = false);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                l10n.toneImportFailedSnackbar(error.toString()),
+                              ),
+                            ),
+                          );
+                          return;
+                        }
+                      }
+                      if (!context.mounted) return;
+                      service.updateTone(draft);
+                      Navigator.pop(context);
+                    },
               child: Text(l10n.commonSave),
             ),
           ],

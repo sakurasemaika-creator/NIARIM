@@ -26,7 +26,7 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   testWidgets(
-    'real Japanese StorageScreen shows six bright bars and device bars without pies',
+    'real Japanese StorageScreen renders adaptive colors in both bar charts',
     (tester) async {
       // Entirely isolated synthetic filesystem; do not touch user projects.
       final root = Directory.systemTemp.createTempSync('storage-six-slices-');
@@ -308,6 +308,65 @@ void main() {
       final themes = tester
           .element(find.byType(StorageScreen))
           .read<ThemeService>();
+      for (final (filename, dark, hue, saturation, lightness) in [
+        ('peach_72', false, 13.0, .76, .72),
+        ('lavender_51', false, 263.0, .56, .51),
+        ('teal_50', false, 173.0, .66, .50),
+        ('blue_28', true, 217.0, .69, .28),
+      ]) {
+        themes.applyPreset(dark ? 'default_dark' : 'default_light');
+        themes.previewCurrent(
+          themes.current.copyWith(
+            accentColor: HSLColor.fromAHSL(
+              1,
+              hue,
+              saturation,
+              lightness,
+            ).toColor(),
+          ),
+        );
+        await tester.pumpAndSettle();
+        final actualScheme = Theme.of(
+          tester.element(find.byType(StorageScreen)),
+        ).colorScheme;
+        final accent = HSLColor.fromColor(actualScheme.primary);
+        expect((accent.lightness * 100).round(), (lightness * 100).round());
+        for (final (labels, colors, prefix) in [
+          (
+            deviceLabels,
+            storageDeviceSliceColorsOf(actualScheme),
+            'storageDeviceBar_',
+          ),
+          (
+            entries.map((entry) => entry.$2).toList(),
+            sliceColorsOf(actualScheme),
+            'storageBreakdownBar_',
+          ),
+        ]) {
+          for (var i = 0; i < labels.length; i++) {
+            final bar = find.byKey(Key('$prefix${labels[i]}'));
+            final fill = tester.widget<FractionallySizedBox>(
+              find.descendant(
+                of: bar,
+                matching: find.byType(FractionallySizedBox),
+              ),
+            );
+            expect(
+              ((fill.child as DecoratedBox).decoration as BoxDecoration).color,
+              colors[i],
+            );
+          }
+        }
+        await tester.runAsync(() async {
+          final image = await boundary.toImage(pixelRatio: 2);
+          final data = await image.toByteData(format: ui.ImageByteFormat.png);
+          image.dispose();
+          await File(
+            '${dir.path}/storage_$filename.png',
+          ).writeAsBytes(data!.buffer.asUint8List());
+        });
+      }
+
       themes.applyPreset('default_dark');
       await tester.pumpAndSettle();
       for (final (_, label) in entries) {

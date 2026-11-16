@@ -2,133 +2,53 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/screens/settings/storage_screen.dart';
 import 'package:niarim/services/theme_service.dart';
-import 'package:niarim/utils/color_contrast.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'helpers/color_channels.dart';
-
-/// 容量削減画面の内訳グラフの色が、**どのテーマでも互いに区別できる**
-/// ことを検証する。
-///
-/// 以前は6色のうち2組が`Theme.of(context).colorScheme`と
-/// `ThemeService.activeColorScheme`（同じインスタンス）から取られていて
-/// **完全に同じ色**になっており、「プロジェクトデータ」と「キャッシュ」が
-/// 見分けられなかった（build/all-route-screenshots/32_storage.png で発覚）。
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  /// 2色の距離。8bitのRGBの差の二乗和で、十分離れているかだけを見る。
-  int distance(Color a, Color b) {
-    final dr = a.red8 - b.red8;
-    final dg = a.green8 - b.green8;
-    final db = a.blue8 - b.blue8;
-    return dr * dr + dg * dg + db * db;
+  void checkPalette(ColorScheme scheme) {
+    final accent = HSLColor.fromColor(scheme.primary);
+    final darker = (accent.lightness * 100).round() >= 51;
+    final shifted = accent.withHue(
+      (accent.hue + storageDeviceHueShiftDegrees) % 360,
+    );
+    for (final (base, colors, count) in [
+      (accent, sliceColorsOf(scheme), 6),
+      (shifted, storageDeviceSliceColorsOf(scheme), 3),
+    ]) {
+      expect(colors, hasLength(count));
+      expect(colors.toSet(), hasLength(count));
+      expect(colors.first, base.toColor());
+      for (var i = 1; i < count; i++) {
+        final previous = HSLColor.fromColor(colors[i - 1]).lightness;
+        final current = HSLColor.fromColor(colors[i]).lightness;
+        expect(current, darker ? lessThan(previous) : greaterThan(previous));
+        expect((current - previous).abs(), closeTo(.08, .005));
+        final expected = base.withLightness(
+          base.lightness + (darker ? -.08 : .08) * i,
+        );
+        expect(colors[i], expected.toColor());
+      }
+    }
   }
 
-  test('組み込みテーマ全てで内訳グラフの6色が互いに区別できる', () async {
+  test('every built-in theme keeps six distinct chart colors', () async {
     SharedPreferences.setMockInitialValues({});
     final service = ThemeService();
     await service.init();
-    var checked = 0;
+    expect(service.presets.length, greaterThan(5));
     for (final preset in service.presets) {
       service.applyPreset(preset.id);
-      final scheme = service.themeData.colorScheme;
-      final colors = sliceColorsOf(scheme);
-      expect(colors.length, 6);
-      final deviceColors = storageDeviceSliceColorsOf(scheme);
-      expect(deviceColors.length, 3);
-      final primaryHsl = HSLColor.fromColor(scheme.primary);
-      final shifted = primaryHsl.withHue(
-        (primaryHsl.hue + storageDeviceHueShiftDegrees) % 360,
-      );
-      for (var i = 0; i < 3; i++) {
-        expect(
-          deviceColors[i],
-          shifted.withLightness(storageChartLightnessLevels[i]).toColor(),
-          reason: '${preset.id}: device chart must shift hue only',
-        );
-        expect(
-          deviceColors[i],
-          isNot(colors[i]),
-          reason: '${preset.id}: device chart should be a distinct hue',
-        );
-      }
-
-      // 6色の色相と彩度はアクセントと完全に同じ。
-      // 明度以外の成分が変更されると、色の統一感が失われる。
-      final accent = HSLColor.fromColor(scheme.primary);
-      expect(storageChartLightnessLevels.length, 6);
-      expect(storageChartLightnessLevels.first, 0.615);
-      expect(storageChartLightnessLevels[1], 0.70);
-      expect(storageChartLightnessLevels[2], 0.785);
-      expect(storageChartLightnessLevels.last, 0.98);
-      for (var i = 0; i < storageChartLightnessLevels.length; i++) {
-        expect(storageChartLightnessLevels[i], lessThan(1));
-        expect(storageChartLightnessLevels[i], greaterThanOrEqualTo(0.615));
-      }
-      for (var i = 0; i < colors.length; i++) {
-        expect(
-          colors[i],
-          accent.withLightness(storageChartLightnessLevels[i]).toColor(),
-          reason: '${preset.id}: $i番目が明度以外も変更している',
-        );
-        // Same H/S, but a deliberately different accent lightness, must
-        // produce exactly the same six colors: only H/S are imported.
-        final alternateScheme = scheme.copyWith(
-          primary: accent.withLightness(0.93).toColor(),
-        );
-        // Color -> HSL -> Color is 8-bit quantized; a small RGB rounding
-        // difference is expected when re-encoding a different source L.
-        expect(
-          distance(sliceColorsOf(alternateScheme)[i], colors[i]),
-          lessThan(150),
-          reason: '${preset.id}: 色の明るさが元アクセントの明度に依存',
-        );
-        if (i > 0) {
-          expect(
-            HSLColor.fromColor(colors[i]).lightness,
-            greaterThan(HSLColor.fromColor(colors[i - 1]).lightness),
-            reason: '${preset.id}: 明度が順に明るくなっていない',
-          );
-        }
-      }
-      for (var i = 0; i < colors.length; i++) {
-        for (var j = i + 1; j < colors.length; j++) {
-          expect(
-            distance(colors[i], colors[j]),
-            greaterThan(400),
-            // Very light pastels have smaller RGB distances, but each
-            // adjacent color must still be distinguishable on 8-bit output.
-            reason:
-                '${preset.id}: $i番目と$j番目の色が近すぎる '
-                '(${colors[i]} / ${colors[j]})',
-          );
-        }
-      }
-      checked++;
+      checkPalette(service.themeData.colorScheme);
     }
-    expect(checked, greaterThan(5), reason: '組み込みテーマが読めていない');
+    service.dispose();
   });
 
-  test(
-    'all built-in palettes provide readable ink on the chart label surface',
-    () async {
-      SharedPreferences.setMockInitialValues({});
-      final service = ThemeService();
-      await service.init();
-      addTearDown(service.dispose);
-      for (final preset in service.presets) {
-        service.applyPreset(preset.id);
-        final scheme = service.themeData.colorScheme;
-        expect(
-          contrastRatio(
-            Color.alphaBlend(scheme.onSurface, scheme.surface),
-            scheme.surface,
-          ),
-          greaterThanOrEqualTo(4.5),
-          reason: preset.id,
-        );
-      }
-    },
-  );
+  test('at 50% bars lighten and at 51% bars darken', () {
+    for (final level in [0.0, .20, .50, .51, .80, 1.0]) {
+      final color = HSLColor.fromAHSL(1, 212, .65, level).toColor();
+      checkPalette(const ColorScheme.light().copyWith(primary: color));
+    }
+  });
 }

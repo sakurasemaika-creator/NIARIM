@@ -8,6 +8,7 @@ class Tone {
   /// Original procedural pattern key; allows safe user renaming of a copy.
   final String? patternName;
   final String? texturePath; // アセットまたはファイルパス
+  final bool pixelMode;
   final bool isFavorite;
   final String? folderId;
   // 分類用の自由入力タグ。お気に入り・フォルダとは別軸で、1つの素材へ
@@ -20,6 +21,7 @@ class Tone {
     required this.name,
     this.patternName,
     this.texturePath,
+    this.pixelMode = false,
     this.isFavorite = false,
     this.folderId,
     this.tags = const [],
@@ -30,6 +32,7 @@ class Tone {
     String? name,
     String? patternName,
     String? texturePath,
+    bool? pixelMode,
     bool? isFavorite,
     String? folderId,
     List<String>? tags,
@@ -39,6 +42,7 @@ class Tone {
       name: name ?? this.name,
       patternName: patternName ?? this.patternName,
       texturePath: texturePath ?? this.texturePath,
+      pixelMode: pixelMode ?? this.pixelMode,
       isFavorite: isFavorite ?? this.isFavorite,
       folderId: folderId ?? this.folderId,
       tags: tags ?? this.tags,
@@ -50,6 +54,7 @@ class Tone {
     'name': name,
     'patternName': patternName,
     'texturePath': texturePath,
+    'pixelMode': pixelMode,
     'isFavorite': isFavorite,
     'folderId': folderId,
     'tags': tags,
@@ -60,6 +65,11 @@ class Tone {
     name: j['name'] as String,
     patternName: j['patternName'] as String?,
     texturePath: j['texturePath'] as String?,
+    pixelMode:
+        j['pixelMode'] as bool? ??
+        ((j['patternName'] as String? ?? j['name'] as String).startsWith(
+          'ピクセル',
+        )),
     isFavorite: j['isFavorite'] as bool? ?? false,
     folderId: j['folderId'] as String?,
     tags: parseTags(j['tags']),

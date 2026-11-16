@@ -90,7 +90,12 @@ class ToneService extends ChangeNotifier {
   }
 
   static List<Tone> _defaultTones() => _toneDefinitions
-      .map((tone) => tone.copyWith(texturePath: 'assets/tones/${tone.id}.png'))
+      .map(
+        (tone) => tone.copyWith(
+          texturePath: 'assets/tones/${tone.id}.png',
+          pixelMode: tone.name.startsWith('ピクセル'),
+        ),
+      )
       .toList();
 
   static final _toneDefinitions = <Tone>[
@@ -789,6 +794,9 @@ class ToneService extends ChangeNotifier {
     final idx = _tones.indexWhere((t) => t.id == tone.id);
     if (idx >= 0) {
       _tones[idx] = tone;
+      if (_currentTone?.id == tone.id) _currentTone = tone;
+      if (_lastBucketTone?.id == tone.id) _lastBucketTone = tone;
+      if (_lastLassoTone?.id == tone.id) _lastLassoTone = tone;
       notifyListeners();
       _persist();
     }
@@ -908,6 +916,14 @@ class ToneService extends ChangeNotifier {
     }
   }
 
+  Future<Tone> withReplacementTexture(Tone tone, String sourcePath) async {
+    final dir = await _tonesDir();
+    final destPath =
+        '${dir.path}/texture_${DateTime.now().microsecondsSinceEpoch}.png';
+    await copyCreativeImageAsPng(sourcePath, destPath);
+    return tone.copyWith(texturePath: destPath);
+  }
+
   Future<Tone> createToneFromImage(String sourcePath, {String? name}) async {
     final id = 'Tone${DateTime.now().millisecondsSinceEpoch}';
     final dir = await _tonesDir();
@@ -980,6 +996,7 @@ class ToneService extends ChangeNotifier {
       name: imported.name,
       patternName: imported.patternName,
       texturePath: newTexturePath,
+      pixelMode: imported.pixelMode,
       isFavorite: imported.isFavorite,
       tags: imported.tags,
     );

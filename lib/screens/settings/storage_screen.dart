@@ -24,54 +24,29 @@ import '../../config/font_fallback.dart';
 /// グラフで可視化し、キャッシュ削除・未使用素材の一括削除（全プロジェクト
 /// 横断）・ゴミ箱を空にする・プロジェクト整理（作品一覧への案内）・
 /// 全データ削除（初期化）の各操作を提供する。
-/// テーマから、6分類ぶんの**互いに区別できる**色を作る。
-///
-/// 以前は`Theme.of(context).colorScheme`と`ThemeService.activeColorScheme`
-/// の両方から色を取っていたが、この2つは同じインスタンス（`themeData`の
-/// getterが代入している）なので、6色のうち2組が**まったく同じ色**に
-/// なっていた。実際に「プロジェクトデータ」と「キャッシュ」が同じ色で
-/// 描かれ、円グラフも凡例もどちらがどちらか分からなかった
-/// （`build/all-route-screenshots/32_storage.png`で発覚）。
-///
-/// さらにこのアプリのテーマは**primaryとsecondaryが同じ色**で、
-/// `ColorScheme`の役割をそのまま並べても区別できる6色にはならない。
-/// アクセント色の**色相と彩度を固定**し、明るい固定明度6色を作る。
-/// 旧4〜6色目を先頭3色とし、さらに明るい3色を加える。
-/// 旧明度の0.085刻みをそのまま9色目まで延長するとL>1になるため、
-/// 後半3段階だけ幅を緩め、明度100%超過・真っ白への潰れを防ぐ。
-/// `test/storage_chart_colors_test.dart`が組み込み28テーマ全てで検証する。
-/// 各カテゴリの明度はテーマの明度から独立した固定値（HSLのL）。
-/// 色相と彩度だけを現在のアクセントから取得する。
-const storageChartLightnessLevels = <double>[
-  0.615, // former 4th tone
-  0.70, // former 5th tone
-  0.785, // former 6th tone
-  0.85, // new 7th tone
-  0.915, // new 8th tone
-  0.98, // new 9th tone: below pure white
-];
-
-List<Color> sliceColorsOf(ColorScheme scheme) {
-  final accent = HSLColor.fromColor(scheme.primary);
-  return [
-    for (final lightness in storageChartLightnessLevels)
-      accent.withLightness(lightness).toColor(),
-  ];
+/// HSL lightness is compared as a whole percentage (50% vs 51%).
+/// Separate categories by eight percentage points from the accent.
+double _storageLightness(double accent, int index) {
+  final step = (accent * 100).round() >= 51 ? -0.08 : 0.08;
+  return (accent + step * index).clamp(0.0, 1.0);
 }
 
-/// Device chart uses the same accent saturation and fixed lightness levels
-/// as NIARIM's six categories. Only the hue is rotated slightly so the two
-/// charts are visually related without being identical.
+List<Color> sliceColorsOf(ColorScheme scheme) =>
+    _storageChartColors(HSLColor.fromColor(scheme.primary), 6);
+
+/// Keep the device chart related to the main chart with a small hue shift.
 const double storageDeviceHueShiftDegrees = 18.0;
 
 List<Color> storageDeviceSliceColorsOf(ColorScheme scheme) {
   final accent = HSLColor.fromColor(scheme.primary);
   final deviceHue = (accent.hue + storageDeviceHueShiftDegrees) % 360;
-  return [
-    for (final lightness in storageChartLightnessLevels.take(3))
-      accent.withHue(deviceHue).withLightness(lightness).toColor(),
-  ];
+  return _storageChartColors(accent.withHue(deviceHue), 3);
 }
+
+List<Color> _storageChartColors(HSLColor accent, int count) => [
+  for (var i = 0; i < count; i++)
+    accent.withLightness(_storageLightness(accent.lightness, i)).toColor(),
+];
 
 /// 端末・NIARIMとも同じ1行34px＋上下4pxの棒グラフだけを使う。
 /// 再取得中も行領域を確保し、操作の位置が不用意に跳ねないようにする。
