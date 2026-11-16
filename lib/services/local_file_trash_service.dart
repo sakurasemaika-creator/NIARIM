@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:isolate';
 
 import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
@@ -73,64 +74,88 @@ abstract final class LocalFileTrashService {
     return Directory('${documents.path}/niarim/trash/files');
   }
 
+  /// The Trash items, newest first.
+  ///
+  /// The records (meta.json) are read in a background isolate with
+  /// synchronous reads. Read on this isolate with asynchronous reads, every
+  /// record cost several round trips to the I/O workers (open, length, read,
+  /// close, and the check of the copy), and reading them side by side did not
+  /// help: 4,000 items kept the Trash tab loading for about 35 seconds (150
+  /// under load). The folder itself is still listed here. The items, their
+  /// order and the items skipped (unreadable record, copy not finished) are
+  /// the same as reading the records one by one.
   static Future<List<LocalTrashedFile>> list() async {
     final root = await _root();
     if (!await root.exists()) return const [];
-    final entries = <LocalTrashedFile>[];
-    await for (final entity in root.list(followLinks: false)) {
-      if (entity is! Directory) continue;
-      try {
-        final meta = jsonDecode(
-          await File('${entity.path}/meta.json').readAsString(),
-        );
-        if (meta is! Map<String, dynamic>) continue;
-        final kindName = meta['kind'];
-        final kind = LocalTrashKind.values
-            .where((v) => v.name == kindName)
-            .firstOrNull;
-        final id = meta['id'];
-        final original = meta['originalPath'];
-        final deletedAt = DateTime.tryParse(meta['deletedAt'] as String? ?? '');
-        if (kind == null ||
-            id is! String ||
-            original is! String ||
-            deletedAt == null ||
-            id !=
-                entity.uri.pathSegments.where((part) => part.isNotEmpty).last) {
-          continue;
-        }
-        final archive = '${entity.path}/data';
-        final isFolder = kind == LocalTrashKind.exportedWorkFolder;
-        if (isFolder
-            ? !await Directory(archive).exists()
-            : !await File(archive).exists()) {
-          continue;
-        }
-        final names = (meta['fileNames'] as List<dynamic>? ?? const [])
-            .whereType<String>()
-            .toList();
-        if (isFolder &&
-            (meta['folderName'] is! String ||
-                names.any((name) => !_safeFileName(name)))) {
-          continue;
-        }
-        entries.add(
-          LocalTrashedFile(
-            id: id,
-            kind: kind,
-            originalPath: original,
-            archivedPath: archive,
-            deletedAt: deletedAt,
-            folderName: meta['folderName'] as String?,
-            fileNames: names,
-          ),
-        );
-      } catch (_) {
-        // Corrupt metadata does not prevent other entries from being restored.
-      }
-    }
+    final folders = <String>[
+      await for (final entity in root.list(followLinks: false))
+        if (entity is Directory) entity.path,
+    ];
+    if (folders.isEmpty) return [];
+    final entries = await Isolate.run(
+      () => _readItems(folders),
+      debugName: 'Trash list',
+    );
     entries.sort((a, b) => b.deletedAt.compareTo(a.deletedAt));
     return entries;
+  }
+
+  /// The Trash items of [folders], in the order of [folders].
+  static List<LocalTrashedFile> _readItems(List<String> folders) => [
+    for (final folder in folders) ?_readItem(folder),
+  ];
+
+  /// The Trash item in [folder], or null when its record cannot be read or
+  /// its copy is not complete.
+  static LocalTrashedFile? _readItem(String folder) {
+    try {
+      final meta = jsonDecode(File('$folder/meta.json').readAsStringSync());
+      if (meta is! Map<String, dynamic>) return null;
+      final kindName = meta['kind'];
+      final kind = LocalTrashKind.values
+          .where((v) => v.name == kindName)
+          .firstOrNull;
+      final id = meta['id'];
+      final original = meta['originalPath'];
+      final deletedAt = DateTime.tryParse(meta['deletedAt'] as String? ?? '');
+      if (kind == null ||
+          id is! String ||
+          original is! String ||
+          deletedAt == null ||
+          id !=
+              Directory(
+                folder,
+              ).uri.pathSegments.where((part) => part.isNotEmpty).last) {
+        return null;
+      }
+      final archive = '$folder/data';
+      final isFolder = kind == LocalTrashKind.exportedWorkFolder;
+      if (isFolder
+          ? !Directory(archive).existsSync()
+          : !File(archive).existsSync()) {
+        return null;
+      }
+      final names = (meta['fileNames'] as List<dynamic>? ?? const [])
+          .whereType<String>()
+          .toList();
+      if (isFolder &&
+          (meta['folderName'] is! String ||
+              names.any((name) => !_safeFileName(name)))) {
+        return null;
+      }
+      return LocalTrashedFile(
+        id: id,
+        kind: kind,
+        originalPath: original,
+        archivedPath: archive,
+        deletedAt: deletedAt,
+        folderName: meta['folderName'] as String?,
+        fileNames: names,
+      );
+    } catch (_) {
+      // Corrupt metadata does not prevent other entries from being restored.
+      return null;
+    }
   }
 
   static bool _safeFileName(String name) =>
