@@ -468,7 +468,7 @@ Future<void> _pumpMissions(
 /// コインの全機能を使っているサーバー。
 CommunityService _rewardServer({
   required int balance,
-  int price = 55000,
+  int price = 44000,
   DateTime? activeUntil,
 }) => CommunityService(
   api: CommunityApi(
@@ -884,12 +884,12 @@ void main() {
       // サーバーが決めた価格（全機能1か月）の合計も、その言語の数と単位。
       expect(
         tester.widget<Text>(find.byKey(const Key('rewardTotalCoins'))).data,
-        l10n.coinAmount(55000),
+        l10n.coinAmount(44000),
       );
       await tester.tap(find.byKey(const Key('rewardRedeemButton')));
       await tester.pumpAndSettle();
       final redeemTexts = _dialogTexts(tester);
-      expect(redeemTexts.join('\n'), contains(l10n.coinAmount(55000)));
+      expect(redeemTexts.join('\n'), contains(l10n.coinAmount(44000)));
       for (final text in redeemTexts) {
         expect(foreign.hasMatch(text), isFalse, reason: '$locale: $text');
       }

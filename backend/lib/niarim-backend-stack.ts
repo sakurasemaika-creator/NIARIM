@@ -12,6 +12,11 @@ import * as events from "aws-cdk-lib/aws-events";
 import * as targets from "aws-cdk-lib/aws-events-targets";
 import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
 import * as path from "path";
+import {
+  COIN_BENEFIT_PRICE_VERSION,
+  FINAL_PREMIUM_MONTHLY_COINS,
+  FINAL_PREMIUM_YEARLY_COINS,
+} from "../src/lib/coinBenefitProposal";
 
 /**
  * NIARIM作品広場バックエンド（`29_動画投稿・ランキング機能仕様.md` 16章）。
@@ -307,12 +312,12 @@ export class NiarimBackendStack extends Stack {
           this.node.tryGetContext("coinIndividualRedemptionEnabled") === "true"
             ? "true" : "false",
         COIN_FULL_PREMIUM_MONTH_COINS:
-          String(this.node.tryGetContext("coinFullPremiumMonthCoins") ?? "55000"),
+          String(this.node.tryGetContext("coinFullPremiumMonthCoins") ?? FINAL_PREMIUM_MONTHLY_COINS),
         COIN_FULL_PREMIUM_YEAR_COINS:
-          String(this.node.tryGetContext("coinFullPremiumYearCoins") ?? "550000"),
+          String(this.node.tryGetContext("coinFullPremiumYearCoins") ?? FINAL_PREMIUM_YEARLY_COINS),
         COIN_PRICE_VERSION:
           String(this.node.tryGetContext("coinPriceVersion") ??
-            "v4-min10-repriced-20261113"),
+            COIN_BENEFIT_PRICE_VERSION),
       },
       bundling: { minify: true, sourceMap: false },
     });

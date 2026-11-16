@@ -630,8 +630,8 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
         priceVersion: 'server-pending',
         fullPremiumMinimumCoins: widget.fullPremiumMinimumCoins,
       );
-      // The existing per-month quote model cannot express the annual
-      // Premium discount. Never show its 12×month cost as a finalized total.
+      // Use the catalog total when the injected unit prices cannot represent
+      // annual pricing.
       final finalTotal = _selected.fold<int>(
         0,
         (sum, target) => sum + CoinBenefitPriceCatalog.cost(target, _duration),

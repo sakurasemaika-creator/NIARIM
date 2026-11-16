@@ -1,97 +1,87 @@
-/**
- * Versioned exchange unit-price catalog: short periods rebalanced.
- * Economics is final, NOT an automatic offer or entitlement grant.
- * Each currently unsupported redemption remains disabled until its
- * authenticated, atomic server redemption path has been implemented.
- * This table does not bypass independent safety and release gates.
- *
- * Multi-unit exchange pricing multiplies a rounded unit price by quantity,
- * EXCEPT full Premium: complete 12-month blocks use the Japanese annual
- * plan price of ¥5,500 × 100 = 550,000 coins, then remaining months use
- * the approved 55,000-coin monthly price. This does not enable annual
- * redemption before a server implementation and independent approval.
- * Discounted bundles remain cheaper than equivalent individual rights.
- */
-import {
-  PREMIUM_YEARLY_LIST_PRICE_YEN, REFERENCE_COINS_PER_YEN,
-} from "./coinEconomyScale";
+/** Opal exchange prices anchored to the Japanese subscription list prices. */
+export const COIN_BENEFIT_PRICE_VERSION = "v6-subscription-aligned-20261116" as const;
 
-export const COIN_BENEFIT_PRICE_VERSION = "v5-shortterm-rebalanced-20261113" as const;
-
-const month = {
-  endCardEdit: 12_000,
-  watermark: 18_000,
-  toneCurve: 18_000,
-  levelAdjustment: 15_000,
-  unlimitedDuration: 25_000,
-  customAutomation: 25_000,
-  projectListAds: 12_000,
-  canvasAds: 20_000,
-  timelineAds: 16_000,
-  processingAds: 10_000,
-  allAds: 40_000,
-  fullPremium: 55_000,
+// v5 monthly weights scaled to 55,000 Opals for the six tools and All Ads.
+const monthlyCoins = {
+  endCardEdit: 4_310,
+  watermark: 6_470,
+  toneCurve: 6_470,
+  levelAdjustment: 5_390,
+  unlimitedDuration: 8_990,
+  customAutomation: 8_990,
+  projectListAds: 4_310,
+  canvasAds: 7_190,
+  timelineAds: 5_750,
+  processingAds: 3_590,
+  allAds: 14_380,
 } as const;
 
-export type BenefitPriceTarget = keyof typeof month;
+type IndividualBenefit = keyof typeof monthlyCoins;
+export type BenefitPriceTarget = IndividualBenefit | "fullPremium";
 export type BenefitDuration = "hour" | "day" | "week" | "month";
 
-export const INDIVIDUAL_BENEFITS: readonly BenefitPriceTarget[] = [
-  "endCardEdit","watermark","toneCurve","levelAdjustment",
-  "unlimitedDuration","customAutomation",
-  "projectListAds","canvasAds","timelineAds","processingAds",
+const adPlacements = [
+  "projectListAds", "canvasAds", "timelineAds", "processingAds",
+] as const;
+
+const productionBenefits = [
+  "endCardEdit", "watermark", "toneCurve", "levelAdjustment",
+  "unlimitedDuration", "customAutomation",
+] as const;
+
+// All Ads replaces the four overlapping placement options in the comparison.
+const comparableBenefits = [...productionBenefits, "allAds"] as const;
+
+export const INDIVIDUAL_BENEFITS: readonly IndividualBenefit[] = [
+  ...productionBenefits, ...adPlacements,
 ];
+
+function individualUnitCoins(
+  target: IndividualBenefit, duration: BenefitDuration,
+): number {
+  const month = monthlyCoins[target];
+  // Round each short-period tariff up to 10 Opals.
+  switch (duration) {
+    case "hour": return Math.ceil(month / 60) * 10;
+    case "day": return Math.ceil(month / 30) * 10;
+    case "week": return Math.ceil(month * 3 / 40) * 10;
+    case "month": return month;
+  }
+}
+
+export function comparableBenefitsUnitCoins(duration: BenefitDuration): number {
+  return comparableBenefits.reduce(
+    (sum, target) => sum + individualUnitCoins(target, duration), 0,
+  );
+}
 
 export function finalBenefitCoins(
   target: BenefitPriceTarget, duration: BenefitDuration,
 ): number {
-  const perMonth = month[target];
-  if (duration === "month") return perMonth;
-  // Full bundle is fixed by the owner; redemption activation remains
-  // separately gated by a server-signed, revisioned quote.
-  if (target === "fullPremium") {
-    return {hour:10_000,day:25_000,week:45_000}[duration];
-  }
-  // Round every unit price UP at the ones place to a multiple of 10.
-  // Short use is deliberately more expensive than a proportional month:
-  // 1 hour ≈ 1/6 month, 1 day ≈ 1/3 month, 1 week ≈ 3/4 month.
-  // Round upward to 10 Opals with integer-safe arithmetic.
-  return {
-    hour: Math.ceil(perMonth / 60) * 10,
-    day: Math.ceil(perMonth / 30) * 10,
-    week: Math.ceil(perMonth * 3 / 40) * 10,
-  }[duration];
+  if (target !== "fullPremium") return individualUnitCoins(target, duration);
+  // Give the Complete Pack a 20% discount, rounded to the nearest 10 Opals.
+  return Math.round(comparableBenefitsUnitCoins(duration) * 4 / 50) * 10;
 }
 
-export const FINAL_PREMIUM_MONTHLY_COINS = month.fullPremium;
-export const FINAL_PREMIUM_YEARLY_COINS =
-  PREMIUM_YEARLY_LIST_PRICE_YEN * REFERENCE_COINS_PER_YEN;
+export const FINAL_PREMIUM_MONTHLY_COINS = finalBenefitCoins("fullPremium", "month");
+export const FINAL_PREMIUM_YEARLY_COINS = 10 * FINAL_PREMIUM_MONTHLY_COINS;
 
-/** Final-priced quantity, including the explicit 1-year discount.
- * This is only a PRICE calculation, never a spendable entitlement quote.
- */
+/** Each complete 12-month block costs ten monthly units. */
 export function finalBenefitCostCoins(
   target: BenefitPriceTarget, duration: BenefitDuration, quantity: number,
 ): number {
-  if (!Number.isSafeInteger(quantity) || quantity < 1 ||
-      quantity > 120) throw new RangeError("Invalid benefit duration quantity");
-  if (target === "fullPremium" && duration === "month") {
-    return Math.floor(quantity / 12) * FINAL_PREMIUM_YEARLY_COINS +
-      (quantity % 12) * FINAL_PREMIUM_MONTHLY_COINS;
+  if (!Number.isSafeInteger(quantity) || quantity < 1 || quantity > 120) {
+    throw new RangeError("Invalid benefit duration quantity");
   }
-  return finalBenefitCoins(target,duration) * quantity;
+  const units = duration === "month" ? quantity - 2 * Math.floor(quantity / 12) : quantity;
+  return finalBenefitCoins(target, duration) * units;
 }
-export const FINAL_ALL_INDIVIDUAL_MONTHLY_COINS = INDIVIDUAL_BENEFITS
-  .reduce((sum,target)=>sum + month[target],0);
 
 export function isBundledPremiumCheaperForAllDurations(): boolean {
-  return (["hour","day","week","month"] as const).every(duration => {
-    const standalone = INDIVIDUAL_BENEFITS.reduce(
-      (sum,target)=>sum + finalBenefitCoins(target,duration),0);
-    const allAdSingles = (["projectListAds","canvasAds",
-      "timelineAds","processingAds"] as const).reduce(
-      (sum,target)=>sum + finalBenefitCoins(target,duration),0);
-    return finalBenefitCoins("fullPremium",duration) < standalone &&
-      finalBenefitCoins("allAds",duration) < allAdSingles;
-  });
+  return (["hour", "day", "week", "month"] as const).every(duration =>
+    finalBenefitCoins("fullPremium", duration) < comparableBenefitsUnitCoins(duration) &&
+    finalBenefitCoins("allAds", duration) < adPlacements.reduce(
+      (sum, target) => sum + finalBenefitCoins(target, duration), 0,
+    ),
+  );
 }

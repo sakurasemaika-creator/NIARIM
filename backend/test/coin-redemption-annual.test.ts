@@ -25,9 +25,9 @@ beforeEach(()=>{
   process.env.TABLE_NAME="test-table";
   process.env.COIN_REDEMPTION_ENABLED="true";
   process.env.COIN_REDEMPTION_REVIEW_APPROVED="true";
-  process.env.COIN_FULL_PREMIUM_MONTH_COINS="55000";
-  process.env.COIN_FULL_PREMIUM_YEAR_COINS="550000";
-  process.env.COIN_PRICE_VERSION="v5-shortterm-rebalanced-20261113";
+  process.env.COIN_FULL_PREMIUM_MONTH_COINS="44000";
+  process.env.COIN_FULL_PREMIUM_YEAR_COINS="440000";
+  process.env.COIN_PRICE_VERSION="v6-subscription-aligned-20261116";
   delete process.env.COIN_PREMIUM_ANNUAL_REDEMPTION_ENABLED;
 });
 describe("independently gated annual Premium redemption",()=>{
@@ -35,19 +35,19 @@ describe("independently gated annual Premium redemption",()=>{
     expect(premiumAnnualRedemptionOffer().enabled).toBe(false);
     const res=await getCoinRedemptionQuote(event());
     expect(JSON.parse(res.body??"{}")).toMatchObject({
-      enabled:false,priceCoins:null,catalogPriceCoins:550000,months:12,
+      enabled:false,priceCoins:null,catalogPriceCoins:440000,months:12,
     });
     await expect(redeemCoins(event({target:"fullPremium",months:12,
-      priceVersion:"v5-shortterm-rebalanced-20261113",requestId})))
+      priceVersion:"v6-subscription-aligned-20261116",requestId})))
       .rejects.toMatchObject({code:"REDEMPTION_DISABLED"});
     expect(send).not.toHaveBeenCalled();
   });
   it("checks the exact approved annual rate and separate release switch",()=>{
     process.env.COIN_PREMIUM_ANNUAL_REDEMPTION_ENABLED="true";
     expect(premiumAnnualRedemptionOffer()).toMatchObject({
-      enabled:true,priceCoins:550000,priceVersion:"v5-shortterm-rebalanced-20261113",
+      enabled:true,priceCoins:440000,priceVersion:"v6-subscription-aligned-20261116",
     });
-    process.env.COIN_FULL_PREMIUM_YEAR_COINS="660000";
+    process.env.COIN_FULL_PREMIUM_YEAR_COINS="528000";
     expect(premiumAnnualRedemptionOffer().enabled).toBe(false);
   });
   it("extends a calendar year without skipping leap-day birthdays",()=>{
@@ -60,16 +60,16 @@ describe("independently gated annual Premium redemption",()=>{
     process.env.COIN_PREMIUM_ANNUAL_REDEMPTION_ENABLED="true";
     const response=await redeemCoins(event({
       target:"fullPremium",months:12,
-      priceVersion:"v5-shortterm-rebalanced-20261113",requestId,priceCoins:1,
+      priceVersion:"v6-subscription-aligned-20261116",requestId,priceCoins:1,
     }));
     expect(JSON.parse(response.body??"{}")).toMatchObject({
-      redeemed:true,costCoins:550000,duplicate:false,
+      redeemed:true,costCoins:440000,duplicate:false,
     });
     const tx=send.mock.calls.find(([c])=>c instanceof TransactWriteCommand)?.[0] as TransactWriteCommand;
     expect(tx.input.TransactItems).toHaveLength(5);
     expect(tx.input.TransactItems?.[0].Put?.Item?.months).toBe(12);
     expect(tx.input.TransactItems?.[1].Update?.ExpressionAttributeValues?.[":minus"])
-      .toBe(-550000);
+      .toBe(-440000);
     expect(tx.input.TransactItems?.[2].Update?.Key?.sk).toBe("ENTITLEMENT#fullPremium");
   });
   it("rejects unsupported options without writes",async()=>{

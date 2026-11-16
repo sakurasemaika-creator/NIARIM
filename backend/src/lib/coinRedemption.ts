@@ -1,14 +1,11 @@
-import { PREMIUM_MONTHLY_REFERENCE_COINS } from "./coinEconomyScale";
-import { FINAL_ALL_INDIVIDUAL_MONTHLY_COINS,
+import { comparableBenefitsUnitCoins,
   FINAL_PREMIUM_MONTHLY_COINS, FINAL_PREMIUM_YEARLY_COINS,
   finalBenefitCostCoins,
   COIN_BENEFIT_PRICE_VERSION } from "./coinBenefitProposal";
 
 /**
  * Initial implemented redemption route: full Premium for ONE calendar month.
- * The final monthly tariff is precisely 55,000 coins (550 yen x 100).
- * Annual Premium is a separate approved 550,000-coin catalog rate but
- * is NOT supported by this monthly-only redemption endpoint.
+ * Monthly and annual offers use the catalog rates and their release switches.
  * Incorrect operator configuration must FAIL CLOSED.
  * Pricing finalization does not itself authorize balance deductions.
  */
@@ -31,8 +28,7 @@ export function premiumRedemptionOffer(): PremiumRedemptionOffer {
     Number.isSafeInteger(amount) &&
     amount % 10 === 0 &&
     amount === FINAL_PREMIUM_MONTHLY_COINS &&
-    amount >= PREMIUM_MONTHLY_REFERENCE_COINS &&
-    amount < FINAL_ALL_INDIVIDUAL_MONTHLY_COINS &&
+    amount < comparableBenefitsUnitCoins("month") &&
     version === COIN_BENEFIT_PRICE_VERSION;
   return {
     enabled,

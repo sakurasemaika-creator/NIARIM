@@ -1,59 +1,58 @@
 import 'coin_unlock_quote.dart';
-import 'coin_economy_scale.dart';
 
-/// Owner-approved final launch unit-price table.
-/// Pricing is fixed, but this client calculator cannot debit a wallet or
-/// activate unsupported benefits. A live purchase still requires an
-/// authenticated, approved, server-versioned quote and atomic redemption.
+/// Versioned Opal exchange prices for display and server quote checks.
 abstract final class CoinBenefitPriceCatalog {
-  static const version = 'v5-shortterm-rebalanced-20261113';
+  static const version = 'v6-subscription-aligned-20261116';
 
-  /// Exactly the Japanese annual Premium plan price × 100 coins.
-  static const yearlyPremiumCoins =
-      CoinEconomyScale.yearlyPlanYen * CoinEconomyScale.referenceCoinsPerYen;
-
+  // v5 monthly weights scaled to 55,000 Opals for the six tools and All Ads.
   static const _monthlyCoins = <CoinUnlockTarget, int>{
-    CoinUnlockTarget.endCardEdit: 12_000,
-    CoinUnlockTarget.watermark: 18_000,
-    CoinUnlockTarget.toneCurve: 18_000,
-    CoinUnlockTarget.levelAdjustment: 15_000,
-    CoinUnlockTarget.unlimitedDuration: 25_000,
-    CoinUnlockTarget.customAutomation: 25_000,
-    CoinUnlockTarget.projectListAds: 12_000,
-    CoinUnlockTarget.canvasAds: 20_000,
-    CoinUnlockTarget.timelineAds: 16_000,
-    CoinUnlockTarget.processingAds: 10_000,
-    CoinUnlockTarget.allAds: 40_000,
-    CoinUnlockTarget.fullPremium: 55_000,
+    CoinUnlockTarget.endCardEdit: 4_310,
+    CoinUnlockTarget.watermark: 6_470,
+    CoinUnlockTarget.toneCurve: 6_470,
+    CoinUnlockTarget.levelAdjustment: 5_390,
+    CoinUnlockTarget.unlimitedDuration: 8_990,
+    CoinUnlockTarget.customAutomation: 8_990,
+    CoinUnlockTarget.projectListAds: 4_310,
+    CoinUnlockTarget.canvasAds: 7_190,
+    CoinUnlockTarget.timelineAds: 5_750,
+    CoinUnlockTarget.processingAds: 3_590,
+    CoinUnlockTarget.allAds: 14_380,
   };
 
-  static const individualTargets = <CoinUnlockTarget>[
+  static const _productionTargets = <CoinUnlockTarget>[
     CoinUnlockTarget.endCardEdit,
     CoinUnlockTarget.watermark,
     CoinUnlockTarget.toneCurve,
     CoinUnlockTarget.levelAdjustment,
     CoinUnlockTarget.unlimitedDuration,
     CoinUnlockTarget.customAutomation,
+  ];
+
+  static const individualTargets = <CoinUnlockTarget>[
+    ..._productionTargets,
     CoinUnlockTarget.projectListAds,
     CoinUnlockTarget.canvasAds,
     CoinUnlockTarget.timelineAds,
     CoinUnlockTarget.processingAds,
   ];
 
-  static int unitCoins(CoinUnlockTarget target, CoinDurationUnit unit) {
+  static const _comparisonTargets = <CoinUnlockTarget>[
+    ..._productionTargets,
+    CoinUnlockTarget.allAds,
+  ];
+
+  static int get yearlyPremiumCoins => cost(
+    CoinUnlockTarget.fullPremium,
+    const CoinUnlockDuration(12, CoinDurationUnit.month),
+  );
+
+  static int _individualUnitCoins(
+    CoinUnlockTarget target,
+    CoinDurationUnit unit,
+  ) {
     final month = _monthlyCoins[target];
     if (month == null) throw StateError('No reference price for $target');
-    if (unit == CoinDurationUnit.month) return month;
-    if (target == CoinUnlockTarget.fullPremium) {
-      return switch (unit) {
-        CoinDurationUnit.hour => 10000,
-        CoinDurationUnit.day => 25000,
-        CoinDurationUnit.week => 45000,
-        CoinDurationUnit.month => month,
-      };
-    }
-    // One-hour, one-day and one-week uses a deliberate short-term premium
-    // over proportional monthly time, matching backend integer arithmetic.
+    // Round each short-period tariff up to 10 Opals.
     return switch (unit) {
       CoinDurationUnit.hour => ((month + 59) ~/ 60) * 10,
       CoinDurationUnit.day => ((month + 29) ~/ 30) * 10,
@@ -62,21 +61,29 @@ abstract final class CoinBenefitPriceCatalog {
     };
   }
 
+  static int unitCoins(CoinUnlockTarget target, CoinDurationUnit unit) {
+    if (target != CoinUnlockTarget.fullPremium) {
+      return _individualUnitCoins(target, unit);
+    }
+    final total = _comparisonTargets.fold<int>(
+      0,
+      (sum, target) => sum + _individualUnitCoins(target, unit),
+    );
+    // Give the Complete Pack a 20% discount, rounded to the nearest 10 Opals.
+    return ((total * 4 + 25) ~/ 50) * 10;
+  }
+
   static int cost(CoinUnlockTarget target, CoinUnlockDuration duration) {
     if (!duration.isValid) throw StateError('Unsupported unlock duration');
-    if (target == CoinUnlockTarget.fullPremium &&
-        duration.unit == CoinDurationUnit.month) {
-      // Use annual-plan pricing for each complete 12-month block. A
-      // 12-month selection must NOT be charged 12 × the monthly tariff.
-      return (duration.amount ~/ 12) * yearlyPremiumCoins +
-          (duration.amount % 12) *
-              unitCoins(CoinUnlockTarget.fullPremium, CoinDurationUnit.month);
-    }
-    return unitCoins(target, duration.unit) * duration.amount;
+    // Each complete 12-month block costs ten monthly units.
+    final units = duration.unit == CoinDurationUnit.month
+        ? duration.amount - 2 * (duration.amount ~/ 12)
+        : duration.amount;
+    return unitCoins(target, duration.unit) * units;
   }
 
   static int singleTotal(CoinUnlockDuration duration) =>
-      individualTargets.fold(0, (sum, target) => sum + cost(target, duration));
+      _comparisonTargets.fold(0, (sum, target) => sum + cost(target, duration));
 
   static bool bundleIsCheaper(CoinUnlockDuration duration) =>
       cost(CoinUnlockTarget.fullPremium, duration) < singleTotal(duration);

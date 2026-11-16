@@ -91,10 +91,6 @@ export async function redeemIndividualCoins(
   if (quote.targets.includes("fullPremium")) {
     badRequest("この交換内容は未対応です","REDEMPTION_NOT_AVAILABLE");
   }
-  if (body.priceVersion !== COIN_BENEFIT_PRICE_VERSION) {
-    conflict("交換価格が変更されました","REDEMPTION_PRICE_CHANGED");
-  }
-
   const receiptKey=Keys.coinTransaction(niarimUserId,`redeem-${requestId}`);
   const existing=await ddb.send(new GetCommand({
     TableName:tableName(),Key:receiptKey,ConsistentRead:true,
@@ -107,8 +103,9 @@ export async function redeemIndividualCoins(
     item.selectionKey === signature &&
     item.duration === quote.duration &&
     item.quantity === quote.quantity &&
-    item.priceVersion === quote.priceVersion &&
-    item.costCoins === quote.catalogPriceCoins &&
+    typeof body.priceVersion === "string" &&
+    item.priceVersion === body.priceVersion &&
+    Number.isSafeInteger(item.costCoins) &&
     typeof item.expiresAtByTarget === "object" &&
     item.expiresAtByTarget !== null;
 
@@ -118,9 +115,12 @@ export async function redeemIndividualCoins(
     }
     return ok({
       redeemed:true,duplicate:true,targets:quote.targets,
-      costCoins:quote.catalogPriceCoins,
+      costCoins:existing.Item.costCoins,
       expiresAtByTarget:existing.Item.expiresAtByTarget,
     });
+  }
+  if (body.priceVersion !== COIN_BENEFIT_PRICE_VERSION) {
+    conflict("交換価格が変更されました","REDEMPTION_PRICE_CHANGED");
   }
   const now=Date.now();
   const user=await getUser(niarimUserId);
@@ -274,7 +274,7 @@ export async function redeemIndividualCoins(
       }));
       if (matches(after.Item)) {
         return ok({redeemed:true,duplicate:true,targets:quote.targets,
-          costCoins:quote.catalogPriceCoins,
+          costCoins:after.Item?.costCoins,
           expiresAtByTarget:after.Item?.expiresAtByTarget});
       }
       conflict("残高または特典状態が更新されました",

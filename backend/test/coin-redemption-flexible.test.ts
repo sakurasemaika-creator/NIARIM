@@ -31,9 +31,9 @@ beforeEach(()=>{
   process.env.COIN_REDEMPTION_ENABLED="true";
   process.env.COIN_REDEMPTION_REVIEW_APPROVED="true";
   process.env.COIN_PREMIUM_ANNUAL_REDEMPTION_ENABLED="true";
-  process.env.COIN_FULL_PREMIUM_MONTH_COINS="55000";
-  process.env.COIN_FULL_PREMIUM_YEAR_COINS="550000";
-  process.env.COIN_PRICE_VERSION="v5-shortterm-rebalanced-20261113";
+  process.env.COIN_FULL_PREMIUM_MONTH_COINS="44000";
+  process.env.COIN_FULL_PREMIUM_YEAR_COINS="440000";
+  process.env.COIN_PRICE_VERSION="v6-subscription-aligned-20261116";
 });
 describe("flexible Full Premium duration redemption",()=>{
   it("does not expose any spendable price before independent safety approval",async()=>{
@@ -44,16 +44,16 @@ describe("flexible Full Premium duration redemption",()=>{
     });
     await expect(redeemCoins(req({
       target:"fullPremium",duration:"hour",quantity:2,
-      requestId,priceVersion:"v5-shortterm-rebalanced-20261113",
+      requestId,priceVersion:"v6-subscription-aligned-20261116",
     }))).rejects.toMatchObject({code:"REDEMPTION_DISABLED"});
     expect(send).not.toHaveBeenCalled();
   });
 
   it("quotes hourly, daily, weekly and multi-month prices from the server",async()=>{
     const cases=[
-      ["hour","2",20000],["day","2",50000],
-      ["week","3",135000],["month","2",110000],
-      ["month","12",550000],["month","13",605000],
+      ["hour","2",14680],["day","2",29380],
+      ["week","3",99120],["month","2",88000],
+      ["month","12",440000],["month","13",484000],
     ] as const;
     for(const [duration,quantity,price] of cases){
       const response=await getCoinRedemptionQuote(req(undefined,{
@@ -62,7 +62,7 @@ describe("flexible Full Premium duration redemption",()=>{
       expect(JSON.parse(response.body??"{}")).toMatchObject({
         target:"fullPremium",duration,quantity:Number(quantity),
         enabled:true,priceCoins:price,catalogPriceCoins:price,
-        priceVersion:"v5-shortterm-rebalanced-20261113",
+        priceVersion:"v6-subscription-aligned-20261116",
       });
     }
   });
@@ -70,10 +70,10 @@ describe("flexible Full Premium duration redemption",()=>{
     const before=Date.now();
     const response=await redeemCoins(req({
       target:"fullPremium",duration:"hour",quantity:2,
-      requestId,priceVersion:"v5-shortterm-rebalanced-20261113",priceCoins:0,
+      requestId,priceVersion:"v6-subscription-aligned-20261116",priceCoins:0,
     }));
     expect(JSON.parse(response.body??"{}")).toMatchObject({
-      redeemed:true,duplicate:false,costCoins:20000,
+      redeemed:true,duplicate:false,costCoins:14680,
     });
     const tx=send.mock.calls.find(([command])=>
       command instanceof TransactWriteCommand)?.[0] as TransactWriteCommand;
@@ -82,7 +82,7 @@ describe("flexible Full Premium duration redemption",()=>{
     expect(writes).toHaveLength(5);
     expect(writes[0].Put?.Item?.duration).toBe("hour");
     expect(writes[0].Put?.Item?.quantity).toBe(2);
-    expect(writes[1].Update?.ExpressionAttributeValues?.[":minus"]).toBe(-20000);
+    expect(writes[1].Update?.ExpressionAttributeValues?.[":minus"]).toBe(-14680);
     expect(writes[2].Update?.Key?.sk).toBe("ENTITLEMENT#fullPremium");
     const expiry=Number(writes[2].Update?.ExpressionAttributeValues?.[":expiry"]);
     expect(expiry).toBeGreaterThanOrEqual(before+7200_000);

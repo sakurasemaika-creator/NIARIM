@@ -34,7 +34,7 @@ class RewardDurationLanguage {
   /// 「単位_数」ごとの、手で書いた正解の文言。
   final Map<String, String> pinned;
 
-  /// 全機能を55000オパールで1か月と引き換えるときの確認の文。
+  /// 全機能を44000オパールで1か月と引き換えるときの確認の文。
   final String redeemConfirmation;
 
   String label(CoinUnlockDuration duration) {
@@ -64,7 +64,7 @@ const rewardDurationLanguages = <RewardDurationLanguage>[
       'month_12': '12か月',
       'hour_1': '1時間',
     },
-    redeemConfirmation: 'コンプリートパック（プレミアム会員と同内容） · 1か月 · 55000オパール',
+    redeemConfirmation: 'コンプリートパック（プレミアム会員と同内容） · 1か月 · 44000オパール',
   ),
   RewardDurationLanguage(
     code: 'en',
@@ -85,7 +85,7 @@ const rewardDurationLanguages = <RewardDurationLanguage>[
       'month_12': '12 months',
       'hour_1': '1 hour',
     },
-    redeemConfirmation: 'Complete Benefits Pack (same as Premium membership) · 1 month · 55000 opals',
+    redeemConfirmation: 'Complete Benefits Pack (same as Premium membership) · 1 month · 44000 opals',
   ),
   RewardDurationLanguage(
     code: 'es',
@@ -107,7 +107,7 @@ const rewardDurationLanguages = <RewardDurationLanguage>[
       'hour_1': '1 hora',
     },
     redeemConfirmation:
-        'Pack completo de ventajas (igual que Premium) · 1 mes · 55000 ópalos',
+        'Pack completo de ventajas (igual que Premium) · 1 mes · 44000 ópalos',
   ),
   RewardDurationLanguage(
     code: 'fr',
@@ -129,7 +129,7 @@ const rewardDurationLanguages = <RewardDurationLanguage>[
       'hour_1': '1 heure',
     },
     redeemConfirmation:
-        'Pack complet d\'avantages (comme l\'abonnement Premium) · 1 mois · 55000 opales',
+        'Pack complet d\'avantages (comme l\'abonnement Premium) · 1 mois · 44000 opales',
   ),
   RewardDurationLanguage(
     code: 'ko',
@@ -150,7 +150,7 @@ const rewardDurationLanguages = <RewardDurationLanguage>[
       'month_12': '12개월',
       'hour_1': '1시간',
     },
-    redeemConfirmation: '혜택 컴플리트 팩 (Premium 회원과 동일한 구성) · 1개월 · 55000오팔',
+    redeemConfirmation: '혜택 컴플리트 팩 (Premium 회원과 동일한 구성) · 1개월 · 44000오팔',
   ),
   RewardDurationLanguage(
     code: 'zh',
@@ -171,7 +171,7 @@ const rewardDurationLanguages = <RewardDurationLanguage>[
       'month_12': '12个月',
       'hour_1': '1小时',
     },
-    redeemConfirmation: '权益全套礼包（与Premium会员内容相同） · 1个月 · 55000欧泊',
+    redeemConfirmation: '权益全套礼包（与Premium会员内容相同） · 1个月 · 44000欧泊',
   ),
   RewardDurationLanguage(
     code: 'zh_Hant',
@@ -192,7 +192,7 @@ const rewardDurationLanguages = <RewardDurationLanguage>[
       'month_12': '12個月',
       'hour_1': '1小時',
     },
-    redeemConfirmation: '權益全套禮包（與Premium會員內容相同） · 1個月 · 55000歐泊',
+    redeemConfirmation: '權益全套禮包（與Premium會員內容相同） · 1個月 · 44000歐泊',
   ),
 ];
 

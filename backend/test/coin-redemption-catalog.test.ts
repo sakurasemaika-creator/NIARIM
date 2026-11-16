@@ -4,7 +4,7 @@ import { catalogRedemptionQuote, catalogSelectionQuote } from "../src/lib/coinRe
 describe("authenticated catalog preview contract", () => {
   it("reports owner-fixed prices for each period but never claims redemption", () => {
     for (const [duration,price] of [
-      ["hour", 10000],["day",25000],["week",45000],["month",55000],
+      ["hour", 7340],["day",14690],["week",33040],["month",44000],
     ] as const) {
       const q = catalogRedemptionQuote({target:"fullPremium",duration});
       expect(q).toMatchObject({
@@ -12,7 +12,7 @@ describe("authenticated catalog preview contract", () => {
         catalogPriceCoins:price,
         enabled:false,priceCoins:null,
         reason:"REDEMPTION_NOT_IMPLEMENTED",
-        priceVersion:"v5-shortterm-rebalanced-20261113",
+        priceVersion:"v6-subscription-aligned-20261116",
       });
     }
   });
@@ -20,7 +20,7 @@ describe("authenticated catalog preview contract", () => {
     const quote = catalogRedemptionQuote({
       target:"toneCurve",duration:"week",quantity:"3",
     });
-    expect(quote.catalogPriceCoins).toBe(40500);
+    expect(quote.catalogPriceCoins).toBe(14580);
     expect(quote.enabled).toBe(false);
     expect(quote.priceCoins).toBeNull();
   });
@@ -28,7 +28,7 @@ describe("authenticated catalog preview contract", () => {
     const quote = catalogRedemptionQuote({
       target:"fullPremium",duration:"month",quantity:"12",
     });
-    expect(quote.catalogPriceCoins).toBe(550000);
+    expect(quote.catalogPriceCoins).toBe(440000);
     expect(quote.enabled).toBe(false);
   });
   it("rejects malformed targets, quantities and conflicting durations", () => {
@@ -51,7 +51,7 @@ describe("multiple benefit comparisons are server-authoritative and non-spendabl
       targets:"toneCurve,levelAdjustment",duration:"week",
     });
     expect(result).toMatchObject({
-      enabled:false,priceCoins:null,catalogPriceCoins:24750,
+      enabled:false,priceCoins:null,catalogPriceCoins:8910,
       duration:"week",quantity:1,
     });
     expect(result.items).toHaveLength(2);

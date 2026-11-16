@@ -14,7 +14,7 @@ import {
 } from "../src/lib/individualCoinRedemption";
 
 const requestId="123e4567-e89b-12d3-a456-426614174000";
-const priceVersion="v5-shortterm-rebalanced-20261113";
+const priceVersion="v6-subscription-aligned-20261116";
 const input=()=>({targets:["toneCurve","levelAdjustment"],duration:"week",
   quantity:1,priceVersion,requestId});
 const enable=()=>{
@@ -64,7 +64,7 @@ describe("fail closed individual benefit redemption",()=>{
       ...input(), ...({costCoins:1,accountId:"attacker"} as Record<string,unknown>),
     });
     expect(JSON.parse(result.body??"{}")).toMatchObject({
-      redeemed:true,costCoins:24750,duplicate:false,
+      redeemed:true,costCoins:8910,duplicate:false,
     });
     const tx=send.mock.calls.find(([cmd])=>cmd instanceof TransactWriteCommand)?.[0] as TransactWriteCommand;
     expect(tx).toBeInstanceOf(TransactWriteCommand);
@@ -72,7 +72,7 @@ describe("fail closed individual benefit redemption",()=>{
     expect(rows).toHaveLength(7);
     expect(rows[0].Put?.Item?.selectionKey).toBe("toneCurve,levelAdjustment");
     expect(rows[1].Update?.Key?.pk).toBe("USER#Naccount");
-    expect(rows[1].Update?.ExpressionAttributeValues?.[":minus"]).toBe(-24750);
+    expect(rows[1].Update?.ExpressionAttributeValues?.[":minus"]).toBe(-8910);
     expect(rows[2].Update?.Key?.sk).toBe("ENTITLEMENT#toneCurve");
     expect(rows[3].Update?.Key?.sk).toBe("ENTITLEMENT#levelAdjustment");
     // The membership and Play term are checked in the SAME transaction as
@@ -87,13 +87,13 @@ describe("fail closed individual benefit redemption",()=>{
     expect(rows[4].ConditionCheck?.ExpressionAttributeValues?.[":free"])
       .toBe("free");
     expect(rows[5].ConditionCheck?.Key?.sk).toBe("ENTITLEMENT#fullPremium");
-    expect(rows[6].Put?.Item?.deltaCoins).toBe(-24750);
+    expect(rows[6].Put?.Item?.deltaCoins).toBe(-8910);
     expect(rows[2].Update?.ConditionExpression).toContain("attribute_not_exists(expiresAtEpochMs)");
   });
   it("rejects price tampering, overlapping ad rights and duplicate targets",async()=>{
     enable();
     await expect(redeemIndividualCoins("Naccount",{
-      ...input(),priceVersion:"wrong",
+      ...input(),priceVersion:"v5-shortterm-rebalanced-20261113",
     })).rejects.toMatchObject({code:"REDEMPTION_PRICE_CHANGED"});
     await expect(redeemIndividualCoins("Naccount",{
       ...input(),targets:["allAds","canvasAds"],
@@ -101,7 +101,8 @@ describe("fail closed individual benefit redemption",()=>{
     await expect(redeemIndividualCoins("Naccount",{
       ...input(),targets:["toneCurve","toneCurve"],
     })).rejects.toMatchObject({code:"REDEMPTION_INVALID_SELECTION"});
-    expect(send).not.toHaveBeenCalled();
+    expect(send.mock.calls.map(([command])=>command.constructor))
+      .toEqual([GetCommand]);
   });
   it("refuses to charge an account with an active verified Play Premium term",async()=>{
     enable();
@@ -114,21 +115,24 @@ describe("fail closed individual benefit redemption",()=>{
     expect(send.mock.calls.some(([cmd])=>cmd instanceof TransactWriteCommand))
       .toBe(false);
   });
-  it("replays the original receipt without touching the balance again",async()=>{
+  it("replays a receipt from before the price change at its recorded amount",async()=>{
     enable();
+    const receiptVersion="v5-shortterm-rebalanced-20261113";
     send.mockImplementation(async(cmd:unknown)=>{
       if(cmd instanceof GetCommand && cmd.input.Key?.sk ===
         `COIN_TX#redeem-${requestId}`) {
         return {Item:{
           itemType:"COIN_REDEMPTION",target:"individualBenefits",
           requestId,selectionKey:"toneCurve,levelAdjustment",
-          duration:"week",quantity:1,priceVersion,costCoins:24750,
+          duration:"week",quantity:1,priceVersion:receiptVersion,costCoins:24750,
           expiresAtByTarget:{toneCurve:1900000000000,levelAdjustment:1900000000000},
         }};
       }
       return {};
     });
-    const response=await redeemIndividualCoins("Naccount",input());
+    const response=await redeemIndividualCoins("Naccount",{
+      ...input(),priceVersion:receiptVersion,
+    });
     expect(JSON.parse(response.body??"{}")).toMatchObject({
       redeemed:true,duplicate:true,costCoins:24750,
     });

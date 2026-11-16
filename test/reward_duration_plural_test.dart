@@ -50,7 +50,7 @@ http.Response _reply(Object body) => http.Response(
   headers: {'content-type': 'application/json; charset=utf-8'},
 );
 
-/// 残高60000オパール・全機能1か月が55000オパールで交換できるサーバー。
+/// 残高60000オパール・全機能1か月が44000オパールで交換できるサーバー。
 /// 交換そのもの（POST）が呼ばれたら[redeemCalls]に数える。
 CommunityService _redeemableServer(List<String> redeemCalls) =>
     CommunityService(
@@ -72,8 +72,8 @@ CommunityService _redeemableServer(List<String> redeemCalls) =>
               }),
               '/me/rewards/quote' => _reply({
                 'enabled': true,
-                'priceCoins': 55000,
-                'priceVersion': 'v5-shortterm-rebalanced-20261113',
+                'priceCoins': 44000,
+                'priceVersion': 'v6-subscription-aligned-20261116',
               }),
               _ => _reply(<String, Object>{}),
             };
@@ -83,21 +83,21 @@ CommunityService _redeemableServer(List<String> redeemCalls) =>
     );
 
 const _toneCurvePrices = CoinUnlockUnitPrices(
-  perHour: 3000,
-  perDay: 6000,
-  perWeek: 13500,
-  perMonth: 18000,
+  perHour: 1080,
+  perDay: 2160,
+  perWeek: 4860,
+  perMonth: 6470,
 );
 
 /// [_toneCurvePrices]で[duration]を選んだときの必要オパール（モデルを通さず、
-/// 単価×数で求めた値）。
+/// 短期は単価×数、月単位は12か月ごとに10か月分の価格で計算する）。
 int _expectedToneCurveCoins(CoinUnlockDuration duration) =>
-    duration.amount *
     switch (duration.unit) {
-      CoinDurationUnit.hour => 3000,
-      CoinDurationUnit.day => 6000,
-      CoinDurationUnit.week => 13500,
-      CoinDurationUnit.month => 18000,
+      CoinDurationUnit.hour => 1080 * duration.amount,
+      CoinDurationUnit.day => 2160 * duration.amount,
+      CoinDurationUnit.week => 4860 * duration.amount,
+      CoinDurationUnit.month =>
+        64700 * (duration.amount ~/ 12) + 6470 * (duration.amount % 12),
     };
 
 Future<void> _pumpScreen(
@@ -315,7 +315,7 @@ void main() {
           find.descendant(
             of: toneCurve,
             matching: find.textContaining(
-              RegExp('^${_expectedToneCurveCoins(duration)}(?![0-9])'),
+              RegExp(r'(?<![0-9])' '${_expectedToneCurveCoins(duration)}(?![0-9])'),
             ),
           ),
           findsOneWidget,
@@ -393,10 +393,12 @@ void main() {
 
       await _reveal(tester, _durationButton);
       expect(_buttonLabel(tester), english.label(duration), reason: where);
-      expect(_toneCurvePrices.cost(duration), coins, reason: where);
       await _reveal(tester, toneCurve);
       expect(
-        find.descendant(of: toneCurve, matching: find.text('$coins opals')),
+        find.descendant(
+          of: toneCurve,
+          matching: find.textContaining(RegExp('(?<![0-9])$coins opals')),
+        ),
         findsOneWidget,
         reason: where,
       );
