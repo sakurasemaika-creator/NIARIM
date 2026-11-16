@@ -843,6 +843,9 @@ class DrawingEngine {
     final sinParticle = math.sin(-particleRotation);
     // Precompute falloff constants once per tip, not for every raster pixel.
     final softSigma = math.max(0.5, (radius + blur) / 3.3);
+    // A pixel center can be half a pixel from the dab center on each axis.
+    // Keep the innermost sample fully opaque while the Gaussian falls off.
+    final falloffScale = -0.5 / (softSigma * softSigma);
     final softnessMix = blur > 0
         ? (blur / (blur + radius)).clamp(0.0, 1.0)
         : 0.0;
@@ -950,8 +953,9 @@ class DrawingEngine {
               if (!pixelMode && blur > 0 && pixelAlpha > 0) {
                 final t = math.max(0.0, (dist - radius) / blur);
                 final classic = math.max(0.0, 1.0 - t * t);
-                final ratio = dist / softSigma;
-                final soft = math.exp(-0.5 * ratio * ratio);
+                final soft = math.exp(
+                  falloffScale * math.max(0.0, dist * dist - 0.5),
+                );
                 pixelAlpha *=
                     classic * (1.0 - softnessMix) + soft * softnessMix;
               }
@@ -1010,8 +1014,9 @@ class DrawingEngine {
               if (dist <= radius + blur) {
                 final t = dist <= radius ? 0.0 : (dist - radius) / blur;
                 final classic = 1.0 - t * t;
-                final ratio = dist / softSigma;
-                final soft = math.exp(-0.5 * ratio * ratio);
+                final soft = math.exp(
+                  falloffScale * math.max(0.0, dist * dist - 0.5),
+                );
                 pixelAlpha = classic * (1.0 - softnessMix) + soft * softnessMix;
               } else {
                 pixelAlpha = 0.0;
