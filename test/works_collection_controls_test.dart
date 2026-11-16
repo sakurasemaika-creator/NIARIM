@@ -57,7 +57,7 @@ void main() {
         (1, 'Alpha.gif'),
         (2, 'Bravo.gif'),
       ]) {
-        final file = File(directory.path + '/' + name);
+        final file = File('${directory.path}/$name');
         await file.writeAsBytes(data);
         await file.setLastModified(DateTime.utc(2026, 10, 1 + index));
       }

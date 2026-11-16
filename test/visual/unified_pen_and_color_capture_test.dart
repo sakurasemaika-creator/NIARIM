@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
@@ -85,7 +84,7 @@ void main() {
           return encoded!.buffer.asUint8List();
         });
         await tester.runAsync(
-          () => File(out.path + '/' + name + '.png').writeAsBytes(bytes!),
+          () => File('${out.path}/$name.png').writeAsBytes(bytes!),
         );
       }
 
@@ -150,7 +149,7 @@ void main() {
         CanvasDockPanel.colorPicker,
       });
       await navigate('/home');
-      await navigate('/canvas/' + demo.id);
+      await navigate('/canvas/${demo.id}');
       expect(find.byType(PenSubToolPanel), findsOneWidget);
       expect(find.byType(BrushPanel), findsOneWidget);
       final brushService = context.read<BrushService>();
@@ -231,7 +230,7 @@ void main() {
       await settings.setForcePcMode(false);
       await settings.setDefaultDockedPanels(<CanvasDockPanel>{});
       await navigate('/home');
-      await navigate('/canvas/' + demo.id);
+      await navigate('/canvas/${demo.id}');
       await tester.tap(find.byKey(const ValueKey('canvasColorSwatch')));
       await settle();
       expect(find.byType(ColorPickerPanel), findsOneWidget);

@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:ui' as ui;
 
+import 'package:flutter/foundation.dart' show debugPrintSynchronously;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
@@ -18,7 +19,7 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   const pathChannel = MethodChannel('plugins.flutter.io/path_provider');
   testWidgets('real Flutter screenshots of thumbnail options', (tester) async {
-    print('CAPTURE_STAGE 00 begin');
+    debugPrintSynchronously('CAPTURE_STAGE 00 begin');
     SharedPreferences.setMockInitialValues({});
     final temp = Directory.systemTemp.createTempSync('niarim_thumb_capture_');
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
@@ -45,7 +46,7 @@ void main() {
     );
     final picture = recorder.endRecording();
     // Image encoding and disk I/O must escape the widget test fake clock.
-    final exportedImage = File(temp.path + '/sample_export.png');
+    final exportedImage = File('${temp.path}/sample_export.png');
     await tester.runAsync(() async {
       final image = await picture.toImage(480, 270);
       final data = await image.toByteData(format: ui.ImageByteFormat.png);
@@ -54,15 +55,15 @@ void main() {
       await exportedImage.writeAsBytes(data!.buffer.asUint8List());
     });
 
-    print('CAPTURE_STAGE 01 before fonts');
+    debugPrintSynchronously('CAPTURE_STAGE 01 before fonts');
     await loadAppFonts(tester);
-    print('CAPTURE_STAGE 02 fonts loaded');
+    debugPrintSynchronously('CAPTURE_STAGE 02 fonts loaded');
     final service = ProjectService();
-    print('CAPTURE_STAGE 03 before service init');
+    debugPrintSynchronously('CAPTURE_STAGE 03 before service init');
     await tester.runAsync(service.init);
-    print('CAPTURE_STAGE 04 after service init');
+    debugPrintSynchronously('CAPTURE_STAGE 04 after service init');
     addTearDown(service.dispose);
-    print('CAPTURE_STAGE 05 before project create');
+    debugPrintSynchronously('CAPTURE_STAGE 05 before project create');
     final project = await tester.runAsync(
       () => service.createProject(
         name: '第1話 サンプルアニメ',
@@ -73,7 +74,7 @@ void main() {
         exportHeight: 270,
       ),
     );
-    print('CAPTURE_STAGE 06 project created');
+    debugPrintSynchronously('CAPTURE_STAGE 06 project created');
     expect(project, isNotNull);
     final boundaryKey = GlobalKey();
     final navKey = GlobalKey<NavigatorState>();
@@ -168,9 +169,9 @@ void main() {
         ),
       ),
     );
-    print('CAPTURE_STAGE 07 before pump host');
+    debugPrintSynchronously('CAPTURE_STAGE 07 before pump host');
     await tester.pumpWidget(host);
-    print('CAPTURE_STAGE 08 after pump host');
+    debugPrintSynchronously('CAPTURE_STAGE 08 after pump host');
     await tester.pump(const Duration(milliseconds: 300));
 
     Future<void> capture(String name) async {
@@ -194,15 +195,13 @@ void main() {
       final dir = Directory('build/thumbnail-editor-visual-audit')
         ..createSync(recursive: true);
       await tester.runAsync(() async {
-        await File(
-          dir.path + '/' + name + '.png',
-        ).writeAsBytes(png!, flush: true);
+        await File('${dir.path}/$name.png').writeAsBytes(png!, flush: true);
       });
     }
 
-    print('CAPTURE_STAGE 09 before first screenshot');
+    debugPrintSynchronously('CAPTURE_STAGE 09 before first screenshot');
     await capture('01_phone_cards');
-    print('CAPTURE_STAGE 10 first screenshot saved');
+    debugPrintSynchronously('CAPTURE_STAGE 10 first screenshot saved');
     await tester.tap(find.byKey(const Key('projectCoverMenuFixture')));
     await tester.pump(const Duration(milliseconds: 300));
     await capture('02_phone_project_menu_fixture');

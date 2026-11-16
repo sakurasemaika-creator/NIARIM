@@ -49,14 +49,14 @@ void main() {
           'R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7',
         );
         for (final name in ['Alpha.gif', 'Beta.gif', 'Deleted.gif']) {
-          await File(exports.path + '/' + name).writeAsBytes(gif);
+          await File('${exports.path}/$name').writeAsBytes(gif);
         }
         await LocalFileTrashService.move(
-          File(exports.path + '/Deleted.gif'),
+          File('${exports.path}/Deleted.gif'),
           LocalTrashKind.exportedWork,
         );
         await ExportEngine.listExportedFiles(forceRefresh: true);
-        return exports.path + '/Alpha.gif';
+        return '${exports.path}/Alpha.gif';
       }))!;
 
       appRouter.go('/home');

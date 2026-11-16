@@ -299,7 +299,7 @@ void main() {
     expect(find.byKey(const Key('folderCoverNone')), findsOneWidget);
     expect(find.byKey(const Key('folderCoverItem')), findsOneWidget);
     expect(find.byKey(const Key('folderCoverCustom')), findsOneWidget);
-    final topOf = (String key) => tester.getTopLeft(find.byKey(Key(key))).dy;
+    double topOf(String key) => tester.getTopLeft(find.byKey(Key(key))).dy;
     expect(topOf('folderCoverAuto'), lessThan(topOf('folderCoverItem')));
     expect(topOf('folderCoverItem'), lessThan(topOf('folderCoverCustom')));
     expect(topOf('folderCoverCustom'), lessThan(topOf('folderCoverNone')));

@@ -95,7 +95,7 @@ void main() {
           });
           await tester.runAsync(
             () => File(
-              output.path + '/' + width.toString() + 'dp-' + suffix + '.png',
+              '${output.path}/${width}dp-$suffix.png',
             ).writeAsBytes(bytes!),
           );
         }

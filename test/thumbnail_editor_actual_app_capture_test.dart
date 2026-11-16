@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:ui' as ui;
 
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart' show debugPrintSynchronously;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
@@ -91,11 +92,11 @@ void main() {
       final bytes = await img.toByteData(format: ui.ImageByteFormat.png);
       img.dispose();
       picture.dispose();
-      final file = File(dir.path + '/sample_export.png');
+      final file = File('${dir.path}/sample_export.png');
       await file.writeAsBytes(bytes!.buffer.asUint8List(), flush: true);
       // Populate the real Trash tab with an independent, disposable sample.
       // The exported original stays in the Works collection.
-      final deletedExample = File(dir.path + '/deleted_sample.png');
+      final deletedExample = File('${dir.path}/deleted_sample.png');
       await deletedExample.writeAsBytes(await file.readAsBytes(), flush: true);
       await LocalFileTrashService.move(
         deletedExample,
@@ -152,11 +153,9 @@ void main() {
       final output = Directory('build/thumbnail-editor-actual-app')
         ..createSync(recursive: true);
       await tester.runAsync(
-        () => File(
-          output.path + '/' + name + '.png',
-        ).writeAsBytes(png!, flush: true),
+        () => File('${output.path}/$name.png').writeAsBytes(png!, flush: true),
       );
-      print('ACTUAL_APP_CAPTURE: ' + name);
+      debugPrintSynchronously('ACTUAL_APP_CAPTURE: $name');
     }
 
     Finder projectMenu() => find
@@ -196,23 +195,17 @@ void main() {
     expect(worksTab, findsOneWidget);
     await tester.tap(worksTab);
     await tester.pump(const Duration(milliseconds: 750));
-    print(
-      'DEBUG_WORKS_FILES: ' +
-          (await tester.runAsync(
-            () => ExportEngine.listExportedFiles(forceRefresh: true),
-          ))!.map((e) => e.path).join(', '),
+    final exportedFiles = await tester.runAsync(
+      () => ExportEngine.listExportedFiles(forceRefresh: true),
     );
-    print(
-      'DEBUG_WORKS_MENU: ' +
-          find
-              .byKey(const Key('exportedWorkMoreMenu'))
-              .evaluate()
-              .length
-              .toString(),
+    debugPrintSynchronously(
+      'DEBUG_WORKS_FILES: ${exportedFiles!.map((e) => e.path).join(', ')}',
     );
-    print(
-      'DEBUG_WORKS_PROJECT_VISIBLE: ' +
-          find.byType(ProjectListWidget).evaluate().length.toString(),
+    final menus = find.byKey(const Key('exportedWorkMoreMenu'));
+    debugPrintSynchronously('DEBUG_WORKS_MENU: ${menus.evaluate().length}');
+    final projectsOnWorksTab = find.byType(ProjectListWidget);
+    debugPrintSynchronously(
+      'DEBUG_WORKS_PROJECT_VISIBLE: ${projectsOnWorksTab.evaluate().length}',
     );
     await capture('08_phone_real_exported_works');
     expect(find.byKey(const Key('exportedWorkMoreMenu')), findsOneWidget);

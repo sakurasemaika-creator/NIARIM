@@ -117,11 +117,11 @@ void main() {
       const kib = 1024;
       final base = '${docs.path}/niarim';
       fileWithSize(
-        '$base/projects/${activeId}/Materials/test-material.png',
+        '$base/projects/$activeId/Materials/test-material.png',
         200 * kib,
       );
-      fileWithSize('$base/projects/${activeId}/project-fixture.bin', 150 * kib);
-      fileWithSize('$base/projects/${deletedId}/trash-fixture.bin', 25 * kib);
+      fileWithSize('$base/projects/$activeId/project-fixture.bin', 150 * kib);
+      fileWithSize('$base/projects/$deletedId/trash-fixture.bin', 25 * kib);
       fileWithSize('$base/exports/fixture.png', 110 * kib);
       fileWithSize('$base/Brushes/fixture-brush.bin', 75 * kib);
       fileWithSize('${cache.path}/cache-fixture.bin', 50 * kib);

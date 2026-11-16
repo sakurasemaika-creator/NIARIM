@@ -29,7 +29,7 @@ void main() {
                     saturation: 0.6,
                     value: 0.8,
                     onHueChanged: (_) {},
-                    onSvChanged: (_, __) {},
+                    onSvChanged: (_, _) {},
                     onEyedropperTap: () {},
                     onToggleTransparent: () {},
                     onSliderModeChanged: (_) {},

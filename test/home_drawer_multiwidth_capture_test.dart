@@ -417,7 +417,7 @@ void main() {
       }
       File(
         '${output.path}/matrix.txt',
-      ).writeAsStringSync(rows.join('\n') + '\n');
+      ).writeAsStringSync('${rows.join('\n')}\n');
     },
     timeout: const Timeout(Duration(minutes: 8)),
   );

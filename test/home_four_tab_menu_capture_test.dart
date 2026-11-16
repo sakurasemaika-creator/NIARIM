@@ -73,10 +73,10 @@ void main() {
       final data = await image.toByteData(format: ui.ImageByteFormat.png);
       image.dispose();
       picture.dispose();
-      final work = File(exports.path + '/ANIME_EP01.png');
+      final work = File('${exports.path}/ANIME_EP01.png');
       workPath = work.path;
       await work.writeAsBytes(data!.buffer.asUint8List(), flush: true);
-      final deleted = File(exports.path + '/ANIME_OLD.png');
+      final deleted = File('${exports.path}/ANIME_OLD.png');
       await deleted.writeAsBytes(await work.readAsBytes(), flush: true);
       await LocalFileTrashService.move(deleted, LocalTrashKind.exportedWork);
       await ExportEngine.listExportedFiles(forceRefresh: true);
@@ -152,16 +152,15 @@ void main() {
       final folder = Directory('build/home-four-tab-captures')
         ..createSync(recursive: true);
       await tester.runAsync(
-        () => File(
-          folder.path + '/' + name + '.png',
-        ).writeAsBytes(bytes!, flush: true),
+        () =>
+            File('${folder.path}/$name.png').writeAsBytes(bytes!, flush: true),
       );
       // ignore: avoid_print
-      print('FOUR_TAB_CAPTURE: ' + name);
+      print('FOUR_TAB_CAPTURE: $name');
     }
 
     Future<void> tab(int index) async {
-      final target = find.byKey(ValueKey('home_tab_' + index.toString()));
+      final target = find.byKey(ValueKey('home_tab_$index'));
       expect(target, findsOneWidget);
       await tester.ensureVisible(target);
       await tester.tap(target);
@@ -232,7 +231,7 @@ void main() {
     expect(projects.shared, isNotEmpty);
     await shot('05_shared');
     final shareMenu = find.byKey(
-      Key('collectionMenu_' + projects.shared.first.id),
+      Key('collectionMenu_${projects.shared.first.id}'),
     );
     expect(shareMenu, findsOneWidget);
     await tester.tap(shareMenu);
@@ -389,7 +388,10 @@ void main() {
       expect(clear, findsOneWidget);
       expect(find.descendant(of: toolbar, matching: paste), findsOneWidget);
       expect(find.descendant(of: toolbar, matching: clear), findsOneWidget);
-      expect(find.ancestor(of: paste, matching: find.byType(AppBar)), findsNothing);
+      expect(
+        find.ancestor(of: paste, matching: find.byType(AppBar)),
+        findsNothing,
+      );
       // Stale instruction from the previous header-based UI must be absent.
       expect(find.textContaining('右上の貼り付け'), findsNothing);
       expect(

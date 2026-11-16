@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'dart:math' as math;
-import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
@@ -89,7 +88,7 @@ void main() {
           return encoded!.buffer.asUint8List();
         });
         await tester.runAsync(
-          () => File(out.path + '/' + name + '.png').writeAsBytes(bytes!),
+          () => File('${out.path}/$name.png').writeAsBytes(bytes!),
         );
       }
 
@@ -180,7 +179,7 @@ void main() {
       await settings.setForcePcMode(true);
       await settings.setDefaultDockedPanels({CanvasDockPanel.colorPicker});
       await navigate('/home');
-      await navigate('/canvas/' + demo.id);
+      await navigate('/canvas/${demo.id}');
       expect(find.byType(ColorPickerPanel), findsOneWidget);
       expect(
         find.byKey(const ValueKey('color-slider-mode-hsv')),
@@ -194,7 +193,7 @@ void main() {
       // Capture every tab of the shared two-row subtool chooser.
       await settings.setDefaultDockedPanels({CanvasDockPanel.penSubTool});
       await navigate('/home');
-      await navigate('/canvas/' + demo.id);
+      await navigate('/canvas/${demo.id}');
       expect(find.byType(PenSubToolPanel), findsOneWidget);
       await shot('02a_pc_pen_subtool_brush_tab_waves');
       final subtool = find.byType(PenSubToolPanel);
@@ -226,7 +225,7 @@ void main() {
         await settings.setDefaultDockedPanels({caseItem.panel});
         await settings.setDesktopDockHeight(caseItem.panel, 620);
         await navigate('/home');
-        await navigate('/canvas/' + demo.id);
+        await navigate('/canvas/${demo.id}');
         final managed = switch (caseItem.panel) {
           CanvasDockPanel.brush => find.byType(BrushPanel),
           CanvasDockPanel.tone => find.byType(TonePanel),
@@ -245,9 +244,9 @@ void main() {
       await settings.setDefaultDockedPanels({CanvasDockPanel.layer});
       await settings.setDesktopDockHeight(CanvasDockPanel.layer, 600);
       await navigate('/home');
-      await navigate('/canvas/' + demo.id);
+      await navigate('/canvas/${demo.id}');
       expect(find.byType(LayerPanel), findsOneWidget);
-      final thumb = find.byKey(ValueKey('layer-preview-tap-' + layer.id));
+      final thumb = find.byKey(ValueKey('layer-preview-tap-${layer.id}'));
       expect(thumb, findsOneWidget);
       await shot('14_pc_layer_palette_thumbnail');
       await tester.tap(thumb);
@@ -264,7 +263,7 @@ void main() {
 
       await settings.setDefaultDockedPanels({CanvasDockPanel.filter});
       await navigate('/home');
-      await navigate('/canvas/' + demo.id);
+      await navigate('/canvas/${demo.id}');
       expect(find.byType(FilterPanel), findsOneWidget);
       await shot('03_pc_filter_gallery_before_editing');
       final filters = tester
@@ -301,7 +300,7 @@ void main() {
 
       await settings.setDefaultDockedPanels({CanvasDockPanel.colorAdjust});
       await navigate('/home');
-      await navigate('/canvas/' + demo.id);
+      await navigate('/canvas/${demo.id}');
       expect(find.byType(ColorAdjustSheet), findsOneWidget);
       expect(find.byType(MenuBar), findsNothing);
       expect(find.byType(ToolbarWidget), findsNothing);
@@ -324,7 +323,7 @@ void main() {
       await settings.setForcePcMode(false);
       await settings.setDefaultDockedPanels(<CanvasDockPanel>{});
       await navigate('/home');
-      await navigate('/canvas/' + demo.id);
+      await navigate('/canvas/${demo.id}');
       final swatch = find.byKey(const ValueKey('canvasColorSwatch'));
       expect(swatch, findsOneWidget);
       await tester.tap(swatch);
@@ -336,14 +335,14 @@ void main() {
       await shot('09_mobile_color_wheel_rgb_edge_controls');
       // The same preset layout is used in the phone's quick pen tool.
       await navigate('/home');
-      await navigate('/canvas/' + demo.id);
+      await navigate('/canvas/${demo.id}');
       final quickPanel = find.byType(PenSubToolPanel);
       if (quickPanel.evaluate().isNotEmpty) {
         await shot('20_phone_pen_subtool_stroke_wave');
       }
 
       await navigate('/home');
-      await navigate('/canvas/' + demo.id);
+      await navigate('/canvas/${demo.id}');
       await tester.tap(find.byIcon(Icons.settings).first);
       await settle();
       final l10n = AppLocalizations.of(

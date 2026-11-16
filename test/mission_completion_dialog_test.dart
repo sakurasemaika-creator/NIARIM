@@ -20,7 +20,7 @@ void main() {
         ),
         GoRoute(
           path: '/rewards',
-          builder: (_, __) => const Scaffold(body: Text('Missions screen')),
+          builder: (_, _) => const Scaffold(body: Text('Missions screen')),
         ),
       ],
     );
@@ -70,7 +70,7 @@ void main() {
         ),
         GoRoute(
           path: '/rewards',
-          builder: (_, __) => const Scaffold(body: Text('Missions screen')),
+          builder: (_, _) => const Scaffold(body: Text('Missions screen')),
         ),
       ],
     );

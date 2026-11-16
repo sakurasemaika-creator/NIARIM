@@ -85,7 +85,7 @@ void main() {
           expect(
             alpha(pixels, size, x, y) != 0,
             spec.matches(x, y),
-            reason: spec.name + ': (' + x.toString() + ',' + y.toString() + ')',
+            reason: '${spec.name}: ($x,$y)',
           );
         }
       }
@@ -100,7 +100,7 @@ void main() {
       final patterns = <String>{};
       for (final denier in [10, 20, 30, 40, 60, 80]) {
         final tone = service.tones.singleWhere(
-          (t) => t.name.contains(denier.toString() + 'デニール'),
+          (t) => t.name.contains('$denierデニール'),
         );
         final pixels = generateBuiltInToneTexture(tone, size: 64);
         patterns.add(
