@@ -51,11 +51,10 @@
    マルチタッチ・筆圧はこの方法では出せない。
 2. コード変更後は必ず`flutter analyze`（ベースライン：**0 issues**。
    info１件も出ていない状態が正なので、**1件でも増えたらそれは自分が
-   足したもの**として必ず直すこと。ただし2026-11-10時点のdev_branchは、
-   他のセッションの分で12件出る〔`home_screen.dart`の使っていないimport
-   2件・`project_service.dart`の不要なimport 1件・テスト4本の9件〕。
-   手を入れる前の件数を先に取り、自分が触ったファイルに0件であることを
-   確かめること。`Color.red/green/blue`は非推奨なので、
+   足したもの**として必ず直すこと。2026-11-16（`cb9644f0`・`ccaf6500`）に
+   リポジトリ全体で0件へ戻った（その前は他のセッションの分で105件出ていた）。
+   他のセッションが足すこともあるので、手を入れる前の件数を先に取り、
+   自分が触ったファイルに0件であることを確かめること。`Color.red/green/blue`は非推奨なので、
    テストでピクセル値と突き合わせるときは
    `test/helpers/color_channels.dart`の`.red8`/`.green8`/`.blue8`/
    `.alpha8`を使う。テスト内のデバッグ出力は`print`ではなく
@@ -1248,6 +1247,22 @@ onTap: ...)`だったために
   `home_tab_switch_focus_test`・`home_fab_focus_ring_test`・
   `home_tab_filtered_empty_states_test`ほか。Shift+Tabで作られていない下の行へ
   戻れない・フォルダの中の画面の空の表示等はまだ（DISC200〜205）。
+- **ホームのカードの丸い操作・画面の帯・動きを減らす設定（DISC181・212〜219、
+  2026-11-16）**：星・︙の丸は描く大きさ40のまま、押せる所と読み上げは48×48
+  （`collection_action_controls.dart`の`_ActionTarget`。丸の外を押すと丸の中心へ
+  届ける）。丸を並べるときは`Row`ではなく`CollectionActionRow`（隙間を分け合い
+  隣と重ならない）、`ListTile`の`trailing`に置くときは行を
+  `.withCollectionActionReach()`で包む（包まないと︙の右の余白を押しても届かない）。
+  丸はカードの端から4px以上離す（親の箱の外は押せない）。一覧の末尾の余白には下の
+  帯（`MediaQuery.paddingOf(context).bottom`）を足し、横向きの左右の切り欠き・帯は
+  本文を`insideSideSafeArea()`で避ける（Scaffoldは浮かぶボタンの所の余白を外すので、
+  浮かぶボタンの行と引き出しの見出しは左右の値を自分で足す）。動きを減らす設定
+  （`MediaQuery.disableAnimationsOf`）ではタブを`_HomeTabController`がその場で替え、
+  閉じた引き出しは1フレーム外して幕を消す（Flutterのばねは設定で200倍速くなり、
+  値が0でも約0.4秒「閉じる途中」のまま全面の幕を残す）。絵の無い表紙の印は作品の
+  用紙の上なので`paperMarkColor`（テーマの色にしない）。左下の「↑」は一覧を上へ
+  戻せるときだけ（`_projectsCanGoUp`。一覧の途中で左下の名前に重なるのは所有者の
+  判断待ち、DISC242）。
 - **作品・フォルダの名前で並べる・探すときは`lib/utils/name_collation.dart`**：
   `String.compareTo`だと「作品10」が「作品2」より前、大文字が小文字より前、
   全角英字・半角カナが最後になる。並べるときは`NameSortKey`で名前ごとに
@@ -1445,6 +1460,8 @@ onTap: ...)`だったために
   **見込んだのに一度も出なかった不具合はそのファイルの最後に失敗になる**
   ので、ホームの不具合を直したら表とテストの`homeMatrix2Known([...])`から
   その番号を外し、そのマトリクスを流し直すこと。1本10〜14分（`-j 1`）。
+  DISC181・212〜219（2026-11-16）で表は空になった。新しく見つけた不具合は台帳に
+  番号を取ってから表へ足す。
 - **`flutter test`環境での既知の制約**：
   - `path_provider`はデフォルトで未登録。ディスクI/Oを伴うテストは
     `test/app_smoke_test.dart`の`mockPathProvider`ヘルパーを使うこと。
