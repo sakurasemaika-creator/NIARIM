@@ -5193,6 +5193,9 @@ Widget? _clearSearchButton(AppLocalizations l10n, VoidCallback? onPressed) =>
 /// 絞り込んでいなければnull（その一覧が空のときの文を出す）。
 /// [hiddenByFavorites]は、検索には当たるがお気に入りで隠れているだけのとき。
 /// [fitIn]は表示に使える幅と高さ（[EmptyStatePlaceholder.fitIn]）。
+/// [inFolder]はフォルダの中の画面（お気に入りが無いときは「このフォルダに
+/// お気に入りはありません」）。[scrollable]は表示が自分でスクロールするか
+/// （[EmptyStatePlaceholder.scrollable]。一覧の中に置くときは偽）。
 Widget? _filteredLibraryEmptyState(
   BuildContext context, {
   required String searchQuery,
@@ -5202,6 +5205,8 @@ Widget? _filteredLibraryEmptyState(
   VoidCallback? onClearSearch,
   VoidCallback? onShowAll,
   Size? fitIn,
+  bool inFolder = false,
+  bool scrollable = false,
 }) {
   final l10n = AppLocalizations.of(context)!;
   final query = searchQuery.trim();
@@ -5210,7 +5215,7 @@ Widget? _filteredLibraryEmptyState(
       icon: Icons.search_off,
       title: l10n.projectListNoMatchTitle(query),
       hint: searchHint,
-      scrollable: false,
+      scrollable: scrollable,
       fitIn: fitIn,
       action: _clearSearchButton(l10n, onClearSearch),
     );
@@ -5220,8 +5225,10 @@ Widget? _filteredLibraryEmptyState(
     icon: Icons.star_border,
     title: query.isNotEmpty
         ? l10n.projectListNoFavoriteMatchTitle(query)
+        : inFolder
+        ? l10n.projectListNoFavoritesInFolderTitle
         : l10n.projectListNoFavoritesTitle,
-    scrollable: false,
+    scrollable: scrollable,
     fitIn: fitIn,
     action: onShowAll == null
         ? null
@@ -5263,6 +5270,11 @@ class _SharedFolderScreen extends StatefulWidget {
 class _SharedFolderScreenState extends State<_SharedFolderScreen> {
   late ProjectViewMode _viewMode;
 
+  // 共有のタブから引き継いだ検索・「お気に入りだけ」。中身を全部隠したときの
+  // 「検索をやめる」「すべて表示」は、このフォルダの中だけで外す。
+  late String _searchQuery = widget.searchQuery;
+  late bool _favoritesOnly = widget.showFavoritesOnly;
+
   @override
   void initState() {
     super.initState();
@@ -5272,15 +5284,17 @@ class _SharedFolderScreenState extends State<_SharedFolderScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final query = foldName(widget.searchQuery).trim();
+    final query = foldName(_searchQuery).trim();
+    final inFolder = context
+        .watch<ProjectService>()
+        .shared
+        .where((p) => p.sharedFolderId == widget.folderId)
+        .toList();
     final items = _sortProjects(
-      context
-          .watch<ProjectService>()
-          .shared
+      inFolder
           .where(
             (p) =>
-                p.sharedFolderId == widget.folderId &&
-                (!widget.showFavoritesOnly || p.isFavorite) &&
+                (!_favoritesOnly || p.isFavorite) &&
                 (query.isEmpty || nameMatches(p.name, query)),
           )
           .toList(),
@@ -5327,10 +5341,27 @@ class _SharedFolderScreenState extends State<_SharedFolderScreen> {
         ],
       ),
       body: items.isEmpty
-          ? EmptyStatePlaceholder(
-              icon: Icons.folder_open_outlined,
-              title: l10n.homeSharedFolderEmpty,
-            )
+          // 中身があるのに絞り込みで全部隠れたときは、タブと同じ文と外す
+          // ボタン（以前は「このフォルダには共有プロジェクトがありません」
+          // と言い、外す道が無かった）。
+          ? (inFolder.isEmpty
+                    ? null
+                    : _filteredLibraryEmptyState(
+                        context,
+                        searchQuery: _searchQuery,
+                        favoritesOnly: _favoritesOnly,
+                        hiddenByFavorites:
+                            query.isNotEmpty &&
+                            inFolder.any((p) => nameMatches(p.name, query)),
+                        inFolder: true,
+                        scrollable: true,
+                        onClearSearch: () => setState(() => _searchQuery = ''),
+                        onShowAll: () => setState(() => _favoritesOnly = false),
+                      )) ??
+                EmptyStatePlaceholder(
+                  icon: Icons.folder_open_outlined,
+                  title: l10n.homeSharedFolderEmpty,
+                )
           : _viewMode != ProjectViewMode.detail
           ? GridView.builder(
               padding: const EdgeInsets.all(8),
@@ -7335,6 +7366,11 @@ class _WorksFolderScreenState extends State<_WorksFolderScreen> {
   late ProjectViewMode _viewMode;
   late ProjectSortMode _sortMode;
 
+  // 作品一覧のタブから引き継いだ検索・「お気に入りだけ」。中身を全部隠した
+  // ときの「検索をやめる」「すべて表示」は、このフォルダの中だけで外す。
+  late String _searchQuery = widget.searchQuery;
+  late bool _favoritesOnly = widget.favoritesOnly;
+
   @override
   void initState() {
     super.initState();
@@ -7437,13 +7473,18 @@ class _WorksFolderScreenState extends State<_WorksFolderScreen> {
                   return _WorksLoadFailure(onRetry: _reload);
                 }
                 final listing = snapshot.data ?? widget.listing;
-                final query = foldName(widget.searchQuery).trim();
+                final query = foldName(_searchQuery).trim();
+                final inFolder = listing.files
+                    .where(
+                      (f) =>
+                          workFolders.folderIdOf(f.uri.pathSegments.last) ==
+                          widget.folderId,
+                    )
+                    .toList();
                 final items = _sortExportedFiles(
-                  listing.files.where(
+                  inFolder.where(
                     (f) =>
-                        workFolders.folderIdOf(f.uri.pathSegments.last) ==
-                            widget.folderId &&
-                        (!widget.favoritesOnly ||
+                        (!_favoritesOnly ||
                             widget.favoritePaths.contains(f.path)) &&
                         (query.isEmpty ||
                             nameMatches(f.uri.pathSegments.last, query)),
@@ -7452,10 +7493,34 @@ class _WorksFolderScreenState extends State<_WorksFolderScreen> {
                   listing.stats,
                 );
                 if (items.isEmpty) {
-                  return EmptyStatePlaceholder(
-                    icon: Icons.folder_open_outlined,
-                    title: l10n.homeWorkFolderEmpty,
-                  );
+                  // 中身があるのに絞り込みで全部隠れたときは、タブと同じ文と
+                  // 外すボタン（以前は「このフォルダには書き出した作品が
+                  // ありません」と言い、外す道が無かった）。
+                  return (inFolder.isEmpty
+                          ? null
+                          : _filteredLibraryEmptyState(
+                              context,
+                              searchQuery: _searchQuery,
+                              favoritesOnly: _favoritesOnly,
+                              hiddenByFavorites:
+                                  query.isNotEmpty &&
+                                  inFolder.any(
+                                    (f) => nameMatches(
+                                      f.uri.pathSegments.last,
+                                      query,
+                                    ),
+                                  ),
+                              inFolder: true,
+                              scrollable: true,
+                              onClearSearch: () =>
+                                  setState(() => _searchQuery = ''),
+                              onShowAll: () =>
+                                  setState(() => _favoritesOnly = false),
+                            )) ??
+                      EmptyStatePlaceholder(
+                        icon: Icons.folder_open_outlined,
+                        title: l10n.homeWorkFolderEmpty,
+                      );
                 }
                 Widget item(BuildContext context, int index, bool grid) {
                   final file = items[index];
@@ -7465,7 +7530,13 @@ class _WorksFolderScreenState extends State<_WorksFolderScreen> {
                     stat: listing.stats[file]!,
                     gridTile: grid,
                     isFavorite: widget.favoritePaths.contains(file.path),
-                    onToggleFavorite: () => widget.onToggleFavorite(file.path),
+                    // お気に入りは作品一覧のタブが持つので、この画面も
+                    // 描き直す（以前は星を押しても、画面を開き直すまで
+                    // 星の色も「お気に入りだけ」の絞り込みも変わらなかった）。
+                    onToggleFavorite: () {
+                      widget.onToggleFavorite(file.path);
+                      setState(() {});
+                    },
                     onCopy: widget.onCopyEntry == null
                         ? null
                         : () => widget.onCopyEntry!(
