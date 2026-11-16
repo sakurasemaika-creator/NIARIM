@@ -272,6 +272,7 @@ void main() {
     await settle(tester);
     await tester.tap(find.text('ゴミ箱へ移動').last);
     await settleIo(tester);
+    await settle(tester);
     expect(find.byType(ProjectDetailScreen), findsNothing);
     expect(s.service.trash.map((p) => p.id), [s.id]);
     expect(find.text('元に戻す'), findsOneWidget);
@@ -321,6 +322,7 @@ void main() {
     await settle(tester);
     await tester.tap(find.text('ゴミ箱へ移動').last);
     await settleIo(tester);
+    await settle(tester);
     expect(s.service.trash.map((p) => p.id), [s.id]);
     // 戻した状態を保存できない（保存先がいっぱい等）。
     store.rejectTrash = true;
