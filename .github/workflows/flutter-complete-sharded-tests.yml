@@ -67,6 +67,23 @@ jobs:
             exit 1
           fi
           flutter test --no-pub --reporter expanded --concurrency=3 "${tests[@]}" 2>&1 | tee reports/flutter-shard.log
+      - name: Summarize test failures
+        if: always()
+        shell: bash
+        run: |
+          log=reports/flutter-shard.log
+          if [[ ! -s "$log" ]]; then
+            echo "Flutter did not produce a shard log." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          {
+            echo "### Flutter shard ${{ matrix.shard }}"
+            echo
+            echo '~~~text'
+            tail -n 1 "$log"
+            awk '/ \[E\]$/ { total++; if (total <= 40) print } END { if (total > 40) print total - 40 " more failure entries in the shard artifact." }' "$log"
+            echo '~~~'
+          } >> "$GITHUB_STEP_SUMMARY"
       - name: Upload full result log
         if: always()
         uses: actions/upload-artifact@v4
