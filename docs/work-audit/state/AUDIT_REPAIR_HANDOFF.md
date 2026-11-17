@@ -130,7 +130,7 @@ App・Web共通。Claudeが要修正の詳細を追記し、ユーザーが別�
   - **担当が見つけた別の不具合**：DISC265（作品一覧・共有の詳細表示の最後のカードが浮かぶボタンの上端ちょうどで終わる）。フォルダの中の画面の「小」のカードでは絵の印が星の所に重なる（DISC263と同じ形、前から）。
 - **このセッションの公開の印が無いDISC**。前のセッションで直った物もあるので、各行の記録と最新 `dev_branch` で確かめる。
   - DISC001〜028・030〜049・051〜061・063〜067・069〜074・077〜081・090・099〜100・102・107・111・115〜116・118〜120・122
-  - DISC126・137・142〜146・149〜150・154〜155・159・161〜162・166・193〜202・204〜205・223・231・236・257〜482
+  - DISC126・137・142〜146・149〜150・154〜155・159・161〜162・166・193〜202・204〜205・223・231・236・257〜483
   - 所有者の判断待ち：DISC090・099・107・115・146・155、A011、DISC066。
 - **dev_branchで落ちているtest**：DISC258（容量削減の画面のtestが多く落ちる。どのコミットからかは未確認）。
 
@@ -1788,3 +1788,10 @@ App・Web共通。Claudeが要修正の詳細を追記し、ユーザーが別�
 - **要修正（新規）**：482（組み込みのブラシ・スタンプ・トーン130の出所の記録が無い）。
 - **OK**：フォントは`assets/licenses/FONT_LICENSES.txt`・ライセンスの画面・`font_license_test`で表示（W031で詳しく）。Webのアイコン（`sprite.svg`）は`public/assets/icons/ui/LICENSE.md`がMaterial Icons（Google、Apache 2.0）とアプリでの使い所まで記録。Webの画像はアプリの実際の画面のキャプチャとアプリのロゴで、第三者の画像は無い。Webのフォントは`public/assets/fonts/LICENSE.md`と/font-licenses/で表示。
 - **未確認**：組み込みの素材・ロゴ・UIと第三者の作品の類似の調査、翻訳・図の作者の記録、肖像・パブリシティ（人物の絵は無い）。
+
+### W031（一巡目、Claude・S40、判定：要修正〔専門の判断は未〕）
+
+- **確認SHA・環境**：App `8f19bcc2`の`pubspec.yaml`・`pubspec.lock`・pubのキャッシュの`ffmpeg_kit_flutter_new_video-2.5.2`のLICENSE・README、`assets/font_catalog/font_catalog.json`、`lib/main.dart`の`_registerBundledFontLicenses`、`.niashare`のフォントの同梱のコード。Web `43fdeac`の`public/assets/fonts/LICENSE.md`・`public/assets/icons/ui/LICENSE.md`。SBOMは作っていない。
+- **要修正（新規）**：483（.niashareに利用者のフォントをライセンスの注意なく入れて渡す）。
+- **OK**：動画の書き出しの`ffmpeg_kit_flutter_new_video`（2.5.2）はLGPL 3.0で、GPLの部品（x264・x265・xvid・vid.stab）を含まない版（`pubspec.yaml`の注記どおりGPLの版をやめた）。Flutterのライセンスの画面（`showLicensePage`）はパッケージのLICENSEを自動で集め、同梱のフォントは`_registerBundledFontLicenses`・`assets/licenses/FONT_LICENSES.txt`・ライセンスの画面のクレジットの3か所で表示（CLAUDE.mdの決まり、`font_license_test`が見張る）。フォントの一覧の2021件はどれも`license`の欄（OFL・Apache・UFL）と`google/fonts`の出所を持つ。WebのフォントとアイコンもLICENSE.mdで出所と条件を書く。バックエンド（AWS CDK・Lambda）は配布しない。
+- **未確認**：推移の依存を含む全部のライセンスの一覧（SBOM）と表示の漏れ、LGPLの「対応するソース」の示し方（FFmpegの出所の案内）が足りるか（専門の判断）、Google Mobile Ads・Firebase等のSDKの規約・表示の義務。
