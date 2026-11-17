@@ -3299,7 +3299,9 @@ class _HomeScreenState extends State<HomeScreen>
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       child: SingleChildScrollView(
+        key: ValueKey('homeBreadcrumb'),
         scrollDirection: Axis.horizontal,
+        reverse: true,
         child: Row(
           children: [
             IconButton(
@@ -6450,13 +6452,22 @@ class _TrashTabState extends State<_TrashTab> {
         .firstOrNull;
     if (record == null) return;
     final l10n = AppLocalizations.of(context)!;
+    final projects = record.projectIds.length;
+    final folders = record.subfolders.length;
+    final message = [
+      l10n.homeTrashFolderPermanentDeleteBody(record.folder.name),
+      if (projects + folders > 0)
+        l10n.homeTrashFolderPermanentDeleteContents(
+          l10n.homeFolderContents(projects, folders),
+        ),
+    ].join('\n');
     setState(() => _pending.add(id));
     try {
       await showDialog<bool>(
         context: context,
         builder: (_) => ProjectTrashDialog(
           title: l10n.homePermanentDeleteConfirmTitle,
-          message: l10n.homePermanentDeleteConfirmBody,
+          message: message,
           // ゴミ箱のカードのボタンと同じ言葉（「完全削除」）。
           confirmLabel: l10n.homePermanentDelete,
           itemNames: [record.folder.name],
@@ -6521,6 +6532,7 @@ class _TrashTabState extends State<_TrashTab> {
       title: record.folder.name,
       subtitle: heading,
       detail: subtitle,
+      folderCount: !unread && projectNames.isNotEmpty ? recorded : null,
       detailKeep: detailKeep,
       // 名前を並べないときの2行目は件数（「プロジェクト2件・フォルダ1件」）。
       detailIsCount: unread || projectNames.isEmpty,
@@ -6764,6 +6776,7 @@ class _TrashTabState extends State<_TrashTab> {
     required String subtitle,
     required List<Widget> actions,
     String? detail,
+    String? folderCount,
     List<String> detailKeep = const [],
     bool detailIsCount = false,
     Key? detailsKey,
@@ -6820,6 +6833,7 @@ class _TrashTabState extends State<_TrashTab> {
           // 名前の印（[detailKeep]）は途中で折り返さない。件数は数と単位の
           // 間で折り返さない（文字2倍のja 360pxで「…フォルダ1 / 件」、en
           // 320pxで「…and 1 / folder」と切れた。韓国語は語ごとにつなぐ）。
+          if (folderCount != null) countText(folderCount),
           if (detail != null)
             detailIsCount && !containsHangul(detail)
                 ? countText(detail)

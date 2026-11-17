@@ -1294,6 +1294,7 @@ class ProjectListWidget extends StatelessWidget {
         value: 'thumbnail',
         child: Text(l10n.thumbnailChangeAction),
       ),
+      PopupMenuItem(value: 'duplicate', child: Text(l10n.commonDuplicate)),
       PopupMenuItem(
         value: 'favorite',
         child: Text(
@@ -1463,6 +1464,17 @@ class ProjectListWidget extends StatelessWidget {
         _showEditFolderDialog(context, folder);
       case 'thumbnail':
         _changeFolderThumbnail(context, folder);
+      case 'duplicate':
+        final l10n = AppLocalizations.of(context)!;
+        await runProjectAction(
+          context,
+          () => service.duplicateFolder(
+            folder.id,
+            targetParentId: folder.parentFolderId,
+            name: l10n.projectDuplicateName(folder.name),
+            namer: (name, taken) => numberedCopyName(l10n, name, taken),
+          ),
+        );
       case 'favorite':
         try {
           await service.toggleFolderFavorite(folder.id);

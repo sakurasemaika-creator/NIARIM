@@ -26,6 +26,28 @@ import 'package:shared_preferences/shared_preferences.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
+  test('inactive slider track remains visible against the editing sheets', () {
+    final service = ThemeService();
+    addTearDown(service.dispose);
+    for (final preset in [
+      AppThemePreset.defaultLight,
+      AppThemePreset.defaultDark,
+    ]) {
+      service.previewCurrent(preset);
+      final theme = service.themeData;
+      final scheme = theme.colorScheme;
+      final track = theme.sliderTheme.inactiveTrackColor!;
+      expect(track, scheme.outline);
+      for (final background in [scheme.surface, scheme.surfaceContainerHigh]) {
+        expect(
+          contrastRatio(track, background),
+          greaterThanOrEqualTo(3.0),
+          reason: preset.id,
+        );
+      }
+    }
+  });
+
   /// 起動画面はexportsフォルダの先読みでディスクを触るため、
   /// path_providerを差し替えておく。
   void mockPathProvider() {

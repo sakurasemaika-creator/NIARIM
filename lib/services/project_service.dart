@@ -5309,6 +5309,7 @@ class ProjectService extends ChangeNotifier {
     String folderId, {
     String? targetParentId,
     required String name,
+    CopyNamer? namer,
   }) => _queueFolder(() async {
     final top = _folders.where((f) => f.id == folderId).firstOrNull;
     if (top == null) return null;
@@ -5319,9 +5320,11 @@ class ProjectService extends ChangeNotifier {
     // ホームの貼り付けが渡す既定の名前（「名前 (コピー)」）は、複製の複製でも
     // 元の名前に空いている番号を付ける（「名前 (コピー) (コピー)」にしない。
     // 並びに無い名前を返すので、下の番号付けは通らない）。
-    var copyTopName = name == '${top.name} (コピー)'
-        ? _nextCopyName(top.name, siblingNames)
-        : name;
+    var copyTopName =
+        namer?.call(top.name, siblingNames) ??
+        (name == '${top.name} (コピー)'
+            ? _nextCopyName(top.name, siblingNames)
+            : name);
     if (siblingNames.contains(copyTopName)) {
       copyTopName = uniqueFolderName(name, parentFolderId: targetParentId);
     }

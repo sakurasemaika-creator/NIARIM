@@ -505,6 +505,8 @@ void main() {
 
       final id = service.trashedFolders.single.folder.id;
       await tester.tap(find.byKey(ValueKey('trashedFolderRestore_$id')));
+      await settle(tester);
+      await tester.tap(find.widgetWithText(FilledButton, '復元'));
       await waitFor(tester, () => service.projects.length == 3);
       // 戻した作品をファイルから読み直し終わるまで待つ（次のフォルダの処理は
       // それを待ってから動く）。
@@ -525,7 +527,7 @@ void main() {
         find.textContaining('フォルダの中のプロジェクト3件・フォルダ2件も一緒に削除します。'),
         findsOneWidget,
       );
-      await tester.tap(find.widgetWithText(FilledButton, '削除'));
+      await tester.tap(find.widgetWithText(FilledButton, '完全削除'));
       // 中の作品を1件ずつファイルごと消し終わるまで待つ。
       await waitFor(tester, () => service.trash.length == 1);
       expect(service.trashedFolders, isEmpty);

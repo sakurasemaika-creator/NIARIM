@@ -1321,6 +1321,8 @@ class ThemeService extends ChangeNotifier {
         ),
         checkColor: WidgetStatePropertyAll(preset.selectionTextColor),
       ),
+      // Keep the unused track visible on editing sheets and panels.
+      sliderTheme: SliderThemeData(inactiveTrackColor: scheme.outline),
       // オンのスイッチは塗りの差し色の通り道に、塗りのボタンの文字色の
       // つまみ（塗りのボタンと同じ組み合わせで、救済判定が見張っている）。
       // 以前は差し色と半透明の差し色で、つまみが通り道に溶けて見えた。
