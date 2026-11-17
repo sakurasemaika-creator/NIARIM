@@ -5172,13 +5172,13 @@ abstract class AppLocalizations {
   /// No description provided for @premiumBannerMembershipDetails.
   ///
   /// In ja, this message translates to:
-  /// **'プレミアム会員について詳しく見る'**
+  /// **'プレミアム会員の案内を見る'**
   String get premiumBannerMembershipDetails;
 
   /// No description provided for @premiumBannerBenefitDetails.
   ///
   /// In ja, this message translates to:
-  /// **'特典について詳しく見る'**
+  /// **'特典の案内を見る'**
   String get premiumBannerBenefitDetails;
 
   /// No description provided for @premiumPackHalfPrice.

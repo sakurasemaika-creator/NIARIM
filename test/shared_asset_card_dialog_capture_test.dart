@@ -252,8 +252,8 @@ void main() {
       continueLabel: l10n.exportFirst90Seconds,
     );
     await pumpRealAsync(tester, const Duration(milliseconds: 400));
-    expect(find.text('プレミアム会員について詳しく見る'), findsOneWidget);
-    expect(find.text('特典について詳しく見る'), findsOneWidget);
+    expect(find.text('プレミアム会員の案内を見る'), findsOneWidget);
+    expect(find.text('特典の案内を見る'), findsOneWidget);
     expect(
       find.descendant(of: find.byType(Badge), matching: find.text('無料')),
       findsOneWidget,

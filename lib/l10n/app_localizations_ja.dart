@@ -2803,10 +2803,10 @@ class AppLocalizationsJa extends AppLocalizations {
   String get premiumBannerBenefits => '長尺作品をつくる、仕上げを調整する。必要な機能はオパールでも使えます。';
 
   @override
-  String get premiumBannerMembershipDetails => 'プレミアム会員について詳しく見る';
+  String get premiumBannerMembershipDetails => 'プレミアム会員の案内を見る';
 
   @override
-  String get premiumBannerBenefitDetails => '特典について詳しく見る';
+  String get premiumBannerBenefitDetails => '特典の案内を見る';
 
   @override
   String get premiumPackHalfPrice => 'コンプリートパックなら単品合計の半額';
