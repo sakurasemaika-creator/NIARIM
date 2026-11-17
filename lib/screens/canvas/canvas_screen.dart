@@ -2085,9 +2085,6 @@ class _CanvasScreenState extends State<CanvasScreen> {
                             changesFrame: true,
                           );
                         },
-                        onTimelineTap: () => _runAutomationBlockedAction(
-                          () => context.go('/timeline/${widget.projectId}'),
-                        ),
                         multiSelectMode: _frameMultiSelectMode,
                         selectedFrames: _selectedFrameIndices,
                         onFrameToggle: (idx) => setState(() {

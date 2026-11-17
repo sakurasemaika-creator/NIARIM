@@ -86,10 +86,11 @@ void main() {
     int frameCount = 10,
     int currentFrame = 0,
     int durationSeconds = 1,
+    double screenWidth = 1400,
   }) async {
     SharedPreferences.setMockInitialValues({});
     mockPathProvider();
-    tester.view.physicalSize = const Size(1400, 320);
+    tester.view.physicalSize = Size(screenWidth, 320);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
@@ -149,6 +150,25 @@ void main() {
   /// フレーム一覧のスクロール位置（`_scrollController.offset`相当）。
   double stripOffset(WidgetTester tester) =>
       tester.state<ScrollableState>(find.byType(Scrollable)).position.pixels;
+
+  for (final screenWidth in [390.0, 1440.0]) {
+    testWidgets('the current frame is centered at screen width $screenWidth', (
+      tester,
+    ) async {
+      await pumpStrip(tester, currentFrame: 2, screenWidth: screenWidth);
+      final cell = find.byKey(const ValueKey('frameStripCell2'));
+      expect(tester.getCenter(cell).dx, closeTo(screenWidth / 2, .5));
+      expect(
+        find.byKey(const ValueKey('frameStripTimelineButton')),
+        findsNothing,
+      );
+
+      final last = find.byKey(const ValueKey('frameStripCell4'));
+      await tester.tap(last);
+      await tester.pumpAndSettle();
+      expect(tester.getCenter(last).dx, closeTo(screenWidth / 2, .5));
+    });
+  }
 
   testWidgets('コマをタップすると、そのコマのindexが現在フレームとして通知される', (tester) async {
     final ctx = await pumpStrip(tester, frameCount: 10);
@@ -246,14 +266,14 @@ void main() {
     await tester.pumpAndSettle();
     expect(project.frameCount(ctx.projectId, ctx.sceneId), 91);
     final l10n = AppLocalizations.of(element)!;
-    expect(find.text(l10n.premiumComparisonPremium), findsOneWidget);
-    expect(find.text(l10n.rewardNavigationExchange), findsOneWidget);
+    expect(find.text(l10n.premiumBannerMembershipDetails), findsOneWidget);
+    expect(find.text(l10n.premiumBannerBenefitDetails), findsOneWidget);
     final close = find.text(l10n.commonClose);
     await tester.ensureVisible(close);
     await tester.pumpAndSettle();
     await tester.tap(close);
     await tester.pumpAndSettle();
-    expect(find.text(l10n.premiumComparisonPremium), findsNothing);
+    expect(find.text(l10n.premiumBannerMembershipDetails), findsNothing);
 
     final undo = element.read<UndoManager>();
     final frames = project.scenesOf(ctx.projectId).first.frames;
@@ -391,7 +411,6 @@ class _StripHostState extends State<_StripHost> {
           widget.onSelected(index);
           setState(() => _current = index);
         },
-        onTimelineTap: () {},
       ),
     );
   }

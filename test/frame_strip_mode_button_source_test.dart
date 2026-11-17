@@ -3,15 +3,21 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  test('frame strip uses one circular movie icon button for timeline', () {
-    final source = File(
+  test('editor mode switches are in the top bars', () {
+    final canvas = File(
+      'lib/screens/canvas/canvas_screen.dart',
+    ).readAsStringSync();
+    final timeline = File(
+      'lib/screens/timeline/timeline_screen.dart',
+    ).readAsStringSync();
+    final strip = File(
       'lib/screens/canvas/widgets/frame_strip_widget.dart',
     ).readAsStringSync();
 
-    expect(source, isNot(contains('SegmentedButton<String>')));
-    expect(source, contains('Icons.movie_filter_outlined'));
-    expect(source, contains("ValueKey('frameStripTimelineButton')"));
-    expect(source, contains('shape: const CircleBorder()'));
-    expect(source, contains('onPressed: widget.onTimelineTap'));
+    expect("canvasTimelineModeButton".allMatches(canvas), hasLength(1));
+    expect(canvas, contains('Icons.movie_filter_outlined'));
+    expect(timeline, contains('tooltip: l10n.timelineBackToCanvasTooltip'));
+    expect(strip, isNot(contains('onTimelineTap')));
+    expect(strip, isNot(contains('Icons.movie_filter_outlined')));
   });
 }

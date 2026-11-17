@@ -64,9 +64,10 @@ void main() {
   String location() => appRouter.routerDelegate.currentConfiguration.uri.path;
 
   Future<({ProjectService service, String id})> open(
-    WidgetTester tester,
-  ) async {
-    tester.view.physicalSize = const Size(390, 844);
+    WidgetTester tester, {
+    Size size = const Size(390, 844),
+  }) async {
+    tester.view.physicalSize = size;
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
@@ -91,6 +92,41 @@ void main() {
       id = project.id;
     });
     return (service: service, id: id);
+  }
+
+  for (final size in [const Size(390, 844), const Size(1440, 900)]) {
+    testWidgets('editor switches stay above the canvas at ${size.width}px', (
+      tester,
+    ) async {
+      final project = await open(tester, size: size);
+      appRouter.go('/canvas/${project.id}');
+      await settleIo(tester);
+
+      final button = find.byKey(const Key('canvasTimelineModeButton'));
+      final frame = find.byKey(const ValueKey('frameStripCell0'));
+      expect(button, findsOneWidget);
+      expect(tester.getCenter(button).dy, lessThan(tester.getCenter(frame).dy));
+      expect(tester.getCenter(frame).dx, closeTo(size.width / 2, .5));
+      expect(
+        find.byKey(const ValueKey('frameStripTimelineButton')),
+        findsNothing,
+      );
+
+      await tester.tap(button);
+      await settleIo(tester);
+      expect(find.byType(TimelineScreen), findsOneWidget);
+      final canvasButton = find.ancestor(
+        of: find.byIcon(Icons.palette_outlined),
+        matching: find.byType(IconButton),
+      );
+      expect(canvasButton, findsOneWidget);
+      expect(tester.getCenter(canvasButton).dx, lessThan(size.width / 2));
+      expect(tester.getCenter(canvasButton).dy, lessThan(size.height / 2));
+      await tester.tap(canvasButton);
+      await settleIo(tester);
+      expect(find.byType(CanvasScreen), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
   }
 
   testWidgets('an unknown id offers the way back instead of a blank canvas', (

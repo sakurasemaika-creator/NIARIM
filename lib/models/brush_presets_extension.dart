@@ -377,7 +377,7 @@ const _hair = Brush(
   foldEnabled: true,
   foldTriggerAngle: 60,
   foldCurveStartRatio: .16,
-  foldAngleRatio: BrushExtensionDefaults.foldAngleRatio,
+  foldAngleRatio: .76,
   foldCrescentDepthThreshold: BrushExtensionDefaults.foldCrescentDepthThreshold,
   foldLengthRatio: .70,
   foldEndTaperRatio: BrushExtensionDefaults.foldEndTaperRatio,

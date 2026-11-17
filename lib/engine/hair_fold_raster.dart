@@ -391,7 +391,15 @@ class HairFoldRaster {
       // Each fold line starts where the inner outlines meet; the front
       // section's own edge is hidden over the back section up to there.
       final foldLines =
-          <int, ({Offset origin, Offset direction, Offset continuation})>{};
+          <
+            int,
+            ({
+              Offset origin,
+              Offset direction,
+              Offset continuation,
+              Offset faceNormal,
+            })
+          >{};
       final hidden = <int, double>{};
       if (brush.foldMode != HairFoldMode.crescent) {
         for (var i = 1; i < indices.length - 1; i++) {
@@ -451,6 +459,12 @@ class HairFoldRaster {
             origin: start.origin,
             direction: start.direction,
             continuation: firstFront ? outgoing : -incoming,
+            // At a hairpin the two faces already nearly overlap. Leave the
+            // narrow visible part to the original continuation curve.
+            faceNormal:
+                Offset(-start.direction.dy, start.direction.dx) *
+                (firstFront ? -sign : sign) *
+                ((_dot(incoming, outgoing) + .85) / .5).clamp(0.0, 1.0),
           );
           hidden[pivot] = math.max(
             p.width,
@@ -612,6 +626,17 @@ class HairFoldRaster {
             ? 1.0
             : math.min(1.0, .98 * bowDepth / (widestHalf * innerPower));
         final chordAxis = _unit(chord);
+        final isFinalRun = run.end == points.length - 1;
+        // A square-cut end needs its full width back before the cut. Blend
+        // across the final bend so the inner edge does not swell at the tip.
+        final flatExitSpan = math.max(
+          brush.size * 3,
+          (lengths.last - lengths[run.start]) * .85,
+        );
+        final flatCapSpan = math.min(
+          brush.size * .8,
+          (lengths.last - lengths[run.start]) * .25,
+        );
         final leadIndex = math.min(crescentCurveStart, apexIndex ?? run.start);
         final leadNormal = brush.foldMode == HairFoldMode.crescent
             ? Offset(
@@ -721,22 +746,25 @@ class HairFoldRaster {
               // continue bulging while the ordinary taper is narrowing.
               var endpointBlend = 1.0;
               if (brush.fadeMode == FadeMode.custom) {
-                final fromStart = lengths[index];
-                final fromEnd = lengths.last - fromStart;
-                double transition(FadeEndpointSettings fade, double distance) {
-                  if (fade.value == 100 || fade.rangePx <= 0) return 1;
-                  final t = (distance / fade.rangePx).clamp(0.0, 1.0);
-                  return t * t * (3 - 2 * t);
+                final enter = brush.fadeIn;
+                if (enter.value < 100 && enter.rangePx > 0) {
+                  final t = (lengths[index] / enter.rangePx).clamp(0.0, 1.0);
+                  endpointBlend = t * t * (3 - 2 * t);
                 }
-
-                endpointBlend = transition(brush.fadeIn, fromStart);
-                if (taperEnd) {
-                  endpointBlend *= transition(brush.fadeOut, fromEnd);
+                final exit = brush.fadeOut;
+                if (taperEnd && exit.value < 100 && exit.rangePx > 0) {
+                  final t = ((lengths.last - lengths[index]) / exit.rangePx)
+                      .clamp(0.0, 1.0);
+                  // Let the taper govern the last part of the point. Turn
+                  // off the crescent displacement before it becomes a hook.
+                  endpointBlend *= t * t * t * (4 - 3 * t);
                 }
               }
-              if (taperEnd && flatEnds) {
+              if (taperEnd && flatEnds && isFinalRun) {
                 final remaining = lengths.last - lengths[index];
-                final t = (remaining / (brush.size * 2)).clamp(0.0, 1.0);
+                final t =
+                    ((remaining - flatCapSpan) / (flatExitSpan - flatCapSpan))
+                        .clamp(0.0, 1.0);
                 endpointBlend *= t * t * (3 - 2 * t);
               }
               final blend = crescent * endpointBlend;
@@ -1071,7 +1099,7 @@ class HairFoldRaster {
           final line = foldLines[i];
           if (line == null) continue;
           final p = points[indices[i]];
-          final (:origin, :direction, :continuation) = line;
+          final (:origin, :direction, :continuation, :faceNormal) = line;
           // A continuous 270-degree fold keeps the authored turn direction:
           // a shorter, later, gentler line than a direction change.
           final continuous = bends[i - 1].continuous;
@@ -1091,11 +1119,16 @@ class HairFoldRaster {
             _dot(direction, continuation),
           );
           // 50 % follows the stroke's turn exactly; 0 % stays straight.
-          final totalTurn = (turn * brush.foldAngleRatio.clamp(0.0, 1.0) * 2)
-              .clamp(-math.pi * .9, math.pi * .9);
+          final angleRatio = brush.foldAngleRatio.clamp(0.0, 1.0);
+          final totalTurn = (turn * angleRatio * 2).clamp(
+            -math.pi * .9,
+            math.pi * .9,
+          );
+          final bowDepth = math.min(length * .28, p.width * angleRatio * .42);
           final taper = brush.foldEndTaperRatio.clamp(.01, 1.0);
           final count = math.max(6, (length / 1.5).ceil());
           var previous = origin;
+          var spine = origin;
           for (var step = 1; step <= count; step++) {
             final t = step / count;
             final u = ((t - delay) / math.max(.001, 1 - delay)).clamp(0.0, 1.0);
@@ -1105,7 +1138,12 @@ class HairFoldRaster {
               direction.dx * c - direction.dy * sn,
               direction.dx * sn + direction.dy * c,
             );
-            final at = previous + heading * (length / count);
+            spine += heading * (length / count);
+            // Bow into the face, with zero sideways slope at both ends so
+            // the crease joins its outline and rolls off without a kink.
+            final phase = (t / (1 - .45 * delay)).clamp(0.0, 1.0);
+            final arch = 4 * phase * (1 - phase);
+            final at = spine + faceNormal * (bowDepth * arch * arch);
             // Never past the strand's own contour.
             if (step > 1 && !_covered(result, at)) break;
             final lineWidth =

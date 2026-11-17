@@ -12,7 +12,6 @@ import '../../../services/project_service.dart';
 import '../../../services/theme_service.dart';
 import '../../../widgets/dispose_on_unmount.dart';
 import '../../../widgets/frame_preview_background.dart';
-import 'canvas_icon_button.dart';
 import '../../../config/accent_text_theme.dart';
 import '../../../widgets/typing_dialog_inset.dart';
 
@@ -21,7 +20,6 @@ class FrameStripWidget extends StatefulWidget {
   final String projectId;
   final String sceneId;
   final ValueChanged<int> onFrameSelected;
-  final VoidCallback onTimelineTap;
   final bool multiSelectMode;
   final Set<int> selectedFrames;
   final ValueChanged<int>? onFrameToggle;
@@ -35,7 +33,6 @@ class FrameStripWidget extends StatefulWidget {
     required this.projectId,
     required this.sceneId,
     required this.onFrameSelected,
-    required this.onTimelineTap,
     this.multiSelectMode = false,
     this.selectedFrames = const {},
     this.onFrameToggle,
@@ -311,7 +308,6 @@ class _FrameStripWidgetState extends State<FrameStripWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
     final service = context.watch<ProjectService>();
     final total = service.frameCount(widget.projectId, widget.sceneId);
     final scheme = Theme.of(context).colorScheme;
@@ -321,250 +317,180 @@ class _FrameStripWidgetState extends State<FrameStripWidget> {
     return Container(
       height: 64,
       color: scheme.surface.withValues(alpha: 0),
-      child: Row(
-        children: [
-          Expanded(
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                final sidePadding = ((constraints.maxWidth - _itemExtent) / 2)
-                    .clamp(0.0, double.infinity);
-                return NotificationListener<ScrollEndNotification>(
-                  onNotification: (n) => _handleScrollEnd(n, total),
-                  child: Stack(
-                    children: [
-                      ListView.builder(
-                        controller: _scrollController,
-                        scrollDirection: Axis.horizontal,
-                        padding: EdgeInsets.symmetric(horizontal: sidePadding),
-                        itemCount: total + 1,
-                        itemBuilder: (context, index) {
-                          if (index == total) {
-                            return GestureDetector(
-                              // 自動テストがコマを番号指定でタップできるよう
-                              // にするためのKey（見た目・挙動には影響しない）。
-                              key: const ValueKey('frameStripAddCell'),
-                              onTap: () {
-                                if (!_canAddFrames(context, service, 1)) return;
-                                service.addFrame(
-                                  widget.projectId,
-                                  widget.sceneId,
-                                );
-                              },
-                              onLongPress: () =>
-                                  _showBatchAddDialog(context, service),
-                              child: Container(
-                                width: 50,
-                                height: 50,
-                                margin: const EdgeInsets.symmetric(vertical: 7),
-                                decoration: BoxDecoration(
-                                  border: Border.all(color: scheme.outline),
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                                child: Center(
-                                  child: Icon(
-                                    Icons.add,
-                                    color: scheme.onSurfaceVariant,
-                                  ),
-                                ),
-                              ),
-                            );
-                          }
-                          final isChecked = widget.selectedFrames.contains(
-                            index,
-                          );
-                          final isSelected =
-                              widget.multiSelectMode && isChecked;
-                          final hold = service.frameHold(
-                            widget.projectId,
-                            widget.sceneId,
-                            index,
-                          );
-                          return GestureDetector(
-                            key: ValueKey('frameStripCell$index'),
-                            onTap: widget.multiSelectMode
-                                ? () => widget.onFrameToggle?.call(index)
-                                : () => widget.onFrameSelected(index),
-                            onLongPress: widget.multiSelectMode
-                                ? null
-                                : () => _showHoldDialog(
-                                    context,
-                                    service,
-                                    index,
-                                    hold,
-                                  ),
-                            child: Container(
-                              width: 50,
-                              height: 50,
-                              margin: const EdgeInsets.symmetric(vertical: 7),
-                              decoration: BoxDecoration(
-                                color: isSelected
-                                    ? scheme.surfaceContainerHighest
-                                    : scheme.surfaceContainerHigh,
-                                border: Border.all(
-                                  color: isSelected
-                                      ? scheme.primary
-                                      : scheme.outlineVariant,
-                                  width: isSelected ? 2 : 1,
-                                ),
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(3),
-                                child: Stack(
-                                  fit: StackFit.expand,
-                                  children: [
-                                    // The background behind the picture's
-                                    // own rectangle, as on the canvas.
-                                    FramePreviewBackground(
-                                      backgroundColor:
-                                          project?.backgroundColor ??
-                                          0xFFFFFFFF,
-                                      showTransparency: widget.showTransparency,
-                                      aspectRatio: project == null
-                                          ? null
-                                          : project.exportWidth /
-                                                project.exportHeight,
-                                      child: _FrameThumbnail(
-                                        key: ValueKey(
-                                          '$index-${_refreshTick[index] ?? 0}',
-                                        ),
-                                        projectId: widget.projectId,
-                                        sceneId: widget.sceneId,
-                                        frameIndex: index,
-                                        backgroundColor: widget.showTransparency
-                                            ? null
-                                            : project?.backgroundColor,
-                                      ),
-                                    ),
-                                    if (hold > 1)
-                                      Center(
-                                        child: Container(
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 3,
-                                            vertical: 1,
-                                          ),
-                                          decoration: BoxDecoration(
-                                            color: context
-                                                .watch<ThemeService>()
-                                                .current
-                                                .menuBgColor
-                                                .withValues(alpha: 0.7),
-                                            borderRadius: BorderRadius.circular(
-                                              3,
-                                            ),
-                                          ),
-                                          child: Text(
-                                            '$hold',
-                                            style: TextStyle(
-                                              fontSize: 11,
-                                              color: context
-                                                  .watch<ThemeService>()
-                                                  .current
-                                                  .updateMarkColor,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    if (widget.multiSelectMode)
-                                      Positioned(
-                                        right: 2,
-                                        top: 2,
-                                        child: Icon(
-                                          isChecked
-                                              ? Icons.check_box
-                                              : Icons.check_box_outline_blank,
-                                          size: 14,
-                                          color: isChecked
-                                              ? scheme.primary
-                                              : scheme.onSurfaceVariant,
-                                        ),
-                                      ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          );
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final sidePadding = ((constraints.maxWidth - _itemExtent) / 2).clamp(
+            0.0,
+            double.infinity,
+          );
+          return NotificationListener<ScrollEndNotification>(
+            onNotification: (n) => _handleScrollEnd(n, total),
+            child: Stack(
+              children: [
+                ListView.builder(
+                  controller: _scrollController,
+                  scrollDirection: Axis.horizontal,
+                  padding: EdgeInsets.symmetric(horizontal: sidePadding),
+                  itemCount: total + 1,
+                  itemBuilder: (context, index) {
+                    if (index == total) {
+                      return GestureDetector(
+                        // 自動テストがコマを番号指定でタップできるよう
+                        // にするためのKey（見た目・挙動には影響しない）。
+                        key: const ValueKey('frameStripAddCell'),
+                        onTap: () {
+                          if (!_canAddFrames(context, service, 1)) return;
+                          service.addFrame(widget.projectId, widget.sceneId);
                         },
-                      ),
-                      IgnorePointer(
-                        child: Center(
-                          child: Container(
-                            width: 50,
-                            height: 50,
-                            decoration: BoxDecoration(
-                              border: Border.all(
-                                color: context
-                                    .watch<ThemeService>()
-                                    .current
-                                    .updateMarkColor,
-                                width: 3,
-                              ),
-                              borderRadius: BorderRadius.circular(4),
+                        onLongPress: () =>
+                            _showBatchAddDialog(context, service),
+                        child: Container(
+                          width: 50,
+                          height: 50,
+                          margin: const EdgeInsets.symmetric(vertical: 7),
+                          decoration: BoxDecoration(
+                            border: Border.all(color: scheme.outline),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Center(
+                            child: Icon(
+                              Icons.add,
+                              color: scheme.onSurfaceVariant,
                             ),
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                );
-              },
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.only(left: 4, right: 2),
-            child: SizedBox(
-              width: 58,
-              height: 44,
-              child: Stack(
-                clipBehavior: Clip.none,
-                alignment: Alignment.centerLeft,
-                children: [
-                  IconButton(
-                    key: const ValueKey('frameStripTimelineButton'),
-                    tooltip: l10n.frameStripTimelineModeLabel,
-                    onPressed: widget.onTimelineTap,
-                    icon: Icon(
-                      Icons.movie_filter_outlined,
-                      shadows: CanvasIconButton.foregroundShadows(
-                        scheme.onSurfaceVariant,
-                        scheme,
-                      ),
-                    ),
-                    iconSize: 21,
-                    style: IconButton.styleFrom(
-                      fixedSize: const Size(42, 42),
-                      minimumSize: const Size(42, 42),
-                      maximumSize: const Size(42, 42),
-                      padding: EdgeInsets.zero,
-                      shape: const CircleBorder(),
-                      side: BorderSide(color: scheme.outlineVariant),
-                      foregroundColor: scheme.onSurfaceVariant,
-                      backgroundColor: scheme.surfaceContainerLow.withValues(
-                        alpha: 0.72,
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    left: 42,
-                    child: IgnorePointer(
-                      child: Icon(
-                        Icons.chevron_right_rounded,
-                        key: const ValueKey('frameStripTimelineArrow'),
-                        size: 16,
-                        color: scheme.onSurface,
-                        shadows: CanvasIconButton.foregroundShadows(
-                          scheme.onSurface,
-                          scheme,
+                      );
+                    }
+                    final isChecked = widget.selectedFrames.contains(index);
+                    final isSelected = widget.multiSelectMode && isChecked;
+                    final hold = service.frameHold(
+                      widget.projectId,
+                      widget.sceneId,
+                      index,
+                    );
+                    return GestureDetector(
+                      key: ValueKey('frameStripCell$index'),
+                      onTap: widget.multiSelectMode
+                          ? () => widget.onFrameToggle?.call(index)
+                          : () => widget.onFrameSelected(index),
+                      onLongPress: widget.multiSelectMode
+                          ? null
+                          : () =>
+                                _showHoldDialog(context, service, index, hold),
+                      child: Container(
+                        width: 50,
+                        height: 50,
+                        margin: const EdgeInsets.symmetric(vertical: 7),
+                        decoration: BoxDecoration(
+                          color: isSelected
+                              ? scheme.surfaceContainerHighest
+                              : scheme.surfaceContainerHigh,
+                          border: Border.all(
+                            color: isSelected
+                                ? scheme.primary
+                                : scheme.outlineVariant,
+                            width: isSelected ? 2 : 1,
+                          ),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(3),
+                          child: Stack(
+                            fit: StackFit.expand,
+                            children: [
+                              // The background behind the picture's
+                              // own rectangle, as on the canvas.
+                              FramePreviewBackground(
+                                backgroundColor:
+                                    project?.backgroundColor ?? 0xFFFFFFFF,
+                                showTransparency: widget.showTransparency,
+                                aspectRatio: project == null
+                                    ? null
+                                    : project.exportWidth /
+                                          project.exportHeight,
+                                child: _FrameThumbnail(
+                                  key: ValueKey(
+                                    '$index-${_refreshTick[index] ?? 0}',
+                                  ),
+                                  projectId: widget.projectId,
+                                  sceneId: widget.sceneId,
+                                  frameIndex: index,
+                                  backgroundColor: widget.showTransparency
+                                      ? null
+                                      : project?.backgroundColor,
+                                ),
+                              ),
+                              if (hold > 1)
+                                Center(
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 3,
+                                      vertical: 1,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: context
+                                          .watch<ThemeService>()
+                                          .current
+                                          .menuBgColor
+                                          .withValues(alpha: 0.7),
+                                      borderRadius: BorderRadius.circular(3),
+                                    ),
+                                    child: Text(
+                                      '$hold',
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        color: context
+                                            .watch<ThemeService>()
+                                            .current
+                                            .updateMarkColor,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              if (widget.multiSelectMode)
+                                Positioned(
+                                  right: 2,
+                                  top: 2,
+                                  child: Icon(
+                                    isChecked
+                                        ? Icons.check_box
+                                        : Icons.check_box_outline_blank,
+                                    size: 14,
+                                    color: isChecked
+                                        ? scheme.primary
+                                        : scheme.onSurfaceVariant,
+                                  ),
+                                ),
+                            ],
+                          ),
                         ),
                       ),
+                    );
+                  },
+                ),
+                IgnorePointer(
+                  child: Center(
+                    child: Container(
+                      width: 50,
+                      height: 50,
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                          color: context
+                              .watch<ThemeService>()
+                              .current
+                              .updateMarkColor,
+                          width: 3,
+                        ),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-          ),
-        ],
+          );
+        },
       ),
     );
   }
