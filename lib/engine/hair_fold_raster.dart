@@ -43,6 +43,36 @@ class HairRibbonPoint {
       outlinedOuterRadius(width, scale, outlineOr(outlineWidth));
 }
 
+/// Project the elliptical nib onto the normal of each local stroke tangent.
+/// Use the bisector at a bend so width changes continuously across segments.
+List<HairRibbonPoint> _verticalNibPoints(List<HairRibbonPoint> points) {
+  final projected = <HairRibbonPoint>[];
+  var incoming = Offset.zero;
+  for (var i = 0; i < points.length; i++) {
+    final point = points[i];
+    final outgoing = i + 1 < points.length
+        ? _unit(points[i + 1].position - point.position)
+        : Offset.zero;
+    final bisector = _unit(incoming + outgoing);
+    final tangent = bisector != Offset.zero ? bisector : incoming;
+    final scaledY = tangent.dy * verticalNibAspect;
+    final widthScale = tangent == Offset.zero
+        ? 1.0
+        : math.sqrt(tangent.dx * tangent.dx + scaledY * scaledY);
+    projected.add(
+      HairRibbonPoint(
+        point.position,
+        point.width * widthScale,
+        point.opacity,
+        point.scale,
+        point.outline,
+      ),
+    );
+    incoming = outgoing;
+  }
+  return projected;
+}
+
 /// The own outline width between [a] and [b], [t] of the way.
 double? _outlineBetween(HairRibbonPoint a, HairRibbonPoint b, double t) {
   final from = a.outline ?? b.outline;
@@ -183,6 +213,9 @@ class HairFoldRaster {
     bool taperEnd = false,
   }) {
     if (points.length < 2) return;
+    if (brush.verticalNib && !brush.rotation) {
+      points = _verticalNibPoints(points);
+    }
     final bendLengths = <double>[0];
     for (var i = 1; i < points.length; i++) {
       bendLengths.add(

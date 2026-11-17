@@ -1,5 +1,8 @@
 import 'dart:ui';
 
+/// Ratio of the short to long axis of the ribbon nib.
+const verticalNibAspect = .38;
+
 List<double> lateralOffsets({required int count, required double spacing}) {
   final safeCount = count.clamp(1, 10).toInt();
   final safeSpacing = spacing.isFinite ? spacing.abs() : 0.0;

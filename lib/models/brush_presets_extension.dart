@@ -62,6 +62,7 @@ List<Brush> brushExtensionPresets() => <Brush>[
       pressureOn: BrushPressureOnSettings.defaults,
       fadeMode: FadeMode.off,
       foldFlatEnds: true,
+      verticalNib: true,
       outlineWidth: _strandOutlineWidth,
       outlineColor: 0xff7d2024,
       presetColor: 0xffdb424b,

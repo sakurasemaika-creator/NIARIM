@@ -6,6 +6,7 @@ on:
     paths:
       - '.github/workflows/hair-fold-bangs-visual-capture.yml'
       - 'test/visual/hair_fold_bangs_render_capture_test.dart'
+      - 'test/visual/hair_ribbon_preset_wave_capture_test.dart'
       - 'test/visual/hair_fold_settings_capture_test.dart'
       - 'test/visual/hair_fold_hairstyle_capture_test.dart'
       - 'test/visual/hair_fold_outline_reference_capture_test.dart'
@@ -34,6 +35,14 @@ jobs:
           channel: stable
           cache: false
       - run: flutter pub get --enforce-lockfile
+      - name: Verify ribbon angles and capture all hair and ribbon presets
+        run: flutter test test/visual/hair_ribbon_preset_wave_capture_test.dart --reporter expanded
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: hair-ribbon-curved-strokes
+          path: build/hair_ribbon_presets/*.png
+          if-no-files-found: error
       - name: Verify capture source
         run: |
           dart format test/visual/hair_fold_bangs_render_capture_test.dart test/visual/hair_fold_hairstyle_capture_test.dart test/visual/hair_fold_outline_reference_capture_test.dart

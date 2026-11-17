@@ -3,10 +3,11 @@ import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:niarim/engine/brush_texture_cache.dart';
 import 'package:niarim/engine/drawing_engine.dart';
 import 'package:niarim/engine/tile_manager.dart';
 import 'package:niarim/models/brush.dart';
-import 'package:niarim/models/brush_presets_extension.dart';
+import 'package:niarim/services/brush_service.dart';
 
 /// The wave of the owner's reference (「ウェーブ俯瞰」 of the hair and ribbon
 /// brushes): drawn left to right, down into a trough, over a crest and down
@@ -71,31 +72,133 @@ const hairRibbonPresetIds = [
   'Brush0040',
 ];
 
+const sampleWidth = 360;
+const sampleHeight = 240;
+
+Map<String, List<ui.Offset>> curvedSamples() {
+  List<ui.Offset> trace(ui.Offset Function(double) point) => [
+    for (var i = 0; i <= 68; i++) point(i / 68),
+  ];
+
+  return {
+    'horizontal': trace(
+      (t) => ui.Offset(
+        24 + 312 * t,
+        119 + 41 * math.sin((t * 4 - .5) * math.pi),
+      ),
+    ),
+    'vertical': trace(
+      (t) => ui.Offset(
+        180 + 45 * math.sin((t * 3 - .5) * math.pi),
+        24 + 192 * t,
+      ),
+    ),
+    'diagonal': trace(
+      (t) => ui.Offset(
+        35 + 290 * t,
+        198 - 156 * t + 34 * math.sin(t * 4 * math.pi),
+      ),
+    ),
+    'curl': trace((t) {
+      final angle = (-.92 + t * 1.65) * math.pi;
+      final radius = 98 - 49 * t;
+      return ui.Offset(
+        183 + 1.25 * radius * math.cos(angle),
+        119 + radius * math.sin(angle),
+      );
+    }),
+  };
+}
+
+Future<int> middleWidth(Brush brush, double angle) async {
+  const center = ui.Offset(96, 96);
+  final tangent = ui.Offset(math.cos(angle), math.sin(angle));
+  final normal = ui.Offset(-tangent.dy, tangent.dx);
+  final image = await drawStroke(
+    brush,
+    [for (var i = -12; i <= 12; i++) center + tangent * (i * 5.0)],
+    width: 192,
+    height: 192,
+  );
+  final pixels = (await image.toByteData(format: ui.ImageByteFormat.rawRgba))!;
+  var width = 0;
+  for (var i = -45; i <= 45; i++) {
+    final point = center + normal * i.toDouble();
+    if (pixels.getUint8((point.dy.floor() * 192 + point.dx.floor()) * 4 + 3) >=
+        128) {
+      width++;
+    }
+  }
+  image.dispose();
+  return width;
+}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+  final brushes = BrushService.builtInBrushes;
+  Brush preset(String id) => brushes.singleWhere((brush) => brush.id == id);
 
-  test('every hair and ribbon preset on the reference wave', () async {
-    final presets = brushExtensionPresets();
+  setUpAll(() async {
+    for (final id in [...hairRibbonPresetIds, 'Brush0024']) {
+      final brush = preset(id);
+      await preloadBrushTextures(
+        brush.resolvedCustomImagePaths,
+        mode: brush.imageInkMode,
+      );
+    }
+  });
+
+  test('each ribbon is widest horizontally and narrowest vertically', () async {
+    for (final id in hairRibbonPresetIds.skip(5)) {
+      final brush = preset(id);
+      expect(Brush.fromJson(brush.toJson()).verticalNib, isTrue, reason: id);
+      final horizontal = await middleWidth(brush, 0);
+      final diagonal = await middleWidth(brush, math.pi / 4);
+      final vertical = await middleWidth(brush, math.pi / 2);
+      expect(horizontal, greaterThanOrEqualTo(24), reason: id);
+      expect(
+        diagonal,
+        inInclusiveRange(vertical + 4, horizontal - 3),
+        reason: id,
+      );
+      expect(vertical, inInclusiveRange(7, 13), reason: id);
+      expect(
+        await middleWidth(brush, math.pi),
+        closeTo(horizontal, 1),
+        reason: id,
+      );
+      expect(
+        await middleWidth(brush, -math.pi / 2),
+        closeTo(vertical, 1),
+        reason: id,
+      );
+    }
+
+    final ribbon = preset('Brush0036').copyWith(foldEnabled: false);
+    final flatHorizontal = await middleWidth(ribbon, 0);
+    final flatVertical = await middleWidth(ribbon, math.pi / 2);
+    expect(flatHorizontal, greaterThan(flatVertical * 1.7));
+  });
+
+  test('capture every hair and ribbon brush on four curved paths', () async {
     final out = Directory('build/hair_ribbon_presets')
       ..createSync(recursive: true);
-    for (final id in hairRibbonPresetIds) {
-      final brush = presets.singleWhere((b) => b.id == id);
-      final layer = await drawStroke(brush, referenceWave());
-      // Enlarged 3x on the reference's paper colour, to read the fold lines.
-      final recorder = ui.PictureRecorder();
-      final canvas = ui.Canvas(recorder)
-        ..drawColor(const ui.Color(0xfffbf9f3), ui.BlendMode.src)
-        ..scale(3);
-      canvas.drawImage(
-        layer,
-        ui.Offset.zero,
-        ui.Paint()..filterQuality = ui.FilterQuality.medium,
-      );
-      final image = await recorder.endRecording().toImage(1440, 600);
-      final png = await image.toByteData(format: ui.ImageByteFormat.png);
-      await File('${out.path}/$id.png').writeAsBytes(png!.buffer.asUint8List());
-      image.dispose();
-      layer.dispose();
+    final paths = curvedSamples();
+    for (final id in [...hairRibbonPresetIds, 'Brush0024']) {
+      final brush = preset(id);
+      for (final entry in paths.entries) {
+        final layer = await drawStroke(
+          brush,
+          entry.value,
+          width: sampleWidth,
+          height: sampleHeight,
+        );
+        final png = await layer.toByteData(format: ui.ImageByteFormat.png);
+        await File(
+          '${out.path}/${id}_${entry.key}.png',
+        ).writeAsBytes(png!.buffer.asUint8List());
+        layer.dispose();
+      }
     }
   }, timeout: const Timeout(Duration(minutes: 5)));
 }

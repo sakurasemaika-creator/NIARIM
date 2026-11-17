@@ -55,6 +55,9 @@ class Brush {
   /// Fixed paper/charcoal granulation in percent (0 = smooth).
   final int grainStrength;
   final double? calligraphyAngle;
+
+  /// A vertically elongated nib with its long axis on the canvas Y axis.
+  final bool verticalNib;
   final PixelColorMode pixelColorMode;
   final int pixelColorLevels;
   final List<int> pixelExplicitColors;
@@ -128,6 +131,7 @@ class Brush {
     this.scatter = 0.0,
     this.grainStrength = 0,
     this.calligraphyAngle,
+    this.verticalNib = false,
     this.pixelColorMode = PixelColorMode.none,
     this.pixelColorLevels = 8,
     this.pixelExplicitColors = const [0xFF000000],
@@ -205,6 +209,7 @@ class Brush {
     double? scatter,
     int? grainStrength,
     double? calligraphyAngle,
+    bool? verticalNib,
     bool clearCalligraphyAngle = false,
     bool clearCustomImages = false,
     PixelColorMode? pixelColorMode,
@@ -271,6 +276,7 @@ class Brush {
     calligraphyAngle: clearCalligraphyAngle
         ? null
         : calligraphyAngle ?? this.calligraphyAngle,
+    verticalNib: verticalNib ?? this.verticalNib,
     pixelColorMode: pixelColorMode ?? this.pixelColorMode,
     pixelColorLevels: pixelColorLevels ?? this.pixelColorLevels,
     pixelExplicitColors: pixelExplicitColors ?? this.pixelExplicitColors,
@@ -346,6 +352,7 @@ class Brush {
     'scatter': scatter,
     'grainStrength': grainStrength,
     'calligraphyAngle': calligraphyAngle,
+    if (verticalNib) 'verticalNib': true,
     'pixelColorMode': pixelColorMode.name,
     'pixelColorLevels': pixelColorLevels,
     'pixelExplicitColors': pixelExplicitColors,
@@ -449,6 +456,7 @@ class Brush {
     scatter: (j['scatter'] as num?)?.toDouble() ?? 0,
     grainStrength: (j['grainStrength'] as num?)?.round().clamp(0, 100) ?? 0,
     calligraphyAngle: (j['calligraphyAngle'] as num?)?.toDouble(),
+    verticalNib: j['verticalNib'] == true,
     pixelColorMode: PixelColorMode.values.firstWhere(
       (e) => e.name == j['pixelColorMode'],
       orElse: () => PixelColorMode.none,

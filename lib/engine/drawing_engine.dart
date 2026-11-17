@@ -8,6 +8,7 @@ import 'brush_texture_cache.dart';
 import 'texture_silhouette.dart';
 import 'brush_texture_selector.dart';
 import 'brush_render_plan.dart';
+import 'brush_stroke_geometry.dart';
 import 'hair_fold_raster.dart';
 import 'outline_accent.dart';
 import 'perceptual_color_mixer.dart';
@@ -646,7 +647,9 @@ class DrawingEngine {
 
     // 傾き変形：カリグラフィーブラシ（ペン先角度固定）の場合は、実際の
     // スタイラス傾きに関わらず常に固定角度へ扁平化したペン先を使う。
-    var tilt = brush.calligraphyAngle != null
+    var tilt = brush.verticalNib
+        ? (scaleX: verticalNibAspect, scaleY: 1.0, angle: 0.0)
+        : brush.calligraphyAngle != null
         ? (
             scaleX: kCalligraphyNibAspect,
             scaleY: 1.0,
@@ -656,7 +659,7 @@ class DrawingEngine {
     // 回転ONではブラシ先端をパス接線方向へ追従させる。固定角度ブラシは
     // その角度を接線方向へのオフセットとして保持する。
     if (brush.rotation) {
-      final angleOffset = brush.calligraphyAngle == null
+      final angleOffset = brush.verticalNib || brush.calligraphyAngle == null
           ? 0.0
           : brush.calligraphyAngle! * math.pi / 180.0;
       tilt = (
@@ -666,7 +669,7 @@ class DrawingEngine {
       );
     }
     final stylusTiltMagnitude =
-        brush.calligraphyAngle == null && !brush.rotation
+        brush.calligraphyAngle == null && !brush.verticalNib && !brush.rotation
         ? math.sqrt(tiltX * tiltX + tiltY * tiltY).clamp(0.0, 1.0)
         : 0.0;
 

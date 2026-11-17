@@ -204,7 +204,8 @@ jobs:
           apksigner="$(find "$ANDROID_HOME/build-tools" -name apksigner -type f | sort -V | tail -1)"
           test -x "$apksigner"
           "$apksigner" verify --verbose build/app/outputs/flutter-apk/app-release.apk
-          sha256sum build/app/outputs/flutter-apk/app-release.apk | tee -a "$GITHUB_STEP_SUMMARY"
+          cd build/app/outputs/flutter-apk
+          sha256sum app-release.apk | tee app-release.apk.sha256 >> "$GITHUB_STEP_SUMMARY"
 
       # Actions Storage（無料枠0.5GB）の上限に達していると、このステップ
       # だけが失敗してもビルド済みAPKは下のGitHub Releaseから取得できる。
@@ -213,7 +214,9 @@ jobs:
         continue-on-error: ${{ github.event_name == 'workflow_dispatch' }}
         with:
           name: niarim-${{ env.BUILD_TYPE }}-apk
-          path: build/app/outputs/flutter-apk/app-${{ env.BUILD_TYPE }}.apk
+          path: |
+            build/app/outputs/flutter-apk/app-${{ env.BUILD_TYPE }}.apk
+            build/app/outputs/flutter-apk/app-${{ env.BUILD_TYPE }}.apk.sha256
           if-no-files-found: error
           # APK本体は大きいため保持期間を最短にする。
           retention-days: 1
