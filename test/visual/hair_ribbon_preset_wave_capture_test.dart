@@ -229,8 +229,9 @@ void main() {
   });
 
   test('the image alone supplies the ribbon directionality', () async {
-    final round = preset('Brush0036')
-        .copyWith(customImagePaths: const ['assets/brushes/round_tip.png']);
+    final round = preset(
+      'Brush0036',
+    ).copyWith(customImagePaths: const ['assets/brushes/round_tip.png']);
     expect(
       await middleWidth(round, math.pi / 2),
       closeTo(await middleWidth(round, 0), 1),
@@ -265,6 +266,72 @@ void main() {
     original.dispose();
   });
 
+  test(
+    'ribbon creases connect to the inner outline of a textured S curve',
+    () async {
+      for (final id in hairRibbonPresetIds.skip(5).take(4)) {
+        final image = await drawStroke(
+          preset(id),
+          curvedSamples()['vertical']!,
+          width: sampleWidth,
+          height: sampleHeight,
+        );
+        final pixels = (await image.toByteData(
+          format: ui.ImageByteFormat.rawRgba,
+        ))!;
+        image.dispose();
+
+        // The red fill is brighter than the outline ink. Use premultiplied
+        // channels so that the partially transparent edge has the same cutoff.
+        int alpha(int x, int y) =>
+            x < 0 || y < 0 || x >= sampleWidth || y >= sampleHeight
+            ? 0
+            : pixels.getUint8((y * sampleWidth + x) * 4 + 3);
+        final ink = <(int, int)>{
+          for (var y = 0; y < sampleHeight; y++)
+            for (var x = 0; x < sampleWidth; x++)
+              if (alpha(x, y) > 225 &&
+                  pixels.getUint8((y * sampleWidth + x) * 4) <
+                      alpha(x, y) * .785)
+                (x, y),
+        };
+        var interiorInk = 0;
+        while (ink.isNotEmpty) {
+          final component = [ink.first];
+          ink.remove(component.first);
+          var touchesOutline = false;
+          for (var i = 0; i < component.length; i++) {
+            final (x, y) = component[i];
+            var nearEdge = false;
+            for (var dy = -2; dy <= 2; dy++) {
+              for (var dx = -2; dx <= 2; dx++) {
+                final neighbor = (x + dx, y + dy);
+                if (alpha(neighbor.$1, neighbor.$2) <= 128) nearEdge = true;
+                if (dx.abs() <= 1 && dy.abs() <= 1 && ink.remove(neighbor)) {
+                  component.add(neighbor);
+                }
+              }
+            }
+            touchesOutline |= nearEdge;
+            if (!nearEdge) interiorInk++;
+          }
+          if (component.length > 2) {
+            expect(
+              touchesOutline,
+              isTrue,
+              reason: 'isolated crease: $id at ${component.first}',
+            );
+          }
+        }
+        expect(
+          interiorInk,
+          greaterThan(10),
+          reason: 'creases remain visible: $id',
+        );
+      }
+    },
+  );
+
   test('capture every hair and ribbon brush on four curved paths', () async {
     final out = Directory('build/hair_ribbon_presets')
       ..createSync(recursive: true);
@@ -279,8 +346,9 @@ void main() {
           height: sampleHeight,
         );
         final png = await layer.toByteData(format: ui.ImageByteFormat.png);
-        await File('${out.path}/${id}_${entry.key}.png')
-            .writeAsBytes(png!.buffer.asUint8List());
+        await File(
+          '${out.path}/${id}_${entry.key}.png',
+        ).writeAsBytes(png!.buffer.asUint8List());
         layer.dispose();
       }
     }

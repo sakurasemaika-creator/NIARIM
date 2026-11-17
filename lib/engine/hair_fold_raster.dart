@@ -1205,6 +1205,23 @@ class HairFoldRaster {
               lead = straight.lead;
             }
           }
+          if (texture != null) {
+            // The projected nib gives us a candidate, but the swept alpha
+            // mask can put the visible inner outline several pixels away.
+            final inner =
+                Offset(-direction.dy, direction.dx) *
+                (line.firstFront ? line.side : -line.side);
+            origin = _creaseOriginOnOutline(
+              result,
+              origin,
+              direction,
+              inner,
+              (math.max(brush.size, p.width) / 2 +
+                      p.outlineOr(brush.outlineWidth))
+                  .clamp(2.0, 24.0),
+              ownerBase + i,
+            );
+          }
           // 100 % is twice the strand width; the line is clipped to the
           // strand, so even the maximum never leaves its contour.
           final length =
@@ -1803,6 +1820,48 @@ class HairFoldRaster {
     }
     final tile = surface[(y ~/ _size) * tiles.tilesX + x ~/ _size];
     return tile != null && tile.shape[(y % _size) * _size + x % _size] > .5;
+  }
+
+  Offset _creaseOriginOnOutline(
+    Map<int, _SurfaceTile> surface,
+    Offset origin,
+    Offset direction,
+    Offset inner,
+    double reach,
+    int owner,
+  ) {
+    // Only consider the visible perimeter behind the crease or on the inner
+    // side of its bend. The perimeter does not include cached crease ink.
+    final left = math.max(0, (origin.dx - reach).floor());
+    final right = math.min(tiles.canvasWidth - 1, (origin.dx + reach).ceil());
+    final top = math.max(0, (origin.dy - reach).floor());
+    final bottom = math.min(tiles.canvasHeight - 1, (origin.dy + reach).ceil());
+    var nearest = reach * reach;
+    var joined = origin;
+    for (var y = top; y <= bottom; y++) {
+      for (var x = left; x <= right; x++) {
+        final point = Offset(x + .5, y + .5);
+        final delta = point - origin;
+        final distance = delta.distanceSquared;
+        if (distance >= nearest ||
+            _dot(delta, direction) > 1 ||
+            _dot(delta, inner) < -1.5) {
+          continue;
+        }
+        final tile = surface[(y ~/ _size) * tiles.tilesX + x ~/ _size];
+        if (tile == null) continue;
+        final p = (y % _size) * _size + x % _size;
+        final face = tile.owner[p];
+        if ((face != owner && face != owner + 1) ||
+            tile.shape[p] <= .5 ||
+            tile.outer[p] - tile.fill[p] < tile.cover[p] * .25) {
+          continue;
+        }
+        nearest = distance;
+        joined = point;
+      }
+    }
+    return joined;
   }
 
   /// Composites one section's mask tile onto a surface tile. Maximum ink
