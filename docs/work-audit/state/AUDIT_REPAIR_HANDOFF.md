@@ -114,7 +114,7 @@ App・Web共通。Claudeが要修正の詳細を追記し、ユーザーが別�
   - **担当が見つけた別の不具合**：DISC265（作品一覧・共有の詳細表示の最後のカードが浮かぶボタンの上端ちょうどで終わる）。フォルダの中の画面の「小」のカードでは絵の印が星の所に重なる（DISC263と同じ形、前から）。
 - **このセッションの公開の印が無いDISC**。前のセッションで直った物もあるので、各行の記録と最新 `dev_branch` で確かめる。
   - DISC001〜028・030〜049・051〜061・063〜067・069〜074・077〜081・090・099〜100・102・107・111・115〜116・118〜120・122
-  - DISC126・137・142〜146・149〜150・154〜155・159・161〜162・166・193〜202・204〜205・223・231・236・257〜427
+  - DISC126・137・142〜146・149〜150・154〜155・159・161〜162・166・193〜202・204〜205・223・231・236・257〜430
   - 所有者の判断待ち：DISC090・099・107・115・146・155、A011、DISC066。
 - **dev_branchで落ちているtest**：DISC258（容量削減の画面のtestが多く落ちる。どのコミットからかは未確認）。
 
@@ -1363,3 +1363,15 @@ App・Web共通。Claudeが要修正の詳細を追記し、ユーザーが別�
   - YouTubeで削除された保留（`VIDEO_NOT_FOUND`・`deleted`）は再試行にせず保留を消して知らせる。サムネイルは登録の前に1回だけ設定し（ショートは処理の完了を待つ）、設定済みを覚える。`POST /works`は同じ動画IDで冪等。
   - test：`community_post_publish_contract_test`・`community_post_recovery_contract_test`・`community_pending_deleted_recovery_contract_test`・`youtube_thumbnail_service_test`ほか42件成功。落ちた3件はDISC427。
 - **未確認（実機・実API）**：動画の選択（ファイルの選択・取り消し）、アップロードの進み具合・途中の通信断・クォータ超過・トークンの期限切れ、YouTubeの公開状態（公開・限定公開・非公開・予約）と作品広場の公開の組み合わせ、登録の失敗→再試行、強制終了からの復旧、7言語・文字2倍・360px。
+
+### A097（一巡目、Claude・S40、判定：要修正〔プッシュ通知は実機〕）
+
+- **確認SHA・環境**：実操作は`2153c952`のLinuxデバッグビルド（`community_follow_notifications_screen.dart`・`community_notification_settings_screen.dart`・`push_notification_service.dart`は今の`4d0efcf9`と同じ）、PC ja 1280×800、マウス、プロフィール`prof/r1-a084`。Google未接続・接続先なし。Linuxにはプッシュ通知（Firebase）が無い。testは今の`4d0efcf9`。画像はscratchpadの`shots-r1/a097-*`（`backup-pending`）。使い捨てのtest（`zz_probe_a097_test`）は流した後に消した。
+- **要修正（新規）**：DISC428（ブラシ・トーン・スタンプの起動が型の違う保存で止まる・寛容でない読み方8ファイル）、DISC429（通知の読み込みの失敗で「通知はありません」も出す・未ログインの理由が無い）、DISC430（押せないスイッチがオンの見た目、アプリ全体）。
+- **既知**：通知の行のアイコンが差し色（`scheme.primary`）で案Aの文字色でない（DISC074の内）。
+- **OK**：
+  - 作品広場の🔔→「通知」、右上の歯車→「この端末のプッシュ通知」（端末のプッシュ通知・新規フォロワー・新規ブックマーク・新規リポスト・作品の投稿・公開）。親を切ると`push_notifications_enabled`が`false`で保存され、子は押せない。
+  - 開くと節目の知らせを既読にする（`markMilestonesRead`）。行はイベントの種類のアイコン・文・端末の現地時刻（表示言語の書き方）、開ける行だけ›で開く。もっと読む・取り直しの失敗は知らせ（`activityError`）。
+  - プッシュ通知（コード）：切っているときはトークンを作らず、あるトークンはサーバーで無効にしてから消す。ログアウト・アカウントの切り替えでトークンを消し、別の投稿者のトークンを付け替えない。許可はログイン後に1回だけ求め、断られても作品広場は使える。他のアカウントの通知の履歴は消す（`clearOtherAccounts`）。
+  - test：`community_milestone_account_boundary_test`・`community_milestone_store_test`・`community_notice_preferences_test`・`push_notification_service_test`と`startup_failure_recovery_test`の残りは成功（29件中28件）。
+- **未確認（実機・実API）**：通知の一覧の実データ（0件・多件・ページ送り・取り直し）、通知のタップで開く画面、プッシュ通知の受信・タップ・トークンの登録と更新と失効、Android 13以降の許可の拒否、7言語・文字2倍・360px。
