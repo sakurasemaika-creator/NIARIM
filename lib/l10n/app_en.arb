@@ -29,6 +29,8 @@
   "homeMoveToTrashConfirm": "{count, plural, one{Move {count} item to the trash?} other{Move {count} items to the trash?}}",
   "commonMove": "Move",
   "homeShareFileDialogTitle": "Shared File",
+  "homeSharedFileTooLarge": "The shared file is larger than 128 MB. Open a file that is 128 MB or smaller.",
+  "homeSharedFileUnreadable": "Couldn’t open the shared file. Save the file again and try opening it.",
   "homeShareFileDialogContent": "Duplicate this shared file and save it as a regular project?",
   "homeMissingFontsSnackbar": "Missing fonts: {names}",
   "homeSharedImportedSnackbar": "Added to the Projects tab",

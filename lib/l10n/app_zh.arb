@@ -29,6 +29,8 @@
   "homeMoveToTrashConfirm": "要将{count}项移至回收站吗？",
   "commonMove": "移动",
   "homeShareFileDialogTitle": "共享文件",
+  "homeSharedFileTooLarge": "共享文件超过 128 MB。请打开不超过 128 MB 的文件。",
+  "homeSharedFileUnreadable": "无法打开共享文件。请重新保存文件后再打开。",
   "homeShareFileDialogContent": "要复制此共享文件并另存为普通项目吗？",
   "homeMissingFontsSnackbar": "缺少字体：{names}",
   "homeSharedImportedSnackbar": "已添加到项目标签页",

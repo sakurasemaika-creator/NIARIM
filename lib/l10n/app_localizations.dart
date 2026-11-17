@@ -281,6 +281,18 @@ abstract class AppLocalizations {
   /// **'共有ファイル'**
   String get homeShareFileDialogTitle;
 
+  /// No description provided for @homeSharedFileTooLarge.
+  ///
+  /// In ja, this message translates to:
+  /// **'共有ファイルが128 MBを超えています。128 MB以下のファイルを開いてください。'**
+  String get homeSharedFileTooLarge;
+
+  /// No description provided for @homeSharedFileUnreadable.
+  ///
+  /// In ja, this message translates to:
+  /// **'共有ファイルを開けませんでした。ファイルを保存し直してから開いてください。'**
+  String get homeSharedFileUnreadable;
+
   /// No description provided for @homeShareFileDialogContent.
   ///
   /// In ja, this message translates to:

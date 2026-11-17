@@ -190,12 +190,13 @@ void main() {
     expect(find.text('S25 renamed'), findsOneWidget);
     await tester.longPress(find.text('S25 renamed'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text(l10n.commonDelete));
+    await tester.tap(find.text(l10n.homeMoveToTrash));
     await tester.pumpAndSettle();
-    await tester.tap(find.text(l10n.commonDelete));
+    await tester.tap(find.byKey(const Key('trash-dialog-confirm')));
     await pumpRealAsync(tester, const Duration(milliseconds: 100));
     await tester.pumpAndSettle();
     expect(service.sharedFolders, isEmpty);
+    expect(service.trashedFolders.single.folder.name, 'S25 renamed');
     expect(find.text(l10n.homeSharedEmpty), findsOneWidget);
     final prefs = await tester.runAsync(SharedPreferences.getInstance);
     expect(jsonDecode(prefs!.getString('shared_folders')!), isEmpty);

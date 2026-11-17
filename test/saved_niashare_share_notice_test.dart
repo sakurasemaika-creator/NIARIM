@@ -15,6 +15,7 @@ import 'package:niarim/screens/home/widgets/project_list_widget.dart';
 import 'package:niarim/screens/project/project_detail_screen.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:niarim/utils/app_error_reporter.dart';
+import 'package:niarim/widgets/home_collection_selection_scope.dart';
 import 'package:niarim/widgets/share_project_file_action.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -472,7 +473,7 @@ void main() {
       find.byKey(ValueKey('receivedShareMenu_${service.shared.single.id}')),
     );
     await pumpRealAsync(tester, const Duration(milliseconds: 600));
-    await tester.tap(find.text(l10n.projectDetailShareQuickAction).last);
+    await tester.tap(find.text(l10n.projectListCreateShareAction).last);
     await pumpRealAsync(tester, const Duration(milliseconds: 600));
     await confirmAndWait(tester);
     expect(tester.takeException(), isNull);
@@ -493,15 +494,15 @@ void main() {
       ..pending = Completer<String>();
     await tester.tap(receivedMenu);
     await pumpRealAsync(tester, const Duration(milliseconds: 600));
-    expect(menuItemEnabled(tester, l10n.projectDetailShareQuickAction), isTrue);
-    await tester.tap(find.text(l10n.projectDetailShareQuickAction).last);
+    expect(menuItemEnabled(tester, l10n.projectListCreateShareAction), isTrue);
+    await tester.tap(find.text(l10n.projectListCreateShareAction).last);
     await pumpRealAsync(tester, const Duration(milliseconds: 600));
     await confirmAndWait(tester);
     expect(share.calls, 2);
     await tester.tap(receivedMenu);
     await pumpRealAsync(tester, const Duration(milliseconds: 600));
     expect(
-      menuItemEnabled(tester, l10n.projectDetailShareQuickAction),
+      menuItemEnabled(tester, l10n.projectListCreateShareAction),
       isFalse,
       reason: '作成・共有の途中',
     );
@@ -522,7 +523,7 @@ void main() {
     share.breakWrites();
     await tester.tap(receivedMenu);
     await pumpRealAsync(tester, const Duration(milliseconds: 600));
-    await tester.tap(find.text(l10n.projectDetailShareQuickAction).last);
+    await tester.tap(find.text(l10n.projectListCreateShareAction).last);
     await pumpRealAsync(tester, const Duration(milliseconds: 600));
     await confirmAndWaitForNotice(tester);
     expect(share.calls, 2, reason: '作れなかったものは共有しない');
@@ -533,7 +534,7 @@ void main() {
     await tester.tap(receivedMenu);
     await pumpRealAsync(tester, const Duration(milliseconds: 600));
     expect(
-      menuItemEnabled(tester, l10n.projectDetailShareQuickAction),
+      menuItemEnabled(tester, l10n.projectListCreateShareAction),
       isTrue,
       reason: '失敗の後も選べる',
     );
@@ -546,7 +547,7 @@ void main() {
     final row = find.descendant(
       of: find.ancestor(
         of: find.byKey(ValueKey('outgoingShareMenu_${saved.path}')),
-        matching: find.byType(ListTile),
+        matching: find.byType(HomeCollectionSelectionSurface),
       ),
       matching: find.byIcon(Icons.insert_drive_file_outlined),
     );

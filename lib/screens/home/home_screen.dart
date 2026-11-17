@@ -873,20 +873,57 @@ class _HomeScreenState extends State<HomeScreen>
   }
 
   Future<void> _handleSharedUri(String uri) async {
-    String localPath;
-    if (uri.startsWith('file://')) {
-      localPath = Uri.parse(uri).toFilePath();
-    } else {
-      final bytes = await context.read<ShareIntentService>().readUriBytes(uri);
-      if (bytes == null) return;
-      final tmpDir = await getTemporaryDirectory();
-      final file = File(
-        '${tmpDir.path}/shared_${DateTime.now().millisecondsSinceEpoch}.niashare',
-      );
-      await file.writeAsBytes(bytes);
-      localPath = file.path;
-    }
     if (!mounted) return;
+    Directory? incoming;
+    try {
+      final String localPath;
+      final source = Uri.parse(uri);
+      if (source.scheme == 'file') {
+        final file = File.fromUri(source);
+        final stat = await file.stat();
+        if (stat.type != FileSystemEntityType.file || stat.size == 0) {
+          throw SharedFileReadFailure.unreadable;
+        }
+        if (stat.size > maxShareIntentBytes) {
+          throw SharedFileReadFailure.tooLarge;
+        }
+        localPath = file.path;
+      } else {
+        final bytes = await context.read<ShareIntentService>().readUriBytes(
+          uri,
+        );
+        if (!mounted) return;
+        incoming = await (await getTemporaryDirectory()).createTemp('shared-');
+        final file = File('${incoming.path}/incoming.niashare');
+        await file.writeAsBytes(bytes);
+        localPath = file.path;
+      }
+      if (mounted) await _confirmSharedFileImport(localPath);
+    } catch (error, stack) {
+      if (error is! SharedFileReadFailure) {
+        AppErrorReporter.record(error, stack);
+      }
+      if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
+        final message = error == SharedFileReadFailure.tooLarge
+            ? l10n.homeSharedFileTooLarge
+            : l10n.homeSharedFileUnreadable;
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(message)));
+      }
+    } finally {
+      if (incoming != null) {
+        try {
+          await incoming.delete(recursive: true);
+        } on FileSystemException catch (error, stack) {
+          AppErrorReporter.record(error, stack);
+        }
+      }
+    }
+  }
+
+  Future<void> _confirmSharedFileImport(String localPath) async {
     final l10n = AppLocalizations.of(context)!;
     final proceed = await showDialog<bool>(
       context: context,
@@ -905,7 +942,7 @@ class _HomeScreenState extends State<HomeScreen>
         ],
       ),
     );
-    if (proceed != true) return;
+    if (proceed != true || !mounted) return;
     try {
       final data = await NiaproSerializer.loadShare(localPath);
       if (!mounted) return;

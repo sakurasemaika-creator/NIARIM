@@ -101,6 +101,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get homeShareFileDialogTitle => '共享文件';
 
   @override
+  String get homeSharedFileTooLarge => '共享文件超过 128 MB。请打开不超过 128 MB 的文件。';
+
+  @override
+  String get homeSharedFileUnreadable => '无法打开共享文件。请重新保存文件后再打开。';
+
+  @override
   String get homeShareFileDialogContent => '要复制此共享文件并另存为普通项目吗？';
 
   @override
@@ -10254,6 +10260,12 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get homeShareFileDialogTitle => '共享檔案';
+
+  @override
+  String get homeSharedFileTooLarge => '分享檔案超過 128 MB。請開啟不超過 128 MB 的檔案。';
+
+  @override
+  String get homeSharedFileUnreadable => '無法開啟分享檔案。請重新儲存檔案後再開啟。';
 
   @override
   String get homeShareFileDialogContent => '要複製這個共享檔案並另存為一般專案嗎？';

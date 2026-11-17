@@ -103,6 +103,14 @@ class AppLocalizationsKo extends AppLocalizations {
   String get homeShareFileDialogTitle => '공유 파일';
 
   @override
+  String get homeSharedFileTooLarge =>
+      '공유 파일이 128 MB를 초과합니다. 128 MB 이하인 파일을 열어 주세요.';
+
+  @override
+  String get homeSharedFileUnreadable =>
+      '공유 파일을 열 수 없습니다. 파일을 다시 저장한 뒤 열어 주세요.';
+
+  @override
   String get homeShareFileDialogContent => '이 공유 파일을 복제하여 일반 프로젝트로 저장하시겠습니까?';
 
   @override

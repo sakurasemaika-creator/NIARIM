@@ -29,6 +29,8 @@
   "homeMoveToTrashConfirm": "要將{count}項移至垃圾桶嗎？",
   "commonMove": "移動",
   "homeShareFileDialogTitle": "共享檔案",
+  "homeSharedFileTooLarge": "分享檔案超過 128 MB。請開啟不超過 128 MB 的檔案。",
+  "homeSharedFileUnreadable": "無法開啟分享檔案。請重新儲存檔案後再開啟。",
   "homeShareFileDialogContent": "要複製這個共享檔案並另存為一般專案嗎？",
   "homeMissingFontsSnackbar": "缺少字型：{names}",
   "homeSharedImportedSnackbar": "已新增至專案分頁",

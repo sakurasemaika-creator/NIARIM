@@ -2,6 +2,11 @@ import 'dart:async';
 
 import 'package:flutter/services.dart';
 
+// Match maxSharedFileBytes in MainActivity's share-intent reader.
+const maxShareIntentBytes = 128 * 1024 * 1024;
+
+enum SharedFileReadFailure implements Exception { tooLarge, unreadable }
+
 /// .niashare のOSレベル受信（他アプリ/ファイラーからのタップで開く）を扱うサービス。
 /// ネイティブ側（MainActivity.kt）とMethodChannelで連携する。
 class ShareIntentService {
@@ -46,13 +51,24 @@ class ShareIntentService {
   }
 
   /// content:// スキームのURIからバイト列を読み出す（ContentResolver経由）。
-  Future<Uint8List?> readUriBytes(String uri) async {
+  Future<Uint8List> readUriBytes(String uri) async {
     try {
-      return await _channel.invokeMethod<Uint8List>('readUri', {'uri': uri});
-    } on PlatformException {
-      return null;
+      final bytes = await _channel.invokeMethod<Uint8List>('readUri', {
+        'uri': uri,
+      });
+      if (bytes == null || bytes.isEmpty) {
+        throw SharedFileReadFailure.unreadable;
+      }
+      if (bytes.length > maxShareIntentBytes) {
+        throw SharedFileReadFailure.tooLarge;
+      }
+      return bytes;
+    } on PlatformException catch (error) {
+      throw error.code == 'FILE_TOO_LARGE'
+          ? SharedFileReadFailure.tooLarge
+          : SharedFileReadFailure.unreadable;
     } on MissingPluginException {
-      return null;
+      throw SharedFileReadFailure.unreadable;
     }
   }
 

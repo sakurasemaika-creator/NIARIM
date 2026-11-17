@@ -8,13 +8,16 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/app.dart';
 import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/engine/niapro_serializer.dart';
+import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/models/project.dart';
 import 'package:niarim/router.dart';
+import 'package:niarim/screens/home/widgets/home_selection_toolbar.dart';
 import 'package:niarim/screens/splash/splash_screen.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:niarim/services/local_file_trash_service.dart';
 import 'package:niarim/services/work_folder_service.dart';
 import 'package:niarim/utils/app_error_reporter.dart';
+import 'package:niarim/widgets/home_collection_selection_scope.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -23,6 +26,11 @@ import 'helpers/load_app_fonts.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+  final l10n = lookupAppLocalizations(const Locale('ja'));
+  final copySelection = find.descendant(
+    of: find.byType(HomeSelectionToolbar),
+    matching: find.byTooltip(l10n.commonCopy),
+  );
   const channel = MethodChannel('plugins.flutter.io/path_provider');
   late Directory tempDir;
 
@@ -165,7 +173,7 @@ void main() {
 
       await tester.longPress(find.text('受信箱').first);
       await tester.pump(const Duration(milliseconds: 400));
-      await tester.tap(find.widgetWithIcon(ListTile, Icons.content_copy));
+      await tester.tap(copySelection);
       await pumpIo(tester);
       expect(find.byKey(const Key('homeCrossTabPasteButton')), findsOneWidget);
       await capture(tester, captureKey, '02_received_folder_copied');
@@ -242,16 +250,18 @@ void main() {
 
       // The outgoing-share pill has a distinct file format but may use Trash.
       final sharePath = service.outgoingShares.single.path;
-      await tester.tap(find.byKey(ValueKey('outgoingShareMenu_$sharePath')));
-      // PopupMenuRoute blocks hit-testing until its entrance animation finishes.
-      await tester.pumpAndSettle(const Duration(milliseconds: 100));
-      final copyOption = find.byWidgetPredicate(
-        (widget) =>
-            widget is PopupMenuItem<String> &&
-            widget.value == 'copyToClipboard',
+      final outgoingCard = find.ancestor(
+        of: find.byKey(ValueKey('outgoingShareMenu_$sharePath')),
+        matching: find.byType(HomeCollectionSelectionSurface),
       );
-      expect(copyOption, findsOneWidget);
-      await tester.tap(copyOption);
+      final outgoingCover = find.descendant(
+        of: outgoingCard,
+        matching: find.byIcon(Icons.insert_drive_file_outlined),
+      );
+      expect(outgoingCover, findsOneWidget);
+      await tester.longPress(outgoingCover);
+      await tester.pump(const Duration(milliseconds: 400));
+      await tester.tap(copySelection);
       await pumpIo(tester);
       await tester.tap(find.byKey(const ValueKey('home_tab_3')));
       await pumpIo(tester);
@@ -329,7 +339,7 @@ void main() {
       await capture(tester, captureKey, '07_works_empty_folder');
       await tester.longPress(find.text('空の書き出し').first);
       await tester.pump(const Duration(milliseconds: 400));
-      await tester.tap(find.widgetWithIcon(ListTile, Icons.content_copy));
+      await tester.tap(copySelection);
       await pumpIo(tester);
       expect(find.byKey(const Key('homeCrossTabPasteButton')), findsOneWidget);
 
@@ -379,7 +389,11 @@ void main() {
       expect(find.byKey(const Key('homePasteRestoreDialog')), findsOneWidget);
       await capture(tester, captureKey, '21_works_folder_restore_confirmation');
       await tester.tap(find.byKey(const Key('homePasteRestoreConfirmButton')));
-      await awaitLibraryState(tester, () => works.folders.length == 1);
+      final trashDirectory = Directory(archived.single.archivedPath).parent;
+      await awaitLibraryState(
+        tester,
+        () => works.folders.length == 1 && !trashDirectory.existsSync(),
+      );
       expect(
         works.folders.single.name,
         '空の書き出し',

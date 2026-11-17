@@ -110,6 +110,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeShareFileDialogTitle => 'Shared File';
 
   @override
+  String get homeSharedFileTooLarge =>
+      'The shared file is larger than 128 MB. Open a file that is 128 MB or smaller.';
+
+  @override
+  String get homeSharedFileUnreadable =>
+      'Couldn’t open the shared file. Save the file again and try opening it.';
+
+  @override
   String get homeShareFileDialogContent =>
       'Duplicate this shared file and save it as a regular project?';
 

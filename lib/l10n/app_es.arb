@@ -29,6 +29,8 @@
   "homeMoveToTrashConfirm": "{count, plural, one{¿Mover {count} elemento a la papelera?} other{¿Mover {count} elementos a la papelera?}}",
   "commonMove": "Mover",
   "homeShareFileDialogTitle": "Archivo compartido",
+  "homeSharedFileTooLarge": "El archivo compartido supera los 128 MB. Abre un archivo de 128 MB o menos.",
+  "homeSharedFileUnreadable": "No se pudo abrir el archivo compartido. Vuelve a guardar el archivo e inténtalo de nuevo.",
   "homeShareFileDialogContent": "¿Duplicar este archivo compartido y guardarlo como un proyecto normal?",
   "homeMissingFontsSnackbar": "Faltan fuentes: {names}",
   "homeSharedImportedSnackbar": "Añadido a la pestaña Proyectos",

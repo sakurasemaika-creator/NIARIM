@@ -111,6 +111,14 @@ class AppLocalizationsFr extends AppLocalizations {
   String get homeShareFileDialogTitle => 'Fichier partagé';
 
   @override
+  String get homeSharedFileTooLarge =>
+      'Le fichier partagé dépasse 128 Mo. Ouvrez un fichier de 128 Mo maximum.';
+
+  @override
+  String get homeSharedFileUnreadable =>
+      'Impossible d’ouvrir le fichier partagé. Enregistrez-le à nouveau, puis réessayez.';
+
+  @override
   String get homeShareFileDialogContent =>
       'Dupliquer ce fichier partagé et l’enregistrer comme projet normal ?';
 
@@ -1546,7 +1554,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get canvasAutosaveRecoveryBody =>
-      'Une version enregistrée automatiquement contient des modifications différentes. Voulez-vous l’ouvrir ?';
+      'Une version enregistrée automatiquement contient des modifications différentes. Voulez-vous l’ouvrir ?';
 
   @override
   String get helpSaveSlotTitle => 'Emplacement de sauvegarde';
