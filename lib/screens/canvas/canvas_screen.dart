@@ -122,6 +122,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
   // 閉じない）ため、_closeAllOverlayPanels/_anyToolPanelOpenの対象には
   // あえて含めていない。
   bool _showReferenceWindow = false;
+  final _referenceImage = ReferenceImageController();
   // キャンバスプレビュー（ナビゲーター）：拡大表示中でも全体を縮小表示で
   // 確認できるPC/DeXモード専用のドッキングパネル。スマホ版では扱わない。
   bool _showCanvasPreviewPanel = false;
@@ -1176,9 +1177,6 @@ class _CanvasScreenState extends State<CanvasScreen> {
                   _toggleDesktopOrMobileDockPanel(CanvasDockPanel.colorAdjust);
                 },
               ),
-              // 資料ウィンドウ（アニメ制作では三面図・キャラクター設定表などの
-              // 資料を見ながら作業することが多いため、任意の参考画像を常に
-              // フローティング表示できるようにした）。
               ListTile(
                 leading: Icon(
                   _showReferenceWindow
@@ -1186,12 +1184,15 @@ class _CanvasScreenState extends State<CanvasScreen> {
                       : Icons.dashboard_customize_outlined,
                 ),
                 title: messageText(l10n.canvasEditMenuReferenceWindow),
-                subtitle: messageText(
-                  l10n.canvasEditMenuReferenceWindowSubtitle,
-                ),
+                subtitle: isWideScreen(context)
+                    ? null
+                    : messageText(l10n.canvasEditMenuReferenceWindowSubtitle),
                 onTap: () {
                   Navigator.pop(ctx);
-                  setState(() => _showReferenceWindow = !_showReferenceWindow);
+                  _setDesktopPanelVisible(
+                    CanvasDockPanel.reference,
+                    !_showReferenceWindow,
+                  );
                 },
               ),
               // キャンバスプレビュー（ナビゲーター）：PC/DeXモード専用。
@@ -1289,6 +1290,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
     _showQuickToolPanel = panels.contains(CanvasDockPanel.quickTool);
     _showColorAdjustPanel = panels.contains(CanvasDockPanel.colorAdjust);
     _showCanvasPreviewPanel = panels.contains(CanvasDockPanel.canvasPreview);
+    _showReferenceWindow = panels.contains(CanvasDockPanel.reference);
   }
 
   @override
@@ -1386,6 +1388,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
   @override
   void dispose() {
     _screenFocus.dispose();
+    _referenceImage.dispose();
     _filterCanvasPreview?.dispose();
     _colorAdjustCanvasPreview?.dispose();
     _filterLensMask.dispose();
@@ -2222,14 +2225,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
                 // 画面下部の分割数スライダー」だけにして、格子点のドラッグに
                 // 画面を明け渡す（パネルがキャンバスを覆って掴めなくなるため）。
                 // デスクトップは横に並ぶので従来どおりパネルを出す。
-                // 資料ウィンドウ：PC/スマホ問わず常にフローティングで表示する
-                // （PC/DeXモードで右上に固定表示する案も試したが、右上は
-                // キャンバスプレビュー・ナビゲーターパネルの定位置と重なる
-                // ため、reference_window.dart側のコメントのとおり見送った）。
-                if (_showReferenceWindow && !immersiveAdjusting)
-                  ReferenceWindow(
-                    onClose: () => setState(() => _showReferenceWindow = false),
-                  ),
+                if (!isDesktop && _showReferenceWindow && !immersiveAdjusting)
+                  _referenceWindow(),
               ],
             ),
           ),
@@ -2266,6 +2263,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
     CanvasDockPanel.quickTool => _showQuickToolPanel,
     CanvasDockPanel.colorAdjust => _showColorAdjustPanel,
     CanvasDockPanel.canvasPreview => _showCanvasPreviewPanel,
+    CanvasDockPanel.reference => _showReferenceWindow,
   };
   void _setDesktopPanelVisible(CanvasDockPanel p, bool visible) {
     if (isLegacyMaterialDock(p)) {
@@ -2302,6 +2300,9 @@ class _CanvasScreenState extends State<CanvasScreen> {
           _showColorAdjustPanel = visible;
         case CanvasDockPanel.canvasPreview:
           _showCanvasPreviewPanel = visible;
+        case CanvasDockPanel.reference:
+          _showReferenceWindow = visible;
+          if (visible) _rememberDockInteraction(p);
       }
     });
     final settings = context.read<SettingsService>();
@@ -2347,6 +2348,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
       CanvasDockPanel.quickTool => l.workspaceDockPanelQuickTool,
       CanvasDockPanel.colorAdjust => l.workspaceDockPanelColorAdjust,
       CanvasDockPanel.canvasPreview => l.workspaceDockPanelCanvasPreview,
+      CanvasDockPanel.reference => l.referenceWindowTitle,
     };
   }
 
@@ -2408,11 +2410,27 @@ class _CanvasScreenState extends State<CanvasScreen> {
     CanvasDockPanel.quickTool => Icons.flash_on_outlined,
     CanvasDockPanel.colorAdjust => Icons.color_lens_outlined,
     CanvasDockPanel.canvasPreview => Icons.map_outlined,
+    CanvasDockPanel.reference => Icons.dashboard_customize_outlined,
   };
 
   /// Full-scene tools keep their entire primary visual in view. Collection
   /// panels scale their contents by width, but retain vertical scrolling.
   Widget _responsiveDockBody(CanvasDockPanel panel) {
+    if (panel == CanvasDockPanel.reference) return _dockBody(panel);
+    if (panel == CanvasDockPanel.penSubTool) {
+      // Preserve enough height for the tabs and list controls when another
+      // panel shares this column. The dock still uses its actual width.
+      return LayoutBuilder(
+        builder: (context, constraints) => SingleChildScrollView(
+          key: const ValueKey('dockViewport-penSubTool'),
+          primary: false,
+          child: SizedBox(
+            height: math.max(280, constraints.maxHeight),
+            child: DockedPanelCloseScope(child: _dockBody(panel)),
+          ),
+        ),
+      );
+    }
     final isCompleteVisual =
         panel == CanvasDockPanel.colorPicker ||
         panel == CanvasDockPanel.canvasPreview;
@@ -2425,7 +2443,6 @@ class _CanvasScreenState extends State<CanvasScreen> {
       minimumContentHeight: switch (panel) {
         CanvasDockPanel.colorPicker => 310,
         CanvasDockPanel.canvasPreview => 220,
-        CanvasDockPanel.penSubTool => 520,
         CanvasDockPanel.brush => 460,
         _ => 260,
       },
@@ -2466,7 +2483,13 @@ class _CanvasScreenState extends State<CanvasScreen> {
           _setDesktopPanelVisible(CanvasDockPanel.canvasPreview, false),
       showCloseButton: false,
     ),
+    CanvasDockPanel.reference => _referenceWindow(),
   };
+
+  Widget _referenceWindow() => ReferenceWindow(
+    controller: _referenceImage,
+    onClose: () => _setDesktopPanelVisible(CanvasDockPanel.reference, false),
+  );
 
   /// An empty dock takes zero width at rest, but becomes a temporary
   /// 52px-wide drop target while a window is being dragged.

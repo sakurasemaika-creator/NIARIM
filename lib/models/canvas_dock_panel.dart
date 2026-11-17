@@ -16,6 +16,7 @@ enum CanvasDockPanel {
   quickTool,
   colorAdjust,
   canvasPreview,
+  reference,
 }
 
 /// Legacy per-material dock IDs remain readable in existing saved

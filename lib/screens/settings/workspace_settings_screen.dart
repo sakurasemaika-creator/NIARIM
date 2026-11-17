@@ -530,6 +530,7 @@ class WorkspaceSettingsScreen extends StatelessWidget {
         CanvasDockPanel.quickTool => l10n.workspaceDockPanelQuickTool,
         CanvasDockPanel.colorAdjust => l10n.workspaceDockPanelColorAdjust,
         CanvasDockPanel.canvasPreview => l10n.workspaceDockPanelCanvasPreview,
+        CanvasDockPanel.reference => l10n.referenceWindowTitle,
       };
 
   void _showSaveDialog(

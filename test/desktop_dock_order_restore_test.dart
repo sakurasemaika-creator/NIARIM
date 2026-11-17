@@ -23,18 +23,20 @@ void main() {
       toRight: true,
       before: CanvasDockPanel.colorPicker,
     );
+    await first.moveDesktopDockPanel(CanvasDockPanel.reference, toRight: false);
 
     final again = await restart();
     expect(again.toolOptionDockOrder, contains(CanvasDockPanel.layer));
     expect(again.rightDockOrder, isNot(contains(CanvasDockPanel.layer)));
     expect(again.rightDockOrder, [
       CanvasDockPanel.canvasPreview,
-      CanvasDockPanel.brush,
+      CanvasDockPanel.penSubTool,
       CanvasDockPanel.colorPicker,
     ]);
+    expect(again.toolOptionDockOrder, contains(CanvasDockPanel.reference));
     expect(again.toolOptionDockOrder, isNot(contains(CanvasDockPanel.brush)));
     // どの窓もちょうど1つの列にある。
-    for (final panel in CanvasDockPanel.values) {
+    for (final panel in uniqueCanonicalCanvasDocks(CanvasDockPanel.values)) {
       final count =
           again.toolOptionDockOrder.where((p) => p == panel).length +
           again.rightDockOrder.where((p) => p == panel).length;
@@ -51,7 +53,10 @@ void main() {
     expect(first.rightDockOrder, isEmpty);
     final again = await restart();
     expect(again.rightDockOrder, isEmpty);
-    expect(again.toolOptionDockOrder.toSet(), CanvasDockPanel.values.toSet());
+    expect(
+      again.toolOptionDockOrder.toSet(),
+      uniqueCanonicalCanvasDocks(CanvasDockPanel.values).toSet(),
+    );
   });
 
   test('older saved data with a window in both columns keeps one', () async {
@@ -74,6 +79,21 @@ void main() {
     expect(settings.rightDockOrder, [
       CanvasDockPanel.canvasPreview,
       CanvasDockPanel.colorPicker,
+      CanvasDockPanel.reference,
     ]);
+  });
+
+  test('an older workspace order still offers the reference panel', () async {
+    SharedPreferences.setMockInitialValues({});
+    final settings = await restart();
+    await settings.setRightDockOrder([CanvasDockPanel.layer]);
+    expect(settings.rightDockOrder, [
+      CanvasDockPanel.layer,
+      CanvasDockPanel.reference,
+    ]);
+    expect(
+      settings.defaultDockedPanels,
+      isNot(contains(CanvasDockPanel.reference)),
+    );
   });
 }

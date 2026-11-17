@@ -522,6 +522,8 @@ class _PcWorkspaceLayoutPreviewState extends State<PcWorkspaceLayoutPreview> {
                               Icons.palette_outlined,
                             CanvasDockPanel.layer => Icons.layers_outlined,
                             CanvasDockPanel.canvasPreview => Icons.map_outlined,
+                            CanvasDockPanel.reference =>
+                              Icons.dashboard_customize_outlined,
                             _ => Icons.tune_outlined,
                           }, size: 24),
                         ),
@@ -546,6 +548,8 @@ class _PcWorkspaceLayoutPreviewState extends State<PcWorkspaceLayoutPreview> {
                                     Icons.layers_outlined,
                                   CanvasDockPanel.canvasPreview =>
                                     Icons.map_outlined,
+                                  CanvasDockPanel.reference =>
+                                    Icons.dashboard_customize_outlined,
                                   _ => Icons.tune_outlined,
                                 },
                                 size: 18,
@@ -755,11 +759,12 @@ class _PcWorkspaceLayoutPreviewState extends State<PcWorkspaceLayoutPreview> {
     }
     return Center(
       child: Icon(
-        panel == CanvasDockPanel.colorPicker
-            ? Icons.palette_outlined
-            : panel == CanvasDockPanel.brush
-            ? Icons.brush_outlined
-            : Icons.tune_outlined,
+        switch (panel) {
+          CanvasDockPanel.colorPicker => Icons.palette_outlined,
+          CanvasDockPanel.brush => Icons.brush_outlined,
+          CanvasDockPanel.reference => Icons.dashboard_customize_outlined,
+          _ => Icons.tune_outlined,
+        },
         size: 48,
         color: scheme.primary,
       ),

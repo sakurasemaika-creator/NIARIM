@@ -380,7 +380,9 @@ class SettingsService extends ChangeNotifier {
   );
 
   List<CanvasDockPanel> get toolOptionDockOrder => List.unmodifiable(
-    desktopDockDefaultMirrored ? _rightDockOrder : _toolOptionDockOrder,
+    desktopDockDefaultMirrored
+        ? _rightDockOrderWithReference
+        : _toolOptionDockOrder,
   );
 
   Future<void> setToolOptionDockOrder(List<CanvasDockPanel> order) async {
@@ -397,17 +399,30 @@ class SettingsService extends ChangeNotifier {
   Future<void> resetToolOptionDockOrder() =>
       setToolOptionDockOrder(_defaultToolOptionDockOrder);
 
-  // Initial RIGHT column order (color, layers, navigator). Once edited it is
-  // the user's saved physical right-side order.
+  // Initial right column order. Once edited it is the user's saved physical
+  // right-side order.
   static const List<CanvasDockPanel> _defaultRightDockOrder = [
     CanvasDockPanel.canvasPreview,
     CanvasDockPanel.colorPicker,
     CanvasDockPanel.layer,
+    CanvasDockPanel.reference,
   ];
   List<CanvasDockPanel> _rightDockOrder = List.of(_defaultRightDockOrder);
 
+  // A workspace preset saved before the reference dock had no placement for it.
+  // Keep it available even before those restored preferences have been reloaded.
+  List<CanvasDockPanel> get _rightDockOrderWithReference {
+    if (_toolOptionDockOrder.contains(CanvasDockPanel.reference) ||
+        _rightDockOrder.contains(CanvasDockPanel.reference)) {
+      return _rightDockOrder;
+    }
+    return [..._rightDockOrder, CanvasDockPanel.reference];
+  }
+
   List<CanvasDockPanel> get rightDockOrder => List.unmodifiable(
-    desktopDockDefaultMirrored ? _toolOptionDockOrder : _rightDockOrder,
+    desktopDockDefaultMirrored
+        ? _toolOptionDockOrder
+        : _rightDockOrderWithReference,
   );
 
   Future<void> setRightDockOrder(List<CanvasDockPanel> order) async {

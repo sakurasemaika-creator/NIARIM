@@ -1,5 +1,5 @@
 name: Build APK
-run-name: NIARIM Android ${{ inputs.build-type || 'release' }} APK · ${{ github.ref_name }}
+run-name: NIARIM Android ${{ inputs.build-type || 'release' }} APK · ${{ github.ref_name }} · ${{ github.sha }}
 
 # 手動ビルドと、ビルド定義を変更した際の署名付き APK の検証。
 # 細かな修正ごとには起動せず、対象テスト・flutter analyze・必要な実キャプチャを先に完了し、
