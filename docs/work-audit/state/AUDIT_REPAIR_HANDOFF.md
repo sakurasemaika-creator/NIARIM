@@ -130,7 +130,7 @@ App・Web共通。Claudeが要修正の詳細を追記し、ユーザーが別�
   - **担当が見つけた別の不具合**：DISC265（作品一覧・共有の詳細表示の最後のカードが浮かぶボタンの上端ちょうどで終わる）。フォルダの中の画面の「小」のカードでは絵の印が星の所に重なる（DISC263と同じ形、前から）。
 - **このセッションの公開の印が無いDISC**。前のセッションで直った物もあるので、各行の記録と最新 `dev_branch` で確かめる。
   - DISC001〜028・030〜049・051〜061・063〜067・069〜074・077〜081・090・099〜100・102・107・111・115〜116・118〜120・122
-  - DISC126・137・142〜146・149〜150・154〜155・159・161〜162・166・193〜202・204〜205・223・231・236・257〜448
+  - DISC126・137・142〜146・149〜150・154〜155・159・161〜162・166・193〜202・204〜205・223・231・236・257〜450
   - 所有者の判断待ち：DISC090・099・107・115・146・155、A011、DISC066。
 - **dev_branchで落ちているtest**：DISC258（容量削減の画面のtestが多く落ちる。どのコミットからかは未確認）。
 
@@ -1590,3 +1590,11 @@ App・Web共通。Claudeが要修正の詳細を追記し、ユーザーが別�
 - **新規の要修正なし**。
 - **OK（照合）**：MP4・WebM・GIF・AVI（`export_screen.dart`の`ExportFormat`）と透過WebM（`helpTransparentWebmTitle`の選択肢）、最大1920×1920（`canvas_size_preset.dart`の`kMaxCanvasEdge`）、縦横比の自由な設定（新規プロジェクトの幅・高さ）、無料90秒・プレミアム2時間（`premium_service.dart`の7200／90）、タイムラインの表示中のフレームをPNG・JPEGで保存（`timeline_screen.dart`の`timelineExportFrameJpegOption`）。
 - **未確認**：書き出したファイルの再生（Linuxにffmpegなし、A050）、7言語、図解の縮尺。料金・キャンペーンの表示はW007で見る。
+
+### W007（一巡目、Claude・S40、判定：要修正）
+
+- **確認SHA・環境**：Web `6c69d0b`の`public/`をローカルの静的サーバーで、Chromium（Playwright）PC 1280×800・SP 360×740、7言語（`w-audit/w007*.js`、本文は`w-audit/w007-ja.txt`、画像は`w-audit/w007-*.png`）。App `b7d652b9`のコードと照合。
+- **要修正（新規）**：449（自作の自動操作はアプリでプレミアムの機能なのに、Webの/premium/にもアプリの比較表にも無い）、450（中国語で日本語の「・」を並べに使い「、」と混ざる。Webの辞書約130行・アプリのARB 183件ずつ）。
+- **既知**：韓国語の「・」（DISC444。/premium/の韓国語にも「모든 기본 제작 기능（그리기・애니메이션・편집・오디오）」、韓国語の全角の括弧も同じ行）。
+- **OK（照合）**：料金（月額550円・年額5,500円〔6,600円に取り消し線・2か月分無料〕はアプリの`premiumMonthlyPrice`・`premiumYearlyPrice`・`premiumYearlyOriginalPrice`と同じ。どちらも「料金・条件はGoogle Playの最新の表示を確認」と書く）、無料版の書き出し最大1920×1920（`kMaxCanvasEdge`）・90秒（`maxProjectDurationSeconds`）・長尺は先頭90秒を書き出し（`export_screen.dart`の`needsLongExport`）、公式エンドマークは無料で必ず付き特典の間だけ切り替え（`shouldAppendOfficialEndCard`）、ウォーターマーク・トーンカーブ・レベル補正・最大2時間（`PremiumFeature`）、広告非表示（`advertising_service.dart`の`shouldShowAds`はプレミアムで偽）、作品広場の投稿数 無料1・プレミアム3／日（`backend/src/lib/quota.ts`の`DAILY_POST_LIMIT_PER_USER`）、返金はGoogle Playの規定、オパールの案内と/coins/へのリンク（7言語とも言語を引き継ぐ）。7言語×PC・SPで横のはみ出し無し・日本語の残り無し。下の空白はスクロールで出る表示の効果で、スクロールすればオパールの案内が出る（PC・SPとも）。
+- **未確認**：Google Playでの実際の購入・価格（端末なし）。全体の投稿の上限（1日100件、`DAILY_POST_LIMIT_GLOBAL`）はWebに書かれていない（約束していないので要修正にはしない）。
