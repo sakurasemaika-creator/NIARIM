@@ -1751,3 +1751,10 @@ App・Web共通。Claudeが要修正の詳細を追記し、ユーザーが別�
 - **新規の要修正なし**。繰り返しの作業の短縮にかかわる既存のDISC：一括の自動塗りの塗り残し・記録（A057のDISC347・DISC348）、自作の自動操作の撮影のtest（DISC323）と、それがプレミアムの機能なのに案内に無いこと（DISC449）、フレームの一覧・タイムラインの操作（A045〜A056の各DISC）。
 - **OK（コード）**：基本の流れ（線画→色→フレームの繰り返し→仕上げ→書き出し）を短くする仕組みがある：フレームの一括追加（1〜100枚、1回の取り消しで戻る`editTimeline`）・フレームの複製（`duplicateFrame`）・前後のフレームへのキー（押し続けで繰り返す`repeatableCommands`はUndo・Redo・前後のフレームだけ）・2本指スワイプのフレーム移動（既定）・オニオンスキン・一括の自動塗り・操作の記録と再生（自作の自動操作）・早替えツール・ワークスペースの保存。どれも決まった手順の自動化で、生成AIの機能は無い（W024）。
 - **未確認**：実際の手数・時間・誤操作の計測（PC・SP）、改善の効果の比較。経路の表の「必要な改善を実装・再操作」は修正の工程（GPT）の仕事で、Claudeは記録だけ。
+
+### W026（一巡目、Claude・S40、判定：一部〔外部の一次資料の調査は未〕、新規の要修正なし）
+
+- **確認SHA・環境**：App `28241d46`の`store/aso/strategy.md`・`store/aso/metadata.json`・`pubspec.yaml`・`android/app/build.gradle.kts`・`ios/`、Web `2a82785`の`public/js/config.js`。国ごとの市場・普及率・価格の一次資料（ストア・統計）は調べていない（外部の調査は捏造しない決まりにより未確認として残す）。
+- **新規の要修正なし**。既知：公開前なのに「配信中」・Google PlayのURLが空（DISC441）、料金がストアの価格でなく円の固定値（アプリ側DISC401、Webも全言語で¥表記〔「Google Playの最新の表示を確認」の注記つき〕）。
+- **リポジトリで分かる配布の事実**：ストアの文は7地域（ja-JP・en-US・zh-CN・zh-TW・ko-KR・fr-FR・es-ES）でGoogle PlayとApp Storeの両方の分がある（`tools/validate_aso_metadata.py`は「passed for 7 locales」）。決済はGoogle Playの課金（`in_app_purchase`）、広告はAdMob、ログインはGoogle（`google_sign_in`）。Androidは`minSdk 24`（7.0以上）。`ios/`のプロジェクト（`IPHONEOS_DEPLOYMENT_TARGET 13.0`）はあるが、iOSのビルドのワークフローは無く、Webは「Android端末全般」とだけ書く（App Storeの文は用意だけ）。入力はペン・板タブ/液晶タブ・Galaxy DeX（Webの/about/）。
+- **未確認**：配布する国・地域の決定、各国のAndroidの普及・低価格の端末の性能、地域ごとの価格、問い合わせの返信の言語（Webに書かれていない）、各市場の検索の経路。所有者の決定と外部の資料が要る。
