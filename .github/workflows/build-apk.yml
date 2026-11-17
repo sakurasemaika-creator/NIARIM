@@ -204,7 +204,7 @@ jobs:
           apksigner="$(find "$ANDROID_HOME/build-tools" -name apksigner -type f | sort -V | tail -1)"
           test -x "$apksigner"
           "$apksigner" verify --verbose build/app/outputs/flutter-apk/app-release.apk
-          sha256sum build/app/outputs/flutter-apk/app-release.apk
+          sha256sum build/app/outputs/flutter-apk/app-release.apk | tee -a "$GITHUB_STEP_SUMMARY"
 
       # Actions Storage（無料枠0.5GB）の上限に達していると、このステップ
       # だけが失敗してもビルド済みAPKは下のGitHub Releaseから取得できる。

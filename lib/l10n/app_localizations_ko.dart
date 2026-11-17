@@ -2821,26 +2821,26 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get premiumBannerEndCardBody =>
-      '프리미엄 멤버십 또는 엔드 로고 편집 혜택을 이용하면 공식 엔드 로고를 표시하거나 숨길 수 있습니다.';
+      '프리미엄 또는 엔드 로고 편집 혜택을 이용하면 공식 엔드 로고를 표시하거나 숨길 수 있습니다.';
 
   @override
   String get premiumBannerWatermarkBody =>
-      '프리미엄 멤버십 또는 워터마크 혜택을 이용하면 내 워터마크를 추가하고 편집할 수 있습니다.';
+      '프리미엄 또는 워터마크 혜택을 이용하면 내 워터마크를 추가하고 편집할 수 있습니다.';
 
   @override
   String get premiumBannerToneCurveBody =>
-      '프리미엄 멤버십 또는 톤 커브 혜택을 이용하면 드로잉 레이어의 밝기와 색상을 조정할 수 있습니다.';
+      '프리미엄 또는 톤 커브 혜택을 이용하면 드로잉 레이어의 밝기와 색상을 조정할 수 있습니다.';
 
   @override
   String get premiumBannerLevelsBody =>
-      '프리미엄 멤버십 또는 레벨 보정 혜택을 이용하면 드로잉 레이어의 밝고 어두운 범위를 조정할 수 있습니다.';
+      '프리미엄 또는 레벨 보정 혜택을 이용하면 드로잉 레이어의 밝고 어두운 범위를 조정할 수 있습니다.';
 
   @override
   String get premiumBannerAutomationBody =>
-      '프리미엄 멤버십 또는 자동 작업 혜택을 이용하면 자동 작업을 만들고 편집하고 실행할 수 있습니다.';
+      '프리미엄 또는 자동 작업 혜택을 이용하면 자동 작업을 만들고 편집하고 실행할 수 있습니다.';
 
   @override
-  String get premiumBannerMembershipDetails => '프리미엄 멤버십 자세히 보기';
+  String get premiumBannerMembershipDetails => '프리미엄 회원 자세히 보기';
 
   @override
   String get premiumBannerBenefitDetails => '혜택 자세히 보기';
