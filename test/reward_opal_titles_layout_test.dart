@@ -143,7 +143,9 @@ RenderParagraph _paragraphOf(WidgetTester tester, Finder within, String text) {
             .descendant(of: within, matching: find.byType(RichText))
             .evaluate())
       if (element.renderObject case final RenderParagraph paragraph
-          when paragraph.text.toPlainText(includeSemanticsLabels: false) ==
+          when paragraph.text
+                  .toPlainText(includeSemanticsLabels: false)
+                  .replaceAll(wordJoiner, '') ==
               text)
         paragraph,
   ];

@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/services/api/community_api.dart';
 import 'package:niarim/services/api/niarim_api_client.dart';
 import 'package:niarim/services/api/niarim_api_config.dart';
@@ -8,12 +9,16 @@ import 'package:niarim/services/api/niarim_api_exception.dart';
 /// Read-only live check using the very same API client shipped in Flutter.
 ///
 /// Run with:
-/// dart run --define=NIARIM_API_BASE_URL=https://YOUR_FUNCTION_URL/ \\
-///   tool/live_backend_smoke.dart
+/// flutter test --dart-define=NIARIM_API_BASE_URL=https://YOUR_FUNCTION_URL/ \\
+///   tool/live_backend_smoke_test.dart
 ///
 /// This only reads public discovery, ranking and the authentication guard.
 /// It NEVER submits a token, writes to DynamoDB or creates a work.
-Future<void> main() async {
+void main() {
+  test('Flutter client reads the Tokyo AWS API', _checkLiveBackend);
+}
+
+Future<void> _checkLiveBackend() async {
   const expectedHost =
       'ibjfhyoqvfanle62ltokgz6sry0fjqfh.lambda-url.ap-northeast-1.on.aws';
 
@@ -74,7 +79,7 @@ Future<void> main() async {
   );
   try {
     try {
-      await guardClient.getJson('/me/works', authenticated: true);
+      await guardClient.getJson('/me/works');
       throw StateError('SECURITY: anonymous GET /me/works was accepted.');
     } on NiarimApiException catch (e) {
       if (e.statusCode != 401) {

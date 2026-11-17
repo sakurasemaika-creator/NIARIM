@@ -272,7 +272,8 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
         }
       }
     } catch (_) {
-      if (mounted && context.read<GoogleAuthService>().account?.id == accountId) {
+      if (mounted &&
+          context.read<GoogleAuthService>().account?.id == accountId) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: messageText(
@@ -1132,7 +1133,10 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
                 key: const Key('coinHistoryButton'),
                 icon: const Icon(Icons.receipt_long_outlined),
                 onPressed: _lastAccountId != null ? _showCoinHistory : null,
-                label: messageText(t['coinHistory']),
+                label: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  child: messageText(t['coinHistory']),
+                ),
               ),
               TextButton.icon(
                 icon: const Icon(Icons.refresh),
@@ -1302,6 +1306,7 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
               ),
               TextButton(
                 onPressed: () => context.push('/membership'),
+                style: TextButton.styleFrom(minimumSize: const Size(48, 48)),
                 child: Text(nav['membership']),
               ),
             ],

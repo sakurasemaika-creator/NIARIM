@@ -7,7 +7,7 @@ on:
     branches: [dev_branch]
     paths:
       - ".github/workflows/flutter-live-backend-smoke.yml"
-      - "tool/live_backend_smoke.dart"
+      - "tool/live_backend_smoke_test.dart"
       - "lib/services/api/**"
       - "lib/models/community_work.dart"
       - "pubspec.yaml"
@@ -41,15 +41,15 @@ jobs:
 
       - name: Execute actual Flutter Dart client against live AWS (GET only)
         run: |
-          dart run \
-            --define=NIARIM_API_BASE_URL=https://ibjfhyoqvfanle62ltokgz6sry0fjqfh.lambda-url.ap-northeast-1.on.aws/ \
-            tool/live_backend_smoke.dart
+          flutter test --no-pub --reporter expanded \
+            --dart-define=NIARIM_API_BASE_URL=https://ibjfhyoqvfanle62ltokgz6sry0fjqfh.lambda-url.ap-northeast-1.on.aws/ \
+            tool/live_backend_smoke_test.dart
 
       - name: Analyze Flutter API client, live script and contract tests
         run: |
           flutter analyze --no-pub --no-fatal-infos \
             lib/services/api \
-            tool/live_backend_smoke.dart \
+            tool/live_backend_smoke_test.dart \
             test/community_api_contract_test.dart \
             test/community_service_backend_test.dart
 
