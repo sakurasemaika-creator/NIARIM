@@ -121,6 +121,11 @@ class NiatraSerializer {
     'first_launch',
     'storage_breakdown_categories',
     'storage_breakdown_incomplete',
+    'push_notifications_enabled',
+    // Whether the built-in groups were generated on this installation.
+    'brush_grouped_presets_v1',
+    'tone_grouped_presets_v1',
+    'stamp_grouped_presets_v1',
   };
 
   /// [deviceRecordKeys]と同じ記録で、キーの頭が決まっているもの（自動保存・
@@ -139,6 +144,8 @@ class NiatraSerializer {
     'creator_edit_unverified_seconds_v1_',
     'pending_coin_redemption_',
     'pending_coin_individual_redemption_',
+    'push_notice_',
+    'noticeHistory.',
   ];
 
   /// 利用者が作った物の一覧（動いているサービスが覚えている）。端末保存

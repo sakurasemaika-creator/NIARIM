@@ -10,6 +10,7 @@ import 'package:niarim/models/watermark_asset.dart';
 import 'package:niarim/screens/settings/watermark_settings_screen.dart';
 import 'package:niarim/services/font_service.dart';
 import 'package:niarim/services/settings_service.dart';
+import 'package:niarim/services/premium_service.dart';
 import 'package:niarim/services/theme_service.dart';
 import 'package:niarim/services/watermark_service.dart';
 import 'package:niarim/utils/duplicate_name.dart';
@@ -65,6 +66,11 @@ final _png = base64Decode(
   'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=',
 );
 
+class _WatermarkPremiumService extends PremiumService {
+  @override
+  bool get isPremium => true;
+}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   const paths = MethodChannel('plugins.flutter.io/path_provider');
@@ -114,6 +120,9 @@ void main() {
           ChangeNotifierProvider.value(value: services.$2),
           ChangeNotifierProvider.value(value: services.$3),
           ChangeNotifierProvider(create: (_) => FontService()),
+          ChangeNotifierProvider<PremiumService>(
+            create: (_) => _WatermarkPremiumService(),
+          ),
         ],
         child: Builder(
           builder: (context) => MaterialApp(

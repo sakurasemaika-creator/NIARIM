@@ -6,6 +6,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/app.dart';
 import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/router.dart';
+import 'package:niarim/l10n/app_localizations.dart';
+import 'package:niarim/models/layer.dart';
 import 'package:niarim/screens/timeline/timeline_screen.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:provider/provider.dart';
@@ -127,6 +129,90 @@ void main() {
     }
     expect(find.byKey(const Key('timelinePreviewLoopButton')), findsNothing);
   }
+
+  testWidgets('edited timeline dialogs finish closing with live controllers', (
+    tester,
+  ) async {
+    final id = await openTimeline(
+      tester,
+      project: const Size(160, 90),
+      screen: const Size(1280, 800),
+      pc: true,
+      fraction: 0.4,
+    );
+    final timeline = find.byType(TimelineScreen);
+    final service = tester.element(timeline).read<ProjectService>();
+    final sceneId = service.scenesOf(id).single.id;
+    final l10n = AppLocalizations.of(tester.element(timeline))!;
+    final more = find.byWidgetPredicate(
+      (widget) =>
+          widget is PopupMenuButton<String> &&
+          widget.icon is Icon &&
+          (widget.icon! as Icon).icon == Icons.more_vert,
+    );
+    final confirm = find.descendant(
+      of: find.byType(AlertDialog),
+      matching: find.widgetWithText(FilledButton, l10n.commonOk),
+    );
+
+    await tester.tap(more.first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(l10n.timelineDurationChangeMenuItem));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.widgetWithText(TextField, l10n.timelineDurationFramesLabel),
+      '8',
+    );
+    await tester.pump();
+    await tester.tap(confirm);
+    await tester.pump();
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+    expect(timeline, findsOneWidget);
+    expect(service.frameCount(id, sceneId), 8);
+
+    final layer = service.addLayer(
+      projectId: id,
+      sceneId: sceneId,
+      frameIndex: 0,
+      type: LayerType.common,
+      name: 'Range fixture',
+    );
+    await tester.pumpAndSettle();
+    final bar = find.text(layer.name).hitTestable().last;
+    await tester.tap(bar);
+    await tester.pumpAndSettle();
+    expect(find.text(l10n.layerPanelRangeDialogTitle), findsOneWidget);
+    await tester.tap(find.text(l10n.layerPanelRangeFrameRangeLabel));
+    await tester.enterText(
+      find.widgetWithText(TextField, l10n.layerPanelRangeStartFrameLabel),
+      '2',
+    );
+    await tester.enterText(
+      find.widgetWithText(TextField, l10n.layerPanelRangeEndFrameLabel),
+      '5',
+    );
+    await tester.pump();
+    await tester.tap(confirm);
+    await tester.pump();
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+    expect(timeline, findsOneWidget);
+
+    await tester.runAsync(() => service.saveProject(id));
+    final reopened = ProjectService();
+    addTearDown(reopened.dispose);
+    await tester.runAsync(reopened.init);
+    expect(reopened.frameCount(id, sceneId), 8);
+    final reloadedLayer = reopened
+        .scenesOf(id)
+        .single
+        .frames
+        .first
+        .layers
+        .singleWhere((item) => item.id == layer.id);
+    expect((reloadedLayer.rangeStart, reloadedLayer.rangeEnd), (2, 5));
+  });
 
   testWidgets('preview controls anchor to the band, not the canvas image', (
     tester,

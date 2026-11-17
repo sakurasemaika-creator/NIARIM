@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/engine/niatra_serializer.dart';
 import 'package:niarim/services/autofill_preset_service.dart';
 import 'package:niarim/services/brush_service.dart';
+import 'package:niarim/services/community_notice.dart';
 import 'package:niarim/services/palette_service.dart';
 import 'package:niarim/services/pixel_art_palette_service.dart';
 import 'package:niarim/services/stamp_service.dart';
@@ -143,6 +144,8 @@ void main() {
       'lib/engine/niatra_serializer.dart key',
       // 期間と数でキーを選ぶ（どれもpending_coin_redemption_で始まる）。
       'lib/services/coin_redemption_attempt_store.dart key',
+      'lib/services/settings_service.dart category.preferenceKey, value);',
+      'lib/services/settings_service.dart category.preferenceKey) == false,',
       'lib/services/work_folder_service.dart key',
       'lib/utils/folder_persistence.dart key',
       "lib/screens/community/community_screen.dart '\$key.\$account'",
@@ -166,6 +169,9 @@ void main() {
     };
     bool deviceRecord(String key) =>
         NiatraSerializer.deviceRecordPrefixes.any(key.startsWith);
+    for (final category in CommunityPushCategory.values) {
+      expect(deviceRecord(category.preferenceKey), isTrue);
+    }
     expect(
       [
         for (final entry in found.keys.entries)

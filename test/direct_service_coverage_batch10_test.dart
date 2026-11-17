@@ -127,6 +127,7 @@ void main() {
         CanvasDockPanel.quickTool,
         CanvasDockPanel.colorAdjust,
         CanvasDockPanel.canvasPreview,
+        CanvasDockPanel.reference,
       };
       expect(ToolbarItemId.values, allToolbar);
       expect(CanvasDockPanel.values.toSet(), allDockPanels);
@@ -144,7 +145,10 @@ void main() {
       expect(s.hiddenToolbarItems, isNot(contains(ToolbarItemId.bucket)));
 
       await s.setDefaultDockedPanels(allDockPanels);
-      expect(s.defaultDockedPanels, allDockPanels);
+      final canonicalPanels = allDockPanels
+          .where((panel) => !isLegacyMaterialDock(panel))
+          .toSet();
+      expect(s.defaultDockedPanels, canonicalPanels);
       final toolDockOrder = <CanvasDockPanel>[
         CanvasDockPanel.quickTool,
         CanvasDockPanel.filter,
@@ -157,17 +161,30 @@ void main() {
         CanvasDockPanel.colorAdjust,
       ];
       await s.setToolOptionDockOrder(toolDockOrder);
-      expect(s.toolOptionDockOrder, toolDockOrder);
+      expect(s.toolOptionDockOrder, [
+        CanvasDockPanel.quickTool,
+        CanvasDockPanel.filter,
+        CanvasDockPanel.ruler,
+        CanvasDockPanel.onionSkin,
+        CanvasDockPanel.penSubTool,
+        CanvasDockPanel.colorAdjust,
+      ]);
       await s.resetToolOptionDockOrder();
       expect(s.toolOptionDockOrder, isNotEmpty);
 
       final rightDockOrder = <CanvasDockPanel>[
+        CanvasDockPanel.reference,
         CanvasDockPanel.layer,
         CanvasDockPanel.colorPicker,
         CanvasDockPanel.canvasPreview,
       ];
       await s.setRightDockOrder(rightDockOrder);
       expect(s.rightDockOrder, rightDockOrder);
+      final reopened = SettingsService();
+      await reopened.init();
+      expect(reopened.rightDockOrder, rightDockOrder);
+      expect(reopened.defaultDockedPanels, canonicalPanels);
+      reopened.dispose();
       await s.resetRightDockOrder();
       expect(s.rightDockOrder, isNotEmpty);
 
@@ -253,7 +270,7 @@ void main() {
 
       final restored = SettingsService();
       await restored.init();
-      expect(restored.defaultDockedPanels, allDockPanels);
+      expect(restored.defaultDockedPanels, canonicalPanels);
       expect(restored.penButton1, GestureAction.brushToggle);
       expect(restored.penButton2, GestureAction.onionSkinToggle);
       expect(restored.penPressureCurve, PenPressureCurve.custom);

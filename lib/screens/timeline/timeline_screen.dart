@@ -4997,134 +4997,137 @@ class _TimelineScreenState extends State<TimelineScreen> {
     String? rangeSceneId = layer.rangeSceneId ?? home.sceneId;
     showDialog(
       context: context,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setS) => AlertDialog(
-          insetPadding: typingDialogInsetPadding(ctx),
-          title: Text(l10n.layerPanelRangeDialogTitle),
-          // 選択状態と変更通知はRadioGroupがまとめて持つ
-          // （groupValue/onChangedはFlutter 3.32で非推奨）。
-          content: RadioGroup<LayerRangeMode>(
-            groupValue: mode,
-            onChanged: (v) => setS(() => mode = v!),
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
+      builder: (_) => DisposeOnUnmount(
+        controller: startCtrl,
+        builder: (_) => DisposeOnUnmount(
+          controller: endCtrl,
+          builder: (ctx) => StatefulBuilder(
+            builder: (ctx, setS) => AlertDialog(
+              insetPadding: typingDialogInsetPadding(ctx),
+              title: Text(l10n.layerPanelRangeDialogTitle),
+              // 選択状態と変更通知はRadioGroupがまとめて持つ
+              // （groupValue/onChangedはFlutter 3.32で非推奨）。
+              content: RadioGroup<LayerRangeMode>(
+                groupValue: mode,
+                onChanged: (v) => setS(() => mode = v!),
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Expanded(
-                        child: TextField(
-                          controller: startCtrl,
-                          keyboardType: TextInputType.number,
-                          decoration: InputDecoration(
-                            labelText: l10n.layerPanelRangeStartFrameLabel,
-                            border: const OutlineInputBorder(),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextField(
+                              controller: startCtrl,
+                              keyboardType: TextInputType.number,
+                              decoration: InputDecoration(
+                                labelText: l10n.layerPanelRangeStartFrameLabel,
+                                border: const OutlineInputBorder(),
+                              ),
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 8),
+                            child: Text(l10n.layerPanelRangeTilde),
+                          ),
+                          Expanded(
+                            child: TextField(
+                              controller: endCtrl,
+                              keyboardType: TextInputType.number,
+                              decoration: InputDecoration(
+                                labelText: l10n.layerPanelRangeEndFrameLabel,
+                                border: const OutlineInputBorder(),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const Divider(),
+                      RadioListTile<LayerRangeMode>(
+                        dense: true,
+                        title: Text(l10n.layerPanelRangeAllFrames),
+                        value: LayerRangeMode.allFrames,
+                      ),
+                      RadioListTile<LayerRangeMode>(
+                        dense: true,
+                        title: Text(l10n.layerPanelRangeCurrentScene),
+                        value: LayerRangeMode.currentScene,
+                      ),
+                      RadioListTile<LayerRangeMode>(
+                        dense: true,
+                        title: Text(l10n.timelineRangeSceneFixed),
+                        value: LayerRangeMode.sceneRange,
+                      ),
+                      if (mode == LayerRangeMode.sceneRange)
+                        Padding(
+                          padding: const EdgeInsets.only(
+                            left: 16,
+                            right: 8,
+                            bottom: 8,
+                          ),
+                          child: DropdownButtonFormField<String>(
+                            initialValue: scenes.any((s) => s.id == rangeSceneId)
+                                ? rangeSceneId
+                                : scenes.firstOrNull?.id,
+                            isExpanded: true,
+                            decoration: InputDecoration(
+                              labelText: l10n.layerPanelRangeTargetSceneLabel,
+                              isDense: true,
+                            ),
+                            items: scenes
+                                .map(
+                                  (s) => DropdownMenuItem(
+                                    value: s.id,
+                                    child: Text(s.displayName),
+                                  ),
+                                )
+                                .toList(),
+                            onChanged: (v) => setS(() => rangeSceneId = v),
                           ),
                         ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 8),
-                        child: Text(l10n.layerPanelRangeTilde),
-                      ),
-                      Expanded(
-                        child: TextField(
-                          controller: endCtrl,
-                          keyboardType: TextInputType.number,
-                          decoration: InputDecoration(
-                            labelText: l10n.layerPanelRangeEndFrameLabel,
-                            border: const OutlineInputBorder(),
-                          ),
-                        ),
+                      RadioListTile<LayerRangeMode>(
+                        dense: true,
+                        title: Text(l10n.layerPanelRangeFrameRangeLabel),
+                        value: LayerRangeMode.frameRange,
                       ),
                     ],
                   ),
-                  const Divider(),
-                  RadioListTile<LayerRangeMode>(
-                    dense: true,
-                    title: Text(l10n.layerPanelRangeAllFrames),
-                    value: LayerRangeMode.allFrames,
-                  ),
-                  RadioListTile<LayerRangeMode>(
-                    dense: true,
-                    title: Text(l10n.layerPanelRangeCurrentScene),
-                    value: LayerRangeMode.currentScene,
-                  ),
-                  RadioListTile<LayerRangeMode>(
-                    dense: true,
-                    title: Text(l10n.timelineRangeSceneFixed),
-                    value: LayerRangeMode.sceneRange,
-                  ),
-                  if (mode == LayerRangeMode.sceneRange)
-                    Padding(
-                      padding: const EdgeInsets.only(
-                        left: 16,
-                        right: 8,
-                        bottom: 8,
-                      ),
-                      child: DropdownButtonFormField<String>(
-                        initialValue: scenes.any((s) => s.id == rangeSceneId)
-                            ? rangeSceneId
-                            : scenes.firstOrNull?.id,
-                        isExpanded: true,
-                        decoration: InputDecoration(
-                          labelText: l10n.layerPanelRangeTargetSceneLabel,
-                          isDense: true,
-                        ),
-                        items: scenes
-                            .map(
-                              (s) => DropdownMenuItem(
-                                value: s.id,
-                                child: Text(s.displayName),
-                              ),
-                            )
-                            .toList(),
-                        onChanged: (v) => setS(() => rangeSceneId = v),
-                      ),
-                    ),
-                  RadioListTile<LayerRangeMode>(
-                    dense: true,
-                    title: Text(l10n.layerPanelRangeFrameRangeLabel),
-                    value: LayerRangeMode.frameRange,
-                  ),
-                ],
+                ),
               ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  child: Text(l10n.commonCancel),
+                ),
+                FilledButton(
+                  onPressed: () {
+                    final start = int.tryParse(startCtrl.text) ?? 1;
+                    final end = int.tryParse(endCtrl.text) ?? start;
+                    final resolvedSceneId = mode == LayerRangeMode.sceneRange
+                        ? rangeSceneId
+                        : null;
+                    ps.updateLayer(
+                      projectId: widget.projectId,
+                      sceneId: home.sceneId,
+                      frameIndex: home.frameIndex,
+                      layer: layer.copyWith(
+                        rangeMode: mode,
+                        rangeStart: start,
+                        rangeEnd: end,
+                        rangeSceneId: resolvedSceneId,
+                      ),
+                    );
+                    Navigator.pop(ctx);
+                  },
+                  child: Text(l10n.commonOk),
+                ),
+              ],
             ),
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: Text(l10n.commonCancel),
-            ),
-            FilledButton(
-              onPressed: () {
-                final start = int.tryParse(startCtrl.text) ?? 1;
-                final end = int.tryParse(endCtrl.text) ?? start;
-                final resolvedSceneId = mode == LayerRangeMode.sceneRange
-                    ? rangeSceneId
-                    : null;
-                ps.updateLayer(
-                  projectId: widget.projectId,
-                  sceneId: home.sceneId,
-                  frameIndex: home.frameIndex,
-                  layer: layer.copyWith(
-                    rangeMode: mode,
-                    rangeStart: start,
-                    rangeEnd: end,
-                    rangeSceneId: resolvedSceneId,
-                  ),
-                );
-                Navigator.pop(ctx);
-              },
-              child: Text(l10n.commonOk),
-            ),
-          ],
         ),
       ),
-    ).then((_) {
-      startCtrl.dispose();
-      endCtrl.dispose();
-    });
+    );
   }
 
   /// ウォーターマークの角度・大きさ・不透明度・表示範囲（ループ表示）を
@@ -7302,122 +7305,125 @@ class _TimelineScreenState extends State<TimelineScreen> {
     );
     showDialog(
       context: context,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setS) => AlertDialog(
-          insetPadding: typingDialogInsetPadding(ctx),
-          title: Text(l10n.timelineDurationChangeMenuItem),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              SteppedSlider(
-                value: frames.toDouble(),
-                min: 1,
-                max: maxFrames.toDouble(),
-                compact: true,
-                onChanged: (v) => setS(() {
-                  frames = v.round();
-                  framesController.text = '$frames';
-                  secondsController.text = (frames / fps).toStringAsFixed(1);
-                }),
-              ),
-              Row(
+      builder: (_) => DisposeOnUnmount(
+        controller: framesController,
+        builder: (_) => DisposeOnUnmount(
+          controller: secondsController,
+          builder: (ctx) => StatefulBuilder(
+            builder: (ctx, setS) => AlertDialog(
+              insetPadding: typingDialogInsetPadding(ctx),
+              title: Text(l10n.timelineDurationChangeMenuItem),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Expanded(
-                    child: TextField(
-                      controller: framesController,
-                      keyboardType: TextInputType.number,
-                      textAlign: TextAlign.center,
-                      decoration: InputDecoration(
-                        isDense: true,
-                        labelText: l10n.timelineDurationFramesLabel,
-                      ),
-                      onChanged: (v) {
-                        final parsed = int.tryParse(v);
-                        if (parsed == null) return;
-                        setS(() {
-                          frames = parsed.clamp(1, maxFrames);
-                          secondsController.text = (frames / fps)
-                              .toStringAsFixed(1);
-                        });
-                      },
-                    ),
+                  SteppedSlider(
+                    value: frames.toDouble(),
+                    min: 1,
+                    max: maxFrames.toDouble(),
+                    compact: true,
+                    onChanged: (v) => setS(() {
+                      frames = v.round();
+                      framesController.text = '$frames';
+                      secondsController.text = (frames / fps).toStringAsFixed(1);
+                    }),
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: TextField(
-                      controller: secondsController,
-                      keyboardType: const TextInputType.numberWithOptions(
-                        decimal: true,
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: framesController,
+                          keyboardType: TextInputType.number,
+                          textAlign: TextAlign.center,
+                          decoration: InputDecoration(
+                            isDense: true,
+                            labelText: l10n.timelineDurationFramesLabel,
+                          ),
+                          onChanged: (v) {
+                            final parsed = int.tryParse(v);
+                            if (parsed == null) return;
+                            setS(() {
+                              frames = parsed.clamp(1, maxFrames);
+                              secondsController.text = (frames / fps)
+                                  .toStringAsFixed(1);
+                            });
+                          },
+                        ),
                       ),
-                      textAlign: TextAlign.center,
-                      decoration: InputDecoration(
-                        isDense: true,
-                        labelText: l10n.timelineDurationSecondsLabel,
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: TextField(
+                          controller: secondsController,
+                          keyboardType: const TextInputType.numberWithOptions(
+                            decimal: true,
+                          ),
+                          textAlign: TextAlign.center,
+                          decoration: InputDecoration(
+                            isDense: true,
+                            labelText: l10n.timelineDurationSecondsLabel,
+                          ),
+                          onChanged: (v) {
+                            final parsed = double.tryParse(v);
+                            if (parsed == null) return;
+                            setS(() {
+                              frames = (parsed * fps).round().clamp(1, maxFrames);
+                              framesController.text = '$frames';
+                            });
+                          },
+                        ),
                       ),
-                      onChanged: (v) {
-                        final parsed = double.tryParse(v);
-                        if (parsed == null) return;
-                        setS(() {
-                          frames = (parsed * fps).round().clamp(1, maxFrames);
-                          framesController.text = '$frames';
-                        });
-                      },
-                    ),
+                    ],
                   ),
                 ],
               ),
-            ],
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  child: Text(l10n.commonCancel),
+                ),
+                FilledButton(
+                  onPressed: () async {
+                    if (ps.sceneFrameShrinkHasContent(
+                      widget.projectId,
+                      sceneId,
+                      frames,
+                    )) {
+                      final confirmed = await showDialog<bool>(
+                        context: ctx,
+                        builder: (dialogCtx) => AlertDialog(
+                          title: Text(l10n.timelineDurationShrinkConfirmTitle),
+                          content: Text(l10n.timelineDurationShrinkConfirmBody),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(dialogCtx, false),
+                              child: Text(l10n.commonCancel),
+                            ),
+                            FilledButton(
+                              style: FilledButton.styleFrom(
+                                backgroundColor:
+                                    ThemeService.activeColorScheme.error,
+                              ),
+                              onPressed: () => Navigator.pop(dialogCtx, true),
+                              child: Text(l10n.commonDelete),
+                            ),
+                          ],
+                        ),
+                      );
+                      if (confirmed != true) return;
+                    }
+                    if (!mounted || !ctx.mounted) return;
+                    final added = frames - ps.frameCount(widget.projectId, sceneId);
+                    if (added > 0 && !_canAddFrames(added)) return;
+                    ps.setSceneFrameCount(widget.projectId, sceneId, frames);
+                    if (ctx.mounted) Navigator.pop(ctx);
+                  },
+                  child: Text(l10n.commonOk),
+                ),
+              ],
+            ),
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: Text(l10n.commonCancel),
-            ),
-            FilledButton(
-              onPressed: () async {
-                if (ps.sceneFrameShrinkHasContent(
-                  widget.projectId,
-                  sceneId,
-                  frames,
-                )) {
-                  final confirmed = await showDialog<bool>(
-                    context: ctx,
-                    builder: (dialogCtx) => AlertDialog(
-                      title: Text(l10n.timelineDurationShrinkConfirmTitle),
-                      content: Text(l10n.timelineDurationShrinkConfirmBody),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.pop(dialogCtx, false),
-                          child: Text(l10n.commonCancel),
-                        ),
-                        FilledButton(
-                          style: FilledButton.styleFrom(
-                            backgroundColor:
-                                ThemeService.activeColorScheme.error,
-                          ),
-                          onPressed: () => Navigator.pop(dialogCtx, true),
-                          child: Text(l10n.commonDelete),
-                        ),
-                      ],
-                    ),
-                  );
-                  if (confirmed != true) return;
-                }
-                if (!mounted || !ctx.mounted) return;
-                final added = frames - ps.frameCount(widget.projectId, sceneId);
-                if (added > 0 && !_canAddFrames(added)) return;
-                ps.setSceneFrameCount(widget.projectId, sceneId, frames);
-                if (ctx.mounted) Navigator.pop(ctx);
-              },
-              child: Text(l10n.commonOk),
-            ),
-          ],
         ),
       ),
-    ).then((_) {
-      framesController.dispose();
-      secondsController.dispose();
-    });
+    );
   }
 
   /// キャンバスサイズ変更ダイアログ（タイムライン三点メニュー）。
