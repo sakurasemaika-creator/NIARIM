@@ -2,10 +2,15 @@ import 'dart:math' as math;
 import 'dart:ui';
 
 /// Width multiplier of a flat nib measured perpendicular to the stroke.
-double nibWidthAcross(Offset tangent, double xScale, double angle) {
+double nibWidthAcross(
+  Offset tangent,
+  double xScale,
+  double angle, {
+  double yScale = 1,
+}) {
   final sinA = math.sin(angle), cosA = math.cos(angle);
   final x = (tangent.dx * sinA - tangent.dy * cosA) * xScale;
-  final y = tangent.dx * cosA + tangent.dy * sinA;
+  final y = (tangent.dx * cosA + tangent.dy * sinA) * yScale;
   return math.sqrt(x * x + y * y);
 }
 

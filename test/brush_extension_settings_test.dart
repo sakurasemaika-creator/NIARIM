@@ -65,6 +65,16 @@ void main() {
     await tester.pumpAndSettle();
     final control = find.byKey(const Key('brush-crescent-depth-threshold'));
     expect(control, findsOneWidget);
+    expect(find.byKey(const Key('brush-fold-trigger-angle')), findsOneWidget);
+    for (final setting in [
+      'brush-fold-flat-ends',
+      'brush-fold-length',
+      'brush-fold-angle',
+      'brush-fold-curve-start',
+      'brush-fold-end-taper',
+    ]) {
+      expect(find.byKey(Key(setting)), findsNothing);
+    }
     await tester.ensureVisible(control);
     expect(find.text('三日月にするカーブの深さ（ペン幅比）'), findsOneWidget);
     final slider = tester.widget<Slider>(
@@ -107,7 +117,9 @@ void main() {
     await tester.tap(find.text('折り畳みモード'));
     await tester.pump();
     expect(changes.last.foldEnabled, isTrue);
-    // Exactly the three fold sliders, each with its explanation.
+    expect(find.byKey(const Key('brush-fold-trigger-angle')), findsOneWidget);
+    expect(find.byKey(const Key('brush-fold-end-taper')), findsOneWidget);
+    expect(find.byKey(const Key('brush-fold-flat-ends')), findsNothing);
     expect(find.text('発生角度'), findsNothing);
     expect(find.text('カーブ強度'), findsNothing);
     expect(find.text('折り返し長さ'), findsOneWidget);
@@ -116,7 +128,7 @@ void main() {
     expect(find.text('折り畳みが伸びる長さを調整します。ブラシサイズに連動します。'), findsOneWidget);
     expect(find.byKey(const Key('brush-fold-mode')), findsOneWidget);
     expect(find.byType(SwitchListTile), findsNWidgets(3));
-    expect(find.byType(Slider), findsNWidgets(4));
+    expect(find.byType(Slider), findsNWidgets(6));
     expect(find.text('ウェーブ'), findsNothing);
     expect(find.text('終点からウェーブにする範囲'), findsNothing);
     expect(find.text('ウェーブ発生角度'), findsNothing);

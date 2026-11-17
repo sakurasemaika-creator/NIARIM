@@ -90,7 +90,7 @@ class Brush {
   final int? presetColor;
   final bool foldEnabled;
 
-  /// Cut perpendicular to the stroke at both ends of the folded ribbon.
+  /// Legacy perpendicular cuts retained for existing saved brushes.
   final bool foldFlatEnds;
   final double foldTriggerAngle;
   final double foldCurveStartRatio;

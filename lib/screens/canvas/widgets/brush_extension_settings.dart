@@ -21,7 +21,6 @@ class BrushExtensionLabels {
   final String colorPicker;
   final String eyedropper;
   final String fold;
-  final String foldFlatEnds;
   final String foldTriggerAngle;
   final String foldEndTaper;
   final String foldCurveStart;
@@ -54,7 +53,6 @@ class BrushExtensionLabels {
     required this.colorPicker,
     required this.eyedropper,
     required this.fold,
-    this.foldFlatEnds = 'Flat ends',
     this.foldTriggerAngle = 'Minimum turn angle',
     this.foldEndTaper = 'Folded tip taper',
     required this.foldCurveStart,
@@ -89,7 +87,6 @@ class BrushExtensionLabels {
         colorPicker: l.brushOutlineColorPicker,
         eyedropper: l.brushOutlineEyedropper,
         fold: l.brushFold,
-        foldFlatEnds: l.brushFoldFlatEnds,
         foldTriggerAngle: l.brushFoldTriggerAngle,
         foldEndTaper: l.brushFoldEndTaper,
         foldCurveStart: l.brushFoldCurveStart,
@@ -129,7 +126,6 @@ class BrushExtensionLabels {
       colorPicker = 'カラーピッカー',
       eyedropper = 'スポイト',
       fold = '折り畳みモード',
-      foldFlatEnds = '両端を平らにする',
       foldTriggerAngle = '折り返しが始まる角度',
       foldEndTaper = '折り返し線の先細り',
       foldCurveStart = '折り返し線のカーブ開始位置',
@@ -340,13 +336,6 @@ class _BrushExtensionSettingsState extends State<BrushExtensionSettings> {
                 },
               ),
             ),
-            SwitchListTile(
-              key: const Key('brush-fold-flat-ends'),
-              dense: true,
-              title: Text(l.foldFlatEnds),
-              value: _brush.foldFlatEnds,
-              onChanged: (v) => _set(_brush.copyWith(foldFlatEnds: v)),
-            ),
             KeyedSubtree(
               key: const Key('brush-fold-trigger-angle'),
               child: _slider(
@@ -359,7 +348,7 @@ class _BrushExtensionSettingsState extends State<BrushExtensionSettings> {
                 suffix: '°',
               ),
             ),
-            if (_brush.foldMode != HairFoldMode.crescent)
+            if (_brush.foldMode != HairFoldMode.crescent) ...[
               KeyedSubtree(
                 key: const Key('brush-fold-end-taper'),
                 child: _ratioSlider(
@@ -368,34 +357,34 @@ class _BrushExtensionSettingsState extends State<BrushExtensionSettings> {
                   (v) => _set(_brush.copyWith(foldEndTaperRatio: v)),
                 ),
               ),
-            KeyedSubtree(
-              key: const Key('brush-fold-length'),
-              child: _ratioSlider(
-                l.foldLength,
-                _brush.foldLengthRatio,
-                (v) => _set(_brush.copyWith(foldLengthRatio: v)),
-                help: l.foldLengthHelp,
+              KeyedSubtree(
+                key: const Key('brush-fold-length'),
+                child: _ratioSlider(
+                  l.foldLength,
+                  _brush.foldLengthRatio,
+                  (v) => _set(_brush.copyWith(foldLengthRatio: v)),
+                  help: l.foldLengthHelp,
+                ),
               ),
-            ),
-            KeyedSubtree(
-              key: const Key('brush-fold-angle'),
-              child: _ratioSlider(
-                l.foldAngle,
-                _brush.foldAngleRatio,
-                (v) => _set(_brush.copyWith(foldAngleRatio: v)),
-                help: l.foldAngleHelp,
+              KeyedSubtree(
+                key: const Key('brush-fold-angle'),
+                child: _ratioSlider(
+                  l.foldAngle,
+                  _brush.foldAngleRatio,
+                  (v) => _set(_brush.copyWith(foldAngleRatio: v)),
+                  help: l.foldAngleHelp,
+                ),
               ),
-            ),
-            KeyedSubtree(
-              key: const Key('brush-fold-curve-start'),
-              child: _ratioSlider(
-                l.foldCurveStart,
-                _brush.foldCurveStartRatio,
-                (v) => _set(_brush.copyWith(foldCurveStartRatio: v)),
-                help: l.foldCurveStartHelp,
+              KeyedSubtree(
+                key: const Key('brush-fold-curve-start'),
+                child: _ratioSlider(
+                  l.foldCurveStart,
+                  _brush.foldCurveStartRatio,
+                  (v) => _set(_brush.copyWith(foldCurveStartRatio: v)),
+                  help: l.foldCurveStartHelp,
+                ),
               ),
-            ),
-            if (_brush.foldMode == HairFoldMode.crescent)
+            ] else
               KeyedSubtree(
                 key: const Key('brush-crescent-depth-threshold'),
                 child: _slider(

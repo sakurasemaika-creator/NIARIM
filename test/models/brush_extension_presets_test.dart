@@ -47,7 +47,7 @@ void main() {
       expect(hair.foldTriggerAngle, 60);
       expect(hair.foldCurveStartRatio, .15);
       expect(hair.foldAngleRatio, .80);
-      expect(hair.foldLengthRatio, .60);
+      expect(hair.foldLengthRatio, .95);
       expect(hair.foldEndTaperRatio, .35);
       expect(hair.fadeIn, FadeEndpointSettings.full);
       expect(hair.fadeOut.rangePx, 165);
@@ -89,35 +89,45 @@ void main() {
       expect(restored.foldEnabled, isTrue);
       expect(restored.outlineEnabled, isTrue);
       expect(restored.foldMode, brush.foldMode);
+      expect(restored.outlineWidth, 1);
+      expect(restored.foldFlatEnds, isFalse);
+      expect(restored.calligraphyAngle, isNull);
+      expect(restored.foldTriggerAngle, 60);
+      expect(restored.foldAngleRatio, .80);
+      expect(restored.foldCurveStartRatio, .15);
+      expect(restored.foldEndTaperRatio, .35);
+      expect(
+        restored.foldLengthRatio,
+        brush.foldMode == HairFoldMode.crescent ? .60 : .95,
+      );
     }
   });
 
-  test(
-    'ribbons offer every fold mode with flat pressure and red as their start color',
-    () {
-      final ribbons = brushExtensionPresets().where(
-        (brush) => brush.name.startsWith('リボン'),
-      );
-      expect(ribbons, hasLength(5));
-      expect(
-        ribbons.map((brush) => brush.foldMode).toSet(),
-        HairFoldMode.values.toSet(),
-      );
-      for (final ribbon in ribbons) {
-        final restored = Brush.fromJson(ribbon.toJson());
-        expect(restored.foldEnabled, isTrue);
-        expect(restored.foldFlatEnds, isTrue);
-        expect(restored.fadeMode, FadeMode.off);
-        expect(restored.pressureOn.size.enabled, isFalse);
-        expect(restored.pressureOn.opacity.enabled, isFalse);
-        expect(restored.presetColor, 0xffdb424b);
-        expect(restored.outlineWidth, 1);
-        expect(restored.foldLengthRatio, .70);
-        expect(restored.foldAngleRatio, .60);
-        expect(restored.foldCurveStartRatio, .30);
-      }
-    },
-  );
+  test('ribbons offer every fold mode with flat pressure and red as their start color', () {
+    final ribbons = brushExtensionPresets().where(
+      (brush) => brush.name.startsWith('リボン'),
+    );
+    expect(ribbons, hasLength(5));
+    expect(
+      ribbons.map((brush) => brush.foldMode).toSet(),
+      HairFoldMode.values.toSet(),
+    );
+    for (final ribbon in ribbons) {
+      final restored = Brush.fromJson(ribbon.toJson());
+      expect(restored.foldEnabled, isTrue);
+      expect(restored.foldFlatEnds, isFalse);
+      expect(restored.calligraphyAngle, isNull);
+      expect(restored.customImagePaths, ['assets/brushes/ribbon_tip.png']);
+      expect(restored.fadeMode, FadeMode.off);
+      expect(restored.pressureOn.size.enabled, isFalse);
+      expect(restored.pressureOn.opacity.enabled, isFalse);
+      expect(restored.presetColor, 0xffdb424b);
+      expect(restored.outlineWidth, 1);
+      expect(restored.foldLengthRatio, .70);
+      expect(restored.foldAngleRatio, .60);
+      expect(restored.foldCurveStartRatio, .30);
+    }
+  });
 
   test('cloud changes tip within the stroke after save and reload', () {
     final cloud = brushExtensionPresets().singleWhere(

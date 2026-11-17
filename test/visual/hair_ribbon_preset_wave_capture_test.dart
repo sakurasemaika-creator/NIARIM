@@ -158,14 +158,13 @@ void main() {
   test('built-in and imported tips draw the same folded brush', () async {
     final home = await Directory.systemTemp.createTemp('folded-brush-tip');
     addTearDown(() => home.delete(recursive: true));
-    final path = (await File(
-      'assets/brushes/round_tip.png',
-    ).copy('${home.path}/my_tip.png')).path;
-    await preloadBrushTextures([path], mode: BrushImageInkMode.alpha);
-
     final stroke = curvedSamples()['horizontal']!;
     for (final id in ['Brush0023', 'Brush0036', 'Brush0040']) {
       final brush = preset(id);
+      final path = (await File(
+        brush.resolvedCustomImagePaths.single,
+      ).copy('${home.path}/$id.png')).path;
+      await preloadBrushTextures([path], mode: brush.imageInkMode);
       final imported = Brush.fromJson({
         ...brush.toJson(),
         'id': 'imported-folding-brush',
@@ -196,8 +195,11 @@ void main() {
     for (final id in hairRibbonPresetIds.skip(5)) {
       final brush = preset(id);
       final restored = Brush.fromJson(brush.toJson());
-      expect(restored.calligraphyAngle, 0, reason: id);
-      expect(restored.nibWidthRatio, .38, reason: id);
+      expect(restored.calligraphyAngle, isNull, reason: id);
+      expect(restored.foldFlatEnds, isFalse, reason: id);
+      expect(restored.resolvedCustomImagePaths, [
+        'assets/brushes/ribbon_tip.png',
+      ]);
       final horizontal = await middleWidth(brush, 0);
       final diagonal = await middleWidth(brush, math.pi / 4);
       final vertical = await middleWidth(brush, math.pi / 2);
@@ -226,6 +228,43 @@ void main() {
     expect(flatHorizontal, greaterThan(flatVertical * 1.7));
   });
 
+  test('the image alone supplies the ribbon directionality', () async {
+    final round = preset('Brush0036')
+        .copyWith(customImagePaths: const ['assets/brushes/round_tip.png']);
+    expect(
+      await middleWidth(round, math.pi / 2),
+      closeTo(await middleWidth(round, 0), 1),
+    );
+  });
+
+  test('crescent pixels are independent of the crease line sliders', () async {
+    final brush = preset('Brush0040');
+    final path = curvedSamples()['horizontal']!;
+    final original = await drawStroke(
+      brush,
+      path,
+      width: sampleWidth,
+      height: sampleHeight,
+    );
+    final changed = await drawStroke(
+      brush.copyWith(
+        foldLengthRatio: 0,
+        foldAngleRatio: 1,
+        foldCurveStartRatio: 1,
+        foldEndTaperRatio: 0,
+      ),
+      path,
+      width: sampleWidth,
+      height: sampleHeight,
+    );
+    expect(
+      (await changed.toByteData())!.buffer.asUint8List(),
+      orderedEquals((await original.toByteData())!.buffer.asUint8List()),
+    );
+    changed.dispose();
+    original.dispose();
+  });
+
   test('capture every hair and ribbon brush on four curved paths', () async {
     final out = Directory('build/hair_ribbon_presets')
       ..createSync(recursive: true);
@@ -240,9 +279,8 @@ void main() {
           height: sampleHeight,
         );
         final png = await layer.toByteData(format: ui.ImageByteFormat.png);
-        await File(
-          '${out.path}/${id}_${entry.key}.png',
-        ).writeAsBytes(png!.buffer.asUint8List());
+        await File('${out.path}/${id}_${entry.key}.png')
+            .writeAsBytes(png!.buffer.asUint8List());
         layer.dispose();
       }
     }

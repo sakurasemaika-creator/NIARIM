@@ -45,9 +45,18 @@ class HairRibbonPoint {
 
 /// Project the tip onto the normal of the local stroke tangent. At a bend,
 /// the bisector keeps the width continuous between adjacent sections.
-List<HairRibbonPoint> _projectNib(List<HairRibbonPoint> points, Brush brush) {
-  final ratio = Brush.clampNibWidthRatio(brush.nibWidthRatio);
-  final angle = brush.calligraphyAngle! * math.pi / 180;
+List<HairRibbonPoint> _projectNib(
+  List<HairRibbonPoint> points,
+  Brush brush,
+  Offset tipScale,
+) {
+  final angle = (brush.calligraphyAngle ?? 0) * math.pi / 180;
+  final xScale =
+      tipScale.dx *
+      (brush.calligraphyAngle == null
+          ? 1
+          : Brush.clampNibWidthRatio(brush.nibWidthRatio));
+  final yScale = tipScale.dy;
   final projected = <HairRibbonPoint>[];
   var incoming = Offset.zero;
   for (var i = 0; i < points.length; i++) {
@@ -59,9 +68,12 @@ List<HairRibbonPoint> _projectNib(List<HairRibbonPoint> points, Brush brush) {
     final tangent = bisector != Offset.zero ? bisector : incoming;
     final widthScale = tangent == Offset.zero
         ? 1.0
-        : brush.rotation
-        ? nibWidthAcross(const Offset(1, 0), ratio, angle)
-        : nibWidthAcross(tangent, ratio, angle);
+        : nibWidthAcross(
+            brush.rotation ? const Offset(1, 0) : tangent,
+            xScale,
+            angle,
+            yScale: yScale,
+          );
     projected.add(
       HairRibbonPoint(
         point.position,
@@ -111,8 +123,8 @@ class HairFoldRaster {
   final Map<(int, int, int, int), _FoldStartCache> _foldStarts = {};
   List<_CreaseSegment> _creases = const [];
   Uint8List? _cachedTexture;
-  double _textureLeft = 0;
-  double _textureRight = brushTextureSize - 1;
+  static final _tipMasks = Expando<_FoldTipMask>();
+  _FoldTipMask? _tipMask;
   HairFoldRaster(this.tiles, this.layer);
 
   /// The fold vertices this renderer finds in [points], as indices: direction
@@ -216,8 +228,16 @@ class HairFoldRaster {
     bool taperEnd = false,
   }) {
     if (points.length < 2) return;
-    if (brush.calligraphyAngle != null) {
-      points = _projectNib(points, brush);
+    final tip = _tipMask = texture == null
+        ? null
+        : (_tipMasks[texture] ??= _FoldTipMask(texture));
+    final tipScale = tip?.scales ?? const Offset(1, 1);
+    final directionalTip = tipScale.dx != tipScale.dy;
+    final crescent = brush.foldMode == HairFoldMode.crescent;
+    // A crescent fits the tip to the face of the curve. Other modes keep
+    // the image's orientation fixed unless the brush enables rotation.
+    if (brush.calligraphyAngle != null || (!crescent && directionalTip)) {
+      points = _projectNib(points, brush, tipScale);
     }
     final bendLengths = <double>[0];
     for (var i = 1; i < points.length; i++) {
@@ -236,7 +256,12 @@ class HairFoldRaster {
       anyCurl: brush.foldMode == HairFoldMode.crescent,
     );
     final flatEnds = brush.foldFlatEnds;
-    final shouldTaperTip = taperEnd && !flatEnds;
+    // A directional image tip with fade disabled keeps its own cap. Round
+    // tips and custom fade strokes keep the existing pointed tail.
+    final shouldTaperTip =
+        taperEnd &&
+        !flatEnds &&
+        (!directionalTip || brush.fadeMode != FadeMode.off);
     final plainTail =
         shouldTaperTip &&
         brush.foldMode != HairFoldMode.crescent &&
@@ -278,29 +303,6 @@ class HairFoldRaster {
       _creases = const [];
       _cachedBrush = brush;
       _cachedTexture = texture;
-      _textureLeft = 0;
-      _textureRight = brushTextureSize - 1;
-      if (texture != null) {
-        // Fit the ink, rather than the transparent image padding, to the
-        // crescent's full-width outline. Keep the two-dimensional tip intact.
-        var peak = 0;
-        final columns = List<int>.filled(brushTextureSize, 0);
-        for (var y = 0; y < brushTextureSize; y++) {
-          for (var x = 0; x < brushTextureSize; x++) {
-            final alpha = texture[(y * brushTextureSize + x) * 4 + 3];
-            columns[x] = math.max(columns[x], alpha);
-            peak = math.max(peak, alpha);
-          }
-        }
-        if (peak > 0) {
-          final left = columns.indexWhere((alpha) => alpha >= peak * .95);
-          final right = columns.lastIndexWhere((alpha) => alpha >= peak * .95);
-          if (right > left) {
-            _textureLeft = left.toDouble();
-            _textureRight = right.toDouble();
-          }
-        }
-      }
     }
     final lengths = <double>[0];
     for (var i = 1; i < points.length; i++) {
@@ -694,8 +696,10 @@ class HairFoldRaster {
             : _dot(points[apexIndex].position - chordStart, chordNormal);
         final outward = chordNormal * apexBow.sign;
         final bowDepth = apexBow.abs();
-        final strength = brush.foldAngleRatio.clamp(0.0, 1.0);
-        final innerPower = 1 + strength * .35;
+        // The crescent has no crease. Use its own contour, independent of
+        // the controls that shape a crease in the other four modes.
+        const crescentShapeStrength = .5;
+        const innerPower = 1 + crescentShapeStrength * .35;
         // The apex keeps the pen's own pressure-resolved width; curve depth
         // only shapes the bows and never thickens or thins the crescent.
         final widestHalf = [
@@ -809,7 +813,9 @@ class HairFoldRaster {
                   ? 0.0
                   : (_dot(point.position - chordStart, outward) / bowDepth)
                         .clamp(0.0, 1.0);
-              final outerProfile = math.pow(bow, 1 - strength * .2).toDouble();
+              final outerProfile = math
+                  .pow(bow, 1 - crescentShapeStrength * .2)
+                  .toDouble();
               final innerProfile = math.pow(bow, innerPower).toDouble();
               // Return to a symmetric, pressure-resolved cross-section at a
               // tapered endpoint. Otherwise the displaced crescent sides can
@@ -1681,9 +1687,11 @@ class HairFoldRaster {
         ? 1.0
         : Brush.clampNibWidthRatio(brush.nibWidthRatio);
     final angleOffset = (nibAngle ?? 0) * math.pi / 180;
-    final tipProjection = nibAngle == null || delta == Offset.zero
-        ? 1.0
-        : nibWidthAcross(_unit(delta), nibRatio, fixedAngle + angleOffset);
+    final tipMask = _tipMask!;
+    final shape = tipMask.scales;
+    final usesProjection =
+        nibAngle != null || (!crescent && shape.dx != shape.dy);
+    final direction = _unit(delta);
     final radiusA = a.fillRadius(outlineWidth);
     final radiusB = b.fillRadius(outlineWidth);
     final outerA = a.outerRadius(outlineWidth);
@@ -1702,18 +1710,28 @@ class HairFoldRaster {
               ? ordinaryAngle + (followingAngle - ordinaryAngle) * blend
               : fixedAngle) +
           angleOffset;
+      final crop = crescent && nibAngle == null ? blend : 0.0;
+      final leftTexel = tipMask.left * crop;
+      final rightTexel =
+          (brushTextureSize - 1) * (1 - crop) + tipMask.right * crop;
+      final tipProjection = !usesProjection || direction == Offset.zero
+          ? 1.0
+          : nibWidthAcross(
+              direction,
+              shape.dx * nibRatio,
+              angle,
+              yScale: shape.dy,
+            );
       final cosA = math.cos(-angle), sinA = math.sin(-angle);
       final outerRadius = outerA + (outerB - outerA) * t;
-      final reachX = nibAngle == null
-          ? outerRadius
-          : outerRadius *
-                nibWidthAcross(const Offset(0, 1), nibRatio, angle) /
-                tipProjection;
-      final reachY = nibAngle == null
-          ? outerRadius
-          : outerRadius *
-                nibWidthAcross(const Offset(1, 0), nibRatio, angle) /
-                tipProjection;
+      final reachX =
+          outerRadius *
+          nibWidthAcross(const Offset(0, 1), nibRatio, angle) /
+          tipProjection;
+      final reachY =
+          outerRadius *
+          nibWidthAcross(const Offset(1, 0), nibRatio, angle) /
+          tipProjection;
       final opacity = a.opacity + (b.opacity - a.opacity) * t;
       final left = (center.dx - reachX - 1).floor().clamp(
         0,
@@ -1742,14 +1760,9 @@ class HairFoldRaster {
             if (crescent && blend > 0 && nibAngle == null) {
               final clip = (r + .5 - math.sqrt(distSquared)).clamp(0.0, 1.0);
               if (clip <= 0) return 0;
-              final left = _textureLeft * blend;
-              final right =
-                  brushTextureSize -
-                  1 +
-                  (_textureRight - (brushTextureSize - 1)) * blend;
               return _textureAlpha(
                     texture,
-                    left + ((u / r + 1) / 2) * (right - left),
+                    leftTexel + ((u / r + 1) / 2) * (rightTexel - leftTexel),
                     ((v / r + 1) / 2) * (brushTextureSize - 1),
                   ) *
                   clip;
@@ -2213,6 +2226,40 @@ bool _samePoint(HairRibbonPoint a, HairRibbonPoint b) =>
     a.opacity == b.opacity &&
     a.scale == b.scale &&
     a.outline == b.outline;
+
+/// Measure the ink instead of the transparent square containing the image.
+class _FoldTipMask {
+  final Offset scales;
+  final double left;
+  final double right;
+  const _FoldTipMask._(this.scales, this.left, this.right);
+
+  factory _FoldTipMask(Uint8List texture) {
+    final columns = List<int>.filled(brushTextureSize, 0);
+    final rows = List<int>.filled(brushTextureSize, 0);
+    var peak = 0;
+    for (var y = 0; y < brushTextureSize; y++) {
+      for (var x = 0; x < brushTextureSize; x++) {
+        final alpha = texture[(y * brushTextureSize + x) * 4 + 3];
+        columns[x] = math.max(columns[x], alpha);
+        rows[y] = math.max(rows[y], alpha);
+        peak = math.max(peak, alpha);
+      }
+    }
+    final core = peak * .95;
+    final left = columns.indexWhere((alpha) => alpha >= core);
+    final right = columns.lastIndexWhere((alpha) => alpha >= core);
+    final top = rows.indexWhere((alpha) => alpha >= core);
+    final bottom = rows.lastIndexWhere((alpha) => alpha >= core);
+    final width = right - left + 1, height = bottom - top + 1;
+    final longSide = math.max(width, height);
+    return _FoldTipMask._(
+      Offset(width / longSide, height / longSide),
+      right > left ? left.toDouble() : 0,
+      right > left ? right.toDouble() : brushTextureSize - 1.0,
+    );
+  }
+}
 
 // Bilinear alpha avoids stair-stepping when a tip rotates through a curve.
 double _textureAlpha(Uint8List texture, double x, double y) {

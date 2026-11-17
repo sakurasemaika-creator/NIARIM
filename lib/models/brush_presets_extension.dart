@@ -44,9 +44,14 @@ List<Brush> brushExtensionPresets() => <Brush>[
     ('Brush0031', '右巻きヘア', HairFoldMode.curlRight),
     ('Brush0032', '左巻きヘア', HairFoldMode.curlLeft),
     ('Brush0034', 'ウェーブヘア（煽り）', HairFoldMode.waveLowAngle),
-    ('Brush0035', '三日月カールヘア', HairFoldMode.crescent),
   ])
     _hair.copyWith(id: id, name: name, foldMode: mode),
+  _hair.copyWith(
+    id: 'Brush0035',
+    name: '三日月カールヘア',
+    foldMode: HairFoldMode.crescent,
+    foldLengthRatio: .60,
+  ),
   for (final (id, name, mode) in const [
     ('Brush0036', 'リボン（ウェーブ俯瞰）', HairFoldMode.waveTopView),
     ('Brush0037', 'リボン（ウェーブ煽り）', HairFoldMode.waveLowAngle),
@@ -61,9 +66,7 @@ List<Brush> brushExtensionPresets() => <Brush>[
       size: 26,
       pressureOn: BrushPressureOnSettings.defaults,
       fadeMode: FadeMode.off,
-      foldFlatEnds: true,
-      calligraphyAngle: 0,
-      nibWidthRatio: .38,
+      customImagePaths: const ['assets/brushes/ribbon_tip.png'],
       outlineWidth: _strandOutlineWidth,
       outlineColor: 0xff7d2024,
       presetColor: 0xffdb424b,
@@ -383,7 +386,7 @@ const _hair = Brush(
   foldCurveStartRatio: .15,
   foldAngleRatio: .80,
   foldCrescentDepthThreshold: BrushExtensionDefaults.foldCrescentDepthThreshold,
-  foldLengthRatio: .60,
+  foldLengthRatio: .95,
   foldEndTaperRatio: BrushExtensionDefaults.foldEndTaperRatio,
   tags: <String>[AssetTagKeys.clothing],
 );

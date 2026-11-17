@@ -49,28 +49,39 @@ void main() {
       expect(await draw(true), steady, reason: ribbon.name);
     }
   });
-  test('all ribbon tips are cut square even on a straight stroke', () async {
-    final presets = brushExtensionPresets().where((b) => b.foldFlatEnds);
-    expect(presets, hasLength(5));
-    for (final brush in presets) {
-      final tiles = TileManager(canvasWidth: 120, canvasHeight: 70);
-      final engine = DrawingEngine(tileManager: tiles)
-        ..currentBrush = brush.copyWith(stabilization: false)
-        ..currentColor = ui.Color(brush.presetColor!);
-      engine.beginStroke(const StrokePoint(x: 20, y: 35), 'ribbon');
-      engine.continueStroke(const StrokePoint(x: 100, y: 35), 'ribbon');
-      engine.endStroke();
-      final image = await tiles.compositeLayerToImage('ribbon');
-      final bytes = (await image.toByteData())!.buffer.asUint8List();
-      image.dispose();
-      tiles.dispose();
-      int alpha(int x, int y) => bytes[(y * 120 + x) * 4 + 3];
-      expect(alpha(19, 35), 0, reason: brush.name);
-      expect(alpha(100, 35), 0, reason: brush.name);
-      expect(alpha(20, 43), 255, reason: brush.name);
-      expect(alpha(99, 43), 255, reason: brush.name);
-      expect(bytes[(35 * 120 + 20) * 4], lessThan(200), reason: brush.name);
-      expect(bytes[(35 * 120 + 99) * 4], lessThan(200), reason: brush.name);
+  test('ribbon ends come from its PNG with folding on or off', () async {
+    final presets = brushExtensionPresets().where(
+      (brush) => brush.name.startsWith('リボン'),
+    );
+    for (final preset in presets) {
+      await preloadBrushTextures(
+        preset.resolvedCustomImagePaths,
+        mode: preset.imageInkMode,
+      );
+      Future<List<int>> draw(bool fold) async {
+        final tiles = TileManager(canvasWidth: 120, canvasHeight: 70);
+        final engine = DrawingEngine(tileManager: tiles)
+          ..currentBrush = preset.copyWith(
+            stabilization: false,
+            foldEnabled: fold,
+          )
+          ..currentColor = ui.Color(preset.presetColor!);
+        engine.beginStroke(const StrokePoint(x: 20, y: 35), 'ribbon');
+        engine.continueStroke(const StrokePoint(x: 100, y: 35), 'ribbon');
+        engine.endStroke();
+        final image = await tiles.compositeLayerToImage('ribbon');
+        final bytes = (await image.toByteData())!.buffer.asUint8List();
+        image.dispose();
+        tiles.dispose();
+        return bytes;
+      }
+
+      final folded = await draw(true);
+      expect(folded, orderedEquals(await draw(false)), reason: preset.name);
+      int alpha(int x, int y) => folded[(y * 120 + x) * 4 + 3];
+      expect(alpha(18, 35), greaterThan(0), reason: preset.name);
+      expect(alpha(101, 35), greaterThan(0), reason: preset.name);
+      expect(alpha(95, 43), 255, reason: preset.name);
     }
   });
   for (final id in ['Brush0023']) {
