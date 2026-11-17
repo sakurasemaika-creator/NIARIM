@@ -1758,3 +1758,10 @@ App・Web共通。Claudeが要修正の詳細を追記し、ユーザーが別�
 - **新規の要修正なし**。既知：公開前なのに「配信中」・Google PlayのURLが空（DISC441）、料金がストアの価格でなく円の固定値（アプリ側DISC401、Webも全言語で¥表記〔「Google Playの最新の表示を確認」の注記つき〕）。
 - **リポジトリで分かる配布の事実**：ストアの文は7地域（ja-JP・en-US・zh-CN・zh-TW・ko-KR・fr-FR・es-ES）でGoogle PlayとApp Storeの両方の分がある（`tools/validate_aso_metadata.py`は「passed for 7 locales」）。決済はGoogle Playの課金（`in_app_purchase`）、広告はAdMob、ログインはGoogle（`google_sign_in`）。Androidは`minSdk 24`（7.0以上）。`ios/`のプロジェクト（`IPHONEOS_DEPLOYMENT_TARGET 13.0`）はあるが、iOSのビルドのワークフローは無く、Webは「Android端末全般」とだけ書く（App Storeの文は用意だけ）。入力はペン・板タブ/液晶タブ・Galaxy DeX（Webの/about/）。
 - **未確認**：配布する国・地域の決定、各国のAndroidの普及・低価格の端末の性能、地域ごとの価格、問い合わせの返信の言語（Webに書かれていない）、各市場の検索の経路。所有者の決定と外部の資料が要る。
+
+### W027（一巡目、Claude・S40、判定：一部〔検索の実データの調査は未〕、新規の要修正なし）
+
+- **確認SHA・環境**：Web `7bfc4b7`の`public/**`（HTML・辞書）とApp `ced5bd1b`の`store/aso/metadata.json`を検索した。各市場の検索語・検索量の一次資料は調べていない。
+- **新規の要修正なし**。既知：en/fr/esの「Gallery」の呼び名がアプリと違う（DISC460）、日本語のタブの「1day」（DISC453）、生のHTMLの本文が日本語（DISC472、検索の取り込みに影響）。
+- **OK**：競合のアプリ名・他社の商標（Procreate・CLIP STUDIO・FlipaClip・ibisPaint・Photoshop等）は、Webのページ・辞書・ストアの文のどこにも無い（「canvas」が「Canva」に当たっただけ）。`<meta name="keywords">`も隠した文字も無い。「No.1」「世界初」「業界初」「最強」などの誇張の語は無い。ストアの文の方針（`store/aso/strategy.md`）は、語の詰め込み・競合の名前・順位・料金の主張を避け、出荷した機能だけを書く、地域の検索語は機械的に訳さない、と決めていて、今の文もその範囲。
+- **未確認**：7地域の実際の検索語・意図（Search Console・ストアの検索語の数値は公開前で無い）、各ページの文と検索の意図の当てはまり。
