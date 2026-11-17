@@ -1,0 +1,278 @@
+import 'dart:convert';
+
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:niarim/app_bootstrap.dart';
+import 'package:niarim/l10n/app_localizations.dart';
+import 'package:niarim/models/autofill_preset.dart';
+import 'package:niarim/models/layer.dart';
+import 'package:niarim/screens/autofill/autofill_preset_screen.dart';
+import 'package:niarim/services/autofill_preset_service.dart';
+import 'package:niarim/services/project_service.dart';
+import 'package:niarim/widgets/name_entry_dialog.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import 'helpers/first_use_tooltips.dart';
+import 'helpers/project_storage.dart';
+
+const part = AutofillPart(id: 'part-fixture', name: 'Hair', color: 0xff875036);
+const preset = AutofillPreset(
+  id: 'preset-fixture',
+  name: 'Practice',
+  parts: [part],
+);
+
+void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+  useTemporaryProjectStorage();
+
+  final l10n = lookupAppLocalizations(const Locale('en'));
+
+  Future<BuildContext> open(WidgetTester tester) async {
+    SharedPreferences.setMockInitialValues({
+      'first_launch': false,
+      firstUseTooltipsSeenKey: kAllFirstUseTooltipKeys,
+    });
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(600, 900);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetPhysicalSize);
+    final providers = (await tester.runAsync(buildAppProviders))!;
+    await tester.pumpWidget(
+      MultiProvider(
+        providers: providers,
+        child: MaterialApp(
+          locale: const Locale('en'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: const AutofillPresetScreen(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    final context = tester.element(find.byType(AutofillPresetScreen));
+    await context.read<AutofillPresetService>().addPreset(preset);
+    await tester.pumpAndSettle();
+    return context;
+  }
+
+  Future<void> presetMenu(
+    WidgetTester tester,
+    String name,
+    String action,
+  ) async {
+    final row = find.widgetWithText(ListTile, name);
+    await tester.tap(
+      find.descendant(of: row, matching: find.byType(PopupMenuButton<String>)),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(action).hitTestable());
+    await tester.pumpAndSettle();
+  }
+
+  test(
+    'legacy duplicate part IDs are separated while the first lookup is preserved',
+    () async {
+      final copy = preset.copyWith(
+        id: 'legacy-copy',
+        parts: [part.copyWith(color: 0xff112233)],
+      );
+      SharedPreferences.setMockInitialValues({
+        'autofill_presets': [
+          jsonEncode(preset.toJson()),
+          jsonEncode(copy.toJson()),
+        ],
+      });
+      final first = AutofillPresetService();
+      await first.init();
+      final repaired = first.presets
+          .firstWhere((p) => p.id == copy.id)
+          .parts
+          .single;
+      expect(repaired.id, isNot(part.id));
+      expect(repaired.color, 0xff112233);
+      expect(first.findPart(part.id)?.color, part.color);
+      final restarted = AutofillPresetService();
+      await restarted.init();
+      expect(restarted.findPart(repaired.id)?.color, 0xff112233);
+      expect(restarted.findPart(part.id)?.color, part.color);
+      const newPart = AutofillPart(
+        id: 'unique-imported-part',
+        name: 'Shirt',
+        color: 0xff778899,
+      );
+      await restarted.addPreset(
+        preset.copyWith(id: 'imported', parts: [part, newPart]),
+      );
+      final imported = restarted.presets.last;
+      expect(imported.parts.first.id, isNot(part.id));
+      expect(imported.parts.last.id, newPart.id);
+      expect(restarted.findPart(part.id)?.color, part.color);
+      first.dispose();
+      restarted.dispose();
+    },
+  );
+
+  testWidgets(
+    'duplicate and paste assign distinct parts and show which works use them',
+    (tester) async {
+      final context = await open(tester);
+      final presets = context.read<AutofillPresetService>();
+      final projects = context.read<ProjectService>();
+      final project = (await tester.runAsync(
+        () => projects.createProject(
+          name: 'Part references',
+          fps: 2,
+          durationSeconds: 1,
+          backgroundColor: 0xffffffff,
+          exportWidth: 32,
+          exportHeight: 32,
+        ),
+      ))!;
+      final scene = projects.scenesOf(project.id).first;
+      for (var i = 0; i < scene.frames.length; i++) {
+        final layer = scene.frames[i].layers.first;
+        projects.updateLayer(
+          projectId: project.id,
+          sceneId: scene.id,
+          frameIndex: i,
+          layer: layer.copyWith(
+            id: scene.frames.first.layers.first.id,
+            type: LayerType.autoFillLineart,
+            partId: part.id,
+          ),
+        );
+      }
+      await tester.pumpAndSettle();
+
+      final originalRow = find.widgetWithText(ListTile, preset.name);
+      await tester.longPress(originalRow);
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip(l10n.commonDuplicate));
+      await tester.pumpAndSettle();
+      Iterable<AutofillPreset> copies() =>
+          presets.presets.where((p) => p.name.startsWith(preset.name));
+      expect(copies(), hasLength(2));
+      final copiedPart = copies().last.parts.single;
+      expect(copiedPart.id, isNot(part.id));
+      expect(copiedPart.color, part.color);
+
+      await tester.longPress(originalRow);
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip(l10n.commonPaste));
+      await tester.pumpAndSettle();
+      expect(copies().map((p) => p.parts.single.id).toSet(), hasLength(3));
+      await presets.updatePreset(
+        copies().last.copyWith(
+          parts: [copies().last.parts.single.copyWith(color: 0xff001122)],
+        ),
+      );
+      expect(
+        presets.findPart(copies().last.parts.single.id)?.color,
+        0xff001122,
+      );
+      expect(presets.findPart(part.id)?.color, part.color);
+
+      await presetMenu(tester, preset.name, l10n.commonDelete);
+      expect(find.text(l10n.autofillDeleteUsage(1, 1)), findsOneWidget);
+      await tester.tap(find.text(l10n.commonCancel));
+      await tester.pumpAndSettle();
+      expect(presets.findPart(part.id), isNotNull);
+    },
+  );
+
+  testWidgets(
+    'preset and part names validate on Enter, and missing tones cannot be applied',
+    (tester) async {
+      final context = await open(tester);
+      final presets = context.read<AutofillPresetService>();
+      final nameDialog = find.byType(NameEntryDialog);
+      Future<void> enter(String name) async {
+        await tester.enterText(
+          find.descendant(of: nameDialog, matching: find.byType(TextField)),
+          name,
+        );
+        await tester.testTextInput.receiveAction(TextInputAction.done);
+        await tester.pumpAndSettle();
+      }
+
+      await tester.tap(find.byType(FloatingActionButton));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(l10n.autofillPresetNewDialogTitle));
+      await tester.pumpAndSettle();
+      await enter('  ');
+      expect(nameDialog, findsOneWidget);
+      await enter('  Practice  ');
+      expect(presets.presets.last.name, 'Practice (2)');
+
+      await presetMenu(tester, 'Practice (2)', l10n.commonRename);
+      await enter('  ');
+      expect(nameDialog, findsOneWidget);
+      await enter('Practice');
+      expect(presets.presets.last.name, 'Practice (2)');
+
+      await tester.tap(find.widgetWithText(ListTile, preset.name));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byType(FloatingActionButton));
+      await tester.pumpAndSettle();
+      await enter('  ');
+      expect(nameDialog, findsOneWidget);
+      await enter(' Hair ');
+      final newPart = presets.presets
+          .firstWhere((p) => p.id == preset.id)
+          .parts
+          .last;
+      expect(newPart.name, 'Hair (2)');
+      await tester.tap(
+        find.descendant(
+          of: find.byKey(ValueKey(newPart.id)),
+          matching: find.byTooltip(l10n.commonEdit),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await enter('  ');
+      expect(nameDialog, findsOneWidget);
+      await enter('Hair');
+      expect(presets.findPart(newPart.id)?.name, 'Hair (2)');
+
+      final row = tester.widget<ListTile>(find.byKey(ValueKey(part.id)));
+      await tester.tap(find.byWidget(row.leading!));
+      await tester.pumpAndSettle();
+      final toneSwitch = find.widgetWithText(
+        CheckboxListTile,
+        l10n.autofillPartUseToneCheckbox,
+      );
+      await tester.ensureVisible(toneSwitch);
+      await tester.pumpAndSettle();
+      await tester.tap(toneSwitch.hitTestable());
+      await tester.pumpAndSettle();
+      final apply = find.widgetWithText(
+        FilledButton,
+        l10n.autofillPartApplyButton,
+      );
+      expect(tester.widget<FilledButton>(apply).onPressed, isNull);
+      expect(presets.findPart(part.id)?.useTone, isFalse);
+      await tester.tap(find.text(l10n.commonCancel));
+      await tester.pumpAndSettle();
+      expect(presets.findPart(part.id)?.useTone, isFalse);
+
+      await tester.pageBack();
+      await tester.pumpAndSettle();
+      final saved = presets.presets.firstWhere((p) => p.id == preset.id);
+      await presets.updatePreset(
+        saved.copyWith(parts: [part.copyWith(useTone: true), newPart]),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(ListTile, preset.name));
+      await tester.pumpAndSettle();
+      expect(
+        find.text(l10n.autofillPartUnconfiguredBanner(1, part.name)),
+        findsOneWidget,
+      );
+      await tester.pageBack();
+      await tester.pumpAndSettle();
+      expect(find.widgetWithText(ListTile, preset.name), findsOneWidget);
+    },
+  );
+}

@@ -217,6 +217,7 @@ class AutofillPresetService extends ChangeNotifier {
         _presets.insert(0, _grayUnderpaintPreset);
         changed = true;
       }
+      if (changed) _dedupeIds();
       // 読めない項目があった保存は、起動では書き換えない（後の版でなら
       // 読めるかもしれない自作の内容を、起動しただけで消さない。その一覧を
       // 次に変えたときに、読めた分だけで保存し直される）。
@@ -244,7 +245,7 @@ class AutofillPresetService extends ChangeNotifier {
     return changed;
   }
 
-  /// プリセットID・パーツID（プリセット内）の重複を検出し、2件目以降を
+  /// プリセットID・パーツID（プリセット全体）の重複を検出し、2件目以降を
   /// 新しいIDへ差し替えて自己修復する。過去に同一ミリ秒での連続タップ等で
   /// ID採番（'p_${DateTime.now().millisecondsSinceEpoch}'）が衝突すると、
   /// パーツ一覧のReorderableListViewが`part.id`をキーに使っているため
@@ -255,6 +256,12 @@ class AutofillPresetService extends ChangeNotifier {
   bool _dedupeIds() {
     var changed = false;
     final seenPresetIds = <String>{};
+    final seenPartIds = <String>{};
+    final reservedPartIds = {
+      for (final preset in _presets)
+        for (final part in preset.parts) part.id,
+    };
+    final repairStamp = DateTime.now().microsecondsSinceEpoch;
     for (int i = 0; i < _presets.length; i++) {
       var preset = _presets[i];
       if (!seenPresetIds.add(preset.id)) {
@@ -263,15 +270,20 @@ class AutofillPresetService extends ChangeNotifier {
         );
         changed = true;
       }
-      final seenPartIds = <String>{};
       final parts = <AutofillPart>[];
       var partsChanged = false;
       for (int j = 0; j < preset.parts.length; j++) {
         var part = preset.parts[j];
         if (!seenPartIds.add(part.id)) {
-          part = part.copyWith(
-            id: 'part_${DateTime.now().microsecondsSinceEpoch}_${i}_$j',
-          );
+          // Keep the first matching part so existing project references
+          // still resolve the same way as they did before this repair.
+          final base = 'part_${repairStamp}_${i}_$j';
+          var replacement = base;
+          for (var suffix = 2; !reservedPartIds.add(replacement); suffix++) {
+            replacement = '${base}_$suffix';
+          }
+          seenPartIds.add(replacement);
+          part = part.copyWith(id: replacement);
           partsChanged = true;
         }
         parts.add(part);
@@ -304,6 +316,9 @@ class AutofillPresetService extends ChangeNotifier {
 
   Future<void> addPreset(AutofillPreset preset) async {
     _presets.add(preset);
+    // Imported presets keep IDs that can restore existing layer references.
+    // Only IDs already in use need to be replaced on the added copy.
+    _dedupeIds();
     await _persist();
     notifyListeners();
   }
@@ -386,14 +401,7 @@ class AutofillPresetService extends ChangeNotifier {
         organizationOf: (p) =>
             (favorite: p.isFavorite, tags: const [], folderId: null),
         withOrganization: (p, o) => p.copyWith(isFavorite: o.favorite),
-        asCopy: (p, id, name) => p.copyWith(
-          id: id,
-          name: name,
-          parts: [
-            for (var i = 0; i < p.parts.length; i++)
-              p.parts[i].copyWith(id: '${id}_part_$i'),
-          ],
-        ),
+        asCopy: (p, id, name) => p.copyWithNewId(id: id, name: name),
         newId: (attempt) =>
             'p_${DateTime.now().microsecondsSinceEpoch}_$attempt',
         copyNames: copyNames,

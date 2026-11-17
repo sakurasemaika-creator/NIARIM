@@ -3889,7 +3889,12 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String autofillPartUnconfiguredBanner(int count, String names) {
-    return '有$count个部件尚未设置：$names（未选择网点）\n全部设置完成前无法关闭此画面。';
+    return '有$count个部件尚未设置：$names（未选择网点）';
+  }
+
+  @override
+  String autofillDeleteUsage(int projects, int layers) {
+    return '有$projects个作品的$layers个线稿图层正在使用。对这些图层执行自动上色前，请指定其他部件。';
   }
 
   @override
@@ -14054,7 +14059,12 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String autofillPartUnconfiguredBanner(int count, String names) {
-    return '有$count個部件尚未設定：$names（未選擇網點）\n全部設定完成前無法關閉此畫面。';
+    return '有$count個部件尚未設定：$names（未選擇網點）';
+  }
+
+  @override
+  String autofillDeleteUsage(int projects, int layers) {
+    return '有$projects個作品的$layers個線稿圖層正在使用。對這些圖層執行自動上色前，請指定其他部件。';
   }
 
   @override

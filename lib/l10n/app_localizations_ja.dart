@@ -3917,7 +3917,12 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String autofillPartUnconfiguredBanner(int count, String names) {
-    return '未設定のパーツが$count件あります：$names（トーン未選択）\nすべて設定するまでこの画面を閉じられません。';
+    return '未設定のパーツが$count件あります：$names（トーン未選択）';
+  }
+
+  @override
+  String autofillDeleteUsage(int projects, int layers) {
+    return '$projects件の作品の線画レイヤー$layers件で使用中です。これらのレイヤーで自動塗りを実行するには、別のパーツを割り当ててください。';
   }
 
   @override

@@ -37,6 +37,21 @@ class AutofillPreset {
     );
   }
 
+  /// Copies a preset as a new item. A layer resolves its part by ID alone.
+  AutofillPreset copyWithNewId({
+    required String id,
+    String? name,
+    bool? isFavorite,
+  }) => copyWith(
+    id: id,
+    name: name,
+    isFavorite: isFavorite,
+    parts: [
+      for (var i = 0; i < parts.length; i++)
+        parts[i].copyWith(id: '${id}_part_$i'),
+    ],
+  );
+
   Map<String, dynamic> toJson() => {
     'id': id,
     'name': name,

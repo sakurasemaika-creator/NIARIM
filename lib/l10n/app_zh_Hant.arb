@@ -1476,7 +1476,8 @@
     }
   },
   "autofillPartSearchHint": "以部件名稱搜尋",
-  "autofillPartUnconfiguredBanner": "有{count}個部件尚未設定：{names}（未選擇網點）\n全部設定完成前無法關閉此畫面。",
+  "autofillPartUnconfiguredBanner": "有{count}個部件尚未設定：{names}（未選擇網點）",
+  "autofillDeleteUsage": "有{projects}個作品的{layers}個線稿圖層正在使用。對這些圖層執行自動上色前，請指定其他部件。",
   "@autofillPartUnconfiguredBanner": {
     "placeholders": {
       "count": {

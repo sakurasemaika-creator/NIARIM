@@ -1476,7 +1476,8 @@
     }
   },
   "autofillPartSearchHint": "Buscar por nombre de parte",
-  "autofillPartUnconfiguredBanner": "Hay {count} parte(s) sin configurar: {names} (sin trama seleccionada)\nNo puedes cerrar esta pantalla hasta que todo esté configurado.",
+  "autofillPartUnconfiguredBanner": "Hay {count} parte(s) sin configurar: {names} (sin trama seleccionada)",
+  "autofillDeleteUsage": "Afecta a {projects, plural, one{1 proyecto} other{{projects} proyectos}} y a {layers, plural, one{1 capa de dibujo lineal} other{{layers} capas de dibujo lineal}}. Asigna otra parte antes de usar el relleno automático en esas capas.",
   "@autofillPartUnconfiguredBanner": {
     "placeholders": {
       "count": {

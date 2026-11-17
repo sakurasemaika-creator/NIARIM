@@ -4139,7 +4139,24 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String autofillPartUnconfiguredBanner(int count, String names) {
-    return 'Hay $count parte(s) sin configurar: $names (sin trama seleccionada)\nNo puedes cerrar esta pantalla hasta que todo esté configurado.';
+    return 'Hay $count parte(s) sin configurar: $names (sin trama seleccionada)';
+  }
+
+  @override
+  String autofillDeleteUsage(int projects, int layers) {
+    String _temp0 = intl.Intl.pluralLogic(
+      projects,
+      locale: localeName,
+      other: '$projects proyectos',
+      one: '1 proyecto',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      layers,
+      locale: localeName,
+      other: '$layers capas de dibujo lineal',
+      one: '1 capa de dibujo lineal',
+    );
+    return 'Afecta a $_temp0 y a $_temp1. Asigna otra parte antes de usar el relleno automático en esas capas.';
   }
 
   @override

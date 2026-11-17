@@ -7188,8 +7188,14 @@ abstract class AppLocalizations {
   /// No description provided for @autofillPartUnconfiguredBanner.
   ///
   /// In ja, this message translates to:
-  /// **'未設定のパーツが{count}件あります：{names}（トーン未選択）\nすべて設定するまでこの画面を閉じられません。'**
+  /// **'未設定のパーツが{count}件あります：{names}（トーン未選択）'**
   String autofillPartUnconfiguredBanner(int count, String names);
+
+  /// No description provided for @autofillDeleteUsage.
+  ///
+  /// In ja, this message translates to:
+  /// **'{projects}件の作品の線画レイヤー{layers}件で使用中です。これらのレイヤーで自動塗りを実行するには、別のパーツを割り当ててください。'**
+  String autofillDeleteUsage(int projects, int layers);
 
   /// No description provided for @autofillPartUnconfiguredDialogTitle.
   ///

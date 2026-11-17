@@ -1842,7 +1842,14 @@
     }
   },
   "autofillPartSearchHint": "パーツ名で検索",
-  "autofillPartUnconfiguredBanner": "未設定のパーツが{count}件あります：{names}（トーン未選択）\nすべて設定するまでこの画面を閉じられません。",
+  "autofillPartUnconfiguredBanner": "未設定のパーツが{count}件あります：{names}（トーン未選択）",
+  "autofillDeleteUsage": "{projects}件の作品の線画レイヤー{layers}件で使用中です。これらのレイヤーで自動塗りを実行するには、別のパーツを割り当ててください。",
+  "@autofillDeleteUsage": {
+    "placeholders": {
+      "projects": {"type": "int"},
+      "layers": {"type": "int"}
+    }
+  },
   "@autofillPartUnconfiguredBanner": {
     "placeholders": {
       "count": {

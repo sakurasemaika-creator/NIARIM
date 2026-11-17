@@ -128,6 +128,54 @@ void main() {
     expect(bytes.sublist(center, center + 4), [0x12, 0xAB, 0x34, 0xFF]);
     final outside = 0;
     expect(bytes.sublist(outside, outside + 4), [0, 0, 0, 0]);
+
+    final original = presetService.presets.singleWhere(
+      (p) => p.id == 'integration',
+    );
+    final copy = original.copyWithNewId(id: 'integration-copy', name: 'Copy');
+    final copiedPart = copy.parts.single.copyWith(color: 0xFF3290CE);
+    await presetService.addPreset(copy.copyWith(parts: [copiedPart]));
+    projectService.assignAutofillPart(
+      projectId: project.id,
+      sceneId: 'Scene0001',
+      frameIndex: 0,
+      lineartLayerId: lineart.id,
+      partId: copiedPart.id,
+      partName: copiedPart.name,
+    );
+    final withCopy = projectService.layersOf(project.id, 'Scene0001', 0);
+    expect(
+      await runAutofillForLayer(
+        projectService: projectService,
+        presetService: presetService,
+        toneService: ToneService(),
+        projectId: project.id,
+        sceneId: 'Scene0001',
+        frameIndex: 0,
+        lineartLayer: withCopy.firstWhere((layer) => layer.id == lineart.id),
+        mode: AutofillMode.repaint,
+      ),
+      AutofillBatchResult.applied,
+    );
+    final copiedFill = projectService.layersOf(
+      project.id,
+      'Scene0001',
+      0,
+    )[lineartIndex + 1];
+    final imageAfterCopy = await tm.compositeLayerToImage(
+      frameLayerKey('Scene0001', 0, copiedFill.id),
+    );
+    final afterCopy = await imageAfterCopy.toByteData(
+      format: ui.ImageByteFormat.rawRgba,
+    );
+    imageAfterCopy.dispose();
+    expect(afterCopy!.buffer.asUint8List().sublist(center, center + 4), [
+      0x32,
+      0x90,
+      0xCE,
+      0xFF,
+    ]);
+    expect(presetService.findPart(original.parts.single.id)?.color, 0xFF12AB34);
   });
 
   test(

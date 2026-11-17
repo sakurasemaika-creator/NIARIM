@@ -7,6 +7,7 @@ import '../../../widgets/dispose_on_unmount.dart';
 import '../../../widgets/name_entry_dialog.dart';
 import '../../../config/font_fallback.dart';
 import '../../../utils/reorder_index.dart';
+import '../../../utils/duplicate_name.dart';
 import '../../../widgets/scrollable_sheet_body.dart';
 import '../../../widgets/typing_dialog_inset.dart';
 
@@ -25,19 +26,10 @@ void showFolderManagementSheet(
   required void Function(int oldIndex, int newIndex) onReorder,
   required Future<void> Function(String id) onDelete,
 }) {
-  String uniqueName(String name, {String? exceptId}) {
-    final used = {
-      for (final folder in getFolders())
-        if (folder.id != exceptId) folder.name,
-    };
-    if (!used.contains(name)) return name;
-    final match = RegExp(r'^(.*) \((\d+)\)$').firstMatch(name);
-    final base = match?.group(1) ?? name;
-    for (var n = (int.tryParse(match?.group(2) ?? '') ?? 1) + 1; ; n++) {
-      final candidate = '$base ($n)';
-      if (!used.contains(candidate)) return candidate;
-    }
-  }
+  String uniqueName(String name, {String? exceptId}) => uniqueNumberedName(
+    name,
+    getFolders().where((f) => f.id != exceptId).map((f) => f.name),
+  );
 
   showModalBottomSheet(
     context: context,

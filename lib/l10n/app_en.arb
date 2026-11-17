@@ -1476,7 +1476,8 @@
     }
   },
   "autofillPartSearchHint": "Search by part name",
-  "autofillPartUnconfiguredBanner": "{count} part(s) are not yet set up: {names} (no screentone selected)\nYou can't close this screen until all are set up.",
+  "autofillPartUnconfiguredBanner": "{count} part(s) are not yet set up: {names} (no screentone selected)",
+  "autofillDeleteUsage": "This affects {projects, plural, one{1 project} other{{projects} projects}} and {layers, plural, one{1 lineart layer} other{{layers} lineart layers}}. Assign another part before running autofill on those layers.",
   "@autofillPartUnconfiguredBanner": {
     "placeholders": {
       "count": {

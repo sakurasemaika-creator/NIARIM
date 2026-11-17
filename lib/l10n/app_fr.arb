@@ -1476,7 +1476,8 @@
     }
   },
   "autofillPartSearchHint": "Rechercher par nom de partie",
-  "autofillPartUnconfiguredBanner": "{count} partie(s) ne sont pas encore configurées : {names} (aucune trame sélectionnée)\nVous ne pouvez pas fermer cet écran tant que tout n’est pas configuré.",
+  "autofillPartUnconfiguredBanner": "{count} partie(s) ne sont pas encore configurées : {names} (aucune trame sélectionnée)",
+  "autofillDeleteUsage": "Cela concerne {projects, plural, one{1 projet} other{{projects} projets}} et {layers, plural, one{1 calque de tracé} other{{layers} calques de tracé}}. Affectez une autre partie avant de lancer le remplissage automatique sur ces calques.",
   "@autofillPartUnconfiguredBanner": {
     "placeholders": {
       "count": {

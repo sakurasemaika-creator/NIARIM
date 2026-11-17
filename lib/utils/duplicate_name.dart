@@ -5,6 +5,18 @@ import '../models/project.dart';
 import '../services/project_service.dart';
 import 'line_break.dart';
 
+/// Uses the requested name if free, otherwise adds or advances a suffix.
+String uniqueNumberedName(String name, Iterable<String> names) {
+  final used = names.toSet();
+  if (!used.contains(name)) return name;
+  final match = RegExp(r'^(.*) \((\d+)\)$').firstMatch(name);
+  final base = match?.group(1) ?? name;
+  for (var n = (int.tryParse(match?.group(2) ?? '') ?? 1) + 1; ; n++) {
+    final candidate = '$base ($n)';
+    if (!used.contains(candidate)) return candidate;
+  }
+}
+
 /// 複製した作品の名前。複製先のフォルダに同じ名前の複製が既にあれば番号を
 /// 付ける（「作品1 (コピー)」「作品1 (コピー 2)」…）。番号が無いと、同じ
 /// 作品を2回貼り付けたとき同じ名前の作品が並び、見分けられなかった。

@@ -14,7 +14,7 @@ import 'package:provider/provider.dart';
 import '../../l10n/app_localizations.dart';
 import '../../models/autofill_gradient.dart';
 import '../../models/autofill_preset.dart';
-import '../../models/layer.dart' show LayerBlendMode;
+import '../../models/layer.dart' show LayerBlendMode, LayerType;
 import '../../utils/blend_mode_label.dart';
 import '../../utils/duplicate_name.dart';
 import '../../services/autofill_preset_service.dart';
@@ -26,6 +26,7 @@ import '../../widgets/confirm_delete.dart';
 import '../../widgets/ad_banner_mock_widget.dart';
 import '../../widgets/editable_slider_value.dart';
 import '../../widgets/keep_together_text.dart';
+import '../../widgets/name_entry_dialog.dart';
 import '../../widgets/export_share_feedback.dart';
 import '../../widgets/first_that_fits.dart';
 import '../../widgets/stepped_slider.dart';
@@ -49,6 +50,32 @@ String _takeCopyName(AppLocalizations l10n, String name, Set<String> taken) {
   return copy;
 }
 
+String? _partUsageWarning(BuildContext context, Iterable<AutofillPart> parts) {
+  final ids = {for (final part in parts) part.id};
+  if (ids.isEmpty) return null;
+  final projects = context.read<ProjectService>();
+  var projectCount = 0;
+  var layerCount = 0;
+  for (final project in projects.projects) {
+    final matchingLayers = {
+      for (final scene in projects.scenesOf(project.id))
+        for (final frame in scene.frames)
+          for (final layer in frame.layers)
+            if (layer.type == LayerType.autoFillLineart &&
+                ids.contains(layer.partId))
+              (scene.id, layer.id),
+    };
+    if (matchingLayers.isEmpty) continue;
+    projectCount++;
+    layerCount += matchingLayers.length;
+  }
+  return layerCount == 0
+      ? null
+      : AppLocalizations.of(
+          context,
+        )!.autofillDeleteUsage(projectCount, layerCount);
+}
+
 class AutofillPresetScreen extends StatefulWidget {
   const AutofillPresetScreen({super.key});
 
@@ -69,16 +96,6 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
   // 保持しておき、「貼り付け」で選択なしにいつでも再度貼り付けられる
   // ようにする（アプリを離れると保持しない、画面内のみのUI状態）。
   final List<AutofillPreset> _presetClipboard = [];
-
-  // このファイルの各ダイアログが使うTextEditingControllerは、
-  // showDialog(...).then((_) => WidgetsBinding.instance.
-  // addPostFrameCallback((_) => ctrl.dispose())) という形で破棄する。
-  // 単純にshowDialogの直後（.then内）で即座にdispose()すると、ダイアログを
-  // 閉じる操作自体が裏で走らせているフォーカス解除処理より先に破棄されて
-  // しまうことがあり、直後に別の操作（例：パーツの色をタップして次の
-  // ダイアログを開く）をした際に「TextEditingController was used after
-  // being disposed」のアサーション例外が発生する。1フレーム遅らせることで
-  // フォーカス解除処理を先に完了させる。
 
   // context.watch()をgetter（_presets/_filtered）に入れ、それを
   // ListView.builderの各行のタップ用コールバック（onEdit/onDelete/onTap）
@@ -438,7 +455,7 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
     final taken = {for (final p in service.presets) p.name};
     final copies = [
       for (final p in selected)
-        p.copyWith(
+        p.copyWithNewId(
           id: 'p_${DateTime.now().microsecondsSinceEpoch}_${p.id}',
           name: _takeCopyName(l10n, p.name, taken),
           isFavorite: false,
@@ -463,7 +480,7 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
     final taken = {for (final p in service.presets) p.name};
     for (final p in _presetClipboard) {
       service.addPreset(
-        p.copyWith(
+        p.copyWithNewId(
           id: 'p_${DateTime.now().microsecondsSinceEpoch}_${p.id}',
           name: _takeCopyName(l10n, p.name, taken),
         ),
@@ -483,7 +500,14 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
         .where((p) => _selectedIds.contains(p.id))
         .toList();
     final deletable = selected.where((p) => !p.isFavorite).toList();
-    if (!await confirmDelete(context)) return;
+    final usage = _partUsageWarning(
+      context,
+      deletable.expand((preset) => preset.parts),
+    );
+    final message = usage == null
+        ? null
+        : '${l10n.confirmDeleteGenericBody}\n\n$usage';
+    if (!await confirmDelete(context, message: message)) return;
     if (!mounted) return;
     final projectService = context.read<ProjectService>();
     final service = context.read<AutofillPresetService>();
@@ -616,85 +640,43 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
     }
   }
 
-  void _showAddDialog() {
-    final l10n = AppLocalizations.of(context)!;
-    final nameCtrl = TextEditingController();
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        insetPadding: typingDialogInsetPadding(ctx),
-        title: Text(l10n.autofillPresetNewDialogTitle),
-        content: TextField(
-          controller: nameCtrl,
-          autofocus: true,
-          decoration: InputDecoration(
-            labelText: l10n.autofillPresetNameLabel,
-            border: const OutlineInputBorder(),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(l10n.commonCancel),
-          ),
-          FilledButton(
-            onPressed: () {
-              if (nameCtrl.text.isNotEmpty) {
-                context.read<AutofillPresetService>().addPreset(
-                  AutofillPreset(
-                    id: 'p_${DateTime.now().microsecondsSinceEpoch}',
-                    name: nameCtrl.text,
-                    parts: [],
-                  ),
-                );
-              }
-              Navigator.pop(ctx);
-            },
-            child: Text(l10n.commonCreate),
-          ),
-        ],
-      ),
-    ).then(
-      (_) => WidgetsBinding.instance.addPostFrameCallback(
-        (_) => nameCtrl.dispose(),
-      ),
-    );
-  }
+  void _showAddDialog() => _showPresetNameDialog();
 
-  void _showEditDialog(AutofillPreset preset) {
+  void _showEditDialog(AutofillPreset preset) =>
+      _showPresetNameDialog(preset: preset);
+
+  void _showPresetNameDialog({AutofillPreset? preset}) {
     final l10n = AppLocalizations.of(context)!;
-    final nameCtrl = TextEditingController(text: preset.name);
-    showDialog(
+    final service = context.read<AutofillPresetService>();
+    showDialog<void>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        insetPadding: typingDialogInsetPadding(ctx),
-        title: Text(l10n.autofillPresetRenameDialogTitle),
-        content: TextField(
-          controller: nameCtrl,
-          autofocus: true,
-          decoration: const InputDecoration(border: OutlineInputBorder()),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(l10n.commonCancel),
-          ),
-          FilledButton(
-            onPressed: () {
-              if (nameCtrl.text.isNotEmpty) {
-                context.read<AutofillPresetService>().updatePreset(
-                  preset.copyWith(name: nameCtrl.text),
-                );
-              }
-              Navigator.pop(ctx);
-            },
-            child: Text(l10n.commonChange),
-          ),
-        ],
-      ),
-    ).then(
-      (_) => WidgetsBinding.instance.addPostFrameCallback(
-        (_) => nameCtrl.dispose(),
+      barrierDismissible: false,
+      builder: (_) => NameEntryDialog(
+        title: preset == null
+            ? l10n.autofillPresetNewDialogTitle
+            : l10n.autofillPresetRenameDialogTitle,
+        labelText: l10n.autofillPresetNameLabel,
+        initialName: preset?.name ?? '',
+        cancelLabel: l10n.commonCancel,
+        confirmLabel: preset == null ? l10n.commonCreate : l10n.commonChange,
+        onSubmit: (name) {
+          final uniqueName = uniqueNumberedName(
+            name,
+            service.presets.where((p) => p.id != preset?.id).map((p) => p.name),
+          );
+          if (preset != null) {
+            final current = service.presets.firstWhere(
+              (p) => p.id == preset.id,
+            );
+            return service.updatePreset(current.copyWith(name: uniqueName));
+          }
+          return service.addPreset(
+            AutofillPreset(
+              id: 'p_${DateTime.now().microsecondsSinceEpoch}',
+              name: uniqueName,
+            ),
+          );
+        },
       ),
     );
   }
@@ -708,10 +690,13 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
       ).showSnackBar(SnackBar(content: Text(l10n.commonFavoriteDeleteBlocked)));
       return;
     }
+    final usage = _partUsageWarning(context, preset.parts);
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(l10n.autofillPresetDeleteConfirmTitle(preset.name)),
+        scrollable: true,
+        content: usage == null ? null : messageText(usage),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
@@ -885,8 +870,8 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
       adMockMaterialPageRoute(
         builder: (_) => _PresetDetailScreen(
           preset: preset,
-          onUpdate: (updated, {String? changedPartId}) {
-            presetService.updatePreset(updated);
+          onUpdate: (updated, {String? changedPartId}) async {
+            await presetService.updatePreset(updated);
             // パーツ色・名前の変更を、当該パーツIDを参照する全フレームの自動塗りレイヤーへ伝播
             if (changedPartId != null) {
               projectService.markAutofillUpdateForPartId(changedPartId);
@@ -1060,7 +1045,7 @@ class _PresetCard extends StatelessWidget {
 }
 
 typedef _PresetUpdateCallback =
-    void Function(AutofillPreset updated, {String? changedPartId});
+    Future<void> Function(AutofillPreset updated, {String? changedPartId});
 
 class _PresetDetailScreen extends StatefulWidget {
   final AutofillPreset preset;
@@ -1102,9 +1087,9 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
     super.dispose();
   }
 
-  void _save(AutofillPreset updated, {String? changedPartId}) {
+  Future<void> _save(AutofillPreset updated, {String? changedPartId}) {
     setState(() => _preset = updated);
-    widget.onUpdate(updated, changedPartId: changedPartId);
+    return widget.onUpdate(updated, changedPartId: changedPartId);
   }
 
   /// 各パーツ設定の色選択時に画像を都度読み込んでスポイトする。読み込んだ画像はスクラッチ領域へ
@@ -1166,112 +1151,72 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
       ? _preset.parts
       : _preset.parts.where((p) => p.name.contains(_partSearchQuery)).toList();
 
-  /// 未設定パーツ一覧。保存チェックで、未設定項目が1つでもある場合は
-  /// 保存不可とする。
-  List<AutofillPart> get _unconfiguredParts =>
-      _preset.parts.where((p) => !p.isConfigured).toList();
-
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final unconfigured = _unconfiguredParts;
-    return PopScope(
-      // 未設定パーツがある間はこの画面を離れられない（保存不可）。
-      canPop: unconfigured.isEmpty,
-      onPopInvokedWithResult: (didPop, result) {
-        if (didPop) return;
-        _showUnconfiguredBlockDialog(unconfigured);
-      },
-      child: Scaffold(
-        appBar: AppBar(
-          title: _isSearchingParts
-              ? TextField(
-                  autofocus: true,
-                  decoration: InputDecoration(
-                    hintText: l10n.autofillPartSearchHint,
-                    border: InputBorder.none,
-                  ),
-                  onChanged: (v) => setState(() => _partSearchQuery = v),
-                )
-              : Text(_preset.name),
-          actions: [
-            // 検索・並び替え・お気に入り登録に対応
-            IconButton(
-              icon: Icon(_isSearchingParts ? Icons.close : Icons.search),
-              tooltip: _isSearchingParts ? l10n.commonClose : l10n.commonSearch,
-              onPressed: () => setState(() {
-                _isSearchingParts = !_isSearchingParts;
-                if (!_isSearchingParts) _partSearchQuery = '';
-              }),
-            ),
-          ],
-        ),
-        body: SafeArea(
-          child: Column(
-            children: [
-              // 未設定パーツがある場合の警告バナー（赤文字で不足している
-              // パーツ名と設定内容を表示）
-              if (unconfigured.isNotEmpty)
-                Container(
-                  width: double.infinity,
-                  color: ThemeService.activeColorScheme.error.withValues(
-                    alpha: 0.12,
-                  ),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 8,
-                  ),
-                  child: Text(
-                    l10n.autofillPartUnconfiguredBanner(
-                      unconfigured.length,
-                      unconfigured.map((p) => p.name).join('・'),
-                    ),
-                    style: TextStyle(
-                      color: ThemeService.activeColorScheme.error,
-                      fontSize: 11,
-                    ),
-                  ),
+    final toneIds = {
+      for (final tone in context.watch<ToneService>().tones) tone.id,
+    };
+    final unconfigured = _preset.parts
+        .where((part) => part.useTone && !toneIds.contains(part.toneId))
+        .toList();
+    return Scaffold(
+      appBar: AppBar(
+        title: _isSearchingParts
+            ? TextField(
+                autofocus: true,
+                decoration: InputDecoration(
+                  hintText: l10n.autofillPartSearchHint,
+                  border: InputBorder.none,
                 ),
-              Expanded(child: _partListBody()),
-            ],
-          ),
-        ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: _showAddPartDialog,
-          child: const Icon(Icons.add),
-        ),
-      ),
-    );
-  }
-
-  void _showUnconfiguredBlockDialog(List<AutofillPart> unconfigured) {
-    final l10n = AppLocalizations.of(context)!;
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(l10n.autofillPartUnconfiguredDialogTitle),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(l10n.autofillPartUnconfiguredDialogBody),
-            SizedBox(height: 8),
-            for (final p in unconfigured)
-              Text(
-                l10n.autofillPartUnconfiguredItem(p.name),
-                style: TextStyle(
-                  color: ThemeService.activeColorScheme.error,
-                  fontSize: 13,
-                ),
-              ),
-          ],
-        ),
+                onChanged: (v) => setState(() => _partSearchQuery = v),
+              )
+            : Text(_preset.name),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(l10n.autofillPartUnconfiguredBackButton),
+          // 検索・並び替え・お気に入り登録に対応
+          IconButton(
+            icon: Icon(_isSearchingParts ? Icons.close : Icons.search),
+            tooltip: _isSearchingParts ? l10n.commonClose : l10n.commonSearch,
+            onPressed: () => setState(() {
+              _isSearchingParts = !_isSearchingParts;
+              if (!_isSearchingParts) _partSearchQuery = '';
+            }),
           ),
         ],
+      ),
+      body: SafeArea(
+        child: Column(
+          children: [
+            // 未設定パーツがある場合の警告バナー（赤文字で不足している
+            // パーツ名と設定内容を表示）
+            if (unconfigured.isNotEmpty)
+              Container(
+                width: double.infinity,
+                color: ThemeService.activeColorScheme.error.withValues(
+                  alpha: 0.12,
+                ),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
+                child: Text(
+                  l10n.autofillPartUnconfiguredBanner(
+                    unconfigured.length,
+                    unconfigured.map((p) => p.name).join('・'),
+                  ),
+                  style: TextStyle(
+                    color: ThemeService.activeColorScheme.error,
+                    fontSize: 11,
+                  ),
+                ),
+              ),
+            Expanded(child: _partListBody()),
+          ],
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _showAddPartDialog,
+        child: const Icon(Icons.add),
       ),
     );
   }
@@ -1322,13 +1267,16 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
   /// 着色した実際のトーンパターンをサムネイルに表示する。
   Widget _partTile(AutofillPart part, {int? dragIndex}) {
     final l10n = AppLocalizations.of(context)!;
+    final tone = part.useTone
+        ? context
+              .watch<ToneService>()
+              .tones
+              .where((t) => t.id == part.toneId)
+              .firstOrNull
+        : null;
+    final isConfigured = !part.useTone || tone != null;
     Widget thumb;
-    if (part.useTone && part.toneId != null) {
-      final tone = context
-          .watch<ToneService>()
-          .tones
-          .where((t) => t.id == part.toneId)
-          .firstOrNull;
+    if (tone != null) {
       thumb = TonePreviewThumb(tone: tone, color: Color(part.color), size: 32);
     } else {
       thumb = Container(
@@ -1384,7 +1332,7 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(part.name),
-            if (!part.isConfigured)
+            if (!isConfigured)
               Text(
                 l10n.autofillPartToneUnselected,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -1399,9 +1347,9 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
           crossAxisAlignment: WrapCrossAlignment.center,
           children: [
             Icon(
-              part.isConfigured ? Icons.check_circle : Icons.error_outline,
+              isConfigured ? Icons.check_circle : Icons.error_outline,
               size: 16,
-              color: part.isConfigured
+              color: isConfigured
                   ? ThemeService.activeColorScheme.secondary
                   : ThemeService.activeColorScheme.error,
             ),
@@ -1420,7 +1368,18 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
               ),
               tooltip: l10n.commonDelete,
               onPressed: () async {
-                if (!await confirmDelete(context, itemName: part.name)) return;
+                final usage = _partUsageWarning(context, [part]);
+                final message = usage == null
+                    ? null
+                    : '${l10n.confirmDeleteNamedBody(part.name)}\n\n$usage';
+                if (!await confirmDelete(
+                      context,
+                      itemName: part.name,
+                      message: message,
+                    ) ||
+                    !mounted) {
+                  return;
+                }
                 final parts = List<AutofillPart>.from(_preset.parts)
                   ..removeWhere((p) => p.id == part.id);
                 _save(_preset.copyWith(parts: parts), changedPartId: part.id);
@@ -1440,91 +1399,43 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
     );
   }
 
-  void _showAddPartDialog() {
-    final l10n = AppLocalizations.of(context)!;
-    final nameCtrl = TextEditingController();
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        insetPadding: typingDialogInsetPadding(ctx),
-        title: Text(l10n.autofillPartAddDialogTitle),
-        content: TextField(
-          controller: nameCtrl,
-          autofocus: true,
-          decoration: InputDecoration(
-            labelText: l10n.autofillPartNameLabel,
-            border: const OutlineInputBorder(),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(l10n.commonCancel),
-          ),
-          FilledButton(
-            onPressed: () {
-              if (nameCtrl.text.isNotEmpty) {
-                final parts = List<AutofillPart>.from(_preset.parts)
-                  ..add(
-                    AutofillPart(
-                      id: 'part_${DateTime.now().microsecondsSinceEpoch}',
-                      name: nameCtrl.text,
-                      color: 0xFFCCCCCC,
-                    ),
-                  );
-                _save(_preset.copyWith(parts: parts));
-              }
-              Navigator.pop(ctx);
-            },
-            child: Text(l10n.autofillPartAddButton),
-          ),
-        ],
-      ),
-    ).then(
-      (_) => WidgetsBinding.instance.addPostFrameCallback(
-        (_) => nameCtrl.dispose(),
-      ),
-    );
-  }
+  void _showAddPartDialog() => _showPartNameDialog();
 
-  void _showEditPartDialog(AutofillPart part) {
+  void _showEditPartDialog(AutofillPart part) =>
+      _showPartNameDialog(part: part);
+
+  void _showPartNameDialog({AutofillPart? part}) {
     final l10n = AppLocalizations.of(context)!;
-    final nameCtrl = TextEditingController(text: part.name);
-    showDialog(
+    showDialog<void>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        insetPadding: typingDialogInsetPadding(ctx),
-        title: Text(l10n.autofillPartRenameDialogTitle),
-        content: TextField(
-          controller: nameCtrl,
-          autofocus: true,
-          decoration: const InputDecoration(border: OutlineInputBorder()),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(l10n.commonCancel),
-          ),
-          FilledButton(
-            onPressed: () {
-              if (nameCtrl.text.isNotEmpty) {
-                final parts = _preset.parts
-                    .map(
-                      (p) =>
-                          p.id == part.id ? p.copyWith(name: nameCtrl.text) : p,
-                    )
-                    .toList();
-                _save(_preset.copyWith(parts: parts), changedPartId: part.id);
-              }
-              Navigator.pop(ctx);
-            },
-            child: Text(l10n.commonChange),
-          ),
-        ],
-      ),
-    ).then(
-      (_) => WidgetsBinding.instance.addPostFrameCallback(
-        (_) => nameCtrl.dispose(),
+      barrierDismissible: false,
+      builder: (_) => NameEntryDialog(
+        title: part == null
+            ? l10n.autofillPartAddDialogTitle
+            : l10n.autofillPartRenameDialogTitle,
+        initialName: part?.name ?? '',
+        labelText: l10n.autofillPartNameLabel,
+        cancelLabel: l10n.commonCancel,
+        confirmLabel: part == null
+            ? l10n.autofillPartAddButton
+            : l10n.commonChange,
+        onSubmit: (name) async {
+          final uniqueName = uniqueNumberedName(
+            name,
+            _preset.parts.where((p) => p.id != part?.id).map((p) => p.name),
+          );
+          final parts = [
+            for (final item in _preset.parts)
+              item.id == part?.id ? item.copyWith(name: uniqueName) : item,
+            if (part == null)
+              AutofillPart(
+                id: 'part_${DateTime.now().microsecondsSinceEpoch}',
+                name: uniqueName,
+                color: 0xFFCCCCCC,
+              ),
+          ];
+          await _save(_preset.copyWith(parts: parts), changedPartId: part?.id);
+        },
       ),
     );
   }
@@ -2088,13 +1999,20 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                 child: Text(l10n.commonCancel),
               ),
               FilledButton(
-                onPressed: () {
-                  final parts = _preset.parts
-                      .map((p) => p.id == part.id ? current : p)
-                      .toList();
-                  _save(_preset.copyWith(parts: parts), changedPartId: part.id);
-                  Navigator.pop(ctx);
-                },
+                onPressed:
+                    current.useTone &&
+                        !tones.any((tone) => tone.id == current.toneId)
+                    ? null
+                    : () {
+                        final parts = _preset.parts
+                            .map((p) => p.id == part.id ? current : p)
+                            .toList();
+                        _save(
+                          _preset.copyWith(parts: parts),
+                          changedPartId: part.id,
+                        );
+                        Navigator.pop(ctx);
+                      },
                 child: Text(l10n.autofillPartApplyButton),
               ),
             ],

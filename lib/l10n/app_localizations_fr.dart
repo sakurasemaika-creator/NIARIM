@@ -4137,7 +4137,24 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String autofillPartUnconfiguredBanner(int count, String names) {
-    return '$count partie(s) ne sont pas encore configurées : $names (aucune trame sélectionnée)\nVous ne pouvez pas fermer cet écran tant que tout n’est pas configuré.';
+    return '$count partie(s) ne sont pas encore configurées : $names (aucune trame sélectionnée)';
+  }
+
+  @override
+  String autofillDeleteUsage(int projects, int layers) {
+    String _temp0 = intl.Intl.pluralLogic(
+      projects,
+      locale: localeName,
+      other: '$projects projets',
+      one: '1 projet',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      layers,
+      locale: localeName,
+      other: '$layers calques de tracé',
+      one: '1 calque de tracé',
+    );
+    return 'Cela concerne $_temp0 et $_temp1. Affectez une autre partie avant de lancer le remplissage automatique sur ces calques.';
   }
 
   @override

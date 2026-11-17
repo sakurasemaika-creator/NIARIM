@@ -1476,7 +1476,8 @@
     }
   },
   "autofillPartSearchHint": "부위 이름으로 검색",
-  "autofillPartUnconfiguredBanner": "설정되지 않은 부위가 {count}개 있습니다: {names}(스크린톤 미선택)\n모두 설정할 때까지 이 화면을 닫을 수 없습니다.",
+  "autofillPartUnconfiguredBanner": "설정되지 않은 부위가 {count}개 있습니다: {names}(스크린톤 미선택)",
+  "autofillDeleteUsage": "작품 {projects}개의 선화 레이어 {layers}개에서 사용 중입니다. 해당 레이어에서 자동 채색을 실행하려면 다른 부위를 지정하세요.",
   "@autofillPartUnconfiguredBanner": {
     "placeholders": {
       "count": {

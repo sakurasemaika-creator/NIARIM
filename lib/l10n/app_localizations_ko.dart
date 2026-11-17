@@ -3936,7 +3936,12 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String autofillPartUnconfiguredBanner(int count, String names) {
-    return '설정되지 않은 부위가 $count개 있습니다: $names(스크린톤 미선택)\n모두 설정할 때까지 이 화면을 닫을 수 없습니다.';
+    return '설정되지 않은 부위가 $count개 있습니다: $names(스크린톤 미선택)';
+  }
+
+  @override
+  String autofillDeleteUsage(int projects, int layers) {
+    return '작품 $projects개의 선화 레이어 $layers개에서 사용 중입니다. 해당 레이어에서 자동 채색을 실행하려면 다른 부위를 지정하세요.';
   }
 
   @override

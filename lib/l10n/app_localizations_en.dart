@@ -4081,7 +4081,24 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String autofillPartUnconfiguredBanner(int count, String names) {
-    return '$count part(s) are not yet set up: $names (no screentone selected)\nYou can\'t close this screen until all are set up.';
+    return '$count part(s) are not yet set up: $names (no screentone selected)';
+  }
+
+  @override
+  String autofillDeleteUsage(int projects, int layers) {
+    String _temp0 = intl.Intl.pluralLogic(
+      projects,
+      locale: localeName,
+      other: '$projects projects',
+      one: '1 project',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      layers,
+      locale: localeName,
+      other: '$layers lineart layers',
+      one: '1 lineart layer',
+    );
+    return 'This affects $_temp0 and $_temp1. Assign another part before running autofill on those layers.';
   }
 
   @override
