@@ -1811,3 +1811,10 @@ App・Web共通。Claudeが要修正の詳細を追記し、ユーザーが別�
 - **新規の要修正なし**（侵害の候補を断定しない）。
 - **専門の調査の候補（独自の処理）**：自動線画（細線化・合流の分離・交点のつなぎ直し、`auto_lineart_engine.dart`）、髪の折り畳みの描画と三日月のカール（`HairFoldRaster`・`outline_accent.dart`）、墨溜まり（`ink_pool_engine.dart`）、投げ縄の領域の吸着（`lasso_region_snap_engine.dart`）、絵の具らしい混色（`perceptual_color_mixer.dart`、RYBの色相とKubelka–Munk）、水彩の境界（`watercolor_border_engine.dart`）、ドット絵の色の限り方（`pixel_art_engine.dart`、Yliluoma式・Weberの詳細保持縮小は論文の方法）、自動塗り、作品広場のYouTubeとの連携・期間のランキング（`backend/src/lib/ranking.ts`）。
 - **未確認**：上の候補ごとの公式のデータベースの調査・法域・存続・優先日の照合（W040で集約）。
+
+### W034（一巡目、Claude・S40、判定：一部〔公式の意匠のデータベースの調査は未〕、新規の要修正なし）
+
+- **確認SHA・環境**：App `49962aef`の`lib/screens/**`・`assets/logo/**`・`assets/icon/**`、Web `ce1617d`の`public/**`。特許庁の意匠（J-PlatPat）・USPTOのdesign patent・EUIPOのRCD・WIPO（Hague Express）の調査はしていない（この環境から使えず、専門の評価が要る）。
+- **新規の要修正なし**（類似の候補を断定しない）。
+- **調べたこと**：CLAUDE.mdは、PC/DeXの作業画面について所有者が「他のソフトのメニューバー（ファイル・編集・選択範囲…）や呼び名を持ち込まない」「完全にパクリはやめて」と指定し、スマホ版と同じボタンで作る方針を記録している（他のペイントソフトの画面の構成に寄せない作り）。アプリのアイコン・ロゴは自前のSVG（`assets/logo/app_logo.svg`）、UIのアイコンはMaterial Icons（Apache 2.0）。
+- **未確認**：アプリのアイコン・ロゴ・主な画面（キャンバス・タイムライン・ホーム）と登録された意匠・design patentの類似の調査、trade dress（W040で集約）。
