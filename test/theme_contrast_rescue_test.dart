@@ -7,6 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/models/app_theme_preset.dart';
+import 'package:niarim/screens/canvas/widgets/color_picker_panel.dart';
 import 'package:niarim/screens/settings/theme_settings_screen.dart';
 import 'package:niarim/screens/splash/splash_screen.dart';
 import 'package:niarim/services/project_service.dart';
@@ -445,9 +446,9 @@ void main() {
     final l10n = lookupAppLocalizations(const Locale('ja'));
     await tester.tap(find.text(l10n.themeColorText));
     await tester.pumpAndSettle();
-    service.previewCurrent(
-      service.current.copyWith(textColor: before.panelBgColor),
-    );
+    tester
+        .widget<ColorPickerPanel>(find.byType(ColorPickerPanel))
+        .onColorChanged(before.panelBgColor);
     await tester.pumpAndSettle();
 
     // 読みにくい配色でも保存を拒否しない。操作不能への対処は起動画面の

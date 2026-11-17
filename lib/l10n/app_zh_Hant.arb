@@ -348,6 +348,7 @@
   "watermarkEmptyHint": "點擊右下角的+新增圖片或文字浮水印",
   "watermarkAddFromImage": "從圖片新增",
   "watermarkAddText": "輸入文字",
+  "watermarkImageImportFailed": "無法載入圖片，請重新選擇。",
   "watermarkAddedSnackbar": "已新增浮水印",
   "watermarkTextDialogTitle": "新增文字浮水印",
   "watermarkTextFieldLabel": "要顯示的文字",

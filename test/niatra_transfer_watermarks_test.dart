@@ -41,6 +41,11 @@ class _Problems {
   }
 }
 
+final _imageBytes = base64Decode(
+  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=',
+);
+final _imageContent = _imageBytes.join(',');
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   const paths = MethodChannel('plugins.flutter.io/path_provider');
@@ -102,8 +107,7 @@ void main() {
       outlineEnabled: true,
       outlineWidth: 5,
     );
-    final logo = File('${temp.path}/logo.png')
-      ..writeAsBytesSync([1, 2, 3, 4, 5, 6]);
+    final logo = File('${temp.path}/logo.png')..writeAsBytesSync(_imageBytes);
     await aMarks.addWatermark(logo.path);
     await settleTransfer();
     final aMarksBefore = await marks();
@@ -123,10 +127,10 @@ void main() {
     await b.import(bytes, nextDir(), report: report);
 
     final p = _Problems();
-    const expected = [
+    final expected = [
       'B mark|text|B mark|4278255360|false|false|3.0|-',
       '@my_account|text|@my_account|4294901760|true|true|5.0|-',
-      'logo|image|null|null|false|false|3.0|1,2,3,4,5,6',
+      'logo|image|null|null|false|false|3.0|$_imageContent',
     ];
     p.check(await marks(), expected, '文字・画像の透かしが届き、この端末の透かしも残る');
     p.check(report.addedCopies, isEmpty, '知らせる複製は無い');
@@ -199,7 +203,7 @@ void main() {
     useDevice('C', {'language': 'ja'});
     final cMarks = WatermarkService();
     await cMarks.init();
-    final cLogo = File('${temp.path}/c.png')..writeAsBytesSync([9, 9]);
+    final cLogo = File('${temp.path}/c.png')..writeAsBytesSync(_imageBytes);
     await cMarks.addWatermark(cLogo.path);
     await settleTransfer();
     final c = await TransferDevice.start();
@@ -231,7 +235,7 @@ void main() {
       nextDir(),
     );
     p.check(await marks(), [
-      'c|image|null|null|false|false|3.0|9,9',
+      'c|image|null|null|false|false|3.0|$_imageContent',
       'Old sign|text|Old sign|4279383126|false|false|3.0|-',
     ], '文字の透かしは届き、画像の無い画像の透かしは足さない');
     final cAfter = WatermarkService();
@@ -270,7 +274,7 @@ void _imageWatermarkTests(
 
   test('the same picture registered as a watermark on both devices is not '
       'added twice and leaves no extra file', () async {
-    final logo = File('${temp().path}/logo.png')..writeAsBytesSync([7, 7, 7]);
+    final logo = File('${temp().path}/logo.png')..writeAsBytesSync(_imageBytes);
     useDevice('A', {'language': 'ja'});
     final aMarks = WatermarkService();
     await aMarks.init();
@@ -287,7 +291,7 @@ void _imageWatermarkTests(
     final b = await TransferDevice.start();
     final report = TransferImportReport();
     await b.import(bytes, nextDir(), report: report);
-    expect(await pictures(), ['logo|false|false|7,7,7']);
+    expect(await pictures(), ['logo|false|false|$_imageContent']);
     expect(report.addedCopies, isEmpty);
     expect(pictureFiles(), 1, reason: '足さなかった透かしの画像を残さない');
   });
@@ -295,7 +299,7 @@ void _imageWatermarkTests(
   test('an image watermark both devices edited differently arrives as a copy '
       'with the same picture; deleting either one keeps the other\'s '
       'picture', () async {
-    final logo = File('${temp().path}/logo.png')..writeAsBytesSync([5, 4, 3]);
+    final logo = File('${temp().path}/logo.png')..writeAsBytesSync(_imageBytes);
     useDevice('A', {'language': 'ja'});
     final aMarks = WatermarkService();
     await aMarks.init();
@@ -316,15 +320,15 @@ void _imageWatermarkTests(
     await settleTransfer();
     await (await TransferDevice.start()).import(second, nextDir());
     expect(await pictures(), [
-      'logo|false|true|5,4,3',
-      'logo (コピー)|true|false|5,4,3',
+      'logo|false|true|$_imageContent',
+      'logo (コピー)|true|false|$_imageContent',
     ], reason: 'この端末の版を残し、もう1台の版を同じ画像の複製として足す');
 
     final after = WatermarkService();
     await after.init();
     await after.removeWatermark(mark.id);
     expect(await pictures(), [
-      'logo (コピー)|true|false|5,4,3',
+      'logo (コピー)|true|false|$_imageContent',
     ], reason: '元の透かしを消しても、複製の画像は残る');
   });
 }

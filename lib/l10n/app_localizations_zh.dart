@@ -988,6 +988,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get watermarkAddText => '输入文字';
 
   @override
+  String get watermarkImageImportFailed => '无法加载图片，请重新选择。';
+
+  @override
   String get watermarkAddedSnackbar => '已添加水印';
 
   @override
@@ -11170,6 +11173,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get watermarkAddText => '輸入文字';
+
+  @override
+  String get watermarkImageImportFailed => '無法載入圖片，請重新選擇。';
 
   @override
   String get watermarkAddedSnackbar => '已新增浮水印';

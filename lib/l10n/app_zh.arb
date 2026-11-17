@@ -348,6 +348,7 @@
   "watermarkEmptyHint": "点击右下角的+号添加图片或文字水印",
   "watermarkAddFromImage": "从图片添加",
   "watermarkAddText": "输入文字",
+  "watermarkImageImportFailed": "无法加载图片，请重新选择。",
   "watermarkAddedSnackbar": "已添加水印",
   "watermarkTextDialogTitle": "添加文字水印",
   "watermarkTextFieldLabel": "要显示的文字",

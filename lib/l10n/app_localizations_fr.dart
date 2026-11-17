@@ -1049,6 +1049,10 @@ class AppLocalizationsFr extends AppLocalizations {
   String get watermarkAddText => 'Saisir du texte';
 
   @override
+  String get watermarkImageImportFailed =>
+      'Impossible de charger l’image. Choisissez-en une autre.';
+
+  @override
   String get watermarkAddedSnackbar => 'Filigrane ajouté';
 
   @override

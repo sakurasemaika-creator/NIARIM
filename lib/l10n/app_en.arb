@@ -348,6 +348,7 @@
   "watermarkEmptyHint": "Tap the + button to add an image or text watermark",
   "watermarkAddFromImage": "Add from Image",
   "watermarkAddText": "Enter Text",
+  "watermarkImageImportFailed": "Couldn’t load the image. Please choose another one.",
   "watermarkAddedSnackbar": "Watermark added",
   "watermarkTextDialogTitle": "Add Text Watermark",
   "watermarkTextFieldLabel": "Text to display",

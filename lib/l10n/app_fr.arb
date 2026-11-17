@@ -348,6 +348,7 @@
   "watermarkEmptyHint": "Appuyez sur le bouton + pour ajouter un filigrane image ou texte",
   "watermarkAddFromImage": "Ajouter depuis une image",
   "watermarkAddText": "Saisir du texte",
+  "watermarkImageImportFailed": "Impossible de charger l’image. Choisissez-en une autre.",
   "watermarkAddedSnackbar": "Filigrane ajouté",
   "watermarkTextDialogTitle": "Ajouter un filigrane textuel",
   "watermarkTextFieldLabel": "Texte à afficher",

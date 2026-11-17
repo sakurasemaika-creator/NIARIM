@@ -521,6 +521,7 @@
   "watermarkEmptyHint": "右下の＋から画像または文字を登録してください",
   "watermarkAddFromImage": "画像から追加",
   "watermarkAddText": "文字を入力",
+  "watermarkImageImportFailed": "画像を読み込めません。画像を選び直してください。",
   "watermarkAddedSnackbar": "ウォーターマークを登録しました",
   "watermarkTextDialogTitle": "文字ウォーターマークを追加",
   "watermarkTextFieldLabel": "表示する文字",

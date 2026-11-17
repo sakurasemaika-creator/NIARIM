@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/services.dart';
@@ -10,6 +11,10 @@ import 'package:niarim/services/premium_service.dart';
 import 'package:niarim/services/storage_info_service.dart';
 import 'package:niarim/services/watermark_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+final _imageBytes = base64Decode(
+  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=',
+);
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -42,7 +47,7 @@ void main() {
   group('WatermarkService direct coverage', () {
     test('image/text add update path persistence and removal work', () async {
       final source = File('${root.path}/source.logo.png')
-        ..writeAsBytesSync([1, 2, 3, 4, 5]);
+        ..writeAsBytesSync(_imageBytes);
       final service = WatermarkService();
       await service.init();
       expect(service.assets, isEmpty);
@@ -52,7 +57,7 @@ void main() {
       expect(image.name, 'source.logo');
       final copiedPath = await service.pathOf(image.id);
       expect(copiedPath, isNotNull);
-      expect(File(copiedPath!).readAsBytesSync(), [1, 2, 3, 4, 5]);
+      expect(File(copiedPath!).readAsBytesSync(), _imageBytes);
 
       final text = await service.addTextWatermark(
         '1234567890123456',
@@ -117,7 +122,7 @@ void main() {
 
     test('image without extension is copied with png extension', () async {
       final source = File('${root.path}/source_without_ext')
-        ..writeAsBytesSync([7, 7]);
+        ..writeAsBytesSync(_imageBytes);
       final service = WatermarkService();
       await service.init();
       final asset = await service.addWatermark(source.path);

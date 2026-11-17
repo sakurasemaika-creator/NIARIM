@@ -1000,6 +1000,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get watermarkAddText => '文字を入力';
 
   @override
+  String get watermarkImageImportFailed => '画像を読み込めません。画像を選び直してください。';
+
+  @override
   String get watermarkAddedSnackbar => 'ウォーターマークを登録しました';
 
   @override

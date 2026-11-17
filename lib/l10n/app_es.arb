@@ -348,6 +348,7 @@
   "watermarkEmptyHint": "Toca el botón + para añadir una marca de agua de imagen o texto",
   "watermarkAddFromImage": "Añadir desde imagen",
   "watermarkAddText": "Introducir texto",
+  "watermarkImageImportFailed": "No se pudo cargar la imagen. Elige otra.",
   "watermarkAddedSnackbar": "Marca de agua añadida",
   "watermarkTextDialogTitle": "Añadir marca de agua de texto",
   "watermarkTextFieldLabel": "Texto a mostrar",

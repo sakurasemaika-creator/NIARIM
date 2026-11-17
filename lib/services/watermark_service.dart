@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:ui' as ui;
 
 import 'package:archive/archive.dart' show getCrc32;
 import 'package:flutter/foundation.dart';
@@ -45,17 +46,29 @@ class WatermarkService extends ChangeNotifier {
     );
   }
 
-  /// [sourcePath]の画像をウォーターマークとして登録する。
+  /// Validates the selected image before it joins the user's watermark list.
   Future<WatermarkAsset> addWatermark(String sourcePath) async {
+    final bytes = await File(sourcePath).readAsBytes();
+    final codec = await ui.instantiateImageCodec(
+      bytes,
+      targetWidth: 1,
+      targetHeight: 1,
+    );
+    try {
+      final frame = await codec.getNextFrame();
+      frame.image.dispose();
+    } finally {
+      codec.dispose();
+    }
+
     final dir = await _watermarksDir();
-    final ext = sourcePath.contains('.') ? sourcePath.split('.').last : 'png';
+    final sourceName = sourcePath.split(RegExp(r'[\\/]')).last;
+    final extension = RegExp(r'\.[^.]+$').firstMatch(sourceName);
+    final ext = extension?.group(0) ?? '.png';
     final id = 'wm_${DateTime.now().millisecondsSinceEpoch}_${_counter++}';
-    final fileName = '$id.$ext';
-    await File(sourcePath).copy('${dir.path}/$fileName');
-    final name = sourcePath
-        .split(RegExp(r'[\\/]'))
-        .last
-        .replaceAll(RegExp(r'\.[^.]+$'), '');
+    final fileName = '$id$ext';
+    final destination = await File('${dir.path}/$fileName').writeAsBytes(bytes);
+    final name = sourceName.replaceFirst(RegExp(r'\.[^.]+$'), '');
     final asset = WatermarkAsset(
       id: id,
       name: name,
@@ -63,7 +76,13 @@ class WatermarkService extends ChangeNotifier {
       fileName: fileName,
     );
     _assets.add(asset);
-    await _persist();
+    try {
+      await _persist();
+    } catch (_) {
+      _assets.remove(asset);
+      await destination.delete();
+      rethrow;
+    }
     notifyListeners();
     return asset;
   }

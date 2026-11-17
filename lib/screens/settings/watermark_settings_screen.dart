@@ -13,6 +13,7 @@ import '../../services/font_service.dart';
 import '../../services/watermark_service.dart';
 import '../../services/premium_service.dart';
 import '../../widgets/premium_lock_widget.dart';
+import '../../utils/app_error_reporter.dart';
 import '../../utils/duplicate_name.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/help_button.dart';
@@ -203,18 +204,22 @@ class WatermarkSettingsScreen extends StatelessWidget {
     WatermarkService service,
   ) async {
     final l10n = AppLocalizations.of(context)!;
-    final result = await FilePicker.platform.pickFiles(type: FileType.image);
-    if (result == null ||
-        result.files.isEmpty ||
-        result.files.first.path == null) {
-      return;
+    try {
+      final result = await FilePicker.platform.pickFiles(type: FileType.image);
+      final path = result?.files.firstOrNull?.path;
+      if (path == null || !context.mounted || !_canEditNow(context)) return;
+      await service.addWatermark(path);
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.watermarkAddedSnackbar)));
+    } catch (error, stack) {
+      AppErrorReporter.record(error, stack);
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.watermarkImageImportFailed)));
     }
-    if (!context.mounted || !_canEditNow(context)) return;
-    await service.addWatermark(result.files.first.path!);
-    if (!context.mounted) return;
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(l10n.watermarkAddedSnackbar)));
   }
 
   /// 文字ウォーターマークの新規作成・編集を兼ねるダイアログ。過去に作成
@@ -253,6 +258,7 @@ class WatermarkSettingsScreen extends StatelessWidget {
                   TextField(
                     controller: controller,
                     autofocus: true,
+                    onChanged: (_) => setS(() {}),
                     decoration: InputDecoration(
                       labelText: l10n.watermarkTextFieldLabel,
                       border: const OutlineInputBorder(),
@@ -349,47 +355,48 @@ class WatermarkSettingsScreen extends StatelessWidget {
                 child: Text(l10n.commonCancel),
               ),
               FilledButton(
-                onPressed: () async {
-                  if (!context.mounted || !_canEditNow(context)) return;
-                  final text = controller.text.trim();
-                  if (text.isEmpty) return;
-                  if (existing == null) {
-                    await service.addTextWatermark(
-                      text,
-                      color: selected.toARGB32(),
-                      fontFamily: fontFamily,
-                      shadowEnabled: shadow.shadowEnabled,
-                      shadowColor: shadow.shadowColor.toARGB32(),
-                      shadowOffsetX: shadow.shadowOffsetX,
-                      shadowOffsetY: shadow.shadowOffsetY,
-                      shadowBlur: shadow.shadowBlur,
-                      outlineEnabled: shadow.outlineEnabled,
-                      outlineColor: shadow.outlineColor.toARGB32(),
-                      outlineWidth: shadow.outlineWidth,
-                    );
-                  } else {
-                    await service.updateAsset(
-                      existing.copyWith(
-                        text: text,
-                        textColor: selected.toARGB32(),
-                        fontFamily: fontFamily,
-                        name: WatermarkService.renamedTextWatermark(
-                          existing,
-                          text,
-                        ),
-                        shadowEnabled: shadow.shadowEnabled,
-                        shadowColor: shadow.shadowColor.toARGB32(),
-                        shadowOffsetX: shadow.shadowOffsetX,
-                        shadowOffsetY: shadow.shadowOffsetY,
-                        shadowBlur: shadow.shadowBlur,
-                        outlineEnabled: shadow.outlineEnabled,
-                        outlineColor: shadow.outlineColor.toARGB32(),
-                        outlineWidth: shadow.outlineWidth,
-                      ),
-                    );
-                  }
-                  if (ctx.mounted) Navigator.pop(ctx);
-                },
+                onPressed: controller.text.trim().isEmpty
+                    ? null
+                    : () async {
+                        if (!context.mounted || !_canEditNow(context)) return;
+                        final text = controller.text.trim();
+                        if (existing == null) {
+                          await service.addTextWatermark(
+                            text,
+                            color: selected.toARGB32(),
+                            fontFamily: fontFamily,
+                            shadowEnabled: shadow.shadowEnabled,
+                            shadowColor: shadow.shadowColor.toARGB32(),
+                            shadowOffsetX: shadow.shadowOffsetX,
+                            shadowOffsetY: shadow.shadowOffsetY,
+                            shadowBlur: shadow.shadowBlur,
+                            outlineEnabled: shadow.outlineEnabled,
+                            outlineColor: shadow.outlineColor.toARGB32(),
+                            outlineWidth: shadow.outlineWidth,
+                          );
+                        } else {
+                          await service.updateAsset(
+                            existing.copyWith(
+                              text: text,
+                              textColor: selected.toARGB32(),
+                              fontFamily: fontFamily,
+                              name: WatermarkService.renamedTextWatermark(
+                                existing,
+                                text,
+                              ),
+                              shadowEnabled: shadow.shadowEnabled,
+                              shadowColor: shadow.shadowColor.toARGB32(),
+                              shadowOffsetX: shadow.shadowOffsetX,
+                              shadowOffsetY: shadow.shadowOffsetY,
+                              shadowBlur: shadow.shadowBlur,
+                              outlineEnabled: shadow.outlineEnabled,
+                              outlineColor: shadow.outlineColor.toARGB32(),
+                              outlineWidth: shadow.outlineWidth,
+                            ),
+                          );
+                        }
+                        if (ctx.mounted) Navigator.pop(ctx);
+                      },
                 child: Text(existing == null ? l10n.commonAdd : l10n.commonOk),
               ),
             ],

@@ -1029,6 +1029,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get watermarkAddText => 'Enter Text';
 
   @override
+  String get watermarkImageImportFailed =>
+      'Couldn’t load the image. Please choose another one.';
+
+  @override
   String get watermarkAddedSnackbar => 'Watermark added';
 
   @override

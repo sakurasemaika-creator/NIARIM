@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
@@ -65,6 +66,28 @@ List<WatermarkAsset> _marks(AppLocalizations l10n) => [
 final _png = base64Decode(
   'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=',
 );
+
+class _WatermarkPicker extends FilePicker {
+  late String path;
+
+  @override
+  Future<FilePickerResult?> pickFiles({
+    String? dialogTitle,
+    String? initialDirectory,
+    FileType type = FileType.any,
+    List<String>? allowedExtensions,
+    Function(FilePickerStatus)? onFileLoading,
+    @Deprecated('unused') bool allowCompression = false,
+    int compressionQuality = 0,
+    bool allowMultiple = false,
+    bool withData = false,
+    bool withReadStream = false,
+    bool lockParentWindow = false,
+    bool readSequential = false,
+  }) async => FilePickerResult([
+    PlatformFile(name: 'watermark.png', size: 0, path: path),
+  ]);
+}
 
 class _WatermarkPremiumService extends PremiumService {
   @override
@@ -153,6 +176,52 @@ void main() {
             .evaluate())
       e.renderObject! as RenderParagraph,
   ];
+
+  testWidgets('invalid images and blank text do not create a watermark', (
+    tester,
+  ) async {
+    final (service, l10n) = await pumpScreen(
+      tester,
+      locale: const Locale('ja'),
+      size: const Size(390, 844),
+      scale: 1,
+    );
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final before = service.assets.length;
+    final bad = File('${temp.path}/bad-image.png')
+      ..writeAsStringSync('invalid');
+    final picker = _WatermarkPicker();
+    FilePicker.platform = picker;
+    final add = find.byType(FloatingActionButton);
+    for (final path in [bad.path, '${temp.path}/missing-image.png']) {
+      picker.path = path;
+      await tester.tap(add);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(l10n.watermarkAddFromImage));
+      await pumpRealAsync(tester, const Duration(milliseconds: 450));
+      expect(find.text(l10n.watermarkImageImportFailed), findsOneWidget);
+      expect(service.assets, hasLength(before));
+      expect(tester.takeException(), isNull);
+      ScaffoldMessenger.of(
+        tester.element(find.byType(WatermarkSettingsScreen)),
+      ).removeCurrentSnackBar();
+      await tester.pump();
+    }
+
+    await tester.tap(add);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(l10n.watermarkAddText));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField), '   ');
+    await tester.pump();
+    final confirm = find.widgetWithText(FilledButton, l10n.commonAdd);
+    expect(tester.widget<FilledButton>(confirm).onPressed, isNull);
+    expect(service.assets, hasLength(before));
+    await tester.enterText(find.byType(TextField), 'New watermark');
+    await tester.pump();
+    expect(tester.widget<FilledButton>(confirm).onPressed, isNotNull);
+  });
 
   testWidgets('a copy\'s tile shows the copy suffix in full, at every size, '
       'text scale and language', (tester) async {

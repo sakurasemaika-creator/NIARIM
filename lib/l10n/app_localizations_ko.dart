@@ -1003,6 +1003,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get watermarkAddText => '문자 입력';
 
   @override
+  String get watermarkImageImportFailed => '이미지를 불러올 수 없습니다. 다른 이미지를 선택해 주세요.';
+
+  @override
   String get watermarkAddedSnackbar => '워터마크를 등록했습니다';
 
   @override

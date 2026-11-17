@@ -1052,6 +1052,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get watermarkAddText => 'Introducir texto';
 
   @override
+  String get watermarkImageImportFailed =>
+      'No se pudo cargar la imagen. Elige otra.';
+
+  @override
   String get watermarkAddedSnackbar => 'Marca de agua añadida';
 
   @override

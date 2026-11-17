@@ -1887,6 +1887,12 @@ abstract class AppLocalizations {
   /// **'文字を入力'**
   String get watermarkAddText;
 
+  /// No description provided for @watermarkImageImportFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'画像を読み込めません。画像を選び直してください。'**
+  String get watermarkImageImportFailed;
+
   /// No description provided for @watermarkAddedSnackbar.
   ///
   /// In ja, this message translates to:
