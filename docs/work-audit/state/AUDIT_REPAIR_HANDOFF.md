@@ -130,7 +130,7 @@ App・Web共通。Claudeが要修正の詳細を追記し、ユーザーが別�
   - **担当が見つけた別の不具合**：DISC265（作品一覧・共有の詳細表示の最後のカードが浮かぶボタンの上端ちょうどで終わる）。フォルダの中の画面の「小」のカードでは絵の印が星の所に重なる（DISC263と同じ形、前から）。
 - **このセッションの公開の印が無いDISC**。前のセッションで直った物もあるので、各行の記録と最新 `dev_branch` で確かめる。
   - DISC001〜028・030〜049・051〜061・063〜067・069〜074・077〜081・090・099〜100・102・107・111・115〜116・118〜120・122
-  - DISC126・137・142〜146・149〜150・154〜155・159・161〜162・166・193〜202・204〜205・223・231・236・257〜471
+  - DISC126・137・142〜146・149〜150・154〜155・159・161〜162・166・193〜202・204〜205・223・231・236・257〜472
   - 所有者の判断待ち：DISC090・099・107・115・146・155、A011、DISC066。
 - **dev_branchで落ちているtest**：DISC258（容量削減の画面のtestが多く落ちる。どのコミットからかは未確認）。
 
@@ -1679,3 +1679,12 @@ App・Web共通。Claudeが要修正の詳細を追記し、ユーザーが別�
 - **OK**：`/about`・`/about/index.html`・`/index.html`・`//about/`・`/about//`は307で正規のURL（`/about/`・`/`）へ1回で移る（繰り返しなし）。知らないパス（`/no-such-page`・`/no-such-page/`・`/about/extra`・`/features/foo.html`・`/ABOUT/`・`/%E3%81%82`・`/../etc/passwd`）は404でブランドの404のページ、`X-Robots-Tag: noindex, nofollow`と`<meta name=robots content=noindex,follow>`。壊れた百分率の符号（`/%E0%A4%A`）は307で`%25`へ逃がした先が404（繰り返しなし）。`/api/`・`/api/unknown`はJSONの404、`/api/contact`のGET・HEADは405。HEADは本文なしで同じ状態。ページへのPOSTは405。`?lang=fr`は`canonical`に`?lang=fr`、知らない`?lang=xx`・`?lang=%ZZ`は200で`canonical`は言語なしのURL。404のページは言語を引き継ぎ（`?lang=fr`で仏語・`?lang=ko`で韓国語、「ホームへ戻る」は`/?lang=fr`）、SPで横のはみ出し無し。戻る・進むで404と前のページを行き来できる。`robots.txt`・`sitemap.xml`は200。
 - **観察（記録のみ）**：(1)`/404.html`は`/404`へ307で、`/404`そのものは状態200で404の本文を返す（`noindex`なので検索には載らないが、厳密にはsoft 404）。(2)`/favicon.ico`は404（ページは`/assets/icons/favicon.svg`と`apple-touch-icon`を宣言しているので主なブラウザは困らない。古いブラウザ・一部の取得の道具は`/favicon.ico`を探す）。
 - **未確認**：本番のCloudflare（キャッシュ・`SITE_ORIGIN`の実際の値）での同じ確認。
+
+### W018（一巡目、Claude・S40、判定：要修正）
+
+- **確認SHA・環境**：Web `fb539bc`をscratchpadで`wrangler dev --local`（127.0.0.1:8799）で動かし、`robots.txt`・`sitemap.xml`と、`sitemap.xml`の77のURL（11ページ×7言語）の生のHTMLをJavaScriptを動かさずに取得（`w-audit/w018.py`、結果は`w-audit/w018-rows.json`）。
+- **要修正（新規）**：472（日本語以外の66のURLの生の本文が日本語）。
+- **既知**：ブラウザの言語で`?lang`の無いURLが別の言語に描かれる（DISC439）、PCのナビの折れ（DISC440）。
+- **OK**：`robots.txt`は`/api/`だけを拒み、`Sitemap:`を示す。`sitemap.xml`は77のURLで、それぞれ7言語＋`x-default`の`hreflang`。77のURLとも状態200、`canonical`は自分自身（`?lang`付き）、`hreflang`8件に自分を含む、題・説明・`og:title`・`og:url`（＝`canonical`）・`og:image`・`twitter:card`がある、JSON-LDはどれも正しいJSON、`<img>`はすべて`alt`付き、`<html lang>`はURLの言語（11ページずつ7言語）。説明の重複は0。題の重複は5組だけで、どれも別の言語で同じ語（「Contact」「FAQ」「Guide」、簡体字と繁体字の「使用指南」「最新消息」）で、`hreflang`で区別される。404と変わったURLはW017で確認。
+- **観察（記録のみ）**：`canonical`・`sitemap`の正規のドメインは`wrangler.jsonc`の`SITE_ORIGIN`＝`https://niarim-web.niarim.workers.dev`（workers.devの下）。独自のドメインで公開するなら設定を替える（W022・W026で見る）。
+- **未確認**：本番の配信先での同じ確認、Search Console等の外部の評価。
