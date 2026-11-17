@@ -318,7 +318,8 @@ void main() {
     final stackButton = find.byTooltip(l10n.timelineStackOrderTitle);
     await tester.ensureVisible(stackButton);
     await tester.tap(stackButton);
-    await tester.pumpAndSettle();
+    // The monitor can still be rasterizing the two text layers in real time.
+    await pumpRealAsync(tester, const Duration(milliseconds: 600));
     expect(find.byType(TimelineStackOrderPanel), findsOneWidget);
     await capture('05_stack_order_default');
     expect(find.text(l10n.timelineStackFrameUnit), findsOneWidget);
