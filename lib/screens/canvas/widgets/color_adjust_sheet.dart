@@ -12,7 +12,10 @@ import '../../../models/effect_filter_instance.dart';
 import '../../../models/filter_def.dart';
 import '../../../services/filter_service.dart';
 import '../../../services/project_service.dart';
+import '../../../utils/duplicate_name.dart';
+import '../../../utils/filter_display_name.dart';
 import '../../../widgets/labeled_slider.dart';
+import '../../../widgets/name_entry_dialog.dart';
 import '../../../config/font_fallback.dart';
 
 /// 色調調整はスマホ・PC共通の画面下部コントロールバーを使う。
@@ -59,6 +62,7 @@ class _ColorAdjustSheetState extends State<ColorAdjustSheet> {
   int _previewH = 0;
   int _previewGeneration = 0;
   bool _applying = false;
+  bool _naming = false;
 
   @override
   void initState() {
@@ -204,36 +208,121 @@ class _ColorAdjustSheetState extends State<ColorAdjustSheet> {
     }
   }
 
-  void _addToDrawFilter(BuildContext context) {
+  String _suggestedFilterName(AppLocalizations l10n) {
+    final settings = [
+      (l10n.filterColorAdjustSaturationLabel, _saturation.round()),
+      (l10n.filterColorAdjustBrightnessLabel, _brightness.round()),
+      (l10n.filterColorAdjustContrastLabel, _contrast.round()),
+    ];
+    final changed = [
+      for (final (label, value) in settings)
+        if (value != 0) '$label ${value > 0 ? '+' : ''}$value',
+    ];
+    return changed.isEmpty
+        ? l10n.filterNameColorAdjust
+        : '${l10n.filterNameColorAdjust} (${changed.join(', ')})';
+  }
+
+  Future<void> _nameFilter({
+    required String title,
+    required Iterable<String> Function() takenNames,
+    required void Function(String name) add,
+    required String Function(String name) notice,
+  }) async {
+    if (_naming) return;
     final l10n = AppLocalizations.of(context)!;
-    context.read<FilterService>().addFilter(
-      FilterDef(
-        id: 'custom_${DateTime.now().microsecondsSinceEpoch}',
-        name: l10n.filterNameColorAdjust,
-        kind: FilterKind.colorAdjust,
-        caSaturation: _saturation,
-        caBrightness: _brightness,
-        caContrast: _contrast,
-      ),
-    );
+    final messenger = ScaffoldMessenger.of(context);
+    String? addedName;
+    setState(() => _naming = true);
+    try {
+      await showDialog<void>(
+        context: context,
+        builder: (_) => NameEntryDialog(
+          title: title,
+          initialName: uniqueNumberedName(
+            _suggestedFilterName(l10n),
+            takenNames(),
+          ),
+          confirmLabel: l10n.commonAdd,
+          cancelLabel: l10n.commonCancel,
+          failureText: (_) => l10n.timelineSaveFailedDialogBody,
+          onSubmit: (name) async {
+            final unique = uniqueNumberedName(name, takenNames());
+            add(unique);
+            addedName = unique;
+          },
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _naming = false);
+    }
+    final name = addedName;
+    if (!mounted || name == null) return;
+    messenger.showSnackBar(SnackBar(content: Text(notice(name))));
     _cancel();
   }
 
-  void _addToEffectFilter(BuildContext context) {
-    context.read<ProjectService>().addEffectFilter(
-      widget.projectId,
-      widget.sceneId,
-      EffectFilterInstance(
-        id: 'effect_${DateTime.now().microsecondsSinceEpoch}',
-        type: EffectFilterType.colorAdjust,
-        startFrame: widget.frameIndex,
-        endFrame: (widget.frameIndex + 11).clamp(0, widget.totalFrames - 1),
-        param1: _saturation,
-        param2: _brightness,
-        param3: _contrast,
+  Future<void> _addToDrawFilter() {
+    final l10n = AppLocalizations.of(context)!;
+    final filters = context.read<FilterService>();
+    return _nameFilter(
+      title: l10n.canvasColorAdjustAddToDrawFilter,
+      takenNames: () => {
+        for (final f in filters.filters) ...[f.name, filterDisplayName(l10n, f)],
+      },
+      add: (name) => filters.addFilter(
+        FilterDef(
+          id: 'custom_${DateTime.now().microsecondsSinceEpoch}',
+          name: name,
+          kind: FilterKind.colorAdjust,
+          caSaturation: _saturation,
+          caBrightness: _brightness,
+          caContrast: _contrast,
+        ),
+        select: false,
       ),
+      notice: l10n.canvasColorAdjustDrawFilterAdded,
     );
-    _cancel();
+  }
+
+  Future<void> _addToEffectFilter() {
+    final l10n = AppLocalizations.of(context)!;
+    final projects = context.read<ProjectService>();
+    final projectId = widget.projectId;
+    final sceneId = widget.sceneId;
+    final start = widget.frameIndex;
+    return _nameFilter(
+      title: l10n.canvasColorAdjustAddToEffectFilter,
+      takenNames: () sync* {
+        for (final filter in projects.effectFiltersOf(projectId, sceneId)) {
+          if (filter.name != null) yield filter.name!;
+          if (filter.type == EffectFilterType.colorAdjust) {
+            yield l10n.filterNameColorAdjust;
+          }
+        }
+      },
+      add: (name) {
+        final total = projects.frameCount(projectId, sceneId);
+        if (start < 0 || start >= total) {
+          throw StateError('Color adjustment target frame no longer exists');
+        }
+        projects.addEffectFilter(
+          projectId,
+          sceneId,
+          EffectFilterInstance(
+            id: 'effect_${DateTime.now().microsecondsSinceEpoch}',
+            type: EffectFilterType.colorAdjust,
+            name: name,
+            startFrame: start,
+            endFrame: (start + 11).clamp(start, total - 1),
+            param1: _saturation,
+            param2: _brightness,
+            param3: _contrast,
+          ),
+        );
+      },
+      notice: l10n.canvasColorAdjustEffectFilterAdded,
+    );
   }
 
   @override
@@ -308,14 +397,16 @@ class _ColorAdjustSheetState extends State<ColorAdjustSheet> {
                       child: Text(l10n.filterApplyButton),
                     ),
                     TextButton(
-                      onPressed: () => _addToDrawFilter(context),
+                      onPressed: _naming ? null : _addToDrawFilter,
                       child: Text(
                         l10n.canvasColorAdjustAddToDrawFilter,
                         style: const TextStyle(fontSize: 11),
                       ),
                     ),
                     TextButton(
-                      onPressed: () => _addToEffectFilter(context),
+                      onPressed: _naming || widget.totalFrames <= 0
+                          ? null
+                          : _addToEffectFilter,
                       child: Text(
                         l10n.canvasColorAdjustAddToEffectFilter,
                         style: const TextStyle(fontSize: 11),

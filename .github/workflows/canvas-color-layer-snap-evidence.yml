@@ -37,6 +37,7 @@ jobs:
         run: |
           flutter test test/canvas_edit_menu_walkthrough_test.dart --plain-name "色調調整 opens without errors" --reporter expanded
           flutter test test/canvas_edit_menu_walkthrough_test.dart --plain-name "color adjustment previews live on canvas; cancel restores, apply saves" --reporter expanded
+          flutter test test/canvas_edit_menu_walkthrough_test.dart --plain-name "color adjustment adds named drawing and timeline filters" --reporter expanded
       - name: Upload screenshot PNGs even if test fails
         if: always()
         uses: actions/upload-artifact@v4

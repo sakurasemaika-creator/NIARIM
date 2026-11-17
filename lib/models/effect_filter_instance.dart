@@ -8,6 +8,7 @@ import 'pixel_color_mode.dart';
 class EffectFilterInstance {
   final String id;
   final EffectFilterType type;
+  final String? name;
   final int startFrame;
   final int endFrame;
   final bool enabled;
@@ -36,6 +37,7 @@ class EffectFilterInstance {
     required this.type,
     required this.startFrame,
     required this.endFrame,
+    this.name,
     this.enabled = true,
     this.param1 = 5.0,
     this.param2 = 50.0,
@@ -49,7 +51,9 @@ class EffectFilterInstance {
   });
 
   EffectFilterInstance copyWith({
+    String? id,
     EffectFilterType? type,
+    String? name,
     int? startFrame,
     int? endFrame,
     bool? enabled,
@@ -64,8 +68,9 @@ class EffectFilterInstance {
     bool? pixelDither,
   }) {
     return EffectFilterInstance(
-      id: id,
+      id: id ?? this.id,
       type: type ?? this.type,
+      name: name ?? this.name,
       startFrame: startFrame ?? this.startFrame,
       endFrame: endFrame ?? this.endFrame,
       enabled: enabled ?? this.enabled,

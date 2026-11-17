@@ -5854,6 +5854,16 @@ class AppLocalizationsKo extends AppLocalizations {
   String get canvasColorAdjustAddToEffectFilter => '연출 필터에 추가';
 
   @override
+  String canvasColorAdjustDrawFilterAdded(String name) {
+    return '그리기 필터에 ‘$name’을(를) 추가했습니다.';
+  }
+
+  @override
+  String canvasColorAdjustEffectFilterAdded(String name) {
+    return '타임라인의 연출 필터에 ‘$name’을(를) 추가했습니다.';
+  }
+
+  @override
   String get canvasColorAdjustMenuTitle => '색조 조정';
 
   @override

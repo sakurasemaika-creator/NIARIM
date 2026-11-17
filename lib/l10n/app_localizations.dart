@@ -10557,6 +10557,18 @@ abstract class AppLocalizations {
   /// **'演出フィルターに追加する'**
   String get canvasColorAdjustAddToEffectFilter;
 
+  /// No description provided for @canvasColorAdjustDrawFilterAdded.
+  ///
+  /// In ja, this message translates to:
+  /// **'描画フィルターに「{name}」を追加しました。'**
+  String canvasColorAdjustDrawFilterAdded(String name);
+
+  /// No description provided for @canvasColorAdjustEffectFilterAdded.
+  ///
+  /// In ja, this message translates to:
+  /// **'演出フィルターに「{name}」を追加しました。タイムラインで確認できます。'**
+  String canvasColorAdjustEffectFilterAdded(String name);
+
   /// No description provided for @canvasColorAdjustMenuTitle.
   ///
   /// In ja, this message translates to:

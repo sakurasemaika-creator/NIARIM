@@ -7,12 +7,15 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/app.dart';
 import 'package:niarim/app_bootstrap.dart';
+import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/router.dart';
 import 'package:niarim/screens/canvas/canvas_screen.dart';
 import 'package:niarim/screens/canvas/widgets/color_adjust_sheet.dart';
 import 'package:niarim/screens/home/home_screen.dart';
+import 'package:niarim/services/filter_service.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:niarim/widgets/labeled_slider.dart';
+import 'package:niarim/widgets/filter_sample_preview.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -333,6 +336,103 @@ void main() {
     await tester.ensureVisible(add);
     await tester.pump();
     expect(tester.getRect(add).right, lessThanOrEqualTo(320));
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('color adjustment adds named drawing and timeline filters', (
+    tester,
+  ) async {
+    await openMenu(tester);
+    final canvas = tester.element(find.byType(CanvasScreen));
+    final l10n = AppLocalizations.of(canvas)!;
+    final ps = canvas.read<ProjectService>();
+    final filters = canvas.read<FilterService>();
+    final project = ps.projects.single;
+    final sceneId = ps.scenesOf(project.id).single.id;
+    final startSelection = filters.currentFilter?.id;
+    final initialCount = filters.filters.length;
+    final panel = find.byType(ColorAdjustSheet);
+    final dialog = find.byType(AlertDialog);
+    final nameField = find.descendant(
+      of: dialog,
+      matching: find.byType(TextField),
+    );
+
+    Future<void> reopen() async {
+      await tester.tap(find.byIcon(Icons.settings));
+      await settle(tester, 3);
+      await tapEntry(tester, l10n.canvasColorAdjustMenuTitle);
+    }
+
+    Future<void> prompt(String label) async {
+      final buttons = find.descendant(of: panel, matching: find.text(label));
+      await tester.ensureVisible(buttons);
+      await tester.tap(buttons);
+      await settle(tester, 4);
+    }
+
+    Future<void> submit(String input, String notice) async {
+      await tester.enterText(nameField, input);
+      await tester.testTextInput.receiveAction(TextInputAction.done);
+      await settle(tester, 5);
+      expect(panel, findsNothing);
+      expect(find.text(notice), findsOneWidget);
+      ScaffoldMessenger.of(canvas).removeCurrentSnackBar();
+    }
+
+    await tapEntry(tester, l10n.canvasColorAdjustMenuTitle);
+    final sliders = find.descendant(
+      of: panel,
+      matching: find.byType(LabeledSlider),
+    );
+    tester.widget<LabeledSlider>(sliders.at(1)).onChanged!.call(-40);
+    await settle(tester, 3);
+    await prompt(l10n.canvasColorAdjustAddToDrawFilter);
+    expect(
+      tester.widget<TextField>(nameField).controller!.text,
+      contains('${l10n.filterColorAdjustBrightnessLabel} -40'),
+    );
+    await tester.tap(
+      find.descendant(of: dialog, matching: find.text(l10n.commonCancel)),
+    );
+    await settle(tester, 4);
+    expect(panel, findsOneWidget);
+    expect(filters.filters, hasLength(initialCount));
+
+    await prompt(l10n.canvasColorAdjustAddToDrawFilter);
+    await submit('  夜の画面  ', l10n.canvasColorAdjustDrawFilterAdded('夜の画面'));
+    await reopen();
+    await prompt(l10n.canvasColorAdjustAddToDrawFilter);
+    await submit('夜の画面', l10n.canvasColorAdjustDrawFilterAdded('夜の画面 (2)'));
+    expect(filters.currentFilter?.id, startSelection);
+    final added = filters.filters.skip(initialCount).toList();
+    expect(added.map((f) => f.name), ['夜の画面', '夜の画面 (2)']);
+    expect(added.first.caBrightness, -40);
+    expect(
+      filterSamplePixels(added.first),
+      isNot(equals(filterSamplePixels(added.last))),
+    );
+
+    await reopen();
+    await prompt(l10n.canvasColorAdjustAddToEffectFilter);
+    await submit('光', l10n.canvasColorAdjustEffectFilterAdded('光'));
+    await reopen();
+    await prompt(l10n.canvasColorAdjustAddToEffectFilter);
+    await submit('光', l10n.canvasColorAdjustEffectFilterAdded('光 (2)'));
+    await tester.runAsync(() => ps.saveProject(project.id));
+    final restored = ProjectService();
+    addTearDown(restored.dispose);
+    await tester.runAsync(restored.init);
+    final effects = restored.effectFiltersOf(project.id, sceneId);
+    expect(effects.map((e) => e.name), ['光', '光 (2)']);
+    for (final effect in effects) {
+      expect((effect.startFrame, effect.endFrame), (0, 1));
+    }
+
+    appRouter.go('/timeline/${project.id}');
+    await settle(tester, 8);
+    expect(find.text('光'), findsWidgets);
+    expect(find.text('光 (2)'), findsWidgets);
     expect(tester.takeException(), isNull);
   });
 

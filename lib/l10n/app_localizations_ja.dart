@@ -5823,6 +5823,16 @@ class AppLocalizationsJa extends AppLocalizations {
   String get canvasColorAdjustAddToEffectFilter => '演出フィルターに追加する';
 
   @override
+  String canvasColorAdjustDrawFilterAdded(String name) {
+    return '描画フィルターに「$name」を追加しました。';
+  }
+
+  @override
+  String canvasColorAdjustEffectFilterAdded(String name) {
+    return '演出フィルターに「$name」を追加しました。タイムラインで確認できます。';
+  }
+
+  @override
   String get canvasColorAdjustMenuTitle => '色調調整';
 
   @override

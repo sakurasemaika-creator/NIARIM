@@ -5766,6 +5766,16 @@ class AppLocalizationsZh extends AppLocalizations {
   String get canvasColorAdjustAddToEffectFilter => '添加到演出滤镜';
 
   @override
+  String canvasColorAdjustDrawFilterAdded(String name) {
+    return '已将“$name”添加到绘图滤镜。';
+  }
+
+  @override
+  String canvasColorAdjustEffectFilterAdded(String name) {
+    return '已将“$name”添加到时间轴的演出滤镜。';
+  }
+
+  @override
   String get canvasColorAdjustMenuTitle => '色调调整';
 
   @override
@@ -15962,6 +15972,16 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get canvasColorAdjustAddToEffectFilter => '新增至演出濾鏡';
+
+  @override
+  String canvasColorAdjustDrawFilterAdded(String name) {
+    return '已將「$name」新增至繪圖濾鏡。';
+  }
+
+  @override
+  String canvasColorAdjustEffectFilterAdded(String name) {
+    return '已將「$name」新增至時間軸的演出濾鏡。';
+  }
 
   @override
   String get canvasColorAdjustMenuTitle => '色調調整';

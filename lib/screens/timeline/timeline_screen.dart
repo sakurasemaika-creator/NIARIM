@@ -5490,7 +5490,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                   children: [
                     _buildTrackLabel(
                       Icons.movie_filter,
-                      _EffectFilterSheet._typeLabel(l10n, e.type),
+                      _EffectFilterSheet._displayName(l10n, e),
                     ),
                     Expanded(
                       child: Stack(
@@ -8111,6 +8111,9 @@ class _EffectFilterSheet extends StatelessWidget {
     required this.currentFrame,
   });
 
+  static String _displayName(AppLocalizations l10n, EffectFilterInstance e) =>
+      e.name ?? _typeLabel(l10n, e.type);
+
   static String _typeLabel(AppLocalizations l10n, EffectFilterType type) =>
       switch (type) {
         EffectFilterType.fade => l10n.timelineEffectTypeFade,
@@ -8268,21 +8271,14 @@ class _EffectFilterSheet extends StatelessWidget {
     List<EffectFilterInstance> effects,
   ) {
     final service = context.read<ProjectService>();
-    final copy = EffectFilterInstance(
+    final l10n = AppLocalizations.of(context)!;
+    final copy = e.copyWith(
       id: 'effect_${DateTime.now().microsecondsSinceEpoch}',
-      type: e.type,
-      startFrame: e.startFrame,
-      endFrame: e.endFrame,
-      enabled: e.enabled,
-      param1: e.param1,
-      param2: e.param2,
-      param3: e.param3,
-      param4: e.param4,
-      param5: e.param5,
-      fadeColor: e.fadeColor,
-      pixelColorMode: e.pixelColorMode,
-      pixelExplicitColors: e.pixelExplicitColors,
-      pixelDither: e.pixelDither,
+      name: e.name == null
+          ? null
+          : numberedCopyName(l10n, e.name!, {
+              for (final effect in effects) _displayName(l10n, effect),
+            }),
     );
     service.addEffectFilter(projectId, sceneId, copy);
     final index = effects.indexWhere((f) => f.id == e.id);
@@ -8318,7 +8314,7 @@ class _EffectFilterSheet extends StatelessWidget {
       child: ExpansionTile(
         leading: Icon(_typeIcons[e.type], size: 20),
         title: Text(
-          _typeLabel(l10n, e.type),
+          _displayName(l10n, e),
           style: const TextStyle(
             fontSize: 13,
             fontFamily: 'Kuramubon',
@@ -8326,7 +8322,10 @@ class _EffectFilterSheet extends StatelessWidget {
           ),
         ),
         subtitle: Text(
-          'F${e.startFrame + 1} ～ F${e.endFrame + 1}',
+          [
+            if (e.name != null) _typeLabel(l10n, e.type),
+            'F${e.startFrame + 1} ～ F${e.endFrame + 1}',
+          ].join(' · '),
           style: const TextStyle(fontSize: 11),
         ),
         trailing: Row(
@@ -8351,7 +8350,7 @@ class _EffectFilterSheet extends StatelessWidget {
               onPressed: () async {
                 if (!await confirmDelete(
                   context,
-                  itemName: _typeLabel(l10n, e.type),
+                  itemName: _displayName(l10n, e),
                 )) {
                   return;
                 }

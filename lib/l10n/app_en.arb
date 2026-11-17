@@ -2478,6 +2478,8 @@
   "canvasColorAdjustTitle": "Color Adjust",
   "canvasColorAdjustAddToDrawFilter": "Add to draw filters",
   "canvasColorAdjustAddToEffectFilter": "Add to effect filters",
+  "canvasColorAdjustDrawFilterAdded": "Added “{name}” to drawing filters.",
+  "canvasColorAdjustEffectFilterAdded": "Added “{name}” to effect filters on the timeline.",
   "canvasColorAdjustMenuTitle": "Color Adjust",
   "canvasEditMenuReferenceWindow": "Reference Window",
   "canvasEditMenuReferenceWindowSubtitle": "Keep a reference image floating on top",

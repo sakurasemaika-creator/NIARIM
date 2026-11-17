@@ -1027,6 +1027,7 @@ class NiaproSerializer {
           (e) => {
             'id': e.id,
             'type': e.type.name,
+            if (e.name != null) 'name': e.name,
             'startFrame': e.startFrame,
             'endFrame': e.endFrame,
             'enabled': e.enabled,
@@ -1207,6 +1208,7 @@ class NiaproSerializer {
         return EffectFilterInstance(
           id: m['id'] as String,
           type: EffectFilterType.values.byName(m['type'] as String),
+          name: m['name'] is String ? m['name'] as String : null,
           startFrame: m['startFrame'] as int,
           endFrame: m['endFrame'] as int,
           enabled: m['enabled'] as bool? ?? true,

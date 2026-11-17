@@ -6167,6 +6167,16 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get canvasColorAdjustAddToEffectFilter =>
+
+  @override
+  String canvasColorAdjustDrawFilterAdded(String name) {
+    return '« $name » a été ajouté aux filtres de dessin.';
+  }
+
+  @override
+  String canvasColorAdjustEffectFilterAdded(String name) {
+    return '« $name » a été ajouté aux filtres d’effets de la chronologie.';
+  }
       'Ajouter aux filtres d’effet';
 
   @override

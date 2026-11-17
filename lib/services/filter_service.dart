@@ -872,9 +872,9 @@ class FilterService extends ChangeNotifier {
     );
   }
 
-  void addFilter(FilterDef filter) {
+  void addFilter(FilterDef filter, {bool select = true}) {
     _filters.add(filter);
-    _currentFilterId = filter.id;
+    if (select) _currentFilterId = filter.id;
     notifyListeners();
     _persist();
   }

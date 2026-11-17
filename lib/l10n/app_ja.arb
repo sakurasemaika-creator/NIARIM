@@ -2908,6 +2908,22 @@
   "canvasColorAdjustTitle": "色調調整",
   "canvasColorAdjustAddToDrawFilter": "描画フィルターに追加する",
   "canvasColorAdjustAddToEffectFilter": "演出フィルターに追加する",
+  "canvasColorAdjustDrawFilterAdded": "描画フィルターに「{name}」を追加しました。",
+  "@canvasColorAdjustDrawFilterAdded": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "canvasColorAdjustEffectFilterAdded": "演出フィルターに「{name}」を追加しました。タイムラインで確認できます。",
+  "@canvasColorAdjustEffectFilterAdded": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "canvasColorAdjustMenuTitle": "色調調整",
   "canvasEditMenuReferenceWindow": "資料ウィンドウ",
   "canvasEditMenuReferenceWindowSubtitle": "三面図・資料画像をフローティング表示",

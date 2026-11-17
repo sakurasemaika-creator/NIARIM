@@ -2478,6 +2478,8 @@
   "canvasColorAdjustTitle": "Réglage des couleurs",
   "canvasColorAdjustAddToDrawFilter": "Ajouter aux filtres de dessin",
   "canvasColorAdjustAddToEffectFilter": "Ajouter aux filtres d’effet",
+  "canvasColorAdjustDrawFilterAdded": "« {name} » a été ajouté aux filtres de dessin.",
+  "canvasColorAdjustEffectFilterAdded": "« {name} » a été ajouté aux filtres d’effets de la chronologie.",
   "canvasColorAdjustMenuTitle": "Réglage des couleurs",
   "canvasEditMenuReferenceWindow": "Fenêtre de référence",
   "canvasEditMenuReferenceWindowSubtitle": "Affiche une image de référence flottante",

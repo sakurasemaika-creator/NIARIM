@@ -2478,6 +2478,8 @@
   "canvasColorAdjustTitle": "색조 조정",
   "canvasColorAdjustAddToDrawFilter": "그리기 필터에 추가",
   "canvasColorAdjustAddToEffectFilter": "연출 필터에 추가",
+  "canvasColorAdjustDrawFilterAdded": "그리기 필터에 ‘{name}’을(를) 추가했습니다.",
+  "canvasColorAdjustEffectFilterAdded": "타임라인의 연출 필터에 ‘{name}’을(를) 추가했습니다.",
   "canvasColorAdjustMenuTitle": "색조 조정",
   "canvasEditMenuReferenceWindow": "참고 창",
   "canvasEditMenuReferenceWindowSubtitle": "참고 이미지를 항상 띄워서 표시",
