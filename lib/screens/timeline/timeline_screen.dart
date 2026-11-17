@@ -77,6 +77,7 @@ import '../../widgets/progress_dialog.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/help_button.dart';
 import '../../config/font_fallback.dart';
+import '../../utils/duplicate_name.dart';
 import '../../utils/reorder_index.dart';
 import '../../widgets/scrollable_sheet_body.dart';
 import '../../widgets/custom_automation_manager_sheet.dart';
@@ -2732,6 +2733,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                             ),
                             if (!_isSceneMultiSelect)
                               GestureDetector(
+                                key: ValueKey('timelineSceneMenu_${scene.id}'),
                                 behavior: HitTestBehavior.opaque,
                                 onTap: () => _showSceneMenu(scene, scenes),
                                 child: const Padding(
@@ -2755,6 +2757,11 @@ class _TimelineScreenState extends State<TimelineScreen> {
     );
   }
 
+  String _sceneCopyName(AppLocalizations l10n, ProjectService ps, Scene scene) =>
+      numberedEditorCopyName(l10n, scene.displayName, {
+        for (final other in ps.scenesOf(widget.projectId)) other.displayName,
+      });
+
   /// 選択中シーンを複製する（シーンのコピー。素材タイムラインの
   /// 上の大きなボタンから起動する）。並び順（シーン一覧の
   /// 実際の順序）に沿って1件ずつ複製元の直後へ挿入していく。
@@ -2770,7 +2777,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
         ps.duplicateScene(
           widget.projectId,
           scene.id,
-          name: l10n.layerPanelCopySuffix(scene.displayName),
+          name: _sceneCopyName(l10n, ps, scene),
         );
       }
     });
@@ -2867,7 +2874,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
         final duplicated = ps.duplicateScene(
           widget.projectId,
           scene.id,
-          name: l10n.layerPanelCopySuffix(scene.displayName),
+          name: _sceneCopyName(l10n, ps, scene),
         );
         if (duplicated != null) newIds.add(duplicated.id);
       }
@@ -3050,10 +3057,11 @@ class _TimelineScreenState extends State<TimelineScreen> {
               title: Text(l10n.themeDuplicateAction),
               onTap: () {
                 Navigator.pop(ctx);
-                context.read<ProjectService>().duplicateScene(
+                final ps = context.read<ProjectService>();
+                ps.duplicateScene(
                   widget.projectId,
                   scene.id,
-                  name: l10n.layerPanelCopySuffix(scene.displayName),
+                  name: _sceneCopyName(l10n, ps, scene),
                 );
               },
             ),

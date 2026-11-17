@@ -326,6 +326,46 @@ void main() {
     },
   );
 
+  testWidgets('scene copies number old and new names in the scene menu', (
+    tester,
+  ) async {
+    final id = await openTimeline(
+      tester,
+      project: const Size(160, 90),
+      screen: const Size(1280, 800),
+      pc: true,
+      fraction: .4,
+      setUpProject: (ps, id) {
+        final original = ps.scenesOf(id).single;
+        ps.renameScene(id, original.id, 'Cut');
+        ps.duplicateScene(id, original.id, name: 'Cutのコピー');
+      },
+    );
+    final context = tester.element(find.byType(TimelineScreen));
+    final ps = context.read<ProjectService>();
+    final l10n = AppLocalizations.of(context)!;
+
+    Future<void> duplicate(String name) async {
+      final source = ps.scenesOf(id).singleWhere((s) => s.displayName == name);
+      await tester.tap(find.byKey(ValueKey('timelineSceneMenu_${source.id}')));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+      await tester.tap(find.text(l10n.themeDuplicateAction));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+    }
+
+    await duplicate('Cutのコピー');
+    await duplicate('Cut (コピー 2)');
+    expect(ps.scenesOf(id).map((scene) => scene.displayName), [
+      'Cut',
+      'Cutのコピー',
+      'Cut (コピー 2)',
+      'Cut (コピー 3)',
+    ]);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets(
     'timeline tools stay above the tracks during selection and paste',
     (tester) async {

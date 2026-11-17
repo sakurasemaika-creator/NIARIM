@@ -89,6 +89,55 @@ String numberedCopyName(AppLocalizations l10n, String name, Set<String> taken) {
   }
 }
 
+/// シーン・レイヤーでは旧版の「名前のコピー」等も番号付き命名に引き継ぐ。
+String numberedEditorCopyName(
+  AppLocalizations l10n,
+  String name,
+  Set<String> taken,
+) {
+  String normalize(String value) {
+    var source = value;
+    var copies = 0;
+    while (true) {
+      final form = _legacyEditorCopyForms
+          .where(
+            (form) =>
+                source.length > form.prefix.length + form.suffix.length &&
+                source.startsWith(form.prefix) &&
+                source.endsWith(form.suffix),
+          )
+          .firstOrNull;
+      if (form == null) break;
+      source = source.substring(
+        form.prefix.length,
+        source.length - form.suffix.length,
+      );
+      copies++;
+    }
+    return copies == 0 ? value : copyNameIn(l10n, source, copies);
+  }
+
+  return numberedCopyName(l10n, normalize(name), {
+    ...taken,
+    for (final other in taken) normalize(other),
+  });
+}
+
+final _legacyEditorCopyForms = [
+  for (final locale in AppLocalizations.supportedLocales)
+    _editorCopyForm(lookupAppLocalizations(locale)),
+];
+
+({String prefix, String suffix}) _editorCopyForm(AppLocalizations l10n) {
+  const marker = '\u0000';
+  final template = l10n.layerPanelCopySuffix(marker);
+  final index = template.indexOf(marker);
+  return (
+    prefix: template.substring(0, index),
+    suffix: template.substring(index + 1),
+  );
+}
+
 /// 画面の言語を受け取らない所（サービスの既定の名前）で付ける複製の名前。
 /// 決まりは[numberedCopyName]と同じで、日本語の形（「名前 (コピー)」）。
 String fallbackCopyName(String name, Iterable<String> taken) =>

@@ -38,6 +38,7 @@ import 'panel_close_bar.dart';
 import 'two_finger_vertical_swipe_detector.dart';
 import '../../../config/font_fallback.dart';
 import '../../../utils/blend_mode_label.dart';
+import '../../../utils/duplicate_name.dart';
 import '../../../utils/reorder_index.dart';
 import '../../../config/accent_text_theme.dart';
 import '../../../widgets/typing_dialog_inset.dart';
@@ -662,6 +663,7 @@ class _LayerPanelState extends State<LayerPanel> {
                         // 三点メニュー・ゴミ箱は各レイヤーの右側に配置する
                         // （対象レイヤーが常に明確になり、選択状態に依存しない）。
                         GestureDetector(
+                          key: ValueKey('canvasLayerMenu_${layer.id}'),
                           onTap: () =>
                               _isTimelineMaterial(layer.type) ||
                                   layer.type == model.LayerType.common ||
@@ -1384,13 +1386,30 @@ class _LayerPanelState extends State<LayerPanel> {
                 title: Text(l10n.themeDuplicateAction),
                 onTap: () {
                   Navigator.pop(ctx);
-                  context.read<ProjectService>().addLayer(
-                    projectId: widget.projectId,
-                    sceneId: widget.sceneId,
-                    frameIndex: widget.frameIndex,
-                    type: model.LayerType.common,
-                    name: l10n.layerPanelCopySuffix(layer.name),
-                  );
+                  final projects = context.read<ProjectService>();
+                  final projectId = widget.projectId;
+                  final home = projects.homeOf(projectId, layer.id);
+                  final sceneId = home?.sceneId ?? widget.sceneId;
+                  final frameIndex = home?.frameIndex ?? widget.frameIndex;
+                  final name = numberedEditorCopyName(l10n, layer.name, {
+                    for (final other in projects.layersOf(
+                      projectId,
+                      sceneId,
+                      frameIndex,
+                    ))
+                      other.name,
+                    for (final entry in projects.commonLayersOf(projectId))
+                      entry.layer.name,
+                  });
+                  projects.editTimeline(projectId, 'Duplicate layer', () {
+                    projects.duplicateLayer(
+                      projectId: projectId,
+                      sceneId: sceneId,
+                      frameIndex: frameIndex,
+                      layerId: layer.id,
+                      nameOverride: name,
+                    );
+                  });
                 },
               ),
             if (isCommon)

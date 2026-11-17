@@ -197,6 +197,62 @@ void main() {
     expect(find.byType(AlertDialog), findsNothing);
   });
 
+  testWidgets('duplicate common layers retain numbered names, range and ink', (
+    tester,
+  ) async {
+    await boot(tester, const Size(640, 780));
+    final (projects, projectId) = await showPanel(tester);
+    final l10n = AppLocalizations.of(tester.element(find.byType(LayerPanel)))!;
+    final sceneId = projects.scenesOf(projectId).single.id;
+    final source = projects.addLayer(
+      projectId: projectId,
+      sceneId: sceneId,
+      frameIndex: 0,
+      type: model.LayerType.common,
+      name: 'Ink',
+    );
+    projects.updateLayer(
+      projectId: projectId,
+      sceneId: sceneId,
+      frameIndex: 0,
+      layer: source.copyWith(
+        rangeMode: model.LayerRangeMode.frameRange,
+        rangeStart: 1,
+        rangeEnd: 4,
+      ),
+    );
+    final tiles = projects.tileManagerOf(projectId);
+    final sourceKey = projects.tileKeyFor(projectId, sceneId, 0, source.id);
+    const rgba = [255, 0, 0, 255];
+    tiles.getOrCreateTile(sourceKey, 0, 0).setRange(0, 4, rgba);
+    tiles.markDirty(sourceKey, 0, 0);
+    await tester.pumpAndSettle();
+
+    Future<model.Layer> duplicate(model.Layer layer, String name) async {
+      await tester.tap(find.byKey(ValueKey('canvasLayerMenu_${layer.id}')));
+      await tester.pumpAndSettle();
+      final action = find.text(l10n.themeDuplicateAction);
+      await tester.ensureVisible(action);
+      await tester.tap(action);
+      await tester.pumpAndSettle();
+      final copy = projects
+          .layersOf(projectId, sceneId, 0)
+          .singleWhere((item) => item.name == name);
+      expect((copy.rangeMode, copy.rangeStart, copy.rangeEnd), (
+        model.LayerRangeMode.frameRange,
+        1,
+        4,
+      ));
+      final key = projects.tileKeyFor(projectId, sceneId, 0, copy.id);
+      expect(tiles.getTile(key, 0, 0)?.take(4), rgba);
+      return copy;
+    }
+
+    final copy = await duplicate(source, 'Ink (コピー)');
+    await duplicate(copy, 'Ink (コピー 2)');
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('common layer creation rejects invalid frame numbers', (
     tester,
   ) async {

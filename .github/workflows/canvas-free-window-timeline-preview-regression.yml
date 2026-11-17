@@ -13,6 +13,8 @@ on:
       - "test/desktop_dock_gap_test.dart"
       - "test/layer_thumbnail_renderer_test.dart"
       - "test/timeline_preview_controls_test.dart"
+      - "test/layer_panel_add_sheet_and_range_dialog_test.dart"
+      - "lib/utils/duplicate_name.dart"
       - ".github/workflows/canvas-free-window-timeline-preview-regression.yml"
   workflow_dispatch:
 
@@ -39,5 +41,7 @@ jobs:
           flutter test test/canvas_dock_compact_interaction_test.dart --reporter expanded
       - name: Actual layer thumbnails over project paper
         run: flutter test test/layer_thumbnail_renderer_test.dart --reporter expanded
+      - name: Layer panel actions
+        run: flutter test test/layer_panel_add_sheet_and_range_dialog_test.dart --reporter expanded
       - name: Timeline overlay anchors on different aspect ratios and widths
         run: flutter test test/timeline_preview_controls_test.dart --reporter expanded
