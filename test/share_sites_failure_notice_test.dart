@@ -261,7 +261,7 @@ void main() {
     expect(find.byType(SnackBar), findsNothing);
   });
 
-  // ブラシ・トーン・スタンプの一覧は同じ作り（行のメニューの「書き出し」）。
+  // ブラシ・トーン・スタンプの一覧は同じ作り（行のメニューから共有カードを作成）。
   for (final kind in ['brush', 'tone', 'stamp']) {
     testWidgets('$kind export: a share problem is reported as a share problem, '
         'once, without the exception text', (tester) async {
@@ -288,21 +288,34 @@ void main() {
         _ => l10n.stampExportFailedSnackbar,
       });
       expect(exportFailed, isNotEmpty);
-      final written = File('${share.directory.path}/$name.nia$kind');
+      File? written;
 
       Future<bool> export() async {
         final row = find.ancestor(
           of: find.text(name).first,
           matching: find.byType(ListTile),
         );
-        return chooseFromMenu(
+        final enabled = await chooseFromMenu(
           tester,
           find.descendant(
             of: row.first,
             matching: find.byIcon(Icons.more_vert),
           ),
-          l10n.transferExport,
+          l10n.shareCardExportMenu,
         );
+        if (!enabled) return false;
+        final dialog = find.byType(AlertDialog);
+        if (dialog.evaluate().isEmpty) return true;
+        final preview = find.descendant(
+          of: dialog,
+          matching: find.byType(Image),
+        );
+        written = (tester.widget<Image>(preview).image as FileImage).file;
+        await tester.tap(
+          find.descendant(of: dialog, matching: find.text(l10n.commonShare)),
+        );
+        await pumpRealAsync(tester, const Duration(milliseconds: 500));
+        return true;
       }
 
       final recorded = AppErrorReporter.recentErrors.length;
@@ -310,8 +323,10 @@ void main() {
       await export();
       expect(tester.takeException(), isNull);
       expect(share.calls, 1);
-      expect(written.existsSync(), isTrue, reason: '書き出しはできている');
-      expect(share.lastPaths, [written.path]);
+      expect(written, isNotNull);
+      expect(written!.path, endsWith('.png'));
+      expect(written!.existsSync(), isTrue, reason: '共有カードは生成済み');
+      expect(share.lastPaths, [written!.path]);
       expect(snackBarTexts(tester), [l10n.communityErrorUnsupported]);
       expectNoInternalText(tester, also: [mockText, exportFailed]);
       expect(AppErrorReporter.recentErrors.length, greaterThan(recorded));

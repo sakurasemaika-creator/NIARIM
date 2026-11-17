@@ -15,6 +15,7 @@ import 'package:niarim/screens/canvas/canvas_screen.dart';
 import 'package:niarim/screens/canvas/widgets/canvas_area.dart';
 import 'package:niarim/screens/canvas/widgets/filter_panel.dart';
 import 'package:niarim/services/custom_automation_service.dart';
+import 'package:niarim/services/premium_service.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:niarim/services/theme_service.dart';
 import 'package:niarim/widgets/custom_automation_draft_sheet.dart';
@@ -26,6 +27,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'helpers/first_use_tooltips.dart';
 import 'helpers/load_app_fonts.dart';
 import 'helpers/pick_filter_card.dart';
+
+class _AutomationMember extends PremiumService {
+  @override
+  bool get isPremium => true;
+}
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -342,7 +348,12 @@ class _ProductionHarness {
       RepaintBoundary(
         key: rootKey,
         child: MultiProvider(
-          providers: providers!,
+          providers: [
+            ...providers!,
+            ChangeNotifierProvider<PremiumService>(
+              create: (_) => _AutomationMember(),
+            ),
+          ],
           child: Builder(
             builder: (themeContext) => MaterialApp(
               theme: themeContext.watch<ThemeService>().themeData,

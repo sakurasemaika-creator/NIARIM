@@ -87,25 +87,25 @@ void main() {
     await tester.pump(const Duration(milliseconds: 1600));
     expect(find.byType(CanvasScreen), findsOneWidget);
 
-    // Move picker into the same left dock as brush, not to a floating window.
+    // Move picker into the same left dock as the pen sub-tool.
     await settings!.moveDesktopDockPanel(
       CanvasDockPanel.colorPicker,
       toRight: false,
-      before: CanvasDockPanel.brush,
+      before: CanvasDockPanel.penSubTool,
     );
     await tester.pump(const Duration(milliseconds: 200));
     final picker = find.byKey(const ValueKey('dockTarget-colorPicker'));
-    final brush = find.byKey(const ValueKey('dockTarget-brush'));
+    final penSubTool = find.byKey(const ValueKey('dockTarget-penSubTool'));
     expect(picker, findsOneWidget);
-    expect(brush, findsOneWidget);
+    expect(penSubTool, findsOneWidget);
     // Adjacent edges touch exactly: no 8px spacer remains between panels.
     expect(
       tester.getBottomLeft(picker).dy,
-      closeTo(tester.getTopLeft(brush).dy, 0.1),
+      closeTo(tester.getTopLeft(penSubTool).dy, 0.1),
     );
-    expect(find.byKey(const ValueKey('freeDockWindow-brush')), findsNothing);
+    expect(find.byKey(const ValueKey('freeDockWindow-penSubTool')), findsNothing);
 
-    await tester.tap(find.byKey(const ValueKey('dockMenu-brush')));
+    await tester.tap(find.byKey(const ValueKey('dockMenu-penSubTool')));
     await tester.pump(const Duration(milliseconds: 300));
     expect(find.text('自由配置'), findsNothing);
     expect(find.byType(CanvasScreen), findsOneWidget);

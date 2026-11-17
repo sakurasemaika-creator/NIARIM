@@ -5,6 +5,7 @@ import 'package:image/image.dart' as img;
 import 'package:niarim/engine/procedural_texture.dart';
 import 'package:niarim/models/asset_tags.dart';
 import 'package:niarim/models/brush.dart';
+import 'package:niarim/models/tone.dart';
 import 'package:niarim/services/brush_service.dart';
 import 'package:niarim/services/stamp_service.dart';
 import 'package:niarim/services/tone_service.dart';
@@ -89,17 +90,11 @@ void main() {
     // どちらも実装ミスではなく数学的な必然。利用者から見ると「散らし」
     // 「市松」という形の名前で探す人と、「25%」「50%」という濃さで探す人が
     // いるため、どちらの入口も残す判断をしている。
-    // Dartのコレクションは`==`が同一性比較なので、集合どうしを直接
-    // 比較しても一致しない。名前を並べ替えて連結した文字列で突き合わせる。
-    // Dartのコレクションは`==`が同一性比較なので集合どうしを直接比較できない。
-    // 名前を並べ替えて連結した文字列へ正規化して突き合わせる。許可リスト側も
-    // 同じ関数で正規化し、並び順を書き手が推測しなくて済むようにしておく
-    // （手で並べた順がString.compareToの順序と食い違って一致しない、という
-    // 取り違えを実際にやったため）。
-    String key(List<String> names) => (names.toList()..sort()).join('|');
+    // 名前の変更で検証が壊れないよう、組み込み素材のIDで組を比較する。
+    String key(Iterable<String> ids) => (ids.toList()..sort()).join('|');
     final knownIdenticalPairs = {
-      key(['ピクセル散らし（1px）', 'ピクセルディザ 25%（4×4）']),
-      key(['ピクセル市松（1px）', 'ピクセルディザ 50%（4×4）']),
+      key(['Tone0009', 'Tone0017']), // 散らしと標準25%
+      key(['Tone0007', 'Tone0019']), // 市松と標準50%
     };
 
     test('素材画像がそれぞれ別の模様になっている', () async {
@@ -110,19 +105,19 @@ void main() {
       // 含む、といった包含関係があるため、判定順序を間違えると別のトーンが
       // 同じ模様になる。全件の模様を突き合わせ、上記の既知の一致を除いて
       // 重複が無いことを確かめる。
-      final groups = <String, List<String>>{};
+      final groups = <String, List<Tone>>{};
       for (final tone in service.tones) {
         groups
             .putIfAbsent(
               _alphaSignature(generateBuiltInToneTexture(tone)),
               () => [],
             )
-            .add(tone.name);
+            .add(tone);
       }
       final unexpected = groups.values
           .where((g) => g.length > 1)
-          .where((g) => !knownIdenticalPairs.contains(key(g)))
-          .map((g) => g.join(' == '))
+          .where((g) => !knownIdenticalPairs.contains(key(g.map((t) => t.id))))
+          .map((g) => g.map((t) => t.name).join(' == '))
           .toList();
       expect(unexpected, isEmpty, reason: '同じ模様になっているトーンがある');
     });
