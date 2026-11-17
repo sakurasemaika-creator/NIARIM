@@ -16,7 +16,10 @@ import type { APIGatewayProxyEventV2 } from "aws-lambda";
  * The local user, key, signature, reward session, wallet and table are
  * synthetic. Nothing interacts with production AdMob or AWS.
  */
-const { loadGoogleKeys } = vi.hoisted(() => ({ loadGoogleKeys: vi.fn() }));
+const { loadGoogleKeys, requestAdMobReport } = vi.hoisted(() => ({
+  loadGoogleKeys: vi.fn(),
+  requestAdMobReport: vi.fn(),
+}));
 vi.mock("../src/lib/auth", () => ({
   authenticate: vi.fn(async () => ({
     niarimUserId: `N${"a".repeat(32)}`,
@@ -30,6 +33,24 @@ vi.mock("../src/lib/admobSsv", async (importOriginal) => ({
 }));
 vi.mock("maxmind", () => ({
   open: vi.fn(async () => ({ get: () => ({ country: { iso_code: "JP" } }) })),
+}));
+vi.mock("@aws-sdk/client-secrets-manager", () => ({
+  GetSecretValueCommand: class {},
+  SecretsManagerClient: class {
+    async send() {
+      return { SecretString: JSON.stringify({
+        client_id: "local-report-client",
+        client_secret: "local-report-secret",
+        refresh_token: "local-report-token",
+      }) };
+    }
+  },
+}));
+vi.mock("google-auth-library", () => ({
+  OAuth2Client: class {
+    setCredentials() {}
+    request = requestAdMobReport;
+  },
 }));
 vi.mock("../src/lib/dynamo", async (importOriginal) => {
   const original = await importOriginal<typeof import("../src/lib/dynamo")>();
@@ -51,6 +72,7 @@ vi.mock("../src/lib/dynamo", async (importOriginal) => {
 import {
   getRewardedAdStatus, receiveRewardedAdSsv, startRewardedAdSession,
 } from "../src/api/routes/rewardedAd";
+import { handler as refreshAdRates } from "../src/batch/rewardAdRevenue";
 import { Keys } from "../src/lib/dynamo";
 import { authenticate } from "../src/lib/auth";
 import { rewardReportDay } from "../src/lib/rewardAdRates";
@@ -216,18 +238,49 @@ describe.skipIf(process.env.NIARIM_DYNAMODB_LOCAL_TESTS !== "1")(
       expect(history.Items?.[0]?.transactionId).toBe(transactionId);
     }, 90_000);
 
-    it("settles a regional offer and its country count in the same transaction", async () => {
+    it("publishes a regional rate from the daily report and settles it once", async () => {
       const regionalOwner = `N${"c".repeat(32)}`;
       const tierUnit = "ca-app-pub-1111111111111111/3333333333";
       process.env.REWARDED_AD_COUNTRY_DB = "/opt/GeoLite2-Country.mmdb";
       process.env.REWARDED_AD_AUTO_RATES_ENABLED = "true";
       process.env.REWARDED_AD_UNIT_TIERS = JSON.stringify({ 20: tierUnit });
+      process.env.ADMOB_REPORT_OAUTH_SECRET_ARN = "local-report-secret";
       try {
-        await ddb.send(new PutCommand({
-          TableName: table,
-          Item: { ...Keys.rewardAdRateSnapshot(), itemType: "REWARDED_AD_RATES",
-            generatedAtMs: Date.now(), rates: { JP: 20 } },
+        const reportToday = rewardReportDay(Date.now());
+        const today = Date.parse(reportToday.replace(/^(\d{4})(\d{2})(\d{2})$/, "$1-$2-$3"));
+        const day = 86_400_000;
+        for (let offset = 2; offset <= 8; offset++) {
+          const date = new Date(today - offset * day).toISOString().slice(0, 10).replaceAll("-", "");
+          await ddb.send(new PutCommand({
+            TableName: table,
+            Item: { ...Keys.rewardAdCountryDay(date, "JP"), completions: 17 },
+          }));
+        }
+        requestAdMobReport.mockResolvedValueOnce({ data: [
+          { header: { localizationSettings: { currencyCode: "JPY" } } },
+          { row: {
+            dimensionValues: { COUNTRY: { value: "JP" }, AD_UNIT: { value: adUnit } },
+            metricValues: { IMPRESSIONS: { integerValue: "120" }, ESTIMATED_EARNINGS: { microsValue: "60000000" } },
+          } },
+          { footer: { matchingRowCount: "1" } },
+        ] });
+        await refreshAdRates();
+        expect(requestAdMobReport).toHaveBeenCalledWith(expect.objectContaining({
+          url: "https://admob.googleapis.com/v1/accounts/pub-1111111111111111/networkReport:generate",
+          data: { reportSpec: expect.objectContaining({
+            dimensionFilters: [{ dimension: "AD_UNIT", matchesAny: { values: [adUnit, tierUnit] } }],
+          }) },
         }));
+        const rates = await row(Keys.rewardAdRateSnapshot());
+        const revenue = await row(Keys.rewardAdRevenueSnapshot());
+        expect(rates?.rates).toEqual({ JP: 20 });
+        expect(revenue?.countries).toEqual({
+          JP: { impressions: 120, earningsMicros: "60000000", completions: 119 },
+        });
+        requestAdMobReport.mockRejectedValueOnce(new Error("Unreachable report service"));
+        await expect(refreshAdRates()).rejects.toThrow("AdMob network report request failed");
+        expect(await row(Keys.rewardAdRateSnapshot())).toEqual(rates);
+        expect(await row(Keys.rewardAdRevenueSnapshot())).toEqual(revenue);
         vi.mocked(authenticate).mockResolvedValueOnce({
           niarimUserId: regionalOwner, membershipTier: "free", googleSub: "local-test-regional",
         });
@@ -248,6 +301,7 @@ describe.skipIf(process.env.NIARIM_DYNAMODB_LOCAL_TESTS !== "1")(
         delete process.env.REWARDED_AD_COUNTRY_DB;
         delete process.env.REWARDED_AD_AUTO_RATES_ENABLED;
         delete process.env.REWARDED_AD_UNIT_TIERS;
+        delete process.env.ADMOB_REPORT_OAUTH_SECRET_ARN;
       }
     });
   },
