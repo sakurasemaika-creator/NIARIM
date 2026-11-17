@@ -45,9 +45,9 @@ void main() {
       expect(hair.outlineWidth, 1);
       expect(hair.foldEnabled, isTrue);
       expect(hair.foldTriggerAngle, 60);
-      expect(hair.foldCurveStartRatio, .16);
-      expect(hair.foldAngleRatio, .5);
-      expect(hair.foldLengthRatio, .70);
+      expect(hair.foldCurveStartRatio, .25);
+      expect(hair.foldAngleRatio, .80);
+      expect(hair.foldLengthRatio, .60);
       expect(hair.foldEndTaperRatio, .35);
       expect(hair.fadeIn, FadeEndpointSettings.full);
       expect(hair.fadeOut.rangePx, 165);
@@ -112,8 +112,8 @@ void main() {
         expect(restored.pressureOn.opacity.enabled, isFalse);
         expect(restored.presetColor, 0xffdb424b);
         expect(restored.outlineWidth, 1);
-        expect(restored.foldLengthRatio, .90);
-        expect(restored.foldAngleRatio, .92);
+        expect(restored.foldLengthRatio, .65);
+        expect(restored.foldAngleRatio, .70);
         expect(restored.foldCurveStartRatio, .62);
       }
     },

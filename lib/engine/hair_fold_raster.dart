@@ -108,7 +108,9 @@ class HairFoldRaster {
   /// starts and heads, as this renderer finds them; no start for a fold
   /// without a line (straight, or an overlapping hairpin).
   @visibleForTesting
-  static List<({Offset vertex, ({Offset origin, Offset direction})? start})>
+  static List<
+    ({Offset vertex, ({Offset origin, Offset direction, bool smooth})? start})
+  >
   foldLineStarts(List<HairRibbonPoint> points, Brush brush) {
     final lengths = <double>[0];
     for (var i = 1; i < points.length; i++) {
@@ -391,7 +393,18 @@ class HairFoldRaster {
       // Each fold line starts where the inner outlines meet; the front
       // section's own edge is hidden over the back section up to there.
       final foldLines =
-          <int, ({Offset origin, Offset direction, Offset continuation})>{};
+          <
+            int,
+            ({
+              Offset origin,
+              Offset direction,
+              Offset continuation,
+              bool smooth,
+              double side,
+              bool firstFront,
+              int backEnd,
+            })
+          >{};
       final hidden = <int, double>{};
       if (brush.foldMode != HairFoldMode.crescent) {
         for (var i = 1; i < indices.length - 1; i++) {
@@ -451,6 +464,10 @@ class HairFoldRaster {
             origin: start.origin,
             direction: start.direction,
             continuation: firstFront ? outgoing : -incoming,
+            smooth: start.smooth,
+            side: sign,
+            firstFront: firstFront,
+            backEnd: fold.backEnd,
           );
           hidden[pivot] = math.max(
             p.width,
@@ -535,39 +552,83 @@ class HairFoldRaster {
               ? (i > 1 ? crescentSides[indices[i - 2]]! : 1)
               : signedTurn.sign;
         }
+        // A wave shallower than the pen is mostly hidden inside its own
+        // stroke, so a thick pen needs a deeper curve to become a crescent.
+        final threshold = Brush.clampFoldCrescentDepthThreshold(
+          brush.foldCrescentDepthThreshold,
+        );
+        final deepRuns = <int>[];
+        for (var i = 1; i < indices.length; i++) {
+          final start = indices[i - 1], end = indices[i];
+          final chord = points[end].position - points[start].position;
+          final apex = points[crescentApices[start]!].position;
+          final depth = chord.distance < 1e-6
+              ? (apex - points[start].position).distance
+              : _cross(chord, apex - points[start].position).abs() /
+                    chord.distance;
+          var width = 0.0;
+          for (var index = start; index <= end; index++) {
+            width = math.max(width, points[index].width);
+          }
+          if (depth >= width * threshold) deepRuns.add(start);
+        }
         if (!_crescentActive) {
-          // A wave shallower than the pen is mostly hidden inside its own
-          // stroke, so a thick pen needs a deeper curve to become a crescent.
           // Once activated, the stroke stays a crescent: nothing was drawn
           // before this point, so no stale fold surface can remain.
-          final threshold = Brush.clampFoldCrescentDepthThreshold(
-            brush.foldCrescentDepthThreshold,
-          );
-          var deepEnough = false;
-          for (var i = 1; i < indices.length && !deepEnough; i++) {
-            final start = indices[i - 1], end = indices[i];
-            final chord = points[end].position - points[start].position;
-            final apex = points[crescentApices[start]!].position;
-            final depth = chord.distance < 1e-6
-                ? (apex - points[start].position).distance
-                : _cross(chord, apex - points[start].position).abs() /
-                      chord.distance;
-            var width = 0.0;
-            for (var index = start; index <= end; index++) {
-              width = math.max(width, points[index].width);
-            }
-            deepEnough = depth >= width * threshold;
-          }
-          if (!deepEnough && !flatEnds) return;
-          _crescentActive = deepEnough;
+          if (deepRuns.isEmpty && !flatEnds) return;
+          _crescentActive = deepRuns.isNotEmpty;
         }
+        // The stroke's ends blend between the ordinary strand and the
+        // nearest real crescent, over the turn up to its apex. A sliver of a
+        // curve before the first or after the last one (a wave started just
+        // before a bend, a C turned a little past half a turn) is too shallow
+        // to be a crescent of its own: measured from it, the blend was so
+        // short that the sliver bulged into a lump at the start, and at the
+        // end its bow ran out into a thread before the tip or square cut.
+        // A sliver outside them stays the ordinary strand, so it joins
+        // the crescent at full width on both sides of their shared point.
+        final headStart = deepRuns.isEmpty ? indices.first : deepRuns.first;
+        final firstApex = crescentApices[headStart]!;
         final transitionTurn = math.max(
           .15,
-          math.min(math.pi / 3, turns[crescentApices[0]!] * .75),
+          math.min(
+            math.pi / 3,
+            // From a sliver the crescent starts at full width, not at its
+            // tip: spread the change over the whole turn to its apex.
+            (turns[firstApex] - turns[headStart]) *
+                (headStart == indices.first ? .75 : 1),
+          ),
         );
+        // The finished stroke's end mirrors its start.
+        final tailStart = deepRuns.isEmpty
+            ? indices[indices.length - 2]
+            : deepRuns.last;
+        final tailEnd = indices[indices.indexOf(tailStart) + 1];
+        final lastApex = crescentApices[tailStart]!;
+        final endTransition = taperEnd
+            ? math.max(
+                .15,
+                math.min(
+                  math.pi / 3,
+                  (turns[tailEnd] - turns[lastApex]) *
+                      (tailEnd == indices.last ? .75 : 1),
+                ),
+              )
+            : null;
         for (var index = 0; index < points.length; index++) {
-          final t = (turns[index] / transitionTurn).clamp(0.0, 1.0);
-          crescentBlend[index] = _crescentActive ? t * t * (3 - 2 * t) : 0;
+          final t = ((turns[index] - turns[headStart]) / transitionTurn).clamp(
+            0.0,
+            1.0,
+          );
+          var blend = index < headStart ? 0.0 : t * t * (3 - 2 * t);
+          if (endTransition != null) {
+            final e = ((turns[tailEnd] - turns[index]) / endTransition).clamp(
+              0.0,
+              1.0,
+            );
+            blend *= index > tailEnd ? 0 : e * e * (3 - 2 * e);
+          }
+          crescentBlend[index] = _crescentActive ? blend : 0;
         }
       }
       runs.sort((a, b) {
@@ -741,7 +802,13 @@ class HairFoldRaster {
               }
               final blend = crescent * endpointBlend;
               var ordinary = normal * point.width / 2 * (1 - blend);
-              if (run.start == 0 && index > leadIndex && leadSpan > 1e-6) {
+              // Only the head, up to the apex: past it the ordinary strand
+              // comes back at the end, and its edge along the chord (across
+              // the bottom of a C) must keep its width.
+              if (run.start == 0 &&
+                  leadSpan > 1e-6 &&
+                  index > leadIndex &&
+                  index <= apexIndex!) {
                 final q =
                     (_dot(
                               point.position - points[leadIndex].position,
@@ -1066,15 +1133,56 @@ class HairFoldRaster {
       // Fold length is its length relative to the strand width; fold angle
       // scales how much of the stroke's turn it follows (50 % = natural);
       // curve start keeps it straight first, which reads as thinner material.
+      // On a smooth bend, where the outlines never cross, it instead runs
+      // along the strand from the front's inner outline ([_smoothFoldLine]).
       if (brush.foldMode != HairFoldMode.crescent) {
         for (var i = 1; i < indices.length - 1; i++) {
           final line = foldLines[i];
           if (line == null) continue;
           final p = points[indices[i]];
-          final (:origin, :direction, :continuation) = line;
+          final origin = line.origin, direction = line.direction;
+          final continuation = line.continuation;
           // A continuous 270-degree fold keeps the authored turn direction:
           // a shorter, later, gentler line than a direction change.
           final continuous = bends[i - 1].continuous;
+          if (line.smooth && !continuous) {
+            final strand = p.width + p.outlineOr(brush.outlineWidth) * 2;
+            final path = _smoothFoldLine(
+              points,
+              lengths,
+              indices[i],
+              line.side,
+              line.firstFront,
+              line.backEnd,
+              line.firstFront ? indices[i - 1] : indices[i + 1],
+              brush.outlineWidth,
+              // Fold angle: how steeply it sinks; curve start: how deep
+              // (deeper reads as thinner material); fold length: how far it
+              // runs on past the bend (100 % = twice the strand width).
+              descent:
+                  strand * (2.4 - 1.6 * brush.foldAngleRatio.clamp(0.0, 1.0)),
+              depthShare: (.2 + .6 * brush.foldCurveStartRatio.clamp(0.0, 1.0))
+                  .clamp(0.0, .75),
+              run: strand * 2 * brush.foldLengthRatio.clamp(0.0, 1.0),
+            );
+            final taper = brush.foldEndTaperRatio.clamp(.01, 1.0);
+            for (var k = 1; k < path.length; k++) {
+              final t = k / (path.length - 1);
+              final lineWidth =
+                  p.outlineOr(brush.outlineWidth) *
+                  (1 - ((t - (1 - taper)) / taper).clamp(0.0, 1.0));
+              creases.add(
+                _CreaseSegment(
+                  path[k - 1],
+                  path[k],
+                  lineWidth,
+                  ownerBase + i,
+                  p.opacity,
+                ),
+              );
+            }
+            continue;
+          }
           // 100 % is twice the strand width; the line is clipped to the
           // strand, so even the maximum never leaves its contour.
           final length =
@@ -2028,7 +2136,7 @@ class _FoldStartCache {
   final List<HairRibbonPoint> samples;
   final int first;
   final double side;
-  final ({Offset origin, Offset direction})? start;
+  final ({Offset origin, Offset direction, bool smooth})? start;
   _FoldStartCache(this.samples, this.first, this.side, this.start);
 
   bool matches(List<HairRibbonPoint> points, int low, int high, double sign) {
@@ -2155,7 +2263,7 @@ _foldSides(
 /// centre line and the outline's direction there, heading into the fold; or
 /// null when the front outline never leaves the back section (an
 /// overlapping hairpin), where there is no outline left to continue.
-({Offset origin, Offset direction})? _foldLineStart(
+({Offset origin, Offset direction, bool smooth})? _foldLineStart(
   List<HairRibbonPoint> points,
   List<double> lengths,
   int pivot,
@@ -2285,9 +2393,10 @@ _foldSides(
     }
   }
   if (inside < 0) {
-    // A smooth bend: the front's inner outline runs on from the apex.
+    // A smooth bend: the front's inner outline runs on from the apex. Its
+    // fold line is drawn along the strand instead ([_smoothFoldLine]).
     final t = tangentAt(vertex);
-    return (origin: outlineAt(0), direction: away < 0 ? t : -t);
+    return (origin: outlineAt(0), direction: away < 0 ? t : -t, smooth: true);
   }
   if (outside == null) return null;
   var exit = outside;
@@ -2309,9 +2418,69 @@ _foldSides(
   );
   if (span < 1) {
     final t = tangentAt(vertex + away * exit);
-    return (origin: origin, direction: away < 0 ? t : -t);
+    return (origin: origin, direction: away < 0 ? t : -t, smooth: false);
   }
-  return (origin: origin, direction: _unit(origin - outlineAt(exit + span)));
+  return (
+    origin: origin,
+    direction: _unit(origin - outlineAt(exit + span)),
+    smooth: false,
+  );
+}
+
+/// The fold line of a smooth bend, which the strand's outlines never cross:
+/// it runs along the strand rather than across it. It leaves the front
+/// section's inner outline a little before the apex at no angle, so the
+/// outline and the line read as one; sinks over [descent] (strand distance)
+/// to [depthShare] of the way to the far outline, eased so it levels off;
+/// then keeps that depth, parallel to both outlines and never touching the
+/// far one, for [run] past the apex or until the back section ends.
+///
+/// [side] is the side of the inner outlines; [firstFront] says the front
+/// section comes before [pivot]; [frontEnd] and [backEnd] bound the two
+/// sections.
+List<Offset> _smoothFoldLine(
+  List<HairRibbonPoint> points,
+  List<double> lengths,
+  int pivot,
+  double side,
+  bool firstFront,
+  int backEnd,
+  int frontEnd,
+  double outlineWidth, {
+  required double descent,
+  required double depthShare,
+  required double run,
+}) {
+  final vertex = lengths[pivot];
+  final forward = firstFront ? 1.0 : -1.0;
+  // Most of the way down by the apex, so it reads as the front's own edge
+  // carried on across the bend.
+  final lead = math.min(descent * .8, (lengths[frontEnd] - vertex).abs() * .85);
+  final tail = math.min(run, (lengths[backEnd] - vertex).abs() * .85);
+  final total = lead + tail;
+  if (total < 1 || descent <= 0) return const [];
+  final width = points[pivot].width + points[pivot].outlineOr(outlineWidth) * 2;
+  final reach = (width / 16).clamp(1.0, 4.0);
+  final count = math.max(6, (total / 1.5).ceil());
+  return [
+    for (var k = 0; k <= count; k++)
+      () {
+        final u = total * k / count;
+        final at = vertex + forward * (u - lead);
+        final p = _pointAtDistance(points, lengths, at);
+        final tangent = _unit(
+          _positionAtDistance(points, lengths, at + reach) -
+              _positionAtDistance(points, lengths, at - reach),
+        );
+        final inner = Offset(-tangent.dy, tangent.dx) * side;
+        // The centre of the inner outline band, as the outline is drawn.
+        final outer = p.outerRadius(outlineWidth);
+        final centre = outer - math.min(p.outlineOr(outlineWidth), outer) / 2;
+        final e = (u / descent).clamp(0.0, 1.0);
+        final depth = 2 * centre * depthShare * e * e * (3 - 2 * e);
+        return p.position + inner * (centre - depth);
+      }(),
+  ];
 }
 
 /// A bowed crescent cross-section between [outer] and [inner] edges, its fill
