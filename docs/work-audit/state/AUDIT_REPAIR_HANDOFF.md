@@ -1730,3 +1730,17 @@ App・Web共通。Claudeが要修正の詳細を追記し、ユーザーが別�
 - **既知**：ヘルプの同期が古い（DISC455・DISC456）、字の抜け（DISC473）。
 - **OK**：CIは`format:check`（Prettier）・`wrangler deploy --dry-run`（Workerが組める）・SEOの契約（`seo-contract-audit.mjs`・`worker-seo-runtime-audit.mjs`）・日本語の字の抜けを確かめる。READMEは秘密を`wrangler secret`で、KVとResendの手順も書く（設定が仮のままなのはDISC477）。`tests/`は69ファイルで、多くは手で動かす監査（`npm run audit:*`）。
 - **未確認**：`HANDOFF.md`・`DESIGN.md`・`引き継ぎガイド（AI開発者向け）.md`の全文と今の作りの一致（読んだのはREADMEの公開手順だけ）、各監査のtestが本当に落ちるか（わざと壊して確かめる）。
+
+### W024（一巡目、Claude・S40、判定：要修正〔既存のDISCのみ〕）
+
+- **確認SHA・環境**：App `787680ab`・Web `0c4de54`。W003〜W023で照合した結果を製品の約束ごとに束ね、残りの項目（対応OS・AIを使わないこと・アプリとサイトのリンク・計測・名前）をコードで確認。
+- **新規の要修正なし**。製品の約束の食い違いはすべて既存のDISCにある：
+  - 公開・配布：公開前なのに「配信中」（DISC441）、ストアのボタンの文（DISC442）、XのURLが未設定なのにFAQが案内（DISC461）。
+  - 有料・特典：自作の自動操作がプレミアムの一覧に無い（DISC449）、エンドロゴ／エンドマークの呼び名と「編集」（DISC402・DISC459）。
+  - 機能の説明：描画・定規（DISC445・DISC446）、保存・引き継ぎ（DISC447・DISC448）、ヘルプの同期（DISC455・DISC456）、自動保存の説明（アプリ側DISC115）。
+  - 作品広場：通報・ブロックを使える機能と書く（DISC451、アプリはDISC410）、カードの開き方（DISC452）、日本語のタブ（DISC453）、en/fr/esの「Gallery」（DISC460）。
+  - 規約・ポリシー：第2条3項（DISC470）、サイト自身の個人の情報（DISC471）。
+  - 多言語：韓国語・中国語の「・」（DISC444・DISC450）、簡体字の「」（DISC457）、生のHTMLの本文が日本語（DISC472）。
+- **OK**：名前は両方「NIARIM（ニアリム）」。対応OS：アプリは`minSdk = 24`（Android 7.0以上）、Webは「幅広いAndroid端末」とだけ書き、食い違いは無い（最低の版は書いていない）。AI：アプリの依存に機械学習・生成AIのライブラリは無く（`pubspec.yaml`）、Webの「生成AIを使わない」の説明と合う。アプリとサイトのリンク：アプリにhttpsのApp Links（`autoVerify`）は無く、Webにも`assetlinks.json`は無く、Webはストアへ案内するだけ（約束していないので食い違いなし）。`.niashare`の受け取りはアプリ内（content/fileのintent）。計測：Webに解析のタグは無い、アプリのFirebaseは通知（`firebase_messaging`）だけで、ポリシーの第7条の端末トークンと合う。書き出しの形式・最大の大きさ・尺・投稿数・料金はW006.09・W007で一致。
+- **観察（記録のみ）**：Webに対応するAndroidの最低の版（7.0以上）が書かれていない（ストアに出るが、Webでも書くと親切）。
+- **未確認**：実機での保存→共有→公開→Webでの表示の往復（バックエンド未デプロイ・端末なし）。
