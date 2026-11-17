@@ -90,7 +90,7 @@ App・Web共通。Claudeが要修正の詳細を追記し、ユーザーが別�
   - **担当が見つけた別の不具合**：DISC265（作品一覧・共有の詳細表示の最後のカードが浮かぶボタンの上端ちょうどで終わる）。フォルダの中の画面の「小」のカードでは絵の印が星の所に重なる（DISC263と同じ形、前から）。
 - **このセッションの公開の印が無いDISC**。前のセッションで直った物もあるので、各行の記録と最新 `dev_branch` で確かめる。
   - DISC001〜028・030〜049・051〜061・063〜067・069〜074・077〜081・090・099〜100・102・107・111・115〜116・118〜120・122
-  - DISC126・137・142〜146・149〜150・154〜155・159・161〜162・166・193〜202・204〜205・223・231・236・257〜417
+  - DISC126・137・142〜146・149〜150・154〜155・159・161〜162・166・193〜202・204〜205・223・231・236・257〜421
   - 所有者の判断待ち：DISC090・099・107・115・146・155、A011、DISC066。
 - **dev_branchで落ちているtest**：DISC258（容量削減の画面のtestが多く落ちる。どのコミットからかは未確認）。
 
@@ -1299,3 +1299,17 @@ App・Web共通。Claudeが要修正の詳細を追記し、ユーザーが別�
   - test：`community_preview_size_test`・`community_shorts_live_state_test`・`community_shorts_youtube_playback_test`・`home_bookmark_youtube_playback_test`は成功（15件）。`community_preview_responsive_test`の4件は既知。
 - **見本のデータだけ**：動画の無い見本でもプレビューに再生／一時停止のボタンが出る（`playbackStatus`は接続先が無いと`available`を返す）。
 - **未確認（実機）**：実際の再生・音・一時停止、動画の終わりのループ・次への自動スクロール（終わりのイベントが要る）、再生できない・削除された動画、空・1件のショート、スマホのスワイプ、7言語・文字2倍。並び順のメニューの下の方の項目の地の色がXvfbの画像で途切れて見えた（1回だけ、項目は押せた）。
+
+### A094（一巡目、Claude・S40、判定：要修正〔実機・実APIは未確認〕）
+
+- **確認SHA・環境**：今の`f86b6569`のコードとtest。Linuxのデバッグビルド（`2153c952`）には`NIARIM_GOOGLE_CLIENT_ID`が無く、Googleのログイン・アカウントの選択・YouTubeの認可・サーバーは動かない（匿名の見本のデータ）。画像はscratchpadの`shots-r1/a094-01.png`（`backup-pending`）。
+- **要修正（新規）**：DISC418（IDトークンを取り直さず約1時間で書き込みが断られる）、DISC419（切り替えのキャンセルでログアウトしたまま）、DISC420（YouTube情報の更新の失敗が例外の文）、DISC421（`youtube.upload`だけで`channels.list`、実APIで要確認）。
+- **既知**：`community_account_boundary_widget_test`の2件（「owner revision removes tag modal」、「タグを追加」が画面の外で押せない）は`7caf76b5`（10-30「default tag searches to exact matching」）から落ちる（`7370585e`では成功、二分探索で特定）。CLAUDE.mdの基準`dc0df19`より前なので、基準の作品広場の失敗（`community_*`の18件）の内。
+- **OK（コード）**：
+  - 起動では`NIARIM_GOOGLE_CLIENT_ID`が無ければGoogleのSDKに触れず匿名で進む。`initialize`は1プロセス1回（`Expando`）、静かなログイン（`attemptLightweightAuthentication`）だけでは画面を出さない。
+  - ログイン・ログアウト・切り替え・追加の認可は同時に走らせない（`_runExclusive`、画面は「処理中」の文）。投稿の認可は投稿のときだけ（`promptIfNecessary`）、範囲は`youtube.upload`だけ。トークンは端末に保存しない（GoogleのSDKに任せる）。
+  - アカウントが変わると`forgetOwner`で投稿者ID・ブックマーク・フォロー・リポスト・通知の数を消し、`accountRevision`で古いアカウントの応答を捨てる（`community_account_*`のtest）。
+  - Googleの失敗は`communityErrorText`で7言語の文（キャンセル・その他・通信・未対応）。
+  - 実画面：未設定のビルドで「Googleアカウントを追加」→「Googleアカウントでログイン」の説明と「この開発ビルドにはGoogleログイン設定がないため、連携を開始できません。」、連携のボタンは押せない（`a094-01.png`）。
+  - test：`coin_authenticated_client_contract_test`・`community_account_boundary_test`・`community_account_microtask_boundary_test`・`community_milestone_account_boundary_test`・`google_auth_init_once_test`・`premium_coin_account_isolation_test`は成功。41件中36件成功・3件スキップ（`google_auth_init_once_test`は`--dart-define`が要る）・2件は既知。
+- **未確認（実機・実API）**：Googleのログイン・選択画面・2つのアカウントの切り替え、`youtube.upload`の許可と拒否、IDトークンの期限切れ・取り消し（Googleのアカウントの画面からの連携の解除）、オフライン、ログに個人の情報が出ないこと（`debugPrint`の例外の文）。
