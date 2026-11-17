@@ -11,13 +11,15 @@ import { ddb, Keys, tableName } from "../../lib/dynamo";
 import { ApiError, badRequest, conflict, forbidden, json, ok } from "../../lib/response";
 import {
   admobPublicKeys, SsvVerificationError,
-  validateAdmobOffer, verifyAdmobSsv,
+  signedRewardSession, validateAdmobOffer, verifyAdmobSsv,
 } from "../../lib/admobSsv";
 import { INITIAL_REWARDED_COINS_PER_COMPLETION,
   INITIAL_REWARD_OFFER_VERSION } from "../../lib/coinEconomyScale";
 import {
   dailyRewardLimit, remainingRewardedGrants, rewardAdUtcDay,
 } from "../../lib/rewardAdQuota";
+import { parseJsonObject } from "../../lib/request";
+import { regionalRewardAdOffer, rewardAdTiers, rewardCountryPattern, rewardReportDay } from "../../lib/rewardAdRates";
 
 /**
  * Explicit kill switch. No ad grants, sessions or SSV key downloads until the
@@ -49,10 +51,16 @@ export async function startRewardedAdSession(event: APIGatewayProxyEventV2) {
   const auth = await authenticate(
     event.headers["authorization"] ?? event.headers["Authorization"],
   );
-  const config = rewardedAdConfiguration();
-  if (!config.enabled) forbidden("報酬広告は準備中です", "REWARDED_AD_DISABLED");
-
   const now = Date.now();
+  const config = await regionalRewardAdOffer(
+    rewardedAdConfiguration(), event.requestContext?.http?.sourceIp, now,
+  );
+  if (!config.enabled) forbidden("報酬広告は準備中です", "REWARDED_AD_DISABLED");
+  const quote = event.body ? parseJsonObject(event.body) : {};
+  if ((quote.offerVersion !== undefined || config.version !== INITIAL_REWARD_OFFER_VERSION) &&
+      (quote.offerVersion !== config.version || quote.rewardCoins !== config.amount)) {
+    conflict("広告報酬が変わりました。もう一度確認してください", "REWARDED_AD_OFFER_CHANGED");
+  }
   const limit = dailyRewardLimit();
   let remainingToday: number | null = null;
   if (limit !== null) {
@@ -77,7 +85,9 @@ export async function startRewardedAdSession(event: APIGatewayProxyEventV2) {
       UpdateExpression:
         "SET itemType = :type, nonce = :nonce, issuedAtMs = :issued, " +
         "expiresAtMs = :expires, offerVersion = :version, " +
-        "rewardCoins = :amount REMOVE consumedAtMs",
+        "rewardCoins = :amount, adUnitId = :unit, rewardCountry = :country, #ttl = :ttl " +
+        "REMOVE consumedAtMs",
+      ExpressionAttributeNames: { "#ttl": "ttl" },
       ConditionExpression:
         "attribute_not_exists(issuedAtMs) OR expiresAtMs < :issued OR " +
         "(attribute_exists(consumedAtMs) AND issuedAtMs <= :cooldown)",
@@ -88,6 +98,9 @@ export async function startRewardedAdSession(event: APIGatewayProxyEventV2) {
         ":expires": now + SESSION_LIFETIME_MS,
         ":version": config.version,
         ":amount": config.amount,
+        ":unit": config.adUnitId,
+        ":country": config.country ?? null,
+        ":ttl": Math.floor((now + SESSION_LIFETIME_MS) / 1000) + 8 * 24 * 3600,
         ":cooldown": now - SESSION_COOLDOWN_MS,
       },
     }));
@@ -101,7 +114,7 @@ export async function startRewardedAdSession(event: APIGatewayProxyEventV2) {
     adUnitId: config.adUnitId,
     rewardCoins: config.amount,
     offerVersion: config.version,
-    customData: `v1.${auth.niarimUserId}.${nonce}`,
+    customData: `${config.country ? "v2" : "v1"}.${auth.niarimUserId}.${nonce}`,
     dailyRewardLimit: limit,
     dailyRewardRemaining: remainingToday,
     expiresAtEpochMs: now + SESSION_LIFETIME_MS,
@@ -151,6 +164,9 @@ export async function getRewardedAdStatus(event: APIGatewayProxyEventV2) {
  */
 export async function receiveRewardedAdSsv(event: APIGatewayProxyEventV2) {
   const config = rewardedAdConfiguration();
+  const now = Date.now();
+  let settledOffer: { adUnitId: string; amount: number; version: string; country?: string } = config;
+  let regional = false;
   let reward;
   let identity;
   try {
@@ -159,7 +175,12 @@ export async function receiveRewardedAdSsv(event: APIGatewayProxyEventV2) {
     // sends a real signed callback without an app-issued custom_data value.
     reward = await verifyAdmobSsv(event.rawQueryString ?? "", admobPublicKeys);
     if (!reward.customData) {
-      const now = Date.now();
+      let configuredAmount = reward.rewardAmount === config.amount;
+      if (!configuredAmount && process.env.REWARDED_AD_UNIT_TIERS) {
+        const unit = rewardAdTiers(process.env.REWARDED_AD_UNIT_TIERS, config.adUnitId)
+          .get(reward.rewardAmount);
+        configuredAmount = unit?.split("/")[1] === reward.adUnit;
+      }
       // Google's AdMob "Verify URL" tool signs a test callback using
       // an ad_unit that may differ from the production unit. Accept only
       // signed, unbound connectivity checks, which NEVER reach DynamoDB.
@@ -167,7 +188,7 @@ export async function receiveRewardedAdSsv(event: APIGatewayProxyEventV2) {
       // validateAdmobOffer and the server-issued session transaction.
       if (!reward.adUnit || reward.adUnit.length > 128 ||
           reward.rewardItem !== "coins" ||
-          reward.rewardAmount !== config.amount ||
+          !configuredAmount ||
           reward.timestampMs > now + 5 * 60_000 ||
           now - reward.timestampMs > 60 * 60_000) {
         throw new SsvVerificationError("Unbound AdMob verification mismatch");
@@ -177,10 +198,47 @@ export async function receiveRewardedAdSsv(event: APIGatewayProxyEventV2) {
       return ok({ verified: true, credited: false });
     }
     if (!config.enabled) forbidden("広告報酬は無効です", "REWARDED_AD_DISABLED");
+    regional = reward.customData.startsWith("v2.");
+    if (regional) {
+      identity = signedRewardSession(reward.customData);
+      // Validate the completion window before reading its account-bound offer.
+      if (reward.rewardItem !== "coins" ||
+          reward.timestampMs > now + 5 * 60_000 ||
+          now - reward.timestampMs > 7 * 86_400_000) {
+        throw new SsvVerificationError("Regional reward or timestamp mismatch");
+      }
+      const { Item } = await ddb.send(new GetCommand({
+        TableName: tableName(),
+        Key: Keys.rewardedAdSession(identity.userId),
+        ConsistentRead: true,
+      }));
+      if (Item?.itemType !== "REWARDED_AD_SESSION" || Item.nonce !== identity.nonce) {
+        const { Item: receipt } = await ddb.send(new GetCommand({
+          TableName: tableName(),
+          Key: Keys.admobReceipt(reward.transactionId.toLowerCase()),
+          ConsistentRead: true,
+        }));
+        if (receipt?.itemType === "REWARDED_AD_RECEIPT" &&
+            receipt.niarimUserId === identity.userId && receipt.sessionNonce === identity.nonce &&
+            receipt.adUnitSuffix === reward.adUnit && receipt.earnedCoins === reward.rewardAmount) {
+          return ok({ credited: true, duplicate: true });
+        }
+        conflict("報酬セッションを確認できません", "SSV_SESSION_CONFLICT");
+      }
+      if (typeof Item.adUnitId !== "string" || typeof Item.offerVersion !== "string" ||
+          !Number.isSafeInteger(Item.rewardCoins) || Item.rewardCoins < 1 || Item.rewardCoins > 100 ||
+          typeof Item.rewardCountry !== "string" || !rewardCountryPattern.test(Item.rewardCountry)) {
+        throw new SsvVerificationError("Invalid stored regional reward offer");
+      }
+      settledOffer = {
+        adUnitId: Item.adUnitId, amount: Item.rewardCoins,
+        version: Item.offerVersion, country: Item.rewardCountry,
+      };
+    }
     identity = validateAdmobOffer(reward, {
-      adUnitId: config.adUnitId,
-      amount: config.amount,
-      nowMs: Date.now(),
+      adUnitId: settledOffer.adUnitId,
+      amount: settledOffer.amount,
+      nowMs: now,
     });
   } catch (error) {
     if (error instanceof SsvVerificationError) {
@@ -196,7 +254,6 @@ export async function receiveRewardedAdSsv(event: APIGatewayProxyEventV2) {
   const transactionId = reward.transactionId.toLowerCase();
   const receiptKey = Keys.admobReceipt(transactionId);
   const sessionKey = Keys.rewardedAdSession(userId);
-  const now = Date.now();
   const dailyCap = dailyRewardLimit();
   const watchedDayUtc = rewardAdUtcDay(reward.timestampMs);
   try {
@@ -212,8 +269,10 @@ export async function receiveRewardedAdSsv(event: APIGatewayProxyEventV2) {
               itemType: "REWARDED_AD_RECEIPT",
               niarimUserId: userId,
               transactionId,
-              offerVersion: config.version,
-              earnedCoins: config.amount,
+              offerVersion: settledOffer.version,
+              earnedCoins: settledOffer.amount,
+              sessionNonce: nonce,
+              adUnitSuffix: reward.adUnit,
               receivedAtMs: now,
               // TTL is a storage optimisation; a 7-day signed timestamp
               // boundary prevents old callbacks from becoming valid again.
@@ -231,14 +290,16 @@ export async function receiveRewardedAdSsv(event: APIGatewayProxyEventV2) {
               "itemType = :type AND nonce = :nonce AND " +
               "issuedAtMs <= :adTimestamp AND expiresAtMs >= :adTimestamp " +
               "AND offerVersion = :version AND rewardCoins = :amount " +
-              "AND attribute_not_exists(consumedAtMs)",
+              "AND attribute_not_exists(consumedAtMs)" +
+              (regional ? " AND adUnitId = :unit AND rewardCountry = :country" : ""),
             ExpressionAttributeValues: {
               ":type": "REWARDED_AD_SESSION",
               ":nonce": nonce,
               ":now": now,
               ":adTimestamp": reward.timestampMs,
-              ":version": config.version,
-              ":amount": config.amount,
+              ":version": settledOffer.version,
+              ":amount": settledOffer.amount,
+              ...(regional ? { ":unit": settledOffer.adUnitId, ":country": settledOffer.country } : {}),
             },
           },
         },
@@ -262,13 +323,25 @@ export async function receiveRewardedAdSsv(event: APIGatewayProxyEventV2) {
             },
           },
         }]),
+        ...(settledOffer.country ? [{
+          Update: {
+            TableName: tableName(),
+            Key: Keys.rewardAdCountryDay(rewardReportDay(reward.timestampMs), settledOffer.country),
+            UpdateExpression: "SET #ttl = :ttl ADD completions :one",
+            ExpressionAttributeNames: { "#ttl": "ttl" },
+            ExpressionAttributeValues: {
+              ":ttl": Math.floor(now / 1000) + 40 * 24 * 3600,
+              ":one": 1,
+            },
+          },
+        }] : []),
         {
           Put: {
             TableName: tableName(),
             Item: {
               ...Keys.coinHistory(userId, reward.timestampMs, `admob-${transactionId}`),
               itemType: "COIN_HISTORY", source: "rewarded-ad",
-              deltaCoins: config.amount, occurredAtEpochMs: reward.timestampMs,
+              deltaCoins: settledOffer.amount, occurredAtEpochMs: reward.timestampMs,
               transactionId,
             },
             ConditionExpression: "attribute_not_exists(pk)",
@@ -288,9 +361,9 @@ export async function receiveRewardedAdSsv(event: APIGatewayProxyEventV2) {
             ExpressionAttributeValues: {
               ":type": "COIN_WALLET",
               ":now": now,
-              ":reward": config.amount,
+              ":reward": settledOffer.amount,
               ":zero": 0,
-              ":limit": Number.MAX_SAFE_INTEGER - config.amount,
+              ":limit": Number.MAX_SAFE_INTEGER - settledOffer.amount,
             },
           },
         },
@@ -306,7 +379,9 @@ export async function receiveRewardedAdSsv(event: APIGatewayProxyEventV2) {
       }));
       if (existing.Item?.itemType === "REWARDED_AD_RECEIPT" &&
           existing.Item.niarimUserId === userId &&
-          existing.Item.earnedCoins === config.amount) {
+          existing.Item.earnedCoins === settledOffer.amount &&
+          (!regional || (existing.Item.sessionNonce === nonce &&
+            existing.Item.adUnitSuffix === reward.adUnit))) {
         return ok({ credited: true, duplicate: true });
       }
       conflict("報酬セッションを確認できません", "SSV_SESSION_CONFLICT");

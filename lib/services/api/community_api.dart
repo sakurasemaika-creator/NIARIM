@@ -179,9 +179,15 @@ class CommunityApi {
   );
 
   /// The backend issues a one-time, account-bound, 30-minute AdMob session.
-  /// It returns ONLY signed-callback customData, never coins or an ad grant.
-  Future<Map<String, dynamic>> beginRewardedAdSession() =>
-      _client.postJson('/me/rewards/ad-session', authenticated: true);
+  /// The offer shown before the tap must still match when it is accepted.
+  Future<Map<String, dynamic>> beginRewardedAdSession({
+    required int rewardCoins,
+    required String offerVersion,
+  }) => _client.postJson(
+    '/me/rewards/ad-session',
+    authenticated: true,
+    body: {'rewardCoins': rewardCoins, 'offerVersion': offerVersion},
+  );
 
   /// GET never creates a grant; consumedAtMs is committed with the wallet.
   Future<Map<String, dynamic>> rewardedAdStatus(String nonce) =>

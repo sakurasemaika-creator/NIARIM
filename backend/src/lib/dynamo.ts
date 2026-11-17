@@ -91,6 +91,11 @@ export const Keys = {
   rewardedAdSession: (niarimUserId: string) => ({
     pk: `USER#${niarimUserId}`, sk: "REWARDED_AD_SESSION",
   }),
+  rewardAdRateSnapshot: () => ({ pk: "REWARDED_AD_OPTIMIZATION", sk: "RATES" }),
+  rewardAdRevenueSnapshot: () => ({ pk: "REWARDED_AD_OPTIMIZATION", sk: "REVENUE" }),
+  rewardAdCountryDay: (day: string, country: string) => ({
+    pk: "REWARDED_AD_OPTIMIZATION", sk: `DAY#${day}#${country}`,
+  }),
   /** One compact per-account per-UTC-day counter only when capped. */
   rewardAdDailyCount: (niarimUserId: string, dayUtc: string) => ({
     pk: `USER#${niarimUserId}`, sk: `REWARDED_AD_DAY#${dayUtc}`,

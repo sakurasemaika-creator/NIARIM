@@ -13,6 +13,33 @@ void main() {
   const version = 'v4-min10-repriced-20261113';
   const uuid = '123e4567-e89b-12d3-a456-426614174000';
 
+  test('rewarded ad accepts only the reward shown for that offer', () async {
+    const offer = 'regional-v1-20-3333333333';
+    final client = NiarimApiClient(
+      baseUrl: apiRoot,
+      tokenProvider: () async => 'synthetic-id-token',
+      httpClient: MockClient((request) async {
+        expect(request.method, 'POST');
+        expect(request.url.path, '/me/rewards/ad-session');
+        expect(request.headers['authorization'], 'Bearer synthetic-id-token');
+        expect(jsonDecode(request.body), {
+          'rewardCoins': 20,
+          'offerVersion': offer,
+        });
+        return http.Response(
+          jsonEncode({'rewardCoins': 20, 'offerVersion': offer}),
+          200,
+        );
+      }),
+    );
+    addTearDown(client.close);
+    final session = await CommunityApi(client).beginRewardedAdSession(
+      rewardCoins: 20,
+      offerVersion: offer,
+    );
+    expect(session['rewardCoins'], 20);
+  });
+
   test('signed-in reward read uses the bearer token and never a user ID', () async {
     final calls = <http.Request>[];
     final httpClient = MockClient((request) async {

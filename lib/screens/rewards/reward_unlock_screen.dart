@@ -191,17 +191,32 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
     final accountId = context.read<GoogleAuthService>().account?.id;
     final api = context.read<CommunityService>().api;
     final ads = context.read<AdvertisingService>();
-    if (accountId == null || api == null || !ads.canOfferRewardedAds) return;
+    final rewardCoins = _rewardState?['rewardedCoinsPerCompletion'];
+    final offerVersion = _rewardState?['rewardedOfferVersion'];
+    if (accountId == null ||
+        api == null ||
+        !ads.canOfferRewardedAds ||
+        rewardCoins is! int ||
+        rewardCoins < 1 ||
+        offerVersion is! String) {
+      return;
+    }
     setState(() => _rewardBusy = true);
     try {
-      final invitation = await api.beginRewardedAdSession();
+      final invitation = await api.beginRewardedAdSession(
+        rewardCoins: rewardCoins,
+        offerVersion: offerVersion,
+      );
       if (!mounted ||
           context.read<GoogleAuthService>().account?.id != accountId) {
         return;
       }
       final adUnit = invitation['adUnitId'];
       final customData = invitation['customData'];
-      if (adUnit is! String || customData is! String) {
+      if (adUnit is! String ||
+          customData is! String ||
+          invitation['rewardCoins'] != rewardCoins ||
+          invitation['offerVersion'] != offerVersion) {
         throw StateError('Missing server-issued rewarded ad session');
       }
       final completed = await ads.showRewardedCoinAd(
@@ -256,8 +271,8 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
           }
         }
       }
-    } catch (error) {
-      if (mounted) {
+    } catch (_) {
+      if (mounted && context.read<GoogleAuthService>().account?.id == accountId) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: messageText(
@@ -265,6 +280,7 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
             ),
           ),
         );
+        await _loadWallet(accountId);
       }
     } finally {
       if (mounted) setState(() => _rewardBusy = false);
@@ -1029,6 +1045,7 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
         ? fullPremiumQuote!['priceCoins'] as int
         : null;
     final balance = _rewardState?['balanceCoins'];
+    final rewardCoins = _rewardState?['rewardedCoinsPerCompletion'];
     final rewardDailyLimit = _rewardState?['rewardedDailyLimit'];
     final rewardDailyRemaining = _rewardState?['rewardedDailyRemaining'];
     final rewardCapReached =
@@ -1077,6 +1094,8 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
                 onPressed:
                     !_rewardBusy &&
                         !rewardCapReached &&
+                        rewardCoins is int &&
+                        rewardCoins > 0 &&
                         context.watch<AdvertisingService>().canOfferRewardedAds
                     ? _watchRewardedAd
                     : null,
@@ -1084,6 +1103,8 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(t['watchRewardedAd']),
+                    if (rewardCoins is int && rewardCoins > 0)
+                      messageText('+${l10n.coinAmount(rewardCoins)}'),
                     messageText(
                       rewardQuotaLabel,
                       style: Theme.of(context).textTheme.labelSmall,

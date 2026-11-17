@@ -24,9 +24,11 @@
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.717.0",
     "@aws-sdk/client-lambda": "^3.717.0",
+    "@aws-sdk/client-secrets-manager": "3.1121.0",
     "@aws-sdk/lib-dynamodb": "^3.717.0",
     "aws-cdk-lib": "2.275.0",
     "constructs": "^10.4.2",
-    "google-auth-library": "^10.9.1"
+    "google-auth-library": "^10.9.1",
+    "maxmind": "^5.1.0"
   }
 }

@@ -5,7 +5,7 @@ import {
   waitUntilTableExists,
 } from "@aws-sdk/client-dynamodb";
 import {
-  DynamoDBDocumentClient, GetCommand, QueryCommand, UpdateCommand,
+  DynamoDBDocumentClient, GetCommand, PutCommand, QueryCommand, UpdateCommand,
 } from "@aws-sdk/lib-dynamodb";
 import type { APIGatewayProxyEventV2 } from "aws-lambda";
 
@@ -28,6 +28,9 @@ vi.mock("../src/lib/admobSsv", async (importOriginal) => ({
   ...(await importOriginal<typeof import("../src/lib/admobSsv")>()),
   admobPublicKeys: loadGoogleKeys,
 }));
+vi.mock("maxmind", () => ({
+  open: vi.fn(async () => ({ get: () => ({ country: { iso_code: "JP" } }) })),
+}));
 vi.mock("../src/lib/dynamo", async (importOriginal) => {
   const original = await importOriginal<typeof import("../src/lib/dynamo")>();
   const { DynamoDBClient: Client } = await import("@aws-sdk/client-dynamodb");
@@ -49,6 +52,8 @@ import {
   getRewardedAdStatus, receiveRewardedAdSsv, startRewardedAdSession,
 } from "../src/api/routes/rewardedAd";
 import { Keys } from "../src/lib/dynamo";
+import { authenticate } from "../src/lib/auth";
+import { rewardReportDay } from "../src/lib/rewardAdRates";
 
 const localOptions = {
   endpoint: "http://127.0.0.1:8000",
@@ -66,12 +71,12 @@ const table = `niarim-ssv-local-${Date.now()}`;
 const bearer = {
   headers: { authorization: "Bearer fake-local-auth" },
 } as unknown as APIGatewayProxyEventV2;
-function signedCallback(customData: string, transactionId: string, unit = "2222222222") {
+function signedCallback(customData: string, transactionId: string, unit = "2222222222", amount = 10, timestamp = Date.now()) {
   const raw = [
     "ad_network=12345", "ad_unit=" + unit,
     "custom_data=" + encodeURIComponent(customData),
-    "reward_amount=10", "reward_item=coins",
-    "timestamp=" + Date.now(),
+    "reward_amount=" + amount, "reward_item=coins",
+    "timestamp=" + timestamp,
     "transaction_id=" + transactionId,
   ].join("&");
   const signer = createSign("SHA256");
@@ -210,5 +215,40 @@ describe.skipIf(process.env.NIARIM_DYNAMODB_LOCAL_TESTS !== "1")(
       expect(history.Items?.[0]?.deltaCoins).toBe(10);
       expect(history.Items?.[0]?.transactionId).toBe(transactionId);
     }, 90_000);
+
+    it("settles a regional offer and its country count in the same transaction", async () => {
+      const regionalOwner = `N${"c".repeat(32)}`;
+      const tierUnit = "ca-app-pub-1111111111111111/3333333333";
+      process.env.REWARDED_AD_COUNTRY_DB = "/opt/GeoLite2-Country.mmdb";
+      process.env.REWARDED_AD_AUTO_RATES_ENABLED = "true";
+      process.env.REWARDED_AD_UNIT_TIERS = JSON.stringify({ 20: tierUnit });
+      try {
+        await ddb.send(new PutCommand({
+          TableName: table,
+          Item: { ...Keys.rewardAdRateSnapshot(), itemType: "REWARDED_AD_RATES",
+            generatedAtMs: Date.now(), rates: { JP: 20 } },
+        }));
+        vi.mocked(authenticate).mockResolvedValueOnce({
+          niarimUserId: regionalOwner, membershipTier: "free", googleSub: "local-test-regional",
+        });
+        const invitation = JSON.parse((await startRewardedAdSession({
+          ...bearer, requestContext: { http: { sourceIp: "203.0.113.20" } },
+          body: JSON.stringify({ rewardCoins: 20, offerVersion: "regional-v1-20-3333333333" }),
+        } as APIGatewayProxyEventV2)).body!);
+        expect(invitation.adUnitId).toBe(tierUnit);
+        const tx = "18fa792de1bca816048293fc71035642";
+        const timestamp = Date.now();
+        const event = ssvEvent(signedCallback(invitation.customData, tx, "3333333333", 20, timestamp));
+        expect(JSON.parse((await receiveRewardedAdSsv(event)).body!)).toEqual({ credited: true });
+        expect(JSON.parse((await receiveRewardedAdSsv(event)).body!))
+          .toEqual({ credited: true, duplicate: true });
+        expect((await row(Keys.coinWallet(regionalOwner)))?.balanceCoins).toBe(20);
+        expect((await row(Keys.rewardAdCountryDay(rewardReportDay(timestamp), "JP")))?.completions).toBe(1);
+      } finally {
+        delete process.env.REWARDED_AD_COUNTRY_DB;
+        delete process.env.REWARDED_AD_AUTO_RATES_ENABLED;
+        delete process.env.REWARDED_AD_UNIT_TIERS;
+      }
+    });
   },
 );

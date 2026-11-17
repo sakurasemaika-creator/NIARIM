@@ -31,6 +31,11 @@ vi.mock("../src/lib/admobSsv", async (importOriginal) => ({
   ...(await importOriginal<typeof import("../src/lib/admobSsv")>()),
   admobPublicKeys: loadGoogleKeys,
 }));
+vi.mock("maxmind", () => ({
+  open: vi.fn(async () => ({
+    get: () => ({ country: { iso_code: "JP" } }),
+  })),
+}));
 import {
   getRewardedAdStatus, receiveRewardedAdSsv, rewardedAdConfiguration,
   startRewardedAdSession,
@@ -89,10 +94,70 @@ beforeEach(() => {
   for (const key of [
     "ADMOB_REWARDED_AD_UNIT_ID", "REWARDED_AD_SSV_ENABLED",
     "REWARDED_AD_REVIEW_APPROVED", "REWARDED_AD_DAILY_LIMIT",
+    "REWARDED_AD_COUNTRY_DB", "REWARDED_AD_AUTO_RATES_ENABLED", "REWARDED_AD_UNIT_TIERS",
   ]) delete process.env[key];
 });
 
 describe("real ECDSA-signed AdMob reward callback through NIARIM API", () => {
+  it("honors a regional rated offer after rates change, and aggregates only its first settlement", async () => {
+    validConfig();
+    const tierUnit = "ca-app-pub-1111111111111111/3333333333";
+    process.env.REWARDED_AD_COUNTRY_DB = "/opt/GeoLite2-Country.mmdb";
+    process.env.REWARDED_AD_AUTO_RATES_ENABLED = "true";
+    process.env.REWARDED_AD_UNIT_TIERS = JSON.stringify({ 20: tierUnit });
+    const snapshot = { Item: {
+      itemType: "REWARDED_AD_RATES", generatedAtMs: Date.now(), rates: { JP: 20 },
+    } };
+    const quote = {
+      ...req,
+      requestContext: { http: { sourceIp: "203.0.113.20" } },
+      body: JSON.stringify({ rewardCoins: 10, offerVersion: "launch-v1-10-coins" }),
+    } as APIGatewayProxyEventV2;
+    send.mockResolvedValueOnce(snapshot);
+    await expect(startRewardedAdSession(quote)).rejects.toMatchObject({
+      code: "REWARDED_AD_OFFER_CHANGED",
+    });
+    expect(send).toHaveBeenCalledTimes(1);
+    send.mockResolvedValueOnce(snapshot);
+    quote.body = JSON.stringify({ rewardCoins: 20, offerVersion: "regional-v1-20-3333333333" });
+    const accepted = JSON.parse((await startRewardedAdSession(quote)).body!);
+    const nonce = accepted.customData.split(".").at(-1);
+    expect(accepted).toMatchObject({ adUnitId: tierUnit, rewardCoins: 20 });
+    expect(accepted.customData).toMatch(/^v2\./);
+    process.env.REWARDED_AD_AUTO_RATES_ENABLED = "false";
+    delete process.env.REWARDED_AD_UNIT_TIERS;
+    const session = { Item: {
+      itemType: "REWARDED_AD_SESSION", nonce, adUnitId: tierUnit,
+      offerVersion: accepted.offerVersion, rewardCoins: 20, rewardCountry: "JP",
+    } };
+    send.mockResolvedValueOnce(session);
+    const completion = (amount: number) => event(signCallback({
+      customData: accepted.customData, unit: "3333333333", amount,
+    }));
+    await expect(receiveRewardedAdSsv(completion(10))).rejects.toMatchObject({ code: "INVALID_SSV" });
+    send.mockResolvedValueOnce(session);
+    expect((await receiveRewardedAdSsv(completion(20))).statusCode).toBe(200);
+    const writes = send.mock.calls.map(([cmd]) => cmd)
+      .filter((cmd): cmd is TransactWriteCommand => cmd instanceof TransactWriteCommand);
+    expect(writes).toHaveLength(1);
+    expect(writes[0].input.TransactItems).toEqual(expect.arrayContaining([
+      expect.objectContaining({ Update: expect.objectContaining({
+        Key: expect.objectContaining({ sk: expect.stringMatching(/^DAY#\d{8}#JP$/) }),
+      }) }),
+      expect.objectContaining({ Update: expect.objectContaining({
+        Key: expect.objectContaining({ sk: "COIN_WALLET" }),
+        ExpressionAttributeValues: expect.objectContaining({ ":reward": 20 }),
+      }) }),
+    ]));
+    send.mockResolvedValueOnce({}).mockResolvedValueOnce({ Item: {
+      itemType: "REWARDED_AD_RECEIPT", niarimUserId: user, sessionNonce: nonce,
+      adUnitSuffix: "3333333333", earnedCoins: 20,
+    } });
+    expect(JSON.parse((await receiveRewardedAdSsv(completion(20))).body!))
+      .toEqual({ credited: true, duplicate: true });
+    expect(send.mock.calls.filter(([cmd]) => cmd instanceof TransactWriteCommand)).toHaveLength(1);
+  });
+
   it("starts owner-bound session, verifies signed completion, and requests atomic 10-coin write", async () => {
     validConfig();
     const started = await startRewardedAdSession(req);

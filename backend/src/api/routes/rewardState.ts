@@ -7,6 +7,7 @@ import { rewardedAdConfiguration } from "./rewardedAd";
 import { premiumRedemptionOffer } from "../../lib/coinRedemption";
 import { individualCoinRedemptionEnabled } from "../../lib/individualCoinRedemption";
 import { remainingRewardedGrants, rewardAdDailyQuota } from "../../lib/rewardAdQuota";
+import { regionalRewardAdOffer } from "../../lib/rewardAdRates";
 
 /**
  * Read-only reward wallet endpoint. Google ID token -> NIARIM user ID is
@@ -18,7 +19,9 @@ export async function getMyRewardState(event: APIGatewayProxyEventV2) {
     event.headers["authorization"] ?? event.headers["Authorization"],
   );
   const now = Date.now();
-  const adConfig = rewardedAdConfiguration();
+  const adConfig = await regionalRewardAdOffer(
+    rewardedAdConfiguration(), event.requestContext?.http?.sourceIp, now,
+  );
   const adQuota = rewardAdDailyQuota(now);
   const [wallet, entitlementPage, adCount] = await Promise.all([
     ddb.send(

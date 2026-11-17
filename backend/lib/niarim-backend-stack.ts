@@ -8,6 +8,8 @@ import {
 import { Construct } from "constructs";
 import * as dynamodb from "aws-cdk-lib/aws-dynamodb";
 import * as lambda from "aws-cdk-lib/aws-lambda";
+import * as iam from "aws-cdk-lib/aws-iam";
+import * as secretsmanager from "aws-cdk-lib/aws-secretsmanager";
 import * as events from "aws-cdk-lib/aws-events";
 import * as targets from "aws-cdk-lib/aws-events-targets";
 import { DynamoEventSource } from "aws-cdk-lib/aws-lambda-event-sources";
@@ -193,12 +195,25 @@ export class NiarimBackendStack extends Stack {
         "niarim-fcm-sender@niarim-513201.iam.gserviceaccount.com",
     };
 
+    const reportSecretArn = this.node.tryGetContext("admobReportOAuthSecretArn") as string | undefined;
+    const countryLayerArn = this.node.tryGetContext("rewardedAdCountryLayerArn") as string | undefined;
+    const autoRewardRates = this.node.tryGetContext("rewardedAdAutoRatesEnabled") === "true";
+    const rewardedUnitTiers = String(this.node.tryGetContext("rewardedAdUnitTiers") ?? "");
+    const rewardedBaseUnit = String(this.node.tryGetContext("admobRewardedAdUnitId") ?? "");
+    if ((reportSecretArn && !countryLayerArn) || (autoRewardRates && !reportSecretArn)) {
+      throw new Error("Regional rewarded ads require the country database layer and AdMob reporting OAuth secret");
+    }
+    const rewardCountryLayer = countryLayerArn
+      ? lambda.LayerVersion.fromLayerVersionArn(this, "RewardAdCountryLayer", countryLayerArn)
+      : undefined;
+
     const apiFunction = new NodejsFunction(this, "ApiFunction", {
       functionName: "niarim-api",
       entry: path.join(__dirname, "../src/api/handler.ts"),
       handler: "handler",
       runtime: lambda.Runtime.NODEJS_22_X,
       memorySize: 256,
+      ...(rewardCountryLayer ? { layers: [rewardCountryLayer] } : {}),
       timeout: Duration.seconds(10),
       // 2026-11-06: ap-northeast-1 のアカウント同時実行上限は10。
       // AWS Lambdaは予約なしの同時実行枠を最低10残す必要があるため、
@@ -281,7 +296,10 @@ export class NiarimBackendStack extends Stack {
         // All reward issuance remains OFF until real AdMob verification,
         // economics review and explicit human production approval.
         ADMOB_REWARDED_AD_UNIT_ID:
-          this.node.tryGetContext("admobRewardedAdUnitId") ?? "",
+          rewardedBaseUnit,
+        ...(rewardCountryLayer ? { REWARDED_AD_COUNTRY_DB: "/opt/GeoLite2-Country.mmdb" } : {}),
+        ...(autoRewardRates ? { REWARDED_AD_AUTO_RATES_ENABLED: "true" } : {}),
+        ...(rewardedUnitTiers ? { REWARDED_AD_UNIT_TIERS: rewardedUnitTiers } : {}),
         REWARDED_AD_SSV_ENABLED:
           this.node.tryGetContext("rewardedAdSsvEnabled") === "true"
             ? "true" : "false",
@@ -390,6 +408,40 @@ export class NiarimBackendStack extends Stack {
       schedule: events.Schedule.rate(Duration.minutes(1)),
       targets: [new targets.LambdaFunction(releaseFunction)],
     });
+
+    if (reportSecretArn) {
+      const reportSecret = secretsmanager.Secret.fromSecretCompleteArn(
+        this, "AdmobReportOAuthSecret", reportSecretArn,
+      );
+      const reportFunction = new NodejsFunction(this, "RewardAdRevenueFunction", {
+        functionName: "niarim-reward-ad-revenue",
+        entry: path.join(__dirname, "../src/batch/rewardAdRevenue.ts"),
+        handler: "handler",
+        runtime: lambda.Runtime.NODEJS_22_X,
+        memorySize: 256,
+        timeout: Duration.seconds(60),
+        environment: {
+          TABLE_NAME: table.tableName,
+          ADMOB_REWARDED_AD_UNIT_ID: rewardedBaseUnit,
+          ADMOB_REPORT_OAUTH_SECRET_ARN: reportSecret.secretArn,
+          REWARDED_AD_UNIT_TIERS: rewardedUnitTiers,
+        },
+      });
+      reportSecret.grantRead(reportFunction);
+      reportFunction.addToRolePolicy(new iam.PolicyStatement({
+        actions: ["dynamodb:Query", "dynamodb:PutItem"],
+        resources: [table.tableArn],
+        conditions: {
+          "ForAllValues:StringEquals": { "dynamodb:LeadingKeys": ["REWARDED_AD_OPTIMIZATION"] },
+        },
+      }));
+      new events.Rule(this, "RewardAdRevenueDailyRule", {
+        schedule: events.Schedule.cron({ minute: "15", hour: "20" }),
+        targets: [new targets.LambdaFunction(reportFunction, {
+          retryAttempts: 2, maxEventAge: Duration.hours(3),
+        })],
+      });
+    }
 
     // YouTube再生数の定期取得は採用しない。統計バッチと定期イベントは作成しない。
     // ランキングはNIARIM独自ブックマークのGSI2から取得する。

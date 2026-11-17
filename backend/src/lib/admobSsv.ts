@@ -142,7 +142,11 @@ export function validateAdmobOffer(
       config.nowMs - reward.timestampMs > 7 * 24 * 3600 * 1000) {
     throw new SsvVerificationError("Ad unit, offer or timestamp mismatch");
   }
-  const match = /^v1\.(N[0-9a-f]{32})\.([0-9a-f-]{36})$/.exec(reward.customData ?? "");
+  return signedRewardSession(reward.customData);
+}
+
+export function signedRewardSession(customData: string | null): { userId: string; nonce: string } {
+  const match = /^v[12]\.(N[0-9a-f]{32})\.([0-9a-f-]{36})$/.exec(customData ?? "");
   if (!match || !/^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$/.test(match[2])) {
     throw new SsvVerificationError("Invalid signed reward session");
   }

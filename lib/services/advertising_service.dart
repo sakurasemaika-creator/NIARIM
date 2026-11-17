@@ -121,7 +121,7 @@ class AdvertisingService extends ChangeNotifier {
   }) async {
     if (!canOfferRewardedAds ||
         !RegExp(r'^ca-app-pub-[0-9]{16}/[0-9]{10}$').hasMatch(adUnitId) ||
-        !RegExp(r'^v1[.]N[0-9a-f]{32}[.][0-9a-f-]{36}$').hasMatch(customData)) {
+        !RegExp(r'^v[12][.]N[0-9a-f]{32}[.][0-9a-f-]{36}$').hasMatch(customData)) {
       return false;
     }
     final completed = Completer<bool>();
@@ -130,9 +130,9 @@ class AdvertisingService extends ChangeNotifier {
       adUnitId: adUnitId,
       request: const AdRequest(),
       rewardedAdLoadCallback: RewardedAdLoadCallback(
-        onAdLoaded: (ad) {
+        onAdLoaded: (ad) async {
           try {
-            ad.setServerSideOptions(
+            await ad.setServerSideOptions(
               ServerSideVerificationOptions(customData: customData),
             );
             ad.fullScreenContentCallback = FullScreenContentCallback(
@@ -145,7 +145,7 @@ class AdvertisingService extends ChangeNotifier {
                 if (!completed.isCompleted) completed.complete(false);
               },
             );
-            ad.show(
+            await ad.show(
               onUserEarnedReward: (ad, reward) {
                 earned = true; // SSV, NOT this callback, credits the wallet.
               },
