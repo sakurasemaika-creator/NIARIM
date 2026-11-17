@@ -80,7 +80,10 @@ void main() {
 
     List<String> snackBarTexts() => [
       for (final text in tester.widgetList<Text>(
-        find.descendant(of: find.byType(SnackBar), matching: find.byType(Text)),
+        find.descendant(
+          of: find.byType(SnackBar),
+          matching: find.bySubtype<Text>(),
+        ),
       ))
         text.data ?? '',
     ];

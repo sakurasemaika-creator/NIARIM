@@ -16,6 +16,7 @@ import 'package:niarim/screens/splash/splash_screen.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:niarim/services/settings_service.dart';
 import 'package:niarim/widgets/name_entry_dialog.dart';
+import 'package:niarim/widgets/sort_mode_control.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -41,7 +42,7 @@ void main() {
     SharedPreferences.setMockInitialValues({
       firstUseTooltipsSeenKey: kAllFirstUseTooltipKeys,
       'first_launch': false,
-      'home_view_mode': 'medium',
+      'home.projectViewMode.v1': 'medium',
     });
   });
 
@@ -104,7 +105,12 @@ void main() {
     List<String> names = const [],
     Future<void> Function(ProjectService service)? extra,
     Size size = const Size(800, 900),
+    String viewMode = 'medium',
   }) async {
+    if (viewMode != 'medium') {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('home.projectViewMode.v1', viewMode);
+    }
     tester.view.physicalSize = size;
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
@@ -145,7 +151,7 @@ void main() {
   String? snackText(WidgetTester tester) {
     final texts = find.descendant(
       of: find.byType(SnackBar),
-      matching: find.byType(Text),
+      matching: find.bySubtype<Text>(),
     );
     if (texts.evaluate().isEmpty) return null;
     return (texts.evaluate().first.widget as Text).data;
@@ -179,6 +185,134 @@ void main() {
       expect(rect.left, greaterThanOrEqualTo(0));
     });
   }
+
+  for (final mode in ['detail', 'medium']) {
+    testWidgets('selection and copying retain card coordinates in $mode', (
+      tester,
+    ) async {
+      final service = await boot(
+        tester,
+        size: const Size(1280, 800),
+        viewMode: mode,
+        names: ['apple', 'banana', 'cherry'],
+      );
+      final second = tester.getCenter(card('banana'));
+      await tester.longPress(card('apple'));
+      await settle(tester);
+      expect(tester.getCenter(card('banana')).dy, second.dy);
+      await tester.tapAt(second);
+      await settle(tester);
+      final list = tester.widget<ProjectListWidget>(
+        find.byType(ProjectListWidget),
+      );
+      expect(list.selectedIds, {
+        for (final project in service.projects)
+          if (project.name != 'cherry') project.id,
+      });
+      await tester.tap(find.byTooltip('コピー'));
+      await settle(tester);
+      expect(tester.getCenter(card('banana')).dy, second.dy);
+      await tester.tap(find.byKey(const Key('homeClearClipboardButton')));
+      await settle(tester);
+      expect(tester.getCenter(card('banana')).dy, second.dy);
+      expect(tester.takeException(), isNull);
+    });
+  }
+
+  testWidgets('name ordering starts at A to Z', (tester) async {
+    await boot(tester, names: ['apple', 'zebra']);
+    expect(
+      tester.getCenter(card('zebra')).dx,
+      lessThan(tester.getCenter(card('apple')).dx),
+    );
+    tester
+        .widget<SortModeControl>(find.byType(SortModeControl).first)
+        .onSortByNameChanged(true);
+    await settle(tester);
+    expect(
+      tester.getCenter(card('apple')).dx,
+      lessThan(tester.getCenter(card('zebra')).dx),
+    );
+  });
+
+  for (final (width, mode) in [
+    (320.0, 'small'),
+    (1280.0, 'small'),
+    (1280.0, 'medium'),
+  ]) {
+    testWidgets(
+      'folder cover keeps both actions outside its picture at $width/$mode',
+      (tester) async {
+        final service = await boot(
+          tester,
+          size: Size(width, 800),
+          viewMode: mode,
+          extra: (service) async {
+            await service.createFolder('Storyboards');
+          },
+        );
+        final id = service.folders.single.id;
+        final cover = tester.getRect(
+          find.byKey(ValueKey('projectFolderCover_$id')),
+        );
+        final star = tester.getRect(find.byKey(Key('collectionFavorite_$id')));
+        final menu = tester.getRect(find.byKey(Key('collectionMenu_$id')));
+        // Each circle's hit area extends four pixels beyond its painted bounds.
+        final starTarget = star.inflate(4);
+        final menuTarget = menu.inflate(4);
+        expect(starTarget.overlaps(cover), isFalse);
+        expect(menuTarget.overlaps(cover), isFalse);
+        expect(starTarget.overlaps(menuTarget), isFalse);
+        await tester.tapAt(star.centerLeft - const Offset(2, 0));
+        await settleIo(tester);
+        expect(service.folders.single.isFavorite, isTrue);
+      },
+    );
+  }
+
+  testWidgets('rapid second paste is ignored after a fast folder copy', (
+    tester,
+  ) async {
+    final service = await boot(
+      tester,
+      size: const Size(1280, 800),
+      extra: (service) async {
+        await service.createFolder('Storyboards');
+      },
+    );
+    await tester.longPress(card('Storyboards'));
+    await settle(tester);
+    await tester.tap(find.byTooltip('コピー'));
+    await settle(tester);
+    final paste = find.byKey(const Key('homeCrossTabPasteButton'));
+
+    Future<void> pressAndFinishIo(int expectedFolders) async {
+      await tester.tap(paste, kind: PointerDeviceKind.mouse);
+      for (var i = 0; i < 12; i++) {
+        await tester.pump();
+        await tester.runAsync(
+          () => Future<void>.delayed(const Duration(milliseconds: 15)),
+        );
+        if (service.folders.length == expectedFolders &&
+            tester.widget<TextButton>(paste).enabled) {
+          break;
+        }
+      }
+      await tester.pump();
+    }
+
+    await pressAndFinishIo(2);
+    expect(service.folders, hasLength(2));
+    await tester.pump(const Duration(milliseconds: 60));
+    await pressAndFinishIo(2);
+    expect(service.folders, hasLength(2));
+
+    await tester.pump(kDoubleTapTimeout);
+    await pressAndFinishIo(3);
+    expect(service.folders, hasLength(3));
+    await tester.pump(kDoubleTapTimeout);
+    expect(tester.takeException(), isNull);
+  });
 
   testWidgets('bulk delete moves folders with their contents and can be '
       'undone; unselected favorites stay', (tester) async {
@@ -309,12 +443,12 @@ void main() {
     );
     await tester.tap(card('親'));
     await settle(tester);
-    await tester.tap(find.byTooltip('1件を貼り付け'));
+    await tester.tap(find.byKey(const Key('homeCrossTabPasteButton')));
     await settleIo(tester);
     expect(snackText(tester), contains('自分自身やその中へは移動できない'));
     expect(service.folders.single.parentFolderId, isNull);
     // まだ切り取ったままなので、別の場所へ貼り付けられる。
-    expect(find.byTooltip('1件を貼り付け'), findsOneWidget);
+    expect(find.byKey(const Key('homeCrossTabPasteButton')), findsOneWidget);
   });
 
   testWidgets('pasting a copy of a work that was trashed says so', (
@@ -332,9 +466,12 @@ void main() {
       ),
     );
     await settle(tester);
-    await tester.tap(find.byTooltip('1件を貼り付け'));
+    await tester.tap(find.byKey(const Key('homeCrossTabPasteButton')));
     await settleIo(tester);
-    expect(snackText(tester), contains('コピー元の作品・フォルダが見つかりません'));
+    expect(
+      snackText(tester),
+      lookupAppLocalizations(const Locale('ja')).homePasteSkippedMissing(1),
+    );
     expect(service.projects.map((p) => p.name), ['banana']);
   });
 
@@ -366,7 +503,7 @@ void main() {
     await settle(tester);
     await tester.tap(find.byTooltip('コピー'));
     await settle(tester);
-    await tester.tap(find.byTooltip('1件を貼り付け'));
+    await tester.tap(find.byKey(const Key('homeCrossTabPasteButton')));
     await settleIo(tester);
     final copy = service.projects.firstWhere((p) => p.id != sourceId);
     expect(copy.name, 'apple (コピー)');
@@ -400,7 +537,7 @@ void main() {
     await tester.tap(find.byTooltip('コピー'));
     await settle(tester);
     for (var i = 0; i < 3; i++) {
-      await tester.tap(find.byTooltip('1件を貼り付け'));
+      await tester.tap(find.byKey(const Key('homeCrossTabPasteButton')));
       await settleIo(tester);
     }
     expect(service.projects.map((p) => p.name).toSet(), {
@@ -411,57 +548,43 @@ void main() {
     });
   });
 
-  testWidgets('the move sheet nests folders and leaves out the moved one', (
-    tester,
-  ) async {
-    await boot(
-      tester,
-      names: ['apple'],
-      extra: (service) async {
-        final a = await service.createFolder('シリーズA');
-        final b = await service.createFolder('シリーズB');
-        final a1 = await service.createFolder('第1話', parentFolderId: a.id);
-        await service.createFolder('第1話', parentFolderId: b.id);
-        await service.createFolder('カット素材', parentFolderId: a1.id);
-      },
-    );
-    Finder inSheet(String name) => find.descendant(
-      of: find.byType(BottomSheet),
-      matching: find.text(name),
-    );
-    Future<void> openMoveSheet(String name) async {
-      await tester.tap(card(name), buttons: kSecondaryButton);
-      await settle(tester);
-      await tester.tap(find.text('フォルダへ移動').last);
-      await settle(tester);
-    }
+  testWidgets(
+    'cut and paste renames a folder that collides in the destination',
+    (tester) async {
+      final service = await boot(
+        tester,
+        extra: (service) async {
+          final destination = await service.createFolder('Storyboards');
+          await service.createFolder('Episode 1');
+          await service.createFolder(
+            'Episode 1',
+            parentFolderId: destination.id,
+          );
+        },
+      );
+      final moved = service.folders.singleWhere(
+        (folder) => folder.name == 'Episode 1' && folder.parentFolderId == null,
+      );
+      final destination = service.folders.singleWhere(
+        (folder) => folder.name == 'Storyboards',
+      );
 
-    await openMoveSheet('apple');
-    final rows = [
-      inSheet('シリーズA'),
-      inSheet('第1話').first,
-      inSheet('カット素材'),
-      inSheet('シリーズB'),
-      inSheet('第1話').last,
-    ].map(tester.getTopLeft).toList();
-    for (var i = 1; i < rows.length; i++) {
-      expect(rows[i].dy, greaterThan(rows[i - 1].dy), reason: 'row $i');
-    }
-    // 中のフォルダは親より字下げする。
-    expect(rows[1].dx, greaterThan(rows[0].dx));
-    expect(rows[2].dx, greaterThan(rows[1].dx));
-    expect(rows[3].dx, rows[0].dx);
-    expect(rows[4].dx, rows[1].dx);
-    await tester.tapAt(const Offset(400, 20));
-    await settle(tester);
+      await tester.longPress(card('Episode 1'));
+      await settle(tester);
+      await tester.tap(find.byTooltip('切り取り'));
+      await settle(tester);
+      await tester.tap(card('Storyboards'));
+      await settle(tester);
+      await tester.tap(find.byKey(const Key('homeCrossTabPasteButton')));
+      await settleIo(tester);
 
-    // フォルダを動かすときは、それ自身と中のフォルダを移動先に出さない。
-    await openMoveSheet('シリーズA');
-    expect(inSheet('シリーズA'), findsNothing);
-    expect(inSheet('カット素材'), findsNothing);
-    expect(inSheet('第1話'), findsOneWidget);
-    expect(inSheet('シリーズB'), findsOneWidget);
-  });
+      expect(card('Episode 1'), findsOneWidget);
+      expect(card('Episode 1 (2)'), findsOneWidget);
+      final movedFolder = service.folders.singleWhere((f) => f.id == moved.id);
+      expect(movedFolder.parentFolderId, destination.id);
+      expect(movedFolder.name, 'Episode 1 (2)');
+    },
+  );
 
   testWidgets('the detail screen move sheet scrolls to every folder', (
     tester,
@@ -688,7 +811,7 @@ void main() {
       SharedPreferences.setMockInitialValues({
         firstUseTooltipsSeenKey: kAllFirstUseTooltipKeys,
         'first_launch': false,
-        'home_view_mode': 'medium',
+        'home.projectViewMode.v1': 'medium',
         'language': language,
       });
       final l10n = lookupAppLocalizations(Locale(language));
@@ -739,7 +862,7 @@ void main() {
     await tester.sendKeyUpEvent(LogicalKeyboardKey.controlLeft);
     await settle(tester);
     expect(snackText(tester), contains('2件をコピーしました'));
-    await tester.tap(find.byTooltip('2件を貼り付け'));
+    await tester.tap(find.byKey(const Key('homeCrossTabPasteButton')));
     await settleIo(tester);
     await settleIo(tester);
     expect(service.folders.map((f) => f.name).toSet(), {'箱', '箱 (コピー)'});
@@ -750,7 +873,7 @@ void main() {
     expect(service.scenesOf(inside.single.id), isNotEmpty);
     expect(card('apple (コピー)'), findsOneWidget);
     // コピーは貼り付けた後も残る（もう一度貼ると番号が付く）。
-    await tester.tap(find.byTooltip('2件を貼り付け'));
+    await tester.tap(find.byKey(const Key('homeCrossTabPasteButton')));
     await settleIo(tester);
     await settleIo(tester);
     expect(service.folders.where((f) => f.name == '箱 (コピー 2)'), hasLength(1));
@@ -871,7 +994,7 @@ void main() {
     // SnackBarの「元に戻す」でやめられる。
     await tester.tap(find.text('元に戻す'));
     await settle(tester);
-    expect(find.byTooltip('1件を貼り付け'), findsNothing);
+    expect(find.byKey(const Key('homeCrossTabPasteButton')), findsNothing);
     expect(
       find.ancestor(of: card('apple'), matching: find.byType(Opacity)),
       findsNothing,
@@ -881,10 +1004,10 @@ void main() {
     await settle(tester);
     await tester.tap(find.byTooltip('切り取り'));
     await settle(tester);
-    expect(find.byTooltip('1件を貼り付け'), findsOneWidget);
+    expect(find.byKey(const Key('homeCrossTabPasteButton')), findsOneWidget);
     await tester.sendKeyEvent(LogicalKeyboardKey.escape);
     await settle(tester);
-    expect(find.byTooltip('1件を貼り付け'), findsNothing);
+    expect(find.byKey(const Key('homeCrossTabPasteButton')), findsNothing);
     handle.dispose();
   });
 
@@ -905,17 +1028,20 @@ void main() {
       }
       return tempDir.path;
     });
-    await tester.tap(find.byTooltip('1件を貼り付け'));
+    await tester.tap(find.byKey(const Key('homeCrossTabPasteButton')));
     await settleIo(tester);
     messenger.setMockMethodCallHandler(
       pathChannel,
       (call) async => tempDir.path,
     );
-    expect(snackText(tester), contains('一部を貼り付けられませんでした'));
+    expect(
+      snackText(tester),
+      lookupAppLocalizations(const Locale('ja')).homePasteSkippedFailed(1),
+    );
     // 素材を写せないうちは、複製を一覧へ加えない。
     expect(service.projects, hasLength(1));
     // 貼り付けはもう一度できる。
-    expect(find.byTooltip('1件を貼り付け'), findsOneWidget);
+    expect(find.byKey(const Key('homeCrossTabPasteButton')), findsOneWidget);
   });
 
   testWidgets('a name dialog that fails to save stays open', (tester) async {

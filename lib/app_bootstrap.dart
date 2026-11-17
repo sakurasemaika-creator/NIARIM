@@ -38,6 +38,7 @@ import 'services/community_preview_service.dart';
 import 'services/google_auth_service.dart';
 import 'services/home_widget_service.dart';
 import 'services/storage_info_service.dart';
+import 'services/export_storage.dart';
 
 /// 起動処理のどこかが失敗したことを表す。[step]は失敗した初期化処理の
 /// 名前で、起動失敗画面の詳細とエラー記録に出す。
@@ -161,6 +162,7 @@ Future<List<SingleChildWidget>> _buildAppProviders(
   await projectService.init();
   await projectService.sweepExpiredTrash(settingsService.trashAutoDeleteDays);
   await LocalFileTrashService.sweepExpired(settingsService.trashAutoDeleteDays);
+  await ExportStorage.cleanInterruptedImageExports();
 
   await enter('brush');
   final brushService = own(BrushService());

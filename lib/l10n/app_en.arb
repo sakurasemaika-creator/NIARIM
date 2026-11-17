@@ -3584,7 +3584,6 @@
   "rewardUnlockSubscriptionBenefit": "Earn opals for free by watching optional ads, or save time with Premium monthly / yearly.",
   "rewardUnlockActive": "Currently active benefits",
   "rewardUnlockActivePremium": "All benefits active through Premium membership",
-  "rewardUnlockActiveCampaign": "Launch campaign: Premium benefits unlocked",
   "rewardUnlockActiveUnavailable": "Opal benefits will appear once the server is connected",
   "rewardUnlockDuration": "Usage period",
   "rewardUnlockChooseDuration": "Select duration",

@@ -51,7 +51,10 @@ void main() {
   List<String?> snackTexts(WidgetTester tester) => [
     for (final element
         in find
-            .descendant(of: find.byType(SnackBar), matching: find.byType(Text))
+            .descendant(
+              of: find.byType(SnackBar),
+              matching: find.bySubtype<Text>(),
+            )
             .evaluate())
       (element.widget as Text).data,
   ];

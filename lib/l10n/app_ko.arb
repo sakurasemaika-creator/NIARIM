@@ -3577,7 +3577,6 @@
   "rewardUnlockSubscriptionBenefit": "선택형 광고 시청으로 무료 오팔을 모으거나 월간·연간 Premium으로 시간을 아낄 수 있습니다.",
   "rewardUnlockActive": "현재 이용 중인 혜택",
   "rewardUnlockActivePremium": "Premium 회원 혜택 전체 이용 중",
-  "rewardUnlockActiveCampaign": "출시 기념 캠페인: Premium 기능 이용 중",
   "rewardUnlockActiveUnavailable": "서버 연결 후 오팔 혜택 정보가 표시됩니다",
   "rewardUnlockDuration": "이용 기간",
   "rewardUnlockChooseDuration": "기간 선택",

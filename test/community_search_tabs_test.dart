@@ -242,7 +242,7 @@ void main() {
           );
           final visibleLabel = find.descendant(
             of: tab,
-            matching: find.byType(Text),
+            matching: find.bySubtype<Text>(),
           );
           if (width <= 430) {
             expect(
@@ -261,7 +261,7 @@ void main() {
           final hasLabels = find
               .descendant(
                 of: find.byKey(const Key('communityTabWidth0')),
-                matching: find.byType(Text),
+                matching: find.bySubtype<Text>(),
               )
               .evaluate()
               .isNotEmpty;
@@ -289,7 +289,7 @@ void main() {
     await tester.pumpAndSettle();
     final firstTab = find.byKey(const Key('communityTabWidth0'));
     expect(
-      find.descendant(of: firstTab, matching: find.byType(Text)),
+      find.descendant(of: firstTab, matching: find.bySubtype<Text>()),
       findsOneWidget,
     );
     tester.platformDispatcher.textScaleFactorTestValue = 3.0;
@@ -297,7 +297,7 @@ void main() {
     for (var i = 0; i < 5; i++) {
       final tab = find.byKey(Key('communityTabWidth$i'));
       expect(
-        find.descendant(of: tab, matching: find.byType(Text)),
+        find.descendant(of: tab, matching: find.bySubtype<Text>()),
         findsNothing,
         reason: 'at 3x text scale, icons regain the space',
       );

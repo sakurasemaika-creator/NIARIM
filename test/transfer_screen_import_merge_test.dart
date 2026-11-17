@@ -350,7 +350,7 @@ void main() {
       await tester.tap(find.text(l10n.transferImport));
       Finder bar() => find.descendant(
         of: find.byType(SnackBar),
-        matching: find.byType(Text),
+        matching: find.bySubtype<Text>(),
       );
       for (var i = 0; i < 100 && bar().evaluate().isEmpty; i++) {
         await pumpRealAsync(tester, const Duration(milliseconds: 100));
@@ -468,7 +468,7 @@ void main() {
       await tester.tap(find.text(l10n.transferImport));
       Finder bar() => find.descendant(
         of: find.byType(SnackBar),
-        matching: find.byType(Text),
+        matching: find.bySubtype<Text>(),
       );
       for (var i = 0; i < 100 && bar().evaluate().isEmpty; i++) {
         await pumpRealAsync(tester, const Duration(milliseconds: 100));

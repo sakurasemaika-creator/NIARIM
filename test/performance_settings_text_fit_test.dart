@@ -266,7 +266,7 @@ void main() {
                     .widgetList<Text>(
                       find.descendant(
                         of: row.first,
-                        matching: find.byType(Text),
+                        matching: find.bySubtype<Text>(),
                       ),
                     )
                     .map((t) => (t.data ?? '').replaceAll('⁠', ''))
@@ -291,7 +291,7 @@ void main() {
             .widgetList<Text>(
               find.descendant(
                 of: find.byType(AlertDialog),
-                matching: find.byType(Text),
+                matching: find.bySubtype<Text>(),
               ),
             )
             .map((t) => t.data)

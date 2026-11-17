@@ -9424,10 +9424,6 @@ class AppLocalizationsEs extends AppLocalizations {
       'Todas las ventajas activas con Premium';
 
   @override
-  String get rewardUnlockActiveCampaign =>
-      'Campaña de lanzamiento: Premium activo';
-
-  @override
   String get rewardUnlockActiveUnavailable =>
       'Los beneficios aparecerán al conectar el servidor';
 

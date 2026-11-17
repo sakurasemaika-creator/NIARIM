@@ -110,7 +110,7 @@ void main() {
   String? snackText(WidgetTester tester) {
     final texts = find.descendant(
       of: find.byType(SnackBar),
-      matching: find.byType(Text),
+      matching: find.bySubtype<Text>(),
     );
     if (texts.evaluate().isEmpty) return null;
     return (texts.evaluate().first.widget as Text).data;

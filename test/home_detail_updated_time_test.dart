@@ -32,7 +32,7 @@ void main() {
       find.ancestor(of: find.text(name), matching: find.byType(ListTile)),
     ).first;
     return find
-        .descendant(of: row, matching: find.byType(Text))
+        .descendant(of: row, matching: find.bySubtype<Text>())
         .evaluate()
         .map((e) => plain(e.widget as Text))
         .join('\n');
@@ -108,7 +108,7 @@ void main() {
         .ancestor(of: find.text(sharedName), matching: find.byType(ListTile))
         .first;
     final text = find
-        .descendant(of: row, matching: find.byType(Text))
+        .descendant(of: row, matching: find.bySubtype<Text>())
         .evaluate()
         .map((e) => plain(e.widget as Text))
         .join('\n');

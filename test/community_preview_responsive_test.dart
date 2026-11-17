@@ -205,7 +205,7 @@ void main() {
       final label = tester.renderObject<RenderParagraph>(
         find.descendant(
           of: find.byKey(const Key('communityPreviewDetails')),
-          matching: find.byType(Text),
+          matching: find.bySubtype<Text>(),
         ),
       );
       if (label.didExceedMaxLines ||

@@ -167,7 +167,7 @@ void main() {
       final delete = find.byKey(ValueKey('trash-delete-${apple.id}'));
       final cardLabel = plain(
         tester.widget<Text>(
-          find.descendant(of: delete, matching: find.byType(Text)),
+          find.descendant(of: delete, matching: find.bySubtype<Text>()),
         ),
       );
       await tester.tap(delete);
@@ -176,7 +176,7 @@ void main() {
         tester.widget<Text>(
           find.descendant(
             of: find.byKey(const Key('trash-dialog-confirm')),
-            matching: find.byType(Text),
+            matching: find.bySubtype<Text>(),
           ),
         ),
       );

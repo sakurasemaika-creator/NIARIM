@@ -2266,21 +2266,9 @@ onSelectionMaskChanged`→`canvas_screen`→`FilterPanel.selectionMask`と渡り
 そのまま実行できるはず。より詳細な一覧・重複しない補足は
 `docs/AI設計書/28_継続タスク（未着手一覧）.md`の同名セクションにもある。
 
-1. **収益化タイマーが2027年1月1日で止まっている**（判断のみ、外部サービス
-   不要）：`lib/config/monetization_gate.dart`の`kMonetizationEnabledFrom =
-DateTime(2027, 1, 1)`により、この日時に達するまで広告SDK（AdMob）・
-   アプリ内課金（in_app_purchase）が一切初期化・接続されず、代わりに
-   全ユーザーへプレミアム機能が無料開放される「リリース記念キャンペーン」
-   状態になっている（税務上の都合、`PremiumService`・`AdvertisingService`
-   のクラスコメント参照）。**本番公開のタイミングに合わせてこの日付を
-   ユーザー自身が判断・変更**すること。dev_branch（2026-11-04）から、日付に
-   加えてビルド時の`--dart-define=NIARIM_MONETIZATION_APPROVED=true`が無いと
-   有効にならない（`kMonetizationExplicitlyApproved`。Play購入のサーバー検証・
-   AdMob SSV・コイン台帳・運用審査を済ませたリリースビルドだけで付ける。
-   端末の時計を進めても有効にならない）。恒久的に有効化する場合は、同ファイル
-   のコメントの指示どおり`monetization_gate.dart`自体を削除し、参照箇所
-   （`kMonetizationEnabledFrom`を条件式に使っている箇所。
-   `grep -rn kMonetizationEnabledFrom lib/`で洗い出せる）も外す。
+1. **配布前に本番の収益化フローを実機で確認する**：Google Playの購入・復元と
+   サーバー検証、AdMobの広告配信・SSV・コイン付与を確認する。各サービスの
+   設定手順は下のAdMob・Google Play Consoleの項目を参照する。
 
 2. **Android署名鍵（keystore）を発行し、リリースビルドに設定する**：
    - 手順（ローカル端末のターミナルで実行。JDKに同梱の`keytool`コマンドを

@@ -61,7 +61,7 @@ void main() {
       return find
           .descendant(
             of: find.byKey(const Key('communityTabWidth0')),
-            matching: find.byType(Text),
+            matching: find.bySubtype<Text>(),
           )
           .evaluate()
           .isNotEmpty;
@@ -99,7 +99,7 @@ void main() {
       for (var i = 0; i < 5; i++) {
         final tab = find.byKey(Key('communityTabWidth$i'));
         final textVisible = find
-            .descendant(of: tab, matching: find.byType(Text))
+            .descendant(of: tab, matching: find.bySubtype<Text>())
             .evaluate()
             .isNotEmpty;
         expect(textVisible, expectedVisible, reason: 'width $width tab $i');

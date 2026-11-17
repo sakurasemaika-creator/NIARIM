@@ -1,4 +1,3 @@
-import 'package:niarim/services/theme_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -14,6 +13,8 @@ import '../../widgets/name_entry_dialog.dart';
 import '../../config/accent_text_theme.dart';
 import '../../widgets/fit_or_hide_title.dart';
 import '../../widgets/typing_dialog_inset.dart';
+import '../../widgets/menu_action_label.dart';
+import 'widgets/canvas_size_fields.dart';
 
 /// 保存済みカスタムキャンバスサイズプリセットの一覧管理画面。
 /// ドラッグでの並べ替え・編集・複製・名前変更・削除ができる。
@@ -183,11 +184,9 @@ class _PresetTile extends StatelessWidget {
                       ),
                       PopupMenuItem(
                         value: 'delete',
-                        child: Text(
-                          l10n.commonDelete,
-                          style: TextStyle(
-                            color: ThemeService.activeColorScheme.error,
-                          ),
+                        child: MenuActionLabel(
+                          icon: Icons.delete_outline,
+                          label: l10n.commonDelete,
                         ),
                       ),
                     ],
@@ -317,43 +316,48 @@ class _PresetSizeDialogState extends State<_PresetSizeDialog> {
     );
     InputDecoration decoration(String label, TextEditingController c) =>
         InputDecoration(
-          labelText: label,
+          label: Text(label),
           border: const OutlineInputBorder(),
-          errorText: _valueOf(c) == null ? error : null,
-          errorMaxLines: 3,
+          error: _valueOf(c) == null ? Text(error) : null,
         );
+    final insets =
+        typingDialogInsetPadding(context) ??
+        Theme.of(context).dialogTheme.insetPadding ??
+        const EdgeInsets.symmetric(horizontal: 40, vertical: 24);
+    final availableWidth =
+        MediaQuery.sizeOf(context).width -
+        MediaQuery.paddingOf(context).horizontal -
+        insets.horizontal -
+        48;
     return AlertDialog(
-      insetPadding: typingDialogInsetPadding(context),
+      insetPadding: insets,
       title: Text(l10n.canvasSizePresetEditDialogTitle),
-      content: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            child: TextField(
-              key: const Key('presetWidthField'),
-              controller: _width,
-              autofocus: true,
-              keyboardType: TextInputType.number,
-              inputFormatters: _numberInput,
-              textInputAction: TextInputAction.next,
-              decoration: decoration(l10n.newProjectWidthLabel, _width),
-              onChanged: (_) => setState(() {}),
-            ),
+      scrollable: true,
+      content: SizedBox(
+        width: 420,
+        child: CanvasSizeFields(
+          availableWidth: availableWidth.clamp(0, 420).toDouble(),
+          widthField: TextField(
+            key: const Key('presetWidthField'),
+            controller: _width,
+            autofocus: true,
+            keyboardType: TextInputType.number,
+            inputFormatters: _numberInput,
+            textInputAction: TextInputAction.next,
+            decoration: decoration(l10n.newProjectWidthLabel, _width),
+            onChanged: (_) => setState(() {}),
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: TextField(
-              key: const Key('presetHeightField'),
-              controller: _height,
-              keyboardType: TextInputType.number,
-              inputFormatters: _numberInput,
-              textInputAction: TextInputAction.done,
-              decoration: decoration(l10n.newProjectHeightLabel, _height),
-              onChanged: (_) => setState(() {}),
-              onSubmitted: (_) => _save(),
-            ),
+          heightField: TextField(
+            key: const Key('presetHeightField'),
+            controller: _height,
+            keyboardType: TextInputType.number,
+            inputFormatters: _numberInput,
+            textInputAction: TextInputAction.done,
+            decoration: decoration(l10n.newProjectHeightLabel, _height),
+            onChanged: (_) => setState(() {}),
+            onSubmitted: (_) => _save(),
           ),
-        ],
+        ),
       ),
       actions: [
         TextButton(

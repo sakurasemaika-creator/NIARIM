@@ -8922,9 +8922,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String get rewardUnlockActivePremium => 'Premium 회원 혜택 전체 이용 중';
 
   @override
-  String get rewardUnlockActiveCampaign => '출시 기념 캠페인: Premium 기능 이용 중';
-
-  @override
   String get rewardUnlockActiveUnavailable => '서버 연결 후 오팔 혜택 정보가 표시됩니다';
 
   @override

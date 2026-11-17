@@ -92,7 +92,10 @@ void main() {
   /// SnackBarに出ている文（出ていなければ空）。
   List<String> snackBarTexts(WidgetTester tester) => [
     for (final text in tester.widgetList<Text>(
-      find.descendant(of: find.byType(SnackBar), matching: find.byType(Text)),
+      find.descendant(
+        of: find.byType(SnackBar),
+        matching: find.bySubtype<Text>(),
+      ),
     ))
       text.data ?? '',
   ];

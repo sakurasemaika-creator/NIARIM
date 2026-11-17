@@ -415,7 +415,7 @@ class _HomeScreenState extends State<HomeScreen>
   // ときだけ出す。以前は一番上でも、スクロールできない短いフォルダでも出て、
   // 左下のカードの名前を隠した）。
   bool _projectsCanGoUp = false;
-  double? _projectActionsClearance;
+  double? _floatingActionsClearance;
 
   /// 一覧を送ったとき（コントローラーの知らせ）と、ホームを組み立て直した
   /// 後（フォルダを替えた・絞り込んだ・窓の大きさを変えた：一覧が作り
@@ -771,13 +771,8 @@ class _HomeScreenState extends State<HomeScreen>
     debugLabel: 'homeFloatingActions',
   );
 
-  void _syncProjectActionsClearance() {
-    if (!mounted ||
-        _currentTabIndex != 0 ||
-        _isSelectionMode ||
-        _usesProjectFooter(context)) {
-      return;
-    }
+  void _syncFloatingActionsClearance() {
+    if (!mounted || _usesProjectFooter(context)) return;
     final view = _listAreaKey.currentContext?.findRenderObject();
     final actions = _floatingActionsKey.currentContext?.findRenderObject();
     if (view is! RenderBox ||
@@ -792,14 +787,16 @@ class _HomeScreenState extends State<HomeScreen>
       0.0,
       view.size.height,
     );
-    if (_projectActionsClearance != clearance) {
-      setState(() => _projectActionsClearance = clearance);
+    if (_floatingActionsClearance != clearance) {
+      setState(() => _floatingActionsClearance = clearance);
     }
   }
 
   bool _usesProjectFooter(BuildContext context) {
     final size = MediaQuery.sizeOf(context);
-    return _currentTabIndex == 0 && size.width < 600 && size.height <= 400;
+    return _currentTabIndex == 0 &&
+        ((size.height <= 400 && !_isSelectionMode && !_hasClipboard) ||
+            (size.width >= 1000 && size.height <= 600));
   }
 
   // プロジェクトの一覧の見出し（お気に入りの絞り込み・並び順・パンくず）。
@@ -859,6 +856,7 @@ class _HomeScreenState extends State<HomeScreen>
     _searchFocus.dispose();
     _homeFocus.dispose();
     _projectScrollController.dispose();
+    _pasteTapGuard?.cancel();
     _sharedFileSub?.cancel();
     super.dispose();
   }
@@ -980,14 +978,11 @@ class _HomeScreenState extends State<HomeScreen>
       _sortMode == ProjectSortMode.updatedAsc;
 
   void _setSortByName(bool byName) {
+    if (byName == _sortByName) return;
     setState(() {
       _sortMode = byName
-          ? (_sortAscending
-                ? ProjectSortMode.nameAsc
-                : ProjectSortMode.nameDesc)
-          : (_sortAscending
-                ? ProjectSortMode.updatedAsc
-                : ProjectSortMode.updatedDesc);
+          ? ProjectSortMode.nameAsc
+          : ProjectSortMode.updatedDesc;
     });
     _rememberProjectSort();
   }
@@ -1010,10 +1005,11 @@ class _HomeScreenState extends State<HomeScreen>
     // On very short viewports the floating add button can cover most of the
     // trailing card's menu. Reserve a footer so their hit areas stay separate.
     final useProjectFooter = _usesProjectFooter(context);
+    final contextualToolbar = _buildContextualToolbar(l10n);
     _tabController.reduceMotion = MediaQuery.disableAnimationsOf(context);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _syncProjectsCanGoUp();
-      _syncProjectActionsClearance();
+      _syncFloatingActionsClearance();
     });
     _maybeRecordLogin(
       context.watch<GoogleAuthService>().account?.id,
@@ -1232,70 +1228,6 @@ class _HomeScreenState extends State<HomeScreen>
           },
           body: Column(
             children: [
-              if (!_isSelectionMode && _hasClipboard)
-                HomeClipboardToolbar(
-                  itemCount:
-                      _clipboardProjectIds.length +
-                      _clipboardFolderIds.length +
-                      (_otherClipboard == null ? 0 : 1),
-                  isCut: _clipboardIsCut,
-                  isPasting: _pasting,
-                  onPaste: _pasteClipboard,
-                  onClear: _clearHomeClipboard,
-                ).insideSideSafeArea(band: true),
-              if (_isSelectionMode)
-                HomeSelectionToolbar(
-                  selectedCount: _selectedIds.length,
-                  onSelectAll: _currentTabIndex == 0
-                      ? _selectAllInCurrentFolder
-                      : _selectAllLibrary,
-                  onDeselectAll: _endProjectSelection,
-                  onCut: _selectedIds.isEmpty
-                      ? null
-                      : (_currentTabIndex == 0
-                            ? _cutSelected
-                            : _currentTabIndex == 3 || _selectedIds.length != 1
-                            ? null
-                            : _cutSelectedLibrary),
-                  onCopy: _selectedIds.isEmpty
-                      ? null
-                      : (_currentTabIndex == 0
-                            ? _copySelected
-                            : _selectedIds.length != 1
-                            ? null
-                            : _currentTabIndex == 3
-                            ? _copySelectedTrash
-                            : _copySelectedLibrary),
-                  onTrash: _selectedIds.isEmpty
-                      ? null
-                      : (_currentTabIndex == 0
-                            ? _deleteSelected
-                            : _currentTabIndex == 3
-                            ? _restoreSelectedTrash
-                            : _trashSelectedLibrary),
-                  primaryActionLabel: _currentTabIndex == 3
-                      ? l10n.commonRestore
-                      : null,
-                  primaryActionIcon: _currentTabIndex == 3
-                      ? Icons.restore
-                      : Icons.delete,
-                  // 作品一覧・共有・ゴミ箱は1件ずつ切り取り・コピーする。2件
-                  // 以上選んだときは、押せない理由を伝える。ゴミ箱からは
-                  // 切り取れないので、切り取りはいつも理由（戻すときは
-                  // 「復元」）を伝える（以前は説明なしに押せなかった）。
-                  cutUnavailableReason: _currentTabIndex == 3
-                      ? l10n.homeTrashCutUnavailable(l10n.commonRestore)
-                      : (_currentTabIndex == 1 || _currentTabIndex == 2) &&
-                            _selectedIds.length > 1
-                      ? l10n.homeSelectionOneAtATime
-                      : null,
-                  copyUnavailableReason:
-                      _currentTabIndex != 0 && _selectedIds.length > 1
-                      ? (_currentTabIndex == 3
-                            ? l10n.homeTrashCopyOneAtATime
-                            : l10n.homeSelectionOneAtATime)
-                      : null,
-                ).insideSideSafeArea(band: true),
               Expanded(
                 child: HomeCollectionSelectionScope(
                   key: _listAreaKey,
@@ -1321,7 +1253,7 @@ class _HomeScreenState extends State<HomeScreen>
                         scrollController: _projectScrollController,
                         bottomClearance: useProjectFooter
                             ? 0
-                            : _projectActionsClearance,
+                            : _floatingActionsClearance,
                         header: Column(
                           key: _projectListHeaderKey,
                           children: [
@@ -1442,6 +1374,7 @@ class _HomeScreenState extends State<HomeScreen>
                         ),
                       ),
                       _WorksTab(
+                        bottomClearance: _floatingActionsClearance,
                         key: const PageStorageKey('home-works'),
                         viewMode: _effectiveWorksViewMode(context),
                         active: _currentTabIndex == 1,
@@ -1453,6 +1386,7 @@ class _HomeScreenState extends State<HomeScreen>
                         onCopyEntry: _copyLibraryEntry,
                       ),
                       SharedScreen(
+                        bottomClearance: _floatingActionsClearance,
                         key: const PageStorageKey('home-shared'),
                         embedded: true,
                         screenFocus: _homeFocus,
@@ -1493,10 +1427,26 @@ class _HomeScreenState extends State<HomeScreen>
           floatingActionButton: useProjectFooter
               ? null
               : _buildHomeActions(context, l10n),
-          bottomNavigationBar: useProjectFooter
-              ? HeroMode(
-                  enabled: false,
-                  child: _buildHomeActions(context, l10n, inFooter: true),
+          // The contextual controls change the viewport at its trailing edge,
+          // so entering selection keeps the row under the pointer in place.
+          bottomNavigationBar: useProjectFooter || contextualToolbar != null
+              ? Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (useProjectFooter)
+                      HeroMode(
+                        enabled: false,
+                        child: _buildHomeActions(context, l10n, inFooter: true),
+                      ),
+                    if (contextualToolbar != null)
+                      SafeArea(
+                        top: false,
+                        bottom: !useProjectFooter,
+                        left: false,
+                        right: false,
+                        child: contextualToolbar.insideSideSafeArea(band: true),
+                      ),
+                  ],
                 )
               : null,
         ),
@@ -1522,6 +1472,69 @@ class _HomeScreenState extends State<HomeScreen>
         },
         child: FocusTraversalGroup(policy: _homeTraversal, child: content),
       ),
+    );
+  }
+
+  Widget? _buildContextualToolbar(AppLocalizations l10n) {
+    if (_isSelectionMode) {
+      return HomeSelectionToolbar(
+        selectedCount: _selectedIds.length,
+        onSelectAll: _currentTabIndex == 0
+            ? _selectAllInCurrentFolder
+            : _selectAllLibrary,
+        onDeselectAll: _endProjectSelection,
+        onCut: _selectedIds.isEmpty
+            ? null
+            : (_currentTabIndex == 0
+                  ? _cutSelected
+                  : _currentTabIndex == 3 || _selectedIds.length != 1
+                  ? null
+                  : _cutSelectedLibrary),
+        onCopy: _selectedIds.isEmpty
+            ? null
+            : (_currentTabIndex == 0
+                  ? _copySelected
+                  : _selectedIds.length != 1
+                  ? null
+                  : _currentTabIndex == 3
+                  ? _copySelectedTrash
+                  : _copySelectedLibrary),
+        onTrash: _selectedIds.isEmpty
+            ? null
+            : (_currentTabIndex == 0
+                  ? _deleteSelected
+                  : _currentTabIndex == 3
+                  ? _restoreSelectedTrash
+                  : _trashSelectedLibrary),
+        primaryActionLabel: _currentTabIndex == 3 ? l10n.commonRestore : null,
+        primaryActionIcon: _currentTabIndex == 3 ? Icons.restore : Icons.delete,
+        // 作品一覧・共有・ゴミ箱は1件ずつ切り取り・コピーする。2件
+        // 以上選んだときは、押せない理由を伝える。ゴミ箱からは
+        // 切り取れないので、切り取りはいつも理由（戻すときは
+        // 「復元」）を伝える（以前は説明なしに押せなかった）。
+        cutUnavailableReason: _currentTabIndex == 3
+            ? l10n.homeTrashCutUnavailable(l10n.commonRestore)
+            : (_currentTabIndex == 1 || _currentTabIndex == 2) &&
+                  _selectedIds.length > 1
+            ? l10n.homeSelectionOneAtATime
+            : null,
+        copyUnavailableReason: _currentTabIndex != 0 && _selectedIds.length > 1
+            ? (_currentTabIndex == 3
+                  ? l10n.homeTrashCopyOneAtATime
+                  : l10n.homeSelectionOneAtATime)
+            : null,
+      );
+    }
+    if (!_hasClipboard) return null;
+    return HomeClipboardToolbar(
+      itemCount:
+          _clipboardProjectIds.length +
+          _clipboardFolderIds.length +
+          (_otherClipboard == null ? 0 : 1),
+      isCut: _clipboardIsCut,
+      isPasting: _pasting,
+      onPaste: _pasteClipboard,
+      onClear: _clearHomeClipboard,
     );
   }
 
@@ -2724,8 +2737,17 @@ class _HomeScreenState extends State<HomeScreen>
   // その前にもう一度押すと2回貼り付けた（書き出したファイルのフォルダが
   // 2つできた）。
   bool _pasteRequested = false;
+  Timer? _pasteTapGuard;
+
   Future<void> _pasteClipboard() async {
-    if (_pasting || _pasteRequested || !_hasClipboard) return;
+    if (_pasting ||
+        _pasteRequested ||
+        (_pasteTapGuard?.isActive ?? false) ||
+        !_hasClipboard) {
+      return;
+    }
+    // Small copies can finish before the second click of a double-click.
+    _pasteTapGuard = Timer(kDoubleTapTimeout, () {});
     _pasteRequested = true;
     try {
       await _pasteClipboardNow();
@@ -3970,6 +3992,7 @@ class SharedScreen extends StatefulWidget {
   const SharedScreen({
     super.key,
     this.embedded = false,
+    this.bottomClearance,
     this.onDirectionChanged,
     this.onCopyEntry,
     this.onOutgoingRenamed,
@@ -3982,6 +4005,7 @@ class SharedScreen extends StatefulWidget {
   });
 
   final bool embedded;
+  final double? bottomClearance;
 
   /// 開いたときに「作成したもの」を出すか。ホームのタブは離れると作り
   /// 直されるので、ホームが覚えている選択を渡す（渡さないと、戻るたびに
@@ -4139,6 +4163,7 @@ class _SharedScreenState extends State<SharedScreen>
               onShowAll: _showAll,
             )
           : _SharedTab(
+              bottomClearance: widget.bottomClearance,
               header: header,
               viewMode: _effectiveViewMode(context),
               onViewModeChanged: _selectViewMode,
@@ -4403,6 +4428,7 @@ List<Project> _sortProjects(List<Project> projects, ProjectSortMode mode) {
 class _SharedTab extends StatelessWidget {
   /// 一覧の先頭に出し、一覧と一緒にスクロールするもの（切り替え・並び順）。
   final Widget header;
+  final double? bottomClearance;
   final ProjectViewMode viewMode;
   final ValueChanged<ProjectViewMode> onViewModeChanged;
   final ProjectSortMode sortMode;
@@ -4418,6 +4444,7 @@ class _SharedTab extends StatelessWidget {
 
   const _SharedTab({
     required this.header,
+    this.bottomClearance,
     required this.viewMode,
     required this.onViewModeChanged,
     required this.sortMode,
@@ -4468,6 +4495,7 @@ class _SharedTab extends StatelessWidget {
     final loadFailed = service.projectsLoadFailed;
     return _FolderableList<Project>(
       reserveForFloatingActions: true,
+      bottomClearance: bottomClearance,
       allItems: shared,
       everyItem: service.shared,
       folders: visibleFolders,
@@ -5612,6 +5640,7 @@ class _FolderableList<T> extends StatelessWidget {
   /// 押し出されない）。
   final Widget Function(Size fitIn)? emptyState;
   final bool reserveForFloatingActions;
+  final double? bottomClearance;
 
   /// 一覧の先頭（フォルダより上）に出し、一覧と一緒にスクロールするもの。
   final Widget? header;
@@ -5633,6 +5662,7 @@ class _FolderableList<T> extends StatelessWidget {
     this.viewMode,
     this.emptyState,
     this.reserveForFloatingActions = false,
+    this.bottomClearance,
     this.onCopyFolder,
     this.onToggleFolderFavorite,
     this.header,
@@ -5705,6 +5735,9 @@ class _FolderableList<T> extends StatelessWidget {
             ],
           );
         }
+        final endClearance = reserveForFloatingActions
+            ? bottomClearance ?? 88 + MediaQuery.paddingOf(context).bottom
+            : 0.0;
         if (gridItemBuilder != null &&
             viewMode != null &&
             !viewMode!.isDetail) {
@@ -5734,12 +5767,8 @@ class _FolderableList<T> extends StatelessWidget {
                         ),
                 ),
               ),
-              if (reserveForFloatingActions)
-                SliverToBoxAdapter(
-                  child: SizedBox(
-                    height: 88 + MediaQuery.paddingOf(context).bottom,
-                  ),
-                ),
+              if (endClearance > 0)
+                SliverToBoxAdapter(child: SizedBox(height: endClearance)),
             ],
           );
         }
@@ -5747,13 +5776,7 @@ class _FolderableList<T> extends StatelessWidget {
         return CollectionDetailSizeScope(
           size: viewMode?.size ?? CollectionViewSize.medium,
           child: ListView.builder(
-            // Leave 48px for the action, 8px inner padding and 4px card margin.
-            padding: EdgeInsets.only(
-              bottom: reserveForFloatingActions
-                  ? (constraints.maxHeight - 60).clamp(0.0, 88.0).toDouble() +
-                        MediaQuery.paddingOf(context).bottom
-                  : 0,
-            ),
+            padding: EdgeInsets.only(bottom: endClearance),
             itemCount: lead + rootItems.length + (hasHeader ? 2 : 0),
             itemBuilder: (context, position) {
               if (position < lead) return header!;
@@ -6303,13 +6326,10 @@ class _TrashTabState extends State<_TrashTab> {
   }
 
   Future<void> _restoreLocal(LocalTrashedFile entry) async {
-    if (_pending.contains(entry.id) ||
-        !await _confirmRestoreFromTrash(entry.fileName) ||
-        !mounted) {
-      return;
-    }
+    if (_pending.contains(entry.id)) return;
     setState(() => _pending.add(entry.id));
     try {
+      if (!await _confirmRestoreFromTrash(entry.fileName) || !mounted) return;
       if (entry.isFolder) {
         await LocalFileTrashService.restoreWorkFolder(
           entry,
@@ -7091,12 +7111,14 @@ class _WorksTab extends StatefulWidget {
     required this.viewMode,
     required this.onViewModeChanged,
     required this.active,
+    this.bottomClearance,
     this.searchQuery = '',
     this.onClearSearch,
     this.onCopyEntry,
   });
   final ProjectViewMode viewMode;
   final bool active;
+  final double? bottomClearance;
   final ValueChanged<ProjectViewMode> onViewModeChanged;
   final String searchQuery;
 
@@ -7499,6 +7521,7 @@ class _WorksTabState extends State<_WorksTab>
                     ),
                   ),
             reserveForFloatingActions: true,
+            bottomClearance: widget.bottomClearance,
             itemBuilder: (context, file) => buildWork(context, file, false),
           ),
         );

@@ -25,7 +25,6 @@ class RewardUnlockLabels {
     'subscriptionBenefit' => _l10n.rewardUnlockSubscriptionBenefit,
     'active' => _l10n.rewardUnlockActive,
     'activePremium' => _l10n.rewardUnlockActivePremium,
-    'activeCampaign' => _l10n.rewardUnlockActiveCampaign,
     'activeUnavailable' => _l10n.rewardUnlockActiveUnavailable,
     'duration' => _l10n.rewardUnlockDuration,
     'chooseDuration' => _l10n.rewardUnlockChooseDuration,

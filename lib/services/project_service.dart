@@ -4884,8 +4884,13 @@ class ProjectService extends ChangeNotifier {
         }
         final i = _folders.indexWhere((f) => f.id == folderId);
         if (i < 0) return;
+        final folder = _folders[i];
+        if (folder.parentFolderId == newParentId) return;
         final next = [..._folders];
-        next[i] = next[i].copyWith(parentFolderId: newParentId);
+        next[i] = folder.copyWith(
+          parentFolderId: newParentId,
+          name: uniqueFolderName(folder.name, parentFolderId: newParentId),
+        );
         await _commitFolders(next);
       });
 

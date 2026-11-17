@@ -196,7 +196,7 @@ void main() {
                 for (final p in tester.renderObjectList<RenderParagraph>(
                   find.descendant(
                     of: find.byType(ProjectPlaybackStatus),
-                    matching: find.byType(Text),
+                    matching: find.bySubtype<Text>(),
                   ),
                 )) {
                   if (p.didExceedMaxLines) failures.add('$tag clipped text');

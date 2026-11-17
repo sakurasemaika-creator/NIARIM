@@ -144,7 +144,10 @@ void main() {
 
   String snackText(WidgetTester tester) => [
     for (final t in tester.widgetList<Text>(
-      find.descendant(of: find.byType(SnackBar), matching: find.byType(Text)),
+      find.descendant(
+        of: find.byType(SnackBar),
+        matching: find.bySubtype<Text>(),
+      ),
     ))
       t.data ?? '',
   ].join(' / ');

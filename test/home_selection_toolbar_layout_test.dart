@@ -144,7 +144,7 @@ void main() {
                   in find
                       .descendant(
                         of: find.byType(HomeSelectionToolbar),
-                        matching: find.byType(Text),
+                        matching: find.bySubtype<Text>(),
                       )
                       .evaluate()) {
                 final paragraph = element.renderObject! as RenderParagraph;

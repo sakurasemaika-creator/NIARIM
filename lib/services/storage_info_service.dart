@@ -27,8 +27,7 @@ enum StorageCategory {
   /// アプリ管理の書き出し済み動画・GIF・画像と共有ファイル。
   exports,
 
-  /// 自作ブラシ・トーン・スタンプ・フォント（niarim/Brushes・Tones・
-  /// Stamps・Fonts/）。
+  /// 自作ブラシ・トーン・スタンプ・フォント・透かし・自動塗りの見本。
   customAssets,
 
   /// アプリ専用キャッシュ。OS共用の一時ディレクトリは含めない。
@@ -403,7 +402,14 @@ class StorageInfoService {
         }
       }
 
-      for (final name in ['Brushes', 'Tones', 'Stamps', 'Fonts']) {
+      for (final name in [
+        'Brushes',
+        'Tones',
+        'Stamps',
+        'Fonts',
+        'watermarks',
+        'autofill_thumbnails',
+      ]) {
         customAssets += await sizeOf(
           Directory('${niarimDir.path}/$name'),
           const [StorageCategory.customAssets],

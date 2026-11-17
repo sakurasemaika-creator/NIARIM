@@ -139,7 +139,7 @@ class HomeAppHarness {
     final cards = inProjects(find.byType(Card));
     for (final element
         in find
-            .descendant(of: cards, matching: find.byType(Text))
+            .descendant(of: cards, matching: find.bySubtype<Text>())
             .evaluate()
             .toSet()) {
       final text = element.widget as Text;

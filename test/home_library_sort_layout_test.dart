@@ -311,7 +311,7 @@ void main() {
             find.text('Gamma'),
             findsOneWidget,
             reason:
-                'shared=${service.shared.map((p) => p.name).toList()} trash=${service.trash.map((p) => p.name).toList()} visible=${tester.widgetList<Text>(find.byType(Text)).map((t) => t.data).toList()}',
+                'shared=${service.shared.map((p) => p.name).toList()} trash=${service.trash.map((p) => p.name).toList()} visible=${tester.widgetList<Text>(find.bySubtype<Text>()).map((t) => t.data).toList()}',
           );
           final positions = {
             for (final name in ['Alpha', 'Beta', 'Gamma'])

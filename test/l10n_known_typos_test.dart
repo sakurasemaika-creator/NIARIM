@@ -67,7 +67,7 @@ void main() {
           ),
         ),
       );
-      titles[language] = tester.widget<Text>(find.byType(Text)).data!;
+      titles[language] = tester.widget<Text>(find.bySubtype<Text>()).data!;
     }
     expect(titles['ko'], contains('볼'));
     expect(titles['zh'], contains('脸颊的红晕'));

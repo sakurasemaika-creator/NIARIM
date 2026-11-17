@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/engine/export_engine.dart';
 import 'package:niarim/services/storage_info_service.dart';
+import 'package:niarim/services/export_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
@@ -51,6 +52,47 @@ void main() {
     expect(await directory.exists(), isTrue);
     expect(await legacy.exists(), isFalse);
   });
+
+  test(
+    'startup cleans interrupted image exports only in managed storage',
+    () async {
+      final complete = write(managed, 'complete.png', 13);
+      final staged = write(
+        Directory('${managed.path}/.export-test'),
+        'image.part',
+        17,
+      );
+      final legacyStage = write(
+        Directory('${legacy.path}/.export-test'),
+        'image.part',
+        19,
+      );
+      final listing = await ExportEngine.listExportedFiles(forceRefresh: true);
+      expect(listing.map((entry) => entry.path), [complete.path]);
+
+      await ExportStorage.cleanInterruptedImageExports();
+
+      expect(await staged.parent.exists(), isFalse);
+      expect(await complete.length(), 13);
+      expect(await legacyStage.length(), 19);
+      final storage = await StorageInfoService().computeBreakdown({});
+      expect(storage.bytesOf(StorageCategory.exports), 13);
+    },
+  );
+
+  test(
+    'custom asset storage includes watermarks and autofill previews',
+    () async {
+      write(Directory('${docs.path}/niarim/watermarks'), 'watermark.png', 19);
+      write(
+        Directory('${docs.path}/niarim/autofill_thumbnails'),
+        'preview.png',
+        23,
+      );
+      final storage = await StorageInfoService().computeBreakdown({});
+      expect(storage.bytesOf(StorageCategory.customAssets), 42);
+    },
+  );
 
   test('storage accounting excludes the shared exports directory', () async {
     final own = write(managed, 'niarim_1.mp4', 13);

@@ -104,7 +104,7 @@ void main() {
           tester,
           find.descendant(
             of: find.byType(ExportPresetSelector),
-            matching: find.byType(Text),
+            matching: find.bySubtype<Text>(),
           ),
         );
         final beforeCancel = value;
@@ -122,7 +122,7 @@ void main() {
           expect(options, findsNWidgets(3));
           _expectWordsIntact(
             tester,
-            find.descendant(of: options, matching: find.byType(Text)),
+            find.descendant(of: options, matching: find.bySubtype<Text>()),
           );
           await tester.tap(
             find.byKey(ValueKey('exportPresetOption-${choice.name}')),
@@ -211,7 +211,7 @@ void main() {
             tester,
             find.descendant(
               of: find.byType(ExportPresetSelector),
-              matching: find.byType(Text),
+              matching: find.bySubtype<Text>(),
             ),
           );
         } catch (error) {
@@ -339,7 +339,7 @@ void main() {
       tester,
       find.descendant(
         of: find.byType(ExportPresetSelector),
-        matching: find.byType(Text),
+        matching: find.bySubtype<Text>(),
       ),
     );
     expect(tester.takeException(), isNull);

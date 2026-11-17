@@ -252,8 +252,8 @@ class HomeSelectionToolbar extends StatelessWidget {
   }
 }
 
-/// Copy/cut state sits immediately below the four tabs, in the same
-/// visual system and 48px action height as [HomeSelectionToolbar].
+/// Copy/cut status and actions use the same visual style and 48px action
+/// height as [HomeSelectionToolbar].
 class HomeClipboardToolbar extends StatelessWidget {
   const HomeClipboardToolbar({
     super.key,

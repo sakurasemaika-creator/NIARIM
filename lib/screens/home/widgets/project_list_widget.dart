@@ -493,6 +493,9 @@ class ProjectListWidget extends StatelessWidget {
       context,
       targetExtent,
       locationRow: searchQuery.trim().isNotEmpty,
+      actionBandHeight: _usesGridActionBand
+          ? CollectionActionFrame.targetExtent
+          : 0,
     );
     if (header != null) {
       return CustomScrollView(
@@ -896,6 +899,44 @@ class ProjectListWidget extends StatelessWidget {
     );
   }
 
+  bool get _usesGridActionBand =>
+      viewMode == ProjectViewMode.small || viewMode == ProjectViewMode.medium;
+
+  Widget _gridPicture({
+    required Widget cover,
+    required Widget actions,
+    Widget? selectionMarker,
+  }) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // Two 48px targets must fit side by side in the action band.
+        final separate =
+            _usesGridActionBand &&
+            constraints.maxWidth >= 2 * CollectionActionFrame.targetExtent;
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Expanded(
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  cover,
+                  if (!separate) actions,
+                  ?selectionMarker,
+                ],
+              ),
+            ),
+            if (separate)
+              SizedBox(
+                height: CollectionActionFrame.targetExtent,
+                child: actions,
+              ),
+          ],
+        );
+      },
+    );
+  }
+
   Widget _gridCard(BuildContext context, _Entry entry) {
     if (entry.isFolder) return _folderGridCard(context, entry.folder!);
     final project = entry.project!;
@@ -953,54 +994,54 @@ class ProjectListWidget extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Expanded(
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    _thumbnail(context, project),
-                    _gridCardActions(
+                child: _gridPicture(
+                  cover: _thumbnail(context, project),
+                  actions: _gridCardActions(
+                    context,
+                    menu: _projectMenu(context, project),
+                    isFavorite: project.isFavorite,
+                    itemId: project.id,
+                    onFavorite: () => runProjectAction(
                       context,
-                      menu: _projectMenu(context, project),
-                      isFavorite: project.isFavorite,
-                      itemId: project.id,
-                      onFavorite: () => runProjectAction(
-                        context,
-                        () => context.read<ProjectService>().toggleFavorite(
-                          project.id,
-                        ),
+                      () => context.read<ProjectService>().toggleFavorite(
+                        project.id,
                       ),
                     ),
-                    if (isSelectionMode)
-                      Positioned(
-                        top: 4,
-                        left: 4,
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 120),
-                          padding: const EdgeInsets.all(1),
-                          decoration: BoxDecoration(
-                            color: isSelected
-                                ? selectionColor
-                                : scheme.surface.withValues(alpha: 0.9),
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: selectionColor,
-                              width: 1.5,
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: ThemeService.activeColorScheme.onSurface
-                                    .withValues(alpha: 0.2),
-                                blurRadius: 3,
+                  ),
+                  selectionMarker: isSelectionMode
+                      ? Positioned(
+                          top: 4,
+                          left: 4,
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 120),
+                            padding: const EdgeInsets.all(1),
+                            decoration: BoxDecoration(
+                              color: isSelected
+                                  ? selectionColor
+                                  : scheme.surface.withValues(alpha: 0.9),
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: selectionColor,
+                                width: 1.5,
                               ),
-                            ],
+                              boxShadow: [
+                                BoxShadow(
+                                  color: ThemeService
+                                      .activeColorScheme
+                                      .onSurface
+                                      .withValues(alpha: 0.2),
+                                  blurRadius: 3,
+                                ),
+                              ],
+                            ),
+                            child: Icon(
+                              isSelected ? Icons.check : null,
+                              size: 16,
+                              color: selectionForeground,
+                            ),
                           ),
-                          child: Icon(
-                            isSelected ? Icons.check : null,
-                            size: 16,
-                            color: selectionForeground,
-                          ),
-                        ),
-                      ),
-                  ],
+                        )
+                      : null,
                 ),
               ),
               _gridCaption(context, project.name, project.folderId),
@@ -1101,50 +1142,45 @@ class ProjectListWidget extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Expanded(
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    FolderThumbnail(
-                      key: ValueKey('projectFolderCover_${folder.id}'),
-                      folder: folder,
-                      choices: _folderCoverChoices(context, folder),
-                      defaultImagePath: _projectFolderCoverPath(
-                        context,
-                        folder,
-                      ),
-                    ),
-                    _gridCardActions(
-                      context,
-                      menu: _folderMenu(context, folder),
-                      isFavorite: folder.isFavorite,
-                      itemId: folder.id,
-                      onFavorite: () =>
-                          _handleFolderAction(context, 'favorite', folder),
-                    ),
-                    if (isSelectionMode)
-                      Positioned(
-                        top: 4,
-                        left: 4,
-                        child: Container(
-                          padding: const EdgeInsets.all(1),
-                          decoration: BoxDecoration(
-                            color: isSelected
-                                ? selectionColor
-                                : scheme.surface.withValues(alpha: 0.9),
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: selectionColor,
-                              width: 1.5,
+                child: _gridPicture(
+                  cover: FolderThumbnail(
+                    key: ValueKey('projectFolderCover_${folder.id}'),
+                    folder: folder,
+                    choices: _folderCoverChoices(context, folder),
+                    defaultImagePath: _projectFolderCoverPath(context, folder),
+                  ),
+                  actions: _gridCardActions(
+                    context,
+                    menu: _folderMenu(context, folder),
+                    isFavorite: folder.isFavorite,
+                    itemId: folder.id,
+                    onFavorite: () =>
+                        _handleFolderAction(context, 'favorite', folder),
+                  ),
+                  selectionMarker: isSelectionMode
+                      ? Positioned(
+                          top: 4,
+                          left: 4,
+                          child: Container(
+                            padding: const EdgeInsets.all(1),
+                            decoration: BoxDecoration(
+                              color: isSelected
+                                  ? selectionColor
+                                  : scheme.surface.withValues(alpha: 0.9),
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: selectionColor,
+                                width: 1.5,
+                              ),
+                            ),
+                            child: Icon(
+                              isSelected ? Icons.check : null,
+                              size: 16,
+                              color: selectionForeground,
                             ),
                           ),
-                          child: Icon(
-                            isSelected ? Icons.check : null,
-                            size: 16,
-                            color: selectionForeground,
-                          ),
-                        ),
-                      ),
-                  ],
+                        )
+                      : null,
                 ),
               ),
               _gridCaption(context, folder.name, folder.parentFolderId),

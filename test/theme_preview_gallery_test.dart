@@ -506,7 +506,7 @@ void main() {
           reason: 'Material $i must appear above gallery navigation',
         );
         final label = tester.widget<Text>(
-          find.descendant(of: kind, matching: find.byType(Text)).first,
+          find.descendant(of: kind, matching: find.bySubtype<Text>()).first,
         );
         expect(
           label.style?.fontFamily,

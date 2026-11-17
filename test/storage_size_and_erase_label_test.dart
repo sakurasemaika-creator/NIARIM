@@ -416,7 +416,7 @@ void main() {
     );
     final values = [
       for (final t in tester.widgetList<Text>(
-        find.descendant(of: row.first, matching: find.byType(Text)),
+        find.descendant(of: row.first, matching: find.bySubtype<Text>()),
       ))
         t.data ?? '',
     ]..remove(l10n.projectDetailInfoSize);

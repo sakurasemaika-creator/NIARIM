@@ -94,7 +94,11 @@ void main() {
   }
 
   /// 一番下まで送った一覧で、浮かぶボタン・下の帯に重なるもの。
-  List<String> overlaps(HomeMatrix m, double bottomInset) {
+  List<String> overlaps(
+    HomeMatrix m,
+    double bottomInset, {
+    double minimumFabGap = 0,
+  }) {
     final out = <String>[];
     final fabs = [
       for (final e in find.byType(FloatingActionButton).evaluate())
@@ -158,10 +162,10 @@ void main() {
     final fabTop = fabs.isEmpty
         ? double.infinity
         : fabs.map((f) => f.top).reduce((a, b) => a < b ? a : b);
-    if (lowest > fabTop + 0.5) {
+    if (lowest + minimumFabGap > fabTop + 0.5) {
       out.add(
-        'the last row ends at $lowest, below the floating buttons '
-        '(top $fabTop)',
+        'the last row ends at $lowest, less than $minimumFabGap px '
+        'from the floating buttons (top $fabTop)',
       );
     }
     if (lowest > m.size.height - bottomInset + 0.5) {
@@ -211,7 +215,9 @@ void main() {
         ('projects grid', HomeView.projects, null),
         ('projects detail', HomeView.projects, ProjectViewMode.detail),
         ('works', HomeView.works, null),
+        ('works detail', HomeView.works, ProjectViewMode.detail),
         ('received', HomeView.sharedReceived, null),
+        ('received detail', HomeView.sharedReceived, ProjectViewMode.detail),
         ('created', HomeView.sharedOutgoing, null),
         ('trash', HomeView.trash, null),
       ];
@@ -227,7 +233,11 @@ void main() {
           if (mode != null) await m.chooseViewMode(mode);
           final end = await toEnd(m);
           (ends[name] ??= {})[bottom] = end;
-          for (final p in overlaps(m, bottom)) {
+          for (final p in overlaps(
+            m,
+            bottom,
+            minimumFabGap: mode?.isDetail == true ? 8 : 0,
+          )) {
             problems.add('$name, bottom bar $bottom: $p');
           }
           await m.capture('end_${name.replaceAll(' ', '_')}_bottom$bottom');
@@ -259,4 +269,21 @@ void main() {
     expect(problems, isEmpty, reason: problems.join('\n'));
     expect(tester.takeException(), isNull);
   });
+  testWidgets(
+    'the last Home project row clears the actions in a short PC window',
+    (tester) async {
+      final m = HomeMatrix(tester, 'ja', run);
+      await m.begin();
+      try {
+        await m.start();
+        await m.seedRich();
+        await m.setPc(true);
+        await m.resize(const Size(1280, 600));
+        await m.cell('short', HomeView.projects, captureEnd: true);
+        m.expectNoFailures();
+      } finally {
+        debugDisableShadows = true;
+      }
+    },
+  );
 }

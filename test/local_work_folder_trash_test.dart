@@ -55,7 +55,10 @@ void main() {
 
       final reopened = WorkFolderService();
       await reopened.init();
-      await LocalFileTrashService.restoreWorkFolder(entry, reopened);
+      await Future.wait([
+        LocalFileTrashService.restoreWorkFolder(entry, reopened),
+        LocalFileTrashService.restoreWorkFolder(archived, reopened),
+      ]);
       expect(await movie.readAsBytes(), [1, 2, 3]);
       expect(await gif.readAsBytes(), [4, 5]);
       expect(reopened.folders.single.name, '動画とGIF');

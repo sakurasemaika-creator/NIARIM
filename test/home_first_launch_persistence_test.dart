@@ -62,7 +62,7 @@ void main() {
       of: find.byWidgetPredicate(
         (widget) => widget is Semantics && widget.properties.liveRegion == true,
       ),
-      matching: find.byType(Text),
+      matching: find.bySubtype<Text>(),
     ),
     matching: find.byType(RichText),
   );

@@ -539,7 +539,7 @@ class _Cell {
       of: find.byWidgetPredicate(
         (widget) => widget is Semantics && widget.properties.liveRegion == true,
       ),
-      matching: find.byType(Text),
+      matching: find.bySubtype<Text>(),
     ),
   );
   Finder get _progress => _inDialog(find.byType(LinearProgressIndicator));
@@ -561,7 +561,7 @@ class _Cell {
   }
 
   bool _startFocused() {
-    final label = find.descendant(of: _start, matching: find.byType(Text));
+    final label = find.descendant(of: _start, matching: find.bySubtype<Text>());
     if (label.evaluate().isEmpty) return false;
     return Focus.maybeOf(tester.element(label.first))?.hasPrimaryFocus ?? false;
   }
@@ -1019,7 +1019,10 @@ class _Cell {
       if (enabled == waiting) {
         _problem(step, waiting ? 'Start enabled while saving' : 'Start off');
       }
-      final label = find.descendant(of: _start, matching: find.byType(Text));
+      final label = find.descendant(
+        of: _start,
+        matching: find.bySubtype<Text>(),
+      );
       final lines = _lineCount(tester.renderObject<RenderParagraph>(label));
       record['startLines'] = lines;
       if (lines != 1) _problem(step, 'Start label wraps to $lines lines');

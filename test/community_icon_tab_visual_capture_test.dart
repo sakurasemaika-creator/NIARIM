@@ -125,7 +125,7 @@ void main() {
           );
           final tabLabel = find.descendant(
             of: find.byKey(Key('communityTabWidth$index')),
-            matching: find.byType(Text),
+            matching: find.bySubtype<Text>(),
           );
           if (width <= 480) {
             expect(
@@ -143,7 +143,7 @@ void main() {
           final firstHasLabel = find
               .descendant(
                 of: find.byKey(const Key('communityTabWidth0')),
-                matching: find.byType(Text),
+                matching: find.bySubtype<Text>(),
               )
               .evaluate()
               .isNotEmpty;

@@ -63,6 +63,28 @@ void main() {
     );
   });
 
+  test('移動先の同名フォルダに連番を付けて永続化する', () async {
+    final service = ProjectService();
+    await service.init();
+    final destination = await service.createFolder('Storyboards');
+    final moved = await service.createFolder('Episode 1');
+    final child = await service.createFolder(
+      'Sketches',
+      parentFolderId: moved.id,
+    );
+    await service.createFolder('Episode 1', parentFolderId: destination.id);
+    await service.createFolder('Episode 1 (2)', parentFolderId: destination.id);
+
+    await service.moveFolderTo(moved.id, destination.id);
+    await service.moveFolderTo(moved.id, destination.id);
+    final restarted = ProjectService();
+    await restarted.init();
+    final folders = {for (final folder in restarted.folders) folder.id: folder};
+    expect(folders[moved.id]!.name, 'Episode 1 (3)');
+    expect(folders[moved.id]!.parentFolderId, destination.id);
+    expect(folders[child.id]!.parentFolderId, moved.id);
+  });
+
   test('フォルダ削除時、中の子フォルダ・プロジェクトはルートへ戻る', () async {
     final service = ProjectService();
     await service.init();

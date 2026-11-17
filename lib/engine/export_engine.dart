@@ -720,7 +720,9 @@ class ExportEngine {
 
   Future<void> _publishImageExport(String path, List<int> bytes) async {
     final destination = File(path);
-    final staging = await destination.parent.createTemp('.export-');
+    final staging = await destination.parent.createTemp(
+      ExportStorage.imageStagingPrefix,
+    );
     try {
       final partial = File('${staging.path}/image.part');
       await partial.writeAsBytes(bytes, flush: true);

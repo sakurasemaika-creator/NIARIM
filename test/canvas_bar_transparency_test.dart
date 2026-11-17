@@ -175,7 +175,7 @@ void main() {
     final brush = find.byType(BrushSizeSlider);
     expect(brush, findsOneWidget);
     final brushText = tester.widget<Text>(
-      find.descendant(of: brush, matching: find.byType(Text)).first,
+      find.descendant(of: brush, matching: find.bySubtype<Text>()).first,
     );
     expect(brushText.style?.shadows, hasLength(8));
     final brushIcon = tester.widget<Icon>(

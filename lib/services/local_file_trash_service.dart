@@ -55,6 +55,19 @@ class LocalTrashedFile {
 abstract final class LocalFileTrashService {
   static final ValueNotifier<int> changes = ValueNotifier<int>(0);
   static final Set<String> _movingPaths = {};
+  static final Map<String, Future<void>> _restoringEntries = {};
+
+  static Future<void> _restoreOnce(
+    LocalTrashedFile entry,
+    Future<void> Function() restore,
+  ) {
+    return _restoringEntries.putIfAbsent(
+      entry.archivedPath,
+      () => restore().whenComplete(() {
+        _restoringEntries.remove(entry.archivedPath);
+      }),
+    );
+  }
 
   /// Tells listeners that the Trash changed. [exports] is true when exported
   /// works moved into or out of the exports directory: the cached list of
@@ -313,7 +326,10 @@ abstract final class LocalFileTrashService {
     }
   }
 
-  static Future<void> restore(LocalTrashedFile entry) async {
+  static Future<void> restore(LocalTrashedFile entry) =>
+      _restoreOnce(entry, () => _restoreFile(entry));
+
+  static Future<void> _restoreFile(LocalTrashedFile entry) async {
     if (entry.isFolder) throw ArgumentError('Use restoreWorkFolder');
     final archived = File(entry.archivedPath);
     if (!await archived.exists()) {
@@ -501,6 +517,11 @@ abstract final class LocalFileTrashService {
   /// Resumes an interrupted restore without overwriting unrelated files.
   /// A verified copy is checkpointed before updating its folder membership.
   static Future<void> restoreWorkFolder(
+    LocalTrashedFile entry,
+    WorkFolderService workFolders,
+  ) => _restoreOnce(entry, () => _restoreWorkFolder(entry, workFolders));
+
+  static Future<void> _restoreWorkFolder(
     LocalTrashedFile entry,
     WorkFolderService workFolders,
   ) async {

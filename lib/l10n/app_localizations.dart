@@ -15999,12 +15999,6 @@ abstract class AppLocalizations {
   /// **'Premium会員として全特典を利用中'**
   String get rewardUnlockActivePremium;
 
-  /// No description provided for @rewardUnlockActiveCampaign.
-  ///
-  /// In ja, this message translates to:
-  /// **'リリース記念キャンペーン：Premium特典を開放中'**
-  String get rewardUnlockActiveCampaign;
-
   /// No description provided for @rewardUnlockActiveUnavailable.
   ///
   /// In ja, this message translates to:

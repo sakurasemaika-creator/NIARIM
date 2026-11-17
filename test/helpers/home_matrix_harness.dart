@@ -1573,7 +1573,7 @@ class HomeMatrix {
             in find
                 .descendant(
                   of: find.byKey(ValueKey('trashKind_$kind')),
-                  matching: find.byType(Text),
+                  matching: find.bySubtype<Text>(),
                 )
                 .evaluate())
           (e.widget as Text).data ?? '',

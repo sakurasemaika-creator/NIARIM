@@ -8875,9 +8875,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get rewardUnlockActivePremium => 'Premium会員として全特典を利用中';
 
   @override
-  String get rewardUnlockActiveCampaign => 'リリース記念キャンペーン：Premium特典を開放中';
-
-  @override
   String get rewardUnlockActiveUnavailable => 'オパール特典の利用状況はサーバー連携後に表示します';
 
   @override

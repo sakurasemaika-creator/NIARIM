@@ -4628,7 +4628,9 @@ void main() {
     expect(tester.widget<TextButton>(delete).onPressed, isNull);
     final lines = [
       for (final e
-          in find.descendant(of: row, matching: find.byType(Text)).evaluate())
+          in find
+              .descendant(of: row, matching: find.bySubtype<Text>())
+              .evaluate())
         ...?(e.widget as Text).data?.split('\n'),
     ];
     expect(lines, isNot(contains('中身なし')), reason: 'the row says it is empty');

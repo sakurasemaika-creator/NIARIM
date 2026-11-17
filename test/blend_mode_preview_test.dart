@@ -166,7 +166,7 @@ void main() {
     final pictureTops = <int, Set<int>>{};
     for (final e in tiles.evaluate()) {
       final tile = find.byWidget(e.widget);
-      final name = find.descendant(of: tile, matching: find.byType(Text));
+      final name = find.descendant(of: tile, matching: find.bySubtype<Text>());
       final picture = find.descendant(
         of: tile,
         matching: find.byType(BlendModePreview),

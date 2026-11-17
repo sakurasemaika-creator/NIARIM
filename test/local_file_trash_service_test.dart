@@ -40,7 +40,11 @@ void main() {
     expect(items.single.fileName, 'clip.mp4');
     expect(await File(entry.archivedPath).readAsBytes(), [11, 22, 33, 44]);
 
-    await LocalFileTrashService.restore(items.single);
+    await Future.wait([
+      LocalFileTrashService.restore(items.single),
+      LocalFileTrashService.restore(entry),
+    ]);
+    expect(LocalFileTrashService.changes.value, change + 2);
     expect(await input.readAsBytes(), [11, 22, 33, 44]);
     expect(await LocalFileTrashService.list(), isEmpty);
   });

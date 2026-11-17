@@ -54,7 +54,7 @@ String _plain(String? text) => (text ?? '')
 
 /// 画面に出ている文（読み上げの文も含む）。
 Set<String> _shownTexts(WidgetTester tester) => {
-  for (final text in tester.widgetList<Text>(find.byType(Text))) ...[
+  for (final text in tester.widgetList<Text>(find.bySubtype<Text>())) ...[
     _plain(text.data),
     _plain(text.semanticsLabel),
   ],

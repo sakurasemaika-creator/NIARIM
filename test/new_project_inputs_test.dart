@@ -307,6 +307,23 @@ void main() {
       expect(message, findsOneWidget, reason: code);
       await tester.ensureVisible(message);
       await tester.pump();
+      expect(
+        tester.renderObject<RenderParagraph>(message).didExceedMaxLines,
+        isFalse,
+        reason: code,
+      );
+      for (final label in [
+        l10n.newProjectWidthLabel,
+        l10n.newProjectHeightLabel,
+      ]) {
+        expect(
+          tester
+              .renderObject<RenderParagraph>(find.text(label))
+              .didExceedMaxLines,
+          isFalse,
+          reason: '$code: $label',
+        );
+      }
       final rect = tester.getRect(message);
       expect(rect.left, greaterThanOrEqualTo(0), reason: code);
       expect(rect.right, lessThanOrEqualTo(320.5), reason: code);

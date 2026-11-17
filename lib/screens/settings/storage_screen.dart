@@ -1392,6 +1392,9 @@ class _StorageScreenState extends State<StorageScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
+        insetPadding: MediaQuery.sizeOf(ctx).height < 320
+            ? const EdgeInsets.symmetric(horizontal: 20, vertical: 8)
+            : const EdgeInsets.symmetric(horizontal: 40, vertical: 24),
         constraints: const BoxConstraints(maxWidth: 560),
         scrollable: true,
         title: Text(l10n.storageEraseAllConfirmTitle),

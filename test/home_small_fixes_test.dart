@@ -580,7 +580,7 @@ void main() {
         .widget<Text>(
           find.descendant(
             of: find.byType(EmptyStatePlaceholder),
-            matching: find.byType(Text),
+            matching: find.bySubtype<Text>(),
           ),
         )
         .data!;

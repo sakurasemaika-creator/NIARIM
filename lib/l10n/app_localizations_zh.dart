@@ -8775,9 +8775,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get rewardUnlockActivePremium => '已通过 Premium 会员使用全部权益';
 
   @override
-  String get rewardUnlockActiveCampaign => '上线活动：Premium 权益已开放';
-
-  @override
   String get rewardUnlockActiveUnavailable => '连接服务器后显示欧泊权益';
 
   @override
@@ -18851,9 +18848,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get rewardUnlockActivePremium => '已透過 Premium 會員使用全部權益';
-
-  @override
-  String get rewardUnlockActiveCampaign => '上線活動：Premium 權益已開放';
 
   @override
   String get rewardUnlockActiveUnavailable => '連線伺服器後顯示歐泊權益';

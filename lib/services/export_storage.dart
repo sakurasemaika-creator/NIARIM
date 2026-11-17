@@ -2,6 +2,8 @@ import 'dart:io';
 
 import 'package:path_provider/path_provider.dart';
 
+import '../utils/app_error_reporter.dart';
+
 /// 保存・初期化でNIARIMが所有する領域と、以前の共有保存先を分ける。
 abstract final class ExportStorage {
   static int _generation = 0;
@@ -19,6 +21,34 @@ abstract final class ExportStorage {
     );
     await directory.create(recursive: true);
     return directory;
+  }
+
+  static const imageStagingPrefix = '.export-';
+
+  /// Call during startup, before this process can start a new export.
+  static Future<void> cleanInterruptedImageExports() async {
+    var changed = false;
+    try {
+      final directory = managedDirectoryIn(
+        await getApplicationDocumentsDirectory(),
+      );
+      if (!await directory.exists()) return;
+      await for (final entry in directory.list(followLinks: false)) {
+        if (entry is! Directory) continue;
+        final name = entry.uri.pathSegments.where((s) => s.isNotEmpty).last;
+        if (!name.startsWith(imageStagingPrefix)) continue;
+        try {
+          await entry.delete(recursive: true);
+          changed = true;
+        } on FileSystemException catch (error, stack) {
+          AppErrorReporter.record(error, stack);
+        }
+      }
+    } catch (error, stack) {
+      AppErrorReporter.record(error, stack);
+    } finally {
+      if (changed) invalidate();
+    }
   }
 
   /// 以前のファイルを移動・削除せず、新旧両方の保存先を読み取る。

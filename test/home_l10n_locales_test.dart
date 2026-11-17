@@ -345,7 +345,7 @@ void main() {
         for (final text in tester.widgetList<Text>(
           find.descendant(
             of: find.byType(AlertDialog),
-            matching: find.byType(Text),
+            matching: find.bySubtype<Text>(),
           ),
         ))
           if ((text.data ?? '').isNotEmpty) text.data!,

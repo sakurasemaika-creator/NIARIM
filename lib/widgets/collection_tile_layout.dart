@@ -197,10 +197,12 @@ CollectionTileGridDelegate collectionTileGridDelegate(
   BuildContext context,
   double maxExtent, {
   bool locationRow = false,
+  double actionBandHeight = 0,
   int nameLines = kCollectionTileNameLines,
 }) {
   final minimumHeight =
       kCollectionTilePictureMinHeight +
+      actionBandHeight +
       collectionTileNameHeight(context, lines: nameLines) +
       (locationRow ? collectionTileLocationHeight(context) : 0) +
       8;

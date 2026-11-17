@@ -2,10 +2,12 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/app.dart';
 import 'package:niarim/app_bootstrap.dart';
+import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/router.dart';
 import 'package:niarim/screens/project/new_project_screen.dart';
 import 'package:niarim/services/settings_service.dart';
@@ -97,6 +99,42 @@ void main() {
     expect(settings.customSizePresets.single.width, 1280);
     expect(settings.customSizePresets.single.height, 720);
     expect(find.text('1280×720'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('large Spanish labels and validation show the complete range', (
+    tester,
+  ) async {
+    final settings = await open(tester, presets: [wide]);
+    await openManager(tester);
+    await tester.runAsync(() => settings.setLanguage('es'));
+    tester.view.physicalSize = const Size(360, 780);
+    tester.platformDispatcher.textScaleFactorTestValue = 2;
+    addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+    await tester.pumpAndSettle();
+    final l10n = lookupAppLocalizations(const Locale('es'));
+    await menu(tester, l10n.canvasSizePresetEditDialogTitle);
+
+    final width = find.byKey(const Key('presetWidthField'));
+    final height = find.byKey(const Key('presetHeightField'));
+    await tester.enterText(width, '9999');
+    await tester.pumpAndSettle();
+    expect(tester.getTopLeft(width).dy, lessThan(tester.getTopLeft(height).dy));
+    for (final value in [
+      l10n.newProjectNumberRangeError(64, 1920),
+      l10n.newProjectWidthLabel,
+      l10n.newProjectHeightLabel,
+    ]) {
+      final text = find.text(value);
+      expect(text, findsOneWidget);
+      expect(
+        tester.renderObject<RenderParagraph>(text).didExceedMaxLines,
+        isFalse,
+        reason: value,
+      );
+    }
+    final confirm = find.widgetWithText(FilledButton, l10n.commonChange);
+    expect(tester.widget<FilledButton>(confirm).enabled, isFalse);
     expect(tester.takeException(), isNull);
   });
 

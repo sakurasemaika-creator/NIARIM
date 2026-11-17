@@ -9289,10 +9289,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'All benefits active through Premium membership';
 
   @override
-  String get rewardUnlockActiveCampaign =>
-      'Launch campaign: Premium benefits unlocked';
-
-  @override
   String get rewardUnlockActiveUnavailable =>
       'Opal benefits will appear once the server is connected';
 

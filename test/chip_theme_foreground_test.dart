@@ -76,7 +76,7 @@ Widget _host(
 void _verify(WidgetTester tester, AppThemePreset palette, bool selected) {
   for (final type in [FilterChip, ChoiceChip, InputChip, Chip]) {
     final label = find
-        .descendant(of: find.byType(type), matching: find.byType(Text))
+        .descendant(of: find.byType(type), matching: find.bySubtype<Text>())
         .first;
     final paragraph = tester.renderObject<RenderParagraph>(label);
     expect(
@@ -180,7 +180,7 @@ void main() {
       for (final type in [FilterChip, ChoiceChip, InputChip]) {
         final chip = find.byType(type);
         final label = find
-            .descendant(of: chip, matching: find.byType(Text))
+            .descendant(of: chip, matching: find.bySubtype<Text>())
             .first;
         expect(
           tester.renderObject<RenderParagraph>(label).text.style!.color,
@@ -216,7 +216,10 @@ void main() {
         await tester.pumpAndSettle();
         for (final type in [FilterChip, ChoiceChip, InputChip]) {
           final label = find
-              .descendant(of: find.byType(type), matching: find.byType(Text))
+              .descendant(
+                of: find.byType(type),
+                matching: find.bySubtype<Text>(),
+              )
               .first;
           expect(
             tester.renderObject<RenderParagraph>(label).text.style!.color,

@@ -166,7 +166,7 @@ void main() {
 
       final l10n = lookupAppLocalizations(locale);
       final texts = [
-        for (final text in tester.widgetList<Text>(find.byType(Text)))
+        for (final text in tester.widgetList<Text>(find.bySubtype<Text>()))
           text.data ?? text.textSpan?.toPlainText() ?? '',
       ];
       // 日付はその言語の書き方（年月日の並び・月の名前・12/24時間）。
@@ -252,7 +252,7 @@ void main() {
         for (final text in tester.widgetList<Text>(
           find.descendant(
             of: find.byType(Card).first,
-            matching: find.byType(Text),
+            matching: find.bySubtype<Text>(),
           ),
         ))
           text.data ?? text.textSpan?.toPlainText() ?? '',

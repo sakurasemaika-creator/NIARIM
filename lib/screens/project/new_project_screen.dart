@@ -23,6 +23,7 @@ import '../../widgets/responsive.dart';
 import '../../widgets/help_button.dart';
 import '../../widgets/ad_banner_mock_widget.dart';
 import 'canvas_size_preset_manage_screen.dart';
+import 'widgets/canvas_size_fields.dart';
 import '../canvas/widgets/canvas_icon_button.dart';
 import '../../config/font_fallback.dart';
 import '../../utils/app_error_reporter.dart';
@@ -302,6 +303,33 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
     );
   }
 
+  Widget _customDimensionField(
+    BuildContext context, {
+    required String label,
+    required TextEditingController controller,
+    required FocusNode focus,
+  }) {
+    final error = _rangeError(
+      AppLocalizations.of(context)!,
+      controller,
+      kMinCanvasEdge,
+      kMaxCanvasEdge,
+    );
+    return TextField(
+      controller: controller,
+      focusNode: focus,
+      keyboardType: TextInputType.number,
+      inputFormatters: _numberInput,
+      decoration: InputDecoration(
+        label: Text(label),
+        border: const OutlineInputBorder(),
+        error: error == null ? null : Text(error),
+      ),
+      onChanged: (_) => _applyCustomSize(),
+      onSubmitted: (_) => _commitNumberFields(),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -527,56 +555,26 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                   ),
                 ),
                 const SizedBox(height: 4),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: TextField(
-                        controller: _customWidthController,
-                        focusNode: _widthFocus,
-                        keyboardType: TextInputType.number,
-                        inputFormatters: _numberInput,
-                        decoration: InputDecoration(
-                          labelText: l10n.newProjectWidthLabel,
-                          border: const OutlineInputBorder(),
-                          errorText: _rangeError(
-                            l10n,
-                            _customWidthController,
-                            kMinCanvasEdge,
-                            kMaxCanvasEdge,
-                          ),
-                          errorMaxLines: 3,
-                        ),
-                        onChanged: (_) => _applyCustomSize(),
-                        onSubmitted: (_) => _commitNumberFields(),
-                      ),
-                    ),
-                    const Padding(
+                LayoutBuilder(
+                  builder: (context, constraints) => CanvasSizeFields(
+                    availableWidth: constraints.maxWidth,
+                    separator: const Padding(
                       padding: EdgeInsets.fromLTRB(8, 16, 8, 0),
                       child: Text('×'),
                     ),
-                    Expanded(
-                      child: TextField(
-                        controller: _customHeightController,
-                        focusNode: _heightFocus,
-                        keyboardType: TextInputType.number,
-                        inputFormatters: _numberInput,
-                        decoration: InputDecoration(
-                          labelText: l10n.newProjectHeightLabel,
-                          border: const OutlineInputBorder(),
-                          errorText: _rangeError(
-                            l10n,
-                            _customHeightController,
-                            kMinCanvasEdge,
-                            kMaxCanvasEdge,
-                          ),
-                          errorMaxLines: 3,
-                        ),
-                        onChanged: (_) => _applyCustomSize(),
-                        onSubmitted: (_) => _commitNumberFields(),
-                      ),
+                    widthField: _customDimensionField(
+                      context,
+                      label: l10n.newProjectWidthLabel,
+                      controller: _customWidthController,
+                      focus: _widthFocus,
                     ),
-                  ],
+                    heightField: _customDimensionField(
+                      context,
+                      label: l10n.newProjectHeightLabel,
+                      controller: _customHeightController,
+                      focus: _heightFocus,
+                    ),
+                  ),
                 ),
                 const SizedBox(height: 12),
                 LabeledSlider(

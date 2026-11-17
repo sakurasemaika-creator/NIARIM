@@ -140,7 +140,7 @@ void main() {
         ) async {
           if (find.text(title).evaluate().isEmpty) {
             final texts = [
-              for (final e in find.byType(Text).evaluate())
+              for (final e in find.bySubtype<Text>().evaluate())
                 (e.widget as Text).data ?? '',
             ].where((t) => t.isNotEmpty).join(' | ');
             problems.add('$where: no "$title" (shown: $texts)');
