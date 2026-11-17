@@ -3,6 +3,7 @@
 # coin-amount display migration, localization and backend integration repairs. The work
 # is independent and does not write production data or publish APKs.
 name: Flutter complete test suite (8 shards)
+run-name: Flutter regression suite · ${{ github.ref_name }} · ${{ github.sha }}
 on:
   push:
     branches: [dev_branch]

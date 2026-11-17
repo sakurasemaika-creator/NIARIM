@@ -5172,13 +5172,13 @@ abstract class AppLocalizations {
   /// No description provided for @premiumBannerMembershipDetails.
   ///
   /// In ja, this message translates to:
-  /// **'プレミアム会員の案内を見る'**
+  /// **'プレミアム会員の詳細を見る'**
   String get premiumBannerMembershipDetails;
 
   /// No description provided for @premiumBannerBenefitDetails.
   ///
   /// In ja, this message translates to:
-  /// **'特典の案内を見る'**
+  /// **'特典の詳細を見る'**
   String get premiumBannerBenefitDetails;
 
   /// No description provided for @premiumPackHalfPrice.
@@ -17348,12 +17348,6 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'元画像 {count}枚（先頭{shown}枚を表示）'**
   String shareCardSourceImageCountFirst(int count, int shown);
-
-  /// 共有カードの画像：アプリの描画の仕組みで描いた線の見本の説明
-  ///
-  /// In ja, this message translates to:
-  /// **'描画エンジンによるストローク見本'**
-  String get shareCardStrokeSample;
 
   /// 共有カードの画像：見本を描けなかったとき（組み込みの模様を設定から作る素材）の説明
   ///

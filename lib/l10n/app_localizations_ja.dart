@@ -2803,10 +2803,10 @@ class AppLocalizationsJa extends AppLocalizations {
   String get premiumBannerBenefits => '長尺作品をつくる、仕上げを調整する。必要な機能はオパールでも使えます。';
 
   @override
-  String get premiumBannerMembershipDetails => 'プレミアム会員の案内を見る';
+  String get premiumBannerMembershipDetails => 'プレミアム会員の詳細を見る';
 
   @override
-  String get premiumBannerBenefitDetails => '特典の案内を見る';
+  String get premiumBannerBenefitDetails => '特典の詳細を見る';
 
   @override
   String get premiumPackHalfPrice => 'コンプリートパックなら単品合計の半額';
@@ -9816,9 +9816,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String shareCardSourceImageCountFirst(int count, int shown) {
     return '元画像 $count枚（先頭$shown枚を表示）';
   }
-
-  @override
-  String get shareCardStrokeSample => '描画エンジンによるストローク見本';
 
   @override
   String get shareCardBuiltInPattern => '内蔵パターン / 設定で生成';

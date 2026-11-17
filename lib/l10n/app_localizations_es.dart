@@ -10681,10 +10681,6 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
-  String get shareCardStrokeSample =>
-      'Trazo de muestra dibujado por el motor de dibujo';
-
-  @override
   String get shareCardBuiltInPattern =>
       'Patrón integrado, generado a partir de los ajustes';
 

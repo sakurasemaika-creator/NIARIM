@@ -9872,9 +9872,6 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
-  String get shareCardStrokeSample => '그리기 엔진으로 그린 스트로크 견본';
-
-  @override
   String get shareCardBuiltInPattern => '내장 패턴 / 설정으로 생성';
 
   @override

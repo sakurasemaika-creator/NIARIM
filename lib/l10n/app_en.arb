@@ -3809,7 +3809,6 @@
   "shareCardSampleHeading": "Sample and source images",
   "shareCardSourceImageCount": "{count, plural, one{{count} source image} other{{count} source images}}",
   "shareCardSourceImageCountFirst": "{count} source images (showing the first {shown})",
-  "shareCardStrokeSample": "Sample stroke drawn by the drawing engine",
   "shareCardBuiltInPattern": "Built-in pattern, generated from the settings",
   "shareCardNoSourceImages": "No external images are used",
   "shareCardCompleteTitle": "Share card",

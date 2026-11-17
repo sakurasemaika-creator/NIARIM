@@ -3802,7 +3802,6 @@
   "shareCardSampleHeading": "素材範例與使用的圖片",
   "shareCardSourceImageCount": "原圖 {count} 張",
   "shareCardSourceImageCountFirst": "原圖 {count} 張（顯示前 {shown} 張）",
-  "shareCardStrokeSample": "由繪圖引擎繪製的筆觸範例",
   "shareCardBuiltInPattern": "內建圖案 / 由設定產生",
   "shareCardNoSourceImages": "未使用外部圖片",
   "shareCardCompleteTitle": "分享卡片",

@@ -819,7 +819,10 @@ class SharedAssetCardService {
       final sy = main.height.toDouble();
       final imageHeight = renderStroke == null ? 310 : 180;
       final imageCenter = renderStroke == null ? 550 : 462;
-      final scale = [920 / sx, imageHeight / sy].reduce((a, b) => a < b ? a : b);
+      final scale = [
+        920 / sx,
+        imageHeight / sy,
+      ].reduce((a, b) => a < b ? a : b);
       final w = sx * scale;
       final h = sy * scale;
       canvas.drawImageRect(
@@ -864,7 +867,12 @@ class SharedAssetCardService {
       try {
         canvas.drawImageRect(
           sample,
-          Rect.fromLTWH(0, 0, sample.width.toDouble(), sample.height.toDouble()),
+          Rect.fromLTWH(
+            0,
+            0,
+            sample.width.toDouble(),
+            sample.height.toDouble(),
+          ),
           images.isEmpty
               ? const Rect.fromLTWH(120, 470, 960, 192)
               : const Rect.fromLTWH(170, 555, 860, 172),
@@ -876,7 +884,9 @@ class SharedAssetCardService {
     } else if (images.isEmpty) {
       final settings =
           jsonDecode(
-                utf8.decode(archive.findFile('data.json')!.content as List<int>),
+                utf8.decode(
+                  archive.findFile('data.json')!.content as List<int>,
+                ),
               )
               as Map<String, dynamic>;
       var rendered = false;
@@ -885,7 +895,12 @@ class SharedAssetCardService {
           final sample = await filterSampleImage(FilterDef.fromJson(settings));
           canvas.drawImageRect(
             sample,
-            Rect.fromLTWH(0, 0, sample.width.toDouble(), sample.height.toDouble()),
+            Rect.fromLTWH(
+              0,
+              0,
+              sample.width.toDouble(),
+              sample.height.toDouble(),
+            ),
             const Rect.fromLTWH(380, 415, 440, 280),
             Paint()..filterQuality = FilterQuality.medium,
           );
@@ -925,7 +940,10 @@ class SharedAssetCardService {
             maxLines: 1,
             ellipsis: '…',
           )..layout(maxWidth: 865);
-          label.paint(canvas, Offset(165, 580.0 - lines.length * 29 + index * 58));
+          label.paint(
+            canvas,
+            Offset(165, 580.0 - lines.length * 29 + index * 58),
+          );
           label.dispose();
         }
       } else if (!rendered) {
@@ -1110,15 +1128,6 @@ class SharedAssetCardService {
         const Color(0xff5d687b),
       ),
       if (sourceImageCount > 0) ...[
-        if (strokeRendered)
-          _CardText(
-            l10n.shareCardStrokeSample,
-            const Rect.fromLTWH(120, 725, 960, 44),
-            28,
-            18,
-            const Color(0xff4e5b6d),
-            center: true,
-          ),
         _CardText(
           sourceImageCount > shownImageCount
               ? l10n.shareCardSourceImageCountFirst(
@@ -1132,19 +1141,18 @@ class SharedAssetCardService {
           const Color(0xff445068),
         ),
       ] else if (const {'brush', 'tone', 'stamp'}.contains(kind)) ...[
-        _CardText(
-          strokeRendered
-              ? l10n.shareCardStrokeSample
-              : l10n.shareCardBuiltInPattern,
-          const Rect.fromLTWH(120, 690, 960, 48),
-          28,
-          18,
-          const Color(0xff4e5b6d),
-          center: true,
-        ),
+        if (!strokeRendered)
+          _CardText(
+            l10n.shareCardBuiltInPattern,
+            const Rect.fromLTWH(120, 690, 960, 48),
+            28,
+            18,
+            const Color(0xff4e5b6d),
+            center: true,
+          ),
         _CardText(
           l10n.shareCardNoSourceImages,
-          const Rect.fromLTWH(120, 742, 960, 42),
+          Rect.fromLTWH(120, strokeRendered ? 700 : 742, 960, 42),
           22,
           15,
           const Color(0xff68758a),

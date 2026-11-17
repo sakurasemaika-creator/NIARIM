@@ -10523,10 +10523,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get shareCardStrokeSample =>
-      'Sample stroke drawn by the drawing engine';
-
-  @override
   String get shareCardBuiltInPattern =>
       'Built-in pattern, generated from the settings';
 

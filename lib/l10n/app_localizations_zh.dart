@@ -9716,9 +9716,6 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get shareCardStrokeSample => '由绘图引擎绘制的笔触示例';
-
-  @override
   String get shareCardBuiltInPattern => '内置图案 / 由设置生成';
 
   @override
@@ -19775,9 +19772,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String shareCardSourceImageCountFirst(int count, int shown) {
     return '原圖 $count 張（顯示前 $shown 張）';
   }
-
-  @override
-  String get shareCardStrokeSample => '由繪圖引擎繪製的筆觸範例';
 
   @override
   String get shareCardBuiltInPattern => '內建圖案 / 由設定產生';

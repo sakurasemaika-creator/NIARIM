@@ -221,7 +221,13 @@ void main() {
         expect((await SharedAssetCardService.inspect(file)).kind, kind);
         if (const {'brush', 'stamp', 'tone'}.contains(kind)) {
           final card = img.decodePng(await file.readAsBytes())!;
-          final stroke = img.copyCrop(card, x: 210, y: 570, width: 780, height: 140);
+          final stroke = img.copyCrop(
+            card,
+            x: 210,
+            y: 570,
+            width: 780,
+            height: 140,
+          );
           expect(
             stroke.any((pixel) => pixel.r < 120 && pixel.g < 120),
             isTrue,
@@ -252,8 +258,11 @@ void main() {
       continueLabel: l10n.exportFirst90Seconds,
     );
     await pumpRealAsync(tester, const Duration(milliseconds: 400));
-    expect(find.text('プレミアム会員の案内を見る'), findsOneWidget);
-    expect(find.text('特典の案内を見る'), findsOneWidget);
+    expect(find.text('プレミアム会員の詳細を見る'), findsOneWidget);
+    expect(find.text('特典の詳細を見る'), findsOneWidget);
+    expect(find.textContaining('コンプリートパック'), findsNothing);
+    expect(find.textContaining('準備中'), findsNothing);
+    expect(find.textContaining('開発中'), findsNothing);
     expect(
       find.descendant(of: find.byType(Badge), matching: find.text('無料')),
       findsOneWidget,

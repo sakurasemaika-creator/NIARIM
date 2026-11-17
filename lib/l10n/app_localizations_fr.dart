@@ -10684,10 +10684,6 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
-  String get shareCardStrokeSample =>
-      'Trait d’exemple dessiné par le moteur de dessin';
-
-  @override
   String get shareCardBuiltInPattern =>
       'Motif intégré, généré à partir des réglages';
 

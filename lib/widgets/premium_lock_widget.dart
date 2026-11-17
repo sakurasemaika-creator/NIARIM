@@ -180,17 +180,6 @@ class _PremiumBannerDialog extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Text(reason ?? labels.premiumBannerBenefits),
-                  const SizedBox(height: 14),
-                  Text(
-                    labels.premiumPackHalfPrice,
-                    style: theme.textTheme.titleSmall?.copyWith(
-                      color: colors.primary,
-                    ),
-                  ),
-                  Text(
-                    labels.premiumPackPriceBasis,
-                    style: theme.textTheme.bodySmall,
-                  ),
                   const SizedBox(height: 16),
                   FilledButton.icon(
                     icon: const Icon(Icons.workspace_premium_outlined),

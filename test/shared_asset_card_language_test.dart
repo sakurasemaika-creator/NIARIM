@@ -182,6 +182,12 @@ void main() {
             sourceImageCount: images,
             strokeRendered: rendered,
           );
+          if (locale.languageCode == 'ja') {
+            expect(
+              blocks.map((block) => block.text),
+              isNot(contains('描画エンジンによるストローク見本')),
+            );
+          }
           for (final block in blocks) {
             final where =
                 '${locale.toLanguageTag()} $kind/$images: '

@@ -3802,7 +3802,6 @@
   "shareCardSampleHeading": "Aperçu et images sources",
   "shareCardSourceImageCount": "{count, plural, one{{count} image source} other{{count} images sources}}",
   "shareCardSourceImageCountFirst": "{count} images sources (les {shown} premières sont affichées)",
-  "shareCardStrokeSample": "Trait d’exemple dessiné par le moteur de dessin",
   "shareCardBuiltInPattern": "Motif intégré, généré à partir des réglages",
   "shareCardNoSourceImages": "Aucune image externe n’est utilisée",
   "shareCardCompleteTitle": "Carte de partage",

@@ -3802,7 +3802,6 @@
   "shareCardSampleHeading": "Muestra e imágenes de origen",
   "shareCardSourceImageCount": "{count, plural, one{{count} imagen de origen} other{{count} imágenes de origen}}",
   "shareCardSourceImageCountFirst": "{count} imágenes de origen (se muestran las {shown} primeras)",
-  "shareCardStrokeSample": "Trazo de muestra dibujado por el motor de dibujo",
   "shareCardBuiltInPattern": "Patrón integrado, generado a partir de los ajustes",
   "shareCardNoSourceImages": "No usa imágenes externas",
   "shareCardCompleteTitle": "Tarjeta para compartir",
