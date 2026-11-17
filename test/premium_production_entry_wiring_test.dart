@@ -5,7 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 Matcher showsPremiumFeature(String feature) => matches(
   RegExp(
     'showPremiumBanner\\(\\s*context,\\s*feature:\\s*'
-    'PremiumFeature\\.$feature,?\\s*\\)',
+    'PremiumFeature\\.$feature\\s*[,)]',
   ),
 );
 
