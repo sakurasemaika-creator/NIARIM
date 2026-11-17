@@ -1583,3 +1583,10 @@ App・Web共通。Claudeが要修正の詳細を追記し、ユーザーが別�
 - **新規の要修正なし**。
 - **OK（照合）**：3種のウィジェット（`home_widget_service.dart`の`HomeWidgetKind`＝作品・作品をつくる・作品広場）、作品→シーン→フレームの選択と合成したプレビュー（`widget_artwork_picker_screen.dart`・`ArtworkFrameThumbnail`）、「作品をつくる」「作品広場」の背景色をテーマに合わせるか自分で決めるか（`widget_settings_screen.dart`の`_ColorMode`、種類ごとに独立）、静止画で表示・追加はホーム画面の長押しから（`widgetSettingsNote`・`widgetSettingsDescription`）。Webの「起動画面ウィジェット」はアプリの設定の見出し（`widgetSectionArtwork`）と同じ名前（Androidのウィジェットの一覧では「NIARIM 作品」）。
 - **未確認**：実機のホーム画面（Android端末なし）、7言語、図解の縮尺。
+
+### W006.09（一巡目、Claude・S40、判定：OK）
+
+- **確認SHA・環境**：Web `5d66037`（本文は`34f01ba`から変わらず）の/features/#exportの日本語の本文（15項目、`w-audit/w006-export-ja.txt`）をApp `716013b8`のコードと照合。
+- **新規の要修正なし**。
+- **OK（照合）**：MP4・WebM・GIF・AVI（`export_screen.dart`の`ExportFormat`）と透過WebM（`helpTransparentWebmTitle`の選択肢）、最大1920×1920（`canvas_size_preset.dart`の`kMaxCanvasEdge`）、縦横比の自由な設定（新規プロジェクトの幅・高さ）、無料90秒・プレミアム2時間（`premium_service.dart`の7200／90）、タイムラインの表示中のフレームをPNG・JPEGで保存（`timeline_screen.dart`の`timelineExportFrameJpegOption`）。
+- **未確認**：書き出したファイルの再生（Linuxにffmpegなし、A050）、7言語、図解の縮尺。料金・キャンペーンの表示はW007で見る。
