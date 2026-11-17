@@ -888,3 +888,14 @@ App・Web共通。Claudeが要修正の詳細を追記し、ユーザーが別�
   - 「未使用素材を削除（1）」→確認（どこからも参照されていない素材をまとめて削除、元に戻せない）→「1件の未使用素材を削除しました」、使用中のtone.wavは残る。未使用の判定は取り消しの履歴に残る素材も使用中と数える（`UndoManager.retainsMaterial`）。
   - 関連のtest：`material_include_dialog_layout_test`・`timeline_text_material_flow_test`が通った。
 - **未確認**：見つからない素材（欠損）の表示と置き換え、動画の素材、容量削減の画面の数との一致、狭い画面。
+
+### A063（一巡目、Claude・S40、判定：OK〔既存DISC069あり〕・一部確認）
+
+- **確認SHA・環境**：実操作はApp `ef376646`のLinuxデバッグビルド（portalの中で起動）、testは今のApp `904b6684`、PC ja 1280×800、マウス、無料会員。画像はscratchpadの`shots-r1/ex-*`（`backup-pending`）。
+- **既存**：失敗の文がOSの例外の文のまま出る（DISC069）。Linuxでは端末のエンコーダーが無く「書き出し失敗: MissingPluginException(No implementation found for method encodeMp4 on channel com.niarim.niarim/hw_video_encoder)」と赤字で出た。
+- **OK**：
+  - 書き出しの画面：プリセット（標準・高画質・カスタム）、形式（MP4・GIF・透過WebM・AVI〔透過非対応〕）、「本編 00:10 + NIARIMエンドマーク（5秒）」「書き出しFPSを変えても作品の再生時間を維持します」。
+  - 書き出し開始を0.05秒の間に2回押しても進捗のダイアログは1つ（9%→32%、ヒントつき）。
+  - 途中でキャンセル→「書き出しをキャンセルしました」、作りかけのファイルは残らない（作品のフォルダに新しいファイル無し）。
+  - 関連のtest：`export_preset_selector_test`・`export_still_gif_partial_write_test`・`export_storage_ownership_test`・`export_timing_test`・`export_transparent_frame_test`・`export_video_failure_cleanup_test`（31件）が通った。
+- **未確認（実機で）**：成功したときの開く・共有、解像度・FPS・尺の実物、GIF・WebM・AVI、プレミアムの制限、古い自動塗りの確認、長さの上限の確認、書き出し中に戻るとき。
