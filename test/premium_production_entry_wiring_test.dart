@@ -2,6 +2,13 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 
+Matcher showsPremiumFeature(String feature) => matches(
+  RegExp(
+    'showPremiumBanner\\(\\s*context,\\s*feature:\\s*'
+    'PremiumFeature\\.$feature,?\\s*\\)',
+  ),
+);
+
 void main() {
   test('watermark production entry remains gated before navigation', () {
     final source = File(
@@ -11,7 +18,7 @@ void main() {
     expect(source, contains('void _showWatermarkSetting()'));
     expect(source, contains('PremiumFeature.watermark'));
     expect(source, contains('isFeatureAvailable('));
-    expect(source, contains('showPremiumBanner(context);'));
+    expect(source, showsPremiumFeature('watermark'));
     expect(source, contains("context.push('/settings/watermark');"));
   });
 
@@ -47,6 +54,8 @@ void main() {
         source,
         contains('isFeatureAvailable(PremiumFeature.unlimitedDuration)'),
       );
+      expect(source, showsPremiumFeature('unlimitedDuration'));
+      expect(source, contains('title: l10n.premiumBannerFullExportTitle'));
       expect(source, contains('exportLongProjectNote'));
       expect(source, contains('shouldAppendOfficialEndCard('));
       expect(source, contains('appendEndCard: shouldAppendEndCard'));
@@ -61,7 +70,7 @@ void main() {
     expect(source, contains('void _showCustomAutomationManager()'));
     expect(source, contains('PremiumFeature.customAutomation'));
     expect(source, contains('isFeatureAvailable('));
-    expect(source, contains('showPremiumBanner(context);'));
+    expect(source, showsPremiumFeature('customAutomation'));
     expect(source, contains('_showCustomAutomationManager();'));
   });
   test('watermark deep links and open dialogs recheck active Premium rights', () {
@@ -72,7 +81,7 @@ void main() {
     expect(source, contains('PremiumFeature.watermark'));
     expect(source, contains('context.watch<PremiumService>()'));
     expect(source, contains('bool _canEditNow(BuildContext context)'));
-    expect(source, contains('showPremiumBanner(context);'));
+    expect(source, showsPremiumFeature('watermark'));
     // Delete after confirmation, imported image after file picker, text save
     // and image edit save must all fail closed if the lease expires mid-dialog.
     expect(
@@ -101,6 +110,14 @@ void main() {
       RegExp(r'PremiumFeature\.watermark').allMatches(source).length,
       greaterThanOrEqualTo(6),
     );
-    expect(source, contains('if (mounted) showPremiumBanner(context);'));
+    expect(
+      source,
+      matches(
+        RegExp(
+          r'if \(mounted\) \{\s*showPremiumBanner\(\s*context,\s*'
+          r'feature:\s*PremiumFeature\.watermark,?\s*\);',
+        ),
+      ),
+    );
   });
 }
