@@ -183,6 +183,11 @@ jobs:
               unset NIARIM_ADMOB_REPORT_OAUTH_SECRET_ARN
             fi
           fi
+          if [[ -z "$NIARIM_REWARDED_AD_AUTO_RATES" ]] && \
+            jq -e '.REWARDED_AD_AUTO_RATES_ENABLED == "true"' "$RUNNER_TEMP/niarim-live-env.json" >/dev/null; then
+            export NIARIM_REWARDED_AD_AUTO_RATES=true
+            printf 'NIARIM_REWARDED_AD_AUTO_RATES=true\n' >> "$GITHUB_ENV"
+          fi
           node scripts/assert-live-coin-config.mjs \
             "$RUNNER_TEMP/niarim-live-env.json"
       - name: Prepare country data for the scheduled reward reports
