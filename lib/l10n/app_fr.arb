@@ -2298,6 +2298,7 @@
   "timelineClipFadeOutLabel": "Fondu de sortie",
   "timelineClipUseStartLabel": "Début utilisé F",
   "timelineClipUseEndLabel": "Fin utilisée F",
+  "timelineCameraFrameAlreadyHasKeyframe": "Cette image contient déjà une image clé de caméra.",
   "timelineCameraKfTitle": "Image clé caméra : F{n}",
   "@timelineCameraKfTitle": {
     "placeholders": {

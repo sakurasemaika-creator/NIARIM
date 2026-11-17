@@ -2298,6 +2298,7 @@
   "timelineClipFadeOutLabel": "Fade out",
   "timelineClipUseStartLabel": "Trim start F",
   "timelineClipUseEndLabel": "Trim end F",
+  "timelineCameraFrameAlreadyHasKeyframe": "This frame already has a camera keyframe.",
   "timelineCameraKfTitle": "Camera KF: F{n}",
   "@timelineCameraKfTitle": {
     "placeholders": {

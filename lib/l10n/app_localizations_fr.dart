@@ -5644,6 +5644,10 @@ class AppLocalizationsFr extends AppLocalizations {
   String get timelineClipUseEndLabel => 'Fin utilisée F';
 
   @override
+  String get timelineCameraFrameAlreadyHasKeyframe =>
+      'Cette image contient déjà une image clé de caméra.';
+
+  @override
   String timelineCameraKfTitle(int n) {
     return 'Image clé caméra : F$n';
   }

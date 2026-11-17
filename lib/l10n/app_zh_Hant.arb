@@ -2298,6 +2298,7 @@
   "timelineClipFadeOutLabel": "淡出",
   "timelineClipUseStartLabel": "使用起始影格",
   "timelineClipUseEndLabel": "使用結束影格",
+  "timelineCameraFrameAlreadyHasKeyframe": "此影格已有相機關鍵影格。",
   "timelineCameraKfTitle": "相機關鍵影格：F{n}",
   "@timelineCameraKfTitle": {
     "placeholders": {

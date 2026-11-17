@@ -2701,6 +2701,7 @@
   "timelineClipFadeOutLabel": "フェードアウト",
   "timelineClipUseStartLabel": "使用開始F",
   "timelineClipUseEndLabel": "使用終了F",
+  "timelineCameraFrameAlreadyHasKeyframe": "このフレームにはカメラのキーフレームがあります。",
   "timelineCameraKfTitle": "カメラ KF: F{n}",
   "@timelineCameraKfTitle": {
     "placeholders": {

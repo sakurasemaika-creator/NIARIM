@@ -2298,6 +2298,7 @@
   "timelineClipFadeOutLabel": "Salida gradual",
   "timelineClipUseStartLabel": "Inicio de uso F",
   "timelineClipUseEndLabel": "Fin de uso F",
+  "timelineCameraFrameAlreadyHasKeyframe": "Este fotograma ya tiene un fotograma clave de cámara.",
   "timelineCameraKfTitle": "Fotograma clave de cámara: F{n}",
   "@timelineCameraKfTitle": {
     "placeholders": {

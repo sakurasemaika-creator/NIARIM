@@ -5298,6 +5298,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get timelineClipUseEndLabel => '使用结束帧';
 
   @override
+  String get timelineCameraFrameAlreadyHasKeyframe => '此帧已有相机关键帧。';
+
+  @override
   String timelineCameraKfTitle(int n) {
     return '相机关键帧：F$n';
   }
@@ -15440,6 +15443,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get timelineClipUseEndLabel => '使用結束影格';
+
+  @override
+  String get timelineCameraFrameAlreadyHasKeyframe => '此影格已有相機關鍵影格。';
 
   @override
   String timelineCameraKfTitle(int n) {

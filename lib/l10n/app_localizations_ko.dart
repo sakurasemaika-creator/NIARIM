@@ -5379,6 +5379,10 @@ class AppLocalizationsKo extends AppLocalizations {
   String get timelineClipUseEndLabel => '사용 종료F';
 
   @override
+  String get timelineCameraFrameAlreadyHasKeyframe =>
+      '이 프레임에는 이미 카메라 키프레임이 있습니다.';
+
+  @override
   String timelineCameraKfTitle(int n) {
     return '카메라 KF: F$n';
   }

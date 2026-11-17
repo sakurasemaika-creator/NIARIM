@@ -5350,6 +5350,10 @@ class AppLocalizationsJa extends AppLocalizations {
   String get timelineClipUseEndLabel => '使用終了F';
 
   @override
+  String get timelineCameraFrameAlreadyHasKeyframe =>
+      'このフレームにはカメラのキーフレームがあります。';
+
+  @override
   String timelineCameraKfTitle(int n) {
     return 'カメラ KF: F$n';
   }

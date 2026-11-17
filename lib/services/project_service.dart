@@ -2739,10 +2739,14 @@ class ProjectService extends ChangeNotifier {
     }).toList();
 
     if (tm != null) {
+      final relocatedSourceIndex =
+          sourceSceneId == targetSceneId && sourceFrameIndex >= clampedInsertAt
+          ? sourceFrameIndex + 1
+          : sourceFrameIndex;
       for (final layer in sourceLayers) {
         final newId = idMap[layer.id]!;
         tm.copyLayer(
-          frameLayerKey(sourceSceneId, sourceFrameIndex, layer.id),
+          frameLayerKey(sourceSceneId, relocatedSourceIndex, layer.id),
           frameLayerKey(targetSceneId, clampedInsertAt, newId),
         );
       }
@@ -3114,21 +3118,24 @@ class ProjectService extends ChangeNotifier {
   }
 
   /// 既存キーフレーム（[oldFrameIndex]で特定）を[newKf]で置き換える。
-  /// newKf.frameIndexが他のキーフレームと重複する場合はその既存分を消す。
-  void updateCameraKeyframe(
+  /// 移動先に別のキーフレームがある場合は変更せず false を返す。
+  bool updateCameraKeyframe(
     String projectId,
     String sceneId,
     int oldFrameIndex,
     CameraKeyframe newKf,
   ) {
     final current = cameraKeyframesOf(projectId, sceneId);
-    final without = current
-        .where(
-          (k) =>
-              k.frameIndex != oldFrameIndex && k.frameIndex != newKf.frameIndex,
-        )
-        .toList();
+    if (!current.any((keyframe) => keyframe.frameIndex == oldFrameIndex) ||
+        (oldFrameIndex != newKf.frameIndex &&
+            current.any(
+              (keyframe) => keyframe.frameIndex == newKf.frameIndex,
+            ))) {
+      return false;
+    }
+    final without = current.where((k) => k.frameIndex != oldFrameIndex);
     _updateSceneCameraKeyframes(projectId, sceneId, [...without, newKf]);
+    return true;
   }
 
   void removeCameraKeyframe(String projectId, String sceneId, int frameIndex) {

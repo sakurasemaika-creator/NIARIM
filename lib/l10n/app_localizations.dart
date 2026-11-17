@@ -9729,6 +9729,12 @@ abstract class AppLocalizations {
   /// **'使用終了F'**
   String get timelineClipUseEndLabel;
 
+  /// No description provided for @timelineCameraFrameAlreadyHasKeyframe.
+  ///
+  /// In ja, this message translates to:
+  /// **'このフレームにはカメラのキーフレームがあります。'**
+  String get timelineCameraFrameAlreadyHasKeyframe;
+
   /// No description provided for @timelineCameraKfTitle.
   ///
   /// In ja, this message translates to:

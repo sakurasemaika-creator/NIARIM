@@ -322,6 +322,39 @@ void main() {
   );
 
   test(
+    'pasting before the source copies the pixels from its new index',
+    () async {
+      final ps = ProjectService();
+      addTearDown(ps.dispose);
+      await ps.init();
+      final project = await ps.createProject(
+        name: 'Paste pixels',
+        fps: 3,
+        durationSeconds: 1,
+        backgroundColor: 0xFFFFFFFF,
+      );
+      final id = project.id;
+      final scene = ps.scenesOf(id).single.id;
+      final manager = ps.tileManagerOf(id);
+      for (final (index, red) in [(1, 27), (2, 145)]) {
+        final layerId = ps.layersOf(id, scene, index).first.id;
+        final key = ps.tileKeyFor(id, scene, index, layerId);
+        manager.getOrCreateTile(key, 0, 0).setRange(0, 4, [red, 0, 0, 255]);
+      }
+      ps.insertDuplicatedFrame(
+        projectId: id,
+        sourceSceneId: scene,
+        sourceFrameIndex: 2,
+        targetSceneId: scene,
+        insertAt: 0,
+      );
+      final pastedLayer = ps.layersOf(id, scene, 0).first.id;
+      final key = ps.tileKeyFor(id, scene, 0, pastedLayer);
+      expect(manager.getTile(key, 0, 0)?.take(4), [145, 0, 0, 255]);
+    },
+  );
+
+  test(
     'switching between open projects keeps their undo and redo separate',
     () async {
       final ps = ProjectService();

@@ -5635,6 +5635,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get timelineClipUseEndLabel => 'Fin de uso F';
 
   @override
+  String get timelineCameraFrameAlreadyHasKeyframe =>
+      'Este fotograma ya tiene un fotograma clave de cámara.';
+
+  @override
   String timelineCameraKfTitle(int n) {
     return 'Fotograma clave de cámara: F$n';
   }
