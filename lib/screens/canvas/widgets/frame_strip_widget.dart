@@ -1,5 +1,6 @@
 import 'dart:ui' as ui;
 
+import 'package:flutter/foundation.dart' show listEquals;
 import 'package:flutter/material.dart';
 import '../../../widgets/project_duration_limit_dialog.dart';
 import 'package:flutter/services.dart';
@@ -7,6 +8,7 @@ import 'package:provider/provider.dart';
 
 import '../../../engine/layer_compositor.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../models/layer.dart';
 import '../../../services/premium_service.dart';
 import '../../../services/project_service.dart';
 import '../../../services/theme_service.dart';
@@ -427,6 +429,11 @@ class _FrameStripWidgetState extends State<FrameStripWidget> {
                                   projectId: widget.projectId,
                                   sceneId: widget.sceneId,
                                   frameIndex: index,
+                                  layers: service.layersOf(
+                                    widget.projectId,
+                                    widget.sceneId,
+                                    index,
+                                  ),
                                   backgroundColor: widget.showTransparency
                                       ? null
                                       : project?.backgroundColor,
@@ -512,6 +519,7 @@ class _FrameThumbnail extends StatefulWidget {
   final String projectId;
   final String sceneId;
   final int frameIndex;
+  final List<Layer> layers;
 
   /// The project's opaque background, when the strip shows it (not the
   /// transparency checkerboard): blend modes act on it.
@@ -521,6 +529,7 @@ class _FrameThumbnail extends StatefulWidget {
     required this.projectId,
     required this.sceneId,
     required this.frameIndex,
+    required this.layers,
     this.backgroundColor,
   });
   @override
@@ -529,6 +538,7 @@ class _FrameThumbnail extends StatefulWidget {
 
 class _FrameThumbnailState extends State<_FrameThumbnail> {
   ui.Image? _image;
+  int _renderRequest = 0;
   @override
   void initState() {
     super.initState();
@@ -538,40 +548,39 @@ class _FrameThumbnailState extends State<_FrameThumbnail> {
   @override
   void didUpdateWidget(covariant _FrameThumbnail old) {
     super.didUpdateWidget(old);
-    // Blend modes act on the paper, so a new background is drawn again.
-    if (old.backgroundColor != widget.backgroundColor) _generate();
+    if (old.projectId != widget.projectId ||
+        old.sceneId != widget.sceneId ||
+        old.frameIndex != widget.frameIndex ||
+        old.backgroundColor != widget.backgroundColor ||
+        !listEquals(old.layers, widget.layers)) {
+      _generate();
+    }
   }
 
   Future<void> _generate() async {
+    final request = ++_renderRequest;
+    final frame = widget;
     final ps = context.read<ProjectService>();
     final project = ps.projects
-        .where((p) => p.id == widget.projectId)
+        .where((p) => p.id == frame.projectId)
         .firstOrNull;
-    final tileManager = ps.tileManagerOf(widget.projectId);
+    final tileManager = ps.tileManagerOf(frame.projectId);
     final drawW = tileManager.canvasWidth;
     final drawH = tileManager.canvasHeight;
     if (drawW <= 0 || drawH <= 0) return;
     final exportW = (project?.exportWidth ?? drawW).clamp(1, drawW).toInt();
     final exportH = (project?.exportHeight ?? drawH).clamp(1, drawH).toInt();
-    final layers = ps.layersOf(
-      widget.projectId,
-      widget.sceneId,
-      widget.frameIndex,
-    );
+    final layers = frame.layers;
     final fullImage = await LayerCompositor.composite(
       tileManager,
       layers,
-      (l) => ps.tileKeyFor(
-        widget.projectId,
-        widget.sceneId,
-        widget.frameIndex,
-        l.id,
-      ),
+      (l) =>
+          ps.tileKeyFor(frame.projectId, frame.sceneId, frame.frameIndex, l.id),
       drawW,
       drawH,
       paperColor: LayerCompositor.paperForBlendModes(
         layers,
-        widget.backgroundColor,
+        frame.backgroundColor,
       ),
     );
     final offsetX = (drawW - exportW) / 2;
@@ -595,7 +604,7 @@ class _FrameThumbnailState extends State<_FrameThumbnail> {
     final picture = recorder.endRecording();
     final thumb = await picture.toImage(thumbW, thumbH);
     picture.dispose();
-    if (!mounted) {
+    if (!mounted || request != _renderRequest) {
       thumb.dispose();
       return;
     }

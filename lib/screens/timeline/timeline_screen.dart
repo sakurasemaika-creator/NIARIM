@@ -9,6 +9,7 @@ import 'dart:ui' as ui;
 
 import 'package:audioplayers/audioplayers.dart' as ap;
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart' show listEquals;
 import 'package:flutter/material.dart' hide MaterialType;
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -431,8 +432,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
     });
   }
 
-  // 共通レイヤートラックのドラッグハンドル操作用の累積ピクセル（
-  // タイムライン上では左右のドラッグハンドルでも表示範囲を変更できる）
+  ({String layerId, String? sceneId, int start, int end})? _commonDragRange;
   double _commonDragAccumPx = 0;
 
   // シーン複数選択モード（「選択」ボタンで開始）
@@ -3421,6 +3421,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                                             index,
                                           );
                                   return GestureDetector(
+                                    key: ValueKey('timelineFrameCell$index'),
                                     onTap: () {
                                       if (_isFrameMultiSelect) {
                                         if (isChecked) {
@@ -3490,6 +3491,12 @@ class _TimelineScreenState extends State<TimelineScreen> {
                                                   projectId: widget.projectId,
                                                   sceneId: frameListSceneId,
                                                   frameIndex: index,
+                                                  layers: projectService
+                                                      .layersOf(
+                                                        widget.projectId,
+                                                        frameListSceneId,
+                                                        index,
+                                                      ),
                                                   backgroundColor:
                                                       backgroundColor,
                                                 ),
@@ -4709,21 +4716,94 @@ class _TimelineScreenState extends State<TimelineScreen> {
     int end,
     int total,
   ) {
-    final left = start * _cellW + _frameMargin;
-    final width = (end - start + 1) * _cellW - _frameMargin * 2;
+    final sceneId = _selectedSceneId;
+    final draft = _commonDragRange;
+    final hasDraft = draft?.layerId == layer.id && draft?.sceneId == sceneId;
+    final displayStart = hasDraft ? draft!.start : start;
+    final displayEnd = hasDraft ? draft!.end : end;
+    final left = displayStart * _cellW + _frameMargin;
+    final width = (displayEnd - displayStart + 1) * _cellW - _frameMargin * 2;
 
-    void applyDrag(int newStart, int newEnd) {
-      newStart = newStart.clamp(0, total - 1);
-      newEnd = newEnd.clamp(newStart, total - 1);
+    void finishDrag({required bool commit}) {
+      final result = _commonDragRange;
+      if (result == null ||
+          result.layerId != layer.id ||
+          result.sceneId != sceneId) {
+        return;
+      }
+      setState(() => _commonDragRange = null);
+      if (!commit || (result.start == start && result.end == end)) return;
       context.read<ProjectService>().updateLayer(
         projectId: widget.projectId,
         sceneId: home.sceneId,
         frameIndex: home.frameIndex,
         layer: layer.copyWith(
           rangeMode: LayerRangeMode.frameRange,
-          rangeStart: newStart + 1,
-          rangeEnd: newEnd + 1,
+          rangeStart: result.start + 1,
+          rangeEnd: result.end + 1,
           rangeSceneId: null,
+        ),
+      );
+    }
+
+    Widget handle({required bool movesStart}) {
+      final color = ThemeService.activeColorScheme.onSurface;
+      return Positioned(
+        left: movesStart ? 0 : null,
+        right: movesStart ? null : 0,
+        top: 0,
+        bottom: 0,
+        child: Listener(
+          onPointerCancel: (_) => finishDrag(commit: false),
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onHorizontalDragStart: (_) {
+              _commonDragAccumPx = 0;
+              _commonDragRange = (
+                layerId: layer.id,
+                sceneId: sceneId,
+                start: start,
+                end: end,
+              );
+            },
+            onHorizontalDragUpdate: (details) {
+              final current = _commonDragRange;
+              if (current == null ||
+                  current.layerId != layer.id ||
+                  current.sceneId != sceneId) {
+                return;
+              }
+              _commonDragAccumPx += details.delta.dx;
+              final delta = (_commonDragAccumPx / _cellW).truncate();
+              final newStart = movesStart
+                  ? (start + delta).clamp(0, total - 1)
+                  : start;
+              final newEnd = (movesStart ? end : end + delta).clamp(
+                newStart,
+                total - 1,
+              );
+              if (newStart == current.start && newEnd == current.end) return;
+              setState(() {
+                _commonDragRange = (
+                  layerId: layer.id,
+                  sceneId: sceneId,
+                  start: newStart,
+                  end: newEnd,
+                );
+              });
+            },
+            onHorizontalDragEnd: (_) => finishDrag(commit: true),
+            onHorizontalDragCancel: () => finishDrag(commit: false),
+            child: Container(
+              width: 8,
+              color: color.withValues(alpha: 0.24),
+              child: Icon(
+                Icons.drag_indicator,
+                size: 8,
+                color: color.withValues(alpha: 0.70),
+              ),
+            ),
+          ),
         ),
       );
     }
@@ -4778,64 +4858,8 @@ class _TimelineScreenState extends State<TimelineScreen> {
                   ),
                 ),
               ),
-              // 左ドラッグハンドル：開始フレームを変更
-              Positioned(
-                left: 0,
-                top: 0,
-                bottom: 0,
-                child: GestureDetector(
-                  behavior: HitTestBehavior.opaque,
-                  onHorizontalDragStart: (_) => _commonDragAccumPx = 0,
-                  onHorizontalDragUpdate: (details) {
-                    _commonDragAccumPx += details.delta.dx;
-                    final frameDelta = (_commonDragAccumPx / _cellW).truncate();
-                    if (frameDelta == 0) return;
-                    _commonDragAccumPx -= frameDelta * _cellW;
-                    applyDrag(start + frameDelta, end);
-                  },
-                  child: Container(
-                    width: 8,
-                    color: ThemeService.activeColorScheme.onSurface.withValues(
-                      alpha: 0.24,
-                    ),
-                    child: Icon(
-                      Icons.drag_indicator,
-                      size: 8,
-                      color: ThemeService.activeColorScheme.onSurface
-                          .withValues(alpha: 0.70),
-                    ),
-                  ),
-                ),
-              ),
-              // 右ドラッグハンドル：終了フレームを変更
-              Positioned(
-                right: 0,
-                top: 0,
-                bottom: 0,
-                child: GestureDetector(
-                  behavior: HitTestBehavior.opaque,
-                  onHorizontalDragStart: (_) => _commonDragAccumPx = 0,
-                  onHorizontalDragUpdate: (details) {
-                    _commonDragAccumPx += details.delta.dx;
-                    final frameDelta = (_commonDragAccumPx / _cellW).truncate();
-                    if (frameDelta == 0) return;
-                    _commonDragAccumPx -= frameDelta * _cellW;
-                    applyDrag(start, end + frameDelta);
-                  },
-                  child: Container(
-                    width: 8,
-                    color: ThemeService.activeColorScheme.onSurface.withValues(
-                      alpha: 0.24,
-                    ),
-                    child: Icon(
-                      Icons.drag_indicator,
-                      size: 8,
-                      color: ThemeService.activeColorScheme.onSurface
-                          .withValues(alpha: 0.70),
-                    ),
-                  ),
-                ),
-              ),
+              handle(movesStart: true),
+              handle(movesStart: false),
             ],
           ),
         ),
@@ -9840,6 +9864,7 @@ class _TimelineFrameThumbnail extends StatefulWidget {
   final String projectId;
   final String sceneId;
   final int frameIndex;
+  final List<Layer> layers;
 
   /// The project's background: blend modes act on it.
   final int backgroundColor;
@@ -9848,6 +9873,7 @@ class _TimelineFrameThumbnail extends StatefulWidget {
     required this.projectId,
     required this.sceneId,
     required this.frameIndex,
+    required this.layers,
     required this.backgroundColor,
   });
 
@@ -9858,6 +9884,7 @@ class _TimelineFrameThumbnail extends StatefulWidget {
 
 class _TimelineFrameThumbnailState extends State<_TimelineFrameThumbnail> {
   ui.Image? _image;
+  int _renderRequest = 0;
 
   @override
   void initState() {
@@ -9871,58 +9898,50 @@ class _TimelineFrameThumbnailState extends State<_TimelineFrameThumbnail> {
     if (old.projectId != widget.projectId ||
         old.sceneId != widget.sceneId ||
         old.frameIndex != widget.frameIndex ||
-        old.backgroundColor != widget.backgroundColor) {
+        old.backgroundColor != widget.backgroundColor ||
+        !listEquals(old.layers, widget.layers)) {
       _generate();
     }
   }
 
   Future<void> _generate() async {
+    final request = ++_renderRequest;
+    final frame = widget;
     final ps = context.read<ProjectService>();
     final project = ps.projects
-        .where((p) => p.id == widget.projectId)
+        .where((p) => p.id == frame.projectId)
         .firstOrNull;
-    final tileManager = ps.tileManagerOf(widget.projectId);
+    final tileManager = ps.tileManagerOf(frame.projectId);
     final drawW = tileManager.canvasWidth;
     final drawH = tileManager.canvasHeight;
     if (drawW <= 0 || drawH <= 0) return;
     final exportW = (project?.exportWidth ?? drawW).clamp(1, drawW).toInt();
     final exportH = (project?.exportHeight ?? drawH).clamp(1, drawH).toInt();
 
-    final layers = ps.layersOf(
-      widget.projectId,
-      widget.sceneId,
-      widget.frameIndex,
-    );
+    final layers = frame.layers;
 
     final fullImage = await LayerCompositor.composite(
       tileManager,
       layers,
-      (l) => ps.tileKeyFor(
-        widget.projectId,
-        widget.sceneId,
-        widget.frameIndex,
-        l.id,
-      ),
+      (l) =>
+          ps.tileKeyFor(frame.projectId, frame.sceneId, frame.frameIndex, l.id),
       drawW,
       drawH,
       keyframeOf: (l) => l.keyframes.isEmpty
           ? null
-          : LayerKeyframeEngine().valueAt(l.keyframes, widget.frameIndex),
+          : LayerKeyframeEngine().valueAt(l.keyframes, frame.frameIndex),
       groupKeyframeOf: (l) {
         final group = ps.groupContainingLayer(
-          widget.projectId,
-          widget.sceneId,
+          frame.projectId,
+          frame.sceneId,
           l.id,
         );
         if (group == null || group.keyframes.isEmpty) return null;
-        return LayerKeyframeEngine().valueAt(
-          group.keyframes,
-          widget.frameIndex,
-        );
+        return LayerKeyframeEngine().valueAt(group.keyframes, frame.frameIndex);
       },
       paperColor: LayerCompositor.paperForBlendModes(
         layers,
-        widget.backgroundColor,
+        frame.backgroundColor,
       ),
     );
 
@@ -9949,7 +9968,7 @@ class _TimelineFrameThumbnailState extends State<_TimelineFrameThumbnail> {
     final thumb = await picture.toImage(thumbW, thumbH);
     picture.dispose();
 
-    if (!mounted) {
+    if (!mounted || request != _renderRequest) {
       thumb.dispose();
       return;
     }

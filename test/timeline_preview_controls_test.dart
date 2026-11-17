@@ -1,6 +1,9 @@
 import 'dart:io';
+import 'dart:ui' as ui;
 
+import 'package:flutter/foundation.dart' show listEquals;
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart' show RenderImage;
 import 'package:flutter/services.dart' hide UndoManager;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/app.dart';
@@ -547,6 +550,203 @@ void main() {
     expect(strength(), 5);
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('one common layer handle drag creates one undo entry', (
+    tester,
+  ) async {
+    final id = await openTimeline(
+      tester,
+      project: const Size(160, 90),
+      screen: const Size(1280, 800),
+      pc: true,
+      fraction: .4,
+      setUpProject: (ps, id) {
+        final sceneId = ps.scenesOf(id).single.id;
+        final layer = ps.addLayer(
+          projectId: id,
+          sceneId: sceneId,
+          frameIndex: 0,
+          type: LayerType.common,
+          name: 'Shared pencil',
+        );
+        ps.updateLayer(
+          projectId: id,
+          sceneId: sceneId,
+          frameIndex: 0,
+          layer: layer.copyWith(
+            rangeMode: LayerRangeMode.frameRange,
+            rangeStart: 1,
+            rangeEnd: 4,
+          ),
+        );
+      },
+    );
+    final context = tester.element(find.byType(TimelineScreen));
+    final ps = context.read<ProjectService>();
+    final history = context.read<UndoManager>();
+    final baseline = history.undoCount;
+    (int?, int?) range() {
+      final layer = ps.commonLayersOf(id).single.layer;
+      return (layer.rangeStart, layer.rangeEnd);
+    }
+
+    final bar = find
+        .ancestor(
+          of: find.text('Shared pencil').last,
+          matching: find.byType(Positioned),
+        )
+        .first;
+    final handles = find.descendant(
+      of: bar,
+      matching: find.byIcon(Icons.drag_indicator),
+    );
+    expect(handles, findsNWidgets(2));
+    final start = tester.getCenter(handles.last);
+    final frameWidth = tester.getSize(bar).width / 4;
+    final drag = await tester.startGesture(start);
+    await drag.moveBy(const Offset(22, 0));
+    for (var frame = 0; frame < 3; frame++) {
+      await drag.moveBy(Offset(frameWidth, 0));
+      await tester.pump();
+    }
+    expect(tester.getCenter(handles.last).dx, greaterThan(start.dx));
+    expect(history.undoCount, baseline);
+    expect(range(), (1, 4));
+    await drag.up();
+    await tester.pumpAndSettle();
+    expect(range(), (1, 7));
+    expect(history.undoCount, baseline + 1);
+
+    history.undo(projectId: id);
+    await tester.pumpAndSettle();
+    expect(range(), (1, 4));
+    final cancelled = await tester.startGesture(start);
+    await cancelled.moveBy(const Offset(22, 0));
+    await cancelled.moveBy(Offset(frameWidth, 0));
+    await tester.pump();
+    await cancelled.cancel();
+    await tester.pumpAndSettle();
+    expect(range(), (1, 4));
+    expect(tester.getCenter(handles.last).dx, start.dx);
+    expect(history.undoCount, baseline);
+    history.redo(projectId: id);
+    expect(range(), (1, 7));
+    expect(tester.takeException(), isNull);
+  });
+
+  for (final (route, key) in const [
+    ('timeline', 'timelineFrameCell'),
+    ('canvas', 'frameStripCell'),
+  ]) {
+    testWidgets('$route frame thumbnails follow common layer range changes', (
+      tester,
+    ) async {
+      late String sceneId;
+      late Layer shared;
+      final id = await openTimeline(
+        tester,
+        project: const Size(160, 90),
+        screen: const Size(1280, 800),
+        pc: true,
+        fraction: .4,
+        setUpProject: (ps, id) {
+          sceneId = ps.scenesOf(id).single.id;
+          shared = ps
+              .addLayer(
+                projectId: id,
+                sceneId: sceneId,
+                frameIndex: 0,
+                type: LayerType.common,
+                name: 'Thumbnail ink',
+              )
+              .copyWith(
+                rangeMode: LayerRangeMode.frameRange,
+                rangeStart: 1,
+                rangeEnd: 1,
+              );
+          ps.updateLayer(
+            projectId: id,
+            sceneId: sceneId,
+            frameIndex: 0,
+            layer: shared,
+          );
+          final tiles = ps.tileManagerOf(id);
+          final rgba = Uint8List(tiles.canvasWidth * tiles.canvasHeight * 4);
+          for (var index = 0; index < rgba.length; index += 4) {
+            rgba[index] = 255;
+            rgba[index + 3] = 255;
+          }
+          tiles.replaceLayerPixels(
+            ps.tileKeyFor(id, sceneId, 0, shared.id),
+            rgba,
+          );
+        },
+      );
+      final service = tester
+          .element(find.byType(TimelineScreen))
+          .read<ProjectService>();
+      if (route == 'canvas') appRouter.go('/canvas/$id');
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+
+      const red = [255, 0, 0, 255];
+      const blank = [0, 0, 0, 0];
+      Future<void> expectPicture(int frame, List<int> expected) async {
+        final picture = find.descendant(
+          of: find.byKey(ValueKey('$key$frame')),
+          matching: find.byType(RawImage),
+        );
+        List<int>? sample;
+        for (var attempt = 0; attempt < 50; attempt++) {
+          await tester.pump(const Duration(milliseconds: 25));
+          final image = picture.evaluate().isEmpty
+              ? null
+              : tester.renderObject<RenderImage>(picture.first).image?.clone();
+          sample = await tester.runAsync<List<int>?>(() async {
+            if (image == null) {
+              await Future<void>.delayed(const Duration(milliseconds: 20));
+              return null;
+            }
+            try {
+              final bytes = (await image.toByteData(
+                format: ui.ImageByteFormat.rawRgba,
+              ))!;
+              final offset =
+                  (image.height ~/ 2 * image.width + image.width ~/ 2) * 4;
+              return bytes.buffer
+                  .asUint8List(bytes.offsetInBytes + offset, 4)
+                  .toList();
+            } finally {
+              image.dispose();
+            }
+          });
+          if (listEquals(sample, expected)) break;
+          await tester.runAsync(
+            () => Future<void>.delayed(const Duration(milliseconds: 20)),
+          );
+        }
+        expect(sample, expected, reason: '$route frame ${frame + 1}');
+      }
+
+      await expectPicture(0, red);
+      await expectPicture(1, blank);
+      service.updateLayer(
+        projectId: id,
+        sceneId: sceneId,
+        frameIndex: 0,
+        layer: shared.copyWith(rangeEnd: 2),
+      );
+      await expectPicture(1, red);
+      service.updateLayer(
+        projectId: id,
+        sceneId: sceneId,
+        frameIndex: 0,
+        layer: shared,
+      );
+      await expectPicture(1, blank);
+      expect(tester.takeException(), isNull);
+    });
+  }
 
   testWidgets('preview controls anchor to the band, not the canvas image', (
     tester,

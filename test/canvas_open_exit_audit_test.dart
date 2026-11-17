@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:math' as math;
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart' hide MaterialType;
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
@@ -8,9 +9,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:niarim/app.dart';
 import 'package:niarim/app_bootstrap.dart';
+import 'package:niarim/models/layer.dart';
 import 'package:niarim/models/material_asset.dart';
 import 'package:niarim/router.dart';
 import 'package:niarim/screens/canvas/canvas_screen.dart';
+import 'package:niarim/screens/canvas/widgets/canvas_area.dart';
+import 'package:niarim/screens/canvas/widgets/layer_panel.dart';
 import 'package:niarim/screens/home/home_screen.dart';
 import 'package:niarim/screens/save_tree/save_management_screen.dart';
 import 'package:niarim/screens/timeline/timeline_screen.dart';
@@ -94,6 +98,75 @@ void main() {
     });
     return (service: service, id: id);
   }
+
+  testWidgets('leaving the shared layer range targets the visible layer', (
+    tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({
+      firstUseTooltipsSeenKey: kAllFirstUseTooltipKeys,
+      'first_launch': false,
+      'language': 'ja',
+      'force_pc_mode': 1,
+    });
+    final (service: projects, :id) = await open(
+      tester,
+      size: const Size(1280, 800),
+    );
+    final sceneId = projects.scenesOf(id).single.id;
+    final common = projects.addLayer(
+      projectId: id,
+      sceneId: sceneId,
+      frameIndex: 0,
+      type: LayerType.common,
+      name: 'Shared stroke',
+    );
+    projects.updateLayer(
+      projectId: id,
+      sceneId: sceneId,
+      frameIndex: 0,
+      layer: common.copyWith(
+        rangeMode: LayerRangeMode.frameRange,
+        rangeStart: 1,
+        rangeEnd: 1,
+      ),
+    );
+    final nextLayer = projects.layersOf(id, sceneId, 1).single;
+    appRouter.go('/canvas/$id');
+    await settleIo(tester);
+    final area = find.byType(CanvasArea);
+    if (find.byType(LayerPanel).evaluate().isEmpty) {
+      await tester.tap(find.byTooltip('レイヤー').first);
+      await settleIo(tester, 2);
+    }
+    await tester.tap(find.text(common.name));
+    await tester.pump();
+    expect(tester.widget<CanvasArea>(area).currentLayerId, common.id);
+
+    await tester.tap(find.byKey(const ValueKey('frameStripCell1')));
+    await settleIo(tester, 2);
+    expect(find.byType(LayerPanel), findsOneWidget);
+    expect(find.text(common.name), findsNothing);
+    expect(tester.widget<CanvasArea>(area).currentLayerId, nextLayer.id);
+
+    final tiles = projects.tileManagerOf(id);
+    final commonKey = projects.tileKeyFor(id, sceneId, 0, common.id);
+    final nextKey = projects.tileKeyFor(id, sceneId, 1, nextLayer.id);
+    final center = tester.getCenter(area);
+    final stroke = await tester.startGesture(
+      center - const Offset(30, 0),
+      kind: PointerDeviceKind.mouse,
+      buttons: kPrimaryMouseButton,
+    );
+    for (var x = -20.0; x <= 30; x += 10) {
+      await stroke.moveTo(center + Offset(x, 0));
+      await settleIo(tester, 1);
+    }
+    await stroke.up();
+    await settleIo(tester, 2);
+    expect(tiles.exportAll()[commonKey], isNull);
+    expect(tiles.exportAll()[nextKey], isNotEmpty);
+    expect(tester.takeException(), isNull);
+  });
 
   for (final restore in [false, true]) {
     testWidgets(
