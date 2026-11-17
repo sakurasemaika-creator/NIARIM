@@ -101,3 +101,19 @@ jobs:
             printf '%s %s\n' "$key" "$(sha256sum "$archive" | cut -d ' ' -f 1)"
           done
           printf 'API asset %s\nCountry layer asset %s\n' "$api_key" "$layer_key"
+          aws s3 cp --only-show-errors \
+            "s3://$target/niarim-release/notification-stream-758eb3f-a62bf961329d411b.zip" \
+            "$RUNNER_TEMP/live-api.zip"
+          unzip -p "$RUNNER_TEMP/live-api.zip" index.js > "$RUNNER_TEMP/live-api.js"
+          unzip -p "$RUNNER_TEMP/$api_key" index.js > "$RUNNER_TEMP/new-api.js"
+          if cmp -s "$RUNNER_TEMP/live-api.js" "$RUNNER_TEMP/new-api.js"; then
+            echo 'Live and staged Lambda code are byte-for-byte identical.'
+          fi
+          for marker in REWARDED_AD_COUNTRY_DB REWARDED_AD_UNIT_TIERS REWARDED_AD_OPTIMIZATION pushPending FCM_WIF_AUDIENCE; do
+            if grep -Fq "$marker" "$RUNNER_TEMP/live-api.js"; then
+              printf 'Live API contains %s\n' "$marker"
+            fi
+            if grep -Fq "$marker" "$RUNNER_TEMP/new-api.js"; then
+              printf 'Staged API contains %s\n' "$marker"
+            fi
+          done
