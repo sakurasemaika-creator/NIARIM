@@ -31,6 +31,9 @@ class CanvasIconButton extends StatelessWidget {
   final bool selected;
   final double iconSize;
 
+  /// アイコンの周りの余白。押せる範囲はアイコン＋この余白の四方。
+  final double padding;
+
   /// 長押しでツールチップを出すかどうか。
   final bool longPressTooltip;
 
@@ -44,6 +47,7 @@ class CanvasIconButton extends StatelessWidget {
     required this.tooltip,
     this.selected = false,
     this.iconSize = 20,
+    this.padding = 6,
     this.longPressTooltip = true,
   }) : assert(
          icon != null || iconBuilder != null || outlinedIconBuilder != null,
@@ -146,11 +150,11 @@ class CanvasIconButton extends StatelessWidget {
           : TooltipTriggerMode.manual,
       child: InkResponse(
         onTap: onPressed,
-        radius: 22,
+        radius: padding > 6 ? iconSize / 2 + padding + 2 : 22,
         containedInkWell: false,
         highlightShape: BoxShape.circle,
         child: Padding(
-          padding: const EdgeInsets.all(6),
+          padding: EdgeInsets.all(padding),
           child: SizedBox(
             width: iconWidth ?? iconSize,
             height: iconSize,

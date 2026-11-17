@@ -3402,13 +3402,15 @@ class _CanvasScreenState extends State<CanvasScreen> {
   /// _borderedIconButtonと同じ考え方）：背景なし・アイコンだけが浮かび、
   /// アイコンの形にぴったり沿う半透明の黒い縁取りを持つ（実装は
   /// CanvasIconButtonへ集約）。
+  /// The top bar's buttons: a 26px icon in a 48px square, so a thumb on a
+  /// phone hits the one it means.
   static Widget _topBarIconButton(
     BuildContext context,
     IconData icon, {
     required VoidCallback? onPressed,
     required String tooltip,
     bool selected = false,
-    double iconSize = 20,
+    double iconSize = 26,
   }) {
     return CanvasIconButton(
       icon: icon,
@@ -3416,8 +3418,12 @@ class _CanvasScreenState extends State<CanvasScreen> {
       tooltip: tooltip,
       selected: selected,
       iconSize: iconSize,
+      padding: (48 - iconSize) / 2,
     );
   }
+
+  /// The space between the top bar's buttons, against mis-taps.
+  static const double _topBarGap = 10;
 
   /// 選択ツール使用中にキャンバス左下へ固定で出す操作バー。
   ///
@@ -3889,7 +3895,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
   Widget _buildTopBar() {
     final l10n = AppLocalizations.of(context)!;
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       child: Row(
         children: [
           // プロジェクト一覧へ戻るボタンはタイムラインモード側へ移した。
@@ -3901,6 +3907,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
             onPressed: () => _applyArtworkHistory(redo: false),
             tooltip: l10n.commonUndo,
           ),
+          const SizedBox(width: _topBarGap),
           _topBarIconButton(
             context,
             Icons.redo,
@@ -3911,54 +3918,70 @@ class _CanvasScreenState extends State<CanvasScreen> {
             const SizedBox(width: 16),
             _buildDesktopMenuBar(),
           ],
-          // 投げ縄塗り選択中：囲って塗るモードスイッチ
-          if (_currentTool == DrawingTool.lasso &&
-              _currentSubTool == PenSubTool.lassoFill) ...[
-            const SizedBox(width: 8),
-            Text(
-              l10n.canvasLassoEnclosedLabel,
-              style: TextStyle(
-                fontSize: 12,
-                shadows: CanvasIconButton.foregroundShadows(
-                  Theme.of(context).colorScheme.onSurface,
-                  Theme.of(context).colorScheme,
+          // What the current tool adds shrinks to fit instead of pushing
+          // the right-hand buttons off a narrow phone.
+          Expanded(
+            child: Align(
+              alignment: AlignmentDirectional.centerStart,
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // 投げ縄塗り選択中：囲って塗るモードスイッチ
+                    if (_currentTool == DrawingTool.lasso &&
+                        _currentSubTool == PenSubTool.lassoFill) ...[
+                      const SizedBox(width: 8),
+                      Text(
+                        l10n.canvasLassoEnclosedLabel,
+                        style: TextStyle(
+                          fontSize: 12,
+                          shadows: CanvasIconButton.foregroundShadows(
+                            Theme.of(context).colorScheme.onSurface,
+                            Theme.of(context).colorScheme,
+                          ),
+                        ),
+                      ),
+                      Switch(
+                        value: _lassoFillEnclosedMode,
+                        onChanged: (v) =>
+                            setState(() => _lassoFillEnclosedMode = v),
+                      ),
+                    ],
+                    // 範囲選択中にのみ使える「選択範囲を反転」ボタン。
+                    if (_isSelectionToolActive &&
+                        _hasActiveSelection &&
+                        !_selectionEditingGivesWay(isWideScreen(context))) ...[
+                      const SizedBox(width: 8),
+                      _topBarIconButton(
+                        context,
+                        Icons.invert_colors_outlined,
+                        onPressed: () =>
+                            setState(() => _invertSelectionToken++),
+                        tooltip: l10n.canvasInvertSelectionTooltip,
+                      ),
+                    ],
+                    // テキストツール選択中：キャンバスタップでテキスト入力ダイアログを表示する旨を示すラベル
+                    if (_currentTool == DrawingTool.text)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        child: Text(
+                          l10n.canvasTapToEnterTextLabel,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Theme.of(context).colorScheme.primary,
+                            shadows: CanvasIconButton.foregroundShadows(
+                              Theme.of(context).colorScheme.primary,
+                              Theme.of(context).colorScheme,
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
               ),
             ),
-            Switch(
-              value: _lassoFillEnclosedMode,
-              onChanged: (v) => setState(() => _lassoFillEnclosedMode = v),
-            ),
-          ],
-          // 範囲選択中にのみ使える「選択範囲を反転」ボタン。
-          if (_isSelectionToolActive &&
-              _hasActiveSelection &&
-              !_selectionEditingGivesWay(isWideScreen(context))) ...[
-            const SizedBox(width: 8),
-            _topBarIconButton(
-              context,
-              Icons.invert_colors_outlined,
-              onPressed: () => setState(() => _invertSelectionToken++),
-              tooltip: l10n.canvasInvertSelectionTooltip,
-            ),
-          ],
-          // テキストツール選択中：キャンバスタップでテキスト入力ダイアログを表示する旨を示すラベル
-          if (_currentTool == DrawingTool.text)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-              child: Text(
-                l10n.canvasTapToEnterTextLabel,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Theme.of(context).colorScheme.primary,
-                  shadows: CanvasIconButton.foregroundShadows(
-                    Theme.of(context).colorScheme.primary,
-                    Theme.of(context).colorScheme,
-                  ),
-                ),
-              ),
-            ),
-          const Spacer(),
+          ),
           if (isWideScreen(context))
             PopupMenuButton<CanvasDockPanel>(
               key: const Key('desktopWindowVisibilityMenu'),
@@ -3985,6 +4008,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
             onPressed: () => _showEditMenu(context),
             tooltip: l10n.canvasSettingsMenuTooltip,
           ),
+          const SizedBox(width: _topBarGap),
           // 定規・ヘルプはツールバー内へ移設したため、この右上には
           // プロジェクト一覧へ戻るホームボタンを設置する
           // （タイムライン画面の同ボタンと同じ挙動：保存して戻る／
@@ -3992,29 +4016,31 @@ class _CanvasScreenState extends State<CanvasScreen> {
           _topBarIconButton(
             context,
             Icons.home_outlined,
-            iconSize: 21,
+            iconSize: 27,
             onPressed: _confirmBackToProjectList,
             tooltip: l10n.timelineBackToProjectListTooltip,
           ),
+          const SizedBox(width: _topBarGap),
           // Direction cue beside the timeline symbol, sharing one hit target.
           // CanvasIconButton keeps both glyphs transparent and theme-colored.
           CanvasIconButton(
             key: const Key('canvasTimelineModeButton'),
-            iconSize: 24,
-            iconWidth: 36,
+            iconSize: 26,
+            iconWidth: 46,
+            padding: 11,
             outlinedIconBuilder: (color, outline) => Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(
                   Icons.movie_filter_outlined,
-                  size: 19,
+                  size: 25,
                   color: color,
                   shadows: CanvasIconButton.outlineShadows(outline),
                 ),
                 const SizedBox(width: 2),
                 Icon(
                   Icons.arrow_forward,
-                  size: 14,
+                  size: 19,
                   color: color,
                   shadows: CanvasIconButton.outlineShadows(outline),
                 ),
