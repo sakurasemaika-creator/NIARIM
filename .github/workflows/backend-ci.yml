@@ -166,6 +166,23 @@ jobs:
               echo "NIARIM_REWARDED_AD_COUNTRY_LAYER_ARN=$NIARIM_REWARDED_AD_COUNTRY_LAYER_ARN" >> "$GITHUB_ENV"
             fi
           fi
+          if [[ -z "$NIARIM_ADMOB_REPORT_OAUTH_SECRET_ARN" ]] && \
+            jq -e '.REWARDED_AD_REPORTING_ENABLED == "true"' "$RUNNER_TEMP/niarim-live-env.json" >/dev/null; then
+            NIARIM_ADMOB_REPORT_OAUTH_SECRET_ARN="$(
+              AWS_ACCESS_KEY_ID="$(jq -r .AccessKeyId <<<"$creds")" \
+              AWS_SECRET_ACCESS_KEY="$(jq -r .SecretAccessKey <<<"$creds")" \
+              AWS_SESSION_TOKEN="$(jq -r .SessionToken <<<"$creds")" \
+                aws lambda get-function-configuration \
+                  --function-name niarim-reward-ad-revenue \
+                  --query 'Environment.Variables.ADMOB_REPORT_OAUTH_SECRET_ARN' --output text
+            )"
+            if [[ "$NIARIM_ADMOB_REPORT_OAUTH_SECRET_ARN" =~ ^arn:aws:secretsmanager:ap-northeast-1:368601349794:secret:[A-Za-z0-9/_+=.@-]+$ ]]; then
+              export NIARIM_ADMOB_REPORT_OAUTH_SECRET_ARN
+              printf 'NIARIM_ADMOB_REPORT_OAUTH_SECRET_ARN=%s\n' "$NIARIM_ADMOB_REPORT_OAUTH_SECRET_ARN" >> "$GITHUB_ENV"
+            else
+              unset NIARIM_ADMOB_REPORT_OAUTH_SECRET_ARN
+            fi
+          fi
           node scripts/assert-live-coin-config.mjs \
             "$RUNNER_TEMP/niarim-live-env.json"
       - name: Prepare country data for the scheduled reward reports
