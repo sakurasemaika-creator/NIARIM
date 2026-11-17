@@ -130,7 +130,7 @@ App・Web共通。Claudeが要修正の詳細を追記し、ユーザーが別�
   - **担当が見つけた別の不具合**：DISC265（作品一覧・共有の詳細表示の最後のカードが浮かぶボタンの上端ちょうどで終わる）。フォルダの中の画面の「小」のカードでは絵の印が星の所に重なる（DISC263と同じ形、前から）。
 - **このセッションの公開の印が無いDISC**。前のセッションで直った物もあるので、各行の記録と最新 `dev_branch` で確かめる。
   - DISC001〜028・030〜049・051〜061・063〜067・069〜074・077〜081・090・099〜100・102・107・111・115〜116・118〜120・122
-  - DISC126・137・142〜146・149〜150・154〜155・159・161〜162・166・193〜202・204〜205・223・231・236・257〜475
+  - DISC126・137・142〜146・149〜150・154〜155・159・161〜162・166・193〜202・204〜205・223・231・236・257〜476
   - 所有者の判断待ち：DISC090・099・107・115・146・155、A011、DISC066。
 - **dev_branchで落ちているtest**：DISC258（容量削減の画面のtestが多く落ちる。どのコミットからかは未確認）。
 
@@ -1705,3 +1705,11 @@ App・Web共通。Claudeが要修正の詳細を追記し、ユーザーが別�
 - **OK**：12ページはどれも「本文へスキップ」（フォーカスで左上に見える、PC・SPとも）・`main#main`・`<h1>`が1つ・`<html lang>`が言語どおり。SPのメニューはEnterで開き（`aria-expanded=true`）、Escで閉じてフォーカスがメニューのボタンへ戻る。幅320px・640px（200%の拡大に相当）で13ページ×仏語・韓国語とも横のはみ出し無し。axeで「serious」以上は色の比だけ（/features/のフッターの1.06〜1.11は固定のヘッダーの下で測った誤検出で、実際は暗い茶色の上の字で読める〔`w020-sp-features-footer.png`〕）。お問い合わせ・FAQ・ヘルプのキーボード操作はW009・W010・W012で確認。
 - **観察（記録のみ）**：axeのmoderate：/premium/の`aside`が`main`の中（`landmark-complementary-is-top-level`）、404のページの一部（`.font-license-access`）がランドマークの外（`region`）。
 - **未確認**：読み上げ（スクリーンリーダー）での実際の読み上げ、ブラウザの文字サイズの設定、Safari・Firefox。
+
+### W021（一巡目、Claude・S40、判定：要修正）
+
+- **確認SHA・環境**：Web `bcbf114`をscratchpadで`wrangler dev --local`（127.0.0.1:8799、地元の配信なので本番のCDN・圧縮・距離は再現しない）で動かし、Chromium（Playwright）で10ページ（トップ・about・features・help・premium・coins・community・faq・contact・privacy）を測った。SP 360×740はCPUを4倍遅く・下り約1.6Mbps・上り750kbps・遅延150ms、PC 1280×800は制限なし。LCP・CLSは`PerformanceObserver`、転送量は`performance.getEntriesByType('resource')`、ずれの元は`layout-shift`の`sources`（`w-audit/w021.js`・`w021b.js`）。キャッシュのヘッダーは`curl`。
+- **要修正（新規）**：476（フォント約970KB・遅いSPでLCP 3〜4秒・/coins/のCLS 0.32）。
+- **OK**：PCの制限なしではどのページもLCP 0.2〜0.7秒・CLS 0.05以下。フォント・画像は`Cache-Control: public, max-age=2592000`（30日）とETag、名前を替えて差し替える運用（`_headers`の注記）。CSS・JSは`no-cache, must-revalidate`＋ETagで、2回目は304で転送量を抑える（デプロイ直後に古いUIを出さないための選択で、`_headers`に理由がある）。HTMLは`max-age=0, must-revalidate`。セキュリティのヘッダー（CSP・HSTS・`X-Frame-Options`等）は全ての応答に付く（W022で見る）。動きを減らす設定の見え方はW003で確認済み。
+- **観察（記録のみ）**：(1)1ページで11〜21のJSファイルを読む（辞書が多数。W023の辞書の重なりと関係）。(2)Service Workerは無く、オフラインでの再訪はブラウザのエラーになる（宣伝のサイトとしては通常）。
+- **未確認**：本番のCloudflareの配信（Brotli・HTTP/3・距離）での実測、実機の低性能SP、INP（操作の反応）の実測。
