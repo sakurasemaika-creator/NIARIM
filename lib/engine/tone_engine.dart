@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
@@ -77,7 +78,7 @@ class ToneEngine {
     final srcB = (color.b * 255).round();
     final covered = Uint8List(canvasWidth * canvasHeight);
 
-    for (final point in points) {
+    for (final point in _samplePath(points, radius)) {
       final cx = point.dx.round();
       final cy = point.dy.round();
 
@@ -118,6 +119,22 @@ class ToneEngine {
     return result;
   }
 
+  /// The input device can send points farther apart than the brush diameter.
+  /// Sample each segment densely enough to keep neighbouring dabs joined.
+  Iterable<ui.Offset> _samplePath(List<ui.Offset> points, int radius) sync* {
+    if (points.isEmpty) return;
+    final spacing = math.max(0.75, radius / 2);
+    yield points.first;
+    for (var i = 1; i < points.length; i++) {
+      final from = points[i - 1];
+      final to = points[i];
+      final steps = ((to - from).distance / spacing).ceil();
+      for (var step = 1; step <= steps; step++) {
+        yield ui.Offset.lerp(from, to, step / steps)!;
+      }
+    }
+  }
+
   /// トーン消しゴム：トーン形状でalphaを削る。
   /// トーン画像に中間alphaがある場合はその強度ぶんだけ消すことで、
   /// アンチエイリアス済みの縁を0/255へ潰さない。
@@ -136,7 +153,7 @@ class ToneEngine {
     final radius = (brushSize / 2).round();
     final covered = Uint8List(canvasWidth * canvasHeight);
 
-    for (final point in points) {
+    for (final point in _samplePath(points, radius)) {
       final cx = point.dx.round();
       final cy = point.dy.round();
 

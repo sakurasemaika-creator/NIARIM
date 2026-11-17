@@ -132,6 +132,23 @@ void main() {
     timeout: const Timeout(Duration(seconds: 120)),
   );
 
+  test('a removed font ID is never assigned again after a restart', () async {
+    final original = FontService();
+    addTearDown(original.dispose);
+    await original.init();
+    final file = File('${root.path}/test.ttf')
+      ..writeAsBytesSync(await bundledFontBytes());
+    final first = (await original.addFont(file.path, 'First'))!;
+    await original.removeFont(first.id);
+
+    final restarted = FontService();
+    addTearDown(restarted.dispose);
+    await restarted.init();
+    expect(restarted.fonts, isEmpty);
+    final next = (await restarted.addFont(file.path, 'Next'))!;
+    expect(next.id, isNot(first.id));
+  });
+
   test(
     'corrupt ttf throws FontCorruptedException and cleans copied file',
     () async {

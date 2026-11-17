@@ -31,6 +31,7 @@ class FontService extends ChangeNotifier {
   String familyNameOf(FontAsset asset) => 'UserFont_${asset.id}';
 
   static const _prefsKey = 'user_fonts';
+  static const _nextIdKey = 'user_font_next_id';
 
   Future<Directory> _fontsDir() async {
     final base = await getApplicationDocumentsDirectory();
@@ -47,6 +48,7 @@ class FontService extends ChangeNotifier {
     }
     try {
       final prefs = await SharedPreferences.getInstance();
+      _counter = (prefs.readInt(_nextIdKey) ?? 0).clamp(0, 1 << 53);
       final raw = prefs.readString(_prefsKey);
       if (raw != null) {
         final list = jsonDecode(raw) as List<dynamic>;
@@ -123,6 +125,7 @@ class FontService extends ChangeNotifier {
   Future<void> _persist() async {
     try {
       final prefs = await SharedPreferences.getInstance();
+      await prefs.setInt(_nextIdKey, _counter);
       await prefs.setString(
         _prefsKey,
         jsonEncode(_fonts.map((f) => f.toJson()).toList()),

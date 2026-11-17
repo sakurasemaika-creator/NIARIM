@@ -112,6 +112,7 @@ class NiatraSerializer {
     'niarim_outgoing_share_favorites',
     'home.works.favoritePaths.v1',
     'user_fonts',
+    'user_font_next_id',
     'home_widget_config_v1',
     'custom_automation_offered_builtins_v1',
     'is_premium',

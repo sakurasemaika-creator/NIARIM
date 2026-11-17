@@ -215,12 +215,31 @@ class _BrushPanelState extends State<BrushPanel> {
             Expanded(
               child: brushList.isEmpty
                   ? Center(
-                      child: Text(
-                        l10n.brushEmpty,
-                        style: TextStyle(
-                          color:
-                              ThemeService.activeColorScheme.onSurfaceVariant,
-                          fontSize: 12,
+                      child: SingleChildScrollView(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              isFiltering && allBrushes.isNotEmpty
+                                  ? l10n.helpNoResults
+                                  : l10n.brushEmpty,
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurfaceVariant,
+                                fontSize: 12,
+                              ),
+                            ),
+                            if (query.isNotEmpty)
+                              TextButton(
+                                onPressed: () => setState(() {
+                                  _searchController.clear();
+                                  _searchQuery = '';
+                                }),
+                                child: Text(l10n.projectListClearSearch),
+                              ),
+                          ],
                         ),
                       ),
                     )

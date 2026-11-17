@@ -10,6 +10,39 @@ void main() {
   final out = Directory('build/functional-visual');
   setUpAll(() => out.createSync(recursive: true));
 
+  test('sparse pointer events draw and erase the entire tone segment', () {
+    const width = 128, height = 32;
+    const points = [ui.Offset(4, 16), ui.Offset(120, 16)];
+    final engine = ToneEngine();
+    final texture = Uint8List.fromList([0, 0, 0, 255]);
+    final drawn = engine.drawToneStroke(
+      points: points,
+      brushSize: 3,
+      color: const ui.Color(0xff123456),
+      canvasData: Uint8List(width * height * 4),
+      canvasWidth: width,
+      canvasHeight: height,
+      toneTexture: texture,
+      toneWidth: 1,
+      toneHeight: 1,
+    );
+    final erased = engine.eraseToneStroke(
+      points: points,
+      brushSize: 3,
+      canvasData: drawn,
+      canvasWidth: width,
+      canvasHeight: height,
+      toneTexture: texture,
+      toneWidth: 1,
+      toneHeight: 1,
+    );
+    for (var x = 4; x <= 120; x++) {
+      final index = (16 * width + x) * 4 + 3;
+      expect(drawn[index], 255, reason: 'painted pixel at x=$x');
+      expect(erased[index], 0, reason: 'erased pixel at x=$x');
+    }
+  });
+
   test('同一トーンを同じ場所へ何度描いてもパターン位置と密度は変わらない', () async {
     const w = 128, h = 96;
     final tone = _checkerTone(8, 8);

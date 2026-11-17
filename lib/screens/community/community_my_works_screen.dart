@@ -633,368 +633,385 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
       ),
       body: desktopCentered(
         context,
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-              child: Card(
-                elevation: 0,
-                color: scheme.surfaceContainerLow,
-                child: Padding(
-                  padding: const EdgeInsets.all(14),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Row(
-                        children: [
-                          CircleAvatar(
-                            radius: 20,
-                            backgroundColor: scheme.primaryContainer,
-                            child: Icon(
-                              account == null
-                                  ? Icons.person_outline
-                                  : Icons.account_circle,
-                              color: scheme.onPrimaryContainer,
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  accountLabel,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.w600,
+        CommunityTopEdgeRefresh(
+          key: const Key('communityMyWorksPullRefresh'),
+          controller: _worksScrollController,
+          enabled: usingBackendOwnerList,
+          onRefresh: () async {
+            if (_loadingWorks || _bulkBusy || _loadingMoreOwnWorks) return;
+            await _reloadOwnerWorks();
+          },
+          child: CustomScrollView(
+            controller: _worksScrollController,
+            physics: const AlwaysScrollableScrollPhysics(),
+            slivers: [
+              // At large text sizes the account controls can be taller than
+              // the remaining viewport. Let them scroll with the work rows.
+              SliverToBoxAdapter(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                      child: Card(
+                        elevation: 0,
+                        color: scheme.surfaceContainerLow,
+                        child: Padding(
+                          padding: const EdgeInsets.all(14),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              Row(
+                                children: [
+                                  CircleAvatar(
+                                    radius: 20,
+                                    backgroundColor: scheme.primaryContainer,
+                                    child: Icon(
+                                      account == null
+                                          ? Icons.person_outline
+                                          : Icons.account_circle,
+                                      color: scheme.onPrimaryContainer,
+                                    ),
                                   ),
-                                ),
-                                if (account != null &&
-                                    account.email != accountLabel) ...[
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    account.email,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: scheme.onSurfaceVariant,
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          accountLabel,
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                        if (account != null &&
+                                            account.email != accountLabel) ...[
+                                          const SizedBox(height: 2),
+                                          Text(
+                                            account.email,
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: TextStyle(
+                                              fontSize: 12,
+                                              color: scheme.onSurfaceVariant,
+                                            ),
+                                          ),
+                                        ],
+                                      ],
                                     ),
                                   ),
                                 ],
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                      if (ownerId != null) ...[
-                        const SizedBox(height: 8),
-                        Wrap(
-                          key: const Key('communityMyWorksSocialCounts'),
-                          spacing: 16,
-                          runSpacing: 4,
-                          children: [
-                            Text(
-                              l10n.communityAuthorFollowerCount(
-                                communityService.followerCountOf(ownerId),
                               ),
-                            ),
-                            Text(
-                              l10n.communityAuthorFollowingCount(
-                                communityService.followingCountOf(ownerId),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                      const SizedBox(height: 12),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          FilledButton.icon(
-                            key: const Key('communityMyWorksPostButton'),
-                            onPressed: _handlePostTap,
-                            icon: const Icon(Icons.video_call_outlined),
-                            label: Text(l10n.communityPostButton),
-                          ),
-                          const SizedBox(height: 8),
-                          OutlinedButton.icon(
-                            key: const Key('communityMyWorksViewAuthorPage'),
-                            onPressed: () => _openOwnAuthorPage(works),
-                            icon: const Icon(Icons.collections_outlined),
-                            label: Text(l10n.communityMyWorksViewAuthorPage),
-                          ),
-                          const SizedBox(height: 8),
-                          if (account != null &&
-                              communityService.api != null) ...[
-                            OutlinedButton.icon(
-                              key: const Key(
-                                'communityMyWorksYoutubeChannelRefresh',
-                              ),
-                              onPressed: _refreshingYouTubeChannel
-                                  ? null
-                                  : _refreshYoutubeChannel,
-                              icon: _refreshingYouTubeChannel
-                                  ? const SizedBox(
-                                      width: 16,
-                                      height: 16,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                      ),
-                                    )
-                                  : const Icon(Icons.refresh_outlined),
-                              label: Text(
-                                CommunityChannelRefreshLabels.of(
-                                  context,
-                                ).button,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                          ],
-                          OutlinedButton.icon(
-                            key: const Key('communityMyWorksAccountButton'),
-                            onPressed: _switchingAccount
-                                ? null
-                                : _switchOrAddGoogleAccount,
-                            icon: _switchingAccount
-                                ? const SizedBox(
-                                    width: 16,
-                                    height: 16,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                    ),
-                                  )
-                                : const Icon(Icons.manage_accounts_outlined),
-                            label: Text(
-                              account == null
-                                  ? l10n.communityMyWorksAddAccount
-                                  : l10n.communityMyWorksSwitchAccount,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-              child: Text(
-                l10n.communityMyWorksManagementHeading,
-                key: const Key('communityMyWorksManagementHeading'),
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontFamily: 'Kuramubon',
-                  fontFamilyFallback: kHeadingFontFallback,
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 4, 16, 4),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      l10n.communityAuthorWorksCount(works.length),
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: scheme.onSurfaceVariant,
-                      ),
-                    ),
-                  ),
-                  if (_loadingWorks) ...[
-                    const SizedBox(width: 10),
-                    const SizedBox(
-                      width: 14,
-                      height: 14,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    ),
-                  ],
-                  IconButton(
-                    key: const Key('communityMyWorksSelectAll'),
-                    onPressed: works.isEmpty || _bulkBusy
-                        ? null
-                        : () => _selectAll(works),
-                    tooltip: l10n.homeSelectionAllSelect,
-                    icon: const Icon(Icons.select_all),
-                  ),
-                  IconButton(
-                    key: const Key('communityMyWorksClearSelection'),
-                    onPressed: _selectedIds.isEmpty || _bulkBusy
-                        ? null
-                        : _clearSelection,
-                    tooltip: l10n.homeSelectionAllDeselect,
-                    icon: const Icon(Icons.deselect),
-                  ),
-                ],
-              ),
-            ),
-            if (_worksError != null &&
-                usingBackendOwnerList &&
-                hasCurrentOwnerState)
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 4,
-                ),
-                child: MaterialBanner(
-                  content: Text(
-                    l10n.communityMyWorksLoadFailed(
-                      communityErrorText(l10n, _worksError!),
-                    ),
-                  ),
-                  actions: [
-                    TextButton(
-                      onPressed: _reloadOwnerWorks,
-                      child: Text(l10n.communityRetry),
-                    ),
-                  ],
-                ),
-              ),
-            Expanded(
-              child: CommunityTopEdgeRefresh(
-                key: const Key('communityMyWorksPullRefresh'),
-                controller: _worksScrollController,
-                enabled: usingBackendOwnerList,
-                onRefresh: () async {
-                  if (_loadingWorks || _bulkBusy || _loadingMoreOwnWorks) {
-                    return;
-                  }
-                  await _reloadOwnerWorks();
-                },
-                child: works.isEmpty
-                    ? CustomScrollView(
-                        controller: _worksScrollController,
-                        physics: const AlwaysScrollableScrollPhysics(),
-                        slivers: [
-                          SliverFillRemaining(
-                            hasScrollBody: false,
-                            child: Center(
-                              child: Padding(
-                                padding: const EdgeInsets.all(24),
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
+                              if (ownerId != null) ...[
+                                const SizedBox(height: 8),
+                                Wrap(
+                                  key: const Key(
+                                    'communityMyWorksSocialCounts',
+                                  ),
+                                  spacing: 16,
+                                  runSpacing: 4,
                                   children: [
-                                    Icon(
-                                      Icons.video_library_outlined,
-                                      size: 56,
-                                      color: AccentTextTheme.of(
-                                        context,
-                                      ).withValues(alpha: 0.55),
-                                    ),
-                                    const SizedBox(height: 12),
                                     Text(
-                                      usingBackendOwnerList && _loadingWorks
-                                          ? l10n.communityMyWorksLoading
-                                          : l10n.communityEmptyState,
-                                      textAlign: TextAlign.center,
-                                      style: TextStyle(
-                                        color: scheme.onSurfaceVariant,
+                                      l10n.communityAuthorFollowerCount(
+                                        communityService.followerCountOf(
+                                          ownerId,
+                                        ),
+                                      ),
+                                    ),
+                                    Text(
+                                      l10n.communityAuthorFollowingCount(
+                                        communityService.followingCountOf(
+                                          ownerId,
+                                        ),
                                       ),
                                     ),
                                   ],
                                 ),
+                              ],
+                              const SizedBox(height: 12),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  FilledButton.icon(
+                                    key: const Key(
+                                      'communityMyWorksPostButton',
+                                    ),
+                                    onPressed: _handlePostTap,
+                                    icon: const Icon(Icons.video_call_outlined),
+                                    label: Text(l10n.communityPostButton),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  OutlinedButton.icon(
+                                    key: const Key(
+                                      'communityMyWorksViewAuthorPage',
+                                    ),
+                                    onPressed: () => _openOwnAuthorPage(works),
+                                    icon: const Icon(
+                                      Icons.collections_outlined,
+                                    ),
+                                    label: Text(
+                                      l10n.communityMyWorksViewAuthorPage,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  if (account != null &&
+                                      communityService.api != null) ...[
+                                    OutlinedButton.icon(
+                                      key: const Key(
+                                        'communityMyWorksYoutubeChannelRefresh',
+                                      ),
+                                      onPressed: _refreshingYouTubeChannel
+                                          ? null
+                                          : _refreshYoutubeChannel,
+                                      icon: _refreshingYouTubeChannel
+                                          ? const SizedBox(
+                                              width: 16,
+                                              height: 16,
+                                              child: CircularProgressIndicator(
+                                                strokeWidth: 2,
+                                              ),
+                                            )
+                                          : const Icon(Icons.refresh_outlined),
+                                      label: Text(
+                                        CommunityChannelRefreshLabels.of(
+                                          context,
+                                        ).button,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                  ],
+                                  OutlinedButton.icon(
+                                    key: const Key(
+                                      'communityMyWorksAccountButton',
+                                    ),
+                                    onPressed: _switchingAccount
+                                        ? null
+                                        : _switchOrAddGoogleAccount,
+                                    icon: _switchingAccount
+                                        ? const SizedBox(
+                                            width: 16,
+                                            height: 16,
+                                            child: CircularProgressIndicator(
+                                              strokeWidth: 2,
+                                            ),
+                                          )
+                                        : const Icon(
+                                            Icons.manage_accounts_outlined,
+                                          ),
+                                    label: Text(
+                                      account == null
+                                          ? l10n.communityMyWorksAddAccount
+                                          : l10n.communityMyWorksSwitchAccount,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                      child: Text(
+                        l10n.communityMyWorksManagementHeading,
+                        key: const Key('communityMyWorksManagementHeading'),
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(
+                              fontFamily: 'Kuramubon',
+                              fontFamilyFallback: kHeadingFontFallback,
+                            ),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 4, 16, 4),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              l10n.communityAuthorWorksCount(works.length),
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: scheme.onSurfaceVariant,
                               ),
                             ),
                           ),
-                        ],
-                      )
-                    : ListView.separated(
-                        controller: _worksScrollController,
-                        physics: const AlwaysScrollableScrollPhysics(),
-                        padding: EdgeInsets.fromLTRB(
-                          16,
-                          8,
-                          16,
-                          _selectionMode ? 126 : 24,
-                        ),
-                        itemCount:
-                            works.length + (_loadingMoreOwnWorks ? 1 : 0),
-                        separatorBuilder: (_, _) => const SizedBox(height: 8),
-                        itemBuilder: (context, index) {
-                          if (index == works.length) {
-                            return const Center(
-                              child: Padding(
-                                padding: EdgeInsets.all(12),
-                                child: CircularProgressIndicator(),
-                              ),
-                            );
-                          }
-                          final work = works[index];
-                          final youtubePrivacy = _youtubePrivacyById[work.id];
-                          final deleted = youtubePrivacy == 'deleted';
-                          return Card(
-                            clipBehavior: Clip.antiAlias,
-                            child: ListTile(
-                              key: ValueKey('communityMyWorksRow-${work.id}'),
-                              onLongPress: () {
-                                if (!_selectionMode) {
-                                  setState(() {
-                                    _selectionMode = true;
-                                    _selectedIds.add(work.id);
-                                  });
-                                } else {
-                                  _toggleSelected(work.id);
-                                }
-                              },
-                              onTap: () {
-                                if (_selectionMode) {
-                                  _toggleSelected(work.id);
-                                } else {
-                                  context.read<CommunityPreviewService>().show(
-                                    work,
-                                  );
-                                }
-                              },
-                              selected: _selectedIds.contains(work.id),
-                              leading: _selectionMode
-                                  ? Checkbox(
-                                      key: ValueKey(
-                                        'communityMyWorksSelect-${work.id}',
-                                      ),
-                                      value: _selectedIds.contains(work.id),
-                                      onChanged: _bulkBusy
-                                          ? null
-                                          : (_) => _toggleSelected(work.id),
-                                    )
-                                  : CircleAvatar(
-                                      backgroundColor:
-                                          work.isNiarimPublished && !deleted
-                                          ? scheme.primaryContainer
-                                          : scheme.surfaceContainerHighest,
-                                      child: Icon(_visibilityIcon(work)),
-                                    ),
-                              title: Text(
-                                work.title.isEmpty ? work.id : work.title,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              subtitle: Text(
-                                '${_visibilityLabel(l10n, work)}  •  '
-                                '${l10n.communityYoutubeVideoIdLabel(work.id)}',
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              trailing: _selectionMode
-                                  ? null
-                                  : IconButton(
-                                      key: ValueKey(
-                                        'communityMyWorksSettings-${work.id}',
-                                      ),
-                                      tooltip:
-                                          l10n.communityMyWorksSettingsTitle,
-                                      onPressed: () => _openWorkSettings(work),
-                                      icon: const Icon(Icons.build_outlined),
-                                    ),
+                          if (_loadingWorks) ...[
+                            const SizedBox(width: 10),
+                            const SizedBox(
+                              width: 14,
+                              height: 14,
+                              child: CircularProgressIndicator(strokeWidth: 2),
                             ),
-                          );
-                        },
+                          ],
+                          IconButton(
+                            key: const Key('communityMyWorksSelectAll'),
+                            onPressed: works.isEmpty || _bulkBusy
+                                ? null
+                                : () => _selectAll(works),
+                            tooltip: l10n.homeSelectionAllSelect,
+                            icon: const Icon(Icons.select_all),
+                          ),
+                          IconButton(
+                            key: const Key('communityMyWorksClearSelection'),
+                            onPressed: _selectedIds.isEmpty || _bulkBusy
+                                ? null
+                                : _clearSelection,
+                            tooltip: l10n.homeSelectionAllDeselect,
+                            icon: const Icon(Icons.deselect),
+                          ),
+                        ],
                       ),
+                    ),
+                    if (_worksError != null &&
+                        usingBackendOwnerList &&
+                        hasCurrentOwnerState)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 4,
+                        ),
+                        child: MaterialBanner(
+                          content: Text(
+                            l10n.communityMyWorksLoadFailed(
+                              communityErrorText(l10n, _worksError!),
+                            ),
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: _reloadOwnerWorks,
+                              child: Text(l10n.communityRetry),
+                            ),
+                          ],
+                        ),
+                      ),
+                  ],
+                ),
               ),
-            ),
-          ],
+              if (works.isEmpty)
+                SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.video_library_outlined,
+                            size: 56,
+                            color: AccentTextTheme.of(
+                              context,
+                            ).withValues(alpha: 0.55),
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            usingBackendOwnerList && _loadingWorks
+                                ? l10n.communityMyWorksLoading
+                                : l10n.communityEmptyState,
+                            textAlign: TextAlign.center,
+                            style: TextStyle(color: scheme.onSurfaceVariant),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                )
+              else
+                SliverPadding(
+                  padding: EdgeInsets.fromLTRB(
+                    16,
+                    8,
+                    16,
+                    _selectionMode ? 126 : 24,
+                  ),
+                  sliver: SliverList.separated(
+                    itemCount: works.length + (_loadingMoreOwnWorks ? 1 : 0),
+                    separatorBuilder: (_, _) => const SizedBox(height: 8),
+                    itemBuilder: (context, index) {
+                      if (index == works.length) {
+                        return const Center(
+                          child: Padding(
+                            padding: EdgeInsets.all(12),
+                            child: CircularProgressIndicator(),
+                          ),
+                        );
+                      }
+                      final work = works[index];
+                      final youtubePrivacy = _youtubePrivacyById[work.id];
+                      final deleted = youtubePrivacy == 'deleted';
+                      return Card(
+                        clipBehavior: Clip.antiAlias,
+                        child: ListTile(
+                          key: ValueKey('communityMyWorksRow-${work.id}'),
+                          onLongPress: () {
+                            if (!_selectionMode) {
+                              setState(() {
+                                _selectionMode = true;
+                                _selectedIds.add(work.id);
+                              });
+                            } else {
+                              _toggleSelected(work.id);
+                            }
+                          },
+                          onTap: () {
+                            if (_selectionMode) {
+                              _toggleSelected(work.id);
+                            } else {
+                              context.read<CommunityPreviewService>().show(
+                                work,
+                              );
+                            }
+                          },
+                          selected: _selectedIds.contains(work.id),
+                          leading: _selectionMode
+                              ? Checkbox(
+                                  key: ValueKey(
+                                    'communityMyWorksSelect-${work.id}',
+                                  ),
+                                  value: _selectedIds.contains(work.id),
+                                  onChanged: _bulkBusy
+                                      ? null
+                                      : (_) => _toggleSelected(work.id),
+                                )
+                              : CircleAvatar(
+                                  backgroundColor:
+                                      work.isNiarimPublished && !deleted
+                                      ? scheme.primaryContainer
+                                      : scheme.surfaceContainerHighest,
+                                  child: Icon(_visibilityIcon(work)),
+                                ),
+                          title: Text(
+                            work.title.isEmpty ? work.id : work.title,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          subtitle: Text(
+                            '${_visibilityLabel(l10n, work)}  •  '
+                            '${l10n.communityYoutubeVideoIdLabel(work.id)}',
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          trailing: _selectionMode
+                              ? null
+                              : IconButton(
+                                  key: ValueKey(
+                                    'communityMyWorksSettings-${work.id}',
+                                  ),
+                                  tooltip: l10n.communityMyWorksSettingsTitle,
+                                  onPressed: () => _openWorkSettings(work),
+                                  icon: const Icon(Icons.build_outlined),
+                                ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,

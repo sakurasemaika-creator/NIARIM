@@ -15,6 +15,7 @@ import '../canvas_screen.dart';
 import 'canvas_icon_button.dart';
 import '../../../config/font_fallback.dart';
 import '../../../widgets/list_ink_clip.dart';
+import '../../../widgets/tone_preview_thumb.dart';
 import 'pen_sub_tool_panel.dart' show LassoFillToneSheet;
 
 class ToolbarWidget extends StatelessWidget {
@@ -505,14 +506,19 @@ class ToolbarWidget extends StatelessWidget {
                                 width: isSelected ? 2 : 1,
                               ),
                               borderRadius: BorderRadius.circular(4),
-                              color: ThemeService
-                                  .activeColorScheme
-                                  .onSurfaceVariant,
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.surfaceContainerHighest,
                             ),
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                const Icon(Icons.grid_on, size: 16),
+                                TonePreviewThumb(
+                                  tone: tone,
+                                  color: Theme.of(context).colorScheme.surface,
+                                  size: 23,
+                                  shape: BoxShape.rectangle,
+                                ),
                                 const SizedBox(height: 2),
                                 Text(
                                   tone.name,
