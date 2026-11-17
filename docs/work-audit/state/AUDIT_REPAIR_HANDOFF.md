@@ -130,7 +130,7 @@ App・Web共通。Claudeが要修正の詳細を追記し、ユーザーが別�
   - **担当が見つけた別の不具合**：DISC265（作品一覧・共有の詳細表示の最後のカードが浮かぶボタンの上端ちょうどで終わる）。フォルダの中の画面の「小」のカードでは絵の印が星の所に重なる（DISC263と同じ形、前から）。
 - **このセッションの公開の印が無いDISC**。前のセッションで直った物もあるので、各行の記録と最新 `dev_branch` で確かめる。
   - DISC001〜028・030〜049・051〜061・063〜067・069〜074・077〜081・090・099〜100・102・107・111・115〜116・118〜120・122
-  - DISC126・137・142〜146・149〜150・154〜155・159・161〜162・166・193〜202・204〜205・223・231・236・257〜476
+  - DISC126・137・142〜146・149〜150・154〜155・159・161〜162・166・193〜202・204〜205・223・231・236・257〜477
   - 所有者の判断待ち：DISC090・099・107・115・146・155、A011、DISC066。
 - **dev_branchで落ちているtest**：DISC258（容量削減の画面のtestが多く落ちる。どのコミットからかは未確認）。
 
@@ -1713,3 +1713,12 @@ App・Web共通。Claudeが要修正の詳細を追記し、ユーザーが別�
 - **OK**：PCの制限なしではどのページもLCP 0.2〜0.7秒・CLS 0.05以下。フォント・画像は`Cache-Control: public, max-age=2592000`（30日）とETag、名前を替えて差し替える運用（`_headers`の注記）。CSS・JSは`no-cache, must-revalidate`＋ETagで、2回目は304で転送量を抑える（デプロイ直後に古いUIを出さないための選択で、`_headers`に理由がある）。HTMLは`max-age=0, must-revalidate`。セキュリティのヘッダー（CSP・HSTS・`X-Frame-Options`等）は全ての応答に付く（W022で見る）。動きを減らす設定の見え方はW003で確認済み。
 - **観察（記録のみ）**：(1)1ページで11〜21のJSファイルを読む（辞書が多数。W023の辞書の重なりと関係）。(2)Service Workerは無く、オフラインでの再訪はブラウザのエラーになる（宣伝のサイトとしては通常）。
 - **未確認**：本番のCloudflareの配信（Brotli・HTTP/3・距離）での実測、実機の低性能SP、INP（操作の反応）の実測。
+
+### W022（一巡目、Claude・S40、判定：要修正）
+
+- **確認SHA・環境**：Web `3218757`。応答のヘッダーは`wrangler dev --local`（127.0.0.1:8799）を`curl`で、コードは`src/**`・`public/js/**`・`public/_headers`・`wrangler.jsonc`・`.github/workflows/*`を読んだ。`npm audit`はscratchpadの写しで実行。
+- **要修正（新規）**：477（公開用の設定が仮のまま：宛先・送り元が例示、回数制限のKVが無い）。
+- **既知**：/api/contactが送り元を確かめない（DISC467）・添付の中身（DISC468）・回数制限の数え漏れ（DISC469）、Google Play・XのURLが空（DISC441・DISC461）。
+- **OK**：HTMLとAPIの応答に`Content-Security-Policy`（`default-src 'self'`・`script-src 'self'`〔インラインのスクリプトも外からの差し込みも拒む、W020でaxeの差し込みが止められたことで確認〕・`frame-ancestors 'none'`・`object-src 'none'`・`img-src`はYouTubeの画像だけ追加）・`Strict-Transport-Security`・`X-Frame-Options: DENY`・`X-Content-Type-Options: nosniff`・`Referrer-Policy`・`Cross-Origin-Opener-Policy`・`Permissions-Policy`、4xx・5xxには`X-Robots-Tag: noindex`。`innerHTML`等に入るのは開発者の書いた辞書・固定の部品だけで、URLの`?lang=`は決まった7言語に正規化、作品広場の題・チャンネル名は`textContent`。`location.hash`を`querySelector`に渡す2か所はどちらも`try`で包む。リポジトリに秘密（`.env`・鍵）は無い（READMEも`wrangler secret`を指示）。製品の依存は`npm audit --omit=dev`で0件。`contents: write`で`dev_branch`へpushする3つのワークフローは、その`dev_branch`へのpush（ワークフロー自身のファイルの変更）と手動の起動だけで動き、`pull_request`からは動かない。
+- **観察（記録のみ）**：開発用の依存（`wrangler`→`miniflare`の`sharp`・`undici`）に高の脆弱性4件（`npm audit fix`で直る）。公開されるWorkerには入らないが、開発・CIで使う。
+- **未確認**：本番のCloudflareの設定（ダッシュボードの変数・秘密・KV・WAF・ログの保存）。
