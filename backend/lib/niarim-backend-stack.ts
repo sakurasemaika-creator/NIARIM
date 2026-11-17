@@ -197,15 +197,25 @@ export class NiarimBackendStack extends Stack {
 
     const reportSecretArn = this.node.tryGetContext("admobReportOAuthSecretArn") as string | undefined;
     const countryLayerArn = this.node.tryGetContext("rewardedAdCountryLayerArn") as string | undefined;
+    const countryDataDirectory = this.node.tryGetContext("rewardedAdCountryDataDirectory") as string | undefined;
     const autoRewardRates = this.node.tryGetContext("rewardedAdAutoRatesEnabled") === "true";
     const rewardedUnitTiers = String(this.node.tryGetContext("rewardedAdUnitTiers") ?? "");
     const rewardedBaseUnit = String(this.node.tryGetContext("admobRewardedAdUnitId") ?? "");
-    if ((reportSecretArn && !countryLayerArn) || (autoRewardRates && !reportSecretArn)) {
+    if (countryLayerArn && countryDataDirectory) {
+      throw new Error("Choose one country database layer source");
+    }
+    if ((reportSecretArn && !countryLayerArn && !countryDataDirectory) ||
+        (autoRewardRates && !reportSecretArn)) {
       throw new Error("Regional rewarded ads require the country database layer and AdMob reporting OAuth secret");
     }
-    const rewardCountryLayer = countryLayerArn
-      ? lambda.LayerVersion.fromLayerVersionArn(this, "RewardAdCountryLayer", countryLayerArn)
-      : undefined;
+    const rewardCountryLayer = countryDataDirectory
+      ? new lambda.LayerVersion(this, "RewardAdCountryData", {
+        code: lambda.Code.fromAsset(path.resolve(countryDataDirectory)),
+        description: "IP to Country Lite by DB-IP, CC BY 4.0",
+        compatibleRuntimes: [lambda.Runtime.NODEJS_22_X],
+      }) : countryLayerArn
+        ? lambda.LayerVersion.fromLayerVersionArn(this, "RewardAdCountryLayer", countryLayerArn)
+        : undefined;
 
     const apiFunction = new NodejsFunction(this, "ApiFunction", {
       functionName: "niarim-api",
@@ -297,7 +307,10 @@ export class NiarimBackendStack extends Stack {
         // economics review and explicit human production approval.
         ADMOB_REWARDED_AD_UNIT_ID:
           rewardedBaseUnit,
-        ...(rewardCountryLayer ? { REWARDED_AD_COUNTRY_DB: "/opt/GeoLite2-Country.mmdb" } : {}),
+        ...(rewardCountryLayer ? {
+          REWARDED_AD_COUNTRY_DB: countryDataDirectory ? "/opt/country.mmdb" : "/opt/GeoLite2-Country.mmdb",
+        } : {}),
+        ...(reportSecretArn ? { REWARDED_AD_REPORTING_ENABLED: "true" } : {}),
         ...(autoRewardRates ? { REWARDED_AD_AUTO_RATES_ENABLED: "true" } : {}),
         ...(rewardedUnitTiers ? { REWARDED_AD_UNIT_TIERS: rewardedUnitTiers } : {}),
         REWARDED_AD_SSV_ENABLED:

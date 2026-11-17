@@ -92,6 +92,11 @@ jobs:
     # 手動実行でdeploy=trueを選んだときだけ動く。Push/PRでは走らない。
     if: github.event_name == 'workflow_dispatch' && inputs.deploy && github.ref == 'refs/heads/dev_branch'
     runs-on: ubuntu-latest
+    env:
+      NIARIM_REWARDED_AD_COUNTRY_DATA: ${{ vars.NIARIM_REWARDED_AD_COUNTRY_DATA }}
+      NIARIM_ADMOB_REPORT_OAUTH_SECRET_ARN: ${{ vars.NIARIM_ADMOB_REPORT_OAUTH_SECRET_ARN }}
+      NIARIM_REWARDED_AD_UNIT_TIERS: ${{ vars.NIARIM_REWARDED_AD_UNIT_TIERS }}
+      NIARIM_REWARDED_AD_AUTO_RATES: ${{ vars.NIARIM_REWARDED_AD_AUTO_RATES }}
     permissions:
       id-token: write # OIDCでIAMロールを引き受けるために必要
       contents: read
@@ -153,16 +158,32 @@ jobs:
           trap 'rm -f "$RUNNER_TEMP/niarim-live-env.json"' EXIT
           node scripts/assert-live-coin-config.mjs \
             "$RUNNER_TEMP/niarim-live-env.json"
+      - name: Prepare country data for the scheduled reward reports
+        if: ${{ env.NIARIM_REWARDED_AD_COUNTRY_DATA == 'true' }}
+        run: bash scripts/prepare-reward-country-layer.sh "$RUNNER_TEMP/reward-country-layer"
       - name: cdk deploy
         shell: bash
         run: |
           set -euo pipefail
-          # NEVER pass an FCM private-key JSON via CDK context/CloudFormation.
-          # Firebase push stays disabled until a secure runtime secret source exists.
+          # Only the ARN of the OAuth secret is passed to CloudFormation.
+          regional_args=()
+          if [[ "$NIARIM_REWARDED_AD_COUNTRY_DATA" == 'true' ]]; then
+            regional_args+=( -c "rewardedAdCountryDataDirectory=$RUNNER_TEMP/reward-country-layer" )
+          fi
+          if [[ -n "$NIARIM_ADMOB_REPORT_OAUTH_SECRET_ARN" ]]; then
+            regional_args+=( -c "admobReportOAuthSecretArn=$NIARIM_ADMOB_REPORT_OAUTH_SECRET_ARN" )
+          fi
+          if [[ -n "$NIARIM_REWARDED_AD_UNIT_TIERS" ]]; then
+            regional_args+=( -c "rewardedAdUnitTiers=$NIARIM_REWARDED_AD_UNIT_TIERS" )
+          fi
+          if [[ -n "$NIARIM_REWARDED_AD_AUTO_RATES" ]]; then
+            regional_args+=( -c "rewardedAdAutoRatesEnabled=$NIARIM_REWARDED_AD_AUTO_RATES" )
+          fi
           npx cdk deploy NiarimBackendStack --require-approval never \
             --outputs-file "$RUNNER_TEMP/niarim-cdk-outputs.json" \
             -c googleClientId="$GOOGLE_CLIENT_ID" \
-            -c youtubeApiKey="$YOUTUBE_API_KEY"
+            -c youtubeApiKey="$YOUTUBE_API_KEY" \
+            "${regional_args[@]}"
         env:
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}

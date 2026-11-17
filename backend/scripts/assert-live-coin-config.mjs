@@ -61,6 +61,24 @@ for (const [env, key] of Object.entries(exactValues)) {
   const expected = String(context[key] ?? "");
   if (deployed[env] !== expected) conflicts.push(env);
 }
+// Once regional accounting is collecting data, a routine deployment must
+// retain its layer and opt-in controls. Explicit true/false permits rollout
+// or rollback through the repository's deployment configuration.
+const countryDbConfigured = process.env.NIARIM_REWARDED_AD_COUNTRY_DATA === "true";
+if (deployed.REWARDED_AD_COUNTRY_DB && !countryDbConfigured) {
+  conflicts.push("REWARDED_AD_COUNTRY_DB");
+}
+if (deployed.REWARDED_AD_REPORTING_ENABLED === "true" && !process.env.NIARIM_ADMOB_REPORT_OAUTH_SECRET_ARN) {
+  conflicts.push("REWARDED_AD_REPORTING_ENABLED");
+}
+if (deployed.REWARDED_AD_AUTO_RATES_ENABLED === "true" &&
+    (!process.env.NIARIM_ADMOB_REPORT_OAUTH_SECRET_ARN ||
+      !["true", "false"].includes(process.env.NIARIM_REWARDED_AD_AUTO_RATES))) {
+  conflicts.push("REWARDED_AD_AUTO_RATES_ENABLED");
+}
+if (deployed.REWARDED_AD_UNIT_TIERS && !process.env.NIARIM_REWARDED_AD_UNIT_TIERS) {
+  conflicts.push("REWARDED_AD_UNIT_TIERS");
+}
 if (conflicts.length) {
   console.error(
     "BLOCKED: CDK would overwrite current production coin/reward settings: " +
