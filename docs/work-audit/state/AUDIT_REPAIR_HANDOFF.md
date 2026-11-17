@@ -1671,3 +1671,11 @@ App・Web共通。Claudeが要修正の詳細を追記し、ユーザーが別�
 - **既知**：アプリの第9条の連絡先が「未設定 ― 公開前にメールアドレス等の連絡先情報をご記入ください」のまま（CLAUDE.mdの「人間の実操作」5、所有者の作業）。Webはお問い合わせのフォームへ案内していて、この点はWebの方が公開できる形。簡体字の「」（DISC457）。
 - **OK**：9条の題は7言語ともアプリと一致。第1条〜第8条の本文は、記号（「」と“ ”、’と'）・空白・箇条の区切りの差を除いて7言語ともアプリと一致（第7条の作品広場の情報、第3条のAdMob、第4条のCookie、GitHubからのフォントのダウンロードなど）。リンク（/contact/）は言語を引き継ぐ。7言語とも横のはみ出し無し。サイトの文字は自前のフォント（Google Fontsへの通信なし）、解析のタグ（Google Analytics等）は無い。
 - **未確認**：法令（日本の個人情報保護法・GDPR・各国）上の要否の判断（W035〜W038・L系）、Google Playのデータセーフティとの照合（W035）。
+
+### W017（一巡目、Claude・S40、判定：OK）
+
+- **確認SHA・環境**：Web `9335531`を`git archive`でscratchpadへ写し、リポジトリの`package-lock.json`どおりに`npm ci`して`wrangler dev --local`（127.0.0.1:8799、Cloudflareの静的ファイルの扱いを再現するMiniflare）で動かした。`curl`でGET・HEAD・POSTの状態・`Location`・`X-Robots-Tag`・`canonical`を見て（`w-audit/w017.sh`）、Chromium（Playwright）SP 360×740で404のページを見た（`w-audit/w017p.js`、画像は`w-audit/w017-404-fr.png`）。
+- **新規の要修正なし**。
+- **OK**：`/about`・`/about/index.html`・`/index.html`・`//about/`・`/about//`は307で正規のURL（`/about/`・`/`）へ1回で移る（繰り返しなし）。知らないパス（`/no-such-page`・`/no-such-page/`・`/about/extra`・`/features/foo.html`・`/ABOUT/`・`/%E3%81%82`・`/../etc/passwd`）は404でブランドの404のページ、`X-Robots-Tag: noindex, nofollow`と`<meta name=robots content=noindex,follow>`。壊れた百分率の符号（`/%E0%A4%A`）は307で`%25`へ逃がした先が404（繰り返しなし）。`/api/`・`/api/unknown`はJSONの404、`/api/contact`のGET・HEADは405。HEADは本文なしで同じ状態。ページへのPOSTは405。`?lang=fr`は`canonical`に`?lang=fr`、知らない`?lang=xx`・`?lang=%ZZ`は200で`canonical`は言語なしのURL。404のページは言語を引き継ぎ（`?lang=fr`で仏語・`?lang=ko`で韓国語、「ホームへ戻る」は`/?lang=fr`）、SPで横のはみ出し無し。戻る・進むで404と前のページを行き来できる。`robots.txt`・`sitemap.xml`は200。
+- **観察（記録のみ）**：(1)`/404.html`は`/404`へ307で、`/404`そのものは状態200で404の本文を返す（`noindex`なので検索には載らないが、厳密にはsoft 404）。(2)`/favicon.ico`は404（ページは`/assets/icons/favicon.svg`と`apple-touch-icon`を宣言しているので主なブラウザは困らない。古いブラウザ・一部の取得の道具は`/favicon.ico`を探す）。
+- **未確認**：本番のCloudflare（キャッシュ・`SITE_ORIGIN`の実際の値）での同じ確認。
