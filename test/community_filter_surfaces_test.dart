@@ -224,6 +224,46 @@ void main() {
     ),
   );
 
+  testWidgets('discard confirmation preserves a pending upload on cancel', (
+    tester,
+  ) async {
+    const videoKey = 'community.pendingUpload.videoId';
+    const titleKey = 'community.pendingUpload.title';
+    SharedPreferences.setMockInitialValues({
+      videoKey: 'abcde123456',
+      titleKey: 'Pending artwork title',
+    });
+    await tester.pumpWidget(postFixture());
+    await tester.pumpAndSettle();
+    final l10n = lookupAppLocalizations(const Locale('ja'));
+    final prefs = await SharedPreferences.getInstance();
+    final discard = find.widgetWithText(
+      TextButton,
+      l10n.communityPostDiscardPending,
+    );
+    await tester.ensureVisible(discard);
+    await tester.tap(discard);
+    await tester.pumpAndSettle();
+    expect(find.text(l10n.communityPostDiscardPendingConfirm), findsOneWidget);
+    expect(prefs.getString(videoKey), 'abcde123456');
+    await tester.tap(find.widgetWithText(TextButton, l10n.commonCancel));
+    await tester.pumpAndSettle();
+    expect(prefs.getString(videoKey), 'abcde123456');
+    expect(prefs.getString(titleKey), 'Pending artwork title');
+    expect(discard, findsOneWidget);
+
+    await tester.tap(discard);
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.widgetWithText(FilledButton, l10n.communityPostDiscardPending),
+    );
+    await tester.pumpAndSettle();
+    expect(prefs.getString(videoKey), isNull);
+    expect(prefs.getString(titleKey), isNull);
+    expect(discard, findsNothing);
+    expect(find.text(l10n.communityPostPendingDiscarded), findsOneWidget);
+  });
+
   testWidgets('YouTube privacy defaults to unlisted and changes by tap', (
     tester,
   ) async {

@@ -20,6 +20,7 @@ import '../../l10n/community_post_visibility_labels.dart';
 import 'widgets/community_post_copy_button.dart';
 import '../../widgets/responsive.dart';
 import 'community_error_text.dart';
+import '../../utils/app_error_reporter.dart';
 import '../../utils/tolerant_preferences.dart';
 import '../../widgets/fit_or_hide_title.dart';
 
@@ -283,8 +284,44 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
   }
 
   Future<void> _discardPendingUpload() async {
-    if (_busy) return;
-    await _clearPendingUpload();
+    final videoId = _youtubeVideoId;
+    if (_busy || videoId == null) return;
+    final l10n = AppLocalizations.of(context)!;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        scrollable: true,
+        title: Text(l10n.communityPostDiscardPending),
+        content: Text(l10n.communityPostDiscardPendingConfirm),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(l10n.commonCancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(l10n.communityPostDiscardPending),
+          ),
+        ],
+      ),
+    );
+    if (!mounted || confirmed != true || _busy || _youtubeVideoId != videoId) {
+      return;
+    }
+    setState(() => _busy = true);
+    try {
+      await _clearPendingUpload();
+    } catch (error, stack) {
+      AppErrorReporter.record(error, stack);
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.communityErrorGeneric)));
+      }
+      return;
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
     if (!mounted) return;
     setState(() {
       _youtubeVideoId = null;
@@ -306,13 +343,9 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
       _error = null;
       _progress = 0;
     });
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          AppLocalizations.of(context)!.communityPostPendingDiscarded,
-        ),
-      ),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(l10n.communityPostPendingDiscarded)));
   }
 
   Future<void> _pickVideo() async {

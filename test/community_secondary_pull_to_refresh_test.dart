@@ -7,6 +7,7 @@ import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/screens/community/community_author_works_screen.dart';
+import 'package:niarim/screens/community/community_follow_notifications_screen.dart';
 import 'package:niarim/screens/community/community_my_works_screen.dart';
 import 'package:niarim/services/api/community_api.dart';
 import 'package:niarim/services/api/niarim_api_client.dart';
@@ -78,6 +79,51 @@ CommunityService _service(MockClient client) => CommunityService(
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   setUp(() => SharedPreferences.setMockInitialValues({}));
+
+  testWidgets('failed Plaza activity fetch explains the error and retries', (
+    tester,
+  ) async {
+    var activityRequests = 0;
+    final community = _service(
+      MockClient((request) async {
+        if (request.url.path == '/me/missions/activity') {
+          activityRequests++;
+          if (activityRequests == 1) return http.Response('{}', 503);
+          return _reply({'events': []});
+        }
+        return _reply({});
+      }),
+    );
+    final l10n = lookupAppLocalizations(const Locale('ja'));
+    await tester.pumpWidget(
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider(create: (_) => SettingsService()),
+          ChangeNotifierProvider<GoogleAuthService>(create: (_) => _Auth('a')),
+          ChangeNotifierProvider<CommunityService>(create: (_) => community),
+        ],
+        child: const MaterialApp(
+          locale: Locale('ja'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: CommunityFollowNotificationsScreen(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    final error = find.text(l10n.creatorMissionActivityError);
+    final empty = find.text(l10n.communityFollowNotificationsEmpty);
+    expect(error, findsOneWidget);
+    expect(empty, findsNothing);
+    expect(find.text(l10n.creatorMissionActivityEmpty), findsNothing);
+    await tester.tap(
+      find.widgetWithText(OutlinedButton, l10n.creatorMissionRetry),
+    );
+    await tester.pumpAndSettle();
+    expect(activityRequests, 2);
+    expect(error, findsNothing);
+    expect(empty, findsOneWidget);
+  });
 
   testWidgets('author page refreshes only that author at the top', (
     tester,

@@ -6363,6 +6363,10 @@ class AppLocalizationsJa extends AppLocalizations {
   String get communityFollowNotificationsEmpty => '通知はありません';
 
   @override
+  String get communityFollowNotificationsSignInRequired =>
+      '作品広場の通知を見るには、Googleアカウントでログインしてください。';
+
+  @override
   String get communityNoWorksMessage => '作品がありません';
 
   @override
@@ -7379,6 +7383,10 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get communityPostDiscardPending => '作品広場への登録をやめる';
+
+  @override
+  String get communityPostDiscardPendingConfirm =>
+      '登録待ちの入力が削除され、この動画の登録を再開できなくなります。YouTubeにアップロード済みの動画は残ります。';
 
   @override
   String get communityPostPendingDiscarded =>

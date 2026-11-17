@@ -12,6 +12,7 @@ import 'package:niarim/services/community_service.dart';
 import 'package:niarim/services/google_auth_service.dart';
 import 'package:niarim/services/premium_service.dart';
 import 'package:niarim/services/settings_service.dart';
+import 'package:niarim/services/theme_service.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -62,6 +63,8 @@ void main() {
     (tester) async {
       SharedPreferences.setMockInitialValues({});
       final settings = SettingsService();
+      final themes = ThemeService();
+      final l10n = lookupAppLocalizations(const Locale('ja'));
       final router = GoRouter(
         initialLocation: communityNotificationsRoute,
         routes: [
@@ -74,10 +77,15 @@ void main() {
             path: communityNotificationSettingsRoute,
             builder: (_, _) => const CommunityNotificationSettingsScreen(),
           ),
+          GoRoute(
+            path: communityMyWorksRoute,
+            builder: (_, _) => const Scaffold(body: Text('Account settings')),
+          ),
         ],
       );
       addTearDown(router.dispose);
       addTearDown(settings.dispose);
+      addTearDown(themes.dispose);
       tester.view.physicalSize = const Size(480, 1300);
       tester.view.devicePixelRatio = 1;
       addTearDown(tester.view.resetPhysicalSize);
@@ -92,12 +100,23 @@ void main() {
           ],
           child: MaterialApp.router(
             routerConfig: router,
+            theme: themes.themeData,
             locale: const Locale('ja'),
             localizationsDelegates: AppLocalizations.localizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
           ),
         ),
       );
+      await tester.pumpAndSettle();
+      expect(
+        find.text(l10n.communityFollowNotificationsSignInRequired),
+        findsOneWidget,
+      );
+      expect(find.text(l10n.communityFollowNotificationsEmpty), findsNothing);
+      await tester.tap(find.text(l10n.communitySignInPromptConnect));
+      await tester.pumpAndSettle();
+      expect(find.text('Account settings'), findsOneWidget);
+      router.pop();
       await tester.pumpAndSettle();
       await tester.tap(find.byKey(const Key('plazaNotificationSettings')));
       await tester.pumpAndSettle();
@@ -110,6 +129,37 @@ void main() {
       for (final entry in toggles.entries) {
         expect(tester.widget<SwitchListTile>(entry.value).value, isTrue);
       }
+      final master = find.byKey(const Key('pushNotificationsOnDevice'));
+      await tester.tap(master);
+      await tester.pumpAndSettle();
+      for (final toggle in toggles.values) {
+        final tile = tester.widget<SwitchListTile>(toggle);
+        expect(tile.value, isTrue);
+        expect(tile.onChanged, isNull);
+      }
+      final toggle = toggles[CommunityPushCategory.bookmark]!;
+      final toggleContext = tester.element(toggle);
+      final theme = Theme.of(toggleContext);
+      const selected = {WidgetState.selected};
+      const disabled = {WidgetState.selected, WidgetState.disabled};
+      expect(
+        SwitchTheme.of(toggleContext).thumbColor?.resolve(selected),
+        theme.colorScheme.onPrimary,
+      );
+      expect(
+        SwitchTheme.of(toggleContext).trackColor?.resolve(selected),
+        theme.colorScheme.primary,
+      );
+      expect(
+        SwitchTheme.of(toggleContext).thumbColor?.resolve(disabled),
+        isNull,
+      );
+      expect(
+        SwitchTheme.of(toggleContext).trackColor?.resolve(disabled),
+        isNull,
+      );
+      await tester.tap(master);
+      await tester.pumpAndSettle();
       await tester.tap(toggles[CommunityPushCategory.bookmark]!);
       await tester.pumpAndSettle();
       expect(settings.pushEnabledFor(CommunityPushCategory.bookmark), isFalse);

@@ -6398,6 +6398,10 @@ class AppLocalizationsKo extends AppLocalizations {
   String get communityFollowNotificationsEmpty => '알림이 없습니다';
 
   @override
+  String get communityFollowNotificationsSignInRequired =>
+      '작품 광장 알림을 보려면 Google 계정으로 로그인하세요.';
+
+  @override
   String get communityNoWorksMessage => '작품이 없습니다';
 
   @override
@@ -7414,6 +7418,10 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get communityPostDiscardPending => '작품 광장 등록 취소';
+
+  @override
+  String get communityPostDiscardPendingConfirm =>
+      '등록 대기 정보와 입력 내용이 삭제되어 여기에서 이 동영상의 등록을 이어갈 수 없습니다. YouTube에 업로드한 동영상은 그대로 남습니다.';
 
   @override
   String get communityPostPendingDiscarded =>

@@ -6732,6 +6732,10 @@ class AppLocalizationsFr extends AppLocalizations {
   String get communityFollowNotificationsEmpty => 'Aucune notification';
 
   @override
+  String get communityFollowNotificationsSignInRequired =>
+      'Connectez-vous avec Google pour voir vos notifications de la Place des œuvres.';
+
+  @override
   String get communityNoWorksMessage => 'Aucune œuvre';
 
   @override
@@ -7801,6 +7805,10 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get communityPostDiscardPending =>
       'Annuler l’enregistrement sur la Place des œuvres';
+
+  @override
+  String get communityPostDiscardPendingConfirm =>
+      'La demande en attente et le formulaire seront effacés. Vous ne pourrez plus reprendre ici l’inscription de cette vidéo. La vidéo mise en ligne restera sur YouTube.';
 
   @override
   String get communityPostPendingDiscarded =>

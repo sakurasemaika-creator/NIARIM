@@ -6726,6 +6726,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get communityFollowNotificationsEmpty => 'No hay notificaciones';
 
   @override
+  String get communityFollowNotificationsSignInRequired =>
+      'Inicia sesión con Google para ver tus notificaciones de la Plaza de Obras.';
+
+  @override
   String get communityNoWorksMessage => 'No hay obras';
 
   @override
@@ -7791,6 +7795,10 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get communityPostDiscardPending =>
       'Cancelar el registro en la Plaza de Obras';
+
+  @override
+  String get communityPostDiscardPendingConfirm =>
+      'Se borrarán el registro pendiente y los datos del formulario. No podrás reanudar aquí el registro de este vídeo. El vídeo subido seguirá en YouTube.';
 
   @override
   String get communityPostPendingDiscarded =>

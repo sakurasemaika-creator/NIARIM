@@ -6618,6 +6618,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get communityFollowNotificationsEmpty => 'No notifications';
 
   @override
+  String get communityFollowNotificationsSignInRequired =>
+      'Sign in with Google to see your Work Plaza notifications.';
+
+  @override
   String get communityNoWorksMessage => 'No works';
 
   @override
@@ -7673,6 +7677,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get communityPostDiscardPending => 'Cancel Work Plaza registration';
+
+  @override
+  String get communityPostDiscardPendingConfirm =>
+      'This clears your pending registration and its form. You won’t be able to resume registration for this video here. The uploaded video will stay on YouTube.';
 
   @override
   String get communityPostPendingDiscarded =>

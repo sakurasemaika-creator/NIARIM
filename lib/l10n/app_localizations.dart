@@ -11571,6 +11571,12 @@ abstract class AppLocalizations {
   /// **'通知はありません'**
   String get communityFollowNotificationsEmpty;
 
+  /// No description provided for @communityFollowNotificationsSignInRequired.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品広場の通知を見るには、Googleアカウントでログインしてください。'**
+  String get communityFollowNotificationsSignInRequired;
+
   /// No description provided for @communityNoWorksMessage.
   ///
   /// In ja, this message translates to:
@@ -13448,6 +13454,12 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'作品広場への登録をやめる'**
   String get communityPostDiscardPending;
+
+  /// No description provided for @communityPostDiscardPendingConfirm.
+  ///
+  /// In ja, this message translates to:
+  /// **'登録待ちの入力が削除され、この動画の登録を再開できなくなります。YouTubeにアップロード済みの動画は残ります。'**
+  String get communityPostDiscardPendingConfirm;
 
   /// No description provided for @communityPostPendingDiscarded.
   ///

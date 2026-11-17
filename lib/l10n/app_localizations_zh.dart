@@ -6305,6 +6305,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get communityFollowNotificationsEmpty => '暂无通知';
 
   @override
+  String get communityFollowNotificationsSignInRequired =>
+      '请使用 Google 账号登录，查看作品广场通知。';
+
+  @override
   String get communityNoWorksMessage => '暂无作品';
 
   @override
@@ -7309,6 +7313,10 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get communityPostDiscardPending => '取消在作品广场登记';
+
+  @override
+  String get communityPostDiscardPendingConfirm =>
+      '待登记的记录和表单内容将被清除，你将无法在此继续登记此视频。已上传的视频会保留在 YouTube 上。';
 
   @override
   String get communityPostPendingDiscarded => '已取消待处理的作品广场登记。YouTube上的视频并未删除。';
@@ -16443,6 +16451,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get communityFollowNotificationsEmpty => '尚無通知';
 
   @override
+  String get communityFollowNotificationsSignInRequired =>
+      '請使用 Google 帳戶登入，查看作品廣場通知。';
+
+  @override
   String get communityNoWorksMessage => '尚無作品';
 
   @override
@@ -17448,6 +17460,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get communityPostDiscardPending => '取消在作品廣場登錄';
+
+  @override
+  String get communityPostDiscardPendingConfirm =>
+      '待登錄的記錄和表單內容將被清除，你將無法在此繼續登錄此影片。已上傳的影片會保留在 YouTube 上。';
 
   @override
   String get communityPostPendingDiscarded => '已取消待處理的作品廣場登錄。YouTube上的影片並未刪除。';

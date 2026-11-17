@@ -226,18 +226,29 @@ class _CommunityFollowNotificationsScreenState
     context.push('/creator-missions');
   }
 
-  Widget _offlineFallback() {
+  Widget _noticeWithLocalHistory({required String message, Widget? action}) {
     final l10n = AppLocalizations.of(context)!;
     final scheme = Theme.of(context).colorScheme;
     final local = context.watch<CommunityService>().milestoneNotifications;
+    final notice = Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(message, textAlign: TextAlign.center),
+          if (action != null) ...[const SizedBox(height: 8), action],
+        ],
+      ),
+    );
     if (local.isEmpty) {
-      return Center(child: Text(l10n.communityFollowNotificationsEmpty));
+      return Center(child: SingleChildScrollView(child: notice));
     }
     return ListView.separated(
-      itemCount: local.length,
+      itemCount: local.length + 1,
       separatorBuilder: (_, _) => const Divider(height: 1),
       itemBuilder: (_, index) {
-        final notification = local[index];
+        if (index == 0) return notice;
+        final notification = local[index - 1];
         final message = notification.isFollower
             ? l10n.communityFollowerMilestone(notification.count.toString())
             : l10n.communityBookmarkMilestone(
@@ -262,6 +273,7 @@ class _CommunityFollowNotificationsScreenState
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final t = CreatorMissionLabels.of(context);
     final api = _api;
     final scheme = Theme.of(context).colorScheme;
@@ -285,8 +297,16 @@ class _CommunityFollowNotificationsScreenState
       ),
       body: desktopCentered(
         context,
-        _accountId == null || api == null
-            ? _offlineFallback()
+        _accountId == null
+            ? _noticeWithLocalHistory(
+                message: l10n.communityFollowNotificationsSignInRequired,
+                action: FilledButton(
+                  onPressed: () => context.push(communityMyWorksRoute),
+                  child: Text(l10n.communitySignInPromptConnect),
+                ),
+              )
+            : api == null
+            ? _noticeWithLocalHistory(message: t.get('activityError'))
             : FutureBuilder<Map<String, dynamic>>(
                 future: _feedFuture,
                 builder: (context, snapshot) {
@@ -299,16 +319,12 @@ class _CommunityFollowNotificationsScreenState
                     );
                   }
                   if (!snapshot.hasData || snapshot.hasError) {
-                    return Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(t.get('activityError')),
-                        OutlinedButton(
-                          onPressed: () => _refresh(api),
-                          child: Text(t.get('retry')),
-                        ),
-                        Expanded(child: _offlineFallback()),
-                      ],
+                    return _noticeWithLocalHistory(
+                      message: t.get('activityError'),
+                      action: OutlinedButton(
+                        onPressed: () => _refresh(api),
+                        child: Text(t.get('retry')),
+                      ),
                     );
                   }
                   final page = snapshot.data!;
@@ -330,7 +346,9 @@ class _CommunityFollowNotificationsScreenState
                     ..._extra,
                   ];
                   if (items.isEmpty && !_scanHasMore && _nextPage == null) {
-                    return Center(child: Text(t.get('activityEmpty')));
+                    return Center(
+                      child: Text(l10n.communityFollowNotificationsEmpty),
+                    );
                   }
                   return ListView.separated(
                     padding: const EdgeInsets.symmetric(vertical: 8),
