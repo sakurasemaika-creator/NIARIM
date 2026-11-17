@@ -8577,6 +8577,18 @@ abstract class AppLocalizations {
   /// **'現在範囲を使用'**
   String get layerPanelRangeUseCurrentButton;
 
+  /// No description provided for @layerPanelRangeNumberError.
+  ///
+  /// In ja, this message translates to:
+  /// **'開始フレームと終了フレームを1〜{count}の範囲で入力してください。'**
+  String layerPanelRangeNumberError(int count);
+
+  /// No description provided for @layerPanelRangeOrderError.
+  ///
+  /// In ja, this message translates to:
+  /// **'終了フレームは開始フレーム以降にしてください。'**
+  String get layerPanelRangeOrderError;
+
   /// No description provided for @layerPanelRangeTargetSceneLabel.
   ///
   /// In ja, this message translates to:

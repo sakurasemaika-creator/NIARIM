@@ -4733,6 +4733,14 @@ class AppLocalizationsKo extends AppLocalizations {
   String get layerPanelRangeUseCurrentButton => '현재 범위 사용';
 
   @override
+  String layerPanelRangeNumberError(int count) {
+    return '시작 프레임과 종료 프레임을 1부터 $count 사이의 값으로 입력하세요.';
+  }
+
+  @override
+  String get layerPanelRangeOrderError => '종료 프레임은 시작 프레임과 같거나 그 이후여야 합니다.';
+
+  @override
   String get layerPanelRangeTargetSceneLabel => '대상 씬';
 
   @override

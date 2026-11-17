@@ -29,6 +29,7 @@ import '../../../widgets/autofill_preset_selection_sheet.dart';
 import '../../../widgets/dispose_on_unmount.dart';
 import '../../../widgets/first_use_tooltip.dart';
 import '../../../widgets/labeled_slider.dart';
+import '../../../widgets/layer_range_dialog.dart';
 import '../../../widgets/list_ink_clip.dart';
 import '../../../widgets/scrollable_sheet_body.dart';
 import 'layer_keyframe_sheet.dart';
@@ -1477,169 +1478,33 @@ class _LayerPanelState extends State<LayerPanel> {
     )?
     onConfirm,
   }) {
-    final l10n = AppLocalizations.of(context)!;
-    final resolvedConfirmLabel = confirmLabel ?? l10n.commonOk;
     final ps = context.read<ProjectService>();
-    final totalFrames = ps.frameCount(widget.projectId, widget.sceneId);
-    final scenes = ps.scenesOf(widget.projectId);
-    final startCtrl = TextEditingController(
-      text: (layer.rangeStart ?? 1).toString(),
-    );
-    final endCtrl = TextEditingController(
-      text: (layer.rangeEnd ?? (totalFrames > 0 ? totalFrames : 1)).toString(),
-    );
-    model.LayerRangeMode mode = layer.rangeMode;
-    String? sceneId = layer.rangeSceneId ?? widget.sceneId;
-    // 入力欄の部品は、ダイアログが画面から外れたときに破棄する（閉じた直後
-    // 〔showDialogのthen〕に破棄すると、閉じる動きの間まだ画面にある欄が
-    // 破棄済みの部品を使う）。
-    showDialog(
+    final homeSceneId =
+        ps.homeOf(widget.projectId, layer.id)?.sceneId ?? widget.sceneId;
+    showDialog<void>(
       context: context,
-      builder: (_) => DisposeOnUnmount(
-        controller: startCtrl,
-        builder: (_) => DisposeOnUnmount(
-          controller: endCtrl,
-          builder: (ctx) => StatefulBuilder(
-            builder: (ctx, setS) => AlertDialog(
-              insetPadding: typingDialogInsetPadding(ctx),
-              title: Text(title ?? l10n.layerPanelRangeDialogTitle),
-              // 選択状態と変更通知はRadioGroupがまとめて持つ
-              // （groupValue/onChangedはFlutter 3.32で非推奨）。
-              content: RadioGroup<model.LayerRangeMode>(
-                groupValue: mode,
-                onChanged: (v) => setS(() => mode = v!),
-                // 選択肢を押したときの色をスクロールの中に限る（ダイアログの面へ
-                // 描くと、半分隠れた選択肢の色が見出し・ボタンの段へはみ出す）。
-                child: SingleChildScrollView(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Expanded(
-                            child: TextField(
-                              controller: startCtrl,
-                              keyboardType: TextInputType.number,
-                              decoration: InputDecoration(
-                                labelText: l10n.layerPanelRangeStartFrameLabel,
-                                border: const OutlineInputBorder(),
-                              ),
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 8),
-                            child: Text(l10n.layerPanelRangeTilde),
-                          ),
-                          Expanded(
-                            child: TextField(
-                              controller: endCtrl,
-                              keyboardType: TextInputType.number,
-                              decoration: InputDecoration(
-                                labelText: l10n.layerPanelRangeEndFrameLabel,
-                                border: const OutlineInputBorder(),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      TextButton(
-                        onPressed: () => setS(() {
-                          startCtrl.text = '1';
-                          endCtrl.text = totalFrames > 0
-                              ? totalFrames.toString()
-                              : '1';
-                        }),
-                        child: Text(l10n.layerPanelRangeUseCurrentButton),
-                      ),
-                      const Divider(),
-                      RadioListTile<model.LayerRangeMode>(
-                        dense: true,
-                        title: Text(l10n.layerPanelRangeAllFrames),
-                        value: model.LayerRangeMode.allFrames,
-                      ),
-                      RadioListTile<model.LayerRangeMode>(
-                        dense: true,
-                        title: Text(l10n.layerPanelRangeCurrentScene),
-                        value: model.LayerRangeMode.currentScene,
-                      ),
-                      RadioListTile<model.LayerRangeMode>(
-                        dense: true,
-                        title: Text(l10n.layerPanelRangeSceneSpecified),
-                        value: model.LayerRangeMode.sceneRange,
-                      ),
-                      if (mode == model.LayerRangeMode.sceneRange)
-                        Padding(
-                          padding: const EdgeInsets.only(
-                            left: 16,
-                            right: 8,
-                            bottom: 8,
-                          ),
-                          child: DropdownButtonFormField<String>(
-                            initialValue: scenes.any((s) => s.id == sceneId)
-                                ? sceneId
-                                : scenes.firstOrNull?.id,
-                            isExpanded: true,
-                            decoration: InputDecoration(
-                              labelText: l10n.layerPanelRangeTargetSceneLabel,
-                              isDense: true,
-                            ),
-                            items: scenes
-                                .map(
-                                  (s) => DropdownMenuItem(
-                                    value: s.id,
-                                    child: Text(s.displayName),
-                                  ),
-                                )
-                                .toList(),
-                            onChanged: (v) => setS(() => sceneId = v),
-                          ),
-                        ),
-                      RadioListTile<model.LayerRangeMode>(
-                        dense: true,
-                        title: Text(l10n.layerPanelRangeFrameRangeLabel),
-                        value: model.LayerRangeMode.frameRange,
-                      ),
-                    ],
-                  ),
-                ).clipListInk(),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(ctx),
-                  child: Text(l10n.commonCancel),
+      builder: (_) => LayerRangeDialog(
+        layer: layer,
+        homeSceneId: homeSceneId,
+        totalFrames: ps.frameCount(widget.projectId, homeSceneId),
+        scenes: ps.scenesOf(widget.projectId),
+        title: title,
+        confirmLabel: confirmLabel,
+        onConfirm:
+            onConfirm ??
+            (mode, start, end, rangeSceneId) {
+              ps.updateLayer(
+                projectId: widget.projectId,
+                sceneId: widget.sceneId,
+                frameIndex: widget.frameIndex,
+                layer: layer.copyWith(
+                  rangeMode: mode,
+                  rangeStart: start,
+                  rangeEnd: end,
+                  rangeSceneId: rangeSceneId,
                 ),
-                FilledButton(
-                  onPressed: () {
-                    final start = int.tryParse(startCtrl.text) ?? 1;
-                    final end = int.tryParse(endCtrl.text) ?? start;
-                    final resolvedSceneId =
-                        mode == model.LayerRangeMode.sceneRange
-                        ? sceneId
-                        : null;
-                    if (onConfirm != null) {
-                      onConfirm(mode, start, end, resolvedSceneId);
-                    } else {
-                      context.read<ProjectService>().updateLayer(
-                        projectId: widget.projectId,
-                        sceneId: widget.sceneId,
-                        frameIndex: widget.frameIndex,
-                        layer: layer.copyWith(
-                          rangeMode: mode,
-                          rangeStart: start,
-                          rangeEnd: end,
-                          rangeSceneId: resolvedSceneId,
-                        ),
-                      );
-                    }
-                    Navigator.pop(ctx);
-                  },
-                  child: Text(resolvedConfirmLabel),
-                ),
-              ],
-            ),
-          ),
-        ),
+              );
+            },
       ),
     );
   }

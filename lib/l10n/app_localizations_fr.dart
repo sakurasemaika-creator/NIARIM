@@ -4991,6 +4991,15 @@ class AppLocalizationsFr extends AppLocalizations {
   String get layerPanelRangeUseCurrentButton => 'Utiliser la plage actuelle';
 
   @override
+  String layerPanelRangeNumberError(int count) {
+    return 'Saisissez des images de début et de fin comprises entre 1 et $count.';
+  }
+
+  @override
+  String get layerPanelRangeOrderError =>
+      'L’image de fin doit être la même que l’image de début ou venir après.';
+
+  @override
   String get layerPanelRangeTargetSceneLabel => 'Scène cible';
 
   @override

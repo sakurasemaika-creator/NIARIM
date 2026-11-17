@@ -4674,6 +4674,14 @@ class AppLocalizationsZh extends AppLocalizations {
   String get layerPanelRangeUseCurrentButton => '使用当前范围';
 
   @override
+  String layerPanelRangeNumberError(int count) {
+    return '请输入介于 1 和 $count 之间的开始帧和结束帧。';
+  }
+
+  @override
+  String get layerPanelRangeOrderError => '结束帧不能早于开始帧。';
+
+  @override
   String get layerPanelRangeTargetSceneLabel => '目标场景';
 
   @override
@@ -14861,6 +14869,14 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get layerPanelRangeUseCurrentButton => '使用目前範圍';
+
+  @override
+  String layerPanelRangeNumberError(int count) {
+    return '請輸入介於 1 和 $count 之間的起始影格與結束影格。';
+  }
+
+  @override
+  String get layerPanelRangeOrderError => '結束影格不能早於起始影格。';
 
   @override
   String get layerPanelRangeTargetSceneLabel => '目標場景';

@@ -1964,6 +1964,8 @@
   "layerPanelRangeEndFrameLabel": "Fotograma final",
   "layerPanelRangeTilde": "–",
   "layerPanelRangeUseCurrentButton": "Usar rango actual",
+  "layerPanelRangeNumberError": "Introduce fotogramas de inicio y fin entre 1 y {count}.",
+  "layerPanelRangeOrderError": "El fotograma final debe ser igual o posterior al inicial.",
   "layerPanelRangeTargetSceneLabel": "Escena objetivo",
   "layerPanelRangeFrameRangeLabel": "Rango de fotogramas específico",
   "layerPanelMenuNormalLayer": "Capa normal",

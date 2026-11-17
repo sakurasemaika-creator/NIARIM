@@ -4983,6 +4983,15 @@ class AppLocalizationsEs extends AppLocalizations {
   String get layerPanelRangeUseCurrentButton => 'Usar rango actual';
 
   @override
+  String layerPanelRangeNumberError(int count) {
+    return 'Introduce fotogramas de inicio y fin entre 1 y $count.';
+  }
+
+  @override
+  String get layerPanelRangeOrderError =>
+      'El fotograma final debe ser igual o posterior al inicial.';
+
+  @override
   String get layerPanelRangeTargetSceneLabel => 'Escena objetivo';
 
   @override

@@ -1964,6 +1964,8 @@
   "layerPanelRangeEndFrameLabel": "结束帧",
   "layerPanelRangeTilde": "～",
   "layerPanelRangeUseCurrentButton": "使用当前范围",
+  "layerPanelRangeNumberError": "请输入介于 1 和 {count} 之间的开始帧和结束帧。",
+  "layerPanelRangeOrderError": "结束帧不能早于开始帧。",
   "layerPanelRangeTargetSceneLabel": "目标场景",
   "layerPanelRangeFrameRangeLabel": "指定帧范围",
   "layerPanelMenuNormalLayer": "普通图层",

@@ -217,6 +217,32 @@ void main() {
     await tester.tap(find.text(l10n.layerPanelRangeFrameRangeLabel));
     await tester.enterText(
       find.widgetWithText(TextField, l10n.layerPanelRangeStartFrameLabel),
+      '7',
+    );
+    await tester.enterText(
+      find.widgetWithText(TextField, l10n.layerPanelRangeEndFrameLabel),
+      '3',
+    );
+    await tester.pump();
+    expect(tester.widget<FilledButton>(confirm).onPressed, isNull);
+    expect(find.text(l10n.layerPanelRangeOrderError), findsOneWidget);
+    expect(
+      service
+          .scenesOf(id)
+          .single
+          .frames
+          .first
+          .layers
+          .singleWhere((item) => item.id == layer.id)
+          .rangeMode,
+      LayerRangeMode.allFrames,
+    );
+    await tester.tap(find.text(l10n.layerPanelRangeUseCurrentButton));
+    await tester.pump();
+    expect(tester.widget<FilledButton>(confirm).onPressed, isNotNull);
+    expect(find.text(l10n.layerPanelRangeOrderError), findsNothing);
+    await tester.enterText(
+      find.widgetWithText(TextField, l10n.layerPanelRangeStartFrameLabel),
       '2',
     );
     await tester.enterText(

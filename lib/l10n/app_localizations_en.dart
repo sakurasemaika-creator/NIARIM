@@ -4915,6 +4915,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get layerPanelRangeUseCurrentButton => 'Use current range';
 
   @override
+  String layerPanelRangeNumberError(int count) {
+    return 'Enter a start and end frame between 1 and $count.';
+  }
+
+  @override
+  String get layerPanelRangeOrderError =>
+      'The end frame must be at or after the start frame.';
+
+  @override
   String get layerPanelRangeTargetSceneLabel => 'Target scene';
 
   @override

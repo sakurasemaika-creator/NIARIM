@@ -196,4 +196,71 @@ void main() {
     expect(tester.takeException(), isNull);
     expect(find.byType(AlertDialog), findsNothing);
   });
+
+  testWidgets('common layer creation rejects invalid frame numbers', (
+    tester,
+  ) async {
+    await boot(tester, const Size(360, 780));
+    final (projects, projectId) = await showPanel(tester);
+    final sceneId = projects.scenesOf(projectId).single.id;
+    final l10n = AppLocalizations.of(tester.element(find.byType(LayerPanel)))!;
+    await tester.tap(find.byIcon(Icons.library_add).first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(l10n.layerPanelMenuCommonLayer));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(l10n.layerPanelRangeFrameRangeLabel));
+    await tester.pumpAndSettle();
+
+    final create = find.widgetWithText(FilledButton, l10n.commonCreate);
+    final start = find.widgetWithText(
+      TextField,
+      l10n.layerPanelRangeStartFrameLabel,
+    );
+    final end = find.widgetWithText(
+      TextField,
+      l10n.layerPanelRangeEndFrameLabel,
+    );
+    for (final (first, last) in [
+      ('0', '3'),
+      ('2', '13'),
+      ('', '5'),
+      ('9', '3'),
+    ]) {
+      await tester.enterText(start, first);
+      await tester.enterText(end, last);
+      await tester.pump();
+      expect(tester.widget<FilledButton>(create).onPressed, isNull);
+      expect(
+        find.text(
+          first == '9'
+              ? l10n.layerPanelRangeOrderError
+              : l10n.layerPanelRangeNumberError(12),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        projects
+            .layersOf(projectId, sceneId, 0)
+            .where((layer) => layer.type == model.LayerType.common),
+        isEmpty,
+      );
+    }
+
+    await tester.enterText(start, '3');
+    await tester.pump();
+    await tester.tap(create);
+    await tester.pumpAndSettle();
+    expect(find.byType(AlertDialog), findsNothing);
+    final layer = projects
+        .scenesOf(projectId)
+        .single
+        .frames
+        .first
+        .layers
+        .singleWhere((layer) => layer.type == model.LayerType.common);
+    expect(
+      (layer.rangeMode, layer.rangeStart, layer.rangeEnd),
+      (model.LayerRangeMode.frameRange, 3, 3),
+    );
+  });
 }

@@ -1964,6 +1964,8 @@
   "layerPanelRangeEndFrameLabel": "結束影格",
   "layerPanelRangeTilde": "～",
   "layerPanelRangeUseCurrentButton": "使用目前範圍",
+  "layerPanelRangeNumberError": "請輸入介於 1 和 {count} 之間的起始影格與結束影格。",
+  "layerPanelRangeOrderError": "結束影格不能早於起始影格。",
   "layerPanelRangeTargetSceneLabel": "目標場景",
   "layerPanelRangeFrameRangeLabel": "指定影格範圍",
   "layerPanelMenuNormalLayer": "一般圖層",

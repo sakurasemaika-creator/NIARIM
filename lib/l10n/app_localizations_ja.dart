@@ -4709,6 +4709,14 @@ class AppLocalizationsJa extends AppLocalizations {
   String get layerPanelRangeUseCurrentButton => '現在範囲を使用';
 
   @override
+  String layerPanelRangeNumberError(int count) {
+    return '開始フレームと終了フレームを1〜$countの範囲で入力してください。';
+  }
+
+  @override
+  String get layerPanelRangeOrderError => '終了フレームは開始フレーム以降にしてください。';
+
+  @override
   String get layerPanelRangeTargetSceneLabel => '対象シーン';
 
   @override

@@ -1964,6 +1964,8 @@
   "layerPanelRangeEndFrameLabel": "Image de fin",
   "layerPanelRangeTilde": "–",
   "layerPanelRangeUseCurrentButton": "Utiliser la plage actuelle",
+  "layerPanelRangeNumberError": "Saisissez des images de début et de fin comprises entre 1 et {count}.",
+  "layerPanelRangeOrderError": "L’image de fin doit être la même que l’image de début ou venir après.",
   "layerPanelRangeTargetSceneLabel": "Scène cible",
   "layerPanelRangeFrameRangeLabel": "Plage d’images spécifiée",
   "layerPanelMenuNormalLayer": "Calque normal",

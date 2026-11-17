@@ -2358,6 +2358,15 @@
   "layerPanelRangeEndFrameLabel": "終了フレーム",
   "layerPanelRangeTilde": "〜",
   "layerPanelRangeUseCurrentButton": "現在範囲を使用",
+  "layerPanelRangeNumberError": "開始フレームと終了フレームを1〜{count}の範囲で入力してください。",
+  "layerPanelRangeOrderError": "終了フレームは開始フレーム以降にしてください。",
+  "@layerPanelRangeNumberError": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "layerPanelRangeTargetSceneLabel": "対象シーン",
   "layerPanelRangeFrameRangeLabel": "フレーム範囲指定",
   "layerPanelMenuNormalLayer": "通常レイヤー",
