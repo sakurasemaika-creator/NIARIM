@@ -778,6 +778,7 @@
   "widgetSectionPlaza": "Widget de la plaza",
   "widgetSectionPlazaDesc": "Al tocarlo se abre la Plaza.",
   "widgetArtworkNone": "Ninguna obra seleccionada",
+  "widgetArtworkInTrash": "La obra elegida está en la papelera. Restáurala para volver a mostrarla.",
   "widgetArtworkFrameNumberLabel": "Fotograma {n}",
   "@widgetArtworkFrameNumberLabel": {
     "placeholders": {

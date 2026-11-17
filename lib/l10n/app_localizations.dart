@@ -4467,6 +4467,12 @@ abstract class AppLocalizations {
   /// **'作品を選んでいません'**
   String get widgetArtworkNone;
 
+  /// No description provided for @widgetArtworkInTrash.
+  ///
+  /// In ja, this message translates to:
+  /// **'選んだ作品はゴミ箱にあります。復元すると再び表示されます。'**
+  String get widgetArtworkInTrash;
+
   /// No description provided for @widgetArtworkFrameNumberLabel.
   ///
   /// In ja, this message translates to:

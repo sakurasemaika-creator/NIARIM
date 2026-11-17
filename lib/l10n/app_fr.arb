@@ -778,6 +778,7 @@
   "widgetSectionPlaza": "Widget de la place",
   "widgetSectionPlazaDesc": "Un appui ouvre la Place.",
   "widgetArtworkNone": "Aucune œuvre sélectionnée",
+  "widgetArtworkInTrash": "L’œuvre choisie est dans la corbeille. Restaurez-la pour l’afficher de nouveau.",
   "widgetArtworkFrameNumberLabel": "Image {n}",
   "@widgetArtworkFrameNumberLabel": {
     "placeholders": {

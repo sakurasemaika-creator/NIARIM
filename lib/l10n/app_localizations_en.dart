@@ -2538,6 +2538,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get widgetArtworkNone => 'No work selected';
 
   @override
+  String get widgetArtworkInTrash =>
+      'The selected work is in the trash. Restore it to display it again.';
+
+  @override
   String widgetArtworkFrameNumberLabel(int n) {
     return 'Frame $n';
   }

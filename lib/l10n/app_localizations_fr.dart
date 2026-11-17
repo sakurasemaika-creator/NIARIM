@@ -2572,6 +2572,10 @@ class AppLocalizationsFr extends AppLocalizations {
   String get widgetArtworkNone => 'Aucune œuvre sélectionnée';
 
   @override
+  String get widgetArtworkInTrash =>
+      'L’œuvre choisie est dans la corbeille. Restaurez-la pour l’afficher de nouveau.';
+
+  @override
   String widgetArtworkFrameNumberLabel(int n) {
     return 'Image $n';
   }

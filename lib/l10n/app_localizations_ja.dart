@@ -2436,6 +2436,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get widgetArtworkNone => '作品を選んでいません';
 
   @override
+  String get widgetArtworkInTrash => '選んだ作品はゴミ箱にあります。復元すると再び表示されます。';
+
+  @override
   String widgetArtworkFrameNumberLabel(int n) {
     return '$n枚目のフレーム';
   }

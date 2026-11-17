@@ -981,6 +981,7 @@
   "widgetSectionPlaza": "作品広場ウィジェット",
   "widgetSectionPlazaDesc": "タップすると「作品広場」が開きます。",
   "widgetArtworkNone": "作品を選んでいません",
+  "widgetArtworkInTrash": "選んだ作品はゴミ箱にあります。復元すると再び表示されます。",
   "widgetArtworkFrameNumberLabel": "{n}枚目のフレーム",
   "@widgetArtworkFrameNumberLabel": {
     "placeholders": {

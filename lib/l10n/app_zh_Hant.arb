@@ -778,6 +778,7 @@
   "widgetSectionPlaza": "作品廣場小工具",
   "widgetSectionPlazaDesc": "點按即可開啟「作品廣場」。",
   "widgetArtworkNone": "尚未選擇作品",
+  "widgetArtworkInTrash": "所選作品在垃圾桶中。還原後會重新顯示。",
   "widgetArtworkFrameNumberLabel": "第 {n} 格",
   "@widgetArtworkFrameNumberLabel": {
     "placeholders": {

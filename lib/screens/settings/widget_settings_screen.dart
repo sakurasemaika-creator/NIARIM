@@ -93,6 +93,9 @@ class WidgetSettingsScreen extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final scheme = Theme.of(context).colorScheme;
     final projectId = widgets.projectId;
+    final artwork = projectId == null
+        ? null
+        : homeWidgetArtworkState(context.watch<ProjectService>(), projectId);
 
     return Card(
       margin: EdgeInsets.zero,
@@ -101,7 +104,7 @@ class WidgetSettingsScreen extends StatelessWidget {
         leading: SizedBox(
           width: 44,
           height: 44,
-          child: projectId == null
+          child: projectId == null || artwork?.name == null
               ? Icon(
                   Icons.add_photo_alternate_outlined,
                   color: AccentTextTheme.of(context),
@@ -115,18 +118,10 @@ class WidgetSettingsScreen extends StatelessWidget {
                   ),
                 ),
         ),
-        title: Text(
-          projectId == null
-              ? l10n.widgetArtworkPickButton
-              : (context
-                        .watch<ProjectService>()
-                        .projects
-                        .where((p) => p.id == projectId)
-                        .firstOrNull
-                        ?.name ??
-                    l10n.widgetArtworkPickButton),
-        ),
-        subtitle: projectId == null
+        title: Text(artwork?.name ?? l10n.widgetArtworkPickButton),
+        subtitle: artwork?.inTrash == true
+            ? Text(l10n.widgetArtworkInTrash)
+            : artwork?.name == null
             ? null
             : Text(
                 l10n.widgetArtworkFrameNumberLabel(

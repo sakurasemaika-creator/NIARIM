@@ -60,7 +60,7 @@ class _NiarimAppState extends State<NiarimApp> with WidgetsBindingObserver {
   /// 直近にウィジェットへ書き出した「テーマ色＋表示言語」。ウィジェットの
   /// 意匠はテーマ配色と文言の両方を焼き込んだ画像なので、どちらが変わっても
   /// 焼き直す必要がある。
-  String? _lastPushedWidgetKey;
+  Object? _lastPushedWidgetKey;
 
   @override
   void initState() {
@@ -142,13 +142,26 @@ class _NiarimAppState extends State<NiarimApp> with WidgetsBindingObserver {
     ThemeService themeService,
     Locale locale,
   ) {
-    final key = '${themeService.current.accentColor.toARGB32()}/$locale';
+    final id = context.select<HomeWidgetService, String?>(
+      (service) => service.projectId,
+    );
+    final artwork = context
+        .select<ProjectService, ({String? name, bool inTrash, bool removed})>(
+          (projects) => homeWidgetArtworkState(projects, id),
+        );
+    final key = (
+      themeService.current.accentColor.toARGB32(),
+      locale,
+      id,
+      artwork,
+    );
     if (_lastPushedWidgetKey == key) return;
     _lastPushedWidgetKey = key;
     final widgets = context.read<HomeWidgetService>();
     final projects = context.read<ProjectService>();
     // build中に非同期処理を始めないよう、フレーム確定後に回す。
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || _lastPushedWidgetKey != key) return;
       refreshHomeWidgets(
         widgets: widgets,
         projects: projects,

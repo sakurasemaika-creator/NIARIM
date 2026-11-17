@@ -778,6 +778,7 @@
   "widgetSectionPlaza": "作品广场小组件",
   "widgetSectionPlazaDesc": "点按即可打开“作品广场”。",
   "widgetArtworkNone": "尚未选择作品",
+  "widgetArtworkInTrash": "所选作品在回收站中。恢复后会重新显示。",
   "widgetArtworkFrameNumberLabel": "第 {n} 帧",
   "@widgetArtworkFrameNumberLabel": {
     "placeholders": {

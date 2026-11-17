@@ -9,6 +9,25 @@ import 'shortcut_widget_renderer.dart';
 import 'theme_service.dart';
 import '../utils/splash_gradient.dart';
 
+({String? name, bool inTrash, bool removed}) homeWidgetArtworkState(
+  ProjectService projects,
+  String? id,
+) {
+  if (id == null) return (name: null, inTrash: false, removed: false);
+  final project = projects.projects.where((p) => p.id == id).firstOrNull;
+  if (project != null) {
+    return (name: project.name, inTrash: false, removed: false);
+  }
+  final inTrash = projects.trash.any((p) => p.id == id);
+  return (
+    name: null,
+    inTrash: inTrash,
+    removed: !inTrash && !projects.projectsLoadFailed,
+  );
+}
+
+final _widgetUpdates = Expando<Future<void>>();
+
 /// テーマ変更・作品選択変更・フレーム選択変更のいずれでも、ホーム画面
 /// ウィジェットの表示内容を実際に書き出し直すための共通処理。
 ///
@@ -34,12 +53,27 @@ Future<void> refreshHomeWidgets({
   required ProjectService projects,
   required ThemeService theme,
   required AppLocalizations l10n,
-}) async {
+}) {
+  // Refreshes share the same output files and native preference keys.
+  Future<void> update() => _writeWidgetContent(widgets, projects, theme, l10n);
+  final previous = _widgetUpdates[widgets];
+  final current = previous == null
+      ? update()
+      : previous.then<void>((_) => update(), onError: (Object _) => update());
+  _widgetUpdates[widgets] = current;
+  return current;
+}
+
+Future<void> _writeWidgetContent(
+  HomeWidgetService widgets,
+  ProjectService projects,
+  ThemeService theme,
+  AppLocalizations l10n,
+) async {
   final id = widgets.projectId;
-  final project = id == null
-      ? null
-      : projects.projects.where((p) => p.id == id).firstOrNull;
-  final thumbnailPath = id == null
+  final artwork = homeWidgetArtworkState(projects, id);
+  if (artwork.removed) await widgets.selectArtwork();
+  final thumbnailPath = id == null || artwork.name == null
       ? null
       : await saveArtworkWidgetThumbnail(
           projects,
@@ -72,7 +106,7 @@ Future<void> refreshHomeWidgets({
     themeColor: theme.current.accentColor.toARGB32(),
     themeForegroundColor: theme.current.buttonTextColor.toARGB32(),
     thumbnailPath: thumbnailPath,
-    projectName: project?.name,
+    projectName: artwork.name ?? l10n.widgetArtworkNone,
     shortcutImagePaths: shortcutImagePaths,
   );
 }

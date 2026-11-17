@@ -778,6 +778,7 @@
   "widgetSectionPlaza": "작품 광장 위젯",
   "widgetSectionPlazaDesc": "누르면 '작품 광장'이 열립니다.",
   "widgetArtworkNone": "작품을 선택하지 않았습니다",
+  "widgetArtworkInTrash": "선택한 작품이 휴지통에 있습니다. 복원하면 다시 표시됩니다.",
   "widgetArtworkFrameNumberLabel": "{n}번째 프레임",
   "@widgetArtworkFrameNumberLabel": {
     "placeholders": {

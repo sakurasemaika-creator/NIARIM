@@ -778,6 +778,7 @@
   "widgetSectionPlaza": "Plaza widget",
   "widgetSectionPlazaDesc": "Tapping it opens the Plaza.",
   "widgetArtworkNone": "No work selected",
+  "widgetArtworkInTrash": "The selected work is in the trash. Restore it to display it again.",
   "widgetArtworkFrameNumberLabel": "Frame {n}",
   "@widgetArtworkFrameNumberLabel": {
     "placeholders": {

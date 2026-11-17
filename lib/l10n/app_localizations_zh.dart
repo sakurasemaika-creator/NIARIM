@@ -2417,6 +2417,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get widgetArtworkNone => '尚未选择作品';
 
   @override
+  String get widgetArtworkInTrash => '所选作品在回收站中。恢复后会重新显示。';
+
+  @override
   String widgetArtworkFrameNumberLabel(int n) {
     return '第 $n 帧';
   }
@@ -12602,6 +12605,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get widgetArtworkNone => '尚未選擇作品';
+
+  @override
+  String get widgetArtworkInTrash => '所選作品在垃圾桶中。還原後會重新顯示。';
 
   @override
   String widgetArtworkFrameNumberLabel(int n) {

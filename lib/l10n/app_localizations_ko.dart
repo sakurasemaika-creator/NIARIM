@@ -2445,6 +2445,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get widgetArtworkNone => '작품을 선택하지 않았습니다';
 
   @override
+  String get widgetArtworkInTrash => '선택한 작품이 휴지통에 있습니다. 복원하면 다시 표시됩니다.';
+
+  @override
   String widgetArtworkFrameNumberLabel(int n) {
     return '$n번째 프레임';
   }

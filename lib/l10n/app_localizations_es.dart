@@ -2575,6 +2575,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get widgetArtworkNone => 'Ninguna obra seleccionada';
 
   @override
+  String get widgetArtworkInTrash =>
+      'La obra elegida está en la papelera. Restáurala para volver a mostrarla.';
+
+  @override
   String widgetArtworkFrameNumberLabel(int n) {
     return 'Fotograma $n';
   }

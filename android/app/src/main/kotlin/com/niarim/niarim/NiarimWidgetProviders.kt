@@ -115,7 +115,11 @@ class NiarimArtworkWidgetProvider : AppWidgetProvider() {
             // 作品が未選択・サムネイル未生成でも空のウィジェットにしない
             // （選び直せるようアプリは開ける状態にしておく）。
             val bitmap = decodeWidgetBitmap(thumbnail)
-            if (bitmap != null) views.setImageViewBitmap(R.id.widget_image, bitmap)
+            if (bitmap != null) {
+                views.setImageViewBitmap(R.id.widget_image, bitmap)
+            } else {
+                views.setImageViewResource(R.id.widget_image, 0)
+            }
             views.setOnClickPendingIntent(R.id.widget_root, launchIntent(context, route))
             appWidgetManager.updateAppWidget(id, views)
         }

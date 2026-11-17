@@ -11,12 +11,15 @@ import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/engine/tile_manager.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/router.dart';
+import 'package:niarim/screens/settings/widget_settings_screen.dart';
 import 'package:niarim/services/frame_thumbnail_renderer.dart';
 import 'package:niarim/services/home_widget_service.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:niarim/widgets/sort_mode_control.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import 'helpers/pump_real_async.dart';
 
 /// ホーム画面ウィジェット機能（設定画面の並び替え済みラジオボタン・
 /// 作品を選ぶ画面・フレームを選ぶ画面）を、実機無しでも「AIだけで
@@ -53,6 +56,107 @@ class _FakeFilePicker extends FilePicker {
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+
+  testWidgets(
+    'Artwork widget clears trash thumbnails, restores them and forgets deleted selections',
+    (tester) async {
+      SharedPreferences.setMockInitialValues({'language': 'ja'});
+      final tempDir = Directory.systemTemp.createTempSync(
+        'niarim_widget_trash_',
+      );
+      final messenger =
+          TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
+      const pathChannel = MethodChannel('plugins.flutter.io/path_provider');
+      const widgetChannel = MethodChannel('home_widget');
+      final payload = <String, Object?>{};
+      messenger.setMockMethodCallHandler(
+        pathChannel,
+        (_) async => tempDir.path,
+      );
+      messenger.setMockMethodCallHandler(widgetChannel, (call) async {
+        if (call.method == 'saveWidgetData') {
+          final args = call.arguments as Map;
+          payload[args['id'] as String] = args['data'];
+        }
+        return true;
+      });
+      addTearDown(() {
+        messenger.setMockMethodCallHandler(pathChannel, null);
+        messenger.setMockMethodCallHandler(widgetChannel, null);
+        tempDir.deleteSync(recursive: true);
+      });
+
+      final providers = (await tester.runAsync(buildAppProviders))!;
+      appRouter.go('/settings/widget');
+      await tester.pumpWidget(
+        MultiProvider(providers: providers, child: const NiarimApp()),
+      );
+      await tester.pumpAndSettle();
+      final context = tester.element(find.byType(WidgetSettingsScreen));
+      final l10n = AppLocalizations.of(context)!;
+      final projects = context.read<ProjectService>();
+      final service = context.read<HomeWidgetService>();
+
+      Future<void> waitFor(bool Function() ready) async {
+        for (var attempt = 0; attempt < 50 && !ready(); attempt++) {
+          await pumpRealAsync(tester, const Duration(milliseconds: 25));
+        }
+        expect(ready(), isTrue);
+        await tester.pumpAndSettle();
+      }
+
+      final project = (await tester.runAsync(
+        () => projects.createProject(
+          name: 'Widget drawing',
+          fps: 12,
+          durationSeconds: 1,
+          backgroundColor: 0xFFFFFFFF,
+          exportWidth: 64,
+          exportHeight: 64,
+        ),
+      ))!;
+      final scene = projects.scenesOf(project.id).first;
+      await service.selectArtwork(
+        projectId: project.id,
+        sceneId: scene.id,
+        frameIndex: 0,
+      );
+      bool showingArtwork() =>
+          payload['projectName'] == project.name &&
+          (payload['thumbnailPath'] as String? ?? '').isNotEmpty;
+      bool showingPlaceholder() =>
+          payload['projectName'] == l10n.widgetArtworkNone &&
+          payload['thumbnailPath'] == '';
+      await waitFor(showingArtwork);
+      expect(File(payload['thumbnailPath'] as String).existsSync(), isTrue);
+      expect(find.text(l10n.widgetArtworkFrameNumberLabel(1)), findsOneWidget);
+
+      await tester.runAsync(() => projects.deleteProject(project.id));
+      await waitFor(showingPlaceholder);
+      expect(service.projectId, project.id);
+      expect(find.text(l10n.widgetArtworkInTrash), findsOneWidget);
+      expect(find.text(l10n.widgetArtworkFrameNumberLabel(1)), findsNothing);
+
+      await tester.runAsync(() => projects.restoreProject(project.id));
+      await waitFor(showingArtwork);
+      expect(find.text(l10n.widgetArtworkFrameNumberLabel(1)), findsOneWidget);
+
+      await tester.runAsync(() async {
+        await projects.deleteProject(project.id);
+        await projects.permanentDelete(project.id);
+      });
+      await waitFor(() => service.projectId == null && showingPlaceholder());
+      expect(service.sceneId, isNull);
+      expect(service.frameIndex, isNull);
+      final restored = HomeWidgetService();
+      addTearDown(restored.dispose);
+      await restored.init();
+      expect(restored.projectId, isNull);
+      expect(find.text(l10n.widgetArtworkInTrash), findsNothing);
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox.shrink());
+    },
+  );
 
   testWidgets('ホーム画面ウィジェット：作品選択→フレーム選択→確定と背景色ラジオボタンを実タップで検証する', (tester) async {
     SharedPreferences.setMockInitialValues({});
