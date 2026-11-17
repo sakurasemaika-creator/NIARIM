@@ -184,6 +184,8 @@ class TileManager {
   // 触れたタイルのみを差分記録する（スパースタイル方式に合わせ、
   // レイヤー全体ではなく変更のあったタイルだけをUndo/Redo対象とする）。
   bool _recordingUndo = false;
+
+  bool get isRecordingUndo => _recordingUndo;
   String? _recordingLayerId;
   final Map<String, Uint8List?> _undoBefore = {};
   // 記録中の操作に不透明度ロックをかけるか（[beginUndoRecording]）。
@@ -893,6 +895,16 @@ class TileManager {
     }
     if (layerMap.isEmpty) _tiles.remove(layerId);
     _invalidateCache(layerId);
+  }
+
+  /// A different TileManager was last persisted. The same archive paths can
+  /// now contain different pixels, so the next save must write every tile.
+  void markAllTilesDirty() {
+    for (final layer in _tiles.entries) {
+      for (final tileKey in layer.value.keys) {
+        _dirtyTiles.add('${layer.key}:$tileKey');
+      }
+    }
   }
 
   /// Records the layer maps for a structural edit without copying pixel bytes.

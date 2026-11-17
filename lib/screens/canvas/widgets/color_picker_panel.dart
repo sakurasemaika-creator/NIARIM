@@ -18,6 +18,7 @@ import '../../../widgets/confirm_delete.dart';
 import '../../../widgets/dispose_on_unmount.dart';
 import '../../../widgets/export_share_feedback.dart';
 import '../../../widgets/labeled_slider.dart';
+import '../../../widgets/name_entry_dialog.dart';
 import '../../../widgets/qr_import_dialog.dart';
 import '../../../widgets/qr_share_dialog.dart';
 import '../../../widgets/scrollable_sheet_body.dart';
@@ -72,6 +73,16 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
     super.initState();
     _syncFromColor(widget.currentColor);
     _hexController.text = _colorToHex(widget.currentColor);
+  }
+
+  @override
+  void didUpdateWidget(covariant ColorPickerPanel oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.currentColor != widget.currentColor &&
+        _currentColor.toARGB32() != widget.currentColor.toARGB32()) {
+      _syncFromColor(widget.currentColor);
+      _hexController.text = _colorToHex(widget.currentColor);
+    }
   }
 
   @override
@@ -304,6 +315,12 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
                   Expanded(
                     child: TextField(
                       controller: _hexController,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.allow(
+                          RegExp('[0-9a-fA-F#]'),
+                        ),
+                        LengthLimitingTextInputFormatter(9),
+                      ],
                       style: const TextStyle(fontSize: 12),
                       decoration: const InputDecoration(
                         isDense: true,
@@ -318,6 +335,8 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
                         if (color != null) {
                           _applyColor(color);
                           _commitToRecent();
+                        } else {
+                          _hexController.text = _colorToHex(_currentColor);
                         }
                       },
                     ),
@@ -328,7 +347,7 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
                     tooltip: l10n.commonCopy,
                     onPressed: () {
                       Clipboard.setData(
-                        ClipboardData(text: '#${_hexController.text}'),
+                        ClipboardData(text: '#${_colorToHex(_currentColor)}'),
                       );
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
@@ -564,38 +583,14 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
     AppLocalizations l10n,
     PaletteService paletteService,
   ) {
-    final ctrl = TextEditingController();
-    showDialog(
+    showDialog<void>(
       context: context,
-      builder: (ctx) => DisposeOnUnmount(
-        controller: ctrl,
-        builder: (ctx) => AlertDialog(
-          insetPadding: typingDialogInsetPadding(ctx),
-          title: Text(l10n.colorPickerNewPaletteTooltip),
-          content: TextField(
-            controller: ctrl,
-            autofocus: true,
-            decoration: InputDecoration(
-              labelText: l10n.colorPickerPaletteNameLabel,
-              border: const OutlineInputBorder(),
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: Text(l10n.commonCancel),
-            ),
-            FilledButton(
-              onPressed: () {
-                if (ctrl.text.isNotEmpty) {
-                  paletteService.createPalette(ctrl.text);
-                }
-                Navigator.pop(ctx);
-              },
-              child: Text(l10n.commonCreate),
-            ),
-          ],
-        ),
+      builder: (ctx) => NameEntryDialog(
+        title: l10n.colorPickerNewPaletteTooltip,
+        labelText: l10n.colorPickerPaletteNameLabel,
+        confirmLabel: l10n.commonCreate,
+        cancelLabel: l10n.commonCancel,
+        onSubmit: paletteService.createPalette,
       ),
     );
   }
@@ -916,7 +911,9 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
   }
 
   Color? _hexToColor(String hex) {
-    hex = hex.replaceAll('#', '');
+    hex = hex.trim();
+    if (hex.startsWith('#')) hex = hex.substring(1);
+    if (!RegExp(r'^[0-9a-fA-F]+$').hasMatch(hex)) return null;
     if (hex.length == 6) {
       final value = int.tryParse('FF$hex', radix: 16);
       if (value != null) return Color(value);

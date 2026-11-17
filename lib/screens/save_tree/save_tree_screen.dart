@@ -1458,87 +1458,96 @@ class _TreeConnectorPainter extends CustomPainter {
 // 保存データ変更画面（保存方式変更・スロット数削減時に表示）
 // ─────────────────────────────────────────────
 
-/// 保存方式変更が必要かどうかを判定し、必要なら変更フローを開始する
-/// 設定画面からは呼ばない。SaveTreeScreenから呼ぶ。
-/// [newIsTreeMode] 変更後のモード
-/// [newSlotMax] スロット方式の場合の新スロット数（ツリー方式ならnull）
-Future<void> showSaveModeChangeFlowIfNeeded({
+/// Collects the choices for every affected project before changing any saves.
+Future<bool> showSaveModeChangeFlowIfNeeded({
   required BuildContext context,
   required String projectId,
   required SaveTreeService saveService,
   required bool newIsTreeMode,
   int? newSlotMax,
-  // 設定画面から複数プロジェクトへ順番に適用する場合、どのプロジェクトの
-  // 変更画面かを示すために使う。単一プロジェクト文脈からの
-  // 呼び出しでは省略可能。
   String? projectName,
+}) => showSaveModeChangeFlows(
+  context: context,
+  projects: {projectId: projectName},
+  saveService: saveService,
+  newIsTreeMode: newIsTreeMode,
+  newSlotMax: newSlotMax,
+);
+
+typedef _SaveModeChoice = ({List<String> keepIds, bool archive});
+
+Future<bool> showSaveModeChangeFlows({
+  required BuildContext context,
+  required Map<String, String?> projects,
+  required SaveTreeService saveService,
+  required bool newIsTreeMode,
+  int? newSlotMax,
 }) async {
-  final nodes = saveService.getNodes(projectId);
-  final currentIsTree = saveService.isTreeMode;
-  // この作品の保存がすべて新しいスロットに入っているか。設定は全作品へ順に
-  // 当てるので、前の作品で方式・スロット数を変えた後の作品も、方式ではなく
-  // この作品の保存で決める（以前は「同じ方式でスロットを増やすだけ」と
-  // 見なされ、保存がスロット数より多くても選ぶ画面が出なかった）。
-  final allInNewSlots = nodes.every(
-    (n) =>
-        n.slotIndex >= 0 && n.slotIndex < (newSlotMax ?? saveService.slotMax),
-  );
-
-  // 同じモード内でスロット数増加のみ→即時適用して終了
-  if (!currentIsTree && !newIsTreeMode && allInNewSlots) {
-    final nextMax = newSlotMax ?? saveService.slotMax;
-    if (nextMax >= saveService.slotMax) {
-      saveService.setSlotMax(nextMax);
-      return;
-    }
-  }
-
-  // ツリー方式への変更は保存数無制限なので変更画面不要。
-  // スロット→ツリーの場合はアーカイブを復元する。
-  // ツリー→ツリー（変更なし）の場合は復元しない。
   if (newIsTreeMode) {
-    if (!currentIsTree) {
-      saveService.restoreArchive(projectId);
+    if (!saveService.isTreeMode) {
+      for (final id in projects.keys) {
+        saveService.restoreArchive(id);
+      }
     }
     saveService.setTreeMode(true);
-    return;
+    return true;
   }
 
-  // スロット方式への変更（ツリー→スロット、またはスロット数削減）
   final limit = newSlotMax ?? saveService.slotMax;
-  final needsSelection = nodes.length > limit;
-
-  if (!needsSelection) {
-    saveService.setSlotMax(limit);
-    saveService.setTreeMode(false);
-    return;
+  final choices = <String, _SaveModeChoice>{};
+  for (final project in projects.entries) {
+    if (saveService.getNodes(project.key).length <= limit) continue;
+    if (!context.mounted) return false;
+    final choice = await Navigator.of(context).push<_SaveModeChoice>(
+      adMockMaterialPageRoute(
+        builder: (_) => _SaveModeChangeScreen(
+          projectId: project.key,
+          saveService: saveService,
+          newSlotMax: limit,
+          projectName: project.value,
+        ),
+      ),
+    );
+    if (choice == null || !context.mounted) return false;
+    choices[project.key] = choice;
   }
 
-  if (!context.mounted) return;
-  await Navigator.of(context).push(
-    adMockMaterialPageRoute(
-      builder: (_) => _SaveModeChangeScreen(
-        projectId: projectId,
-        saveService: saveService,
+  if (!context.mounted) return false;
+  final messenger = ScaffoldMessenger.of(context);
+  final failure = AppLocalizations.of(context)!.saveTreeDeleteFailedSnackbar;
+  var allDone = true;
+  for (final entry in choices.entries) {
+    try {
+      final done = await saveService.applyModeChange(
+        projectId: entry.key,
+        keepIds: entry.value.keepIds,
+        archive: entry.value.archive,
         newIsTreeMode: false,
         newSlotMax: limit,
-        projectName: projectName,
-      ),
-    ),
-  );
+      );
+      allDone = allDone && done;
+    } catch (error, stack) {
+      AppErrorReporter.record(error, stack);
+      allDone = false;
+    }
+  }
+  saveService.setSlotMax(limit);
+  saveService.setTreeMode(false);
+  if (!allDone && messenger.mounted) {
+    messenger.showSnackBar(SnackBar(content: Text(failure)));
+  }
+  return true;
 }
 
 class _SaveModeChangeScreen extends StatefulWidget {
   final String projectId;
   final SaveTreeService saveService;
-  final bool newIsTreeMode;
-  final int? newSlotMax;
+  final int newSlotMax;
   final String? projectName;
 
   const _SaveModeChangeScreen({
     required this.projectId,
     required this.saveService,
-    required this.newIsTreeMode,
     required this.newSlotMax,
     this.projectName,
   });
@@ -1551,8 +1560,7 @@ class _SaveModeChangeScreenState extends State<_SaveModeChangeScreen> {
   final Set<String> _selectedIds = {};
   bool _showSelectionList = false;
   late final bool _initialIsTreeMode;
-  int get _limit =>
-      widget.newSlotMax ?? widget.saveService.getNodes(widget.projectId).length;
+  int get _limit => widget.newSlotMax;
   int _effectiveLimit(int nodeCount) => nodeCount < _limit ? nodeCount : _limit;
 
   @override
@@ -1728,48 +1736,24 @@ class _SaveModeChangeScreenState extends State<_SaveModeChangeScreen> {
     });
   }
 
-  void _showDiscardDialog(BuildContext context, List<SaveNode> nodes) {
-    final discardCount = nodes.length - _selectedIds.length;
-    var applying = false;
-    showDialog(
+  Future<void> _showDiscardDialog(
+    BuildContext context,
+    List<SaveNode> nodes,
+  ) async {
+    final archive = await showDialog<bool>(
       context: context,
       builder: (ctx) => _DiscardChoiceDialog(
-        discardCount: discardCount,
-        onConfirm: (archive) async {
-          // 変え終えてから閉じる（以前は待たずに閉じ、選ばなかった保存を
-          // 消せなかったときの例外を誰も受けなかった）。二度押しで2回変えない。
-          if (applying) return;
-          applying = true;
-          final messenger = ScaffoldMessenger.of(context);
-          final failed = AppLocalizations.of(
-            context,
-          )!.saveTreeDeleteFailedSnackbar;
-          var done = false;
-          try {
-            done = await widget.saveService.applyModeChange(
-              projectId: widget.projectId,
-              keepIds: _selectedIds.toList(),
-              archive: archive,
-              newIsTreeMode: widget.newIsTreeMode,
-              newSlotMax: widget.newSlotMax,
-            );
-          } catch (error, stack) {
-            AppErrorReporter.record(error, stack);
-          }
-          // 閉じるのは自分のダイアログと変更の画面だけ（その間に戻る操作で
-          // 閉じていたら、下の画面を閉じない）。
-          if (ctx.mounted && (ModalRoute.of(ctx)?.isCurrent ?? false)) {
-            Navigator.pop(ctx);
-          }
-          if (context.mounted && (ModalRoute.of(context)?.isCurrent ?? false)) {
-            Navigator.pop(context);
-          }
-          // 消せなかった保存は退避に残した（ツリー方式へ戻すと出る）。
-          if (!done) messenger.showSnackBar(SnackBar(content: Text(failed)));
-        },
+        discardCount: nodes.length - _selectedIds.length,
+        onConfirm: (archive) => Navigator.pop(ctx, archive),
         onBack: () => Navigator.pop(ctx),
       ),
     );
+    if (archive == null || !context.mounted) return;
+    if (ModalRoute.of(context)?.isCurrent != true) return;
+    Navigator.pop(context, (
+      keepIds: _selectedIds.toList(growable: false),
+      archive: archive,
+    ));
   }
 }
 

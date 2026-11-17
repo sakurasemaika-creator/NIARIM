@@ -1,12 +1,15 @@
 import 'dart:typed_data';
 
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:intl/intl.dart';
 // MaterialTypeはflutter/material.dart（Material widgetの描画種別）と
 // models/material_asset.dart（画像/動画/音声の素材種別）の双方に同名の型が
 // 存在するため、こちらでは使わないflutter側をhideして曖昧さを解消する。
 import 'package:flutter/material.dart' hide MaterialType;
 import 'package:provider/provider.dart';
 
+import '../../engine/archive_security.dart';
 import '../../engine/niapro_serializer.dart';
 import '../../engine/niatra_asset_bundle.dart';
 import '../../engine/niatra_serializer.dart';
@@ -33,6 +36,7 @@ import '../../services/theme_service.dart';
 import '../../services/tone_service.dart';
 import '../../services/watermark_service.dart';
 import '../../services/workspace_preset_service.dart';
+import '../../utils/app_error_reporter.dart';
 import '../../utils/transfer_merge.dart';
 import '../../widgets/export_share_feedback.dart';
 import '../../widgets/responsive.dart';
@@ -82,6 +86,14 @@ class _TransferScreenState extends State<TransferScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final projectService = context.watch<ProjectService>();
+    final projects = projectService.projects;
+    final projectIds = {for (final project in projects) project.id};
+    final selectedProjectIds = _selectedProjectIds.intersection(projectIds);
+    final folderNames = {
+      for (final folder in projectService.folders) folder.id: folder.name,
+    };
+    final lastSaved = DateFormat.yMMMd(l10n.localeName).add_jms();
     return Scaffold(
       // topicはヘルプ画面側の項目タイトル（日本語固定の内部検索キー）と
       // 一致させる必要があるため翻訳しない。
@@ -121,22 +133,26 @@ class _TransferScreenState extends State<TransferScreen> {
                   TextButton(
                     onPressed: _isBusy
                         ? null
-                        : () =>
-                              setState(() => _items.updateAll((_, _) => true)),
+                        : () => setState(() {
+                            _items.updateAll((_, _) => true);
+                            _selectedProjectIds.addAll(projectIds);
+                          }),
                     child: Text(l10n.homeSelectionAllSelect),
                   ),
                   TextButton(
                     onPressed: _isBusy
                         ? null
-                        : () =>
-                              setState(() => _items.updateAll((_, _) => false)),
+                        : () => setState(() {
+                            _items.updateAll((_, _) => false);
+                            _selectedProjectIds.clear();
+                          }),
                     child: Text(l10n.homeSelectionAllDeselect),
                   ),
                   FilledButton.icon(
                     onPressed:
                         (!_isBusy &&
                             (_items.values.any((v) => v) ||
-                                _selectedProjectIds.isNotEmpty))
+                                selectedProjectIds.isNotEmpty))
                         ? _export
                         : null,
                     icon: _isBusy
@@ -226,7 +242,6 @@ class _TransferScreenState extends State<TransferScreen> {
                   ),
                   Consumer<ProjectService>(
                     builder: (context, projectService, _) {
-                      final projects = projectService.projects;
                       if (projects.isEmpty) {
                         if (projectService.projectsLoadFailed) {
                           return const SizedBox.shrink();
@@ -254,11 +269,6 @@ class _TransferScreenState extends State<TransferScreen> {
                           ),
                         );
                       }
-                      // 削除済みプロジェクトのIDが選択集合に残り続けないよう
-                      // 現存プロジェクトのIDのみに絞り込む。
-                      _selectedProjectIds.removeWhere(
-                        (id) => !projects.any((p) => p.id == id),
-                      );
                       return Card(
                         elevation: 1,
                         shadowColor: ThemeService.activeColorScheme.shadow
@@ -274,8 +284,15 @@ class _TransferScreenState extends State<TransferScreen> {
                             for (final p in projects) ...[
                               if (p != projects.first) const Divider(height: 1),
                               CheckboxListTile(
+                                key: ValueKey('transfer-project-${p.id}'),
                                 title: Text(p.name),
-                                value: _selectedProjectIds.contains(p.id),
+                                subtitle: Text(
+                                  [
+                                    ?folderNames[p.folderId],
+                                    lastSaved.format(p.updatedAt.toLocal()),
+                                  ].join(' · '),
+                                ),
+                                value: selectedProjectIds.contains(p.id),
                                 onChanged: _isBusy
                                     ? null
                                     : (v) => setState(() {
@@ -315,7 +332,10 @@ class _TransferScreenState extends State<TransferScreen> {
     final materialService = context.read<MaterialService>();
     final fontService = context.read<FontService>();
     final files = <String, Uint8List>{};
-    for (final id in _selectedProjectIds) {
+    final currentIds = {
+      for (final project in projectService.projects) project.id,
+    };
+    for (final id in _selectedProjectIds.intersection(currentIds)) {
       final project = projectService.projects
           .where((p) => p.id == id)
           .firstOrNull;
@@ -388,14 +408,13 @@ class _TransferScreenState extends State<TransferScreen> {
           stamp: stampService,
           watermarks: watermarkService,
         );
-      } catch (e) {
+      } catch (error, stack) {
+        AppErrorReporter.record(error, stack);
         if (!mounted) return;
         final l10n = AppLocalizations.of(context)!;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(l10n.transferExportFailedSnackbar(e.toString())),
-          ),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.transferExportFileFailed)));
         return;
       }
       if (!mounted) return;
@@ -432,19 +451,19 @@ class _TransferScreenState extends State<TransferScreen> {
   }
 
   Future<void> _import() async {
-    // withData: trueでバイト列も取得しておく（Web版はpathがnullになり
-    // ファイルパスから読み込めないため、その場合はバイト列側を使う）。
-    final result = await FilePicker.platform.pickFiles(
-      type: FileType.custom,
-      allowedExtensions: ['niatra'],
-      withData: true,
-    );
-    if (result == null || result.files.isEmpty) return;
-    final picked = result.files.first;
-    if (picked.path == null && picked.bytes == null) return;
-    if (!mounted) return;
+    if (_isBusy) return;
     setState(() => _isBusy = true);
+    var applying = false;
     try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['niatra'],
+        withData: kIsWeb,
+      );
+      if (result == null || result.files.isEmpty || !mounted) return;
+      final picked = result.files.first;
+      ArchiveSecurity.validateFileSize(picked.size);
+      if (picked.path == null && picked.bytes == null) return;
       final data = picked.bytes != null
           ? NiatraSerializer.loadFromBytes(picked.bytes!)
           : await NiatraSerializer.load(picked.path!);
@@ -462,6 +481,7 @@ class _TransferScreenState extends State<TransferScreen> {
       // どちらも一覧の項目はIDで突き合わせ、この端末の内容を残す（同じIDで
       // 中身が違えば受け取った方を複製として足す）ので、同じファイルを
       // 読み直しても増えない。
+      applying = true;
       await NiatraAssetBundle.restoreEmbeddedAssets(
         data,
         brush: brushService,
@@ -558,12 +578,17 @@ class _TransferScreenState extends State<TransferScreen> {
           ),
         ),
       );
-    } catch (e) {
+    } catch (error, stack) {
+      AppErrorReporter.record(error, stack);
       if (!mounted) return;
       final l10n = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(l10n.transferImportFailedSnackbar(e.toString())),
+          content: Text(
+            applying
+                ? l10n.transferImportInterrupted
+                : l10n.transferImportFileFailed,
+          ),
         ),
       );
     } finally {

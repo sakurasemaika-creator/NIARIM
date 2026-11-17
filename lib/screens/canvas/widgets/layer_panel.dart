@@ -153,10 +153,6 @@ class _LayerPanelState extends State<LayerPanel> {
   );
 
   int _selectedIndex = 0;
-  // widget.currentLayerIdに基づく_selectedIndexの初回同期が済んだか
-  // （毎buildで探索し直すと、ユーザーがパネル内で選択を変えた直後の
-  // buildで上書きしてしまうため、初回のみに限定する）。
-  bool _syncedInitialSelection = false;
   bool _isSelectionMode = false;
   final Set<String> _selectedIds = {};
   model.LayerType? _selectionBaseType;
@@ -280,16 +276,11 @@ class _LayerPanelState extends State<LayerPanel> {
             ?.backgroundColor ??
         0xFFFFFFFF;
 
-    // パネル初回表示時、実際にペンストロークが書き込まれる対象
-    // （widget.currentLayerId）を選択行としてハイライトする（このbuild内
-    // のみで完結する直接代入で、setStateは呼ばない。以降ユーザーが別の
-    // 行をタップしても、この同期は初回のみなので上書きしない）。
-    if (!_syncedInitialSelection) {
-      _syncedInitialSelection = true;
-      if (widget.currentLayerId != null) {
-        final idx = layers.indexWhere((l) => l.id == widget.currentLayerId);
-        if (idx >= 0) _selectedIndex = idx;
-      }
+    // The row and the canvas use the same layer ID, even after a reorder.
+    if (widget.currentLayerId != null) {
+      _selectedIndex = layers.indexWhere(
+        (layer) => layer.id == widget.currentLayerId,
+      );
     }
 
     // ストロークが確定した（＝ペンが離れた）タイミングを検知し、現在

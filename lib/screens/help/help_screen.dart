@@ -665,6 +665,11 @@ class _HelpScreenState extends State<HelpScreen> {
                 }),
               ),
             ),
+            if (_topic != null && _searchQuery.isEmpty)
+              TextButton(
+                onPressed: () => setState(() => _topic = null),
+                child: Text(l10n.helpShowAllTopics),
+              ),
             Expanded(
               child: filtered.isEmpty
                   ? Center(
@@ -699,6 +704,10 @@ class _HelpScreenState extends State<HelpScreen> {
                                 .withValues(alpha: 0.15),
                             clipBehavior: Clip.antiAlias,
                             child: ExpansionTile(
+                              expandedAlignment:
+                                  AlignmentDirectional.centerStart,
+                              expandedCrossAxisAlignment:
+                                  CrossAxisAlignment.start,
                               // 各画面のヘルプボタンから遷移した場合、該当項目を
                               // 自動展開して探す手間を省く。topicKeyはHelpButton(topic:)の
                               // 呼び出し元と一致させる固定の内部識別子（翻訳対象外）。

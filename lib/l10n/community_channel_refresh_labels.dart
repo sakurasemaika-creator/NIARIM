@@ -17,6 +17,5 @@ class CommunityChannelRefreshLabels {
   String get success => _l10n.communityChannelRefreshSuccess;
   String get noToken => _l10n.communityChannelRefreshNoToken;
   String get unavailable => _l10n.communityChannelRefreshUnavailable;
-  String failed(Object error) =>
-      _l10n.communityChannelRefreshFailed(error.toString());
+  String get failed => _l10n.communityChannelRefreshRetry;
 }

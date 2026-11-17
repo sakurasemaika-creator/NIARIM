@@ -201,6 +201,43 @@ void main() {
         s.slotDisplayMemoOf(id, n.slotIndex) ?? '',
   ]..sort();
 
+  testWidgets(
+    'cancelling the second project leaves all saves and mode intact',
+    (tester) async {
+      await open(tester, tree: true);
+      final first = await newProject(tester, '先の作品');
+      final second = await newProject(tester, '次の作品');
+      for (final project in [first, second]) {
+        await save(tester, project, 'A');
+        await save(tester, project, 'B');
+      }
+      final originalLimit = saves.slotMax;
+
+      final flow = showSaveModeChangeFlows(
+        context: navKey.currentContext!,
+        projects: {first.id: first.name, second.id: second.name},
+        saveService: saves,
+        newIsTreeMode: false,
+        newSlotMax: 1,
+      );
+      await settleIo(tester, 3);
+      await tester.tap(find.text('最新1件を保存'));
+      await settleIo(tester, 3);
+      await tester.tap(find.text('変更する'));
+      await settleIo(tester, 4);
+      expect(find.text('保存データ変更（次の作品）'), findsOneWidget);
+      await tester.binding.handlePopRoute();
+      await settleIo(tester, 4);
+      expect(await flow, isFalse);
+      expect(saves.isTreeMode, isTrue);
+      expect(saves.slotMax, originalLimit);
+      for (final project in [first, second]) {
+        expect(saves.getNodes(project.id).map((n) => n.comment), ['A', 'B']);
+        expect(saves.getArchivedNodes(project.id), isEmpty);
+      }
+    },
+  );
+
   testWidgets('tree -> slots with fewer saves than slots: the saves are in '
       'the slot screen, also after a restart', (tester) async {
     await open(tester, tree: true);

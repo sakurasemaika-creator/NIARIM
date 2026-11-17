@@ -362,8 +362,11 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
       final token = await auth.youtubeUploadAccessToken(
         promptIfNecessary: true,
       );
-      if (token == null || token.isEmpty) throw StateError(labels.noToken);
       if (!mounted || auth.account?.id != accountId) return;
+      if (token == null || token.isEmpty) {
+        _showSnackBar(labels.noToken);
+        return;
+      }
       final profile = await api.refreshYoutubeChannelInfo(token);
       if (!mounted || auth.account?.id != accountId) return;
       final name = profile['channelName'] as String?;
@@ -377,9 +380,9 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
         });
       }
       _showSnackBar(labels.success);
-    } catch (error) {
-      if (!mounted) return;
-      _showSnackBar(labels.failed(error));
+    } catch (_) {
+      if (!mounted || auth.account?.id != accountId) return;
+      _showSnackBar(labels.failed);
     } finally {
       if (mounted) setState(() => _refreshingYouTubeChannel = false);
     }

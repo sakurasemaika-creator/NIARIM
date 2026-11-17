@@ -1055,7 +1055,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get premiumStoreUnavailable =>
-      '스토어에 연결할 수 없습니다（실제 기기・스토어 심사 환경 이외에서는 구매할 수 없습니다）';
+      '스토어에서 구매 정보를 불러오지 못했습니다. 연결을 확인하고 다시 시도해 주세요.';
 
   @override
   String get premiumYearlyTitle => '연간 플랜（추천）';
@@ -1104,7 +1104,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get premiumFeatureMaxDuration => '최대 길이';
 
   @override
-  String get premiumFeatureEndLogo => '공식 엔드 로고';
+  String get premiumFeatureEndLogo => '공식 엔드마크';
 
   @override
   String get premiumFeatureWatermark => '내 워터마크 추가 및 편집';
@@ -2826,7 +2826,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get premiumBannerEndCardBody =>
-      '프리미엄 또는 엔드 로고 편집 혜택을 이용하면 공식 엔드 로고를 표시하거나 숨길 수 있습니다.';
+      '프리미엄 또는 엔드마크 편집 혜택을 이용하면 공식 엔드마크를 표시하거나 숨길 수 있습니다.';
 
   @override
   String get premiumBannerWatermarkBody =>
@@ -10276,4 +10276,27 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get timelineSelectionClips => '소재 클립';
+
+  @override
+  String get helpShowAllTopics => '모든 항목 보기';
+
+  @override
+  String get transferExportFileFailed => '이전 파일을 만들지 못했습니다.';
+
+  @override
+  String get transferImportFileFailed => '이전 파일을 읽지 못했습니다.';
+
+  @override
+  String get transferImportInterrupted =>
+      '가져오기를 완료하지 못했습니다. 이미 가져온 항목은 남아 있습니다.';
+
+  @override
+  String get communityChannelRefreshRetry =>
+      'YouTube 채널 정보를 업데이트하지 못했습니다. 다시 시도해 주세요.';
+
+  @override
+  String get timelineAutofillBatchCancelled => '자동 채색을 취소했습니다.';
+
+  @override
+  String get timelineAutofillBatchFailed => '오류가 발생해 자동 채색을 중단했습니다.';
 }

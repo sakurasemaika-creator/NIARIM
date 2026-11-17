@@ -51,14 +51,18 @@ class PerformanceService extends ChangeNotifier {
     QualityLevel.custom => _customOnionSkinNext,
   };
 
-  SaveMode get saveMode => switch (_qualityLevel) {
+  SaveMode get saveMode => saveModeFor(_qualityLevel);
+
+  SaveMode saveModeFor(QualityLevel level) => switch (level) {
     QualityLevel.low => SaveMode.slot,
     QualityLevel.medium => SaveMode.slot,
     QualityLevel.high => SaveMode.tree,
     QualityLevel.custom => _customSaveMode,
   };
 
-  int get slotCount => switch (_qualityLevel) {
+  int get slotCount => slotCountFor(_qualityLevel);
+
+  int slotCountFor(QualityLevel level) => switch (level) {
     QualityLevel.low => 5,
     QualityLevel.medium => 10,
     QualityLevel.high => 0, // ツリー方式のためスロット数なし（参照不可）

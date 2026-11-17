@@ -873,8 +873,7 @@ void main() {
     tester,
   ) async {
     final l10n = await pumpHome(tester, const TransferScreen());
-    final exportFailed = failureLead(l10n.transferExportFailedSnackbar);
-    expect(exportFailed, isNotEmpty);
+    final exportFailed = l10n.transferExportFileFailed;
     final exportButton = find.text(l10n.transferExport);
     expect(exportButton, findsOneWidget);
 
@@ -1006,7 +1005,11 @@ void main() {
     final callsBeforeFailure = share.calls;
     await export();
     expect(share.calls, callsBeforeFailure, reason: '作れなかったものは共有しない');
-    await expectExportFailure(tester, l10n, exportFailed);
+    expect(snackBarTexts(tester), [exportFailed]);
+    ScaffoldMessenger.of(
+      tester.element(find.byType(Scaffold).first),
+    ).hideCurrentSnackBar();
+    await tester.pumpAndSettle();
     expect(find.byType(CircularProgressIndicator), findsNothing);
     share.fixWrites();
     await export();

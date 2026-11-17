@@ -573,6 +573,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
   void _toggleFrameMultiSelect() => setState(() {
     _frameMultiSelectMode = !_frameMultiSelectMode;
     _selectedFrameIndices = {};
+    _filterBulkFrames = null;
   });
 
   /// 画面端ダブルタップでのフレーム送り（フレーム一覧の開閉
@@ -1518,9 +1519,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
   @override
   Widget build(BuildContext context) {
     context.select<BrushService, Color>((brushes) => brushes.currentColor);
-    final project = context
-        .watch<ProjectService>()
-        .projects
+    final projects = context.watch<ProjectService>();
+    final project = projects.projects
         .where((p) => p.id == widget.projectId)
         .firstOrNull;
     // 存在しないID・ゴミ箱へ移した作品：空のキャンバスを出さず、一覧へ戻す。
@@ -1528,6 +1528,16 @@ class _CanvasScreenState extends State<CanvasScreen> {
       return const ProjectNotFoundView(
         homeButtonKey: Key('canvasNotFoundHome'),
       );
+    }
+    // A layer can disappear from this frame after moving the playhead, a
+    // range edit, removal, or Undo. Keep drawing and the panel on the same ID.
+    final layers = projects.layersOf(
+      project.id,
+      _currentSceneId,
+      _currentFrame,
+    );
+    if (!layers.any((layer) => layer.id == _currentLayerId)) {
+      _currentLayerId = layers.firstOrNull?.id;
     }
     // 使うブラシ・その太さ・不透明度が変わったら（一覧で選ぶ・早替えツール）
     // この画面を作り直し、太さ・不透明度の欄をそのブラシの値へ合わせる
@@ -3006,6 +3016,10 @@ class _CanvasScreenState extends State<CanvasScreen> {
   }
 
   void _applyArtworkHistory({required bool redo}) {
+    final tiles = context.read<ProjectService>().tileManagerOf(
+      widget.projectId,
+    );
+    if (tiles.isRecordingUndo) return;
     final history = context.read<UndoManager>();
     if (redo ? !history.canRedo : !history.canUndo) return;
     if (redo) {
@@ -4137,6 +4151,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
     void cancel() => setState(() {
       _frameMultiSelectMode = false;
       _selectedFrameIndices = {};
+      _filterBulkFrames = null;
     });
     final close = IconButton(
       icon: const Icon(Icons.close, size: 18),

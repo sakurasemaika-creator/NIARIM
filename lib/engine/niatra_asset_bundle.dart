@@ -178,8 +178,10 @@ class NiatraAssetBundle {
 
     final jsonBytes = utf8.encode(jsonEncode(data));
     output.addFile(ArchiveFile(_dataFile, jsonBytes.length, jsonBytes));
+    ArchiveSecurity.validateExport(output);
     final encoded = ZipEncoder().encode(output);
     if (encoded == null) throw const FormatException('ZIP encoding failed');
+    ArchiveSecurity.validateFileSize(encoded.length);
     return Uint8List.fromList(encoded);
   }
 

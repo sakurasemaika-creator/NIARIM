@@ -29,7 +29,7 @@ class _RewardAuth extends GoogleAuthService {
 }
 
 class _RewardApi extends CommunityApi {
-  _RewardApi(NiarimApiClient client) : super(client);
+  _RewardApi(super.client);
 
   int starts = 0;
   bool credited = false;

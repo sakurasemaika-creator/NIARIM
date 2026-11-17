@@ -494,23 +494,35 @@ class PremiumService extends ChangeNotifier {
     }
     _purchasedProductId = prefs.readString('premium_purchase_product_id');
 
-    // in_app_purchaseのストア実装はAndroid/iOS専用。widget testや
-    // デスクトップ、Flutter Webでinstanceへ触れると、isAvailable()の
-    // try/catch外で開始される非同期接続がPlatformExceptionを投げる。
-    if (!supportsMobilePluginRuntime) {
-      // 非対応OSおよびwidgetテストではストアへ接続しない。
-      _storeAvailable = false;
+    await refreshStoreProducts();
+  }
+
+  bool _loadingStoreProducts = false;
+
+  Future<void> refreshStoreProducts() async {
+    if (!supportsMobilePluginRuntime || _loadingStoreProducts || _disposed) {
       return;
     }
-
+    _loadingStoreProducts = true;
     try {
       _storeAvailable = await _iap.isAvailable();
+      if (_disposed || !_storeAvailable) {
+        _products = [];
+        return;
+      }
+      _subscribeToPurchases();
+      final response = await _iap.queryProductDetails(_productIds);
+      _products = response.productDetails;
     } catch (_) {
-      _storeAvailable = false;
+      _products = [];
+    } finally {
+      _loadingStoreProducts = false;
+      if (!_disposed) notifyListeners();
     }
-    if (!_storeAvailable) return;
+  }
 
-    _subscription = _iap.purchaseStream.listen(
+  void _subscribeToPurchases() {
+    _subscription ??= _iap.purchaseStream.listen(
       (purchases) async {
         final completion = _playRefreshCompletion;
         try {
@@ -530,13 +542,6 @@ class PremiumService extends ChangeNotifier {
       onDone: () => _subscription?.cancel(),
       onError: (_) {},
     );
-
-    try {
-      final response = await _iap.queryProductDetails(_productIds);
-      _products = response.productDetails;
-    } catch (_) {
-      _products = [];
-    }
   }
 
   /// 指定商品IDの購入フローを開始する（サブスクリプション）。

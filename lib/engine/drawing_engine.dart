@@ -141,6 +141,37 @@ class DrawingEngine {
     final effective = _replayingFinalStroke
         ? point
         : _applyPointConstraint(_applyStabilization(point));
+    _appendStrokePoint(effective, layerId, screenPosition);
+  }
+
+  /// Brings the smoothed line to the lift position before the final fade or
+  /// outline is computed. The lift reuses the last contact's pressure and tilt.
+  void finishStrokePath(
+    StrokePoint lastContact,
+    String layerId, {
+    required ui.Offset canvasPosition,
+    required ui.Offset screenPosition,
+  }) {
+    if (_currentStroke.isEmpty) return;
+    final end = _applyPointConstraint(
+      StrokePoint(
+        x: canvasPosition.dx,
+        y: canvasPosition.dy,
+        pressure: lastContact.pressure,
+        tiltX: lastContact.tiltX,
+        tiltY: lastContact.tiltY,
+        inputType: lastContact.inputType,
+      ),
+    );
+    if (_distance(_currentStroke.last, end) <= 0.0001) return;
+    _appendStrokePoint(end, layerId, screenPosition);
+  }
+
+  void _appendStrokePoint(
+    StrokePoint effective,
+    String layerId,
+    ui.Offset? screenPosition,
+  ) {
     final from = _currentStroke.last;
     // 区間を描画してから終点を履歴へ追加する。これにより
     // _renderStrokeSegment() が取得するbaseStrokeLengthは必ず区間開始時点までの

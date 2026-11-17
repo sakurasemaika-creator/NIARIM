@@ -9,7 +9,7 @@ import '../../services/font_service.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/action_beside_or_below.dart';
 import '../../widgets/confirm_delete.dart';
-import '../../widgets/dispose_on_unmount.dart';
+import '../../widgets/name_entry_dialog.dart';
 import '../../utils/file_size_label.dart';
 import '../../utils/line_break.dart';
 import '../../widgets/fit_or_hide_title.dart';
@@ -19,7 +19,6 @@ import '../../widgets/help_button.dart';
 import 'font_catalog_tab.dart';
 import '../../config/font_fallback.dart';
 import '../../config/accent_text_theme.dart';
-import '../../widgets/typing_dialog_inset.dart';
 
 /// フォント管理画面（設定 → フォント管理）。
 /// 3つのタブで構成する。
@@ -354,34 +353,15 @@ class _DownloadedFontsTabState extends State<_DownloadedFontsTab>
 
   void _showRenameDialog(BuildContext context, FontAsset font) {
     final l10n = AppLocalizations.of(context)!;
-    final controller = TextEditingController(text: font.displayName);
-    showDialog(
+    final fonts = context.read<FontService>();
+    showDialog<void>(
       context: context,
-      builder: (ctx) => DisposeOnUnmount(
-        controller: controller,
-        builder: (ctx) => AlertDialog(
-          insetPadding: typingDialogInsetPadding(ctx),
-          title: Text(l10n.fontRenameDialogTitle),
-          content: TextField(controller: controller, autofocus: true),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: Text(l10n.commonCancel),
-            ),
-            FilledButton(
-              onPressed: () {
-                if (controller.text.isNotEmpty) {
-                  context.read<FontService>().renameFont(
-                    font.id,
-                    controller.text,
-                  );
-                }
-                Navigator.pop(ctx);
-              },
-              child: Text(l10n.commonChange),
-            ),
-          ],
-        ),
+      builder: (_) => NameEntryDialog(
+        title: l10n.fontRenameDialogTitle,
+        initialName: font.displayName,
+        confirmLabel: l10n.commonChange,
+        cancelLabel: l10n.commonCancel,
+        onSubmit: (name) => fonts.renameFont(font.id, name),
       ),
     );
   }

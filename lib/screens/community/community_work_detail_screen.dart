@@ -1,4 +1,3 @@
-import 'package:niarim/services/theme_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -233,123 +232,6 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
     );
   }
 
-  void _showReportDialog(CommunityWork work) {
-    final l10n = AppLocalizations.of(context)!;
-    final reasons = [
-      l10n.communityReportReasonInappropriate,
-      l10n.communityReportReasonCopyright,
-      l10n.communityReportReasonSpam,
-      l10n.communityReportReasonOther,
-    ];
-    String selected = reasons.first;
-    final detailController = TextEditingController();
-    bool showDetailError = false;
-    showDialog(
-      context: context,
-      builder: (ctx) => DisposeOnUnmount(
-        controller: detailController,
-        builder: (ctx) => StatefulBuilder(
-          builder: (ctx, setDialogState) => AlertDialog(
-            insetPadding: typingDialogInsetPadding(ctx),
-            title: Text(l10n.communityReportDialogTitle),
-            content: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(l10n.communityReportDialogBody),
-                  const SizedBox(height: 8),
-                  RadioGroup<String>(
-                    groupValue: selected,
-                    onChanged: (v) => setDialogState(() => selected = v!),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        for (final reason in reasons)
-                          RadioListTile<String>(
-                            contentPadding: EdgeInsets.zero,
-                            dense: true,
-                            title: Text(reason),
-                            value: reason,
-                          ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  TextField(
-                    controller: detailController,
-                    minLines: 3,
-                    maxLines: 5,
-                    decoration: InputDecoration(
-                      labelText: l10n.communityReportDetailLabel,
-                      hintText: l10n.communityReportDetailHint,
-                      errorText: showDetailError
-                          ? l10n.communityReportDetailRequiredError
-                          : null,
-                    ),
-                    onChanged: (_) {
-                      if (showDetailError) {
-                        setDialogState(() => showDetailError = false);
-                      }
-                    },
-                  ),
-                ],
-              ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(ctx),
-                child: Text(l10n.commonCancel),
-              ),
-              FilledButton(
-                onPressed: () {
-                  if (detailController.text.trim().isEmpty) {
-                    setDialogState(() => showDetailError = true);
-                    return;
-                  }
-                  Navigator.pop(ctx);
-                  _showComingSoonSnackbar(
-                    l10n.communityReportComingSoonSnackbar,
-                  );
-                  _showBlockConfirmDialog(work);
-                },
-                child: Text(l10n.communityReportSubmitButton),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  void _showBlockConfirmDialog(CommunityWork work) {
-    final l10n = AppLocalizations.of(context)!;
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(l10n.communityBlockConfirmTitle(work.authorName)),
-        content: Text(l10n.communityBlockConfirmBody),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(l10n.commonCancel),
-          ),
-          FilledButton(
-            style: FilledButton.styleFrom(
-              backgroundColor: ThemeService.activeColorScheme.error,
-            ),
-            onPressed: () {
-              Navigator.pop(ctx);
-              _showComingSoonSnackbar(l10n.communityBlockComingSoonSnackbar);
-            },
-            child: Text(l10n.communityWorkDetailBlockButton),
-          ),
-        ],
-      ),
-    );
-  }
-
-  /// 日付は表示言語の書き方（アプリのほかの日付と同じ`yMd`）。
   String _formatDate(DateTime d) =>
       DateFormat.yMd(AppLocalizations.of(context)!.localeName).format(d);
 
@@ -751,25 +633,31 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
                   ),
                 ),
               ),
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  Expanded(
-                    child: TextButton.icon(
-                      onPressed: () => _showReportDialog(work),
-                      icon: const Icon(Icons.flag_outlined, size: 18),
-                      label: Text(l10n.communityWorkDetailReportButton),
+              if (!isOwner) ...[
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextButton.icon(
+                        onPressed: () => _showComingSoonSnackbar(
+                          l10n.communityReportComingSoonSnackbar,
+                        ),
+                        icon: const Icon(Icons.flag_outlined, size: 18),
+                        label: Text(l10n.communityWorkDetailReportButton),
+                      ),
                     ),
-                  ),
-                  Expanded(
-                    child: TextButton.icon(
-                      onPressed: () => _showBlockConfirmDialog(work),
-                      icon: const Icon(Icons.block, size: 18),
-                      label: Text(l10n.communityWorkDetailBlockButton),
+                    Expanded(
+                      child: TextButton.icon(
+                        onPressed: () => _showComingSoonSnackbar(
+                          l10n.communityBlockComingSoonSnackbar,
+                        ),
+                        icon: const Icon(Icons.block, size: 18),
+                        label: Text(l10n.communityWorkDetailBlockButton),
+                      ),
                     ),
-                  ),
-                ],
-              ),
+                  ],
+                ),
+              ],
             ],
           ),
         ),

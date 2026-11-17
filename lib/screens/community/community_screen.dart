@@ -36,6 +36,7 @@ import '../../config/font_fallback.dart';
 import '../../utils/color_contrast.dart';
 import '../../utils/responsive_tile_defaults.dart';
 import '../../widgets/typing_dialog_inset.dart';
+import '../../widgets/keep_together_text.dart';
 
 enum _RankingPeriod { allTime, yearly, monthly, weekly, daily }
 
@@ -2764,7 +2765,7 @@ class _ContentFilterDialogState extends State<_ContentFilterDialog> {
                   trackOutlineColor: WidgetStatePropertyAll(scheme.onSurface),
                   value: _hideAi,
                   onChanged: (value) => setState(() => _hideAi = value),
-                  title: Text(l10n.communityHideGenerativeAiImageVideo),
+                  title: messageText(l10n.communityHideGenerativeAiImageVideo),
                 ),
               ),
           ],

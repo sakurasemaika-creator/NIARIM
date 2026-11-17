@@ -413,8 +413,10 @@ class NiatraSerializer {
 
     final jsonBytes = utf8.encode(jsonEncode(data));
     archive.addFile(ArchiveFile(_dataFile, jsonBytes.length, jsonBytes));
+    ArchiveSecurity.validateExport(archive);
     final zipBytes = ZipEncoder().encode(archive);
     if (zipBytes == null) throw const FormatException('ZIP encoding failed');
+    ArchiveSecurity.validateFileSize(zipBytes.length);
     return Uint8List.fromList(zipBytes);
   }
 

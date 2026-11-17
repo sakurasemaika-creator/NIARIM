@@ -1051,7 +1051,8 @@ class AppLocalizationsJa extends AppLocalizations {
   String get premiumPlanSectionTitle => 'プラン';
 
   @override
-  String get premiumStoreUnavailable => 'ストアに接続できません（実機・ストア審査環境以外では購入できません）';
+  String get premiumStoreUnavailable =>
+      'ストアから購入情報を取得できませんでした。通信を確認して再試行してください。';
 
   @override
   String get premiumYearlyTitle => '年額プラン（おすすめ）';
@@ -1100,7 +1101,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get premiumFeatureMaxDuration => '作成・延長できる尺';
 
   @override
-  String get premiumFeatureEndLogo => '公式エンドロゴ';
+  String get premiumFeatureEndLogo => '公式エンドマーク';
 
   @override
   String get premiumFeatureWatermark => '自分のウォーターマークを追加・編集';
@@ -2815,7 +2816,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get premiumBannerEndCardBody =>
-      '公式エンドロゴの表示・非表示は、プレミアム会員またはエンドロゴ編集の特典を利用中に設定できます。';
+      '公式エンドマークの表示・非表示は、プレミアム会員またはエンドマーク編集の特典を利用中に設定できます。';
 
   @override
   String get premiumBannerWatermarkBody =>
@@ -10220,4 +10221,26 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get timelineSelectionClips => '素材クリップ';
+
+  @override
+  String get helpShowAllTopics => 'すべての項目を表示';
+
+  @override
+  String get transferExportFileFailed => '引き継ぎファイルを作成できませんでした。';
+
+  @override
+  String get transferImportFileFailed => '引き継ぎファイルを読み込めませんでした。';
+
+  @override
+  String get transferImportInterrupted => '読み込みを完了できませんでした。取り込み済みの項目は残っています。';
+
+  @override
+  String get communityChannelRefreshRetry =>
+      'YouTube情報を更新できませんでした。もう一度お試しください。';
+
+  @override
+  String get timelineAutofillBatchCancelled => '自動塗りを中止しました。';
+
+  @override
+  String get timelineAutofillBatchFailed => '自動塗りの途中でエラーが発生しました。';
 }

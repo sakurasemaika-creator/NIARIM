@@ -15,6 +15,8 @@ import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
 
 import '../../utils/immersive_mode.dart';
+import '../../utils/app_error_reporter.dart';
+import '../../widgets/name_entry_dialog.dart';
 import '../../widgets/project_duration_limit_dialog.dart';
 import '../../services/shortcut_service.dart';
 import '../../models/shortcut_binding.dart';
@@ -3321,39 +3323,16 @@ class _TimelineScreenState extends State<TimelineScreen> {
 
   void _showRenameSceneDialog(Scene scene) {
     final l10n = AppLocalizations.of(context)!;
-    final controller = TextEditingController(text: scene.displayName);
-    showDialog(
+    final projects = context.read<ProjectService>();
+    showDialog<void>(
       context: context,
-      builder: (ctx) => DisposeOnUnmount(
-        controller: controller,
-        builder: (ctx) => AlertDialog(
-          insetPadding: typingDialogInsetPadding(ctx),
-          title: Text(l10n.timelineSceneRenameTitle),
-          content: TextField(
-            controller: controller,
-            autofocus: true,
-            decoration: const InputDecoration(border: OutlineInputBorder()),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: Text(l10n.commonCancel),
-            ),
-            FilledButton(
-              onPressed: () {
-                if (controller.text.isNotEmpty) {
-                  context.read<ProjectService>().renameScene(
-                    widget.projectId,
-                    scene.id,
-                    controller.text,
-                  );
-                }
-                Navigator.pop(ctx);
-              },
-              child: Text(l10n.commonChange),
-            ),
-          ],
-        ),
+      builder: (_) => NameEntryDialog(
+        title: l10n.timelineSceneRenameTitle,
+        initialName: scene.displayName,
+        confirmLabel: l10n.commonChange,
+        cancelLabel: l10n.commonCancel,
+        onSubmit: (name) async =>
+            projects.renameScene(widget.projectId, scene.id, name),
       ),
     );
   }
@@ -5083,7 +5062,8 @@ class _TimelineScreenState extends State<TimelineScreen> {
                             bottom: 8,
                           ),
                           child: DropdownButtonFormField<String>(
-                            initialValue: scenes.any((s) => s.id == rangeSceneId)
+                            initialValue:
+                                scenes.any((s) => s.id == rangeSceneId)
                                 ? rangeSceneId
                                 : scenes.firstOrNull?.id,
                             isExpanded: true,
@@ -7326,7 +7306,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
                     onChanged: (v) => setS(() {
                       frames = v.round();
                       framesController.text = '$frames';
-                      secondsController.text = (frames / fps).toStringAsFixed(1);
+                      secondsController.text = (frames / fps).toStringAsFixed(
+                        1,
+                      );
                     }),
                   ),
                   Row(
@@ -7367,7 +7349,10 @@ class _TimelineScreenState extends State<TimelineScreen> {
                             final parsed = double.tryParse(v);
                             if (parsed == null) return;
                             setS(() {
-                              frames = (parsed * fps).round().clamp(1, maxFrames);
+                              frames = (parsed * fps).round().clamp(
+                                1,
+                                maxFrames,
+                              );
                               framesController.text = '$frames';
                             });
                           },
@@ -7413,7 +7398,8 @@ class _TimelineScreenState extends State<TimelineScreen> {
                       if (confirmed != true) return;
                     }
                     if (!mounted || !ctx.mounted) return;
-                    final added = frames - ps.frameCount(widget.projectId, sceneId);
+                    final added =
+                        frames - ps.frameCount(widget.projectId, sceneId);
                     if (added > 0 && !_canAddFrames(added)) return;
                     ps.setSceneFrameCount(widget.projectId, sceneId, frames);
                     if (ctx.mounted) Navigator.pop(ctx);
@@ -7625,74 +7611,99 @@ class _TimelineScreenState extends State<TimelineScreen> {
         }
     }
 
-    double progress = 0;
-    int applied = 0;
-    void Function(void Function())? setDialogState;
+    var progress = 0.0;
+    var applied = 0;
+    var cancelled = false;
+    var failed = false;
+    StateSetter? updateProgress;
     if (!mounted) return;
-    unawaited(
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (ctx) => StatefulBuilder(
-          builder: (ctx, setS) {
-            setDialogState = setS;
-            return ProgressDialog(
+    final navigator = Navigator.of(context, rootNavigator: true);
+    final route = DialogRoute<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => StatefulBuilder(
+        builder: (dialogContext, setDialogState) {
+          updateProgress = (update) {
+            if (dialogContext.mounted) setDialogState(update);
+          };
+          return PopScope(
+            canPop: false,
+            child: ProgressDialog(
               title: l10n.timelineAutofillProgressTitle,
               progress: progress,
               subtitle: l10n.timelineAutofillProgressSubtitle(targets.length),
-            );
-          },
-        ),
+              onCancel: () => cancelled = true,
+            ),
+          );
+        },
       ),
     );
-    await Future.delayed(const Duration(milliseconds: 16));
+    unawaited(navigator.push(route));
 
-    for (int i = 0; i < targets.length; i++) {
-      final (sceneId, frameIndex) = targets[i];
-      final layers = ps.layersOf(widget.projectId, sceneId, frameIndex);
-      final lineartLayers = layers.where(
-        (l) => l.type == LayerType.autoFillLineart,
+    try {
+      await ps.runWithGroupedUndo(
+        description: l10n.timelineAutofillProgressTitle,
+        operation: () async {
+          for (var i = 0; i < targets.length && !cancelled && mounted; i++) {
+            final (sceneId, frameIndex) = targets[i];
+            final layers = ps.layersOf(widget.projectId, sceneId, frameIndex);
+            final lineartLayers = layers.where(
+              (l) => l.type == LayerType.autoFillLineart,
+            );
+            for (final lineartLayer in lineartLayers) {
+              if (cancelled || !mounted) break;
+              final result = await runAutofillForLayer(
+                projectService: ps,
+                presetService: presetService,
+                toneService: toneService,
+                projectId: widget.projectId,
+                sceneId: sceneId,
+                frameIndex: frameIndex,
+                lineartLayer: lineartLayer,
+                mode: mode,
+              );
+              if (result == AutofillBatchResult.applied) applied++;
+            }
+            // 対応する線画レイヤーが存在しない孤立した自動塗りレイヤー（
+            // 「線画レイヤーなし・塗りレイヤーあり」の行）は、選択中のモードに
+            // 関わらず不透明度ロック＋最新色での塗りつぶしのみを行う。
+            final orphanedLayers = layers.where(
+              (l) => isOrphanedAutofillLayer(layers, l),
+            );
+            for (final orphanedLayer in orphanedLayers) {
+              if (cancelled || !mounted) break;
+              final result = await runAutofillForOrphanedLayer(
+                projectService: ps,
+                presetService: presetService,
+                projectId: widget.projectId,
+                sceneId: sceneId,
+                frameIndex: frameIndex,
+                autofillLayer: orphanedLayer,
+              );
+              if (result == AutofillBatchResult.applied) applied++;
+            }
+            progress = (i + 1) / targets.length;
+            updateProgress?.call(() {});
+          }
+        },
       );
-      for (final lineartLayer in lineartLayers) {
-        final result = await runAutofillForLayer(
-          projectService: ps,
-          presetService: presetService,
-          toneService: toneService,
-          projectId: widget.projectId,
-          sceneId: sceneId,
-          frameIndex: frameIndex,
-          lineartLayer: lineartLayer,
-          mode: mode,
-        );
-        if (result == AutofillBatchResult.applied) applied++;
-      }
-      // 対応する線画レイヤーが存在しない孤立した自動塗りレイヤー（
-      // 「線画レイヤーなし・塗りレイヤーあり」の行）は、選択中のモードに
-      // 関わらず不透明度ロック＋最新色での塗りつぶしのみを行う。
-      final orphanedLayers = layers.where(
-        (l) => isOrphanedAutofillLayer(layers, l),
-      );
-      for (final orphanedLayer in orphanedLayers) {
-        final result = await runAutofillForOrphanedLayer(
-          projectService: ps,
-          presetService: presetService,
-          projectId: widget.projectId,
-          sceneId: sceneId,
-          frameIndex: frameIndex,
-          autofillLayer: orphanedLayer,
-        );
-        if (result == AutofillBatchResult.applied) applied++;
-      }
-      progress = (i + 1) / targets.length;
-      setDialogState?.call(() {});
+    } catch (error, stack) {
+      failed = true;
+      AppErrorReporter.record(error, stack);
+    } finally {
+      if (route.isActive) navigator.removeRoute(route);
     }
 
     if (!mounted) return;
-    Navigator.of(context, rootNavigator: true).pop();
     setState(() {});
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(l10n.timelineAutofillCompleteSnackbar(applied))),
-    );
+    final message = failed
+        ? l10n.timelineAutofillBatchFailed
+        : cancelled
+        ? l10n.timelineAutofillBatchCancelled
+        : l10n.timelineAutofillCompleteSnackbar(applied);
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 }
 

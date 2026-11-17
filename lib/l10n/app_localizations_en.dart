@@ -1081,7 +1081,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get premiumStoreUnavailable =>
-      'Unable to connect to the store (purchases are only available on a real device or store review environment)';
+      'Could not load purchase information from the store. Check your connection and try again.';
 
   @override
   String get premiumYearlyTitle => 'Yearly Plan (Recommended)';
@@ -1131,7 +1131,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get premiumFeatureMaxDuration => 'Max Duration';
 
   @override
-  String get premiumFeatureEndLogo => 'Official End Logo';
+  String get premiumFeatureEndLogo => 'Official End Mark';
 
   @override
   String get premiumFeatureWatermark => 'Add and edit your own watermark';
@@ -2923,7 +2923,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get premiumBannerEndCardBody =>
-      'Premium membership or the end logo editing benefit lets you show or hide the official end logo.';
+      'Premium membership or the end mark editing benefit lets you show or hide the official end mark.';
 
   @override
   String get premiumBannerWatermarkBody =>
@@ -10953,4 +10953,28 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get timelineSelectionClips => 'Media clips';
+
+  @override
+  String get helpShowAllTopics => 'Show all topics';
+
+  @override
+  String get transferExportFileFailed => 'Could not create the transfer file.';
+
+  @override
+  String get transferImportFileFailed => 'Could not read the transfer file.';
+
+  @override
+  String get transferImportInterrupted =>
+      'The import stopped before it was complete. Items already imported are still available.';
+
+  @override
+  String get communityChannelRefreshRetry =>
+      'Could not refresh YouTube channel information. Please try again.';
+
+  @override
+  String get timelineAutofillBatchCancelled => 'Auto-fill cancelled.';
+
+  @override
+  String get timelineAutofillBatchFailed =>
+      'Auto-fill stopped because of an error.';
 }

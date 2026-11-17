@@ -68,11 +68,12 @@ class _FrameStripWidgetState extends State<FrameStripWidget> {
   }
 
   void _scrollToCurrent({required bool animate}) {
-    if (!_scrollController.hasClients) return;
+    if (!mounted || !_scrollController.hasClients) return;
     final target = (widget.currentFrame * _itemExtent).clamp(
       0.0,
       _scrollController.position.maxScrollExtent,
     );
+    if ((target - _scrollController.offset).abs() < 0.001) return;
     if (animate) {
       _scrollController.animateTo(
         target,
@@ -98,7 +99,11 @@ class _FrameStripWidgetState extends State<FrameStripWidget> {
     if (nearest != widget.currentFrame) {
       widget.onFrameSelected(nearest);
     } else {
-      _scrollToCurrent(animate: true);
+      // Starting an animation in ScrollEnd can synchronously end the drag
+      // again while ScrollPosition is still replacing its activity.
+      WidgetsBinding.instance.addPostFrameCallback(
+        (_) => _scrollToCurrent(animate: true),
+      );
     }
     return false;
   }
@@ -236,9 +241,16 @@ class _FrameStripWidgetState extends State<FrameStripWidget> {
                     final parsed = int.tryParse(controller.text);
                     final addCount = (parsed ?? count).clamp(1, 100);
                     if (!_canAddFrames(context, service, addCount)) return;
-                    for (var i = 0; i < addCount; i++) {
-                      service.addFrame(widget.projectId, widget.sceneId);
-                    }
+                    service.editTimeline(
+                      widget.projectId,
+                      l10n.frameStripBulkAddTitle,
+                      () {
+                        for (var i = 0; i < addCount; i++) {
+                          service.addFrame(widget.projectId, widget.sceneId);
+                        }
+                      },
+                      changesTiles: false,
+                    );
                     Navigator.pop(ctx);
                   },
                   label: Text(l10n.commonOk),

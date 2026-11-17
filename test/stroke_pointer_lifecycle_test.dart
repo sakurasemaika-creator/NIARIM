@@ -4,6 +4,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/app_bootstrap.dart';
+import 'package:niarim/engine/tile_manager.dart';
 import 'package:niarim/engine/undo_manager.dart' as app_undo;
 import 'package:niarim/screens/canvas/canvas_screen.dart' show DrawingTool;
 import 'package:niarim/screens/canvas/widgets/canvas_area.dart';
@@ -55,6 +56,7 @@ void main() {
     final tm = projects.tileManagerOf(p.id);
     final providers = await tester.runAsync(buildAppProviders);
     var lockInput = false;
+    var tool = DrawingTool.pen;
     late StateSetter rebuild;
     await tester.pumpWidget(
       MultiProvider(
@@ -72,7 +74,7 @@ void main() {
                 return CanvasArea(
                   project: p,
                   currentLayerId: layer.id,
-                  currentTool: DrawingTool.pen,
+                  currentTool: tool,
                   currentFrame: 0,
                   sceneId: scene.id,
                   lockToolInput: lockInput,
@@ -149,6 +151,38 @@ void main() {
     expect(inked(), 0);
     expect(undo.canUndo, isFalse);
 
+    int alphaAt(int x, int y) {
+      const size = TileManager.tileSize;
+      final tile = tm.getTile(key, x ~/ size, y ~/ size);
+      return tile?[((y % size) * size + x % size) * 4 + 3] ?? 0;
+    }
+
+    // The final event can share the last move's position or advance beyond it.
+    // Use a large move so a smoothed preview cannot reach either endpoint.
+    for (final liftX in [220, 245]) {
+      const pointer = 20;
+      g = await tester.startGesture(
+        at(const Offset(60, 100)),
+        kind: PointerDeviceKind.mouse,
+        pointer: pointer,
+      );
+      await g.moveTo(at(const Offset(220, 100)));
+      await tester.pump();
+      expect(alphaAt(liftX, 100), 0);
+      await tester.sendEventToBinding(
+        PointerUpEvent(
+          pointer: pointer,
+          kind: PointerDeviceKind.mouse,
+          position: at(Offset(liftX.toDouble(), 100)),
+        ),
+      );
+      await settle();
+      expect(alphaAt(liftX - 2, 100), greaterThan(0));
+      undo.undo();
+      await settle();
+      expect(inked(), 0);
+    }
+
     // ── ペンを置いたまま手のひらが触れ、ペンを上げた後に手のひらが動く ──
     final pen = await tester.startGesture(
       at(const Offset(60, 140)),
@@ -186,6 +220,25 @@ void main() {
     await settle();
     expect(inked(), 0);
     expect(undo.canUndo, isFalse);
+
+    // A quick bucket tap releases before asynchronous compositing completes.
+    // The fill must still have one Undo entry covering every touched tile.
+    rebuild(() {
+      lockInput = false;
+      tool = DrawingTool.bucket;
+    });
+    await tester.pump();
+    await tester.tapAt(at(const Offset(140, 80)));
+    await settle();
+    expect(alphaAt(10, 10), 255);
+    expect(alphaAt(290, 180), 255);
+    expect(undo.undoCount, 1);
+    undo.undo();
+    await settle();
+    expect(inked(), 0);
+    undo.redo();
+    await settle();
+    expect(alphaAt(290, 180), 255);
 
     await tester.pumpWidget(const SizedBox());
   });

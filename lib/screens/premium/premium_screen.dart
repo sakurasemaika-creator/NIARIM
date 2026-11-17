@@ -27,6 +27,19 @@ class _PremiumScreenState extends State<PremiumScreen> {
     final premium = context.watch<PremiumService>();
     final scheme = Theme.of(context).colorScheme;
 
+    final monthlyPrice = premium.storeAvailable
+        ? premium.products
+              .where((product) => product.id == PremiumService.monthlyProductId)
+              .firstOrNull
+              ?.price
+        : null;
+    final yearlyPrice = premium.storeAvailable
+        ? premium.products
+              .where((product) => product.id == PremiumService.yearlyProductId)
+              .firstOrNull
+              ?.price
+        : null;
+
     return Scaffold(
       appBar: AppBar(
         title: FitOrHideTitle(l10n.premiumScreenTitle),
@@ -148,14 +161,22 @@ class _PremiumScreenState extends State<PremiumScreen> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                if (!premium.storeAvailable)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
-                    child: Text(
-                      l10n.premiumStoreUnavailable,
-                      style: TextStyle(fontSize: 12, color: scheme.error),
+                if (yearlyPrice == null || monthlyPrice == null) ...[
+                  Text(
+                    l10n.premiumStoreUnavailable,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: scheme.onSurfaceVariant,
                     ),
                   ),
+                  Align(
+                    alignment: AlignmentDirectional.centerStart,
+                    child: TextButton(
+                      onPressed: premium.refreshStoreProducts,
+                      child: Text(l10n.communityRetry),
+                    ),
+                  ),
+                ],
                 if (premium.purchaseError != null)
                   Padding(
                     padding: const EdgeInsets.only(bottom: 12),
@@ -168,21 +189,17 @@ class _PremiumScreenState extends State<PremiumScreen> {
                   context,
                   l10n,
                   l10n.premiumYearlyTitle,
-                  l10n.premiumYearlyPrice,
-                  l10n.premiumYearlyDescription,
+                  yearlyPrice,
                   true,
                   premium,
                   PremiumService.yearlyProductId,
-                  originalPrice: l10n.premiumYearlyOriginalPrice,
-                  perMonthLabel: l10n.premiumYearlyPerMonthLabel,
                 ),
                 const SizedBox(height: 12),
                 _planCard(
                   context,
                   l10n,
                   l10n.premiumMonthlyTitle,
-                  l10n.premiumMonthlyPrice,
-                  '',
+                  monthlyPrice,
                   false,
                   premium,
                   PremiumService.monthlyProductId,
@@ -535,27 +552,30 @@ class _PremiumScreenState extends State<PremiumScreen> {
     BuildContext context,
     AppLocalizations l10n,
     String title,
-    String price,
-    String description,
+    String? price,
     bool isRecommended,
     PremiumService premium,
-    String productId, {
-    String? originalPrice,
-    String? perMonthLabel,
-  }) {
+    String productId,
+  ) {
     final scheme = Theme.of(context).colorScheme;
     final busy = premium.purchasePending;
+    final available = price != null;
+    final featured = isRecommended && available;
     return Card(
-      elevation: isRecommended ? 6 : 1,
+      elevation: !available
+          ? 0
+          : featured
+          ? 6
+          : 1,
       clipBehavior: Clip.antiAlias,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: isRecommended
+        side: featured
             ? BorderSide(color: scheme.primary, width: 2)
             : BorderSide(color: scheme.outlineVariant.withValues(alpha: 0.35)),
       ),
       child: InkWell(
-        onTap: (!premium.storeAvailable || busy)
+        onTap: (!available || busy)
             ? null
             : () async {
                 final ok = await premium.buy(productId);
@@ -566,7 +586,7 @@ class _PremiumScreenState extends State<PremiumScreen> {
                 }
               },
         child: Container(
-          decoration: isRecommended
+          decoration: featured
               ? BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topLeft,
@@ -586,7 +606,7 @@ class _PremiumScreenState extends State<PremiumScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    if (isRecommended)
+                    if (featured)
                       Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 10,
@@ -636,18 +656,6 @@ class _PremiumScreenState extends State<PremiumScreen> {
                         color: scheme.onSurface,
                       ),
                     ),
-                    if (description.isNotEmpty)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 2),
-                        child: Text(
-                          description,
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            color: AccentTextTheme.of(context),
-                          ),
-                        ),
-                      ),
                   ],
                 ),
               ),
@@ -660,41 +668,16 @@ class _PremiumScreenState extends State<PremiumScreen> {
                     color: scheme.primary,
                   ),
                 )
-              else
+              else if (price != null)
                 Flexible(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      if (originalPrice != null)
-                        Text(
-                          originalPrice,
-                          textAlign: TextAlign.end,
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: scheme.onSurfaceVariant,
-                            decoration: TextDecoration.lineThrough,
-                            decorationColor: scheme.onSurfaceVariant,
-                          ),
-                        ),
-                      Text(
-                        price,
-                        textAlign: TextAlign.end,
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: scheme.onSurface,
-                        ),
-                      ),
-                      if (perMonthLabel != null)
-                        Text(
-                          perMonthLabel,
-                          textAlign: TextAlign.end,
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: scheme.onSurfaceVariant,
-                          ),
-                        ),
-                    ],
+                  child: Text(
+                    price,
+                    textAlign: TextAlign.end,
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: scheme.onSurface,
+                    ),
                   ),
                 ),
             ],

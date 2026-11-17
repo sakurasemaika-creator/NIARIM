@@ -1,5 +1,6 @@
 import 'package:niarim/services/theme_service.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../l10n/app_localizations.dart';
 import 'tip_diagrams.dart';
@@ -899,6 +900,17 @@ class _TipDetailDialogState extends State<_TipDetailDialog> {
     return pages.isEmpty ? [text] : pages;
   }
 
+  void _goToPage(int page) {
+    if (page < 0 || page >= _textPages.length || !_pageController.hasClients) {
+      return;
+    }
+    _pageController.animateToPage(
+      page,
+      duration: const Duration(milliseconds: 200),
+      curve: Curves.easeOut,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
@@ -911,125 +923,157 @@ class _TipDetailDialogState extends State<_TipDetailDialog> {
     final screenSize = MediaQuery.sizeOf(context);
     final dialogWidth = (screenSize.width - 32).clamp(280.0, 480.0);
     final dialogHeight = (screenSize.height - 64).clamp(420.0, 680.0);
-    return Dialog(
-      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-      child: SizedBox(
-        width: dialogWidth,
-        height: dialogHeight,
-        child: Stack(
-          children: [
-            Column(
+    final words = MaterialLocalizations.of(context);
+    return CallbackShortcuts(
+      bindings: {
+        const SingleActivator(LogicalKeyboardKey.arrowLeft): () =>
+            _goToPage(_page - 1),
+        const SingleActivator(LogicalKeyboardKey.arrowRight): () =>
+            _goToPage(_page + 1),
+      },
+      child: Focus(
+        autofocus: true,
+        child: Dialog(
+          insetPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 24,
+          ),
+          child: SizedBox(
+            width: dialogWidth,
+            height: dialogHeight,
+            child: Stack(
               children: [
-                Expanded(
-                  child: PageView(
-                    controller: _pageController,
-                    onPageChanged: (p) => setState(() => _page = p),
-                    children: [
-                      for (final page in _textPages)
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(20, 40, 20, 8),
-                          // タイトルは上寄せ・図解は中央寄せ・本文は下寄せに
-                          // なるよう、縦方向をExpandedで区切って配分する。
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              // タイトル（上寄せ、くらむぼんフォント）。
-                              Text(
-                                widget.tip.title,
-                                style: TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w700,
-                                  fontFamily: 'Kuramubon',
-                                  fontFamilyFallback: kHeadingFontFallback,
-                                  color: AccentTextTheme.of(context),
-                                ),
-                              ),
-                              const SizedBox(height: 10),
-                              // 図解（中央寄せ。すべてのページで併記する、
-                              // 文章だけのページを作らない）。画面を再現する
-                              // 図解ほど縦横比が意味を持つため、AspectRatioで
-                              // 一定比率を保ちつつダイアログ幅いっぱいに広げる。
-                              Expanded(
-                                flex: 6,
-                                child: Center(
-                                  child: AspectRatio(
-                                    aspectRatio: 15 / 11,
-                                    child: TipDiagram(widget.tip.diagram),
+                Column(
+                  children: [
+                    Expanded(
+                      child: PageView(
+                        controller: _pageController,
+                        onPageChanged: (p) => setState(() => _page = p),
+                        children: [
+                          for (final page in _textPages)
+                            Padding(
+                              padding: const EdgeInsets.fromLTRB(20, 40, 20, 8),
+                              // タイトルは上寄せ・図解は中央寄せ・本文は下寄せに
+                              // なるよう、縦方向をExpandedで区切って配分する。
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  // タイトル（上寄せ、くらむぼんフォント）。
+                                  Text(
+                                    widget.tip.title,
+                                    style: TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w700,
+                                      fontFamily: 'Kuramubon',
+                                      fontFamilyFallback: kHeadingFontFallback,
+                                      color: AccentTextTheme.of(context),
+                                    ),
                                   ),
-                                ),
-                              ),
-                              const SizedBox(height: 10),
-                              // 本文（下寄せ。ページ内に収まらない分量は
-                              // スクロールできる）。
-                              Expanded(
-                                flex: 4,
-                                child: Align(
-                                  alignment: Alignment.bottomLeft,
-                                  child: SingleChildScrollView(
-                                    child: Text(
-                                      page,
-                                      style: const TextStyle(
-                                        fontSize: 13,
-                                        height: 1.5,
+                                  const SizedBox(height: 10),
+                                  // 図解（中央寄せ。すべてのページで併記する、
+                                  // 文章だけのページを作らない）。画面を再現する
+                                  // 図解ほど縦横比が意味を持つため、AspectRatioで
+                                  // 一定比率を保ちつつダイアログ幅いっぱいに広げる。
+                                  Expanded(
+                                    flex: 6,
+                                    child: Center(
+                                      child: AspectRatio(
+                                        aspectRatio: 15 / 11,
+                                        child: TipDiagram(widget.tip.diagram),
                                       ),
                                     ),
                                   ),
-                                ),
+                                  const SizedBox(height: 10),
+                                  // 本文（下寄せ。ページ内に収まらない分量は
+                                  // スクロールできる）。
+                                  Expanded(
+                                    flex: 4,
+                                    child: Align(
+                                      alignment: Alignment.bottomLeft,
+                                      child: SingleChildScrollView(
+                                        child: Text(
+                                          page,
+                                          style: const TextStyle(
+                                            fontSize: 13,
+                                            height: 1.5,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ],
+                            ),
+                        ],
+                      ),
+                    ),
+                    if (totalPages > 1)
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          IconButton(
+                            tooltip: words.previousPageTooltip,
+                            onPressed: _page == 0
+                                ? null
+                                : () => _goToPage(_page - 1),
+                            icon: const Icon(Icons.chevron_left),
                           ),
-                        ),
-                    ],
+                          if (totalPages <= 6)
+                            for (var i = 0; i < totalPages; i++)
+                              Semantics(
+                                selected: i == _page,
+                                child: IconButton(
+                                  constraints: const BoxConstraints.tightFor(
+                                    width: 32,
+                                    height: 48,
+                                  ),
+                                  padding: EdgeInsets.zero,
+                                  tooltip: words.pageRowsInfoTitle(
+                                    i + 1,
+                                    i + 1,
+                                    totalPages,
+                                    false,
+                                  ),
+                                  icon: Icon(
+                                    i == _page
+                                        ? Icons.circle
+                                        : Icons.circle_outlined,
+                                    size: 9,
+                                    color: i == _page
+                                        ? scheme.primary
+                                        : scheme.outline,
+                                  ),
+                                  onPressed: () => _goToPage(i),
+                                ),
+                              )
+                          else
+                            Text(
+                              '${_page + 1} / $totalPages',
+                              style: TextStyle(color: scheme.onSurfaceVariant),
+                            ),
+                          IconButton(
+                            tooltip: words.nextPageTooltip,
+                            onPressed: _page == totalPages - 1
+                                ? null
+                                : () => _goToPage(_page + 1),
+                            icon: const Icon(Icons.chevron_right),
+                          ),
+                        ],
+                      ),
+                  ],
+                ),
+                // 右上の閉じるボタン
+                Positioned(
+                  right: 4,
+                  top: 4,
+                  child: IconButton(
+                    icon: const Icon(Icons.close, size: 20),
+                    onPressed: () => Navigator.pop(context),
                   ),
                 ),
-                // ページ位置インジケーター（何ページ中何ページ目か）。1ページに
-                // 収まる説明ではスワイプ自体が不要なため表示しない。ページ数が
-                // 多い説明でもドットが横に溢れないよう、6ページを超えたら
-                // 「n / N」のテキスト表示に切り替える。
-                if (totalPages > 1)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 10),
-                    child: totalPages <= 6
-                        ? Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: List.generate(totalPages, (i) {
-                              final active = i == _page;
-                              return AnimatedContainer(
-                                duration: const Duration(milliseconds: 150),
-                                margin: const EdgeInsets.symmetric(
-                                  horizontal: 3,
-                                ),
-                                width: active ? 16 : 6,
-                                height: 6,
-                                decoration: BoxDecoration(
-                                  color: active
-                                      ? scheme.primary
-                                      : scheme.outlineVariant,
-                                  borderRadius: BorderRadius.circular(3),
-                                ),
-                              );
-                            }),
-                          )
-                        : Text(
-                            '${_page + 1} / $totalPages',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: scheme.onSurfaceVariant,
-                            ),
-                          ),
-                  ),
               ],
             ),
-            // 右上の閉じるボタン
-            Positioned(
-              right: 4,
-              top: 4,
-              child: IconButton(
-                icon: const Icon(Icons.close, size: 20),
-                onPressed: () => Navigator.pop(context),
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );

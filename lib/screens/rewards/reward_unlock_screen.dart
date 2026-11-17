@@ -107,6 +107,7 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
   Future<void> _loadWallet(String accountId) async {
     final api = context.read<CommunityService>().api;
     if (api == null) return;
+    final premium = context.read<PremiumService>();
     final request = ++_walletRequest;
     bool isCurrent() =>
         mounted &&
@@ -129,11 +130,11 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
           }
         }
       }
-      context.read<PremiumService>().applyServerCoinPremiumExpiry(
+      premium.applyServerCoinPremiumExpiry(
         activeCoinPremium,
         accountId: accountId,
       );
-      context.read<PremiumService>().applyServerCoinBenefitEntitlements(
+      premium.applyServerCoinBenefitEntitlements(
         state['entitlements'] as List<dynamic>?,
         accountId: accountId,
       );
@@ -1175,11 +1176,11 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
                 style: Theme.of(context).textTheme.titleMedium,
               ),
               const SizedBox(height: 8),
-              Text(
-                AppLocalizations.of(context)!.premiumPackHalfPrice,
+              messageText(
+                l10n.premiumPackHalfPrice,
                 style: Theme.of(context).textTheme.titleSmall,
               ),
-              Text(AppLocalizations.of(context)!.premiumPackPriceBasis),
+              messageText(l10n.premiumPackPriceBasis),
               _targetTile(context, t, CoinUnlockTarget.fullPremium),
               Divider(color: scheme.outlineVariant),
               for (final target in _standardTargets)

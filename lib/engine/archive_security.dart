@@ -44,6 +44,34 @@ class ArchiveSecurity {
     }
   }
 
+  /// Validates the sizes of an archive produced by this app before encoding.
+  /// The writer supplies the uncompressed contents, so there is no need to
+  /// decompress them a second time.
+  static void validateExport(Archive archive) {
+    if (archive.files.length > maxEntries) {
+      throw const FormatException('アーカイブ内のファイル数が上限を超えています');
+    }
+    var expandedBytes = 0;
+    for (final file in archive.files) {
+      final name = file.name.replaceAll('\\', '/');
+      _validateEntryName(name);
+      _validateEntrySize(name, file.size);
+      expandedBytes += file.size;
+      if (expandedBytes > maxExpandedBytes) {
+        throw const FormatException('アーカイブの展開後サイズが上限を超えています');
+      }
+    }
+  }
+
+  static void _validateEntrySize(String name, int size) {
+    if (size < 0 || size > maxSingleEntryBytes) {
+      throw const FormatException('アーカイブ内のファイルサイズが上限を超えています');
+    }
+    if (_isMetadata(name) && size > maxMetadataEntryBytes) {
+      throw const FormatException('アーカイブ内のメタデータが大きすぎます');
+    }
+  }
+
   static void _validateDirectory(ZipDirectory directory) {
     if (directory.numberOfThisDisk != 0 ||
         directory.diskWithTheStartOfTheCentralDirectory != 0 ||
@@ -80,12 +108,10 @@ class ArchiveSecurity {
       }
 
       final size = header.uncompressedSize;
-      if (size == null || size < 0 || size > maxSingleEntryBytes) {
-        throw const FormatException('アーカイブ内のファイルサイズが上限を超えています');
+      if (size == null) {
+        throw const FormatException('ZIPエントリの展開後サイズが不正です');
       }
-      if (_isMetadata(name) && size > maxMetadataEntryBytes) {
-        throw const FormatException('アーカイブ内のメタデータが大きすぎます');
-      }
+      _validateEntrySize(name, size);
       final file = header.file;
       if (file == null) throw const FormatException('ZIPエントリの実体がありません');
       final actualSize = switch (header.compressionMethod) {

@@ -1998,7 +1998,7 @@ abstract class AppLocalizations {
   /// No description provided for @premiumStoreUnavailable.
   ///
   /// In ja, this message translates to:
-  /// **'ストアに接続できません（実機・ストア審査環境以外では購入できません）'**
+  /// **'ストアから購入情報を取得できませんでした。通信を確認して再試行してください。'**
   String get premiumStoreUnavailable;
 
   /// No description provided for @premiumYearlyTitle.
@@ -2094,7 +2094,7 @@ abstract class AppLocalizations {
   /// No description provided for @premiumFeatureEndLogo.
   ///
   /// In ja, this message translates to:
-  /// **'公式エンドロゴ'**
+  /// **'公式エンドマーク'**
   String get premiumFeatureEndLogo;
 
   /// No description provided for @premiumFeatureWatermark.
@@ -5190,7 +5190,7 @@ abstract class AppLocalizations {
   /// No description provided for @premiumBannerEndCardBody.
   ///
   /// In ja, this message translates to:
-  /// **'公式エンドロゴの表示・非表示は、プレミアム会員またはエンドロゴ編集の特典を利用中に設定できます。'**
+  /// **'公式エンドマークの表示・非表示は、プレミアム会員またはエンドマーク編集の特典を利用中に設定できます。'**
   String get premiumBannerEndCardBody;
 
   /// No description provided for @premiumBannerWatermarkBody.
@@ -18050,6 +18050,48 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'素材クリップ'**
   String get timelineSelectionClips;
+
+  /// No description provided for @helpShowAllTopics.
+  ///
+  /// In ja, this message translates to:
+  /// **'すべての項目を表示'**
+  String get helpShowAllTopics;
+
+  /// No description provided for @transferExportFileFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'引き継ぎファイルを作成できませんでした。'**
+  String get transferExportFileFailed;
+
+  /// No description provided for @transferImportFileFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'引き継ぎファイルを読み込めませんでした。'**
+  String get transferImportFileFailed;
+
+  /// No description provided for @transferImportInterrupted.
+  ///
+  /// In ja, this message translates to:
+  /// **'読み込みを完了できませんでした。取り込み済みの項目は残っています。'**
+  String get transferImportInterrupted;
+
+  /// No description provided for @communityChannelRefreshRetry.
+  ///
+  /// In ja, this message translates to:
+  /// **'YouTube情報を更新できませんでした。もう一度お試しください。'**
+  String get communityChannelRefreshRetry;
+
+  /// No description provided for @timelineAutofillBatchCancelled.
+  ///
+  /// In ja, this message translates to:
+  /// **'自動塗りを中止しました。'**
+  String get timelineAutofillBatchCancelled;
+
+  /// No description provided for @timelineAutofillBatchFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'自動塗りの途中でエラーが発生しました。'**
+  String get timelineAutofillBatchFailed;
 }
 
 class _AppLocalizationsDelegate

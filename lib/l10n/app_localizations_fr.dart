@@ -1101,7 +1101,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get premiumStoreUnavailable =>
-      'Impossible de se connecter à la boutique (les achats ne sont possibles que sur un appareil réel ou dans un environnement de révision de la boutique)';
+      'Impossible de charger les informations d’achat de la boutique. Vérifiez votre connexion et réessayez.';
 
   @override
   String get premiumYearlyTitle => 'Formule annuelle (recommandée)';
@@ -1151,7 +1151,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get premiumFeatureMaxDuration => 'Durée max.';
 
   @override
-  String get premiumFeatureEndLogo => 'Logo de fin officiel';
+  String get premiumFeatureEndLogo => 'Marque de fin officielle';
 
   @override
   String get premiumFeatureWatermark =>
@@ -2960,7 +2960,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get premiumBannerEndCardBody =>
-      'L’abonnement Premium ou l’avantage de modification du logo de fin permet d’afficher ou de masquer le logo de fin officiel.';
+      'L’abonnement Premium ou l’avantage de modification de la marque de fin permet d’afficher ou de masquer la marque de fin officielle.';
 
   @override
   String get premiumBannerWatermarkBody =>
@@ -11128,4 +11128,31 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get timelineSelectionClips => 'Clips multimédias';
+
+  @override
+  String get helpShowAllTopics => 'Afficher tous les sujets';
+
+  @override
+  String get transferExportFileFailed =>
+      'Impossible de créer le fichier de transfert.';
+
+  @override
+  String get transferImportFileFailed =>
+      'Impossible de lire le fichier de transfert.';
+
+  @override
+  String get transferImportInterrupted =>
+      'L’importation a été interrompue. Les éléments déjà importés restent disponibles.';
+
+  @override
+  String get communityChannelRefreshRetry =>
+      'Impossible d’actualiser les informations de la chaîne YouTube. Réessayez.';
+
+  @override
+  String get timelineAutofillBatchCancelled =>
+      'Remplissage automatique annulé.';
+
+  @override
+  String get timelineAutofillBatchFailed =>
+      'Une erreur a interrompu le remplissage automatique.';
 }

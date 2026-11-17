@@ -96,6 +96,50 @@ void main() {
     );
   }
 
+  test('canvas crop restores dimensions and archived pixels on undo', () async {
+    final s = await setUpProject(null);
+    final original = layerBytes(s.tm, s.key);
+    s.projects.replaceLayerPixels(
+      projectId: s.projectId,
+      sceneId: s.sceneId,
+      frameIndex: 0,
+      layerId: s.layer.id,
+      pixels: solid(30, 60, 220),
+    );
+    final beforeCrop = layerBytes(s.tm, s.key);
+    await s.projects.saveProject(s.projectId);
+
+    await s.projects.resizeCanvas(
+      s.projectId,
+      newWidth: 64,
+      newHeight: 64,
+      cropX: 0,
+      cropY: 0,
+    );
+    await s.projects.saveProject(s.projectId);
+    expect(s.projects.tileManagerOf(s.projectId).canvasWidth, 64);
+    expect(s.projects.projects.single.exportWidth, 64);
+
+    s.undo.undo();
+    await s.projects.saveProject(s.projectId);
+    expect(s.projects.tileManagerOf(s.projectId), same(s.tm));
+    expect(s.projects.projects.single.exportWidth, _w);
+    expect(layerBytes(s.tm, s.key), beforeCrop);
+    final reopened = ProjectService();
+    await reopened.init();
+    expect(reopened.projects.single.exportWidth, _w);
+    expect(layerBytes(reopened.tileManagerOf(s.projectId), s.key), beforeCrop);
+
+    s.undo.undo();
+    expect(layerBytes(s.tm, s.key), original);
+    s.undo.redo();
+    expect(layerBytes(s.tm, s.key), beforeCrop);
+    s.undo.redo();
+    expect(s.projects.tileManagerOf(s.projectId).canvasWidth, 64);
+    await s.projects.saveProject(s.projectId);
+    reopened.dispose();
+  });
+
   test('replacing a layer\'s pixels is one Undo step, with Redo', () async {
     final s = await setUpProject(null);
     final before = layerBytes(s.tm, s.key);

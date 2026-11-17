@@ -26,102 +26,51 @@ class PerformanceSettingsScreen extends StatefulWidget {
 }
 
 class _PerformanceSettingsScreenState extends State<PerformanceSettingsScreen> {
-  /// 品質変更：PerformanceServiceを更新してからSaveTreeServiceを同期する
-  /// プリセット間変更で保存方式が変わる場合は変更フローを経由する
   Future<void> _onQualityChanged(QualityLevel level) async {
     final perf = context.read<PerformanceService>();
-    final saveService = context.read<SaveTreeService>();
-    final prevMode = perf.saveMode;
-    final prevSlot = perf.slotCount;
-    perf.setQualityLevel(level);
-    final newMode = perf.saveMode;
-    final newSlot = perf.slotCount;
-    final modeChanged = prevMode != newMode;
-    final slotReduced =
-        newMode == SaveMode.slot &&
-        prevMode == SaveMode.slot &&
-        newSlot < prevSlot;
-    if (modeChanged || slotReduced) {
-      if (!context.mounted) return;
-      await _applyToAllProjects(
-        context: context,
-        saveService: saveService,
-        newIsTreeMode: newMode == SaveMode.tree,
-        newSlotMax: newMode == SaveMode.slot ? newSlot : null,
-      );
-    } else {
-      saveService.setTreeMode(newMode == SaveMode.tree);
-      if (newMode == SaveMode.slot) saveService.setSlotMax(newSlot);
+    if (await _changeSaveSettings(
+      context,
+      perf.saveModeFor(level),
+      perf.slotCountFor(level),
+    )) {
+      perf.setQualityLevel(level);
     }
   }
 
-  /// カスタム保存方式変更：変更フローを経由する
   Future<void> _onCustomSaveModeChanged(
     BuildContext context,
     SaveMode newMode,
     PerformanceService perf,
   ) async {
-    final saveService = context.read<SaveTreeService>();
-    final newIsTree = newMode == SaveMode.tree;
-    final newSlotMax = newIsTree ? null : perf.slotCount;
-    await _applyToAllProjects(
-      context: context,
-      saveService: saveService,
-      newIsTreeMode: newIsTree,
-      newSlotMax: newSlotMax,
-    );
-    if (!context.mounted) return;
-    perf.setCustomSaveMode(newMode);
+    if (await _changeSaveSettings(context, newMode, perf.slotCount)) {
+      perf.setCustomSaveMode(newMode);
+    }
   }
 
-  /// カスタムスロット数変更：削減時は変更フローを経由する
   Future<void> _onCustomSlotCountChanged(
     BuildContext context,
     int newCount,
     PerformanceService perf,
   ) async {
-    final saveService = context.read<SaveTreeService>();
-    await _applyToAllProjects(
-      context: context,
-      saveService: saveService,
-      newIsTreeMode: false,
-      newSlotMax: newCount,
-    );
-    if (!context.mounted) return;
-    perf.setCustomSlotCount(newCount);
+    if (await _changeSaveSettings(context, SaveMode.slot, newCount)) {
+      perf.setCustomSlotCount(newCount);
+    }
   }
 
-  /// 保存方式・保存可能数は端末全体の設定だが、実際の保存データは
-  /// プロジェクトごとに管理されている。この画面はどのプロジェクトも
-  /// 開いていない文脈で呼ばれるため、保存データを持つ全プロジェクトを1件ずつ
-  /// チェックし、新しい上限を超えるものがあれば変更画面（保持するデータの選択・
-  /// アーカイブ/完全削除）を順番に経由する。超えないプロジェクトは即時反映される。
-  Future<void> _applyToAllProjects({
-    required BuildContext context,
-    required SaveTreeService saveService,
-    required bool newIsTreeMode,
-    int? newSlotMax,
-  }) async {
-    final projects = context.read<ProjectService>().projects;
-    for (final project in projects) {
-      if (!context.mounted) return;
-      await showSaveModeChangeFlowIfNeeded(
-        context: context,
-        projectId: project.id,
-        saveService: saveService,
-        newIsTreeMode: newIsTreeMode,
-        newSlotMax: newSlotMax,
-        projectName: project.name,
-      );
-    }
-    // プロジェクトが1件もない場合、上のループ内では誰もsetTreeMode/setSlotMaxを
-    // 呼ばないため、ここで明示的に反映する（既にどれかのプロジェクトで
-    // 反映済みの場合は冪等なので害はない）。
-    saveService.setTreeMode(newIsTreeMode);
-    if (!newIsTreeMode && newSlotMax != null) {
-      saveService.setSlotMax(newSlotMax);
-    }
-  }
+  Future<bool> _changeSaveSettings(
+    BuildContext context,
+    SaveMode mode,
+    int slotCount,
+  ) => showSaveModeChangeFlows(
+    context: context,
+    projects: {
+      for (final project in context.read<ProjectService>().projects)
+        project.id: project.name,
+    },
+    saveService: context.read<SaveTreeService>(),
+    newIsTreeMode: mode == SaveMode.tree,
+    newSlotMax: mode == SaveMode.slot ? slotCount : null,
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -550,30 +499,13 @@ class _PerformanceSettingsScreenState extends State<PerformanceSettingsScreen> {
           FilledButton(
             onPressed: () async {
               Navigator.pop(ctx);
-              final saveService = context.read<SaveTreeService>();
-              final prevMode = perf.saveMode;
-              final prevSlot = perf.slotCount;
-              perf.resetCustomToDefault();
-              final newMode = perf.saveMode;
-              final newSlot = perf.slotCount;
-              // 保存方式・スロット数が変わる場合は変更フローを経由
-              final modeChanged = prevMode != newMode;
-              final slotReduced =
-                  newMode == SaveMode.slot &&
-                  prevMode == SaveMode.slot &&
-                  newSlot < prevSlot;
-              if (modeChanged || slotReduced) {
-                if (!context.mounted) return;
-                await showSaveModeChangeFlowIfNeeded(
-                  context: context,
-                  projectId: '',
-                  saveService: saveService,
-                  newIsTreeMode: newMode == SaveMode.tree,
-                  newSlotMax: newMode == SaveMode.slot ? newSlot : null,
-                );
-              } else {
-                saveService.setTreeMode(newMode == SaveMode.tree);
-                if (newMode == SaveMode.slot) saveService.setSlotMax(newSlot);
+              final preset = perf.defaultPreset;
+              if (await _changeSaveSettings(
+                context,
+                perf.saveModeFor(preset),
+                perf.slotCountFor(preset),
+              )) {
+                perf.resetCustomToDefault();
               }
             },
             child: Text(l10n.perfSettingsResetConfirmButton),
@@ -604,31 +536,12 @@ class _PerformanceSettingsScreenState extends State<PerformanceSettingsScreen> {
                 ),
                 onTap: () async {
                   Navigator.pop(ctx);
-                  final saveService = context.read<SaveTreeService>();
-                  final prevMode = perf.saveMode;
-                  final prevSlot = perf.slotCount;
-                  perf.copyPresetToCustom(level);
-                  final newMode = perf.saveMode;
-                  final newSlot = perf.slotCount;
-                  final modeChanged = prevMode != newMode;
-                  final slotReduced =
-                      newMode == SaveMode.slot &&
-                      prevMode == SaveMode.slot &&
-                      newSlot < prevSlot;
-                  if (modeChanged || slotReduced) {
-                    if (!context.mounted) return;
-                    await showSaveModeChangeFlowIfNeeded(
-                      context: context,
-                      projectId: '',
-                      saveService: saveService,
-                      newIsTreeMode: newMode == SaveMode.tree,
-                      newSlotMax: newMode == SaveMode.slot ? newSlot : null,
-                    );
-                  } else {
-                    saveService.setTreeMode(newMode == SaveMode.tree);
-                    if (newMode == SaveMode.slot) {
-                      saveService.setSlotMax(newSlot);
-                    }
+                  if (await _changeSaveSettings(
+                    context,
+                    perf.saveModeFor(level),
+                    perf.slotCountFor(level),
+                  )) {
+                    perf.copyPresetToCustom(level);
                   }
                 },
               ),

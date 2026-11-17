@@ -4350,7 +4350,6 @@ class ProjectService extends ChangeNotifier {
   }) async {
     final idx = _projects.indexWhere((p) => p.id == projectId);
     if (idx < 0) return;
-    final project = _projects[idx];
     final sourceTm = _tileManagers[projectId];
     if (sourceTm == null) return;
 
@@ -4406,15 +4405,52 @@ class ProjectService extends ChangeNotifier {
       newTm.replaceLayerPixels(key, newBytes);
     }
 
-    _tileManagers[projectId] = newTm;
-    final scale = project.drawingAreaScale <= 0
+    final current = _projects.where((p) => p.id == projectId).firstOrNull;
+    if (current == null || !identical(_tileManagers[projectId], sourceTm)) {
+      return;
+    }
+    final scale = current.drawingAreaScale <= 0
         ? 1.0
-        : project.drawingAreaScale;
+        : current.drawingAreaScale;
     final newExportWidth = (newWidth / scale).round().clamp(64, 1 << 30);
     final newExportHeight = (newHeight / scale).round().clamp(64, 1 << 30);
-    _projects[idx] = project.copyWith(
-      exportWidth: newExportWidth,
-      exportHeight: newExportHeight,
+
+    _setResizedCanvas(projectId, newTm, newExportWidth, newExportHeight);
+    // Pixel history actions retain their TileManager. Restore that exact
+    // instance so operations on each side of the resize remain undoable.
+    _undoManager?.push(
+      ProjectEditUndoAction(
+        'Resize canvas',
+        () => _setResizedCanvas(
+          projectId,
+          sourceTm,
+          current.exportWidth,
+          current.exportHeight,
+        ),
+        () => _setResizedCanvas(
+          projectId,
+          newTm,
+          newExportWidth,
+          newExportHeight,
+        ),
+      ),
+      projectId: projectId,
+    );
+  }
+
+  void _setResizedCanvas(
+    String projectId,
+    TileManager tiles,
+    int exportWidth,
+    int exportHeight,
+  ) {
+    final index = _projects.indexWhere((p) => p.id == projectId);
+    if (index < 0) return;
+    tiles.markAllTilesDirty();
+    _tileManagers[projectId] = tiles;
+    _projects[index] = _projects[index].copyWith(
+      exportWidth: exportWidth,
+      exportHeight: exportHeight,
     );
     _saveAsync(projectId);
     notifyListeners();

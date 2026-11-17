@@ -1041,7 +1041,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get premiumPlanSectionTitle => '套餐';
 
   @override
-  String get premiumStoreUnavailable => '无法连接到商店（仅可在真机或商店审核环境中购买）';
+  String get premiumStoreUnavailable => '无法加载商店的购买信息。请检查网络连接后重试。';
 
   @override
   String get premiumYearlyTitle => '年付套餐（推荐）';
@@ -1090,7 +1090,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get premiumFeatureMaxDuration => '最大时长';
 
   @override
-  String get premiumFeatureEndLogo => '官方片尾标志';
+  String get premiumFeatureEndLogo => '官方片尾标记';
 
   @override
   String get premiumFeatureWatermark => '添加和编辑自定义水印';
@@ -2797,7 +2797,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get premiumBannerFullExportTitle => '导出完整作品';
 
   @override
-  String get premiumBannerEndCardBody => '高级会员或片尾标志编辑权益可以设置显示或隐藏官方片尾标志。';
+  String get premiumBannerEndCardBody => '使用高级会员或片尾标记编辑权益时，可以显示或隐藏官方片尾标记。';
 
   @override
   String get premiumBannerWatermarkBody => '高级会员或水印权益可以添加和编辑自定义水印。';
@@ -10111,6 +10111,27 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get timelineSelectionClips => '素材片段';
+
+  @override
+  String get helpShowAllTopics => '显示所有主题';
+
+  @override
+  String get transferExportFileFailed => '无法创建迁移文件。';
+
+  @override
+  String get transferImportFileFailed => '无法读取迁移文件。';
+
+  @override
+  String get transferImportInterrupted => '导入未能完成。已导入的项目仍然保留。';
+
+  @override
+  String get communityChannelRefreshRetry => '无法更新 YouTube 频道信息，请重试。';
+
+  @override
+  String get timelineAutofillBatchCancelled => '已取消自动上色。';
+
+  @override
+  String get timelineAutofillBatchFailed => '自动上色因错误中断。';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -11150,7 +11171,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get premiumPlanSectionTitle => '方案';
 
   @override
-  String get premiumStoreUnavailable => '無法連接到商店（僅可於實機或商店審核環境中購買）';
+  String get premiumStoreUnavailable => '無法載入商店的購買資訊。請檢查網路連線後再試一次。';
 
   @override
   String get premiumYearlyTitle => '年繳方案（推薦）';
@@ -11199,7 +11220,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get premiumFeatureMaxDuration => '最長長度';
 
   @override
-  String get premiumFeatureEndLogo => '官方片尾標誌';
+  String get premiumFeatureEndLogo => '官方片尾標記';
 
   @override
   String get premiumFeatureWatermark => '新增和編輯自訂浮水印';
@@ -12906,7 +12927,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get premiumBannerFullExportTitle => '匯出完整作品';
 
   @override
-  String get premiumBannerEndCardBody => '進階會員或片尾標誌編輯權益可以設定顯示或隱藏官方片尾標誌。';
+  String get premiumBannerEndCardBody => '使用進階會員或片尾標記編輯權益時，可以顯示或隱藏官方片尾標記。';
 
   @override
   String get premiumBannerWatermarkBody => '進階會員或浮水印權益可以新增和編輯自訂浮水印。';
@@ -20222,4 +20243,25 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get timelineSelectionClips => '素材片段';
+
+  @override
+  String get helpShowAllTopics => '顯示所有主題';
+
+  @override
+  String get transferExportFileFailed => '無法建立移轉檔案。';
+
+  @override
+  String get transferImportFileFailed => '無法讀取移轉檔案。';
+
+  @override
+  String get transferImportInterrupted => '匯入未能完成。已匯入的項目仍然保留。';
+
+  @override
+  String get communityChannelRefreshRetry => '無法更新 YouTube 頻道資訊，請重試。';
+
+  @override
+  String get timelineAutofillBatchCancelled => '已取消自動上色。';
+
+  @override
+  String get timelineAutofillBatchFailed => '自動上色因錯誤中斷。';
 }

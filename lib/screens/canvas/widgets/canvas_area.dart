@@ -33,6 +33,7 @@ import '../../../engine/stamp_engine.dart';
 import '../../../engine/tile_manager.dart';
 import '../../../engine/tone_engine.dart';
 import '../../../engine/undo_manager.dart' as app_undo;
+import '../../../utils/app_error_reporter.dart';
 import '../../../models/filter_canvas_gizmo.dart';
 import '../../../models/layer.dart';
 import '../../../models/layer_keyframe.dart';
@@ -595,6 +596,15 @@ class CanvasArea extends StatefulWidget {
   State<CanvasArea> createState() => _CanvasAreaState();
 }
 
+class _BucketGesture {
+  _BucketGesture(this.pointer, Offset initialPosition)
+    : pending = [initialPosition];
+
+  final int pointer;
+  final List<Offset> pending;
+  bool released = false;
+}
+
 class _CanvasAreaState extends State<CanvasArea> {
   final TransformationController _transformController =
       TransformationController();
@@ -857,7 +867,21 @@ class _CanvasAreaState extends State<CanvasArea> {
   @override
   void didUpdateWidget(CanvasArea old) {
     super.didUpdateWidget(old);
-    if (old.project?.id != widget.project?.id) {
+    final projectId = widget.project?.id;
+    final managerChanged =
+        old.project?.id != projectId ||
+        (projectId != null &&
+            !identical(_tileManager, _projects.tileManagerOf(projectId)));
+    final targetChanged =
+        managerChanged ||
+        old.currentFrame != widget.currentFrame ||
+        old.sceneId != widget.sceneId ||
+        old.currentLayerId != widget.currentLayerId;
+    if (_bucketGesture != null &&
+        (targetChanged || widget.currentTool != DrawingTool.bucket)) {
+      _cancelBucket();
+    }
+    if (managerChanged) {
       _compositeImage?.dispose();
       _compositeImage = null;
       _belowImage?.dispose();
@@ -908,10 +932,7 @@ class _CanvasAreaState extends State<CanvasArea> {
     }
     // フレーム・シーン・現在レイヤーが変わった場合は現在レイヤー画像も
     // 合成し直す（他のレイヤー変更検知は_recomposeSurroundings内で行う）。
-    final frameChanged =
-        old.currentFrame != widget.currentFrame ||
-        old.sceneId != widget.sceneId ||
-        old.currentLayerId != widget.currentLayerId;
+    final frameChanged = targetChanged;
     if (frameChanged) {
       _scheduleComposite();
       // 選択範囲はフレームごとの一時状態のため、フレーム切替時にクリアする
@@ -1062,10 +1083,12 @@ class _CanvasAreaState extends State<CanvasArea> {
     if (_hasTileManager) {
       _tileManager.removeLayerContentListener(_onLayerContentChanged);
     }
-    if (_selectionTransformActive && _undoRecordingLayerKey != null) {
+    if ((_selectionTransformActive || _bucketGesture != null) &&
+        _undoRecordingLayerKey != null) {
       _tileManager.cancelUndoRecordingAndRestore();
       _undoRecordingLayerKey = null;
     }
+    _bucketGesture = null;
     _holdEyedropperTimer?.cancel();
     meshSourceImage?.dispose();
     _transformController.removeListener(_publishViewInfo);
@@ -1532,6 +1555,10 @@ class _CanvasAreaState extends State<CanvasArea> {
   }
 
   void _onPointerDown(PointerEvent event) {
+    if (event.kind == PointerDeviceKind.mouse &&
+        event.buttons & (kPrimaryMouseButton | kMiddleMouseButton) == 0) {
+      return;
+    }
     final type = _inputHandler.classifyInput(event);
     final canvasPos = _canvasPosition(event.localPosition);
     final settings = context.read<SettingsService>();
@@ -1677,8 +1704,7 @@ class _CanvasAreaState extends State<CanvasArea> {
     if (widget.currentTool == DrawingTool.bucket) {
       // パームリジェクション：スタイラス使用中（isStylusActive）のみタッチを無視する。
       // タッチのみの端末・スタイラス未使用時はタッチでも通常通り描画できる。
-      _syncBrushAndColor();
-      _handleBucketDown(canvasPos);
+      unawaited(_handleBucketDown(event.pointer, canvasPos));
       return;
     }
     if (widget.currentTool == DrawingTool.lasso) {
@@ -1722,6 +1748,8 @@ class _CanvasAreaState extends State<CanvasArea> {
     final point = _toCanvasPoint(_rawToStrokePoint(event));
     _beginTileUndo();
     _strokePointer = event.pointer;
+    _lastStrokeContact = point;
+    _lastStrokeScreenPosition = event.localPosition;
     _drawingEngine.beginStroke(
       point,
       _tileKeyFor(_layerId),
@@ -1828,7 +1856,7 @@ class _CanvasAreaState extends State<CanvasArea> {
     if (widget.currentTool == DrawingTool.bucket) {
       // パームリジェクション：スタイラス使用中（isStylusActive）のみタッチを無視する。
       // タッチのみの端末・スタイラス未使用時はタッチでも通常通り描画できる。
-      _handleBucketMove(canvasPos);
+      _handleBucketMove(event.pointer, canvasPos);
       return;
     }
     if (widget.currentTool == DrawingTool.lasso) {
@@ -1866,6 +1894,8 @@ class _CanvasAreaState extends State<CanvasArea> {
     if (event.pointer != _strokePointer) return;
     _updateHoldEyedropper(event, canvasPos);
     final point = _toCanvasPoint(_rawToStrokePoint(event));
+    _lastStrokeContact = point;
+    _lastStrokeScreenPosition = event.localPosition;
     _drawingEngine.continueStroke(
       point,
       _tileKeyFor(_layerId),
@@ -1874,7 +1904,7 @@ class _CanvasAreaState extends State<CanvasArea> {
     _scheduleComposite();
   }
 
-  void _onPointerUp(PointerEvent event) {
+  void _onPointerUp(PointerEvent event, {required bool touchTransform}) {
     if (_middleClickPanning) {
       _middleClickPanning = false;
       _middleClickLastScreenPos = null;
@@ -1953,7 +1983,7 @@ class _CanvasAreaState extends State<CanvasArea> {
       return;
     }
     if (widget.currentTool == DrawingTool.bucket) {
-      _handleBucketUp();
+      _handleBucketUp(event.pointer);
       // スタイラス操作の終了はポインター種別に関わらずここで確定する
       // （スタイラス自体のUpイベントでのみisStylusActiveを確実に解除するため）。
       _inputHandler.onPointerUp(event);
@@ -2014,6 +2044,22 @@ class _CanvasAreaState extends State<CanvasArea> {
       return;
     }
     _strokePointer = null;
+    final lastContact = _lastStrokeContact;
+    final lift = touchTransform
+        ? _lastStrokeScreenPosition
+        : event.localPosition;
+    if (lastContact != null && lift != null) {
+      _drawingEngine.finishStrokePath(
+        lastContact,
+        _tileKeyFor(_layerId),
+        canvasPosition: lift == _lastStrokeScreenPosition
+            ? Offset(lastContact.x, lastContact.y)
+            : _canvasPosition(lift),
+        screenPosition: lift,
+      );
+    }
+    _lastStrokeContact = null;
+    _lastStrokeScreenPosition = null;
     if (_drawingEngine.needsFinalFadeReplay && _undoRecordingLayerKey != null) {
       final layerKey = _undoRecordingLayerKey!;
       final previewSnapshot = _tileManager.endUndoRecording();
@@ -2072,6 +2118,8 @@ class _CanvasAreaState extends State<CanvasArea> {
 
   /// 今のペン・消しゴムのストロークを描いている指（無ければnull）。
   int? _strokePointer;
+  StrokePoint? _lastStrokeContact;
+  Offset? _lastStrokeScreenPosition;
 
   /// ブラシのピクセルモードで配色方式（[Brush.pixelColorMode]）が
   /// none以外の場合、ストローク確定直後・Undo記録終了前に今回変更された
@@ -2931,6 +2979,10 @@ class _CanvasAreaState extends State<CanvasArea> {
   /// 残さない（残すと次の操作の記録に混ざって取り消せなくなる）。選択範囲の
   /// 変形・メッシュ変形は確定の操作が別にあるのでここでは触らない。
   void _cancelToolPointer(int pointer) {
+    if (pointer == _bucketGesture?.pointer) {
+      _cancelBucket();
+      return;
+    }
     if (pointer == _strokePointer) {
       _strokePointer = null;
       _drawingEngine.endStroke(cancel: true);
@@ -2977,8 +3029,19 @@ class _CanvasAreaState extends State<CanvasArea> {
   /// 断った押下（その指の以後の動き・離すもツールへ渡さない。渡すとペンは
   /// 動きだけで線を描き始め、ぼかしは動いた所をぼかしてしまう）。
   bool _refuseLockedLayer(PointerEvent? event) {
-    final layer = _layers.where((l) => l.id == _layerId).firstOrNull;
-    if (layer == null || !layer.isLocked) return false;
+    final project = widget.project;
+    if (project == null) return false;
+    final layers = _projects.layersOf(
+      project.id,
+      widget.sceneId,
+      widget.currentFrame,
+    );
+    final layer = layers.where((l) => l.id == _layerId).firstOrNull;
+    if (layer == null) {
+      if (event != null) _toolHandledPointers.remove(event.pointer);
+      return true;
+    }
+    if (!layer.isLocked) return false;
     if (event != null) {
       _toolHandledPointers.remove(event.pointer);
       // 右クリック等、描くボタン以外のマウスの押下は描く操作ではない。
@@ -3251,35 +3314,71 @@ class _CanvasAreaState extends State<CanvasArea> {
     return byteData?.buffer.asUint8List() ?? Uint8List(w * h * 4);
   }
 
-  Future<void> _handleBucketDown(Offset canvasPos) async {
-    final w = _tileManager.canvasWidth;
-    final h = _tileManager.canvasHeight;
-    final buffer = await _flattenVisibleLayers();
-    if (!mounted) return;
-    // バケツ塗り中（_bucketFillAt）はポインタ移動のたびに同期呼び出しされる
-    // ため、トーン画像は開始時点で事前読み込みしてキャッシュへ入れておく。
-    final toneService = context.read<ToneService>();
-    final tone = toneService.bucketUseTone
-        ? (toneService.lastBucketTone ?? toneService.currentTone)
-        : null;
-    if (tone != null) {
-      await ensureToneTextureLoaded(tone, size: 64);
-      if (!mounted) return;
-    }
+  _BucketGesture? _bucketGesture;
+
+  Future<void> _handleBucketDown(int pointer, Offset canvasPos) async {
+    if (_bucketGesture != null || _tileManager.isRecordingUndo) return;
+    _syncBrushAndColor();
+    final gesture = _bucketGesture = _BucketGesture(pointer, canvasPos);
     _beginTileUndo();
-    _bucketRefBuffer = buffer;
-    _bucketVisitedMask = Uint8List(w * h);
-    _bucketFillAt(canvasPos);
+    try {
+      final buffer = await _flattenVisibleLayers();
+      if (!mounted || _bucketGesture != gesture) return;
+      final toneService = context.read<ToneService>();
+      final tone = toneService.bucketUseTone
+          ? (toneService.lastBucketTone ?? toneService.currentTone)
+          : null;
+      if (tone != null) await ensureToneTextureLoaded(tone, size: 64);
+      if (!mounted || _bucketGesture != gesture) return;
+
+      _bucketRefBuffer = buffer;
+      _bucketVisitedMask = Uint8List(
+        _tileManager.canvasWidth * _tileManager.canvasHeight,
+      );
+      for (final position in gesture.pending) {
+        _bucketFillAt(position);
+      }
+      gesture.pending.clear();
+      if (gesture.released) _finishBucket();
+    } catch (error, stack) {
+      if (mounted && _bucketGesture == gesture) _cancelBucket();
+      AppErrorReporter.record(error, stack);
+    }
   }
 
-  void _handleBucketMove(Offset canvasPos) {
-    if (_bucketRefBuffer == null) return;
-    _bucketFillAt(canvasPos);
+  void _handleBucketMove(int pointer, Offset canvasPos) {
+    final gesture = _bucketGesture;
+    if (gesture == null || gesture.pointer != pointer) return;
+    if (_bucketRefBuffer == null) {
+      gesture.pending.add(canvasPos);
+    } else {
+      _bucketFillAt(canvasPos);
+    }
   }
 
-  void _handleBucketUp() {
-    if (_bucketVisitedMask != null) _markLineartDirtyIfNeeded();
+  void _handleBucketUp(int pointer) {
+    final gesture = _bucketGesture;
+    if (gesture == null || gesture.pointer != pointer) return;
+    if (_bucketRefBuffer == null) {
+      gesture.released = true;
+    } else {
+      _finishBucket();
+    }
+  }
+
+  void _finishBucket() {
+    _clearBucket();
+    _markLineartDirtyIfNeeded();
     _finishTileUndo();
+  }
+
+  void _cancelBucket() {
+    _clearBucket();
+    _cancelTileUndoAndRestore();
+  }
+
+  void _clearBucket() {
+    _bucketGesture = null;
     _bucketRefBuffer = null;
     _bucketVisitedMask = null;
   }
@@ -4076,17 +4175,19 @@ class _CanvasAreaState extends State<CanvasArea> {
   /// 形状でマスクした状態まで合成しておく（不透明度・ブレンドモードはpaint時に
   /// 適用するためここでは反映しない）。
   Future<ui.Image> _composeCurrentLayerImage() async {
-    final key = _tileKeyFor(_layerId);
-    final raw = await _tileManager.compositeLayerToImage(key);
-    final idx = _layers.indexWhere((l) => l.id == _layerId);
-    if (idx < 0 || !_layers[idx].hasClipping) return raw;
-    final clipSourceId = findClipSourceLayerId(_layers, idx);
-    if (clipSourceId == null) return raw;
-    final clipImg = await _tileManager.compositeLayerToImage(
-      _tileKeyFor(clipSourceId),
-    );
-    final w = _tileManager.canvasWidth;
-    final h = _tileManager.canvasHeight;
+    final manager = _tileManager;
+    final layerId = _layerId;
+    final key = _tileKeyFor(layerId);
+    final index = _layers.indexWhere((layer) => layer.id == layerId);
+    final clipId = index >= 0 && _layers[index].hasClipping
+        ? findClipSourceLayerId(_layers, index)
+        : null;
+    final clipKey = clipId == null ? null : _tileKeyFor(clipId);
+    final raw = await manager.compositeLayerToImage(key);
+    if (clipKey == null) return raw;
+    final clipImg = await manager.compositeLayerToImage(clipKey);
+    final w = manager.canvasWidth;
+    final h = manager.canvasHeight;
     final recorder = ui.PictureRecorder();
     final canvas = ui.Canvas(recorder);
     final rect = ui.Rect.fromLTWH(0, 0, w.toDouble(), h.toDouble());
@@ -4101,17 +4202,20 @@ class _CanvasAreaState extends State<CanvasArea> {
     clipImg.dispose();
     raw.dispose();
     final picture = recorder.endRecording();
-    return picture.toImage(w, h);
+    return picture.toImage(w, h).whenComplete(picture.dispose);
   }
+
+  bool _compositePending = false;
 
   void _scheduleComposite() {
     final project = widget.project;
     if (project == null) return;
     if (_isCompositing) {
-      setState(() {});
+      _compositePending = true;
       return;
     }
     _isCompositing = true;
+    _compositePending = false;
     _composeCurrentLayerImage().then((img) {
       if (!mounted) {
         img.dispose();
@@ -4127,6 +4231,7 @@ class _CanvasAreaState extends State<CanvasArea> {
       // オーバーレイへも反映する（存在しない・別レイヤーの場合はキャッシュ
       // 済みの合成結果を返すだけなので軽量）。
       _refreshSelectionLayerOverlay();
+      if (_compositePending) _scheduleComposite();
     });
   }
 
@@ -4236,7 +4341,16 @@ class _CanvasAreaState extends State<CanvasArea> {
       widget.currentFrame,
     );
     if (!force && _sameLayerList(_layers, layers)) return;
+    String? clipOf(List<Layer> list) {
+      final index = list.indexWhere((layer) => layer.id == _layerId);
+      return index >= 0 && list[index].hasClipping
+          ? findClipSourceLayerId(list, index)
+          : null;
+    }
+
+    final clipChanged = clipOf(_layers) != clipOf(layers);
     _layers = layers;
+    if (clipChanged) _scheduleComposite();
     _isComposingSurroundings = true;
 
     final idx = layers.indexWhere((l) => l.id == _layerId);
@@ -4550,6 +4664,7 @@ class _CanvasAreaState extends State<CanvasArea> {
               // 2本指目が触れた時点で、既存の1本指用の長押しスポイト保留は
               // 変形操作の意図と衝突するため解除する。
               _disarmHoldEyedropper();
+              if (_bucketGesture != null) _cancelBucket();
               // A lens-area stroke started by the first finger is a zoom.
               _abandonLensMaskEdit();
             }
@@ -4582,6 +4697,8 @@ class _CanvasAreaState extends State<CanvasArea> {
           _onPointerMove(e);
         },
         onPointerUp: (e) {
+          final touchTransform =
+              e.kind == PointerDeviceKind.touch && _touchTransformActive;
           if (e.pointer == _lockedNoticePointer) _notifyLockedLayerForTouch();
           MultiTouchTapKind? completedTap;
           if (e.kind == PointerDeviceKind.touch) {
@@ -4602,7 +4719,7 @@ class _CanvasAreaState extends State<CanvasArea> {
             _handleGesture(context, settings.fourOrMoreFingerTap);
           }
           if (!_toolHandledPointers.remove(e.pointer)) return;
-          _onPointerUp(e);
+          _onPointerUp(e, touchTransform: touchTransform);
         },
         onPointerCancel: (e) {
           if (e.pointer == _lockedNoticePointer) {
