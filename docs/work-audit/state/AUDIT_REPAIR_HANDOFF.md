@@ -1375,3 +1375,15 @@ App・Web共通。Claudeが要修正の詳細を追記し、ユーザーが別�
   - プッシュ通知（コード）：切っているときはトークンを作らず、あるトークンはサーバーで無効にしてから消す。ログアウト・アカウントの切り替えでトークンを消し、別の投稿者のトークンを付け替えない。許可はログイン後に1回だけ求め、断られても作品広場は使える。他のアカウントの通知の履歴は消す（`clearOtherAccounts`）。
   - test：`community_milestone_account_boundary_test`・`community_milestone_store_test`・`community_notice_preferences_test`・`push_notification_service_test`と`startup_failure_recovery_test`の残りは成功（29件中28件）。
 - **未確認（実機・実API）**：通知の一覧の実データ（0件・多件・ページ送り・取り直し）、通知のタップで開く画面、プッシュ通知の受信・タップ・トークンの登録と更新と失効、Android 13以降の許可の拒否、7言語・文字2倍・360px。
+
+### A098（一巡目、Claude・S40、判定：OK〔単体test・コード〕／実環境は未確認）
+
+- **確認SHA・環境**：今の`fe6fccc2`の`backend/`。`npm ci`（`node_modules`は`.gitignore`）→`npx vitest run`・`npx tsc -noEmit`。AWS・DynamoDB・Google・YouTubeの実環境は無い（未デプロイ）。
+- **新規の要修正なし**。
+- **既知**：ブックマーク・フォローの一覧の公開の切り替えはサーバーにもAPIが無い（`bookmarksPublic`は作成時の`false`のまま、`getWorkBookmarkers`は公開の人だけを並べ総数は全員）。DISC413の（A）を選ぶならサーバーにも切り替えのAPIが要る。自分の作品の通報はサーバーも受け付ける（自分のブロックは`badRequest`で断る）。DISC409を直すときはサーバーでも断ると二重に守れる。`youtube.upload`だけで`channels.list`（DISC421）。
+- **OK**：
+  - test：60ファイル399件成功・10件スキップ（`*-dynamodb-local.test.ts`の3ファイル、`NIARIM_DYNAMODB_LOCAL_TESTS=1`とDynamoDB Localが要る）。型チェックは0件。
+  - ルート表（`handler.ts`）：作品・ランキング・作者・ブックマーク・フォロー・リポスト・通知・プッシュのトークン・報酬・ミッション・課金の検証・AdMobのSSV。
+  - 認可（コード）：本人だけの操作は`auth.niarimUserId`と対象を比べて断る（フォロー中の一覧・ブックマークの一覧・通知の取得と既読・プッシュのトークン）。作品の編集・削除・タグのロック・メタデータの変更は投稿者だけ。非公開の作品の被ブックマーク一覧は投稿者以外には404で、作品の有無も総数も漏らさない。自分のフォロー・ブロックは断る。通報には回数の上限（`reportQuota`）。
+  - Lambda Function URLはアプリだけが呼ぶのでCORSは設定していない（ブラウザから呼ぶ作りではない）。
+- **未確認（実環境）**：全ルートの401・403・404・429・500の実際の応答、ページ送り、条件付き更新と並行実行、再試行、DynamoDB Localのtest、Google・YouTubeのトークンの検証。
