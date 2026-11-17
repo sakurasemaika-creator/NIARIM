@@ -1515,7 +1515,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpAutoSaveDesc =>
-      'A save dedicated to recovery in case of a crash or file corruption. It saves automatically every time there\'s a change, such as drawing, and overwrites the oldest of up to 3 saves. It\'s managed completely separately from manual saves (save slots and the save tree) and is not a substitute for regular saving. You\'re only asked whether to restore it when relaunching the app after an abnormal exit.';
+      'A save dedicated to recovery in case of a crash or file corruption. It saves automatically every time there\'s a change, such as drawing, and overwrites the oldest of up to 3 saves. It\'s managed completely separately from manual saves (save slots and the save tree) and is not a substitute for regular saving. When you open a project with a different autosaved version, you can choose whether to restore it.';
+
+  @override
+  String get canvasAutosaveRecoveryTitle => 'Restore autosave';
+
+  @override
+  String get canvasAutosaveRecoveryBody =>
+      'An autosave contains different changes from this project. Open the autosaved version?';
 
   @override
   String get helpSaveSlotTitle => 'Save Slot';

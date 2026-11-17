@@ -1484,7 +1484,14 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get helpAutoSaveDesc =>
-      '충돌이나 파일 손상이 발생했을 때를 위한 복원 전용 저장입니다. 그리기 등의 변경이 있을 때마다 자동으로 저장되며, 최대 3개까지 오래된 순서로 덮어씌워집니다. 수동 저장（세이브 슬롯・세이브 트리）과는 완전히 별도로 관리되며, 일반 저장을 대체하지는 않습니다. 앱이 비정상 종료된 후 재시작할 때만 복원할지 묻습니다.';
+      '충돌이나 파일 손상이 발생했을 때를 위한 복원 전용 저장입니다. 그리기 등의 변경이 있을 때마다 자동으로 저장되며, 최대 3개까지 오래된 순서로 덮어씌워집니다. 수동 저장（세이브 슬롯・세이브 트리）과는 완전히 별도로 관리되며, 일반 저장을 대체하지는 않습니다. 작품을 열 때 내용이 다른 자동 저장본이 있으면 복원 여부를 선택할 수 있습니다.';
+
+  @override
+  String get canvasAutosaveRecoveryTitle => '자동 저장 복원';
+
+  @override
+  String get canvasAutosaveRecoveryBody =>
+      '이 작품과 내용이 다른 자동 저장본이 있습니다. 자동 저장본을 여시겠습니까?';
 
   @override
   String get helpSaveSlotTitle => '세이브 슬롯';

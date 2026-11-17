@@ -1480,7 +1480,14 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get helpAutoSaveDesc =>
-      'クラッシュやファイル破損が起きた時のための復元専用の保存です。描画などの変更があるたびに自動で保存され、最大3件まで古い順に上書きされます。手動保存（セーブスロット・セーブツリー）とは完全に別で管理されており、通常の保存の代わりにはなりません。アプリを異常終了した後の再起動時のみ、復元するかどうかを尋ねられます。';
+      'クラッシュやファイル破損が起きた時のための復元専用の保存です。描画などの変更があるたびに自動で保存され、最大3件まで古い順に上書きされます。手動保存（セーブスロット・セーブツリー）とは完全に別で管理されており、通常の保存の代わりにはなりません。作品を開いたときに内容が異なる自動保存があれば、復元するかどうかを尋ねられます。';
+
+  @override
+  String get canvasAutosaveRecoveryTitle => '自動保存から復元';
+
+  @override
+  String get canvasAutosaveRecoveryBody =>
+      'この作品と内容が異なる自動保存があります。その内容で作品を開きますか？';
 
   @override
   String get helpSaveSlotTitle => 'セーブスロット';

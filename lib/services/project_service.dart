@@ -2324,6 +2324,42 @@ class ProjectService extends ChangeNotifier {
   /// 自動保存データを既存プロジェクトへ復元する（クラッシュ復元専用）。
   /// プロジェクトIDは維持したまま、シーン・タイルの内容のみ自動保存時点へ戻す。
   void restoreFromAutosave(String projectId, NiaproData data) {
+    final idx = _projects.indexWhere((p) => p.id == projectId);
+    if (idx < 0) return;
+    final tiles = tileManagerOf(projectId);
+    if (tiles.canvasWidth != data.project.drawingWidth ||
+        tiles.canvasHeight != data.project.drawingHeight) {
+      final before = _captureTimeline(projectId);
+      final restoredTiles = TileManager(
+        canvasWidth: data.project.drawingWidth,
+        canvasHeight: data.project.drawingHeight,
+        compositeCacheMax: _tileCacheBudget,
+      )..importAll(data.tileData);
+      _tileManagers[projectId] = restoredTiles;
+      _installAutosave(projectId, idx, data);
+      final after = _captureTimeline(projectId);
+      _undoManager?.push(
+        ProjectEditUndoAction(
+          'Restore saved project',
+          () {
+            tiles.markAllTilesDirty();
+            _tileManagers[projectId] = tiles;
+            _restoreTimeline(projectId, before, const {});
+          },
+          () {
+            restoredTiles.markAllTilesDirty();
+            _tileManagers[projectId] = restoredTiles;
+            _restoreTimeline(projectId, after, const {});
+          },
+          retainedMaterialIds: _materialIdsIn(
+            before.scenes,
+          ).followedBy(_materialIdsIn(after.scenes)),
+        ),
+        projectId: projectId,
+      );
+      notifyListeners();
+      return;
+    }
     if (!_recordingTimelineEdits.contains(projectId) && _undoManager != null) {
       editTimeline(
         projectId,
@@ -2332,8 +2368,12 @@ class ProjectService extends ChangeNotifier {
       );
       return;
     }
-    final idx = _projects.indexWhere((p) => p.id == projectId);
-    if (idx < 0) return;
+    _installAutosave(projectId, idx, data);
+    tiles.importAll(data.tileData);
+    notifyListeners();
+  }
+
+  void _installAutosave(String projectId, int idx, NiaproData data) {
     final live = _projects[idx];
     _projects[idx] = data.project.copyWith(
       id: projectId,
@@ -2346,22 +2386,12 @@ class ProjectService extends ChangeNotifier {
       isFavorite: live.isFavorite,
       tags: live.tags,
     );
-    _scenes[projectId] = data.scenes;
+    _scenes[projectId] = List.of(data.scenes);
     _layerHomes[projectId] = buildLayerHomeIndex(data.scenes);
-    final tm = _tileManagers.putIfAbsent(
-      projectId,
-      () => TileManager(
-        canvasWidth: data.project.drawingWidth,
-        canvasHeight: data.project.drawingHeight,
-        compositeCacheMax: _tileCacheBudget,
-      ),
-    );
-    tm.importAll(data.tileData);
     _layerIdCounters[projectId] = math.max(
       _layerIdCounters[projectId] ?? 1,
       _maxLayerCounter(data.scenes),
     );
-    notifyListeners();
   }
 
   // ─── 自動塗り連携 ─────────────────────────────────────────────────────
@@ -2639,12 +2669,14 @@ class ProjectService extends ChangeNotifier {
   /// （タイル）の両方を複製する。表示範囲レイヤー（common・
   /// timelineImage・timelineVideo・watermark）はホームが別フレームに
   /// 存在する参照であり、フレーム単位の複製対象ではないため除外する。
+  /// 切り取り元のフレームを削除する場合は [transferFrameAnchors] も指定する。
   void insertDuplicatedFrame({
     required String projectId,
     required String sourceSceneId,
     required int sourceFrameIndex,
     required String targetSceneId,
     required int insertAt,
+    bool transferFrameAnchors = false,
   }) {
     if (!_recordingTimelineEdits.contains(projectId) && _undoManager != null) {
       editTimeline(
@@ -2656,6 +2688,7 @@ class ProjectService extends ChangeNotifier {
           sourceFrameIndex: sourceFrameIndex,
           targetSceneId: targetSceneId,
           insertAt: insertAt,
+          transferFrameAnchors: transferFrameAnchors,
         ),
         changesTiles: true,
       );
@@ -2727,7 +2760,28 @@ class ProjectService extends ChangeNotifier {
         .entries
         .map((e) => e.value.copyWith(index: e.key))
         .toList();
-    scenes[targetSceneIdx] = targetScene.copyWith(frames: reindexed);
+    var updatedScene = _remapFrameAnchors(
+      targetScene,
+      reindexed,
+      (index) => index >= clampedInsertAt ? index + 1 : index,
+    );
+    if (transferFrameAnchors) {
+      updatedScene = updatedScene.copyWith(
+        markers: [
+          ...updatedScene.markers,
+          for (final marker in sourceScene.markers)
+            if (marker.frameIndex == sourceFrameIndex)
+              marker.copyWith(frameIndex: clampedInsertAt),
+        ]..sort((a, b) => a.frameIndex.compareTo(b.frameIndex)),
+        cameraKeyframes: [
+          ...updatedScene.cameraKeyframes,
+          for (final keyframe in sourceScene.cameraKeyframes)
+            if (keyframe.frameIndex == sourceFrameIndex)
+              keyframe.copyWith(frameIndex: clampedInsertAt),
+        ]..sort((a, b) => a.frameIndex.compareTo(b.frameIndex)),
+      );
+    }
+    scenes[targetSceneIdx] = updatedScene;
 
     // 表示範囲レイヤーのホーム位置インデックスも合わせて更新する（挿入位置
     // 以降がホームだったレイヤーは1つ後ろへ詰める）。
@@ -2801,7 +2855,10 @@ class ProjectService extends ChangeNotifier {
         .entries
         .map((e) => e.value.copyWith(index: e.key))
         .toList();
-    scenes[sceneIdx] = scene.copyWith(frames: reindexed);
+    scenes[sceneIdx] = _remapFrameAnchors(scene, reindexed, (index) {
+      if (index == frameIndex) return null;
+      return index > frameIndex ? index - 1 : index;
+    });
 
     // 表示範囲レイヤーのホーム位置インデックスも合わせて更新する。
     // 削除されたフレーム自体がホームだったレイヤーは実データごと消滅するため
@@ -2856,6 +2913,12 @@ class ProjectService extends ChangeNotifier {
     if (scene == null) return false;
     final currentCount = scene.frames.length;
     if (targetCount >= currentCount) return false;
+    if (scene.markers.any((marker) => marker.frameIndex >= targetCount) ||
+        scene.cameraKeyframes.any(
+          (keyframe) => keyframe.frameIndex >= targetCount,
+        )) {
+      return true;
+    }
     final tm = _tileManagers[projectId];
     final tiles = tm?.exportAll();
     for (int i = targetCount; i < currentCount; i++) {
@@ -2892,6 +2955,7 @@ class ProjectService extends ChangeNotifier {
     final sceneIdx = scenes.indexWhere((s) => s.id == sceneId);
     if (sceneIdx < 0) return;
     final clamped = targetCount.clamp(1, 1 << 30);
+    if (scenes[sceneIdx].frames.length == clamped) return;
     while (scenes[sceneIdx].frames.length < clamped) {
       addFrame(projectId, sceneId);
     }
@@ -2903,6 +2967,32 @@ class ProjectService extends ChangeNotifier {
         recordUndo: false,
       );
     }
+    _saveAsync(projectId);
+  }
+
+  Scene _remapFrameAnchors(
+    Scene scene,
+    List<Frame> frames,
+    int? Function(int) newIndexFor,
+  ) {
+    int? newIndex(int oldIndex) {
+      if (oldIndex < 0 || oldIndex >= scene.frames.length) return null;
+      return newIndexFor(oldIndex);
+    }
+
+    return scene.copyWith(
+      frames: frames,
+      cameraKeyframes: [
+        for (final keyframe in scene.cameraKeyframes)
+          if (newIndex(keyframe.frameIndex) case final int index)
+            keyframe.copyWith(frameIndex: index),
+      ]..sort((a, b) => a.frameIndex.compareTo(b.frameIndex)),
+      markers: [
+        for (final marker in scene.markers)
+          if (newIndex(marker.frameIndex) case final int index)
+            marker.copyWith(frameIndex: index),
+      ]..sort((a, b) => a.frameIndex.compareTo(b.frameIndex)),
+    );
   }
 
   /// フレームをカーソル固定方式で並び替える（シーン移動と同じ操作体系を
@@ -2928,6 +3018,16 @@ class ProjectService extends ChangeNotifier {
     if (sceneIdx < 0) return;
     final scene = scenes[sceneIdx];
     if (oldIndicesInNewOrder.length != scene.frames.length) return;
+    final oldToNew = <int, int>{
+      for (int newIdx = 0; newIdx < oldIndicesInNewOrder.length; newIdx++)
+        oldIndicesInNewOrder[newIdx]: newIdx,
+    };
+    if (oldToNew.length != scene.frames.length ||
+        oldToNew.keys.any(
+          (index) => index < 0 || index >= scene.frames.length,
+        )) {
+      return;
+    }
 
     final tm = _tileManagers[projectId];
     if (tm != null) {
@@ -2952,15 +3052,11 @@ class ProjectService extends ChangeNotifier {
       for (int newIdx = 0; newIdx < oldIndicesInNewOrder.length; newIdx++)
         scene.frames[oldIndicesInNewOrder[newIdx]].copyWith(index: newIdx),
     ];
-    scenes[sceneIdx] = scene.copyWith(frames: newFrames);
+    scenes[sceneIdx] = _remapFrameAnchors(scene, newFrames, (i) => oldToNew[i]);
 
     // 表示範囲レイヤーのホームインデックスも新しい並び順へ追従させる
     final homes = _layerHomes[projectId];
     if (homes != null) {
-      final oldToNew = <int, int>{
-        for (int newIdx = 0; newIdx < oldIndicesInNewOrder.length; newIdx++)
-          oldIndicesInNewOrder[newIdx]: newIdx,
-      };
       final updates = <String, LayerHome>{};
       homes.forEach((layerId, home) {
         if (home.sceneId == sceneId && oldToNew.containsKey(home.frameIndex)) {
@@ -2972,6 +3068,7 @@ class ProjectService extends ChangeNotifier {
       });
       updates.forEach((id, home) => homes[id] = home);
     }
+    _saveAsync(projectId);
     notifyListeners();
   }
 
@@ -3003,6 +3100,7 @@ class ProjectService extends ChangeNotifier {
     final sorted = List<CameraKeyframe>.from(keyframes)
       ..sort((a, b) => a.frameIndex.compareTo(b.frameIndex));
     scenes[idx] = scenes[idx].copyWith(cameraKeyframes: sorted);
+    _saveAsync(projectId);
     notifyListeners();
   }
 
@@ -3080,6 +3178,7 @@ class ProjectService extends ChangeNotifier {
     final idx = scenes.indexWhere((s) => s.id == sceneId);
     if (idx < 0) return;
     scenes[idx] = scenes[idx].copyWith(groups: groups);
+    _saveAsync(projectId);
     notifyListeners();
   }
 
@@ -3152,6 +3251,7 @@ class ProjectService extends ChangeNotifier {
     final sorted = List<TimelineMarker>.from(markers)
       ..sort((a, b) => a.frameIndex.compareTo(b.frameIndex));
     scenes[idx] = scenes[idx].copyWith(markers: sorted);
+    _saveAsync(projectId);
     notifyListeners();
   }
 
@@ -3219,6 +3319,7 @@ class ProjectService extends ChangeNotifier {
     final idx = scenes.indexWhere((s) => s.id == sceneId);
     if (idx < 0) return;
     scenes[idx] = scenes[idx].copyWith(effectFilters: filters);
+    _saveAsync(projectId);
     notifyListeners();
   }
 

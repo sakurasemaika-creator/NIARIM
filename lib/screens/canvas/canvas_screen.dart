@@ -1416,36 +1416,36 @@ class _CanvasScreenState extends State<CanvasScreen> {
     super.dispose();
   }
 
-  /// クラッシュ・ファイル破損時の復元用：プロジェクトの最終保存より新しい
-  /// 自動保存があれば、確認ダイアログを出さずそのまま自動的に復元して
-  /// 再開する（プロジェクトを開いた際、
-  /// 自動保存データがあれば最後の自動保存から自動的に復元する）。
-  /// 自動保存は常に「その時点までの最新の編集内容」を表すため、これへ
-  /// 揃えることで作業を失うことはない（確認ダイアログを出して「無視」を
-  /// 選ばれると、その分の編集内容が失われてしまう）。
-  ///
-  /// CanvasScreenはタイムラインモードとの往復（context.go）のたびにWidget
-  /// ごと再生成されるため、Widget側の状態フラグだけでは「編集を再開した
-  /// だけ」「タイムラインからキャンバスへ戻っただけ」でも毎回この処理が
-  /// 走ってしまっていた（アプリセッション中に一度も明示保存していない限り
-  /// 自動保存の方が新しいままになるため）。AutosaveService側にアプリ
-  /// セッション単位で「確認済みか」を記録することで、1セッション中に
-  /// 一度だけ行うようにしている。
+  /// 時計の変更で順序を誤らないよう、内容が異なる場合に復元を選べる。
   Future<void> _checkCrashRecovery(AutosaveService autosave) async {
-    if (!mounted) return;
-    if (autosave.hasPromptedThisSession(widget.projectId)) return;
-    autosave.markPrompted(widget.projectId);
-    final slot = autosave.latestSlotFor(widget.projectId);
-    if (slot == null) return;
-    final project = context
-        .read<ProjectService>()
-        .projects
-        .where((p) => p.id == widget.projectId)
-        .firstOrNull;
-    if (project == null || !slot.savedAt.isAfter(project.updatedAt)) return;
-    final data = await autosave.restore(widget.projectId, slot.slotIndex);
-    if (data == null || !mounted) return;
-    context.read<ProjectService>().restoreFromAutosave(widget.projectId, data);
+    final projectId = widget.projectId;
+    if (!mounted || autosave.hasPromptedThisSession(projectId)) return;
+    final projects = context.read<ProjectService>();
+    final data = await autosave.recoveryCandidate(projects, projectId);
+    if (!mounted || autosave.hasPromptedThisSession(projectId)) return;
+    autosave.markPrompted(projectId);
+    if (data == null) return;
+    final l10n = AppLocalizations.of(context)!;
+    final restore = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l10n.canvasAutosaveRecoveryTitle),
+        content: Text(l10n.canvasAutosaveRecoveryBody),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: Text(l10n.commonCancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: Text(l10n.commonRestore),
+          ),
+        ],
+      ),
+    );
+    if (mounted && restore == true) {
+      projects.restoreFromAutosave(projectId, data);
+    }
   }
 
   /// 不足素材の検出。プロジェクトを開いた際に参照先の素材ファイルが

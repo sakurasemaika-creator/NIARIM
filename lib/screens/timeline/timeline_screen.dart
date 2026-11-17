@@ -3861,6 +3861,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
         ps.duplicateFrame(widget.projectId, sceneId, idx);
       }
     });
+    unawaited(_saveFrameEdit());
     setState(() {
       _selectedFrameIndices.clear();
       _isFrameMultiSelect = false;
@@ -3880,6 +3881,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
         ps.removeFrame(widget.projectId, sceneId, idx);
       }
     });
+    unawaited(_saveFrameEdit());
     setState(() {
       _selectedFrameIndices.clear();
       _isFrameMultiSelect = false;
@@ -3961,10 +3963,10 @@ class _TimelineScreenState extends State<TimelineScreen> {
     if (!movingFrames && !_canAddFrames(sortedSourceIndices.length)) return;
     final ps = context.read<ProjectService>();
     final insertAt = _frameMoveCursorPos.clamp(0, _totalFrames);
+    final sameScene = clip.sceneId == targetSceneId;
     ps.editTimeline(widget.projectId, 'Paste frames', () {
       var insertedSoFar = 0;
       for (final originalIdx in sortedSourceIndices) {
-        final sameScene = clip.sceneId == targetSceneId;
         final effectiveSrcIdx = (sameScene && originalIdx >= insertAt)
             ? originalIdx + insertedSoFar
             : originalIdx;
@@ -3974,6 +3976,13 @@ class _TimelineScreenState extends State<TimelineScreen> {
           sourceFrameIndex: effectiveSrcIdx,
           targetSceneId: targetSceneId,
           insertAt: insertAt + insertedSoFar,
+          // When cutting an entire scene into another, the first source
+          // frame survives because a scene must keep at least one frame.
+          transferFrameAnchors:
+              clip.isCut &&
+              (sameScene ||
+                  movingFrames ||
+                  originalIdx != sortedSourceIndices.first),
         );
         insertedSoFar++;
       }
@@ -3981,7 +3990,6 @@ class _TimelineScreenState extends State<TimelineScreen> {
         // 貼り付けによって挿入された分だけ、切り取り元より後ろにあった
         // 元フレームのインデックスが後ろへずれているため、削除前に
         // 実際の位置へ補正し、降順に削除する。
-        final sameScene = clip.sceneId == targetSceneId;
         final m = sortedSourceIndices.length;
         final currentPositions =
             sortedSourceIndices
@@ -4002,6 +4010,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
         }
       }
     });
+    unawaited(_saveFrameEdit());
     setState(() {
       _isFramePasteMode = false;
       _frameClipboard = null;
@@ -7130,6 +7139,15 @@ class _TimelineScreenState extends State<TimelineScreen> {
     if (mounted) context.go('/canvas/${widget.projectId}');
   }
 
+  Future<void> _saveFrameEdit() async {
+    try {
+      await context.read<ProjectService>().saveProject(widget.projectId);
+    } catch (error) {
+      debugPrint('timeline: saving frame changes failed: $error');
+      if (mounted) await _showSaveFailedDialog();
+    }
+  }
+
   Future<void> _showSaveFailedDialog() {
     final l10n = AppLocalizations.of(context)!;
     return showDialog(
@@ -7402,6 +7420,10 @@ class _TimelineScreenState extends State<TimelineScreen> {
                         frames - ps.frameCount(widget.projectId, sceneId);
                     if (added > 0 && !_canAddFrames(added)) return;
                     ps.setSceneFrameCount(widget.projectId, sceneId, frames);
+                    setState(() {
+                      _currentFrame = _currentFrame.clamp(0, frames - 1);
+                      _selectedFrameIndices.removeWhere((i) => i >= frames);
+                    });
                     if (ctx.mounted) Navigator.pop(ctx);
                   },
                   child: Text(l10n.commonOk),

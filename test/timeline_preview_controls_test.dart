@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/app.dart';
 import 'package:niarim/app_bootstrap.dart';
+import 'package:niarim/engine/niapro_serializer.dart';
 import 'package:niarim/router.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/models/layer.dart';
@@ -175,6 +176,18 @@ void main() {
     expect(tester.takeException(), isNull);
     expect(timeline, findsOneWidget);
     expect(service.frameCount(id, sceneId), 8);
+    var persisted = false;
+    for (var attempt = 0; attempt < 120 && !persisted; attempt++) {
+      persisted = (await tester.runAsync(() async {
+        final path =
+            '${await NiaproSerializer.projectsBasePath()}/$id/$id.niapro';
+        await Future<void>.delayed(const Duration(milliseconds: 25));
+        final saved = await NiaproSerializer.load(path);
+        return saved.scenes.single.frames.length == 8;
+      }))!;
+      await tester.pump(const Duration(milliseconds: 25));
+    }
+    expect(persisted, isTrue);
 
     final layer = service.addLayer(
       projectId: id,

@@ -1543,7 +1543,14 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get helpAutoSaveDesc =>
-      'Un guardado dedicado a la recuperación en caso de fallo o corrupción de archivo. Se guarda automáticamente cada vez que hay un cambio, como dibujar, y sobrescribe el más antiguo de un máximo de 3 guardados. Se gestiona de forma completamente separada de los guardados manuales (ranuras de guardado y árbol de guardado) y no sustituye al guardado habitual. Solo se te pregunta si quieres restaurarlo al reiniciar la aplicación tras un cierre anómalo.';
+      'Un guardado dedicado a la recuperación en caso de fallo o corrupción de archivo. Se guarda automáticamente cada vez que hay un cambio, como dibujar, y sobrescribe el más antiguo de un máximo de 3 guardados. Se gestiona de forma completamente separada de los guardados manuales (ranuras de guardado y árbol de guardado) y no sustituye al guardado habitual. Al abrir un proyecto con una versión automática distinta, puedes elegir si quieres restaurarla.';
+
+  @override
+  String get canvasAutosaveRecoveryTitle => 'Restaurar guardado automático';
+
+  @override
+  String get canvasAutosaveRecoveryBody =>
+      'Hay una versión guardada automáticamente con contenido distinto. ¿Quieres abrirla?';
 
   @override
   String get helpSaveSlotTitle => 'Ranura de guardado';
