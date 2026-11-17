@@ -13653,6 +13653,30 @@ abstract class AppLocalizations {
   /// **'YouTubeへアップロードしています…'**
   String get communityPostStatusUploading;
 
+  /// No description provided for @communityPostCancelUpload.
+  ///
+  /// In ja, this message translates to:
+  /// **'アップロードを取り消す'**
+  String get communityPostCancelUpload;
+
+  /// No description provided for @communityPostKeepUploading.
+  ///
+  /// In ja, this message translates to:
+  /// **'アップロードを続ける'**
+  String get communityPostKeepUploading;
+
+  /// No description provided for @communityPostCancelUploadConfirm.
+  ///
+  /// In ja, this message translates to:
+  /// **'アップロードを取り消しますか？入力した内容はこの画面に残ります。'**
+  String get communityPostCancelUploadConfirm;
+
+  /// No description provided for @communityPostStatusUploadCancelled.
+  ///
+  /// In ja, this message translates to:
+  /// **'アップロードを中止しました。完了直前に中止した場合は、再試行の前にYouTube Studioで動画を確認してください。'**
+  String get communityPostStatusUploadCancelled;
+
   /// No description provided for @communityPostStatusRegistering.
   ///
   /// In ja, this message translates to:

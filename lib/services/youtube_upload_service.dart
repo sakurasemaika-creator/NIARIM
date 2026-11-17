@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math' as math;
@@ -12,8 +13,29 @@ class YoutubeUploadResult {
   final String videoId;
 }
 
-typedef YoutubeUploadProgress =
-    void Function(int uploadedBytes, int totalBytes);
+typedef YoutubeUploadProgress = void Function(
+  int uploadedBytes,
+  int totalBytes,
+);
+
+/// An upload can be stopped while sending, probing, or waiting to retry.
+class YoutubeUploadCancellation {
+  final _trigger = Completer<void>();
+
+  bool get isCancelled => _trigger.isCompleted;
+
+  void cancel() {
+    if (!isCancelled) _trigger.complete();
+  }
+
+  void _check() {
+    if (isCancelled) throw const YoutubeUploadCancelled();
+  }
+}
+
+class YoutubeUploadCancelled implements Exception {
+  const YoutubeUploadCancelled();
+}
 
 /// YouTube Data API v3へ動画を直接アップロードするクライアント。
 ///
@@ -47,8 +69,10 @@ class YoutubeUploadService {
     DateTime? scheduledPublishAt,
     String? mimeType,
     YoutubeUploadProgress? onProgress,
+    YoutubeUploadCancellation? cancellation,
     int chunkSize = defaultChunkSize,
   }) async {
+    cancellation?._check();
     if (accessToken.isEmpty) {
       throw ArgumentError.value(accessToken, 'accessToken', '空です');
     }
@@ -99,7 +123,10 @@ class YoutubeUploadService {
       tags: tags,
       privacyStatus: privacyStatus,
       scheduledPublishAt: scheduledPublishAt,
+      cancellation: cancellation,
     );
+
+    cancellation?._check();
 
     final handle = await file.open(mode: FileMode.read);
     try {
@@ -108,6 +135,7 @@ class YoutubeUploadService {
       onProgress?.call(0, totalBytes);
 
       while (offset < totalBytes) {
+        cancellation?._check();
         await handle.setPosition(offset);
         final remaining = totalBytes - offset;
         final wanted = math.min(chunkSize, remaining);
@@ -124,6 +152,7 @@ class YoutubeUploadService {
             start: offset,
             totalBytes: totalBytes,
             mimeType: uploadMimeType,
+            cancellation: cancellation,
           );
 
           if (_isSuccess(response.statusCode)) {
@@ -132,6 +161,7 @@ class YoutubeUploadService {
             return YoutubeUploadResult(videoId: id);
           }
 
+          cancellation?._check();
           if (response.statusCode == 308) {
             offset = _nextOffset(response, fallback: offset + bytes.length);
             retry = 0;
@@ -144,12 +174,17 @@ class YoutubeUploadService {
               throw YoutubeUploadException.fromResponse(response);
             }
             retry++;
-            await _backoff(retry, response.headers['retry-after']);
+            await _backoff(
+              retry,
+              response.headers['retry-after'],
+              cancellation,
+            );
             final status = await _queryStatus(
               sessionUri: sessionUri,
               accessToken: accessToken,
               totalBytes: totalBytes,
               fallback: offset,
+              cancellation: cancellation,
             );
             if (status.videoId case final String id) {
               onProgress?.call(totalBytes, totalBytes);
@@ -161,20 +196,24 @@ class YoutubeUploadService {
           }
 
           throw YoutubeUploadException.fromResponse(response);
+        } on YoutubeUploadCancelled {
+          rethrow;
         } on YoutubeUploadException {
           rethrow;
         } on Object catch (error) {
+          cancellation?._check();
           if (retry >= maxRetries) {
             throw YoutubeUploadException('YouTubeへの動画送信に失敗しました', cause: error);
           }
           retry++;
-          await _backoff(retry, null);
+          await _backoff(retry, null, cancellation);
           try {
             final status = await _queryStatus(
               sessionUri: sessionUri,
               accessToken: accessToken,
               totalBytes: totalBytes,
               fallback: offset,
+              cancellation: cancellation,
             );
             if (status.videoId case final String id) {
               onProgress?.call(totalBytes, totalBytes);
@@ -182,6 +221,8 @@ class YoutubeUploadService {
             }
             offset = status.nextOffset;
             onProgress?.call(offset, totalBytes);
+          } on YoutubeUploadCancelled {
+            rethrow;
           } on Object {
             // 状態照会自体が一時的に失敗した場合は同じchunkを再送する。
           }
@@ -203,28 +244,34 @@ class YoutubeUploadService {
     required List<String> tags,
     required String privacyStatus,
     required DateTime? scheduledPublishAt,
+    required YoutubeUploadCancellation? cancellation,
   }) async {
-    final request = http.Request('POST', _createVideoUri)
-      ..headers.addAll(<String, String>{
-        'authorization': 'Bearer $accessToken',
-        'content-type': 'application/json; charset=UTF-8',
-        'x-upload-content-length': '$totalBytes',
-        'x-upload-content-type': mimeType,
-      })
-      ..body = jsonEncode(<String, Object>{
-        'snippet': <String, Object>{
-          'title': title,
-          if (description.isNotEmpty) 'description': description,
-          if (tags.isNotEmpty) 'tags': tags,
-        },
-        'status': <String, Object>{
-          'privacyStatus': privacyStatus,
-          if (scheduledPublishAt != null)
-            'publishAt': scheduledPublishAt.toUtc().toIso8601String(),
-        },
-      });
+    final request =
+        http.AbortableRequest(
+            'POST',
+            _createVideoUri,
+            abortTrigger: cancellation?._trigger.future,
+          )
+          ..headers.addAll(<String, String>{
+            'authorization': 'Bearer $accessToken',
+            'content-type': 'application/json; charset=UTF-8',
+            'x-upload-content-length': '$totalBytes',
+            'x-upload-content-type': mimeType,
+          })
+          ..body = jsonEncode(<String, Object>{
+            'snippet': <String, Object>{
+              'title': title,
+              if (description.isNotEmpty) 'description': description,
+              if (tags.isNotEmpty) 'tags': tags,
+            },
+            'status': <String, Object>{
+              'privacyStatus': privacyStatus,
+              if (scheduledPublishAt != null)
+                'publishAt': scheduledPublishAt.toUtc().toIso8601String(),
+            },
+          });
 
-    final response = await http.Response.fromStream(await _http.send(request));
+    final response = await _send(request, cancellation);
     if (!_isSuccess(response.statusCode)) {
       throw YoutubeUploadException.fromResponse(response);
     }
@@ -248,16 +295,22 @@ class YoutubeUploadService {
     required int start,
     required int totalBytes,
     required String mimeType,
+    required YoutubeUploadCancellation? cancellation,
   }) async {
     final end = start + bytes.length - 1;
-    final request = http.Request('PUT', sessionUri)
-      ..headers.addAll(<String, String>{
-        'authorization': 'Bearer $accessToken',
-        'content-type': mimeType,
-        'content-range': 'bytes $start-$end/$totalBytes',
-      })
-      ..bodyBytes = bytes;
-    return http.Response.fromStream(await _http.send(request));
+    final request =
+        http.AbortableRequest(
+            'PUT',
+            sessionUri,
+            abortTrigger: cancellation?._trigger.future,
+          )
+          ..headers.addAll(<String, String>{
+            'authorization': 'Bearer $accessToken',
+            'content-type': mimeType,
+            'content-range': 'bytes $start-$end/$totalBytes',
+          })
+          ..bodyBytes = bytes;
+    return _send(request, cancellation);
   }
 
   /// `Content-Range: bytes */total` で現在位置を照会する。
@@ -269,14 +322,20 @@ class YoutubeUploadService {
     required String accessToken,
     required int totalBytes,
     required int fallback,
+    required YoutubeUploadCancellation? cancellation,
   }) async {
-    final request = http.Request('PUT', sessionUri)
-      ..headers.addAll(<String, String>{
-        'authorization': 'Bearer $accessToken',
-        'content-length': '0',
-        'content-range': 'bytes */$totalBytes',
-      });
-    final response = await http.Response.fromStream(await _http.send(request));
+    final request =
+        http.AbortableRequest(
+            'PUT',
+            sessionUri,
+            abortTrigger: cancellation?._trigger.future,
+          )
+          ..headers.addAll(<String, String>{
+            'authorization': 'Bearer $accessToken',
+            'content-length': '0',
+            'content-range': 'bytes */$totalBytes',
+          });
+    final response = await _send(request, cancellation);
     if (response.statusCode == 308) {
       return _YoutubeUploadStatus(
         nextOffset: _nextOffset(response, fallback: fallback),
@@ -315,10 +374,38 @@ class YoutubeUploadService {
     throw const YoutubeUploadException('YouTubeの完了レスポンスにvideoIdがありません');
   }
 
-  Future<void> _backoff(int retry, String? retryAfter) async {
+  Future<http.Response> _send(
+    http.AbortableRequest request,
+    YoutubeUploadCancellation? cancellation,
+  ) async {
+    cancellation?._check();
+    try {
+      return await http.Response.fromStream(await _http.send(request));
+    } on http.RequestAbortedException {
+      cancellation?._check();
+      rethrow;
+    }
+  }
+
+  Future<void> _backoff(
+    int retry,
+    String? retryAfter,
+    YoutubeUploadCancellation? cancellation,
+  ) async {
+    cancellation?._check();
     final serverSeconds = int.tryParse(retryAfter ?? '');
     final seconds = serverSeconds ?? math.min(1 << (retry - 1), 16);
-    await Future<void>.delayed(Duration(seconds: seconds));
+    final elapsed = Completer<void>();
+    final timer = Timer(Duration(seconds: seconds), elapsed.complete);
+    try {
+      await Future.any([
+        elapsed.future,
+        if (cancellation != null) cancellation._trigger.future,
+      ]);
+      cancellation?._check();
+    } finally {
+      timer.cancel();
+    }
   }
 
   static bool _isSuccess(int status) => status >= 200 && status < 300;

@@ -7944,6 +7944,20 @@ class AppLocalizationsEs extends AppLocalizations {
   String get communityPostStatusUploading => 'Subiendo a YouTube…';
 
   @override
+  String get communityPostCancelUpload => 'Cancelar la subida';
+
+  @override
+  String get communityPostKeepUploading => 'Continuar la subida';
+
+  @override
+  String get communityPostCancelUploadConfirm =>
+      '¿Cancelar la subida? Tus datos se conservarán en esta pantalla.';
+
+  @override
+  String get communityPostStatusUploadCancelled =>
+      'Se canceló la subida. Si estaba a punto de terminar, busca el vídeo en YouTube Studio antes de reintentar.';
+
+  @override
   String get communityPostStatusRegistering =>
       'Subida a YouTube completada. Registrando en la Plaza de Obras…';
 

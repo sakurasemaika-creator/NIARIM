@@ -7510,6 +7510,20 @@ class AppLocalizationsJa extends AppLocalizations {
   String get communityPostStatusUploading => 'YouTubeへアップロードしています…';
 
   @override
+  String get communityPostCancelUpload => 'アップロードを取り消す';
+
+  @override
+  String get communityPostKeepUploading => 'アップロードを続ける';
+
+  @override
+  String get communityPostCancelUploadConfirm =>
+      'アップロードを取り消しますか？入力した内容はこの画面に残ります。';
+
+  @override
+  String get communityPostStatusUploadCancelled =>
+      'アップロードを中止しました。完了直前に中止した場合は、再試行の前にYouTube Studioで動画を確認してください。';
+
+  @override
   String get communityPostStatusRegistering =>
       'YouTubeへのアップロードが完了しました。作品広場へ登録しています…';
 

@@ -7435,6 +7435,19 @@ class AppLocalizationsZh extends AppLocalizations {
   String get communityPostStatusUploading => '正在上传到YouTube…';
 
   @override
+  String get communityPostCancelUpload => '取消上传';
+
+  @override
+  String get communityPostKeepUploading => '继续上传';
+
+  @override
+  String get communityPostCancelUploadConfirm => '要取消上传吗？输入的内容将保留在此页面。';
+
+  @override
+  String get communityPostStatusUploadCancelled =>
+      '已取消上传。如果上传即将完成，请先在 YouTube Studio 中确认视频，再重试。';
+
+  @override
   String get communityPostStatusRegistering => '已上传到YouTube。正在登记到作品广场…';
 
   @override
@@ -17642,6 +17655,19 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get communityPostStatusUploading => '正在上傳到YouTube…';
+
+  @override
+  String get communityPostCancelUpload => '取消上傳';
+
+  @override
+  String get communityPostKeepUploading => '繼續上傳';
+
+  @override
+  String get communityPostCancelUploadConfirm => '要取消上傳嗎？輸入的內容會保留在此畫面。';
+
+  @override
+  String get communityPostStatusUploadCancelled =>
+      '已取消上傳。如果上傳即將完成，請先在 YouTube Studio 中確認影片，再重試。';
 
   @override
   String get communityPostStatusRegistering => '已上傳到YouTube。正在登錄到作品廣場…';

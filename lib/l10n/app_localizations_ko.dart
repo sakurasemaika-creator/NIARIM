@@ -4699,7 +4699,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String layerPanelCommonRemoveFrame(String name) {
-    return '이 프레임에서 “$name” 레이어를 숨길까요?';
+    return '이 프레임에서 「$name」 레이어를 숨길까요?';
   }
 
   @override
@@ -5855,12 +5855,12 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String canvasColorAdjustDrawFilterAdded(String name) {
-    return '그리기 필터에 ‘$name’을(를) 추가했습니다.';
+    return '그리기 필터에 「$name」을(를) 추가했습니다.';
   }
 
   @override
   String canvasColorAdjustEffectFilterAdded(String name) {
-    return '타임라인의 연출 필터에 ‘$name’을(를) 추가했습니다.';
+    return '타임라인의 연출 필터에 「$name」을(를) 추가했습니다.';
   }
 
   @override
@@ -7543,6 +7543,20 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get communityPostStatusUploading => 'YouTube에 업로드하는 중…';
+
+  @override
+  String get communityPostCancelUpload => '업로드 취소';
+
+  @override
+  String get communityPostKeepUploading => '업로드 계속';
+
+  @override
+  String get communityPostCancelUploadConfirm =>
+      '업로드를 취소하시겠습니까? 입력한 내용은 이 화면에 남습니다.';
+
+  @override
+  String get communityPostStatusUploadCancelled =>
+      '업로드가 취소되었습니다. 완료 직전에 취소했다면 다시 시도하기 전에 YouTube Studio에서 동영상을 확인하세요.';
 
   @override
   String get communityPostStatusRegistering =>

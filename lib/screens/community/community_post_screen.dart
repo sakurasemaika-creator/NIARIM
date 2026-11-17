@@ -35,6 +35,7 @@ enum _PostStatus {
   syncingAiFlag,
   syncingVisibility,
   uploading,
+  uploadCancelled,
   registering,
   uploadFailed,
   registrationRetryable,
@@ -95,7 +96,9 @@ class _PostFailure implements Exception {
 /// アカウントを永続保持し、NIARIM登録失敗・画面終了・アプリ終了後も動画を
 /// 再アップロードせずPOST /worksだけを再試行する。
 class CommunityPostScreen extends StatefulWidget {
-  const CommunityPostScreen({super.key});
+  const CommunityPostScreen({super.key, this.createUploader});
+
+  final YoutubeUploadService Function()? createUploader;
 
   @override
   State<CommunityPostScreen> createState() => _CommunityPostScreenState();
@@ -146,6 +149,8 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
   double _progress = 0;
   _PostStatus? _status;
   Object? _error;
+  YoutubeUploadCancellation? _uploadCancellation;
+  Future<bool?>? _uploadCancelPrompt;
 
   @override
   void initState() {
@@ -155,11 +160,49 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
 
   @override
   void dispose() {
+    _uploadCancellation?.cancel();
     _titleController.dispose();
     _youtubeTitleController.dispose();
     _descriptionController.dispose();
     _youtubeDescriptionController.dispose();
     super.dispose();
+  }
+
+  Future<void> _handleBusyBack() async {
+    final l10n = AppLocalizations.of(context)!;
+    final cancellation = _uploadCancellation;
+    if (cancellation == null) {
+      if (_status case final status?) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(_statusText(l10n, status))));
+      }
+      return;
+    }
+    if (cancellation.isCancelled || _uploadCancelPrompt != null) return;
+    final prompt = showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        scrollable: true,
+        title: Text(l10n.communityPostCancelUpload),
+        content: Text(l10n.communityPostCancelUploadConfirm),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(l10n.communityPostKeepUploading),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(l10n.communityPostCancelUpload),
+          ),
+        ],
+      ),
+    );
+    _uploadCancelPrompt = prompt;
+    try {
+      if (await prompt == true && mounted) setState(cancellation.cancel);
+    } finally {
+      _uploadCancelPrompt = null;
+    }
   }
 
   Future<void> _restorePendingUpload() async {
@@ -751,11 +794,14 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
 
       if (videoId == null) {
         if (!mounted) return;
+        final uploader =
+            widget.createUploader?.call() ?? YoutubeUploadService();
+        final cancellation = YoutubeUploadCancellation();
         setState(() {
+          _uploadCancellation = cancellation;
           _status = _PostStatus.uploading;
           _progress = 0;
         });
-        final uploader = YoutubeUploadService();
         try {
           final result = await uploader.uploadVideo(
             file: file!,
@@ -768,6 +814,7 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
             scheduledPublishAt: _youtubePrivacyStatus == 'scheduled'
                 ? _scheduledPublishAt
                 : null,
+            cancellation: cancellation,
             onProgress: (sent, total) {
               if (!mounted || total <= 0) return;
               setState(() => _progress = sent / total);
@@ -786,14 +833,20 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
             title: title,
           );
           if (!mounted) return;
+          if (await _uploadCancelPrompt == true) cancellation.cancel();
+          if (!mounted) return;
           setState(() {
             _youtubeVideoId = result.videoId;
             _uploadAccountId = uploadAccountId;
             _uploadAccountEmail = uploadAccountEmail;
             _progress = 1;
-            _status = _PostStatus.registering;
+            _status = cancellation.isCancelled
+                ? _PostStatus.registrationRetryable
+                : _PostStatus.registering;
           });
+          if (cancellation.isCancelled) return;
         } finally {
+          _uploadCancellation = null;
           uploader.close();
         }
       }
@@ -878,6 +931,8 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
         registeredVideoId,
         owner: registeredWork.authorId,
       );
+    } on YoutubeUploadCancelled {
+      if (mounted) setState(() => _status = _PostStatus.uploadCancelled);
     } catch (error) {
       // 未登録の保留動画がYouTubeから消されている場合、バックエンドは
       // VIDEO_NOT_FOUNDを返す。この状態は時間や再認証では直らないため、
@@ -918,6 +973,7 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
         _PostStatus.syncingVisibility =>
           l10n.communityPostStatusSyncingVisibility,
         _PostStatus.uploading => l10n.communityPostStatusUploading,
+        _PostStatus.uploadCancelled => l10n.communityPostStatusUploadCancelled,
         _PostStatus.registering => l10n.communityPostStatusRegistering,
         _PostStatus.uploadFailed => l10n.communityPostStatusUploadFailed,
         _PostStatus.registrationRetryable =>
@@ -975,8 +1031,24 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
     final retainedVideoId = _youtubeVideoId;
     return PopScope(
       canPop: !_busy,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop && _busy) _handleBusyBack();
+      },
       child: Scaffold(
-        appBar: AppBar(title: FitOrHideTitle(l10n.communityPostButton)),
+        appBar: AppBar(
+          title: FitOrHideTitle(l10n.communityPostButton),
+          actions: [
+            if (_uploadCancellation case final cancellation?)
+              IconButton(
+                key: const Key('communityPostCancelUpload'),
+                tooltip: l10n.communityPostCancelUpload,
+                onPressed: cancellation.isCancelled
+                    ? null
+                    : () => setState(cancellation.cancel),
+                icon: const Icon(Icons.close),
+              ),
+          ],
+        ),
         body: desktopCentered(
           context,
           SingleChildScrollView(

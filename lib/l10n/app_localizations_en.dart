@@ -7824,6 +7824,20 @@ class AppLocalizationsEn extends AppLocalizations {
   String get communityPostStatusUploading => 'Uploading to YouTube…';
 
   @override
+  String get communityPostCancelUpload => 'Cancel upload';
+
+  @override
+  String get communityPostKeepUploading => 'Keep uploading';
+
+  @override
+  String get communityPostCancelUploadConfirm =>
+      'Cancel the upload? Your entries will remain on this screen.';
+
+  @override
+  String get communityPostStatusUploadCancelled =>
+      'The upload was canceled. If it was almost done, check YouTube Studio for the video before trying again.';
+
+  @override
   String get communityPostStatusRegistering =>
       'Upload to YouTube complete. Registering in the Work Plaza…';
 

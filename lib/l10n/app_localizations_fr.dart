@@ -788,7 +788,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String creativeFolderDeleteBody(String name) {
-    return 'Supprimer « $name » ? Son contenu sera déplacé vers « Aucun dossier ».';
+    return 'Supprimer « $name » ? Son contenu sera déplacé vers « Aucun dossier ».';
   }
 
   @override
@@ -4955,7 +4955,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String layerPanelCommonRemoveFrame(String name) {
-    return 'Masquer « $name » sur cette image ?';
+    return 'Masquer « $name » sur cette image ?';
   }
 
   @override
@@ -6167,17 +6167,17 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get canvasColorAdjustAddToEffectFilter =>
+      'Ajouter aux filtres d’effet';
 
   @override
   String canvasColorAdjustDrawFilterAdded(String name) {
-    return '« $name » a été ajouté aux filtres de dessin.';
+    return '« $name » a été ajouté aux filtres de dessin.';
   }
 
   @override
   String canvasColorAdjustEffectFilterAdded(String name) {
-    return '« $name » a été ajouté aux filtres d’effets de la chronologie.';
+    return '« $name » a été ajouté aux filtres d’effets de la chronologie.';
   }
-      'Ajouter aux filtres d’effet';
 
   @override
   String get canvasColorAdjustMenuTitle => 'Réglage des couleurs';
@@ -7954,6 +7954,20 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get communityPostStatusUploading => 'Mise en ligne sur YouTube…';
+
+  @override
+  String get communityPostCancelUpload => 'Annuler l’envoi';
+
+  @override
+  String get communityPostKeepUploading => 'Poursuivre l’envoi';
+
+  @override
+  String get communityPostCancelUploadConfirm =>
+      'Annuler l’envoi ? Les informations saisies resteront à l’écran.';
+
+  @override
+  String get communityPostStatusUploadCancelled =>
+      'L’envoi a été annulé. S’il était presque terminé, vérifiez dans YouTube Studio si la vidéo y figure avant de réessayer.';
 
   @override
   String get communityPostStatusRegistering =>
