@@ -1,8 +1,8 @@
-# Full Dart/Flutter test suite in four deterministic file shards.
+# Full Dart/Flutter test suite in eight deterministic file shards.
 # Verification of the complete, current dev_branch regression suite after
 # coin-amount display migration, localization and backend integration repairs. The work
 # is independent and does not write production data or publish APKs.
-name: Flutter complete test suite (4 shards)
+name: Flutter complete test suite (8 shards)
 on:
   push:
     branches: [dev_branch]
@@ -13,7 +13,7 @@ on:
 permissions:
   contents: read
 concurrency:
-  group: niarim-full-shards-${{ github.ref }}
+  group: niarim-full-shards-${{ github.ref }}-${{ github.sha }}
   cancel-in-progress: true
 jobs:
   analyze:
@@ -39,7 +39,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        shard: [0, 1, 2, 3]
+        shard: [0, 1, 2, 3, 4, 5, 6, 7]
     runs-on: ubuntu-latest
     timeout-minutes: 55
     steps:
@@ -57,10 +57,11 @@ jobs:
         shell: bash
         env:
           SHARD: ${{ matrix.shard }}
+          SHARD_COUNT: ${{ strategy.job-total }}
         run: |
           set -euo pipefail
           mkdir -p reports
-          mapfile -t tests < <(find test -type f -name '*_test.dart' | LC_ALL=C sort | awk -v s="$SHARD" 'NR % 4 == s {print}')
+          mapfile -t tests < <(find test -type f -name '*_test.dart' | LC_ALL=C sort | awk -v s="$SHARD" -v n="$SHARD_COUNT" '(NR - 1) % n == s {print}')
           printf 'Shard %s: %s test files\\n' "$SHARD" "${#tests[@]}"
           if [ "${#tests[@]}" -eq 0 ]; then
             echo "No test files in shard!"

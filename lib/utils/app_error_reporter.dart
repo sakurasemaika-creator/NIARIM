@@ -117,7 +117,7 @@ class AppErrorReporter {
                 value.toLowerCase() == 'basic')) {
           return m[0]!;
         }
-        return '${prefix}[hidden]';
+        return '$prefix[hidden]';
       })
       .replaceAllMapped(_cookieHeader, (m) => '${m[1]}${m[2]}[hidden]')
       .replaceAll(_phone, '[phone]')

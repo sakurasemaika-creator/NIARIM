@@ -1,9 +1,12 @@
 name: Build APK
 
-# 最終確認用の手動Workflow。
+# 手動ビルドと、ビルド定義を変更した際の署名付き APK の検証。
 # 細かな修正ごとには起動せず、対象テスト・flutter analyze・必要な実キャプチャを先に完了し、
 # 一連の追加修正がすべて揃った最後に1回だけ起動する。
 on:
+  push:
+    branches: [dev_branch]
+    paths: [".github/workflows/build-apk.yml"]
   workflow_dispatch:
     inputs:
       build-type:
@@ -32,6 +35,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
+  BUILD_TYPE: ${{ inputs.build-type || 'release' }}
   # Public Function URL of niarim-api in ap-northeast-1.
   NIARIM_API_BASE_URL: https://ibjfhyoqvfanle62ltokgz6sry0fjqfh.lambda-url.ap-northeast-1.on.aws/
 
@@ -73,7 +77,7 @@ jobs:
       # The keystores live only in GitHub Actions encrypted Secrets, not in git.
       # Fail closed rather than silently producing a different SHA-1 each run.
       - name: 固定debug署名鍵を復元
-        if: ${{ inputs.build-type == 'debug' }}
+        if: ${{ env.BUILD_TYPE == 'debug' }}
         env:
           KEYSTORE_BASE64: ${{ secrets.NIARIM_DEBUG_KEYSTORE_BASE64 }}
           KEYSTORE_PASSWORD: ${{ secrets.NIARIM_DEBUG_STORE_PASSWORD }}
@@ -88,7 +92,7 @@ jobs:
           keytool -list -keystore "$RUNNER_TEMP/niarim-ci-debug.jks" -storepass "$KEYSTORE_PASSWORD" -alias niarim_ci_debug >/dev/null
 
       - name: 固定upload署名鍵を復元
-        if: ${{ inputs.build-type == 'release' }}
+        if: ${{ env.BUILD_TYPE == 'release' }}
         env:
           KEYSTORE_BASE64: ${{ secrets.NIARIM_UPLOAD_KEYSTORE_BASE64 }}
           KEYSTORE_PASSWORD: ${{ secrets.NIARIM_UPLOAD_STORE_PASSWORD }}
@@ -110,7 +114,7 @@ jobs:
         run: flutter analyze --no-fatal-infos
 
       - name: APKビルド（debug）
-        if: ${{ inputs.build-type == 'debug' }}
+        if: ${{ env.BUILD_TYPE == 'debug' }}
         env:
           NIARIM_DEBUG_KEYSTORE_PATH: ${{ runner.temp }}/niarim-ci-debug.jks
           NIARIM_DEBUG_STORE_PASSWORD: ${{ secrets.NIARIM_DEBUG_STORE_PASSWORD }}
@@ -142,13 +146,13 @@ jobs:
           flutter build apk "${args[@]}"
 
       - name: リリースでデバッグ接続オプションを拒否
-        if: ${{ inputs.build-type == 'release' && (inputs.connect_backend || inputs.connect_google_auth) }}
+        if: ${{ env.BUILD_TYPE == 'release' && (inputs.connect_backend || inputs.connect_google_auth) }}
         run: |
           echo "::error::リリースAPKではconnect_backendをオフにしてください"
           exit 1
 
       - name: 本番用バックエンド・Google認証の接続設定を検証
-        if: ${{ inputs.build-type == 'release' }}
+        if: ${{ env.BUILD_TYPE == 'release' }}
         env:
           GOOGLE_WEB_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           RELEASE_BANNER_ID: ${{ vars.NIARIM_ANDROID_BANNER_AD_UNIT_ID }}
@@ -175,7 +179,7 @@ jobs:
           echo "Release API, OAuth client and AdMob placements are configured."
 
       - name: APKビルド（release）
-        if: ${{ inputs.build-type == 'release' }}
+        if: ${{ env.BUILD_TYPE == 'release' }}
         env:
           NIARIM_UPLOAD_KEYSTORE_PATH: ${{ runner.temp }}/niarim-upload.jks
           NIARIM_UPLOAD_STORE_PASSWORD: ${{ secrets.NIARIM_UPLOAD_STORE_PASSWORD }}
@@ -191,21 +195,31 @@ jobs:
             --dart-define="NIARIM_ADMOB_ANDROID_BANNER_AD_UNIT_ID=$RELEASE_BANNER_ID" \
             --dart-define="NIARIM_ADMOB_ANDROID_RECTANGLE_AD_UNIT_ID=$RELEASE_RECTANGLE_ID"
 
+      - name: 配布APKの署名を検証
+        if: ${{ env.BUILD_TYPE == 'release' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          apksigner="$(find "$ANDROID_HOME/build-tools" -name apksigner -type f | sort -V | tail -1)"
+          test -x "$apksigner"
+          "$apksigner" verify --verbose build/app/outputs/flutter-apk/app-release.apk
+
       # Actions Storage（無料枠0.5GB）の上限に達していると、このステップ
       # だけが失敗してもビルド済みAPKは下のGitHub Releaseから取得できる。
       - name: APKをArtifactsへアップロード
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
-        continue-on-error: true
+        continue-on-error: ${{ github.event_name == 'workflow_dispatch' }}
         with:
-          name: niarim-${{ inputs.build-type }}-apk
-          path: build/app/outputs/flutter-apk/app-${{ inputs.build-type }}.apk
+          name: niarim-${{ env.BUILD_TYPE }}-apk
+          path: build/app/outputs/flutter-apk/app-${{ env.BUILD_TYPE }}.apk
+          if-no-files-found: error
           # APK本体は大きいため保持期間を最短にする。
           retention-days: 1
 
       # リリースビルドのR8マッピング/使用状況レポート（難読化後のクラス名
       # から元の名前を復元する際や、将来の同種の不具合調査に備えて保存）。
       - name: R8マッピング/使用状況レポートをArtifactsへアップロード
-        if: ${{ inputs.build-type == 'release' }}
+        if: ${{ env.BUILD_TYPE == 'release' }}
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
         continue-on-error: true
         with:
@@ -222,7 +236,7 @@ jobs:
       # Draft releases are visible only to accounts with write access.
       # They provide a private download fallback if GitHub Actions artifact storage is full.
       - name: 開発用デバッグAPKをドラフトReleaseへ保存（未公開）
-        if: ${{ inputs.build-type == 'debug' && inputs.connect_backend }}
+        if: ${{ github.event_name == 'workflow_dispatch' && env.BUILD_TYPE == 'debug' && inputs.connect_backend }}
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -239,14 +253,15 @@ jobs:
       # Public GitHub repository: NEVER publish a dev-backend test APK to Releases.
       # Testers can retrieve it from the run's short-lived Actions artifact instead.
       - name: APKをGitHub Releaseへ公開（Actions Storage逼迫時の代替配布）
-        if: ${{ !(inputs.build-type == 'debug' && inputs.connect_backend) }}
+        if: ${{ github.event_name == 'workflow_dispatch' && !(env.BUILD_TYPE == 'debug' && inputs.connect_backend) }}
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          TAG="build-${{ inputs.build-type }}-latest"
+          TAG="build-${{ env.BUILD_TYPE }}-latest"
           gh release delete "$TAG" --yes --cleanup-tag || true
           gh release create "$TAG" \
-            "build/app/outputs/flutter-apk/app-${{ inputs.build-type }}.apk" \
-            --title "NIARIM ${{ inputs.build-type }} 最新ビルド（実機確認用）" \
+            "build/app/outputs/flutter-apk/app-${{ env.BUILD_TYPE }}.apk" \
+            --target "${{ github.sha }}" \
+            --title "NIARIM ${{ env.BUILD_TYPE }} 最新ビルド（実機確認用）" \
             --notes "コミット ${{ github.sha }} からの最終確認ビルド。Actions Storage逼迫時の代替配布用のため、古いRelease履歴は残さず毎回上書きする。" \
             --prerelease
