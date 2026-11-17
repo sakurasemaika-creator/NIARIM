@@ -11,9 +11,14 @@ trap 'rm -rf "$staging"' EXIT
 curl --fail --silent --show-error --location --retry 2 --connect-timeout 15 \
   --max-time 120 --proto '=https' --proto-redir '=https' \
   --output "$staging/country.mmdb.gz" "$source"
-printf '%s  %s\n' "$expected_sha1" "$staging/country.mmdb.gz" | sha1sum --check
 mkdir "$staging/layer"
 gzip -dc "$staging/country.mmdb.gz" > "$staging/layer/country.mmdb"
+archive_sha1="$(sha1sum "$staging/country.mmdb.gz" | cut -d ' ' -f 1)"
+data_sha1="$(sha1sum "$staging/layer/country.mmdb" | cut -d ' ' -f 1)"
+if [[ "$expected_sha1" != "$archive_sha1" && "$expected_sha1" != "$data_sha1" ]]; then
+  printf 'DB-IP %s checksum mismatch (archive %s, data %s)\n' "$edition" "$archive_sha1" "$data_sha1" >&2
+  exit 1
+fi
 node - "$staging/layer/country.mmdb" <<'JS'
 const assert = require('node:assert/strict');
 const { open } = require('maxmind');
