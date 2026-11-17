@@ -8,12 +8,19 @@ import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/models/layer.dart' as model;
 import 'package:niarim/screens/canvas/widgets/filter_panel.dart';
 import 'package:niarim/services/filter_service.dart';
+import 'package:niarim/services/premium_service.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'helpers/first_use_tooltips.dart';
 import 'helpers/pick_filter_card.dart';
+
+class _ToneCurveAccess extends PremiumService {
+  @override
+  bool isFeatureAvailable(PremiumFeature feature) =>
+      feature == PremiumFeature.toneCurve;
+}
 
 /// Undo in the filter editor takes back one whole edit at a time: dragging a
 /// slider or a curve point is one step, not one step per frame of the drag.
@@ -114,7 +121,12 @@ void main() {
 
       final providers = await tester.runAsync(buildAppProviders);
       Widget app(Widget home) => MultiProvider(
-        providers: providers!,
+        providers: [
+          ...providers!,
+          ChangeNotifierProvider<PremiumService>(
+            create: (_) => _ToneCurveAccess(),
+          ),
+        ],
         child: MaterialApp(
           locale: const Locale('ja'),
           localizationsDelegates: AppLocalizations.localizationsDelegates,
