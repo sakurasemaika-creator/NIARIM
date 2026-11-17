@@ -3139,7 +3139,7 @@ class _FilterPanelState extends State<FilterPanel> {
     final feature = _premiumFeatureFor(filter.kind);
     if (feature != null &&
         !context.read<PremiumService>().isFeatureAvailable(feature)) {
-      showPremiumBanner(context);
+      showPremiumBanner(context, feature: feature);
       return;
     }
     setState(() => _applying = true);

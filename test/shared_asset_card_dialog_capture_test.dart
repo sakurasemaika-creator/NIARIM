@@ -13,10 +13,12 @@ import 'package:niarim/models/custom_automation.dart';
 import 'package:niarim/models/filter_def.dart';
 import 'package:niarim/models/workspace_preset.dart';
 import 'package:niarim/services/brush_service.dart';
+import 'package:niarim/services/premium_service.dart';
 import 'package:niarim/services/shared_asset_card_service.dart';
 import 'package:niarim/services/stamp_service.dart';
 import 'package:niarim/services/tone_service.dart';
 import 'package:niarim/widgets/premium_lock_widget.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'helpers/load_app_fonts.dart';
 import 'helpers/pump_real_async.dart';
@@ -210,6 +212,8 @@ void main() {
         if (dialog.evaluate().isNotEmpty) break;
       }
       expect(dialog, findsOneWidget, reason: kind);
+      expect(find.text(l10n.shareCardKeepOriginalNote), findsOneWidget);
+      expect(find.textContaining('SNSで画像を保存'), findsNothing);
       await pumpRealAsync(tester, const Duration(milliseconds: 550));
       final image = tester.widget<Image>(
         find.descendant(of: dialog, matching: find.byType(Image)).first,
@@ -254,10 +258,14 @@ void main() {
     }
     showPremiumBanner(
       screen,
+      feature: PremiumFeature.unlimitedDuration,
+      title: l10n.premiumBannerFullExportTitle,
       reason: l10n.exportLongProjectNote,
       continueLabel: l10n.exportFirst90Seconds,
     );
     await pumpRealAsync(tester, const Duration(milliseconds: 400));
+    expect(find.text('作品を全編書き出す'), findsOneWidget);
+    expect(find.text(l10n.exportLongProjectNote), findsOneWidget);
     expect(find.text('プレミアム会員の詳細を見る'), findsOneWidget);
     expect(find.text('特典の詳細を見る'), findsOneWidget);
     expect(find.textContaining('コンプリートパック'), findsNothing);
@@ -280,4 +288,53 @@ void main() {
     await tester.tap(find.text(l10n.exportFirst90Seconds));
     await tester.pumpAndSettle();
   }, timeout: const Timeout(Duration(minutes: 6)));
+
+  testWidgets('Each locked feature shows its own title and body', (
+    tester,
+  ) async {
+    final labels = lookupAppLocalizations(const Locale('ja'));
+    final premium = PremiumService();
+    addTearDown(premium.dispose);
+    for (final (feature, title, body) in [
+      (PremiumFeature.endCardEdit, labels.premiumFeatureEndLogo,
+          labels.premiumBannerEndCardBody),
+      (PremiumFeature.watermark, labels.premiumFeatureWatermark,
+          labels.premiumBannerWatermarkBody),
+      (PremiumFeature.toneCurve, labels.premiumFeatureToneCurve,
+          labels.premiumBannerToneCurveBody),
+      (PremiumFeature.levelAdjustment, labels.premiumFeatureLevelCorrection,
+          labels.premiumBannerLevelsBody),
+      (PremiumFeature.unlimitedDuration, labels.premiumFeatureMaxDuration,
+          labels.timelineDurationLimitBodyFree),
+      (PremiumFeature.customAutomation, labels.customAutomationTitle,
+          labels.premiumBannerAutomationBody),
+    ]) {
+      final trigger = ValueKey(feature);
+      await tester.pumpWidget(
+        ChangeNotifierProvider.value(
+          value: premium,
+          child: MaterialApp(
+            locale: const Locale('ja'),
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: Scaffold(
+              body: PremiumLockWidget(
+                key: trigger,
+                feature: feature,
+                child: const Text('Locked feature'),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.byKey(trigger));
+      await tester.pumpAndSettle();
+      expect(find.text(title), findsOneWidget, reason: feature.name);
+      expect(find.text(body), findsOneWidget, reason: feature.name);
+      expect(find.text(labels.exportFirst90Seconds), findsNothing);
+      await tester.tap(find.text(labels.commonClose));
+      await tester.pumpAndSettle();
+      expect(find.text(title), findsNothing);
+    }
+  });
 }

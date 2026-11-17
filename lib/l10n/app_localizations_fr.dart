@@ -2951,11 +2951,27 @@ class AppLocalizationsFr extends AppLocalizations {
   String get exportFirst90Seconds => 'Exporter les 90 premières secondes';
 
   @override
-  String get premiumBannerHeadline => 'Créez et exportez jusqu’à 2 heures';
+  String get premiumBannerFullExportTitle => 'Exporter le projet en entier';
 
   @override
-  String get premiumBannerBenefits =>
-      'Créez des projets plus longs et accédez à plus d’outils de finition. Les opales permettent aussi de débloquer ces avantages.';
+  String get premiumBannerEndCardBody =>
+      'L’abonnement Premium ou l’avantage de modification du logo de fin permet d’afficher ou de masquer le logo de fin officiel.';
+
+  @override
+  String get premiumBannerWatermarkBody =>
+      'Ajoutez et modifiez votre propre filigrane avec l’abonnement Premium ou l’avantage Filigrane.';
+
+  @override
+  String get premiumBannerToneCurveBody =>
+      'Ajustez la luminosité et les couleurs d’un calque de dessin avec Courbe de tonalité grâce à l’abonnement Premium ou à l’avantage correspondant.';
+
+  @override
+  String get premiumBannerLevelsBody =>
+      'Ajustez la plage tonale d’un calque de dessin avec Niveaux grâce à l’abonnement Premium ou à l’avantage correspondant.';
+
+  @override
+  String get premiumBannerAutomationBody =>
+      'Créez, modifiez et exécutez des automatisations avec l’abonnement Premium ou l’avantage Automatisations.';
 
   @override
   String get premiumBannerMembershipDetails =>
@@ -10619,7 +10635,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get shareCardKeepOriginalNote =>
-      'Enregistrez ou partagez le fichier PNG d’origine tel quel. Réenregistrer l’image depuis un réseau social peut effacer les données nécessaires à son import.';
+      'Enregistrez ou partagez le fichier PNG d’origine tel quel.';
 
   @override
   String get shareCardSaveToDevice => 'Enregistrer sur l’appareil';

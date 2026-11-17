@@ -2806,10 +2806,27 @@ class AppLocalizationsJa extends AppLocalizations {
   String get exportFirst90Seconds => '先頭90秒を書き出す';
 
   @override
-  String get premiumBannerHeadline => '最大2時間の制作・全編書き出し';
+  String get premiumBannerFullExportTitle => '作品を全編書き出す';
 
   @override
-  String get premiumBannerBenefits => '長尺作品をつくる、仕上げを調整する。必要な機能はオパールでも使えます。';
+  String get premiumBannerEndCardBody =>
+      '公式エンドロゴの表示・非表示は、プレミアム会員またはエンドロゴ編集の特典を利用中に設定できます。';
+
+  @override
+  String get premiumBannerWatermarkBody =>
+      '自分のウォーターマークの追加・編集は、プレミアム会員またはウォーターマークの特典を利用中にできます。';
+
+  @override
+  String get premiumBannerToneCurveBody =>
+      '描画レイヤーの明るさや色をトーンカーブで調整するには、プレミアム会員またはトーンカーブの特典が必要です。';
+
+  @override
+  String get premiumBannerLevelsBody =>
+      '描画レイヤーの明暗の範囲をレベル補正で調整するには、プレミアム会員またはレベル補正の特典が必要です。';
+
+  @override
+  String get premiumBannerAutomationBody =>
+      '自動操作の作成・編集・実行は、プレミアム会員または自動操作の特典を利用中にできます。';
 
   @override
   String get premiumBannerMembershipDetails => 'プレミアム会員の詳細を見る';
@@ -9761,8 +9778,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get shareCardCreatedTitle => '共有カードを作成しました';
 
   @override
-  String get shareCardKeepOriginalNote =>
-      '元のPNGファイルをそのまま保存・共有してください。SNSで画像を保存し直すと、読み込みに必要なデータが失われることがあります。';
+  String get shareCardKeepOriginalNote => '元のPNGファイルをそのまま保存・共有してください。';
 
   @override
   String get shareCardSaveToDevice => '端末に保存';

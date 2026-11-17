@@ -164,7 +164,7 @@ class WatermarkSettingsScreen extends StatelessWidget {
     )) {
       return true;
     }
-    showPremiumBanner(context);
+    showPremiumBanner(context, feature: PremiumFeature.watermark);
     return false;
   }
 

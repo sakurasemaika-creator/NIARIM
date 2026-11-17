@@ -2954,11 +2954,27 @@ class AppLocalizationsEs extends AppLocalizations {
   String get exportFirst90Seconds => 'Exportar los primeros 90 segundos';
 
   @override
-  String get premiumBannerHeadline => 'Crea y exporta hasta 2 horas';
+  String get premiumBannerFullExportTitle => 'Exportar el proyecto completo';
 
   @override
-  String get premiumBannerBenefits =>
-      'Crea proyectos más largos y usa más herramientas de acabado. También puedes desbloquearlas con ópalos.';
+  String get premiumBannerEndCardBody =>
+      'La suscripción Premium o la ventaja de edición del logotipo final te permite mostrar u ocultar el logotipo final oficial.';
+
+  @override
+  String get premiumBannerWatermarkBody =>
+      'Añade y edita tu propia marca de agua con la suscripción Premium o la ventaja de marca de agua.';
+
+  @override
+  String get premiumBannerToneCurveBody =>
+      'Ajusta el brillo y el color de una capa de dibujo con Curva de tonos usando la suscripción Premium o la ventaja de Curva de tonos.';
+
+  @override
+  String get premiumBannerLevelsBody =>
+      'Ajusta la gama tonal de una capa de dibujo con Niveles usando la suscripción Premium o la ventaja de Niveles.';
+
+  @override
+  String get premiumBannerAutomationBody =>
+      'Crea, edita y ejecuta automatizaciones con la suscripción Premium o la ventaja de automatización.';
 
   @override
   String get premiumBannerMembershipDetails =>
@@ -10616,7 +10632,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get shareCardKeepOriginalNote =>
-      'Guarda o comparte el archivo PNG original tal cual. Si vuelves a guardar la imagen desde una red social, pueden perderse los datos necesarios para importarla.';
+      'Guarda o comparte el archivo PNG original tal cual.';
 
   @override
   String get shareCardSaveToDevice => 'Guardar en el dispositivo';

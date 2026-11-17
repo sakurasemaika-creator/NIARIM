@@ -1188,8 +1188,12 @@
   "exportBenefitsUnavailable": "特典を確認できませんでした。再確認するか、表示中の条件で書き出せます。",
   "exportBenefitsChecking": "特典を確認中です。",
   "exportFirst90Seconds": "先頭90秒を書き出す",
-  "premiumBannerHeadline": "最大2時間の制作・全編書き出し",
-  "premiumBannerBenefits": "長尺作品をつくる、仕上げを調整する。必要な機能はオパールでも使えます。",
+  "premiumBannerFullExportTitle": "作品を全編書き出す",
+  "premiumBannerEndCardBody": "公式エンドロゴの表示・非表示は、プレミアム会員またはエンドロゴ編集の特典を利用中に設定できます。",
+  "premiumBannerWatermarkBody": "自分のウォーターマークの追加・編集は、プレミアム会員またはウォーターマークの特典を利用中にできます。",
+  "premiumBannerToneCurveBody": "描画レイヤーの明るさや色をトーンカーブで調整するには、プレミアム会員またはトーンカーブの特典が必要です。",
+  "premiumBannerLevelsBody": "描画レイヤーの明暗の範囲をレベル補正で調整するには、プレミアム会員またはレベル補正の特典が必要です。",
+  "premiumBannerAutomationBody": "自動操作の作成・編集・実行は、プレミアム会員または自動操作の特典を利用中にできます。",
   "premiumBannerMembershipDetails": "プレミアム会員の詳細を見る",
   "premiumBannerBenefitDetails": "特典の詳細を見る",
   "premiumPackHalfPrice": "コンプリートパックなら単品合計の半額",
@@ -5617,7 +5621,7 @@
   "@shareCardCreatedTitle": {
     "description": "共有カードを書き出したあとのダイアログの見出し"
   },
-  "shareCardKeepOriginalNote": "元のPNGファイルをそのまま保存・共有してください。SNSで画像を保存し直すと、読み込みに必要なデータが失われることがあります。",
+  "shareCardKeepOriginalNote": "元のPNGファイルをそのまま保存・共有してください。",
   "@shareCardKeepOriginalNote": {
     "description": "共有カードは元のPNGのまま渡すよう知らせる注記"
   },

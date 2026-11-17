@@ -433,7 +433,10 @@ class WorkspaceSettingsScreen extends StatelessWidget {
                 onChanged:
                     premium.isFeatureAvailable(PremiumFeature.endCardEdit)
                     ? (v) => settings.setEndCardDefaultHiddenForPremium(v)
-                    : (_) => showPremiumBanner(context),
+                    : (_) => showPremiumBanner(
+                        context,
+                        feature: PremiumFeature.endCardEdit,
+                      ),
               ),
             ),
             const SizedBox(height: 20),

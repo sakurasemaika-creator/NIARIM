@@ -1998,7 +1998,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
             )) {
               _showWatermarkPicker();
             } else {
-              showPremiumBanner(context);
+              showPremiumBanner(context, feature: PremiumFeature.watermark);
             }
           }
         },
@@ -2176,7 +2176,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
     if (!context.read<PremiumService>().isFeatureAvailable(
       PremiumFeature.watermark,
     )) {
-      showPremiumBanner(context);
+      showPremiumBanner(context, feature: PremiumFeature.watermark);
       return;
     }
     final l10n = AppLocalizations.of(context)!;
@@ -2263,7 +2263,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
         !context.read<PremiumService>().isFeatureAvailable(
           PremiumFeature.watermark,
         )) {
-      if (mounted) showPremiumBanner(context);
+      if (mounted) {
+        showPremiumBanner(context, feature: PremiumFeature.watermark);
+      }
       return;
     }
     final l10n = AppLocalizations.of(context)!;
@@ -2296,7 +2298,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
     if (!context.read<PremiumService>().isFeatureAvailable(
       PremiumFeature.watermark,
     )) {
-      showPremiumBanner(context);
+      showPremiumBanner(context, feature: PremiumFeature.watermark);
       return;
     }
 
@@ -2345,7 +2347,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
         !context.read<PremiumService>().isFeatureAvailable(
           PremiumFeature.watermark,
         )) {
-      if (mounted) showPremiumBanner(context);
+      if (mounted) {
+        showPremiumBanner(context, feature: PremiumFeature.watermark);
+      }
       return null;
     }
     final watermarkService = context.read<WatermarkService>();
@@ -2370,7 +2374,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
     if (!context.read<PremiumService>().isFeatureAvailable(
       PremiumFeature.watermark,
     )) {
-      showPremiumBanner(context);
+      showPremiumBanner(context, feature: PremiumFeature.watermark);
       return null;
     }
     return _applyWatermarkEffects(pixels, w, h, asset);
@@ -3017,7 +3021,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
   void _showCustomAutomationManager() {
     final premium = context.read<PremiumService>();
     if (!premium.isFeatureAvailable(PremiumFeature.customAutomation)) {
-      showPremiumBanner(context);
+      showPremiumBanner(context, feature: PremiumFeature.customAutomation);
       return;
     }
     showModalBottomSheet(
@@ -3075,7 +3079,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
     if (!context.read<PremiumService>().isFeatureAvailable(
       PremiumFeature.customAutomation,
     )) {
-      showPremiumBanner(context);
+      showPremiumBanner(context, feature: PremiumFeature.customAutomation);
       return;
     }
     if (targetFrames != null) {
@@ -5742,7 +5746,12 @@ class _TimelineScreenState extends State<TimelineScreen> {
         return GestureDetector(
           // 無料会員：トラックのどこをタップしてもプレミアム誘導へ（仕様：
           // 「一切操作できずタップした瞬間に有料会員へ誘導される」）。
-          onTap: canEditEndCard ? null : () => showPremiumBanner(context),
+          onTap: canEditEndCard
+              ? null
+              : () => showPremiumBanner(
+                  context,
+                  feature: PremiumFeature.endCardEdit,
+                ),
           child: Container(
             height: 32,
             color: Theme.of(context).colorScheme.surfaceContainerLow,
@@ -5797,7 +5806,10 @@ class _TimelineScreenState extends State<TimelineScreen> {
                       if (!premium.isFeatureAvailable(
                         PremiumFeature.endCardEdit,
                       )) {
-                        showPremiumBanner(context);
+                        showPremiumBanner(
+                          context,
+                          feature: PremiumFeature.endCardEdit,
+                        );
                         return;
                       }
                       projects.setProjectEndCardHidden(

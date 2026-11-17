@@ -2914,11 +2914,27 @@ class AppLocalizationsEn extends AppLocalizations {
   String get exportFirst90Seconds => 'Export first 90 seconds';
 
   @override
-  String get premiumBannerHeadline => 'Create and export up to 2 hours';
+  String get premiumBannerFullExportTitle => 'Export the full project';
 
   @override
-  String get premiumBannerBenefits =>
-      'Create longer projects and use more tools to finish them. You can also unlock benefits with Opals.';
+  String get premiumBannerEndCardBody =>
+      'Premium membership or the end logo editing benefit lets you show or hide the official end logo.';
+
+  @override
+  String get premiumBannerWatermarkBody =>
+      'Premium membership or the watermark benefit lets you add and edit your own watermark.';
+
+  @override
+  String get premiumBannerToneCurveBody =>
+      'Adjust a drawing layer’s brightness and colors with Tone Curve using Premium membership or the Tone Curve benefit.';
+
+  @override
+  String get premiumBannerLevelsBody =>
+      'Adjust the tonal range of a drawing layer with Levels using Premium membership or the Levels benefit.';
+
+  @override
+  String get premiumBannerAutomationBody =>
+      'Create, edit, and run automations with Premium membership or the automation benefit.';
 
   @override
   String get premiumBannerMembershipDetails => 'Learn about Premium membership';
@@ -10460,7 +10476,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get shareCardKeepOriginalNote =>
-      'Save or share the original PNG file as is. Re-saving the image through social media can remove the data needed to import it.';
+      'Save or share the original PNG file as is.';
 
   @override
   String get shareCardSaveToDevice => 'Save to device';

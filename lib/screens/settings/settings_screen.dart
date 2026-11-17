@@ -395,7 +395,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (!context.read<PremiumService>().isFeatureAvailable(
       PremiumFeature.watermark,
     )) {
-      showPremiumBanner(context);
+      showPremiumBanner(context, feature: PremiumFeature.watermark);
       return;
     }
     context.push('/settings/watermark');

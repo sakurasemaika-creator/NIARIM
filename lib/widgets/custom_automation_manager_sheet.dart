@@ -42,7 +42,7 @@ class CustomAutomationManagerSheet extends StatelessWidget {
         premium.isFeatureAvailable(PremiumFeature.customAutomation)) {
       return true;
     }
-    showPremiumBanner(context);
+    showPremiumBanner(context, feature: PremiumFeature.customAutomation);
     return false;
   }
 

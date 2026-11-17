@@ -27,7 +27,7 @@ class PremiumLockWidget extends StatelessWidget {
     final premium = context.watch<PremiumService>();
     return PremiumLockState(
       locked: !premium.isFeatureAvailable(feature),
-      onLockedTap: () => showPremiumBanner(context),
+      onLockedTap: () => showPremiumBanner(context, feature: feature),
       child: child,
     );
   }
@@ -87,16 +87,48 @@ class PremiumLockState extends StatelessWidget {
 /// Shared offer for locked features. A limited export is an explicit choice.
 Future<bool> showPremiumBanner(
   BuildContext context, {
+  required PremiumFeature feature,
+  String? title,
   String? reason,
   String? continueLabel,
 }) async {
   final choice = await showDialog<String>(
     context: context,
-    builder: (dialog) => _PremiumBannerDialog(
-      reason: reason,
-      continueLabel: continueLabel,
-      onChoose: (value) => Navigator.pop(dialog, value),
-    ),
+    builder: (dialog) {
+      final labels = AppLocalizations.of(dialog)!;
+      final (featureTitle, featureBody) = switch (feature) {
+        PremiumFeature.endCardEdit => (
+          labels.premiumFeatureEndLogo,
+          labels.premiumBannerEndCardBody,
+        ),
+        PremiumFeature.watermark => (
+          labels.premiumFeatureWatermark,
+          labels.premiumBannerWatermarkBody,
+        ),
+        PremiumFeature.toneCurve => (
+          labels.premiumFeatureToneCurve,
+          labels.premiumBannerToneCurveBody,
+        ),
+        PremiumFeature.levelAdjustment => (
+          labels.premiumFeatureLevelCorrection,
+          labels.premiumBannerLevelsBody,
+        ),
+        PremiumFeature.unlimitedDuration => (
+          labels.premiumFeatureMaxDuration,
+          labels.timelineDurationLimitBodyFree,
+        ),
+        PremiumFeature.customAutomation => (
+          labels.customAutomationTitle,
+          labels.premiumBannerAutomationBody,
+        ),
+      };
+      return _PremiumBannerDialog(
+        title: title ?? featureTitle,
+        body: reason ?? featureBody,
+        continueLabel: continueLabel,
+        onChoose: (value) => Navigator.pop(dialog, value),
+      );
+    },
   );
   if (!context.mounted) return false;
   if (choice == 'premium') context.push('/premium');
@@ -106,12 +138,14 @@ Future<bool> showPremiumBanner(
 
 class _PremiumBannerDialog extends StatelessWidget {
   const _PremiumBannerDialog({
-    this.reason,
+    required this.title,
+    required this.body,
     this.continueLabel,
     required this.onChoose,
   });
 
-  final String? reason;
+  final String title;
+  final String body;
   final String? continueLabel;
   final ValueChanged<String> onChoose;
 
@@ -164,7 +198,7 @@ class _PremiumBannerDialog extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    labels.premiumBannerHeadline,
+                    title,
                     style: theme.textTheme.headlineSmall?.copyWith(
                       color: colors.onPrimaryContainer,
                       fontFamily: 'Kuramubon',
@@ -179,7 +213,7 @@ class _PremiumBannerDialog extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Text(reason ?? labels.premiumBannerBenefits),
+                  Text(body),
                   const SizedBox(height: 16),
                   FilledButton.icon(
                     icon: const Icon(Icons.workspace_premium_outlined),

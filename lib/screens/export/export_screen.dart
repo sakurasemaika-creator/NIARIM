@@ -345,6 +345,8 @@ class _ExportScreenState extends State<ExportScreen> {
       setState(() => _startingExport = true);
       final proceed = await showPremiumBanner(
         context,
+        feature: PremiumFeature.unlimitedDuration,
+        title: l10n.premiumBannerFullExportTitle,
         reason: l10n.exportLongProjectNote,
         continueLabel: l10n.exportFirst90Seconds,
       );

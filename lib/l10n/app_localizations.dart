@@ -5175,17 +5175,41 @@ abstract class AppLocalizations {
   /// **'先頭90秒を書き出す'**
   String get exportFirst90Seconds;
 
-  /// No description provided for @premiumBannerHeadline.
+  /// No description provided for @premiumBannerFullExportTitle.
   ///
   /// In ja, this message translates to:
-  /// **'最大2時間の制作・全編書き出し'**
-  String get premiumBannerHeadline;
+  /// **'作品を全編書き出す'**
+  String get premiumBannerFullExportTitle;
 
-  /// No description provided for @premiumBannerBenefits.
+  /// No description provided for @premiumBannerEndCardBody.
   ///
   /// In ja, this message translates to:
-  /// **'長尺作品をつくる、仕上げを調整する。必要な機能はオパールでも使えます。'**
-  String get premiumBannerBenefits;
+  /// **'公式エンドロゴの表示・非表示は、プレミアム会員またはエンドロゴ編集の特典を利用中に設定できます。'**
+  String get premiumBannerEndCardBody;
+
+  /// No description provided for @premiumBannerWatermarkBody.
+  ///
+  /// In ja, this message translates to:
+  /// **'自分のウォーターマークの追加・編集は、プレミアム会員またはウォーターマークの特典を利用中にできます。'**
+  String get premiumBannerWatermarkBody;
+
+  /// No description provided for @premiumBannerToneCurveBody.
+  ///
+  /// In ja, this message translates to:
+  /// **'描画レイヤーの明るさや色をトーンカーブで調整するには、プレミアム会員またはトーンカーブの特典が必要です。'**
+  String get premiumBannerToneCurveBody;
+
+  /// No description provided for @premiumBannerLevelsBody.
+  ///
+  /// In ja, this message translates to:
+  /// **'描画レイヤーの明暗の範囲をレベル補正で調整するには、プレミアム会員またはレベル補正の特典が必要です。'**
+  String get premiumBannerLevelsBody;
+
+  /// No description provided for @premiumBannerAutomationBody.
+  ///
+  /// In ja, this message translates to:
+  /// **'自動操作の作成・編集・実行は、プレミアム会員または自動操作の特典を利用中にできます。'**
+  String get premiumBannerAutomationBody;
 
   /// No description provided for @premiumBannerMembershipDetails.
   ///
@@ -17298,7 +17322,7 @@ abstract class AppLocalizations {
   /// 共有カードは元のPNGのまま渡すよう知らせる注記
   ///
   /// In ja, this message translates to:
-  /// **'元のPNGファイルをそのまま保存・共有してください。SNSで画像を保存し直すと、読み込みに必要なデータが失われることがあります。'**
+  /// **'元のPNGファイルをそのまま保存・共有してください。'**
   String get shareCardKeepOriginalNote;
 
   /// 共有カードを端末に保存するボタン

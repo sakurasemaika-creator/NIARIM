@@ -606,7 +606,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
   void _showCustomAutomationManager() {
     final premium = context.read<PremiumService>();
     if (!premium.isFeatureAvailable(PremiumFeature.customAutomation)) {
-      showPremiumBanner(context);
+      showPremiumBanner(context, feature: PremiumFeature.customAutomation);
       return;
     }
     showModalBottomSheet(
@@ -686,7 +686,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
     if (!context.read<PremiumService>().isFeatureAvailable(
       PremiumFeature.customAutomation,
     )) {
-      showPremiumBanner(context);
+      showPremiumBanner(context, feature: PremiumFeature.customAutomation);
       return;
     }
     if (_customAutomationRunning) return;

@@ -2789,10 +2789,22 @@ class AppLocalizationsZh extends AppLocalizations {
   String get exportFirst90Seconds => '导出开头90秒';
 
   @override
-  String get premiumBannerHeadline => '最长可制作和导出2小时';
+  String get premiumBannerFullExportTitle => '导出完整作品';
 
   @override
-  String get premiumBannerBenefits => '制作更长的作品，使用更多工具完成细节。也可以用欧泊解锁权益。';
+  String get premiumBannerEndCardBody => '高级会员或片尾标志编辑权益可以设置显示或隐藏官方片尾标志。';
+
+  @override
+  String get premiumBannerWatermarkBody => '高级会员或水印权益可以添加和编辑自定义水印。';
+
+  @override
+  String get premiumBannerToneCurveBody => '高级会员或色调曲线权益可以用色调曲线调整绘图图层的亮度和颜色。';
+
+  @override
+  String get premiumBannerLevelsBody => '高级会员或色阶校正权益可以用色阶校正调整绘图图层的明暗范围。';
+
+  @override
+  String get premiumBannerAutomationBody => '高级会员或自动操作权益可以创建、编辑和运行自动操作。';
 
   @override
   String get premiumBannerMembershipDetails => '了解高级会员详情';
@@ -9659,8 +9671,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get shareCardCreatedTitle => '已创建分享卡片';
 
   @override
-  String get shareCardKeepOriginalNote =>
-      '请直接保存或分享原始PNG文件。在社交平台上重新保存图片，可能会丢失导入所需的数据。';
+  String get shareCardKeepOriginalNote => '请直接保存或分享原始PNG文件。';
 
   @override
   String get shareCardSaveToDevice => '保存到设备';
@@ -12854,10 +12865,22 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get exportFirst90Seconds => '匯出開頭90秒';
 
   @override
-  String get premiumBannerHeadline => '最長可製作和匯出2小時';
+  String get premiumBannerFullExportTitle => '匯出完整作品';
 
   @override
-  String get premiumBannerBenefits => '製作更長的作品，使用更多工具完成細節。也可以用歐泊解鎖權益。';
+  String get premiumBannerEndCardBody => '進階會員或片尾標誌編輯權益可以設定顯示或隱藏官方片尾標誌。';
+
+  @override
+  String get premiumBannerWatermarkBody => '進階會員或浮水印權益可以新增和編輯自訂浮水印。';
+
+  @override
+  String get premiumBannerToneCurveBody => '進階會員或色調曲線權益可以用色調曲線調整繪圖圖層的亮度和顏色。';
+
+  @override
+  String get premiumBannerLevelsBody => '進階會員或色階校正權益可以用色階校正調整繪圖圖層的明暗範圍。';
+
+  @override
+  String get premiumBannerAutomationBody => '進階會員或自動操作權益可以建立、編輯和執行自動操作。';
 
   @override
   String get premiumBannerMembershipDetails => '了解進階會員詳情';
@@ -19726,8 +19749,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get shareCardCreatedTitle => '已建立分享卡片';
 
   @override
-  String get shareCardKeepOriginalNote =>
-      '請直接儲存或分享原始PNG檔案。在社群平台上重新儲存圖片，可能會遺失匯入所需的資料。';
+  String get shareCardKeepOriginalNote => '請直接儲存或分享原始PNG檔案。';
 
   @override
   String get shareCardSaveToDevice => '儲存到裝置';

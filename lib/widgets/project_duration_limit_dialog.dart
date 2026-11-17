@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'premium_lock_widget.dart';
 
 import '../l10n/app_localizations.dart';
+import '../services/premium_service.dart';
 
 void showProjectDurationLimit(
   BuildContext context, {
@@ -9,7 +10,7 @@ void showProjectDurationLimit(
 }) {
   final l10n = AppLocalizations.of(context)!;
   if (!hasUnlimitedDuration) {
-    showPremiumBanner(context, reason: l10n.timelineDurationLimitBodyFree);
+    showPremiumBanner(context, feature: PremiumFeature.unlimitedDuration);
     return;
   }
   showDialog<void>(
