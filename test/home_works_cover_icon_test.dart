@@ -6,7 +6,6 @@ import 'package:niarim/engine/export_engine.dart';
 import 'package:niarim/models/app_theme_preset.dart';
 import 'package:niarim/screens/home/home_screen.dart';
 import 'package:niarim/screens/home/widgets/exported_work_card.dart';
-import 'package:niarim/screens/home/widgets/project_list_widget.dart';
 import 'package:niarim/services/export_storage.dart';
 import 'package:niarim/services/theme_service.dart';
 import 'package:niarim/utils/color_contrast.dart';
@@ -58,14 +57,7 @@ void main() {
         if (!grid) {
           // 作品一覧のタブで、表示サイズを「詳細」にする。
           await m.show(HomeView.works);
-          await tester.tap(find.byType(ProjectViewModeMenu));
-          await m.frames(6);
-          await tester.tap(
-            find
-                .byType(PopupMenuItem<ProjectViewMode>)
-                .at(ProjectViewMode.detail.index),
-          );
-          await m.frames(6);
+          await m.chooseViewMode(ProjectViewMode.detail);
         }
         final themes = <AppThemePreset>[
           ...m.themes.presets,

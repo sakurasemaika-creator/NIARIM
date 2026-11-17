@@ -139,6 +139,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeViewModeDetail => 'Detail';
 
   @override
+  String get homeViewLayoutHeading => 'Layout';
+
+  @override
+  String get homeViewLayoutTiles => 'Tiles';
+
+  @override
+  String get homeViewSizeHeading => 'Size';
+
+  @override
   String get homeSortFieldName => 'Name';
 
   @override
@@ -8213,7 +8222,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get commonShowExplanation => 'Show explanation';
 
   @override
-  String get homeViewModeTooltip => 'Display size';
+  String get homeViewModeTooltip => 'Layout and size';
 
   @override
   String get homeMoveToTrashNothing =>

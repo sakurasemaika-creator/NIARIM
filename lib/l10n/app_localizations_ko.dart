@@ -131,6 +131,15 @@ class AppLocalizationsKo extends AppLocalizations {
   String get homeViewModeDetail => '상세';
 
   @override
+  String get homeViewLayoutHeading => '표시 형식';
+
+  @override
+  String get homeViewLayoutTiles => '타일';
+
+  @override
+  String get homeViewSizeHeading => '크기';
+
+  @override
   String get homeSortFieldName => '이름';
 
   @override
@@ -7942,7 +7951,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get commonShowExplanation => '설명 보기';
 
   @override
-  String get homeViewModeTooltip => '표시 크기';
+  String get homeViewModeTooltip => '표시 형식과 크기';
 
   @override
   String get homeMoveToTrashNothing =>

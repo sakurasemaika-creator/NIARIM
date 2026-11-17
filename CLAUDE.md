@@ -1303,7 +1303,9 @@ onTap: ...)`だったために
   （`MediaQuery.disableAnimationsOf`）ではタブを`_HomeTabController`がその場で替え、
   閉じた引き出しは1フレーム外して幕を消す（Flutterのばねは設定で200倍速くなり、
   値が0でも約0.4秒「閉じる途中」のまま全面の幕を残す）。絵の無い表紙の印は作品の
-  用紙の上なので`paperMarkColor`（テーマの色にしない）。左下の「↑」は一覧を上へ
+  用紙の上なので`paperMarkColor`（テーマの色にしない）。**左下は起動画面へ戻る
+  矢印**（`homeBackToSplashFab`、どのタブでも・選んでいる間も同じ所。上のバーの
+  左上には置かない、所有者の指定、2026-11-17）。「↑」は＋の左に、一覧を上へ
   戻せるときだけ（`_projectsCanGoUp`）。一覧の途中で左下の名前に重なるのは
   そのまま、どのカードも浮かぶボタンに重ならない所まで送れるようにする
   （所有者の判断、2026-11-16、DISC242。末尾の余白は浮かぶボタンの並びから測る、
@@ -1462,6 +1464,20 @@ onTap: ...)`だったために
   （`home_view_mode`、並び順と同じ所で設定の引き継ぎにも入る）と
   dev_branchのキー（`home.projectViewMode.v1`）の両方へ保存する。
   低スペック端末で小にする決まりはdev_branchが外した。
+  **表示は「表示形式（タイル・詳細）×大きさ（大・中・小）」（所有者の指定、
+  2026-11-17）**：`ProjectViewMode`は`large`/`medium`/`small`（タイル）と
+  `detailLarge`/`detail`（詳細の中、以前からの保存値）/`detailSmall`。
+  `isDetail`・`size`で読み、`viewMode == ProjectViewMode.detail`と書かない。
+  メニュー（`ProjectViewModeMenu`、作品一覧・共有のフォルダの画面も同じ部品）は
+  表示形式と大きさの2つの見出しに分かれ、表示形式を替えるとその形式の既定の
+  大きさ（タイルは画面の幅で決まる大きさ、詳細は中）から始まる。メニューの
+  項目を位置（`.at(mode.index)`）で押すテストは書かず、`HomeMatrix.chooseViewMode`
+  を使う。タイルの基準の幅は画面の幅ごと（`collection_tile_layout.dart`の
+  `_tileExtentsFor`：スマホ130/170/240、タブレット120/200/300、PC142/212/322。
+  800pxで3・4・7列、1280pxで4・6・9列）。詳細の行の絵は
+  `collectionDetailThumbExtent`（`CollectionDetailSizeScope`の大きさと画面の幅、
+  スマホの中が今までの48/56px）と`collectionDetailMinRowHeight`（ListTileは
+  先頭の部品で行の高さを決めないので、絵が大きいときは`minTileHeight`を渡す）。
 - **`SliverMultiBoxAdaptorElement`の「見えている子」は描画範囲ぶんだけ**：
   `ListView.builder`はcacheExtent（既定250px）ぶん先の子も**生成・レイアウト
   する**が、`debugVisitOnstageChildren`が返すのは**実際に描画される範囲の

@@ -140,6 +140,15 @@ class AppLocalizationsFr extends AppLocalizations {
   String get homeViewModeDetail => 'Détails';
 
   @override
+  String get homeViewLayoutHeading => 'Disposition';
+
+  @override
+  String get homeViewLayoutTiles => 'Vignettes';
+
+  @override
+  String get homeViewSizeHeading => 'Taille';
+
+  @override
   String get homeSortFieldName => 'Nom';
 
   @override
@@ -8356,7 +8365,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get commonShowExplanation => 'Afficher l’explication';
 
   @override
-  String get homeViewModeTooltip => 'Taille d’affichage';
+  String get homeViewModeTooltip => 'Disposition et taille';
 
   @override
   String get homeMoveToTrashNothing =>

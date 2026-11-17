@@ -138,9 +138,10 @@ bool _crossesViewSizeEdge(int a, int b) => _viewSizeEdges.any(
 /// カードの列数（gridWidthは一覧の幅＝画面の幅から左右8pxずつ引いたもの）。
 /// 文字を大きくしているとき（[textScale]が1より大きい）は、幅を文字の倍率で
 /// 割った幅で決める（名前の字が大きくなる分、カードを広くする）。基準の幅
-/// （小130・中170・大240、間隔8）で並ぶ数を切り上げ、小は幅76px以上の
-/// カードが3列並ぶ間は3列、中は小より、大は中より少なくとも1列少なくする
-/// （どの幅でも大・中・小が違って見える）。
+/// （スマホは小130・中170・大240、タブレット〔一覧の幅＋16が600以上〕は
+/// 小120・中200・大300、PC〔1000以上〕は小142・中212・大322、間隔8）で
+/// 並ぶ数を切り上げ、小は幅76px以上のカードが3列並ぶ間は3列、中は小より、
+/// 大は中より少なくとも1列少なくする（どの幅でも大・中・小が違って見える）。
 int _expectedColumns(
   ProjectViewMode mode,
   double gridWidth, [
@@ -148,17 +149,21 @@ int _expectedColumns(
 ]) {
   final width = textScale > 1 ? gridWidth / textScale : gridWidth;
   int fit(double extent) => math.max(1, (width / (extent + 8)).ceil());
-  final small = math.max(
-    fit(130),
-    math.min(3, ((width + 8) / (76 + 8)).floor()),
-  );
-  final medium = math.max(1, math.min(fit(170), small - 1));
-  final large = math.max(1, math.min(fit(240), medium - 1));
+  final (s, m, l) = width + 16 >= 1000
+      ? (142.0, 212.0, 322.0)
+      : width + 16 >= 600
+      ? (120.0, 200.0, 300.0)
+      : (130.0, 170.0, 240.0);
+  final small = math.max(fit(s), math.min(3, ((width + 8) / (76 + 8)).floor()));
+  final medium = math.max(1, math.min(fit(m), small - 1));
+  final large = math.max(1, math.min(fit(l), medium - 1));
   return switch (mode) {
     ProjectViewMode.small => small,
     ProjectViewMode.medium => medium,
     ProjectViewMode.large => large,
-    ProjectViewMode.detail => 1,
+    ProjectViewMode.detail ||
+    ProjectViewMode.detailLarge ||
+    ProjectViewMode.detailSmall => 1,
   };
 }
 
@@ -746,13 +751,15 @@ Future<void> _sweep(
         }
       }
 
-      // 上のバーのメニュー・浮かぶボタンが画面内。浮かぶボタンは選んで
-      // いる間とゴミ箱のタブでは出ない。
+      // 上のバーのメニュー・浮かぶボタンが画面内。作成の＋は選んでいる間と
+      // ゴミ箱のタブでは出ない（左下の戻る矢印は出る）。
       final menu = scan.keyed['homeMenuButton'];
       if (menu == null || !onScreen(_globalRect(menu))) {
         found.add('menu button off screen');
       }
-      final expectedFabs = scenario == _Scenario.listEnd ? 2 : 0;
+      // 起動画面へ戻る矢印（左下）はいつも出る。一番下まで送ったときは
+      // 「一番上へ」と＋も。
+      final expectedFabs = scenario == _Scenario.listEnd ? 3 : 1;
       if (scan.fabs.length != expectedFabs) {
         found.add('floating buttons ${scan.fabs.length} != $expectedFabs');
       }

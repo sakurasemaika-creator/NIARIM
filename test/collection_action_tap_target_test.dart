@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/screens/home/home_screen.dart';
-import 'package:niarim/screens/home/widgets/project_list_widget.dart';
 import 'package:niarim/widgets/collection_action_controls.dart';
 
 import 'helpers/home_matrix_harness.dart';
@@ -98,14 +97,8 @@ void main() {
     );
   }
 
-  Future<void> chooseViewMode(HomeMatrix m, ProjectViewMode mode) async {
-    await m.tester.tap(find.byType(ProjectViewModeMenu));
-    await m.frames(6);
-    await m.tester.tap(
-      find.byType(PopupMenuItem<ProjectViewMode>).at(mode.index),
-    );
-    await m.frames(6);
-  }
+  Future<void> chooseViewMode(HomeMatrix m, ProjectViewMode mode) =>
+      m.chooseViewMode(mode);
 
   for (final (width, pc) in const [(360, false), (412, false), (1280, true)]) {
     testWidgets('card actions take 48x48 taps without overlapping '

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../config/accent_text_theme.dart';
+import '../config/font_fallback.dart';
 
 /// 今の選択にチェックが付くメニュー項目（読み上げでも選択中と伝える）。
 PopupMenuItem<T> checkedMenuItem<T>(
@@ -38,4 +39,46 @@ PopupMenuItem<T> checkedMenuItem<T>(
       ),
     ),
   );
+}
+
+/// ポップアップメニューの中の小見出し（選べない）。メニューの文字色で、
+/// 見出しの書体（くらむぼん）。
+class MenuSectionHeading<T> extends PopupMenuEntry<T> {
+  const MenuSectionHeading(this.label, {super.key});
+
+  final String label;
+
+  @override
+  double get height => 32;
+
+  @override
+  bool represents(T? value) => false;
+
+  @override
+  State<MenuSectionHeading<T>> createState() => _MenuSectionHeadingState<T>();
+}
+
+class _MenuSectionHeadingState<T> extends State<MenuSectionHeading<T>> {
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Semantics(
+      header: true,
+      child: Padding(
+        padding: const EdgeInsetsDirectional.fromSTEB(12, 8, 12, 4),
+        child: Text(
+          widget.label,
+          style: TextStyle(
+            fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback,
+            fontSize: 12,
+            fontWeight: FontWeight.w700,
+            color:
+                theme.popupMenuTheme.textStyle?.color ??
+                theme.colorScheme.onSurface,
+          ),
+        ),
+      ),
+    );
+  }
 }

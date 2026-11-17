@@ -5,7 +5,8 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'helpers/home_matrix_harness.dart';
 
-/// ホームのプロジェクトの一覧の左下の「↑」（一番上へ）は、一覧を上へ戻せる
+/// ホームのプロジェクトの一覧の「↑」（一番上へ、右下の＋の左。左下は起動画面へ
+/// 戻る矢印）は、一覧を上へ戻せる
 /// とき（一番上から送ってあるとき）だけ出す。一覧の一番上にいるとき・
 /// スクロールできない短い一覧（2件のフォルダ）では出さない。押して一番上へ
 /// 戻ったら消える。フォルダへ入って一覧が一番上から始まったら消える。
@@ -95,7 +96,8 @@ void main() {
               .localToGlobal(Offset(0, viewport.size.height))
               .dy;
           final tail = find.byKey(const Key('homeProjectListEndClearance'));
-          expect(controls, findsNWidgets(2));
+          // 起動画面へ戻る矢印・一番上へ・＋。
+          expect(controls, findsNWidgets(3));
           expect(
             tester.getSize(tail).height,
             closeTo(bottom - buttonTop + 16, 0.5),

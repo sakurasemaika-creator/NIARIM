@@ -130,6 +130,15 @@ class AppLocalizationsJa extends AppLocalizations {
   String get homeViewModeDetail => '詳細';
 
   @override
+  String get homeViewLayoutHeading => '表示形式';
+
+  @override
+  String get homeViewLayoutTiles => 'タイル';
+
+  @override
+  String get homeViewSizeHeading => 'サイズ';
+
+  @override
   String get homeSortFieldName => '名前';
 
   @override
@@ -7901,7 +7910,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get commonShowExplanation => '説明を表示';
 
   @override
-  String get homeViewModeTooltip => '表示の大きさ';
+  String get homeViewModeTooltip => '表示形式とサイズ';
 
   @override
   String get homeMoveToTrashNothing => 'ゴミ箱へ移動できるものがありません（お気に入りは移動しません）。';

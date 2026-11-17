@@ -399,9 +399,19 @@ class ExportedWorkCard extends StatelessWidget {
                 // Use a proportionate cover on phones without letting it grow
                 // unreasonably large on desktop. The Table fills this cover to
                 // the *actual* content height, including wrapped action rows.
+                // 詳細の大・中・小で表紙の幅の範囲を変える（中は今までどおり）。
+                final (
+                  share,
+                  low,
+                  high,
+                ) = switch (CollectionDetailSizeScope.sizeOf(context)) {
+                  CollectionViewSize.small => (0.18, 56.0, 72.0),
+                  CollectionViewSize.medium => (0.24, 72.0, 96.0),
+                  CollectionViewSize.large => (0.30, 96.0, 168.0),
+                };
                 final coverWidth = constraints.maxWidth.isFinite
-                    ? (constraints.maxWidth * 0.24).clamp(72.0, 96.0).toDouble()
-                    : 88.0;
+                    ? (constraints.maxWidth * share).clamp(low, high).toDouble()
+                    : (low + high) / 2;
                 return Table(
                   columnWidths: {
                     0: FixedColumnWidth(coverWidth),

@@ -98,11 +98,8 @@ void main() {
           await tester.pump(const Duration(seconds: 2));
         }
 
-        // 検索していないとき（プロジェクトのタブ）。
-        await check(
-          find.byKey(const Key('homeBackToSplashButton')),
-          l10n.homeBackToSplashTooltip,
-        );
+        // 検索していないとき（プロジェクトのタブ）。起動画面へ戻る矢印は
+        // 上のバーではなく左下の浮かぶボタン。
         await check(
           find.byKey(const Key('homeCollectionViewModeMenu')),
           l10n.homeViewModeTooltip,

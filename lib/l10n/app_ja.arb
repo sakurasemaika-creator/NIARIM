@@ -65,6 +65,9 @@
   "homeViewModeMedium": "中",
   "homeViewModeSmall": "小",
   "homeViewModeDetail": "詳細",
+  "homeViewLayoutHeading": "表示形式",
+  "homeViewLayoutTiles": "タイル",
+  "homeViewSizeHeading": "サイズ",
   "homeSortFieldName": "名前",
   "homeSortFieldUpdated": "更新日時",
   "homeSortDirectionAscTooltip": "昇順（タップで降順に切り替え）",
@@ -3894,7 +3897,7 @@
   "homeTrashWorking": "処理中…",
   "homeAddTooltip": "新規作成",
   "commonShowExplanation": "説明を表示",
-  "homeViewModeTooltip": "表示の大きさ",
+  "homeViewModeTooltip": "表示形式とサイズ",
   "homeMoveToTrashNothing": "ゴミ箱へ移動できるものがありません（お気に入りは移動しません）。",
   "homeMovedToTrashSnackbar": "{count}件をゴミ箱へ移動しました",
   "@homeMovedToTrashSnackbar": {

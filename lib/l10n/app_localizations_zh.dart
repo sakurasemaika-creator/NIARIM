@@ -129,6 +129,15 @@ class AppLocalizationsZh extends AppLocalizations {
   String get homeViewModeDetail => '详情';
 
   @override
+  String get homeViewLayoutHeading => '显示方式';
+
+  @override
+  String get homeViewLayoutTiles => '缩略图';
+
+  @override
+  String get homeViewSizeHeading => '大小';
+
+  @override
   String get homeSortFieldName => '名称';
 
   @override
@@ -7823,7 +7832,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get commonShowExplanation => '显示说明';
 
   @override
-  String get homeViewModeTooltip => '显示大小';
+  String get homeViewModeTooltip => '显示方式和大小';
 
   @override
   String get homeMoveToTrashNothing => '没有可移至回收站的项目（收藏的项目不会移动）。';
@@ -10183,6 +10192,15 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get homeViewModeDetail => '詳細';
+
+  @override
+  String get homeViewLayoutHeading => '顯示方式';
+
+  @override
+  String get homeViewLayoutTiles => '縮圖';
+
+  @override
+  String get homeViewSizeHeading => '大小';
 
   @override
   String get homeSortFieldName => '名稱';
@@ -17881,7 +17899,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get commonShowExplanation => '顯示說明';
 
   @override
-  String get homeViewModeTooltip => '顯示大小';
+  String get homeViewModeTooltip => '顯示方式和大小';
 
   @override
   String get homeMoveToTrashNothing => '沒有可移至垃圾桶的項目（我的最愛不會移動）。';

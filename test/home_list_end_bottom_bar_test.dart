@@ -7,7 +7,6 @@ import 'package:niarim/engine/export_engine.dart';
 import 'package:niarim/engine/niapro_serializer.dart';
 import 'package:niarim/screens/home/home_screen.dart';
 import 'package:niarim/screens/home/widgets/folder_thumbnail.dart';
-import 'package:niarim/screens/home/widgets/project_list_widget.dart';
 import 'package:niarim/services/export_storage.dart';
 import 'package:niarim/widgets/collection_action_controls.dart';
 import 'package:niarim/widgets/frame_preview_background.dart';
@@ -225,14 +224,7 @@ void main() {
         await m.frames(3);
         for (final (name, view, mode) in cells) {
           await m.show(view);
-          if (mode != null) {
-            await tester.tap(find.byType(ProjectViewModeMenu));
-            await m.frames(6);
-            await tester.tap(
-              find.byType(PopupMenuItem<ProjectViewMode>).at(mode.index),
-            );
-            await m.frames(6);
-          }
+          if (mode != null) await m.chooseViewMode(mode);
           final end = await toEnd(m);
           (ends[name] ??= {})[bottom] = end;
           for (final p in overlaps(m, bottom)) {
@@ -241,16 +233,7 @@ void main() {
           await m.capture('end_${name.replaceAll(' ', '_')}_bottom$bottom');
           content(m)?.position.jumpTo(0);
           await m.frames(2);
-          if (mode != null) {
-            await tester.tap(find.byType(ProjectViewModeMenu));
-            await m.frames(6);
-            await tester.tap(
-              find
-                  .byType(PopupMenuItem<ProjectViewMode>)
-                  .at(ProjectViewMode.small.index),
-            );
-            await m.frames(6);
-          }
+          if (mode != null) await m.chooseViewMode(ProjectViewMode.small);
         }
       }
     } finally {

@@ -1035,20 +1035,8 @@ class _HomeScreenState extends State<HomeScreen>
           key: _scaffoldKey,
           appBar: AppBar(
             automaticallyImplyLeading: false,
-            // 狭い画面では題の左右の余白を詰める。戻る・表示サイズ・検索・
-            // メニューのボタンで幅が残らず、題が「プロジ…」と切れていた。
-            // 検索中は題の所に検索の種類のボタン・入力欄が来るので詰めない
-            // （戻るボタンと4pxまで近づいた）。
-            titleSpacing:
-                !_isSearching && MediaQuery.sizeOf(context).width < 400
-                ? 0
-                : null,
-            leading: IconButton(
-              key: const Key('homeBackToSplashButton'),
-              icon: const Icon(Icons.arrow_back),
-              tooltip: l10n.homeBackToSplashTooltip,
-              onPressed: () => context.go('/'),
-            ).tooltipsBelowTabs(),
+            // 起動画面へ戻る矢印は上のバーに置かず、左下の浮かぶボタンに
+            // する（どのタブでも同じ場所、所有者の指定）。
             title: _isSearching
                 ? Row(
                     children: [
@@ -1508,9 +1496,7 @@ class _HomeScreenState extends State<HomeScreen>
           bottomNavigationBar: useProjectFooter
               ? HeroMode(
                   enabled: false,
-                  child:
-                      _buildHomeActions(context, l10n, inFooter: true) ??
-                      const SizedBox.shrink(),
+                  child: _buildHomeActions(context, l10n, inFooter: true),
                 )
               : null,
         ),
@@ -2019,28 +2005,86 @@ class _HomeScreenState extends State<HomeScreen>
     icon: Icons.create_new_folder_outlined,
   );
 
-  Widget? _buildHomeActions(
+  Widget _buildHomeActions(
     BuildContext context,
     AppLocalizations l10n, {
     bool inFooter = false,
   }) {
-    if (_isSelectionMode ||
-        _currentTabIndex == 3 ||
-        (_currentTabIndex == 2 && _sharedOutgoing)) {
-      return null;
-    }
     final compact = MediaQuery.sizeOf(context).height < 400;
 
+    // 起動画面へ戻る矢印は、どのタブでも・選んでいる間も左下に置く
+    // （所有者の指定。以前は上のバーの左上）。
+    final back = _buildHomeAction(
+      compact: compact,
+      key: const Key('homeBackToSplashFab'),
+      heroTag: 'home-back-to-splash',
+      tooltip: l10n.homeBackToSplashTooltip,
+      onPressed: () => context.go('/'),
+      icon: Icons.arrow_back,
+    );
+    final creates =
+        !_isSelectionMode &&
+        _currentTabIndex != 3 &&
+        !(_currentTabIndex == 2 && _sharedOutgoing);
     final projects = _currentTabIndex == 0;
     final shared = _currentTabIndex == 2;
     // 一覧が空（空の表示・読み込めなかった知らせだけ）のときは、送る先が
     // 無いので「一番上へ」を出さない（押しても何も起きず、空の表示の案内に
     // 重なった）。一覧の一番上にいるとき・スクロールできない短い一覧でも
-    // 出さない（上へ戻る先が無い）。作成の＋は右下に残す。
+    // 出さない（上へ戻る先が無い）。左下は戻る矢印なので、作成の＋の左に
+    // 並べる。
     final scrollToTop =
+        creates &&
         projects &&
         _projectsCanGoUp &&
         _visibleProjectIds(context.watch<ProjectService>()).isNotEmpty;
+    final trailing = <Widget>[
+      if (scrollToTop) ...[
+        _buildHomeAction(
+          compact: compact,
+          key: const Key('homeScrollToTopFab'),
+          heroTag: 'home-scroll-to-top',
+          tooltip: l10n.communityScrollToTop,
+          onPressed: () {
+            if (!_projectScrollController.hasClients) return;
+            if (MediaQuery.disableAnimationsOf(context)) {
+              _projectScrollController.jumpTo(0);
+              return;
+            }
+            _projectScrollController.animateTo(
+              0,
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeOutCubic,
+            );
+          },
+          icon: Icons.arrow_upward,
+        ),
+        const SizedBox(width: 16),
+      ],
+      if (!creates)
+        const SizedBox.shrink()
+      else if (projects)
+        _buildHomeAction(
+          compact: compact,
+          heroTag: 'home-add-project',
+          tooltip: l10n.commonAdd,
+          onPressed: () => _showAddChoiceSheet(context),
+          icon: Icons.add,
+        )
+      else if (shared)
+        _buildHomeAction(
+          compact: compact,
+          heroTag: 'shared-add-folder',
+          tooltip: l10n.homeAddSheetNewFolder,
+          onPressed: () => showCreateFolderNameDialog(
+            context,
+            (name) => context.read<ProjectService>().createSharedFolder(name),
+          ),
+          icon: Icons.create_new_folder_outlined,
+        )
+      else
+        _buildCreateWorkFolderAction(context, l10n, compact: compact),
+    ];
     // 浮かぶボタンの所では Scaffold が画面の左右の安全な領域を外すので、
     // 横向きの左右の切り欠き・3ボタンの帯は、ホームの画面の値で避ける
     // （以前は帯の下に描いた。縦向きでは0で、今までどおり）。
@@ -2055,52 +2099,10 @@ class _HomeScreenState extends State<HomeScreen>
       ),
       child: Row(
         key: inFooter ? null : _floatingActionsKey,
-        mainAxisAlignment: scrollToTop
-            ? MainAxisAlignment.spaceBetween
-            : MainAxisAlignment.end,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          if (projects) ...[
-            if (scrollToTop)
-              _buildHomeAction(
-                compact: compact,
-                key: const Key('homeScrollToTopFab'),
-                heroTag: 'home-scroll-to-top',
-                tooltip: l10n.communityScrollToTop,
-                onPressed: () {
-                  if (!_projectScrollController.hasClients) return;
-                  if (MediaQuery.disableAnimationsOf(context)) {
-                    _projectScrollController.jumpTo(0);
-                    return;
-                  }
-                  _projectScrollController.animateTo(
-                    0,
-                    duration: const Duration(milliseconds: 300),
-                    curve: Curves.easeOutCubic,
-                  );
-                },
-                icon: Icons.arrow_upward,
-              ),
-            _buildHomeAction(
-              compact: compact,
-              heroTag: 'home-add-project',
-              tooltip: l10n.commonAdd,
-              onPressed: () => _showAddChoiceSheet(context),
-              icon: Icons.add,
-            ),
-          ] else if (shared)
-            _buildHomeAction(
-              compact: compact,
-              heroTag: 'shared-add-folder',
-              tooltip: l10n.homeAddSheetNewFolder,
-              onPressed: () => showCreateFolderNameDialog(
-                context,
-                (name) =>
-                    context.read<ProjectService>().createSharedFolder(name),
-              ),
-              icon: Icons.create_new_folder_outlined,
-            )
-          else
-            _buildCreateWorkFolderAction(context, l10n, compact: compact),
+          back,
+          Row(mainAxisSize: MainAxisSize.min, children: trailing),
         ],
       ),
     );
@@ -4704,7 +4706,14 @@ Widget _receivedShareProjectTile(
       margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       color: theme.colorScheme.surfaceContainerLow,
       child: ListTile(
-        leading: SizedBox(width: 56, height: 56, child: cover()),
+        minTileHeight: collectionDetailMinRowHeight(
+          collectionDetailThumbExtent(context, 56),
+          56,
+        ),
+        leading: SizedBox.square(
+          dimension: collectionDetailThumbExtent(context, 56),
+          child: cover(),
+        ),
         title: KoreanWordsText(
           project.name,
           copyMarks: copyMarkParts(project.name),
@@ -5268,7 +5277,10 @@ class _OutgoingSharesList extends StatelessWidget {
           margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
           color: scheme.surfaceContainerLow,
           child: ListTile(
-            leading: const Icon(Icons.insert_drive_file_outlined, size: 36),
+            leading: Icon(
+              Icons.insert_drive_file_outlined,
+              size: collectionDetailThumbExtent(context, 36),
+            ),
             title: KoreanWordsText(
               entry.name,
               breakAtFileSeparators: true,
@@ -5290,7 +5302,7 @@ class _OutgoingSharesList extends StatelessWidget {
       );
     }
 
-    if (viewMode != ProjectViewMode.detail) {
+    if (!viewMode.isDetail) {
       return CustomScrollView(
         key: ValueKey(('outgoing-niashares', viewMode)),
         slivers: [
@@ -5313,14 +5325,17 @@ class _OutgoingSharesList extends StatelessWidget {
         ],
       );
     }
-    return ListView.builder(
-      key: const PageStorageKey('outgoing-niashares'),
-      padding: EdgeInsets.only(
-        bottom: 100 + MediaQuery.paddingOf(context).bottom,
+    return CollectionDetailSizeScope(
+      size: viewMode.size,
+      child: ListView.builder(
+        key: const PageStorageKey('outgoing-niashares'),
+        padding: EdgeInsets.only(
+          bottom: 100 + MediaQuery.paddingOf(context).bottom,
+        ),
+        itemCount: saved.length + 1,
+        itemBuilder: (context, i) =>
+            i == 0 ? top : card(context, saved[i - 1], false),
       ),
-      itemCount: saved.length + 1,
-      itemBuilder: (context, i) =>
-          i == 0 ? top : card(context, saved[i - 1], false),
     );
   }
 }
@@ -5494,32 +5509,13 @@ class _SharedFolderScreenState extends State<_SharedFolderScreen> {
       appBar: AppBar(
         title: Text(widget.folderName),
         actions: [
-          PopupMenuButton<ProjectViewMode>(
+          ProjectViewModeMenu(
             key: const Key('sharedFolderViewModeMenu'),
-            icon: const Icon(Icons.view_module),
-            tooltip: l10n.homeViewModeTooltip,
-            onSelected: (mode) {
+            value: _viewMode,
+            onChanged: (mode) {
               setState(() => _viewMode = mode);
               widget.onViewModeChanged(mode);
             },
-            itemBuilder: (_) => [
-              PopupMenuItem(
-                value: ProjectViewMode.large,
-                child: Text(l10n.homeViewModeLarge),
-              ),
-              PopupMenuItem(
-                value: ProjectViewMode.medium,
-                child: Text(l10n.homeViewModeMedium),
-              ),
-              PopupMenuItem(
-                value: ProjectViewMode.small,
-                child: Text(l10n.homeViewModeSmall),
-              ),
-              PopupMenuItem(
-                value: ProjectViewMode.detail,
-                child: Text(l10n.homeViewModeDetail),
-              ),
-            ],
           ),
         ],
       ),
@@ -5562,7 +5558,7 @@ class _SharedFolderScreenState extends State<_SharedFolderScreen> {
                         icon: Icons.folder_open_outlined,
                         title: l10n.homeSharedFolderEmpty,
                       )
-                : _viewMode != ProjectViewMode.detail
+                : !_viewMode.isDetail
                 ? GridView.builder(
                     padding: const EdgeInsets.all(8),
                     gridDelegate: _worksGridDelegate(context, _viewMode),
@@ -5711,7 +5707,7 @@ class _FolderableList<T> extends StatelessWidget {
         }
         if (gridItemBuilder != null &&
             viewMode != null &&
-            viewMode != ProjectViewMode.detail) {
+            !viewMode!.isDetail) {
           return CustomScrollView(
             slivers: [
               if (header != null) SliverToBoxAdapter(child: header!),
@@ -5747,24 +5743,31 @@ class _FolderableList<T> extends StatelessWidget {
             ],
           );
         }
-        return ListView.builder(
-          // Leave 48px for the action, 8px inner padding and 4px card margin.
-          padding: EdgeInsets.only(
-            bottom: reserveForFloatingActions
-                ? (constraints.maxHeight - 60).clamp(0.0, 88.0).toDouble() +
-                      MediaQuery.paddingOf(context).bottom
-                : 0,
+        // 詳細の大・中・小を行（絵の大きさ）へ渡す。
+        return CollectionDetailSizeScope(
+          size: viewMode?.size ?? CollectionViewSize.medium,
+          child: ListView.builder(
+            // Leave 48px for the action, 8px inner padding and 4px card margin.
+            padding: EdgeInsets.only(
+              bottom: reserveForFloatingActions
+                  ? (constraints.maxHeight - 60).clamp(0.0, 88.0).toDouble() +
+                        MediaQuery.paddingOf(context).bottom
+                  : 0,
+            ),
+            itemCount: lead + rootItems.length + (hasHeader ? 2 : 0),
+            itemBuilder: (context, position) {
+              if (position < lead) return header!;
+              final index = position - lead;
+              if (hasHeader && index == 0) {
+                return _folderChips(context, countByFolder);
+              }
+              if (hasHeader && index == 1) return const Divider(height: 1);
+              return itemBuilder(
+                context,
+                rootItems[index - (hasHeader ? 2 : 0)],
+              );
+            },
           ),
-          itemCount: lead + rootItems.length + (hasHeader ? 2 : 0),
-          itemBuilder: (context, position) {
-            if (position < lead) return header!;
-            final index = position - lead;
-            if (hasHeader && index == 0) {
-              return _folderChips(context, countByFolder);
-            }
-            if (hasHeader && index == 1) return const Divider(height: 1);
-            return itemBuilder(context, rootItems[index - (hasHeader ? 2 : 0)]);
-          },
         );
       },
     );
@@ -5959,9 +5962,12 @@ class _FolderableList<T> extends StatelessWidget {
               color: Theme.of(context).colorScheme.surfaceContainerLow,
               child: ListTile(
                 minVerticalPadding: 8,
-                leading: SizedBox(
-                  width: 56,
-                  height: 56,
+                minTileHeight: collectionDetailMinRowHeight(
+                  collectionDetailThumbExtent(context, 56),
+                  56,
+                ),
+                leading: SizedBox.square(
+                  dimension: collectionDetailThumbExtent(context, 56),
                   child: FolderThumbnail(
                     folder: folder,
                     choices: _folderCoverChoices(folder.id),
@@ -7072,13 +7078,11 @@ SliverGridDelegate _worksGridDelegate(
   ProjectViewMode mode, {
   int nameLines = kCollectionTileNameLines,
 }) {
-  final extent = switch (mode) {
-    ProjectViewMode.small => 130.0,
-    ProjectViewMode.medium => 170.0,
-    ProjectViewMode.large => 240.0,
-    ProjectViewMode.detail => 240.0,
-  };
-  return collectionTileGridDelegate(context, extent, nameLines: nameLines);
+  return collectionTileGridDelegate(
+    context,
+    mode.isDetail ? kCollectionTileLargeExtent : mode.tileExtent,
+    nameLines: nameLines,
+  );
 }
 
 class _WorksTab extends StatefulWidget {
@@ -7635,29 +7639,10 @@ class _WorksFolderScreenState extends State<_WorksFolderScreen> {
       appBar: AppBar(
         title: Text(widget.folderName),
         actions: [
-          PopupMenuButton<ProjectViewMode>(
+          ProjectViewModeMenu(
             key: const Key('worksFolderViewModeMenu'),
-            icon: const Icon(Icons.view_module),
-            tooltip: l10n.homeViewModeTooltip,
-            onSelected: _selectViewMode,
-            itemBuilder: (_) => [
-              PopupMenuItem(
-                value: ProjectViewMode.large,
-                child: Text(l10n.homeViewModeLarge),
-              ),
-              PopupMenuItem(
-                value: ProjectViewMode.medium,
-                child: Text(l10n.homeViewModeMedium),
-              ),
-              PopupMenuItem(
-                value: ProjectViewMode.small,
-                child: Text(l10n.homeViewModeSmall),
-              ),
-              PopupMenuItem(
-                value: ProjectViewMode.detail,
-                child: Text(l10n.homeViewModeDetail),
-              ),
-            ],
+            value: _viewMode,
+            onChanged: _selectViewMode,
           ),
         ],
       ),
@@ -7759,7 +7744,7 @@ class _WorksFolderScreenState extends State<_WorksFolderScreen> {
                   );
                 }
 
-                if (_viewMode != ProjectViewMode.detail) {
+                if (!_viewMode.isDetail) {
                   return GridView.builder(
                     key: ValueKey(('works-folder-grid', _viewMode)),
                     padding: const EdgeInsets.all(8),
@@ -8183,7 +8168,47 @@ class _WorkPreviewState extends State<_WorkPreview> {
   }
 }
 
-enum ProjectViewMode { large, medium, small, detail }
+/// ホームの一覧の表示：サムネイルのタイルか詳細（行）か、と大きさ（大・中・
+/// 小）の組み合わせ。保存は名前で、`detail`は以前からの詳細（中）。
+enum ProjectViewMode {
+  large,
+  medium,
+  small,
+  detail,
+  detailLarge,
+  detailSmall;
+
+  /// 詳細（行）の表示か。
+  bool get isDetail =>
+      this == detail || this == detailLarge || this == detailSmall;
+
+  /// 表示形式によらない大きさ。
+  CollectionViewSize get size => switch (this) {
+    large || detailLarge => CollectionViewSize.large,
+    medium || detail => CollectionViewSize.medium,
+    small || detailSmall => CollectionViewSize.small,
+  };
+
+  static ProjectViewMode of({
+    required bool detail,
+    required CollectionViewSize size,
+  }) => switch ((detail, size)) {
+    (false, CollectionViewSize.large) => ProjectViewMode.large,
+    (false, CollectionViewSize.medium) => ProjectViewMode.medium,
+    (false, CollectionViewSize.small) => ProjectViewMode.small,
+    (true, CollectionViewSize.large) => ProjectViewMode.detailLarge,
+    (true, CollectionViewSize.medium) => ProjectViewMode.detail,
+    (true, CollectionViewSize.small) => ProjectViewMode.detailSmall,
+  };
+
+  /// タイルのカードの基準の幅（[collectionTileGridDelegate]）。詳細の
+  /// 表示では使わない。
+  double get tileExtent => switch (size) {
+    CollectionViewSize.large => kCollectionTileLargeExtent,
+    CollectionViewSize.medium => kCollectionTileMediumExtent,
+    CollectionViewSize.small => kCollectionTileSmallExtent,
+  };
+}
 
 enum ProjectSortMode { nameAsc, nameDesc, updatedAsc, updatedDesc }
 

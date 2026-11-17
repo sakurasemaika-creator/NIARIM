@@ -153,6 +153,11 @@ void main() {
 
     final viewMenu = find.byKey(const Key('homeCollectionViewModeMenu'));
     expect(viewMenu, findsOneWidget);
+    // 詳細からタイルへ替え（スマホの幅の既定は小）、大きさに小を選ぶ。
+    await tester.tap(viewMenu);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(l10n.homeViewLayoutTiles).last);
+    await tester.pumpAndSettle();
     await tester.tap(viewMenu);
     await tester.pumpAndSettle();
     await tester.tap(find.text(l10n.homeViewModeSmall).last);

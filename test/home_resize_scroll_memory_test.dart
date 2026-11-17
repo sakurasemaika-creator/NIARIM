@@ -11,6 +11,7 @@ import 'package:niarim/router.dart';
 import 'package:niarim/screens/home/home_screen.dart';
 import 'package:niarim/screens/home/widgets/project_list_widget.dart';
 import 'package:niarim/services/project_service.dart';
+import 'package:niarim/widgets/collection_tile_layout.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -141,7 +142,9 @@ void main() {
           ProjectViewMode.large => l10n.homeViewModeLarge,
           ProjectViewMode.medium => l10n.homeViewModeMedium,
           ProjectViewMode.small => l10n.homeViewModeSmall,
-          ProjectViewMode.detail => l10n.homeViewModeDetail,
+          ProjectViewMode.detail ||
+          ProjectViewMode.detailLarge ||
+          ProjectViewMode.detailSmall => l10n.homeViewModeDetail,
         }).last,
       );
       await tester.pumpAndSettle();
@@ -162,25 +165,44 @@ void main() {
     });
   }
 
+  // 表示のメニューは表示形式（タイル・詳細）と大きさ（大・中・小）を別々に
+  // 選ぶ。表示形式が違うときは先に表示形式を替え（その形式の既定の大きさから
+  // 始まる）、それから大きさを選ぶ。
   Future<void> pick(WidgetTester tester, ProjectViewMode chosen) async {
     final l10n = AppLocalizations.of(
       tester.element(find.byType(ProjectListWidget)),
     )!;
-    await tester.tap(find.byTooltip(l10n.homeViewModeTooltip));
-    await tester.pumpAndSettle();
-    await tester.tap(
-      find.text(switch (chosen) {
-        ProjectViewMode.large => l10n.homeViewModeLarge,
-        ProjectViewMode.medium => l10n.homeViewModeMedium,
-        ProjectViewMode.small => l10n.homeViewModeSmall,
-        ProjectViewMode.detail => l10n.homeViewModeDetail,
-      }).last,
-    );
-    await tester.pumpAndSettle();
-    expect(
-      tester.widget<ProjectListWidget>(find.byType(ProjectListWidget)).viewMode,
-      chosen,
-    );
+    ProjectViewMode shown() => tester
+        .widget<ProjectListWidget>(find.byType(ProjectListWidget))
+        .viewMode;
+    if (shown().isDetail != chosen.isDetail) {
+      await tester.tap(find.byTooltip(l10n.homeViewModeTooltip));
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find
+            .text(
+              chosen.isDetail
+                  ? l10n.homeViewModeDetail
+                  : l10n.homeViewLayoutTiles,
+            )
+            .last,
+      );
+      await tester.pumpAndSettle();
+    }
+    // 大きさはいつも選び直す（いま出ている大きさを選ぶ操作も確かめる）。
+    {
+      await tester.tap(find.byTooltip(l10n.homeViewModeTooltip));
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.text(switch (chosen.size) {
+          CollectionViewSize.large => l10n.homeViewModeLarge,
+          CollectionViewSize.medium => l10n.homeViewModeMedium,
+          CollectionViewSize.small => l10n.homeViewModeSmall,
+        }).last,
+      );
+      await tester.pumpAndSettle();
+    }
+    expect(shown(), chosen);
   }
 
   Future<void> scrollTo(WidgetTester tester, double pixels) async {

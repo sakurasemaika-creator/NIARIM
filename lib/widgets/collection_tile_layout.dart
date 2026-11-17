@@ -65,10 +65,77 @@ class CollectionTileGridDelegate
       super.shouldRelayout(oldDelegate);
 }
 
-/// 表示サイズ（小・中・大）のカードの基準の幅。
+/// 一覧の表示の大きさ（タイルでも詳細でも、大・中・小）。
+enum CollectionViewSize { large, medium, small }
+
+/// 表示サイズ（小・中・大）のカードの基準の幅（スマホ）。タブレット・PCの
+/// 広い一覧では[collectionTileColumnCount]がそれぞれの幅に合わせ直す。
 const double kCollectionTileSmallExtent = 130;
 const double kCollectionTileMediumExtent = 170;
 const double kCollectionTileLargeExtent = 240;
+
+/// 画面の幅ごとの、カードの基準の幅（大・中・小）。スマホは大1列・中2列・
+/// 小3列。タブレット（画面の幅600〜999px）は800pxで3・4・7列、PC（1000px
+/// 以上）は1280pxで4・6・9列、1920pxで6・9・13列。広い画面ほど大と小の差を
+/// 大きくする（PCで大のカードが小の2倍強の幅になる）。
+({double large, double medium, double small}) _tileExtentsFor(
+  double listWidth,
+) {
+  // 一覧の左右の余白（8pxずつ）を足した、画面の幅にあたる値で分ける。
+  final screenWidth = listWidth + 16;
+  if (screenWidth >= 1000) return (large: 322, medium: 212, small: 142);
+  if (screenWidth >= 600) return (large: 300, medium: 200, small: 120);
+  return (
+    large: kCollectionTileLargeExtent,
+    medium: kCollectionTileMediumExtent,
+    small: kCollectionTileSmallExtent,
+  );
+}
+
+/// 詳細（行）の表示の、行の先頭の絵の大きさ。[usual]はスマホの中（今までの
+/// 大きさ：作品は48・共有・作品一覧は56）。タブレット・PCでは中から大きく
+/// し、大は絵で見分けられる大きさにする。
+double collectionDetailThumbExtent(BuildContext context, double usual) {
+  final size = CollectionDetailSizeScope.sizeOf(context);
+  final width = MediaQuery.sizeOf(context).width;
+  final factor = switch ((width >= 1000, width >= 600, size)) {
+    (true, _, CollectionViewSize.large) => 2.5,
+    (true, _, CollectionViewSize.medium) => 1.5,
+    (false, true, CollectionViewSize.large) => 2.0,
+    (false, true, CollectionViewSize.medium) => 1.375,
+    (false, false, CollectionViewSize.large) => 1.5,
+    (false, false, CollectionViewSize.medium) => 1.0,
+    (_, _, CollectionViewSize.small) => width >= 600 ? 1.0 : 0.84,
+  };
+  return (usual * factor).roundToDouble();
+}
+
+/// 詳細の行の高さの下限。絵が大きいときは絵の上下に8pxずつ取る（ListTileは
+/// 行の高さを先頭の部品で決めないので、渡さないと絵が隣の行へはみ出す）。
+double? collectionDetailMinRowHeight(double thumb, double usual) =>
+    thumb > usual ? thumb + 16 : null;
+
+/// 詳細の表示の大きさを、一覧の行（[collectionDetailThumbExtent]）へ渡す。
+class CollectionDetailSizeScope extends InheritedWidget {
+  const CollectionDetailSizeScope({
+    super.key,
+    required this.size,
+    required super.child,
+  });
+
+  final CollectionViewSize size;
+
+  /// 囲んでいる詳細の一覧の大きさ（無ければ中）。
+  static CollectionViewSize sizeOf(BuildContext context) =>
+      context
+          .dependOnInheritedWidgetOfExactType<CollectionDetailSizeScope>()
+          ?.size ??
+      CollectionViewSize.medium;
+
+  @override
+  bool updateShouldNotify(CollectionDetailSizeScope oldWidget) =>
+      size != oldWidget.size;
+}
 
 /// 小のカードを3列に並べてよい、カードの幅の下限。右上のメニューと左下の
 /// 星（どちらも[CollectionActionFrame.extent]）が置け、名前の帯に字が入る幅。
@@ -104,16 +171,14 @@ int collectionTileColumnCount(
   if (textScale > 1) width /= textScale;
   int fit(double extent) => math.max(1, (width / (extent + 8)).ceil());
   if (maxExtent < kCollectionTileSmallExtent) return fit(maxExtent);
+  final extents = _tileExtentsFor(width);
   // 幅[kCollectionTileMinWidth]以上のカードが並ぶ列の数。
   final roomy = ((width + 8) / (kCollectionTileMinWidth + 8)).floor();
-  final small = math.max(fit(kCollectionTileSmallExtent), math.min(3, roomy));
+  final small = math.max(fit(extents.small), math.min(3, roomy));
   if (maxExtent <= kCollectionTileSmallExtent) return small;
-  final medium = math.max(
-    1,
-    math.min(fit(kCollectionTileMediumExtent), small - 1),
-  );
+  final medium = math.max(1, math.min(fit(extents.medium), small - 1));
   if (maxExtent <= kCollectionTileMediumExtent) return medium;
-  return math.max(1, math.min(fit(maxExtent), medium - 1));
+  return math.max(1, math.min(fit(extents.large), medium - 1));
 }
 
 TextStyle collectionTileCaptionStyle(BuildContext context) => TextStyle(

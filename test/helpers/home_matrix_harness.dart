@@ -972,17 +972,40 @@ class HomeMatrix {
     await drawerCell('state');
   }
 
+  /// 上部バーの表示のメニューで[mode]にする。メニューは表示形式（タイル・
+  /// 詳細）と大きさ（大・中・小）を別々に選ぶので、どちらも今と違うときは
+  /// 表示形式を先に替えてから大きさを選ぶ。
+  Future<void> chooseViewMode(ProjectViewMode mode) async {
+    Finder item(ProjectViewMode value) => find.byWidgetPredicate(
+      (w) => w is PopupMenuItem<ProjectViewMode> && w.value == value,
+    );
+    for (var round = 0; round < 2; round++) {
+      await tester.tap(find.byType(ProjectViewModeMenu));
+      // メニューが開き終わるまで待つ（開く途中のタップは届かない）。
+      await frames(6);
+      if (item(mode).evaluate().isNotEmpty) {
+        await tester.tap(item(mode).first);
+        await frames(6);
+        return;
+      }
+      // 表示形式が違う：大きさの項目はどれも今の表示形式なので、表示形式が
+      // [mode]と同じ項目は表示形式の項目だけ。
+      final layout = find.byWidgetPredicate(
+        (w) =>
+            w is PopupMenuItem<ProjectViewMode> &&
+            w.value?.isDetail == mode.isDetail,
+      );
+      await tester.tap(layout.first);
+      await frames(6);
+    }
+    throw StateError('could not choose $mode');
+  }
+
   /// 上部バーの表示サイズのメニューで[mode]を選んで撮る。並んだ列数
   /// （詳細ならnull）を返す。
   Future<int?> viewModeCell(ProjectViewMode mode) async {
     await show(HomeView.projects);
-    await tester.tap(find.byType(ProjectViewModeMenu));
-    // メニューが開き終わるまで待つ（開く途中のタップは届かない）。
-    await frames(6);
-    await tester.tap(
-      find.byType(PopupMenuItem<ProjectViewMode>).at(mode.index),
-    );
-    await frames(6);
+    await chooseViewMode(mode);
     chosenViewMode = mode;
     final menu = tester.widget<ProjectViewModeMenu>(
       find.byType(ProjectViewModeMenu),
@@ -993,11 +1016,9 @@ class HomeMatrix {
       mode.name,
       problems: {
         if (menu.value != mode) 'view size ${menu.value.name} != ${mode.name}',
-        if (mode == ProjectViewMode.detail &&
-            find.byType(ListTile).evaluate().isEmpty)
+        if (mode.isDetail && find.byType(ListTile).evaluate().isEmpty)
           'detail rows not shown',
-        if (mode != ProjectViewMode.detail && columns == null)
-          'project grid not shown',
+        if (!mode.isDetail && columns == null) 'project grid not shown',
       },
       captureEnd: true,
     );
@@ -1779,7 +1800,7 @@ class HomeMatrix {
         projectsScroll.position.pixels >
             projectsScroll.position.minScrollExtent + 0.5;
     final controls = <String, Finder>{
-      'back': find.byKey(const Key('homeBackToSplashButton')),
+      'back': fab('home-back-to-splash', l10n.homeBackToSplashTooltip),
       'drawer': find.byKey(const Key('homeMenuButton')),
       ...switch (currentView) {
         HomeView.projects => {
@@ -1930,12 +1951,12 @@ class HomeMatrix {
         find.byType(EmptyStatePlaceholder).evaluate().isEmpty &&
         contents == HomeContents.seeded;
     if (grid == null) {
-      if (expected != ProjectViewMode.detail && listed) {
+      if (!expected.isDetail && listed) {
         problems.add('project grid not shown');
       }
       return problems;
     }
-    if (expected == ProjectViewMode.detail) {
+    if (expected.isDetail) {
       problems.add('grid shown in the detail view');
       return problems;
     }

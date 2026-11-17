@@ -329,6 +329,24 @@ abstract class AppLocalizations {
   /// **'詳細'**
   String get homeViewModeDetail;
 
+  /// No description provided for @homeViewLayoutHeading.
+  ///
+  /// In ja, this message translates to:
+  /// **'表示形式'**
+  String get homeViewLayoutHeading;
+
+  /// No description provided for @homeViewLayoutTiles.
+  ///
+  /// In ja, this message translates to:
+  /// **'タイル'**
+  String get homeViewLayoutTiles;
+
+  /// No description provided for @homeViewSizeHeading.
+  ///
+  /// In ja, this message translates to:
+  /// **'サイズ'**
+  String get homeViewSizeHeading;
+
   /// No description provided for @homeSortFieldName.
   ///
   /// In ja, this message translates to:
@@ -14400,7 +14418,7 @@ abstract class AppLocalizations {
   /// No description provided for @homeViewModeTooltip.
   ///
   /// In ja, this message translates to:
-  /// **'表示の大きさ'**
+  /// **'表示形式とサイズ'**
   String get homeViewModeTooltip;
 
   /// No description provided for @homeMoveToTrashNothing.

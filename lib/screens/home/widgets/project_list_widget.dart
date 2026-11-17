@@ -36,6 +36,7 @@ import '../../../widgets/menu_action_label.dart';
 import '../../../widgets/secondary_click_menu.dart';
 import '../../../utils/app_error_reporter.dart';
 import '../../../utils/duplicate_name.dart';
+import '../../../utils/responsive_tile_defaults.dart';
 import 'folder_save_feedback.dart';
 import 'work_folder_move_sheet.dart';
 import 'project_folder_edit_dialog.dart';
@@ -115,6 +116,10 @@ void showRenameFolderNameDialog(
 /// チェックが付き（読み上げでも選択中）、ボタンを覆わないよう下に開く
 /// （以前はどれを選んでいるか分からず、ボタンの上に重なって開いた）。
 /// ホームのタブと、ホーム画面ウィジェットの作品を選ぶ一覧で使う。
+/// 一覧の表示のメニュー：表示形式（タイル・詳細）と大きさ（大・中・小）を
+/// 別々に選ぶ（PCのファイルの一覧と同じ考え方）。大きさはそれぞれの表示形式の
+/// 中で選び、表示形式を切り替えたときはその形式の既定の大きさ（タイルは画面の
+/// 幅で決まる大きさ、詳細は中）から始める。
 class ProjectViewModeMenu extends StatelessWidget {
   const ProjectViewModeMenu({
     super.key,
@@ -128,25 +133,45 @@ class ProjectViewModeMenu extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    String label(ProjectViewMode mode) => switch (mode) {
-      ProjectViewMode.large => l10n.homeViewModeLarge,
-      ProjectViewMode.medium => l10n.homeViewModeMedium,
-      ProjectViewMode.small => l10n.homeViewModeSmall,
-      ProjectViewMode.detail => l10n.homeViewModeDetail,
+    String sizeLabel(CollectionViewSize size) => switch (size) {
+      CollectionViewSize.large => l10n.homeViewModeLarge,
+      CollectionViewSize.medium => l10n.homeViewModeMedium,
+      CollectionViewSize.small => l10n.homeViewModeSmall,
     };
     return PopupMenuButton<ProjectViewMode>(
       icon: const Icon(Icons.view_module),
       tooltip: l10n.homeViewModeTooltip,
-      initialValue: value,
       position: PopupMenuPosition.under,
       onSelected: onChanged,
       itemBuilder: (_) => [
-        for (final mode in ProjectViewMode.values)
+        MenuSectionHeading<ProjectViewMode>(l10n.homeViewLayoutHeading),
+        checkedMenuItem(
+          context,
+          value: value.isDetail
+              ? ProjectViewMode.of(
+                  detail: false,
+                  size: defaultTileSizeFor(MediaQuery.sizeOf(context).width),
+                )
+              : value,
+          checked: !value.isDetail,
+          label: l10n.homeViewLayoutTiles,
+          icon: Icons.grid_view,
+        ),
+        checkedMenuItem(
+          context,
+          value: value.isDetail ? value : ProjectViewMode.detail,
+          checked: value.isDetail,
+          label: l10n.homeViewModeDetail,
+          icon: Icons.view_list,
+        ),
+        const PopupMenuDivider(),
+        MenuSectionHeading<ProjectViewMode>(l10n.homeViewSizeHeading),
+        for (final size in CollectionViewSize.values)
           checkedMenuItem(
             context,
-            value: mode,
-            checked: mode == value,
-            label: label(mode),
+            value: ProjectViewMode.of(detail: value.isDetail, size: size),
+            checked: value.size == size,
+            label: sizeLabel(size),
           ),
       ],
     );
@@ -453,56 +478,16 @@ class ProjectListWidget extends StatelessWidget {
       );
     }
 
-    if (viewMode == ProjectViewMode.detail) {
-      if (header != null) {
-        return CustomScrollView(
-          controller: scrollController,
-          slivers: [
-            SliverToBoxAdapter(child: header!),
-            SliverList.builder(
-              itemCount: sorted.length,
-              itemBuilder: (context, index) => _withCutFeedback(
-                context,
-                sorted[index],
-                // 右クリックで行の︙と同じメニューを開く（カードと同じ）。
-                SecondaryClickMenu(
-                  child: _detailTile(context, l10n, sorted[index]),
-                ),
-              ),
-            ),
-            // 浮かぶボタンは画面の下の帯（ジェスチャー・3ボタン）の分だけ
-            // 上がるので、末尾の余白にも帯の分を足す（足さないと、一番下
-            // まで送っても最後の行の名前が＋の下に入った）。
-            SliverToBoxAdapter(
-              child: SizedBox(
-                key: const Key('homeProjectListEndClearance'),
-                height:
-                    bottomClearance ??
-                    104 + MediaQuery.paddingOf(context).bottom,
-              ),
-            ),
-          ],
-        );
-      }
-      return ListView.builder(
-        controller: scrollController,
-        itemCount: sorted.length,
-        itemBuilder: (context, index) => _withCutFeedback(
-          context,
-          sorted[index],
-          SecondaryClickMenu(child: _detailTile(context, l10n, sorted[index])),
-        ),
+    if (viewMode.isDetail) {
+      return CollectionDetailSizeScope(
+        size: viewMode.size,
+        child: _detailList(context, l10n, sorted),
       );
     }
 
     // カード基準サイズ（大/中/小）を軸に、画面幅に応じて列数が自然に増減する
     // グリッドを使う（PC/DeXモードの広い画面でも余白だらけにならないように）。
-    final targetExtent = switch (viewMode) {
-      ProjectViewMode.large => 240.0,
-      ProjectViewMode.medium => 170.0,
-      ProjectViewMode.small => 130.0,
-      ProjectViewMode.detail => double.infinity,
-    };
+    final targetExtent = viewMode.tileExtent;
     // 検索の結果には、入っているフォルダの場所の行を添える。
     final gridDelegate = collectionTileGridDelegate(
       context,
@@ -704,6 +689,52 @@ class ProjectListWidget extends StatelessWidget {
     return names.isEmpty ? null : names.join(' / ');
   }
 
+  /// 詳細（行）の一覧。
+  Widget _detailList(
+    BuildContext context,
+    AppLocalizations l10n,
+    List<_Entry> sorted,
+  ) {
+    if (header != null) {
+      return CustomScrollView(
+        controller: scrollController,
+        slivers: [
+          SliverToBoxAdapter(child: header!),
+          SliverList.builder(
+            itemCount: sorted.length,
+            itemBuilder: (context, index) => _withCutFeedback(
+              context,
+              sorted[index],
+              // 右クリックで行の︙と同じメニューを開く（カードと同じ）。
+              SecondaryClickMenu(
+                child: _detailTile(context, l10n, sorted[index]),
+              ),
+            ),
+          ),
+          // 浮かぶボタンは画面の下の帯（ジェスチャー・3ボタン）の分だけ
+          // 上がるので、末尾の余白にも帯の分を足す（足さないと、一番下
+          // まで送っても最後の行の名前が＋の下に入った）。
+          SliverToBoxAdapter(
+            child: SizedBox(
+              key: const Key('homeProjectListEndClearance'),
+              height:
+                  bottomClearance ?? 104 + MediaQuery.paddingOf(context).bottom,
+            ),
+          ),
+        ],
+      );
+    }
+    return ListView.builder(
+      controller: scrollController,
+      itemCount: sorted.length,
+      itemBuilder: (context, index) => _withCutFeedback(
+        context,
+        sorted[index],
+        SecondaryClickMenu(child: _detailTile(context, l10n, sorted[index])),
+      ),
+    );
+  }
+
   Widget _detailTile(
     BuildContext context,
     AppLocalizations l10n,
@@ -712,18 +743,21 @@ class ProjectListWidget extends StatelessWidget {
     if (entry.isFolder) return _folderDetailTile(context, entry.folder!);
     final project = entry.project!;
     final isSelected = selectedIds.contains(project.id);
+    // 行の先頭の絵の大きさは詳細の大・中・小と画面の幅で決まる。
+    final thumb = collectionDetailThumbExtent(context, 48);
     return ListTile(
+      minTileHeight: collectionDetailMinRowHeight(thumb, 48),
       leading: isSelectionMode
           ? Checkbox(
               value: isSelected,
               onChanged: (_) => onSelectionChanged(project.id),
             )
           : SizedBox(
-              width: 48,
-              height: 48,
+              width: thumb,
+              height: thumb,
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(10),
-                child: _thumbnail(context, project, displayWidth: 48),
+                child: _thumbnail(context, project, displayWidth: thumb),
               ),
             ),
       // 韓国語の名前は語の途中で、複製の名前の印（「(コピー 2)」）は印の
@@ -793,15 +827,17 @@ class ProjectListWidget extends StatelessWidget {
 
   Widget _folderDetailTile(BuildContext context, ProjectFolder folder) {
     final isSelected = selectedIds.contains(folder.id);
+    final thumb = collectionDetailThumbExtent(context, 48);
     return ListTile(
+      minTileHeight: collectionDetailMinRowHeight(thumb, 48),
       leading: isSelectionMode
           ? Checkbox(
               value: isSelected,
               onChanged: (_) => onSelectionChanged(folder.id),
             )
           : SizedBox(
-              width: 48,
-              height: 48,
+              width: thumb,
+              height: thumb,
               child: FolderThumbnail(
                 folder: folder,
                 choices: _folderCoverChoices(context, folder),
