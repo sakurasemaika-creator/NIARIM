@@ -1015,3 +1015,15 @@ App・Web共通。Claudeが要修正の詳細を追記し、ユーザーが別�
   - test：`canvas_pinch_gesture_test`・`gesture_settings_sheet_test`・`multi_touch_tap_tracker_test`・`two_finger_vertical_swipe_detector_test`（14件）は成功。
 - **気づいた点（DISCにしない）**：操作を選ぶシートに見出しが無く、どのジェスチャーの選択か書いていない。
 - **未確認**：実機のタッチでの発火・ピンチや描画との競合・ポインターの取り消し、再起動後の値（保存で確認）。
+
+### A073（一巡目、Claude・S40、判定：OK）
+
+- **確認SHA・環境**：実操作は`ef376646`のLinuxデバッグビルド（ショートカットの画面・サービスは今の`05ed3fa9`と同じ）、PC ja 1280×800、キーボード・マウス、プロフィール`prof/r1-a066`。testは今の`05ed3fa9`。画像はscratchpadの`shots-r1/sc-*`（`backup-pending`）。
+- **OK**：
+  - 一覧：既定のCtrl+Z・Ctrl+Y・Ctrl+Shift+Z・Ctrl+A・Ctrl+C・Ctrl+X・Ctrl+V、削除は確認（`confirmDelete`）つき。
+  - 追加：「キーを押してください」（修飾キーも、Escで取り消し）→Ctrl+Zを押すと「Ctrl+Z に何を割り当てますか？」→主要操作のコピー→「すでに割り当てられています／Ctrl+Z には既に「取り消し（Undo）」が割り当てられています。上書きしますか？」（キャンセルで何も変わらない）。
+  - Alt+Shift+F5は「Shift+Alt+F5」と表記。ツール選択→Gペン→「Gペンのサイズ」3px→一覧に「Shift+Alt+F5 Gペン 3px」。
+  - キャンバス（PCの作業画面）でShift+Alt+F5を押すと、ブラシがGペン・太さ3pxに替わる。
+  - test：ショートカットの10ファイル（`shortcut_repeat_test`・`typing_aware_shortcuts_test`〔入力中・ダイアログの上では効かない〕・`niatra_transfer_shortcut_conflict_test`ほか）43件は成功。
+- **気づいた点（DISCにしない）**：既定のショートカットを消した後に既定へ戻す手段が見当たらない。キャンバスのPCの作業画面の上部に「ファイル・レイヤー・表示・設定」の並びがある（PCの作業画面はDISC066の所有者の判断待ち）。
+- **未確認**：左手デバイス（実機）、キーを押し続けたときの繰り返し（testで確認）、タイムラインでの発火、欠けたブラシを指すショートカットの実行。
