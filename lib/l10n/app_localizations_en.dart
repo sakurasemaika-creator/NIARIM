@@ -10914,4 +10914,22 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get pcLayoutInstruction =>
       'Drag a window’s edge in the preview to change its width or height. Press and hold the handle at its top left to move it or swap it with another window. Pinch to zoom.';
+
+  @override
+  String get brushNibWidthRatio => 'Tip width relative to height';
+
+  @override
+  String get brushFoldFlatEnds => 'Flat ends';
+
+  @override
+  String get brushFoldTriggerAngle => 'Minimum turn angle';
+
+  @override
+  String get brushFoldEndTaper => 'Folded tip taper';
+
+  @override
+  String get timelineSelectionScenes => 'Scenes';
+
+  @override
+  String get timelineSelectionClips => 'Media clips';
 }

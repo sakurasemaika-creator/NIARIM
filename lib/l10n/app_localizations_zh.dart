@@ -10075,6 +10075,24 @@ class AppLocalizationsZh extends AppLocalizations {
   @override
   String get pcLayoutInstruction =>
       '在预览中拖动窗口边缘可调整宽度和高度，长按左上角的手柄可移动窗口或与其他窗口交换。双指缩放可放大。';
+
+  @override
+  String get brushNibWidthRatio => '笔尖宽度（相对高度）';
+
+  @override
+  String get brushFoldFlatEnds => '两端切平';
+
+  @override
+  String get brushFoldTriggerAngle => '开始折叠的角度';
+
+  @override
+  String get brushFoldEndTaper => '折叠末端收尖';
+
+  @override
+  String get timelineSelectionScenes => '场景';
+
+  @override
+  String get timelineSelectionClips => '素材片段';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -20150,4 +20168,22 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   @override
   String get pcLayoutInstruction =>
       '在預覽中拖曳視窗邊緣可調整寬度和高度，長按左上角的控點可移動視窗或與其他視窗交換。雙指縮放可放大。';
+
+  @override
+  String get brushNibWidthRatio => '筆尖寬度（相對高度）';
+
+  @override
+  String get brushFoldFlatEnds => '兩端切平';
+
+  @override
+  String get brushFoldTriggerAngle => '開始摺疊的角度';
+
+  @override
+  String get brushFoldEndTaper => '摺疊末端收尖';
+
+  @override
+  String get timelineSelectionScenes => '場景';
+
+  @override
+  String get timelineSelectionClips => '素材片段';
 }

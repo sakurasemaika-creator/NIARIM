@@ -3907,5 +3907,11 @@
   "pcLayoutAutoFoldTitle": "Replier automatiquement les fenêtres d’outils",
   "pcLayoutAutoFoldHelp": "Les fenêtres utilisées le moins récemment se replient temporairement, uniquement si les fenêtres ne tiennent toujours pas une fois réduites. La fenêtre en cours reste ouverte et les fenêtres repliées reviennent dès que la place le permet. Si l’option est désactivée, la colonne défile simplement.",
   "pcLayoutResetWorkspace": "Réinitialiser l’espace de travail",
-  "pcLayoutInstruction": "Faites glisser le bord d’une fenêtre dans l’aperçu pour modifier sa largeur ou sa hauteur. Maintenez la poignée en haut à gauche pour la déplacer ou l’échanger avec une autre. Pincez pour zoomer."
+  "pcLayoutInstruction": "Faites glisser le bord d’une fenêtre dans l’aperçu pour modifier sa largeur ou sa hauteur. Maintenez la poignée en haut à gauche pour la déplacer ou l’échanger avec une autre. Pincez pour zoomer.",
+  "brushNibWidthRatio": "Largeur de la pointe par rapport à la hauteur",
+  "brushFoldFlatEnds": "Extrémités plates",
+  "brushFoldTriggerAngle": "Angle de virage minimal",
+  "brushFoldEndTaper": "Effilement de la pointe repliée",
+  "timelineSelectionScenes": "Scènes",
+  "timelineSelectionClips": "Clips multimédias"
 }

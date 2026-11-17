@@ -17984,6 +17984,42 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'プレビューのウィンドウ端をドラッグして幅・高さを変更し、左上のハンドルを長押しして移動・入れ替えできます。ピンチで拡大できます。'**
   String get pcLayoutInstruction;
+
+  /// No description provided for @brushNibWidthRatio.
+  ///
+  /// In ja, this message translates to:
+  /// **'ペン先の幅（高さ比）'**
+  String get brushNibWidthRatio;
+
+  /// No description provided for @brushFoldFlatEnds.
+  ///
+  /// In ja, this message translates to:
+  /// **'両端を平らにする'**
+  String get brushFoldFlatEnds;
+
+  /// No description provided for @brushFoldTriggerAngle.
+  ///
+  /// In ja, this message translates to:
+  /// **'折り返しが始まる角度'**
+  String get brushFoldTriggerAngle;
+
+  /// No description provided for @brushFoldEndTaper.
+  ///
+  /// In ja, this message translates to:
+  /// **'折り返し線の先細り'**
+  String get brushFoldEndTaper;
+
+  /// No description provided for @timelineSelectionScenes.
+  ///
+  /// In ja, this message translates to:
+  /// **'シーン'**
+  String get timelineSelectionScenes;
+
+  /// No description provided for @timelineSelectionClips.
+  ///
+  /// In ja, this message translates to:
+  /// **'素材クリップ'**
+  String get timelineSelectionClips;
 }
 
 class _AppLocalizationsDelegate

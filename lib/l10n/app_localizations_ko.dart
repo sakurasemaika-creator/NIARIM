@@ -10240,4 +10240,22 @@ class AppLocalizationsKo extends AppLocalizations {
   @override
   String get pcLayoutInstruction =>
       '미리보기에서 창 가장자리를 드래그해 너비와 높이를 바꾸고, 왼쪽 위의 손잡이를 길게 눌러 이동하거나 다른 창과 바꿀 수 있습니다. 핀치하면 확대됩니다.';
+
+  @override
+  String get brushNibWidthRatio => '펜촉 너비(높이 대비)';
+
+  @override
+  String get brushFoldFlatEnds => '양끝을 평평하게';
+
+  @override
+  String get brushFoldTriggerAngle => '접힘 시작 각도';
+
+  @override
+  String get brushFoldEndTaper => '접힌 끝 가늘기';
+
+  @override
+  String get timelineSelectionScenes => '장면';
+
+  @override
+  String get timelineSelectionClips => '소재 클립';
 }

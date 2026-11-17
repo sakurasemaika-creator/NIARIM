@@ -3914,5 +3914,11 @@
   "pcLayoutAutoFoldTitle": "Fold tool windows automatically",
   "pcLayoutAutoFoldHelp": "The least recently used windows fold away temporarily, but only when windows still don’t fit after being shortened. The window you’re using stays open, and folded windows come back when there’s room again. When off, the column only scrolls.",
   "pcLayoutResetWorkspace": "Reset workspace",
-  "pcLayoutInstruction": "Drag a window’s edge in the preview to change its width or height. Press and hold the handle at its top left to move it or swap it with another window. Pinch to zoom."
+  "pcLayoutInstruction": "Drag a window’s edge in the preview to change its width or height. Press and hold the handle at its top left to move it or swap it with another window. Pinch to zoom.",
+  "brushNibWidthRatio": "Tip width relative to height",
+  "brushFoldFlatEnds": "Flat ends",
+  "brushFoldTriggerAngle": "Minimum turn angle",
+  "brushFoldEndTaper": "Folded tip taper",
+  "timelineSelectionScenes": "Scenes",
+  "timelineSelectionClips": "Media clips"
 }

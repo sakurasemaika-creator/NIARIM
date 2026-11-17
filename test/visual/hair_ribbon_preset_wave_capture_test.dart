@@ -82,16 +82,12 @@ Map<String, List<ui.Offset>> curvedSamples() {
 
   return {
     'horizontal': trace(
-      (t) => ui.Offset(
-        24 + 312 * t,
-        119 + 41 * math.sin((t * 4 - .5) * math.pi),
-      ),
+      (t) =>
+          ui.Offset(24 + 312 * t, 119 + 41 * math.sin((t * 4 - .5) * math.pi)),
     ),
     'vertical': trace(
-      (t) => ui.Offset(
-        180 + 45 * math.sin((t * 3 - .5) * math.pi),
-        24 + 192 * t,
-      ),
+      (t) =>
+          ui.Offset(180 + 45 * math.sin((t * 3 - .5) * math.pi), 24 + 192 * t),
     ),
     'diagonal': trace(
       (t) => ui.Offset(
@@ -148,10 +144,60 @@ void main() {
     }
   });
 
+  test('saved vertical nib migrates to editable flat tip settings', () {
+    final data = preset('Brush0036').toJson()
+      ..remove('calligraphyAngle')
+      ..remove('nibWidthRatio')
+      ..['verticalNib'] = true;
+    final migrated = Brush.fromJson(data);
+    expect(migrated.calligraphyAngle, 0);
+    expect(migrated.nibWidthRatio, .38);
+    expect(migrated.toJson().containsKey('verticalNib'), isFalse);
+  });
+
+  test('built-in and imported tips draw the same folded brush', () async {
+    final home = await Directory.systemTemp.createTemp('folded-brush-tip');
+    addTearDown(() => home.delete(recursive: true));
+    final path = (await File(
+      'assets/brushes/round_tip.png',
+    ).copy('${home.path}/my_tip.png')).path;
+    await preloadBrushTextures([path], mode: BrushImageInkMode.alpha);
+
+    final stroke = curvedSamples()['horizontal']!;
+    for (final id in ['Brush0023', 'Brush0036', 'Brush0040']) {
+      final brush = preset(id);
+      final imported = Brush.fromJson({
+        ...brush.toJson(),
+        'id': 'imported-folding-brush',
+        'customImagePaths': [path],
+      });
+      final reference = await drawStroke(
+        brush,
+        stroke,
+        width: 360,
+        height: 240,
+      );
+      final actual = await drawStroke(
+        imported,
+        stroke,
+        width: 360,
+        height: 240,
+      );
+      final expectedPixels = (await reference.toByteData())!.buffer
+          .asUint8List();
+      final actualPixels = (await actual.toByteData())!.buffer.asUint8List();
+      expect(actualPixels, orderedEquals(expectedPixels), reason: id);
+      actual.dispose();
+      reference.dispose();
+    }
+  });
+
   test('each ribbon is widest horizontally and narrowest vertically', () async {
     for (final id in hairRibbonPresetIds.skip(5)) {
       final brush = preset(id);
-      expect(Brush.fromJson(brush.toJson()).verticalNib, isTrue, reason: id);
+      final restored = Brush.fromJson(brush.toJson());
+      expect(restored.calligraphyAngle, 0, reason: id);
+      expect(restored.nibWidthRatio, .38, reason: id);
       final horizontal = await middleWidth(brush, 0);
       final diagonal = await middleWidth(brush, math.pi / 4);
       final vertical = await middleWidth(brush, math.pi / 2);

@@ -8,7 +8,6 @@ import 'brush_texture_cache.dart';
 import 'texture_silhouette.dart';
 import 'brush_texture_selector.dart';
 import 'brush_render_plan.dart';
-import 'brush_stroke_geometry.dart';
 import 'hair_fold_raster.dart';
 import 'outline_accent.dart';
 import 'perceptual_color_mixer.dart';
@@ -16,10 +15,6 @@ import 'tile_manager.dart';
 import 'watercolor_wash.dart';
 
 final _jitterRng = math.Random();
-
-// カリグラフィーブラシのペン先の扁平度（幅:高さ）。値が大きいほど、
-// ペン先の向きに直交する方向へ動かした時の線が太く、平行な方向は細くなる。
-const double kCalligraphyNibAspect = 2.6;
 
 class DrawingEngine {
   final TileManager tileManager;
@@ -338,9 +333,7 @@ class DrawingEngine {
       taperEnd: finalize,
       brush: brush,
       fillColor: currentColor,
-      texture:
-          texture == null ||
-              (brush.foldFlatEnds && texture == 'assets/brushes/round_tip.png')
+      texture: texture == null
           ? null
           : getCachedBrushTexture(texture, mode: brush.imageInkMode),
     );
@@ -647,29 +640,25 @@ class DrawingEngine {
 
     // 傾き変形：カリグラフィーブラシ（ペン先角度固定）の場合は、実際の
     // スタイラス傾きに関わらず常に固定角度へ扁平化したペン先を使う。
-    var tilt = brush.verticalNib
-        ? (scaleX: verticalNibAspect, scaleY: 1.0, angle: 0.0)
-        : brush.calligraphyAngle != null
+    final nibAngle = brush.calligraphyAngle;
+    var tilt = nibAngle != null
         ? (
-            scaleX: kCalligraphyNibAspect,
+            scaleX: Brush.clampNibWidthRatio(brush.nibWidthRatio),
             scaleY: 1.0,
-            angle: brush.calligraphyAngle! * math.pi / 180,
+            angle: nibAngle * math.pi / 180,
           )
         : calcTiltTransform(tiltX, tiltY);
     // 回転ONではブラシ先端をパス接線方向へ追従させる。固定角度ブラシは
     // その角度を接線方向へのオフセットとして保持する。
     if (brush.rotation) {
-      final angleOffset = brush.verticalNib || brush.calligraphyAngle == null
-          ? 0.0
-          : brush.calligraphyAngle! * math.pi / 180.0;
+      final angleOffset = (nibAngle ?? 0) * math.pi / 180;
       tilt = (
         scaleX: tilt.scaleX,
         scaleY: tilt.scaleY,
         angle: pathAngle + angleOffset,
       );
     }
-    final stylusTiltMagnitude =
-        brush.calligraphyAngle == null && !brush.verticalNib && !brush.rotation
+    final stylusTiltMagnitude = nibAngle == null && !brush.rotation
         ? math.sqrt(tiltX * tiltX + tiltY * tiltY).clamp(0.0, 1.0)
         : 0.0;
 

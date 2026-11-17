@@ -9,6 +9,9 @@ enum HairFoldMode { waveTopView, waveLowAngle, curlRight, curlLeft, crescent }
 /// The widest stamp spacing (canvas px) the brush settings offer. Built-in
 /// brushes stay within it so their settings can be reproduced in a copy.
 const int kBrushSpacingMax = 200;
+const double kDefaultNibWidthRatio = 2.6;
+const double kMinNibWidthRatio = 0.1;
+const double kMaxNibWidthRatio = 4.0;
 
 /// 保存した整数の項目を読む。同じ値の小数（80.0）で保存されていても読む
 /// （別の道具で書いたJSONは整数を小数で書くことがある）。数でない値と、
@@ -56,8 +59,8 @@ class Brush {
   final int grainStrength;
   final double? calligraphyAngle;
 
-  /// A vertically elongated nib with its long axis on the canvas Y axis.
-  final bool verticalNib;
+  /// Horizontal scale of a flat tip before applying its angle.
+  final double nibWidthRatio;
   final PixelColorMode pixelColorMode;
   final int pixelColorLevels;
   final List<int> pixelExplicitColors;
@@ -131,7 +134,7 @@ class Brush {
     this.scatter = 0.0,
     this.grainStrength = 0,
     this.calligraphyAngle,
-    this.verticalNib = false,
+    this.nibWidthRatio = kDefaultNibWidthRatio,
     this.pixelColorMode = PixelColorMode.none,
     this.pixelColorLevels = 8,
     this.pixelExplicitColors = const [0xFF000000],
@@ -170,6 +173,10 @@ class Brush {
   }
 
   static int clampLateralRepeatCount(int value) => value.clamp(1, 10).toInt();
+  static double clampNibWidthRatio(double value) => value.isFinite
+      ? value.clamp(kMinNibWidthRatio, kMaxNibWidthRatio).toDouble()
+      : kDefaultNibWidthRatio;
+
   static double clampFoldRatio(double value, double fallback) =>
       value.isFinite ? value.clamp(0.0, 1.0).toDouble() : fallback;
   static double clampFoldCrescentDepthThreshold(double value) => value.isFinite
@@ -209,7 +216,7 @@ class Brush {
     double? scatter,
     int? grainStrength,
     double? calligraphyAngle,
-    bool? verticalNib,
+    double? nibWidthRatio,
     bool clearCalligraphyAngle = false,
     bool clearCustomImages = false,
     PixelColorMode? pixelColorMode,
@@ -276,7 +283,7 @@ class Brush {
     calligraphyAngle: clearCalligraphyAngle
         ? null
         : calligraphyAngle ?? this.calligraphyAngle,
-    verticalNib: verticalNib ?? this.verticalNib,
+    nibWidthRatio: clampNibWidthRatio(nibWidthRatio ?? this.nibWidthRatio),
     pixelColorMode: pixelColorMode ?? this.pixelColorMode,
     pixelColorLevels: pixelColorLevels ?? this.pixelColorLevels,
     pixelExplicitColors: pixelExplicitColors ?? this.pixelExplicitColors,
@@ -352,7 +359,8 @@ class Brush {
     'scatter': scatter,
     'grainStrength': grainStrength,
     'calligraphyAngle': calligraphyAngle,
-    if (verticalNib) 'verticalNib': true,
+    if (nibWidthRatio != kDefaultNibWidthRatio)
+      'nibWidthRatio': clampNibWidthRatio(nibWidthRatio),
     'pixelColorMode': pixelColorMode.name,
     'pixelColorLevels': pixelColorLevels,
     'pixelExplicitColors': pixelExplicitColors,
@@ -455,8 +463,13 @@ class Brush {
     density: (j['density'] as num?)?.toDouble() ?? 1,
     scatter: (j['scatter'] as num?)?.toDouble() ?? 0,
     grainStrength: (j['grainStrength'] as num?)?.round().clamp(0, 100) ?? 0,
-    calligraphyAngle: (j['calligraphyAngle'] as num?)?.toDouble(),
-    verticalNib: j['verticalNib'] == true,
+    calligraphyAngle: j['verticalNib'] == true
+        ? 0
+        : (j['calligraphyAngle'] as num?)?.toDouble(),
+    nibWidthRatio: clampNibWidthRatio(
+      (j['nibWidthRatio'] as num?)?.toDouble() ??
+          (j['verticalNib'] == true ? .38 : kDefaultNibWidthRatio),
+    ),
     pixelColorMode: PixelColorMode.values.firstWhere(
       (e) => e.name == j['pixelColorMode'],
       orElse: () => PixelColorMode.none,

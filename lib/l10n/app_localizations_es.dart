@@ -11081,4 +11081,22 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get pcLayoutInstruction =>
       'Arrastra el borde de una ventana en la vista previa para cambiar su ancho o alto. Mantén pulsada el asa de arriba a la izquierda para moverla o intercambiarla con otra. Pellizca para ampliar.';
+
+  @override
+  String get brushNibWidthRatio => 'Ancho de la punta respecto a la altura';
+
+  @override
+  String get brushFoldFlatEnds => 'Extremos planos';
+
+  @override
+  String get brushFoldTriggerAngle => 'Ángulo mínimo de giro';
+
+  @override
+  String get brushFoldEndTaper => 'Estrechamiento de la punta plegada';
+
+  @override
+  String get timelineSelectionScenes => 'Escenas';
+
+  @override
+  String get timelineSelectionClips => 'Clips multimedia';
 }

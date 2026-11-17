@@ -21,6 +21,9 @@ class BrushExtensionLabels {
   final String colorPicker;
   final String eyedropper;
   final String fold;
+  final String foldFlatEnds;
+  final String foldTriggerAngle;
+  final String foldEndTaper;
   final String foldCurveStart;
   final String foldLength;
   final String foldAngle;
@@ -51,6 +54,9 @@ class BrushExtensionLabels {
     required this.colorPicker,
     required this.eyedropper,
     required this.fold,
+    this.foldFlatEnds = 'Flat ends',
+    this.foldTriggerAngle = 'Minimum turn angle',
+    this.foldEndTaper = 'Folded tip taper',
     required this.foldCurveStart,
     required this.foldLength,
     required this.foldAngle,
@@ -83,6 +89,9 @@ class BrushExtensionLabels {
         colorPicker: l.brushOutlineColorPicker,
         eyedropper: l.brushOutlineEyedropper,
         fold: l.brushFold,
+        foldFlatEnds: l.brushFoldFlatEnds,
+        foldTriggerAngle: l.brushFoldTriggerAngle,
+        foldEndTaper: l.brushFoldEndTaper,
         foldCurveStart: l.brushFoldCurveStart,
         foldLength: l.brushFoldLength,
         foldAngle: l.brushFoldAngle,
@@ -120,6 +129,9 @@ class BrushExtensionLabels {
       colorPicker = 'カラーピッカー',
       eyedropper = 'スポイト',
       fold = '折り畳みモード',
+      foldFlatEnds = '両端を平らにする',
+      foldTriggerAngle = '折り返しが始まる角度',
+      foldEndTaper = '折り返し線の先細り',
       foldCurveStart = '折り返し線のカーブ開始位置',
       foldLength = '折り返し長さ',
       foldAngle = '折り返し角度',
@@ -328,6 +340,34 @@ class _BrushExtensionSettingsState extends State<BrushExtensionSettings> {
                 },
               ),
             ),
+            SwitchListTile(
+              key: const Key('brush-fold-flat-ends'),
+              dense: true,
+              title: Text(l.foldFlatEnds),
+              value: _brush.foldFlatEnds,
+              onChanged: (v) => _set(_brush.copyWith(foldFlatEnds: v)),
+            ),
+            KeyedSubtree(
+              key: const Key('brush-fold-trigger-angle'),
+              child: _slider(
+                l.foldTriggerAngle,
+                _brush.foldTriggerAngle,
+                30,
+                170,
+                (v) => _set(_brush.copyWith(foldTriggerAngle: v)),
+                divisions: 140,
+                suffix: '°',
+              ),
+            ),
+            if (_brush.foldMode != HairFoldMode.crescent)
+              KeyedSubtree(
+                key: const Key('brush-fold-end-taper'),
+                child: _ratioSlider(
+                  l.foldEndTaper,
+                  _brush.foldEndTaperRatio,
+                  (v) => _set(_brush.copyWith(foldEndTaperRatio: v)),
+                ),
+              ),
             KeyedSubtree(
               key: const Key('brush-fold-length'),
               child: _ratioSlider(

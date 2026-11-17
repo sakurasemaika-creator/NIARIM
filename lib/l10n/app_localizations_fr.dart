@@ -11087,4 +11087,23 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get pcLayoutInstruction =>
       'Faites glisser le bord d’une fenêtre dans l’aperçu pour modifier sa largeur ou sa hauteur. Maintenez la poignée en haut à gauche pour la déplacer ou l’échanger avec une autre. Pincez pour zoomer.';
+
+  @override
+  String get brushNibWidthRatio =>
+      'Largeur de la pointe par rapport à la hauteur';
+
+  @override
+  String get brushFoldFlatEnds => 'Extrémités plates';
+
+  @override
+  String get brushFoldTriggerAngle => 'Angle de virage minimal';
+
+  @override
+  String get brushFoldEndTaper => 'Effilement de la pointe repliée';
+
+  @override
+  String get timelineSelectionScenes => 'Scènes';
+
+  @override
+  String get timelineSelectionClips => 'Clips multimédias';
 }

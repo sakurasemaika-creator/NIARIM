@@ -12,6 +12,7 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:niarim/engine/brush_stroke_geometry.dart';
 import 'package:niarim/engine/drawing_engine.dart';
 import 'package:niarim/engine/tile_manager.dart';
 import 'package:niarim/models/brush.dart';
@@ -191,7 +192,16 @@ void main() {
   final tangent = ui.Offset(1, 34 * 2 * math.pi / 190);
   final along = tangent / tangent.distance;
   final inner = ui.Offset(along.dy, -along.dx);
-  final rim = brush.size / 2 + brush.outlineWidth / 2;
+  final nibAngle = brush.calligraphyAngle;
+  final widthAtInflection = nibAngle == null
+      ? brush.size
+      : brush.size *
+            nibWidthAcross(
+              along,
+              brush.nibWidthRatio,
+              nibAngle * math.pi / 180,
+            );
+  final rim = widthAtInflection / 2 + brush.outlineWidth / 2;
   final branch = const ui.Offset(62.5, 100) + inner * rim;
   var leading = 0, outside = 0;
   for (var x = branch.dx.round() + 4; x <= 110 + strandWidth; x++) {

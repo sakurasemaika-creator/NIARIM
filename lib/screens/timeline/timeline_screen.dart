@@ -89,6 +89,8 @@ enum _ClipTrackType { audio, video, image, text }
 
 enum _TimelineToolbarAction { watermark }
 
+enum _TimelineSelection { scenes, frames, clips }
+
 /// The colour of text clips on the timeline (amber, apart from the theme's
 /// colours that video, image and audio clips use).
 const Color _textClipColor = Color(0xFFE09A2C);
@@ -707,9 +709,11 @@ class _TimelineScreenState extends State<TimelineScreen> {
     if (_isSceneMultiSelect) {
       final scenes = context.read<ProjectService>().scenesOf(widget.projectId);
       setState(() => _selectedSceneIds.addAll(scenes.map((s) => s.id)));
-    } else {
+    } else if (_isClipMultiSelect) {
+      _selectAllClips();
+    } else if (!_isFrameCursorActive && !_isSceneCursorActive) {
       setState(() {
-        _isFrameMultiSelect = true;
+        _setTimelineSelection(_TimelineSelection.frames);
         _selectedFrameIndices.addAll(List.generate(_totalFrames, (i) => i));
       });
     }
@@ -783,6 +787,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
   /// フレームは既存の移動モードと同じカーソル固定UIで貼り付け先を選ぶが、
   /// クリップは常に現在地（_currentFrame）へ即座に貼り付ける。
   void _pasteFromClipboard() {
+    if (_isSceneCursorActive || _isFrameCursorActive) return;
     if (_sceneClipboard != null) {
       _startScenePasteMode();
     } else if (_frameClipboard != null) {
@@ -1113,11 +1118,6 @@ class _TimelineScreenState extends State<TimelineScreen> {
                               child: Column(
                                 children: [
                                   _buildCommonLayerTrack(),
-                                  // シーン・フレームの複数選択モード中の一括操作バー
-                                  // （小さいボタンではなく素材タイムラインの上に大きな
-                                  // 3分割ボタンで表示）
-                                  _buildMultiSelectActionBar(),
-                                  _buildClipToolbar(),
                                   // 並びは既定の重なり順（テキストが手前、
                                   // フレームのイラスト、画像、動画）と同じ。
                                   _buildMaterialTrackGroup(
@@ -1980,9 +1980,16 @@ class _TimelineScreenState extends State<TimelineScreen> {
 
   Widget _buildToolbar() {
     final l10n = AppLocalizations.of(context)!;
+    if (_isSceneCursorActive || _isFrameCursorActive) {
+      return _buildTimelinePlacementToolbar(l10n);
+    }
+    final selection = _timelineSelection;
+    if (selection != null) return _buildSelectionToolbar(l10n, selection);
     final canUseWatermark = context.watch<PremiumService>().isFeatureAvailable(
       PremiumFeature.watermark,
     );
+    final width = MediaQuery.sizeOf(context).width;
+    final showLabels = width >= 600;
     final controls = <Widget>[
       PopupMenuButton<Object>(
         key: const Key('timelineAddMaterialMenu'),
@@ -2093,33 +2100,68 @@ class _TimelineScreenState extends State<TimelineScreen> {
     ];
     return Container(
       height: 49,
-      padding: const EdgeInsets.symmetric(horizontal: 8),
+      padding: EdgeInsets.symmetric(horizontal: width <= 360 ? 0 : 8),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surfaceContainerHighest,
         border: Border(
           top: BorderSide(color: Theme.of(context).colorScheme.outlineVariant),
         ),
       ),
-      // Six targets fit at320px. Keep Export visible even when an unusually
-      // small viewport needs to scroll the less frequent editing controls.
       child: Row(
         children: [
-          Expanded(
-            child: LayoutBuilder(
-              builder: (context, constraints) => SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(minWidth: constraints.maxWidth),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: controls
-                        .map(
-                          (control) =>
-                              SizedBox(width: 48, height: 48, child: control),
-                        )
-                        .toList(),
-                  ),
+          PopupMenuButton<_TimelineSelection>(
+            key: const Key('timelineSelectionMenu'),
+            icon: showLabels ? null : const Icon(Icons.checklist, size: 20),
+            tooltip: l10n.toolbarItemSelect,
+            onSelected: (target) =>
+                setState(() => _setTimelineSelection(target)),
+            itemBuilder: (_) => [
+              for (final target in _TimelineSelection.values)
+                PopupMenuItem(
+                  value: target,
+                  enabled: switch (target) {
+                    _TimelineSelection.scenes =>
+                      context
+                          .read<ProjectService>()
+                          .scenesOf(widget.projectId)
+                          .isNotEmpty,
+                    _TimelineSelection.frames => _selectedSceneId != null,
+                    _TimelineSelection.clips => _allClips.isNotEmpty,
+                  },
+                  child: Text(_timelineSelectionLabel(l10n, target)),
                 ),
+            ],
+            child: showLabels
+                ? _timelineToolbarLabel(Icons.checklist, l10n.toolbarItemSelect)
+                : null,
+          ),
+          if (_canPasteTimelineSelection)
+            if (showLabels)
+              Tooltip(
+                message: _timelinePasteLabel(l10n),
+                child: TextButton.icon(
+                  key: const Key('timelinePasteButton'),
+                  onPressed: _pasteFromClipboard,
+                  icon: const Icon(Icons.content_paste, size: 19),
+                  label: Text(l10n.commonPaste),
+                ),
+              )
+            else
+              IconButton(
+                key: const Key('timelinePasteButton'),
+                tooltip: _timelinePasteLabel(l10n),
+                onPressed: _pasteFromClipboard,
+                icon: const Icon(Icons.content_paste, size: 20),
+              ),
+          const VerticalDivider(width: 1, indent: 10, endIndent: 10),
+          Expanded(
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: [
+                  for (final control in controls)
+                    SizedBox(width: 44, height: 48, child: control),
+                ],
               ),
             ),
           ),
@@ -2637,7 +2679,6 @@ class _TimelineScreenState extends State<TimelineScreen> {
 
   /// シーンタブ（カーソル固定方式で並び替え）
   Widget _buildSceneTabs() {
-    final l10n = AppLocalizations.of(context)!;
     final projectService = context.watch<ProjectService>();
     final scenes = projectService.scenesOf(widget.projectId);
     return SizedBox(
@@ -2652,28 +2693,6 @@ class _TimelineScreenState extends State<TimelineScreen> {
             height: 36,
             child: Row(
               children: [
-                // 移動・貼り付けモード中：「決定」ボタン。通常時：「選択」ボタン。
-                // 複数選択モード中の移動・複製・削除・全選択・全解除は、素材
-                // タイムラインの上に大きな専用ボタンとして表示する
-                // （_buildMultiSelectActionBar参照）。
-                if (_isSceneCursorActive)
-                  TextButton(
-                    onPressed: _isScenePasteMode
-                        ? _confirmScenePaste
-                        : () => _confirmMove(scenes),
-                    child: Text(
-                      l10n.timelineConfirmButton,
-                      style: const TextStyle(fontSize: 11),
-                    ),
-                  )
-                else if (!_isSceneMultiSelect)
-                  TextButton(
-                    onPressed: () => setState(() => _isSceneMultiSelect = true),
-                    child: Text(
-                      l10n.toolbarItemSelect,
-                      style: const TextStyle(fontSize: 11),
-                    ),
-                  ),
                 Expanded(
                   child: ListView.builder(
                     scrollDirection: Axis.horizontal,
@@ -2785,12 +2804,12 @@ class _TimelineScreenState extends State<TimelineScreen> {
                                     .frameCount(widget.projectId, scene.id);
                                 setState(() {
                                   _selectedSceneId = scene.id;
-                                  _isFrameMultiSelect = true;
-                                  _selectedFrameIndices
-                                    ..clear()
-                                    ..addAll(
-                                      List.generate(frameCount, (i) => i),
-                                    );
+                                  _setTimelineSelection(
+                                    _TimelineSelection.frames,
+                                  );
+                                  _selectedFrameIndices.addAll(
+                                    List.generate(frameCount, (i) => i),
+                                  );
                                 });
                               },
                               child: Padding(
@@ -2865,18 +2884,6 @@ class _TimelineScreenState extends State<TimelineScreen> {
                     },
                   ),
                 ),
-                // 移動・貼り付けモード中：キャンセルボタン
-                if (_isSceneCursorActive)
-                  TextButton(
-                    onPressed: () => setState(() {
-                      _isMoveMode = false;
-                      _isScenePasteMode = false;
-                    }),
-                    child: Text(
-                      l10n.commonCancel,
-                      style: const TextStyle(fontSize: 11),
-                    ),
-                  ),
               ],
             ),
           ),
@@ -3197,6 +3204,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                 setState(() {
                   _sceneClipboard = (ids: [scene.id], isCut: false);
                   _frameClipboard = null;
+                  _clipClipboard = null;
                 });
               },
             ),
@@ -3208,6 +3216,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                 setState(() {
                   _sceneClipboard = (ids: [scene.id], isCut: true);
                   _frameClipboard = null;
+                  _clipClipboard = null;
                 });
               },
             ),
@@ -3415,40 +3424,6 @@ class _TimelineScreenState extends State<TimelineScreen> {
                     Icons.movie_filter,
                     l10n.timelineFrameTrackLabel,
                   ),
-                  // 移動・貼り付けモード中：「決定」。通常時：「選択」。複数選択モード中の
-                  // 移動・複製・削除・全選択・全解除は素材タイムラインの上の大きな
-                  // ボタンへ移動した（_buildMultiSelectActionBar参照）。
-                  if (_isFrameCursorActive)
-                    TextButton(
-                      onPressed: _isFramePasteMode
-                          ? _confirmFramePaste
-                          : _confirmFrameMove,
-                      child: Text(
-                        l10n.timelineConfirmButton,
-                        style: const TextStyle(fontSize: 11),
-                      ),
-                    )
-                  else if (!_isFrameMultiSelect)
-                    TextButton(
-                      onPressed: () =>
-                          setState(() => _isFrameMultiSelect = true),
-                      child: Text(
-                        l10n.toolbarItemSelect,
-                        style: const TextStyle(fontSize: 11),
-                      ),
-                    ),
-                  // フレームのクリップボードに内容がある間は、複数選択に
-                  // 入らなくてもいつでも貼り付けを開始できるようにする。
-                  if (!_isFrameCursorActive &&
-                      !_isFrameMultiSelect &&
-                      _frameClipboard != null)
-                    IconButton(
-                      iconSize: 16,
-                      visualDensity: VisualDensity.compact,
-                      tooltip: l10n.commonPaste,
-                      onPressed: _startFramePasteMode,
-                      icon: const Icon(Icons.content_paste),
-                    ),
                   Expanded(
                     child: LayoutBuilder(
                       builder: (context, constraints) {
@@ -3633,7 +3608,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
                                     onLongPress: () {
                                       if (_isFrameMultiSelect) return;
                                       setState(() {
-                                        _isFrameMultiSelect = true;
+                                        _setTimelineSelection(
+                                          _TimelineSelection.frames,
+                                        );
                                         _selectedFrameIndices.add(index);
                                       });
                                     },
@@ -3771,18 +3748,6 @@ class _TimelineScreenState extends State<TimelineScreen> {
                       },
                     ),
                   ),
-                  // 移動・貼り付けモード中：キャンセルボタン
-                  if (_isFrameCursorActive)
-                    TextButton(
-                      onPressed: () => setState(() {
-                        _isFrameMoveMode = false;
-                        _isFramePasteMode = false;
-                      }),
-                      child: Text(
-                        l10n.commonCancel,
-                        style: const TextStyle(fontSize: 11),
-                      ),
-                    ),
                 ],
               ),
             ),
@@ -4525,203 +4490,254 @@ class _TimelineScreenState extends State<TimelineScreen> {
     if (sceneId != null) _persistClipUpdate(clip, sceneId, moved: moved);
   }
 
-  /// シーン・フレームの複数選択モード中の一括操作バー。
-  /// 素材タイムラインの上に大きな3分割ボタン（移動・複製・削除）＋
-  /// 次の段に全選択・全解除を表示する。移動モード中は専用のカーソルUIが
-  /// 別途表示されるためここでは非表示にする。
-  Widget _buildMultiSelectActionBar() {
-    if (!_isSceneMultiSelect && !_isFrameMultiSelect) {
-      return const SizedBox.shrink();
-    }
-    if (_isSceneCursorActive || _isFrameCursorActive) {
-      return const SizedBox.shrink();
-    }
-    final l10n = AppLocalizations.of(context)!;
-    final isScene = _isSceneMultiSelect;
-    final projectService = context.watch<ProjectService>();
-    final scenes = projectService.scenesOf(widget.projectId);
-    final total = _totalFrames;
+  _TimelineSelection? get _timelineSelection {
+    if (_isSceneMultiSelect) return _TimelineSelection.scenes;
+    if (_isFrameMultiSelect) return _TimelineSelection.frames;
+    if (_isClipMultiSelect) return _TimelineSelection.clips;
+    return null;
+  }
 
-    final selectedCount = isScene
-        ? _selectedSceneIds.length
-        : _selectedFrameIndices.length;
-    final canMove = selectedCount > 0;
-    final canDuplicate = selectedCount > 0;
-    final canDelete = isScene
-        ? (selectedCount > 0 && selectedCount < scenes.length)
-        : (selectedCount > 0 && selectedCount < total);
+  void _setTimelineSelection(_TimelineSelection? target) {
+    if (target == _timelineSelection) return;
+    _isSceneMultiSelect = target == _TimelineSelection.scenes;
+    _isFrameMultiSelect = target == _TimelineSelection.frames;
+    _isClipMultiSelect = target == _TimelineSelection.clips;
+    _selectedSceneIds.clear();
+    _selectedFrameIndices.clear();
+    _selectedClipIds.clear();
+  }
 
-    void onMove() => isScene ? _startMoveMode(scenes) : _startFrameMoveMode();
-    void onDuplicate() =>
-        isScene ? _duplicateSelectedScenes(scenes) : _duplicateSelectedFrames();
-    void onDelete() =>
-        isScene ? _showMultiDeleteConfirm() : _deleteSelectedFrames();
-    final canPaste = isScene
-        ? _sceneClipboard != null
-        : _frameClipboard != null;
-    void onSelectAll() => setState(() {
-      if (isScene) {
-        _selectedSceneIds.addAll(scenes.map((s) => s.id));
-      } else {
-        _selectedFrameIndices.addAll(List.generate(total, (i) => i));
-      }
-    });
-    void onDeselectAll() => setState(() {
-      if (isScene) {
-        _selectedSceneIds.clear();
-        _isSceneMultiSelect = false;
-      } else {
-        _selectedFrameIndices.clear();
-        _isFrameMultiSelect = false;
-      }
-    });
+  String _timelineSelectionLabel(
+    AppLocalizations l10n,
+    _TimelineSelection selection,
+  ) => switch (selection) {
+    _TimelineSelection.scenes => l10n.timelineSelectionScenes,
+    _TimelineSelection.frames => l10n.timelineFrameTrackLabel,
+    _TimelineSelection.clips => l10n.timelineSelectionClips,
+  };
 
-    Widget bigButton(String label, VoidCallback? onTap, {Color? color}) {
-      return Expanded(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 2),
-          child: FilledButton.tonal(
-            onPressed: onTap,
-            style: FilledButton.styleFrom(
-              minimumSize: const Size.fromHeight(40),
-              foregroundColor: color,
-            ),
-            child: Text(label, style: const TextStyle(fontSize: 12)),
-          ),
-        ),
-      );
-    }
+  Widget _timelineToolbarLabel(IconData icon, String text) => Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 10),
+    child: Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: 20),
+        const SizedBox(width: 6),
+        Text(text),
+        const Icon(Icons.arrow_drop_down, size: 18),
+      ],
+    ),
+  );
 
+  String _timelinePasteLabel(AppLocalizations l10n) {
+    final source = _sceneClipboard != null
+        ? _TimelineSelection.scenes
+        : _frameClipboard != null
+        ? _TimelineSelection.frames
+        : _clipClipboard != null
+        ? _TimelineSelection.clips
+        : null;
+    return source == null
+        ? l10n.commonPaste
+        : '${l10n.commonPaste} · ${_timelineSelectionLabel(l10n, source)}';
+  }
+
+  bool get _canPasteTimelineSelection =>
+      _sceneClipboard != null ||
+      (_frameClipboard != null && _selectedSceneId != null) ||
+      (_clipClipboard != null &&
+          _clipClipboard!.sourceSceneId == _selectedSceneId);
+
+  Widget _timelineContextBar({
+    required String title,
+    required String subtitle,
+    required List<Widget> actions,
+  }) {
+    final theme = Theme.of(context);
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+      key: const Key('timelineContextToolbar'),
+      height: 49,
+      padding: const EdgeInsets.symmetric(horizontal: 8),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerHigh,
-        border: Border.symmetric(
-          horizontal: BorderSide(
-            color: Theme.of(context).colorScheme.outlineVariant,
-          ),
+        color: theme.colorScheme.secondaryContainer,
+        border: Border(
+          top: BorderSide(color: theme.colorScheme.outlineVariant),
         ),
-        boxShadow: [
-          BoxShadow(
-            color: ThemeService.activeColorScheme.onSurface.withValues(
-              alpha: 0.12,
-            ),
-            blurRadius: 6,
-            offset: const Offset(0, 2),
-          ),
-        ],
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Row(
-            children: [
-              bigButton(l10n.commonMove, canMove ? onMove : null),
-              bigButton(
-                l10n.themeDuplicateAction,
-                canDuplicate ? onDuplicate : null,
+      child: IconTheme(
+        data: IconThemeData(color: theme.colorScheme.onSecondaryContainer),
+        child: Row(
+          children: [
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsetsDirectional.only(start: 6, end: 4),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.labelLarge?.copyWith(
+                        color: theme.colorScheme.onSecondaryContainer,
+                      ),
+                    ),
+                    Text(
+                      subtitle,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        color: theme.colorScheme.onSecondaryContainer,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-              bigButton(
-                l10n.commonDelete,
-                canDelete ? onDelete : null,
-                color: ThemeService.activeColorScheme.error,
-              ),
-            ],
-          ),
-          const SizedBox(height: 4),
-          Row(
-            children: [
-              bigButton(
-                l10n.commonCopy,
-                selectedCount > 0 ? _copySelectionToClipboard : null,
-              ),
-              bigButton(
-                l10n.commonCut,
-                selectedCount > 0 ? _cutSelectionToClipboard : null,
-              ),
-              bigButton(
-                l10n.commonPaste,
-                canPaste ? _pasteFromClipboard : null,
-              ),
-            ],
-          ),
-          const SizedBox(height: 4),
-          Row(
-            children: [
-              bigButton(l10n.layerPanelSelectAll, onSelectAll),
-              bigButton(l10n.layerPanelDeselectAll, onDeselectAll),
-            ],
-          ),
-        ],
+            ),
+            ...actions,
+          ],
+        ),
       ),
     );
   }
 
-  /// 素材クリップ（動画・音声）の複数選択・コピー・切り取り・貼り付け
-  /// ツールバー。クリップの長押しは移動ドラッグに使っているため、
-  /// 複数選択への切り替えはこの専用ボタンから行う。貼り付けは複数選択に
-  /// 入っていなくてもクリップボードに内容がある間はいつでも行える
-  /// （貼り付け先は常に現在地=_currentFrame）。
-  Widget _buildClipToolbar() {
-    if (_allClips.isEmpty && _clipClipboard == null) {
-      return const SizedBox.shrink();
-    }
-    final l10n = AppLocalizations.of(context)!;
-    final canPaste =
-        _clipClipboard != null &&
-        _clipClipboard!.sourceSceneId == _selectedSceneId;
-
-    Widget smallButton(String label, VoidCallback? onTap, {Color? color}) {
-      return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 2),
-        child: OutlinedButton(
-          onPressed: onTap,
-          style: OutlinedButton.styleFrom(
-            foregroundColor: color,
-            visualDensity: VisualDensity.compact,
-            padding: const EdgeInsets.symmetric(horizontal: 8),
-          ),
-          child: Text(label, style: const TextStyle(fontSize: 11)),
-        ),
-      );
-    }
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-      color: Theme.of(context).colorScheme.surfaceContainerHigh,
-      child: Wrap(
-        alignment: WrapAlignment.end,
-        crossAxisAlignment: WrapCrossAlignment.center,
-        children: [
-          if (_isClipMultiSelect) ...[
-            smallButton(l10n.layerPanelSelectAll, _selectAllClips),
-            smallButton(l10n.layerPanelDeselectAll, _deselectAllClips),
-            smallButton(
-              l10n.commonCopy,
-              _selectedClipIds.isNotEmpty ? _copySelectedClips : null,
-            ),
-            smallButton(
-              l10n.commonCut,
-              _selectedClipIds.isNotEmpty ? _cutSelectedClips : null,
-            ),
-            smallButton(
-              l10n.commonDelete,
-              _selectedClipIds.isNotEmpty ? _deleteSelectedClips : null,
-              color: ThemeService.activeColorScheme.error,
-            ),
-          ],
-          smallButton(
-            l10n.commonPaste,
-            canPaste ? _pasteClipsAtCurrentFrame : null,
-          ),
-          smallButton(
-            _isClipMultiSelect
-                ? l10n.timelineClipSelectDoneButton
-                : l10n.toolbarItemSelect,
-            _toggleClipMultiSelect,
-          ),
-        ],
+  Widget _buildTimelinePlacementToolbar(AppLocalizations l10n) {
+    final scene = _isSceneCursorActive;
+    final paste = _isScenePasteMode || _isFramePasteMode;
+    return _timelineContextBar(
+      title: _timelineSelectionLabel(
+        l10n,
+        scene ? _TimelineSelection.scenes : _TimelineSelection.frames,
       ),
+      subtitle: paste ? l10n.commonPaste : l10n.commonMove,
+      actions: [
+        TextButton(
+          onPressed: () => setState(() {
+            _isMoveMode = false;
+            _isScenePasteMode = false;
+            _isFrameMoveMode = false;
+            _isFramePasteMode = false;
+          }),
+          child: Text(l10n.commonCancel),
+        ),
+        const SizedBox(width: 4),
+        FilledButton(
+          onPressed: scene
+              ? (paste
+                    ? _confirmScenePaste
+                    : () => _confirmMove(
+                        context.read<ProjectService>().scenesOf(
+                          widget.projectId,
+                        ),
+                      ))
+              : (paste ? _confirmFramePaste : _confirmFrameMove),
+          child: Text(l10n.timelineConfirmButton),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSelectionToolbar(
+    AppLocalizations l10n,
+    _TimelineSelection selection,
+  ) {
+    final scenes = context.watch<ProjectService>().scenesOf(widget.projectId);
+    final total = _totalFrames;
+    final count = switch (selection) {
+      _TimelineSelection.scenes => _selectedSceneIds.length,
+      _TimelineSelection.frames => _selectedFrameIndices.length,
+      _TimelineSelection.clips => _selectedClipIds.length,
+    };
+    final hasSelection = count > 0;
+    final forClips = selection == _TimelineSelection.clips;
+    final forScenes = selection == _TimelineSelection.scenes;
+    final canDelete =
+        hasSelection &&
+        (forClips || count < (forScenes ? scenes.length : total));
+    final actions = <({String label, IconData icon, VoidCallback? run})>[
+      (
+        label: l10n.layerPanelSelectAll,
+        icon: Icons.select_all,
+        run: _selectAllFramesOrScenes,
+      ),
+      if (!forClips) ...[
+        (
+          label: l10n.commonMove,
+          icon: Icons.swap_horiz,
+          run: !hasSelection
+              ? null
+              : forScenes
+              ? () => _startMoveMode(scenes)
+              : _startFrameMoveMode,
+        ),
+        (
+          label: l10n.themeDuplicateAction,
+          icon: Icons.copy_all_outlined,
+          run: !hasSelection
+              ? null
+              : forScenes
+              ? () => _duplicateSelectedScenes(scenes)
+              : _duplicateSelectedFrames,
+        ),
+      ],
+      (
+        label: l10n.commonDelete,
+        icon: Icons.delete_outline,
+        run: !canDelete
+            ? null
+            : forClips
+            ? _deleteSelectedClips
+            : forScenes
+            ? _showMultiDeleteConfirm
+            : _deleteSelectedFrames,
+      ),
+    ];
+    return _timelineContextBar(
+      title: _timelineSelectionLabel(l10n, selection),
+      subtitle: l10n.timelineStackSelectedCount(count),
+      actions: [
+        IconButton(
+          tooltip: l10n.commonCopy,
+          onPressed: hasSelection ? _copySelectionToClipboard : null,
+          icon: const Icon(Icons.content_copy, size: 19),
+        ),
+        IconButton(
+          tooltip: l10n.commonCut,
+          onPressed: hasSelection ? _cutSelectionToClipboard : null,
+          icon: const Icon(Icons.content_cut, size: 19),
+        ),
+        IconButton(
+          key: const Key('timelinePasteButton'),
+          tooltip: _timelinePasteLabel(l10n),
+          onPressed: _canPasteTimelineSelection ? _pasteFromClipboard : null,
+          icon: const Icon(Icons.content_paste, size: 19),
+        ),
+        PopupMenuButton<int>(
+          key: const Key('timelineSelectionActions'),
+          icon: const Icon(Icons.more_horiz),
+          onSelected: (index) => actions[index].run?.call(),
+          itemBuilder: (_) => [
+            for (final (index, action) in actions.indexed)
+              PopupMenuItem(
+                value: index,
+                enabled: action.run != null,
+                child: ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: Icon(action.icon, size: 19),
+                  title: Text(action.label),
+                  enabled: action.run != null,
+                ),
+              ),
+          ],
+        ),
+        IconButton(
+          key: const Key('timelineSelectionDone'),
+          tooltip: l10n.timelineClipSelectDoneButton,
+          onPressed: () => setState(() => _setTimelineSelection(null)),
+          icon: const Icon(Icons.close, size: 20),
+        ),
+      ],
     );
   }
 
@@ -6611,25 +6627,11 @@ class _TimelineScreenState extends State<TimelineScreen> {
     _ClipTrackType.text => _textClips,
   };
 
-  void _toggleClipMultiSelect() {
-    setState(() {
-      _isClipMultiSelect = !_isClipMultiSelect;
-      _selectedClipIds.clear();
-    });
-  }
-
   void _selectAllClips() {
     setState(() {
       _selectedClipIds
         ..clear()
         ..addAll(_allClips.map((c) => c.id));
-    });
-  }
-
-  void _deselectAllClips() {
-    setState(() {
-      _selectedClipIds.clear();
-      _isClipMultiSelect = false;
     });
   }
 

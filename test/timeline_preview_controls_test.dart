@@ -8,6 +8,7 @@ import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/router.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/models/layer.dart';
+import 'package:niarim/models/audio_clip.dart';
 import 'package:niarim/screens/timeline/timeline_screen.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:provider/provider.dart';
@@ -39,6 +40,7 @@ void main() {
     required Size screen,
     required bool pc,
     required double fraction,
+    void Function(ProjectService, String)? setUpProject,
   }) async {
     await tester.pumpWidget(const SizedBox.shrink());
     SharedPreferences.setMockInitialValues({
@@ -78,6 +80,9 @@ void main() {
         exportHeight: project.height.toInt(),
       ),
     );
+    if (setUpProject != null) {
+      await tester.runAsync(() async => setUpProject(ps, created!.id));
+    }
     appRouter.go('/timeline/${created!.id}');
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 600));
@@ -213,6 +218,93 @@ void main() {
         .singleWhere((item) => item.id == layer.id);
     expect((reloadedLayer.rangeStart, reloadedLayer.rangeEnd), (2, 5));
   });
+  testWidgets(
+    'timeline tools stay above the tracks during selection and paste',
+    (tester) async {
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      const widths = [Size(320, 680), Size(1280, 800)];
+      const selectionMenu = Key('timelineSelectionMenu');
+      const selectionActions = Key('timelineSelectionActions');
+      const paste = Key('timelinePasteButton');
+      const tools = Key('timelineContextToolbar');
+      for (final screen in widths) {
+        final id = await openTimeline(
+          tester,
+          project: projects['portrait']!,
+          screen: screen,
+          pc: screen.width > 600,
+          fraction: .36,
+          setUpProject: (ps, id) {
+            ps.addAudioClip(
+              id,
+              ps.scenesOf(id).first.id,
+              const AudioClip(
+                id: 'tone',
+                label: 'tone',
+                startFrame: 2,
+                lengthFrames: 5,
+              ),
+            );
+          },
+        );
+        final ps = tester
+            .element(find.byType(TimelineScreen))
+            .read<ProjectService>();
+        final scene = ps.scenesOf(id).first.id;
+
+        Future<void> choose(String label) async {
+          await tester.tap(find.byKey(selectionMenu));
+          await tester.pumpAndSettle();
+          await tester.tap(find.text(label).last);
+          await tester.pumpAndSettle();
+        }
+
+        Future<void> selectAll() async {
+          await tester.tap(find.byKey(selectionActions));
+          await tester.pumpAndSettle();
+          await tester.tap(find.text('全選択'));
+          await tester.pumpAndSettle();
+        }
+
+        expect(find.byKey(selectionMenu), findsOneWidget);
+        expect(find.byKey(paste), findsNothing);
+        await choose('素材クリップ');
+        final toolbar = find.byKey(tools);
+        expect(
+          find.descendant(of: toolbar, matching: find.text('素材クリップ')),
+          findsOneWidget,
+        );
+        expect(find.text('0件選択中'), findsOneWidget);
+        await selectAll();
+        expect(find.text('1件選択中'), findsOneWidget);
+        await tester.tap(find.byKey(const Key('timelineSelectionDone')));
+        await tester.pumpAndSettle();
+        await choose('フレーム');
+        await selectAll();
+        expect(find.text('12件選択中'), findsOneWidget);
+        await tester.tap(find.byIcon(Icons.content_copy));
+        await tester.pumpAndSettle();
+        await tester.tap(find.byKey(paste));
+        await tester.pumpAndSettle();
+        expect(
+          find.descendant(of: toolbar, matching: find.text('貼り付け')),
+          findsOneWidget,
+        );
+        await tester.tap(find.text('キャンセル'));
+        await tester.pumpAndSettle();
+        expect(ps.frameCount(id, scene), 12);
+        await tester.tap(find.byKey(paste));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('決定'));
+        await tester.pumpAndSettle();
+        expect(ps.frameCount(id, scene), 24);
+        expect(tester.takeException(), isNull);
+        await tester.runAsync(() => ps.saveProject(id));
+      }
+      await tester.pumpWidget(const SizedBox.shrink());
+    },
+  );
 
   testWidgets('preview controls anchor to the band, not the canvas image', (
     tester,

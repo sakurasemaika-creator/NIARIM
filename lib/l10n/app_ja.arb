@@ -6177,5 +6177,11 @@
   "pcLayoutInstruction": "プレビューのウィンドウ端をドラッグして幅・高さを変更し、左上のハンドルを長押しして移動・入れ替えできます。ピンチで拡大できます。",
   "@pcLayoutInstruction": {
     "description": "PCレイアウト：見本の操作のしかた"
-  }
+  },
+  "brushNibWidthRatio": "ペン先の幅（高さ比）",
+  "brushFoldFlatEnds": "両端を平らにする",
+  "brushFoldTriggerAngle": "折り返しが始まる角度",
+  "brushFoldEndTaper": "折り返し線の先細り",
+  "timelineSelectionScenes": "シーン",
+  "timelineSelectionClips": "素材クリップ"
 }

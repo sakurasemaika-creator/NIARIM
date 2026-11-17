@@ -1,7 +1,13 @@
+import 'dart:math' as math;
 import 'dart:ui';
 
-/// Ratio of the short to long axis of the ribbon nib.
-const verticalNibAspect = .38;
+/// Width multiplier of a flat nib measured perpendicular to the stroke.
+double nibWidthAcross(Offset tangent, double xScale, double angle) {
+  final sinA = math.sin(angle), cosA = math.cos(angle);
+  final x = (tangent.dx * sinA - tangent.dy * cosA) * xScale;
+  final y = tangent.dx * cosA + tangent.dy * sinA;
+  return math.sqrt(x * x + y * y);
+}
 
 List<double> lateralOffsets({required int count, required double spacing}) {
   final safeCount = count.clamp(1, 10).toInt();

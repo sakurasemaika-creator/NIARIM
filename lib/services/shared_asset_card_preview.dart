@@ -77,13 +77,14 @@ class SharedAssetCardPreview {
         final radians = angle * math.pi / 180;
         final cos = math.cos(radians);
         final sin = math.sin(radians);
-        final longAxisSquared = kCalligraphyNibAspect * kCalligraphyNibAspect;
+        final ratio = Brush.clampNibWidthRatio(brush.nibWidthRatio);
+        final widthScaleSquared = ratio * ratio;
         horizontalScale = brush.rotation
-            ? kCalligraphyNibAspect
-            : math.sqrt(longAxisSquared * cos * cos + sin * sin);
+            ? math.max(ratio, 1.0)
+            : math.sqrt(widthScaleSquared * cos * cos + sin * sin);
         verticalScale = brush.rotation
-            ? kCalligraphyNibAspect
-            : math.sqrt(longAxisSquared * sin * sin + cos * cos);
+            ? math.max(ratio, 1.0)
+            : math.sqrt(widthScaleSquared * sin * sin + cos * cos);
       }
       final verticalRoom = _height / 2 - _waveAmplitude - 2;
       final scale = math.min(

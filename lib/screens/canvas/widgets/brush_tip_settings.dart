@@ -158,7 +158,14 @@ class BrushTipSettings extends StatelessWidget {
             ),
           ),
         ),
-        if (brush.calligraphyAngle != null)
+        if (brush.calligraphyAngle != null) ...[
+          _number(
+            l.brushNibWidthRatio,
+            brush.nibWidthRatio * 100,
+            kMinNibWidthRatio * 100,
+            kMaxNibWidthRatio * 100,
+            (v) => onChanged(brush.copyWith(nibWidthRatio: v / 100)),
+          ),
           _number(
             l.brushNibAngle,
             brush.calligraphyAngle!,
@@ -167,6 +174,7 @@ class BrushTipSettings extends StatelessWidget {
             (v) => onChanged(brush.copyWith(calligraphyAngle: v)),
             suffix: '°',
           ),
+        ],
         const Divider(),
         OutlinedButton.icon(
           onPressed: onAddImages,

@@ -43,9 +43,11 @@ class HairRibbonPoint {
       outlinedOuterRadius(width, scale, outlineOr(outlineWidth));
 }
 
-/// Project the elliptical nib onto the normal of each local stroke tangent.
-/// Use the bisector at a bend so width changes continuously across segments.
-List<HairRibbonPoint> _verticalNibPoints(List<HairRibbonPoint> points) {
+/// Project the tip onto the normal of the local stroke tangent. At a bend,
+/// the bisector keeps the width continuous between adjacent sections.
+List<HairRibbonPoint> _projectNib(List<HairRibbonPoint> points, Brush brush) {
+  final ratio = Brush.clampNibWidthRatio(brush.nibWidthRatio);
+  final angle = brush.calligraphyAngle! * math.pi / 180;
   final projected = <HairRibbonPoint>[];
   var incoming = Offset.zero;
   for (var i = 0; i < points.length; i++) {
@@ -55,10 +57,11 @@ List<HairRibbonPoint> _verticalNibPoints(List<HairRibbonPoint> points) {
         : Offset.zero;
     final bisector = _unit(incoming + outgoing);
     final tangent = bisector != Offset.zero ? bisector : incoming;
-    final scaledY = tangent.dy * verticalNibAspect;
     final widthScale = tangent == Offset.zero
         ? 1.0
-        : math.sqrt(tangent.dx * tangent.dx + scaledY * scaledY);
+        : brush.rotation
+        ? nibWidthAcross(const Offset(1, 0), ratio, angle)
+        : nibWidthAcross(tangent, ratio, angle);
     projected.add(
       HairRibbonPoint(
         point.position,
@@ -213,8 +216,8 @@ class HairFoldRaster {
     bool taperEnd = false,
   }) {
     if (points.length < 2) return;
-    if (brush.verticalNib && !brush.rotation) {
-      points = _verticalNibPoints(points);
+    if (brush.calligraphyAngle != null) {
+      points = _projectNib(points, brush);
     }
     final bendLengths = <double>[0];
     for (var i = 1; i < points.length; i++) {
@@ -1673,6 +1676,14 @@ class HairFoldRaster {
     final startAngle = angleA ?? fixedAngle;
     final endAngle = angleB ?? fixedAngle;
     final outlineWidth = brush.outlineWidth;
+    final nibAngle = brush.calligraphyAngle;
+    final nibRatio = nibAngle == null
+        ? 1.0
+        : Brush.clampNibWidthRatio(brush.nibWidthRatio);
+    final angleOffset = (nibAngle ?? 0) * math.pi / 180;
+    final tipProjection = nibAngle == null || delta == Offset.zero
+        ? 1.0
+        : nibWidthAcross(_unit(delta), nibRatio, fixedAngle + angleOffset);
     final radiusA = a.fillRadius(outlineWidth);
     final radiusB = b.fillRadius(outlineWidth);
     final outerA = a.outerRadius(outlineWidth);
@@ -1680,43 +1691,55 @@ class HairFoldRaster {
     for (var step = 0; step <= steps; step++) {
       final t = step / steps;
       final center = a.position + delta * t;
-      final radius = math.max(.001, radiusA + (radiusB - radiusA) * t);
+      final radius = math.max(0.0, radiusA + (radiusB - radiusA) * t);
       final blend = blendA + (blendB - blendA) * t;
       final followingAngle = startAngle + (endAngle - startAngle) * t;
       final ordinaryAngle = brush.rotation
           ? followingAngle + math.pi / 2
           : fixedAngle;
       final angle =
-          (crescent
+          (crescent && nibAngle == null
               ? ordinaryAngle + (followingAngle - ordinaryAngle) * blend
               : fixedAngle) +
-          (brush.calligraphyAngle ?? 0) * math.pi / 180;
+          angleOffset;
       final cosA = math.cos(-angle), sinA = math.sin(-angle);
       final outerRadius = outerA + (outerB - outerA) * t;
+      final reachX = nibAngle == null
+          ? outerRadius
+          : outerRadius *
+                nibWidthAcross(const Offset(0, 1), nibRatio, angle) /
+                tipProjection;
+      final reachY = nibAngle == null
+          ? outerRadius
+          : outerRadius *
+                nibWidthAcross(const Offset(1, 0), nibRatio, angle) /
+                tipProjection;
       final opacity = a.opacity + (b.opacity - a.opacity) * t;
-      final left = (center.dx - outerRadius - 1).floor().clamp(
+      final left = (center.dx - reachX - 1).floor().clamp(
         0,
         tiles.canvasWidth - 1,
       );
-      final right = (center.dx + outerRadius + 1).ceil().clamp(
+      final right = (center.dx + reachX + 1).ceil().clamp(
         0,
         tiles.canvasWidth - 1,
       );
-      final top = (center.dy - outerRadius - 1).floor().clamp(
+      final top = (center.dy - reachY - 1).floor().clamp(
         0,
         tiles.canvasHeight - 1,
       );
-      final bottom = (center.dy + outerRadius + 1).ceil().clamp(
+      final bottom = (center.dy + reachY + 1).ceil().clamp(
         0,
         tiles.canvasHeight - 1,
       );
       for (var y = top; y <= bottom; y++) {
         for (var x = left; x <= right; x++) {
           final dx = x + .5 - center.dx, dy = y + .5 - center.dy;
-          final u = dx * cosA - dy * sinA, v = dx * sinA + dy * cosA;
+          final u = (dx * cosA - dy * sinA) * tipProjection / nibRatio;
+          final v = (dx * sinA + dy * cosA) * tipProjection;
           final distSquared = u * u + v * v;
           double coverage(double r) {
-            if (crescent && blend > 0) {
+            if (r <= 0) return 0;
+            if (crescent && blend > 0 && nibAngle == null) {
               final clip = (r + .5 - math.sqrt(distSquared)).clamp(0.0, 1.0);
               if (clip <= 0) return 0;
               final left = _textureLeft * blend;
@@ -1806,11 +1829,25 @@ class HairFoldRaster {
     final endAxis = cutStop ? _unit(endTangent) : Offset.zero;
     final startBand = points[run.start].outlineOr(brush.outlineWidth);
     final endBand = points[run.end].outlineOr(brush.outlineWidth);
-    final startCapRadius =
-        points[run.start].outerRadius(brush.outlineWidth) + 1;
-    final endCapRadius = points[run.end].outerRadius(brush.outlineWidth) + 1;
-    final startCapReach = startCapRadius * startCapRadius;
-    final endCapReach = endCapRadius * endCapRadius;
+    double capReach(HairRibbonPoint point, Offset tangent) {
+      if (tangent == Offset.zero) return 0;
+      final outer = point.outerRadius(brush.outlineWidth);
+      final baseAngle = brush.calligraphyAngle;
+      var radius = outer;
+      if (baseAngle != null) {
+        final ratio = Brush.clampNibWidthRatio(brush.nibWidthRatio);
+        final angle =
+            baseAngle * math.pi / 180 +
+            (brush.rotation ? math.atan2(tangent.dy, tangent.dx) : 0.0);
+        // The section width is the nib's cross-stroke projection. Include
+        // its full footprint when trimming along the stroke at the cap.
+        radius *= math.max(1.0, ratio) / nibWidthAcross(tangent, ratio, angle);
+      }
+      return (radius + 1) * (radius + 1);
+    }
+
+    final startCapReach = capReach(points[run.start], startAxis);
+    final endCapReach = capReach(points[run.end], endAxis);
     final outer = m.outer, fills = m.fill, opacities = m.opacity;
     final shape = surface.shape, covers = surface.cover;
     final surfaceOuter = surface.outer, surfaceFill = surface.fill;

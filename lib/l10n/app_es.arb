@@ -3907,5 +3907,11 @@
   "pcLayoutAutoFoldTitle": "Plegar automáticamente las ventanas de herramientas",
   "pcLayoutAutoFoldHelp": "Solo cuando las ventanas no caben ni reduciendo su altura, se pliegan temporalmente las que llevan más tiempo sin usarse. La que estás usando sigue abierta y las plegadas vuelven cuando hay espacio. Si lo desactivas, la columna solo se desplaza.",
   "pcLayoutResetWorkspace": "Restablecer espacio de trabajo",
-  "pcLayoutInstruction": "Arrastra el borde de una ventana en la vista previa para cambiar su ancho o alto. Mantén pulsada el asa de arriba a la izquierda para moverla o intercambiarla con otra. Pellizca para ampliar."
+  "pcLayoutInstruction": "Arrastra el borde de una ventana en la vista previa para cambiar su ancho o alto. Mantén pulsada el asa de arriba a la izquierda para moverla o intercambiarla con otra. Pellizca para ampliar.",
+  "brushNibWidthRatio": "Ancho de la punta respecto a la altura",
+  "brushFoldFlatEnds": "Extremos planos",
+  "brushFoldTriggerAngle": "Ángulo mínimo de giro",
+  "brushFoldEndTaper": "Estrechamiento de la punta plegada",
+  "timelineSelectionScenes": "Escenas",
+  "timelineSelectionClips": "Clips multimedia"
 }

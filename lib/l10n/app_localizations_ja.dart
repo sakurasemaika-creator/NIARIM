@@ -10184,4 +10184,22 @@ class AppLocalizationsJa extends AppLocalizations {
   @override
   String get pcLayoutInstruction =>
       'プレビューのウィンドウ端をドラッグして幅・高さを変更し、左上のハンドルを長押しして移動・入れ替えできます。ピンチで拡大できます。';
+
+  @override
+  String get brushNibWidthRatio => 'ペン先の幅（高さ比）';
+
+  @override
+  String get brushFoldFlatEnds => '両端を平らにする';
+
+  @override
+  String get brushFoldTriggerAngle => '折り返しが始まる角度';
+
+  @override
+  String get brushFoldEndTaper => '折り返し線の先細り';
+
+  @override
+  String get timelineSelectionScenes => 'シーン';
+
+  @override
+  String get timelineSelectionClips => '素材クリップ';
 }
