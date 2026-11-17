@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../../config/accent_text_theme.dart';
@@ -10,12 +12,13 @@ import '../../l10n/reward_unlock_labels.dart';
 import '../../l10n/reward_navigation_labels.dart';
 import '../../models/coin_unlock_quote.dart';
 import '../../models/coin_benefit_price_proposal.dart';
-import '../../services/premium_service.dart';
 import '../../services/advertising_service.dart';
+import '../../services/api/community_api.dart';
 import '../../services/coin_redemption_attempt_store.dart';
 import '../../services/individual_coin_redemption_attempt_store.dart';
 import '../../services/community_service.dart';
 import '../../services/google_auth_service.dart';
+import '../../services/premium_service.dart';
 import '../../utils/coin_duration_label.dart';
 import '../../widgets/action_beside_or_below.dart';
 import '../../widgets/coin_history_sheet.dart';
@@ -25,8 +28,7 @@ import '../../widgets/fit_or_hide_title.dart';
 
 enum RewardPageMode { exchange, earnCoins }
 
-/// Reward UI shell; the server wallet/pricing/ad issuance are not yet live.
-/// Never invent coin balances, price quotes or exchange success on the client.
+/// Displays the server wallet, reward offers and exchange prices.
 class RewardUnlockScreen extends StatefulWidget {
   const RewardUnlockScreen({
     super.key,
@@ -56,6 +58,7 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
   String? _lastAccountId;
   Map<String, dynamic>? _rewardState;
   bool _walletLoading = false;
+  int _walletRequest = 0;
   bool _rewardBusy = false;
   bool _redeemBusy = false;
   Map<String, dynamic>? _officialPremiumQuote;
@@ -84,6 +87,7 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
     final id = _authService?.account?.id;
     if (_lastAccountId == id) return;
     _lastAccountId = id;
+    _walletRequest++;
     context.read<PremiumService>().applyServerCoinPremiumExpiry(null);
     if (id != null) {
       context.read<PremiumService>().applyServerCoinBenefitEntitlements(
@@ -93,6 +97,7 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
     }
     setState(() {
       _rewardState = null;
+      _walletLoading = false;
       _officialPremiumQuote = null;
       _officialAnnualPremiumQuote = null;
     });
@@ -102,10 +107,15 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
   Future<void> _loadWallet(String accountId) async {
     final api = context.read<CommunityService>().api;
     if (api == null) return;
+    final request = ++_walletRequest;
+    bool isCurrent() =>
+        mounted &&
+        request == _walletRequest &&
+        _authService?.account?.id == accountId;
     setState(() => _walletLoading = true);
     try {
       final state = await api.myRewardState();
-      if (!mounted || _authService?.account?.id != accountId) return;
+      if (!isCurrent()) return;
       setState(() => _rewardState = state);
       DateTime? activeCoinPremium;
       for (final row in (state['entitlements'] as List? ?? const [])) {
@@ -138,13 +148,13 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
           } catch (_) {
             annual = null;
           }
-          if (!mounted || _authService?.account?.id != accountId) return;
+          if (!isCurrent()) return;
           setState(() {
             _officialPremiumQuote = quote;
             _officialAnnualPremiumQuote = annual;
           });
         } catch (_) {
-          if (mounted && _authService?.account?.id == accountId) {
+          if (isCurrent()) {
             setState(() {
               _officialPremiumQuote = null;
               _officialAnnualPremiumQuote = null;
@@ -159,10 +169,10 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
       }
     } catch (_) {
       // Never show a stale wallet or an invented zero while offline.
-      if (!mounted || _authService?.account?.id != accountId) return;
+      if (!isCurrent()) return;
       setState(() => _rewardState = null);
     } finally {
-      if (mounted && _authService?.account?.id == accountId) {
+      if (isCurrent()) {
         setState(() => _walletLoading = false);
       }
     }
@@ -235,41 +245,10 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
           ),
         ),
       );
-      // The SDK callback is NOT an award. Only a signed SSV transaction may
-      // consume the session and credit the wallet. Query a bounded number of
-      // times so the user needn't manually refresh after a normal callback.
-      // This intentionally never increments balanceCoins on the device.
       if (completed) {
-        final nonce = customData.split('.').last;
-        for (final delay in [
-          const Duration(seconds: 1),
-          const Duration(seconds: 2),
-          const Duration(seconds: 4),
-          const Duration(seconds: 6),
-        ]) {
-          await Future<void>.delayed(delay);
-          if (!mounted ||
-              context.read<GoogleAuthService>().account?.id != accountId) {
-            break;
-          }
-          try {
-            final status = await api.rewardedAdStatus(nonce);
-            if (!mounted ||
-                context.read<GoogleAuthService>().account?.id != accountId) {
-              break;
-            }
-            if (status['credited'] == true) {
-              await _loadWallet(accountId);
-              break;
-            }
-            if (status['status'] == 'expired' ||
-                status['status'] == 'not_found') {
-              break;
-            }
-          } catch (_) {
-            // Temporary network errors never create local coin grants.
-          }
-        }
+        unawaited(
+          _refreshAfterReward(api, accountId, customData.split('.').last),
+        );
       }
     } catch (_) {
       if (mounted &&
@@ -285,6 +264,34 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
       }
     } finally {
       if (mounted) setState(() => _rewardBusy = false);
+    }
+  }
+
+  Future<void> _refreshAfterReward(
+    CommunityApi api,
+    String accountId,
+    String nonce,
+  ) async {
+    // Check settlement in the background so the next ad can start immediately.
+    for (final seconds in const [1, 2, 4, 6, 10, 15, 20, 30, 30]) {
+      await Future<void>.delayed(Duration(seconds: seconds));
+      if (!mounted || _authService?.account?.id != accountId) return;
+      try {
+        final status = await api.rewardedAdStatus(nonce);
+        if (!mounted || _authService?.account?.id != accountId) return;
+        if (status['credited'] == true) {
+          await _loadWallet(accountId);
+          return;
+        }
+        if (status['status'] == 'expired' || status['status'] == 'not_found') {
+          return;
+        }
+      } catch (_) {
+        // The next check may succeed when connectivity returns.
+      }
+    }
+    if (mounted && _authService?.account?.id == accountId) {
+      await _loadWallet(accountId);
     }
   }
 
@@ -1085,6 +1092,7 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
             if (earn && _rewardState?['rewardEarningEnabled'] == true) ...[
               const SizedBox(height: 10),
               FilledButton.icon(
+                key: const Key('rewardWatchAdButton'),
                 icon: _rewardBusy
                     ? const SizedBox(
                         width: 18,
@@ -1128,19 +1136,20 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 child: messageText(nav['earnUnavailable']),
               ),
-            if (!earn && _rewardState != null) ...[
-              TextButton.icon(
-                key: const Key('coinHistoryButton'),
-                icon: const Icon(Icons.receipt_long_outlined),
-                onPressed: _lastAccountId != null ? _showCoinHistory : null,
-                label: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 4),
-                  child: messageText(t['coinHistory']),
+            if (_lastAccountId != null) ...[
+              if (!earn && _rewardState != null)
+                TextButton.icon(
+                  key: const Key('coinHistoryButton'),
+                  icon: const Icon(Icons.receipt_long_outlined),
+                  onPressed: _showCoinHistory,
+                  label: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 4),
+                    child: messageText(t['coinHistory']),
+                  ),
                 ),
-              ),
               TextButton.icon(
                 icon: const Icon(Icons.refresh),
-                onPressed: !_walletLoading && _lastAccountId != null
+                onPressed: !_walletLoading
                     ? () => _loadWallet(_lastAccountId!)
                     : null,
                 label: messageText(t['rewardRefresh']),

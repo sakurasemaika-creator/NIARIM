@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
-  GetCommand, TransactWriteCommand, UpdateCommand,
+  GetCommand, PutCommand, TransactWriteCommand,
 } from "@aws-sdk/lib-dynamodb";
 import { TransactionCanceledException } from "@aws-sdk/client-dynamodb";
 import type { APIGatewayProxyEventV2 } from "aws-lambda";
@@ -32,6 +32,8 @@ const request = {
   headers: { authorization: "Bearer verified-in-mock" },
   rawQueryString: "original=google-signed-raw-query",
 } as unknown as APIGatewayProxyEventV2;
+const nonce = "123e4567-e89b-12d3-a456-426614174000";
+const session = { Item: { itemType: "REWARDED_AD_SESSION", nonce } };
 
 beforeEach(() => {
   send.mockReset();
@@ -148,11 +150,10 @@ describe("rewarded ad SSV + exactly-once wallet", () => {
     expect(send).toHaveBeenCalledTimes(2);
     expect(send.mock.calls[0][0]).toBeInstanceOf(GetCommand);
     const command = send.mock.calls[1][0];
-    expect(command).toBeInstanceOf(UpdateCommand);
-    expect(command.input.Key.pk).toBe(`USER#N${"a".repeat(32)}`);
-    expect(command.input.ConditionExpression).toContain("issuedAtMs");
-    expect(command.input.ConditionExpression).toContain("attribute_exists(consumedAtMs)");
-    expect(command.input.ConditionExpression).toContain("expiresAtMs < :issued");
+    expect(command).toBeInstanceOf(PutCommand);
+    expect(command.input.Item.pk).toBe(`USER#N${"a".repeat(32)}`);
+    expect(command.input.Item.sk).toBe(`REWARDED_AD_SESSION#${body.customData.split(".")[2]}`);
+    expect(command.input.ConditionExpression).toBe("attribute_not_exists(pk)");
     expect(send.mock.calls.some(([c]) => c instanceof TransactWriteCommand))
       .toBe(false);
   });
@@ -205,9 +206,10 @@ describe("rewarded ad SSV + exactly-once wallet", () => {
 
   it("credits signed event once with immutable coin history", async () => {
     enable();
+    send.mockResolvedValueOnce(session);
     const response = await receiveRewardedAdSsv(request);
     expect(response.statusCode).toBe(200);
-    const tx = send.mock.calls[0][0] as TransactWriteCommand;
+    const tx = send.mock.calls[1][0] as TransactWriteCommand;
     expect(tx).toBeInstanceOf(TransactWriteCommand);
     expect(tx.input.TransactItems).toHaveLength(5);
     const rows = tx.input.TransactItems!;
@@ -215,7 +217,7 @@ describe("rewarded ad SSV + exactly-once wallet", () => {
     expect(rows[0].Put?.ConditionExpression).toContain("attribute_not_exists");
     expect(rows[0].Put?.Item?.ttl).toBeGreaterThan(Date.now() / 1000);
     expect(rows[1].Update?.ConditionExpression).toContain("attribute_not_exists(consumedAtMs)");
-    expect(rows[1].Update?.Key?.sk).toBe("REWARDED_AD_SESSION");
+    expect(rows[1].Update?.Key?.sk).toBe(`REWARDED_AD_SESSION#${nonce}`);
     expect(rows[2].Update?.Key?.sk).toMatch(/^REWARDED_AD_DAY#/);
     expect(rows[2].Update?.ExpressionAttributeValues?.[":limit"]).toBe(10);
     expect(rows[2].Update?.UpdateExpression).toContain("#ttl = :ttl");
@@ -247,6 +249,7 @@ describe("rewarded ad SSV + exactly-once wallet", () => {
       }
       return {};
     });
+    send.mockResolvedValueOnce(session);
     const response = await receiveRewardedAdSsv(request);
     expect(JSON.parse(response.body ?? "{}")).toMatchObject({
       credited: true, duplicate: true,
@@ -265,6 +268,7 @@ describe("rewarded ad SSV + exactly-once wallet", () => {
       }
       return {};
     });
+    send.mockResolvedValueOnce(session);
     await expect(receiveRewardedAdSsv(request)).rejects.toMatchObject({
       code: "SSV_SESSION_CONFLICT",
     });

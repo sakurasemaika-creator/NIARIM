@@ -5,7 +5,7 @@ import {
   waitUntilTableExists,
 } from "@aws-sdk/client-dynamodb";
 import {
-  DynamoDBDocumentClient, GetCommand, PutCommand, QueryCommand, UpdateCommand,
+  DynamoDBDocumentClient, GetCommand, PutCommand, QueryCommand,
 } from "@aws-sdk/lib-dynamodb";
 import type { APIGatewayProxyEventV2 } from "aws-lambda";
 
@@ -159,7 +159,7 @@ describe.skipIf(process.env.NIARIM_DYNAMODB_LOCAL_TESTS !== "1")(
       expect(offer.rewardCoins).toBe(10);
       expect(offer.customData).toMatch(/^v1\.N[a-f0-9]{32}\.[0-9a-f-]{36}$/);
       const nonce = offer.customData.split(".")[2] as string;
-      const session = await row(Keys.rewardedAdSession(owner));
+      const session = await row(Keys.rewardedAdSession(owner, nonce));
       expect(session?.itemType).toBe("REWARDED_AD_SESSION");
       expect(session?.nonce).toBe(nonce);
       const pending = await getRewardedAdStatus({
@@ -179,7 +179,7 @@ describe.skipIf(process.env.NIARIM_DYNAMODB_LOCAL_TESTS !== "1")(
       const receipt = await row(Keys.admobReceipt(transactionId));
       expect(receipt?.earnedCoins).toBe(10);
       expect(receipt?.niarimUserId).toBe(owner);
-      const updatedSession = await row(Keys.rewardedAdSession(owner));
+      const updatedSession = await row(Keys.rewardedAdSession(owner, nonce));
       expect(updatedSession?.consumedAtMs).toBeGreaterThan(0);
       const status = await getRewardedAdStatus({
         ...bearer, queryStringParameters: { nonce },
@@ -208,15 +208,12 @@ describe.skipIf(process.env.NIARIM_DYNAMODB_LOCAL_TESTS !== "1")(
         .rejects.toMatchObject({ code: "REWARDED_AD_DAILY_LIMIT" });
       const secondNonce = randomUUID();
       const now = Date.now();
-      await ddb.send(new UpdateCommand({
-        TableName: table, Key: Keys.rewardedAdSession(owner),
-        UpdateExpression: "SET nonce = :nonce, issuedAtMs = :start, " +
-          "expiresAtMs = :expiry, offerVersion = :version, " +
-          "rewardCoins = :amount REMOVE consumedAtMs",
-        ExpressionAttributeValues: {
-          ":nonce": secondNonce, ":start": now - 1000,
-          ":expiry": now + 300000,
-          ":version": offer.offerVersion, ":amount": 10,
+      await ddb.send(new PutCommand({
+        TableName: table,
+        Item: {
+          ...Keys.rewardedAdSession(owner), itemType: "REWARDED_AD_SESSION", nonce: secondNonce,
+          issuedAtMs: now - 1000, expiresAtMs: now + 300000,
+          offerVersion: offer.offerVersion, rewardCoins: 10,
         },
       }));
       const tx2 = "18fa792de1bca816048293fc71035639";
@@ -237,6 +234,35 @@ describe.skipIf(process.env.NIARIM_DYNAMODB_LOCAL_TESTS !== "1")(
       expect(history.Items?.[0]?.deltaCoins).toBe(10);
       expect(history.Items?.[0]?.transactionId).toBe(transactionId);
     }, 90_000);
+
+    it("accepts consecutive ads and settles delayed callbacks without an account-wide slot", async () => {
+      const previousLimit = process.env.REWARDED_AD_DAILY_LIMIT;
+      process.env.REWARDED_AD_DAILY_LIMIT = "unlimited";
+      const start = async () => {
+        vi.mocked(authenticate).mockResolvedValueOnce({
+          niarimUserId: other, membershipTier: "free", googleSub: "local-test-unlimited",
+        });
+        return JSON.parse((await startRewardedAdSession(bearer)).body!);
+      };
+      try {
+        const abandoned = await start();
+        const first = await start();
+        const second = await start();
+        expect(new Set([abandoned.customData, first.customData, second.customData]).size).toBe(3);
+        expect(first.dailyRewardLimit).toBeNull();
+        const eventForSecond = ssvEvent(signedCallback(second.customData, "18fa792de1bca816048293fc71035640"));
+        const eventForFirst = ssvEvent(signedCallback(first.customData, "18fa792de1bca816048293fc71035641"));
+        expect((await receiveRewardedAdSsv(eventForSecond)).statusCode).toBe(200);
+        expect((await receiveRewardedAdSsv(eventForFirst)).statusCode).toBe(200);
+        expect(JSON.parse((await receiveRewardedAdSsv(eventForSecond)).body!))
+          .toEqual({ credited: true, duplicate: true });
+        expect((await row(Keys.coinWallet(other)))?.balanceCoins).toBe(20);
+        expect(await row(Keys.rewardAdDailyCount(other, new Date().toISOString().slice(0, 10).replaceAll("-", ""))))
+          .toBeUndefined();
+      } finally {
+        process.env.REWARDED_AD_DAILY_LIMIT = previousLimit;
+      }
+    });
 
     it("publishes a regional rate from the daily report and settles it once", async () => {
       const regionalOwner = `N${"c".repeat(32)}`;

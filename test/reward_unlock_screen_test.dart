@@ -1,15 +1,134 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/models/coin_benefit_price_proposal.dart';
 import 'package:niarim/models/coin_unlock_quote.dart';
 import 'package:niarim/screens/rewards/reward_unlock_screen.dart';
+import 'package:niarim/services/advertising_service.dart';
+import 'package:niarim/services/api/community_api.dart';
+import 'package:niarim/services/api/niarim_api_client.dart';
+import 'package:niarim/services/community_service.dart';
 import 'package:niarim/services/google_auth_service.dart';
 import 'package:niarim/services/premium_service.dart';
 import 'package:niarim/services/settings_service.dart';
 
+class _RewardAccount implements GoogleSignInAccount {
+  @override
+  String get id => 'reward-test-account';
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+class _RewardAuth extends GoogleAuthService {
+  @override
+  final GoogleSignInAccount account = _RewardAccount();
+}
+
+class _RewardApi extends CommunityApi {
+  _RewardApi(NiarimApiClient client) : super(client);
+
+  int starts = 0;
+  bool credited = false;
+
+  @override
+  Future<Map<String, dynamic>> myRewardState() async => {
+    'balanceCoins': credited ? 20 : 0,
+    'rewardEarningEnabled': true,
+    'rewardedCoinsPerCompletion': 10,
+    'rewardedOfferVersion': 'launch-v1-10-coins',
+  };
+
+  @override
+  Future<Map<String, dynamic>> beginRewardedAdSession({
+    required int rewardCoins,
+    required String offerVersion,
+  }) async => {
+    'rewardCoins': rewardCoins,
+    'offerVersion': offerVersion,
+    'adUnitId': 'fixture-ad-unit',
+    'customData': 'v1.fixture.${++starts}',
+  };
+
+  @override
+  Future<Map<String, dynamic>> rewardedAdStatus(String nonce) async => {
+    'credited': credited,
+    'status': credited ? 'credited' : 'pending',
+  };
+}
+
+class _RewardAds extends AdvertisingService {
+  _RewardAds({required super.premiumService});
+
+  @override
+  bool get canOfferRewardedAds => true;
+
+  @override
+  Future<bool> showRewardedCoinAd({
+    required String adUnitId,
+    required String customData,
+  }) async => true;
+}
+
 void main() {
+  testWidgets('accepts the next ad while earlier rewards are settling', (
+    tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({});
+    final client = NiarimApiClient(baseUrl: 'https://example.invalid');
+    final api = _RewardApi(client);
+    final community = CommunityService(api: api);
+    final premium = PremiumService();
+    final ads = _RewardAds(premiumService: premium);
+    final auth = _RewardAuth();
+    await tester.pumpWidget(
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider<GoogleAuthService>.value(value: auth),
+          ChangeNotifierProvider<CommunityService>.value(value: community),
+          ChangeNotifierProvider<PremiumService>.value(value: premium),
+          ChangeNotifierProvider<AdvertisingService>.value(value: ads),
+        ],
+        child: const MaterialApp(
+          locale: Locale('en'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: RewardUnlockScreen(mode: RewardPageMode.earnCoins),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final labels = lookupAppLocalizations(const Locale('en'));
+    final watch = find.byKey(const Key('rewardWatchAdButton'));
+    await tester.tap(watch);
+    await tester.pump();
+    expect(api.starts, 1);
+    expect(tester.widget<FilledButton>(watch).onPressed, isNotNull);
+    await tester.tap(watch);
+    await tester.pump();
+    expect(api.starts, 2);
+    expect(find.text(labels.rewardUnlockRewardRefresh), findsOneWidget);
+
+    for (final seconds in [1, 2, 4, 6]) {
+      await tester.pump(Duration(seconds: seconds));
+    }
+    api.credited = true;
+    await tester.pump(const Duration(seconds: 10));
+    await tester.pumpAndSettle();
+    expect(find.text(labels.coinAmount(20)), findsOneWidget);
+
+    await tester.pumpWidget(const SizedBox.shrink());
+    ads.dispose();
+    auth.dispose();
+    community.dispose();
+    premium.dispose();
+    client.close();
+  });
+
   testWidgets('12-month full Premium shows 550000 opals and cannot redeem '
       'without a server wallet and quote', (tester) async {
     final premium = PremiumService();

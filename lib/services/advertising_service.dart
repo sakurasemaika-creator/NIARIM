@@ -110,7 +110,6 @@ class AdvertisingService extends ChangeNotifier {
   /// Rewarded ads are USER-INITIATED and separate from normal placements.
   /// A paying Premium member may choose to accumulate coins for later use.
   /// Being Premium hides normal ads, but does not prevent optional rewards.
-  /// Real grants remain disabled until rewarded SDK/SSV/wallet are connected.
   bool get canOfferRewardedAds => _canRequestAds && supportsMobilePluginRuntime;
 
   /// Voluntary rewarded ad: the SDK callback never grants coins locally.
@@ -126,11 +125,19 @@ class AdvertisingService extends ChangeNotifier {
     }
     final completed = Completer<bool>();
     var earned = false;
-    RewardedAd.load(
+    final loadDeadline = Timer(const Duration(seconds: 20), () {
+      if (!completed.isCompleted) completed.complete(false);
+    });
+    final load = RewardedAd.load(
       adUnitId: adUnitId,
       request: const AdRequest(),
       rewardedAdLoadCallback: RewardedAdLoadCallback(
         onAdLoaded: (ad) async {
+          loadDeadline.cancel();
+          if (completed.isCompleted) {
+            ad.dispose();
+            return;
+          }
           try {
             await ad.setServerSideOptions(
               ServerSideVerificationOptions(customData: customData),
@@ -156,10 +163,15 @@ class AdvertisingService extends ChangeNotifier {
           }
         },
         onAdFailedToLoad: (error) {
+          loadDeadline.cancel();
           if (!completed.isCompleted) completed.complete(false);
         },
       ),
     );
+    unawaited(load.catchError((Object _) {
+      loadDeadline.cancel();
+      if (!completed.isCompleted) completed.complete(false);
+    }));
     return completed.future;
   }
 

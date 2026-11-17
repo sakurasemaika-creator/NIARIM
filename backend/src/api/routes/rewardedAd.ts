@@ -4,7 +4,7 @@ import {
   ConditionalCheckFailedException, TransactionCanceledException,
 } from "@aws-sdk/client-dynamodb";
 import {
-  GetCommand, TransactWriteCommand, UpdateCommand,
+  GetCommand, PutCommand, TransactWriteCommand,
 } from "@aws-sdk/lib-dynamodb";
 import { authenticate } from "../../lib/auth";
 import { ddb, Keys, tableName } from "../../lib/dynamo";
@@ -29,9 +29,7 @@ import { regionalRewardAdOffer, rewardAdTiers, rewardCountryPattern, rewardRepor
 export function rewardedAdConfiguration() {
   const adUnit = process.env.ADMOB_REWARDED_AD_UNIT_ID ?? "";
   const rawCap = process.env.REWARDED_AD_DAILY_LIMIT ?? "";
-  // A missing or invalid cap must DISABLE issuance. A configured launch
-  // cannot accidentally mint unlimited coins because of an omitted value.
-  const capIsValid = rawCap !== "" && dailyRewardLimit() !== null;
+  const capIsValid = rawCap === "unlimited" || dailyRewardLimit() !== null;
   const enabled = capIsValid &&
     process.env.REWARDED_AD_SSV_ENABLED === "true" &&
     /^ca-app-pub-[0-9]{16}\/[0-9]{10}$/.test(adUnit) &&
@@ -44,8 +42,21 @@ export function rewardedAdConfiguration() {
   };
 }
 const SESSION_LIFETIME_MS = 30 * 60_000;
-const SESSION_COOLDOWN_MS = 30_000;
 const RECEIPT_LIFETIME_SECONDS = 30 * 24 * 3600;
+
+async function findRewardedAdSession(userId: string, nonce: string) {
+  const table = tableName();
+  const key = Keys.rewardedAdSession(userId, nonce);
+  const { Item } = await ddb.send(new GetCommand({ TableName: table, Key: key, ConsistentRead: true }));
+  if (Item) return { key, item: Item };
+  // Earlier app requests used one record per account. In-flight watches can
+  // still settle against that record after new requests start using nonce keys.
+  const legacyKey = Keys.rewardedAdSession(userId);
+  const { Item: legacy } = await ddb.send(new GetCommand({
+    TableName: table, Key: legacyKey, ConsistentRead: true,
+  }));
+  return { key: legacyKey, item: legacy };
+}
 
 export async function startRewardedAdSession(event: APIGatewayProxyEventV2) {
   const auth = await authenticate(
@@ -77,39 +88,18 @@ export async function startRewardedAdSession(event: APIGatewayProxyEventV2) {
     }
   }
   const nonce = randomUUID();
-  const key = Keys.rewardedAdSession(auth.niarimUserId);
-  try {
-    await ddb.send(new UpdateCommand({
-      TableName: tableName(),
-      Key: key,
-      UpdateExpression:
-        "SET itemType = :type, nonce = :nonce, issuedAtMs = :issued, " +
-        "expiresAtMs = :expires, offerVersion = :version, " +
-        "rewardCoins = :amount, adUnitId = :unit, rewardCountry = :country, #ttl = :ttl " +
-        "REMOVE consumedAtMs",
-      ExpressionAttributeNames: { "#ttl": "ttl" },
-      ConditionExpression:
-        "attribute_not_exists(issuedAtMs) OR expiresAtMs < :issued OR " +
-        "(attribute_exists(consumedAtMs) AND issuedAtMs <= :cooldown)",
-      ExpressionAttributeValues: {
-        ":type": "REWARDED_AD_SESSION",
-        ":nonce": nonce,
-        ":issued": now,
-        ":expires": now + SESSION_LIFETIME_MS,
-        ":version": config.version,
-        ":amount": config.amount,
-        ":unit": config.adUnitId,
-        ":country": config.country ?? null,
-        ":ttl": Math.floor((now + SESSION_LIFETIME_MS) / 1000) + 8 * 24 * 3600,
-        ":cooldown": now - SESSION_COOLDOWN_MS,
-      },
-    }));
-  } catch (error) {
-    if (error instanceof ConditionalCheckFailedException) {
-      conflict("次の広告まで少し時間を空けてください", "REWARD_AD_COOLDOWN");
-    }
-    throw error;
-  }
+  const expiresAtMs = now + SESSION_LIFETIME_MS;
+  await ddb.send(new PutCommand({
+    TableName: tableName(),
+    Item: {
+      ...Keys.rewardedAdSession(auth.niarimUserId, nonce),
+      itemType: "REWARDED_AD_SESSION", nonce, issuedAtMs: now, expiresAtMs,
+      offerVersion: config.version, rewardCoins: config.amount, adUnitId: config.adUnitId,
+      rewardCountry: config.country ?? null,
+      ttl: Math.floor(expiresAtMs / 1000) + 8 * 24 * 3600,
+    },
+    ConditionExpression: "attribute_not_exists(pk)",
+  }));
   return ok({
     adUnitId: config.adUnitId,
     rewardCoins: config.amount,
@@ -117,7 +107,7 @@ export async function startRewardedAdSession(event: APIGatewayProxyEventV2) {
     customData: `${config.country ? "v2" : "v1"}.${auth.niarimUserId}.${nonce}`,
     dailyRewardLimit: limit,
     dailyRewardRemaining: remainingToday,
-    expiresAtEpochMs: now + SESSION_LIFETIME_MS,
+    expiresAtEpochMs: expiresAtMs,
   });
 }
 
@@ -134,12 +124,7 @@ export async function getRewardedAdStatus(event: APIGatewayProxyEventV2) {
   if (!nonce || !/^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$/.test(nonce)) {
     badRequest("広告セッションIDが不正です", "REWARDED_AD_INVALID_NONCE");
   }
-  const result = await ddb.send(new GetCommand({
-    TableName: tableName(),
-    Key: Keys.rewardedAdSession(auth.niarimUserId),
-    ConsistentRead: true,
-  }));
-  const session = result.Item;
+  const { item: session } = await findRewardedAdSession(auth.niarimUserId, nonce);
   if (session?.itemType !== "REWARDED_AD_SESSION" ||
       session.nonce !== nonce) {
     return ok({credited: false, status: "not_found"});
@@ -169,6 +154,7 @@ export async function receiveRewardedAdSsv(event: APIGatewayProxyEventV2) {
   let regional = false;
   let reward;
   let identity;
+  let sessionKey: ReturnType<typeof Keys.rewardedAdSession>;
   try {
     // Always verify Google's ECDSA signature BEFORE acknowledging a
     // callback, even if issuance is disabled. AdMob's URL verification
@@ -199,32 +185,30 @@ export async function receiveRewardedAdSsv(event: APIGatewayProxyEventV2) {
     }
     if (!config.enabled) forbidden("広告報酬は無効です", "REWARDED_AD_DISABLED");
     regional = reward.customData.startsWith("v2.");
-    if (regional) {
-      identity = signedRewardSession(reward.customData);
-      // Validate the completion window before reading its account-bound offer.
-      if (reward.rewardItem !== "coins" ||
-          reward.timestampMs > now + 5 * 60_000 ||
-          now - reward.timestampMs > 7 * 86_400_000) {
-        throw new SsvVerificationError("Regional reward or timestamp mismatch");
-      }
-      const { Item } = await ddb.send(new GetCommand({
+    identity = regional
+      ? signedRewardSession(reward.customData)
+      : validateAdmobOffer(reward, { adUnitId: config.adUnitId, amount: config.amount, nowMs: now });
+    if (reward.rewardItem !== "coins" || reward.timestampMs > now + 5 * 60_000 ||
+        now - reward.timestampMs > 7 * 86_400_000) {
+      throw new SsvVerificationError("Reward or timestamp mismatch");
+    }
+    const found = await findRewardedAdSession(identity.userId, identity.nonce);
+    sessionKey = found.key;
+    const { item: Item } = found;
+    if (Item?.itemType !== "REWARDED_AD_SESSION" || Item.nonce !== identity.nonce) {
+      const { Item: receipt } = await ddb.send(new GetCommand({
         TableName: tableName(),
-        Key: Keys.rewardedAdSession(identity.userId),
+        Key: Keys.admobReceipt(reward.transactionId.toLowerCase()),
         ConsistentRead: true,
       }));
-      if (Item?.itemType !== "REWARDED_AD_SESSION" || Item.nonce !== identity.nonce) {
-        const { Item: receipt } = await ddb.send(new GetCommand({
-          TableName: tableName(),
-          Key: Keys.admobReceipt(reward.transactionId.toLowerCase()),
-          ConsistentRead: true,
-        }));
-        if (receipt?.itemType === "REWARDED_AD_RECEIPT" &&
-            receipt.niarimUserId === identity.userId && receipt.sessionNonce === identity.nonce &&
-            receipt.adUnitSuffix === reward.adUnit && receipt.earnedCoins === reward.rewardAmount) {
-          return ok({ credited: true, duplicate: true });
-        }
-        conflict("報酬セッションを確認できません", "SSV_SESSION_CONFLICT");
+      if (receipt?.itemType === "REWARDED_AD_RECEIPT" &&
+          receipt.niarimUserId === identity.userId && receipt.sessionNonce === identity.nonce &&
+          receipt.adUnitSuffix === reward.adUnit && receipt.earnedCoins === reward.rewardAmount) {
+        return ok({ credited: true, duplicate: true });
       }
+      conflict("報酬セッションを確認できません", "SSV_SESSION_CONFLICT");
+    }
+    if (regional) {
       if (typeof Item.adUnitId !== "string" || typeof Item.offerVersion !== "string" ||
           !Number.isSafeInteger(Item.rewardCoins) || Item.rewardCoins < 1 || Item.rewardCoins > 100 ||
           typeof Item.rewardCountry !== "string" || !rewardCountryPattern.test(Item.rewardCountry)) {
@@ -234,12 +218,10 @@ export async function receiveRewardedAdSsv(event: APIGatewayProxyEventV2) {
         adUnitId: Item.adUnitId, amount: Item.rewardCoins,
         version: Item.offerVersion, country: Item.rewardCountry,
       };
+      validateAdmobOffer(reward, {
+        adUnitId: settledOffer.adUnitId, amount: settledOffer.amount, nowMs: now,
+      });
     }
-    identity = validateAdmobOffer(reward, {
-      adUnitId: settledOffer.adUnitId,
-      amount: settledOffer.amount,
-      nowMs: now,
-    });
   } catch (error) {
     if (error instanceof SsvVerificationError) {
       throw new ApiError(
@@ -253,12 +235,11 @@ export async function receiveRewardedAdSsv(event: APIGatewayProxyEventV2) {
   const { userId, nonce } = identity;
   const transactionId = reward.transactionId.toLowerCase();
   const receiptKey = Keys.admobReceipt(transactionId);
-  const sessionKey = Keys.rewardedAdSession(userId);
   const dailyCap = dailyRewardLimit();
   const watchedDayUtc = rewardAdUtcDay(reward.timestampMs);
   try {
-    // One indivisible transaction: global receipt prevents replay across
-    // accounts, and an optional 4th item enforces the daily coin-grant cap.
+    // The receipt and session prevent duplicate payments in the same write
+    // as the balance. A cap counter is included only if a cap is configured.
     await ddb.send(new TransactWriteCommand({
       TransactItems: [
         {

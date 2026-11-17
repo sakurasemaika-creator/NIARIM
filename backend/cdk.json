@@ -29,7 +29,7 @@
     "admobRewardedAdUnitId": "ca-app-pub-4380578821900659/6321761453",
     "rewardedAdSsvEnabled": "true",
     "rewardedAdReviewApproved": "true",
-    "rewardedAdDailyLimit": "1",
+    "rewardedAdDailyLimit": "unlimited",
     "coinFullPremiumMonthCoins": "55000",
     "coinPriceVersion": "v8-complete-pack-half-20261116",
     "coinRedemptionEnabled": "true",

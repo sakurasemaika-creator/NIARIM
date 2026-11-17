@@ -88,8 +88,9 @@ export const Keys = {
     pk: `ADMOB_TX#${transactionId}`, sk: "META",
   }),
   /** One replaceable ad invitation per signed-in account. */
-  rewardedAdSession: (niarimUserId: string) => ({
-    pk: `USER#${niarimUserId}`, sk: "REWARDED_AD_SESSION",
+  rewardedAdSession: (niarimUserId: string, nonce?: string) => ({
+    pk: `USER#${niarimUserId}`,
+    sk: nonce === undefined ? "REWARDED_AD_SESSION" : `REWARDED_AD_SESSION#${nonce}`,
   }),
   rewardAdRateSnapshot: () => ({ pk: "REWARDED_AD_OPTIMIZATION", sk: "RATES" }),
   rewardAdRevenueSnapshot: () => ({ pk: "REWARDED_AD_OPTIMIZATION", sk: "REVENUE" }),

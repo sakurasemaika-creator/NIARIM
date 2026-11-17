@@ -1,5 +1,5 @@
 import { createSign, generateKeyPairSync } from "node:crypto";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
   SsvVerificationError, validateAdmobOffer, verifyAdmobSsv,
 } from "../src/lib/admobSsv";
@@ -67,5 +67,25 @@ describe("AdMob ECDSA callback verification", () => {
       .rejects.toBeInstanceOf(SsvVerificationError);
     await expect(verifyAdmobSsv(content(), keys))
       .rejects.toBeInstanceOf(SsvVerificationError);
+  });
+
+  it("reloads fresh public keys on rotation and coalesces simultaneous misses", async () => {
+    const next = generateKeyPairSync("ec", { namedCurve: "prime256v1" });
+    const pem = publicKey.export({ type: "spki", format: "pem" }).toString();
+    const nextPem = next.publicKey.export({ type: "spki", format: "pem" }).toString();
+    const fetchKeys = vi.fn()
+      .mockResolvedValueOnce(Response.json({ keys: [{ keyId, pem }] }))
+      .mockResolvedValueOnce(Response.json({ keys: [{ keyId, pem }, { keyId: keyId + 1, pem: nextPem }] }));
+    vi.stubGlobal("fetch", fetchKeys);
+    try {
+      await verifyAdmobSsv(signed(content()));
+      const raw = content();
+      const sig = createSign("SHA256").update(raw).sign(next.privateKey).toString("base64url");
+      const rotated = `${raw}&signature=${sig}&key_id=${keyId + 1}`;
+      await Promise.all([verifyAdmobSsv(rotated), verifyAdmobSsv(rotated)]);
+      expect(fetchKeys).toHaveBeenCalledTimes(2);
+    } finally {
+      vi.unstubAllGlobals();
+    }
   });
 });

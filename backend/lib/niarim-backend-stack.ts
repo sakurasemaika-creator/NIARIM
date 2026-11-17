@@ -11,6 +11,7 @@ import * as lambda from "aws-cdk-lib/aws-lambda";
 import * as iam from "aws-cdk-lib/aws-iam";
 import * as secretsmanager from "aws-cdk-lib/aws-secretsmanager";
 import * as events from "aws-cdk-lib/aws-events";
+import * as cloudwatch from "aws-cdk-lib/aws-cloudwatch";
 import * as targets from "aws-cdk-lib/aws-events-targets";
 import { DynamoEventSource } from "aws-cdk-lib/aws-lambda-event-sources";
 import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
@@ -321,8 +322,7 @@ export class NiarimBackendStack extends Stack {
         REWARDED_AD_REVIEW_APPROVED:
           this.node.tryGetContext("rewardedAdReviewApproved") === "true"
             ? "true" : "false",
-        // Optional UTC-day cap on verified rewarded coin grants. Blank means
-        // no NIARIM-specific count cap; Google may independently no-fill.
+        // Set a numeric UTC-day grant cap or explicitly select "unlimited".
         REWARDED_AD_DAILY_LIMIT:
           String(this.node.tryGetContext("rewardedAdDailyLimit") ?? ""),
         // Coin exchange development toggles. All amounts are computed again
@@ -455,6 +455,28 @@ export class NiarimBackendStack extends Stack {
         targets: [new targets.LambdaFunction(reportFunction, {
           retryAttempts: 2, maxEventAge: Duration.hours(3),
         })],
+      });
+      const period = Duration.hours(1);
+      const errors = reportFunction.metricErrors({ period, statistic: "Sum" });
+      new cloudwatch.Alarm(this, "RewardAdRevenueErrors", {
+        alarmDescription: "AdMob revenue collection failed in the last hour.",
+        metric: errors,
+        evaluationPeriods: 1,
+        threshold: 1,
+        treatMissingData: cloudwatch.TreatMissingData.NOT_BREACHING,
+      });
+      new cloudwatch.Alarm(this, "RewardAdRevenueStale", {
+        alarmDescription: "No successful AdMob revenue collection in 36 hours.",
+        metric: new cloudwatch.MathExpression({
+          expression: "invocations - errors",
+          usingMetrics: { invocations: reportFunction.metricInvocations({ period, statistic: "Sum" }), errors },
+          period,
+        }),
+        comparisonOperator: cloudwatch.ComparisonOperator.LESS_THAN_THRESHOLD,
+        evaluationPeriods: 36,
+        datapointsToAlarm: 36,
+        threshold: 1,
+        treatMissingData: cloudwatch.TreatMissingData.BREACHING,
       });
     }
 

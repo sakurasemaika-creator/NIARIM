@@ -1,6 +1,6 @@
 import { createSign, generateKeyPairSync } from "node:crypto";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { GetCommand, TransactWriteCommand, UpdateCommand } from "@aws-sdk/lib-dynamodb";
+import { GetCommand, TransactWriteCommand, PutCommand } from "@aws-sdk/lib-dynamodb";
 import { TransactionCanceledException } from "@aws-sdk/client-dynamodb";
 import type { APIGatewayProxyEventV2 } from "aws-lambda";
 
@@ -46,6 +46,9 @@ const keyId = 812345;
 const adUnit = "ca-app-pub-1111111111111111/2222222222";
 const user = `N${"a".repeat(32)}`;
 const signedTransactionId = "18fa792de1bca816048293fc71035638";
+const fixtureSession = { Item: {
+  itemType: "REWARDED_AD_SESSION", nonce: "123e4567-e89b-12d3-a456-426614174000",
+} };
 const req = {
   headers: { authorization: "Bearer fixture-authentication" },
 } as unknown as APIGatewayProxyEventV2;
@@ -176,7 +179,7 @@ describe("real ECDSA-signed AdMob reward callback through NIARIM API", () => {
         ExpressionAttributeValues: expect.objectContaining({ ":reward": 20 }),
       }) }),
     ]));
-    send.mockResolvedValueOnce({}).mockResolvedValueOnce({ Item: {
+    send.mockResolvedValueOnce({}).mockResolvedValueOnce({}).mockResolvedValueOnce({ Item: {
       itemType: "REWARDED_AD_RECEIPT", niarimUserId: user, sessionNonce: nonce,
       adUnitSuffix: "3333333333", earnedCoins: 20,
     } });
@@ -193,6 +196,9 @@ describe("real ECDSA-signed AdMob reward callback through NIARIM API", () => {
     expect(invitation.adUnitId).toBe(adUnit);
     expect(invitation.rewardCoins).toBe(10);
     expect(invitation.customData).toMatch(/^v1\.N[a-f0-9]{32}\.[0-9a-f-]{36}$/);
+    const issuedSession = send.mock.calls.map(([command]) => command)
+      .find((command): command is PutCommand => command instanceof PutCommand);
+    send.mockResolvedValueOnce({ Item: issuedSession!.input.Item });
     const signed = signCallback({ customData: invitation.customData });
     const result = await receiveRewardedAdSsv(event(signed));
     expect(result.statusCode).toBe(200);
@@ -291,6 +297,7 @@ describe("real ECDSA-signed AdMob reward callback through NIARIM API", () => {
       }
       return {};
     });
+    send.mockResolvedValueOnce(fixtureSession);
     const result = await receiveRewardedAdSsv(event(raw));
     expect(JSON.parse(result.body ?? "{}")).toEqual({
       credited: true, duplicate: true,
@@ -317,6 +324,7 @@ describe("real ECDSA-signed AdMob reward callback through NIARIM API", () => {
       }
       return {};
     });
+    send.mockResolvedValueOnce(fixtureSession);
     const raw = signCallback({
       customData: `v1.${user}.123e4567-e89b-12d3-a456-426614174000`,
     });

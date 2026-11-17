@@ -129,7 +129,7 @@ describe.skipIf(process.env.NIARIM_DYNAMODB_LOCAL_TESTS !== "1")(
       expect((await read(Keys.coinWallet(owner)))?.balanceCoins).toBe(10);
       expect((await read(Keys.coinWallet(owner)))?.rewardedEarnedCoins).toBe(10);
       expect((await read(Keys.admobReceipt(receiptId)))?.niarimUserId).toBe(owner);
-      expect((await read(Keys.rewardedAdSession(owner)))?.consumedAtMs)
+      expect((await read(Keys.rewardedAdSession(owner, start.customData.split(".")[2])))?.consumedAtMs)
         .toBeGreaterThan(0);
       const day = new Date().toISOString().slice(0, 10).replaceAll("-", "");
       expect((await read(Keys.rewardAdDailyCount(owner, day)))?.consumed).toBe(1);
@@ -178,7 +178,7 @@ describe.skipIf(process.env.NIARIM_DYNAMODB_LOCAL_TESTS !== "1")(
         ...request("other"), rawQueryString: raw,
       })).rejects.toMatchObject({ code: "INVALID_SSV" });
       expect(await read(Keys.coinWallet(other))).toBeUndefined();
-      expect((await read(Keys.rewardedAdSession(other)))?.consumedAtMs)
+      expect((await read(Keys.rewardedAdSession(other, start.customData.split(".")[2])))?.consumedAtMs)
         .toBeUndefined();
     }, 15000);
   },

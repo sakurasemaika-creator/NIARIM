@@ -13,6 +13,8 @@ const MAX_QUERY_LENGTH = 4096;
 type KeyEntry = { keyId: number; pem: string };
 let cachedKeys: Map<number, string> | null = null;
 let cachedUntil = 0;
+let keysInFlight: Promise<Map<number, string>> | undefined;
+let unknownKeyRetryAt = 0;
 
 export class SsvVerificationError extends Error {
   constructor(message: string, public readonly temporary = false) {
@@ -20,11 +22,22 @@ export class SsvVerificationError extends Error {
   }
 }
 
-export async function admobPublicKeys(): Promise<Map<number, string>> {
-  if (cachedKeys && Date.now() < cachedUntil) return cachedKeys;
-  let response: Response;
+export async function admobPublicKeys(keyId?: number): Promise<Map<number, string>> {
+  const now = Date.now();
+  if (cachedKeys && now < cachedUntil) {
+    if (keyId === undefined || cachedKeys.has(keyId)) return cachedKeys;
+    if (keysInFlight) return keysInFlight;
+    if (now < unknownKeyRetryAt) return cachedKeys;
+    // Refresh early for a rotating key, sharing the same request when possible.
+    unknownKeyRetryAt = now + 2_000;
+  }
+  keysInFlight ??= fetchAdmobPublicKeys().finally(() => { keysInFlight = undefined; });
+  return keysInFlight;
+}
+
+async function fetchAdmobPublicKeys(): Promise<Map<number, string>> {
   try {
-    response = await fetch(ADMOB_KEY_URL, {
+    const response = await fetch(ADMOB_KEY_URL, {
       signal: AbortSignal.timeout(3000),
       headers: { accept: "application/json" },
     });
@@ -65,7 +78,7 @@ export interface VerifiedAdmobReward {
 
 export async function verifyAdmobSsv(
   rawQuery: string,
-  loadKeys: () => Promise<Map<number, string>> = admobPublicKeys,
+  loadKeys: (keyId: number) => Promise<Map<number, string>> = admobPublicKeys,
 ): Promise<VerifiedAdmobReward> {
   if (!rawQuery || rawQuery.length > MAX_QUERY_LENGTH ||
       /[\r\n\u0000]/.test(rawQuery)) {
@@ -78,7 +91,7 @@ export async function verifyAdmobSsv(
   if (!Number.isSafeInteger(keyId) || encodedSignature.length > 300) {
     throw new SsvVerificationError("Invalid verification key");
   }
-  const keys = await loadKeys();
+  const keys = await loadKeys(keyId);
   const pem = keys.get(keyId);
   if (!pem) throw new SsvVerificationError("Unknown AdMob signing key", true);
   let verified = false;
