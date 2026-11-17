@@ -212,8 +212,12 @@ void main() {
     expectDots(12, 7);
 
     // Back to the block-size slider: same size, and it shows it.
-    await tester.tap(inPanel(find.text(l10n.filterPixelateModeBlock)));
+    final blockMode = inPanel(find.text(l10n.filterPixelateModeBlock));
+    await tester.ensureVisible(blockMode);
     await tester.pump();
+    await tester.tap(blockMode);
+    await tester.pump();
+    expect(current().pixelArtByDots, isFalse);
     expect(cell(), closeTo(60 / 7, 1e-9));
     expect(
       inPanel(find.textContaining('${l10n.filterPixelateBlockSize}: 8.6')),

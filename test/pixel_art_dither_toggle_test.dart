@@ -275,7 +275,7 @@ void main() {
     expect(toggle, findsNothing);
   });
 
-  testWidgets('the timeline\'s effect filter has the switch too', (
+  testWidgets('the timeline can add Pixel Art and switch dithering', (
     tester,
   ) async {
     const pathProviderChannel = MethodChannel(
@@ -327,16 +327,6 @@ void main() {
       ),
     ))!;
     final sceneId = projects.scenesOf(project.id).first.id;
-    projects.addEffectFilter(
-      project.id,
-      sceneId,
-      const EffectFilterInstance(
-        id: 'pixel',
-        type: EffectFilterType.pixelate,
-        startFrame: 0,
-        endFrame: 11,
-      ),
-    );
     appRouter.go('/timeline/${project.id}');
     await settle();
     final l10n = AppLocalizations.of(
@@ -345,16 +335,41 @@ void main() {
 
     await tester.tap(find.byTooltip(l10n.timelineEffectFilterLabel).first);
     await settle(rounds: 3);
+    expect(projects.effectFiltersOf(project.id, sceneId), isEmpty);
+
+    await tester.tap(find.widgetWithText(FilledButton, l10n.commonAdd));
+    await settle(rounds: 3);
+    final dialog = find.widgetWithText(
+      AlertDialog,
+      l10n.timelineAddFilterDialogTitle,
+    );
+    final pixelArtOption = find.descendant(
+      of: dialog,
+      matching: find.widgetWithText(ListTile, l10n.filterNamePixelate),
+    );
+    await tester.scrollUntilVisible(
+      pixelArtOption,
+      200,
+      scrollable: find.descendant(
+        of: dialog,
+        matching: find.byType(Scrollable),
+      ),
+    );
+    await tester.tap(pixelArtOption);
+    await settle(rounds: 3);
+    expect(
+      projects.effectFiltersOf(project.id, sceneId).single.type,
+      EffectFilterType.pixelate,
+    );
+
     await tester.tap(find.text(l10n.filterNamePixelate).last);
     await settle(rounds: 3);
     final toggle = find.byKey(const ValueKey('effect-pixel-art-dither-toggle'));
     await tester.ensureVisible(toggle);
     await tester.pump();
     expect(toggle, findsOneWidget);
-    bool dither() => projects
-        .effectFiltersOf(project.id, sceneId)
-        .firstWhere((e) => e.id == 'pixel')
-        .pixelDither;
+    bool dither() =>
+        projects.effectFiltersOf(project.id, sceneId).single.pixelDither;
     expect(dither(), isTrue);
     await tester.tap(toggle);
     await settle(rounds: 2);
