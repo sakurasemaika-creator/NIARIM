@@ -130,7 +130,7 @@ App・Web共通。Claudeが要修正の詳細を追記し、ユーザーが別�
   - **担当が見つけた別の不具合**：DISC265（作品一覧・共有の詳細表示の最後のカードが浮かぶボタンの上端ちょうどで終わる）。フォルダの中の画面の「小」のカードでは絵の印が星の所に重なる（DISC263と同じ形、前から）。
 - **このセッションの公開の印が無いDISC**。前のセッションで直った物もあるので、各行の記録と最新 `dev_branch` で確かめる。
   - DISC001〜028・030〜049・051〜061・063〜067・069〜074・077〜081・090・099〜100・102・107・111・115〜116・118〜120・122
-  - DISC126・137・142〜146・149〜150・154〜155・159・161〜162・166・193〜202・204〜205・223・231・236・257〜477
+  - DISC126・137・142〜146・149〜150・154〜155・159・161〜162・166・193〜202・204〜205・223・231・236・257〜479
   - 所有者の判断待ち：DISC090・099・107・115・146・155、A011、DISC066。
 - **dev_branchで落ちているtest**：DISC258（容量削減の画面のtestが多く落ちる。どのコミットからかは未確認）。
 
@@ -1722,3 +1722,11 @@ App・Web共通。Claudeが要修正の詳細を追記し、ユーザーが別�
 - **OK**：HTMLとAPIの応答に`Content-Security-Policy`（`default-src 'self'`・`script-src 'self'`〔インラインのスクリプトも外からの差し込みも拒む、W020でaxeの差し込みが止められたことで確認〕・`frame-ancestors 'none'`・`object-src 'none'`・`img-src`はYouTubeの画像だけ追加）・`Strict-Transport-Security`・`X-Frame-Options: DENY`・`X-Content-Type-Options: nosniff`・`Referrer-Policy`・`Cross-Origin-Opener-Policy`・`Permissions-Policy`、4xx・5xxには`X-Robots-Tag: noindex`。`innerHTML`等に入るのは開発者の書いた辞書・固定の部品だけで、URLの`?lang=`は決まった7言語に正規化、作品広場の題・チャンネル名は`textContent`。`location.hash`を`querySelector`に渡す2か所はどちらも`try`で包む。リポジトリに秘密（`.env`・鍵）は無い（READMEも`wrangler secret`を指示）。製品の依存は`npm audit --omit=dev`で0件。`contents: write`で`dev_branch`へpushする3つのワークフローは、その`dev_branch`へのpush（ワークフロー自身のファイルの変更）と手動の起動だけで動き、`pull_request`からは動かない。
 - **観察（記録のみ）**：開発用の依存（`wrangler`→`miniflare`の`sharp`・`undici`）に高の脆弱性4件（`npm audit fix`で直る）。公開されるWorkerには入らないが、開発・CIで使う。
 - **未確認**：本番のCloudflareの設定（ダッシュボードの変数・秘密・KV・WAF・ログの保存）。
+
+### W023（一巡目、Claude・S40、判定：要修正）
+
+- **確認SHA・環境**：Web `38b7e91`。`public/css`・`public/js`・`tests`・`tools`・`.github/workflows`を数え、辞書は`w-audit/w019dict.js`の方法で21ファイルを読み比べた。CIのワークフローの中身を読んだ。
+- **要修正（新規）**：478（上書きの重ね貼り：CSS 54ファイル・`!important` 3587・辞書の重複203の鍵・実行時の書き換え）、479（testの見逃し：字の抜けのCIが日本語だけ・ヘルプの同期の道具が無い・`font-fallback-audit`がCIに無い）。
+- **既知**：ヘルプの同期が古い（DISC455・DISC456）、字の抜け（DISC473）。
+- **OK**：CIは`format:check`（Prettier）・`wrangler deploy --dry-run`（Workerが組める）・SEOの契約（`seo-contract-audit.mjs`・`worker-seo-runtime-audit.mjs`）・日本語の字の抜けを確かめる。READMEは秘密を`wrangler secret`で、KVとResendの手順も書く（設定が仮のままなのはDISC477）。`tests/`は69ファイルで、多くは手で動かす監査（`npm run audit:*`）。
+- **未確認**：`HANDOFF.md`・`DESIGN.md`・`引き継ぎガイド（AI開発者向け）.md`の全文と今の作りの一致（読んだのはREADMEの公開手順だけ）、各監査のtestが本当に落ちるか（わざと壊して確かめる）。
