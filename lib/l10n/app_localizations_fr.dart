@@ -1538,7 +1538,15 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get helpAutoSaveDesc =>
-      'Un enregistrement dédié à la récupération en cas de plantage ou de corruption de fichier. Il s’enregistre automatiquement à chaque modification, comme le dessin, et écrase le plus ancien des 3 enregistrements maximum. Il est géré complètement séparément des enregistrements manuels (emplacements de sauvegarde et arbre de sauvegarde) et ne remplace pas l’enregistrement habituel. On ne vous demande de le restaurer que lors du redémarrage de l’application après une fermeture anormale.';
+      'Un enregistrement dédié à la récupération en cas de plantage ou de corruption de fichier. Il s’enregistre automatiquement à chaque modification, comme le dessin, et écrase le plus ancien des 3 enregistrements maximum. Il est géré complètement séparément des enregistrements manuels (emplacements de sauvegarde et arbre de sauvegarde) et ne remplace pas l’enregistrement habituel. Lorsque vous ouvrez un projet dont la sauvegarde automatique diffère, vous pouvez choisir de la restaurer.';
+
+  @override
+  String get canvasAutosaveRecoveryTitle =>
+      'Restaurer la sauvegarde automatique';
+
+  @override
+  String get canvasAutosaveRecoveryBody =>
+      'Une version enregistrée automatiquement contient des modifications différentes. Voulez-vous l’ouvrir ?';
 
   @override
   String get helpSaveSlotTitle => 'Emplacement de sauvegarde';
@@ -5634,6 +5642,10 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get timelineClipUseEndLabel => 'Fin utilisée F';
+
+  @override
+  String get timelineCameraFrameAlreadyHasKeyframe =>
+      'Cette image contient déjà une image clé de caméra.';
 
   @override
   String timelineCameraKfTitle(int n) {

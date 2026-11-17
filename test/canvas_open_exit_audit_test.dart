@@ -14,6 +14,7 @@ import 'package:niarim/screens/canvas/canvas_screen.dart';
 import 'package:niarim/screens/home/home_screen.dart';
 import 'package:niarim/screens/save_tree/save_management_screen.dart';
 import 'package:niarim/screens/timeline/timeline_screen.dart';
+import 'package:niarim/services/autosave_service.dart';
 import 'package:niarim/services/material_service.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:niarim/services/save_tree_service.dart';
@@ -92,6 +93,50 @@ void main() {
       id = project.id;
     });
     return (service: service, id: id);
+  }
+
+  for (final restore in [false, true]) {
+    testWidgets(
+      'opening a different autosave asks before restoring ($restore)',
+      (tester) async {
+        final project = await open(tester);
+        final service = project.service;
+        final autosave = tester
+            .element(find.byType(HomeScreen))
+            .read<AutosaveService>();
+        final scene = service.scenesOf(project.id).single;
+        final layer = scene.frames.first.layers.first;
+        final key = service.tileKeyFor(project.id, scene.id, 0, layer.id);
+        final tiles = service.tileManagerOf(project.id);
+        const restored = [30, 60, 220, 255];
+        await tester.runAsync(() async {
+          tiles.getOrCreateTile(key, 0, 0).setRange(0, 4, restored);
+          tiles.markDirty(key, 0, 0);
+          await autosave.save(project.id, service);
+          tiles.importAll(const {});
+        });
+
+        appRouter.go('/canvas/${project.id}');
+        await settleIo(tester);
+        final title = find.text('自動保存から復元');
+        expect(title, findsOneWidget);
+        expect(tiles.getTile(key, 0, 0), isNull);
+        await tester.tap(
+          find.widgetWithText(
+            restore ? FilledButton : TextButton,
+            restore ? '復元' : 'キャンセル',
+          ),
+        );
+        await settleIo(tester);
+        expect(title, findsNothing);
+        if (restore) {
+          expect(tiles.getTile(key, 0, 0)?.take(4), restored);
+        } else {
+          expect(tiles.getTile(key, 0, 0), isNull);
+        }
+        expect(tester.takeException(), isNull);
+      },
+    );
   }
 
   for (final size in [const Size(390, 844), const Size(1440, 900)]) {

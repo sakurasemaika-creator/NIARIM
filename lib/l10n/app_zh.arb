@@ -498,7 +498,9 @@
   "helpEndCardTitle": "片尾卡（片尾标志）",
   "helpEndCardDesc": "NIARIM 片尾标志是 MP4、WebM 和 AVI 末尾的 5 秒标志。权益有效时可按作品切换显示。到期后仍保留设置。GIF 不添加标志。",
   "helpAutoSaveTitle": "自动保存",
-  "helpAutoSaveDesc": "专用于崩溃或文件损坏时恢复的保存。每次绘图等发生变更时都会自动保存，最多保留3份，按从旧到新的顺序覆盖。它与手动保存（存档槽・存档树）完全分开管理，不能替代常规保存。仅在应用异常退出后重新启动时，才会询问是否要恢复。",
+  "helpAutoSaveDesc": "专用于崩溃或文件损坏时恢复的保存。每次绘图等发生变更时都会自动保存，最多保留3份，按从旧到新的顺序覆盖。它与手动保存（存档槽・存档树）完全分开管理，不能替代常规保存。打开作品时，如果有内容不同的自动保存版本，可以选择是否恢复。",
+  "canvasAutosaveRecoveryTitle": "恢复自动保存",
+  "canvasAutosaveRecoveryBody": "此作品有内容不同的自动保存版本。要打开该版本吗？",
   "helpSaveSlotTitle": "存档槽",
   "helpSaveSlotDesc": "在固定数量的存档槽中，由自己选择保存位置进行保存的方式。存档槽的数量由设置决定（低画质5个・中画质10个）。由于每次都需要自己选择要覆盖的存档槽，适合“想保留这个时间点的状态”这类管理方式。",
   "helpSaveTreeTitle": "存档树",
@@ -2296,6 +2298,7 @@
   "timelineClipFadeOutLabel": "淡出",
   "timelineClipUseStartLabel": "使用起始帧",
   "timelineClipUseEndLabel": "使用结束帧",
+  "timelineCameraFrameAlreadyHasKeyframe": "此帧已有相机关键帧。",
   "timelineCameraKfTitle": "相机关键帧：F{n}",
   "@timelineCameraKfTitle": {
     "placeholders": {

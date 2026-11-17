@@ -667,7 +667,9 @@
   "helpEndCardTitle": "エンドカード",
   "helpEndCardDesc": "NIARIMのエンドマークは、MP4・WebM・AVIの本編末尾に付く5秒のロゴです。エンドマーク特典が有効な間は、作品ごとに表示を切り替えられます。期限後も作品の設定は保存されます。GIFには付きません。",
   "helpAutoSaveTitle": "自動保存",
-  "helpAutoSaveDesc": "クラッシュやファイル破損が起きた時のための復元専用の保存です。描画などの変更があるたびに自動で保存され、最大3件まで古い順に上書きされます。手動保存（セーブスロット・セーブツリー）とは完全に別で管理されており、通常の保存の代わりにはなりません。アプリを異常終了した後の再起動時のみ、復元するかどうかを尋ねられます。",
+  "helpAutoSaveDesc": "クラッシュやファイル破損が起きた時のための復元専用の保存です。描画などの変更があるたびに自動で保存され、最大3件まで古い順に上書きされます。手動保存（セーブスロット・セーブツリー）とは完全に別で管理されており、通常の保存の代わりにはなりません。作品を開いたときに内容が異なる自動保存があれば、復元するかどうかを尋ねられます。",
+  "canvasAutosaveRecoveryTitle": "自動保存から復元",
+  "canvasAutosaveRecoveryBody": "この作品と内容が異なる自動保存があります。その内容で作品を開きますか？",
   "helpSaveSlotTitle": "セーブスロット",
   "helpSaveSlotDesc": "決まった数の保存枠（スロット）に、自分で保存先を選びながら保存する方式です。スロット数は設定（低品質5件・中品質10件）で決まります。上書きしたい枠を毎回自分で選ぶため、「このタイミングの状態は残しておきたい」という管理がしやすい方式です。",
   "helpSaveTreeTitle": "セーブツリー",
@@ -2699,6 +2701,7 @@
   "timelineClipFadeOutLabel": "フェードアウト",
   "timelineClipUseStartLabel": "使用開始F",
   "timelineClipUseEndLabel": "使用終了F",
+  "timelineCameraFrameAlreadyHasKeyframe": "このフレームにはカメラのキーフレームがあります。",
   "timelineCameraKfTitle": "カメラ KF: F{n}",
   "@timelineCameraKfTitle": {
     "placeholders": {

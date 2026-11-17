@@ -18,6 +18,8 @@ class AutosaveService extends ChangeNotifier {
 
   final List<AutosaveSlot> _slots = [];
   int _nextSlotIndex = 0;
+  Future<void>? _pendingSave;
+  bool _disposed = false;
   Timer? _timer;
   Timer? _debounce;
   ProjectService? _projectService;
@@ -111,7 +113,26 @@ class AutosaveService extends ChangeNotifier {
   }
 
   /// 指定プロジェクトを自動保存スロットへ書き出す（3件固定・古い順に上書き）。
-  Future<void> save(String projectId, ProjectService projectService) async {
+  Future<void> save(String projectId, ProjectService projectService) {
+    final previous = _pendingSave;
+    final save = previous == null
+        ? _writeSlot(projectId, projectService)
+        : previous.then((_) => _writeSlot(projectId, projectService));
+    final settled = save.then<void>(
+      (_) {},
+      onError: (Object _, StackTrace _) {},
+    );
+    _pendingSave = settled;
+    return save.whenComplete(() {
+      if (identical(_pendingSave, settled)) _pendingSave = null;
+    });
+  }
+
+  Future<void> _writeSlot(
+    String projectId,
+    ProjectService projectService,
+  ) async {
+    if (_disposed) return;
     final project = projectService.projects
         .where((p) => p.id == projectId)
         .firstOrNull;
@@ -120,7 +141,6 @@ class AutosaveService extends ChangeNotifier {
     final tileManager = projectService.tileManagerOf(projectId);
 
     final slotIndex = _nextSlotIndex % maxSlots;
-    _nextSlotIndex++;
     try {
       await NiaproSerializer.saveAutosave(
         project: project,
@@ -131,6 +151,7 @@ class AutosaveService extends ChangeNotifier {
     } catch (_) {
       return; // 保存失敗はサイレントに無視（自動保存は補助機能のため）
     }
+    _nextSlotIndex++;
     _slots.removeWhere((s) => s.slotIndex == slotIndex);
     _slots.add(
       AutosaveSlot(
@@ -143,14 +164,32 @@ class AutosaveService extends ChangeNotifier {
       _slots.removeAt(0);
     }
     await _persist();
-    notifyListeners();
+    if (!_disposed) notifyListeners();
   }
 
-  /// 指定プロジェクト・最新の自動保存スロットを返す（クラッシュ復元候補の検出用）。
-  AutosaveSlot? latestSlotFor(String projectId) {
-    final matches = _slots.where((s) => s.projectId == projectId).toList()
-      ..sort((a, b) => b.savedAt.compareTo(a.savedAt));
-    return matches.isEmpty ? null : matches.first;
+  /// スロットの書き込み順を使い、作品と内容が異なる場合に復元候補を返す。
+  Future<NiaproData?> recoveryCandidate(
+    ProjectService projectService,
+    String projectId,
+  ) async {
+    final candidates = _slots.reversed
+        .where((slot) => slot.projectId == projectId)
+        .toList();
+    for (final slot in candidates) {
+      final backup = await restore(projectId, slot.slotIndex);
+      if (backup == null || backup.project.id != projectId) continue;
+      final project = projectService.projects
+          .where((project) => project.id == projectId)
+          .firstOrNull;
+      if (project == null) return null;
+      final current = NiaproData(
+        project: project,
+        scenes: projectService.scenesOf(projectId),
+        tileData: projectService.tileManagerOf(projectId).exportAll(),
+      );
+      return NiaproSerializer.sameContent(current, backup) ? null : backup;
+    }
+    return null;
   }
 
   /// 自動保存データを読み込む（実際の反映はProjectService.restoreFromAutosave経由）。
@@ -178,6 +217,7 @@ class AutosaveService extends ChangeNotifier {
 
   @override
   void dispose() {
+    _disposed = true;
     _timer?.cancel();
     _debounce?.cancel();
     _undoManager?.removeListener(_onProjectChanged);

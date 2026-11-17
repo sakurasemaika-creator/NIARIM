@@ -2790,8 +2790,20 @@ abstract class AppLocalizations {
   /// No description provided for @helpAutoSaveDesc.
   ///
   /// In ja, this message translates to:
-  /// **'クラッシュやファイル破損が起きた時のための復元専用の保存です。描画などの変更があるたびに自動で保存され、最大3件まで古い順に上書きされます。手動保存（セーブスロット・セーブツリー）とは完全に別で管理されており、通常の保存の代わりにはなりません。アプリを異常終了した後の再起動時のみ、復元するかどうかを尋ねられます。'**
+  /// **'クラッシュやファイル破損が起きた時のための復元専用の保存です。描画などの変更があるたびに自動で保存され、最大3件まで古い順に上書きされます。手動保存（セーブスロット・セーブツリー）とは完全に別で管理されており、通常の保存の代わりにはなりません。作品を開いたときに内容が異なる自動保存があれば、復元するかどうかを尋ねられます。'**
   String get helpAutoSaveDesc;
+
+  /// No description provided for @canvasAutosaveRecoveryTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'自動保存から復元'**
+  String get canvasAutosaveRecoveryTitle;
+
+  /// No description provided for @canvasAutosaveRecoveryBody.
+  ///
+  /// In ja, this message translates to:
+  /// **'この作品と内容が異なる自動保存があります。その内容で作品を開きますか？'**
+  String get canvasAutosaveRecoveryBody;
 
   /// No description provided for @helpSaveSlotTitle.
   ///
@@ -9716,6 +9728,12 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'使用終了F'**
   String get timelineClipUseEndLabel;
+
+  /// No description provided for @timelineCameraFrameAlreadyHasKeyframe.
+  ///
+  /// In ja, this message translates to:
+  /// **'このフレームにはカメラのキーフレームがあります。'**
+  String get timelineCameraFrameAlreadyHasKeyframe;
 
   /// No description provided for @timelineCameraKfTitle.
   ///

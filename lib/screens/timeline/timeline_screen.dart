@@ -3861,6 +3861,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
         ps.duplicateFrame(widget.projectId, sceneId, idx);
       }
     });
+    unawaited(_saveFrameEdit());
     setState(() {
       _selectedFrameIndices.clear();
       _isFrameMultiSelect = false;
@@ -3880,6 +3881,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
         ps.removeFrame(widget.projectId, sceneId, idx);
       }
     });
+    unawaited(_saveFrameEdit());
     setState(() {
       _selectedFrameIndices.clear();
       _isFrameMultiSelect = false;
@@ -3961,10 +3963,10 @@ class _TimelineScreenState extends State<TimelineScreen> {
     if (!movingFrames && !_canAddFrames(sortedSourceIndices.length)) return;
     final ps = context.read<ProjectService>();
     final insertAt = _frameMoveCursorPos.clamp(0, _totalFrames);
+    final sameScene = clip.sceneId == targetSceneId;
     ps.editTimeline(widget.projectId, 'Paste frames', () {
       var insertedSoFar = 0;
       for (final originalIdx in sortedSourceIndices) {
-        final sameScene = clip.sceneId == targetSceneId;
         final effectiveSrcIdx = (sameScene && originalIdx >= insertAt)
             ? originalIdx + insertedSoFar
             : originalIdx;
@@ -3974,6 +3976,13 @@ class _TimelineScreenState extends State<TimelineScreen> {
           sourceFrameIndex: effectiveSrcIdx,
           targetSceneId: targetSceneId,
           insertAt: insertAt + insertedSoFar,
+          // When cutting an entire scene into another, the first source
+          // frame survives because a scene must keep at least one frame.
+          transferFrameAnchors:
+              clip.isCut &&
+              (sameScene ||
+                  movingFrames ||
+                  originalIdx != sortedSourceIndices.first),
         );
         insertedSoFar++;
       }
@@ -3981,7 +3990,6 @@ class _TimelineScreenState extends State<TimelineScreen> {
         // 貼り付けによって挿入された分だけ、切り取り元より後ろにあった
         // 元フレームのインデックスが後ろへずれているため、削除前に
         // 実際の位置へ補正し、降順に削除する。
-        final sameScene = clip.sceneId == targetSceneId;
         final m = sortedSourceIndices.length;
         final currentPositions =
             sortedSourceIndices
@@ -4002,6 +4010,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
         }
       }
     });
+    unawaited(_saveFrameEdit());
     setState(() {
       _isFramePasteMode = false;
       _frameClipboard = null;
@@ -5401,12 +5410,21 @@ class _TimelineScreenState extends State<TimelineScreen> {
         liveFrame == originalFrame) {
       return;
     }
-    context.read<ProjectService>().updateCameraKeyframe(
+    final moved = context.read<ProjectService>().updateCameraKeyframe(
       widget.projectId,
       sceneId,
       originalFrame,
       kf.copyWith(frameIndex: liveFrame),
     );
+    if (!moved) {
+      final l10n = AppLocalizations.of(context)!;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(l10n.timelineCameraFrameAlreadyHasKeyframe),
+          persist: false,
+        ),
+      );
+    }
   }
 
   /// タイムスタンプ用トラック（特定フレームへワンタップで移動できるマーカー
@@ -5428,6 +5446,10 @@ class _TimelineScreenState extends State<TimelineScreen> {
     // タイムスタンプが1件もない間は非表示にする。最初の1件は
     // ツールバーのタイムスタンプアイコンから追加できる。
     if (markers.isEmpty) return const SizedBox.shrink();
+    final markersByFrame = <int, List<TimelineMarker>>{};
+    for (final marker in markers) {
+      (markersByFrame[marker.frameIndex] ??= []).add(marker);
+    }
     return Container(
       height: 32,
       color: Theme.of(context).colorScheme.surfaceContainerLow,
@@ -5457,7 +5479,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
                     ),
                   ),
                 ),
-                ...markers.map((m) => _buildMarkerPin(m)),
+                ...markersByFrame.entries.map(
+                  (entry) => _buildMarkerPin(entry.key, entry.value),
+                ),
                 Positioned(
                   right: 4,
                   top: 4,
@@ -5487,47 +5511,86 @@ class _TimelineScreenState extends State<TimelineScreen> {
     );
   }
 
-  Widget _buildMarkerPin(TimelineMarker m) {
+  Widget _buildMarkerPin(int frameIndex, List<TimelineMarker> markers) {
+    final markerLabels = markers
+        .map(
+          (marker) =>
+              marker.comment.isEmpty ? 'F${frameIndex + 1}' : marker.comment,
+        )
+        .toList();
+    final colors = ThemeService.activeColorScheme;
     return AnimatedBuilder(
       animation: _markerScrollCtrl,
       builder: (ctx, child) {
         final scrollOffset = _markerScrollCtrl.hasClients
             ? _markerScrollCtrl.offset
             : 0.0;
-        final cx = m.frameIndex * _cellW + _cellW / 2 - scrollOffset;
+        final cx = frameIndex * _cellW + _cellW / 2 - scrollOffset;
         return Positioned(
           left: cx - 7,
           top: 9,
           child: GestureDetector(
             // タップ一発でその場所へジャンプする（タイムスタンプの主目的）。
-            onTap: () => setState(() => _currentFrame = m.frameIndex),
-            onLongPress: () => _showEditMarkerDialog(m),
+            onTap: () => setState(() => _currentFrame = frameIndex),
+            onLongPress: () => _editMarkerAtFrame(markers, markerLabels),
+            onSecondaryTap: () => _editMarkerAtFrame(markers, markerLabels),
             child: Tooltip(
-              message: m.comment.isEmpty ? 'F${m.frameIndex + 1}' : m.comment,
+              message: markerLabels.join('\n'),
+              triggerMode: TooltipTriggerMode.manual,
               child: Container(
                 width: 14,
                 height: 14,
                 decoration: BoxDecoration(
-                  color: ThemeService.activeColorScheme.secondary,
+                  color: colors.secondary,
                   shape: BoxShape.circle,
-                  border: Border.all(
-                    color: ThemeService.activeColorScheme.onSurface,
-                    width: 1.5,
-                  ),
+                  border: Border.all(color: colors.onSurface, width: 1.5),
                   boxShadow: [
                     BoxShadow(
-                      color: ThemeService.activeColorScheme.onSurface
-                          .withValues(alpha: 0.3),
+                      color: colors.onSurface.withValues(alpha: 0.3),
                       blurRadius: 2,
                     ),
                   ],
                 ),
+                alignment: Alignment.center,
+                child: markers.length == 1
+                    ? null
+                    : Icon(
+                        Icons.more_horiz,
+                        size: 10,
+                        color: colors.onSecondary,
+                      ),
               ),
             ),
           ),
         );
       },
     );
+  }
+
+  Future<void> _editMarkerAtFrame(
+    List<TimelineMarker> markers,
+    List<String> labels,
+  ) async {
+    if (markers.length == 1) {
+      _showEditMarkerDialog(markers.single);
+      return;
+    }
+    final l10n = AppLocalizations.of(context)!;
+    final frameIndex = markers.first.frameIndex;
+    final selected = await showDialog<TimelineMarker>(
+      context: context,
+      builder: (ctx) => SimpleDialog(
+        title: Text(l10n.timelineMarkerEditDialogTitle(frameIndex + 1)),
+        children: [
+          for (var index = 0; index < markers.length; index++)
+            SimpleDialogOption(
+              onPressed: () => Navigator.pop(ctx, markers[index]),
+              child: Text(labels[index]),
+            ),
+        ],
+      ),
+    );
+    if (mounted && selected != null) _showEditMarkerDialog(selected);
   }
 
   void _showAddMarkerDialog() {
@@ -5609,7 +5672,6 @@ class _TimelineScreenState extends State<TimelineScreen> {
                 if (ctx.mounted) Navigator.pop(ctx);
               },
             ),
-            const Spacer(),
             TextButton(
               onPressed: () => Navigator.pop(ctx),
               child: Text(l10n.commonCancel),
@@ -5858,13 +5920,12 @@ class _TimelineScreenState extends State<TimelineScreen> {
         onDelete: (currentFrameIndex) => context
             .read<ProjectService>()
             .removeCameraKeyframe(widget.projectId, sceneId, currentFrameIndex),
-        onSave: (oldFrameIndex, newKf) =>
-            context.read<ProjectService>().updateCameraKeyframe(
-              widget.projectId,
-              sceneId,
-              oldFrameIndex,
-              newKf,
-            ),
+        onSave: (newKf) => context.read<ProjectService>().updateCameraKeyframe(
+          widget.projectId,
+          sceneId,
+          kf.frameIndex,
+          newKf,
+        ),
       ),
     );
   }
@@ -7130,6 +7191,15 @@ class _TimelineScreenState extends State<TimelineScreen> {
     if (mounted) context.go('/canvas/${widget.projectId}');
   }
 
+  Future<void> _saveFrameEdit() async {
+    try {
+      await context.read<ProjectService>().saveProject(widget.projectId);
+    } catch (error) {
+      debugPrint('timeline: saving frame changes failed: $error');
+      if (mounted) await _showSaveFailedDialog();
+    }
+  }
+
   Future<void> _showSaveFailedDialog() {
     final l10n = AppLocalizations.of(context)!;
     return showDialog(
@@ -7402,6 +7472,10 @@ class _TimelineScreenState extends State<TimelineScreen> {
                         frames - ps.frameCount(widget.projectId, sceneId);
                     if (added > 0 && !_canAddFrames(added)) return;
                     ps.setSceneFrameCount(widget.projectId, sceneId, frames);
+                    setState(() {
+                      _currentFrame = _currentFrame.clamp(0, frames - 1);
+                      _selectedFrameIndices.removeWhere((i) => i >= frames);
+                    });
                     if (ctx.mounted) Navigator.pop(ctx);
                   },
                   child: Text(l10n.commonOk),
@@ -8618,15 +8692,14 @@ class _EffectFilterSheet extends StatelessWidget {
     int max,
     ValueChanged<int> onChanged,
   ) {
-    return LabeledSlider(
+    return _effectSlider(
       label: label,
       value: (value + 1).toDouble(),
       min: (min + 1).toDouble(),
       max: (max + 1).toDouble(),
       divisions: max > min ? max - min : 1,
-      sliderLabel: 'F${value + 1}',
-      valueText: 'F${value + 1}',
-      onChanged: (v) => onChanged(v.round() - 1),
+      format: (v) => 'F${v.round()}',
+      onCommit: (v) => onChanged(v.round() - 1),
     );
   }
 
@@ -8642,15 +8715,13 @@ class _EffectFilterSheet extends StatelessWidget {
         ? kPixelArtMaxBlockSize.toDouble()
         : 20.0;
     return [
-      LabeledSlider(
+      _effectSlider(
         label: label,
         value: e.param1,
         min: 1,
         max: maxVal,
         divisions: maxVal.round() - 1,
-        sliderLabel: e.param1.round().toString(),
-        valueText: e.param1.round().toString(),
-        onChanged: (v) => _update(context, e.copyWith(param1: v)),
+        onCommit: (v) => _update(context, e.copyWith(param1: v)),
       ),
     ];
   }
@@ -8663,19 +8734,49 @@ class _EffectFilterSheet extends StatelessWidget {
     double max,
     int divisions,
     ValueChanged<double> onChanged, {
-    String? valueText,
+    String Function(double)? format,
   }) {
-    final shown = valueText ?? value.round().toString();
-    return LabeledSlider(
+    return _effectSlider(
       label: label,
       value: value,
       min: min,
       max: max,
       divisions: divisions > 0 ? divisions : null,
       isInt: false,
-      sliderLabel: shown,
-      valueText: shown,
-      onChanged: onChanged,
+      format: format,
+      onCommit: onChanged,
+    );
+  }
+
+  Widget _effectSlider({
+    required String label,
+    required double value,
+    required double min,
+    required double max,
+    required int? divisions,
+    required ValueChanged<double> onCommit,
+    bool isInt = true,
+    String Function(double)? format,
+  }) {
+    var preview = value;
+    return StatefulBuilder(
+      builder: (_, setPreview) {
+        final shown = format?.call(preview) ?? preview.round().toString();
+        return LabeledSlider(
+          label: label,
+          value: preview,
+          min: min,
+          max: max,
+          divisions: divisions,
+          isInt: isInt,
+          sliderLabel: shown,
+          valueText: shown,
+          onChanged: (next) => setPreview(() => preview = next),
+          onChangeEnd: (next) {
+            if (next != value) onCommit(next);
+          },
+        );
+      },
     );
   }
 
@@ -8735,7 +8836,7 @@ class _EffectFilterSheet extends StatelessWidget {
         100,
         99,
         (v) => _update(context, e.copyWith(param2: v)),
-        valueText: '${e.param2.round()}%',
+        format: (v) => '${v.round()}%',
       ),
       _paramRow(
         l10n.timelineEffectGrainSizeLabel,
@@ -8786,7 +8887,7 @@ class _EffectFilterSheet extends StatelessWidget {
         60,
         0,
         (v) => _update(context, e.copyWith(param4: v)),
-        valueText: '${e.param4.round()}°',
+        format: (v) => '${v.round()}°',
       ),
     ];
   }
@@ -8951,15 +9052,14 @@ class _EffectFilterSheet extends StatelessWidget {
     ) {
       final v = value.round().clamp(min, max);
       void change(int next) => onChanged(next.clamp(min, max).toDouble());
-      return LabeledSlider(
+      return _effectSlider(
         label: label,
         value: v.toDouble(),
         min: min.toDouble(),
         max: max.toDouble(),
         divisions: max - min,
-        sliderLabel: '${v}px',
-        valueText: '${v}px',
-        onChanged: (n) => change(n.round()),
+        format: (n) => '${n.round()}px',
+        onCommit: (n) => change(n.round()),
       );
     }
 
@@ -9043,7 +9143,7 @@ class _EffectFilterSheet extends StatelessWidget {
         100,
         100,
         (v) => _update(context, e.copyWith(param2: v)),
-        valueText: '${e.param2.round()}%',
+        format: (v) => '${v.round()}%',
       ),
     ];
   }
@@ -9084,7 +9184,7 @@ class _EffectFilterSheet extends StatelessWidget {
         3,
         290,
         (v) => _update(context, e.copyWith(param3: v)),
-        valueText: e.param3.toStringAsFixed(2),
+        format: (v) => v.toStringAsFixed(2),
       ),
       _paramRow(
         l10n.filterLevelsOutputBlack,
@@ -9127,7 +9227,7 @@ class _EffectFilterSheet extends StatelessWidget {
         3,
         300,
         (v) => _update(context, e.copyWith(param2: v)),
-        valueText: e.param2.toStringAsFixed(2),
+        format: (v) => v.toStringAsFixed(2),
       ),
     ];
   }
@@ -9147,7 +9247,7 @@ class _EffectFilterSheet extends StatelessWidget {
         50,
         49,
         (v) => _update(context, e.copyWith(param1: v)),
-        valueText: '${e.param1.round()}px',
+        format: (v) => '${v.round()}px',
       ),
       _paramRow(
         l10n.filterWatercolorBorderDarken,
@@ -9172,7 +9272,7 @@ class _EffectFilterSheet extends StatelessWidget {
         20,
         20,
         (v) => _update(context, e.copyWith(param4: v)),
-        valueText: '${e.param4.round()}px',
+        format: (v) => '${v.round()}px',
       ),
       SwitchListTile(
         key: const ValueKey('effect-watercolor-border-color-edges'),
@@ -9228,7 +9328,7 @@ class _EffectFilterSheet extends StatelessWidget {
         100,
         100,
         (v) => _update(context, e.copyWith(param1: v)),
-        valueText: '${e.param1.round()}%',
+        format: (v) => '${v.round()}%',
       ),
       _paramRow(
         l10n.filterVignetteDensity,
@@ -9767,7 +9867,7 @@ class _CameraKfSheet extends StatefulWidget {
   final CameraKeyframe kf;
   final int totalFrames;
   final ValueChanged<int> onDelete;
-  final void Function(int oldFrameIndex, CameraKeyframe newKf) onSave;
+  final bool Function(CameraKeyframe newKf) onSave;
   const _CameraKfSheet({
     required this.projectId,
     required this.sceneId,
@@ -9789,29 +9889,27 @@ class _CameraKfSheetState extends State<_CameraKfSheet> {
     _kf = widget.kf;
   }
 
-  void _update(CameraKeyframe newKf) {
-    widget.onSave(_kf.frameIndex, newKf);
-    setState(() => _kf = newKf);
-  }
+  void _update(CameraKeyframe newKf) => setState(() => _kf = newKf);
 
   /// カメラ操作の見え方をスライダー操作だけに頼らず確認できるようにする
   /// プレビュー。現在編集中のキーフレーム位置における実際の
   /// 見え方（カメラ変換適用後の
   /// フレーム）をその場でプレビュー表示し、スライダー操作と同時に確認できる
-  /// ようにする。カメラキーフレーム一覧はwatchで購読し、スライダー変更の
-  /// たびに即時反映されるようにする。
-  Widget _buildLivePreview(BuildContext context) {
-    final ps = context.watch<ProjectService>();
+  /// ようにする。確定するまで編集中のキーフレームはシート内だけに反映する。
+  Widget _buildLivePreview(ProjectService ps, List<CameraKeyframe> savedKeys) {
     final tileManager = ps.tileManagerOf(widget.projectId);
     final stacked = ps.stackedLayersOf(
       widget.projectId,
       widget.sceneId,
       _kf.frameIndex,
     );
-    final cameraKeyframes = ps.cameraKeyframesOf(
-      widget.projectId,
-      widget.sceneId,
-    );
+    final previewKeys = [
+      for (final keyframe in savedKeys)
+        if (keyframe.frameIndex != widget.kf.frameIndex &&
+            keyframe.frameIndex != _kf.frameIndex)
+          keyframe,
+      _kf,
+    ]..sort((a, b) => a.frameIndex.compareTo(b.frameIndex));
     return Container(
       margin: EdgeInsets.fromLTRB(16, 4, 16, 8),
       height: 140,
@@ -9829,7 +9927,7 @@ class _CameraKfSheetState extends State<_CameraKfSheet> {
         maskGroups: stacked.maskGroups,
         sceneId: widget.sceneId,
         frameIndex: _kf.frameIndex,
-        cameraKeyframes: cameraKeyframes,
+        cameraKeyframes: previewKeys,
         layerHomes: ps.layerHomesOf(widget.projectId),
         groups: ps.layerGroupsOf(widget.projectId, widget.sceneId),
       ),
@@ -9839,6 +9937,17 @@ class _CameraKfSheetState extends State<_CameraKfSheet> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final ps = context.watch<ProjectService>();
+    final savedKeys = ps.cameraKeyframesOf(widget.projectId, widget.sceneId);
+    final occupied =
+        _kf.frameIndex != widget.kf.frameIndex &&
+        savedKeys.any((keyframe) => keyframe.frameIndex == _kf.frameIndex);
+    final changed =
+        _kf.frameIndex != widget.kf.frameIndex ||
+        _kf.x != widget.kf.x ||
+        _kf.y != widget.kf.y ||
+        _kf.zoom != widget.kf.zoom ||
+        _kf.rotation != widget.kf.rotation;
     return DraggableScrollableSheet(
       expand: false,
       initialChildSize: 0.6,
@@ -9880,14 +9989,22 @@ class _CameraKfSheetState extends State<_CameraKfSheet> {
                     if (!await confirmDelete(context)) return;
                     if (!context.mounted) return;
                     Navigator.pop(context);
-                    widget.onDelete(_kf.frameIndex);
+                    widget.onDelete(widget.kf.frameIndex);
                   },
+                ),
+                FilledButton(
+                  onPressed: changed && !occupied
+                      ? () {
+                          if (widget.onSave(_kf)) Navigator.pop(context);
+                        }
+                      : null,
+                  child: Text(l10n.commonApply),
                 ),
               ],
             ),
           ),
           const Divider(height: 1),
-          _buildLivePreview(context),
+          _buildLivePreview(ps, savedKeys),
           Expanded(
             child: ListView(
               controller: scrollCtrl,
@@ -9941,6 +10058,13 @@ class _CameraKfSheetState extends State<_CameraKfSheet> {
                   onChanged: (v) =>
                       _update(_kf.copyWith(frameIndex: v.round() - 1)),
                 ),
+                if (occupied)
+                  Text(
+                    l10n.timelineCameraFrameAlreadyHasKeyframe,
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.error,
+                    ),
+                  ),
               ],
             ),
           ),

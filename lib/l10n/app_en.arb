@@ -498,7 +498,9 @@
   "helpEndCardTitle": "End Card (End Logo)",
   "helpEndCardDesc": "The NIARIM end mark is a five-second logo appended to MP4, WebM, and AVI exports. While the benefit is active, you can show or hide it per project. Project preferences are kept after expiry. GIFs do not include it.",
   "helpAutoSaveTitle": "Auto Save",
-  "helpAutoSaveDesc": "A save dedicated to recovery in case of a crash or file corruption. It saves automatically every time there's a change, such as drawing, and overwrites the oldest of up to 3 saves. It's managed completely separately from manual saves (save slots and the save tree) and is not a substitute for regular saving. You're only asked whether to restore it when relaunching the app after an abnormal exit.",
+  "helpAutoSaveDesc": "A save dedicated to recovery in case of a crash or file corruption. It saves automatically every time there's a change, such as drawing, and overwrites the oldest of up to 3 saves. It's managed completely separately from manual saves (save slots and the save tree) and is not a substitute for regular saving. When you open a project with a different autosaved version, you can choose whether to restore it.",
+  "canvasAutosaveRecoveryTitle": "Restore autosave",
+  "canvasAutosaveRecoveryBody": "An autosave contains different changes from this project. Open the autosaved version?",
   "helpSaveSlotTitle": "Save Slot",
   "helpSaveSlotDesc": "A method of saving into a fixed number of save slots, where you choose which slot to save to each time. The number of slots is determined by the settings (5 for low quality, 10 for medium quality). Since you choose which slot to overwrite every time, it's an easy way to manage keeping a particular moment's state.",
   "helpSaveTreeTitle": "Save Tree",
@@ -2296,6 +2298,7 @@
   "timelineClipFadeOutLabel": "Fade out",
   "timelineClipUseStartLabel": "Trim start F",
   "timelineClipUseEndLabel": "Trim end F",
+  "timelineCameraFrameAlreadyHasKeyframe": "This frame already has a camera keyframe.",
   "timelineCameraKfTitle": "Camera KF: F{n}",
   "@timelineCameraKfTitle": {
     "placeholders": {

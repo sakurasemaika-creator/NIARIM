@@ -1467,7 +1467,13 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get helpAutoSaveDesc =>
-      '专用于崩溃或文件损坏时恢复的保存。每次绘图等发生变更时都会自动保存，最多保留3份，按从旧到新的顺序覆盖。它与手动保存（存档槽・存档树）完全分开管理，不能替代常规保存。仅在应用异常退出后重新启动时，才会询问是否要恢复。';
+      '专用于崩溃或文件损坏时恢复的保存。每次绘图等发生变更时都会自动保存，最多保留3份，按从旧到新的顺序覆盖。它与手动保存（存档槽・存档树）完全分开管理，不能替代常规保存。打开作品时，如果有内容不同的自动保存版本，可以选择是否恢复。';
+
+  @override
+  String get canvasAutosaveRecoveryTitle => '恢复自动保存';
+
+  @override
+  String get canvasAutosaveRecoveryBody => '此作品有内容不同的自动保存版本。要打开该版本吗？';
 
   @override
   String get helpSaveSlotTitle => '存档槽';
@@ -5290,6 +5296,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get timelineClipUseEndLabel => '使用结束帧';
+
+  @override
+  String get timelineCameraFrameAlreadyHasKeyframe => '此帧已有相机关键帧。';
 
   @override
   String timelineCameraKfTitle(int n) {
@@ -11613,7 +11622,13 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get helpAutoSaveDesc =>
-      '專用於當機或檔案損毀時復原的儲存。每次繪圖等發生變更時都會自動儲存，最多保留3份，依由舊到新的順序覆寫。它與手動儲存（存檔槽・儲存樹）完全分開管理，不能取代一般儲存。僅在App異常結束後重新啟動時，才會詢問是否要復原。';
+      '專用於當機或檔案損毀時復原的儲存。每次繪圖等發生變更時都會自動儲存，最多保留3份，依由舊到新的順序覆寫。它與手動儲存（存檔槽・儲存樹）完全分開管理，不能取代一般儲存。開啟作品時，如果有內容不同的自動儲存版本，可以選擇是否還原。';
+
+  @override
+  String get canvasAutosaveRecoveryTitle => '還原自動儲存';
+
+  @override
+  String get canvasAutosaveRecoveryBody => '此作品有內容不同的自動儲存版本。要開啟該版本嗎？';
 
   @override
   String get helpSaveSlotTitle => '存檔槽';
@@ -15436,6 +15451,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get timelineClipUseEndLabel => '使用結束影格';
+
+  @override
+  String get timelineCameraFrameAlreadyHasKeyframe => '此影格已有相機關鍵影格。';
 
   @override
   String timelineCameraKfTitle(int n) {

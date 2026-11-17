@@ -1,16 +1,22 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:flutter/services.dart' hide UndoManager;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/app.dart';
 import 'package:niarim/app_bootstrap.dart';
+import 'package:niarim/engine/niapro_serializer.dart';
+import 'package:niarim/engine/filter_engine.dart';
+import 'package:niarim/engine/undo_manager.dart';
 import 'package:niarim/router.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/models/layer.dart';
 import 'package:niarim/models/audio_clip.dart';
+import 'package:niarim/models/camera_keyframe.dart';
+import 'package:niarim/models/effect_filter_instance.dart';
 import 'package:niarim/screens/timeline/timeline_screen.dart';
 import 'package:niarim/services/project_service.dart';
+import 'package:niarim/widgets/labeled_slider.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -87,6 +93,25 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 600));
     return created.id;
+  }
+
+  Future<bool> frameCountSaved(
+    WidgetTester tester,
+    String projectId,
+    int frames,
+  ) async {
+    for (var attempt = 0; attempt < 120; attempt++) {
+      final persisted = (await tester.runAsync(() async {
+        final base = await NiaproSerializer.projectsBasePath();
+        final path = '$base/$projectId/$projectId.niapro';
+        await Future<void>.delayed(const Duration(milliseconds: 25));
+        final saved = await NiaproSerializer.load(path);
+        return saved.scenes.single.frames.length == frames;
+      }))!;
+      await tester.pump(const Duration(milliseconds: 25));
+      if (persisted) return true;
+    }
+    return false;
   }
 
   void expectBandAnchors(
@@ -175,6 +200,7 @@ void main() {
     expect(tester.takeException(), isNull);
     expect(timeline, findsOneWidget);
     expect(service.frameCount(id, sceneId), 8);
+    expect(await frameCountSaved(tester, id, 8), isTrue);
 
     final layer = service.addLayer(
       projectId: id,
@@ -300,11 +326,201 @@ void main() {
         await tester.pumpAndSettle();
         expect(ps.frameCount(id, scene), 24);
         expect(tester.takeException(), isNull);
-        await tester.runAsync(() => ps.saveProject(id));
+        expect(await frameCountSaved(tester, id, 24), isTrue);
       }
       await tester.pumpWidget(const SizedBox.shrink());
     },
   );
+
+  testWidgets('camera sheet commits one move and keeps an occupied keyframe', (
+    tester,
+  ) async {
+    final id = await openTimeline(
+      tester,
+      project: const Size(160, 90),
+      screen: const Size(1280, 800),
+      pc: true,
+      fraction: .4,
+      setUpProject: (ps, id) {
+        final sceneId = ps.scenesOf(id).single.id;
+        ps.addCameraKeyframe(id, sceneId, const CameraKeyframe(frameIndex: 0));
+        ps.addCameraKeyframe(
+          id,
+          sceneId,
+          const CameraKeyframe(frameIndex: 4, zoom: 2),
+        );
+      },
+    );
+    final context = tester.element(find.byType(TimelineScreen));
+    final l10n = AppLocalizations.of(context)!;
+    final ps = context.read<ProjectService>();
+    final history = context.read<UndoManager>();
+    final sceneId = ps.scenesOf(id).single.id;
+    final baseline = history.undoCount;
+    final first = find.byKey(const ValueKey('cameraKfMarker_0'));
+    final moving = find.byKey(const ValueKey('cameraKfMarker_4'));
+    await tester.tap(moving);
+    await tester.pumpAndSettle();
+    final slider = find.byWidgetPredicate(
+      (w) => w is LabeledSlider && w.label == l10n.timelineFrameTrackLabel,
+    );
+    final apply = find.widgetWithText(FilledButton, l10n.commonApply);
+    expect(apply, findsOneWidget);
+    final sheetList = find.descendant(
+      of: find.byType(BottomSheet),
+      matching: find.byType(ListView),
+    );
+    await tester.drag(sheetList, const Offset(0, -400));
+    await tester.pumpAndSettle();
+    tester.widget<LabeledSlider>(slider).onChanged!(1);
+    await tester.pump();
+    expect(tester.widget<FilledButton>(apply).onPressed, isNull);
+    expect(history.undoCount, baseline);
+    tester.widget<LabeledSlider>(slider).onChanged!(3);
+    await tester.pump();
+    await tester.tap(apply);
+    await tester.pumpAndSettle();
+    expect(ps.cameraKeyframesOf(id, sceneId).map((key) => key.frameIndex), [
+      0,
+      2,
+    ]);
+    expect(history.undoCount, baseline + 1);
+    history.undo(projectId: id);
+    await tester.pumpAndSettle();
+    expect(ps.cameraKeyframesOf(id, sceneId).map((key) => key.frameIndex), [
+      0,
+      4,
+    ]);
+
+    final distance = tester.getCenter(first).dx - tester.getCenter(moving).dx;
+    final drag = await tester.startGesture(tester.getCenter(moving));
+    await drag.moveBy(const Offset(-30, 0));
+    await drag.moveBy(Offset(distance, 0));
+    await drag.up();
+    await tester.pumpAndSettle();
+    expect(ps.cameraKeyframesOf(id, sceneId).map((key) => key.frameIndex), [
+      0,
+      4,
+    ]);
+    expect(
+      find.text(l10n.timelineCameraFrameAlreadyHasKeyframe),
+      findsOneWidget,
+    );
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets(
+    'markers sharing a frame can be edited and deleted individually',
+    (tester) async {
+      final id = await openTimeline(
+        tester,
+        project: const Size(160, 90),
+        screen: const Size(1280, 800),
+        pc: true,
+        fraction: .4,
+        setUpProject: (ps, id) {
+          final sceneId = ps.scenesOf(id).single.id;
+          ps.addTimelineMarker(id, sceneId, 1, 'First marker');
+          ps.addTimelineMarker(id, sceneId, 1, 'Second marker');
+        },
+      );
+      final context = tester.element(find.byType(TimelineScreen));
+      final l10n = AppLocalizations.of(context)!;
+      final ps = context.read<ProjectService>();
+      final sceneId = ps.scenesOf(id).single.id;
+      final both = find.byTooltip('First marker\nSecond marker');
+      await tester.longPress(both);
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(SimpleDialogOption, 'First marker'));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextField), 'Edited marker');
+      await tester.tap(find.widgetWithText(FilledButton, l10n.commonSave));
+      await tester.pumpAndSettle();
+      final markers = ps.timelineMarkersOf(id, sceneId);
+      expect(markers.map((m) => m.comment).toSet(), {
+        'Edited marker',
+        'Second marker',
+      });
+
+      final updated = find.byTooltip(markers.map((m) => m.comment).join('\n'));
+      await tester.longPress(updated);
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.widgetWithText(SimpleDialogOption, 'Second marker'),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip(l10n.commonDelete).last);
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(FilledButton, l10n.commonDelete));
+      await tester.pumpAndSettle();
+      expect(ps.timelineMarkersOf(id, sceneId).single.comment, 'Edited marker');
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets('one effect slider drag creates one undo entry', (tester) async {
+    final id = await openTimeline(
+      tester,
+      project: const Size(160, 90),
+      screen: const Size(1280, 800),
+      pc: true,
+      fraction: .4,
+      setUpProject: (ps, id) => ps.addEffectFilter(
+        id,
+        ps.scenesOf(id).single.id,
+        const EffectFilterInstance(
+          id: 'blur-effect',
+          type: EffectFilterType.gaussianBlur,
+          startFrame: 0,
+          endFrame: 11,
+          param1: 5,
+        ),
+      ),
+    );
+    final context = tester.element(find.byType(TimelineScreen));
+    final l10n = AppLocalizations.of(context)!;
+    final ps = context.read<ProjectService>();
+    final history = context.read<UndoManager>();
+    final sceneId = ps.scenesOf(id).single.id;
+    final baseline = history.undoCount;
+    double strength() => ps.effectFiltersOf(id, sceneId).single.param1;
+    Future<void> animate() async {
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+    }
+
+    await tester.tap(find.byTooltip(l10n.timelineEffectFilterLabel));
+    await animate();
+    final tile = find.widgetWithText(
+      ExpansionTile,
+      l10n.timelineEffectTypeGaussianBlur,
+    );
+    await tester.tap(tile);
+    await animate();
+    final row = find.byWidgetPredicate(
+      (w) => w is LabeledSlider && w.label == l10n.timelineEffectStrengthLabel,
+    );
+    await tester.ensureVisible(row);
+    await animate();
+    final slider = find.descendant(of: row, matching: find.byType(Slider));
+    final rect = tester.getRect(slider);
+    final drag = await tester.startGesture(
+      rect.centerLeft + Offset(rect.width * .27, 0),
+    );
+    for (var step = 0; step < 4; step++) {
+      await drag.moveBy(Offset(rect.width * .07, 0));
+      await tester.pump();
+    }
+    expect(history.undoCount, baseline);
+    expect(strength(), 5);
+    await drag.up();
+    await animate();
+    expect(strength(), greaterThan(5));
+    expect(history.undoCount, baseline + 1);
+    history.undo(projectId: id);
+    expect(strength(), 5);
+    expect(tester.takeException(), isNull);
+  });
 
   testWidgets('preview controls anchor to the band, not the canvas image', (
     tester,

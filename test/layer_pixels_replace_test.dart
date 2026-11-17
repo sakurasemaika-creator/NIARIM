@@ -7,12 +7,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart' show RenderRepaintBoundary;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/app_bootstrap.dart';
-import 'package:niarim/engine/niapro_serializer.dart' show NiaproData;
+import 'package:niarim/engine/niapro_serializer.dart';
 import 'package:niarim/engine/tile_manager.dart';
 import 'package:niarim/engine/undo_manager.dart' as app_undo;
 import 'package:niarim/models/layer.dart';
 import 'package:niarim/screens/canvas/canvas_screen.dart' show DrawingTool;
 import 'package:niarim/screens/canvas/widgets/canvas_area.dart';
+import 'package:niarim/services/autosave_service.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -138,6 +139,94 @@ void main() {
     expect(s.projects.tileManagerOf(s.projectId).canvasWidth, 64);
     await s.projects.saveProject(s.projectId);
     reopened.dispose();
+  });
+
+  for (final clockMovedBack in [false, true]) {
+    test('finds the divergent autosave after restart (clock moved back: '
+        '$clockMovedBack)', () async {
+      final s = await setUpProject(null);
+      addTearDown(s.projects.dispose);
+      addTearDown(s.undo.dispose);
+      final project = s.projects.projects.single;
+      final savedAt = DateTime.utc(2026, 11, 17);
+      final canonicalTime = savedAt.add(
+        Duration(hours: clockMovedBack ? 1 : -1),
+      );
+      await NiaproSerializer.save(
+        project: project,
+        scenes: s.projects.scenesOf(s.projectId),
+        tileManager: s.tm,
+        updatedAt: canonicalTime,
+      );
+      final original = layerBytes(s.tm, s.key);
+      final backup = AutosaveService();
+      addTearDown(backup.dispose);
+      s.tm.replaceLayerPixels(s.key, solid(220, 60, 30));
+      await backup.save(s.projectId, s.projects);
+      s.tm.replaceLayerPixels(s.key, solid(30, 60, 220));
+      await backup.save(s.projectId, s.projects);
+      final first = backup.slots.first;
+      final latest = backup.slots.last;
+
+      // The earlier slot can still appear newer after a device clock change.
+      SharedPreferences.setMockInitialValues({
+        'autosave_count': 2,
+        'autosave_0_project': s.projectId,
+        'autosave_0_savedAt': savedAt
+            .add(const Duration(days: 2))
+            .millisecondsSinceEpoch,
+        'autosave_0_slot': first.slotIndex,
+        'autosave_1_project': s.projectId,
+        'autosave_1_savedAt': savedAt.millisecondsSinceEpoch,
+        'autosave_1_slot': latest.slotIndex,
+      });
+      final reopened = ProjectService();
+      addTearDown(reopened.dispose);
+      await reopened.init();
+      final recovery = AutosaveService();
+      addTearDown(recovery.dispose);
+      await recovery.init();
+      final current = reopened.tileManagerOf(s.projectId);
+      final candidate = await recovery.recoveryCandidate(reopened, s.projectId);
+      expect(candidate, isNotNull);
+      expect(layerBytes(current, s.key), original);
+      reopened.restoreFromAutosave(s.projectId, candidate!);
+      expect(layerBytes(current, s.key), solid(30, 60, 220));
+      await reopened.saveProject(s.projectId);
+      expect(await recovery.recoveryCandidate(reopened, s.projectId), isNull);
+    });
+  }
+
+  test('restoring a save with a different canvas size is reversible', () async {
+    final s = await setUpProject(null);
+    addTearDown(s.projects.dispose);
+    addTearDown(s.undo.dispose);
+    final original = layerBytes(s.tm, s.key);
+    final project = s.projects.projects.single;
+    final backup = TileManager(canvasWidth: 60, canvasHeight: _h);
+    addTearDown(backup.dispose);
+    final tile = backup.getOrCreateTile(s.key, 0, 0);
+    tile.setRange(0, 4, [30, 60, 220, 255]);
+
+    s.projects.restoreFromAutosave(
+      s.projectId,
+      NiaproData(
+        project: project.copyWith(exportWidth: 60),
+        scenes: s.projects.scenesOf(s.projectId),
+        tileData: backup.exportAll(),
+      ),
+    );
+    final restored = s.projects.tileManagerOf(s.projectId);
+    expect(restored.canvasWidth, 60);
+    expect(restored.getTile(s.key, 0, 0)?.take(4), [30, 60, 220, 255]);
+    s.undo.undo(projectId: s.projectId);
+    expect(s.projects.tileManagerOf(s.projectId), same(s.tm));
+    expect(s.projects.projects.single.exportWidth, _w);
+    expect(layerBytes(s.tm, s.key), original);
+    s.undo.redo(projectId: s.projectId);
+    expect(s.projects.tileManagerOf(s.projectId), same(restored));
+    expect(s.projects.projects.single.exportWidth, 60);
+    await s.projects.saveProject(s.projectId);
   });
 
   test('replacing a layer\'s pixels is one Undo step, with Redo', () async {

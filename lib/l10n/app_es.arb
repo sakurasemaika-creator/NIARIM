@@ -498,7 +498,9 @@
   "helpEndCardTitle": "Tarjeta final (logotipo de cierre)",
   "helpEndCardDesc": "El logo final de NIARIM dura cinco segundos y se añade a MP4, WebM y AVI. Puedes ocultarlo por proyecto mientras el beneficio esté activo. El ajuste se conserva al caducar. Los GIF no lo incluyen.",
   "helpAutoSaveTitle": "Guardado automático",
-  "helpAutoSaveDesc": "Un guardado dedicado a la recuperación en caso de fallo o corrupción de archivo. Se guarda automáticamente cada vez que hay un cambio, como dibujar, y sobrescribe el más antiguo de un máximo de 3 guardados. Se gestiona de forma completamente separada de los guardados manuales (ranuras de guardado y árbol de guardado) y no sustituye al guardado habitual. Solo se te pregunta si quieres restaurarlo al reiniciar la aplicación tras un cierre anómalo.",
+  "helpAutoSaveDesc": "Un guardado dedicado a la recuperación en caso de fallo o corrupción de archivo. Se guarda automáticamente cada vez que hay un cambio, como dibujar, y sobrescribe el más antiguo de un máximo de 3 guardados. Se gestiona de forma completamente separada de los guardados manuales (ranuras de guardado y árbol de guardado) y no sustituye al guardado habitual. Al abrir un proyecto con una versión automática distinta, puedes elegir si quieres restaurarla.",
+  "canvasAutosaveRecoveryTitle": "Restaurar guardado automático",
+  "canvasAutosaveRecoveryBody": "Hay una versión guardada automáticamente con contenido distinto. ¿Quieres abrirla?",
   "helpSaveSlotTitle": "Ranura de guardado",
   "helpSaveSlotDesc": "Un método de guardado en un número fijo de ranuras, donde eliges qué ranura usar cada vez. El número de ranuras lo determinan los ajustes (5 para calidad baja, 10 para calidad media). Como eliges qué ranura sobrescribir cada vez, es una forma sencilla de gestionar la conservación del estado de un momento concreto.",
   "helpSaveTreeTitle": "Árbol de guardado",
@@ -2296,6 +2298,7 @@
   "timelineClipFadeOutLabel": "Salida gradual",
   "timelineClipUseStartLabel": "Inicio de uso F",
   "timelineClipUseEndLabel": "Fin de uso F",
+  "timelineCameraFrameAlreadyHasKeyframe": "Este fotograma ya tiene un fotograma clave de cámara.",
   "timelineCameraKfTitle": "Fotograma clave de cámara: F{n}",
   "@timelineCameraKfTitle": {
     "placeholders": {
