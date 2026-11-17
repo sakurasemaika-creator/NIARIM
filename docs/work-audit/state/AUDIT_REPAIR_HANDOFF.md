@@ -1569,3 +1569,10 @@ App・Web共通。Claudeが要修正の詳細を追記し、ユーザーが別�
 - **要修正（新規）**：447（.niatraの説明の「フォント」は引き継ぎの項目に無い。`user_fonts`はこの端末の記録）、448（.niashareの「プロジェクト本体・その他のデータ」は選べない。選べるのは画像・動画・音声・フォント）。
 - **OK（照合）**：品質の低・中・高・カスタム（`performance_service.dart`の`QualityLevel`）、カスタムの保存方式・スロット数・オニオンスキン・傾き検知（同）、Undo回数（`performance_settings_screen.dart`の`perfSettingsUndoLimitTitle`）、自動保存（`autosave_service.dart`）、セーブスロット（低5・中10・カスタム）、セーブツリー（`save_tree_service.dart`に件数の上限なし）、受け取った.niashareの複製（`project_service.dart`）、引き継ぎの項目ごとのチェックボックスと制作中のプロジェクトの個別選択（`transfer_screen.dart`）、下のカードの項目（設定・ブラシ・トーン・スタンプ・自動塗り設定・テーマ・パレット）。
 - **未確認**：7言語、図解の縮尺。
+
+### W006.07（一巡目、Claude・S40、判定：OK）
+
+- **確認SHA・環境**：Web `fbeff44`（本文は`34f01ba`から変わらず）の/features/#workspaceの日本語の本文（15項目、`w-audit/w006-workspace-ja.txt`）をApp `e2fde611`のコードと照合。
+- **新規の要修正なし**。
+- **OK（照合）**：左手モードはPC・DeXモードのみ（`workspace_settings_screen.dart`がスマホ表示では`onChanged: null`、副題「PC/DeXモードでのみ設定できます」）、PC・DeXモードへの切り替え（`WorkspacePreset.forcePcMode`）、名前を付けたワークスペースの保存・切り替え（`workspace_preset_service.dart`）、ジェスチャー（`settings_service.dart`の`GestureType`＝2本指・3本指・4本指以上のタップ・2本指スワイプ・長押し、`GestureAction`＝元に戻す・やり直す・スポイト・フレーム移動ほか）、テーマのプリセット（パステル・くすみ、`theme_service.dart`）と差し色・文字色・パネル背景・選択色・更新マークの色（`AppThemePreset`）。
+- **未確認**：7言語、図解の縮尺。
