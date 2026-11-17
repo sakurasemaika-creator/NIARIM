@@ -27,6 +27,21 @@ class CustomAutomationFilterRunner {
     required FilterDef filter,
     GeneratedLayerNamer? layerName,
   }) async {
+    model.Layer editableSource() {
+      final layer = projectService
+          .layersOf(projectId, sceneId, frameIndex)
+          .where((entry) => entry.id == sourceLayerId)
+          .firstOrNull;
+      if (layer == null) {
+        throw StateError('Recorded filter source layer is unavailable');
+      }
+      if (layer.isLocked) {
+        throw StateError('Recorded filter source layer is locked');
+      }
+      return layer;
+    }
+
+    editableSource();
     final tm = projectService.tileManagerOf(projectId);
     final key = projectService.tileKeyFor(
       projectId,
@@ -100,6 +115,7 @@ class CustomAutomationFilterRunner {
       ));
     }
 
+    final sourceLayer = editableSource();
     if (_createsLayer(filter)) {
       return _writeGeneratedLayer(
         projectService: projectService,
@@ -113,13 +129,6 @@ class CustomAutomationFilterRunner {
       );
     }
 
-    final sourceLayer = projectService
-        .layersOf(projectId, sceneId, frameIndex)
-        .where((layer) => layer.id == sourceLayerId)
-        .firstOrNull;
-    if (sourceLayer == null) {
-      throw StateError('Recorded filter source layer disappeared');
-    }
     projectService.replaceLayerPixels(
       projectId: projectId,
       sceneId: sceneId,

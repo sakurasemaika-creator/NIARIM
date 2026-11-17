@@ -870,7 +870,10 @@
   "themeExportMenuItem": "导出 (.niatheme)",
   "themeExportFailedSnackbar": "导出失败：{error}",
   "themeImportSuccessSnackbar": "已导入.niatheme文件",
-  "themeImportFailedSnackbar": "导入失败：{error}",
+  "themeImportInvalidFile": "此文件不是主题文件，或文件已损坏。",
+  "themeImportMissingColors": "主题缺少必需的颜色或设置，或其格式无效。",
+  "themeImportLowContrast": "已将对比度较低的主题添加至列表。界面仍然使用当前配色。",
+  "themeImportReadFailed": "无法读取主题文件。",
   "themeSaveAsNewButton": "将当前设置保存为新主题",
   "themeImportButton": "导入.niatheme",
   "themePresetNameDialogTitle": "主题名称",
@@ -922,7 +925,7 @@
   "exportKeepsPlaybackTime": "更改导出帧率会保留原播放时长。",
   "exportLongProjectNote": "完整导出超过90秒的作品需要高级会员或时长延长权益。你也可以导出开头90秒。",
   "exportOutputWithoutEndCard": "正片 {duration}（无片尾标志）",
-  "exportOutputWithEndCard": "正片 {duration} ＋ NIARIM 片尾标志（5 秒）",
+  "exportOutputWithEndCard": "正片 {duration}  +  NIARIM 片尾标志（5 秒）",
   "exportProjectNotFoundError": "未找到项目",
   "exportFailedError": "导出失败：{error}",
   "exportInProgressTitle": "正在导出",
@@ -1619,7 +1622,7 @@
       }
     }
   },
-  "autofillPartGradientStopDragHint": "左右拖动▲标记可调整各颜色的位置",
+  "autofillPartGradientStopDragHint": "拖动▲标记可调整各颜色的位置。渐变覆盖部件的整个填充区域。",
   "saveTreeScreenTitleTree": "存档树",
   "saveTreeScreenTitleSlot": "存档槽",
   "timelineExportMenuItem": "导出",
@@ -1942,6 +1945,7 @@
     }
   },
   "layerPanelDeleteConfirmBody": "将从该素材显示范围内的所有帧中删除。",
+  "layerPanelCommonRemoveFrame": "要在此帧隐藏“{name}”吗？",
   "layerPanelCommonDeleteMidDialogTitle": "要更改“{name}”的显示范围吗？",
   "@layerPanelCommonDeleteMidDialogTitle": {
     "placeholders": {

@@ -2711,9 +2711,16 @@ class AppLocalizationsJa extends AppLocalizations {
   String get themeImportSuccessSnackbar => '.niathemeを読み込みました';
 
   @override
-  String themeImportFailedSnackbar(String error) {
-    return '読み込みに失敗しました: $error';
-  }
+  String get themeImportInvalidFile => 'テーマのファイルではないか、ファイルが壊れています。';
+
+  @override
+  String get themeImportMissingColors => 'テーマに必要な色や設定が不足しているか、形式が正しくありません。';
+
+  @override
+  String get themeImportLowContrast => '文字が見えにくいテーマを一覧に追加しました。現在の配色で表示しています。';
+
+  @override
+  String get themeImportReadFailed => 'テーマのファイルを読み込めませんでした。';
 
   @override
   String get themeSaveAsNewButton => '現在の設定を新しいテーマとして保存';
@@ -2760,7 +2767,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get onionSkinColorLabel => '色';
 
   @override
-  String get onionSkinOpacityLabel => '透明度';
+  String get onionSkinOpacityLabel => '不透明度';
 
   @override
   String get exportScreenTitle => '書き出し';
@@ -2880,7 +2887,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String exportOutputWithEndCard(String duration) {
-    return '本編 $duration ＋ NIARIMエンドマーク（5秒）';
+    return '本編 $duration  +  NIARIMエンドマーク（5秒）';
   }
 
   @override
@@ -4121,7 +4128,8 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
-  String get autofillPartGradientStopDragHint => '▲を左右にドラッグして色の切り替え位置を調整できます';
+  String get autofillPartGradientStopDragHint =>
+      '▲をドラッグすると色の切り替え位置を調整できます。グラデーションはパーツの塗り範囲全体にかかります。';
 
   @override
   String get saveTreeScreenTitleTree => 'セーブツリー';
@@ -4658,6 +4666,11 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get layerPanelDeleteConfirmBody => 'この素材の表示範囲内のすべてのフレームから削除されます。';
+
+  @override
+  String layerPanelCommonRemoveFrame(String name) {
+    return 'このフレームで「$name」を非表示にしますか？';
+  }
 
   @override
   String layerPanelCommonDeleteMidDialogTitle(String name) {

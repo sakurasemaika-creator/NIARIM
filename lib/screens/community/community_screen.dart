@@ -1903,6 +1903,8 @@ class _CommunityScreenState extends State<CommunityScreen>
                         return CommunityRankingWorkList(
                           layout: _rankingLayout,
                           works: ranked,
+                          // Smallest-first responses do not carry global ranks.
+                          showRanks: !_sortAscending,
                           periodScores:
                               communityService.periodRankingBookmarkCounts,
                           bookmarkedIds: bookmarkedIds,

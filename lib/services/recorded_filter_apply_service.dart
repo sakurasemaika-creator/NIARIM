@@ -31,13 +31,21 @@ class RecordedFilterApplyService {
   }) async {
     final filter = parseSnapshot(filterSnapshot);
     final tileManager = projectService.tileManagerOf(projectId);
-    final sourceLayer = projectService
-        .layersOf(projectId, sceneId, frameIndex)
-        .where((layer) => layer.id == layerId)
-        .firstOrNull;
-    if (sourceLayer == null) {
-      throw StateError('Recorded filter source layer is unavailable');
+    model.Layer editableSource() {
+      final layer = projectService
+          .layersOf(projectId, sceneId, frameIndex)
+          .where((entry) => entry.id == layerId)
+          .firstOrNull;
+      if (layer == null) {
+        throw StateError('Recorded filter source layer is unavailable');
+      }
+      if (layer.isLocked) {
+        throw StateError('Recorded filter source layer is locked');
+      }
+      return layer;
     }
+
+    editableSource();
 
     final key = projectService.tileKeyFor(
       projectId,
@@ -115,6 +123,7 @@ class RecordedFilterApplyService {
       ));
     }
 
+    final sourceLayer = editableSource();
     if (filter.kind != FilterKind.prism &&
         (filter.kind == FilterKind.outline ||
             filter.kind == FilterKind.inkPool ||

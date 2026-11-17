@@ -78,6 +78,43 @@ void main() {
           if (reference != null) expect(pixels, orderedEquals(reference));
           reference = Uint8List.fromList(pixels);
         }
+        projects.updateLayer(
+          projectId: project.id,
+          sceneId: scene,
+          frameIndex: 0,
+          layer: projects
+              .layersOf(project.id, scene, 0)
+              .single
+              .copyWith(isLocked: true),
+        );
+        final filter = const FilterDef(
+          id: 'custom-adjust',
+          name: 'Color adjust',
+          kind: FilterKind.colorAdjust,
+          caBrightness: 30,
+        );
+        final result = legacy
+            ? RecordedFilterApplyService.apply(
+                projectService: projects,
+                projectId: project.id,
+                sceneId: scene,
+                frameIndex: 0,
+                layerId: layer.id,
+                filterSnapshot: filter.toJson(),
+              )
+            : CustomAutomationFilterRunner.apply(
+                projectService: projects,
+                projectId: project.id,
+                sceneId: scene,
+                frameIndex: 0,
+                sourceLayerId: layer.id,
+                filter: filter,
+              );
+        await expectLater(result, throwsStateError);
+        final image = await tiles.compositeLayerToImage(key);
+        final data = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
+        image.dispose();
+        expect(data!.buffer.asUint8List(), orderedEquals(reference!));
       },
     );
   }

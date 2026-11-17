@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/engine/autofill_engine.dart';
 import 'package:niarim/engine/color_trace_adjust_engine.dart';
+import 'package:niarim/engine/filter_engine.dart';
 import 'package:niarim/engine/filter_preview.dart';
 import 'package:niarim/models/autofill_preset.dart';
 import 'package:niarim/models/filter_def.dart';
@@ -89,6 +90,31 @@ void main() {
     }
     return bad;
   }
+
+  test('color adjustment responds equally on solid and translucent paint', () {
+    final data = Uint8List.fromList([240, 160, 80, 255, 60, 40, 20, 64]);
+    for (final amount in [-45.0, 45.0]) {
+      for (final (saturation, brightness, contrast) in [
+        (amount, 0.0, 0.0),
+        (0.0, amount, 0.0),
+        (0.0, 0.0, amount),
+      ]) {
+        final out = FilterEngine().applyColorAdjust(
+          data,
+          2,
+          1,
+          saturation: saturation,
+          brightness: brightness,
+          contrast: contrast,
+        );
+        expect(invalid(out), 0);
+        expect(out[7], 64);
+        for (var channel = 0; channel < 3; channel++) {
+          expect(out[4 + channel] * 255 / 64, closeTo(out[channel], 5));
+        }
+      }
+    }
+  });
 
   test('the colour trace adjustment keeps edges valid and true', () {
     // The same orange, solid and at 25 %.

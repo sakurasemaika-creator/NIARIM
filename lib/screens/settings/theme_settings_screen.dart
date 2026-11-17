@@ -17,8 +17,13 @@ import '../../widgets/responsive.dart';
 import '../canvas/widgets/color_picker_panel.dart';
 import '../../widgets/help_button.dart';
 import '../../config/font_fallback.dart';
+import '../../utils/app_error_reporter.dart';
+import '../../utils/color_contrast.dart';
 import '../../utils/duplicate_name.dart';
 import '../../utils/reorder_index.dart';
+import '../../widgets/confirm_delete.dart';
+import '../../widgets/keep_together_text.dart';
+import '../../widgets/name_entry_dialog.dart';
 import '../../widgets/theme_rescue_button.dart';
 import 'theme_preview_gallery_screen.dart';
 import '../../config/accent_text_theme.dart';
@@ -42,10 +47,13 @@ class ThemeSettingsScreen extends StatelessWidget {
         actions: [
           const HelpButton(topic: 'テーマ設定'),
           if (themeService.needsThemeRescue)
-            ThemeRescueButton(
-              iconOnly:
-                  MediaQuery.sizeOf(context).width < 520 ||
-                  MediaQuery.textScalerOf(context).scale(1) > 1.4,
+            Padding(
+              padding: const EdgeInsetsDirectional.only(end: 8),
+              child: ThemeRescueButton(
+                iconOnly:
+                    MediaQuery.sizeOf(context).width < 520 ||
+                    MediaQuery.textScalerOf(context).scale(1) > 1.4,
+              ),
             ),
         ],
       ),
@@ -373,97 +381,135 @@ class ThemeSettingsScreen extends StatelessWidget {
                             horizontal: 12,
                             vertical: 6,
                           ),
-                          child: Row(
-                            children: [
-                              _PresetColorSwatch(preset: entry.value),
-                              const SizedBox(width: 14),
-                              Expanded(
-                                child: Text(
-                                  themePresetLabel(entry.value, locale),
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 14,
-                                    fontFamily: 'Kuramubon',
-                                    fontFamilyFallback: kHeadingFontFallback,
-                                  ),
+                          child: LayoutBuilder(
+                            builder: (context, constraints) {
+                              final name = messageText(
+                                themePresetLabel(entry.value, locale),
+                                keepLineStarts: true,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 14,
+                                  fontFamily: 'Kuramubon',
+                                  fontFamilyFallback: kHeadingFontFallback,
                                 ),
-                              ),
-                              if (current.id == entry.value.id)
-                                Padding(
-                                  padding: const EdgeInsets.only(right: 4),
-                                  child: Icon(
-                                    Icons.check,
-                                    key: const Key('themePresetEditingCheck'),
-                                    color: AccentTextTheme.of(context),
+                              );
+                              final swatch = _PresetColorSwatch(
+                                preset: entry.value,
+                              );
+                              final actions = <Widget>[
+                                if (current.id == entry.value.id)
+                                  Padding(
+                                    padding: const EdgeInsets.only(right: 4),
+                                    child: Icon(
+                                      Icons.check,
+                                      key: const Key('themePresetEditingCheck'),
+                                      color: AccentTextTheme.of(context),
+                                      size: 16,
+                                    ),
+                                  ),
+                                IconButton(
+                                  icon: Icon(
+                                    entry.value.isFavorite
+                                        ? Icons.star
+                                        : Icons.star_outline,
                                     size: 16,
+                                    color: entry.value.isFavorite
+                                        ? ThemeService
+                                              .activeColorScheme
+                                              .tertiary
+                                        : null,
+                                  ),
+                                  tooltip: l10n.commonFavoriteToggle,
+                                  onPressed: () => themeService.toggleFavorite(
+                                    entry.value.id,
                                   ),
                                 ),
-                              IconButton(
-                                icon: Icon(
-                                  entry.value.isFavorite
-                                      ? Icons.star
-                                      : Icons.star_outline,
-                                  size: 16,
-                                  color: entry.value.isFavorite
-                                      ? ThemeService.activeColorScheme.tertiary
-                                      : null,
-                                ),
-                                tooltip: l10n.commonFavoriteToggle,
-                                onPressed: () =>
-                                    themeService.toggleFavorite(entry.value.id),
-                              ),
-                              PopupMenuButton<String>(
-                                icon: const Icon(Icons.more_vert, size: 16),
-                                onSelected: (action) => _handleAction(
-                                  context,
-                                  action,
-                                  entry.value,
-                                  themeService,
-                                ),
-                                itemBuilder: (_) => [
-                                  PopupMenuItem(
-                                    value: 'edit',
-                                    child: Text(l10n.commonEdit),
+                                PopupMenuButton<String>(
+                                  icon: const Icon(Icons.more_vert, size: 16),
+                                  onSelected: (action) => _handleAction(
+                                    context,
+                                    action,
+                                    entry.value,
+                                    themeService,
                                   ),
-                                  PopupMenuItem(
-                                    value: 'rename',
-                                    child: Text(l10n.commonRename),
-                                  ),
-                                  PopupMenuItem(
-                                    value: 'duplicate',
-                                    child: Text(l10n.themeDuplicateAction),
-                                  ),
-                                  PopupMenuItem(
-                                    value: 'exportCard',
-                                    child: Text(l10n.shareCardExportMenu),
-                                  ),
-                                  PopupMenuItem(
-                                    value: 'export',
-                                    // 書き出しと共有が終わるまで、同じ
-                                    // テーマをもう一度は書き出さない。
-                                    enabled: !ExportShareService.isRunning(
-                                      _exportKey(entry.value),
+                                  itemBuilder: (_) => [
+                                    PopupMenuItem(
+                                      value: 'edit',
+                                      child: Text(l10n.commonEdit),
                                     ),
-                                    child: Text(l10n.themeExportMenuItem),
-                                  ),
-                                  PopupMenuItem(
-                                    value: 'delete',
-                                    child: Text(
-                                      l10n.commonDelete,
-                                      style: TextStyle(
-                                        color: ThemeService
-                                            .activeColorScheme
-                                            .error,
+                                    PopupMenuItem(
+                                      value: 'rename',
+                                      child: Text(l10n.commonRename),
+                                    ),
+                                    PopupMenuItem(
+                                      value: 'duplicate',
+                                      child: Text(l10n.themeDuplicateAction),
+                                    ),
+                                    PopupMenuItem(
+                                      value: 'exportCard',
+                                      child: Text(l10n.shareCardExportMenu),
+                                    ),
+                                    PopupMenuItem(
+                                      value: 'export',
+                                      // 書き出しと共有が終わるまで、同じ
+                                      // テーマをもう一度は書き出さない。
+                                      enabled: !ExportShareService.isRunning(
+                                        _exportKey(entry.value),
                                       ),
+                                      child: Text(l10n.themeExportMenuItem),
                                     ),
+                                    if (ThemeService.isBuiltInPreset(
+                                      entry.value.id,
+                                    ))
+                                      PopupMenuItem(
+                                        value: 'reset',
+                                        child: Text(
+                                          l10n.themeResetConfirmAction,
+                                        ),
+                                      )
+                                    else
+                                      PopupMenuItem(
+                                        value: 'delete',
+                                        child: Text(l10n.commonDelete),
+                                      ),
+                                  ],
+                                ),
+                                ReorderableDragStartListener(
+                                  index: entry.key,
+                                  child: const Icon(
+                                    Icons.drag_handle,
+                                    size: 18,
                                   ),
+                                ),
+                              ];
+                              if (constraints.maxWidth <
+                                  370 *
+                                      MediaQuery.textScalerOf(
+                                        context,
+                                      ).scale(1)) {
+                                return Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    name,
+                                    Row(
+                                      children: [
+                                        swatch,
+                                        const Spacer(),
+                                        ...actions,
+                                      ],
+                                    ),
+                                  ],
+                                );
+                              }
+                              return Row(
+                                children: [
+                                  swatch,
+                                  const SizedBox(width: 14),
+                                  Expanded(child: name),
+                                  ...actions,
                                 ],
-                              ),
-                              ReorderableDragStartListener(
-                                index: entry.key,
-                                child: const Icon(Icons.drag_handle, size: 18),
-                              ),
-                            ],
+                              );
+                            },
                           ),
                         ),
                       ),
@@ -507,13 +553,14 @@ class ThemeSettingsScreen extends StatelessWidget {
   /// 読みにくさを理由にユーザーの色選択を拒否しない。操作不能になる
   /// ほど色が近いテーマからの復旧は、起動画面右上のテーマ非依存の
   /// リセットボタンで行う（判定は `color_contrast.dart`）。
-  void _showColorPickerDialog(
+  Future<void> _showColorPickerDialog(
     BuildContext context,
     ThemeService service,
     AppThemePreset Function(AppThemePreset preset, Color color) update,
     Color initialColor,
-  ) {
-    showDialog(
+  ) async {
+    var changed = false;
+    await showDialog<void>(
       context: context,
       builder: (ctx) => Dialog(
         backgroundColor: Colors.transparent,
@@ -523,23 +570,23 @@ class ThemeSettingsScreen extends StatelessWidget {
         ),
         child: ColorPickerPanel(
           currentColor: initialColor,
-          onColorChanged: (c) =>
-              service.previewCurrent(update(service.current, c)),
-          onClose: () {
-            service.commitCurrent();
-            Navigator.pop(ctx);
+          onColorChanged: (color) {
+            changed = true;
+            service.previewCurrent(update(service.current, color));
           },
+          onClose: () => Navigator.pop(ctx),
         ),
       ),
     );
+    if (changed) service.commitCurrent();
   }
 
-  void _handleAction(
+  Future<void> _handleAction(
     BuildContext context,
     String action,
     AppThemePreset preset,
     ThemeService service,
-  ) {
+  ) async {
     final l10n = AppLocalizations.of(context)!;
     final locale = Localizations.localeOf(context);
     final name = themePresetLabel(preset, locale);
@@ -553,7 +600,7 @@ class ThemeSettingsScreen extends StatelessWidget {
           SnackBar(content: Text(l10n.themeEditPresetSnackbar(name))),
         );
       case 'rename':
-        _showRenameDialog(context, preset, service);
+        await _showRenameDialog(context, preset, service);
       case 'duplicate':
         // ブラシ・作品の複製・引き継ぎで足す複製と同じ形の名前（同じ名前が
         // あれば番号を付ける）。
@@ -570,9 +617,28 @@ class ThemeSettingsScreen extends StatelessWidget {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(l10n.commonFavoriteDeleteBlocked)),
           );
-        } else {
+        } else if (await confirmDelete(context, itemName: name)) {
           service.deletePreset(preset.id);
         }
+      case 'reset':
+        final confirmed = await showDialog<bool>(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            title: messageText(l10n.themeResetConfirmTitle),
+            content: messageText(name),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: Text(l10n.commonCancel),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.pop(ctx, true),
+                child: Text(l10n.themeResetConfirmAction),
+              ),
+            ],
+          ),
+        );
+        if (confirmed == true) service.resetPresetColors(preset.id);
       case 'export':
         _exportTheme(context, preset);
       case 'exportCard':
@@ -612,99 +678,103 @@ class ThemeSettingsScreen extends StatelessWidget {
       });
 
   Future<void> _importTheme(BuildContext context, ThemeService service) async {
-    final result = await FilePicker.platform.pickFiles(
-      type: FileType.custom,
-      allowedExtensions: ['niatheme', 'png'],
-    );
-    if (result == null ||
-        result.files.isEmpty ||
-        result.files.first.path == null) {
-      return;
-    }
-    if (!context.mounted) return;
     final l10n = AppLocalizations.of(context)!;
     try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['niatheme', 'png'],
+      );
+      final path = result?.files.firstOrNull?.path;
+      if (!context.mounted || path == null) return;
+
       final content = await SharedAssetCardService.readSettingsFile(
-        result.files.first.path!,
+        path,
         kind: 'theme',
       );
-      final json = jsonDecode(content) as Map<String, dynamic>;
-      final preset = AppThemePreset.fromJson(
-        json,
-      ).copyWith(id: 'theme_${DateTime.now().millisecondsSinceEpoch}');
+      final json = jsonDecode(content);
+      if (json is! Map<String, dynamic> ||
+          (!json.containsKey('accentColor') &&
+              !(json['id'] is String && json['name'] is String))) {
+        throw const FormatException('Not a theme');
+      }
+      final AppThemePreset preset;
+      try {
+        preset = AppThemePreset.fromJson(
+          json,
+        ).copyWith(id: 'theme_${DateTime.now().millisecondsSinceEpoch}');
+      } on TypeError catch (error, stack) {
+        AppErrorReporter.record(error, stack);
+        if (context.mounted) {
+          _showImportMessage(context, l10n.themeImportMissingColors);
+        }
+        return;
+      }
+      if (!context.mounted) return;
       service.savePreset(preset);
-      service.applyPreset(preset.id);
-      if (!context.mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(l10n.themeImportSuccessSnackbar)));
-    } catch (e) {
-      if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.themeImportFailedSnackbar(e.toString()))),
-      );
+      if (isThemeAtLockoutRisk(preset)) {
+        _showImportMessage(context, l10n.themeImportLowContrast);
+      } else {
+        service.applyPreset(preset.id);
+        _showImportMessage(context, l10n.themeImportSuccessSnackbar);
+      }
+    } on FormatException catch (error, stack) {
+      AppErrorReporter.record(FormatException(error.message), stack);
+      _showImportMessage(context, l10n.themeImportInvalidFile);
+    } catch (error, stack) {
+      AppErrorReporter.record(error, stack);
+      _showImportMessage(context, l10n.themeImportReadFailed);
     }
   }
 
-  void _showRenameDialog(
+  void _showImportMessage(BuildContext context, String message) {
+    if (context.mounted) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: messageText(message)));
+    }
+  }
+
+  Future<void> _showRenameDialog(
     BuildContext context,
     AppThemePreset preset,
     ThemeService service,
   ) {
     final l10n = AppLocalizations.of(context)!;
     final name = themePresetLabel(preset, Localizations.localeOf(context));
-    final controller = TextEditingController(text: name);
-    showDialog(
+    return showDialog<void>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        insetPadding: typingDialogInsetPadding(ctx),
-        title: Text(l10n.commonRename),
-        content: TextField(controller: controller, autofocus: true),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(l10n.commonCancel),
-          ),
-          FilledButton(
-            onPressed: () {
-              if (controller.text != name) {
-                service.savePreset(preset.copyWith(name: controller.text));
-              }
-              Navigator.pop(ctx);
-            },
-            child: Text(l10n.commonSave),
-          ),
-        ],
+      builder: (_) => NameEntryDialog(
+        title: l10n.commonRename,
+        confirmLabel: l10n.commonSave,
+        cancelLabel: l10n.commonCancel,
+        initialName: name,
+        onSubmit: (newName) async {
+          if (newName != name) {
+            service.renamePreset(preset.id, newName);
+          }
+        },
       ),
     );
   }
 
   void _saveCurrentAsNew(BuildContext context, ThemeService service) {
     final l10n = AppLocalizations.of(context)!;
-    final controller = TextEditingController(text: l10n.themeDefaultPresetName);
-    showDialog(
+    showDialog<void>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        insetPadding: typingDialogInsetPadding(ctx),
-        title: Text(l10n.themePresetNameDialogTitle),
-        content: TextField(controller: controller, autofocus: true),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(l10n.commonCancel),
-          ),
-          FilledButton(
-            onPressed: () {
-              final newPreset = service.current.copyWith(
-                id: 'theme_${DateTime.now().millisecondsSinceEpoch}',
-                name: controller.text,
-              );
-              service.savePreset(newPreset);
-              Navigator.pop(ctx);
-            },
-            child: Text(l10n.commonSave),
-          ),
-        ],
+      builder: (_) => NameEntryDialog(
+        title: l10n.themePresetNameDialogTitle,
+        confirmLabel: l10n.commonSave,
+        cancelLabel: l10n.commonCancel,
+        initialName: l10n.themeDefaultPresetName,
+        onSubmit: (name) async {
+          service.savePreset(
+            service.current.copyWith(
+              id: 'theme_${DateTime.now().millisecondsSinceEpoch}',
+              name: name,
+              isFavorite: false,
+            ),
+          );
+        },
       ),
     );
   }

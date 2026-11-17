@@ -2690,9 +2690,16 @@ class AppLocalizationsZh extends AppLocalizations {
   String get themeImportSuccessSnackbar => '已导入.niatheme文件';
 
   @override
-  String themeImportFailedSnackbar(String error) {
-    return '导入失败：$error';
-  }
+  String get themeImportInvalidFile => '此文件不是主题文件，或文件已损坏。';
+
+  @override
+  String get themeImportMissingColors => '主题缺少必需的颜色或设置，或其格式无效。';
+
+  @override
+  String get themeImportLowContrast => '已将对比度较低的主题添加至列表。界面仍然使用当前配色。';
+
+  @override
+  String get themeImportReadFailed => '无法读取主题文件。';
 
   @override
   String get themeSaveAsNewButton => '将当前设置保存为新主题';
@@ -2853,7 +2860,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String exportOutputWithEndCard(String duration) {
-    return '正片 $duration ＋ NIARIM 片尾标志（5 秒）';
+    return '正片 $duration  +  NIARIM 片尾标志（5 秒）';
   }
 
   @override
@@ -4093,7 +4100,8 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get autofillPartGradientStopDragHint => '左右拖动▲标记可调整各颜色的位置';
+  String get autofillPartGradientStopDragHint =>
+      '拖动▲标记可调整各颜色的位置。渐变覆盖部件的整个填充区域。';
 
   @override
   String get saveTreeScreenTitleTree => '存档树';
@@ -4623,6 +4631,11 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get layerPanelDeleteConfirmBody => '将从该素材显示范围内的所有帧中删除。';
+
+  @override
+  String layerPanelCommonRemoveFrame(String name) {
+    return '要在此帧隐藏“$name”吗？';
+  }
 
   @override
   String layerPanelCommonDeleteMidDialogTitle(String name) {
@@ -12861,9 +12874,16 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get themeImportSuccessSnackbar => '已匯入.niatheme檔案';
 
   @override
-  String themeImportFailedSnackbar(String error) {
-    return '匯入失敗：$error';
-  }
+  String get themeImportInvalidFile => '此檔案不是主題檔案，或檔案已損毀。';
+
+  @override
+  String get themeImportMissingColors => '主題缺少必要的色彩或設定，或其格式無效。';
+
+  @override
+  String get themeImportLowContrast => '已將對比度較低的主題加入清單。介面仍使用目前的配色。';
+
+  @override
+  String get themeImportReadFailed => '無法讀取主題檔案。';
 
   @override
   String get themeSaveAsNewButton => '將目前設定儲存為新主題';
@@ -13024,7 +13044,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String exportOutputWithEndCard(String duration) {
-    return '正片 $duration ＋ NIARIM 片尾標誌（5 秒）';
+    return '正片 $duration  +  NIARIM 片尾標誌（5 秒）';
   }
 
   @override
@@ -14263,7 +14283,8 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   }
 
   @override
-  String get autofillPartGradientStopDragHint => '左右拖曳▲標記可調整各顏色的位置';
+  String get autofillPartGradientStopDragHint =>
+      '拖曳▲標記可調整各顏色的位置。漸層涵蓋部件的整個填色區域。';
 
   @override
   String get saveTreeScreenTitleTree => '存檔樹';
@@ -14793,6 +14814,11 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get layerPanelDeleteConfirmBody => '將從此素材顯示範圍內的所有影格中刪除。';
+
+  @override
+  String layerPanelCommonRemoveFrame(String name) {
+    return '要在此影格隱藏「$name」嗎？';
+  }
 
   @override
   String layerPanelCommonDeleteMidDialogTitle(String name) {

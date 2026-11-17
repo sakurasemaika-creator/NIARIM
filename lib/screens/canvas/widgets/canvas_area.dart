@@ -29,6 +29,7 @@ import '../../../engine/multi_touch_tap_tracker.dart';
 import '../../../engine/onion_skin.dart';
 import '../../../engine/procedural_texture.dart';
 import '../../../engine/ruler_engine.dart';
+import '../../../engine/selection_transform_raster.dart';
 import '../../../engine/stamp_engine.dart';
 import '../../../engine/tile_manager.dart';
 import '../../../engine/tone_engine.dart';
@@ -53,6 +54,13 @@ import 'pen_sub_tool_panel.dart' show PenSubTool;
 
 /// 選択範囲の変形のモード（移動・拡大縮小・回転）。
 enum _TransformMode { translate, scale, rotate }
+
+typedef SelectionTransformValues = ({
+  double moveX,
+  double moveY,
+  double scale,
+  double rotateDeg,
+});
 
 /// キャンバスウィジェット上で、実際にプロジェクトの内容
 /// （書き出しサイズ＝プロジェクトのピクセル座標系）が描画される矩形を計算する。
@@ -466,6 +474,7 @@ class CanvasArea extends StatefulWidget {
   // 確定処理がTileManagerへの非同期書き込みを伴うためコールバックではなく
   // プロパティ監視（didUpdateWidget）で駆動する）。
   final int meshDensity;
+  final bool meshSelectionOnly;
   final double meshRotateDeg;
   final double meshScaleValue;
   final int meshCommitToken;
@@ -524,6 +533,8 @@ class CanvasArea extends StatefulWidget {
 
   /// スライダーから指を離したときに増える。増えたら実画素へ確定する。
   final int selectionTransformCommitToken;
+  final SelectionTransformValues? selectionTransformCommitValues;
+  final int selectionTransformCancelToken;
 
   /// 表示の操作（拡大・縮小・全体表示・回転）。serialが変わったら行う。
   final CanvasViewRequest? viewRequest;
@@ -568,6 +579,7 @@ class CanvasArea extends StatefulWidget {
     this.onNextQuickTool,
     this.onToggleOnionSkin,
     this.meshDensity = 1,
+    this.meshSelectionOnly = false,
     this.meshRotateDeg = 0.0,
     this.meshScaleValue = 1.0,
     this.meshCommitToken = 0,
@@ -591,6 +603,8 @@ class CanvasArea extends StatefulWidget {
     this.selectionScale = 1,
     this.selectionRotateDeg = 0,
     this.selectionTransformCommitToken = 0,
+    this.selectionTransformCommitValues,
+    this.selectionTransformCancelToken = 0,
     this.viewRequest,
     this.viewInfo,
     this.onLockedLayerEdit,
@@ -786,6 +800,10 @@ class _CanvasAreaState extends State<CanvasArea> {
   List<Offset>? meshControlPoints;
   // 変形対象レイヤーの、ツールを開いた時点での合成画像（ワープのソース）。
   ui.Image? meshSourceImage;
+  ui.Image? _meshBaseImage;
+  Rect? _meshSourceBounds;
+  Uint8List? _meshSelectionMask;
+  int _meshGeneration = 0;
   // ポインターID→ドラッグ中の格子点インデックス（複数指で別々の点を同時に
   // つまんで動かせる。2本の角を掴んで引っ張れば、そのまま「2本指での
   // 回転・拡大縮小」相当の操作になる）。
@@ -804,6 +822,12 @@ class _CanvasAreaState extends State<CanvasArea> {
   Rect? _selectionTransformBounds;
   Matrix4? _selectionTransformLive;
   ui.Image? _floatingSelectionImage;
+  ui.Image? _selectionBasePreview;
+  SelectionTransformRaster? _selectionRaster;
+  Matrix4 _selectionMatrix = Matrix4.identity();
+  Object _selectionSession = Object();
+  final _selectionActions = <app_undo.UndoAction>{};
+  bool _writingSelectionPixels = false;
 
   bool get _isSelectionTool =>
       widget.currentTool == DrawingTool.selectRect ||
@@ -940,19 +964,7 @@ class _CanvasAreaState extends State<CanvasArea> {
     if (frameChanged) {
       _scheduleComposite();
       // 選択範囲はフレームごとの一時状態のため、フレーム切替時にクリアする
-      _clearSelectionMask();
-      // 選択範囲の変形操作中にフレームが切り替わった場合の後始末
-      // （通常のUIフローでは起こりにくいが、念のため状態を破棄する）。
-      if (_selectionTransformActive) {
-        _cancelTileUndoAndRestore();
-        _floatingSelectionImage?.dispose();
-        _floatingSelectionImage = null;
-        _selectionTransformActive = false;
-        _selectionTransformStart = null;
-        _selectionTransformCenter = null;
-        _selectionTransformBounds = null;
-        _selectionTransformLive = null;
-      }
+      _clearSelectionMask(notifyAlways: true);
     }
     _recomposeSurroundings(
       force: frameChanged || old.autofillCheckMode != widget.autofillCheckMode,
@@ -965,7 +977,9 @@ class _CanvasAreaState extends State<CanvasArea> {
     final leftMeshTransform =
         old.currentTool == DrawingTool.meshTransform &&
         widget.currentTool != DrawingTool.meshTransform;
-    if (enteredMeshTransform) {
+    if (enteredMeshTransform ||
+        (targetChanged && widget.currentTool == DrawingTool.meshTransform)) {
+      _cancelMeshTransform();
       _beginMeshTransform();
     }
     if (widget.currentTool == DrawingTool.meshTransform &&
@@ -993,17 +1007,48 @@ class _CanvasAreaState extends State<CanvasArea> {
       _cancelMeshTransform();
     }
 
-    // 画面下部のスライダーによる変形。値が動いている間はライブプレビュー、
-    // 指を離した時点（確定トークンの増加）で実画素へ焼き込む。
-    if (old.selectionMoveX != widget.selectionMoveX ||
-        old.selectionMoveY != widget.selectionMoveY ||
-        old.selectionScale != widget.selectionScale ||
-        old.selectionRotateDeg != widget.selectionRotateDeg) {
-      _applySliderTransform();
-    }
-    if (old.selectionTransformCommitToken !=
-        widget.selectionTransformCommitToken) {
-      if (_selectionTransformActive) _commitSelectionTransform();
+    final cancelling =
+        old.selectionTransformCancelToken !=
+        widget.selectionTransformCancelToken;
+    if (cancelling) {
+      final session = _selectionSession;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted || !identical(session, _selectionSession)) return;
+        _cancelSelectionTransforms();
+        _clearSelectionMask();
+      });
+    } else if (!_isSelectionTool) {
+      _resetSelectionTransform();
+    } else {
+      final committing =
+          old.selectionTransformCommitToken !=
+          widget.selectionTransformCommitToken;
+      final valuesChanged =
+          old.selectionMoveX != widget.selectionMoveX ||
+          old.selectionMoveY != widget.selectionMoveY ||
+          old.selectionScale != widget.selectionScale ||
+          old.selectionRotateDeg != widget.selectionRotateDeg;
+      if (committing || valuesChanged) {
+        _applySliderTransform(
+          (committing ? widget.selectionTransformCommitValues : null) ??
+              (
+                moveX: widget.selectionMoveX,
+                moveY: widget.selectionMoveY,
+                scale: widget.selectionScale,
+                rotateDeg: widget.selectionRotateDeg,
+              ),
+        );
+      }
+      if (committing && _selectionTransformActive) {
+        final session = _selectionSession;
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted &&
+              identical(session, _selectionSession) &&
+              _selectionTransformActive) {
+            _commitSelectionTransform();
+          }
+        });
+      }
     }
 
     if (old.invertSelectionToken != widget.invertSelectionToken) {
@@ -1012,8 +1057,8 @@ class _CanvasAreaState extends State<CanvasArea> {
     if (old.selectAllSelectionToken != widget.selectAllSelectionToken) {
       _selectAllSelectionMask();
     }
-    if (old.clearSelectionToken != widget.clearSelectionToken) {
-      _clearSelectionMask();
+    if (!cancelling && old.clearSelectionToken != widget.clearSelectionToken) {
+      _clearSelectionMask(notifyAlways: true);
     }
     final view = widget.viewRequest;
     if (view != null && view.serial != old.viewRequest?.serial) {
@@ -1087,14 +1132,14 @@ class _CanvasAreaState extends State<CanvasArea> {
     if (_hasTileManager) {
       _tileManager.removeLayerContentListener(_onLayerContentChanged);
     }
-    if ((_selectionTransformActive || _bucketGesture != null) &&
-        _undoRecordingLayerKey != null) {
+    if (_bucketGesture != null && _undoRecordingLayerKey != null) {
       _tileManager.cancelUndoRecordingAndRestore();
       _undoRecordingLayerKey = null;
     }
     _bucketGesture = null;
     _holdEyedropperTimer?.cancel();
     meshSourceImage?.dispose();
+    _meshBaseImage?.dispose();
     _transformController.removeListener(_publishViewInfo);
     _transformController.dispose();
     _compositeImage?.dispose();
@@ -1103,7 +1148,7 @@ class _CanvasAreaState extends State<CanvasArea> {
     _exactBlend?.dispose();
     _selectionOverlayImage?.dispose();
     _selectionLayerOverlayImage?.dispose();
-    _floatingSelectionImage?.dispose();
+    _resetSelectionTransform();
     for (final img in _onionImages.values) {
       img.dispose();
     }
@@ -1112,8 +1157,12 @@ class _CanvasAreaState extends State<CanvasArea> {
 
   // ─── 選択範囲マスク（矩形選択・投げ縄選択・自動選択で共通） ──
 
-  void _clearSelectionMask() {
-    if (_selectionMask == null && _selectionOverlayImage == null) return;
+  void _clearSelectionMask({bool notifyAlways = false}) {
+    _resetSelectionTransform();
+    if (_selectionMask == null && _selectionOverlayImage == null) {
+      if (notifyAlways) _notifySelectionActive(false);
+      return;
+    }
     _selectionOverlayImage?.dispose();
     _selectionOverlayImage = null;
     setState(() => _selectionMask = null);
@@ -1312,6 +1361,9 @@ class _CanvasAreaState extends State<CanvasArea> {
   void _onLayerContentChanged(String layerKey) {
     if (!mounted) return;
     if (layerKey == _tileKeyFor(_layerId)) {
+      if (!_writingSelectionPixels && _selectionRaster != null) {
+        _resetSelectionTransform();
+      }
       _currentLayerChangedOutside = true;
     } else if (_layers.any((layer) => _tileKeyFor(layer.id) == layerKey)) {
       _otherLayerChangedOutside = true;
@@ -1345,7 +1397,13 @@ class _CanvasAreaState extends State<CanvasArea> {
   }
 
   /// 選択範囲マスクを確定し、プレビュー用オーバーレイ画像を非同期で生成する。
-  void _setSelectionMask(Uint8List mask, int w, int h) {
+  void _setSelectionMask(
+    Uint8List mask,
+    int w,
+    int h, {
+    bool keepTransform = false,
+  }) {
+    if (!keepTransform) _resetSelectionTransform();
     _selectionOverlayImage?.dispose();
     _selectionOverlayImage = null;
     _selectionMask = mask;
@@ -1566,6 +1624,7 @@ class _CanvasAreaState extends State<CanvasArea> {
   }
 
   void _onPointerDown(PointerEvent event) {
+    if (_meshCommitInFlight) return;
     if (event.kind == PointerDeviceKind.mouse &&
         event.buttons & (kPrimaryMouseButton | kMiddleMouseButton) == 0) {
       return;
@@ -2174,30 +2233,33 @@ class _CanvasAreaState extends State<CanvasArea> {
   }
 
   /// 記録を終了し、実際に変更があった場合のみUndoManagerへ登録する。
-  void _finishTileUndo() {
+  void _finishTileUndo({
+    app_undo.UndoAction Function(app_undo.TileUndoAction)? wrap,
+  }) {
     final snapshot = _tileManager.endUndoRecording();
     final layerKey = _undoRecordingLayerKey;
     _undoRecordingLayerKey = null;
-    if (snapshot.before.isEmpty || layerKey == null) return;
+    if (layerKey == null || (snapshot.before.isEmpty && wrap == null)) return;
     final projectId = widget.project?.id;
     final projects = projectId == null ? null : context.read<ProjectService>();
+    final tiles = app_undo.TileUndoAction(
+      tileManager: _tileManager,
+      layerId: layerKey,
+      before: snapshot.before,
+      after: snapshot.after,
+      onApply: () {
+        if (projectId != null) projects?.refreshDrawingHistory(projectId);
+        if (mounted) _scheduleComposite();
+      },
+    );
     context.read<app_undo.UndoManager>().push(
-      app_undo.TileUndoAction(
-        tileManager: _tileManager,
-        layerId: layerKey,
-        before: snapshot.before,
-        after: snapshot.after,
-        onApply: () {
-          if (projectId != null) projects?.refreshDrawingHistory(projectId);
-          if (mounted) _scheduleComposite();
-        },
-      ),
+      wrap?.call(tiles) ?? tiles,
       projectId: projectId,
     );
     // Only real tile edits that reached Undo become mission candidates.
     // Pan, eyedropper, selection preview, taps and scrubbing are excluded.
     final project = widget.project;
-    if (project != null) {
+    if (project != null && snapshot.before.isNotEmpty) {
       context.read<ProjectService>().recordConfirmedEdit(project.id);
     }
   }
@@ -2715,42 +2777,73 @@ class _CanvasAreaState extends State<CanvasArea> {
   /// メッシュ変形ツールへ切り替わった直後：現在レイヤーの合成画像を
   /// ワープ元として取得し、既定の分割数（widget.meshDensity）で規則格子を
   /// 初期状態として設定する。
+  Future<ui.Image> _decodeMeshPixels(Uint8List pixels, int w, int h) {
+    final image = Completer<ui.Image>();
+    ui.decodeImageFromPixels(
+      pixels,
+      w,
+      h,
+      ui.PixelFormat.rgba8888,
+      image.complete,
+    );
+    return image.future;
+  }
+
   Future<void> _beginMeshTransform() async {
+    final generation = ++_meshGeneration;
     final key = _tileKeyFor(_layerId);
-    final source = await _tileManager.compositeLayerToImage(key);
-    if (!mounted || widget.currentTool != DrawingTool.meshTransform) {
-      source.dispose();
+    final w = _tileManager.canvasWidth;
+    final h = _tileManager.canvasHeight;
+    final canvasBounds = Rect.fromLTWH(0, 0, w.toDouble(), h.toDouble());
+    final selected = widget.meshSelectionOnly ? _selectionMask : null;
+    final bounds = selected == null
+        ? canvasBounds
+        : _selectionMaskBounds()?.intersect(canvasBounds);
+    if (bounds == null ||
+        bounds.isEmpty ||
+        (widget.meshSelectionOnly && selected == null)) {
+      return;
+    }
+    final raster = selected == null
+        ? null
+        : SelectionTransformRaster(
+            tiles: _tileManager,
+            layerKey: key,
+            mask: selected,
+            bounds: bounds,
+          );
+    final images = raster == null
+        ? [await _tileManager.compositeLayerToImage(key)]
+        : await Future.wait([
+            _decodeMeshPixels(raster.selected, w, h),
+            _decodeMeshPixels(raster.base, w, h),
+          ]);
+    if (!mounted ||
+        generation != _meshGeneration ||
+        widget.currentTool != DrawingTool.meshTransform) {
+      for (final image in images) {
+        image.dispose();
+      }
       return;
     }
     final rows = widget.meshDensity.clamp(1, 10);
-    final bounds = Rect.fromLTWH(
-      0,
-      0,
-      _tileManager.canvasWidth.toDouble(),
-      _tileManager.canvasHeight.toDouble(),
-    );
     setState(() {
-      meshSourceImage?.dispose();
       meshRows = rows;
       meshCols = rows;
-      meshSourceImage = source;
+      meshSourceImage = images.first;
+      _meshBaseImage = images.length > 1 ? images[1] : null;
+      _meshSourceBounds = bounds;
+      _meshSelectionMask = selected;
       meshControlPoints = MeshWarpEngine.regularGrid(rows, rows, bounds);
       _meshPointerToIndex.clear();
     });
   }
 
-  /// 分割数（1〜10）が変わった：格子点を新しい分割数の規則格子へ作り直す
-  /// （仕様上、分割数変更時点までの個別ドラッグ・回転・拡大縮小はリセット
-  /// される。単純さを優先した仕様）。
+  /// Changing the density starts again from the original source rectangle.
   void _applyMeshDensity(int density) {
-    if (meshSourceImage == null) return;
+    final bounds = _meshSourceBounds;
+    if (bounds == null) return;
     final rows = density.clamp(1, 10);
-    final bounds = Rect.fromLTWH(
-      0,
-      0,
-      _tileManager.canvasWidth.toDouble(),
-      _tileManager.canvasHeight.toDouble(),
-    );
     setState(() {
       meshRows = rows;
       meshCols = rows;
@@ -2823,44 +2916,103 @@ class _CanvasAreaState extends State<CanvasArea> {
   Future<void> _commitMeshTransform() async {
     final points = meshControlPoints;
     final source = meshSourceImage;
-    if (points == null || source == null) return;
+    if (points == null ||
+        source == null ||
+        _meshCommitInFlight ||
+        _tileManager.isRecordingUndo ||
+        _refuseLockedLayer(null)) {
+      return;
+    }
     final rows = meshRows;
     final cols = meshCols;
+    final bounds = _meshSourceBounds;
+    final mask = _meshSelectionMask;
+    final key = _tileKeyFor(_layerId);
+    final tiles = _tileManager;
+    final w = tiles.canvasWidth;
+    final h = tiles.canvasHeight;
+    final copy = source.clone();
+    final base = _meshBaseImage?.clone();
     _meshCommitInFlight = true;
-    _beginTileUndo(paints: false);
-    try {
-      await _tileManager.meshTransformLayer(
-        _tileKeyFor(_layerId),
-        rows,
-        cols,
-        points,
+
+    Future<Uint8List?> render(ui.Image image, {ui.Image? background}) async {
+      final warped = await MeshWarpEngine.warp(
+        image: image,
+        rows: rows,
+        cols: cols,
+        controlPoints: points,
+        outputWidth: w,
+        outputHeight: h,
+        sourceBounds: bounds,
+        base: background,
       );
-    } finally {
-      _meshCommitInFlight = false;
+      try {
+        final bytes = await warped.toByteData(
+          format: ui.ImageByteFormat.rawRgba,
+        );
+        return bytes?.buffer.asUint8List();
+      } finally {
+        warped.dispose();
+      }
     }
-    if (!mounted) return;
-    _scheduleComposite();
-    _markLineartDirtyIfNeeded();
-    _finishTileUndo();
-    setState(() {
-      meshControlPoints = null;
-      meshSourceImage?.dispose();
-      meshSourceImage = null;
-      _meshPointerToIndex.clear();
-    });
+
+    try {
+      final pixels = await render(copy, background: base);
+      Uint8List? transformedMask;
+      if (mask != null) {
+        final rgba = Uint8List(mask.length * 4);
+        for (var i = 0; i < mask.length; i++) {
+          if (mask[i] != 0) rgba[i * 4 + 3] = 255;
+        }
+        final maskImage = await _decodeMeshPixels(rgba, w, h);
+        try {
+          final result = await render(maskImage);
+          if (result == null) return;
+          transformedMask = Uint8List(mask.length);
+          for (var i = 0; i < transformedMask.length; i++) {
+            transformedMask[i] = result[i * 4 + 3] > 32 ? 1 : 0;
+          }
+        } finally {
+          maskImage.dispose();
+        }
+      }
+      if (!mounted ||
+          pixels == null ||
+          !identical(tiles, _tileManager) ||
+          key != _tileKeyFor(_layerId) ||
+          _tileManager.isRecordingUndo) {
+        return;
+      }
+      _beginTileUndo(paints: false);
+      tiles.replaceLayerPixels(key, pixels);
+      if (transformedMask != null && identical(_selectionMask, mask)) {
+        _setSelectionMask(transformedMask, w, h);
+      }
+      _scheduleComposite();
+      _markLineartDirtyIfNeeded();
+      _finishTileUndo();
+    } catch (error, stack) {
+      AppErrorReporter.record(error, stack);
+    } finally {
+      copy.dispose();
+      base?.dispose();
+      _meshCommitInFlight = false;
+      if (mounted) _cancelMeshTransform();
+    }
   }
 
-  /// キャンセル（コントロールパネルの「キャンセル」ボタン・閉じるボタン・
-  /// ツール離脱時の保険）：ワープ元画像・格子点を破棄してプレビューを消す
-  /// だけで、レイヤーへは何も書き戻さない。確定処理が進行中の場合は、
-  /// その処理がまだ参照しているui.Imageを誤ってdisposeしないよう何もしない。
   void _cancelMeshTransform() {
     if (_meshCommitInFlight) return;
-    if (meshControlPoints == null && meshSourceImage == null) return;
+    _meshGeneration++;
+    if (meshSourceImage == null) return;
     setState(() {
       meshControlPoints = null;
       meshSourceImage?.dispose();
       meshSourceImage = null;
+      _meshBaseImage?.dispose();
+      _meshBaseImage = null;
+      _meshSourceBounds = null;
+      _meshSelectionMask = null;
       _meshPointerToIndex.clear();
     });
   }
@@ -2875,6 +3027,10 @@ class _CanvasAreaState extends State<CanvasArea> {
   /// 現在の選択マスクのバウンディングボックス（キャンバスピクセル座標）。
   /// 選択が無い場合はnull。
   Rect? _selectionMaskBounds() {
+    final raster = _selectionRaster;
+    if (raster != null) {
+      return MatrixUtils.transformRect(_selectionMatrix, raster.bounds);
+    }
     final mask = _selectionMask;
     if (mask == null) return null;
     final w = _tileManager.canvasWidth;
@@ -3101,109 +3257,125 @@ class _CanvasAreaState extends State<CanvasArea> {
     }
   }
 
+  bool get _showSelectionPreview =>
+      _selectionTransformActive &&
+      _selectionBasePreview != null &&
+      _floatingSelectionImage != null;
+
+  void _resetSelectionTransform() {
+    _selectionRaster = null;
+    _selectionMatrix = Matrix4.identity();
+    _selectionSession = Object();
+    _selectionActions.clear();
+    _endSelectionGesture();
+    _selectionBasePreview?.dispose();
+    _selectionBasePreview = null;
+    _floatingSelectionImage?.dispose();
+    _floatingSelectionImage = null;
+  }
+
+  void _endSelectionGesture() {
+    _selectionTransformActive = false;
+    _selectionTransformStart = null;
+    _selectionTransformCenter = null;
+    _selectionTransformBounds = null;
+    _selectionTransformLive = null;
+  }
+
   void _beginSelectionTransform(
     Offset canvasPos,
     _TransformMode mode,
     Rect bounds,
   ) {
     final mask = _selectionMask;
-    if (mask == null) return;
+    if (mask == null || _tileManager.isRecordingUndo) return;
+    if (_selectionRaster == null) {
+      final raster = SelectionTransformRaster(
+        tiles: _tileManager,
+        layerKey: _tileKeyFor(_layerId),
+        mask: mask,
+        bounds: bounds,
+      );
+      _selectionRaster = raster;
+      void decode(Uint8List pixels, {required bool isBase}) {
+        ui.decodeImageFromPixels(
+          pixels,
+          raster.width,
+          raster.height,
+          ui.PixelFormat.rgba8888,
+          (image) {
+            if (!mounted || !identical(_selectionRaster, raster)) {
+              image.dispose();
+              return;
+            }
+            setState(() {
+              if (isBase) {
+                _selectionBasePreview = image;
+              } else {
+                _floatingSelectionImage = image;
+              }
+            });
+          },
+        );
+      }
+
+      decode(raster.base, isBase: true);
+      decode(raster.selected, isBase: false);
+    }
     setState(() {
       _selectionTransformActive = true;
       _selectionTransformMode = mode;
       _selectionTransformStart = canvasPos;
       _selectionTransformCenter = bounds.center;
       _selectionTransformBounds = bounds;
-      _selectionTransformLive = Matrix4.identity();
-    });
-    _beginTileUndo(paints: false);
-    final w = _tileManager.canvasWidth;
-    final h = _tileManager.canvasHeight;
-    final key = _tileKeyFor(_layerId);
-    _tileManager.compositeLayerToImage(key).then((composite) async {
-      final byteData = await composite.toByteData(
-        format: ui.ImageByteFormat.rawRgba,
-      );
-      composite.dispose();
-      if (!mounted || byteData == null || !identical(_selectionMask, mask)) {
-        return;
-      }
-      final src = byteData.buffer.asUint8List();
-      // 選択範囲内のピクセルを切り取った浮動画像を作る（範囲外は透明）。
-      final floating = Uint8List(w * h * 4);
-      for (int i = 0; i < w * h; i++) {
-        if (mask[i] == 0) continue;
-        final idx = i * 4;
-        floating[idx] = src[idx];
-        floating[idx + 1] = src[idx + 1];
-        floating[idx + 2] = src[idx + 2];
-        floating[idx + 3] = src[idx + 3];
-      }
-      // 元レイヤーの選択範囲内を透明化する（切り取り＝穴が空いた状態にする）。
-      // タップ直後にすぐ指を離す等でコミットが先に完了していた場合は、
-      // 浮動画像を貼り戻す先が無いまま切り取りだけが残ってしまう
-      // （データ消失）ため、ここで再度アクティブ状態を確認する。
-      if (!_selectionTransformActive) return;
-      for (int y = 0; y < h; y++) {
-        final rowBase = y * w;
-        for (int x = 0; x < w; x++) {
-          if (mask[rowBase + x] == 0) continue;
-          final tx = x ~/ TileManager.tileSize;
-          final ty = y ~/ TileManager.tileSize;
-          final tile = _tileManager.getOrCreateTile(key, tx, ty);
-          final lx = x % TileManager.tileSize;
-          final ly = y % TileManager.tileSize;
-          _tileManager.setPixel(tile, lx, ly, 0, 0, 0, 0);
-          _tileManager.markDirty(key, tx, ty);
-        }
-      }
-      if (!mounted) return;
-      _scheduleComposite();
-      ui.decodeImageFromPixels(floating, w, h, ui.PixelFormat.rgba8888, (img) {
-        if (!mounted || !_selectionTransformActive) {
-          img.dispose();
-          return;
-        }
-        setState(() => _floatingSelectionImage = img);
-      });
+      _selectionTransformLive = _selectionMatrix;
     });
   }
 
-  /// 画面下部のスライダーの値を選択範囲へ反映する（ライブプレビュー）。
-  ///
-  /// 最初に値が動いた時点で、ドラッグと同じように選択範囲の中身を切り出して
-  /// 「浮動画像」にする。以降は行列だけ差し替えるので、スライダーを動かして
-  /// いる間は実画素を触らない（確定は[_commitSelectionTransform]）。
-  void _applySliderTransform() {
+  void _applySliderTransform(SelectionTransformValues values) {
     final bounds = _selectionMaskBounds();
     if (bounds == null) return;
+    final scale = values.scale <= 0 ? 1.0 : values.scale;
     if (!_selectionTransformActive) {
+      if (values.moveX == 0 &&
+          values.moveY == 0 &&
+          values.rotateDeg == 0 &&
+          scale == 1) {
+        return;
+      }
       if (_refuseLockedLayer(null)) return;
-      // まだ掴んでいない状態からスライダーが動いた：切り出しだけ先に始める。
       _beginSelectionTransform(bounds.center, _TransformMode.translate, bounds);
+      if (!_selectionTransformActive) return;
     }
     final center = bounds.center;
-    final scale = widget.selectionScale <= 0 ? 1.0 : widget.selectionScale;
-    final radians = widget.selectionRotateDeg * math.pi / 180.0;
-    final matrix =
-        Matrix4.translationValues(
-          widget.selectionMoveX,
-          widget.selectionMoveY,
-          0,
-        ) *
+    final delta =
+        Matrix4.translationValues(values.moveX, values.moveY, 0) *
         Matrix4.translationValues(center.dx, center.dy, 0) *
-        Matrix4.rotationZ(radians) *
+        Matrix4.rotationZ(values.rotateDeg * math.pi / 180) *
         Matrix4.diagonal3Values(scale, scale, 1) *
         Matrix4.translationValues(-center.dx, -center.dy, 0);
-    setState(() => _selectionTransformLive = matrix);
+    _previewSelectionDelta(delta);
+  }
+
+  void _previewSelectionDelta(Matrix4 delta) {
+    final raster = _selectionRaster;
+    if (raster == null) return;
+    final matrix = delta * _selectionMatrix;
+    setState(() {
+      _selectionTransformLive = matrix;
+      _selectionTransformBounds = MatrixUtils.transformRect(
+        matrix,
+        raster.bounds,
+      );
+    });
   }
 
   void _updateSelectionTransform(Offset canvasPos) {
     final start = _selectionTransformStart;
     final center = _selectionTransformCenter;
     if (start == null || center == null) return;
-    setState(
-      () => _selectionTransformLive = _computeTransformMatrix(
+    _previewSelectionDelta(
+      _computeTransformMatrix(
         _selectionTransformMode,
         start,
         canvasPos,
@@ -3212,94 +3384,82 @@ class _CanvasAreaState extends State<CanvasArea> {
     );
   }
 
-  void _commitSelectionTransform() {
-    final matrix = _selectionTransformLive ?? Matrix4.identity();
-    final floating = _floatingSelectionImage;
-    setState(() {
-      _selectionTransformActive = false;
-      _selectionTransformStart = null;
-      _selectionTransformCenter = null;
-      _selectionTransformBounds = null;
-      _selectionTransformLive = null;
-      _floatingSelectionImage = null;
-    });
-    if (floating == null) {
-      // 浮動画像の生成が間に合わないうちに指を離した場合：変形操作は成立
-      // していないので、切り取り途中の画素をUndo履歴として残すのではなく、
-      // 操作開始直前へ即時ロールバックする。
-      _cancelTileUndoAndRestore();
-      return;
+  void _writeSelectionPixels(VoidCallback write) {
+    _writingSelectionPixels = true;
+    try {
+      write();
+    } finally {
+      _writingSelectionPixels = false;
     }
-    final key = _tileKeyFor(_layerId);
-    final w = _tileManager.canvasWidth;
-    final h = _tileManager.canvasHeight;
-    _tileManager.compositeLayerToImage(key).then((base) async {
-      final recorder = ui.PictureRecorder();
-      final canvas = ui.Canvas(recorder);
-      canvas.drawImage(base, Offset.zero, ui.Paint());
-      base.dispose();
-      canvas.save();
-      canvas.transform(matrix.storage);
-      canvas.drawImage(floating, Offset.zero, ui.Paint());
-      canvas.restore();
-      floating.dispose();
-      final picture = recorder.endRecording();
-      final merged = await picture.toImage(w, h);
-      picture.dispose();
-      final byteData = await merged.toByteData(
-        format: ui.ImageByteFormat.rawRgba,
-      );
-      merged.dispose();
-      if (!mounted) return;
-      if (byteData != null) {
-        _tileManager.replaceLayerPixels(key, byteData.buffer.asUint8List());
-      }
-      // 選択範囲も同じ変形をかけ、選択範囲が移動後の位置へ追従するようにする。
-      if (!matrix.isIdentity()) _transformSelectionMask(matrix);
-      _scheduleComposite();
-      _markLineartDirtyIfNeeded();
-      _finishTileUndo();
-    });
   }
 
-  /// 選択マスクへ[matrix]と同じ変形をかけ、選択範囲を移動後の位置へ更新する。
-  void _transformSelectionMask(Matrix4 matrix) {
-    final mask = _selectionMask;
-    if (mask == null) return;
-    final w = _tileManager.canvasWidth;
-    final h = _tileManager.canvasHeight;
-    final maskRgba = Uint8List(w * h * 4);
-    for (int i = 0; i < w * h; i++) {
-      if (mask[i] == 0) continue;
-      final idx = i * 4;
-      maskRgba[idx] = 255;
-      maskRgba[idx + 1] = 255;
-      maskRgba[idx + 2] = 255;
-      maskRgba[idx + 3] = 255;
-    }
-    ui.decodeImageFromPixels(maskRgba, w, h, ui.PixelFormat.rgba8888, (
-      maskImage,
-    ) async {
-      final recorder = ui.PictureRecorder();
-      final canvas = ui.Canvas(recorder);
-      canvas.transform(matrix.storage);
-      canvas.drawImage(maskImage, Offset.zero, ui.Paint());
-      maskImage.dispose();
-      final picture = recorder.endRecording();
-      final transformed = await picture.toImage(w, h);
-      picture.dispose();
-      final byteData = await transformed.toByteData(
-        format: ui.ImageByteFormat.rawRgba,
+  void _commitSelectionTransform() {
+    final raster = _selectionRaster;
+    final next = _selectionTransformLive;
+    setState(_endSelectionGesture);
+    if (raster == null || next == null || next == _selectionMatrix) return;
+    final previous = _selectionMatrix;
+    final session = _selectionSession;
+    final data = raster.render(next);
+    final layerKey = _tileKeyFor(_layerId);
+    _beginTileUndo(paints: false);
+    _writeSelectionPixels(
+      () => _tileManager.replaceLayerPixels(layerKey, data.pixels),
+    );
+    _selectionMatrix = next;
+    _setSelectionMask(
+      data.mask,
+      raster.width,
+      raster.height,
+      keepTransform: true,
+    );
+    _scheduleComposite();
+    _markLineartDirtyIfNeeded();
+    _finishTileUndo(
+      wrap: (tiles) {
+        void restore(Matrix4 matrix, VoidCallback apply) {
+          if (!mounted || !identical(session, _selectionSession)) {
+            apply();
+            return;
+          }
+          _writeSelectionPixels(apply);
+          final source = _selectionRaster!;
+          _selectionMatrix = matrix;
+          _setSelectionMask(
+            source.render(matrix).mask,
+            source.width,
+            source.height,
+            keepTransform: true,
+          );
+        }
+
+        final action = app_undo.ProjectEditUndoAction(
+          tiles.description,
+          () => restore(previous, tiles.undo),
+          () => restore(next, tiles.redo),
+        );
+        _selectionActions.add(action);
+        return action;
+      },
+    );
+  }
+
+  void _cancelSelectionTransforms() {
+    final raster = _selectionRaster;
+    if (raster == null) return;
+    if (!_selectionMatrix.isIdentity()) {
+      final pixels = raster.render(Matrix4.identity()).pixels;
+      _writeSelectionPixels(
+        () => _tileManager.replaceLayerPixels(_tileKeyFor(_layerId), pixels),
       );
-      transformed.dispose();
-      if (!mounted || byteData == null) return;
-      final bytes = byteData.buffer.asUint8List();
-      final newMask = Uint8List(w * h);
-      for (int i = 0; i < w * h; i++) {
-        newMask[i] = bytes[i * 4 + 3] > 32 ? 1 : 0;
-      }
-      _setSelectionMask(newMask, w, h);
-    });
+      final project = widget.project;
+      if (project != null) _projects.refreshDrawingHistory(project.id);
+      _scheduleComposite();
+    }
+    context.read<app_undo.UndoManager>().discardActions(
+      _selectionActions,
+      projectId: widget.project?.id,
+    );
   }
 
   // ─── バケツ連続塗り ───────────────────────────────────────────────────
@@ -4755,6 +4915,9 @@ class _CanvasAreaState extends State<CanvasArea> {
           }
           _disarmHoldEyedropper(e.pointer);
           if (_toolHandledPointers.remove(e.pointer)) {
+            if (_isSelectionTool && _selectionTransformActive) {
+              setState(_endSelectionGesture);
+            }
             _cancelToolPointer(e.pointer);
           }
           if (e.pointer == _gizmoPointer) _endFilterGizmoDrag();
@@ -4779,12 +4942,14 @@ class _CanvasAreaState extends State<CanvasArea> {
                     project: widget.project,
                     background: widget.background,
                     transform: _transformController.value,
-                    compositeImage:
-                        widget.currentLayerPreview ?? _compositeImage,
+                    compositeImage: _showSelectionPreview
+                        ? _selectionBasePreview
+                        : widget.currentLayerPreview ?? _compositeImage,
                     belowImage: _belowImage,
                     abovePicture: _abovePicture,
                     exactCurrentBlend:
-                        _exactBlendKey != null &&
+                        !_showSelectionPreview &&
+                            _exactBlendKey != null &&
                             _exactBlendKey == _exactBlendInputs
                         ? _exactBlend
                         : null,
@@ -4805,7 +4970,8 @@ class _CanvasAreaState extends State<CanvasArea> {
                     selectionEnd: _selectionEnd,
                     // 変形操作中は移動前の位置のハイライトが紛らわしいため非表示にする
                     // （ハンドル・浮動画像プレビューの方で現在の状態を示す）。
-                    selectionOverlayImage: _selectionTransformActive
+                    selectionOverlayImage:
+                        _selectionTransformActive || _meshBaseImage != null
                         ? null
                         : _selectionOverlayImage,
                     selectionLayerOverlayImage: _selectionLayerOverlayImage,
@@ -4827,7 +4993,9 @@ class _CanvasAreaState extends State<CanvasArea> {
                     moveDelta: widget.currentTool == DrawingTool.move
                         ? _moveDelta
                         : null,
-                    floatingSelectionImage: _floatingSelectionImage,
+                    floatingSelectionImage: _showSelectionPreview
+                        ? _floatingSelectionImage
+                        : null,
                     selectionTransformLive: _selectionTransformLive,
                     selectionTransformBounds: _selectionTransformBounds,
                     // 選択範囲がある間は、掴む前からハンドルを描いておく
@@ -4844,6 +5012,8 @@ class _CanvasAreaState extends State<CanvasArea> {
                     meshCols: meshCols,
                     meshControlPoints: meshControlPoints,
                     meshSourceImage: meshSourceImage,
+                    meshBaseImage: _meshBaseImage,
+                    meshSourceBounds: _meshSourceBounds,
                     showMeshHandles:
                         widget.currentTool == DrawingTool.meshTransform,
                     handleColor: theme.selectionColor,
@@ -5047,6 +5217,8 @@ class _CanvasPainter extends CustomPainter {
   final int meshCols;
   final List<Offset>? meshControlPoints;
   final ui.Image? meshSourceImage;
+  final ui.Image? meshBaseImage;
+  final Rect? meshSourceBounds;
   final bool showMeshHandles;
   // 選択範囲・変形ハンドル・定規ハンドルの色（テーマの選択色連動、
   // 色固定を廃止している）。キャンバス内容は任意の絵柄になり得るため、
@@ -5103,6 +5275,8 @@ class _CanvasPainter extends CustomPainter {
     this.meshCols = 1,
     this.meshControlPoints,
     this.meshSourceImage,
+    this.meshBaseImage,
+    this.meshSourceBounds,
     this.showMeshHandles = false,
     required this.handleColor,
     required this.handleOutlineColor,
@@ -5155,23 +5329,20 @@ class _CanvasPainter extends CustomPainter {
         ..blendMode = LayerCompositor.displayBlendMode(currentLayerBlendMode);
       final sx = drawingRect.width / meshSourceImage!.width;
       final sy = drawingRect.height / meshSourceImage!.height;
-      canvas.save();
+      canvas.saveLayer(drawingRect, meshCurrentPaint);
       canvas.translate(drawingRect.left, drawingRect.top);
       canvas.scale(sx, sy);
-      final vertices = MeshWarpEngine.buildVertices(
+      if (meshBaseImage != null) {
+        canvas.drawImage(meshBaseImage!, Offset.zero, Paint());
+      }
+      MeshWarpEngine.draw(
+        canvas,
         image: meshSourceImage!,
         rows: meshRows,
         cols: meshCols,
         controlPoints: meshControlPoints!,
+        sourceBounds: meshSourceBounds,
       );
-      meshCurrentPaint.shader = ui.ImageShader(
-        meshSourceImage!,
-        ui.TileMode.clamp,
-        ui.TileMode.clamp,
-        MeshWarpEngine.identityMatrix4,
-        filterQuality: ui.FilterQuality.low,
-      );
-      canvas.drawVertices(vertices, BlendMode.srcOver, meshCurrentPaint);
       canvas.restore();
     } else if (compositeImage != null && exact == null) {
       final currentPaint = Paint()
@@ -5184,7 +5355,15 @@ class _CanvasPainter extends CustomPainter {
         ..blendMode = LayerCompositor.displayBlendMode(currentLayerBlendMode);
       final sx = drawingRect.width / compositeImage!.width;
       final sy = drawingRect.height / compositeImage!.height;
-      if (moveDelta != null) {
+      if (floatingSelectionImage != null && selectionTransformLive != null) {
+        canvas.saveLayer(drawingRect, currentPaint);
+        canvas.translate(drawingRect.left, drawingRect.top);
+        canvas.scale(sx, sy);
+        canvas.drawImage(compositeImage!, Offset.zero, Paint());
+        canvas.transform(selectionTransformLive!.storage);
+        canvas.drawImage(floatingSelectionImage!, Offset.zero, Paint());
+        canvas.restore();
+      } else if (moveDelta != null) {
         // 移動ツール：ドラッグ中はコミット前のプレビューとして表示する
         canvas.save();
         canvas.translate(drawingRect.left, drawingRect.top);
@@ -5201,22 +5380,6 @@ class _CanvasPainter extends CustomPainter {
         );
         canvas.drawImageRect(compositeImage!, src, drawingRect, currentPaint);
       }
-    }
-
-    // 選択ツールの移動・回転・拡大縮小：ドラッグ中の浮動選択画像プレビュー
-    // （元レイヤーは既に選択範囲が透明化された状態で上のcompositeImageに
-    // 反映済みのため、その上に変形後の位置で重ねて描く）。
-    if (floatingSelectionImage != null) {
-      final sx = drawingRect.width / floatingSelectionImage!.width;
-      final sy = drawingRect.height / floatingSelectionImage!.height;
-      canvas.save();
-      canvas.translate(drawingRect.left, drawingRect.top);
-      canvas.scale(sx, sy);
-      if (selectionTransformLive != null) {
-        canvas.transform(selectionTransformLive!.storage);
-      }
-      canvas.drawImage(floatingSelectionImage!, Offset.zero, Paint());
-      canvas.restore();
     }
 
     // オニオンスキン（後フレーム）
@@ -5814,6 +5977,7 @@ class _CanvasPainter extends CustomPainter {
     int offset,
   ) {
     final opacity = onionEngine.getOpacityForFrame(onionSettings, offset);
+    if (opacity <= 0) return;
     final color = onionEngine.getColorForFrame(onionSettings, offset);
     final src = Rect.fromLTWH(
       0,
@@ -5827,8 +5991,8 @@ class _CanvasPainter extends CustomPainter {
       drawingRect,
       Paint()
         ..colorFilter = ui.ColorFilter.mode(
-          color.withValues(alpha: opacity),
-          BlendMode.srcATop,
+          color.withValues(alpha: color.a * opacity),
+          BlendMode.srcIn,
         ),
     );
   }
@@ -5927,6 +6091,8 @@ class _CanvasPainter extends CustomPainter {
       old.meshCols != meshCols ||
       old.meshControlPoints != meshControlPoints ||
       old.meshSourceImage != meshSourceImage ||
+      old.meshBaseImage != meshBaseImage ||
+      old.meshSourceBounds != meshSourceBounds ||
       old.showMeshHandles != showMeshHandles ||
       old.project?.drawingAreaScale != project?.drawingAreaScale ||
       old.viewTransform != viewTransform ||

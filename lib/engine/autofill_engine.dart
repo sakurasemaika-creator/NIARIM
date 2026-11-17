@@ -1,3 +1,4 @@
+import 'dart:collection';
 import 'dart:math' as math;
 import 'dart:typed_data';
 
@@ -236,6 +237,14 @@ class AutofillEngine {
   }) {
     final result = Uint8List.fromList(existingData);
     final gradient = part.gradient;
+    final position = gradient == null
+        ? null
+        : _gradientPosition(
+            gradient,
+            width,
+            height,
+            (i) => existingData[i * 4 + 3] != 0,
+          );
     final useTone = part.useTone && toneTexture != null;
     // 縁取りが有効な場合、既存の不透明範囲（塗り本体＋縁取りリング）の
     // うち「既存データの時点で境界（線画側の外周）に近いピクセル」を
@@ -269,7 +278,12 @@ class AutofillEngine {
         final argb = isOutlinePixel
             ? part.outlineColor
             : gradient != null
-            ? _gradientColorAt(gradient, x, y, width, height)
+            ? _sampleGradient(
+                gradient.colors,
+                gradient.stops,
+                position!(x, y),
+                gradient.feather,
+              )
             : part.color;
         final a = result[i + 3];
         result[i] = premultipliedChannel((argb >> 16) & 0xFF, a);
@@ -448,6 +462,16 @@ class AutofillEngine {
     }
     final result = Uint8List.fromList(lineartData);
     final gradient = part.gradient;
+    final position =
+        gradient == null ||
+            part.lineColorMode == AutofillLineColorMode.specified
+        ? null
+        : _gradientPosition(
+            gradient,
+            width,
+            height,
+            (i) => lineartData[i * 4 + 3] != 0,
+          );
     for (int y = 0; y < height; y++) {
       for (int x = 0; x < width; x++) {
         final idx = (y * width + x) * 4;
@@ -458,11 +482,21 @@ class AutofillEngine {
             argb = part.lineColor;
           case AutofillLineColorMode.sameAsFill:
             argb = gradient != null
-                ? _gradientColorAt(gradient, x, y, width, height)
+                ? _sampleGradient(
+                    gradient.colors,
+                    gradient.stops,
+                    position!(x, y),
+                    gradient.feather,
+                  )
                 : part.color;
           case AutofillLineColorMode.traceAdjust:
             final baseArgb = gradient != null
-                ? _gradientColorAt(gradient, x, y, width, height)
+                ? _sampleGradient(
+                    gradient.colors,
+                    gradient.stops,
+                    position!(x, y),
+                    gradient.feather,
+                  )
                 : part.color;
             argb = _traceAdjustColor(
               baseArgb,
@@ -510,27 +544,10 @@ class AutofillEngine {
 
     void fill(int startX, int startY) {
       if (isLineart(startX, startY)) return;
-      final queue = <(int, int)>[(startX, startY)];
+      final queue = Queue<(int, int)>()..add((startX, startY));
       visited[startY * width + startX] = true;
       while (queue.isNotEmpty) {
-        final (cx, cy) = queue.removeAt(0);
-        final idx = (cy * width + cx) * 4;
-        var coverage = 255;
-        if (useTone) {
-          final tx = cx % toneWidth;
-          final ty = cy % toneHeight;
-          coverage = toneTexture[(ty * toneWidth + tx) * 4 + 3];
-        }
-        if (coverage > 0) {
-          final argb = gradient == null
-              ? solidColor
-              : _gradientColorAt(gradient, cx, cy, width, height);
-          final a = premultipliedChannel((argb >> 24) & 0xFF, coverage);
-          outputData[idx] = premultipliedChannel((argb >> 16) & 0xFF, a);
-          outputData[idx + 1] = premultipliedChannel((argb >> 8) & 0xFF, a);
-          outputData[idx + 2] = premultipliedChannel(argb & 0xFF, a);
-          outputData[idx + 3] = a;
-        }
+        final (cx, cy) = queue.removeFirst();
         for (final (nx, ny) in [
           (cx - 1, cy),
           (cx + 1, cy),
@@ -547,7 +564,7 @@ class AutofillEngine {
     }
 
     final outside = List<bool>.filled(width * height, false);
-    final outerQueue = <(int, int)>[];
+    final outerQueue = Queue<(int, int)>();
     for (int x = 0; x < width; x++) {
       if (!isLineart(x, 0)) {
         outside[x] = true;
@@ -569,7 +586,7 @@ class AutofillEngine {
       }
     }
     while (outerQueue.isNotEmpty) {
-      final (cx, cy) = outerQueue.removeAt(0);
+      final (cx, cy) = outerQueue.removeFirst();
       for (final (nx, ny) in [
         (cx - 1, cy),
         (cx + 1, cy),
@@ -592,48 +609,84 @@ class AutofillEngine {
         }
       }
     }
+    final position = gradient == null
+        ? null
+        : _gradientPosition(gradient, width, height, (i) => visited[i]);
+    for (var y = 0; y < height; y++) {
+      for (var x = 0; x < width; x++) {
+        final index = y * width + x;
+        if (!visited[index]) continue;
+        final coverage = useTone
+            ? toneTexture[((y % toneHeight) * toneWidth + x % toneWidth) * 4 +
+                  3]
+            : 255;
+        if (coverage == 0) continue;
+        final argb = gradient == null
+            ? solidColor
+            : _sampleGradient(
+                gradient.colors,
+                gradient.stops,
+                position!(x, y),
+                gradient.feather,
+              );
+        final a = premultipliedChannel((argb >> 24) & 0xFF, coverage);
+        final i = index * 4;
+        outputData[i] = premultipliedChannel((argb >> 16) & 0xFF, a);
+        outputData[i + 1] = premultipliedChannel((argb >> 8) & 0xFF, a);
+        outputData[i + 2] = premultipliedChannel(argb & 0xFF, a);
+        outputData[i + 3] = a;
+      }
+    }
     return visited;
   }
 
   // ─── グラデーション（塗り色設定・グラデーション） ─────────────
 
-  /// キャンバス座標(x, y)におけるグラデーション色をARGB intで返す。
-  int _gradientColorAt(
-    AutofillGradient g,
-    int x,
-    int y,
+  /// Map the part's occupied pixel bounds onto the gradient stops.
+  double Function(int, int) _gradientPosition(
+    AutofillGradient gradient,
     int width,
     int height,
+    bool Function(int) contains,
   ) {
-    double t;
-    switch (g.type) {
-      case AutofillGradientType.linear:
-        final rad = g.angle * math.pi / 180;
-        final dx = math.cos(rad);
-        final dy = math.sin(rad);
-        // 中心を原点としたピクセル単位の実座標を方向ベクトルへ投影する。
-        // 以前はx・yをそれぞれ幅・高さで個別に0〜1正規化してから射影して
-        // いたが、この方式だと正方形でない塗り範囲では指定した角度と
-        // 実際に画面上で見える傾きがズレてしまう（例：横長の範囲では
-        // 45度がほぼ水平寄りに見える）。塗り範囲の縦横比が変わるたびに
-        // 同じ角度でも見た目の傾きが変わって見える不具合の原因だった。
-        // ピクセル単位のまま（幅・高さを個別に正規化せず）射影することで、
-        // 縦横比によらず指定した角度どおりの向きになるようにする。
-        final px = x - width / 2.0;
-        final py = y - height / 2.0;
-        final proj = px * dx + py * dy;
-        final halfDiagonal = math.sqrt(width * width + height * height) / 2.0;
-        t = halfDiagonal > 0 ? (proj + halfDiagonal) / (halfDiagonal * 2) : 0.5;
-      case AutofillGradientType.radialCenterOut:
-      case AutofillGradientType.radialOutCenter:
-        final cx = g.centerX * width;
-        final cy = g.centerY * height;
-        final maxRadius = math.sqrt(width * width + height * height) / 2;
-        final dist = math.sqrt((x - cx) * (x - cx) + (y - cy) * (y - cy));
-        t = maxRadius > 0 ? dist / maxRadius : 0;
-        if (g.type == AutofillGradientType.radialOutCenter) t = 1 - t;
+    var left = width, top = height, right = -1, bottom = -1;
+    for (var y = 0; y < height; y++) {
+      for (var x = 0; x < width; x++) {
+        if (!contains(y * width + x)) continue;
+        left = math.min(x, left);
+        right = math.max(x, right);
+        top = math.min(y, top);
+        bottom = math.max(y, bottom);
+      }
     }
-    return _sampleGradient(g.colors, g.stops, t.clamp(0.0, 1.0), g.feather);
+    final spanX = right - left;
+    final spanY = bottom - top;
+    if (spanX < 0 || spanY < 0) return (_, _) => 0.5;
+    if (gradient.type == AutofillGradientType.linear) {
+      final angle = gradient.angle * math.pi / 180;
+      final dx = math.cos(angle);
+      final dy = math.sin(angle);
+      final half = (spanX * dx.abs() + spanY * dy.abs()) / 2;
+      final cx = (left + right) / 2;
+      final cy = (top + bottom) / 2;
+      if (half < 1e-9) return (_, _) => 0.5;
+      return (x, y) =>
+          (0.5 + ((x - cx) * dx + (y - cy) * dy) / (2 * half)).clamp(0.0, 1.0);
+    }
+    final cx = left + spanX * gradient.centerX;
+    final cy = top + spanY * gradient.centerY;
+    final dx = math.max((cx - left).abs(), (cx - right).abs());
+    final dy = math.max((cy - top).abs(), (cy - bottom).abs());
+    final radius = math.sqrt(dx * dx + dy * dy);
+    final reversed = gradient.type == AutofillGradientType.radialOutCenter;
+    return (x, y) {
+      final distX = x - cx;
+      final distY = y - cy;
+      final t = radius == 0
+          ? 0.0
+          : (math.sqrt(distX * distX + distY * distY) / radius).clamp(0.0, 1.0);
+      return reversed ? 1 - t : t;
+    };
   }
 
   /// [feather]（0.0〜1.0）：1.0なら隣接する2色の境界（stops[i]〜stops[i+1]）

@@ -323,7 +323,7 @@ class FilterService extends ChangeNotifier {
     _colorNoiseProfile ??= _defaultFilters().firstWhere(
       (f) => f.id == genericNoiseFilterId,
     );
-    _currentFilterId = filters.firstOrNull?.id;
+    _currentFilterId = null;
   }
 
   /// [filter] read the way this version reads a filter saved by an older

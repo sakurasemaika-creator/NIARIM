@@ -415,6 +415,11 @@ void main() {
         _painted(tester, find.text('hint'))!.withAlpha(255),
         preset.textColor,
       );
+      final input = tester.element(find.byType(TextField));
+      final border = InputDecorationTheme.of(input).border!;
+      final outline = WidgetStateProperty.resolveAs<InputBorder>(border, {});
+      expect(outline.borderSide.width, 1, reason: preset.name);
+      expect(outline.borderSide.color.a, greaterThan(0));
       await tester.sendKeyEvent(LogicalKeyboardKey.escape);
       await tester.pumpAndSettle();
     }

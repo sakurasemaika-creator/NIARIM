@@ -456,6 +456,9 @@ class ThemeService extends ChangeNotifier {
     ),
   ];
 
+  static bool isBuiltInPreset(String id) =>
+      _builtInPresets.any((preset) => preset.id == id);
+
   /// A renamed preset keeps its user-supplied name in every language.
   static bool usesBuiltInName(AppThemePreset preset) => _builtInPresets.any(
     (original) => original.id == preset.id && original.name == preset.name,
@@ -507,9 +510,7 @@ class ThemeService extends ChangeNotifier {
       }
       // 保存済みプリセット一覧に、組み込みプリセット（パステル・
       // ニュアンス・くすみカラー等）を反映する（同IDが既に存在する場合は
-      // 追加しない。プリセット名は同一IDであれば保存済みデータ側が優先
-      // されるため、名称を変更したい場合はプリセットの削除→再度組み込み
-      // 一覧から選び直すことで反映できる）。
+      // 追加しない。利用者が付けた名前は保存済みデータを優先する）。
       final existingIds = _presets.map((p) => p.id).toSet();
       final missing = _builtInPresets.where((p) => !existingIds.contains(p.id));
       if (missing.isNotEmpty) _presets.addAll(missing);
@@ -794,8 +795,27 @@ class ThemeService extends ChangeNotifier {
     await copies.save();
   }
 
+  void renamePreset(String id, String name) {
+    final preset = _presets.where((entry) => entry.id == id).firstOrNull;
+    if (preset != null) savePreset(preset.copyWith(name: name));
+  }
+
+  void resetPresetColors(String id) {
+    final original = _builtInPresets
+        .where((entry) => entry.id == id)
+        .firstOrNull;
+    final stored = _presets.where((entry) => entry.id == id).firstOrNull;
+    if (original == null || stored == null) return;
+    savePreset(
+      original.copyWith(name: stored.name, isFavorite: stored.isFavorite),
+    );
+  }
+
   void deletePreset(String id) {
-    _presets.removeWhere((p) => p.id == id);
+    final index = _presets.indexWhere((preset) => preset.id == id);
+    if (index < 0 || _presets[index].isFavorite || isBuiltInPreset(id)) return;
+    _presets.removeAt(index);
+    if (_current.id == id) _current = _current.copyWith(id: customCurrentId);
     notifyListeners();
     _persist();
   }

@@ -2856,9 +2856,19 @@ class AppLocalizationsEs extends AppLocalizations {
   String get themeImportSuccessSnackbar => 'Archivo .niatheme importado';
 
   @override
-  String themeImportFailedSnackbar(String error) {
-    return 'Error al importar: $error';
-  }
+  String get themeImportInvalidFile =>
+      'El archivo no es un tema o está dañado.';
+
+  @override
+  String get themeImportMissingColors =>
+      'Al tema le faltan colores o ajustes obligatorios, o su formato no es válido.';
+
+  @override
+  String get themeImportLowContrast =>
+      'El tema importado tiene poco contraste. Se añadió a la lista y los colores actuales siguen activos.';
+
+  @override
+  String get themeImportReadFailed => 'No se pudo leer el archivo del tema.';
 
   @override
   String get themeSaveAsNewButton => 'Guardar ajustes actuales como nuevo tema';
@@ -4365,7 +4375,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get autofillPartGradientStopDragHint =>
-      'Arrastra los marcadores ▲ hacia los lados para ajustar la posición de cada color';
+      'Arrastra los marcadores ▲ para ajustar la posición de los colores. El degradado abarca toda el área de relleno de la parte.';
 
   @override
   String get saveTreeScreenTitleTree => 'Árbol de guardado';
@@ -4928,6 +4938,11 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get layerPanelDeleteConfirmBody =>
       'Este material se eliminará de todos los fotogramas dentro de su rango de visualización.';
+
+  @override
+  String layerPanelCommonRemoveFrame(String name) {
+    return '¿Ocultar «$name» en este fotograma?';
+  }
 
   @override
   String layerPanelCommonDeleteMidDialogTitle(String name) {

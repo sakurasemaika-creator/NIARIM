@@ -2720,9 +2720,17 @@ class AppLocalizationsKo extends AppLocalizations {
   String get themeImportSuccessSnackbar => '.niatheme 파일을 불러왔습니다';
 
   @override
-  String themeImportFailedSnackbar(String error) {
-    return '불러오기에 실패했습니다: $error';
-  }
+  String get themeImportInvalidFile => '테마 파일이 아니거나 파일이 손상되었습니다.';
+
+  @override
+  String get themeImportMissingColors => '테마에 필요한 색상이나 설정이 없거나 형식이 올바르지 않습니다.';
+
+  @override
+  String get themeImportLowContrast =>
+      '가져온 테마의 대비가 낮습니다. 목록에 추가했으며 현재 색상을 계속 표시합니다.';
+
+  @override
+  String get themeImportReadFailed => '테마 파일을 읽을 수 없습니다.';
 
   @override
   String get themeSaveAsNewButton => '현재 설정을 새 테마로 저장';
@@ -4144,7 +4152,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get autofillPartGradientStopDragHint =>
-      '▲ 표시를 좌우로 드래그하여 각 색상의 위치를 조정할 수 있습니다';
+      '▲ 표시를 드래그하여 색상 위치를 조정하세요. 그라데이션은 부위의 전체 채색 영역에 적용됩니다.';
 
   @override
   String get saveTreeScreenTitleTree => '세이브 트리';
@@ -4682,6 +4690,11 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get layerPanelDeleteConfirmBody => '이 소재의 표시 범위 내 모든 프레임에서 삭제됩니다.';
+
+  @override
+  String layerPanelCommonRemoveFrame(String name) {
+    return '이 프레임에서 “$name” 레이어를 숨길까요?';
+  }
 
   @override
   String layerPanelCommonDeleteMidDialogTitle(String name) {

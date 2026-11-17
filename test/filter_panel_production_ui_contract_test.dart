@@ -10,10 +10,26 @@ import 'package:niarim/models/layer.dart' as model;
 import 'package:niarim/screens/canvas/widgets/filter_panel.dart';
 import 'package:niarim/services/filter_service.dart';
 import 'package:niarim/services/project_service.dart';
+import 'package:niarim/services/premium_service.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'helpers/first_use_tooltips.dart';
+
+Future<void> _tapFilterCard(WidgetTester tester, Finder card) async {
+  await Scrollable.ensureVisible(tester.element(card), alignment: 0.5);
+  await tester.pump();
+  expect(card.hitTestable(), findsOneWidget);
+  await tester.tap(card);
+  await tester.pump();
+}
+
+class _FilterAccess extends PremiumService {
+  @override
+  bool isFeatureAvailable(PremiumFeature feature) =>
+      feature == PremiumFeature.toneCurve ||
+      feature == PremiumFeature.levelAdjustment;
+}
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -78,7 +94,12 @@ void main() {
 
       await tester.pumpWidget(
         MultiProvider(
-          providers: providers,
+          providers: [
+            ...providers,
+            ChangeNotifierProvider<PremiumService>(
+              create: (_) => _FilterAccess(),
+            ),
+          ],
           child: MaterialApp(
             locale: const Locale('ja'),
             localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -98,7 +119,10 @@ void main() {
       await tester.pump();
 
       final panelContext = tester.element(find.byType(FilterPanel));
-      final filters = panelContext.read<FilterService>().filters;
+      final service = panelContext.read<FilterService>();
+      expect(service.currentFilter, isNull);
+      expect(find.byKey(const ValueKey('filter-apply-button')), findsNothing);
+      final filters = service.filters;
       expect(filters, isNotEmpty);
       expect(filters.map((f) => f.id).toSet(), hasLength(filters.length));
       final gallery = find.byKey(const ValueKey('filter-tile-grid'));
@@ -119,12 +143,7 @@ void main() {
           findsOneWidget,
           reason: '${filter.id} ${filter.name} must be reachable',
         );
-        await tester.ensureVisible(card);
-        await tester.pump();
-        await tester.ensureVisible(card);
-        await tester.pump();
-        await tester.tap(card);
-        await tester.pump();
+        await _tapFilterCard(tester, card);
         expect(
           panelContext.read<FilterService>().currentFilter?.id,
           filter.id,
@@ -228,7 +247,12 @@ void main() {
           .id;
       await tester.pumpWidget(
         MultiProvider(
-          providers: providers,
+          providers: [
+            ...providers,
+            ChangeNotifierProvider<PremiumService>(
+              create: (_) => _FilterAccess(),
+            ),
+          ],
           child: MaterialApp(
             locale: const Locale('ja'),
             localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -260,10 +284,7 @@ void main() {
           matching: find.byType(Scrollable),
         ),
       );
-      await tester.ensureVisible(card);
-      await tester.pump();
-      await tester.tap(card);
-      await tester.pump();
+      await _tapFilterCard(tester, card);
       expect(
         find.byKey(const ValueKey('tone-curve-channel-selector')),
         findsOneWidget,
@@ -281,6 +302,8 @@ void main() {
       await tester.pump();
       expect(find.byKey(const ValueKey('tone-curve-editor-1')), findsOneWidget);
       final redEditor = find.byKey(const ValueKey('tone-curve-editor-1'));
+      await tester.ensureVisible(redEditor);
+      await tester.pump();
       final redBox = tester.getRect(redEditor);
       await tester.tapAt(
         Offset(
@@ -318,10 +341,7 @@ void main() {
           matching: find.byType(Scrollable),
         ),
       );
-      await tester.ensureVisible(levelsCard);
-      await tester.pump();
-      await tester.tap(levelsCard);
-      await tester.pump();
+      await _tapFilterCard(tester, levelsCard);
       expect(
         find.byKey(const ValueKey('levels-channel-selector')),
         findsOneWidget,

@@ -23,6 +23,7 @@ class CommunityRankingWorkList extends StatelessWidget {
     required this.works,
     required this.layout,
     this.periodScores = const {},
+    this.showRanks = true,
     required this.bookmarkedIds,
     required this.onTapWork,
     required this.onToggleBookmark,
@@ -35,6 +36,7 @@ class CommunityRankingWorkList extends StatelessWidget {
   /// Selected JST period scores; cumulative bookmarkCount stays unchanged.
   final Map<String, int> periodScores;
   final CommunityRankingLayout layout;
+  final bool showRanks;
   final Set<String> bookmarkedIds;
   final void Function(CommunityWork) onTapWork;
   final void Function(CommunityWork) onToggleBookmark;
@@ -54,7 +56,7 @@ class CommunityRankingWorkList extends StatelessWidget {
             CommunityRankingWorkCard(
               key: ValueKey('community-ranking-work-${works[i].id}'),
               work: works[i],
-              rank: i + 1,
+              rank: showRanks ? i + 1 : null,
               periodBookmarkCount: periodScores[works[i].id],
               layout: layout,
               isBookmarked: bookmarkedIds.contains(works[i].id),
@@ -159,7 +161,7 @@ class CommunityRankingWorkCard extends StatelessWidget {
   });
 
   final CommunityWork work;
-  final int rank;
+  final int? rank;
   final CommunityRankingLayout layout;
   final int? periodBookmarkCount;
   final bool isBookmarked;
@@ -400,8 +402,13 @@ class CommunityRankingWorkCard extends StatelessWidget {
                         Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            CommunityRankBadge(rank: rank, small: width < 400),
-                            const SizedBox(width: 4),
+                            if (rank case final place?) ...[
+                              CommunityRankBadge(
+                                rank: place,
+                                small: width < 400,
+                              ),
+                              const SizedBox(width: 4),
+                            ],
                             Expanded(child: _title(context)),
                           ],
                         ),
@@ -450,8 +457,10 @@ class CommunityRankingWorkCard extends StatelessWidget {
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  CommunityRankBadge(rank: rank),
-                  const SizedBox(width: 9),
+                  if (rank case final place?) ...[
+                    CommunityRankBadge(rank: place),
+                    const SizedBox(width: 9),
+                  ],
                   Expanded(child: _title(context, large: true)),
                 ],
               ),

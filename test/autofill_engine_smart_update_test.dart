@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/engine/autofill_engine.dart';
 import 'package:niarim/models/autofill_preset.dart';
+import 'package:niarim/models/autofill_gradient.dart';
 
 void main() {
   const width = 9;
@@ -38,6 +39,53 @@ void main() {
     final i = (y * width + x) * 4;
     return data.sublist(i, i + 4);
   }
+
+  test('a small part uses both gradient ends during repaint and recolor', () {
+    final lineart = lineartRect(2, 3, 6, 5);
+    final gradient = AutofillGradient.defaultTwoColor(0xFFFF0000, 0xFF0000FF);
+    final paint = part.copyWith(gradient: gradient);
+    final engine = AutofillEngine();
+    final fill = engine.repaint(
+      lineartData: lineart,
+      width: width,
+      height: height,
+      part: paint,
+    );
+    expect(rgba(fill, 3, 4), [255, 0, 0, 255]);
+    expect(rgba(fill, 4, 4), [128, 0, 128, 255]);
+    expect(rgba(fill, 5, 4), [0, 0, 255, 255]);
+    expect(rgba(fill, 2, 4), [0, 0, 0, 0]);
+    final recolored = engine.colorUpdate(
+      existingData: fill,
+      width: width,
+      height: height,
+      part: part.copyWith(gradient: gradient.copyWith(angle: 180)),
+    );
+    expect(rgba(recolored, 3, 4), [0, 0, 255, 255]);
+    expect(rgba(recolored, 5, 4), [255, 0, 0, 255]);
+  });
+
+  test(
+    'radial gradient reaches its stops within a small part in both directions',
+    () {
+      final lineart = lineartRect(2, 2, 6, 6);
+      final gradient = AutofillGradient.defaultTwoColor(0xFFFF0000, 0xFF0000FF);
+      for (final type in [
+        AutofillGradientType.radialCenterOut,
+        AutofillGradientType.radialOutCenter,
+      ]) {
+        final fill = AutofillEngine().repaint(
+          lineartData: lineart,
+          width: width,
+          height: height,
+          part: part.copyWith(gradient: gradient.copyWith(type: type)),
+        );
+        final outward = type == AutofillGradientType.radialCenterOut;
+        expect(rgba(fill, 4, 4), outward ? [255, 0, 0, 255] : [0, 0, 255, 255]);
+        expect(rgba(fill, 3, 3), outward ? [0, 0, 255, 255] : [255, 0, 0, 255]);
+      }
+    },
+  );
 
   test('smart update preserves edited overlap and fills newly added area', () {
     final lineart = lineartRect(1, 1, 7, 7);

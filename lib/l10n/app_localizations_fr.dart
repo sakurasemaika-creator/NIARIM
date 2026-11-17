@@ -2853,9 +2853,19 @@ class AppLocalizationsFr extends AppLocalizations {
   String get themeImportSuccessSnackbar => 'Fichier .niatheme importé';
 
   @override
-  String themeImportFailedSnackbar(String error) {
-    return 'Échec de l’importation : $error';
-  }
+  String get themeImportInvalidFile =>
+      'Ce fichier n’est pas un thème ou il est endommagé.';
+
+  @override
+  String get themeImportMissingColors =>
+      'Des couleurs ou réglages obligatoires du thème sont manquants ou invalides.';
+
+  @override
+  String get themeImportLowContrast =>
+      'Le thème importé manque de contraste. Il a été ajouté à la liste et vos couleurs actuelles restent actives.';
+
+  @override
+  String get themeImportReadFailed => 'Impossible de lire le fichier de thème.';
 
   @override
   String get themeSaveAsNewButton =>
@@ -4365,7 +4375,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get autofillPartGradientStopDragHint =>
-      'Faites glisser les repères ▲ pour ajuster la position de chaque couleur';
+      'Faites glisser les repères ▲ pour ajuster la position des couleurs. Le dégradé couvre toute la zone de remplissage de la partie.';
 
   @override
   String get saveTreeScreenTitleTree => 'Arbre de sauvegarde';
@@ -4934,6 +4944,11 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get layerPanelDeleteConfirmBody =>
       'Ce matériau sera supprimé de toutes les images de sa plage d’affichage.';
+
+  @override
+  String layerPanelCommonRemoveFrame(String name) {
+    return 'Masquer « $name » sur cette image ?';
+  }
 
   @override
   String layerPanelCommonDeleteMidDialogTitle(String name) {

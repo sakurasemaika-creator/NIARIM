@@ -154,6 +154,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
   // Non-destructive color adjustment preview is drawn on the actual canvas.
   ui.Image? _colorAdjustCanvasPreview;
   int _canvasContentRevision = 0;
+  final _canvasAreaKey = GlobalKey(debugLabel: 'Canvas drawing area');
   // The canvas selection (drawing filters apply only inside it) and the
   // glasses filter's lens area, painted on the canvas while it is adjusted.
   Uint8List? _canvasSelectionMask;
@@ -171,6 +172,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
   // だけを持つ（RulerPanel等と同様、パネルの主導権はこの画面側）。
   bool _showMeshTransformPanel = false;
   int _meshDensity = 1;
+  bool _meshSelectionOnly = false;
   double _meshRotateDeg = 0.0;
   double _meshScaleValue = 1.0;
   int _meshCommitToken = 0;
@@ -190,9 +192,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
   double _selectionScale = 1;
   double _selectionRotateDeg = 0;
   int _selectionTransformCommitToken = 0;
-  // 「変更キャンセル」で戻す量。選択範囲を作った時点からこの選択範囲へ
-  // 加えた変形の回数を数えておき、その回数ぶんUndoする。
-  int _selectionTransformSteps = 0;
+  SelectionTransformValues? _selectionTransformCommitValues;
+  int _selectionTransformCancelToken = 0;
   int _invertSelectionToken = 0;
   int _selectAllSelectionToken = 0;
   int _clearSelectionToken = 0;
@@ -427,14 +428,16 @@ class _CanvasScreenState extends State<CanvasScreen> {
   /// スライダー値を初期状態へ戻す。
   /// [density]は格子の分割数。1（既定・4隅のみ）が「自由変形」、
   /// 2以上が「メッシュ変形」にあたる（同じ仕組みの分割数違い）。
-  void _openMeshTransformPanel({int density = 1}) => setState(() {
-    _closeAllOverlayPanels();
-    _showMeshTransformPanel = true;
-    _meshDensity = density;
-    _meshRotateDeg = 0.0;
-    _meshScaleValue = 1.0;
-    _currentTool = DrawingTool.meshTransform;
-  });
+  void _openMeshTransformPanel({int density = 1, bool selectionOnly = false}) =>
+      setState(() {
+        _closeAllOverlayPanels();
+        _showMeshTransformPanel = true;
+        _meshDensity = density;
+        _meshSelectionOnly = selectionOnly;
+        _meshRotateDeg = 0.0;
+        _meshScaleValue = 1.0;
+        _currentTool = DrawingTool.meshTransform;
+      });
 
   /// 自由変形・メッシュ変形の確定（コントロールパネルの「適用」ボタン）。
   void _applyMeshTransform() => setState(() {
@@ -1713,6 +1716,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                                       }
                                     }),
                                     child: CanvasArea(
+                                      key: _canvasAreaKey,
                                       onTapForText:
                                           _currentTool == DrawingTool.text
                                           ? onCanvasTapForText
@@ -1772,6 +1776,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                                             ),
                                       ),
                                       meshDensity: _meshDensity,
+                                      meshSelectionOnly: _meshSelectionOnly,
                                       meshRotateDeg: _meshRotateDeg,
                                       meshScaleValue: _meshScaleValue,
                                       meshCommitToken: _meshCommitToken,
@@ -1799,7 +1804,6 @@ class _CanvasScreenState extends State<CanvasScreen> {
                                           // 選択範囲を作り直した／解除したら、
                                           // 「変更キャンセル」で戻せる範囲も
                                           // そこで区切る。
-                                          _selectionTransformSteps = 0;
                                           _resetSelectionSliders();
                                         });
                                       },
@@ -1825,6 +1829,10 @@ class _CanvasScreenState extends State<CanvasScreen> {
                                       selectionRotateDeg: _selectionRotateDeg,
                                       selectionTransformCommitToken:
                                           _selectionTransformCommitToken,
+                                      selectionTransformCommitValues:
+                                          _selectionTransformCommitValues,
+                                      selectionTransformCancelToken:
+                                          _selectionTransformCancelToken,
                                       onLockedLayerEdit: _showLockedLayerNotice,
                                     ),
                                   ),
@@ -1982,8 +1990,13 @@ class _CanvasScreenState extends State<CanvasScreen> {
                                   rotateDeg ?? _selectionRotateDeg;
                             }),
                         onCommit: () => setState(() {
+                          _selectionTransformCommitValues = (
+                            moveX: _selectionMoveX,
+                            moveY: _selectionMoveY,
+                            scale: _selectionScale,
+                            rotateDeg: _selectionRotateDeg,
+                          );
                           _selectionTransformCommitToken++;
-                          _selectionTransformSteps++;
                           _resetSelectionSliders();
                         }),
                       ),
@@ -3205,6 +3218,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
   Widget _colorAdjustPanel({bool bottomBar = false}) => ColorAdjustSheet(
     key: const ValueKey('color-adjust-live-panel'),
     bottomBar: bottomBar,
+    selectionMask: _canvasSelectionMask,
     onCanvasPreviewChanged: _setColorAdjustCanvasPreview,
     onApplied: () => setState(() => _canvasContentRevision++),
     projectId: widget.projectId,
@@ -3538,12 +3552,13 @@ class _CanvasScreenState extends State<CanvasScreen> {
                 chip(
                   icon: Icons.crop_free,
                   label: l10n.canvasSelectionFreeTransform,
-                  onTap: () => _openMeshTransformPanel(),
+                  onTap: () => _openMeshTransformPanel(selectionOnly: true),
                 ),
                 chip(
                   icon: Icons.grid_on,
                   label: l10n.canvasSelectionMeshTransform,
-                  onTap: () => _openMeshTransformPanel(density: 3),
+                  onTap: () =>
+                      _openMeshTransformPanel(density: 3, selectionOnly: true),
                 ),
                 // 変形を取り消して選択ツールごと抜ける。アイコンは、
                 // 隣の「適用」がチェックなのと対になるよう×にしている。
@@ -3749,24 +3764,12 @@ class _CanvasScreenState extends State<CanvasScreen> {
 
   /// 「変形キャンセル（終了）」：いまの選択範囲へ加えた変形をまとめて
   /// 元へ戻したうえで、選択ツールごと抜ける。
-  void _cancelSelectionTransformAndExit() {
-    _revertSelectionTransforms();
-    _exitSelectionTool();
-  }
-
-  /// いまの選択範囲へ加えた変形を、加えた回数ぶんまとめて元へ戻す
-  /// （変形1回＝Undo履歴1件で積まれている）。
-  void _revertSelectionTransforms() {
-    final undo = context.read<UndoManager>();
-    for (var i = 0; i < _selectionTransformSteps; i++) {
-      if (!undo.canUndo) break;
-      undo.undo();
-    }
-    setState(() {
-      _selectionTransformSteps = 0;
-      _resetSelectionSliders();
-    });
-  }
+  void _cancelSelectionTransformAndExit() => setState(() {
+    _selectionTransformCancelToken++;
+    _resetSelectionSliders();
+    _clearSelectionToken++;
+    _currentTool = DrawingTool.pen;
+  });
 
   /// 移動量スライダーの端の値。キャンバスの短辺の半分まで動かせるようにする。
   double _selectionSliderMaxMove(BuildContext context) {

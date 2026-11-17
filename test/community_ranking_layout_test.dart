@@ -271,6 +271,27 @@ void main() {
     );
     await capture('22_ranking_large_thumbnail');
 
+    final order = find.byWidgetPredicate(
+      (widget) =>
+          widget is IconButton &&
+          widget.icon is Icon &&
+          const [
+            Icons.arrow_upward,
+            Icons.arrow_downward,
+          ].contains((widget.icon as Icon).icon),
+    );
+    expect(find.byType(CommunityRankBadge), findsWidgets);
+    await tester.tap(order);
+    await tester.pumpAndSettle();
+    expect(find.byType(CommunityRankBadge), findsNothing);
+    expect(
+      find.byKey(const Key('communityRankingLargeThumbnailCard')),
+      findsWidgets,
+    );
+    await tester.tap(order);
+    await tester.pumpAndSettle();
+    expect(find.byType(CommunityRankBadge), findsWidgets);
+
     final prefs = await SharedPreferences.getInstance();
     expect(prefs.getString('community.rankingLayout.v1'), 'largeThumbnail');
     await tester.tap(find.byType(Tab).at(0));

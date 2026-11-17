@@ -3132,6 +3132,23 @@ class _FilterPanelState extends State<FilterPanel> {
     };
   }
 
+  model.Layer? _filterLayer(ProjectService projects, int frame, String id) =>
+      projects
+          .layersOf(widget.projectId, widget.sceneId, frame)
+          .where((layer) => layer.id == id)
+          .firstOrNull;
+
+  void _showLockedFilterNotice() {
+    if (!mounted) return;
+    final messenger = ScaffoldMessenger.of(context);
+    messenger.hideCurrentSnackBar();
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(AppLocalizations.of(context)!.canvasLayerLockedNotice),
+      ),
+    );
+  }
+
   Future<void> _applyFilter() async {
     final layerId = widget.layerId;
     final filter = context.read<FilterService>().currentFilter;
@@ -3142,11 +3159,18 @@ class _FilterPanelState extends State<FilterPanel> {
       showPremiumBanner(context, feature: feature);
       return;
     }
+    final ps = context.read<ProjectService>();
+    final bulk = widget.bulkFrameIndices;
+    final frames = bulk != null && bulk.length > 1 ? bulk : {widget.frameIndex};
+    if (frames.any(
+      (frame) => _filterLayer(ps, frame, layerId)?.isLocked == true,
+    )) {
+      _showLockedFilterNotice();
+      return;
+    }
     setState(() => _applying = true);
     try {
-      final ps = context.read<ProjectService>();
       final tm = ps.tileManagerOf(widget.projectId);
-      final bulk = widget.bulkFrameIndices;
       if (bulk != null && bulk.length > 1) {
         await _applyBulk(ps, tm, layerId, filter, bulk);
       } else {
@@ -3170,6 +3194,8 @@ class _FilterPanelState extends State<FilterPanel> {
         setState(() => _collapsed = false);
         await _loadPreviewBase();
       }
+    } on _FilterLayerLocked {
+      _showLockedFilterNotice();
     } finally {
       if (mounted) setState(() => _applying = false);
     }
@@ -3183,6 +3209,9 @@ class _FilterPanelState extends State<FilterPanel> {
     int frameIndex, {
     String? generatedLayerId,
   }) async {
+    final source = _filterLayer(ps, frameIndex, layerId);
+    if (source == null) return null;
+    if (source.isLocked) throw const _FilterLayerLocked();
     final l10n =
         filter.kind == FilterKind.outline ||
             filter.kind == FilterKind.inkPool ||
@@ -3308,6 +3337,10 @@ class _FilterPanelState extends State<FilterPanel> {
           : restrictToSelection(data, result, selection);
     }
 
+    if (!mounted) return null;
+    final layer = _filterLayer(ps, frameIndex, layerId);
+    if (layer == null) return null;
+    if (layer.isLocked) throw const _FilterLayerLocked();
     if (!_isPrism(filter) && filter.kind == FilterKind.outline) {
       return _applyGeneratedLayer(
         ps,
@@ -3345,17 +3378,13 @@ class _FilterPanelState extends State<FilterPanel> {
       );
     }
 
-    final layer = ps
-        .layersOf(widget.projectId, widget.sceneId, frameIndex)
-        .where((l) => l.id == layerId)
-        .firstOrNull;
     ps.replaceLayerPixels(
       projectId: widget.projectId,
       sceneId: widget.sceneId,
       frameIndex: frameIndex,
       layerId: layerId,
       pixels: result,
-      updatedLayer: layer != null && _isPrism(filter)
+      updatedLayer: _isPrism(filter)
           ? layer.copyWith(blendMode: model.LayerBlendMode.linearDodge)
           : null,
     );
@@ -3467,6 +3496,10 @@ class _FilterPanelState extends State<FilterPanel> {
       if (mounted) Navigator.of(context, rootNavigator: true).pop();
     }
   }
+}
+
+class _FilterLayerLocked implements Exception {
+  const _FilterLayerLocked();
 }
 
 class _ToneCurveEditor extends StatefulWidget {

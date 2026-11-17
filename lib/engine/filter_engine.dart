@@ -2588,10 +2588,11 @@ class FilterEngine {
     final conF =
         (259 * (contrastScaled + 255)) / (255 * (259 - contrastScaled));
     for (int i = 0; i < data.length; i += 4) {
-      if (data[i + 3] == 0) continue;
-      var r = data[i].toDouble();
-      var g = data[i + 1].toDouble();
-      var b = data[i + 2].toDouble();
+      final alpha = data[i + 3];
+      if (alpha == 0) continue;
+      var r = straightChannel(data[i], alpha).toDouble();
+      var g = straightChannel(data[i + 1], alpha).toDouble();
+      var b = straightChannel(data[i + 2], alpha).toDouble();
       if (saturation != 0) {
         final gray = r * 0.299 + g * 0.587 + b * 0.114;
         r = gray + (r - gray) * satFactor;
@@ -2608,9 +2609,9 @@ class FilterEngine {
         g = conF * (g - 128) + 128;
         b = conF * (b - 128) + 128;
       }
-      result[i] = r.round().clamp(0, 255);
-      result[i + 1] = g.round().clamp(0, 255);
-      result[i + 2] = b.round().clamp(0, 255);
+      result[i] = premultipliedChannel(r.round().clamp(0, 255), alpha);
+      result[i + 1] = premultipliedChannel(g.round().clamp(0, 255), alpha);
+      result[i + 2] = premultipliedChannel(b.round().clamp(0, 255), alpha);
     }
     return result;
   }

@@ -269,12 +269,12 @@ List<String> lineStartKeepParts(String text) {
 }
 
 /// ひらがな。
-final RegExp _hiragana = RegExp(r'[ぁ-ゟ]');
+final RegExp _hiragana = RegExp(r'[\u3041-\u309F]');
 
 /// 日本語の語（文節）の始まりになる字：漢字・カタカナ・英数字・開き括弧。
 final RegExp _phraseHead = RegExp(
-  r'[゠-ヿ㐀-䶿一-鿿豈-﫿'
-  r'A-Za-z0-9０-９Ａ-Ｚａ-ｚ（「『【]',
+  r'[\u30A0-\u30FF\u3400-\u4DBF\u4E00-\u9FFF\uF900-\uFAFF'
+  r'A-Za-z0-9\uFF10-\uFF19\uFF21-\uFF3A\uFF41-\uFF5A（「『【]',
 );
 
 /// 字（文字・数字）。句読点・括弧・空白は数えない。

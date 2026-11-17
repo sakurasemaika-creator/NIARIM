@@ -24,7 +24,9 @@ import 'package:niarim/models/community_work.dart';
 import 'package:niarim/models/layer.dart';
 import 'package:niarim/models/material_asset.dart' as material_asset;
 import 'package:niarim/services/material_service.dart';
+import 'package:niarim/screens/canvas/canvas_screen.dart' show DrawingTool;
 import 'package:niarim/screens/canvas/widgets/canvas_area.dart';
+import 'package:niarim/screens/rewards/membership_benefits_screen.dart';
 import 'package:niarim/screens/canvas/widgets/toolbar_widget.dart';
 import 'package:niarim/screens/community/community_author_works_screen.dart';
 import 'package:niarim/screens/community/widgets/community_shorts_viewer.dart';
@@ -191,7 +193,13 @@ void main() {
     expect(find.byType(Scaffold), findsWidgets);
     expectAdSlotFollowsPremium(tester, 'ホーム画面の最上部の横長広告モック');
 
-    final firstLaunchDialogButton = find.byKey(const Key('tutorialSkip'));
+    final l10n = AppLocalizations.of(
+      tester.element(find.byType(Scaffold).first),
+    )!;
+    final firstLaunchDialogButton = find.widgetWithText(
+      FilledButton,
+      l10n.homeFirstLaunchStart,
+    );
     if (firstLaunchDialogButton.evaluate().isNotEmpty) {
       await tester.tap(firstLaunchDialogButton);
       await tester.pump(const Duration(milliseconds: 300));
@@ -590,7 +598,23 @@ void main() {
     await tester.pump(const Duration(milliseconds: 300));
     expect(tester.takeException(), isNull, reason: 'ドロワー表示で例外');
 
-    final settingsTileFinder = find.byIcon(Icons.settings_outlined);
+    final l10n = AppLocalizations.of(
+      tester.element(find.byType(Scaffold).first),
+    )!;
+    final settingsTileFinder = find.widgetWithText(
+      ListTile,
+      l10n.homeDrawerSettings,
+    );
+    await tester.scrollUntilVisible(
+      settingsTileFinder,
+      95,
+      scrollable: find
+          .descendant(
+            of: find.byType(Drawer),
+            matching: find.byType(Scrollable),
+          )
+          .first,
+    );
     expect(settingsTileFinder, findsOneWidget);
     await tester.tap(settingsTileFinder);
     await tester.pump(const Duration(milliseconds: 300));
@@ -835,6 +859,18 @@ void main() {
     await tester.pump(const Duration(milliseconds: 300));
     await tester.pump(const Duration(milliseconds: 300));
 
+    final customSize = find.widgetWithText(ChoiceChip, 'カスタム');
+    await tester.ensureVisible(customSize);
+    await tester.tap(customSize);
+    await tester.pumpAndSettle();
+    final width = find.widgetWithText(TextField, '幅(px)');
+    final height = find.widgetWithText(TextField, '高さ(px)');
+    await tester.ensureVisible(width);
+    await tester.enterText(width, '128');
+    await tester.enterText(height, '128');
+    await tester.testTextInput.receiveAction(TextInputAction.done);
+    await tester.pump();
+
     final createFinder = find.text('作成');
     expect(createFinder, findsOneWidget);
     await tester.tap(createFinder);
@@ -853,19 +889,23 @@ void main() {
     // ツールチップ文言で一意に特定する。
     final bucketToolFinder = find.byTooltip('バケツ（長押しでベタ/トーン切替）');
     expect(bucketToolFinder, findsOneWidget);
+    expect(bucketToolFinder.hitTestable(), findsOneWidget);
     await tester.tap(bucketToolFinder);
-    await tester.pump(const Duration(milliseconds: 100));
+    await tester.pump(const Duration(milliseconds: 350));
 
     final canvasFinder = find.byType(CanvasArea);
     expect(canvasFinder, findsOneWidget);
+    final canvas = tester.widget<CanvasArea>(canvasFinder);
+    expect(canvas.currentTool, DrawingTool.bucket);
+    final area = tester.getRect(canvasFinder);
+    final fillStart =
+        area.topLeft + canvasDrawingRectFor(area.size, canvas.project).center;
     final undoManagerBefore = tester
         .element(canvasFinder)
         .read<engine.UndoManager>();
     expect(undoManagerBefore.canUndo, isFalse, reason: '塗る前はUndoできる操作が無いはず');
 
-    final bucketGesture = await tester.startGesture(
-      tester.getCenter(canvasFinder),
-    );
+    final bucketGesture = await tester.startGesture(fillStart);
     await tester.pump(const Duration(milliseconds: 100));
     await tester.pump(const Duration(milliseconds: 100));
     await bucketGesture.up();
@@ -875,6 +915,16 @@ void main() {
     final undoManagerAfter = tester
         .element(canvasFinder)
         .read<engine.UndoManager>();
+    for (
+      var attempt = 0;
+      attempt < 60 && !undoManagerAfter.canUndo;
+      attempt++
+    ) {
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 30)),
+      );
+      await tester.pump();
+    }
     expect(
       undoManagerAfter.canUndo,
       isTrue,
@@ -1445,7 +1495,7 @@ void main() {
     );
   }, timeout: const Timeout(Duration(seconds: 60)));
 
-  testWidgets('起動→新規プロジェクト作成→タイムライン再生：ループOFFなら最終フレームで自動停止する', (
+  testWidgets('起動→新規プロジェクト作成→タイムライン再生：最終フレームから先頭へループする', (
     WidgetTester tester,
   ) async {
     await bootToHome(tester);
@@ -1488,11 +1538,8 @@ void main() {
     await tester.tap(stepBackButton);
     await tester.pump();
 
-    // ループトグルをOFFにする（既定はON）。
-    final loopButton = find.byIcon(Icons.repeat);
-    expect(loopButton, findsOneWidget, reason: 'ループトグルボタンが見つからない');
-    await tester.tap(loopButton);
-    await tester.pump();
+    final timestamp = find.byKey(const Key('timelineCurrentSeconds'));
+    final nearEnd = tester.widget<Text>(timestamp).data;
 
     // 再生開始。
     final playButton = find.byIcon(Icons.play_arrow);
@@ -1505,20 +1552,17 @@ void main() {
       reason: '再生中はpauseアイコンに切り替わるはず',
     );
 
-    // 最終フレームに到達するまで十分な時間を進める（開始位置は
-    // 最終フレームの1つ手前なので、既定fps=12でも300msあれば
-    // 「最終フレームへ進む」「最終フレームで停止判定」の2回分の
-    // Timer.periodicが確実に発火する）。
-    await tester.pump(const Duration(milliseconds: 300));
-
-    // ループOFFのため、最終フレームで自動停止してplay_arrowアイコンへ
-    // 戻っているはず（ループONなら先頭へ戻ってpauseのまま再生継続する）。
-    expect(
-      find.byIcon(Icons.play_arrow),
-      findsOneWidget,
-      reason: 'ループOFFなら最終フレームで自動停止するはず',
-    );
-    expect(find.byIcon(Icons.pause), findsNothing);
+    for (var tick = 0; tick < 12; tick++) {
+      await tester.pump(const Duration(milliseconds: 100));
+    }
+    final afterLoop = tester.widget<Text>(timestamp).data;
+    double seconds(String? value) => double.parse(value!.replaceFirst('s', ''));
+    expect(seconds(afterLoop), lessThan(seconds(nearEnd)));
+    final pauseButton = find.byIcon(Icons.pause);
+    expect(pauseButton, findsOneWidget);
+    await tester.tap(pauseButton);
+    await tester.pump();
+    expect(playButton, findsOneWidget);
     expect(tester.takeException(), isNull);
   }, timeout: const Timeout(Duration(seconds: 60)));
 
@@ -1902,7 +1946,13 @@ void main() {
     await tester.pump(const Duration(milliseconds: 300));
     expect(tester.takeException(), isNull, reason: 'ホーム画面への遷移で例外');
 
-    final firstLaunchDialogButton = find.byKey(const Key('tutorialSkip'));
+    final l10n = AppLocalizations.of(
+      tester.element(find.byType(Scaffold).first),
+    )!;
+    final firstLaunchDialogButton = find.widgetWithText(
+      FilledButton,
+      l10n.homeFirstLaunchStart,
+    );
     if (firstLaunchDialogButton.evaluate().isNotEmpty) {
       await tester.tap(firstLaunchDialogButton);
       await tester.pump(const Duration(milliseconds: 300));
@@ -2099,13 +2149,17 @@ void main() {
     await tester.pump(const Duration(milliseconds: 300));
     expect(tester.takeException(), isNull, reason: 'ドロワー表示で例外');
 
-    final premiumTileFinder = find.byIcon(Icons.workspace_premium_outlined);
+    final premiumTileFinder = find.byKey(
+      const Key('homeMembershipBenefitsMenuItem'),
+    );
+    await tester.ensureVisible(premiumTileFinder);
+    await tester.pump();
     expect(premiumTileFinder, findsOneWidget);
     await tester.tap(premiumTileFinder);
     await tester.pump(const Duration(milliseconds: 300));
     await tester.pump(const Duration(milliseconds: 300));
     expect(tester.takeException(), isNull, reason: '有料会員画面への遷移で例外');
-    expect(find.text('作品広場への投稿数/日'), findsOneWidget);
+    expect(find.byType(MembershipBenefitsScreen), findsOneWidget);
     expect(find.textContaining('みんなの作品'), findsNothing);
     await probeAllControls(tester);
   }, timeout: const Timeout(Duration(seconds: 60)));

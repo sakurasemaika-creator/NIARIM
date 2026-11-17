@@ -139,11 +139,53 @@ class _RouteMenuSurface extends StatelessWidget {
     final route = ModalRoute.of(context);
     if (route is RawDialogRoute) {
       // メニューの面のテーマ（あれば）の上で、狭い画面の空きを決める。
-      return MenuSurface(child: NarrowDialogInset(child: child));
+      return MenuSurface(
+        child: _MenuInputOutline(child: NarrowDialogInset(child: child)),
+      );
     }
     if (route is ModalBottomSheetRoute) {
-      return MenuSurface(child: child);
+      return MenuSurface(child: _MenuInputOutline(child: child));
     }
     return child;
+  }
+}
+
+/// Filled inputs share the dialog background, so a themed outline is needed
+/// even when the field has no focus or hover.
+class _MenuInputOutline extends StatelessWidget {
+  const _MenuInputOutline({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final decoration = InputDecorationTheme.of(context);
+    final border = decoration.border;
+    if (border is! OutlineInputBorder || border.borderSide != BorderSide.none) {
+      return child;
+    }
+    final scheme = theme.colorScheme;
+    final menuInk =
+        theme.popupMenuTheme.labelTextStyle?.resolve({})?.color ??
+        scheme.onSurface;
+    return InputDecorationTheme(
+      data: decoration.copyWith(
+        border: WidgetStateInputBorder.resolveWith((states) {
+          final color = states.contains(WidgetState.disabled)
+              ? menuInk.withValues(alpha: 0.38)
+              : states.contains(WidgetState.error)
+              ? scheme.error
+              : menuInk.withValues(alpha: 0.70);
+          return border.copyWith(
+            borderSide: BorderSide(
+              color: color,
+              width: states.contains(WidgetState.focused) ? 2 : 1,
+            ),
+          );
+        }),
+      ),
+      child: child,
+    );
   }
 }

@@ -870,7 +870,10 @@
   "themeExportMenuItem": "Export (.niatheme)",
   "themeExportFailedSnackbar": "Export failed: {error}",
   "themeImportSuccessSnackbar": "Imported the .niatheme file",
-  "themeImportFailedSnackbar": "Import failed: {error}",
+  "themeImportInvalidFile": "This file is not a theme or is damaged.",
+  "themeImportMissingColors": "The theme is missing required colors or settings, or their format is invalid.",
+  "themeImportLowContrast": "The imported theme has low contrast. It was added to the list and your current colors are still active.",
+  "themeImportReadFailed": "The theme file could not be read.",
   "themeSaveAsNewButton": "Save Current Settings as New Theme",
   "themeImportButton": "Import .niatheme",
   "themePresetNameDialogTitle": "Theme Name",
@@ -1619,7 +1622,7 @@
       }
     }
   },
-  "autofillPartGradientStopDragHint": "Drag the ▲ markers left or right to adjust each color's position",
+  "autofillPartGradientStopDragHint": "Drag the ▲ markers to adjust the color stops. The gradient spans the full bounds of the part’s fill.",
   "timelineExportMenuItem": "Export",
   "timelineExportFrameMenuItem": "Export frame as image",
   "timelineExportFrameDialogTitle": "Export frame as image",
@@ -1942,6 +1945,7 @@
     }
   },
   "layerPanelDeleteConfirmBody": "This material will be removed from every frame within its display range.",
+  "layerPanelCommonRemoveFrame": "Hide “{name}” on this frame?",
   "layerPanelCommonDeleteMidDialogTitle": "Change the display range of {name}?",
   "@layerPanelCommonDeleteMidDialogTitle": {
     "placeholders": {

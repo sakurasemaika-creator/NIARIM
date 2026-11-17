@@ -1147,14 +1147,10 @@
     }
   },
   "themeImportSuccessSnackbar": ".niathemeを読み込みました",
-  "themeImportFailedSnackbar": "読み込みに失敗しました: {error}",
-  "@themeImportFailedSnackbar": {
-    "placeholders": {
-      "error": {
-        "type": "String"
-      }
-    }
-  },
+  "themeImportInvalidFile": "テーマのファイルではないか、ファイルが壊れています。",
+  "themeImportMissingColors": "テーマに必要な色や設定が不足しているか、形式が正しくありません。",
+  "themeImportLowContrast": "文字が見えにくいテーマを一覧に追加しました。現在の配色で表示しています。",
+  "themeImportReadFailed": "テーマのファイルを読み込めませんでした。",
   "themeSaveAsNewButton": "現在の設定を新しいテーマとして保存",
   "themeImportButton": ".niathemeを読み込む",
   "themePresetNameDialogTitle": "テーマ名",
@@ -1176,7 +1172,7 @@
     }
   },
   "onionSkinColorLabel": "色",
-  "onionSkinOpacityLabel": "透明度",
+  "onionSkinOpacityLabel": "不透明度",
   "exportScreenTitle": "書き出し",
   "exportPresetSection": "プリセット",
   "exportPresetStandard": "標準",
@@ -1214,7 +1210,7 @@
   "exportLongProjectNote": "90秒を超える作品の全編書き出しにはプレミアムまたは最大尺の特典が必要です。先頭の90秒を書き出すこともできます。",
   "exportOutputWithoutEndCard": "本編 {duration}（エンドマークなし）",
   "@exportOutputWithoutEndCard": {"placeholders": {"duration": {"type": "String"}}},
-  "exportOutputWithEndCard": "本編 {duration} ＋ NIARIMエンドマーク（5秒）",
+  "exportOutputWithEndCard": "本編 {duration}  +  NIARIMエンドマーク（5秒）",
   "@exportOutputWithEndCard": {"placeholders": {"duration": {"type": "String"}}},
   "exportProjectNotFoundError": "プロジェクトが見つかりません",
   "exportFailedError": "書き出し失敗: {error}",
@@ -2006,7 +2002,7 @@
       }
     }
   },
-  "autofillPartGradientStopDragHint": "▲を左右にドラッグして色の切り替え位置を調整できます",
+  "autofillPartGradientStopDragHint": "▲をドラッグすると色の切り替え位置を調整できます。グラデーションはパーツの塗り範囲全体にかかります。",
   "saveTreeScreenTitleTree": "セーブツリー",
   "saveTreeScreenTitleSlot": "セーブスロット",
   "timelineExportMenuItem": "書き出し",
@@ -2336,6 +2332,14 @@
     }
   },
   "layerPanelDeleteConfirmBody": "この素材の表示範囲内のすべてのフレームから削除されます。",
+  "layerPanelCommonRemoveFrame": "このフレームで「{name}」を非表示にしますか？",
+  "@layerPanelCommonRemoveFrame": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "layerPanelCommonDeleteMidDialogTitle": "{name}の表示範囲を変更しますか？",
   "@layerPanelCommonDeleteMidDialogTitle": {
     "placeholders": {

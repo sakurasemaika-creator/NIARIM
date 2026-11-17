@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../engine/filter_engine.dart';
+import '../../../engine/filter_selection.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../models/effect_filter_instance.dart';
 import '../../../models/filter_def.dart';
@@ -25,6 +26,7 @@ class ColorAdjustSheet extends StatefulWidget {
   final VoidCallback onClose;
   final VoidCallback? onApplied;
   final bool bottomBar;
+  final Uint8List? selectionMask;
 
   /// Ownership of non-null preview images is transferred to the parent.
   final ValueChanged<ui.Image?>? onCanvasPreviewChanged;
@@ -39,6 +41,7 @@ class ColorAdjustSheet extends StatefulWidget {
     required this.onClose,
     this.onApplied,
     this.bottomBar = false,
+    this.selectionMask,
     this.onCanvasPreviewChanged,
   });
 
@@ -73,7 +76,28 @@ class _ColorAdjustSheetState extends State<ColorAdjustSheet> {
       _previewGeneration++;
       _previewBase = null;
       unawaited(_loadPreviewBase());
+    } else if (!identical(oldWidget.selectionMask, widget.selectionMask)) {
+      unawaited(_updatePreview());
     }
+  }
+
+  bool _isLocked(ProjectService projects, String layerId) => projects
+      .layersOf(widget.projectId, widget.sceneId, widget.frameIndex)
+      .any((layer) => layer.id == layerId && layer.isLocked);
+
+  Uint8List _adjustPixels(Uint8List base) {
+    final adjusted = _engine.applyColorAdjust(
+      base,
+      _previewW,
+      _previewH,
+      saturation: _saturation,
+      brightness: _brightness,
+      contrast: _contrast,
+    );
+    final mask = widget.selectionMask;
+    return mask == null || mask.length != _previewW * _previewH
+        ? adjusted
+        : restrictToSelection(base, adjusted, selectionCoverage(mask));
   }
 
   @override
@@ -117,14 +141,12 @@ class _ColorAdjustSheetState extends State<ColorAdjustSheet> {
       return;
     }
     final generation = ++_previewGeneration;
-    final pixels = _engine.applyColorAdjust(
-      base,
-      _previewW,
-      _previewH,
-      saturation: _saturation,
-      brightness: _brightness,
-      contrast: _contrast,
-    );
+    final layerId = widget.layerId;
+    if (layerId == null || _isLocked(context.read<ProjectService>(), layerId)) {
+      widget.onCanvasPreviewChanged?.call(null);
+      return;
+    }
+    final pixels = _adjustPixels(base);
     final completer = Completer<ui.Image>();
     ui.decodeImageFromPixels(
       pixels,
@@ -134,7 +156,9 @@ class _ColorAdjustSheetState extends State<ColorAdjustSheet> {
       completer.complete,
     );
     final image = await completer.future;
-    if (!mounted || generation != _previewGeneration) {
+    if (!mounted ||
+        generation != _previewGeneration ||
+        _isLocked(context.read<ProjectService>(), layerId)) {
       image.dispose();
       return;
     }
@@ -149,25 +173,24 @@ class _ColorAdjustSheetState extends State<ColorAdjustSheet> {
   Future<void> _apply() async {
     final layerId = widget.layerId;
     if (layerId == null || _applying) return;
-    setState(() => _applying = true);
-    final base = _previewBase;
-    if (base == null) {
-      setState(() => _applying = false);
+    final projects = context.read<ProjectService>();
+    if (_isLocked(projects, layerId)) {
+      widget.onCanvasPreviewChanged?.call(null);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(AppLocalizations.of(context)!.canvasLayerLockedNotice),
+        ),
+      );
       return;
     }
+    final base = _previewBase;
+    if (base == null) return;
+    setState(() => _applying = true);
     try {
-      final committed = _engine.applyColorAdjust(
-        base,
-        _previewW,
-        _previewH,
-        saturation: _saturation,
-        brightness: _brightness,
-        contrast: _contrast,
-      );
-      if (!mounted) return;
+      final committed = _adjustPixels(base);
       // Persist through ProjectService (one undoable editing operation)
       // rather than directly mutating TileManager without an undo entry.
-      context.read<ProjectService>().replaceLayerPixels(
+      projects.replaceLayerPixels(
         projectId: widget.projectId,
         sceneId: widget.sceneId,
         frameIndex: widget.frameIndex,

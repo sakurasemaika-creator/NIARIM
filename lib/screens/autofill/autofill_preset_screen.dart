@@ -2226,11 +2226,15 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                                     painter: const _CheckerboardPainter(),
                                   ),
                                   DecoratedBox(
+                                    key: const ValueKey(
+                                      'autofillGradientPreview',
+                                    ),
                                     decoration: BoxDecoration(
                                       gradient: _previewGradient(
                                         gradient,
                                         _gradientPreviewDiameter,
                                         _gradientPreviewDiameter,
+                                        circular: true,
                                       ),
                                     ),
                                   ),
@@ -2760,29 +2764,23 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
     );
   }
 
-  /// [g]の種類（直線／放射2種）・角度・中心位置・ぼかしの強さを反映した
-  /// Flutter用Gradientへ変換する（角度の違うグラデーションや
-  /// 放射状のグラデーションなど対応したプレビューを表示する）。
-  /// autofill_engine.dartの実際の塗り計算式（_gradientColorAt/_sampleGradient）
-  /// と挙動を合わせている。[w]・[h]はプレビュー枠の実際の幅・高さ
-  /// （直線グラデーションの角度計算で、枠の縦横比に依存せず指定した
-  /// 角度どおりの傾きになるよう補正するために使う）。
-  Gradient _previewGradient(AutofillGradient g, double w, double h) {
+  /// The editor's circular sample spans the marked diameter. The rectangular
+  /// swatch uses the projection of its bounds, like the filled artwork.
+  Gradient _previewGradient(
+    AutofillGradient g,
+    double w,
+    double h, {
+    bool circular = false,
+  }) {
     switch (g.type) {
       case AutofillGradientType.linear:
         final expanded = _expandForFeather(g.colors, g.stops, g.feather);
         final rad = g.angle * math.pi / 180;
         final dx = math.cos(rad);
         final dy = math.sin(rad);
-        // Alignmentはx・yをそれぞれ枠の幅・高さの半分を基準に正規化する
-        // ため、dx・dyをそのまま使うと正方形でない枠では見た目の傾きが
-        // 指定角度からズレる（autofill_engine.dart側の同じ不具合と対応する
-        // 修正）。ピクセル単位の対角線長を幅・高さそれぞれで割ることで、
-        // 枠の縦横比によらず実際のピクセル空間で指定角度どおりに見える
-        // Alignmentへ変換する。
-        final diag = math.sqrt(w * w + h * h);
-        final ax = w > 0 ? diag * dx / w : dx;
-        final ay = h > 0 ? diag * dy / h : dy;
+        final extent = circular ? w : w * dx.abs() + h * dy.abs();
+        final ax = extent * dx / w;
+        final ay = extent * dy / h;
         return LinearGradient(
           begin: Alignment(-ax, -ay),
           end: Alignment(ax, ay),
@@ -2791,29 +2789,24 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
         );
       case AutofillGradientType.radialCenterOut:
       case AutofillGradientType.radialOutCenter:
-        // プレビューは横長・薄い帯（本来の塗り範囲とは形が違う簡易表示）
-        // のため、Flutter標準のRadialGradient（箱の短辺基準の円）を
-        // そのまま使うと、下の三角ハンドル（幅いっぱいを使って中心からの
-        // 距離を表す）とは全く違う位置に色の境界が来てしまっていた
-        // （ぼかしの強さを下げてはっきりした帯にすると特に目立つズレ）。
-        // ハンドルと同じ「中心からの距離＝箱の幅に対する割合」で色を
-        // 配置した、左右対称のLinearGradientとして描き直す。
-        final isOutCenter = g.type == AutofillGradientType.radialOutCenter;
-        final pairs = <MapEntry<double, int>>[
-          for (int i = 0; i < g.colors.length; i++)
-            MapEntry(isOutCenter ? 1 - g.stops[i] : g.stops[i], g.colors[i]),
-        ]..sort((a, b) => a.key.compareTo(b.key));
-        final geomStops = pairs.map((p) => p.key).toList();
-        final geomColors = pairs.map((p) => p.value).toList();
-        final expanded = _expandForFeather(geomColors, geomStops, g.feather);
-        return LinearGradient(
-          begin: Alignment.centerLeft,
-          end: Alignment.centerRight,
-          stops: [
-            for (final t in expanded.stops.reversed) 0.5 - t * 0.5,
-            for (final t in expanded.stops) 0.5 + t * 0.5,
-          ],
-          colors: [...expanded.colors.reversed, ...expanded.colors],
+        final reversed = g.type == AutofillGradientType.radialOutCenter;
+        final colors = reversed ? g.colors.reversed.toList() : g.colors;
+        final stops = reversed
+            ? g.stops.reversed.map((stop) => 1 - stop).toList()
+            : g.stops;
+        final expanded = _expandForFeather(colors, stops, g.feather);
+        final cx = circular ? 0.5 : g.centerX;
+        final cy = circular ? 0.5 : g.centerY;
+        final dx = w * math.max(cx.abs(), (1 - cx).abs());
+        final dy = h * math.max(cy.abs(), (1 - cy).abs());
+        final radius = circular
+            ? 0.5
+            : math.sqrt(dx * dx + dy * dy) / math.min(w, h);
+        return RadialGradient(
+          center: Alignment(cx * 2 - 1, cy * 2 - 1),
+          radius: radius,
+          stops: expanded.stops,
+          colors: expanded.colors,
         );
     }
   }

@@ -89,6 +89,43 @@ void main() {
   });
 
   group('MeshWarpEngine.warp', () {
+    test(
+      'perspective keeps a line straight across the former diagonal seam',
+      () async {
+        final recorder = ui.PictureRecorder();
+        ui.Canvas(recorder).drawRect(
+          const ui.Rect.fromLTWH(31, 0, 3, 64),
+          ui.Paint()..color = const ui.Color(0xFF000000),
+        );
+        final picture = recorder.endRecording();
+        final source = await picture.toImage(64, 64);
+        picture.dispose();
+        final result = await MeshWarpEngine.warp(
+          image: source,
+          rows: 1,
+          cols: 1,
+          controlPoints: const [
+            ui.Offset(0, 0),
+            ui.Offset(64, 0),
+            ui.Offset(0, 64),
+            ui.Offset(40, 64),
+          ],
+          outputWidth: 64,
+          outputHeight: 64,
+        );
+        for (final (x, y) in [(29, 16), (26, 32), (23, 48)]) {
+          expect(
+            (await pixelAt(result, x, y, 64)).a,
+            greaterThan(0.6),
+            reason: 'perspective line at ($x, $y)',
+          );
+        }
+        expect((await pixelAt(result, 20, 32, 64)).a, 0);
+        result.dispose();
+        source.dispose();
+      },
+    );
+
     test('制御点が規則格子と同じ（恒等変形）場合、元画像と同じ結果になる', () async {
       final image = await buildQuadrantImage();
       final points = MeshWarpEngine.regularGrid(

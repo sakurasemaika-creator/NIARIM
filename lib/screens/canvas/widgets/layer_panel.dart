@@ -1083,7 +1083,13 @@ class _LayerPanelState extends State<LayerPanel> {
       await _deleteCommonLayerAtCurrentFrame(context, layer);
       return;
     }
-    if (!await confirmDelete(context, itemName: layer.name)) return;
+    final l10n = AppLocalizations.of(context)!;
+    if (!await confirmDelete(
+      context,
+      message: l10n.layerPanelDeleteConfirmTitle(layer.name),
+    )) {
+      return;
+    }
     if (!context.mounted) return;
     context.read<ProjectService>().removeLayer(
       projectId: widget.projectId,
@@ -1129,7 +1135,12 @@ class _LayerPanelState extends State<LayerPanel> {
     }
 
     Future<void> deleteEntirely() async {
-      if (!await confirmDelete(context, itemName: layer.name)) return;
+      if (!await confirmDelete(
+        context,
+        message: l10n.layerPanelDeleteConfirmTitle(layer.name),
+      )) {
+        return;
+      }
       if (!context.mounted) return;
       projectService.removeLayer(
         projectId: widget.projectId,
@@ -1158,7 +1169,12 @@ class _LayerPanelState extends State<LayerPanel> {
     }
     if (trimmed != null) {
       // 先頭または末尾フレーム：一意に範囲が縮む。
-      if (!await confirmDelete(context, itemName: layer.name)) return;
+      if (!await confirmDelete(
+        context,
+        message: l10n.layerPanelCommonRemoveFrame(layer.name),
+      )) {
+        return;
+      }
       if (!context.mounted) return;
       applyRange(trimmed);
       return;

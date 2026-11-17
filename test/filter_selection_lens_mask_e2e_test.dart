@@ -13,12 +13,14 @@ import 'package:niarim/models/filter_def.dart';
 import 'package:niarim/models/project.dart';
 import 'package:niarim/screens/canvas/canvas_screen.dart';
 import 'package:niarim/screens/canvas/widgets/canvas_area.dart';
+import 'package:niarim/screens/canvas/widgets/color_adjust_sheet.dart';
 import 'package:niarim/screens/canvas/widgets/filter_panel.dart';
 import 'package:niarim/screens/canvas/widgets/selection_transform_sliders.dart';
 import 'package:niarim/services/filter_service.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:niarim/services/theme_service.dart';
 import 'package:niarim/widgets/app_scroll_behavior.dart';
+import 'package:niarim/widgets/labeled_slider.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -160,6 +162,7 @@ void main() {
     }
 
     final canvasFinder = find.byType(CanvasArea);
+    final originalCanvasState = tester.state(canvasFinder);
     Future<Uint8List> layerPixels() async => (await tester.runAsync(() async {
       final image = await tm.compositeLayerToImage(key);
       final data = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
@@ -196,6 +199,13 @@ void main() {
       await tester.tap(apply.first);
       await pumpRealAsync(tester, const Duration(milliseconds: 1500));
       await pumpRealAsync(tester, const Duration(milliseconds: 600));
+      expect(fs.currentFilter, isNull);
+      final close = find.descendant(
+        of: find.byType(FilterPanel),
+        matching: find.byIcon(Icons.close),
+      );
+      await tester.tap(close.first);
+      await pumpRealAsync(tester, const Duration(milliseconds: 400));
       expect(find.byType(FilterPanel), findsNothing);
     }
 
@@ -271,6 +281,7 @@ void main() {
     await capture('01_threshold_preview_in_selection');
     await applyFilter();
     expectSelectionEditing(true, 'after the filter is applied');
+    expect(tester.state(canvasFinder), same(originalCanvasState));
     final thresholded = await layerPixels();
     // Inside: black or white; outside: as it was.
     final inside = px(thresholded, 80, 80);
@@ -294,6 +305,83 @@ void main() {
     expect(changedOutside, 0, reason: 'nothing outside the selection');
     await capture('02_threshold_applied');
     // Put the stripes back for the glasses filter.
+    tm.replaceLayerPixels(key, original);
+    await pumpRealAsync(tester, const Duration(milliseconds: 300));
+
+    Future<void> openColorAdjust() async {
+      await tester.tap(find.byIcon(Icons.settings).first);
+      await tester.pump(const Duration(milliseconds: 250));
+      final entry = find.text(l10n.canvasColorAdjustMenuTitle);
+      await tester.ensureVisible(entry);
+      await tester.pump(const Duration(milliseconds: 150));
+      await tester.tap(entry);
+      await pumpRealAsync(tester, const Duration(milliseconds: 700));
+      expect(find.byType(ColorAdjustSheet), findsOneWidget);
+    }
+
+    final colorAdjustment = find.byType(ColorAdjustSheet);
+    final brightness = find
+        .descendant(of: colorAdjustment, matching: find.byType(LabeledSlider))
+        .at(1);
+    final applyAdjustment = find.descendant(
+      of: colorAdjustment,
+      matching: find.widgetWithText(FilledButton, l10n.commonApply),
+    );
+
+    await openColorAdjust();
+    tester.widget<LabeledSlider>(brightness).onChanged!(-20);
+    await pumpRealAsync(tester, const Duration(milliseconds: 250));
+    await tester.tap(applyAdjustment);
+    await pumpRealAsync(tester, const Duration(milliseconds: 500));
+    expect(colorAdjustment, findsNothing);
+    final adjusted = await layerPixels();
+    expect(px(adjusted, 80, 80)[0], lessThan(px(original, 80, 80)[0]));
+    expect(px(adjusted, 180, 80), px(original, 180, 80));
+
+    void setLayerLocked(bool value) => ps.updateLayer(
+      projectId: project.id,
+      sceneId: scene.id,
+      frameIndex: 0,
+      layer: layer.copyWith(isLocked: value),
+    );
+    setLayerLocked(true);
+    await tester.pump();
+    await openColorAdjust();
+    tester.widget<LabeledSlider>(brightness).onChanged!(20);
+    await tester.pump();
+    await tester.tap(applyAdjustment);
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(find.text(l10n.canvasLayerLockedNotice), findsOneWidget);
+    expect(await layerPixels(), orderedEquals(adjusted));
+    await tester.tap(find.widgetWithText(TextButton, l10n.commonCancel));
+    await pumpRealAsync(tester, const Duration(milliseconds: 400));
+
+    ScaffoldMessenger.of(tester.element(canvasFinder)).removeCurrentSnackBar();
+    await tester.pump();
+    expect(find.text(l10n.canvasLayerLockedNotice), findsNothing);
+
+    await openFilterPanel();
+    await pickFilterCard(tester, _thresholdFilterId);
+    await tester.pump();
+    final lockedApply = find.byKey(const ValueKey('filter-apply-button'));
+    expect(lockedApply.hitTestable(), findsOneWidget);
+    await tester.tap(lockedApply);
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(find.text(l10n.canvasLayerLockedNotice), findsOneWidget);
+    expect(await layerPixels(), orderedEquals(adjusted));
+    await tester.tap(find.byKey(const ValueKey('filter-back-to-list')));
+    await tester.pump(const Duration(milliseconds: 400));
+    await tester.tap(
+      find
+          .descendant(
+            of: find.byType(FilterPanel),
+            matching: find.byIcon(Icons.close),
+          )
+          .first,
+    );
+    await pumpRealAsync(tester, const Duration(milliseconds: 400));
+
+    setLayerLocked(false);
     tm.replaceLayerPixels(key, original);
     await pumpRealAsync(tester, const Duration(milliseconds: 300));
 
@@ -407,6 +495,33 @@ void main() {
     expect(tester.takeException(), isNull);
     // The lens area is forgotten with the panel.
     expect(tester.widget<CanvasArea>(canvasFinder).filterLensMask, isNull);
+
+    Future<void> expectFilterSelection(bool selected) async {
+      await openFilterPanel();
+      final panel = find.byType(FilterPanel);
+      expect(
+        tester.widget<FilterPanel>(panel).selectionMask,
+        selected ? isNotNull : isNull,
+      );
+      await tester.tap(
+        find.descendant(of: panel, matching: find.byIcon(Icons.close)).first,
+      );
+      await pumpRealAsync(tester, const Duration(milliseconds: 300));
+    }
+
+    final deselect = find.text(l10n.canvasDeselectAllButton);
+    await tester.ensureVisible(deselect);
+    await tester.tap(deselect);
+    await pumpRealAsync(tester, const Duration(milliseconds: 300));
+    await expectFilterSelection(false);
+    final selectAll = find.text(l10n.canvasSelectAllButton);
+    await tester.ensureVisible(selectAll);
+    await tester.tap(selectAll);
+    await pumpRealAsync(tester, const Duration(milliseconds: 300));
+    await expectFilterSelection(true);
+    tester.widget<CanvasArea>(canvasFinder).onNextFrame!();
+    await pumpRealAsync(tester, const Duration(milliseconds: 300));
+    await expectFilterSelection(false);
     await tester.pumpWidget(const SizedBox());
   });
 }

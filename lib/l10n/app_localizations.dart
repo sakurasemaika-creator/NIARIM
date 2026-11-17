@@ -4977,11 +4977,29 @@ abstract class AppLocalizations {
   /// **'.niathemeを読み込みました'**
   String get themeImportSuccessSnackbar;
 
-  /// No description provided for @themeImportFailedSnackbar.
+  /// No description provided for @themeImportInvalidFile.
   ///
   /// In ja, this message translates to:
-  /// **'読み込みに失敗しました: {error}'**
-  String themeImportFailedSnackbar(String error);
+  /// **'テーマのファイルではないか、ファイルが壊れています。'**
+  String get themeImportInvalidFile;
+
+  /// No description provided for @themeImportMissingColors.
+  ///
+  /// In ja, this message translates to:
+  /// **'テーマに必要な色や設定が不足しているか、形式が正しくありません。'**
+  String get themeImportMissingColors;
+
+  /// No description provided for @themeImportLowContrast.
+  ///
+  /// In ja, this message translates to:
+  /// **'文字が見えにくいテーマを一覧に追加しました。現在の配色で表示しています。'**
+  String get themeImportLowContrast;
+
+  /// No description provided for @themeImportReadFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'テーマのファイルを読み込めませんでした。'**
+  String get themeImportReadFailed;
 
   /// No description provided for @themeSaveAsNewButton.
   ///
@@ -5070,7 +5088,7 @@ abstract class AppLocalizations {
   /// No description provided for @onionSkinOpacityLabel.
   ///
   /// In ja, this message translates to:
-  /// **'透明度'**
+  /// **'不透明度'**
   String get onionSkinOpacityLabel;
 
   /// No description provided for @exportScreenTitle.
@@ -5292,7 +5310,7 @@ abstract class AppLocalizations {
   /// No description provided for @exportOutputWithEndCard.
   ///
   /// In ja, this message translates to:
-  /// **'本編 {duration} ＋ NIARIMエンドマーク（5秒）'**
+  /// **'本編 {duration}  +  NIARIMエンドマーク（5秒）'**
   String exportOutputWithEndCard(String duration);
 
   /// No description provided for @exportProjectNotFoundError.
@@ -7530,7 +7548,7 @@ abstract class AppLocalizations {
   /// No description provided for @autofillPartGradientStopDragHint.
   ///
   /// In ja, this message translates to:
-  /// **'▲を左右にドラッグして色の切り替え位置を調整できます'**
+  /// **'▲をドラッグすると色の切り替え位置を調整できます。グラデーションはパーツの塗り範囲全体にかかります。'**
   String get autofillPartGradientStopDragHint;
 
   /// No description provided for @saveTreeScreenTitleTree.
@@ -8486,6 +8504,12 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'この素材の表示範囲内のすべてのフレームから削除されます。'**
   String get layerPanelDeleteConfirmBody;
+
+  /// No description provided for @layerPanelCommonRemoveFrame.
+  ///
+  /// In ja, this message translates to:
+  /// **'このフレームで「{name}」を非表示にしますか？'**
+  String layerPanelCommonRemoveFrame(String name);
 
   /// No description provided for @layerPanelCommonDeleteMidDialogTitle.
   ///

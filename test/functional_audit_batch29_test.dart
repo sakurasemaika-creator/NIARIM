@@ -111,15 +111,10 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('rotate-90')));
     await tester.pump();
     expect(
-      tm.recordingTouchedTiles,
-      isNotNull,
-      reason: '回転スライダーを動かすと実際に回転が開始されること',
+      _readCanvas(tm, key, 96, 96),
+      orderedEquals(before),
+      reason: 'drag previews must leave the stored pixels intact until commit',
     );
-    await _waitForAlpha(tester, tm, key, 36, 62, 0);
-    await tester.runAsync(
-      () => Future<void>.delayed(const Duration(milliseconds: 150)),
-    );
-    await tester.pump();
     await tester.tap(find.byKey(const ValueKey('commit')));
     await tester.pump();
     await _waitForUndo(tester, undo, 1);
@@ -205,27 +200,6 @@ Future<void> _waitForUndo(
     await tester.pump();
   }
   expect(undo.undoCount, n);
-}
-
-Future<void> _waitForAlpha(
-  WidgetTester tester,
-  dynamic tm,
-  String key,
-  int x,
-  int y,
-  int a,
-) async {
-  final end = DateTime.now().add(const Duration(seconds: 3));
-  while (DateTime.now().isBefore(end)) {
-    final tile = tm.getTile(key, 0, 0) as Uint8List?;
-    final got = tile == null ? 0 : tile[(y * 256 + x) * 4 + 3];
-    if (got == a) return;
-    await tester.runAsync(
-      () => Future<void>.delayed(const Duration(milliseconds: 10)),
-    );
-    await tester.pump();
-  }
-  fail('alpha did not become $a at $x,$y');
 }
 
 Uint8List _readCanvas(dynamic tm, String key, int w, int h) {

@@ -172,14 +172,10 @@ void main() {
     await capture('after_tap_adopt_colors');
 
     // 三点メニューを開く（対象テーマの行のもの）。
-    final menuButton = find
-        .descendant(
-          of: find
-              .ancestor(of: find.text(target.name), matching: find.byType(Row))
-              .first,
-          matching: find.byType(PopupMenuButton<String>),
-        )
-        .first;
+    final menuButton = find.descendant(
+      of: find.byKey(ValueKey(target.id)),
+      matching: find.byType(PopupMenuButton<String>),
+    );
     await tester.tap(menuButton);
     await tester.pump(const Duration(milliseconds: 400));
     expect(
@@ -192,10 +188,11 @@ void main() {
       l10n.commonRename,
       l10n.themeDuplicateAction,
       l10n.themeExportMenuItem,
-      l10n.commonDelete,
+      l10n.themeResetConfirmAction,
     ]) {
       expect(find.text(label), findsOneWidget, reason: '$label が消えている');
     }
+    expect(find.text(l10n.commonDelete), findsNothing);
     await tester.pump(const Duration(milliseconds: 400));
     await capture('three_dot_menu');
 

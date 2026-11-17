@@ -870,7 +870,10 @@
   "themeExportMenuItem": "Exportar (.niatheme)",
   "themeExportFailedSnackbar": "Error al exportar: {error}",
   "themeImportSuccessSnackbar": "Archivo .niatheme importado",
-  "themeImportFailedSnackbar": "Error al importar: {error}",
+  "themeImportInvalidFile": "El archivo no es un tema o está dañado.",
+  "themeImportMissingColors": "Al tema le faltan colores o ajustes obligatorios, o su formato no es válido.",
+  "themeImportLowContrast": "El tema importado tiene poco contraste. Se añadió a la lista y los colores actuales siguen activos.",
+  "themeImportReadFailed": "No se pudo leer el archivo del tema.",
   "themeSaveAsNewButton": "Guardar ajustes actuales como nuevo tema",
   "themeImportButton": "Importar .niatheme",
   "themePresetNameDialogTitle": "Nombre del tema",
@@ -1619,7 +1622,7 @@
       }
     }
   },
-  "autofillPartGradientStopDragHint": "Arrastra los marcadores ▲ hacia los lados para ajustar la posición de cada color",
+  "autofillPartGradientStopDragHint": "Arrastra los marcadores ▲ para ajustar la posición de los colores. El degradado abarca toda el área de relleno de la parte.",
   "saveTreeScreenTitleTree": "Árbol de guardado",
   "saveTreeScreenTitleSlot": "Ranuras de guardado",
   "timelineExportMenuItem": "Exportar",
@@ -1942,6 +1945,7 @@
     }
   },
   "layerPanelDeleteConfirmBody": "Este material se eliminará de todos los fotogramas dentro de su rango de visualización.",
+  "layerPanelCommonRemoveFrame": "¿Ocultar «{name}» en este fotograma?",
   "layerPanelCommonDeleteMidDialogTitle": "¿Cambiar el rango de visualización de {name}?",
   "@layerPanelCommonDeleteMidDialogTitle": {
     "placeholders": {

@@ -119,6 +119,16 @@ class UndoManager extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Removes the specified operations from both stacks after their caller
+  /// has restored the original pixels.
+  void discardActions(Set<UndoAction> actions, {String? projectId}) {
+    if (actions.isEmpty) return;
+    final history = _stacksFor(projectId ?? _projectId);
+    history.undo.removeWhere(actions.contains);
+    history.redo.removeWhere(actions.contains);
+    notifyListeners();
+  }
+
   void clear() {
     _undoStack.clear();
     _redoStack.clear();

@@ -1,17 +1,8 @@
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
-/// レイヤー全体の自由変形・メッシュ変形（新機能）。
-///
-/// 変形前の画像を、rows×cols分割された(rows+1)×(cols+1)個の規則的な
-/// 格子点（[regularGrid]）から、ユーザーがドラッグして動かした後の
-/// 格子点（[controlPoints]）へワープする。各セル（4点で囲まれた升目）を
-/// 対角線で2枚の三角形に分割し、Flutter標準の[ui.Vertices]（テクスチャ
-/// 座標付き三角形メッシュ）でGPU描画する。rows=cols=1（4隅のみ）の場合は
-/// 「自由変形」（4隅を個別にドラッグできる、通常のアフィン変換では表現
-/// できない台形・平行四辺形状の変形も可能）そのものになり、rows・colsを
-/// 増やすと「メッシュ変形」（升目を細かくした自由な歪み）になる
-/// （両者は同じ仕組みの分割数違いに過ぎない）。
+/// Warps a source rectangle by a projective four-corner transform or a
+/// tessellated multi-cell mesh. The canvas preview and raster use the same path.
 class MeshWarpEngine {
   /// [rows]×[cols]分割の規則的な格子点を、[bounds]の範囲へ均等割りで
   /// 生成する（変形ツールを開いた直後の初期状態、および分割数変更時に使う）。
@@ -41,14 +32,16 @@ class MeshWarpEngine {
     required int rows,
     required int cols,
     required List<ui.Offset> controlPoints,
+    ui.Rect? sourceBounds,
   }) {
     assert(controlPoints.length == (rows + 1) * (cols + 1));
-    final srcW = image.width.toDouble();
-    final srcH = image.height.toDouble();
+    final bounds = sourceBounds ?? _imageBounds(image);
 
     int idxAt(int r, int c) => r * (cols + 1) + c;
-    ui.Offset srcPointAt(int r, int c) =>
-        ui.Offset(srcW * c / cols, srcH * r / rows);
+    ui.Offset srcPointAt(int r, int c) => ui.Offset(
+      bounds.left + bounds.width * c / cols,
+      bounds.top + bounds.height * r / rows,
+    );
 
     final positions = Float32List((rows + 1) * (cols + 1) * 2);
     final texCoords = Float32List((rows + 1) * (cols + 1) * 2);
@@ -111,9 +104,84 @@ class MeshWarpEngine {
     1,
   ]);
 
-  /// [image]を、規則的な格子（[regularGrid]相当）から[controlPoints]へ
-  /// ワープした結果を、[outputWidth]×[outputHeight]サイズの新しい画像として
-  /// 返す（変形確定時にレイヤーのタイルへ書き戻す用）。
+  static ui.Rect _imageBounds(ui.Image image) =>
+      ui.Rect.fromLTWH(0, 0, image.width.toDouble(), image.height.toDouble());
+
+  /// Maps the unit square onto a convex quad. Falling back to triangles
+  /// keeps intentionally folded or degenerate four-point edits usable.
+  static Float64List? _projection(List<ui.Offset> points) {
+    final [tl, tr, bl, br] = points;
+    final a = tr - br;
+    final b = bl - br;
+    final difference = tl + br - tr - bl;
+    final det = a.dx * b.dy - a.dy * b.dx;
+    if (det.abs() < 1e-9) return null;
+    final g = (difference.dx * b.dy - difference.dy * b.dx) / det;
+    final h = (a.dx * difference.dy - a.dy * difference.dx) / det;
+    if (1 + g <= 1e-9 || 1 + h <= 1e-9 || 1 + g + h <= 1e-9) return null;
+    return Float64List.fromList([
+      tr.dx * (1 + g) - tl.dx,
+      tr.dy * (1 + g) - tl.dy,
+      0,
+      g,
+      bl.dx * (1 + h) - tl.dx,
+      bl.dy * (1 + h) - tl.dy,
+      0,
+      h,
+      0,
+      0,
+      1,
+      0,
+      tl.dx,
+      tl.dy,
+      0,
+      1,
+    ]);
+  }
+
+  static void draw(
+    ui.Canvas canvas, {
+    required ui.Image image,
+    required int rows,
+    required int cols,
+    required List<ui.Offset> controlPoints,
+    ui.Rect? sourceBounds,
+  }) {
+    final bounds = sourceBounds ?? _imageBounds(image);
+    if (bounds.isEmpty) return;
+    final projection = rows == 1 && cols == 1
+        ? _projection(controlPoints)
+        : null;
+    final paint = ui.Paint()..filterQuality = ui.FilterQuality.low;
+    if (projection != null) {
+      canvas.save();
+      canvas.transform(projection);
+      canvas.drawImageRect(
+        image,
+        bounds,
+        const ui.Rect.fromLTWH(0, 0, 1, 1),
+        paint,
+      );
+      canvas.restore();
+      return;
+    }
+    final vertices = buildVertices(
+      image: image,
+      rows: rows,
+      cols: cols,
+      controlPoints: controlPoints,
+      sourceBounds: bounds,
+    );
+    paint.shader = ui.ImageShader(
+      image,
+      ui.TileMode.clamp,
+      ui.TileMode.clamp,
+      identityMatrix4,
+      filterQuality: ui.FilterQuality.low,
+    );
+    canvas.drawVertices(vertices, ui.BlendMode.srcOver, paint);
+  }
+
   static Future<ui.Image> warp({
     required ui.Image image,
     required int rows,
@@ -121,27 +189,25 @@ class MeshWarpEngine {
     required List<ui.Offset> controlPoints,
     required int outputWidth,
     required int outputHeight,
+    ui.Rect? sourceBounds,
+    ui.Image? base,
   }) async {
-    final vertices = buildVertices(
+    final recorder = ui.PictureRecorder();
+    final canvas = ui.Canvas(recorder);
+    if (base != null) canvas.drawImage(base, ui.Offset.zero, ui.Paint());
+    draw(
+      canvas,
       image: image,
       rows: rows,
       cols: cols,
       controlPoints: controlPoints,
+      sourceBounds: sourceBounds,
     );
-    final recorder = ui.PictureRecorder();
-    final canvas = ui.Canvas(recorder);
-    final paint = ui.Paint()
-      ..shader = ui.ImageShader(
-        image,
-        ui.TileMode.clamp,
-        ui.TileMode.clamp,
-        identityMatrix4,
-        filterQuality: ui.FilterQuality.low,
-      );
-    canvas.drawVertices(vertices, ui.BlendMode.srcOver, paint);
     final picture = recorder.endRecording();
-    final result = await picture.toImage(outputWidth, outputHeight);
-    picture.dispose();
-    return result;
+    try {
+      return await picture.toImage(outputWidth, outputHeight);
+    } finally {
+      picture.dispose();
+    }
   }
 }

@@ -275,4 +275,35 @@ void main() {
       expect(find.widgetWithText(ListTile, preset.name), findsOneWidget);
     },
   );
+  testWidgets('gradient stops match the circular editor preview endpoints', (
+    tester,
+  ) async {
+    await open(tester);
+    await tester.tap(find.widgetWithText(ListTile, preset.name));
+    await tester.pumpAndSettle();
+    final row = tester.widget<ListTile>(find.byKey(ValueKey(part.id)));
+    await tester.tap(find.byWidget(row.leading!));
+    await tester.pumpAndSettle();
+    final set = find.text(l10n.autofillPartGradientSetButton);
+    await tester.ensureVisible(set);
+    await tester.pumpAndSettle();
+    await tester.tap(set.hitTestable());
+    await tester.pumpAndSettle();
+    final preview = find.byKey(const ValueKey('autofillGradientPreview'));
+    Gradient gradient() =>
+        (tester.widget<DecoratedBox>(preview).decoration as BoxDecoration)
+            .gradient!;
+    final linear = gradient() as LinearGradient;
+    expect(linear.begin, const Alignment(-1, 0));
+    expect(linear.end, const Alignment(1, 0));
+    expect(linear.stops, [0, 1]);
+    expect(linear.colors, [Color(part.color), Colors.white]);
+    final radial = find.text(l10n.autofillGradientTypeRadialCenterOut);
+    await tester.ensureVisible(radial);
+    await tester.pumpAndSettle();
+    await tester.tap(radial.hitTestable());
+    await tester.pumpAndSettle();
+    expect((gradient() as RadialGradient).radius, 0.5);
+    expect((gradient() as RadialGradient).center, Alignment.center);
+  });
 }

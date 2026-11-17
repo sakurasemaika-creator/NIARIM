@@ -149,6 +149,27 @@ void main() {
       reason: 'ONで後フレーム由来の青優勢画素が増えること',
     );
 
+    hostSetState!(() {
+      settings = settings.copyWith(prevOpacity: 0.35, nextOpacity: 0.35);
+    });
+    await tester.pump();
+    await _settleRealAsync(tester);
+    final faint = await _capture(tester, boundaryKey);
+    expect(
+      _hasRgb(faint.rgba, 255, 166, 166),
+      isTrue,
+      reason: '35% red over white leaves 65% white',
+    );
+    expect(_hasRgb(faint.rgba, 166, 166, 255), isTrue);
+
+    hostSetState!(() {
+      settings = settings.copyWith(prevOpacity: 0, nextOpacity: 0);
+    });
+    await tester.pump();
+    await _settleRealAsync(tester);
+    final zero = await _capture(tester, boundaryKey);
+    expect(zero.rgba, orderedEquals(off.rgba));
+
     final out = Directory('build/functional-visual')
       ..createSync(recursive: true);
     await tester.runAsync(() async {
@@ -160,6 +181,17 @@ void main() {
       );
     });
   }, timeout: const Timeout(Duration(seconds: 120)));
+}
+
+bool _hasRgb(Uint8List pixels, int r, int g, int b) {
+  for (var i = 0; i < pixels.length; i += 4) {
+    if ((pixels[i] - r).abs() <= 1 &&
+        (pixels[i + 1] - g).abs() <= 1 &&
+        (pixels[i + 2] - b).abs() <= 1) {
+      return true;
+    }
+  }
+  return false;
 }
 
 Future<void> _settleRealAsync(WidgetTester tester) async {
