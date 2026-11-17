@@ -1804,3 +1804,10 @@ App・Web共通。Claudeが要修正の詳細を追記し、ユーザーが別�
 - **調べたこと（判断はしない）**：公開のWeb検索では「NIARIM」と同じ綴りの商標・アプリは出なかった。似た綴りとして「NIRAMI」（米国 79432998）、「NIARO」（米国 98853569、衣類・玩具・広告）、「NIARAP」（米国 98866203）、「NIYARA」（インド）が出た。公式のデータベースで、区分（第9類・第41類・第42類など）を指定して同一・類似を確かめる必要がある。
 - **OK**：他社の商標は、機能の説明に要る範囲で名前として出るだけ（「Google」「YouTube」「Galaxy DeXモード・Sペン」「Android」）で、ロゴの画像は使っていない。競合の名前をSEO・ASOに使っていない（W027）。
 - **未確認**：「NIARIM」・ロゴの各国の公式のデータベースでの調査、YouTubeのAPIの利用で求められるブランドの表示（CLAUDE.mdの「人間の実操作」10）、Samsungの商標（Galaxy・DeX・S Pen）の表記の決まり。
+
+### W033（一巡目、Claude・S40、判定：一部〔公式の特許のデータベースの調査は未〕、新規の要修正なし）
+
+- **確認SHA・環境**：App `49962aef`の`lib/engine/**`・`lib/services/**`・`backend/**`を読み、独自の処理の候補を挙げた。特許庁（J-PlatPat）・USPTO・EPO（Espacenet）・WIPO（PATENTSCOPE）等の公式のデータベースの調査、請求項の構成要件との照合はしていない（この環境から使えず、専門の評価が要る）。
+- **新規の要修正なし**（侵害の候補を断定しない）。
+- **専門の調査の候補（独自の処理）**：自動線画（細線化・合流の分離・交点のつなぎ直し、`auto_lineart_engine.dart`）、髪の折り畳みの描画と三日月のカール（`HairFoldRaster`・`outline_accent.dart`）、墨溜まり（`ink_pool_engine.dart`）、投げ縄の領域の吸着（`lasso_region_snap_engine.dart`）、絵の具らしい混色（`perceptual_color_mixer.dart`、RYBの色相とKubelka–Munk）、水彩の境界（`watercolor_border_engine.dart`）、ドット絵の色の限り方（`pixel_art_engine.dart`、Yliluoma式・Weberの詳細保持縮小は論文の方法）、自動塗り、作品広場のYouTubeとの連携・期間のランキング（`backend/src/lib/ranking.ts`）。
+- **未確認**：上の候補ごとの公式のデータベースの調査・法域・存続・優先日の照合（W040で集約）。
