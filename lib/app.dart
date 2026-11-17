@@ -233,7 +233,13 @@ class _NiarimAppState extends State<NiarimApp> with WidgetsBindingObserver {
                 child: AppToastMessenger(
                   key: PushNotificationService.scaffoldMessengerKey,
                   child: Stack(
-                    children: [child!, const CommunityFloatingPreview()],
+                    children: [
+                      child!,
+                      CommunityFloatingPreview(
+                        obscured:
+                            adModalVisibilityObserver.isModalVisible.value,
+                      ),
+                    ],
                   ),
                 ),
               );

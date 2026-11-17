@@ -14,8 +14,18 @@ abstract final class ExportShareService {
   static final _running = <String>{};
   static final _runningChanged = _RunningChanged();
 
-  static Future<ShareResult> share(File file, {Rect? origin}) =>
-      shareFiles([XFile(file.path)], key: file.absolute.path, origin: origin);
+  static Future<ShareResult> share(File file, {Rect? origin}) => shareFiles(
+    [
+      XFile(
+        file.path,
+        mimeType: file.path.toLowerCase().endsWith('.niashare')
+            ? 'application/vnd.niarim.niashare'
+            : null,
+      ),
+    ],
+    key: file.absolute.path,
+    origin: origin,
+  );
 
   /// Several files, or bytes that are not on disk, in one native share sheet.
   ///

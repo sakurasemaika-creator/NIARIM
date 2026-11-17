@@ -468,6 +468,7 @@ class _TransferScreenState extends State<TransferScreen> {
           ? NiatraSerializer.loadFromBytes(picked.bytes!)
           : await NiatraSerializer.load(picked.path!);
       if (!mounted) return;
+      NiatraSerializer.validateProjects(data);
 
       final brushService = context.read<BrushService>();
       final toneService = context.read<ToneService>();

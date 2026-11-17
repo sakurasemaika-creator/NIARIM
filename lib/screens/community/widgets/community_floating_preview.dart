@@ -16,7 +16,9 @@ import 'community_youtube_player.dart';
 /// App-wide preview state survives navigation. The YouTube IFrame player is
 /// mounted only after a fresh backend visibility check succeeds.
 class CommunityFloatingPreview extends StatefulWidget {
-  const CommunityFloatingPreview({super.key});
+  const CommunityFloatingPreview({super.key, this.obscured = false});
+
+  final bool obscured;
 
   @override
   State<CommunityFloatingPreview> createState() =>
@@ -137,6 +139,9 @@ class _CommunityFloatingPreviewState extends State<CommunityFloatingPreview> {
       return const SizedBox.shrink();
     }
     final l10n = AppLocalizations.of(context)!;
+    final hasVideo = CommunityYoutubePlayer.isValidVideoId(work.id);
+    final canPlay =
+        hasVideo && _playbackStatus == CommunityPlaybackStatus.available;
     final theme = Theme.of(context);
     final barColor = theme.cardTheme.color ?? theme.colorScheme.surface;
     final controlColor =
@@ -203,7 +208,7 @@ class _CommunityFloatingPreviewState extends State<CommunityFloatingPreview> {
           if (mounted &&
               service.work?.id == work.id &&
               _showingPlayer == showPlayer) {
-            final target = showPlayer ? _playFocus : _detailsFocus;
+            final target = showPlayer && hasVideo ? _playFocus : _detailsFocus;
             target.requestFocus();
             if (!showPlayer && target.context != null) {
               Scrollable.ensureVisible(target.context!, alignment: 1);
@@ -231,7 +236,17 @@ class _CommunityFloatingPreviewState extends State<CommunityFloatingPreview> {
       value.dx.clamp(leftLimit, leftLimit + availableWidth - width),
       value.dy.clamp(topLimit, topLimit + availableHeight - height),
     );
-    final position = boundedPosition(service.position);
+    final position = boundedPosition(
+      service.position ??
+          Offset(
+            leftLimit + availableWidth - width - 16,
+            topLimit + availableHeight - height - 16,
+          ),
+    );
+
+    void moveBy(Offset delta) => service.updatePosition(
+      boundedPosition(boundedPosition(service.position ?? position) + delta),
+    );
     double currentWidth() => math.min(service.width, availableWidth);
 
     void resize(double next) =>
@@ -359,9 +374,7 @@ class _CommunityFloatingPreviewState extends State<CommunityFloatingPreview> {
     );
     final controls = GestureDetector(
       onPanStart: (_) => service.updatePosition(position),
-      onPanUpdate: (event) => service.updatePosition(
-        boundedPosition(service.position + event.delta),
-      ),
+      onPanUpdate: (event) => moveBy(event.delta),
       child: Container(
         key: const Key('communityPreviewControls'),
         color: barColor,
@@ -374,9 +387,7 @@ class _CommunityFloatingPreviewState extends State<CommunityFloatingPreview> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      if (showPlayer &&
-                          _playbackStatus == CommunityPlaybackStatus.available)
-                        play,
+                      if (showPlayer && canPlay) play,
                       close,
                       if (showPlayer) resizeControl,
                     ],
@@ -388,9 +399,7 @@ class _CommunityFloatingPreviewState extends State<CommunityFloatingPreview> {
                 height: detailsHeight,
                 child: Row(
                   children: [
-                    if (showPlayer &&
-                        _playbackStatus == CommunityPlaybackStatus.available)
-                      play,
+                    if (showPlayer && canPlay) play,
                     close,
                     Expanded(child: detailButton),
                     if (showPlayer) resizeControl,
@@ -408,112 +417,116 @@ class _CommunityFloatingPreviewState extends State<CommunityFloatingPreview> {
         height: height,
         // This surface lives outside the router's Navigator. A local overlay
         // supplies real hover/long-press tooltips without depending on a route.
-        child: Overlay.wrap(
-          clipBehavior: Clip.none,
-          child: FocusTraversalGroup(
-            policy: WidgetOrderTraversalPolicy(),
-            child: Focus(
-              canRequestFocus: false,
-              onKeyEvent: (_, event) {
-                if (event is! KeyDownEvent && event is! KeyRepeatEvent) {
-                  return KeyEventResult.ignored;
-                }
-                final key = event.logicalKey;
-                if (key == LogicalKeyboardKey.escape) {
-                  service.close();
-                  return KeyEventResult.handled;
-                }
-                if (!HardwareKeyboard.instance.isAltPressed) {
-                  return KeyEventResult.ignored;
-                }
-                final delta = switch (key) {
-                  LogicalKeyboardKey.arrowLeft => const Offset(-16, 0),
-                  LogicalKeyboardKey.arrowRight => const Offset(16, 0),
-                  LogicalKeyboardKey.arrowUp => const Offset(0, -16),
-                  LogicalKeyboardKey.arrowDown => const Offset(0, 16),
-                  _ => Offset.zero,
-                };
-                if (delta == Offset.zero) return KeyEventResult.ignored;
-                service.updatePosition(
-                  boundedPosition(boundedPosition(service.position) + delta),
-                );
-                return KeyEventResult.handled;
-              },
-              child: Material(
-                key: const Key('communityPreviewSurface'),
-                // Avoid the heavy, almost black elevation shadow shown
-                // as an outline around the floating preview.
-                elevation: 0,
-                color: barColor,
-                borderRadius: BorderRadius.circular(12),
-                clipBehavior: Clip.antiAlias,
-                child: GestureDetector(
-                  behavior: HitTestBehavior.opaque,
-                  // Give real YouTube player its touch gestures; drag the toolbar.
-                  onPanStart: showPlayer
-                      ? null
-                      : (_) => service.updatePosition(position),
-                  onPanUpdate: showPlayer
-                      ? null
-                      : (event) => service.updatePosition(
-                          boundedPosition(service.position + event.delta),
-                        ),
-                  child: SingleChildScrollView(
-                    physics: showPlayer
-                        ? const NeverScrollableScrollPhysics()
-                        : null,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        if (showPlayer)
-                          Semantics(
-                            hint: l10n.communityFloatingPreviewMoveHint,
-                            child: SizedBox(
-                              key: const Key('communityPreviewPlayer'),
-                              height: playerHeight,
-                              child:
-                                  _playbackStatus !=
-                                      CommunityPlaybackStatus.available
-                                  ? CommunityPlaybackStatusView(
-                                      status: _playbackStatus,
-                                      onRetry: _retryPlayback,
-                                    )
-                                  : CommunityYoutubePlayer(
-                                      key: ValueKey(
-                                        'communityPreviewYoutube-${work.id}',
-                                      ),
-                                      videoId: work.id,
-                                      playing: _isPlaying,
-                                      validatePlayback: () async =>
-                                          await _checkPlayback(work.id) ==
-                                          CommunityPlaybackStatus.available,
-                                      onPlayingChanged: (playing) {
-                                        if (mounted &&
-                                            _lastWorkId == work.id &&
-                                            _playbackStatus ==
-                                                CommunityPlaybackStatus
-                                                    .available &&
-                                            _isPlaying != playing) {
-                                          setState(() => _isPlaying = playing);
-                                        }
-                                      },
-                                    ),
-                            ),
-                          )
-                        else
-                          Padding(
-                            padding: const EdgeInsets.all(12),
-                            child: Text(
-                              l10n.communityFloatingPreviewCompactHint,
-                              key: const Key('communityPreviewCompactHint'),
-                              style: theme.textTheme.bodySmall?.copyWith(
-                                color: controlColor,
+        child: Offstage(
+          offstage: widget.obscured,
+          child: ExcludeFocus(
+            excluding: widget.obscured,
+            child: Overlay.wrap(
+              clipBehavior: Clip.none,
+              child: FocusTraversalGroup(
+                policy: WidgetOrderTraversalPolicy(),
+                child: Focus(
+                  canRequestFocus: false,
+                  onKeyEvent: (_, event) {
+                    if (event is! KeyDownEvent && event is! KeyRepeatEvent) {
+                      return KeyEventResult.ignored;
+                    }
+                    final key = event.logicalKey;
+                    if (key == LogicalKeyboardKey.escape) {
+                      service.close();
+                      return KeyEventResult.handled;
+                    }
+                    if (!HardwareKeyboard.instance.isAltPressed) {
+                      return KeyEventResult.ignored;
+                    }
+                    final delta = switch (key) {
+                      LogicalKeyboardKey.arrowLeft => const Offset(-16, 0),
+                      LogicalKeyboardKey.arrowRight => const Offset(16, 0),
+                      LogicalKeyboardKey.arrowUp => const Offset(0, -16),
+                      LogicalKeyboardKey.arrowDown => const Offset(0, 16),
+                      _ => Offset.zero,
+                    };
+                    if (delta == Offset.zero) return KeyEventResult.ignored;
+                    moveBy(delta);
+                    return KeyEventResult.handled;
+                  },
+                  child: Material(
+                    key: const Key('communityPreviewSurface'),
+                    // Avoid the heavy, almost black elevation shadow shown
+                    // as an outline around the floating preview.
+                    elevation: 0,
+                    color: barColor,
+                    borderRadius: BorderRadius.circular(12),
+                    clipBehavior: Clip.antiAlias,
+                    child: GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      // Give real YouTube player its touch gestures; drag the toolbar.
+                      onPanStart: showPlayer
+                          ? null
+                          : (_) => service.updatePosition(position),
+                      onPanUpdate: showPlayer
+                          ? null
+                          : (event) => moveBy(event.delta),
+                      child: SingleChildScrollView(
+                        physics: showPlayer
+                            ? const NeverScrollableScrollPhysics()
+                            : null,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (showPlayer)
+                              Semantics(
+                                hint: l10n.communityFloatingPreviewMoveHint,
+                                child: SizedBox(
+                                  key: const Key('communityPreviewPlayer'),
+                                  height: playerHeight,
+                                  child:
+                                      _playbackStatus !=
+                                          CommunityPlaybackStatus.available
+                                      ? CommunityPlaybackStatusView(
+                                          status: _playbackStatus,
+                                          onRetry: _retryPlayback,
+                                        )
+                                      : CommunityYoutubePlayer(
+                                          key: ValueKey(
+                                            'communityPreviewYoutube-${work.id}',
+                                          ),
+                                          videoId: work.id,
+                                          playing: _isPlaying,
+                                          validatePlayback: () async =>
+                                              await _checkPlayback(work.id) ==
+                                              CommunityPlaybackStatus.available,
+                                          onPlayingChanged: (playing) {
+                                            if (mounted &&
+                                                _lastWorkId == work.id &&
+                                                _playbackStatus ==
+                                                    CommunityPlaybackStatus
+                                                        .available &&
+                                                _isPlaying != playing) {
+                                              setState(
+                                                () => _isPlaying = playing,
+                                              );
+                                            }
+                                          },
+                                        ),
+                                ),
+                              )
+                            else
+                              Padding(
+                                padding: const EdgeInsets.all(12),
+                                child: Text(
+                                  l10n.communityFloatingPreviewCompactHint,
+                                  key: const Key('communityPreviewCompactHint'),
+                                  style: theme.textTheme.bodySmall?.copyWith(
+                                    color: controlColor,
+                                  ),
+                                ),
                               ),
-                            ),
-                          ),
-                        controls,
-                      ],
+                            controls,
+                          ],
+                        ),
+                      ),
                     ),
                   ),
                 ),

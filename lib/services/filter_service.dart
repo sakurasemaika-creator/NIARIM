@@ -8,6 +8,7 @@ import '../models/filter_canvas_gizmo.dart';
 import '../models/filter_def.dart';
 import '../models/layer.dart';
 import '../models/pixel_color_mode.dart';
+import '../utils/duplicate_name.dart';
 import '../utils/filter_display_name.dart';
 import '../utils/saved_list_reader.dart';
 import '../utils/tolerant_preferences.dart';
@@ -810,6 +811,11 @@ class FilterService extends ChangeNotifier {
           ..remove('id')
           ..remove('name')
           ..remove('isFavorite'),
+        duplicateContentOf: (f) => f.toJson()
+          ..remove('id')
+          ..remove('name')
+          ..remove('isFavorite')
+          ..['builtIn'] = isBuiltIn(f.id),
         organizationOf: (f) =>
             (favorite: f.isFavorite, tags: const [], folderId: null),
         withOrganization: (f, o) => f.copyWith(isFavorite: o.favorite),
@@ -820,7 +826,6 @@ class FilterService extends ChangeNotifier {
         },
         newId: (attempt) =>
             'custom_${DateTime.now().microsecondsSinceEpoch}_$attempt',
-        // 保存する名前の複製（一覧には出ないので、知らせは下で書く）。
         copyNames: TransferCopyNames(copyNames.l10n),
         shippedOf: (id) => _shippedFilters[id],
         organizationOnly: (id) =>
@@ -859,6 +864,14 @@ class FilterService extends ChangeNotifier {
       .toSet();
   bool isBuiltIn(String id) => _builtInIds.contains(id);
 
+  static bool usesBuiltInName(FilterDef filter) {
+    if (_builtInIds.contains(filter.id)) return true;
+    final baseName = copySourceName(filter.name) ?? filter.name;
+    return _shippedFilters.values.any(
+      (builtin) => builtin.kind == filter.kind && builtin.name == baseName,
+    );
+  }
+
   void addFilter(FilterDef filter) {
     _filters.add(filter);
     _currentFilterId = filter.id;
@@ -872,10 +885,25 @@ class FilterService extends ChangeNotifier {
     final source = _filters[idx];
     final copy = source.copyWith(
       id: 'custom_${DateTime.now().microsecondsSinceEpoch}',
-      name: '${source.name}_copy',
+      name: fallbackCopyName(source.name, _filters.map((f) => f.name)),
       isFavorite: false,
     );
     _filters.insert(idx + 1, copy);
+    notifyListeners();
+    _persist();
+  }
+
+  void renameFilter(String id, String name) {
+    final trimmed = name.trim();
+    if (isBuiltIn(id) || trimmed.isEmpty) return;
+    final idx = _filters.indexWhere((f) => f.id == id);
+    if (idx < 0 || _filters[idx].name == trimmed) return;
+    _filters[idx] = _filters[idx].copyWith(
+      name: uniqueNumberedName(
+        trimmed,
+        _filters.where((f) => f.id != id).map((f) => f.name),
+      ),
+    );
     notifyListeners();
     _persist();
   }

@@ -17,6 +17,7 @@ void main() {
       final messenger =
           TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
       String? errorCode = 'FILE_TOO_LARGE';
+      var sharedBytes = Uint8List.fromList([1, 2, 3]);
       messenger.setMockMethodCallHandler(channel, (call) async {
         switch (call.method) {
           case 'getInitialUri':
@@ -24,7 +25,7 @@ void main() {
           case 'readUri':
             expect(call.arguments, {'uri': uri});
             if (errorCode case final code?) throw PlatformException(code: code);
-            return Uint8List.fromList([1, 2, 3]);
+            return sharedBytes;
           default:
             throw MissingPluginException();
         }
@@ -70,20 +71,45 @@ void main() {
 
       clearNotice();
       errorCode = null;
-      await receive(uri);
-      await home.waitFor(() => dialog.evaluate().isNotEmpty);
-      await home.settle();
-      expect(find.text(l10n.homeShareFileDialogTitle), findsOneWidget);
       Iterable<Directory> staged() =>
           home.dir.listSync().whereType<Directory>().where(
             (dir) => dir.uri.pathSegments.any(
               (segment) => segment.startsWith('shared-'),
             ),
           );
+      await receive(uri);
+      await home.waitFor(
+        () => home.snackText() == l10n.homeSharedFileUnreadable,
+      );
+      expect(dialog, findsNothing);
+      await home.waitFor(() => staged().isEmpty);
+
+      clearNotice();
+      final project = await home.addWork('Share source');
+      sharedBytes = (await tester.runAsync(() async {
+        final archive = await home.projects.createOutgoingShare(
+          project: project,
+        );
+        return archive.readAsBytes();
+      }))!;
+      await receive(uri);
+      await home.waitFor(() => dialog.evaluate().isNotEmpty);
+      await home.settle();
+      expect(find.text(l10n.homeShareFileDialogTitle), findsOneWidget);
       expect(staged(), hasLength(1));
       await tester.tap(find.widgetWithText(TextButton, l10n.commonCancel));
       await home.waitFor(() => staged().isEmpty);
+      await home.settle();
       expect(home.projects.shared, isEmpty);
+
+      await receive(uri);
+      final save = find.widgetWithText(FilledButton, l10n.commonSave);
+      await home.waitFor(() => save.hitTestable().evaluate().isNotEmpty);
+      await home.settle();
+      await tester.tap(save);
+      await home.waitFor(
+        () => home.projects.shared.length == 1 && staged().isEmpty,
+      );
       await home.close();
     },
   );

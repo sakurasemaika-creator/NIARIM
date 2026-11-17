@@ -48,9 +48,8 @@ void main() {
             GlobalCupertinoLocalizations.delegate,
           ],
           home: Builder(
-            builder: (context) => throw StateError(
-              'セーブツリー保存の再現用エラー for private@example.com',
-            ),
+            builder: (context) =>
+                throw StateError('セーブツリー保存の再現用エラー for private@example.com'),
           ),
         ),
       );

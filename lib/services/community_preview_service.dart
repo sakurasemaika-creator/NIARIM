@@ -18,8 +18,8 @@ class CommunityPreviewService extends ChangeNotifier {
   CommunityWork? _work;
   CommunityWork? get work => _work;
 
-  Offset _position = const Offset(16, 100);
-  Offset get position => _position;
+  Offset? _position;
+  Offset? get position => _position;
 
   // Desired width survives viewport changes. The view resolves the actual
   // bounds without mutating this state during layout.

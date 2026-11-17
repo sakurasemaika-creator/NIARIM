@@ -731,7 +731,10 @@ class NiaproSerializer {
   static Future<NiaproData> load(String filePath) async {
     final source = File(filePath);
     ArchiveSecurity.validateFileSize(await source.length());
-    final bytes = await source.readAsBytes();
+    return loadFromBytes(await source.readAsBytes());
+  }
+
+  static NiaproData loadFromBytes(List<int> bytes) {
     final archive = ArchiveSecurity.decodeZip(bytes);
 
     final manifestFile = archive.findFile(_manifestFile);

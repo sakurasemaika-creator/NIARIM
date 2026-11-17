@@ -898,7 +898,8 @@ class _HomeScreenState extends State<HomeScreen>
         await file.writeAsBytes(bytes);
         localPath = file.path;
       }
-      if (mounted) await _confirmSharedFileImport(localPath);
+      final data = await NiaproSerializer.loadShare(localPath);
+      if (mounted) await _confirmSharedFileImport(data);
     } catch (error, stack) {
       if (error is! SharedFileReadFailure) {
         AppErrorReporter.record(error, stack);
@@ -923,7 +924,7 @@ class _HomeScreenState extends State<HomeScreen>
     }
   }
 
-  Future<void> _confirmSharedFileImport(String localPath) async {
+  Future<void> _confirmSharedFileImport(NiaproData data) async {
     final l10n = AppLocalizations.of(context)!;
     final proceed = await showDialog<bool>(
       context: context,
@@ -944,8 +945,6 @@ class _HomeScreenState extends State<HomeScreen>
     );
     if (proceed != true || !mounted) return;
     try {
-      final data = await NiaproSerializer.loadShare(localPath);
-      if (!mounted) return;
       final projectService = context.read<ProjectService>();
       final project = await projectService.importSharedProject(data);
       if (!mounted) return;
@@ -4319,64 +4318,59 @@ class _TrashScreenState extends State<TrashScreen>
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final header = Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(8, 8, 8, 2),
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: Wrap(
+              spacing: 6,
+              runSpacing: 0,
+              children: [
+                for (final kind in TrashEntryKind.values)
+                  ChipFocusRing(
+                    builder: (context, focusSide) => FilterChip(
+                      key: ValueKey('trashKind_${kind.name}'),
+                      side: focusSide,
+                      label: Text(_trashKindLabel(context, kind)),
+                      selected: _selectedKinds.contains(kind),
+                      onSelected: (selected) => setState(() {
+                        if (selected) {
+                          _selectedKinds.add(kind);
+                        } else {
+                          _selectedKinds.remove(kind);
+                        }
+                      }),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ),
+        _HomeCollectionSortHeader(
+          sortByName: _sortByName,
+          sortAscending: _sortAscending,
+          onSortByNameChanged: _setSortByName,
+          onToggleDirection: _toggleSortDirection,
+        ),
+      ],
+    );
     return Scaffold(
       appBar: widget.embedded
           ? null
           : AppBar(title: FitOrHideTitle(l10n.homeTabTrash)),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(8, 8, 8, 2),
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: Wrap(
-                spacing: 6,
-                runSpacing: 0,
-                children: [
-                  for (final kind in TrashEntryKind.values)
-                    ChipFocusRing(
-                      builder: (context, focusSide) => FilterChip(
-                        key: ValueKey('trashKind_${kind.name}'),
-                        side: focusSide,
-                        label: Text(_trashKindLabel(context, kind)),
-                        selected: _selectedKinds.contains(kind),
-                        onSelected: (selected) => setState(() {
-                          if (selected) {
-                            _selectedKinds.add(kind);
-                          } else {
-                            _selectedKinds.remove(kind);
-                          }
-                        }),
-                      ),
-                    ),
-                ],
-              ),
-            ),
-          ),
-          _HomeCollectionSortHeader(
-            sortByName: _sortByName,
-            sortAscending: _sortAscending,
-            onSortByNameChanged: _setSortByName,
-            onToggleDirection: _toggleSortDirection,
-          ),
-          Expanded(
-            child: ValueListenableBuilder<int>(
-              valueListenable: LocalFileTrashService.changes,
-              builder: (context, version, _) => _TrashTab(
-                key: ValueKey('trash-list-version-$version'),
-                sortMode: _sortMode,
-                selectedKinds: _selectedKinds,
-                searchQuery: widget.searchQuery,
-                onClearSearch: widget.onClearSearch,
-                onShowAllKinds: () => setState(
-                  () => _selectedKinds.addAll(TrashEntryKind.values),
-                ),
-                onCopyEntry: widget.onCopyEntry,
-                screenFocus: widget.screenFocus,
-              ),
-            ),
-          ),
-        ],
+      body: _TrashTab(
+        header: header,
+        sortMode: _sortMode,
+        selectedKinds: _selectedKinds,
+        searchQuery: widget.searchQuery,
+        onClearSearch: widget.onClearSearch,
+        onShowAllKinds: () =>
+            setState(() => _selectedKinds.addAll(TrashEntryKind.values)),
+        onCopyEntry: widget.onCopyEntry,
+        screenFocus: widget.screenFocus,
       ),
     );
   }
@@ -6274,7 +6268,7 @@ class _FolderableList<T> extends StatelessWidget {
 
 class _TrashTab extends StatefulWidget {
   const _TrashTab({
-    super.key,
+    required this.header,
     required this.sortMode,
     required this.selectedKinds,
     this.searchQuery = '',
@@ -6284,6 +6278,7 @@ class _TrashTab extends StatefulWidget {
     this.screenFocus,
   });
 
+  final Widget header;
   final ProjectSortMode sortMode;
   final Set<TrashEntryKind> selectedKinds;
   final String searchQuery;
@@ -7003,12 +6998,7 @@ class _TrashTabState extends State<_TrashTab> {
         // ゴミ箱の作品は保存先から読む。読めなかったときは知らせを先頭に
         // 出し、「ゴミ箱は空です」とは言わない（作品が消えたように見える）。
         final loadFailed = service.projectsLoadFailed;
-        final lead = loadFailed ? 1 : 0;
-        if (snapshot.connectionState != ConnectionState.done &&
-            rows.isEmpty &&
-            !loadFailed) {
-          return const Center(child: CircularProgressIndicator());
-        }
+        final lead = loadFailed ? 2 : 1;
         // 書き出した作品・作成した共有ファイルの控えをまだ読んでいる間は、
         // 読めた行（作品）は出したまま、一覧の先頭に読み込み中の印を出す
         // （控えが多いと数十秒かかり、作品の行だけを全部のように出していた）。
@@ -7016,34 +7006,41 @@ class _TrashTabState extends State<_TrashTab> {
             snapshot.connectionState != ConnectionState.done &&
             (widget.selectedKinds.contains(TrashEntryKind.createdShare) ||
                 widget.selectedKinds.contains(TrashEntryKind.exportedWork));
-        if (rows.isEmpty && !loadFailed) {
+        if (rows.isEmpty && !loadFailed && !loadingFiles) {
           // 種類の絞り込み・検索で隠れているだけのときは「ゴミ箱は空です」と
           // 言わず、外すボタンを出す（プロジェクトのタブと同じ）。
           final shownQuery = widget.searchQuery.trim();
-          if (hiddenByKinds) {
-            return EmptyStatePlaceholder(
-              icon: Icons.filter_alt_off,
-              title: shownQuery.isEmpty
-                  ? l10n.homeTrashNoKindTitle
-                  : l10n.homeTrashNoKindMatchTitle(shownQuery),
-              action: widget.onShowAllKinds == null
-                  ? null
-                  : OutlinedButton(
-                      onPressed: widget.onShowAllKinds,
-                      child: Text(l10n.projectListShowAll),
-                    ),
-            );
-          }
-          if (query.isNotEmpty) {
-            return EmptyStatePlaceholder(
-              icon: Icons.search_off,
-              title: l10n.homeTrashNoMatchTitle(shownQuery),
-              action: _clearSearchButton(l10n, widget.onClearSearch),
-            );
-          }
-          return EmptyStatePlaceholder(
-            icon: Icons.delete_outline,
-            title: l10n.homeTrashEmpty,
+          final empty = hiddenByKinds
+              ? EmptyStatePlaceholder(
+                  scrollable: false,
+                  icon: Icons.filter_alt_off,
+                  title: shownQuery.isEmpty
+                      ? l10n.homeTrashNoKindTitle
+                      : l10n.homeTrashNoKindMatchTitle(shownQuery),
+                  action: widget.onShowAllKinds == null
+                      ? null
+                      : OutlinedButton(
+                          onPressed: widget.onShowAllKinds,
+                          child: Text(l10n.projectListShowAll),
+                        ),
+                )
+              : query.isNotEmpty
+              ? EmptyStatePlaceholder(
+                  scrollable: false,
+                  icon: Icons.search_off,
+                  title: l10n.homeTrashNoMatchTitle(shownQuery),
+                  action: _clearSearchButton(l10n, widget.onClearSearch),
+                )
+              : EmptyStatePlaceholder(
+                  scrollable: false,
+                  icon: Icons.delete_outline,
+                  title: l10n.homeTrashEmpty,
+                );
+          return CustomScrollView(
+            slivers: [
+              SliverToBoxAdapter(child: widget.header),
+              SliverFillRemaining(hasScrollBody: false, child: empty),
+            ],
           );
         }
         final loadingRow = loadingFiles ? 1 : 0;
@@ -7054,6 +7051,7 @@ class _TrashTabState extends State<_TrashTab> {
             bottom: 100 + MediaQuery.paddingOf(context).bottom,
           ),
           itemBuilder: (context, position) {
+            if (position == 0) return widget.header;
             if (position < lead) {
               return ProjectsLoadFailureNotice(
                 key: const Key('trashProjectsLoadFailed'),

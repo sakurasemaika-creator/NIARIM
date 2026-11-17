@@ -10,7 +10,8 @@
 library;
 
 abstract final class CoinEconomyScale {
-  static const String finalEconomyVersion = 'economy-v4-subscription-aligned-20261116';
+  static const String finalEconomyVersion =
+      'economy-v4-subscription-aligned-20261116';
 
   /// Product design reference: 1 yen of displayed plan price maps to 100 coins.
   static const int referenceCoinsPerYen = 100;

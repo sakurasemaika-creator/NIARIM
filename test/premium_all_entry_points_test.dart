@@ -174,7 +174,10 @@ void main() {
       scrollable: drawerList,
     );
     await _pumpFrames(tester, count: 2);
-    expect(find.byKey(const Key('homeMembershipBenefitsMenuItem')), findsOneWidget);
+    expect(
+      find.byKey(const Key('homeMembershipBenefitsMenuItem')),
+      findsOneWidget,
+    );
     await _capture(tester, boundaryKey, 'home-drawer-premium-entry');
     await tester.tap(find.byKey(const Key('homeMembershipBenefitsMenuItem')));
     await _pumpFrames(tester, count: 12);

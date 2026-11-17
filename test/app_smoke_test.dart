@@ -32,6 +32,7 @@ import 'package:niarim/screens/community/community_author_works_screen.dart';
 import 'package:niarim/screens/community/widgets/community_shorts_viewer.dart';
 import 'package:niarim/screens/community/widgets/community_work_card.dart';
 import 'package:niarim/services/community_service.dart';
+import 'package:niarim/services/community_preview_service.dart';
 import 'package:niarim/services/community_milestone_store.dart';
 import 'package:niarim/services/performance_service.dart';
 import 'package:niarim/services/premium_service.dart';
@@ -1639,6 +1640,48 @@ void main() {
     final cardCountRestored = find.byType(CommunityWorkCard).evaluate().length;
     expect(cardCountRestored, cardCountBefore);
   }, timeout: const Timeout(Duration(seconds: 60)));
+
+  testWidgets(
+    'a floating preview keeps community filter save reachable at 360 dp',
+    (tester) async {
+      tester.view.physicalSize = const Size(360, 800);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      final providers = (await tester.runAsync(buildAppProviders))!;
+      await tester.pumpWidget(
+        MultiProvider(providers: providers, child: const NiarimApp()),
+      );
+      await tester.pump(const Duration(milliseconds: 500));
+      await tester.tap(find.byIcon(Icons.movie_filter_outlined));
+      await tester.pumpAndSettle();
+      final filter = find.byKey(const Key('communityContentFilterButton'));
+      final context = tester.element(filter);
+      final preview = context.read<CommunityPreviewService>();
+      final community = context.read<CommunityService>();
+      final l10n = AppLocalizations.of(context)!;
+      preview.show(community.discoverableWorks.first);
+      await tester.pumpAndSettle();
+      final surface = find.byKey(const Key('communityPreviewSurface'));
+      expect(surface.hitTestable(), findsOneWidget);
+      expect(filter.hitTestable(), findsOneWidget);
+      await tester.tap(filter);
+      await pumpRealAsync(tester, const Duration(milliseconds: 200));
+      await tester.pumpAndSettle();
+      expect(find.byType(AlertDialog), findsOneWidget);
+      expect(surface.hitTestable(), findsNothing);
+      final save = find.descendant(
+        of: find.byType(AlertDialog),
+        matching: find.text(l10n.commonSave),
+      );
+      expect(save.hitTestable(), findsOneWidget);
+      await tester.tap(save);
+      await tester.pumpAndSettle();
+      expect(find.byType(AlertDialog), findsNothing);
+      expect(surface.hitTestable(), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    },
+  );
 
   testWidgets('コミュニティ画面：ショートモードでショート動画のみの全画面ビューアが開く（Task#159）', (
     WidgetTester tester,

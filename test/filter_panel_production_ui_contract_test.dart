@@ -52,6 +52,101 @@ void main() {
         .setMockMethodCallHandler(pathProviderChannel, null);
   });
 
+  testWidgets('gallery duplicates, renames and deletes custom filters', (
+    tester,
+  ) async {
+    final providers = (await tester.runAsync(buildAppProviders))!;
+    await tester.pumpWidget(
+      MultiProvider(
+        providers: providers,
+        child: const MaterialApp(
+          locale: Locale('en'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: Center(
+              child: FilterPanel(
+                projectId: '',
+                sceneId: '',
+                layerId: null,
+                frameIndex: 0,
+                onClose: _doNothing,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    final service = tester
+        .element(find.byType(FilterPanel))
+        .read<FilterService>();
+    final l10n = AppLocalizations.of(tester.element(find.byType(FilterPanel)))!;
+
+    Future<void> openMenu(String id) async {
+      await tester.tap(find.byKey(ValueKey('filter-menu-$id')));
+      await tester.pumpAndSettle();
+    }
+
+    await openMenu('Filter0001');
+    expect(find.text(l10n.commonRename), findsNothing);
+    expect(find.text(l10n.commonDelete), findsNothing);
+    await tester.tap(find.text(l10n.commonDuplicate));
+    await tester.pumpAndSettle();
+    final copy = service.filters.singleWhere((f) => !service.isBuiltIn(f.id));
+    expect(
+      find.text(l10n.projectDuplicateName(l10n.filterNameGaussianBlur)),
+      findsOneWidget,
+    );
+
+    await openMenu(copy.id);
+    await tester.tap(find.text(l10n.commonRename));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField), '   ');
+    await tester.pump();
+    expect(
+      tester
+          .widget<FilledButton>(
+            find.widgetWithText(FilledButton, l10n.commonSave),
+          )
+          .onPressed,
+      isNull,
+    );
+    await tester.enterText(find.byType(TextField), 'Soft shading');
+    await tester.testTextInput.receiveAction(TextInputAction.done);
+    await tester.pumpAndSettle();
+    expect(find.text('Soft shading'), findsOneWidget);
+
+    await openMenu(copy.id);
+    await tester.tap(find.text(l10n.commonDuplicate));
+    await tester.pumpAndSettle();
+    expect(
+      find.text(l10n.projectDuplicateName('Soft shading')),
+      findsOneWidget,
+    );
+
+    await openMenu(copy.id);
+    await tester.tap(find.text(l10n.commonDelete));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(TextButton, l10n.commonCancel));
+    await tester.pumpAndSettle();
+    expect(find.text('Soft shading'), findsOneWidget);
+    await openMenu(copy.id);
+    await tester.tap(find.text(l10n.commonDelete));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(FilledButton, l10n.commonDelete));
+    await tester.pumpAndSettle();
+    expect(find.text('Soft shading'), findsNothing);
+    expect(find.text(l10n.filterNameGaussianBlur), findsOneWidget);
+
+    final restored = FilterService();
+    addTearDown(restored.dispose);
+    await restored.init();
+    expect(restored.filters.any((f) => f.id == copy.id), isFalse);
+    expect(restored.filters.any((f) => f.name == 'Soft shading (コピー)'), isTrue);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets(
     'every built-in filter is reachable by a stable production UI card',
     (tester) async {
@@ -358,6 +453,8 @@ void main() {
     },
   );
 }
+
+void _doNothing() {}
 
 class _FilterPanelHarness extends StatelessWidget {
   const _FilterPanelHarness();

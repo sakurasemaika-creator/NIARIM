@@ -165,18 +165,18 @@ void main() {
     final auth = _FakeAuth()..switchAccount('account-a');
     final premium = PremiumService()..bindGoogleAuth(auth);
     const placementKeys = [
-      'projectListAds', 'canvasAds', 'timelineAds', 'processingAds', 'allAds',
+      'projectListAds',
+      'canvasAds',
+      'timelineAds',
+      'processingAds',
+      'allAds',
     ];
     final expiry = DateTime.now()
         .add(const Duration(hours: 1))
         .millisecondsSinceEpoch;
     for (final target in placementKeys) {
       premium.applyServerCoinBenefitEntitlements([
-        {
-          'feature': target,
-          'status': 'active',
-          'expiresAtEpochMs': expiry,
-        },
+        {'feature': target, 'status': 'active', 'expiresAtEpochMs': expiry},
       ], accountId: 'account-a');
       for (final other in placementKeys) {
         expect(
@@ -192,11 +192,7 @@ void main() {
         'status': 'active',
         'expiresAtEpochMs': expiry - const Duration(days: 1).inMilliseconds,
       },
-      {
-        'feature': 'canvasAds',
-        'status': 'paused',
-        'expiresAtEpochMs': expiry,
-      },
+      {'feature': 'canvasAds', 'status': 'paused', 'expiresAtEpochMs': expiry},
       {
         'feature': 'projectListAds',
         'status': 'active',
@@ -213,7 +209,6 @@ void main() {
     premium.dispose();
     auth.dispose();
   });
-
 
   test('unbound and unattributed coin Premium grants fail closed', () {
     final premium = PremiumService();
@@ -232,5 +227,4 @@ void main() {
     premium.dispose();
     auth.dispose();
   });
-
 }

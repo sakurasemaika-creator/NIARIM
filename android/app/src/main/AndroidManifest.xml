@@ -46,20 +46,17 @@
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
-                <data
-          android:scheme="content"
-          android:mimeType="*/*"
-          android:pathPattern=".*\\.niashare"
-        />
+                <data android:mimeType="application/vnd.niarim.niashare" />
             </intent-filter>
+            <!-- Some file managers infer a generic MIME type from the filename. -->
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
-                <data
-          android:scheme="file"
-          android:mimeType="*/*"
-          android:pathPattern=".*\\.niashare"
-        />
+                <data android:scheme="content"
+                      android:host="*"
+                      android:mimeType="*/*"
+                      android:pathPattern=".*\\.niashare"
+                      android:pathSuffix=".niashare" />
             </intent-filter>
         </activity>
         <!-- Don't delete the meta-data below.

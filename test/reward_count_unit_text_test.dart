@@ -852,9 +852,7 @@ void main() {
       await tester.pumpAndSettle();
       final review = find.byKey(const Key('rewardOverlapPreviewButton'));
       final buttonLabel = tester
-          .widget<Text>(
-            find.descendant(of: review, matching: _anyText),
-          )
+          .widget<Text>(find.descendant(of: review, matching: _anyText))
           .data!;
       expect(foreign.hasMatch(buttonLabel), isFalse, reason: buttonLabel);
       await tester.tap(review);

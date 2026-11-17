@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/gestures.dart';
+import 'package:flutter/services.dart';
 
 import '../../../config/font_fallback.dart';
 
@@ -85,6 +87,27 @@ class _CommunityShortsScreenState extends State<CommunityShortsScreen> {
     setState(() => _endBehavior = value);
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_endBehaviorPreferenceKey, value.name);
+  }
+
+  void _stepPage(int delta, int count) {
+    if (!_controller.hasClients ||
+        _controller.position.isScrollingNotifier.value) {
+      return;
+    }
+    final next = _currentIndex + delta;
+    if (next < 0 || next >= count) return;
+    _controller.animateToPage(
+      next,
+      duration: const Duration(milliseconds: 320),
+      curve: Curves.easeOutCubic,
+    );
+  }
+
+  void _onWheel(PointerSignalEvent event, int count) {
+    if (event is! PointerScrollEvent || event.scrollDelta.dy == 0) return;
+    GestureBinding.instance.pointerSignalResolver.register(event, (signal) {
+      _stepPage(event.scrollDelta.dy > 0 ? 1 : -1, count);
+    });
   }
 
   /// Called by the real IFrame player when the active video ends.
@@ -218,30 +241,52 @@ class _CommunityShortsScreenState extends State<CommunityShortsScreen> {
             ),
           ),
           Expanded(
-            child: PageView.builder(
-              controller: _controller,
-              scrollDirection: Axis.vertical,
-              itemCount: visibleWorks.length,
-              onPageChanged: (index) => setState(() => _currentIndex = index),
-              itemBuilder: (context, index) {
-                final work = visibleWorks[index];
-                return _ShortsVerifiedPage(
-                  key: ValueKey('shorts-verified-${work.id}'),
-                  work: work,
-                  isCurrentPage: index == _currentIndex,
-                  isBookmarked: communityService.isBookmarked(work.id),
-                  onToggleBookmark: () => reportFailedCommunityEdit(
-                    context,
-                    communityService,
-                    communityService.toggleBookmark(work.id),
-                  ),
-                  onPlaybackEnded: (onLoopCurrent) => _handlePlaybackEnded(
-                    index,
-                    visibleWorks,
-                    onLoopCurrent: onLoopCurrent,
-                  ),
-                );
+            child: CallbackShortcuts(
+              bindings: {
+                const SingleActivator(LogicalKeyboardKey.arrowDown): () =>
+                    _stepPage(1, visibleWorks.length),
+                const SingleActivator(LogicalKeyboardKey.pageDown): () =>
+                    _stepPage(1, visibleWorks.length),
+                const SingleActivator(LogicalKeyboardKey.arrowUp): () =>
+                    _stepPage(-1, visibleWorks.length),
+                const SingleActivator(LogicalKeyboardKey.pageUp): () =>
+                    _stepPage(-1, visibleWorks.length),
               },
+              child: Focus(
+                autofocus: true,
+                child: PageView.builder(
+                  controller: _controller,
+                  scrollDirection: Axis.vertical,
+                  itemCount: visibleWorks.length,
+                  onPageChanged: (index) =>
+                      setState(() => _currentIndex = index),
+                  itemBuilder: (context, index) {
+                    final work = visibleWorks[index];
+                    return Listener(
+                      behavior: HitTestBehavior.opaque,
+                      onPointerSignal: (event) =>
+                          _onWheel(event, visibleWorks.length),
+                      child: _ShortsVerifiedPage(
+                        key: ValueKey('shorts-verified-${work.id}'),
+                        work: work,
+                        isCurrentPage: index == _currentIndex,
+                        isBookmarked: communityService.isBookmarked(work.id),
+                        onToggleBookmark: () => reportFailedCommunityEdit(
+                          context,
+                          communityService,
+                          communityService.toggleBookmark(work.id),
+                        ),
+                        onPlaybackEnded: (onLoopCurrent) =>
+                            _handlePlaybackEnded(
+                              index,
+                              visibleWorks,
+                              onLoopCurrent: onLoopCurrent,
+                            ),
+                      ),
+                    );
+                  },
+                ),
+              ),
             ),
           ),
         ],
@@ -318,7 +363,9 @@ class _ShortsVerifiedPageState extends State<_ShortsVerifiedPage> {
 
   /// IFrame control resume and replay are fresh action boundaries.
   Future<bool> _validateNativePlay() async {
-    if (!mounted || !widget.isCurrentPage) {
+    if (!mounted ||
+        !widget.isCurrentPage ||
+        !(ModalRoute.isCurrentOf(context) ?? true)) {
       return false;
     }
     final id = widget.work.id;
@@ -326,6 +373,7 @@ class _ShortsVerifiedPageState extends State<_ShortsVerifiedPage> {
     final status = await context.read<CommunityService>().playbackStatus(id);
     if (!mounted ||
         !widget.isCurrentPage ||
+        !(ModalRoute.isCurrentOf(context) ?? true) ||
         widget.work.id != id ||
         epoch != _checkEpoch) {
       return false;
@@ -357,7 +405,7 @@ class _ShortsVerifiedPageState extends State<_ShortsVerifiedPage> {
     }
     return _ShortsPage(
       work: widget.work,
-      isCurrentPage: widget.isCurrentPage,
+      isCurrentPage: ModalRoute.isCurrentOf(context) ?? true,
       isBookmarked: widget.isBookmarked,
       onToggleBookmark: widget.onToggleBookmark,
       onPlaybackEnded: _handlePlaybackEnded,

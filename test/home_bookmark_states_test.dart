@@ -179,8 +179,11 @@ void main() {
         );
         await tester.drag(refresh, const Offset(0, 400));
         await tester.pumpAndSettle();
-        expect(fetches, initialFetches + 1,
-            reason: 'A pull gesture must refresh the saved feed once');
+        expect(
+          fetches,
+          initialFetches + 1,
+          reason: 'A pull gesture must refresh the saved feed once',
+        );
         expect(service.hasLoadedSocial, isTrue);
         expect(service.bookmarkedIds, isEmpty);
         expect(tester.widget<TabBar>(find.byType(TabBar)).controller!.index, 4);
@@ -239,11 +242,15 @@ void main() {
           if (unresolved) {
             expect(service.bookmarkedWorksForViewer, isEmpty);
           } else {
-            expect(service.bookmarkedWorksForViewer.map((w) => w.id),
-                contains('fixture-ai'));
+            expect(
+              service.bookmarkedWorksForViewer.map((w) => w.id),
+              contains('fixture-ai'),
+            );
             expect(service.isWorkMuted(service.byId('fixture-ai')!), isTrue);
-            expect(service.isDiscoverableForViewer(service.byId('fixture-ai')!),
-                isFalse);
+            expect(
+              service.isDiscoverableForViewer(service.byId('fixture-ai')!),
+              isFalse,
+            );
           }
           expect(
             find.text(

@@ -222,6 +222,7 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
     }
     final shorts = works.where((w) => w.isShort).toList();
     final target = shorts.isNotEmpty ? shorts : works;
+    context.read<CommunityPreviewService?>()?.close();
     Navigator.of(context).push(
       adMockMaterialPageRoute(
         builder: (_) => CommunityShortsScreen(

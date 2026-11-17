@@ -7,7 +7,9 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/l10n/app_localizations.dart';
+import 'package:niarim/models/community_work.dart';
 import 'package:niarim/screens/community/widgets/community_floating_preview.dart';
+import 'package:niarim/screens/community/widgets/community_youtube_player.dart';
 import 'package:niarim/services/community_preview_service.dart';
 import 'package:niarim/services/community_service.dart';
 import 'package:niarim/services/theme_service.dart';
@@ -65,11 +67,11 @@ void main() {
       preview.show(community.discoverableWorks.first);
       await tester.pumpWidget(previewHost(theme, community, preview));
       await tester.pumpAndSettle();
-      final panel = find.byWidgetPredicate(
-        (w) => w is Material && w.elevation == 10,
-      );
+      final panel = find.byKey(const Key('communityPreviewSurface'));
       final rect = tester.getRect(panel);
       expect(rect.right, lessThanOrEqualTo(320));
+      expect(rect.bottom, 844 - 16);
+      expect(find.byKey(const Key('communityPreviewPlay')), findsNothing);
       for (final button
           in find
               .descendant(of: panel, matching: find.byType(IconButton))
@@ -158,9 +160,7 @@ void main() {
       final tag =
           '${locale.toLanguageTag()}/${size.width}x${size.height}/'
           '$scale/$desiredWidth/${preset.id}';
-      final panel = find.byWidgetPredicate(
-        (w) => w is Material && w.elevation == 10,
-      );
+      final panel = find.byKey(const Key('communityPreviewSurface'));
       final rect = tester.getRect(panel);
       if (rect.left < 0 ||
           rect.right > size.width + .01 ||
@@ -182,7 +182,7 @@ void main() {
         }
       }
       final targets = <Finder>[
-        if (player.evaluate().isNotEmpty)
+        if (find.byKey(const Key('communityPreviewPlay')).evaluate().isNotEmpty)
           find.byKey(const Key('communityPreviewPlay')),
         find.byKey(const Key('communityPreviewClose')),
         find.byKey(const Key('communityPreviewDetails')),
@@ -322,6 +322,22 @@ void main() {
     await theme.init();
     final community = CommunityService();
     final preview = CommunityPreviewService();
+    final video = CommunityWork(
+      id: 'abcdefghijk',
+      title: 'Preview video',
+      authorId: 'preview-author',
+      authorName: 'Creator',
+      viewCount: 0,
+      likeCount: 0,
+      bookmarkCount: 0,
+      postedAt: DateTime.utc(2026),
+      durationSeconds: 30,
+      thumbnailColorIndex: 0,
+    );
+    community.applyServerWork(video);
+    CommunityYoutubePlayer.debugPlayerBuilder = (_, _, _) =>
+        const SizedBox.expand();
+    addTearDown(() => CommunityYoutubePlayer.debugPlayerBuilder = null);
     addTearDown(theme.dispose);
     addTearDown(community.dispose);
     addTearDown(preview.dispose);
@@ -334,7 +350,7 @@ void main() {
     await tester.pumpWidget(previewHost(theme, community, preview, scale: 1));
     await tester.pumpAndSettle();
     // Open from an already mounted route, as the card action does in the app.
-    preview.show(community.discoverableWorks.first);
+    preview.show(video);
     await tester.pumpAndSettle();
     expect(
       FocusManager.instance.primaryFocus?.debugLabel,
@@ -366,9 +382,7 @@ void main() {
     expect(preview.width, 320);
     await tester.sendKeyEvent(LogicalKeyboardKey.home);
     await tester.pumpAndSettle();
-    final panel = find.byWidgetPredicate(
-      (w) => w is Material && w.elevation == 10,
-    );
+    final panel = find.byKey(const Key('communityPreviewSurface'));
     final before = tester.getRect(panel);
     await tester.sendKeyDownEvent(LogicalKeyboardKey.altLeft);
     await tester.sendKeyEvent(LogicalKeyboardKey.arrowLeft);
@@ -393,7 +407,7 @@ void main() {
     await tester.sendKeyEvent(LogicalKeyboardKey.escape);
     await tester.pumpAndSettle();
     expect(preview.work, isNull);
-    preview.show(community.discoverableWorks.first);
+    preview.show(video);
     await tester.pumpAndSettle();
     final play = find.byKey(const Key('communityPreviewPlay'));
     expect(
@@ -438,25 +452,28 @@ void main() {
       tester.view.devicePixelRatio = 1;
       tester.view.physicalSize = const Size(640, 900);
       preview.updateWidth(300);
+      preview.updatePosition(const Offset(16, 100));
       await tester.pumpWidget(previewHost(theme, community, preview, scale: 1));
       await tester.pumpAndSettle();
       preview.show(community.discoverableWorks.first);
       await tester.pumpAndSettle();
       final failures = <String>[];
       final drag = await tester.startGesture(
-        tester.getCenter(find.byKey(const Key('communityPreviewPlayer'))),
+        tester.getTopLeft(find.byKey(const Key('communityPreviewControls'))) +
+            const Offset(4, 24),
       );
       await drag.moveBy(const Offset(40, 0));
       await tester.pump();
-      final position = preview.position;
+      final position = preview.position!;
       for (var i = 0; i < 20; i++) {
         await drag.moveBy(const Offset(2, 1));
       }
       await drag.up();
       await tester.pumpAndSettle();
-      if ((preview.position - position - const Offset(40, 20)).distance > .01) {
+      if ((preview.position! - position - const Offset(40, 20)).distance >
+          .01) {
         failures.add(
-          'lost movement: ${preview.position - position}, expected40,20',
+          'lost movement: ${preview.position! - position}, expected40,20',
         );
       }
       final resize = await tester.startGesture(

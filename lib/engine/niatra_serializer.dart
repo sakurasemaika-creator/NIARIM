@@ -4,7 +4,6 @@ import 'dart:typed_data';
 import 'dart:ui' show Locale;
 
 import 'package:archive/archive.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../l10n/app_localizations.dart';
@@ -945,9 +944,6 @@ class NiatraSerializer {
   /// 変えない）。この端末でゴミ箱へ移したフォルダは戻さず、足せなかった
   /// フォルダの作品は一番上に置く。
   ///
-  /// 一時ファイルの書き出しにpath_providerを使うため、Web版では動作しない
-  /// （プロジェクトデータ自体が既にdart:io/path_provider前提の.niapro形式で
-  /// あり、この制約はniatra以前から存在する既存の制約に合わせたもの）。
   static Future<void> restoreProjects(
     NiatraData data,
     ProjectService projectService, {
@@ -985,7 +981,6 @@ class NiatraSerializer {
       part: parts.origin,
       mark: marks.origin,
     );
-    final tempDir = await getTemporaryDirectory();
 
     /// [same]は、この端末の同じ中身の作品（名前が同じでも複製の名前に
     /// しない。この端末で消した作品が戻る）。
@@ -1034,9 +1029,7 @@ class NiatraSerializer {
     final pending = <Project>[];
     final candidates = <List<Project>>[];
     for (final name in fileNames) {
-      final entry = data.archive.findFile('Projects/$name');
-      if (entry == null) continue;
-      final asSaved = await _loadProject(tempDir, name, entry);
+      final asSaved = _loadProject(data, name);
       // 作品が使う自動塗りのプリセット・パーツと透かしを、合わせた後で
       // もう1台の中身を持つこの端末の項目にする。
       final niaproData = _withTransferredReferences(asSaved, data);
@@ -1094,33 +1087,30 @@ class NiatraSerializer {
       // この端末の同じ作品が、ファイルの同じ作品より少ない（この端末で
       // 消したもう1つの作品）。
       final name = pendingNames[i];
-      final entry = data.archive.findFile('Projects/$name');
-      if (entry == null) continue;
       await add(
-        _withTransferredReferences(
-          await _loadProject(tempDir, name, entry),
-          data,
-        ),
+        _withTransferredReferences(_loadProject(data, name), data),
         same: candidates[i],
       );
     }
   }
 
-  /// ファイルの作品[entry]を読む（一時ファイルを経て読む）。
-  static Future<NiaproData> _loadProject(
-    Directory tempDir,
-    String name,
-    ArchiveFile entry,
-  ) async {
-    final tempFile = File(
-      '${tempDir.path}/niatra_import_${DateTime.now().microsecondsSinceEpoch}_$name',
-    );
-    await tempFile.writeAsBytes(entry.content as List<int>);
-    try {
-      return await NiaproSerializer.loadShare(tempFile.path);
-    } finally {
-      if (await tempFile.exists()) await tempFile.delete();
+  /// Check every embedded project before any import step writes to this device.
+  /// Keep one decoded project at a time so large transfers can be checked.
+  static void validateProjects(NiatraData data) {
+    final names = (data.raw['projectFiles'] as List<dynamic>?)?.cast<String>();
+    for (final name in names ?? const <String>[]) {
+      _loadProject(data, name);
     }
+  }
+
+  static NiaproData _loadProject(NiatraData data, String name) {
+    final entry = data.archive.findFile('Projects/$name');
+    if (entry == null || !entry.isFile) {
+      throw const FormatException(
+        'A project in the transfer archive is missing',
+      );
+    }
+    return NiaproSerializer.loadFromBytes(entry.content as List<int>);
   }
 
   /// ファイルの作品[incoming]（i番目。[candidates]のi番目がこの端末の同じ

@@ -125,12 +125,20 @@ void main() {
           final labels = [l10n.homeTabProjects, l10n.homeTabWorks];
           for (var index = 0; index < labels.length; index++) {
             final label = labels[index];
-            final paragraph = tester.renderObject<RenderParagraph>(
-              find.descendant(
-                of: find.byKey(ValueKey('home_tab_$index')),
-                matching: find.text(label),
-              ),
+            final tab = find.byKey(ValueKey('home_tab_$index'));
+            final textLabel = find.descendant(
+              of: tab,
+              matching: find.text(label),
             );
+            if (textLabel.evaluate().isEmpty) {
+              expect(
+                find.descendant(of: tab, matching: find.byTooltip(label)),
+                findsOneWidget,
+              );
+              expect(tester.widget<Semantics>(tab).properties.label, label);
+              continue;
+            }
+            final paragraph = tester.renderObject<RenderParagraph>(textLabel);
             expect(
               paragraph.size.width + 0.01,
               greaterThanOrEqualTo(
@@ -139,14 +147,29 @@ void main() {
               reason: '$label at $size / $scale',
             );
           }
-          await tester.longPress(find.text('Layout'));
+          final projectName = find.text('Layout');
+          await tester.ensureVisible(projectName);
           await tester.pumpAndSettle();
           expect(
-            find.bySemanticsLabel(l10n.homeSelectionCount(1)),
+            projectName.hitTestable(),
             findsOneWidget,
+            reason: '$size / $scale',
           );
-          await tester.tap(find.byTooltip(l10n.homeSelectionAllDeselect));
+          await tester.longPress(projectName);
           await tester.pumpAndSettle();
+          final count = find.byKey(const Key('home-selection-count'));
+          expect(
+            tester.widget<Text>(count).data,
+            anyOf('1', l10n.homeSelectionCount(1)),
+            reason: '$size / $scale',
+          );
+          final compact = find.byTooltip(l10n.homeSelectionAllDeselect);
+          final deselect = compact.evaluate().isNotEmpty
+              ? compact
+              : find.text(l10n.homeSelectionAllDeselect);
+          await tester.tap(deselect);
+          await tester.pumpAndSettle();
+          expect(count, findsNothing);
           expect(tester.takeException(), isNull, reason: '$size / $scale');
         }
       }

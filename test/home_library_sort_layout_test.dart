@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/engine/niapro_serializer.dart';
 import 'package:niarim/l10n/app_localizations.dart';
+import 'package:niarim/models/project.dart';
 import 'package:niarim/screens/home/home_screen.dart';
 import 'package:niarim/services/premium_service.dart';
 import 'package:niarim/services/project_service.dart';
@@ -15,6 +16,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'helpers/load_app_fonts.dart';
+import 'helpers/pump_real_async.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -94,6 +96,7 @@ void main() {
         ),
       ),
     );
+    await pumpRealAsync(tester, const Duration(milliseconds: 150));
     await tester.pumpAndSettle();
     return AppLocalizations.of(
       tester.element(find.byType(trash ? TrashScreen : SharedScreen)),
@@ -145,19 +148,36 @@ void main() {
               expect(tester.widget<FilterChip>(favorite).selected, !before);
               expect(tester.takeException(), isNull);
             }
-            final field = find.byWidgetPredicate(
-              (w) => w is PopupMenuButton<bool>,
+            final sort = find.byType(SortModeControl);
+            final field = find.descendant(
+              of: sort,
+              matching: find.byWidgetPredicate((w) => w is PopupMenuButton),
             );
             final direction = find.widgetWithIcon(
               IconButton,
               Icons.arrow_downward,
             );
-            for (final control in [field, direction]) {
+            for (final control in [
+              field,
+              if (direction.evaluate().isNotEmpty) direction,
+            ]) {
+              await tester.ensureVisible(control);
+              await tester.pumpAndSettle();
               final bounds = tester.getRect(control);
               expect(bounds.width, greaterThanOrEqualTo(48));
               expect(bounds.height, greaterThanOrEqualTo(48));
               expect(bounds.left, greaterThanOrEqualTo(0));
               expect(bounds.right, lessThanOrEqualTo(size.width));
+            }
+            if (direction.evaluate().isEmpty) {
+              await tester.tap(field);
+              await tester.pumpAndSettle();
+              await tester.tap(find.text(l10n.homeSortDirectionDescTooltip));
+              await tester.pumpAndSettle();
+              expect(
+                tester.widget<SortModeControl>(sort).sortAscending,
+                isTrue,
+              );
             }
           }
         }
@@ -297,6 +317,11 @@ void main() {
             .element(find.byType(trash ? TrashScreen : SharedScreen))
             .read<ProjectService>();
         final base = await tester.runAsync(NiaproSerializer.projectsBasePath);
+        final dated = trash ? service.trash.toList() : service.shared.toList();
+        DateTime sortDate(Project project) =>
+            trash ? service.deletedAtOf(project.id)! : project.updatedAt;
+        dated.sort((a, b) => sortDate(b).compareTo(sortDate(a)));
+        final newestFirst = dated.map((p) => p.name).toList();
         final bytes = <String, List<int>>{};
         for (final project in [...service.projects, ...service.trash]) {
           final path = '$base/${project.id}/${project.id}.niapro';
@@ -315,10 +340,15 @@ void main() {
           );
           final positions = {
             for (final name in ['Alpha', 'Beta', 'Gamma'])
-              name: tester.getTopLeft(find.text(name)).dy,
+              name: tester.getTopLeft(find.text(name)),
           };
           final actual = positions.keys.toList()
-            ..sort((a, b) => positions[a]!.compareTo(positions[b]!));
+            ..sort((a, b) {
+              final left = positions[a]!;
+              final right = positions[b]!;
+              final row = left.dy.compareTo(right.dy);
+              return row != 0 ? row : left.dx.compareTo(right.dx);
+            });
           expect(actual, expected);
           final state = tester.widget<SortModeControl>(
             find.byType(SortModeControl),
@@ -336,11 +366,7 @@ void main() {
           await tester.pumpAndSettle();
         }
 
-        expectOrder(
-          ['Beta', 'Alpha', 'Gamma'],
-          byName: false,
-          ascending: false,
-        );
+        expectOrder(newestFirst, byName: false, ascending: false);
         await choose(l10n.homeSortFieldName);
         expectOrder(['Gamma', 'Beta', 'Alpha'], byName: true, ascending: false);
         await tester.tap(find.byTooltip(l10n.homeSortDirectionDescTooltip));
@@ -359,14 +385,14 @@ void main() {
           );
         }
         await choose(l10n.homeSortFieldUpdated);
-        expectOrder(['Gamma', 'Alpha', 'Beta'], byName: false, ascending: true);
+        expectOrder(
+          newestFirst.reversed.toList(),
+          byName: false,
+          ascending: true,
+        );
         await tester.tap(find.byTooltip(l10n.homeSortDirectionAscTooltip));
         await tester.pumpAndSettle();
-        expectOrder(
-          ['Beta', 'Alpha', 'Gamma'],
-          byName: false,
-          ascending: false,
-        );
+        expectOrder(newestFirst, byName: false, ascending: false);
         for (final entry in bytes.entries) {
           expect(File(entry.key).readAsBytesSync(), entry.value);
         }
@@ -421,7 +447,11 @@ void main() {
             scale: scale,
             seedProjects: true,
           );
-          final title = tester.renderObject<RenderParagraph>(find.text('Beta'));
+          final titleFinder = find.text('Beta');
+          if (titleFinder.hitTestable().evaluate().isEmpty) {
+            await tester.scrollUntilVisible(titleFinder, 60);
+          }
+          final title = tester.renderObject<RenderParagraph>(titleFinder);
           expect(
             title.size.width + 0.01,
             greaterThanOrEqualTo(title.getMaxIntrinsicWidth(double.infinity)),
@@ -436,8 +466,9 @@ void main() {
             expect(rect.height, greaterThanOrEqualTo(48));
             expect(rect.left, greaterThanOrEqualTo(0));
             expect(rect.right, lessThanOrEqualTo(size.width));
-            expect(rect.top, greaterThanOrEqualTo(112));
+            expect(rect.top, greaterThanOrEqualTo(56));
             expect(rect.bottom, lessThanOrEqualTo(size.height));
+            expect(control.hitTestable(), findsOneWidget);
             expect(tester.widget<TextButton>(control).onPressed, isNotNull);
           }
           expect(

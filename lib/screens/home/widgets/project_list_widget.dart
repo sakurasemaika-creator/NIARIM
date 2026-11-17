@@ -919,11 +919,7 @@ class ProjectListWidget extends StatelessWidget {
             Expanded(
               child: Stack(
                 fit: StackFit.expand,
-                children: [
-                  cover,
-                  if (!separate) actions,
-                  ?selectionMarker,
-                ],
+                children: [cover, if (!separate) actions, ?selectionMarker],
               ),
             ),
             if (separate)

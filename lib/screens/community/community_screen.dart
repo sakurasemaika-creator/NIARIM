@@ -1112,6 +1112,7 @@ class _CommunityScreenState extends State<CommunityScreen>
     final shorts = base.where((w) => w.isShort).toList();
     final target = shorts.isNotEmpty ? shorts : base;
     final communityService = context.read<CommunityService>();
+    context.read<CommunityPreviewService?>()?.close();
     Navigator.of(context).push(
       adMockMaterialPageRoute(
         builder: (_) => CommunityShortsScreen(

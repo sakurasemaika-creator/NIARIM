@@ -1,5 +1,7 @@
+import 'dart:convert';
 import 'dart:io';
 
+import 'package:archive/archive.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -206,6 +208,37 @@ void main() {
     final theme = screen.read<ThemeService>();
     final builtInBrushes = brush.brushes.length;
     final builtInThemes = theme.presets.length;
+    final corrupt = ZipDecoder().decodeBytes(bytes);
+    final originalData = corrupt.findFile('data.json')!;
+    final patchedData =
+        jsonDecode(utf8.decode(originalData.content as List<int>))
+            as Map<String, dynamic>;
+    patchedData['projectFiles'] = ['broken.niashare'];
+    final metadata = utf8.encode(jsonEncode(patchedData));
+    final transfer = Archive()
+      ..addFile(ArchiveFile('data.json', metadata.length, metadata))
+      ..addFile(ArchiveFile('Projects/broken.niashare', 3, [1, 2, 3]));
+    for (final entry in corrupt.files) {
+      if (entry.name != 'data.json') transfer.addFile(entry);
+    }
+    FilePicker.platform = _PickNiatra(
+      Uint8List.fromList(ZipEncoder().encode(transfer)!),
+    );
+    await tester.tap(find.text(l10n.transferImport));
+    await pumpRealAsync(tester, const Duration(milliseconds: 300));
+    expect(find.text(l10n.transferImportFileFailed), findsOneWidget);
+    expect(find.text(l10n.transferImportInterrupted), findsNothing);
+    expect(brush.brushes, hasLength(builtInBrushes));
+    expect(theme.presets, hasLength(builtInThemes));
+    expect(
+      screen.read<AutofillPresetService>().presets.any(
+        (p) => p.id == 'p_moved',
+      ),
+      isFalse,
+    );
+    expect(screen.read<ProjectService>().projects, isEmpty);
+    ScaffoldMessenger.of(screen).clearSnackBars();
+    await pumpRealAsync(tester, const Duration(milliseconds: 300));
     FilePicker.platform = _PickNiatra(bytes);
 
     Future<void> readFile() async {

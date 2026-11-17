@@ -119,18 +119,23 @@ void main() {
       () async {
         final service = FilterService();
         await service.init();
-        // 28 shipped filters, Mosaic, the generic noise preset, Sphere
-        // Shading and Watercolor Edge included.
-        expect(service.filters.length, 28);
+        expect(
+          service.filters.map((f) => f.id),
+          FilterService.builtInFilters.map((f) => f.id),
+        );
         expect(
           service.filters.map((f) => f.id),
           contains(FilterService.prismFilterId),
         );
         expect(
           service.filters.map((f) => f.id),
-          contains(FilterService.vhsNoiseFilterId),
+          contains(FilterService.genericNoiseFilterId),
         );
-        expect(service.currentFilter?.id, 'Filter0001');
+        expect(
+          service.filters.map((f) => f.id),
+          isNot(contains(FilterService.vhsNoiseFilterId)),
+        );
+        expect(service.currentFilter, isNull);
         expect(service.isBuiltIn('Filter0001'), isTrue);
         expect(service.removeFilter('Filter0001'), isFalse);
 
@@ -176,7 +181,7 @@ void main() {
         service.duplicateFilter(custom.id);
         await Future<void>.delayed(Duration.zero);
         final copies = service.filters
-            .where((f) => f.name == 'Direct Custom_copy')
+            .where((f) => f.name == 'Direct Custom (コピー)')
             .toList();
         expect(copies, hasLength(1));
         final copyId = copies.single.id;

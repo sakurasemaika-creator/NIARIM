@@ -34,9 +34,11 @@ import '../../../services/theme_service.dart';
 import '../../../utils/blend_mode_label.dart';
 import '../../../utils/filter_display_name.dart';
 import '../../../widgets/filter_sample_preview.dart';
+import '../../../widgets/confirm_delete.dart';
 import '../../../widgets/frame_preview_background.dart';
 import '../../../widgets/editable_slider_value.dart';
 import '../../../widgets/grab_pan_gesture_recognizer.dart';
+import '../../../widgets/name_entry_dialog.dart';
 import '../../../widgets/pixel_color_mode_selector.dart';
 import '../../../widgets/premium_lock_widget.dart';
 import '../../../widgets/progress_dialog.dart';
@@ -53,6 +55,8 @@ import '../../../widgets/list_ink_clip.dart';
 import '../../../widgets/typing_dialog_inset.dart';
 
 enum FilterColorEyedropperTarget { inkPool, outline }
+
+enum _FilterCardAction { duplicate, rename, delete }
 
 class FilterPanel extends StatefulWidget {
   final String projectId;
@@ -984,6 +988,34 @@ class _FilterPanelState extends State<FilterPanel> {
         onChanged: service.setSearchQuery,
       );
 
+  Future<void> _manageFilter(
+    _FilterCardAction action,
+    FilterService service,
+    FilterDef filter,
+    AppLocalizations l10n,
+  ) async {
+    final name = filterDisplayName(l10n, filter);
+    switch (action) {
+      case _FilterCardAction.duplicate:
+        service.duplicateFilter(filter.id);
+      case _FilterCardAction.rename:
+        await showDialog<void>(
+          context: context,
+          builder: (_) => NameEntryDialog(
+            title: l10n.commonRename,
+            confirmLabel: l10n.commonSave,
+            cancelLabel: l10n.commonCancel,
+            initialName: name,
+            onSubmit: (name) async => service.renameFilter(filter.id, name),
+          ),
+        );
+      case _FilterCardAction.delete:
+        if (await confirmDelete(context, itemName: name) && mounted) {
+          service.removeFilter(filter.id);
+        }
+    }
+  }
+
   /// The catalog is a vertical 2/3-column gallery. It is only mounted while
   /// no preview is active, so the canvas and filter adjustments have room.
   Widget _filterCards(
@@ -1016,6 +1048,7 @@ class _FilterPanelState extends State<FilterPanel> {
                 !context.watch<PremiumService>().isFeatureAvailable(premium);
             final selected = filter.id == current?.id;
             final scheme = Theme.of(context).colorScheme;
+            final builtIn = service.isBuiltIn(filter.id);
             final child = InkWell(
               key: ValueKey('filter-card-${filter.id}'),
               onTap: locked ? null : () => _chooseFilter(service, filter),
@@ -1042,6 +1075,43 @@ class _FilterPanelState extends State<FilterPanel> {
                               height: math.max(1.0, size.maxHeight),
                             ),
                           ),
+                          if (!locked)
+                            PositionedDirectional(
+                              top: 0,
+                              end: 0,
+                              child: Material(
+                                color: scheme.surface.withValues(alpha: .90),
+                                borderRadius: BorderRadius.circular(6),
+                                child: PopupMenuButton<_FilterCardAction>(
+                                  key: ValueKey('filter-menu-${filter.id}'),
+                                  padding: EdgeInsets.zero,
+                                  icon: const Icon(Icons.more_vert, size: 20),
+                                  onSelected: (action) => _manageFilter(
+                                    action,
+                                    service,
+                                    filter,
+                                    l10n,
+                                  ),
+                                  itemBuilder: (_) => [
+                                    PopupMenuItem(
+                                      value: _FilterCardAction.duplicate,
+                                      child: Text(l10n.commonDuplicate),
+                                    ),
+                                    if (!builtIn) ...[
+                                      PopupMenuItem(
+                                        value: _FilterCardAction.rename,
+                                        child: Text(l10n.commonRename),
+                                      ),
+                                      PopupMenuItem(
+                                        value: _FilterCardAction.delete,
+                                        enabled: !filter.isFavorite,
+                                        child: Text(l10n.commonDelete),
+                                      ),
+                                    ],
+                                  ],
+                                ),
+                              ),
+                            ),
                           Positioned(
                             right: 1,
                             bottom: 1,
@@ -1074,7 +1144,7 @@ class _FilterPanelState extends State<FilterPanel> {
                             size: 15,
                           ),
                         ),
-                        if (!service.isBuiltIn(filter.id))
+                        if (!builtIn)
                           InkWell(
                             onTap: () => SharedAssetCardService.exportSettings(
                               context,

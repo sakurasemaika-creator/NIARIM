@@ -103,31 +103,34 @@ void main() {
     }
   });
 
-  test('ribbons offer every fold mode with flat pressure and red as their start color', () {
-    final ribbons = brushExtensionPresets().where(
-      (brush) => brush.name.startsWith('リボン'),
-    );
-    expect(ribbons, hasLength(5));
-    expect(
-      ribbons.map((brush) => brush.foldMode).toSet(),
-      HairFoldMode.values.toSet(),
-    );
-    for (final ribbon in ribbons) {
-      final restored = Brush.fromJson(ribbon.toJson());
-      expect(restored.foldEnabled, isTrue);
-      expect(restored.foldFlatEnds, isFalse);
-      expect(restored.calligraphyAngle, isNull);
-      expect(restored.customImagePaths, ['assets/brushes/ribbon_tip.png']);
-      expect(restored.fadeMode, FadeMode.off);
-      expect(restored.pressureOn.size.enabled, isFalse);
-      expect(restored.pressureOn.opacity.enabled, isFalse);
-      expect(restored.presetColor, 0xffdb424b);
-      expect(restored.outlineWidth, 1);
-      expect(restored.foldLengthRatio, .70);
-      expect(restored.foldAngleRatio, .60);
-      expect(restored.foldCurveStartRatio, .30);
-    }
-  });
+  test(
+    'ribbons offer every fold mode with flat pressure and red as their start color',
+    () {
+      final ribbons = brushExtensionPresets().where(
+        (brush) => brush.name.startsWith('リボン'),
+      );
+      expect(ribbons, hasLength(5));
+      expect(
+        ribbons.map((brush) => brush.foldMode).toSet(),
+        HairFoldMode.values.toSet(),
+      );
+      for (final ribbon in ribbons) {
+        final restored = Brush.fromJson(ribbon.toJson());
+        expect(restored.foldEnabled, isTrue);
+        expect(restored.foldFlatEnds, isFalse);
+        expect(restored.calligraphyAngle, isNull);
+        expect(restored.customImagePaths, ['assets/brushes/ribbon_tip.png']);
+        expect(restored.fadeMode, FadeMode.off);
+        expect(restored.pressureOn.size.enabled, isFalse);
+        expect(restored.pressureOn.opacity.enabled, isFalse);
+        expect(restored.presetColor, 0xffdb424b);
+        expect(restored.outlineWidth, 1);
+        expect(restored.foldLengthRatio, .70);
+        expect(restored.foldAngleRatio, .60);
+        expect(restored.foldCurveStartRatio, .30);
+      }
+    },
+  );
 
   test('cloud changes tip within the stroke after save and reload', () {
     final cloud = brushExtensionPresets().singleWhere(

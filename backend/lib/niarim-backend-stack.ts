@@ -12,6 +12,8 @@ import * as iam from "aws-cdk-lib/aws-iam";
 import * as secretsmanager from "aws-cdk-lib/aws-secretsmanager";
 import * as events from "aws-cdk-lib/aws-events";
 import * as targets from "aws-cdk-lib/aws-events-targets";
+import * as s3 from "aws-cdk-lib/aws-s3";
+import * as logs from "aws-cdk-lib/aws-logs";
 import { DynamoEventSource } from "aws-cdk-lib/aws-lambda-event-sources";
 import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
 import * as path from "path";
@@ -64,6 +66,7 @@ const CAPACITY_PLAN = {
 
 /** DynamoDB Always Free枠の上限（アカウント単位・永続）。 */
 const FREE_TIER_CAPACITY = 25;
+const FUNCTION_LOG_RETENTION = logs.RetentionDays.ONE_MONTH;
 
 /**
  * 容量配分がAlways Free枠を超えていないことを合成時に検証する。
@@ -221,6 +224,8 @@ export class NiarimBackendStack extends Stack {
 
     const apiFunction = new NodejsFunction(this, "ApiFunction", {
       functionName: "niarim-api",
+      // Apply retention to the existing default group, including old logs.
+      logRetention: FUNCTION_LOG_RETENTION,
       entry: path.join(__dirname, "../src/api/handler.ts"),
       handler: "handler",
       runtime: lambda.Runtime.NODEJS_22_X,
@@ -358,6 +363,17 @@ export class NiarimBackendStack extends Stack {
     });
     table.grantReadWriteData(apiFunction);
 
+    const notificationFailures = new s3.Bucket(this, "NotificationStreamFailures", {
+      blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
+      encryption: s3.BucketEncryption.S3_MANAGED,
+      enforceSSL: true,
+      removalPolicy: RemovalPolicy.RETAIN,
+      lifecycleRules: [{ expiration: Duration.days(7) }],
+    });
+    new CfnOutput(this, "NotificationStreamFailureBucket", {
+      value: notificationFailures.bucketName,
+    });
+
     // Reuse the already federated API role for FCM. The worker receives only
     // committed DynamoDB changes; an HTTP client cannot trigger this handler.
     apiFunction.addEventSource(new DynamoEventSource(table, {
@@ -366,6 +382,26 @@ export class NiarimBackendStack extends Stack {
       maxRecordAge: Duration.minutes(15),
       retryAttempts: 4,
       reportBatchItemFailures: true,
+      onFailure: {
+        bind: (mapping, handler) => {
+          // Lambda writes the original stream payload to S3. Limit the role to
+          // the actions it needs and to buckets owned by this account.
+          const conditions = { StringEquals: { "s3:ResourceAccount": this.account } };
+          iam.Grant.addToPrincipal({
+            grantee: handler,
+            actions: ["s3:ListBucket"],
+            resourceArns: [notificationFailures.bucketArn],
+            conditions,
+          }).applyBefore(mapping);
+          iam.Grant.addToPrincipal({
+            grantee: handler,
+            actions: ["s3:PutObject"],
+            resourceArns: [notificationFailures.arnForObjects("aws/lambda/*")],
+            conditions,
+          }).applyBefore(mapping);
+          return { destination: notificationFailures.bucketArn };
+        },
+      },
       filters: [
         lambda.FilterCriteria.filter({ dynamodb: { NewImage: {
           itemType: { S: ["FOLLOWER_RECORD", "BOOKMARK", "REPOST"] },
@@ -405,6 +441,7 @@ export class NiarimBackendStack extends Stack {
     // before inserting a release into NIARIM's discovery indexes.
     const releaseFunction = new NodejsFunction(this, "ScheduledReleaseFunction", {
       functionName: "niarim-scheduled-release",
+      logRetention: FUNCTION_LOG_RETENTION,
       entry: path.join(__dirname, "../src/batch/scheduledRelease.ts"),
       handler: "handler",
       runtime: lambda.Runtime.NODEJS_22_X,
@@ -429,6 +466,7 @@ export class NiarimBackendStack extends Stack {
       );
       const reportFunction = new NodejsFunction(this, "RewardAdRevenueFunction", {
         functionName: "niarim-reward-ad-revenue",
+        logRetention: FUNCTION_LOG_RETENTION,
         entry: path.join(__dirname, "../src/batch/rewardAdRevenue.ts"),
         handler: "handler",
         runtime: lambda.Runtime.NODEJS_22_X,

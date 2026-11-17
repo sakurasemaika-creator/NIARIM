@@ -296,18 +296,36 @@ void main() {
     final premium = PremiumService();
     addTearDown(premium.dispose);
     for (final (feature, title, body) in [
-      (PremiumFeature.endCardEdit, labels.premiumFeatureEndLogo,
-          labels.premiumBannerEndCardBody),
-      (PremiumFeature.watermark, labels.premiumFeatureWatermark,
-          labels.premiumBannerWatermarkBody),
-      (PremiumFeature.toneCurve, labels.premiumFeatureToneCurve,
-          labels.premiumBannerToneCurveBody),
-      (PremiumFeature.levelAdjustment, labels.premiumFeatureLevelCorrection,
-          labels.premiumBannerLevelsBody),
-      (PremiumFeature.unlimitedDuration, labels.premiumFeatureMaxDuration,
-          labels.timelineDurationLimitBodyFree),
-      (PremiumFeature.customAutomation, labels.customAutomationTitle,
-          labels.premiumBannerAutomationBody),
+      (
+        PremiumFeature.endCardEdit,
+        labels.premiumFeatureEndLogo,
+        labels.premiumBannerEndCardBody,
+      ),
+      (
+        PremiumFeature.watermark,
+        labels.premiumFeatureWatermark,
+        labels.premiumBannerWatermarkBody,
+      ),
+      (
+        PremiumFeature.toneCurve,
+        labels.premiumFeatureToneCurve,
+        labels.premiumBannerToneCurveBody,
+      ),
+      (
+        PremiumFeature.levelAdjustment,
+        labels.premiumFeatureLevelCorrection,
+        labels.premiumBannerLevelsBody,
+      ),
+      (
+        PremiumFeature.unlimitedDuration,
+        labels.premiumFeatureMaxDuration,
+        labels.timelineDurationLimitBodyFree,
+      ),
+      (
+        PremiumFeature.customAutomation,
+        labels.customAutomationTitle,
+        labels.premiumBannerAutomationBody,
+      ),
     ]) {
       final trigger = ValueKey(feature);
       await tester.pumpWidget(
