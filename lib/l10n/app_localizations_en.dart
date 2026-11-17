@@ -257,7 +257,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsBasicTitle => 'Basic';
 
   @override
-  String get settingsBasicSubtitle => 'FPS, background color, language';
+  String get settingsBasicSubtitle => 'FPS, language, drawing area';
 
   @override
   String get settingsBasicSheetTitle => 'Basic Settings';
@@ -587,7 +587,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get bucketSettingsTitle => 'Bucket Fill Settings';
 
   @override
-  String get bucketSettingsToleranceSection => 'Tolerance';
+  String get bucketSettingsToleranceSection => 'Color tolerance';
 
   @override
   String get bucketSettingsToleranceHint =>
@@ -1176,7 +1176,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get premiumMonthlyPrice => '¥550/month';
 
   @override
-  String get toolbarItemPen => 'G-Pen';
+  String get toolbarItemPen => 'Pen';
 
   @override
   String get toolbarItemEraser => 'Eraser';
@@ -1262,6 +1262,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get workspaceLoadButton => 'Load Workspace';
+
+  @override
+  String workspaceLoadConfirmBody(String name) {
+    return 'Loading “$name” will replace your current workspace settings. You can save your current settings first.';
+  }
 
   @override
   String get workspaceEmptyToolbar => 'No tools to display';
@@ -3591,7 +3596,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get perfSettingsResetButton => 'Reset to default';
 
   @override
-  String get perfSettingsCopyPresetButton => 'Copy current preset';
+  String get perfSettingsCopyPresetButton => 'Copy from preset';
 
   @override
   String get perfSettingsTiltSwitchTitle => 'Apply pen tilt to brush';
@@ -6085,10 +6090,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String get pcWorkspaceLayoutRightWidthLabel => 'Layer panel side width';
 
   @override
-  String get pcWorkspaceLayoutResetWidthButton => 'Reset width to default';
+  String get pcWorkspaceLayoutResetWidthButton => 'Reset width and height';
 
   @override
   String get pcWorkspaceLayoutResetOrderButton => 'Reset order to default';
+
+  @override
+  String get pcWorkspaceLayoutResetWorkspaceConfirmBody =>
+      'This restores the default panel order, sizes, collapse settings, and panels that open by default.';
+
+  @override
+  String get pcWorkspaceLayoutResetSizeConfirmBody =>
+      'This restores the default panel widths and heights.';
+
+  @override
+  String get pcWorkspaceLayoutResetOrderConfirmBody =>
+      'This restores the default panel order.';
 
   @override
   String get canvasPreviewNavigatorTitle => 'Canvas Preview';
@@ -10380,6 +10397,10 @@ class AppLocalizationsEn extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get homeTrashPasteElsewhere =>
+      'Open the destination where you want to restore the item, then paste.';
 
   @override
   String get homeClipboardClear => 'Clear';

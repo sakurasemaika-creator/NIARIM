@@ -524,7 +524,7 @@ abstract class AppLocalizations {
   /// No description provided for @settingsBasicSubtitle.
   ///
   /// In ja, this message translates to:
-  /// **'FPS・背景色・言語'**
+  /// **'FPS・言語・描画領域'**
   String get settingsBasicSubtitle;
 
   /// No description provided for @settingsBasicSheetTitle.
@@ -1142,7 +1142,7 @@ abstract class AppLocalizations {
   /// No description provided for @bucketSettingsToleranceSection.
   ///
   /// In ja, this message translates to:
-  /// **'許容誤差'**
+  /// **'色の許容誤差'**
   String get bucketSettingsToleranceSection;
 
   /// No description provided for @bucketSettingsToleranceHint.
@@ -2184,7 +2184,7 @@ abstract class AppLocalizations {
   /// No description provided for @toolbarItemPen.
   ///
   /// In ja, this message translates to:
-  /// **'Gペン'**
+  /// **'ペン'**
   String get toolbarItemPen;
 
   /// No description provided for @toolbarItemEraser.
@@ -2342,6 +2342,12 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'ワークスペースを読み込み'**
   String get workspaceLoadButton;
+
+  /// No description provided for @workspaceLoadConfirmBody.
+  ///
+  /// In ja, this message translates to:
+  /// **'「{name}」を読み込むと、現在のワークスペース設定が置き換わります。先に現在の設定を保存できます。'**
+  String workspaceLoadConfirmBody(String name);
 
   /// No description provided for @workspaceEmptyToolbar.
   ///
@@ -6312,7 +6318,7 @@ abstract class AppLocalizations {
   /// No description provided for @perfSettingsCopyPresetButton.
   ///
   /// In ja, this message translates to:
-  /// **'現在のプリセットをコピー'**
+  /// **'プリセットからコピー'**
   String get perfSettingsCopyPresetButton;
 
   /// No description provided for @perfSettingsTiltSwitchTitle.
@@ -10638,7 +10644,7 @@ abstract class AppLocalizations {
   /// No description provided for @pcWorkspaceLayoutResetWidthButton.
   ///
   /// In ja, this message translates to:
-  /// **'幅をデフォルトに戻す'**
+  /// **'幅と高さをデフォルトに戻す'**
   String get pcWorkspaceLayoutResetWidthButton;
 
   /// No description provided for @pcWorkspaceLayoutResetOrderButton.
@@ -10646,6 +10652,24 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'並び順をデフォルトに戻す'**
   String get pcWorkspaceLayoutResetOrderButton;
+
+  /// No description provided for @pcWorkspaceLayoutResetWorkspaceConfirmBody.
+  ///
+  /// In ja, this message translates to:
+  /// **'パネルの並び順・幅・高さ・収納状態・自動収納の設定と、最初から開くパネルをデフォルトに戻します。'**
+  String get pcWorkspaceLayoutResetWorkspaceConfirmBody;
+
+  /// No description provided for @pcWorkspaceLayoutResetSizeConfirmBody.
+  ///
+  /// In ja, this message translates to:
+  /// **'パネルの幅と高さをデフォルトに戻します。'**
+  String get pcWorkspaceLayoutResetSizeConfirmBody;
+
+  /// No description provided for @pcWorkspaceLayoutResetOrderConfirmBody.
+  ///
+  /// In ja, this message translates to:
+  /// **'パネルの並び順をデフォルトに戻します。'**
+  String get pcWorkspaceLayoutResetOrderConfirmBody;
 
   /// No description provided for @canvasPreviewNavigatorTitle.
   ///
@@ -11112,7 +11136,7 @@ abstract class AppLocalizations {
   /// No description provided for @workspaceNameRequiredError.
   ///
   /// In ja, this message translates to:
-  /// **'名前を保存してください'**
+  /// **'名前を入力してください'**
   String get workspaceNameRequiredError;
 
   /// No description provided for @workspaceNoSavedPresets.
@@ -17174,6 +17198,12 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'{count}件をコピー中'**
   String homeClipboardCopiedStatus(int count);
+
+  /// No description provided for @homeTrashPasteElsewhere.
+  ///
+  /// In ja, this message translates to:
+  /// **'戻したい場所を開いて貼り付けてください。'**
+  String get homeTrashPasteElsewhere;
 
   /// ホームの上の帯：コピー・切り取りをやめて帯を閉じるボタン
   ///

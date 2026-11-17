@@ -261,7 +261,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get settingsBasicTitle => 'Général';
 
   @override
-  String get settingsBasicSubtitle => 'FPS, couleur de fond, langue';
+  String get settingsBasicSubtitle => 'FPS, langue, zone de dessin';
 
   @override
   String get settingsBasicSheetTitle => 'Réglages généraux';
@@ -596,7 +596,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get bucketSettingsTitle => 'Réglages du pot de peinture';
 
   @override
-  String get bucketSettingsToleranceSection => 'Tolérance';
+  String get bucketSettingsToleranceSection => 'Tolérance de couleur';
 
   @override
   String get bucketSettingsToleranceHint =>
@@ -1198,7 +1198,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get premiumMonthlyPrice => '550 ¥/mois';
 
   @override
-  String get toolbarItemPen => 'Plume G';
+  String get toolbarItemPen => 'Plume';
 
   @override
   String get toolbarItemEraser => 'Gomme';
@@ -1284,6 +1284,11 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get workspaceLoadButton => 'Charger un espace de travail';
+
+  @override
+  String workspaceLoadConfirmBody(String name) {
+    return 'Le chargement de « $name » remplacera les réglages actuels de l’espace de travail. Vous pouvez les enregistrer d’abord.';
+  }
 
   @override
   String get workspaceEmptyToolbar => 'Aucun outil à afficher';
@@ -3639,7 +3644,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get perfSettingsResetButton => 'Réinitialiser aux valeurs par défaut';
 
   @override
-  String get perfSettingsCopyPresetButton => 'Copier le préréglage actuel';
+  String get perfSettingsCopyPresetButton => 'Copier depuis un préréglage';
 
   @override
   String get perfSettingsTiltSwitchTitle =>
@@ -6185,10 +6190,23 @@ class AppLocalizationsFr extends AppLocalizations {
       'Largeur côté panneau de calques';
 
   @override
-  String get pcWorkspaceLayoutResetWidthButton => 'Réinitialiser la largeur';
+  String get pcWorkspaceLayoutResetWidthButton =>
+      'Réinitialiser la largeur et la hauteur';
 
   @override
   String get pcWorkspaceLayoutResetOrderButton => 'Réinitialiser l’ordre';
+
+  @override
+  String get pcWorkspaceLayoutResetWorkspaceConfirmBody =>
+      'L’ordre, les dimensions, l’état et le réglage de repli automatique, ainsi que les panneaux ouverts par défaut seront rétablis.';
+
+  @override
+  String get pcWorkspaceLayoutResetSizeConfirmBody =>
+      'La largeur et la hauteur par défaut des panneaux seront rétablies.';
+
+  @override
+  String get pcWorkspaceLayoutResetOrderConfirmBody =>
+      'L’ordre des panneaux par défaut sera rétabli.';
 
   @override
   String get canvasPreviewNavigatorTitle => 'Aperçu du canevas';
@@ -10538,6 +10556,10 @@ class AppLocalizationsFr extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get homeTrashPasteElsewhere =>
+      'Ouvrez l’emplacement où restaurer l’élément, puis collez-le.';
 
   @override
   String get homeClipboardClear => 'Vider';

@@ -243,7 +243,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get settingsBasicTitle => '기본';
 
   @override
-  String get settingsBasicSubtitle => 'FPS・배경색・언어';
+  String get settingsBasicSubtitle => 'FPS·언어·그리기 영역';
 
   @override
   String get settingsBasicSheetTitle => '기본 설정';
@@ -569,7 +569,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get bucketSettingsTitle => '페인트 통 채우기 설정';
 
   @override
-  String get bucketSettingsToleranceSection => '허용 오차';
+  String get bucketSettingsToleranceSection => '색상 허용 오차';
 
   @override
   String get bucketSettingsToleranceHint =>
@@ -1149,7 +1149,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get premiumMonthlyPrice => '¥550/월';
 
   @override
-  String get toolbarItemPen => 'G펜';
+  String get toolbarItemPen => '펜';
 
   @override
   String get toolbarItemEraser => '지우개';
@@ -1231,6 +1231,11 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get workspaceLoadButton => '작업 공간 불러오기';
+
+  @override
+  String workspaceLoadConfirmBody(String name) {
+    return '“$name”을(를) 불러오면 현재 워크스페이스 설정이 바뀝니다. 현재 설정을 먼저 저장할 수 있습니다.';
+  }
 
   @override
   String get workspaceEmptyToolbar => '표시할 도구가 없습니다';
@@ -3456,7 +3461,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get perfSettingsResetButton => '기본값으로 되돌리기';
 
   @override
-  String get perfSettingsCopyPresetButton => '현재 프리셋 복사';
+  String get perfSettingsCopyPresetButton => '프리셋에서 복사';
 
   @override
   String get perfSettingsTiltSwitchTitle => '펜 기울기를 브러시에 반영';
@@ -5884,10 +5889,20 @@ class AppLocalizationsKo extends AppLocalizations {
   String get pcWorkspaceLayoutRightWidthLabel => '레이어 패널 쪽 너비';
 
   @override
-  String get pcWorkspaceLayoutResetWidthButton => '너비를 기본값으로 되돌리기';
+  String get pcWorkspaceLayoutResetWidthButton => '너비와 높이 초기화';
 
   @override
   String get pcWorkspaceLayoutResetOrderButton => '순서를 기본값으로 되돌리기';
+
+  @override
+  String get pcWorkspaceLayoutResetWorkspaceConfirmBody =>
+      '패널 순서, 크기, 접힘 상태, 자동 접기 설정, 기본으로 열리는 패널을 모두 기본값으로 되돌립니다.';
+
+  @override
+  String get pcWorkspaceLayoutResetSizeConfirmBody => '패널 너비와 높이를 기본값으로 되돌립니다.';
+
+  @override
+  String get pcWorkspaceLayoutResetOrderConfirmBody => '패널 순서를 기본값으로 되돌립니다.';
 
   @override
   String get canvasPreviewNavigatorTitle => '캔버스 미리보기';
@@ -9740,6 +9755,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String homeClipboardCopiedStatus(int count) {
     return '$count개 항목 복사함';
   }
+
+  @override
+  String get homeTrashPasteElsewhere => '복원할 위치를 열고 붙여넣으세요.';
 
   @override
   String get homeClipboardClear => '취소';

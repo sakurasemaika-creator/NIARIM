@@ -19,12 +19,13 @@ import '../../services/premium_service.dart';
 import '../../services/quick_tool_service.dart';
 import '../../services/settings_service.dart';
 import '../../services/workspace_preset_service.dart';
+import '../../utils/app_error_reporter.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/help_button.dart';
 import '../../widgets/ad_banner_mock_widget.dart';
 import '../../widgets/confirm_delete.dart';
-import '../../widgets/dispose_on_unmount.dart';
 import '../../widgets/export_share_feedback.dart';
+import '../../widgets/name_entry_dialog.dart';
 import '../../widgets/premium_lock_widget.dart';
 import '../../widgets/qr_import_dialog.dart';
 import '../../widgets/qr_share_dialog.dart';
@@ -750,83 +751,126 @@ class WorkspaceSettingsScreen extends StatelessWidget {
 
     showModalBottomSheet(
       context: context,
-      builder: (ctx) => ScrollableSheetBody(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // 端末内の一覧より上に、外部ファイル（.niaworkspace）からの
-            // 読み込みを常設する。
-            ListTile(
-              leading: const Icon(Icons.file_upload_outlined),
-              title: Text(l10n.workspaceImportFromFileButton),
-              onTap: () {
-                Navigator.pop(ctx);
-                importFromFile();
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.qr_code_2),
-              title: Text(l10n.colorPickerImportViaQr),
-              onTap: () {
-                Navigator.pop(ctx);
-                showDialog(
-                  context: context,
-                  builder: (_) => QrImportDialog(
-                    title: l10n.colorPickerImportViaQr,
-                    onImport: (text) async {
-                      await presetService.importPresetJson(text);
-                      return true;
-                    },
-                  ),
-                );
-              },
-            ),
-            if (presetService.presets.isNotEmpty) const Divider(height: 1),
-            for (final preset in presetService.presets)
+      builder: (ctx) => ListenableBuilder(
+        listenable: presetService,
+        builder: (ctx, _) => ScrollableSheetBody(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // 端末内の一覧より上に、外部ファイル（.niaworkspace）からの
+              // 読み込みを常設する。
               ListTile(
-                leading: const Icon(Icons.dashboard_customize),
-                title: Text(preset.name),
-                subtitle: Text(
-                  preset.isLeftHanded
-                      ? l10n.workspaceLoadLeftHanded
-                      : l10n.workspaceLoadRightHanded,
-                ),
+                leading: const Icon(Icons.file_upload_outlined),
+                title: Text(l10n.workspaceImportFromFileButton),
                 onTap: () {
-                  applyPreset(preset);
                   Navigator.pop(ctx);
+                  importFromFile();
                 },
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.edit_outlined),
-                      tooltip: l10n.commonRename,
-                      onPressed: () => _showRenamePresetDialog(
-                        context,
-                        presetService,
-                        preset,
-                      ),
-                    ),
-                    IconButton(
-                      icon: Icon(
-                        Icons.delete,
-                        color: ThemeService.activeColorScheme.error,
-                      ),
-                      tooltip: l10n.commonDelete,
-                      onPressed: () async {
-                        if (!await confirmDelete(
-                          context,
-                          itemName: preset.name,
-                        )) {
-                          return;
-                        }
-                        presetService.delete(preset.id);
+              ),
+              ListTile(
+                leading: const Icon(Icons.qr_code_2),
+                title: Text(l10n.colorPickerImportViaQr),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  showDialog(
+                    context: context,
+                    builder: (_) => QrImportDialog(
+                      title: l10n.colorPickerImportViaQr,
+                      onImport: (text) async {
+                        await presetService.importPresetJson(text);
+                        return true;
                       },
                     ),
-                  ],
-                ),
+                  );
+                },
               ),
-          ],
+              if (presetService.presets.isNotEmpty) const Divider(height: 1),
+              for (final preset in presetService.presets)
+                ListTile(
+                  leading: const Icon(Icons.dashboard_customize),
+                  title: Text(preset.name),
+                  subtitle: Text(
+                    preset.isLeftHanded
+                        ? l10n.workspaceLoadLeftHanded
+                        : l10n.workspaceLoadRightHanded,
+                  ),
+                  onTap: () async {
+                    final choice = await showDialog<_WorkspaceLoadChoice>(
+                      context: ctx,
+                      builder: (dialogContext) => AlertDialog(
+                        scrollable: true,
+                        title: Text(l10n.workspaceLoadButton),
+                        content: Text(
+                          l10n.workspaceLoadConfirmBody(preset.name),
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(dialogContext),
+                            child: Text(l10n.commonCancel),
+                          ),
+                          TextButton(
+                            onPressed: () => Navigator.pop(
+                              dialogContext,
+                              _WorkspaceLoadChoice.saveCurrent,
+                            ),
+                            child: Text(l10n.workspaceSaveDialogTitle),
+                          ),
+                          FilledButton(
+                            onPressed: () => Navigator.pop(
+                              dialogContext,
+                              _WorkspaceLoadChoice.load,
+                            ),
+                            child: Text(l10n.workspaceLoadButton),
+                          ),
+                        ],
+                      ),
+                    );
+                    if (choice == null || !ctx.mounted || !context.mounted) {
+                      return;
+                    }
+                    Navigator.pop(ctx);
+                    if (choice == _WorkspaceLoadChoice.saveCurrent) {
+                      _showSaveDialog(context, settings, presetService);
+                      return;
+                    }
+                    applyPreset(preset);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(l10n.workspaceAppliedSnackbar)),
+                    );
+                  },
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.edit_outlined),
+                        tooltip: l10n.commonRename,
+                        onPressed: () => _showRenamePresetDialog(
+                          context,
+                          presetService,
+                          preset,
+                        ),
+                      ),
+                      IconButton(
+                        icon: Icon(
+                          Icons.delete,
+                          color: ThemeService.activeColorScheme.error,
+                        ),
+                        tooltip: l10n.commonDelete,
+                        onPressed: () async {
+                          if (!await confirmDelete(
+                            context,
+                            itemName: preset.name,
+                          )) {
+                            return;
+                          }
+                          presetService.delete(preset.id);
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
     );
@@ -838,42 +882,21 @@ class WorkspaceSettingsScreen extends StatelessWidget {
     WorkspacePreset preset,
   ) {
     final l10n = AppLocalizations.of(context)!;
-    final controller = TextEditingController(text: preset.name);
     showDialog(
       context: context,
-      builder: (ctx) => DisposeOnUnmount(
-        controller: controller,
-        builder: (ctx) => AlertDialog(
-          insetPadding: typingDialogInsetPadding(ctx),
-          title: Text(l10n.commonRename),
-          content: TextField(
-            controller: controller,
-            autofocus: true,
-            decoration: InputDecoration(
-              labelText: l10n.workspaceSaveDialogLabel,
-              border: const OutlineInputBorder(),
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: Text(l10n.commonCancel),
-            ),
-            FilledButton(
-              onPressed: () {
-                final name = controller.text.trim();
-                if (name.isEmpty) return;
-                presetService.rename(preset.id, name);
-                Navigator.pop(ctx);
-              },
-              child: Text(l10n.commonSave),
-            ),
-          ],
-        ),
+      builder: (_) => NameEntryDialog(
+        initialName: preset.name,
+        title: l10n.commonRename,
+        labelText: l10n.workspaceSaveDialogLabel,
+        cancelLabel: l10n.commonCancel,
+        confirmLabel: l10n.commonSave,
+        onSubmit: (name) => presetService.rename(preset.id, name),
       ),
     );
   }
 }
+
+enum _WorkspaceLoadChoice { saveCurrent, load }
 
 /// 「ワークスペースに名前を付けて保存・上書き保存」ダイアログ。
 /// 新規保存（名前必須）と上書き保存（既存の一覧から選択、名前は
@@ -896,6 +919,7 @@ class _WorkspaceSaveDialog extends StatefulWidget {
 class _WorkspaceSaveDialogState extends State<_WorkspaceSaveDialog> {
   final _controller = TextEditingController();
   String? _errorText;
+  bool _saving = false;
 
   @override
   void dispose() {
@@ -903,45 +927,78 @@ class _WorkspaceSaveDialogState extends State<_WorkspaceSaveDialog> {
     super.dispose();
   }
 
-  void _saveNew() {
+  Future<void> _saveNew() async {
+    if (_saving) return;
     final l10n = AppLocalizations.of(context)!;
     final name = _controller.text.trim();
     if (name.isEmpty) {
       setState(() => _errorText = l10n.workspaceNameRequiredError);
       return;
     }
-    widget.presetService.save(
-      name,
-      isLeftHanded: widget.settings.isLeftHanded,
-      forcePcMode: widget.settings.forcePcMode,
-      toolbarOrder: widget.settings.toolbarOrder.map((e) => e.name).toList(),
-      hiddenToolbarItems: widget.settings.hiddenToolbarItems
-          .map((e) => e.name)
-          .toList(),
-      quickToolEntries: widget.quickToolEntries,
-      defaultDockedPanels: widget.settings.defaultDockedPanels
-          .map((e) => e.name)
-          .toList(),
-      desktopPanelWidth: widget.settings.desktopPanelWidth,
-      desktopToolPanelWidth: widget.settings.desktopToolPanelWidth,
-      toolOptionDockOrder: widget.settings.toolOptionDockOrder
-          .map((e) => e.name)
-          .toList(),
-      rightDockOrder: widget.settings.rightDockOrder
-          .map((e) => e.name)
-          .toList(),
-    );
-    Navigator.pop(context);
+    setState(() => _saving = true);
+    try {
+      if (widget.presetService.presets.any((preset) => preset.name == name)) {
+        if (!await _confirmOverwrite(name) || !mounted) return;
+      }
+      await widget.presetService.save(
+        name,
+        isLeftHanded: widget.settings.isLeftHanded,
+        forcePcMode: widget.settings.forcePcMode,
+        toolbarOrder: widget.settings.toolbarOrder.map((e) => e.name).toList(),
+        hiddenToolbarItems: widget.settings.hiddenToolbarItems
+            .map((e) => e.name)
+            .toList(),
+        quickToolEntries: widget.quickToolEntries,
+        defaultDockedPanels: widget.settings.defaultDockedPanels
+            .map((e) => e.name)
+            .toList(),
+        desktopPanelWidth: widget.settings.desktopPanelWidth,
+        desktopToolPanelWidth: widget.settings.desktopToolPanelWidth,
+        toolOptionDockOrder: widget.settings.toolOptionDockOrder
+            .map((e) => e.name)
+            .toList(),
+        rightDockOrder: widget.settings.rightDockOrder
+            .map((e) => e.name)
+            .toList(),
+      );
+      if (mounted && ModalRoute.of(context)?.isCurrent == true) {
+        Navigator.pop(context);
+      }
+    } catch (error, stack) {
+      AppErrorReporter.record(error, stack);
+      if (mounted) {
+        setState(() => _errorText = l10n.timelineSaveFailedDialogBody);
+      }
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+  }
+
+  Future<bool> _confirmOverwrite(String name) async {
+    final l10n = AppLocalizations.of(context)!;
+    return await showDialog<bool>(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            scrollable: true,
+            title: Text(l10n.workspaceOverwriteConfirmTitle),
+            content: Text(l10n.workspaceOverwriteConfirmBody(name)),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: Text(l10n.commonCancel),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.pop(ctx, true),
+                child: Text(l10n.commonOk),
+              ),
+            ],
+          ),
+        ) ==
+        true;
   }
 
   Future<void> _overwrite() async {
     final l10n = AppLocalizations.of(context)!;
-    if (widget.presetService.presets.isEmpty) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(l10n.workspaceNoSavedPresets)));
-      return;
-    }
     final selected = await showModalBottomSheet<WorkspacePreset>(
       context: context,
       builder: (ctx) => SafeArea(
@@ -970,24 +1027,7 @@ class _WorkspaceSaveDialogState extends State<_WorkspaceSaveDialog> {
       ),
     );
     if (selected == null || !mounted) return;
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(l10n.workspaceOverwriteConfirmTitle),
-        content: Text(l10n.workspaceOverwriteConfirmBody(selected.name)),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: Text(l10n.commonCancel),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: Text(l10n.commonOk),
-          ),
-        ],
-      ),
-    );
-    if (confirmed != true || !mounted) return;
+    if (!await _confirmOverwrite(selected.name) || !mounted) return;
     final newName = _controller.text.trim();
     await widget.presetService.overwrite(
       selected.id,
@@ -1019,6 +1059,7 @@ class _WorkspaceSaveDialogState extends State<_WorkspaceSaveDialog> {
     final l10n = AppLocalizations.of(context)!;
     return AlertDialog(
       insetPadding: typingDialogInsetPadding(context),
+      scrollable: true,
       title: Text(l10n.workspaceSaveDialogTitle),
       content: Column(
         mainAxisSize: MainAxisSize.min,
@@ -1027,6 +1068,7 @@ class _WorkspaceSaveDialogState extends State<_WorkspaceSaveDialog> {
           TextField(
             controller: _controller,
             autofocus: true,
+            textInputAction: TextInputAction.done,
             decoration: InputDecoration(
               labelText: l10n.workspaceSaveDialogLabel,
               border: const OutlineInputBorder(),
@@ -1034,6 +1076,8 @@ class _WorkspaceSaveDialogState extends State<_WorkspaceSaveDialog> {
             onChanged: (_) {
               if (_errorText != null) setState(() => _errorText = null);
             },
+            onEditingComplete: () {},
+            onSubmitted: (_) => _saveNew(),
           ),
           if (_errorText != null)
             Padding(
@@ -1055,10 +1099,15 @@ class _WorkspaceSaveDialogState extends State<_WorkspaceSaveDialog> {
           child: Text(l10n.commonCancel),
         ),
         TextButton(
-          onPressed: _overwrite,
+          onPressed: _saving || widget.presetService.presets.isEmpty
+              ? null
+              : _overwrite,
           child: Text(l10n.workspaceOverwriteButton),
         ),
-        FilledButton(onPressed: _saveNew, child: Text(l10n.commonSave)),
+        FilledButton(
+          onPressed: _saving ? null : _saveNew,
+          child: Text(l10n.commonSave),
+        ),
       ],
     );
   }

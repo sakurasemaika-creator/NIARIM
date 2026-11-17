@@ -262,12 +262,14 @@ class HomeClipboardToolbar extends StatelessWidget {
     required this.onPaste,
     required this.onClear,
     this.isPasting = false,
+    this.pasteUnavailableStatus,
   });
 
   final int itemCount;
   final bool isCut;
   final bool isPasting;
-  final VoidCallback onPaste;
+  final VoidCallback? onPaste;
+  final String? pasteUnavailableStatus;
   final VoidCallback onClear;
 
   @override
@@ -295,10 +297,10 @@ class HomeClipboardToolbar extends StatelessWidget {
         children: [
           Expanded(
             child: Text(
-              status,
+              pasteUnavailableStatus ?? status,
               key: const Key('homeClipboardStatusLabel'),
               style: theme.textTheme.bodyMedium?.copyWith(color: foreground),
-              maxLines: 1,
+              maxLines: pasteUnavailableStatus == null ? 1 : null,
               overflow: TextOverflow.ellipsis,
             ),
           ),
@@ -309,13 +311,14 @@ class HomeClipboardToolbar extends StatelessWidget {
             label: Text(clearLabel, maxLines: 1),
             style: style,
           ),
-          TextButton.icon(
-            key: const Key('homeCrossTabPasteButton'),
-            onPressed: isPasting ? null : onPaste,
-            icon: const Icon(Icons.content_paste, size: 20),
-            label: Text(l10n.commonPaste, maxLines: 1),
-            style: style,
-          ),
+          if (onPaste != null)
+            TextButton.icon(
+              key: const Key('homeCrossTabPasteButton'),
+              onPressed: isPasting ? null : onPaste,
+              icon: const Icon(Icons.content_paste, size: 20),
+              label: Text(l10n.commonPaste, maxLines: 1),
+              style: style,
+            ),
         ],
       ),
     );

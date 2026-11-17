@@ -6,6 +6,7 @@ import 'package:niarim/screens/home/home_screen.dart';
 import 'package:niarim/screens/home/widgets/exported_work_card.dart';
 import 'package:niarim/services/local_file_trash_service.dart';
 import 'package:niarim/services/work_folder_service.dart';
+import 'package:niarim/widgets/project_trash_dialog.dart';
 import 'package:provider/provider.dart';
 
 import 'helpers/home_clipboard_harness.dart';
@@ -20,7 +21,9 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   Future<void> confirm(HomeClipboardHarness home) async {
-    await home.tester.tap(find.byKey(const Key('trash-dialog-confirm')));
+    final confirm = find.byKey(const Key('trash-dialog-confirm'));
+    await home.waitFor(() => confirm.evaluate().isNotEmpty);
+    await home.tester.tap(confirm);
     await home.waitFor(
       () => find.byType(AlertDialog).evaluate().isEmpty,
       reason: 'the question stayed open',
@@ -82,6 +85,17 @@ void main() {
     await home.settle();
     await confirm(home);
     expect(folders.folders, isEmpty);
+    await home.showTab(3);
+    final entry = (await trashedFiles(home)).single;
+    final copy = find.byKey(ValueKey('trashCopyLocal_${entry.id}'));
+    await home.waitFor(() => copy.evaluate().isNotEmpty);
+    await tester.ensureVisible(copy);
+    await tester.tap(copy);
+    await home.settle();
+    expect(home.pasteButton, findsNothing);
+    expect(find.text(l10n.homeTrashPasteElsewhere), findsOneWidget);
+    await home.showTab(1);
+    expect(home.pasteButton, findsOneWidget);
     await restoreFromTrashTab(home);
     expect(
       File('${home.dir.path}/exports/clip_1.gif').existsSync() &&
@@ -104,11 +118,14 @@ void main() {
     await home.settle();
     await tester.tap(find.text(l10n.homeMoveToTrash).last);
     await home.settle();
+    final contents = l10n.homeMoveToTrashFolderContents(
+      l10n.homeWorkFolderContents(2),
+    );
+    final dialog = find.byType(ProjectTrashDialog);
+    await home.waitFor(() => dialog.evaluate().isNotEmpty);
     expect(
-      find.textContaining(
-        l10n.homeMoveToTrashFolderContents(l10n.homeWorkFolderContents(2)),
-      ),
-      findsOneWidget,
+      tester.widget<ProjectTrashDialog>(dialog).message,
+      contains(contents),
       reason: 'the folder looks empty in its trash question',
     );
     await tester.tap(find.byKey(const Key('trash-dialog-cancel')));

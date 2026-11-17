@@ -175,11 +175,20 @@ class _MaterialListScreenState extends State<MaterialListScreen> {
                         ],
                       ),
                       trailing: IconButton(
-                        icon: const Icon(Icons.delete_outline),
+                        icon: Icon(
+                          used ? Icons.lock_outline : Icons.delete_outline,
+                          color: used ? scheme.onSurfaceVariant : null,
+                        ),
                         tooltip: used
                             ? l10n.materialDeleteTooltipUsed
                             : l10n.commonDelete,
-                        onPressed: used ? null : () => _confirmRemoveOne(m),
+                        onPressed: used
+                            ? () => ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(l10n.materialDeleteTooltipUsed),
+                                ),
+                              )
+                            : () => _confirmRemoveOne(m),
                       ),
                     ),
                   );

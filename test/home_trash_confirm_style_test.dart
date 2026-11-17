@@ -107,6 +107,7 @@ void main() {
       );
       await home.settle();
       await tester.tap(find.text(l10n.homeMoveToTrash).last);
+      await home.waitFor(() => find.byType(AlertDialog).evaluate().isNotEmpty);
       await home.settle();
       expectLikeTheOthers(tester, name, '$name sheet', problems);
       await cancel(home);
@@ -117,6 +118,7 @@ void main() {
       );
       await home.settle();
       await tester.tap(find.text(l10n.homeMoveToTrash).last);
+      await home.waitFor(() => find.byType(AlertDialog).evaluate().isNotEmpty);
       await home.settle();
       expectLikeTheOthers(tester, name, '$name right click', problems);
       await cancel(home);
@@ -131,6 +133,7 @@ void main() {
     );
     await home.settle();
     await tester.tap(find.text(l10n.homeMoveToTrash).last);
+    await home.waitFor(() => find.byType(AlertDialog).evaluate().isNotEmpty);
     await home.settle();
     await tester.tap(
       find.descendant(

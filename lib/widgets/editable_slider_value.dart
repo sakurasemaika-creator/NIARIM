@@ -13,6 +13,7 @@ class EditableSliderValue extends StatelessWidget {
   final num min;
   final num max;
   final String? title;
+  final String? unit;
   // trueの場合は整数入力（小数点キーボードを出さない・int.tryParseで検証）。
   final bool isInt;
   final ValueChanged<num> onChanged;
@@ -28,6 +29,7 @@ class EditableSliderValue extends StatelessWidget {
     required this.onChanged,
     this.style,
     this.title,
+    this.unit,
     this.isInt = true,
     this.textAlign,
     this.editIconRight = -11,
@@ -74,6 +76,7 @@ class EditableSliderValue extends StatelessWidget {
       context: context,
       builder: (ctx) => _NumberInputDialog(
         title: title,
+        unit: unit,
         initialValue: value,
         isInt: isInt,
         signed: min < 0,
@@ -95,12 +98,14 @@ class EditableSliderValue extends StatelessWidget {
 /// まで呼ばれないため、ここへ持たせることでこの競合を避けられる。
 class _NumberInputDialog extends StatefulWidget {
   final String? title;
+  final String? unit;
   final num initialValue;
   final bool isInt;
   final bool signed;
 
   const _NumberInputDialog({
     required this.title,
+    required this.unit,
     required this.initialValue,
     required this.isInt,
     required this.signed,
@@ -189,6 +194,7 @@ class _NumberInputDialogState extends State<_NumberInputDialog> {
           signed: widget.signed,
         ),
         decoration: InputDecoration(
+          suffixText: widget.unit,
           helperText: _error == null ? _rangeText() : null,
           errorText: _error,
         ),

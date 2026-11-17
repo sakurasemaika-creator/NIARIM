@@ -240,7 +240,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get settingsBasicTitle => '基本';
 
   @override
-  String get settingsBasicSubtitle => 'FPS・背景色・语言';
+  String get settingsBasicSubtitle => 'FPS・语言・绘图区域';
 
   @override
   String get settingsBasicSheetTitle => '基本设置';
@@ -563,7 +563,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get bucketSettingsTitle => '油漆桶填充设置';
 
   @override
-  String get bucketSettingsToleranceSection => '容差';
+  String get bucketSettingsToleranceSection => '颜色容差';
 
   @override
   String get bucketSettingsToleranceHint =>
@@ -1135,7 +1135,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get premiumMonthlyPrice => '¥550/月';
 
   @override
-  String get toolbarItemPen => 'G笔';
+  String get toolbarItemPen => '笔';
 
   @override
   String get toolbarItemEraser => '橡皮擦';
@@ -1214,6 +1214,11 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get workspaceLoadButton => '加载工作区';
+
+  @override
+  String workspaceLoadConfirmBody(String name) {
+    return '加载“$name”将替换当前工作区设置。你可以先保存当前设置。';
+  }
 
   @override
   String get workspaceEmptyToolbar => '没有要显示的工具';
@@ -3415,7 +3420,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get perfSettingsResetButton => '恢复初始值';
 
   @override
-  String get perfSettingsCopyPresetButton => '复制当前预设';
+  String get perfSettingsCopyPresetButton => '从预设复制';
 
   @override
   String get perfSettingsTiltSwitchTitle => '将笔的倾斜反映到画笔';
@@ -5798,10 +5803,20 @@ class AppLocalizationsZh extends AppLocalizations {
   String get pcWorkspaceLayoutRightWidthLabel => '图层面板一侧宽度';
 
   @override
-  String get pcWorkspaceLayoutResetWidthButton => '将宽度恢复为默认值';
+  String get pcWorkspaceLayoutResetWidthButton => '恢复默认宽度和高度';
 
   @override
   String get pcWorkspaceLayoutResetOrderButton => '将顺序恢复为默认值';
+
+  @override
+  String get pcWorkspaceLayoutResetWorkspaceConfirmBody =>
+      '将恢复面板的默认顺序、大小、折叠状态、自动折叠设置及默认打开的面板。';
+
+  @override
+  String get pcWorkspaceLayoutResetSizeConfirmBody => '将恢复面板的默认宽度和高度。';
+
+  @override
+  String get pcWorkspaceLayoutResetOrderConfirmBody => '将恢复面板的默认顺序。';
 
   @override
   String get canvasPreviewNavigatorTitle => '画布预览';
@@ -9582,6 +9597,9 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String get homeTrashPasteElsewhere => '打开要恢复到的位置，再粘贴。';
+
+  @override
   String get homeClipboardClear => '清除';
 
   @override
@@ -10331,7 +10349,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get settingsBasicTitle => '基本';
 
   @override
-  String get settingsBasicSubtitle => 'FPS・背景色・語言';
+  String get settingsBasicSubtitle => 'FPS・語言・繪圖區域';
 
   @override
   String get settingsBasicSheetTitle => '基本設定';
@@ -10654,7 +10672,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get bucketSettingsTitle => '油漆桶填色設定';
 
   @override
-  String get bucketSettingsToleranceSection => '容差';
+  String get bucketSettingsToleranceSection => '顏色容差';
 
   @override
   String get bucketSettingsToleranceHint =>
@@ -11226,7 +11244,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get premiumMonthlyPrice => '¥550/月';
 
   @override
-  String get toolbarItemPen => 'G筆';
+  String get toolbarItemPen => '筆';
 
   @override
   String get toolbarItemEraser => '橡皮擦';
@@ -11305,6 +11323,11 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get workspaceLoadButton => '載入工作區';
+
+  @override
+  String workspaceLoadConfirmBody(String name) {
+    return '載入「$name」會取代目前的工作區設定。你可以先儲存目前的設定。';
+  }
 
   @override
   String get workspaceEmptyToolbar => '沒有要顯示的工具';
@@ -13505,7 +13528,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get perfSettingsResetButton => '恢復初始值';
 
   @override
-  String get perfSettingsCopyPresetButton => '複製目前的預設';
+  String get perfSettingsCopyPresetButton => '從預設複製';
 
   @override
   String get perfSettingsTiltSwitchTitle => '將筆的傾斜套用到筆刷';
@@ -15889,10 +15912,20 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get pcWorkspaceLayoutRightWidthLabel => '圖層面板側寬度';
 
   @override
-  String get pcWorkspaceLayoutResetWidthButton => '將寬度重設為預設值';
+  String get pcWorkspaceLayoutResetWidthButton => '恢復預設寬度和高度';
 
   @override
   String get pcWorkspaceLayoutResetOrderButton => '將順序重設為預設值';
+
+  @override
+  String get pcWorkspaceLayoutResetWorkspaceConfirmBody =>
+      '將恢復面板的預設順序、大小、收合狀態、自動收合設定及預設開啟的面板。';
+
+  @override
+  String get pcWorkspaceLayoutResetSizeConfirmBody => '將恢復面板的預設寬度和高度。';
+
+  @override
+  String get pcWorkspaceLayoutResetOrderConfirmBody => '將恢復面板的預設順序。';
 
   @override
   String get canvasPreviewNavigatorTitle => '畫布預覽';
@@ -19673,6 +19706,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String homeClipboardCopiedStatus(int count) {
     return '已複製$count項';
   }
+
+  @override
+  String get homeTrashPasteElsewhere => '開啟要還原到的位置，再貼上。';
 
   @override
   String get homeClipboardClear => '清除';

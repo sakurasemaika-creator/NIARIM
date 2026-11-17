@@ -242,7 +242,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get settingsBasicTitle => '基本';
 
   @override
-  String get settingsBasicSubtitle => 'FPS・背景色・言語';
+  String get settingsBasicSubtitle => 'FPS・言語・描画領域';
 
   @override
   String get settingsBasicSheetTitle => '基本設定';
@@ -566,7 +566,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get bucketSettingsTitle => 'バケツ塗り設定';
 
   @override
-  String get bucketSettingsToleranceSection => '許容誤差';
+  String get bucketSettingsToleranceSection => '色の許容誤差';
 
   @override
   String get bucketSettingsToleranceHint =>
@@ -1145,7 +1145,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get premiumMonthlyPrice => '¥550/月';
 
   @override
-  String get toolbarItemPen => 'Gペン';
+  String get toolbarItemPen => 'ペン';
 
   @override
   String get toolbarItemEraser => '消しゴム';
@@ -1226,6 +1226,11 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get workspaceLoadButton => 'ワークスペースを読み込み';
+
+  @override
+  String workspaceLoadConfirmBody(String name) {
+    return '「$name」を読み込むと、現在のワークスペース設定が置き換わります。先に現在の設定を保存できます。';
+  }
 
   @override
   String get workspaceEmptyToolbar => '表示するツールがありません';
@@ -3439,7 +3444,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get perfSettingsResetButton => '初期値に戻す';
 
   @override
-  String get perfSettingsCopyPresetButton => '現在のプリセットをコピー';
+  String get perfSettingsCopyPresetButton => 'プリセットからコピー';
 
   @override
   String get perfSettingsTiltSwitchTitle => 'ペンの傾きをブラシに反映';
@@ -5852,10 +5857,20 @@ class AppLocalizationsJa extends AppLocalizations {
   String get pcWorkspaceLayoutRightWidthLabel => 'レイヤー等パネル側の幅';
 
   @override
-  String get pcWorkspaceLayoutResetWidthButton => '幅をデフォルトに戻す';
+  String get pcWorkspaceLayoutResetWidthButton => '幅と高さをデフォルトに戻す';
 
   @override
   String get pcWorkspaceLayoutResetOrderButton => '並び順をデフォルトに戻す';
+
+  @override
+  String get pcWorkspaceLayoutResetWorkspaceConfirmBody =>
+      'パネルの並び順・幅・高さ・収納状態・自動収納の設定と、最初から開くパネルをデフォルトに戻します。';
+
+  @override
+  String get pcWorkspaceLayoutResetSizeConfirmBody => 'パネルの幅と高さをデフォルトに戻します。';
+
+  @override
+  String get pcWorkspaceLayoutResetOrderConfirmBody => 'パネルの並び順をデフォルトに戻します。';
 
   @override
   String get canvasPreviewNavigatorTitle => 'キャンバスプレビュー';
@@ -6109,7 +6124,7 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
-  String get workspaceNameRequiredError => '名前を保存してください';
+  String get workspaceNameRequiredError => '名前を入力してください';
 
   @override
   String get workspaceNoSavedPresets => '保存済みのワークスペースがありません';
@@ -9687,6 +9702,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String homeClipboardCopiedStatus(int count) {
     return '$count件をコピー中';
   }
+
+  @override
+  String get homeTrashPasteElsewhere => '戻したい場所を開いて貼り付けてください。';
 
   @override
   String get homeClipboardClear => 'クリア';

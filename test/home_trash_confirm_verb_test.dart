@@ -148,6 +148,10 @@ void main() {
       }
 
       Future<void> checkTrashDialog(String where) async {
+        await home.waitFor(
+          () => find.byType(AlertDialog).evaluate().isNotEmpty,
+          reason: '$where: no confirmation',
+        );
         await home.settle();
         check(
           where,

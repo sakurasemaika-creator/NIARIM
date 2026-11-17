@@ -27,6 +27,33 @@ class _PcWorkspaceLayoutSettingsScreenState
     super.dispose();
   }
 
+  Future<void> _confirmReset(
+    String title,
+    String message,
+    Future<void> Function() reset,
+  ) async {
+    final l10n = AppLocalizations.of(context)!;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        scrollable: true,
+        title: Text(title),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(l10n.commonCancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(l10n.commonOk),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true && mounted) await reset();
+  }
+
   String _panelLabel(AppLocalizations l10n, CanvasDockPanel panel) =>
       switch (panel) {
         CanvasDockPanel.brush => l10n.workspaceDockPanelBrush,
@@ -78,27 +105,37 @@ class _PcWorkspaceLayoutSettingsScreenState
             spacing: 8,
             children: [
               TextButton.icon(
-                onPressed: () async {
-                  await settings.resetDesktopDockOrderToHandedDefaults();
-                },
+                onPressed: () => _confirmReset(
+                  l.pcWorkspaceLayoutResetOrderButton,
+                  l.pcWorkspaceLayoutResetOrderConfirmBody,
+                  settings.resetDesktopDockOrderToHandedDefaults,
+                ),
                 icon: const Icon(Icons.restart_alt),
                 label: Text(l.pcWorkspaceLayoutResetOrderButton),
               ),
               TextButton.icon(
                 key: const Key('resetDesktopWorkspaceLayout'),
-                onPressed: settings.resetDesktopWorkspaceLayout,
+                onPressed: () => _confirmReset(
+                  resetWorkspaceTitle,
+                  l.pcWorkspaceLayoutResetWorkspaceConfirmBody,
+                  settings.resetDesktopWorkspaceLayout,
+                ),
                 icon: const Icon(Icons.settings_backup_restore),
                 label: Text(resetWorkspaceTitle),
               ),
               TextButton.icon(
-                onPressed: () async {
-                  await settings.setDesktopToolPanelWidth(280);
-                  await settings.setDesktopPanelWidth(280);
-                  for (final panel in CanvasDockPanel.values) {
-                    await settings.setDesktopDockWidth(panel, 280);
-                    await settings.setDesktopDockHeight(panel, 260);
-                  }
-                },
+                onPressed: () => _confirmReset(
+                  l.pcWorkspaceLayoutResetWidthButton,
+                  l.pcWorkspaceLayoutResetSizeConfirmBody,
+                  () async {
+                    await settings.setDesktopToolPanelWidth(280);
+                    await settings.setDesktopPanelWidth(280);
+                    for (final panel in CanvasDockPanel.values) {
+                      await settings.setDesktopDockWidth(panel, 280);
+                      await settings.setDesktopDockHeight(panel, 260);
+                    }
+                  },
+                ),
                 icon: const Icon(Icons.aspect_ratio_outlined),
                 label: Text(l.pcWorkspaceLayoutResetWidthButton),
               ),

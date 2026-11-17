@@ -66,7 +66,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         icon: Icons.settings,
         title: l10n.settingsBasicTitle,
         subtitle: l10n.settingsBasicSubtitle,
-        keywords: 'fps 背景色 言語 描画領域初期値',
+        keywords: 'fps 言語 描画領域初期値',
         onTap: _showBasicSettings,
         accent: Theme.of(context).colorScheme.primary,
       ),
@@ -402,7 +402,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   void _showBasicSettings() {
-    final l10n = AppLocalizations.of(context)!;
     final settings = context.read<SettingsService>();
     var enabled = settings.defaultDrawingAreaEnabled;
     var scale = settings.defaultDrawingAreaScale;
@@ -415,7 +414,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           minChildSize: 0.3,
           maxChildSize: 0.9,
           expand: false,
-          builder: (_, controller) {
+          builder: (sheetContext, controller) {
+            final l10n = AppLocalizations.of(sheetContext)!;
             return ListView(
               controller: controller,
               padding: const EdgeInsets.all(16),
@@ -468,7 +468,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     );
                     if (selected != null) {
                       await settings.setDefaultFps(selected);
-                      setS(() {});
+                      if (ctx.mounted) setS(() {});
                     }
                   },
                 ),
@@ -518,7 +518,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     );
                     if (selected != null) {
                       await settings.setLanguage(selected);
-                      setS(() {});
+                      if (ctx.mounted) setS(() {});
                     }
                   },
                 ),

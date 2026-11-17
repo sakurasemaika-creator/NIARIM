@@ -38,7 +38,7 @@ class BucketFillSettingsScreen extends StatelessWidget {
               context,
               l10n.bucketSettingsToleranceSection,
               value: EditableSliderValue(
-                text: settings.bucketTolerance.round().toString(),
+                text: '${settings.bucketTolerance.round()} / 100',
                 value: settings.bucketTolerance,
                 min: 0,
                 max: 100,
@@ -67,11 +67,12 @@ class BucketFillSettingsScreen extends StatelessWidget {
               context,
               l10n.bucketSettingsExpandSection,
               value: EditableSliderValue(
-                text: '${settings.bucketExpandPx}',
+                text: '${settings.bucketExpandPx}px',
                 value: settings.bucketExpandPx,
                 min: 0,
                 max: 10,
                 title: l10n.bucketSettingsExpandSection,
+                unit: 'px',
                 onChanged: (v) => settings.setBucketExpandPx(v.round()),
               ),
             ),

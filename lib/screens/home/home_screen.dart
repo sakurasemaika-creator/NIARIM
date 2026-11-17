@@ -1526,6 +1526,8 @@ class _HomeScreenState extends State<HomeScreen>
       );
     }
     if (!_hasClipboard) return null;
+    final copiedFromTrash =
+        _currentTabIndex == 3 && _otherClipboard?.source == HomePasteArea.trash;
     return HomeClipboardToolbar(
       itemCount:
           _clipboardProjectIds.length +
@@ -1533,7 +1535,10 @@ class _HomeScreenState extends State<HomeScreen>
           (_otherClipboard == null ? 0 : 1),
       isCut: _clipboardIsCut,
       isPasting: _pasting,
-      onPaste: _pasteClipboard,
+      onPaste: copiedFromTrash ? null : _pasteClipboard,
+      pasteUnavailableStatus: copiedFromTrash
+          ? l10n.homeTrashPasteElsewhere
+          : null,
       onClear: _clearHomeClipboard,
     );
   }
@@ -2996,6 +3001,10 @@ class _HomeScreenState extends State<HomeScreen>
     final ps = context.read<ProjectService>();
     final ws = context.read<WorkFolderService>();
     final dest = _pasteDestination;
+    if (entry.source == HomePasteArea.trash && dest == HomePasteArea.trash) {
+      await _explainPasteRestriction((l) => l.homeTrashPasteElsewhere);
+      return;
+    }
     // Persisted folder memberships can outlive an exported file that was
     // removed. The empty-folder exception is based on files that actually
     // exist in the Works list, not stale preference records.
@@ -5623,6 +5632,7 @@ class _FolderableList<T> extends StatelessWidget {
   onEnterFolder;
   final Future<void> Function(String id, String name) onRenameFolder;
   final Future<void> Function(String id) onDeleteFolder;
+  final Future<List<T>> Function(String id)? loadFolderContents;
   final Future<void> Function(
     String id, {
     required String mode,
@@ -5656,6 +5666,7 @@ class _FolderableList<T> extends StatelessWidget {
     required this.onEnterFolder,
     required this.onRenameFolder,
     required this.onDeleteFolder,
+    this.loadFolderContents,
     this.onSetFolderThumbnail,
     required this.itemBuilder,
     this.gridItemBuilder,
@@ -6169,14 +6180,32 @@ class _FolderableList<T> extends StatelessWidget {
   /// ファイルと同じ形（名前と中身の数を出し、「ゴミ箱へ移動」は差し色、移せな
   /// かったときは中に理由を出して開いたまま）。以前は名前の無い別の
   /// ダイアログで、ボタンが危険の赤だった。
-  void _confirmFolderTrash(BuildContext context, ProjectFolder folder) {
+  Future<void> _confirmFolderTrash(
+    BuildContext context,
+    ProjectFolder folder,
+  ) async {
     final l10n = AppLocalizations.of(context)!;
     // 受け取ったもののお気に入りのフォルダ・お気に入りを含むフォルダは
     // 移さない（プロジェクトのフォルダのメニューと同じく、開く前に断る）。
-    final inside = [
-      for (final item in everyItem ?? allItems)
-        if (folderIdOf(item) == folder.id) item,
-    ];
+    final loader = loadFolderContents;
+    late final List<T> inside;
+    try {
+      inside = loader != null
+          ? await loader(folder.id)
+          : [
+              for (final item in everyItem ?? allItems)
+                if (folderIdOf(item) == folder.id) item,
+            ];
+    } catch (error, stackTrace) {
+      AppErrorReporter.record(error, stackTrace);
+      if (context.mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.homeWorksLoadFailed)));
+      }
+      return;
+    }
+    if (!context.mounted) return;
     if (T == Project) {
       final holdsFavorite = inside.any((e) => (e as Project).isFavorite);
       if (folder.isFavorite || holdsFavorite) {
@@ -7307,6 +7336,16 @@ class _WorksTabState extends State<_WorksTab>
 
   bool _loadFailed = false;
 
+  Future<List<File>> _loadFolderContents(
+    WorkFolderService folders,
+    String id,
+  ) async {
+    final exports = await ExportEngine.listExportedFiles(forceRefresh: true);
+    return exports
+        .where((file) => folders.folderIdOf(file.uri.pathSegments.last) == id)
+        .toList();
+  }
+
   Future<void> _reload() async {
     final request = ExportEngine.listExportedFileMetadata(forceRefresh: true);
     setState(() {
@@ -7342,6 +7381,7 @@ class _WorksTabState extends State<_WorksTab>
         _updateView(listing, workFolders, query);
         final files = _shownFiles;
         final folders = _shownFolders;
+        final folderByFile = _folderByFile;
         selection?.onVisibleIds('work', _shownIds);
         Widget buildWork(BuildContext context, File file, bool grid) =>
             _WorkListItem(
@@ -7438,7 +7478,8 @@ class _WorksTabState extends State<_WorksTab>
             exportStats: listing.stats,
             groupedItems: _groupedFiles,
             folders: folders,
-            folderIdOf: (file) => _folderByFile[file],
+            folderIdOf: (file) => folderByFile[file],
+            loadFolderContents: (id) => _loadFolderContents(workFolders, id),
             onEnterFolder: (folderId, folderName, itemsInFolder) =>
                 Navigator.of(context).push(
                   adMockMaterialPageRoute(
@@ -7477,16 +7518,7 @@ class _WorksTabState extends State<_WorksTab>
               final messenger = ScaffoldMessenger.of(context);
               final projects = context.read<ProjectService>();
               final l10n = AppLocalizations.of(context)!;
-              final exports = await ExportEngine.listExportedFiles(
-                forceRefresh: true,
-              );
-              final members = exports
-                  .where(
-                    (file) =>
-                        workFolders.folderIdOf(file.uri.pathSegments.last) ==
-                        id,
-                  )
-                  .toList();
+              final members = await _loadFolderContents(workFolders, id);
               final entry = await LocalFileTrashService.moveWorkFolder(
                 folderName: folder.name,
                 files: members,

@@ -18,7 +18,9 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   Future<void> confirm(HomeClipboardHarness home) async {
-    await home.tester.tap(find.byKey(const Key('trash-dialog-confirm')));
+    final confirm = find.byKey(const Key('trash-dialog-confirm'));
+    await home.waitFor(() => confirm.evaluate().isNotEmpty);
+    await home.tester.tap(confirm);
     await home.waitFor(
       () => find.byType(AlertDialog).evaluate().isEmpty,
       reason: 'the question stayed open',
