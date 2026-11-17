@@ -1534,3 +1534,10 @@ App・Web共通。Claudeが要修正の詳細を追記し、ユーザーが別�
   - 指ツール：「長押しまたは上スワイプでサブツールを切り替え」は`toolbar_widget.dart`の`onVerticalDragEnd`（上向きの速さ200以上で`onFingerLongPress`）と長押しで裏付けあり。
   - ブラシの詳細設定（フェード・ストローク減衰・混色・筆圧カーブ）はブラシの設定にある。
 - **未確認**：図解のラベル・状態・縮尺の一つずつの照合、7言語の同じ節の意味の照合。
+
+### W006.02（一巡目、Claude・S40、判定：OK）
+
+- **確認SHA・環境**：Web `07360dc`の/features/#animationの日本語の本文（22項目、`w-audit/w006-animation-ja.txt`）をApp `585cd6b2`のコードと照合。
+- **新規の要修正なし**。
+- **OK（照合）**：レイヤーのキーフレーム（`layer_keyframe.dart`：位置x・y・拡大・回転〔Z・X・Y〕・イージング、間は補間）、レイヤーのグループを1つのキーフレームで動かす（`layer_compositor.dart`の`groupKeyframeOf`）、カメラのキーフレーム（`camera_keyframe.dart`：x・y・ズーム・回転）、シーン（`scene.dart`・`scene_stack.dart`）、画像・動画・音声・共通レイヤーをタイムラインに置く、フレームの追加・描き直し・プレビュー、画像を並べたストップモーション。
+- **未確認**：図解のラベルの一つずつの照合、7言語。
