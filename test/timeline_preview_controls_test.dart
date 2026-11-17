@@ -273,6 +273,59 @@ void main() {
         .singleWhere((item) => item.id == layer.id);
     expect((reloadedLayer.rangeStart, reloadedLayer.rangeEnd), (2, 5));
   });
+
+  testWidgets(
+    'scene rename rejects blank input and saves a trimmed name on Enter',
+    (tester) async {
+      final id = await openTimeline(
+        tester,
+        project: const Size(160, 90),
+        screen: const Size(1280, 800),
+        pc: true,
+        fraction: .4,
+      );
+      final context = tester.element(find.byType(TimelineScreen));
+      final ps = context.read<ProjectService>();
+      final l10n = AppLocalizations.of(context)!;
+      final original = ps.scenesOf(id).single.displayName;
+      await tester.tap(
+        find.byWidgetPredicate(
+          (widget) =>
+              widget is Icon &&
+              widget.icon == Icons.more_vert &&
+              widget.size == 14,
+        ),
+      );
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+      await tester.tap(find.text(l10n.timelineSceneRenameTitle));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+
+      final field = find.descendant(
+        of: find.byType(AlertDialog),
+        matching: find.byType(TextField),
+      );
+      final change = find.widgetWithText(FilledButton, l10n.commonChange);
+      for (final name in ['', '   ']) {
+        await tester.enterText(field, name);
+        await tester.pump();
+        expect(tester.widget<FilledButton>(change).onPressed, isNull);
+        await tester.testTextInput.receiveAction(TextInputAction.done);
+        await tester.pump();
+        expect(field, findsOneWidget);
+        expect(ps.scenesOf(id).single.displayName, original);
+      }
+      await tester.enterText(field, '  Cut 2  ');
+      await tester.testTextInput.receiveAction(TextInputAction.done);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+      expect(field, findsNothing);
+      expect(ps.scenesOf(id).single.displayName, 'Cut 2');
+      expect(tester.takeException(), isNull);
+    },
+  );
+
   testWidgets(
     'timeline tools stay above the tracks during selection and paste',
     (tester) async {
