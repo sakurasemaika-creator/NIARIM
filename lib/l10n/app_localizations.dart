@@ -5169,6 +5169,18 @@ abstract class AppLocalizations {
   /// **'長尺作品をつくる、仕上げを調整する。必要な機能はオパールでも使えます。'**
   String get premiumBannerBenefits;
 
+  /// No description provided for @premiumBannerMembershipDetails.
+  ///
+  /// In ja, this message translates to:
+  /// **'プレミアム会員について詳しく見る'**
+  String get premiumBannerMembershipDetails;
+
+  /// No description provided for @premiumBannerBenefitDetails.
+  ///
+  /// In ja, this message translates to:
+  /// **'特典について詳しく見る'**
+  String get premiumBannerBenefitDetails;
+
   /// No description provided for @premiumPackHalfPrice.
   ///
   /// In ja, this message translates to:
@@ -17358,7 +17370,7 @@ abstract class AppLocalizations {
   /// 共有カードの画像：設定と使用画像をすべて含むカードであることを示す見出し
   ///
   /// In ja, this message translates to:
-  /// **'完全共有カード'**
+  /// **'共有カード'**
   String get shareCardCompleteTitle;
 
   /// 共有カードの画像：このカードを読み込む方法（buttonは一覧の読み込みのボタンの名前）

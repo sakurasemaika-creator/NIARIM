@@ -5,6 +5,7 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 
+import '../engine/brush_texture_cache.dart';
 import '../engine/drawing_engine.dart';
 import '../engine/procedural_texture.dart';
 import '../engine/stamp_engine.dart';
@@ -14,19 +15,22 @@ import '../models/brush.dart';
 import '../models/stamp.dart';
 import '../models/tone.dart';
 
-/// Actual drawing-engine sample for a procedural NIARIM share card.
-/// Reuses the same raster path as StrokeSamplePreview in the pen panel.
+/// A stroke rendered with the canvas drawing engines for the tool list and shared cards.
 class SharedAssetCardPreview {
   SharedAssetCardPreview._();
 
-  static const int width = 240;
-  static const int height = 48;
+  static const int _width = 240;
+  static const int _height = 48;
+  static const int _waveInset = 12;
+  static const int _waveAmplitude = 9;
 
-  static List<ui.Offset> _wave() => [
-    for (var x = 12; x <= width - 12; x += 2)
+  static List<ui.Offset> _wavePoints([int inset = _waveInset]) => [
+    for (var x = inset; x <= _width - inset; x += 2)
       ui.Offset(
         x.toDouble(),
-        height / 2 + 9 * math.sin((x - 12) / (width - 24) * math.pi * 4),
+        _height / 2 +
+            _waveAmplitude *
+                math.sin((x - inset) / (_width - 2 * inset) * math.pi * 4),
       ),
   ];
 
@@ -34,26 +38,29 @@ class SharedAssetCardPreview {
     final completer = Completer<ui.Image>();
     ui.decodeImageFromPixels(
       rgba,
-      width,
-      height,
+      _width,
+      _height,
       ui.PixelFormat.rgba8888,
       completer.complete,
     );
     return completer.future;
   }
 
-  static Future<ui.Image> render(
-    String kind,
-    Map<String, dynamic> json, {
+  static Future<ui.Image> render({
+    Brush? brush,
+    Tone? tone,
+    Stamp? stamp,
     Color color = Colors.black,
   }) async {
-    if (kind == 'brush') {
-      final brush = Brush.fromJson(json);
-      if (brush.resolvedCustomImagePaths.isNotEmpty) {
-        throw const FormatException(
-          'Image brush needs original source textures',
-        );
-      }
+    if (brush != null) {
+      await preloadBrushTextures(
+        brush.resolvedCustomImagePaths,
+        mode: brush.imageInkMode,
+      );
+      // A soft preset can spread far beyond its nominal pen size. Scale
+      // BOTH the diameter and the blur radius to keep the whole soft edge
+      // visible in this 48px strip. Previously only size was clamped, which
+      // made e.g. a 30px/50-blur airbrush look like a solid, clipped mark.
       final offBlur = brush.pressureOff.blur;
       final onBlur = brush.pressureOn.blur;
       final maxBlur = math.max(
@@ -61,13 +68,38 @@ class SharedAssetCardPreview {
         onBlur.enabled ? math.max(onBlur.weak, onBlur.strong) : 0,
       );
       final extent = brush.size / 2 + maxBlur;
+      // The drawing engine stretches fixed-angle tips before rotating them.
+      // Project that ellipse onto the preview axes to leave room for its halo.
+      final angle = brush.calligraphyAngle;
+      var horizontalScale = 1.0;
+      var verticalScale = 1.0;
+      if (angle != null) {
+        final radians = angle * math.pi / 180;
+        final cos = math.cos(radians);
+        final sin = math.sin(radians);
+        final longAxisSquared = kCalligraphyNibAspect * kCalligraphyNibAspect;
+        horizontalScale = brush.rotation
+            ? kCalligraphyNibAspect
+            : math.sqrt(longAxisSquared * cos * cos + sin * sin);
+        verticalScale = brush.rotation
+            ? kCalligraphyNibAspect
+            : math.sqrt(longAxisSquared * sin * sin + cos * cos);
+      }
+      final verticalRoom = _height / 2 - _waveAmplitude - 2;
       final scale = math.min(
         1.0,
-        math.min(19.0 / math.max(brush.size, 1), 16.0 / math.max(extent, 1)),
+        math.min(
+          19.0 / math.max(brush.size, 1),
+          (angle == null ? 16.0 : verticalRoom / verticalScale - 1) /
+              math.max(extent, 1),
+        ),
       );
-      int scaledBlur(int value) => (value * scale).round().clamp(0, 100);
-      final preview = brush.copyWith(
+      int scaledBlur(int original) => (original * scale).round().clamp(0, 100);
+      final previewBrush = brush.copyWith(
         size: math.max(0.5, brush.size * scale),
+        // Keep the gap-to-tip ratio when compressing large tips into the list.
+        // Ratio-based tips already scale their spacing with size in the engine.
+        spacing: math.max(1, (brush.spacing * scale).round()),
         pressureOff: brush.pressureOff.copyWith(
           blur: offBlur.copyWith(value: scaledBlur(offBlur.value)),
         ),
@@ -78,87 +110,93 @@ class SharedAssetCardPreview {
           ),
         ),
       );
-      final tiles = TileManager(canvasWidth: width, canvasHeight: height);
+      final tiles = TileManager(canvasWidth: _width, canvasHeight: _height);
       try {
         final engine = DrawingEngine(tileManager: tiles)
-          ..currentColor = color
-          ..currentBrush = preview
+          ..currentColor = brush.presetColor == null
+              ? color
+              : Color(brush.presetColor!)
+          ..currentBrush = previewBrush
+          // Simulate a stylus moving with variable pressure, so G pens,
+          // pencils and user-configured pressure-sensitive brushes also
+          // show their characteristic thickness and opacity.
           ..pressureEnabled = true;
-        final points = _wave();
-        StrokePoint strokePoint(ui.Offset pos, int i) {
-          final t = i / (points.length - 1);
+        final inset = angle == null
+            ? _waveInset
+            : math.max(
+                _waveInset,
+                ((previewBrush.size / 2 + scaledBlur(maxBlur) + 0.5) *
+                            horizontalScale)
+                        .ceil() +
+                    2,
+              );
+        final points = _wavePoints(inset);
+        StrokePoint samplePoint(ui.Offset p, int index) {
+          final t = index / (points.length - 1);
           return StrokePoint(
-            x: pos.dx,
-            y: pos.dy,
+            x: p.dx,
+            y: p.dy,
             inputType: InputType.stylus,
             pressure: 0.4 + 0.6 * math.sin(math.pi * t),
           );
         }
 
-        engine.beginStroke(strokePoint(points.first, 0), 'share-card');
+        engine.beginStroke(samplePoint(points.first, 0), 'preview');
         for (var i = 1; i < points.length; i++) {
-          engine.continueStroke(strokePoint(points[i], i), 'share-card');
+          engine.continueStroke(samplePoint(points[i], i), 'preview');
         }
         if (engine.needsFinalFadeReplay) {
           engine.replayCurrentStrokeWithFinalFade();
         }
         engine.endStroke();
-        return await tiles.compositeLayerToImage('share-card');
+        return await tiles.compositeLayerToImage('preview');
       } finally {
         tiles.dispose();
       }
     }
-    if (kind == 'tone') {
-      final tone = Tone.fromJson(json);
-      if (tone.texturePath != null) {
-        throw const FormatException('Image tone needs original source texture');
-      }
+
+    if (tone != null) {
       const textureSize = 64;
       await ensureToneTextureLoaded(tone, size: textureSize);
-      final pixels = ToneEngine().drawToneStroke(
-        points: _wave(),
+      final texture = generateBuiltInToneTexture(tone, size: textureSize);
+      final result = ToneEngine().drawToneStroke(
+        points: _wavePoints(),
         brushSize: 17,
         color: color,
-        canvasData: Uint8List(width * height * 4),
-        canvasWidth: width,
-        canvasHeight: height,
-        toneTexture: generateBuiltInToneTexture(tone, size: textureSize),
+        canvasData: Uint8List(_width * _height * 4),
+        canvasWidth: _width,
+        canvasHeight: _height,
+        toneTexture: texture,
         toneWidth: textureSize,
         toneHeight: textureSize,
       );
-      return _decode(pixels);
+      return _decode(result);
     }
-    if (kind == 'stamp') {
-      final stamp = Stamp.fromJson(json);
-      if (stamp.imagePath != null) {
-        throw const FormatException(
-          'Image stamp needs original source texture',
-        );
-      }
-      const stampSize = 23.0;
-      final texture = await generateBuiltInStampTexture(
-        stamp,
-        size: 48,
-        renderedSize: stampSize,
-        color: color,
-      );
-      final pixels = StampEngine().stampAlongPath(
-        canvasData: Uint8List(width * height * 4),
-        width: width,
-        height: height,
-        texture: texture,
-        texSize: 48,
-        points: _wave(),
-        stampSize: stampSize,
-        rotation: stamp.rotation,
-        scatter: stamp.scatter * stampSize,
-        density: stamp.density,
-        opacity: 100,
-        premultiplied: true,
-        seed: 0,
-      );
-      return _decode(pixels);
-    }
-    throw const FormatException('Unsupported share card kind');
+
+    final activeStamp = stamp!;
+    const stampSize = 23.0;
+    final texture = await generateBuiltInStampTexture(
+      activeStamp,
+      size: 48,
+      renderedSize: stampSize,
+      color: color,
+    );
+    final result = StampEngine().stampAlongPath(
+      canvasData: Uint8List(_width * _height * 4),
+      width: _width,
+      height: _height,
+      texture: texture,
+      texSize: 48,
+      points: _wavePoints(),
+      stampSize: stampSize,
+      rotation: activeStamp.rotation,
+      scatter: activeStamp.scatter * stampSize,
+      density: activeStamp.density,
+      // The source texture has already had its opacity applied.
+      opacity: 100,
+      premultiplied: true,
+      seed: 0,
+    );
+    return _decode(result);
   }
 }

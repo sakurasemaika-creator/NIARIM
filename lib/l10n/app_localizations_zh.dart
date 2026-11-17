@@ -2786,6 +2786,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get premiumBannerBenefits => '制作更长的作品，使用更多工具完成细节。也可以用欧泊解锁权益。';
 
   @override
+  String get premiumBannerMembershipDetails => '了解高级会员详情';
+
+  @override
+  String get premiumBannerBenefitDetails => '了解权益详情';
+
+  @override
   String get premiumPackHalfPrice => '全功能组合包是单项合计的一半';
 
   @override
@@ -9719,7 +9725,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get shareCardNoSourceImages => '未使用外部图片';
 
   @override
-  String get shareCardCompleteTitle => '完整分享卡片';
+  String get shareCardCompleteTitle => '分享卡片';
 
   @override
   String shareCardRestoreHint(String button) {
@@ -12837,6 +12843,12 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get premiumBannerBenefits => '製作更長的作品，使用更多工具完成細節。也可以用歐泊解鎖權益。';
+
+  @override
+  String get premiumBannerMembershipDetails => '了解進階會員詳情';
+
+  @override
+  String get premiumBannerBenefitDetails => '了解權益詳情';
 
   @override
   String get premiumPackHalfPrice => '全功能組合包是單項合計的一半';
@@ -19774,7 +19786,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get shareCardNoSourceImages => '未使用外部圖片';
 
   @override
-  String get shareCardCompleteTitle => '完整分享卡片';
+  String get shareCardCompleteTitle => '分享卡片';
 
   @override
   String shareCardRestoreHint(String button) {

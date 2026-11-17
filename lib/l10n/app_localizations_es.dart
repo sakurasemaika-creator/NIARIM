@@ -2952,6 +2952,14 @@ class AppLocalizationsEs extends AppLocalizations {
       'Crea proyectos más largos y usa más herramientas de acabado. También puedes desbloquearlas con ópalos.';
 
   @override
+  String get premiumBannerMembershipDetails =>
+      'Más información sobre la suscripción Premium';
+
+  @override
+  String get premiumBannerBenefitDetails =>
+      'Más información sobre los beneficios';
+
+  @override
   String get premiumPackHalfPrice =>
       'Paquete completo por la mitad del total individual';
 
@@ -10684,7 +10692,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get shareCardNoSourceImages => 'No usa imágenes externas';
 
   @override
-  String get shareCardCompleteTitle => 'Tarjeta para compartir completa';
+  String get shareCardCompleteTitle => 'Tarjeta para compartir';
 
   @override
   String shareCardRestoreHint(String button) {

@@ -2815,6 +2815,12 @@ class AppLocalizationsKo extends AppLocalizations {
       '긴 작품을 만들고 여러 도구로 마무리하세요. 오팔로도 혜택을 이용할 수 있습니다.';
 
   @override
+  String get premiumBannerMembershipDetails => '프리미엄 멤버십 자세히 보기';
+
+  @override
+  String get premiumBannerBenefitDetails => '혜택 자세히 보기';
+
+  @override
   String get premiumPackHalfPrice => '컴플리트 팩은 단품 합계의 절반';
 
   @override
@@ -9875,7 +9881,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get shareCardNoSourceImages => '사용하는 외부 이미지가 없습니다';
 
   @override
-  String get shareCardCompleteTitle => '완전 공유 카드';
+  String get shareCardCompleteTitle => '공유 카드';
 
   @override
   String shareCardRestoreHint(String button) {

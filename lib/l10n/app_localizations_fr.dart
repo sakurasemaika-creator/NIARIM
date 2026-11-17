@@ -2949,6 +2949,13 @@ class AppLocalizationsFr extends AppLocalizations {
       'Créez des projets plus longs et accédez à plus d’outils de finition. Les opales permettent aussi de débloquer ces avantages.';
 
   @override
+  String get premiumBannerMembershipDetails =>
+      'En savoir plus sur l’abonnement Premium';
+
+  @override
+  String get premiumBannerBenefitDetails => 'En savoir plus sur les avantages';
+
+  @override
   String get premiumPackHalfPrice =>
       'Pack complet à la moitié du total à l’unité';
 
@@ -10688,7 +10695,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get shareCardNoSourceImages => 'Aucune image externe n’est utilisée';
 
   @override
-  String get shareCardCompleteTitle => 'Carte de partage complète';
+  String get shareCardCompleteTitle => 'Carte de partage';
 
   @override
   String shareCardRestoreHint(String button) {

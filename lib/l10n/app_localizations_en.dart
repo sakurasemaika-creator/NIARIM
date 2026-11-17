@@ -2912,6 +2912,12 @@ class AppLocalizationsEn extends AppLocalizations {
       'Create longer projects and use more tools to finish them. You can also unlock benefits with Opals.';
 
   @override
+  String get premiumBannerMembershipDetails => 'Learn about Premium membership';
+
+  @override
+  String get premiumBannerBenefitDetails => 'Learn about benefits';
+
+  @override
   String get premiumPackHalfPrice =>
       'Complete Pack for half the individual total';
 
@@ -10528,7 +10534,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get shareCardNoSourceImages => 'No external images are used';
 
   @override
-  String get shareCardCompleteTitle => 'Complete share card';
+  String get shareCardCompleteTitle => 'Share card';
 
   @override
   String shareCardRestoreHint(String button) {

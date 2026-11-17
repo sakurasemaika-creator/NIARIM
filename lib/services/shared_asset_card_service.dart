@@ -13,12 +13,14 @@ import 'package:qr_flutter/qr_flutter.dart';
 import '../config/font_fallback.dart';
 import '../l10n/app_localizations.dart';
 import '../models/brush.dart';
+import '../models/custom_automation.dart';
 import '../models/filter_def.dart';
 import '../widgets/filter_sample_preview.dart';
 import '../models/stamp.dart';
 import '../models/tone.dart';
 import '../models/workspace_preset.dart';
 import '../utils/creative_image_source.dart';
+import '../utils/custom_automation_labels.dart';
 import 'brush_service.dart';
 import 'stamp_service.dart';
 import 'tone_service.dart';
@@ -115,7 +117,13 @@ class SharedAssetCardService {
     Brush brush, {
     required AppLocalizations l10n,
   }) async {
-    return _createCard('brush', brush.name, await _brushArchive(brush), l10n);
+    return _createCard(
+      'brush',
+      brush.name,
+      await _brushArchive(brush),
+      l10n,
+      renderStroke: () => SharedAssetCardPreview.render(brush: brush),
+    );
   }
 
   static Future<Uint8List> _brushArchive(Brush brush) async {
@@ -157,7 +165,13 @@ class SharedAssetCardService {
       final ext = tone.texturePath!.split('.').last;
       a.addFile(ArchiveFile('image.$ext', b.length, b));
     }
-    return _createCard('tone', tone.name, _toZip(a), l10n);
+    return _createCard(
+      'tone',
+      tone.name,
+      _toZip(a),
+      l10n,
+      renderStroke: () => SharedAssetCardPreview.render(tone: tone),
+    );
   }
 
   static Future<File> exportStamp(
@@ -177,7 +191,13 @@ class SharedAssetCardService {
       final ext = stamp.imagePath!.split('.').last;
       a.addFile(ArchiveFile('image.$ext', b.length, b));
     }
-    return _createCard('stamp', stamp.name, _toZip(a), l10n);
+    return _createCard(
+      'stamp',
+      stamp.name,
+      _toZip(a),
+      l10n,
+      renderStroke: () => SharedAssetCardPreview.render(stamp: stamp),
+    );
   }
 
   static Future<void> exportSettings(
@@ -686,8 +706,9 @@ class SharedAssetCardService {
     String kind,
     String name,
     Uint8List originalArchive,
-    AppLocalizations l10n,
-  ) async {
+    AppLocalizations l10n, {
+    Future<ui.Image> Function()? renderStroke,
+  }) async {
     if (originalArchive.isEmpty ||
         originalArchive.length > SharedAssetCardCodec.maxAssetBytes) {
       throw const FormatException('Shared asset file is too large');
@@ -700,6 +721,7 @@ class SharedAssetCardService {
       originalArchive,
       digest,
       l10n,
+      renderStroke: renderStroke,
     );
     final cardBytes = SharedAssetCardCodec.embed(
       png: rendered,
@@ -733,8 +755,9 @@ class SharedAssetCardService {
     String name,
     Uint8List originalArchive,
     String digest,
-    AppLocalizations l10n,
-  ) async {
+    AppLocalizations l10n, {
+    required Future<ui.Image> Function()? renderStroke,
+  }) async {
     const width = 1200;
     const height = 1600;
     final recorder = ui.PictureRecorder();
@@ -760,7 +783,6 @@ class SharedAssetCardService {
     );
 
     final images = <ui.Image>[];
-    var strokeRendered = false;
     final archive = ZipDecoder().decodeBytes(originalArchive);
     final sourceEntries = archive.files
         .where(
@@ -795,13 +817,15 @@ class SharedAssetCardService {
       final main = images.first;
       final sx = main.width.toDouble();
       final sy = main.height.toDouble();
-      final scale = [920 / sx, 310 / sy].reduce((a, b) => a < b ? a : b);
+      final imageHeight = renderStroke == null ? 310 : 180;
+      final imageCenter = renderStroke == null ? 550 : 462;
+      final scale = [920 / sx, imageHeight / sy].reduce((a, b) => a < b ? a : b);
       final w = sx * scale;
       final h = sy * scale;
       canvas.drawImageRect(
         main,
         Rect.fromLTWH(0, 0, sx, sy),
-        Rect.fromLTWH(600 - w / 2, 550 - h / 2, w, h),
+        Rect.fromLTWH(600 - w / 2, imageCenter - h / 2, w, h),
         Paint()..filterQuality = FilterQuality.medium,
       );
       for (var i = 0; i < images.length; i++) {
@@ -834,52 +858,77 @@ class SharedAssetCardService {
           Paint()..filterQuality = FilterQuality.medium,
         );
       }
-    } else {
-      // Render a genuine stroke using the very same raster engines as the
-      // live pen sub-tool panel; parameters are never approximated by a
-      // hand-drawn line when a source image is not attached.
-      final settings = archive.findFile('data.json');
+    }
+    if (renderStroke != null) {
+      final sample = await renderStroke();
+      try {
+        canvas.drawImageRect(
+          sample,
+          Rect.fromLTWH(0, 0, sample.width.toDouble(), sample.height.toDouble()),
+          images.isEmpty
+              ? const Rect.fromLTWH(120, 470, 960, 192)
+              : const Rect.fromLTWH(170, 555, 860, 172),
+          Paint()..filterQuality = FilterQuality.medium,
+        );
+      } finally {
+        sample.dispose();
+      }
+    } else if (images.isEmpty) {
+      final settings =
+          jsonDecode(
+                utf8.decode(archive.findFile('data.json')!.content as List<int>),
+              )
+              as Map<String, dynamic>;
       var rendered = false;
-      if (settings != null) {
+      if (kind == 'filter') {
         try {
-          final data = jsonDecode(utf8.decode(settings.content as List<int>));
-          if (data is Map<String, dynamic>) {
-            final isFilter = kind == 'filter';
-            final sample = isFilter
-                ? await filterSampleImage(FilterDef.fromJson(data))
-                : await SharedAssetCardPreview.render(kind, data);
-            try {
-              canvas.drawImageRect(
-                sample,
-                Rect.fromLTWH(
-                  0,
-                  0,
-                  sample.width.toDouble(),
-                  sample.height.toDouble(),
-                ),
-                isFilter
-                    ? const Rect.fromLTWH(380, 415, 440, 280)
-                    : const Rect.fromLTWH(120, 470, 960, 192),
-                Paint()..filterQuality = FilterQuality.medium,
-              );
-              rendered = true;
-            } finally {
-              if (!isFilter) sample.dispose();
-            }
-          }
+          final sample = await filterSampleImage(FilterDef.fromJson(settings));
+          canvas.drawImageRect(
+            sample,
+            Rect.fromLTWH(0, 0, sample.width.toDouble(), sample.height.toDouble()),
+            const Rect.fromLTWH(380, 415, 440, 280),
+            Paint()..filterQuality = FilterQuality.medium,
+          );
+          rendered = true;
         } catch (_) {
           // Settings are independently validated when importing this card.
         }
       }
-      strokeRendered = rendered;
-      if (!rendered && !const {'brush', 'tone', 'stamp'}.contains(kind)) {
-        final settings =
-            jsonDecode(
-                  utf8.decode(
-                    archive.findFile('data.json')!.content as List<int>,
-                  ),
-                )
-                as Map<String, dynamic>;
+      if (kind == 'automation') {
+        final automation = CustomAutomation.fromJson(settings);
+        const maxVisibleSteps = 5;
+        final whitespace = RegExp(r'\s+');
+        final labels = automation.steps.take(maxVisibleSteps).map((step) {
+          final label = customAutomationStepLabel(l10n, step).trim();
+          return (label.isEmpty ? step.command : label).replaceAll(
+            whitespace,
+            ' ',
+          );
+        });
+        final lines = [
+          for (final (index, label) in labels.indexed) '${index + 1}. $label',
+          if (automation.steps.length > maxVisibleSteps) '…',
+        ];
+        for (final (index, line) in lines.indexed) {
+          final label = TextPainter(
+            text: TextSpan(
+              text: line,
+              style: const TextStyle(
+                color: Color(0xff343c55),
+                fontSize: 36,
+                fontFamily: 'NotoSerifJP',
+                fontFamilyFallback: kBodyFontFallback,
+              ),
+            ),
+            textDirection: TextDirection.ltr,
+            locale: _CardText._localeOf(l10n),
+            maxLines: 1,
+            ellipsis: '…',
+          )..layout(maxWidth: 865);
+          label.paint(canvas, Offset(165, 580.0 - lines.length * 29 + index * 58));
+          label.dispose();
+        }
+      } else if (!rendered) {
         final colors = [
           if (settings['colors'] case final List colors)
             ...colors.whereType<int>(),
@@ -908,8 +957,6 @@ class SharedAssetCardService {
           }
         } else {
           final details = [
-            if (settings['steps'] case final List steps)
-              ...steps.whereType<Map>().take(5).map((step) => step['label']),
             if (settings['toolbarOrder'] case final List tools)
               ...tools.take(6),
           ].whereType<String>().join('   /   ');
@@ -960,7 +1007,7 @@ class SharedAssetCardService {
       name: name,
       sourceImageCount: sourceEntries.length,
       shownImageCount: images.length,
-      strokeRendered: strokeRendered,
+      strokeRendered: renderStroke != null,
       digest: digest,
     )) {
       final fitted = block.fit(l10n);
@@ -1062,7 +1109,16 @@ class SharedAssetCardService {
         22,
         const Color(0xff5d687b),
       ),
-      if (sourceImageCount > 0)
+      if (sourceImageCount > 0) ...[
+        if (strokeRendered)
+          _CardText(
+            l10n.shareCardStrokeSample,
+            const Rect.fromLTWH(120, 725, 960, 44),
+            28,
+            18,
+            const Color(0xff4e5b6d),
+            center: true,
+          ),
         _CardText(
           sourceImageCount > shownImageCount
               ? l10n.shareCardSourceImageCountFirst(
@@ -1074,8 +1130,8 @@ class SharedAssetCardService {
           22,
           15,
           const Color(0xff445068),
-        )
-      else if (const {'brush', 'tone', 'stamp'}.contains(kind)) ...[
+        ),
+      ] else if (const {'brush', 'tone', 'stamp'}.contains(kind)) ...[
         _CardText(
           strokeRendered
               ? l10n.shareCardStrokeSample

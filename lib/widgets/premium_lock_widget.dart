@@ -195,12 +195,31 @@ class _PremiumBannerDialog extends StatelessWidget {
                   FilledButton.icon(
                     icon: const Icon(Icons.workspace_premium_outlined),
                     onPressed: () => onChoose('premium'),
-                    label: Text(labels.premiumComparisonPremium),
+                    label: Text(
+                      labels.premiumBannerMembershipDetails,
+                      textAlign: TextAlign.center,
+                    ),
                   ),
                   OutlinedButton.icon(
                     icon: const Icon(Icons.diamond_outlined),
                     onPressed: () => onChoose('rewards'),
-                    label: Text(labels.rewardNavigationExchange),
+                    label: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Flexible(
+                          child: Text(
+                            labels.premiumBannerBenefitDetails,
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Badge(
+                          label: Text(labels.premiumComparisonFree),
+                          backgroundColor: colors.secondaryContainer,
+                          textColor: colors.onSecondaryContainer,
+                        ),
+                      ],
+                    ),
                   ),
                   TextButton(
                     onPressed: () =>

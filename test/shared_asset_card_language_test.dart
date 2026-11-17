@@ -137,10 +137,10 @@ void main() {
     final en = await exportCardFromPanel(tester, const Locale('en'));
     final ko = await exportCardFromPanel(tester, const Locale('ko'));
     // 1600pxの縦の中で、文だけが並ぶ帯：見本の見出し（約290〜345）、
-    // 「完全共有カード」とその説明（約920〜1100）、QRの右の注記（約1140〜1300）。
+    // 「共有カード」とその説明（約920〜1100）、QRの右の注記（約1140〜1300）。
     for (final (label, top, bottom) in const [
       ('見本の見出し', 290, 345),
-      ('完全共有カードと説明', 920, 1100),
+      ('共有カードと説明', 920, 1100),
       ('QRの注記', 1140, 1300),
     ]) {
       expect(
@@ -261,7 +261,8 @@ void main() {
             block.text,
         ].join('\n');
         if (locale.languageCode == 'ja') {
-          expect(texts, contains(l10n.shareCardCompleteTitle));
+          expect(texts, contains('共有カード'));
+          expect(texts, isNot(contains('完全共有カード')));
         } else {
           expect(japanese.hasMatch(texts), isFalse, reason: '$tag: $texts');
         }

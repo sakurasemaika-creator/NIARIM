@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:image/image.dart' as img;
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/models/app_theme_preset.dart';
 import 'package:niarim/models/autofill_preset.dart';
@@ -73,6 +74,7 @@ void main() {
         RepaintBoundary(
           key: key,
           child: MaterialApp(
+            debugShowCheckedModeBanner: false,
             theme: ThemeData(
               colorSchemeSeed: const Color(0xff6354a1),
               useMaterial3: true,
@@ -217,6 +219,15 @@ void main() {
           key.currentContext!.findRenderObject()! as RenderRepaintBoundary;
       await tester.runAsync(() async {
         expect((await SharedAssetCardService.inspect(file)).kind, kind);
+        if (const {'brush', 'stamp', 'tone'}.contains(kind)) {
+          final card = img.decodePng(await file.readAsBytes())!;
+          final stroke = img.copyCrop(card, x: 210, y: 570, width: 780, height: 140);
+          expect(
+            stroke.any((pixel) => pixel.r < 120 && pixel.g < 120),
+            isTrue,
+            reason: '$kind must render ink in the separate stroke area',
+          );
+        }
         await file.copy('${out.path}/$kind-card.png');
         final picture = await boundary.toImage(pixelRatio: 1.5);
         try {
@@ -241,6 +252,12 @@ void main() {
       continueLabel: l10n.exportFirst90Seconds,
     );
     await pumpRealAsync(tester, const Duration(milliseconds: 400));
+    expect(find.text('プレミアム会員について詳しく見る'), findsOneWidget);
+    expect(find.text('特典について詳しく見る'), findsOneWidget);
+    expect(
+      find.descendant(of: find.byType(Badge), matching: find.text('無料')),
+      findsOneWidget,
+    );
     final boundary =
         key.currentContext!.findRenderObject()! as RenderRepaintBoundary;
     await tester.runAsync(() async {
