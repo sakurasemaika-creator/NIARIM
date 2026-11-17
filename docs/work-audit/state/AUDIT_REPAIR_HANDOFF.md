@@ -90,7 +90,7 @@ App・Web共通。Claudeが要修正の詳細を追記し、ユーザーが別�
   - **担当が見つけた別の不具合**：DISC265（作品一覧・共有の詳細表示の最後のカードが浮かぶボタンの上端ちょうどで終わる）。フォルダの中の画面の「小」のカードでは絵の印が星の所に重なる（DISC263と同じ形、前から）。
 - **このセッションの公開の印が無いDISC**。前のセッションで直った物もあるので、各行の記録と最新 `dev_branch` で確かめる。
   - DISC001〜028・030〜049・051〜061・063〜067・069〜074・077〜081・090・099〜100・102・107・111・115〜116・118〜120・122
-  - DISC126・137・142〜146・149〜150・154〜155・159・161〜162・166・193〜202・204〜205・223・231・236・257〜421
+  - DISC126・137・142〜146・149〜150・154〜155・159・161〜162・166・193〜202・204〜205・223・231・236・257〜423
   - 所有者の判断待ち：DISC090・099・107・115・146・155、A011、DISC066。
 - **dev_branchで落ちているtest**：DISC258（容量削減の画面のtestが多く落ちる。どのコミットからかは未確認）。
 
@@ -1304,7 +1304,7 @@ App・Web共通。Claudeが要修正の詳細を追記し、ユーザーが別�
 
 - **確認SHA・環境**：今の`f86b6569`のコードとtest。Linuxのデバッグビルド（`2153c952`）には`NIARIM_GOOGLE_CLIENT_ID`が無く、Googleのログイン・アカウントの選択・YouTubeの認可・サーバーは動かない（匿名の見本のデータ）。画像はscratchpadの`shots-r1/a094-01.png`（`backup-pending`）。
 - **要修正（新規）**：DISC418（IDトークンを取り直さず約1時間で書き込みが断られる）、DISC419（切り替えのキャンセルでログアウトしたまま）、DISC420（YouTube情報の更新の失敗が例外の文）、DISC421（`youtube.upload`だけで`channels.list`、実APIで要確認）。
-- **既知**：`community_account_boundary_widget_test`の2件（「owner revision removes tag modal」、「タグを追加」が画面の外で押せない）は`7caf76b5`（10-30「default tag searches to exact matching」）から落ちる（`7370585e`では成功、二分探索で特定）。CLAUDE.mdの基準`dc0df19`より前なので、基準の作品広場の失敗（`community_*`の18件）の内。
+- **訂正（A095の一巡目）**：この節に書いた「`community_account_boundary_widget_test`の2件は`7caf76b5`から落ち、基準`dc0df19`の内」は誤り（二分探索が終了コードだけで判定し、flutterのツールの作り直しで失敗した版を「落ちる」と数えた）。出力で確かめ直すと`dc0df19`（基準）・`7caf76b5`とも成功、`9a653575`（11-15）と今は失敗。基準の後の新しい回帰でDISC423に記録した。
 - **OK（コード）**：
   - 起動では`NIARIM_GOOGLE_CLIENT_ID`が無ければGoogleのSDKに触れず匿名で進む。`initialize`は1プロセス1回（`Expando`）、静かなログイン（`attemptLightweightAuthentication`）だけでは画面を出さない。
   - ログイン・ログアウト・切り替え・追加の認可は同時に走らせない（`_runExclusive`、画面は「処理中」の文）。投稿の認可は投稿のときだけ（`promptIfNecessary`）、範囲は`youtube.upload`だけ。トークンは端末に保存しない（GoogleのSDKに任せる）。
@@ -1313,3 +1313,16 @@ App・Web共通。Claudeが要修正の詳細を追記し、ユーザーが別�
   - 実画面：未設定のビルドで「Googleアカウントを追加」→「Googleアカウントでログイン」の説明と「この開発ビルドにはGoogleログイン設定がないため、連携を開始できません。」、連携のボタンは押せない（`a094-01.png`）。
   - test：`coin_authenticated_client_contract_test`・`community_account_boundary_test`・`community_account_microtask_boundary_test`・`community_milestone_account_boundary_test`・`google_auth_init_once_test`・`premium_coin_account_isolation_test`は成功。41件中36件成功・3件スキップ（`google_auth_init_once_test`は`--dart-define`が要る）・2件は既知。
 - **未確認（実機・実API）**：Googleのログイン・選択画面・2つのアカウントの切り替え、`youtube.upload`の許可と拒否、IDトークンの期限切れ・取り消し（Googleのアカウントの画面からの連携の解除）、オフライン、ログに個人の情報が出ないこと（`debugPrint`の例外の文）。
+
+### A095（一巡目、Claude・S40、判定：要修正〔test〕）
+
+- **確認SHA・環境**：実操作は`2153c952`のLinuxデバッグビルド（`community_my_works_screen.dart`・`community_work_settings_screen.dart`は今の`fa01b85d`と同じ）、PC ja 1280×800、マウス、プロフィール`prof/r1-a084`。見本のデータ（Googleは未接続、自分の作品4件）。testは今の`fa01b85d`。画像はscratchpadの`shots-r1/a095-*`（`backup-pending`）。
+- **要修正（新規）**：DISC422（仏語・320px・文字2倍で選んだ件数が上部バーに出ない、test）、DISC423（`community_account_boundary_widget_test`の2件は基準の後の回帰。A094の記録を訂正）。
+- **既知**：作品の設定の「NIARIM作品広場からこの作品を削除」・削除の確認の赤い色（DISC193〜199の危ない操作の色）。
+- **OK**：
+  - 自分の投稿：Googleの状態・「投稿する」・「自分の作品一覧ページを見る」・「Googleアカウントを追加」、作品管理（件数・全選択・選ぶのをやめる）。
+  - 全選択→上部バー「4件選択中」→「一括非公開」→4件とも「非公開」、知らせ「完了: 4件 / 失敗: 0件」、選択が終わる（`a095-01`・`02`）。一括の公開はAIの申告を変えず、失敗した作品は選んだまま残す（コード）。YouTubeで削除された作品は一括で公開にしない。
+  - 行を押すと浮かぶプレビュー、長押しで選ぶ。工具の印→作品の設定（タイトル・概要欄の編集、NIARIM内で公開、AI画像・AI動画使用、タグの管理〔鍵・編集・削除〕、YouTube Studio、作品広場から削除）。削除→確認「この作品を削除しますか？…YouTube上の動画は削除されません。この操作は取り消せません。」→「削除」で一覧から消え3作品（`a095-03`〜`05`）。
+  - アカウントが変わったら一覧を作り直す（`accountRevision`）、一括の途中で変わったら止める。
+  - test：`community_my_works_controls_test`・`community_ranking_privacy_visibility_test`・`five_fixes_screenshot_test`は成功。`app_bar_title_fit_or_hide_test`の1件がDISC422。
+- **未確認**：APIのある環境（読み込み・失敗・再試行・公開の切り替えの失敗の巻き戻し・YouTube側の状態の差〔非公開・削除・予約〕の表示）、2つのアカウントの切り替え、7言語・文字2倍・360pxの実画面。
