@@ -1,17 +1,24 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:ui' as ui;
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:niarim/app.dart';
+import 'package:niarim/app_bootstrap.dart';
+import 'package:niarim/engine/watermark_render.dart';
 import 'package:niarim/l10n/app_localizations.dart';
+import 'package:niarim/models/layer.dart';
 import 'package:niarim/models/watermark_asset.dart';
+import 'package:niarim/router.dart';
 import 'package:niarim/screens/settings/watermark_settings_screen.dart';
 import 'package:niarim/services/font_service.dart';
 import 'package:niarim/services/settings_service.dart';
 import 'package:niarim/services/premium_service.dart';
+import 'package:niarim/services/project_service.dart';
 import 'package:niarim/services/theme_service.dart';
 import 'package:niarim/services/watermark_service.dart';
 import 'package:niarim/utils/duplicate_name.dart';
@@ -19,6 +26,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'helpers/load_app_fonts.dart';
+import 'helpers/first_use_tooltips.dart';
 import 'helpers/pump_real_async.dart';
 
 /// 引き継ぎで足した透かしの複製（「名前 (コピー)」）は、透かしの一覧の
@@ -94,6 +102,18 @@ class _WatermarkPremiumService extends PremiumService {
   bool get isPremium => true;
 }
 
+bool _hasColor(Uint8List pixels, List<int> color) {
+  for (var i = 0; i < pixels.length; i += 4) {
+    if (pixels[i] == color[0] &&
+        pixels[i + 1] == color[1] &&
+        pixels[i + 2] == color[2] &&
+        pixels[i + 3] == color[3]) {
+      return true;
+    }
+  }
+  return false;
+}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   const paths = MethodChannel('plugins.flutter.io/path_provider');
@@ -111,6 +131,82 @@ void main() {
         .setMockMethodCallHandler(paths, null);
     if (temp.existsSync()) temp.deleteSync(recursive: true);
   });
+
+  testWidgets(
+    'adding a watermark in the timeline bakes in the effects immediately',
+    (tester) async {
+      SharedPreferences.setMockInitialValues({
+        firstUseTooltipsSeenKey: kAllFirstUseTooltipKeys,
+        'force_pc_mode': 0,
+      });
+      tester.view.physicalSize = const Size(390, 844);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      appRouter.go('/');
+      final providers = (await tester.runAsync(buildAppProviders))!;
+      await tester.pumpWidget(
+        MultiProvider(
+          providers: [
+            ...providers,
+            ChangeNotifierProvider<PremiumService>(
+              create: (_) => _WatermarkPremiumService(),
+            ),
+          ],
+          child: const NiarimApp(),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final context = tester.element(find.byType(MaterialApp));
+      final projects = context.read<ProjectService>();
+      final service = context.read<WatermarkService>();
+      final project = (await tester.runAsync(() async {
+        await service.addTextWatermark(
+          'Fx',
+          color: 0xFF00FF00,
+          outlineEnabled: true,
+          outlineColor: 0xFFFF0000,
+          outlineWidth: 3,
+          shadowEnabled: true,
+          shadowColor: 0x800000FF,
+          shadowOffsetY: -8,
+          shadowBlur: 0,
+        );
+        return projects.createProject(
+          name: 'Timeline watermark test',
+          fps: 12,
+          durationSeconds: 1,
+          backgroundColor: 0xFFFFFFFF,
+          exportWidth: 128,
+          exportHeight: 128,
+        );
+      }))!;
+      appRouter.go('/timeline/${project.id}');
+      await pumpRealAsync(tester, const Duration(milliseconds: 300));
+      await tester.tap(find.byKey(const Key('timelineAddMaterialMenu')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('timelineAddWatermarkMenuItem')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(ListTile, 'Fx'));
+      await pumpRealAsync(tester, const Duration(milliseconds: 450));
+      final scene = projects.scenesOf(project.id).first;
+      final layer = projects
+          .layersOf(project.id, scene.id, 0)
+          .singleWhere((l) => l.type == LayerType.watermark);
+      final key = projects.tileKeyFor(project.id, scene.id, 0, layer.id);
+      final tiles = projects.tileManagerOf(project.id).exportAll()[key]!.values;
+      expect(
+        tiles.any((tile) => _hasColor(tile, const [255, 0, 0, 255])),
+        isTrue,
+      );
+      expect(
+        tiles.any((tile) => _hasColor(tile, const [0, 0, 128, 128])),
+        isTrue,
+      );
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox.shrink());
+    },
+  );
 
   Future<(WatermarkService, AppLocalizations)> pumpScreen(
     WidgetTester tester, {
@@ -176,6 +272,94 @@ void main() {
             .evaluate())
       e.renderObject! as RenderParagraph,
   ];
+
+  testWidgets(
+    'watermark list, editor and placement render the selected outline and shadow',
+    (tester) async {
+      final path = '${temp.path}/niarim/watermarks/logo.png';
+      await tester.runAsync(() async {
+        final recorder = ui.PictureRecorder();
+        ui.Canvas(
+          recorder,
+        ).drawColor(const Color(0xFF00FF00), ui.BlendMode.src);
+        final picture = recorder.endRecording();
+        final image = await picture.toImage(2, 2);
+        final data = (await image.toByteData(format: ui.ImageByteFormat.png))!;
+        image.dispose();
+        picture.dispose();
+        await File(path).writeAsBytes(data.buffer.asUint8List());
+      });
+      final (service, l10n) = await pumpScreen(
+        tester,
+        locale: const Locale('en'),
+        size: const Size(640, 844),
+        scale: 1,
+      );
+      final asset = service.assets
+          .firstWhere((a) => a.id == 'wm_logo')
+          .copyWith(
+            outlineEnabled: true,
+            outlineColor: 0xFFFF0000,
+            outlineWidth: 3,
+            shadowEnabled: true,
+            shadowColor: 0x800000FF,
+            shadowOffsetX: -10,
+            shadowOffsetY: -10,
+            shadowBlur: 0,
+          );
+      await tester.runAsync(() => service.updateAsset(asset));
+      await pumpRealAsync(tester, const Duration(milliseconds: 300));
+
+      Future<Uint8List> pixelsOf(Finder finder) async {
+        final raw = tester.widget<RawImage>(finder);
+        return (await tester.runAsync(
+          () async => (await raw.image!.toByteData(
+            format: ui.ImageByteFormat.rawRgba,
+          ))!.buffer.asUint8List(),
+        ))!;
+      }
+
+      const red = [255, 0, 0, 255];
+      const blue = [0, 0, 128, 128];
+      const green = [0, 255, 0, 255];
+      final card = find.ancestor(
+        of: find.text('logo'),
+        matching: find.byType(Card),
+      );
+      final tile = find.descendant(of: card, matching: find.byType(RawImage));
+      final listPixels = await pixelsOf(tile);
+      expect(_hasColor(listPixels, red), isTrue);
+      expect(_hasColor(listPixels, blue), isTrue);
+      expect(_hasColor(listPixels, green), isTrue);
+
+      await tester.tap(tile);
+      await pumpRealAsync(tester, const Duration(milliseconds: 300));
+      final editor = find.descendant(
+        of: find.byType(AlertDialog),
+        matching: find.byType(RawImage),
+      );
+      expect(await pixelsOf(editor), listPixels);
+      final outline = find.widgetWithText(
+        SwitchListTile,
+        l10n.watermarkOutlineLabel,
+      );
+      await tester.ensureVisible(outline);
+      await tester.tap(outline);
+      await pumpRealAsync(tester, const Duration(milliseconds: 300));
+      final adjusted = await pixelsOf(editor);
+      expect(_hasColor(adjusted, red), isFalse);
+      expect(_hasColor(adjusted, blue), isTrue);
+
+      final placed = (await tester.runAsync(
+        () => rasterizeWatermark(asset, 96, 96, imagePath: path),
+      ))!;
+      expect(_hasColor(placed, red), isTrue);
+      expect(_hasColor(placed, blue), isTrue);
+      expect(_hasColor(placed, green), isTrue);
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox.shrink());
+    },
+  );
 
   testWidgets('invalid images and blank text do not create a watermark', (
     tester,

@@ -1,12 +1,15 @@
 import 'package:niarim/services/theme_service.dart';
 
-import 'dart:io';
+import 'dart:async';
+import 'dart:ui' as ui;
 
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart' show mapEquals;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../l10n/app_localizations.dart';
+import '../../engine/watermark_render.dart';
 import '../../models/bundled_fonts.dart';
 import '../../models/watermark_asset.dart';
 import '../../services/font_service.dart';
@@ -345,6 +348,23 @@ class WatermarkSettingsScreen extends StatelessWidget {
                       ),
                     ],
                   ),
+                  if (controller.text.trim().isNotEmpty)
+                    SizedBox(
+                      height: 100,
+                      child: _WatermarkPreview(
+                        service: service,
+                        asset: shadow.applyTo(
+                          WatermarkAsset(
+                            id: existing?.id ?? '',
+                            name: '',
+                            type: WatermarkAssetType.text,
+                            text: controller.text.trim(),
+                            textColor: selected.toARGB32(),
+                            fontFamily: fontFamily,
+                          ),
+                        ),
+                      ),
+                    ),
                   _buildShadowOutlineSection(context, l10n, shadow, setS),
                 ],
               ),
@@ -376,22 +396,16 @@ class WatermarkSettingsScreen extends StatelessWidget {
                           );
                         } else {
                           await service.updateAsset(
-                            existing.copyWith(
-                              text: text,
-                              textColor: selected.toARGB32(),
-                              fontFamily: fontFamily,
-                              name: WatermarkService.renamedTextWatermark(
-                                existing,
-                                text,
+                            shadow.applyTo(
+                              existing.copyWith(
+                                text: text,
+                                textColor: selected.toARGB32(),
+                                fontFamily: fontFamily,
+                                name: WatermarkService.renamedTextWatermark(
+                                  existing,
+                                  text,
+                                ),
                               ),
-                              shadowEnabled: shadow.shadowEnabled,
-                              shadowColor: shadow.shadowColor.toARGB32(),
-                              shadowOffsetX: shadow.shadowOffsetX,
-                              shadowOffsetY: shadow.shadowOffsetY,
-                              shadowBlur: shadow.shadowBlur,
-                              outlineEnabled: shadow.outlineEnabled,
-                              outlineColor: shadow.outlineColor.toARGB32(),
-                              outlineWidth: shadow.outlineWidth,
                             ),
                           );
                         }
@@ -438,6 +452,13 @@ class WatermarkSettingsScreen extends StatelessWidget {
                       border: const OutlineInputBorder(),
                     ),
                   ),
+                  SizedBox(
+                    height: 100,
+                    child: _WatermarkPreview(
+                      service: service,
+                      asset: shadow.applyTo(existing),
+                    ),
+                  ),
                   _buildShadowOutlineSection(context, l10n, shadow, setS),
                 ],
               ),
@@ -451,18 +472,12 @@ class WatermarkSettingsScreen extends StatelessWidget {
                 onPressed: () async {
                   if (!context.mounted || !_canEditNow(context)) return;
                   await service.updateAsset(
-                    existing.copyWith(
-                      name: nameController.text.trim().isEmpty
-                          ? existing.name
-                          : nameController.text.trim(),
-                      shadowEnabled: shadow.shadowEnabled,
-                      shadowColor: shadow.shadowColor.toARGB32(),
-                      shadowOffsetX: shadow.shadowOffsetX,
-                      shadowOffsetY: shadow.shadowOffsetY,
-                      shadowBlur: shadow.shadowBlur,
-                      outlineEnabled: shadow.outlineEnabled,
-                      outlineColor: shadow.outlineColor.toARGB32(),
-                      outlineWidth: shadow.outlineWidth,
+                    shadow.applyTo(
+                      existing.copyWith(
+                        name: nameController.text.trim().isEmpty
+                            ? existing.name
+                            : nameController.text.trim(),
+                      ),
                     ),
                   );
                   if (ctx.mounted) Navigator.pop(ctx);
@@ -647,6 +662,17 @@ class _ShadowOutlineState {
         outlineColor: Color(asset?.outlineColor ?? 0xFFFFFFFF),
         outlineWidth: asset?.outlineWidth ?? 3,
       );
+
+  WatermarkAsset applyTo(WatermarkAsset asset) => asset.copyWith(
+    shadowEnabled: shadowEnabled,
+    shadowColor: shadowColor.toARGB32(),
+    shadowOffsetX: shadowOffsetX,
+    shadowOffsetY: shadowOffsetY,
+    shadowBlur: shadowBlur,
+    outlineEnabled: outlineEnabled,
+    outlineColor: outlineColor.toARGB32(),
+    outlineWidth: outlineWidth,
+  );
 }
 
 class _WatermarkTile extends StatelessWidget {
@@ -673,55 +699,7 @@ class _WatermarkTile extends StatelessWidget {
           Expanded(
             child: InkWell(
               onTap: onTap,
-              child: asset.type == WatermarkAssetType.text
-                  ? Container(
-                      width: double.infinity,
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.surfaceContainerHighest,
-                      alignment: Alignment.center,
-                      padding: const EdgeInsets.all(8),
-                      child: Text(
-                        asset.text ?? '',
-                        style: TextStyle(
-                          color: Color(asset.textColor ?? 0xFFFFFFFF),
-                          fontFamily: asset.fontFamily,
-                          fontWeight: FontWeight.bold,
-                          shadows: [
-                            Shadow(
-                              color: ThemeService.activeColorScheme.onSurface
-                                  .withValues(alpha: 0.45),
-                              blurRadius: 3,
-                            ),
-                          ],
-                        ),
-                        textAlign: TextAlign.center,
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 3,
-                      ),
-                    )
-                  : FutureBuilder<String?>(
-                      future: service.pathOf(asset.id),
-                      builder: (context, snapshot) {
-                        final path = snapshot.data;
-                        if (path == null) {
-                          return Center(
-                            child: Icon(
-                              Icons.broken_image,
-                              color: Theme.of(
-                                context,
-                              ).colorScheme.onSurfaceVariant,
-                            ),
-                          );
-                        }
-                        return Container(
-                          color: Theme.of(
-                            context,
-                          ).colorScheme.surfaceContainerHighest,
-                          child: Image.file(File(path), fit: BoxFit.contain),
-                        );
-                      },
-                    ),
+              child: _WatermarkPreview(service: service, asset: asset),
             ),
           ),
           Padding(
@@ -742,6 +720,96 @@ class _WatermarkTile extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _WatermarkPreview extends StatefulWidget {
+  const _WatermarkPreview({required this.service, required this.asset});
+
+  final WatermarkService service;
+  final WatermarkAsset asset;
+
+  @override
+  State<_WatermarkPreview> createState() => _WatermarkPreviewState();
+}
+
+class _WatermarkPreviewState extends State<_WatermarkPreview> {
+  ui.Image? _image;
+  int _revision = 0;
+  bool _failed = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  @override
+  void didUpdateWidget(covariant _WatermarkPreview oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (!mapEquals(oldWidget.asset.toJson(), widget.asset.toJson())) _load();
+  }
+
+  Future<void> _load() async {
+    final revision = ++_revision;
+    final asset = widget.asset;
+    const width = 240;
+    const height = 144;
+    ui.Image? image;
+    try {
+      final path = asset.type == WatermarkAssetType.image
+          ? await widget.service.pathOf(asset.id)
+          : null;
+      final pixels = await rasterizeWatermark(
+        asset,
+        width,
+        height,
+        imagePath: path,
+        preview: true,
+      );
+      if (pixels != null && mounted && revision == _revision) {
+        final decoded = Completer<ui.Image>();
+        ui.decodeImageFromPixels(
+          pixels,
+          width,
+          height,
+          ui.PixelFormat.rgba8888,
+          decoded.complete,
+        );
+        image = await decoded.future;
+      }
+    } catch (error, stack) {
+      AppErrorReporter.record(error, stack);
+    }
+    if (!mounted || revision != _revision) {
+      image?.dispose();
+      return;
+    }
+    final previous = _image;
+    setState(() {
+      _image = image;
+      _failed = image == null;
+    });
+    previous?.dispose();
+  }
+
+  @override
+  void dispose() {
+    _image?.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return ColoredBox(
+      color: scheme.surfaceContainerHighest,
+      child: Center(
+        child: _failed
+            ? Icon(Icons.broken_image, color: scheme.onSurfaceVariant)
+            : RawImage(image: _image, fit: BoxFit.contain),
       ),
     );
   }

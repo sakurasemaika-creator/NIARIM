@@ -29,7 +29,7 @@ import '../../engine/filter_engine.dart';
 import '../../engine/layer_compositor.dart';
 import '../../engine/layer_keyframe_engine.dart';
 import '../../engine/layer_range_resolver.dart';
-import '../../engine/text_render.dart';
+import '../../engine/watermark_render.dart';
 import '../../engine/tile_manager.dart';
 import '../../engine/timeline_material.dart';
 import '../../engine/timeline_stack.dart';
@@ -47,7 +47,6 @@ import '../../models/timeline_marker.dart';
 import '../../models/material_asset.dart';
 import '../../models/pixel_color_mode.dart';
 import '../../models/scene.dart';
-import '../../models/text_object.dart';
 import '../../models/timeline_row_kind.dart';
 import '../../models/watermark_asset.dart';
 import '../../models/custom_automation.dart';
@@ -2322,21 +2321,13 @@ class _TimelineScreenState extends State<TimelineScreen> {
 
     const defaultAngle = 0.0;
     const defaultScale = 0.25;
-    final pixels = asset.type == WatermarkAssetType.text
-        ? await _rasterizeTextWatermark(
-            asset,
-            w,
-            h,
-            angle: defaultAngle,
-            scale: defaultScale,
-          )
-        : await _rasterizeImageWatermark(
-            asset,
-            w,
-            h,
-            angle: defaultAngle,
-            scale: defaultScale,
-          );
+    final pixels = await _rasterizeWatermark(
+      asset,
+      w,
+      h,
+      angle: defaultAngle,
+      scale: defaultScale,
+    );
     if (pixels == null || !mounted) return;
     // Rasterization may outlive the server entitlement lease.
     if (!context.read<PremiumService>().isFeatureAvailable(
@@ -2405,15 +2396,13 @@ class _TimelineScreenState extends State<TimelineScreen> {
     final tileManager = projectService.tileManagerOf(widget.projectId);
     final w = tileManager.canvasWidth;
     final h = tileManager.canvasHeight;
-    final pixels = asset.type == WatermarkAssetType.text
-        ? await _rasterizeTextWatermark(asset, w, h, angle: angle, scale: scale)
-        : await _rasterizeImageWatermark(
-            asset,
-            w,
-            h,
-            angle: angle,
-            scale: scale,
-          );
+    final pixels = await _rasterizeWatermark(
+      asset,
+      w,
+      h,
+      angle: angle,
+      scale: scale,
+    );
     if (pixels == null || !mounted) return null;
     if (!context.read<PremiumService>().isFeatureAvailable(
       PremiumFeature.watermark,
@@ -2421,171 +2410,40 @@ class _TimelineScreenState extends State<TimelineScreen> {
       showPremiumBanner(context, feature: PremiumFeature.watermark);
       return null;
     }
-    return _applyWatermarkEffects(pixels, w, h, asset);
+    return pixels;
   }
 
-  /// ウォーターマークのドロップシャドウ・縁取りを適用する。ウォーターマーク
-  /// 設定画面で予め設定できるようにしたドロップシャドウ・縁取りを、実際に
-  /// タイムラインへ配置する際のラスタライズ結果へ反映する。
-  /// 縁取りはFilterEngine.applyOutline（元の描画内容を保持したまま外周へ
-  /// リング状に描く）をそのまま使い、ドロップシャドウは元画像のシルエット
-  /// （アルファそのまま・RGBを影色に置換）をオフセット＋ガウスぼかしした
-  /// ものを下に敷いてから元画像を重ねて作る。
-  Uint8List _applyWatermarkEffects(
-    Uint8List pixels,
-    int w,
-    int h,
+  Future<Uint8List?> _rasterizeWatermark(
     WatermarkAsset asset,
-  ) {
-    var result = pixels;
-    if (asset.outlineEnabled) {
-      result = FilterEngine().applyOutline(
-        result,
-        w,
-        h,
-        color: asset.outlineColor,
-        widthPx: asset.outlineWidth,
+    int width,
+    int height, {
+    required double angle,
+    required double scale,
+  }) async {
+    final l10n = AppLocalizations.of(context)!;
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      final imagePath = asset.type == WatermarkAssetType.image
+          ? await context.read<WatermarkService>().pathOf(asset.id)
+          : null;
+      final pixels = await rasterizeWatermark(
+        asset,
+        width,
+        height,
+        imagePath: imagePath,
+        angle: angle,
+        scale: scale,
+      );
+      if (pixels != null) return pixels;
+    } catch (error, stack) {
+      AppErrorReporter.record(error, stack);
+    }
+    if (mounted && messenger.mounted) {
+      messenger.showSnackBar(
+        SnackBar(content: Text(l10n.watermarkImageImportFailed)),
       );
     }
-    if (asset.shadowEnabled) {
-      final silhouette = Uint8List(result.length);
-      final sa = (asset.shadowColor >> 24) & 0xFF;
-      final sr = (asset.shadowColor >> 16) & 0xFF;
-      final sg = (asset.shadowColor >> 8) & 0xFF;
-      final sb = asset.shadowColor & 0xFF;
-      final offX = asset.shadowOffsetX.round();
-      final offY = asset.shadowOffsetY.round();
-      for (int y = 0; y < h; y++) {
-        final sy = y - offY;
-        if (sy < 0 || sy >= h) continue;
-        for (int x = 0; x < w; x++) {
-          final sx = x - offX;
-          if (sx < 0 || sx >= w) continue;
-          final srcA = result[(sy * w + sx) * 4 + 3];
-          if (srcA == 0) continue;
-          final idx = (y * w + x) * 4;
-          silhouette[idx] = sr;
-          silhouette[idx + 1] = sg;
-          silhouette[idx + 2] = sb;
-          silhouette[idx + 3] = ((srcA * sa) / 255).round();
-        }
-      }
-      final blurred = asset.shadowBlur > 0
-          ? FilterEngine().applyGaussianBlur(silhouette, w, h, asset.shadowBlur)
-          : silhouette;
-      // 影の上に元画像（縁取り適用済みの場合はそれも含む）を重ねて合成する。
-      final composited = Uint8List.fromList(blurred);
-      for (int i = 0; i < composited.length; i += 4) {
-        final srcA = result[i + 3];
-        if (srcA == 0) continue;
-        if (srcA >= 255) {
-          composited[i] = result[i];
-          composited[i + 1] = result[i + 1];
-          composited[i + 2] = result[i + 2];
-          composited[i + 3] = 255;
-        } else {
-          // アルファブレンド（src over dst）
-          final invA = 255 - srcA;
-          composited[i] = ((result[i] * srcA + composited[i] * invA) / 255)
-              .round();
-          composited[i + 1] =
-              ((result[i + 1] * srcA + composited[i + 1] * invA) / 255).round();
-          composited[i + 2] =
-              ((result[i + 2] * srcA + composited[i + 2] * invA) / 255).round();
-          composited[i + 3] = (srcA + (composited[i + 3] * invA / 255))
-              .round()
-              .clamp(0, 255);
-        }
-      }
-      result = composited;
-    }
-    return result;
-  }
-
-  /// 画像ウォーターマークをキャンバス全体サイズのRGBAピクセルへラスタライズする。
-  /// 右下に配置する一般的なウォーターマーク位置をデフォルトとする。
-  /// [angle]は度数法での回転角、[scale]はキャンバス幅に対する大きさの倍率
-  /// （タイムラインでウォーターマークをタップすればいつでも変更できる）。
-  Future<Uint8List?> _rasterizeImageWatermark(
-    WatermarkAsset asset,
-    int w,
-    int h, {
-    double angle = 0,
-    double scale = 0.25,
-  }) async {
-    final watermarkService = context.read<WatermarkService>();
-    final path = await watermarkService.pathOf(asset.id);
-    if (path == null || !mounted) return null;
-
-    final bytes = await File(path).readAsBytes();
-    final codec = await ui.instantiateImageCodec(bytes);
-    final frame = await codec.getNextFrame();
-    codec.dispose();
-    final image = frame.image;
-    if (!mounted) {
-      image.dispose();
-      return null;
-    }
-
-    final targetW = w * scale;
-    final imgScale = targetW / image.width;
-    final drawW = image.width * imgScale;
-    final drawH = image.height * imgScale;
-    const margin = 16.0;
-    final dx = w - drawW - margin;
-    final dy = h - drawH - margin;
-
-    final recorder = ui.PictureRecorder();
-    final canvas = ui.Canvas(recorder);
-    canvas.save();
-    canvas.translate(dx + drawW / 2, dy + drawH / 2);
-    canvas.rotate(angle * 3.1415926535 / 180);
-    canvas.translate(-(dx + drawW / 2), -(dy + drawH / 2));
-    canvas.drawImageRect(
-      image,
-      ui.Rect.fromLTWH(0, 0, image.width.toDouble(), image.height.toDouble()),
-      ui.Rect.fromLTWH(dx, dy, drawW, drawH),
-      ui.Paint(),
-    );
-    canvas.restore();
-    final picture = recorder.endRecording();
-    final rendered = await picture.toImage(w, h);
-    image.dispose();
-    final byteData = await rendered.toByteData(
-      format: ui.ImageByteFormat.rawRgba,
-    );
-    rendered.dispose();
-    return byteData?.buffer.asUint8List();
-  }
-
-  /// 文字入力ウォーターマークをキャンバス全体サイズのRGBAピクセルへ
-  /// ラスタライズする（設定項目：画像選択 / 文字入力）。
-  /// 既存のテキストレイヤー描画エンジン（text_render.dart）を再利用し、
-  /// 画像ウォーターマークと同様に右下へ配置する。フォント・[angle]（回転角）・
-  /// [scale]（大きさ倍率）はいずれもタイムラインでウォーターマークをタップ
-  /// すればいつでも変更できる。
-  Future<Uint8List?> _rasterizeTextWatermark(
-    WatermarkAsset asset,
-    int w,
-    int h, {
-    double angle = 0,
-    double scale = 0.25,
-  }) async {
-    final text = asset.text ?? '';
-    if (text.isEmpty) return null;
-    final fontSize = h * 0.18 * scale;
-    final color = ui.Color(asset.textColor ?? 0xFFFFFFFF);
-    final textObject = TextObject(
-      id: asset.id,
-      text: text,
-      fontSize: fontSize,
-      color: color,
-      fontFamily: asset.fontFamily ?? 'Roboto',
-      align: TextAlign.right,
-      rotation: angle,
-      position: Offset(w * 0.1, h - fontSize * 1.6 - h * 0.02),
-    );
-    return rasterizeTextObject(textObject, w, h);
+    return null;
   }
 
   // 移動・貼り付けモード中の吹き出しプレビュー
