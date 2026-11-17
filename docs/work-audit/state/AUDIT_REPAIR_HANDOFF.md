@@ -1443,3 +1443,11 @@ App・Web共通。Claudeが要修正の詳細を追記し、ユーザーが別�
 - **既知**：`font_coverage_test`の5件（組み込みテーマの名前の字が部分フォントに無い等、DISC394）。`l10n_unused_key_test`（未使用のARBのキーが66件、CLAUDE.mdの基準の失敗の内）。
 - **OK**：124件中115件成功。日本語・英語のまま残った文が無い（全7言語）、簡体字は“ ”‘ ’・繁体字は「」・英西仏に「」『』が無い、仏語の冠詞の省略・西語の性・韓国語の助詞・大文字小文字のそろい（`l10n_review_wording_test`）、既知の誤字が無い、画面の手書きの日本語の表が無い（ホーム・ダイアログ・設定）。
 - **未確認**：全キーの意味・語調の逆翻訳による照合、日付・時刻・数の書き方の画面ごとの実表示、Webの規約・ストアの文との一致（A105以降）。
+
+### A103（一巡目、Claude・S40、判定：OK〔test・静的〕／実機の性能は未確認）
+
+- **確認SHA・環境**：今の`57c7f44c`。`flutter analyze`は0件。性能・負荷のtest 6ファイル（`brush_size_memory`・`home_resize_scroll_memory`・`home_works_large_collection`・`keep_together_text_relayout_cost`・`save_tree_large_branch_stress`・`save_tree_lazy_list`）は26件とも成功。
+- **新規の要修正なし**。
+- **既知（この一巡目の記録）**：起動処理が型の違う保存で止まる（DISC428）、2万件の作品の性能（DISC178・182）。
+- **資産の大きさ**：`assets`は43MBで、ほぼ`assets/fonts`（42MB）：くらむぼん15.6MB・Noto Serif JP 13.6MB・白光明朝7.8MB・Dela Gothic One 2.5MB・韓国語と簡体字の部分フォント計4.1MB。どれも`pubspec.yaml`に役目（本文・見出し・その代替）と同梱の理由が書かれ、`font_fallback.dart`・共有カードの画像から使われている。テキストツール用の他のフォントは「フォント管理」から後で取得する方式（同梱しない）。
+- **未確認（実機）**：低・中・高の端末での起動時間・フレーム時間・メモリ、長い動画の書き出し・取り消し・再試行、多数のレイヤー・素材、裏へ回ってから戻る、APKの大きさ（R8・`shrinkResources`後）。
