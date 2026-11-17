@@ -675,3 +675,16 @@ App・Web共通。Claudeが要修正の詳細を追記し、ユーザーが別�
   - test：`custom_automation_service_test`・`custom_automation_draft_reorder_test`・`custom_automation_discrete_step_test`・`custom_automation_manager_dialog_lifecycle_test`・`custom_automation_executor_test`・`custom_automation_frame_scope_test`で35件、`custom_automation_management_capture_test`・`custom_automation_interaction_capture_test`で3件成功。操作の流れ（記録・並べ替え・手の編集・名前の変更・お気に入り・削除）は`interaction-proof.txt`ですべてtrue。
 - **気づいた点（DISCにしない）**：プレミアムの案内の見出しは「最大2時間の制作・全編書き出し」で、押した機能（自動操作）の名前が出ない（プレミアムの画面の項目A088で確かめる）。
 - **未確認**：プレミアムでの実操作のすべて（記録の開始・停止・再開、未対応の操作の扱い、値の操作のまとめ、取り消し、読み込み・書き出し、ショートカット、キャンバス・タイムラインの両方）。
+
+### A044（一巡目、Claude・S40、判定：OK〔testとコード〕・プレミアムの実操作は未確認）
+
+- **確認SHA**：`e9d53a6f`のtestとコード。環境の制約はA043と同じ（プレミアムにできないので実行の実操作はできない）。
+- **OK（コードとtest）**：
+  - キャンバスの実行（`custom_automation_executor.dart`の`executeCanvas`）は`ProjectService.editProjectWithAutomation`で1つの取り消しにまとまる。タイムラインの手の混ざった操作、1コマで記録していない操作の「指定コマ・全コマ」は断る（例外）。記録に無い命令は`UnsupportedError`で止まり、何番目の手かを持った`CustomAutomationExecutionException`になる。
+  - 途中で失敗したときは、そこまでの結果を残して1つの取り消しにし、失敗の知らせ（`customAutomationExecutionFailed`）を出す。成功の扱いにはしない（`failed recipes retain Undo and Redo for their partial output`のtestで決められた作り）。
+  - 指定コマで選んだレイヤーは、IDが無ければ名前、種類の中の順で探し直す（`_LayerAnchor`）。
+  - test：`custom_automation_executor_test`（11）・`custom_automation_frame_scope_test`ほか（A043で35件）と、`custom_automation_builtin_refresh_test`・`custom_automation_digital_lineart_step_evidence_test`・`custom_automation_labels_test`・`automation_presets_tips_sync_test`・`niatra_transfer_automation_names_test`で25件成功。
+- **気づいた点（DISCにしない）**：
+  - 失敗の知らせは何番目の手で止まったかを言わない（例外は手の番号を持っている）。
+  - 指定コマの範囲外の番号は黙って外し、全部外れたら何もせず知らせも出ない（範囲の入力欄が外の番号を通すかは未確認）。
+- **未確認**：プレミアムでの実行（今のコマ・指定コマ・全コマ・繰り返し・取り消し・やり直し・ロックしたレイヤー・レイヤーの足りないコマ・古い保存の読み込み）。
