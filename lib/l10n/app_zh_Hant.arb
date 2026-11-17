@@ -243,6 +243,7 @@
   "folderNameLabel": "資料夾名稱",
   "folderMoveToTitle": "移至資料夾",
   "folderNone": "無資料夾",
+  "creativeFolderDeleteBody": "要刪除「{name}」嗎？其中的素材會移到「無資料夾」。",
   "creativeAssetNameLabel": "名稱",
   "commonAdd": "新增",
   "commonSearch": "搜尋",

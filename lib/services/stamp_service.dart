@@ -576,7 +576,7 @@ class StampService extends ChangeNotifier {
 
   Future<StampFolder> createFolder(String name) async {
     final folder = StampFolder(
-      id: 'StampFolder${DateTime.now().millisecondsSinceEpoch}',
+      id: 'StampFolder${DateTime.now().microsecondsSinceEpoch}',
       name: name,
     );
     _folders.add(folder);
@@ -585,12 +585,12 @@ class StampService extends ChangeNotifier {
     return folder;
   }
 
-  void renameFolder(String id, String name) {
+  Future<void> renameFolder(String id, String name) async {
     final idx = _folders.indexWhere((f) => f.id == id);
     if (idx < 0) return;
     _folders[idx] = _folders[idx].copyWith(name: name);
     notifyListeners();
-    _persistFolders();
+    await _persistFolders();
   }
 
   void toggleFolderFavorite(String id) {
@@ -611,22 +611,38 @@ class StampService extends ChangeNotifier {
     _persistFolders();
   }
 
-  void deleteFolder(String id) {
+  Future<void> deleteFolder(String id) async {
     _folders.removeWhere((f) => f.id == id);
     for (int i = 0; i < _stamps.length; i++) {
       if (_stamps[i].folderId == id) {
-        _stamps[i] = _stamps[i].copyWith(folderId: null);
+        _stamps[i] = _stamps[i].copyWith(clearFolder: true);
       }
     }
+    final current = _currentStamp;
+    if (current != null && current.folderId == id) {
+      _currentStamp = current.copyWith(clearFolder: true);
+    }
     notifyListeners();
-    _persistFolders();
-    _persist();
+    // Persist the members first. If interrupted, an existing folder can
+    // still be opened and deleted again.
+    await _persist();
+    await _persistFolders();
   }
 
   void moveToFolder(String stampId, String? folderId) {
     final idx = _stamps.indexWhere((s) => s.id == stampId);
     if (idx < 0) return;
-    _stamps[idx] = _stamps[idx].copyWith(folderId: folderId);
+    _stamps[idx] = _stamps[idx].copyWith(
+      folderId: folderId,
+      clearFolder: folderId == null,
+    );
+    final current = _currentStamp;
+    if (current != null && current.id == stampId) {
+      _currentStamp = current.copyWith(
+        folderId: folderId,
+        clearFolder: folderId == null,
+      );
+    }
     notifyListeners();
     _persist();
   }

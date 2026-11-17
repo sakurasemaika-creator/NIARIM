@@ -243,6 +243,7 @@
   "folderNameLabel": "文件夹名称",
   "folderMoveToTitle": "移至文件夹",
   "folderNone": "无文件夹",
+  "creativeFolderDeleteBody": "要删除“{name}”吗？其中的素材将移到“无文件夹”。",
   "creativeAssetNameLabel": "名称",
   "commonAdd": "添加",
   "commonSearch": "搜索",

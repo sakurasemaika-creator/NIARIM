@@ -109,6 +109,10 @@ void main() {
                 child: Wrap(
                   children: [
                     FilledButton(onPressed: () {}, child: const Text('塗り')),
+                    FilledButton.tonal(
+                      onPressed: () {},
+                      child: const Text('淡い塗り'),
+                    ),
                     TextButton(onPressed: () {}, child: const Text('文字')),
                     OutlinedButton(onPressed: () {}, child: const Text('枠')),
                     ElevatedButton(onPressed: () {}, child: const Text('浮き')),
@@ -140,13 +144,16 @@ void main() {
       return null;
     }
 
-    for (final label in ['塗り', '文字', '枠', '浮き', '文字つきの浮き']) {
+    for (final label in ['塗り', '淡い塗り', '文字', '枠', '浮き', '文字つきの浮き']) {
       final style = spanStyle(label);
       expect(style, isNotNull, reason: '$labelのラベルが見つからない');
       expect(style!.fontFamily, 'Kuramubon', reason: '$labelのボタン');
       // 見出し用の代替列（明朝を含まない）。
       expect(style.fontFamilyFallback, kHeadingFontFallback, reason: label);
     }
+
+    expect(spanStyle('塗り')?.color, theme.colorScheme.onPrimary);
+    expect(spanStyle('淡い塗り')?.color, theme.colorScheme.onSecondaryContainer);
 
     ScaffoldMessenger.of(ctx).showSnackBar(
       SnackBar(

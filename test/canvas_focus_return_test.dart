@@ -7,7 +7,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/screens/canvas/canvas_screen.dart';
+import 'package:niarim/screens/canvas/widgets/brush_panel.dart';
 import 'package:niarim/screens/canvas/widgets/canvas_area.dart';
+import 'package:niarim/screens/canvas/widgets/stamp_panel.dart';
+import 'package:niarim/screens/canvas/widgets/tone_panel.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:niarim/widgets/typing_aware_shortcuts.dart';
 import 'package:provider/provider.dart';
@@ -34,6 +37,71 @@ void main() {
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(pathChannel, null);
     if (tempDir.existsSync()) tempDir.deleteSync(recursive: true);
+  });
+
+  testWidgets('asset searches take focus from the canvas shortcuts', (
+    tester,
+  ) async {
+    final providers = (await tester.runAsync(buildAppProviders))!;
+    final screenFocus = FocusNode();
+    addTearDown(screenFocus.dispose);
+    var selectAllCalls = 0;
+    for (final panel in [
+      BrushPanel(dockedMode: true, onClose: () {}),
+      TonePanel(onClose: () {}),
+      StampPanel(onClose: () {}),
+    ]) {
+      await tester.pumpWidget(
+        MultiProvider(
+          providers: providers,
+          child: MaterialApp(
+            locale: const Locale('ja'),
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: Scaffold(
+              body: TypingAwareShortcuts(
+                screenFocus: screenFocus,
+                bindings: {
+                  const SingleActivator(
+                    LogicalKeyboardKey.keyA,
+                    control: true,
+                  ): () =>
+                      selectAllCalls++,
+                },
+                child: Focus(focusNode: screenFocus, child: panel),
+              ),
+            ),
+          ),
+        ),
+      );
+      screenFocus.requestFocus();
+      await tester.pump();
+      final l10n = AppLocalizations.of(tester.element(find.byWidget(panel)))!;
+      await tester.tap(find.byTooltip(l10n.creativePanelSearchTooltip));
+      await tester.pumpAndSettle();
+      final input = find.byKey(const ValueKey('asset-search-input'));
+      expect(
+        TypingAwareShortcuts.isTyping,
+        isTrue,
+        reason: '${panel.runtimeType}',
+      );
+      expect(tester.testTextInput.hasAnyClients, isTrue);
+      tester.testTextInput.enterText('zzz');
+      await tester.pump();
+      final controller = tester.widget<TextField>(input).controller!;
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.controlLeft);
+      await tester.sendKeyEvent(LogicalKeyboardKey.keyA);
+      await tester.sendKeyUpEvent(LogicalKeyboardKey.controlLeft);
+      expect(controller.text, 'zzz');
+      expect(
+        controller.selection,
+        const TextSelection(baseOffset: 0, extentOffset: 3),
+      );
+      expect(selectAllCalls, 0);
+      await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+      await tester.pumpAndSettle();
+      expect(input, findsNothing);
+    }
   });
 
   for (final kind in [PointerDeviceKind.touch, PointerDeviceKind.mouse]) {

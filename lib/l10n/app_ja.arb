@@ -390,6 +390,12 @@
   "folderNameLabel": "フォルダ名",
   "folderMoveToTitle": "フォルダへ移動",
   "folderNone": "フォルダなし",
+  "creativeFolderDeleteBody": "「{name}」を削除しますか？中の素材は「フォルダなし」に移動します。",
+  "@creativeFolderDeleteBody": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
   "creativeAssetNameLabel": "名前",
   "commonAdd": "追加",
   "commonSearch": "検索",

@@ -753,6 +753,11 @@ class AppLocalizationsJa extends AppLocalizations {
   String get folderNone => 'フォルダなし';
 
   @override
+  String creativeFolderDeleteBody(String name) {
+    return '「$name」を削除しますか？中の素材は「フォルダなし」に移動します。';
+  }
+
+  @override
   String get creativeAssetNameLabel => '名前';
 
   @override

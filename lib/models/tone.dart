@@ -35,6 +35,7 @@ class Tone {
     bool? pixelMode,
     bool? isFavorite,
     String? folderId,
+    bool clearFolder = false,
     List<String>? tags,
   }) {
     return Tone(
@@ -44,7 +45,7 @@ class Tone {
       texturePath: texturePath ?? this.texturePath,
       pixelMode: pixelMode ?? this.pixelMode,
       isFavorite: isFavorite ?? this.isFavorite,
-      folderId: folderId ?? this.folderId,
+      folderId: clearFolder ? null : (folderId ?? this.folderId),
       tags: tags ?? this.tags,
     );
   }

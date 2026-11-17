@@ -27,6 +27,7 @@ void main() {
   setUp(() {
     SharedPreferences.setMockInitialValues({});
     final dir = Directory.systemTemp.createTempSync('niarim_text_scale');
+    addTearDown(() => dir.deleteSync(recursive: true));
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(
           const MethodChannel('plugins.flutter.io/path_provider'),
@@ -38,6 +39,7 @@ void main() {
   /// 内容を文字列として返す（空なら問題なし）。
   Future<List<String>> visitScreens(WidgetTester tester, double scale) async {
     final problems = <String>[];
+    var route = '起動';
     final original = FlutterError.onError;
     FlutterError.onError = (details) {
       final s = details.toString();
@@ -51,134 +53,143 @@ void main() {
           s
               .split('\n')
               .firstWhere((l) => l.contains('thrown'), orElse: () => 'レイアウト例外');
-      problems.add('${where?.group(1) ?? "場所不明"}: $what');
+      problems.add('$route ${where?.group(1) ?? "場所不明"}: $what');
     };
-    // 一般的なスマホ相当（360×760dp）。狭い端末ほど文字拡大の影響が出る。
-    tester.view.physicalSize = const Size(1080, 2280);
-    tester.view.devicePixelRatio = 3.0;
-    addTearDown(tester.view.resetPhysicalSize);
-    addTearDown(tester.view.resetDevicePixelRatio);
+    try {
+      // 一般的なスマホ相当（360×760dp）。狭い端末ほど文字拡大の影響が出る。
+      tester.view.physicalSize = const Size(1080, 2280);
+      tester.view.devicePixelRatio = 3.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      tester.platformDispatcher.textScaleFactorTestValue = scale;
+      addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
 
-    final providers = await tester.runAsync(buildAppProviders);
-    await tester.pumpWidget(
-      MediaQuery(
-        data: MediaQueryData(textScaler: TextScaler.linear(scale)),
-        child: MultiProvider(providers: providers!, child: const NiarimApp()),
-      ),
-    );
-    await tester.pump(const Duration(milliseconds: 500));
+      final providers = await tester.runAsync(buildAppProviders);
+      await tester.pumpWidget(
+        MultiProvider(providers: providers!, child: const NiarimApp()),
+      );
+      await tester.pump(const Duration(milliseconds: 500));
 
-    final createButton = find.byIcon(Icons.brush_outlined);
-    if (createButton.evaluate().isNotEmpty) {
-      await tester.tap(createButton);
-      await tester.pump(const Duration(milliseconds: 400));
-      final start = find.byKey(const Key('tutorialSkip'));
-      if (start.evaluate().isNotEmpty) {
-        await tester.tap(start);
+      final createButton = find.byIcon(Icons.brush_outlined);
+      if (createButton.evaluate().isNotEmpty) {
+        await tester.tap(createButton);
         await tester.pump(const Duration(milliseconds: 400));
-      }
-    }
-
-    // id付きルートも巡回できるようプロジェクトを1件用意する。
-    final ctx = tester.element(find.byType(Navigator).first);
-    final projectService = ctx.read<ProjectService>();
-    await tester.runAsync(
-      () => projectService.createProject(
-        name: 'text-scale',
-        fps: 24,
-        durationSeconds: 5,
-        backgroundColor: 0xFFFFFFFF,
-      ),
-    );
-    await tester.pump(const Duration(milliseconds: 300));
-    final projectId = projectService.projects.first.id;
-
-    for (final route in <String>[
-      '/',
-      '/home',
-      '/shared',
-      '/trash',
-      '/community',
-      '/new-project',
-      '/project/$projectId',
-      '/canvas/$projectId',
-      '/timeline/$projectId',
-      '/export/$projectId',
-      '/save-tree/$projectId',
-      '/materials/$projectId',
-      '/settings',
-      '/settings/gestures',
-      '/settings/shortcuts',
-      '/settings/performance',
-      '/settings/pen',
-      '/settings/bucket',
-      '/settings/workspace',
-      '/settings/transfer',
-      '/settings/theme',
-      '/settings/watermark',
-      '/settings/fonts',
-      '/settings/license',
-      '/settings/privacy-policy',
-      '/settings/error-log',
-      '/help',
-      '/tips',
-      '/premium',
-      '/autofill-presets',
-      '/storage',
-    ]) {
-      appRouter.go(route);
-      await tester.pump(const Duration(milliseconds: 400));
-      await tester.pump(const Duration(milliseconds: 400));
-      if (route == '/project/$projectId') {
-        final fullscreen = find.byKey(
-          const Key('projectDetailFullscreenButton'),
-        );
-        expect(fullscreen, findsOneWidget);
-        await tester.tap(fullscreen);
-        await tester.pumpAndSettle();
-        for (final size in [
-          const Size(1080, 660),
-          const Size(960, 660),
-          const Size(960, 480),
-          const Size(1080, 2280),
-        ]) {
-          tester.view.physicalSize = size;
-          await tester.pumpAndSettle();
-          expect(
-            tester
-                .getSize(find.byKey(const Key('projectDetailFullscreenImage')))
-                .height,
-            greaterThanOrEqualTo(64),
-          );
-          final loop = find.byKey(const Key('projectDetailLoopButton'));
-          await tester.ensureVisible(loop);
-          await tester.pumpAndSettle();
-          expect(loop.hitTestable(), findsOneWidget);
-          final transport = find.byKey(
-            const Key('projectDetailFullscreenTransport'),
-          );
-          await tester.ensureVisible(transport);
-          await tester.pumpAndSettle();
-          expect(transport.hitTestable(), findsOneWidget);
+        final start = find.byKey(const Key('tutorialSkip'));
+        if (start.evaluate().isNotEmpty) {
+          await tester.tap(start);
+          await tester.pump(const Duration(milliseconds: 400));
         }
-        final exit = find.byKey(const Key('projectDetailFullscreenExit'));
-        await tester.ensureVisible(exit);
-        await tester.tap(exit);
-        await tester.pumpAndSettle();
-        expect(
-          find.byKey(const Key('projectDetailFullscreenImage')),
-          findsNothing,
-        );
       }
+
+      // id付きルートも巡回できるようプロジェクトを1件用意する。
+      final ctx = tester.element(find.byType(Navigator).first);
+      final projectService = ctx.read<ProjectService>();
+      await tester.runAsync(
+        () => projectService.createProject(
+          name: 'text-scale',
+          fps: 24,
+          durationSeconds: 5,
+          backgroundColor: 0xFFFFFFFF,
+        ),
+      );
+      await tester.pump(const Duration(milliseconds: 300));
+      final projectId = projectService.projects.first.id;
+
+      for (final path in <String>[
+        '/',
+        '/home',
+        '/shared',
+        '/trash',
+        '/community',
+        '/new-project',
+        '/project/$projectId',
+        '/canvas/$projectId',
+        '/timeline/$projectId',
+        '/export/$projectId',
+        '/save-tree/$projectId',
+        '/materials/$projectId',
+        '/settings',
+        '/settings/gestures',
+        '/settings/shortcuts',
+        '/settings/performance',
+        '/settings/pen',
+        '/settings/bucket',
+        '/settings/workspace',
+        '/settings/transfer',
+        '/settings/theme',
+        '/settings/watermark',
+        '/settings/fonts',
+        '/settings/license',
+        '/settings/privacy-policy',
+        '/settings/error-log',
+        '/help',
+        '/tips',
+        '/premium',
+        '/autofill-presets',
+        '/storage',
+      ]) {
+        route = path;
+        appRouter.go(route);
+        await tester.pump(const Duration(milliseconds: 400));
+        await tester.pump(const Duration(milliseconds: 400));
+        if (route == '/project/$projectId') {
+          final fullscreen = find.byKey(
+            const Key('projectDetailFullscreenButton'),
+          );
+          if (fullscreen.hitTestable().evaluate().length != 1) {
+            problems.add('$route 全画面再生を開けません');
+            continue;
+          }
+          await tester.tap(fullscreen);
+          await tester.pumpAndSettle();
+          for (final size in [
+            const Size(1080, 660),
+            const Size(960, 660),
+            const Size(960, 480),
+            const Size(1080, 2280),
+          ]) {
+            tester.view.physicalSize = size;
+            await tester.pumpAndSettle();
+            final image = find.byKey(const Key('projectDetailFullscreenImage'));
+            final height = image.evaluate().length == 1
+                ? tester.getSize(image).height
+                : 0.0;
+            if (height < 64) {
+              problems.add('$route $size 全画面の画像の高さ: $height');
+            }
+            for (final key in [
+              'projectDetailFullscreenLoopButton',
+              'projectDetailFullscreenTransport',
+            ]) {
+              final control = find.byKey(Key(key));
+              if (control.evaluate().length == 1) {
+                await tester.ensureVisible(control);
+                await tester.pumpAndSettle();
+              }
+              if (control.hitTestable().evaluate().length != 1) {
+                problems.add('$route $size $key を操作できません');
+              }
+            }
+          }
+          final exit = find.byKey(const Key('projectDetailFullscreenExit'));
+          if (exit.hitTestable().evaluate().length == 1) {
+            await tester.tap(exit);
+            await tester.pumpAndSettle();
+          }
+          if (find
+              .byKey(const Key('projectDetailFullscreenImage'))
+              .evaluate()
+              .isNotEmpty) {
+            problems.add('$route 全画面再生を閉じられません');
+          }
+        }
+      }
+      // 後続テストへ影響しないようホームへ戻す。
+      appRouter.go('/home');
+      await tester.pump(const Duration(milliseconds: 300));
+    } finally {
+      FlutterError.onError = original;
     }
-    // 後続テストへ影響しないようホームへ戻す。
-    appRouter.go('/home');
-    await tester.pump(const Duration(milliseconds: 300));
-    // expect()を呼ぶ前に必ずハンドラーを元へ戻す。戻さないまま
-    // expect()が失敗すると、flutter_test側が
-    // 「A test overrode FlutterError.onError but ... failed to return it
-    // to its original state」で停止してしまい、本来の失敗内容が読めなくなる。
-    FlutterError.onError = original;
     return problems;
   }
 

@@ -243,6 +243,7 @@
   "folderNameLabel": "Nom du dossier",
   "folderMoveToTitle": "Déplacer vers un dossier",
   "folderNone": "Aucun dossier",
+  "creativeFolderDeleteBody": "Supprimer « {name} » ? Son contenu sera déplacé vers « Aucun dossier ».",
   "creativeAssetNameLabel": "Nom",
   "commonAdd": "Ajouter",
   "commonSearch": "Rechercher",

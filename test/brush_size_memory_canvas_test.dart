@@ -11,6 +11,7 @@ import 'package:niarim/router.dart';
 import 'package:niarim/screens/canvas/canvas_screen.dart';
 import 'package:niarim/screens/canvas/widgets/brush_panel.dart';
 import 'package:niarim/screens/canvas/widgets/brush_size_slider.dart';
+import 'package:niarim/screens/canvas/widgets/canvas_area.dart';
 import 'package:niarim/screens/home/home_screen.dart';
 import 'package:niarim/services/brush_service.dart';
 import 'package:niarim/services/project_service.dart';
@@ -121,6 +122,33 @@ void main() {
     expect(slider().brushSize, 42);
     expect(slider().opacity, 35);
     expect(brushes.currentBrush!.size, 42);
+
+    Future<void> selectTool(String tooltip) async {
+      final button = find.byTooltip(tooltip).hitTestable();
+      expect(button, findsOneWidget);
+      await tester.tap(button);
+      await tester.pump(const Duration(milliseconds: 350));
+      await tester.pumpAndSettle();
+    }
+
+    await selectTool(l10n.toolbarItemEraser);
+    await enter(0, '80');
+    await enter(1, '60');
+    expect(slider().brushSize, 80);
+    expect(slider().opacity, 60);
+    final area = tester.widget<CanvasArea>(find.byType(CanvasArea));
+    expect(area.toolBrushSize, 80);
+    expect(area.toolBrushOpacity, 60);
+    expect(brushes.currentBrush!.size, 42);
+    expect(brushes.currentBrush!.opacity, 35);
+
+    await selectTool(l10n.toolbarPenTooltip);
+    expect(slider().brushSize, 42);
+    expect(slider().opacity, 35);
+    await selectTool(l10n.toolbarItemEraser);
+    expect(slider().brushSize, 80);
+    expect(slider().opacity, 60);
+    await selectTool(l10n.toolbarPenTooltip);
 
     // 別のブラシへ切り替えるとそのブラシの値、戻ると覚えた値。
     brushes.selectBrush('Brush0001');

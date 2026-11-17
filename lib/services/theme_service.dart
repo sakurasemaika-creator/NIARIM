@@ -1103,7 +1103,7 @@ class ThemeService extends ChangeNotifier {
       // Keep the user's foreground tokens unchanged.
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
-          foregroundColor: scheme.onPrimary,
+          // Material chooses onPrimary or onSecondaryContainer per variant.
           minimumSize: const Size(64, 48),
           // ラベルが折り返したら上下に余白を取ってボタンを伸ばす（くらむぼんの
           // 字は行の外へ出るので、余白が0だと字が枠を越える）。

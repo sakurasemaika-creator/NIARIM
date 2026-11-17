@@ -437,6 +437,8 @@ class CanvasArea extends StatefulWidget {
   final bool isEraser;
   final DrawingTool currentTool;
   final PenSubTool currentSubTool;
+  final double? toolBrushSize;
+  final int? toolBrushOpacity;
   final bool lassoFillEnclosedMode;
   final OnionSkinSettings onionSkinSettings;
   final int currentFrame;
@@ -552,6 +554,8 @@ class CanvasArea extends StatefulWidget {
     this.isEraser = false,
     this.currentTool = DrawingTool.pen,
     this.currentSubTool = PenSubTool.brush,
+    this.toolBrushSize,
+    this.toolBrushOpacity,
     this.lassoFillEnclosedMode = false,
     this.onionSkinSettings = const OnionSkinSettings(),
     this.currentFrame = 0,
@@ -1396,7 +1400,14 @@ class _CanvasAreaState extends State<CanvasArea> {
   void _syncBrushAndColor() {
     final bs = context.read<BrushService>();
     final settings = context.read<SettingsService>();
-    _drawingEngine.currentBrush = bs.currentBrush;
+    final brush = bs.currentBrush;
+    _drawingEngine.currentBrush =
+        widget.toolBrushSize != null || widget.toolBrushOpacity != null
+        ? brush?.copyWith(
+            size: widget.toolBrushSize,
+            opacity: widget.toolBrushOpacity,
+          )
+        : brush;
     _drawingEngine.pressureEnabled = settings.penPressureEnabled;
     final c = bs.currentColor;
     _drawingEngine.currentColor = ui.Color.fromARGB(
@@ -2264,7 +2275,9 @@ class _CanvasAreaState extends State<CanvasArea> {
     final tone = toneService.currentTone;
     if (tone == null) return;
     final bs = context.read<BrushService>();
-    final brushSize = bs.currentBrush?.size ?? 20;
+    final brushSize = widget.toolBrushSize ?? bs.currentBrush?.size ?? 20;
+    final brushOpacity =
+        widget.toolBrushOpacity ?? bs.currentBrush?.opacity ?? 100;
     _beginTileUndo();
     final key = _tileKeyFor(_layerId);
     final w = _tileManager.canvasWidth;
@@ -2298,7 +2311,7 @@ class _CanvasAreaState extends State<CanvasArea> {
       toneTexture: texture,
       toneWidth: toneSize,
       toneHeight: toneSize,
-      opacity: bs.currentBrush?.opacity ?? 100,
+      opacity: brushOpacity,
     ));
     if (!mounted) return;
     _tileManager.replaceLayerPixels(key, result);
@@ -2317,7 +2330,7 @@ class _CanvasAreaState extends State<CanvasArea> {
     final stamp = stampService.currentStamp;
     if (stamp == null) return;
     final bs = context.read<BrushService>();
-    final stampSize = bs.currentBrush?.size ?? 40;
+    final stampSize = widget.toolBrushSize ?? bs.currentBrush?.size ?? 40;
     final color = bs.currentColor;
     _beginTileUndo();
     final key = _tileKeyFor(_layerId);
@@ -2556,7 +2569,9 @@ class _CanvasAreaState extends State<CanvasArea> {
       return;
     }
     final bs = context.read<BrushService>();
-    final brushSize = bs.currentBrush?.size ?? 20;
+    final brushSize = widget.toolBrushSize ?? bs.currentBrush?.size ?? 20;
+    final brushOpacity =
+        widget.toolBrushOpacity ?? bs.currentBrush?.opacity ?? 100;
     final key = _tileKeyFor(_layerId);
     final w = _tileManager.canvasWidth;
     final h = _tileManager.canvasHeight;
@@ -2600,7 +2615,7 @@ class _CanvasAreaState extends State<CanvasArea> {
       toneTexture: texture,
       toneWidth: toneSize,
       toneHeight: toneSize,
-      opacity: bs.currentBrush?.opacity ?? 100,
+      opacity: brushOpacity,
     ));
     if (!mounted) return;
     _tileManager.replaceLayerPixels(key, result);
@@ -3542,7 +3557,10 @@ class _CanvasAreaState extends State<CanvasArea> {
   void _applyBlurMosaic(Offset center) {
     final w = _tileManager.canvasWidth;
     final h = _tileManager.canvasHeight;
-    final brushSize = context.read<BrushService>().currentBrush?.size ?? 20;
+    final brushSize =
+        widget.toolBrushSize ??
+        context.read<BrushService>().currentBrush?.size ??
+        20;
     final radius = (brushSize * 1.5).round().clamp(4, 300);
     final isMosaic = widget.currentTool == DrawingTool.mosaic;
     final cx = center.dx.round();
@@ -3619,7 +3637,10 @@ class _CanvasAreaState extends State<CanvasArea> {
   void _applyFingerWarp(Uint8List buffer, Offset center, Offset delta) {
     final w = _tileManager.canvasWidth;
     final h = _tileManager.canvasHeight;
-    final brushSize = context.read<BrushService>().currentBrush?.size ?? 20;
+    final brushSize =
+        widget.toolBrushSize ??
+        context.read<BrushService>().currentBrush?.size ??
+        20;
     final radius = brushSize * 1.5;
     if (radius < 2) return;
     final minX = (center.dx - radius).floor().clamp(0, w - 1);

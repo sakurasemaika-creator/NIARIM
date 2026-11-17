@@ -756,6 +756,11 @@ class AppLocalizationsKo extends AppLocalizations {
   String get folderNone => '폴더 없음';
 
   @override
+  String creativeFolderDeleteBody(String name) {
+    return '「$name」 폴더를 삭제하시겠습니까? 안에 있는 소재는 「폴더 없음」으로 이동합니다.';
+  }
+
+  @override
   String get creativeAssetNameLabel => '이름';
 
   @override

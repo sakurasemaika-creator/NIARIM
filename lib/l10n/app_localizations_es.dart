@@ -789,6 +789,11 @@ class AppLocalizationsEs extends AppLocalizations {
   String get folderNone => 'Sin carpeta';
 
   @override
+  String creativeFolderDeleteBody(String name) {
+    return '¿Eliminar «$name»? Su contenido se moverá a «Sin carpeta».';
+  }
+
+  @override
   String get creativeAssetNameLabel => 'Nombre';
 
   @override

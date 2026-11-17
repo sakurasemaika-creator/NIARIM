@@ -939,7 +939,7 @@ class ToneService extends ChangeNotifier {
 
   Future<ToneFolder> createFolder(String name) async {
     final folder = ToneFolder(
-      id: 'ToneFolder${DateTime.now().millisecondsSinceEpoch}',
+      id: 'ToneFolder${DateTime.now().microsecondsSinceEpoch}',
       name: name,
     );
     _folders.add(folder);
@@ -948,12 +948,12 @@ class ToneService extends ChangeNotifier {
     return folder;
   }
 
-  void renameFolder(String id, String name) {
+  Future<void> renameFolder(String id, String name) async {
     final idx = _folders.indexWhere((f) => f.id == id);
     if (idx < 0) return;
     _folders[idx] = _folders[idx].copyWith(name: name);
     notifyListeners();
-    _persistFolders();
+    await _persistFolders();
   }
 
   void toggleFolderFavorite(String id) {
@@ -974,22 +974,38 @@ class ToneService extends ChangeNotifier {
     _persistFolders();
   }
 
-  void deleteFolder(String id) {
+  Future<void> deleteFolder(String id) async {
     _folders.removeWhere((f) => f.id == id);
     for (int i = 0; i < _tones.length; i++) {
       if (_tones[i].folderId == id) {
-        _tones[i] = _tones[i].copyWith(folderId: null);
+        _tones[i] = _tones[i].copyWith(clearFolder: true);
       }
     }
+    final current = _currentTone;
+    if (current != null && current.folderId == id) {
+      _currentTone = current.copyWith(clearFolder: true);
+    }
     notifyListeners();
-    _persistFolders();
-    _persist();
+    // Persist the members first. If interrupted, an existing folder can
+    // still be opened and deleted again.
+    await _persist();
+    await _persistFolders();
   }
 
   void moveToFolder(String toneId, String? folderId) {
     final idx = _tones.indexWhere((t) => t.id == toneId);
     if (idx < 0) return;
-    _tones[idx] = _tones[idx].copyWith(folderId: folderId);
+    _tones[idx] = _tones[idx].copyWith(
+      folderId: folderId,
+      clearFolder: folderId == null,
+    );
+    final current = _currentTone;
+    if (current != null && current.id == toneId) {
+      _currentTone = current.copyWith(
+        folderId: folderId,
+        clearFolder: folderId == null,
+      );
+    }
     notifyListeners();
     _persist();
   }

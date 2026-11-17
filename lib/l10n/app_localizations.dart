@@ -1443,6 +1443,12 @@ abstract class AppLocalizations {
   /// **'フォルダなし'**
   String get folderNone;
 
+  /// No description provided for @creativeFolderDeleteBody.
+  ///
+  /// In ja, this message translates to:
+  /// **'「{name}」を削除しますか？中の素材は「フォルダなし」に移動します。'**
+  String creativeFolderDeleteBody(String name);
+
   /// No description provided for @creativeAssetNameLabel.
   ///
   /// In ja, this message translates to:

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../widgets/confirm_delete.dart';
 import '../../../widgets/dispose_on_unmount.dart';
+import '../../../widgets/name_entry_dialog.dart';
 import '../../../config/font_fallback.dart';
 import '../../../utils/reorder_index.dart';
 import '../../../widgets/scrollable_sheet_body.dart';
@@ -19,11 +20,25 @@ void showFolderManagementSheet(
   required List<({String id, String name, bool isFavorite})> Function()
   getFolders,
   required Future<void> Function(String name) onCreate,
-  required void Function(String id, String name) onRename,
+  required Future<void> Function(String id, String name) onRename,
   required void Function(String id) onToggleFavorite,
   required void Function(int oldIndex, int newIndex) onReorder,
-  required void Function(String id) onDelete,
+  required Future<void> Function(String id) onDelete,
 }) {
+  String uniqueName(String name, {String? exceptId}) {
+    final used = {
+      for (final folder in getFolders())
+        if (folder.id != exceptId) folder.name,
+    };
+    if (!used.contains(name)) return name;
+    final match = RegExp(r'^(.*) \((\d+)\)$').firstMatch(name);
+    final base = match?.group(1) ?? name;
+    for (var n = (int.tryParse(match?.group(2) ?? '') ?? 1) + 1; ; n++) {
+      final candidate = '$base ($n)';
+      if (!used.contains(candidate)) return candidate;
+    }
+  }
+
   showModalBottomSheet(
     context: context,
     isScrollControlled: true,
@@ -55,13 +70,21 @@ void showFolderManagementSheet(
                       icon: const Icon(Icons.create_new_folder, size: 18),
                       label: Text(l10n.folderManagementCreateNew),
                       onPressed: () async {
-                        final name = await _promptFolderName(
-                          ctx,
-                          title: l10n.homeAddSheetNewFolder,
+                        await showDialog<void>(
+                          context: ctx,
+                          barrierDismissible: false,
+                          builder: (_) => NameEntryDialog(
+                            title: l10n.homeAddSheetNewFolder,
+                            labelText: l10n.folderNameLabel,
+                            confirmLabel: l10n.commonCreate,
+                            cancelLabel: l10n.commonCancel,
+                            failureText: (_) => l10n.folderCreateFailed,
+                            onSubmit: (name) async {
+                              await onCreate(uniqueName(name));
+                              if (ctx.mounted) setSheetState(() {});
+                            },
+                          ),
                         );
-                        if (name == null || name.trim().isEmpty) return;
-                        await onCreate(name.trim());
-                        setSheetState(() {});
                       },
                     ),
                   ],
@@ -117,14 +140,26 @@ void showFolderManagementSheet(
                             icon: const Icon(Icons.edit_outlined, size: 18),
                             tooltip: l10n.commonRename,
                             onPressed: () async {
-                              final name = await _promptFolderName(
-                                ctx,
-                                title: l10n.commonRename,
-                                initial: f.name,
+                              await showDialog<void>(
+                                context: ctx,
+                                barrierDismissible: false,
+                                builder: (_) => NameEntryDialog(
+                                  title: l10n.commonRename,
+                                  labelText: l10n.folderNameLabel,
+                                  initialName: f.name,
+                                  confirmLabel: l10n.commonRename,
+                                  cancelLabel: l10n.commonCancel,
+                                  failureText: (_) =>
+                                      l10n.folderChangesSaveFailed,
+                                  onSubmit: (name) async {
+                                    await onRename(
+                                      f.id,
+                                      uniqueName(name, exceptId: f.id),
+                                    );
+                                    if (ctx.mounted) setSheetState(() {});
+                                  },
+                                ),
                               );
-                              if (name == null || name.trim().isEmpty) return;
-                              onRename(f.id, name.trim());
-                              setSheetState(() {});
                             },
                           ),
                           IconButton(
@@ -146,11 +181,17 @@ void showFolderManagementSheet(
                                 );
                                 return;
                               }
-                              if (!await confirmDelete(ctx, itemName: f.name)) {
+                              if (!await confirmDelete(
+                                    ctx,
+                                    message: l10n.creativeFolderDeleteBody(
+                                      f.name,
+                                    ),
+                                  ) ||
+                                  !ctx.mounted) {
                                 return;
                               }
-                              onDelete(f.id);
-                              setSheetState(() {});
+                              await onDelete(f.id);
+                              if (ctx.mounted) setSheetState(() {});
                             },
                           ),
                           ReorderableDragStartListener(
@@ -167,45 +208,6 @@ void showFolderManagementSheet(
           ),
         );
       },
-    ),
-  );
-}
-
-Future<String?> _promptFolderName(
-  BuildContext context, {
-  required String title,
-  String? initial,
-}) {
-  final controller = TextEditingController(text: initial);
-  final l10n = AppLocalizations.of(context)!;
-  return showDialog<String>(
-    context: context,
-    builder: (ctx) => DisposeOnUnmount(
-      controller: controller,
-      builder: (ctx) => AlertDialog(
-        insetPadding: typingDialogInsetPadding(ctx),
-        title: Text(title),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          decoration: InputDecoration(
-            labelText: l10n.folderNameLabel,
-            border: const OutlineInputBorder(),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(l10n.commonCancel),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(ctx, controller.text),
-            child: Text(
-              initial == null ? l10n.commonCreate : l10n.commonRename,
-            ),
-          ),
-        ],
-      ),
     ),
   );
 }

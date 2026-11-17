@@ -787,6 +787,11 @@ class AppLocalizationsFr extends AppLocalizations {
   String get folderNone => 'Aucun dossier';
 
   @override
+  String creativeFolderDeleteBody(String name) {
+    return 'Supprimer « $name » ? Son contenu sera déplacé vers « Aucun dossier ».';
+  }
+
+  @override
   String get creativeAssetNameLabel => 'Nom';
 
   @override

@@ -100,7 +100,7 @@ void main() {
     await tester.tap(menu);
     await tester.pumpAndSettle();
     expect(find.text('サムネイル変更'), findsOneWidget);
-    expect(find.text('移動'), findsOneWidget);
+    expect(find.text('開く'), findsOneWidget);
     expect(find.text('共有'), findsOneWidget);
     expect(find.text('削除'), findsOneWidget);
     expect(tester.takeException(), isNull);
@@ -225,7 +225,7 @@ void main() {
     expect(find.byIcon(Icons.ios_share), findsNothing);
     await tester.tap(find.byKey(const Key('exportedWorkMoreMenu')));
     await tester.pumpAndSettle();
-    for (final name in ['開く', 'コピー', '移動', '共有', 'サムネイル変更', '削除']) {
+    for (final name in ['開く', '共有', 'サムネイル変更', '削除']) {
       expect(find.text(name), findsOneWidget, reason: name);
     }
     expect(tester.takeException(), isNull);

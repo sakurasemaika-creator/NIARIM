@@ -243,6 +243,7 @@
   "folderNameLabel": "폴더 이름",
   "folderMoveToTitle": "폴더로 이동",
   "folderNone": "폴더 없음",
+  "creativeFolderDeleteBody": "「{name}」 폴더를 삭제하시겠습니까? 안에 있는 소재는 「폴더 없음」으로 이동합니다.",
   "creativeAssetNameLabel": "이름",
   "commonAdd": "추가",
   "commonSearch": "검색",

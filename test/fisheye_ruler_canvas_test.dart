@@ -79,7 +79,7 @@ void main() {
     final undo = app_undo.UndoManager();
     projects.setUndoManager(undo);
     final brushes = BrushService();
-    await brushes.init();
+    await tester.runAsync(brushes.init);
     final p = (await tester.runAsync(
       () => projects.createProject(
         name: 'fisheye-ruler',

@@ -204,6 +204,7 @@ class Brush {
     bool? strokeDecay,
     bool? isFavorite,
     String? folderId,
+    bool clearFolder = false,
     String? customImagePath,
     List<String>? customImagePaths,
     BrushImageSelectionMode? customImageSelectionMode,
@@ -263,7 +264,7 @@ class Brush {
     fadeOut: fadeOut ?? this.fadeOut,
     strokeDecay: strokeDecay ?? this.strokeDecay,
     isFavorite: isFavorite ?? this.isFavorite,
-    folderId: folderId ?? this.folderId,
+    folderId: clearFolder ? null : (folderId ?? this.folderId),
     customImagePath: clearCustomImages
         ? null
         : customImagePath ?? this.customImagePath,

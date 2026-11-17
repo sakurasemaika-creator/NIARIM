@@ -72,7 +72,7 @@ void main() {
     expect(find.byKey(const Key('projectThumbnailFramePanel')), findsNothing);
 
     await tester.tap(find.byKey(const Key('projectThumbnailFrame')));
-    await tester.pump(const Duration(milliseconds: 250));
+    await tester.pumpAndSettle();
     expect(find.byKey(const Key('projectThumbnailFramePanel')), findsOneWidget);
     expect(
       find.byKey(const Key('projectThumbnailFramePreview')),
@@ -91,19 +91,66 @@ void main() {
 
     final last = find.byKey(const Key('projectThumbnailLastFrame'));
     await tester.ensureVisible(last);
+    await tester.pump();
+    expect(last.hitTestable(), findsOneWidget);
     await tester.tap(last);
     await tester.pump();
     final total = service.scenesOf(project!.id).first.frames.length;
-    expect(find.text('現在のフレーム: $total / $total'), findsOneWidget);
-    await tester.tap(find.byKey(const Key('projectThumbnailFirstFrame')));
+    final count = find.byKey(const Key('projectThumbnailFrameCount'));
+    final l10n = AppLocalizations.of(tester.element(count))!;
+    expect(
+      tester.widget<Text>(count).data,
+      l10n.thumbnailCurrentFrame(total, total),
+    );
+    final first = find.byKey(const Key('projectThumbnailFirstFrame'));
+    await tester.ensureVisible(first);
     await tester.pump();
-    expect(find.text('現在のフレーム: 1 / $total'), findsOneWidget);
+    expect(first.hitTestable(), findsOneWidget);
+    await tester.tap(first);
+    await tester.pump();
+    expect(
+      tester.widget<Text>(count).data,
+      l10n.thumbnailCurrentFrame(1, total),
+    );
 
-    await tester.tap(find.byKey(const Key('projectThumbnailNone')));
+    Future<void> apply() async {
+      await tester.runAsync(() async {
+        await tester.tap(find.byKey(const Key('projectThumbnailApply')));
+        for (
+          var i = 0;
+          i < 50 &&
+              find
+                  .byKey(const Key('projectThumbnailApply'))
+                  .evaluate()
+                  .isNotEmpty;
+          i++
+        ) {
+          await Future<void>.delayed(const Duration(milliseconds: 10));
+          await tester.pump(const Duration(milliseconds: 100));
+        }
+      });
+      await tester.pumpAndSettle();
+    }
+
+    await apply();
+    final selected = await tester.runAsync(
+      () => NiaproSerializer.load(
+        '${dir.path}/niarim/projects/${project.id}/${project.id}.niapro',
+      ),
+    );
+    expect(selected!.project.thumbnailMode, 'frame');
+    expect(selected.project.thumbnailFrameIndex, 0);
+
+    await tester.tap(find.text('Open picker'));
+    await tester.pumpAndSettle();
+    final none = find.byKey(const Key('projectThumbnailNone'));
+    await tester.ensureVisible(none);
+    await tester.pump();
+    expect(none.hitTestable(), findsOneWidget);
+    await tester.tap(none);
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('projectThumbnailFramePanel')), findsNothing);
-    await tester.tap(find.byKey(const Key('projectThumbnailApply')));
-    await tester.pumpAndSettle();
+    await apply();
     expect(service.projects.single.thumbnailMode, 'none');
     expect(service.projects.single.thumbnailPath, isNull);
 

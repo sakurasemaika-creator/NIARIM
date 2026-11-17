@@ -52,7 +52,6 @@ class _StampPanelState extends State<StampPanel> {
   String _searchQuery = '';
   final _searchController = TextEditingController();
   String? _folderFilter;
-  static const _allFolders = '__all__';
 
   @override
   void dispose() {
@@ -69,13 +68,18 @@ class _StampPanelState extends State<StampPanel> {
     );
     final allStamps = stampService.stamps;
     final folders = stampService.folders;
+    final folderIds = {for (final folder in folders) folder.id};
+    final folderFilter =
+        _folderFilter == '' || folderIds.contains(_folderFilter)
+        ? _folderFilter
+        : null;
     var stamps = _showFavoritesOnly
         ? allStamps.where((s) => s.isFavorite)
         : allStamps.where((_) => true);
-    if (_folderFilter == '') {
-      stamps = stamps.where((s) => s.folderId == null);
-    } else if (_folderFilter != null && _folderFilter != _allFolders) {
-      stamps = stamps.where((s) => s.folderId == _folderFilter);
+    if (folderFilter == '') {
+      stamps = stamps.where((s) => !folderIds.contains(s.folderId));
+    } else if (folderFilter != null) {
+      stamps = stamps.where((s) => s.folderId == folderFilter);
     }
     final query = _searchQuery.trim().toLowerCase();
     if (query.isNotEmpty) {
@@ -96,9 +100,7 @@ class _StampPanelState extends State<StampPanel> {
     // 絞込中（お気に入りのみ・検索・フォルダ指定）は表示順と実際の並び順が
     // 一致しないため、並べ替えは絞込なしのときだけ有効にする。
     final isFiltering =
-        _showFavoritesOnly ||
-        query.isNotEmpty ||
-        (_folderFilter != null && _folderFilter != _allFolders);
+        _showFavoritesOnly || query.isNotEmpty || folderFilter != null;
 
     return PanelSurface(
       width: 280,
@@ -148,18 +150,18 @@ class _StampPanelState extends State<StampPanel> {
                     children: [
                       _folderChip(
                         l10n.creativePanelFolderAllChip,
-                        _folderFilter == null || _folderFilter == _allFolders,
+                        folderFilter == null,
                         () => setState(() => _folderFilter = null),
                       ),
                       _folderChip(
                         l10n.folderNone,
-                        _folderFilter == '',
+                        folderFilter == '',
                         () => setState(() => _folderFilter = ''),
                       ),
                       ...folders.map(
                         (f) => _folderChip(
                           f.name,
-                          _folderFilter == f.id,
+                          folderFilter == f.id,
                           () => setState(() => _folderFilter = f.id),
                         ),
                       ),
@@ -426,7 +428,12 @@ class _StampPanelState extends State<StampPanel> {
       onToggleFavorite: (id) => service.toggleFolderFavorite(id),
       onReorder: (oldIndex, newIndex) =>
           service.reorderFolder(oldIndex, newIndex),
-      onDelete: (id) => service.deleteFolder(id),
+      onDelete: (id) async {
+        await service.deleteFolder(id);
+        if (mounted && _folderFilter == id) {
+          setState(() => _folderFilter = null);
+        }
+      },
     );
   }
 

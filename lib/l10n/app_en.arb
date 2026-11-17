@@ -243,6 +243,7 @@
   "folderNameLabel": "Folder Name",
   "folderMoveToTitle": "Move to Folder",
   "folderNone": "No Folder",
+  "creativeFolderDeleteBody": "Delete “{name}”? Its items will move to “No Folder”.",
   "creativeAssetNameLabel": "Name",
   "commonAdd": "Add",
   "commonSearch": "Search",

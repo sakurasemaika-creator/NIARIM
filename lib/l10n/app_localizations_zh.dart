@@ -742,6 +742,11 @@ class AppLocalizationsZh extends AppLocalizations {
   String get folderNone => '无文件夹';
 
   @override
+  String creativeFolderDeleteBody(String name) {
+    return '要删除“$name”吗？其中的素材将移到“无文件夹”。';
+  }
+
+  @override
   String get creativeAssetNameLabel => '名称';
 
   @override
@@ -10901,6 +10906,11 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get folderNone => '無資料夾';
+
+  @override
+  String creativeFolderDeleteBody(String name) {
+    return '要刪除「$name」嗎？其中的素材會移到「無資料夾」。';
+  }
 
   @override
   String get creativeAssetNameLabel => '名稱';

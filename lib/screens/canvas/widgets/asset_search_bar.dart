@@ -38,7 +38,7 @@ bool assetMatchesSearch({
 /// ときは、登録済みタグをチップで並べてワンタップで絞り込めるようにする
 /// （タグ名を覚えていなくても選べるようにするため。チップは
 /// `XxxService.allTags()`が使用件数の多い順で返す）。
-class AssetSearchBar extends StatelessWidget {
+class AssetSearchBar extends StatefulWidget {
   final TextEditingController controller;
   final AssetSearchMode mode;
   final ValueChanged<AssetSearchMode> onModeChanged;
@@ -62,22 +62,44 @@ class AssetSearchBar extends StatelessWidget {
     required this.keywordHint,
   });
 
+  @override
+  State<AssetSearchBar> createState() => _AssetSearchBarState();
+}
+
+class _AssetSearchBarState extends State<AssetSearchBar> {
+  final _focusNode = FocusNode();
+
+  @override
+  void initState() {
+    super.initState();
+    // The dock's screen may already hold focus when search is opened.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _focusNode.requestFocus();
+    });
+  }
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    super.dispose();
+  }
+
   bool _isSelected(String tag) =>
-      controller.text.trim().toLowerCase() == tag.toLowerCase();
+      widget.controller.text.trim().toLowerCase() == tag.toLowerCase();
 
   void _toggleTag(String tag) {
     // 選択済みのチップをもう一度押したら絞り込みを解除する
     // （「解除するには入力欄を手で消す」しかない状態を避ける）。
     final next = _isSelected(tag) ? '' : tag;
-    controller.text = next;
-    controller.selection = TextSelection.collapsed(offset: next.length);
-    onQueryChanged(next);
+    widget.controller.text = next;
+    widget.controller.selection = TextSelection.collapsed(offset: next.length);
+    widget.onQueryChanged(next);
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final isTag = mode == AssetSearchMode.tag;
+    final isTag = widget.mode == AssetSearchMode.tag;
     final scheme = Theme.of(context).colorScheme;
 
     return Padding(
@@ -87,19 +109,21 @@ class AssetSearchBar extends StatelessWidget {
         children: [
           CallbackShortcuts(
             bindings: {
-              const SingleActivator(LogicalKeyboardKey.escape): ?onClose,
+              const SingleActivator(LogicalKeyboardKey.escape): ?widget.onClose,
             },
             child: TextField(
               key: const ValueKey('asset-search-input'),
-              controller: controller,
-              autofocus: true,
+              controller: widget.controller,
+              focusNode: _focusNode,
               textInputAction: TextInputAction.search,
               onSubmitted: (_) => FocusScope.of(context).unfocus(),
               onTapOutside: (_) => FocusScope.of(context).unfocus(),
               style: const TextStyle(fontSize: 13),
               decoration: InputDecoration(
                 isDense: true,
-                hintText: isTag ? l10n.creativePanelTagSearchHint : keywordHint,
+                hintText: isTag
+                    ? l10n.creativePanelTagSearchHint
+                    : widget.keywordHint,
                 // 検索方式の切り替えは入力欄の左端に置く。ヘッダー行は
                 // お気に入り・検索・フォルダのボタンで既に埋まっており、
                 // 幅280pxのドッキングパネルではこれ以上ボタンを足せないため。
@@ -107,7 +131,7 @@ class AssetSearchBar extends StatelessWidget {
                   icon: Icon(isTag ? Icons.sell : Icons.search, size: 16),
                   color: isTag ? AccentTextTheme.of(context) : null,
                   visualDensity: VisualDensity.compact,
-                  onPressed: () => onModeChanged(
+                  onPressed: () => widget.onModeChanged(
                     isTag ? AssetSearchMode.keyword : AssetSearchMode.tag,
                   ),
                   tooltip: isTag
@@ -119,20 +143,20 @@ class AssetSearchBar extends StatelessWidget {
                   tooltip: l10n.commonClose,
                   icon: const Icon(Icons.close, size: 18),
                   onPressed:
-                      onClose ??
+                      widget.onClose ??
                       () {
-                        controller.clear();
-                        onQueryChanged('');
+                        widget.controller.clear();
+                        widget.onQueryChanged('');
                       },
                 ),
               ),
-              onChanged: onQueryChanged,
+              onChanged: widget.onQueryChanged,
             ),
           ),
           if (isTag)
             Padding(
               padding: const EdgeInsets.only(top: 4),
-              child: availableTags.isEmpty
+              child: widget.availableTags.isEmpty
                   ? Text(
                       l10n.creativePanelTagNoneYet,
                       style: TextStyle(
@@ -146,7 +170,7 @@ class AssetSearchBar extends StatelessWidget {
                       scrollDirection: Axis.horizontal,
                       child: Row(
                         children: [
-                          for (final tag in availableTags)
+                          for (final tag in widget.availableTags)
                             Padding(
                               padding: const EdgeInsets.only(right: 4),
                               child: FilterChip(

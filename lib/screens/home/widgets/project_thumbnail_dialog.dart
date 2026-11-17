@@ -263,8 +263,8 @@ class _ProjectThumbnailDialogState extends State<_ProjectThumbnailDialog> {
                 _seek(value.round());
               },
       ),
-      Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      Wrap(
+        alignment: WrapAlignment.center,
         children: [
           IconButton(
             key: const Key('projectThumbnailFirstFrame'),

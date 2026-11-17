@@ -1737,7 +1737,7 @@ class BrushService extends ChangeNotifier {
 
   Future<BrushFolder> createFolder(String name) async {
     final folder = BrushFolder(
-      id: 'BrushFolder${DateTime.now().millisecondsSinceEpoch}',
+      id: 'BrushFolder${DateTime.now().microsecondsSinceEpoch}',
       name: name,
     );
     _folders.add(folder);
@@ -1746,12 +1746,12 @@ class BrushService extends ChangeNotifier {
     return folder;
   }
 
-  void renameFolder(String id, String name) {
+  Future<void> renameFolder(String id, String name) async {
     final idx = _folders.indexWhere((f) => f.id == id);
     if (idx < 0) return;
     _folders[idx] = _folders[idx].copyWith(name: name);
     notifyListeners();
-    _persistFolders();
+    await _persistFolders();
   }
 
   void toggleFolderFavorite(String id) {
@@ -1773,22 +1773,38 @@ class BrushService extends ChangeNotifier {
   }
 
   /// フォルダを削除する。中の素材はルート（フォルダなし）へ戻す。
-  void deleteFolder(String id) {
+  Future<void> deleteFolder(String id) async {
     _folders.removeWhere((f) => f.id == id);
     for (int i = 0; i < _brushes.length; i++) {
       if (_brushes[i].folderId == id) {
-        _brushes[i] = _brushes[i].copyWith(folderId: null);
+        _brushes[i] = _brushes[i].copyWith(clearFolder: true);
       }
     }
+    final current = _currentBrush;
+    if (current != null && current.folderId == id) {
+      _currentBrush = current.copyWith(clearFolder: true);
+    }
     notifyListeners();
-    _persistFolders();
-    _persist();
+    // Persist the members first. If interrupted, an existing folder can
+    // still be opened and deleted again.
+    await _persist();
+    await _persistFolders();
   }
 
   void moveToFolder(String brushId, String? folderId) {
     final idx = _brushes.indexWhere((b) => b.id == brushId);
     if (idx < 0) return;
-    _brushes[idx] = _brushes[idx].copyWith(folderId: folderId);
+    _brushes[idx] = _brushes[idx].copyWith(
+      folderId: folderId,
+      clearFolder: folderId == null,
+    );
+    final current = _currentBrush;
+    if (current != null && current.id == brushId) {
+      _currentBrush = current.copyWith(
+        folderId: folderId,
+        clearFolder: folderId == null,
+      );
+    }
     notifyListeners();
     _persist();
   }

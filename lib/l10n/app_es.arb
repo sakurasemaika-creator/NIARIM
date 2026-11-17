@@ -243,6 +243,7 @@
   "folderNameLabel": "Nombre de la carpeta",
   "folderMoveToTitle": "Mover a carpeta",
   "folderNone": "Sin carpeta",
+  "creativeFolderDeleteBody": "¿Eliminar «{name}»? Su contenido se moverá a «Sin carpeta».",
   "creativeAssetNameLabel": "Nombre",
   "commonAdd": "Añadir",
   "commonSearch": "Buscar",

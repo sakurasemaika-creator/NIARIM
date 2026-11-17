@@ -51,7 +51,6 @@ class _TonePanelState extends State<TonePanel> {
   String _searchQuery = '';
   final _searchController = TextEditingController();
   String? _folderFilter;
-  static const _allFolders = '__all__';
 
   @override
   void dispose() {
@@ -65,13 +64,18 @@ class _TonePanelState extends State<TonePanel> {
     final toneService = context.watch<ToneService>();
     final allTones = toneService.tones;
     final folders = toneService.folders;
+    final folderIds = {for (final folder in folders) folder.id};
+    final folderFilter =
+        _folderFilter == '' || folderIds.contains(_folderFilter)
+        ? _folderFilter
+        : null;
     var tones = _showFavoritesOnly
         ? allTones.where((t) => t.isFavorite)
         : allTones.where((_) => true);
-    if (_folderFilter == '') {
-      tones = tones.where((t) => t.folderId == null);
-    } else if (_folderFilter != null && _folderFilter != _allFolders) {
-      tones = tones.where((t) => t.folderId == _folderFilter);
+    if (folderFilter == '') {
+      tones = tones.where((t) => !folderIds.contains(t.folderId));
+    } else if (folderFilter != null) {
+      tones = tones.where((t) => t.folderId == folderFilter);
     }
     final query = _searchQuery.trim().toLowerCase();
     if (query.isNotEmpty) {
@@ -92,9 +96,7 @@ class _TonePanelState extends State<TonePanel> {
     // 絞込中（お気に入りのみ・検索・フォルダ指定）は表示順と実際の並び順が
     // 一致しないため、並べ替えは絞込なしのときだけ有効にする。
     final isFiltering =
-        _showFavoritesOnly ||
-        query.isNotEmpty ||
-        (_folderFilter != null && _folderFilter != _allFolders);
+        _showFavoritesOnly || query.isNotEmpty || folderFilter != null;
 
     return PanelSurface(
       width: 280,
@@ -144,18 +146,18 @@ class _TonePanelState extends State<TonePanel> {
                     children: [
                       _folderChip(
                         l10n.creativePanelFolderAllChip,
-                        _folderFilter == null || _folderFilter == _allFolders,
+                        folderFilter == null,
                         () => setState(() => _folderFilter = null),
                       ),
                       _folderChip(
                         l10n.folderNone,
-                        _folderFilter == '',
+                        folderFilter == '',
                         () => setState(() => _folderFilter = ''),
                       ),
                       ...folders.map(
                         (f) => _folderChip(
                           f.name,
-                          _folderFilter == f.id,
+                          folderFilter == f.id,
                           () => setState(() => _folderFilter = f.id),
                         ),
                       ),
@@ -420,7 +422,12 @@ class _TonePanelState extends State<TonePanel> {
       onToggleFavorite: (id) => service.toggleFolderFavorite(id),
       onReorder: (oldIndex, newIndex) =>
           service.reorderFolder(oldIndex, newIndex),
-      onDelete: (id) => service.deleteFolder(id),
+      onDelete: (id) async {
+        await service.deleteFolder(id);
+        if (mounted && _folderFilter == id) {
+          setState(() => _folderFilter = null);
+        }
+      },
     );
   }
 

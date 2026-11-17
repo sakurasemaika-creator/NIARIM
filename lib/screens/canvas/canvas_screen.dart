@@ -110,6 +110,15 @@ class _CanvasScreenState extends State<CanvasScreen> {
   PenSubTool _currentSubTool = PenSubTool.brush;
   double _brushSize = 5;
   int _brushOpacity = 100;
+  final _toolBrushSizes = <(DrawingTool, PenSubTool?), double>{};
+  final _toolBrushOpacities = <(DrawingTool, PenSubTool?), int>{};
+
+  (DrawingTool, PenSubTool?) get _brushControlTarget =>
+      (_currentTool, _currentTool == DrawingTool.pen ? _currentSubTool : null);
+
+  double? get _toolBrushSize => _toolBrushSizes[_brushControlTarget];
+  int? get _toolBrushOpacity => _toolBrushOpacities[_brushControlTarget];
+
   Color get _currentColor => context.read<BrushService>().currentColor;
   int _currentFrame = 0;
   AutofillCheckMode _autofillCheckMode = AutofillCheckMode.normal;
@@ -454,6 +463,28 @@ class _CanvasScreenState extends State<CanvasScreen> {
   bool get _remembersBrushValues =>
       _currentTool == DrawingTool.pen && _currentSubTool == PenSubTool.brush;
 
+  void _setBrushSize(double value, {required bool remember}) {
+    if (_remembersBrushValues) {
+      context.read<BrushService>().updateCurrentBrushSize(
+        value,
+        remember: remember,
+      );
+    } else {
+      setState(() => _toolBrushSizes[_brushControlTarget] = value);
+    }
+  }
+
+  void _setBrushOpacity(int value, {required bool remember}) {
+    if (_remembersBrushValues) {
+      context.read<BrushService>().updateCurrentBrushOpacity(
+        value,
+        remember: remember,
+      );
+    } else {
+      setState(() => _toolBrushOpacities[_brushControlTarget] = value);
+    }
+  }
+
   bool _usesBrushSize(DrawingTool tool) => switch (tool) {
     DrawingTool.pen ||
     DrawingTool.eraser ||
@@ -784,20 +815,12 @@ class _CanvasScreenState extends State<CanvasScreen> {
       case 'canvas.brushSize':
         final value = (step.args['value'] as num?)?.toDouble();
         if (value == null) throw StateError('Missing brush size');
-        setState(() => _brushSize = value);
         // 再生で当てる太さは、そのブラシで覚えている値を書き換えない。
-        context.read<BrushService>().updateCurrentBrushSize(
-          value,
-          remember: false,
-        );
+        _setBrushSize(value, remember: false);
       case 'canvas.brushOpacity':
         final value = (step.args['value'] as num?)?.round();
         if (value == null) throw StateError('Missing brush opacity');
-        setState(() => _brushOpacity = value.clamp(0, 100));
-        context.read<BrushService>().updateCurrentBrushOpacity(
-          _brushOpacity,
-          remember: false,
-        );
+        _setBrushOpacity(value.clamp(0, 100), remember: false);
       case 'canvas.color':
         final argb = (step.args['argb'] as num?)?.toInt();
         if (argb == null) throw StateError('Missing color');
@@ -1726,6 +1749,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
                                           _currentTool == DrawingTool.eraser,
                                       currentTool: _currentTool,
                                       currentSubTool: _currentSubTool,
+                                      toolBrushSize: _toolBrushSize,
+                                      toolBrushOpacity: _toolBrushOpacity,
                                       lassoFillEnclosedMode:
                                           _lassoFillEnclosedMode,
                                       onionSkinSettings: _onionSkinSettings,
@@ -1964,19 +1989,15 @@ class _CanvasScreenState extends State<CanvasScreen> {
                       ),
                     if (!immersiveAdjusting && _usesBrushSize(_currentTool))
                       BrushSizeSlider(
-                        brushSize: _brushSize,
-                        opacity: _brushOpacity,
+                        brushSize: _toolBrushSize ?? _brushSize,
+                        opacity: _toolBrushOpacity ?? _brushOpacity,
                         // 変えた太さ・不透明度は、操作の終わりにブラシ
                         // ごとの覚えとして保存する。
                         onChangeEnd: () => context
                             .read<BrushService>()
                             .commitRememberedValues(),
                         onSizeChanged: (v) {
-                          setState(() => _brushSize = v);
-                          context.read<BrushService>().updateCurrentBrushSize(
-                            v,
-                            remember: _remembersBrushValues,
-                          );
+                          _setBrushSize(v, remember: true);
                           _recordCanvasAutomation(
                             'canvas.brushSize',
                             'Brush size',
@@ -1984,13 +2005,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                           );
                         },
                         onOpacityChanged: (v) {
-                          setState(() => _brushOpacity = v);
-                          context
-                              .read<BrushService>()
-                              .updateCurrentBrushOpacity(
-                                v,
-                                remember: _remembersBrushValues,
-                              );
+                          _setBrushOpacity(v, remember: true);
                           _recordCanvasAutomation(
                             'canvas.brushOpacity',
                             'Brush opacity',
@@ -3148,7 +3163,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
     currentTool: _currentTool,
     currentBrushId: context.read<BrushService>().currentBrush?.id,
     currentBrushName: context.read<BrushService>().currentBrush?.name,
-    currentSize: _brushSize,
+    currentSize: _toolBrushSize ?? _brushSize,
   );
 
   /// レイヤー全体の自由変形・メッシュ変形パネル。
@@ -3303,11 +3318,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
     if (sizeOverride != null) {
       // 早替えツールの太さはそのツールの設定。ブラシが覚えている太さは
       // 書き換えない（同じブラシを太さ違いで登録して切り替えられる）。
-      context.read<BrushService>().updateCurrentBrushSize(
-        sizeOverride,
-        remember: false,
-      );
-      setState(() => _brushSize = sizeOverride);
+      _setBrushSize(sizeOverride, remember: false);
     }
   }
 

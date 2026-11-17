@@ -64,7 +64,6 @@ class _BrushPanelState extends State<BrushPanel> {
   final _searchController = TextEditingController();
   // null=全て表示・''(空文字)=フォルダなしのみ・その他=そのフォルダIDのみ
   String? _folderFilter;
-  static const _allFolders = '__all__';
 
   @override
   void dispose() {
@@ -78,13 +77,18 @@ class _BrushPanelState extends State<BrushPanel> {
     final brushService = context.watch<BrushService>();
     final allBrushes = brushService.brushes;
     final folders = brushService.folders;
+    final folderIds = {for (final folder in folders) folder.id};
+    final folderFilter =
+        _folderFilter == '' || folderIds.contains(_folderFilter)
+        ? _folderFilter
+        : null;
     var brushes = _showFavoritesOnly
         ? allBrushes.where((b) => b.isFavorite)
         : allBrushes.where((_) => true);
-    if (_folderFilter == '') {
-      brushes = brushes.where((b) => b.folderId == null);
-    } else if (_folderFilter != null && _folderFilter != _allFolders) {
-      brushes = brushes.where((b) => b.folderId == _folderFilter);
+    if (folderFilter == '') {
+      brushes = brushes.where((b) => !folderIds.contains(b.folderId));
+    } else if (folderFilter != null) {
+      brushes = brushes.where((b) => b.folderId == folderFilter);
     }
     final query = _searchQuery.trim().toLowerCase();
     if (query.isNotEmpty) {
@@ -102,9 +106,7 @@ class _BrushPanelState extends State<BrushPanel> {
     }
     final brushList = brushes.toList();
     final isFiltering =
-        _showFavoritesOnly ||
-        query.isNotEmpty ||
-        (_folderFilter != null && _folderFilter != _allFolders);
+        _showFavoritesOnly || query.isNotEmpty || folderFilter != null;
     final current = brushService.currentBrush;
 
     return PanelSurface(
@@ -169,20 +171,20 @@ class _BrushPanelState extends State<BrushPanel> {
                       _folderChip(
                         context,
                         l10n.creativePanelFolderAllChip,
-                        _folderFilter == null || _folderFilter == _allFolders,
+                        folderFilter == null,
                         () => setState(() => _folderFilter = null),
                       ),
                       _folderChip(
                         context,
                         l10n.folderNone,
-                        _folderFilter == '',
+                        folderFilter == '',
                         () => setState(() => _folderFilter = ''),
                       ),
                       ...folders.map(
                         (f) => _folderChip(
                           context,
                           f.name,
-                          _folderFilter == f.id,
+                          folderFilter == f.id,
                           () => setState(() => _folderFilter = f.id),
                         ),
                       ),
@@ -529,7 +531,12 @@ class _BrushPanelState extends State<BrushPanel> {
       onToggleFavorite: (id) => service.toggleFolderFavorite(id),
       onReorder: (oldIndex, newIndex) =>
           service.reorderFolder(oldIndex, newIndex),
-      onDelete: (id) => service.deleteFolder(id),
+      onDelete: (id) async {
+        await service.deleteFolder(id);
+        if (mounted && _folderFilter == id) {
+          setState(() => _folderFilter = null);
+        }
+      },
     );
   }
 

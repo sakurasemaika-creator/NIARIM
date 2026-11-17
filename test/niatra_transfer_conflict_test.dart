@@ -651,10 +651,8 @@ void main() {
     SharedPreferences.setMockInitialValues({'language': 'ja'});
     final b = await TransferDevice.start();
     final before = _counts(b);
-    final toneName = b.tone.tones.singleWhere((t) => t.id == 'Tone0001').name;
-    final stampName = b.stamp.stamps
-        .singleWhere((s) => s.id == 'Stamp0001')
-        .name;
+    final builtinTone = b.tone.tones.singleWhere((t) => t.id == 'Tone0001');
+    final builtinStamp = b.stamp.stamps.singleWhere((s) => s.id == 'Stamp0001');
     final image = File('${temp.path}/other.png')..writeAsBytesSync([1]);
     NiatraData file() => NiatraData({
       'tones': [
@@ -691,13 +689,13 @@ void main() {
       final tone = d.tone.tones.singleWhere((t) => t.id == 'Tone0001');
       p.check(
         [tone.name, tone.texturePath, tone.isFavorite],
-        [toneName, null, true],
+        [builtinTone.name, builtinTone.texturePath, true],
         '$stage: 組み込みトーンの中身はこの版のまま、お気に入りだけ',
       );
       final stamp = d.stamp.stamps.singleWhere((s) => s.id == 'Stamp0001');
       p.check(
         [stamp.name, stamp.imagePath, stamp.density, stamp.isFavorite],
-        [stampName, null, 1.0, true],
+        [builtinStamp.name, builtinStamp.imagePath, builtinStamp.density, true],
         '$stage: 組み込みスタンプ',
       );
     }
