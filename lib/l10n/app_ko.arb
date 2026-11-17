@@ -3950,5 +3950,8 @@
   "transferImportInterrupted": "가져오기를 완료하지 못했습니다. 이미 가져온 항목은 남아 있습니다.",
   "communityChannelRefreshRetry": "YouTube 채널 정보를 업데이트하지 못했습니다. 다시 시도해 주세요.",
   "timelineAutofillBatchCancelled": "자동 채색을 취소했습니다.",
+  "timelineAutofillFailedFrames": "자동 채색으로 {count}개 프레임을 처리하지 못했습니다.",
+  "timelineAutofillFileError": "일부 파일 데이터에 접근할 수 없었습니다.",
+  "timelineAutofillProcessingError": "그림 데이터를 처리하는 중에 오류가 발생했습니다.",
   "timelineAutofillBatchFailed": "오류가 발생해 자동 채색을 중단했습니다."
 }

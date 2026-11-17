@@ -10338,5 +10338,16 @@ class AppLocalizationsJa extends AppLocalizations {
   String get timelineAutofillBatchCancelled => '自動塗りを中止しました。';
 
   @override
+  String timelineAutofillFailedFrames(int count) {
+    return '自動塗りで$countコマの処理に失敗しました。';
+  }
+
+  @override
+  String get timelineAutofillFileError => '一部のファイルデータにアクセスできませんでした。';
+
+  @override
+  String get timelineAutofillProcessingError => '描画データの処理中にエラーが発生しました。';
+
+  @override
   String get timelineAutofillBatchFailed => '自動塗りの途中でエラーが発生しました。';
 }

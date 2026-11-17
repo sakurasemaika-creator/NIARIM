@@ -10394,5 +10394,16 @@ class AppLocalizationsKo extends AppLocalizations {
   String get timelineAutofillBatchCancelled => '자동 채색을 취소했습니다.';
 
   @override
+  String timelineAutofillFailedFrames(int count) {
+    return '자동 채색으로 $count개 프레임을 처리하지 못했습니다.';
+  }
+
+  @override
+  String get timelineAutofillFileError => '일부 파일 데이터에 접근할 수 없었습니다.';
+
+  @override
+  String get timelineAutofillProcessingError => '그림 데이터를 처리하는 중에 오류가 발생했습니다.';
+
+  @override
   String get timelineAutofillBatchFailed => '오류가 발생해 자동 채색을 중단했습니다.';
 }

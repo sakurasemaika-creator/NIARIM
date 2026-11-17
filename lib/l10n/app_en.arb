@@ -3957,5 +3957,15 @@
   "transferImportInterrupted": "The import stopped before it was complete. Items already imported are still available.",
   "communityChannelRefreshRetry": "Could not refresh YouTube channel information. Please try again.",
   "timelineAutofillBatchCancelled": "Auto-fill cancelled.",
+  "timelineAutofillFailedFrames": "{count, plural, one {Auto-fill could not complete 1 frame.} other {Auto-fill could not complete {count} frames.}}",
+  "timelineAutofillFileError": "Some file data could not be accessed.",
+  "timelineAutofillProcessingError": "An error occurred while processing the artwork.",
+  "@timelineAutofillFailedFrames": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "timelineAutofillBatchFailed": "Auto-fill stopped because of an error."
 }

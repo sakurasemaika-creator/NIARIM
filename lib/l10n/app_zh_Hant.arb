@@ -3950,5 +3950,8 @@
   "transferImportInterrupted": "匯入未能完成。已匯入的項目仍然保留。",
   "communityChannelRefreshRetry": "無法更新 YouTube 頻道資訊，請重試。",
   "timelineAutofillBatchCancelled": "已取消自動上色。",
+  "timelineAutofillFailedFrames": "{count} 格未能完成自動上色。",
+  "timelineAutofillFileError": "無法存取部分檔案資料。",
+  "timelineAutofillProcessingError": "處理繪圖資料時發生錯誤。",
   "timelineAutofillBatchFailed": "自動上色因錯誤中斷。"
 }

@@ -10,20 +10,33 @@ import 'package:niarim/app.dart';
 import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/engine/niapro_serializer.dart';
 import 'package:niarim/engine/filter_engine.dart';
+import 'package:niarim/engine/tile_manager.dart';
 import 'package:niarim/engine/undo_manager.dart';
 import 'package:niarim/router.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/models/layer.dart';
+import 'package:niarim/models/autofill_preset.dart';
 import 'package:niarim/models/audio_clip.dart';
 import 'package:niarim/models/camera_keyframe.dart';
 import 'package:niarim/models/effect_filter_instance.dart';
 import 'package:niarim/screens/timeline/timeline_screen.dart';
 import 'package:niarim/services/project_service.dart';
+import 'package:niarim/services/autofill_preset_service.dart';
 import 'package:niarim/widgets/labeled_slider.dart';
+import 'package:niarim/widgets/progress_dialog.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'helpers/first_use_tooltips.dart';
+import 'helpers/pump_real_async.dart';
+
+class _FailingAutofillPresets extends AutofillPresetService {
+  @override
+  AutofillPart? findPart(String partId) {
+    if (partId == 'unreadable') throw const FileSystemException('test');
+    return super.findPart(partId);
+  }
+}
 
 /// Controls use the header/preview-band and resize-handle edges as anchors.
 /// They need not avoid artwork and must never reserve space around the image.
@@ -50,6 +63,7 @@ void main() {
     required bool pc,
     required double fraction,
     void Function(ProjectService, String)? setUpProject,
+    AutofillPresetService? presets,
   }) async {
     await tester.pumpWidget(const SizedBox.shrink());
     SharedPreferences.setMockInitialValues({
@@ -73,7 +87,14 @@ void main() {
     appRouter.go('/');
     final providers = await tester.runAsync(buildAppProviders);
     await tester.pumpWidget(
-      MultiProvider(providers: providers!, child: const NiarimApp()),
+      MultiProvider(
+        providers: [
+          ...providers!,
+          if (presets != null)
+            ChangeNotifierProvider<AutofillPresetService>.value(value: presets),
+        ],
+        child: const NiarimApp(),
+      ),
     );
     await tester.pump(const Duration(milliseconds: 300));
     final ps = tester
@@ -96,6 +117,129 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 600));
     return created.id;
+  }
+
+  for (final scenario in ['success', 'unreadable frame', 'cancel']) {
+    testWidgets('timeline batch auto-fill: $scenario', (tester) async {
+      final presets = _FailingAutofillPresets();
+      addTearDown(presets.dispose);
+      String partFor(int frame) => scenario == 'unreadable frame' && frame == 1
+          ? 'unreadable'
+          : 'test-part';
+      final id = await openTimeline(
+        tester,
+        project: const Size(16, 16),
+        screen: const Size(1280, 900),
+        pc: true,
+        fraction: .4,
+        presets: presets,
+        setUpProject: (projects, id) {
+          final scene = projects.scenesOf(id).single.id;
+          final lineart = Uint8List(16 * 16 * 4);
+          for (var y = 2; y <= 13; y++) {
+            for (var x = 2; x <= 13; x++) {
+              if (x == 2 || x == 13 || y == 2 || y == 13) {
+                lineart[(y * 16 + x) * 4 + 3] = 255;
+              }
+            }
+          }
+          for (var frame = 0; frame < 3; frame++) {
+            final layer = projects.addLayer(
+              projectId: id,
+              sceneId: scene,
+              frameIndex: frame,
+              type: LayerType.autoFillLineart,
+              name: 'Line art',
+            );
+            projects.assignAutofillPart(
+              projectId: id,
+              sceneId: scene,
+              frameIndex: frame,
+              lineartLayerId: layer.id,
+              partId: partFor(frame),
+              partName: 'Fill',
+            );
+            projects
+                .tileManagerOf(id)
+                .replaceLayerPixels(
+                  frameLayerKey(scene, frame, layer.id),
+                  lineart,
+                );
+          }
+        },
+      );
+      await tester.runAsync(() async {
+        await presets.init();
+        await presets.addPreset(
+          const AutofillPreset(
+            id: 'test-preset',
+            name: 'Test preset',
+            parts: [
+              AutofillPart(id: 'test-part', name: 'Fill', color: 0xFF12AB34),
+            ],
+          ),
+        );
+      });
+      final context = tester.element(find.byType(TimelineScreen));
+      final l10n = AppLocalizations.of(context)!;
+      final projects = context.read<ProjectService>();
+      final history = context.read<UndoManager>();
+      final scene = projects.scenesOf(id).single.id;
+      List<bool> filledFrames() => [
+        for (var frame = 0; frame < 3; frame++)
+          projects
+              .layersOf(id, scene, frame)
+              .any((l) => l.type == LayerType.autoFill),
+      ];
+      expect(filledFrames(), [false, false, false]);
+      final before = history.undoCount;
+
+      await tester.tap(find.byIcon(Icons.more_vert).hitTestable().first);
+      await pumpRealAsync(tester, const Duration(milliseconds: 400));
+      await tester.tap(find.text(l10n.layerPanelMenuRunAutofill).hitTestable());
+      await pumpRealAsync(tester, const Duration(milliseconds: 400));
+      final currentScene = find.text(l10n.timelineAutofillScopeCurrentScene);
+      await tester.ensureVisible(currentScene);
+      await tester.tap(currentScene);
+      await tester.pump();
+      await tester.tap(
+        find.widgetWithText(FilledButton, l10n.layerPanelExecuteButton),
+      );
+      await tester.pump();
+      final progress = find.byType(ProgressDialog);
+      if (scenario == 'cancel') {
+        await tester.pump(const Duration(milliseconds: 400));
+        expect(progress, findsOneWidget);
+        final cancel = find.descendant(
+          of: progress,
+          matching: find.text(l10n.commonCancel),
+        );
+        await tester.tap(cancel.hitTestable());
+        await tester.pump();
+      }
+      final expected = switch (scenario) {
+        'success' => l10n.timelineAutofillCompleteSnackbar(3),
+        'unreadable frame' =>
+          '${l10n.timelineAutofillFailedFrames(1)} ${l10n.timelineAutofillFileError}',
+        _ => l10n.timelineAutofillBatchCancelled,
+      };
+      final notice = find.text(expected);
+      for (var i = 0; notice.evaluate().isEmpty && i < 120; i++) {
+        await pumpRealAsync(tester, const Duration(milliseconds: 50));
+      }
+      expect(notice, findsOneWidget);
+      expect(progress, findsNothing);
+      if (scenario == 'cancel') {
+        expect(filledFrames().skip(1), [false, false]);
+      } else {
+        expect(filledFrames(), [true, scenario == 'success', true]);
+        expect(history.undoCount, before + 1);
+        history.undo(projectId: id);
+        await tester.pump();
+        expect(filledFrames(), [false, false, false]);
+      }
+      expect(tester.takeException(), isNull);
+    });
   }
 
   Future<bool> frameCountSaved(

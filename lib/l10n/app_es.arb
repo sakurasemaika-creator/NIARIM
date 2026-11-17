@@ -3950,5 +3950,8 @@
   "transferImportInterrupted": "La importación se interrumpió. Los elementos ya importados siguen disponibles.",
   "communityChannelRefreshRetry": "No se pudo actualizar la información del canal de YouTube. Inténtalo de nuevo.",
   "timelineAutofillBatchCancelled": "Relleno automático cancelado.",
+  "timelineAutofillFailedFrames": "{count, plural, one {No se pudo completar el relleno automático de 1 fotograma.} other {No se pudo completar el relleno automático de {count} fotogramas.}}",
+  "timelineAutofillFileError": "No se pudo acceder a algunos datos de los archivos.",
+  "timelineAutofillProcessingError": "Se produjo un error al procesar el dibujo.",
   "timelineAutofillBatchFailed": "El relleno automático se detuvo por un error."
 }

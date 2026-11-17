@@ -11262,6 +11262,25 @@ class AppLocalizationsEs extends AppLocalizations {
   String get timelineAutofillBatchCancelled => 'Relleno automático cancelado.';
 
   @override
+  String timelineAutofillFailedFrames(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'No se pudo completar el relleno automático de $count fotogramas.',
+      one: 'No se pudo completar el relleno automático de 1 fotograma.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get timelineAutofillFileError =>
+      'No se pudo acceder a algunos datos de los archivos.';
+
+  @override
+  String get timelineAutofillProcessingError =>
+      'Se produjo un error al procesar el dibujo.';
+
+  @override
   String get timelineAutofillBatchFailed =>
       'El relleno automático se detuvo por un error.';
 }

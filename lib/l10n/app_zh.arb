@@ -3950,5 +3950,8 @@
   "transferImportInterrupted": "导入未能完成。已导入的项目仍然保留。",
   "communityChannelRefreshRetry": "无法更新 YouTube 频道信息，请重试。",
   "timelineAutofillBatchCancelled": "已取消自动上色。",
+  "timelineAutofillFailedFrames": "{count} 帧未能完成自动上色。",
+  "timelineAutofillFileError": "无法访问部分文件数据。",
+  "timelineAutofillProcessingError": "处理绘图数据时出错。",
   "timelineAutofillBatchFailed": "自动上色因错误中断。"
 }

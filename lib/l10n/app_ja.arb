@@ -6254,5 +6254,15 @@
   "transferImportInterrupted": "読み込みを完了できませんでした。取り込み済みの項目は残っています。",
   "communityChannelRefreshRetry": "YouTube情報を更新できませんでした。もう一度お試しください。",
   "timelineAutofillBatchCancelled": "自動塗りを中止しました。",
+  "timelineAutofillFailedFrames": "自動塗りで{count}コマの処理に失敗しました。",
+  "timelineAutofillFileError": "一部のファイルデータにアクセスできませんでした。",
+  "timelineAutofillProcessingError": "描画データの処理中にエラーが発生しました。",
+  "@timelineAutofillFailedFrames": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "timelineAutofillBatchFailed": "自動塗りの途中でエラーが発生しました。"
 }

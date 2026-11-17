@@ -11094,6 +11094,25 @@ class AppLocalizationsEn extends AppLocalizations {
   String get timelineAutofillBatchCancelled => 'Auto-fill cancelled.';
 
   @override
+  String timelineAutofillFailedFrames(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Auto-fill could not complete $count frames.',
+      one: 'Auto-fill could not complete 1 frame.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get timelineAutofillFileError =>
+      'Some file data could not be accessed.';
+
+  @override
+  String get timelineAutofillProcessingError =>
+      'An error occurred while processing the artwork.';
+
+  @override
   String get timelineAutofillBatchFailed =>
       'Auto-fill stopped because of an error.';
 }

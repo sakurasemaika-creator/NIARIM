@@ -11273,6 +11273,25 @@ class AppLocalizationsFr extends AppLocalizations {
       'Remplissage automatique annulé.';
 
   @override
+  String timelineAutofillFailedFrames(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Le remplissage automatique a échoué pour $count images.',
+      one: 'Le remplissage automatique a échoué pour 1 image.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get timelineAutofillFileError =>
+      'Certaines données de fichier sont inaccessibles.';
+
+  @override
+  String get timelineAutofillProcessingError =>
+      'Une erreur est survenue pendant le traitement du dessin.';
+
+  @override
   String get timelineAutofillBatchFailed =>
       'Une erreur a interrompu le remplissage automatique.';
 }

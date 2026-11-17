@@ -18237,6 +18237,24 @@ abstract class AppLocalizations {
   /// **'自動塗りを中止しました。'**
   String get timelineAutofillBatchCancelled;
 
+  /// No description provided for @timelineAutofillFailedFrames.
+  ///
+  /// In ja, this message translates to:
+  /// **'自動塗りで{count}コマの処理に失敗しました。'**
+  String timelineAutofillFailedFrames(int count);
+
+  /// No description provided for @timelineAutofillFileError.
+  ///
+  /// In ja, this message translates to:
+  /// **'一部のファイルデータにアクセスできませんでした。'**
+  String get timelineAutofillFileError;
+
+  /// No description provided for @timelineAutofillProcessingError.
+  ///
+  /// In ja, this message translates to:
+  /// **'描画データの処理中にエラーが発生しました。'**
+  String get timelineAutofillProcessingError;
+
   /// No description provided for @timelineAutofillBatchFailed.
   ///
   /// In ja, this message translates to:

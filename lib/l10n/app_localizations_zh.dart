@@ -10222,6 +10222,17 @@ class AppLocalizationsZh extends AppLocalizations {
   String get timelineAutofillBatchCancelled => '已取消自动上色。';
 
   @override
+  String timelineAutofillFailedFrames(int count) {
+    return '$count 帧未能完成自动上色。';
+  }
+
+  @override
+  String get timelineAutofillFileError => '无法访问部分文件数据。';
+
+  @override
+  String get timelineAutofillProcessingError => '处理绘图数据时出错。';
+
+  @override
   String get timelineAutofillBatchFailed => '自动上色因错误中断。';
 }
 
@@ -20443,6 +20454,17 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get timelineAutofillBatchCancelled => '已取消自動上色。';
+
+  @override
+  String timelineAutofillFailedFrames(int count) {
+    return '$count 格未能完成自動上色。';
+  }
+
+  @override
+  String get timelineAutofillFileError => '無法存取部分檔案資料。';
+
+  @override
+  String get timelineAutofillProcessingError => '處理繪圖資料時發生錯誤。';
 
   @override
   String get timelineAutofillBatchFailed => '自動上色因錯誤中斷。';

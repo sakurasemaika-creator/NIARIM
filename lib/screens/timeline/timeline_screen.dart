@@ -7455,7 +7455,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
     var progress = 0.0;
     var applied = 0;
     var cancelled = false;
-    var failed = false;
+    var batchFailed = false;
+    var failedFrames = 0;
+    final frameErrors = <String>{};
     StateSetter? updateProgress;
     if (!mounted) return;
     final navigator = Navigator.of(context, rootNavigator: true);
@@ -7487,41 +7489,51 @@ class _TimelineScreenState extends State<TimelineScreen> {
         operation: () async {
           for (var i = 0; i < targets.length && !cancelled && mounted; i++) {
             final (sceneId, frameIndex) = targets[i];
-            final layers = ps.layersOf(widget.projectId, sceneId, frameIndex);
-            final lineartLayers = layers.where(
-              (l) => l.type == LayerType.autoFillLineart,
-            );
-            for (final lineartLayer in lineartLayers) {
-              if (cancelled || !mounted) break;
-              final result = await runAutofillForLayer(
-                projectService: ps,
-                presetService: presetService,
-                toneService: toneService,
-                projectId: widget.projectId,
-                sceneId: sceneId,
-                frameIndex: frameIndex,
-                lineartLayer: lineartLayer,
-                mode: mode,
+            try {
+              final layers = ps.layersOf(widget.projectId, sceneId, frameIndex);
+              final lineartLayers = layers.where(
+                (l) => l.type == LayerType.autoFillLineart,
               );
-              if (result == AutofillBatchResult.applied) applied++;
-            }
-            // 対応する線画レイヤーが存在しない孤立した自動塗りレイヤー（
-            // 「線画レイヤーなし・塗りレイヤーあり」の行）は、選択中のモードに
-            // 関わらず不透明度ロック＋最新色での塗りつぶしのみを行う。
-            final orphanedLayers = layers.where(
-              (l) => isOrphanedAutofillLayer(layers, l),
-            );
-            for (final orphanedLayer in orphanedLayers) {
-              if (cancelled || !mounted) break;
-              final result = await runAutofillForOrphanedLayer(
-                projectService: ps,
-                presetService: presetService,
-                projectId: widget.projectId,
-                sceneId: sceneId,
-                frameIndex: frameIndex,
-                autofillLayer: orphanedLayer,
+              for (final lineartLayer in lineartLayers) {
+                if (cancelled || !mounted) break;
+                final result = await runAutofillForLayer(
+                  projectService: ps,
+                  presetService: presetService,
+                  toneService: toneService,
+                  projectId: widget.projectId,
+                  sceneId: sceneId,
+                  frameIndex: frameIndex,
+                  lineartLayer: lineartLayer,
+                  mode: mode,
+                );
+                if (result == AutofillBatchResult.applied) applied++;
+              }
+              // 対応する線画レイヤーが存在しない孤立した自動塗りレイヤー（
+              // 「線画レイヤーなし・塗りレイヤーあり」の行）は、選択中のモードに
+              // 関わらず不透明度ロック＋最新色での塗りつぶしのみを行う。
+              final orphanedLayers = layers.where(
+                (l) => isOrphanedAutofillLayer(layers, l),
               );
-              if (result == AutofillBatchResult.applied) applied++;
+              for (final orphanedLayer in orphanedLayers) {
+                if (cancelled || !mounted) break;
+                final result = await runAutofillForOrphanedLayer(
+                  projectService: ps,
+                  presetService: presetService,
+                  projectId: widget.projectId,
+                  sceneId: sceneId,
+                  frameIndex: frameIndex,
+                  autofillLayer: orphanedLayer,
+                );
+                if (result == AutofillBatchResult.applied) applied++;
+              }
+            } catch (error, stack) {
+              failedFrames++;
+              frameErrors.add(
+                error is FileSystemException
+                    ? l10n.timelineAutofillFileError
+                    : l10n.timelineAutofillProcessingError,
+              );
+              AppErrorReporter.record(error, stack);
             }
             progress = (i + 1) / targets.length;
             updateProgress?.call(() {});
@@ -7529,7 +7541,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
         },
       );
     } catch (error, stack) {
-      failed = true;
+      batchFailed = true;
       AppErrorReporter.record(error, stack);
     } finally {
       if (route.isActive) navigator.removeRoute(route);
@@ -7537,14 +7549,16 @@ class _TimelineScreenState extends State<TimelineScreen> {
 
     if (!mounted) return;
     setState(() {});
-    final message = failed
-        ? l10n.timelineAutofillBatchFailed
-        : cancelled
-        ? l10n.timelineAutofillBatchCancelled
-        : l10n.timelineAutofillCompleteSnackbar(applied);
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(message)));
+    final message = [
+      if (batchFailed) l10n.timelineAutofillBatchFailed,
+      if (cancelled) l10n.timelineAutofillBatchCancelled,
+      if (failedFrames > 0) l10n.timelineAutofillFailedFrames(failedFrames),
+      ...frameErrors,
+      if (!batchFailed && !cancelled && failedFrames == 0)
+        l10n.timelineAutofillCompleteSnackbar(applied),
+    ].join(' ');
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message)));
   }
 }
 
