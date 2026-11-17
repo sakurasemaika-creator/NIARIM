@@ -56,7 +56,7 @@ App・Web共通。Claudeが要修正の詳細を追記し、ユーザーが別�
   - **担当が見つけた別の不具合**：DISC265（作品一覧・共有の詳細表示の最後のカードが浮かぶボタンの上端ちょうどで終わる）。フォルダの中の画面の「小」のカードでは絵の印が星の所に重なる（DISC263と同じ形、前から）。
 - **このセッションの公開の印が無いDISC**。前のセッションで直った物もあるので、各行の記録と最新 `dev_branch` で確かめる。
   - DISC001〜028・030〜049・051〜061・063〜067・069〜074・077〜081・090・099〜100・102・107・111・115〜116・118〜120・122
-  - DISC126・137・142〜146・149〜150・154〜155・159・161〜162・166・193〜202・204〜205・223・231・236・257〜351
+  - DISC126・137・142〜146・149〜150・154〜155・159・161〜162・166・193〜202・204〜205・223・231・236・257〜352
   - 所有者の判断待ち：DISC090・099・107・115・146・155、A011、DISC066。
 - **dev_branchで落ちているtest**：DISC258（容量削減の画面のtestが多く落ちる。どのコミットからかは未確認）。
 
@@ -878,3 +878,13 @@ App・Web共通。Claudeが要修正の詳細を追記し、ユーザーが別�
   - `.niapro`はzip（`manifest.json`・`Scene/…/frames.json`・`Tiles/…`）。保存の時刻・中身をscratchpadの`cam_in_niapro.py`で読んで確かめた。
   - 関連のtest：`archive_security_test`（zip-slip・巨大な中身など）・`niapro_alpha_compatibility_test`・`niapro_blend_mode_roundtrip_test`・`niapro_manifest_rewrite_dates_test`・`niatra_serializer_test`・`niatra_asset_bundle_test`・`audio_source_offset_serializer_regression_test`が通った。
 - **未確認**：古い版の保存の読み込み（移行）、書き込みの途中で落ちたときの原子的な置き換え、ディスク不足、.niashare・.niatraの実物の書き出しと読み込み（Linuxは共有が無い）、フォントの同梱。
+
+### A062（一巡目、Claude・S40、判定：要修正）
+
+- **確認SHA・環境**：App `ef376646`のLinuxデバッグビルド（portalの中で起動、素材管理の画面とテーマは今の`db3c563d`と同じ）、PC ja 1280×800、マウス。画像はscratchpadの`shots-r1/mt-*`（`backup-pending`）。
+- **要修正（新規）**：DISC352（使用中の素材の削除ボタンが押せないのに押せる色で、押しても何も起きない）。
+- **OK**：
+  - プロジェクト詳細の︙→素材管理：素材ごとに縮小画像（音声は音符）・名前・Material番号・大きさ・日付・「未使用／使用中」。
+  - 「未使用素材を削除（1）」→確認（どこからも参照されていない素材をまとめて削除、元に戻せない）→「1件の未使用素材を削除しました」、使用中のtone.wavは残る。未使用の判定は取り消しの履歴に残る素材も使用中と数える（`UndoManager.retainsMaterial`）。
+  - 関連のtest：`material_include_dialog_layout_test`・`timeline_text_material_flow_test`が通った。
+- **未確認**：見つからない素材（欠損）の表示と置き換え、動画の素材、容量削減の画面の数との一致、狭い画面。
