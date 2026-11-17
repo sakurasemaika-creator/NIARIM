@@ -29,6 +29,13 @@ void main() {
   final captureRoot = Platform.environment['NIARIM_AUDIT_CAPTURE'];
   final manifest = <Map<String, Object?>>[];
 
+  void disposeServices(List<ChangeNotifier> services) {
+    for (final service in services.reversed) {
+      service.dispose();
+    }
+    services.clear();
+  }
+
   Future<AppLocalizations> open(
     WidgetTester tester, {
     bool first = false,
@@ -37,8 +44,10 @@ void main() {
     Size size = const Size(390, 844),
     double scale = 1,
     AppThemePreset? theme,
+    List<ChangeNotifier>? services,
   }) async {
     await tester.pumpWidget(const SizedBox.shrink());
+    if (services != null) disposeServices(services);
     SharedPreferences.setMockInitialValues({
       'first_launch': first,
       'language': language,
@@ -66,7 +75,9 @@ void main() {
     tester.view.devicePixelRatio = 1;
     tester.platformDispatcher.textScaleFactorTestValue = scale;
     appRouter.go('/home');
-    final providers = await tester.runAsync(buildAppProviders);
+    final providers = await tester.runAsync(
+      () => buildAppProviders(debugOnCreated: services?.add),
+    );
     await tester.pumpWidget(
       RepaintBoundary(
         key: boundary,
@@ -590,177 +601,194 @@ void main() {
     },
   );
 
-  testWidgets('home main states fit all widths, modes, languages and mutations', (
-    tester,
-  ) async {
-    await loadAppFonts(tester);
-    const widths = [
-      320,
-      360,
-      375,
-      390,
-      430,
-      480,
-      520,
-      559,
-      560,
-      600,
-      640,
-      641,
-      700,
-      759,
-      760,
-      834,
-      900,
-      1024,
-      1180,
-      1280,
-      1366,
-      1440,
-      1600,
-      1920,
-    ];
-    const languages = ['ja', 'en', 'zh', 'zh_Hant', 'ko', 'fr', 'es'];
-    for (final language in languages) {
-      final profiles =
-          <
-            ({
-              bool pc,
-              Size size,
-              double scale,
-              AppThemePreset? theme,
-              String suffix,
-            })
-          >[
-            for (final pc in [false, true])
-              for (final width in widths)
-                (
-                  pc: pc,
-                  size: Size(width.toDouble(), pc ? 900 : 844),
-                  scale: 1,
-                  theme: null,
-                  suffix: '',
+  const widths = [
+    320,
+    360,
+    375,
+    390,
+    430,
+    480,
+    520,
+    559,
+    560,
+    600,
+    640,
+    641,
+    700,
+    759,
+    760,
+    834,
+    900,
+    1024,
+    1180,
+    1280,
+    1366,
+    1440,
+    1600,
+    1920,
+  ];
+  for (final language in const [
+    'ja',
+    'en',
+    'zh',
+    'zh_Hant',
+    'ko',
+    'fr',
+    'es',
+  ]) {
+    testWidgets(
+      'home main states fit all widths, modes and mutations ($language)',
+      (tester) async {
+        await loadAppFonts(tester);
+        final services = <ChangeNotifier>[];
+        final profiles =
+            <
+              ({
+                bool pc,
+                Size size,
+                double scale,
+                AppThemePreset? theme,
+                String suffix,
+              })
+            >[
+              for (final pc in [false, true])
+                for (final width in widths)
+                  (
+                    pc: pc,
+                    size: Size(width.toDouble(), pc ? 900 : 844),
+                    scale: 1,
+                    theme: null,
+                    suffix: '',
+                  ),
+              (
+                pc: false,
+                size: const Size(320, 844),
+                scale: 2,
+                theme: AppThemePreset.defaultDark,
+                suffix: '-dark-scale2',
+              ),
+              (
+                pc: false,
+                size: const Size(390, 844),
+                scale: 1.3,
+                theme: AppThemePreset.defaultLight.copyWith(
+                  accentColor: Colors.white,
+                  selectionColor: Colors.black,
                 ),
-            (
-              pc: false,
-              size: const Size(320, 844),
-              scale: 2,
-              theme: AppThemePreset.defaultDark,
-              suffix: '-dark-scale2',
-            ),
-            (
-              pc: false,
-              size: const Size(390, 844),
-              scale: 1.3,
-              theme: AppThemePreset.defaultLight.copyWith(
-                accentColor: Colors.white,
-                selectionColor: Colors.black,
+                suffix: '-custom-scale1.3',
               ),
-              suffix: '-custom-scale1.3',
-            ),
-            (
-              pc: true,
-              size: const Size(1440, 900),
-              scale: 2,
-              theme: AppThemePreset.defaultLight.copyWith(
-                accentColor: Colors.white,
-                selectionColor: Colors.black,
+              (
+                pc: true,
+                size: const Size(1440, 900),
+                scale: 2,
+                theme: AppThemePreset.defaultLight.copyWith(
+                  accentColor: Colors.white,
+                  selectionColor: Colors.black,
+                ),
+                suffix: '-custom-scale2',
               ),
-              suffix: '-custom-scale2',
-            ),
-            (
-              pc: true,
-              size: const Size(760, 900),
-              scale: 1.3,
-              theme: AppThemePreset.defaultDark,
-              suffix: '-dark-scale1.3',
-            ),
-            (
-              pc: false,
-              size: const Size(559, 844),
-              scale: 2,
-              theme: null,
-              suffix: '-light-scale2',
-            ),
-            (
-              pc: true,
-              size: const Size(641, 360),
-              scale: 1,
-              theme: null,
-              suffix: '-short',
-            ),
-            (
-              pc: false,
-              size: const Size(640, 360),
-              scale: 2,
-              theme: null,
-              suffix: '-short-scale2',
-            ),
-          ];
-      for (final profile in profiles) {
-        final suffix =
-            '$language-${profile.pc ? 'pc' : 'sp'}-${profile.size.width.toInt()}${profile.suffix}';
-        final l10n = await open(
-          tester,
-          first: true,
-          language: language,
-          pc: profile.pc,
-          size: profile.size,
-          scale: profile.scale,
-          theme: profile.theme,
-        );
-        await capture(tester, 'first-guidance-$suffix');
-        for (final text in [
-          l10n.homeFirstLaunchMessage,
-          l10n.homeFirstLaunchStart,
-        ]) {
-          final label = tester.renderObject<RenderParagraph>(find.text(text));
-          expect(label.didExceedMaxLines, isFalse, reason: '$suffix $text');
-          expect(find.text(text).hitTestable(), findsOneWidget, reason: suffix);
-          final bounds = tester.getRect(find.text(text));
-          expect(bounds.left, greaterThanOrEqualTo(0), reason: suffix);
-          expect(
-            bounds.right,
-            lessThanOrEqualTo(profile.size.width),
-            reason: suffix,
+              (
+                pc: true,
+                size: const Size(760, 900),
+                scale: 1.3,
+                theme: AppThemePreset.defaultDark,
+                suffix: '-dark-scale1.3',
+              ),
+              (
+                pc: false,
+                size: const Size(559, 844),
+                scale: 2,
+                theme: null,
+                suffix: '-light-scale2',
+              ),
+              (
+                pc: true,
+                size: const Size(641, 360),
+                scale: 1,
+                theme: null,
+                suffix: '-short',
+              ),
+              (
+                pc: false,
+                size: const Size(640, 360),
+                scale: 2,
+                theme: null,
+                suffix: '-short-scale2',
+              ),
+            ];
+        for (final profile in profiles) {
+          final suffix =
+              '$language-${profile.pc ? 'pc' : 'sp'}-${profile.size.width.toInt()}${profile.suffix}';
+          final l10n = await open(
+            tester,
+            first: true,
+            language: language,
+            pc: profile.pc,
+            size: profile.size,
+            scale: profile.scale,
+            theme: profile.theme,
+            services: services,
           );
-          expect(bounds.top, greaterThanOrEqualTo(0), reason: suffix);
-          expect(
-            bounds.bottom,
-            lessThanOrEqualTo(profile.size.height),
-            reason: suffix,
+          await capture(tester, 'first-guidance-$suffix');
+          for (final text in [
+            l10n.homeFirstLaunchMessage,
+            l10n.homeFirstLaunchStart,
+          ]) {
+            final label = tester.renderObject<RenderParagraph>(find.text(text));
+            expect(label.didExceedMaxLines, isFalse, reason: '$suffix $text');
+            expect(
+              find.text(text).hitTestable(),
+              findsOneWidget,
+              reason: suffix,
+            );
+            final bounds = tester.getRect(find.text(text));
+            expect(bounds.left, greaterThanOrEqualTo(0), reason: suffix);
+            expect(
+              bounds.right,
+              lessThanOrEqualTo(profile.size.width),
+              reason: suffix,
+            );
+            expect(bounds.top, greaterThanOrEqualTo(0), reason: suffix);
+            expect(
+              bounds.bottom,
+              lessThanOrEqualTo(profile.size.height),
+              reason: suffix,
+            );
+          }
+          await tester.tap(find.text(l10n.homeFirstLaunchStart));
+          await tester.pumpAndSettle();
+          await capture(tester, 'projects-empty-$suffix');
+          await switchTab(tester, 1);
+          await capture(tester, 'works-empty-$suffix');
+          await switchTab(tester, 0);
+          await tester.tap(find.byIcon(Icons.search));
+          await settleWithAsyncExport(tester);
+          expect(find.byKey(const Key('homeSearchInput')), findsOneWidget);
+          await capture(tester, 'search-empty-$suffix');
+          tester
+              .state<ScaffoldState>(
+                find
+                    .descendant(
+                      of: find.byType(HomeScreen),
+                      matching: find.byType(Scaffold),
+                    )
+                    .first,
+              )
+              .openEndDrawer();
+          await settleWithAsyncExport(tester);
+          await capture(tester, 'drawer-$suffix');
+          Scaffold.of(tester.element(find.byType(Drawer))).closeEndDrawer();
+          await settleWithAsyncExport(tester);
+        }
+        if (captureRoot != null) {
+          File('$captureRoot/manifest.json').writeAsStringSync(
+            const JsonEncoder.withIndent('  ').convert(manifest),
           );
         }
-        await tester.tap(find.text(l10n.homeFirstLaunchStart));
-        await tester.pumpAndSettle();
-        await capture(tester, 'projects-empty-$suffix');
-        await switchTab(tester, 1);
-        await capture(tester, 'works-empty-$suffix');
-        await switchTab(tester, 0);
-        await tester.tap(find.byIcon(Icons.search));
-        await tester.pumpAndSettle();
-        await capture(tester, 'search-empty-$suffix');
-        tester
-            .state<ScaffoldState>(
-              find
-                  .descendant(
-                    of: find.byType(HomeScreen),
-                    matching: find.byType(Scaffold),
-                  )
-                  .first,
-            )
-            .openEndDrawer();
-        await tester.pumpAndSettle();
-        await capture(tester, 'drawer-$suffix');
-        Scaffold.of(tester.element(find.byType(Drawer))).closeEndDrawer();
-        await tester.pumpAndSettle();
-      }
-    }
-    if (captureRoot != null) {
-      File(
-        '$captureRoot/manifest.json',
-      ).writeAsStringSync(const JsonEncoder.withIndent('  ').convert(manifest));
-    }
-    await tester.pumpWidget(const SizedBox.shrink());
-  }, timeout: const Timeout(Duration(minutes: 20)));
+        await tester.pumpWidget(const SizedBox.shrink());
+        disposeServices(services);
+      },
+      timeout: const Timeout(Duration(minutes: 10)),
+    );
+  }
 }
