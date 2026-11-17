@@ -402,7 +402,6 @@ class HairFoldRaster {
               bool smooth,
               double side,
               bool firstFront,
-              int backEnd,
             })
           >{};
       final hidden = <int, double>{};
@@ -467,7 +466,6 @@ class HairFoldRaster {
             smooth: start.smooth,
             side: sign,
             firstFront: firstFront,
-            backEnd: fold.backEnd,
           );
           hidden[pivot] = math.max(
             p.width,
@@ -1133,66 +1131,55 @@ class HairFoldRaster {
       // Fold length is its length relative to the strand width; fold angle
       // scales how much of the stroke's turn it follows (50 % = natural);
       // curve start keeps it straight first, which reads as thinner material.
-      // On a smooth bend, where the outlines never cross, it instead runs
-      // along the strand from the front's inner outline ([_smoothFoldLine]).
+      // On a smooth bend, where the outlines never cross, it leads in from
+      // the front's inner outline further back ([_smoothFoldLead]).
       if (brush.foldMode != HairFoldMode.crescent) {
         for (var i = 1; i < indices.length - 1; i++) {
           final line = foldLines[i];
           if (line == null) continue;
           final p = points[indices[i]];
-          final origin = line.origin, direction = line.direction;
+          var origin = line.origin, direction = line.direction;
           final continuation = line.continuation;
           // A continuous 270-degree fold keeps the authored turn direction:
           // a shorter, later, gentler line than a direction change.
           final continuous = bends[i - 1].continuous;
+          // On a smooth bend the line carries the front's inner outline on
+          // straight from where it is straightest ([_smoothFoldLead]), up to
+          // about the apex, before it turns: it never runs outside that
+          // extension, where the folded part would look suddenly thinner.
+          var lead = 0.0;
           if (line.smooth && !continuous) {
-            final strand = p.width + p.outlineOr(brush.outlineWidth) * 2;
-            final path = _smoothFoldLine(
+            final straight = _smoothFoldLead(
               points,
               lengths,
               indices[i],
-              line.side,
-              line.firstFront,
-              line.backEnd,
               line.firstFront ? indices[i - 1] : indices[i + 1],
+              line.side,
               brush.outlineWidth,
-              // Fold angle: how steeply it sinks; curve start: how deep
-              // (deeper reads as thinner material); fold length: how far it
-              // runs on past the bend (100 % = twice the strand width).
-              descent:
-                  strand * (2.4 - 1.6 * brush.foldAngleRatio.clamp(0.0, 1.0)),
-              depthShare: (.2 + .6 * brush.foldCurveStartRatio.clamp(0.0, 1.0))
-                  .clamp(0.0, .75),
-              run: strand * 2 * brush.foldLengthRatio.clamp(0.0, 1.0),
             );
-            final taper = brush.foldEndTaperRatio.clamp(.01, 1.0);
-            for (var k = 1; k < path.length; k++) {
-              final t = k / (path.length - 1);
-              final lineWidth =
-                  p.outlineOr(brush.outlineWidth) *
-                  (1 - ((t - (1 - taper)) / taper).clamp(0.0, 1.0));
-              creases.add(
-                _CreaseSegment(
-                  path[k - 1],
-                  path[k],
-                  lineWidth,
-                  ownerBase + i,
-                  p.opacity,
-                ),
-              );
+            if (straight != null) {
+              origin = straight.origin;
+              direction = straight.direction;
+              lead = straight.lead;
             }
-            continue;
           }
           // 100 % is twice the strand width; the line is clipped to the
           // strand, so even the maximum never leaves its contour.
           final length =
+              lead +
               p.width *
-              2 *
-              brush.foldLengthRatio.clamp(0.0, 1.0) *
-              (continuous ? .32 : 1.0);
+                  2 *
+                  brush.foldLengthRatio.clamp(0.0, 1.0) *
+                  (continuous ? .32 : 1.0);
           if (length < 1) continue;
+          // From a smooth bend's straight lead, curve start sets how far
+          // along the lead (half way to the apex at 0 %) the turn begins.
           final delay = continuous
               ? math.max(.50, brush.foldCurveStartRatio.clamp(0.0, 1.0))
+              : lead > 0
+              ? lead *
+                    (.5 + .5 * brush.foldCurveStartRatio.clamp(0.0, 1.0)) /
+                    length
               : brush.foldCurveStartRatio.clamp(0.0, .95);
           final turn = math.atan2(
             _cross(direction, continuation),
@@ -2394,7 +2381,7 @@ _foldSides(
   }
   if (inside < 0) {
     // A smooth bend: the front's inner outline runs on from the apex. Its
-    // fold line is drawn along the strand instead ([_smoothFoldLine]).
+    // fold line leads in from further back ([_smoothFoldLead]).
     final t = tangentAt(vertex);
     return (origin: outlineAt(0), direction: away < 0 ? t : -t, smooth: true);
   }
@@ -2427,60 +2414,59 @@ _foldSides(
   );
 }
 
-/// The fold line of a smooth bend, which the strand's outlines never cross:
-/// it runs along the strand rather than across it. It leaves the front
-/// section's inner outline a little before the apex at no angle, so the
-/// outline and the line read as one; sinks over [descent] (strand distance)
-/// to [depthShare] of the way to the far outline, eased so it levels off;
-/// then keeps that depth, parallel to both outlines and never touching the
-/// far one, for [run] past the apex or until the back section ends.
+/// Where the fold line of a smooth bend starts, which the strand's outlines
+/// never cross: on the front section's inner outline where it is straightest
+/// (a wave's inflection, or where a straight leg meets the bend), heading
+/// straight on along it. Carried on straight, the line is that outline's own
+/// extension: it leaves the outline at no angle and passes under the apex.
+/// [lead] is the strand distance from there to the apex.
 ///
-/// [side] is the side of the inner outlines; [firstFront] says the front
-/// section comes before [pivot]; [frontEnd] and [backEnd] bound the two
-/// sections.
-List<Offset> _smoothFoldLine(
+/// [frontEnd] bounds the front section; [side] is the side of the inner
+/// outlines. Null for a front too short or too straight to lead in from.
+({Offset origin, Offset direction, double lead})? _smoothFoldLead(
   List<HairRibbonPoint> points,
   List<double> lengths,
   int pivot,
-  double side,
-  bool firstFront,
-  int backEnd,
   int frontEnd,
-  double outlineWidth, {
-  required double descent,
-  required double depthShare,
-  required double run,
-}) {
+  double side,
+  double outlineWidth,
+) {
   final vertex = lengths[pivot];
-  final forward = firstFront ? 1.0 : -1.0;
-  // Most of the way down by the apex, so it reads as the front's own edge
-  // carried on across the bend.
-  final lead = math.min(descent * .8, (lengths[frontEnd] - vertex).abs() * .85);
-  final tail = math.min(run, (lengths[backEnd] - vertex).abs() * .85);
-  final total = lead + tail;
-  if (total < 1 || descent <= 0) return const [];
+  final away = frontEnd < pivot ? -1.0 : 1.0;
   final width = points[pivot].width + points[pivot].outlineOr(outlineWidth) * 2;
   final reach = (width / 16).clamp(1.0, 4.0);
-  final count = math.max(6, (total / 1.5).ceil());
-  return [
-    for (var k = 0; k <= count; k++)
-      () {
-        final u = total * k / count;
-        final at = vertex + forward * (u - lead);
-        final p = _pointAtDistance(points, lengths, at);
-        final tangent = _unit(
-          _positionAtDistance(points, lengths, at + reach) -
-              _positionAtDistance(points, lengths, at - reach),
-        );
-        final inner = Offset(-tangent.dy, tangent.dx) * side;
-        // The centre of the inner outline band, as the outline is drawn.
-        final outer = p.outerRadius(outlineWidth);
-        final centre = outer - math.min(p.outlineOr(outlineWidth), outer) / 2;
-        final e = (u / descent).clamp(0.0, 1.0);
-        final depth = 2 * centre * depthShare * e * e * (3 - 2 * e);
-        return p.position + inner * (centre - depth);
-      }(),
-  ];
+  Offset tangentAt(double at) => _unit(
+    _positionAtDistance(points, lengths, at + reach) -
+        _positionAtDistance(points, lengths, at - reach),
+  );
+  final limit = math.min((lengths[frontEnd] - vertex).abs() * .85, width * 3);
+  if (limit < reach * 2) return null;
+  final apex = tangentAt(vertex);
+  final step = (width / 24).clamp(.5, 2.0);
+  final turns = <(double, double)>[];
+  var straightest = 0.0;
+  for (var d = step; d <= limit; d += step) {
+    final t = tangentAt(vertex + away * d);
+    final turn = math.atan2(_cross(apex, t), _dot(apex, t)).abs();
+    turns.add((d, turn));
+    straightest = math.max(straightest, turn);
+  }
+  if (straightest < .02) return null;
+  // The nearest point turned within a degree of the straightest heading, so
+  // a straight leg leads in from where it meets the bend, not from far back.
+  final (lead, _) = turns.firstWhere(
+    (sample) => sample.$2 >= straightest - math.pi / 180,
+  );
+  final at = vertex + away * lead;
+  final p = _pointAtDistance(points, lengths, at);
+  final t = tangentAt(at);
+  final outer = p.outerRadius(outlineWidth);
+  final centre = outer - math.min(p.outlineOr(outlineWidth), outer) / 2;
+  return (
+    origin: p.position + Offset(-t.dy, t.dx) * side * centre,
+    direction: away < 0 ? t : -t,
+    lead: lead,
+  );
 }
 
 /// A bowed crescent cross-section between [outer] and [inner] edges, its fill

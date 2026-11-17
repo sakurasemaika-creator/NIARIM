@@ -1,12 +1,12 @@
 // On a smooth bend (radius larger than the strand's half width, so the two
-// inner outlines never cross) the fold line runs along the strand: it
-// leaves the front section's inner outline before the apex at no angle (one
-// line with the outline), sinks into the face folded behind while passing
-// the bend, then keeps its depth, parallel to the far outline and clear of
-// it (the owner's blue and green marks on the 「ウェーブ俯瞰」 hair and
-// ribbon samples). It used to leave the apex along its tangent and run
-// beside the inner outline, then for a while dived from the apex at an
-// angle to the outline.
+// inner outlines never cross) the fold line is the front section's inner
+// outline carried on straight from where it is straightest (a wave's
+// inflection), then turned with the stroke: it leaves the outline at no
+// angle, passes under the apex, never runs outside that straight extension
+// (where the folded part would look suddenly thinner) and stays clear of
+// the far outline (the owner's blue, green and yellow marks on the
+// 「ウェーブ俯瞰」 hair and ribbon samples). It used to leave the apex along
+// its tangent and run beside the inner outline.
 import 'dart:math' as math;
 import 'dart:typed_data';
 import 'dart:ui' as ui;
@@ -145,33 +145,64 @@ void main() {
       // ...and stays inside it (it never runs into the outer outline).
       expect(share, lessThan(.85), reason: id);
       final rgba = await _draw(tester, brush);
-      // One line with the outline: before the apex it already runs just
-      // inside the incoming inner outline, not starting at the apex.
-      var beforeApex = 0;
-      for (var x = (110 - strandWidth * .6).round(); x < 106; x++) {
-        final c = _column(rgba, x);
-        if (c?.crease != null && c!.crease! - c.top <= strandWidth * .4) {
-          beforeApex++;
-        }
-      }
-      expect(beforeApex, greaterThan(2), reason: '$id branches before apex');
-      // Past the bend it keeps its depth: parallel to the far outline.
-      final shares = <double>[];
-      for (
-        var x = (110 + strandWidth * .7).round();
-        x <= 110 + strandWidth * 1.1;
-        x++
-      ) {
-        final c = _column(rgba, x);
-        if (c?.crease == null) continue;
-        shares.add((c!.crease! - c.top) / (c.bottom - c.top));
-      }
-      expect(shares, isNotEmpty, reason: id);
+      final (:leading, :outside) = _againstExtension(rgba, brush);
       expect(
-        shares.reduce(math.max) - shares.reduce(math.min),
-        lessThan(.2),
-        reason: '$id keeps its depth past the bend: $shares',
+        leading,
+        greaterThanOrEqualTo(2),
+        reason: '$id leads in from the outline',
       );
+      expect(outside, 0, reason: '$id runs outside the straight extension');
     }
   });
+
+  testWidgets('no fold setting takes the line outside the straight '
+      'extension', (tester) async {
+    final presets = brushExtensionPresets();
+    for (final id in const ['Brush0023', 'Brush0036']) {
+      for (final (angle, start, length) in const [
+        (.2, .95, 1.0),
+        (.5, .9, 1.0),
+        (1.0, .9, 1.0),
+        (.5, 0.0, 1.0),
+      ]) {
+        final brush = presets
+            .singleWhere((b) => b.id == id)
+            .copyWith(
+              foldAngleRatio: angle,
+              foldCurveStartRatio: start,
+              foldLengthRatio: length,
+            );
+        final (:leading, :outside) = _againstExtension(
+          await _draw(tester, brush),
+          brush,
+        );
+        expect(outside, 0, reason: '$id $angle/$start/$length');
+      }
+    }
+  });
+}
+
+/// Against the inner outline's straight extension from the inflection
+/// before the first trough (x = 62.5, where the wave descends steepest):
+/// columns where the line already runs just inside the incoming outline
+/// before the apex, and columns where it runs outside the extension.
+({int leading, int outside}) _againstExtension(Uint8List rgba, Brush brush) {
+  final strandWidth = brush.size + brush.outlineWidth * 2;
+  final tangent = ui.Offset(1, 34 * 2 * math.pi / 190);
+  final along = tangent / tangent.distance;
+  final inner = ui.Offset(along.dy, -along.dx);
+  final rim = brush.size / 2 + brush.outlineWidth / 2;
+  final branch = const ui.Offset(62.5, 100) + inner * rim;
+  var leading = 0, outside = 0;
+  for (var x = branch.dx.round() + 4; x <= 110 + strandWidth; x++) {
+    final c = _column(rgba, x);
+    if (c?.crease == null) continue;
+    final at = ui.Offset(x.toDouble(), c!.crease!.toDouble());
+    if (x < 110 - strandWidth * .25 && at.dy - c.top <= strandWidth * .45) {
+      leading++;
+    }
+    final side = (at - branch).dx * inner.dx + (at - branch).dy * inner.dy;
+    if (side < -2) outside++;
+  }
+  return (leading: leading, outside: outside);
 }
