@@ -80,7 +80,6 @@ export async function regionalRewardAdOffer(
         !Object.hasOwn(Item.rates ?? {}, country)) return fallback;
     const amount: unknown = Item.rates[country];
     const tiers = rewardAdTiers(process.env.REWARDED_AD_UNIT_TIERS ?? "", base.adUnitId);
-    if (amount === 0) return { ...fallback, enabled: false, amount: 0 };
     const adUnitId = typeof amount === "number" ? tiers.get(amount) : undefined;
     if (typeof amount !== "number" || !adUnitId) return fallback;
     return {

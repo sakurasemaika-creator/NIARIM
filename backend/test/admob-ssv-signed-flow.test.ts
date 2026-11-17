@@ -99,6 +99,33 @@ beforeEach(() => {
 });
 
 describe("real ECDSA-signed AdMob reward callback through NIARIM API", () => {
+  it("settles a standard 10-coin session with a legacy zero-rate snapshot", async () => {
+    validConfig();
+    process.env.REWARDED_AD_COUNTRY_DB = "/opt/GeoLite2-Country.mmdb";
+    process.env.REWARDED_AD_AUTO_RATES_ENABLED = "true";
+    send.mockResolvedValueOnce({ Item: {
+      itemType: "REWARDED_AD_RATES", generatedAtMs: Date.now(), rates: { JP: 0 },
+    } });
+    const quote = {
+      ...req,
+      requestContext: { http: { sourceIp: "203.0.113.20" } },
+      body: JSON.stringify({ rewardCoins: 10, offerVersion: "launch-v1-10-coins" }),
+    } as APIGatewayProxyEventV2;
+    const started = await startRewardedAdSession(quote);
+    expect(started.statusCode).toBe(200);
+    const invitation = JSON.parse(started.body!);
+    expect(invitation).toMatchObject({
+      adUnitId: adUnit, rewardCoins: 10, offerVersion: "launch-v1-10-coins",
+    });
+    send.mockResolvedValueOnce({ Item: {
+      itemType: "REWARDED_AD_SESSION", nonce: invitation.customData.split(".").at(-1),
+      adUnitId: adUnit, offerVersion: invitation.offerVersion, rewardCoins: 10, rewardCountry: "JP",
+    } });
+    const completed = await receiveRewardedAdSsv(event(signCallback({ customData: invitation.customData })));
+    expect(completed.statusCode).toBe(200);
+    expect(JSON.parse(completed.body!)).toMatchObject({ credited: true });
+  });
+
   it("honors a regional rated offer after rates change, and aggregates only its first settlement", async () => {
     validConfig();
     const tierUnit = "ca-app-pub-1111111111111111/3333333333";

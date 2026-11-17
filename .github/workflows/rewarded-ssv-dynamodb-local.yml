@@ -9,6 +9,7 @@ on:
       - ".github/workflows/rewarded-ssv-dynamodb-local.yml"
       - "backend/src/api/routes/rewardedAd.ts"
       - "backend/src/lib/admobSsv.ts"
+      - "backend/src/lib/rewardAdRates.ts"
       - "backend/src/lib/rewardAdQuota.ts"
       - "backend/src/lib/dynamo.ts"
       - "backend/test/rewarded-ad-dynamodb-local.test.ts"

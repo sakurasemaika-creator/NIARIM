@@ -1,6 +1,7 @@
 import { GetSecretValueCommand, SecretsManagerClient } from "@aws-sdk/client-secrets-manager";
 import { TransactWriteCommand, paginateQuery } from "@aws-sdk/lib-dynamodb";
 import { OAuth2Client } from "google-auth-library";
+import { INITIAL_REWARDED_COINS_PER_COMPLETION } from "../lib/coinEconomyScale";
 import { ddb, Keys, tableName } from "../lib/dynamo";
 import { rewardAdTiers, rewardCountryPattern, rewardReportDay, rewardReportTimeZone } from "../lib/rewardAdRates";
 import { rewardAdUtcDay } from "../lib/rewardAdQuota";
@@ -75,7 +76,8 @@ export function regionalRewardRates(
     // reserved. The larger denominator is conservative if reports lag SSV.
     const divisor = BigInt(Math.max(verified.completions, sample.impressions)) * 1_000_000n;
     const affordable = sample.earningsMicros * 50n / divisor;
-    rates[country] = levels.find(amount => BigInt(amount) <= affordable) ?? 0;
+    rates[country] = levels.find(amount => BigInt(amount) <= affordable) ??
+      INITIAL_REWARDED_COINS_PER_COMPLETION;
   }
   return rates;
 }

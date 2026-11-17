@@ -23,19 +23,20 @@ describe("regional rewarded ad reporting", () => {
     const report = parseRewardAdReport([
       header, row("JP", base, 200, "80000000"), row("JP", higher, 200, 84_000_000),
       row("US", base, 200, "20000000"), row("FR", base, 100, "1000000"),
-      row("GB", base, 800, "400000000"), footer(5),
+      row("GB", base, 800, "400000000"), row("AU", base, 120, "-1000000"), footer(6),
     ], units);
     const views = new Map([
       ["JP", { days: 12, completions: 370 }],
       ["US", { days: 10, completions: 180 }],
       ["FR", { days: 7, completions: 120 }],
       ["GB", { days: 6, completions: 200 }],
+      ["AU", { days: 7, completions: 100 }],
     ]);
     expect(regionalRewardRates(report, views, rewardAdTiers(
       JSON.stringify({ 5: lower, 20: higher }), base,
-    ))).toEqual({ JP: 20, US: 5, FR: 0 });
+    ))).toEqual({ JP: 20, US: 5, FR: 10, AU: 10 });
     expect(regionalRewardRates(report, views, rewardAdTiers("", base)))
-      .toEqual({ JP: 10, US: 0, FR: 0 });
+      .toEqual({ JP: 10, US: 10, FR: 10, AU: 10 });
   });
 
   it("rejects partial or duplicate rows, unexpected currencies and duplicate units", () => {
