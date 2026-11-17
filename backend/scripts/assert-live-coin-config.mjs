@@ -64,7 +64,8 @@ for (const [env, key] of Object.entries(exactValues)) {
 // Once regional accounting is collecting data, a routine deployment must
 // retain its layer and opt-in controls. Explicit true/false permits rollout
 // or rollback through the repository's deployment configuration.
-const countryDbConfigured = process.env.NIARIM_REWARDED_AD_COUNTRY_DATA === "true";
+const countryDbConfigured = process.env.NIARIM_REWARDED_AD_COUNTRY_DATA === "true" ||
+  Boolean(process.env.NIARIM_REWARDED_AD_COUNTRY_LAYER_ARN);
 if (deployed.REWARDED_AD_COUNTRY_DB && !countryDbConfigured) {
   conflicts.push("REWARDED_AD_COUNTRY_DB");
 }

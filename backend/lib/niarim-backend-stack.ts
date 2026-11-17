@@ -216,6 +216,8 @@ export class NiarimBackendStack extends Stack {
       }) : countryLayerArn
         ? lambda.LayerVersion.fromLayerVersionArn(this, "RewardAdCountryLayer", countryLayerArn)
         : undefined;
+    const usesCountryLite = countryDataDirectory ||
+      /:layer:niarim-reward-country-data:[0-9]+$/.test(countryLayerArn ?? "");
 
     const apiFunction = new NodejsFunction(this, "ApiFunction", {
       functionName: "niarim-api",
@@ -308,7 +310,7 @@ export class NiarimBackendStack extends Stack {
         ADMOB_REWARDED_AD_UNIT_ID:
           rewardedBaseUnit,
         ...(rewardCountryLayer ? {
-          REWARDED_AD_COUNTRY_DB: countryDataDirectory ? "/opt/country.mmdb" : "/opt/GeoLite2-Country.mmdb",
+          REWARDED_AD_COUNTRY_DB: usesCountryLite ? "/opt/country.mmdb" : "/opt/GeoLite2-Country.mmdb",
         } : {}),
         ...(reportSecretArn ? { REWARDED_AD_REPORTING_ENABLED: "true" } : {}),
         ...(autoRewardRates ? { REWARDED_AD_AUTO_RATES_ENABLED: "true" } : {}),

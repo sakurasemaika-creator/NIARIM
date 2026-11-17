@@ -94,6 +94,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       NIARIM_REWARDED_AD_COUNTRY_DATA: ${{ vars.NIARIM_REWARDED_AD_COUNTRY_DATA }}
+      NIARIM_REWARDED_AD_COUNTRY_LAYER_ARN: ${{ vars.NIARIM_REWARDED_AD_COUNTRY_LAYER_ARN }}
       NIARIM_ADMOB_REPORT_OAUTH_SECRET_ARN: ${{ vars.NIARIM_ADMOB_REPORT_OAUTH_SECRET_ARN }}
       NIARIM_REWARDED_AD_UNIT_TIERS: ${{ vars.NIARIM_REWARDED_AD_UNIT_TIERS }}
       NIARIM_REWARDED_AD_AUTO_RATES: ${{ vars.NIARIM_REWARDED_AD_AUTO_RATES }}
@@ -153,13 +154,22 @@ jobs:
           AWS_SESSION_TOKEN="$(jq -r .SessionToken <<<"$creds")" \
             aws lambda get-function-configuration \
               --function-name niarim-api \
-              --query 'Environment.Variables' --output json \
-              > "$RUNNER_TEMP/niarim-live-env.json"
-          trap 'rm -f "$RUNNER_TEMP/niarim-live-env.json"' EXIT
+              --query '{Variables: Environment.Variables, LayerArns: Layers[].Arn}' --output json \
+              > "$RUNNER_TEMP/niarim-live-config.json"
+          trap 'rm -f "$RUNNER_TEMP/niarim-live-config.json" "$RUNNER_TEMP/niarim-live-env.json"' EXIT
+          jq '.Variables' "$RUNNER_TEMP/niarim-live-config.json" > "$RUNNER_TEMP/niarim-live-env.json"
+          if [[ -z "$NIARIM_REWARDED_AD_COUNTRY_LAYER_ARN" && -z "$NIARIM_REWARDED_AD_COUNTRY_DATA" ]] && \
+            jq -e '.REWARDED_AD_COUNTRY_DB == "/opt/country.mmdb"' "$RUNNER_TEMP/niarim-live-env.json" >/dev/null; then
+            NIARIM_REWARDED_AD_COUNTRY_LAYER_ARN="$(jq -r '.LayerArns[]? | select(test(":layer:niarim-reward-country-data:[0-9]+$"))' "$RUNNER_TEMP/niarim-live-config.json")"
+            if [[ -n "$NIARIM_REWARDED_AD_COUNTRY_LAYER_ARN" ]]; then
+              export NIARIM_REWARDED_AD_COUNTRY_LAYER_ARN
+              echo "NIARIM_REWARDED_AD_COUNTRY_LAYER_ARN=$NIARIM_REWARDED_AD_COUNTRY_LAYER_ARN" >> "$GITHUB_ENV"
+            fi
+          fi
           node scripts/assert-live-coin-config.mjs \
             "$RUNNER_TEMP/niarim-live-env.json"
       - name: Prepare country data for the scheduled reward reports
-        if: ${{ env.NIARIM_REWARDED_AD_COUNTRY_DATA == 'true' }}
+        if: ${{ env.NIARIM_REWARDED_AD_COUNTRY_DATA == 'true' && env.NIARIM_REWARDED_AD_COUNTRY_LAYER_ARN == '' }}
         run: bash scripts/prepare-reward-country-layer.sh "$RUNNER_TEMP/reward-country-layer"
       - name: cdk deploy
         shell: bash
@@ -167,7 +177,9 @@ jobs:
           set -euo pipefail
           # Only the ARN of the OAuth secret is passed to CloudFormation.
           regional_args=()
-          if [[ "$NIARIM_REWARDED_AD_COUNTRY_DATA" == 'true' ]]; then
+          if [[ -n "$NIARIM_REWARDED_AD_COUNTRY_LAYER_ARN" ]]; then
+            regional_args+=( -c "rewardedAdCountryLayerArn=$NIARIM_REWARDED_AD_COUNTRY_LAYER_ARN" )
+          elif [[ "$NIARIM_REWARDED_AD_COUNTRY_DATA" == 'true' ]]; then
             regional_args+=( -c "rewardedAdCountryDataDirectory=$RUNNER_TEMP/reward-country-layer" )
           fi
           if [[ -n "$NIARIM_ADMOB_REPORT_OAUTH_SECRET_ARN" ]]; then
