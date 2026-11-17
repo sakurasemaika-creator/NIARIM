@@ -82,6 +82,7 @@ void main() {
     final api = _RewardApi(client);
     final community = CommunityService(api: api);
     final premium = PremiumService();
+    final settings = SettingsService();
     final ads = _RewardAds(premiumService: premium);
     final auth = _RewardAuth();
     await tester.pumpWidget(
@@ -90,6 +91,7 @@ void main() {
           ChangeNotifierProvider<GoogleAuthService>.value(value: auth),
           ChangeNotifierProvider<CommunityService>.value(value: community),
           ChangeNotifierProvider<PremiumService>.value(value: premium),
+          ChangeNotifierProvider<SettingsService>.value(value: settings),
           ChangeNotifierProvider<AdvertisingService>.value(value: ads),
         ],
         child: const MaterialApp(
@@ -126,6 +128,7 @@ void main() {
     auth.dispose();
     community.dispose();
     premium.dispose();
+    settings.dispose();
     client.close();
   });
 

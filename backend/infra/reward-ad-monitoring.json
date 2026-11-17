@@ -1,0 +1,94 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Monitor NIARIM AdMob report collection independently of the API deployment stack.",
+  "Parameters": {
+    "RevenueFunctionName": {
+      "Type": "String",
+      "Default": "niarim-reward-ad-revenue"
+    }
+  },
+  "Resources": {
+    "RewardAdRevenueErrors": {
+      "Type": "AWS::CloudWatch::Alarm",
+      "Properties": {
+        "AlarmDescription": "AdMob revenue collection failed in the last hour.",
+        "ComparisonOperator": "GreaterThanOrEqualToThreshold",
+        "Dimensions": [
+          {
+            "Name": "FunctionName",
+            "Value": {
+              "Ref": "RevenueFunctionName"
+            }
+          }
+        ],
+        "EvaluationPeriods": 1,
+        "MetricName": "Errors",
+        "Namespace": "AWS/Lambda",
+        "Period": 3600,
+        "Statistic": "Sum",
+        "Threshold": 1,
+        "TreatMissingData": "notBreaching",
+        "AlarmName": "niarim-reward-ad-revenue-errors"
+      }
+    },
+    "RewardAdRevenueStale": {
+      "Type": "AWS::CloudWatch::Alarm",
+      "Properties": {
+        "AlarmDescription": "No successful AdMob revenue collection in 36 hours.",
+        "ComparisonOperator": "LessThanThreshold",
+        "DatapointsToAlarm": 36,
+        "EvaluationPeriods": 36,
+        "Metrics": [
+          {
+            "Expression": "invocations - errors",
+            "Id": "expr_1",
+            "ReturnData": true
+          },
+          {
+            "Id": "invocations",
+            "MetricStat": {
+              "Metric": {
+                "Dimensions": [
+                  {
+                    "Name": "FunctionName",
+                    "Value": {
+                      "Ref": "RevenueFunctionName"
+                    }
+                  }
+                ],
+                "MetricName": "Invocations",
+                "Namespace": "AWS/Lambda"
+              },
+              "Period": 3600,
+              "Stat": "Sum"
+            },
+            "ReturnData": false
+          },
+          {
+            "Id": "errors",
+            "MetricStat": {
+              "Metric": {
+                "Dimensions": [
+                  {
+                    "Name": "FunctionName",
+                    "Value": {
+                      "Ref": "RevenueFunctionName"
+                    }
+                  }
+                ],
+                "MetricName": "Errors",
+                "Namespace": "AWS/Lambda"
+              },
+              "Period": 3600,
+              "Stat": "Sum"
+            },
+            "ReturnData": false
+          }
+        ],
+        "Threshold": 1,
+        "TreatMissingData": "breaching",
+        "AlarmName": "niarim-reward-ad-revenue-stale"
+      }
+    }
+  }
+}
