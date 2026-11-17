@@ -11895,6 +11895,18 @@ abstract class AppLocalizations {
   /// **'未使用素材を一括削除（全プロジェクト）'**
   String get storageRemoveUnusedMaterialsButton;
 
+  /// No description provided for @storageRemoveUnusedMaterialsConfirmBody.
+  ///
+  /// In ja, this message translates to:
+  /// **'未使用の素材を{count}件（{size}）削除します。この操作は取り消せません。'**
+  String storageRemoveUnusedMaterialsConfirmBody(int count, String size);
+
+  /// No description provided for @storageNoUnusedMaterials.
+  ///
+  /// In ja, this message translates to:
+  /// **'未使用の素材はありません。'**
+  String get storageNoUnusedMaterials;
+
   /// No description provided for @storageEmptyTrashButton.
   ///
   /// In ja, this message translates to:

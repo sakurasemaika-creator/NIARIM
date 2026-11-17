@@ -308,7 +308,8 @@ class StampService extends ChangeNotifier {
       // 読めない項目があった保存は、起動では書き換えない（後の版でなら
       // 読めるかもしれない自作の内容を、起動しただけで消さない。その一覧を
       // 次に変えたときに、読めた分だけで保存し直される）。
-      if (prefs.getBool(_groupedPresetsKey) != true) {
+      final grouped = prefs.readBool(_groupedPresetsKey) ?? false;
+      if (!grouped) {
         if (groupUnfiledBuiltIns(
           _stamps,
           _presetOrder,
@@ -319,7 +320,7 @@ class StampService extends ChangeNotifier {
         }
       }
       if (changed && intact) await _persist();
-      if (intact && prefs.getBool(_groupedPresetsKey) != true) {
+      if (intact && !grouped) {
         await prefs.setBool(_groupedPresetsKey, true);
       }
     }

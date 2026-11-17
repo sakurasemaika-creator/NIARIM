@@ -508,7 +508,7 @@ class _HomeScreenState extends State<HomeScreen>
   Future<void> _loadSharedViewMode() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final stored = prefs.getString(_sharedViewModeKey);
+      final stored = prefs.readString(_sharedViewModeKey);
       if (!mounted || stored == null) return;
       for (final mode in ProjectViewMode.values) {
         if (mode.name == stored) {
@@ -534,7 +534,7 @@ class _HomeScreenState extends State<HomeScreen>
   Future<void> _loadWorksViewMode() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final stored = prefs.getString(_worksViewModeKey);
+      final stored = prefs.readString(_worksViewModeKey);
       if (!mounted || stored == null) return;
       for (final mode in ProjectViewMode.values) {
         if (mode.name == stored) {
@@ -7268,7 +7268,8 @@ class _WorksTabState extends State<_WorksTab>
   Future<void> _loadFavoritePaths() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final stored = prefs.getStringList(_favoritePathsKey) ?? const <String>[];
+      final stored =
+          prefs.readStringList(_favoritePathsKey) ?? const <String>[];
       if (mounted && !setEquals(_favoritePaths, stored.toSet())) {
         setState(() {
           _favoritePaths

@@ -669,7 +669,7 @@ class ProjectService extends ChangeNotifier {
       final prefs = await SharedPreferences.getInstance();
       _outgoingFavoritePaths
         ..clear()
-        ..addAll(prefs.getStringList(_outgoingFavoritePrefsKey) ?? const []);
+        ..addAll(prefs.readStringList(_outgoingFavoritePrefsKey) ?? const []);
     } catch (error, stackTrace) {
       AppErrorReporter.record(error, stackTrace);
     }

@@ -1234,7 +1234,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String workspaceLoadConfirmBody(String name) {
-    return '“$name”을(를) 불러오면 현재 워크스페이스 설정이 바뀝니다. 현재 설정을 먼저 저장할 수 있습니다.';
+    return '「$name」을(를) 불러오면 현재 워크스페이스 설정이 바뀝니다. 현재 설정을 먼저 저장할 수 있습니다.';
   }
 
   @override
@@ -6564,6 +6564,14 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get storageRemoveUnusedMaterialsButton => '미사용 소재 일괄 삭제(모든 프로젝트)';
+
+  @override
+  String storageRemoveUnusedMaterialsConfirmBody(int count, String size) {
+    return '사용하지 않는 소재 $count개($size)를 삭제합니다. 이 작업은 되돌릴 수 없습니다.';
+  }
+
+  @override
+  String get storageNoUnusedMaterials => '사용하지 않는 소재가 없습니다.';
 
   @override
   String get storageEmptyTrashButton => '휴지통 비우기';

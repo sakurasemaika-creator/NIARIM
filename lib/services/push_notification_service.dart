@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../l10n/app_localizations.dart';
 import '../router.dart';
+import '../utils/tolerant_preferences.dart';
 import 'community_notice.dart';
 import 'community_service.dart';
 import 'google_auth_service.dart';
@@ -185,7 +186,7 @@ class PushNotificationService {
             _community.api != null
         ? _community.currentUserId
         : null;
-    if (prefs.getString('push_notice_owner') == noticeOwner) return;
+    if (prefs.readString('push_notice_owner') == noticeOwner) return;
     if (noticeOwner == null) {
       await prefs.remove('push_notice_owner');
     } else {

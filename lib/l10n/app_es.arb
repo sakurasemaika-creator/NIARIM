@@ -2792,6 +2792,8 @@
   "storageCategoryTrash": "Papelera",
   "storageClearCacheButton": "Borrar caché",
   "storageRemoveUnusedMaterialsButton": "Eliminar materiales sin usar (todos los proyectos)",
+  "storageRemoveUnusedMaterialsConfirmBody": "¿Eliminar {count, plural, one{{count} recurso sin usar} other{{count} recursos sin usar}} ({size})? Esta acción no se puede deshacer.",
+  "storageNoUnusedMaterials": "No hay recursos sin usar.",
   "storageEmptyTrashButton": "Vaciar papelera",
   "storageEmptyTrashKeptUnreadFolders": "No se vació la papelera. Las carpetas con proyectos que no se pudieron cargar no se pueden eliminar hasta que se carguen. Pulsa «{retry}» en Inicio para volver a cargarlos.",
   "storageOrganizeProjectsButton": "Organizar proyectos",

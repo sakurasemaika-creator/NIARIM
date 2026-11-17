@@ -1287,7 +1287,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String workspaceLoadConfirmBody(String name) {
-    return 'Le chargement de « $name » remplacera les réglages actuels de l’espace de travail. Vous pouvez les enregistrer d’abord.';
+    return 'Le chargement de « $name » remplacera les réglages actuels de l’espace de travail. Vous pouvez les enregistrer d’abord.';
   }
 
   @override
@@ -6906,6 +6906,20 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get storageRemoveUnusedMaterialsButton =>
       'Supprimer les matériaux inutilisés (tous les projets)';
+
+  @override
+  String storageRemoveUnusedMaterialsConfirmBody(int count, String size) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count ressources inutilisées',
+      one: '$count ressource inutilisée',
+    );
+    return 'Supprimer $_temp0 ($size) ? Cette action est irréversible.';
+  }
+
+  @override
+  String get storageNoUnusedMaterials => 'Aucune ressource inutilisée.';
 
   @override
   String get storageEmptyTrashButton => 'Vider la corbeille';

@@ -3214,6 +3214,9 @@
   "storageCategoryTrash": "ゴミ箱",
   "storageClearCacheButton": "キャッシュを削除",
   "storageRemoveUnusedMaterialsButton": "未使用素材を一括削除（全プロジェクト）",
+  "storageRemoveUnusedMaterialsConfirmBody": "未使用の素材を{count}件（{size}）削除します。この操作は取り消せません。",
+  "@storageRemoveUnusedMaterialsConfirmBody": {"placeholders": {"count": {"type": "int"}, "size": {"type": "String"}}},
+  "storageNoUnusedMaterials": "未使用の素材はありません。",
   "storageEmptyTrashButton": "ゴミ箱を空にする",
   "storageEmptyTrashKeptUnreadFolders": "ゴミ箱を空にしませんでした。読み込めていないプロジェクトを含むフォルダは、読み込めるまで削除できません。ホームの「{retry}」でもう一度読み込んでください。",
   "@storageEmptyTrashKeptUnreadFolders": {

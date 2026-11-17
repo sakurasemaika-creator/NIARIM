@@ -6531,6 +6531,14 @@ class AppLocalizationsJa extends AppLocalizations {
   String get storageRemoveUnusedMaterialsButton => '未使用素材を一括削除（全プロジェクト）';
 
   @override
+  String storageRemoveUnusedMaterialsConfirmBody(int count, String size) {
+    return '未使用の素材を$count件（$size）削除します。この操作は取り消せません。';
+  }
+
+  @override
+  String get storageNoUnusedMaterials => '未使用の素材はありません。';
+
+  @override
   String get storageEmptyTrashButton => 'ゴミ箱を空にする';
 
   @override

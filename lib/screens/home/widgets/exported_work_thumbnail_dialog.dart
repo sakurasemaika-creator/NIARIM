@@ -15,6 +15,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:video_player/video_player.dart';
 
 import '../../../l10n/app_localizations.dart';
+import '../../../utils/tolerant_preferences.dart';
 
 /// Non-destructive display-only thumbnail metadata for exported media.
 /// Never rewrites the actual exported .mp4/.webm/.gif/.png file.
@@ -23,7 +24,7 @@ class ExportedWorkCoverStore {
 
   static Future<Map<String, dynamic>> read(File file) async {
     final prefs = await SharedPreferences.getInstance();
-    final map = _decode(prefs.getString(prefsKey));
+    final map = _decode(prefs.readString(prefsKey));
     final entry = map[file.path];
     if (entry is! Map) return const {'mode': 'latest'};
     try {
@@ -247,7 +248,7 @@ class ExportedWorkCoverStore {
     int? frameIndex,
   }) async {
     final prefs = await SharedPreferences.getInstance();
-    final current = _decode(prefs.getString(prefsKey));
+    final current = _decode(prefs.readString(prefsKey));
     final previous = current[file.path];
     final stat = await file.stat();
     current[file.path] = {

@@ -9,11 +9,16 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/l10n/app_localizations.dart';
+import 'package:niarim/models/audio_clip.dart';
+import 'package:niarim/models/material_asset.dart' as assets;
 import 'package:niarim/screens/settings/storage_screen.dart';
+import 'package:niarim/services/material_service.dart';
+import 'package:niarim/services/project_service.dart';
 import 'package:niarim/services/storage_info_service.dart';
 import 'package:niarim/services/theme_service.dart';
 import 'package:niarim/utils/app_error_reporter.dart';
 import 'package:niarim/utils/app_locale.dart';
+import 'package:niarim/utils/file_size_label.dart';
 import 'package:niarim/widgets/app_scroll_behavior.dart';
 import 'package:provider/provider.dart';
 import 'package:provider/single_child_widget.dart';
@@ -194,6 +199,100 @@ void main() {
   ListTile tile(WidgetTester tester, String title) => tester.widget<ListTile>(
     find.widgetWithText(ListTile, title, skipOffstage: false),
   );
+
+  testWidgets('bulk removal previews bytes and preserves in-use assets', (
+    tester,
+  ) async {
+    final service = _ScriptedStorage();
+    final l10n = await show(tester, await bootstrap(tester), service);
+    service.deviceQueries.single.complete(_device);
+    service.scans.single.complete(_breakdownOf());
+    await tester.pump();
+    final context = tester.element(find.byType(StorageScreen));
+    final projects = context.read<ProjectService>();
+    final materials = context.read<MaterialService>();
+    final fixture = (await tester.runAsync(() async {
+      final project = await projects.createProject(
+        name: 'Storage fixture',
+        fps: 12,
+        durationSeconds: 1,
+        backgroundColor: 0xFFFFFFFF,
+      );
+      Future<assets.MaterialAsset> add(String name, int bytes) async {
+        final source = File('${root.path}/$name')
+          ..writeAsBytesSync(List.filled(bytes, 0));
+        return materials.addMaterial(
+          projectId: project.id,
+          sourcePath: source.path,
+          type: assets.MaterialType.audio,
+        );
+      }
+
+      final used = await add('used.wav', 256);
+      final unused = await add('unused.wav', 128);
+      projects.addAudioClip(
+        project.id,
+        projects.scenesOf(project.id).single.id,
+        AudioClip(
+          id: 'clip',
+          label: 'Used audio',
+          materialId: used.id,
+          startFrame: 0,
+          lengthFrames: 1,
+        ),
+      );
+      await projects.saveProject(project.id);
+      return (
+        projectId: project.id,
+        usedId: used.id,
+        used: File((await materials.pathOf(project.id, used.id))!),
+        unused: File((await materials.pathOf(project.id, unused.id))!),
+      );
+    }))!;
+
+    Future<void> waitFor(bool Function() done) async {
+      for (var i = 0; i < 70 && !done(); i++) {
+        await tester.runAsync(
+          () => Future<void>.delayed(const Duration(milliseconds: 20)),
+        );
+        await tester.pump(const Duration(milliseconds: 100));
+      }
+      expect(done(), isTrue);
+    }
+
+    final dialog = find.byType(AlertDialog);
+    void activate() =>
+        tile(tester, l10n.storageRemoveUnusedMaterialsButton).onTap!();
+    activate();
+    await waitFor(() => dialog.evaluate().isNotEmpty);
+    final preview = tester.widget<AlertDialog>(dialog).content! as Text;
+    expect(
+      (preview.data ?? preview.textSpan!.toPlainText()).replaceAll(
+        '\u2060',
+        '',
+      ),
+      l10n.storageRemoveUnusedMaterialsConfirmBody(1, fileSizeLabel(l10n, 128)),
+    );
+    expect(fixture.unused.existsSync(), isTrue);
+    await tester.tap(find.widgetWithText(TextButton, l10n.commonCancel));
+    await tester.pump(const Duration(milliseconds: 350));
+    expect(fixture.unused.existsSync(), isTrue);
+
+    activate();
+    await waitFor(() => dialog.evaluate().isNotEmpty);
+    await tester.tap(find.widgetWithText(FilledButton, l10n.commonDelete));
+    await waitFor(() => service.invalidations == 1);
+    expect(fixture.unused.existsSync(), isFalse);
+    expect(fixture.used.existsSync(), isTrue);
+    expect(materials.materialsOf(fixture.projectId).single.id, fixture.usedId);
+
+    ScaffoldMessenger.of(context).clearSnackBars();
+    activate();
+    final emptyMessage = find.text(l10n.storageNoUnusedMaterials);
+    await waitFor(() => emptyMessage.evaluate().isNotEmpty);
+    expect(dialog, findsNothing);
+    expect(service.invalidations, 1);
+  });
 
   testWidgets('集計と端末の容量を待っている間も、操作の欄は出ていて、欄ごとに集計中になる', (tester) async {
     final providers = await bootstrap(tester);

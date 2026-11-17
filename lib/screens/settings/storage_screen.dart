@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -1221,30 +1222,94 @@ class _StorageScreenState extends State<StorageScreen> {
 
   Future<void> _confirmRemoveUnusedMaterials() => _runAction(() async {
     final l10n = AppLocalizations.of(context)!;
-    final ok = await confirmDelete(
-      context,
-      itemName: l10n.storageRemoveUnusedMaterialsButton,
-    );
-    if (!ok || !mounted) return false;
-    _willEmpty(const [StorageCategory.materials]);
     final ps = context.read<ProjectService>();
     final ms = context.read<MaterialService>();
-    final removed = await _work(() async {
-      var count = 0;
-      for (final project in ps.projects) {
-        count += await ms.removeUnused(
-          projectId: project.id,
-          isUsed: (materialId) => ps.isMaterialUsed(project.id, materialId),
-        );
-      }
-      return count;
-    });
-    if (!mounted) return true;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(l10n.materialRemovedSnackbar(removed))),
+    final candidates = <String, List<String>>{};
+    var count = 0;
+    var bytes = 0;
+    try {
+      await _work(() async {
+        for (final project in ps.projects) {
+          await ms.ensureLoaded(project.id);
+          for (final material in ms.materialsOf(project.id)) {
+            if (ps.isMaterialUsed(project.id, material.id)) continue;
+            final path = await ms.pathOf(project.id, material.id);
+            if (path != null) {
+              bytes += math.max(0, (await File(path).stat()).size);
+            }
+            (candidates[project.id] ??= []).add(material.id);
+            count++;
+          }
+        }
+      });
+    } catch (error, stack) {
+      AppErrorReporter.record(error, stack);
+      if (mounted) _showMaterialsFeedback(l10n.communityErrorGeneric);
+      return false;
+    }
+    if (!mounted) return false;
+    if (count == 0) {
+      _showMaterialsFeedback(l10n.storageNoUnusedMaterials);
+      return false;
+    }
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        scrollable: true,
+        title: Text(l10n.commonDelete),
+        content: messageText(
+          l10n.storageRemoveUnusedMaterialsConfirmBody(
+            count,
+            fileSizeLabel(l10n, bytes),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(l10n.commonCancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(l10n.commonDelete),
+          ),
+        ],
+      ),
     );
+    if (confirmed != true || !mounted) return false;
+    _willEmpty(const [StorageCategory.materials]);
+    var removed = 0;
+    try {
+      await _work(() async {
+        for (final project in ps.projects) {
+          for (final id in candidates[project.id] ?? const <String>[]) {
+            if (await ms.removeMaterial(
+              projectId: project.id,
+              materialId: id,
+              isUsed: (id) => ps.isMaterialUsed(project.id, id),
+            )) {
+              removed++;
+            }
+          }
+        }
+      });
+    } catch (error, stack) {
+      AppErrorReporter.record(error, stack);
+      if (mounted) _showMaterialsFeedback(l10n.communityErrorGeneric);
+      return true;
+    }
+    if (mounted) {
+      _showMaterialsFeedback(
+        removed == 0
+            ? l10n.storageNoUnusedMaterials
+            : l10n.materialRemovedSnackbar(removed),
+      );
+    }
     return true;
   });
+
+  void _showMaterialsFeedback(String text) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
+  }
 
   Future<void> _confirmEmptyTrash() => _runAction(() async {
     final l10n = AppLocalizations.of(context)!;

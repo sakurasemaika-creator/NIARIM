@@ -2,6 +2,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../utils/tolerant_preferences.dart';
+
 /// Saves only opaque match keys and their first observed event IDs. Android
 /// shares its app-private database with the FCM service in the same process.
 class CommunityNoticeHistory {
@@ -60,7 +62,7 @@ class CommunityNoticeHistory {
         for (final receipt in dedup) {
           final key = 'noticeHistory.$account.${receipt['key']}';
           final id = receipt['event']!;
-          final previous = prefs.getString(key);
+          final previous = prefs.readString(key);
           if (previous == id ||
               (previous == null && await prefs.setString(key, id))) {
             allowed.add(id);

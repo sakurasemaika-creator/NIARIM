@@ -6472,6 +6472,14 @@ class AppLocalizationsZh extends AppLocalizations {
   String get storageRemoveUnusedMaterialsButton => '批量删除未使用素材（所有项目）';
 
   @override
+  String storageRemoveUnusedMaterialsConfirmBody(int count, String size) {
+    return '要删除 $count 个未使用的素材（$size）吗？此操作无法撤销。';
+  }
+
+  @override
+  String get storageNoUnusedMaterials => '没有未使用的素材。';
+
+  @override
   String get storageEmptyTrashButton => '清空回收站';
 
   @override
@@ -16600,6 +16608,14 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get storageRemoveUnusedMaterialsButton => '批次刪除未使用素材（所有專案）';
+
+  @override
+  String storageRemoveUnusedMaterialsConfirmBody(int count, String size) {
+    return '要刪除 $count 個未使用的素材（$size）嗎？此操作無法復原。';
+  }
+
+  @override
+  String get storageNoUnusedMaterials => '沒有未使用的素材。';
 
   @override
   String get storageEmptyTrashButton => '清空垃圾桶';

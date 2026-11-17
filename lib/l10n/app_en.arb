@@ -2792,6 +2792,8 @@
   "storageCategoryTrash": "Trash",
   "storageClearCacheButton": "Clear cache",
   "storageRemoveUnusedMaterialsButton": "Remove unused materials (all projects)",
+  "storageRemoveUnusedMaterialsConfirmBody": "Delete {count, plural, one{{count} unused asset} other{{count} unused assets}} ({size})? This can’t be undone.",
+  "storageNoUnusedMaterials": "There are no unused assets.",
   "storageEmptyTrashButton": "Empty trash",
   "storageEmptyTrashKeptUnreadFolders": "The trash was not emptied. Folders with projects that could not be loaded can’t be deleted until they load. Press “{retry}” on Home to load them again.",
   "storageOrganizeProjectsButton": "Organize projects",

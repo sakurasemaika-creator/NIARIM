@@ -187,6 +187,32 @@ void main() {
     expect(offenders, isEmpty);
   });
 
+  test('invalid preset migration flags do not stop a returning user', () async {
+    await recordSteps();
+    final prefs = await SharedPreferences.getInstance();
+    for (final key in ['brushes', 'tones', 'stamps']) {
+      expect(prefs.getStringList(key), isNotEmpty, reason: key);
+    }
+    const markers = [
+      'brush_grouped_presets_v1',
+      'tone_grouped_presets_v1',
+      'stamp_grouped_presets_v1',
+    ];
+    for (final key in markers) {
+      await prefs.setString(key, 'incorrect type');
+    }
+    await prefs.setInt('niarim_outgoing_share_favorites', 2);
+    AppErrorReporter.recentErrors.clear();
+
+    await recordSteps();
+
+    for (final key in markers) {
+      expect(prefs.getBool(key), isTrue, reason: key);
+      expect(AppErrorReporter.recentErrors, contains(contains(key)));
+    }
+    expect(prefs.get('niarim_outgoing_share_favorites'), 2);
+  });
+
   test('tolerant reads return null for another type', () async {
     SharedPreferences.setMockInitialValues({
       'b': 'x',
@@ -221,7 +247,8 @@ void main() {
     }) async {
       await tester.pumpWidget(
         StartupFailureApp(
-          details: 'step: brush\nerror: Bad state: boom '
+          details:
+              'step: brush\nerror: Bad state: boom '
               'private@example.com "/home/Artist/private sketch.niapro"',
           languageCode: languageCode,
           onRetry: onRetry,

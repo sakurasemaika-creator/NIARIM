@@ -1103,7 +1103,8 @@ class BrushService extends ChangeNotifier {
           needsPersist = true;
         }
       }
-      if (prefs.getBool(_groupedPresetsKey) != true) {
+      final grouped = prefs.readBool(_groupedPresetsKey) ?? false;
+      if (!grouped) {
         if (groupUnfiledBuiltIns(
           _brushes,
           _presetOrder,
@@ -1116,7 +1117,7 @@ class BrushService extends ChangeNotifier {
       if (needsPersist) {
         await _persist();
       }
-      if (prefs.getBool(_groupedPresetsKey) != true) {
+      if (!grouped) {
         await prefs.setBool(_groupedPresetsKey, true);
       }
     }

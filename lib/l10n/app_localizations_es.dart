@@ -6902,6 +6902,20 @@ class AppLocalizationsEs extends AppLocalizations {
       'Eliminar materiales sin usar (todos los proyectos)';
 
   @override
+  String storageRemoveUnusedMaterialsConfirmBody(int count, String size) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count recursos sin usar',
+      one: '$count recurso sin usar',
+    );
+    return '¿Eliminar $_temp0 ($size)? Esta acción no se puede deshacer.';
+  }
+
+  @override
+  String get storageNoUnusedMaterials => 'No hay recursos sin usar.';
+
+  @override
   String get storageEmptyTrashButton => 'Vaciar papelera';
 
   @override
