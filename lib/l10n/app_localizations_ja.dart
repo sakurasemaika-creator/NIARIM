@@ -1580,17 +1580,17 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get helpStampToolDesc =>
-      'キャンバスに登録済み画像をブラシのように配置するツールです。集中線や背景パターン、小物などを毎回描き直さず再利用できます。ピクセルモードでは、ドット絵フィルターと同じ処理で透明境界を硬く保ちながらピクセル化・減色します。モザイクは別のエフェクトで、スタンプのピクセルモードには使用しません。スタンプパネルでは配置するスタンプの回転角度とサイズも調整できます。';
+      'キャンバスに登録済み画像をブラシのように配置するツールです。集中線や背景パターン、小物などを毎回描き直さず再利用できます。ドット絵モードでは、ドット絵フィルターと同じ処理で透明境界を硬く保ちながらピクセル化・減色します。モザイクは別のエフェクトで、スタンプのドット絵モードには使用しません。スタンプパネルでは配置するスタンプの回転角度とサイズも調整できます。';
 
   @override
   String get helpToneFillTitle => 'トーン塗り';
 
   @override
   String get helpToneFillDesc =>
-      'バケツツールの設定でベタ塗りからトーン塗りへ切り替えると、選択した網点・ライン柄などのトーンパターンで塗りつぶせます。ピクセルモード専用の市松模様・格子柄トーンも用意されており、ドット絵の質感を活かした塗りができます。フリルやニット、タイツなど、手描きでは手間のかかる細かい柄も簡単に描けます。オリジナルのトーンを自作して追加したり、ほかの人と共有したりすることも可能です。 トーン一覧では網点・ライン・布柄・ピクセル柄をまとめて表示します。ピクセルディザの名前には目の細かさ、マス目の大きさ、濃度を表示します。';
+      'バケツツールの設定でベタ塗りからトーン塗りへ切り替えると、選択した網点・ライン柄などのトーンパターンで塗りつぶせます。ドット絵モード専用の市松模様・格子柄トーンも用意されており、ドット絵の質感を活かした塗りができます。フリルやニット、タイツなど、手描きでは手間のかかる細かい柄も簡単に描けます。オリジナルのトーンを自作して追加したり、ほかの人と共有したりすることも可能です。 トーン一覧では網点・ライン・布柄・ピクセル柄をまとめて表示します。ピクセルディザの名前には目の細かさ、マス目の大きさ、濃度を表示します。';
 
   @override
-  String get helpPixelModeTitle => 'ピクセルモード';
+  String get helpPixelModeTitle => 'ドット絵モード';
 
   @override
   String get helpPixelModeDesc =>
@@ -1832,7 +1832,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get tipsTextCaptionDesc =>
-      'テキストツールを使えば、字幕やコメントをフレームごとに配置できます。フォントをピクセルモードに切り替えると、レトロゲーム風の質感を演出することもできます。';
+      'テキストツールを使えば、字幕やコメントをフレームごとに配置できます。フォントをドット絵モードに切り替えると、レトロゲーム風の質感を演出することもできます。';
 
   @override
   String get tipsAutofillPresetTitle => '自動塗り設定はパーツごとに登録しておく';
@@ -1962,11 +1962,11 @@ class AppLocalizationsJa extends AppLocalizations {
       '同じ作品の複数話数を作るときは、フォルダで話数ごとにプロジェクトをまとめ、各プロジェクトで使う自動塗り設定を絞り込んでおくと、キャラごとの配色を混同せず効率よく作業できます。';
 
   @override
-  String get tipsPixelToneRetroTitle => 'スタンプのピクセルモード×トーン塗りでレトロ統一';
+  String get tipsPixelToneRetroTitle => 'スタンプのドット絵モード×トーン塗りでレトロ統一';
 
   @override
   String get tipsPixelToneRetroDesc =>
-      'ピクセルモードのスタンプと、ピクセルモード専用の市松・格子柄トーンを組み合わせると、画面全体をドット絵風の質感で統一できます。レトロゲーム風の演出に向いています。';
+      'ドット絵モードのスタンプと、ドット絵モード専用の市松・格子柄トーンを組み合わせると、画面全体をドット絵風の質感で統一できます。レトロゲーム風の演出に向いています。';
 
   @override
   String get tipsMagicWandLassoTitle => 'マジックワンド選択×投げ縄塗りで塗り分け効率化';
@@ -2205,7 +2205,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get fontDownloadedSearchHint => 'フォント名で検索...';
 
   @override
-  String get fontPixelModeTooltip => 'ピクセルモード（ドットフォント用。アンチエイリアスなしでくっきり表示）';
+  String get fontPixelModeTooltip => 'ドット絵モード（ドットフォント用。アンチエイリアスなしでくっきり表示）';
 
   @override
   String get fontEmptyTitle => 'フォントがありません';
@@ -2577,7 +2577,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get stampRotationLabel => '回転';
 
   @override
-  String get stampPixelModeLabel => 'ピクセルモード';
+  String get stampPixelModeLabel => 'ドット絵モード';
 
   @override
   String get stampPixelModeHint => 'ドット絵風（モザイク＋色数削減）に加工して描画します';
@@ -3154,7 +3154,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get brushSettingsBlurRadiusLabel => 'ぼかし半径';
 
   @override
-  String get brushSettingsPixelModeTitle => 'ピクセルモード';
+  String get brushSettingsPixelModeTitle => 'ドット絵モード';
 
   @override
   String get brushSettingsFadeModeTitle => 'フェード';

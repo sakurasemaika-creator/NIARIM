@@ -46,7 +46,7 @@ void main() {
       expect(hair.foldEnabled, isTrue);
       expect(hair.foldTriggerAngle, 60);
       expect(hair.foldCurveStartRatio, .16);
-      expect(hair.foldAngleRatio, .76);
+      expect(hair.foldAngleRatio, .5);
       expect(hair.foldLengthRatio, .70);
       expect(hair.foldEndTaperRatio, .35);
       expect(hair.fadeIn, FadeEndpointSettings.full);

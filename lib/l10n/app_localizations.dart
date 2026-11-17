@@ -2964,7 +2964,7 @@ abstract class AppLocalizations {
   /// No description provided for @helpStampToolDesc.
   ///
   /// In ja, this message translates to:
-  /// **'キャンバスに登録済み画像をブラシのように配置するツールです。集中線や背景パターン、小物などを毎回描き直さず再利用できます。ピクセルモードでは、ドット絵フィルターと同じ処理で透明境界を硬く保ちながらピクセル化・減色します。モザイクは別のエフェクトで、スタンプのピクセルモードには使用しません。スタンプパネルでは配置するスタンプの回転角度とサイズも調整できます。'**
+  /// **'キャンバスに登録済み画像をブラシのように配置するツールです。集中線や背景パターン、小物などを毎回描き直さず再利用できます。ドット絵モードでは、ドット絵フィルターと同じ処理で透明境界を硬く保ちながらピクセル化・減色します。モザイクは別のエフェクトで、スタンプのドット絵モードには使用しません。スタンプパネルでは配置するスタンプの回転角度とサイズも調整できます。'**
   String get helpStampToolDesc;
 
   /// No description provided for @helpToneFillTitle.
@@ -2976,13 +2976,13 @@ abstract class AppLocalizations {
   /// No description provided for @helpToneFillDesc.
   ///
   /// In ja, this message translates to:
-  /// **'バケツツールの設定でベタ塗りからトーン塗りへ切り替えると、選択した網点・ライン柄などのトーンパターンで塗りつぶせます。ピクセルモード専用の市松模様・格子柄トーンも用意されており、ドット絵の質感を活かした塗りができます。フリルやニット、タイツなど、手描きでは手間のかかる細かい柄も簡単に描けます。オリジナルのトーンを自作して追加したり、ほかの人と共有したりすることも可能です。 トーン一覧では網点・ライン・布柄・ピクセル柄をまとめて表示します。ピクセルディザの名前には目の細かさ、マス目の大きさ、濃度を表示します。'**
+  /// **'バケツツールの設定でベタ塗りからトーン塗りへ切り替えると、選択した網点・ライン柄などのトーンパターンで塗りつぶせます。ドット絵モード専用の市松模様・格子柄トーンも用意されており、ドット絵の質感を活かした塗りができます。フリルやニット、タイツなど、手描きでは手間のかかる細かい柄も簡単に描けます。オリジナルのトーンを自作して追加したり、ほかの人と共有したりすることも可能です。 トーン一覧では網点・ライン・布柄・ピクセル柄をまとめて表示します。ピクセルディザの名前には目の細かさ、マス目の大きさ、濃度を表示します。'**
   String get helpToneFillDesc;
 
   /// No description provided for @helpPixelModeTitle.
   ///
   /// In ja, this message translates to:
-  /// **'ピクセルモード'**
+  /// **'ドット絵モード'**
   String get helpPixelModeTitle;
 
   /// No description provided for @helpPixelModeDesc.
@@ -3402,7 +3402,7 @@ abstract class AppLocalizations {
   /// No description provided for @tipsTextCaptionDesc.
   ///
   /// In ja, this message translates to:
-  /// **'テキストツールを使えば、字幕やコメントをフレームごとに配置できます。フォントをピクセルモードに切り替えると、レトロゲーム風の質感を演出することもできます。'**
+  /// **'テキストツールを使えば、字幕やコメントをフレームごとに配置できます。フォントをドット絵モードに切り替えると、レトロゲーム風の質感を演出することもできます。'**
   String get tipsTextCaptionDesc;
 
   /// No description provided for @tipsAutofillPresetTitle.
@@ -3624,13 +3624,13 @@ abstract class AppLocalizations {
   /// No description provided for @tipsPixelToneRetroTitle.
   ///
   /// In ja, this message translates to:
-  /// **'スタンプのピクセルモード×トーン塗りでレトロ統一'**
+  /// **'スタンプのドット絵モード×トーン塗りでレトロ統一'**
   String get tipsPixelToneRetroTitle;
 
   /// No description provided for @tipsPixelToneRetroDesc.
   ///
   /// In ja, this message translates to:
-  /// **'ピクセルモードのスタンプと、ピクセルモード専用の市松・格子柄トーンを組み合わせると、画面全体をドット絵風の質感で統一できます。レトロゲーム風の演出に向いています。'**
+  /// **'ドット絵モードのスタンプと、ドット絵モード専用の市松・格子柄トーンを組み合わせると、画面全体をドット絵風の質感で統一できます。レトロゲーム風の演出に向いています。'**
   String get tipsPixelToneRetroDesc;
 
   /// No description provided for @tipsMagicWandLassoTitle.
@@ -4044,7 +4044,7 @@ abstract class AppLocalizations {
   /// No description provided for @fontPixelModeTooltip.
   ///
   /// In ja, this message translates to:
-  /// **'ピクセルモード（ドットフォント用。アンチエイリアスなしでくっきり表示）'**
+  /// **'ドット絵モード（ドットフォント用。アンチエイリアスなしでくっきり表示）'**
   String get fontPixelModeTooltip;
 
   /// No description provided for @fontEmptyTitle.
@@ -4746,7 +4746,7 @@ abstract class AppLocalizations {
   /// No description provided for @stampPixelModeLabel.
   ///
   /// In ja, this message translates to:
-  /// **'ピクセルモード'**
+  /// **'ドット絵モード'**
   String get stampPixelModeLabel;
 
   /// No description provided for @stampPixelModeHint.
@@ -5778,7 +5778,7 @@ abstract class AppLocalizations {
   /// No description provided for @brushSettingsPixelModeTitle.
   ///
   /// In ja, this message translates to:
-  /// **'ピクセルモード'**
+  /// **'ドット絵モード'**
   String get brushSettingsPixelModeTitle;
 
   /// No description provided for @brushSettingsFadeModeTitle.

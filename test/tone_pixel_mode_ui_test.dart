@@ -40,7 +40,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.longPress(find.text('テストのトーン'));
     await tester.pumpAndSettle();
-    final pixelMode = find.widgetWithText(SwitchListTile, 'ピクセルモード');
+    final pixelMode = find.widgetWithText(SwitchListTile, 'ドット絵モード');
     expect(tester.widget<SwitchListTile>(pixelMode).value, isFalse);
     await tester.tap(pixelMode);
     await tester.pumpAndSettle();
