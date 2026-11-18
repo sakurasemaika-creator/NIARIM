@@ -4186,13 +4186,13 @@ class AppLocalizationsFr extends AppLocalizations {
       projects,
       locale: localeName,
       other: '$projects projets',
-      one: '1 projet',
+      one: '$projects projet',
     );
     String _temp1 = intl.Intl.pluralLogic(
       layers,
       locale: localeName,
       other: '$layers calques de tracé',
-      one: '1 calque de tracé',
+      one: '$layers calque de tracé',
     );
     return 'Cela concerne $_temp0 et $_temp1. Affectez une autre partie avant de lancer le remplissage automatique sur ces calques.';
   }
@@ -11352,7 +11352,7 @@ class AppLocalizationsFr extends AppLocalizations {
       count,
       locale: localeName,
       other: 'Le remplissage automatique a échoué pour $count images.',
-      one: 'Le remplissage automatique a échoué pour 1 image.',
+      one: 'Le remplissage automatique a échoué pour $count image.',
     );
     return '$_temp0';
   }

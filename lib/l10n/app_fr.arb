@@ -1487,7 +1487,7 @@
   },
   "autofillPartSearchHint": "Rechercher par nom de partie",
   "autofillPartUnconfiguredBanner": "{count} partie(s) ne sont pas encore configurées : {names} (aucune trame sélectionnée)",
-  "autofillDeleteUsage": "Cela concerne {projects, plural, one{1 projet} other{{projects} projets}} et {layers, plural, one{1 calque de tracé} other{{layers} calques de tracé}}. Affectez une autre partie avant de lancer le remplissage automatique sur ces calques.",
+  "autofillDeleteUsage": "Cela concerne {projects, plural, one{{projects} projet} other{{projects} projets}} et {layers, plural, one{{layers} calque de tracé} other{{layers} calques de tracé}}. Affectez une autre partie avant de lancer le remplissage automatique sur ces calques.",
   "@autofillPartUnconfiguredBanner": {
     "placeholders": {
       "count": {
@@ -3969,7 +3969,7 @@
   "transferImportPendingSteps": "Étapes non démarrées",
   "communityChannelRefreshRetry": "Impossible d’actualiser les informations de la chaîne YouTube. Réessayez.",
   "timelineAutofillBatchCancelled": "Remplissage automatique annulé.",
-  "timelineAutofillFailedFrames": "{count, plural, one {Le remplissage automatique a échoué pour 1 image.} other {Le remplissage automatique a échoué pour {count} images.}}",
+  "timelineAutofillFailedFrames": "{count, plural, one {Le remplissage automatique a échoué pour {count} image.} other {Le remplissage automatique a échoué pour {count} images.}}",
   "timelineAutofillFileError": "Certaines données de fichier sont inaccessibles.",
   "timelineAutofillProcessingError": "Une erreur est survenue pendant le traitement du dessin.",
   "timelineAutofillBatchFailed": "Une erreur a interrompu le remplissage automatique."
