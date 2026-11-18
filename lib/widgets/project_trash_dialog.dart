@@ -229,6 +229,9 @@ class _ProjectTrashDialogState extends State<ProjectTrashDialog> {
         scrollable: true,
         // 狭い画面では左右の空きを縮め、題・ボタンの語を途中で折らない。
         insetPadding: compactInsets,
+        actionsPadding: shortScreen
+            ? const EdgeInsets.fromLTRB(12, 0, 12, 8)
+            : null,
         // 題と本文は、韓国語の語・数と単位を1行に入れば途中で折らない
         // （本文が「휴지통 / 으로」、題が「삭제하시겠습니 / 까?」と切れた）。
         title: messageText(widget.title),

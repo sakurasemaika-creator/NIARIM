@@ -10,7 +10,9 @@ import 'package:niarim/engine/export_engine.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/router.dart';
 import 'package:niarim/screens/home/home_screen.dart';
+import 'package:niarim/services/local_file_trash_service.dart';
 import 'package:niarim/services/project_service.dart' show ProjectFolder;
+import 'package:niarim/widgets/project_trash_dialog.dart';
 import 'package:niarim/services/work_folder_service.dart';
 import 'package:niarim/screens/home/widgets/exported_work_card.dart';
 import 'package:flutter/rendering.dart';
@@ -95,6 +97,35 @@ void main() {
     await tester.tap(tab);
     await tester.pumpAndSettle();
     return (l10n: l10n, folders: folders);
+  }
+
+  Future<void> waitFor(WidgetTester tester, bool Function() ready) async {
+    for (var attempt = 0; attempt < 40 && !ready(); attempt++) {
+      await pumpRealAsync(tester, const Duration(milliseconds: 50));
+    }
+    expect(ready(), isTrue);
+  }
+
+  Future<void> openFolderMenu(WidgetTester tester) async {
+    final menu = find.byKey(
+      const ValueKey('collectionFolderMenu_audit-folder'),
+    );
+    await tester.ensureVisible(menu);
+    await tester.pumpAndSettle();
+    await tester.tap(menu);
+    await tester.pumpAndSettle();
+  }
+
+  Future<void> openFolderTrash(
+    WidgetTester tester,
+    AppLocalizations l10n,
+  ) async {
+    await openFolderMenu(tester);
+    await tester.tap(find.widgetWithText(ListTile, l10n.homeMoveToTrash));
+    final dialog = find.byType(ProjectTrashDialog);
+    await waitFor(tester, () => dialog.evaluate().isNotEmpty);
+    await tester.pumpAndSettle();
+    expect(dialog, findsOneWidget);
   }
 
   testWidgets(
@@ -423,28 +454,23 @@ void main() {
     'empty-library folder rename and delete cancellation retain the correct state',
     (tester) async {
       final env = await open(tester, libraryHasFile: false);
-      await tester.longPress(find.text('AUDIT'));
-      await tester.pumpAndSettle();
+      await openFolderMenu(tester);
       await tester.tap(find.text(env.l10n.commonRename));
       await tester.pumpAndSettle();
       await tester.enterText(find.byType(TextField), 'RENAMED');
       await tester.tap(find.text(env.l10n.commonChange));
       await tester.pumpAndSettle();
       expect(find.text('RENAMED'), findsOneWidget);
-      await tester.longPress(find.text('RENAMED'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text(env.l10n.commonDelete));
-      await tester.pumpAndSettle();
+      await openFolderTrash(tester, env.l10n);
       await tester.tap(find.text(env.l10n.commonCancel));
       await tester.pumpAndSettle();
       expect(env.folders.folders.single.name, 'RENAMED');
       expect(find.text('RENAMED'), findsOneWidget);
-      await tester.longPress(find.text('RENAMED'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text(env.l10n.commonDelete));
-      await tester.pumpAndSettle();
-      await tester.tap(
-        find.widgetWithText(FilledButton, env.l10n.commonDelete),
+      await openFolderTrash(tester, env.l10n);
+      await tester.tap(find.byKey(const Key('trash-dialog-confirm')));
+      await waitFor(
+        tester,
+        () => find.byType(ProjectTrashDialog).evaluate().isEmpty,
       );
       await tester.pumpAndSettle();
       expect(env.folders.folders, isEmpty);
@@ -453,57 +479,70 @@ void main() {
       expect(tester.takeException(), isNull);
     },
   );
-  testWidgets(
-    'deleting a Works folder explains exports and preserves its real GIF',
-    (tester) async {
-      final env = await open(tester);
-      await env.folders.moveFileToFolder('AUDIT_root.gif', 'audit-folder');
-      await tester.pumpAndSettle();
-      final files = await tester.runAsync(
-        () => ExportEngine.listExportedFiles(forceRefresh: true),
-      );
-      final file = files!.singleWhere(
-        (file) => file.path.endsWith('/AUDIT_root.gif'),
-      );
-      final originalBytes = file.readAsBytesSync();
-      await tester.longPress(find.text('AUDIT'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text(env.l10n.commonDelete));
-      await tester.pumpAndSettle();
-      expect(
-        find.text(env.l10n.projectListDeleteFolderConfirmBody('AUDIT')),
-        findsNothing,
-        reason: 'Exported works are files, not a nested Project hierarchy',
-      );
-      expect(
-        find.text(env.l10n.homeDeleteFolderKeepContents('AUDIT')),
-        findsOneWidget,
-      );
-      await tester.tap(find.text(env.l10n.commonCancel));
-      await tester.pumpAndSettle();
-      expect(env.folders.folders.single.name, 'AUDIT');
-      expect(env.folders.folderIdOf('AUDIT_root.gif'), 'audit-folder');
-      expect(file.readAsBytesSync(), originalBytes);
-      await tester.longPress(find.text('AUDIT'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text(env.l10n.commonDelete));
-      await tester.pumpAndSettle();
-      await tester.tap(
-        find.widgetWithText(FilledButton, env.l10n.commonDelete),
-      );
-      await tester.pumpAndSettle();
-      expect(env.folders.folders, isEmpty);
-      expect(env.folders.folderIdOf('AUDIT_root.gif'), isNull);
-      expect(file.readAsBytesSync(), originalBytes);
-      expect(findExportedWorkName('AUDIT_root.gif'), findsOneWidget);
-      final restored = WorkFolderService();
-      await restored.init();
-      expect(restored.folders, isEmpty);
-      expect(restored.folderIdOf('AUDIT_root.gif'), isNull);
-      restored.dispose();
-      expect(tester.takeException(), isNull);
-    },
-  );
+  testWidgets('moving a Works folder through Trash preserves its real GIF', (
+    tester,
+  ) async {
+    final env = await open(tester);
+    await env.folders.moveFileToFolder('AUDIT_root.gif', 'audit-folder');
+    await tester.pumpAndSettle();
+    final files = await tester.runAsync(
+      () => ExportEngine.listExportedFiles(forceRefresh: true),
+    );
+    final file = files!.singleWhere(
+      (file) => file.path.endsWith('/AUDIT_root.gif'),
+    );
+    final originalBytes = file.readAsBytesSync();
+    await openFolderTrash(tester, env.l10n);
+    final dialog = tester.widget<ProjectTrashDialog>(
+      find.byType(ProjectTrashDialog),
+    );
+    expect(dialog.itemNames, ['AUDIT']);
+    expect(dialog.message, contains(env.l10n.homeWorkFolderContents(1)));
+    await tester.tap(find.text(env.l10n.commonCancel));
+    await tester.pumpAndSettle();
+    expect(env.folders.folders.single.name, 'AUDIT');
+    expect(env.folders.folderIdOf('AUDIT_root.gif'), 'audit-folder');
+    expect(file.readAsBytesSync(), originalBytes);
+
+    await openFolderTrash(tester, env.l10n);
+    await tester.tap(find.byKey(const Key('trash-dialog-confirm')));
+    await waitFor(
+      tester,
+      () => find.byType(ProjectTrashDialog).evaluate().isEmpty,
+    );
+    await tester.pumpAndSettle();
+    expect(env.folders.folders, isEmpty);
+    expect(file.existsSync(), isFalse);
+    final archive = (await tester.runAsync(
+      LocalFileTrashService.list,
+    ))!.singleWhere((entry) => entry.isFolder);
+    expect(
+      File('${archive.archivedPath}/AUDIT_root.gif').readAsBytesSync(),
+      originalBytes,
+    );
+    await tester.tap(find.byKey(const ValueKey('home_tab_3')));
+    await tester.pumpAndSettle();
+    final restore = find.byKey(ValueKey('trash-restore-local-${archive.id}'));
+    await waitFor(tester, () => restore.evaluate().isNotEmpty);
+    await tester.ensureVisible(restore);
+    await tester.pumpAndSettle();
+    await tester.tap(restore);
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('homeTrashRestoreConfirmButton')));
+    await waitFor(
+      tester,
+      () =>
+          file.existsSync() && env.folders.folderIdOf('AUDIT_root.gif') != null,
+    );
+    await tester.pumpAndSettle();
+    expect(file.readAsBytesSync(), originalBytes);
+    expect(env.folders.folders.single.name, 'AUDIT');
+    expect(
+      env.folders.folderIdOf('AUDIT_root.gif'),
+      env.folders.folders.single.id,
+    );
+    expect(tester.takeException(), isNull);
+  });
 
   testWidgets(
     'Works folder deletion retains usable copy and controls in every locale and width',
@@ -538,18 +577,13 @@ void main() {
       for (final language in ['ja', 'en', 'zh', 'zh_Hant', 'ko', 'fr', 'es']) {
         for (final pc in [false, true]) {
           final env = await open(tester, language: language, pc: pc);
-          await tester.longPress(find.text('AUDIT'));
-          await tester.pumpAndSettle();
-          await tester.tap(find.text(env.l10n.commonDelete));
-          await tester.pumpAndSettle();
-          final body = find.text(
-            env.l10n.homeDeleteFolderKeepContents('AUDIT'),
+          await openFolderTrash(tester, env.l10n);
+          final dialog = tester.widget<ProjectTrashDialog>(
+            find.byType(ProjectTrashDialog),
           );
+          expect(dialog.itemNames, ['AUDIT']);
+          final body = find.text(dialog.message);
           expect(body, findsOneWidget);
-          expect(
-            find.text(env.l10n.projectListDeleteFolderConfirmBody('AUDIT')),
-            findsNothing,
-          );
           for (final (width, height) in [
             for (final width in widths) (width, pc ? 900.0 : 844.0),
             (320.0, 220.0),
@@ -559,12 +593,16 @@ void main() {
             await tester.ensureVisible(body);
             await tester.pumpAndSettle();
             expect(
-              tester.renderObject<RenderParagraph>(body).didExceedMaxLines,
+              tester
+                  .renderObject<RenderParagraph>(
+                    find.descendant(of: body, matching: find.byType(RichText)),
+                  )
+                  .didExceedMaxLines,
               isFalse,
             );
             for (final button in [
               find.widgetWithText(TextButton, env.l10n.commonCancel),
-              find.widgetWithText(FilledButton, env.l10n.commonDelete),
+              find.byKey(const Key('trash-dialog-confirm')),
             ]) {
               await tester.ensureVisible(button);
               await tester.pumpAndSettle();
