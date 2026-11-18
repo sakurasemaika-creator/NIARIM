@@ -10734,6 +10734,15 @@ class AppLocalizationsFr extends AppLocalizations {
   String get communityUnfollowedLabel => 'Vous ne suivez plus ce compte';
 
   @override
+  String get communityFollowersTitle => 'Abonnés';
+
+  @override
+  String get communityFollowersEmpty => 'Aucun abonné pour le moment';
+
+  @override
+  String get communityFollowersLoadMore => 'Afficher plus';
+
+  @override
   String get communityFollowingListEmpty => 'Vous ne suivez encore personne';
 
   @override

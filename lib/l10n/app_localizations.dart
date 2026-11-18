@@ -17361,6 +17361,24 @@ abstract class AppLocalizations {
   /// **'フォロー解除済み'**
   String get communityUnfollowedLabel;
 
+  /// No description provided for @communityFollowersTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'フォロワー'**
+  String get communityFollowersTitle;
+
+  /// No description provided for @communityFollowersEmpty.
+  ///
+  /// In ja, this message translates to:
+  /// **'フォロワーはまだいません'**
+  String get communityFollowersEmpty;
+
+  /// No description provided for @communityFollowersLoadMore.
+  ///
+  /// In ja, this message translates to:
+  /// **'さらに表示'**
+  String get communityFollowersLoadMore;
+
   /// フォロー中の一覧：だれもフォローしていない
   ///
   /// In ja, this message translates to:

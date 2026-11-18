@@ -9844,6 +9844,15 @@ class AppLocalizationsJa extends AppLocalizations {
   String get communityUnfollowedLabel => 'フォロー解除済み';
 
   @override
+  String get communityFollowersTitle => 'フォロワー';
+
+  @override
+  String get communityFollowersEmpty => 'フォロワーはまだいません';
+
+  @override
+  String get communityFollowersLoadMore => 'さらに表示';
+
+  @override
   String get communityFollowingListEmpty => 'フォロー中のユーザーはいません';
 
   @override

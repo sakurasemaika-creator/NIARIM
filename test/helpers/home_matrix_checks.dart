@@ -624,6 +624,8 @@ extension HomeMatrixChecks on HomeMatrix {
     for (var i = 1; i <= _maxFocusStops; i++) {
       await tester.sendKeyEvent(LogicalKeyboardKey.tab);
       await tester.pump();
+      // Focus may scroll again after layout to clear the floating buttons.
+      await tester.pump();
       final node = FocusManager.instance.primaryFocus;
       final context = node?.context;
       if (node == null || context == null || !context.mounted) {
@@ -885,14 +887,15 @@ extension HomeMatrixChecks on HomeMatrix {
       if (!sameScroll) continue;
       // 同じカード・行の中の操作（星とメニュー等）は、どの順でもよい。
       if (a.item != null && identical(a.item, b.item)) continue;
-      final tolerance = math.min(a.rect.height, b.rect.height) / 2;
+      final tolerance = math.min(a.orderRect.height, b.orderRect.height) / 2;
       final dy = b.contentTop! - a.contentTop!;
       if (dy < -tolerance) {
         problems.add(
           'focus order: back up the list to ${b.name} after ${a.name} '
           '(Tab #${i + 1})',
         );
-      } else if (dy.abs() <= tolerance && b.rect.left < a.rect.left - 1) {
+      } else if (dy.abs() <= tolerance &&
+          b.orderRect.left < a.orderRect.left - 1) {
         problems.add(
           'focus order: leftwards in a row to ${b.name} after ${a.name} '
           '(Tab #${i + 1})',
@@ -1109,11 +1112,15 @@ class _FocusStop {
       last = a;
       return true;
     });
+    final itemBox = item?.renderObject;
+    orderRect = itemBox is RenderBox && itemBox.attached && itemBox.hasSize
+        ? HomeMatrix._globalRect(itemBox)
+        : rect;
     if (vertical != null) {
       final top = HomeMatrix._globalRect(
         vertical.context.findRenderObject()! as RenderBox,
       ).top;
-      contentTop = rect.top - top + vertical.position.pixels;
+      contentTop = orderRect.top - top + vertical.position.pixels;
     }
   }
 
@@ -1121,6 +1128,7 @@ class _FocusStop {
   final BuildContext context;
   final String region;
   final Rect rect;
+  late final Rect orderRect;
 
   /// 止まった所の名前（止まったときの。後で一覧から外れても使える）。
   final String name;

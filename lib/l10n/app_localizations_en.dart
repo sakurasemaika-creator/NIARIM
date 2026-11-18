@@ -10572,6 +10572,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get communityUnfollowedLabel => 'Unfollowed';
 
   @override
+  String get communityFollowersTitle => 'Followers';
+
+  @override
+  String get communityFollowersEmpty => 'No followers yet';
+
+  @override
+  String get communityFollowersLoadMore => 'Show more';
+
+  @override
   String get communityFollowingListEmpty => 'You’re not following anyone yet';
 
   @override

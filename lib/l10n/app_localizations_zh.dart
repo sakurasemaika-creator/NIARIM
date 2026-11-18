@@ -9729,6 +9729,15 @@ class AppLocalizationsZh extends AppLocalizations {
   String get communityUnfollowedLabel => '已取消关注';
 
   @override
+  String get communityFollowersTitle => '关注者';
+
+  @override
+  String get communityFollowersEmpty => '暂无关注者';
+
+  @override
+  String get communityFollowersLoadMore => '显示更多';
+
+  @override
   String get communityFollowingListEmpty => '还没有关注任何人';
 
   @override
@@ -19837,6 +19846,15 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get communityUnfollowedLabel => '已取消追蹤';
+
+  @override
+  String get communityFollowersTitle => '追蹤者';
+
+  @override
+  String get communityFollowersEmpty => '目前沒有追蹤者';
+
+  @override
+  String get communityFollowersLoadMore => '顯示更多';
 
   @override
   String get communityFollowingListEmpty => '還沒有追蹤任何人';

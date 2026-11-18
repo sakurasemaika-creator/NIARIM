@@ -5708,6 +5708,9 @@
   "@communityUnfollowedLabel": {
     "description": "フォロー中の一覧：最近フォローをやめた人の行の補足"
   },
+  "communityFollowersTitle": "フォロワー",
+  "communityFollowersEmpty": "フォロワーはまだいません",
+  "communityFollowersLoadMore": "さらに表示",
   "communityFollowingListEmpty": "フォロー中のユーザーはいません",
   "@communityFollowingListEmpty": {
     "description": "フォロー中の一覧：だれもフォローしていない"

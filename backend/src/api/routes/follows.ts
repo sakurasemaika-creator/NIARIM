@@ -149,6 +149,43 @@ export async function getSocialCounts(
   });
 }
 
+/** Returns a page of followers to the profile owner. */
+export async function getFollowers(
+  event: APIGatewayProxyEventV2,
+  targetId: string,
+) {
+  const auth = await authenticate(
+    event.headers["authorization"] ?? event.headers["Authorization"],
+  );
+  if (auth.niarimUserId !== targetId) {
+    forbidden("自分のフォロワーのみ取得できます");
+  }
+  const cursor = event.queryStringParameters?.cursor;
+  if (cursor !== undefined && !/^N[a-f0-9]{32}$/.test(cursor)) {
+    badRequest("カーソルが不正です");
+  }
+
+  const result = await ddb.send(new QueryCommand({
+    TableName: tableName(),
+    KeyConditionExpression: "pk = :pk AND begins_with(sk, :prefix)",
+    ExpressionAttributeValues: {
+      ":pk": Keys.user(targetId).pk,
+      ":prefix": "FOLLOWER#",
+    },
+    Limit: 25,
+    ExclusiveStartKey: cursor ? Keys.followerRecord(targetId, cursor) : undefined,
+  }));
+  const records = (result.Items ?? []) as FollowerRecordItem[];
+  const profiles = await Promise.all(records.map((record) => getUser(record.followerId)));
+  return ok({
+    followers: profiles.filter((user): user is UserItem => Boolean(user)).map((user) => ({
+      niarimUserId: user.niarimUserId,
+      channelName: user.channelName,
+    })),
+    nextCursor: result.LastEvaluatedKey?.sk?.slice("FOLLOWER#".length) ?? null,
+  });
+}
+
 /** `GET /users/{id}/following`（22.5節）。フォロー中一覧はこの修正の対象外（22.7節）。 */
 export async function getFollowing(
   event: APIGatewayProxyEventV2,

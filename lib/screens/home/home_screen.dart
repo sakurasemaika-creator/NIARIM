@@ -44,6 +44,7 @@ import '../../widgets/korean_words_text.dart';
 import '../../widgets/sort_mode_control.dart';
 import '../../widgets/project_trash_dialog.dart';
 import '../../widgets/collection_action_controls.dart';
+import '../../widgets/collection_card_keys.dart';
 import '../../widgets/collection_tile_layout.dart';
 import '../../widgets/home_collection_selection_scope.dart';
 import '../../widgets/secondary_click_menu.dart';
@@ -3730,7 +3731,7 @@ class _HomeTraversalPolicy extends ReadingOrderTraversalPolicy {
     // 高さの行の並びに混ざり、その高さに入った行の︙だけが同じ行の星より先に
     // 並んだ。Tabで進んで一覧がスクロールするたびに並びが変わり、同じ︙に
     // 2回止まる・星を飛ばすことがあった。
-    final list = super.sortDescendants(inside, currentNode);
+    final list = _sortListCards(inside, currentNode);
     final rest = super.sortDescendants(others, currentNode).toList();
     final top = box.localToGlobal(Offset.zero).dy;
     // 上端が一覧より上の物（上部バー・タブ・操作バー、画面を包むノード）は
@@ -3741,6 +3742,47 @@ class _HomeTraversalPolicy extends ReadingOrderTraversalPolicy {
       ...list,
       ...rest.where((node) => !above(node)),
     ];
+  }
+
+  Iterable<FocusNode> _sortListCards(
+    List<FocusNode> nodes,
+    FocusNode currentNode,
+  ) {
+    final cards = <Element, List<FocusNode>>{};
+    final standalone = <FocusNode>[];
+    for (final node in nodes) {
+      Element? card;
+      node.context?.visitAncestorElements((element) {
+        if (element.widget is CollectionCardFocus ||
+            element.widget is CollectionCardKeyboard) {
+          card = element;
+          return false;
+        }
+        return true;
+      });
+      if (card case final Element owner) {
+        (cards[owner] ??= []).add(node);
+      } else {
+        standalone.add(node);
+      }
+    }
+    // Sort cards by their body so a lower button cannot split one card's
+    // stops with the body of a neighbouring card in the same grid row.
+    final stopsByBody = <FocusNode, List<FocusNode>>{};
+    for (final stops in cards.values) {
+      final ordered = super.sortDescendants(stops, currentNode).toList();
+      final body = ordered.reduce((a, b) {
+        final aRect = a.rect;
+        final bRect = b.rect;
+        return aRect.width * aRect.height >= bRect.width * bRect.height ? a : b;
+      });
+      stopsByBody[body] = [body, ...ordered.where((node) => node != body)];
+    }
+    final anchors = super.sortDescendants([
+      ...standalone,
+      ...stopsByBody.keys,
+    ], currentNode);
+    return anchors.expand((node) => stopsByBody[node] ?? [node]);
   }
 
   static void _revealTraversedFocus(

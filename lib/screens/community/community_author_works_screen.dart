@@ -10,11 +10,13 @@ import '../../widgets/responsive.dart';
 import '../../widgets/ad_banner_mock_widget.dart';
 import 'community_edit_feedback.dart';
 import 'community_following_list_screen.dart';
+import 'community_followers_screen.dart';
 import 'widgets/community_shorts_viewer.dart';
 import 'widgets/community_top_edge_refresh.dart';
 import 'widgets/community_work_card.dart';
 import 'widgets/video_type_filter.dart';
 import '../../config/font_fallback.dart';
+import '../../config/accent_text_theme.dart';
 
 /// Confirm both mute and unmute; used by author profiles and muted-user lists.
 Future<void> confirmCommunityAuthorMute(
@@ -267,6 +269,46 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
         ? communityService.bookmarkedWorksOf(widget.authorId)
         : const <CommunityWork>[];
 
+    Widget socialCount(String key, String label, Widget screen) {
+      if (!isSelf) {
+        return Text(
+          label,
+          style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
+        );
+      }
+      final color = AccentTextTheme.of(context);
+      return InkWell(
+        key: Key(key),
+        borderRadius: BorderRadius.circular(6),
+        onTap: () => Navigator.of(
+          context,
+        ).push(adMockMaterialPageRoute<void>(builder: (_) => screen)),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(minHeight: 48),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Flexible(
+                  child: Text(
+                    label,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: color,
+                      decoration: TextDecoration.underline,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 2),
+                Icon(Icons.chevron_right, size: 16, color: color),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
     void toggleBookmark(CommunityWork work) => reportFailedCommunityEdit(
       context,
       communityService,
@@ -349,61 +391,18 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
                                 color: scheme.onSurfaceVariant,
                               ),
                             ),
-                            if (isSelf)
-                              InkWell(
-                                key: const Key(
-                                  'communityOwnFollowingCountButton',
-                                ),
-                                borderRadius: BorderRadius.circular(6),
-                                onTap: () => Navigator.of(context).push(
-                                  adMockMaterialPageRoute<void>(
-                                    builder: (_) =>
-                                        const CommunityFollowingListScreen(),
-                                  ),
-                                ),
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 4,
-                                    vertical: 6,
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Text(
-                                        l10n.communityAuthorFollowingCount(
-                                          followingCount,
-                                        ),
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          color: scheme.primary,
-                                          decoration: TextDecoration.underline,
-                                        ),
-                                      ),
-                                      const SizedBox(width: 2),
-                                      Icon(
-                                        Icons.chevron_right,
-                                        size: 16,
-                                        color: scheme.primary,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              )
-                            else
-                              Text(
-                                l10n.communityAuthorFollowingCount(
-                                  followingCount,
-                                ),
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: scheme.onSurfaceVariant,
-                                ),
+                            socialCount(
+                              'communityOwnFollowingCountButton',
+                              l10n.communityAuthorFollowingCount(
+                                followingCount,
                               ),
-                            Text(
+                              const CommunityFollowingListScreen(),
+                            ),
+                            socialCount(
+                              'communityOwnFollowersCountButton',
                               l10n.communityAuthorFollowerCount(followerCount),
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: scheme.onSurfaceVariant,
+                              CommunityFollowersScreen(
+                                ownerId: widget.authorId,
                               ),
                             ),
                           ],

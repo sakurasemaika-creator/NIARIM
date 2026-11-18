@@ -50,6 +50,7 @@ import { getUserReposts, toggleRepost } from "./routes/reposts";
 import {
   toggleFollow,
   getFollowing,
+  getFollowers,
   getSocialCounts,
 } from "./routes/follows";
 import { putPushToken } from "./routes/notifications";
@@ -103,6 +104,7 @@ const routes: Route[] = [
   route("GET", "/users/{id}/bookmarks", (e, p) => getUserBookmarks(e, p.id)),
   route("GET", "/users/{id}/social-counts", (e, p) => getSocialCounts(e, p.id)),
   route("GET", "/users/{id}/following", (e, p) => getFollowing(e, p.id)),
+  route("GET", "/users/{id}/followers", (e, p) => getFollowers(e, p.id)),
   route("GET", "/users/{id}/reposts", (e, p) => getUserReposts(e, p.id)),
 
   // Authenticated owner read. This keeps account switching simple on clients:

@@ -530,6 +530,29 @@ class CommunityApi {
         .toList();
   }
 
+  Future<({List<ApiUserRef> users, String? nextCursor})> followersOfPage(
+    String userId, {
+    String? cursor,
+  }) async {
+    final json = await _client.getJson(
+      '/users/${Uri.encodeComponent(userId)}/followers',
+      authenticated: true,
+      query: {'cursor': ?cursor},
+    );
+    final followers = json['followers'];
+    final nextCursor = json['nextCursor'];
+    if (followers is! List || (nextCursor != null && nextCursor is! String)) {
+      throw const FormatException('Invalid followers response');
+    }
+    return (
+      users: followers
+          .whereType<Map<String, dynamic>>()
+          .map(ApiUserRef.fromJson)
+          .toList(),
+      nextCursor: nextCursor as String?,
+    );
+  }
+
   /// A user's reposts, newest first (public, no sign-in).
   Future<List<ApiRepost>> repostsOf(String userId) async {
     final json = await _client.getJson(

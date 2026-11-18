@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -7,6 +8,7 @@ import 'package:http/testing.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/screens/community/community_author_works_screen.dart';
 import 'package:niarim/screens/community/community_following_list_screen.dart';
+import 'package:niarim/screens/community/community_followers_screen.dart';
 import 'package:niarim/services/api/community_api.dart';
 import 'package:niarim/services/api/niarim_api_client.dart';
 import 'package:niarim/services/community_service.dart';
@@ -62,6 +64,123 @@ Widget _app(
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   setUp(() => SharedPreferences.setMockInitialValues({}));
+
+  testWidgets('owner opens followers, retries a failed page and returns', (
+    tester,
+  ) async {
+    var pageCalls = 0;
+    final service = _service(
+      MockClient((request) async {
+        switch (request.url.path) {
+          case '/users/self/followers':
+            expect(request.headers['authorization'], 'Bearer test');
+            if (request.url.queryParameters['cursor'] == null) {
+              return _reply({
+                'followers': [_user('alice', 'Alice')],
+                'nextCursor': 'next',
+              });
+            }
+            expect(request.url.queryParameters['cursor'], 'next');
+            if (++pageCalls == 1) {
+              return http.Response('{"error":"internal error"}', 503);
+            }
+            return _reply({
+              'followers': [_user('bob', 'Bob')],
+              'nextCursor': null,
+            });
+          case '/users/self/works':
+          case '/me/works':
+            return _reply({'works': <Object>[]});
+          case '/users/self/social-counts':
+            return _reply({'followerCount': 2, 'followingCount': 0});
+          default:
+            return _reply({});
+        }
+      }),
+    );
+    addTearDown(service.dispose);
+    await tester.binding.setSurfaceSize(const Size(360, 640));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    await tester.pumpWidget(
+      _app(
+        service,
+        home: const CommunityAuthorWorksScreen(
+          authorId: 'self',
+          authorName: 'Owner',
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('communityOwnFollowersCountButton')));
+    await tester.pumpAndSettle();
+    expect(find.text('Alice'), findsOneWidget);
+    await tester.tap(find.text('さらに表示'));
+    await tester.pumpAndSettle();
+    expect(find.text('Alice'), findsOneWidget);
+    expect(find.text('internal error'), findsNothing);
+    await tester.tap(find.text('再試行'));
+    await tester.pumpAndSettle();
+    expect(find.text('Bob'), findsOneWidget);
+    expect(find.text('さらに表示'), findsNothing);
+    await tester.tap(find.byType(BackButton));
+    await tester.pumpAndSettle();
+    expect(find.byType(CommunityAuthorWorksScreen), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets(
+    'followers are cleared from view as soon as the account changes',
+    (tester) async {
+      final pending = Completer<http.Response>();
+      final service = _service(
+        MockClient((request) async {
+          expect(request.url.path, '/users/self/followers');
+          if (request.url.queryParameters.isNotEmpty) return pending.future;
+          return _reply({
+            'followers': [_user('alice', 'Private follower')],
+            'nextCursor': 'next',
+          });
+        }),
+      );
+      addTearDown(service.dispose);
+      await tester.pumpWidget(
+        _app(service, home: const CommunityFollowersScreen(ownerId: 'self')),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('Private follower'), findsOneWidget);
+      await tester.tap(find.text('さらに表示'));
+      await tester.pump();
+      service.setCurrentUserId('another-account');
+      await tester.pump();
+      expect(find.text('Private follower'), findsNothing);
+      pending.complete(
+        _reply({
+          'followers': [_user('bob', 'Private second page')],
+        }),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('Private second page'), findsNothing);
+      service.setCurrentUserId('self');
+      await tester.pumpAndSettle();
+      expect(find.text('Private follower'), findsNothing);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets('renders the empty followers state', (tester) async {
+    final service = _service(
+      MockClient((request) async {
+        return _reply({'followers': <Object>[]});
+      }),
+    );
+    addTearDown(service.dispose);
+    await tester.pumpWidget(
+      _app(service, home: const CommunityFollowersScreen(ownerId: 'self')),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('フォロワーはまだいません'), findsOneWidget);
+    expect(find.text('さらに表示'), findsNothing);
+  });
 
   testWidgets('refreshes only own follows at top without fetching the plaza', (
     tester,
@@ -191,7 +310,11 @@ void main() {
       findsOneWidget,
     );
     expect(
-      find.byKey(const Key('communityOwnFollowingListButton')),
+      find.byKey(const Key('communityOwnFollowingCountButton')),
+      findsNothing,
+    );
+    expect(
+      find.byKey(const Key('communityOwnFollowersCountButton')),
       findsNothing,
     );
     expect(requested, isNot(contains('/users/alice/following')));
@@ -355,6 +478,10 @@ void main() {
     expect(find.text(l10n.communityAuthorFollowingCount(4)), findsOneWidget);
     expect(
       find.byKey(const Key('communityOwnFollowingCountButton')),
+      findsNothing,
+    );
+    expect(
+      find.byKey(const Key('communityOwnFollowersCountButton')),
       findsNothing,
     );
     expect(requested, isNot(contains('/users/alice/following')));

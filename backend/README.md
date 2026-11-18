@@ -112,6 +112,7 @@ backend/
 | POST     | `/works/{id}/repost`                  | 8.5bis節                                                                                 | 必須                                             |
 | POST     | `/users/{id}/follow`                  | 22.5節                                                                                   | 必須                                             |
 | GET      | `/users/{id}/following`               | 22.5節                                                                                   | 必須（本人のみ）                       |
+| GET      | `/users/{id}/followers`               | フォロワー一覧を25件ずつ取得（次のページは `cursor`）                                      | 必須（本人のみ）                       |
 | GET      | `/users/{id}/reposts`                 | 8.5bis節（リポスト一覧。フォロー中タブで使う）                                           | 不要（リポストは公開。非公開化された作品は除外） |
 | PUT      | `/users/{id}/push-token`              | 22.7節（FCM端末トークン登録／解除）                                                      | 必須（本人のみ）                                 |
 

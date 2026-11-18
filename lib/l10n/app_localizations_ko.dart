@@ -9896,6 +9896,15 @@ class AppLocalizationsKo extends AppLocalizations {
   String get communityUnfollowedLabel => '팔로우 취소됨';
 
   @override
+  String get communityFollowersTitle => '팔로워';
+
+  @override
+  String get communityFollowersEmpty => '아직 팔로워가 없습니다';
+
+  @override
+  String get communityFollowersLoadMore => '더 보기';
+
+  @override
   String get communityFollowingListEmpty => '팔로우 중인 사용자가 없습니다';
 
   @override

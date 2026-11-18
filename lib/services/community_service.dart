@@ -1672,6 +1672,27 @@ class CommunityService extends ChangeNotifier {
     }
   }
 
+  Future<({List<ApiUserRef> users, String? nextCursor})> loadOwnFollowers(
+    String ownerId, {
+    String? cursor,
+  }) async {
+    if (!isOwnAuthor(ownerId)) throw const CommunityAccountChangedException();
+    final client = api;
+    if (client == null) {
+      return (
+        users: [
+          for (final id in followerIdsOf(ownerId))
+            ApiUserRef(niarimUserId: id, channelName: authorNameOf(id)),
+        ],
+        nextCursor: null,
+      );
+    }
+    return _awaitInAccount(
+      client.followersOfPage(ownerId, cursor: cursor),
+      _accountRevision,
+    );
+  }
+
   /// [authorId]のフォロワーID一覧。ダミーの固定フォロワー（他の作者同士の
   /// 関係を表示確認用に生成したもの）に加え、自分がこの作者をフォロー中
   /// なら自分自身のIDも即座に反映する。
