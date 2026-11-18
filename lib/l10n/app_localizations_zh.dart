@@ -217,7 +217,7 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get homeShareOpenWith => '分享・用照片应用等打开';
+  String get homeShareOpenWith => '分享、用照片应用等打开';
 
   @override
   String get homePreviewFailed => '无法播放预览';
@@ -238,7 +238,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get settingsBasicTitle => '基本';
 
   @override
-  String get settingsBasicSubtitle => 'FPS・语言・绘图区域';
+  String get settingsBasicSubtitle => 'FPS、语言、绘图区域';
 
   @override
   String get settingsBasicSheetTitle => '基本设置';
@@ -280,37 +280,37 @@ class AppLocalizationsZh extends AppLocalizations {
   String get settingsPerformanceTitle => '性能';
 
   @override
-  String get settingsPerformanceSubtitle => '画质设置・撤销次数・回收站・运行速度';
+  String get settingsPerformanceSubtitle => '画质设置、撤销次数、回收站、运行速度';
 
   @override
   String get settingsGestureTitle => '手势';
 
   @override
-  String get settingsGestureSubtitle => '双指点按・长按';
+  String get settingsGestureSubtitle => '双指点按、长按';
 
   @override
   String get settingsPenTitle => '笔输入';
 
   @override
-  String get settingsPenSubtitle => '笔压・倾斜・笔按钮';
+  String get settingsPenSubtitle => '笔压、倾斜、笔按钮';
 
   @override
   String get settingsWorkspaceTitle => '工作区';
 
   @override
-  String get settingsWorkspaceSubtitle => '工具栏编辑・面板布局';
+  String get settingsWorkspaceSubtitle => '工具栏编辑、面板布局';
 
   @override
   String get settingsBucketTitle => '油漆桶填充';
 
   @override
-  String get settingsBucketSubtitle => '容差・扩展・潜入线稿下方';
+  String get settingsBucketSubtitle => '容差、扩展、潜入线稿下方';
 
   @override
-  String get settingsThemeTitle => '主题・外观';
+  String get settingsThemeTitle => '主题、外观';
 
   @override
-  String get settingsThemeSubtitle => '主题配色・文字色・背景色';
+  String get settingsThemeSubtitle => '主题配色、文字色、背景色';
 
   @override
   String get settingsWatermarkTitle => '水印';
@@ -322,19 +322,19 @@ class AppLocalizationsZh extends AppLocalizations {
   String get settingsTransferTitle => '数据迁移';
 
   @override
-  String get settingsTransferSubtitle => '将设置・素材・画笔导出/导入到其他设备';
+  String get settingsTransferSubtitle => '将设置、素材、画笔导出/导入到其他设备';
 
   @override
   String get settingsFontTitle => '字体管理';
 
   @override
-  String get settingsFontSubtitle => '添加・搜索・删除TTF/OTF字体';
+  String get settingsFontSubtitle => '添加、搜索、删除TTF/OTF字体';
 
   @override
   String get settingsNoResults => '未找到相关设置项';
 
   @override
-  String get settingsTermsLicense => '使用条款・许可';
+  String get settingsTermsLicense => '使用条款、许可';
 
   @override
   String get settingsDrawingAreaTitle => '绘图区域初始值';
@@ -632,7 +632,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get transferItemTheme => '主题';
 
   @override
-  String get transferItemPalette => '调色板（取色器・像素画专用）';
+  String get transferItemPalette => '调色板（取色器、像素画专用）';
 
   @override
   String get transferProjectsSectionTitle => '制作中的项目（可选）';
@@ -850,7 +850,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get settingsShortcutTitle => '快捷键设置';
 
   @override
-  String get settingsShortcutSubtitle => '为键盘・左手设备分配工具和操作';
+  String get settingsShortcutSubtitle => '为键盘、左手设备分配工具和操作';
 
   @override
   String get shortcutSettingsTitle => '快捷键设置';
@@ -867,7 +867,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get shortcutCaptureHint =>
-      '请按下想要设置的按键组合（可同时按住Ctrl・Shift・Alt等辅助键）。按Esc取消。';
+      '请按下想要设置的按键组合（可同时按住Ctrl/Shift/Alt等辅助键）。按Esc取消。';
 
   @override
   String shortcutChooseActionTitle(String combo) {
@@ -933,7 +933,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get materialEmptyTitle => '没有素材';
 
   @override
-  String get materialEmptyHint => '从时间轴添加图片・视频・音频后，\n将显示在这里';
+  String get materialEmptyHint => '从时间轴添加图片、视频、音频后，\n将显示在这里';
 
   @override
   String get materialUsedLabel => '使用中';
@@ -1067,7 +1067,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get premiumComparisonFree => '免费';
 
   @override
-  String get premiumFeatureDrawing => '动画制作・绘图功能';
+  String get premiumFeatureDrawing => '动画制作、绘图功能';
 
   @override
   String get premiumFeatureTimeline => '时间轴';
@@ -1191,7 +1191,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get workspacePcModeHint => '在宽屏环境下会自动切换为面板固定排列的专业布局。如需手动固定，请在此处指定。';
 
   @override
-  String get workspacePcModeAuto => '自动（按屏幕宽度判断・推荐）';
+  String get workspacePcModeAuto => '自动（按屏幕宽度判断、推荐）';
 
   @override
   String get workspacePcModeAlwaysPc => '始终使用PC模式';
@@ -1203,7 +1203,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get workspaceSaveSection => '保存工作区';
 
   @override
-  String get workspaceSaveHint => '可将左手模式・PC模式・工具栏・快捷工具设置命名保存，之后随时调用。';
+  String get workspaceSaveHint => '可将左手模式、PC模式、工具栏、快捷工具设置命名保存，之后随时调用。';
 
   @override
   String get workspaceLoadButton => '加载工作区';
@@ -1220,7 +1220,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get workspaceSaveDialogTitle => '保存工作区';
 
   @override
-  String get workspaceSaveDialogLabel => '名称（例：动画用・线稿用）';
+  String get workspaceSaveDialogLabel => '名称（例：动画用、线稿用）';
 
   @override
   String get workspaceLoadRightHanded => '右手';
@@ -1278,7 +1278,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get helpPenToolDesc =>
-      '在画布上绘制线条的基本工具。长按可更改画笔种类・粗细・颜色（双击显示简要说明）。支持数位板/液晶数位板的笔压与倾斜，在设置画面的“笔输入”中调整笔压曲线，可以细致自定义笔压的传达方式（轻压时粗细/不透明度会变化多少）。切换笔的子工具后，还能用同一支笔工具进行贴网点・放置图章。';
+      '在画布上绘制线条的基本工具。长按可更改画笔种类、粗细、颜色（双击显示简要说明）。支持数位板/液晶数位板的笔压与倾斜，在设置画面的“笔输入”中调整笔压曲线，可以细致自定义笔压的传达方式（轻压时粗细/不透明度会变化多少）。切换笔的子工具后，还能用同一支笔工具进行贴网点、放置图章。';
 
   @override
   String get helpEraserToolTitle => '橡皮擦工具';
@@ -1292,7 +1292,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get helpBucketToolDesc =>
-      '一次性填充被包围的区域。在线稿所围成的区域内点击，整个区域就会被填充为当前选择的颜色（或网点）。如果线稿有缝隙，颜色可能会扩散到意料之外的范围，因此使用前请确认线稿是否已完全闭合。可以在设置中切换纯色填充/网点填充。 详细设置（容差・扩展px・潜入线稿下方）可以在设置画面的“油漆桶填充”中调整。';
+      '一次性填充被包围的区域。在线稿所围成的区域内点击，整个区域就会被填充为当前选择的颜色（或网点）。如果线稿有缝隙，颜色可能会扩散到意料之外的范围，因此使用前请确认线稿是否已完全闭合。可以在设置中切换纯色填充/网点填充。 详细设置（容差、扩展px、潜入线稿下方）可以在设置画面的“油漆桶填充”中调整。';
 
   @override
   String get helpLassoFillTitle => '套索填充';
@@ -1313,7 +1313,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get helpSelectToolDesc =>
-      '选取画布的一部分区域，仅对所选区域进行移动・旋转・缩放的工具。长按可以从“矩形选择”“套索选择（自由形状包围）”“自动选择（魔术棒，自动合并相近颜色的区域）”三种选择方式中选择。选择中会在画布上显示表示所选范围的边框，在取消选择之前，所有帧・所有图层都会固定显示相同的范围。在套索选择中开启“吸附到线条”后，会像油漆桶填充一样查看线稿划分出的区域，只选择大部分位于套索内的区域。选区边缘会精确沿着线稿的外缘，围住这些区域的线条和内部的线条也会一并选中（从轮廓向外延伸的线条会在轮廓处截断）。上色的面也会像油漆桶填充一样按颜色视为各自的区域，因此在有上色和线条的图层上也能按画的形状选择。线条中不超过“线条间隙容差”宽度的断口会被视为相连。套索内没有线稿时，按圈出的形状原样选择。线稿取自选择参照（“仅工作图层”／“所有可见图层”）。';
+      '选取画布的一部分区域，仅对所选区域进行移动、旋转、缩放的工具。长按可以从“矩形选择”“套索选择（自由形状包围）”“自动选择（魔术棒，自动合并相近颜色的区域）”三种选择方式中选择。选择中会在画布上显示表示所选范围的边框，在取消选择之前，所有帧、所有图层都会固定显示相同的范围。在套索选择中开启“吸附到线条”后，会像油漆桶填充一样查看线稿划分出的区域，只选择大部分位于套索内的区域。选区边缘会精确沿着线稿的外缘，围住这些区域的线条和内部的线条也会一并选中（从轮廓向外延伸的线条会在轮廓处截断）。上色的面也会像油漆桶填充一样按颜色视为各自的区域，因此在有上色和线条的图层上也能按画的形状选择。线条中不超过“线条间隙容差”宽度的断口会被视为相连。套索内没有线稿时，按圈出的形状原样选择。线稿取自选择参照（“仅工作图层”／“所有可见图层”）。';
 
   @override
   String get helpFingerToolTitle => '手指工具（扭曲工具）';
@@ -1327,21 +1327,21 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get helpShapeToolDesc =>
-      '一键绘制直线・矩形・圆形等精确图形的工具。从起点拖动到终点时会即时预览，松开手指即可确定。在难以徒手绘制直线或正圆时非常方便。';
+      '一键绘制直线、矩形、圆形等精确图形的工具。从起点拖动到终点时会即时预览，松开手指即可确定。在难以徒手绘制直线或正圆时非常方便。';
 
   @override
   String get helpTextToolTitle => '文字工具';
 
   @override
   String get helpTextToolDesc =>
-      '在画布上放置文字的工具。可选择字体・大小・颜色・竖排/横排。竖排时还支持半角字母数字的自动旋转・纵中横（数字保持横向排列的表记）・注音标注（类似日语振假名的读音标注）。放置的文字在导出时也会作为像素烧录进画面。 可添加・搜索・删除文字工具可用字体的画面。除初始内置字体外的其他免费字体，为控制初始安装容量，需从此处按需下载。';
+      '在画布上放置文字的工具。可选择字体、大小、颜色、竖排/横排。竖排时还支持半角字母数字的自动旋转、纵中横（数字保持横向排列的表记）、注音标注（类似日语振假名的读音标注）。放置的文字在导出时也会作为像素烧录进画面。 可添加、搜索、删除文字工具可用字体的画面。除初始内置字体外的其他免费字体，为控制初始安装容量，需从此处按需下载。';
 
   @override
   String get helpQuickToolTitle => '快捷工具';
 
   @override
   String get helpQuickToolDesc =>
-      '预先登记常用的画笔・工具组合，只需点击一个按钮即可依次切换。长按或向上滑动画布上的↺按钮，即可打开可以添加、排序、删除的管理弹窗。可通过拖动改变顺序。';
+      '预先登记常用的画笔、工具组合，只需点击一个按钮即可依次切换。长按或向上滑动画布上的↺按钮，即可打开可以添加、排序、删除的管理弹窗。可通过拖动改变顺序。';
 
   @override
   String get helpLayerTitle => '图层';
@@ -1369,7 +1369,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get helpCommonLayerDesc =>
-      '普通图层按每一帧独立存在，而公共图层则是在多个帧・场景中共享同一内容的图层。像背景这样不随帧变化而移动的元素，无需每帧重新绘制，只需画一次即可。在时间轴上会以专用轨道的形式显示。 可以把普通图层转换为共同图层（在多个帧中持续显示相同内容的图层）的功能。也可以先把当前显示的图层合并为一张，再进行共同化。想反复使用背景等每帧内容相同的部分时，可以省去重新绘制的麻烦。';
+      '普通图层按每一帧独立存在，而公共图层则是在多个帧、场景中共享同一内容的图层。像背景这样不随帧变化而移动的元素，无需每帧重新绘制，只需画一次即可。在时间轴上会以专用轨道的形式显示。 可以把普通图层转换为共同图层（在多个帧中持续显示相同内容的图层）的功能。也可以先把当前显示的图层合并为一张，再进行共同化。想反复使用背景等每帧内容相同的部分时，可以省去重新绘制的麻烦。';
 
   @override
   String get helpAutoFillTitle => '自动上色';
@@ -1383,14 +1383,14 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get helpOnionSkinDesc =>
-      '将当前编辑帧前后的帧以半透明方式叠加显示，使你可以一边确认动作的连贯性一边绘制的功能。可以在性能设置中调整显示的帧数（前后各显示几帧）以及颜色・透明度。';
+      '将当前编辑帧前后的帧以半透明方式叠加显示，使你可以一边确认动作的连贯性一边绘制的功能。可以在性能设置中调整显示的帧数（前后各显示几帧）以及颜色、透明度。';
 
   @override
   String get helpRulerTitle => '标尺';
 
   @override
   String get helpRulerDesc =>
-      '直线・圆・椭圆・透视标尺（使用消失点的透视图法专用标尺）等，用于辅助绘制徒手难以画出的精确线条的功能。放置的标尺会使笔尖自动吸附，即使是没有标尺就难以绘制的具有纵深感的构图也会更容易画出。标尺可以通过操作控制柄进行移动・旋转・调整大小。鱼眼透视标尺是五点曲线透视：在镜头圆内，横线和竖线弯成圆弧，纵深方向的线汇聚到中心。笔画会沿着与开始绘制方向相符的线条，拖动控制柄可移动中心、改变半径（圆右侧的点）和倾斜（圆上方的点）。';
+      '直线、圆、椭圆、透视标尺（使用消失点的透视图法专用标尺）等，用于辅助绘制徒手难以画出的精确线条的功能。放置的标尺会使笔尖自动吸附，即使是没有标尺就难以绘制的具有纵深感的构图也会更容易画出。标尺可以通过操作控制柄进行移动、旋转、调整大小。鱼眼透视标尺是五点曲线透视：在镜头圆内，横线和竖线弯成圆弧，纵深方向的线汇聚到中心。笔画会沿着与开始绘制方向相符的线条，拖动控制柄可移动中心、改变半径（圆右侧的点）和倾斜（圆上方的点）。';
 
   @override
   String get helpFadeTitle => '淡出';
@@ -1418,14 +1418,14 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get helpPressureCurveDesc =>
-      '笔输入设置中的功能，可通过图表自由调整实际笔压强度与画笔粗细・不透明度反映方式之间的关系。无论是希望轻压也能画出粗线的人，还是相反希望必须用力按压才会变粗的人，都能根据自己的用笔习惯细致自定义画感。更改设置后可当场试写确认效果。';
+      '笔输入设置中的功能，可通过图表自由调整实际笔压强度与画笔粗细、不透明度反映方式之间的关系。无论是希望轻压也能画出粗线的人，还是相反希望必须用力按压才会变粗的人，都能根据自己的用笔习惯细致自定义画感。更改设置后可当场试写确认效果。';
 
   @override
   String get helpTimelineTitle => '时间轴';
 
   @override
   String get helpTimelineDesc =>
-      '管理动画时间轴的画面。将帧（单张静止图像）排列并像翻页动画一样播放，就形成了动画。文字・图片・视频・音频素材轨道、公共图层轨道、摄像机关键帧也都在同一条时间轴上管理。文字・图片・视频与帧插画之间的前后关系可在“叠放顺序”中按整个场景或指定的帧范围调整。也可以长按项目进行多选，一起移动。';
+      '管理动画时间轴的画面。将帧（单张静止图像）排列并像翻页动画一样播放，就形成了动画。文字、图片、视频、音频素材轨道、公共图层轨道、摄像机关键帧也都在同一条时间轴上管理。文字、图片、视频与帧插画之间的前后关系可在“叠放顺序”中按整个场景或指定的帧范围调整。也可以长按项目进行多选，一起移动。';
 
   @override
   String get helpSceneTitle => '场景';
@@ -1439,14 +1439,14 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get helpCameraKeyframeDesc =>
-      '在时间轴上的特定位置记录摄像机的位置・缩放比例・旋转角度的功能。关键帧之间会自动平滑插值，因此可以轻松添加平移（横向移动）或拉近拉远等镜头运动。';
+      '在时间轴上的特定位置记录摄像机的位置、缩放比例、旋转角度的功能。关键帧之间会自动平滑插值，因此可以轻松添加平移（横向移动）或拉近拉远等镜头运动。';
 
   @override
   String get helpEffectFilterTitle => '演出滤镜';
 
   @override
   String get helpEffectFilterDesc =>
-      '可应用于场景或帧的画面效果（模糊・色调校正・辉光・像素画等）。在不改变手绘画面本身的前提下，作为演出手段调整整个画面观感时使用。绘画滤镜中的色调曲线（预设与强度）・色阶・锐化・USM锐化・暗角（颜色・范围・浓度）・水彩边界也收录在演出滤镜中，可以一次对多个帧施加相同的效果。像素画也可以选择配色方式（不指定颜色・指定颜色・指定颜色数・从调色板选择）。限制颜色时，单用一种颜色与原色相差较远的地方，会用可用颜色中的两到三种按规则排列（抖动）来接近原色，这种排列在帧与帧之间不会移动；轮廓处保持清晰。抖动可以用开关打开或关闭，关闭后用最接近的一种颜色填充。 演出滤镜可以叠加应用多个，其应用顺序依照时间轴上的排列顺序。拖动滤镜列表重新排序后，实际反映到画面上的顺序也会随之改变。 一种演出滤镜，会逐帧改变类似胶片颗粒感的噪点。可以用滑块调整强度、数量（噪点出现的密度）和颗粒大小。回到同一帧时噪点形态相同（拖动时不会闪烁），播放时颗粒则会呈现出跳动的效果。 用来表现画面中降雨的演出滤镜。可以用滑块调整降雨强度（雨滴数量）、速度、雨滴大小和风向角度。每滴雨都会随着帧数推进以恒定速度持续下落，呈现自然的降雨效果。';
+      '可应用于场景或帧的画面效果（模糊、色调校正、辉光、像素画等）。在不改变手绘画面本身的前提下，作为演出手段调整整个画面观感时使用。绘画滤镜中的色调曲线（预设与强度）、色阶、锐化、USM锐化、暗角（颜色、范围、浓度）、水彩边界也收录在演出滤镜中，可以一次对多个帧施加相同的效果。像素画也可以选择配色方式（不指定颜色、指定颜色、指定颜色数、从调色板选择）。限制颜色时，单用一种颜色与原色相差较远的地方，会用可用颜色中的两到三种按规则排列（抖动）来接近原色，这种排列在帧与帧之间不会移动；轮廓处保持清晰。抖动可以用开关打开或关闭，关闭后用最接近的一种颜色填充。 演出滤镜可以叠加应用多个，其应用顺序依照时间轴上的排列顺序。拖动滤镜列表重新排序后，实际反映到画面上的顺序也会随之改变。 一种演出滤镜，会逐帧改变类似胶片颗粒感的噪点。可以用滑块调整强度、数量（噪点出现的密度）和颗粒大小。回到同一帧时噪点形态相同（拖动时不会闪烁），播放时颗粒则会呈现出跳动的效果。 用来表现画面中降雨的演出滤镜。可以用滑块调整降雨强度（雨滴数量）、速度、雨滴大小和风向角度。每滴雨都会随着帧数推进以恒定速度持续下落，呈现自然的降雨效果。';
 
   @override
   String get helpEndCardTitle => '片尾卡（片尾标志）';
@@ -1460,7 +1460,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get helpAutoSaveDesc =>
-      '专用于崩溃或文件损坏时恢复的保存。每次绘图等发生变更时都会自动保存，最多保留3份，按从旧到新的顺序覆盖。它与手动保存（存档槽・存档树）完全分开管理，不能替代常规保存。打开作品时，如果有内容不同的自动保存版本，可以选择是否恢复。';
+      '专用于崩溃或文件损坏时恢复的保存。每次绘图等发生变更时都会自动保存，最多保留3份，按从旧到新的顺序覆盖。它与手动保存（存档槽、存档树）完全分开管理，不能替代常规保存。打开作品时，如果有内容不同的自动保存版本，可以选择是否恢复。';
 
   @override
   String get canvasAutosaveRecoveryTitle => '恢复自动保存';
@@ -1473,7 +1473,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get helpSaveSlotDesc =>
-      '在固定数量的存档槽中，由自己选择保存位置进行保存的方式。存档槽的数量由设置决定（低画质5个・中画质10个）。由于每次都需要自己选择要覆盖的存档槽，适合“想保留这个时间点的状态”这类管理方式。';
+      '在固定数量的存档槽中，由自己选择保存位置进行保存的方式。存档槽的数量由设置决定（低画质5个、中画质10个）。由于每次都需要自己选择要覆盖的存档槽，适合“想保留这个时间点的状态”这类管理方式。';
 
   @override
   String get helpSaveTreeTitle => '存档树';
@@ -1508,10 +1508,10 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get helpTransferDesc =>
-      '将设置、素材、笔刷、自动上色设置、主题、调色板（取色器・像素画专用）等整个应用环境一次性转移到其他设备的功能。可以通过复选框单独选择要转移的项目，还可以选择性地一并包含制作中的项目（所选项目会连同素材、字体一起完整转移）。如果只想传递单个项目，也可以改用“共享（.niashare）”。';
+      '将设置、素材、笔刷、自动上色设置、主题、调色板（取色器、像素画专用）等整个应用环境一次性转移到其他设备的功能。可以通过复选框单独选择要转移的项目，还可以选择性地一并包含制作中的项目（所选项目会连同素材、字体一起完整转移）。如果只想传递单个项目，也可以改用“共享（.niashare）”。';
 
   @override
-  String get helpVideoExportTitle => '视频导出（MP4・WebM・GIF・AVI）';
+  String get helpVideoExportTitle => '视频导出（MP4/WebM/GIF/AVI）';
 
   @override
   String get helpVideoExportDesc =>
@@ -1525,7 +1525,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get helpCommunityDesc =>
-      '可以将动画・插画作品以YouTube视频的形式发布到社区，并浏览其他用户的作品。可以切换“最新”“排行榜”“关注”三个标签页，也可以按作品标题或投稿者名称搜索。切换到标签搜索模式后可按标签筛选作品，标签不仅投稿者本人，其他用户也可以自由添加或删除（投稿者锁定的标签只能由投稿者本人解锁），点击标签即可筛选出相同标签的作品。点击作品卡片会打开可拖动、可调整大小的悬浮预览窗口，可以在继续操作其他画面的同时观看。点击“查看详情”按钮可打开作品详情画面（投稿者、发布日期、标签编辑、收藏、转发等）。点击投稿者名称旁的“关注”按钮即可将其加入关注列表，“关注”标签页会按时间顺序汇总显示该作者的作品。仅本人可查看关注的用户列表和已收藏的作品列表。不显示粉丝身份和粉丝列表，仅显示关注数和粉丝数。关注、收藏或转发时，系统不会向对方发送有关该操作的单独通知。除自己发布的作品外，都可以用“转发”按钮转发；当关注的作者转发了他人的作品时，该作品也会以“发布日期”和“转发日期”中较新的一方为基准，混入“关注”标签页中显示（卡片上会显示“○○转发了”）。收藏的作品会汇总显示在主页的“已收藏”标签页中，也可以在自己的投稿者页面的“收藏”标签页中查看。对不当作品可以附上理由进行举报，举报提交后会询问你是否要屏蔽该投稿者。竖屏视频可以在“竖屏模式”中连续播放观看。每日可发布的作品数量有上限，免费会员每天1个，高级会员每天3个。点击画面右上角的显示筛选按钮（带斜线的眼睛图标），可以隐藏不想看到的作品。除了可以隐藏“包含生成式 AI 图像或视频”的作品外，还可以通过“新增”逐条登记只匹配作品标题的隐藏标题关键词，以及只匹配作品广场标签的隐藏标签。可用编辑图标修改或垃圾桶图标删除，无需输入逗号或 #。这些筛选适用于“最新”“排行榜”“关注”（含转发）、竖屏模式、投稿者页面、作品详情和收藏。“包含生成式 AI 图像或视频”由投稿者在发布时自行声明，发布后也只有投稿者本人可以更改（可在“我的投稿”或作品详情画面中更改）。';
+      '可以将动画、插画作品以YouTube视频的形式发布到社区，并浏览其他用户的作品。可以切换“最新”“排行榜”“关注”三个标签页，也可以按作品标题或投稿者名称搜索。切换到标签搜索模式后可按标签筛选作品，标签不仅投稿者本人，其他用户也可以自由添加或删除（投稿者锁定的标签只能由投稿者本人解锁），点击标签即可筛选出相同标签的作品。点击作品卡片会打开可拖动、可调整大小的悬浮预览窗口，可以在继续操作其他画面的同时观看。点击“查看详情”按钮可打开作品详情画面（投稿者、发布日期、标签编辑、收藏、转发等）。点击投稿者名称旁的“关注”按钮即可将其加入关注列表，“关注”标签页会按时间顺序汇总显示该作者的作品。仅本人可查看关注的用户列表和已收藏的作品列表。不显示粉丝身份和粉丝列表，仅显示关注数和粉丝数。关注、收藏或转发时，系统不会向对方发送有关该操作的单独通知。除自己发布的作品外，都可以用“转发”按钮转发；当关注的作者转发了他人的作品时，该作品也会以“发布日期”和“转发日期”中较新的一方为基准，混入“关注”标签页中显示（卡片上会显示“○○转发了”）。收藏的作品会汇总显示在主页的“已收藏”标签页中，也可以在自己的投稿者页面的“收藏”标签页中查看。对不当作品可以附上理由进行举报，举报提交后会询问你是否要屏蔽该投稿者。竖屏视频可以在“竖屏模式”中连续播放观看。每日可发布的作品数量有上限，免费会员每天1个，高级会员每天3个。点击画面右上角的显示筛选按钮（带斜线的眼睛图标），可以隐藏不想看到的作品。除了可以隐藏“包含生成式 AI 图像或视频”的作品外，还可以通过“新增”逐条登记只匹配作品标题的隐藏标题关键词，以及只匹配作品广场标签的隐藏标签。可用编辑图标修改或垃圾桶图标删除，无需输入逗号或 #。这些筛选适用于“最新”“排行榜”“关注”（含转发）、竖屏模式、投稿者页面、作品详情和收藏。“包含生成式 AI 图像或视频”由投稿者在发布时自行声明，发布后也只有投稿者本人可以更改（可在“我的投稿”或作品详情画面中更改）。';
 
   @override
   String get helpWatermarkEntryTitle => '水印';
@@ -1553,14 +1553,14 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get helpPerformanceSettingsDesc =>
-      '可根据设备性能从低画质・中画质・高画质预设中选择，也可逐项单独设置（自定义）。除保存方式・运行速度・洋葱皮・倾斜检测外，撤销次数、回收站自动删除等影响应用容量与运行负载的设置也都集中在这里。';
+      '可根据设备性能从低画质、中画质、高画质预设中选择，也可逐项单独设置（自定义）。除保存方式、运行速度、洋葱皮、倾斜检测外，撤销次数、回收站自动删除等影响应用容量与运行负载的设置也都集中在这里。';
 
   @override
-  String get helpMaterialClipTitle => '素材片段（文字・图片・视频・音频）';
+  String get helpMaterialClipTitle => '素材片段（文字、图片、视频、音频）';
 
   @override
   String get helpMaterialClipDesc =>
-      '放置在时间轴文字、图片、视频、音频轨道上的片段。长按拖动片段本身可移动其起始位置，拖动两端的手柄可改变使用范围（长度）。同一时间重叠的素材会自动放到其他行。点击文字・图片・视频片段，会在预览下方打开编辑面板：可修改文字内容・字体・颜色・描边，位置・缩放・X轴／Y轴／Z轴旋转・不透明度（也可在预览上拖动，添加关键帧即可产生动画），蒙版（矩形・椭圆・羽化・反转）以及所在行，也可在此复制或删除。音频片段在详情面板中调整音量和淡入淡出。';
+      '放置在时间轴文字、图片、视频、音频轨道上的片段。长按拖动片段本身可移动其起始位置，拖动两端的手柄可改变使用范围（长度）。同一时间重叠的素材会自动放到其他行。点击文字、图片、视频片段，会在预览下方打开编辑面板：可修改文字内容、字体、颜色、描边，位置、缩放、X轴／Y轴／Z轴旋转、不透明度（也可在预览上拖动，添加关键帧即可产生动画），蒙版（矩形、椭圆、羽化、反转）以及所在行，也可在此复制或删除。音频片段在详情面板中调整音量和淡入淡出。';
 
   @override
   String get helpGestureSettingsTitle => '手势设置';
@@ -1616,7 +1616,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get helpThemeSettingsDesc =>
-      '可以从主题列表中选择应用的整体配色。你可以调整六种基础颜色，也可以在高级颜色设置中单独设置菜单文字、选中状态等颜色。标题・项目名称用字体与说明文字用字体是分开的，能在保持可读性的同时享受换装乐趣。';
+      '可以从主题列表中选择应用的整体配色。你可以调整六种基础颜色，也可以在高级颜色设置中单独设置菜单文字、选中状态等颜色。标题、项目名称用字体与说明文字用字体是分开的，能在保持可读性的同时享受换装乐趣。';
 
   @override
   String get helpWorkspaceSettingsTitle => '工作区设置';
@@ -1630,7 +1630,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get helpPenSettingsDesc =>
-      '除了数位板・数位屏的压感曲线外，这个设置画面还能把切换橡皮擦、取色器等操作分配给支持的触控笔侧面按键。';
+      '除了数位板、数位屏的压感曲线外，这个设置画面还能把切换橡皮擦、取色器等操作分配给支持的触控笔侧面按键。';
 
   @override
   String get helpMaterialListTitle => '素材列表';
@@ -1710,7 +1710,7 @@ class AppLocalizationsZh extends AppLocalizations {
       '可以把多个图层整理到文件夹中的功能。即使是部位较多的插画，也能让图层面板保持清晰易看。剪裁无法跨文件夹套用，如果要使用剪裁，建议把相关图层放在同一个文件夹内。';
 
   @override
-  String get helpLayerMultiSelectTitle => '图层多选・批量操作';
+  String get helpLayerMultiSelectTitle => '图层多选、批量操作';
 
   @override
   String get helpLayerMultiSelectDesc =>
@@ -1784,14 +1784,14 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get helpDrawingFilterDesc =>
-      '直接应用于所选图层的滤镜（演出滤镜作用于整条时间线或整个场景，而绘图滤镜按图层生效）。内置26种滤镜：高斯模糊、镜头模糊、动画风、色调曲线、色阶、描边、锐化、USM锐化、暗角、复古动漫、老电视、二值化、鱼眼镜头、色差、眼镜断层、像素画、质感变换、背景融合、积墨、自动线稿、棱镜、反色、马赛克、噪点、球体阴影和水彩边界。水彩边界会让作业图层上涂色部分的边缘聚集颜色、内侧变得通透，就像干了的水彩（开启“颜色交界处也添加”后，相邻颜色的交界处也会出现边缘）。动漫风格会减少颜色数，并在相邻颜色之差达到“颜色差阈值”以上的边界上，于较暗的一侧画出“边界线粗细”的线（线稿的线条不会变粗）。棱镜会把图层上每个形状分别涂上彩虹六色（红、绿、青色、蓝、紫、红）并模糊，再把图层设为线性减淡。先在单独的图层上用深色画出细小的叶片状形状再使用，画面上就会出现柔和的彩虹光痕（模糊量与一般的高斯模糊采用相同标准）。球体阴影会在椭圆形光的内侧叠加光色、外侧叠加阴影色，且只加在已绘制的地方（也可以在画布上拖动光）。描边不会改写原图层，只会把结果绘制到新图层。眼镜断层只对用面板的“画笔”“填充桶”在画布上涂抹的范围（可用“橡皮擦”修改）施加类似强力眼镜镜片的局部变形（如果有选区或选区图层，会从该范围开始）。画布上有选区时，绘图滤镜只应用于选区内。像素画还可选择配色方式（不限制、指定颜色、指定颜色数或从调色板选择）。限制颜色时，单用一种颜色与原色相差较远的地方，会用可用颜色中的两到三种按规则排列（抖动），使其更接近原色；轮廓处不混色，保持清晰。指定颜色数时，会从占画面大部分的颜色中选取。抖动可以用开关打开或关闭，关闭后用最接近的一种颜色填充。大小可在“指定色块大小”（1～100共100级）和“指定点数”（横向・纵向点数滑块，最左为1，最右为画布尺寸）之间切换，横向和纵向会在保持画面宽高比的同时一起变化，两种指定方式也会联动。两种方式下点都保持正方形，不会产生半透明的边缘。 自动线稿可在应用滤镜前直接编辑临时矢量控制点。拖动控制点时只移动该点。选择“应用”右侧的“添加控制点”后点击线条可添加控制点，选择“删除控制点”后点击控制点可将其删除（两者都未选择时点击控制点，会先确认再删除）。编辑后的形状会直接用于最终应用结果，控制点的移动、添加和删除也可以用滤镜编辑的撤销・重做逐一恢复。 色调曲线中，轻点曲线上的空白处可添加点，拖动点可移动，长按可删除；R、G、B 各颜色的曲线在 RGB 曲线之后生效。色阶也可按 R、G、B 分别调整，伽马可改变中间调的亮度。描边的“向内延伸”可将边缘扩展到原轮廓内侧，描边的新图层会放在原图层的正下方。色差可指定将偏移分配到 X（横向）、Y（纵向）、Z（从中心向外）各多少。鱼眼镜头的中心和半径也可以在画布上拖动 ＋ 和圆上的手柄来更改。暗角会柔和地压暗整个画布的四个角（没有绘画的透明处也会有阴影）。可用“范围”调整从四角向中心压暗到多远，用“浓度”调整四角的暗度。眼镜断层像真正的高度数眼镜一样，让透过镜片看到的景物朝镜片中心均匀缩小（负值，近视用）或放大（正值，远视用），并在镜片边缘使轮廓错开成台阶状。积墨只积在线条以“最大角度”或更小角度相交处（初始值90°时为锐角和直角：V字、交叉的窄侧、T字、方角）的夹角内侧，更宽的角不积：在相交点从线条边缘起为“中央宽度”，再朝“范围”的末端笔直变细，末端为0px，平滑地收成尖端（即使加大“中央宽度”，也不会鼓出连接两侧积墨末端的直线之外，最宽时中间也是平的）；若线条在范围内中断，该线条上的积墨会以中断处为终点细到0px（每条线的长度可以不同），此时两处积墨仍会在夹角的正中相接，距两条线的宽度相同（较长线条的积墨从那里再细到范围的末端）。自动线稿沿草稿线条的中心描出细线。靠得很近的线条只要中间有一点空隙，就仍画成两条线，只填补线条内部的小白点。两条线靠拢并贴在一起的地方，不会在中间画成一条线，而是像草稿一样两条线逐渐靠近并合在一起。线条交叉或重叠的地方，也会像草稿一样让每条线照原样延续（不会在交点处折弯，重叠的两条线也不会融成一条）。以较浅角度斜向交叉的线也会笔直地穿过交叉处，仅相互接触的线（例如沿着头部画的头发轮廓）则各自留在自己的一侧，仍是分开的线。眼睛之类的点会画成实心的点。比“草稿线宽”短的分叉不绘制。“起笔收笔”可以用开关打开或关闭，关闭后线条直到末端都保持相同粗细。背景融入以混合模式“强光”叠加背景的光与影（影子的颜色不是黑色或灰色，而是把背景中阴影部分的颜色压暗后的颜色）。周围的颜色以“叠加”覆盖整幅画来统一色彩方向，从下方反上来的光和周围的反射光以“滤色”加入，霓虹灯之类的强烈有色光以“相加（发光）”加在轮廓上。“匹配背景的明暗与色调”会把比背景过亮或过于鲜艳的颜色拉回背景的范围，并让暗部、中间调、亮部分别带上背景中相同明度的色调（线稿的黑色保持不变）。“模糊程度”是取色前模糊背景的程度。';
+      '直接应用于所选图层的滤镜（演出滤镜作用于整条时间线或整个场景，而绘图滤镜按图层生效）。内置26种滤镜：高斯模糊、镜头模糊、动画风、色调曲线、色阶、描边、锐化、USM锐化、暗角、复古动漫、老电视、二值化、鱼眼镜头、色差、眼镜断层、像素画、质感变换、背景融合、积墨、自动线稿、棱镜、反色、马赛克、噪点、球体阴影和水彩边界。水彩边界会让作业图层上涂色部分的边缘聚集颜色、内侧变得通透，就像干了的水彩（开启“颜色交界处也添加”后，相邻颜色的交界处也会出现边缘）。动漫风格会减少颜色数，并在相邻颜色之差达到“颜色差阈值”以上的边界上，于较暗的一侧画出“边界线粗细”的线（线稿的线条不会变粗）。棱镜会把图层上每个形状分别涂上彩虹六色（红、绿、青色、蓝、紫、红）并模糊，再把图层设为线性减淡。先在单独的图层上用深色画出细小的叶片状形状再使用，画面上就会出现柔和的彩虹光痕（模糊量与一般的高斯模糊采用相同标准）。球体阴影会在椭圆形光的内侧叠加光色、外侧叠加阴影色，且只加在已绘制的地方（也可以在画布上拖动光）。描边不会改写原图层，只会把结果绘制到新图层。眼镜断层只对用面板的“画笔”“填充桶”在画布上涂抹的范围（可用“橡皮擦”修改）施加类似强力眼镜镜片的局部变形（如果有选区或选区图层，会从该范围开始）。画布上有选区时，绘图滤镜只应用于选区内。像素画还可选择配色方式（不限制、指定颜色、指定颜色数或从调色板选择）。限制颜色时，单用一种颜色与原色相差较远的地方，会用可用颜色中的两到三种按规则排列（抖动），使其更接近原色；轮廓处不混色，保持清晰。指定颜色数时，会从占画面大部分的颜色中选取。抖动可以用开关打开或关闭，关闭后用最接近的一种颜色填充。大小可在“指定色块大小”（1～100共100级）和“指定点数”（横向、纵向点数滑块，最左为1，最右为画布尺寸）之间切换，横向和纵向会在保持画面宽高比的同时一起变化，两种指定方式也会联动。两种方式下点都保持正方形，不会产生半透明的边缘。 自动线稿可在应用滤镜前直接编辑临时矢量控制点。拖动控制点时只移动该点。选择“应用”右侧的“添加控制点”后点击线条可添加控制点，选择“删除控制点”后点击控制点可将其删除（两者都未选择时点击控制点，会先确认再删除）。编辑后的形状会直接用于最终应用结果，控制点的移动、添加和删除也可以用滤镜编辑的撤销、重做逐一恢复。 色调曲线中，轻点曲线上的空白处可添加点，拖动点可移动，长按可删除；R、G、B 各颜色的曲线在 RGB 曲线之后生效。色阶也可按 R、G、B 分别调整，伽马可改变中间调的亮度。描边的“向内延伸”可将边缘扩展到原轮廓内侧，描边的新图层会放在原图层的正下方。色差可指定将偏移分配到 X（横向）、Y（纵向）、Z（从中心向外）各多少。鱼眼镜头的中心和半径也可以在画布上拖动 ＋ 和圆上的手柄来更改。暗角会柔和地压暗整个画布的四个角（没有绘画的透明处也会有阴影）。可用“范围”调整从四角向中心压暗到多远，用“浓度”调整四角的暗度。眼镜断层像真正的高度数眼镜一样，让透过镜片看到的景物朝镜片中心均匀缩小（负值，近视用）或放大（正值，远视用），并在镜片边缘使轮廓错开成台阶状。积墨只积在线条以“最大角度”或更小角度相交处（初始值90°时为锐角和直角：V字、交叉的窄侧、T字、方角）的夹角内侧，更宽的角不积：在相交点从线条边缘起为“中央宽度”，再朝“范围”的末端笔直变细，末端为0px，平滑地收成尖端（即使加大“中央宽度”，也不会鼓出连接两侧积墨末端的直线之外，最宽时中间也是平的）；若线条在范围内中断，该线条上的积墨会以中断处为终点细到0px（每条线的长度可以不同），此时两处积墨仍会在夹角的正中相接，距两条线的宽度相同（较长线条的积墨从那里再细到范围的末端）。自动线稿沿草稿线条的中心描出细线。靠得很近的线条只要中间有一点空隙，就仍画成两条线，只填补线条内部的小白点。两条线靠拢并贴在一起的地方，不会在中间画成一条线，而是像草稿一样两条线逐渐靠近并合在一起。线条交叉或重叠的地方，也会像草稿一样让每条线照原样延续（不会在交点处折弯，重叠的两条线也不会融成一条）。以较浅角度斜向交叉的线也会笔直地穿过交叉处，仅相互接触的线（例如沿着头部画的头发轮廓）则各自留在自己的一侧，仍是分开的线。眼睛之类的点会画成实心的点。比“草稿线宽”短的分叉不绘制。“起笔收笔”可以用开关打开或关闭，关闭后线条直到末端都保持相同粗细。背景融入以混合模式“强光”叠加背景的光与影（影子的颜色不是黑色或灰色，而是把背景中阴影部分的颜色压暗后的颜色）。周围的颜色以“叠加”覆盖整幅画来统一色彩方向，从下方反上来的光和周围的反射光以“滤色”加入，霓虹灯之类的强烈有色光以“相加（发光）”加在轮廓上。“匹配背景的明暗与色调”会把比背景过亮或过于鲜艳的颜色拉回背景的范围，并让暗部、中间调、亮部分别带上背景中相同明度的色调（线稿的黑色保持不变）。“模糊程度”是取色前模糊背景的程度。';
 
   @override
   String get helpLayerKeyframeTitle => '图层关键帧（分部件动画）';
 
   @override
   String get helpLayerKeyframeDesc =>
-      '按帧设置每个图层的位置・缩放・旋转，关键帧之间会自动插值。摄像机关键帧移动的是整个画面，而这个功能只移动单个图层。由于自动上色的每个部件都会生成为独立的图层，因此可以直接用它来做分部件动画（只动一只手臂、只让嘴巴开合等）。每个关键帧还可以单独设置“匀速”“缓入”“缓出”“缓入缓出”“弹跳”这类缓动（与下一个关键帧的衔接方式），不仅限于单调的匀速移动，还能表现出弹跳般的动作。在图层面板的三点菜单“动画（关键帧）”中设置。图层本身的画面内容不会改变，只是显示位置发生变化的非破坏性变形。此功能只影响时间轴的显示（预览・导出），不会影响画布模式下的实际作画。';
+      '按帧设置每个图层的位置、缩放、旋转，关键帧之间会自动插值。摄像机关键帧移动的是整个画面，而这个功能只移动单个图层。由于自动上色的每个部件都会生成为独立的图层，因此可以直接用它来做分部件动画（只动一只手臂、只让嘴巴开合等）。每个关键帧还可以单独设置“匀速”“缓入”“缓出”“缓入缓出”“弹跳”这类缓动（与下一个关键帧的衔接方式），不仅限于单调的匀速移动，还能表现出弹跳般的动作。在图层面板的三点菜单“动画（关键帧）”中设置。图层本身的画面内容不会改变，只是显示位置发生变化的非破坏性变形。此功能只影响时间轴的显示（预览、导出），不会影响画布模式下的实际作画。';
 
   @override
   String get helpLayerGroupTitle => '图层分组（把多个部件一起移动）';
@@ -2046,7 +2046,7 @@ class AppLocalizationsZh extends AppLocalizations {
       '投稿到作品广场后，作品将通过YouTube公开。NIARIM不具备将视频文件本体发送、收集或保存到开发者服务器的功能。如果在YouTube一侧将视频设置为“不公开列出”，该视频就不会出现在YouTube的公开列表中，只会显示在作品广场内。';
 
   @override
-  String get tipsToolbarCustomizeTitle => '重新排列・隐藏工具栏，缩短手指移动距离';
+  String get tipsToolbarCustomizeTitle => '重新排列、隐藏工具栏，缩短手指移动距离';
 
   @override
   String get tipsToolbarCustomizeDesc =>
@@ -2148,7 +2148,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get tipsVideoTrimReuseDesc =>
-      '即使是同一个视频素材，只要为每个片段设置不同的使用开始・结束帧，就能当作不同的镜头重复使用。不用增加素材也能做出变化。';
+      '即使是同一个视频素材，只要为每个片段设置不同的使用开始、结束帧，就能当作不同的镜头重复使用。不用增加素材也能做出变化。';
 
   @override
   String get tipsSaveSlotAutoSaveTitle => '区分使用存档槽和自动保存';
@@ -2237,7 +2237,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get fontCorruptedSnackbar => '字体已损坏。';
 
   @override
-  String get licenseScreenTitle => '使用条款・许可';
+  String get licenseScreenTitle => '使用条款、许可';
 
   @override
   String get licenseSectionTerms => '使用条款';
@@ -2306,7 +2306,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get toolbarPenTooltip => '笔（长按打开子工具）';
 
   @override
-  String get toolbarPenFirstUseTip => '长按笔工具，可切换画笔・网点・图章・套索填色。';
+  String get toolbarPenFirstUseTip => '长按笔工具，可切换画笔、网点、图章、套索填色。';
 
   @override
   String get toolbarBucketTooltip => '填充桶（长按切换纯色/网点填充）';
@@ -2334,11 +2334,11 @@ class AppLocalizationsZh extends AppLocalizations {
       '单击工具栏图标即可切换到该工具。长按同一图标或向上滑动，可打开该工具的详细设置（笔刷种类、填充方式、选择方式等）。双击图标会显示该工具的简短说明。关闭之后，也可以从各画面右上角的“?”按钮在帮助中重新阅读。';
 
   @override
-  String get helpBasicGestureTitle => '基本操作（点击・长按・上滑）';
+  String get helpBasicGestureTitle => '基本操作（点击、长按、上滑）';
 
   @override
   String get helpBasicGestureDesc =>
-      '单击工具栏图标即可切换到该工具。长按同一图标或向上滑动，可打开详细设置。钢笔可切换笔刷・网点・图章・套索填充，油漆桶可切换纯色填充与网点填充，选择工具可切换矩形・套索・自动选择，手指工具可切换模糊与马赛克，快速切换工具可编辑已登记的内容，这些都在长按或上滑之后。双击图标时，画面下方会显示该工具的简短说明。\n在画布上，双指捏合可缩放，双指拖动可平移，双指点击撤销，三指点击重做。双击画面左右边缘可移动到前后一帧。\n连接鼠标或数位板时，可用滚轮缩放、按住中键拖动平移。';
+      '单击工具栏图标即可切换到该工具。长按同一图标或向上滑动，可打开详细设置。钢笔可切换笔刷、网点、图章、套索填充，油漆桶可切换纯色填充与网点填充，选择工具可切换矩形、套索、自动选择，手指工具可切换模糊与马赛克，快速切换工具可编辑已登记的内容，这些都在长按或上滑之后。双击图标时，画面下方会显示该工具的简短说明。\n在画布上，双指捏合可缩放，双指拖动可平移，双指点击撤销，三指点击重做。双击画面左右边缘可移动到前后一帧。\n连接鼠标或数位板时，可用滚轮缩放、按住中键拖动平移。';
 
   @override
   String get toolbarStampColorLockedSnackbar => '图章保留了自身的颜色信息，因此无法更改颜色';
@@ -2626,7 +2626,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get stampChangeImageButton => '更改图章图片';
 
   @override
-  String get themeSettingsTitle => '主题・外观';
+  String get themeSettingsTitle => '主题、外观';
 
   @override
   String get themeColorCustomizeSection => '颜色自定义';
@@ -2944,10 +2944,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get newProjectSizeLabel => '尺寸';
 
   @override
-  String get newProjectPresetFullHd => 'Full HD（16:9・适合YouTube等横版视频）';
+  String get newProjectPresetFullHd => 'Full HD（16:9、适合YouTube等横版视频）';
 
   @override
-  String get newProjectPresetHd => 'HD（16:9・轻量版）';
+  String get newProjectPresetHd => 'HD（16:9、轻量版）';
 
   @override
   String get newProjectPresetSquare => '1:1 正方形（适合Twitter/Instagram发布）';
@@ -3361,13 +3361,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get perfSettingsQualityCustom => '自定义';
 
   @override
-  String get perfSettingsQualityDescLow => '适合想要更轻量运行的设备（前后各1张洋葱皮・5个存档槽）';
+  String get perfSettingsQualityDescLow => '适合想要更轻量运行的设备（前后各1张洋葱皮、5个存档槽）';
 
   @override
-  String get perfSettingsQualityDescMedium => '适合一般设备（前后各3张洋葱皮・10个存档槽）';
+  String get perfSettingsQualityDescMedium => '适合一般设备（前后各3张洋葱皮、10个存档槽）';
 
   @override
-  String get perfSettingsQualityDescHigh => '适合性能有余裕的设备（前后各5张洋葱皮・树状存档）';
+  String get perfSettingsQualityDescHigh => '适合性能有余裕的设备（前后各5张洋葱皮、树状存档）';
 
   @override
   String get perfSettingsQualityDescCustom => '分别设置各项目';
@@ -3494,13 +3494,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get perfSettingsCopyPresetDialogBody => '请选择要复制到自定义设置的预设。';
 
   @override
-  String get perfSettingsCopyDescLow => '前后各显示1张・轻量运行';
+  String get perfSettingsCopyDescLow => '前后各显示1张、轻量运行';
 
   @override
-  String get perfSettingsCopyDescMedium => '前后各显示3张・标准';
+  String get perfSettingsCopyDescMedium => '前后各显示3张、标准';
 
   @override
-  String get perfSettingsCopyDescHigh => '前后各显示5张・高画质';
+  String get perfSettingsCopyDescHigh => '前后各显示5张、高画质';
 
   @override
   String get filterPanelTitle => '滤镜';
@@ -3577,7 +3577,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get filterRetroStrength => '强度';
 
   @override
-  String get filterCrtScreenStrength => '扫描线・荧光体浓度';
+  String get filterCrtScreenStrength => '扫描线、荧光体浓度';
 
   @override
   String get filterCrtAberration => '色偏强度';
@@ -3820,7 +3820,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get autofillLineColorModeSameAsFill => '与填色相同';
 
   @override
-  String get autofillLineColorModeTraceAdjust => '颜色描线・与线稿融合';
+  String get autofillLineColorModeTraceAdjust => '颜色描线、与线稿融合';
 
   @override
   String get autofillGradientTypeLinear => '直线';
@@ -4305,7 +4305,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get canvasEditMenuAutofillPresets => '自动上色设置';
 
   @override
-  String get canvasEditMenuAutofillPresetsSubtitle => '编辑各部位的颜色・网点组合';
+  String get canvasEditMenuAutofillPresetsSubtitle => '编辑各部位的颜色、网点组合';
 
   @override
   String get canvasEditMenuBackgroundToggle => '切换背景';
@@ -4335,13 +4335,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get canvasEditMenuPressureCurveSubtitle => '打开钢笔输入设置（与设置画面共用）';
 
   @override
-  String get canvasEditMenuMeshTransform => '自由变形・网格变形';
+  String get canvasEditMenuMeshTransform => '自由变形、网格变形';
 
   @override
   String get canvasEditMenuMeshTransformSubtitle => '无需选区即可变形整个图层';
 
   @override
-  String get meshTransformPanelTitle => '自由变形・网格变形';
+  String get meshTransformPanelTitle => '自由变形、网格变形';
 
   @override
   String get meshTransformPanelHint => '用手指拖动角点或网格点（双指同时拖动不同的点即可旋转、缩放）';
@@ -5345,7 +5345,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get layerKeyframeSheetDesc =>
-      '按帧设置该图层的位置・缩放・旋转，关键帧之间会自动插值。图层本身的画面内容不会改变。';
+      '按帧设置该图层的位置、缩放、旋转，关键帧之间会自动插值。图层本身的画面内容不会改变。';
 
   @override
   String layerKeyframeAddAtCurrentFrame(int n) {
@@ -5453,7 +5453,7 @@ class AppLocalizationsZh extends AppLocalizations {
       '本使用条款（以下称“本条款”）规定了本应用“NIARIM”（以下称“本应用”）的使用条件。用户须在同意本条款的前提下使用本应用。使用本应用即视为已同意本条款。';
 
   @override
-  String get licenseTermsArt2Title => '第2条（使用资格・适用环境）';
+  String get licenseTermsArt2Title => '第2条（使用资格、适用环境）';
 
   @override
   String get licenseTermsArt2Body =>
@@ -5464,7 +5464,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get licenseTermsArt3Body =>
-      '用户在使用本应用时，不得实施以下行为：\n・违反法令或公序良俗的行为\n・侵害本应用、开发者或第三方的著作权、商标权等知识产权、肖像权、隐私权或其他权利或利益的行为\n・以反编译、反汇编、逆向工程或其他解析为目的的行为（法令允许的情况除外）\n・对本应用进行未经授权的改造、复制或再分发\n・对本应用或其提供基础设施进行未经授权的访问、施加过度负荷等妨碍其正常提供的行为\n・其他开发者基于合理理由判断为不当的行为';
+      '用户在使用本应用时，不得实施以下行为：\n• 违反法令或公序良俗的行为\n• 侵害本应用、开发者或第三方的著作权、商标权等知识产权、肖像权、隐私权或其他权利或利益的行为\n• 以反编译、反汇编、逆向工程或其他解析为目的的行为（法令允许的情况除外）\n• 对本应用进行未经授权的改造、复制或再分发\n• 对本应用或其提供基础设施进行未经授权的访问、施加过度负荷等妨碍其正常提供的行为\n• 其他开发者基于合理理由判断为不当的行为';
 
   @override
   String get licenseTermsArt4Title => '第4条（创作内容的权利）';
@@ -5474,14 +5474,14 @@ class AppLocalizationsZh extends AppLocalizations {
       '1. 用户使用本应用制作的插画、动画等内容（包括项目数据、导出的图片、视频等，以下称“创作内容”）所涉及的著作权及其他权利，在法令允许的范围内，归属于对该内容享有权利的用户或第三方。\n2. 本应用未提供将创作内容发送、收集或同步至开发者服务器的功能。项目数据原则上仅保存在用户设备内（用户自行选择使用作品广场功能发布创作内容时的处理方式，参见第12条）。\n3. 无论使用免费版还是高级版制作，开发者均不会以本应用的使用费用或版本为由限制创作内容的商业使用（免费版与高级版的区别仅限于片尾卡显示、导出时长上限等功能方面）。\n4. 尽管有前项规定，用户添加至本应用中的字体、图片、素材等由第三方享有权利的内容，仍需遵守第5条规定的各自使用条件。';
 
   @override
-  String get licenseTermsArt5Title => '第5条（内置字体・追加素材相关规定）';
+  String get licenseTermsArt5Title => '第5条（内置字体、追加素材相关规定）';
 
   @override
   String get licenseTermsArt5Body =>
       '1. 本应用内置的字体及其他素材，均依照本画面“关于使用字体”中所记载的各许可条款进行使用。\n2. 关于用户自行添加注册或读取至本应用中的字体、图片、网点、印章等素材的权利关系，应由用户自行负责，在取得必要权利或许可的前提下合法使用。\n3. 因用户使用第三方素材而与第三方产生纠纷的，除法令另有规定应承担责任的情形外，开发者不承担责任。';
 
   @override
-  String get licenseTermsArt6Title => '第6条（高级功能・付费）';
+  String get licenseTermsArt6Title => '第6条（高级功能、付费）';
 
   @override
   String get licenseTermsArt6Body =>
@@ -5502,7 +5502,7 @@ class AppLocalizationsZh extends AppLocalizations {
       '1. 本应用未提供将用户制作的插画、动画等内容及项目数据发送或收集至开发者服务器的功能。这些数据原则上仅保存在用户设备内；由于开发者自身不具备保存此类内容的功能，因此开发者一方不存在所谓的保存期限概念。\n2. 本应用内置的第三方服务（广告投放、应用内购买等）所获取的信息及其他用户信息的处理，依照另行制定的《隐私政策》办理。\n3. 卸载本应用后，保存在设备内的数据（项目、设置、已添加的字体等）将被删除。';
 
   @override
-  String get licenseTermsArt9Title => '第9条（提供的中止・变更・终止）';
+  String get licenseTermsArt9Title => '第9条（提供的中止、变更、终止）';
 
   @override
   String get licenseTermsArt9Body =>
@@ -5527,10 +5527,10 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get licenseTermsArt12Body =>
-      '1. 本应用可选择性地提供以下功能：用户可通过自己的Google账号，将自己制作的动画作品发布至YouTube，并在“作品广场”上公开、浏览（以下称“本社区功能”）。即使不使用本社区功能，用户也可以浏览和制作作品。\n2. 已发布的视频文件本身保存在YouTube上，不会保存在开发者的服务器上。另一方面，用于识别、显示已发布作品所需的信息（YouTube视频ID、标题、统计信息、举报信息等），以及用户使用发布、举报、屏蔽功能时颁发的NIARIM User ID（与Google账号不同、由本应用内部颁发的识别码），由开发者的服务器管理。\n3. 本社区功能中的作品发布、举报以及屏蔽其他用户，均需通过Google账号登录。\n4. 可发布的作品数量设有每日上限（免费会员与高级会员的上限不同）。该上限可能因运营原因而变更。\n5. 若用户认为其他用户发布的作品违反法令或公序良俗，或可能符合第3条各项所述情形，可通过本应用内的举报功能向开发者举报。开发者在确认举报内容后，可基于合理理由，对相关作品采取从列表中隐藏等必要措施。禁止进行虚假举报或滥用举报功能。\n6. 用户删除发布内容，或解除本应用与Google账号的关联时，对应的YouTube视频可能会被删除。此外，若视频在YouTube一方被设为非公开或被删除，该作品也将不再在作品广场上显示。\n7. 使用本社区功能时，除本条款外，还需遵守YouTube的服务条款及社区准则。\n8. 用户可以关注其他用户，并可收藏或转发其他用户的作品。仅本人可查看关注的用户列表和已收藏的作品列表。不显示粉丝身份和粉丝列表，仅显示关注数和粉丝数。关注、收藏或转发时，系统不会向对方发送有关该操作的单独通知。\n9. 作品上的标签也可由发布者以外的用户添加或删除。发布者可锁定自己作品的标签，以禁止其他用户编辑。用户不得添加诽谤他人的标签、与作品内容无关的标签或其他不当标签。开发者可能删除不当标签。\n10. 开发者会在本应用的通知列表中显示关于你自己的作品投稿、公开和任务达成等通知。如果设备已允许通知，本应用可能发送推送通知。你可以在本应用或设备的设置中关闭推送通知。\n11. 用户不得将本社区功能用于骚扰其他用户、宣传・招揽或其他偏离其本来目的（作品的公开与浏览）的目的。使用拉黑功能后，被拉黑对象的作品将不再显示在自己的列表中。';
+      '1. 本应用可选择性地提供以下功能：用户可通过自己的Google账号，将自己制作的动画作品发布至YouTube，并在“作品广场”上公开、浏览（以下称“本社区功能”）。即使不使用本社区功能，用户也可以浏览和制作作品。\n2. 已发布的视频文件本身保存在YouTube上，不会保存在开发者的服务器上。另一方面，用于识别、显示已发布作品所需的信息（YouTube视频ID、标题、统计信息、举报信息等），以及用户使用发布、举报、屏蔽功能时颁发的NIARIM User ID（与Google账号不同、由本应用内部颁发的识别码），由开发者的服务器管理。\n3. 本社区功能中的作品发布、举报以及屏蔽其他用户，均需通过Google账号登录。\n4. 可发布的作品数量设有每日上限（免费会员与高级会员的上限不同）。该上限可能因运营原因而变更。\n5. 若用户认为其他用户发布的作品违反法令或公序良俗，或可能符合第3条各项所述情形，可通过本应用内的举报功能向开发者举报。开发者在确认举报内容后，可基于合理理由，对相关作品采取从列表中隐藏等必要措施。禁止进行虚假举报或滥用举报功能。\n6. 用户删除发布内容，或解除本应用与Google账号的关联时，对应的YouTube视频可能会被删除。此外，若视频在YouTube一方被设为非公开或被删除，该作品也将不再在作品广场上显示。\n7. 使用本社区功能时，除本条款外，还需遵守YouTube的服务条款及社区准则。\n8. 用户可以关注其他用户，并可收藏或转发其他用户的作品。仅本人可查看关注的用户列表和已收藏的作品列表。不显示粉丝身份和粉丝列表，仅显示关注数和粉丝数。关注、收藏或转发时，系统不会向对方发送有关该操作的单独通知。\n9. 作品上的标签也可由发布者以外的用户添加或删除。发布者可锁定自己作品的标签，以禁止其他用户编辑。用户不得添加诽谤他人的标签、与作品内容无关的标签或其他不当标签。开发者可能删除不当标签。\n10. 开发者会在本应用的通知列表中显示关于你自己的作品投稿、公开和任务达成等通知。如果设备已允许通知，本应用可能发送推送通知。你可以在本应用或设备的设置中关闭推送通知。\n11. 用户不得将本社区功能用于骚扰其他用户、宣传、招揽或其他偏离其本来目的（作品的公开与浏览）的目的。使用拉黑功能后，被拉黑对象的作品将不再显示在自己的列表中。';
 
   @override
-  String get licenseTermsArt13Title => '第13条（准据法・裁判管辖）';
+  String get licenseTermsArt13Title => '第13条（准据法、裁判管辖）';
 
   @override
   String get licenseTermsArt13Body =>
@@ -5541,7 +5541,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get privacyPolicyArt1Body =>
-      '本隐私政策（以下称“本政策”）规定了本应用“NIARIM”（以下称“本应用”）中信息的处理方式。有关本应用使用条件的整体内容，请另行参阅“使用条款・许可”画面。';
+      '本隐私政策（以下称“本政策”）规定了本应用“NIARIM”（以下称“本应用”）中信息的处理方式。有关本应用使用条件的整体内容，请另行参阅“使用条款、许可”画面。';
 
   @override
   String get privacyPolicyArt2Title => '第2条（本应用不会获取的数据）';
@@ -5559,7 +5559,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get privacyPolicyArt3Body =>
-      '本应用内置以下第三方服务，各服务提供商可能在提供各自服务所需的范围内获取信息。本应用的开发者未实现独立获取或保存这些信息的功能（各服务所获取信息的管理，依照该服务提供商各自的隐私政策办理）。\n\n【广告投放（Google AdMob）】\n免费版通过Google AdMob投放广告。出于广告投放、效果测量、防止不正当行为等目的，Google或其关联公司可能会获取并使用广告标识符（Advertising ID）等设备信息。有关获取及使用的详情，请参阅Google隐私政策（https://policies.google.com/privacy）。用户可通过设备设置（如Android设置应用中的“隐私”等）重置广告标识符或停用个性化广告。若您位于欧洲经济区（EEA）、英国或瑞士，可在启动时显示的同意表单中选择广告个性化相关的同意设置，并可随时通过本画面下方的“变更广告同意设置”按钮进行修改。\n\n【应用内购买（Google Play Billing）】\n高级功能的购买通过Google Play的结算系统进行。开发者不会直接获取或保存信用卡号等结算信息。结算相关信息的处理依照Google Play的规定。\n\n【下载附加字体（GitHub）】\n仅当您在设置界面的“字体管理”中选择下载附加字体时，才会与字体文件的分发方 GitHub（GitHub, Inc.）的服务器进行通信。该通信仅在您选择下载时发生，应用启动时或正常使用过程中不会发生。发送的仅为通信所必需的信息（IP 地址、所请求的字体文件等），不会发送作品数据或可识别您身份的信息。所获取信息的处理遵循 GitHub 的隐私声明（https://docs.github.com/site-policy/privacy-policies/github-privacy-statement）。\n\n【崩溃分析・使用情况分析】\n本应用目前未内置以崩溃分析、使用情况分析为目的的SDK。今后如引入此类服务，将更新本政策并在本应用内进行公告。';
+      '本应用内置以下第三方服务，各服务提供商可能在提供各自服务所需的范围内获取信息。本应用的开发者未实现独立获取或保存这些信息的功能（各服务所获取信息的管理，依照该服务提供商各自的隐私政策办理）。\n\n【广告投放（Google AdMob）】\n免费版通过Google AdMob投放广告。出于广告投放、效果测量、防止不正当行为等目的，Google或其关联公司可能会获取并使用广告标识符（Advertising ID）等设备信息。有关获取及使用的详情，请参阅Google隐私政策（https://policies.google.com/privacy）。用户可通过设备设置（如Android设置应用中的“隐私”等）重置广告标识符或停用个性化广告。若您位于欧洲经济区（EEA）、英国或瑞士，可在启动时显示的同意表单中选择广告个性化相关的同意设置，并可随时通过本画面下方的“变更广告同意设置”按钮进行修改。\n\n【应用内购买（Google Play Billing）】\n高级功能的购买通过Google Play的结算系统进行。开发者不会直接获取或保存信用卡号等结算信息。结算相关信息的处理依照Google Play的规定。\n\n【下载附加字体（GitHub）】\n仅当您在设置界面的“字体管理”中选择下载附加字体时，才会与字体文件的分发方 GitHub（GitHub, Inc.）的服务器进行通信。该通信仅在您选择下载时发生，应用启动时或正常使用过程中不会发生。发送的仅为通信所必需的信息（IP 地址、所请求的字体文件等），不会发送作品数据或可识别您身份的信息。所获取信息的处理遵循 GitHub 的隐私声明（https://docs.github.com/site-policy/privacy-policies/github-privacy-statement）。\n\n【崩溃分析、使用情况分析】\n本应用目前未内置以崩溃分析、使用情况分析为目的的SDK。今后如引入此类服务，将更新本政策并在本应用内进行公告。';
 
   @override
   String get privacyPolicyArt4Title => '第4条（关于Cookie等跟踪技术）';
@@ -5587,7 +5587,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get privacyPolicyArt7Body =>
-      '1. 仅当用户出于自身意愿使用“作品广场”功能（用户协议第12条）时，本应用才会在开发者的服务器上管理以下信息。\n・用于识别和展示已发布作品的信息（YouTube 视频 ID、标题、统计信息、发布时间、标签等）\n・使用发布、举报、拉黑、关注、收藏等功能时发放的 NIARIM User ID（与 Google 账号分开、在本应用内部发放的标识符）\n・已关联 YouTube 频道的公开信息（频道名称、频道图标的图片 URL）。为展示发布者名称与图标，会复制并保存在开发者的服务器上\n・使用举报功能时的举报内容以及举报者的 NIARIM User ID\n・所拉黑对象的 NIARIM User ID\n・所关注对象的 NIARIM User ID，以及关注数与粉丝数\n・已收藏作品的 ID 及收藏时间\n・已转发作品的 ID 及转发时间\n・作品上的标签（参见第4款）\n・启用推送通知时的设备令牌（设备为确定通知送达对象而发放的标识符，仅用于发送通知）\n2. 已发布的视频文件本身保存在 YouTube 上，不保存在开发者的服务器上。\n3. 前两款所述信息仅在提供本社区功能所需的范围内使用（作品列表展示、排行、搜索、举报处理、发布上限管理、关注・收藏・转发的体现、通知发送等）。开发者不会为广告投放目的向第三方提供这些信息。\n4. 标签也可由发布者以外的用户添加或删除（发布者可锁定自己作品的标签以禁止编辑）。标签在作品广场上公开，且不显示由谁添加。\n5. 仅本人可查看关注的用户列表和已收藏的作品列表。不显示粉丝身份和粉丝列表，仅显示关注数和粉丝数。关注、收藏或转发时，系统不会向对方发送有关该操作的单独通知。\n6. 将已发布作品设为不公开或删除后，该作品将不再显示在作品广场的列表与排行中。如希望删除开发者服务器上的记录，请通过第9条的联系方式与我们联系。\n7. 不使用本社区功能时，不会发生本条所述的信息处理。（依照第2条的原则，不会向开发者的服务器发送任何内容。）';
+      '1. 仅当用户出于自身意愿使用“作品广场”功能（用户协议第12条）时，本应用才会在开发者的服务器上管理以下信息。\n• 用于识别和展示已发布作品的信息（YouTube 视频 ID、标题、统计信息、发布时间、标签等）\n• 使用发布、举报、拉黑、关注、收藏等功能时发放的 NIARIM User ID（与 Google 账号分开、在本应用内部发放的标识符）\n• 已关联 YouTube 频道的公开信息（频道名称、频道图标的图片 URL）。为展示发布者名称与图标，会复制并保存在开发者的服务器上\n• 使用举报功能时的举报内容以及举报者的 NIARIM User ID\n• 所拉黑对象的 NIARIM User ID\n• 所关注对象的 NIARIM User ID，以及关注数与粉丝数\n• 已收藏作品的 ID 及收藏时间\n• 已转发作品的 ID 及转发时间\n• 作品上的标签（参见第4款）\n• 启用推送通知时的设备令牌（设备为确定通知送达对象而发放的标识符，仅用于发送通知）\n2. 已发布的视频文件本身保存在 YouTube 上，不保存在开发者的服务器上。\n3. 前两款所述信息仅在提供本社区功能所需的范围内使用（作品列表展示、排行、搜索、举报处理、发布上限管理、关注、收藏、转发的体现、通知发送等）。开发者不会为广告投放目的向第三方提供这些信息。\n4. 标签也可由发布者以外的用户添加或删除（发布者可锁定自己作品的标签以禁止编辑）。标签在作品广场上公开，且不显示由谁添加。\n5. 仅本人可查看关注的用户列表和已收藏的作品列表。不显示粉丝身份和粉丝列表，仅显示关注数和粉丝数。关注、收藏或转发时，系统不会向对方发送有关该操作的单独通知。\n6. 将已发布作品设为不公开或删除后，该作品将不再显示在作品广场的列表与排行中。如希望删除开发者服务器上的记录，请通过第9条的联系方式与我们联系。\n7. 不使用本社区功能时，不会发生本条所述的信息处理。（依照第2条的原则，不会向开发者的服务器发送任何内容。）';
 
   @override
   String get privacyPolicyArt8Title => '第8条（本政策的变更）';
@@ -5693,7 +5693,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get canvasBrushSliderToggleLabel => '详细';
 
   @override
-  String get helpMeshTransformTitle => '自由变形・网格变形';
+  String get helpMeshTransformTitle => '自由变形、网格变形';
 
   @override
   String get helpMeshTransformDesc =>
@@ -5992,25 +5992,25 @@ class AppLocalizationsZh extends AppLocalizations {
   String get filterSelectionOnlyHint => '仅应用于选区内';
 
   @override
-  String get tipsStockingDenierTitle => '丝袜・连裤袜的网眼粗细会随旦数变化';
+  String get tipsStockingDenierTitle => '丝袜、连裤袜的网眼粗细会随旦数变化';
 
   @override
   String get tipsStockingDenierDesc =>
-      '新增的丝袜・连裤袜网点按照旦数越低（布料越薄）网格间距越密的设定制作，其中最低的10旦特意做得非常细密，根据显示或导出分辨率的不同甚至可能出现摩尔纹。旦数越高的连裤袜间距越宽、显得更不透明，请根据角色的腿部选用合适的一款。';
+      '新增的丝袜、连裤袜网点按照旦数越低（布料越薄）网格间距越密的设定制作，其中最低的10旦特意做得非常细密，根据显示或导出分辨率的不同甚至可能出现摩尔纹。旦数越高的连裤袜间距越宽、显得更不透明，请根据角色的腿部选用合适的一款。';
 
   @override
-  String get tipsFisheyeChromaticTitle => '用鱼眼镜头・色差滤镜营造镜头般的畸变与色边';
+  String get tipsFisheyeChromaticTitle => '用鱼眼镜头、色差滤镜营造镜头般的畸变与色边';
 
   @override
   String get tipsFisheyeChromaticDesc =>
-      '鱼眼镜头滤镜会让画面中心膨胀、边缘压缩，重现广角・鱼眼镜头拍摄般的弯曲效果。色差滤镜会让RGB通道略微错开，重现廉价镜头拍摄时常见的彩色边缘。两者都可以作为绘图滤镜（直接应用于图层）和演出滤镜（在时间轴上指定范围应用）使用。鱼眼镜头的中心也可以拖动画布上的＋来移动。';
+      '鱼眼镜头滤镜会让画面中心膨胀、边缘压缩，重现广角、鱼眼镜头拍摄般的弯曲效果。色差滤镜会让RGB通道略微错开，重现廉价镜头拍摄时常见的彩色边缘。两者都可以作为绘图滤镜（直接应用于图层）和演出滤镜（在时间轴上指定范围应用）使用。鱼眼镜头的中心也可以拖动画布上的＋来移动。';
 
   @override
   String get tipsLensDistortionTitle => '用眼镜断层滤镜再现透过眼镜看到的畸变';
 
   @override
   String get tipsLensDistortionDesc =>
-      '选择眼镜断层滤镜，用面板中的“画笔”在画布上涂抹镜片范围（如眼镜镜片部分），或用“填充桶”点击被线条围住的区域，即可只对该范围应用局部畸变。涂出界的部分可以用“橡皮擦”擦掉，涂抹的范围可以通过撤销・重做逐步还原。如果有选区或选择图层，会从该范围开始。镜片强度滑块在负值时呈凹透镜般缩小，在正值时呈凸透镜般放大，中心位置也可微调。也可以涂抹两片镜片并一次性应用效果。涂抹的范围不会出现在导出结果或最终画面中。除了眼镜之外，也可以用来再现透过相机镜头看风景般的畸变效果，建议涂抹背景等较大范围，并使用较弱的强度。';
+      '选择眼镜断层滤镜，用面板中的“画笔”在画布上涂抹镜片范围（如眼镜镜片部分），或用“填充桶”点击被线条围住的区域，即可只对该范围应用局部畸变。涂出界的部分可以用“橡皮擦”擦掉，涂抹的范围可以通过撤销、重做逐步还原。如果有选区或选择图层，会从该范围开始。镜片强度滑块在负值时呈凹透镜般缩小，在正值时呈凸透镜般放大，中心位置也可微调。也可以涂抹两片镜片并一次性应用效果。涂抹的范围不会出现在导出结果或最终画面中。除了眼镜之外，也可以用来再现透过相机镜头看风景般的畸变效果，建议涂抹背景等较大范围，并使用较弱的强度。';
 
   @override
   String get tipsSphereShadingTitle => '用球体阴影滤镜一次加上圆润的立体感';
@@ -6027,7 +6027,7 @@ class AppLocalizationsZh extends AppLocalizations {
       '要让画好的人物自然地融入背景照片或画作，先对人物图层使用绘图滤镜“背景融入”。它会把所画颜色的明暗与饱和度收进背景的范围，并一次加上背景的整体色调（叠加）、以背景阴影颜色呈现的光与影（强光）、从下方反上来的光（滤色）以及霓虹灯之类的强光（相加（发光））。想再细化时，先在正片叠底或强光图层上画出大块阴影，再用滤色或相加（发光）图层添加玻璃、金属等各材质的反光和轮廓光。想突出的部分（如脸部）保持明亮鲜艳，并用暗角把周围稍微压暗，主角就会更醒目。最后用色调曲线或色阶统一整体颜色。';
 
   @override
-  String get tipsLineArtExtractionTitle => '组合色调调整・二值化・明度转透明来提取线稿';
+  String get tipsLineArtExtractionTitle => '组合色调调整、二值化、明度转透明来提取线稿';
 
   @override
   String get tipsLineArtExtractionDesc =>
@@ -6038,7 +6038,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get tipsLineColorUsageDesc =>
-      '如果想让部位轮廓清楚、但不让线稿过于突出，可将“线稿颜色”设为“颜色描线・与线稿融合”。对于用作阴影或高光的色块，将“线稿颜色”设为“与填色相同”，线稿就会跟随填色颜色，不会像更深的线条一样突出。若有意使用不同的线稿颜色，再选择“指定颜色”。';
+      '如果想让部位轮廓清楚、但不让线稿过于突出，可将“线稿颜色”设为“颜色描线、与线稿融合”。对于用作阴影或高光的色块，将“线稿颜色”设为“与填色相同”，线稿就会跟随填色颜色，不会像更深的线条一样突出。若有意使用不同的线稿颜色，再选择“指定颜色”。';
 
   @override
   String get tipsBlushAutofillTitle => '脸颊的红晕也能用自动填色柔和地上色';
@@ -6073,7 +6073,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get workspaceAppliedSnackbar => '已应用工作区设置。';
 
   @override
-  String get workspaceSaveAsButton => '将工作区命名保存・覆盖保存';
+  String get workspaceSaveAsButton => '将工作区命名保存、覆盖保存';
 
   @override
   String get workspaceShareButton => '共享工作区';
@@ -10411,7 +10411,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   }
 
   @override
-  String get homeShareOpenWith => '分享・用相片App等開啟';
+  String get homeShareOpenWith => '分享、用相片App等開啟';
 
   @override
   String get homePreviewFailed => '無法播放預覽';
@@ -10432,7 +10432,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get settingsBasicTitle => '基本';
 
   @override
-  String get settingsBasicSubtitle => 'FPS・語言・繪圖區域';
+  String get settingsBasicSubtitle => 'FPS、語言、繪圖區域';
 
   @override
   String get settingsBasicSheetTitle => '基本設定';
@@ -10474,37 +10474,37 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get settingsPerformanceTitle => '效能';
 
   @override
-  String get settingsPerformanceSubtitle => '畫質設定・復原次數・垃圾桶・運作速度';
+  String get settingsPerformanceSubtitle => '畫質設定、復原次數、垃圾桶、運作速度';
 
   @override
   String get settingsGestureTitle => '手勢';
 
   @override
-  String get settingsGestureSubtitle => '雙指點按・長按';
+  String get settingsGestureSubtitle => '雙指點按、長按';
 
   @override
   String get settingsPenTitle => '筆輸入';
 
   @override
-  String get settingsPenSubtitle => '筆壓・傾斜・筆按鈕';
+  String get settingsPenSubtitle => '筆壓、傾斜、筆按鈕';
 
   @override
   String get settingsWorkspaceTitle => '工作區';
 
   @override
-  String get settingsWorkspaceSubtitle => '工具列編輯・面板配置';
+  String get settingsWorkspaceSubtitle => '工具列編輯、面板配置';
 
   @override
   String get settingsBucketTitle => '油漆桶填色';
 
   @override
-  String get settingsBucketSubtitle => '容差・擴張・潛入線稿下方';
+  String get settingsBucketSubtitle => '容差、擴張、潛入線稿下方';
 
   @override
-  String get settingsThemeTitle => '主題・外觀';
+  String get settingsThemeTitle => '主題、外觀';
 
   @override
-  String get settingsThemeSubtitle => '主題配色・文字色・背景色';
+  String get settingsThemeSubtitle => '主題配色、文字色、背景色';
 
   @override
   String get settingsWatermarkTitle => '浮水印';
@@ -10516,19 +10516,19 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get settingsTransferTitle => '資料轉移';
 
   @override
-  String get settingsTransferSubtitle => '將設定・素材・筆刷匯出/匯入到其他裝置';
+  String get settingsTransferSubtitle => '將設定、素材、筆刷匯出/匯入到其他裝置';
 
   @override
   String get settingsFontTitle => '字型管理';
 
   @override
-  String get settingsFontSubtitle => '新增・搜尋・刪除TTF/OTF字型';
+  String get settingsFontSubtitle => '新增、搜尋、刪除TTF/OTF字型';
 
   @override
   String get settingsNoResults => '找不到相關設定項目';
 
   @override
-  String get settingsTermsLicense => '使用條款・授權';
+  String get settingsTermsLicense => '使用條款、授權';
 
   @override
   String get settingsDrawingAreaTitle => '繪圖區域初始值';
@@ -10826,7 +10826,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get transferItemTheme => '主題';
 
   @override
-  String get transferItemPalette => '調色盤（取色器・像素畫專用）';
+  String get transferItemPalette => '調色盤（取色器、像素畫專用）';
 
   @override
   String get transferProjectsSectionTitle => '製作中的專案（可選）';
@@ -11044,7 +11044,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get settingsShortcutTitle => '快捷鍵設定';
 
   @override
-  String get settingsShortcutSubtitle => '為鍵盤・左手裝置分配工具與操作';
+  String get settingsShortcutSubtitle => '為鍵盤、左手裝置分配工具與操作';
 
   @override
   String get shortcutSettingsTitle => '快捷鍵設定';
@@ -11061,7 +11061,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get shortcutCaptureHint =>
-      '請按下想要設定的按鍵組合（可同時按住Ctrl・Shift・Alt等輔助鍵）。按Esc取消。';
+      '請按下想要設定的按鍵組合（可同時按住Ctrl/Shift/Alt等輔助鍵）。按Esc取消。';
 
   @override
   String shortcutChooseActionTitle(String combo) {
@@ -11127,7 +11127,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get materialEmptyTitle => '沒有素材';
 
   @override
-  String get materialEmptyHint => '從時間軸新增圖片・影片・音訊後，\n將顯示在這裡';
+  String get materialEmptyHint => '從時間軸新增圖片、影片、音訊後，\n將顯示在這裡';
 
   @override
   String get materialUsedLabel => '使用中';
@@ -11261,7 +11261,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get premiumComparisonFree => '免費';
 
   @override
-  String get premiumFeatureDrawing => '動畫製作・繪圖功能';
+  String get premiumFeatureDrawing => '動畫製作、繪圖功能';
 
   @override
   String get premiumFeatureTimeline => '時間軸';
@@ -11385,7 +11385,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get workspacePcModeHint => '在寬螢幕環境下會自動切換為面板固定排列的專業版面配置。若要手動固定，請於此處指定。';
 
   @override
-  String get workspacePcModeAuto => '自動（依螢幕寬度判斷・建議）';
+  String get workspacePcModeAuto => '自動（依螢幕寬度判斷、建議）';
 
   @override
   String get workspacePcModeAlwaysPc => '永遠使用PC模式';
@@ -11397,7 +11397,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get workspaceSaveSection => '儲存工作區';
 
   @override
-  String get workspaceSaveHint => '可將左手模式・PC模式・工具列・快速切換工具設定命名儲存，之後隨時叫出。';
+  String get workspaceSaveHint => '可將左手模式、PC模式、工具列、快速切換工具設定命名儲存，之後隨時叫出。';
 
   @override
   String get workspaceLoadButton => '載入工作區';
@@ -11414,7 +11414,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get workspaceSaveDialogTitle => '儲存工作區';
 
   @override
-  String get workspaceSaveDialogLabel => '名稱（例：動畫用・線稿用）';
+  String get workspaceSaveDialogLabel => '名稱（例：動畫用、線稿用）';
 
   @override
   String get workspaceLoadRightHanded => '右手';
@@ -11472,7 +11472,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get helpPenToolDesc =>
-      '在畫布上繪製線條的基本工具。長按可變更筆刷種類・粗細・顏色（雙擊顯示簡易說明）。支援數位板/液晶數位板的筆壓與傾斜，於設定畫面的「筆輸入」中調整筆壓曲線，可細緻自訂筆壓的反映方式（輕壓時粗細/不透明度會有多少變化）。切換筆的子工具後，還能以同一支筆工具進行貼網點・放置印章。';
+      '在畫布上繪製線條的基本工具。長按可變更筆刷種類、粗細、顏色（雙擊顯示簡易說明）。支援數位板/液晶數位板的筆壓與傾斜，於設定畫面的「筆輸入」中調整筆壓曲線，可細緻自訂筆壓的反映方式（輕壓時粗細/不透明度會有多少變化）。切換筆的子工具後，還能以同一支筆工具進行貼網點、放置印章。';
 
   @override
   String get helpEraserToolTitle => '橡皮擦工具';
@@ -11486,7 +11486,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get helpBucketToolDesc =>
-      '一次性填滿被包圍的區域。在線稿所圍成的區域內點擊，整個區域就會被填滿為目前選擇的顏色（或網點）。若線稿有縫隙，顏色可能會擴散到意料之外的範圍，因此使用前請確認線稿是否已完全封閉。可在設定中切換純色填滿/網點填滿。 詳細設定（容差・擴張px・潛入線稿下方）可在設定畫面的「油漆桶填色」中調整。';
+      '一次性填滿被包圍的區域。在線稿所圍成的區域內點擊，整個區域就會被填滿為目前選擇的顏色（或網點）。若線稿有縫隙，顏色可能會擴散到意料之外的範圍，因此使用前請確認線稿是否已完全封閉。可在設定中切換純色填滿/網點填滿。 詳細設定（容差、擴張px、潛入線稿下方）可在設定畫面的「油漆桶填色」中調整。';
 
   @override
   String get helpLassoFillTitle => '套索填色';
@@ -11507,7 +11507,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get helpSelectToolDesc =>
-      '選取畫布的一部分範圍，僅對所選範圍進行移動・旋轉・縮放的工具。長按可以從「矩形選取」「套索選取（自由形狀包圍）」「自動選取（魔術棒，自動合併相近顏色的範圍）」三種選取方式中選擇。選取中會在畫布上顯示表示所選範圍的框線，在取消選取之前，所有影格・所有圖層都會固定顯示相同的範圍。在套索選取中開啟「吸附到線條」後，會像油漆桶填色一樣查看線稿劃分出的區域，只選取大部分位於套索內的區域。選取範圍的邊緣會精確沿著線稿的外緣，圍住這些區域的線條和內部的線條也會一併選取（從輪廓向外延伸的線條會在輪廓處截斷）。上色的面也會像油漆桶填色一樣依顏色視為各自的區域，因此在有上色和線條的圖層上也能依畫的形狀選取。線條中不超過「線條間隙容差」寬度的斷口會視為相連。套索內沒有線稿時，按圈出的形狀原樣選取。線稿取自選取參照（「僅工作圖層」／「所有可見圖層」）。';
+      '選取畫布的一部分範圍，僅對所選範圍進行移動、旋轉、縮放的工具。長按可以從「矩形選取」「套索選取（自由形狀包圍）」「自動選取（魔術棒，自動合併相近顏色的範圍）」三種選取方式中選擇。選取中會在畫布上顯示表示所選範圍的框線，在取消選取之前，所有影格、所有圖層都會固定顯示相同的範圍。在套索選取中開啟「吸附到線條」後，會像油漆桶填色一樣查看線稿劃分出的區域，只選取大部分位於套索內的區域。選取範圍的邊緣會精確沿著線稿的外緣，圍住這些區域的線條和內部的線條也會一併選取（從輪廓向外延伸的線條會在輪廓處截斷）。上色的面也會像油漆桶填色一樣依顏色視為各自的區域，因此在有上色和線條的圖層上也能依畫的形狀選取。線條中不超過「線條間隙容差」寬度的斷口會視為相連。套索內沒有線稿時，按圈出的形狀原樣選取。線稿取自選取參照（「僅工作圖層」／「所有可見圖層」）。';
 
   @override
   String get helpFingerToolTitle => '手指工具（扭曲工具）';
@@ -11521,21 +11521,21 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get helpShapeToolDesc =>
-      '一鍵繪製直線・矩形・圓形等精確圖形的工具。從起點拖曳到終點時會即時預覽，放開手指即可確定。在難以徒手畫出直線或正圓時非常方便。';
+      '一鍵繪製直線、矩形、圓形等精確圖形的工具。從起點拖曳到終點時會即時預覽，放開手指即可確定。在難以徒手畫出直線或正圓時非常方便。';
 
   @override
   String get helpTextToolTitle => '文字工具';
 
   @override
   String get helpTextToolDesc =>
-      '在畫布上放置文字的工具。可選擇字型・大小・顏色・直排/橫排。直排時還支援半形英數字的自動旋轉・縱中橫（數字保持橫向排列的表記）・注音標示（類似日文振假名的讀音標示）。放置的文字在匯出時也會作為像素燒錄進畫面。 可新增・搜尋・刪除文字工具可用字型的畫面。除初始內建字型外的其他免費字型，為控制初始安裝容量，需從此處按需下載。';
+      '在畫布上放置文字的工具。可選擇字型、大小、顏色、直排/橫排。直排時還支援半形英數字的自動旋轉、縱中橫（數字保持橫向排列的表記）、注音標示（類似日文振假名的讀音標示）。放置的文字在匯出時也會作為像素燒錄進畫面。 可新增、搜尋、刪除文字工具可用字型的畫面。除初始內建字型外的其他免費字型，為控制初始安裝容量，需從此處按需下載。';
 
   @override
   String get helpQuickToolTitle => '快速切換工具';
 
   @override
   String get helpQuickToolDesc =>
-      '預先登記常用的畫筆・工具組合，只需點擊一個按鈕即可依序切換。長按或向上滑動畫布上的↺按鈕，即可開啟可以新增、排序、刪除的管理彈窗。可透過拖曳改變順序。';
+      '預先登記常用的畫筆、工具組合，只需點擊一個按鈕即可依序切換。長按或向上滑動畫布上的↺按鈕，即可開啟可以新增、排序、刪除的管理彈窗。可透過拖曳改變順序。';
 
   @override
   String get helpLayerTitle => '圖層';
@@ -11563,7 +11563,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get helpCommonLayerDesc =>
-      '一般圖層依每個影格獨立存在，而共用圖層則是在多個影格・場景中共享同一內容的圖層。像背景這類不隨影格變化而移動的元素，無需每格重新繪製，只需畫一次即可。在時間軸上會以專用軌道的形式顯示。 可以把一般圖層轉換為共用圖層（在多個影格中持續顯示相同內容的圖層）的功能。也可以先把目前顯示的圖層合併為一張，再進行共用化。想反覆使用背景等每影格內容相同的部分時，可以省去重新繪製的麻煩。';
+      '一般圖層依每個影格獨立存在，而共用圖層則是在多個影格、場景中共享同一內容的圖層。像背景這類不隨影格變化而移動的元素，無需每格重新繪製，只需畫一次即可。在時間軸上會以專用軌道的形式顯示。 可以把一般圖層轉換為共用圖層（在多個影格中持續顯示相同內容的圖層）的功能。也可以先把目前顯示的圖層合併為一張，再進行共用化。想反覆使用背景等每影格內容相同的部分時，可以省去重新繪製的麻煩。';
 
   @override
   String get helpAutoFillTitle => '自動上色';
@@ -11577,14 +11577,14 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get helpOnionSkinDesc =>
-      '將目前編輯影格前後的影格以半透明方式疊加顯示，讓你可以一邊確認動作的連貫性一邊繪製的功能。可以在效能設定中調整顯示的影格數（前後各顯示幾張）以及顏色・透明度。';
+      '將目前編輯影格前後的影格以半透明方式疊加顯示，讓你可以一邊確認動作的連貫性一邊繪製的功能。可以在效能設定中調整顯示的影格數（前後各顯示幾張）以及顏色、透明度。';
 
   @override
   String get helpRulerTitle => '尺規';
 
   @override
   String get helpRulerDesc =>
-      '直線・圓・橢圓・透視尺規（使用消失點的透視圖法專用尺規）等，用於輔助繪製徒手難以畫出的精確線條的功能。放置的尺規會使筆尖自動吸附，即使是沒有尺規就難以繪製的具有縱深感的構圖也會更容易畫出。尺規可以透過操作控制點進行移動・旋轉・調整大小。魚眼透視尺規是五點曲線透視：在鏡頭圓內，橫線和豎線彎成圓弧，縱深方向的線匯聚到中心。筆畫會沿著與開始繪製方向相符的線條，拖曳控制點可移動中心、改變半徑（圓右側的點）和傾斜（圓上方的點）。';
+      '直線、圓、橢圓、透視尺規（使用消失點的透視圖法專用尺規）等，用於輔助繪製徒手難以畫出的精確線條的功能。放置的尺規會使筆尖自動吸附，即使是沒有尺規就難以繪製的具有縱深感的構圖也會更容易畫出。尺規可以透過操作控制點進行移動、旋轉、調整大小。魚眼透視尺規是五點曲線透視：在鏡頭圓內，橫線和豎線彎成圓弧，縱深方向的線匯聚到中心。筆畫會沿著與開始繪製方向相符的線條，拖曳控制點可移動中心、改變半徑（圓右側的點）和傾斜（圓上方的點）。';
 
   @override
   String get helpFadeTitle => '淡出';
@@ -11612,14 +11612,14 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get helpPressureCurveDesc =>
-      '筆輸入設定中的功能，可透過圖表自由調整實際筆壓強度與筆刷粗細・不透明度反映方式之間的關係。無論是希望輕壓也能畫出粗線的人，還是相反希望必須用力按壓才會變粗的人，都能依自己的用筆習慣細緻自訂畫感。變更設定後可當場試畫確認效果。';
+      '筆輸入設定中的功能，可透過圖表自由調整實際筆壓強度與筆刷粗細、不透明度反映方式之間的關係。無論是希望輕壓也能畫出粗線的人，還是相反希望必須用力按壓才會變粗的人，都能依自己的用筆習慣細緻自訂畫感。變更設定後可當場試畫確認效果。';
 
   @override
   String get helpTimelineTitle => '時間軸';
 
   @override
   String get helpTimelineDesc =>
-      '管理動畫時間軸的畫面。將影格（單張靜止影像）排列並像翻頁動畫一樣播放，就形成了動畫。文字・圖片・影片・音訊素材軌道、共用圖層軌道、攝影機關鍵影格也都在同一條時間軸上管理。文字・圖片・影片與影格插畫之間的前後關係可在「疊放順序」中依整個場景或指定的影格範圍調整。也可以長按項目進行多選，一起移動。';
+      '管理動畫時間軸的畫面。將影格（單張靜止影像）排列並像翻頁動畫一樣播放，就形成了動畫。文字、圖片、影片、音訊素材軌道、共用圖層軌道、攝影機關鍵影格也都在同一條時間軸上管理。文字、圖片、影片與影格插畫之間的前後關係可在「疊放順序」中依整個場景或指定的影格範圍調整。也可以長按項目進行多選，一起移動。';
 
   @override
   String get helpSceneTitle => '場景';
@@ -11633,14 +11633,14 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get helpCameraKeyframeDesc =>
-      '在時間軸上的特定位置記錄攝影機的位置・縮放比例・旋轉角度的功能。關鍵影格之間會自動平滑內插，因此可以輕鬆加入平移（橫向移動）或拉近拉遠等鏡頭運動。';
+      '在時間軸上的特定位置記錄攝影機的位置、縮放比例、旋轉角度的功能。關鍵影格之間會自動平滑內插，因此可以輕鬆加入平移（橫向移動）或拉近拉遠等鏡頭運動。';
 
   @override
   String get helpEffectFilterTitle => '演出濾鏡';
 
   @override
   String get helpEffectFilterDesc =>
-      '可套用於場景或影格的畫面效果（模糊・色調校正・光暈・像素畫等）。在不改變手繪畫面本身的前提下，作為演出手段調整整個畫面觀感時使用。繪畫濾鏡中的色調曲線（預設與強度）・色階・銳化・USM銳化・暗角（顏色・範圍・濃度）・水彩邊界也收錄在演出濾鏡中，可以一次對多個影格套用相同的效果。像素畫也可以選擇配色方式（不指定顏色・指定顏色・指定顏色數・從調色盤選擇）。限制顏色時，單用一種顏色與原色相差較遠的地方，會用可用顏色中的兩到三種按規則排列（混色抖動）來接近原色，這種排列在影格之間不會移動；輪廓處保持清晰。混色抖動可以用開關開啟或關閉，關閉後用最接近的一種顏色填色。 演出濾鏡可以疊加套用多個，其套用順序依照時間軸上的排列順序。拖曳濾鏡清單重新排序後，實際反映到畫面上的順序也會隨之改變。 一種演出濾鏡，會逐影格改變類似膠片顆粒感的雜訊。可以用滑桿調整強度、數量（雜訊出現的密度）和顆粒大小。回到同一影格時雜訊形態相同（拖曳時不會閃爍），播放時顆粒則會呈現出跳動的效果。 用來表現畫面中降雨的演出濾鏡。可以用滑桿調整降雨強度（雨滴數量）、速度、雨滴大小和風向角度。每滴雨都會隨著影格數推進以固定速度持續落下，呈現自然的降雨效果。';
+      '可套用於場景或影格的畫面效果（模糊、色調校正、光暈、像素畫等）。在不改變手繪畫面本身的前提下，作為演出手段調整整個畫面觀感時使用。繪畫濾鏡中的色調曲線（預設與強度）、色階、銳化、USM銳化、暗角（顏色、範圍、濃度）、水彩邊界也收錄在演出濾鏡中，可以一次對多個影格套用相同的效果。像素畫也可以選擇配色方式（不指定顏色、指定顏色、指定顏色數、從調色盤選擇）。限制顏色時，單用一種顏色與原色相差較遠的地方，會用可用顏色中的兩到三種按規則排列（混色抖動）來接近原色，這種排列在影格之間不會移動；輪廓處保持清晰。混色抖動可以用開關開啟或關閉，關閉後用最接近的一種顏色填色。 演出濾鏡可以疊加套用多個，其套用順序依照時間軸上的排列順序。拖曳濾鏡清單重新排序後，實際反映到畫面上的順序也會隨之改變。 一種演出濾鏡，會逐影格改變類似膠片顆粒感的雜訊。可以用滑桿調整強度、數量（雜訊出現的密度）和顆粒大小。回到同一影格時雜訊形態相同（拖曳時不會閃爍），播放時顆粒則會呈現出跳動的效果。 用來表現畫面中降雨的演出濾鏡。可以用滑桿調整降雨強度（雨滴數量）、速度、雨滴大小和風向角度。每滴雨都會隨著影格數推進以固定速度持續落下，呈現自然的降雨效果。';
 
   @override
   String get helpEndCardTitle => '片尾卡（片尾標誌）';
@@ -11654,7 +11654,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get helpAutoSaveDesc =>
-      '專用於當機或檔案損毀時復原的儲存。每次繪圖等發生變更時都會自動儲存，最多保留3份，依由舊到新的順序覆寫。它與手動儲存（存檔槽・儲存樹）完全分開管理，不能取代一般儲存。開啟作品時，如果有內容不同的自動儲存版本，可以選擇是否還原。';
+      '專用於當機或檔案損毀時復原的儲存。每次繪圖等發生變更時都會自動儲存，最多保留3份，依由舊到新的順序覆寫。它與手動儲存（存檔槽、儲存樹）完全分開管理，不能取代一般儲存。開啟作品時，如果有內容不同的自動儲存版本，可以選擇是否還原。';
 
   @override
   String get canvasAutosaveRecoveryTitle => '還原自動儲存';
@@ -11667,7 +11667,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get helpSaveSlotDesc =>
-      '在固定數量的存檔槽中，由自己選擇儲存位置進行儲存的方式。存檔槽的數量由設定決定（低畫質5個・中畫質10個）。由於每次都需要自己選擇要覆寫的存檔槽，適合「想保留這個時間點的狀態」這類管理方式。';
+      '在固定數量的存檔槽中，由自己選擇儲存位置進行儲存的方式。存檔槽的數量由設定決定（低畫質5個、中畫質10個）。由於每次都需要自己選擇要覆寫的存檔槽，適合「想保留這個時間點的狀態」這類管理方式。';
 
   @override
   String get helpSaveTreeTitle => '儲存樹';
@@ -11702,10 +11702,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get helpTransferDesc =>
-      '將設定、素材、筆刷、自動上色設定、主題、調色盤（取色器・像素畫專用）等整個應用程式環境一次性轉移到其他裝置的功能。可以透過核取方塊個別選擇要轉移的項目，還可以選擇性地一併包含製作中的專案（所選專案會連同素材、字型一起完整轉移）。如果只想傳遞單一專案，也可以改用「共用（.niashare）」。';
+      '將設定、素材、筆刷、自動上色設定、主題、調色盤（取色器、像素畫專用）等整個應用程式環境一次性轉移到其他裝置的功能。可以透過核取方塊個別選擇要轉移的項目，還可以選擇性地一併包含製作中的專案（所選專案會連同素材、字型一起完整轉移）。如果只想傳遞單一專案，也可以改用「共用（.niashare）」。';
 
   @override
-  String get helpVideoExportTitle => '影片匯出（MP4・WebM・GIF・AVI）';
+  String get helpVideoExportTitle => '影片匯出（MP4/WebM/GIF/AVI）';
 
   @override
   String get helpVideoExportDesc =>
@@ -11719,7 +11719,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get helpCommunityDesc =>
-      '可以將動畫・插畫作品以YouTube影片的形式發佈到社群，並瀏覽其他使用者的作品。可以切換「最新」「排行榜」「追蹤」三個分頁，也可以依作品標題或投稿者名稱搜尋。切換到標籤搜尋模式後可依標籤篩選作品，標籤不僅投稿者本人，其他使用者也可以自由新增或刪除（投稿者鎖定的標籤只能由投稿者本人解鎖），點擊標籤即可篩選出相同標籤的作品。點擊作品卡片會開啟可拖曳、可調整大小的浮動預覽視窗，可以在繼續操作其他畫面的同時觀看。點擊「查看詳情」按鈕可開啟作品詳情畫面（投稿者、發佈日期、標籤編輯、收藏、轉發等）。點擊投稿者名稱旁的「追蹤」按鈕即可將其加入追蹤清單，「追蹤」分頁會依時間順序彙整顯示該作者的作品。僅本人可查看追蹤的使用者清單與已收藏的作品清單。不顯示粉絲身分與粉絲清單，僅顯示追蹤數與粉絲數。追蹤、收藏或轉發時，系統不會向對方傳送有關該操作的個別通知。除自己發佈的作品外，都可以用「轉發」按鈕轉發；當追蹤的作者轉發了他人的作品時，該作品也會以「發佈日期」和「轉發日期」中較新的一方為基準，混入「追蹤」分頁中顯示（卡片上會顯示「○○轉發了」）。收藏的作品會彙整顯示在主畫面的「已收藏」分頁中，也可以在自己的投稿者頁面的「收藏」分頁中查看。對不當作品可以附上理由進行檢舉，檢舉送出後會詢問你是否要封鎖該投稿者。直向影片可以在「直向模式」中連續播放觀看。每日可發佈的作品數量有上限，免費會員每天1個，進階會員每天3個。點擊畫面右上角的顯示篩選按鈕（帶斜線的眼睛圖示），可以隱藏不想看到的作品。除了可以隱藏「包含生成式 AI 圖像或影片」的作品外，還可以透過「新增」逐條登錄只比對作品標題的隱藏標題關鍵字，以及只比對作品廣場標籤的隱藏標籤。可用編輯圖示修改或垃圾桶圖示刪除，無需輸入逗號或 #。這些篩選適用於「最新」「排行榜」「追蹤」（含轉發）、直向模式、投稿者頁面、作品詳情和收藏。「包含生成式 AI 圖像或影片」由投稿者在發佈時自行聲明，發佈後也只有投稿者本人可以變更（可在「我的投稿」或作品詳情畫面中變更）。';
+      '可以將動畫、插畫作品以YouTube影片的形式發佈到社群，並瀏覽其他使用者的作品。可以切換「最新」「排行榜」「追蹤」三個分頁，也可以依作品標題或投稿者名稱搜尋。切換到標籤搜尋模式後可依標籤篩選作品，標籤不僅投稿者本人，其他使用者也可以自由新增或刪除（投稿者鎖定的標籤只能由投稿者本人解鎖），點擊標籤即可篩選出相同標籤的作品。點擊作品卡片會開啟可拖曳、可調整大小的浮動預覽視窗，可以在繼續操作其他畫面的同時觀看。點擊「查看詳情」按鈕可開啟作品詳情畫面（投稿者、發佈日期、標籤編輯、收藏、轉發等）。點擊投稿者名稱旁的「追蹤」按鈕即可將其加入追蹤清單，「追蹤」分頁會依時間順序彙整顯示該作者的作品。僅本人可查看追蹤的使用者清單與已收藏的作品清單。不顯示粉絲身分與粉絲清單，僅顯示追蹤數與粉絲數。追蹤、收藏或轉發時，系統不會向對方傳送有關該操作的個別通知。除自己發佈的作品外，都可以用「轉發」按鈕轉發；當追蹤的作者轉發了他人的作品時，該作品也會以「發佈日期」和「轉發日期」中較新的一方為基準，混入「追蹤」分頁中顯示（卡片上會顯示「○○轉發了」）。收藏的作品會彙整顯示在主畫面的「已收藏」分頁中，也可以在自己的投稿者頁面的「收藏」分頁中查看。對不當作品可以附上理由進行檢舉，檢舉送出後會詢問你是否要封鎖該投稿者。直向影片可以在「直向模式」中連續播放觀看。每日可發佈的作品數量有上限，免費會員每天1個，進階會員每天3個。點擊畫面右上角的顯示篩選按鈕（帶斜線的眼睛圖示），可以隱藏不想看到的作品。除了可以隱藏「包含生成式 AI 圖像或影片」的作品外，還可以透過「新增」逐條登錄只比對作品標題的隱藏標題關鍵字，以及只比對作品廣場標籤的隱藏標籤。可用編輯圖示修改或垃圾桶圖示刪除，無需輸入逗號或 #。這些篩選適用於「最新」「排行榜」「追蹤」（含轉發）、直向模式、投稿者頁面、作品詳情和收藏。「包含生成式 AI 圖像或影片」由投稿者在發佈時自行聲明，發佈後也只有投稿者本人可以變更（可在「我的投稿」或作品詳情畫面中變更）。';
 
   @override
   String get helpWatermarkEntryTitle => '浮水印';
@@ -11747,14 +11747,14 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get helpPerformanceSettingsDesc =>
-      '可依裝置效能從低畫質・中畫質・高畫質預設中選擇，也可逐項單獨設定（自訂）。除儲存方式・運作速度・洋蔥皮・傾斜偵測外，復原次數、垃圾桶自動刪除等影響App容量與運作負擔的設定也都集中在這裡。';
+      '可依裝置效能從低畫質、中畫質、高畫質預設中選擇，也可逐項單獨設定（自訂）。除儲存方式、運作速度、洋蔥皮、傾斜偵測外，復原次數、垃圾桶自動刪除等影響App容量與運作負擔的設定也都集中在這裡。';
 
   @override
-  String get helpMaterialClipTitle => '素材片段（文字・圖片・影片・音訊）';
+  String get helpMaterialClipTitle => '素材片段（文字、圖片、影片、音訊）';
 
   @override
   String get helpMaterialClipDesc =>
-      '放置在時間軸文字、圖片、影片、音訊軌道上的片段。長按拖曳片段本身可移動其起始位置，拖曳兩端的把手可改變使用範圍（長度）。同一時間重疊的素材會自動放到其他列。點擊文字・圖片・影片片段，會在預覽下方開啟編輯面板：可修改文字內容・字型・顏色・描邊，位置・縮放・X軸／Y軸／Z軸旋轉・不透明度（也可在預覽上拖曳，新增關鍵影格即可產生動畫），遮罩（矩形・橢圓・羽化・反轉）以及所在列，也可在此複製或刪除。音訊片段在詳細面板中調整音量和淡入淡出。';
+      '放置在時間軸文字、圖片、影片、音訊軌道上的片段。長按拖曳片段本身可移動其起始位置，拖曳兩端的把手可改變使用範圍（長度）。同一時間重疊的素材會自動放到其他列。點擊文字、圖片、影片片段，會在預覽下方開啟編輯面板：可修改文字內容、字型、顏色、描邊，位置、縮放、X軸／Y軸／Z軸旋轉、不透明度（也可在預覽上拖曳，新增關鍵影格即可產生動畫），遮罩（矩形、橢圓、羽化、反轉）以及所在列，也可在此複製或刪除。音訊片段在詳細面板中調整音量和淡入淡出。';
 
   @override
   String get helpGestureSettingsTitle => '手勢設定';
@@ -11810,7 +11810,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get helpThemeSettingsDesc =>
-      '可以從主題清單選擇 App 的整體配色。你可以調整六種基本色，也可以在進階色彩設定中個別設定選單文字、選取狀態等色彩。標題・項目名稱用字型與說明文字用字型是分開的，能在保持可讀性的同時享受換裝樂趣。';
+      '可以從主題清單選擇 App 的整體配色。你可以調整六種基本色，也可以在進階色彩設定中個別設定選單文字、選取狀態等色彩。標題、項目名稱用字型與說明文字用字型是分開的，能在保持可讀性的同時享受換裝樂趣。';
 
   @override
   String get helpWorkspaceSettingsTitle => '工作區設定';
@@ -11824,7 +11824,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get helpPenSettingsDesc =>
-      '除了數位板・數位螢幕的筆壓曲線外，這個設定畫面還能把切換橡皮擦、取色器等操作指派給支援的觸控筆側邊按鍵。';
+      '除了數位板、數位螢幕的筆壓曲線外，這個設定畫面還能把切換橡皮擦、取色器等操作指派給支援的觸控筆側邊按鍵。';
 
   @override
   String get helpMaterialListTitle => '素材清單';
@@ -11904,7 +11904,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
       '可以把多個圖層整理到資料夾中的功能。即使是部件較多的插畫，也能讓圖層面板保持清晰易看。剪裁無法跨資料夾套用，如果要使用剪裁，建議把相關圖層放在同一個資料夾內。';
 
   @override
-  String get helpLayerMultiSelectTitle => '圖層多選・批次操作';
+  String get helpLayerMultiSelectTitle => '圖層多選、批次操作';
 
   @override
   String get helpLayerMultiSelectDesc =>
@@ -11978,14 +11978,14 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get helpDrawingFilterDesc =>
-      '直接套用於所選圖層的濾鏡（演出濾鏡作用於整條時間軸或整個場景，而繪圖濾鏡按圖層生效）。內建26種濾鏡：高斯模糊、鏡頭模糊、動畫風、色調曲線、色階、外框、銳化、USM銳化、暗角、復古動漫、老電視、二值化、魚眼鏡頭、色差、眼鏡斷層、像素畫、質感變換、背景融合、積墨、自動線稿、稜鏡、色彩反轉、馬賽克、雜訊、球體陰影和水彩邊界。水彩邊界會讓作業圖層上塗色部分的邊緣聚集顏色、內側變得通透，就像乾了的水彩（開啟「顏色交界處也添加」後，相鄰顏色的交界處也會出現邊緣）。動漫風格會減少顏色數，並在相鄰顏色之差達到「顏色差閾值」以上的邊界上，於較暗的一側畫出「邊界線粗細」的線（線稿的線條不會變粗）。稜鏡會把圖層上每個形狀分別塗上彩虹六色（紅、綠、青色、藍、紫、紅）並模糊，再把圖層設為線性減淡。先在單獨的圖層上用深色畫出細小的葉片狀形狀再使用，畫面上就會出現柔和的彩虹光痕（模糊量與一般的高斯模糊採用相同標準）。球體陰影會在橢圓形光的內側疊加光色、外側疊加陰影色，且只加在已繪製的地方（也可以在畫布上拖曳光）。外框不會改寫原圖層，只會把結果繪製到新圖層。眼鏡斷層只對用面板的「畫筆」「油漆桶」在畫布上塗抹的範圍（可用「橡皮擦」修改）套用類似強力眼鏡鏡片的局部變形（如果有選取範圍或選取圖層，會從該範圍開始）。畫布上有選取範圍時，繪圖濾鏡只套用於選取範圍內。像素畫還可選擇配色方式（不限制、指定顏色、指定顏色數或從調色盤選擇）。限制顏色時，單用一種顏色與原色相差較遠的地方，會用可用顏色中的兩到三種按規則排列（混色抖動），使其更接近原色；輪廓處不混色，保持清晰。指定顏色數時，會從佔畫面大部分的顏色中選取。混色抖動可以用開關開啟或關閉，關閉後用最接近的一種顏色填色。大小可在「指定色塊大小」（1～100共100級）和「指定點數」（橫向・縱向點數滑桿，最左為1，最右為畫布尺寸）之間切換，橫向和縱向會在維持畫面長寬比的同時一起變化，兩種指定方式也會連動。兩種方式下點都維持正方形，不會產生半透明的邊緣。 自動線稿可在套用濾鏡前直接編輯暫時向量控制點。拖曳控制點時只移動該點。選擇「套用」右側的「新增控制點」後點擊線條可新增控制點，選擇「刪除控制點」後點擊控制點可將其刪除（兩者都未選擇時點擊控制點，會先確認再刪除）。編輯後的形狀會直接用於最終套用結果，控制點的移動、新增和刪除也可以用濾鏡編輯的復原・重做逐一還原。 色調曲線中，輕點曲線上的空白處可新增點，拖曳點可移動，長按可刪除；R、G、B 各顏色的曲線在 RGB 曲線之後套用。色階也可按 R、G、B 分別調整，伽瑪可改變中間調的亮度。描邊的「向內延伸」可將邊緣擴展到原輪廓內側，描邊的新圖層會放在原圖層的正下方。色差可指定將偏移分配到 X（橫向）、Y（縱向）、Z（從中心向外）各多少。魚眼鏡頭的中心和半徑也可以在畫布上拖曳 ＋ 和圓上的控點來變更。暗角會柔和地壓暗整個畫布的四個角（沒有繪畫的透明處也會有陰影）。可用「範圍」調整從四角向中心壓暗到多遠，用「濃度」調整四角的暗度。眼鏡斷層像真正的高度數眼鏡一樣，讓透過鏡片看到的景物朝鏡片中心均勻縮小（負值，近視用）或放大（正值，遠視用），並在鏡片邊緣使輪廓錯開成台階狀。積墨只積在線條以「最大角度」或更小角度相交處（初始值90°時為銳角和直角：V字、交叉的窄側、T字、方角）的夾角內側，更寬的角不積：在相交點從線條邊緣起為「中央寬度」，再朝「範圍」的末端筆直變細，末端為0px，平滑地收成尖端（即使加大「中央寬度」，也不會鼓出連接兩側積墨末端的直線之外，最寬時中間也是平的）；若線條在範圍內中斷，該線條上的積墨會以中斷處為終點細到0px（每條線的長度可以不同），此時兩處積墨仍會在夾角的正中相接，距兩條線的寬度相同（較長線條的積墨從那裡再細到範圍的末端）。自動線稿沿草稿線條的中心描出細線。靠得很近的線條只要中間有一點空隙，就仍畫成兩條線，只填補線條內部的小白點。兩條線靠攏並貼在一起的地方，不會在中間畫成一條線，而是像草稿一樣兩條線逐漸靠近並合在一起。線條交叉或重疊的地方，也會像草稿一樣讓每條線照原樣延續（不會在交點處折彎，重疊的兩條線也不會融成一條）。以較淺角度斜向交叉的線也會筆直地穿過交叉處，僅相互接觸的線（例如沿著頭部畫的頭髮輪廓）則各自留在自己的一側，仍是分開的線。眼睛之類的點會畫成實心的點。比「草稿線寬」短的分岔不繪製。「起筆收筆」可以用開關開啟或關閉，關閉後線條直到末端都保持相同粗細。背景融入以混合模式「實光」疊加背景的光與影（影子的顏色不是黑色或灰色，而是把背景中陰影部分的顏色壓暗後的顏色）。周圍的顏色以「覆蓋」疊在整幅畫上來統一色彩方向，從下方反上來的光和周圍的反射光以「濾色」加入，霓虹燈之類的強烈有色光以「相加（發光）」加在輪廓上。「匹配背景的明暗與色調」會把比背景過亮或過於鮮豔的顏色拉回背景的範圍，並讓暗部、中間調、亮部分別帶上背景中相同明度的色調（線稿的黑色保持不變）。「模糊程度」是取色前模糊背景的程度。';
+      '直接套用於所選圖層的濾鏡（演出濾鏡作用於整條時間軸或整個場景，而繪圖濾鏡按圖層生效）。內建26種濾鏡：高斯模糊、鏡頭模糊、動畫風、色調曲線、色階、外框、銳化、USM銳化、暗角、復古動漫、老電視、二值化、魚眼鏡頭、色差、眼鏡斷層、像素畫、質感變換、背景融合、積墨、自動線稿、稜鏡、色彩反轉、馬賽克、雜訊、球體陰影和水彩邊界。水彩邊界會讓作業圖層上塗色部分的邊緣聚集顏色、內側變得通透，就像乾了的水彩（開啟「顏色交界處也添加」後，相鄰顏色的交界處也會出現邊緣）。動漫風格會減少顏色數，並在相鄰顏色之差達到「顏色差閾值」以上的邊界上，於較暗的一側畫出「邊界線粗細」的線（線稿的線條不會變粗）。稜鏡會把圖層上每個形狀分別塗上彩虹六色（紅、綠、青色、藍、紫、紅）並模糊，再把圖層設為線性減淡。先在單獨的圖層上用深色畫出細小的葉片狀形狀再使用，畫面上就會出現柔和的彩虹光痕（模糊量與一般的高斯模糊採用相同標準）。球體陰影會在橢圓形光的內側疊加光色、外側疊加陰影色，且只加在已繪製的地方（也可以在畫布上拖曳光）。外框不會改寫原圖層，只會把結果繪製到新圖層。眼鏡斷層只對用面板的「畫筆」「油漆桶」在畫布上塗抹的範圍（可用「橡皮擦」修改）套用類似強力眼鏡鏡片的局部變形（如果有選取範圍或選取圖層，會從該範圍開始）。畫布上有選取範圍時，繪圖濾鏡只套用於選取範圍內。像素畫還可選擇配色方式（不限制、指定顏色、指定顏色數或從調色盤選擇）。限制顏色時，單用一種顏色與原色相差較遠的地方，會用可用顏色中的兩到三種按規則排列（混色抖動），使其更接近原色；輪廓處不混色，保持清晰。指定顏色數時，會從佔畫面大部分的顏色中選取。混色抖動可以用開關開啟或關閉，關閉後用最接近的一種顏色填色。大小可在「指定色塊大小」（1～100共100級）和「指定點數」（橫向、縱向點數滑桿，最左為1，最右為畫布尺寸）之間切換，橫向和縱向會在維持畫面長寬比的同時一起變化，兩種指定方式也會連動。兩種方式下點都維持正方形，不會產生半透明的邊緣。 自動線稿可在套用濾鏡前直接編輯暫時向量控制點。拖曳控制點時只移動該點。選擇「套用」右側的「新增控制點」後點擊線條可新增控制點，選擇「刪除控制點」後點擊控制點可將其刪除（兩者都未選擇時點擊控制點，會先確認再刪除）。編輯後的形狀會直接用於最終套用結果，控制點的移動、新增和刪除也可以用濾鏡編輯的復原、重做逐一還原。 色調曲線中，輕點曲線上的空白處可新增點，拖曳點可移動，長按可刪除；R、G、B 各顏色的曲線在 RGB 曲線之後套用。色階也可按 R、G、B 分別調整，伽瑪可改變中間調的亮度。描邊的「向內延伸」可將邊緣擴展到原輪廓內側，描邊的新圖層會放在原圖層的正下方。色差可指定將偏移分配到 X（橫向）、Y（縱向）、Z（從中心向外）各多少。魚眼鏡頭的中心和半徑也可以在畫布上拖曳 ＋ 和圓上的控點來變更。暗角會柔和地壓暗整個畫布的四個角（沒有繪畫的透明處也會有陰影）。可用「範圍」調整從四角向中心壓暗到多遠，用「濃度」調整四角的暗度。眼鏡斷層像真正的高度數眼鏡一樣，讓透過鏡片看到的景物朝鏡片中心均勻縮小（負值，近視用）或放大（正值，遠視用），並在鏡片邊緣使輪廓錯開成台階狀。積墨只積在線條以「最大角度」或更小角度相交處（初始值90°時為銳角和直角：V字、交叉的窄側、T字、方角）的夾角內側，更寬的角不積：在相交點從線條邊緣起為「中央寬度」，再朝「範圍」的末端筆直變細，末端為0px，平滑地收成尖端（即使加大「中央寬度」，也不會鼓出連接兩側積墨末端的直線之外，最寬時中間也是平的）；若線條在範圍內中斷，該線條上的積墨會以中斷處為終點細到0px（每條線的長度可以不同），此時兩處積墨仍會在夾角的正中相接，距兩條線的寬度相同（較長線條的積墨從那裡再細到範圍的末端）。自動線稿沿草稿線條的中心描出細線。靠得很近的線條只要中間有一點空隙，就仍畫成兩條線，只填補線條內部的小白點。兩條線靠攏並貼在一起的地方，不會在中間畫成一條線，而是像草稿一樣兩條線逐漸靠近並合在一起。線條交叉或重疊的地方，也會像草稿一樣讓每條線照原樣延續（不會在交點處折彎，重疊的兩條線也不會融成一條）。以較淺角度斜向交叉的線也會筆直地穿過交叉處，僅相互接觸的線（例如沿著頭部畫的頭髮輪廓）則各自留在自己的一側，仍是分開的線。眼睛之類的點會畫成實心的點。比「草稿線寬」短的分岔不繪製。「起筆收筆」可以用開關開啟或關閉，關閉後線條直到末端都保持相同粗細。背景融入以混合模式「實光」疊加背景的光與影（影子的顏色不是黑色或灰色，而是把背景中陰影部分的顏色壓暗後的顏色）。周圍的顏色以「覆蓋」疊在整幅畫上來統一色彩方向，從下方反上來的光和周圍的反射光以「濾色」加入，霓虹燈之類的強烈有色光以「相加（發光）」加在輪廓上。「匹配背景的明暗與色調」會把比背景過亮或過於鮮豔的顏色拉回背景的範圍，並讓暗部、中間調、亮部分別帶上背景中相同明度的色調（線稿的黑色保持不變）。「模糊程度」是取色前模糊背景的程度。';
 
   @override
   String get helpLayerKeyframeTitle => '圖層關鍵影格（分部件動畫）';
 
   @override
   String get helpLayerKeyframeDesc =>
-      '依影格設定每個圖層的位置・縮放・旋轉，關鍵影格之間會自動內插。攝影機關鍵影格移動的是整個畫面，而這個功能只移動單一圖層。由於自動上色的每個部件都會生成為獨立的圖層，因此可以直接用它來做分部件動畫（只動一隻手臂、只讓嘴巴開合等）。每個關鍵影格還可以單獨設定「等速」「緩入」「緩出」「緩入緩出」「彈跳」這類緩動（與下一個關鍵影格的銜接方式），不僅限於單調的等速移動，還能表現出彈跳般的動作。在圖層面板的三點選單「動畫（關鍵影格）」中設定。圖層本身的畫面內容不會改變，只是顯示位置改變的非破壞性變形。這個功能只影響時間軸的顯示（預覽・匯出），不會影響畫布模式下的實際作畫。';
+      '依影格設定每個圖層的位置、縮放、旋轉，關鍵影格之間會自動內插。攝影機關鍵影格移動的是整個畫面，而這個功能只移動單一圖層。由於自動上色的每個部件都會生成為獨立的圖層，因此可以直接用它來做分部件動畫（只動一隻手臂、只讓嘴巴開合等）。每個關鍵影格還可以單獨設定「等速」「緩入」「緩出」「緩入緩出」「彈跳」這類緩動（與下一個關鍵影格的銜接方式），不僅限於單調的等速移動，還能表現出彈跳般的動作。在圖層面板的三點選單「動畫（關鍵影格）」中設定。圖層本身的畫面內容不會改變，只是顯示位置改變的非破壞性變形。這個功能只影響時間軸的顯示（預覽、匯出），不會影響畫布模式下的實際作畫。';
 
   @override
   String get helpLayerGroupTitle => '圖層群組（把多個部件一起移動）';
@@ -12240,7 +12240,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
       '投稿到作品廣場後，作品將透過YouTube公開。NIARIM不具備將影片檔案本體傳送、蒐集或保存到開發者伺服器的功能。若在YouTube端將影片設定為「非公開條列」，該影片就不會出現在YouTube的公開清單中，僅會顯示於作品廣場內。';
 
   @override
-  String get tipsToolbarCustomizeTitle => '重新排列・隱藏工具列，縮短手指移動距離';
+  String get tipsToolbarCustomizeTitle => '重新排列、隱藏工具列，縮短手指移動距離';
 
   @override
   String get tipsToolbarCustomizeDesc =>
@@ -12342,7 +12342,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get tipsVideoTrimReuseDesc =>
-      '即使是同一個影片素材，只要為每個片段設定不同的使用開始・結束影格，就能當作不同的鏡頭重複使用。不用增加素材也能做出變化。';
+      '即使是同一個影片素材，只要為每個片段設定不同的使用開始、結束影格，就能當作不同的鏡頭重複使用。不用增加素材也能做出變化。';
 
   @override
   String get tipsSaveSlotAutoSaveTitle => '區分使用存檔槽和自動儲存';
@@ -12431,7 +12431,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get fontCorruptedSnackbar => '字型已損毀。';
 
   @override
-  String get licenseScreenTitle => '使用條款・授權';
+  String get licenseScreenTitle => '使用條款、授權';
 
   @override
   String get licenseSectionTerms => '使用條款';
@@ -12500,7 +12500,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get toolbarPenTooltip => '筆（長按開啟子工具）';
 
   @override
-  String get toolbarPenFirstUseTip => '長按筆工具，可切換筆刷・網點・印章・套索填色。';
+  String get toolbarPenFirstUseTip => '長按筆工具，可切換筆刷、網點、印章、套索填色。';
 
   @override
   String get toolbarBucketTooltip => '油漆桶（長按切換純色/網點填滿）';
@@ -12528,11 +12528,11 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
       '單擊工具列圖示即可切換到該工具。長按同一圖示或向上滑動，可開啟該工具的詳細設定（筆刷種類、填色方式、選取方式等）。雙擊圖示會顯示該工具的簡短說明。關閉之後，也可以從各畫面右上角的「?」按鈕在說明中重新閱讀。';
 
   @override
-  String get helpBasicGestureTitle => '基本操作（點擊・長按・上滑）';
+  String get helpBasicGestureTitle => '基本操作（點擊、長按、上滑）';
 
   @override
   String get helpBasicGestureDesc =>
-      '單擊工具列圖示即可切換到該工具。長按同一圖示或向上滑動，可開啟詳細設定。鋼筆可切換筆刷・網點・印章・套索填色，油漆桶可切換純色填色與網點填色，選取工具可切換矩形・套索・自動選取，手指工具可切換模糊與馬賽克，快速切換工具可編輯已登記的內容，這些都在長按或上滑之後。雙擊圖示時，畫面下方會顯示該工具的簡短說明。\n在畫布上，雙指捏合可縮放，雙指拖曳可平移，雙指點擊復原，三指點擊重做。雙擊畫面左右邊緣可移動到前後一格。\n連接滑鼠或繪圖板時，可用滾輪縮放、按住中鍵拖曳平移。';
+      '單擊工具列圖示即可切換到該工具。長按同一圖示或向上滑動，可開啟詳細設定。鋼筆可切換筆刷、網點、印章、套索填色，油漆桶可切換純色填色與網點填色，選取工具可切換矩形、套索、自動選取，手指工具可切換模糊與馬賽克，快速切換工具可編輯已登記的內容，這些都在長按或上滑之後。雙擊圖示時，畫面下方會顯示該工具的簡短說明。\n在畫布上，雙指捏合可縮放，雙指拖曳可平移，雙指點擊復原，三指點擊重做。雙擊畫面左右邊緣可移動到前後一格。\n連接滑鼠或繪圖板時，可用滾輪縮放、按住中鍵拖曳平移。';
 
   @override
   String get toolbarStampColorLockedSnackbar => '印章保留了自身的顏色資訊，因此無法變更顏色';
@@ -12820,7 +12820,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get stampChangeImageButton => '變更印章圖片';
 
   @override
-  String get themeSettingsTitle => '主題・外觀';
+  String get themeSettingsTitle => '主題、外觀';
 
   @override
   String get themeColorCustomizeSection => '顏色自訂';
@@ -13138,10 +13138,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get newProjectSizeLabel => '尺寸';
 
   @override
-  String get newProjectPresetFullHd => 'Full HD（16:9・適合YouTube等橫式影片）';
+  String get newProjectPresetFullHd => 'Full HD（16:9、適合YouTube等橫式影片）';
 
   @override
-  String get newProjectPresetHd => 'HD（16:9・輕量版）';
+  String get newProjectPresetHd => 'HD（16:9、輕量版）';
 
   @override
   String get newProjectPresetSquare => '1:1 正方形（適合Twitter/Instagram發佈）';
@@ -13554,13 +13554,13 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get perfSettingsQualityCustom => '自訂';
 
   @override
-  String get perfSettingsQualityDescLow => '適合想要更輕量運作的裝置（前後各1張洋蔥皮・5個存檔槽）';
+  String get perfSettingsQualityDescLow => '適合想要更輕量運作的裝置（前後各1張洋蔥皮、5個存檔槽）';
 
   @override
-  String get perfSettingsQualityDescMedium => '適合一般裝置（前後各3張洋蔥皮・10個存檔槽）';
+  String get perfSettingsQualityDescMedium => '適合一般裝置（前後各3張洋蔥皮、10個存檔槽）';
 
   @override
-  String get perfSettingsQualityDescHigh => '適合效能較充裕的裝置（前後各5張洋蔥皮・樹狀存檔）';
+  String get perfSettingsQualityDescHigh => '適合效能較充裕的裝置（前後各5張洋蔥皮、樹狀存檔）';
 
   @override
   String get perfSettingsQualityDescCustom => '個別設定各項目';
@@ -13687,13 +13687,13 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get perfSettingsCopyPresetDialogBody => '請選擇要複製到自訂設定的預設。';
 
   @override
-  String get perfSettingsCopyDescLow => '前後各顯示1張・輕量運作';
+  String get perfSettingsCopyDescLow => '前後各顯示1張、輕量運作';
 
   @override
-  String get perfSettingsCopyDescMedium => '前後各顯示3張・標準';
+  String get perfSettingsCopyDescMedium => '前後各顯示3張、標準';
 
   @override
-  String get perfSettingsCopyDescHigh => '前後各顯示5張・高畫質';
+  String get perfSettingsCopyDescHigh => '前後各顯示5張、高畫質';
 
   @override
   String get filterPanelTitle => '濾鏡';
@@ -13770,7 +13770,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get filterRetroStrength => '強度';
 
   @override
-  String get filterCrtScreenStrength => '掃描線・螢光體濃度';
+  String get filterCrtScreenStrength => '掃描線、螢光體濃度';
 
   @override
   String get filterCrtAberration => '色偏強度';
@@ -14013,7 +14013,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get autofillLineColorModeSameAsFill => '與填色相同';
 
   @override
-  String get autofillLineColorModeTraceAdjust => '顏色描線・與線稿融合';
+  String get autofillLineColorModeTraceAdjust => '顏色描線、與線稿融合';
 
   @override
   String get autofillGradientTypeLinear => '直線';
@@ -14498,7 +14498,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get canvasEditMenuAutofillPresets => '自動上色設定';
 
   @override
-  String get canvasEditMenuAutofillPresetsSubtitle => '編輯各部位的顏色・網點組合';
+  String get canvasEditMenuAutofillPresetsSubtitle => '編輯各部位的顏色、網點組合';
 
   @override
   String get canvasEditMenuBackgroundToggle => '切換背景';
@@ -14528,13 +14528,13 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get canvasEditMenuPressureCurveSubtitle => '開啟畫筆輸入設定（與設定畫面共用）';
 
   @override
-  String get canvasEditMenuMeshTransform => '自由變形・網格變形';
+  String get canvasEditMenuMeshTransform => '自由變形、網格變形';
 
   @override
   String get canvasEditMenuMeshTransformSubtitle => '無需選取範圍即可變形整個圖層';
 
   @override
-  String get meshTransformPanelTitle => '自由變形・網格變形';
+  String get meshTransformPanelTitle => '自由變形、網格變形';
 
   @override
   String get meshTransformPanelHint => '用手指拖曳角點或網格點（雙指同時拖曳不同的點即可旋轉、縮放）';
@@ -15539,7 +15539,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get layerKeyframeSheetDesc =>
-      '依影格設定此圖層的位置・縮放・旋轉，關鍵影格之間會自動內插。圖層本身的畫面內容不會改變。';
+      '依影格設定此圖層的位置、縮放、旋轉，關鍵影格之間會自動內插。圖層本身的畫面內容不會改變。';
 
   @override
   String layerKeyframeAddAtCurrentFrame(int n) {
@@ -15647,7 +15647,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
       '本使用條款（以下稱「本條款」）規定了本應用程式「NIARIM」（以下稱「本應用程式」）的使用條件。使用者應於同意本條款後方可使用本應用程式。使用本應用程式即視為已同意本條款。';
 
   @override
-  String get licenseTermsArt2Title => '第2條（使用資格・適用環境）';
+  String get licenseTermsArt2Title => '第2條（使用資格、適用環境）';
 
   @override
   String get licenseTermsArt2Body =>
@@ -15658,7 +15658,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get licenseTermsArt3Body =>
-      '使用者於使用本應用程式時，不得為下列行為：\n・違反法令或公序良俗之行為\n・侵害本應用程式、開發者或第三方之著作權、商標權等智慧財產權、肖像權、隱私權或其他權利或利益之行為\n・以反編譯、反組譯、逆向工程或其他解析為目的之行為（法令允許之情形除外）\n・對本應用程式進行未經授權之改造、重製或再散布\n・對本應用程式或其提供基礎設施進行未經授權之存取、施加過度負荷等妨礙其正常提供之行為\n・其他開發者基於合理理由判斷為不當之行為';
+      '使用者於使用本應用程式時，不得為下列行為：\n• 違反法令或公序良俗之行為\n• 侵害本應用程式、開發者或第三方之著作權、商標權等智慧財產權、肖像權、隱私權或其他權利或利益之行為\n• 以反編譯、反組譯、逆向工程或其他解析為目的之行為（法令允許之情形除外）\n• 對本應用程式進行未經授權之改造、重製或再散布\n• 對本應用程式或其提供基礎設施進行未經授權之存取、施加過度負荷等妨礙其正常提供之行為\n• 其他開發者基於合理理由判斷為不當之行為';
 
   @override
   String get licenseTermsArt4Title => '第4條（創作內容之權利）';
@@ -15668,14 +15668,14 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
       '1. 使用者利用本應用程式製作之插畫、動畫等內容（包括專案資料、匯出之圖片、影片等，以下稱「創作內容」）所涉及之著作權及其他權利，於法令允許之範圍內，歸屬於就該內容享有權利之使用者或第三方。\n2. 本應用程式未提供將創作內容傳送、蒐集或同步至開發者伺服器之功能。專案資料原則上僅保存於使用者裝置內（使用者自行選擇利用作品廣場功能發布創作內容時之處理方式，請參見第12條）。\n3. 無論使用免費版或進階版製作，開發者均不會以本應用程式之使用費用或版本為由限制創作內容之商業使用（免費版與進階版之差異僅限於片尾卡顯示、匯出時長上限等功能面向）。\n4. 縱有前項規定，使用者新增至本應用程式中之字型、圖片、素材等由第三方享有權利之內容，仍應遵守第5條所定各自之使用條件。';
 
   @override
-  String get licenseTermsArt5Title => '第5條（內建字型・新增素材相關規定）';
+  String get licenseTermsArt5Title => '第5條（內建字型、新增素材相關規定）';
 
   @override
   String get licenseTermsArt5Body =>
       '1. 本應用程式內建之字型及其他素材，均依照本畫面「關於使用字型」所載各授權條款使用。\n2. 關於使用者自行新增登錄或載入本應用程式之字型、圖片、網點、印章等素材之權利關係，應由使用者自行負責，於取得必要權利或授權之前提下合法使用。\n3. 因使用者利用第三方素材而與第三方發生紛爭者，除法令另有規定應負責任之情形外，開發者不負任何責任。';
 
   @override
-  String get licenseTermsArt6Title => '第6條（進階功能・付費）';
+  String get licenseTermsArt6Title => '第6條（進階功能、付費）';
 
   @override
   String get licenseTermsArt6Body =>
@@ -15696,7 +15696,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
       '1. 本應用程式未提供將使用者製作之插畫、動畫等內容及專案資料傳送或蒐集至開發者伺服器之功能。此等資料原則上僅保存於使用者裝置內；由於開發者本身不具備保存此類內容之功能，因此開發者端不存在所謂之保存期間概念。\n2. 本應用程式內建之第三方服務（廣告投放、應用程式內購買等）所取得之資訊及其他使用者資訊之處理，依另行訂定之《隱私權政策》辦理。\n3. 解除安裝本應用程式後，保存於裝置內之資料（專案、設定、已新增字型等）將被刪除。';
 
   @override
-  String get licenseTermsArt9Title => '第9條（提供之中止・變更・終止）';
+  String get licenseTermsArt9Title => '第9條（提供之中止、變更、終止）';
 
   @override
   String get licenseTermsArt9Body =>
@@ -15721,10 +15721,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get licenseTermsArt12Body =>
-      '1. 本應用程式可選擇性地提供以下功能：使用者可透過自己的Google帳號，將自己製作之動畫作品發布至YouTube，並於「作品廣場」上公開、瀏覽（以下稱「本社群功能」）。縱使不使用本社群功能，使用者仍可瀏覽及製作作品。\n2. 已發布之影片檔案本身保存於YouTube上，不會保存於開發者之伺服器上。另一方面，用於識別、顯示已發布作品所需之資訊（YouTube影片ID、標題、統計資訊、檢舉資訊等），以及使用者利用發布、檢舉、封鎖功能時核發之NIARIM User ID（與Google帳號不同、由本應用程式內部核發之識別碼），由開發者之伺服器管理。\n3. 本社群功能中之作品發布、檢舉以及封鎖其他使用者，均須透過Google帳號登入。\n4. 可發布之作品數量設有每日上限（免費會員與進階會員之上限不同）。該上限可能因營運原因而變更。\n5. 若使用者認為其他使用者發布之作品違反法令或公序良俗，或可能符合第3條各款所述情形，得透過本應用程式內之檢舉功能向開發者檢舉。開發者於確認檢舉內容後，得基於合理理由，對相關作品採取自列表中隱藏等必要措施。禁止進行虛偽檢舉或濫用檢舉功能。\n6. 使用者刪除發布內容，或解除本應用程式與Google帳號之連結時，對應之YouTube影片可能會被刪除。此外，若影片於YouTube端被設為非公開或遭刪除，該作品亦將不再於作品廣場上顯示。\n7. 使用本社群功能時，除本條款外，亦應遵守YouTube之服務條款及社群規範。\n8. 使用者得追蹤其他使用者，並得收藏或轉發其他使用者之作品。僅本人可查看追蹤的使用者清單與已收藏的作品清單。不顯示粉絲身分與粉絲清單，僅顯示追蹤數與粉絲數。追蹤、收藏或轉發時，系統不會向對方傳送有關該操作的個別通知。\n9. 作品上之標籤亦得由發布者以外之使用者新增或刪除。發布者得鎖定自身作品之標籤，以禁止其他使用者編輯。使用者不得新增誹謗他人之標籤、與作品內容無關之標籤或其他不當標籤。開發者得刪除不當標籤。\n10. 開發者會在本應用程式的通知清單中顯示關於你自己的作品投稿、公開與任務達成等通知。如果裝置已允許通知，本應用程式可能傳送推播通知。你可以在本應用程式或裝置的設定中關閉推播通知。\n11. 使用者不得將本社群功能用於騷擾其他使用者、宣傳・招攬或其他偏離其本來目的（作品之公開與瀏覽）之目的。使用封鎖功能後，遭封鎖對象之作品將不再顯示於自身之清單中。';
+      '1. 本應用程式可選擇性地提供以下功能：使用者可透過自己的Google帳號，將自己製作之動畫作品發布至YouTube，並於「作品廣場」上公開、瀏覽（以下稱「本社群功能」）。縱使不使用本社群功能，使用者仍可瀏覽及製作作品。\n2. 已發布之影片檔案本身保存於YouTube上，不會保存於開發者之伺服器上。另一方面，用於識別、顯示已發布作品所需之資訊（YouTube影片ID、標題、統計資訊、檢舉資訊等），以及使用者利用發布、檢舉、封鎖功能時核發之NIARIM User ID（與Google帳號不同、由本應用程式內部核發之識別碼），由開發者之伺服器管理。\n3. 本社群功能中之作品發布、檢舉以及封鎖其他使用者，均須透過Google帳號登入。\n4. 可發布之作品數量設有每日上限（免費會員與進階會員之上限不同）。該上限可能因營運原因而變更。\n5. 若使用者認為其他使用者發布之作品違反法令或公序良俗，或可能符合第3條各款所述情形，得透過本應用程式內之檢舉功能向開發者檢舉。開發者於確認檢舉內容後，得基於合理理由，對相關作品採取自列表中隱藏等必要措施。禁止進行虛偽檢舉或濫用檢舉功能。\n6. 使用者刪除發布內容，或解除本應用程式與Google帳號之連結時，對應之YouTube影片可能會被刪除。此外，若影片於YouTube端被設為非公開或遭刪除，該作品亦將不再於作品廣場上顯示。\n7. 使用本社群功能時，除本條款外，亦應遵守YouTube之服務條款及社群規範。\n8. 使用者得追蹤其他使用者，並得收藏或轉發其他使用者之作品。僅本人可查看追蹤的使用者清單與已收藏的作品清單。不顯示粉絲身分與粉絲清單，僅顯示追蹤數與粉絲數。追蹤、收藏或轉發時，系統不會向對方傳送有關該操作的個別通知。\n9. 作品上之標籤亦得由發布者以外之使用者新增或刪除。發布者得鎖定自身作品之標籤，以禁止其他使用者編輯。使用者不得新增誹謗他人之標籤、與作品內容無關之標籤或其他不當標籤。開發者得刪除不當標籤。\n10. 開發者會在本應用程式的通知清單中顯示關於你自己的作品投稿、公開與任務達成等通知。如果裝置已允許通知，本應用程式可能傳送推播通知。你可以在本應用程式或裝置的設定中關閉推播通知。\n11. 使用者不得將本社群功能用於騷擾其他使用者、宣傳、招攬或其他偏離其本來目的（作品之公開與瀏覽）之目的。使用封鎖功能後，遭封鎖對象之作品將不再顯示於自身之清單中。';
 
   @override
-  String get licenseTermsArt13Title => '第13條（準據法・管轄法院）';
+  String get licenseTermsArt13Title => '第13條（準據法、管轄法院）';
 
   @override
   String get licenseTermsArt13Body =>
@@ -15735,7 +15735,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get privacyPolicyArt1Body =>
-      '本隱私權政策（以下稱「本政策」）規定本應用程式「NIARIM」（以下稱「本應用程式」）就資訊之處理方式。關於本應用程式使用條件之整體內容，請另行參閱「使用條款・授權」畫面。';
+      '本隱私權政策（以下稱「本政策」）規定本應用程式「NIARIM」（以下稱「本應用程式」）就資訊之處理方式。關於本應用程式使用條件之整體內容，請另行參閱「使用條款、授權」畫面。';
 
   @override
   String get privacyPolicyArt2Title => '第2條（本應用程式不蒐集之資料）';
@@ -15753,7 +15753,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get privacyPolicyArt3Body =>
-      '本應用程式內建下列第三方服務，各服務提供者得於提供各自服務所需之範圍內取得資訊。本應用程式之開發者並未實作獨立取得或保存此等資訊之功能（各服務所取得資訊之管理，依各該服務提供者之隱私權政策辦理）。\n\n【廣告投放（Google AdMob）】\n免費版透過Google AdMob投放廣告。基於廣告投放、成效衡量、防止不當行為等目的，Google或其關係企業可能取得並使用廣告識別碼（Advertising ID）等裝置資訊。關於取得及使用之詳情，請參閱Google隱私權政策（https://policies.google.com/privacy）。使用者可透過裝置設定（如Android設定應用程式之「隱私權」等）重設廣告識別碼或停用個人化廣告。若您位於歐洲經濟區（EEA）、英國或瑞士，可於啟動時顯示之同意表單中選擇廣告個人化相關之同意設定，亦可隨時透過本畫面下方之「變更廣告同意設定」按鈕進行修改。\n\n【應用程式內購買（Google Play Billing）】\n進階功能之購買透過Google Play之付款系統進行。開發者不會直接取得或保存信用卡卡號等付款資訊。付款相關資訊之處理依Google Play之規定辦理。\n\n【下載附加字型（GitHub）】\n僅當您在設定畫面的「字型管理」中選擇下載附加字型時，才會與字型檔案的散布方 GitHub（GitHub, Inc.）的伺服器進行通訊。該通訊僅在您選擇下載時發生，應用程式啟動時或正常使用過程中不會發生。傳送的僅為通訊所必需的資訊（IP 位址、所請求的字型檔案等），不會傳送作品資料或可識別您身分的資訊。所取得資訊的處理遵循 GitHub 的隱私權聲明（https://docs.github.com/site-policy/privacy-policies/github-privacy-statement）。\n\n【當機分析・使用狀況分析】\n本應用程式目前未內建以當機分析、使用狀況分析為目的之SDK。日後如導入此類服務，將更新本政策並於本應用程式內公告。';
+      '本應用程式內建下列第三方服務，各服務提供者得於提供各自服務所需之範圍內取得資訊。本應用程式之開發者並未實作獨立取得或保存此等資訊之功能（各服務所取得資訊之管理，依各該服務提供者之隱私權政策辦理）。\n\n【廣告投放（Google AdMob）】\n免費版透過Google AdMob投放廣告。基於廣告投放、成效衡量、防止不當行為等目的，Google或其關係企業可能取得並使用廣告識別碼（Advertising ID）等裝置資訊。關於取得及使用之詳情，請參閱Google隱私權政策（https://policies.google.com/privacy）。使用者可透過裝置設定（如Android設定應用程式之「隱私權」等）重設廣告識別碼或停用個人化廣告。若您位於歐洲經濟區（EEA）、英國或瑞士，可於啟動時顯示之同意表單中選擇廣告個人化相關之同意設定，亦可隨時透過本畫面下方之「變更廣告同意設定」按鈕進行修改。\n\n【應用程式內購買（Google Play Billing）】\n進階功能之購買透過Google Play之付款系統進行。開發者不會直接取得或保存信用卡卡號等付款資訊。付款相關資訊之處理依Google Play之規定辦理。\n\n【下載附加字型（GitHub）】\n僅當您在設定畫面的「字型管理」中選擇下載附加字型時，才會與字型檔案的散布方 GitHub（GitHub, Inc.）的伺服器進行通訊。該通訊僅在您選擇下載時發生，應用程式啟動時或正常使用過程中不會發生。傳送的僅為通訊所必需的資訊（IP 位址、所請求的字型檔案等），不會傳送作品資料或可識別您身分的資訊。所取得資訊的處理遵循 GitHub 的隱私權聲明（https://docs.github.com/site-policy/privacy-policies/github-privacy-statement）。\n\n【當機分析、使用狀況分析】\n本應用程式目前未內建以當機分析、使用狀況分析為目的之SDK。日後如導入此類服務，將更新本政策並於本應用程式內公告。';
 
   @override
   String get privacyPolicyArt4Title => '第4條（關於Cookie等追蹤技術）';
@@ -15781,7 +15781,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get privacyPolicyArt7Body =>
-      '1. 僅當使用者出於自身意願使用「作品廣場」功能（使用者條款第12條）時，本應用程式才會於開發者之伺服器上管理下列資訊。\n・用以識別及顯示已發布作品之資訊（YouTube 影片 ID、標題、統計資訊、發布時間、標籤等）\n・使用發布、檢舉、封鎖、追蹤、收藏等功能時所核發之 NIARIM User ID（與 Google 帳戶分開、於本應用程式內部核發之識別碼）\n・已連結 YouTube 頻道之公開資訊（頻道名稱、頻道圖示之圖片 URL）。為顯示發布者名稱與圖示，將複製並保存於開發者之伺服器\n・使用檢舉功能時之檢舉內容以及檢舉者之 NIARIM User ID\n・所封鎖對象之 NIARIM User ID\n・所追蹤對象之 NIARIM User ID，以及追蹤數與粉絲數\n・已收藏作品之 ID 及收藏時間\n・已轉發作品之 ID 及轉發時間\n・作品上之標籤（參見第4項）\n・啟用推播通知時之裝置權杖（裝置為確定通知送達對象所核發之識別碼，僅用於傳送通知）\n2. 已發布之影片檔案本身保存於 YouTube 上，不保存於開發者之伺服器。\n3. 前二項所述資訊僅於提供本社群功能所需之範圍內使用（作品清單顯示、排行、搜尋、檢舉處理、發布上限管理、追蹤・收藏・轉發之反映、通知傳送等）。開發者不會為廣告投放之目的向第三方提供此等資訊。\n4. 標籤亦得由發布者以外之使用者新增或刪除（發布者得鎖定自身作品之標籤以禁止編輯）。標籤於作品廣場上公開，且不顯示係由何人新增。\n5. 僅本人可查看追蹤的使用者清單與已收藏的作品清單。不顯示粉絲身分與粉絲清單，僅顯示追蹤數與粉絲數。追蹤、收藏或轉發時，系統不會向對方傳送有關該操作的個別通知。\n6. 將已發布作品設為不公開或予以刪除後，該作品將不再顯示於作品廣場之清單與排行中。如欲刪除開發者伺服器上之紀錄，請透過第9條之聯絡方式與我們聯繫。\n7. 未使用本社群功能時，不會發生本條所述之資訊處理。（依第2條之原則，不會向開發者之伺服器傳送任何內容。）';
+      '1. 僅當使用者出於自身意願使用「作品廣場」功能（使用者條款第12條）時，本應用程式才會於開發者之伺服器上管理下列資訊。\n• 用以識別及顯示已發布作品之資訊（YouTube 影片 ID、標題、統計資訊、發布時間、標籤等）\n• 使用發布、檢舉、封鎖、追蹤、收藏等功能時所核發之 NIARIM User ID（與 Google 帳戶分開、於本應用程式內部核發之識別碼）\n• 已連結 YouTube 頻道之公開資訊（頻道名稱、頻道圖示之圖片 URL）。為顯示發布者名稱與圖示，將複製並保存於開發者之伺服器\n• 使用檢舉功能時之檢舉內容以及檢舉者之 NIARIM User ID\n• 所封鎖對象之 NIARIM User ID\n• 所追蹤對象之 NIARIM User ID，以及追蹤數與粉絲數\n• 已收藏作品之 ID 及收藏時間\n• 已轉發作品之 ID 及轉發時間\n• 作品上之標籤（參見第4項）\n• 啟用推播通知時之裝置權杖（裝置為確定通知送達對象所核發之識別碼，僅用於傳送通知）\n2. 已發布之影片檔案本身保存於 YouTube 上，不保存於開發者之伺服器。\n3. 前二項所述資訊僅於提供本社群功能所需之範圍內使用（作品清單顯示、排行、搜尋、檢舉處理、發布上限管理、追蹤、收藏、轉發之反映、通知傳送等）。開發者不會為廣告投放之目的向第三方提供此等資訊。\n4. 標籤亦得由發布者以外之使用者新增或刪除（發布者得鎖定自身作品之標籤以禁止編輯）。標籤於作品廣場上公開，且不顯示係由何人新增。\n5. 僅本人可查看追蹤的使用者清單與已收藏的作品清單。不顯示粉絲身分與粉絲清單，僅顯示追蹤數與粉絲數。追蹤、收藏或轉發時，系統不會向對方傳送有關該操作的個別通知。\n6. 將已發布作品設為不公開或予以刪除後，該作品將不再顯示於作品廣場之清單與排行中。如欲刪除開發者伺服器上之紀錄，請透過第9條之聯絡方式與我們聯繫。\n7. 未使用本社群功能時，不會發生本條所述之資訊處理。（依第2條之原則，不會向開發者之伺服器傳送任何內容。）';
 
   @override
   String get privacyPolicyArt8Title => '第8條（本政策之變更）';
@@ -15887,7 +15887,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get canvasBrushSliderToggleLabel => '詳細';
 
   @override
-  String get helpMeshTransformTitle => '自由變形・網格變形';
+  String get helpMeshTransformTitle => '自由變形、網格變形';
 
   @override
   String get helpMeshTransformDesc =>
@@ -16186,25 +16186,25 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get filterSelectionOnlyHint => '僅套用於選取範圍內';
 
   @override
-  String get tipsStockingDenierTitle => '絲襪・褲襪的網眼粗細會隨丹數變化';
+  String get tipsStockingDenierTitle => '絲襪、褲襪的網眼粗細會隨丹數變化';
 
   @override
   String get tipsStockingDenierDesc =>
-      '新增的絲襪・褲襪網點依照丹數越低（布料越薄）網格間距越密的設定製作，其中最低的10丹刻意做得非常細密，依顯示或匯出解析度不同甚至可能出現摩爾紋。丹數越高的褲襪間距越寬、看起來更不透明，請依角色的腿部選用合適的一款。';
+      '新增的絲襪、褲襪網點依照丹數越低（布料越薄）網格間距越密的設定製作，其中最低的10丹刻意做得非常細密，依顯示或匯出解析度不同甚至可能出現摩爾紋。丹數越高的褲襪間距越寬、看起來更不透明，請依角色的腿部選用合適的一款。';
 
   @override
-  String get tipsFisheyeChromaticTitle => '用魚眼鏡頭・色差濾鏡營造鏡頭般的變形與色邊';
+  String get tipsFisheyeChromaticTitle => '用魚眼鏡頭、色差濾鏡營造鏡頭般的變形與色邊';
 
   @override
   String get tipsFisheyeChromaticDesc =>
-      '魚眼鏡頭濾鏡會讓畫面中心膨脹、邊緣壓縮，重現廣角・魚眼鏡頭拍攝般的彎曲效果。色差濾鏡會讓RGB色版略微錯開，重現廉價鏡頭拍攝時常見的彩色邊緣。兩者都可作為繪圖濾鏡（直接套用於圖層）與演出濾鏡（在時間軸上指定範圍套用）使用。魚眼鏡頭的中心也可以拖曳畫布上的＋來移動。';
+      '魚眼鏡頭濾鏡會讓畫面中心膨脹、邊緣壓縮，重現廣角、魚眼鏡頭拍攝般的彎曲效果。色差濾鏡會讓RGB色版略微錯開，重現廉價鏡頭拍攝時常見的彩色邊緣。兩者都可作為繪圖濾鏡（直接套用於圖層）與演出濾鏡（在時間軸上指定範圍套用）使用。魚眼鏡頭的中心也可以拖曳畫布上的＋來移動。';
 
   @override
   String get tipsLensDistortionTitle => '用眼鏡斷層濾鏡重現透過眼鏡看到的畸變';
 
   @override
   String get tipsLensDistortionDesc =>
-      '選擇眼鏡斷層濾鏡，用面板中的「畫筆」在畫布上塗抹鏡片範圍（如眼鏡鏡片部分），或用「油漆桶」點擊被線條圍住的區域，即可僅對該範圍套用局部畸變。塗出界的部分可以用「橡皮擦」擦掉，塗抹的範圍可以透過復原・重做逐步還原。如果有選取範圍或選取圖層，會從該範圍開始。鏡片強度滑桿在負值時呈凹透鏡般縮小，在正值時呈凸透鏡般放大，中心位置也可微調。也可以塗抹兩片鏡片並一次套用效果。塗抹的範圍不會出現在匯出結果或最終畫面中。除了眼鏡之外，也可以用來重現透過相機鏡頭看風景般的畸變效果，建議塗抹背景等較大範圍，並套用較弱的強度。';
+      '選擇眼鏡斷層濾鏡，用面板中的「畫筆」在畫布上塗抹鏡片範圍（如眼鏡鏡片部分），或用「油漆桶」點擊被線條圍住的區域，即可僅對該範圍套用局部畸變。塗出界的部分可以用「橡皮擦」擦掉，塗抹的範圍可以透過復原、重做逐步還原。如果有選取範圍或選取圖層，會從該範圍開始。鏡片強度滑桿在負值時呈凹透鏡般縮小，在正值時呈凸透鏡般放大，中心位置也可微調。也可以塗抹兩片鏡片並一次套用效果。塗抹的範圍不會出現在匯出結果或最終畫面中。除了眼鏡之外，也可以用來重現透過相機鏡頭看風景般的畸變效果，建議塗抹背景等較大範圍，並套用較弱的強度。';
 
   @override
   String get tipsSphereShadingTitle => '用球體陰影濾鏡一次加上圓潤的立體感';
@@ -16221,7 +16221,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
       '要讓畫好的人物自然地融入背景照片或畫作，先對人物圖層使用繪圖濾鏡「背景融入」。它會把所畫顏色的明暗與飽和度收進背景的範圍，並一次加上背景的整體色調（覆蓋）、以背景陰影顏色呈現的光與影（實光）、從下方反上來的光（濾色）以及霓虹燈之類的強光（相加（發光））。想再細化時，先在色彩增值或實光圖層上畫出大塊陰影，再用濾色或相加（發光）圖層添加玻璃、金屬等各材質的反光和輪廓光。想突出的部分（如臉部）保持明亮鮮豔，並用暗角把周圍稍微壓暗，主角就會更醒目。最後用色調曲線或色階統一整體顏色。';
 
   @override
-  String get tipsLineArtExtractionTitle => '組合色調調整・二值化・明度轉透明來擷取線稿';
+  String get tipsLineArtExtractionTitle => '組合色調調整、二值化、明度轉透明來擷取線稿';
 
   @override
   String get tipsLineArtExtractionDesc =>
@@ -16232,7 +16232,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get tipsLineColorUsageDesc =>
-      '如果想讓部位輪廓清楚，但不讓線稿過於突出，可將「線稿顏色」設為「顏色描線・與線稿融合」。對於用作陰影或高光的色塊，將「線稿顏色」設為「與填色相同」，線稿就會跟隨填色顏色，不會像較深的線條一樣突出。若有意使用不同的線稿顏色，再選擇「指定顏色」。';
+      '如果想讓部位輪廓清楚，但不讓線稿過於突出，可將「線稿顏色」設為「顏色描線、與線稿融合」。對於用作陰影或高光的色塊，將「線稿顏色」設為「與填色相同」，線稿就會跟隨填色顏色，不會像較深的線條一樣突出。若有意使用不同的線稿顏色，再選擇「指定顏色」。';
 
   @override
   String get tipsBlushAutofillTitle => '臉頰的紅暈也能用自動填色柔和地上色';
@@ -16267,7 +16267,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get workspaceAppliedSnackbar => '已套用工作區設定。';
 
   @override
-  String get workspaceSaveAsButton => '將工作區命名儲存・覆蓋儲存';
+  String get workspaceSaveAsButton => '將工作區命名儲存、覆蓋儲存';
 
   @override
   String get workspaceShareButton => '共用工作區';
