@@ -155,12 +155,16 @@ void main() {
             (file) => file.path.endsWith('/AUDIT_root.gif'),
           );
           final original = file.readAsBytesSync();
-          final move = find.byTooltip(
-            '${env.l10n.folderMoveToTitle}: AUDIT_root.gif',
-          );
-          await tester.ensureVisible(move);
-          await tester.tap(move);
-          await tester.pumpAndSettle();
+          Future<void> openMove() async {
+            final menu = find.byKey(const Key('exportedWorkMoreMenu'));
+            await tester.ensureVisible(menu);
+            await tester.tap(menu);
+            await tester.pumpAndSettle();
+            await tester.tap(find.text(env.l10n.folderMoveToTitle).last);
+            await tester.pumpAndSettle();
+          }
+
+          await openMove();
           expect(
             find.widgetWithText(ListTile, env.l10n.folderNone),
             findsOneWidget,
@@ -171,8 +175,7 @@ void main() {
           expect(env.folders.folderIdOf('AUDIT_root.gif'), isNull);
           expect(file.readAsBytesSync(), original);
 
-          await tester.tap(move);
-          await tester.pumpAndSettle();
+          await openMove();
           await tester.tap(find.widgetWithText(ListTile, 'AUDIT'));
           await tester.pumpAndSettle();
           expect(env.folders.folderIdOf('AUDIT_root.gif'), 'audit-folder');
@@ -180,8 +183,7 @@ void main() {
           await tester.tap(find.text('AUDIT'));
           await tester.pumpAndSettle();
           expect(findExportedWorkName('AUDIT_root.gif'), findsOneWidget);
-          await tester.tap(move);
-          await tester.pumpAndSettle();
+          await openMove();
           await tester.tap(find.widgetWithText(ListTile, env.l10n.folderNone));
           await tester.pumpAndSettle();
           expect(env.folders.folderIdOf('AUDIT_root.gif'), isNull);

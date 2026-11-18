@@ -85,23 +85,18 @@ void main() {
     await tester.pumpAndSettle();
     final context = tester.element(find.byType(ExportedWorkCard));
     final l10n = AppLocalizations.of(context)!;
-    final move = find.byTooltip('${l10n.folderMoveToTitle}: $name');
-    expect(move, findsOneWidget);
-    expect(tester.getSize(move), const Size(48, 48));
-    await tester.tap(move);
+    final menu = find.byKey(const Key('exportedWorkMoreMenu'));
+    expect(menu, findsOneWidget);
+    await tester.tap(menu);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(l10n.folderMoveToTitle));
     await tester.pumpAndSettle();
     expect(actions, ['move']);
     Focus.of(tester.element(titleFor(name))).requestFocus();
     await tester.pump();
-    await tester.sendKeyEvent(LogicalKeyboardKey.tab);
-    expect(
-      Focus.of(
-        tester.element(find.byIcon(Icons.drive_file_move_outline)),
-      ).hasPrimaryFocus,
-      isTrue,
-    );
-    await tester.pump();
-    await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+    await tester.sendKeyDownEvent(LogicalKeyboardKey.shiftLeft);
+    await tester.sendKeyEvent(LogicalKeyboardKey.f10);
+    await tester.sendKeyUpEvent(LogicalKeyboardKey.shiftLeft);
     await tester.pumpAndSettle();
     expect(actions, ['move', 'move']);
     expect(tester.takeException(), isNull);

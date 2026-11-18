@@ -3754,13 +3754,22 @@ class _HomeTraversalPolicy extends ReadingOrderTraversalPolicy {
     // 作ったまま残している見えないページ・行（並べていない所）は送り出せない
     // （送り出そうとすると、並べていない所の位置を求めて例外になった）。
     if (!_laidOutInScrollables(context.findRenderObject())) return;
-    _keepAboveFloatingActions(context, listArea, floatingActions);
     for (final policy in const [
       ScrollPositionAlignmentPolicy.keepVisibleAtEnd,
       ScrollPositionAlignmentPolicy.keepVisibleAtStart,
     ]) {
       Scrollable.ensureVisible(context, alignmentPolicy: policy);
     }
+    // The first scroll can make the return-to-top button appear. Use the
+    // resulting layout to reveal the focused item above the buttons.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (context.mounted &&
+          node.hasPrimaryFocus &&
+          _laidOutInScrollables(context.findRenderObject())) {
+        _keepAboveFloatingActions(context, listArea, floatingActions);
+      }
+    });
+    SchedulerBinding.instance.scheduleFrame();
   }
 
   /// [target]が、スクロールする所の中で今並べてある所にあるか（作ったまま
@@ -3776,8 +3785,7 @@ class _HomeTraversalPolicy extends ReadingOrderTraversalPolicy {
 
   /// タブの一覧（[listArea]）の中の部品を、一覧の見える所のうち浮かぶ
   /// ボタンより上へ送り出す（入らないほど高い部品は上端をそろえる）。浮かぶ
-  /// ボタンが無い（ゴミ箱のタブ・選んでいる間）ときは一覧の下端まで。続けて
-  /// 呼ぶ[Scrollable.ensureVisible]は、もう見えているので縦には動かさない。
+  /// ボタンが無い（ゴミ箱のタブ・選んでいる間）ときは一覧の下端まで。
   /// 一覧の外（引き出し等）は浮かぶボタンの下に入らないので送らない。
   static void _keepAboveFloatingActions(
     BuildContext context,

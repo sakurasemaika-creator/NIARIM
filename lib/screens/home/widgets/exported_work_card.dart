@@ -208,6 +208,7 @@ class ExportedWorkCard extends StatelessWidget {
               enabled: onOpen != null,
               child: Text(l10n.projectListOpenAction),
             ),
+            PopupMenuItem(value: 'move', child: Text(moveLabel)),
             PopupMenuItem(
               value: 'share',
               enabled: onShare != null && !shareBusy,

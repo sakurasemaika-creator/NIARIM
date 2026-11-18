@@ -177,11 +177,11 @@ void main() {
             const Size(320, 220),
           ];
           env.store.failWrites = true;
-          final move = find.byTooltip(
-            '${env.l10n.folderMoveToTitle}: $filename',
-          );
-          await tester.ensureVisible(move);
-          await tester.tap(move);
+          final menu = find.byKey(const Key('exportedWorkMoreMenu'));
+          await tester.ensureVisible(menu);
+          await tester.tap(menu);
+          await tester.pumpAndSettle();
+          await tester.tap(find.text(env.l10n.folderMoveToTitle).last);
           await tester.pumpAndSettle();
           await tester.tap(find.widgetWithText(ListTile, 'AUDIT'));
           await tester.pumpAndSettle();
@@ -273,11 +273,11 @@ void main() {
           final env = await open(tester, language: language, pc: pc);
           final original = env.file.readAsBytesSync();
           env.store.failWrites = true;
-          final move = find.byTooltip(
-            '${env.l10n.folderMoveToTitle}: $filename',
-          );
-          await tester.ensureVisible(move);
-          await tester.tap(move);
+          final menu = find.byKey(const Key('exportedWorkMoreMenu'));
+          await tester.ensureVisible(menu);
+          await tester.tap(menu);
+          await tester.pumpAndSettle();
+          await tester.tap(find.text(env.l10n.folderMoveToTitle).last);
           await tester.pumpAndSettle();
           await tester.tap(find.widgetWithText(ListTile, 'AUDIT'));
           await tester.pumpAndSettle();

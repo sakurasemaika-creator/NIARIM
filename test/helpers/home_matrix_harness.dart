@@ -682,7 +682,11 @@ class HomeMatrix {
         .evaluate()
         .length;
     if (contents == HomeContents.loading) return true;
-    if (any(find.byType(CircularProgressIndicator))) return false;
+    if (any(find.byType(CircularProgressIndicator)) ||
+        (view == HomeView.trash &&
+            any(find.byKey(const Key('trashFilesLoading'))))) {
+      return false;
+    }
     if (contents != HomeContents.seeded) return true;
     return switch (view) {
       HomeView.projects => true,
