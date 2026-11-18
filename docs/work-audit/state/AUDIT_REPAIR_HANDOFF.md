@@ -467,6 +467,8 @@ App・Web共通。Claudeが要修正の詳細を追記し、ユーザーが別�
 
 - 残る確認は、AndroidのGoogle SDKでのトークン期限切れ・再ログイン、Flutter全体回帰、公開Workerと実メール配信、および台帳に残る別指摘。Flutterのローカル実行は、修正前と修正後の両方で実行中にコンパイラーが終了した。Android・DeX実機の確認と、監査担当の正式な二巡目は引き続き未確認。
 
+- App `6631dbd536cc2e6566fcc6b5fd2120f1d9bd4163` の [Flutter外部連携の回帰・静的解析](https://github.com/sakurasemaika-creator/NIARIM/actions/runs/44260470152) と [Android OAuth設定の照合](https://github.com/sakurasemaika-creator/NIARIM/actions/runs/44260470425) が成功。GoogleログインとAPI接続を含む [実機確認用デバッグAPK](https://github.com/sakurasemaika-creator/NIARIM/actions/runs/44260470122/artifacts/14408346630) の生成を確認した。実機によるトークン更新と全Flutter回帰の確認が残る。
+
 ## 要修正の記録
 
 ### 旧手順の修正担当からの切替（2026-11-16、Claude・S40）
