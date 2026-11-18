@@ -643,7 +643,7 @@ const _sliderHeadingStyle = TextStyle(
 class _SlotCountSlider extends StatefulWidget {
   final String label;
   final int value;
-  final ValueChanged<int> onChangeEnd;
+  final Future<void> Function(int) onChangeEnd;
 
   const _SlotCountSlider({
     required this.label,
@@ -657,6 +657,7 @@ class _SlotCountSlider extends StatefulWidget {
 
 class _SlotCountSliderState extends State<_SlotCountSlider> {
   late double _draft;
+  bool _applying = false;
 
   @override
   void initState() {
@@ -668,6 +669,23 @@ class _SlotCountSliderState extends State<_SlotCountSlider> {
   void didUpdateWidget(_SlotCountSlider old) {
     super.didUpdateWidget(old);
     if (old.value != widget.value) _draft = widget.value.toDouble();
+  }
+
+  Future<void> _apply(double value) async {
+    if (_applying) return;
+    final requested = value.round();
+    if (requested == widget.value) return;
+    setState(() => _applying = true);
+    try {
+      await widget.onChangeEnd(requested);
+    } finally {
+      if (mounted) {
+        setState(() {
+          _applying = false;
+          _draft = widget.value.toDouble();
+        });
+      }
+    }
   }
 
   @override
@@ -682,8 +700,8 @@ class _SlotCountSliderState extends State<_SlotCountSlider> {
       value: _draft,
       sliderLabel: l10n.perfSettingsSlotCountValue(_draft.round()),
       valueText: l10n.perfSettingsSlotCountValue(_draft.round()),
-      onChanged: (v) => setState(() => _draft = v),
-      onChangeEnd: (v) => widget.onChangeEnd(v.round()),
+      onChanged: _applying ? null : (v) => setState(() => _draft = v),
+      onChangeEnd: _apply,
     );
   }
 }

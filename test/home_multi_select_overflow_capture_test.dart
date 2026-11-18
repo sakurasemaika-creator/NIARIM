@@ -27,7 +27,10 @@ void main() {
         await m.resize(Size(width, kHomeMatrixPhoneHeight));
         await m.show(HomeView.projects);
         // As in the screenshot: a folder card long-pressed.
-        await tester.longPress(find.text('シリーズ').first);
+        final folder = find.text('シリーズ').first;
+        await tester.ensureVisible(folder);
+        await m.frames(3);
+        await tester.longPress(folder);
         await m.frames(8);
         expect(find.byType(HomeSelectionToolbar), findsOneWidget);
         expect(tester.takeException(), isNull, reason: '$width');

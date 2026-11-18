@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/models/canvas_dock_panel.dart';
 import 'package:niarim/screens/settings/widgets/pc_workspace_layout_preview.dart';
+import 'package:niarim/screens/settings/workspace_settings_screen.dart';
 import 'package:niarim/services/settings_service.dart';
+import 'package:niarim/services/workspace_preset_service.dart';
+import 'package:niarim/widgets/scrollable_sheet_body.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -11,6 +15,71 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   setUp(() => SharedPreferences.setMockInitialValues({}));
+
+  testWidgets('workspace overwrite reaches the last preset on a short screen', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(390, 500);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final providers = (await tester.runAsync(buildAppProviders))!;
+    await tester.pumpWidget(
+      MultiProvider(
+        providers: providers,
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          locale: const Locale('en'),
+          home: const WorkspaceSettingsScreen(),
+        ),
+      ),
+    );
+    final context = tester.element(find.byType(WorkspaceSettingsScreen));
+    final l10n = AppLocalizations.of(context)!;
+    final presets = context.read<WorkspacePresetService>();
+    final settings = context.read<SettingsService>();
+    for (var index = 1; index <= 12; index++) {
+      await presets.save(
+        'Preset $index',
+        isLeftHanded: false,
+        forcePcMode: null,
+      );
+    }
+    final lastId = presets.presets.last.id;
+    await settings.setLeftHanded(true);
+    final save = find.text(l10n.workspaceSaveAsButton);
+    await tester.scrollUntilVisible(
+      save,
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.tap(save);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(l10n.workspaceOverwriteButton));
+    await tester.pumpAndSettle();
+    final sheet = find.byType(ScrollableSheetBody);
+    final last = find.descendant(of: sheet, matching: find.text('Preset 12'));
+    await tester.scrollUntilVisible(
+      last,
+      200,
+      scrollable: find.descendant(of: sheet, matching: find.byType(Scrollable)),
+    );
+    await tester.tap(last);
+    await tester.pumpAndSettle();
+    expect(
+      find.text(l10n.workspaceOverwriteConfirmBody('Preset 12')),
+      findsOneWidget,
+    );
+    await tester.tap(find.widgetWithText(FilledButton, l10n.commonOk));
+    await tester.pumpAndSettle();
+    expect(
+      presets.presets.firstWhere((preset) => preset.id == lastId).isLeftHanded,
+      isTrue,
+    );
+    expect(presets.presets.first.isLeftHanded, isFalse);
+    expect(tester.takeException(), isNull);
+  });
 
   test(
     'pristine dock defaults mirror by hand, but never after a user edit',

@@ -184,10 +184,28 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(delete);
       await tester.pumpAndSettle();
+      final confirmation = find.byType(AlertDialog);
+      final message = l10n.homeMoveToTrashConfirm(1);
       expect(
-        find.text(l10n.homeWorkDeleteConfirmTitle('AUDIT_0_animation.gif')),
+        find.descendant(
+          of: confirmation,
+          matching: find.byWidgetPredicate(
+            (widget) =>
+                widget is Text &&
+                (widget.data == message || widget.semanticsLabel == message),
+          ),
+        ),
         findsOneWidget,
         reason: 'The same position must not open the new-folder FAB',
+      );
+      final target = find.descendant(
+        of: confirmation,
+        matching: find.byKey(const ValueKey('trash-dialog-target-0')),
+      );
+      final targetLabel = tester.widget<Text>(target);
+      expect(
+        targetLabel.semanticsLabel ?? targetLabel.data,
+        'AUDIT_0_animation.gif',
       );
       expect(find.text(l10n.projectListNewFolderTitle), findsNothing);
       await tester.tap(find.text(l10n.commonCancel));

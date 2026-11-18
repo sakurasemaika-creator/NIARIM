@@ -16,6 +16,39 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+  test('fisheye interpolation follows the selected rotated circular guide', () {
+    final ruler = RulerEngine()
+      ..setActiveRuler(
+        const Ruler(
+          type: RulerType.fisheyePerspective,
+          position: Offset(120, 100),
+          rotation: .31,
+          settings: RulerSettings(radiusX: 100),
+        ),
+      )
+      ..beginStroke();
+    Offset toWorld(double x, double y) =>
+        const Offset(120, 100) +
+        Offset(
+          x * math.cos(.31) - y * math.sin(.31),
+          x * math.sin(.31) + y * math.cos(.31),
+        );
+    final start = ruler.snapToRuler(toWorld(0, 60));
+    final end = ruler.snapToRuler(toWorld(100, 0));
+    final points = ruler.arcBetween(start, end);
+
+    expect(points.length, greaterThan(5));
+    final center = toWorld(0, -160 / 3);
+    final radius = (start - center).distance;
+    var previous = start;
+    for (final point in [...points, end]) {
+      expect((point - center).distance, closeTo(radius, 1e-8));
+      final chordMidpoint = Offset.lerp(previous, point, .5)!;
+      expect(radius - (chordMidpoint - center).distance, lessThan(.2));
+      previous = point;
+    }
+  });
+
   test('sparse stabilized ellipse strokes stay on the rotated guide', () async {
     final manager = TileManager(canvasWidth: 256, canvasHeight: 256);
     addTearDown(manager.dispose);

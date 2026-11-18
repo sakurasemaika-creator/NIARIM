@@ -1001,7 +1001,7 @@ class _WorkspaceSaveDialogState extends State<_WorkspaceSaveDialog> {
     final l10n = AppLocalizations.of(context)!;
     final selected = await showModalBottomSheet<WorkspacePreset>(
       context: context,
-      builder: (ctx) => SafeArea(
+      builder: (ctx) => ScrollableSheetBody(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [

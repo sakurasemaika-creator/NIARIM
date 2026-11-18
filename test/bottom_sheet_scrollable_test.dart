@@ -25,6 +25,8 @@ import 'package:niarim/screens/home/widgets/work_folder_move_sheet.dart';
 /// 展開しているシートは必ずスクロール可能にすること
 /// （`lib/widgets/scrollable_sheet_body.dart`の`ScrollableSheetBody`で包む）。
 void main() {
+  final modalCall = RegExp(r'\bshowModalBottomSheet(?:<[^\n;]*?>)?\s*\(');
+
   test('可変長の一覧を出すボトムシートは必ずスクロールできる', () {
     final offenders = <String>[];
 
@@ -34,20 +36,10 @@ void main() {
             .whereType<File>()
             .where((f) => f.path.endsWith('.dart'))) {
       final source = file.readAsStringSync();
-      var searchFrom = 0;
-      while (true) {
-        final start = source.indexOf('showModalBottomSheet', searchFrom);
-        if (start < 0) break;
-        searchFrom = start + 1;
-
-        // builderの中身を、次の`showModalBottomSheet`か十分な文字数までで
-        // 切り出す（厳密な構文解析はしない。行数で切ると長いシートを
-        // 取りこぼすため、次の出現位置までを見る）。
-        final next = source.indexOf('showModalBottomSheet', start + 1);
-        final end = next < 0
-            ? source.length
-            : (next < start + 4000 ? next : start + 4000);
-        final body = source.substring(start, end);
+      for (final match in modalCall.allMatches(source)) {
+        final start = match.start;
+        final body = _balancedCall(source, match.end - 1);
+        if (body == null) continue;
 
         // 件数が可変＝コレクションをforで展開している（分解する形も含む）か、
         // `...list.map(`で並べている、かどうか（後者を見ていなかったため、
@@ -101,14 +93,9 @@ void main() {
             .whereType<File>()
             .where((f) => f.path.endsWith('.dart'))) {
       final source = file.readAsStringSync();
-      var searchFrom = 0;
-      while (true) {
-        final start = source.indexOf('showModalBottomSheet', searchFrom);
-        if (start < 0) break;
-        searchFrom = start + 1;
-        final open = source.indexOf('(', start);
-        if (open < 0) break;
-        final call = _balancedCall(source, open);
+      for (final match in modalCall.allMatches(source)) {
+        final start = match.start;
+        final call = _balancedCall(source, match.end - 1);
         if (call == null) continue;
         final rows = rowPattern.allMatches(call).length;
         if (rows < 4) continue;

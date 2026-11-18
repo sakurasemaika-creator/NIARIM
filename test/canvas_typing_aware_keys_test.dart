@@ -15,6 +15,7 @@ import 'package:niarim/screens/canvas/widgets/canvas_area.dart';
 import 'package:niarim/screens/canvas/widgets/color_picker_panel.dart';
 import 'package:niarim/screens/home/home_screen.dart';
 import 'package:niarim/services/brush_service.dart';
+import 'package:niarim/services/palette_service.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:niarim/services/quick_tool_service.dart';
 import 'package:provider/provider.dart';
@@ -143,6 +144,98 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets(
+    'Ctrl+Z during a stroke preserves both strokes and their history',
+    (tester) async {
+      tester.view.physicalSize = const Size(1280, 800);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      final providers = (await tester.runAsync(buildAppProviders))!;
+      await tester.pumpWidget(
+        MultiProvider(providers: providers, child: const NiarimApp()),
+      );
+      await settleIo(tester, 4);
+      final home = tester.element(find.byType(HomeScreen));
+      final projects = home.read<ProjectService>();
+      final history = home.read<app_undo.UndoManager>();
+      final project = (await tester.runAsync(
+        () => projects.createProject(
+          name: 'Undo while drawing',
+          fps: 1,
+          durationSeconds: 1,
+          backgroundColor: 0xFFFFFFFF,
+          exportWidth: 640,
+          exportHeight: 360,
+        ),
+      ))!;
+      appRouter.push('/canvas/${project.id}');
+      await settleIo(tester, 6);
+
+      final viewport = tester.getRect(find.byType(CanvasArea));
+      final drawing = canvasDrawingRectFor(
+        viewport.size,
+        project,
+      ).shift(viewport.topLeft);
+      Offset position(double x, double y) =>
+          drawing.topLeft + Offset(x * drawing.width, y * drawing.height);
+      final scene = projects.scenesOf(project.id).single.id;
+      final layer = projects.layersOf(project.id, scene, 0).first.id;
+      final tiles = projects.tileManagerOf(project.id);
+      final key = projects.tileKeyFor(project.id, scene, 0, layer);
+
+      bool hasInk(double y) {
+        final py = (tiles.canvasHeight * y).round();
+        for (var dy = -5; dy <= 5; dy++) {
+          for (
+            var x = tiles.canvasWidth ~/ 3;
+            x < tiles.canvasWidth * .52;
+            x++
+          ) {
+            if (tiles.getPixelColorAt(key, x, py + dy) != null) return true;
+          }
+        }
+        return false;
+      }
+
+      Future<TestGesture> startStroke(double y) async {
+        final stroke = await tester.startGesture(
+          position(.32, y),
+          kind: PointerDeviceKind.mouse,
+        );
+        await stroke.moveTo(position(.5, y));
+        await tester.pump();
+        return stroke;
+      }
+
+      final first = await startStroke(.35);
+      await first.up();
+      await settleIo(tester, 2);
+      final baseline = history.undoCount;
+      expect(baseline, greaterThan(0));
+      expect(hasInk(.35), isTrue);
+      final second = await startStroke(.65);
+      expect(tiles.isRecordingUndo, isTrue);
+      await pressCtrlZ(tester);
+      expect(history.undoCount, baseline);
+      expect(hasInk(.35), isTrue);
+      await second.moveTo(position(.68, .65));
+      await second.up();
+      await settleIo(tester, 2);
+      expect(history.undoCount, baseline + 1);
+      expect(hasInk(.65), isTrue);
+      await pressCtrlZ(tester);
+      expect(hasInk(.35), isTrue);
+      expect(hasInk(.65), isFalse);
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.controlLeft);
+      await tester.sendKeyEvent(LogicalKeyboardKey.keyY);
+      await tester.sendKeyUpEvent(LogicalKeyboardKey.controlLeft);
+      await settleIo(tester, 2);
+      expect(hasInk(.35), isTrue);
+      expect(hasInk(.65), isTrue);
+    },
+  );
+
   testWidgets('Ctrl+Z while typing in the colour code is not canvas undo', (
     tester,
   ) async {
@@ -218,8 +311,39 @@ void main() {
     await tester.testTextInput.receiveAction(TextInputAction.done);
     await settleIo(tester, 2);
     expect(FocusManager.instance.primaryFocus?.debugLabel, 'Canvas');
+    final savedHex = tester.widget<TextField>(field).controller!.text;
+
+    await tester.tap(field);
+    await tester.enterText(field, 'G1Q');
+    expect(tester.widget<TextField>(field).controller!.text, '1');
+    await tester.testTextInput.receiveAction(TextInputAction.done);
+    await settleIo(tester, 2);
+    expect(tester.widget<TextField>(field).controller!.text, savedHex);
     await pressCtrlZ(tester);
     expect(undo.canUndo, isFalse, reason: 'after Enter, Ctrl+Z is canvas undo');
+    final context = tester.element(find.byType(ColorPickerPanel));
+    final l10n = AppLocalizations.of(context)!;
+    final palettes = context.read<PaletteService>();
+    final oldCount = palettes.palettes.length;
+    final newPalette = find.byTooltip(l10n.colorPickerNewPaletteTooltip);
+    await tester.ensureVisible(newPalette);
+    await tester.tap(newPalette);
+    await tester.pumpAndSettle();
+    final paletteName = find.descendant(
+      of: find.byType(AlertDialog),
+      matching: find.byType(TextField),
+    );
+    await tester.enterText(paletteName, '   ');
+    await tester.testTextInput.receiveAction(TextInputAction.done);
+    await tester.pumpAndSettle();
+    expect(palettes.palettes.length, oldCount);
+    expect(paletteName, findsOneWidget);
+    await tester.enterText(paletteName, '  Audit palette  ');
+    await tester.testTextInput.receiveAction(TextInputAction.done);
+    await tester.pumpAndSettle();
+    expect(paletteName, findsNothing);
+    expect(palettes.palettes.length, oldCount + 1);
+    expect(palettes.activePalette?.name, 'Audit palette');
     expect(tester.takeException(), isNull);
   });
 }

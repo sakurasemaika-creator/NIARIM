@@ -10,9 +10,12 @@ import 'package:niarim/models/project.dart';
 import 'package:niarim/models/save_node.dart';
 import 'package:niarim/screens/save_tree/save_management_screen.dart';
 import 'package:niarim/screens/save_tree/save_tree_screen.dart';
+import 'package:niarim/screens/settings/performance_settings_screen.dart';
+import 'package:niarim/services/performance_service.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:niarim/services/save_tree_service.dart';
 import 'package:niarim/services/theme_service.dart';
+import 'package:niarim/widgets/labeled_slider.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -200,6 +203,52 @@ void main() {
       if (n.slotIndex >= 0 && n.slotIndex < slotMax)
         s.slotDisplayMemoOf(id, n.slotIndex) ?? '',
   ]..sort();
+
+  testWidgets('cancelling a shorter slot limit restores the settings slider', (
+    tester,
+  ) async {
+    await open(tester, tree: false);
+    final project = await newProject(tester, 'カット1');
+    await save(tester, project, 'A', slot: 0);
+    await save(tester, project, 'B', slot: 4);
+
+    final performance = navKey.currentContext!.read<PerformanceService>();
+    performance.setQualityLevel(QualityLevel.custom);
+    performance.setCustomSaveMode(SaveMode.slot);
+    performance.setCustomSlotCount(5);
+    navKey.currentState!.push(
+      MaterialPageRoute<void>(
+        builder: (_) => const PerformanceSettingsScreen(),
+      ),
+    );
+    await settleIo(tester);
+    final context = tester.element(find.byType(PerformanceSettingsScreen));
+    final l10n = AppLocalizations.of(context)!;
+    final slider = find.byWidgetPredicate(
+      (widget) =>
+          widget is LabeledSlider &&
+          widget.label == l10n.perfSettingsSlotCountLabel,
+    );
+    await tester.scrollUntilVisible(
+      slider,
+      160,
+      scrollable: find.byType(Scrollable).first,
+    );
+    tester.widget<LabeledSlider>(slider).onChanged!(1);
+    tester.widget<LabeledSlider>(slider).onChangeEnd!(1);
+    await settleIo(tester);
+    expect(find.text('保存データ変更（カット1）'), findsOneWidget);
+    await tester.tap(find.text(l10n.commonCancel));
+    await settleIo(tester);
+
+    expect(tester.widget<LabeledSlider>(slider).value, 5);
+    expect(performance.slotCount, 5);
+    expect(saves.slotMax, 5);
+    expect(saves.getNodes(project.id).map((node) => node.slotIndex), [0, 4]);
+    expect(saves.getArchivedNodes(project.id), isEmpty);
+    final prefs = await SharedPreferences.getInstance();
+    expect(prefs.getInt('custom_slot_count'), 5);
+  });
 
   testWidgets(
     'cancelling the second project leaves all saves and mode intact',

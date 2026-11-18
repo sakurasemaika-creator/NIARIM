@@ -215,12 +215,20 @@ class _ProjectTrashDialogState extends State<ProjectTrashDialog> {
     final l10n = AppLocalizations.of(context)!;
     final scheme = Theme.of(context).colorScheme;
     final names = widget.pendingItemNames?.call() ?? widget.itemNames;
+    final insets = dialogInsetPadding(context);
+    final shortScreen = MediaQuery.sizeOf(context).height < 280;
+    final compactInsets = shortScreen
+        ? (insets ??
+                  Theme.of(context).dialogTheme.insetPadding ??
+                  const EdgeInsets.symmetric(horizontal: 40))
+              .copyWith(top: 8, bottom: 8)
+        : insets;
     return PopScope(
       canPop: !_working,
       child: AlertDialog(
         scrollable: true,
         // 狭い画面では左右の空きを縮め、題・ボタンの語を途中で折らない。
-        insetPadding: dialogInsetPadding(context),
+        insetPadding: compactInsets,
         // 題と本文は、韓国語の語・数と単位を1行に入れば途中で折らない
         // （本文が「휴지통 / 으로」、題が「삭제하시겠습니 / 까?」と切れた）。
         title: messageText(widget.title),

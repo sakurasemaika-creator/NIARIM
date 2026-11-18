@@ -113,14 +113,11 @@ void main() {
       kind: PointerDeviceKind.touch,
     );
     await tester.pump();
-    expect(tm.recordingTouchedTiles, isNotNull, reason: 'ワンド選択後に選択変形へ入れること');
-    await _waitAlpha(tester, tm, key, 30, 33, 0);
-    await tester.runAsync(
-      () => Future<void>.delayed(const Duration(milliseconds: 150)),
-    );
-    await tester.pump();
+    expect(_read(tm, key, 96, 80), orderedEquals(before));
     await move.moveTo(at(30, 55));
     await tester.pump(const Duration(milliseconds: 40));
+    expect(undo.undoCount, 0);
+    expect(_read(tm, key, 96, 80), orderedEquals(before));
     await move.up();
     await tester.pump();
     await _waitUntil(tester, () => undo.undoCount == 1);
@@ -198,20 +195,6 @@ Future<void> _waitUntil(WidgetTester t, bool Function() f) async {
     await t.pump();
   }
   expect(f(), isTrue);
-}
-
-Future<void> _waitAlpha(
-  WidgetTester t,
-  dynamic tm,
-  String key,
-  int x,
-  int y,
-  int a,
-) async {
-  await _waitUntil(t, () {
-    final tile = tm.getTile(key, 0, 0) as Uint8List?;
-    return (tile == null ? 0 : tile[(y * 256 + x) * 4 + 3]) == a;
-  });
 }
 
 Uint8List _read(dynamic tm, String key, int w, int h) {

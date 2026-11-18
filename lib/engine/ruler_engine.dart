@@ -147,20 +147,45 @@ class RulerEngine {
   /// The maximum radius bounds how far each chord can leave the guide.
   List<Offset> arcBetween(Offset from, Offset to) {
     final ruler = _activeRuler;
-    if (ruler == null ||
-        !ruler.snapEnabled ||
-        (ruler.type != RulerType.circle && ruler.type != RulerType.ellipse)) {
+    if (ruler == null || !ruler.snapEnabled) return const [];
+    if (ruler.type == RulerType.fisheyePerspective) {
+      final curve = _strokeCurve;
+      final localCenter = curve?.center;
+      final radius = curve?.radius;
+      if (localCenter == null || radius == null) return const [];
+      final c = cos(ruler.rotation), s = sin(ruler.rotation);
+      final center =
+          ruler.position +
+          Offset(
+            localCenter.dx * c - localCenter.dy * s,
+            localCenter.dx * s + localCenter.dy * c,
+          );
+      return _arcOnEllipse(from, to, center, radius, radius, 1, 0);
+    }
+    if (ruler.type != RulerType.circle && ruler.type != RulerType.ellipse) {
       return const [];
     }
     final rx = ruler.settings.radiusX ?? 100;
     final ry = ruler.type == RulerType.circle
         ? rx
         : ruler.settings.radiusY ?? 60;
-    if (rx <= 0 || ry <= 0 || !rx.isFinite || !ry.isFinite) return const [];
     final c = ruler.type == RulerType.circle ? 1.0 : cos(ruler.rotation);
     final s = ruler.type == RulerType.circle ? 0.0 : sin(ruler.rotation);
+    return _arcOnEllipse(from, to, ruler.position, rx, ry, c, s);
+  }
+
+  List<Offset> _arcOnEllipse(
+    Offset from,
+    Offset to,
+    Offset center,
+    double rx,
+    double ry,
+    double c,
+    double s,
+  ) {
+    if (rx <= 0 || ry <= 0 || !rx.isFinite || !ry.isFinite) return const [];
     double angle(Offset point) {
-      final d = point - ruler.position;
+      final d = point - center;
       return atan2((-d.dx * s + d.dy * c) / ry, (d.dx * c + d.dy * s) / rx);
     }
 
@@ -171,7 +196,7 @@ class RulerEngine {
     return [
       for (var index = 1; index < segments; index++)
         _fromEllipseAngle(
-          ruler.position,
+          center,
           rx,
           ry,
           c,
