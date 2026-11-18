@@ -131,10 +131,10 @@ void main() {
         expect(restored.outlineWidth, 1);
         expect(restored.foldTriggerAngle, 60);
         expect(restored.foldDepartureAngle, -3);
-        expect(restored.foldCurveStartRatio, .75);
-        expect(restored.foldLengthRatio, 1);
-        expect(restored.foldAngleRatio, .60);
-        expect(restored.foldEndTaperRatio, .10);
+        expect(restored.foldCurveStartRatio, .60);
+        expect(restored.foldLengthRatio, .90);
+        expect(restored.foldAngleRatio, .70);
+        expect(restored.foldEndTaperRatio, .15);
       }
     },
   );
