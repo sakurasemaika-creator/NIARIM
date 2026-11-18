@@ -3772,7 +3772,7 @@
   "brushFoldLengthHelp": "折り畳みが伸びる長さを調整します。ブラシサイズに連動します。",
   "brushFoldAngleHelp": "ストロークのカーブに対する折り畳みの強さを調整します。50%でストロークのカーブに自然に連動します。",
   "brushFoldDepartureAngle": "折り返し線の出る角度",
-  "brushFoldDepartureAngleHelp": "0°は縁取りの向きに沿い、＋は内側、−は外側に傾きます。",
+  "brushFoldDepartureAngleHelp": "0°は縁取りの向きに沿い、+は内側、−は外側に傾きます。",
   "brushFoldCurveStartHelp": "折り返し線のどこから曲がるかを調整します。0%で始点から曲がり、100%で直線になります。",
   "filterAutoLineartAddPointTooltip": "制御点追加",
   "filterAutoLineartDeletePointTooltip": "制御点削除",

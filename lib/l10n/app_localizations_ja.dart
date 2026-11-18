@@ -7669,7 +7669,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get brushFoldDepartureAngle => '折り返し線の出る角度';
 
   @override
-  String get brushFoldDepartureAngleHelp => '0°は縁取りの向きに沿い、＋は内側、−は外側に傾きます。';
+  String get brushFoldDepartureAngleHelp => '0°は縁取りの向きに沿い、+は内側、−は外側に傾きます。';
 
   @override
   String get brushFoldCurveStartHelp =>

@@ -13920,7 +13920,7 @@ abstract class AppLocalizations {
   /// No description provided for @brushFoldDepartureAngleHelp.
   ///
   /// In ja, this message translates to:
-  /// **'0°は縁取りの向きに沿い、＋は内側、−は外側に傾きます。'**
+  /// **'0°は縁取りの向きに沿い、+は内側、−は外側に傾きます。'**
   String get brushFoldDepartureAngleHelp;
 
   /// No description provided for @brushFoldCurveStartHelp.
