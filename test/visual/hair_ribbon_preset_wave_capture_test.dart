@@ -239,6 +239,35 @@ void main() {
     );
   });
 
+  test('the rectangular ribbon tip antialiases the curve boundary', () async {
+    final path = curvedSamples()['horizontal']!;
+    for (final folded in [false, true]) {
+      final brush = preset('Brush0036').copyWith(foldEnabled: folded);
+      final layer = await drawStroke(
+        brush,
+        path,
+        width: sampleWidth,
+        height: sampleHeight,
+      );
+      try {
+        final rgba = (await layer.toByteData(
+          format: ui.ImageByteFormat.rawRgba,
+        ))!;
+        var blendedEdges = 0;
+        for (var y = 0; y < sampleHeight; y++) {
+          // Inspect the curved body, clear of the two square end caps.
+          for (var x = 50; x < 310; x++) {
+            final alpha = rgba.getUint8((y * sampleWidth + x) * 4 + 3);
+            if (alpha > 16 && alpha < 239) blendedEdges++;
+          }
+        }
+        expect(blendedEdges, greaterThan(100), reason: 'folding: $folded');
+      } finally {
+        layer.dispose();
+      }
+    }
+  });
+
   test('crescent pixels are independent of the crease line sliders', () async {
     final brush = preset('Brush0040');
     final path = curvedSamples()['horizontal']!;

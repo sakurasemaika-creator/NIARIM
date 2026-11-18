@@ -1752,14 +1752,36 @@ class HairFoldRaster {
             );
       final cosA = math.cos(-angle), sinA = math.sin(-angle);
       final outerRadius = outerA + (outerB - outerA) * t;
-      final reachX =
+      final followsCrescent = crescent && blend > 0 && nibAngle == null;
+      final rectangle = followsCrescent || brush.pixelMode
+          ? null
+          : tipMask.opaqueRectangle;
+      var reachX =
           outerRadius *
           nibWidthAcross(const Offset(0, 1), nibRatio, angle) /
           tipProjection;
-      final reachY =
+      var reachY =
           outerRadius *
           nibWidthAcross(const Offset(1, 0), nibRatio, angle) /
           tipProjection;
+      final absCos = cosA.abs(), absSin = sinA.abs();
+      final pixelSpan = (absCos + absSin) * tipProjection;
+      if (rectangle != null) {
+        final halfWidth =
+            math.max(rectangle.left.abs(), rectangle.right.abs()) * nibRatio;
+        final halfHeight = math.max(
+          rectangle.top.abs(),
+          rectangle.bottom.abs(),
+        );
+        reachX =
+            outerRadius *
+            (halfWidth * absCos + halfHeight * absSin) /
+            tipProjection;
+        reachY =
+            outerRadius *
+            (halfWidth * absSin + halfHeight * absCos) /
+            tipProjection;
+      }
       final opacity = a.opacity + (b.opacity - a.opacity) * t;
       final left = (center.dx - reachX - 1).floor().clamp(
         0,
@@ -1785,7 +1807,7 @@ class HairFoldRaster {
           final distSquared = u * u + v * v;
           double coverage(double r) {
             if (r <= 0) return 0;
-            if (crescent && blend > 0 && nibAngle == null) {
+            if (followsCrescent) {
               final clip = (r + .5 - math.sqrt(distSquared)).clamp(0.0, 1.0);
               if (clip <= 0) return 0;
               return _textureAlpha(
@@ -1794,6 +1816,23 @@ class HairFoldRaster {
                     ((v / r + 1) / 2) * (brushTextureSize - 1),
                   ) *
                   clip;
+            }
+            if (rectangle != null) {
+              // Measure the pixel footprint against the four straight edges
+              // in canvas units. A 128-texel tip can be much smaller on the
+              // canvas, so filtering only in texel space still leaves steps.
+              return _intervalCoverage(
+                    u,
+                    rectangle.left * r,
+                    rectangle.right * r,
+                    pixelSpan / nibRatio,
+                  ) *
+                  _intervalCoverage(
+                    v,
+                    rectangle.top * r,
+                    rectangle.bottom * r,
+                    pixelSpan,
+                  );
             }
             if (distSquared > r * r) return 0;
             final tx = (((u / r + 1) / 2) * (brushTextureSize - 1))
@@ -2324,15 +2363,27 @@ class _FoldTipMask {
   final Offset scales;
   final double left;
   final double right;
-  const _FoldTipMask._(this.scales, this.left, this.right);
+  final Rect? opaqueRectangle;
+  const _FoldTipMask._(
+    this.scales,
+    this.left,
+    this.right,
+    this.opaqueRectangle,
+  );
 
   factory _FoldTipMask(Uint8List texture) {
     final columns = List<int>.filled(brushTextureSize, 0);
     final rows = List<int>.filled(brushTextureSize, 0);
-    var peak = 0;
+    var peak = 0, opaquePixels = 0;
+    var hasTranslucentPixels = false;
     for (var y = 0; y < brushTextureSize; y++) {
       for (var x = 0; x < brushTextureSize; x++) {
         final alpha = texture[(y * brushTextureSize + x) * 4 + 3];
+        if (alpha == 255) {
+          opaquePixels++;
+        } else if (alpha != 0) {
+          hasTranslucentPixels = true;
+        }
         columns[x] = math.max(columns[x], alpha);
         rows[y] = math.max(rows[y], alpha);
         peak = math.max(peak, alpha);
@@ -2345,12 +2396,31 @@ class _FoldTipMask {
     final bottom = rows.lastIndexWhere((alpha) => alpha >= core);
     final width = right - left + 1, height = bottom - top + 1;
     final longSide = math.max(width, height);
+    // Match the mask itself so the same imported tip renders like the preset.
+    final rectangle =
+        width != height &&
+            !hasTranslucentPixels &&
+            opaquePixels == width * height
+        ? Rect.fromLTRB(
+            left * 2 / brushTextureSize - 1,
+            top * 2 / brushTextureSize - 1,
+            (right + 1) * 2 / brushTextureSize - 1,
+            (bottom + 1) * 2 / brushTextureSize - 1,
+          )
+        : null;
     return _FoldTipMask._(
       Offset(width / longSide, height / longSide),
       right > left ? left.toDouble() : 0,
       right > left ? right.toDouble() : brushTextureSize - 1.0,
+      rectangle,
     );
   }
+}
+
+double _intervalCoverage(double at, double low, double high, double span) {
+  final half = span / 2;
+  final overlap = math.min(high, at + half) - math.max(low, at - half);
+  return (overlap / span).clamp(0.0, 1.0);
 }
 
 // Bilinear alpha avoids stair-stepping when a tip rotates through a curve.
