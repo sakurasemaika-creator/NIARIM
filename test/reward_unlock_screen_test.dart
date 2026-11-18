@@ -63,6 +63,8 @@ class _RewardApi extends CommunityApi {
 class _RewardAds extends AdvertisingService {
   _RewardAds({required super.premiumService});
 
+  bool available = false;
+
   @override
   bool get canOfferRewardedAds => true;
 
@@ -70,11 +72,11 @@ class _RewardAds extends AdvertisingService {
   Future<bool> showRewardedCoinAd({
     required String adUnitId,
     required String customData,
-  }) async => true;
+  }) async => available;
 }
 
 void main() {
-  testWidgets('accepts the next ad while earlier rewards are settling', (
+  testWidgets('shows unavailable ads and allows retries and consecutive ads', (
     tester,
   ) async {
     SharedPreferences.setMockInitialValues({});
@@ -95,7 +97,7 @@ void main() {
           ChangeNotifierProvider<AdvertisingService>.value(value: ads),
         ],
         child: const MaterialApp(
-          locale: Locale('en'),
+          locale: Locale('ja'),
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: RewardUnlockScreen(mode: RewardPageMode.earnCoins),
@@ -104,15 +106,23 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    final labels = lookupAppLocalizations(const Locale('en'));
+    final labels = lookupAppLocalizations(const Locale('ja'));
     final watch = find.byKey(const Key('rewardWatchAdButton'));
     await tester.tap(watch);
     await tester.pump();
     expect(api.starts, 1);
+    expect(find.text(labels.rewardUnlockRewardUnavailable), findsOneWidget);
+    expect(find.text(labels.coinAmount(0)), findsOneWidget);
     expect(tester.widget<FilledButton>(watch).onPressed, isNotNull);
+
+    ads.available = true;
     await tester.tap(watch);
     await tester.pump();
     expect(api.starts, 2);
+    expect(tester.widget<FilledButton>(watch).onPressed, isNotNull);
+    await tester.tap(watch);
+    await tester.pump();
+    expect(api.starts, 3);
     expect(find.text(labels.rewardUnlockRewardRefresh), findsOneWidget);
 
     for (final seconds in [1, 2, 4, 6]) {
