@@ -406,8 +406,7 @@ class CommunityApi {
   Future<Map<String, dynamic>> myCreatorMissions({String? workId}) => _client
       .getJson('/me/missions', authenticated: true, query: {'workId': ?workId});
 
-  /// The server verifies the achievement and either starts the mandatory
-  /// hold period or completes an atomic, exactly-once mission reward.
+  /// The server verifies eligibility and credits a qualifying reward atomically.
   Future<Map<String, dynamic>> claimCreatorMission({
     required String missionId,
     String? workId,

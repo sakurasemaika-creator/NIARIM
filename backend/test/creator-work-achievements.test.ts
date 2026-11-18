@@ -37,6 +37,8 @@ describe("manual, per-work mission achievement list",()=>{
       if(command instanceof BatchGetCommand)return {Responses:{"test-table":[{
         pk:"USER#Nowner",sk:"MISSION_WORK#abcdefghijk",
         itemType:"CREATOR_WORK_MISSIONS_V1",claimedMask:2**5,
+        firstQualifiedAt:{"7":Math.floor(Date.now()/1000)},
+        pendingCoins:{"7":65},
       }]}};
       return {};
     });
@@ -49,7 +51,7 @@ describe("manual, per-work mission achievement list",()=>{
     expect(body.items[1]).toMatchObject({workTitle:"My animation",
       claimed:true,workId:"abcdefghijk",missionId:"work_bookmarks_10"});
     expect(body.items[10]).toMatchObject({
-      claimed:false,required:100,readyForClaim:true});
+      claimed:false,required:100,readyForClaim:true,coins:65});
     expect(body.items[11]).toMatchObject({
       claimed:false,required:0,workTitle:"Not yet",readyForClaim:true});
     expect(send.mock.calls.some(([c])=>c instanceof BatchGetCommand)).toBe(true);

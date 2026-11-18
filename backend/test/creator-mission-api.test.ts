@@ -162,22 +162,26 @@ describe("creator mission endpoints", () => {
       .toBe(false);
   });
 
-  it("first eligible follower claim enters hold and creates no coins", async () => {
+  it("first eligible follower claim credits coins and initializes claim state atomically", async () => {
     process.env.CREATOR_MISSION_CLAIMS_ENABLED = "true";
     process.env.CREATOR_MISSION_CLAIMS_REVIEW_APPROVED = "true";
     const resp = await claimCreatorMission(req({ missionId: "followers_10" }));
     expect(JSON.parse(resp.body ?? "{}")).toMatchObject({
-      claimed: false, pending: true, awardedCoins: 0,
+      claimed: true, awardedCoins: 10,
     });
     const writes = send.mock.calls.map(([c]) => c);
-    expect(writes.filter((c) => c instanceof UpdateCommand)).toHaveLength(1);
-    expect(writes.filter((c) => c instanceof TransactWriteCommand)).toHaveLength(0);
+    expect(writes.filter((c) => c instanceof UpdateCommand)).toHaveLength(0);
+    const tx = writes.find((c) => c instanceof TransactWriteCommand);
+    expect(tx?.input.TransactItems?.[0].Update?.ConditionExpression)
+      .toContain("attribute_not_exists(pk)");
+    expect(tx?.input.TransactItems?.[0].Update?.ExpressionAttributeValues)
+      .toMatchObject({ ":type": "CREATOR_MISSIONS_V1", ":newMask": 2 ** 10 });
   });
 
-  it("matured achievement credits the existing wallet atomically once", async () => {
+  it("a legacy offer can be collected immediately at its quoted amount", async () => {
     process.env.CREATOR_MISSION_CLAIMS_ENABLED = "true";
     process.env.CREATOR_MISSION_CLAIMS_REVIEW_APPROVED = "true";
-    const old = Math.floor(Date.now() / 1000) - 3 * 86400;
+    const old = Math.floor(Date.now() / 1000) - 60;
     send.mockImplementation(async (c: unknown) => {
       if (c instanceof GetCommand) return { Item: {
         itemType: "CREATOR_MISSIONS_V1",
@@ -255,12 +259,12 @@ describe("creator mission endpoints", () => {
       workId: "abcdefghijk",
     }));
     expect(JSON.parse(resp.body ?? "{}")).toMatchObject({
-      pending: true, offeredCoins: 15, awardedCoins: 0,
+      claimed: true, awardedCoins: 15,
       workId: "abcdefghijk",
     });
     const write = send.mock.calls.map(([c]) => c)
-      .find((c) => c instanceof UpdateCommand);
-    expect(write?.input.Key).toEqual({
+      .find((c) => c instanceof TransactWriteCommand);
+    expect(write?.input.TransactItems?.[0].Update?.Key).toEqual({
       pk: "USER#NverifiedByGoogle",
       sk: "MISSION_WORK#abcdefghijk",
     });
@@ -286,7 +290,7 @@ describe("creator mission endpoints", () => {
     expect(send.mock.calls.some(([c]) => c instanceof TransactWriteCommand)).toBe(false);
   });
 
-  it("clears a held offer when bookmark progress drops below the requirement", async () => {
+  it("rejects a claim when bookmark progress drops below the requirement", async () => {
     process.env.CREATOR_MISSION_CLAIMS_ENABLED = "true";
     process.env.CREATOR_MISSION_CLAIMS_REVIEW_APPROVED = "true";
     const first = Math.floor(Date.now() / 1000) - 49 * 3600;
@@ -313,13 +317,11 @@ describe("creator mission endpoints", () => {
       missionId: "work_bookmarks_10", workId: "abcdefghijk",
     }))).rejects.toMatchObject({code:"MISSION_NOT_YET_COMPLETE"});
     const writes = send.mock.calls.map(([command]) => command);
-    const clear = writes.find((x) => x instanceof UpdateCommand);
-    expect(clear?.input.ExpressionAttributeValues?.[":first"]).toEqual({});
-    expect(clear?.input.ExpressionAttributeValues?.[":coins"]).toEqual({});
+    expect(writes.some((x) => x instanceof UpdateCommand)).toBe(false);
     expect(writes.some((x) => x instanceof TransactWriteCommand)).toBe(false);
   });
 
-  it("pays matured per-work award only with the work's own bitmask", async () => {
+  it("pays the per-work award only with the work's own bitmask", async () => {
     process.env.CREATOR_MISSION_CLAIMS_ENABLED = "true";
     process.env.CREATOR_MISSION_CLAIMS_REVIEW_APPROVED = "true";
     const old = Math.floor(Date.now() / 1000) - 3 * 86400;
@@ -361,7 +363,6 @@ describe("creator mission endpoints", () => {
   it("claims a repost milestone independently from the same bookmark milestone", async () => {
     process.env.CREATOR_MISSION_CLAIMS_ENABLED = "true";
     process.env.CREATOR_MISSION_CLAIMS_REVIEW_APPROVED = "true";
-    const old = Math.floor(Date.now() / 1000) - 3 * 86400;
     const workId = "abcdefghijk";
     const repostKey = "MISSION_WORK#REPOST#" + workId;
     send.mockImplementation(async command => {
@@ -372,12 +373,6 @@ describe("creator mission endpoints", () => {
           itemType: "WORK", workId, authorId: "NverifiedByGoogle",
           isNiarimPublished: true, youtubePrivacyStatus: "public",
           gsi2pk: "BOOKMARK_RANKING", bookmarkCount: 0, repostCount: 10,
-        }};
-      }
-      if (key?.sk === repostKey) {
-        return { Item: {
-          itemType: "CREATOR_WORK_MISSIONS_V1", claimedMask: 0,
-          revision: 5, firstQualifiedAt: { "5": old }, pendingCoins: { "5": 15 },
         }};
       }
       return {};
@@ -450,12 +445,12 @@ describe("creator mission endpoints", () => {
         missionId:"work_bookmarks_100",workId,
       }));
       expect(JSON.parse(result.body ?? "{}")).toMatchObject({
-        pending:true,awardedCoins:0,workId,
+        claimed:true,awardedCoins:60,workId,
       });
     }
     const writes = send.mock.calls.map(([c])=>c)
-      .filter(c=>c instanceof UpdateCommand);
-    expect(writes.map(c=>c.input.Key?.sk)).toEqual([
+      .filter(c=>c instanceof TransactWriteCommand);
+    expect(writes.map(c=>c.input.TransactItems?.[0].Update?.Key?.sk)).toEqual([
       "MISSION_WORK#abcdefghijk","MISSION_WORK#lmnopqrstuv",
     ]);
   });

@@ -114,8 +114,8 @@ export const MAX_CREATOR_MISSION_COINS = ACCOUNT_MISSIONS.reduce(
  * scan, increases future NIARIM-native bookmark rank rewards. No read-heavy
  * COUNT across all works is needed during a claim.
  *
- * Untrusted/unknown population uses x1; a 48h held offer must freeze the
- * quoted amount rather than retroactively changing it.
+ * Untrusted/unknown population uses x1. Legacy quotes are honored when
+ * the qualifying claim is paid.
  */
 /** Server-owned published-work counts, with finer tiers even below 1,000.
  * Count 100 starts at x1; 1,000=x2; 10,000=x3; 100,000=x4;
@@ -248,9 +248,8 @@ export interface CreatorMissionState {
   claimedMask: number;
   verifiedEditSeconds: number;
   totalMissionCoins: number;
-  firstQualifiedAt?: Record<string, number>;
   claimedAt?: Record<string, number>;
-  /** Snapshot of server quoted coin amount during 48h verification window. */
+  /** Legacy server quotes for claims that were pending before immediate payout. */
   pendingCoins?: Record<string, number>;
 }
 
@@ -259,7 +258,6 @@ export interface CreatorWorkMissionState {
   itemType: "CREATOR_WORK_MISSIONS_V1";
   claimedMask: number;
   revision: number;
-  firstQualifiedAt?: Record<string, number>;
   claimedAt?: Record<string, number>;
   pendingCoins?: Record<string, number>;
 }

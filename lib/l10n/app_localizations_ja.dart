@@ -8611,8 +8611,7 @@ class AppLocalizationsJa extends AppLocalizations {
       '作品が条件を達成すると、上部に作品名入りの達成項目が追加されます。この見本の行は常に未達成のまま表示されます。';
 
   @override
-  String get creatorMissionDetailsPending =>
-      '達成を確認中です。48時間後にもう一度「受け取る」を押してください。';
+  String get creatorMissionDetailsPending => '受け取りを確認中です。';
 
   @override
   String get creatorMissionDetailsOffline => 'この報酬は現在公開準備中のため、受取操作は無効です。';
@@ -8627,7 +8626,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get creatorMissionClaimReceived => '報酬を受け取りました';
 
   @override
-  String get creatorMissionHoldStarted => '達成確認中です。48時間後、もう一度「受け取る」を押してください。';
+  String get creatorMissionHoldStarted => '受け取りを確認中です。';
 
   @override
   String get creatorMissionClaimFailed => '受取処理に失敗しました。再読み込みしてお試しください。';
@@ -9171,7 +9170,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get creatorMissionDetailsClaimRule =>
-      '【受取方法】対象の達成状況をサーバーで確認し、初回申請から48時間保留します。48時間後にもう一度「受け取る」を押すと、その時点の達成条件を再検証し、満たしていれば支給します。条件を失った場合は保留をやり直します。報酬は同一ミッションにつきアカウントまたは作品ごとに1回限りです。';
+      '【受取方法】「受け取る」を押すとサーバーが達成条件を確認し、満たしていればすぐに報酬を付与します。報酬は同じミッションにつきアカウントまたは作品ごとに1回限りです。';
 
   @override
   String creatorMissionRankDetailsRules(int percent, int rank) {
@@ -9180,7 +9179,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get creatorMissionRankDetailsHold =>
-      '【受取のタイミング】ランキングは随時更新されます。申請時に条件をサーバーが確認し、48時間の確認期間が始まります。48時間経過後、もう一度「受け取る」を押した時点で再確認し、条件を満たしていれば報酬を付与します。再確認時に順位などの条件を失っていれば確認期間はリセットされます。過去の一瞬のランクインは自動認定されません。同じ作品の同じ順位報酬は1回限りです。異なる作品では別々に達成できます。';
+      '【ランキング報酬】「受け取る」を押した時点の順位と達成条件をサーバーが確認し、満たしていればすぐに付与します。同じ作品の同じ順位報酬は1回限りです。';
 
   @override
   String get creatorMissionRankSelectWork => '作品を選択すると現在の達成状況を確認できます';
@@ -9211,7 +9210,7 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
-  String get creatorMissionRankQualified => 'すべての条件を達成。申請時と48時間後に再確認します';
+  String get creatorMissionRankQualified => 'すべての条件を達成。受取時に最新の状況を確認します';
 
   @override
   String creatorMissionRankPoolCurrent(int count) {

@@ -15486,7 +15486,7 @@ abstract class AppLocalizations {
   /// No description provided for @creatorMissionDetailsPending.
   ///
   /// In ja, this message translates to:
-  /// **'達成を確認中です。48時間後にもう一度「受け取る」を押してください。'**
+  /// **'受け取りを確認中です。'**
   String get creatorMissionDetailsPending;
 
   /// No description provided for @creatorMissionDetailsOffline.
@@ -15516,7 +15516,7 @@ abstract class AppLocalizations {
   /// No description provided for @creatorMissionHoldStarted.
   ///
   /// In ja, this message translates to:
-  /// **'達成確認中です。48時間後、もう一度「受け取る」を押してください。'**
+  /// **'受け取りを確認中です。'**
   String get creatorMissionHoldStarted;
 
   /// No description provided for @creatorMissionClaimFailed.
@@ -16437,10 +16437,10 @@ abstract class AppLocalizations {
   /// **'【制作時間の条件】端末の自己申告や端末に保存した制作時間は報酬対象ではありません。実際の制作を証明する仕組みが未完成のため、制作時間ミッションのオパール受取は現在できません。画面に表示される制作時間は参考値です。'**
   String get creatorMissionDetailsTimeRule;
 
-  /// ミッションの達成条件：受け取り方（48時間の確認）
+  /// ミッションの達成条件：受け取り時の達成条件の確認
   ///
   /// In ja, this message translates to:
-  /// **'【受取方法】対象の達成状況をサーバーで確認し、初回申請から48時間保留します。48時間後にもう一度「受け取る」を押すと、その時点の達成条件を再検証し、満たしていれば支給します。条件を失った場合は保留をやり直します。報酬は同一ミッションにつきアカウントまたは作品ごとに1回限りです。'**
+  /// **'【受取方法】「受け取る」を押すとサーバーが達成条件を確認し、満たしていればすぐに報酬を付与します。報酬は同じミッションにつきアカウントまたは作品ごとに1回限りです。'**
   String get creatorMissionDetailsClaimRule;
 
   /// ランキングのミッションの達成条件：順位の計算方法。percentは全体の上位の割合（％）、rankはミッションの順位
@@ -16449,10 +16449,10 @@ abstract class AppLocalizations {
   /// **'【順位の計算方法】NIARIMで公開中の自分の作品が対象です。全体の公開作品が100件以上で、作品のブックマーク数が指定件数以上、かつランキング{rank}位以内・全体の上位{percent}％以内を同時に満たす必要があります。上位割合による順位上限は「全体の公開作品数 × {percent}％」を小数点以下切り捨て（最低1位）で計算し、{rank}位と比較して厳しい方を適用します。公開作品数はサーバーの集計値を使用します。'**
   String creatorMissionRankDetailsRules(int percent, int rank);
 
-  /// ランキングのミッションの達成条件：受け取りのタイミング（48時間の確認）
+  /// ランキングのミッションの達成条件：受け取り時の順位確認
   ///
   /// In ja, this message translates to:
-  /// **'【受取のタイミング】ランキングは随時更新されます。申請時に条件をサーバーが確認し、48時間の確認期間が始まります。48時間経過後、もう一度「受け取る」を押した時点で再確認し、条件を満たしていれば報酬を付与します。再確認時に順位などの条件を失っていれば確認期間はリセットされます。過去の一瞬のランクインは自動認定されません。同じ作品の同じ順位報酬は1回限りです。異なる作品では別々に達成できます。'**
+  /// **'【ランキング報酬】「受け取る」を押した時点の順位と達成条件をサーバーが確認し、満たしていればすぐに付与します。同じ作品の同じ順位報酬は1回限りです。'**
   String get creatorMissionRankDetailsHold;
 
   /// ランキングのミッション：作品を選んでいないとき
@@ -16500,7 +16500,7 @@ abstract class AppLocalizations {
   /// ランキングのミッション：すべての条件を満たしたとき
   ///
   /// In ja, this message translates to:
-  /// **'すべての条件を達成。申請時と48時間後に再確認します'**
+  /// **'すべての条件を達成。受取時に最新の状況を確認します'**
   String get creatorMissionRankQualified;
 
   /// ランキングのミッションの達成条件：NIARIM全体の公開作品数

@@ -45,20 +45,19 @@ describe("manual grid coin claims require new reward approval",()=>{
     .rejects.toMatchObject({code:"MISSION_GRID_REWARDS_DISABLED"});
    expect(send).not.toHaveBeenCalled();
  });
- it("first tap starts a hold without crediting coins and stores a shard mask",async()=>{
+ it("first claim pays immediately while creating its shard",async()=>{
    enable();eligibleSend();
    const result=await claimWorkCountMission("Nowner",mission);
-   expect(JSON.parse(result.body??"{}")).toMatchObject({pending:true,awardedCoins:0});
-   const write=send.mock.calls.map(([x])=>x).find(x=>x instanceof UpdateCommand) as UpdateCommand;
-   expect(write.input.Key?.sk).toBe("MISSION_GRID#3");
-   expect(write.input.ExpressionAttributeValues?.[":coins"]).toMatchObject({
-     "0":mission.coins,
-   });
-   expect(send.mock.calls.some(([x])=>x instanceof TransactWriteCommand)).toBe(false);
+   expect(JSON.parse(result.body??"{}")).toMatchObject({claimed:true,awardedCoins:mission.coins});
+   const tx=send.mock.calls.map(([x])=>x).find(x=>x instanceof TransactWriteCommand);
+   expect(tx?.input.TransactItems?.[0].Update?.ConditionExpression)
+     .toContain("attribute_not_exists(pk)");
+   expect(tx?.input.TransactItems?.[0].Update?.ExpressionAttributeValues?.[":type"])
+     .toBe("CREATOR_GRID_V1");
  });
- it("after hold pays once and writes account shard, wallet and history together",async()=>{
+ it("pays legacy quotes immediately and writes shard, wallet and history together",async()=>{
    enable();
-   const old=Math.floor(Date.now()/1000)-49*3600;
+   const old=Math.floor(Date.now()/1000)-60;
    eligibleSend({itemType:"CREATOR_GRID_V1",revision:4,claimedMask:0,
      totalMissionCoins:0,firstQualifiedAt:{"0":old},
      pendingCoins:{"0":mission.coins}});
@@ -88,7 +87,7 @@ describe("manual grid coin claims require new reward approval",()=>{
    enable();eligibleSend();
    const result=await claimWorkCountMission("Nowner",mission);
    expect(JSON.parse(result.body??"{}")).toMatchObject({
-     pending:true,offeredCoins:mission.coins,awardedCoins:0,
+     claimed:true,awardedCoins:mission.coins,
    });
    const reads=send.mock.calls.map(([cmd])=>cmd)
      .filter(cmd=>cmd instanceof GetCommand) as GetCommand[];
@@ -111,7 +110,7 @@ describe("manual grid coin claims require new reward approval",()=>{
      c instanceof TransactWriteCommand)).toBe(false);
  });
  it("transaction conflict never awards partial wallet coins",async()=>{
-   enable();const old=Math.floor(Date.now()/1000)-49*3600;
+   enable();const old=Math.floor(Date.now()/1000)-60;
    eligibleSend({itemType:"CREATOR_GRID_V1",revision:4,claimedMask:0,
      totalMissionCoins:0,firstQualifiedAt:{"0":old},
      pendingCoins:{"0":mission.coins}});

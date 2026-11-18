@@ -16,7 +16,6 @@ import type { WorkItem } from "../../lib/types";
  * A single call reads <=25 public works and <=50 claim bitmask records.
  */
 const PAGE_SIZE = 25;
-const HOLD_SECONDS = 48 * 3600;
 const engagementMissions = PER_WORK_MISSIONS.filter(m =>
   m.kind === "workBookmarks" || m.kind === "workReposts",
 );
@@ -93,7 +92,6 @@ export async function getMyWorkMissionAchievements(event: APIGatewayProxyEventV2
       states.set(raw.sk, raw);
     }
   }
-  const nowSec = Math.floor(Date.now() / 1000);
   const items = qualifying.flatMap(work => engagementMissions
     .filter(m => (m.kind === "workReposts" ? work.repostCount ?? 0 : work.bookmarkCount) >= m.required)
     .map(m => {
@@ -102,17 +100,11 @@ export async function getMyWorkMissionAchievements(event: APIGatewayProxyEventV2
       ).sk);
       const mask = Number.isSafeInteger(state?.claimedMask) &&
         (state?.claimedMask as number) >= 0 ? state!.claimedMask as number : 0;
-      const since = state?.firstQualifiedAt;
-      const held = since && typeof since === "object" && !Array.isArray(since)
-        ? since as Record<string, unknown> : {};
       const coinQuotes = state?.pendingCoins && typeof state.pendingCoins === "object" &&
         !Array.isArray(state.pendingCoins)
           ? state.pendingCoins as Record<string, unknown> : {};
       const key = String(m.bit);
       const claimed = missionClaimed(mask, m.bit);
-      const pendingSince = typeof held[key] === "number" &&
-        Number.isSafeInteger(held[key]) && (held[key] as number) > 0
-          ? held[key] as number : null;
       const quoted = coinQuotes[key];
       return {
         missionId: m.id,
@@ -127,9 +119,7 @@ export async function getMyWorkMissionAchievements(event: APIGatewayProxyEventV2
           ? quoted : m.coins,
         claimed,
         claimedAt: (state?.claimedAt as Record<string, unknown> | undefined)?.[key] ?? null,
-        pendingSince,
-        readyForClaim: !claimed &&
-          (pendingSince === null || nowSec - pendingSince >= HOLD_SECONDS),
+        readyForClaim: !claimed,
       };
     }));
   const nextCursor = page.LastEvaluatedKey

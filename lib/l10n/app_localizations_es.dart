@@ -9169,7 +9169,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get creatorMissionDetailsPending =>
-      'Verificación en curso. Reclama de nuevo tras 48 horas.';
+      'Se está comprobando tu solicitud.';
 
   @override
   String get creatorMissionDetailsOffline =>
@@ -9185,8 +9185,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get creatorMissionClaimReceived => 'Recompensa recibida';
 
   @override
-  String get creatorMissionHoldStarted =>
-      'Verificación iniciada. Vuelve en 48 horas y reclama.';
+  String get creatorMissionHoldStarted => 'Se está comprobando tu solicitud.';
 
   @override
   String get creatorMissionClaimFailed =>
@@ -9853,7 +9852,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get creatorMissionDetailsClaimRule =>
-      'COBRO: El servidor comprueba las condiciones al solicitar y espera 48 horas. Vuelve a pulsar Reclamar después; se comprobarán las condiciones otra vez. Si dejan de cumplirse, se reinicia la espera. Cada recompensa se concede una vez por cuenta u obra.';
+      'COBRO: Al pulsar Reclamar, el servidor comprueba tu progreso y abona la recompensa al instante si cumples los requisitos. Cada misión se puede cobrar una vez por cuenta u obra.';
 
   @override
   String creatorMissionRankDetailsRules(int percent, int rank) {
@@ -9868,7 +9867,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get creatorMissionRankDetailsHold =>
-      'COBRO: La clasificación se actualiza continuamente. El servidor comprueba los requisitos al solicitar y vuelve a comprobarlos cuando pulsas Reclamar tras 48 horas. Si dejan de cumplirse, se reinicia la espera. No se acredita una aparición pasada breve. Cada obra puede cobrar una vez por puesto; las obras distintas se evalúan por separado.';
+      'RECOMPENSAS DE CLASIFICACIÓN: Al pulsar Reclamar, el servidor comprueba tu posición actual y los requisitos. Si los cumples, abona la recompensa al instante, una vez por puesto y obra.';
 
   @override
   String get creatorMissionRankSelectWork =>
@@ -9909,7 +9908,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get creatorMissionRankQualified =>
-      'Se cumplen todos los requisitos. Se vuelven a comprobar al solicitar y tras 48 horas';
+      'Se cumplen todos los requisitos. El servidor los comprueba al reclamar.';
 
   @override
   String creatorMissionRankPoolCurrent(int count) {

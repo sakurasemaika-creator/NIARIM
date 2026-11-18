@@ -1,5 +1,5 @@
 import {beforeEach,describe,expect,it,vi} from "vitest";
-import {BatchGetCommand,GetCommand,QueryCommand,TransactWriteCommand,UpdateCommand}
+import {BatchGetCommand,GetCommand,QueryCommand,TransactWriteCommand}
   from "@aws-sdk/lib-dynamodb";
 import type {APIGatewayProxyEventV2} from "aws-lambda";
 const {send}=vi.hoisted(()=>({send:vi.fn()}));
@@ -58,18 +58,6 @@ beforeEach(()=>{
       return {Items:rank?[work]:[]};
     if(cmd instanceof BatchGetCommand)
       return {Responses:{test:rank?[work]:[]}};
-    if(cmd instanceof UpdateCommand){
-      writes.push(cmd);
-      // Simulate the conditional state update on the first qualified rank.
-      const expression=cmd.input.ExpressionAttributeValues ?? {};
-      if(expression[":first"] && expression[":coins"]){
-        current={...current,
-          firstQualifiedAt:expression[":first"],
-          pendingCoins:expression[":coins"],
-          revision:current.revision+1};
-      }
-      return {};
-    }
     if(cmd instanceof TransactWriteCommand){
       writes.push(cmd);
       const values=cmd.input.TransactItems?.[0].Update?.ExpressionAttributeValues;
@@ -77,7 +65,6 @@ beforeEach(()=>{
       current={...current,
         claimedMask:values[":newMask"],
         totalMissionCoins:values[":total"],
-        firstQualifiedAt:values[":pending"],
         pendingCoins:values[":pendingCoins"],
         revision:current.revision+1};
       return {};
@@ -92,16 +79,15 @@ describe("live rankings are per-work, per-rank, and once-only",()=>{
       .rejects.toMatchObject({code:"RANKING_REWARD_REVIEW_PENDING"});
     expect(send).not.toHaveBeenCalled();
   });
-  it("first observation starts a 48h hold but never credits coins",async()=>{
+  it("pays the first claim from the verified live rank",async()=>{
     const result=JSON.parse((await claimCreatorMission(ev("bookmark_rank_1"))).body??"{}");
-    expect(result).toMatchObject({pending:true,claimed:false,
-      offeredCoins:205,awardedCoins:0});
-    expect(current.firstQualifiedAt["16"]).toBeGreaterThan(0);
-    expect(writes.filter(w=>w instanceof TransactWriteCommand)).toHaveLength(0);
+    expect(result).toMatchObject({claimed:true,awardedCoins:205});
+    expect(current.claimedMask).toBe(2**16);
+    expect(writes.filter(w=>w instanceof TransactWriteCommand)).toHaveLength(1);
   });
   it("after a fresh live rank check, credits same work/rank only once",async()=>{
     current=state({
-      revision:2,firstQualifiedAt:{"16":now()-3*86400},
+      revision:2,firstQualifiedAt:{"16":now()-60},
       pendingCoins:{"16":200},
     });
     const first=JSON.parse((await claimCreatorMission(ev("bookmark_rank_1"))).body??"{}");
@@ -120,9 +106,8 @@ describe("live rankings are per-work, per-rank, and once-only",()=>{
     expect(second).toMatchObject({claimed:true,awardedCoins:0});
     expect(writes.filter(w=>w instanceof TransactWriteCommand)).toHaveLength(1);
     const otherTier=JSON.parse((await claimCreatorMission(ev("bookmark_rank_3"))).body??"{}");
-    expect(otherTier).toMatchObject({pending:true,offeredCoins:130,awardedCoins:0});
-    expect(current.firstQualifiedAt["15"]).toBeGreaterThan(0);
-    expect(current.claimedMask).toBe(2**16);
+    expect(otherTier).toMatchObject({claimed:true,awardedCoins:130});
+    expect(current.claimedMask).toBe(2**16+2**15);
   });
   it("does not give top-ten rewards just because there are 99 works",async()=>{
     population=99;
@@ -131,15 +116,14 @@ describe("live rankings are per-work, per-rank, and once-only",()=>{
     expect(writes).toHaveLength(0);
     expect(send.mock.calls.some(([c])=>c instanceof QueryCommand)).toBe(false);
   });
-  it("if ranking changes before the held reward, the hold is invalidated",async()=>{
+  it("rejects the claim when the rank no longer qualifies",async()=>{
     rank=false;
     current=state({
-      firstQualifiedAt:{"16":now()-3*86400},
+      firstQualifiedAt:{"16":now()-60},
       pendingCoins:{"16":200},
     });
     await expect(claimCreatorMission(ev("bookmark_rank_1")))
       .rejects.toMatchObject({code:"MISSION_NOT_YET_COMPLETE"});
     expect(writes.filter(w=>w instanceof TransactWriteCommand)).toHaveLength(0);
-    expect(current.firstQualifiedAt["16"]).toBeUndefined();
   });
 });

@@ -4336,12 +4336,12 @@
   "creatorMissionDetailsPerWorkRule": "作品ごとに1回受け取れます。別の作品で同じ条件を達成すると、別途受け取れます。",
   "creatorMissionDetailsAccountRule": "この条件の報酬はアカウントにつき1回限りです。",
   "creatorMissionDetailsTemplateRule": "作品が条件を達成すると、上部に作品名入りの達成項目が追加されます。この見本の行は常に未達成のまま表示されます。",
-  "creatorMissionDetailsPending": "達成を確認中です。48時間後にもう一度「受け取る」を押してください。",
+  "creatorMissionDetailsPending": "受け取りを確認中です。",
   "creatorMissionDetailsOffline": "この報酬は現在公開準備中のため、受取操作は無効です。",
   "creatorMissionDrawerAttention": "未受取の達成ミッションがあります",
   "creatorMissionAchieved": "条件達成",
   "creatorMissionClaimReceived": "報酬を受け取りました",
-  "creatorMissionHoldStarted": "達成確認中です。48時間後、もう一度「受け取る」を押してください。",
+  "creatorMissionHoldStarted": "受け取りを確認中です。",
   "creatorMissionClaimFailed": "受取処理に失敗しました。再読み込みしてお試しください。",
   "creatorMissionWorkSection": "作品ごとの達成ミッション",
   "creatorMissionWorkWarning": "達成作品だけを表示します。同じ作品・同じミッションの報酬は1回限りです。",
@@ -4759,9 +4759,9 @@
   "@creatorMissionDetailsTimeRule": {
     "description": "ミッションの達成条件：制作時間の決まり"
   },
-  "creatorMissionDetailsClaimRule": "【受取方法】対象の達成状況をサーバーで確認し、初回申請から48時間保留します。48時間後にもう一度「受け取る」を押すと、その時点の達成条件を再検証し、満たしていれば支給します。条件を失った場合は保留をやり直します。報酬は同一ミッションにつきアカウントまたは作品ごとに1回限りです。",
+  "creatorMissionDetailsClaimRule": "【受取方法】「受け取る」を押すとサーバーが達成条件を確認し、満たしていればすぐに報酬を付与します。報酬は同じミッションにつきアカウントまたは作品ごとに1回限りです。",
   "@creatorMissionDetailsClaimRule": {
-    "description": "ミッションの達成条件：受け取り方（48時間の確認）"
+    "description": "ミッションの達成条件：受け取り時の達成条件の確認"
   },
   "creatorMissionRankDetailsRules": "【順位の計算方法】NIARIMで公開中の自分の作品が対象です。全体の公開作品が100件以上で、作品のブックマーク数が指定件数以上、かつランキング{rank}位以内・全体の上位{percent}％以内を同時に満たす必要があります。上位割合による順位上限は「全体の公開作品数 × {percent}％」を小数点以下切り捨て（最低1位）で計算し、{rank}位と比較して厳しい方を適用します。公開作品数はサーバーの集計値を使用します。",
   "@creatorMissionRankDetailsRules": {
@@ -4775,9 +4775,9 @@
       }
     }
   },
-  "creatorMissionRankDetailsHold": "【受取のタイミング】ランキングは随時更新されます。申請時に条件をサーバーが確認し、48時間の確認期間が始まります。48時間経過後、もう一度「受け取る」を押した時点で再確認し、条件を満たしていれば報酬を付与します。再確認時に順位などの条件を失っていれば確認期間はリセットされます。過去の一瞬のランクインは自動認定されません。同じ作品の同じ順位報酬は1回限りです。異なる作品では別々に達成できます。",
+  "creatorMissionRankDetailsHold": "【ランキング報酬】「受け取る」を押した時点の順位と達成条件をサーバーが確認し、満たしていればすぐに付与します。同じ作品の同じ順位報酬は1回限りです。",
   "@creatorMissionRankDetailsHold": {
-    "description": "ランキングのミッションの達成条件：受け取りのタイミング（48時間の確認）"
+    "description": "ランキングのミッションの達成条件：受け取り時の順位確認"
   },
   "creatorMissionRankSelectWork": "作品を選択すると現在の達成状況を確認できます",
   "@creatorMissionRankSelectWork": {
@@ -4831,7 +4831,7 @@
       }
     }
   },
-  "creatorMissionRankQualified": "すべての条件を達成。申請時と48時間後に再確認します",
+  "creatorMissionRankQualified": "すべての条件を達成。受取時に最新の状況を確認します",
   "@creatorMissionRankQualified": {
     "description": "ランキングのミッション：すべての条件を満たしたとき"
   },

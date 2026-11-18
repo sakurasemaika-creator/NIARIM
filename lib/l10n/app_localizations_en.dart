@@ -9031,8 +9031,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'When a work qualifies, a titled achievement appears above. This template always remains incomplete.';
 
   @override
-  String get creatorMissionDetailsPending =>
-      'Verification in progress. Tap Claim again after 48 hours.';
+  String get creatorMissionDetailsPending => 'Checking your claim.';
 
   @override
   String get creatorMissionDetailsOffline =>
@@ -9048,8 +9047,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get creatorMissionClaimReceived => 'Reward claimed';
 
   @override
-  String get creatorMissionHoldStarted =>
-      'Verification started. Return after 48 hours and tap Claim again.';
+  String get creatorMissionHoldStarted => 'Checking your claim.';
 
   @override
   String get creatorMissionClaimFailed =>
@@ -9735,7 +9733,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get creatorMissionDetailsClaimRule =>
-      'CLAIMING: The server verifies your milestone at the first request and starts a 48-hour hold. Press Claim again after 48 hours: the server rechecks the live conditions before paying. If conditions are lost, the hold restarts. Each mission pays once per account or once per work, depending on the mission.';
+      'CLAIMING: When you tap Claim, the server checks your progress and awards the reward immediately if you qualify. Each mission can be claimed once per account or work.';
 
   @override
   String creatorMissionRankDetailsRules(int percent, int rank) {
@@ -9744,7 +9742,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get creatorMissionRankDetailsHold =>
-      'CLAIM TIMING: Rankings update continuously. The server checks all conditions when you apply and starts a 48-hour hold. After 48 hours, press Claim again; the server rechecks current conditions before paying. If they are no longer met, the hold resets. A brief past appearance in the ranking is not automatically credited. Each work can receive each rank reward once; different works qualify separately.';
+      'RANKING REWARDS: The server checks your current rank and eligibility when you tap Claim. If you qualify, the reward is credited immediately, once per rank and work.';
 
   @override
   String get creatorMissionRankSelectWork =>
@@ -9785,7 +9783,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get creatorMissionRankQualified =>
-      'All conditions met. Rechecked at request and after 48 hours';
+      'All conditions met. The server checks current eligibility when you claim.';
 
   @override
   String creatorMissionRankPoolCurrent(int count) {

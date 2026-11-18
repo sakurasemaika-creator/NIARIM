@@ -17,7 +17,6 @@ import type { WorkItem } from "../../lib/types";
  * candidates are not proof of reward eligibility and never pay coins here.
  */
 const PAGE_SIZE=25,MAX_PAGES=20;
-const HOLD_SECONDS=48*3600;
 export async function getMyWorkCountMissionGrid(event: APIGatewayProxyEventV2) {
   const auth = await authenticate(
     event.headers["authorization"] ?? event.headers["Authorization"],
@@ -67,25 +66,21 @@ export async function getMyWorkCountMissionGrid(event: APIGatewayProxyEventV2) {
       continue;
     shards.set(workGoal,raw);
   }
-  const now=Math.floor(Date.now()/1000);
   const missions=WORK_COUNT_MISSIONS.map(m=>{
     const count=totals.get(m.eachWorkBookmarks)??0;
     const record=shards.get(m.required);
     const mask=Number.isSafeInteger(record?.claimedMask) &&
       (record!.claimedMask as number)>=0 ? record!.claimedMask as number:0;
-    const dates=record?.firstQualifiedAt;
-    const pending=dates && typeof dates==="object" && !Array.isArray(dates)
-      ?(dates as Record<string,unknown>)[String(m.bit)]:null;
-    const pendingSince=typeof pending==="number" &&
-      Number.isSafeInteger(pending)&&pending>0?pending:null;
+    const pendingCoins=record?.pendingCoins;
+    const quoted=pendingCoins && typeof pendingCoins==="object" && !Array.isArray(pendingCoins)
+      ? (pendingCoins as Record<string,unknown>)[String(m.bit)] : undefined;
     const claimed=missionClaimed(mask,m.bit);
     const eligible=count>=m.required?true:exhausted?false:null;
-    const readyForClaim=eligible===true&&!claimed&&
-      (pendingSince===null||now-pendingSince>=HOLD_SECONDS);
     return {
       ...m,claimed,progress:count,
+      coins:typeof quoted==="number" && Number.isSafeInteger(quoted) && quoted>0 ? quoted : m.coins,
       eligible,progressAuthoritative:false,
-      pendingSince,readyForClaim,
+      readyForClaim:eligible===true&&!claimed,
       // Payout approval is independent from display-only eligibility.
       rewardEnabled:gridClaimsEnabled(),
     };

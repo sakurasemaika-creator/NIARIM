@@ -8507,7 +8507,7 @@ class AppLocalizationsZh extends AppLocalizations {
       '作品达标后会在上方出现包含作品名称的任务。此模板始终显示为未达成。';
 
   @override
-  String get creatorMissionDetailsPending => '正在验证。48小时后请再次点击领取。';
+  String get creatorMissionDetailsPending => '正在确认领取。';
 
   @override
   String get creatorMissionDetailsOffline => '奖励尚未开放，暂时无法领取。';
@@ -8522,7 +8522,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get creatorMissionClaimReceived => '已领取奖励';
 
   @override
-  String get creatorMissionHoldStarted => '正在验证。48小时后再次点击领取。';
+  String get creatorMissionHoldStarted => '正在确认领取。';
 
   @override
   String get creatorMissionClaimFailed => '领取失败。请刷新后重试。';
@@ -9060,7 +9060,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get creatorMissionDetailsClaimRule =>
-      '【领取方式】首次申请时服务器验证条件并开始48小时等待。48小时后需再次点击领取并重新验证；条件未满足时重新等待。同一任务每个账号或每件作品只能领取一次。';
+      '【领取方式】点击领取时，服务器会验证达成条件。符合条件时立即发放奖励。每项任务按账号或作品仅可领取一次。';
 
   @override
   String creatorMissionRankDetailsRules(int percent, int rank) {
@@ -9069,7 +9069,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get creatorMissionRankDetailsHold =>
-      '【领取时间】排名随时变化。申请时服务器检查条件并开始48小时等待；48小时后需再次点击领取，服务器重新检查当前条件。若条件不再满足，等待期重新开始。过去短暂上榜不自动算作达成。同一作品同一名次奖励只能领取一次，不同作品分别计算。';
+      '【排名奖励】点击领取时，服务器会验证当前排名和达成条件。符合条件时立即发放，同一作品的同一排名奖励仅可领取一次。';
 
   @override
   String get creatorMissionRankSelectWork => '选择作品后即可查看当前的达成情况';
@@ -9099,7 +9099,7 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get creatorMissionRankQualified => '已满足全部条件。将在申请时和48小时后再次确认';
+  String get creatorMissionRankQualified => '已满足全部条件。领取时将验证最新状态。';
 
   @override
   String creatorMissionRankPoolCurrent(int count) {
@@ -18676,7 +18676,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
       '作品達標後會在上方出現包含作品名稱的任務。此範本始終顯示為未達成。';
 
   @override
-  String get creatorMissionDetailsPending => '正在驗證。48小時後請再次點擊領取。';
+  String get creatorMissionDetailsPending => '正在確認領取。';
 
   @override
   String get creatorMissionDetailsOffline => '獎勵尚未開放，暫時無法領取。';
@@ -18691,7 +18691,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get creatorMissionClaimReceived => '獎勵已領取';
 
   @override
-  String get creatorMissionHoldStarted => '正在驗證。48小時後再按領取。';
+  String get creatorMissionHoldStarted => '正在確認領取。';
 
   @override
   String get creatorMissionClaimFailed => '領取失敗，請重新整理後再試。';
@@ -19229,7 +19229,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get creatorMissionDetailsClaimRule =>
-      '【領取方式】首次申請時伺服器驗證條件並開始48小時等待。48小時後須再次點擊領取並重新驗證；條件未滿足時重新等待。同一任務每個帳號或每件作品只能領取一次。';
+      '【領取方式】點擊領取時，伺服器會驗證達成條件。符合條件時立即發放獎勵。每項任務按帳號或作品僅可領取一次。';
 
   @override
   String creatorMissionRankDetailsRules(int percent, int rank) {
@@ -19238,7 +19238,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get creatorMissionRankDetailsHold =>
-      '【領取時間】排名隨時變化。申請時伺服器檢查條件並開始48小時等待；48小時後需再次點擊領取，伺服器重新檢查當前條件。若條件不再滿足，等待期重新開始。過去短暫上榜不自動算作達成。同一作品同一名次獎勵只能領取一次，不同作品分別計算。';
+      '【排名獎勵】點擊領取時，伺服器會驗證目前排名和達成條件。符合條件時立即發放，同一作品的同一排名獎勵僅可領取一次。';
 
   @override
   String get creatorMissionRankSelectWork => '選擇作品後即可查看目前的達成情況';
@@ -19268,7 +19268,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   }
 
   @override
-  String get creatorMissionRankQualified => '已滿足全部條件。將在申請時和48小時後再次確認';
+  String get creatorMissionRankQualified => '已滿足全部條件。領取時將驗證最新狀態。';
 
   @override
   String creatorMissionRankPoolCurrent(int count) {

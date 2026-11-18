@@ -1,5 +1,5 @@
 import {ConditionalCheckFailedException,TransactionCanceledException} from "@aws-sdk/client-dynamodb";
-import {BatchGetCommand,GetCommand,QueryCommand,TransactWriteCommand,UpdateCommand} from "@aws-sdk/lib-dynamodb";
+import {BatchGetCommand,GetCommand,QueryCommand,TransactWriteCommand} from "@aws-sdk/lib-dynamodb";
 import {ddb,Keys,tableName} from "../../lib/dynamo";
 import {conflict,forbidden,ok} from "../../lib/response";
 import {
@@ -12,8 +12,7 @@ import {randomUUID} from "node:crypto";
 
 /**
  * Server-only, manual and once-per-account grid claims.
- * A completed author-index scan is NOT trusted as reward proof. Before
- * starting a hold or paying, re-read the candidate works from the base table
+ * Before paying, re-read the candidate works from the base table
  * using strongly consistent BatchGet. The resulting 500-work upper bound is
  * intentional; if it cannot prove achievement, fail closed.
  *
@@ -21,7 +20,7 @@ import {randomUUID} from "node:crypto";
  * in a DynamoDB transaction. Hence the v3 payout flags remain OFF pending
  * a production consistency review, even if basic claims are approved.
  */
-const PAGE_SIZE=25,MAX_PAGES=20,HOLD_SECONDS=48*3600;
+const PAGE_SIZE=25,MAX_PAGES=20;
 async function validatedCount(userId:string, mission:GridMission):Promise<number>{
   const table=tableName();
   const ids:string[]=[];
@@ -79,7 +78,7 @@ async function validatedCount(userId:string, mission:GridMission):Promise<number
   return count;
 }
 type State={claimedMask:number,revision:number,totalMissionCoins:number,
-  firstQualifiedAt:Record<string,number>,pendingCoins:Record<string,number>,
+  pendingCoins:Record<string,number>,
   claimedAt:Record<string,number>};
 function normDates(raw:unknown):Record<string,number>{
   if(!raw||typeof raw!=="object"||Array.isArray(raw))return {};
@@ -104,7 +103,6 @@ function normalize(raw:Record<string,unknown>|undefined):State{
     claimedMask:raw?value(raw.claimedMask):0,
     revision:raw?value(raw.revision):0,
     totalMissionCoins:raw?value(raw.totalMissionCoins):0,
-    firstQualifiedAt:normDates(raw?.firstQualifiedAt),
     pendingCoins:normDates(raw?.pendingCoins),
     claimedAt:normDates(raw?.claimedAt),
   };
@@ -134,37 +132,7 @@ export async function claimWorkCountMission(userId:string,mission:GridMission){
   }
   const nowSec=Math.floor(Date.now()/1000);
   const bitKey=String(mission.bit);
-  const first=state.firstQualifiedAt[bitKey];
-  const offered=state.pendingCoins[bitKey];
-  if(!first || first>nowSec){
-    const firstQualifiedAt={...state.firstQualifiedAt,[bitKey]:nowSec};
-    const pendingCoins={...state.pendingCoins,[bitKey]:mission.coins};
-    try{
-      await ddb.send(new UpdateCommand({
-        TableName:table,Key:key,
-        UpdateExpression:
-          "SET itemType = :type, catalogVersion = :catalog, " +
-          "claimedMask = if_not_exists(claimedMask,:zero), " +
-          "totalMissionCoins = if_not_exists(totalMissionCoins,:zero), " +
-          "firstQualifiedAt = :first, pendingCoins = :coins ADD revision :one",
-        ConditionExpression:
-          "attribute_not_exists(pk) OR " +
-          "(itemType = :type AND revision = :rev AND claimedMask = :mask)",
-        ExpressionAttributeValues:{
-          ":type":"CREATOR_GRID_V1",":catalog":ACCOUNT_GRID_CATALOG_VERSION,
-          ":zero":0,":one":1,":rev":state.revision,":mask":state.claimedMask,
-          ":first":firstQualifiedAt,":coins":pendingCoins,
-        },
-      }));
-    }catch(e){retryError(e);}
-    return ok({missionId:mission.id,claimed:false,pending:true,
-      offeredCoins:mission.coins,awardedCoins:0,
-      readyAt:(nowSec+HOLD_SECONDS)*1000});
-  }
-  if(nowSec-first<HOLD_SECONDS)return ok({
-    missionId:mission.id,claimed:false,pending:true,awardedCoins:0,
-    offeredCoins:offered??0,readyAt:(first+HOLD_SECONDS)*1000,
-  });
+  const offered=state.pendingCoins[bitKey] ?? mission.coins;
   if(!Number.isSafeInteger(offered) || offered<=0 || offered>100_000){
     forbidden("報酬の再確認が必要です","MISSION_GRID_OFFER_MISSING");
   }
@@ -175,9 +143,8 @@ export async function claimWorkCountMission(userId:string,mission:GridMission){
     forbidden("報酬の累計が不正です","MISSION_GRID_BUDGET");
   }
   const claimedAt={...state.claimedAt,[bitKey]:nowSec};
-  const firstQualifiedAt={...state.firstQualifiedAt};
   const pendingCoins={...state.pendingCoins};
-  delete firstQualifiedAt[bitKey];delete pendingCoins[bitKey];
+  delete pendingCoins[bitKey];
   const now=Date.now();
   try{
     await ddb.send(new TransactWriteCommand({
@@ -185,15 +152,17 @@ export async function claimWorkCountMission(userId:string,mission:GridMission){
         {Update:{
           TableName:table,Key:key,
           UpdateExpression:
-            "SET claimedMask = :newMask, totalMissionCoins = :total, " +
-            "claimedAt = :claimedAt, firstQualifiedAt = :first, " +
+            "SET itemType = :type, catalogVersion = :catalog, claimedMask = :newMask, " +
+            "totalMissionCoins = :total, claimedAt = :claimedAt, " +
             "pendingCoins = :coins ADD revision :one",
-          ConditionExpression:"itemType = :type AND revision = :rev AND claimedMask = :oldMask",
+          ConditionExpression:"attribute_not_exists(pk) OR " +
+            "(itemType = :type AND revision = :rev AND claimedMask = :oldMask)",
           ExpressionAttributeValues:{
-            ":type":"CREATOR_GRID_V1",":rev":state.revision,
+            ":type":"CREATOR_GRID_V1",":catalog":ACCOUNT_GRID_CATALOG_VERSION,
+            ":rev":state.revision,
             ":oldMask":state.claimedMask,
             ":newMask":claimMissionInMask(state.claimedMask,mission.bit),
-            ":total":total,":claimedAt":claimedAt,":first":firstQualifiedAt,
+            ":total":total,":claimedAt":claimedAt,
             ":coins":pendingCoins,":one":1,
           },
         }},

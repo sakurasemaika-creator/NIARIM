@@ -7,7 +7,6 @@ import {
   GetCommand,
   QueryCommand,
   TransactWriteCommand,
-  UpdateCommand,
 } from "@aws-sdk/lib-dynamodb";
 import { authenticate, getUser } from "../../lib/auth";
 import { ddb, Keys, tableName } from "../../lib/dynamo";
@@ -50,7 +49,6 @@ function rankPayoutEnabled():boolean {
   return enabled() &&
     process.env.CREATOR_RANKING_REWARDS_REVIEW_APPROVED==="true";
 }
-const SOCIAL_HOLD_SECONDS = 48 * 60 * 60;
 const QUERY_WORK_PAGE_SIZE = 25;
 const MAX_OWN_WORK_PAGES = 20; // Prevent unbounded DynamoDB reads.
 type MissionStateRecord = {
@@ -60,7 +58,6 @@ type MissionStateRecord = {
   verifiedEditSeconds: number;
   candidateEditSeconds: number;
   totalMissionCoins: number;
-  firstQualifiedAt: Record<string, number>;
   claimedAt: Record<string, number>;
   pendingCoins: Record<string, number>;
 };
@@ -110,7 +107,6 @@ function normalizeState(
     verifiedEditSeconds,
     candidateEditSeconds,
     totalMissionCoins,
-    firstQualifiedAt: parseDates(raw?.firstQualifiedAt),
     claimedAt: parseDates(raw?.claimedAt),
     pendingCoins: parseDates(raw?.pendingCoins),
   };
@@ -317,16 +313,13 @@ export async function getMyCreatorMissions(event: APIGatewayProxyEventV2) {
                 workBookmarks:selectedRankingBookmarks,
               })
           : null;
-      const pendingAt = current?.firstQualifiedAt[key];
+      const claimed = current ? missionClaimed(current.claimedMask, mission.bit) : null;
       return {
         ...mission,
         eligible,
-        readyForClaim: eligible === true &&
-          (pendingAt === undefined ||
-            (Math.floor(Date.now() / 1000) - pendingAt) >= SOCIAL_HOLD_SECONDS),
-        claimed: current ? missionClaimed(current.claimedMask, mission.bit) : null,
+        readyForClaim: eligible === true && claimed !== true,
+        claimed,
         claimedAt: current?.claimedAt[key] ?? null,
-        pendingSince: current?.firstQualifiedAt[key] ?? null,
         coins: current?.pendingCoins[key] ??
           missionRewardCoins(mission, publishedWorkCount),
         progress: mission.kind === "followers"
@@ -442,89 +435,13 @@ export async function claimCreatorMission(event: APIGatewayProxyEventV2) {
         workBookmarks:progress.bookmarks ?? 0,
       })
     : progress.count >= mission.required;
-  const bitKey = String(mission.bit);
   if (!eligible) {
-    // A mission that lost its requirement must restart the 48-hour hold.
-    // Never retain an old qualifying timestamp for a later temporary spike.
-    if (state.firstQualifiedAt[bitKey]) {
-      const firstQualifiedAt = { ...state.firstQualifiedAt };
-      const pendingCoins = { ...state.pendingCoins };
-      delete firstQualifiedAt[bitKey];
-      delete pendingCoins[bitKey];
-      try {
-        await ddb.send(new UpdateCommand({
-          TableName: tableName(),
-          Key: missionKey(auth.niarimUserId, itemWorkId, repost),
-          UpdateExpression:
-            "SET firstQualifiedAt = :first, pendingCoins = :coins ADD revision :one",
-          ConditionExpression:
-            "revision = :rev AND claimedMask = :mask AND itemType = :type",
-          ExpressionAttributeValues: {
-            ":first": firstQualifiedAt,
-            ":coins": pendingCoins,
-            ":one": 1, ":rev": state.revision,
-            ":mask": state.claimedMask, ":type": state.itemType,
-          },
-        }));
-      } catch (error) {
-        if (error instanceof ConditionalCheckFailedException ||
-            error instanceof TransactionCanceledException) {
-          conflict("進捗が更新されました。再確認してください", "MISSION_STATE_CHANGED");
-        }
-        throw error;
-      }
-    }
     conflict("ミッションの達成条件を確認できません", "MISSION_NOT_YET_COMPLETE");
   }
-
-  const nowSec = Math.floor(Date.now() / 1000);
-  const first = state.firstQualifiedAt[bitKey];
-  let coins = state.pendingCoins[bitKey];
-  if (!first || first > nowSec) {
-    coins = missionRewardCoins(mission,publishedWorkCount ?? 0);
-    const firstQualifiedAt = { ...state.firstQualifiedAt, [bitKey]: nowSec };
-    const pendingCoins = { ...state.pendingCoins, [bitKey]: coins };
-    try {
-      await ddb.send(new UpdateCommand({
-        TableName: tableName(),
-        Key: missionKey(auth.niarimUserId, itemWorkId, repost),
-        UpdateExpression:
-          "SET itemType = :type, firstQualifiedAt = :first, pendingCoins = :coins, " +
-          "claimedMask = if_not_exists(claimedMask, :zero), " +
-          "totalMissionCoins = if_not_exists(totalMissionCoins, :zero) " +
-          "ADD revision :one",
-        ConditionExpression:
-          "attribute_not_exists(revision) OR revision = :revision",
-        ExpressionAttributeValues: {
-          ":type": state.itemType,
-          ":first": firstQualifiedAt,
-          ":coins": pendingCoins,
-          ":zero": 0,
-          ":one": 1,
-          ":revision": state.revision,
-        },
-      }));
-    } catch (error) {
-      if (error instanceof TransactionCanceledException ||
-          error instanceof ConditionalCheckFailedException) {
-        conflict("進捗が更新されました。再試行してください", "MISSION_STATE_CHANGED");
-      }
-      throw error;
-    }
-    return ok({ missionId: id, workId: itemWorkId ?? null,
-      claimed: false, pending: true,
-      readyAt: (nowSec + SOCIAL_HOLD_SECONDS) * 1000,
-      offeredCoins: coins, awardedCoins: 0 });
-  }
-  if (nowSec - first < SOCIAL_HOLD_SECONDS) {
-    return ok({ missionId: id, workId: itemWorkId ?? null,
-      claimed: false, pending: true,
-      readyAt: (first + SOCIAL_HOLD_SECONDS) * 1000,
-      offeredCoins: coins ?? 0, awardedCoins: 0 });
-  }
-
-  // An already-present, versioned offer is immutable. Never pay a new rate
-  // after the 48h hold. No forged client-side amounts are accepted.
+  const bitKey = String(mission.bit);
+  // An offer stored by the previous claim flow keeps its quoted amount.
+  const coins = state.pendingCoins[bitKey] ??
+    missionRewardCoins(mission, publishedWorkCount ?? 0);
   if (!Number.isSafeInteger(coins) || coins <= 0) {
     forbidden("報酬額の再検証が必要です", "MISSION_OFFER_MISSING");
   }
@@ -535,17 +452,14 @@ export async function claimCreatorMission(event: APIGatewayProxyEventV2) {
     forbidden("ミッションの獲得上限を超えています", "MISSION_REWARD_BUDGET");
   }
   const awardedAtMs = Date.now();
-  const claimedAt = { ...state.claimedAt, [bitKey]: nowSec };
-  const pending = { ...state.firstQualifiedAt };
+  const claimedAt = { ...state.claimedAt, [bitKey]: Math.floor(awardedAtMs / 1000) };
   const pendingCoins = { ...state.pendingCoins };
-  delete pending[bitKey];
   delete pendingCoins[bitKey];
 
   // Revalidate the live source in the SAME transaction as the wallet.
   // A GET alone would allow a simultaneous unpublish, unfollow or bookmark
-  // removal to race with payout. Rankings are rechecked at BOTH the start
-  // and end of the 48-hour hold; a transient live rank never pays instantly.
-  // Anti-sybil/social manipulation still requires operational review.
+  // removal to race with payout. Rank and population are checked before the
+  // transaction, and the work's ranking eligibility is checked within it.
   const sourceCondition = mission.perWork ? {
     ConditionCheck: {
       TableName: tableName(),
@@ -593,16 +507,16 @@ export async function claimCreatorMission(event: APIGatewayProxyEventV2) {
             TableName: tableName(),
             Key: missionKey(auth.niarimUserId, itemWorkId, repost),
             UpdateExpression:
-              "SET claimedMask = :newMask, totalMissionCoins = :total, " +
-              "claimedAt = :claimedAt, firstQualifiedAt = :pending, " +
-              "pendingCoins = :pendingCoins ADD revision :one",
-            ConditionExpression: "revision = :rev AND claimedMask = :oldMask",
+              "SET itemType = :type, claimedMask = :newMask, totalMissionCoins = :total, " +
+              "claimedAt = :claimedAt, pendingCoins = :pendingCoins ADD revision :one",
+            ConditionExpression: "attribute_not_exists(pk) OR " +
+              "(itemType = :type AND revision = :rev AND claimedMask = :oldMask)",
             ExpressionAttributeValues: {
+              ":type": state.itemType,
               ":newMask": nextMask,
               ":oldMask": state.claimedMask,
               ":total": nextTotal,
               ":claimedAt": claimedAt,
-              ":pending": pending,
               ":pendingCoins": pendingCoins,
               ":rev": state.revision,
               ":one": 1,

@@ -8659,7 +8659,7 @@ class AppLocalizationsKo extends AppLocalizations {
       '조건을 달성한 작품은 제목이 있는 항목으로 상단에 표시됩니다. 이 예시 항목은 항상 미달성으로 남습니다.';
 
   @override
-  String get creatorMissionDetailsPending => '확인 중입니다. 48시간 후 다시 받기를 누르세요.';
+  String get creatorMissionDetailsPending => '보상 수령을 확인 중입니다.';
 
   @override
   String get creatorMissionDetailsOffline => '현재 보상 지급이 비활성화되어 있습니다.';
@@ -8674,7 +8674,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get creatorMissionClaimReceived => '보상을 받았습니다';
 
   @override
-  String get creatorMissionHoldStarted => '달성 확인 중입니다. 48시간 뒤 다시 받기를 누르세요.';
+  String get creatorMissionHoldStarted => '보상 수령을 확인 중입니다.';
 
   @override
   String get creatorMissionClaimFailed => '보상 확인 실패. 새로고침 후 다시 시도하세요.';
@@ -9219,7 +9219,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get creatorMissionDetailsClaimRule =>
-      '【수령 조건】최초 신청 시 서버가 달성을 확인하고 48시간 보류합니다. 48시간 후 다시 수령을 누르면 조건을 재확인합니다. 미달성 시 다시 대기합니다. 계정 또는 작품별 동일 미션은 1회만 수령할 수 있습니다.';
+      '【수령 방법】받기를 누르면 서버가 달성 조건을 확인하고, 조건을 충족하면 즉시 보상을 지급합니다. 같은 미션의 보상은 계정 또는 작품별로 한 번만 받을 수 있습니다.';
 
   @override
   String creatorMissionRankDetailsRules(int percent, int rank) {
@@ -9228,7 +9228,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get creatorMissionRankDetailsHold =>
-      '【보상 수령】순위는 수시로 변경됩니다. 신청 시 서버가 확인하고 48시간 대기가 시작됩니다. 48시간 후 다시 수령 버튼을 누르면 조건을 재확인합니다. 미달이면 대기 기간이 초기화됩니다. 과거 잠깐 진입한 순위는 자동 인정하지 않습니다. 동일 작품의 동일 순위 보상은 1회만 지급되며, 다른 작품은 별도입니다.';
+      '【순위 보상】받기를 누른 시점의 순위와 달성 조건을 서버가 확인합니다. 충족 시 작품별로 같은 순위의 보상을 한 번 즉시 지급합니다.';
 
   @override
   String get creatorMissionRankSelectWork => '작품을 선택하면 현재 달성 상황을 확인할 수 있습니다';
@@ -9259,8 +9259,7 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
-  String get creatorMissionRankQualified =>
-      '모든 조건을 달성했습니다. 신청 시와 48시간 후에 다시 확인합니다';
+  String get creatorMissionRankQualified => '모든 조건을 달성했습니다. 수령 시 최신 조건을 확인합니다.';
 
   @override
   String creatorMissionRankPoolCurrent(int count) {

@@ -100,9 +100,8 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
           : receipt['claimed'] == true
           ? t.get('claimReceived')
           : t.get('claimFailed');
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: messageText(message)));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: messageText(message)));
       _refresh(api);
     } catch (_) {
       if (mounted &&
@@ -160,13 +159,35 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
           final receipt = await request();
           if (receipt['claimed'] == true &&
               receipt['duplicate'] != true &&
-              receipt['pending'] != true) {
+              receipt['pending'] != true &&
+              receipt['awardedCoins'] != 0) {
             received++;
           }
         } catch (_) {
           failed++;
         }
       }
+
+      final extraWorks = _extraWorks.toList();
+      final works = pageData['works'] as Map<String, dynamic>?;
+      var cursor = _loadedExtraPage
+          ? _nextWorkCursor
+          : works?['nextCursor'] as String?;
+      final seenCursors = <String>{};
+      while (works?['rewardEnabled'] == true && cursor != null) {
+        if (!sameOwner()) return;
+        if (!seenCursors.add(cursor)) {
+          throw StateError('Repeated work mission cursor');
+        }
+        final page = await api.myWorkMissionAchievements(cursor: cursor);
+        extraWorks.addAll(
+          (page['items'] as List? ?? const []).whereType<Map>().map(
+            (row) => Map<String, dynamic>.from(row),
+          ),
+        );
+        cursor = page['nextCursor'] as String?;
+      }
+      if (!sameOwner()) return;
 
       if (login['rewardEnabled'] == true) {
         if (login['visitedToday'] == true && login['dailyClaimed'] != true) {
@@ -199,7 +220,8 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
         final id = row['id'] as String;
         await collect(() => api.claimPlazaMission(id));
       }
-      for (final row in _rows(pageData)) {
+      final attempted = <(String, String?)>{};
+      for (final row in _rows(pageData, extraWorks: extraWorks)) {
         if (row['readyForClaim'] != true ||
             row['rewardEnabled'] != true ||
             row['claimed'] == true ||
@@ -209,6 +231,7 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
         final id = (row['id'] ?? row['missionId']) as String?;
         if (id == null || id.isEmpty) continue;
         final workId = row['_workId'] as String?;
+        if (!attempted.add((id, workId))) continue;
         await collect(
           () => api.claimCreatorMission(missionId: id, workId: workId),
         );
@@ -217,9 +240,8 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: messageText(
-              appLocalizationsOf(
-                context,
-              ).creatorMissionClaimAllResult(received, failed),
+              appLocalizationsOf(context)
+                  .creatorMissionClaimAllResult(received, failed),
             ),
           ),
         );
@@ -595,7 +617,10 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
     );
   }
 
-  List<Map<String, dynamic>> _rows(Map<String, dynamic> data) {
+  List<Map<String, dynamic>> _rows(
+    Map<String, dynamic> data, {
+    List<Map<String, dynamic>>? extraWorks,
+  }) {
     final account = data['account'] as Map<String, dynamic>;
     final grid = data['grid'] as Map<String, dynamic>?;
     final works = data['works'] as Map<String, dynamic>?;
@@ -632,7 +657,10 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
     for (final raw in (grid?['missions'] as List? ?? const [])) {
       if (raw is Map) all.add(Map<String, dynamic>.from(raw));
     }
-    final earned = [...(works?['items'] as List? ?? const []), ..._extraWorks];
+    final earned = [
+      ...(works?['items'] as List? ?? const []),
+      ...extraWorks ?? _extraWorks,
+    ];
     for (final raw in earned) {
       if (raw is! Map) continue;
       final row = Map<String, dynamic>.from(raw);
@@ -649,9 +677,8 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
     // Dart's list sort is not stable; use the original index as the tie break.
     final indexed = all.asMap().entries.toList();
     indexed.sort((a, b) {
-      final priority = missionSortPriority(
-        a.value,
-      ).compareTo(missionSortPriority(b.value));
+      final priority = missionSortPriority(a.value)
+          .compareTo(missionSortPriority(b.value));
       return priority != 0 ? priority : a.key.compareTo(b.key);
     });
     return indexed.map((e) => e.value).toList(growable: false);
@@ -756,7 +783,9 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
           if (rowIndex < rows.length) return _tile(t, api, rows[rowIndex]);
           if (cursor != null && rowIndex == rows.length) {
             return OutlinedButton(
-              onPressed: _moreBusy ? null : () => _more(api, cursor),
+              onPressed: _bulkBusy || _moreBusy
+                  ? null
+                  : () => _more(api, cursor),
               child: messageText(t.get('loadMore')),
             );
           }
