@@ -101,13 +101,23 @@ final appRouter = GoRouter(
     GoRoute(
       path: '/canvas/:id',
       builder: (context, state) => AdMockPageFrame(
-        child: CanvasScreen(projectId: state.pathParameters['id']!),
+        child: CanvasScreen(
+          projectId: state.pathParameters['id']!,
+          initialSceneId: state.uri.queryParameters['scene'],
+          initialFrame:
+              int.tryParse(state.uri.queryParameters['frame'] ?? '') ?? 0,
+        ),
       ),
     ),
     GoRoute(
       path: '/timeline/:id',
       builder: (context, state) => AdMockPageFrame(
-        child: TimelineScreen(projectId: state.pathParameters['id']!),
+        child: TimelineScreen(
+          projectId: state.pathParameters['id']!,
+          initialSceneId: state.uri.queryParameters['scene'],
+          initialFrame:
+              int.tryParse(state.uri.queryParameters['frame'] ?? '') ?? 0,
+        ),
       ),
     ),
     GoRoute(

@@ -208,7 +208,15 @@ class _AudioWaveformThumbState extends State<_AudioWaveformThumb> {
 
 class TimelineScreen extends StatefulWidget {
   final String projectId;
-  const TimelineScreen({super.key, required this.projectId});
+  final String? initialSceneId;
+  final int initialFrame;
+
+  const TimelineScreen({
+    super.key,
+    required this.projectId,
+    this.initialSceneId,
+    this.initialFrame = 0,
+  });
 
   @override
   State<TimelineScreen> createState() => _TimelineScreenState();
@@ -535,8 +543,6 @@ class _TimelineScreenState extends State<TimelineScreen> {
     // タイムライン編集に作業領域を広く使えるよう、既定でAndroid標準の
     // ナビゲーションバーを最小化する。
     ImmersiveMode.enterWorkspace();
-    // _selectedSceneIdはbuild()内で実データ（ProjectService.scenesOf）が
-    // 取得でき次第、先頭シーンへ同期する。
 
     _frameScrollCtrl = ScrollController();
     _audioScrollCtrl = ScrollController();
@@ -554,6 +560,22 @@ class _TimelineScreenState extends State<TimelineScreen> {
 
     // 制作時間カウント（タイムラインモードのみカウント）
     _projectService = context.read<ProjectService>();
+    final scenes = _projectService.scenesOf(widget.projectId);
+    final initialScene =
+        scenes
+            .where((scene) => scene.id == widget.initialSceneId)
+            .firstOrNull ??
+        scenes.firstOrNull;
+    if (initialScene != null) {
+      _selectedSceneId = initialScene.id;
+      if (widget.initialSceneId == null ||
+          widget.initialSceneId == initialScene.id) {
+        _currentFrame = widget.initialFrame.clamp(
+          0,
+          math.max(0, initialScene.frames.length - 1),
+        );
+      }
+    }
     context.read<UndoManager>().selectProject(widget.projectId);
     _workTrackingLease = _projectService.beginWorkTracking(widget.projectId);
   }
@@ -6955,7 +6977,16 @@ class _TimelineScreenState extends State<TimelineScreen> {
       if (mounted) await _showSaveFailedDialog();
       return;
     }
-    if (mounted) context.go('/canvas/${widget.projectId}');
+    if (!mounted) return;
+    context.go(
+      Uri(
+        path: '/canvas/${widget.projectId}',
+        queryParameters: {
+          'scene': ?_selectedSceneId,
+          'frame': '$_currentFrame',
+        },
+      ).toString(),
+    );
   }
 
   Future<void> _saveFrameEdit() async {

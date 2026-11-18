@@ -91,7 +91,15 @@ import '../../widgets/docked_panel_scope.dart';
 
 class CanvasScreen extends StatefulWidget {
   final String projectId;
-  const CanvasScreen({super.key, required this.projectId});
+  final String? initialSceneId;
+  final int initialFrame;
+
+  const CanvasScreen({
+    super.key,
+    required this.projectId,
+    this.initialSceneId,
+    this.initialFrame = 0,
+  });
 
   @override
   State<CanvasScreen> createState() => _CanvasScreenState();
@@ -1323,6 +1331,13 @@ class _CanvasScreenState extends State<CanvasScreen> {
   @override
   void initState() {
     super.initState();
+    final projects = context.read<ProjectService>();
+    final sceneId = _currentSceneId;
+    final total = projects.frameCount(widget.projectId, sceneId);
+    if (total > 0 &&
+        (widget.initialSceneId == null || widget.initialSceneId == sceneId)) {
+      _currentFrame = widget.initialFrame.clamp(0, total - 1);
+    }
     // 描画に作業領域を広く使えるよう、既定でAndroid標準の
     // ナビゲーションバーを最小化する。
     ImmersiveMode.enterWorkspace();
@@ -1340,11 +1355,12 @@ class _CanvasScreenState extends State<CanvasScreen> {
     }
     // 現在レイヤーIDを初期化
     if (_currentLayerId == null) {
-      final scenes = context.read<ProjectService>().scenesOf(widget.projectId);
-      if (scenes.isNotEmpty && scenes.first.frames.isNotEmpty) {
-        final layers = scenes.first.frames.first.layers;
-        if (layers.isNotEmpty) _currentLayerId = layers.first.id;
-      }
+      final layers = context.read<ProjectService>().layersOf(
+        widget.projectId,
+        _currentSceneId,
+        _currentFrame,
+      );
+      if (layers.isNotEmpty) _currentLayerId = layers.first.id;
     }
     // PC/DeXモード（広い画面）では、初回表示時にワークスペース設定
     // （設定＞ワークスペース＞PC版で既定で開くパネル）で選ばれている
@@ -4082,7 +4098,15 @@ class _CanvasScreenState extends State<CanvasScreen> {
               ],
             ),
             onPressed: () => _runAutomationBlockedAction(
-              () => context.go('/timeline/${widget.projectId}'),
+              () => context.go(
+                Uri(
+                  path: '/timeline/${widget.projectId}',
+                  queryParameters: {
+                    'scene': _currentSceneId,
+                    'frame': '$_currentFrame',
+                  },
+                ).toString(),
+              ),
             ),
             tooltip: l10n.canvasTimelineModeTooltip,
           ),
@@ -4356,8 +4380,13 @@ class _CanvasScreenState extends State<CanvasScreen> {
   }
 
   String get _currentSceneId {
-    final scenes = context.read<ProjectService>().scenesOf(widget.projectId);
-    return scenes.isNotEmpty ? scenes.first.id : 'Scene0001';
+    final projects = context.read<ProjectService>();
+    final initialSceneId = widget.initialSceneId;
+    if (initialSceneId != null &&
+        projects.sceneOf(widget.projectId, initialSceneId) != null) {
+      return initialSceneId;
+    }
+    return projects.scenesOf(widget.projectId).firstOrNull?.id ?? 'Scene0001';
   }
 
   /// テキストツール選択中にキャンバスタップで呼び出す。
