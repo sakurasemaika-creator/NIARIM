@@ -1190,7 +1190,7 @@ class HairFoldRaster {
           // about the apex, before it turns: it never runs outside that
           // extension, where the folded part would look suddenly thinner.
           var lead = 0.0;
-          if (line.smooth && !continuous) {
+          if (!continuous && (line.smooth || directionalTip)) {
             final straight = _smoothFoldLead(
               points,
               lengths,
@@ -1198,6 +1198,7 @@ class HairFoldRaster {
               line.firstFront ? indices[i - 1] : indices[i + 1],
               line.side,
               brush.outlineWidth,
+              followOutline: directionalTip,
             );
             if (straight != null) {
               origin = straight.origin;
@@ -1220,6 +1221,20 @@ class HairFoldRaster {
                       p.outlineOr(brush.outlineWidth))
                   .clamp(2.0, 24.0),
               ownerBase + i,
+            );
+          }
+          final departure = Brush.clampFoldDepartureAngle(
+            brush.foldDepartureAngle,
+          );
+          if (departure != 0) {
+            // Mirror the offset on opposite bends. Positive points away from
+            // the inner edge and into the face on either side of the stroke.
+            final sign = line.firstFront ? -line.side : line.side;
+            final angle = departure * sign * math.pi / 180;
+            final cos = math.cos(angle), sin = math.sin(angle);
+            direction = Offset(
+              direction.dx * cos - direction.dy * sin,
+              direction.dx * sin + direction.dy * cos,
             );
           }
           // Measure the straight section from the visible join. Constrain
@@ -2647,8 +2662,9 @@ _foldSides(
   int pivot,
   int frontEnd,
   double side,
-  double outlineWidth,
-) {
+  double outlineWidth, {
+  required bool followOutline,
+}) {
   final vertex = lengths[pivot];
   final away = frontEnd < pivot ? -1.0 : 1.0;
   final width = points[pivot].width + points[pivot].outlineOr(outlineWidth) * 2;
@@ -2670,19 +2686,28 @@ _foldSides(
     straightest = math.max(straightest, turn);
   }
   if (straightest < .02) return null;
-  // The nearest point turned within a degree of the straightest heading, so
-  // a straight leg leads in from where it meets the bend, not from far back.
-  final (lead, _) = turns.firstWhere(
-    (sample) => sample.$2 >= straightest - math.pi / 180,
-  );
+  // Choose the departure just inside the turn of a directional tip. Its
+  // varying width changes the outline tangent relative to the stroke axis.
+  final turnAtDeparture = followOutline
+      ? straightest * .94
+      : straightest - math.pi / 180;
+  final (lead, _) = turns.firstWhere((sample) => sample.$2 >= turnAtDeparture);
   final at = vertex + away * lead;
-  final p = _pointAtDistance(points, lengths, at);
-  final t = tangentAt(at);
-  final outer = p.outerRadius(outlineWidth);
-  final centre = outer - math.min(p.outlineOr(outlineWidth), outer) / 2;
+  Offset innerOutlineAt(double distance) {
+    final point = _pointAtDistance(points, lengths, distance);
+    final tangent = tangentAt(distance);
+    final outer = point.outerRadius(outlineWidth);
+    final centre = outer - math.min(point.outlineOr(outlineWidth), outer) / 2;
+    return point.position + Offset(-tangent.dy, tangent.dx) * side * centre;
+  }
+
+  final tangent = followOutline
+      ? _unit(innerOutlineAt(at + reach) - innerOutlineAt(at - reach))
+      : tangentAt(at);
+  if (tangent == Offset.zero) return null;
   return (
-    origin: p.position + Offset(-t.dy, t.dx) * side * centre,
-    direction: away < 0 ? t : -t,
+    origin: innerOutlineAt(at),
+    direction: away < 0 ? tangent : -tangent,
     lead: lead,
   );
 }

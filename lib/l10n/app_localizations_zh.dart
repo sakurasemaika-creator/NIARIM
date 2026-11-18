@@ -7742,8 +7742,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get brushFoldAngleHelp => '调整折叠相对于笔画弯曲的强度。50%时与笔画弯曲自然联动。';
 
   @override
-  String get brushFoldCurveStartHelp =>
-      '调整折返线开始弯曲的位置，用以表现头发或丝带的厚度。0%时从分叉处立即弯曲。';
+  String get brushFoldDepartureAngle => '折返线的出发角度';
+
+  @override
+  String get brushFoldDepartureAngleHelp => '0°时沿轮廓方向延伸，正值使线条向内倾斜，负值使线条向外倾斜。';
+
+  @override
+  String get brushFoldCurveStartHelp => '调整折返线开始弯曲的位置。0%时从起点弯曲，100%时保持直线。';
 
   @override
   String get filterAutoLineartAddPointTooltip => '添加控制点';
@@ -18085,8 +18090,13 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get brushFoldAngleHelp => '調整折疊相對於筆畫彎曲的強度。50%時與筆畫彎曲自然連動。';
 
   @override
-  String get brushFoldCurveStartHelp =>
-      '調整折返線開始彎曲的位置，用以表現頭髮或緞帶的厚度。0%時從分岔處立即彎曲。';
+  String get brushFoldDepartureAngle => '折返線的出發角度';
+
+  @override
+  String get brushFoldDepartureAngleHelp => '0°時沿輪廓方向延伸，正值使線條向內傾斜，負值使線條向外傾斜。';
+
+  @override
+  String get brushFoldCurveStartHelp => '調整折返線開始彎曲的位置。0%時從起點彎曲，100%時保持直線。';
 
   @override
   String get filterAutoLineartAddPointTooltip => '新增控制點';

@@ -8164,8 +8164,15 @@ class AppLocalizationsEn extends AppLocalizations {
       'Adjusts how strongly the fold follows the curve of the stroke. At 50% it follows the curve naturally.';
 
   @override
+  String get brushFoldDepartureAngle => 'Fold line departure angle';
+
+  @override
+  String get brushFoldDepartureAngleHelp =>
+      'At 0°, the line follows the outline’s direction. Positive values tilt inward and negative values tilt outward.';
+
+  @override
   String get brushFoldCurveStartHelp =>
-      'Sets where the fold line starts to curve, expressing the thickness of hair or ribbon. At 0% it curves right from where it branches.';
+      'Controls where the fold line starts to curve. At 0% it curves from the start, and at 100% it stays straight.';
 
   @override
   String get filterAutoLineartAddPointTooltip => 'Add control point';

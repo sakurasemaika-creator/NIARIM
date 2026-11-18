@@ -14193,10 +14193,22 @@ abstract class AppLocalizations {
   /// **'ストロークのカーブに対する折り畳みの強さを調整します。50%でストロークのカーブに自然に連動します。'**
   String get brushFoldAngleHelp;
 
+  /// No description provided for @brushFoldDepartureAngle.
+  ///
+  /// In ja, this message translates to:
+  /// **'折り返し線の出る角度'**
+  String get brushFoldDepartureAngle;
+
+  /// No description provided for @brushFoldDepartureAngleHelp.
+  ///
+  /// In ja, this message translates to:
+  /// **'0°は縁取りの向きに沿い、＋は内側、−は外側に傾きます。'**
+  String get brushFoldDepartureAngleHelp;
+
   /// No description provided for @brushFoldCurveStartHelp.
   ///
   /// In ja, this message translates to:
-  /// **'折り返し線が曲がり始める位置を調整し、髪やリボンの厚みを表現します。0%では分岐位置からすぐにカーブします。'**
+  /// **'折り返し線のどこから曲がるかを調整します。0%で始点から曲がり、100%で直線になります。'**
   String get brushFoldCurveStartHelp;
 
   /// No description provided for @filterAutoLineartAddPointTooltip.

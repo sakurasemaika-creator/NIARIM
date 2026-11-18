@@ -81,6 +81,7 @@ void main() {
           foldEnabled: true,
           foldMode: entry.key,
           foldTriggerAngle: 67,
+          foldDepartureAngle: -12,
           foldCurveStartRatio: 0.31,
           foldAngleRatio: 0.7,
           foldLengthRatio: 0.72,
@@ -97,6 +98,7 @@ void main() {
         expect(restored.outlineEnabled, isTrue);
         expect(restored.foldEnabled, isTrue);
         expect(restored.foldTriggerAngle, 67);
+        expect(restored.foldDepartureAngle, -12);
         expect(restored.foldCurveStartRatio, 0.31);
         expect(restored.foldAngleRatio, 0.7);
         expect(restored.foldLengthRatio, 0.72);
@@ -136,6 +138,32 @@ void main() {
       expect(_baseBrush().foldLengthRatio, .5);
       expect(_baseBrush().copyWith(foldAngleRatio: -3).foldAngleRatio, 0);
       expect(_baseBrush().copyWith(foldAngleRatio: 99).foldAngleRatio, 1);
+    });
+
+    test('fold departure angle handles old or out-of-range settings', () {
+      final json = _baseBrush().toJson()..remove('foldDepartureAngle');
+      expect(Brush.fromJson(json).foldDepartureAngle, 0);
+      expect(
+        Brush.fromJson({
+          ...json,
+          'foldDepartureAngle': 'old',
+        }).foldDepartureAngle,
+        0,
+      );
+      expect(
+        Brush.fromJson({...json, 'foldDepartureAngle': -90}).foldDepartureAngle,
+        -30,
+      );
+      expect(
+        _baseBrush().copyWith(foldDepartureAngle: 90).foldDepartureAngle,
+        30,
+      );
+      expect(
+        _baseBrush()
+            .copyWith(foldDepartureAngle: double.nan)
+            .foldDepartureAngle,
+        0,
+      );
     });
 
     test('legacy fold depth is ignored when reading pre-release JSON', () {

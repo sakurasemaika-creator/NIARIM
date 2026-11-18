@@ -7868,8 +7868,15 @@ class AppLocalizationsKo extends AppLocalizations {
       '스트로크 커브에 대한 접힘의 강도를 조정합니다. 50%에서 스트로크 커브에 자연스럽게 연동됩니다.';
 
   @override
+  String get brushFoldDepartureAngle => '접힘선 시작 각도';
+
+  @override
+  String get brushFoldDepartureAngleHelp =>
+      '0°에서는 윤곽선 방향을 따릅니다. 양수는 안쪽으로, 음수는 바깥쪽으로 기울입니다.';
+
+  @override
   String get brushFoldCurveStartHelp =>
-      '접힘선이 구부러지기 시작하는 위치를 조정해 머리카락이나 리본의 두께를 표현합니다. 0%에서는 갈라지는 위치에서 바로 구부러집니다.';
+      '접힘선이 구부러지기 시작하는 위치를 조정합니다. 0%에서는 처음부터 구부러지고 100%에서는 직선으로 유지됩니다.';
 
   @override
   String get filterAutoLineartAddPointTooltip => '제어점 추가';

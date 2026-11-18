@@ -8303,8 +8303,15 @@ class AppLocalizationsFr extends AppLocalizations {
       'Règle avec quelle force le pli suit la courbe du trait. À 50 %, il la suit naturellement.';
 
   @override
+  String get brushFoldDepartureAngle => 'Angle de départ de la ligne de pli';
+
+  @override
+  String get brushFoldDepartureAngleHelp =>
+      'À 0°, la ligne suit la direction du contour. Les valeurs positives l’inclinent vers l’intérieur et les négatives vers l’extérieur.';
+
+  @override
   String get brushFoldCurveStartHelp =>
-      'Définit où la ligne de pli commence à se courber, pour exprimer l’épaisseur des cheveux ou du ruban. À 0 %, elle se courbe dès son point de départ.';
+      'Règle le début de la courbe de la ligne de pli. À 0 %, elle se courbe dès le départ. À 100 %, elle reste droite.';
 
   @override
   String get filterAutoLineartAddPointTooltip => 'Ajouter un point de contrôle';

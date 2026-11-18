@@ -7831,8 +7831,14 @@ class AppLocalizationsJa extends AppLocalizations {
       'ストロークのカーブに対する折り畳みの強さを調整します。50%でストロークのカーブに自然に連動します。';
 
   @override
+  String get brushFoldDepartureAngle => '折り返し線の出る角度';
+
+  @override
+  String get brushFoldDepartureAngleHelp => '0°は縁取りの向きに沿い、＋は内側、−は外側に傾きます。';
+
+  @override
   String get brushFoldCurveStartHelp =>
-      '折り返し線が曲がり始める位置を調整し、髪やリボンの厚みを表現します。0%では分岐位置からすぐにカーブします。';
+      '折り返し線のどこから曲がるかを調整します。0%で始点から曲がり、100%で直線になります。';
 
   @override
   String get filterAutoLineartAddPointTooltip => '制御点追加';

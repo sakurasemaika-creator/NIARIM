@@ -22,6 +22,8 @@ class BrushExtensionLabels {
   final String eyedropper;
   final String fold;
   final String foldTriggerAngle;
+  final String foldDepartureAngle;
+  final String foldDepartureAngleHelp;
   final String foldEndTaper;
   final String foldCurveStart;
   final String foldLength;
@@ -54,6 +56,8 @@ class BrushExtensionLabels {
     required this.eyedropper,
     required this.fold,
     this.foldTriggerAngle = 'Minimum turn angle',
+    this.foldDepartureAngle = 'Fold line departure angle',
+    this.foldDepartureAngleHelp = '',
     this.foldEndTaper = 'Folded tip taper',
     required this.foldCurveStart,
     required this.foldLength,
@@ -88,6 +92,8 @@ class BrushExtensionLabels {
         eyedropper: l.brushOutlineEyedropper,
         fold: l.brushFold,
         foldTriggerAngle: l.brushFoldTriggerAngle,
+        foldDepartureAngle: l.brushFoldDepartureAngle,
+        foldDepartureAngleHelp: l.brushFoldDepartureAngleHelp,
         foldEndTaper: l.brushFoldEndTaper,
         foldCurveStart: l.brushFoldCurveStart,
         foldLength: l.brushFoldLength,
@@ -127,6 +133,8 @@ class BrushExtensionLabels {
       eyedropper = 'スポイト',
       fold = '折り畳みモード',
       foldTriggerAngle = '折り返しが始まる角度',
+      foldDepartureAngle = '折り返し線の出る角度',
+      foldDepartureAngleHelp = '0°は縁取りの向きに沿い、＋は内側、−は外側に傾きます。',
       foldEndTaper = '折り返し線の先細り',
       foldCurveStart = '折り返し線のカーブ開始位置',
       foldLength = '折り返し長さ',
@@ -136,9 +144,7 @@ class BrushExtensionLabels {
       foldAngleHelp =
           'ストロークのカーブに対する折り畳みの強さを調整します。'
           '50%でストロークのカーブに自然に連動します。',
-      foldCurveStartHelp =
-          '折り返し線が曲がり始める位置を調整し、髪やリボンの厚みを表現します。'
-          '0%では分岐位置からすぐにカーブします。',
+      foldCurveStartHelp = '折り返し線のどこから曲がるかを調整します。0%で始点から曲がり、100%で直線になります。',
       foldCrescentDepthThreshold = '三日月にするカーブの深さ（ペン幅比）',
       foldMode = '折り畳みタイプ',
       foldModeWaveTopView = 'ウェーブ俯瞰',
@@ -349,6 +355,20 @@ class _BrushExtensionSettingsState extends State<BrushExtensionSettings> {
               ),
             ),
             if (_brush.foldMode != HairFoldMode.crescent) ...[
+              KeyedSubtree(
+                key: const Key('brush-fold-departure-angle'),
+                child: _slider(
+                  l.foldDepartureAngle,
+                  _brush.foldDepartureAngle,
+                  -BrushExtensionDefaults.maxFoldDepartureAngle,
+                  BrushExtensionDefaults.maxFoldDepartureAngle,
+                  (v) => _set(_brush.copyWith(foldDepartureAngle: v)),
+                  divisions:
+                      BrushExtensionDefaults.maxFoldDepartureAngle.toInt() * 2,
+                  suffix: '°',
+                  help: l.foldDepartureAngleHelp,
+                ),
+              ),
               KeyedSubtree(
                 key: const Key('brush-fold-end-taper'),
                 child: _ratioSlider(

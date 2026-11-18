@@ -8290,8 +8290,16 @@ class AppLocalizationsEs extends AppLocalizations {
       'Ajusta con qué intensidad el pliegue sigue la curva del trazo. Al 50 % la sigue de forma natural.';
 
   @override
+  String get brushFoldDepartureAngle =>
+      'Ángulo de salida de la línea de pliegue';
+
+  @override
+  String get brushFoldDepartureAngleHelp =>
+      'A 0°, la línea sigue la dirección del contorno. Los valores positivos la inclinan hacia dentro y los negativos, hacia fuera.';
+
+  @override
   String get brushFoldCurveStartHelp =>
-      'Define dónde empieza a curvarse la línea de pliegue para expresar el grosor del cabello o la cinta. Al 0 % se curva justo desde donde se ramifica.';
+      'Ajusta dónde empieza a curvarse la línea de pliegue. Al 0 % se curva desde el inicio y al 100 % queda recta.';
 
   @override
   String get filterAutoLineartAddPointTooltip => 'Añadir punto de control';

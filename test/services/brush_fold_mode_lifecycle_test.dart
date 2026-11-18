@@ -42,6 +42,7 @@ Brush _foldBrush(HairFoldMode mode, {String? imagePath}) => Brush(
   foldEnabled: true,
   foldMode: mode,
   foldTriggerAngle: 64,
+  foldDepartureAngle: 9,
   foldCurveStartRatio: 0.32,
   foldAngleRatio: 0.8,
   foldCrescentDepthThreshold: .35,
@@ -64,6 +65,7 @@ void _expectFoldSettings(Brush actual, Brush expected) {
   expect(actual.outlineWidth, expected.outlineWidth);
   expect(actual.outlineColor, expected.outlineColor);
   expect(actual.foldTriggerAngle, expected.foldTriggerAngle);
+  expect(actual.foldDepartureAngle, expected.foldDepartureAngle);
   expect(actual.foldCurveStartRatio, expected.foldCurveStartRatio);
   expect(actual.foldAngleRatio, expected.foldAngleRatio);
   expect(

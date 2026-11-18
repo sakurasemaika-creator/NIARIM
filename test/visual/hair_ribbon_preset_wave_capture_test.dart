@@ -253,6 +253,7 @@ void main() {
         foldLengthRatio: 0,
         foldAngleRatio: 1,
         foldCurveStartRatio: 1,
+        foldDepartureAngle: 20,
         foldEndTaperRatio: 0,
       ),
       path,
@@ -385,7 +386,30 @@ void main() {
     }
 
     final straight = await crease(ribbon.copyWith(foldCurveStartRatio: 1));
-    expect(straight.map((pixel) => pixel.dy).toSet(), hasLength(lessThan(4)));
+    void expectStraight(List<ui.Offset> pixels) {
+      final direction = pixels.last - pixels.first;
+      expect(direction.distance, greaterThan(10));
+      for (final pixel in pixels) {
+        final delta = pixel - pixels.first;
+        final deviation =
+            (direction.dx * delta.dy - direction.dy * delta.dx).abs() /
+            direction.distance;
+        expect(deviation, lessThan(2.2), reason: 'at $pixel');
+      }
+    }
+
+    expectStraight(straight);
+    final tilted = await crease(
+      ribbon.copyWith(foldCurveStartRatio: 1, foldDepartureAngle: 12),
+    );
+    expectStraight(tilted);
+    final baseline = straight.last - straight.first;
+    final rotated = tilted.last - tilted.first;
+    final tilt = math.atan2(
+      baseline.dx * rotated.dy - baseline.dy * rotated.dx,
+      baseline.dx * rotated.dx + baseline.dy * rotated.dy,
+    );
+    expect(tilt * 180 / math.pi, closeTo(12, 3));
     final folded = await crease(ribbon);
     final shortened = await crease(ribbon.copyWith(foldLengthRatio: .65));
     final earlier = await crease(ribbon.copyWith(foldCurveStartRatio: .35));

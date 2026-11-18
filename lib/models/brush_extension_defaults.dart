@@ -14,6 +14,7 @@ abstract final class BrushExtensionDefaults {
   // (100 % = two widths); angle scales how much of the stroke's own turn the
   // fold line follows (50 % = exactly); curve start is the straight share
   // of the fold line before it curves (0 % = thick material).
+  static const double maxFoldDepartureAngle = 30.0;
   static const double foldCurveStartRatio = 0.0;
   static const double foldAngleRatio = 0.5;
   // Minimum curve depth, as a ratio of the pen width, for a crescent.

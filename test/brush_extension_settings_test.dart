@@ -71,6 +71,7 @@ void main() {
       'brush-fold-length',
       'brush-fold-angle',
       'brush-fold-curve-start',
+      'brush-fold-departure-angle',
       'brush-fold-end-taper',
     ]) {
       expect(find.byKey(Key(setting)), findsNothing);
@@ -86,6 +87,37 @@ void main() {
     await tester.pump();
     expect(changes.last.toJson()['foldCrescentDepthThreshold'], .35);
   });
+  testWidgets('departure angle and curve start are independently editable', (
+    tester,
+  ) async {
+    final changes = <Brush>[];
+    await tester.pumpWidget(
+      host(
+        base.copyWith(
+          outlineEnabled: true,
+          foldEnabled: true,
+          foldCurveStartRatio: .75,
+        ),
+        changes.add,
+      ),
+    );
+    await tester.pumpAndSettle();
+    Slider slider(String key) => tester.widget<Slider>(
+      find.descendant(of: find.byKey(Key(key)), matching: find.byType(Slider)),
+    );
+    const depart = 'brush-fold-departure-angle';
+    expect(slider(depart).min, -30);
+    expect(slider(depart).max, 30);
+    slider(depart).onChanged!(12);
+    await tester.pump();
+    expect(changes.last.foldDepartureAngle, 12);
+    expect(changes.last.foldCurveStartRatio, .75);
+    slider('brush-fold-curve-start').onChanged!(.6);
+    await tester.pump();
+    expect(changes.last.foldDepartureAngle, 12);
+    expect(changes.last.foldCurveStartRatio, .6);
+  });
+
   testWidgets('lateral repeat dependants are hidden while disabled', (
     tester,
   ) async {
@@ -128,7 +160,7 @@ void main() {
     expect(find.text('折り畳みが伸びる長さを調整します。ブラシサイズに連動します。'), findsOneWidget);
     expect(find.byKey(const Key('brush-fold-mode')), findsOneWidget);
     expect(find.byType(SwitchListTile), findsNWidgets(3));
-    expect(find.byType(Slider), findsNWidgets(6));
+    expect(find.byType(Slider), findsNWidgets(7));
     expect(find.text('ウェーブ'), findsNothing);
     expect(find.text('終点からウェーブにする範囲'), findsNothing);
     expect(find.text('ウェーブ発生角度'), findsNothing);
