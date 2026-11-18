@@ -268,7 +268,10 @@ class _ColorAdjustSheetState extends State<ColorAdjustSheet> {
     return _nameFilter(
       title: l10n.canvasColorAdjustAddToDrawFilter,
       takenNames: () => {
-        for (final f in filters.filters) ...[f.name, filterDisplayName(l10n, f)],
+        for (final f in filters.filters) ...[
+          f.name,
+          filterDisplayName(l10n, f),
+        ],
       },
       add: (name) => filters.addFilter(
         FilterDef(

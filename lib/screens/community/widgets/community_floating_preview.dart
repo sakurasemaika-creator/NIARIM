@@ -182,7 +182,9 @@ class _CommunityFloatingPreviewState extends State<CommunityFloatingPreview> {
     final showCounts =
         !work.isUnavailable &&
         (work.isNiarimPublished || community.isOwnWork(work));
-    final countsHeight = showCounts ? media.textScaler.scale(12) * 1.5 + 8 : 0.0;
+    final countsHeight = showCounts
+        ? media.textScaler.scale(12) * 1.5 + 8
+        : 0.0;
     // Reserve every control outside the media rectangle, including the resize
     // handle. Never overlay a handle on top of Details or the player.
     final playerSplitRows = width < detailsWidth + 3 * 48 + 3 * 8 + 16;
