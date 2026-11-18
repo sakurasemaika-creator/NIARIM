@@ -591,7 +591,8 @@ void main() {
       reason: 'selection ended',
     );
     expect(searchButton(tester), findsOneWidget, reason: 'works search');
-    expect(find.byIcon(Icons.view_module), findsNothing);
+    // 作品一覧にも自分の表示のメニューがある（表示形式×大きさ、2026-11-17）。
+    expect(find.byIcon(Icons.view_module), findsOneWidget);
     expect(find.byType(TextField), findsNothing, reason: 'search closed');
     await tester.tap(find.byKey(const ValueKey('home_tab_0')));
     await settle(tester);

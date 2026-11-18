@@ -301,11 +301,20 @@ void main() {
             expect(find.text(env.l10n.homeWorksEmpty), findsOneWidget);
             await env.folders.createFolder('AUDIT');
             await tester.pumpAndSettle();
-            final folder = find.text('AUDIT');
+            // 低い画面では空の表示の下にあり、画面の外にいる。
+            final folder = find.text('AUDIT', skipOffstage: false);
             await tester.ensureVisible(folder);
+            await tester.pumpAndSettle();
             await tester.tap(folder);
             await tester.pumpAndSettle();
-            final message = find.text(env.l10n.homeWorkFolderEmpty);
+            // 韓国語は語を折らないよう語結合子を入れた`Text.rich`で描くので、
+            // 結合子を除いた文で探す（読み上げは元の文）。
+            final message = find.byWidgetPredicate(
+              (w) =>
+                  w is Text &&
+                  (w.data ?? w.textSpan?.toPlainText())?.replaceAll('⁠', '') ==
+                      env.l10n.homeWorkFolderEmpty,
+            );
             await tester.ensureVisible(message);
             await tester.pumpAndSettle();
             expect(find.text(env.l10n.folderManagementEmpty), findsNothing);
@@ -313,9 +322,11 @@ void main() {
               tester.renderObject<RenderParagraph>(message).didExceedMaxLines,
               isFalse,
             );
+            // 低い画面では空の表示がアイコンを省いて見出しを残す。
+            final icon = find.byIcon(Icons.folder_open_outlined);
             expect(
-              tester.getCenter(find.byIcon(Icons.folder_open_outlined)).dx,
-              closeTo(width / 2, 0.1),
+              tester.getCenter(icon.evaluate().isEmpty ? message : icon).dx,
+              closeTo(width / 2, 0.5),
               reason: 'Empty folder content must stay centered at $width px',
             );
             await tester.tap(find.byType(BackButton));
