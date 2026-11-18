@@ -40,11 +40,12 @@ class NiarimApiConfig {
 
   /// 設定済みならAPIクライアントを作る。未設定ならnull。
   ///
-  /// [tokenProvider]はログイン基盤（未実装）が用意するGoogle IDトークンの
+  /// [tokenProvider]はログイン基盤が用意するGoogle IDトークンの
   /// 取得関数。渡さない場合は常に未ログイン扱いになり、読み取り系APIだけが
   /// 使える。
   static CommunityApi? createApi({
     NiarimAuthTokenProvider? tokenProvider,
+    NiarimAuthTokenRefresher? refreshToken,
     http.Client? httpClient,
   }) {
     if (!isConfigured) return null;
@@ -52,6 +53,7 @@ class NiarimApiConfig {
       NiarimApiClient(
         baseUrl: baseUrl,
         tokenProvider: tokenProvider,
+        refreshToken: refreshToken,
         httpClient: httpClient,
       ),
     );

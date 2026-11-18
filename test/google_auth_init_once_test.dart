@@ -1,7 +1,12 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:http/http.dart' as http;
+import 'package:http/testing.dart';
+import 'package:niarim/services/api/niarim_api_client.dart';
+import 'package:niarim/services/api/niarim_api_exception.dart';
 import 'package:niarim/services/google_auth_service.dart';
 
 /// GoogleSignInの`initialize`は1プロセスに1回しか呼べない。起動に失敗して
@@ -14,7 +19,9 @@ import 'package:niarim/services/google_auth_service.dart';
 ///     test/google_auth_init_once_test.dart
 class _FakeSignIn implements GoogleSignIn {
   int initializeCalls = 0;
+  int lightweightCalls = 0;
   Completer<void> initialization = Completer<void>();
+  Future<GoogleSignInAccount?>? Function()? lightweight;
   final _events = StreamController<GoogleSignInAuthenticationEvent>.broadcast();
 
   @override
@@ -35,13 +42,27 @@ class _FakeSignIn implements GoogleSignIn {
   @override
   Future<GoogleSignInAccount?>? attemptLightweightAuthentication({
     bool reportAllExceptions = false,
-  }) => null;
+  }) {
+    lightweightCalls++;
+    return lightweight?.call();
+  }
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
 class _TestAccount implements GoogleSignInAccount {
+  _TestAccount({this.id = 'first', this.token = 'stale'});
+
+  @override
+  final String id;
+
+  final String token;
+
+  @override
+  GoogleSignInAuthentication get authentication =>
+      GoogleSignInAuthentication(idToken: token);
+
   @override
   final _TestAuthorization authorizationClient = _TestAuthorization();
 
@@ -80,6 +101,112 @@ class _TestAuthorization implements GoogleSignInAuthorizationClient {
 void main() {
   final configured = GoogleAuthService.googleClientId.isNotEmpty;
   const skip = 'run with --dart-define=NIARIM_GOOGLE_CLIENT_ID=test';
+
+  Future<GoogleAuthService> signedIn(
+    _FakeSignIn sdk,
+    _TestAccount account,
+  ) async {
+    final service = GoogleAuthService(signIn: sdk);
+    addTearDown(service.dispose);
+    await service.init();
+    sdk._events.add(GoogleSignInAuthenticationEventSignIn(user: account));
+    await Future<void>.delayed(Duration.zero);
+    return service;
+  }
+
+  test(
+    'concurrent 401 responses retry once with a renewed account token',
+    () async {
+      final sdk = _FakeSignIn()..initialization.complete();
+      final auth = await signedIn(sdk, _TestAccount());
+      final refreshed = _TestAccount(token: 'fresh');
+      final refreshGate = Completer<GoogleSignInAccount>();
+      final renewalStarted = Completer<void>();
+      sdk.lightweight = () {
+        renewalStarted.complete();
+        return refreshGate.future;
+      };
+      final twoRequests = Completer<void>();
+      final tokens = <String?>[];
+      final api = NiarimApiClient(
+        baseUrl: 'https://example.invalid',
+        tokenProvider: auth.backendIdToken,
+        refreshToken: auth.refreshRejectedBackendIdToken,
+        httpClient: MockClient((request) async {
+          final token = request.headers['authorization'];
+          tokens.add(token);
+          if (tokens.length == 2) twoRequests.complete();
+          if (token == 'Bearer fresh') return http.Response('{}', 200);
+          return http.Response('{"code":"UNAUTHORIZED"}', 401);
+        }),
+      );
+      addTearDown(api.close);
+      final writes = Future.wait([
+        api.patchJson('/works/one', body: {'title': 'one'}),
+        api.postJson('/users/creator/follow', body: {'follow': true}),
+      ]);
+      await Future.wait([twoRequests.future, renewalStarted.future]);
+      sdk._events.add(GoogleSignInAuthenticationEventSignIn(user: refreshed));
+      refreshGate.complete(refreshed);
+      await writes;
+      expect(sdk.lightweightCalls, 2); // Startup and a single renewal.
+      expect(tokens, [
+        'Bearer stale',
+        'Bearer stale',
+        'Bearer fresh',
+        'Bearer fresh',
+      ]);
+    },
+    skip: configured ? false : skip,
+  );
+
+  test('known-expired credentials are renewed before they are sent', () async {
+    final sdk = _FakeSignIn()..initialization.complete();
+    final payload = base64Url.encode(utf8.encode('{"exp":1}'));
+    final auth = await signedIn(sdk, _TestAccount(token: 'head.$payload.sig'));
+    sdk.lightweight = () async => _TestAccount(token: 'fresh');
+    expect(await auth.backendIdToken(), 'fresh');
+    expect(await auth.backendIdToken(), 'fresh');
+    expect(sdk.lightweightCalls, 2);
+  }, skip: configured ? false : skip);
+
+  test(
+    'a different account at renewal signs out and never replays a write',
+    () async {
+      final sdk = _FakeSignIn()..initialization.complete();
+      final auth = await signedIn(sdk, _TestAccount());
+      sdk.lightweight = () async {
+        final other = _TestAccount(id: 'second', token: 'other');
+        sdk._events.add(GoogleSignInAuthenticationEventSignIn(user: other));
+        return other;
+      };
+      final tokens = <String?>[];
+      final api = NiarimApiClient(
+        baseUrl: 'https://example.invalid',
+        tokenProvider: auth.backendIdToken,
+        refreshToken: auth.refreshRejectedBackendIdToken,
+        httpClient: MockClient((request) async {
+          tokens.add(request.headers['authorization']);
+          return http.Response('{}', 401);
+        }),
+      );
+      addTearDown(api.close);
+      await expectLater(
+        api.postJson('/works'),
+        throwsA(
+          isA<NiarimApiException>().having(
+            (e) => e.isUnauthorized,
+            '401',
+            true,
+          ),
+        ),
+      );
+      expect(tokens, ['Bearer stale']);
+      expect(auth.isSignedIn, isFalse);
+      expect(await auth.backendIdToken(), isNull);
+    },
+    skip: configured ? false : skip,
+  );
 
   test('YouTube only requests the scopes needed for each action', () async {
     const read = 'https://www.googleapis.com/auth/youtube.readonly';

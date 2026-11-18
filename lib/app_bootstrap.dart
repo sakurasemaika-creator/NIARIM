@@ -257,6 +257,7 @@ Future<List<SingleChildWidget>> _buildAppProviders(
     CommunityService(
       api: NiarimApiConfig.createApi(
         tokenProvider: googleAuthService.backendIdToken,
+        refreshToken: googleAuthService.refreshRejectedBackendIdToken,
       ),
     ),
   );

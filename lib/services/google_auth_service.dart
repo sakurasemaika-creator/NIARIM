@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -42,13 +43,17 @@ class GoogleAuthService extends ChangeNotifier {
   GoogleSignInAccount? _account;
   bool _initialized = false;
   bool _authOperationInProgress = false;
+  bool _disposed = false;
   Object? _lastError;
+  Future<String?>? _backendTokenRefresh;
+  String? _lastRejectedBackendToken;
 
   GoogleSignInAccount? get account => _account;
   bool get isConfigured => googleClientId.isNotEmpty;
   bool get isInitialized => _initialized;
   bool get isSignedIn => _account != null;
-  bool get authOperationInProgress => _authOperationInProgress;
+  bool get authOperationInProgress =>
+      _authOperationInProgress || _backendTokenRefresh != null;
   Object? get lastError => _lastError;
 
   /// GoogleSignIn 7.xはinitializeを1回だけ呼ぶ必要があるため、起動時に
@@ -71,7 +76,9 @@ class GoogleAuthService extends ChangeNotifier {
       (event) {
         switch (event) {
           case GoogleSignInAuthenticationEventSignIn(:final user):
-            _setAccount(user);
+            // A renewal must validate the returned account before adopting
+            // it. In particular, an OS account chooser may return a new user.
+            if (_backendTokenRefresh == null) _setAccount(user);
           case GoogleSignInAuthenticationEventSignOut():
             _setAccount(null);
         }
@@ -131,13 +138,90 @@ class GoogleAuthService extends ChangeNotifier {
 
   /// NIARIM APIが検証するOpenID Connect IDトークン。
   ///
-  /// UIを出さないため、未設定・未ログイン時はnullを返す。書き込み操作を
-  /// 始める前に[signInInteractively]を呼ぶのは画面側の責務。
+  /// 期限切れの場合は、同じアカウントでの軽量認証を一度試す。
+  /// 再認証できなければ、次の操作からログインし直せるようにログアウト扱いにする。
   Future<String?> backendIdToken() async {
-    if (!isConfigured) return null;
+    if (!isConfigured || _disposed) return null;
     final user = _account;
     if (user == null) return null;
-    return user.authentication.idToken;
+    final token = user.authentication.idToken;
+    if (token == null || token.isEmpty || _isExpired(token)) {
+      return _renewBackendIdToken(user);
+    }
+    return token;
+  }
+
+  Future<String?> refreshRejectedBackendIdToken(String rejected) async {
+    final user = _account;
+    if (!isConfigured || _disposed || user == null) return null;
+    final current = user.authentication.idToken;
+    if (current == rejected) return _renewBackendIdToken(user);
+    // Parallel requests might both have sent the same old token. Reuse the
+    // completed renewal only if this is the token actually replaced.
+    return rejected == _lastRejectedBackendToken ? current : null;
+  }
+
+  bool _isExpired(String token) {
+    final parts = token.split('.');
+    if (parts.length != 3) return false;
+    try {
+      final payload = jsonDecode(
+        utf8.decode(base64Url.decode(base64Url.normalize(parts[1]))),
+      );
+      final expiry = payload is Map<String, dynamic> ? payload['exp'] : null;
+      return expiry is int &&
+          expiry <= DateTime.now().millisecondsSinceEpoch ~/ 1000;
+    } on FormatException {
+      return false;
+    }
+  }
+
+  Future<String?> _renewBackendIdToken(GoogleSignInAccount user) {
+    final pending = _backendTokenRefresh;
+    if (pending != null) return pending;
+    if (_authOperationInProgress) return Future<String?>.value();
+
+    final renewal = Completer<String?>();
+    _backendTokenRefresh = renewal.future;
+    notifyListeners();
+    unawaited(_completeBackendTokenRenewal(user, renewal));
+    return renewal.future;
+  }
+
+  Future<void> _completeBackendTokenRenewal(
+    GoogleSignInAccount user,
+    Completer<String?> renewal,
+  ) async {
+    String? replacement;
+    try {
+      GoogleSignInAccount? renewed;
+      try {
+        renewed = await _signIn.attemptLightweightAuthentication();
+      } on Object {
+        // A failed renewal is handled like an expired session.
+      }
+      if (_disposed || !identical(_account, user)) return;
+
+      final rejected = user.authentication.idToken;
+      final token = renewed?.authentication.idToken;
+      if (renewed == null ||
+          renewed.id != user.id ||
+          token == null ||
+          token.isEmpty ||
+          token == rejected ||
+          _isExpired(token)) {
+        _setAccount(null);
+        return;
+      }
+
+      _lastRejectedBackendToken = rejected;
+      _setAccount(renewed);
+      replacement = token;
+    } finally {
+      _backendTokenRefresh = null;
+      renewal.complete(replacement);
+      if (!_disposed) notifyListeners();
+    }
   }
 
   /// 動画の投稿と、登録時のチャンネル・動画の所有確認に使う。
@@ -190,7 +274,7 @@ class GoogleAuthService extends ChangeNotifier {
   });
 
   Future<T> _runExclusive<T>(Future<T> Function() operation) async {
-    if (_authOperationInProgress) {
+    if (authOperationInProgress) {
       throw StateError('Googleアカウント操作を処理中です。完了後にもう一度お試しください');
     }
     _authOperationInProgress = true;
@@ -209,6 +293,7 @@ class GoogleAuthService extends ChangeNotifier {
 
   void _setAccount(GoogleSignInAccount? value) {
     if (identical(_account, value)) return;
+    if (_account?.id != value?.id) _lastRejectedBackendToken = null;
     _account = value;
     _lastError = null;
     notifyListeners();
@@ -225,6 +310,7 @@ class GoogleAuthService extends ChangeNotifier {
 
   @override
   void dispose() {
+    _disposed = true;
     _authSubscription?.cancel();
     super.dispose();
   }

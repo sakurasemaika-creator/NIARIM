@@ -6,12 +6,14 @@ import 'package:http/http.dart' as http;
 import 'niarim_api_exception.dart';
 
 typedef NiarimAuthTokenProvider = Future<String?> Function();
+typedef NiarimAuthTokenRefresher = Future<String?> Function(String rejected);
 
 class NiarimApiClient {
   final String baseUrl;
 
   final http.Client _httpClient;
   final NiarimAuthTokenProvider _tokenProvider;
+  final NiarimAuthTokenRefresher? _refreshToken;
 
   final Duration timeout;
   final int maxGetRetries;
@@ -21,12 +23,14 @@ class NiarimApiClient {
     required String baseUrl,
     http.Client? httpClient,
     NiarimAuthTokenProvider? tokenProvider,
+    NiarimAuthTokenRefresher? refreshToken,
     this.timeout = const Duration(seconds: 15),
     this.maxGetRetries = 2,
     this.retryBackoff = const Duration(milliseconds: 400),
   }) : baseUrl = _normalizeBaseUrl(baseUrl),
        _httpClient = httpClient ?? http.Client(),
-       _tokenProvider = (tokenProvider ?? _noToken);
+       _tokenProvider = tokenProvider ?? _noToken,
+       _refreshToken = refreshToken;
 
   static Future<String?> _noToken() async => null;
 
@@ -128,15 +132,34 @@ class NiarimApiClient {
     NiarimApiException? lastError;
     var transientAttempts = 0;
     var authRetryUsed = false;
+    String? refreshedToken;
 
     while (true) {
+      final token = authenticated ? await _tokenProvider() : null;
+      // A queued retry belongs to the session that made the original request.
+      if (refreshedToken != null && token != refreshedToken) {
+        throw lastError!;
+      }
       try {
-        return await _sendOnce(method, uri, body: body, auth: authenticated);
+        return await _sendOnce(method, uri, body: body, token: token);
       } on NiarimApiException catch (e) {
         if (authenticated &&
             e.isUnauthorized &&
             !authRetryUsed &&
-            _canRetryUnauthorized(method, uri)) {
+            (e.code == 'UNAUTHORIZED' || _canRetryUnauthorized(method, uri))) {
+          // NIARIM returns UNAUTHORIZED before a protected route mutates
+          // anything. Keep the legacy retry rules for other callers.
+          final refresh = _refreshToken;
+          if (refresh == null && !_canRetryUnauthorized(method, uri)) rethrow;
+          if (refresh != null) {
+            if (token == null || token.isEmpty) rethrow;
+            refreshedToken = await refresh(token);
+            if (refreshedToken == null ||
+                refreshedToken.isEmpty ||
+                refreshedToken == token) {
+              rethrow;
+            }
+          }
           authRetryUsed = true;
           lastError = e;
           continue;
@@ -156,15 +179,12 @@ class NiarimApiClient {
     String method,
     Uri uri, {
     Object? body,
-    required bool auth,
+    String? token,
   }) async {
     final headers = <String, String>{'accept': 'application/json'};
     if (body != null) headers['content-type'] = 'application/json';
-    if (auth) {
-      final token = await _tokenProvider();
-      if (token != null && token.isNotEmpty) {
-        headers['authorization'] = 'Bearer $token';
-      }
+    if (token != null && token.isNotEmpty) {
+      headers['authorization'] = 'Bearer $token';
     }
 
     final request = http.Request(method, uri)..headers.addAll(headers);
