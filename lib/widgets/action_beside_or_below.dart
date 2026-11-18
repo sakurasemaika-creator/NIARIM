@@ -290,8 +290,9 @@ class RenderActionBesideOrBelow extends RenderBox
   /// 文が1つの書体で描けて途中に空白が無いと、字の間で折り返せることを最小の
   /// 固有幅に入れず、文全体の幅を返す（中国語の本文の書体〔Noto Serif SC〕の
   /// 文で起きた）。中国語・日本語は字の間で折り返してよいので、文の中の段落を
-  /// 折り返す幅で並べ直して測った本当のいちばん広い語で数え直す（文の幅から、
-  /// いちばん広い段落の測り違いの分を引く。[widestUnbreakableWidth]）。
+  /// 折り返す幅で並べ直して、離せないかたまりの幅を測る
+  /// （[widestUnbreakableWidth]）。Flutterの測定幅より大きいかたまりも
+  /// 入る場合にだけ、操作と文を横に並べる。
   /// 自分で数え直した幅を答える文（[ReportsWidestWord]）の中は測り直さない。
   double _widestWord(RenderBox text) {
     final reported = text.getMinIntrinsicWidth(double.infinity);
@@ -311,8 +312,9 @@ class RenderActionBesideOrBelow extends RenderBox
     }
 
     visit(text);
-    if (widestActual >= widestReported) return reported;
-    return math.max(widestActual, reported - (widestReported - widestActual));
+    if (widestActual == widestReported) return reported;
+    final overestimate = math.max(0.0, widestReported - widestActual);
+    return math.max(widestActual, reported - overestimate);
   }
 
   /// 段落[p]の、折り返せないいちばん広いかたまりの幅（[_widestWord]）。

@@ -231,18 +231,19 @@ void main() {
                 ),
               ),
             );
-            final joinedSpan = tester
-                .widget<RichText>(
-                  find.descendant(
-                    of: find.byType(KeepTogetherText),
-                    matching: find.byType(RichText),
-                  ),
-                )
-                .text;
+            final paragraph = tester.renderObject<RenderParagraph>(
+              find.descendant(
+                of: find.byType(KeepTogetherText),
+                matching: find.byType(RichText),
+              ),
+            );
+            final joinedSpan = paragraph.text;
+            // 比較する段落でも同じ言語の字形と改行規則で測る。
             final joined = TextPainter(
               text: joinedSpan,
               textDirection: TextDirection.ltr,
               textScaler: scaler,
+              locale: paragraph.locale,
             )..layout();
             final groups = _groups(joined);
             // 最も長い語（つないだかたまりを1語として）の幅。
@@ -280,6 +281,7 @@ void main() {
                             text: RichText(
                               text: joinedSpan,
                               textScaler: scaler,
+                              locale: paragraph.locale,
                             ),
                             action: action,
                           ),
