@@ -1247,7 +1247,10 @@
     }
   },
   "perfSettingsTrashAutoDeleteTitle": "Suppression automatique de la corbeille",
-  "perfSettingsTrashAutoDeleteSubtitle": "Durée de conservation des projets supprimés",
+  "perfSettingsTrashAutoDeleteSubtitle": "Durée de conservation des projets et des fichiers dans la corbeille",
+  "perfSettingsTrashApplyConfirm": "Ce réglage supprime définitivement dès maintenant {count} éléments arrivés à expiration dans la corbeille.",
+  "perfSettingsTrashApplied": "{count} éléments arrivés à expiration ont été supprimés définitivement de la corbeille.",
+  "homeTrashDaysUntilPermanentDelete": "Suppression automatique dans {days} j",
   "perfSettingsTrashAutoDeleteOff": "Désactivée",
   "perfSettingsTrashAutoDeleteValue": "{n, plural, one{{n} jour} other{{n} jours}}",
   "@perfSettingsTrashAutoDeleteValue": {
@@ -3810,7 +3813,9 @@
   "homeFolderMenuTooltip": "Menu du dossier",
   "homeClipboardCutStatus": "{count, plural, one{{count} élément coupé} other{{count} éléments coupés}}",
   "homeClipboardCopiedStatus": "{count, plural, one{{count} élément copié} other{{count} éléments copiés}}",
-  "homeTrashPasteElsewhere": "Ouvrez l’emplacement où restaurer l’élément, puis collez-le.",
+  "homeTrashPasteElsewhere": "Ouvrez l’onglet d’origine et choisissez Coller pour restaurer l’élément.",
+  "homePasteRestoreOriginalQuestion": "Restaurer cet élément à son emplacement d’origine ?",
+  "homePasteRestoredOriginalCollection": "Élément restauré dans sa collection d’origine.",
   "homeClipboardClear": "Vider",
   "homeExportedWorkMetadata": "{date} · {size}",
   "homeWorkFolderContents": "{count, plural, =0{Vide} =1{1 œuvre} other{{count} œuvres}}",

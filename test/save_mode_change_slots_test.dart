@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -11,9 +12,11 @@ import 'package:niarim/models/save_node.dart';
 import 'package:niarim/screens/save_tree/save_management_screen.dart';
 import 'package:niarim/screens/save_tree/save_tree_screen.dart';
 import 'package:niarim/screens/settings/performance_settings_screen.dart';
+import 'package:niarim/services/local_file_trash_service.dart';
 import 'package:niarim/services/performance_service.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:niarim/services/save_tree_service.dart';
+import 'package:niarim/services/settings_service.dart';
 import 'package:niarim/services/theme_service.dart';
 import 'package:niarim/widgets/labeled_slider.dart';
 import 'package:provider/provider.dart';
@@ -203,6 +206,116 @@ void main() {
       if (n.slotIndex >= 0 && n.slotIndex < slotMax)
         s.slotDisplayMemoOf(id, n.slotIndex) ?? '',
   ]..sort();
+
+  testWidgets(
+    'shortening Trash retention reviews and purges projects and files',
+    (tester) async {
+      await open(tester, tree: false);
+      final settings = navKey.currentContext!.read<SettingsService>();
+      await settings.setTrashAutoDelete(60);
+      final oldProject = await newProject(tester, '期限切れの作品');
+      final freshProject = await newProject(tester, '期限内の作品');
+      final prefs = await SharedPreferences.getInstance();
+      final expired = DateTime.now().subtract(const Duration(days: 31));
+      final fresh = DateTime.now().subtract(const Duration(days: 29));
+      late LocalTrashedFile oldExport, oldShare, freshExport;
+      await tester.runAsync(() async {
+        await projects.deleteProject(oldProject.id);
+        await projects.deleteProject(freshProject.id);
+        await prefs.setStringList('trashed_projects', [
+          '${oldProject.id}|${expired.toIso8601String()}',
+          '${freshProject.id}|${fresh.toIso8601String()}',
+        ]);
+        await projects.init();
+
+        Future<LocalTrashedFile> moveFile(
+          String name,
+          LocalTrashKind kind,
+          DateTime deletedAt,
+        ) async {
+          final file = File('${dir.path}/$name')..writeAsStringSync(name);
+          final item = await LocalFileTrashService.move(file, kind);
+          final record = File(
+            '${File(item.archivedPath).parent.path}/meta.json',
+          );
+          record.writeAsStringSync(
+            jsonEncode({
+              ...item.toJson(),
+              'deletedAt': deletedAt.toIso8601String(),
+            }),
+          );
+          return item;
+        }
+
+        oldExport = await moveFile(
+          'old.gif',
+          LocalTrashKind.exportedWork,
+          expired,
+        );
+        oldShare = await moveFile(
+          'old.niashare',
+          LocalTrashKind.outgoingShare,
+          expired,
+        );
+        freshExport = await moveFile(
+          'fresh.gif',
+          LocalTrashKind.exportedWork,
+          fresh,
+        );
+      });
+      expect(projects.deletedAtOf(oldProject.id), expired);
+      navKey.currentState!.push(
+        MaterialPageRoute<void>(
+          builder: (_) => const PerformanceSettingsScreen(),
+        ),
+      );
+      await settleIo(tester);
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(PerformanceSettingsScreen)),
+      )!;
+      final row = find.text(l10n.perfSettingsTrashAutoDeleteTitle);
+      await tester.scrollUntilVisible(
+        row,
+        150,
+        scrollable: find.byType(Scrollable).first,
+      );
+      Future<void> choose30() async {
+        await tester.tap(row);
+        await settleIo(tester, 3);
+        await tester.tap(find.text(l10n.perfSettingsTrashAutoDeleteValue(30)));
+        await settleIo(tester);
+        expect(
+          find.text(l10n.perfSettingsTrashApplyConfirm(3)),
+          findsOneWidget,
+        );
+      }
+
+      await choose30();
+      await tester.tap(find.text(l10n.commonCancel));
+      await settleIo(tester, 3);
+      expect(settings.trashAutoDeleteDays, 60);
+      expect(File(oldExport.archivedPath).existsSync(), isTrue);
+      expect(File(oldShare.archivedPath).existsSync(), isTrue);
+      expect(projects.trash.map((p) => p.id), contains(oldProject.id));
+
+      await choose30();
+      await tester.tap(
+        find.widgetWithText(FilledButton, l10n.homePermanentDelete),
+      );
+      final notice = find.text(l10n.perfSettingsTrashApplied(3));
+      for (var i = 0; i < 20 && notice.evaluate().isEmpty; i++) {
+        await settleIo(tester, 2);
+      }
+      expect(settings.trashAutoDeleteDays, 30);
+      expect(prefs.getInt('trash_auto_delete'), 30);
+      expect(projects.trash.map((p) => p.id), [freshProject.id]);
+      expect(File(oldExport.archivedPath).existsSync(), isFalse);
+      expect(File(oldShare.archivedPath).existsSync(), isFalse);
+      expect(File(freshExport.archivedPath).existsSync(), isTrue);
+      expect(notice, findsOneWidget);
+      expect(tester.takeException(), isNull);
+    },
+  );
 
   testWidgets('cancelling a shorter slot limit restores the settings slider', (
     tester,

@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/screens/home/home_screen.dart';
 import 'package:niarim/screens/home/widgets/exported_work_card.dart';
 import 'package:niarim/services/local_file_trash_service.dart';
+import 'package:niarim/services/settings_service.dart';
 import 'package:niarim/services/work_folder_service.dart';
 import 'package:provider/provider.dart';
 
@@ -22,7 +23,12 @@ void main() {
   final older = DateTime(2026, 11, 10, 9, 5);
 
   Future<void> confirm(HomeClipboardHarness home) async {
-    await home.tester.tap(find.byKey(const Key('trash-dialog-confirm')));
+    final button = find.byKey(const Key('trash-dialog-confirm'));
+    await home.waitFor(
+      () => button.evaluate().isNotEmpty,
+      reason: 'the trash confirmation did not open',
+    );
+    await home.tester.tap(button);
     await home.waitFor(
       () => find.byType(AlertDialog).evaluate().isEmpty,
       reason: 'the question stayed open',
@@ -102,6 +108,42 @@ void main() {
     await home.settle();
     await confirm(home);
   }
+
+  testWidgets('a trash row shows the current retention deadline', (
+    tester,
+  ) async {
+    final home = await HomeClipboardHarness.open(
+      tester,
+      exports: ['deadline.gif'],
+    );
+    final settings = tester
+        .element(find.byType(HomeScreen))
+        .read<SettingsService>();
+    await settings.setTrashAutoDelete(60);
+    await home.showTab(1);
+    await trashExportFromMenu(home, 'deadline.gif');
+    await home.showTab(3);
+    final remaining = home.l10n.homeTrashDaysUntilPermanentDelete(60);
+    final countdown = find.byWidgetPredicate(
+      (widget) =>
+          widget is Text &&
+          (widget.semanticsLabel ??
+                  widget.data ??
+                  widget.textSpan?.toPlainText() ??
+                  '')
+              .contains(remaining),
+    );
+    await home.waitFor(
+      () => countdown.evaluate().isNotEmpty,
+      reason: 'Trash should show the remaining retention period',
+    );
+    expect(countdown, findsOneWidget);
+    await settings.setTrashAutoDelete(0);
+    await home.settle();
+    expect(countdown, findsNothing);
+    expect(tester.takeException(), isNull);
+    await home.close();
+  });
 
   for (final how in ['Undo', 'Restore']) {
     testWidgets('an exported file keeps its date ($how)', (tester) async {

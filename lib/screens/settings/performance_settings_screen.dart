@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../../engine/undo_manager.dart';
 import '../../l10n/app_localizations.dart';
+import '../../services/local_file_trash_service.dart';
 import '../../services/performance_service.dart';
 import '../../services/project_service.dart';
 import '../../services/save_tree_service.dart';
@@ -12,6 +13,7 @@ import '../../widgets/labeled_slider.dart';
 import '../../widgets/responsive.dart';
 import '../save_tree/save_tree_screen.dart';
 import '../../utils/line_break.dart';
+import '../../utils/app_error_reporter.dart';
 import '../../widgets/action_beside_or_below.dart';
 import '../../widgets/fit_or_hide_title.dart';
 import '../../widgets/help_button.dart';
@@ -26,6 +28,8 @@ class PerformanceSettingsScreen extends StatefulWidget {
 }
 
 class _PerformanceSettingsScreenState extends State<PerformanceSettingsScreen> {
+  bool _changingTrashRetention = false;
+
   Future<void> _onQualityChanged(QualityLevel level) async {
     final perf = context.read<PerformanceService>();
     if (await _changeSaveSettings(
@@ -429,10 +433,11 @@ class _PerformanceSettingsScreenState extends State<PerformanceSettingsScreen> {
     );
   }
 
-  void _showTrashAutoDeleteDialog(
+  Future<void> _showTrashAutoDeleteDialog(
     BuildContext context,
     SettingsService settings,
-  ) {
+  ) async {
+    if (_changingTrashRetention) return;
     final l10n = AppLocalizations.of(context)!;
     final options = {
       0: l10n.perfSettingsTrashAutoDeleteOff,
@@ -440,9 +445,10 @@ class _PerformanceSettingsScreenState extends State<PerformanceSettingsScreen> {
       60: l10n.perfSettingsTrashAutoDeleteValue(60),
       90: l10n.perfSettingsTrashAutoDeleteValue(90),
     };
-    showDialog(
+    final days = await showDialog<int>(
       context: context,
       builder: (ctx) => AlertDialog(
+        scrollable: true,
         // popup-standard-close: タイトル行の右端へ寄せた閉じるボタン。
         // AlertDialogの`icon:`スロットへ入れると、Flutterが
         // タイトルを強制的に中央寄せにするため（dialog.dartの
@@ -464,11 +470,8 @@ class _PerformanceSettingsScreenState extends State<PerformanceSettingsScreen> {
         // （各ラジオのgroupValue/onChangedはFlutter 3.32で非推奨）。
         content: RadioGroup<int>(
           groupValue: settings.trashAutoDeleteDays,
-          onChanged: (v) {
-            if (v == null) return;
-            settings.setTrashAutoDelete(v);
-            context.read<ProjectService>().sweepExpiredTrash(v);
-            Navigator.pop(ctx);
+          onChanged: (value) {
+            if (value != null) Navigator.pop(ctx, value);
           },
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -481,6 +484,130 @@ class _PerformanceSettingsScreenState extends State<PerformanceSettingsScreen> {
         ),
       ),
     );
+    if (!context.mounted ||
+        days == null ||
+        days == settings.trashAutoDeleteDays) {
+      return;
+    }
+    _changingTrashRetention = true;
+    try {
+      if (days == 0) {
+        await settings.setTrashAutoDelete(days);
+        return;
+      }
+      await _applyTrashRetention(context, settings, days);
+    } catch (error, stack) {
+      AppErrorReporter.record(error, stack);
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.homeTrashOperationFailed)));
+    } finally {
+      _changingTrashRetention = false;
+    }
+  }
+
+  Future<void> _applyTrashRetention(
+    BuildContext context,
+    SettingsService settings,
+    int days,
+  ) async {
+    final l10n = AppLocalizations.of(context)!;
+    final service = context.read<ProjectService>();
+    final messenger = ScaffoldMessenger.of(context);
+    if (service.projectsLoadFailed) {
+      messenger.showSnackBar(
+        SnackBar(content: Text(l10n.homeProjectsLoadFailed)),
+      );
+      return;
+    }
+    final cutoff = DateTime.now().subtract(Duration(days: days));
+    bool expires(DateTime? deleted) =>
+        deleted != null && !deleted.isAfter(cutoff);
+    final projects = [
+      for (final project in service.trash)
+        if (service.trashedFolderOf(project.id) == null &&
+            expires(service.deletedAtOf(project.id)))
+          project.id,
+    ];
+    final folders = [
+      for (final folder in service.trashedFolders)
+        if (expires(folder.deletedAt) &&
+            !service.trashedFolderHasUnreadWorks(folder))
+          folder,
+    ];
+    final files = (await LocalFileTrashService.list())
+        .where((entry) => expires(entry.deletedAt))
+        .toList();
+    if (!context.mounted) return;
+    final count = projects.length + folders.length + files.length;
+    if (count > 0) {
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (dialog) => AlertDialog(
+          scrollable: true,
+          title: Text(l10n.homePermanentDeleteConfirmTitle),
+          content: Text(l10n.perfSettingsTrashApplyConfirm(count)),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialog, false),
+              child: Text(l10n.commonCancel),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(dialog, true),
+              child: Text(l10n.homePermanentDelete),
+            ),
+          ],
+        ),
+      );
+      if (confirmed != true || !context.mounted) return;
+    }
+    await settings.setTrashAutoDelete(days);
+    if (count == 0) return;
+
+    // Delete the reviewed entries only. Other entries may expire while the
+    // confirmation is on screen and will be handled by the normal sweep.
+    var failed = false;
+    Future<void> remove(Future<void> Function() operation) async {
+      try {
+        await operation();
+      } catch (error, stack) {
+        failed = true;
+        AppErrorReporter.record(error, stack);
+      }
+    }
+
+    for (final projectId in projects) {
+      await remove(() => service.permanentDelete(projectId));
+    }
+    for (final folder in folders) {
+      await remove(
+        () => service.permanentDeleteTrashedFolder(folder.folder.id),
+      );
+      if (service.trash.any(
+        (project) => folder.projectIds.contains(project.id),
+      )) {
+        failed = true;
+      }
+    }
+    for (final entry in files) {
+      await remove(() async {
+        if (!await LocalFileTrashService.deleteUnlessRestoring(entry)) {
+          failed = true;
+        }
+      });
+    }
+    if (messenger.mounted) {
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(
+            failed
+                ? l10n.homeTrashOperationFailed
+                : l10n.perfSettingsTrashApplied(count),
+          ),
+        ),
+      );
+    }
   }
 
   void _showResetDialog(BuildContext context, PerformanceService perf) {

@@ -1247,7 +1247,31 @@
     }
   },
   "perfSettingsTrashAutoDeleteTitle": "Auto-delete trash",
-  "perfSettingsTrashAutoDeleteSubtitle": "Retention period for deleted projects",
+  "perfSettingsTrashAutoDeleteSubtitle": "How long projects and files stay in Trash",
+  "perfSettingsTrashApplyConfirm": "Applying this setting will permanently delete {count} expired Trash items now.",
+  "@perfSettingsTrashApplyConfirm": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "perfSettingsTrashApplied": "Permanently deleted {count} expired Trash items.",
+  "@perfSettingsTrashApplied": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "homeTrashDaysUntilPermanentDelete": "Auto-delete in {days} d",
+  "@homeTrashDaysUntilPermanentDelete": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
   "perfSettingsTrashAutoDeleteOff": "OFF",
   "perfSettingsTrashAutoDeleteValue": "{n, plural, one{{n} day} other{{n} days}}",
   "@perfSettingsTrashAutoDeleteValue": {
@@ -3817,7 +3841,9 @@
   "homeFolderMenuTooltip": "Folder menu",
   "homeClipboardCutStatus": "{count, plural, one{{count} item cut} other{{count} items cut}}",
   "homeClipboardCopiedStatus": "{count, plural, one{{count} item copied} other{{count} items copied}}",
-  "homeTrashPasteElsewhere": "Open the destination where you want to restore the item, then paste.",
+  "homeTrashPasteElsewhere": "Open the original tab and choose Paste to restore the item.",
+  "homePasteRestoreOriginalQuestion": "Restore this item to its original location?",
+  "homePasteRestoredOriginalCollection": "Restored to its original collection.",
   "homeClipboardClear": "Clear",
   "homeExportedWorkMetadata": "{date} · {size}",
   "homeWorkFolderContents": "{count, plural, =0{Empty} =1{1 work} other{{count} works}}",

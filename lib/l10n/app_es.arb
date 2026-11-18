@@ -1247,7 +1247,10 @@
     }
   },
   "perfSettingsTrashAutoDeleteTitle": "Eliminación automática de la papelera",
-  "perfSettingsTrashAutoDeleteSubtitle": "Periodo de retención de proyectos eliminados",
+  "perfSettingsTrashAutoDeleteSubtitle": "Tiempo de conservación de proyectos y archivos en la papelera",
+  "perfSettingsTrashApplyConfirm": "Al aplicar este ajuste, se eliminarán de forma permanente {count} elementos caducados de la papelera.",
+  "perfSettingsTrashApplied": "Se eliminaron de forma permanente {count} elementos caducados de la papelera.",
+  "homeTrashDaysUntilPermanentDelete": "Eliminación automática en {days} d",
   "perfSettingsTrashAutoDeleteOff": "Desactivada",
   "perfSettingsTrashAutoDeleteValue": "{n, plural, one{{n} día} other{{n} días}}",
   "@perfSettingsTrashAutoDeleteValue": {
@@ -3810,7 +3813,9 @@
   "homeFolderMenuTooltip": "Menú de la carpeta",
   "homeClipboardCutStatus": "{count, plural, one{{count} elemento cortado} other{{count} elementos cortados}}",
   "homeClipboardCopiedStatus": "{count, plural, one{{count} elemento copiado} other{{count} elementos copiados}}",
-  "homeTrashPasteElsewhere": "Abre el lugar donde quieres restaurar el elemento y pégalo allí.",
+  "homeTrashPasteElsewhere": "Abre la pestaña de origen y pulsa Pegar para restaurar el elemento.",
+  "homePasteRestoreOriginalQuestion": "¿Restaurar este elemento a su ubicación original?",
+  "homePasteRestoredOriginalCollection": "Se ha restaurado en su colección original.",
   "homeClipboardClear": "Cancelar",
   "homeExportedWorkMetadata": "{date} · {size}",
   "homeWorkFolderContents": "{count, plural, =0{Vacía} =1{1 obra} other{{count} obras}}",

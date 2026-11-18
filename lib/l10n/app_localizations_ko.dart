@@ -3450,7 +3450,22 @@ class AppLocalizationsKo extends AppLocalizations {
   String get perfSettingsTrashAutoDeleteTitle => '휴지통 자동 삭제';
 
   @override
-  String get perfSettingsTrashAutoDeleteSubtitle => '삭제된 프로젝트의 보관 기간';
+  String get perfSettingsTrashAutoDeleteSubtitle => '휴지통에 프로젝트와 파일을 보관하는 기간';
+
+  @override
+  String perfSettingsTrashApplyConfirm(int count) {
+    return '이 설정을 적용하면 보관 기간이 지난 휴지통 항목 $count개가 즉시 영구 삭제됩니다.';
+  }
+
+  @override
+  String perfSettingsTrashApplied(int count) {
+    return '보관 기간이 지난 휴지통 항목 $count개를 영구 삭제했습니다.';
+  }
+
+  @override
+  String homeTrashDaysUntilPermanentDelete(int days) {
+    return '자동 삭제까지 $days일';
+  }
 
   @override
   String get perfSettingsTrashAutoDeleteOff => 'OFF';
@@ -9884,7 +9899,13 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
-  String get homeTrashPasteElsewhere => '복원할 위치를 열고 붙여넣으세요.';
+  String get homeTrashPasteElsewhere => '원래 탭을 열고 붙여넣기를 눌러 항목을 복원하세요.';
+
+  @override
+  String get homePasteRestoreOriginalQuestion => '이 항목을 원래 위치로 복원할까요?';
+
+  @override
+  String get homePasteRestoredOriginalCollection => '원래 목록에 복원했습니다.';
 
   @override
   String get homeClipboardClear => '취소';

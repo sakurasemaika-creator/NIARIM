@@ -3433,7 +3433,22 @@ class AppLocalizationsJa extends AppLocalizations {
   String get perfSettingsTrashAutoDeleteTitle => 'ゴミ箱の自動削除';
 
   @override
-  String get perfSettingsTrashAutoDeleteSubtitle => '削除済みプロジェクトの保持期間';
+  String get perfSettingsTrashAutoDeleteSubtitle => 'ゴミ箱の作品・ファイルの保持期間';
+
+  @override
+  String perfSettingsTrashApplyConfirm(int count) {
+    return 'この設定を適用すると、期限切れの項目$count件を今すぐ完全に削除します。削除した項目は元に戻せません。';
+  }
+
+  @override
+  String perfSettingsTrashApplied(int count) {
+    return '期限切れの項目$count件を完全に削除しました。';
+  }
+
+  @override
+  String homeTrashDaysUntilPermanentDelete(int days) {
+    return '自動削除まで$days日';
+  }
 
   @override
   String get perfSettingsTrashAutoDeleteOff => 'OFF';
@@ -9832,7 +9847,13 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
-  String get homeTrashPasteElsewhere => '戻したい場所を開いて貼り付けてください。';
+  String get homeTrashPasteElsewhere => '元のタブを開き、「貼り付け」を押すと復元できます。';
+
+  @override
+  String get homePasteRestoreOriginalQuestion => '以下の項目を元の場所に復元しますか？';
+
+  @override
+  String get homePasteRestoredOriginalCollection => 'ゴミ箱から元の一覧に復元しました。';
 
   @override
   String get homeClipboardClear => 'クリア';

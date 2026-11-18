@@ -2681,7 +2681,9 @@ class _HomeScreenState extends State<HomeScreen>
       _clipboardIsCut = entry.isCut;
       _otherClipboard = entry;
     });
-    if (mounted) {
+    if (entry.source == HomePasteArea.trash) {
+      _closeClipboardNotice();
+    } else {
       _showClipboardFeedback(
         AppLocalizations.of(context)!.homeCopiedSnackbar(1),
         describesClipboard: true,
@@ -3098,7 +3100,7 @@ class _HomeScreenState extends State<HomeScreen>
           key: const Key('homePasteRestoreDialog'),
           title: Text(l10n.homeRestoreFromTrashTitle),
           content: copyNameText(
-            '${l10n.homeRestoreFromTrashQuestion}\n'
+            '${l10n.homePasteRestoreOriginalQuestion}\n'
             '${l10n.commonBulletItem(entry.name)}',
             name: entry.name,
           ),
@@ -3258,7 +3260,11 @@ class _HomeScreenState extends State<HomeScreen>
       }
       if (mounted) {
         setState(() {});
-        _showClipboardFeedback(l10n.homePastedSnackbar(1));
+        _showClipboardFeedback(
+          entry.source == HomePasteArea.trash
+              ? l10n.homePasteRestoredOriginalCollection
+              : l10n.homePastedSnackbar(1),
+        );
       }
     } catch (error, stackTrace) {
       AppErrorReporter.record(error, stackTrace);
@@ -6327,7 +6333,16 @@ class _TrashTabState extends State<_TrashTab> {
 
   String _deletedLabel(DateTime? deleted, AppLocalizations l10n) {
     if (deleted == null) return '';
-    return l10n.homeTrashDeletedOn(deleted);
+    final label = l10n.homeTrashDeletedOn(deleted);
+    final limit = context.read<SettingsService>().trashAutoDeleteDays;
+    if (limit <= 0) return label;
+    final expiry = deleted.add(Duration(days: limit));
+    final left = expiry.difference(DateTime.now()).inMilliseconds;
+    final remaining = (left / Duration.millisecondsPerDay).ceil().clamp(
+      0,
+      limit,
+    );
+    return '$label · ${l10n.homeTrashDaysUntilPermanentDelete(remaining)}';
   }
 
   Future<bool> _confirmRestoreFromTrash(String name) async {
@@ -6922,6 +6937,9 @@ class _TrashTabState extends State<_TrashTab> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final service = context.watch<ProjectService>();
+    context.select<SettingsService, int>(
+      (settings) => settings.trashAutoDeleteDays,
+    );
     return FutureBuilder<List<LocalTrashedFile>>(
       future: _localFiles,
       builder: (context, snapshot) {

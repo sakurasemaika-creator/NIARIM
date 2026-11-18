@@ -55,6 +55,44 @@ void main() {
     }
   }
 
+  testWidgets('pasting a Trash entry in another folder explains the original '
+      'location and restores the work there', (tester) async {
+    final home = await HomeClipboardHarness.open(tester);
+    final original = await home.addFolder('Original');
+    await home.addFolder('Other');
+    final work = await home.addWork('Work in Trash', folderId: original.id);
+    await tester.runAsync(() => home.projects.deleteProject(work.id));
+    await home.showTab(3);
+    await tester.tap(find.byKey(ValueKey('trashCopyProject_${work.id}')));
+    await home.settle();
+    expect(home.pasteButton, findsNothing);
+    expect(find.text(home.l10n.homeTrashPasteElsewhere), findsOneWidget);
+
+    await home.showTab(0);
+    await tester.tap(home.card('Other').first);
+    await home.settle();
+    await tester.tap(home.pasteButton);
+    await home.settle();
+    final confirm = find.byKey(const Key('homePasteRestoreConfirmButton'));
+    expect(
+      find.textContaining(home.l10n.homePasteRestoreOriginalQuestion),
+      findsOneWidget,
+    );
+    await tester.tap(confirm);
+    await home.waitFor(
+      () => home.projects.projects.any((project) => project.id == work.id),
+    );
+    final restored = home.projects.projects.singleWhere(
+      (project) => project.id == work.id,
+    );
+    expect(restored.folderId, original.id);
+    expect(home.projects.trash, isEmpty);
+    expect(home.card(work.name), findsNothing);
+    await expectNotice(home, home.l10n.homePasteRestoredOriginalCollection);
+    expect(tester.takeException(), isNull);
+    await home.close();
+  });
+
   testWidgets('a Trash copy of a work deleted for good is not counted as '
       'pasted', (tester) async {
     final home = await HomeClipboardHarness.open(tester);

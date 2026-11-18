@@ -3571,7 +3571,22 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get perfSettingsTrashAutoDeleteSubtitle =>
-      'Retention period for deleted projects';
+      'How long projects and files stay in Trash';
+
+  @override
+  String perfSettingsTrashApplyConfirm(int count) {
+    return 'Applying this setting will permanently delete $count expired Trash items now.';
+  }
+
+  @override
+  String perfSettingsTrashApplied(int count) {
+    return 'Permanently deleted $count expired Trash items.';
+  }
+
+  @override
+  String homeTrashDaysUntilPermanentDelete(int days) {
+    return 'Auto-delete in $days d';
+  }
 
   @override
   String get perfSettingsTrashAutoDeleteOff => 'OFF';
@@ -10550,7 +10565,15 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get homeTrashPasteElsewhere =>
-      'Open the destination where you want to restore the item, then paste.';
+      'Open the original tab and choose Paste to restore the item.';
+
+  @override
+  String get homePasteRestoreOriginalQuestion =>
+      'Restore this item to its original location?';
+
+  @override
+  String get homePasteRestoredOriginalCollection =>
+      'Restored to its original collection.';
 
   @override
   String get homeClipboardClear => 'Clear';

@@ -1570,7 +1570,31 @@
     }
   },
   "perfSettingsTrashAutoDeleteTitle": "ゴミ箱の自動削除",
-  "perfSettingsTrashAutoDeleteSubtitle": "削除済みプロジェクトの保持期間",
+  "perfSettingsTrashAutoDeleteSubtitle": "ゴミ箱の作品・ファイルの保持期間",
+  "perfSettingsTrashApplyConfirm": "この設定を適用すると、期限切れの項目{count}件を今すぐ完全に削除します。削除した項目は元に戻せません。",
+  "@perfSettingsTrashApplyConfirm": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "perfSettingsTrashApplied": "期限切れの項目{count}件を完全に削除しました。",
+  "@perfSettingsTrashApplied": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "homeTrashDaysUntilPermanentDelete": "自動削除まで{days}日",
+  "@homeTrashDaysUntilPermanentDelete": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
   "perfSettingsTrashAutoDeleteOff": "OFF",
   "@perfSettingsTrashAutoDeleteOff": {
     "description": "ゴミ箱の自動削除の値・選択肢（オフ）。仏・西は女性名詞（Suppression・Eliminación）に合わせる。"
@@ -5577,7 +5601,9 @@
       }
     }
   },
-  "homeTrashPasteElsewhere": "戻したい場所を開いて貼り付けてください。",
+  "homeTrashPasteElsewhere": "元のタブを開き、「貼り付け」を押すと復元できます。",
+  "homePasteRestoreOriginalQuestion": "以下の項目を元の場所に復元しますか？",
+  "homePasteRestoredOriginalCollection": "ゴミ箱から元の一覧に復元しました。",
   "homeClipboardClear": "クリア",
   "@homeClipboardClear": {
     "description": "ホームの上の帯：コピー・切り取りをやめて帯を閉じるボタン"

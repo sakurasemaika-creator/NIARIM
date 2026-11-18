@@ -6300,8 +6300,26 @@ abstract class AppLocalizations {
   /// No description provided for @perfSettingsTrashAutoDeleteSubtitle.
   ///
   /// In ja, this message translates to:
-  /// **'削除済みプロジェクトの保持期間'**
+  /// **'ゴミ箱の作品・ファイルの保持期間'**
   String get perfSettingsTrashAutoDeleteSubtitle;
+
+  /// No description provided for @perfSettingsTrashApplyConfirm.
+  ///
+  /// In ja, this message translates to:
+  /// **'この設定を適用すると、期限切れの項目{count}件を今すぐ完全に削除します。削除した項目は元に戻せません。'**
+  String perfSettingsTrashApplyConfirm(int count);
+
+  /// No description provided for @perfSettingsTrashApplied.
+  ///
+  /// In ja, this message translates to:
+  /// **'期限切れの項目{count}件を完全に削除しました。'**
+  String perfSettingsTrashApplied(int count);
+
+  /// No description provided for @homeTrashDaysUntilPermanentDelete.
+  ///
+  /// In ja, this message translates to:
+  /// **'自動削除まで{days}日'**
+  String homeTrashDaysUntilPermanentDelete(int days);
 
   /// ゴミ箱の自動削除の値・選択肢（オフ）。仏・西は女性名詞（Suppression・Eliminación）に合わせる。
   ///
@@ -17400,8 +17418,20 @@ abstract class AppLocalizations {
   /// No description provided for @homeTrashPasteElsewhere.
   ///
   /// In ja, this message translates to:
-  /// **'戻したい場所を開いて貼り付けてください。'**
+  /// **'元のタブを開き、「貼り付け」を押すと復元できます。'**
   String get homeTrashPasteElsewhere;
+
+  /// No description provided for @homePasteRestoreOriginalQuestion.
+  ///
+  /// In ja, this message translates to:
+  /// **'以下の項目を元の場所に復元しますか？'**
+  String get homePasteRestoreOriginalQuestion;
+
+  /// No description provided for @homePasteRestoredOriginalCollection.
+  ///
+  /// In ja, this message translates to:
+  /// **'ゴミ箱から元の一覧に復元しました。'**
+  String get homePasteRestoredOriginalCollection;
 
   /// ホームの上の帯：コピー・切り取りをやめて帯を閉じるボタン
   ///

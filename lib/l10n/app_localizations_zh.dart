@@ -3405,7 +3405,22 @@ class AppLocalizationsZh extends AppLocalizations {
   String get perfSettingsTrashAutoDeleteTitle => '回收站自动删除';
 
   @override
-  String get perfSettingsTrashAutoDeleteSubtitle => '已删除项目的保留期限';
+  String get perfSettingsTrashAutoDeleteSubtitle => '回收站中项目和文件的保留期限';
+
+  @override
+  String perfSettingsTrashApplyConfirm(int count) {
+    return '应用此设置将立即永久删除回收站中 $count 个已到期的项目。';
+  }
+
+  @override
+  String perfSettingsTrashApplied(int count) {
+    return '已永久删除回收站中 $count 个到期项目。';
+  }
+
+  @override
+  String homeTrashDaysUntilPermanentDelete(int days) {
+    return '距自动删除还有 $days 天';
+  }
 
   @override
   String get perfSettingsTrashAutoDeleteOff => '关闭';
@@ -9717,7 +9732,13 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get homeTrashPasteElsewhere => '打开要恢复到的位置，再粘贴。';
+  String get homeTrashPasteElsewhere => '打开原来的标签页，点击“粘贴”即可恢复该项目。';
+
+  @override
+  String get homePasteRestoreOriginalQuestion => '要将此项目恢复到原来的位置吗？';
+
+  @override
+  String get homePasteRestoredOriginalCollection => '已恢复到原来的列表。';
 
   @override
   String get homeClipboardClear => '清除';
@@ -13683,7 +13704,22 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get perfSettingsTrashAutoDeleteTitle => '垃圾桶自動刪除';
 
   @override
-  String get perfSettingsTrashAutoDeleteSubtitle => '已刪除專案的保留期限';
+  String get perfSettingsTrashAutoDeleteSubtitle => '資源回收筒中專案和檔案的保留期限';
+
+  @override
+  String perfSettingsTrashApplyConfirm(int count) {
+    return '套用此設定將立即永久刪除資源回收筒中 $count 個已到期的項目。';
+  }
+
+  @override
+  String perfSettingsTrashApplied(int count) {
+    return '已永久刪除資源回收筒中 $count 個到期項目。';
+  }
+
+  @override
+  String homeTrashDaysUntilPermanentDelete(int days) {
+    return '距自動刪除還有 $days 天';
+  }
 
   @override
   String get perfSettingsTrashAutoDeleteOff => '關閉';
@@ -19998,7 +20034,13 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   }
 
   @override
-  String get homeTrashPasteElsewhere => '開啟要還原到的位置，再貼上。';
+  String get homeTrashPasteElsewhere => '開啟原來的分頁，點選「貼上」即可還原此項目。';
+
+  @override
+  String get homePasteRestoreOriginalQuestion => '要將此項目還原到原來的位置嗎？';
+
+  @override
+  String get homePasteRestoredOriginalCollection => '已還原到原來的清單。';
 
   @override
   String get homeClipboardClear => '清除';

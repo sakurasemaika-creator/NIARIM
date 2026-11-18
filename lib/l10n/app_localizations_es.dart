@@ -3624,7 +3624,22 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get perfSettingsTrashAutoDeleteSubtitle =>
-      'Periodo de retención de proyectos eliminados';
+      'Tiempo de conservación de proyectos y archivos en la papelera';
+
+  @override
+  String perfSettingsTrashApplyConfirm(int count) {
+    return 'Al aplicar este ajuste, se eliminarán de forma permanente $count elementos caducados de la papelera.';
+  }
+
+  @override
+  String perfSettingsTrashApplied(int count) {
+    return 'Se eliminaron de forma permanente $count elementos caducados de la papelera.';
+  }
+
+  @override
+  String homeTrashDaysUntilPermanentDelete(int days) {
+    return 'Eliminación automática en $days d';
+  }
 
   @override
   String get perfSettingsTrashAutoDeleteOff => 'Desactivada';
@@ -10704,7 +10719,15 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get homeTrashPasteElsewhere =>
-      'Abre el lugar donde quieres restaurar el elemento y pégalo allí.';
+      'Abre la pestaña de origen y pulsa Pegar para restaurar el elemento.';
+
+  @override
+  String get homePasteRestoreOriginalQuestion =>
+      '¿Restaurar este elemento a su ubicación original?';
+
+  @override
+  String get homePasteRestoredOriginalCollection =>
+      'Se ha restaurado en su colección original.';
 
   @override
   String get homeClipboardClear => 'Cancelar';

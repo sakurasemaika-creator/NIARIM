@@ -1247,7 +1247,10 @@
     }
   },
   "perfSettingsTrashAutoDeleteTitle": "垃圾桶自動刪除",
-  "perfSettingsTrashAutoDeleteSubtitle": "已刪除專案的保留期限",
+  "perfSettingsTrashAutoDeleteSubtitle": "資源回收筒中專案和檔案的保留期限",
+  "perfSettingsTrashApplyConfirm": "套用此設定將立即永久刪除資源回收筒中 {count} 個已到期的項目。",
+  "perfSettingsTrashApplied": "已永久刪除資源回收筒中 {count} 個到期項目。",
+  "homeTrashDaysUntilPermanentDelete": "距自動刪除還有 {days} 天",
   "perfSettingsTrashAutoDeleteOff": "關閉",
   "perfSettingsTrashAutoDeleteValue": "{n}天",
   "@perfSettingsTrashAutoDeleteValue": {
@@ -3810,7 +3813,9 @@
   "homeFolderMenuTooltip": "資料夾選單",
   "homeClipboardCutStatus": "已剪下{count}項",
   "homeClipboardCopiedStatus": "已複製{count}項",
-  "homeTrashPasteElsewhere": "開啟要還原到的位置，再貼上。",
+  "homeTrashPasteElsewhere": "開啟原來的分頁，點選「貼上」即可還原此項目。",
+  "homePasteRestoreOriginalQuestion": "要將此項目還原到原來的位置嗎？",
+  "homePasteRestoredOriginalCollection": "已還原到原來的清單。",
   "homeClipboardClear": "清除",
   "homeExportedWorkMetadata": "{date} · {size}",
   "homeWorkFolderContents": "{count, plural, =0{空} other{{count}個作品}}",

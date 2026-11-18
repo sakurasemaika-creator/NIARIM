@@ -1173,9 +1173,26 @@ class SettingsService extends ChangeNotifier {
   }
 
   Future<void> setTrashAutoDelete(int days) async {
-    _trashAutoDeleteDays = days;
+    const key = 'trash_auto_delete';
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setInt('trash_auto_delete', days);
+    final previous = prefs.readInt(key);
+    try {
+      if (!await prefs.setInt(key, days)) {
+        throw StateError('Trash retention preference write rejected');
+      }
+    } catch (_) {
+      try {
+        if (previous == null) {
+          await prefs.remove(key);
+        } else {
+          await prefs.setInt(key, previous);
+        }
+      } catch (_) {
+        // SharedPreferences restores the cached value before writing.
+      }
+      rethrow;
+    }
+    _trashAutoDeleteDays = days;
     notifyListeners();
   }
 

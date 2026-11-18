@@ -1247,7 +1247,10 @@
     }
   },
   "perfSettingsTrashAutoDeleteTitle": "回收站自动删除",
-  "perfSettingsTrashAutoDeleteSubtitle": "已删除项目的保留期限",
+  "perfSettingsTrashAutoDeleteSubtitle": "回收站中项目和文件的保留期限",
+  "perfSettingsTrashApplyConfirm": "应用此设置将立即永久删除回收站中 {count} 个已到期的项目。",
+  "perfSettingsTrashApplied": "已永久删除回收站中 {count} 个到期项目。",
+  "homeTrashDaysUntilPermanentDelete": "距自动删除还有 {days} 天",
   "perfSettingsTrashAutoDeleteOff": "关闭",
   "perfSettingsTrashAutoDeleteValue": "{n}天",
   "@perfSettingsTrashAutoDeleteValue": {
@@ -3810,7 +3813,9 @@
   "homeFolderMenuTooltip": "文件夹菜单",
   "homeClipboardCutStatus": "已剪切{count}项",
   "homeClipboardCopiedStatus": "已复制{count}项",
-  "homeTrashPasteElsewhere": "打开要恢复到的位置，再粘贴。",
+  "homeTrashPasteElsewhere": "打开原来的标签页，点击“粘贴”即可恢复该项目。",
+  "homePasteRestoreOriginalQuestion": "要将此项目恢复到原来的位置吗？",
+  "homePasteRestoredOriginalCollection": "已恢复到原来的列表。",
   "homeClipboardClear": "清除",
   "homeExportedWorkMetadata": "{date} · {size}",
   "homeWorkFolderContents": "{count, plural, =0{空} other{{count}个作品}}",

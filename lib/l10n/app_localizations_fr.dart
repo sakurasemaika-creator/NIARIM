@@ -3620,7 +3620,22 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get perfSettingsTrashAutoDeleteSubtitle =>
-      'Durée de conservation des projets supprimés';
+      'Durée de conservation des projets et des fichiers dans la corbeille';
+
+  @override
+  String perfSettingsTrashApplyConfirm(int count) {
+    return 'Ce réglage supprime définitivement dès maintenant $count éléments arrivés à expiration dans la corbeille.';
+  }
+
+  @override
+  String perfSettingsTrashApplied(int count) {
+    return '$count éléments arrivés à expiration ont été supprimés définitivement de la corbeille.';
+  }
+
+  @override
+  String homeTrashDaysUntilPermanentDelete(int days) {
+    return 'Suppression automatique dans $days j';
+  }
 
   @override
   String get perfSettingsTrashAutoDeleteOff => 'Désactivée';
@@ -10710,7 +10725,15 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get homeTrashPasteElsewhere =>
-      'Ouvrez l’emplacement où restaurer l’élément, puis collez-le.';
+      'Ouvrez l’onglet d’origine et choisissez Coller pour restaurer l’élément.';
+
+  @override
+  String get homePasteRestoreOriginalQuestion =>
+      'Restaurer cet élément à son emplacement d’origine ?';
+
+  @override
+  String get homePasteRestoredOriginalCollection =>
+      'Élément restauré dans sa collection d’origine.';
 
   @override
   String get homeClipboardClear => 'Vider';
