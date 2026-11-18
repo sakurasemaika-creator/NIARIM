@@ -163,6 +163,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
   ui.Image? _colorAdjustCanvasPreview;
   int _canvasContentRevision = 0;
   final _canvasAreaKey = GlobalKey(debugLabel: 'Canvas drawing area');
+  final _navigatorViewport = ValueNotifier<Rect?>(null);
+  CanvasViewRequest? _navigatorViewRequest;
   // The canvas selection (drawing filters apply only inside it) and the
   // glasses filter's lens area, painted on the canvas while it is adjusted.
   Uint8List? _canvasSelectionMask;
@@ -1431,6 +1433,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
   @override
   void dispose() {
     _screenFocus.dispose();
+    _navigatorViewport.dispose();
     _referenceImage.dispose();
     _filterCanvasPreview?.dispose();
     _colorAdjustCanvasPreview?.dispose();
@@ -1733,6 +1736,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
                                     }),
                                     child: CanvasArea(
                                       key: _canvasAreaKey,
+                                      viewRequest: _navigatorViewRequest,
+                                      navigatorViewport: _navigatorViewport,
                                       onTapForText:
                                           _currentTool == DrawingTool.text
                                           ? onCanvasTapForText
@@ -2533,6 +2538,14 @@ class _CanvasScreenState extends State<CanvasScreen> {
       projectId: widget.projectId,
       sceneId: _currentSceneId,
       frameIndex: _currentFrame,
+      viewport: _navigatorViewport,
+      onNavigate: (target) => setState(() {
+        _navigatorViewRequest = CanvasViewRequest(
+          (_navigatorViewRequest?.serial ?? 0) + 1,
+          CanvasViewAction.centerOn,
+          normalizedCenter: target,
+        );
+      }),
       onClose: () =>
           _setDesktopPanelVisible(CanvasDockPanel.canvasPreview, false),
       showCloseButton: false,

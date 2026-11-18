@@ -1,27 +1,26 @@
 import 'dart:async';
 import 'dart:ui' as ui;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../engine/layer_compositor.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../models/layer.dart';
 import '../../../services/project_service.dart';
 import '../../../services/theme_service.dart';
 import '../../../config/font_fallback.dart';
 import '../../../widgets/docked_panel_scope.dart';
 import '../../../widgets/frame_preview_background.dart';
 
-/// キャンバスプレビュー（ナビゲーター）：拡大表示中でも作品全体を縮小した
-/// 状態で常に確認できる、プロ向けペイントソフトのナビゲーターパネルに
-/// 相当する機能（PC/DeXモードのドッキング領域専用）。フル解像度で毎フレーム
-/// 再合成すると重いため、小さい出力サイズで軽量に合成し、一定間隔で
-/// 更新する（ライブのストロークそのものではなく「今どのあたりを描いて
-/// いるか」を把握するための概観表示）。
+/// A small view of the drawing area with the current canvas viewport.
 class CanvasPreviewNavigator extends StatefulWidget {
   final String projectId;
   final String sceneId;
   final int frameIndex;
+  final ValueListenable<Rect?> viewport;
+  final ValueChanged<Offset> onNavigate;
   final VoidCallback onClose;
   final bool showCloseButton;
 
@@ -30,6 +29,8 @@ class CanvasPreviewNavigator extends StatefulWidget {
     required this.projectId,
     required this.sceneId,
     required this.frameIndex,
+    required this.viewport,
+    required this.onNavigate,
     required this.onClose,
     this.showCloseButton = true,
   });
@@ -42,13 +43,19 @@ class _CanvasPreviewNavigatorState extends State<CanvasPreviewNavigator> {
   ui.Image? _image;
   bool _building = false;
   Timer? _timer;
+  List<Layer>? _renderedLayers;
+  int? _renderedRevision;
+  int? _renderedPaper;
+  bool _reportedError = false;
+
+  (String, String, int) get _frame =>
+      (widget.projectId, widget.sceneId, widget.frameIndex);
 
   @override
   void initState() {
     super.initState();
     _rebuild();
-    // ストローク中も一定間隔で最新の状態へ更新する（毎フレーム合成は
-    // 重いため、フル解像度ではなく縮小サイズでの合成に留めている）。
+    // Refresh strokes at a bounded rate while keeping idle previews cached.
     _timer = Timer.periodic(
       const Duration(milliseconds: 900),
       (_) => _rebuild(),
@@ -61,6 +68,8 @@ class _CanvasPreviewNavigatorState extends State<CanvasPreviewNavigator> {
     if (old.sceneId != widget.sceneId ||
         old.frameIndex != widget.frameIndex ||
         old.projectId != widget.projectId) {
+      _image?.dispose();
+      _image = null;
       _rebuild();
     }
   }
@@ -75,53 +84,73 @@ class _CanvasPreviewNavigatorState extends State<CanvasPreviewNavigator> {
   Future<void> _rebuild() async {
     if (_building || !mounted) return;
     _building = true;
+    final frame = _frame;
+    final (projectId, sceneId, frameIndex) = frame;
     try {
       final ps = context.read<ProjectService>();
-      final tm = ps.tileManagerOf(widget.projectId);
-      final layers = ps.layersOf(
-        widget.projectId,
-        widget.sceneId,
-        widget.frameIndex,
-      );
-      // 概観確認用のため、縦横比を保ったまま長辺を200pxまで縮小して合成する
-      // （フル解像度は不要かつ重い）。
-      const maxSide = 200.0;
-      final scale =
-          maxSide /
-          (tm.canvasWidth > tm.canvasHeight ? tm.canvasWidth : tm.canvasHeight);
-      final outW = (tm.canvasWidth * scale).round().clamp(1, 4096);
-      final outH = (tm.canvasHeight * scale).round().clamp(1, 4096);
-      final img = await LayerCompositor.composite(
+      final tm = ps.tileManagerOf(projectId);
+      final layers = ps.layersOf(projectId, sceneId, frameIndex);
+      final background = ps.projects
+          .where((project) => project.id == projectId)
+          .firstOrNull
+          ?.backgroundColor;
+      final paper = LayerCompositor.paperForBlendModes(layers, background);
+      final revision = tm.rasterRevision;
+      if (_image != null &&
+          revision == _renderedRevision &&
+          paper == _renderedPaper &&
+          listEquals(layers, _renderedLayers)) {
+        return;
+      }
+      final width = tm.canvasWidth, height = tm.canvasHeight;
+      final full = await LayerCompositor.composite(
         tm,
         layers,
-        (l) => ps.tileKeyFor(
-          widget.projectId,
-          widget.sceneId,
-          widget.frameIndex,
-          l.id,
-        ),
-        outW,
-        outH,
-        paperColor: LayerCompositor.paperForBlendModes(
-          layers,
-          ps.projects
-              .where((p) => p.id == widget.projectId)
-              .firstOrNull
-              ?.backgroundColor,
-        ),
+        (layer) => ps.tileKeyFor(projectId, sceneId, frameIndex, layer.id),
+        width,
+        height,
+        paperColor: paper,
       );
-      if (!mounted) {
-        img.dispose();
+      const maxSide = 200;
+      final scale = maxSide / (width > height ? width : height);
+      final outW = (width * scale).round().clamp(1, maxSide);
+      final outH = (height * scale).round().clamp(1, maxSide);
+      final recorder = ui.PictureRecorder();
+      final canvas = ui.Canvas(recorder);
+      canvas.drawImageRect(
+        full,
+        Rect.fromLTWH(0, 0, width.toDouble(), height.toDouble()),
+        Rect.fromLTWH(0, 0, outW.toDouble(), outH.toDouble()),
+        ui.Paint()..filterQuality = ui.FilterQuality.medium,
+      );
+      full.dispose();
+      final picture = recorder.endRecording();
+      final ui.Image image;
+      try {
+        image = await picture.toImage(outW, outH);
+      } finally {
+        picture.dispose();
+      }
+      if (!mounted || frame != _frame) {
+        image.dispose();
         return;
       }
       final old = _image;
-      setState(() => _image = img);
+      _renderedLayers = List.of(layers);
+      _renderedRevision = revision;
+      _renderedPaper = paper;
+      _reportedError = false;
+      setState(() => _image = image);
       old?.dispose();
-    } catch (_) {
-      // 合成に失敗しても（レイヤーが空、破棄済みタイル等）ナビゲーター自体は
-      // 表示を維持し、次回の定期更新で回復を試みる。
+    } catch (error, stack) {
+      if (!_reportedError) {
+        debugPrint('Canvas preview rendering failed: $error');
+        debugPrintStack(stackTrace: stack);
+        _reportedError = true;
+      }
     } finally {
       _building = false;
+      if (mounted && frame != _frame) unawaited(_rebuild());
     }
   }
 
@@ -174,59 +203,100 @@ class _CanvasPreviewNavigatorState extends State<CanvasPreviewNavigator> {
               ],
             ),
           ),
-          Expanded(
-            child: Center(
-              child: AspectRatio(
-                aspectRatio: _image != null
-                    ? _image!.width / _image!.height
-                    : 1,
-                child: Container(
-                  color: scheme.surfaceContainerHighest,
-                  child: _image == null
-                      ? const Center(
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      // The project's own background, as on the canvas.
-                      : FramePreviewBackground(
-                          backgroundColor:
-                              context
-                                  .watch<ProjectService>()
-                                  .projects
-                                  .where((p) => p.id == widget.projectId)
-                                  .firstOrNull
-                                  ?.backgroundColor ??
-                              0xFFFFFFFF,
-                          aspectRatio: _image!.width / _image!.height,
-                          child: RawImage(image: _image, fit: BoxFit.fill),
-                        ),
-                ),
-              ),
-            ),
-          ),
+          Expanded(child: Center(child: preview)),
         ],
       ),
     );
   }
 
-  Widget _preview(ColorScheme scheme) => AspectRatio(
-    aspectRatio: _image != null ? _image!.width / _image!.height : 1,
-    child: Container(
-      color: scheme.surfaceContainerHighest,
-      child: _image == null
-          ? const Center(child: CircularProgressIndicator(strokeWidth: 2))
-          // The project's own background, as on the canvas.
-          : FramePreviewBackground(
-              backgroundColor:
-                  context
-                      .watch<ProjectService>()
-                      .projects
-                      .where((p) => p.id == widget.projectId)
-                      .firstOrNull
-                      ?.backgroundColor ??
-                  0xFFFFFFFF,
-              aspectRatio: _image!.width / _image!.height,
-              child: RawImage(image: _image, fit: BoxFit.fill),
-            ),
-    ),
-  );
+  Widget _preview(ColorScheme scheme) {
+    final image = _image;
+    return AspectRatio(
+      aspectRatio: image == null ? 1 : image.width / image.height,
+      child: ColoredBox(
+        color: scheme.surfaceContainerHighest,
+        child: image == null
+            ? const Center(child: CircularProgressIndicator(strokeWidth: 2))
+            : LayoutBuilder(
+                builder: (context, constraints) {
+                  final size = constraints.biggest;
+                  void navigate(Offset position) {
+                    if (size.isEmpty) return;
+                    widget.onNavigate(
+                      Offset(
+                        (position.dx / size.width).clamp(0.0, 1.0),
+                        (position.dy / size.height).clamp(0.0, 1.0),
+                      ),
+                    );
+                  }
+
+                  return GestureDetector(
+                    key: const ValueKey('canvasPreviewNavigatorImage'),
+                    behavior: HitTestBehavior.opaque,
+                    onTapDown: (details) => navigate(details.localPosition),
+                    onPanStart: (details) => navigate(details.localPosition),
+                    onPanUpdate: (details) => navigate(details.localPosition),
+                    child: FramePreviewBackground(
+                      backgroundColor:
+                          context
+                              .watch<ProjectService>()
+                              .projects
+                              .where((p) => p.id == widget.projectId)
+                              .firstOrNull
+                              ?.backgroundColor ??
+                          0xFFFFFFFF,
+                      child: Stack(
+                        fit: StackFit.expand,
+                        children: [
+                          RawImage(image: image, fit: BoxFit.fill),
+                          ValueListenableBuilder<Rect?>(
+                            valueListenable: widget.viewport,
+                            builder: (context, viewport, _) => CustomPaint(
+                              painter: _ViewportBorder(
+                                viewport,
+                                scheme.primary,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+      ),
+    );
+  }
+}
+
+class _ViewportBorder extends CustomPainter {
+  const _ViewportBorder(this.viewport, this.color);
+
+  final Rect? viewport;
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final rect = viewport;
+    if (rect == null) return;
+    final bounds = Rect.fromLTRB(
+      rect.left * size.width,
+      rect.top * size.height,
+      rect.right * size.width,
+      rect.bottom * size.height,
+    );
+    final border = ui.Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3
+      ..color = Colors.white;
+    canvas.drawRect(bounds, border);
+    border
+      ..strokeWidth = 1.5
+      ..color = color;
+    canvas.drawRect(bounds, border);
+  }
+
+  @override
+  bool shouldRepaint(_ViewportBorder old) =>
+      viewport != old.viewport || color != old.color;
 }

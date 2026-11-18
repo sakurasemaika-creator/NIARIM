@@ -636,7 +636,7 @@ class _FrameThumbnailState extends State<_FrameThumbnail> {
         exportH.toDouble(),
       ),
       ui.Rect.fromLTWH(0, 0, thumbW.toDouble(), thumbH.toDouble()),
-      ui.Paint(),
+      ui.Paint()..filterQuality = ui.FilterQuality.medium,
     );
     fullImage.dispose();
     final picture = recorder.endRecording();

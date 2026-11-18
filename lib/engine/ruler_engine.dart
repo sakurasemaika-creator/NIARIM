@@ -138,15 +138,60 @@ class RulerEngine {
     final sr = sin(-ruler.rotation);
     final localDx = dx * cr - dy * sr;
     final localDy = dx * sr + dy * cr;
-    final angle = atan2(localDy, localDx);
-    final localX = rx * cos(angle);
-    final localY = ry * sin(angle);
-    final wc = cos(ruler.rotation);
-    final ws = sin(ruler.rotation);
-    return Offset(
-      ruler.position.dx + localX * wc - localY * ws,
-      ruler.position.dy + localX * ws + localY * wc,
-    );
+    if (rx <= 0 || ry <= 0) return point;
+    final angle = atan2(localDy / ry, localDx / rx);
+    return _fromEllipseAngle(ruler.position, rx, ry, cr, -sr, angle);
+  }
+
+  /// Intermediate points on the short arc between two snapped samples.
+  /// The maximum radius bounds how far each chord can leave the guide.
+  List<Offset> arcBetween(Offset from, Offset to) {
+    final ruler = _activeRuler;
+    if (ruler == null ||
+        !ruler.snapEnabled ||
+        (ruler.type != RulerType.circle && ruler.type != RulerType.ellipse)) {
+      return const [];
+    }
+    final rx = ruler.settings.radiusX ?? 100;
+    final ry = ruler.type == RulerType.circle
+        ? rx
+        : ruler.settings.radiusY ?? 60;
+    if (rx <= 0 || ry <= 0 || !rx.isFinite || !ry.isFinite) return const [];
+    final c = ruler.type == RulerType.circle ? 1.0 : cos(ruler.rotation);
+    final s = ruler.type == RulerType.circle ? 0.0 : sin(ruler.rotation);
+    double angle(Offset point) {
+      final d = point - ruler.position;
+      return atan2((-d.dx * s + d.dy * c) / ry, (d.dx * c + d.dy * s) / rx);
+    }
+
+    final start = angle(from);
+    final sweep = (angle(to) - start + pi) % (2 * pi) - pi;
+    if (!sweep.isFinite) return const [];
+    final segments = (sweep.abs() * sqrt(max(rx, ry))).ceil().clamp(1, 512);
+    return [
+      for (var index = 1; index < segments; index++)
+        _fromEllipseAngle(
+          ruler.position,
+          rx,
+          ry,
+          c,
+          s,
+          start + sweep * index / segments,
+        ),
+    ];
+  }
+
+  Offset _fromEllipseAngle(
+    Offset center,
+    double rx,
+    double ry,
+    double c,
+    double s,
+    double angle,
+  ) {
+    final x = rx * cos(angle);
+    final y = ry * sin(angle);
+    return center + Offset(x * c - y * s, x * s + y * c);
   }
 
   Offset _snapToRadial(Offset point) {

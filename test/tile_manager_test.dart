@@ -2,7 +2,9 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:niarim/engine/pixel_art_engine.dart';
 import 'package:niarim/engine/tile_manager.dart';
+import 'package:niarim/models/pixel_color_mode.dart';
 
 /// TileManagerのタイルキャッシュ（Task#73）が安全かどうかを検証するテスト。
 /// 実機での目視確認ができない開発環境のため、キャッシュの正しさ（変更後に
@@ -254,6 +256,44 @@ void main() {
     tm.endUndoRecording();
     // 記録終了後はnullに戻る。
     expect(tm.recordingTouchedTiles, isNull);
+  });
+
+  test('pixel brush palette keeps earlier paint in the same tile', () {
+    final tm = TileManager(canvasWidth: 8, canvasHeight: 8);
+    const layer = 'ink';
+    final original = tm.getOrCreateTile(layer, 0, 0);
+    tm.blendPixel(original, 1, 1, 255, 0, 0, 255);
+    tm.blendPixel(original, 2, 1, 255, 0, 0, 255);
+
+    tm.beginUndoRecording(layer);
+    final tile = tm.getOrCreateTile(layer, 0, 0);
+    tm.blendPixel(tile, 2, 1, 0, 0, 255, 255);
+    tm.blendPixel(tile, 3, 1, 0, 0, 255, 128);
+    tm.transformRecordingPixels(
+      (pixels) => const PixelArtEngine().convert(
+        pixels,
+        TileManager.tileSize,
+        TileManager.tileSize,
+        pixelSize: 1,
+        colorMode: PixelColorMode.explicit,
+        paletteColors: [0xFF000000],
+        squareBlocks: false,
+      ),
+    );
+    final stroke = tm.endUndoRecording();
+    const red = ui.Color(0xFFFF0000);
+    const black = ui.Color(0xFF000000);
+    expect(tm.getPixelColorAt(layer, 1, 1), red);
+    expect(tm.getPixelColorAt(layer, 2, 1), black);
+    expect(tm.getPixelColorAt(layer, 3, 1), const ui.Color(0x80000000));
+
+    tm.applyTileSnapshot(layer, stroke.before);
+    expect(tm.getPixelColorAt(layer, 1, 1), red);
+    expect(tm.getPixelColorAt(layer, 2, 1), red);
+    expect(tm.getPixelColorAt(layer, 3, 1), isNull);
+    tm.applyTileSnapshot(layer, stroke.after);
+    expect(tm.getPixelColorAt(layer, 1, 1), red);
+    expect(tm.getPixelColorAt(layer, 2, 1), black);
   });
 
   test('importAllは全キャッシュを無効化する', () async {

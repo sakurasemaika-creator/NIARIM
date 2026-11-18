@@ -11094,6 +11094,26 @@ class AppLocalizationsEn extends AppLocalizations {
       'The import stopped before it was complete. Items already imported are still available.';
 
   @override
+  String get transferImportStepSettings => 'Settings, themes, and palettes';
+
+  @override
+  String get transferImportStepDeviceData =>
+      'Device preferences and saved items';
+
+  @override
+  String get transferImportStepProjects => 'Projects';
+
+  @override
+  String get transferImportCompletedSteps => 'Completed steps';
+
+  @override
+  String get transferImportFailedStep =>
+      'Interrupted step (some changes may have been applied)';
+
+  @override
+  String get transferImportPendingSteps => 'Steps that did not start';
+
+  @override
   String get communityChannelRefreshRetry =>
       'Could not refresh YouTube channel information. Please try again.';
 

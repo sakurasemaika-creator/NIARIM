@@ -11262,6 +11262,26 @@ class AppLocalizationsEs extends AppLocalizations {
       'La importación se interrumpió. Los elementos ya importados siguen disponibles.';
 
   @override
+  String get transferImportStepSettings => 'Ajustes, temas y paletas';
+
+  @override
+  String get transferImportStepDeviceData =>
+      'Preferencias del dispositivo y elementos guardados';
+
+  @override
+  String get transferImportStepProjects => 'Proyectos';
+
+  @override
+  String get transferImportCompletedSteps => 'Pasos completados';
+
+  @override
+  String get transferImportFailedStep =>
+      'Paso interrumpido (es posible que se hayan aplicado algunos cambios)';
+
+  @override
+  String get transferImportPendingSteps => 'Pasos que no se iniciaron';
+
+  @override
   String get communityChannelRefreshRetry =>
       'No se pudo actualizar la información del canal de YouTube. Inténtalo de nuevo.';
 

@@ -1,5 +1,9 @@
+import 'dart:typed_data';
+import 'dart:ui' as ui;
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/engine/layer_compositor.dart';
+import 'package:niarim/engine/tile_manager.dart';
 import 'package:niarim/models/layer.dart';
 
 Layer _layer(String id, {bool hasClipping = false, String? parentFolderId}) =>
@@ -12,6 +16,49 @@ Layer _layer(String id, {bool hasClipping = false, String? parentFolderId}) =>
     );
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+  test(
+    'nested folder visibility and opacity affect the composited pixels',
+    () async {
+      final manager = TileManager(canvasWidth: 1, canvasHeight: 1);
+      addTearDown(manager.dispose);
+      manager.replaceLayerPixels('paint', Uint8List.fromList([255, 0, 0, 255]));
+      const top = Layer(
+        id: 'top',
+        name: 'top',
+        type: LayerType.folder,
+        opacity: 50,
+      );
+      const sub = Layer(
+        id: 'sub',
+        name: 'sub',
+        type: LayerType.folder,
+        parentFolderId: 'top',
+        opacity: 50,
+      );
+      final paint = _layer('paint', parentFolderId: 'sub');
+      Future<int> alpha(List<Layer> layers) async {
+        final image = await LayerCompositor.composite(
+          manager,
+          layers,
+          (layer) => layer.id,
+          1,
+          1,
+        );
+        try {
+          return (await image.toByteData(
+            format: ui.ImageByteFormat.rawRgba,
+          ))!.getUint8(3);
+        } finally {
+          image.dispose();
+        }
+      }
+
+      expect(await alpha([top, sub, paint]), closeTo(64, 1));
+      expect(await alpha([top.copyWith(isVisible: false), sub, paint]), 0);
+    },
+  );
+
   group('findClipSourceLayerId（仕様書16：クリッピング）', () {
     test('同一階層内では直下の非クリッピングレイヤーを返す', () {
       final layers = [

@@ -3454,15 +3454,13 @@ class _TimelineScreenState extends State<TimelineScreen> {
                                     key: ValueKey('timelineFrameCell$index'),
                                     onTap: () {
                                       if (_isFrameMultiSelect) {
-                                        if (isChecked) {
-                                          setState(() {
-                                            _selectedFrameIndices.remove(index);
-                                            if (_selectedFrameIndices.isEmpty) {
-                                              _isFrameMultiSelect = false;
-                                            }
-                                          });
-                                        }
-                                        // 未選択フレームは何もしない（シーンと同じ操作体系）
+                                        setState(() {
+                                          if (!_selectedFrameIndices.remove(
+                                            index,
+                                          )) {
+                                            _selectedFrameIndices.add(index);
+                                          }
+                                        });
                                       } else {
                                         setState(() => _currentFrame = index);
                                         _recordTimelineAutomation(
@@ -10013,7 +10011,7 @@ class _TimelineFrameThumbnailState extends State<_TimelineFrameThumbnail> {
         exportH.toDouble(),
       ),
       ui.Rect.fromLTWH(0, 0, thumbW.toDouble(), thumbH.toDouble()),
-      ui.Paint(),
+      ui.Paint()..filterQuality = ui.FilterQuality.medium,
     );
     fullImage.dispose();
     final picture = recorder.endRecording();

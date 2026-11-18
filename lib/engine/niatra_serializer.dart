@@ -1094,6 +1094,49 @@ class NiatraSerializer {
     }
   }
 
+  /// Read model metadata without modifying the destination services.
+  static void validateMetadata(NiatraData data) {
+    final raw = data.raw;
+    final settings = raw['settings'] as Map<String, dynamic>?;
+    for (final key in ['defaultFps', 'undoLimit', 'trashAutoDeleteDays']) {
+      final value = settings?[key];
+      if (value != null && value is! int) {
+        throw const FormatException('Invalid transfer setting');
+      }
+    }
+    if (raw['localPreferences'] case final local? when local is! Map) {
+      throw const FormatException('Invalid transfer preferences');
+    }
+    final brushes = _items(data, 'brushes', 'brushes') ?? const [];
+    for (var i = 0; i < brushes.length; i++) {
+      _deserializeBrush(brushes[i], i);
+    }
+    final tones = _items(data, 'tones', 'tones') ?? const [];
+    for (var i = 0; i < tones.length; i++) {
+      _deserializeTone(tones[i], i);
+    }
+    final stamps = _items(data, 'stamps', 'stamps') ?? const [];
+    for (var i = 0; i < stamps.length; i++) {
+      _deserializeStamp(stamps[i], i);
+    }
+    for (final preset
+        in _items(data, 'autofillPresets', 'autofill_presets') ?? const []) {
+      AutofillPreset.fromJson(preset);
+    }
+    final currentTheme = raw['currentTheme'] as Map<String, dynamic>?;
+    if (currentTheme != null) _deserializeThemePreset(currentTheme);
+    for (final preset
+        in _items(data, 'themePresets', 'theme_presets') ?? const []) {
+      _deserializeThemePreset(preset);
+    }
+    for (final palette in [
+      ...?_items(data, 'palettes', 'color_palettes'),
+      ...?_items(data, 'pixelArtPalettes', 'pixel_art_palettes'),
+    ]) {
+      ColorPalette.fromJson(palette);
+    }
+  }
+
   /// Check every embedded project before any import step writes to this device.
   /// Keep one decoded project at a time so large transfers can be checked.
   static void validateProjects(NiatraData data) {

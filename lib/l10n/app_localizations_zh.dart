@@ -10223,6 +10223,24 @@ class AppLocalizationsZh extends AppLocalizations {
   String get transferImportInterrupted => '导入未能完成。已导入的项目仍然保留。';
 
   @override
+  String get transferImportStepSettings => '设置、主题和调色板';
+
+  @override
+  String get transferImportStepDeviceData => '设备偏好设置和已保存项目';
+
+  @override
+  String get transferImportStepProjects => '项目';
+
+  @override
+  String get transferImportCompletedSteps => '已完成的步骤';
+
+  @override
+  String get transferImportFailedStep => '中断的步骤（可能已应用部分更改）';
+
+  @override
+  String get transferImportPendingSteps => '尚未开始的步骤';
+
+  @override
   String get communityChannelRefreshRetry => '无法更新 YouTube 频道信息，请重试。';
 
   @override
@@ -20462,6 +20480,24 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get transferImportInterrupted => '匯入未能完成。已匯入的項目仍然保留。';
+
+  @override
+  String get transferImportStepSettings => '設定、主題和調色盤';
+
+  @override
+  String get transferImportStepDeviceData => '裝置偏好設定和已儲存的項目';
+
+  @override
+  String get transferImportStepProjects => '專案';
+
+  @override
+  String get transferImportCompletedSteps => '已完成的步驟';
+
+  @override
+  String get transferImportFailedStep => '中斷的步驟（可能已套用部分變更）';
+
+  @override
+  String get transferImportPendingSteps => '尚未開始的步驟';
 
   @override
   String get communityChannelRefreshRetry => '無法更新 YouTube 頻道資訊，請重試。';

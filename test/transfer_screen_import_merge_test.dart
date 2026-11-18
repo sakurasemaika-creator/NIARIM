@@ -56,6 +56,18 @@ class _PickNiatra extends FilePicker {
   ]);
 }
 
+class _FailingImportSettings extends SettingsService {
+  bool fail = false;
+
+  @override
+  Future<void> setDefaultFps(int fps) async {
+    if (fail) throw const FileSystemException('Simulated write failure');
+    await super.setDefaultFps(fps);
+  }
+}
+
+final _samplePng = File('assets/brushes/bangs_01.png');
+
 const _allItems = {
   '設定': true,
   '端末保存データ': true,
@@ -91,7 +103,7 @@ Future<Uint8List> _sourceFile(Directory temp) async {
   brush.updateCurrentBrushSize(23);
   await brush.commitRememberedValues();
   final image = File('${temp.path}/source_brush.png')
-    ..writeAsBytesSync([1, 2, 3, 4]);
+    ..writeAsBytesSync(_samplePng.readAsBytesSync());
   brush.addBrush(
     Brush(
       id: 'BrushMoved',
@@ -120,7 +132,7 @@ Future<Uint8List> _sourceFile(Directory temp) async {
   );
   await autofill.setPresetThumbnailBytes(
     'p_moved',
-    Uint8List.fromList([3, 1, 4]),
+    _samplePng.readAsBytesSync(),
   );
   for (var i = 0; i < 5; i++) {
     await pumpEventQueue();
@@ -187,9 +199,15 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
     final providers = (await tester.runAsync(buildAppProviders))!;
+    final settings = _FailingImportSettings();
+    addTearDown(settings.dispose);
+    await tester.runAsync(settings.init);
     await tester.pumpWidget(
       MultiProvider(
-        providers: providers,
+        providers: [
+          ...providers,
+          ChangeNotifierProvider<SettingsService>.value(value: settings),
+        ],
         child: Builder(
           builder: (context) => MaterialApp(
             theme: context.watch<ThemeService>().themeData,
@@ -239,7 +257,47 @@ void main() {
     expect(screen.read<ProjectService>().projects, isEmpty);
     ScaffoldMessenger.of(screen).clearSnackBars();
     await pumpRealAsync(tester, const Duration(milliseconds: 300));
+    // A corrupt creative image is caught before settings or material writes.
+    final invalidImageData = Map<String, dynamic>.from(patchedData)
+      ..remove('projectFiles');
+    (invalidImageData['brushes'] as List).first['embeddedImagePath'] =
+        'CreativeAssets/Brushes/broken.png';
+    final imageMetadata = utf8.encode(jsonEncode(invalidImageData));
+    final brokenImage = Archive()
+      ..addFile(ArchiveFile('data.json', imageMetadata.length, imageMetadata))
+      ..addFile(ArchiveFile('CreativeAssets/Brushes/broken.png', 3, [1, 2, 3]));
+    for (final entry in corrupt.files) {
+      if (entry.name != 'data.json') brokenImage.addFile(entry);
+    }
+    FilePicker.platform = _PickNiatra(
+      Uint8List.fromList(ZipEncoder().encode(brokenImage)!),
+    );
+    await tester.tap(find.text(l10n.transferImport));
+    await pumpRealAsync(tester, const Duration(milliseconds: 500));
+    expect(find.text(l10n.transferImportFileFailed), findsOneWidget);
+    expect(brush.brushes, hasLength(builtInBrushes));
+    expect(theme.presets, hasLength(builtInThemes));
+    ScaffoldMessenger.of(screen).clearSnackBars();
+    await pumpRealAsync(tester, const Duration(milliseconds: 300));
+
     FilePicker.platform = _PickNiatra(bytes);
+    settings.fail = true;
+    await tester.tap(find.text(l10n.transferImport));
+    for (
+      var attempt = 0;
+      attempt < 60 && find.byType(AlertDialog).evaluate().isEmpty;
+      attempt++
+    ) {
+      await pumpRealAsync(tester, const Duration(milliseconds: 100));
+    }
+    expect(find.text(l10n.transferImportCompletedSteps), findsOneWidget);
+    expect(find.text(l10n.transferItemMaterials), findsWidgets);
+    expect(find.text(l10n.transferImportStepSettings), findsOneWidget);
+    expect(find.text(l10n.transferImportPendingSteps), findsOneWidget);
+    expect(find.text(l10n.transferImportStepProjects), findsOneWidget);
+    await tester.tap(find.widgetWithText(TextButton, l10n.commonClose));
+    await tester.pumpAndSettle();
+    settings.fail = false;
 
     Future<void> readFile() async {
       await tester.tap(find.text(l10n.transferImport));
@@ -290,7 +348,7 @@ void main() {
       thumbnail != null && File(thumbnail).existsSync()
           ? File(thumbnail).readAsBytesSync()
           : null,
-      [3, 1, 4],
+      _samplePng.readAsBytesSync(),
       '自動塗りプリセットのサムネイルの画像が届く',
     );
     await readFile();

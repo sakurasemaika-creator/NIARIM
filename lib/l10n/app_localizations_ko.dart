@@ -10395,6 +10395,24 @@ class AppLocalizationsKo extends AppLocalizations {
       '가져오기를 완료하지 못했습니다. 이미 가져온 항목은 남아 있습니다.';
 
   @override
+  String get transferImportStepSettings => '설정·테마·팔레트';
+
+  @override
+  String get transferImportStepDeviceData => '기기 환경설정 및 저장 항목';
+
+  @override
+  String get transferImportStepProjects => '프로젝트';
+
+  @override
+  String get transferImportCompletedSteps => '완료한 단계';
+
+  @override
+  String get transferImportFailedStep => '중단된 단계 (일부 변경 사항이 적용되었을 수 있습니다)';
+
+  @override
+  String get transferImportPendingSteps => '시작하지 않은 단계';
+
+  @override
   String get communityChannelRefreshRetry =>
       'YouTube 채널 정보를 업데이트하지 못했습니다. 다시 시도해 주세요.';
 

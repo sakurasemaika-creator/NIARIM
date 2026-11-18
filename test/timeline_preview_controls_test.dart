@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:ui' as ui;
 
 import 'package:flutter/foundation.dart' show listEquals;
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart' show RenderImage;
 import 'package:flutter/services.dart' hide UndoManager;
@@ -19,6 +20,8 @@ import 'package:niarim/models/autofill_preset.dart';
 import 'package:niarim/models/audio_clip.dart';
 import 'package:niarim/models/camera_keyframe.dart';
 import 'package:niarim/models/effect_filter_instance.dart';
+import 'package:niarim/screens/canvas/widgets/canvas_area.dart';
+import 'package:niarim/screens/canvas/widgets/canvas_preview_navigator.dart';
 import 'package:niarim/screens/timeline/timeline_screen.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:niarim/services/autofill_preset_service.dart';
@@ -64,6 +67,7 @@ void main() {
     required double fraction,
     void Function(ProjectService, String)? setUpProject,
     AutofillPresetService? presets,
+    bool showNavigator = false,
   }) async {
     await tester.pumpWidget(const SizedBox.shrink());
     SharedPreferences.setMockInitialValues({
@@ -71,6 +75,8 @@ void main() {
       'language': 'ja',
       'force_pc_mode': pc ? 1 : 0,
       'timeline_preview_height_fraction': fraction,
+      if (showNavigator) 'default_docked_panels': ['canvasPreview'],
+      if (showNavigator) 'desktop_dock_auto_collapse_enabled': false,
       firstUseTooltipsSeenKey: kAllFirstUseTooltipKeys,
     });
     final directory = Directory.systemTemp.createTempSync('timeline-controls-');
@@ -871,10 +877,211 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets(
+    'timeline toggles individual frames and deletes the three selected',
+    (tester) async {
+      final id = await openTimeline(
+        tester,
+        project: const Size(160, 90),
+        screen: const Size(1280, 800),
+        pc: true,
+        fraction: .4,
+      );
+      final context = tester.element(find.byType(TimelineScreen));
+      final l10n = AppLocalizations.of(context)!;
+      final ps = context.read<ProjectService>();
+      final initial = ps
+          .scenesOf(id)
+          .single
+          .frames
+          .map((frame) => frame.layers.first.id)
+          .toList();
+      final frames = [0, 1, 3]
+          .map((index) => find.byKey(ValueKey('timelineFrameCell$index')))
+          .toList();
+
+      await tester.tap(find.byKey(const Key('timelineSelectionMenu')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(l10n.timelineFrameTrackLabel).last);
+      await tester.pumpAndSettle();
+      expect(find.text(l10n.timelineStackSelectedCount(0)), findsOneWidget);
+      for (final frame in frames) {
+        await tester.tap(frame);
+        await tester.pump();
+      }
+      expect(find.text(l10n.timelineStackSelectedCount(3)), findsOneWidget);
+      await tester.tap(frames[1]);
+      await tester.pump();
+      expect(find.text(l10n.timelineStackSelectedCount(2)), findsOneWidget);
+      await tester.tap(frames[1]);
+      await tester.pump();
+      await tester.tap(find.byKey(const Key('timelineSelectionActions')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(l10n.commonDelete));
+      await tester.pumpAndSettle();
+      expect(
+        ps.scenesOf(id).single.frames.map((frame) => frame.layers.first.id),
+        [
+          for (final (index, frame) in initial.indexed)
+            if (![0, 1, 3].contains(index)) frame,
+        ],
+      );
+      await tester.longPress(frames[0]);
+      await tester.pumpAndSettle();
+      await tester.tap(frames[1]);
+      await tester.pump();
+      expect(find.text(l10n.timelineStackSelectedCount(2)), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets('canvas navigator shows new paint and pans the zoomed canvas', (
+    tester,
+  ) async {
+    final id = await openTimeline(
+      tester,
+      project: const Size(640, 360),
+      screen: const Size(1280, 800),
+      pc: true,
+      fraction: .4,
+      showNavigator: true,
+      setUpProject: (ps, id) =>
+          ps.setSceneFrameCount(id, ps.scenesOf(id).single.id, 2),
+    );
+    appRouter.go('/canvas/$id');
+    final navigator = find.byType(CanvasPreviewNavigator);
+    final preview = find.byKey(const ValueKey('canvasPreviewNavigatorImage'));
+    final area = find.byType(CanvasArea).first;
+    final raw = find.descendant(of: preview, matching: find.byType(RawImage));
+    await pumpRealAsync(tester, const Duration(milliseconds: 400));
+    expect(preview, findsOneWidget);
+    final viewport = tester.widget<CanvasPreviewNavigator>(navigator).viewport;
+    expect(viewport.value, const Rect.fromLTWH(0, 0, 1, 1));
+
+    Future<int> inkPixels() async {
+      final image = tester.renderObject<RenderImage>(raw).image!.clone();
+      return (await tester.runAsync(() async {
+        try {
+          final bytes = (await image.toByteData(
+            format: ui.ImageByteFormat.rawRgba,
+          ))!;
+          var count = 0;
+          for (var offset = 3; offset < bytes.lengthInBytes; offset += 4) {
+            if (bytes.getUint8(offset) > 0) count++;
+          }
+          return count;
+        } finally {
+          image.dispose();
+        }
+      }))!;
+    }
+
+    expect(await inkPixels(), 0);
+    final center = tester.getCenter(area);
+    final stroke = await tester.startGesture(
+      center.translate(45, -28),
+      kind: ui.PointerDeviceKind.mouse,
+    );
+    await stroke.moveBy(const Offset(100, 48));
+    await stroke.up();
+    await pumpRealAsync(tester, const Duration(milliseconds: 1120));
+    expect(await inkPixels(), greaterThan(10));
+
+    await tester.tap(find.byKey(const ValueKey('frameStripCell1')));
+    await pumpRealAsync(tester, const Duration(milliseconds: 260));
+    expect(tester.widget<CanvasPreviewNavigator>(navigator).frameIndex, 1);
+    expect(await inkPixels(), 0);
+    await tester.tap(find.byKey(const ValueKey('frameStripCell0')));
+    await pumpRealAsync(tester, const Duration(milliseconds: 260));
+    expect(await inkPixels(), greaterThan(10));
+
+    await tester.sendKeyDownEvent(LogicalKeyboardKey.controlLeft);
+    await tester.sendEventToBinding(
+      PointerScrollEvent(
+        kind: ui.PointerDeviceKind.mouse,
+        position: center,
+        scrollDelta: const Offset(0, -480),
+      ),
+    );
+    await tester.sendKeyUpEvent(LogicalKeyboardKey.controlLeft);
+    await tester.pump();
+    final zoomed = viewport.value!;
+    expect(zoomed.width, lessThan(1));
+    final rect = tester.getRect(preview);
+    await tester.tapAt(Offset(rect.left + rect.width * .73, rect.center.dy));
+    await tester.pump();
+    expect(viewport.value!.center.dx, greaterThan(zoomed.center.dx));
+    final panned = viewport.value!.center.dx;
+    await tester.dragFrom(
+      Offset(rect.left + rect.width * .73, rect.center.dy),
+      Offset(-rect.width * .48, 0),
+    );
+    await tester.pump();
+    expect(viewport.value!.center.dx, lessThan(panned));
+    expect(tester.takeException(), isNull);
+  });
+
   for (final (route, key) in const [
     ('timeline', 'timelineFrameCell'),
     ('canvas', 'frameStripCell'),
   ]) {
+    testWidgets('$route thumbnails retain a five-pixel line', (tester) async {
+      final id = await openTimeline(
+        tester,
+        project: const Size(1920, 1080),
+        screen: const Size(1280, 800),
+        pc: true,
+        fraction: .4,
+        setUpProject: (ps, id) {
+          ps.setSceneFrameCount(id, ps.scenesOf(id).single.id, 2);
+          final scene = ps.scenesOf(id).single.id;
+          final layer = ps.layersOf(id, scene, 0).first;
+          final tiles = ps.tileManagerOf(id);
+          final rgba = Uint8List(tiles.canvasWidth * tiles.canvasHeight * 4);
+          final cropX = (tiles.canvasWidth - 1920) ~/ 2;
+          final cropY = (tiles.canvasHeight - 1080) ~/ 2;
+          for (var y = cropY + 100; y < cropY + 980; y++) {
+            for (var x = cropX + 2; x < cropX + 7; x++) {
+              rgba[(y * tiles.canvasWidth + x) * 4 + 3] = 255;
+            }
+          }
+          tiles.replaceLayerPixels(ps.tileKeyFor(id, scene, 0, layer.id), rgba);
+        },
+      );
+      if (route == 'canvas') {
+        appRouter.go('/canvas/$id');
+        await tester.pump();
+      }
+      final picture = find.descendant(
+        of: find.byKey(ValueKey('${key}0')),
+        matching: find.byType(RawImage),
+      );
+      var visibleRows = 0;
+      for (var attempt = 0; attempt < 80; attempt++) {
+        await pumpRealAsync(tester, const Duration(milliseconds: 25));
+        final image = picture.evaluate().isEmpty
+            ? null
+            : tester.renderObject<RenderImage>(picture.first).image?.clone();
+        if (image == null) continue;
+        visibleRows = (await tester.runAsync(() async {
+          try {
+            final bytes = (await image.toByteData(
+              format: ui.ImageByteFormat.rawRgba,
+            ))!;
+            var rows = 0;
+            for (var y = image.height ~/ 4; y < image.height * 3 ~/ 4; y++) {
+              if (bytes.getUint8((y * image.width) * 4 + 3) > 0) rows++;
+            }
+            return rows;
+          } finally {
+            image.dispose();
+          }
+        }))!;
+        if (visibleRows >= 12) break;
+      }
+      expect(visibleRows, greaterThanOrEqualTo(12));
+    });
+
     testWidgets('$route frame thumbnails follow common layer range changes', (
       tester,
     ) async {

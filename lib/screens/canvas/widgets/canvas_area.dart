@@ -128,15 +128,17 @@ enum CanvasViewAction {
   rotateLeft,
   rotateRight,
   resetRotation,
+  centerOn,
 }
 
 /// [CanvasArea.viewRequest]で渡す表示の操作。[serial]が変わるたびに1回行う。
 @immutable
 class CanvasViewRequest {
-  const CanvasViewRequest(this.serial, this.action);
+  const CanvasViewRequest(this.serial, this.action, {this.normalizedCenter});
 
   final int serial;
   final CanvasViewAction action;
+  final Offset? normalizedCenter;
 }
 
 /// キャンバスの今の表示（PC/DeXモードのステータスバー用）。[zoom]は、
@@ -541,6 +543,7 @@ class CanvasArea extends StatefulWidget {
 
   /// 今の表示の倍率・回転をここへ書く（nullなら書かない）。
   final ValueNotifier<CanvasViewInfo>? viewInfo;
+  final ValueNotifier<Rect?>? navigatorViewport;
 
   /// ロックしたレイヤーへ描こうとした（描かずにここを呼ぶ）。
   final VoidCallback? onLockedLayerEdit;
@@ -607,6 +610,7 @@ class CanvasArea extends StatefulWidget {
     this.selectionTransformCancelToken = 0,
     this.viewRequest,
     this.viewInfo,
+    this.navigatorViewport,
     this.onLockedLayerEdit,
   });
 
@@ -883,7 +887,8 @@ class _CanvasAreaState extends State<CanvasArea> {
     _hasTileManager = true;
     _tileManager.addLayerContentListener(_onLayerContentChanged);
     _drawingEngine = DrawingEngine(tileManager: _tileManager)
-      ..pointConstraint = _rulerEngine.snapToRuler;
+      ..pointConstraint = _rulerEngine.snapToRuler
+      ..curveBetween = _rulerEngine.arcBetween;
     // 初回マウント時点ですでに定規が選択されている場合も、didUpdateWidget待ちに
     // せずRulerEngineへ同期する。プロジェクト再表示・Widget再生成直後の最初の
     // ストロークだけ定規が効かない状態を防ぐ。
@@ -1065,13 +1070,13 @@ class _CanvasAreaState extends State<CanvasArea> {
       // ビルド中に変換を変えると、変換を描くAnimatedBuilderとステータスバーの
       // 作り直しがビルド中に起きるので、次のフレームで行う。
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) _applyViewAction(view.action);
+        if (mounted) _applyViewAction(view);
       });
     }
   }
 
   /// [CanvasViewAction]を表示の中央を基準に行う。
-  void _applyViewAction(CanvasViewAction action) {
+  void _applyViewAction(CanvasViewRequest request) {
     final size = context.size;
     if (size == null || size.isEmpty) return;
     final center = size.center(Offset.zero);
@@ -1087,7 +1092,8 @@ class _CanvasAreaState extends State<CanvasArea> {
 
     Matrix4 rotated(double deg) =>
         around(Matrix4.rotationZ(deg * math.pi / 180))..multiply(current);
-    final next = switch (action) {
+    final target = request.normalizedCenter;
+    final next = switch (request.action) {
       CanvasViewAction.zoomIn => scaled(1.25),
       CanvasViewAction.zoomOut => scaled(0.8),
       CanvasViewAction.fit => Matrix4.identity(),
@@ -1101,8 +1107,23 @@ class _CanvasAreaState extends State<CanvasArea> {
       CanvasViewAction.resetRotation => rotated(
         -canvasViewRotationDegOf(current),
       ),
+      CanvasViewAction.centerOn =>
+        target == null ? current : _viewCenteredOn(size, current, target),
     };
     _transformController.value = _constrainViewMatrix(next);
+  }
+
+  Matrix4 _viewCenteredOn(Size size, Matrix4 current, Offset normalized) {
+    final drawing = canvasDrawingRectFor(size, widget.project);
+    final target = MatrixUtils.transformPoint(
+      current,
+      Offset(
+        drawing.left + normalized.dx * drawing.width,
+        drawing.top + normalized.dy * drawing.height,
+      ),
+    );
+    final shift = size.center(Offset.zero) - target;
+    return Matrix4.translationValues(shift.dx, shift.dy, 0)..multiply(current);
   }
 
   /// 表示倍率1（全体表示）のときの、プロジェクトの1pxあたりの画面の論理px。
@@ -1113,15 +1134,33 @@ class _CanvasAreaState extends State<CanvasArea> {
   }
 
   void _publishViewInfo() {
-    final notifier = widget.viewInfo;
-    if (notifier == null || !mounted) return;
+    if (!mounted ||
+        (widget.viewInfo == null && widget.navigatorViewport == null)) {
+      return;
+    }
     final size = context.size;
     if (size == null || size.isEmpty) return;
     final matrix = _transformController.value;
-    notifier.value = CanvasViewInfo(
+    widget.viewInfo?.value = CanvasViewInfo(
       zoom: _fitZoom(size) * canvasViewScaleOf(matrix),
       rotationDeg: canvasViewRotationDegOf(matrix),
     );
+    final viewport = widget.navigatorViewport;
+    if (viewport != null) {
+      final drawing = canvasDrawingRectFor(size, widget.project);
+      final visible = visibleWidgetRectFor(size, matrix);
+      if (drawing.isEmpty || !drawing.overlaps(visible)) {
+        viewport.value = null;
+      } else {
+        final shown = drawing.intersect(visible);
+        viewport.value = Rect.fromLTRB(
+          (shown.left - drawing.left) / drawing.width,
+          (shown.top - drawing.top) / drawing.height,
+          (shown.right - drawing.left) / drawing.width,
+          (shown.bottom - drawing.top) / drawing.height,
+        );
+      }
+    }
   }
 
   @override
@@ -2193,7 +2232,7 @@ class _CanvasAreaState extends State<CanvasArea> {
 
   /// ブラシのピクセルモードで配色方式（[Brush.pixelColorMode]）が
   /// none以外の場合、ストローク確定直後・Undo記録終了前に今回変更された
-  /// タイルだけへ色の後処理を適用する。ブラシは既に1px単位（アンチ
+  /// 画素だけへ色の後処理を適用する。ブラシは既に1px単位（アンチ
   /// エイリアス無し）で描画済みのため、ドット絵フィルターと異なり
   /// モザイク化は行わず、色の減色・パレットスナップのみを行う
   /// （quantizeColors参照）。この後にendUndoRecording()を呼ぶことで、
@@ -2205,18 +2244,9 @@ class _CanvasAreaState extends State<CanvasArea> {
         brush.pixelColorMode == PixelColorMode.none) {
       return;
     }
-    final touched = _tileManager.recordingTouchedTiles;
-    if (touched == null) return;
-    for (final key in touched.tileKeys) {
-      final parts = key.split(',');
-      if (parts.length != 2) continue;
-      final tx = int.tryParse(parts[0]);
-      final ty = int.tryParse(parts[1]);
-      if (tx == null || ty == null) continue;
-      final tile = _tileManager.getTile(touched.layerId, tx, ty);
-      if (tile == null) continue;
-      final quantized = const PixelArtEngine().convert(
-        tile,
+    _tileManager.transformRecordingPixels(
+      (pixels) => const PixelArtEngine().convert(
+        pixels,
         TileManager.tileSize,
         TileManager.tileSize,
         pixelSize: 1,
@@ -2224,12 +2254,8 @@ class _CanvasAreaState extends State<CanvasArea> {
         colorLevels: brush.pixelColorLevels,
         paletteColors: brush.pixelExplicitColors,
         squareBlocks: false,
-      );
-      tile.setAll(0, quantized);
-      // getTileのバッファを直接書き換えているため、TileManager側の
-      // 無効化フックを通っていない。明示的にこのタイルのキャッシュを捨てる。
-      _tileManager.invalidateTile(touched.layerId, tx, ty);
-    }
+      ),
+    );
   }
 
   /// 記録を終了し、実際に変更があった場合のみUndoManagerへ登録する。
@@ -4486,16 +4512,19 @@ class _CanvasAreaState extends State<CanvasArea> {
     final recorder = ui.PictureRecorder();
     final canvas = ui.Canvas(recorder);
     var partIndex = 0;
+    final byId = {for (final layer in layers) layer.id: layer};
     for (var i = layers.length - 1; i >= 0; i--) {
       final layer = layers[i];
-      if (!layer.isVisible || layer.type != LayerType.autoFill) continue;
+      if (layer.type != LayerType.autoFill) continue;
+      final effectiveOpacity = inheritedLayerOpacity(layer, byId);
+      if (effectiveOpacity == 0) continue;
       final raw = await _tileManager.compositeLayerToImage(
         _tileKeyFor(layer.id),
       );
       final color = autofillCheckColor(widget.autofillCheckMode, partIndex++);
       final preview = await _autofillCheckImage(raw, color);
       raw.dispose();
-      final opacity = (layer.opacity.clamp(0, 100) * 255 / 100).round();
+      final opacity = (effectiveOpacity * 255 / 100).round();
       canvas.drawImage(
         preview,
         ui.Offset.zero,
@@ -4535,7 +4564,6 @@ class _CanvasAreaState extends State<CanvasArea> {
     _isComposingSurroundings = true;
 
     final idx = layers.indexWhere((l) => l.id == _layerId);
-    final below = idx < 0 ? layers : layers.sublist(idx + 1);
     final w = _tileManager.canvasWidth;
     final h = _tileManager.canvasHeight;
     LayerKeyframe? groupKf(Layer layer) {
@@ -4552,10 +4580,11 @@ class _CanvasAreaState extends State<CanvasArea> {
     final belowImg = checkMode == AutofillCheckMode.normal
         ? await LayerCompositor.composite(
             _tileManager,
-            below,
+            layers,
             (l) => _tileKeyFor(l.id),
             w,
             h,
+            shouldRender: (_, i) => i > idx,
             keyframeOf: _keyframeOf,
             groupKeyframeOf: groupKf,
             // The paper takes part in the blending, as in the export.
@@ -4631,7 +4660,9 @@ class _CanvasAreaState extends State<CanvasArea> {
     if (layer == null) return 100;
     // The selected layer is drawn outside the normal layer compositor.
     // Hidden artwork must remain in its own thumbnail, not on the canvas.
-    return layer.isVisible ? layer.opacity : 0;
+    return inheritedLayerOpacity(layer, {
+      for (final item in _layers) item.id: item,
+    });
   }
 
   /// What the exact blend of the current layer is made from now, or null
@@ -4783,7 +4814,7 @@ class _CanvasAreaState extends State<CanvasArea> {
 
   @override
   Widget build(BuildContext context) {
-    if (widget.viewInfo != null) {
+    if (widget.viewInfo != null || widget.navigatorViewport != null) {
       // 窓の大きさが変わると、同じ表示でも実際の倍率が変わる。
       WidgetsBinding.instance.addPostFrameCallback((_) => _publishViewInfo());
     }

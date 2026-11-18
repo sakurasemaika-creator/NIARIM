@@ -1518,15 +1518,18 @@ class ProjectService extends ChangeNotifier {
             (l) => !isRangeLayerType(l.type) && l.type != LayerType.selection,
           )
           .toList();
+      final idMap = {
+        for (final layer in sourceLayers) layer.id: _nextLayerId(projectId),
+      };
       final newLayers = sourceLayers.map((l) {
-        final newId = _nextLayerId(projectId);
+        final newId = idMap[l.id]!;
         if (tm != null) {
           tm.copyLayer(
             frameLayerKey(sceneId, frame.index, l.id),
             frameLayerKey(newSceneId, frame.index, newId),
           );
         }
-        return l.copyWith(id: newId);
+        return l.copyWith(id: newId, parentFolderId: idMap[l.parentFolderId]);
       }).toList();
       newFrames.add(
         Frame(index: frame.index, layers: newLayers, hold: frame.hold),
@@ -1831,7 +1834,15 @@ class ProjectService extends ChangeNotifier {
           id: layerId,
         )] =
         removed;
-    final newLayers = List<Layer>.from(frame.layers)..removeAt(layerIdx);
+    final newLayers = [
+      for (final layer in frame.layers)
+        if (layer.id != layerId)
+          if (removed.type == LayerType.folder &&
+              layer.parentFolderId == layerId)
+            layer.copyWith(parentFolderId: removed.parentFolderId)
+          else
+            layer,
+    ];
     _applyFrameUpdate(projectId, sceneIdx, frameIndex, newLayers);
     _layerHomes[projectId]?.remove(layerId);
   }
@@ -1927,15 +1938,29 @@ class ProjectService extends ChangeNotifier {
     required String name,
     String? id,
     int insertIndex = 0,
+    String? parentFolderId,
   }) {
     final layerId = id ?? _nextLayerId(projectId);
-    final layer = Layer(id: layerId, name: name, type: type);
     final scene = sceneOf(projectId, sceneId);
-    final ownLayerCount =
+    final ownLayers =
         scene != null && frameIndex >= 0 && frameIndex < scene.frames.length
-        ? scene.frames[frameIndex].layers.length
-        : 0;
-    final targetIndex = insertIndex.clamp(0, ownLayerCount);
+        ? scene.frames[frameIndex].layers
+        : const <Layer>[];
+    final folderIndex = parentFolderId == null || isRangeLayerType(type)
+        ? -1
+        : ownLayers.indexWhere(
+            (layer) =>
+                layer.id == parentFolderId && layer.type == LayerType.folder,
+          );
+    final layer = Layer(
+      id: layerId,
+      name: name,
+      type: type,
+      parentFolderId: folderIndex >= 0 ? parentFolderId : null,
+    );
+    final targetIndex = folderIndex >= 0
+        ? folderIndex + 1
+        : insertIndex.clamp(0, ownLayers.length);
     _applyLayerInsert(projectId, sceneId, frameIndex, layer, targetIndex);
     _registerHomeIfNeeded(projectId, sceneId, frameIndex, layer);
 
@@ -2068,6 +2093,17 @@ class ProjectService extends ChangeNotifier {
     final layers = layersOf(projectId, home.sceneId, home.frameIndex);
     final removedIndex = layers.indexWhere((l) => l.id == layerId);
     if (removedIndex < 0) return;
+    if (layers[removedIndex].type == LayerType.folder &&
+        layers.any((layer) => layer.parentFolderId == layerId)) {
+      editTimeline(
+        projectId,
+        'Remove layer folder',
+        () =>
+            _removeLayerById(projectId, home.sceneId, home.frameIndex, layerId),
+        changesTiles: false,
+      );
+      return;
+    }
     _removeLayerById(projectId, home.sceneId, home.frameIndex, layerId);
 
     (_recordingTimelineEdits.contains(projectId) ? null : _undoManager)?.push(
@@ -2272,14 +2308,120 @@ class ProjectService extends ChangeNotifier {
     if (frameIndex >= scene.frames.length) return;
     final frame = scene.frames[frameIndex];
     if (oldIndex < 0 || oldIndex >= frame.layers.length) return;
-    final newLayers = List<Layer>.from(frame.layers);
-    final layer = newLayers.removeAt(oldIndex);
-    final target = (newIndex > oldIndex ? newIndex - 1 : newIndex).clamp(
-      0,
-      newLayers.length,
+    final branch = _layerBranch(frame.layers, frame.layers[oldIndex]);
+    final moved = <Layer>[];
+    final remaining = <Layer>[];
+    var target = 0;
+    for (var index = 0; index < frame.layers.length; index++) {
+      final layer = frame.layers[index];
+      if (branch.contains(layer.id)) {
+        moved.add(layer);
+      } else {
+        if (index < newIndex) target++;
+        remaining.add(layer);
+      }
+    }
+    remaining.insertAll(target, moved);
+    if (!listEquals(remaining, frame.layers)) {
+      _applyFrameUpdate(projectId, sceneIdx, frameIndex, remaining);
+    }
+  }
+
+  static Set<String> _layerBranch(List<Layer> layers, Layer source) {
+    final subtree = <String>{source.id};
+    if (source.type == LayerType.folder) {
+      final children = <String?, List<String>>{};
+      for (final layer in layers) {
+        children.putIfAbsent(layer.parentFolderId, () => []).add(layer.id);
+      }
+      final pending = [source.id];
+      while (pending.isNotEmpty) {
+        final current = pending.removeLast();
+        for (final child in children[current] ?? const <String>[]) {
+          if (subtree.add(child)) pending.add(child);
+        }
+      }
+    }
+    return subtree;
+  }
+
+  /// Drag and drop changes the order among siblings, keeping folder contents
+  /// together. Membership is changed through the explicit folder picker.
+  void reorderLayerRelative({
+    required String projectId,
+    required String sceneId,
+    required int frameIndex,
+    required String layerId,
+    required String siblingId,
+    required bool after,
+  }) {
+    final scene = sceneOf(projectId, sceneId);
+    if (scene == null || frameIndex < 0 || frameIndex >= scene.frames.length) {
+      return;
+    }
+    final layers = scene.frames[frameIndex].layers;
+    final from = layers.indexWhere((layer) => layer.id == layerId);
+    final to = layers.indexWhere((layer) => layer.id == siblingId);
+    if (from < 0 || to < 0 || from == to) return;
+    if (layers[from].parentFolderId != layers[to].parentFolderId) return;
+    var insertAt = to;
+    if (after) {
+      final targetBranch = _layerBranch(layers, layers[to]);
+      insertAt =
+          layers.lastIndexWhere((layer) => targetBranch.contains(layer.id)) + 1;
+    }
+    reorderLayer(
+      projectId: projectId,
+      sceneId: sceneId,
+      frameIndex: frameIndex,
+      oldIndex: from,
+      newIndex: insertAt,
     );
-    newLayers.insert(target, layer);
-    _applyFrameUpdate(projectId, sceneIdx, frameIndex, newLayers);
+  }
+
+  /// Move a frame-local layer (or folder subtree) and preserve its pixels.
+  bool moveLayerToFolder({
+    required String projectId,
+    required String sceneId,
+    required int frameIndex,
+    required String layerId,
+    required String? folderId,
+  }) {
+    final scenes = _scenes[projectId];
+    if (scenes == null) return false;
+    final sceneIndex = scenes.indexWhere((scene) => scene.id == sceneId);
+    if (sceneIndex < 0) return false;
+    final frames = scenes[sceneIndex].frames;
+    if (frameIndex < 0 || frameIndex >= frames.length) return false;
+    final layers = frames[frameIndex].layers;
+    final byId = {for (final layer in layers) layer.id: layer};
+    final source = byId[layerId];
+    if (source == null ||
+        isRangeLayerType(source.type) ||
+        source.parentFolderId == folderId) {
+      return false;
+    }
+    if (folderId != null && byId[folderId]?.type != LayerType.folder) {
+      return false;
+    }
+    final subtree = _layerBranch(layers, source);
+    if (subtree.contains(folderId)) return false;
+    final next = layers.where((layer) => !subtree.contains(layer.id)).toList();
+    final target = folderId == null
+        ? 0
+        : next.indexWhere((layer) => layer.id == folderId) + 1;
+    next.insertAll(target, [
+      source.copyWith(parentFolderId: folderId),
+      for (final layer in layers)
+        if (layer.id != layerId && subtree.contains(layer.id)) layer,
+    ]);
+    editTimeline(
+      projectId,
+      'Move layer to folder',
+      () => _applyFrameUpdate(projectId, sceneIndex, frameIndex, next),
+      changesTiles: false,
+    );
+    return true;
   }
 
   /// .niashare を複製して通常プロジェクトとして追加する（共有フロー）。
@@ -2731,12 +2873,16 @@ class ProjectService extends ChangeNotifier {
           (l) => !isRangeLayerType(l.type) && l.type != LayerType.selection,
         )
         .toList();
-    final idMap = <String, String>{};
-    final newLayers = sourceLayers.map((l) {
-      final newId = _nextLayerId(projectId);
-      idMap[l.id] = newId;
-      return l.copyWith(id: newId);
-    }).toList();
+    final idMap = {
+      for (final layer in sourceLayers) layer.id: _nextLayerId(projectId),
+    };
+    final newLayers = [
+      for (final layer in sourceLayers)
+        layer.copyWith(
+          id: idMap[layer.id]!,
+          parentFolderId: idMap[layer.parentFolderId],
+        ),
+    ];
 
     if (tm != null) {
       final relocatedSourceIndex =

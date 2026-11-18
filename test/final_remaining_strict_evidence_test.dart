@@ -16,6 +16,75 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+  test('sparse stabilized ellipse strokes stay on the rotated guide', () async {
+    final manager = TileManager(canvasWidth: 256, canvasHeight: 256);
+    addTearDown(manager.dispose);
+    const center = ui.Offset(128, 128);
+    const rotation = 0.42;
+    final ruler = RulerEngine()
+      ..setActiveRuler(
+        const Ruler(
+          type: RulerType.ellipse,
+          position: center,
+          rotation: rotation,
+          settings: RulerSettings(radiusX: 86, radiusY: 21),
+        ),
+      );
+    final drawing = DrawingEngine(tileManager: manager)
+      ..currentBrush = _brush(
+        size: 5,
+      ).copyWith(stabilization: true, stabilizationStrength: 50)
+      ..pointConstraint = ruler.snapToRuler
+      ..curveBetween = ruler.arcBetween;
+    ui.Offset onGuide(double angle) {
+      final x = 86 * math.cos(angle);
+      final y = 21 * math.sin(angle);
+      final c = math.cos(rotation);
+      final s = math.sin(rotation);
+      return center + ui.Offset(x * c - y * s, x * s + y * c);
+    }
+
+    ruler.beginStroke();
+    for (var i = 0; i <= 8; i++) {
+      final position = onGuide(2 * math.pi * i / 8);
+      final point = StrokePoint(x: position.dx, y: position.dy);
+      if (i == 0) {
+        drawing.beginStroke(point, 'ellipse');
+      } else {
+        drawing.continueStroke(point, 'ellipse');
+      }
+    }
+    final end = onGuide(0);
+    drawing.finishStrokePath(
+      StrokePoint(x: end.dx, y: end.dy),
+      'ellipse',
+      canvasPosition: end,
+      screenPosition: end,
+    );
+    drawing.endStroke();
+    final image = await manager.compositeLayerToImage('ellipse');
+    final pixels = await _rgba(image);
+    image.dispose();
+
+    final guide = List.generate(1440, (i) => onGuide(2 * math.pi * i / 1440));
+    var painted = 0;
+    var maxDistanceSquared = 0.0;
+    for (var y = 0; y < 256; y++) {
+      for (var x = 0; x < 256; x++) {
+        if (pixels[(y * 256 + x) * 4 + 3] == 0) continue;
+        painted++;
+        final pixel = ui.Offset(x + .5, y + .5);
+        var nearest = double.infinity;
+        for (final point in guide) {
+          nearest = math.min(nearest, (point - pixel).distanceSquared);
+        }
+        maxDistanceSquared = math.max(maxDistanceSquared, nearest);
+      }
+    }
+    expect(painted, greaterThan(1000));
+    expect(math.sqrt(maxDistanceSquared), lessThanOrEqualTo(3.5));
+  });
+
   final out = Directory('build/final-remaining-strict');
   late Directory tempDir;
   const pathChannel = MethodChannel('plugins.flutter.io/path_provider');
@@ -240,7 +309,7 @@ void main() {
     final b = Uint8List(16 * 12 * 4);
     b[0] = 17;
     b[1] = 91;
-    b[2] = 203;
+    b[2] = 143;
     b[3] = 177;
     ps.tileManagerOf(p.id).replaceLayerPixels(key, b);
     await ps.saveProject(p.id);
@@ -256,7 +325,7 @@ void main() {
     final rl = restored.layersOf(p.id, scene.id, 0).first;
     final rk = restored.tileKeyFor(p.id, scene.id, 0, rl.id);
     final tile = restored.tileManagerOf(p.id).getTile(rk, 0, 0)!;
-    expect(tile.sublist(0, 4), [17, 91, 203, 177]);
+    expect(tile.sublist(0, 4), [17, 91, 143, 177]);
   });
 }
 
@@ -338,7 +407,8 @@ Future<void> _rulerCircle(Directory out, {required bool ellipse}) async {
   final d = DrawingEngine(tileManager: tm)
     ..currentBrush = _brush(size: 3)
     ..currentColor = const ui.Color(0xFF2040C0)
-    ..pointConstraint = re.snapToRuler;
+    ..pointConstraint = re.snapToRuler
+    ..curveBetween = re.arcBetween;
   re.beginStroke();
   for (var i = 0; i <= 72; i++) {
     final a = 2 * math.pi * i / 72;

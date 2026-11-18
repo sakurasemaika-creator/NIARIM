@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
+import 'dart:ui' as ui;
 
 import 'package:archive/archive.dart';
 import 'package:flutter/foundation.dart' show kIsWeb, listEquals;
@@ -183,6 +184,50 @@ class NiatraAssetBundle {
     if (encoded == null) throw const FormatException('ZIP encoding failed');
     ArchiveSecurity.validateFileSize(encoded.length);
     return Uint8List.fromList(encoded);
+  }
+
+  /// Verify referenced images before restoring anything to local storage.
+  static Future<void> validateEmbeddedImages(NiatraData data) async {
+    final referenced = <String>{};
+    void addReference(Object? value) {
+      if (value == null) return;
+      if (value is! String || !value.startsWith('CreativeAssets/')) {
+        throw const FormatException('Invalid transfer image reference');
+      }
+      referenced.add(value);
+    }
+
+    if (data.raw[_versionKey] == _version) {
+      for (final key in ['brushes', 'tones', 'stamps', 'autofillPresets']) {
+        for (final raw in data.raw[key] as List? ?? const []) {
+          final item = raw as Map<String, dynamic>;
+          addReference(item[_embeddedImageKey]);
+          for (final path in item[_embeddedImagesKey] as List? ?? const []) {
+            addReference(path);
+          }
+        }
+      }
+    }
+    final watermarks = data.raw[NiatraSerializer.watermarkImagesKey] as Map?;
+    for (final path in watermarks?.values ?? const []) {
+      addReference(path);
+    }
+    for (final path in referenced) {
+      final entry = data.archive.findFile(path);
+      if (entry == null || !entry.isFile || entry.size == 0) {
+        throw const FormatException('Transfer image is missing');
+      }
+      final codec = await ui.instantiateImageCodec(
+        Uint8List.fromList(entry.content as List<int>),
+        targetWidth: 1,
+      );
+      try {
+        final frame = await codec.getNextFrame();
+        frame.image.dispose();
+      } finally {
+        codec.dispose();
+      }
+    }
   }
 
   /// 新形式の埋め込み画像を取り込み先端末のアプリ領域へ展開し、対応する

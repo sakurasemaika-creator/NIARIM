@@ -87,8 +87,13 @@ class TileManager {
 
   String _tileImageKey(String layerId, String tileKey) => '$layerId|$tileKey';
 
+  /// Changes when cached layer pixels may have been replaced or edited.
+  int get rasterRevision => _rasterRevision;
+  int _rasterRevision = 0;
+
   /// レイヤー1枚ぶんの合成結果のみを捨てる（タイル画像は残す）。
   void _invalidateComposite(String layerId) {
+    _rasterRevision++;
     _compositeCache.remove(layerId)?.dispose();
   }
 
@@ -149,6 +154,7 @@ class TileManager {
   }
 
   void _invalidateCachePrefix(String prefix) {
+    _rasterRevision++;
     final keys = _compositeCache.keys
         .where((k) => k.startsWith(prefix))
         .toList();
@@ -161,6 +167,7 @@ class TileManager {
   }
 
   void _invalidateCacheAll() {
+    _rasterRevision++;
     for (final img in _compositeCache.values) {
       img.dispose();
     }
@@ -812,6 +819,43 @@ class TileManager {
     final layerId = _recordingLayerId;
     if (!_recordingUndo || layerId == null) return null;
     return (layerId: layerId, tileKeys: _undoBefore.keys.toSet());
+  }
+
+  /// Applies a stroke post-process to pixels changed in the current undo
+  /// recording. Earlier paint is excluded from the input and kept in the tile.
+  void transformRecordingPixels(Uint8List Function(Uint8List) transform) {
+    final layerId = _recordingLayerId;
+    if (!_recordingUndo || layerId == null) return;
+    for (final entry in _undoBefore.entries) {
+      final tile = _tiles[layerId]?[entry.key];
+      if (tile == null) continue;
+      final before = entry.value;
+      final changed = <int>[];
+      for (var i = 0; i < tile.length; i += 4) {
+        // Cleared pixels have no color left to transform.
+        if (tile[i + 3] == 0) continue;
+        if (before == null ||
+            tile[i] != before[i] ||
+            tile[i + 1] != before[i + 1] ||
+            tile[i + 2] != before[i + 2] ||
+            tile[i + 3] != before[i + 3]) {
+          changed.add(i);
+        }
+      }
+      if (changed.isEmpty) continue;
+      final input = Uint8List(tile.length);
+      for (final i in changed) {
+        input.setRange(i, i + 4, tile, i);
+      }
+      final output = transform(input);
+      for (final i in changed) {
+        tile.setRange(i, i + 4, output, i);
+      }
+      final coordinates = entry.key.split(',');
+      final tx = int.parse(coordinates[0]);
+      final ty = int.parse(coordinates[1]);
+      invalidateTile(layerId, tx, ty);
+    }
   }
 
   /// 記録中であれば、指定タイルの変更前状態を（操作中の初回のみ）記録する。

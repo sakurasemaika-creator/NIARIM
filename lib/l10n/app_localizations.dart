@@ -18237,6 +18237,42 @@ abstract class AppLocalizations {
   /// **'読み込みを完了できませんでした。取り込み済みの項目は残っています。'**
   String get transferImportInterrupted;
 
+  /// No description provided for @transferImportStepSettings.
+  ///
+  /// In ja, this message translates to:
+  /// **'設定・テーマ・パレット'**
+  String get transferImportStepSettings;
+
+  /// No description provided for @transferImportStepDeviceData.
+  ///
+  /// In ja, this message translates to:
+  /// **'端末の設定と登録項目'**
+  String get transferImportStepDeviceData;
+
+  /// No description provided for @transferImportStepProjects.
+  ///
+  /// In ja, this message translates to:
+  /// **'プロジェクト'**
+  String get transferImportStepProjects;
+
+  /// No description provided for @transferImportCompletedSteps.
+  ///
+  /// In ja, this message translates to:
+  /// **'完了した処理'**
+  String get transferImportCompletedSteps;
+
+  /// No description provided for @transferImportFailedStep.
+  ///
+  /// In ja, this message translates to:
+  /// **'中断した処理（一部反映された可能性があります）'**
+  String get transferImportFailedStep;
+
+  /// No description provided for @transferImportPendingSteps.
+  ///
+  /// In ja, this message translates to:
+  /// **'開始していない処理'**
+  String get transferImportPendingSteps;
+
   /// No description provided for @communityChannelRefreshRetry.
   ///
   /// In ja, this message translates to:

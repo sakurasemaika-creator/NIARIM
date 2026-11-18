@@ -97,6 +97,22 @@ String? findClipSourceLayerId(List<Layer> layers, int index) {
   return null;
 }
 
+/// Effective opacity of a layer after its enclosing folders are applied.
+int inheritedLayerOpacity(Layer layer, Map<String, Layer> byId) {
+  if (!layer.isVisible) return 0;
+  var opacity = layer.opacity.clamp(0, 100).toDouble();
+  final visited = <String>{layer.id};
+  var parentId = layer.parentFolderId;
+  while (parentId != null && visited.add(parentId)) {
+    final parent = byId[parentId];
+    if (parent == null || parent.type != LayerType.folder) break;
+    if (!parent.isVisible) return 0;
+    opacity *= parent.opacity.clamp(0, 100) / 100;
+    parentId = parent.parentFolderId;
+  }
+  return opacity.round();
+}
+
 /// レイヤー群をタイル方式のピクセルデータから合成し1枚のui.Imageを生成する
 /// 共通処理。キャンバス表示・書き出し・オニオンスキン・バケツ参照などで共有する。
 class LayerCompositor {
@@ -144,11 +160,18 @@ class LayerCompositor {
       );
     }
 
+    final byId = {for (final layer in layers) layer.id: layer};
     for (int i = layers.length - 1; i >= 0; i--) {
-      final layer = layers[i];
-      if (!layer.isVisible) continue;
-      if (!pixelLayerTypes.contains(layer.type)) continue;
-      if (shouldRender != null && !shouldRender(layer, i)) continue;
+      final original = layers[i];
+      if (!original.isVisible || !pixelLayerTypes.contains(original.type)) {
+        continue;
+      }
+      if (shouldRender != null && !shouldRender(original, i)) continue;
+      final opacity = inheritedLayerOpacity(original, byId);
+      if (opacity == 0) continue;
+      final layer = opacity == original.opacity
+          ? original
+          : original.copyWith(opacity: opacity);
       masking.enter(canvas, layer);
 
       if (_requiresCpuBlend(layer.blendMode) && !masking.isOpen) {
@@ -233,11 +256,18 @@ class LayerCompositor {
     final recorder = ui.PictureRecorder();
     final canvas = ui.Canvas(recorder);
     final masking = _MaskGroupDrawer(maskGroups, width, height);
+    final byId = {for (final layer in layers) layer.id: layer};
     for (int i = layers.length - 1; i >= 0; i--) {
-      final layer = layers[i];
-      if (!layer.isVisible) continue;
-      if (!pixelLayerTypes.contains(layer.type)) continue;
-      if (shouldRender != null && !shouldRender(layer, i)) continue;
+      final original = layers[i];
+      if (!original.isVisible || !pixelLayerTypes.contains(original.type)) {
+        continue;
+      }
+      if (shouldRender != null && !shouldRender(original, i)) continue;
+      final opacity = inheritedLayerOpacity(original, byId);
+      if (opacity == 0) continue;
+      final layer = opacity == original.opacity
+          ? original
+          : original.copyWith(opacity: opacity);
       masking.enter(canvas, layer);
       await _drawLayer(
         canvas,

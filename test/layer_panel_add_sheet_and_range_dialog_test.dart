@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/app_bootstrap.dart';
+import 'package:niarim/engine/niapro_serializer.dart';
+import 'package:niarim/engine/undo_manager.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/models/layer.dart' as model;
 import 'package:niarim/screens/canvas/widgets/layer_panel.dart';
@@ -12,6 +14,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'helpers/first_use_tooltips.dart';
 import 'helpers/project_storage.dart';
+import 'helpers/pump_real_async.dart';
 
 /// レイヤーパネルの「レイヤーを追加」のシートと、表示範囲のダイアログ。
 ///
@@ -145,6 +148,108 @@ void main() {
     await tester.tap(clear);
     await tester.pumpAndSettle();
     expect(clear, findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('layer menu moves a drawing into a folder and back to root', (
+    tester,
+  ) async {
+    await boot(tester, const Size(1280, 800));
+    final (projects, projectId) = await showPanel(tester);
+    final panel = find.byType(LayerPanel);
+    final l10n = AppLocalizations.of(tester.element(panel))!;
+    final sceneId = projects.scenesOf(projectId).first.id;
+    final original = projects.layersOf(projectId, sceneId, 0).single;
+    await tester.tap(find.byTooltip(l10n.layerPanelNewFolderButton));
+    await tester.pumpAndSettle();
+    final folder = projects
+        .layersOf(projectId, sceneId, 0)
+        .singleWhere((layer) => layer.type == model.LayerType.folder);
+    await tester.tap(find.text(folder.name));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip(l10n.layerPanelNewLayerButton));
+    await tester.pumpAndSettle();
+    expect(
+      projects
+          .layersOf(projectId, sceneId, 0)
+          .any(
+            (layer) =>
+                layer.type == model.LayerType.normal &&
+                layer.parentFolderId == folder.id,
+          ),
+      isTrue,
+    );
+
+    Future<void> move(String target) async {
+      await tester.tap(find.byKey(ValueKey('canvasLayerMenu_${original.id}')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(l10n.folderMoveToTitle));
+      await tester.pumpAndSettle();
+      final picker = find.byType(SimpleDialog);
+      await tester.tap(
+        find.descendant(of: picker, matching: find.text(target)),
+      );
+      await tester.pumpAndSettle();
+    }
+
+    model.Layer current() => projects
+        .layersOf(projectId, sceneId, 0)
+        .singleWhere((layer) => layer.id == original.id);
+    await move(folder.name);
+    expect(current().parentFolderId, folder.id);
+    final row = find.byKey(ValueKey('canvasLayerMenu_${original.id}'));
+    await tester.tap(find.byIcon(Icons.expand_more));
+    await tester.pumpAndSettle();
+    expect(row, findsNothing);
+    await tester.tap(find.byIcon(Icons.chevron_right));
+    await tester.pumpAndSettle();
+    expect(row, findsOneWidget);
+    await move(l10n.projectListFolderRootOption);
+    expect(current().parentFolderId, isNull);
+    final undo = tester.element(panel).read<UndoManager>();
+    undo.undo(projectId: projectId);
+    await tester.pumpAndSettle();
+    expect(current().parentFolderId, folder.id);
+
+    var savedToDisk = false;
+    final saving = projects
+        .saveProject(projectId)
+        .then((_) => savedToDisk = true);
+    for (var attempt = 0; attempt < 30 && !savedToDisk; attempt++) {
+      await pumpRealAsync(tester, const Duration(milliseconds: 100));
+    }
+    expect(savedToDisk, isTrue);
+    await saving;
+    final saved = (await tester.runAsync(() async {
+      final root = await NiaproSerializer.projectsBasePath();
+      return NiaproSerializer.load('$root/$projectId/$projectId.niapro');
+    }))!;
+    expect(
+      saved.scenes.first.frames.first.layers
+          .singleWhere((layer) => layer.id == original.id)
+          .parentFolderId,
+      folder.id,
+    );
+    final copy = projects.duplicateScene(projectId, sceneId)!;
+    final copyLayers = copy.frames.first.layers;
+    expect(
+      copyLayers
+          .singleWhere((layer) => layer.name == original.name)
+          .parentFolderId,
+      copyLayers
+          .singleWhere((layer) => layer.type == model.LayerType.folder)
+          .id,
+    );
+    expect(
+      projects.moveLayerToFolder(
+        projectId: projectId,
+        sceneId: sceneId,
+        frameIndex: 0,
+        layerId: folder.id,
+        folderId: folder.id,
+      ),
+      isFalse,
+    );
     expect(tester.takeException(), isNull);
   });
 

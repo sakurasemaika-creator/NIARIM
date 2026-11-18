@@ -10339,6 +10339,24 @@ class AppLocalizationsJa extends AppLocalizations {
   String get transferImportInterrupted => '読み込みを完了できませんでした。取り込み済みの項目は残っています。';
 
   @override
+  String get transferImportStepSettings => '設定・テーマ・パレット';
+
+  @override
+  String get transferImportStepDeviceData => '端末の設定と登録項目';
+
+  @override
+  String get transferImportStepProjects => 'プロジェクト';
+
+  @override
+  String get transferImportCompletedSteps => '完了した処理';
+
+  @override
+  String get transferImportFailedStep => '中断した処理（一部反映された可能性があります）';
+
+  @override
+  String get transferImportPendingSteps => '開始していない処理';
+
+  @override
   String get communityChannelRefreshRetry =>
       'YouTube情報を更新できませんでした。もう一度お試しください。';
 

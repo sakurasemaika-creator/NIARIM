@@ -224,9 +224,10 @@ void main() {
             matching: find.byIcon(Icons.star),
           );
           expect(star, findsOneWidget);
+          // Compact projects can put both actions next to one another.
           expect(
-            tester.getRect(star).top,
-            greaterThan(tester.getRect(_menu(name)).bottom),
+            tester.getRect(star).overlaps(tester.getRect(_menu(name))),
+            isFalse,
           );
           expect(
             tester

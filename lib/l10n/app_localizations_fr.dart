@@ -11272,6 +11272,26 @@ class AppLocalizationsFr extends AppLocalizations {
       'L’importation a été interrompue. Les éléments déjà importés restent disponibles.';
 
   @override
+  String get transferImportStepSettings => 'Réglages, thèmes et palettes';
+
+  @override
+  String get transferImportStepDeviceData =>
+      'Préférences de l’appareil et éléments enregistrés';
+
+  @override
+  String get transferImportStepProjects => 'Projets';
+
+  @override
+  String get transferImportCompletedSteps => 'Étapes terminées';
+
+  @override
+  String get transferImportFailedStep =>
+      'Étape interrompue (certains changements ont pu être appliqués)';
+
+  @override
+  String get transferImportPendingSteps => 'Étapes non démarrées';
+
+  @override
   String get communityChannelRefreshRetry =>
       'Impossible d’actualiser les informations de la chaîne YouTube. Réessayez.';
 

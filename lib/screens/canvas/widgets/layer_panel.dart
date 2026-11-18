@@ -39,7 +39,6 @@ import 'two_finger_vertical_swipe_detector.dart';
 import '../../../config/font_fallback.dart';
 import '../../../utils/blend_mode_label.dart';
 import '../../../utils/duplicate_name.dart';
-import '../../../utils/reorder_index.dart';
 import '../../../config/accent_text_theme.dart';
 import '../../../widgets/typing_dialog_inset.dart';
 
@@ -155,6 +154,7 @@ class _LayerPanelState extends State<LayerPanel> {
   );
 
   int _selectedIndex = 0;
+  String? _selectedFolderId;
   bool _isSelectionMode = false;
   final Set<String> _selectedIds = {};
   model.LayerType? _selectionBaseType;
@@ -181,6 +181,11 @@ class _LayerPanelState extends State<LayerPanel> {
   @override
   void didUpdateWidget(LayerPanel oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (widget.projectId != oldWidget.projectId ||
+        widget.sceneId != oldWidget.sceneId ||
+        widget.frameIndex != oldWidget.frameIndex) {
+      _selectedFolderId = null;
+    }
     if (widget.selectAllToken != oldWidget.selectAllToken) {
       final allLayers = context.read<ProjectService>().layersOf(
         widget.projectId,
@@ -216,7 +221,8 @@ class _LayerPanelState extends State<LayerPanel> {
       return base.any((l) {
         if (!l.name.toLowerCase().contains(query)) return false;
         String? pid = l.parentFolderId;
-        while (pid != null) {
+        final visited = <String>{};
+        while (pid != null && visited.add(pid)) {
           if (pid == folder.id) return true;
           pid = byId[pid]?.parentFolderId;
         }
@@ -235,7 +241,8 @@ class _LayerPanelState extends State<LayerPanel> {
   bool _isHiddenByCollapsedFolder(model.Layer layer, List<model.Layer> all) {
     final byId = {for (final l in all) l.id: l};
     String? pid = layer.parentFolderId;
-    while (pid != null) {
+    final visited = <String>{};
+    while (pid != null && visited.add(pid)) {
       final parent = byId[pid];
       if (parent == null) break;
       if (!context.read<ProjectService>().isLayerFolderExpanded(
@@ -253,7 +260,8 @@ class _LayerPanelState extends State<LayerPanel> {
     final byId = {for (final l in all) l.id: l};
     int depth = 0;
     String? pid = layer.parentFolderId;
-    while (pid != null) {
+    final visited = <String>{};
+    while (pid != null && visited.add(pid)) {
       depth++;
       final parent = byId[pid];
       pid = parent?.parentFolderId;
@@ -525,17 +533,33 @@ class _LayerPanelState extends State<LayerPanel> {
                     if (_searchQuery.trim().isNotEmpty) {
                       return; // 検索中はフィルタ表示のため並び替え不可
                     }
-                    context.read<ProjectService>().reorderLayer(
+                    if (oldIdx == newIdx) return;
+                    final source = layers[oldIdx];
+                    final byId = {
+                      for (final layer in allLayers) layer.id: layer,
+                    };
+                    final visited = <String>{};
+                    model.Layer? target = layers[newIdx];
+                    while (target != null &&
+                        target.parentFolderId != source.parentFolderId &&
+                        visited.add(target.id)) {
+                      target = byId[target.parentFolderId];
+                    }
+                    if (target == null) return;
+                    projectService.reorderLayerRelative(
                       projectId: widget.projectId,
                       sceneId: widget.sceneId,
                       frameIndex: widget.frameIndex,
-                      oldIndex: oldIdx,
-                      newIndex: preRemovalIndex(oldIdx, newIdx),
+                      layerId: source.id,
+                      siblingId: target.id,
+                      after: newIdx > oldIdx,
                     );
                   },
                   itemBuilder: (context, index) {
                     final layer = layers[index];
-                    final isSelected = index == _selectedIndex;
+                    final isSelected = _selectedFolderId == null
+                        ? index == _selectedIndex
+                        : layer.id == _selectedFolderId;
                     final isChecked = _selectedIds.contains(layer.id);
                     final depth = _depthOf(layer, layers);
                     return TwoFingerVerticalSwipeDetector(
@@ -562,7 +586,8 @@ class _LayerPanelState extends State<LayerPanel> {
                         leading: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            if (depth > 0) SizedBox(width: depth * 12.0),
+                            if (depth > 0)
+                              SizedBox(width: depth.clamp(0, 4) * 12.0),
                             if (layer.type == model.LayerType.folder)
                               GestureDetector(
                                 onTap: () {
@@ -794,6 +819,10 @@ class _LayerPanelState extends State<LayerPanel> {
                               }
                             } else {
                               _selectedIndex = index;
+                              _selectedFolderId =
+                                  layer.type == model.LayerType.folder
+                                  ? layer.id
+                                  : null;
                             }
                           });
                           if (!_isSelectionMode &&
@@ -950,7 +979,10 @@ class _LayerPanelState extends State<LayerPanel> {
     final idx = layers.indexWhere((l) => l.id == layer.id);
     if (idx < 0 || idx + 1 >= layers.length) return null;
     final below = layers[idx + 1];
-    return _mergeableLayerTypesForPanel.contains(below.type) ? below : null;
+    return below.parentFolderId == layer.parentFolderId &&
+            _mergeableLayerTypesForPanel.contains(below.type)
+        ? below
+        : null;
   }
 
   /// このレイヤーとすぐ下のレイヤーをワンタップで結合する。
@@ -1708,25 +1740,99 @@ class _LayerPanelState extends State<LayerPanel> {
     model.LayerType type,
     String Function(int n) nameBuilder,
   ) {
-    final layers = context.read<ProjectService>().layersOf(
+    final projects = context.read<ProjectService>();
+    final layers = projects.layersOf(
       widget.projectId,
       widget.sceneId,
       widget.frameIndex,
     );
-    final visible = _visibleLayers(layers);
-    final created = context.read<ProjectService>().addLayer(
+    final folder = layers
+        .where((layer) => layer.id == _selectedFolderId)
+        .firstOrNull;
+    final created = projects.addLayer(
       projectId: widget.projectId,
       sceneId: widget.sceneId,
       frameIndex: widget.frameIndex,
       type: type,
-      name: nameBuilder(visible.length + 1),
+      name: nameBuilder(layers.length + 1),
+      parentFolderId: folder?.id,
     );
-    setState(() => _selectedIndex = 0);
-    // 追加したレイヤーへそのまま描き始められるよう、実際の描画対象も
-    // 新規レイヤーへ切り替える（フォルダは描画対象になり得ないため除外）。
+    if (folder != null && created.parentFolderId == folder.id) {
+      projects.setLayerFolderExpanded(widget.projectId, folder, true);
+    }
+    final visible = _visibleLayers(
+      projects.layersOf(widget.projectId, widget.sceneId, widget.frameIndex),
+    );
+    setState(() {
+      _selectedIndex = visible.indexWhere((layer) => layer.id == created.id);
+      _selectedFolderId = type == model.LayerType.folder ? created.id : null;
+    });
     if (type != model.LayerType.folder) {
       widget.onLayerSelected?.call(created.id);
     }
+  }
+
+  List<model.Layer> _layerFolderChoices(model.Layer layer) {
+    final all = context.read<ProjectService>().layersOf(
+      widget.projectId,
+      widget.sceneId,
+      widget.frameIndex,
+    );
+    final byId = {for (final item in all) item.id: item};
+    return all.where((candidate) {
+      if (candidate.type != model.LayerType.folder ||
+          candidate.id == layer.parentFolderId) {
+        return false;
+      }
+      final visited = <String>{};
+      String? parent = candidate.id;
+      while (parent != null && visited.add(parent)) {
+        if (parent == layer.id) return false;
+        parent = byId[parent]?.parentFolderId;
+      }
+      return parent == null;
+    }).toList();
+  }
+
+  Future<void> _showLayerFolderPicker(model.Layer layer) async {
+    final l10n = AppLocalizations.of(context)!;
+    final choices = _layerFolderChoices(layer);
+    final selected = await showDialog<({String? folderId})>(
+      context: context,
+      builder: (ctx) => SimpleDialog(
+        title: Text(l10n.folderMoveToTitle),
+        children: [
+          if (layer.parentFolderId != null)
+            SimpleDialogOption(
+              onPressed: () => Navigator.pop(ctx, (folderId: null)),
+              child: Text(l10n.projectListFolderRootOption),
+            ),
+          for (final folder in choices)
+            SimpleDialogOption(
+              onPressed: () => Navigator.pop(ctx, (folderId: folder.id)),
+              child: Text(folder.name),
+            ),
+        ],
+      ),
+    );
+    if (!mounted || selected == null) return;
+    final projects = context.read<ProjectService>();
+    if (!projects.moveLayerToFolder(
+      projectId: widget.projectId,
+      sceneId: widget.sceneId,
+      frameIndex: widget.frameIndex,
+      layerId: layer.id,
+      folderId: selected.folderId,
+    )) {
+      return;
+    }
+    final target = choices
+        .where((folder) => folder.id == selected.folderId)
+        .firstOrNull;
+    if (target != null) {
+      projects.setLayerFolderExpanded(widget.projectId, target, true);
+    }
+    setState(() {});
   }
 
   /// [frameIndex]時点のキーフレーム値（拡大縮小・回転）を書き換えた
@@ -1795,6 +1901,16 @@ class _LayerPanelState extends State<LayerPanel> {
                   ),
                 ),
               ),
+              if (layer.parentFolderId != null ||
+                  _layerFolderChoices(layer).isNotEmpty)
+                ListTile(
+                  leading: const Icon(Icons.drive_file_move_outline),
+                  title: Text(l10n.folderMoveToTitle),
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    _showLayerFolderPicker(layer);
+                  },
+                ),
               // 不透明度スライダー
               StatefulBuilder(
                 builder: (ctx, setS) => LabeledSlider(

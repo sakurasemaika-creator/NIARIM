@@ -68,6 +68,8 @@ class DrawingEngine {
 
   // 定規など、手ブレ補正より後に必ず満たすべき最終座標制約。
   ui.Offset Function(ui.Offset)? pointConstraint;
+  List<ui.Offset> Function(ui.Offset, ui.Offset)? curveBetween;
+  double _strokeDistance = 0;
 
   // 手ブレ補正用：直近の平滑化済み座標（ON/OFF・強度調整）
   StrokePoint? _smoothed;
@@ -80,6 +82,7 @@ class DrawingEngine {
     ui.Offset? screenPosition,
   }) {
     _currentStroke.clear();
+    _strokeDistance = 0;
     _strokeScreenPositions.clear();
     _strokeCoverageByTile.clear();
     _strokeBaseAlpha.clear();
@@ -88,7 +91,9 @@ class DrawingEngine {
     _lastOilStamp = null;
     _watercolor = null;
     _smoothed = point;
-    final effective = _applyPointConstraint(point);
+    final effective = _replayingFinalStroke
+        ? point
+        : _applyPointConstraint(point);
     _activeLayerId = layerId;
     _distanceSinceLastBrushStamp = 0.0;
     _hasStampedCurrentStroke = false;
@@ -173,18 +178,40 @@ class DrawingEngine {
     ui.Offset? screenPosition,
   ) {
     final from = _currentStroke.last;
-    // 区間を描画してから終点を履歴へ追加する。これにより
-    // _renderStrokeSegment() が取得するbaseStrokeLengthは必ず区間開始時点までの
-    // 累積距離となり、OSから届くmoveイベント数に依存しない。
-    // Until the stroke folds (and, for a crescent, its curve is deep enough
-    // for the pen width) it keeps drawing as an ordinary line.
-    if (!(_foldRaster?.replacesStroke ?? false)) {
-      _renderStrokeSegment(from, effective, layerId);
+    final end = ui.Offset(effective.x, effective.y);
+    final intermediate = _replayingFinalStroke
+        ? const <ui.Offset>[]
+        : curveBetween?.call(ui.Offset(from.x, from.y), end) ??
+              const <ui.Offset>[];
+    final screenFrom = _strokeScreenPositions.last;
+    final screenTo = screenPosition ?? end;
+
+    void add(StrokePoint point, ui.Offset screen) {
+      final previous = _currentStroke.last;
+      if (!(_foldRaster?.replacesStroke ?? false)) {
+        _renderStrokeSegment(previous, point, layerId);
+      }
+      _strokeDistance += _distance(previous, point);
+      _currentStroke.add(point);
+      _strokeScreenPositions.add(screen);
     }
-    _currentStroke.add(effective);
-    _strokeScreenPositions.add(
-      screenPosition ?? ui.Offset(effective.x, effective.y),
-    );
+
+    for (var i = 0; i < intermediate.length; i++) {
+      final offset = intermediate[i];
+      final t = (i + 1) / (intermediate.length + 1);
+      add(
+        StrokePoint(
+          x: offset.dx,
+          y: offset.dy,
+          pressure: from.pressure + (effective.pressure - from.pressure) * t,
+          tiltX: from.tiltX + (effective.tiltX - from.tiltX) * t,
+          tiltY: from.tiltY + (effective.tiltY - from.tiltY) * t,
+          inputType: effective.inputType,
+        ),
+        ui.Offset.lerp(screenFrom, screenTo, t)!,
+      );
+    }
+    add(effective, screenTo);
     _rebuildHairFold();
   }
 
@@ -221,6 +248,7 @@ class DrawingEngine {
       totalLength += _distance(points[i - 1], points[i]);
     }
     _currentStroke.clear();
+    _strokeDistance = 0;
     _strokeCoverageByTile.clear();
     _strokeBaseAlpha.clear();
     _distanceSinceLastBrushStamp = 0.0;
@@ -267,6 +295,7 @@ class DrawingEngine {
     _oilPaint = null;
     _lastOilStamp = null;
     _currentStroke.clear();
+    _strokeDistance = 0;
     _strokeCoverageByTile.clear();
     _strokeBaseAlpha.clear();
     _smoothed = null;
@@ -422,6 +451,7 @@ class DrawingEngine {
   }) {
     if (currentBrush == null || pathPoints.isEmpty) return;
     _currentStroke.clear();
+    _strokeDistance = 0;
     _strokeCoverageByTile.clear();
     _strokeBaseAlpha.clear();
     _activeLayerId = layerId;
@@ -452,7 +482,9 @@ class DrawingEngine {
     }
     for (int i = 1; i < pathPoints.length; i++) {
       final to = pathPoints[i];
-      _renderStrokeSegment(_currentStroke.last, to, layerId);
+      final previous = _currentStroke.last;
+      _renderStrokeSegment(previous, to, layerId);
+      _strokeDistance += _distance(previous, to);
       _currentStroke.add(to);
     }
     if (closeLoop && pathPoints.length > 1) {
@@ -473,7 +505,7 @@ class DrawingEngine {
     // この区間より前に実際に進んだ距離。各補間スタンプでは
     // base + consumed を使うため、1回の大きなmoveでも多数の小さなmoveでも
     // フェード/ストローク減衰が同じ距離位置で同じ値になる。
-    final baseStrokeLength = _currentStrokeLength();
+    final baseStrokeLength = _strokeDistance;
 
     // 回転/散布ではPointerDown時点で保留した初点を、最初の実移動から得た
     // 接線方向を使って描く。これで先頭だけ角度0・散布方向固定にならない。
@@ -577,7 +609,7 @@ class DrawingEngine {
         (brush.opacity / 100.0) *
         (brush.outlineEnabled ? 1.0 : resolvedPressure.opacityScale);
 
-    final strokeLength = strokeLengthOverride ?? _currentStrokeLength();
+    final strokeLength = strokeLengthOverride ?? _strokeDistance;
 
     // フェード仕様は「ストロークが進むにつれて不透明度・サイズが減少」。
     // 同じ係数を両方へ適用し、終端で薄いだけの同径線にならないようにする。
@@ -1212,15 +1244,6 @@ class DrawingEngine {
     final dx = a.x - b.x;
     final dy = a.y - b.y;
     return math.sqrt(dx * dx + dy * dy);
-  }
-
-  double _currentStrokeLength() {
-    if (_currentStroke.length < 2) return 0;
-    double total = 0;
-    for (int i = 1; i < _currentStroke.length; i++) {
-      total += _distance(_currentStroke[i - 1], _currentStroke[i]);
-    }
-    return total;
   }
 
   double _calculateFade(

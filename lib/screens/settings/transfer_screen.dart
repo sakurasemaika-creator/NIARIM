@@ -454,7 +454,8 @@ class _TransferScreenState extends State<TransferScreen> {
   Future<void> _import() async {
     if (_isBusy) return;
     setState(() => _isBusy = true);
-    var applying = false;
+    var currentStep = -1;
+    late List<String> steps;
     try {
       final result = await FilePicker.platform.pickFiles(
         type: FileType.custom,
@@ -469,13 +470,22 @@ class _TransferScreenState extends State<TransferScreen> {
           ? NiatraSerializer.loadFromBytes(picked.bytes!)
           : await NiatraSerializer.load(picked.path!);
       if (!mounted) return;
+      NiatraSerializer.validateMetadata(data);
       NiatraSerializer.validateProjects(data);
+      await NiatraAssetBundle.validateEmbeddedImages(data);
+      if (!mounted) return;
 
       final brushService = context.read<BrushService>();
       final toneService = context.read<ToneService>();
       final stampService = context.read<StampService>();
       // この端末の項目を残して足す複製の名前（「名前 (コピー)」）の言語。
-      final copyLanguage = AppLocalizations.of(context);
+      final copyLanguage = AppLocalizations.of(context)!;
+      steps = [
+        copyLanguage.transferItemMaterials,
+        copyLanguage.transferImportStepSettings,
+        copyLanguage.transferImportStepDeviceData,
+        copyLanguage.transferImportStepProjects,
+      ];
       // 足した複製の名前（読み込みの後に知らせる）。
       final report = TransferImportReport();
       // 新形式のカスタム画像を先にアプリ領域へ展開する。処理済みカテゴリは
@@ -483,7 +493,7 @@ class _TransferScreenState extends State<TransferScreen> {
       // どちらも一覧の項目はIDで突き合わせ、この端末の内容を残す（同じIDで
       // 中身が違えば受け取った方を複製として足す）ので、同じファイルを
       // 読み直しても増えない。
-      applying = true;
+      currentStep = 0;
       await NiatraAssetBundle.restoreEmbeddedAssets(
         data,
         brush: brushService,
@@ -494,6 +504,7 @@ class _TransferScreenState extends State<TransferScreen> {
         report: report,
       );
       if (!mounted) return;
+      currentStep = 1;
       await NiatraSerializer.applyTo(
         data,
         settings: context.read<SettingsService>(),
@@ -512,6 +523,7 @@ class _TransferScreenState extends State<TransferScreen> {
       // （ブラシ・テーマ等）とこの端末の作品・ゴミ箱・フォルダ等の記録を
       // 書き換えない。利用者が作った物の一覧は、動いているサービスが
       // この端末の一覧へ足す。
+      currentStep = 2;
       await NiatraSerializer.restoreLocalPreferences(
         data,
         lists: TransferredSavedLists(
@@ -537,6 +549,7 @@ class _TransferScreenState extends State<TransferScreen> {
       // プロジェクトの復元はファイルI/Oを伴う非同期処理のため、他項目の
       // 同期的なapplyTo()とは別にawaitする。同じ中身の作品は足さず、同じ
       // 名前の別の作品は複製の名前で足して知らせる。
+      currentStep = 3;
       await NiatraSerializer.restoreProjects(
         data,
         context.read<ProjectService>(),
@@ -584,15 +597,45 @@ class _TransferScreenState extends State<TransferScreen> {
       AppErrorReporter.record(error, stack);
       if (!mounted) return;
       final l10n = AppLocalizations.of(context)!;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            applying
-                ? l10n.transferImportInterrupted
-                : l10n.transferImportFileFailed,
+      if (currentStep < 0) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.transferImportFileFailed)));
+      } else {
+        await showDialog<void>(
+          context: context,
+          builder: (dialog) => AlertDialog(
+            scrollable: true,
+            title: Text(l10n.transferImport),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(l10n.transferImportInterrupted),
+                if (currentStep > 0) ...[
+                  const SizedBox(height: 12),
+                  Text(l10n.transferImportCompletedSteps),
+                  for (final step in steps.take(currentStep)) Text(step),
+                ],
+                const SizedBox(height: 12),
+                Text(l10n.transferImportFailedStep),
+                Text(steps[currentStep]),
+                if (currentStep + 1 < steps.length) ...[
+                  const SizedBox(height: 12),
+                  Text(l10n.transferImportPendingSteps),
+                  for (final step in steps.skip(currentStep + 1)) Text(step),
+                ],
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(dialog),
+                child: Text(l10n.commonClose),
+              ),
+            ],
           ),
-        ),
-      );
+        );
+      }
     } finally {
       if (mounted) setState(() => _isBusy = false);
     }
