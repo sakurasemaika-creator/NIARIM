@@ -24,7 +24,10 @@ class GoogleAuthService extends ChangeNotifier {
     defaultValue: '',
   );
 
+  static const _youtubeReadOnlyScope =
+      'https://www.googleapis.com/auth/youtube.readonly';
   static const List<String> youtubeUploadScopes = <String>[
+    _youtubeReadOnlyScope,
     'https://www.googleapis.com/auth/youtube.upload',
   ];
 
@@ -137,28 +140,41 @@ class GoogleAuthService extends ChangeNotifier {
     return user.authentication.idToken;
   }
 
-  /// `youtube.upload` スコープのアクセストークンを取得する。
+  /// 動画の投稿と、登録時のチャンネル・動画の所有確認に使う。
   ///
   /// [promptIfNecessary] がfalseならUIを出さず、既に許可済みの時だけ返す。
   /// trueは必ずボタン等のユーザー操作から呼ぶこと。
   Future<String?> youtubeUploadAccessToken({bool promptIfNecessary = false}) =>
-      _runExclusive(() async {
-        _ensureReadyForGoogle();
-        var user = _account;
-        if (user == null) {
-          if (!promptIfNecessary) return null;
-          user = await _signInInteractivelyInternal();
-        }
+      _youtubeAccessToken(
+        youtubeUploadScopes,
+        promptIfNecessary: promptIfNecessary,
+      );
 
-        var authorization = await user.authorizationClient
-            .authorizationForScopes(youtubeUploadScopes);
-        if (authorization == null && promptIfNecessary) {
-          authorization = await user.authorizationClient.authorizeScopes(
-            youtubeUploadScopes,
-          );
-        }
-        return authorization?.accessToken;
-      });
+  /// チャンネルの更新や、アップロード済み動画の登録だけを行う場合に使う。
+  Future<String?> youtubeReadAccessToken({bool promptIfNecessary = false}) =>
+      _youtubeAccessToken(const [
+        _youtubeReadOnlyScope,
+      ], promptIfNecessary: promptIfNecessary);
+
+  Future<String?> _youtubeAccessToken(
+    List<String> scopes, {
+    required bool promptIfNecessary,
+  }) => _runExclusive(() async {
+    _ensureReadyForGoogle();
+    var user = _account;
+    if (user == null) {
+      if (!promptIfNecessary) return null;
+      user = await _signInInteractivelyInternal();
+    }
+
+    var authorization = await user.authorizationClient.authorizationForScopes(
+      scopes,
+    );
+    if (authorization == null && promptIfNecessary) {
+      authorization = await user.authorizationClient.authorizeScopes(scopes);
+    }
+    return authorization?.accessToken;
+  });
 
   Future<void> signOut() => _runExclusive(() async {
     _ensureReadyForGoogle();

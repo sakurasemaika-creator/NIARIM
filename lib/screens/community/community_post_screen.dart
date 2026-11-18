@@ -818,11 +818,12 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
         }
       }
 
-      // ここへ来るのは新規YouTubeアップロード、またはYouTubeには存在するが
-      // NIARIM未登録の保留投稿だけ。初めてここでyoutube.upload scopeを要求する。
-      final youtubeToken = await auth.youtubeUploadAccessToken(
-        promptIfNecessary: true,
-      );
+      // A registration retry only reads YouTube unless it still needs to set a thumbnail.
+      final needsUpload =
+          videoId == null || (_thumbnailFile != null && !_thumbnailApplied);
+      final youtubeToken = needsUpload
+          ? await auth.youtubeUploadAccessToken(promptIfNecessary: true)
+          : await auth.youtubeReadAccessToken(promptIfNecessary: true);
       if (youtubeToken == null || youtubeToken.isEmpty) {
         throw const _PostFailure(_PostFailureKind.youtubePermissionDenied);
       }

@@ -165,7 +165,7 @@ backend/
 
 1. Google Cloudプロジェクト作成・YouTube Data API有効化
 2. OAuth同意画面の設定・OAuthクライアントの作成
-3. `youtube.upload`スコープの申請理由整理・Googleのアプリ確認審査
+3. OAuth 同意画面に `youtube.upload`（動画・サムネイルの投稿）と `youtube.readonly`（本人のチャンネル情報と投稿動画の所有・公開状態の確認）を登録し、それぞれの利用理由を添えて Google のアプリ確認審査を申請する。チャンネル情報の手動更新では読み取り権限のみを要求する。
 
 審査完了前でも、テストユーザーとして自分のGoogleアカウントを登録すれば
 動作確認は可能です。

@@ -67,6 +67,11 @@ class _Auth extends GoogleAuthService {
   Future<String?> youtubeUploadAccessToken({
     bool promptIfNecessary = false,
   }) async => 'test-token';
+
+  @override
+  Future<String?> youtubeReadAccessToken({
+    bool promptIfNecessary = false,
+  }) async => 'read-only-token';
 }
 
 File _sampleVideo() {
@@ -170,13 +175,18 @@ void main() {
         SharedPreferences.setMockInitialValues({});
         FilePicker.platform = _VideoPicker(_sampleVideo());
 
-        var registrations = 0;
+        final registrations = <Map<String, dynamic>>[];
         final community = CommunityService(
           api: CommunityApi(
             NiarimApiClient(
               baseUrl: 'https://example.invalid',
-              httpClient: MockClient((_) async {
-                registrations++;
+              httpClient: MockClient((request) async {
+                if (request.url.path == '/me/works') {
+                  return http.Response('{"authorId":"owner","works":[]}', 200);
+                }
+                registrations.add(
+                  jsonDecode(request.body) as Map<String, dynamic>,
+                );
                 return http.Response('{}', 500);
               }),
               maxGetRetries: 0,
@@ -332,7 +342,7 @@ void main() {
             ),
           );
           await pumpRealAsync(tester, const Duration(milliseconds: 300));
-          expect(registrations, 0);
+          expect(registrations, isEmpty);
           await tester.tap(
             find.widgetWithText(FilledButton, l10n.communityPostCancelUpload),
           );
@@ -347,7 +357,7 @@ void main() {
         final prefs = await SharedPreferences.getInstance();
         expect(abortTriggered, isTrue);
         expect(requests, 2);
-        expect(registrations, 0);
+        expect(registrations, isEmpty);
         expect(
           prefs.getString('community.pendingUpload.videoId'),
           completedBeforeCancel ? 'test-video' : isNull,
@@ -371,7 +381,15 @@ void main() {
         if (completedBeforeCancel) {
           await tapVisible(submit);
           await tester.pumpAndSettle();
-          expect(registrations, 1);
+          // A server error retries POST /works once with the same payload.
+          expect(registrations, hasLength(2));
+          expect(registrations.first, registrations.last);
+          expect(registrations.first['youtubeVideoId'], 'test-video');
+          expect(registrations.first['youtubeAccessToken'], 'read-only-token');
+          expect(
+            registrations.first['containsGenerativeAiImageOrVideo'],
+            isFalse,
+          );
           expect(requests, 2);
           expect(missing, findsNothing);
           expect(

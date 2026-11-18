@@ -12,7 +12,7 @@ void main() {
     () {
       final myWorks = source.indexOf('final ownWorks = await api.myWorks()');
       final youtubeScope = source.indexOf(
-        'final youtubeToken = await auth.youtubeUploadAccessToken',
+        'await auth.youtubeUploadAccessToken',
       );
 
       expect(myWorks, greaterThanOrEqualTo(0));
@@ -82,9 +82,23 @@ void main() {
     expect(source, contains('youtubeDescription: true,'));
   });
 
-  test('still requests YouTube scope when pending video is not registered', () {
-    expect(source, contains('ここへ来るのは新規YouTubeアップロード、またはYouTubeには存在するが'));
-    expect(source, contains('promptIfNecessary: true'));
-    expect(source, contains('await api.createWork('));
-  });
+  test(
+    'registration retries request upload permission only for a pending thumbnail',
+    () {
+      final compact = source.replaceAll(RegExp(r'\s+'), ' ');
+      expect(
+        compact,
+        contains(
+          'videoId == null || (_thumbnailFile != null && !_thumbnailApplied)',
+        ),
+      );
+      expect(
+        compact,
+        contains(
+          'needsUpload ? await auth.youtubeUploadAccessToken(promptIfNecessary: true) : await auth.youtubeReadAccessToken(promptIfNecessary: true)',
+        ),
+      );
+      expect(source, contains('await api.createWork('));
+    },
+  );
 }

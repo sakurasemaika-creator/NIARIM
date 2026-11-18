@@ -351,7 +351,7 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
     final accountId = auth.account?.id;
     setState(() => _refreshingYouTubeChannel = true);
     try {
-      final token = await auth.youtubeUploadAccessToken(
+      final token = await auth.youtubeReadAccessToken(
         promptIfNecessary: true,
       );
       if (!mounted || auth.account?.id != accountId) return;
