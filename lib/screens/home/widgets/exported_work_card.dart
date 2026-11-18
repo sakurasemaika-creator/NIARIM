@@ -353,6 +353,18 @@ class ExportedWorkCard extends StatelessWidget {
                       fit: StackFit.expand,
                       children: [
                         thumbnail(),
+                        if (shareError != null)
+                          Center(
+                            child: SingleChildScrollView(
+                              child: ColoredBox(
+                                color: background,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(6),
+                                  child: shareFeedback(),
+                                ),
+                              ),
+                            ),
+                          ),
                         // Keep grid actions in the same corners as Projects:
                         // menu at top-right, favorite at bottom-left.
                         if (!selectionActive)

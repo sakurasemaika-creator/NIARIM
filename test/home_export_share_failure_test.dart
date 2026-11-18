@@ -107,7 +107,8 @@ void main() {
     await tester.ensureVisible(control);
     await tester.pumpAndSettle();
     await tester.tap(control);
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
     // The Works list now routes all file operations through the same three-dot
     // menu as Projects. Preview still has its dedicated share TextButton.
     if (control.evaluate().isNotEmpty &&
@@ -128,7 +129,9 @@ void main() {
     bool enabled,
   ) async {
     await tester.tap(find.byKey(const Key('exportedWorkMoreMenu')));
-    await tester.pumpAndSettle();
+    // Let the menu animate while the native share indicator keeps running.
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
     for (final value in ['open', 'share', 'delete']) {
       final action = find.byWidgetPredicate(
         (w) => w is PopupMenuItem<String> && w.value == value,
@@ -141,7 +144,8 @@ void main() {
       );
     }
     await tester.sendKeyEvent(LogicalKeyboardKey.escape);
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
   }
 
   for (final preview in [false, true]) {
