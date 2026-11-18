@@ -4,6 +4,8 @@ import { ConditionalCheckFailedException, TransactionCanceledException } from "@
 import { GetCommand, TransactWriteCommand, UpdateCommand } from "@aws-sdk/lib-dynamodb";
 import { ddb, Keys, tableName } from "./dynamo";
 import { sendPushToUser } from "./push";
+import { ACCOUNT_MISSIONS, PER_WORK_MISSIONS, REPOST_MISSIONS } from "./missionCatalog";
+import { recordMissionAchievement } from "./missionNotifications";
 import { TABLE_ITEM_TYPE } from "./types";
 
 export const communityActivityType = "COMMUNITY_ACTIVITY_V1";
@@ -202,6 +204,66 @@ async function deliver(record: DynamoDBRecord): Promise<void> {
   });
 }
 
+const followerMissions = ACCOUNT_MISSIONS.filter(m => m.kind === "followers");
+const bookmarkMissions = PER_WORK_MISSIONS.filter(m =>
+  m.kind === "workBookmarks" && m.required > 0,
+);
+
+function imageCount(image: Image, key: string): number {
+  const raw = image?.[key]?.N;
+  if (raw === undefined) return 0;
+  const count = Number(raw);
+  return Number.isSafeInteger(count) && count >= 0 ? count : NaN;
+}
+
+async function recordReachedMilestones(record: DynamoDBRecord): Promise<void> {
+  if (record.eventName !== "MODIFY") return;
+  const old = record.dynamodb?.OldImage;
+  const image = record.dynamodb?.NewImage;
+  const timestamp = record.dynamodb?.ApproximateCreationDateTime;
+  if (!old || !image || !timestamp) return;
+  const when = timestamp * 1000;
+  const now = Date.now();
+  if (!Number.isFinite(when) || when < now - notificationStreamMaxAgeMs ||
+      when > now + 60_000) return;
+  const occurredAt = new Date(when).toISOString();
+  const type = str(image, "itemType");
+  if (type !== str(old, "itemType")) return;
+  const crossed = (attribute: string, required: number) =>
+    imageCount(old, attribute) < required && imageCount(image, attribute) >= required;
+  if (type === TABLE_ITEM_TYPE.User) {
+    const owner = str(image, "niarimUserId");
+    if (!userId(owner) || str(image, "pk") !== `USER#${owner}`) return;
+    for (const m of followerMissions) {
+      if (crossed("followerCount", m.required)) {
+        await recordMissionAchievement(owner, {
+          kind: "followers", missionId: m.id, required: m.required, occurredAt,
+        });
+      }
+    }
+    return;
+  }
+  if (type !== TABLE_ITEM_TYPE.Work || image.isNiarimPublished?.BOOL !== true ||
+      !youtubeVisible(str(image, "youtubePrivacyStatus")) ||
+      str(image, "gsi2pk") !== "BOOKMARK_RANKING") return;
+  const owner = str(image, "authorId");
+  const id = str(image, "workId");
+  if (!userId(owner) || !workId(id)) return;
+  for (const [kind, countAttribute, missions] of [
+    ["workBookmarks", "bookmarkCount", bookmarkMissions],
+    ["workReposts", "repostCount", REPOST_MISSIONS],
+  ] as const) {
+    for (const m of missions) {
+      if (crossed(countAttribute, m.required)) {
+        await recordMissionAchievement(owner, {
+          kind, missionId: m.id, required: m.required, occurredAt,
+          workId: id, workTitle: str(image, "title"),
+        });
+      }
+    }
+  }
+}
+
 export async function handleNotificationStream(records: DynamoDBRecord[]): Promise<DynamoDBBatchResponse> {
   const failures = await Promise.all(records.map(async (record): Promise<{itemIdentifier: string} | undefined> => {
     if (record.eventSource !== "aws:dynamodb") return undefined;
@@ -214,6 +276,7 @@ export async function handleNotificationStream(records: DynamoDBRecord[]): Promi
       } else {
         const activity = recentActivity(record);
         if (activity) await storeActivity(activity);
+        await recordReachedMilestones(record);
       }
     } catch (error) {
       console.error("Notification stream record failed", error instanceof Error ? error.name : "UnknownError");

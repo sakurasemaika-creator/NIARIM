@@ -160,7 +160,8 @@ export async function toggleBookmark(
     throw err;
   }
 
-  if (!isBookmarked && isPublic &&
+  // With the stream enabled, only committed count changes drive milestones.
+  if (process.env.NOTIFICATION_STREAM_ENABLED !== "true" && !isBookmarked && isPublic &&
       Number.isSafeInteger(work.bookmarkCount) &&
       work.bookmarkCount >= 0) {
     // Only the first crossing of a threshold creates its notification.

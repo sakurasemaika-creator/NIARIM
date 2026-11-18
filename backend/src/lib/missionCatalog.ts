@@ -11,7 +11,7 @@
  */
 export type MissionKind =
   | "verifiedEditSeconds" | "workBookmarks" | "qualifiedWorks"
-  | "followers" | "niarimBookmarkRanking";
+  | "followers" | "niarimBookmarkRanking" | "workReposts";
 
 export interface MissionDefinition {
   id: string;
@@ -26,8 +26,8 @@ export interface MissionDefinition {
   eachWorkBookmarks?: number;
 }
 
-export const MISSION_CATALOG_VERSION = "creator-v10-min10" as const;
-export const CREATOR_MISSIONS: readonly MissionDefinition[] = Object.freeze([
+export const MISSION_CATALOG_VERSION = "creator-v11-reposts" as const;
+const originalMissions: readonly MissionDefinition[] = [
   { id: "edit_1h", bit: 0, kind: "verifiedEditSeconds", required: 3600, coins: 10, perWork: false },
   { id: "edit_5h", bit: 1, kind: "verifiedEditSeconds", required: 18000, coins: 15, perWork: false },
   { id: "edit_20h", bit: 2, kind: "verifiedEditSeconds", required: 72000, coins: 25, perWork: false },
@@ -83,7 +83,17 @@ export const CREATOR_MISSIONS: readonly MissionDefinition[] = Object.freeze([
   { id: "bookmark_rank_10", bit: 14, kind: "niarimBookmarkRanking", required: 10, coins: 80, perWork: true },
   { id: "bookmark_rank_3", bit: 15, kind: "niarimBookmarkRanking", required: 3, coins: 130, perWork: true },
   { id: "bookmark_rank_1", bit: 16, kind: "niarimBookmarkRanking", required: 1, coins: 205, perWork: true },
-]);
+];
+
+// Reposts use their own per-work state key, so each keeps the corresponding
+// bookmark bit position and reward without changing any existing claim bits.
+export const REPOST_MISSIONS: readonly MissionDefinition[] = originalMissions
+  .filter(m => m.kind === "workBookmarks" && m.required > 0)
+  .sort((a, b) => a.required - b.required)
+  .map(m => ({ ...m, id: `work_reposts_${m.required}`, kind: "workReposts" }));
+
+export const CREATOR_MISSIONS: readonly MissionDefinition[] =
+  Object.freeze([...originalMissions, ...REPOST_MISSIONS]);
 
 export const ACCOUNT_MISSIONS = CREATOR_MISSIONS.filter((m) => !m.perWork);
 export const PER_WORK_MISSIONS = CREATOR_MISSIONS.filter((m) => m.perWork)

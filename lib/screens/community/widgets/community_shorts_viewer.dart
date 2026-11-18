@@ -20,6 +20,7 @@ import '../community_edit_feedback.dart';
 import '../../../utils/tolerant_preferences.dart';
 import '../../../config/accent_text_theme.dart';
 import 'package:intl/intl.dart';
+import 'community_work_counts.dart';
 
 enum CommunityShortsEndBehavior { loopCurrent, autoAdvance }
 
@@ -628,15 +629,10 @@ class _ShortsPage extends StatelessWidget {
                         icon: Icons.play_arrow_rounded,
                         text: formatCompactCount(work.viewCount, languageCode),
                       ),
-                      _InfoItem(
-                        icon: Icons.bookmark_outline,
-                        text: formatCompactCount(
-                          work.bookmarkCount,
-                          languageCode,
-                        ),
-                      ),
                     ],
                   ),
+                  const SizedBox(height: 4),
+                  CommunityWorkCounts(work: work),
                 ],
               ),
             ),

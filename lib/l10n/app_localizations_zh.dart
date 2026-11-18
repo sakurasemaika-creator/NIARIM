@@ -6288,6 +6288,9 @@ class AppLocalizationsZh extends AppLocalizations {
       '在喜欢的作者页面点击“关注”，即可在此查看该作者的最新作品。';
 
   @override
+  String get communityRepostCount => '转发';
+
+  @override
   String get communityRepostButton => '转发';
 
   @override
@@ -8906,8 +8909,18 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String creatorMissionGenericRepost(int count) {
+    return '已发布作品达到$count次转发';
+  }
+
+  @override
   String creatorMissionGenericBookmark(int count) {
     return '已发布作品达到$count个收藏';
+  }
+
+  @override
+  String creatorMissionNamedRepost(String title, int count) {
+    return '$title达到$count次转发';
   }
 
   @override
@@ -8941,6 +8954,11 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String creatorMissionActivityWorkReposts(String title, int count) {
+    return '$title达到了$count次转发';
+  }
+
+  @override
   String creatorMissionActivityWorkBookmarks(String title, int count) {
     return '$title达到了$count个收藏';
   }
@@ -8953,6 +8971,11 @@ class AppLocalizationsZh extends AppLocalizations {
   @override
   String creatorMissionActivityWorksPublished(int works) {
     return '你已发布$works件作品';
+  }
+
+  @override
+  String creatorMissionDetailsRepostProgress(int progress, int goal) {
+    return '当前转发：$progress次（需要：$goal次）';
   }
 
   @override
@@ -9014,6 +9037,10 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get creatorMissionRankOne => 'NIARIM 收藏榜第1名';
+
+  @override
+  String get creatorMissionDetailsRepostRule =>
+      '作品须为本人在 NIARIM 上公开发布的作品。转发次数按作品统计。';
 
   @override
   String get creatorMissionDetailsBookmarkRule =>
@@ -16405,6 +16432,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
       '在喜歡的作者頁面點選「追蹤」，即可在此查看該作者的最新作品。';
 
   @override
+  String get communityRepostCount => '轉發';
+
+  @override
   String get communityRepostButton => '轉發';
 
   @override
@@ -19025,8 +19055,18 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   }
 
   @override
+  String creatorMissionGenericRepost(int count) {
+    return '已發布作品達到$count次轉發';
+  }
+
+  @override
   String creatorMissionGenericBookmark(int count) {
     return '已發佈作品達到$count個收藏';
+  }
+
+  @override
+  String creatorMissionNamedRepost(String title, int count) {
+    return '$title達到$count次轉發';
   }
 
   @override
@@ -19060,6 +19100,11 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   }
 
   @override
+  String creatorMissionActivityWorkReposts(String title, int count) {
+    return '$title達到了$count次轉發';
+  }
+
+  @override
   String creatorMissionActivityWorkBookmarks(String title, int count) {
     return '$title達到了$count個收藏';
   }
@@ -19072,6 +19117,11 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   @override
   String creatorMissionActivityWorksPublished(int works) {
     return '你已發佈$works件作品';
+  }
+
+  @override
+  String creatorMissionDetailsRepostProgress(int progress, int goal) {
+    return '目前轉發：$progress次（需要：$goal次）';
   }
 
   @override
@@ -19133,6 +19183,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get creatorMissionRankOne => 'NIARIM 收藏榜第1名';
+
+  @override
+  String get creatorMissionDetailsRepostRule =>
+      '作品須為本人在 NIARIM 上公開發布的作品。轉發次數按作品統計。';
 
   @override
   String get creatorMissionDetailsBookmarkRule =>

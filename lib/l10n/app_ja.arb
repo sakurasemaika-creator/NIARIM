@@ -3127,6 +3127,7 @@
   "communityFavoriteAuthorFollowing": "フォロー中",
   "communityFavoriteAuthorsEmptyTitle": "お気に入り作者がいません",
   "communityFavoriteAuthorsEmptyBody": "気に入った投稿者のページで「フォロー」すると、ここにその人の新着作品が並びます。",
+  "communityRepostCount": "リポスト数",
   "communityRepostButton": "リポスト",
   "communityRepostedButton": "リポスト済み",
   "communityRepostedByBadge": "{name}さんがリポスト",
@@ -4489,10 +4490,31 @@
       }
     }
   },
+  "creatorMissionGenericRepost": "投稿した作品がリポスト数{count}件を達成する",
+  "@creatorMissionGenericRepost": {
+    "description": "ミッション：投稿した作品のリポスト数の目標（作品名なし）",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "creatorMissionGenericBookmark": "投稿した作品がブックマーク数{count}件達成する",
   "@creatorMissionGenericBookmark": {
     "description": "ミッション：投稿した作品のブックマーク数の目標（作品名なし）",
     "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "creatorMissionNamedRepost": "{title}がリポスト数{count}件を達成する",
+  "@creatorMissionNamedRepost": {
+    "description": "ミッション：作品名つきのリポスト数の目標",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      },
       "count": {
         "type": "int"
       }
@@ -4558,6 +4580,18 @@
       }
     }
   },
+  "creatorMissionActivityWorkReposts": "{title}がリポスト数{count}件を達成しました",
+  "@creatorMissionActivityWorkReposts": {
+    "description": "作品広場の通知：作品がリポスト数を達成した",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "creatorMissionActivityWorkBookmarks": "{title}がブックマーク数{count}件を達成しました",
   "@creatorMissionActivityWorkBookmarks": {
     "description": "作品広場の通知：作品がブックマーク数を達成した",
@@ -4587,6 +4621,18 @@
     "description": "作品広場の通知：作品を投稿した数を達成した",
     "placeholders": {
       "works": {
+        "type": "int"
+      }
+    }
+  },
+  "creatorMissionDetailsRepostProgress": "現在のリポスト数：{progress}件（必要：{goal}件）",
+  "@creatorMissionDetailsRepostProgress": {
+    "description": "ミッションの達成条件：作品のリポスト数の進み具合",
+    "placeholders": {
+      "progress": {
+        "type": "int"
+      },
+      "goal": {
         "type": "int"
       }
     }
@@ -4696,6 +4742,7 @@
   "@creatorMissionRankOne": {
     "description": "ミッション：ブックマークランキング1位の目標"
   },
+  "creatorMissionDetailsRepostRule": "NIARIMで公開中の自分の作品が対象です。リポスト数は作品ごとに集計します。",
   "creatorMissionDetailsBookmarkRule": "【作品のブックマーク数】自分がNIARIMで公開中の作品について、NIARIM内で付けられたブックマーク数が目標以上であることが条件です。作品ごとに判定します。公開を取り消した作品や削除された作品は対象外です。",
   "@creatorMissionDetailsBookmarkRule": {
     "description": "ミッションの達成条件：作品のブックマーク数の決まり"

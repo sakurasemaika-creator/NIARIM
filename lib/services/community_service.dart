@@ -1448,6 +1448,13 @@ class CommunityService extends ChangeNotifier {
   Future<bool> toggleBookmark(String workId) => _toggleSocial(
     isOn: () => _bookmarkedIds.contains(workId),
     set: (on) {
+      final current = byId(workId);
+      if (current != null &&
+          !current.isUnavailable &&
+          on != _bookmarkedIds.contains(workId)) {
+        final count = current.bookmarkCount + (on ? 1 : -1);
+        _upsert(current.copyWith(bookmarkCount: max(0, count)));
+      }
       if (on) {
         _bookmarkedIds.add(workId);
         _bookmarkWorkIds = {..._bookmarkWorkIds, workId};
@@ -1885,9 +1892,10 @@ class CommunityService extends ChangeNotifier {
         _reposts.any((r) => r.workId == workId && r.reposterId == self);
   }
 
-  /// この作品をリポストした人数（自分・ダミー他作者を問わない）。
-  int repostCountOf(String workId) =>
-      _reposts.where((r) => r.workId == workId).length;
+  /// 本番の作品では、フィード内のリポスト行の数ではなく作品の総数を使う。
+  int repostCountOf(String workId, {int fallback = 0}) => api == null
+      ? _reposts.where((r) => r.workId == workId).length
+      : byId(workId)?.repostCount ?? fallback;
 
   /// リポストの追加・取り消しを切り替える。[authorId]を省略すると閲覧者
   /// 自身としてリポストする（バックエンド接続時はサーバーへ送る。
@@ -1902,13 +1910,18 @@ class CommunityService extends ChangeNotifier {
     bool isOn() =>
         _reposts.any((r) => r.workId == workId && r.reposterId == reposterId);
     void set(bool on) {
+      if (on == isOn()) return;
+      final current = byId(workId);
+      if (api != null && current != null && !current.isUnavailable) {
+        final count = current.repostCount + (on ? 1 : -1);
+        _upsert(current.copyWith(repostCount: max(0, count)));
+      }
       if (!on) {
         _reposts.removeWhere(
           (r) => r.workId == workId && r.reposterId == reposterId,
         );
         return;
       }
-      if (isOn()) return;
       final reposterName =
           _works
               .where((w) => w.authorId == reposterId)

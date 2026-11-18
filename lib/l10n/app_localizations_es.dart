@@ -6725,6 +6725,9 @@ class AppLocalizationsEs extends AppLocalizations {
       'Sigue a un creador desde su página para ver aquí sus últimas obras.';
 
   @override
+  String get communityRepostCount => 'Republicaciones';
+
+  @override
   String get communityRepostButton => 'Republicar';
 
   @override
@@ -9600,6 +9603,11 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
+  String creatorMissionGenericRepost(int count) {
+    return 'Una obra alcanza $count republicaciones';
+  }
+
+  @override
   String creatorMissionGenericBookmark(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
@@ -9608,6 +9616,11 @@ class AppLocalizationsEs extends AppLocalizations {
       one: '$count marcador',
     );
     return 'Una obra alcanza $_temp0';
+  }
+
+  @override
+  String creatorMissionNamedRepost(String title, int count) {
+    return '$title alcanza $count republicaciones';
   }
 
   @override
@@ -9677,6 +9690,11 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
+  String creatorMissionActivityWorkReposts(String title, int count) {
+    return '$title alcanzó $count republicaciones';
+  }
+
+  @override
   String creatorMissionActivityWorkBookmarks(String title, int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
@@ -9719,6 +9737,11 @@ class AppLocalizationsEs extends AppLocalizations {
       one: '$works obra',
     );
     return 'Publicaste $_temp0';
+  }
+
+  @override
+  String creatorMissionDetailsRepostProgress(int progress, int goal) {
+    return 'Republicaciones actuales: $progress (necesarias: $goal)';
   }
 
   @override
@@ -9807,6 +9830,10 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get creatorMissionRankOne =>
       'Primer puesto en la clasificación de marcadores';
+
+  @override
+  String get creatorMissionDetailsRepostRule =>
+      'La obra debe ser tuya y estar publicada en NIARIM. Las republicaciones se cuentan por obra.';
 
   @override
   String get creatorMissionDetailsBookmarkRule =>

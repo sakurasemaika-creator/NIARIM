@@ -11535,6 +11535,12 @@ abstract class AppLocalizations {
   /// **'気に入った投稿者のページで「フォロー」すると、ここにその人の新着作品が並びます。'**
   String get communityFavoriteAuthorsEmptyBody;
 
+  /// No description provided for @communityRepostCount.
+  ///
+  /// In ja, this message translates to:
+  /// **'リポスト数'**
+  String get communityRepostCount;
+
   /// No description provided for @communityRepostButton.
   ///
   /// In ja, this message translates to:
@@ -16245,11 +16251,23 @@ abstract class AppLocalizations {
   /// **'{count}オパール'**
   String coinAmount(int count);
 
+  /// ミッション：投稿した作品のリポスト数の目標（作品名なし）
+  ///
+  /// In ja, this message translates to:
+  /// **'投稿した作品がリポスト数{count}件を達成する'**
+  String creatorMissionGenericRepost(int count);
+
   /// ミッション：投稿した作品のブックマーク数の目標（作品名なし）
   ///
   /// In ja, this message translates to:
   /// **'投稿した作品がブックマーク数{count}件達成する'**
   String creatorMissionGenericBookmark(int count);
+
+  /// ミッション：作品名つきのリポスト数の目標
+  ///
+  /// In ja, this message translates to:
+  /// **'{title}がリポスト数{count}件を達成する'**
+  String creatorMissionNamedRepost(String title, int count);
 
   /// ミッション：作品名つきのブックマーク数の目標
   ///
@@ -16287,6 +16305,12 @@ abstract class AppLocalizations {
   /// **'フォロワーが{count}人になりました'**
   String creatorMissionActivityFollowers(int count);
 
+  /// 作品広場の通知：作品がリポスト数を達成した
+  ///
+  /// In ja, this message translates to:
+  /// **'{title}がリポスト数{count}件を達成しました'**
+  String creatorMissionActivityWorkReposts(String title, int count);
+
   /// 作品広場の通知：作品がブックマーク数を達成した
   ///
   /// In ja, this message translates to:
@@ -16304,6 +16328,12 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'あなたが{works}作品を投稿しました'**
   String creatorMissionActivityWorksPublished(int works);
+
+  /// ミッションの達成条件：作品のリポスト数の進み具合
+  ///
+  /// In ja, this message translates to:
+  /// **'現在のリポスト数：{progress}件（必要：{goal}件）'**
+  String creatorMissionDetailsRepostProgress(int progress, int goal);
 
   /// ミッションの達成条件：作品のブックマーク数の進み具合
   ///
@@ -16376,6 +16406,12 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'ブックマークランキング1位'**
   String get creatorMissionRankOne;
+
+  /// No description provided for @creatorMissionDetailsRepostRule.
+  ///
+  /// In ja, this message translates to:
+  /// **'NIARIMで公開中の自分の作品が対象です。リポスト数は作品ごとに集計します。'**
+  String get creatorMissionDetailsRepostRule;
 
   /// ミッションの達成条件：作品のブックマーク数の決まり
   ///

@@ -25,11 +25,13 @@ const publicWork = { itemType: "WORK", authorId: owner, workId: work,
   youtubePrivacyStatus: "public", isNiarimPublished: true };
 const image = (values: Record<string, unknown>) =>
   Object.fromEntries(Object.entries(values).map(([k, v]) => [k,
-    typeof v === "boolean" ? { BOOL: v } : { S: String(v) }]));
+    typeof v === "boolean" ? { BOOL: v } :
+      typeof v === "number" ? { N: String(v) } : { S: String(v) }]));
 function record(values: Record<string, unknown>, eventName: DynamoDBRecord["eventName"] = "INSERT",
   old?: Record<string, unknown>): DynamoDBRecord {
   return { eventSource: "aws:dynamodb", eventName, dynamodb: {
-    SequenceNumber: "1234", NewImage: image(values), ...(old ? { OldImage: image(old) } : {}),
+    SequenceNumber: "1234", ApproximateCreationDateTime: Date.parse(now) / 1000,
+    NewImage: image(values), ...(old ? { OldImage: image(old) } : {}),
   } };
 }
 const follow = (day = now) => record({
@@ -78,6 +80,38 @@ describe("committed activity to private history", () => {
     expect(send).not.toHaveBeenCalled();
     expect(push).not.toHaveBeenCalled();
   });
+
+  it.each([
+    ["followers", "followers_10", "followerCount",
+      { itemType: "USER", niarimUserId: owner, pk: "USER#" + owner }],
+    ["workBookmarks", "work_bookmarks_10", "bookmarkCount",
+      { ...publicWork, gsi2pk: "BOOKMARK_RANKING" }],
+    ["workReposts", "work_reposts_10", "repostCount",
+      { ...publicWork, gsi2pk: "BOOKMARK_RANKING" }],
+  ] as const)("queues a push when the committed %s total crosses a milestone",
+    async (kind, missionId, attr, metadata) => {
+      vi.stubEnv("NOTIFICATION_STREAM_ENABLED", "true");
+      await handleNotificationStream([
+        record({ ...metadata, [attr]: 9 }, "MODIFY", { ...metadata, [attr]: 8 }),
+        record({ ...metadata, [attr]: 10 }, "MODIFY", { ...metadata, [attr]: 11 }),
+        record({ ...metadata, [attr]: 10 }, "MODIFY", { ...metadata, [attr]: 10 }),
+      ]);
+      expect(send).not.toHaveBeenCalled();
+      await handleNotificationStream([
+        record({ ...metadata, [attr]: 10 }, "MODIFY", { ...metadata, [attr]: 9 }),
+      ]);
+      const { event } = lastStored();
+      expect(event).toMatchObject({
+        pk: "USER#" + owner, itemType: "MISSION_ACTIVITY_V1", kind,
+        missionId, required: 10, occurredAt: now, pushPending: true,
+      });
+      expect(event.niarimUserId).toBeUndefined();
+      expect(push).not.toHaveBeenCalled();
+      await handleNotificationStream([record(event)]);
+      expect(push).toHaveBeenCalledWith(owner, expect.objectContaining({
+        data: expect.objectContaining({ type: "mission_achievement" }),
+      }));
+    });
 
   it("ignores stale publication events and retries failures creating current ones", async () => {
     const old = record({ ...publicWork, createdAt: "2026-11-15T04:00:00Z" });

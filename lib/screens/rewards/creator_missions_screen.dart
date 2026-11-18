@@ -299,6 +299,10 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
             : workTitle != null
             ? l10n.creatorMissionNamedBookmark(workTitle, required)
             : l10n.creatorMissionGenericBookmark(required),
+      'workReposts' =>
+        workTitle != null
+            ? l10n.creatorMissionNamedRepost(workTitle, required)
+            : l10n.creatorMissionGenericRepost(required),
       'followers' => l10n.creatorMissionFollowers(required),
       'verifiedEditSeconds' => l10n.creatorMissionTime(required ~/ 3600),
       'niarimBookmarkRanking' =>
@@ -366,10 +370,10 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
         : t.get('notAchieved');
     final coins = (row['coins'] as num?)?.toInt() ?? 0;
     final goal = (row['required'] as num?)?.toInt() ?? 0;
-    final progress =
-        (row['progress'] as num?)?.toInt() ??
-        (row['bookmarkCount'] as num?)?.toInt();
     final kind = row['kind'];
+    final countKey = kind == 'workReposts' ? 'repostCount' : 'bookmarkCount';
+    final progress =
+        (row['progress'] as num?)?.toInt() ?? (row[countKey] as num?)?.toInt();
     final template = row['_genericTemplate'] == true;
     final details = <String>[
       name,
@@ -378,6 +382,8 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
         l10n.creatorMissionDetailsWorksProgress(progress, goal),
       if (progress != null && !template && kind == 'workBookmarks' && goal > 0)
         l10n.creatorMissionDetailsWorkProgress(progress, goal),
+      if (progress != null && !template && kind == 'workReposts')
+        l10n.creatorMissionDetailsRepostProgress(progress, goal),
       if (progress != null && kind == 'followers')
         l10n.creatorMissionDetailsFollowersProgress(progress, goal),
       if (kind == 'niarimBookmarkRanking' &&
@@ -420,6 +426,7 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
         ),
       if (kind == 'niarimBookmarkRanking') t.get('rankDetailsHold'),
       if (kind == 'workBookmarks') t.get('detailsCreatorBookmarkRule'),
+      if (kind == 'workReposts') l10n.creatorMissionDetailsRepostRule,
       if (kind == 'qualifiedWorks') ...[
         t.get('detailsCreatorWorksRule'),
         t.get('detailsDraftCount'),
@@ -605,7 +612,7 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
         row['_workTitle'] = row['perWork'] == true ? selectedTitle : null;
         all.add(row);
       } else if (row['perWork'] == true) {
-        // 28 per-work templates (including ranking), not claimable until a
+        // Per-work templates (including ranking) are not claimable until a
         // specific work is selected; never suggest that rank alone qualifies.
         all.add({
           ...row,

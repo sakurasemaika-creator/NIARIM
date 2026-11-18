@@ -10,6 +10,7 @@ import 'package:provider/provider.dart';
 
 import '../../../models/community_work.dart';
 import '../../../config/font_fallback.dart';
+import 'community_work_counts.dart';
 
 String formatDurationLabel(int seconds) {
   final m = seconds ~/ 60;
@@ -75,8 +76,6 @@ class CommunityWorkCard extends StatelessWidget {
     final author = work.authorName.trim().isEmpty
         ? l10n.communityCreatorLabel
         : work.authorName;
-    final language = Localizations.localeOf(context).languageCode;
-    final bookmarks = formatCompactCount(work.bookmarkCount, language);
     final overlay = cardColor;
     Widget badge(
       String label, {
@@ -112,18 +111,6 @@ class CommunityWorkCard extends StatelessWidget {
               ),
             ],
           ],
-        ),
-      ),
-    );
-    Widget count(String label, String value, {String? fullValue}) => Semantics(
-      key: ValueKey('community-bookmark-count-${work.id}'),
-      label: '$label: ${fullValue ?? value}',
-      child: ExcludeSemantics(
-        child: Text(
-          value,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: TextStyle(fontSize: 11, color: detailColor),
         ),
       ),
     );
@@ -335,41 +322,19 @@ class CommunityWorkCard extends StatelessWidget {
                           ),
                         ),
                       ],
-                      if (!isUnavailable) ...[
+                      if (!obscured) ...[
                         const SizedBox(height: 4),
+                        CommunityWorkCounts(
+                          work: work,
+                          compact: constraints.maxWidth < 160,
+                          fontSize: 11,
+                        ),
+                      ],
+                      if (!isUnavailable) ...[
                         Row(
                           key: ValueKey('community-card-actions-${work.id}'),
                           mainAxisAlignment: MainAxisAlignment.end,
                           children: [
-                            if (!obscured)
-                              Expanded(
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    if (constraints.maxWidth >= 160) ...[
-                                      Icon(
-                                        Icons.bookmarks_outlined,
-                                        size: 13,
-                                        color: detailColor,
-                                      ),
-                                      const SizedBox(width: 2),
-                                    ],
-                                    Flexible(
-                                      child: count(
-                                        l10n.communityRankingSortBookmarks,
-                                        constraints.maxWidth < 160 &&
-                                                work.bookmarkCount >= 1000 &&
-                                                work.bookmarkCount < 10000
-                                            ? '${(work.bookmarkCount ~/ 100) / 10}K'
-                                            : bookmarks,
-                                        fullValue: bookmarks,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              )
-                            else
-                              const Spacer(),
                             // ブックマークと︙は押せる所（48×48）が重ならず、
                             // 行の外（上下の帯）も押せる並び。
                             CollectionActionRow(

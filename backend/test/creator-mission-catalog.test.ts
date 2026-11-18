@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
-  ACCOUNT_MISSIONS, CREATOR_MISSIONS, PER_WORK_MISSIONS,
+  ACCOUNT_MISSIONS, CREATOR_MISSIONS, PER_WORK_MISSIONS, REPOST_MISSIONS,
   MAX_CREATOR_MISSION_COINS,
   claimMissionInMask, missionClaimed,
   missionRewardCoins, rankingDifficultyMultiplier,
@@ -9,26 +9,33 @@ import {
   rankingEffectiveRankLimit, RANKING_TOP_PERCENT,
 } from "../src/lib/missionCatalog";
 
+const originalWorkMissions = PER_WORK_MISSIONS.filter(m => m.kind !== "workReposts");
+
 describe("creator missions with separate account and work scopes", () => {
   it("contains stable unique bit IDs within the 53-bit integer mask", () => {
-    expect(CREATOR_MISSIONS).toHaveLength(55);
-    expect(new Set(CREATOR_MISSIONS.map((m) => m.id)).size).toBe(55);
+    expect(CREATOR_MISSIONS).toHaveLength(78);
+    expect(new Set(CREATOR_MISSIONS.map((m) => m.id)).size).toBe(78);
     // Account and per-work records use DIFFERENT DynamoDB keys. Bit indexes
     // can overlap safely between scopes, but never within a single scope.
     expect(new Set(ACCOUNT_MISSIONS.map((m) => m.bit)).size).toBe(27);
-    expect(new Set(PER_WORK_MISSIONS.map((m) => m.bit)).size).toBe(28);
+    expect(new Set(originalWorkMissions.map((m) => m.bit)).size).toBe(28);
     expect(CREATOR_MISSIONS.every((m) =>
       Number.isSafeInteger(m.coins) && m.coins > 0 &&
       m.bit >= 0 && m.bit <= 52)).toBe(true);
     expect(ACCOUNT_MISSIONS).toHaveLength(27);
-    expect(PER_WORK_MISSIONS).toHaveLength(28);
+    expect(originalWorkMissions).toHaveLength(28);
+    expect(new Set(REPOST_MISSIONS.map(m => m.bit)).size).toBe(23);
+    expect(REPOST_MISSIONS.map(m => [m.required, m.coins])).toEqual(
+      originalWorkMissions.filter(m => m.kind === "workBookmarks" && m.required > 0)
+        .map(m => [m.required, m.coins]),
+    );
     expect(MAX_CREATOR_MISSION_COINS).toBe(
       ACCOUNT_MISSIONS.reduce((n, m) => n + m.coins, 0),
     );
   });
 
   it("tracks claims in one safe-number bitmask without duplicate awards", () => {
-    for (const scope of [ACCOUNT_MISSIONS,PER_WORK_MISSIONS]) {
+    for (const scope of [ACCOUNT_MISSIONS, originalWorkMissions, REPOST_MISSIONS]) {
       let mask = 0;
       for (const mission of scope) {
         expect(missionClaimed(mask, mission.bit)).toBe(false);

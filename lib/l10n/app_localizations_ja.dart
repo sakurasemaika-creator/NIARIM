@@ -6350,6 +6350,9 @@ class AppLocalizationsJa extends AppLocalizations {
       '気に入った投稿者のページで「フォロー」すると、ここにその人の新着作品が並びます。';
 
   @override
+  String get communityRepostCount => 'リポスト数';
+
+  @override
   String get communityRepostButton => 'リポスト';
 
   @override
@@ -9017,8 +9020,18 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
+  String creatorMissionGenericRepost(int count) {
+    return '投稿した作品がリポスト数$count件を達成する';
+  }
+
+  @override
   String creatorMissionGenericBookmark(int count) {
     return '投稿した作品がブックマーク数$count件達成する';
+  }
+
+  @override
+  String creatorMissionNamedRepost(String title, int count) {
+    return '$titleがリポスト数$count件を達成する';
   }
 
   @override
@@ -9052,6 +9065,11 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
+  String creatorMissionActivityWorkReposts(String title, int count) {
+    return '$titleがリポスト数$count件を達成しました';
+  }
+
+  @override
   String creatorMissionActivityWorkBookmarks(String title, int count) {
     return '$titleがブックマーク数$count件を達成しました';
   }
@@ -9064,6 +9082,11 @@ class AppLocalizationsJa extends AppLocalizations {
   @override
   String creatorMissionActivityWorksPublished(int works) {
     return 'あなたが$works作品を投稿しました';
+  }
+
+  @override
+  String creatorMissionDetailsRepostProgress(int progress, int goal) {
+    return '現在のリポスト数：$progress件（必要：$goal件）';
   }
 
   @override
@@ -9125,6 +9148,10 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get creatorMissionRankOne => 'ブックマークランキング1位';
+
+  @override
+  String get creatorMissionDetailsRepostRule =>
+      'NIARIMで公開中の自分の作品が対象です。リポスト数は作品ごとに集計します。';
 
   @override
   String get creatorMissionDetailsBookmarkRule =>

@@ -3,20 +3,23 @@ import { BatchGetCommand, QueryCommand } from "@aws-sdk/lib-dynamodb";
 import { authenticate } from "../../lib/auth";
 import { ddb, Keys, tableName } from "../../lib/dynamo";
 import { badRequest, ok } from "../../lib/response";
-import { PER_WORK_MISSIONS, missionClaimed } from "../../lib/missionCatalog";
+import { PER_WORK_MISSIONS, REPOST_MISSIONS, missionClaimed } from "../../lib/missionCatalog";
 import type { WorkItem } from "../../lib/types";
 
 /**
- * Read-only, paginated list of *achieved* per-work bookmark milestones.
+ * Read-only, paginated list of *achieved* per-work bookmark and repost milestones.
  * Claimed bits remain in USER#<id>/MISSION_WORK#<workId> forever, and
  * POST /me/missions/claim does the atomic claim + balance update.
  *
  * Never award coins here. GSI3 is eventually consistent: each candidate is
  * rechecked against the strongly consistent work item by the claim handler.
- * A single call reads <=25 public works and <=25 claim bitmask records.
+ * A single call reads <=25 public works and <=50 claim bitmask records.
  */
 const PAGE_SIZE = 25;
 const HOLD_SECONDS = 48 * 3600;
+const engagementMissions = PER_WORK_MISSIONS.filter(m =>
+  m.kind === "workBookmarks" || m.kind === "workReposts",
+);
 const MAX_CURSOR_CHARS = 1024;
 function decodeCursor(value: string | undefined, userId: string) {
   if (value === undefined) return undefined;
@@ -69,8 +72,11 @@ export async function getMyWorkMissionAchievements(event: APIGatewayProxyEventV2
   }) as WorkItem[];
   // Only one BatchGet on the primary table (GSI reads aren't strongly
   // consistent). Missing state is treated as unclaimed, not as proof.
-  const stateKeys = qualifying.map(w =>
-    Keys.creatorWorkMissionState(auth.niarimUserId, w.workId));
+  const stateKeys = qualifying.flatMap(w => [
+    Keys.creatorWorkMissionState(auth.niarimUserId, w.workId),
+    ...((w.repostCount ?? 0) >= REPOST_MISSIONS[0].required
+      ? [Keys.creatorWorkMissionState(auth.niarimUserId, w.workId, true)] : []),
+  ]);
   const stateResult = stateKeys.length
     ? await ddb.send(new BatchGetCommand({
       RequestItems: {[table]: {Keys: stateKeys, ConsistentRead: true}},
@@ -83,48 +89,49 @@ export async function getMyWorkMissionAchievements(event: APIGatewayProxyEventV2
   for (const raw of stateResult?.Responses?.[table] ?? []) {
     if (raw.itemType === "CREATOR_WORK_MISSIONS_V1" &&
         typeof raw.pk === "string" && raw.pk === `USER#${auth.niarimUserId}` &&
-        typeof raw.sk === "string" && /^MISSION_WORK#[A-Za-z0-9_-]{11}$/.test(raw.sk)) {
-      states.set(raw.sk.slice("MISSION_WORK#".length), raw);
+        typeof raw.sk === "string" && /^MISSION_WORK#(?:REPOST#)?[A-Za-z0-9_-]{11}$/.test(raw.sk)) {
+      states.set(raw.sk, raw);
     }
   }
   const nowSec = Math.floor(Date.now() / 1000);
-  const items = qualifying.flatMap(work => {
-    const state = states.get(work.workId);
-    const mask = Number.isSafeInteger(state?.claimedMask) &&
-      (state?.claimedMask as number) >= 0 ? state!.claimedMask as number : 0;
-    const since = state?.firstQualifiedAt;
-    const held = since && typeof since === "object" && !Array.isArray(since)
-      ? since as Record<string, unknown> : {};
-    const coinQuotes = state?.pendingCoins && typeof state.pendingCoins === "object" &&
-      !Array.isArray(state.pendingCoins)
-        ? state.pendingCoins as Record<string, unknown> : {};
-    return PER_WORK_MISSIONS
-      .filter(m => m.kind === "workBookmarks" && work.bookmarkCount >= m.required)
-      .map(m => {
-        const key = String(m.bit);
-        const claimed = missionClaimed(mask, m.bit);
-        const pendingSince = typeof held[key] === "number" &&
-          Number.isSafeInteger(held[key]) && (held[key] as number) > 0
-            ? held[key] as number : null;
-        const quoted = coinQuotes[key];
-        return {
-          missionId: m.id,
-          workId: work.workId,
-          workTitle: work.title,
-          workPostedAt: work.postedAt,
-          kind: m.kind,
-          required: m.required,
-          bookmarkCount: work.bookmarkCount,
-          coins: Number.isSafeInteger(quoted) && (quoted as number) > 0
-            ? quoted : m.coins,
-          claimed,
-          claimedAt: (state?.claimedAt as Record<string, unknown> | undefined)?.[key] ?? null,
-          pendingSince,
-          readyForClaim: !claimed &&
-            (pendingSince === null || nowSec - pendingSince >= HOLD_SECONDS),
-        };
-      });
-  });
+  const items = qualifying.flatMap(work => engagementMissions
+    .filter(m => (m.kind === "workReposts" ? work.repostCount ?? 0 : work.bookmarkCount) >= m.required)
+    .map(m => {
+      const state = states.get(Keys.creatorWorkMissionState(
+        auth.niarimUserId, work.workId, m.kind === "workReposts",
+      ).sk);
+      const mask = Number.isSafeInteger(state?.claimedMask) &&
+        (state?.claimedMask as number) >= 0 ? state!.claimedMask as number : 0;
+      const since = state?.firstQualifiedAt;
+      const held = since && typeof since === "object" && !Array.isArray(since)
+        ? since as Record<string, unknown> : {};
+      const coinQuotes = state?.pendingCoins && typeof state.pendingCoins === "object" &&
+        !Array.isArray(state.pendingCoins)
+          ? state.pendingCoins as Record<string, unknown> : {};
+      const key = String(m.bit);
+      const claimed = missionClaimed(mask, m.bit);
+      const pendingSince = typeof held[key] === "number" &&
+        Number.isSafeInteger(held[key]) && (held[key] as number) > 0
+          ? held[key] as number : null;
+      const quoted = coinQuotes[key];
+      return {
+        missionId: m.id,
+        workId: work.workId,
+        workTitle: work.title,
+        workPostedAt: work.postedAt,
+        kind: m.kind,
+        required: m.required,
+        bookmarkCount: work.bookmarkCount,
+        repostCount: work.repostCount ?? 0,
+        coins: Number.isSafeInteger(quoted) && (quoted as number) > 0
+          ? quoted : m.coins,
+        claimed,
+        claimedAt: (state?.claimedAt as Record<string, unknown> | undefined)?.[key] ?? null,
+        pendingSince,
+        readyForClaim: !claimed &&
+          (pendingSince === null || nowSec - pendingSince >= HOLD_SECONDS),
+      };
+    }));
   const nextCursor = page.LastEvaluatedKey
     ? Buffer.from(JSON.stringify(page.LastEvaluatedKey)).toString("base64url")
     : null;
@@ -134,6 +141,6 @@ export async function getMyWorkMissionAchievements(event: APIGatewayProxyEventV2
     rewardEnabled: process.env.CREATOR_MISSION_CLAIMS_ENABLED === "true" &&
       process.env.CREATOR_MISSION_CLAIMS_REVIEW_APPROVED === "true",
     // Rank missions need a separate live rank check; no guesses here.
-    includedKinds: ["workBookmarks"],
+    includedKinds: ["workBookmarks", "workReposts"],
   });
 }

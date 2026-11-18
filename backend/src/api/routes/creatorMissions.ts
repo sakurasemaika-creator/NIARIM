@@ -64,9 +64,9 @@ type MissionStateRecord = {
   claimedAt: Record<string, number>;
   pendingCoins: Record<string, number>;
 };
-const missionKey = (userId: string, workId?: string) =>
+const missionKey = (userId: string, workId?: string, repost = false) =>
   workId === undefined ? Keys.creatorMissionState(userId) :
-    Keys.creatorWorkMissionState(userId, workId);
+    Keys.creatorWorkMissionState(userId, workId, repost);
 
 function normalizeState(
   raw: Record<string, unknown> | undefined, perWork = false,
@@ -117,11 +117,11 @@ function normalizeState(
 }
 
 async function loadMissionState(
-  userId: string, workId?: string,
+  userId: string, workId?: string, repost = false,
 ): Promise<MissionStateRecord> {
   const record = await ddb.send(new GetCommand({
     TableName: tableName(),
-    Key: missionKey(userId, workId),
+    Key: missionKey(userId, workId, repost),
     ConsistentRead: true,
   }));
   return normalizeState(record.Item, workId !== undefined);
@@ -156,7 +156,8 @@ async function measuredProgress(
       return { count: user?.followerCount ?? 0, authoritative: true };
     }
 
-    case "workBookmarks": {
+    case "workBookmarks":
+    case "workReposts": {
       if (!workId || !/^[A-Za-z0-9_-]{11}$/.test(workId)) {
         badRequest("作品IDを指定してください", "MISSION_WORK_ID_REQUIRED");
       }
@@ -167,7 +168,9 @@ async function measuredProgress(
       }));
       const item = work.Item as WorkItem | undefined;
       return {
-        count: isPublicWork(item, userId) ? item!.bookmarkCount : 0,
+        count: isPublicWork(item, userId)
+          ? (mission.kind === "workReposts" ? item!.repostCount ?? 0 : item!.bookmarkCount)
+          : 0,
         authoritative: true,
       };
     }
@@ -240,6 +243,7 @@ export async function getMyCreatorMissions(event: APIGatewayProxyEventV2) {
     Number.isSafeInteger(rawCount) && rawCount >= 0;
   const publishedWorkCount = rankingPopulationKnown ? rawCount as number : 0;
   let workState: MissionStateRecord | undefined;
+  let repostState: MissionStateRecord | undefined;
   let selectedWork: WorkItem | undefined;
   let selectedRanking: {count:number;bookmarks?:number}|undefined;
   if (selectedWorkId) {
@@ -250,7 +254,10 @@ export async function getMyCreatorMissions(event: APIGatewayProxyEventV2) {
     if (selectedWork?.authorId !== auth.niarimUserId) {
       forbidden("この作品のミッションは参照できません", "MISSION_NOT_YOUR_WORK");
     }
-    workState = await loadMissionState(auth.niarimUserId, selectedWorkId);
+    [workState, repostState] = await Promise.all([
+      loadMissionState(auth.niarimUserId, selectedWorkId),
+      loadMissionState(auth.niarimUserId, selectedWorkId, true),
+    ]);
     if(publishedWorkCount>=MIN_RANK_MISSION_PUBLIC_WORKS &&
        isPublicWork(selectedWork,auth.niarimUserId)) {
       // One authoritative live ranking read for ALL four milestones of
@@ -288,14 +295,17 @@ export async function getMyCreatorMissions(event: APIGatewayProxyEventV2) {
     publishedWorkCount,
     rankingPopulationKnown,
     missions: CREATOR_MISSIONS.map((mission) => {
-      const current = mission.perWork ? workState : state;
+      const repost = mission.kind === "workReposts";
+      const current = repost ? repostState : mission.perWork ? workState : state;
+      const workCount = repost ? selectedWork?.repostCount ?? 0 : selectedWork?.bookmarkCount;
+      const workCountMission = mission.kind === "workBookmarks" || repost;
       const key = String(mission.bit);
       const eligible = mission.kind === "followers"
         ? (user?.followerCount ?? 0) >= mission.required
-        : mission.kind === "workBookmarks" && selectedWorkId
+        : workCountMission && selectedWorkId
           ? isPublicWork(selectedWork, auth.niarimUserId) &&
-            Number.isSafeInteger(selectedWork!.bookmarkCount) &&
-            selectedWork!.bookmarkCount >= mission.required
+            workCount !== undefined && Number.isSafeInteger(workCount) &&
+            workCount >= mission.required
           : mission.kind === "verifiedEditSeconds"
             ? editTimeVerificationEnabled() &&
               state.verifiedEditSeconds>=mission.required
@@ -322,8 +332,8 @@ export async function getMyCreatorMissions(event: APIGatewayProxyEventV2) {
         progress: mission.kind === "followers"
           ? user?.followerCount ?? 0
           : mission.kind === "verifiedEditSeconds" ? state.verifiedEditSeconds
-          : mission.kind === "workBookmarks" && selectedWorkId
-            ? selectedWork?.bookmarkCount ?? 0
+          : workCountMission && selectedWorkId
+            ? workCount ?? 0
           : mission.kind === "niarimBookmarkRanking" && selectedWorkId
             ? selectedRanking?.count??null : null,
         rankingPopulationKnown: mission.kind==="niarimBookmarkRanking"
@@ -399,7 +409,8 @@ export async function claimCreatorMission(event: APIGatewayProxyEventV2) {
   }
 
   const itemWorkId = mission.perWork ? workId as string : undefined;
-  const state = await loadMissionState(auth.niarimUserId, itemWorkId);
+  const repost = mission.kind === "workReposts";
+  const state = await loadMissionState(auth.niarimUserId, itemWorkId, repost);
   if (missionClaimed(state.claimedMask, mission.bit)) {
     return ok({ missionId: id, workId: itemWorkId ?? null,
       claimed: true, awardedCoins: 0 });
@@ -443,7 +454,7 @@ export async function claimCreatorMission(event: APIGatewayProxyEventV2) {
       try {
         await ddb.send(new UpdateCommand({
           TableName: tableName(),
-          Key: missionKey(auth.niarimUserId, itemWorkId),
+          Key: missionKey(auth.niarimUserId, itemWorkId, repost),
           UpdateExpression:
             "SET firstQualifiedAt = :first, pendingCoins = :coins ADD revision :one",
           ConditionExpression:
@@ -476,7 +487,7 @@ export async function claimCreatorMission(event: APIGatewayProxyEventV2) {
     try {
       await ddb.send(new UpdateCommand({
         TableName: tableName(),
-        Key: missionKey(auth.niarimUserId, itemWorkId),
+        Key: missionKey(auth.niarimUserId, itemWorkId, repost),
         UpdateExpression:
           "SET itemType = :type, firstQualifiedAt = :first, pendingCoins = :coins, " +
           "claimedMask = if_not_exists(claimedMask, :zero), " +
@@ -546,6 +557,7 @@ export async function claimCreatorMission(event: APIGatewayProxyEventV2) {
         "AND youtubePrivacyStatus <> :deleted " +
         "AND gsi2pk = :bookmarkRank" +
         (mission.kind === "workBookmarks" ? " AND bookmarkCount >= :required" : "") +
+        (repost ? " AND repostCount >= :required" : "") +
         (mission.kind === "niarimBookmarkRanking"
           ? " AND bookmarkCount >= :rankingMinBookmarks" : ""),
       ExpressionAttributeValues: {
@@ -555,7 +567,7 @@ export async function claimCreatorMission(event: APIGatewayProxyEventV2) {
         ":private": "private",
         ":deleted": "deleted",
         ":bookmarkRank": "BOOKMARK_RANKING",
-        ...(mission.kind === "workBookmarks" ? { ":required": mission.required } : {}),
+        ...(mission.kind === "workBookmarks" || repost ? { ":required": mission.required } : {}),
         ...(mission.kind === "niarimBookmarkRanking"
           ? { ":rankingMinBookmarks": RANKING_MIN_BOOKMARKS[mission.required] }
           : {}),
@@ -579,7 +591,7 @@ export async function claimCreatorMission(event: APIGatewayProxyEventV2) {
         {
           Update: {
             TableName: tableName(),
-            Key: missionKey(auth.niarimUserId, itemWorkId),
+            Key: missionKey(auth.niarimUserId, itemWorkId, repost),
             UpdateExpression:
               "SET claimedMask = :newMask, totalMissionCoins = :total, " +
               "claimedAt = :claimedAt, firstQualifiedAt = :pending, " +

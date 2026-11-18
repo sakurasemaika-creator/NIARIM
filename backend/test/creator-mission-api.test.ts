@@ -46,7 +46,7 @@ describe("creator mission endpoints", () => {
     expect(resp.statusCode).toBe(200);
     const body = JSON.parse(resp.body ?? "{}");
     expect(body.enabled).toBe(false);
-    expect(body.missions).toHaveLength(55);
+    expect(body.missions).toHaveLength(78);
     expect(body.missions.find((m: {id: string}) => m.id === 'edit_50h').coins).toBe(30);
     const rank=body.missions.find((m: {id: string}) => m.id === 'bookmark_rank_1');
     expect(rank.claimed).toBe(null);
@@ -356,6 +356,45 @@ describe("creator mission endpoints", () => {
       .toContain("bookmarkCount >= :required");
     expect(tx?.input.TransactItems?.[3].ConditionCheck?.ExpressionAttributeValues?.[":required"])
       .toBe(10);
+  });
+
+  it("claims a repost milestone independently from the same bookmark milestone", async () => {
+    process.env.CREATOR_MISSION_CLAIMS_ENABLED = "true";
+    process.env.CREATOR_MISSION_CLAIMS_REVIEW_APPROVED = "true";
+    const old = Math.floor(Date.now() / 1000) - 3 * 86400;
+    const workId = "abcdefghijk";
+    const repostKey = "MISSION_WORK#REPOST#" + workId;
+    send.mockImplementation(async command => {
+      if (!(command instanceof GetCommand)) return {};
+      const key = command.input.Key;
+      if (key?.pk === "WORK#" + workId) {
+        return { Item: {
+          itemType: "WORK", workId, authorId: "NverifiedByGoogle",
+          isNiarimPublished: true, youtubePrivacyStatus: "public",
+          gsi2pk: "BOOKMARK_RANKING", bookmarkCount: 0, repostCount: 10,
+        }};
+      }
+      if (key?.sk === repostKey) {
+        return { Item: {
+          itemType: "CREATOR_WORK_MISSIONS_V1", claimedMask: 0,
+          revision: 5, firstQualifiedAt: { "5": old }, pendingCoins: { "5": 15 },
+        }};
+      }
+      return {};
+    });
+    const response = await claimCreatorMission(req({
+      missionId: "work_reposts_10", workId,
+    }));
+    expect(JSON.parse(response.body ?? "{}")).toMatchObject({
+      claimed: true, awardedCoins: 15,
+    });
+    const tx = send.mock.calls.map(([command]) => command)
+      .find(command => command instanceof TransactWriteCommand);
+    expect(tx?.input.TransactItems?.[0].Update?.Key?.sk).toBe(repostKey);
+    expect(tx?.input.TransactItems?.[3].ConditionCheck?.ConditionExpression)
+      .toContain("repostCount >= :required");
+    expect(tx?.input.TransactItems?.[3].ConditionCheck?.ConditionExpression)
+      .not.toContain("bookmarkCount");
   });
 
   it("a claimed bit for the same work and mission is never payable again", async () => {

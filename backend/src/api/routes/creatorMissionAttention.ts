@@ -3,7 +3,7 @@ import { BatchGetCommand, GetCommand, QueryCommand } from "@aws-sdk/lib-dynamodb
 import { authenticate, getUser } from "../../lib/auth";
 import { ddb, Keys, tableName } from "../../lib/dynamo";
 import { ok } from "../../lib/response";
-import { ACCOUNT_MISSIONS, PER_WORK_MISSIONS, missionClaimed } from "../../lib/missionCatalog";
+import { ACCOUNT_MISSIONS, PER_WORK_MISSIONS, REPOST_MISSIONS, missionClaimed } from "../../lib/missionCatalog";
 import {
   BOOKMARK_GOALS, WORK_COUNT_GOALS, WORK_COUNT_MISSIONS,
 } from "../../lib/workCountMissionGrid";
@@ -88,8 +88,11 @@ export async function getMyCreatorMissionAttention(event: APIGatewayProxyEventV2
       const stateResult = await ddb.send(new BatchGetCommand({
         RequestItems: {
           [table]: {
-            Keys: works.map(work =>
-              Keys.creatorWorkMissionState(auth.niarimUserId, work.workId)),
+            Keys: works.flatMap(work => [
+              Keys.creatorWorkMissionState(auth.niarimUserId, work.workId),
+              ...((work.repostCount ?? 0) >= REPOST_MISSIONS[0].required
+                ? [Keys.creatorWorkMissionState(auth.niarimUserId, work.workId, true)] : []),
+            ]),
             ConsistentRead: true,
           },
         },
@@ -102,15 +105,21 @@ export async function getMyCreatorMissionAttention(event: APIGatewayProxyEventV2
         if (item.pk === "USER#" + auth.niarimUserId &&
             item.itemType === "CREATOR_WORK_MISSIONS_V1" &&
             typeof item.sk === "string" &&
-            /^MISSION_WORK#[A-Za-z0-9_-]{11}$/.test(item.sk)) {
-          masks.set(item.sk.slice("MISSION_WORK#".length), safeMask(item.claimedMask));
+            /^MISSION_WORK#(?:REPOST#)?[A-Za-z0-9_-]{11}$/.test(item.sk)) {
+          masks.set(item.sk, safeMask(item.claimedMask));
         }
       }
       for (const work of works) {
-        const mask = masks.get(work.workId) ?? 0;
+        const mask = (repost: boolean) => masks.get(
+          Keys.creatorWorkMissionState(auth.niarimUserId, work.workId, repost).sk,
+        ) ?? 0;
+        const bookmarkMask = mask(false);
+        const repostMask = mask(true);
         if (BOOKMARK_MISSIONS.some(mission =>
-          work.bookmarkCount >= mission.required &&
-          !missionClaimed(mask, mission.bit))) {
+          work.bookmarkCount >= mission.required && !missionClaimed(bookmarkMask, mission.bit),
+        ) || REPOST_MISSIONS.some(mission =>
+          (work.repostCount ?? 0) >= mission.required && !missionClaimed(repostMask, mission.bit),
+        )) {
           return ok({
             hasAchievedUnclaimed: true,
             source: "work", provisional: true, complete: true,

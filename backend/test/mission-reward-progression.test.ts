@@ -21,7 +21,7 @@ describe("mission rewards strictly rise with difficulty",()=>{
     }
   };
   it("raises edit, follower and work bookmark rewards at every new goal",()=>{
-    for(const kind of ["verifiedEditSeconds","followers","workBookmarks"] as const){
+    for(const kind of ["verifiedEditSeconds","followers","workBookmarks","workReposts"] as const){
       increasing(CREATOR_MISSIONS.filter(m=>m.kind===kind)
         .sort((a,b)=>a.required-b.required).map(m=>m.coins));
     }
@@ -69,21 +69,21 @@ describe("mission rewards strictly rise with difficulty",()=>{
 });
 
 
-describe("all 551 mission coins use strict five-coin steps",()=>{
+describe("all 574 mission coins use strict five-coin steps",()=>{
   const denomination=(n:number)=>{expect(n).toBeGreaterThan(0);expect(n%5).toBe(0);};
   const increasingFive=(arr:number[])=>{
     for(let i=1;i<arr.length;i++)
       expect(arr[i]-arr[i-1],`tier ${i} needs at least five more`).toBeGreaterThanOrEqual(5);
   };
   it("covers every creator goal and ranking population tier",()=>{
-    expect(CREATOR_MISSIONS).toHaveLength(55);
+    expect(CREATOR_MISSIONS).toHaveLength(78);
     for(const m of CREATOR_MISSIONS){
       denomination(m.coins);
       expect(m.coins).toBeGreaterThanOrEqual(10);
       for(const pop of [0,1000,10000,100000,1000000])
         denomination(missionRewardCoins(m,pop));
     }
-    for(const kind of ["verifiedEditSeconds","followers","workBookmarks"] as const)
+    for(const kind of ["verifiedEditSeconds","followers","workBookmarks","workReposts"] as const)
       increasingFive(CREATOR_MISSIONS.filter(m=>m.kind===kind)
         .sort((a,b)=>a.required-b.required).map(m=>m.coins));
     const ranks=CREATOR_MISSIONS.filter(m=>m.kind==="niarimBookmarkRanking")

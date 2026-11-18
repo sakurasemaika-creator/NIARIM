@@ -120,6 +120,7 @@ class ApiWork {
           viewCount: viewCount,
           likeCount: likeCount,
           bookmarkCount: bookmarkCount,
+          repostCount: repostCount,
           postedAt: postedAt,
           durationSeconds: _derivedDurationSeconds,
           thumbnailColorIndex: workId.hashCode.abs() % 6,

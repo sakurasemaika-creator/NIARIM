@@ -25,6 +25,7 @@ import '../../widgets/fit_or_hide_title.dart';
 import '../../widgets/button_row_or_stack.dart';
 import '../../widgets/first_that_fits.dart';
 import '../../widgets/typing_dialog_inset.dart';
+import 'widgets/community_work_counts.dart';
 
 /// 作品詳細画面（別ルート、`/community/work/:id`）。
 /// 横画面フローティングプレビューの「詳細へ」と縦画面の詳細情報アイコンは
@@ -291,7 +292,6 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
       );
     }
     final scheme = Theme.of(context).colorScheme;
-    final languageCode = Localizations.localeOf(context).languageCode;
     final isBookmarked = communityService.isBookmarked(work.id);
     final bookmarkIcon = isBookmarked ? Icons.bookmark : Icons.bookmark_border;
     final bookmarkLabel = isBookmarked
@@ -467,30 +467,7 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
                 ],
               ),
               const SizedBox(height: 14),
-              Row(
-                children: [
-                  Icon(
-                    Icons.bookmark,
-                    size: 16,
-                    color: scheme.onSurfaceVariant,
-                  ),
-                  const SizedBox(width: 3),
-                  Text(
-                    formatCompactCount(work.bookmarkCount, languageCode),
-                    style: TextStyle(color: scheme.onSurfaceVariant),
-                  ),
-                  const SizedBox(width: 14),
-                  Icon(Icons.repeat, size: 16, color: scheme.onSurfaceVariant),
-                  const SizedBox(width: 3),
-                  Text(
-                    formatCompactCount(
-                      communityService.repostCountOf(work.id),
-                      languageCode,
-                    ),
-                    style: TextStyle(color: scheme.onSurfaceVariant),
-                  ),
-                ],
-              ),
+              CommunityWorkCounts(work: work, fontSize: 14),
               const SizedBox(height: 6),
               Text(
                 l10n.communityWorkDetailPostedLabel(_formatDate(work.postedAt)),

@@ -6617,6 +6617,9 @@ class AppLocalizationsEn extends AppLocalizations {
       'Follow a creator from their page to see their latest works here.';
 
   @override
+  String get communityRepostCount => 'Reposts';
+
+  @override
   String get communityRepostButton => 'Repost';
 
   @override
@@ -9466,6 +9469,17 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String creatorMissionGenericRepost(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count reposts',
+      one: '$count repost',
+    );
+    return 'A published work reaches $_temp0';
+  }
+
+  @override
   String creatorMissionGenericBookmark(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
@@ -9474,6 +9488,17 @@ class AppLocalizationsEn extends AppLocalizations {
       one: '$count bookmark',
     );
     return 'A published work reaches $_temp0';
+  }
+
+  @override
+  String creatorMissionNamedRepost(String title, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count reposts',
+      one: '$count repost',
+    );
+    return '$title reaches $_temp0';
   }
 
   @override
@@ -9543,6 +9568,17 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String creatorMissionActivityWorkReposts(String title, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count reposts',
+      one: '$count repost',
+    );
+    return '$title reached $_temp0';
+  }
+
+  @override
   String creatorMissionActivityWorkBookmarks(String title, int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
@@ -9585,6 +9621,11 @@ class AppLocalizationsEn extends AppLocalizations {
       one: '$works work',
     );
     return 'You published $_temp0';
+  }
+
+  @override
+  String creatorMissionDetailsRepostProgress(int progress, int goal) {
+    return 'Current reposts: $progress (required: $goal)';
   }
 
   @override
@@ -9671,6 +9712,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get creatorMissionRankOne => 'NIARIM bookmark ranking #1';
+
+  @override
+  String get creatorMissionDetailsRepostRule =>
+      'Your own work must be public on NIARIM. Reposts are counted separately for each work.';
 
   @override
   String get creatorMissionDetailsBookmarkRule =>

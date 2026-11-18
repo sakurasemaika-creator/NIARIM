@@ -20,6 +20,7 @@ import 'community_author_works_screen.dart';
 import 'community_post_screen.dart';
 import 'community_work_settings_screen.dart';
 import 'widgets/community_top_edge_refresh.dart';
+import 'widgets/community_work_counts.dart';
 import '../../widgets/first_that_fits.dart';
 import '../../widgets/fit_or_hide_title.dart';
 
@@ -351,9 +352,7 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
     final accountId = auth.account?.id;
     setState(() => _refreshingYouTubeChannel = true);
     try {
-      final token = await auth.youtubeReadAccessToken(
-        promptIfNecessary: true,
-      );
+      final token = await auth.youtubeReadAccessToken(promptIfNecessary: true);
       if (!mounted || auth.account?.id != accountId) return;
       if (token == null || token.isEmpty) {
         _showSnackBar(labels.noToken);
@@ -981,11 +980,19 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
-                          subtitle: Text(
-                            '${_visibilityLabel(l10n, work)}  •  '
-                            '${l10n.communityYoutubeVideoIdLabel(work.id)}',
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
+                          subtitle: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                '${_visibilityLabel(l10n, work)}  •  '
+                                '${l10n.communityYoutubeVideoIdLabel(work.id)}',
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              if (!deleted && !work.isUnavailable)
+                                CommunityWorkCounts(work: work),
+                            ],
                           ),
                           trailing: _selectionMode
                               ? null

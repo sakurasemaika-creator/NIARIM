@@ -12,6 +12,7 @@ import '../../../services/api/community_api.dart';
 import 'community_playback_status_view.dart';
 import '../../../widgets/ad_banner_mock_widget.dart';
 import 'community_youtube_player.dart';
+import 'community_work_counts.dart';
 
 /// App-wide preview state survives navigation. The YouTube IFrame player is
 /// mounted only after a fresh backend visibility check succeeds.
@@ -178,6 +179,10 @@ class _CommunityFloatingPreviewState extends State<CommunityFloatingPreview> {
     final detailsWidth = math.max(64.0, text.width + 24);
     final detailsHeight = math.max(48.0, text.height + 24);
     final playerHeight = CommunityPreviewService.playerHeightFor(width);
+    final showCounts =
+        !work.isUnavailable &&
+        (work.isNiarimPublished || community.isOwnWork(work));
+    final countsHeight = showCounts ? media.textScaler.scale(12) * 1.5 + 8 : 0.0;
     // Reserve every control outside the media rectangle, including the resize
     // handle. Never overlay a handle on top of Details or the player.
     final playerSplitRows = width < detailsWidth + 3 * 48 + 3 * 8 + 16;
@@ -186,7 +191,7 @@ class _CommunityFloatingPreviewState extends State<CommunityFloatingPreview> {
         : detailsHeight;
     final showPlayer =
         width >= CommunityPreviewService.minWidth &&
-        playerHeight + playerControlsHeight <= availableHeight;
+        playerHeight + playerControlsHeight + countsHeight <= availableHeight;
     final splitRows = showPlayer
         ? playerSplitRows
         : width < detailsWidth + 48 + 16;
@@ -228,7 +233,9 @@ class _CommunityFloatingPreviewState extends State<CommunityFloatingPreview> {
     )..layout(maxWidth: math.max(1, width - 24));
     final height = math.min(
       availableHeight,
-      controlsHeight + (showPlayer ? playerHeight : hint.height + 24),
+      controlsHeight +
+          countsHeight +
+          (showPlayer ? playerHeight : hint.height + 24),
     );
     text.dispose();
     hint.dispose();
@@ -524,6 +531,21 @@ class _CommunityFloatingPreviewState extends State<CommunityFloatingPreview> {
                                 ),
                               ),
                             controls,
+                            if (showCounts)
+                              SizedBox(
+                                height: countsHeight,
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 4,
+                                  ),
+                                  child: FittedBox(
+                                    fit: BoxFit.scaleDown,
+                                    alignment: AlignmentDirectional.centerStart,
+                                    child: CommunityWorkCounts(work: work),
+                                  ),
+                                ),
+                              ),
                           ],
                         ),
                       ),

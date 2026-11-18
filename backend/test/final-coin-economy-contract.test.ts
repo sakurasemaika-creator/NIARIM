@@ -542,7 +542,7 @@ describe("versioned coin economy v2 remains exact across all reward categories",
   it("locks all 55 original creator mission awards by immutable mission ID",()=>{
     expect(FINAL_COIN_ECONOMY_VERSION).toBe("economy-v4-subscription-aligned-20261116");
     expect(CREATOR).toHaveLength(55);
-    expect(byId(CREATOR_MISSIONS)).toEqual(CREATOR);
+    expect(byId(CREATOR_MISSIONS.filter(m => m.kind !== "workReposts"))).toEqual(CREATOR);
   });
 
   it("locks every exact value in the complete 480-mission grid",()=>{

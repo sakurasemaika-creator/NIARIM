@@ -5,6 +5,7 @@ import '../../../config/font_fallback.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../l10n/community_plaza_labels.dart';
 import '../../../l10n/community_ranking_layout_labels.dart';
+import 'community_work_counts.dart';
 import '../../../models/community_work.dart';
 import '../../../services/community_service.dart';
 import '../../../widgets/collection_action_controls.dart';
@@ -335,43 +336,9 @@ class CommunityRankingWorkCard extends StatelessWidget {
     );
   }
 
-  Widget _counts(BuildContext context) {
-    if (_obscured) return const SizedBox.shrink();
-    final l10n = AppLocalizations.of(context)!;
-    final scheme = Theme.of(context).colorScheme;
-    final language = Localizations.localeOf(context).languageCode;
-    final bookmarks = formatCompactCount(
-      periodBookmarkCount ?? work.bookmarkCount,
-      language,
-    );
-    final rankLabel = periodBookmarkCount == null
-        ? l10n.communityRankingSortBookmarks
-        : CommunityRankingLayoutLabels.of(context).periodBookmarks;
-    return Wrap(
-      crossAxisAlignment: WrapCrossAlignment.center,
-      spacing: 10,
-      runSpacing: 2,
-      children: [
-        Semantics(
-          label: '$rankLabel: $bookmarks',
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                Icons.bookmarks_outlined,
-                size: 15,
-                color: scheme.onSurfaceVariant,
-              ),
-              Text(
-                bookmarks,
-                style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
+  Widget _counts(BuildContext context) => _obscured
+      ? const SizedBox.shrink()
+      : CommunityWorkCounts(work: work, periodBookmarks: periodBookmarkCount);
 
   Widget _horizontal(BuildContext context, double width) {
     final thumbnailWidth = (width * .35).clamp(106.0, 230.0).toDouble();

@@ -11,6 +11,7 @@ import 'community_error_text.dart';
 import '../../widgets/fit_or_hide_title.dart';
 import '../../widgets/keep_together_text.dart';
 import '../../widgets/typing_dialog_inset.dart';
+import 'widgets/community_work_counts.dart';
 
 /// Per-work owner settings. The YouTube editor is an external destination;
 /// NIARIM visibility and AI disclosure use the authenticated NIARIM API.
@@ -445,6 +446,10 @@ class _CommunityWorkSettingsScreenState
                     l10n.communityYoutubeVideoIdLabel(work.id),
                     style: TextStyle(color: scheme.onSurfaceVariant),
                   ),
+                  if (ownWork && !cannotPublish && !work.isUnavailable) ...[
+                    const SizedBox(height: 6),
+                    CommunityWorkCounts(work: work),
+                  ],
                   const SizedBox(height: 18),
                   Card(
                     child: ListTile(

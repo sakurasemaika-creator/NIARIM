@@ -201,6 +201,7 @@ class _CommunityFollowNotificationsScreenState
         name,
         required,
       ),
+      'workReposts' => l10n.creatorMissionActivityWorkReposts(name, required),
       'qualifiedWorks' when each == 0 =>
         l10n.creatorMissionActivityWorksPublished(required),
       'qualifiedWorks' => l10n.creatorMissionActivityWorksBookmarks(
@@ -386,6 +387,7 @@ class _CommunityFollowNotificationsScreenState
                         'workPublicationConfirmed' ||
                         'workPublished' => Icons.movie_creation_outlined,
                         'workBookmarks' => Icons.bookmarks_outlined,
+                        'workReposts' => Icons.repeat,
                         'qualifiedWorks' => Icons.emoji_events_outlined,
                         'followers' => Icons.people_outline,
                         'loginMilestone' => Icons.calendar_month_outlined,

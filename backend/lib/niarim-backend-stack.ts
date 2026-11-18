@@ -397,6 +397,10 @@ export class NiarimBackendStack extends Stack {
             plazaPublicationConfirmedAt: { S: [{ exists: true }] },
           },
         } }),
+        // Updated aggregate counts are authoritative, including concurrent writes.
+        lambda.FilterCriteria.filter({ eventName: ["MODIFY"], dynamodb: {
+          NewImage: { itemType: { S: ["USER", "WORK"] } },
+        } }),
         lambda.FilterCriteria.filter({ dynamodb: { NewImage: {
           itemType: { S: ["MISSION_ACTIVITY_V1", "COMMUNITY_ACTIVITY_V1"] },
           pushPending: { BOOL: [true] },

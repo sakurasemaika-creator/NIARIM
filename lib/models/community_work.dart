@@ -21,6 +21,7 @@ class CommunityWork {
   final int viewCount;
   final int likeCount;
   final int bookmarkCount;
+  final int repostCount;
   final DateTime postedAt;
   final int durationSeconds;
 
@@ -66,6 +67,7 @@ class CommunityWork {
     required this.viewCount,
     required this.likeCount,
     required this.bookmarkCount,
+    this.repostCount = 0,
     required this.postedAt,
     required this.durationSeconds,
     required this.thumbnailColorIndex,
@@ -116,6 +118,8 @@ class CommunityWork {
     DateTime? projectCreatedAt,
     int? projectCanvasWidth,
     int? projectCanvasHeight,
+    int? bookmarkCount,
+    int? repostCount,
   }) {
     return CommunityWork(
       id: id,
@@ -124,7 +128,8 @@ class CommunityWork {
       authorName: authorName ?? this.authorName,
       viewCount: viewCount,
       likeCount: likeCount,
-      bookmarkCount: bookmarkCount,
+      bookmarkCount: bookmarkCount ?? this.bookmarkCount,
+      repostCount: repostCount ?? this.repostCount,
       postedAt: postedAt,
       durationSeconds: durationSeconds,
       thumbnailColorIndex: thumbnailColorIndex,

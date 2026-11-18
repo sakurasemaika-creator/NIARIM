@@ -19,7 +19,7 @@ import { sendPushToUser } from "./push";
  */
 export type MissionActivityKind =
   | "workPublished" | "workBookmarks" | "qualifiedWorks" | "followers"
-  | "loginMilestone";
+  | "loginMilestone" | "workReposts";
 
 export type MissionAchievement = {
   kind: MissionActivityKind;

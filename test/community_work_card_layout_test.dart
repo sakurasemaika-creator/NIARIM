@@ -236,7 +236,7 @@ void main() {
   );
 
   testWidgets(
-    'card shows title, author, then count / bookmark / menu in one row',
+    'card shows title, author, counts, and independent bookmark/menu controls',
     (tester) async {
       final work = CommunityWork(
         id: 'layout-sample',
@@ -342,6 +342,7 @@ void main() {
       viewCount: 0,
       likeCount: 0,
       bookmarkCount: 2684,
+      repostCount: 17,
       postedAt: DateTime.utc(2026, 11, 10),
       durationSeconds: 45,
       thumbnailColorIndex: 0,
@@ -384,6 +385,14 @@ void main() {
         contains('2,684'),
         reason: 'full value remains accessible at width $width',
       );
+      final repost = find.byKey(
+        const ValueKey('community-repost-count-compact-count'),
+      );
+      expect(
+        find.descendant(of: repost, matching: find.text('17')),
+        findsOneWidget,
+      );
+      expect(tester.widget<Semantics>(repost).properties.label, 'リポスト数: 17');
       final bookmark = find.byKey(
         const ValueKey('community-bookmark-compact-count'),
       );
@@ -391,8 +400,12 @@ void main() {
         const ValueKey('communityMuteMenu-compact-count'),
       );
       expect(
-        tester.getRect(total).right,
-        lessThanOrEqualTo(tester.getRect(bookmark).left + 1),
+        tester.getRect(total).bottom,
+        lessThanOrEqualTo(tester.getRect(bookmark).top + 1),
+      );
+      expect(
+        tester.getRect(repost).bottom,
+        lessThanOrEqualTo(tester.getRect(bookmark).top + 1),
       );
       expect(
         tester.getRect(bookmark).right,

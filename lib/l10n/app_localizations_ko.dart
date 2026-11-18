@@ -6386,6 +6386,9 @@ class AppLocalizationsKo extends AppLocalizations {
       '마음에 드는 작가의 페이지에서 「팔로우」하면 이곳에 그 사람의 신작이 표시됩니다.';
 
   @override
+  String get communityRepostCount => '리포스트';
+
+  @override
   String get communityRepostButton => '리포스트';
 
   @override
@@ -9064,8 +9067,18 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
+  String creatorMissionGenericRepost(int count) {
+    return '게시한 작품의 리포스트 $count개 달성';
+  }
+
+  @override
   String creatorMissionGenericBookmark(int count) {
     return '게시한 작품의 북마크 $count개 달성';
+  }
+
+  @override
+  String creatorMissionNamedRepost(String title, int count) {
+    return '$title의 리포스트 $count개 달성';
   }
 
   @override
@@ -9099,6 +9112,11 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
+  String creatorMissionActivityWorkReposts(String title, int count) {
+    return '$title의 리포스트가 $count개에 도달했습니다';
+  }
+
+  @override
   String creatorMissionActivityWorkBookmarks(String title, int count) {
     return '$title의 북마크가 $count개에 도달했습니다';
   }
@@ -9111,6 +9129,11 @@ class AppLocalizationsKo extends AppLocalizations {
   @override
   String creatorMissionActivityWorksPublished(int works) {
     return '작품 $works개를 게시했습니다';
+  }
+
+  @override
+  String creatorMissionDetailsRepostProgress(int progress, int goal) {
+    return '현재 리포스트: $progress개 (필요: $goal개)';
   }
 
   @override
@@ -9173,6 +9196,10 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get creatorMissionRankOne => '북마크 랭킹 1위';
+
+  @override
+  String get creatorMissionDetailsRepostRule =>
+      'NIARIM에 공개한 본인의 작품이 대상입니다. 리포스트는 작품별로 집계합니다.';
 
   @override
   String get creatorMissionDetailsBookmarkRule =>

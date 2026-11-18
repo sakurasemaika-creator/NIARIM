@@ -6731,6 +6731,9 @@ class AppLocalizationsFr extends AppLocalizations {
       'Suivez un créateur depuis sa page pour voir ses dernières œuvres ici.';
 
   @override
+  String get communityRepostCount => 'Repartages';
+
+  @override
   String get communityRepostButton => 'Repartager';
 
   @override
@@ -9625,6 +9628,11 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
+  String creatorMissionGenericRepost(int count) {
+    return 'Une œuvre publiée atteint $count repartages';
+  }
+
+  @override
   String creatorMissionGenericBookmark(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
@@ -9633,6 +9641,11 @@ class AppLocalizationsFr extends AppLocalizations {
       one: '$count favori',
     );
     return 'Une œuvre atteint $_temp0';
+  }
+
+  @override
+  String creatorMissionNamedRepost(String title, int count) {
+    return '$title atteint $count repartages';
   }
 
   @override
@@ -9702,6 +9715,11 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
+  String creatorMissionActivityWorkReposts(String title, int count) {
+    return '$title a atteint $count repartages';
+  }
+
+  @override
   String creatorMissionActivityWorkBookmarks(String title, int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
@@ -9744,6 +9762,11 @@ class AppLocalizationsFr extends AppLocalizations {
       one: '$works œuvre',
     );
     return 'Vous avez publié $_temp0';
+  }
+
+  @override
+  String creatorMissionDetailsRepostProgress(int progress, int goal) {
+    return 'Repartages actuels : $progress (requis : $goal)';
   }
 
   @override
@@ -9831,6 +9854,10 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get creatorMissionRankOne => '1re place du classement des favoris';
+
+  @override
+  String get creatorMissionDetailsRepostRule =>
+      'Votre œuvre doit être publique sur NIARIM. Les repartages sont comptés pour chaque œuvre.';
 
   @override
   String get creatorMissionDetailsBookmarkRule =>

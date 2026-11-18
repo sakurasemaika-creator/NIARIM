@@ -102,7 +102,7 @@ export async function syncMyMissionActivity(event:APIGatewayProxyEventV2){
     const exactPublishedDate=published&&validDate(raw.workPostedAt);
     const occurredAt=exactPublishedDate?raw.workPostedAt:now;
     works.push({
-      kind:published?"workPublished":"workBookmarks",
+      kind:published?"workPublished":raw.kind==="workReposts"?"workReposts":"workBookmarks",
       missionId:raw.missionId,workId:raw.workId,workTitle:raw.workTitle,
       required:raw.required,occurredAt,
       dateIsObserved:!exactPublishedDate,
@@ -127,9 +127,7 @@ export async function syncMyMissionActivity(event:APIGatewayProxyEventV2){
       occurredAt:now,dateIsObserved:true,
     });
   }
-  // Follower milestones were previously device-only. Preserve them in the
-  // same account-owned, cross-device bell history; exact historic crossing
-  // times aren't available, so mark them as first-observed.
+  // Recover follower milestones that predate stream detection or were missed.
   for(const raw of accountData?.missions??[]){
     if(!raw || typeof raw!=="object" ||
         raw.kind!=="followers" || raw.eligible!==true ||
