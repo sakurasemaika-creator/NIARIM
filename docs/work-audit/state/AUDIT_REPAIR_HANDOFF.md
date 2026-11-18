@@ -543,6 +543,13 @@ App・Web共通。Claudeが要修正の詳細を追記し、ユーザーが別�
 - **所有者・専門家の判断待ち（コードでは決めない）**：DISC404（無料版でも広告が出ないのにPremiumの比較表・FAQは広告の有無を書く。広告を出すか、文を変えるか）、DISC437（終わった`one-shot-*`のワークフロー63本を消すか、手動起動だけにするか）、DISC439（`?lang`の無いURLの言語、案A／B）、DISC474（差し色#FF5C7Aの上の白い字の明るさの比2.97:1。ブランドの色の判断）、DISC476・478・479（Webの重さ・CSSの作り・CIの範囲。作り直しの規模の判断）、DISC480・481（ストアの説明文・解析）、DISC482（同梱のブラシ・スタンプ・トーンの出所の記録。作った人の情報が要る）、DISC484（Google Playの公式バッジ。公開時の素材）、DISC471・485〜490（Web・アプリのプライバシーポリシーと利用規約。法務の確認）。
 - **次の再開位置**：(1) Chromiumの依存ライブラリの導入（`npx playwright install-deps chromium`、sudo）の許可を得て`web_nav_audit.mjs`とWebの`tests/website-glyph-coverage-audit.mjs`を流し、通ればWebの4コミット（`2ce5408`・`533f644`・`fde018b`・`eb53734`）をpushする。(2) DISC473（Webの本文の書体に大文字のアクセント付きの字が無い）は部分フォントの作り直しが要る。(3) S41の一覧の古いDISC（001〜060番台ほか）を今のコードで確かめる。
 
+## Claudeの再検証（2026-11-18〜19、App・Web dev_branch、S43）
+
+- **起点**：App `32f592a5`（originと同じ）、Web `eb53734`（originの`08acde5`より4つ先、未push：`2ce5408`・`533f644`・`fde018b`・`eb53734`）。両方とも作業ツリーに差分なし。
+- **Webのブラウザ（DISC444・450・451・457・459・460のナビ・表示）**：Chromiumはまだ`libatk-1.0.so.0`が無く起動しない。`npx playwright install-deps chromium`は今回も許可が下りなかった。debを手で展開してライブラリをそろえる回り道は、AGENTS.mdの「実行環境の明示的な拒否を迂回しない」に当たるのでしない。**必要な操作**：この環境で`sudo npx playwright install-deps chromium`（またはUbuntu 24.04の`libatk1.0-0t64`・`libatk-bridge2.0-0t64`・`libcups2t64`・`libxkbcommon0`・`libxcomposite1`・`libxdamage1`・`libxrandr2`・`libgbm1`・`libpango-1.0-0`・`libcairo2`・`libasound2t64`の導入）を許可する。その後`node .dart_tool/audit_tools/web_nav_audit.mjs`（Appのリポジトリの中、390〜1440px×仏・西・英・日×6ページのナビの行数・はみ出し・重なりと仏語の撮影）とWebの`tests/website-glyph-coverage-audit.mjs`を流し、通ればWebの4コミットをpushする。
+- **古いDISCの確認（今のコード `32f592a5`）**：DISC043は直っている（作品・フォルダ・書き出したファイルの完全削除の確認は`ProjectTrashDialog`の`itemNames`で名前を出す、`home_screen.dart`の3か所）。DISC025は直っている（アプリの文言に特許・ライセンスを断定する文が無い。7言語のARBに「特許」0件）。
+- **Flutter全体のtest**：前のセッションの実行は終わる前にセッションが切れた（失敗の記録0件のまま途中）。このセッションでやり直す。
+
 ## 要修正の記録
 
 ### 旧手順の修正担当からの切替（2026-11-16、Claude・S40）
