@@ -166,10 +166,9 @@ void main() {
           if (find.byKey(ValueKey(key)).evaluate().isEmpty) {
             problems.add('$where: the buttons went away');
           }
-          // 押したボタンの働き：コピーは知らせ、復元・完全削除は確かめる
-          // ダイアログ。
+          // コピーは操作バー、復元・完全削除は確認ダイアログに反映される。
           final ran = index == 0
-              ? find.text(l10n.homeCopiedSnackbar(1)).evaluate().isNotEmpty
+              ? find.text(l10n.homeTrashPasteElsewhere).evaluate().isNotEmpty
               : find.byType(AlertDialog).evaluate().isNotEmpty;
           if (!ran) problems.add('$where: the button did not run');
 
@@ -188,13 +187,10 @@ void main() {
             );
             await settle(tester, rounds: 3);
           }
-          // コピーの知らせが消えるのを待つ（次のコピーの知らせと見分ける）。
-          for (
-            var i = 0;
-            i < 80 && find.byType(SnackBar).evaluate().isNotEmpty;
-            i++
-          ) {
-            await tester.pump(const Duration(milliseconds: 100));
+          final clear = find.byKey(const Key('homeClearClipboardButton'));
+          if (clear.evaluate().isNotEmpty) {
+            await tester.tap(clear);
+            await settle(tester, rounds: 3);
           }
         }
       }

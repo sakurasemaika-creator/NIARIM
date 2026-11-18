@@ -182,6 +182,7 @@ void main() {
         await tester.tap(favorite);
         await settle();
         await tester.tap(search);
+        await settle();
         expect(
           find.descendant(
             of: panel,
@@ -189,15 +190,13 @@ void main() {
           ),
           findsOneWidget,
         );
-        expect(
-          find.descendant(
-            of: panel,
-            matching: find.byKey(const ValueKey('asset-search-close')),
-          ),
-          findsOneWidget,
+        final close = find.descendant(
+          of: panel,
+          matching: find.byKey(const ValueKey('asset-search-close')),
         );
+        expect(close, findsOneWidget);
         await shot('${kind}_search_open');
-        await tester.tap(search);
+        await tester.tap(close);
         await settle();
       }
 

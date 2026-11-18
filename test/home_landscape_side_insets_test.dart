@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/screens/home/home_screen.dart';
 import 'package:niarim/screens/home/widgets/home_selection_toolbar.dart';
+import 'package:niarim/screens/home/widgets/project_list_widget.dart';
 
 import 'helpers/home_matrix_harness.dart';
 
@@ -189,14 +190,21 @@ void main() {
         }
         // 上部バーの続きの帯（選択中の操作・貼り付け）も。帯の色は端まで。
         await m.show(HomeView.projects);
-        final card = find.byWidgetPredicate(
-          (w) =>
-              w is Text &&
-              RegExp(
-                r'^カット\d+$',
-              ).hasMatch(w.data ?? w.textSpan?.toPlainText() ?? ''),
-        );
-        await tester.longPress(card.hitTestable().first);
+        final cards = find
+            .descendant(
+              of: find.byType(ProjectListWidget),
+              matching: find.byWidgetPredicate(
+                (widget) => switch (widget) {
+                  ListTile(:final onLongPress) => onLongPress != null,
+                  GestureDetector(:final onLongPress, :final onDoubleTap) =>
+                    onLongPress != null && onDoubleTap != null,
+                  _ => false,
+                },
+              ),
+            )
+            .hitTestable();
+        expect(cards, findsWidgets);
+        await tester.longPress(cards.first);
         await m.frames(4);
         expect(find.byType(HomeSelectionToolbar), findsOneWidget);
         for (final p in outside(m, padding, cutout)) {

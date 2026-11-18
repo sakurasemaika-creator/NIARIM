@@ -14,6 +14,7 @@ import 'package:niarim/screens/canvas/widgets/canvas_area.dart';
 import 'package:niarim/screens/canvas/widgets/canvas_icon_button.dart';
 import 'package:niarim/screens/canvas/widgets/filter_panel.dart';
 import 'package:niarim/services/custom_automation_service.dart';
+import 'package:niarim/services/premium_service.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:niarim/services/theme_service.dart';
 import 'package:niarim/utils/custom_automation_labels.dart';
@@ -23,6 +24,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'helpers/first_use_tooltips.dart';
 import 'helpers/load_app_fonts.dart';
 import 'helpers/pick_filter_card.dart';
+
+class _AutomationMember extends PremiumService {
+  @override
+  bool get isPremium => true;
+}
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -73,7 +79,12 @@ void main() {
         RepaintBoundary(
           key: rootKey,
           child: MultiProvider(
-            providers: providers!,
+            providers: [
+              ...providers!,
+              ChangeNotifierProvider<PremiumService>(
+                create: (_) => _AutomationMember(),
+              ),
+            ],
             child: Builder(
               builder: (themeContext) => MaterialApp(
                 theme: themeContext.watch<ThemeService>().themeData,
@@ -308,9 +319,14 @@ void main() {
       await prewarmActiveLayer();
       await capture('05_real_filter_applied_and_recorded');
 
-      // Applying closes the panel by itself.
+      final panel = find.byType(FilterPanel);
+      final closeFilter = find.descendant(
+        of: panel,
+        matching: find.byIcon(Icons.close),
+      );
+      await tester.tap(closeFilter);
       await tester.pump(const Duration(milliseconds: 250));
-      expect(find.byType(FilterPanel), findsNothing);
+      expect(panel, findsNothing);
 
       final stop = find.text(l10n.customAutomationStopRecording);
       expect(stop, findsWidgets);

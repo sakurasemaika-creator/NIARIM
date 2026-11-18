@@ -13,6 +13,7 @@ on:
       - "test/visual/modified_canvas_scope_capture_test.dart"
       - "test/timeline_pc_workspace_test.dart"
       - "test/timeline_preview_controls_test.dart"
+      - "test/home_landscape_side_insets_test.dart"
       - "lib/screens/canvas/widgets/hsv_color_wheel.dart"
       - "lib/screens/community/community_screen.dart"
       - "lib/screens/project/project_detail_screen.dart"

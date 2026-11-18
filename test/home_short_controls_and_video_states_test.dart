@@ -22,6 +22,7 @@ import 'package:video_player_platform_interface/video_player_platform_interface.
 import 'helpers/exported_work_name.dart';
 import 'helpers/first_use_tooltips.dart';
 import 'helpers/load_app_fonts.dart';
+import 'helpers/pump_real_async.dart';
 
 class _VideoBackend extends platform.VideoPlayerPlatform {
   final events = StreamController<platform.VideoEvent>.broadcast();
@@ -78,6 +79,7 @@ void main() {
     bool short = false,
     bool video = false,
     bool pc = false,
+    List<int>? firstGifBytes,
     double? height,
   }) async {
     await tester.pumpWidget(const SizedBox.shrink());
@@ -104,9 +106,10 @@ void main() {
       for (var i = 0; i < 3; i++) {
         final file = File('${exports.path}/AUDIT_${i}_animation.gif');
         file.writeAsBytesSync(
-          base64Decode(
-            'R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7',
-          ),
+          (i == 0 ? firstGifBytes : null) ??
+              base64Decode(
+                'R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7',
+              ),
         );
         file.setLastModifiedSync(DateTime.utc(2026, 10, 27, 0, i));
       }
@@ -354,20 +357,26 @@ void main() {
   testWidgets('cached portrait GIF uses its dimensions on open and reopen', (
     tester,
   ) async {
-    final l10n = await open(tester);
-    final context = tester.element(find.byType(ExportedWorkCard).first);
-    await tester.runAsync(() async {
-      final files = await ExportEngine.listExportedFiles();
-      final file = files.singleWhere(
-        (file) => file.path.endsWith('/AUDIT_0_animation.gif'),
-      );
-      final image = img.Image(width: 90, height: 160);
-      img.fill(image, color: img.ColorRgb8(35, 107, 69));
-      await file.writeAsBytes(img.encodeGif(image));
-      final provider = FileImage(file);
-      await provider.evict();
-      await precacheImage(provider, context);
-    });
+    final portrait = img.Image(width: 90, height: 160);
+    img.fill(portrait, color: img.ColorRgb8(35, 107, 69));
+    final l10n = await open(tester, firstGifBytes: img.encodeGif(portrait));
+    final card = find.ancestor(
+      of: findExportedWorkName('AUDIT_0_animation.gif'),
+      matching: find.byType(ExportedWorkCard),
+    );
+    final context = tester.element(card);
+    final mediaPath = tester.widget<ExportedWorkCard>(card).originalMediaPath!;
+    final provider = FileImage(File(mediaPath));
+    var ready = false;
+    final pendingImage = precacheImage(
+      provider,
+      context,
+    ).then((_) => ready = true);
+    for (var attempt = 0; attempt < 40 && !ready; attempt++) {
+      await pumpRealAsync(tester, const Duration(milliseconds: 50));
+    }
+    expect(ready, isTrue);
+    await pendingImage;
     await tester.pump();
     for (var attempt = 0; attempt < 2; attempt++) {
       final name = findExportedWorkName('AUDIT_0_animation.gif');
