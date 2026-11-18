@@ -9,6 +9,7 @@ import 'package:niarim/app.dart';
 import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/router.dart';
 import 'package:niarim/screens/home/home_screen.dart';
+import 'package:niarim/screens/home/widgets/project_list_widget.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -132,17 +133,26 @@ void main() {
     final projects = tester
         .element(find.byType(HomeScreen))
         .read<ProjectService>();
-    await tester.runAsync(
-      () => projects.createProject(
-        name: 'サンプル作品',
-        fps: 12,
-        durationSeconds: 1,
-        backgroundColor: 0xFFFFFFFF,
-        exportWidth: 320,
-        exportHeight: 180,
-      ),
-    );
+    await tester.runAsync(() async {
+      for (var index = 1; index <= 12; index++) {
+        await projects.createProject(
+          name: 'サンプル作品 $index',
+          fps: 12,
+          durationSeconds: 1,
+          backgroundColor: 0xFFFFFFFF,
+          exportWidth: 320,
+          exportHeight: 180,
+        );
+      }
+    });
     await advanceUi();
+    expect(scrollToTop, findsNothing);
+    final projectList = find.descendant(
+      of: find.byType(ProjectListWidget),
+      matching: find.byType(Scrollable),
+    );
+    tester.state<ScrollableState>(projectList.first).position.jumpTo(200);
+    await tester.pump();
     expect(scrollToTop, findsOneWidget);
     await capture('01_home_projects_two_fabs', minFabs: 2);
     await tester.tap(find.byKey(const ValueKey('home_tab_1')));
