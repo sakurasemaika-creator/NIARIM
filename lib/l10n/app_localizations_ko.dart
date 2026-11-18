@@ -2289,6 +2289,47 @@ class AppLocalizationsKo extends AppLocalizations {
   String get licenseSectionTerms => '이용약관';
 
   @override
+  String get licenseCreditBody => '기본 본문 글꼴';
+
+  @override
+  String get licenseCreditHeading => '제목 및 버튼 글꼴';
+
+  @override
+  String get licenseCreditNumbers => 'Android의 숫자 표시';
+
+  @override
+  String get licenseCreditCjkBody =>
+      '중국어 간체 및 번체 본문과 한글 표시에 사용하는 글꼴의 일부를 포함합니다.';
+
+  @override
+  String get licenseCreditCjkHeading => '한국어 및 중국어 제목에 필요한 글자를 보완합니다.';
+
+  @override
+  String get licenseCreditFallback => 'Kuramubon에 없는 글자를 표시합니다.';
+
+  @override
+  String get licenseCreditTextTool => '텍스트 도구에 포함된 글꼴';
+
+  @override
+  String licenseCreditCatalog(String path) {
+    return '$path에서 텍스트 도구용 글꼴을 추가로 다운로드할 수 있습니다.';
+  }
+
+  @override
+  String get licenseCreditCatalogAuthor =>
+      '각 글꼴의 제작자는 Google Fonts의 해당 글꼴 페이지에서 확인할 수 있습니다.';
+
+  @override
+  String get licenseCreditCatalogLicense => '각 글꼴의 라이선스는 글꼴 목록에서 확인할 수 있습니다.';
+
+  @override
+  String get licenseCreditIcons => '지우개, 채우기 및 도형 도구 아이콘';
+
+  @override
+  String get licenseCreditIconLicense =>
+      '아이콘에는 CC BY 4.0, 글꼴에는 SIL Open Font License 1.1, 패키지에는 MIT License가 적용됩니다.';
+
+  @override
   String get licenseSectionFonts => '사용 폰트에 대하여';
 
   @override
@@ -5574,6 +5615,9 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get premiumBannerRegisterButton => 'Premium에 가입';
+
+  @override
+  String get legalLastUpdated => '최종 업데이트: 2026년 11월 18일';
 
   @override
   String get licenseTermsArt1Title => '제1조（적용）';

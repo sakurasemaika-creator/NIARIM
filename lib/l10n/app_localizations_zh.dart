@@ -2267,6 +2267,45 @@ class AppLocalizationsZh extends AppLocalizations {
   String get licenseSectionTerms => '使用条款';
 
   @override
+  String get licenseCreditBody => '默认正文字体';
+
+  @override
+  String get licenseCreditHeading => '标题和按钮字体';
+
+  @override
+  String get licenseCreditNumbers => 'Android 数字显示';
+
+  @override
+  String get licenseCreditCjkBody => '内置字体子集用于简体中文和繁体中文正文以及韩文字符';
+
+  @override
+  String get licenseCreditCjkHeading => '内置字体子集用于补充韩文和中文标题';
+
+  @override
+  String get licenseCreditFallback => '用于显示 Kuramubon 中缺少的字符';
+
+  @override
+  String get licenseCreditTextTool => '文本工具内置字体';
+
+  @override
+  String licenseCreditCatalog(String path) {
+    return '可从 $path 下载文本工具的其他字体。';
+  }
+
+  @override
+  String get licenseCreditCatalogAuthor => '每种字体的设计者可在 Google Fonts 的相应字体页面查看。';
+
+  @override
+  String get licenseCreditCatalogLicense => '每种字体的许可信息均显示在字体目录中。';
+
+  @override
+  String get licenseCreditIcons => '橡皮擦、填充和形状工具图标';
+
+  @override
+  String get licenseCreditIconLicense =>
+      '图标使用 CC BY 4.0，字体使用 SIL Open Font License 1.1，软件包使用 MIT License。';
+
+  @override
   String get licenseSectionFonts => '关于所用字体';
 
   @override
@@ -5488,6 +5527,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get premiumBannerRegisterButton => '升级Premium';
+
+  @override
+  String get legalLastUpdated => '最后更新日期：2026年11月18日';
 
   @override
   String get licenseTermsArt1Title => '第1条（适用）';
@@ -12567,6 +12609,45 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get licenseSectionTerms => '使用條款';
 
   @override
+  String get licenseCreditBody => '預設內文字型';
+
+  @override
+  String get licenseCreditHeading => '標題和按鈕的字型';
+
+  @override
+  String get licenseCreditNumbers => 'Android 數字顯示';
+
+  @override
+  String get licenseCreditCjkBody => '內建字型子集用於簡體和繁體中文內文以及韓文字元';
+
+  @override
+  String get licenseCreditCjkHeading => '內建字型子集用於補充韓文和中文標題';
+
+  @override
+  String get licenseCreditFallback => '用於顯示 Kuramubon 中缺少的字元';
+
+  @override
+  String get licenseCreditTextTool => '文字工具內建字型';
+
+  @override
+  String licenseCreditCatalog(String path) {
+    return '可從 $path 下載文字工具的其他字型。';
+  }
+
+  @override
+  String get licenseCreditCatalogAuthor => '每種字型的設計者可在 Google Fonts 的相應字型頁面查看。';
+
+  @override
+  String get licenseCreditCatalogLicense => '每種字型的授權資訊都會顯示在字型目錄中。';
+
+  @override
+  String get licenseCreditIcons => '橡皮擦、填色和形狀工具圖示';
+
+  @override
+  String get licenseCreditIconLicense =>
+      '圖示使用 CC BY 4.0，字型使用 SIL Open Font License 1.1，套件使用 MIT License。';
+
+  @override
   String get licenseSectionFonts => '關於使用的字型';
 
   @override
@@ -15788,6 +15869,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get premiumBannerRegisterButton => '升級Premium';
+
+  @override
+  String get legalLastUpdated => '最後更新日期：2026年11月18日';
 
   @override
   String get licenseTermsArt1Title => '第1條（適用範圍）';

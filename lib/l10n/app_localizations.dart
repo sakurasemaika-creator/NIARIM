@@ -4179,6 +4179,78 @@ abstract class AppLocalizations {
   /// **'利用規約'**
   String get licenseSectionTerms;
 
+  /// No description provided for @licenseCreditBody.
+  ///
+  /// In ja, this message translates to:
+  /// **'基本の本文書体（白光明朝・はっこうみんちょう）'**
+  String get licenseCreditBody;
+
+  /// No description provided for @licenseCreditHeading.
+  ///
+  /// In ja, this message translates to:
+  /// **'見出し・タイトル・ボタンの書体（くらむぼん）'**
+  String get licenseCreditHeading;
+
+  /// No description provided for @licenseCreditNumbers.
+  ///
+  /// In ja, this message translates to:
+  /// **'Androidの数値表示'**
+  String get licenseCreditNumbers;
+
+  /// No description provided for @licenseCreditCjkBody.
+  ///
+  /// In ja, this message translates to:
+  /// **'中国語（簡体字・繁体字）の本文と韓国語の文字を表示する同梱サブセット'**
+  String get licenseCreditCjkBody;
+
+  /// No description provided for @licenseCreditCjkHeading.
+  ///
+  /// In ja, this message translates to:
+  /// **'韓国語・中国語の見出しを補う同梱サブセット'**
+  String get licenseCreditCjkHeading;
+
+  /// No description provided for @licenseCreditFallback.
+  ///
+  /// In ja, this message translates to:
+  /// **'くらむぼんにない文字の代替表示'**
+  String get licenseCreditFallback;
+
+  /// No description provided for @licenseCreditTextTool.
+  ///
+  /// In ja, this message translates to:
+  /// **'テキストツールの同梱書体'**
+  String get licenseCreditTextTool;
+
+  /// No description provided for @licenseCreditCatalog.
+  ///
+  /// In ja, this message translates to:
+  /// **'テキストツールの追加書体は {path} からダウンロードできます。'**
+  String licenseCreditCatalog(String path);
+
+  /// No description provided for @licenseCreditCatalogAuthor.
+  ///
+  /// In ja, this message translates to:
+  /// **'各書体の作者は Google Fonts の書体ページで確認できます。'**
+  String get licenseCreditCatalogAuthor;
+
+  /// No description provided for @licenseCreditCatalogLicense.
+  ///
+  /// In ja, this message translates to:
+  /// **'書体ごとのライセンスはフォント管理のカタログに表示されます。'**
+  String get licenseCreditCatalogLicense;
+
+  /// No description provided for @licenseCreditIcons.
+  ///
+  /// In ja, this message translates to:
+  /// **'消しゴム・バケツ塗り・図形ツールのアイコン'**
+  String get licenseCreditIcons;
+
+  /// No description provided for @licenseCreditIconLicense.
+  ///
+  /// In ja, this message translates to:
+  /// **'アイコンは CC BY 4.0、フォントは SIL Open Font License 1.1、パッケージは MIT License。'**
+  String get licenseCreditIconLicense;
+
   /// No description provided for @licenseSectionFonts.
   ///
   /// In ja, this message translates to:
@@ -10058,6 +10130,12 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'プレミアムに登録'**
   String get premiumBannerRegisterButton;
+
+  /// No description provided for @legalLastUpdated.
+  ///
+  /// In ja, this message translates to:
+  /// **'最終更新日：2026年11月18日'**
+  String get legalLastUpdated;
 
   /// No description provided for @licenseTermsArt1Title.
   ///

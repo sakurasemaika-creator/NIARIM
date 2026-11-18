@@ -5,11 +5,57 @@
 // assets/fonts/へ直接置いたフォントはLicenseRegistryの自動収集対象外のため、
 // main.dartで明示的に登録している。その登録が将来壊れないよう固定する。
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:niarim/l10n/app_localizations.dart';
+import 'package:niarim/screens/settings/license_screen.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+
+  testWidgets(
+    'font credits describe the uses and show the actual catalog path in each language',
+    (tester) async {
+      tester.view.devicePixelRatio = 1;
+      tester.view.physicalSize = const Size(360, 760);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      addTearDown(tester.view.resetPhysicalSize);
+      for (final locale in AppLocalizations.supportedLocales) {
+        final l10n = lookupAppLocalizations(locale);
+        await tester.pumpWidget(
+          MaterialApp(
+            key: ValueKey(locale),
+            locale: locale,
+            supportedLocales: AppLocalizations.supportedLocales,
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            home: const LicenseScreen(),
+          ),
+        );
+        await tester.pumpAndSettle();
+        expect(find.text(l10n.legalLastUpdated), findsOneWidget);
+        Future<void> show(String text) async {
+          final label = find.text(text);
+          await tester.scrollUntilVisible(label, 300, maxScrolls: 150);
+          expect(label, findsOneWidget, reason: locale.toLanguageTag());
+        }
+
+        await show(l10n.licenseCreditHeading);
+        await show(l10n.licenseCreditCjkBody);
+        final path = [
+          l10n.settingsScreenTitle,
+          l10n.settingsFontTitle,
+          l10n.fontSettingsTabSearch,
+        ].join(' → ');
+        await show(l10n.licenseCreditCatalog(path));
+        expect(
+          find.textContaining(l10n.licenseCreditCatalogAuthor),
+          findsOneWidget,
+        );
+        expect(tester.takeException(), isNull);
+      }
+    },
+  );
 
   test('同梱フォントのライセンス本文がアセットとして読み込める', () async {
     final text = await rootBundle.loadString(

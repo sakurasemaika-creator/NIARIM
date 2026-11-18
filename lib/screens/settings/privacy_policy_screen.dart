@@ -81,6 +81,8 @@ class _PolicyBody extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        Text(l10n.legalLastUpdated),
+        const SizedBox(height: 12),
         for (var i = 0; i < sections.length; i++)
           Padding(
             padding: const EdgeInsets.only(bottom: 12),

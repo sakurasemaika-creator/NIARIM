@@ -48,14 +48,26 @@ void main() {
         tester.getRect(find.byElementPredicate((e) => e == element)),
   ];
 
-  void expectTwoLineNames(
+  Future<void> expectTwoLineNames(
     WidgetTester tester,
     String reason, {
     bool twelveFits = true,
-  }) {
+  }) async {
+    final scrollable = HomeAppHarness.inProjects(find.byType(Scrollable));
+    tester.state<ScrollableState>(scrollable).position.jumpTo(0);
+    await tester.pump();
+    Future<Text> visibleCaption(String name) async {
+      final label = caption(name);
+      if (label.evaluate().isEmpty) {
+        await tester.scrollUntilVisible(label, 160, scrollable: scrollable);
+      }
+      expect(label, findsOneWidget, reason: '$reason $name');
+      return tester.widget<Text>(label);
+    }
+
     expect(tester.takeException(), isNull, reason: reason);
     for (final name in [...short, folderName, if (twelveFits) twelve]) {
-      final text = tester.widget<Text>(caption(name));
+      final text = await visibleCaption(name);
       expect(text.maxLines, 2, reason: '$reason $name');
       final paragraph = tester.renderObject<RenderParagraph>(
         find.descendant(of: caption(name), matching: find.byType(RichText)),
@@ -66,10 +78,10 @@ void main() {
     // 14文字分）。英語は語の途中で切らない。読み上げは名前の全部。
     String displayed(Text text) =>
         ((text.textSpan as TextSpan?)?.text ?? text.data)!;
-    final ja = tester.widget<Text>(caption(longJa));
+    final ja = await visibleCaption(longJa);
     expect(displayed(ja), '${longJa.substring(0, 13)}…', reason: reason);
     expect(ja.semanticsLabel, longJa, reason: reason);
-    final en = tester.widget<Text>(caption(longEn));
+    final en = await visibleCaption(longEn);
     final enShown = displayed(en);
     expect(enShown, endsWith('…'), reason: reason);
     final enWords = enShown.substring(0, enShown.length - 1).split(' ');
@@ -102,14 +114,14 @@ void main() {
   ) async {
     final home = HomeAppHarness.prepare(tester);
     await home.open(size: const Size(320, 568), textScale: 2, seed: seed);
-    expectTwoLineNames(tester, '320 x2', twelveFits: false);
+    await expectTwoLineNames(tester, '320 x2', twelveFits: false);
     await home.close();
   });
 
   testWidgets('360px phones show a 12-character name in full', (tester) async {
     final home = HomeAppHarness.prepare(tester);
     await home.open(size: const Size(360, 800), seed: seed);
-    expectTwoLineNames(tester, '360 x1');
+    await expectTwoLineNames(tester, '360 x1');
     await home.close();
   });
 
@@ -125,7 +137,7 @@ void main() {
       for (final width in [320.0, 360.0, 1280.0]) {
         for (final scale in [1.0, 2.0]) {
           await home.resize(Size(width, 800), textScale: scale);
-          expectTwoLineNames(
+          await expectTwoLineNames(
             tester,
             '$language $width x$scale',
             twelveFits: scale == 1 || width == 1280,

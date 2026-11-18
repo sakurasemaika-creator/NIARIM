@@ -2375,6 +2375,50 @@ class AppLocalizationsEn extends AppLocalizations {
   String get licenseSectionTerms => 'Terms of Service';
 
   @override
+  String get licenseCreditBody => 'Default body text';
+
+  @override
+  String get licenseCreditHeading => 'Headings, titles and buttons';
+
+  @override
+  String get licenseCreditNumbers => 'Numbers on Android';
+
+  @override
+  String get licenseCreditCjkBody =>
+      'Bundled subsets for Simplified and Traditional Chinese body text and Korean characters';
+
+  @override
+  String get licenseCreditCjkHeading =>
+      'Bundled fallback subsets for Korean and Chinese headings';
+
+  @override
+  String get licenseCreditFallback =>
+      'Fallback for characters missing from Kuramubon';
+
+  @override
+  String get licenseCreditTextTool => 'Bundled text tool font';
+
+  @override
+  String licenseCreditCatalog(String path) {
+    return 'Download additional text tool fonts from $path.';
+  }
+
+  @override
+  String get licenseCreditCatalogAuthor =>
+      'See the font’s page on Google Fonts for its designers.';
+
+  @override
+  String get licenseCreditCatalogLicense =>
+      'Find the license for each font in the font catalog.';
+
+  @override
+  String get licenseCreditIcons => 'Eraser, fill and shape tool icons';
+
+  @override
+  String get licenseCreditIconLicense =>
+      'Icons use CC BY 4.0, the font uses SIL Open Font License 1.1 and the package uses the MIT License.';
+
+  @override
   String get licenseSectionFonts => 'Fonts Used';
 
   @override
@@ -5771,6 +5815,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get premiumBannerRegisterButton => 'Upgrade to Premium';
+
+  @override
+  String get legalLastUpdated => 'Last updated: November 18, 2026';
 
   @override
   String get licenseTermsArt1Title => 'Article 1 (Application)';

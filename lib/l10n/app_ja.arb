@@ -911,6 +911,25 @@
   "fontCorruptedSnackbar": "フォントが破損しています。",
   "licenseScreenTitle": "利用規約・ライセンス",
   "licenseSectionTerms": "利用規約",
+  "licenseCreditBody": "基本の本文書体（白光明朝・はっこうみんちょう）",
+  "licenseCreditHeading": "見出し・タイトル・ボタンの書体（くらむぼん）",
+  "licenseCreditNumbers": "Androidの数値表示",
+  "licenseCreditCjkBody": "中国語（簡体字・繁体字）の本文と韓国語の文字を表示する同梱サブセット",
+  "licenseCreditCjkHeading": "韓国語・中国語の見出しを補う同梱サブセット",
+  "licenseCreditFallback": "くらむぼんにない文字の代替表示",
+  "licenseCreditTextTool": "テキストツールの同梱書体",
+  "licenseCreditCatalog": "テキストツールの追加書体は {path} からダウンロードできます。",
+  "@licenseCreditCatalog": {
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  },
+  "licenseCreditCatalogAuthor": "各書体の作者は Google Fonts の書体ページで確認できます。",
+  "licenseCreditCatalogLicense": "書体ごとのライセンスはフォント管理のカタログに表示されます。",
+  "licenseCreditIcons": "消しゴム・バケツ塗り・図形ツールのアイコン",
+  "licenseCreditIconLicense": "アイコンは CC BY 4.0、フォントは SIL Open Font License 1.1、パッケージは MIT License。",
   "licenseSectionFonts": "使用フォントについて",
   "licenseSectionOss": "オープンソースソフトウェアライセンス",
   "licenseOssListTitle": "使用ライブラリのライセンス一覧",
@@ -2843,6 +2862,7 @@
   "adMediumRectangleMockPlaceholderLabel": "中型レクタングル広告（300×250・配置検討用モック）",
   "progressDialogTipLabel": "ヒント",
   "premiumBannerRegisterButton": "プレミアムに登録",
+  "legalLastUpdated": "最終更新日：2026年11月18日",
   "licenseTermsArt1Title": "第1条（適用）",
   "licenseTermsArt1Body": "この利用規約（以下「本規約」といいます。）は、本アプリ「NIARIM」（以下「本アプリ」といいます。）の利用条件を定めるものです。ユーザーは、本規約に同意の上、本アプリをご利用いただくものとします。本アプリを利用することにより、本規約に同意したものとみなします。",
   "licenseTermsArt2Title": "第2条（利用資格・対応環境）",

@@ -2405,6 +2405,51 @@ class AppLocalizationsFr extends AppLocalizations {
   String get licenseSectionTerms => 'Conditions d’utilisation';
 
   @override
+  String get licenseCreditBody => 'Police du corps de texte par défaut';
+
+  @override
+  String get licenseCreditHeading => 'Titres, en-têtes et boutons';
+
+  @override
+  String get licenseCreditNumbers => 'Chiffres sur Android';
+
+  @override
+  String get licenseCreditCjkBody =>
+      'Sous-ensembles inclus pour le corps de texte en chinois simplifié et traditionnel et les caractères coréens';
+
+  @override
+  String get licenseCreditCjkHeading =>
+      'Sous-ensembles de remplacement pour les titres en coréen et en chinois';
+
+  @override
+  String get licenseCreditFallback =>
+      'Remplacement des caractères absents de Kuramubon';
+
+  @override
+  String get licenseCreditTextTool => 'Police fournie avec l’outil Texte';
+
+  @override
+  String licenseCreditCatalog(String path) {
+    return 'Téléchargez des polices pour l’outil Texte depuis $path.';
+  }
+
+  @override
+  String get licenseCreditCatalogAuthor =>
+      'Les créateurs de chaque police figurent sur sa page Google Fonts.';
+
+  @override
+  String get licenseCreditCatalogLicense =>
+      'La licence de chaque police figure dans le catalogue.';
+
+  @override
+  String get licenseCreditIcons =>
+      'Icônes des outils Gomme, Remplissage et Formes';
+
+  @override
+  String get licenseCreditIconLicense =>
+      'Les icônes utilisent CC BY 4.0, la police utilise SIL Open Font License 1.1 et le paquet utilise la licence MIT.';
+
+  @override
   String get licenseSectionFonts => 'Polices utilisées';
 
   @override
@@ -5860,6 +5905,9 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get premiumBannerRegisterButton => 'Passer à Premium';
+
+  @override
+  String get legalLastUpdated => 'Dernière mise à jour : 18 novembre 2026';
 
   @override
   String get licenseTermsArt1Title => 'Article 1 (Application)';
@@ -10729,7 +10777,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get homePasteRestoreOriginalQuestion =>
-      'Restaurer cet élément à son emplacement d’origine ?';
+      'Restaurer cet élément à son emplacement d’origine ?';
 
   @override
   String get homePasteRestoredOriginalCollection =>

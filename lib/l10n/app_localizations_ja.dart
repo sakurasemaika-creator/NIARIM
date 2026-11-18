@@ -2284,6 +2284,46 @@ class AppLocalizationsJa extends AppLocalizations {
   String get licenseSectionTerms => '利用規約';
 
   @override
+  String get licenseCreditBody => '基本の本文書体（白光明朝・はっこうみんちょう）';
+
+  @override
+  String get licenseCreditHeading => '見出し・タイトル・ボタンの書体（くらむぼん）';
+
+  @override
+  String get licenseCreditNumbers => 'Androidの数値表示';
+
+  @override
+  String get licenseCreditCjkBody => '中国語（簡体字・繁体字）の本文と韓国語の文字を表示する同梱サブセット';
+
+  @override
+  String get licenseCreditCjkHeading => '韓国語・中国語の見出しを補う同梱サブセット';
+
+  @override
+  String get licenseCreditFallback => 'くらむぼんにない文字の代替表示';
+
+  @override
+  String get licenseCreditTextTool => 'テキストツールの同梱書体';
+
+  @override
+  String licenseCreditCatalog(String path) {
+    return 'テキストツールの追加書体は $path からダウンロードできます。';
+  }
+
+  @override
+  String get licenseCreditCatalogAuthor =>
+      '各書体の作者は Google Fonts の書体ページで確認できます。';
+
+  @override
+  String get licenseCreditCatalogLicense => '書体ごとのライセンスはフォント管理のカタログに表示されます。';
+
+  @override
+  String get licenseCreditIcons => '消しゴム・バケツ塗り・図形ツールのアイコン';
+
+  @override
+  String get licenseCreditIconLicense =>
+      'アイコンは CC BY 4.0、フォントは SIL Open Font License 1.1、パッケージは MIT License。';
+
+  @override
   String get licenseSectionFonts => '使用フォントについて';
 
   @override
@@ -5545,6 +5585,9 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get premiumBannerRegisterButton => 'プレミアムに登録';
+
+  @override
+  String get legalLastUpdated => '最終更新日：2026年11月18日';
 
   @override
   String get licenseTermsArt1Title => '第1条（適用）';

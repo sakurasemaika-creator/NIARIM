@@ -19,7 +19,7 @@ License     : This Font Software is licensed under the SIL Open Font License,
 License URL : https://openfontlicense.org
 
 
---- assets/fonts/Kuramubon.otf（くらむぼん / チュートリアル・説明テキスト）---
+--- assets/fonts/Kuramubon.otf（くらむぼん / 見出し・タイトル・ボタン）---
 Copyright   : Copyright 2020 The Dela Gothic Project Authors
               (https://github.com/syakuzen/DelaGothic),flopdesign.com
 License     : SIL Open Font License 1.1
@@ -52,9 +52,9 @@ License URL : https://openfontlicense.org
 
 
 --- assets/fonts/NotoSerifKRSubset.ttf / NotoSerifSCSubset.ttf
-    （韓国語・簡体字の本文用。Noto Serif KR / Noto Serif SC のサブセット）---
+    （韓国語・中国語（簡体字・繁体字）の本文用。Noto Serif KR / Noto Serif SC のサブセット）---
 --- assets/fonts/NotoSansKRBlackSubset.ttf / NotoSansSCBlackSubset.ttf
-    （韓国語・簡体字の見出し用。Noto Sans KR / Noto Sans SC の Black(900) の
+    （韓国語・中国語の見出し用。Noto Sans KR / Noto Sans SC の Black(900) の
       サブセット）---
 
 これら4つは、Google Fonts で配布されている下記の可変フォントを、

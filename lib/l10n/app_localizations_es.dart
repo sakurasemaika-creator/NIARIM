@@ -2410,6 +2410,50 @@ class AppLocalizationsEs extends AppLocalizations {
   String get licenseSectionTerms => 'Términos de uso';
 
   @override
+  String get licenseCreditBody => 'Texto principal predeterminado';
+
+  @override
+  String get licenseCreditHeading => 'Encabezados, títulos y botones';
+
+  @override
+  String get licenseCreditNumbers => 'Números en Android';
+
+  @override
+  String get licenseCreditCjkBody =>
+      'Subconjuntos incluidos para el texto en chino simplificado y tradicional y los caracteres coreanos';
+
+  @override
+  String get licenseCreditCjkHeading =>
+      'Subconjuntos de apoyo para encabezados en coreano y chino';
+
+  @override
+  String get licenseCreditFallback => 'Caracteres que faltan en Kuramubon';
+
+  @override
+  String get licenseCreditTextTool =>
+      'Fuente incluida en la herramienta de texto';
+
+  @override
+  String licenseCreditCatalog(String path) {
+    return 'Descarga más fuentes para la herramienta de texto desde $path.';
+  }
+
+  @override
+  String get licenseCreditCatalogAuthor =>
+      'Consulta los diseñadores en la página de cada fuente en Google Fonts.';
+
+  @override
+  String get licenseCreditCatalogLicense =>
+      'La licencia de cada fuente aparece en el catálogo.';
+
+  @override
+  String get licenseCreditIcons => 'Iconos de borrador, relleno y formas';
+
+  @override
+  String get licenseCreditIconLicense =>
+      'Los iconos usan CC BY 4.0, la fuente usa SIL Open Font License 1.1 y el paquete usa la licencia MIT.';
+
+  @override
   String get licenseSectionFonts => 'Fuentes utilizadas';
 
   @override
@@ -5851,6 +5895,10 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get premiumBannerRegisterButton => 'Pasar a Premium';
+
+  @override
+  String get legalLastUpdated =>
+      'Última actualización: 18 de noviembre de 2026';
 
   @override
   String get licenseTermsArt1Title => 'Artículo 1 (Aplicación)';

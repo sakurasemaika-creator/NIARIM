@@ -98,6 +98,11 @@ class LicenseScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final fontCatalogPath = [
+      l10n.settingsScreenTitle,
+      l10n.settingsFontTitle,
+      l10n.fontSettingsTabSearch,
+    ].join(' → ');
     return Scaffold(
       // 規約・ライセンス本文自体が説明そのものであり、対応する専用の
       // ヘルプ項目が存在しないため、ヘルプアイコンは表示しない。
@@ -110,78 +115,66 @@ class LicenseScreen extends StatelessWidget {
             const _TermsBody(),
             const SizedBox(height: 24),
             _SectionTitle(l10n.licenseSectionFonts),
-            const _FontCredit(
-              usage: 'アプリ全体の基本フォント',
-              name: '白光明朝（はっこうみんちょう）',
+            _FontCredit(
+              usage: l10n.licenseCreditBody,
+              name: 'Hakkou Mincho',
               author: 'lavsic',
               license: 'SIL Open Font License 1.1',
             ),
-            const _FontCredit(
-              usage: 'チュートリアル・説明テキスト',
-              name: 'くらむぼん',
+            _FontCredit(
+              usage: l10n.licenseCreditHeading,
+              name: 'Kuramubon',
               author:
-                  'Yoshikawa Kinomi（フロップデザイン）／The Dela Gothic Project Authors',
+                  'Yoshikawa Kinomi (FLOP DESIGN) / The Dela Gothic Project Authors',
               license: 'SIL Open Font License 1.1',
             ),
-            const _FontCredit(
-              usage: '数値表示',
-              name: 'Android標準フォント（Roboto / Noto Sans）',
+            _FontCredit(
+              usage: l10n.licenseCreditNumbers,
+              name: 'Roboto / Noto Sans',
               author: 'Google',
               license: 'Apache License 2.0 / SIL Open Font License',
             ),
-            const _FontCredit(
-              usage:
-                  '韓国語・簡体字の本文表示（同梱フォントが'
-                  'ハングル・簡体字を持たないため）',
-              name: 'Noto Serif KR / Noto Serif SC（サブセット）',
+            _FontCredit(
+              usage: l10n.licenseCreditCjkBody,
+              name: 'Noto Serif KR / Noto Serif SC',
               author: 'Adobe',
               license: 'SIL Open Font License 1.1',
             ),
-            const _FontCredit(
-              usage: '韓国語・簡体字の見出し表示',
-              name: 'Noto Sans KR / Noto Sans SC Black（サブセット）',
+            _FontCredit(
+              usage: l10n.licenseCreditCjkHeading,
+              name: 'Noto Sans KR / Noto Sans SC Black',
               author: 'Adobe',
               license: 'SIL Open Font License 1.1',
             ),
-            const _FontCredit(
-              usage: 'くらむぼんに無い文字の代替表示',
+            _FontCredit(
+              usage: l10n.licenseCreditFallback,
               name: 'Dela Gothic One',
               author: 'The Dela Gothic Project Authors',
               license: 'SIL Open Font License 1.1',
             ),
-            const _FontCredit(
-              usage: 'テキストツール同梱フォント',
+            _FontCredit(
+              usage: l10n.licenseCreditTextTool,
               name: 'Noto Serif JP',
-              author: 'Google Fonts',
+              author: 'Adobe',
               license: 'SIL Open Font License 1.1',
             ),
-            const _FontCredit(
-              usage:
-                  'テキストツール追加フリーフォント（設定 → フォント管理 → '
-                  '追加フリーフォントを探す、からダウンロードして利用可能。'
-                  '初回のみネット接続が必要）',
-              name:
-                  'Google Fonts 全書体（約2000書体。SIL Open Font License /'
-                  ' Apache License 2.0 / Ubuntu Font License いずれかで'
-                  '配布されているもの全て）',
-              author:
-                  'Google Fonts（各フォントの制作者・詳細はダウンロード'
-                  '画面から各フォント名で確認可能）',
+            _FontCredit(
+              usage: l10n.licenseCreditCatalog(fontCatalogPath),
+              name: 'Google Fonts',
+              author: l10n.licenseCreditCatalogAuthor,
               license:
-                  'SIL Open Font License 1.1 / Apache License 2.0 / '
-                  'Ubuntu Font License 1.0（フォントごとに異なる。いずれも'
-                  '個人・商用問わず無償で利用可能）',
+                  '${l10n.licenseCreditCatalogLicense}\n'
+                  'SIL Open Font License 1.1 / Apache License 2.0 / Ubuntu Font License 1.0',
             ),
             const SizedBox(height: 24),
             _SectionTitle(l10n.licenseSectionIcons),
-            const _FontCredit(
-              usage: '消しゴム・バケツ塗り・図形ツールのアイコン',
+            _FontCredit(
+              usage: l10n.licenseCreditIcons,
               name: 'Font Awesome Free',
               author: 'Fonticons, Inc.',
               license:
-                  'アイコン：CC BY 4.0 / フォント：SIL Open Font License 1.1 '
-                  '（font_awesome_flutterパッケージ自体はMIT License。'
-                  'https://fontawesome.com/license/free）',
+                  '${l10n.licenseCreditIconLicense}\n'
+                  'https://fontawesome.com/license/free',
             ),
             const SizedBox(height: 24),
             _SectionTitle(l10n.licenseSectionOss),
@@ -254,6 +247,8 @@ class _TermsBody extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        Text(l10n.legalLastUpdated),
+        const SizedBox(height: 12),
         for (final (title, body) in sections)
           Padding(
             padding: const EdgeInsets.only(bottom: 12),
@@ -302,11 +297,6 @@ class _FontCredit extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // usage/name/authorは法務未確認の草稿段階かつライセンス表記の
-            // 正確性が求められるため、翻訳対象外（日本語固定。クラス冒頭の
-            // コメント参照）。各フォントのライセンス条件に関する説明文（旧
-            // note）は、フォント名・使用箇所・作者・
-            // ライセンス・クレジット表示のみを残す形で削除した。
             Text(
               usage,
               style: TextStyle(
