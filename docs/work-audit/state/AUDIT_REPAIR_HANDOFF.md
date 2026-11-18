@@ -565,6 +565,14 @@ App・Web共通。Claudeが要修正の詳細を追記し、ユーザーが別�
 - **所有者の判断待ち（追加）**：DISC144（ホームのCtrl+F・Delete。PC版の操作の決まり、DISC066と合わせる）、DISC166（タグの変更を作品の変更として最終保存の日時を変えるか）。
 - **次の再開位置**：(1) Webのブラウザの許可（上）→Webの4コミットをpush。(2) S41の一覧の古いDISCの残り（DISC008〜024・030・031・033・035・037〜040・042・052・056・070・080・090・119・145・150・161・223・236。DISC111は二巡目の撮影だけ）。二巡目（A001〜）は、Webの4コミットのブラウザ確認とFlutter全体のtestが済み、この一覧が片付いてから始める。を同じやり方（対応するtest・コード）で確かめる。DISC001・002はCLAUDE.mdの記述どおり実装済みの見込み。(3) DISC473（Webの書体のアクセント付き大文字、部分フォントの作り直し）。
 
+## Claudeの再検証（2026-11-19、Web dev_branch、S44）
+
+- **Webのブラウザでの確認ができるようになった**（Chromium 151が起動）。`.dart_tool/audit_tools/web_nav_audit.mjs`（Appのリポジトリの中、Playwright、`public/`をそのまま配信）で、Web `eb53734`のナビを測った。
+- **見つけて直したこと（Web `cdf36de`、DISC460の確認で発見・DISC440の残り）**：1181px以上のナビの項目を語の途中で折らない規則（Web `9e9ad94`）が`body.nr-site`（トップ）だけに当たり、ほかのページ（`body.nr-enhanced`、Featuresはclassなし）では仏語・西語で「À / propos」「opales et / missions」「Place des / œuvres」と語の途中で折れていた（originの「Galerie」でも1181pxで同じことを撮って確かめた）。入らないときは項目ごと2段目へ回すが、リンクの最小の高さ44pxで2段が92pxになり、高さ68pxのヘッダーから上下にはみ出した（「Place des œuvres」で仏語は1280pxでも2段になった）。規則を全ページに当て、仏語・西語は1181〜1439pxで項目の間隔10px・段の間2px・リンクの最小の高さ30pxにした。
+- **確認（Web `cdf36de`）**：6ページ（/・/about/・/features/・/community/・/faq/・/premium/）×仏・西・英・日×11幅（390・430・560・760・900・1024・1180・1181・1280・1366・1440、1180px以下はメニューを開いて）の264状態で、ナビの項目の折れ・画面外・重なり・作品広場の呼び名（Place des œuvres／Plaza de Obras／Work Plaza／作品広場）が0件。仏語の1181px（2段、ヘッダー内）と1280px（1段、中央）を撮って目で確かめた。Webの単体test 31件、フォント・キャプチャの契約が成功。`tests/website-glyph-coverage-audit.mjs`は字の抜け18グループで、originの版でも同じ18グループ（元から：日本語の見出しの部分フォントに「備」〔配信準備中〕等が無い。DISC473・479の仲間で、今回の変更では増えていない）。
+- **DISC444・450・451・457・459・460のWeb側**：上の確認で検証済み（ブラウザで7言語の辞書を読んで表示、構文・単体test・契約）。
+- **pushできない（認証エラー）**：`git push origin HEAD:refs/heads/dev_branch`が`Permission to sakurasemaika-creator/NIARIM-web.git denied`（403）。2回試した。未反映のコミットは5つ（originの`08acde5`の上）：`2ce5408`（DISC459・460：`public/faq/index.html`・辞書11ファイル）、`533f644`（DISC444：辞書15ファイル）、`fde018b`（DISC450・457：辞書11ファイル）、`eb53734`（DISC451：`public/help/index.html`・`i18n-dict-help.js`・`app-help-sync-2026.js`）、`cdf36de`（ナビ：`public/css/niarim-game-site.css`）。どれも`/workspaces/NIARIM-web`の`dev_branch`にある。**必要な操作**：この実行環境のGitHubの認証にNIARIM-webへの書き込み権限を付ける（または別の環境から同じブランチをpushする）。
+
 ## 要修正の記録
 
 ### 旧手順の修正担当からの切替（2026-11-16、Claude・S40）
