@@ -49,7 +49,7 @@ void main() {
       '_moveStart = canvasPos;',
       '_hitTestMeshPoint(canvasPos);',
       '_handleRulerDown(canvasPos)',
-      '_handleBucketDown(canvasPos);',
+      '_handleBucketDown(event.pointer, canvasPos)',
       '_handleFingerDown(canvasPos);',
       '_handleBlurMosaicDown(canvasPos);',
     ]) {
@@ -60,7 +60,7 @@ void main() {
   test('ドラッグ系ツールも毎moveで共通canvasPosを使う', () {
     final body = methodBody(
       'void _onPointerMove(PointerEvent event)',
-      '\n  void _onPointerUp(PointerEvent event)',
+      '\n  void _onPointerUp(',
     );
 
     expect(
@@ -76,7 +76,7 @@ void main() {
       '_moveDelta = canvasPos - _moveStart!',
       'updated[idx] = canvasPos;',
       '_handleRulerMove(canvasPos);',
-      '_handleBucketMove(canvasPos);',
+      '_handleBucketMove(event.pointer, canvasPos);',
       '_subToolStrokePoints.add(canvasPos)',
       '_handleFingerMove(canvasPos);',
       '_handleBlurMosaicMove(canvasPos);',
@@ -92,7 +92,7 @@ void main() {
     );
     final move = methodBody(
       'void _onPointerMove(PointerEvent event)',
-      '\n  void _onPointerUp(PointerEvent event)',
+      '\n  void _onPointerUp(',
     );
 
     expect(

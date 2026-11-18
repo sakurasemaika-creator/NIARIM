@@ -91,6 +91,9 @@ void main() {
       );
 
       restored.deletePreset(custom.id);
+      expect(restored.presets.any((p) => p.id == custom.id), isTrue);
+      restored.toggleFavorite(custom.id);
+      restored.deletePreset(custom.id);
       await Future<void>.delayed(Duration.zero);
       expect(restored.presets.any((p) => p.id == custom.id), isFalse);
     },

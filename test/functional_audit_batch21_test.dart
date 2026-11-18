@@ -41,24 +41,31 @@ void main() {
     final tm = projects.tileManagerOf(project.id);
 
     final source = Uint8List(32 * 24 * 4);
+    final tilePixels = Uint8List(source.length);
     void put(int x, int y, int r, int g, int b, int a) {
       final i = (y * 32 + x) * 4;
       source[i] = r;
       source[i + 1] = g;
       source[i + 2] = b;
       source[i + 3] = a;
+      tilePixels[i] = r * a ~/ 255;
+      tilePixels[i + 1] = g * a ~/ 255;
+      tilePixels[i + 2] = b * a ~/ 255;
+      tilePixels[i + 3] = a;
     }
 
-    // 完全不透明・半透明・低alpha・色の異なる点を混在させる。
+    // タイルは乗算済みRGBA、PNGは非乗算RGBA。8bitの乗算で端数が
+    // 出ない組み合わせを使い、PNGの全チャンネルを元の色と比較する。
     put(2, 3, 255, 20, 30, 255);
-    put(10, 8, 40, 220, 60, 128);
-    put(20, 15, 30, 70, 240, 64);
+    put(10, 8, 42, 222, 60, 170);
+    put(20, 15, 30, 70, 240, 51);
+    const alphas = [17, 51, 85, 153, 170, 255];
     for (var y = 18; y < 22; y++) {
       for (var x = 24; x < 30; x++) {
-        put(x, y, 180, 90, 210, (80 + (x - 24) * 20).clamp(0, 255));
+        put(x, y, 180, 90, 210, alphas[x - 24]);
       }
     }
-    tm.replaceLayerPixels(key, source);
+    tm.replaceLayerPixels(key, tilePixels);
 
     final engine = ExportEngine();
     final outputPath = await engine.exportFrameImage(
@@ -96,7 +103,7 @@ void main() {
 
     // 特に半透明画素が勝手に不透明化・premultiplyされたままになっていないこと。
     int alphaAt(int x, int y) => actual[(y * 32 + x) * 4 + 3];
-    expect(alphaAt(10, 8), 128);
-    expect(alphaAt(20, 15), 64);
+    expect(alphaAt(10, 8), 170);
+    expect(alphaAt(20, 15), 51);
   });
 }

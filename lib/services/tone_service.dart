@@ -531,6 +531,11 @@ class ToneService extends ChangeNotifier {
   Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
     final raw = prefs.readStringList(_prefsKey);
+    // A missing marker belongs to an older install. Keep an unrecognized
+    // stored value and avoid reordering that user's presets on startup.
+    final grouped =
+        prefs.readBool(_groupedPresetsKey) ??
+        prefs.containsKey(_groupedPresetsKey);
     _tones.clear();
     if (raw == null) {
       _tones.addAll(_defaultTones());
@@ -538,7 +543,7 @@ class ToneService extends ChangeNotifier {
       // 保存は書き換えない。
       if (!prefs.containsKey(_prefsKey)) {
         await _persist();
-        await prefs.setBool(_groupedPresetsKey, true);
+        if (!grouped) await prefs.setBool(_groupedPresetsKey, true);
       }
     } else {
       var intact = true;
@@ -657,7 +662,6 @@ class ToneService extends ChangeNotifier {
       // 読めない項目があった保存は、起動では書き換えない（後の版でなら
       // 読めるかもしれない自作の内容を、起動しただけで消さない。その一覧を
       // 次に変えたときに、読めた分だけで保存し直される）。
-      final grouped = prefs.readBool(_groupedPresetsKey) ?? false;
       if (!grouped) {
         if (groupUnfiledBuiltIns(
           _tones,

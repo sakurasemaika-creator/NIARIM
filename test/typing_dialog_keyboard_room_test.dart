@@ -326,7 +326,10 @@ bool _passesTypingInset(String body, String source) {
   if (body.contains('insetPadding: typingDialogInsetPadding(')) return true;
   final named = RegExp(r'insetPadding: ([A-Za-z_]\w*),').firstMatch(body);
   if (named == null) return false;
-  return source.contains('${named.group(1)} = typingDialogInsetPadding(');
+  final name = RegExp.escape(named.group(1)!);
+  return RegExp(
+    '\\b$name\\s*=\\s*typingDialogInsetPadding\\(',
+  ).hasMatch(source);
 }
 
 /// 打つ欄（入力欄・入力欄を持つ色の選び方のパネル）。

@@ -978,6 +978,11 @@ class BrushService extends ChangeNotifier {
   Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
     final raw = prefs.readStringList(_prefsKey);
+    // A missing marker belongs to an older install. Keep an unrecognized
+    // stored value and avoid reordering that user's presets on startup.
+    final grouped =
+        prefs.readBool(_groupedPresetsKey) ??
+        prefs.containsKey(_groupedPresetsKey);
     _brushes.clear();
     _unreadableEntries.clear();
     _readBuiltInWorking(prefs);
@@ -989,7 +994,7 @@ class BrushService extends ChangeNotifier {
       _brushes.addAll(_defaultBrushes().map(_withWorkingValues));
       if (!prefs.containsKey(_prefsKey)) {
         await _persist();
-        await prefs.setBool(_groupedPresetsKey, true);
+        if (!grouped) await prefs.setBool(_groupedPresetsKey, true);
       }
     } else {
       // 1件ずつ読む。壊れた1件（途中で切れた・項目の欠けた保存）で全体を
@@ -1103,7 +1108,6 @@ class BrushService extends ChangeNotifier {
           needsPersist = true;
         }
       }
-      final grouped = prefs.readBool(_groupedPresetsKey) ?? false;
       if (!grouped) {
         if (groupUnfiledBuiltIns(
           _brushes,

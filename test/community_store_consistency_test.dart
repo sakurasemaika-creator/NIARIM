@@ -125,7 +125,7 @@ void main() {
     final work = service.byId('w')!;
     expect(work.tags, isNot(contains('x')), reason: 'its own change undone');
     expect(work.containsGenerativeAiImageOrVideo, isTrue);
-    expect(service.discoverableWorks, isEmpty, reason: 'still hidden as AI');
+    expect(service.isWorkMuted(work), isTrue, reason: 'still hidden as AI');
   });
 
   test(
@@ -159,7 +159,7 @@ void main() {
   });
 
   test(
-    'the ranking keeps the server\'s order and follows the filters',
+    'the ranking keeps server positions while viewer filters mute works',
     () async {
       final (:service, requests: _, :lists, patches: _) = backend();
       lists['ranking'] = [
@@ -174,7 +174,17 @@ void main() {
         'third',
       ]);
       await service.setMutedTags(['x']);
-      expect(service.rankedWorks.map((w) => w.id), ['second', 'third']);
+      expect(service.rankedWorks.map((w) => w.id), [
+        'second',
+        'first',
+        'third',
+      ]);
+      expect(
+        service.rankedWorks
+            .where(service.isDiscoverableForViewer)
+            .map((w) => w.id),
+        ['second', 'third'],
+      );
     },
   );
 
