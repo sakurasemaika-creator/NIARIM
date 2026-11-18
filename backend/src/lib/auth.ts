@@ -103,8 +103,6 @@ async function findOrCreateUser(sub: string): Promise<UserItem> {
       niarimUserId,
       googleSub: sub,
       membershipTier: "free",
-      bookmarksPublic: false,
-      followersPublic: false,
       followerCount: 0,
       followingCount: 0,
       createdAt: new Date().toISOString(),

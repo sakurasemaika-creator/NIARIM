@@ -81,8 +81,8 @@ void main() {
     }
   });
 
-  test('old social pushes do not open any screen', () {
-    for (final kind in ['newFollower', 'newBookmark', 'newRepost']) {
+  test('unsupported notification types do not open any screen', () {
+    for (final kind in ['unknown', 'newFollower', 'newBookmark', 'newRepost']) {
       expect(
         PushNotificationService.routeForData({
           'type': kind,

@@ -4,31 +4,6 @@ import { badRequest, forbidden, ok } from "../../lib/response";
 import { parseJsonObject } from "../../lib/request";
 import { registerDeviceToken, unregisterDeviceToken } from "../../lib/push";
 
-/** Compatibility response for older apps after follow notifications were retired. */
-export async function getNotifications(
-  event: APIGatewayProxyEventV2,
-  targetId: string,
-) {
-  const auth = await authenticate(
-    event.headers["authorization"] ?? event.headers["Authorization"],
-  );
-  if (auth.niarimUserId !== targetId) forbidden("本人の通知のみ取得できます");
-
-  return ok({ notifications: [], unreadCount: 0 });
-}
-
-export async function markNotificationsRead(
-  event: APIGatewayProxyEventV2,
-  targetId: string,
-) {
-  const auth = await authenticate(
-    event.headers["authorization"] ?? event.headers["Authorization"],
-  );
-  if (auth.niarimUserId !== targetId) forbidden("本人の通知のみ操作できます");
-
-  return ok({ markedCount: 0 });
-}
-
 /**
  * `PUT /users/{id}/push-token`（22.7節：真のプッシュ通知）。
  * アプリがFCMから受け取った端末トークンを登録する。本人のみ。

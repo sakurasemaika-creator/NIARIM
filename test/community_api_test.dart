@@ -107,9 +107,9 @@ void main() {
     });
 
     test('パスに入るIDはURLエンコードする', () async {
-      final m = mock((_) => {'workId': 'a/b', 'totalCount': 0, 'users': []});
-      await apiWith(m.client).bookmarkers('a/b');
-      expect(m.requests.single.url.path, '/api/works/a%2Fb/bookmarkers');
+      final m = mock((_) => {'works': []});
+      await apiWith(m.client).worksByAuthor('a/b');
+      expect(m.requests.single.url.path, '/api/users/a%2Fb/works');
     });
 
     test('新着一覧のlimit・cursorはクエリに載る（未指定なら載せない）', () async {
@@ -226,28 +226,6 @@ void main() {
       expect(page.works, isEmpty);
     });
 
-    test('被ブックマーク一覧は総数と公開ぶんを分けて読む', () async {
-      final m = mock(
-        (_) => {
-          'workId': 'vid1',
-          'totalCount': 9,
-          'users': [
-            {
-              'niarimUserId': 'u1',
-              'channelName': 'あ',
-              'channelAvatarUrl': null,
-              'bookmarkedAt': '2026-08-02T00:00:00.000Z',
-            },
-          ],
-        },
-      );
-      final result = await apiWith(m.client).bookmarkers('vid1');
-      expect(result.totalCount, 9, reason: '非公開の人も含んだ実数');
-      expect(result.users, hasLength(1), reason: '公開している人だけ');
-      expect(result.users.single.displayName, 'あ');
-      expect(result.users.single.bookmarkedAt, isNotNull);
-    });
-
     test(
       'public social totals use one request without follower identities or owner auth',
       () async {
@@ -267,26 +245,6 @@ void main() {
     test('チャンネル名が無いユーザーはIDで代用する', () {
       final user = ApiUserRef.fromJson({'niarimUserId': 'u9'});
       expect(user.displayName, 'u9');
-    });
-
-    test('通知一覧は未読件数も読む', () async {
-      final m = mock(
-        (_) => {
-          'notifications': [
-            {
-              'fromUserId': 'u2',
-              'fromUserName': 'い',
-              'createdAt': '2026-08-03T00:00:00.000Z',
-              'read': false,
-            },
-          ],
-          'unreadCount': 1,
-        },
-      );
-      final result = await apiWith(m.client, token: 'T').notifications('u1');
-      expect(result.unreadCount, 1);
-      expect(result.notifications.single.fromUserName, 'い');
-      expect(result.notifications.single.read, isFalse);
     });
 
     test('トグル系は操作後の状態を返す', () async {
@@ -510,7 +468,6 @@ void main() {
     }
     await api.worksByAuthor('U');
     await api.myWorks();
-    await api.bookmarkers('W');
     await api.bookmarksOf('U');
     await api.socialCounts('U');
     await api.following('U');
@@ -528,8 +485,6 @@ void main() {
     await api.toggleFollow('U');
     await api.reportWork(workId: 'W', reason: 'r');
     await api.blockUser('U');
-    await api.notifications('U');
-    await api.markNotificationsRead('U');
     await api.putPushToken('U', token: 't', platform: 'android');
 
     /// 実際に飛んだパスを、handler.tsの`{id}`形式のパターンへ戻す。

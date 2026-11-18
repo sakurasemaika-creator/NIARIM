@@ -45,7 +45,6 @@ import { createBlock } from "./routes/blocks";
 import {
   toggleBookmark,
   getUserBookmarks,
-  getWorkBookmarkers,
 } from "./routes/bookmarks";
 import { getUserReposts, toggleRepost } from "./routes/reposts";
 import {
@@ -53,11 +52,7 @@ import {
   getFollowing,
   getSocialCounts,
 } from "./routes/follows";
-import {
-  getNotifications,
-  markNotificationsRead,
-  putPushToken,
-} from "./routes/notifications";
+import { putPushToken } from "./routes/notifications";
 
 type Handler = (
   event: APIGatewayProxyEventV2,
@@ -105,9 +100,6 @@ const routes: Route[] = [
   route("PATCH", "/works/{id}/metadata", (e, p) => updateWorkMetadata(e, p.id)),
   route("GET", "/works/{id}/youtube-comments", (e, p) => getYoutubeComments(e, p.id)),
   route("GET", "/users/{id}/works", (e, p) => getAuthorWorks(e, p.id)),
-  route("GET", "/works/{id}/bookmarkers", (e, p) =>
-    getWorkBookmarkers(e, p.id),
-  ),
   route("GET", "/users/{id}/bookmarks", (e, p) => getUserBookmarks(e, p.id)),
   route("GET", "/users/{id}/social-counts", (e, p) => getSocialCounts(e, p.id)),
   route("GET", "/users/{id}/following", (e, p) => getFollowing(e, p.id)),
@@ -156,12 +148,6 @@ const routes: Route[] = [
   route("POST", "/works/{id}/bookmark", (e, p) => toggleBookmark(e, p.id)),
   route("POST", "/works/{id}/repost", (e, p) => toggleRepost(e, p.id)),
   route("POST", "/users/{id}/follow", (e, p) => toggleFollow(e, p.id)),
-  route("GET", "/users/{id}/notifications", (e, p) =>
-    getNotifications(e, p.id),
-  ),
-  route("POST", "/users/{id}/notifications/mark-read", (e, p) =>
-    markNotificationsRead(e, p.id),
-  ),
   route("PUT", "/users/{id}/push-token", (e, p) => putPushToken(e, p.id)),
 ];
 

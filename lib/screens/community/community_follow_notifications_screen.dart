@@ -8,7 +8,6 @@ import '../../l10n/creator_mission_labels.dart';
 import '../../services/api/community_api.dart';
 import '../../services/community_service.dart';
 import '../../services/community_notice.dart';
-import '../../services/community_notice_history.dart';
 import '../../services/google_auth_service.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/fit_or_hide_title.dart';
@@ -62,16 +61,12 @@ class _CommunityFollowNotificationsScreenState
       _pageInitialized = false;
       _nextScanCursor = null;
       _scanHasMore = false;
-      _feedFuture = accountId != null && api != null
-          ? _loadFirst(api, _ownerId)
-          : null;
+      _feedFuture = accountId != null && api != null ? _loadFirst(api) : null;
     }
   }
 
-  Future<Map<String, dynamic>> _loadFirst(
-    CommunityApi api,
-    String? owner,
-  ) async {
+  Future<Map<String, dynamic>> _loadFirst(CommunityApi api) async {
+    final owner = _ownerId;
     Map<String, dynamic>? sync;
     try {
       sync = await api.syncMyMissionActivity();
@@ -79,8 +74,24 @@ class _CommunityFollowNotificationsScreenState
       // A failed catch-up scan must never hide previously saved history.
       debugPrint('Mission activity backfill unavailable: $error');
     }
-    final result = await api.myMissionActivity(includeCommunity: true);
-    return filterCommunityNoticePage({...result, 'sync': sync}, owner);
+    final result = await _loadPage(api, owner);
+    return {...result, 'sync': sync};
+  }
+
+  Future<Map<String, dynamic>> _loadPage(
+    CommunityApi api,
+    String? owner, {
+    String? cursor,
+  }) async {
+    final page = await api.myMissionActivity(
+      cursor: cursor,
+      includeCommunity: true,
+    );
+    final responseOwner = page['noticeOwner'];
+    if (responseOwner != null && owner != null && responseOwner != owner) {
+      return {'events': const []};
+    }
+    return page;
   }
 
   void _refresh(CommunityApi api) => setState(() {
@@ -89,7 +100,7 @@ class _CommunityFollowNotificationsScreenState
     _pageInitialized = false;
     _scanHasMore = false;
     _nextScanCursor = null;
-    _feedFuture = _loadFirst(api, _ownerId);
+    _feedFuture = _loadFirst(api);
   });
 
   Future<void> _more(CommunityApi api) async {
@@ -99,10 +110,7 @@ class _CommunityFollowNotificationsScreenState
     final noticeOwner = _ownerId;
     setState(() => _loadingMore = true);
     try {
-      final data = filterCommunityNoticePage(
-        await api.myMissionActivity(cursor: cursor, includeCommunity: true),
-        noticeOwner,
-      );
+      final data = await _loadPage(api, noticeOwner, cursor: cursor);
       if (!mounted ||
           owner != _accountId ||
           noticeOwner != _ownerId ||
@@ -139,10 +147,7 @@ class _CommunityFollowNotificationsScreenState
     setState(() => _scanningMore = true);
     try {
       final sync = await api.syncMyMissionActivity(workCursor: _nextScanCursor);
-      final page = filterCommunityNoticePage(
-        await api.myMissionActivity(includeCommunity: true),
-        noticeOwner,
-      );
+      final page = await _loadPage(api, noticeOwner);
       if (!mounted ||
           owner != _accountId ||
           noticeOwner != _ownerId ||

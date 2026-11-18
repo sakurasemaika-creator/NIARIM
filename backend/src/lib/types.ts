@@ -37,7 +37,6 @@ export const TABLE_ITEM_TYPE = {
   FollowingRecord: "FOLLOWING_RECORD",
   Report: "REPORT",
   Block: "BLOCK",
-  FollowNotification: "FOLLOW_NOTIFICATION",
   DailyCounter: "DAILY_COUNTER",
   ReportCounter: "REPORT_COUNTER",
   DeviceToken: "DEVICE_TOKEN",
@@ -175,11 +174,6 @@ export interface UserItem {
   /** JST日付につき成功1回の手動YouTubeプロフィール更新。 */
   channelInfoManualUpdatedJstDay?: string;
 
-  // 8.5節「ブックマーク一覧の公開設定」・22.5節「フォロー中/フォロワー
-  // 一覧の公開設定」。いずれも既定false（非公開）。
-  bookmarksPublic: boolean;
-  followersPublic: boolean;
-
   followerCount: number; // 常時公開の集計値（22.5節）
   followingCount: number; // 常時公開の集計値（22.5節）
 
@@ -201,7 +195,6 @@ export interface GoogleSubLookupItem {
 /**
  * ブックマーク記録（8.5節）。
  * PK = `USER#{niarimUserId}` / SK = `BOOKMARK#{workId}`
- * 逆引き（被ブックマーク一覧、21.1節）用にGSI5も張る。
  */
 export interface BookmarkItem {
   itemType: typeof TABLE_ITEM_TYPE.Bookmark;
@@ -210,8 +203,6 @@ export interface BookmarkItem {
   niarimUserId: string;
   workId: string;
   bookmarkedAt: string;
-  gsi5pk: string; // `WORKBOOKMARKS#{workId}`
-  gsi5sk: string; // bookmarkedAt
   /** Only newly recorded visible bookmarks participate in period ranking. */
   periodScoreVersion?: number;
   periodScoreRecordedAt?: string;
@@ -288,23 +279,6 @@ export interface BlockItem {
   blockerId: string;
   blockedId: string;
   createdAt: string;
-}
-
-/**
- * フォロー通知（22.6節：アプリ内通知一覧、方式A）。TTLで自動失効
- * （21.3節の推奨に合わせ30日）。
- * PK = `USER#{targetId}` / SK = `NOTIF#{createdAt}#{notifId}`
- */
-export interface FollowNotificationItem {
-  itemType: typeof TABLE_ITEM_TYPE.FollowNotification;
-  pk: string;
-  sk: string;
-  targetId: string;
-  fromUserId: string;
-  fromUserName: string;
-  read: boolean;
-  createdAt: string;
-  ttl: number; // epoch seconds
 }
 
 /**

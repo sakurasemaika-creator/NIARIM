@@ -479,13 +479,6 @@ class CommunityApi {
     return ApiWorkPage.fromJson(json);
   }
 
-  Future<ApiBookmarkers> bookmarkers(String workId) async {
-    final json = await _client.getJson(
-      '/works/${Uri.encodeComponent(workId)}/bookmarkers',
-    );
-    return ApiBookmarkers.fromJson(json);
-  }
-
   Future<List<ApiWork>> bookmarksOf(
     String userId, {
     bool asOwner = false,
@@ -671,22 +664,6 @@ class CommunityApi {
 
   Future<void> blockUser(String targetUserId) =>
       _client.postJson('/blocks', body: {'targetUserId': targetUserId});
-
-  Future<ApiNotifications> notifications(String userId) async {
-    final json = await _client.getJson(
-      '/users/${Uri.encodeComponent(userId)}/notifications',
-      authenticated: true,
-    );
-    return ApiNotifications.fromJson(json);
-  }
-
-  Future<int> markNotificationsRead(String userId) async {
-    final json = await _client.postJson(
-      '/users/${Uri.encodeComponent(userId)}/notifications/mark-read',
-    );
-    final marked = json['markedCount'];
-    return marked is int ? marked : 0;
-  }
 
   Future<bool> putPushToken(
     String userId, {

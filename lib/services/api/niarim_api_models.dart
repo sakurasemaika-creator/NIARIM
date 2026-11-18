@@ -256,94 +256,9 @@ class ApiRepostPage {
   );
 }
 
-class ApiBookmarkers {
-  final String workId;
-  final int totalCount;
-  final List<ApiUserRef> users;
-
-  const ApiBookmarkers({
-    required this.workId,
-    required this.totalCount,
-    required this.users,
-  });
-
-  factory ApiBookmarkers.fromJson(Map<String, dynamic> json) => ApiBookmarkers(
-    workId: _string(json['workId']),
-    totalCount: _int(json['totalCount']),
-    users: _users(json['users']),
-  );
-}
-
-class ApiFollowers {
-  final String targetId;
-  final int totalCount;
-  final List<ApiUserRef> visibleFollowers;
-  final int hiddenCount;
-
-  const ApiFollowers({
-    required this.targetId,
-    required this.totalCount,
-    required this.visibleFollowers,
-    required this.hiddenCount,
-  });
-
-  factory ApiFollowers.fromJson(Map<String, dynamic> json) => ApiFollowers(
-    targetId: _string(json['targetId']),
-    totalCount: _int(json['totalCount']),
-    visibleFollowers: _users(json['visibleFollowers']),
-    hiddenCount: _int(json['hiddenCount']),
-  );
-}
-
-class ApiFollowNotification {
-  final String fromUserId;
-  final String fromUserName;
-  final DateTime createdAt;
-  final bool read;
-
-  const ApiFollowNotification({
-    required this.fromUserId,
-    required this.fromUserName,
-    required this.createdAt,
-    required this.read,
-  });
-
-  factory ApiFollowNotification.fromJson(Map<String, dynamic> json) =>
-      ApiFollowNotification(
-        fromUserId: _string(json['fromUserId']),
-        fromUserName: _string(json['fromUserName']),
-        createdAt: _dateTime(json['createdAt']),
-        read: json['read'] == true,
-      );
-}
-
-class ApiNotifications {
-  final List<ApiFollowNotification> notifications;
-  final int unreadCount;
-
-  const ApiNotifications({
-    required this.notifications,
-    required this.unreadCount,
-  });
-
-  factory ApiNotifications.fromJson(Map<String, dynamic> json) =>
-      ApiNotifications(
-        notifications: (json['notifications'] as List? ?? const [])
-            .whereType<Map<String, dynamic>>()
-            .map(ApiFollowNotification.fromJson)
-            .toList(),
-        unreadCount: _int(json['unreadCount']),
-      );
-}
-
 List<ApiWork> _works(Object? raw) => (raw as List? ?? const [])
     .whereType<Map<String, dynamic>>()
     .map(ApiWork.fromJson)
-    .toList();
-
-List<ApiUserRef> _users(Object? raw) => (raw as List? ?? const [])
-    .whereType<Map<String, dynamic>>()
-    .map(ApiUserRef.fromJson)
     .toList();
 
 String _string(Object? raw) => raw is String ? raw : '';

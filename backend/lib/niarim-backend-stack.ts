@@ -45,13 +45,6 @@ import {
  * テーブル本体15 + GSI 6本合計8 = 23。GSIを増減する場合は
  * 必ず`assertCapacityWithinFreeTier()`が通る範囲に収めること（超過分は
  * Provisioned Throughputの課金対象になる）。
- *
- * GSI5（被ブックマーク一覧、21.1節）は今回追加した。追加前の合計は24で
- * 1単位空いていたため（旧コメントは「GSI 6本合計10」としていたが実際は
- * 9だった）、テーブル本体を削らずにGSI5へ1 RCU/1 WCUを割り当てられた。
- * GSI5は「作品詳細で誰がブックマークしたかを開いたときだけ」引かれる
- * 低頻度アクセスなのでこの配分で足りるという判断。実運用でスロットリングが
- * 出たら、CloudWatchの`ThrottledRequests`を見て配分を調整すること。
  */
 const CAPACITY_PLAN = {
   table: { read: 15, write: 15 },
@@ -59,7 +52,6 @@ const CAPACITY_PLAN = {
   gsi3AuthorWorksIndex: { read: 1, write: 1 },
   gsi3AllAuthorWorksIndex: { read: 1, write: 1 },
   gsi4LatestIndex: { read: 2, write: 2 },
-  gsi5WorkBookmarksIndex: { read: 1, write: 1 },
   gsi6ScheduledReleaseIndex: { read: 1, write: 1 },
   gsi7ReportStatusIndex: { read: 1, write: 1 },
 } as const;
@@ -164,22 +156,6 @@ export class NiarimBackendStack extends Stack {
       projectionType: dynamodb.ProjectionType.ALL,
       readCapacity: CAPACITY_PLAN.gsi7ReportStatusIndex.read,
       writeCapacity: CAPACITY_PLAN.gsi7ReportStatusIndex.write,
-    });
-
-    // GSI5：被ブックマーク一覧（21.1節）。`GET /works/{id}/bookmarkers`が
-    // `WORKBOOKMARKS#{workId}`をブックマーク日時の降順で引く。
-    table.addGlobalSecondaryIndex({
-      indexName: "GSI5",
-      partitionKey: { name: "gsi5pk", type: dynamodb.AttributeType.STRING },
-      sortKey: { name: "gsi5sk", type: dynamodb.AttributeType.STRING },
-      // 一覧に必要なのはブックマークしたユーザーIDと日時だけ。ALLだと
-      // BookmarkItem全体が複製されてストレージと書き込み容量を余計に
-      // 使うため、KEYS_ONLYに近い最小構成にする（niarimUserIdは
-      // pkから復元できるが、明示的に持たせた方が読み側が簡潔になる）。
-      projectionType: dynamodb.ProjectionType.INCLUDE,
-      nonKeyAttributes: ["niarimUserId", "workId", "bookmarkedAt", "itemType"],
-      readCapacity: CAPACITY_PLAN.gsi5WorkBookmarksIndex.read,
-      writeCapacity: CAPACITY_PLAN.gsi5WorkBookmarksIndex.write,
     });
 
     const commonEnvironment = {

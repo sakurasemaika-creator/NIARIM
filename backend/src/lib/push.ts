@@ -10,7 +10,7 @@ import { TABLE_ITEM_TYPE } from "./types";
  *
  * ## 設計
  *
- * アプリ内通知一覧（方式A、notifications.ts）はDynamoDBに通知アイテムを
+ * アプリ内通知一覧はDynamoDBに通知アイテムを
  * 積むだけで、アプリが起動していないと気付けない。ここではそれに加えて
  * FCMへ実際のプッシュを投げる。両者は独立していて、**FCMの送信が失敗
  * してもアプリ内通知は残る**ようにしてある（送信はbest-effortで、

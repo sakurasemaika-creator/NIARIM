@@ -15,7 +15,6 @@ vi.mock("../src/lib/auth", () => ({ authenticate }));
 
 import { handleNotificationStream } from "../src/lib/communityNotifications";
 import { getMyMissionActivity } from "../src/api/routes/creatorMissionActivity";
-import { getNotifications, markNotificationsRead } from "../src/api/routes/notifications";
 import { recordMissionAchievement } from "../src/lib/missionNotifications";
 
 const owner = "N" + "a".repeat(32);
@@ -198,15 +197,4 @@ describe("delivery from stored activity", () => {
       kind: "workPublicationConfirmed", targetRoute: "/community/work/" + work });
     expect(JSON.stringify(events)).not.toContain(actor);
   });
-});
-
-it("keeps the legacy follow endpoints private and returns empty results to their owner", async () => {
-  const event = { headers: {} } as Parameters<typeof getNotifications>[0];
-  expect(JSON.parse((await getNotifications(event, owner)).body!))
-    .toEqual({ notifications: [], unreadCount: 0 });
-  expect(JSON.parse((await markNotificationsRead(event, owner)).body!))
-    .toEqual({ markedCount: 0 });
-  await expect(getNotifications(event, actor)).rejects.toMatchObject({ statusCode: 403 });
-  await expect(markNotificationsRead(event, actor)).rejects.toMatchObject({ statusCode: 403 });
-  expect(send).not.toHaveBeenCalled();
 });

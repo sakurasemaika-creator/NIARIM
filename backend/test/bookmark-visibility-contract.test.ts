@@ -36,52 +36,24 @@ describe("bookmark visibility contract", () => {
     expect(removeBranch).toBeGreaterThan(guard);
   });
 
-  it("hides bookmarker details for a hidden work from everyone except its author", () => {
-    expect(source).toContain(
-      "!isWorkPublic(work) && caller?.niarimUserId !== work.authorId",
-    );
-    expect(source).toContain('notFound("作品が見つかりません")');
-  });
 });
 
-const { send, tryAuthenticate, getUser } = vi.hoisted(() => ({
-  send: vi.fn(), tryAuthenticate: vi.fn(), getUser: vi.fn(),
+const { send, tryAuthenticate } = vi.hoisted(() => ({
+  send: vi.fn(), tryAuthenticate: vi.fn(),
 }));
 vi.mock("../src/lib/dynamo", async (load) => ({
   ...(await load<typeof import("../src/lib/dynamo")>()),
   ddb: { send },
 }));
-vi.mock("../src/lib/auth", () => ({ tryAuthenticate, getUser }));
-import { getUserBookmarks, getWorkBookmarkers } from "../src/api/routes/bookmarks";
+vi.mock("../src/lib/auth", () => ({ tryAuthenticate }));
+import { getUserBookmarks } from "../src/api/routes/bookmarks";
 
-it("returns totals and only the caller's own bookmark even with legacy public flags", async () => {
-  vi.stubEnv("TABLE_NAME", "test");
-  try {
-    const workId = "Ab_12345678";
-    const event = { headers: {} } as Parameters<typeof getWorkBookmarkers>[0];
-    const work = {
-      itemType: "WORK", authorId: "author", isNiarimPublished: true,
-      youtubePrivacyStatus: "public", bookmarkCount: 5,
-    };
-    tryAuthenticate.mockResolvedValueOnce(null).mockResolvedValueOnce({ niarimUserId: "viewer" });
-    send.mockResolvedValueOnce({ Item: work }).mockResolvedValueOnce({ Item: work })
-      .mockResolvedValueOnce({ Item: { itemType: "BOOKMARK", bookmarkedAt: "2026-11-18" } });
-    getUser.mockResolvedValueOnce({ channelName: "Viewer", bookmarksPublic: true });
-    expect(JSON.parse((await getWorkBookmarkers(event, workId)).body!))
-      .toEqual({ workId, totalCount: 5, users: [] });
-    expect(JSON.parse((await getWorkBookmarkers(event, workId)).body!))
-      .toEqual({ workId, totalCount: 5, users: [
-        { userId: "viewer", channelName: "Viewer", channelAvatarUrl: null, bookmarkedAt: "2026-11-18" },
-      ] });
-    expect(send.mock.calls[2][0].input.Key).toEqual({
-      pk: "USER#viewer", sk: "BOOKMARK#" + workId,
-    });
-    expect(getUser.mock.calls).toEqual([["viewer"]]);
-
-    tryAuthenticate.mockResolvedValueOnce({ niarimUserId: "viewer" });
+it("blocks bookmark list reads by anyone other than the owner", async () => {
+  tryAuthenticate.mockResolvedValueOnce(null)
+    .mockResolvedValueOnce({ niarimUserId: "viewer" });
+  const event = { headers: {} } as Parameters<typeof getUserBookmarks>[0];
+  for (let i = 0; i < 2; i++) {
     await expect(getUserBookmarks(event, "author")).rejects.toMatchObject({ statusCode: 403 });
-    expect(send).toHaveBeenCalledTimes(3);
-  } finally {
-    vi.unstubAllEnvs();
   }
+  expect(send).not.toHaveBeenCalled();
 });

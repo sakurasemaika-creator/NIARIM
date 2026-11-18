@@ -130,14 +130,6 @@ export const Keys = {
     pk: `USER#${blockerId}`,
     sk: `BLOCK#${blockedId}`,
   }),
-  followNotification: (
-    targetId: string,
-    createdAt: string,
-    notifId: string,
-  ) => ({
-    pk: `USER#${targetId}`,
-    sk: `NOTIF#${createdAt}#${notifId}`,
-  }),
   dailyCounter: (niarimUserId: string, yyyymmdd: string) => ({
     pk: `COUNTER#${niarimUserId}#${yyyymmdd}`,
     sk: "META",

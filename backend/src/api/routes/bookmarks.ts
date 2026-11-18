@@ -7,7 +7,7 @@ import {
 } from "@aws-sdk/lib-dynamodb";
 import { ConditionalCheckFailedException, TransactionCanceledException } from "@aws-sdk/client-dynamodb";
 import { ddb, tableName, Keys } from "../../lib/dynamo";
-import { authenticate, tryAuthenticate, getUser } from "../../lib/auth";
+import { authenticate, tryAuthenticate } from "../../lib/auth";
 import { forbidden, notFound, ok } from "../../lib/response";
 import type { BookmarkItem, WorkItem } from "../../lib/types";
 import { TABLE_ITEM_TYPE } from "../../lib/types";
@@ -120,8 +120,6 @@ export async function toggleBookmark(
         niarimUserId: auth.niarimUserId,
         workId,
         bookmarkedAt: now,
-        gsi5pk: `WORKBOOKMARKS#${workId}`,
-        gsi5sk: now,
         ...(isPublic ? {
           periodScoreVersion: PERIOD_SCORE_VERSION,
           periodScoreRecordedAt: now,
@@ -189,12 +187,7 @@ export async function toggleBookmark(
   return ok({ bookmarked: !isBookmarked });
 }
 
-/**
- * `GET /users/{id}/bookmarks`（8.5節・21.2節）。非公開の場合は403で
- * 拒否する。本人自身が見る場合は公開設定に関わらず常に見られる。
- * ただしブックマーク先の作品自体が非公開になった場合、その作品はこの
- * 一覧から除外する。ブックマーク一覧を経由して作品公開設定を迂回させない。
- */
+/** Only the bookmark owner can read their list. Hidden works use tombstones. */
 export async function getUserBookmarks(
   event: APIGatewayProxyEventV2,
   targetUserId: string,
@@ -239,46 +232,4 @@ export async function getUserBookmarks(
   });
 
   return ok({ userId: targetUserId, works: bookmarkWorks });
-}
-
-/**
- * `GET /works/{id}/bookmarkers` returns the total and, if signed in,
- * the viewer's own bookmark. Related user identities stay private.
- */
-export async function getWorkBookmarkers(
-  event: APIGatewayProxyEventV2,
-  workId: string,
-) {
-  const caller = await tryAuthenticate(
-    event.headers["authorization"] ?? event.headers["Authorization"],
-  );
-
-  const workResult = await ddb.send(
-    new GetCommand({ TableName: tableName(), Key: Keys.work(workId) }),
-  );
-  if (workResult.Item?.itemType !== TABLE_ITEM_TYPE.Work) {
-    notFound("作品が見つかりません");
-  }
-  const work = workResult.Item as WorkItem;
-  if (!isWorkPublic(work) && caller?.niarimUserId !== work.authorId) {
-    notFound("作品が見つかりません");
-  }
-
-  const viewerId = caller?.niarimUserId;
-  const users = [];
-  if (viewerId) {
-    const { Item: bookmark } = await ddb.send(new GetCommand({
-      TableName: tableName(), Key: Keys.bookmark(viewerId, workId),
-    }));
-    if (bookmark?.itemType === TABLE_ITEM_TYPE.Bookmark) {
-      const viewer = await getUser(viewerId);
-      users.push({
-        userId: viewerId,
-        channelName: viewer?.channelName ?? null,
-        channelAvatarUrl: viewer?.channelAvatarUrl ?? null,
-        bookmarkedAt: bookmark.bookmarkedAt,
-      });
-    }
-  }
-  return ok({ workId, totalCount: work.bookmarkCount, users });
 }

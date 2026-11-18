@@ -28,15 +28,17 @@ class CommunityNotificationSettingsScreen extends StatelessWidget {
               onChanged: settings.setPushNotificationsEnabled,
             ),
             const Divider(),
-            for (final category in CommunityPushCategory.values)
-              SwitchListTile(
-                key: ValueKey(category.preferenceKey),
-                title: Text(communityPushCategoryLabel(l10n, category)),
-                value: settings.pushEnabledFor(category),
-                onChanged: settings.pushNotificationsEnabled
-                    ? (value) => settings.setPushCategory(category, value)
-                    : null,
-              ),
+            SwitchListTile(
+              key: ValueKey(CommunityPushCategory.publication.preferenceKey),
+              title: Text(publicationPushLabel(l10n)),
+              value: settings.pushEnabledFor(CommunityPushCategory.publication),
+              onChanged: settings.pushNotificationsEnabled
+                  ? (value) => settings.setPushCategory(
+                      CommunityPushCategory.publication,
+                      value,
+                    )
+                  : null,
+            ),
           ],
         ),
       ),

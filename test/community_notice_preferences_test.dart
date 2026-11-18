@@ -6,7 +6,6 @@ import 'package:niarim/screens/community/community_follow_notifications_screen.d
 import 'package:niarim/screens/settings/community_notification_settings_screen.dart';
 import 'package:niarim/screens/settings/settings_screen.dart';
 import 'package:niarim/services/community_notice.dart';
-import 'package:niarim/services/community_notice_history.dart';
 import 'package:niarim/services/community_service.dart';
 import 'package:niarim/services/google_auth_service.dart';
 import 'package:niarim/services/premium_service.dart';
@@ -24,27 +23,6 @@ class _Premium extends ChangeNotifier implements PremiumService {
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
-
-  test('retired social notices stay hidden even on older servers', () {
-    final page = {
-      'noticeOwner': 'current',
-      'nextCursor': 'next-page',
-      'events': [
-        for (final kind in ['newFollower', 'newBookmark', 'newRepost'])
-          {'kind': kind, 'eventId': kind},
-        {'kind': 'workPublicationConfirmed', 'eventId': 'publication'},
-        {'kind': 'workBookmarks', 'eventId': 'milestone'},
-      ],
-    };
-    expect(filterCommunityNoticePage(page, 'current'), {
-      ...page,
-      'events': [
-        {'kind': 'workPublicationConfirmed', 'eventId': 'publication'},
-        {'kind': 'workBookmarks', 'eventId': 'milestone'},
-      ],
-    });
-    expect(filterCommunityNoticePage(page, 'another')['events'], isEmpty);
-  });
 
   testWidgets(
     'gear and creation settings open one screen and return to their caller',
@@ -117,8 +95,8 @@ void main() {
       for (final entry in toggles.entries) {
         expect(tester.widget<SwitchListTile>(entry.value).value, isTrue);
       }
-      for (final retired in ['follower', 'bookmark', 'repost']) {
-        expect(find.byKey(ValueKey('push_notice_$retired')), findsNothing);
+      for (final name in ['follower', 'bookmark', 'repost']) {
+        expect(find.byKey(ValueKey('push_notice_$name')), findsNothing);
       }
       final master = find.byKey(const Key('pushNotificationsOnDevice'));
       await tester.tap(master);
@@ -157,7 +135,6 @@ void main() {
         settings.pushEnabledFor(CommunityPushCategory.publication),
         isFalse,
       );
-
       await tester.tap(find.byType(BackButton));
       await tester.pumpAndSettle();
       expect(find.byType(CommunityFollowNotificationsScreen), findsOneWidget);

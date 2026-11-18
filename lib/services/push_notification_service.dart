@@ -78,9 +78,9 @@ class PushNotificationService {
   // arbitrary notification payloads as navigable routes.
   @visibleForTesting
   static String? routeForData(Map<String, dynamic> data) =>
-      isRetiredSocialNotice(data['type'])
-      ? null
-      : notificationRoute(data['targetRoute']);
+      supportsNotificationType(data['type'])
+      ? notificationRoute(data['targetRoute'])
+      : null;
 
   void _handleTap(RemoteMessage message) {
     final route = routeForData(message.data);
@@ -96,8 +96,8 @@ class PushNotificationService {
   }
 
   void _showForeground(RemoteMessage message) {
-    if (message.data['niarimNoticeVersion'] == '1' ||
-        isRetiredSocialNotice(message.data['type']) ||
+    if (!supportsNotificationType(message.data['type']) ||
+        message.data['niarimNoticeVersion'] == '1' ||
         _disposed ||
         !_settings.pushNotificationsEnabled ||
         _auth.account == null) {

@@ -87,26 +87,22 @@ String devicePushLabel(AppLocalizations l10n) => _for(l10n)[0];
 
 String devicePushDescription(AppLocalizations l10n) => _for(l10n)[1];
 
+const _noticeTextIndices = {
+  'scheduledRelease': 2,
+  'mission_achievement': 3,
+  'workPosted': 4,
+  'workPublicationConfirmed': 5,
+};
+
+bool supportsNotificationType(Object? kind) =>
+    kind == null || _noticeTextIndices.containsKey(kind);
+
 String? communityNoticeText(AppLocalizations l10n, Object? kind) {
-  final index = switch (kind) {
-    'scheduledRelease' => 2,
-    'mission_achievement' => 3,
-    'workPosted' => 4,
-    'workPublicationConfirmed' => 5,
-    _ => null,
-  };
+  final index = _noticeTextIndices[kind];
   return index == null ? null : _for(l10n)[index];
 }
 
-String communityPushCategoryLabel(
-  AppLocalizations l10n,
-  CommunityPushCategory category,
-) => _for(l10n)[6 + category.index];
-
-bool isRetiredSocialNotice(Object? kind) => switch (kind) {
-  'newFollower' || 'newBookmark' || 'newRepost' => true,
-  _ => false,
-};
+String publicationPushLabel(AppLocalizations l10n) => _for(l10n)[6];
 
 String? notificationRoute(Object? route) {
   if (route == communityNotificationsRoute ||
