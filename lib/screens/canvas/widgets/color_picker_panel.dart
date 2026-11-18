@@ -27,6 +27,7 @@ import '../../../widgets/docked_panel_scope.dart';
 import 'panel_close_bar.dart';
 import '../../../config/font_fallback.dart';
 import '../../../widgets/typing_dialog_inset.dart';
+import '../../../utils/file_failure_reason.dart';
 
 /// カラーピッカーパネル。
 /// カラーピッカー（HSV/RGB/HEX）・最近使った色・パレットの3セクション構成。
@@ -194,8 +195,9 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
                       child: ConstrainedBox(
                         constraints: const BoxConstraints(maxWidth: 200),
                         child: Semantics(
-                          label:
-                              '${l10n.colorPickerTitle}: #${_colorToHex(_currentColor)}',
+                          label: l10n.colorPickerCurrentColorSemanticsLabel(
+                            '#${_colorToHex(_currentColor)}',
+                          ),
                           child: SizedBox(
                             key: const ValueKey('selected-color-preview-chip'),
                             // A height-only box inside Flexible can collapse to
@@ -794,7 +796,9 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(l10n.colorPickerShareFailedSnackbar(e.toString())),
+          content: Text(
+            l10n.colorPickerShareFailedSnackbar(fileFailureReason(l10n, e)),
+          ),
         ),
       );
       return;
@@ -842,7 +846,9 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(
-                        l10n.colorPickerImportFailedSnackbar(e.toString()),
+                        l10n.colorPickerImportFailedSnackbar(
+                          fileFailureReason(l10n, e),
+                        ),
                       ),
                     ),
                   );

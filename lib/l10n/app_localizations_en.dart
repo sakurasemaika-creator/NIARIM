@@ -741,6 +741,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get folderMoveToTitle => 'Move to Folder';
 
   @override
+  String folderMoveSheetSemanticsLabel(String name) {
+    return 'Move “$name” to a folder';
+  }
+
+  @override
+  String folderColorOptionSemanticsLabel(String code) {
+    return 'Folder color $code';
+  }
+
+  @override
+  String colorPickerCurrentColorSemanticsLabel(String code) {
+    return 'Selected color $code';
+  }
+
+  @override
   String get folderNone => 'No Folder';
 
   @override
@@ -7844,6 +7859,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get communityErrorGeneric => 'Something went wrong. Please try again.';
 
   @override
+  String get fileFailureReasonAccess => 'The file could not be read or written';
+
+  @override
+  String get fileFailureReasonFormat =>
+      'The file is in another format or is damaged';
+
+  @override
+  String get fileFailureReasonOther => 'An unexpected problem occurred';
+
+  @override
   String communityErrorTagLimitExceeded(int max) {
     return 'A work can have up to $max tags.';
   }
@@ -9461,11 +9486,15 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String coinAmount(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count opals',
-      one: '$count opal',
+      other: '$countString opals',
+      one: '$countString opal',
     );
     return '$_temp0';
   }

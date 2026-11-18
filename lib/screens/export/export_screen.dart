@@ -23,6 +23,8 @@ import '../home/widgets/exported_work_thumbnail_dialog.dart';
 import 'widgets/export_preset_selector.dart';
 import '../../models/export_preset.dart';
 import '../../widgets/fit_or_hide_title.dart';
+import '../../widgets/menu_card.dart';
+import '../../utils/file_failure_reason.dart';
 export '../../models/export_preset.dart';
 
 class ExportScreen extends StatefulWidget {
@@ -153,7 +155,7 @@ class _ExportScreenState extends State<ExportScreen> {
                   ? const SizedBox.shrink()
                   : Padding(
                       padding: const EdgeInsets.only(top: 16),
-                      child: Card(
+                      child: MenuCard(
                         child: Padding(
                           padding: const EdgeInsets.all(12),
                           child: Column(
@@ -494,7 +496,7 @@ class _ExportScreenState extends State<ExportScreen> {
         setState(() {
           _isExporting = false;
           _cancelToken = null;
-          _error = l10n.exportFailedError(e.toString());
+          _error = l10n.exportFailedError(fileFailureReason(l10n, e));
         });
       }
     }

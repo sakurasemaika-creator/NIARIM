@@ -29,6 +29,7 @@ import 'theme_preview_gallery_screen.dart';
 import '../../config/accent_text_theme.dart';
 import '../../widgets/fit_or_hide_title.dart';
 import '../../widgets/typing_dialog_inset.dart';
+import '../../utils/file_failure_reason.dart';
 
 class ThemeSettingsScreen extends StatelessWidget {
   const ThemeSettingsScreen({super.key});
@@ -668,7 +669,9 @@ class ThemeSettingsScreen extends StatelessWidget {
           final l10n = AppLocalizations.of(context)!;
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(l10n.themeExportFailedSnackbar(e.toString())),
+              content: Text(
+                l10n.themeExportFailedSnackbar(fileFailureReason(l10n, e)),
+              ),
             ),
           );
           return;

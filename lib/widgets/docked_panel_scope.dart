@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'menu_surface.dart';
+
 /// パネルがPC/DeXモードの作業画面のドックに入っていることを伝える。
 /// ドックのペインは自分で見出し・閉じるボタンを持つので、パネルは
 /// スマホ用の浮かぶカード・閉じるボタン・固定の大きさをやめて、ペインを
@@ -62,11 +64,24 @@ class PanelSurface extends StatelessWidget {
       // An unframed Material belongs to the PC dock content itself. It keeps
       // ListTile ink and selected backgrounds above the outer dock decoration
       // instead of being obscured, without introducing another card/window.
-      return Material(
-        color: Theme.of(context).colorScheme.surface,
-        child: height != null || selfScrolling
-            ? SizedBox.expand(child: child)
-            : SingleChildScrollView(child: child),
+      final theme = Theme.of(context);
+      // ドックの面は用紙の色（colorScheme.surface）。テーマのタブの色は上部バー
+      // （メニューの背景色）に合わせてあるので、ドックの中のタブの選んでいない
+      // 名前は本文の文字色から作る。
+      return Theme(
+        data: theme.copyWith(
+          tabBarTheme: theme.tabBarTheme.copyWith(
+            unselectedLabelColor: theme.colorScheme.onSurface.withValues(
+              alpha: 0.6,
+            ),
+          ),
+        ),
+        child: Material(
+          color: theme.colorScheme.surface,
+          child: height != null || selfScrolling
+              ? SizedBox.expand(child: child)
+              : SingleChildScrollView(child: child),
+        ),
       );
     }
     final sized = ConstrainedBox(
@@ -84,10 +99,13 @@ class PanelSurface extends StatelessWidget {
         child: sized,
       );
     }
+    // 浮かぶカードの下地はメニューの背景色（cardTheme）なので、中身は
+    // ダイアログ・シートと同じメニューの面のテーマで描く（本文の文字色の
+    // ままだと、メニューを暗く・本文の文字を暗くしたテーマで読めなかった）。
     return Card(
       elevation: elevation,
       surfaceTintColor: surfaceTintColor,
-      child: sized,
+      child: MenuSurface(child: sized),
     );
   }
 }

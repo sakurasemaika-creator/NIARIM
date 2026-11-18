@@ -30,6 +30,7 @@ import 'widgets/save_screen_app_bar.dart';
 import 'widgets/save_slot_title.dart';
 import '../../config/font_fallback.dart';
 import '../../config/accent_text_theme.dart';
+import '../../utils/file_failure_reason.dart';
 
 export 'save_tree_screen.dart' show SaveTreeEntryMode, parseSaveTreeEntryMode;
 
@@ -238,7 +239,10 @@ class _GameStyleSlotScreen extends StatelessWidget {
                     // 韓国語の語は、1行に入れば途中で折らない。
                     child: messageText(
                       l10n.saveTreeSlotOverwriteWarning(
-                        _formatDate(existing.savedAt),
+                        formatSaveTime(
+                          existing.savedAt,
+                          AppLocalizations.of(context)!.localeName,
+                        ),
                       ),
                       style: TextStyle(
                         fontSize: 12,
@@ -377,7 +381,9 @@ class _GameStyleSlotScreen extends StatelessWidget {
                               (ModalRoute.of(ctx)?.isCurrent ?? false)) {
                             setDialogState(() {
                               saving = false;
-                              failure = l10n.saveTreeSaveFailedSnackbar('$e');
+                              failure = l10n.saveTreeSaveFailedSnackbar(
+                                fileFailureReason(l10n, e),
+                              );
                             });
                           } else {
                             // 保存中に戻るでダイアログを閉じていた：画面に出す
@@ -385,7 +391,9 @@ class _GameStyleSlotScreen extends StatelessWidget {
                             messenger.showSnackBar(
                               SnackBar(
                                 content: Text(
-                                  l10n.saveTreeSaveFailedSnackbar('$e'),
+                                  l10n.saveTreeSaveFailedSnackbar(
+                                    fileFailureReason(l10n, e),
+                                  ),
                                 ),
                               ),
                             );
@@ -529,7 +537,10 @@ class _SlotConfirmationSummary extends StatelessWidget {
             ),
             const SizedBox(height: 4),
             Text(
-              _formatDate(node.savedAt),
+              formatSaveTime(
+                node.savedAt,
+                AppLocalizations.of(context)!.localeName,
+              ),
               style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
             ),
           ],
@@ -703,7 +714,10 @@ class _GameSaveSlotTile extends StatelessWidget {
                           if (hasData) ...[
                             const SizedBox(height: 3),
                             Text(
-                              _formatDate(node!.savedAt),
+                              formatSaveTime(
+                                node!.savedAt,
+                                AppLocalizations.of(context)!.localeName,
+                              ),
                               style: TextStyle(
                                 fontSize: 12,
                                 color: scheme.onSurfaceVariant,
@@ -855,7 +869,3 @@ const _slotTitleStyle = TextStyle(
   fontFamily: 'Kuramubon',
   fontFamilyFallback: kHeadingFontFallback,
 );
-
-String _formatDate(DateTime dt) =>
-    '${dt.year}/${dt.month.toString().padLeft(2, '0')}/${dt.day.toString().padLeft(2, '0')} '
-    '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';

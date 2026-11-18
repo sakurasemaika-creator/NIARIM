@@ -25,6 +25,7 @@ import '../../widgets/coin_history_sheet.dart';
 import '../../widgets/keep_together_text.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/fit_or_hide_title.dart';
+import '../../widgets/menu_card.dart';
 
 enum RewardPageMode { exchange, earnCoins }
 
@@ -1191,7 +1192,7 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
               Divider(color: scheme.outlineVariant),
               for (final target in _bundles) _targetTile(context, t, target),
               const SizedBox(height: 16),
-              Card(
+              MenuCard(
                 child: Padding(
                   padding: const EdgeInsets.all(16),
                   child: Column(

@@ -192,6 +192,34 @@ void main() {
   });
 
   group('リセットボタン用の操作不能リスク判定', () {
+    test('本文の文字が暗く・メニューが暗いテーマ（customdark）は救済対象にしない', () {
+      // メニューの色の面（ダイアログ・シート・入力欄・カード・浮かぶ
+      // パネル）はメニューの文字色で描くので、本文の文字色はメニューの
+      // 背景色に載らない（DISC199）。
+      const customDark = AppThemePreset(
+        id: 'customdark',
+        name: 'Dark menu',
+        accentColor: Color(0xFF1E88A8),
+        accentTextColor: Color(0xFF0B5F78),
+        textColor: Color(0xFF20242A),
+        buttonTextColor: Color(0xFFFFFFFF),
+        menuTextColor: Color(0xFFEDEFF2),
+        selectionTextColor: Color(0xFFFFFFFF),
+        panelBgColor: Color(0xFFF4F1EA),
+        menuBgColor: Color(0xFF262B33),
+        selectionColor: Color(0xFF2F6F5E),
+        updateMarkColor: Color(0xFFFFB020),
+      );
+      expect(isThemeAtLockoutRisk(customDark), isFalse);
+      // メニューの文字が読めなければ今までどおり救済対象。
+      expect(
+        isThemeAtLockoutRisk(
+          customDark.copyWith(menuTextColor: const Color(0xFF2A2F37)),
+        ),
+        isTrue,
+      );
+    });
+
     test('同じ色は1.0、白と黒は21.0', () {
       expect(
         contrastRatio(const Color(0xFF336699), const Color(0xFF336699)),

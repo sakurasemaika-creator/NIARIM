@@ -10,6 +10,7 @@ import '../../utils/coin_duration_label.dart';
 import '../../widgets/action_beside_or_below.dart';
 import '../../widgets/keep_together_text.dart';
 import 'mission_panel_heading.dart';
+import '../../widgets/menu_card.dart';
 
 /// Authenticated, read-only view until the server explicitly enables payouts.
 /// A permanently open Plaza page counts: video playback is not a requirement.
@@ -193,7 +194,7 @@ class _PlazaMissionsPanelState extends State<PlazaMissionsPanel> {
   @override
   Widget build(BuildContext context) {
     if (_owner == null || _api == null) return const SizedBox.shrink();
-    return Card(
+    return MenuCard(
       key: const Key('plazaMissionsPanel'),
       child: Padding(
         padding: const EdgeInsets.all(12),

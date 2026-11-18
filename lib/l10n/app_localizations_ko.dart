@@ -721,6 +721,21 @@ class AppLocalizationsKo extends AppLocalizations {
   String get folderMoveToTitle => '폴더로 이동';
 
   @override
+  String folderMoveSheetSemanticsLabel(String name) {
+    return '「$name」을(를) 폴더로 이동';
+  }
+
+  @override
+  String folderColorOptionSemanticsLabel(String code) {
+    return '폴더 색상 $code';
+  }
+
+  @override
+  String colorPickerCurrentColorSemanticsLabel(String code) {
+    return '선택한 색상 $code';
+  }
+
+  @override
   String get folderNone => '폴더 없음';
 
   @override
@@ -7563,6 +7578,15 @@ class AppLocalizationsKo extends AppLocalizations {
   String get communityErrorGeneric => '문제가 발생했습니다. 다시 시도해 주세요.';
 
   @override
+  String get fileFailureReasonAccess => '파일을 읽거나 쓸 수 없습니다';
+
+  @override
+  String get fileFailureReasonFormat => '파일 형식이 다르거나 손상되었습니다';
+
+  @override
+  String get fileFailureReasonOther => '예기치 않은 문제가 발생했습니다';
+
+  @override
   String communityErrorTagLimitExceeded(int max) {
     return '태그는 작품당 최대 $max개까지 붙일 수 있습니다.';
   }
@@ -9066,7 +9090,11 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String coinAmount(int count) {
-    return '$count오팔';
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return '$countString오팔';
   }
 
   @override

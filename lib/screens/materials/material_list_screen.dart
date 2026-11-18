@@ -16,6 +16,7 @@ import '../../widgets/keep_together_text.dart';
 import '../../config/font_fallback.dart';
 import '../../config/accent_text_theme.dart';
 import '../../widgets/fit_or_hide_title.dart';
+import '../../widgets/menu_card.dart';
 
 /// 素材一覧画面。
 /// サムネイル・種類アイコン・ファイル名・容量等を一覧表示し、
@@ -129,7 +130,7 @@ class _MaterialListScreenState extends State<MaterialListScreen> {
                   final m = materials[index];
                   final used = _isUsed(m.id);
                   final isMissing = _missing.any((e) => e.id == m.id);
-                  return Card(
+                  return MenuCard(
                     child: ListTile(
                       leading: _thumbnail(m, scheme),
                       title: Text(

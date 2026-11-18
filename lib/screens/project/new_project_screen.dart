@@ -28,6 +28,7 @@ import '../canvas/widgets/canvas_icon_button.dart';
 import '../../config/font_fallback.dart';
 import '../../utils/app_error_reporter.dart';
 import '../../widgets/fit_or_hide_title.dart';
+import '../../widgets/menu_card.dart';
 
 class NewProjectScreen extends StatefulWidget {
   const NewProjectScreen({super.key});
@@ -890,7 +891,7 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                 ),
               ),
               const SizedBox(height: 24),
-              Card(
+              MenuCard(
                 child: Padding(
                   padding: const EdgeInsets.all(12),
                   child: Column(

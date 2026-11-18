@@ -262,7 +262,7 @@ void main() {
           isNot(contains(wordJoiner)),
         );
       }
-      expect(find.byType(Text), findsNWidgets(2));
+      expect(find.bySubtype<Text>(), findsNWidgets(2));
     }
   });
 

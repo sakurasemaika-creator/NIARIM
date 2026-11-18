@@ -9,6 +9,7 @@ import '../../widgets/help_button.dart';
 import '../../config/font_fallback.dart';
 import '../../config/accent_text_theme.dart';
 import '../../widgets/fit_or_hide_title.dart';
+import '../../widgets/menu_card.dart';
 
 /// プレミアム画面。ユーザー作品そのものを除くUI色はColorSchemeへ集約する。
 class PremiumScreen extends StatefulWidget {
@@ -425,7 +426,7 @@ class _PremiumScreenState extends State<PremiumScreen> {
       ),
     ];
     final premiumBg = scheme.primary;
-    return Card(
+    return MenuCard(
       clipBehavior: Clip.antiAlias,
       elevation: 2,
       shadowColor: scheme.primary.withValues(alpha: 0.2),
@@ -562,7 +563,7 @@ class _PremiumScreenState extends State<PremiumScreen> {
     final busy = premium.purchasePending;
     final available = price != null;
     final featured = isRecommended && available;
-    return Card(
+    return MenuCard(
       elevation: !available
           ? 0
           : featured

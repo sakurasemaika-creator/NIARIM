@@ -15,6 +15,7 @@ import '../../widgets/fit_or_hide_title.dart';
 import '../../widgets/typing_dialog_inset.dart';
 import '../../widgets/menu_action_label.dart';
 import 'widgets/canvas_size_fields.dart';
+import '../../widgets/menu_card.dart';
 
 /// 保存済みカスタムキャンバスサイズプリセットの一覧管理画面。
 /// ドラッグでの並べ替え・編集・複製・名前変更・削除ができる。
@@ -107,7 +108,7 @@ class _PresetTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final settings = context.read<SettingsService>();
-    return Card(
+    return MenuCard(
       margin: const EdgeInsets.only(bottom: 8),
       child: Padding(
         padding: const EdgeInsets.fromLTRB(16, 8, 8, 8),

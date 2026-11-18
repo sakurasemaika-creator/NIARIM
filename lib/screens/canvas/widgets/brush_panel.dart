@@ -31,6 +31,7 @@ import 'asset_tag_dialog.dart';
 import '../../../widgets/asset_tag_label.dart';
 import '../../../widgets/list_ink_clip.dart';
 import '../../../widgets/typing_dialog_inset.dart';
+import '../../../utils/file_failure_reason.dart';
 
 class BrushPanel extends StatefulWidget {
   final VoidCallback onClose;
@@ -578,7 +579,11 @@ class _BrushPanelState extends State<BrushPanel> {
     } catch (e) {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.brushExportFailedSnackbar('$e'))),
+        SnackBar(
+          content: Text(
+            l10n.brushExportFailedSnackbar(fileFailureReason(l10n, e)),
+          ),
+        ),
       );
       return;
     }

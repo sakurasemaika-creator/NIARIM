@@ -27,6 +27,7 @@ import 'tone_service.dart';
 import 'shared_asset_card_codec.dart';
 import 'shared_asset_card_preview.dart';
 import '../widgets/export_share_feedback.dart';
+import '../utils/file_failure_reason.dart';
 
 /// Self-contained PNG sharing for creative assets.
 /// A ZIP is used only as an *in-memory* implementation of the compressed
@@ -103,7 +104,13 @@ class SharedAssetCardService {
       } catch (error) {
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(l10n.shareCardSaveFailedSnackbar('$error'))),
+            SnackBar(
+              content: Text(
+                l10n.shareCardSaveFailedSnackbar(
+                  fileFailureReason(l10n, error),
+                ),
+              ),
+            ),
           );
         }
       }
@@ -309,7 +316,11 @@ class SharedAssetCardService {
     } catch (error) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.shareCardSaveFailedSnackbar('$error'))),
+          SnackBar(
+            content: Text(
+              l10n.shareCardSaveFailedSnackbar(fileFailureReason(l10n, error)),
+            ),
+          ),
         );
       }
     }
@@ -438,7 +449,9 @@ class SharedAssetCardService {
             content: Text(
               error is _WrongCardKind
                   ? l10n.shareCardWrongKind(error.kind)
-                  : l10n.shareCardImportFailedSnackbar('$error'),
+                  : l10n.shareCardImportFailedSnackbar(
+                      fileFailureReason(l10n, error),
+                    ),
             ),
           ),
         );

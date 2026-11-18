@@ -19,6 +19,7 @@ import 'pixel_art_palette_edit_dialog.dart';
 import 'qr_import_dialog.dart';
 import 'qr_share_dialog.dart';
 import 'scrollable_sheet_body.dart';
+import '../utils/file_failure_reason.dart';
 
 /// 「パレットから選ぶ」のポップアップ。保存済みのドット絵専用パレット一覧
 /// （[PixelArtPaletteService]）から1つタップして選択し、「適用」を押すと
@@ -94,7 +95,9 @@ class _PixelArtPalettePickerDialogState
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(l10n.colorPickerShareFailedSnackbar(e.toString())),
+            content: Text(
+              l10n.colorPickerShareFailedSnackbar(fileFailureReason(l10n, e)),
+            ),
           ),
         );
         return;
@@ -211,7 +214,9 @@ class _PixelArtPalettePickerDialogState
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(
-                        l10n.colorPickerImportFailedSnackbar(e.toString()),
+                        l10n.colorPickerImportFailedSnackbar(
+                          fileFailureReason(l10n, e),
+                        ),
                       ),
                     ),
                   );

@@ -45,6 +45,7 @@ import 'project_thumbnail_dialog.dart';
 import '../../../utils/folder_persistence.dart';
 import '../../../utils/folder_tree.dart';
 import '../../../utils/name_collation.dart';
+import '../../../utils/file_failure_reason.dart';
 
 /// 新規フォルダ作成ダイアログ（フォルダ名入力）。プロジェクト一覧画面の
 /// ＋ボタン（新規プロジェクト/新規フォルダ選択）・フォルダ移動ピッカーの
@@ -975,6 +976,7 @@ class ProjectListWidget extends StatelessWidget {
             ),
           ],
         ),
+        // menu-surface: n/a — 絵（用紙の色）の上に印を描くカード。名前は自分でメニューの文字色を読む。
         child: Card(
           clipBehavior: Clip.antiAlias,
           elevation: 0,
@@ -1123,6 +1125,7 @@ class ProjectListWidget extends StatelessWidget {
             ),
           ],
         ),
+        // menu-surface: n/a — 絵（用紙の色）の上に印を描くカード。名前は自分でメニューの文字色を読む。
         child: Card(
           clipBehavior: Clip.antiAlias,
           elevation: 0,
@@ -1742,7 +1745,11 @@ Future<void> runNiashareFlow(
       return;
     } catch (error, stackTrace) {
       AppErrorReporter.record(error, stackTrace);
-      handles.tell(handles.l10n.projectDetailNiashareFailedSnackbar('$error'));
+      handles.tell(
+        handles.l10n.projectDetailNiashareFailedSnackbar(
+          fileFailureReason(handles.l10n, error),
+        ),
+      );
       return;
     }
     await handles.share(file);

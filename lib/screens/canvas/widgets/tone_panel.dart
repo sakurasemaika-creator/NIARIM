@@ -24,6 +24,7 @@ import 'asset_tag_dialog.dart';
 import '../../../widgets/asset_tag_label.dart';
 import '../../../widgets/preset_stroke_row.dart';
 import '../../../widgets/list_ink_clip.dart';
+import '../../../utils/file_failure_reason.dart';
 
 /// トーンの全機能管理パネル（一覧・お気に入り・検索・
 /// 自作トーン・読み込み・書き出し・フォルダ管理）。ブラシパネルと同構成。
@@ -189,13 +190,34 @@ class _TonePanelState extends State<TonePanel> {
             const Divider(),
             Expanded(
               child: toneList.isEmpty
+                  // 絞り込み（お気に入り・検索・フォルダ）で全部隠れたときは
+                  // 「トーンがありません」と言わない（ブラシの一覧と同じ）。
                   ? Center(
-                      child: Text(
-                        l10n.toneEmpty,
-                        style: TextStyle(
-                          color:
-                              ThemeService.activeColorScheme.onSurfaceVariant,
-                          fontSize: 12,
+                      child: SingleChildScrollView(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              isFiltering && allTones.isNotEmpty
+                                  ? l10n.helpNoResults
+                                  : l10n.toneEmpty,
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurfaceVariant,
+                                fontSize: 12,
+                              ),
+                            ),
+                            if (query.isNotEmpty)
+                              TextButton(
+                                onPressed: () => setState(() {
+                                  _searchController.clear();
+                                  _searchQuery = '';
+                                }),
+                                child: Text(l10n.projectListClearSearch),
+                              ),
+                          ],
                         ),
                       ),
                     )
@@ -466,7 +488,11 @@ class _TonePanelState extends State<TonePanel> {
     } catch (e) {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.toneExportFailedSnackbar(e.toString()))),
+        SnackBar(
+          content: Text(
+            l10n.toneExportFailedSnackbar(fileFailureReason(l10n, e)),
+          ),
+        ),
       );
       return;
     }
@@ -591,7 +617,9 @@ class _ToneSettingsSheetState extends State<_ToneSettingsSheet> {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: Text(
-                                l10n.toneImportFailedSnackbar(error.toString()),
+                                l10n.toneImportFailedSnackbar(
+                                  fileFailureReason(l10n, error),
+                                ),
                               ),
                             ),
                           );

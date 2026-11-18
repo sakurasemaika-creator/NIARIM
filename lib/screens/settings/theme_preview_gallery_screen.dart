@@ -17,6 +17,7 @@ import '../../utils/line_break.dart';
 import '../../utils/work_time_label.dart';
 import '../../widgets/fit_or_hide_title.dart';
 import 'package:intl/intl.dart';
+import '../../widgets/menu_card.dart';
 
 /// Lightweight preview of main creation and community screens only.
 /// Tab variants, settings/management pages, menus and floating panels are
@@ -2710,7 +2711,7 @@ class _ThemeSampleScreen extends StatelessWidget {
         style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
       ),
       const SizedBox(height: 12),
-      Card(
+      MenuCard(
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(

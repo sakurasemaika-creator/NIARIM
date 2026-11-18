@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:intl/intl.dart';
+import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/widgets/coin_history_sheet.dart';
 
 void main() {
@@ -11,6 +13,9 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         locale: const Locale('en'),
+        // 本番と同じ（Materialの言語データが日付の書き方を読み込む）。
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(
           body: CoinHistorySheet(
             ownerId: 'owner-a',
@@ -49,16 +54,24 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('+10 opals'), findsOneWidget);
     expect(find.text('Rewarded ad'), findsOneWidget);
+    // 日時は表示言語の書き方（「2025-10-09 08:53」の内部の書き方ではない、
+    // DISC077）。
+    final when = DateTime.fromMillisecondsSinceEpoch(1760000000000).toLocal();
+    expect(
+      find.text(DateFormat.yMd('en').add_jm().format(when)),
+      findsOneWidget,
+    );
+    expect(find.textContaining(RegExp(r'\d{4}-\d{2}-\d{2}')), findsNothing);
     await tester.tap(find.byKey(const Key('coinHistoryMoreButton')));
     await tester.pumpAndSettle();
     expect(cursors, [null, 'server-cursor']);
-    expect(find.text('-55000 opals'), findsOneWidget);
+    expect(find.text('-55,000 opals'), findsOneWidget);
     expect(find.byKey(const Key('coinHistoryMoreButton')), findsNothing);
 
     owner.value = 'owner-b';
     await tester.pumpAndSettle();
     expect(find.text('+10 opals'), findsNothing);
-    expect(find.text('-55000 opals'), findsNothing);
+    expect(find.text('-55,000 opals'), findsNothing);
     owner.dispose();
   });
 

@@ -707,6 +707,21 @@ class AppLocalizationsZh extends AppLocalizations {
   String get folderMoveToTitle => '移至文件夹';
 
   @override
+  String folderMoveSheetSemanticsLabel(String name) {
+    return '将“$name”移至文件夹';
+  }
+
+  @override
+  String folderColorOptionSemanticsLabel(String code) {
+    return '文件夹颜色 $code';
+  }
+
+  @override
+  String colorPickerCurrentColorSemanticsLabel(String code) {
+    return '所选颜色 $code';
+  }
+
+  @override
   String get folderNone => '无文件夹';
 
   @override
@@ -7446,6 +7461,15 @@ class AppLocalizationsZh extends AppLocalizations {
   String get communityErrorGeneric => '出现问题。请重试。';
 
   @override
+  String get fileFailureReasonAccess => '无法读写文件';
+
+  @override
+  String get fileFailureReasonFormat => '文件格式不对或已损坏';
+
+  @override
+  String get fileFailureReasonOther => '发生了意外的问题';
+
+  @override
   String communityErrorTagLimitExceeded(int max) {
     return '每件作品最多可添加$max个标签。';
   }
@@ -8907,7 +8931,11 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String coinAmount(int count) {
-    return '$count欧泊';
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return '$countString欧泊';
   }
 
   @override
@@ -10871,6 +10899,21 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get folderMoveToTitle => '移至資料夾';
+
+  @override
+  String folderMoveSheetSemanticsLabel(String name) {
+    return '將「$name」移至資料夾';
+  }
+
+  @override
+  String folderColorOptionSemanticsLabel(String code) {
+    return '資料夾顏色 $code';
+  }
+
+  @override
+  String colorPickerCurrentColorSemanticsLabel(String code) {
+    return '所選顏色 $code';
+  }
 
   @override
   String get folderNone => '無資料夾';
@@ -17613,6 +17656,15 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get communityErrorGeneric => '發生問題。請再試一次。';
 
   @override
+  String get fileFailureReasonAccess => '無法讀寫檔案';
+
+  @override
+  String get fileFailureReasonFormat => '檔案格式不對或已損壞';
+
+  @override
+  String get fileFailureReasonOther => '發生了意外的問題';
+
+  @override
   String communityErrorTagLimitExceeded(int max) {
     return '每件作品最多可新增$max個標籤。';
   }
@@ -19075,7 +19127,11 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String coinAmount(int count) {
-    return '$count歐泊';
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return '$countString歐泊';
   }
 
   @override

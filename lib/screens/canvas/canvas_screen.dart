@@ -90,6 +90,7 @@ import '../../widgets/custom_automation_draft_sheet.dart';
 import '../../widgets/premium_lock_widget.dart';
 import '../../widgets/typing_aware_shortcuts.dart';
 import '../../widgets/docked_panel_scope.dart';
+import '../../widgets/menu_surface.dart';
 
 class CanvasScreen extends StatefulWidget {
   final String projectId;
@@ -528,8 +529,16 @@ class _CanvasScreenState extends State<CanvasScreen> {
 
   /// フィルターパネルの開閉（キャンバス上部バーの
   /// 「設定/編集」メニューへ集約）。
-  void _toggleFilterPanel() =>
-      _toggleDesktopOrMobileDockPanel(CanvasDockPanel.filter);
+  void _toggleFilterPanel() {
+    // 開くときは一覧から（前に選んだフィルターが残っていると、PCでは開いた
+    // その場で調整の画面〔下の段にキャンセル・適用〕へ入り、一覧を一度も
+    // 見られなかった。DISC149）。パネル自身も開いたときに選択を外すが、
+    // それは次のフレームで、そのフレームの間に調整の画面へ切り替わっていた。
+    if (!_desktopPanelVisible(canonicalCanvasDock(CanvasDockPanel.filter))) {
+      context.read<FilterService>().clearCurrentFilter();
+    }
+    _toggleDesktopOrMobileDockPanel(CanvasDockPanel.filter);
+  }
 
   void _toggleFilterColorEyedropper(FilterColorEyedropperTarget target) {
     setState(() {
@@ -4565,42 +4574,45 @@ class _CanvasScreenState extends State<CanvasScreen> {
                       ),
                     ),
                     const SizedBox(height: 12),
-                    DropdownButtonFormField<String>(
-                      initialValue: fontFamily,
-                      isExpanded: true,
-                      decoration: InputDecoration(
-                        labelText: l10n.canvasTextFontLabel,
-                        isDense: true,
-                      ),
-                      items: [
-                        DropdownMenuItem(
-                          value: 'Roboto',
-                          child: Text(l10n.canvasTextStandardFont),
+                    MenuSurface(
+                      child: DropdownButtonFormField<String>(
+                        initialValue: fontFamily,
+                        isExpanded: true,
+                        decoration: InputDecoration(
+                          labelText: l10n.canvasTextFontLabel,
+                          isDense: true,
                         ),
-                        // あらかじめ同梱しているフリーフォント（全てSIL Open Font
-                        // License、Google Fonts配布分。ライセンス表記は設定画面
-                        // 「利用規約・ライセンス」参照）
-                        for (final f in kBundledFonts)
+                        items: [
                           DropdownMenuItem(
-                            value: f.family,
-                            child: Text(
-                              f.displayName,
-                              style: TextStyle(fontFamily: f.family),
-                            ),
+                            value: 'Roboto',
+                            child: Text(l10n.canvasTextStandardFont),
                           ),
-                        ...fontService.fonts.map(
-                          (f) => DropdownMenuItem(
-                            value: fontService.familyNameOf(f),
-                            child: Text(
-                              f.displayName,
-                              style: TextStyle(
-                                fontFamily: fontService.familyNameOf(f),
+                          // あらかじめ同梱しているフリーフォント（全てSIL Open Font
+                          // License、Google Fonts配布分。ライセンス表記は設定画面
+                          // 「利用規約・ライセンス」参照）
+                          for (final f in kBundledFonts)
+                            DropdownMenuItem(
+                              value: f.family,
+                              child: Text(
+                                f.displayName,
+                                style: TextStyle(fontFamily: f.family),
+                              ),
+                            ),
+                          ...fontService.fonts.map(
+                            (f) => DropdownMenuItem(
+                              value: fontService.familyNameOf(f),
+                              child: Text(
+                                f.displayName,
+                                style: TextStyle(
+                                  fontFamily: fontService.familyNameOf(f),
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                      ],
-                      onChanged: (v) => setS(() => fontFamily = v ?? 'Roboto'),
+                        ],
+                        onChanged: (v) =>
+                            setS(() => fontFamily = v ?? 'Roboto'),
+                      ),
                     ),
                     const SizedBox(height: 8),
                     LabeledSlider(

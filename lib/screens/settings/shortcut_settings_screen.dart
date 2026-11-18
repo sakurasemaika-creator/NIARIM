@@ -20,6 +20,7 @@ import '../../widgets/stepped_slider.dart';
 import '../../config/font_fallback.dart';
 import '../../widgets/scrollable_sheet_body.dart';
 import '../../widgets/fit_or_hide_title.dart';
+import '../../widgets/menu_card.dart';
 
 /// キーボード・左手デバイス用ショートカットの設定画面。
 /// ツール選択（早替えツールと同じ粒度：ツール＋ブラシ＋太さ）と、
@@ -143,7 +144,7 @@ class ShortcutSettingsScreen extends StatelessWidget {
                       itemCount: bindings.length,
                       itemBuilder: (context, index) {
                         final b = bindings[index];
-                        return Card(
+                        return MenuCard(
                           margin: const EdgeInsets.symmetric(
                             horizontal: 12,
                             vertical: 4,

@@ -185,10 +185,10 @@ void main() {
     await tester.pumpAndSettle();
     final price = find.descendant(
       of: full,
-      matching: find.textContaining('550000 opals'),
+      matching: find.textContaining('550,000 opals'),
     );
     expect(price, findsOneWidget);
-    expect(find.textContaining('528000 opals'), findsNothing);
+    expect(find.textContaining('528,000 opals'), findsNothing);
     final total = find.byKey(const Key('rewardTotalCoins'));
     // The summary card is lazily built below the benefit list.
     await tester.scrollUntilVisible(
@@ -197,7 +197,7 @@ void main() {
       scrollable: find.byType(Scrollable).first,
     );
     await tester.pumpAndSettle();
-    expect(tester.widget<Text>(total).data, contains('550000 opals'));
+    expect(tester.widget<Text>(total).data, contains('550,000 opals'));
     expect(
       tester
           .widget<OutlinedButton>(find.byKey(const Key('rewardRedeemButton')))

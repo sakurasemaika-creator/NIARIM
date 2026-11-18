@@ -9,6 +9,7 @@ import '../../utils/app_locale.dart';
 import '../../widgets/action_beside_or_below.dart';
 import '../../widgets/keep_together_text.dart';
 import 'mission_panel_heading.dart';
+import '../../widgets/menu_card.dart';
 
 bool canClaimLoginBonus({
   required bool enabled,
@@ -99,7 +100,7 @@ class _LoginBonusPanelState extends State<LoginBonusPanel> {
     final l10n = appLocalizationsOf(context);
     final scheme = Theme.of(context).colorScheme;
     if (_owner == null || _api == null) return const SizedBox.shrink();
-    return Card(
+    return MenuCard(
       key: const Key('loginBonusPanel'),
       child: Padding(
         padding: const EdgeInsets.all(12),

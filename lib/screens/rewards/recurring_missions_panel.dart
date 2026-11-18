@@ -8,6 +8,7 @@ import '../../utils/app_locale.dart';
 import '../../widgets/action_beside_or_below.dart';
 import '../../widgets/keep_together_text.dart';
 import 'mission_panel_heading.dart';
+import '../../widgets/menu_card.dart';
 
 /// Server counts visits by JST day; only a confirmed POST claim can credit coins.
 class RecurringMissionsPanel extends StatefulWidget {
@@ -188,7 +189,7 @@ class _RecurringMissionsPanelState extends State<RecurringMissionsPanel> {
   Widget build(BuildContext context) {
     if (_owner == null || _api == null) return const SizedBox.shrink();
     final l10n = appLocalizationsOf(context);
-    return Card(
+    return MenuCard(
       key: const Key('recurringMissionsPanel'),
       child: Padding(
         padding: const EdgeInsets.all(12),

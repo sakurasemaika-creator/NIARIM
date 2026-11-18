@@ -12,6 +12,7 @@ import '../../utils/app_locale.dart';
 import '../../widgets/keep_together_text.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/fit_or_hide_title.dart';
+import '../../widgets/menu_card.dart';
 
 /// Current entitlements are read from the authenticated server; plan details
 /// are shown only when Google Play verification is still valid.
@@ -98,7 +99,7 @@ class _MembershipBenefitsScreenState extends State<MembershipBenefitsScreen> {
         ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            Card(
+            MenuCard(
               child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: Column(

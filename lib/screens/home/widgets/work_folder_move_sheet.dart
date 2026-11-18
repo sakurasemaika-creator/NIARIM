@@ -83,7 +83,8 @@ class _WorkFolderMoveSheetState extends State<WorkFolderMoveSheet> {
     return Semantics(
       namesRoute: true,
       explicitChildNodes: true,
-      label: '${l10n.folderMoveToTitle}: ${widget.filename}',
+      // 1つの文にする（言語によって語順・助詞が違う。DISC137）。
+      label: l10n.folderMoveSheetSemanticsLabel(widget.filename),
       child: ScrollableSheetBody(
         child: Column(
           mainAxisSize: MainAxisSize.min,

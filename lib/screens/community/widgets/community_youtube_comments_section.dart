@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../../../l10n/community_youtube_comment_labels.dart';
 import '../../../services/community_service.dart';
 import '../../../utils/app_locale.dart';
+import '../../../widgets/menu_card.dart';
 
 /// View-only YouTube comments. A collapsed section issues NO YouTube requests.
 /// Comment text is held in widget memory only; never persisted to DynamoDB.
@@ -143,7 +144,7 @@ class _CommunityYoutubeCommentsSectionState
   @override
   Widget build(BuildContext context) {
     final labels = CommunityYoutubeCommentLabels.of(context);
-    return Card(
+    return MenuCard(
       child: ExpansionTile(
         key: const Key('communityYoutubeCommentsExpansion'),
         leading: const Icon(Icons.comment_outlined),

@@ -1,10 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 import '../l10n/app_localizations.dart';
 import '../l10n/reward_unlock_labels.dart';
 import '../l10n/login_bonus_labels.dart';
 import '../utils/app_locale.dart';
+import '../utils/line_break.dart';
 import 'action_beside_or_below.dart';
+
+/// 取引の日時（表示言語の日付と時刻、この端末の時間帯）。描く文だけ日付・
+/// 時刻の途中で折り返さない（「오 / 후」と切れない）。読み上げ・文での
+/// 検索は元の文。
+Text _occurredAtText(String localeName, int epochMs) {
+  final when = DateTime.fromMillisecondsSinceEpoch(epochMs).toLocal();
+  final plain = DateFormat.yMd(localeName).add_jm().format(when);
+  final shown = keepDateTimeTogether(plain, when, localeName);
+  if (shown == plain) return Text(plain);
+  return Text.rich(TextSpan(text: shown, semanticsLabel: plain));
+}
 
 /// 取引のコインの増減（「+1 coin」「-55000 coins」）。単数・複数は数の
 /// 大きさで決まるので、符号は付けずに数えた文言の前へ置く。
@@ -178,10 +191,12 @@ class _CoinHistorySheetState extends State<CoinHistorySheet> {
                         // 「Coin redemptio|n」と単語の途中で切れた）。
                         title: Text(_sourceLabel(context, t, row)),
                         subtitle: ActionBesideOrBelow(
-                          text: Text(
-                            DateTime.fromMillisecondsSinceEpoch(
-                              row['occurredAtEpochMs'] as int,
-                            ).toLocal().toString().substring(0, 16),
+                          // 日時は表示言語の書き方（プロジェクト詳細と同じ）。
+                          // 以前は「2026-11-13 18:19」と端末の言語に関係なく
+                          // 内部の書き方のまま出ていた（DISC077）。
+                          text: _occurredAtText(
+                            l10n.localeName,
+                            row['occurredAtEpochMs'] as int,
                           ),
                           action: Text(
                             coinDeltaLabel(l10n, row['deltaCoins'] as int),

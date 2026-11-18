@@ -40,6 +40,7 @@ import '../../utils/work_time_label.dart';
 import '../../widgets/share_project_file_action.dart';
 import '../home/widgets/project_list_widget.dart' show niashareKey;
 import '../../widgets/typing_dialog_inset.dart';
+import '../../widgets/menu_card.dart';
 
 class ProjectDetailScreen extends StatefulWidget {
   final String projectId;
@@ -571,7 +572,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                   ),
                 ),
               ),
-              Card(
+              MenuCard(
                 child: Padding(
                   padding: const EdgeInsets.all(16),
                   child: Column(

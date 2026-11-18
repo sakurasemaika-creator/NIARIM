@@ -135,6 +135,77 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('fr 320px, text x2: bulk buttons become icons and stay one row', (
+    tester,
+  ) async {
+    // DISC159：名前が3〜4行に折れて一括のボタンが高くなり、作品の一覧が約20px
+    // の帯になった。入らない幅ではアイコンだけ（名前は吹き出しと読み上げ）。
+    tester.view.physicalSize = const Size(320, 700);
+    tester.view.devicePixelRatio = 1.0;
+    tester.platformDispatcher.textScaleFactorTestValue = 2.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+    SharedPreferences.setMockInitialValues({});
+    final service = CommunityService();
+    final auth = GoogleAuthService();
+    await auth.init();
+    addTearDown(service.dispose);
+    addTearDown(auth.dispose);
+    await tester.pumpWidget(
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider.value(value: service),
+          ChangeNotifierProvider.value(value: auth),
+          ChangeNotifierProvider(create: (_) => CommunityPreviewService()),
+          ChangeNotifierProvider(create: (_) => SettingsService()),
+          ChangeNotifierProvider(create: (_) => PremiumService()),
+        ],
+        child: MaterialApp(
+          locale: const Locale('fr'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: const CommunityMyWorksScreen(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    final l10n = lookupAppLocalizations(const Locale('fr'));
+    final firstId = service
+        .worksByAuthor(kDummySelfAuthorId, includeHidden: true)
+        .first
+        .id;
+    final row = find.byKey(ValueKey('communityMyWorksRow-$firstId'));
+    // 320px・文字2倍では見出しが高く、最初の行はまだ作られていない。
+    await tester.scrollUntilVisible(
+      row,
+      120,
+      scrollable: find
+          .descendant(
+            of: find.byType(CustomScrollView),
+            matching: find.byType(Scrollable),
+          )
+          .first,
+    );
+    await tester.pumpAndSettle();
+    await tester.longPress(row);
+    await tester.pumpAndSettle();
+    final bar = find.byKey(const Key('communityMyWorksBulkActions'));
+    expect(bar, findsOneWidget);
+    expect(
+      find.descendant(
+        of: bar,
+        matching: find.text(l10n.communityMyWorksBulkPublish),
+      ),
+      findsNothing,
+    );
+    expect(find.byTooltip(l10n.communityMyWorksBulkPublish), findsOneWidget);
+    expect(find.byTooltip(l10n.communityMyWorksBulkHide), findsOneWidget);
+    // 一列のボタン（48pxのボタン＋上下の余白）に収まる。
+    expect(tester.getSize(bar).height, lessThanOrEqualTo(80));
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('wrench opens per-work settings; AI and delete are individual', (
     tester,
   ) async {

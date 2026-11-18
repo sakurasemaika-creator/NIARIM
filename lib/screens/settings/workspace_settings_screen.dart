@@ -34,6 +34,7 @@ import '../../config/font_fallback.dart';
 import '../../widgets/scrollable_sheet_body.dart';
 import '../../widgets/fit_or_hide_title.dart';
 import '../../widgets/typing_dialog_inset.dart';
+import '../../utils/file_failure_reason.dart';
 
 class WorkspaceSettingsScreen extends StatelessWidget {
   const WorkspaceSettingsScreen({super.key});
@@ -655,7 +656,9 @@ class WorkspaceSettingsScreen extends StatelessWidget {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(l10n.workspaceShareFailedSnackbar(e.toString())),
+          content: Text(
+            l10n.workspaceShareFailedSnackbar(fileFailureReason(l10n, e)),
+          ),
         ),
       );
       return;
@@ -743,7 +746,9 @@ class WorkspaceSettingsScreen extends StatelessWidget {
         if (!context.mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(l10n.workspaceImportFailedSnackbar(e.toString())),
+            content: Text(
+              l10n.workspaceImportFailedSnackbar(fileFailureReason(l10n, e)),
+            ),
           ),
         );
       }

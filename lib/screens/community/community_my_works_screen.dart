@@ -23,6 +23,7 @@ import 'widgets/community_top_edge_refresh.dart';
 import 'widgets/community_work_counts.dart';
 import '../../widgets/first_that_fits.dart';
 import '../../widgets/fit_or_hide_title.dart';
+import '../../widgets/menu_card.dart';
 
 /// Owner hub opened from the community square.
 ///
@@ -492,6 +493,26 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
 
   /// Sequential, idempotent visibility updates: a partial failure remains
   /// selected for retry. Never bulk-delete or bulk-update the AI declaration.
+  /// 一括のボタン（アイコンつきの塗りのボタン）の名前[label]が、幅
+  /// [buttonWidth]のボタンの中に1行で入るか。ボタンの左右の余白（16・24）、
+  /// アイコン（18）と間（8）を除いた幅で、ボタンと同じ書式・文字の大きさで
+  /// 測る。
+  bool _bulkLabelFits(BuildContext context, String label, double buttonWidth) {
+    final theme = Theme.of(context);
+    final style = (theme.textTheme.labelLarge ?? const TextStyle()).merge(
+      theme.filledButtonTheme.style?.textStyle?.resolve(const {}),
+    );
+    final painter = TextPainter(
+      text: TextSpan(text: label, style: style),
+      textDirection: Directionality.of(context),
+      textScaler: MediaQuery.textScalerOf(context),
+      maxLines: 1,
+    )..layout();
+    final width = painter.width;
+    painter.dispose();
+    return width <= buttonWidth - 16 - 24 - 18 - 8;
+  }
+
   Future<void> _applyBulkVisibility(
     List<CommunityWork> works,
     bool published,
@@ -934,7 +955,7 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
                       final work = works[index];
                       final youtubePrivacy = _youtubePrivacyById[work.id];
                       final deleted = youtubePrivacy == 'deleted';
-                      return Card(
+                      return MenuCard(
                         clipBehavior: Clip.antiAlias,
                         child: ListTile(
                           key: ValueKey('communityMyWorksRow-${work.id}'),
@@ -1026,42 +1047,106 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
                   color: scheme.surface,
                   child: Padding(
                     padding: const EdgeInsets.all(10),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: FilledButton.icon(
-                            key: const Key('communityMyWorksBulkPublish'),
-                            onPressed: _bulkBusy
-                                ? null
-                                : () => _applyBulkVisibility(works, true),
-                            icon: const Icon(Icons.public),
-                            label: Text(l10n.communityMyWorksBulkPublish),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: FilledButton.tonalIcon(
-                            key: const Key('communityMyWorksBulkHide'),
-                            style: FilledButton.styleFrom(
-                              backgroundColor: scheme.primaryContainer,
-                              foregroundColor: scheme.onPrimaryContainer,
-                              side: BorderSide.none,
+                    // 名前が1行で入らない幅（長い言語・大きな文字）では、
+                    // 2つともアイコンだけにする（名前は吹き出しと読み上げ。
+                    // 所有者の判断3と同じ。文字は縮めない）。以前は名前が
+                    // 3〜4行に折れてボタンが高くなり、作品の一覧が約20pxの
+                    // 帯になった（DISC159）。
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        final hideStyle = FilledButton.styleFrom(
+                          backgroundColor: scheme.primaryContainer,
+                          foregroundColor: scheme.onPrimaryContainer,
+                          side: BorderSide.none,
+                        );
+                        final spinner = _bulkBusy ? 8.0 + 18.0 : 0.0;
+                        final buttonWidth =
+                            (constraints.maxWidth - 8 - spinner) / 2;
+                        final labelled =
+                            _bulkLabelFits(
+                              context,
+                              l10n.communityMyWorksBulkPublish,
+                              buttonWidth,
+                            ) &&
+                            _bulkLabelFits(
+                              context,
+                              l10n.communityMyWorksBulkHide,
+                              buttonWidth,
+                            );
+                        void publish() => _applyBulkVisibility(works, true);
+                        void hide() => _applyBulkVisibility(works, false);
+                        return Row(
+                          children: [
+                            Expanded(
+                              child: labelled
+                                  ? FilledButton.icon(
+                                      key: const Key(
+                                        'communityMyWorksBulkPublish',
+                                      ),
+                                      onPressed: _bulkBusy ? null : publish,
+                                      icon: const Icon(Icons.public),
+                                      label: Text(
+                                        l10n.communityMyWorksBulkPublish,
+                                        maxLines: 1,
+                                        softWrap: false,
+                                      ),
+                                    )
+                                  : FilledButton(
+                                      key: const Key(
+                                        'communityMyWorksBulkPublish',
+                                      ),
+                                      onPressed: _bulkBusy ? null : publish,
+                                      child: Tooltip(
+                                        message:
+                                            l10n.communityMyWorksBulkPublish,
+                                        child: const Icon(Icons.public),
+                                      ),
+                                    ),
                             ),
-                            onPressed: _bulkBusy
-                                ? null
-                                : () => _applyBulkVisibility(works, false),
-                            icon: const Icon(Icons.visibility_off_outlined),
-                            label: Text(l10n.communityMyWorksBulkHide),
-                          ),
-                        ),
-                        if (_bulkBusy) ...[
-                          const SizedBox(width: 8),
-                          const SizedBox.square(
-                            dimension: 18,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          ),
-                        ],
-                      ],
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: labelled
+                                  ? FilledButton.tonalIcon(
+                                      key: const Key(
+                                        'communityMyWorksBulkHide',
+                                      ),
+                                      style: hideStyle,
+                                      onPressed: _bulkBusy ? null : hide,
+                                      icon: const Icon(
+                                        Icons.visibility_off_outlined,
+                                      ),
+                                      label: Text(
+                                        l10n.communityMyWorksBulkHide,
+                                        maxLines: 1,
+                                        softWrap: false,
+                                      ),
+                                    )
+                                  : FilledButton.tonal(
+                                      key: const Key(
+                                        'communityMyWorksBulkHide',
+                                      ),
+                                      style: hideStyle,
+                                      onPressed: _bulkBusy ? null : hide,
+                                      child: Tooltip(
+                                        message: l10n.communityMyWorksBulkHide,
+                                        child: const Icon(
+                                          Icons.visibility_off_outlined,
+                                        ),
+                                      ),
+                                    ),
+                            ),
+                            if (_bulkBusy) ...[
+                              const SizedBox(width: 8),
+                              const SizedBox.square(
+                                dimension: 18,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              ),
+                            ],
+                          ],
+                        );
+                      },
                     ),
                   ),
                 ),

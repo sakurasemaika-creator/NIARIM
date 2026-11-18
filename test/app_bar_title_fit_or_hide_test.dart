@@ -287,7 +287,6 @@ void main() {
       // 作品広場は題を3行まで折り返す（dev_branchの作り）。
       'lib/screens/community/community_screen.dart',
       // ほかの作業の画面。
-      'lib/screens/settings/storage_screen.dart',
       'lib/screens/project/project_detail_screen.dart',
       'lib/screens/canvas/canvas_screen.dart',
     };
@@ -297,8 +296,7 @@ void main() {
       if (file is! File || !path.endsWith('.dart')) continue;
       if (exempt.contains(path) ||
           path.startsWith('lib/screens/home/') ||
-          path.startsWith('lib/screens/save_tree/') ||
-          path.startsWith('lib/screens/settings/transfer')) {
+          path.startsWith('lib/screens/save_tree/')) {
         continue;
       }
       final source = file.readAsStringSync();

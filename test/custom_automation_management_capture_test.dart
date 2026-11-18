@@ -7,10 +7,13 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/models/custom_automation.dart';
 import 'package:niarim/services/custom_automation_service.dart';
+import 'package:niarim/services/theme_service.dart';
 import 'package:niarim/widgets/custom_automation_draft_sheet.dart';
 import 'package:niarim/widgets/custom_automation_manager_sheet.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import 'helpers/load_app_fonts.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -76,12 +79,24 @@ void main() {
     });
   }
 
+  // 撮る画面は本番と同じテーマ・同梱フォントで描く（無いとFlutterの既定の
+  // 配色で、字もアイコンも豆腐になり、本番と違う画面を撮る）。
+  late ThemeData theme;
+  Future<void> prepareLook(WidgetTester tester) async {
+    final themes = ThemeService();
+    await themes.init();
+    theme = themes.themeData;
+    themes.dispose();
+    await loadAppFonts(tester);
+  }
+
   Widget app(CustomAutomationService service, Widget home, GlobalKey key) {
     return RepaintBoundary(
       key: key,
       child: ChangeNotifierProvider<CustomAutomationService>.value(
         value: service,
         child: MaterialApp(
+          theme: theme,
           locale: const Locale('ja'),
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
@@ -95,6 +110,7 @@ void main() {
     final out = Directory('build/visual-reaudit/custom-automation-management');
     out.createSync(recursive: true);
     final service = await serviceWithDraft();
+    await prepareLook(tester);
     final key = GlobalKey();
 
     tester.view.physicalSize = const Size(1080, 2160);
@@ -137,6 +153,7 @@ void main() {
     final saved = await service.saveDraft();
     expect(saved, isNotNull);
     final savedId = saved!.id;
+    await prepareLook(tester);
     final key = GlobalKey();
 
     tester.view.physicalSize = const Size(1080, 2160);

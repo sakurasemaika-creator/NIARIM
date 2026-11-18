@@ -41,6 +41,9 @@ import '../../widgets/scrollable_sheet_body.dart';
 import '../../config/accent_text_theme.dart';
 import '../../widgets/fit_or_hide_title.dart';
 import '../../widgets/typing_dialog_inset.dart';
+import '../../widgets/menu_surface.dart';
+import '../../widgets/menu_card.dart';
+import '../../utils/file_failure_reason.dart';
 
 /// [taken]と重ならない複製の名前を付け、[taken]に加える（まとめて複製する
 /// ときに、同じ名前の複製を並べない）。
@@ -573,7 +576,9 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(
-                l10n.autofillPresetExportFailedSnackbar(e.toString()),
+                l10n.autofillPresetExportFailedSnackbar(
+                  fileFailureReason(l10n, e),
+                ),
               ),
             ),
           );
@@ -1971,23 +1976,26 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                       l10n.autofillPartBlendModeLabel,
                       style: Theme.of(ctx).textTheme.titleSmall,
                     ),
-                    DropdownButtonFormField<LayerBlendMode>(
-                      initialValue: current.blendMode,
-                      isExpanded: true,
-                      decoration: const InputDecoration(isDense: true),
-                      items: LayerBlendMode.values
-                          .map(
-                            (m) => DropdownMenuItem(
-                              value: m,
-                              child: Text(
-                                blendModeLabels[m]!,
-                                style: const TextStyle(fontSize: 13),
+                    MenuSurface(
+                      child: DropdownButtonFormField<LayerBlendMode>(
+                        initialValue: current.blendMode,
+                        isExpanded: true,
+                        decoration: const InputDecoration(isDense: true),
+                        items: LayerBlendMode.values
+                            .map(
+                              (m) => DropdownMenuItem(
+                                value: m,
+                                child: Text(
+                                  blendModeLabels[m]!,
+                                  style: const TextStyle(fontSize: 13),
+                                ),
                               ),
-                            ),
-                          )
-                          .toList(),
-                      onChanged: (v) =>
-                          setS(() => current = current.copyWith(blendMode: v)),
+                            )
+                            .toList(),
+                        onChanged: (v) => setS(
+                          () => current = current.copyWith(blendMode: v),
+                        ),
+                      ),
                     ),
                   ],
                 ),
@@ -2913,7 +2921,7 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                 onClose: () {},
               ),
               const SizedBox(height: 8),
-              Card(
+              MenuCard(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 12,

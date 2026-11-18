@@ -87,7 +87,13 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String homeSelectionCount(int count) {
-    return '$count seleccionado(s)';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count seleccionados',
+      one: '$count seleccionado',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -751,6 +757,21 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get folderMoveToTitle => 'Mover a carpeta';
+
+  @override
+  String folderMoveSheetSemanticsLabel(String name) {
+    return 'Mover «$name» a una carpeta';
+  }
+
+  @override
+  String folderColorOptionSemanticsLabel(String code) {
+    return 'Color de la carpeta $code';
+  }
+
+  @override
+  String colorPickerCurrentColorSemanticsLabel(String code) {
+    return 'Color seleccionado $code';
+  }
 
   @override
   String get folderNone => 'Sin carpeta';
@@ -7965,6 +7986,17 @@ class AppLocalizationsEs extends AppLocalizations {
       'Se produjo un problema. Inténtalo de nuevo.';
 
   @override
+  String get fileFailureReasonAccess =>
+      'No se pudo leer ni escribir el archivo';
+
+  @override
+  String get fileFailureReasonFormat =>
+      'El archivo tiene otro formato o está dañado';
+
+  @override
+  String get fileFailureReasonOther => 'Se produjo un problema inesperado';
+
+  @override
   String communityErrorTagLimitExceeded(int max) {
     return 'Una obra puede tener como máximo $max etiquetas.';
   }
@@ -9596,11 +9628,15 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String coinAmount(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count ópalos',
-      one: '$count ópalo',
+      other: '$countString ópalos',
+      one: '$countString ópalo',
     );
     return '$_temp0';
   }

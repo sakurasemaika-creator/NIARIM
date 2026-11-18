@@ -32,6 +32,7 @@ import 'widgets/save_rename_button.dart';
 import 'widgets/save_screen_app_bar.dart';
 import 'widgets/save_slot_title.dart';
 import 'widgets/save_thumbnail_capture.dart';
+import '../../utils/file_failure_reason.dart';
 
 /// セーブツリー（SaveTree/）の合計容量がこれを超えた場合にユーザーへ通知する
 /// 閾値。「容量が大きくなる場合はユーザーへ通知」するために使う。ツリー方式は
@@ -346,7 +347,9 @@ void _showTreeSaveDialog(
                             (ModalRoute.of(ctx)?.isCurrent ?? false)) {
                           setDialogState(() {
                             saving = false;
-                            failure = l10n.saveTreeSaveFailedSnackbar('$e');
+                            failure = l10n.saveTreeSaveFailedSnackbar(
+                              fileFailureReason(l10n, e),
+                            );
                           });
                         } else {
                           // 保存中に戻るでダイアログを閉じていた：画面に出す
@@ -354,7 +357,9 @@ void _showTreeSaveDialog(
                           messenger.showSnackBar(
                             SnackBar(
                               content: Text(
-                                l10n.saveTreeSaveFailedSnackbar('$e'),
+                                l10n.saveTreeSaveFailedSnackbar(
+                                  fileFailureReason(l10n, e),
+                                ),
                               ),
                             ),
                           );
@@ -599,7 +604,9 @@ class _SlotView extends StatelessWidget {
         // （打ったメモは欄に残る。以前は何も出なかった）。閉じた後なら
         // 画面に出す。
         AppErrorReporter.record(e, st);
-        final message = l10n.saveTreeSaveFailedSnackbar('$e');
+        final message = l10n.saveTreeSaveFailedSnackbar(
+          fileFailureReason(l10n, e),
+        );
         final shown = failureText.currentState?.show(message) ?? false;
         if (!shown && context.mounted) {
           ScaffoldMessenger.of(
@@ -633,7 +640,10 @@ class _SlotView extends StatelessWidget {
                   // 韓国語の語は、1行に入れば途中で折らない。
                   child: messageText(
                     l10n.saveTreeSlotOverwriteWarning(
-                      _formatDate(existing.savedAt),
+                      formatSaveTime(
+                        existing.savedAt,
+                        AppLocalizations.of(context)!.localeName,
+                      ),
                     ),
                     style: TextStyle(
                       fontSize: 12,
@@ -761,10 +771,6 @@ class _SlotView extends StatelessWidget {
       ),
     );
   }
-
-  String _formatDate(DateTime dt) =>
-      '${dt.year}/${dt.month.toString().padLeft(2, '0')}/${dt.day.toString().padLeft(2, '0')} '
-      '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
 }
 
 /// セーブノードのサムネイル画像。thumbnailPathが無い・読み込めない場合は
@@ -978,7 +984,10 @@ class _SlotTile extends StatelessWidget {
                     ),
                     if (node != null)
                       Text(
-                        _formatDate(node!.savedAt),
+                        formatSaveTime(
+                          node!.savedAt,
+                          AppLocalizations.of(context)!.localeName,
+                        ),
                         style: TextStyle(
                           fontSize: 12,
                           color: scheme.onSurfaceVariant,
@@ -1030,10 +1039,6 @@ class _SlotTile extends StatelessWidget {
       ),
     );
   }
-
-  String _formatDate(DateTime dt) =>
-      '${dt.year}/${dt.month.toString().padLeft(2, '0')}/${dt.day.toString().padLeft(2, '0')} '
-      '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
 }
 
 class _SaveTreeSlotActionButton extends StatelessWidget {
@@ -1292,7 +1297,12 @@ class _TreeView extends StatelessWidget {
                 ),
               ],
             ),
-            subtitle: Text(_formatDate(node.savedAt)),
+            subtitle: Text(
+              formatSaveTime(
+                node.savedAt,
+                AppLocalizations.of(context)!.localeName,
+              ),
+            ),
             onTap: () => onNodeSelected(isSelected ? null : node.id),
             trailing: PopupMenuButton<String>(
               onSelected: (action) => _handleAction(context, action, node),
@@ -1378,10 +1388,6 @@ class _TreeView extends StatelessWidget {
       ),
     );
   }
-
-  String _formatDate(DateTime dt) =>
-      '${dt.year}/${dt.month.toString().padLeft(2, '0')}/${dt.day.toString().padLeft(2, '0')} '
-      '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
 }
 
 /// Full-height connectors for the bottom-up (reverse:true) save tree.
@@ -1808,16 +1814,17 @@ class _SelectableSlotView extends StatelessWidget {
                   : null,
             ),
           ),
-          subtitle: Text(_formatDate(node.savedAt)),
+          subtitle: Text(
+            formatSaveTime(
+              node.savedAt,
+              AppLocalizations.of(context)!.localeName,
+            ),
+          ),
           onTap: isDisabled ? null : () => onToggle(node.id),
         );
       },
     );
   }
-
-  String _formatDate(DateTime dt) =>
-      '${dt.year}/${dt.month.toString().padLeft(2, '0')}/${dt.day.toString().padLeft(2, '0')} '
-      '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
 }
 
 // ─── 選択可能ツリービュー ───
@@ -1891,15 +1898,16 @@ class _SelectableTreeView extends StatelessWidget {
                 : null,
           ),
         ),
-        subtitle: Text(_formatDate(node.savedAt)),
+        subtitle: Text(
+          formatSaveTime(
+            node.savedAt,
+            AppLocalizations.of(context)!.localeName,
+          ),
+        ),
         onTap: isDisabled ? null : () => onToggle(node.id),
       ),
     );
   }
-
-  String _formatDate(DateTime dt) =>
-      '${dt.year}/${dt.month.toString().padLeft(2, '0')}/${dt.day.toString().padLeft(2, '0')} '
-      '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
 }
 
 // ─── 未選択データの処理選択ダイアログ ───

@@ -7,10 +7,13 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/models/custom_automation.dart';
 import 'package:niarim/services/custom_automation_service.dart';
+import 'package:niarim/services/theme_service.dart';
 import 'package:niarim/widgets/custom_automation_draft_sheet.dart';
 import 'package:niarim/widgets/custom_automation_manager_sheet.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import 'helpers/load_app_fonts.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -29,6 +32,12 @@ void main() {
 
     final service = CustomAutomationService();
     await service.init();
+    // 撮る画面は本番と同じテーマ・同梱フォントで描く（無いとFlutterの既定の
+    // 配色で、字もアイコンも豆腐になり、本番と違う画面を撮る）。
+    final themes = ThemeService();
+    await themes.init();
+    addTearDown(themes.dispose);
+    await loadAppFonts(tester);
     final captureKey = GlobalKey();
 
     tester.view.physicalSize = const Size(1080, 2160);
@@ -41,7 +50,7 @@ void main() {
         key: captureKey,
         child: ChangeNotifierProvider<CustomAutomationService>.value(
           value: service,
-          child: const _InteractionHost(),
+          child: _InteractionHost(theme: themes.themeData),
         ),
       ),
     );
@@ -206,11 +215,14 @@ void main() {
 }
 
 class _InteractionHost extends StatelessWidget {
-  const _InteractionHost();
+  const _InteractionHost({required this.theme});
+
+  final ThemeData theme;
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      theme: theme,
       locale: const Locale('ja'),
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,

@@ -718,6 +718,21 @@ class AppLocalizationsJa extends AppLocalizations {
   String get folderMoveToTitle => 'フォルダへ移動';
 
   @override
+  String folderMoveSheetSemanticsLabel(String name) {
+    return '「$name」をフォルダへ移動';
+  }
+
+  @override
+  String folderColorOptionSemanticsLabel(String code) {
+    return 'フォルダ色 $code';
+  }
+
+  @override
+  String colorPickerCurrentColorSemanticsLabel(String code) {
+    return '選んでいる色 $code';
+  }
+
+  @override
   String get folderNone => 'フォルダなし';
 
   @override
@@ -7527,6 +7542,15 @@ class AppLocalizationsJa extends AppLocalizations {
   String get communityErrorGeneric => '問題が発生しました。もう一度お試しください。';
 
   @override
+  String get fileFailureReasonAccess => 'ファイルを読み書きできませんでした';
+
+  @override
+  String get fileFailureReasonFormat => 'ファイルの形式が違うか、壊れています';
+
+  @override
+  String get fileFailureReasonOther => '予期しない問題が起きました';
+
+  @override
   String communityErrorTagLimitExceeded(int max) {
     return 'タグは1作品につき$max個までです。';
   }
@@ -9018,7 +9042,11 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String coinAmount(int count) {
-    return '$countオパール';
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return '$countStringオパール';
   }
 
   @override

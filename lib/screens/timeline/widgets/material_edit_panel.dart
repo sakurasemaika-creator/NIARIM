@@ -22,6 +22,7 @@ import '../../../widgets/layer_mask_editor.dart';
 import '../../canvas/widgets/color_picker_panel.dart';
 import '../../../config/accent_text_theme.dart';
 import '../../../widgets/typing_dialog_inset.dart';
+import '../../../widgets/menu_surface.dart';
 
 enum _Section { text, transform, mask, video }
 
@@ -377,41 +378,43 @@ class _TimelineMaterialEditPanelState extends State<TimelineMaterialEditPanel> {
           onChanged: (v) => _editText((t) => t.copyWith(text: v)),
         ),
         const SizedBox(height: 10),
-        DropdownButtonFormField<String>(
-          key: ValueKey('font-${widget.layerId}'),
-          initialValue: families.contains(text.fontFamily)
-              ? text.fontFamily
-              : 'Roboto',
-          isExpanded: true,
-          decoration: InputDecoration(
-            labelText: l10n.canvasTextFontLabel,
-            isDense: true,
-          ),
-          items: [
-            DropdownMenuItem(
-              value: 'Roboto',
-              child: Text(l10n.canvasTextStandardFont),
+        MenuSurface(
+          child: DropdownButtonFormField<String>(
+            key: ValueKey('font-${widget.layerId}'),
+            initialValue: families.contains(text.fontFamily)
+                ? text.fontFamily
+                : 'Roboto',
+            isExpanded: true,
+            decoration: InputDecoration(
+              labelText: l10n.canvasTextFontLabel,
+              isDense: true,
             ),
-            for (final f in kBundledFonts)
+            items: [
               DropdownMenuItem(
-                value: f.family,
-                child: Text(
-                  f.displayName,
-                  style: TextStyle(fontFamily: f.family),
-                ),
+                value: 'Roboto',
+                child: Text(l10n.canvasTextStandardFont),
               ),
-            if (fonts != null)
-              for (final f in fonts.fonts)
+              for (final f in kBundledFonts)
                 DropdownMenuItem(
-                  value: fonts.familyNameOf(f),
+                  value: f.family,
                   child: Text(
                     f.displayName,
-                    style: TextStyle(fontFamily: fonts.familyNameOf(f)),
+                    style: TextStyle(fontFamily: f.family),
                   ),
                 ),
-          ],
-          onChanged: (v) =>
-              _editText((t) => t.copyWith(fontFamily: v ?? 'Roboto')),
+              if (fonts != null)
+                for (final f in fonts.fonts)
+                  DropdownMenuItem(
+                    value: fonts.familyNameOf(f),
+                    child: Text(
+                      f.displayName,
+                      style: TextStyle(fontFamily: fonts.familyNameOf(f)),
+                    ),
+                  ),
+            ],
+            onChanged: (v) =>
+                _editText((t) => t.copyWith(fontFamily: v ?? 'Roboto')),
+          ),
         ),
         const SizedBox(height: 4),
         LabeledSlider(

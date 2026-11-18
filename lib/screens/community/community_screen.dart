@@ -37,6 +37,7 @@ import '../../utils/color_contrast.dart';
 import '../../utils/responsive_tile_defaults.dart';
 import '../../widgets/typing_dialog_inset.dart';
 import '../../widgets/keep_together_text.dart';
+import '../../widgets/menu_surface.dart';
 
 enum _RankingPeriod { allTime, yearly, monthly, weekly, daily }
 
@@ -2529,25 +2530,27 @@ class _ContentFilterDialogState extends State<_ContentFilterDialog> {
                   fontFamilyFallback: kHeadingFontFallback,
                 ),
               ),
-              DropdownButtonFormField<_PostDateFilter>(
-                key: const Key('communityPostDateFilter'),
-                initialValue: _dateFilter,
-                isExpanded: true,
-                items: [
-                  for (final date in _PostDateFilter.values)
-                    DropdownMenuItem(
-                      value: date,
-                      child: Text(_dateLabel(l10n, date)),
-                    ),
-                ],
-                onChanged: (value) {
-                  if (value == null) return;
-                  if (value == _PostDateFilter.custom) {
-                    _chooseDateRange();
-                  } else {
-                    setState(() => _dateFilter = value);
-                  }
-                },
+              MenuSurface(
+                child: DropdownButtonFormField<_PostDateFilter>(
+                  key: const Key('communityPostDateFilter'),
+                  initialValue: _dateFilter,
+                  isExpanded: true,
+                  items: [
+                    for (final date in _PostDateFilter.values)
+                      DropdownMenuItem(
+                        value: date,
+                        child: Text(_dateLabel(l10n, date)),
+                      ),
+                  ],
+                  onChanged: (value) {
+                    if (value == null) return;
+                    if (value == _PostDateFilter.custom) {
+                      _chooseDateRange();
+                    } else {
+                      setState(() => _dateFilter = value);
+                    }
+                  },
+                ),
               ),
               if (_dateFilter == _PostDateFilter.custom)
                 TextButton.icon(
@@ -2568,26 +2571,28 @@ class _ContentFilterDialogState extends State<_ContentFilterDialog> {
                   fontFamilyFallback: kHeadingFontFallback,
                 ),
               ),
-              DropdownButtonFormField<_DurationFilterMode>(
-                key: const Key('communityDurationMode'),
-                initialValue: _durationMode,
-                isExpanded: true,
-                items: [
-                  DropdownMenuItem(
-                    value: _DurationFilterMode.all,
-                    child: Text(l10n.communityDurationAny),
+              MenuSurface(
+                child: DropdownButtonFormField<_DurationFilterMode>(
+                  key: const Key('communityDurationMode'),
+                  initialValue: _durationMode,
+                  isExpanded: true,
+                  items: [
+                    DropdownMenuItem(
+                      value: _DurationFilterMode.all,
+                      child: Text(l10n.communityDurationAny),
+                    ),
+                    DropdownMenuItem(
+                      value: _DurationFilterMode.upTo,
+                      child: Text(l10n.communityDurationUpTo),
+                    ),
+                    DropdownMenuItem(
+                      value: _DurationFilterMode.range,
+                      child: Text(l10n.communityDurationRange),
+                    ),
+                  ],
+                  onChanged: (value) => setState(
+                    () => _durationMode = value ?? _DurationFilterMode.all,
                   ),
-                  DropdownMenuItem(
-                    value: _DurationFilterMode.upTo,
-                    child: Text(l10n.communityDurationUpTo),
-                  ),
-                  DropdownMenuItem(
-                    value: _DurationFilterMode.range,
-                    child: Text(l10n.communityDurationRange),
-                  ),
-                ],
-                onChanged: (value) => setState(
-                  () => _durationMode = value ?? _DurationFilterMode.all,
                 ),
               ),
               if (_durationMode == _DurationFilterMode.upTo) ...[
@@ -2643,38 +2648,42 @@ class _ContentFilterDialogState extends State<_ContentFilterDialog> {
                     fontFamilyFallback: kHeadingFontFallback,
                   ),
                 ),
-                DropdownButtonFormField<int>(
-                  key: Key(
-                    filter == 0
-                        ? 'communityMinimumViews'
-                        : 'communityMinimumBookmarks',
-                  ),
-                  initialValue: filter == 0 ? _minimumViews : _minimumBookmarks,
-                  isExpanded: true,
-                  items: [
-                    for (final count in _communityThresholdChoices)
-                      DropdownMenuItem(
-                        value: count,
-                        child: Text(
-                          count == 0
-                              ? l10n.communityThresholdAny
-                              : filter == 0
-                              ? l10n.communityMinimumViewsOption(
-                                  NumberFormat.decimalPattern().format(count),
-                                )
-                              : l10n.communityMinimumBookmarksOption(
-                                  NumberFormat.decimalPattern().format(count),
-                                ),
+                MenuSurface(
+                  child: DropdownButtonFormField<int>(
+                    key: Key(
+                      filter == 0
+                          ? 'communityMinimumViews'
+                          : 'communityMinimumBookmarks',
+                    ),
+                    initialValue: filter == 0
+                        ? _minimumViews
+                        : _minimumBookmarks,
+                    isExpanded: true,
+                    items: [
+                      for (final count in _communityThresholdChoices)
+                        DropdownMenuItem(
+                          value: count,
+                          child: Text(
+                            count == 0
+                                ? l10n.communityThresholdAny
+                                : filter == 0
+                                ? l10n.communityMinimumViewsOption(
+                                    NumberFormat.decimalPattern().format(count),
+                                  )
+                                : l10n.communityMinimumBookmarksOption(
+                                    NumberFormat.decimalPattern().format(count),
+                                  ),
+                          ),
                         ),
-                      ),
-                  ],
-                  onChanged: (value) => setState(() {
-                    if (filter == 0) {
-                      _minimumViews = value ?? 0;
-                    } else {
-                      _minimumBookmarks = value ?? 0;
-                    }
-                  }),
+                    ],
+                    onChanged: (value) => setState(() {
+                      if (filter == 0) {
+                        _minimumViews = value ?? 0;
+                      } else {
+                        _minimumBookmarks = value ?? 0;
+                      }
+                    }),
+                  ),
                 ),
               ],
             ],

@@ -5,6 +5,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../../models/brush.dart';
 import '../../../models/brush_extension_defaults.dart';
 import '../../../widgets/help_button.dart';
+import '../../../widgets/menu_surface.dart';
 
 class BrushExtensionLabels {
   final String lateralRepeat;
@@ -312,30 +313,32 @@ class _BrushExtensionSettingsState extends State<BrushExtensionSettings> {
           if (_brush.foldEnabled) ...[
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-              child: DropdownButtonFormField<HairFoldMode>(
-                key: const Key('brush-fold-mode'),
-                initialValue: _brush.foldMode,
-                isExpanded: true,
-                decoration: InputDecoration(
-                  labelText: l.foldMode,
-                  helperText: l.foldModeHelp.isEmpty ? null : l.foldModeHelp,
-                  helperMaxLines: 3,
-                ),
-                items: HairFoldMode.values
-                    .map(
-                      (mode) => DropdownMenuItem(
-                        value: mode,
-                        child: Text(
-                          _foldModeLabel(mode),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
+              child: MenuSurface(
+                child: DropdownButtonFormField<HairFoldMode>(
+                  key: const Key('brush-fold-mode'),
+                  initialValue: _brush.foldMode,
+                  isExpanded: true,
+                  decoration: InputDecoration(
+                    labelText: l.foldMode,
+                    helperText: l.foldModeHelp.isEmpty ? null : l.foldModeHelp,
+                    helperMaxLines: 3,
+                  ),
+                  items: HairFoldMode.values
+                      .map(
+                        (mode) => DropdownMenuItem(
+                          value: mode,
+                          child: Text(
+                            _foldModeLabel(mode),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
-                      ),
-                    )
-                    .toList(),
-                onChanged: (mode) {
-                  if (mode != null) _set(_brush.copyWith(foldMode: mode));
-                },
+                      )
+                      .toList(),
+                  onChanged: (mode) {
+                    if (mode != null) _set(_brush.copyWith(foldMode: mode));
+                  },
+                ),
               ),
             ),
             KeyedSubtree(

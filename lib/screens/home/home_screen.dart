@@ -82,6 +82,7 @@ import '../../utils/file_size_label.dart';
 import '../../utils/folder_persistence.dart';
 import '../../utils/responsive_tile_defaults.dart';
 import '../../utils/tolerant_preferences.dart';
+import '../../utils/file_failure_reason.dart';
 
 /// 共有ファイルの名前を、すでにある共有ファイルと同じ名前に変えようとした。
 class _ShareNameTaken implements Exception {
@@ -988,7 +989,9 @@ class _HomeScreenState extends State<HomeScreen>
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(l10n.homeSharedImportFailedSnackbar(e.toString())),
+          content: Text(
+            l10n.homeSharedImportFailedSnackbar(fileFailureReason(l10n, e)),
+          ),
         ),
       );
     }
@@ -4773,6 +4776,7 @@ Widget _receivedShareProjectTile(
       selectionId: selectionId,
       child: collectionTileShadow(
         context,
+        // menu-surface: n/a — 絵（用紙の色）の上に印を描くカード。名前は自分でメニューの文字色を読む。
         Card(
           margin: EdgeInsets.zero,
           elevation: 0,
@@ -5350,6 +5354,7 @@ class _OutgoingSharesList extends StatelessWidget {
           selectionId: selectionId,
           child: collectionTileShadow(
             context,
+            // menu-surface: n/a — 絵（用紙の色）の上に印を描くカード。名前は自分でメニューの文字色を読む。
             Card(
               margin: EdgeInsets.zero,
               elevation: 0,
@@ -6003,6 +6008,7 @@ class _FolderableList<T> extends StatelessWidget {
       onSecondaryClick: (at) => _showFolderMenuAt(context, folder, at),
       child: collectionTileShadow(
         context,
+        // menu-surface: n/a — 絵（用紙の色）の上に印を描くカード。名前は自分でメニューの文字色を読む。
         Card(
           key: ValueKey('collectionFolder_${folder.id}'),
           margin: EdgeInsets.zero,

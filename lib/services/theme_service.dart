@@ -1206,6 +1206,18 @@ class ThemeService extends ChangeNotifier {
               ? const TextStyle()
               : TextStyle(color: fieldInk(states)),
         ),
+        // 入力のある欄で上に浮いた名前も同じ。指定しないと Material 3 の既定
+        // （本文の文字色70%）で描かれ、メニューを暗く・本文の文字を暗くした
+        // テーマで読めなかった。欄ごとに labelStyle を渡すときは
+        // floatingLabelStyle も渡すこと（テーマのこちらが先に使われる）。
+        floatingLabelStyle: WidgetStateTextStyle.resolveWith(
+          (states) =>
+              !states.contains(WidgetState.disabled) &&
+                  (states.contains(WidgetState.focused) ||
+                      states.contains(WidgetState.error))
+              ? const TextStyle()
+              : TextStyle(color: fieldInk(states)),
+        ),
         prefixIconColor: WidgetStateColor.resolveWith(fieldInk),
         suffixIconColor: WidgetStateColor.resolveWith(
           (states) =>
@@ -1416,10 +1428,15 @@ class ThemeService extends ChangeNotifier {
           fontWeight: FontWeight.w700,
         ),
       ),
+      // タブは上部バー（メニューの背景色）の下に並べる（ヘルプ・活用Tips・
+      // フォント・作品広場・特典）。選んでいない名前もメニューの文字色から
+      // 作る（本文の文字色だと、メニューを暗く・本文の文字を暗くしたテーマで
+      // 読めなかった）。用紙の色の面（PCのドック）に置くタブは
+      // PanelSurfaceが本文の文字色へ戻す。
       tabBarTheme: TabBarThemeData(
         indicatorColor: scheme.primary,
         labelColor: accentText,
-        unselectedLabelColor: preset.textColor.withValues(alpha: 0.6),
+        unselectedLabelColor: menuForeground.withValues(alpha: 0.6),
       ),
       dividerTheme: DividerThemeData(
         color: preset.textColor.withValues(alpha: 0.08),

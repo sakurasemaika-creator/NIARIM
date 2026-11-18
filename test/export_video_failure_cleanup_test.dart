@@ -251,6 +251,15 @@ void main() {
         ),
       ];
 
+  /// 書き出しごとのコマのフォルダ（[prefix]_…）が一時フォルダに残っているか。
+  bool frameFoldersLeft(String prefix) =>
+      temporary.listSync().whereType<Directory>().any(
+        (d) => d.uri.pathSegments
+            .where((s) => s.isNotEmpty)
+            .last
+            .startsWith('${prefix}_'),
+      );
+
   List<String> exportedNames() => [
     if (exportsDir().existsSync())
       for (final f in exportsDir().listSync()) f.uri.pathSegments.last,
@@ -274,7 +283,7 @@ void main() {
         reason: 'the half-written video stayed in the exports folder',
       );
       expect(
-        Directory('${temporary.path}/$framesFolder').existsSync(),
+        frameFoldersLeft(framesFolder),
         isFalse,
         reason: 'the frame folder was not removed',
       );
@@ -292,10 +301,7 @@ void main() {
         export(ExportEngine(), paintedTiles(), false),
         throwsA(isA<PlatformException>()),
       );
-      expect(
-        Directory('${temporary.path}/$framesFolder').existsSync(),
-        isFalse,
-      );
+      expect(frameFoldersLeft(framesFolder), isFalse);
     });
 
     test('a $name export that succeeds keeps its video and removes its frame '
@@ -306,10 +312,7 @@ void main() {
       expect(File(output).readAsBytesSync(), _fullVideo);
       expect(exportedNames(), [File(output).uri.pathSegments.last]);
       expect(File(output).parent.path, exportsDir().path);
-      expect(
-        Directory('${temporary.path}/$framesFolder').existsSync(),
-        isFalse,
-      );
+      expect(frameFoldersLeft(framesFolder), isFalse);
       expect(
         [for (final f in await ExportEngine.listExportedFiles()) f.path],
         [output],
@@ -319,6 +322,45 @@ void main() {
       }
     });
   }
+
+  test('two MP4 exports running at once keep their own frames', () async {
+    // DISC026：どの書き出しも同じ`export_frames`を使い、始めるときに丸ごと
+    // 消していたので、同時に走る別の書き出しのコマを消した。エンコーダーへ
+    // 渡したコマがその時点で全部あることを見る。
+    encoderSucceeds = true;
+    final missing = <String>[];
+    final folders = <String>{};
+    messenger.setMockMethodCallHandler(_hwEncoderChannel, (call) async {
+      final args = call.arguments as Map<Object?, Object?>;
+      final frames = List<String>.from(args['framePaths']! as List<Object?>);
+      // Let the other export start (and, before the fix, wipe the folder).
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+      for (final path in frames) {
+        if (!File(path).existsSync()) missing.add(path);
+        folders.add(File(path).parent.path);
+      }
+      File(args['outputPath']! as String).writeAsBytesSync(_fullVideo);
+      return null;
+    });
+    Future<String> mp4() => ExportEngine().exportMp4(
+      scenes: scenes,
+      tileManager: paintedTiles(),
+      fps: 1,
+      drawingWidth: w,
+      drawingHeight: h,
+      width: w,
+      height: h,
+      backgroundColor: 0xFFFFFFFF,
+    );
+    final outputs = await Future.wait([mp4(), mp4()]);
+    expect(missing, isEmpty);
+    expect(folders, hasLength(2), reason: 'each export has its own folder');
+    expect(outputs.toSet(), hasLength(2));
+    for (final output in outputs) {
+      expect(File(output).readAsBytesSync(), _fullVideo);
+    }
+    expect(frameFoldersLeft('export_frames'), isFalse);
+  });
 }
 
 final _fullVideo = Uint8List.fromList([for (var i = 0; i < 64; i++) i]);

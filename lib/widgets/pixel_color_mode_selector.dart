@@ -6,6 +6,7 @@ import 'editable_slider_value.dart';
 import 'pixel_art_palette_picker_dialog.dart';
 import 'pixel_color_chip_list.dart';
 import 'stepped_slider.dart';
+import 'menu_surface.dart';
 
 /// ブラシのピクセルモード・ドット絵フィルター（描画・演出）共通の配色方式
 /// セレクター。プルダウンで「色を指定しない／パレットから選ぶ／色を
@@ -70,28 +71,30 @@ class PixelColorModeSelector extends StatelessWidget {
       children: [
         Text(l10n.pixelColorModeLabel, style: const TextStyle(fontSize: 11)),
         const SizedBox(height: 4),
-        DropdownButtonFormField<PixelColorMode>(
-          initialValue: mode,
-          isExpanded: true,
-          style: style,
-          decoration:
-              decoration ??
-              const InputDecoration(
-                isDense: true,
-                contentPadding: EdgeInsets.zero,
-              ),
-          items: [
-            for (final m in PixelColorMode.values)
-              DropdownMenuItem(value: m, child: Text(_label(l10n, m))),
-          ],
-          onChanged: (v) {
-            if (v == null) return;
-            if (v == PixelColorMode.palette) {
-              _openPalettePicker(context);
-              return;
-            }
-            onModeChanged(v);
-          },
+        MenuSurface(
+          child: DropdownButtonFormField<PixelColorMode>(
+            initialValue: mode,
+            isExpanded: true,
+            style: style,
+            decoration:
+                decoration ??
+                const InputDecoration(
+                  isDense: true,
+                  contentPadding: EdgeInsets.zero,
+                ),
+            items: [
+              for (final m in PixelColorMode.values)
+                DropdownMenuItem(value: m, child: Text(_label(l10n, m))),
+            ],
+            onChanged: (v) {
+              if (v == null) return;
+              if (v == PixelColorMode.palette) {
+                _openPalettePicker(context);
+                return;
+              }
+              onModeChanged(v);
+            },
+          ),
         ),
         if (mode == PixelColorMode.count) ...[
           const SizedBox(height: 8),

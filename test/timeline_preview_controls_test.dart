@@ -1021,7 +1021,7 @@ void main() {
             .widgetList<Text>(
               find.descendant(
                 of: find.byType(Dialog),
-                matching: find.byType(Text),
+                matching: find.bySubtype<Text>(),
               ),
             )
             .map((text) => text.data ?? text.semanticsLabel)

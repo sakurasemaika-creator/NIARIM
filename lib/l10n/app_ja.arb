@@ -353,6 +353,33 @@
   "folderChangesPartiallySaved": "一部の変更だけが保存されました。一覧を確認して、もう一度お試しください。",
   "folderNameLabel": "フォルダ名",
   "folderMoveToTitle": "フォルダへ移動",
+  "folderMoveSheetSemanticsLabel": "「{name}」をフォルダへ移動",
+  "@folderMoveSheetSemanticsLabel": {
+    "description": "Screen-reader name of the 'move to folder' sheet for one file.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "folderColorOptionSemanticsLabel": "フォルダ色 {code}",
+  "@folderColorOptionSemanticsLabel": {
+    "description": "Name of one folder color choice; code is like #FF5C7A.",
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "colorPickerCurrentColorSemanticsLabel": "選んでいる色 {code}",
+  "@colorPickerCurrentColorSemanticsLabel": {
+    "description": "Screen-reader name of the colour preview in the colour picker; code is like #FF5C7A.",
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
   "folderNone": "フォルダなし",
   "creativeFolderDeleteBody": "「{name}」を削除しますか？中の素材は「フォルダなし」に移動します。",
   "@creativeFolderDeleteBody": {
@@ -3683,6 +3710,18 @@
   "communityErrorRateLimited": "操作が集中しています。しばらく待ってから、もう一度お試しください。",
   "communityErrorServer": "サーバーで問題が発生しました。しばらく待ってから、もう一度お試しください。",
   "communityErrorGeneric": "問題が発生しました。もう一度お試しください。",
+  "fileFailureReasonAccess": "ファイルを読み書きできませんでした",
+  "@fileFailureReasonAccess": {
+    "description": "Reason shown after a failed export/import/save when the file system refused (never the raw exception text)."
+  },
+  "fileFailureReasonFormat": "ファイルの形式が違うか、壊れています",
+  "@fileFailureReasonFormat": {
+    "description": "Reason shown after a failed import when the file could not be understood."
+  },
+  "fileFailureReasonOther": "予期しない問題が起きました",
+  "@fileFailureReasonOther": {
+    "description": "Reason shown after a failed export/import/save for any other cause."
+  },
   "communityErrorTagLimitExceeded": "タグは1作品につき{max}個までです。",
   "@communityErrorTagLimitExceeded": {
     "placeholders": {
@@ -4484,10 +4523,11 @@
   "sharedArchiveEmpty": "作成した共有ファイルはまだありません",
   "coinAmount": "{count}オパール",
   "@coinAmount": {
-    "description": "オパールの数（報酬・交換・履歴・ミッション共通）。数と単位をまとめた1つの文言",
+    "description": "オパールの数（報酬・交換・履歴・ミッション共通）。数と単位をまとめた1つの文言。数は表示言語の桁区切りで書く",
     "placeholders": {
       "count": {
-        "type": "int"
+        "type": "int",
+        "format": "decimalPattern"
       }
     }
   },

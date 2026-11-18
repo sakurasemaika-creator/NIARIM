@@ -301,8 +301,9 @@ bool isColorVisionPairConfusable(Color a, Color b) {
 /// [preset]の重要な操作において、実際に重なる文字・アイコンと背景を判定する。
 ///
 /// - 本文の文字色 × パネル背景色（一覧・設定画面の本文）
-/// - メニュー文字色 × メニュー背景色（メニュー・上部バー）
-/// - 本文文字色 × メニュー背景色（ダイアログ本文）
+/// - メニュー文字色 × メニュー背景色（メニュー・上部バー・ダイアログ・
+///   シート・知らせ・入力欄・カード・浮かぶパネルの中身。どれもメニューの
+///   面のテーマで描くので、本文の文字色はメニューの背景色に載らない）
 /// - ボタン文字色 × アクセント色・選択色（起動画面の導線）
 /// - 選択中文字色 × 選択色（選択背景上のラベル）
 /// - アクセントの文字・アイコン色 × パネル背景色・メニュー背景色（選択中の
@@ -323,10 +324,9 @@ List<({Color a, Color b})> readabilityCriticalPairs(AppThemePreset preset) {
   return [
     // 一般的な一覧・設定項目の本文/パネル背景
     (a: opaqueOver(preset.textColor, panel), b: panel),
-    // 上部バー・メニューの文字と、メニュー背景
+    // 上部バー・メニュー・ダイアログ・シート・入力欄・カードの文字と、
+    // メニュー背景
     (a: opaqueOver(menuForeground, menu), b: menu),
-    // ダイアログ本文や入力欄など、本文文字がメニュー色の面に載る場合
-    (a: opaqueOver(preset.textColor, menu), b: menu),
     // 起動画面「作品をつくる」の文字・アイコン/アクセント色
     (a: opaqueOver(splashForeground, accent), b: accent),
     // 起動画面「作品広場」の文字・アイコン/選択色

@@ -110,7 +110,9 @@ class _ProjectFolderEditDialogState extends State<ProjectFolderEditDialog> {
                     child: IconButton(
                       tooltip: color == null
                           ? l10n.folderNone
-                          : '${l10n.projectListFolderColorLabel}: #${color.toRadixString(16).substring(2).toUpperCase()}',
+                          : l10n.folderColorOptionSemanticsLabel(
+                              '#${color.toRadixString(16).substring(2).toUpperCase()}',
+                            ),
                       onPressed: _saving
                           ? null
                           : () => setState(() => _color = color),

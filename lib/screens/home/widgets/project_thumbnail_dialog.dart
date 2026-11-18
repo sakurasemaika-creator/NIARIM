@@ -12,6 +12,7 @@ import '../../../models/project.dart';
 import '../../../models/scene.dart';
 import '../../../services/frame_thumbnail_renderer.dart';
 import '../../../services/project_service.dart';
+import '../../../widgets/menu_surface.dart';
 
 /// A four-choice project thumbnail editor shared by owned and received
 /// projects. The selected frame is previewed with the same scene compositor
@@ -215,22 +216,24 @@ class _ProjectThumbnailDialogState extends State<_ProjectThumbnailDialog> {
     children: [
       const SizedBox(height: 10),
       if (scenes.length > 1)
-        DropdownButtonFormField<String>(
-          key: const Key('projectThumbnailScene'),
-          initialValue: sceneId,
-          isExpanded: true,
-          items: [
-            for (final s in scenes)
-              DropdownMenuItem(value: s.id, child: Text(s.displayName)),
-          ],
-          onChanged: (value) {
-            _stop();
-            setState(() {
-              sceneId = value;
-              frameIndex = 0;
-            });
-            _render();
-          },
+        MenuSurface(
+          child: DropdownButtonFormField<String>(
+            key: const Key('projectThumbnailScene'),
+            initialValue: sceneId,
+            isExpanded: true,
+            items: [
+              for (final s in scenes)
+                DropdownMenuItem(value: s.id, child: Text(s.displayName)),
+            ],
+            onChanged: (value) {
+              _stop();
+              setState(() {
+                sceneId = value;
+                frameIndex = 0;
+              });
+              _render();
+            },
+          ),
         ),
       AspectRatio(
         aspectRatio:

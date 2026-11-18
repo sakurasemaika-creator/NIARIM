@@ -39,6 +39,7 @@ import '../../services/workspace_preset_service.dart';
 import '../../utils/app_error_reporter.dart';
 import '../../utils/transfer_merge.dart';
 import '../../widgets/export_share_feedback.dart';
+import '../../widgets/fit_or_hide_title.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/help_button.dart';
 import '../../widgets/projects_load_failure_notice.dart';
@@ -98,7 +99,8 @@ class _TransferScreenState extends State<TransferScreen> {
       // topicはヘルプ画面側の項目タイトル（日本語固定の内部検索キー）と
       // 一致させる必要があるため翻訳しない。
       appBar: AppBar(
-        title: Text(l10n.transferScreenTitle),
+        // 画面名は入らなければ出さない（省略記号で切らない、ほかの画面と同じ）。
+        title: FitOrHideTitle(l10n.transferScreenTitle),
         actions: const [HelpButton(topic: '引き継ぎ（.niatra）')],
       ),
       // ボタンの段は本文ではなく画面の下の段（bottomNavigationBar）に置く。
@@ -204,7 +206,12 @@ class _TransferScreenState extends State<TransferScreen> {
                           CheckboxListTile(
                             title: Text(_itemLabel(l10n, key)),
                             value: _items[key],
-                            onChanged: (v) => setState(() => _items[key] = v!),
+                            // 書き出し・読み込みの間は選び直せない（作品の
+                            // 選択と同じ。途中で変えた項目が今の処理に
+                            // 入ったか分からなくなる）。
+                            onChanged: _isBusy
+                                ? null
+                                : (v) => setState(() => _items[key] = v!),
                           ),
                         ],
                       ],

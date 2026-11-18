@@ -9,6 +9,8 @@ import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/screens/canvas/canvas_screen.dart';
 import 'package:niarim/screens/canvas/widgets/brush_panel.dart';
 import 'package:niarim/screens/canvas/widgets/canvas_area.dart';
+import 'package:niarim/screens/canvas/widgets/filter_panel.dart';
+import 'package:niarim/services/filter_service.dart';
 import 'package:niarim/screens/canvas/widgets/stamp_panel.dart';
 import 'package:niarim/screens/canvas/widgets/tone_panel.dart';
 import 'package:niarim/services/project_service.dart';
@@ -102,6 +104,73 @@ void main() {
       await tester.pumpAndSettle();
       expect(input, findsNothing);
     }
+  });
+
+  testWidgets('the filter list search takes focus and Esc closes it', (
+    tester,
+  ) async {
+    // DISC294：フィルターの一覧の検索欄だけ、開いてもフォーカスが入らず、
+    // 打った字が画面のショートカットへ届いた。閉じても言葉が残って一覧を
+    // 隠し続けた。
+    final providers = (await tester.runAsync(buildAppProviders))!;
+    final screenFocus = FocusNode();
+    addTearDown(screenFocus.dispose);
+    var selectAllCalls = 0;
+    await tester.pumpWidget(
+      MultiProvider(
+        providers: providers,
+        child: MaterialApp(
+          locale: const Locale('ja'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: TypingAwareShortcuts(
+              screenFocus: screenFocus,
+              bindings: {
+                const SingleActivator(
+                  LogicalKeyboardKey.keyA,
+                  control: true,
+                ): () =>
+                    selectAllCalls++,
+              },
+              child: Focus(
+                focusNode: screenFocus,
+                child: FilterPanel(
+                  projectId: 'none',
+                  sceneId: 'none',
+                  layerId: 'none',
+                  frameIndex: 0,
+                  onClose: () {},
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    screenFocus.requestFocus();
+    await tester.pumpAndSettle();
+    final l10n = AppLocalizations.of(tester.element(find.byType(FilterPanel)))!;
+    final filters = tester
+        .element(find.byType(FilterPanel))
+        .read<FilterService>();
+    final visibleBefore = filters.visibleFilters.length;
+    await tester.tap(find.byTooltip(l10n.creativePanelSearchTooltip));
+    await tester.pumpAndSettle();
+    final input = find.byKey(const ValueKey('filter-search-input'));
+    expect(input, findsOneWidget);
+    expect(TypingAwareShortcuts.isTyping, isTrue);
+    tester.testTextInput.enterText('zzzz該当なし');
+    await tester.pump();
+    expect(filters.visibleFilters, isEmpty);
+    await tester.sendKeyDownEvent(LogicalKeyboardKey.controlLeft);
+    await tester.sendKeyEvent(LogicalKeyboardKey.keyA);
+    await tester.sendKeyUpEvent(LogicalKeyboardKey.controlLeft);
+    expect(selectAllCalls, 0);
+    await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+    await tester.pumpAndSettle();
+    expect(input, findsNothing);
+    expect(filters.visibleFilters.length, visibleBefore);
   });
 
   for (final kind in [PointerDeviceKind.touch, PointerDeviceKind.mouse]) {

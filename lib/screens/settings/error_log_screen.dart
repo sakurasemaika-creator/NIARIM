@@ -6,6 +6,7 @@ import '../../utils/app_error_reporter.dart';
 import '../../widgets/empty_state_placeholder.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/fit_or_hide_title.dart';
+import '../../widgets/menu_card.dart';
 
 /// 設定の「エラーの記録」。アプリを閉じるまでに起きたエラー
 /// （[AppErrorReporter.recentErrors]）を新しい順に見せ、不具合を知らせる
@@ -74,7 +75,7 @@ class _ErrorLogScreenState extends State<ErrorLogScreen> {
                   ),
                   const SizedBox(height: 12),
                   for (final error in errors)
-                    Card(
+                    MenuCard(
                       margin: const EdgeInsets.only(bottom: 8),
                       child: Padding(
                         padding: const EdgeInsets.all(12),

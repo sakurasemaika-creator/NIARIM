@@ -180,14 +180,14 @@ class _CanvasPreviewNavigatorState extends State<CanvasPreviewNavigator> {
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
             child: Row(
               children: [
-                Icon(Icons.map_outlined, size: 14, color: theme.textColor),
+                Icon(Icons.map_outlined, size: 14, color: theme.menuTextColor),
                 const SizedBox(width: 6),
                 Expanded(
                   child: Text(
                     l10n.canvasPreviewNavigatorTitle,
                     style: TextStyle(
                       fontSize: 11,
-                      color: theme.textColor,
+                      color: theme.menuTextColor,
                       fontWeight: FontWeight.w600,
                       fontFamily: 'Kuramubon',
                       fontFamilyFallback: kHeadingFontFallback,
@@ -198,7 +198,11 @@ class _CanvasPreviewNavigatorState extends State<CanvasPreviewNavigator> {
                 if (widget.showCloseButton)
                   InkWell(
                     onTap: widget.onClose,
-                    child: Icon(Icons.close, size: 16, color: theme.textColor),
+                    child: Icon(
+                      Icons.close,
+                      size: 16,
+                      color: theme.menuTextColor,
+                    ),
                   ),
               ],
             ),

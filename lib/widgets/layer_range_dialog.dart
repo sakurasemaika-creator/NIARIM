@@ -5,6 +5,7 @@ import '../models/layer.dart';
 import '../models/scene.dart';
 import 'list_ink_clip.dart';
 import 'typing_dialog_inset.dart';
+import 'menu_surface.dart';
 
 class LayerRangeDialog extends StatefulWidget {
   const LayerRangeDialog({
@@ -154,21 +155,24 @@ class _LayerRangeDialogState extends State<LayerRangeDialog> {
               if (_mode == LayerRangeMode.sceneRange)
                 Padding(
                   padding: const EdgeInsets.only(left: 16, right: 8, bottom: 8),
-                  child: DropdownButtonFormField<String>(
-                    initialValue: _sceneId,
-                    isExpanded: true,
-                    decoration: InputDecoration(
-                      labelText: l10n.layerPanelRangeTargetSceneLabel,
-                      isDense: true,
+                  child: MenuSurface(
+                    child: DropdownButtonFormField<String>(
+                      initialValue: _sceneId,
+                      isExpanded: true,
+                      decoration: InputDecoration(
+                        labelText: l10n.layerPanelRangeTargetSceneLabel,
+                        isDense: true,
+                      ),
+                      items: [
+                        for (final scene in widget.scenes)
+                          DropdownMenuItem(
+                            value: scene.id,
+                            child: Text(scene.displayName),
+                          ),
+                      ],
+                      onChanged: (sceneId) =>
+                          setState(() => _sceneId = sceneId),
                     ),
-                    items: [
-                      for (final scene in widget.scenes)
-                        DropdownMenuItem(
-                          value: scene.id,
-                          child: Text(scene.displayName),
-                        ),
-                    ],
-                    onChanged: (sceneId) => setState(() => _sceneId = sceneId),
                   ),
                 ),
               RadioListTile<LayerRangeMode>(

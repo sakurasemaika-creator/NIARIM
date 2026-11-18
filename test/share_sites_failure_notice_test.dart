@@ -953,6 +953,15 @@ void main() {
     expect(share.calls, calls + 1);
     await export(wait: false);
     expect(share.calls, calls + 1, reason: '二度押しで共有を二重に呼ばない');
+    // 書き出しの間は、書き出す項目（設定の項目・作品）も選び直せない
+    // （DISC389：設定の項目だけ押せた）。
+    final tiles = tester.widgetList<CheckboxListTile>(
+      find.byType(CheckboxListTile, skipOffstage: false),
+    );
+    expect(tiles, isNotEmpty);
+    for (final tile in tiles) {
+      expect(tile.onChanged, isNull, reason: '${tile.title}');
+    }
     share.pending!.complete('');
     share.pending = null;
     await pumpRealAsync(tester, const Duration(milliseconds: 300));

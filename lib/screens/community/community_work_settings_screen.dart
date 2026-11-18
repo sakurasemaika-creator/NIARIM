@@ -12,6 +12,7 @@ import '../../widgets/fit_or_hide_title.dart';
 import '../../widgets/keep_together_text.dart';
 import '../../widgets/typing_dialog_inset.dart';
 import 'widgets/community_work_counts.dart';
+import '../../widgets/menu_card.dart';
 
 /// Per-work owner settings. The YouTube editor is an external destination;
 /// NIARIM visibility and AI disclosure use the authenticated NIARIM API.
@@ -451,7 +452,7 @@ class _CommunityWorkSettingsScreenState
                     CommunityWorkCounts(work: work),
                   ],
                   const SizedBox(height: 18),
-                  Card(
+                  MenuCard(
                     child: ListTile(
                       key: const Key('communityWorkSettingsEditMetadata'),
                       leading: const Icon(Icons.edit_note_outlined),
@@ -466,7 +467,7 @@ class _CommunityWorkSettingsScreenState
                     ),
                   ),
                   const SizedBox(height: 12),
-                  Card(
+                  MenuCard(
                     child: Column(
                       children: [
                         SwitchListTile(
@@ -500,7 +501,7 @@ class _CommunityWorkSettingsScreenState
                     ),
                   ),
                   const SizedBox(height: 14),
-                  Card(
+                  MenuCard(
                     child: Padding(
                       padding: const EdgeInsets.all(12),
                       child: Column(

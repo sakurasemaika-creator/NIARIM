@@ -371,8 +371,7 @@ class ExportEngine {
         : img.encodePng(image);
     final dir = await ExportEngine.exportsDir();
     final ext = asJpeg ? 'jpg' : 'png';
-    final outputPath =
-        '${dir.path}/niarim_frame_${DateTime.now().millisecondsSinceEpoch}.$ext';
+    final outputPath = _freshOutputPath(dir, 'niarim_frame', ext);
     await _publishImageExport(outputPath, bytes);
     return outputPath;
   }
@@ -491,11 +490,55 @@ class ExportEngine {
     );
   }
 
+  /// 書き出し先の名前として、この起動の間に渡したものとも、既にあるファイル
+  /// とも重ならないもの（`niarim_<ミリ秒>.<ext>`）。同じミリ秒に終わった2つの
+  /// 書き出しが同じ名前になり、後の方が前の作品を上書きしないように。
+  static final Set<String> _issuedOutputPaths = {};
+
+  /// 今走っている書き出しのコマのフォルダ。
+  static final Set<String> _framesInUse = {};
+
+  /// 書き出しごとに別のコマのフォルダ（`[prefix]_…`）を作る。同じ名前の
+  /// フォルダを使い回すと、同時に走る別の書き出しが始めるときに消し、互いの
+  /// コマを消したり混ぜたりした。前の書き出しが消せずに残したフォルダ
+  /// （今走っていないもの、以前の版の`[prefix]`そのもの）はここで片付ける。
+  static Directory _newFramesDir(Directory tmpDir, String prefix) {
+    try {
+      for (final entity in tmpDir.listSync()) {
+        if (entity is! Directory || _framesInUse.contains(entity.path)) {
+          continue;
+        }
+        final name = entity.uri.pathSegments.lastWhere((s) => s.isNotEmpty);
+        if (name == prefix || name.startsWith('${prefix}_')) {
+          _removeFrames(entity);
+        }
+      }
+    } on FileSystemException catch (error, stackTrace) {
+      AppErrorReporter.record(error, stackTrace);
+    }
+    final frames = tmpDir.createTempSync('${prefix}_');
+    _framesInUse.add(frames.path);
+    return frames;
+  }
+
+  static String _freshOutputPath(Directory dir, String stem, String ext) {
+    var stamp = DateTime.now().millisecondsSinceEpoch;
+    while (true) {
+      final path = '${dir.path}/${stem}_$stamp.$ext';
+      if (!_issuedOutputPaths.contains(path) && !File(path).existsSync()) {
+        _issuedOutputPaths.add(path);
+        return path;
+      }
+      stamp++;
+    }
+  }
+
   /// Remove the temporary folder of frame PNGs a video export wrote, whether
   /// the export finished, failed or was cancelled. A folder that cannot be
-  /// removed is emptied by the next export of the same kind; it must not turn
-  /// a finished export into a failure.
+  /// removed is cleared when the next export of the same kind starts; it must
+  /// not turn a finished export into a failure.
   static void _removeFrames(Directory frames) {
+    _framesInUse.remove(frames.path);
     try {
       if (frames.existsSync()) frames.deleteSync(recursive: true);
     } on FileSystemException catch (error, stackTrace) {
@@ -541,9 +584,8 @@ class ExportEngine {
     ExportCancelToken? cancelToken,
   }) async {
     final tmpDir = await getTemporaryDirectory();
-    final framesDir = Directory('${tmpDir.path}/export_frames');
-    if (framesDir.existsSync()) framesDir.deleteSync(recursive: true);
-    framesDir.createSync();
+    // 書き出しごとに別のフォルダ（同時に走る書き出しのコマを消さない）。
+    final framesDir = _newFramesDir(tmpDir, 'export_frames');
     String? partialOutput;
     try {
       int globalIndex = 0;
@@ -623,8 +665,7 @@ class ExportEngine {
       }
 
       final exportsDir = await ExportEngine.exportsDir();
-      final outputPath =
-          '${exportsDir.path}/niarim_${DateTime.now().millisecondsSinceEpoch}.mp4';
+      final outputPath = _freshOutputPath(exportsDir, 'niarim', 'mp4');
       partialOutput = outputPath;
       await HardwareVideoEncoder.encodeMp4(
         framePaths: framePaths,
@@ -712,8 +753,7 @@ class ExportEngine {
 
     final gifBytes = img.encodeGif(gifImage!);
     final exportsDir = await ExportEngine.exportsDir();
-    final outputPath =
-        '${exportsDir.path}/niarim_${DateTime.now().millisecondsSinceEpoch}.gif';
+    final outputPath = _freshOutputPath(exportsDir, 'niarim', 'gif');
     await _publishImageExport(outputPath, gifBytes);
     return outputPath;
   }
@@ -760,9 +800,8 @@ class ExportEngine {
     ExportCancelToken? cancelToken,
   }) async {
     final tmpDir = await getTemporaryDirectory();
-    final framesDir = Directory('${tmpDir.path}/export_webm_frames');
-    if (framesDir.existsSync()) framesDir.deleteSync(recursive: true);
-    framesDir.createSync();
+    // 書き出しごとに別のフォルダ（同時に走る書き出しのコマを消さない）。
+    final framesDir = _newFramesDir(tmpDir, 'export_webm_frames');
     String? partialOutput;
     try {
       int globalIndex = 0;
@@ -840,8 +879,7 @@ class ExportEngine {
       }
 
       final exportsDir = await ExportEngine.exportsDir();
-      final outputPath =
-          '${exportsDir.path}/niarim_${DateTime.now().millisecondsSinceEpoch}.webm';
+      final outputPath = _freshOutputPath(exportsDir, 'niarim', 'webm');
       partialOutput = outputPath;
       final session = await FFmpegKit.execute(
         '-y -framerate $fps -i "${framesDir.path}/frame_%06d.png" '
@@ -887,9 +925,8 @@ class ExportEngine {
     ExportCancelToken? cancelToken,
   }) async {
     final tmpDir = await getTemporaryDirectory();
-    final framesDir = Directory('${tmpDir.path}/export_avi_frames');
-    if (framesDir.existsSync()) framesDir.deleteSync(recursive: true);
-    framesDir.createSync();
+    // 書き出しごとに別のフォルダ（同時に走る書き出しのコマを消さない）。
+    final framesDir = _newFramesDir(tmpDir, 'export_avi_frames');
     String? partialOutput;
     try {
       int globalIndex = 0;
@@ -967,8 +1004,7 @@ class ExportEngine {
       }
 
       final exportsDir = await ExportEngine.exportsDir();
-      final outputPath =
-          '${exportsDir.path}/niarim_${DateTime.now().millisecondsSinceEpoch}.avi';
+      final outputPath = _freshOutputPath(exportsDir, 'niarim', 'avi');
       partialOutput = outputPath;
       // mjpegはアルファ非対応のため、透過を破棄してbackgroundColorで合成済みの
       // RGBを不透明のyuvj420pへ変換する（yuva420p等は指定しない）。

@@ -28,6 +28,8 @@ import '../../config/font_fallback.dart';
 import '../../config/accent_text_theme.dart';
 import '../../widgets/fit_or_hide_title.dart';
 import '../../widgets/typing_dialog_inset.dart';
+import '../../widgets/menu_surface.dart';
+import '../../widgets/menu_card.dart';
 
 /// ウォーターマーク登録・管理画面（プレミアム限定）。
 /// 「設定項目：画像選択 / 文字入力 / …」のうち、画像・文字それぞれの
@@ -270,39 +272,41 @@ class WatermarkSettingsScreen extends StatelessWidget {
                   const SizedBox(height: 12),
                   // フォント選択（文字ウォーターマークもキャンバスの
                   // テキストツールと同じくフォントを自由に選べる）
-                  DropdownButtonFormField<String>(
-                    initialValue: fontFamily,
-                    isExpanded: true,
-                    decoration: InputDecoration(
-                      labelText: l10n.canvasTextFontLabel,
-                      isDense: true,
-                    ),
-                    items: [
-                      DropdownMenuItem(
-                        value: 'Roboto',
-                        child: Text(l10n.canvasTextStandardFont),
+                  MenuSurface(
+                    child: DropdownButtonFormField<String>(
+                      initialValue: fontFamily,
+                      isExpanded: true,
+                      decoration: InputDecoration(
+                        labelText: l10n.canvasTextFontLabel,
+                        isDense: true,
                       ),
-                      for (final f in kBundledFonts)
+                      items: [
                         DropdownMenuItem(
-                          value: f.family,
-                          child: Text(
-                            f.displayName,
-                            style: TextStyle(fontFamily: f.family),
-                          ),
+                          value: 'Roboto',
+                          child: Text(l10n.canvasTextStandardFont),
                         ),
-                      ...fontService.fonts.map(
-                        (f) => DropdownMenuItem(
-                          value: fontService.familyNameOf(f),
-                          child: Text(
-                            f.displayName,
-                            style: TextStyle(
-                              fontFamily: fontService.familyNameOf(f),
+                        for (final f in kBundledFonts)
+                          DropdownMenuItem(
+                            value: f.family,
+                            child: Text(
+                              f.displayName,
+                              style: TextStyle(fontFamily: f.family),
+                            ),
+                          ),
+                        ...fontService.fonts.map(
+                          (f) => DropdownMenuItem(
+                            value: fontService.familyNameOf(f),
+                            child: Text(
+                              f.displayName,
+                              style: TextStyle(
+                                fontFamily: fontService.familyNameOf(f),
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                    ],
-                    onChanged: (v) => setS(() => fontFamily = v ?? 'Roboto'),
+                      ],
+                      onChanged: (v) => setS(() => fontFamily = v ?? 'Roboto'),
+                    ),
                   ),
                   const SizedBox(height: 12),
                   Text(
@@ -689,7 +693,7 @@ class _WatermarkTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final service = context.read<WatermarkService>();
-    return Card(
+    return MenuCard(
       clipBehavior: Clip.antiAlias,
       elevation: 2,
       shadowColor: ThemeService.activeColorScheme.shadow.withValues(alpha: 0.2),

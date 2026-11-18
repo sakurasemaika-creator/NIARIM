@@ -7,6 +7,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/foundation.dart' show compute;
 import 'package:flutter/gestures.dart' show DragStartBehavior;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show LogicalKeyboardKey;
 import 'package:file_picker/file_picker.dart';
 import 'dart:convert';
 import 'package:provider/provider.dart';
@@ -53,6 +54,8 @@ import '../../../engine/tone_curve.dart';
 import '../../../config/accent_text_theme.dart';
 import '../../../widgets/list_ink_clip.dart';
 import '../../../widgets/typing_dialog_inset.dart';
+import '../../../widgets/menu_card.dart';
+import '../../../utils/file_failure_reason.dart';
 
 enum FilterColorEyedropperTarget { inkPool, outline }
 
@@ -775,7 +778,7 @@ class _FilterPanelState extends State<FilterPanel> {
     final shell = docked
         ? (Widget child) => child
         : current == null
-        ? (Widget child) => Card(
+        ? (Widget child) => MenuCard(
             elevation: 0, // Prevent black shadows around the floating panel.
             surfaceTintColor: Colors.transparent,
             child: child,
@@ -926,7 +929,8 @@ class _FilterPanelState extends State<FilterPanel> {
         IconButton(
           visualDensity: VisualDensity.compact,
           icon: const Icon(Icons.search, size: 18),
-          onPressed: () => setState(() => _showSearch = !_showSearch),
+          tooltip: l10n.creativePanelSearchTooltip,
+          onPressed: () => _setSearchShown(!_showSearch),
         ),
         IconButton(
           visualDensity: VisualDensity.compact,
@@ -971,21 +975,30 @@ class _FilterPanelState extends State<FilterPanel> {
     } catch (error) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.shareCardImportFailedSnackbar('$error'))),
+          SnackBar(
+            content: Text(
+              l10n.shareCardImportFailedSnackbar(
+                fileFailureReason(l10n, error),
+              ),
+            ),
+          ),
         );
       }
     }
   }
 
+  void _setSearchShown(bool shown) => setState(() {
+    _showSearch = shown;
+    // 閉じた検索の言葉で一覧を隠したままにしない（開き直した欄は空なのに、
+    // 一致しないフィルターが出なかった）。
+    if (!shown) context.read<FilterService>().setSearchQuery('');
+  });
+
   Widget _searchField(AppLocalizations l10n, FilterService service) =>
-      TextField(
-        decoration: InputDecoration(
-          isDense: true,
-          hintText: l10n.filterSearchHint,
-          prefixIcon: const Icon(Icons.search, size: 16),
-        ),
-        style: const TextStyle(fontSize: 12),
+      _FilterSearchField(
+        hint: l10n.filterSearchHint,
         onChanged: service.setSearchQuery,
+        onClose: () => _setSearchShown(false),
       );
 
   Future<void> _manageFilter(
@@ -2678,6 +2691,7 @@ class _FilterPanelState extends State<FilterPanel> {
       border: line,
       enabledBorder: line,
       labelStyle: _overCanvasTextStyle(),
+      floatingLabelStyle: _overCanvasTextStyle(),
     );
   }
 
@@ -2789,6 +2803,7 @@ class _FilterPanelState extends State<FilterPanel> {
     final l10n = AppLocalizations.of(context)!;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 3),
+      // menu-surface: n/a — 塗らない欄（キャンバスの上に縁取りの字で書く）。
       child: DropdownButtonFormField<model.LayerBlendMode>(
         // The value is part of the key so Undo, which changes it from
         // outside, shows the restored mode.
@@ -3570,6 +3585,62 @@ class _FilterPanelState extends State<FilterPanel> {
 
 class _FilterLayerLocked implements Exception {
   const _FilterLayerLocked();
+}
+
+/// フィルターの一覧の検索欄。開いたらすぐ打てるようにフォーカスを入れる
+/// （PCのドックでは画面が先にフォーカスを持っているので`autofocus`では
+/// 入らない。ブラシ・トーン・スタンプの検索欄と同じ）。Escで欄を出る。
+class _FilterSearchField extends StatefulWidget {
+  const _FilterSearchField({
+    required this.hint,
+    required this.onChanged,
+    required this.onClose,
+  });
+
+  final String hint;
+  final ValueChanged<String> onChanged;
+  final VoidCallback onClose;
+
+  @override
+  State<_FilterSearchField> createState() => _FilterSearchFieldState();
+}
+
+class _FilterSearchFieldState extends State<_FilterSearchField> {
+  final _focusNode = FocusNode();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _focusNode.requestFocus();
+    });
+  }
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => CallbackShortcuts(
+    bindings: {
+      const SingleActivator(LogicalKeyboardKey.escape): widget.onClose,
+    },
+    child: TextField(
+      key: const ValueKey('filter-search-input'),
+      focusNode: _focusNode,
+      textInputAction: TextInputAction.search,
+      onSubmitted: (_) => _focusNode.unfocus(),
+      decoration: InputDecoration(
+        isDense: true,
+        hintText: widget.hint,
+        prefixIcon: const Icon(Icons.search, size: 16),
+      ),
+      style: const TextStyle(fontSize: 12),
+      onChanged: widget.onChanged,
+    ),
+  );
 }
 
 class _ToneCurveEditor extends StatefulWidget {

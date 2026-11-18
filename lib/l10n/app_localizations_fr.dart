@@ -87,7 +87,13 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String homeSelectionCount(int count) {
-    return '$count sélectionné(s)';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count sélectionnés',
+      one: '$count sélectionné',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -749,6 +755,21 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get folderMoveToTitle => 'Déplacer vers un dossier';
+
+  @override
+  String folderMoveSheetSemanticsLabel(String name) {
+    return 'Déplacer « $name » vers un dossier';
+  }
+
+  @override
+  String folderColorOptionSemanticsLabel(String code) {
+    return 'Couleur du dossier $code';
+  }
+
+  @override
+  String colorPickerCurrentColorSemanticsLabel(String code) {
+    return 'Couleur sélectionnée $code';
+  }
 
   @override
   String get folderNone => 'Aucun dossier';
@@ -7978,6 +7999,17 @@ class AppLocalizationsFr extends AppLocalizations {
       'Un problème est survenu. Veuillez réessayer.';
 
   @override
+  String get fileFailureReasonAccess =>
+      'Impossible de lire ou d’écrire le fichier';
+
+  @override
+  String get fileFailureReasonFormat =>
+      'Le fichier a un autre format ou est endommagé';
+
+  @override
+  String get fileFailureReasonOther => 'Un problème inattendu est survenu';
+
+  @override
   String communityErrorTagLimitExceeded(int max) {
     return 'Une œuvre peut avoir au maximum $max tags.';
   }
@@ -9622,11 +9654,15 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String coinAmount(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count opales',
-      one: '$count opale',
+      other: '$countString opales',
+      one: '$countString opale',
     );
     return '$_temp0';
   }

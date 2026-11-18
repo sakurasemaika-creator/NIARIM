@@ -101,7 +101,7 @@ void main() {
         )!;
         await tester.enterText(find.byType(TextField), 'RETAIN ME');
         final color = find.byTooltip(
-          '${l10n.projectListFolderColorLabel}: #FF5C7A',
+          l10n.folderColorOptionSemanticsLabel('#FF5C7A'),
         );
         await tester.ensureVisible(color);
         await tester.tap(color);

@@ -2,7 +2,11 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/gestures.dart'
-    show DragStartBehavior, GestureBinding, PointerScrollEvent, PointerSignalEvent;
+    show
+        DragStartBehavior,
+        GestureBinding,
+        PointerScrollEvent,
+        PointerSignalEvent;
 
 import 'dart:math' as math;
 import 'dart:typed_data';
@@ -19,6 +23,7 @@ import 'package:video_player/video_player.dart';
 
 import '../../utils/immersive_mode.dart';
 import '../../utils/app_error_reporter.dart';
+import '../../widgets/action_beside_or_below.dart';
 import '../../widgets/name_entry_dialog.dart';
 import '../../widgets/pc_workspace.dart';
 import '../../widgets/project_duration_limit_dialog.dart';
@@ -1202,25 +1207,21 @@ class _TimelineScreenState extends State<TimelineScreen> {
                   icon: Icons.image,
                   defaultLabel: l10n.projectListMaterialImage,
                   allClips: _imageClips,
-                  addColor: ThemeService
-                      .activeColorScheme
-                      .secondary,
+                  addColor: ThemeService.activeColorScheme.secondary,
                 ),
                 _buildMaterialTrackGroup(
                   type: TimelineRowKind.video,
                   icon: Icons.videocam,
                   defaultLabel: l10n.projectListMaterialVideo,
                   allClips: _videoClips,
-                  addColor:
-                      ThemeService.activeColorScheme.primary,
+                  addColor: ThemeService.activeColorScheme.primary,
                 ),
                 _buildMaterialTrackGroup(
                   type: TimelineRowKind.audio,
                   icon: Icons.audiotrack,
                   defaultLabel: l10n.projectListMaterialAudio,
                   allClips: _audioClips,
-                  addColor:
-                      ThemeService.activeColorScheme.tertiary,
+                  addColor: ThemeService.activeColorScheme.tertiary,
                 ),
                 _buildCameraTrack(),
                 _buildMarkerTrack(),
@@ -1725,7 +1726,8 @@ class _TimelineScreenState extends State<TimelineScreen> {
           ),
         ),
         const PcCommandDivider(),
-        if (!_isSceneCursorActive && !_isFrameCursorActive &&
+        if (!_isSceneCursorActive &&
+            !_isFrameCursorActive &&
             _timelineSelection == null)
           ..._timelineSelectionControls(l10n, showLabels: false),
         _addMaterialMenu(l10n, style: barStyle),
@@ -2140,70 +2142,73 @@ class _TimelineScreenState extends State<TimelineScreen> {
   }
 
   Widget _moreMenu(AppLocalizations l10n, {ButtonStyle? style}) =>
-    PopupMenuButton<String>(
-      key: const ValueKey('timelineMoreMenu'),
-      style: style,
-      icon: const Icon(Icons.more_vert),
-      onSelected: (action) {
-        if (action == 'autofill') _showAutofillDialog();
-        if (action == 'automation') _showCustomAutomationManager();
-        if (action == 'save_tree') {
-          _runAutomationBlockedAction(
-            () => context.push(
-              '/save-tree/${widget.projectId}?entry=timeline',
+      PopupMenuButton<String>(
+        key: const ValueKey('timelineMoreMenu'),
+        style: style,
+        icon: const Icon(Icons.more_vert),
+        onSelected: (action) {
+          if (action == 'autofill') _showAutofillDialog();
+          if (action == 'automation') _showCustomAutomationManager();
+          if (action == 'save_tree') {
+            _runAutomationBlockedAction(
+              () =>
+                  context.push('/save-tree/${widget.projectId}?entry=timeline'),
+            );
+          }
+          if (action == 'export') {
+            _runAutomationBlockedAction(
+              () => context.push('/export/${widget.projectId}'),
+            );
+          }
+          if (action == 'export_frame') _exportCurrentFrameImage();
+          if (action == 'duration') _showDurationChangeDialog();
+          if (action == 'canvas_size') _showCanvasSizeChangeDialog();
+        },
+        itemBuilder: (_) => [
+          PopupMenuItem(
+            value: 'automation',
+            child: Row(
+              children: [
+                Icon(
+                  Icons.playlist_play,
+                  size: 18,
+                  color: PopupMenuTheme.of(context).iconColor,
+                ),
+                const SizedBox(width: 8),
+                Text(l10n.customAutomationTitle),
+              ],
             ),
-          );
-        }
-        if (action == 'export') {
-          _runAutomationBlockedAction(
-            () => context.push('/export/${widget.projectId}'),
-          );
-        }
-        if (action == 'export_frame') _exportCurrentFrameImage();
-        if (action == 'duration') _showDurationChangeDialog();
-        if (action == 'canvas_size') _showCanvasSizeChangeDialog();
-      },
-      itemBuilder: (_) => [
-        PopupMenuItem(
-          value: 'automation',
-          child: Row(
-            children: [
-              const Icon(Icons.playlist_play, size: 18),
-              const SizedBox(width: 8),
-              Text(l10n.customAutomationTitle),
-            ],
           ),
-        ),
-        PopupMenuItem(
-          value: 'save_tree',
-          child: Text(
-            context.read<SaveTreeService>().isTreeMode
-                ? l10n.saveTreeScreenTitleTree
-                : l10n.saveTreeScreenTitleSlot,
+          PopupMenuItem(
+            value: 'save_tree',
+            child: Text(
+              context.read<SaveTreeService>().isTreeMode
+                  ? l10n.saveTreeScreenTitleTree
+                  : l10n.saveTreeScreenTitleSlot,
+            ),
           ),
-        ),
-        PopupMenuItem(
-          value: 'autofill',
-          child: Text(l10n.layerPanelMenuRunAutofill),
-        ),
-        PopupMenuItem(
-          value: 'duration',
-          child: Text(l10n.timelineDurationChangeMenuItem),
-        ),
-        PopupMenuItem(
-          value: 'canvas_size',
-          child: Text(l10n.timelineCanvasSizeChangeMenuItem),
-        ),
-        PopupMenuItem(
-          value: 'export',
-          child: Text(l10n.timelineExportMenuItem),
-        ),
-        PopupMenuItem(
-          value: 'export_frame',
-          child: Text(l10n.timelineExportFrameMenuItem),
-        ),
-      ],
-    );
+          PopupMenuItem(
+            value: 'autofill',
+            child: Text(l10n.layerPanelMenuRunAutofill),
+          ),
+          PopupMenuItem(
+            value: 'duration',
+            child: Text(l10n.timelineDurationChangeMenuItem),
+          ),
+          PopupMenuItem(
+            value: 'canvas_size',
+            child: Text(l10n.timelineCanvasSizeChangeMenuItem),
+          ),
+          PopupMenuItem(
+            value: 'export',
+            child: Text(l10n.timelineExportMenuItem),
+          ),
+          PopupMenuItem(
+            value: 'export_frame',
+            child: Text(l10n.timelineExportFrameMenuItem),
+          ),
+        ],
+      );
 
   Widget _buildTopBar() {
     final l10n = AppLocalizations.of(context)!;
@@ -2697,87 +2702,91 @@ class _TimelineScreenState extends State<TimelineScreen> {
       PremiumFeature.watermark,
     );
     return PopupMenuButton<Object>(
-        key: const Key('timelineAddMaterialMenu'),
-        style: style,
-        icon: const Icon(Icons.add_circle_outline, size: 18),
-        tooltip: l10n.timelineAddMaterialTooltip,
-        onSelected: (action) {
-          if (action is _ClipTrackType) {
-            _addMaterialOfType(action);
-          } else if (action == _TimelineToolbarAction.watermark) {
-            // Recheck at selection, including changes while the menu is open.
-            if (context.read<PremiumService>().isFeatureAvailable(
-              PremiumFeature.watermark,
-            )) {
-              _showWatermarkPicker();
-            } else {
-              showPremiumBanner(context, feature: PremiumFeature.watermark);
-            }
+      key: const Key('timelineAddMaterialMenu'),
+      style: style,
+      icon: const Icon(Icons.add_circle_outline, size: 18),
+      tooltip: l10n.timelineAddMaterialTooltip,
+      onSelected: (action) {
+        if (action is _ClipTrackType) {
+          _addMaterialOfType(action);
+        } else if (action == _TimelineToolbarAction.watermark) {
+          // Recheck at selection, including changes while the menu is open.
+          if (context.read<PremiumService>().isFeatureAvailable(
+            PremiumFeature.watermark,
+          )) {
+            _showWatermarkPicker();
+          } else {
+            showPremiumBanner(context, feature: PremiumFeature.watermark);
           }
-        },
-        itemBuilder: (_) => [
-          for (final (type, icon, label) in [
-            (
-              _ClipTrackType.text,
-              Icons.text_fields,
-              l10n.timelineAddTextTooltip,
-            ),
-            (_ClipTrackType.image, Icons.image, l10n.timelineAddImageTooltip),
-            (
-              _ClipTrackType.video,
-              Icons.videocam,
-              l10n.timelineAddVideoTooltip,
-            ),
-            (
-              _ClipTrackType.audio,
-              Icons.audiotrack,
-              l10n.timelineAddAudioTooltip,
-            ),
-          ])
-            PopupMenuItem<Object>(
-              value: type,
-              child: Row(
-                children: [
-                  Icon(icon, size: 20),
-                  const SizedBox(width: 12),
-                  Flexible(
-                    child: Text(
-                      label,
-                      style: const TextStyle(
-                        fontFamily: 'Kuramubon',
-                        fontFamilyFallback: kHeadingFontFallback,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          const PopupMenuDivider(),
+        }
+      },
+      itemBuilder: (_) => [
+        for (final (type, icon, label) in [
+          (_ClipTrackType.text, Icons.text_fields, l10n.timelineAddTextTooltip),
+          (_ClipTrackType.image, Icons.image, l10n.timelineAddImageTooltip),
+          (_ClipTrackType.video, Icons.videocam, l10n.timelineAddVideoTooltip),
+          (
+            _ClipTrackType.audio,
+            Icons.audiotrack,
+            l10n.timelineAddAudioTooltip,
+          ),
+        ])
           PopupMenuItem<Object>(
-            key: const Key('timelineAddWatermarkMenuItem'),
-            value: _TimelineToolbarAction.watermark,
+            value: type,
             child: Row(
               children: [
-                const Icon(Icons.branding_watermark, size: 20),
+                Icon(
+                  icon,
+                  size: 20,
+                  color: PopupMenuTheme.of(context).iconColor,
+                ),
                 const SizedBox(width: 12),
                 Flexible(
                   child: Text(
-                    l10n.timelineAddWatermarkTooltip,
+                    label,
                     style: const TextStyle(
                       fontFamily: 'Kuramubon',
                       fontFamilyFallback: kHeadingFontFallback,
                     ),
                   ),
                 ),
-                if (!canUseWatermark) ...[
-                  const SizedBox(width: 8),
-                  const Icon(Icons.lock_outline, size: 16),
-                ],
               ],
             ),
           ),
-        ],
-      );
+        const PopupMenuDivider(),
+        PopupMenuItem<Object>(
+          key: const Key('timelineAddWatermarkMenuItem'),
+          value: _TimelineToolbarAction.watermark,
+          child: Row(
+            children: [
+              Icon(
+                Icons.branding_watermark,
+                size: 20,
+                color: PopupMenuTheme.of(context).iconColor,
+              ),
+              const SizedBox(width: 12),
+              Flexible(
+                child: Text(
+                  l10n.timelineAddWatermarkTooltip,
+                  style: const TextStyle(
+                    fontFamily: 'Kuramubon',
+                    fontFamilyFallback: kHeadingFontFallback,
+                  ),
+                ),
+              ),
+              if (!canUseWatermark) ...[
+                const SizedBox(width: 8),
+                Icon(
+                  Icons.lock_outline,
+                  size: 16,
+                  color: PopupMenuTheme.of(context).iconColor,
+                ),
+              ],
+            ],
+          ),
+        ),
+      ],
+    );
   }
 
   List<Widget> _timelineSelectionControls(
@@ -2788,8 +2797,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
       key: const Key('timelineSelectionMenu'),
       icon: showLabels ? null : const Icon(Icons.checklist, size: 20),
       tooltip: l10n.toolbarItemSelect,
-      onSelected: (target) =>
-          setState(() => _setTimelineSelection(target)),
+      onSelected: (target) => setState(() => _setTimelineSelection(target)),
       itemBuilder: (_) => [
         for (final target in _TimelineSelection.values)
           PopupMenuItem(
@@ -3480,10 +3488,13 @@ class _TimelineScreenState extends State<TimelineScreen> {
     );
   }
 
-  String _sceneCopyName(AppLocalizations l10n, ProjectService ps, Scene scene) =>
-      numberedEditorCopyName(l10n, scene.displayName, {
-        for (final other in ps.scenesOf(widget.projectId)) other.displayName,
-      });
+  String _sceneCopyName(
+    AppLocalizations l10n,
+    ProjectService ps,
+    Scene scene,
+  ) => numberedEditorCopyName(l10n, scene.displayName, {
+    for (final other in ps.scenesOf(widget.projectId)) other.displayName,
+  });
 
   /// 選択中シーンを複製する（シーンのコピー。素材タイムラインの
   /// 上の大きなボタンから起動する）。並び順（シーン一覧の
@@ -8305,8 +8316,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
       if (!batchFailed && !cancelled && failedFrames == 0)
         l10n.timelineAutofillCompleteSnackbar(applied),
     ].join(' ');
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 }
 
@@ -8961,24 +8973,25 @@ class _EffectFilterSheet extends StatelessWidget {
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-            child: Row(
-              children: [
-                Text(
-                  l10n.timelineEffectFilterLabel,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'Kuramubon',
-                    fontFamilyFallback: kHeadingFontFallback,
-                  ),
+            // 見出しと「追加」は入れば横に並べ、入らなければ「追加」を下へ
+            // 回す（長い言語・大きな文字で見出しとボタンが重なり、右端が
+            // はみ出した。DISC027）。
+            child: ActionBesideOrBelow(
+              text: Text(
+                l10n.timelineEffectFilterLabel,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'Kuramubon',
+                  fontFamilyFallback: kHeadingFontFallback,
                 ),
-                const Spacer(),
-                FilledButton.icon(
-                  icon: const Icon(Icons.add, size: 16),
-                  label: Text(l10n.commonAdd),
-                  onPressed: () => _showAddEffectDialog(context),
-                ),
-              ],
+              ),
+              action: FilledButton.icon(
+                key: const ValueKey('timelineEffectFilterAdd'),
+                icon: const Icon(Icons.add, size: 16),
+                label: Text(l10n.commonAdd),
+                onPressed: () => _showAddEffectDialog(context),
+              ),
             ),
           ),
           const Divider(height: 1),

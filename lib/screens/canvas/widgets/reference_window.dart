@@ -160,7 +160,7 @@ class _ReferenceWindowState extends State<ReferenceWindow> {
                           Icon(
                             Icons.dashboard_customize_outlined,
                             size: 14,
-                            color: theme.textColor,
+                            color: theme.menuTextColor,
                           ),
                           const SizedBox(width: 6),
                           Expanded(
@@ -168,7 +168,7 @@ class _ReferenceWindowState extends State<ReferenceWindow> {
                               l10n.referenceWindowTitle,
                               style: TextStyle(
                                 fontSize: 11,
-                                color: theme.textColor,
+                                color: theme.menuTextColor,
                                 fontWeight: FontWeight.w600,
                                 fontFamily: 'Kuramubon',
                                 fontFamilyFallback: kHeadingFontFallback,
@@ -183,7 +183,7 @@ class _ReferenceWindowState extends State<ReferenceWindow> {
                             child: Icon(
                               Icons.add_photo_alternate_outlined,
                               size: 16,
-                              color: theme.textColor,
+                              color: theme.menuTextColor,
                             ),
                           ),
                           const SizedBox(width: 10),
@@ -192,7 +192,7 @@ class _ReferenceWindowState extends State<ReferenceWindow> {
                             child: Icon(
                               Icons.close,
                               size: 16,
-                              color: theme.textColor,
+                              color: theme.menuTextColor,
                             ),
                           ),
                         ],

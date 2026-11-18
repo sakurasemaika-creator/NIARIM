@@ -14,11 +14,13 @@ import '../../services/storage_info_service.dart';
 import '../../utils/app_error_reporter.dart';
 import '../../utils/file_size_label.dart';
 import '../../widgets/confirm_delete.dart';
+import '../../widgets/fit_or_hide_title.dart';
 import '../../widgets/help_button.dart';
 import '../../widgets/keep_together_text.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/project_trash_dialog.dart';
 import '../../config/font_fallback.dart';
+import '../../widgets/menu_card.dart';
 
 /// 容量削減画面（ホーム画面ハンバーガーメニューから遷移）。
 /// 端末容量に対するNIARIMの使用量・NIARIM内部のデータ内訳を2つの棒
@@ -475,7 +477,8 @@ class _StorageScreenState extends State<StorageScreen> {
     );
     return Scaffold(
       appBar: AppBar(
-        title: Text(l10n.storageScreenTitle),
+        // 画面名は入らなければ出さない（省略記号で切らない、ほかの画面と同じ）。
+        title: FitOrHideTitle(l10n.storageScreenTitle),
         actions: const [HelpButton(topic: '容量削減')],
       ),
       body: desktopCentered(
@@ -1105,7 +1108,7 @@ class _StorageScreenState extends State<StorageScreen> {
     final subtitleStyle =
         ListTileTheme.of(context).subtitleTextStyle ??
         theme.textTheme.bodyMedium;
-    return Card(
+    return MenuCard(
       margin: const EdgeInsets.symmetric(vertical: 4),
       child: ListTile(
         focusNode: focusNode,

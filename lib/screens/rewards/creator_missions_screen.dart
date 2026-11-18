@@ -14,6 +14,7 @@ import 'login_bonus_panel.dart';
 import 'recurring_missions_panel.dart';
 import 'plaza_missions_panel.dart';
 import '../../widgets/fit_or_hide_title.dart';
+import '../../widgets/menu_card.dart';
 
 /// Display-only policy. The server must independently verify every request.
 bool missionClaimActionAllowed({
@@ -100,8 +101,9 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
           : receipt['claimed'] == true
           ? t.get('claimReceived')
           : t.get('claimFailed');
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: messageText(message)));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: messageText(message)));
       _refresh(api);
     } catch (_) {
       if (mounted &&
@@ -240,8 +242,9 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: messageText(
-              appLocalizationsOf(context)
-                  .creatorMissionClaimAllResult(received, failed),
+              appLocalizationsOf(
+                context,
+              ).creatorMissionClaimAllResult(received, failed),
             ),
           ),
         );
@@ -519,7 +522,7 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
         : row['eligible'] == null && row['kind'] == 'qualifiedWorks'
         ? t.get('reviewing')
         : t.get('notAchieved');
-    return Card(
+    return MenuCard(
       key: ValueKey('mission_$id:${workId ?? "template"}'),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
@@ -677,8 +680,9 @@ class _CreatorMissionsScreenState extends State<CreatorMissionsScreen> {
     // Dart's list sort is not stable; use the original index as the tie break.
     final indexed = all.asMap().entries.toList();
     indexed.sort((a, b) {
-      final priority = missionSortPriority(a.value)
-          .compareTo(missionSortPriority(b.value));
+      final priority = missionSortPriority(
+        a.value,
+      ).compareTo(missionSortPriority(b.value));
       return priority != 0 ? priority : a.key.compareTo(b.key);
     });
     return indexed.map((e) => e.value).toList(growable: false);

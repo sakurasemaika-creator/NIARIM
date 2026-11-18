@@ -1389,6 +1389,24 @@ abstract class AppLocalizations {
   /// **'フォルダへ移動'**
   String get folderMoveToTitle;
 
+  /// Screen-reader name of the 'move to folder' sheet for one file.
+  ///
+  /// In ja, this message translates to:
+  /// **'「{name}」をフォルダへ移動'**
+  String folderMoveSheetSemanticsLabel(String name);
+
+  /// Name of one folder color choice; code is like #FF5C7A.
+  ///
+  /// In ja, this message translates to:
+  /// **'フォルダ色 {code}'**
+  String folderColorOptionSemanticsLabel(String code);
+
+  /// Screen-reader name of the colour preview in the colour picker; code is like #FF5C7A.
+  ///
+  /// In ja, this message translates to:
+  /// **'選んでいる色 {code}'**
+  String colorPickerCurrentColorSemanticsLabel(String code);
+
   /// No description provided for @folderNone.
   ///
   /// In ja, this message translates to:
@@ -13677,6 +13695,24 @@ abstract class AppLocalizations {
   /// **'問題が発生しました。もう一度お試しください。'**
   String get communityErrorGeneric;
 
+  /// Reason shown after a failed export/import/save when the file system refused (never the raw exception text).
+  ///
+  /// In ja, this message translates to:
+  /// **'ファイルを読み書きできませんでした'**
+  String get fileFailureReasonAccess;
+
+  /// Reason shown after a failed import when the file could not be understood.
+  ///
+  /// In ja, this message translates to:
+  /// **'ファイルの形式が違うか、壊れています'**
+  String get fileFailureReasonFormat;
+
+  /// Reason shown after a failed export/import/save for any other cause.
+  ///
+  /// In ja, this message translates to:
+  /// **'予期しない問題が起きました'**
+  String get fileFailureReasonOther;
+
   /// No description provided for @communityErrorTagLimitExceeded.
   ///
   /// In ja, this message translates to:
@@ -16251,7 +16287,7 @@ abstract class AppLocalizations {
   /// **'作成した共有ファイルはまだありません'**
   String get sharedArchiveEmpty;
 
-  /// オパールの数（報酬・交換・履歴・ミッション共通）。数と単位をまとめた1つの文言
+  /// オパールの数（報酬・交換・履歴・ミッション共通）。数と単位をまとめた1つの文言。数は表示言語の桁区切りで書く
   ///
   /// In ja, this message translates to:
   /// **'{count}オパール'**
