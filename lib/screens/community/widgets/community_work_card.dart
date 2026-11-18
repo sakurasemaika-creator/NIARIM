@@ -69,6 +69,9 @@ class CommunityWorkCard extends StatelessWidget {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     final l10n = AppLocalizations.of(context)!;
+    final isSample = context.select<CommunityService?, bool>(
+      (service) => service?.isBackendConnected == false,
+    );
     final cardColor = theme.cardTheme.color ?? scheme.surfaceContainerLow;
     final textColor = scheme.onSurface;
     final detailColor = scheme.onSurfaceVariant;
@@ -269,6 +272,11 @@ class CommunityWorkCard extends StatelessWidget {
                         ),
                         const SizedBox(height: 3),
                       ],
+                      if (isSample && !obscured)
+                        Text(
+                          l10n.communitySampleBadge,
+                          style: theme.textTheme.labelSmall,
+                        ),
                       // Full-width title and author. The final line keeps
                       // count, bookmark action and menu left-to-right.
                       Text(

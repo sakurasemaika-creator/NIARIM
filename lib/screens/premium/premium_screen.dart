@@ -416,6 +416,7 @@ class _PremiumScreenState extends State<PremiumScreen> {
       (l10n.premiumFeatureWatermark, '×', '○'),
       (l10n.premiumFeatureToneCurve, '×', '○'),
       (l10n.premiumFeatureLevelCorrection, '×', '○'),
+      (l10n.helpCustomAutomationTitle, '×', '○'),
       (l10n.premiumFeatureAds, l10n.premiumValueYes, l10n.premiumValueNo),
       (
         l10n.premiumFeatureCommunityUpload,

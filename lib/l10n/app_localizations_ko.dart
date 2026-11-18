@@ -1026,13 +1026,13 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get premiumHeroSubtitle =>
-      '최대 2시간 길이로 만들고 NIARIM 엔드마크를 편집하며 톤 커브와 레벨 보정 그리기 필터를 사용할 수 있습니다.';
+      '최대 2시간 길이로 만들고 공식 엔드마크를 표시하거나 숨기며 톤 커브와 레벨 보정 그리기 필터를 사용할 수 있습니다.';
 
   @override
   String get premiumHeroHighlightDuration => '길이 최대 2시간';
 
   @override
-  String get premiumHeroHighlightWatermark => 'NIARIM 엔드마크 편집';
+  String get premiumHeroHighlightWatermark => '공식 엔드마크 표시 전환';
 
   @override
   String get premiumHeroHighlightGrading => '톤 커브 /\n레벨 보정';
@@ -6197,6 +6197,9 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get splashCreateButton => '애니메이션 만들기';
+
+  @override
+  String get communitySampleBadge => '예시 데이터';
 
   @override
   String get communityScreenTitle => '작품 광장';

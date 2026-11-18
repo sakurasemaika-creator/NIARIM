@@ -1072,13 +1072,14 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get premiumHeroSubtitle =>
-      'Créez des animations de 2 heures maximum, modifiez le logo de fin NIARIM et utilisez les filtres de dessin Courbe de tons et Correction des niveaux.';
+      'Créez des animations de 2 heures maximum, affichez ou masquez la marque de fin officielle et utilisez les filtres Courbe de tons et Correction des niveaux.';
 
   @override
   String get premiumHeroHighlightDuration => 'Jusqu’à 2 heures';
 
   @override
-  String get premiumHeroHighlightWatermark => 'Modifier le logo de fin NIARIM';
+  String get premiumHeroHighlightWatermark =>
+      'Afficher ou masquer la marque de fin officielle';
 
   @override
   String get premiumHeroHighlightGrading => 'Courbe de tons /\nniveaux';
@@ -6535,6 +6536,9 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get splashCreateButton => 'Créer une animation';
+
+  @override
+  String get communitySampleBadge => 'Données fictives';
 
   @override
   String get communityScreenTitle => 'Place des œuvres';

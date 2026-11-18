@@ -23,14 +23,13 @@ class NiarimApiClient {
     required String baseUrl,
     http.Client? httpClient,
     NiarimAuthTokenProvider? tokenProvider,
-    NiarimAuthTokenRefresher? refreshToken,
+    this._refreshToken,
     this.timeout = const Duration(seconds: 15),
     this.maxGetRetries = 2,
     this.retryBackoff = const Duration(milliseconds: 400),
   }) : baseUrl = _normalizeBaseUrl(baseUrl),
        _httpClient = httpClient ?? http.Client(),
-       _tokenProvider = tokenProvider ?? _noToken,
-       _refreshToken = refreshToken;
+       _tokenProvider = tokenProvider ?? _noToken;
 
   static Future<String?> _noToken() async => null;
 

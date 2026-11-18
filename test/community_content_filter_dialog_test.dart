@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:http/http.dart' as http;
+import 'package:http/testing.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/models/community_work.dart';
 import 'package:niarim/screens/community/community_screen.dart';
 import 'package:niarim/screens/community/community_author_works_screen.dart';
+import 'package:niarim/services/api/community_api.dart';
+import 'package:niarim/services/api/niarim_api_client.dart';
 import 'package:niarim/services/community_preview_service.dart';
 import 'package:niarim/services/community_service.dart';
 import 'package:niarim/services/premium_service.dart';
@@ -73,6 +77,56 @@ void main() {
       find.byKey(const Key('communityMutedTagsAccordion')),
     );
   }
+
+  for (final locale in AppLocalizations.supportedLocales) {
+    testWidgets('sample community feed is labeled at large text ($locale)', (
+      tester,
+    ) async {
+      SharedPreferences.setMockInitialValues({});
+      tester.view.devicePixelRatio = 1;
+      tester.view.physicalSize = const Size(320, 640);
+      tester.platformDispatcher.textScaleFactorTestValue = 2;
+      addTearDown(tester.view.resetDevicePixelRatio);
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+      final sample = CommunityService();
+      addTearDown(sample.dispose);
+      await tester.pumpWidget(host(sample, locale: locale));
+      await tester.pumpAndSettle();
+
+      final label = l10nOf(tester).communitySampleBadge;
+      final header = find.byKey(const Key('communitySampleNotice'));
+      expect(header, findsOneWidget);
+      expect(tester.widget<Text>(header).data, label);
+      expect(
+        tester.getRect(header).bottom,
+        lessThanOrEqualTo(tester.getRect(find.byType(AppBar)).bottom),
+      );
+      expect(find.text(label), findsWidgets);
+      expect(tester.takeException(), isNull);
+    });
+  }
+
+  testWidgets('connected community does not label its results as samples', (
+    tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({});
+    final service = CommunityService(
+      api: CommunityApi(
+        NiarimApiClient(
+          baseUrl: 'https://example.invalid',
+          httpClient: MockClient(
+            (_) async => http.Response('{"works":[]}', 200),
+          ),
+        ),
+      ),
+    );
+    addTearDown(service.dispose);
+    await tester.pumpWidget(host(service));
+    await tester.pumpAndSettle();
+    expect(find.text(l10nOf(tester).communitySampleBadge), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
 
   testWidgets('pre-fills each row, edits with pencil and adds without commas', (
     tester,

@@ -1010,14 +1010,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get premiumHeroTitle => '开通高级版，创作更自由';
 
   @override
-  String get premiumHeroSubtitle =>
-      '最长可制作2小时动画，可编辑 NIARIM 片尾标志，并使用色调曲线和色阶校正绘图滤镜。';
+  String get premiumHeroSubtitle => '最长可制作2小时动画，可显示或隐藏官方片尾标记，并使用色调曲线和色阶校正绘图滤镜。';
 
   @override
   String get premiumHeroHighlightDuration => '时长最长2小时';
 
   @override
-  String get premiumHeroHighlightWatermark => '编辑 NIARIM 片尾标志';
+  String get premiumHeroHighlightWatermark => '显示或隐藏官方片尾标记';
 
   @override
   String get premiumHeroHighlightGrading => '色调曲线 /\n色阶调整';
@@ -6107,6 +6106,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get splashCreateButton => '制作动画';
 
   @override
+  String get communitySampleBadge => '示例数据';
+
+  @override
   String get communityScreenTitle => '作品广场';
 
   @override
@@ -11174,14 +11176,13 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get premiumHeroTitle => '開通進階版，創作更自由';
 
   @override
-  String get premiumHeroSubtitle =>
-      '最長可製作2小時動畫，可編輯 NIARIM 片尾標誌，並使用色調曲線和色階校正繪圖濾鏡。';
+  String get premiumHeroSubtitle => '最長可製作2小時動畫，可顯示或隱藏官方片尾標記，並使用色調曲線和色階校正繪圖濾鏡。';
 
   @override
   String get premiumHeroHighlightDuration => '時長最長2小時';
 
   @override
-  String get premiumHeroHighlightWatermark => '編輯 NIARIM 片尾標誌';
+  String get premiumHeroHighlightWatermark => '顯示或隱藏官方片尾標記';
 
   @override
   String get premiumHeroHighlightGrading => '色調曲線 /\n階調調整';
@@ -16269,6 +16270,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get splashCreateButton => '製作動畫';
+
+  @override
+  String get communitySampleBadge => '範例資料';
 
   @override
   String get communityScreenTitle => '作品廣場';

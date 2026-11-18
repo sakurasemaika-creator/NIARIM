@@ -1950,7 +1950,7 @@ abstract class AppLocalizations {
   /// No description provided for @premiumHeroSubtitle.
   ///
   /// In ja, this message translates to:
-  /// **'最大尺2時間・公式エンドマーク編集・描画フィルターのトーンカーブ／レベル補正などが使えます'**
+  /// **'最大尺2時間・公式エンドマークの表示切り替え・描画フィルターのトーンカーブ／レベル補正などが使えます'**
   String get premiumHeroSubtitle;
 
   /// No description provided for @premiumHeroHighlightDuration.
@@ -1962,7 +1962,7 @@ abstract class AppLocalizations {
   /// No description provided for @premiumHeroHighlightWatermark.
   ///
   /// In ja, this message translates to:
-  /// **'公式エンドマーク編集'**
+  /// **'公式エンドマークの表示切り替え'**
   String get premiumHeroHighlightWatermark;
 
   /// No description provided for @premiumHeroHighlightGrading.
@@ -11198,6 +11198,12 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'作品をつくる'**
   String get splashCreateButton;
+
+  /// No description provided for @communitySampleBadge.
+  ///
+  /// In ja, this message translates to:
+  /// **'見本データ'**
+  String get communitySampleBadge;
 
   /// No description provided for @communityScreenTitle.
   ///

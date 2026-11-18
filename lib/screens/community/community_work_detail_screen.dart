@@ -322,6 +322,14 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              if (!communityService.isBackendConnected)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: Text(
+                    l10n.communitySampleBadge,
+                    style: Theme.of(context).textTheme.labelLarge,
+                  ),
+                ),
               ClipRRect(
                 borderRadius: BorderRadius.circular(14),
                 child: SizedBox(

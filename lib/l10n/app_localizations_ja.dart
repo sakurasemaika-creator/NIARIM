@@ -1023,13 +1023,13 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get premiumHeroSubtitle =>
-      '最大尺2時間・公式エンドマーク編集・描画フィルターのトーンカーブ／レベル補正などが使えます';
+      '最大尺2時間・公式エンドマークの表示切り替え・描画フィルターのトーンカーブ／レベル補正などが使えます';
 
   @override
   String get premiumHeroHighlightDuration => '尺は最大2時間';
 
   @override
-  String get premiumHeroHighlightWatermark => '公式エンドマーク編集';
+  String get premiumHeroHighlightWatermark => '公式エンドマークの表示切り替え';
 
   @override
   String get premiumHeroHighlightGrading => 'トーンカーブ／\nレベル補正';
@@ -6164,6 +6164,9 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get splashCreateButton => '作品をつくる';
+
+  @override
+  String get communitySampleBadge => '見本データ';
 
   @override
   String get communityScreenTitle => '作品広場';

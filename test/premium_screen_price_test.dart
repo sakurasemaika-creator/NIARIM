@@ -68,6 +68,19 @@ void main() {
     expect(find.text('45,99 €'), findsOneWidget);
     expect(find.text(words.premiumYearlyOriginalPrice), findsNothing);
     expect(find.text(words.premiumStoreUnavailable), findsNothing);
+    expect(find.text('Show or hide the official end mark'), findsOneWidget);
+    final row = tester
+        .widget<Table>(find.byType(Table))
+        .children
+        .where(
+          (row) => row.children.any(
+            (cell) =>
+                cell is Container &&
+                cell.child is Text &&
+                (cell.child as Text).data == words.helpCustomAutomationTitle,
+          ),
+        );
+    expect(row, hasLength(1));
   });
 
   testWidgets('unavailable products hide prices and can be queried again', (

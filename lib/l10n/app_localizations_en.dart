@@ -1052,13 +1052,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get premiumHeroSubtitle =>
-      'Create up to 2 hours of animation, edit the NIARIM end mark, and use Tone Curve and Level Correction drawing filters.';
+      'Create up to 2 hours of animation, show or hide the official end mark, and use Tone Curve and Level Correction drawing filters.';
 
   @override
   String get premiumHeroHighlightDuration => 'Up to 2 hours';
 
   @override
-  String get premiumHeroHighlightWatermark => 'Edit the NIARIM end mark';
+  String get premiumHeroHighlightWatermark =>
+      'Show or hide the official end mark';
 
   @override
   String get premiumHeroHighlightGrading => 'Tone curve /\nlevels';
@@ -6425,6 +6426,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get splashCreateButton => 'Create an Animation';
+
+  @override
+  String get communitySampleBadge => 'Sample data';
 
   @override
   String get communityScreenTitle => 'Work Plaza';

@@ -1182,11 +1182,23 @@ class _CommunityScreenState extends State<CommunityScreen>
       return size;
     }
 
+    final titleWidth = (width - 216).clamp(1.0, double.infinity);
     final titleSize = measure(
       l10n.communityScreenTitle,
       titleStyle,
-      maxWidth: (width - 216).clamp(1.0, double.infinity),
+      maxWidth: titleWidth,
     );
+    final showSampleNotice = !communityService.isBackendConnected;
+    final sampleStyle = theme.textTheme.labelMedium!.copyWith(
+      color: foreground,
+    );
+    final sampleHeight = showSampleNotice
+        ? measure(
+            l10n.communitySampleBadge,
+            sampleStyle,
+            maxWidth: titleWidth,
+          ).height
+        : 0.0;
     final labels = [
       l10n.communityTabNew,
       l10n.communityTabRanking,
@@ -1595,14 +1607,26 @@ class _CommunityScreenState extends State<CommunityScreen>
         titleTextStyle: titleStyle,
         iconTheme: IconThemeData(color: foreground),
         actionsIconTheme: IconThemeData(color: foreground),
-        toolbarHeight: (titleSize.height + 16)
+        toolbarHeight: (titleSize.height + sampleHeight + 16)
             .clamp(kToolbarHeight, double.infinity)
             .toDouble(),
-        title: Text(
-          l10n.communityScreenTitle,
-          softWrap: true,
-          maxLines: 3,
-          overflow: TextOverflow.visible,
+        title: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              l10n.communityScreenTitle,
+              softWrap: true,
+              maxLines: 3,
+              overflow: TextOverflow.visible,
+            ),
+            if (showSampleNotice)
+              Text(
+                l10n.communitySampleBadge,
+                key: const Key('communitySampleNotice'),
+                style: sampleStyle,
+              ),
+          ],
         ),
         actions: [
           IconButton(
