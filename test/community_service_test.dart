@@ -314,21 +314,7 @@ void main() {
     });
   });
 
-  group('ブックマークの公開設定・ユーザー別ブックマーク一覧', () {
-    test('自分のブックマーク公開設定は既定で非公開', () {
-      final service = CommunityService();
-      expect(service.selfBookmarksPublic, isFalse);
-      expect(service.isBookmarksPublic(kDummySelfAuthorId), isFalse);
-    });
-
-    test('setSelfBookmarksPublicで公開設定を変更できる', () {
-      final service = CommunityService();
-      service.setSelfBookmarksPublic(true);
-      expect(service.selfBookmarksPublic, isTrue);
-      service.setSelfBookmarksPublic(false);
-      expect(service.selfBookmarksPublic, isFalse);
-    });
-
+  group('本人専用のブックマーク一覧', () {
     test('bookmarkedWorksOfは自分自身の場合、実際にトグルしたブックマークを返す', () {
       final service = CommunityService();
       final work = service.works.first;
@@ -342,25 +328,9 @@ void main() {
       );
     });
 
-    test('bookmarkedWorksOfは他のダミー作者の場合、生成済みの固定ダミーブックマークを返す', () {
+    test('他の作者のブックマーク一覧は取得できない', () {
       final service = CommunityService();
-      // 少なくとも1人はダミーブックマークを持つ想定
-      // （_buildDummyBookmarksByAuthorは各作者2〜5件を生成する）。
-      final works = service.bookmarkedWorksOf('author_02');
-      expect(works, isNotEmpty);
-    });
-
-    test('同じ引数で呼び出すたびに同じ結果を返す（固定シードで再現可能）', () {
-      final service = CommunityService();
-      final first = service
-          .bookmarkedWorksOf('author_03')
-          .map((w) => w.id)
-          .toList();
-      final second = service
-          .bookmarkedWorksOf('author_03')
-          .map((w) => w.id)
-          .toList();
-      expect(first, second);
+      expect(service.bookmarkedWorksOf('author_02'), isEmpty);
     });
   });
 

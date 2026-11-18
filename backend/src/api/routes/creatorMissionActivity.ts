@@ -2,7 +2,7 @@ import type { APIGatewayProxyEventV2 } from "aws-lambda";
 import { QueryCommand } from "@aws-sdk/lib-dynamodb";
 import { authenticate } from "../../lib/auth";
 import { ddb, tableName } from "../../lib/dynamo";
-import { communityActivityType, communityTarget, isCommunityKind } from "../../lib/communityNotifications";
+import { communityActivityType, communityKinds, communityTarget, isCommunityKind } from "../../lib/communityNotifications";
 import { badRequest, ok } from "../../lib/response";
 
 /** Read the author's durable mission activity, newest first, 1–50 per page. */
@@ -36,6 +36,9 @@ export async function getMyMissionActivity(event: APIGatewayProxyEventV2) {
       badRequest("通知カーソルが不正です", "MISSION_ACTIVITY_INVALID_CURSOR");
     }
   }
+  const communityValues = Object.fromEntries(
+    communityKinds.map((kind, index) => [`:communityKind${index}`, kind]),
+  );
   const result = await ddb.send(new QueryCommand({
     TableName: tableName(),
     KeyConditionExpression:"pk = :owner AND begins_with(sk, :prefix)",
@@ -44,12 +47,14 @@ export async function getMyMissionActivity(event: APIGatewayProxyEventV2) {
       ":mission": "MISSION_ACTIVITY_V1",
       ...(includeCommunity ? {
         ":community": communityActivityType, ":now": Math.floor(Date.now() / 1000),
+        ...communityValues,
       } : {}),
     },
     FilterExpression: includeCommunity
-      ? "itemType = :mission OR (itemType = :community AND #ttl > :now)"
+      ? `itemType = :mission OR (itemType = :community AND #ttl > :now
+          AND #kind IN (${Object.keys(communityValues).join(", ")}))`
       : "itemType = :mission",
-    ...(includeCommunity ? { ExpressionAttributeNames: { "#ttl": "ttl" } } : {}),
+    ...(includeCommunity ? { ExpressionAttributeNames: { "#ttl": "ttl", "#kind": "kind" } } : {}),
     Limit:limit,ScanIndexForward:true,ExclusiveStartKey:cursor,
     ConsistentRead:true,
   }));
@@ -68,8 +73,6 @@ export async function getMyMissionActivity(event: APIGatewayProxyEventV2) {
       return [{
         eventId: x.eventId, kind: x.kind, occurredAt: x.occurredAt,
         targetRoute: communityTarget(x.kind, x.workId),
-        ...(typeof x.firstKey === "string" && /^[a-f0-9]{64}$/.test(x.firstKey)
-          ? { firstKey: x.firstKey } : {}),
       }];
     }),
     nextCursor:result.LastEvaluatedKey

@@ -80,7 +80,7 @@ class _CommunityFollowNotificationsScreenState
       debugPrint('Mission activity backfill unavailable: $error');
     }
     final result = await api.myMissionActivity(includeCommunity: true);
-    return CommunityNoticeHistory.filter({...result, 'sync': sync}, owner);
+    return filterCommunityNoticePage({...result, 'sync': sync}, owner);
   }
 
   void _refresh(CommunityApi api) => setState(() {
@@ -99,7 +99,7 @@ class _CommunityFollowNotificationsScreenState
     final noticeOwner = _ownerId;
     setState(() => _loadingMore = true);
     try {
-      final data = await CommunityNoticeHistory.filter(
+      final data = filterCommunityNoticePage(
         await api.myMissionActivity(cursor: cursor, includeCommunity: true),
         noticeOwner,
       );
@@ -139,7 +139,7 @@ class _CommunityFollowNotificationsScreenState
     setState(() => _scanningMore = true);
     try {
       final sync = await api.syncMyMissionActivity(workCursor: _nextScanCursor);
-      final page = await CommunityNoticeHistory.filter(
+      final page = filterCommunityNoticePage(
         await api.myMissionActivity(includeCommunity: true),
         noticeOwner,
       );
@@ -376,9 +376,6 @@ class _CommunityFollowNotificationsScreenState
                       }
                       final event = items[index];
                       final icon = switch (event['kind']) {
-                        'newFollower' => Icons.person_add_outlined,
-                        'newBookmark' => Icons.bookmark_outline,
-                        'newRepost' => Icons.repeat,
                         'scheduledRelease' => Icons.schedule_outlined,
                         'workPosted' ||
                         'workPublicationConfirmed' ||

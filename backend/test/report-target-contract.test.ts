@@ -14,6 +14,9 @@ describe("report target contract", () => {
     expect(getIndex).toBeGreaterThanOrEqual(0);
     expect(quotaIndex).toBeGreaterThan(getIndex);
     expect(source).toContain("if (!work || !isWorkPublic(work))");
+    const selfReportCheck = source.indexOf("work.authorId === auth.niarimUserId");
+    expect(selfReportCheck).toBeGreaterThan(getIndex);
+    expect(selfReportCheck).toBeLessThan(quotaIndex);
     expect(source).toContain('notFound("作品が見つかりません")');
   });
 

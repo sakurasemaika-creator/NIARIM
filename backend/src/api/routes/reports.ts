@@ -50,6 +50,10 @@ export async function createReport(event: APIGatewayProxyEventV2) {
     notFound("作品が見つかりません");
   }
 
+  if (work.authorId === auth.niarimUserId) {
+    badRequest("自分の作品は通報できません");
+  }
+
   await reserveReportQuota(auth.niarimUserId);
 
   const now = new Date().toISOString();

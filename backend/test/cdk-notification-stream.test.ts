@@ -56,6 +56,10 @@ it("retains discarded notification records with scoped access and expiry", () =>
     MaximumRecordAgeInSeconds: 900,
     FunctionResponseTypes: ["ReportBatchItemFailures"],
   });
+  const mappings = template.findResources("AWS::Lambda::EventSourceMapping");
+  const filters = JSON.stringify(mappings);
+  expect(filters).toContain("COMMUNITY_ACTIVITY_V1");
+  expect(filters).not.toMatch(/FOLLOWER_RECORD|BOOKMARK|REPOST/);
   template.hasResourceProperties("AWS::IAM::Policy", {
     PolicyDocument: {
       Statement: Match.arrayWith([

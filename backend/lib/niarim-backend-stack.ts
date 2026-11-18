@@ -403,9 +403,6 @@ export class NiarimBackendStack extends Stack {
         },
       },
       filters: [
-        lambda.FilterCriteria.filter({ dynamodb: { NewImage: {
-          itemType: { S: ["FOLLOWER_RECORD", "BOOKMARK", "REPOST"] },
-        } } }),
         lambda.FilterCriteria.filter({ dynamodb: {
           OldImage: { youtubePrivacyStatus: { S: ["private"] } },
           NewImage: {

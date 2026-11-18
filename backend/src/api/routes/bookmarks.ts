@@ -189,8 +189,6 @@ export async function toggleBookmark(
   return ok({ bookmarked: !isBookmarked });
 }
 
-const bookmarksVisibilityDefault = false;
-
 /**
  * `GET /users/{id}/bookmarks`（8.5節・21.2節）。非公開の場合は403で
  * 拒否する。本人自身が見る場合は公開設定に関わらず常に見られる。
@@ -244,20 +242,8 @@ export async function getUserBookmarks(
 }
 
 /**
- * `GET /works/{id}/bookmarkers`（21.1節：被ブックマーク一覧）。
- *
- * BookmarkItemに張ってあるGSI5（`WORKBOOKMARKS#{workId}`）を引き、その
- * 作品をブックマークしたユーザーを新しい順に返す。これまでGSI5は
- * 書き込むだけで誰も読んでいなかったため、CDKスタック側にもインデックス
- * 自体が作られていなかった（今回追加した）。
- *
- * プライバシーの扱い：ブックマーク一覧を非公開にしているユーザー
- * （`bookmarksPublic = false`、既定値）は、その人が誰を/何をブックマーク
- * したかを他人に見せない設定なので、この一覧からも除外する。除外しても
- * 総数（`totalCount`）には数えるため、作者は「何人にブックマークされたか」
- * は分かる。呼び出し本人は公開設定に関わらず自分自身を見られる。
- * 作品自体が非公開の場合は、作者本人以外には404相当として扱い、作品の
- * 存在・総ブックマーク数・ブックマークした利用者を漏らさない。
+ * `GET /works/{id}/bookmarkers` returns the total and, if signed in,
+ * the viewer's own bookmark. Related user identities stay private.
  */
 export async function getWorkBookmarkers(
   event: APIGatewayProxyEventV2,
@@ -270,48 +256,29 @@ export async function getWorkBookmarkers(
   const workResult = await ddb.send(
     new GetCommand({ TableName: tableName(), Key: Keys.work(workId) }),
   );
-  const work = workResult.Item as WorkItem | undefined;
-  if (!work) notFound("作品が見つかりません");
+  if (workResult.Item?.itemType !== TABLE_ITEM_TYPE.Work) {
+    notFound("作品が見つかりません");
+  }
+  const work = workResult.Item as WorkItem;
   if (!isWorkPublic(work) && caller?.niarimUserId !== work.authorId) {
     notFound("作品が見つかりません");
   }
 
-  const result = await ddb.send(
-    new QueryCommand({
-      TableName: tableName(),
-      IndexName: "GSI5",
-      KeyConditionExpression: "gsi5pk = :pk",
-      ExpressionAttributeValues: { ":pk": `WORKBOOKMARKS#${workId}` },
-      ScanIndexForward: false, // 新しい順
-      Limit: BOOKMARKERS_PAGE_LIMIT,
-    }),
-  );
-  const bookmarks = (result.Items ?? []) as BookmarkItem[];
-
-  const users = await Promise.all(
-    bookmarks.map((b) => getUser(b.niarimUserId)),
-  );
-  const visible = bookmarks
-    .map((bookmark, i) => ({ bookmark, user: users[i] }))
-    .filter(({ bookmark, user }) => {
-      if (caller?.niarimUserId === bookmark.niarimUserId) return true;
-      return user?.bookmarksPublic ?? bookmarksVisibilityDefault;
-    })
-    .map(({ bookmark, user }) => ({
-      userId: bookmark.niarimUserId,
-      channelName: user?.channelName ?? null,
-      channelAvatarUrl: user?.channelAvatarUrl ?? null,
-      bookmarkedAt: bookmark.bookmarkedAt,
+  const viewerId = caller?.niarimUserId;
+  const users = [];
+  if (viewerId) {
+    const { Item: bookmark } = await ddb.send(new GetCommand({
+      TableName: tableName(), Key: Keys.bookmark(viewerId, workId),
     }));
-
-  return ok({
-    workId,
-    // 作品側が持つ集計値。非公開設定のユーザーぶんも含んだ総数。
-    totalCount: work.bookmarkCount,
-    // 公開設定にしているユーザーだけを並べたもの。totalCountより少なくなり得る。
-    users: visible,
-  });
+    if (bookmark?.itemType === TABLE_ITEM_TYPE.Bookmark) {
+      const viewer = await getUser(viewerId);
+      users.push({
+        userId: viewerId,
+        channelName: viewer?.channelName ?? null,
+        channelAvatarUrl: viewer?.channelAvatarUrl ?? null,
+        bookmarkedAt: bookmark.bookmarkedAt,
+      });
+    }
+  }
+  return ok({ workId, totalCount: work.bookmarkCount, users });
 }
-
-/** 被ブックマーク一覧の1ページ件数。 */
-const BOOKMARKERS_PAGE_LIMIT = 100;

@@ -81,6 +81,18 @@ void main() {
     }
   });
 
+  test('old social pushes do not open any screen', () {
+    for (final kind in ['newFollower', 'newBookmark', 'newRepost']) {
+      expect(
+        PushNotificationService.routeForData({
+          'type': kind,
+          'targetRoute': '/community/work/Ab_12345678',
+        }),
+        isNull,
+      );
+    }
+  });
+
   test('only expected NIARIM push routes are navigable', () {
     expect(
       PushNotificationService.routeForData({

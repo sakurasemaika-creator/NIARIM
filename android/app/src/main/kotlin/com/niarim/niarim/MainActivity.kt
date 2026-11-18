@@ -149,18 +149,6 @@ class MainActivity : FlutterActivity() {
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "com.niarim.niarim/activity_notice_history")
             .setMethodCallHandler { call, result ->
                 when (call.method) {
-                    "filter" -> {
-                        val owner = call.argument<String>("owner") ?: ""
-                        val receipts = call.argument<List<Map<String, String>>>("receipts").orEmpty()
-                        thread(name = "notice-history") {
-                            try {
-                                val filtered = CommunityNotices.filter(applicationContext, owner, receipts)
-                                mainHandler.post { result.success(filtered) }
-                            } catch (_: Exception) {
-                                mainHandler.post { result.error("HISTORY_UNAVAILABLE", null, null) }
-                            }
-                        }
-                    }
                     "clearOtherAccounts" -> {
                         CommunityNotices.clearOtherAccounts(this, call.argument<String>("owner"))
                         result.success(null)

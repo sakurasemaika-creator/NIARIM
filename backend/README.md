@@ -101,7 +101,7 @@ backend/
 | GET      | `/ranking/{period}`                   | 8.2節（`period=all`／`yearly`／`monthly`／`weekly`／`daily`）／`period=bookmarks`は8.5節 | 不要                                             |
 | GET      | `/works/latest`                       | 8.3節・8.6節（`q`で検索）                                                                | 不要                                             |
 | GET      | `/users/{id}/works`                   | 8.4節                                                                                    | 任意（本人なら非公開作品も含む）                 |
-| GET      | `/works/{id}/bookmarkers`             | 21.1節（被ブックマーク一覧）                                                             | 任意（非公開設定のユーザーは除外）               |
+| GET      | `/works/{id}/bookmarkers`             | 作品のブックマーク総数と呼び出し本人の記録                                                             | 任意（未認証時は総数のみ）               |
 | POST     | `/works`                              | 6章・12章・17章                                                                          | 必須                                             |
 | PATCH    | `/works/{id}`                         | 13章                                                                                     | 必須（投稿者本人）                               |
 | DELETE   | `/works/{id}`                         | 13章                                                                                     | 必須（投稿者本人）                               |
@@ -109,12 +109,12 @@ backend/
 | POST     | `/reports`                            | 9章                                                                                      | 必須                                             |
 | POST     | `/blocks`                             | 9章                                                                                      | 必須                                             |
 | POST     | `/works/{id}/bookmark`                | 8.5節                                                                                    | 必須                                             |
-| GET      | `/users/{id}/bookmarks`               | 8.5節・21.2節                                                                            | 任意（非公開なら本人のみ）                       |
+| GET      | `/users/{id}/bookmarks`               | 8.5節・21.2節                                                                            | 必須（本人のみ）                       |
 | PATCH    | `/users/{id}/bookmarks-visibility`    | 8.5節                                                                                    | 必須（本人のみ）                                 |
 | POST     | `/works/{id}/repost`                  | 8.5bis節                                                                                 | 必須                                             |
 | POST     | `/users/{id}/follow`                  | 22.5節                                                                                   | 必須                                             |
 | GET      | `/users/{id}/followers`               | 22.5節・22.7節                                                                           | 任意（非公開なら本人のみ、22.7節のフィルタ適用） |
-| GET      | `/users/{id}/following`               | 22.5節                                                                                   | 任意（非公開なら本人のみ）                       |
+| GET      | `/users/{id}/following`               | 22.5節                                                                                   | 必須（本人のみ）                       |
 | GET      | `/users/{id}/reposts`                 | 8.5bis節（リポスト一覧。フォロー中タブで使う）                                           | 不要（リポストは公開。非公開化された作品は除外） |
 | PATCH    | `/users/{id}/follow-visibility`       | 22.5節                                                                                   | 必須（本人のみ）                                 |
 | GET      | `/users/{id}/notifications`           | 22.6節                                                                                   | 必須（本人のみ）                                 |
@@ -201,7 +201,7 @@ backend/
 FCMはFirestoreとは無関係です。Flutter端末がFCMトークンを取得し、認証済み
 `PUT /users/{id}/push-token` でDynamoDBに保存します。ミッション達成時の
 永続通知が記録された場合のみ、`sendPushToUser` がFCM HTTP v1へ送信します。
-交流・予約公開の通知はDynamoDB Streamsで処理します。通知条件と実機確認は [FCM運用手順](../docs/FCM_プッシュ通知_導入・実機確認.md) を参照してください。
+投稿・公開とミッションの通知はDynamoDB Streamsで処理します。通知条件と実機確認は [FCM運用手順](../docs/FCM_プッシュ通知_導入・実機確認.md) を参照してください。
 
 AWS Lambdaでは長期秘密鍵を発行しません。Google Cloud
 `niarim-513201` の WIF `niarim-aws-fcm/niarim-aws-lambda` を使用し、

@@ -1,8 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="push_new_follower">你有了新的关注者</string>
-    <string name="push_new_bookmark">有作品被收藏了</string>
-    <string name="push_new_repost">有作品被转发了</string>
     <string name="push_scheduled_release">你预约的作品已公开</string>
     <string name="push_mission_achievement">你有新的任务达成通知</string>
     <string name="push_work_posted">你的作品已投稿</string>

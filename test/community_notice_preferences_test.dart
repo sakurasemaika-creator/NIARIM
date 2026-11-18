@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
@@ -26,36 +25,25 @@ class _Premium extends ChangeNotifier implements PremiumService {
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  test('first social notices win permanently, isolated by account', () async {
-    debugDefaultTargetPlatformOverride = TargetPlatform.linux;
-    addTearDown(() => debugDefaultTargetPlatformOverride = null);
-    SharedPreferences.setMockInitialValues({});
-    Map<String, String> event(String id, String key) => {
-      'eventId': id,
-      'firstKey': key * 64,
+  test('retired social notices stay hidden even on older servers', () {
+    final page = {
+      'noticeOwner': 'current',
+      'nextCursor': 'next-page',
+      'events': [
+        for (final kind in ['newFollower', 'newBookmark', 'newRepost'])
+          {'kind': kind, 'eventId': kind},
+        {'kind': 'workPublicationConfirmed', 'eventId': 'publication'},
+        {'kind': 'workBookmarks', 'eventId': 'milestone'},
+      ],
     };
-    final original = event('first_follow', 'a');
-    final later = event('later_follow', 'a');
-    final bookmark = event('new_bookmark', 'b');
-    final repost = event('new_repost', 'c');
-    final samePage = await CommunityNoticeHistory.filter({
-      'events': [later, original],
-      'nextCursor': 'keep-this',
-    }, 'account1');
-    expect(samePage, {
-      'events': [original],
-      'nextCursor': 'keep-this',
+    expect(filterCommunityNoticePage(page, 'current'), {
+      ...page,
+      'events': [
+        {'kind': 'workPublicationConfirmed', 'eventId': 'publication'},
+        {'kind': 'workBookmarks', 'eventId': 'milestone'},
+      ],
     });
-    final observedAgain = await CommunityNoticeHistory.filter({
-      'events': [later, bookmark, repost, original],
-    }, 'account1');
-    expect(observedAgain['events'], [bookmark, repost, original]);
-    expect(
-      (await CommunityNoticeHistory.filter({
-        'events': [later],
-      }, 'account2'))['events'],
-      [later],
-    );
+    expect(filterCommunityNoticePage(page, 'another')['events'], isEmpty);
   });
 
   testWidgets(
@@ -129,6 +117,9 @@ void main() {
       for (final entry in toggles.entries) {
         expect(tester.widget<SwitchListTile>(entry.value).value, isTrue);
       }
+      for (final retired in ['follower', 'bookmark', 'repost']) {
+        expect(find.byKey(ValueKey('push_notice_$retired')), findsNothing);
+      }
       final master = find.byKey(const Key('pushNotificationsOnDevice'));
       await tester.tap(master);
       await tester.pumpAndSettle();
@@ -137,7 +128,7 @@ void main() {
         expect(tile.value, isTrue);
         expect(tile.onChanged, isNull);
       }
-      final toggle = toggles[CommunityPushCategory.bookmark]!;
+      final toggle = toggles[CommunityPushCategory.publication]!;
       final toggleContext = tester.element(toggle);
       final theme = Theme.of(toggleContext);
       const selected = {WidgetState.selected};
@@ -160,15 +151,13 @@ void main() {
       );
       await tester.tap(master);
       await tester.pumpAndSettle();
-      await tester.tap(toggles[CommunityPushCategory.bookmark]!);
+      await tester.tap(toggles[CommunityPushCategory.publication]!);
       await tester.pumpAndSettle();
-      expect(settings.pushEnabledFor(CommunityPushCategory.bookmark), isFalse);
-      expect(settings.pushEnabledFor(CommunityPushCategory.follower), isTrue);
-      expect(settings.pushEnabledFor(CommunityPushCategory.repost), isTrue);
       expect(
         settings.pushEnabledFor(CommunityPushCategory.publication),
-        isTrue,
+        isFalse,
       );
+
       await tester.tap(find.byType(BackButton));
       await tester.pumpAndSettle();
       expect(find.byType(CommunityFollowNotificationsScreen), findsOneWidget);
@@ -182,7 +171,7 @@ void main() {
       expect(find.byType(CommunityNotificationSettingsScreen), findsOneWidget);
       expect(
         tester
-            .widget<SwitchListTile>(toggles[CommunityPushCategory.bookmark]!)
+            .widget<SwitchListTile>(toggles[CommunityPushCategory.publication]!)
             .value,
         isFalse,
       );
@@ -192,8 +181,10 @@ void main() {
 
       final reopened = SettingsService();
       await reopened.init();
-      expect(reopened.pushEnabledFor(CommunityPushCategory.bookmark), isFalse);
-      expect(reopened.pushEnabledFor(CommunityPushCategory.follower), isTrue);
+      expect(
+        reopened.pushEnabledFor(CommunityPushCategory.publication),
+        isFalse,
+      );
       reopened.dispose();
     },
   );

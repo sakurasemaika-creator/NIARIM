@@ -13,8 +13,9 @@ vi.mock("../src/lib/dynamo", async (base) => ({
 vi.mock("../src/lib/push", () => ({ sendPushToUser: push }));
 vi.mock("../src/lib/auth", () => ({ authenticate }));
 
-import { communityTarget, handleNotificationStream } from "../src/lib/communityNotifications";
+import { handleNotificationStream } from "../src/lib/communityNotifications";
 import { getMyMissionActivity } from "../src/api/routes/creatorMissionActivity";
+import { getNotifications, markNotificationsRead } from "../src/api/routes/notifications";
 import { recordMissionAchievement } from "../src/lib/missionNotifications";
 
 const owner = "N" + "a".repeat(32);
@@ -45,9 +46,7 @@ beforeEach(() => {
   vi.stubEnv("TABLE_NAME", "test");
   send.mockReset();
   send.mockImplementation(async (command) => command instanceof GetCommand
-    ? { Item: command.input.Key?.pk === "SYSTEM#COMMUNITY_NOTICE_FINGERPRINT"
-        ? { secret: "ab".repeat(32) }
-        : publicWork }
+    ? { Item: publicWork }
     : {});
   push.mockReset().mockResolvedValue(undefined);
   authenticate.mockReset().mockResolvedValue({ niarimUserId: owner });
@@ -70,67 +69,30 @@ describe("committed activity to private history", () => {
     ["newBookmark", bookmark()],
     ["newRepost", record({ itemType: "REPOST", niarimUserId: actor,
       workId: work, repostedAt: now })],
-  ])("records %s anonymously and checks current relationship and both blocks", async (kind, change) => {
-    expect(await handleNotificationStream([change])).toEqual({ batchItemFailures: [] });
-    const { items, marker, event } = lastStored();
-    expect(event).toMatchObject({ pk: "USER#" + owner, kind, occurredAt: now, pushPending: true });
-    expect(JSON.stringify(event)).not.toContain(actor);
-    expect(marker.ConditionExpression).toContain("#when <= :cutoff");
-    expect(marker.ExpressionAttributeValues![":cutoff"]).toBe(Date.parse(now) - 86_400_000);
-    expect(items.map((i) => i.ConditionCheck?.Key?.sk)).toEqual(expect.arrayContaining([
-      "BLOCK#" + actor, "BLOCK#" + owner,
-    ]));
-    expect(push).not.toHaveBeenCalled();
-  });
-
-  it("suppresses self-actions, removals, stale records and nonpublic work", async () => {
-    await handleNotificationStream([
-      { ...follow(), eventName: "REMOVE" },
-      record({ itemType: "FOLLOWER_RECORD", followerId: owner, targetId: owner, followedAt: now }),
-      record({ itemType: "FOLLOWER_RECORD", followerId: actor, targetId: owner, followedAt: "2026-11-15T04:00:00Z" }),
-    ]);
+  ])("ignores %s source events and already queued notices", async (kind, change) => {
+    const queued = record({
+      itemType: "COMMUNITY_ACTIVITY_V1", pk: "USER#" + owner,
+      sk: "MISSION_ACTIVITY#1", kind, eventId: "old", workId: work,
+      occurredAt: now, pushPending: true,
+    });
+    expect(await handleNotificationStream([change, queued])).toEqual({ batchItemFailures: [] });
     expect(send).not.toHaveBeenCalled();
-    send.mockResolvedValueOnce({ Item: { ...publicWork, youtubePrivacyStatus: "private" } });
-    await handleNotificationStream([bookmark()]);
-    expect(send.mock.calls.map(([c]) => c.constructor.name)).toEqual(["GetCommand"]);
+    expect(push).not.toHaveBeenCalled();
   });
 
-  it("dedupes a replay or a new toggle within 24 hours without retrying a block denial", async () => {
+  it("ignores stale publication events and retries failures creating current ones", async () => {
+    const old = record({ ...publicWork, createdAt: "2026-11-15T04:00:00Z" });
+    await handleNotificationStream([old]);
+    expect(send).not.toHaveBeenCalled();
+    const change = record({ ...publicWork, createdAt: now });
     send.mockRejectedValueOnce(new TransactionCanceledException({
-      $metadata: {}, message: "Expected condition failure", CancellationReasons: [{ Code: "ConditionalCheckFailed" }],
+      $metadata: {}, message: "Already recorded", CancellationReasons: [{ Code: "ConditionalCheckFailed" }],
     }));
-    expect(await handleNotificationStream([follow()])).toEqual({ batchItemFailures: [] });
-    expect(push).not.toHaveBeenCalled();
+    expect(await handleNotificationStream([change])).toEqual({ batchItemFailures: [] });
     send.mockRejectedValueOnce(new Error("temporary throttle"));
-    expect(await handleNotificationStream([follow()])).toEqual({
+    expect(await handleNotificationStream([change])).toEqual({
       batchItemFailures: [{ itemIdentifier: "1234" }],
     });
-  });
-
-  it("keeps the same opaque key across days and separates people, works, and action kinds", async () => {
-    await handleNotificationStream([follow()]);
-    const first = lastStored().event;
-    const nextDay = new Date(Date.parse(now) + 2 * 86_400_000).toISOString();
-    vi.setSystemTime(new Date(nextDay));
-    await handleNotificationStream([follow(nextDay)]);
-    expect(lastStored().event).toMatchObject({ firstKey: first.firstKey });
-    expect(lastStored().event.eventId).not.toBe(first.eventId);
-    expect(first.firstKey).toMatch(/^[a-f0-9]{64}$/);
-    expect(communityTarget("newFollower")).toBe("/community/my-works");
-
-    const action = async (kind: "BOOKMARK" | "REPOST", by: string, video: string) => {
-      await handleNotificationStream([record({ itemType: kind, niarimUserId: by,
-        workId: video, [kind === "BOOKMARK" ? "bookmarkedAt" : "repostedAt"]: new Date().toISOString() })]);
-      return lastStored().event.firstKey;
-    };
-    const bookmark = await action("BOOKMARK", actor, work);
-    const repost = await action("REPOST", actor, work);
-    expect(await action("REPOST", "N" + "c".repeat(32), work)).not.toBe(repost);
-    expect(await action("BOOKMARK", actor, "OtherWork01")).not.toBe(bookmark);
-    vi.setSystemTime(new Date(Date.parse(nextDay) + 2 * 86_400_000));
-    expect(await action("BOOKMARK", actor, work)).toBe(bookmark);
-    expect(await action("REPOST", actor, work)).toBe(repost);
-    expect(new Set([first.firstKey, bookmark, repost]).size).toBe(3);
   });
 
   it("distinguishes ordinary registration, visible publication, and a pending reservation", async () => {
@@ -175,13 +137,13 @@ describe("committed activity to private history", () => {
 
 describe("delivery from stored activity", () => {
   it("claims once and sends safe data, without double sending on replay", async () => {
-    await handleNotificationStream([bookmark()]);
+    await handleNotificationStream([record({ ...publicWork, createdAt: now })]);
     const activity = record(lastStored().event);
     expect(await handleNotificationStream([activity])).toEqual({ batchItemFailures: [] });
     expect(push).toHaveBeenCalledWith(owner, expect.objectContaining({
-      androidBodyLocKey: "push_new_bookmark",
-      data: expect.objectContaining({ targetRoute: "/community/work/" + work, type: "newBookmark",
-        occurredAt: now, firstKey: expect.stringMatching(/^[a-f0-9]{64}$/) }),
+      androidBodyLocKey: "push_work_published",
+      data: expect.objectContaining({ targetRoute: "/community/work/" + work, type: "workPublicationConfirmed",
+        occurredAt: now }),
       deviceHandled: true,
     }));
     expect(send.mock.calls.some(([cmd]) => cmd instanceof UpdateCommand &&
@@ -193,7 +155,7 @@ describe("delivery from stored activity", () => {
   });
 
   it("skips a private/deleted work at delivery, including after recording", async () => {
-    await handleNotificationStream([bookmark()]);
+    await handleNotificationStream([record({ ...publicWork, createdAt: now })]);
     send.mockResolvedValueOnce({});
     await handleNotificationStream([record(lastStored().event)]);
     expect(push).not.toHaveBeenCalled();
@@ -216,9 +178,13 @@ describe("delivery from stored activity", () => {
   it("keeps existing mission responses and exposes only allowlisted community data on opt-in", async () => {
     const entries = [
       { itemType: "COMMUNITY_ACTIVITY_V1", eventId: "safe", occurredAt: now,
-        ttl: Date.parse(now) / 1000 + 100, workId: work, actorId: actor, kind: "newBookmark" },
+        ttl: Date.parse(now) / 1000 + 100, workId: work, kind: "workPublicationConfirmed" },
+      ...["newFollower", "newBookmark", "newRepost"].map((kind) => ({
+        itemType: "COMMUNITY_ACTIVITY_V1", eventId: kind, occurredAt: now,
+        ttl: Date.parse(now) / 1000 + 100, workId: work, actorId: actor, kind,
+      })),
       { itemType: "COMMUNITY_ACTIVITY_V1", eventId: "expired", occurredAt: now,
-        ttl: Date.parse(now) / 1000 - 100, kind: "newFollower" },
+        ttl: Date.parse(now) / 1000 - 100, kind: "scheduledRelease" },
       { itemType: "MISSION_ACTIVITY_V1", eventId: "mission", kind: "followers",
         required: 1, occurredAt: now },
     ];
@@ -229,7 +195,18 @@ describe("delivery from stored activity", () => {
     const events = JSON.parse(mixed.body!).events;
     expect(events).toHaveLength(2);
     expect(events[0]).toEqual({ eventId: "safe", occurredAt: now,
-      kind: "newBookmark", targetRoute: "/community/work/" + work });
+      kind: "workPublicationConfirmed", targetRoute: "/community/work/" + work });
     expect(JSON.stringify(events)).not.toContain(actor);
   });
+});
+
+it("keeps the legacy follow endpoints private and returns empty results to their owner", async () => {
+  const event = { headers: {} } as Parameters<typeof getNotifications>[0];
+  expect(JSON.parse((await getNotifications(event, owner)).body!))
+    .toEqual({ notifications: [], unreadCount: 0 });
+  expect(JSON.parse((await markNotificationsRead(event, owner)).body!))
+    .toEqual({ markedCount: 0 });
+  await expect(getNotifications(event, actor)).rejects.toMatchObject({ statusCode: 403 });
+  await expect(markNotificationsRead(event, actor)).rejects.toMatchObject({ statusCode: 403 });
+  expect(send).not.toHaveBeenCalled();
 });

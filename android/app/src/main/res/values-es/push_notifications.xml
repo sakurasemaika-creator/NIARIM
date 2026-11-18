@@ -1,8 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="push_new_follower">Tienes un nuevo seguidor</string>
-    <string name="push_new_bookmark">Han guardado una de tus obras</string>
-    <string name="push_new_repost">Han compartido una de tus obras</string>
     <string name="push_scheduled_release">Se publicó tu obra programada</string>
     <string name="push_mission_achievement">Has alcanzado un nuevo objetivo de misión</string>
     <string name="push_work_posted">Se registró tu obra</string>

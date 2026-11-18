@@ -28,24 +28,16 @@ internal object CommunityNotices {
     private const val MY_WORKS = "/community/my-works"
     private const val MISSIONS = "/creator-missions"
     private val ownerId = Regex("N[a-f0-9]{32}")
-    private val firstKey = Regex("[a-f0-9]{64}")
     private val eventId = Regex("[A-Za-z0-9_-]{1,120}")
     private val workId = Regex("[A-Za-z0-9_-]{11}")
     private val workRoute = Regex("/community/work/[A-Za-z0-9_-]{11}")
     private val isoDate = Regex("[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{3})?Z")
     private const val DAY_MS = 86_400_000L
-    private val socialCategories = setOf("follower", "bookmark", "repost")
     private var database: NoticeDatabase? = null
 
     private class NoticeDatabase(context: Context) :
-        SQLiteOpenHelper(context, "niarim-notice-history.db", null, 1) {
+        SQLiteOpenHelper(context, "niarim-notice-history.db", null, 2) {
         override fun onCreate(db: SQLiteDatabase) {
-            db.execSQL("""
-                CREATE TABLE first_seen (
-                    owner TEXT NOT NULL, identity TEXT NOT NULL, event TEXT NOT NULL,
-                    PRIMARY KEY (owner, identity)
-                ) WITHOUT ROWID
-            """.trimIndent())
             db.execSQL("""
                 CREATE TABLE shown (
                     owner TEXT NOT NULL, identity TEXT NOT NULL, created INTEGER NOT NULL,
@@ -54,7 +46,9 @@ internal object CommunityNotices {
             """.trimIndent())
         }
 
-        override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) = Unit
+        override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
+            if (oldVersion < 2) db.execSQL("DROP TABLE IF EXISTS first_seen")
+        }
     }
 
     private fun prefs(context: Context) =
@@ -63,43 +57,9 @@ internal object CommunityNotices {
     private fun db(context: Context) =
         (database ?: NoticeDatabase(context.applicationContext).also { database = it }).writableDatabase
 
-    private fun isOriginal(db: SQLiteDatabase, owner: String, key: String, event: String): Boolean {
-        val values = ContentValues().apply {
-            put("owner", owner)
-            put("identity", key)
-            put("event", event)
-        }
-        db.insertWithOnConflict("first_seen", null, values, SQLiteDatabase.CONFLICT_IGNORE)
-        return db.rawQuery(
-            "SELECT event FROM first_seen WHERE owner = ? AND identity = ?", arrayOf(owner, key)
-        ).use { it.moveToFirst() && it.getString(0) == event }
-    }
-
-    @Synchronized
-    fun filter(context: Context, owner: String, receipts: List<Map<String, String>>): List<String> {
-        if (!ownerId.matches(owner) || receipts.size > 200) return emptyList()
-        val db = db(context)
-        db.beginTransaction()
-        try {
-            val accepted = receipts.mapNotNull { receipt ->
-                val key = receipt["key"] ?: return@mapNotNull null
-                val event = receipt["event"] ?: return@mapNotNull null
-                event.takeIf { firstKey.matches(key) && eventId.matches(event) &&
-                    isOriginal(db, owner, key, event) }
-            }
-            db.setTransactionSuccessful()
-            return accepted
-        } finally {
-            db.endTransaction()
-        }
-    }
-
     private data class Notice(val category: String?, val body: Int)
 
     private val notices = mapOf(
-        "newFollower" to Notice("follower", R.string.push_new_follower),
-        "newBookmark" to Notice("bookmark", R.string.push_new_bookmark),
-        "newRepost" to Notice("repost", R.string.push_new_repost),
         "workPosted" to Notice("publication", R.string.push_work_posted),
         "workPublicationConfirmed" to Notice("publication", R.string.push_work_published),
         "scheduledRelease" to Notice("publication", R.string.push_scheduled_release),
@@ -122,7 +82,7 @@ internal object CommunityNotices {
     }
 
     private fun routeValid(kind: String, route: String) = when (kind) {
-        "newFollower", "workPosted" -> route == MY_WORKS
+        "workPosted" -> route == MY_WORKS
         "mission_achievement" -> route == MISSIONS
         else -> workRoute.matches(route)
     }
@@ -143,11 +103,6 @@ internal object CommunityNotices {
             val now = System.currentTimeMillis()
             val whenMs = date(data["occurredAt"] ?: return) ?: return
             if (whenMs <= 0 || whenMs > now + DAY_MS) return
-            if (notice.category in socialCategories) {
-                val key = data["firstKey"]?.takeIf(firstKey::matches) ?: return
-                // Record the first observed action even when alerts are muted.
-                if (!isOriginal(db(context), owner, key, event)) return
-            }
             show(context, owner, display, route, notice, whenMs)
         } catch (error: Exception) {
             Log.w("CommunityNotices", "Notification unavailable: ${error.javaClass.simpleName}")
@@ -182,7 +137,6 @@ internal object CommunityNotices {
         }
         val database = db(context)
         // FCM display receipts only need to outlive its one-day message TTL.
-        // First-seen social identities are never expired.
         val now = System.currentTimeMillis()
         database.delete("shown", "created < ?", arrayOf((now - 7 * DAY_MS).toString()))
         val added = database.insertWithOnConflict("shown", null, ContentValues().apply {

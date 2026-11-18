@@ -647,21 +647,6 @@ class CommunityService extends ChangeNotifier {
   late final List<CommunityRepost> _reposts = api == null
       ? _buildDummyReposts(_works)
       : <CommunityRepost>[];
-  // 各authorIdの「自分のブックマーク一覧を他ユーザーに公開するか」設定。
-  // ユーザー別ブックマーク一覧の実現可否調査（Task#145・29_動画投稿・
-  // ランキング機能仕様.md 21.2節）でプライバシー面から既定非公開を推奨
-  // したため、自分（kDummySelfAuthorId）は既定false。他のダミー作者は
-  // 公開/非公開どちらの見た目も確認できるよう交互に割り当てている。
-  final Map<String, bool> _bookmarksPublicByAuthor =
-      _buildDummyPublicVisibility();
-  // 他のダミー作者（自分以外）が何をブックマークしているかの表示確認用
-  // ダミーデータ。実際のマルチユーザーバックエンドが無いため、自分の
-  // ブックマーク（_bookmarkedIds、実際にトグル可能）とは別に固定シードの
-  // 乱数で生成する。
-  late final Map<String, Set<String>> _dummyBookmarksByOtherAuthor = api == null
-      ? _buildDummyBookmarksByAuthor(_works)
-      : {};
-  // フォロワー一覧（Task#134継続：本人選択制で公開できる妥協案。22.5節）。
   // 他のダミー作者同士が誰をフォローしているかの表示確認用ダミーデータ
   // （固定シードの乱数で生成）。表示時はここへ「自分がフォローして
   // いれば自分自身のID」を加算する（followerIdsOf参照）。
@@ -1963,43 +1948,17 @@ class CommunityService extends ChangeNotifier {
     return reposts;
   }
 
-  // ─── ブックマークの公開設定・ユーザー別ブックマーク一覧
-  //     （Task#145の調査を受けた実装） ─────────────────────────────────
-
-  /// [authorId]が自分のブックマーク一覧を他ユーザーに公開しているか。
-  bool isBookmarksPublic(String authorId) =>
-      _bookmarksPublicByAuthor[authorId] ?? false;
-
-  /// 自分のブックマーク一覧の公開設定（ユーザー設定）。
-  bool get selfBookmarksPublic => isBookmarksPublic(kDummySelfAuthorId);
-
-  /// 自分のブックマーク一覧を公開するかどうかを変更する。
-  void setSelfBookmarksPublic(bool value) {
-    _bookmarksPublicByAuthor[kDummySelfAuthorId] = value;
-    notifyListeners();
-  }
-
-  /// [authorId]がブックマークしている作品一覧（新着順）。自分自身の場合は
-  /// 実際にトグルした[_bookmarkedIds]を、それ以外のダミー作者の場合は
-  /// 表示確認用に生成した固定のダミーブックマークを返す。他ユーザーの
-  /// 一覧はNIARIM側で非公開にした作品を除外する（discoverableWorksと
-  /// 同じ扱い。自分自身の一覧は、ホーム画面の「ブクマ済み」タブと同様に
-  /// 除外しない）。公開設定に関わらずデータ自体は返すため、呼び出し側で
-  /// [isBookmarksPublic]を確認してから表示するかどうかを判断すること。
+  /// The signed-in viewer's bookmarks, newest first.
   List<CommunityWork> bookmarkedWorksOf(String authorId) {
-    final isSelf = isOwnAuthor(authorId);
-    final ids = isSelf
-        ? _bookmarkedIds
-        : (_dummyBookmarksByOtherAuthor[authorId] ?? const {});
+    if (!isOwnAuthor(authorId)) return const [];
+    final ids = _bookmarkedIds;
     // The viewer's own list follows their filters too; only their own
     // works stay when hidden.
     final list = _works
         .where(
           (w) =>
               ids.contains(w.id) &&
-              (w.isUnavailable ||
-                  (isSelf && isOwnWork(w)) ||
-                  w.isNiarimPublished),
+              (w.isUnavailable || isOwnWork(w) || w.isNiarimPublished),
         )
         .toList();
     list.sort((a, b) => b.postedAt.compareTo(a.postedAt));
@@ -2026,44 +1985,6 @@ class CommunityService extends ChangeNotifier {
           result[targetId]!.add(followerId);
         }
       }
-    }
-    return result;
-  }
-
-  /// 「自分の関係性データ（ブックマーク一覧・フォロワー一覧）を他ユーザーに
-  /// 公開するか」の設定用ダミーデータ。両機能で同じ交互パターンを流用する
-  /// （author_02, 04, 06を公開、author_03, 05を非公開にして、一覧側で
-  /// 公開・非公開どちらの見た目も確認できるようにする）。
-  static Map<String, bool> _buildDummyPublicVisibility() {
-    final map = <String, bool>{kDummySelfAuthorId: false};
-    const others = [
-      'author_02',
-      'author_03',
-      'author_04',
-      'author_05',
-      'author_06',
-    ];
-    for (var i = 0; i < others.length; i++) {
-      map[others[i]] = i.isEven;
-    }
-    return map;
-  }
-
-  static Map<String, Set<String>> _buildDummyBookmarksByAuthor(
-    List<CommunityWork> works,
-  ) {
-    final random = Random(7);
-    final authorIds = works.map((w) => w.authorId).toSet().toList()
-      ..remove(kDummySelfAuthorId)
-      ..sort();
-    final result = <String, Set<String>>{};
-    for (final id in authorIds) {
-      final count = (2 + random.nextInt(4)).clamp(0, works.length);
-      final ids = <String>{};
-      while (ids.length < count) {
-        ids.add(works[random.nextInt(works.length)].id);
-      }
-      result[id] = ids;
     }
     return result;
   }

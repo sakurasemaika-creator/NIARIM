@@ -1,8 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="push_new_follower">새 팔로워가 생겼습니다</string>
-    <string name="push_new_bookmark">작품이 북마크되었습니다</string>
-    <string name="push_new_repost">작품이 리포스트되었습니다</string>
     <string name="push_scheduled_release">예약한 작품이 공개되었습니다</string>
     <string name="push_mission_achievement">새 미션 달성 알림이 있습니다</string>
     <string name="push_work_posted">작품이 게시되었습니다</string>
