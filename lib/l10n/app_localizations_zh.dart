@@ -10146,6 +10146,29 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get timelineAutofillBatchFailed => '自动上色因错误中断。';
+
+  @override
+  String get pcBinEmpty => '还没有素材';
+
+  @override
+  String pcBinSceneFrames(int count) {
+    return '$count 帧';
+  }
+
+  @override
+  String get pcInspectorHint => '在时间轴上选择素材后，可在此调整位置、大小、不透明度等。';
+
+  @override
+  String get pcPaneInspector => '详情';
+
+  @override
+  String get pcPaneProgram => '预览';
+
+  @override
+  String get pcTimelineZoomIn => '放大时间轴';
+
+  @override
+  String get pcTimelineZoomOut => '缩小时间轴';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -20292,4 +20315,27 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get timelineAutofillBatchFailed => '自動上色因錯誤中斷。';
+
+  @override
+  String get pcBinEmpty => '還沒有素材';
+
+  @override
+  String pcBinSceneFrames(int count) {
+    return '$count 影格';
+  }
+
+  @override
+  String get pcInspectorHint => '在時間軸上選擇素材後，可在此調整位置、大小、不透明度等。';
+
+  @override
+  String get pcPaneInspector => '詳情';
+
+  @override
+  String get pcPaneProgram => '預覽';
+
+  @override
+  String get pcTimelineZoomIn => '放大時間軸';
+
+  @override
+  String get pcTimelineZoomOut => '縮小時間軸';
 }

@@ -3890,5 +3890,12 @@
   "timelineAutofillFailedFrames": "{count, plural, one {Le remplissage automatique a échoué pour {count} image.} other {Le remplissage automatique a échoué pour {count} images.}}",
   "timelineAutofillFileError": "Certaines données de fichier sont inaccessibles.",
   "timelineAutofillProcessingError": "Une erreur est survenue pendant le traitement du dessin.",
-  "timelineAutofillBatchFailed": "Une erreur a interrompu le remplissage automatique."
+  "timelineAutofillBatchFailed": "Une erreur a interrompu le remplissage automatique.",
+  "pcBinEmpty": "Aucun matériau pour l’instant",
+  "pcBinSceneFrames": "{count} images",
+  "pcInspectorHint": "Sélectionnez un matériau dans la chronologie pour régler ici sa position, sa taille, son opacité, etc.",
+  "pcPaneInspector": "Détails",
+  "pcPaneProgram": "Aperçu",
+  "pcTimelineZoomIn": "Agrandir la chronologie",
+  "pcTimelineZoomOut": "Réduire la chronologie"
 }

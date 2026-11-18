@@ -10320,4 +10320,28 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get timelineAutofillBatchFailed => '오류가 발생해 자동 채색을 중단했습니다.';
+
+  @override
+  String get pcBinEmpty => '아직 소재가 없습니다';
+
+  @override
+  String pcBinSceneFrames(int count) {
+    return '$count프레임';
+  }
+
+  @override
+  String get pcInspectorHint =>
+      '타임라인에서 소재를 선택하면 여기에서 위치·크기·불투명도 등을 조정할 수 있습니다.';
+
+  @override
+  String get pcPaneInspector => '상세';
+
+  @override
+  String get pcPaneProgram => '미리보기';
+
+  @override
+  String get pcTimelineZoomIn => '타임라인 확대';
+
+  @override
+  String get pcTimelineZoomOut => '타임라인 축소';
 }

@@ -152,6 +152,7 @@ void main() {
     // メニュー・書き出しはスマホと同じもの）。
     expect(find.byKey(const Key('timelineExportButton')), findsNothing);
     expect(find.byKey(const Key('timelineAddMaterialMenu')), findsOneWidget);
+    expect(find.byKey(const Key('timelineSelectionMenu')), findsOneWidget);
     expect(find.byKey(const ValueKey('timelineMoreMenu')), findsOneWidget);
     expect(find.byKey(const ValueKey('pcCommandExport')), findsOneWidget);
     expect(find.byKey(const ValueKey('pcCommandBackToCanvas')), findsOneWidget);

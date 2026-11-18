@@ -11195,4 +11195,28 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get timelineAutofillBatchFailed =>
       'El relleno automático se detuvo por un error.';
+
+  @override
+  String get pcBinEmpty => 'Aún no hay materiales';
+
+  @override
+  String pcBinSceneFrames(int count) {
+    return '$count fotogramas';
+  }
+
+  @override
+  String get pcInspectorHint =>
+      'Selecciona un material en la línea de tiempo para ajustar aquí su posición, tamaño, opacidad y más.';
+
+  @override
+  String get pcPaneInspector => 'Detalles';
+
+  @override
+  String get pcPaneProgram => 'Vista previa';
+
+  @override
+  String get pcTimelineZoomIn => 'Ampliar la línea de tiempo';
+
+  @override
+  String get pcTimelineZoomOut => 'Reducir la línea de tiempo';
 }

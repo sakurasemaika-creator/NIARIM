@@ -10264,4 +10264,27 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get timelineAutofillBatchFailed => '自動塗りの途中でエラーが発生しました。';
+
+  @override
+  String get pcBinEmpty => '素材はまだありません';
+
+  @override
+  String pcBinSceneFrames(int count) {
+    return '$countフレーム';
+  }
+
+  @override
+  String get pcInspectorHint => 'タイムラインの素材を選ぶと、ここで位置・大きさ・不透明度などを調整できます。';
+
+  @override
+  String get pcPaneInspector => '詳細';
+
+  @override
+  String get pcPaneProgram => 'プレビュー';
+
+  @override
+  String get pcTimelineZoomIn => 'タイムラインを拡大';
+
+  @override
+  String get pcTimelineZoomOut => 'タイムラインを縮小';
 }

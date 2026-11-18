@@ -11205,4 +11205,28 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get timelineAutofillBatchFailed =>
       'Une erreur a interrompu le remplissage automatique.';
+
+  @override
+  String get pcBinEmpty => 'Aucun matériau pour l’instant';
+
+  @override
+  String pcBinSceneFrames(int count) {
+    return '$count images';
+  }
+
+  @override
+  String get pcInspectorHint =>
+      'Sélectionnez un matériau dans la chronologie pour régler ici sa position, sa taille, son opacité, etc.';
+
+  @override
+  String get pcPaneInspector => 'Détails';
+
+  @override
+  String get pcPaneProgram => 'Aperçu';
+
+  @override
+  String get pcTimelineZoomIn => 'Agrandir la chronologie';
+
+  @override
+  String get pcTimelineZoomOut => 'Réduire la chronologie';
 }

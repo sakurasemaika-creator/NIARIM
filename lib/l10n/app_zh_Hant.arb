@@ -3890,5 +3890,12 @@
   "timelineAutofillFailedFrames": "{count} 格未能完成自動上色。",
   "timelineAutofillFileError": "無法存取部分檔案資料。",
   "timelineAutofillProcessingError": "處理繪圖資料時發生錯誤。",
-  "timelineAutofillBatchFailed": "自動上色因錯誤中斷。"
+  "timelineAutofillBatchFailed": "自動上色因錯誤中斷。",
+  "pcBinEmpty": "還沒有素材",
+  "pcBinSceneFrames": "{count} 影格",
+  "pcInspectorHint": "在時間軸上選擇素材後，可在此調整位置、大小、不透明度等。",
+  "pcPaneInspector": "詳情",
+  "pcPaneProgram": "預覽",
+  "pcTimelineZoomIn": "放大時間軸",
+  "pcTimelineZoomOut": "縮小時間軸"
 }

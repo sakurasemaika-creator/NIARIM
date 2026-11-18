@@ -11046,4 +11046,28 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get timelineAutofillBatchFailed =>
       'Auto-fill stopped because of an error.';
+
+  @override
+  String get pcBinEmpty => 'No materials yet';
+
+  @override
+  String pcBinSceneFrames(int count) {
+    return '$count frames';
+  }
+
+  @override
+  String get pcInspectorHint =>
+      'Select a material on the timeline to adjust its position, size, opacity and more here.';
+
+  @override
+  String get pcPaneInspector => 'Details';
+
+  @override
+  String get pcPaneProgram => 'Preview';
+
+  @override
+  String get pcTimelineZoomIn => 'Zoom In Timeline';
+
+  @override
+  String get pcTimelineZoomOut => 'Zoom Out Timeline';
 }

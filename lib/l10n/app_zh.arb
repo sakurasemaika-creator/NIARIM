@@ -3890,5 +3890,12 @@
   "timelineAutofillFailedFrames": "{count} 帧未能完成自动上色。",
   "timelineAutofillFileError": "无法访问部分文件数据。",
   "timelineAutofillProcessingError": "处理绘图数据时出错。",
-  "timelineAutofillBatchFailed": "自动上色因错误中断。"
+  "timelineAutofillBatchFailed": "自动上色因错误中断。",
+  "pcBinEmpty": "还没有素材",
+  "pcBinSceneFrames": "{count} 帧",
+  "pcInspectorHint": "在时间轴上选择素材后，可在此调整位置、大小、不透明度等。",
+  "pcPaneInspector": "详情",
+  "pcPaneProgram": "预览",
+  "pcTimelineZoomIn": "放大时间轴",
+  "pcTimelineZoomOut": "缩小时间轴"
 }

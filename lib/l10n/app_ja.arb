@@ -6217,5 +6217,20 @@
       }
     }
   },
-  "timelineAutofillBatchFailed": "自動塗りの途中でエラーが発生しました。"
+  "timelineAutofillBatchFailed": "自動塗りの途中でエラーが発生しました。",
+  "pcBinEmpty": "素材はまだありません",
+  "pcBinSceneFrames": "{count}フレーム",
+  "@pcBinSceneFrames": {
+    "description": "PC/DeXモードのタイムライン：シーンの一覧のフレーム数",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "pcInspectorHint": "タイムラインの素材を選ぶと、ここで位置・大きさ・不透明度などを調整できます。",
+  "pcPaneInspector": "詳細",
+  "pcPaneProgram": "プレビュー",
+  "pcTimelineZoomIn": "タイムラインを拡大",
+  "pcTimelineZoomOut": "タイムラインを縮小"
 }

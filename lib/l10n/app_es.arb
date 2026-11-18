@@ -3890,5 +3890,12 @@
   "timelineAutofillFailedFrames": "{count, plural, one {No se pudo completar el relleno automático de 1 fotograma.} other {No se pudo completar el relleno automático de {count} fotogramas.}}",
   "timelineAutofillFileError": "No se pudo acceder a algunos datos de los archivos.",
   "timelineAutofillProcessingError": "Se produjo un error al procesar el dibujo.",
-  "timelineAutofillBatchFailed": "El relleno automático se detuvo por un error."
+  "timelineAutofillBatchFailed": "El relleno automático se detuvo por un error.",
+  "pcBinEmpty": "Aún no hay materiales",
+  "pcBinSceneFrames": "{count} fotogramas",
+  "pcInspectorHint": "Selecciona un material en la línea de tiempo para ajustar aquí su posición, tamaño, opacidad y más.",
+  "pcPaneInspector": "Detalles",
+  "pcPaneProgram": "Vista previa",
+  "pcTimelineZoomIn": "Ampliar la línea de tiempo",
+  "pcTimelineZoomOut": "Reducir la línea de tiempo"
 }

@@ -3925,5 +3925,12 @@
       }
     }
   },
-  "timelineAutofillBatchFailed": "Auto-fill stopped because of an error."
+  "timelineAutofillBatchFailed": "Auto-fill stopped because of an error.",
+  "pcBinEmpty": "No materials yet",
+  "pcBinSceneFrames": "{count} frames",
+  "pcInspectorHint": "Select a material on the timeline to adjust its position, size, opacity and more here.",
+  "pcPaneInspector": "Details",
+  "pcPaneProgram": "Preview",
+  "pcTimelineZoomIn": "Zoom In Timeline",
+  "pcTimelineZoomOut": "Zoom Out Timeline"
 }

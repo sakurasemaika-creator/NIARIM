@@ -7,6 +7,7 @@ import 'package:http/testing.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/models/community_work.dart';
 import 'package:niarim/screens/community/community_work_detail_screen.dart';
+import 'package:niarim/screens/community/widgets/community_youtube_player.dart';
 import 'package:niarim/services/api/community_api.dart';
 import 'package:niarim/services/api/niarim_api_client.dart';
 import 'package:niarim/services/community_service.dart';
@@ -77,6 +78,8 @@ void main() {
           'authorId': 'user_1',
           'works': [workJson()],
         };
+      } else if (path == '/works/vid00000001/playback-status') {
+        body = {'status': 'available'};
       } else {
         return http.Response('{}', 404, headers: headers);
       }
@@ -267,10 +270,15 @@ void main() {
     testWidgets('viewers see the declaration but cannot change it', (
       tester,
     ) async {
+      final oldPlayer = CommunityYoutubePlayer.debugPlayerBuilder;
+      CommunityYoutubePlayer.debugPlayerBuilder = (_, _, _) =>
+          const SizedBox.expand();
+      addTearDown(() => CommunityYoutubePlayer.debugPlayerBuilder = oldPlayer);
       final (:service, :requests) = backend(latest: [workJson(ai: true)]);
       await tester.runAsync(service.refreshFromBackend);
       service.setCurrentUserId('someone_else');
       await pumpDetail(tester, service, 'vid00000001');
+      await tester.pumpAndSettle();
       expect(find.byKey(switchKey), findsNothing);
       await tester.ensureVisible(find.byKey(labelKey));
       expect(find.byKey(labelKey), findsOneWidget);
