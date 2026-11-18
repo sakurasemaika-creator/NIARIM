@@ -548,7 +548,15 @@ App・Web共通。Claudeが要修正の詳細を追記し、ユーザーが別�
 - **起点**：App `32f592a5`（originと同じ）、Web `eb53734`（originの`08acde5`より4つ先、未push：`2ce5408`・`533f644`・`fde018b`・`eb53734`）。両方とも作業ツリーに差分なし。
 - **Webのブラウザ（DISC444・450・451・457・459・460のナビ・表示）**：Chromiumはまだ`libatk-1.0.so.0`が無く起動しない。`npx playwright install-deps chromium`は今回も許可が下りなかった。debを手で展開してライブラリをそろえる回り道は、AGENTS.mdの「実行環境の明示的な拒否を迂回しない」に当たるのでしない。**必要な操作**：この環境で`sudo npx playwright install-deps chromium`（またはUbuntu 24.04の`libatk1.0-0t64`・`libatk-bridge2.0-0t64`・`libcups2t64`・`libxkbcommon0`・`libxcomposite1`・`libxdamage1`・`libxrandr2`・`libgbm1`・`libpango-1.0-0`・`libcairo2`・`libasound2t64`の導入）を許可する。その後`node .dart_tool/audit_tools/web_nav_audit.mjs`（Appのリポジトリの中、390〜1440px×仏・西・英・日×6ページのナビの行数・はみ出し・重なりと仏語の撮影）とWebの`tests/website-glyph-coverage-audit.mjs`を流し、通ればWebの4コミットをpushする。
 - **古いDISCの確認（今のコード `32f592a5`）**：DISC043は直っている（作品・フォルダ・書き出したファイルの完全削除の確認は`ProjectTrashDialog`の`itemNames`で名前を出す、`home_screen.dart`の3か所）。DISC025は直っている（アプリの文言に特許・ライセンスを断定する文が無い。7言語のARBに「特許」0件）。
-- **Flutter全体のtest**：前のセッションの実行は終わる前にセッションが切れた（失敗の記録0件のまま途中）。このセッションでやり直す。
+- **Flutter全体のtest**：全909ファイル。`-r expanded`で流すと最初の10分で67件（ホームの総当たりのマトリクスが重い）で、この実行環境ではセッション（と後ろで動かす処理）が数十分で切れ、切り離して動かす`nohup`・`setsid`・`&`は許可が下りない。全体はまだ一度も最後まで流せていない。**必要な操作**：GitHub Actionsの[全Flutter回帰]（`build-apk.yml`ではない、GPTが使っている回帰のワークフロー）を手で起動するか、`gh`の許可を出す。この環境では5分以内に終わる単位に分けて流す。
+- **古いDISCの確認（App `b314aa21`、2026-11-19）**：今のコードとtestで直っていることを確かめた。
+  - DISC007：ホームの各タブの一覧に`PageStorageKey`（`home-works`・`home-shared`・`home-trash`ほか）。
+  - DISC032：書き出し作品のフォルダの中が空のとき`homeWorkFolderEmpty`（「フォルダはまだありません」はキャンバスのブラシ等のフォルダ管理だけ）。`home_work_folder_empty_test` 11件成功（testを今の作りに合わせた：韓国語は語結合子入りの`Text.rich`、320×220pxでは行が画面外・空の表示はアイコンを省く）。
+  - DISC034：プロジェクト用の`projectListDeleteFolderConfirmBody`は今どこからも使われていない。
+  - DISC036・044：`home_work_folder_save_failure_test`・`work_folder_service_persistence_test`が成功。
+  - DISC005（`accent_fill_roles_test`）・DISC045（`font_coverage_test`）・DISC046（`project_favorite_delete_guard_test`）・DISC048（`app_tutorial_test` 8件）・DISC051/053（`stroke_premultiplied_test`・`engine/filter_premultiplied_validity_test`）・DISC059（`storage_cache_isolation_test`）・DISC060（`home_static_export_preview_test`）が成功（8ファイル51件＋tutorial・font）。
+  - DISC054・055：`home_navigation_state_test` 30件成功（作品一覧のタブにも表示のメニューがある今の作り〔所有者の指定 2026-11-17〕にtestを合わせた）。
+- **次の再開位置**：(1) Webのブラウザの許可（上）→Webの4コミットをpush。(2) S41の一覧の古いDISCの残り（DISC001・002・004・006・008〜024・030・031・033・035・037〜040・042・047・049・052・056・065・070〜072・079・080・090・099・100・102・111・115・116・118〜120・144〜146・150・155・161・166・223・236）を同じやり方（対応するtest・コード）で確かめる。DISC001・002はCLAUDE.mdの記述どおり実装済みの見込み。(3) DISC473（Webの書体のアクセント付き大文字、部分フォントの作り直し）。
 
 ## 要修正の記録
 
