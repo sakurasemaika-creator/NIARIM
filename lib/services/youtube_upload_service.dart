@@ -13,10 +13,8 @@ class YoutubeUploadResult {
   final String videoId;
 }
 
-typedef YoutubeUploadProgress = void Function(
-  int uploadedBytes,
-  int totalBytes,
-);
+typedef YoutubeUploadProgress =
+    void Function(int uploadedBytes, int totalBytes);
 
 /// An upload can be stopped while sending, probing, or waiting to retry.
 class YoutubeUploadCancellation {
@@ -63,6 +61,8 @@ class YoutubeUploadService {
     required File file,
     required String accessToken,
     required String title,
+    required bool containsSyntheticMedia,
+    required bool selfDeclaredMadeForKids,
     String description = '',
     List<String> tags = const <String>[],
     String privacyStatus = 'private',
@@ -121,6 +121,8 @@ class YoutubeUploadService {
       title: title.trim(),
       description: description,
       tags: tags,
+      containsSyntheticMedia: containsSyntheticMedia,
+      selfDeclaredMadeForKids: selfDeclaredMadeForKids,
       privacyStatus: privacyStatus,
       scheduledPublishAt: scheduledPublishAt,
       cancellation: cancellation,
@@ -240,6 +242,8 @@ class YoutubeUploadService {
     required int totalBytes,
     required String mimeType,
     required String title,
+    required bool containsSyntheticMedia,
+    required bool selfDeclaredMadeForKids,
     required String description,
     required List<String> tags,
     required String privacyStatus,
@@ -266,6 +270,8 @@ class YoutubeUploadService {
             },
             'status': <String, Object>{
               'privacyStatus': privacyStatus,
+              'containsSyntheticMedia': containsSyntheticMedia,
+              'selfDeclaredMadeForKids': selfDeclaredMadeForKids,
               if (scheduledPublishAt != null)
                 'publishAt': scheduledPublishAt.toUtc().toIso8601String(),
             },

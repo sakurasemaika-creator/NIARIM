@@ -7467,6 +7467,29 @@ class AppLocalizationsJa extends AppLocalizations {
       '保留中だった作品広場への登録を取りやめました。YouTubeの動画は削除していません。';
 
   @override
+  String get communityPostYoutubeSyntheticQuestion =>
+      'YouTube 向けの申告：現実と見分けにくい改変・合成コンテンツを含みますか？';
+
+  @override
+  String get communityPostYoutubeSyntheticHelp =>
+      '実在する人がしていないことをしたように見せたり、実際には起きていない出来事を本物のように表現した場合などが該当します。';
+
+  @override
+  String get communityPostYoutubeKidsQuestion =>
+      'YouTube の視聴者設定：この動画は子ども向けですか？';
+
+  @override
+  String get communityPostYoutubeKidsHelp => '子どもを対象に制作した動画なら「はい」を選んでください。';
+
+  @override
+  String get communityPostYoutubeDeclarationsRequired =>
+      'YouTube の改変・合成コンテンツと子ども向けの設定を両方選んでください。';
+
+  @override
+  String get communityPostYoutubeDeclarationsStudio =>
+      'アップロード済みの動画の改変・合成コンテンツと視聴者の設定は YouTube Studio で確認・変更できます。';
+
+  @override
   String get communityPostSubmitUpload => 'YouTubeへアップロードして投稿';
 
   @override

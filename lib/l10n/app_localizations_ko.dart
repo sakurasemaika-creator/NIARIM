@@ -7502,6 +7502,29 @@ class AppLocalizationsKo extends AppLocalizations {
       '보류 중이던 작품 광장 등록을 취소했습니다. YouTube의 동영상은 삭제되지 않았습니다.';
 
   @override
+  String get communityPostYoutubeSyntheticQuestion =>
+      'YouTube에 신고할 실제처럼 보이는 변경 또는 합성 콘텐츠가 있나요?';
+
+  @override
+  String get communityPostYoutubeSyntheticHelp =>
+      '예를 들어 실제 인물이 하지 않은 행동을 한 것처럼 보이게 하거나 일어나지 않은 일을 실제처럼 표현한 경우입니다.';
+
+  @override
+  String get communityPostYoutubeKidsQuestion =>
+      'YouTube 시청자층 설정: 이 동영상은 아동용인가요?';
+
+  @override
+  String get communityPostYoutubeKidsHelp => '어린이를 대상으로 만든 동영상이라면 예를 선택하세요.';
+
+  @override
+  String get communityPostYoutubeDeclarationsRequired =>
+      'YouTube의 변경 또는 합성 콘텐츠와 아동용 여부를 모두 선택하세요.';
+
+  @override
+  String get communityPostYoutubeDeclarationsStudio =>
+      '업로드한 동영상의 변경 또는 합성 콘텐츠와 시청자층 설정은 YouTube Studio에서 확인하고 변경할 수 있습니다.';
+
+  @override
   String get communityPostSubmitUpload => 'YouTube에 업로드하고 게시';
 
   @override

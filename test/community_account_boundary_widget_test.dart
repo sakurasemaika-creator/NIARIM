@@ -42,6 +42,30 @@ class _Auth extends GoogleAuthService {
   bool get isConfigured => true;
   @override
   bool get isSignedIn => _current != null;
+  int chooserRequests = 0;
+  int signOutRequests = 0;
+  String? nextChoice;
+
+  @override
+  Future<GoogleSignInAccount> signInInteractively() async {
+    chooserRequests++;
+    final choice = nextChoice;
+    if (choice == null) {
+      throw const GoogleSignInException(
+        code: GoogleSignInExceptionCode.canceled,
+      );
+    }
+    switchTo(choice);
+    return _current!;
+  }
+
+  @override
+  Future<void> signOut() async {
+    signOutRequests++;
+    _current = null;
+    notifyListeners();
+  }
+
   void switchTo(String id) {
     _current = _Account(id);
     notifyListeners();
@@ -121,8 +145,20 @@ void main() {
         );
         await tester.pumpAndSettle();
         expect(find.text('Private fixture old'), findsOneWidget);
-        community.forgetOwner();
-        auth.switchTo('new');
+        final accountButton = find.byKey(
+          const Key('communityMyWorksAccountButton'),
+        );
+        await tester.ensureVisible(accountButton);
+        await tester.tap(accountButton);
+        await tester.pumpAndSettle();
+        expect(auth.chooserRequests, 1);
+        expect(auth.signOutRequests, 0);
+        expect(auth.account?.id, 'old');
+        expect(find.text('Private fixture old'), findsOneWidget);
+        expect(community.byId('old-private'), isNotNull);
+
+        auth.nextChoice = 'new';
+        await tester.tap(accountButton);
         await tester.pump();
         await tester.pump(const Duration(milliseconds: 100));
         expect(nextStarted.isCompleted, isTrue);

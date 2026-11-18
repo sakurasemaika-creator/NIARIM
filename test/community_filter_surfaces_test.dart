@@ -260,6 +260,10 @@ void main() {
     await tester.pumpAndSettle();
     expect(prefs.getString(videoKey), isNull);
     expect(prefs.getString(titleKey), isNull);
+    final declarations = tester.widgetList<RadioGroup<bool>>(
+      find.byType(RadioGroup<bool>),
+    );
+    expect(declarations.map((group) => group.groupValue), [null, null]);
     expect(discard, findsNothing);
     expect(find.text(l10n.communityPostPendingDiscarded), findsOneWidget);
   });
@@ -306,6 +310,11 @@ void main() {
       final l10n = AppLocalizations.of(
         tester.element(find.byType(CommunityPostScreen)),
       )!;
+      expect(find.byType(RadioGroup<bool>), findsNothing);
+      expect(
+        find.text(l10n.communityPostYoutubeDeclarationsStudio),
+        findsOneWidget,
+      );
       final aiSwitch = find.widgetWithText(
         SwitchListTile,
         l10n.communityContainsGenerativeAiImageVideo,

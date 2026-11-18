@@ -324,17 +324,9 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
 
     setState(() => _switchingAccount = true);
     try {
-      // Force account chooser instead of silently reusing the current session.
-      if (auth.isSignedIn) await auth.signOut();
-      if (mounted) {
-        setState(() {
-          _ownerWorks = null;
-          _youtubePrivacyById = const <String, String>{};
-          _worksError = null;
-        });
-      }
+      // The interactive picker keeps the current session if it is dismissed.
+      // didChangeDependencies reloads owner-only data when the account changes.
       await auth.signInInteractively();
-      await _reloadOwnerWorks();
     } catch (error) {
       debugPrint('Google account switch failed: $error');
       if (!mounted) return;

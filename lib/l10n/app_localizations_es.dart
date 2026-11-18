@@ -7895,6 +7895,30 @@ class AppLocalizationsEs extends AppLocalizations {
       'Se ha descartado el registro pendiente en la Plaza de Obras. El vídeo de YouTube no se ha eliminado.';
 
   @override
+  String get communityPostYoutubeSyntheticQuestion =>
+      '¿Incluye el vídeo contenido alterado o sintético de aspecto realista para YouTube?';
+
+  @override
+  String get communityPostYoutubeSyntheticHelp =>
+      'Por ejemplo, mostrar a una persona real haciendo algo que nunca hizo o recrear de forma realista algo que nunca ocurrió.';
+
+  @override
+  String get communityPostYoutubeKidsQuestion =>
+      'Audiencia en YouTube: ¿se ha creado este vídeo para niños?';
+
+  @override
+  String get communityPostYoutubeKidsHelp =>
+      'Selecciona Sí si los niños forman parte del público al que va dirigido.';
+
+  @override
+  String get communityPostYoutubeDeclarationsRequired =>
+      'Responde a las dos preguntas de YouTube sobre el contenido alterado o sintético y la audiencia.';
+
+  @override
+  String get communityPostYoutubeDeclarationsStudio =>
+      'Puedes revisar o cambiar la declaración y la audiencia del vídeo subido en YouTube Studio.';
+
+  @override
   String get communityPostSubmitUpload => 'Subir a YouTube y publicar';
 
   @override

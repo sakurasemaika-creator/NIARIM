@@ -7391,6 +7391,28 @@ class AppLocalizationsZh extends AppLocalizations {
   String get communityPostPendingDiscarded => '已取消待处理的作品广场登记。YouTube上的视频并未删除。';
 
   @override
+  String get communityPostYoutubeSyntheticQuestion =>
+      '视频是否含有需要向 YouTube 声明的看起来真实的修改或合成内容？';
+
+  @override
+  String get communityPostYoutubeSyntheticHelp =>
+      '例如，让真人看起来做了自己没有做过的事，或让从未发生过的事件看起来像真的一样。';
+
+  @override
+  String get communityPostYoutubeKidsQuestion => 'YouTube 观看对象设置：这是面向儿童制作的视频吗？';
+
+  @override
+  String get communityPostYoutubeKidsHelp => '如果儿童是这部视频的目标人群，请选择“是”。';
+
+  @override
+  String get communityPostYoutubeDeclarationsRequired =>
+      '请回答 YouTube 关于修改或合成内容和目标人群的两个问题。';
+
+  @override
+  String get communityPostYoutubeDeclarationsStudio =>
+      '你可以在 YouTube Studio 中查看或更改已上传视频的内容声明和观看对象设置。';
+
+  @override
   String get communityPostSubmitUpload => '上传到YouTube并发布';
 
   @override
@@ -17647,6 +17669,28 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get communityPostPendingDiscarded => '已取消待處理的作品廣場登錄。YouTube上的影片並未刪除。';
+
+  @override
+  String get communityPostYoutubeSyntheticQuestion =>
+      '影片是否含有需要向 YouTube 聲明的變造或合成內容，且看起來像真的一樣？';
+
+  @override
+  String get communityPostYoutubeSyntheticHelp =>
+      '例如，讓真人看起來做了自己沒做過的事，或讓從未發生過的事件看起來像真的一樣。';
+
+  @override
+  String get communityPostYoutubeKidsQuestion => 'YouTube 觀看對象設定：這部影片是為兒童製作的嗎？';
+
+  @override
+  String get communityPostYoutubeKidsHelp => '如果兒童是這部影片的目標對象，請選擇「是」。';
+
+  @override
+  String get communityPostYoutubeDeclarationsRequired =>
+      '請回答 YouTube 關於變造或合成內容及目標對象的兩個問題。';
+
+  @override
+  String get communityPostYoutubeDeclarationsStudio =>
+      '你可以在 YouTube Studio 查看或變更已上傳影片的內容聲明和觀看對象設定。';
 
   @override
   String get communityPostSubmitUpload => '上傳到YouTube並發佈';

@@ -7906,6 +7906,30 @@ class AppLocalizationsFr extends AppLocalizations {
       'L’enregistrement en attente sur la Place des œuvres a été abandonné. La vidéo sur YouTube n’a pas été supprimée.';
 
   @override
+  String get communityPostYoutubeSyntheticQuestion =>
+      'Cette vidéo contient-elle du contenu modifié ou synthétique réaliste à déclarer sur YouTube ?';
+
+  @override
+  String get communityPostYoutubeSyntheticHelp =>
+      'Par exemple, montrer une personne réelle en train de faire quelque chose qu’elle n’a jamais fait ou représenter de façon réaliste un événement qui n’a jamais eu lieu.';
+
+  @override
+  String get communityPostYoutubeKidsQuestion =>
+      'Audience sur YouTube : cette vidéo est-elle conçue pour les enfants ?';
+
+  @override
+  String get communityPostYoutubeKidsHelp =>
+      'Sélectionnez Oui si les enfants font partie du public visé.';
+
+  @override
+  String get communityPostYoutubeDeclarationsRequired =>
+      'Répondez aux deux questions de YouTube sur le contenu modifié ou synthétique et sur le public visé.';
+
+  @override
+  String get communityPostYoutubeDeclarationsStudio =>
+      'Vous pouvez vérifier ou modifier la déclaration et le public de la vidéo mise en ligne dans YouTube Studio.';
+
+  @override
   String get communityPostSubmitUpload =>
       'Mettre en ligne sur YouTube et publier';
 

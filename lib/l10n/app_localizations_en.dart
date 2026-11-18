@@ -7777,6 +7777,30 @@ class AppLocalizationsEn extends AppLocalizations {
       'The pending Work Plaza registration was discarded. The video on YouTube was not deleted.';
 
   @override
+  String get communityPostYoutubeSyntheticQuestion =>
+      'Does this video contain realistic altered or synthetic content for YouTube?';
+
+  @override
+  String get communityPostYoutubeSyntheticHelp =>
+      'Examples include making a real person appear to do something they never did or realistically depicting an event that never happened.';
+
+  @override
+  String get communityPostYoutubeKidsQuestion =>
+      'YouTube audience setting: Is this video made for kids?';
+
+  @override
+  String get communityPostYoutubeKidsHelp =>
+      'Select Yes if children are an intended audience.';
+
+  @override
+  String get communityPostYoutubeDeclarationsRequired =>
+      'Answer both YouTube questions about altered or synthetic content and the intended audience.';
+
+  @override
+  String get communityPostYoutubeDeclarationsStudio =>
+      'You can review or change the uploaded video’s disclosure and audience settings in YouTube Studio.';
+
+  @override
   String get communityPostSubmitUpload => 'Upload to YouTube and post';
 
   @override

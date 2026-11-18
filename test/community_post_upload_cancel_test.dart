@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
@@ -100,6 +101,8 @@ void main() {
         file: file,
         accessToken: 'test-token',
         title: 'My film',
+        containsSyntheticMedia: false,
+        selfDeclaredMadeForKids: false,
         cancellation: cancellation,
       ),
       throwsA(isA<YoutubeUploadCancelled>()),
@@ -110,6 +113,49 @@ void main() {
     await result.timeout(const Duration(seconds: 3));
     expect(methods, ['POST', 'PUT']);
   });
+
+  for (final synthetic in [true, false]) {
+    for (final kids in [true, false]) {
+      test(
+        'one upload sets synthetic=$synthetic and madeForKids=$kids',
+        () async {
+          final requests = <String>[];
+          final publishAt = DateTime.now().toUtc().add(const Duration(days: 1));
+          final uploader = YoutubeUploadService(
+            httpClient: MockClient((request) async {
+              requests.add(request.method);
+              if (request.method == 'POST') {
+                expect(request.url.queryParameters['part'], 'snippet,status');
+                expect(jsonDecode(request.body)['status'], {
+                  'privacyStatus': 'private',
+                  'publishAt': publishAt.toIso8601String(),
+                  'containsSyntheticMedia': synthetic,
+                  'selfDeclaredMadeForKids': kids,
+                });
+                return http.Response(
+                  '',
+                  200,
+                  headers: {'location': 'https://example.invalid/upload'},
+                );
+              }
+              return http.Response('{"id":"test-video"}', 200);
+            }),
+          );
+          addTearDown(uploader.close);
+          final result = await uploader.uploadVideo(
+            file: _sampleVideo(),
+            accessToken: 'test-token',
+            title: 'My film',
+            containsSyntheticMedia: synthetic,
+            selfDeclaredMadeForKids: kids,
+            scheduledPublishAt: publishAt,
+          );
+          expect(result.videoId, 'test-video');
+          expect(requests, ['POST', 'PUT']);
+        },
+      );
+    }
+  }
 
   for (final completedBeforeCancel in [false, true]) {
     testWidgets(
@@ -142,9 +188,15 @@ void main() {
         var uploadStarted = false;
         var requests = 0;
         var abortTriggered = false;
-        final client = MockClient.streaming((request, _) async {
+        final client = MockClient.streaming((request, body) async {
           requests++;
           if (request.method == 'POST') {
+            final data = jsonDecode(await body.bytesToString());
+            expect(data['status'], {
+              'privacyStatus': 'unlisted',
+              'containsSyntheticMedia': completedBeforeCancel,
+              'selfDeclaredMadeForKids': !completedBeforeCancel,
+            });
             return http.StreamedResponse(
               const Stream.empty(),
               200,
@@ -215,6 +267,39 @@ void main() {
 
         final submit = find.byKey(const Key('communityPostSubmitButton'));
         await tapVisible(find.text(l10n.communityPostPickVideo));
+        Finder answer(String group, bool yes) => find.descendant(
+          of: find.byKey(Key(group)),
+          matching: find.widgetWithText(
+            RadioListTile<bool>,
+            yes ? l10n.customAutomationYes : l10n.customAutomationNo,
+          ),
+        );
+        final missing = find.text(
+          l10n.communityPostErrorLabel(
+            l10n.communityPostYoutubeDeclarationsRequired,
+          ),
+        );
+        await tapVisible(submit);
+        expect(missing, findsOneWidget);
+        expect(requests, 0);
+        await tapVisible(
+          answer('communityYoutubeSyntheticMedia', completedBeforeCancel),
+        );
+        await tapVisible(submit);
+        expect(missing, findsOneWidget);
+        expect(requests, 0);
+        await tapVisible(
+          answer('communityYoutubeMadeForKids', !completedBeforeCancel),
+        );
+        expect(missing, findsNothing);
+        if (!completedBeforeCancel) {
+          await tapVisible(
+            find.widgetWithText(
+              SwitchListTile,
+              l10n.communityContainsGenerativeAiImageVideo,
+            ),
+          );
+        }
         await tapVisible(submit);
         for (var i = 0; !uploadStarted && i < 30; i++) {
           await pumpRealAsync(tester, const Duration(milliseconds: 40));
@@ -283,6 +368,17 @@ void main() {
           'My film',
         );
         expect(tester.widget<FilledButton>(submit).onPressed, isNotNull);
+        if (completedBeforeCancel) {
+          await tapVisible(submit);
+          await tester.pumpAndSettle();
+          expect(registrations, 1);
+          expect(requests, 2);
+          expect(missing, findsNothing);
+          expect(
+            prefs.getString('community.pendingUpload.videoId'),
+            'test-video',
+          );
+        }
         expect(tester.takeException(), isNull);
       },
     );

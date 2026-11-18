@@ -45,6 +45,7 @@ enum _PostFailureKind {
   noVideo,
   noTitle,
   noYoutubeTitle,
+  missingYoutubeDeclarations,
   invalidYoutubeDescription,
   googleNotConfigured,
   serverNotConfigured,
@@ -141,6 +142,8 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
   String? _uploadAccountId;
   String? _uploadAccountEmail;
   bool _isShort = false;
+  bool? _youtubeContainsSyntheticMedia;
+  bool? _youtubeMadeForKids;
   String _youtubePrivacyStatus = 'unlisted';
   bool _isNiarimPublished = true;
   bool _containsGenerativeAiImageOrVideo = false;
@@ -173,8 +176,9 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
     final cancellation = _uploadCancellation;
     if (cancellation == null) {
       if (_status case final status?) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(_statusText(l10n, status))));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(_statusText(l10n, status))));
       }
       return;
     }
@@ -317,6 +321,8 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
     if (!mounted) return;
     setState(() {
       _youtubeVideoId = null;
+      _youtubeContainsSyntheticMedia = null;
+      _youtubeMadeForKids = null;
       _uploadAccountId = null;
       _uploadAccountEmail = null;
       _videoFile = null;
@@ -368,6 +374,8 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
     if (!mounted) return;
     setState(() {
       _youtubeVideoId = null;
+      _youtubeContainsSyntheticMedia = null;
+      _youtubeMadeForKids = null;
       _uploadAccountId = null;
       _uploadAccountEmail = null;
       _videoFile = null;
@@ -395,8 +403,12 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
     if (_busy || _youtubeVideoId != null) return;
     final result = await FilePicker.platform.pickFiles(type: FileType.video);
     final path = result?.files.single.path;
-    if (path == null || path.isEmpty) return;
+    if (!mounted || path == null || path.isEmpty) return;
     setState(() {
+      if (_videoFile != null && _videoFile!.path != path) {
+        _youtubeContainsSyntheticMedia = null;
+        _youtubeMadeForKids = null;
+      }
       _videoFile = File(path);
       _error = null;
       final name = result!.files.single.name;
@@ -653,6 +665,20 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
     Navigator.of(context).pop(registeredVideoId);
   }
 
+  void _setYoutubeDeclarations({bool? synthetic, bool? madeForKids}) {
+    setState(() {
+      _youtubeContainsSyntheticMedia =
+          synthetic ?? _youtubeContainsSyntheticMedia;
+      _youtubeMadeForKids = madeForKids ?? _youtubeMadeForKids;
+      if (_error
+          case _PostFailure(kind: _PostFailureKind.missingYoutubeDeclarations)
+          when _youtubeContainsSyntheticMedia != null &&
+              _youtubeMadeForKids != null) {
+        _error = null;
+      }
+    });
+  }
+
   Future<void> _submit() async {
     if (_busy || _restoringPending) return;
     final file = _videoFile;
@@ -691,6 +717,18 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
       setState(
         () => _error = const _PostFailure(
           _PostFailureKind.invalidYoutubeDescription,
+        ),
+      );
+      return;
+    }
+
+    final containsSyntheticMedia = _youtubeContainsSyntheticMedia;
+    final madeForKids = _youtubeMadeForKids;
+    if (_youtubeVideoId == null &&
+        (containsSyntheticMedia == null || madeForKids == null)) {
+      setState(
+        () => _error = const _PostFailure(
+          _PostFailureKind.missingYoutubeDeclarations,
         ),
       );
       return;
@@ -807,6 +845,8 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
             file: file!,
             accessToken: youtubeToken,
             title: youtubeTitle,
+            containsSyntheticMedia: containsSyntheticMedia!,
+            selfDeclaredMadeForKids: madeForKids!,
             description: youtubeDescription,
             privacyStatus: _youtubePrivacyStatus == 'scheduled'
                 ? 'private'
@@ -984,6 +1024,8 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
     if (error is! _PostFailure) return communityErrorText(l10n, error);
     return switch (error.kind) {
       _PostFailureKind.noVideo => l10n.communityPostErrorNoVideo,
+      _PostFailureKind.missingYoutubeDeclarations =>
+        l10n.communityPostYoutubeDeclarationsRequired,
       _PostFailureKind.noTitle => l10n.communityPostErrorNoTitle,
       _PostFailureKind.noYoutubeTitle => CommunityWorkMetadataLabels.of(
         context,
@@ -1344,6 +1386,27 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
                     );
                   },
                 ),
+                if (!_restoringPending && retainedVideoId == null) ...[
+                  _YoutubeDeclaration(
+                    key: const Key('communityYoutubeSyntheticMedia'),
+                    question: l10n.communityPostYoutubeSyntheticQuestion,
+                    help: l10n.communityPostYoutubeSyntheticHelp,
+                    value: _youtubeContainsSyntheticMedia,
+                    enabled: !_busy,
+                    onChanged: (value) =>
+                        _setYoutubeDeclarations(synthetic: value),
+                  ),
+                  _YoutubeDeclaration(
+                    key: const Key('communityYoutubeMadeForKids'),
+                    question: l10n.communityPostYoutubeKidsQuestion,
+                    help: l10n.communityPostYoutubeKidsHelp,
+                    value: _youtubeMadeForKids,
+                    enabled: !_busy,
+                    onChanged: (value) =>
+                        _setYoutubeDeclarations(madeForKids: value),
+                  ),
+                ] else if (retainedVideoId != null)
+                  Text(l10n.communityPostYoutubeDeclarationsStudio),
                 SwitchListTile(
                   contentPadding: EdgeInsets.zero,
                   value: _containsGenerativeAiImageOrVideo,
@@ -1474,6 +1537,54 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _YoutubeDeclaration extends StatelessWidget {
+  const _YoutubeDeclaration({
+    super.key,
+    required this.question,
+    required this.help,
+    required this.value,
+    required this.enabled,
+    required this.onChanged,
+  });
+
+  final String question;
+  final String help;
+  final bool? value;
+  final bool enabled;
+  final ValueChanged<bool?> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return RadioGroup<bool>(
+      groupValue: value,
+      onChanged: onChanged,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Semantics(
+            header: true,
+            child: Text(
+              question,
+              style: Theme.of(context).textTheme.titleSmall,
+            ),
+          ),
+          Text(help),
+          for (final answer in [true, false])
+            RadioListTile<bool>(
+              contentPadding: EdgeInsets.zero,
+              enabled: enabled,
+              value: answer,
+              title: Text(
+                answer ? l10n.customAutomationYes : l10n.customAutomationNo,
+              ),
+            ),
+        ],
       ),
     );
   }
