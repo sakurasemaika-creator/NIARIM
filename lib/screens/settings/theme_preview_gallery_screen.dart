@@ -2394,8 +2394,12 @@ class _ThemeSampleScreen extends StatelessWidget {
                             label: l.exportCompleteTitle,
                             child: const SizedBox.shrink(),
                           ),
+                        // 韓国語は語（空白で区切った単位）の途中で折らない。
                         Text(
-                          l.exportCompleteFramesBody(48),
+                          keepKoreanWordsTogether(
+                            l.exportCompleteFramesBody(48),
+                          ),
+                          semanticsLabel: l.exportCompleteFramesBody(48),
                           style: const TextStyle(fontSize: 14),
                         ),
                         const SizedBox(height: 12),
@@ -2965,8 +2969,10 @@ class _ThemeSampleScreen extends StatelessWidget {
                     children: [
                       Text(l.saveTreeSlotLabel(i + 1), style: labelStyle),
                       const SizedBox(height: 4),
+                      // 韓国語は語の途中で折らない（「저장 데이/터 없음」と切れた）。
                       Text(
-                        l.saveTreeNoDataLabel,
+                        keepKoreanWordsTogether(l.saveTreeNoDataLabel),
+                        semanticsLabel: l.saveTreeNoDataLabel,
                         style: TextStyle(color: c.onSurfaceVariant),
                       ),
                     ],
