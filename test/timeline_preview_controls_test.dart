@@ -877,6 +877,70 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('material clip starts line up while the frame row scrolls', (
+    tester,
+  ) async {
+    late String imageId;
+    await openTimeline(
+      tester,
+      project: const Size(160, 90),
+      screen: const Size(1280, 800),
+      pc: true,
+      fraction: .4,
+      setUpProject: (ps, id) {
+        final scene = ps.scenesOf(id).single.id;
+        final image = ps.addLayer(
+          projectId: id,
+          sceneId: scene,
+          frameIndex: 2,
+          type: LayerType.timelineImage,
+          name: 'Image alignment sample',
+        );
+        imageId = image.id;
+        ps.updateLayer(
+          projectId: id,
+          sceneId: scene,
+          frameIndex: 2,
+          layer: image.copyWith(
+            rangeMode: LayerRangeMode.frameRange,
+            rangeStart: 3,
+            rangeEnd: 7,
+          ),
+        );
+        ps.addAudioClip(
+          id,
+          scene,
+          const AudioClip(
+            id: 'alignment',
+            label: 'Alignment sample',
+            startFrame: 2,
+            lengthFrames: 5,
+          ),
+        );
+      },
+    );
+    final clips = [
+      find.byKey(const ValueKey('timelineClip-alignment')),
+      find.byKey(ValueKey('timelineClip-$imageId')),
+    ];
+    final start = find.byKey(const ValueKey('timelineFrameCell2'));
+    final target = find.byKey(const ValueKey('timelineFrameCell6'));
+    await tester.pumpAndSettle();
+    final initialX = tester.getTopLeft(start).dx;
+    for (final clip in clips) {
+      expect(tester.getTopLeft(clip).dx, closeTo(initialX, .5));
+    }
+
+    await tester.tap(target);
+    await tester.pumpAndSettle();
+    final movedX = tester.getTopLeft(start).dx;
+    expect(movedX, lessThan(initialX - 50));
+    for (final clip in clips) {
+      expect(tester.getTopLeft(clip).dx, closeTo(movedX, .5));
+    }
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets(
     'timeline toggles individual frames and deletes the three selected',
     (tester) async {

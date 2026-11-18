@@ -344,6 +344,8 @@ class _TimelineScreenState extends State<TimelineScreen> {
   double get _frameW => _frameWBase * _frameWidthScale;
   static const double _frameMargin = 0.0;
   double get _cellW => _frameW + _frameMargin * 2;
+  double _trackSidePadding(double viewportWidth) =>
+      math.max(0.0, (viewportWidth - _cellW) / 2);
 
   // ピンチズーム用：現在タイムライン上に乗っているポインター位置。
   final Map<int, Offset> _timelinePinchPointers = {};
@@ -3298,11 +3300,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
                         // 左右に((ビューポート幅-セル幅)/2)の余白を入れることで、
                         // 先頭・末尾のフレームも赤枠（画面中央）まできっちり
                         // スクロールできるようにする。
-                        final sidePadding =
-                            ((constraints.maxWidth - _cellW) / 2).clamp(
-                              0.0,
-                              double.infinity,
-                            );
+                        final sidePadding = _trackSidePadding(
+                          constraints.maxWidth,
+                        );
                         return NotificationListener<ScrollEndNotification>(
                           onNotification: _handleFrameListScrollEnd,
                           child: Stack(
@@ -4019,53 +4019,68 @@ class _TimelineScreenState extends State<TimelineScreen> {
             child: _buildTrackLabel(icon, rowLabel),
           ),
           Expanded(
-            child: Stack(
-              children: [
-                // 背景グリッド（フレーム幅に合わせた縦線）
-                ListView.builder(
-                  controller: scrollCtrl,
-                  scrollDirection: Axis.horizontal,
-                  physics: const ClampingScrollPhysics(),
-                  itemCount: total,
-                  itemBuilder: (_, i) => Container(
-                    width: _cellW,
-                    decoration: BoxDecoration(
-                      border: Border(
-                        right: BorderSide(
-                          color: Theme.of(context).colorScheme.outlineVariant,
-                          width: 0.5,
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final sidePadding = _trackSidePadding(constraints.maxWidth);
+                return NotificationListener<ScrollMetricsNotification>(
+                  onNotification: (_) {
+                    _syncFrom(_frameScrollCtrl);
+                    return false;
+                  },
+                  child: Stack(
+                    children: [
+                      // 背景グリッド（フレーム幅に合わせた縦線）
+                      ListView.builder(
+                        controller: scrollCtrl,
+                        scrollDirection: Axis.horizontal,
+                        physics: const ClampingScrollPhysics(),
+                        padding: EdgeInsets.symmetric(horizontal: sidePadding),
+                        itemCount: total,
+                        itemBuilder: (_, i) => Container(
+                          width: _cellW,
+                          decoration: BoxDecoration(
+                            border: Border(
+                              right: BorderSide(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.outlineVariant,
+                                width: 0.5,
+                              ),
+                            ),
+                          ),
                         ),
                       ),
-                    ),
-                  ),
-                ),
-                // クリップ描画
-                ...clips.map((clip) => _buildClipWidget(clip, scrollCtrl)),
-                // 表示中の最後尾の行にのみ＋を出し、同じタイミングで重ねたい
-                // 素材がある時だけ新しい行を追加できるようにする。行の削除は
-                // 個々のクリップを消せば自動で畳まれるため、専用ボタンは持たない。
-                if (showAddButton)
-                  Positioned(
-                    right: 4,
-                    top: 4,
-                    child: GestureDetector(
-                      onTap: () => _addTrackRow(type),
-                      child: Container(
-                        width: 20,
-                        height: 20,
-                        decoration: BoxDecoration(
-                          color: addColor.withValues(alpha: 0.8),
-                          borderRadius: BorderRadius.circular(10),
+                      // クリップ描画
+                      for (final clip in clips)
+                        _buildClipWidget(clip, scrollCtrl, sidePadding),
+                      // 表示中の最後尾の行にのみ＋を出し、同じタイミングで重ねたい
+                      // 素材がある時だけ新しい行を追加できるようにする。行の削除は
+                      // 個々のクリップを消せば自動で畳まれるため、専用ボタンは持たない。
+                      if (showAddButton)
+                        Positioned(
+                          right: 4,
+                          top: 4,
+                          child: GestureDetector(
+                            onTap: () => _addTrackRow(type),
+                            child: Container(
+                              width: 20,
+                              height: 20,
+                              decoration: BoxDecoration(
+                                color: addColor.withValues(alpha: 0.8),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Icon(
+                                Icons.add,
+                                size: 14,
+                                color: ThemeService.activeColorScheme.onSurface,
+                              ),
+                            ),
+                          ),
                         ),
-                        child: Icon(
-                          Icons.add,
-                          size: 14,
-                          color: ThemeService.activeColorScheme.onSurface,
-                        ),
-                      ),
-                    ),
+                    ],
                   ),
-              ],
+                );
+              },
             ),
           ),
         ],
@@ -4124,12 +4139,16 @@ class _TimelineScreenState extends State<TimelineScreen> {
     );
   }
 
-  Widget _buildClipWidget(_TrackClip clip, ScrollController scrollCtrl) {
+  Widget _buildClipWidget(
+    _TrackClip clip,
+    ScrollController scrollCtrl,
+    double sidePadding,
+  ) {
     return AnimatedBuilder(
       animation: scrollCtrl,
       builder: (ctx, child) {
         final scrollOffset = scrollCtrl.hasClients ? scrollCtrl.offset : 0.0;
-        final left = clip.startFrame * _cellW - scrollOffset;
+        final left = sidePadding + clip.startFrame * _cellW - scrollOffset;
         final width = clip.lengthFrames * _cellW - _frameMargin * 2;
         final isDragging = _draggingClipId == clip.id;
         // ドラッグ中のクリップは画面外カリングの対象から外す。カリングで
@@ -4143,11 +4162,12 @@ class _TimelineScreenState extends State<TimelineScreen> {
         const rowPadding = 3.0;
         final isSelected = _selectedClipIds.contains(clip.id);
         return Positioned(
-          left: left.clamp(0.0, double.infinity),
+          left: left,
           top: rowPadding,
           width: width.clamp(handleW * 2 + 4, double.infinity),
           height: _materialTrackHeight - rowPadding * 2,
           child: GestureDetector(
+            key: ValueKey('timelineClip-${clip.id}'),
             onTap: () {
               if (_isClipMultiSelect) {
                 setState(() {
