@@ -556,7 +556,9 @@ App・Web共通。Claudeが要修正の詳細を追記し、ユーザーが別�
   - DISC036・044：`home_work_folder_save_failure_test`・`work_folder_service_persistence_test`が成功。
   - DISC005（`accent_fill_roles_test`）・DISC045（`font_coverage_test`）・DISC046（`project_favorite_delete_guard_test`）・DISC048（`app_tutorial_test` 8件）・DISC051/053（`stroke_premultiplied_test`・`engine/filter_premultiplied_validity_test`）・DISC059（`storage_cache_isolation_test`）・DISC060（`home_static_export_preview_test`）が成功（8ファイル51件＋tutorial・font）。
   - DISC054・055：`home_navigation_state_test` 30件成功（作品一覧のタブにも表示のメニューがある今の作り〔所有者の指定 2026-11-17〕にtestを合わせた）。
-- **次の再開位置**：(1) Webのブラウザの許可（上）→Webの4コミットをpush。(2) S41の一覧の古いDISCの残り（DISC001・002・004・006・008〜024・030・031・033・035・037〜040・042・047・049・052・056・065・070〜072・079・080・090・099・100・102・111・115・116・118〜120・144〜146・150・155・161・166・223・236）を同じやり方（対応するtest・コード）で確かめる。DISC001・002はCLAUDE.mdの記述どおり実装済みの見込み。(3) DISC473（Webの書体のアクセント付き大文字、部分フォントの作り直し）。
+- **古いDISCの確認（続き、App `3a78f443`）**：DISC071（Escで検索を閉じる。`home_navigation_state_test`のEscの9件を含む30件成功）、DISC072（一致なしの表示。`home_filtered_empty_states_test`・`home_tab_filtered_empty_states_test`・`home_folder_filtered_empty_test` 32件成功）、DISC079（複製は`duplicateProjectWithNotice`：失敗は`runProjectAction`が知らせ、名前は一覧へ加える直前に決める。`home_duplicate_twice_test`ほか14件成功）、DISC100（ゴミ箱のフォルダの行は`commonListSeparator`でつなぐ）、DISC115（ヘルプの自動保存の説明は「作品を開いたときに内容が異なる自動保存があれば尋ねる」で今の作りと同じ）、DISC146（「初回の起動で出た案内」の文は無い）は直っている。
+- **所有者の判断待ち（追加）**：DISC144（ホームのCtrl+F・Delete。PC版の操作の決まり、DISC066と合わせる）、DISC166（タグの変更を作品の変更として最終保存の日時を変えるか）。
+- **次の再開位置**：(1) Webのブラウザの許可（上）→Webの4コミットをpush。(2) S41の一覧の古いDISCの残り（DISC001・002・004・006・008〜024・030・031・033・035・037〜040・042・047・049・052・056・065・070・080・090・099・102・111・116・118〜120・145・150・155・161・223・236）を同じやり方（対応するtest・コード）で確かめる。DISC001・002はCLAUDE.mdの記述どおり実装済みの見込み。(3) DISC473（Webの書体のアクセント付き大文字、部分フォントの作り直し）。
 
 ## 要修正の記録
 
