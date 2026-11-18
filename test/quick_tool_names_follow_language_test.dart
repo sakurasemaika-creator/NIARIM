@@ -168,6 +168,7 @@ void main() {
       final tag = locale.toLanguageTag();
       // 一覧は見えている行だけを作るので、動かしながら行ごとの名前を集める。
       final names = <String, String?>{};
+      var showedMissingBrush = false;
       final list = find
           .descendant(
             of: find.byType(QuickToolPanel),
@@ -196,9 +197,13 @@ void main() {
                 ),
               )
               .map((t) => (t as Text).data)
-              .where((d) => d != null && int.tryParse(d) == null);
-          names[((tile.widget as ListTile).key! as ValueKey<String>).value] =
-              texts.length == 1 ? texts.single : null;
+              .where((d) => d != null && int.tryParse(d) == null)
+              .toList();
+          final id = ((tile.widget as ListTile).key! as ValueKey<String>).value;
+          if (id == 'qt_zh_5') {
+            showedMissingBrush |= texts.remove(l10n.quickToolBrushUnavailable);
+          }
+          names[id] = texts.length == 1 ? texts.single : null;
         }
         // 行の名前の欄より広い1語（どう並べても途中で折れる語。DISC155と
         // 同じ種類）は、数えずに名前を出す。
@@ -224,6 +229,9 @@ void main() {
       position.jumpTo(0);
       await tester.pump();
       final shown = [for (final e in quickTools.entries) names[e.id]];
+      if (!showedMissingBrush) {
+        problems.add('$tag: missing brush status was not shown');
+      }
       final expected = [
         // 最初からある5つ（ブラシの名前は組み込みの名前のまま。DISC107）。
         '$gPen 3px',

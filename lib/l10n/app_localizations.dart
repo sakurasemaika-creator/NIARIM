@@ -1617,6 +1617,12 @@ abstract class AppLocalizations {
   /// **'早替えツール設定'**
   String get quickToolPanelTitle;
 
+  /// No description provided for @quickToolBrushUnavailable.
+  ///
+  /// In ja, this message translates to:
+  /// **'ブラシが見つかりません'**
+  String get quickToolBrushUnavailable;
+
   /// No description provided for @quickToolEmpty.
   ///
   /// In ja, this message translates to:
@@ -6924,8 +6930,14 @@ abstract class AppLocalizations {
   /// No description provided for @projectListIncludeFontsSubtitle.
   ///
   /// In ja, this message translates to:
-  /// **'使用中のユーザー追加フォントを同梱します'**
+  /// **'使用中の追加フォントを同梱します。再配布が許可されたフォントだけにしてください。'**
   String get projectListIncludeFontsSubtitle;
+
+  /// No description provided for @projectListFontLicenseUnavailable.
+  ///
+  /// In ja, this message translates to:
+  /// **'追加フォントのライセンスを確認できません。通信を確認して再試行するか、フォントの同梱を外してください。'**
+  String get projectListFontLicenseUnavailable;
 
   /// No description provided for @blendModeNormal.
   ///

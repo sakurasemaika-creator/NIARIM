@@ -7,6 +7,7 @@ class FontAsset {
   final int sizeBytes;
   final DateTime addedAt;
   final bool isFavorite;
+  final String? licenseNotice;
   // ピクセルモード：ONの場合、このフォントで
   // ラスタライズするテキストはアンチエイリアスを行わず、輪郭をくっきり
   // 二値化する（ドットフォント・ビットマップ由来フォントをにじませずに
@@ -24,6 +25,7 @@ class FontAsset {
     required this.addedAt,
     this.isFavorite = false,
     this.pixelMode = false,
+    this.licenseNotice,
   });
 
   String get extension => fileName.split('.').last.toUpperCase();
@@ -32,6 +34,7 @@ class FontAsset {
     String? displayName,
     bool? isFavorite,
     bool? pixelMode,
+    String? licenseNotice,
   }) => FontAsset(
     id: id,
     displayName: displayName ?? this.displayName,
@@ -40,6 +43,7 @@ class FontAsset {
     addedAt: addedAt,
     isFavorite: isFavorite ?? this.isFavorite,
     pixelMode: pixelMode ?? this.pixelMode,
+    licenseNotice: licenseNotice ?? this.licenseNotice,
   );
 
   Map<String, dynamic> toJson() => {
@@ -50,6 +54,7 @@ class FontAsset {
     'addedAt': addedAt.toIso8601String(),
     'isFavorite': isFavorite,
     'pixelMode': pixelMode,
+    if (licenseNotice != null) 'licenseNotice': licenseNotice,
   };
 
   factory FontAsset.fromJson(Map<String, dynamic> j) => FontAsset(
@@ -60,5 +65,8 @@ class FontAsset {
     addedAt: DateTime.parse(j['addedAt'] as String),
     isFavorite: j['isFavorite'] as bool? ?? false,
     pixelMode: j['pixelMode'] as bool? ?? false,
+    licenseNotice: j['licenseNotice'] is String
+        ? j['licenseNotice'] as String
+        : null,
   );
 }

@@ -878,6 +878,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get quickToolPanelTitle => 'Quick Tool Settings';
 
   @override
+  String get quickToolBrushUnavailable => 'Brush unavailable';
+
+  @override
   String get quickToolEmpty => 'No tools added yet';
 
   @override
@@ -3931,7 +3934,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get projectListIncludeFontsSubtitle =>
-      'Includes user-added fonts currently in use';
+      'Includes the added fonts used in this project. Only include fonts you have permission to redistribute.';
+
+  @override
+  String get projectListFontLicenseUnavailable =>
+      'A font license could not be verified. Check your connection and try again, or share without the fonts.';
 
   @override
   String get blendModeNormal => 'Normal';

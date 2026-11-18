@@ -957,6 +957,7 @@ class _HomeScreenState extends State<HomeScreen>
           displayName: font.displayName,
           fileName: font.fileName,
           bytes: font.bytes,
+          licenseNotice: font.licenseNotice,
         );
       }
       // 不足フォント検出（「不足フォントがあります。○○」を表示）：

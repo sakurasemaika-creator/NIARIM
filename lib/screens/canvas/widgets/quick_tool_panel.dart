@@ -157,6 +157,13 @@ class QuickToolPanel extends StatelessWidget {
                               key: ValueKey(e.id),
                               index: index,
                               label: quickToolDisplayLabel(l10n, e, brushes),
+                              unavailable:
+                                  e.brushId != null &&
+                                      !brushes.any(
+                                        (brush) => brush.id == e.brushId,
+                                      )
+                                  ? l10n.quickToolBrushUnavailable
+                                  : null,
                               deleteTooltip: l10n.commonDelete,
                               onDelete: () => service.removeEntry(e.id),
                             );
@@ -475,12 +482,14 @@ class _QuickToolRows {
     required Key key,
     required int index,
     required String label,
+    String? unavailable,
     required String deleteTooltip,
     required VoidCallback onDelete,
   }) {
     // 韓国語の語・数と単位は、1行に入れば途中で折らない。
     final name = messageText(label, style: _nameStyle);
-    final beside = _lineWidthOf(name, label) <= _nameWidthBeside;
+    final beside =
+        unavailable == null && _lineWidthOf(name, label) <= _nameWidthBeside;
     final badge = SizedBox(
       width: _badgeWidth,
       child: Text(
@@ -537,6 +546,11 @@ class _QuickToolRows {
               children: [
                 Row(children: [badge, const Spacer(), controls]),
                 name,
+                if (unavailable != null)
+                  messageText(
+                    unavailable,
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
               ],
             ),
       trailing: beside ? controls : null,

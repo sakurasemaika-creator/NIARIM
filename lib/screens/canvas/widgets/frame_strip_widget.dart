@@ -1,7 +1,9 @@
+import 'dart:async';
 import 'dart:ui' as ui;
 
 import 'package:flutter/foundation.dart' show listEquals;
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart' show ScrollDirection;
 import '../../../widgets/project_duration_limit_dialog.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -47,6 +49,9 @@ class FrameStripWidget extends StatefulWidget {
 class _FrameStripWidgetState extends State<FrameStripWidget> {
   final Map<int, int> _refreshTick = {};
   final ScrollController _scrollController = ScrollController();
+  bool _userScrolled = false;
+  bool _dragScrolled = false;
+  Timer? _wheelSnap;
   static const double _itemExtent = 50;
   @override
   void initState() {
@@ -59,8 +64,10 @@ class _FrameStripWidgetState extends State<FrameStripWidget> {
   @override
   void didUpdateWidget(covariant FrameStripWidget old) {
     super.didUpdateWidget(old);
+    if (old.multiSelectMode != widget.multiSelectMode) _wheelSnap?.cancel();
     if (old.currentFrame != widget.currentFrame ||
         old.sceneId != widget.sceneId) {
+      _wheelSnap?.cancel();
       final left = old.currentFrame;
       _refreshTick[left] = (_refreshTick[left] ?? 0) + 1;
       WidgetsBinding.instance.addPostFrameCallback(
@@ -87,13 +94,42 @@ class _FrameStripWidgetState extends State<FrameStripWidget> {
     }
   }
 
-  bool _handleScrollEnd(ScrollEndNotification notification, int total) {
-    if (notification.dragDetails == null ||
-        widget.multiSelectMode ||
-        total <= 0 ||
-        !_scrollController.hasClients) {
-      return false;
+  bool _handleScroll(ScrollNotification notification) {
+    if (notification.depth != 0) return false;
+    if (notification is UserScrollNotification &&
+        notification.direction != ScrollDirection.idle) {
+      _userScrolled = true;
+      _wheelSnap?.cancel();
+    } else if (notification is ScrollUpdateNotification &&
+        notification.dragDetails != null) {
+      _dragScrolled = true;
+    } else if (notification is ScrollEndNotification && _userScrolled) {
+      _userScrolled = false;
+      final wasDrag = _dragScrolled;
+      _dragScrolled = false;
+      if (wasDrag) {
+        _selectNearestFrame();
+      } else {
+        // Wheel scrolling sends an end notification for each increment.
+        // Snap after the increments stop so small deltas add up to a frame.
+        _wheelSnap = Timer(
+          const Duration(milliseconds: 120),
+          _selectNearestFrame,
+        );
+      }
     }
+    return false;
+  }
+
+  void _selectNearestFrame() {
+    if (!mounted || widget.multiSelectMode || !_scrollController.hasClients) {
+      return;
+    }
+    final total = context.read<ProjectService>().frameCount(
+      widget.projectId,
+      widget.sceneId,
+    );
+    if (total == 0) return;
     final nearest = (_scrollController.offset / _itemExtent).round().clamp(
       0,
       total - 1,
@@ -107,11 +143,11 @@ class _FrameStripWidgetState extends State<FrameStripWidget> {
         (_) => _scrollToCurrent(animate: true),
       );
     }
-    return false;
   }
 
   @override
   void dispose() {
+    _wheelSnap?.cancel();
     _scrollController.dispose();
     super.dispose();
   }
@@ -278,6 +314,7 @@ class _FrameStripWidgetState extends State<FrameStripWidget> {
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setS) => AlertDialog(
           title: Text(l10n.frameStripHoldDialogTitle(frameIndex + 1)),
+          scrollable: true,
           content: Row(
             children: [
               IconButton(
@@ -287,6 +324,7 @@ class _FrameStripWidgetState extends State<FrameStripWidget> {
               ),
               Expanded(
                 child: Center(
+                  heightFactor: 1,
                   child: Text('$hold', style: const TextStyle(fontSize: 24)),
                 ),
               ),
@@ -337,8 +375,8 @@ class _FrameStripWidgetState extends State<FrameStripWidget> {
             0.0,
             double.infinity,
           );
-          return NotificationListener<ScrollEndNotification>(
-            onNotification: (n) => _handleScrollEnd(n, total),
+          return NotificationListener<ScrollNotification>(
+            onNotification: _handleScroll,
             child: Stack(
               children: [
                 ListView.builder(

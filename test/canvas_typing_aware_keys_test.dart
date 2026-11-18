@@ -7,12 +7,16 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/app.dart';
 import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/engine/undo_manager.dart' as app_undo;
+import 'package:niarim/l10n/app_localizations.dart';
+import 'package:niarim/models/quick_tool_entry.dart';
 import 'package:niarim/router.dart';
 import 'package:niarim/screens/canvas/canvas_screen.dart';
 import 'package:niarim/screens/canvas/widgets/canvas_area.dart';
 import 'package:niarim/screens/canvas/widgets/color_picker_panel.dart';
 import 'package:niarim/screens/home/home_screen.dart';
+import 'package:niarim/services/brush_service.dart';
 import 'package:niarim/services/project_service.dart';
+import 'package:niarim/services/quick_tool_service.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -62,6 +66,82 @@ void main() {
     await tester.sendKeyUpEvent(LogicalKeyboardKey.controlLeft);
     await settleIo(tester, 2);
   }
+
+  testWidgets('a deleted quick-tool brush leaves the current tool intact', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1280, 800);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final providers = (await tester.runAsync(buildAppProviders))!;
+    await tester.pumpWidget(
+      MultiProvider(providers: providers, child: const NiarimApp()),
+    );
+    await settleIo(tester, 4);
+    final home = tester.element(find.byType(HomeScreen));
+    final brushes = home.read<BrushService>();
+    final quickTools = home.read<QuickToolService>();
+    final service = home.read<ProjectService>();
+    final l10n = AppLocalizations.of(home)!;
+    final selectedBrush = brushes.currentBrush!;
+    final availableBrush = brushes.brushes.firstWhere(
+      (brush) => brush.id != selectedBrush.id,
+    );
+    final deletedBrush = selectedBrush.copyWith(id: 'audit_deleted_brush');
+    brushes.addBrush(deletedBrush);
+    quickTools.replaceAll([
+      const QuickToolEntry(id: 'eraser', label: 'Eraser', toolKey: 'eraser'),
+      QuickToolEntry(
+        id: 'deleted',
+        label: 'Deleted brush',
+        toolKey: 'pen',
+        brushId: deletedBrush.id,
+        sizeOverride: 5,
+      ),
+      QuickToolEntry(
+        id: 'available',
+        label: 'Available brush',
+        toolKey: 'pen',
+        brushId: availableBrush.id,
+        sizeOverride: 12,
+      ),
+    ]);
+    final project = (await tester.runAsync(
+      () => service.createProject(
+        name: 'Quick tools',
+        fps: 1,
+        durationSeconds: 1,
+        backgroundColor: 0xFFFFFFFF,
+        exportWidth: 160,
+        exportHeight: 90,
+      ),
+    ))!;
+    appRouter.push('/canvas/${project.id}');
+    await settleIo(tester, 10);
+    final quickTool = find.byTooltip(l10n.toolbarQuickToolTooltip);
+    CanvasArea area() => tester.widget<CanvasArea>(find.byType(CanvasArea));
+
+    await tester.tap(quickTool);
+    await tester.pump();
+    expect(area().currentTool, DrawingTool.eraser);
+    final size = area().toolBrushSize;
+    brushes.deleteBrush(deletedBrush.id);
+    final brushBefore = brushes.currentBrush!.id;
+    await tester.tap(quickTool);
+    await tester.pumpAndSettle();
+    expect(area().currentTool, DrawingTool.eraser);
+    expect(area().toolBrushSize, size);
+    expect(brushes.currentBrush!.id, brushBefore);
+    expect(find.text(l10n.quickToolBrushUnavailable), findsOneWidget);
+
+    await tester.tap(quickTool);
+    await tester.pump();
+    expect(area().currentTool, DrawingTool.pen);
+    expect(brushes.currentBrush!.id, availableBrush.id);
+    expect(area().toolBrushSize ?? brushes.currentBrush!.size, 12);
+    expect(tester.takeException(), isNull);
+  });
 
   testWidgets('Ctrl+Z while typing in the colour code is not canvas undo', (
     tester,

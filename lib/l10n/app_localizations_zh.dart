@@ -841,6 +841,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get quickToolPanelTitle => '快捷工具设置';
 
   @override
+  String get quickToolBrushUnavailable => '找不到画笔';
+
+  @override
   String get quickToolEmpty => '暂无已添加的工具';
 
   @override
@@ -3737,7 +3740,11 @@ class AppLocalizationsZh extends AppLocalizations {
   String get projectListIncludeFontsTitle => '包含字体';
 
   @override
-  String get projectListIncludeFontsSubtitle => '包含正在使用的用户添加字体';
+  String get projectListIncludeFontsSubtitle => '包含此项目使用的已添加字体。请仅包含允许再分发的字体。';
+
+  @override
+  String get projectListFontLicenseUnavailable =>
+      '无法确认字体许可证。请检查网络连接后重试，或取消包含字体后再分享。';
 
   @override
   String get blendModeNormal => '正常';
@@ -11073,6 +11080,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get quickToolPanelTitle => '快速切換工具設定';
 
   @override
+  String get quickToolBrushUnavailable => '找不到筆刷';
+
+  @override
   String get quickToolEmpty => '尚未登錄任何工具';
 
   @override
@@ -13968,7 +13978,11 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get projectListIncludeFontsTitle => '包含字型';
 
   @override
-  String get projectListIncludeFontsSubtitle => '包含目前使用中的使用者新增字型';
+  String get projectListIncludeFontsSubtitle => '包含此專案使用的已新增字型。請僅包含允許再散布的字型。';
+
+  @override
+  String get projectListFontLicenseUnavailable =>
+      '無法確認字型授權。請檢查網路連線後重試，或取消包含字型後再分享。';
 
   @override
   String get blendModeNormal => '正常';

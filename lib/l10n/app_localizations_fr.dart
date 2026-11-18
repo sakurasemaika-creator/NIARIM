@@ -895,6 +895,9 @@ class AppLocalizationsFr extends AppLocalizations {
   String get quickToolPanelTitle => 'Réglages des outils rapides';
 
   @override
+  String get quickToolBrushUnavailable => 'Pinceau indisponible';
+
+  @override
   String get quickToolEmpty => 'Aucun outil enregistré';
 
   @override
@@ -3985,7 +3988,11 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get projectListIncludeFontsSubtitle =>
-      'Inclut les polices ajoutées par l’utilisateur actuellement utilisées';
+      'Inclut les polices ajoutées utilisées dans ce projet. Incluez uniquement les polices que vous êtes autorisé à redistribuer.';
+
+  @override
+  String get projectListFontLicenseUnavailable =>
+      'Impossible de vérifier la licence d’une police. Vérifiez votre connexion et réessayez, ou partagez sans inclure les polices.';
 
   @override
   String get blendModeNormal => 'Normal';

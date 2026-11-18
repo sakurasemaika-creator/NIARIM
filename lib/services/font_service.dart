@@ -192,6 +192,7 @@ class FontService extends ChangeNotifier {
     required String displayName,
     required String fileName,
     required Uint8List bytes,
+    String? licenseNotice,
   }) async {
     if (_fonts.any((f) => f.id == id)) return;
     final dir = await _fontsDir();
@@ -207,6 +208,7 @@ class FontService extends ChangeNotifier {
       fileName: fileName,
       sizeBytes: bytes.length,
       addedAt: DateTime.now(),
+      licenseNotice: licenseNotice,
     );
     try {
       await _registerFont(asset, destFile);
@@ -251,6 +253,7 @@ class FontService extends ChangeNotifier {
         displayName: entry.displayName,
         fileName: entry.fileName,
         bytes: response.bodyBytes,
+        licenseNotice: await _readCatalogLicense(entry),
       );
     } catch (_) {
       throw const FontDownloadException(FontDownloadFailure.corrupted);
@@ -260,6 +263,82 @@ class FontService extends ChangeNotifier {
       // スキップされるため、登録できたかどうかをここで確認する。
       throw const FontDownloadException(FontDownloadFailure.corrupted);
     }
+  }
+
+  /// Keep the original family-specific copyright and license with the font.
+  /// Older downloads need their bytes matched against the catalog source once.
+  Future<String?> licenseNoticeForShare(FontAsset font, Uint8List bytes) async {
+    final saved = font.licenseNotice;
+    if (saved != null && saved.trim().isNotEmpty) return saved;
+    final entry = _catalog.where((entry) => entry.id == font.id).firstOrNull;
+    if (entry == null) {
+      if (font.id.startsWith('dlfont_')) {
+        throw const CatalogFontNoticeException();
+      }
+      return null;
+    }
+    try {
+      final response = await http
+          .get(Uri.parse(entry.sourceUrl))
+          .timeout(const Duration(seconds: 10));
+      if (response.statusCode == 200 && listEquals(response.bodyBytes, bytes)) {
+        final notice = await _readCatalogLicense(entry);
+        if (notice != null) {
+          final index = _fonts.indexWhere((asset) => asset.id == font.id);
+          if (index >= 0) {
+            _fonts[index] = _fonts[index].copyWith(licenseNotice: notice);
+            await _persist();
+          }
+          return notice;
+        }
+      }
+    } catch (_) {
+      // The caller can offer to share the project without font files.
+    }
+    throw const CatalogFontNoticeException();
+  }
+
+  Future<String?> _readCatalogLicense(DownloadableFontEntry entry) async {
+    final source = Uri.parse(entry.sourceUrl);
+    final paths = source.pathSegments;
+    if (paths.length < 6) return null;
+    final licenseFile = switch (paths[3]) {
+      'ofl' => 'OFL.txt',
+      'apache' => 'LICENSE.txt',
+      'ufl' => 'UFL.txt',
+      _ => null,
+    };
+    if (licenseFile == null) return null;
+    try {
+      final response = await http
+          .get(source.resolve(licenseFile))
+          .timeout(const Duration(seconds: 10));
+      final license = _licenseDocument(response);
+      if (license == null) return null;
+      String? attribution;
+      if (paths[3] == 'apache') {
+        final notice = await http
+            .get(source.resolve('NOTICE.txt'))
+            .timeout(const Duration(seconds: 10));
+        if (notice.statusCode != 404) {
+          attribution = _licenseDocument(notice);
+          if (attribution == null) return null;
+        }
+      }
+      return '${entry.displayName}\n${entry.sourceUrl}\n'
+          '${source.resolve(licenseFile)}\n\n$license'
+          '${attribution == null ? '' : '\n\nNOTICE.txt\n$attribution'}';
+    } catch (_) {
+      return null;
+    }
+  }
+
+  String? _licenseDocument(http.Response response) {
+    if (response.statusCode != 200 || response.bodyBytes.length > 32 * 1024) {
+      return null;
+    }
+    final text = utf8.decode(response.bodyBytes, allowMalformed: true);
+    return text.trim().isEmpty ? null : text;
   }
 
   Future<void> renameFont(String id, String newName) async {
@@ -326,6 +405,10 @@ class FontService extends ChangeNotifier {
 /// フォントファイルの読み込み（パース）に失敗した場合の例外
 /// （「フォントが破損しています。」）。拡張子は正しいが内容が壊れているケースを表す。
 class FontCorruptedException implements Exception {}
+
+class CatalogFontNoticeException implements Exception {
+  const CatalogFontNoticeException();
+}
 
 /// 追加フリーフォントのダウンロードに失敗した場合の例外（[FontService.
 /// downloadCatalogFont]用）。[message]はそのままユーザーへ表示できる文言。

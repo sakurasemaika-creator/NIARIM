@@ -855,6 +855,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get quickToolPanelTitle => '빠른 도구 설정';
 
   @override
+  String get quickToolBrushUnavailable => '브러시를 찾을 수 없습니다';
+
+  @override
   String get quickToolEmpty => '등록된 도구가 없습니다';
 
   @override
@@ -3785,7 +3788,12 @@ class AppLocalizationsKo extends AppLocalizations {
   String get projectListIncludeFontsTitle => '폰트 포함';
 
   @override
-  String get projectListIncludeFontsSubtitle => '사용 중인 사용자 추가 폰트를 포함합니다';
+  String get projectListIncludeFontsSubtitle =>
+      '이 프로젝트에서 사용 중인 추가 폰트를 포함합니다. 재배포가 허용된 폰트만 포함하세요.';
+
+  @override
+  String get projectListFontLicenseUnavailable =>
+      '폰트 라이선스를 확인할 수 없습니다. 연결을 확인하고 다시 시도하거나 폰트를 제외하고 공유하세요.';
 
   @override
   String get blendModeNormal => '표준';

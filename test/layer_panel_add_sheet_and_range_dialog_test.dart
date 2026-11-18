@@ -53,7 +53,12 @@ void main() {
   );
 
   /// 作品を1つ作り、レイヤーパネルを左上に載せる。
-  Future<(ProjectService, String)> showPanel(WidgetTester tester) async {
+  Future<(ProjectService, String)> showPanel(
+    WidgetTester tester, {
+    double width = 300,
+    double height = 380,
+    bool docked = false,
+  }) async {
     await tester.pumpWidget(app(const Scaffold(body: SizedBox.shrink())));
     final projects = tester
         .element(find.byType(Scaffold))
@@ -78,10 +83,11 @@ void main() {
           body: Align(
             alignment: Alignment.topLeft,
             child: SizedBox(
-              width: 300,
-              height: 380,
+              width: width,
+              height: height,
               child: LayerPanel(
                 onClose: () {},
+                dockedMode: docked,
                 projectId: project.id,
                 sceneId: sceneId,
                 frameIndex: 0,
@@ -95,6 +101,52 @@ void main() {
     await tester.pumpAndSettle();
     return (projects, project.id);
   }
+
+  testWidgets('the short dock can scroll to its layer selection controls', (
+    tester,
+  ) async {
+    await boot(tester, const Size(1280, 800));
+    tester.platformDispatcher.textScaleFactorTestValue = 2;
+    addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+    final (projects, projectId) = await showPanel(
+      tester,
+      width: 220,
+      height: 135,
+      docked: true,
+    );
+    final panel = find.byType(LayerPanel);
+    final context = tester.element(panel);
+    final l10n = AppLocalizations.of(context)!;
+    final sceneId = projects.scenesOf(projectId).first.id;
+    final layer = projects.layersOf(projectId, sceneId, 0).single;
+    final preview = find.byKey(ValueKey('layer-preview-tap-${layer.id}'));
+    final scrollable = find.descendant(
+      of: panel,
+      matching: find.byType(Scrollable),
+    );
+    await tester.scrollUntilVisible(preview, 55, scrollable: scrollable);
+    await tester.pumpAndSettle();
+    await tester.longPress(preview);
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+
+    final hide = find.byTooltip(l10n.layerPanelHideSelectedTooltip);
+    await tester.scrollUntilVisible(hide, 55, scrollable: scrollable);
+    await tester.pumpAndSettle();
+    expect(hide.hitTestable(), findsOneWidget);
+    await tester.tap(hide);
+    await tester.pumpAndSettle();
+    expect(projects.layersOf(projectId, sceneId, 0).single.isVisible, isFalse);
+
+    final clear = find.text(l10n.layerPanelDeselectAll);
+    await tester.scrollUntilVisible(clear, -55, scrollable: scrollable);
+    await tester.pumpAndSettle();
+    expect(clear.hitTestable(), findsOneWidget);
+    await tester.tap(clear);
+    await tester.pumpAndSettle();
+    expect(clear, findsNothing);
+    expect(tester.takeException(), isNull);
+  });
 
   for (final (label, view, scale) in const [
     ('360x440', Size(360, 440), 1.0),
@@ -238,11 +290,10 @@ void main() {
       final copy = projects
           .layersOf(projectId, sceneId, 0)
           .singleWhere((item) => item.name == name);
-      expect((copy.rangeMode, copy.rangeStart, copy.rangeEnd), (
-        model.LayerRangeMode.frameRange,
-        1,
-        4,
-      ));
+      expect(
+        (copy.rangeMode, copy.rangeStart, copy.rangeEnd),
+        (model.LayerRangeMode.frameRange, 1, 4),
+      );
       final key = projects.tileKeyFor(projectId, sceneId, 0, copy.id);
       expect(tiles.getTile(key, 0, 0)?.take(4), rgba);
       return copy;

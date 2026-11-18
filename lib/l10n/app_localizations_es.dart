@@ -896,6 +896,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get quickToolPanelTitle => 'Ajustes de herramientas rápidas';
 
   @override
+  String get quickToolBrushUnavailable => 'Pincel no disponible';
+
+  @override
   String get quickToolEmpty => 'No hay herramientas registradas';
 
   @override
@@ -3989,7 +3992,11 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get projectListIncludeFontsSubtitle =>
-      'Incluye las fuentes añadidas por el usuario que están en uso';
+      'Incluye las fuentes añadidas que usa este proyecto. Incluye solo fuentes que tengas permiso para redistribuir.';
+
+  @override
+  String get projectListFontLicenseUnavailable =>
+      'No se pudo verificar la licencia de una fuente. Comprueba tu conexión y vuelve a intentarlo o comparte sin incluir las fuentes.';
 
   @override
   String get blendModeNormal => 'Normal';

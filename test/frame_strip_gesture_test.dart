@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' hide UndoManager;
 import 'package:flutter_test/flutter_test.dart';
@@ -87,10 +88,11 @@ void main() {
     int currentFrame = 0,
     int durationSeconds = 1,
     double screenWidth = 1400,
+    double screenHeight = 320,
   }) async {
     SharedPreferences.setMockInitialValues({});
     mockPathProvider();
-    tester.view.physicalSize = Size(screenWidth, 320);
+    tester.view.physicalSize = Size(screenWidth, screenHeight);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
@@ -145,6 +147,45 @@ void main() {
     await tester.pump(const Duration(milliseconds: 300));
 
     return (projectId: projectId, sceneId: sceneId, selected: selected);
+  }
+
+  for (final size in [const Size(1280, 800), const Size(360, 640)]) {
+    testWidgets('frame hold dialog fits its controls at $size', (tester) async {
+      final strip = await pumpStrip(
+        tester,
+        screenWidth: size.width,
+        screenHeight: size.height,
+      );
+      final context = tester.element(find.byType(FrameStripWidget));
+      final projects = context.read<ProjectService>();
+      final undo = context.read<UndoManager>();
+      final l10n = AppLocalizations.of(context)!;
+      final frame = find.byKey(const ValueKey('frameStripCell1'));
+      await tester.longPress(frame);
+      await tester.pumpAndSettle();
+      final dialog = find.byType(AlertDialog);
+      expect(find.text(l10n.frameStripHoldDialogTitle(2)), findsOneWidget);
+      final card = find.descendant(
+        of: dialog,
+        matching: find.byWidgetPredicate(
+          (widget) => widget is Material && widget.type == MaterialType.card,
+        ),
+      );
+      expect(tester.getSize(card).height, lessThan(size.height / 2));
+      await tester.tap(find.byTooltip(l10n.commonIncrease));
+      await tester.pump();
+      expect(
+        find.descendant(of: dialog, matching: find.text('2')),
+        findsOneWidget,
+      );
+      await tester.tap(find.widgetWithText(FilledButton, l10n.commonOk));
+      await tester.pumpAndSettle();
+      expect(projects.frameHold(strip.projectId, strip.sceneId, 1), 2);
+      undo.undo(projectId: strip.projectId);
+      await tester.pumpAndSettle();
+      expect(projects.frameHold(strip.projectId, strip.sceneId, 1), 1);
+      expect(tester.takeException(), isNull);
+    });
   }
 
   /// フレーム一覧のスクロール位置（`_scrollController.offset`相当）。
@@ -229,6 +270,57 @@ void main() {
     expect(ctx.selected.last, expectedIndex);
     // 通知を受けた側がcurrentFrameを更新した結果、位置もそのコマへ揃う。
     expect(stripOffset(tester), closeTo(expectedIndex * itemExtent, 0.5));
+  });
+
+  testWidgets('Shift+wheel selects and centers the nearest frame', (
+    tester,
+  ) async {
+    final strip = await pumpStrip(tester);
+    final position = tester.getCenter(find.byType(FrameStripWidget));
+    await tester.sendKeyDownEvent(LogicalKeyboardKey.shiftLeft);
+    for (var i = 0; i < 6; i++) {
+      await tester.sendEventToBinding(
+        PointerScrollEvent(
+          kind: PointerDeviceKind.mouse,
+          position: position,
+          scrollDelta: Offset(0, itemExtent / 3),
+        ),
+      );
+      await tester.pump(const Duration(milliseconds: 20));
+    }
+    await tester.sendKeyUpEvent(LogicalKeyboardKey.shiftLeft);
+    expect(strip.selected, isEmpty);
+    await tester.pump(const Duration(milliseconds: 180));
+    await tester.pumpAndSettle();
+    expect(strip.selected, [2]);
+    expect(stripOffset(tester), closeTo(2 * itemExtent, 0.5));
+  });
+
+  testWidgets('five frames added at once can be undone and redone together', (
+    tester,
+  ) async {
+    final strip = await pumpStrip(tester, frameCount: 3);
+    final context = tester.element(find.byType(FrameStripWidget));
+    final projects = context.read<ProjectService>();
+    final undo = context.read<UndoManager>();
+    final l10n = AppLocalizations.of(context)!;
+    final initialUndoCount = undo.undoCount;
+    int frames() => projects.frameCount(strip.projectId, strip.sceneId);
+
+    await tester.longPress(find.byKey(const ValueKey('frameStripAddCell')));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField), '5');
+    await tester.tap(find.text(l10n.commonOk));
+    await tester.pumpAndSettle();
+    expect(frames(), 8);
+    expect(undo.undoCount, initialUndoCount + 1);
+    undo.undo(projectId: strip.projectId);
+    await tester.pumpAndSettle();
+    expect(frames(), 3);
+    undo.redo(projectId: strip.projectId);
+    await tester.pumpAndSettle();
+    expect(frames(), 8);
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('最大尺の単品特典がある間だけ90秒からフレームを増やせる', (tester) async {

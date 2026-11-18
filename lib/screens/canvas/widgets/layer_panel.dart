@@ -296,6 +296,198 @@ class _LayerPanelState extends State<LayerPanel> {
       }
     }
 
+    final header = <Widget>[
+      if (!widget.dockedMode) PanelCenterCloseBar(onClose: widget.onClose),
+      // ヘッダー
+      Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        child: Row(
+          children: [
+            // ドックを狭めたとき（下限200）でも右のボタンを押せるよう、
+            // 見出しの方を省略する。
+            if (!widget.dockedMode)
+              Expanded(
+                child: Text(
+                  l10n.layerPanelTitle,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'Kuramubon',
+                    fontFamilyFallback: kHeadingFontFallback,
+                  ),
+                ),
+              ),
+            // 表示中の全レイヤーをワンタップで結合する（複数選択モードを
+            // 使わずに済む一括操作の一つ）。
+            IconButton(
+              icon: const Icon(Icons.merge_type, size: 18),
+              onPressed: () => _mergeAllVisibleLayers(context, layers),
+              tooltip: l10n.layerPanelMergeAllVisibleTooltip,
+            ),
+            IconButton(
+              icon: const Icon(Icons.help_outline, size: 18),
+              onPressed: () => _showHelp(context),
+              tooltip: l10n.layerPanelHelpTooltip,
+            ),
+            IconButton(
+              icon: Icon(
+                _showSearch ? Icons.search_off : Icons.search,
+                size: 18,
+              ),
+              onPressed: () => setState(() {
+                _showSearch = !_showSearch;
+                if (!_showSearch) {
+                  _searchQuery = '';
+                  _searchController.clear();
+                }
+              }),
+              tooltip: l10n.creativePanelSearchTooltip,
+            ),
+          ],
+        ),
+      ),
+      if (_showSearch)
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          child: TextField(
+            controller: _searchController,
+            autofocus: true,
+            style: const TextStyle(fontSize: 13),
+            decoration: InputDecoration(
+              isDense: true,
+              hintText: l10n.layerPanelSearchHint,
+              prefixIcon: const Icon(Icons.search, size: 16),
+            ),
+            onChanged: (v) => setState(() => _searchQuery = v),
+          ),
+        ),
+      // 選択モードバー
+      if (_isSelectionMode)
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          color: Theme.of(context).colorScheme.surfaceContainerHighest,
+          child: Wrap(
+            spacing: 4,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+              TextButton(
+                onPressed: () => setState(() {
+                  final base = _selectionBaseType;
+                  if (base == null) return;
+                  _selectedIds.addAll(
+                    layers.where((l) => l.type == base).map((l) => l.id),
+                  );
+                }),
+                child: Text(
+                  l10n.layerPanelSelectAll,
+                  style: const TextStyle(fontSize: 12),
+                ),
+              ),
+              TextButton(
+                onPressed: () => setState(() {
+                  _selectedIds.clear();
+                  _isSelectionMode = false;
+                  _selectionBaseType = null;
+                }),
+                child: Text(
+                  l10n.layerPanelDeselectAll,
+                  style: const TextStyle(fontSize: 12),
+                ),
+              ),
+              Text(
+                l10n.homeSelectionCount(_selectedIds.length),
+                style: const TextStyle(fontSize: 12),
+              ),
+            ],
+          ),
+        ),
+      const Divider(height: 1),
+      // 上部ショートカットボタン。
+      // `TextButton.icon`は既定で高さ40dp・タップ判定48dpを確保し、
+      // さらにアイコンとラベルの間に8dpの固定の隙間を入れる。4つ並べる
+      // だけで段が約48dp（レイヤー1行ぶんに近い高さ）を占めるうえ、
+      // パネル幅（約250dp）を4等分した約58dpからその隙間が引かれ、
+      // 日本語ラベルが2文字も出ない。実寸に合わせて詰めた自前の
+      // Rowにして、段の高さをおおよそ半分にしている。
+      Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+        child: _shortcutRow([
+          (
+            icon: Icons.add,
+            label: l10n.layerPanelNewLayerButton,
+            onPressed: () => _addLayer(
+              context,
+              model.LayerType.normal,
+              (n) => l10n.layerPanelDefaultLayerName(n),
+            ),
+          ),
+          (
+            icon: Icons.folder,
+            label: l10n.layerPanelNewFolderButton,
+            onPressed: () => _addLayer(
+              context,
+              model.LayerType.folder,
+              (n) => l10n.layerPanelDefaultFolderName(n),
+            ),
+          ),
+          // 共通レイヤー・自動塗り線画・自動塗りレイヤー等の
+          // その他種別を選ぶメニュー。新規レイヤーボタンとアイコンが
+          // 被らないようlibrary_addを使用。
+          (
+            icon: Icons.library_add,
+            label: l10n.layerPanelAddTooltip,
+            onPressed: () => _showAddLayerMenu(context),
+          ),
+          (
+            icon: Icons.photo,
+            label: l10n.layerPanelImportImageButton,
+            onPressed: () => _importImage(context),
+          ),
+        ]),
+      ),
+      const Divider(height: 1),
+    ];
+    final footer = <Widget>[
+      // パネル下部の三点メニュー・ゴミ箱は各レイヤー右側へ移動したため削除した。
+      // 「追加」ボタンも上部ショートカット行へ移動済み。削除・結合は
+      // 各レイヤー行のボタンとヘッダーの「全レイヤー結合」ボタンへ
+      // ワンタップ化したため、複数選択モードはグループ化専用として残す
+      // （グループ化は性質上、複数レイヤーの選択が必要なため）。
+      if (_isSelectionMode) ...[
+        const Divider(height: 1),
+        Padding(
+          padding: const EdgeInsets.all(4),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              IconButton(
+                icon: const Icon(Icons.visibility, size: 18),
+                onPressed: _selectedIds.isEmpty
+                    ? null
+                    : () => _setVisibilityForSelected(context, layers, true),
+                tooltip: l10n.layerPanelShowSelectedTooltip,
+              ),
+              IconButton(
+                icon: const Icon(Icons.visibility_off, size: 18),
+                onPressed: _selectedIds.isEmpty
+                    ? null
+                    : () => _setVisibilityForSelected(context, layers, false),
+                tooltip: l10n.layerPanelHideSelectedTooltip,
+              ),
+              IconButton(
+                icon: const Icon(Icons.workspaces_outline, size: 18),
+                onPressed: _selectedIds.length >= 2
+                    ? () => _showCreateGroupDialog(context)
+                    : null,
+                tooltip: l10n.layerPanelGroupTooltip,
+              ),
+            ],
+          ),
+        ),
+      ],
+    ];
+
     // Container(color:)はColoredBoxとして描画されるため、内部のListTile
     // （選択中ハイライト・タップ時のインクスプラッシュ）が隠れてしまう
     // （「ListTile background color or ink splashes may be invisible」）。
@@ -303,496 +495,336 @@ class _LayerPanelState extends State<LayerPanel> {
     // 正しく表示されるようにする。
     return Material(
       color: Theme.of(context).colorScheme.surfaceContainerHigh,
-      child: Column(
-        children: [
-          if (!widget.dockedMode) PanelCenterCloseBar(onClose: widget.onClose),
-          // ヘッダー
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            child: Row(
-              children: [
-                // ドックを狭めたとき（下限200）でも右のボタンを押せるよう、
-                // 見出しの方を省略する。
-                if (!widget.dockedMode)
-                  Expanded(
-                    child: Text(
-                      l10n.layerPanelTitle,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontFamily: 'Kuramubon',
-                        fontFamilyFallback: kHeadingFontFallback,
-                      ),
-                    ),
-                  ),
-                // 表示中の全レイヤーをワンタップで結合する（複数選択モードを
-                // 使わずに済む一括操作の一つ）。
-                IconButton(
-                  icon: const Icon(Icons.merge_type, size: 18),
-                  onPressed: () => _mergeAllVisibleLayers(context, layers),
-                  tooltip: l10n.layerPanelMergeAllVisibleTooltip,
-                ),
-                IconButton(
-                  icon: const Icon(Icons.help_outline, size: 18),
-                  onPressed: () => _showHelp(context),
-                  tooltip: l10n.layerPanelHelpTooltip,
-                ),
-                IconButton(
-                  icon: Icon(
-                    _showSearch ? Icons.search_off : Icons.search,
-                    size: 18,
-                  ),
-                  onPressed: () => setState(() {
-                    _showSearch = !_showSearch;
-                    if (!_showSearch) {
-                      _searchQuery = '';
-                      _searchController.clear();
+      child: LayoutBuilder(
+        builder: (context, limits) {
+          // Short docks need the same scrollable area for the layer rows and
+          // their controls. On a taller panel the controls can stay visible.
+          final controlsHeight =
+              (widget.dockedMode ? 150.0 : 190.0) +
+              (_isSelectionMode ? 160.0 : 0) +
+              (_showSearch ? 72.0 : 0);
+          final scrollControls = limits.maxHeight < controlsHeight;
+          return Column(
+            children: [
+              if (!scrollControls) ...header,
+              // 選んだ行の背景を一覧の外（上のボタン）へはみ出させない
+              // （末尾のclipListInk）。
+              Expanded(
+                child: ReorderableListView.builder(
+                  header: scrollControls ? Column(children: header) : null,
+                  footer: scrollControls && footer.isNotEmpty
+                      ? Column(children: footer)
+                      : null,
+                  // 標準の自動ドラッグハンドル（PC/DeXモードなどマウス操作環境で
+                  // 自動的に行の末尾へ付与される）は、ゴミ箱アイコンなど自前の
+                  // 末尾アイコン群と重なって表示されてしまっていたため無効化し、
+                  // 代わりに専用のハンドルアイコンを一番右に明示的に配置する。
+                  buildDefaultDragHandles: false,
+                  itemCount: layers.length,
+                  onReorderItem: (oldIdx, newIdx) {
+                    if (_searchQuery.trim().isNotEmpty) {
+                      return; // 検索中はフィルタ表示のため並び替え不可
                     }
-                  }),
-                  tooltip: l10n.creativePanelSearchTooltip,
-                ),
-              ],
-            ),
-          ),
-          if (_showSearch)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              child: TextField(
-                controller: _searchController,
-                autofocus: true,
-                style: const TextStyle(fontSize: 13),
-                decoration: InputDecoration(
-                  isDense: true,
-                  hintText: l10n.layerPanelSearchHint,
-                  prefixIcon: const Icon(Icons.search, size: 16),
-                ),
-                onChanged: (v) => setState(() => _searchQuery = v),
-              ),
-            ),
-          // 選択モードバー
-          if (_isSelectionMode)
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              color: Theme.of(context).colorScheme.surfaceContainerHighest,
-              child: Row(
-                children: [
-                  TextButton(
-                    onPressed: () => setState(() {
-                      final base = _selectionBaseType;
-                      if (base == null) return;
-                      _selectedIds.addAll(
-                        layers.where((l) => l.type == base).map((l) => l.id),
-                      );
-                    }),
-                    child: Text(
-                      l10n.layerPanelSelectAll,
-                      style: const TextStyle(fontSize: 12),
-                    ),
-                  ),
-                  TextButton(
-                    onPressed: () => setState(() {
-                      _selectedIds.clear();
-                      _isSelectionMode = false;
-                      _selectionBaseType = null;
-                    }),
-                    child: Text(
-                      l10n.layerPanelDeselectAll,
-                      style: const TextStyle(fontSize: 12),
-                    ),
-                  ),
-                  const Spacer(),
-                  Text(
-                    l10n.homeSelectionCount(_selectedIds.length),
-                    style: const TextStyle(fontSize: 12),
-                  ),
-                ],
-              ),
-            ),
-          const Divider(height: 1),
-          // 上部ショートカットボタン。
-          // `TextButton.icon`は既定で高さ40dp・タップ判定48dpを確保し、
-          // さらにアイコンとラベルの間に8dpの固定の隙間を入れる。4つ並べる
-          // だけで段が約48dp（レイヤー1行ぶんに近い高さ）を占めるうえ、
-          // パネル幅（約250dp）を4等分した約58dpからその隙間が引かれ、
-          // 日本語ラベルが2文字も出ない。実寸に合わせて詰めた自前の
-          // Rowにして、段の高さをおおよそ半分にしている。
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-            child: _shortcutRow([
-              (
-                icon: Icons.add,
-                label: l10n.layerPanelNewLayerButton,
-                onPressed: () => _addLayer(
-                  context,
-                  model.LayerType.normal,
-                  (n) => l10n.layerPanelDefaultLayerName(n),
-                ),
-              ),
-              (
-                icon: Icons.folder,
-                label: l10n.layerPanelNewFolderButton,
-                onPressed: () => _addLayer(
-                  context,
-                  model.LayerType.folder,
-                  (n) => l10n.layerPanelDefaultFolderName(n),
-                ),
-              ),
-              // 共通レイヤー・自動塗り線画・自動塗りレイヤー等の
-              // その他種別を選ぶメニュー。新規レイヤーボタンとアイコンが
-              // 被らないようlibrary_addを使用。
-              (
-                icon: Icons.library_add,
-                label: l10n.layerPanelAddTooltip,
-                onPressed: () => _showAddLayerMenu(context),
-              ),
-              (
-                icon: Icons.photo,
-                label: l10n.layerPanelImportImageButton,
-                onPressed: () => _importImage(context),
-              ),
-            ]),
-          ),
-          const Divider(height: 1),
-          // 選んだ行の背景を一覧の外（上のボタン）へはみ出させない
-          // （末尾のclipListInk）。
-          Expanded(
-            child: ReorderableListView.builder(
-              // 標準の自動ドラッグハンドル（PC/DeXモードなどマウス操作環境で
-              // 自動的に行の末尾へ付与される）は、ゴミ箱アイコンなど自前の
-              // 末尾アイコン群と重なって表示されてしまっていたため無効化し、
-              // 代わりに専用のハンドルアイコンを一番右に明示的に配置する。
-              buildDefaultDragHandles: false,
-              itemCount: layers.length,
-              onReorderItem: (oldIdx, newIdx) {
-                if (_searchQuery.trim().isNotEmpty) {
-                  return; // 検索中はフィルタ表示のため並び替え不可
-                }
-                context.read<ProjectService>().reorderLayer(
-                  projectId: widget.projectId,
-                  sceneId: widget.sceneId,
-                  frameIndex: widget.frameIndex,
-                  oldIndex: oldIdx,
-                  newIndex: preRemovalIndex(oldIdx, newIdx),
-                );
-              },
-              itemBuilder: (context, index) {
-                final layer = layers[index];
-                final isSelected = index == _selectedIndex;
-                final isChecked = _selectedIds.contains(layer.id);
-                final depth = _depthOf(layer, layers);
-                return TwoFingerVerticalSwipeDetector(
-                  key: ValueKey(layer.id),
-                  onSwipeUp: () => _copyLayerWithGesture(context, layer),
-                  onSwipeDown: () =>
-                      _pasteLayerBeforeWithGesture(context, layer),
-                  child: ListTile(
-                    key: ValueKey(layer.id),
-                    selected: isSelected,
-                    dense: true,
-                    // レイヤーパネルは幅が約250dpしか無い。ListTileの既定
-                    // （左右24dpずつの余白＋タイトル前16dpの隙間）のままだと、
-                    // leading（目・種別・サムネイル）とtrailing（更新マーク・
-                    // 三点・結合・ゴミ箱・ドラッグハンドル）に挟まれた
-                    // レイヤー名の領域が30dpほどしか残らず、名前がほぼ
-                    // 省略記号だけになってしまう。余白を詰めて名前へ回す。
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 6),
-                    horizontalTitleGap: 6,
-                    minLeadingWidth: 0,
-                    minVerticalPadding: 0,
-                    leading: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        if (depth > 0) SizedBox(width: depth * 12.0),
-                        if (layer.type == model.LayerType.folder)
-                          GestureDetector(
-                            onTap: () {
-                              final projects = context.read<ProjectService>();
-                              projects.setLayerFolderExpanded(
-                                widget.projectId,
-                                layer,
-                                !projects.isLayerFolderExpanded(
-                                  widget.projectId,
-                                  layer,
-                                ),
-                              );
-                              setState(() {});
-                            },
-                            child: Icon(
-                              context
-                                      .read<ProjectService>()
-                                      .isLayerFolderExpanded(
-                                        widget.projectId,
-                                        layer,
-                                      )
-                                  ? Icons.expand_more
-                                  : Icons.chevron_right,
-                              size: 16,
-                            ),
-                          )
-                        else if (depth > 0)
-                          const SizedBox(width: 16),
-                        if (_isSelectionMode)
-                          Checkbox(
-                            value: isChecked,
-                            onChanged: layer.type == _selectionBaseType
-                                ? (_) => setState(() {
-                                    if (isChecked) {
-                                      _selectedIds.remove(layer.id);
-                                      if (_selectedIds.isEmpty) {
-                                        _isSelectionMode = false;
-                                        _selectionBaseType = null;
-                                      }
-                                    } else {
-                                      _selectedIds.add(layer.id);
-                                    }
-                                  })
-                                : null,
-                          )
-                        else
-                          GestureDetector(
-                            onTap: () =>
-                                context.read<ProjectService>().updateLayer(
-                                  projectId: widget.projectId,
-                                  sceneId: widget.sceneId,
-                                  frameIndex: widget.frameIndex,
-                                  layer: layer.copyWith(
-                                    isVisible: !layer.isVisible,
-                                  ),
-                                ),
-                            child: Icon(
-                              layer.isVisible
-                                  ? Icons.visibility
-                                  : Icons.visibility_off,
-                              size: 16,
-                            ),
-                          ),
-                        const SizedBox(width: 4),
-                        _layerTypeIcon(context, layer.type),
-                        const SizedBox(width: 4),
-                        GestureDetector(
-                          key: ValueKey('layer-preview-tap-${layer.id}'),
-                          behavior: HitTestBehavior.opaque,
-                          onTap: () => _openLayerFullscreenPreview(
-                            layer,
-                            canvasBackground,
-                          ),
-                          child: _LayerThumbnail(
-                            // Visibility affects the canvas composition,
-                            // never the layer's own thumbnail/preview.
-                            key: ValueKey(
-                              '${widget.sceneId}:${widget.frameIndex}:${layer.id}:'
-                              '${_thumbRevision[layer.id] ?? 0}:$canvasBackground:'
-                              '${layer.opacity}',
-                            ),
-                            projectId: widget.projectId,
-                            sceneId: widget.sceneId,
-                            frameIndex: widget.frameIndex,
-                            layerId: layer.id,
-                            backgroundColor: canvasBackground,
-                            layerOpacity: layer.opacity,
-                          ),
+                    context.read<ProjectService>().reorderLayer(
+                      projectId: widget.projectId,
+                      sceneId: widget.sceneId,
+                      frameIndex: widget.frameIndex,
+                      oldIndex: oldIdx,
+                      newIndex: preRemovalIndex(oldIdx, newIdx),
+                    );
+                  },
+                  itemBuilder: (context, index) {
+                    final layer = layers[index];
+                    final isSelected = index == _selectedIndex;
+                    final isChecked = _selectedIds.contains(layer.id);
+                    final depth = _depthOf(layer, layers);
+                    return TwoFingerVerticalSwipeDetector(
+                      key: ValueKey(layer.id),
+                      onSwipeUp: () => _copyLayerWithGesture(context, layer),
+                      onSwipeDown: () =>
+                          _pasteLayerBeforeWithGesture(context, layer),
+                      child: ListTile(
+                        key: ValueKey(layer.id),
+                        selected: isSelected,
+                        dense: true,
+                        // レイヤーパネルは幅が約250dpしか無い。ListTileの既定
+                        // （左右24dpずつの余白＋タイトル前16dpの隙間）のままだと、
+                        // leading（目・種別・サムネイル）とtrailing（更新マーク・
+                        // 三点・結合・ゴミ箱・ドラッグハンドル）に挟まれた
+                        // レイヤー名の領域が30dpほどしか残らず、名前がほぼ
+                        // 省略記号だけになってしまう。余白を詰めて名前へ回す。
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 6,
                         ),
-                      ],
-                    ),
-                    // ListTileのleading（目・種別アイコン・サムネイル）と
-                    // trailing（更新マーク・三点・結合・ゴミ箱・ハンドル）で
-                    // 幅を取られ、パネル幅約250dpだと名前に約50dpしか残らない。
-                    // 折り返しを許すと日本語名が**1文字ずつ縦に積まれて**
-                    // 行の高さが3倍になり読めなくなるため、必ず1行で省略する。
-                    title: Text(
-                      layer.name,
-                      maxLines: 1,
-                      softWrap: false,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        fontFamily: 'Kuramubon',
-                        fontFamilyFallback: kHeadingFontFallback,
-                      ),
-                    ),
-                    subtitle: layer.type == model.LayerType.common
-                        ? Text(
-                            _rangeSummary(l10n, layer),
-                            maxLines: 1,
-                            softWrap: false,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              fontSize: 9,
-                              color: ThemeService.activeAccentText,
-                            ),
-                          )
-                        : layer.hasClipping
-                        ? Text(
-                            l10n.layerPanelClippingBadge,
-                            maxLines: 1,
-                            softWrap: false,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              fontSize: 9,
-                              color: AccentTextTheme.of(context),
-                            ),
-                          )
-                        : null,
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        // 自動塗り更新マーク：初回使用時の吹き出し説明
-                        if (layer.needsAutofillUpdate)
-                          FirstUseTooltip(
-                            tooltipKey: 'autofill_mark',
-                            message: l10n.layerPanelAutofillMarkTooltip,
-                            child: GestureDetector(
-                              onTap: () => _showAutofillDialog(context, layer),
-                              onLongPress: () =>
-                                  _showAutofillUpdateHelp(context),
-                              child: Icon(
-                                Icons.error,
-                                color: ThemeService.activeColorScheme.tertiary,
-                                size: 14,
+                        horizontalTitleGap: 6,
+                        minLeadingWidth: 0,
+                        minVerticalPadding: 0,
+                        leading: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (depth > 0) SizedBox(width: depth * 12.0),
+                            if (layer.type == model.LayerType.folder)
+                              GestureDetector(
+                                onTap: () {
+                                  final projects = context
+                                      .read<ProjectService>();
+                                  projects.setLayerFolderExpanded(
+                                    widget.projectId,
+                                    layer,
+                                    !projects.isLayerFolderExpanded(
+                                      widget.projectId,
+                                      layer,
+                                    ),
+                                  );
+                                  setState(() {});
+                                },
+                                child: Icon(
+                                  context
+                                          .read<ProjectService>()
+                                          .isLayerFolderExpanded(
+                                            widget.projectId,
+                                            layer,
+                                          )
+                                      ? Icons.expand_more
+                                      : Icons.chevron_right,
+                                  size: 16,
+                                ),
+                              )
+                            else if (depth > 0)
+                              const SizedBox(width: 16),
+                            if (_isSelectionMode)
+                              Checkbox(
+                                value: isChecked,
+                                onChanged: layer.type == _selectionBaseType
+                                    ? (_) => setState(() {
+                                        if (isChecked) {
+                                          _selectedIds.remove(layer.id);
+                                          if (_selectedIds.isEmpty) {
+                                            _isSelectionMode = false;
+                                            _selectionBaseType = null;
+                                          }
+                                        } else {
+                                          _selectedIds.add(layer.id);
+                                        }
+                                      })
+                                    : null,
+                              )
+                            else
+                              GestureDetector(
+                                onTap: () =>
+                                    context.read<ProjectService>().updateLayer(
+                                      projectId: widget.projectId,
+                                      sceneId: widget.sceneId,
+                                      frameIndex: widget.frameIndex,
+                                      layer: layer.copyWith(
+                                        isVisible: !layer.isVisible,
+                                      ),
+                                    ),
+                                child: Icon(
+                                  layer.isVisible
+                                      ? Icons.visibility
+                                      : Icons.visibility_off,
+                                  size: 16,
+                                ),
+                              ),
+                            const SizedBox(width: 4),
+                            _layerTypeIcon(context, layer.type),
+                            const SizedBox(width: 4),
+                            GestureDetector(
+                              key: ValueKey('layer-preview-tap-${layer.id}'),
+                              behavior: HitTestBehavior.opaque,
+                              onTap: () => _openLayerFullscreenPreview(
+                                layer,
+                                canvasBackground,
+                              ),
+                              child: _LayerThumbnail(
+                                // Visibility affects the canvas composition,
+                                // never the layer's own thumbnail/preview.
+                                key: ValueKey(
+                                  '${widget.sceneId}:${widget.frameIndex}:${layer.id}:'
+                                  '${_thumbRevision[layer.id] ?? 0}:$canvasBackground:'
+                                  '${layer.opacity}',
+                                ),
+                                projectId: widget.projectId,
+                                sceneId: widget.sceneId,
+                                frameIndex: widget.frameIndex,
+                                layerId: layer.id,
+                                backgroundColor: canvasBackground,
+                                layerOpacity: layer.opacity,
                               ),
                             ),
-                          ),
-                        if (layer.opacityLocked)
-                          Icon(
-                            Icons.opacity,
-                            size: 14,
-                            color: AccentTextTheme.of(context),
-                          ),
-                        if (layer.isLocked) const Icon(Icons.lock, size: 14),
-                        // 三点メニュー・ゴミ箱は各レイヤーの右側に配置する
-                        // （対象レイヤーが常に明確になり、選択状態に依存しない）。
-                        GestureDetector(
-                          key: ValueKey('canvasLayerMenu_${layer.id}'),
-                          onTap: () =>
-                              _isTimelineMaterial(layer.type) ||
-                                  layer.type == model.LayerType.common ||
-                                  layer.type == model.LayerType.autoFillLineart
-                              ? _showTimelineLayerMenu(context, layer)
-                              : _showLayerOptions(context, layer),
-                          child: const Icon(Icons.more_vert, size: 16),
+                          ],
                         ),
-                        const SizedBox(width: 8),
-                        // 下のレイヤーとワンタップで結合（複数選択モードを使わずに
-                        // 済む一括操作の一つ）。ゴミ箱アイコンのすぐ隣に置くことで
-                        // 「レイヤーへの操作」としてまとまって見えるようにしている。
-                        GestureDetector(
-                          onTap: _layerBelow(layer, layers) != null
-                              ? () =>
-                                    _mergeWithLayerBelow(context, layer, layers)
-                              : null,
-                          child: Icon(
-                            Icons.merge_type,
-                            size: 16,
-                            color: _layerBelow(layer, layers) != null
-                                ? null
-                                : Theme.of(context).disabledColor,
+                        // ListTileのleading（目・種別アイコン・サムネイル）と
+                        // trailing（更新マーク・三点・結合・ゴミ箱・ハンドル）で
+                        // 幅を取られ、パネル幅約250dpだと名前に約50dpしか残らない。
+                        // 折り返しを許すと日本語名が**1文字ずつ縦に積まれて**
+                        // 行の高さが3倍になり読めなくなるため、必ず1行で省略する。
+                        title: Text(
+                          layer.name,
+                          maxLines: 1,
+                          softWrap: false,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontFamily: 'Kuramubon',
+                            fontFamilyFallback: kHeadingFontFallback,
                           ),
                         ),
-                        const SizedBox(width: 8),
-                        GestureDetector(
-                          onTap: _canDeleteLayerRow(layer, layers)
-                              ? () => _deleteLayerRow(context, layer, layers)
-                              : null,
-                          child: Icon(
-                            Icons.delete_outline,
-                            size: 16,
-                            color: _canDeleteLayerRow(layer, layers)
-                                ? ThemeService.activeColorScheme.error
-                                : Theme.of(context).disabledColor,
-                          ),
+                        subtitle: layer.type == model.LayerType.common
+                            ? Text(
+                                _rangeSummary(l10n, layer),
+                                maxLines: 1,
+                                softWrap: false,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontSize: 9,
+                                  color: ThemeService.activeAccentText,
+                                ),
+                              )
+                            : layer.hasClipping
+                            ? Text(
+                                l10n.layerPanelClippingBadge,
+                                maxLines: 1,
+                                softWrap: false,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontSize: 9,
+                                  color: AccentTextTheme.of(context),
+                                ),
+                              )
+                            : null,
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            // 自動塗り更新マーク：初回使用時の吹き出し説明
+                            if (layer.needsAutofillUpdate)
+                              FirstUseTooltip(
+                                tooltipKey: 'autofill_mark',
+                                message: l10n.layerPanelAutofillMarkTooltip,
+                                child: GestureDetector(
+                                  onTap: () =>
+                                      _showAutofillDialog(context, layer),
+                                  onLongPress: () =>
+                                      _showAutofillUpdateHelp(context),
+                                  child: Icon(
+                                    Icons.error,
+                                    color:
+                                        ThemeService.activeColorScheme.tertiary,
+                                    size: 14,
+                                  ),
+                                ),
+                              ),
+                            if (layer.opacityLocked)
+                              Icon(
+                                Icons.opacity,
+                                size: 14,
+                                color: AccentTextTheme.of(context),
+                              ),
+                            if (layer.isLocked)
+                              const Icon(Icons.lock, size: 14),
+                            // 三点メニュー・ゴミ箱は各レイヤーの右側に配置する
+                            // （対象レイヤーが常に明確になり、選択状態に依存しない）。
+                            GestureDetector(
+                              key: ValueKey('canvasLayerMenu_${layer.id}'),
+                              onTap: () =>
+                                  _isTimelineMaterial(layer.type) ||
+                                      layer.type == model.LayerType.common ||
+                                      layer.type ==
+                                          model.LayerType.autoFillLineart
+                                  ? _showTimelineLayerMenu(context, layer)
+                                  : _showLayerOptions(context, layer),
+                              child: const Icon(Icons.more_vert, size: 16),
+                            ),
+                            const SizedBox(width: 8),
+                            // 下のレイヤーとワンタップで結合（複数選択モードを使わずに
+                            // 済む一括操作の一つ）。ゴミ箱アイコンのすぐ隣に置くことで
+                            // 「レイヤーへの操作」としてまとまって見えるようにしている。
+                            GestureDetector(
+                              onTap: _layerBelow(layer, layers) != null
+                                  ? () => _mergeWithLayerBelow(
+                                      context,
+                                      layer,
+                                      layers,
+                                    )
+                                  : null,
+                              child: Icon(
+                                Icons.merge_type,
+                                size: 16,
+                                color: _layerBelow(layer, layers) != null
+                                    ? null
+                                    : Theme.of(context).disabledColor,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            GestureDetector(
+                              onTap: _canDeleteLayerRow(layer, layers)
+                                  ? () =>
+                                        _deleteLayerRow(context, layer, layers)
+                                  : null,
+                              child: Icon(
+                                Icons.delete_outline,
+                                size: 16,
+                                color: _canDeleteLayerRow(layer, layers)
+                                    ? ThemeService.activeColorScheme.error
+                                    : Theme.of(context).disabledColor,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            // ドラッグハンドル（並び替え用）。ゴミ箱等の操作アイコンと
+                            // 重ならないよう、常にこの位置に明示的に配置する。
+                            ReorderableDragStartListener(
+                              index: index,
+                              child: const Icon(Icons.drag_handle, size: 16),
+                            ),
+                          ],
                         ),
-                        const SizedBox(width: 8),
-                        // ドラッグハンドル（並び替え用）。ゴミ箱等の操作アイコンと
-                        // 重ならないよう、常にこの位置に明示的に配置する。
-                        ReorderableDragStartListener(
-                          index: index,
-                          child: const Icon(Icons.drag_handle, size: 16),
-                        ),
-                      ],
-                    ),
-                    onTap: () {
-                      setState(() {
-                        if (_isSelectionMode) {
-                          if (layer.type != _selectionBaseType) return;
-                          if (_selectedIds.contains(layer.id)) {
-                            _selectedIds.remove(layer.id);
-                            if (_selectedIds.isEmpty) {
-                              _isSelectionMode = false;
-                              _selectionBaseType = null;
+                        onTap: () {
+                          setState(() {
+                            if (_isSelectionMode) {
+                              if (layer.type != _selectionBaseType) return;
+                              if (_selectedIds.contains(layer.id)) {
+                                _selectedIds.remove(layer.id);
+                                if (_selectedIds.isEmpty) {
+                                  _isSelectionMode = false;
+                                  _selectionBaseType = null;
+                                }
+                              } else {
+                                _selectedIds.add(layer.id);
+                              }
+                            } else {
+                              _selectedIndex = index;
                             }
-                          } else {
+                          });
+                          if (!_isSelectionMode &&
+                              layer.type == model.LayerType.text &&
+                              widget.onEditTextLayer != null) {
+                            widget.onEditTextLayer!(layer);
+                          }
+                          // フォルダ行は描画対象になり得ないため、実際の描画先
+                          // レイヤーの切り替え通知からは除外する（グループ化用の
+                          // 見出し行としての選択ハイライトのみ）。
+                          if (!_isSelectionMode &&
+                              layer.type != model.LayerType.folder) {
+                            widget.onLayerSelected?.call(layer.id);
+                          }
+                        },
+                        onLongPress: () => setState(() {
+                          if (!_isSelectionMode) {
+                            _isSelectionMode = true;
+                            _selectionBaseType = layer.type;
                             _selectedIds.add(layer.id);
                           }
-                        } else {
-                          _selectedIndex = index;
-                        }
-                      });
-                      if (!_isSelectionMode &&
-                          layer.type == model.LayerType.text &&
-                          widget.onEditTextLayer != null) {
-                        widget.onEditTextLayer!(layer);
-                      }
-                      // フォルダ行は描画対象になり得ないため、実際の描画先
-                      // レイヤーの切り替え通知からは除外する（グループ化用の
-                      // 見出し行としての選択ハイライトのみ）。
-                      if (!_isSelectionMode &&
-                          layer.type != model.LayerType.folder) {
-                        widget.onLayerSelected?.call(layer.id);
-                      }
-                    },
-                    onLongPress: () => setState(() {
-                      if (!_isSelectionMode) {
-                        _isSelectionMode = true;
-                        _selectionBaseType = layer.type;
-                        _selectedIds.add(layer.id);
-                      }
-                    }),
-                  ),
-                );
-              },
-            ).clipListInk(),
-          ),
-          // パネル下部の三点メニュー・ゴミ箱は各レイヤー右側へ移動したため削除した。
-          // 「追加」ボタンも上部ショートカット行へ移動済み。削除・結合は
-          // 各レイヤー行のボタンとヘッダーの「全レイヤー結合」ボタンへ
-          // ワンタップ化したため、複数選択モードはグループ化専用として残す
-          // （グループ化は性質上、複数レイヤーの選択が必要なため）。
-          if (_isSelectionMode) ...[
-            const Divider(height: 1),
-            Padding(
-              padding: const EdgeInsets.all(4),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.visibility, size: 18),
-                    onPressed: _selectedIds.isEmpty
-                        ? null
-                        : () =>
-                              _setVisibilityForSelected(context, layers, true),
-                    tooltip: l10n.layerPanelShowSelectedTooltip,
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.visibility_off, size: 18),
-                    onPressed: _selectedIds.isEmpty
-                        ? null
-                        : () =>
-                              _setVisibilityForSelected(context, layers, false),
-                    tooltip: l10n.layerPanelHideSelectedTooltip,
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.workspaces_outline, size: 18),
-                    onPressed: _selectedIds.length >= 2
-                        ? () => _showCreateGroupDialog(context)
-                        : null,
-                    tooltip: l10n.layerPanelGroupTooltip,
-                  ),
-                ],
+                        }),
+                      ),
+                    );
+                  },
+                ).clipListInk(),
               ),
-            ),
-          ],
-        ],
+              if (!scrollControls) ...footer,
+            ],
+          );
+        },
       ),
     );
   }

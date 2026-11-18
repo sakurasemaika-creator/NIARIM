@@ -303,23 +303,41 @@ class NiaproSerializer {
   /// （FontLoaderへの読み込み・一覧への追加）はFontServiceが行うため、
   /// engine層であるここではアーカイブのパースのみ行う。
   static List<
-    ({String id, String displayName, String fileName, Uint8List bytes})
+    ({
+      String id,
+      String displayName,
+      String fileName,
+      Uint8List bytes,
+      String? licenseNotice,
+    })
   >
   bundledFonts(NiaproData data) {
     if (data.fontsManifest == null) return const [];
     final list = jsonDecode(data.fontsManifest!) as List<dynamic>;
     final result =
-        <({String id, String displayName, String fileName, Uint8List bytes})>[];
+        <
+          ({
+            String id,
+            String displayName,
+            String fileName,
+            Uint8List bytes,
+            String? licenseNotice,
+          })
+        >[];
     for (final e in list) {
       final map = e as Map<String, dynamic>;
       final fileName = map['fileName'] as String?;
       final bytes = fileName != null ? data.fontFiles[fileName] : null;
       if (fileName == null || bytes == null) continue;
+      final notice = data.fontFiles['$fileName.license.txt'];
       result.add((
         id: map['id'] as String,
         displayName: map['displayName'] as String,
         fileName: fileName,
         bytes: bytes,
+        licenseNotice: notice != null && notice.length <= 66 * 1024
+            ? utf8.decode(notice, allowMalformed: true)
+            : null,
       ));
     }
     return result;

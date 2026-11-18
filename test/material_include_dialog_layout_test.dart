@@ -21,7 +21,7 @@ void main() {
     addTearDown(tester.view.resetPadding);
     addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
     final problems = <String>[];
-    for (final locale in const ['ja', 'en', 'fr']) {
+    for (final locale in AppLocalizations.supportedLocales) {
       for (final (size, bars) in const [
         (Size(800, 360), true),
         (Size(640, 360), false),
@@ -43,7 +43,7 @@ void main() {
           await tester.pumpWidget(
             MaterialApp(
               theme: theme.themeData,
-              locale: Locale(locale),
+              locale: locale,
               localizationsDelegates: AppLocalizations.localizationsDelegates,
               supportedLocales: AppLocalizations.supportedLocales,
               home: Builder(
@@ -70,6 +70,15 @@ void main() {
             tester.element(find.byType(AlertDialog)),
           )!;
           final dialog = tester.getRect(find.byType(AlertDialog));
+          final fonts = find.widgetWithText(
+            CheckboxListTile,
+            l10n.projectListIncludeFontsTitle,
+          );
+          expect(tester.widget<CheckboxListTile>(fonts).value, isFalse);
+          expect(
+            find.text(l10n.projectListIncludeFontsSubtitle),
+            findsOneWidget,
+          );
           // ボタンは画面の中にあり、押せる（何かに重なっていない）こと。
           for (final label in [l10n.commonCancel, l10n.commonCreate]) {
             final button = find.text(label);
@@ -106,6 +115,9 @@ void main() {
               problems.add('$profile: "$label" is covered');
             }
           }
+          await tester.tap(find.text(l10n.projectListIncludeFontsTitle));
+          await tester.pumpAndSettle();
+          expect(tester.widget<CheckboxListTile>(fonts).value, isTrue);
           expect(tester.takeException(), isNull, reason: profile);
         }
       }

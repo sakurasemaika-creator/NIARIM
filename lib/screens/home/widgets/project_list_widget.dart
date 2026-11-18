@@ -1737,6 +1737,9 @@ Future<void> runNiashareFlow(
     final File file;
     try {
       file = await build(options);
+    } on CatalogFontNoticeException {
+      handles.tell(handles.l10n.projectListFontLicenseUnavailable);
+      return;
     } catch (error, stackTrace) {
       AppErrorReporter.record(error, stackTrace);
       handles.tell(handles.l10n.projectDetailNiashareFailedSnackbar('$error'));
@@ -1748,8 +1751,8 @@ Future<void> runNiashareFlow(
 }
 
 /// .niashare作成時の同梱選択ダイアログ（画像/動画/音声を
-/// 種類ごとに選択できる。デフォルトは全種類ON。「フォントを含める」を
-/// 選択した場合のみユーザー追加フォントも同梱する）。キャンセル時はnullを返す。
+/// 種類ごとに選択できる。フォントは利用者が選んだときだけ同梱する）。
+/// キャンセル時はnullを返す。
 Future<NiashareIncludeOptions?> showMaterialIncludeDialog(
   BuildContext context,
 ) {
@@ -1759,7 +1762,7 @@ Future<NiashareIncludeOptions?> showMaterialIncludeDialog(
     MaterialType.video,
     MaterialType.audio,
   };
-  bool includeFonts = true;
+  bool includeFonts = false;
   return showDialog<NiashareIncludeOptions>(
     context: context,
     builder: (ctx) => StatefulBuilder(
@@ -1815,7 +1818,7 @@ Future<NiashareIncludeOptions?> showMaterialIncludeDialog(
                 style: const TextStyle(fontSize: 11),
               ),
               contentPadding: EdgeInsets.zero,
-              onChanged: (v) => setDialogState(() => includeFonts = v ?? true),
+              onChanged: (v) => setDialogState(() => includeFonts = v == true),
             ),
           ],
         ),
@@ -1843,8 +1846,9 @@ Future<NiashareIncludeOptions?> showMaterialIncludeDialog(
 Future<({Map<String, Uint8List> files, String? manifest})> buildFontShareBundle(
   ProjectService projectService,
   FontService fontService,
-  String projectId,
-) async {
+  String projectId, {
+  bool forSharing = true,
+}) async {
   final usedFamilies = projectService.usedFontFamiliesOf(projectId);
   final files = <String, Uint8List>{};
   final manifestList = <Map<String, dynamic>>[];
@@ -1852,7 +1856,15 @@ Future<({Map<String, Uint8List> files, String? manifest})> buildFontShareBundle(
     if (!usedFamilies.contains(fontService.familyNameOf(font))) continue;
     final bytes = await fontService.readFontBytes(font);
     if (bytes == null) continue;
+    final notice = forSharing
+        ? await fontService.licenseNoticeForShare(font, bytes)
+        : font.licenseNotice;
     files[font.fileName] = bytes;
+    if (notice != null) {
+      files['${font.fileName}.license.txt'] = Uint8List.fromList(
+        utf8.encode(notice),
+      );
+    }
     manifestList.add({
       'id': font.id,
       'displayName': font.displayName,

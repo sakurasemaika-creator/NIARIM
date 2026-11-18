@@ -3320,15 +3320,22 @@ class _CanvasScreenState extends State<CanvasScreen> {
     String? brushId,
     double? sizeOverride,
   }) {
-    setState(() => _currentTool = DrawingTool.values.byName(toolKey));
+    final tool = DrawingTool.values.byName(toolKey);
     final brushes = context.read<BrushService>();
     if (brushId != null) {
-      brushes.selectBrush(brushId);
-      // 登録したブラシが消されていたら、太さだけを別のブラシへ当てない。
-      if (brushes.currentBrush?.id != brushId) {
+      if (!brushes.brushes.any((brush) => brush.id == brushId)) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: messageText(
+              AppLocalizations.of(context)!.quickToolBrushUnavailable,
+            ),
+          ),
+        );
         return;
       }
+      brushes.selectBrush(brushId);
     }
+    setState(() => _currentTool = tool);
     if (sizeOverride != null) {
       // 早替えツールの太さはそのツールの設定。ブラシが覚えている太さは
       // 書き換えない（同じブラシを太さ違いで登録して切り替えられる）。

@@ -350,6 +350,7 @@ class _TransferScreenState extends State<TransferScreen> {
         projectService,
         fontService,
         id,
+        forSharing: false,
       );
       final file = await NiaproSerializer.saveShare(
         project: project,
