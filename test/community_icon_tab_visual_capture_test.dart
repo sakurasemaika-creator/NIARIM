@@ -183,9 +183,9 @@ void main() {
           reason: '$width author / action row order',
         );
         expect(
-          countRect.right,
-          lessThanOrEqualTo(saveRect.left + 1),
-          reason: '$width count must precede bookmark button',
+          countRect.bottom,
+          lessThanOrEqualTo(saveRect.top + 1),
+          reason: '$width count row must precede bookmark and menu actions',
         );
         expect(
           saveRect.right,
