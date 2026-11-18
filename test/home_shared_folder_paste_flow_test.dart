@@ -364,7 +364,12 @@ void main() {
       await capture(tester, captureKey, '19_works_folder_trash_confirmation');
       AppErrorReporter.recentErrors.clear();
       await tester.tap(find.byKey(const Key('homePasteTrashConfirmButton')));
-      await awaitLibraryState(tester, () => works.folders.isEmpty);
+      await awaitLibraryState(
+        tester,
+        () =>
+            works.folders.isEmpty &&
+            find.byKey(const Key('homeClipboardToolbar')).evaluate().isEmpty,
+      );
       expect(
         works.folders,
         isEmpty,
