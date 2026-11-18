@@ -349,9 +349,12 @@ void main() {
       for (var i = 1; i <= 30; i++) end + heading * (i * 3),
     ];
     const width = 400, height = 270;
-    final ribbon = preset(
-      'Brush0036',
-    ).copyWith(size: 50, outlineWidth: 2, stabilization: false);
+    final ribbon = preset('Brush0036').copyWith(
+      size: 50,
+      outlineWidth: 2,
+      stabilization: false,
+      foldDepartureAngle: 0,
+    );
     Future<ByteData> render(Brush brush) async {
       final image = await drawStroke(
         brush,

@@ -45,10 +45,11 @@ void main() {
       expect(hair.outlineWidth, 1);
       expect(hair.foldEnabled, isTrue);
       expect(hair.foldTriggerAngle, 60);
+      expect(hair.foldDepartureAngle, -20);
       expect(hair.foldCurveStartRatio, .15);
       expect(hair.foldAngleRatio, .80);
       expect(hair.foldLengthRatio, .95);
-      expect(hair.foldEndTaperRatio, .35);
+      expect(hair.foldEndTaperRatio, .65);
       expect(hair.fadeIn, FadeEndpointSettings.full);
       expect(hair.fadeOut.rangePx, 165);
       expect(hair.toJson().containsKey('fillColor'), isFalse);
@@ -93,9 +94,11 @@ void main() {
       expect(restored.foldFlatEnds, isFalse);
       expect(restored.calligraphyAngle, isNull);
       expect(restored.foldTriggerAngle, 60);
+      final isWaveTopView = brush.foldMode == HairFoldMode.waveTopView;
+      expect(restored.foldDepartureAngle, isWaveTopView ? -20 : 0);
       expect(restored.foldAngleRatio, .80);
       expect(restored.foldCurveStartRatio, .15);
-      expect(restored.foldEndTaperRatio, .35);
+      expect(restored.foldEndTaperRatio, isWaveTopView ? .65 : .35);
       expect(
         restored.foldLengthRatio,
         brush.foldMode == HairFoldMode.crescent ? .60 : .95,
@@ -116,6 +119,7 @@ void main() {
       );
       for (final ribbon in ribbons) {
         final restored = Brush.fromJson(ribbon.toJson());
+        expect(restored.outlineEnabled, isTrue);
         expect(restored.foldEnabled, isTrue);
         expect(restored.foldFlatEnds, isFalse);
         expect(restored.calligraphyAngle, isNull);
@@ -125,10 +129,12 @@ void main() {
         expect(restored.pressureOn.opacity.enabled, isFalse);
         expect(restored.presetColor, 0xffdb424b);
         expect(restored.outlineWidth, 1);
-        final crescent = ribbon.foldMode == HairFoldMode.crescent;
-        expect(restored.foldLengthRatio, crescent ? .70 : 1);
-        expect(restored.foldAngleRatio, crescent ? .60 : 1);
-        expect(restored.foldCurveStartRatio, crescent ? .30 : .75);
+        expect(restored.foldTriggerAngle, 60);
+        expect(restored.foldDepartureAngle, -3);
+        expect(restored.foldCurveStartRatio, .75);
+        expect(restored.foldLengthRatio, 1);
+        expect(restored.foldAngleRatio, .60);
+        expect(restored.foldEndTaperRatio, .10);
       }
     },
   );

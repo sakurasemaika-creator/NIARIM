@@ -1,5 +1,5 @@
-// On a smooth bend (radius larger than the strand's half width, so the two
-// inner outlines never cross) the fold line is the front section's inner
+// With zero departure angle on a smooth bend (radius larger than half the
+// strand width, so the inner outlines never cross), the fold line is the front section's inner
 // outline carried on straight from where it is straightest (a wave's
 // inflection), then turned with the stroke: it leaves the outline at no
 // angle, passes under the apex, never runs outside that straight extension
@@ -123,14 +123,20 @@ Future<Uint8List> _draw(WidgetTester tester, Brush brush) async {
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  testWidgets('the hair and ribbon fold lines dive into the strand on a '
-      'smooth bend', (tester) async {
+  testWidgets('hair and ribbon folds with tangent entry dive into the '
+      'strand on a smooth bend', (tester) async {
     final presets = brushExtensionPresets();
-    for (final (id, minimum) in const [
-      ('Brush0023', .2), // hair: dips about a third of the strand
-      ('Brush0036', .35), // ribbon: dives about half the strand
+    for (final (id, angle, minimum) in const [
+      ('Brush0023', .80, .2), // hair: dips about a third of the strand
+      ('Brush0036', 1.0, .35), // ribbon: dives about half the strand
     ]) {
-      final brush = presets.singleWhere((b) => b.id == id);
+      final brush = presets
+          .singleWhere((b) => b.id == id)
+          .copyWith(
+            foldDepartureAngle: 0,
+            foldAngleRatio: angle,
+            foldEndTaperRatio: .35,
+          );
       final strandWidth = brush.size + brush.outlineWidth * 2;
       final (:dive, :share) = _diveBelowApex(
         await _draw(tester, brush),
@@ -156,8 +162,8 @@ void main() {
     }
   });
 
-  testWidgets('no fold setting takes the line outside the straight '
-      'extension', (tester) async {
+  testWidgets('changing the curve after tangent entry keeps the fold within '
+      'the straight extension', (tester) async {
     final presets = brushExtensionPresets();
     for (final id in const ['Brush0023', 'Brush0036']) {
       for (final (angle, start, length) in const [
@@ -169,6 +175,7 @@ void main() {
         final brush = presets
             .singleWhere((b) => b.id == id)
             .copyWith(
+              foldDepartureAngle: 0,
               foldAngleRatio: angle,
               foldCurveStartRatio: start,
               foldLengthRatio: length,
