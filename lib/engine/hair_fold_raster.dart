@@ -1222,53 +1222,73 @@ class HairFoldRaster {
               ownerBase + i,
             );
           }
-          // 100 % is twice the strand width; the line is clipped to the
-          // strand, so even the maximum never leaves its contour.
-          final length =
-              lead +
-              p.width *
-                  2 *
-                  brush.foldLengthRatio.clamp(0.0, 1.0) *
-                  (continuous ? .32 : 1.0);
+          // Measure the straight section from the visible join. Constrain
+          // its range to this bend so a late curve can still begin inside it.
+          final lengthRatio = brush.foldLengthRatio.clamp(0.0, 1.0);
+          if (lengthRatio == 0) continue;
+          final owner = ownerBase + i;
+          final limit = lead + p.width * 2 * (continuous ? .32 : 1.0);
+          final delay = brush.foldCurveStartRatio.clamp(0.0, 1.0);
+          final curvedShare = 1 - delay;
+          final straightReach = _creaseReach(
+            result,
+            origin,
+            direction,
+            limit,
+            p.width * .15,
+            owner,
+          );
+          // An earlier curve can turn back into the ribbon and travel
+          // farther than its straight extension. A sharp corner turns
+          // faster, so it has more room for that continuation.
+          final extra =
+              (line.smooth ? straightReach * .35 : limit) *
+              curvedShare *
+              curvedShare;
+          final available = math.min(limit, straightReach + extra);
+          final length = available * lengthRatio;
           if (length < 1) continue;
-          // From a smooth bend's straight lead, curve start sets how far
-          // along the lead (half way to the apex at 0 %) the turn begins.
-          final delay = continuous
-              ? math.max(.50, brush.foldCurveStartRatio.clamp(0.0, 1.0))
-              : lead > 0
-              ? lead *
-                    (.5 + .5 * brush.foldCurveStartRatio.clamp(0.0, 1.0)) /
-                    length
-              : brush.foldCurveStartRatio.clamp(0.0, .95);
+          final straight = length * delay;
+          final curved = length - straight;
           final turn = math.atan2(
             _cross(direction, continuation),
             _dot(direction, continuation),
           );
-          // 50 % follows the stroke's turn exactly; 0 % stays straight.
-          final totalTurn = (turn * brush.foldAngleRatio.clamp(0.0, 1.0) * 2)
+          // The curve follows the stroke's turn. Smooth bends turn gradually;
+          // the later they start, the less of the turn they can follow.
+          final turnRate = (turn * brush.foldAngleRatio.clamp(0.0, 1.0) * 2)
               .clamp(-math.pi * .9, math.pi * .9);
           final taper = brush.foldEndTaperRatio.clamp(.01, 1.0);
-          final count = math.max(6, (length / 1.5).ceil());
+          final width = p.outlineOr(brush.outlineWidth);
+          const sampleStep = 1.25;
+          var distance = 0.0;
           var previous = origin;
-          for (var step = 1; step <= count; step++) {
-            final t = step / count;
-            final u = ((t - delay) / math.max(.001, 1 - delay)).clamp(0.0, 1.0);
-            final angle = totalTurn * u;
+          while (distance < length) {
+            var next = math.min(length, distance + sampleStep);
+            // Put a sample exactly at the join of the straight and curved
+            // parts. No sample before it rotates away from the tangent.
+            if (distance < straight) next = math.min(next, straight);
+            final progress = curved <= 0
+                ? 0.0
+                : math.max(0, (distance + next) / 2 - straight) / curved;
+            final angle =
+                turnRate *
+                (line.smooth ? progress * progress * curvedShare : progress);
             final c = math.cos(angle), sn = math.sin(angle);
             final heading = Offset(
               direction.dx * c - direction.dy * sn,
               direction.dx * sn + direction.dy * c,
             );
-            final at = previous + heading * (length / count);
-            // Never past the strand's own contour.
-            if (step > 1 && !_covered(result, at)) break;
+            final at = previous + heading * (next - distance);
+            if (distance > 0 && !_covered(result, at)) break;
+            final t = (distance + next) / (2 * length);
             final lineWidth =
-                p.outlineOr(brush.outlineWidth) *
-                (1 - ((t - (1 - taper)) / taper).clamp(0.0, 1.0));
+                width * (1 - ((t - (1 - taper)) / taper).clamp(0.0, 1.0));
             creases.add(
-              _CreaseSegment(previous, at, lineWidth, ownerBase + i, p.opacity),
+              _CreaseSegment(previous, at, lineWidth, owner, p.opacity),
             );
             previous = at;
+            distance = next;
           }
         }
       }
@@ -1813,13 +1833,35 @@ class HairFoldRaster {
     }
   }
 
-  bool _covered(Map<int, _SurfaceTile> surface, Offset at) {
+  double _creaseReach(
+    Map<int, _SurfaceTile> surface,
+    Offset origin,
+    Offset direction,
+    double limit,
+    double inset,
+    int owner,
+  ) {
+    // The join can lie on an antialiased pixel. Look for the first exit
+    // after entering the folded surface, ignoring the subpixel start.
+    for (var distance = 1.5; distance < limit; distance += 1) {
+      if (!_covered(surface, origin + direction * distance, owner)) {
+        return math.max(0, distance - math.max(.5, inset));
+      }
+    }
+    return limit;
+  }
+
+  bool _covered(Map<int, _SurfaceTile> surface, Offset at, [int? owner]) {
     final x = at.dx.floor(), y = at.dy.floor();
     if (x < 0 || y < 0 || x >= tiles.canvasWidth || y >= tiles.canvasHeight) {
       return false;
     }
     final tile = surface[(y ~/ _size) * tiles.tilesX + x ~/ _size];
-    return tile != null && tile.shape[(y % _size) * _size + x % _size] > .5;
+    if (tile == null) return false;
+    final p = (y % _size) * _size + x % _size;
+    final face = tile.owner[p];
+    return tile.shape[p] > .5 &&
+        (owner == null || face == owner || face == owner + 1);
   }
 
   Offset _creaseOriginOnOutline(
@@ -2748,8 +2790,9 @@ bool _sameGeometry(List<Object>? a, List<Object>? b) {
 ///
 /// The stroke is split into bends at its inflections. A bend that changes
 /// direction by at least [trigger] folds at its vertex, where half of its
-/// turn has happened, if it sits between inflections (a wave) or is a sharp
-/// corner ([anyCurl]: any bend, for crescents). Independently, every
+/// turn has happened, if it sits between inflections (a wave), joins two
+/// straight legs, or is a sharp corner ([anyCurl]: any bend, for crescents).
+/// Independently, every
 /// further 270 degrees of continuous turning in
 /// one direction adds a fold that keeps the turn direction, so 265 degrees
 /// does not fold, 275 folds once, 545 twice and 815 three times.
@@ -2839,9 +2882,16 @@ List<({int index, bool continuous})> _strokeBends(
       final radius =
           (lengths[at(total * .9)] - lengths[at(total * .1)]) / (total * .8);
       final betweenInflections = spans.length > 1;
-      // A crescent curls any bend that turns far enough, even a lone one.
+      // A single rounded corner can fold when it has straight legs on both
+      // sides. A long arc or a spiral without those legs retains its own rule.
+      const straightTolerance = math.pi / 180;
+      final betweenStraightLegs =
+          total < math.pi &&
+          lengths[at(straightTolerance)] - lengths[first] >= width &&
+          lengths[last] - lengths[at(total - straightTolerance)] >= width;
       if (anyCurl ||
-          (betweenInflections && radius <= math.max(width * 4, 48)) ||
+          ((betweenInflections || betweenStraightLegs) &&
+              radius <= math.max(width * 4, 48)) ||
           radius <= width * .5) {
         folds.add((index: at(total / 2), continuous: false));
       }

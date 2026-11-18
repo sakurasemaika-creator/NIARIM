@@ -125,9 +125,10 @@ void main() {
         expect(restored.pressureOn.opacity.enabled, isFalse);
         expect(restored.presetColor, 0xffdb424b);
         expect(restored.outlineWidth, 1);
-        expect(restored.foldLengthRatio, .70);
-        expect(restored.foldAngleRatio, .60);
-        expect(restored.foldCurveStartRatio, .30);
+        final crescent = ribbon.foldMode == HairFoldMode.crescent;
+        expect(restored.foldLengthRatio, crescent ? .70 : 1);
+        expect(restored.foldAngleRatio, crescent ? .60 : 1);
+        expect(restored.foldCurveStartRatio, crescent ? .30 : .75);
       }
     },
   );

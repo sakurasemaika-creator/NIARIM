@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:math' as math;
+import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:flutter_test/flutter_test.dart';
@@ -331,6 +332,71 @@ void main() {
       }
     },
   );
+
+  test('ribbon crease starts straight and its settings move the end', () async {
+    const center = ui.Offset(165, 106);
+    const radius = 107.0;
+    const turn = 70 * math.pi / 180;
+    ui.Offset onBend(double angle) =>
+        center + ui.Offset(math.sin(angle), math.cos(angle)) * radius;
+    final end = onBend(turn);
+    final heading = ui.Offset(math.cos(turn), -math.sin(turn));
+    final stroke = [
+      for (var x = 38; x < center.dx; x += 2)
+        ui.Offset(x.toDouble(), center.dy + radius),
+      for (var i = 0; i <= 64; i++) onBend(turn * i / 64),
+      for (var i = 1; i <= 30; i++) end + heading * (i * 3),
+    ];
+    const width = 400, height = 270;
+    final ribbon = preset(
+      'Brush0036',
+    ).copyWith(size: 50, outlineWidth: 2, stabilization: false);
+    Future<ByteData> render(Brush brush) async {
+      final image = await drawStroke(
+        brush,
+        stroke,
+        width: width,
+        height: height,
+      );
+      final data = (await image.toByteData(
+        format: ui.ImageByteFormat.rawRgba,
+      ))!;
+      image.dispose();
+      return data;
+    }
+
+    final body = await render(ribbon.copyWith(foldLengthRatio: 0));
+    Future<List<ui.Offset>> crease(Brush brush) async {
+      final pixels = await render(brush);
+      final ink = <ui.Offset>[];
+      for (var x = 0; x < width; x++) {
+        for (var y = 0; y < height; y++) {
+          final i = (y * width + x) * 4;
+          if (pixels.getUint8(i + 3) != body.getUint8(i + 3)) {
+            fail('A crease setting moved the silhouette at ($x, $y)');
+          }
+          if (body.getUint8(i) - pixels.getUint8(i) > 16) {
+            ink.add(ui.Offset(x.toDouble(), y.toDouble()));
+          }
+        }
+      }
+      expect(ink, isNotEmpty);
+      return ink;
+    }
+
+    final straight = await crease(ribbon.copyWith(foldCurveStartRatio: 1));
+    expect(straight.map((pixel) => pixel.dy).toSet(), hasLength(lessThan(4)));
+    final folded = await crease(ribbon);
+    final shortened = await crease(ribbon.copyWith(foldLengthRatio: .65));
+    final earlier = await crease(ribbon.copyWith(foldCurveStartRatio: .35));
+    final angleOff = await crease(ribbon.copyWith(foldAngleRatio: 0));
+
+    expect((folded.first - straight.first).distance, lessThan(2));
+    expect(folded.last.dy, lessThan(straight.last.dy));
+    expect(earlier.last.dy, lessThan(folded.last.dy));
+    expect(shortened.last.dx, lessThan(folded.last.dx - 8));
+    expect(angleOff.last.dy, closeTo(straight.last.dy, 1));
+  });
 
   test('capture every hair and ribbon brush on four curved paths', () async {
     final out = Directory('build/hair_ribbon_presets')
