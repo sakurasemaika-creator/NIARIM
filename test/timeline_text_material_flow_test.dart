@@ -271,7 +271,31 @@ void main() {
       l10n.timelineTransformRotationY,
     );
     await tester.ensureVisible(turnY);
-    tester.widget<LabeledSlider>(turnY).onChanged!(40);
+    final baseline = undo.undoCount;
+    final beforeTurn = texts().single.keyframes;
+    final slider = find.descendant(of: turnY, matching: find.byType(Slider));
+    await tester.ensureVisible(slider);
+    final gesture = await tester.startGesture(tester.getCenter(slider));
+    await gesture.moveBy(const Offset(17, 0));
+    await tester.pump();
+    await gesture.moveBy(const Offset(16, 0));
+    await tester.pump();
+    final angle = texts().single.keyframes.single.rotationY;
+    expect(angle, greaterThan(0));
+    expect(undo.undoCount, baseline);
+    await gesture.up();
+    await tester.pump();
+    expect(undo.undoCount, baseline + 1);
+    undo.undo();
+    await tester.pump();
+    expect(texts().single.keyframes, beforeTurn);
+    undo.redo();
+    await tester.pump();
+    expect(texts().single.keyframes.single.rotationY, angle);
+
+    final turn = tester.widget<LabeledSlider>(turnY);
+    turn.onChanged!(40);
+    turn.onChangeEnd!(40);
     await tester.pump();
     expect(texts().single.keyframes.single.rotationY, 40);
 

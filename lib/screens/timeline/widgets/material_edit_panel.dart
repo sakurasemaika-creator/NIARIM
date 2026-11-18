@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import '../../../config/font_fallback.dart';
 import '../../../engine/layer_range_resolver.dart';
 import '../../../engine/timeline_material.dart';
+import '../../../engine/undo_manager.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../models/bundled_fonts.dart';
 import '../../../models/layer.dart';
@@ -83,6 +84,8 @@ class TimelineMaterialEditPanel extends StatefulWidget {
 class _TimelineMaterialEditPanelState extends State<TimelineMaterialEditPanel> {
   late final ProjectService _projects;
   FontService? _fonts;
+  UndoManager? _undo;
+  Layer? _beforeSlider;
   _Section? _section;
   final TextEditingController _textCtrl = TextEditingController();
 
@@ -98,6 +101,7 @@ class _TimelineMaterialEditPanelState extends State<TimelineMaterialEditPanel> {
     super.initState();
     _projects = context.read<ProjectService>();
     _fonts = Provider.of<FontService?>(context, listen: false);
+    _undo = context.read<UndoManager?>();
     final layer = _find()?.layer;
     final text = layer?.textObject;
     if (text != null) _textCtrl.text = text.text;
@@ -112,7 +116,9 @@ class _TimelineMaterialEditPanelState extends State<TimelineMaterialEditPanel> {
   @override
   void didUpdateWidget(covariant TimelineMaterialEditPanel oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.layerId != widget.layerId) {
+    if (oldWidget.layerId != widget.layerId ||
+        oldWidget.projectId != widget.projectId) {
+      _finishSlider(oldWidget.projectId, duringBuild: true);
       _flushText();
       _draft = null;
       _section = null;
@@ -122,6 +128,7 @@ class _TimelineMaterialEditPanelState extends State<TimelineMaterialEditPanel> {
 
   @override
   void dispose() {
+    _finishSlider(widget.projectId, duringBuild: true);
     _flushText();
     _textCtrl.dispose();
     super.dispose();
@@ -138,18 +145,66 @@ class _TimelineMaterialEditPanelState extends State<TimelineMaterialEditPanel> {
     return (layer: layer, home: home);
   }
 
-  void _update(Layer Function(Layer layer) change) {
+  void _update(Layer Function(Layer layer) change, {bool preview = false}) {
     final found = _find();
     if (found == null) return;
     final next = change(found.layer);
+    final recordsPreview = preview && _undo != null;
+    if (recordsPreview) _beforeSlider ??= found.layer;
     _projects.updateLayer(
       projectId: widget.projectId,
       sceneId: found.home.sceneId,
       frameIndex: found.home.frameIndex,
       layer: next,
+      recordUndo: !recordsPreview,
     );
     widget.onLayerChanged?.call(next);
   }
+
+  void _finishSlider(String projectId, {bool duringBuild = false}) {
+    final previous = _beforeSlider;
+    _beforeSlider = null;
+    final undo = _undo;
+    if (previous == null || undo == null) return;
+    final home = _projects.homeOf(projectId, previous.id);
+    if (home == null) return;
+    final current = _projects
+        .layersOf(projectId, home.sceneId, home.frameIndex)
+        .where((layer) => layer.id == previous.id)
+        .firstOrNull;
+    if (current == null || identical(current, previous)) return;
+    final projects = _projects;
+
+    void apply(Layer layer) {
+      final home = projects.homeOf(projectId, layer.id);
+      if (home == null) return;
+      projects.updateLayer(
+        projectId: projectId,
+        sceneId: home.sceneId,
+        frameIndex: home.frameIndex,
+        layer: layer,
+        recordUndo: false,
+      );
+    }
+
+    void record() => undo.push(
+      ProjectEditUndoAction(
+        'Edit timeline material',
+        () => apply(previous),
+        () => apply(current),
+        retainedMaterialIds: {?current.materialId, ?previous.materialId},
+      ),
+      projectId: projectId,
+    );
+
+    if (duringBuild) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => record());
+    } else {
+      record();
+    }
+  }
+
+  void _finishSliderDrag(double _) => _finishSlider(widget.projectId);
 
   // ─── Text ───────────────────────────────────────────────────────────────
 
@@ -567,11 +622,14 @@ class _TimelineMaterialEditPanelState extends State<TimelineMaterialEditPanel> {
 
   // ─── Position ───────────────────────────────────────────────────────────
 
-  void _editTransform(LayerKeyframe Function(LayerKeyframe kf) change) {
+  void _editTransform(
+    LayerKeyframe Function(LayerKeyframe kf) change, {
+    bool preview = false,
+  }) {
     final frame = widget.currentFrame.value;
-    _update(
-      (l) => l.copyWith(keyframes: editMaterialTransform(l, frame, change)),
-    );
+    Layer transform(Layer layer) =>
+        layer.copyWith(keyframes: editMaterialTransform(layer, frame, change));
+    _update(transform, preview: preview);
   }
 
   Widget _transformSection(Layer layer, LayerHome home, int frame) {
@@ -596,7 +654,9 @@ class _TimelineMaterialEditPanelState extends State<TimelineMaterialEditPanel> {
       max: 180,
       divisions: 360,
       valueText: '${value.round()}°',
-      onChanged: (v) => _editTransform((k) => apply(k, v.roundToDouble())),
+      onChanged: (v) =>
+          _editTransform((k) => apply(k, v.roundToDouble()), preview: true),
+      onChangeEnd: _finishSliderDrag,
     );
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -666,8 +726,11 @@ class _TimelineMaterialEditPanelState extends State<TimelineMaterialEditPanel> {
           max: w,
           divisions: (w * 2).round(),
           valueText: '${kf.x.round()}',
-          onChanged: (v) =>
-              _editTransform((k) => k.copyWith(x: v.roundToDouble())),
+          onChanged: (v) => _editTransform(
+            (k) => k.copyWith(x: v.roundToDouble()),
+            preview: true,
+          ),
+          onChangeEnd: _finishSliderDrag,
         ),
         LabeledSlider(
           label: l10n.timelineCameraMoveYLabel,
@@ -676,8 +739,11 @@ class _TimelineMaterialEditPanelState extends State<TimelineMaterialEditPanel> {
           max: h,
           divisions: (h * 2).round(),
           valueText: '${kf.y.round()}',
-          onChanged: (v) =>
-              _editTransform((k) => k.copyWith(y: v.roundToDouble())),
+          onChanged: (v) => _editTransform(
+            (k) => k.copyWith(y: v.roundToDouble()),
+            preview: true,
+          ),
+          onChangeEnd: _finishSliderDrag,
         ),
         LabeledSlider(
           label: l10n.layerKeyframeScaleLabel,
@@ -689,7 +755,9 @@ class _TimelineMaterialEditPanelState extends State<TimelineMaterialEditPanel> {
           valueText: '×${kf.scale.toStringAsFixed(2)}',
           onChanged: (v) => _editTransform(
             (k) => k.copyWith(scale: (v * 100).roundToDouble() / 100),
+            preview: true,
           ),
+          onChangeEnd: _finishSliderDrag,
         ),
         angle(
           l10n.timelineTransformRotationX,
@@ -713,7 +781,9 @@ class _TimelineMaterialEditPanelState extends State<TimelineMaterialEditPanel> {
           max: 100,
           divisions: 100,
           valueText: '${layer.opacity}%',
-          onChanged: (v) => _update((l) => l.copyWith(opacity: v.round())),
+          onChanged: (v) =>
+              _update((l) => l.copyWith(opacity: v.round()), preview: true),
+          onChangeEnd: _finishSliderDrag,
         ),
         Align(
           alignment: Alignment.centerRight,
@@ -748,8 +818,11 @@ class _TimelineMaterialEditPanelState extends State<TimelineMaterialEditPanel> {
           max: 100,
           divisions: 100,
           valueText: '${(layer.videoVolume * 100).round()}%',
-          onChanged: (v) =>
-              _update((l) => l.copyWith(videoVolume: v.round() / 100)),
+          onChanged: (v) => _update(
+            (l) => l.copyWith(videoVolume: v.round() / 100),
+            preview: true,
+          ),
+          onChangeEnd: _finishSliderDrag,
         ),
         if (last > 0) ...[
           LabeledSlider(
@@ -761,7 +834,9 @@ class _TimelineMaterialEditPanelState extends State<TimelineMaterialEditPanel> {
             valueText: 'F${useStart + 1}',
             onChanged: (v) => _update(
               (l) => l.copyWith(sourceTrimStart: v.round().clamp(0, useEnd)),
+              preview: true,
             ),
+            onChangeEnd: _finishSliderDrag,
           ),
           LabeledSlider(
             label: l10n.timelineClipUseEndLabel,
@@ -772,7 +847,9 @@ class _TimelineMaterialEditPanelState extends State<TimelineMaterialEditPanel> {
             valueText: 'F${useEnd + 1}',
             onChanged: (v) => _update(
               (l) => l.copyWith(sourceTrimEnd: v.round().clamp(useStart, last)),
+              preview: true,
             ),
+            onChangeEnd: _finishSliderDrag,
           ),
         ],
       ],

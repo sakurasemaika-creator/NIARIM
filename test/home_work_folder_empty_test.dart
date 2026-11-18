@@ -325,12 +325,12 @@ void main() {
       expect(find.text(env.l10n.homeWorkFolderEmpty), findsNothing);
       await tester.tap(find.byKey(const Key('exportedWorkMoreMenu')));
       await tester.pumpAndSettle();
-      final deleteAction = find.text(env.l10n.commonDelete).last;
+      final deleteAction = find.text(env.l10n.homeMoveToTrash).last;
       await tester.ensureVisible(deleteAction);
       await tester.pumpAndSettle();
       await tester.tap(deleteAction);
       await tester.pumpAndSettle();
-      final confirm = find.widgetWithText(FilledButton, env.l10n.commonDelete);
+      final confirm = find.byKey(const Key('trash-dialog-confirm'));
       await tester.ensureVisible(confirm);
       await tester.tap(confirm);
       await pumpRealAsync(tester, const Duration(milliseconds: 300));

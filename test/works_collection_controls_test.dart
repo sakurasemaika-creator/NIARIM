@@ -169,9 +169,19 @@ void main() {
     final menu = find.byKey(const Key('exportedWorkMoreMenu')).first;
     await tester.tap(menu);
     await tester.pumpAndSettle();
-    for (final text in ['開く', 'コピー', 'サムネイル変更', '削除']) {
-      expect(find.text(text), findsOneWidget, reason: text);
+    for (final label in [
+      l10n.projectListOpenAction,
+      l10n.homeShareOpenWith,
+      l10n.thumbnailChangeAction,
+      l10n.homeMoveToTrash,
+    ]) {
+      expect(find.text(label), findsOneWidget, reason: label);
     }
+    await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+    await tester.pumpAndSettle();
+    await tester.longPress(card('Alpha.gif'));
+    await tester.pumpAndSettle();
+    expect(find.byTooltip(l10n.commonCopy), findsOneWidget);
     // The Home tab bar includes its Trash icon; only the export card itself
     // must omit an inline delete button.
     expect(
