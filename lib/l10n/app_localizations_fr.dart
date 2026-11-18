@@ -9770,7 +9770,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String creatorMissionDetailsRepostProgress(int progress, int goal) {
-    return 'Repartages actuels : $progress (requis : $goal)';
+    return 'Repartages actuels : $progress (requis : $goal)';
   }
 
   @override
@@ -9881,7 +9881,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get creatorMissionDetailsClaimRule =>
-      'RÉCLAMATION : Lorsque vous appuyez sur Réclamer, le serveur vérifie votre progression et crédite aussitôt la récompense si les conditions sont remplies. Chaque mission peut être réclamée une fois par compte ou par œuvre.';
+      'RÉCLAMATION : Lorsque vous appuyez sur Réclamer, le serveur vérifie votre progression et crédite aussitôt la récompense si les conditions sont remplies. Chaque mission peut être réclamée une fois par compte ou par œuvre.';
 
   @override
   String creatorMissionRankDetailsRules(int percent, int rank) {
@@ -9890,7 +9890,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get creatorMissionRankDetailsHold =>
-      'RÉCOMPENSES DE CLASSEMENT : Lorsque vous appuyez sur Réclamer, le serveur vérifie votre rang actuel et les conditions requises. Si elles sont remplies, la récompense est créditée aussitôt, une fois par rang et par œuvre.';
+      'RÉCOMPENSES DE CLASSEMENT : Lorsque vous appuyez sur Réclamer, le serveur vérifie votre rang actuel et les conditions requises. Si elles sont remplies, la récompense est créditée aussitôt, une fois par rang et par œuvre.';
 
   @override
   String get creatorMissionRankSelectWork =>
