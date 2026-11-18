@@ -161,7 +161,7 @@ void main() {
     await tester.pumpWidget(const SizedBox());
   });
 
-  testWidgets('a layer clipped to the current layer stays inside it', (
+  testWidgets('the canvas updates clipping without another stroke', (
     tester,
   ) async {
     tester.view.physicalSize = const Size(640, 480);
@@ -240,12 +240,16 @@ void main() {
           home: Scaffold(
             body: RepaintBoundary(
               key: boundary,
-              child: CanvasArea(
-                project: ps.projects.firstWhere((p) => p.id == project.id),
-                currentLayerId: base.id,
-                currentTool: DrawingTool.pen,
-                currentFrame: 0,
-                sceneId: sceneId,
+              child: Consumer<ProjectService>(
+                builder: (_, projects, _) => CanvasArea(
+                  project: projects.projects.firstWhere(
+                    (p) => p.id == project.id,
+                  ),
+                  currentLayerId: red.id,
+                  currentTool: DrawingTool.pen,
+                  currentFrame: 0,
+                  sceneId: sceneId,
+                ),
               ),
             ),
           ),
@@ -254,31 +258,47 @@ void main() {
     );
     await pumpRealAsync(tester, const Duration(milliseconds: 600));
     await pumpRealAsync(tester, const Duration(milliseconds: 300));
-    final shot = await tester.runAsync(() async {
-      final render =
-          boundary.currentContext!.findRenderObject()! as RenderRepaintBoundary;
-      final image = await render.toImage(pixelRatio: 1);
-      final data = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
-      final width = image.width;
-      image.dispose();
-      return (data!.buffer.asUint8List(), width);
-    });
-    final (pixels, width) = shot!;
-    final rect = tester.getRect(find.byType(CanvasArea));
-    final drawing = canvasDrawingRectFor(
-      rect.size,
-      ps.projects.firstWhere((p) => p.id == project.id),
-    );
-    List<int> at(double fx, double fy) {
+    Future<List<int>> sample(double fx, double fy) async {
+      final rect = tester.getRect(find.byType(CanvasArea));
+      final drawing = canvasDrawingRectFor(rect.size, project);
       final x = (rect.left + drawing.left + drawing.width * fx).round();
       final y = (rect.top + drawing.top + drawing.height * fy).round();
-      final i = (y * width + x) * 4;
-      return pixels.sublist(i, i + 3);
+      final bytes = await tester.runAsync(() async {
+        final render =
+            boundary.currentContext!.findRenderObject()!
+                as RenderRepaintBoundary;
+        final image = await render.toImage(pixelRatio: 1);
+        try {
+          final pixels = (await image.toByteData(
+            format: ui.ImageByteFormat.rawRgba,
+          ))!;
+          final offset = (y * image.width + x) * 4;
+          return [for (var i = 0; i < 3; i++) pixels.getUint8(offset + i)];
+        } finally {
+          image.dispose();
+        }
+      });
+      return bytes!;
     }
 
-    expect(at(0.5, 0.5)[0], greaterThan(180), reason: 'red inside the square');
-    expect(at(0.5, 0.5)[1], lessThan(60));
-    expect(at(0.1, 0.1), [255, 255, 255], reason: 'paper outside it');
+    final center = await sample(.5, .5);
+    expect(center[0], greaterThan(180), reason: 'red inside the square');
+    expect(center[1], lessThan(60));
+    expect(await sample(.1, .1), [255, 255, 255], reason: 'paper outside it');
+
+    for (final clipping in [false, true]) {
+      final active = ps
+          .layersOf(project.id, sceneId, 0)
+          .firstWhere((layer) => layer.id == red.id);
+      ps.updateLayer(
+        projectId: project.id,
+        sceneId: sceneId,
+        frameIndex: 0,
+        layer: active.copyWith(hasClipping: clipping),
+      );
+      await pumpRealAsync(tester, const Duration(milliseconds: 300));
+      expect(await sample(.1, .1), clipping ? [255, 255, 255] : [220, 30, 30]);
+    }
     await tester.pumpWidget(const SizedBox());
   });
 }

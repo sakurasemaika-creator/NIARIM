@@ -798,12 +798,23 @@ class SettingsService extends ChangeNotifier {
     );
   }
 
-  /// 新しい制御点を追加する（最大10点まで。x昇順を保つ）。
+  static const double _pressurePointGap = 0.01;
+
+  /// Adds an interior point when there is room between its neighbors.
   Future<void> addCustomPressurePoint(double x, double y) async {
-    if (_customPressurePoints.length >= maxPressurePoints) return;
-    final points = List<(double, double)>.from(_customPressurePoints)
-      ..add((x.clamp(0.0, 1.0), y.clamp(0.0, 1.0)));
-    points.sort((a, b) => a.$1.compareTo(b.$1));
+    if (!x.isFinite ||
+        !y.isFinite ||
+        _customPressurePoints.length >= maxPressurePoints) {
+      return;
+    }
+    final points = List<(double, double)>.from(_customPressurePoints);
+    final next = points.indexWhere((point) => point.$1 > x);
+    if (next <= 0 ||
+        x < points[next - 1].$1 + _pressurePointGap ||
+        x > points[next].$1 - _pressurePointGap) {
+      return;
+    }
+    points.insert(next, (x, y.clamp(0.0, 1.0)));
     _customPressurePoints = points;
     await _persistCustomPressurePoints();
     notifyListeners();
@@ -813,15 +824,19 @@ class SettingsService extends ChangeNotifier {
   /// 中間点は前後の制御点の間からxが出ないようクランプする。
   Future<void> moveCustomPressurePoint(int index, double x, double y) async {
     final points = List<(double, double)>.from(_customPressurePoints);
-    if (index < 0 || index >= points.length) return;
+    if (index < 0 || index >= points.length || !x.isFinite || !y.isFinite) {
+      return;
+    }
     final isEndpoint = index == 0 || index == points.length - 1;
     final clampedY = y.clamp(0.0, 1.0);
     if (isEndpoint) {
       points[index] = (points[index].$1, clampedY);
     } else {
-      final minX = points[index - 1].$1 + 0.01;
-      final maxX = points[index + 1].$1 - 0.01;
-      final clampedX = x.clamp(minX, maxX);
+      final minX = points[index - 1].$1 + _pressurePointGap;
+      final maxX = points[index + 1].$1 - _pressurePointGap;
+      // Older builds allowed points closer together. Keep their x position
+      // when there is too little room, and still allow vertical edits.
+      final clampedX = minX <= maxX ? x.clamp(minX, maxX) : points[index].$1;
       points[index] = (clampedX, clampedY);
     }
     _customPressurePoints = points;

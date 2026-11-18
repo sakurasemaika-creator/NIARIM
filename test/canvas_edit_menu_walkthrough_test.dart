@@ -10,6 +10,8 @@ import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/router.dart';
 import 'package:niarim/screens/canvas/canvas_screen.dart';
+import 'package:niarim/screens/canvas/widgets/canvas_area.dart';
+import 'package:niarim/screens/canvas/widgets/filter_panel.dart';
 import 'package:niarim/screens/canvas/widgets/color_adjust_sheet.dart';
 import 'package:niarim/screens/home/home_screen.dart';
 import 'package:niarim/services/filter_service.dart';
@@ -136,6 +138,31 @@ void main() {
   Finder menuSheet() => find.ancestor(
     of: find.text('資料ウィンドウ', skipOffstage: false),
     matching: find.byType(BottomSheet, skipOffstage: false),
+  );
+
+  testWidgets(
+    'the first PC filter opening starts at the list with no preview',
+    (tester) async {
+      await openMenu(tester, size: const Size(1280, 800));
+      await tapEntry(tester, 'フィルター');
+      final panel = find.byType(FilterPanel);
+      expect(panel, findsOneWidget);
+      final context = tester.element(panel);
+      final l10n = AppLocalizations.of(context)!;
+      expect(context.read<FilterService>().currentFilter, isNull);
+      expect(
+        find.descendant(
+          of: panel,
+          matching: find.text(l10n.filterNameGaussianBlur),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        tester.widget<CanvasArea>(find.byType(CanvasArea)).currentLayerPreview,
+        isNull,
+      );
+      expect(tester.takeException(), isNull);
+    },
   );
 
   testWidgets('the menu itself', (tester) async {

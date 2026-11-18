@@ -24,7 +24,14 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   setUp(() => SharedPreferences.setMockInitialValues({}));
 
-  Future<double Function()> pumpCanvas(WidgetTester tester) async {
+  Future<double Function()> pumpCanvas(
+    WidgetTester tester, {
+    DrawingTool tool = DrawingTool.pan,
+    VoidCallback? next,
+    VoidCallback? previous,
+    VoidCallback? toggleOnionSkin,
+    VoidCallback? undoGesture,
+  }) async {
     tester.view.physicalSize = const Size(600, 600);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
@@ -64,7 +71,11 @@ void main() {
                 child: CanvasArea(
                   project: p,
                   currentLayerId: layer.id,
-                  currentTool: DrawingTool.pan,
+                  currentTool: tool,
+                  onNextFrame: next,
+                  onPreviousFrame: previous,
+                  onToggleOnionSkin: toggleOnionSkin,
+                  onUndoGesture: undoGesture,
                   currentFrame: 0,
                   sceneId: scene.id,
                 ),
@@ -103,6 +114,89 @@ void main() {
     await b.up();
     await tester.pump();
   }
+
+  Future<void> parallelSwipe(WidgetTester tester, double dx) async {
+    final center = tester.getCenter(find.byType(CanvasArea));
+    final a = await tester.startGesture(center - const Offset(42, 0));
+    final b = await tester.startGesture(center + const Offset(42, 0));
+    for (var step = 0; step < 3; step++) {
+      await a.moveBy(Offset(dx / 3, 0));
+      await b.moveBy(Offset(dx / 3, 0));
+      await tester.pump(const Duration(milliseconds: 16));
+    }
+    await a.up();
+    await b.up();
+    await tester.pump();
+  }
+
+  testWidgets('two fingers swipe to the next or previous frame once', (
+    tester,
+  ) async {
+    var next = 0, previous = 0;
+    await pumpCanvas(tester, next: () => next++, previous: () => previous++);
+    final before = _viewMatrix(tester).clone();
+    await parallelSwipe(tester, -78);
+    expect((next, previous), (1, 0));
+    expect(_viewMatrix(tester), before);
+    await parallelSwipe(tester, 78);
+    expect((next, previous), (1, 1));
+    expect(_viewMatrix(tester), before);
+  });
+
+  testWidgets('a swipe runs the action assigned in gesture settings once', (
+    tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({
+      'gesture_two_finger_swipe': 'onionSkinToggle',
+    });
+    var toggled = 0, next = 0;
+    await pumpCanvas(
+      tester,
+      next: () => next++,
+      toggleOnionSkin: () => toggled++,
+    );
+    await parallelSwipe(tester, -90);
+    expect((toggled, next), (1, 0));
+  });
+
+  testWidgets(
+    'holding a drawing pointer runs the assigned action without ink',
+    (tester) async {
+      SharedPreferences.setMockInitialValues({
+        'gesture_long_press': 'undo',
+        'hold_eyedropper_enabled': false,
+      });
+      var calls = 0;
+      await pumpCanvas(
+        tester,
+        tool: DrawingTool.pen,
+        undoGesture: () => calls++,
+      );
+      final finder = find.byType(CanvasArea);
+      final center = tester.getCenter(finder);
+      final area = tester.widget<CanvasArea>(finder);
+      final service = tester.element(finder).read<ProjectService>();
+      final project = area.project!;
+      final tiles = service.tileManagerOf(project.id);
+      final layer = service.tileKeyFor(
+        project.id,
+        area.sceneId,
+        0,
+        area.currentLayerId!,
+      );
+      final press = await tester.startGesture(center);
+      await tester.pump(const Duration(milliseconds: 350));
+      expect(calls, 0);
+      await tester.pump(const Duration(milliseconds: 200));
+      expect(calls, 1);
+      expect(tiles.isRecordingUndo, isFalse);
+      expect(tiles.getPixelColorAt(layer, 48, 48), isNull);
+      await tester.pump(const Duration(seconds: 1));
+      await press.up();
+      await tester.pump();
+      expect(calls, 1);
+    },
+  );
 
   testWidgets('2本指を広げるとキャンバスが拡大される', (tester) async {
     final scaleOf = await pumpCanvas(tester);

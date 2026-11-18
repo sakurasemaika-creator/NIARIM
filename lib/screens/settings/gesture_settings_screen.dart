@@ -20,6 +20,7 @@ class GestureSettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final settings = context.watch<SettingsService>();
+    final usesHoldEyedropper = settings.longPress == GestureAction.eyedropper;
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
@@ -115,7 +116,9 @@ class GestureSettingsScreen extends StatelessWidget {
                       style: const TextStyle(fontSize: 11),
                     ),
                     value: settings.holdEyedropperEnabled,
-                    onChanged: (v) => settings.setHoldEyedropperEnabled(v),
+                    onChanged: usesHoldEyedropper
+                        ? settings.setHoldEyedropperEnabled
+                        : null,
                   ),
                   if (settings.holdEyedropperEnabled) ...[
                     const Divider(height: 1),
@@ -134,7 +137,9 @@ class GestureSettingsScreen extends StatelessWidget {
                       valueText: l10n.gestureHoldEyedropperSecondsValue(
                         settings.holdEyedropperSeconds.toStringAsFixed(1),
                       ),
-                      onChanged: (v) => settings.setHoldEyedropperSeconds(v),
+                      onChanged: usesHoldEyedropper
+                          ? settings.setHoldEyedropperSeconds
+                          : null,
                     ),
                   ],
                 ],

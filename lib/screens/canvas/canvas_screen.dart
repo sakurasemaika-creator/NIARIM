@@ -1355,15 +1355,6 @@ class _CanvasScreenState extends State<CanvasScreen> {
       _brushSize = brush.size;
       _brushOpacity = brush.opacity;
     }
-    // 現在レイヤーIDを初期化
-    if (_currentLayerId == null) {
-      final layers = context.read<ProjectService>().layersOf(
-        widget.projectId,
-        _currentSceneId,
-        _currentFrame,
-      );
-      if (layers.isNotEmpty) _currentLayerId = layers.first.id;
-    }
     // PC/DeXモード（広い画面）では、初回表示時にワークスペース設定
     // （設定＞ワークスペース＞PC版で既定で開くパネル）で選ばれている
     // パネルをまとめて自動でドッキング表示する。1セッション1回のみで、
@@ -1581,8 +1572,11 @@ class _CanvasScreenState extends State<CanvasScreen> {
       _currentSceneId,
       _currentFrame,
     );
-    if (!layers.any((layer) => layer.id == _currentLayerId)) {
-      _currentLayerId = layers.firstOrNull?.id;
+    final drawingLayers = layers.where(
+      (layer) => layer.type != model.LayerType.folder,
+    );
+    if (!drawingLayers.any((layer) => layer.id == _currentLayerId)) {
+      _currentLayerId = drawingLayers.firstOrNull?.id;
     }
     // 使うブラシ・その太さ・不透明度が変わったら（一覧で選ぶ・早替えツール）
     // この画面を作り直し、太さ・不透明度の欄をそのブラシの値へ合わせる

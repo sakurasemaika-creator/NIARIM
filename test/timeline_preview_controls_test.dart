@@ -22,6 +22,7 @@ import 'package:niarim/models/camera_keyframe.dart';
 import 'package:niarim/models/effect_filter_instance.dart';
 import 'package:niarim/screens/canvas/widgets/canvas_area.dart';
 import 'package:niarim/screens/canvas/widgets/canvas_preview_navigator.dart';
+import 'package:niarim/screens/canvas/widgets/layer_panel.dart';
 import 'package:niarim/screens/timeline/timeline_screen.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:niarim/services/autofill_preset_service.dart';
@@ -876,6 +877,178 @@ void main() {
     expect(range(), (1, 7));
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets(
+    'canvas retargets drawing after deleting a layer or leaving a common range',
+    (tester) async {
+      late String scene;
+      late Layer deleted, folder, common;
+      final id = await openTimeline(
+        tester,
+        project: const Size(640, 360),
+        screen: const Size(1280, 800),
+        pc: true,
+        fraction: .4,
+        setUpProject: (ps, id) {
+          scene = ps.scenesOf(id).single.id;
+          common = ps
+              .addLayer(
+                projectId: id,
+                sceneId: scene,
+                frameIndex: 0,
+                type: LayerType.common,
+                name: 'First frame only',
+              )
+              .copyWith(
+                rangeMode: LayerRangeMode.frameRange,
+                rangeStart: 1,
+                rangeEnd: 1,
+              );
+          ps.updateLayer(
+            projectId: id,
+            sceneId: scene,
+            frameIndex: 0,
+            layer: common,
+          );
+          deleted = ps.addLayer(
+            projectId: id,
+            sceneId: scene,
+            frameIndex: 0,
+            type: LayerType.normal,
+            name: 'Remove this layer',
+          );
+          folder = ps.addLayer(
+            projectId: id,
+            sceneId: scene,
+            frameIndex: 0,
+            type: LayerType.folder,
+            name: 'Folder above the drawing',
+          );
+          ps.addLayer(
+            projectId: id,
+            sceneId: scene,
+            frameIndex: 1,
+            type: LayerType.folder,
+            name: 'Second frame folder',
+          );
+        },
+      );
+      final ps = tester
+          .element(find.byType(TimelineScreen))
+          .read<ProjectService>();
+      appRouter.go('/canvas/$id');
+      await pumpRealAsync(tester, const Duration(milliseconds: 250));
+      final canvas = find.byType(CanvasArea);
+      CanvasArea area() => tester.widget<CanvasArea>(canvas);
+      final tm = ps.tileManagerOf(id);
+      String tileKey(int frame, String layer) =>
+          ps.tileKeyFor(id, scene, frame, layer);
+      bool hasInk(String key) =>
+          tm.exportAll()[key]?.values.any(
+            (bytes) => bytes.indexWhere((byte) => byte != 0) >= 0,
+          ) ??
+          false;
+      Future<void> stroke() async {
+        final center = tester.getCenter(canvas);
+        final gesture = await tester.startGesture(
+          center - const Offset(35, 0),
+          kind: ui.PointerDeviceKind.mouse,
+        );
+        await gesture.moveTo(center + const Offset(40, 12));
+        await gesture.up();
+        await pumpRealAsync(tester, const Duration(milliseconds: 150));
+      }
+
+      expect(area().currentLayerId, deleted.id);
+      final oldKey = tileKey(0, deleted.id);
+      await stroke();
+      expect(hasInk(oldKey), isTrue);
+      final deletedPixels = tm
+          .exportAll()[oldKey]!
+          .values
+          .expand((bytes) => bytes)
+          .toList();
+      ps.removeLayer(
+        projectId: id,
+        sceneId: scene,
+        frameIndex: 0,
+        layerId: deleted.id,
+      );
+      await pumpRealAsync(tester, const Duration(milliseconds: 250));
+      expect(
+        ps.layersOf(id, scene, 0).any((layer) => layer.id == deleted.id),
+        isFalse,
+      );
+      expect(
+        tm.exportAll()[oldKey]?.values.expand((bytes) => bytes).toList(),
+        deletedPixels,
+      );
+      expect(
+        area().currentLayerId,
+        isNot(anyOf(deleted.id, folder.id, isNull)),
+      );
+      final current = tileKey(0, area().currentLayerId!);
+      await stroke();
+      expect(hasInk(current), isTrue);
+      expect(hasInk(tileKey(0, folder.id)), isFalse);
+      expect(
+        tm.exportAll()[oldKey]?.values.expand((bytes) => bytes).toList(),
+        deletedPixels,
+      );
+
+      final commonRow = find.descendant(
+        of: find.byType(LayerPanel),
+        matching: find.text(common.name),
+      );
+      await tester.ensureVisible(commonRow);
+      await tester.tap(commonRow);
+      await tester.pump();
+      expect(area().currentLayerId, common.id);
+      final originalCommonPixels = tm
+          .exportAll()[tileKey(0, common.id)]
+          ?.values
+          .expand((bytes) => bytes)
+          .toList();
+      expect(
+        ModalRoute.of(tester.element(canvas))?.isCurrent,
+        isTrue,
+        reason: tester
+            .widgetList<Text>(
+              find.descendant(
+                of: find.byType(Dialog),
+                matching: find.byType(Text),
+              ),
+            )
+            .map((text) => text.data ?? text.semanticsLabel)
+            .join(' / '),
+      );
+      final center = tester.getCenter(canvas);
+      final left = await tester.startGesture(center - const Offset(40, 0));
+      final right = await tester.startGesture(center + const Offset(40, 0));
+      await left.moveBy(const Offset(-70, 0));
+      await right.moveBy(const Offset(-70, 0));
+      await left.up();
+      await right.up();
+      await pumpRealAsync(tester, const Duration(milliseconds: 200));
+      expect(area().currentFrame, 1);
+      expect(area().currentLayerId, isNot(common.id));
+      final nextLayer = ps
+          .layersOf(id, scene, 1)
+          .singleWhere((layer) => layer.id == area().currentLayerId);
+      expect(nextLayer.type, LayerType.normal);
+      await stroke();
+      expect(hasInk(tileKey(1, nextLayer.id)), isTrue);
+      expect(
+        tm
+            .exportAll()[tileKey(0, common.id)]
+            ?.values
+            .expand((bytes) => bytes)
+            .toList(),
+        originalCommonPixels,
+      );
+      expect(tester.takeException(), isNull);
+    },
+  );
 
   testWidgets('material clip starts line up while the frame row scrolls', (
     tester,

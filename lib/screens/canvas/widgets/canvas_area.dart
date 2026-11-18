@@ -652,6 +652,10 @@ class _CanvasAreaState extends State<CanvasArea> {
   // 描画ツールへイベントを渡さない（指を離した瞬間に残りの1本で不意に
   // 描画が始まってしまう事故を防ぐ）。
   bool _touchTransformActive = false;
+  ({Offset position, Duration time})? _firstSwipeContact;
+  ({Map<int, Offset> positions, Matrix4 view, GestureAction action})?
+  _possibleSwipe;
+  ({GestureAction action, double dx})? _completedSwipe;
   // 実際に描画ツール側（_onPointerDown等）へ処理を委譲したポインターの集合。
   // 対応するonPointerUpも同じポインターのみ委譲する（変形操作用に握り
   // つぶしたポインターのUpをツール側の「描画終了」として誤処理しない）。
@@ -1662,6 +1666,82 @@ class _CanvasAreaState extends State<CanvasArea> {
     );
   }
 
+  // A short gap between contacts and a stationary first finger distinguish
+  // a coordinated swipe from a second contact during an existing stroke.
+  void _trackSwipeContact(PointerDownEvent event, GestureAction action) {
+    final count = _activeTouchPositions.length;
+    if (count == 1) {
+      _firstSwipeContact = (
+        position: event.localPosition,
+        time: event.timeStamp,
+      );
+    }
+    _possibleSwipe = null;
+    _completedSwipe = null;
+    final first = _firstSwipeContact;
+    if (count != 2 ||
+        first == null ||
+        action == GestureAction.none ||
+        _touchTransformActive ||
+        !_canTouchTransform ||
+        widget.lockToolInput ||
+        _inputHandler.isStylusActive ||
+        event.timeStamp - first.time > const Duration(milliseconds: 180)) {
+      return;
+    }
+    final firstPosition = _activeTouchPositions.values.first;
+    if ((firstPosition - first.position).distance > kTouchSlop) return;
+    _possibleSwipe = (
+      positions: Map.of(_activeTouchPositions),
+      view: Matrix4.copy(_transformController.value),
+      action: action,
+    );
+  }
+
+  void _recognizeSwipe(PointerUpEvent event) {
+    final swipe = _possibleSwipe;
+    _possibleSwipe = null;
+    if (swipe == null || widget.lockToolInput || _inputHandler.isStylusActive) {
+      return;
+    }
+    final movements = [
+      for (final pointer in swipe.positions.keys)
+        (pointer == event.pointer
+                ? event.localPosition
+                : _activeTouchPositions[pointer]!) -
+            swipe.positions[pointer]!,
+    ];
+    final average = (movements.first + movements.last) / 2;
+    if (average.dx.abs() < 36 ||
+        movements.any(
+          (delta) =>
+              delta.dx * average.dx <= 0 || delta.dy.abs() > delta.dx.abs() / 2,
+        ) ||
+        (movements.first - movements.last).distance >
+            math.max(16, average.dx.abs() / 4)) {
+      return;
+    }
+    // Pinch and pan keep their usual live preview. A completed swipe owns
+    // the gesture, so restore the view and discard any provisional ink.
+    _transformController.value = _constrainViewMatrix(swipe.view);
+    for (final pointer in swipe.positions.keys) {
+      if (_toolHandledPointers.remove(pointer)) _cancelToolPointer(pointer);
+    }
+    _completedSwipe = (action: swipe.action, dx: average.dx);
+  }
+
+  void _finishSwipe() {
+    final swipe = _completedSwipe;
+    _firstSwipeContact = null;
+    _completedSwipe = null;
+    if (swipe == null) return;
+    if (swipe.action == GestureAction.frameMove) {
+      (swipe.dx < 0 ? widget.onNextFrame : widget.onPreviousFrame)?.call();
+    } else {
+      _handleGesture(context, swipe.action);
+    }
+  }
+
   void _onPointerDown(PointerEvent event) {
     if (_meshCommitInFlight) return;
     if (event.kind == PointerDeviceKind.mouse &&
@@ -1865,7 +1945,7 @@ class _CanvasAreaState extends State<CanvasArea> {
       screenPosition: event.localPosition,
     );
     _scheduleComposite();
-    _armHoldEyedropperIfEligible(event, canvasPos);
+    _armLongPressIfEligible(event, canvasPos);
   }
 
   void _onPointerMove(PointerEvent event) {
@@ -2483,18 +2563,23 @@ class _CanvasAreaState extends State<CanvasArea> {
     );
   }
 
-  // ─── 長押しスポイト（設定画面「ジェスチャー」で調整可能） ─────────────────
+  // ─── ペン・消しゴムの長押し ──────────────────────────────────────
 
   /// ペン（トーン/スタンプサブツールを除く）・消しゴムでのストローク開始
   /// 時にのみ保留タイマーを仕込む。他のツール（バケツ・投げ縄・選択・図形・
   /// 変形等）は元々タイル未確定のままローカル状態のみで完結するか、
   /// バケツのように長押し自体が別の意味（連続塗り）を持つため対象外とする。
-  void _armHoldEyedropperIfEligible(PointerEvent event, Offset canvasPos) {
+  void _armLongPressIfEligible(PointerEvent event, Offset canvasPos) {
     _holdEyedropperTimer?.cancel();
     _holdEyedropperTimer = null;
     _holdEyedropperPointerId = null;
     final settings = context.read<SettingsService>();
-    if (!settings.holdEyedropperEnabled) return;
+    final action = settings.longPress;
+    if (action == GestureAction.none ||
+        action == GestureAction.frameMove ||
+        action == GestureAction.eyedropper && !settings.holdEyedropperEnabled) {
+      return;
+    }
     final eligible =
         widget.currentTool == DrawingTool.eraser ||
         (widget.currentTool == DrawingTool.pen &&
@@ -2504,10 +2589,17 @@ class _CanvasAreaState extends State<CanvasArea> {
     _holdEyedropperPointerId = event.pointer;
     _holdEyedropperDownScreenPos = event.localPosition;
     _holdEyedropperLastCanvasPos = canvasPos;
-    final ms = (settings.holdEyedropperSeconds * 1000).round().clamp(200, 3000);
+    final delay = action == GestureAction.eyedropper
+        ? Duration(
+            milliseconds: (settings.holdEyedropperSeconds * 1000).round().clamp(
+              200,
+              3000,
+            ),
+          )
+        : kLongPressTimeout;
     _holdEyedropperTimer = Timer(
-      Duration(milliseconds: ms),
-      () => _triggerHoldEyedropper(event.pointer),
+      delay,
+      () => _triggerLongPress(event.pointer, action),
     );
   }
 
@@ -2537,10 +2629,10 @@ class _CanvasAreaState extends State<CanvasArea> {
 
   /// 長押しが保留時間まで成立した時点で呼ばれる。それまでに描かれていた
   /// 分のストロークをUndo履歴に残さず巻き戻し（TileManagerが記録している
-  /// 「変更前」タイルへ書き戻すだけ）、その位置の色をスポイトのように拾う。
+  /// 「変更前」タイルへ書き戻すだけ）、設定された操作を行う。
   /// このポインターは以後の描画ツール処理から除外する（残りの
   /// onPointerMove/onPointerUpは無視され、既に離れた状態のまま扱われる）。
-  Future<void> _triggerHoldEyedropper(int pointer) async {
+  Future<void> _triggerLongPress(int pointer, GestureAction action) async {
     if (_holdEyedropperPointerId != pointer) return;
     final canvasPos = _holdEyedropperLastCanvasPos;
     _holdEyedropperTimer = null;
@@ -2559,8 +2651,11 @@ class _CanvasAreaState extends State<CanvasArea> {
     _toolHandledPointers.remove(pointer);
     _scheduleComposite();
 
-    if (canvasPos == null) return;
-    await _pickColor(canvasPos);
+    if (action == GestureAction.eyedropper) {
+      if (canvasPos != null) await _pickColor(canvasPos);
+    } else {
+      _handleGesture(context, action);
+    }
   }
 
   // ─── 図形ツール ───────────────────────────────────────────────────────
@@ -3234,7 +3329,7 @@ class _CanvasAreaState extends State<CanvasArea> {
       widget.currentFrame,
     );
     final layer = layers.where((l) => l.id == _layerId).firstOrNull;
-    if (layer == null) {
+    if (layer == null || layer.type == LayerType.folder) {
       if (event != null) _toolHandledPointers.remove(event.pointer);
       return true;
     }
@@ -4861,6 +4956,7 @@ class _CanvasAreaState extends State<CanvasArea> {
           if (e.kind == PointerDeviceKind.touch) {
             _touchCount++;
             _activeTouchPositions[e.pointer] = e.localPosition;
+            _trackSwipeContact(e, settings.twoFingerSwipe);
             _multiTouchTapTracker.pointerDown(
               e.pointer,
               e.localPosition,
@@ -4915,13 +5011,20 @@ class _CanvasAreaState extends State<CanvasArea> {
           MultiTouchTapKind? completedTap;
           if (e.kind == PointerDeviceKind.touch) {
             _touchCount = (_touchCount - 1).clamp(0, 10);
+            if (_activeTouchPositions.length == 2 &&
+                _activeTouchPositions.containsKey(e.pointer)) {
+              _recognizeSwipe(e);
+            }
             _activeTouchPositions.remove(e.pointer);
             completedTap = _multiTouchTapTracker.pointerUp(
               e.pointer,
               DateTime.now(),
             );
             // 全ての指が離れて初めて、次のタッチを新規の描画として扱えるように戻す。
-            if (_activeTouchPositions.isEmpty) _touchTransformActive = false;
+            if (_activeTouchPositions.isEmpty) {
+              _touchTransformActive = false;
+              _finishSwipe();
+            }
           }
           if (completedTap == MultiTouchTapKind.twoFinger) {
             _handleGesture(context, settings.twoFingerTap);
@@ -4930,7 +5033,10 @@ class _CanvasAreaState extends State<CanvasArea> {
           } else if (completedTap == MultiTouchTapKind.fourOrMoreFinger) {
             _handleGesture(context, settings.fourOrMoreFingerTap);
           }
-          if (!_toolHandledPointers.remove(e.pointer)) return;
+          if (!_toolHandledPointers.remove(e.pointer)) {
+            _inputHandler.onPointerUp(e);
+            return;
+          }
           _onPointerUp(e, touchTransform: touchTransform);
         },
         onPointerCancel: (e) {
@@ -4942,8 +5048,14 @@ class _CanvasAreaState extends State<CanvasArea> {
             _touchCount = (_touchCount - 1).clamp(0, 10);
             _activeTouchPositions.remove(e.pointer);
             _multiTouchTapTracker.pointerCancel(e.pointer);
-            if (_activeTouchPositions.isEmpty) _touchTransformActive = false;
+            _possibleSwipe = null;
+            _completedSwipe = null;
+            if (_activeTouchPositions.isEmpty) {
+              _touchTransformActive = false;
+              _firstSwipeContact = null;
+            }
           }
+          _inputHandler.onPointerUp(e);
           _disarmHoldEyedropper(e.pointer);
           if (_toolHandledPointers.remove(e.pointer)) {
             if (_isSelectionTool && _selectionTransformActive) {

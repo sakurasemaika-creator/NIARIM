@@ -43,4 +43,63 @@ void main() {
       expect(prefs.getBool('pen_pressure_enabled'), isTrue);
     });
   });
+
+  group('custom pen curve', () {
+    test(
+      'points survive reloading and drive interpolated stylus pressure',
+      () async {
+        SharedPreferences.setMockInitialValues({});
+        final settings = SettingsService();
+        addTearDown(settings.dispose);
+        await settings.init();
+        await settings.setPenPressureCurve(PenPressureCurve.custom);
+        await settings.addCustomPressurePoint(.25, .75);
+        await settings.addCustomPressurePoint(.75, .20);
+        await settings.addCustomPressurePoint(.254, .35);
+        await settings.addCustomPressurePoint(1, .5);
+        await settings.addCustomPressurePoint(double.nan, .5);
+
+        final restored = SettingsService();
+        addTearDown(restored.dispose);
+        await restored.init();
+        expect(restored.penPressureCurve, PenPressureCurve.custom);
+        expect(restored.customPressurePoints, [
+          (0.0, 0.0),
+          (.25, .75),
+          (.75, .20),
+          (1.0, 1.0),
+        ]);
+        expect(restored.applyPressureCurve(.25), .75);
+        expect(restored.applyPressureCurve(.50), closeTo(.475, 1e-10));
+        expect(restored.applyPressureCurve(.75), closeTo(.20, 1e-10));
+      },
+    );
+
+    test('previous curves with overlapping points remain editable', () async {
+      SharedPreferences.setMockInitialValues({
+        'pen_pressure_curve': 'custom',
+        'pen_pressure_custom_points': [
+          '0',
+          '0',
+          '.5',
+          '.3',
+          '.503',
+          '.8',
+          '.504',
+          '.6',
+          '1',
+          '1',
+        ],
+      });
+      final settings = SettingsService();
+      addTearDown(settings.dispose);
+      await settings.init();
+      await settings.moveCustomPressurePoint(2, .8, .4);
+      expect(settings.customPressurePoints[2], (.503, .4));
+      await settings.removeCustomPressurePoint(1);
+      await settings.removeCustomPressurePoint(2);
+      await settings.moveCustomPressurePoint(1, .8, .6);
+      expect(settings.customPressurePoints[1], (.8, .6));
+    });
+  });
 }
