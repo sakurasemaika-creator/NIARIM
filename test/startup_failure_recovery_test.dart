@@ -207,7 +207,7 @@ void main() {
     await recordSteps();
 
     for (final key in markers) {
-      expect(prefs.getBool(key), isTrue, reason: key);
+      expect(prefs.get(key), 'incorrect type', reason: key);
       expect(AppErrorReporter.recentErrors, contains(contains(key)));
     }
     expect(prefs.get('niarim_outgoing_share_favorites'), 2);

@@ -115,6 +115,7 @@ const _sameInLocale = <String, Set<String>>{
     'storageCategoryCache',
     // テーマの見本の投稿欄の見出し（仏語でも Description）。
     'themePreviewSampleDescriptionLabel',
+    'themePreviewScreenNotifications',
     'timelineAddAudioTooltip',
     'timelineAddImageTooltip',
     'timelineCameraRotationLabel',

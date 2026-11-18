@@ -213,7 +213,10 @@ void main() {
     await settle();
     expect(find.byType(PopupMenuItem<String>), findsWidgets);
     expect(find.text('ゴミ箱へ移動'), findsWidgets);
-    expect(find.text('フォルダへ移動'), findsNothing);
+    expect(
+      find.widgetWithText(PopupMenuItem<String>, 'フォルダへ移動'),
+      findsOneWidget,
+    );
     await shot('04_works_menu');
     await closeMenu();
 

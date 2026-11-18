@@ -48,6 +48,7 @@ import '../../engine/undo_manager.dart';
 import '../../engine/custom_automation_executor.dart';
 import '../../engine/filter_lens_mask.dart';
 import '../../l10n/app_localizations.dart';
+import '../../l10n/desktop_canvas_menu_labels.dart';
 import '../../models/bundled_fonts.dart';
 import '../../models/filter_canvas_gizmo.dart';
 import '../../models/filter_def.dart';
@@ -3867,16 +3868,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
   /// canvas action icons. Actions reuse the existing canvas handlers.
   Widget _buildDesktopMenuBar() {
     final l = AppLocalizations.of(context)!;
-    final locale = Localizations.localeOf(context);
-    final titles = switch (locale.languageCode) {
-      'ja' => const ['ファイル', 'レイヤー', '表示', '設定'],
-      'ko' => const ['파일', '레이어', '보기', '설정'],
-      'zh' when locale.scriptCode == 'Hant' => const ['檔案', '圖層', '檢視', '設定'],
-      'zh' => const ['文件', '图层', '视图', '设置'],
-      'es' => const ['Archivo', 'Capa', 'Ver', 'Ajustes'],
-      'fr' => const ['Fichier', 'Calque', 'Affichage', 'Paramètres'],
-      _ => const ['File', 'Layer', 'View', 'Settings'],
-    };
+    final titles = desktopCanvasMenuLabels(Localizations.localeOf(context));
     final scheme = Theme.of(context).colorScheme;
     return MenuBar(
       style: MenuStyle(
@@ -3900,7 +3892,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
               child: Text(l.timelineBackToProjectListTooltip),
             ),
           ],
-          child: Text(titles[0]),
+          child: Text(titles.file),
         ),
         SubmenuButton(
           menuChildren: [
@@ -3916,7 +3908,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
               child: Text(l.layerPanelSelectAll),
             ),
           ],
-          child: Text(titles[1]),
+          child: Text(titles.layer),
         ),
         SubmenuButton(
           menuChildren: [
@@ -3936,7 +3928,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
               child: Text(l.pcWorkspaceLayoutScreenTitle),
             ),
           ],
-          child: Text(titles[2]),
+          child: Text(titles.view),
         ),
         SubmenuButton(
           menuChildren: [
@@ -3949,7 +3941,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
               child: Text(l.workspacePcLayoutButton),
             ),
           ],
-          child: Text(titles[3]),
+          child: Text(titles.settings),
         ),
       ],
     );
