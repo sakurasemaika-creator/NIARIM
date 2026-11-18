@@ -127,6 +127,7 @@ class HsvColorWheel extends StatelessWidget {
                   onTapDown: (d) => _handleRing(d.localPosition),
                   onTapUp: (_) => onChangeEnd?.call(),
                   child: CustomPaint(
+                    key: const ValueKey('color-picker-hue-ring'),
                     size: Size(size, size),
                     painter: _HueRingPainter(
                       hue: hue,

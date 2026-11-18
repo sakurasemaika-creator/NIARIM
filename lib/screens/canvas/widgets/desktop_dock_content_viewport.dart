@@ -31,9 +31,10 @@ class DesktopDockContentViewport extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final docked = DockedPanelScope.of(context);
     // Desktop dock content is laid out at its real column width. Scaling a
-    // mobile-sized card left large blank margins and duplicated window chrome.
-    if (DockedPanelScope.of(context)) {
+    // mobile-sized list left large blank margins and duplicated window chrome.
+    if (docked && mode == DesktopDockContentMode.scroll) {
       return SizedBox.expand(
         key: const ValueKey('desktopDockContentScale'),
         child: child,
@@ -47,7 +48,8 @@ class DesktopDockContentViewport extends StatelessWidget {
           return child;
         }
 
-        final widthScale = width / designWidth;
+        final contentWidth = docked ? width : designWidth;
+        final widthScale = width / contentWidth;
         // fit mode keeps the first, complete object (e.g. HSV wheel and its
         // heading) in view; further advanced controls can still scroll inside.
         final desiredScale = mode == DesktopDockContentMode.fit
@@ -55,7 +57,7 @@ class DesktopDockContentViewport extends StatelessWidget {
             : widthScale;
         final scale = desiredScale.clamp(0.05, 3.0).toDouble();
         final contentHeight = math.max(height / scale, minimumContentHeight);
-        final visualWidth = designWidth * scale;
+        final visualWidth = contentWidth * scale;
         final visualHeight = contentHeight * scale;
         // Matching layout dimensions on both axes means BoxFit.fill applies
         // exactly the SAME scale in X and Y; the colour wheel stays circular,
@@ -68,7 +70,7 @@ class DesktopDockContentViewport extends StatelessWidget {
             fit: BoxFit.fill,
             alignment: Alignment.topLeft,
             child: SizedBox(
-              width: designWidth,
+              width: contentWidth,
               height: contentHeight,
               child: child,
             ),

@@ -39,6 +39,7 @@ import '../../widgets/labeled_slider.dart';
 import '../../widgets/stepped_slider.dart';
 import '../../widgets/typing_dialog_inset.dart';
 import '../../utils/immersive_mode.dart';
+import '../../utils/app_error_reporter.dart';
 import '../../utils/custom_automation_labels.dart';
 import '../../utils/filter_display_name.dart';
 import '../../engine/autofill_engine.dart' show AutofillCheckMode;
@@ -1441,14 +1442,18 @@ class _CanvasScreenState extends State<CanvasScreen> {
     // プロジェクトカードのサムネイルを編集終了時に更新する。
     // 非同期処理だがdispose()自体は同期のままfire-and-forgetで発火する
     // （ProjectService内部状態のみを参照するため、Widget破棄後も安全）。
-    final scenesAtExit = projectService?.scenesOf(widget.projectId);
-    projectService?.generateAndSaveThumbnail(
-      widget.projectId,
-      sceneId: scenesAtExit == null || scenesAtExit.isEmpty
-          ? null
-          : scenesAtExit.first.id,
-      frameIndex: _currentFrame,
-    );
+    if (projectService != null) {
+      final scenesAtExit = projectService.scenesOf(widget.projectId);
+      unawaited(
+        projectService
+            .generateAndSaveThumbnail(
+              widget.projectId,
+              sceneId: scenesAtExit.firstOrNull?.id,
+              frameIndex: _currentFrame,
+            )
+            .catchError(AppErrorReporter.record),
+      );
+    }
     super.dispose();
   }
 
