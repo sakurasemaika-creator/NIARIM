@@ -102,7 +102,6 @@ void main() {
       of: picker,
       matching: find.byType(HsvColorWheel),
     );
-    final wheelWidget = tester.widget<HsvColorWheel>(wheel);
     final wheelBox = tester.getRect(wheel);
     final hsv = find.descendant(of: wheel, matching: find.byKey(_hsvKey));
     final rgb = find.descendant(of: wheel, matching: find.byKey(_rgbKey));
@@ -155,8 +154,14 @@ void main() {
       }
     }
     // 色の輪（色相の帯の外周）に重ならない。
-    final radius = wheelWidget.size / 2;
-    final centre = Offset(wheelBox.center.dx, wheelBox.top + radius);
+    final ring = tester.getRect(
+      find.descendant(
+        of: wheel,
+        matching: find.byKey(const ValueKey('color-picker-hue-ring')),
+      ),
+    );
+    final radius = ring.width / 2;
+    final centre = ring.center;
     final gap = distanceTo(pill, centre) - radius;
     if (gap < -0.5) {
       problems.add(
@@ -172,6 +177,9 @@ void main() {
       final other = find.descendant(of: wheel, matching: find.byKey(key));
       if (other.evaluate().isEmpty) continue;
       final r = tester.getRect(other);
+      if (distanceTo(r, centre) < radius - 0.5) {
+        problems.add('$at: $key $r overlaps the hue ring $ring');
+      }
       if (r.overlaps(pill.deflate(0.5))) {
         problems.add('$at: the switch $pill overlaps $key $r');
       }

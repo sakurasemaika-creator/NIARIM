@@ -85,30 +85,31 @@ class HsvColorWheel extends StatelessWidget {
     final pill = _SliderModePill.sizeFor(segment);
     const pillRight = 6.0; // Keep clear of the scroll bar on phones.
     final pillLeft = width - pillRight - pill.width;
-    final horizontalDistance = pillLeft - width / 2;
-    // A pill wider than the right half of the ring moves below the ring
-    // (its own row) instead of cutting into it.
-    var modeTop = horizontalDistance <= 0
-        ? 2 * radius + 2
-        : radius +
-              math.sqrt(
-                math.max(
-                  0.0,
-                  radius * radius - horizontalDistance * horizontalDistance,
-                ),
-              ) +
-              2;
+    double clearOfLowerRing(double horizontalDistance) {
+      final distance = horizontalDistance.clamp(0.0, radius);
+      return radius + math.sqrt(radius * radius - distance * distance) + 2;
+    }
+
+    final transparentRight = _transparentLeft + _transparentSize;
+    final transparentTop = math.max(
+      size - _transparentBottomGap,
+      clearOfLowerRing(width / 2 - transparentRight),
+    );
+    final transparentBottom = transparentTop + _transparentSize;
+    var modeTop = clearOfLowerRing(pillLeft - width / 2);
     // Nor does it cover the transparent-colour button at the lower left.
-    if (onToggleTransparent != null &&
-        pillLeft < _transparentLeft + _transparentSize + 4) {
-      modeTop = math.max(
-        modeTop,
-        size - _transparentBottomGap + _transparentSize + 4,
-      );
+    if (onToggleTransparent != null && pillLeft < transparentRight + 4) {
+      modeTop = math.max(modeTop, transparentBottom + 4);
     }
     return SizedBox(
       width: width,
-      height: math.max(size, modeTop + pill.height),
+      height: math.max(
+        size,
+        math.max(
+          onToggleTransparent == null ? 0 : transparentBottom,
+          onSliderModeChanged == null ? 0 : modeTop + pill.height,
+        ),
+      ),
       child: Stack(
         alignment: Alignment.topCenter,
         clipBehavior: Clip.none,
@@ -199,7 +200,7 @@ class HsvColorWheel extends StatelessWidget {
           if (onToggleTransparent != null)
             Positioned(
               left: _transparentLeft,
-              top: size - _transparentBottomGap,
+              top: transparentTop,
               child: _TransparentToggleButton(
                 isActive: isTransparent,
                 onTap: onToggleTransparent!,
