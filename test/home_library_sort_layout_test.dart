@@ -10,6 +10,7 @@ import 'package:niarim/models/project.dart';
 import 'package:niarim/screens/home/home_screen.dart';
 import 'package:niarim/services/premium_service.dart';
 import 'package:niarim/services/project_service.dart';
+import 'package:niarim/services/settings_service.dart';
 import 'package:niarim/services/theme_service.dart';
 import 'package:niarim/widgets/sort_mode_control.dart';
 import 'package:provider/provider.dart';
@@ -85,6 +86,7 @@ void main() {
         providers: [
           ChangeNotifierProvider<ProjectService>.value(value: service!),
           ChangeNotifierProvider(create: (_) => PremiumService()),
+          ChangeNotifierProvider(create: (_) => SettingsService()),
         ],
         child: MaterialApp(
           key: ValueKey((trash, locale, size, scale)),

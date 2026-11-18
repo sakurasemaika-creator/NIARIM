@@ -17,6 +17,7 @@ import '../../utils/app_error_reporter.dart';
 import '../../widgets/action_beside_or_below.dart';
 import '../../widgets/fit_or_hide_title.dart';
 import '../../widgets/help_button.dart';
+import '../../widgets/keep_together_text.dart';
 import '../../config/font_fallback.dart';
 
 class PerformanceSettingsScreen extends StatefulWidget {
@@ -547,7 +548,7 @@ class _PerformanceSettingsScreenState extends State<PerformanceSettingsScreen> {
         builder: (dialog) => AlertDialog(
           scrollable: true,
           title: Text(l10n.homePermanentDeleteConfirmTitle),
-          content: Text(l10n.perfSettingsTrashApplyConfirm(count)),
+          content: messageText(l10n.perfSettingsTrashApplyConfirm(count)),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(dialog, false),

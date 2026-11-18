@@ -92,6 +92,7 @@ void main() {
       sceneId: scene.id,
       frameIndex: 0,
       layer: layer.copyWith(isLocked: true),
+      recordUndo: false,
     );
 
     appRouter.push('/canvas/$id');

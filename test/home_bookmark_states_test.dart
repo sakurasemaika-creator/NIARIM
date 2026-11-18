@@ -153,7 +153,7 @@ void main() {
         var fetches = 0;
         final service = backend(
           MockClient((r) async {
-            if (r.url.path.endsWith('/bookmarks')) {
+            if (r.url.path == '/users/fixture-owner/bookmarks') {
               fetches++;
               return http.Response('{"works":[]}', 200);
             }
@@ -297,7 +297,7 @@ void main() {
       final started = Completer<void>();
       final service = backend(
         MockClient((r) async {
-          if (r.url.path.endsWith('/bookmarks')) {
+          if (r.url.path == '/users/fixture-owner/bookmarks') {
             started.complete();
             return held.future;
           }
@@ -337,7 +337,7 @@ void main() {
       var bookmarkRequests = 0;
       final service = backend(
         MockClient((r) async {
-          if (r.url.path.endsWith('/bookmarks')) {
+          if (r.url.path == '/users/fixture-owner/bookmarks') {
             return ++bookmarkRequests == 1
                 ? http.Response('{"error":"unavailable"}', 503)
                 : http.Response('{"works":[]}', 200);
@@ -378,9 +378,9 @@ void main() {
           var requests = 0;
           final service = backend(
             MockClient((r) async {
-              if (r.url.path.endsWith('/bookmarks')) requests++;
+              if (r.url.path == '/users/fixture-owner/bookmarks') requests++;
               return http.Response(
-                r.url.path.endsWith('/bookmarks')
+                r.url.path == '/users/fixture-owner/bookmarks'
                     ? '{"works":[]}'
                     : r.url.path.endsWith('/following')
                     ? '{"following":[]}'

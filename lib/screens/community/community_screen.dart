@@ -726,6 +726,7 @@ class _CommunityScreenState extends State<CommunityScreen>
         service.isBackendConnected &&
         service.currentUserId != null &&
         !service.hasLoadedSocial &&
+        service.socialError == null &&
         !service.isSocialLoading) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted && _tabController.index == 4) service.loadSocial();

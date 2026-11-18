@@ -1421,7 +1421,10 @@ void main() {
     addTearDown(service.dispose);
     await service.init();
     expect(service.projects, isEmpty);
-    expect(_recorded(project.id, 'project_service.dart'), isTrue);
+    expect(
+      _recorded('Cannot retrieve length of file', 'project_service.dart'),
+      isTrue,
+    );
     // 読めなかった作品があることをホームで知らせ、「再試行」を出す
     // （空の一覧だけだと、作品が消えたように見える）。
     expect(service.projectsLoadFailed, isTrue);

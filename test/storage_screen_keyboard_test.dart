@@ -7,8 +7,11 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/app.dart';
 import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/l10n/app_localizations.dart';
+import 'package:niarim/models/material_asset.dart' as asset;
 import 'package:niarim/router.dart';
 import 'package:niarim/screens/settings/storage_screen.dart';
+import 'package:niarim/services/material_service.dart';
+import 'package:niarim/services/project_service.dart';
 import 'package:niarim/services/storage_info_service.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -56,6 +59,23 @@ void main() {
     final service = ScriptedStorage();
     final l10n = await showStorageScreen(tester, providers, service);
     await settle(tester, service);
+    final context = tester.element(find.byType(StorageScreen));
+    final projects = context.read<ProjectService>();
+    final materials = context.read<MaterialService>();
+    await tester.runAsync(() async {
+      final project = await projects.createProject(
+        name: 'Unused material fixture',
+        fps: 12,
+        durationSeconds: 1,
+        backgroundColor: 0xFFFFFFFF,
+      );
+      final source = File('${root.path}/unused.wav')..writeAsBytesSync([0]);
+      await materials.addMaterial(
+        projectId: project.id,
+        sourcePath: source.path,
+        type: asset.MaterialType.audio,
+      );
+    });
 
     for (final title in [
       l10n.storageClearCacheButton,
@@ -65,9 +85,15 @@ void main() {
       final tile = storageTile(title);
       expect(await tabTo(tester, tile), isTrue, reason: title);
       await tester.sendKeyEvent(LogicalKeyboardKey.enter);
-      await tester.pump();
+      final dialog = find.byType(AlertDialog);
+      for (var frame = 0; frame < 30 && dialog.evaluate().isEmpty; frame++) {
+        await tester.runAsync(
+          () => Future<void>.delayed(const Duration(milliseconds: 20)),
+        );
+        await tester.pump(const Duration(milliseconds: 100));
+      }
       await tester.pump(const Duration(milliseconds: 400));
-      expect(find.byType(AlertDialog), findsOneWidget, reason: title);
+      expect(dialog, findsOneWidget, reason: title);
       // フォーカスはダイアログの中。下の画面の行・ヘルプのボタンには無い。
       expect(dialogHasFocus(tester), isTrue, reason: title);
       expect(focusIsWithin(tester, tile), isFalse, reason: title);

@@ -108,28 +108,18 @@ void main() {
     expect(selectionActive, isTrue, reason: '矩形選択のPointer操作で選択マスクが実際に確定すること');
     debugPrint('B20 stage 4: rectangle selection mask confirmed active');
 
-    // 2) 選択内を掴む。浮動画像の非同期生成を待ってから16px右・10px下へ移動。
+    // 2) 選択範囲を16px右・10px下へドラッグし、指を離すまで元の画素を保つ。
     final move1Gesture = await tester.startGesture(
       at(const Offset(30, 28)),
       kind: PointerDeviceKind.touch,
     );
     await tester.pump();
-    expect(
-      tm.recordingTouchedTiles,
-      isNotNull,
-      reason: '選択内Pointer Downで選択変形のUndo記録が開始されること',
-    );
-    debugPrint('B20 stage 4b: selection transform begin confirmed');
-    await _waitForAnyCanvasDifference(tester, tm, key, before, 96, 80);
-    await _waitForPixelAlpha(tester, tm, key, 20, 19, 0);
-    // 切り取り完了と浮動画像decode完了は別の非同期段階。fake timeだけを
-    // 進めるとdecode callbackが走らないため、実時間も進めてからドラッグする。
-    await tester.runAsync(
-      () => Future<void>.delayed(const Duration(milliseconds: 150)),
-    );
-    await tester.pump();
+    expect(_readCanvas(tm, key, 96, 80), orderedEquals(before));
+    expect(undo.undoCount, 0);
     await move1Gesture.moveTo(at(const Offset(46, 38)));
     await tester.pump(const Duration(milliseconds: 40));
+    expect(_readCanvas(tm, key, 96, 80), orderedEquals(before));
+    expect(undo.undoCount, 0, reason: 'the drag is a preview until release');
     await move1Gesture.up();
     await tester.pump();
     // 元図形と重ならない移動先末端を観測し、ロールバックを成功扱いしない。
@@ -159,32 +149,13 @@ void main() {
     );
 
     // 3) 選択マスク自体も移動先へ追従していることを、移動先をもう一度掴んで確認。
-    await _pumpRealAsyncUntil(
-      tester,
-      () => tm.recordingTouchedTiles == null,
-      timeout: const Duration(seconds: 3),
-    );
-    // 画素コミット後、選択マスク追従は別のui.Image非同期処理で完了する。
-    // Widget fake-asyncだけではコールバックが進まないため実時間も進める。
-    await tester.runAsync(
-      () => Future<void>.delayed(const Duration(milliseconds: 150)),
-    );
-    await tester.pump();
     final move2Gesture = await tester.startGesture(
       at(const Offset(60, 50)),
       kind: PointerDeviceKind.touch,
     );
     await tester.pump();
-    expect(
-      tm.recordingTouchedTiles,
-      isNotNull,
-      reason: '旧範囲外・移動後範囲内の点で2回目の選択変形が開始できること',
-    );
-    await _waitForPixelAlpha(tester, tm, key, 36, 29, 0);
-    await tester.runAsync(
-      () => Future<void>.delayed(const Duration(milliseconds: 150)),
-    );
-    await tester.pump();
+    expect(_readCanvas(tm, key, 96, 80), orderedEquals(moved1));
+    expect(undo.undoCount, 1);
     await move2Gesture.moveTo(at(const Offset(65, 50)));
     await tester.pump(const Duration(milliseconds: 40));
     await move2Gesture.up();
@@ -260,49 +231,6 @@ Future<void> _pumpRealAsyncUntil(
     condition(),
     isTrue,
     reason: '実時間イベントとWidget fake-asyncを交互に進めても期限内に完了すること',
-  );
-}
-
-Future<void> _waitForAnyCanvasDifference(
-  WidgetTester tester,
-  dynamic tm,
-  String layer,
-  Uint8List before,
-  int w,
-  int h,
-) async {
-  bool differs() {
-    final now = _readCanvas(tm, layer, w, h);
-    for (int i = 0; i < now.length; i++) {
-      if (now[i] != before[i]) return true;
-    }
-    return false;
-  }
-
-  await _pumpRealAsyncUntil(
-    tester,
-    differs,
-    timeout: const Duration(seconds: 3),
-  );
-  final now = _readCanvas(tm, layer, w, h);
-  int minX = w, minY = h, maxX = -1, maxY = -1, changed = 0;
-  for (int y = 0; y < h; y++) {
-    for (int x = 0; x < w; x++) {
-      final i = (y * w + x) * 4;
-      var diff = false;
-      for (int c = 0; c < 4; c++) {
-        if (now[i + c] != before[i + c]) diff = true;
-      }
-      if (!diff) continue;
-      changed++;
-      if (x < minX) minX = x;
-      if (x > maxX) maxX = x;
-      if (y < minY) minY = y;
-      if (y > maxY) maxY = y;
-    }
-  }
-  debugPrint(
-    'B20 diagnostic: changedPixels=$changed bbox=[$minX,$minY]-[$maxX,$maxY]',
   );
 }
 

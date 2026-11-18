@@ -152,9 +152,12 @@ void main() {
       void assertColorWheelControlsClear() {
         final wheelFinder = find.byType(HsvColorWheel);
         expect(wheelFinder, findsOneWidget);
-        final wheel = tester.widget<HsvColorWheel>(wheelFinder);
-        final bounds = tester.getRect(wheelFinder);
-        final center = Offset(bounds.center.dx, bounds.top + wheel.size / 2);
+        final ring = find.descendant(
+          of: wheelFinder,
+          matching: find.byKey(const ValueKey('color-picker-hue-ring')),
+        );
+        final bounds = tester.getRect(ring);
+        final center = bounds.center;
         for (final key in [
           'color-picker-eyedropper',
           'color-picker-transparent-toggle',
@@ -170,7 +173,7 @@ void main() {
           );
           expect(
             (nearest - center).distance,
-            greaterThanOrEqualTo(wheel.size / 2 - 2),
+            greaterThanOrEqualTo(bounds.width / 2 - 0.5),
             reason: '$key must not overlap the circular hue ring',
           );
         }

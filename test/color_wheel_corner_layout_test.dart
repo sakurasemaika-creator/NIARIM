@@ -70,7 +70,7 @@ void main() {
     );
   }, semanticsEnabled: true);
 
-  for (final panelWidth in <double>[236, 264, 288]) {
+  for (final panelWidth in <double>[174, 236, 264, 288]) {
     testWidgets(
       'Wheel corners do not overlap hue ring or clip RGB at $panelWidth dp',
       (tester) async {
@@ -84,7 +84,7 @@ void main() {
                 body: Align(
                   alignment: Alignment.topLeft,
                   child: HsvColorWheel(
-                    size: 236,
+                    size: math.min(236, panelWidth),
                     controlsWidth: panelWidth,
                     hue: 0,
                     saturation: 0.6,
@@ -102,8 +102,11 @@ void main() {
         );
 
         final wheel = tester.getRect(find.byType(HsvColorWheel));
-        const radius = 118.0;
-        final center = Offset(wheel.left + panelWidth / 2, wheel.top + radius);
+        final ring = tester.getRect(
+          find.byKey(const ValueKey('color-picker-hue-ring')),
+        );
+        final radius = ring.width / 2;
+        final center = ring.center;
         for (final name in [
           'color-picker-transparent-toggle',
           'color-picker-eyedropper',
@@ -112,6 +115,7 @@ void main() {
         ]) {
           final key = find.byKey(ValueKey(name));
           expect(key, findsOneWidget, reason: name);
+          expect(key.hitTestable(), findsOneWidget, reason: name);
           final rect = tester.getRect(key);
           final nearest = Offset(
             math.max(rect.left, math.min(center.dx, rect.right)),
@@ -119,7 +123,7 @@ void main() {
           );
           expect(
             (nearest - center).distance,
-            greaterThanOrEqualTo(radius - 2),
+            greaterThanOrEqualTo(radius - 0.5),
             reason: '$name overlapped the ring at $panelWidth dp',
           );
         }

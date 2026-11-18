@@ -8,6 +8,7 @@ import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/engine/export_engine.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/router.dart';
+import 'package:niarim/screens/community/community_screen.dart';
 import 'package:niarim/screens/home/home_screen.dart';
 import 'package:niarim/screens/home/widgets/project_list_widget.dart';
 import 'package:niarim/services/community_service.dart';
@@ -17,7 +18,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'helpers/first_use_tooltips.dart';
 
-/// ホームの一覧のスクロール位置（DISC007の関連一覧）：作品一覧・ブクマ済みも
+/// ホームと作品広場のスクロール位置：作品一覧・ブクマ済みも
 /// タブを行き来して戻ると同じ位置。プロジェクトはフォルダの中と外、
 /// お気に入りの絞り込みで位置を共有しない（フォルダから戻ると外の位置、
 /// もう一度入るとフォルダの中の位置）。
@@ -140,8 +141,10 @@ void main() {
 
     testWidgets('$mode bookmarks keep their place across tabs', (tester) async {
       await open(tester, pc: pc);
+      appRouter.go('/community');
+      await tester.pumpAndSettle();
       final community = tester
-          .element(find.byType(HomeScreen))
+          .element(find.byType(CommunityScreen))
           .read<CommunityService>();
       for (final work in community.works) {
         if (!community.bookmarkedIds.contains(work.id)) {
@@ -150,15 +153,22 @@ void main() {
       }
       await tester.pumpAndSettle();
       expect(community.bookmarkedWorksForViewer.length, greaterThan(8));
-      await tab(tester, 2);
-      final bookmarks = find.byKey(const PageStorageKey('home-bookmarks'));
+      Future<void> plazaTab(int index) async {
+        final finder = find.byKey(ValueKey('communityTab$index'));
+        await tester.ensureVisible(finder);
+        await tester.tap(finder);
+        await tester.pumpAndSettle();
+      }
+
+      await plazaTab(4);
+      final bookmarks = find.byKey(const PageStorageKey('community-bookmarks'));
       final list = scrollableIn(bookmarks);
       await tester.drag(list, const Offset(0, -900));
       await tester.pumpAndSettle();
       final before = offset(tester, list);
       expect(before, greaterThan(pc ? 100 : 200));
-      await tab(tester, 0);
-      await tab(tester, 2);
+      await plazaTab(0);
+      await plazaTab(4);
       expect(offset(tester, scrollableIn(bookmarks)), closeTo(before, .1));
       expect(community.bookmarkedIds, isNotEmpty);
       expect(tester.takeException(), isNull);

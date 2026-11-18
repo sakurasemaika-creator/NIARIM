@@ -202,6 +202,7 @@ void main() {
         sceneId: scene.id,
         frameIndex: 0,
         layer: current.copyWith(isLocked: locked, opacityLocked: opacity),
+        recordUndo: false,
       );
       rebuild(() {});
       await tester.pump();

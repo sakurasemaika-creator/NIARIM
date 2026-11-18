@@ -590,7 +590,7 @@ void main() {
       findsNothing,
       reason: 'selection ended',
     );
-    expect(searchButton(tester), findsNothing, reason: 'project search');
+    expect(searchButton(tester), findsOneWidget, reason: 'works search');
     expect(find.byIcon(Icons.view_module), findsNothing);
     expect(find.byType(TextField), findsNothing, reason: 'search closed');
     await tester.tap(find.byKey(const ValueKey('home_tab_0')));

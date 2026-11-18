@@ -120,14 +120,12 @@ void main() {
       kind: PointerDeviceKind.touch,
     );
     await tester.pump();
-    expect(tm.recordingTouchedTiles, isNotNull);
-    await _waitAlpha(tester, tm, key, 34, 34, 0);
-    await tester.runAsync(
-      () => Future<void>.delayed(const Duration(milliseconds: 150)),
-    );
-    await tester.pump();
+    expect(_read(tm, key, 96, 80), orderedEquals(before));
+    expect(undo.undoCount, 0);
     await move.moveTo(at(54, 44));
     await tester.pump(const Duration(milliseconds: 40));
+    expect(_read(tm, key, 96, 80), orderedEquals(before));
+    expect(undo.undoCount, 0);
     await move.up();
     await tester.pump();
     await _waitUndo(tester, undo, 1);
@@ -207,27 +205,6 @@ Future<void> _waitUndo(WidgetTester t, app_undo.UndoManager u, int n) async {
     await t.pump();
   }
   expect(u.undoCount, n);
-}
-
-Future<void> _waitAlpha(
-  WidgetTester t,
-  dynamic tm,
-  String key,
-  int x,
-  int y,
-  int a,
-) async {
-  final e = DateTime.now().add(const Duration(seconds: 3));
-  while (DateTime.now().isBefore(e)) {
-    final tile = tm.getTile(key, 0, 0) as Uint8List?;
-    final got = tile == null ? 0 : tile[(y * 256 + x) * 4 + 3];
-    if (got == a) return;
-    await t.runAsync(
-      () => Future<void>.delayed(const Duration(milliseconds: 10)),
-    );
-    await t.pump();
-  }
-  fail('alpha wait failed');
 }
 
 Uint8List _read(dynamic tm, String key, int w, int h) {

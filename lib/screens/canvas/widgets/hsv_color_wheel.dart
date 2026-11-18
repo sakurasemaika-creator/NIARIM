@@ -85,14 +85,28 @@ class HsvColorWheel extends StatelessWidget {
     final pill = _SliderModePill.sizeFor(segment);
     const pillRight = 6.0; // Keep clear of the scroll bar on phones.
     final pillLeft = width - pillRight - pill.width;
-    double clearOfLowerRing(double horizontalDistance) {
+    double halfChord(double horizontalDistance) {
       final distance = horizontalDistance.clamp(0.0, radius);
-      return radius + math.sqrt(radius * radius - distance * distance) + 2;
+      return math.sqrt(radius * radius - distance * distance);
     }
+
+    const clearance = 2.0;
+    const eyedropperSize = 40.0;
+    final ringTop = onEyedropperTap == null
+        ? 0.0
+        : math.max(
+            0.0,
+            eyedropperSize +
+                clearance +
+                halfChord(width / 2 - eyedropperSize) -
+                radius,
+          );
+    double clearOfLowerRing(double horizontalDistance) =>
+        ringTop + radius + halfChord(horizontalDistance) + clearance;
 
     final transparentRight = _transparentLeft + _transparentSize;
     final transparentTop = math.max(
-      size - _transparentBottomGap,
+      ringTop + size - _transparentBottomGap,
       clearOfLowerRing(width / 2 - transparentRight),
     );
     final transparentBottom = transparentTop + _transparentSize;
@@ -104,7 +118,7 @@ class HsvColorWheel extends StatelessWidget {
     return SizedBox(
       width: width,
       height: math.max(
-        size,
+        ringTop + size,
         math.max(
           onToggleTransparent == null ? 0 : transparentBottom,
           onSliderModeChanged == null ? 0 : modeTop + pill.height,
@@ -114,7 +128,8 @@ class HsvColorWheel extends StatelessWidget {
         alignment: Alignment.topCenter,
         clipBehavior: Clip.none,
         children: [
-          SizedBox(
+          Positioned(
+            top: ringTop,
             width: size,
             height: size,
             child: Stack(
@@ -183,18 +198,18 @@ class HsvColorWheel extends StatelessWidget {
           ),
           if (onEyedropperTap != null)
             Positioned(
-              // In compact docks the 40px touch target needs a few pixels
-              // of the panel's outer padding to stay clear of the hue ring.
-              right: -5,
-              top: -5,
-              child: IconButton(
-                key: const ValueKey('color-picker-eyedropper'),
-                constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
-                padding: const EdgeInsets.all(4),
-                visualDensity: VisualDensity.compact,
-                icon: const Icon(Icons.colorize, size: 18),
-                tooltip: eyedropperTooltip,
-                onPressed: onEyedropperTap,
+              right: 0,
+              top: 0,
+              child: SizedBox.square(
+                dimension: eyedropperSize,
+                child: IconButton(
+                  key: const ValueKey('color-picker-eyedropper'),
+                  padding: const EdgeInsets.all(4),
+                  visualDensity: VisualDensity.compact,
+                  icon: const Icon(Icons.colorize, size: 18),
+                  tooltip: eyedropperTooltip,
+                  onPressed: onEyedropperTap,
+                ),
               ),
             ),
           if (onToggleTransparent != null)

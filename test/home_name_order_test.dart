@@ -29,11 +29,12 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text(ja.homeSortFieldName).last);
     await tester.pumpAndSettle();
-    // 名前を選ぶと降順のまま。
-    if (ascending) {
-      await tester.tap(
-        find.byTooltip(ja.homeSortDirectionDescTooltip).hitTestable().first,
-      );
+    final needsDirectionChange = ascending
+        ? ja.homeSortDirectionDescTooltip
+        : ja.homeSortDirectionAscTooltip;
+    final direction = find.byTooltip(needsDirectionChange).hitTestable();
+    if (direction.evaluate().isNotEmpty) {
+      await tester.tap(direction.first);
       await tester.pumpAndSettle();
     }
   }

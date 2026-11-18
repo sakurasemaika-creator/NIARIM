@@ -30,17 +30,17 @@ void main() {
       },
     );
     expect(home.shownNames(), ['作品1', '作品10', '作品2']);
-    // 名前を選ぶ（降順のまま）。
+    // プロジェクト一覧で名前を選ぶと昇順から始まる。
     await tester.tap(find.byTooltip(ja.homeSortFieldUpdated).first);
     await tester.pumpAndSettle();
     await tester.tap(find.text(ja.homeSortFieldName).last);
     await tester.pumpAndSettle();
     final prefs = (await tester.runAsync(SharedPreferences.getInstance))!;
-    expect(prefs.getString(key), 'nameDesc');
-    // 昇順へ。
-    await tester.tap(find.byTooltip(ja.homeSortDirectionDescTooltip).first);
-    await tester.pumpAndSettle();
     expect(prefs.getString(key), 'nameAsc');
+    // 降順に変えて保存し、初期値と区別して再起動を確かめる。
+    await tester.tap(find.byTooltip(ja.homeSortDirectionAscTooltip).first);
+    await tester.pumpAndSettle();
+    expect(prefs.getString(key), 'nameDesc');
     final shown = home.shownNames();
 
     // 起動し直す。
@@ -52,7 +52,7 @@ void main() {
     );
     await home.settle();
     expect(find.byTooltip(ja.homeSortFieldName), findsWidgets);
-    expect(find.byTooltip(ja.homeSortDirectionAscTooltip), findsWidgets);
+    expect(find.byTooltip(ja.homeSortDirectionDescTooltip), findsWidgets);
     expect(home.shownNames(), shown);
     expect(tester.takeException(), isNull);
     await home.close();

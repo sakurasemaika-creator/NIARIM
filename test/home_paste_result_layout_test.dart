@@ -80,14 +80,14 @@ void main() {
             );
             debugPrint(
               '$where: notice ${snack.top.toStringAsFixed(0)}–'
-              '${snack.bottom.toStringAsFixed(0)}, paste bar bottom '
-              '${toolbar.bottom.toStringAsFixed(0)}',
+              '${snack.bottom.toStringAsFixed(0)}, paste bar top '
+              '${toolbar.top.toStringAsFixed(0)}',
             );
-            // 高さの低い横向き（640x360）でも、知らせは貼り付けの欄の下で
-            // 止まり、入らない分は中でスクロールする。
+            // 貼り付けの欄は画面下にある。横向きでも知らせが欄に重ならず、
+            // 収まらない分は知らせの中でスクロールする。
             expect(
-              snack.top,
-              greaterThanOrEqualTo(toolbar.bottom),
+              snack.bottom,
+              lessThanOrEqualTo(toolbar.top),
               reason: '$where: the notice covers the paste bar',
             );
             expect(snack.bottom, lessThanOrEqualTo(size.height), reason: where);
