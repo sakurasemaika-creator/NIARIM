@@ -21,7 +21,6 @@ class BrushExtensionLabels {
   final String colorPicker;
   final String eyedropper;
   final String fold;
-  final String foldTriggerAngle;
   final String foldDepartureAngle;
   final String foldDepartureAngleHelp;
   final String foldEndTaper;
@@ -32,7 +31,7 @@ class BrushExtensionLabels {
   final String foldLengthHelp;
   final String foldAngleHelp;
   final String foldCurveStartHelp;
-  final String foldCrescentDepthThreshold;
+  final String foldTriggerDepthRatio;
   final String foldMode;
   final String foldModeWaveTopView;
   final String foldModeWaveLowAngle;
@@ -55,7 +54,6 @@ class BrushExtensionLabels {
     required this.colorPicker,
     required this.eyedropper,
     required this.fold,
-    this.foldTriggerAngle = 'Minimum turn angle',
     this.foldDepartureAngle = 'Fold line departure angle',
     this.foldDepartureAngleHelp = '',
     this.foldEndTaper = 'Folded tip taper',
@@ -66,7 +64,7 @@ class BrushExtensionLabels {
     this.foldLengthHelp = '',
     this.foldAngleHelp = '',
     this.foldCurveStartHelp = '',
-    this.foldCrescentDepthThreshold = 'Crescent minimum depth / pen width',
+    this.foldTriggerDepthRatio = 'Curve depth to start folding (× pen width)',
     required this.foldMode,
     required this.foldModeWaveTopView,
     required this.foldModeWaveLowAngle,
@@ -91,7 +89,6 @@ class BrushExtensionLabels {
         colorPicker: l.brushOutlineColorPicker,
         eyedropper: l.brushOutlineEyedropper,
         fold: l.brushFold,
-        foldTriggerAngle: l.brushFoldTriggerAngle,
         foldDepartureAngle: l.brushFoldDepartureAngle,
         foldDepartureAngleHelp: l.brushFoldDepartureAngleHelp,
         foldEndTaper: l.brushFoldEndTaper,
@@ -102,7 +99,7 @@ class BrushExtensionLabels {
         foldLengthHelp: l.brushFoldLengthHelp,
         foldAngleHelp: l.brushFoldAngleHelp,
         foldCurveStartHelp: l.brushFoldCurveStartHelp,
-        foldCrescentDepthThreshold: l.brushFoldCrescentDepthThreshold,
+        foldTriggerDepthRatio: l.brushFoldTriggerDepthRatio,
         foldMode: l.brushFoldMode,
         foldModeWaveTopView: l.brushFoldModeWaveTopView,
         foldModeWaveLowAngle: l.brushFoldModeWaveLowAngle,
@@ -132,7 +129,6 @@ class BrushExtensionLabels {
       colorPicker = 'カラーピッカー',
       eyedropper = 'スポイト',
       fold = '折り畳みモード',
-      foldTriggerAngle = '折り返しが始まる角度',
       foldDepartureAngle = '折り返し線の出る角度',
       foldDepartureAngleHelp = '0°は縁取りの向きに沿い、＋は内側、−は外側に傾きます。',
       foldEndTaper = '折り返し線の先細り',
@@ -145,7 +141,7 @@ class BrushExtensionLabels {
           'ストロークのカーブに対する折り畳みの強さを調整します。'
           '50%でストロークのカーブに自然に連動します。',
       foldCurveStartHelp = '折り返し線のどこから曲がるかを調整します。0%で始点から曲がり、100%で直線になります。',
-      foldCrescentDepthThreshold = '三日月にするカーブの深さ（ペン幅比）',
+      foldTriggerDepthRatio = '折り返しが始まるカーブの深さ（ペン幅比）',
       foldMode = '折り畳みタイプ',
       foldModeWaveTopView = 'ウェーブ俯瞰',
       foldModeWaveLowAngle = 'ウェーブ煽り',
@@ -343,15 +339,16 @@ class _BrushExtensionSettingsState extends State<BrushExtensionSettings> {
               ),
             ),
             KeyedSubtree(
-              key: const Key('brush-fold-trigger-angle'),
+              key: const Key('brush-fold-trigger-depth'),
               child: _slider(
-                l.foldTriggerAngle,
-                _brush.foldTriggerAngle,
-                30,
-                170,
-                (v) => _set(_brush.copyWith(foldTriggerAngle: v)),
-                divisions: 140,
-                suffix: '°',
+                l.foldTriggerDepthRatio,
+                _brush.foldTriggerDepthRatio,
+                0,
+                BrushExtensionDefaults.maxFoldTriggerDepthRatio,
+                (v) => _set(_brush.copyWith(foldTriggerDepthRatio: v)),
+                divisions: 60,
+                displayValue:
+                    '${(_brush.foldTriggerDepthRatio * 100).round()}%',
               ),
             ),
             if (_brush.foldMode != HairFoldMode.crescent) ...[
@@ -404,20 +401,7 @@ class _BrushExtensionSettingsState extends State<BrushExtensionSettings> {
                   help: l.foldCurveStartHelp,
                 ),
               ),
-            ] else
-              KeyedSubtree(
-                key: const Key('brush-crescent-depth-threshold'),
-                child: _slider(
-                  l.foldCrescentDepthThreshold,
-                  _brush.foldCrescentDepthThreshold,
-                  0,
-                  BrushExtensionDefaults.maxFoldCrescentDepthThreshold,
-                  (v) => _set(_brush.copyWith(foldCrescentDepthThreshold: v)),
-                  divisions: 60,
-                  displayValue:
-                      '${(_brush.foldCrescentDepthThreshold * 100).round()}%',
-                ),
-              ),
+            ],
           ],
         ],
       ],

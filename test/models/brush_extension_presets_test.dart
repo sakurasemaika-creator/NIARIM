@@ -44,7 +44,7 @@ void main() {
       expect(hair.outlineColor, 0xff000000);
       expect(hair.outlineWidth, 1);
       expect(hair.foldEnabled, isTrue);
-      expect(hair.foldTriggerAngle, 60);
+      expect(hair.foldTriggerDepthRatio, 1);
       expect(hair.foldDepartureAngle, -20);
       expect(hair.foldCurveStartRatio, .15);
       expect(hair.foldAngleRatio, .80);
@@ -93,7 +93,7 @@ void main() {
       expect(restored.outlineWidth, 1);
       expect(restored.foldFlatEnds, isFalse);
       expect(restored.calligraphyAngle, isNull);
-      expect(restored.foldTriggerAngle, 60);
+      expect(restored.foldTriggerDepthRatio, 1);
       final isWaveTopView = brush.foldMode == HairFoldMode.waveTopView;
       expect(restored.foldDepartureAngle, isWaveTopView ? -20 : 0);
       expect(restored.foldAngleRatio, .80);
@@ -129,7 +129,7 @@ void main() {
         expect(restored.pressureOn.opacity.enabled, isFalse);
         expect(restored.presetColor, 0xffdb424b);
         expect(restored.outlineWidth, 1);
-        expect(restored.foldTriggerAngle, 60);
+        expect(restored.foldTriggerDepthRatio, .65);
         expect(restored.foldDepartureAngle, -3);
         expect(restored.foldCurveStartRatio, .60);
         expect(restored.foldLengthRatio, .90);

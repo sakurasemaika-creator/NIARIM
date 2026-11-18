@@ -16,7 +16,7 @@ void main() {
     bool outline = false,
     double outlineWidth = 1.5,
     bool fold = false,
-    double foldTriggerAngle = 90,
+    double foldTriggerDepthRatio = 1,
     BrushTipShape tip = BrushTipShape.round,
     List<String> customImagePaths = const [],
     BrushImageSelectionMode customImageSelectionMode =
@@ -39,7 +39,7 @@ void main() {
     outlineWidth: outlineWidth,
     outlineColor: 0xFF000000,
     foldEnabled: fold,
-    foldTriggerAngle: foldTriggerAngle,
+    foldTriggerDepthRatio: foldTriggerDepthRatio,
     yBranchAngle: 45,
     yBranchLengthRatio: 0.8,
     yBranchWidthRatio: 0.12,
@@ -216,7 +216,12 @@ void main() {
     'fold-enabled outlined stroke rasterizes inward Y branches at a sharp bend',
     () {
       final engine = engineFor(
-        brush(outline: true, outlineWidth: 2, fold: true, foldTriggerAngle: 80),
+        brush(
+          outline: true,
+          outlineWidth: 2,
+          fold: true,
+          foldTriggerDepthRatio: 0,
+        ),
       );
       engine.beginStroke(
         const StrokePoint(x: 30, y: 50, pressure: 1, tiltX: 0, tiltY: 0),
@@ -250,7 +255,12 @@ void main() {
     // width, so the same stroke folds identically at any zoom.
     List<int> render(double zoom) {
       final engine = engineFor(
-        brush(outline: true, outlineWidth: 2, fold: true, foldTriggerAngle: 60),
+        brush(
+          outline: true,
+          outlineWidth: 2,
+          fold: true,
+          foldTriggerDepthRatio: 0,
+        ),
       );
       const path = [Offset(20, 20), Offset(70, 60), Offset(20, 100)];
       StrokePoint at(Offset p) =>

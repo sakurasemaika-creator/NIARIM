@@ -107,11 +107,11 @@ abstract class AppLocalizations {
     Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hant'),
   ];
 
-  /// No description provided for @brushFoldCrescentDepthThreshold.
+  /// No description provided for @brushFoldTriggerDepthRatio.
   ///
   /// In ja, this message translates to:
-  /// **'三日月にするカーブの深さ（ペン幅比）'**
-  String get brushFoldCrescentDepthThreshold;
+  /// **'折り返しが始まるカーブの深さ（ペン幅比）'**
+  String get brushFoldTriggerDepthRatio;
 
   /// No description provided for @homeTabProjects.
   ///
@@ -17972,12 +17972,6 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'ペン先の幅（高さ比）'**
   String get brushNibWidthRatio;
-
-  /// No description provided for @brushFoldTriggerAngle.
-  ///
-  /// In ja, this message translates to:
-  /// **'折り返しが始まる角度'**
-  String get brushFoldTriggerAngle;
 
   /// No description provided for @brushFoldEndTaper.
   ///

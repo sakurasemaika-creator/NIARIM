@@ -103,7 +103,7 @@ void main() {
                     size: preset.size * multiplier,
                     stabilization: false,
                     foldMode: mode,
-                    foldTriggerAngle: 30,
+                    foldTriggerDepthRatio: 0,
                     customImageSelectionMode:
                         BrushImageSelectionMode.sequential,
                   )

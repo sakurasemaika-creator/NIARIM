@@ -85,7 +85,7 @@ void main() {
     await tester.tap(find.text('三日月カール').last);
     await tester.pumpAndSettle();
     await tester.ensureVisible(
-      find.byKey(const Key('brush-crescent-depth-threshold')),
+      find.byKey(const Key('brush-fold-trigger-depth')),
     );
     await save('crescent_depth_threshold_settings_ja');
     expect(tester.takeException(), isNull);

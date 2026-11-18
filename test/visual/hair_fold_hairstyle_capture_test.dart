@@ -51,7 +51,7 @@ Brush _brush(Brush base, HairFoldMode mode, double width) => base.copyWith(
   fadeMode: FadeMode.off,
   foldEnabled: true,
   foldMode: mode,
-  foldTriggerAngle: 30,
+  foldTriggerDepthRatio: 0,
   outlineWidth: 2.4,
   outlineColor: 0xff5d4941,
   customImageSelectionMode: BrushImageSelectionMode.sequential,

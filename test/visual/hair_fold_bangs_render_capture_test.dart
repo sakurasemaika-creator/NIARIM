@@ -111,10 +111,9 @@ void main() {
             stabilization: false,
             fadeMode: FadeMode.off,
             foldEnabled: true,
-            foldTriggerAngle: 30,
             foldMode: HairFoldMode.crescent,
             foldAngleRatio: 1,
-            foldCrescentDepthThreshold: 0,
+            foldTriggerDepthRatio: 0,
             customImageSelectionMode: BrushImageSelectionMode.sequential,
           );
       final prefix = id == 'Brush0023' ? 'hair' : 'bangs';
@@ -126,8 +125,7 @@ void main() {
       // stroke. The same wave on a 12 px pen is worth a crescent.
       final thick = await capture(
         brush.copyWith(
-          foldCrescentDepthThreshold:
-              BrushExtensionDefaults.foldCrescentDepthThreshold,
+          foldTriggerDepthRatio: BrushExtensionDefaults.foldTriggerDepthRatio,
         ),
         '${prefix}_crescent_small_wave_thick_pen',
         input: smallWave,
@@ -141,8 +139,7 @@ void main() {
       final thin = await capture(
         brush.copyWith(
           size: 12,
-          foldCrescentDepthThreshold:
-              BrushExtensionDefaults.foldCrescentDepthThreshold,
+          foldTriggerDepthRatio: BrushExtensionDefaults.foldTriggerDepthRatio,
         ),
         '${prefix}_crescent_small_wave_thin_pen',
         input: smallWave,
@@ -155,8 +152,7 @@ void main() {
       expect(thin, isNot(thinOrdinary));
       await capture(
         brush.copyWith(
-          foldCrescentDepthThreshold:
-              BrushExtensionDefaults.foldCrescentDepthThreshold,
+          foldTriggerDepthRatio: BrushExtensionDefaults.foldTriggerDepthRatio,
         ),
         '${prefix}_crescent_deep_wave_keeps_pen_width',
         input: [
@@ -204,7 +200,6 @@ void main() {
             stabilization: false,
             fadeMode: FadeMode.off,
             foldEnabled: true,
-            foldTriggerAngle: 30,
             foldMode: entry.key,
             customImageSelectionMode: BrushImageSelectionMode.sequential,
           );
@@ -270,7 +265,6 @@ void main() {
               outlineWidth: 2.5,
               stabilization: false,
               fadeMode: FadeMode.off,
-              foldTriggerAngle: 30,
               foldMode: mode,
             ),
             'hair_${modeNames[mode]}_${degrees.toInt()}deg_continuous',

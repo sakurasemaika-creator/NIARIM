@@ -1,5 +1,5 @@
 {
-  "brushFoldCrescentDepthThreshold": "三日月にするカーブの深さ（ペン幅比）",
+  "brushFoldTriggerDepthRatio": "折り返しが始まるカーブの深さ（ペン幅比）",
   "@@locale": "ja",
   "homeTabProjects": "プロジェクト",
   "homeTabShared": "共有",
@@ -6191,7 +6191,6 @@
     "description": "PCレイアウト：見本の操作のしかた"
   },
   "brushNibWidthRatio": "ペン先の幅（高さ比）",
-  "brushFoldTriggerAngle": "折り返しが始まる角度",
   "brushFoldEndTaper": "折り返し線の先細り",
   "timelineSelectionScenes": "シーン",
   "timelineSelectionClips": "素材クリップ",

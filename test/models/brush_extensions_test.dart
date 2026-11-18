@@ -39,7 +39,7 @@ void main() {
       outlineWidth: 2.5,
       outlineColor: 0xff1267ab,
       foldEnabled: true,
-      foldTriggerAngle: 110,
+      foldTriggerDepthRatio: 1.1,
       yBranchAngle: 55,
       yBranchLengthRatio: .75,
       yBranchWidthRatio: .12,
@@ -54,7 +54,7 @@ void main() {
     expect(decoded.outlineWidth, 2.5);
     expect(decoded.outlineColor, 0xff1267ab);
     expect(decoded.foldEnabled, isTrue);
-    expect(decoded.foldTriggerAngle, 110);
+    expect(decoded.foldTriggerDepthRatio, 1.1);
     expect(decoded.yBranchAngle, 55);
     expect(decoded.yBranchLengthRatio, .75);
     expect(decoded.yBranchWidthRatio, .12);
@@ -72,7 +72,7 @@ void main() {
       ..remove('outlineWidth')
       ..remove('outlineColor')
       ..remove('foldEnabled')
-      ..remove('foldTriggerAngle')
+      ..remove('foldTriggerDepthRatio')
       ..remove('yBranchAngle')
       ..remove('yBranchLengthRatio')
       ..remove('yBranchWidthRatio')

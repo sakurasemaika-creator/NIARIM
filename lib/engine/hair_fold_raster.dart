@@ -5,6 +5,7 @@ import 'dart:ui';
 import 'package:flutter/foundation.dart';
 
 import '../models/brush.dart';
+import '../models/brush_extension_defaults.dart';
 import 'brush_render_plan.dart';
 import 'brush_stroke_geometry.dart';
 import 'brush_texture_cache.dart';
@@ -132,7 +133,7 @@ class HairFoldRaster {
   @visibleForTesting
   static List<({int index, bool continuous})> foldVertices(
     List<HairRibbonPoint> points, {
-    double triggerDegrees = 90,
+    double depthRatio = BrushExtensionDefaults.foldTriggerDepthRatio,
     bool crescent = false,
   }) {
     final lengths = <double>[0];
@@ -144,7 +145,7 @@ class HairFoldRaster {
     return _strokeBends(
       points,
       lengths,
-      triggerDegrees.clamp(30.0, 170.0) * math.pi / 180,
+      Brush.clampFoldTriggerDepthRatio(depthRatio),
       anyCurl: crescent,
     );
   }
@@ -166,7 +167,7 @@ class HairFoldRaster {
     final bends = _strokeBends(
       points,
       lengths,
-      brush.foldTriggerAngle.clamp(30.0, 170.0) * math.pi / 180,
+      Brush.clampFoldTriggerDepthRatio(brush.foldTriggerDepthRatio),
       anyCurl: brush.foldMode == HairFoldMode.crescent,
     );
     final indices = <int>{
@@ -234,6 +235,9 @@ class HairFoldRaster {
     final tipScale = tip?.scales ?? const Offset(1, 1);
     final directionalTip = tipScale.dx != tipScale.dy;
     final crescent = brush.foldMode == HairFoldMode.crescent;
+    final depthRatio = Brush.clampFoldTriggerDepthRatio(
+      brush.foldTriggerDepthRatio,
+    );
     // A crescent fits the tip to the face of the curve. Other modes keep
     // the image's orientation fixed unless the brush enables rotation.
     if (brush.calligraphyAngle != null || (!crescent && directionalTip)) {
@@ -252,8 +256,9 @@ class HairFoldRaster {
     var bends = _strokeBends(
       points,
       bendLengths,
-      brush.foldTriggerAngle.clamp(30.0, 170.0) * math.pi / 180,
-      anyCurl: brush.foldMode == HairFoldMode.crescent,
+      // Crescent runs are tested below after splitting at their own reversals.
+      crescent ? 0 : depthRatio,
+      anyCurl: crescent,
     );
     final flatEnds = brush.foldFlatEnds;
     // A directional image tip with fade disabled keeps its own cap. Round
@@ -333,11 +338,7 @@ class HairFoldRaster {
       final crescentBoundaries = <int>{
         0,
         points.length - 1,
-        ..._curveReversals(
-          points,
-          lengths,
-          brush.foldTriggerAngle * math.pi / 180,
-        ),
+        ..._curveReversals(points, lengths, depthRatio),
       };
       crescentContinuous.addAll(
         _crescentTurnBoundaries(
@@ -563,50 +564,25 @@ class HairFoldRaster {
           0,
           turns.indexWhere((turn) => turn > .005),
         );
+        final deepRuns = <int>[];
         for (var i = 1; i < indices.length; i++) {
           final start = indices[i - 1], end = indices[i];
-          final chord = points[end].position - points[start].position;
-          var apex = (start + end) ~/ 2;
-          var deviation = 0.0;
+          final extent = _curveExtent(points, start, end);
           var signedTurn = 0.0;
           for (var index = start + 1; index <= end; index++) {
-            final distance = _cross(
-              chord,
-              points[index].position - points[start].position,
-            );
-            if (distance.abs() > deviation) {
-              deviation = distance.abs();
-              apex = index;
-            }
             signedTurn += _cross(
               crescentTangents[index - 1]!,
               crescentTangents[index]!,
             );
           }
-          crescentApices[start] = apex;
+          crescentApices[start] = extent.apex;
           crescentSides[start] = signedTurn == 0
               ? (i > 1 ? crescentSides[indices[i - 2]]! : 1)
               : signedTurn.sign;
-        }
-        // A wave shallower than the pen is mostly hidden inside its own
-        // stroke, so a thick pen needs a deeper curve to become a crescent.
-        final threshold = Brush.clampFoldCrescentDepthThreshold(
-          brush.foldCrescentDepthThreshold,
-        );
-        final deepRuns = <int>[];
-        for (var i = 1; i < indices.length; i++) {
-          final start = indices[i - 1], end = indices[i];
-          final chord = points[end].position - points[start].position;
-          final apex = points[crescentApices[start]!].position;
-          final depth = chord.distance < 1e-6
-              ? (apex - points[start].position).distance
-              : _cross(chord, apex - points[start].position).abs() /
-                    chord.distance;
-          var width = 0.0;
-          for (var index = start; index <= end; index++) {
-            width = math.max(width, points[index].width);
+          if (extent.depth > 1e-6 &&
+              extent.depth >= extent.width * depthRatio) {
+            deepRuns.add(start);
           }
-          if (depth >= width * threshold) deepRuns.add(start);
         }
         if (!_crescentActive) {
           // Once activated, the stroke stays a crescent: nothing was drawn
@@ -2811,10 +2787,34 @@ bool _sameGeometry(List<Object>? a, List<Object>? b) {
   return true;
 }
 
+({int apex, double depth, double width}) _curveExtent(
+  List<HairRibbonPoint> points,
+  int start,
+  int end,
+) {
+  final origin = points[start].position;
+  final chord = points[end].position - origin;
+  final unit = _unit(chord);
+  var apex = (start + end) ~/ 2;
+  var depth = 0.0, width = 0.0;
+  for (var i = start; i <= end; i++) {
+    final delta = points[i].position - origin;
+    final distance = unit == Offset.zero
+        ? delta.distance
+        : _cross(unit, delta).abs();
+    if (distance > depth) {
+      depth = distance;
+      apex = i;
+    }
+    width = math.max(width, points[i].width);
+  }
+  return (apex: apex, depth: depth, width: width);
+}
+
 /// Fold vertices of the authored stroke.
 ///
-/// The stroke is split into bends at its inflections. A bend that changes
-/// direction by at least [trigger] folds at its vertex, where half of its
+/// The stroke is split into bends at its inflections. A bend deep enough
+/// for [depthRatio] folds at its vertex, where half of its
 /// turn has happened, if it sits between inflections (a wave), joins two
 /// straight legs, or is a sharp corner ([anyCurl]: any bend, for crescents).
 /// Independently, every
@@ -2825,7 +2825,7 @@ bool _sameGeometry(List<Object>? a, List<Object>? b) {
 List<({int index, bool continuous})> _strokeBends(
   List<HairRibbonPoint> points,
   List<double> lengths,
-  double trigger, {
+  double depthRatio, {
   bool anyCurl = false,
 }) {
   final count = points.length;
@@ -2886,10 +2886,9 @@ List<({int index, bool continuous})> _strokeBends(
   final result = <({int index, bool continuous})>[];
   for (var k = 0; k < spans.length; k++) {
     final (first, last, sign) = spans[k];
-    var total = 0.0, width = 0.0;
+    var total = 0.0;
     for (var i = first; i <= last; i++) {
       total += turns[i] * sign;
-      width = math.max(width, points[i].width);
     }
     int at(double turn) {
       var accumulated = 0.0;
@@ -2901,7 +2900,12 @@ List<({int index, bool continuous})> _strokeBends(
     }
 
     final folds = <({int index, bool continuous})>[];
-    if (total >= trigger) {
+    final extent = _curveExtent(points, first, last);
+    final width = extent.width;
+    // Ignore tiny direction changes using the same tolerance as reversals.
+    if (total >= .15 &&
+        extent.depth > 1e-6 &&
+        extent.depth >= width * depthRatio) {
       // Radius of the central 80 % of the turn: a broad arc is a curve,
       // not a fold.
       final radius =
@@ -2925,12 +2929,20 @@ List<({int index, bool continuous})> _strokeBends(
     for (var i = first; i <= last; i++) {
       rawTotal += rawTurns[i] * sign;
     }
+    const fullFoldTurn = math.pi * 1.5;
+    var turnStart = first;
     for (
-      var turn = math.pi * 1.5;
+      var turn = fullFoldTurn;
       turn <= rawTotal + 1e-6;
-      turn += math.pi * 1.5
+      turn += fullFoldTurn
     ) {
       final index = at(turn * total / math.max(rawTotal, 1e-9));
+      final turnExtent = _curveExtent(points, turnStart, index);
+      turnStart = index;
+      if (turnExtent.depth <= 1e-6 ||
+          turnExtent.depth < turnExtent.width * depthRatio) {
+        continue;
+      }
       if (folds.any(
         (f) => (lengths[f.index] - lengths[index]).abs() < width * .5,
       )) {
@@ -2983,7 +2995,7 @@ List<double> _runDepths(
 List<int> _curveReversals(
   List<HairRibbonPoint> points,
   List<double> lengths,
-  double minimumEndTurn,
+  double depthRatio,
 ) {
   final boundaries = <int>[];
   var previous = Offset.zero;
@@ -3022,10 +3034,13 @@ List<int> _curveReversals(
     }
   }
   // A tiny unfinished reverse at pointer-up is part of the preceding curl.
-  // Giving it a full-width apex before it reaches the trigger angle creates
+  // Giving it a full-width apex before it reaches the minimum depth creates
   // a box-like terminal lobe on an almost straight tail.
-  if (boundaries.isNotEmpty && accumulated < minimumEndTurn) {
-    boundaries.removeLast();
+  if (boundaries.isNotEmpty) {
+    final tail = _curveExtent(points, boundaries.last, points.length - 1);
+    if (tail.depth <= 1e-6 || tail.depth < tail.width * depthRatio) {
+      boundaries.removeLast();
+    }
   }
   return boundaries;
 }

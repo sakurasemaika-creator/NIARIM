@@ -1,5 +1,5 @@
 {
-  "brushFoldCrescentDepthThreshold": "Profondeur de courbe pour le croissant (× largeur du trait)",
+  "brushFoldTriggerDepthRatio": "Profondeur de courbe pour amorcer le pli (× largeur du trait)",
   "@@locale": "fr",
   "homeTabProjects": "Projets",
   "homeTabShared": "Partagés",
@@ -3871,7 +3871,6 @@
   "pcLayoutResetWorkspace": "Réinitialiser l’espace de travail",
   "pcLayoutInstruction": "Faites glisser le bord d’une fenêtre dans l’aperçu pour modifier sa largeur ou sa hauteur. Maintenez la poignée en haut à gauche pour la déplacer ou l’échanger avec une autre. Pincez pour zoomer.",
   "brushNibWidthRatio": "Largeur de la pointe par rapport à la hauteur",
-  "brushFoldTriggerAngle": "Angle de virage minimal",
   "brushFoldEndTaper": "Effilement de la pointe repliée",
   "timelineSelectionScenes": "Scènes",
   "timelineSelectionClips": "Clips multimédias",

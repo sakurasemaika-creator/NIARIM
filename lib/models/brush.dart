@@ -92,14 +92,13 @@ class Brush {
 
   /// Legacy perpendicular cuts retained for existing saved brushes.
   final bool foldFlatEnds;
-  final double foldTriggerAngle;
 
   /// Departure angle in degrees relative to the inner outline's tangent.
   /// Positive values point toward the ribbon or strand's interior.
   final double foldDepartureAngle;
   final double foldCurveStartRatio;
   final double foldAngleRatio;
-  final double foldCrescentDepthThreshold;
+  final double foldTriggerDepthRatio;
   final double foldLengthRatio;
   final double foldEndTaperRatio;
   final HairFoldMode foldMode;
@@ -155,12 +154,10 @@ class Brush {
     this.presetColor,
     this.foldEnabled = false,
     this.foldFlatEnds = false,
-    this.foldTriggerAngle = 90.0,
     this.foldDepartureAngle = 0,
     this.foldCurveStartRatio = BrushExtensionDefaults.foldCurveStartRatio,
     this.foldAngleRatio = BrushExtensionDefaults.foldAngleRatio,
-    this.foldCrescentDepthThreshold =
-        BrushExtensionDefaults.foldCrescentDepthThreshold,
+    this.foldTriggerDepthRatio = BrushExtensionDefaults.foldTriggerDepthRatio,
     this.foldLengthRatio = BrushExtensionDefaults.foldLengthRatio,
     this.foldEndTaperRatio = 0.35,
     this.foldMode = HairFoldMode.waveTopView,
@@ -193,11 +190,11 @@ class Brush {
 
   static double clampFoldRatio(double value, double fallback) =>
       value.isFinite ? value.clamp(0.0, 1.0).toDouble() : fallback;
-  static double clampFoldCrescentDepthThreshold(double value) => value.isFinite
+  static double clampFoldTriggerDepthRatio(double value) => value.isFinite
       ? value
-            .clamp(0.0, BrushExtensionDefaults.maxFoldCrescentDepthThreshold)
+            .clamp(0.0, BrushExtensionDefaults.maxFoldTriggerDepthRatio)
             .toDouble()
-      : BrushExtensionDefaults.foldCrescentDepthThreshold;
+      : BrushExtensionDefaults.foldTriggerDepthRatio;
   static double clampFoldAngle(double value, double fallback) =>
       value.isFinite ? value.clamp(1.0, 180.0).toDouble() : fallback;
 
@@ -250,11 +247,10 @@ class Brush {
     int? presetColor,
     bool? foldEnabled,
     bool? foldFlatEnds,
-    double? foldTriggerAngle,
     double? foldDepartureAngle,
     double? foldCurveStartRatio,
     double? foldAngleRatio,
-    double? foldCrescentDepthThreshold,
+    double? foldTriggerDepthRatio,
     double? foldLengthRatio,
     double? foldEndTaperRatio,
     HairFoldMode? foldMode,
@@ -318,7 +314,6 @@ class Brush {
     presetColor: presetColor ?? this.presetColor,
     foldEnabled: foldEnabled ?? this.foldEnabled,
     foldFlatEnds: foldFlatEnds ?? this.foldFlatEnds,
-    foldTriggerAngle: foldTriggerAngle ?? this.foldTriggerAngle,
     foldDepartureAngle: clampFoldDepartureAngle(
       foldDepartureAngle ?? this.foldDepartureAngle,
     ),
@@ -330,8 +325,8 @@ class Brush {
       foldAngleRatio ?? this.foldAngleRatio,
       BrushExtensionDefaults.foldAngleRatio,
     ),
-    foldCrescentDepthThreshold: clampFoldCrescentDepthThreshold(
-      foldCrescentDepthThreshold ?? this.foldCrescentDepthThreshold,
+    foldTriggerDepthRatio: clampFoldTriggerDepthRatio(
+      foldTriggerDepthRatio ?? this.foldTriggerDepthRatio,
     ),
     foldLengthRatio: clampFoldRatio(
       foldLengthRatio ?? this.foldLengthRatio,
@@ -396,7 +391,6 @@ class Brush {
     if (presetColor != null) 'presetColor': presetColor,
     'foldEnabled': foldEnabled,
     if (foldFlatEnds) 'foldFlatEnds': true,
-    'foldTriggerAngle': foldTriggerAngle,
     'foldDepartureAngle': clampFoldDepartureAngle(foldDepartureAngle),
     'foldCurveStartRatio': clampFoldRatio(
       foldCurveStartRatio,
@@ -406,9 +400,7 @@ class Brush {
       foldAngleRatio,
       BrushExtensionDefaults.foldAngleRatio,
     ),
-    'foldCrescentDepthThreshold': clampFoldCrescentDepthThreshold(
-      foldCrescentDepthThreshold,
-    ),
+    'foldTriggerDepthRatio': clampFoldTriggerDepthRatio(foldTriggerDepthRatio),
     'foldLengthRatio': clampFoldRatio(
       foldLengthRatio,
       BrushExtensionDefaults.foldLengthRatio,
@@ -517,7 +509,6 @@ class Brush {
     presetColor: (j['presetColor'] as num?)?.toInt(),
     foldEnabled: j['foldEnabled'] as bool? ?? false,
     foldFlatEnds: j['foldFlatEnds'] as bool? ?? false,
-    foldTriggerAngle: (j['foldTriggerAngle'] as num?)?.toDouble() ?? 90,
     foldDepartureAngle: clampFoldDepartureAngle(
       j['foldDepartureAngle'] is num
           ? (j['foldDepartureAngle'] as num).toDouble()
@@ -533,9 +524,10 @@ class Brush {
           BrushExtensionDefaults.foldAngleRatio,
       BrushExtensionDefaults.foldAngleRatio,
     ),
-    foldCrescentDepthThreshold: clampFoldCrescentDepthThreshold(
-      (j['foldCrescentDepthThreshold'] as num?)?.toDouble() ??
-          BrushExtensionDefaults.foldCrescentDepthThreshold,
+    foldTriggerDepthRatio: clampFoldTriggerDepthRatio(
+      (j['foldTriggerDepthRatio'] as num?)?.toDouble() ??
+          (j['foldCrescentDepthThreshold'] as num?)?.toDouble() ??
+          BrushExtensionDefaults.foldTriggerDepthRatio,
     ),
     foldLengthRatio: clampFoldRatio(
       (j['foldLengthRatio'] as num?)?.toDouble() ??

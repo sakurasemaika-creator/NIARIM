@@ -44,7 +44,7 @@ Future<({Uint8List pixels, Map<String, Object> timing})> captureReference(
     fadeMode: FadeMode.off,
     foldEnabled: folded,
     foldMode: mode,
-    foldTriggerAngle: 30,
+    foldTriggerDepthRatio: 0,
   );
   final tiles = TileManager(canvasWidth: 720, canvasHeight: 1000);
   final engine = DrawingEngine(tileManager: tiles)

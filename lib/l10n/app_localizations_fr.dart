@@ -9,8 +9,8 @@ class AppLocalizationsFr extends AppLocalizations {
   AppLocalizationsFr([String locale = 'fr']) : super(locale);
 
   @override
-  String get brushFoldCrescentDepthThreshold =>
-      'Profondeur de courbe pour le croissant (× largeur du trait)';
+  String get brushFoldTriggerDepthRatio =>
+      'Profondeur de courbe pour amorcer le pli (× largeur du trait)';
 
   @override
   String get homeTabProjects => 'Projets';
@@ -11127,9 +11127,6 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get brushNibWidthRatio =>
       'Largeur de la pointe par rapport à la hauteur';
-
-  @override
-  String get brushFoldTriggerAngle => 'Angle de virage minimal';
 
   @override
   String get brushFoldEndTaper => 'Effilement de la pointe repliée';

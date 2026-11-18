@@ -1,5 +1,5 @@
 {
-  "brushFoldCrescentDepthThreshold": "形成月牙的曲線深度（相對筆寬）",
+  "brushFoldTriggerDepthRatio": "開始摺疊的曲線深度（相對筆寬）",
   "@@locale": "zh_Hant",
   "homeTabProjects": "專案",
   "homeTabShared": "共享",
@@ -3871,7 +3871,6 @@
   "pcLayoutResetWorkspace": "重設工作區",
   "pcLayoutInstruction": "在預覽中拖曳視窗邊緣可調整寬度和高度，長按左上角的控點可移動視窗或與其他視窗交換。雙指縮放可放大。",
   "brushNibWidthRatio": "筆尖寬度（相對高度）",
-  "brushFoldTriggerAngle": "開始摺疊的角度",
   "brushFoldEndTaper": "摺疊末端收尖",
   "timelineSelectionScenes": "場景",
   "timelineSelectionClips": "素材片段",

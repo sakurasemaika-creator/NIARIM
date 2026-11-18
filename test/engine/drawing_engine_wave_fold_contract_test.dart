@@ -44,7 +44,7 @@ Future<Uint8List> renderFold(
       outlineWidth: 2,
       outlineColor: 0xff000000,
       foldEnabled: enabled,
-      foldTriggerAngle: 45,
+      foldTriggerDepthRatio: 0,
       foldMode: mode,
     );
   final points = reverse ? curve.reversed.toList() : curve;
@@ -405,7 +405,7 @@ void main() {
         fadeMode: FadeMode.custom,
         outlineEnabled: true,
         foldEnabled: true,
-        foldTriggerAngle: 30,
+        foldTriggerDepthRatio: 0,
         customImagePaths: const ['first.png', 'second.png'],
         customImageSelectionMode: BrushImageSelectionMode.sequential,
       );

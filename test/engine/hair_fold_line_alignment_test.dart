@@ -478,7 +478,10 @@ void main() {
               1,
             ),
       ];
-      final folds = HairFoldRaster.foldLineStarts(points, pen());
+      final folds = HairFoldRaster.foldLineStarts(
+        points,
+        pen().copyWith(foldTriggerDepthRatio: .75),
+      );
       expect(folds.where((f) => f.start != null), isNotEmpty);
       for (final fold in folds) {
         final start = fold.start;

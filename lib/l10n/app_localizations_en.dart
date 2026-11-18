@@ -9,8 +9,8 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
-  String get brushFoldCrescentDepthThreshold =>
-      'Curve depth for crescent (× pen width)';
+  String get brushFoldTriggerDepthRatio =>
+      'Curve depth to start folding (× pen width)';
 
   @override
   String get homeTabProjects => 'Projects';
@@ -10969,9 +10969,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get brushNibWidthRatio => 'Tip width relative to height';
-
-  @override
-  String get brushFoldTriggerAngle => 'Minimum turn angle';
 
   @override
   String get brushFoldEndTaper => 'Folded tip taper';

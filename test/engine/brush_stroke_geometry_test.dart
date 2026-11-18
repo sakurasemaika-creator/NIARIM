@@ -70,6 +70,27 @@ void main() {
       );
     });
 
+    test('all fold detectors compare curve depth with the pen width', () {
+      final path = <Offset>[
+        for (var x = 0; x <= 60; x += 2) Offset(x.toDouble(), 0),
+        for (var y = 2; y <= 60; y += 2) Offset(60, y.toDouble()),
+      ];
+      for (final crescent in [false, true]) {
+        List<({int index, bool continuous})> folds(
+          double width,
+          double ratio,
+        ) => HairFoldRaster.foldVertices(
+          strand(path, width: width),
+          depthRatio: ratio,
+          crescent: crescent,
+        );
+
+        expect(folds(20, .80), hasLength(1));
+        expect(folds(60, .80), isEmpty);
+        expect(folds(60, .50), hasLength(1));
+      }
+    });
+
     test('a hand-drawn wave folds at every apex', () {
       final points = <Offset>[
         for (var i = 0; i <= 240; i++)
@@ -99,9 +120,9 @@ void main() {
 
     test('a crescent curls a lone bend before a full turn', () {
       final points = strand(arc(90, radius: 180, step: 1), width: 40);
-      expect(HairFoldRaster.foldVertices(points, triggerDegrees: 30), isEmpty);
+      expect(HairFoldRaster.foldVertices(points, depthRatio: 0), isEmpty);
       expect(
-        HairFoldRaster.foldVertices(points, triggerDegrees: 30, crescent: true),
+        HairFoldRaster.foldVertices(points, depthRatio: 0, crescent: true),
         hasLength(1),
       );
     });

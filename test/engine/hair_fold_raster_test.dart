@@ -42,8 +42,7 @@ TileManager draw({double frontOpacity = 1, int? textureAlpha}) {
       outlineEnabled: true,
       outlineWidth: 2,
       foldEnabled: true,
-      // The corner is exactly 90 degrees; keep it clear of the threshold.
-      foldTriggerAngle: 60,
+      foldTriggerDepthRatio: 0,
     ),
     fillColor: const Color(0xffffffff),
     texture: texture,
@@ -56,7 +55,6 @@ TileManager crescent({
   double width = 60,
   double rotation = 0,
   int strength = 5,
-  double triggerAngle = 90,
   double threshold = 0,
   double pressure = 1,
   bool continuous = false,
@@ -99,8 +97,7 @@ TileManager crescent({
       foldEnabled: true,
       foldMode: HairFoldMode.crescent,
       foldAngleRatio: (strength - 1) / 9,
-      foldTriggerAngle: triggerAngle,
-      foldCrescentDepthThreshold: threshold,
+      foldTriggerDepthRatio: threshold,
       rotation: false,
     ),
     fillColor: const Color(0xffffffff),
@@ -199,7 +196,6 @@ void main() {
       final tiles = crescent(
         width: 64,
         strength: strength,
-        triggerAngle: 30,
         threshold: 0,
         input: sine(20),
       );
@@ -323,28 +319,21 @@ void main() {
     // The same 20 px wave: hidden inside a 64 px pen, visible on an 8 px pen.
     final thick = crescent(
       width: 64,
-      triggerAngle: 30,
-      threshold: BrushExtensionDefaults.foldCrescentDepthThreshold,
+      threshold: BrushExtensionDefaults.foldTriggerDepthRatio,
       input: sine(20),
     );
     addTearDown(thick.dispose);
     expect(hasInk(thick), isFalse);
     final thin = crescent(
       width: 8,
-      triggerAngle: 30,
-      threshold: BrushExtensionDefaults.foldCrescentDepthThreshold,
+      threshold: BrushExtensionDefaults.foldTriggerDepthRatio,
       input: [
         for (final p in sine(20)) HairRibbonPoint(p.position, 8, p.opacity),
       ],
     );
     addTearDown(thin.dispose);
     expect(hasInk(thin), isTrue);
-    final lowered = crescent(
-      width: 64,
-      triggerAngle: 30,
-      threshold: .25,
-      input: sine(20),
-    );
+    final lowered = crescent(width: 64, threshold: .25, input: sine(20));
     addTearDown(lowered.dispose);
     expect(hasInk(lowered), isTrue);
   });

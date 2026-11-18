@@ -1,5 +1,5 @@
 {
-  "brushFoldCrescentDepthThreshold": "Profundidad de curva para media luna (× ancho del trazo)",
+  "brushFoldTriggerDepthRatio": "Profundidad de curva para iniciar el pliegue (× ancho del trazo)",
   "@@locale": "es",
   "homeTabProjects": "Proyectos",
   "homeTabShared": "Compartidos",
@@ -3871,7 +3871,6 @@
   "pcLayoutResetWorkspace": "Restablecer espacio de trabajo",
   "pcLayoutInstruction": "Arrastra el borde de una ventana en la vista previa para cambiar su ancho o alto. Mantén pulsada el asa de arriba a la izquierda para moverla o intercambiarla con otra. Pellizca para ampliar.",
   "brushNibWidthRatio": "Ancho de la punta respecto a la altura",
-  "brushFoldTriggerAngle": "Ángulo mínimo de giro",
   "brushFoldEndTaper": "Estrechamiento de la punta plegada",
   "timelineSelectionScenes": "Escenas",
   "timelineSelectionClips": "Clips multimedia",

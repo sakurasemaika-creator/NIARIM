@@ -9,7 +9,7 @@ class AppLocalizationsJa extends AppLocalizations {
   AppLocalizationsJa([String locale = 'ja']) : super(locale);
 
   @override
-  String get brushFoldCrescentDepthThreshold => '三日月にするカーブの深さ（ペン幅比）';
+  String get brushFoldTriggerDepthRatio => '折り返しが始まるカーブの深さ（ペン幅比）';
 
   @override
   String get homeTabProjects => 'プロジェクト';
@@ -10200,9 +10200,6 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get brushNibWidthRatio => 'ペン先の幅（高さ比）';
-
-  @override
-  String get brushFoldTriggerAngle => '折り返しが始まる角度';
 
   @override
   String get brushFoldEndTaper => '折り返し線の先細り';

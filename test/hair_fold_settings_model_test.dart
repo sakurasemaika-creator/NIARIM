@@ -18,22 +18,22 @@ Brush _baseBrush() => const Brush(
 
 void main() {
   group('hair fold settings', () {
-    test('crescent depth threshold is a persisted common setting', () {
+    test('minimum fold depth migrates from the old crescent setting', () {
       final json = _baseBrush().toJson();
-      expect(json['foldCrescentDepthThreshold'], 1);
+      expect(json.remove('foldTriggerDepthRatio'), 1);
+      json['foldTriggerAngle'] = 90;
       json['foldCrescentDepthThreshold'] = .35;
-      expect(
-        Brush.fromJson(
-          json,
-        ).copyWith(name: 'My crescent').toJson()['foldCrescentDepthThreshold'],
-        .35,
-      );
-      json['foldCrescentDepthThreshold'] = 10;
-      expect(Brush.fromJson(json).toJson()['foldCrescentDepthThreshold'], 3);
-      json['foldCrescentDepthThreshold'] = -2;
-      expect(Brush.fromJson(json).toJson()['foldCrescentDepthThreshold'], 0);
+      final migrated = Brush.fromJson(json).toJson();
+      expect(migrated['foldTriggerDepthRatio'], .35);
+      expect(migrated.containsKey('foldCrescentDepthThreshold'), isFalse);
+      expect(migrated.containsKey('foldTriggerAngle'), isFalse);
+      json['foldTriggerDepthRatio'] = 10;
+      expect(Brush.fromJson(json).foldTriggerDepthRatio, 3);
+      json['foldTriggerDepthRatio'] = -2;
+      expect(Brush.fromJson(json).foldTriggerDepthRatio, 0);
+      json.remove('foldTriggerDepthRatio');
       json.remove('foldCrescentDepthThreshold');
-      expect(Brush.fromJson(json).toJson()['foldCrescentDepthThreshold'], 1);
+      expect(Brush.fromJson(json).foldTriggerDepthRatio, 1);
     });
     test('keep overlaps defaults on and survives copyWith and JSON', () {
       const brush = Brush(
@@ -80,7 +80,7 @@ void main() {
           outlineEnabled: true,
           foldEnabled: true,
           foldMode: entry.key,
-          foldTriggerAngle: 67,
+          foldTriggerDepthRatio: .65,
           foldDepartureAngle: -12,
           foldCurveStartRatio: 0.31,
           foldAngleRatio: 0.7,
@@ -97,7 +97,7 @@ void main() {
         expect(restored.foldMode, entry.key);
         expect(restored.outlineEnabled, isTrue);
         expect(restored.foldEnabled, isTrue);
-        expect(restored.foldTriggerAngle, 67);
+        expect(restored.foldTriggerDepthRatio, .65);
         expect(restored.foldDepartureAngle, -12);
         expect(restored.foldCurveStartRatio, 0.31);
         expect(restored.foldAngleRatio, 0.7);

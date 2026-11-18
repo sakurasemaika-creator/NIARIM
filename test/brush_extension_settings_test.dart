@@ -48,7 +48,7 @@ void main() {
     ),
   );
 
-  testWidgets('crescent depth ratio is editable in custom settings', (
+  testWidgets('custom fold modes share one editable minimum depth', (
     tester,
   ) async {
     final changes = <Brush>[];
@@ -63,9 +63,8 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    final control = find.byKey(const Key('brush-crescent-depth-threshold'));
+    final control = find.byKey(const Key('brush-fold-trigger-depth'));
     expect(control, findsOneWidget);
-    expect(find.byKey(const Key('brush-fold-trigger-angle')), findsOneWidget);
     for (final setting in [
       'brush-fold-flat-ends',
       'brush-fold-length',
@@ -77,15 +76,25 @@ void main() {
       expect(find.byKey(Key(setting)), findsNothing);
     }
     await tester.ensureVisible(control);
-    expect(find.text('三日月にするカーブの深さ（ペン幅比）'), findsOneWidget);
-    final slider = tester.widget<Slider>(
+    expect(find.text('折り返しが始まるカーブの深さ（ペン幅比）'), findsOneWidget);
+    Slider depthSlider() => tester.widget<Slider>(
       find.descendant(of: control, matching: find.byType(Slider)),
     );
-    expect(slider.value, 1);
-    expect(slider.max, 3);
-    slider.onChanged!(.35);
+    expect(depthSlider().value, 1);
+    expect(depthSlider().max, 3);
+    depthSlider().onChanged!(.35);
     await tester.pump();
-    expect(changes.last.toJson()['foldCrescentDepthThreshold'], .35);
+    expect(changes.last.foldTriggerDepthRatio, .35);
+    for (final mode in HairFoldMode.values) {
+      tester
+          .widget<DropdownButtonFormField<HairFoldMode>>(
+            find.byType(DropdownButtonFormField<HairFoldMode>),
+          )
+          .onChanged!(mode);
+      await tester.pump();
+      expect(changes.last.foldMode, mode);
+      expect(depthSlider().value, .35);
+    }
   });
   testWidgets('departure angle and curve start are independently editable', (
     tester,
@@ -149,7 +158,7 @@ void main() {
     await tester.tap(find.text('折り畳みモード'));
     await tester.pump();
     expect(changes.last.foldEnabled, isTrue);
-    expect(find.byKey(const Key('brush-fold-trigger-angle')), findsOneWidget);
+    expect(find.byKey(const Key('brush-fold-trigger-depth')), findsOneWidget);
     expect(find.byKey(const Key('brush-fold-end-taper')), findsOneWidget);
     expect(find.byKey(const Key('brush-fold-flat-ends')), findsNothing);
     expect(find.text('発生角度'), findsNothing);

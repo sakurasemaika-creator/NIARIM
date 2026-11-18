@@ -7,7 +7,7 @@ void main() {
     expect(BrushExtensionDefaults.maxLateralRepeatCount, 10);
     expect(BrushExtensionDefaults.outlineWidth, 1.5);
     expect(BrushExtensionDefaults.outlineColor, 0xff000000);
-    expect(BrushExtensionDefaults.foldTriggerAngle, 90);
+    expect(BrushExtensionDefaults.foldTriggerDepthRatio, 1);
     expect(BrushExtensionDefaults.yBranchAngle, 45);
     expect(BrushExtensionDefaults.yBranchLengthRatio, .6);
     expect(BrushExtensionDefaults.yBranchWidthRatio, .08);

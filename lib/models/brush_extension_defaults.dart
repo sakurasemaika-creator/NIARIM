@@ -8,7 +8,6 @@ abstract final class BrushExtensionDefaults {
   static const double lateralRepeatSpacing = 1.0;
   static const double outlineWidth = 1.5;
   static const int outlineColor = 0xff000000;
-  static const double foldTriggerAngle = 90.0;
 
   // Fold line controls. Length is relative to the effective brush width
   // (100 % = two widths); angle scales how much of the stroke's own turn the
@@ -17,9 +16,9 @@ abstract final class BrushExtensionDefaults {
   static const double maxFoldDepartureAngle = 30.0;
   static const double foldCurveStartRatio = 0.0;
   static const double foldAngleRatio = 0.5;
-  // Minimum curve depth, as a ratio of the pen width, for a crescent.
-  static const double foldCrescentDepthThreshold = 1.0;
-  static const double maxFoldCrescentDepthThreshold = 3.0;
+  // Minimum depth from the curve to its chord, relative to the pen width.
+  static const double foldTriggerDepthRatio = 1.0;
+  static const double maxFoldTriggerDepthRatio = 3.0;
   static const double foldLengthRatio = 0.5;
   static const double foldEndTaperRatio = 0.35;
 

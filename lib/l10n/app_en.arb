@@ -1,5 +1,5 @@
 {
-  "brushFoldCrescentDepthThreshold": "Curve depth for crescent (× pen width)",
+  "brushFoldTriggerDepthRatio": "Curve depth to start folding (× pen width)",
   "@@locale": "en",
   "homeTabProjects": "Projects",
   "homeTabShared": "Shared",
@@ -3899,7 +3899,6 @@
   "pcLayoutResetWorkspace": "Reset workspace",
   "pcLayoutInstruction": "Drag a window’s edge in the preview to change its width or height. Press and hold the handle at its top left to move it or swap it with another window. Pinch to zoom.",
   "brushNibWidthRatio": "Tip width relative to height",
-  "brushFoldTriggerAngle": "Minimum turn angle",
   "brushFoldEndTaper": "Folded tip taper",
   "timelineSelectionScenes": "Scenes",
   "timelineSelectionClips": "Media clips",

@@ -9,8 +9,8 @@ class AppLocalizationsEs extends AppLocalizations {
   AppLocalizationsEs([String locale = 'es']) : super(locale);
 
   @override
-  String get brushFoldCrescentDepthThreshold =>
-      'Profundidad de curva para media luna (× ancho del trazo)';
+  String get brushFoldTriggerDepthRatio =>
+      'Profundidad de curva para iniciar el pliegue (× ancho del trazo)';
 
   @override
   String get homeTabProjects => 'Proyectos';
@@ -11117,9 +11117,6 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get brushNibWidthRatio => 'Ancho de la punta respecto a la altura';
-
-  @override
-  String get brushFoldTriggerAngle => 'Ángulo mínimo de giro';
 
   @override
   String get brushFoldEndTaper => 'Estrechamiento de la punta plegada';

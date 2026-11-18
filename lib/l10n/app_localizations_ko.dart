@@ -9,7 +9,7 @@ class AppLocalizationsKo extends AppLocalizations {
   AppLocalizationsKo([String locale = 'ko']) : super(locale);
 
   @override
-  String get brushFoldCrescentDepthThreshold => '초승달로 만들 곡선 깊이(펜 두께 대비)';
+  String get brushFoldTriggerDepthRatio => '접힘 시작 곡선 깊이(펜 두께 대비)';
 
   @override
   String get homeTabProjects => '프로젝트';
@@ -10255,9 +10255,6 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get brushNibWidthRatio => '펜촉 너비(높이 대비)';
-
-  @override
-  String get brushFoldTriggerAngle => '접힘 시작 각도';
 
   @override
   String get brushFoldEndTaper => '접힌 끝 가늘기';

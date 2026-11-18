@@ -9,7 +9,7 @@ class AppLocalizationsZh extends AppLocalizations {
   AppLocalizationsZh([String locale = 'zh']) : super(locale);
 
   @override
-  String get brushFoldCrescentDepthThreshold => '形成月牙的曲线深度（相对笔宽）';
+  String get brushFoldTriggerDepthRatio => '开始折叠的曲线深度（相对笔宽）';
 
   @override
   String get homeTabProjects => '项目';
@@ -10086,9 +10086,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get brushNibWidthRatio => '笔尖宽度（相对高度）';
 
   @override
-  String get brushFoldTriggerAngle => '开始折叠的角度';
-
-  @override
   String get brushFoldEndTaper => '折叠末端收尖';
 
   @override
@@ -10176,7 +10173,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   AppLocalizationsZhHant() : super('zh_Hant');
 
   @override
-  String get brushFoldCrescentDepthThreshold => '形成月牙的曲線深度（相對筆寬）';
+  String get brushFoldTriggerDepthRatio => '開始摺疊的曲線深度（相對筆寬）';
 
   @override
   String get homeTabProjects => '專案';
@@ -20253,9 +20250,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get brushNibWidthRatio => '筆尖寬度（相對高度）';
-
-  @override
-  String get brushFoldTriggerAngle => '開始摺疊的角度';
 
   @override
   String get brushFoldEndTaper => '摺疊末端收尖';
