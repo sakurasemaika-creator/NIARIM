@@ -1,5 +1,3 @@
-import 'package:niarim/widgets/sort_mode_control.dart';
-
 import 'dart:io';
 import 'dart:ui' as ui;
 
@@ -13,7 +11,11 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:niarim/app.dart';
 import 'package:niarim/app_bootstrap.dart';
+import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/router.dart';
+import 'package:niarim/widgets/sort_mode_control.dart';
+
+import 'helpers/load_app_fonts.dart';
 
 class _FakeFilePicker extends FilePicker {
   @override
@@ -73,18 +75,6 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
   }
 
-  Future<void> loadAppFonts(WidgetTester tester) async {
-    await tester.runAsync(() async {
-      final hakkou = FontLoader('HakkouMincho')
-        ..addFont(rootBundle.load('assets/fonts/HakkouMincho.ttf'));
-      final kuramubon = FontLoader('Kuramubon')
-        ..addFont(rootBundle.load('assets/fonts/Kuramubon.otf'));
-      final noto = FontLoader('NotoSerifJP')
-        ..addFont(rootBundle.load('assets/fonts/NotoSerifJP.ttf'));
-      await Future.wait([hakkou.load(), kuramubon.load(), noto.load()]);
-    });
-  }
-
   Future<void> capture(WidgetTester tester, String name) async {
     await tester.pump(const Duration(milliseconds: 120));
     final renderObject =
@@ -131,14 +121,18 @@ void main() {
     await tester.pump(const Duration(milliseconds: 350));
     expectNoFlutterException(tester, '作品をつくる→ホーム');
 
-    final firstLaunch = find.byKey(const Key('tutorialSkip'));
-    if (firstLaunch.evaluate().isNotEmpty) {
-      await capture(tester, '02_first_launch_dialog');
-      await tester.tap(firstLaunch);
-      await tester.pump(const Duration(milliseconds: 350));
-      await tester.pump(const Duration(milliseconds: 350));
-      expectNoFlutterException(tester, '初回案内を閉じる');
-    }
+    final dialog = find.byType(AlertDialog);
+    expect(dialog, findsOneWidget);
+    final l10n = AppLocalizations.of(tester.element(dialog))!;
+    final firstLaunch = find.widgetWithText(
+      FilledButton,
+      l10n.homeFirstLaunchStart,
+    );
+    await capture(tester, '02_first_launch_dialog');
+    await tester.tap(firstLaunch);
+    await tester.pumpAndSettle();
+    expect(dialog, findsNothing);
+    expectNoFlutterException(tester, '初回案内を閉じる');
     await capture(tester, '03_home_default');
   }
 
@@ -146,39 +140,44 @@ void main() {
     await boot(tester);
     await goHome(tester);
 
-    final down = find.descendant(
-      of: find.byType(SortModeControl),
-      matching: find.byIcon(Icons.arrow_downward),
+    final sortControl = find.byType(SortModeControl);
+    final l10n = AppLocalizations.of(tester.element(sortControl))!;
+    final sortPopup = find.descendant(
+      of: sortControl,
+      matching: find.byTooltip(l10n.homeSortFieldUpdated),
     );
-    expect(down, findsOneWidget);
-    await tester.tap(down);
-    await tester.pump(const Duration(milliseconds: 250));
+    expect(sortPopup, findsOneWidget);
+    expect(tester.widget<SortModeControl>(sortControl).sortAscending, isFalse);
+    final directionButton = find.byTooltip(l10n.homeSortDirectionDescTooltip);
+    if (directionButton.evaluate().isNotEmpty) {
+      await tester.tap(directionButton.hitTestable());
+    } else {
+      await tester.tap(sortPopup.hitTestable());
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.text(l10n.homeSortDirectionDescTooltip).hitTestable(),
+      );
+    }
+    await tester.pumpAndSettle();
     expectNoFlutterException(tester, '昇順/降順切り替え');
-    expect(
-      find.descendant(
-        of: find.byType(SortModeControl),
-        matching: find.byIcon(Icons.arrow_upward),
-      ),
-      findsOneWidget,
-    );
+    expect(tester.widget<SortModeControl>(sortControl).sortAscending, isTrue);
     await capture(tester, '04_home_sort_ascending');
 
-    final sortPopup = find.byType(PopupMenuButton<bool>);
-    expect(sortPopup, findsWidgets);
-    await tester.tap(sortPopup.first);
-    await tester.pump(const Duration(milliseconds: 250));
+    await tester.tap(sortPopup);
+    await tester.pumpAndSettle();
     expectNoFlutterException(tester, '並び替え基準メニュー表示');
     await capture(tester, '05_home_sort_menu_open');
 
-    final nameItem = find.text('名前');
-    expect(nameItem, findsWidgets);
-    await tester.tap(nameItem.last);
+    final nameItem = find.text(l10n.homeSortFieldName).hitTestable();
+    expect(nameItem, findsOneWidget);
+    await tester.tap(nameItem);
     await tester.pump(const Duration(milliseconds: 250));
     expectNoFlutterException(tester, '名前順へ変更');
+    expect(tester.widget<SortModeControl>(sortControl).sortByName, isTrue);
     await capture(tester, '06_home_sort_by_name');
 
     // ボタンのアイコンは今の表示サイズを表すので、読み上げ名で探す。
-    final viewMode = find.byTooltip('表示の大きさ');
+    final viewMode = find.byTooltip(l10n.homeViewModeTooltip);
     expect(viewMode, findsOneWidget);
     await tester.tap(viewMode);
     await tester.pump(const Duration(milliseconds: 250));
@@ -231,9 +230,9 @@ void main() {
     expect(homeScaffold.isEndDrawerOpen, isFalse);
     expectNoFlutterException(tester, 'ホームドロワーを閉じる');
 
-    final worksTab = find.text('作品一覧');
-    expect(worksTab, findsWidgets);
-    await tester.tap(worksTab.first);
+    final worksTab = find.byKey(const ValueKey('home_tab_1')).hitTestable();
+    expect(worksTab, findsOneWidget);
+    await tester.tap(worksTab);
     await tester.pump(const Duration(milliseconds: 300));
     await tester.pump(const Duration(milliseconds: 300));
     expectNoFlutterException(tester, '作品一覧タブ切り替え');
