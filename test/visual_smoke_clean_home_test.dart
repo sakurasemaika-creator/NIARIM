@@ -12,6 +12,8 @@ import 'package:niarim/app.dart';
 import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/router.dart';
 
+import 'helpers/first_use_tooltips.dart';
+
 class _FakeFilePicker extends FilePicker {
   @override
   Future<FilePickerResult?> pickFiles({
@@ -37,7 +39,12 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   testWidgets('作品一覧を新しいWidgetツリーから撮影できる', (tester) async {
-    SharedPreferences.setMockInitialValues({});
+    SharedPreferences.setMockInitialValues({
+      'first_launch': false,
+      'force_pc_mode': 0,
+      'language': 'ja',
+      firstUseTooltipsSeenKey: kAllFirstUseTooltipKeys,
+    });
     FilePicker.platform = _FakeFilePicker();
     appRouter.go('/home');
 
@@ -75,12 +82,6 @@ void main() {
       ),
     );
     await tester.pump(const Duration(milliseconds: 700));
-
-    final firstLaunch = find.byKey(const Key('tutorialSkip'));
-    if (firstLaunch.evaluate().isNotEmpty) {
-      await tester.tap(firstLaunch);
-      await tester.pump(const Duration(milliseconds: 700));
-    }
 
     // 同じ文言がOffstage側にも存在し得るため、実際にhit test可能なタブだけを押す。
     final worksTab = find.byKey(const ValueKey('home_tab_1')).hitTestable();

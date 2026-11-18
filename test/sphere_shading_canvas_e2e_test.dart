@@ -184,15 +184,19 @@ void main() {
     FilterCanvasGizmo? gizmoOnCanvas() =>
         tester.widget<CanvasArea>(canvasFinder).filterGizmo;
 
+    Future<void> openFilters() async {
+      await tester.tap(find.byIcon(Icons.settings).first);
+      await tester.pump(const Duration(milliseconds: 250));
+      final filterMenuEntry = find.byIcon(Icons.blur_on);
+      await tester.ensureVisible(filterMenuEntry);
+      await pumpRealAsync(tester, const Duration(milliseconds: 300));
+      await tester.tap(filterMenuEntry);
+      await pumpRealAsync(tester, const Duration(milliseconds: 300));
+      expect(find.byType(FilterPanel), findsOneWidget);
+    }
+
     // ── Open the panel from the canvas menu and pick sphere shading ──
-    await tester.tap(find.byIcon(Icons.settings).first);
-    await tester.pump(const Duration(milliseconds: 250));
-    final filterMenuEntry = find.byIcon(Icons.blur_on);
-    await tester.ensureVisible(filterMenuEntry);
-    await pumpRealAsync(tester, const Duration(milliseconds: 300));
-    await tester.tap(filterMenuEntry);
-    await pumpRealAsync(tester, const Duration(milliseconds: 300));
-    expect(find.byType(FilterPanel), findsOneWidget);
+    await openFilters();
     expect(gizmoOnCanvas(), isNull, reason: 'nothing to drag yet');
     await pickFilterCard(tester, FilterService.sphereShadingFilterId);
     await pumpRealAsync(tester, const Duration(milliseconds: 600));
@@ -344,6 +348,12 @@ void main() {
     expect(fs.currentFilter, isNull);
     expect(gizmoOnCanvas(), isNull, reason: 'the edit overlay was cleared');
     expect(tester.widget<CanvasArea>(canvasFinder).currentLayerPreview, isNull);
+    expect(find.byType(ToolbarWidget), findsNothing);
+    await tester.tap(
+      find.descendant(of: panel, matching: find.byIcon(Icons.close)),
+    );
+    await pumpRealAsync(tester, const Duration(milliseconds: 300));
+    expect(panel, findsNothing);
     expect(find.byIcon(Icons.settings), findsWidgets, reason: 'top bar back');
     expect(find.byType(ToolbarWidget), findsOneWidget);
     expect(find.byType(FrameStripWidget), findsOneWidget);
@@ -368,6 +378,7 @@ void main() {
     expect(await layerPixels(), orderedEquals(disc));
 
     // ── The fisheye's centre is dragged the same way ──
+    await openFilters();
     await pickFilterCard(tester, 'Filter0015');
     await pumpRealAsync(tester, const Duration(milliseconds: 600));
     final eye = gizmoOnCanvas()!;

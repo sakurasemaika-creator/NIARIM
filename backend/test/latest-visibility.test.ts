@@ -12,7 +12,7 @@ import { getLatestWorks } from "../src/api/routes/worksLatest";
 const a = "aaaaaaaaaaa", b = "bbbbbbbbbbb", c = "ccccccccccc";
 const work = (id: string, status: "public" | "unlisted" | "private", published = true) => ({
   pk: "WORK#" + id, sk: "META", itemType: "WORK", workId: id,
-  title: "Current title " + id, channelName: "Creator", authorId: "author",
+  title: "Current title " + id, channelName: "Creator " + id, authorId: "author",
   postedAt: "2026-11-09T12:00:00.000Z", tags: [], lockedTags: [],
   bookmarkCount: 2, isNiarimPublished: published,
   youtubePrivacyStatus: status,
@@ -65,5 +65,16 @@ describe("latest/search public metadata privacy", () => {
     expect(result.works.map((w: any) => w.workId)).toEqual([a, c]);
     const stale = body(await getLatestWorks(event("Stale title")));
     expect(stale.works).toEqual([]);
+  });
+
+  it("matches public author names in keyword search only", async () => {
+    const search = (q: string, options: Record<string, string> = {}) =>
+      getLatestWorks({ ...event(q), queryStringParameters: { q, ...options } });
+    expect(body(await search("CREATOR aaaa")).works.map((w: any) => w.workId))
+      .toEqual([a]);
+    expect(body(await search("Creator bbbb")).works).toEqual([]);
+    expect(body(await search('"Creator aaaaaaaaaaa"', { exact: "true" })).works
+      .map((w: any) => w.workId)).toEqual([a]);
+    expect(body(await search("Creator", { tagMode: "true" })).works).toEqual([]);
   });
 });

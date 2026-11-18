@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/app.dart';
 import 'package:niarim/app_bootstrap.dart';
+import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/models/app_theme_preset.dart';
 import 'package:niarim/router.dart';
 import 'package:niarim/screens/home/home_screen.dart';
@@ -20,8 +21,7 @@ import 'helpers/first_use_tooltips.dart';
 /// テーマ・外観の「アクセントの文字・アイコン色」は、背景の上に差し色で
 /// 描く文字・アイコンのすべてに効く。差し色とは別の色を選んだテーマで、
 /// テーマの見本一覧（作品広場・プロジェクト一覧・
-/// プロジェクト詳細の模型）、プロジェクト詳細のループ、セーブスロットの
-/// 削除がその色で描かれ、
+/// プロジェクト詳細の模型）と、プロジェクト詳細のループがその色で描かれ、
 /// 塗り（引き出しの見出し・タブの下線）は差し色のままであることを見張る。
 void main() {
   const accent = Color(0xFF2E6B5E);
@@ -36,6 +36,7 @@ void main() {
     SharedPreferences.setMockInitialValues({
       'first_launch': false,
       'language': 'ja',
+      'quality_level': 'low',
       firstUseTooltipsSeenKey: kAllFirstUseTooltipKeys,
       'theme_current_json': jsonEncode(preset.toJson()),
     });
@@ -176,45 +177,52 @@ void main() {
     expect(loopColor(), accentText);
   });
 
-  testWidgets('the save slot delete icon uses it', (tester) async {
-    final service = await open(tester);
-    late final String id;
-    await tester.runAsync(() async {
-      final project = await service.createProject(
-        name: 'スロット',
-        backgroundColor: 0xFFFFFFFF,
-        fps: 2,
-        durationSeconds: 1,
-        exportWidth: 64,
-        exportHeight: 36,
+  testWidgets(
+    'the save slot delete icon uses the configured accent text color',
+    (tester) async {
+      final service = await open(tester);
+      late final String id;
+      await tester.runAsync(() async {
+        final project = await service.createProject(
+          name: 'スロット',
+          backgroundColor: 0xFFFFFFFF,
+          fps: 2,
+          durationSeconds: 1,
+          exportWidth: 64,
+          exportHeight: 36,
+        );
+        id = project.id;
+        final saves = tester
+            .element(find.byType(HomeScreen))
+            .read<SaveTreeService>();
+        await saves.saveToSlot(
+          projectId: id,
+          slotIndex: 0,
+          project: project,
+          scenes: service.scenesOf(id),
+          tileManager: service.tileManagerOf(id),
+        );
+      });
+      appRouter.go('/save-tree/$id?entry=projectDetail');
+      for (var i = 0; i < 6; i++) {
+        await tester.runAsync(
+          () => Future<void>.delayed(const Duration(milliseconds: 50)),
+        );
+        await tester.pump(const Duration(milliseconds: 100));
+      }
+      final context = tester.element(find.byType(Scaffold).last);
+      final l10n = AppLocalizations.of(context)!;
+      final delete = find.byWidgetPredicate(
+        (w) =>
+            w is IconButton &&
+            w.tooltip == l10n.saveTreeSlotDeleteTooltip &&
+            w.onPressed != null,
       );
-      id = project.id;
-      final saves = tester
-          .element(find.byType(HomeScreen))
-          .read<SaveTreeService>();
-      await saves.saveToSlot(
-        projectId: id,
-        slotIndex: 0,
-        project: project,
-        scenes: service.scenesOf(id),
-        tileManager: service.tileManagerOf(id),
+      expect(delete, findsOneWidget);
+      expect(
+        (tester.widget<IconButton>(delete).icon as Icon).color,
+        accentText,
       );
-    });
-    appRouter.push('/save-tree/$id');
-    for (var i = 0; i < 6; i++) {
-      await tester.runAsync(
-        () => Future<void>.delayed(const Duration(milliseconds: 50)),
-      );
-      await tester.pump(const Duration(milliseconds: 100));
-    }
-    final delete = find.byWidgetPredicate(
-      (w) => w is IconButton && w.tooltip == 'このスロットを削除',
-    );
-    expect(delete, findsWidgets);
-    // 保存のあるスロット1の削除はこの色、書き込みは中立色のまま。
-    expect(
-      (tester.widget<IconButton>(delete.first).icon as Icon).color,
-      accentText,
-    );
-  });
+    },
+  );
 }

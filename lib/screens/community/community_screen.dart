@@ -923,8 +923,11 @@ class _CommunityScreenState extends State<CommunityScreen>
       });
       if (_tagSearchMode) return matchesTag;
       final title = work.title.toLowerCase();
+      final author = work.authorName.toLowerCase();
       return matchesTag ||
-          (_tagExactMatch ? title == term : title.contains(term));
+          (_tagExactMatch
+              ? title == term || author == term
+              : title.contains(term) || author.contains(term));
     }
 
     return typeFiltered.where((work) {

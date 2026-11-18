@@ -1602,12 +1602,13 @@ void main() {
     await tester.pump(const Duration(milliseconds: 300));
     expect(tester.takeException(), isNull, reason: 'コミュニティ画面への遷移で例外');
 
-    // 絞り込み前は複数件のカードが表示されている（ダミーデータは24件）。
-    final cardCountBefore = find.byType(CommunityWorkCard).evaluate().length;
+    await tester.tap(find.byKey(const Key('communityTab3')));
+    await tester.pumpAndSettle();
+    final cards = find.byType(CommunityWorkCard);
+    final cardCountBefore = cards.evaluate().length;
+    expect(cardCountBefore, greaterThan(1));
 
-    // 検索を開いて、ダミーデータの投稿者名の一部（'sakura_draws'）で
-    // 検索する。作品タイトルでは一致しない語のため、投稿者名検索が
-    // 機能していることの確認になる。
+    // 作品名に含まれず、投稿者名でだけ一致する語を探す。
     final searchFieldFinder = find.byKey(const Key('communitySearchInput'));
     expect(searchFieldFinder, findsOneWidget);
     await tester.enterText(searchFieldFinder, 'sakura_draws');
@@ -1619,6 +1620,12 @@ void main() {
     final cardCountAfter = find.byType(CommunityWorkCard).evaluate().length;
     expect(cardCountAfter, lessThan(cardCountBefore));
     expect(cardCountAfter, greaterThan(0));
+    expect(
+      tester
+          .widgetList<CommunityWorkCard>(cards)
+          .map((card) => card.work.authorName),
+      everyElement(contains('sakura_draws')),
+    );
 
     // 存在しない語で検索すると「該当なし」の空状態表示になる
     // （クラッシュせず、CommunityWorkCard＝作品カードが0件になること）。
@@ -1628,7 +1635,7 @@ void main() {
     expect(tester.takeException(), isNull, reason: '該当なし検索の表示で例外');
     expect(find.byIcon(Icons.search_off), findsOneWidget);
 
-    // 検索を閉じると全件表示に戻る。
+    // 検索欄をクリアすると全件表示に戻る。
     final closeIconFinder = find.descendant(
       of: find.byKey(const Key('communitySearchRow')),
       matching: find.byIcon(Icons.close),
@@ -1813,15 +1820,12 @@ void main() {
     final tagModeFinder = find.byKey(const Key('communitySearchModeToggle'));
     expect(tagModeFinder, findsOneWidget);
     expect(find.byType(SegmentedButton<bool>), findsNothing);
-    expect(
-      find.descendant(of: tagModeFinder, matching: find.byIcon(Icons.search)),
-      findsOneWidget,
-      reason: 'Tag mode offers keyword search as the next mode',
-    );
-    expect(
-      tester.widget<TextField>(find.byType(TextField)).controller!.text,
-      newTag,
-    );
+    final tagField = find.byKey(const Key('communitySearchInput'));
+    final searchContext = tester.element(tagField);
+    final searchLabels = AppLocalizations.of(searchContext)!;
+    final field = tester.widget<TextField>(tagField);
+    expect(field.decoration?.hintText, searchLabels.communityTagSearchHint);
+    expect(field.controller!.text, newTag);
     expect(
       find.byType(CommunityWorkCard),
       findsOneWidget,
@@ -1943,7 +1947,7 @@ void main() {
     );
   }, timeout: const Timeout(Duration(seconds: 60)));
 
-  testWidgets('コミュニティでブックマークした作品がホームの「ブクマ済み」タブに表示される', (
+  testWidgets('コミュニティでブックマークした作品が作品広場の「ブックマーク」タブに表示される', (
     WidgetTester tester,
   ) async {
     setPhoneViewSize(tester);
@@ -1966,7 +1970,10 @@ void main() {
       find.byType(CommunityWorkCard).first,
     );
     final bookmarkedTitle = firstCard.work.title;
-    final bookmarkButtonFinder = find.byIcon(Icons.bookmark_border).first;
+    final bookmarkButtonFinder = find.descendant(
+      of: find.byType(CommunityWorkCard).first,
+      matching: find.byIcon(Icons.bookmark_border),
+    );
     await tester.tap(bookmarkButtonFinder);
     await tester.pump(const Duration(milliseconds: 300));
     expect(tester.takeException(), isNull, reason: 'ブックマーク操作で例外');
@@ -1976,41 +1983,11 @@ void main() {
       reason: 'ブックマーク済み表示に切り替わっていない',
     );
 
-    // コミュニティ画面を閉じてスプラッシュへ戻り、通常のホーム画面遷移
-    // 経路で「作品をつくる」からホームへ入る。
-    Navigator.of(tester.element(find.byType(Scaffold).first)).pop();
-    await tester.pump(const Duration(milliseconds: 300));
-    await tester.pump(const Duration(milliseconds: 300));
-
-    final createButtonFinder = find.byIcon(Icons.brush_outlined);
-    expect(createButtonFinder, findsOneWidget);
-    await tester.tap(createButtonFinder);
-    await tester.pump(const Duration(milliseconds: 300));
-    await tester.pump(const Duration(milliseconds: 300));
-    expect(tester.takeException(), isNull, reason: 'ホーム画面への遷移で例外');
-
-    final l10n = AppLocalizations.of(
-      tester.element(find.byType(Scaffold).first),
-    )!;
-    final firstLaunchDialogButton = find.widgetWithText(
-      FilledButton,
-      l10n.homeFirstLaunchStart,
-    );
-    if (firstLaunchDialogButton.evaluate().isNotEmpty) {
-      await tester.tap(firstLaunchDialogButton);
-      await tester.pump(const Duration(milliseconds: 300));
-      await tester.pump(const Duration(milliseconds: 300));
-    }
-
-    // 「ブクマ済み」タブへ切り替え、先ほどブックマークした作品が
-    // 表示されることを確認する（CommunityServiceがアプリ全体で共有の
-    // Providerであることの確認でもある）。
-    final bookmarkedTabFinder = find.text('ブクマ済み');
+    final bookmarkedTabFinder = find.byKey(const Key('communityTab4'));
     expect(bookmarkedTabFinder, findsOneWidget);
     await tester.tap(bookmarkedTabFinder);
-    await tester.pump(const Duration(milliseconds: 300));
-    await tester.pump(const Duration(milliseconds: 300));
-    expect(tester.takeException(), isNull, reason: 'ブクマ済みタブ表示で例外');
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull, reason: 'ブックマークのタブ表示で例外');
     expect(
       find.widgetWithText(CommunityWorkCard, bookmarkedTitle),
       findsOneWidget,
@@ -2126,7 +2103,7 @@ void main() {
     expect(find.text('$initialUnread'), findsNothing);
   }, timeout: const Timeout(Duration(seconds: 60)));
 
-  testWidgets('投稿者別作品一覧のFF件数は本人・他作者とも非操作テキストで表示する', (tester) async {
+  testWidgets('投稿者別作品一覧でフォロー一覧へ移動できるのは本人だけ', (tester) async {
     setPhoneViewSize(tester);
     final providers = await tester.runAsync(buildAppProviders);
     await tester.pumpWidget(
@@ -2165,10 +2142,13 @@ void main() {
       for (final label in labels) {
         final count = find.descendant(of: screen, matching: find.text(label));
         expect(count, findsOneWidget);
-        expect(
-          find.ancestor(of: count, matching: find.byType(InkWell)),
-          findsNothing,
-        );
+        final action = find.ancestor(of: count, matching: find.byType(InkWell));
+        if (authorId == kDummySelfAuthorId) {
+          expect(action, findsOneWidget);
+          expect(tester.widget<InkWell>(action).onTap, isNotNull);
+          continue;
+        }
+        expect(action, findsNothing);
         await tester.ensureVisible(count);
         await tester.tap(count);
         await tester.pumpAndSettle();

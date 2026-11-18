@@ -91,7 +91,13 @@ void main() {
     expect(paintedColor(tester, find.text(l10n.homeDrawerAppTagline)), ink);
 
     // 使い方：番号の丸と「次へ」。
-    await tester.tap(find.byKey(const Key('homeDrawerTutorial')));
+    final guide = find.byKey(const Key('homeGuideMenuItem'));
+    await tester.ensureVisible(guide);
+    await tester.tap(guide);
+    await tester.pumpAndSettle();
+    final tutorial = find.byKey(const Key('helpTutorialButton'));
+    await tester.ensureVisible(tutorial);
+    await tester.tap(tutorial);
     await tester.pumpAndSettle();
     final badge = find.descendant(
       of: find.byKey(const Key('tutorialPages')),

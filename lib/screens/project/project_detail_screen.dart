@@ -11,6 +11,7 @@ import 'package:provider/provider.dart';
 
 import '../../engine/layer_compositor.dart';
 import '../../engine/undo_manager.dart';
+import '../../config/accent_text_theme.dart';
 import '../../l10n/app_localizations.dart';
 import '../../models/project.dart';
 import '../../services/autofill_preset_service.dart';
@@ -755,7 +756,9 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
   /// The loop's colour: neutral when off, accent when on.
   Color _loopForeground() {
     final scheme = Theme.of(context).colorScheme;
-    return _loopPlayback ? scheme.primary : scheme.onSurfaceVariant;
+    return _loopPlayback
+        ? AccentTextTheme.of(context)
+        : scheme.onSurfaceVariant;
   }
 
   /// The loop is the fifth quick action, directly beside Share.

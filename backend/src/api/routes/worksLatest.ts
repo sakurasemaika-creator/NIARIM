@@ -104,7 +104,12 @@ function matchesSearch(work: WorkItem, query: string, tagMode: boolean, exact: b
       return exact ? normalized === term : normalized.includes(term);
     });
     const title = work.title.toLowerCase();
-    const found = tagMode ? foundTag : foundTag || (exact ? title === term : title.includes(term));
+    const author = (work.channelName ?? "").toLowerCase();
+    const found = tagMode
+      ? foundTag
+      : foundTag || (exact
+        ? title === term || author === term
+        : title.includes(term) || author.includes(term));
     return negative ? !found : found;
   });
 }
