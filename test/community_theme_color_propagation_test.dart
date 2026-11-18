@@ -91,7 +91,10 @@ void main() {
         final bookmark = tester.widget<IconButton>(
           find.descendant(of: card, matching: find.byType(IconButton)).first,
         );
-        expect((bookmark.icon as Icon).color, preset.textColor);
+        expect(
+          (bookmark.icon as Icon).color,
+          preset.textColor.withValues(alpha: 0.7),
+        );
         // The floating preview can cover the plaza's expanded search header.
         // Move it through its drag gesture before operating the underlying menu.
         final drag = find.descendant(

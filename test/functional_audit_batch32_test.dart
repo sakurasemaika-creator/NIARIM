@@ -32,7 +32,7 @@ void main() {
     final undo = app_undo.UndoManager();
     projects.setUndoManager(undo);
     final brushes = BrushService();
-    await brushes.init();
+    await tester.runAsync(brushes.init);
     // 通常描画系のCanvasAreaはBrushService.currentBrushを本番と同じ経路で読む。
     // テスト用の仮Brushを作らず、実組み込み既定ブラシをそのまま使う。
     expect(brushes.currentBrush, isNotNull);

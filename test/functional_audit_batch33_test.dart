@@ -92,7 +92,7 @@ Future<_Result> _operate(
   final undo = app_undo.UndoManager();
   projects.setUndoManager(undo);
   final bs = BrushService();
-  await bs.init();
+  await tester.runAsync(bs.init);
   bs.updateCurrentBrushSize(brushSize);
   final p = (await tester.runAsync(
     () => projects.createProject(

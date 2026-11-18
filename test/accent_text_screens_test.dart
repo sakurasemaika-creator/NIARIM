@@ -19,7 +19,7 @@ import 'helpers/first_use_tooltips.dart';
 
 /// テーマ・外観の「アクセントの文字・アイコン色」は、背景の上に差し色で
 /// 描く文字・アイコンのすべてに効く。差し色とは別の色を選んだテーマで、
-/// 引き出しのアイコン、テーマの見本一覧（作品広場・プロジェクト一覧・
+/// テーマの見本一覧（作品広場・プロジェクト一覧・
 /// プロジェクト詳細の模型）、プロジェクト詳細のループ、セーブスロットの
 /// 削除がその色で描かれ、
 /// 塗り（引き出しの見出し・タブの下線）は差し色のままであることを見張る。
@@ -71,7 +71,7 @@ void main() {
   Color? textColor(WidgetTester tester, Finder text) =>
       tester.widget<Text>(text).style?.color;
 
-  testWidgets('drawer icons use it, the drawer header keeps the accent', (
+  testWidgets('drawer icons and the header use the configured accent', (
     tester,
   ) async {
     await open(tester);
@@ -79,8 +79,7 @@ void main() {
     await tester.pumpAndSettle();
     final drawer = find.byType(Drawer);
     final colors = iconColors(drawer).toList();
-    expect(colors.where((c) => c == accentText), isNotEmpty);
-    expect(colors, isNot(contains(accent)));
+    expect(colors, contains(accent));
     // 見出しは差し色の塗り。
     expect(
       find.descendant(

@@ -1,7 +1,8 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:flutter/gestures.dart' show DragStartBehavior;
+import 'package:flutter/gestures.dart'
+    show DragStartBehavior, GestureBinding, PointerScrollEvent, PointerSignalEvent;
 
 import 'dart:math' as math;
 import 'dart:typed_data';
@@ -11,6 +12,7 @@ import 'package:audioplayers/audioplayers.dart' as ap;
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart' show listEquals;
 import 'package:flutter/material.dart' hide MaterialType;
+import 'package:flutter/services.dart' show HardwareKeyboard;
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
@@ -384,6 +386,27 @@ class _TimelineScreenState extends State<TimelineScreen> {
       _timelinePinchStartDistance = null;
       _timelinePinchStartScale = null;
     }
+  }
+
+  void _onTimelinePointerSignal(PointerSignalEvent event) {
+    if (event is! PointerScrollEvent ||
+        event.scrollDelta.dy == 0 ||
+        !isWideScreen(context, listen: false)) {
+      return;
+    }
+    final keyboard = HardwareKeyboard.instance;
+    if (!keyboard.isControlPressed && !keyboard.isMetaPressed) return;
+    GestureBinding.instance.pointerSignalResolver.register(event, (_) {
+      final factor = event.scrollDelta.dy > 0 ? 1 / 1.1 : 1.1;
+      final scale = (_frameWidthScale * factor).clamp(0.6, 2.5);
+      if (scale == _frameWidthScale) return;
+      setState(() => _frameWidthScale = scale);
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && !_isFrameCursorActive) {
+          _centerFrameInList(animate: false);
+        }
+      });
+    });
   }
 
   /// 動画・音源トラック1行の高さ（px）。ワークスペース設定の
@@ -1122,6 +1145,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                           onPointerMove: _onTimelinePinchPointerMove,
                           onPointerUp: _onTimelinePinchPointerUp,
                           onPointerCancel: _onTimelinePinchPointerUp,
+                          onPointerSignal: _onTimelinePointerSignal,
                           child: _buildFrameList(),
                         ),
                         // 各種タイムライン行：デフォルトではプレビュー・

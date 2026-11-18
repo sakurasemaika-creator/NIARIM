@@ -262,6 +262,7 @@ class HomeClipboardHarness {
           : true;
     }, reason: 'the paste never finished');
     await settleIo(2);
+    await tester.pump(kDoubleTapTimeout);
   }
 
   Future<void> showTab(int index) async {

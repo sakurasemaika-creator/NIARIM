@@ -196,7 +196,7 @@ void main() {
                 r'^カット\d+$',
               ).hasMatch(w.data ?? w.textSpan?.toPlainText() ?? ''),
         );
-        await tester.longPress(card.first);
+        await tester.longPress(card.hitTestable().first);
         await m.frames(4);
         expect(find.byType(HomeSelectionToolbar), findsOneWidget);
         for (final p in outside(m, padding, cutout)) {

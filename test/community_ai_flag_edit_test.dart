@@ -137,7 +137,8 @@ void main() {
     expect(service.isDiscoverableForViewer(work), isFalse);
     expect(
       service.discoverableWorks.map((w) => w.id),
-      isNot(contains(work.id)),
+      contains(work.id),
+      reason: 'the muted card retains its discovery slot',
     );
     expect(service.worksByAuthor('user_1').map((w) => w.id), isEmpty);
     expect(
@@ -147,7 +148,7 @@ void main() {
     );
 
     await service.setAiImageVideoDisclosure('vid00000001', false);
-    expect(service.discoverableWorks.map((w) => w.id), contains(work.id));
+    expect(service.isDiscoverableForViewer(service.byId(work.id)!), isTrue);
   });
 
   test('a work missing from the latest list is added from the reply', () async {

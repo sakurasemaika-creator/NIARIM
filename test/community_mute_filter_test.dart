@@ -125,12 +125,13 @@ void main() {
         makeWork(title: 'mute this'),
       ]);
 
+      expect(service.worksByAuthor('author_x').map((w) => w.title), [
+        'visible',
+      ]);
       expect(
-        service.worksByAuthor('author_x').map((w) => w.title),
-        containsAll(['visible', 'mute this']),
-      );
-      expect(
-        service.isWorkMuted(service.worksByAuthor('author_x').last),
+        service.isWorkMuted(
+          service.works.singleWhere((w) => w.title == 'mute this'),
+        ),
         isTrue,
       );
       expect(

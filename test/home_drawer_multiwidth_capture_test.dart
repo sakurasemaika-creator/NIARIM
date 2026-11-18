@@ -166,9 +166,13 @@ void main() {
         );
         expect(sharedAddFolderFab, findsOneWidget, reason: 'width $width');
         final fab = tester.widget<FloatingActionButton>(sharedAddFolderFab);
-        expect(fab.elevation, 0);
-        expect(fab.shape, isA<CircleBorder>());
-        expect((fab.shape! as CircleBorder).side, BorderSide.none);
+        final theme = FloatingActionButtonTheme.of(
+          tester.element(sharedAddFolderFab),
+        );
+        final shape = fab.shape ?? theme.shape;
+        expect(fab.elevation ?? theme.elevation, 0);
+        expect(shape, isA<CircleBorder>());
+        expect((shape! as CircleBorder).side, BorderSide.none);
         await shot('04-shared-received');
         final receivedMenu = find.byKey(
           ValueKey('receivedShareMenu_${service.shared.single.id}'),

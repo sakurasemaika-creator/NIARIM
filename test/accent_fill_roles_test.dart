@@ -67,11 +67,13 @@ void main() {
     final ink = preset.buttonTextColor;
 
     // ホームの左下・右下の丸いボタン。
-    for (final fab in tester.widgetList<FloatingActionButton>(
-      find.byType(FloatingActionButton),
-    )) {
-      expect(fab.backgroundColor, preset.accentColor);
-      expect(fab.foregroundColor, ink);
+    final buttons = find.byType(FloatingActionButton).evaluate();
+    expect(buttons, isNotEmpty);
+    for (final element in buttons) {
+      final fab = element.widget as FloatingActionButton;
+      final theme = FloatingActionButtonTheme.of(element);
+      expect(fab.backgroundColor ?? theme.backgroundColor, preset.accentColor);
+      expect(fab.foregroundColor ?? theme.foregroundColor, ink);
     }
     final add = find.descendant(
       of: find.byType(FloatingActionButton),

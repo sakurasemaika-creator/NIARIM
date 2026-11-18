@@ -83,7 +83,7 @@ void main() {
     }
 
     // 同じ文言がOffstage側にも存在し得るため、実際にhit test可能なタブだけを押す。
-    final worksTab = find.text('作品一覧').hitTestable();
+    final worksTab = find.byKey(const ValueKey('home_tab_1')).hitTestable();
     expect(worksTab, findsOneWidget);
     await tester.tap(worksTab);
     await tester.pump(const Duration(milliseconds: 700));

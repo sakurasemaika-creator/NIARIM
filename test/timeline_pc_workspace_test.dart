@@ -214,10 +214,9 @@ void main() {
     tester,
   ) async {
     await openTimeline(tester, size: const Size(1280, 800));
-    // フレーム一覧の真ん中の赤枠（今のフレーム）はフレームと同じ幅。
-    final marker = find.byKey(const ValueKey('timelineCurrentFrameMarker'));
-    final at = tester.getCenter(marker) + const Offset(60, 0);
-    double frameWidth() => tester.getSize(marker).width;
+    final frame = find.byKey(const ValueKey('timelineFrameCell0'));
+    final at = tester.getCenter(frame);
+    double frameWidth() => tester.getSize(frame).width;
     final before = frameWidth();
     Future<void> scroll(Offset delta, {LogicalKeyboardKey? holding}) async {
       if (holding != null) await tester.sendKeyDownEvent(holding);

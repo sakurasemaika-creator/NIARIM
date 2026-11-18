@@ -717,9 +717,10 @@ Future<void> _sweep(
         if (scan.keyed.containsKey('trash-restore-${seed.receivedTrashId}')) {
           found.add('filtered-out received share shown');
         }
-        if (scan.trashItemCount != seed.trashedIds.length) {
+        final rowsWithHeader = seed.trashedIds.length + 1;
+        if (scan.trashItemCount != rowsWithHeader) {
           found.add(
-            'trash rows ${scan.trashItemCount} != ${seed.trashedIds.length}',
+            'trash list including its header: ${scan.trashItemCount} != $rowsWithHeader',
           );
         }
         for (final key in scan.keyed.keys) {

@@ -442,9 +442,9 @@ void main() {
         await tester.pump(frame);
       }
 
-      // 2回目は、1回目の知らせへ入れ替わる途中で押す。
+      // ダブルクリックの判定を過ぎ、1回目の知らせが残っているうちに押す。
       await paste(2);
-      await tester.pump(frame);
+      await tester.pump(kDoubleTapTimeout);
       await paste(3);
       final life = await afterRepeats(tester, l10n.homePastedSnackbar(1));
       expect(life.onScreen, lessThanOrEqualTo(longestLife));
@@ -1562,6 +1562,10 @@ void main() {
           1,
           '進み具合のダイアログを描いてから重い処理を始める',
         ),
+        'lib/screens/canvas/widgets/frame_strip_widget.dart': (
+          1,
+          'ホイール操作が止まったらフレームの位置にそろえる',
+        ),
         'lib/screens/community/community_screen.dart': (
           2,
           '作品広場の経過時間を2分ごとに進める・名前のダイアログが閉じ切ってから'
@@ -1575,6 +1579,7 @@ void main() {
           1,
           'サムネイルを選ぶダイアログのコマ送り再生',
         ),
+        'lib/screens/home/home_screen.dart': (1, 'ダブルクリックでの二重貼り付けを防ぐ'),
         'lib/screens/project/project_detail_screen.dart': (1, 'プレビューのコマ送り再生'),
         'lib/screens/rewards/reward_unlock_screen.dart': (
           1,
@@ -1588,21 +1593,19 @@ void main() {
           1,
           'ウィジェットの絵を選ぶ画面のコマ送り再生',
         ),
-        'lib/screens/timeline/timeline_screen.dart': (
-          2,
-          'タイムラインの再生・進み具合のダイアログを描いてから処理を始める',
-        ),
+        'lib/screens/timeline/timeline_screen.dart': (1, 'タイムラインの再生'),
         'lib/screens/timeline/widgets/material_edit_panel.dart': (
           1,
           '打ち終わってから文字の素材を描き直す',
         ),
         'lib/services/api/niarim_api_client.dart': (1, '通信をやり直すまでの間'),
+        'lib/services/advertising_service.dart': (1, '広告読み込みの待ち時間の上限'),
         'lib/services/autosave_service.dart': (2, '自動保存の間隔と、変更の後のまとめ'),
         'lib/services/creator_edit_session_reporter.dart': (
           1,
           '制作時間の記録の途中経過を送る',
         ),
-        'lib/services/premium_service.dart': (4, '購入・特典の期限の取り直しと終わり'),
+        'lib/services/premium_service.dart': (5, '購入・特典の期限の取り直しと終わり'),
         'lib/services/project_service.dart': (2, '制作時間を数える'),
         'lib/services/youtube_thumbnail_service.dart': (
           1,

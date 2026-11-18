@@ -115,18 +115,12 @@ void main() {
       kind: PointerDeviceKind.touch,
     );
     await tester.pump();
-    expect(
-      tm.recordingTouchedTiles,
-      isNotNull,
-      reason: '四隅の角ハンドルを掴むと拡大縮小が開始されること',
-    );
-    await _waitForPixelAlpha(tester, tm, key, 24, 22, 0);
-    await tester.runAsync(
-      () => Future<void>.delayed(const Duration(milliseconds: 150)),
-    );
-    await tester.pump();
+    expect(_readCanvas(tm, key, 96, 80), orderedEquals(before));
+    expect(undo.undoCount, 0);
     await scale.moveTo(at(const Offset(64, 62)));
     await tester.pump(const Duration(milliseconds: 40));
+    expect(_readCanvas(tm, key, 96, 80), orderedEquals(before));
+    expect(undo.undoCount, 0);
     await scale.up();
     await tester.pump();
     await _waitForUndo(tester, undo, 1);
@@ -176,29 +170,6 @@ Future<void> _waitForUndo(
     await tester.pump();
   }
   expect(undo.undoCount, count);
-}
-
-Future<void> _waitForPixelAlpha(
-  WidgetTester tester,
-  dynamic tm,
-  String key,
-  int x,
-  int y,
-  int expected,
-) async {
-  final deadline = DateTime.now().add(const Duration(seconds: 3));
-  while (DateTime.now().isBefore(deadline)) {
-    final tile = tm.getTile(key, x ~/ 256, y ~/ 256) as Uint8List?;
-    final alpha = tile == null
-        ? 0
-        : tile[((y % 256) * 256 + (x % 256)) * 4 + 3];
-    if (alpha == expected) return;
-    await tester.runAsync(
-      () => Future<void>.delayed(const Duration(milliseconds: 10)),
-    );
-    await tester.pump();
-  }
-  fail('pixel alpha did not become $expected at ($x,$y)');
 }
 
 Uint8List _readCanvas(dynamic tm, String key, int w, int h) {

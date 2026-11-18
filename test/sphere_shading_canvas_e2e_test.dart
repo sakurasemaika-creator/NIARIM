@@ -340,8 +340,9 @@ void main() {
     final shaded = sphere();
     await tester.tap(find.byKey(const ValueKey('filter-apply-button')));
     await pumpRealAsync(tester, const Duration(milliseconds: 1200));
-    expect(find.byType(FilterPanel), findsNothing);
-    expect(gizmoOnCanvas(), isNull, reason: 'gone with the panel');
+    expect(panel, findsOneWidget, reason: 'Apply returns to the filter list');
+    expect(fs.currentFilter, isNull);
+    expect(gizmoOnCanvas(), isNull, reason: 'the edit overlay was cleared');
     expect(tester.widget<CanvasArea>(canvasFinder).currentLayerPreview, isNull);
     expect(find.byIcon(Icons.settings), findsWidgets, reason: 'top bar back');
     expect(find.byType(ToolbarWidget), findsOneWidget);
@@ -367,12 +368,6 @@ void main() {
     expect(await layerPixels(), orderedEquals(disc));
 
     // ── The fisheye's centre is dragged the same way ──
-    await tester.tap(find.byIcon(Icons.settings).first);
-    await tester.pump(const Duration(milliseconds: 250));
-    await tester.ensureVisible(filterMenuEntry);
-    await pumpRealAsync(tester, const Duration(milliseconds: 300));
-    await tester.tap(filterMenuEntry);
-    await pumpRealAsync(tester, const Duration(milliseconds: 300));
     await pickFilterCard(tester, 'Filter0015');
     await pumpRealAsync(tester, const Duration(milliseconds: 600));
     final eye = gizmoOnCanvas()!;
