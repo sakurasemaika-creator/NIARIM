@@ -354,9 +354,12 @@ abstract final class LocalFileTrashService {
   }
 
   /// Archive all actual export files before removing any source.
+  /// Save folder metadata after verifying the archive and before exposing it
+  /// in Trash or removing originals. A rejected save leaves the bytes in Works.
   static Future<LocalTrashedFile> moveWorkFolder({
     required String folderName,
     required List<File> files,
+    Future<void> Function()? saveFolderRemoval,
   }) async {
     final sources = files.map((f) => File(f.absolute.path)).toList();
     // Claim the files like [move]. A file moved on its own while its works
@@ -373,7 +376,7 @@ abstract final class LocalFileTrashService {
     }
     _movingPaths.addAll(paths);
     try {
-      return await _moveWorkFolder(folderName, sources);
+      return await _moveWorkFolder(folderName, sources, saveFolderRemoval);
     } finally {
       _movingPaths.removeAll(paths);
     }
@@ -382,6 +385,7 @@ abstract final class LocalFileTrashService {
   static Future<LocalTrashedFile> _moveWorkFolder(
     String folderName,
     List<File> sources,
+    Future<void> Function()? saveFolderRemoval,
   ) async {
     final names = <String>[];
     for (final file in sources) {
@@ -427,6 +431,7 @@ abstract final class LocalFileTrashService {
         }
         await _keepModifiedTime(source, copy);
       }
+      if (saveFolderRemoval != null) await saveFolderRemoval();
       // Commit the manifest only after all bytes have been verified.
       // A crash during staging must not expose an incomplete Trash item.
       await _replaceMeta(File('${directory.path}/meta.json'), entry.toJson());

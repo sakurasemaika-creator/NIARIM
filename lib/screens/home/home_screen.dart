@@ -1940,9 +1940,9 @@ class _HomeScreenState extends State<HomeScreen>
           await LocalFileTrashService.moveWorkFolder(
             folderName: folder.name,
             files: files,
+            saveFolderRemoval: () => ws.deleteFolder(folderId),
           ),
         );
-        await ws.deleteFolder(folderId);
       } else if (id.startsWith('shared_file:')) {
         final projectId = id.substring('shared_file:'.length);
         if (ps.shared.any((p) => p.id == projectId)) {
@@ -3178,9 +3178,8 @@ class _HomeScreenState extends State<HomeScreen>
           await LocalFileTrashService.moveWorkFolder(
             folderName: entry.name,
             files: members,
+            saveFolderRemoval: () => ws.deleteFolder(entry.id),
           );
-          // Delete membership only AFTER the archive is safely stored.
-          await ws.deleteFolder(entry.id);
           StorageInfoService().invalidate();
         } else if (entry.source == HomePasteArea.received) {
           // 受け取った作品が無い（もうゴミ箱へ移した・消した）ときは何も
@@ -7641,8 +7640,8 @@ class _WorksTabState extends State<_WorksTab>
               final entry = await LocalFileTrashService.moveWorkFolder(
                 folderName: folder.name,
                 files: members,
+                saveFolderRemoval: () => workFolders.deleteFolder(id),
               );
-              await workFolders.deleteFolder(id);
               StorageInfoService().invalidate();
               // 作品のフォルダと同じく、フォルダの名前で知らせて戻せる。
               showMovedToTrashSnackBar(

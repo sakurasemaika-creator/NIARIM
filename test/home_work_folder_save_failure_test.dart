@@ -10,7 +10,8 @@ import 'package:niarim/engine/export_engine.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/router.dart';
 import 'package:niarim/screens/home/home_screen.dart';
-import 'package:niarim/screens/home/widgets/folder_delete_dialog.dart';
+import 'package:niarim/services/local_file_trash_service.dart';
+import 'package:niarim/widgets/project_trash_dialog.dart';
 import 'package:niarim/screens/home/widgets/work_folder_move_sheet.dart';
 import 'package:niarim/services/project_service.dart' show ProjectFolder;
 import 'package:niarim/services/work_folder_service.dart';
@@ -22,6 +23,7 @@ import 'helpers/controlled_preferences_store.dart';
 import 'helpers/exported_work_name.dart';
 import 'helpers/first_use_tooltips.dart';
 import 'helpers/load_app_fonts.dart';
+import 'helpers/pump_real_async.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -104,6 +106,36 @@ void main() {
       store: store,
       file: file,
     );
+  }
+
+  Future<void> openFolderMenu(WidgetTester tester) async {
+    final menu = find.byKey(
+      const ValueKey('collectionFolderMenu_audit-folder'),
+    );
+    await tester.ensureVisible(menu);
+    await tester.tap(menu);
+    await tester.pumpAndSettle();
+  }
+
+  final confirmTrash = find.byKey(const Key('trash-dialog-confirm'));
+  final trashDialog = find.byType(ProjectTrashDialog);
+  final trashError = find.byKey(const Key('trash-dialog-error'));
+
+  Future<void> waitFor(WidgetTester tester, bool Function() ready) async {
+    for (var attempt = 0; attempt < 40 && !ready(); attempt++) {
+      await pumpRealAsync(tester, const Duration(milliseconds: 50));
+    }
+    expect(ready(), isTrue);
+    await tester.pumpAndSettle();
+  }
+
+  Future<void> openFolderTrash(
+    WidgetTester tester,
+    AppLocalizations l10n,
+  ) async {
+    await openFolderMenu(tester);
+    await tester.tap(find.widgetWithText(ListTile, l10n.homeMoveToTrash));
+    await waitFor(tester, () => trashDialog.evaluate().isNotEmpty);
   }
 
   testWidgets(
@@ -198,9 +230,10 @@ void main() {
           await tester.pumpAndSettle();
           tester.view.physicalSize = Size(pc ? 1440 : 320, 844);
           await tester.pumpAndSettle();
-          await tester.longPress(find.text('AUDIT'));
-          await tester.pumpAndSettle();
-          await tester.tap(find.text(env.l10n.commonRename));
+          await openFolderMenu(tester);
+          await tester.tap(
+            find.widgetWithText(ListTile, env.l10n.commonRename),
+          );
           await tester.pumpAndSettle();
           await tester.enterText(find.byType(TextField), '海と空_étude_애니메이션');
           final change = find.widgetWithText(
@@ -236,17 +269,11 @@ void main() {
               (key == 'flutter.work_file_folder_map' &&
                   value is String &&
                   (jsonDecode(value) as Map).isNotEmpty);
-          await tester.longPress(find.text('AUDIT'));
-          await tester.pumpAndSettle();
-          await tester.tap(find.text(env.l10n.commonDelete));
-          await tester.pumpAndSettle();
-          final confirm = find.widgetWithText(
-            FilledButton,
-            env.l10n.commonDelete,
-          );
+          await openFolderTrash(tester, env.l10n);
+          final confirm = confirmTrash;
           await tester.ensureVisible(confirm);
           await tester.tap(confirm);
-          await tester.pumpAndSettle();
+          await waitFor(tester, () => trashError.evaluate().isNotEmpty);
           for (final size in sizes) {
             tester.view.physicalSize = size;
             await tester.pumpAndSettle();
@@ -304,9 +331,10 @@ void main() {
           await tester.pumpAndSettle();
           expect(find.byType(WorkFolderMoveSheet), findsNothing);
           expect(env.folders.folderIdOf(filename), 'audit-folder');
-          await tester.longPress(find.text('AUDIT'));
-          await tester.pumpAndSettle();
-          await tester.tap(find.text(env.l10n.commonRename));
+          await openFolderMenu(tester);
+          await tester.tap(
+            find.widgetWithText(ListTile, env.l10n.commonRename),
+          );
           await tester.pumpAndSettle();
           await tester.enterText(find.byType(TextField), 'RENAMED');
           env.store.failWrites = true;
@@ -351,16 +379,13 @@ void main() {
           (key == 'flutter.work_file_folder_map' &&
               value is String &&
               (jsonDecode(value) as Map).isNotEmpty);
-      await tester.longPress(find.text('AUDIT'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text(env.l10n.commonDelete));
-      await tester.pumpAndSettle();
+      await openFolderTrash(tester, env.l10n);
       tester.view.physicalSize = const Size(320, 220);
       await tester.pumpAndSettle();
-      final confirm = find.widgetWithText(FilledButton, env.l10n.commonDelete);
+      final confirm = confirmTrash;
       await tester.ensureVisible(confirm);
       await tester.tap(confirm);
-      await tester.pumpAndSettle();
+      await waitFor(tester, () => trashError.evaluate().isNotEmpty);
       final error = find.text(env.l10n.folderChangesPartiallySaved);
       expect(error, findsOneWidget);
       expect(
@@ -371,25 +396,23 @@ void main() {
       expect(env.folders.folders.single.name, 'AUDIT');
       expect(env.folders.folderIdOf(filename), isNull);
       expect(env.file.readAsBytesSync(), original);
+      expect(await tester.runAsync(LocalFileTrashService.list), isEmpty);
       final cancel = find.widgetWithText(TextButton, env.l10n.commonCancel);
       await tester.ensureVisible(cancel);
       await tester.tap(cancel);
       await tester.pumpAndSettle();
-      expect(find.byType(FolderDeleteDialog), findsNothing);
+      expect(find.byType(ProjectTrashDialog), findsNothing);
       tester.view.physicalSize = const Size(320, 844);
       await tester.pumpAndSettle();
       expect(findExportedWorkName(filename), findsOneWidget);
       env.store.reject = null;
-      await tester.longPress(find.text('AUDIT'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text(env.l10n.commonDelete));
-      await tester.pumpAndSettle();
-      await tester.tap(
-        find.widgetWithText(FilledButton, env.l10n.commonDelete),
-      );
-      await tester.pumpAndSettle();
-      expect(find.byType(FolderDeleteDialog), findsNothing);
+      await openFolderTrash(tester, env.l10n);
+      await tester.tap(confirmTrash);
+      await waitFor(tester, () => trashDialog.evaluate().isEmpty);
       expect(env.folders.folders, isEmpty);
+      final trash = (await tester.runAsync(LocalFileTrashService.list))!;
+      expect(trash, hasLength(1));
+      expect(trash.single.fileNames, isEmpty);
       expect(findExportedWorkName(filename), findsOneWidget);
       expect(env.file.readAsBytesSync(), original);
       expect(tester.takeException(), isNull);
