@@ -573,6 +573,13 @@ App・Web共通。Claudeが要修正の詳細を追記し、ユーザーが別�
 - **DISC444・450・451・457・459・460のWeb側**：上の確認で検証済み（ブラウザで7言語の辞書を読んで表示、構文・単体test・契約）。
 - **pushできない（認証エラー）**：`git push origin HEAD:refs/heads/dev_branch`が`Permission to sakurasemaika-creator/NIARIM-web.git denied`（403）。2回試した。未反映のコミットは5つ（originの`08acde5`の上）：`2ce5408`（DISC459・460：`public/faq/index.html`・辞書11ファイル）、`533f644`（DISC444：辞書15ファイル）、`fde018b`（DISC450・457：辞書11ファイル）、`eb53734`（DISC451：`public/help/index.html`・`i18n-dict-help.js`・`app-help-sync-2026.js`）、`cdf36de`（ナビ：`public/css/niarim-game-site.css`）。どれも`/workspaces/NIARIM-web`の`dev_branch`にある。**必要な操作**：この実行環境のGitHubの認証にNIARIM-webへの書き込み権限を付ける（または別の環境から同じブランチをpushする）。
 
+## Claudeの修正・再検証（2026-11-19、App dev_branch、S44の続き）
+
+- **DISC080（App `13a26eeb`）**：1本目の指で線を描き始めてから2本目の指でピンチ・パンすると、線と取り消しの記録が残った（新しい再現test：インク384画素）。2本目の指で拡大・移動が始まったら、ほかの指の描きかけを`_cancelToolPointer`で戻すようにした（スワイプ・指の取り上げと同じ）。`canvas_pinch_after_stroke_test`と、2本指・タッチの回帰14ファイル42件が成功、analyze 0件。実機の指での確認は未実施（二巡目のA012〜A013で）。
+- **Flutter全体のtestの分割実行（App `bdb96961`）**：`test/engine` 75ファイル463件、`test/models`・`services`・`screens`・`widgets` 78件が成功。`test/visual`は7ファイルでも5分を超え、この環境のセッションの長さでは通せない。全体はGitHub Actionsの回帰で通す必要がある（上の「必要な操作」）。
+- **古いDISCの確認（続き6）**：DISC236（Web `ca5b6c2`で公開済み。残りはスクリーンリーダーでの読み上げの実操作＝実機）。DISC223（ダイアログの中から開いたダイアログの余白。開いている間の幅の変化に合わせるか見張りだけ足すかの判断と、折りたたみ端末の開閉の実機確認が要る）。
+- **次の再開位置**：(1) Webの5コミットのpush（認証の権限、上）。(2) 残りの古いDISC（DISC008〜024・030・031・033・035・037〜040・042・052・056・070・090・119・145・150・161）を対応するtest・コードで確かめる。(3) Flutter全体のtestをCIで通す。
+
 ## 要修正の記録
 
 ### 旧手順の修正担当からの切替（2026-11-16、Claude・S40）
