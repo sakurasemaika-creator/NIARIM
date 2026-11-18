@@ -4975,6 +4975,15 @@ class _CanvasAreaState extends State<CanvasArea> {
               if (_bucketGesture != null) _cancelBucket();
               // A lens-area stroke started by the first finger is a zoom.
               _abandonLensMaskEdit();
+              // 1本目の指で描き始めた線も拡大・移動の一部だった。描きかけを
+              // 丸ごと戻す（残すと線と取り消しの記録が残った。スワイプ・
+              // 指の取り上げと同じ）。
+              for (final pointer in _activeTouchPositions.keys.toList()) {
+                if (pointer == e.pointer) continue;
+                if (_toolHandledPointers.remove(pointer)) {
+                  _cancelToolPointer(pointer);
+                }
+              }
             }
             // 2本指以上でのキャンバス操作モード中は、この指を描画ツールへ
             // 渡さない（複数指での誤描画・二重ストローク防止）。
