@@ -63,8 +63,6 @@
   "homeSharedFolderEmpty": "No hay proyectos compartidos en esta carpeta",
   "homeDeleteFolderKeepContents": "Se eliminará «{name}». Su contenido volverá a la lista principal y no se eliminará.",
   "homeShareOpenWith": "Compartir / Abrir en Fotos",
-  "homeWorkDeleteConfirmTitle": "¿Eliminar {name}?",
-  "homeWorkDeleteConfirmBody": "Se eliminará el archivo exportado de este dispositivo. Esta acción no se puede deshacer.",
   "homePreviewFailed": "No se puede reproducir la vista previa",
   "homeFirstLaunchMessage": "Puedes crear animaciones dibujadas a mano",
   "homeFirstLaunchStart": "Comenzar",
@@ -129,14 +127,6 @@
   "commonRename": "Renombrar",
   "commonCopy": "Copiar",
   "commonCut": "Cortar",
-  "homePasteTooltip": "Pegar {count} elemento(s)",
-  "@homePasteTooltip": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "commonPaste": "Pegar",
   "commonDuplicate": "Duplicar",
   "commonLabelWithValue": "{label}: {value}",
@@ -172,9 +162,6 @@
   "homeDrawerAppTagline": "App de creación de animación dibujada a mano",
   "homeDrawerAutofillPreset": "Ajustes de relleno automático",
   "homeDrawerSettings": "Ajustes",
-  "homeDrawerHelp": "Ayuda",
-  "homeDrawerTips": "Consejos",
-  "homeDrawerPremium": "Premium",
   "gestureActionNoneShort": "Ninguna",
   "pressureTryDrawHint": "Puedes probar a dibujar con este ajuste (con un lápiz óptico se refleja la presión real)",
   "pressureTryDrawClear": "Borrar",
@@ -229,11 +216,9 @@
   "transferImport": "Importar",
   "transferExport": "Exportar",
   "transferExportSuccessSnackbar": "Archivo .niatra exportado",
-  "transferExportFailedSnackbar": "Error al exportar: {error}",
   "transferImportSuccessSnackbar": "Archivo .niatra importado",
   "transferImportAddedCopiesSnackbar": "{count, plural, =1{Archivo .niatra importado. 1 elemento era distinto en este dispositivo: se conservó la versión de este dispositivo y la importada se añadió como «{name}»} other{Archivo .niatra importado. {count} elementos eran distintos en este dispositivo: se conservaron las versiones de este dispositivo y las importadas se añadieron con nombres como «{name}»}}",
   "transferImportShortcutsNotAddedSnackbar": "{count, plural, =1{El atajo importado «{name}» ({combo}) no se añadió porque este dispositivo usa las mismas teclas para otra acción. Para usarlo, añádelo con otras teclas en los ajustes de Atajos} other{{count} atajos importados, como «{name}» ({combo}), no se añadieron porque este dispositivo usa las mismas teclas para otras acciones. Para usarlos, añádelos con otras teclas en los ajustes de Atajos}}",
-  "transferImportFailedSnackbar": "Error al importar: {error}",
   "folderManagementTitle": "Gestión de carpetas",
   "folderManagementCreateNew": "Nueva",
   "folderManagementEmpty": "Aún no hay carpetas",
@@ -373,10 +358,8 @@
   "premiumHeroHighlightWatermark": "Editar la marca final de NIARIM",
   "premiumHeroHighlightGrading": "Curva de tonos /\nniveles",
   "premiumYearlyTitle": "Plan anual (recomendado)",
-  "premiumYearlyDescription": "Equivale a 2 meses gratis",
   "premiumYearlyPrice": "¥5.500/año",
   "premiumYearlyOriginalPrice": "¥6.600",
-  "premiumYearlyPerMonthLabel": "Equivale a ¥458/mes",
   "premiumMonthlyTitle": "Plan mensual",
   "premiumRestorePurchases": "Restaurar compras",
   "premiumRestoredSnackbar": "Se restauraron tus compras (si las había)",
@@ -851,7 +834,6 @@
   "stampSearchHint": "Buscar por nombre de sello",
   "stampEmpty": "No hay sellos",
   "stampCreateDialogTitle": "Sello personalizado",
-  "stampImportFailedSnackbar": "Error al cargar el sello: {error}",
   "stampExportFailedSnackbar": "Error al exportar el sello: {error}",
   "stampEditTitle": "Editar sello",
   "stampRotationLabel": "Rotación",
@@ -949,10 +931,6 @@
   "exportOutdatedAutofillTitle": "El coloreado automático no está actualizado",
   "exportOutdatedAutofillBody": "Hay capas de coloreado automático sin actualizar. ¿Exportar de todos modos?",
   "exportContinueButton": "Continuar",
-  "exportDurationExceededTitle": "Se superó la duración máxima",
-  "exportDurationExceededBody": "La duración máxima de la versión gratuita es de {max} segundos.\nEl proyecto actual dura aproximadamente {current} segundos.\nActualizar a Premium amplía este límite hasta 2 horas.",
-  "exportViewPremiumButton": "Ver Premium",
-  "exportContinueAnywayButton": "Continuar de todos modos",
   "exportCompleteTitle": "Exportación completa",
   "exportCompleteFramesBody": "Se exportaron {count} fotograma(s).",
   "exportSaveLocationLabel": "Guardado en: almacenamiento de la app ({fileName})",
@@ -1131,7 +1109,6 @@
   "penSubToolTabLassoFill": "Relleno con lazo",
   "penSubToolToneTooltipMessage": "Elige una trama para pintar patrones de trama con el bote de pintura o el lápiz.",
   "penSubToolStampTooltipMessage": "Coloca sellos de forma fija. Mantén pulsado para ajustar la rotación, la densidad y más.",
-  "penSubToolManageTooltip": "Gestionar",
   "penSubToolBrushSizeOpacity": "{size}px · {opacity}%",
   "@penSubToolBrushSizeOpacity": {
     "placeholders": {
@@ -1143,18 +1120,9 @@
       }
     }
   },
-  "penSubToolStampRotationSubtitle": "Rotación aleatoria según la dirección del trazo",
   "brushSearchHint": "Buscar por nombre de pincel",
   "brushEmpty": "No hay pinceles",
   "brushCreateDialogTitle": "Pincel personalizado",
-  "brushImportFailedSnackbar": "Error al cargar el pincel: {error}",
-  "@brushImportFailedSnackbar": {
-    "placeholders": {
-      "error": {
-        "type": "String"
-      }
-    }
-  },
   "brushExportFailedSnackbar": "Error al exportar el pincel: {error}",
   "@brushExportFailedSnackbar": {
     "placeholders": {
@@ -1394,7 +1362,6 @@
     }
   },
   "filterEmpty": "No hay filtros",
-  "filterPickHint": "Elige un filtro de la lista de arriba",
   "filterApplyingTitle": "Aplicando filtro",
   "filterApplyingSubtitle": "{name}　{count} fotogramas",
   "@filterApplyingSubtitle": {
@@ -1415,14 +1382,6 @@
   "projectListCreateShareAction": "Crear .niashare",
   "projectListEditFolderAction": "Editar nombre y color",
   "projectListDeleteFolderConfirmTitle": "¿Eliminar esta carpeta?",
-  "projectListDeleteFolderConfirmBody": "Se eliminará «{name}». Los proyectos y subcarpetas que contiene se moverán a la raíz.",
-  "@projectListDeleteFolderConfirmBody": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
   "projectListFolderRootOption": "Sin carpeta (raíz)",
   "projectListEditFolderTooltip": "Editar carpeta",
   "projectListCreateFolderAction": "Crear nueva carpeta",
@@ -1510,17 +1469,6 @@
       }
     }
   },
-  "autofillPartUnconfiguredDialogTitle": "Hay partes sin configurar",
-  "autofillPartUnconfiguredDialogBody": "Configura las siguientes partes antes de guardar.",
-  "autofillPartUnconfiguredItem": "• {name}: sin trama seleccionada",
-  "@autofillPartUnconfiguredItem": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "autofillPartUnconfiguredBackButton": "Volver a la configuración",
   "autofillPartEmpty": "No hay partes\nToca + para añadir una",
   "autofillPartToneUnselected": "Sin trama seleccionada",
   "autofillPartAddDialogTitle": "Añadir parte",
@@ -1705,8 +1653,6 @@
   "saveTreeTimelineActionChoiceBody": "Elige si quieres sobrescribir esta partida guardada con el contenido actual, o reanudar el trabajo desde aquí.",
   "saveTreeOverwriteAction": "Sobrescribir",
   "saveTreeOverwriteConfirmBody": "Se perderán los datos guardados en ese momento. ¿Continuar?",
-  "saveTreeResumeFromHereAction": "Reanudar desde aquí",
-  "saveTreeResumeConfirmBody": "¿Quieres continuar trabajando desde estos datos guardados?\n\nSe sobrescribirán los datos actuales. Guarda el trabajo actual antes si necesitas conservarlo.",
   "saveTreeProjectDetailResumeBody": "¿Reanudar el trabajo desde estos datos guardados?\n\nSe sobrescribirán los datos actuales. Para conservarlos, cancela por ahora y guarda primero en otra ranura (o en otra rama del árbol).",
   "saveTreeLoadFailedSnackbar": "No se pudieron cargar los datos guardados",
   "saveTreeRestoredSnackbar": "Datos guardados cargados ({name})",
@@ -2238,7 +2184,6 @@
   "timelineFrameTrackLabel": "Fotograma",
   "timelineTrackRowRenameTitle": "Renombrar fila",
   "timelineCameraTrackLabel": "Cámara",
-  "timelineRangeSceneFixed": "Escena fija",
   "timelineEndCardDefaultLogoLabel": "Logo de NIARIM",
   "timelineEndCardHiddenLabel": "Oculto",
   "timelineEndCardTrackLabel": "Pista de tarjeta final",
@@ -2521,12 +2466,7 @@
   "pcWorkspaceLayoutScreenTitle": "Ajustes de diseño para PC",
   "pcWorkspaceLayoutIntroHint": "Ajusta el orden y el ancho de los paneles cuando la pantalla de lienzo se abre en modo PC (horizontal + ratón/tableta gráfica conectados).",
   "pcWorkspaceLayoutToolOrderSection": "Orden de los paneles de herramientas",
-  "pcWorkspaceLayoutToolOrderHint": "El orden de apilado usado cuando hay varios paneles abiertos a la vez (pincel, trama, sello, etc.).",
   "pcWorkspaceLayoutRightOrderSection": "Orden del panel de capas, etc.",
-  "pcWorkspaceLayoutRightOrderHint": "El orden de apilado del selector de color, el panel de capas y la vista previa del lienzo.",
-  "pcWorkspaceLayoutWidthSection": "Ancho de los paneles",
-  "pcWorkspaceLayoutToolWidthLabel": "Ancho del lado del panel de herramientas",
-  "pcWorkspaceLayoutRightWidthLabel": "Ancho del lado del panel de capas",
   "pcWorkspaceLayoutResetWidthButton": "Restablecer ancho y alto",
   "pcWorkspaceLayoutResetOrderButton": "Restablecer orden predeterminado",
   "pcWorkspaceLayoutResetWorkspaceConfirmBody": "Se restaurarán el orden, el tamaño, el estado y el ajuste de contracción automática, y los paneles abiertos predeterminados.",
@@ -2624,7 +2564,6 @@
   "workspaceImportFromFileButton": "Importar desde archivo",
   "workspaceImportFailedSnackbar": "Error al importar: {error}",
   "workspaceNameRequiredError": "Introduce un nombre.",
-  "workspaceNoSavedPresets": "Todavía no hay espacios de trabajo guardados.",
   "workspaceOverwriteSelectTitle": "Selecciona un espacio de trabajo para sobrescribir",
   "workspaceOverwriteConfirmTitle": "Confirmar sobrescritura",
   "workspaceOverwriteConfirmBody": "Esto sobrescribirá «{name}» con los ajustes actuales. Se perderá su contenido anterior. ¿Continuar?",
@@ -2680,7 +2619,6 @@
   "communityRankingPeriodMonthly": "Mensual",
   "communityRankingPeriodWeekly": "Semanal",
   "communityRankingPeriodDaily": "Diario",
-  "communityRankingSortViews": "Reproducciones",
   "communityRankingSortBookmarks": "Marcadores",
   "communityRankingSortAscendingTooltip": "Ascendente (menor primero)",
   "communityRankingSortDescendingTooltip": "Descendente (mayor primero)",
@@ -2693,7 +2631,6 @@
     }
   },
   "communityWorkDetailViewOnYoutube": "Ver en YouTube",
-  "communityWorkDetailViewOnYoutubeComingSoonSnackbar": "La integración con YouTube estará disponible próximamente",
   "communityWorkDetailBookmarkAdd": "Marcar",
   "communityWorkDetailBookmarkRemove": "Marcado",
   "communityWorkDetailReportButton": "Denunciar",
@@ -2712,26 +2649,7 @@
   "communityFloatingPreviewResizeTooltip": "Cambiar el tamaño de la vista previa",
   "communityFloatingPreviewMoveHint": "Arrastra para mover. También puedes usar Alt + las flechas.",
   "communityFloatingPreviewCompactHint": "Abre Detalles para ver esta obra.",
-  "communityReportDialogTitle": "Denunciar esta obra",
-  "communityReportDialogBody": "Selecciona un motivo para la denuncia.",
-  "communityReportReasonInappropriate": "Contenido inapropiado",
-  "communityReportReasonCopyright": "Posible infracción de derechos de autor",
-  "communityReportReasonSpam": "Spam o publicaciones repetidas",
-  "communityReportReasonOther": "Otro",
-  "communityReportSubmitButton": "Enviar denuncia",
-  "communityReportDetailLabel": "Detalles",
-  "communityReportDetailHint": "Describe específicamente cuál es el problema",
-  "communityReportDetailRequiredError": "Introduce los detalles",
   "communityReportComingSoonSnackbar": "La función de denuncia estará disponible próximamente. No se ha enviado nada.",
-  "communityBlockConfirmTitle": "¿Bloquear a «{name}»?",
-  "@communityBlockConfirmTitle": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "communityBlockConfirmBody": "Al bloquear, las obras de este creador dejarán de aparecer en tus listas.",
   "communityBlockComingSoonSnackbar": "La función de bloqueo estará disponible próximamente. No se ha aplicado nada.",
   "communityAuthorWorksCount": "{count} obras",
   "@communityAuthorWorksCount": {
@@ -3067,7 +2985,6 @@
   "brushImageMoveDown": "Bajar",
   "brushImageRemove": "Quitar imagen",
   "filterNoiseStyle": "Tipo de ruido",
-  "filterNoiseFilmGrain": "Grano de película",
   "filterNoiseColor": "Ruido de color",
   "filterNoiseSeed": "Semilla del patrón",
   "communityContentFilterTitle": "Filtros de visualización",
@@ -3344,7 +3261,6 @@
   "communityMuteNo": "No",
   "communityMuteDone": "Creador oculto",
   "communityUnmuteDone": "Creador visible de nuevo",
-  "communityMilestoneNotificationsTitle": "Notificaciones",
   "communityFollowerMilestone": "Has alcanzado {count} seguidores",
   "@communityFollowerMilestone": {
     "placeholders": {
@@ -3370,10 +3286,8 @@
   "communitySortLabel": "Ordenar",
   "homeTrashOperationFailed": "No se pudo completar la operación. Revisa el almacenamiento e inténtalo de nuevo.",
   "homeTrashWorking": "Procesando…",
-  "homeAddTooltip": "Crear nuevo",
   "commonShowExplanation": "Mostrar explicación",
   "homeViewModeTooltip": "Diseño y tamaño",
-  "homeMoveToTrashNothing": "No hay nada que mover a la papelera (los favoritos no se mueven).",
   "homeMovedToTrashSnackbar": "{count, plural, one{{count} elemento movido a la papelera} other{{count} elementos movidos a la papelera}}",
   "homeUndoAction": "Deshacer",
   "homeCutSnackbar": "{count, plural, one{{count} elemento cortado. Abre el destino y toca Pegar en la barra debajo de las pestañas.} other{{count} elementos cortados. Abre el destino y toca Pegar en la barra debajo de las pestañas.}}",
@@ -3454,7 +3368,6 @@
   "settingsTipsResetDone": "Las explicaciones volverán a aparecer la próxima vez que uses cada función",
   "helpTutorialButton": "Ver la guía",
   "projectListTrashFolderConfirmTitle": "¿Mover la carpeta a la papelera?",
-  "projectListTrashFolderConfirmBody": "«{name}» se moverá a la papelera. Puedes restaurar la carpeta completa desde la papelera.",
   "homeFolderMovedToTrashSnackbar": "«{name}» movida a la papelera",
   "homeMoveToTrashFolderContents": "También se moverá el contenido de las carpetas: {contents}.",
   "homeMoveToTrashUnreadNote": "Si dentro hay proyectos que no se pudieron cargar, pasarán a la carpeta de la papelera cuando se carguen.",
@@ -3462,27 +3375,9 @@
   "homeFolderContents": "{projects, plural, =0{{folders, plural, =0{Vacía} =1{1 carpeta} other{{folders} carpetas}}} =1{1 proyecto{folders, plural, =0{} =1{ y 1 carpeta} other{ y {folders} carpetas}}} other{{projects} proyectos{folders, plural, =0{} =1{ y 1 carpeta} other{ y {folders} carpetas}}}}",
   "homeTrashFolderPermanentDeleteContents": "También se eliminará el contenido de la carpeta: {contents}.",
   "newProjectNumberRangeError": "Introduce un número entre {min} y {max}",
-  "pcViewZoomIn": "Acercar",
-  "pcViewZoomOut": "Alejar",
   "pcViewFit": "Ajustar a la ventana",
-  "pcViewActualPixels": "Píxeles reales (100 %)",
-  "pcViewRotateLeft": "Girar a la izquierda",
-  "pcViewRotateRight": "Girar a la derecha",
-  "pcViewResetRotation": "Restablecer el giro",
-  "pcViewHidePanels": "Ocultar paneles",
-  "pcViewFrameStrip": "Lista de fotogramas",
-  "pcPaneToolProperty": "Ajustes de la herramienta",
-  "pcToolPropertyEmpty": "Esta herramienta no tiene ajustes",
   "pcStatusFrame": "Fotograma {current}/{total}",
-  "pcPaneProgram": "Vista previa",
-  "pcPaneInspector": "Detalles",
-  "pcTimelineZoomIn": "Ampliar la línea de tiempo",
-  "pcTimelineZoomOut": "Reducir la línea de tiempo",
-  "pcBinEmpty": "Aún no hay materiales",
-  "pcBinSceneFrames": "{count} fotogramas",
-  "pcInspectorHint": "Selecciona un material en la línea de tiempo para ajustar aquí su posición, tamaño, opacidad y más.",
   "pcStatusFps": "{fps} fps",
-  "canvasSizePresetDuplicateSuffix": "copia",
   "communityChannelRefreshButton": "Actualizar nombre e icono de YouTube (una vez al día)",
   "communityChannelRefreshSuccess": "Nombre e icono de YouTube actualizados",
   "communityChannelRefreshNoToken": "Se requiere autorización de YouTube",
@@ -3967,7 +3862,6 @@
   "pcLayoutResetWorkspace": "Restablecer espacio de trabajo",
   "pcLayoutInstruction": "Arrastra el borde de una ventana en la vista previa para cambiar su ancho o alto. Mantén pulsada el asa de arriba a la izquierda para moverla o intercambiarla con otra. Pellizca para ampliar.",
   "brushNibWidthRatio": "Ancho de la punta respecto a la altura",
-  "brushFoldFlatEnds": "Extremos planos",
   "brushFoldTriggerAngle": "Ángulo mínimo de giro",
   "brushFoldEndTaper": "Estrechamiento de la punta plegada",
   "timelineSelectionScenes": "Escenas",

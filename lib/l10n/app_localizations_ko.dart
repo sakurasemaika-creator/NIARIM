@@ -224,14 +224,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String get homeShareOpenWith => '공유・사진 앱 등으로 열기';
 
   @override
-  String homeWorkDeleteConfirmTitle(String name) {
-    return '$name을(를) 삭제하시겠습니까?';
-  }
-
-  @override
-  String get homeWorkDeleteConfirmBody => '기기에 저장된 내보내기 파일이 삭제됩니다. 되돌릴 수 없습니다.';
-
-  @override
   String get homePreviewFailed => '미리보기를 재생할 수 없습니다';
 
   @override
@@ -420,11 +412,6 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
-  String homePasteTooltip(int count) {
-    return '$count건 붙여넣기';
-  }
-
-  @override
   String get commonOk => '확인';
 
   @override
@@ -501,15 +488,6 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get homeDrawerSettings => '설정';
-
-  @override
-  String get homeDrawerHelp => '도움말';
-
-  @override
-  String get homeDrawerTips => '활용 팁';
-
-  @override
-  String get homeDrawerPremium => 'Premium';
 
   @override
   String get gestureActionNoneShort => '없음';
@@ -685,11 +663,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String get transferExportSuccessSnackbar => '.niatra 파일을 내보냈습니다';
 
   @override
-  String transferExportFailedSnackbar(String error) {
-    return '내보내기에 실패했습니다: $error';
-  }
-
-  @override
   String get transferImportSuccessSnackbar => '.niatra 파일을 가져왔습니다';
 
   @override
@@ -720,11 +693,6 @@ class AppLocalizationsKo extends AppLocalizations {
           '가져온 단축키 「$name」($combo)은(는) 이 기기에서 같은 키를 다른 동작에 쓰고 있어서 추가하지 않았습니다. 사용하려면 단축키 설정에서 다른 키로 추가하세요',
     );
     return '$_temp0';
-  }
-
-  @override
-  String transferImportFailedSnackbar(String error) {
-    return '가져오기에 실패했습니다: $error';
   }
 
   @override
@@ -1080,16 +1048,10 @@ class AppLocalizationsKo extends AppLocalizations {
   String get premiumYearlyTitle => '연간 플랜（추천）';
 
   @override
-  String get premiumYearlyDescription => '실질적으로 2개월 무료';
-
-  @override
   String get premiumYearlyPrice => '¥5,500/년';
 
   @override
   String get premiumYearlyOriginalPrice => '¥6,600';
-
-  @override
-  String get premiumYearlyPerMonthLabel => '월 환산 ¥458';
 
   @override
   String get premiumMonthlyTitle => '월간 플랜';
@@ -2655,11 +2617,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String get stampCreateDialogTitle => '직접 제작한 스탬프';
 
   @override
-  String stampImportFailedSnackbar(String error) {
-    return '스탬프를 불러오지 못했습니다: $error';
-  }
-
-  @override
   String stampExportFailedSnackbar(String error) {
     return '스탬프 내보내기에 실패했습니다: $error';
   }
@@ -2980,20 +2937,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String get exportContinueButton => '계속';
 
   @override
-  String get exportDurationExceededTitle => '동영상 길이 상한을 초과했습니다';
-
-  @override
-  String exportDurationExceededBody(int max, int current) {
-    return '무료판의 최대 동영상 길이는 $max초입니다.\n현재 프로젝트는 약 $current초입니다.\nPremium으로 업그레이드하면 길이 제한이 최대 2시간까지 늘어납니다.';
-  }
-
-  @override
-  String get exportViewPremiumButton => 'Premium 보기';
-
-  @override
-  String get exportContinueAnywayButton => '그대로 계속';
-
-  @override
   String get exportCompleteTitle => '내보내기 완료';
 
   @override
@@ -3236,15 +3179,9 @@ class AppLocalizationsKo extends AppLocalizations {
       '정해진 모양의 스탬프를 배치할 수 있습니다. 길게 누르면 회전・밀도 등을 설정할 수 있습니다.';
 
   @override
-  String get penSubToolManageTooltip => '관리';
-
-  @override
   String penSubToolBrushSizeOpacity(int size, int opacity) {
     return '${size}px · $opacity%';
   }
-
-  @override
-  String get penSubToolStampRotationSubtitle => '획 방향에 맞춰 무작위로 회전';
 
   @override
   String get brushSearchHint => '브러시 이름으로 검색';
@@ -3254,11 +3191,6 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get brushCreateDialogTitle => '커스텀 브러시';
-
-  @override
-  String brushImportFailedSnackbar(String error) {
-    return '브러시 불러오기에 실패했습니다: $error';
-  }
 
   @override
   String brushExportFailedSnackbar(String error) {
@@ -3773,9 +3705,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String get filterEmpty => '필터가 없습니다';
 
   @override
-  String get filterPickHint => '위 목록에서 사용할 필터를 고르세요';
-
-  @override
   String get filterApplyingTitle => '필터 적용 중';
 
   @override
@@ -3806,11 +3735,6 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get projectListDeleteFolderConfirmTitle => '이 폴더를 삭제하시겠습니까?';
-
-  @override
-  String projectListDeleteFolderConfirmBody(String name) {
-    return '「$name」을(를) 삭제합니다. 안에 있던 프로젝트・하위 폴더는 루트로 이동합니다.';
-  }
 
   @override
   String get projectListFolderRootOption => '폴더 없음(루트)';
@@ -4021,20 +3945,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String autofillDeleteUsage(int projects, int layers) {
     return '작품 $projects개의 선화 레이어 $layers개에서 사용 중입니다. 해당 레이어에서 자동 채색을 실행하려면 다른 부위를 지정하세요.';
   }
-
-  @override
-  String get autofillPartUnconfiguredDialogTitle => '설정되지 않은 부위가 있습니다';
-
-  @override
-  String get autofillPartUnconfiguredDialogBody => '저장하기 전에 다음 부위를 설정해 주세요.';
-
-  @override
-  String autofillPartUnconfiguredItem(String name) {
-    return '・$name: 스크린톤이 선택되지 않았습니다';
-  }
-
-  @override
-  String get autofillPartUnconfiguredBackButton => '설정으로 돌아가기';
 
   @override
   String get autofillPartEmpty => '부위가 없습니다\n＋ 버튼으로 추가해 주세요';
@@ -4343,13 +4253,6 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get saveTreeOverwriteConfirmBody => '그 시점의 세이브 데이터가 사라집니다. 계속하시겠습니까?';
-
-  @override
-  String get saveTreeResumeFromHereAction => '여기서부터 다시 시작';
-
-  @override
-  String get saveTreeResumeConfirmBody =>
-      '이 세이브 데이터에서 작업을 다시 시작하시겠습니까?\n\n현재 데이터가 덮어쓰여집니다. 현재 작업을 보관하려면 먼저 저장하세요.';
 
   @override
   String get saveTreeProjectDetailResumeBody =>
@@ -5315,9 +5218,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String get timelineCameraTrackLabel => '카메라';
 
   @override
-  String get timelineRangeSceneFixed => '씬 고정';
-
-  @override
   String get timelineEndCardDefaultLogoLabel => 'NIARIM 로고';
 
   @override
@@ -6002,24 +5902,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get pcWorkspaceLayoutToolOrderSection => '도구 패널 순서';
 
   @override
-  String get pcWorkspaceLayoutToolOrderHint =>
-      '브러시·스크린톤·스탬프 등을 동시에 열었을 때 쌓이는 순서입니다.';
-
-  @override
   String get pcWorkspaceLayoutRightOrderSection => '레이어 등 패널 순서';
-
-  @override
-  String get pcWorkspaceLayoutRightOrderHint =>
-      '색상 선택기·레이어·캔버스 미리보기의 쌓이는 순서입니다.';
-
-  @override
-  String get pcWorkspaceLayoutWidthSection => '패널 너비';
-
-  @override
-  String get pcWorkspaceLayoutToolWidthLabel => '도구 패널 쪽 너비';
-
-  @override
-  String get pcWorkspaceLayoutRightWidthLabel => '레이어 패널 쪽 너비';
 
   @override
   String get pcWorkspaceLayoutResetWidthButton => '너비와 높이 초기화';
@@ -6293,9 +6176,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String get workspaceNameRequiredError => '이름을 입력해 주세요.';
 
   @override
-  String get workspaceNoSavedPresets => '저장된 워크스페이스가 없습니다.';
-
-  @override
   String get workspaceOverwriteSelectTitle => '덮어쓸 워크스페이스 선택';
 
   @override
@@ -6381,9 +6261,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String get communityRankingPeriodDaily => '일간';
 
   @override
-  String get communityRankingSortViews => '조회수';
-
-  @override
   String get communityRankingSortBookmarks => '북마크 수';
 
   @override
@@ -6399,10 +6276,6 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get communityWorkDetailViewOnYoutube => 'YouTube에서 보기';
-
-  @override
-  String get communityWorkDetailViewOnYoutubeComingSoonSnackbar =>
-      'YouTube 연동 기능은 준비 중입니다';
 
   @override
   String get communityWorkDetailBookmarkAdd => '북마크';
@@ -6464,46 +6337,8 @@ class AppLocalizationsKo extends AppLocalizations {
   String get communityFloatingPreviewCompactHint => '이 작품은 상세 화면에서 볼 수 있습니다.';
 
   @override
-  String get communityReportDialogTitle => '작품 신고';
-
-  @override
-  String get communityReportDialogBody => '신고 사유를 선택해 주세요.';
-
-  @override
-  String get communityReportReasonInappropriate => '부적절한 내용';
-
-  @override
-  String get communityReportReasonCopyright => '저작권 침해 의심';
-
-  @override
-  String get communityReportReasonSpam => '스팸・반복 게시';
-
-  @override
-  String get communityReportReasonOther => '기타';
-
-  @override
-  String get communityReportSubmitButton => '신고하기';
-
-  @override
-  String get communityReportDetailLabel => '상세 내용';
-
-  @override
-  String get communityReportDetailHint => '구체적으로 어떤 점이 문제인지 입력해 주세요';
-
-  @override
-  String get communityReportDetailRequiredError => '상세 내용을 입력해 주세요';
-
-  @override
   String get communityReportComingSoonSnackbar =>
       '신고 기능은 준비 중입니다. 실제로 전송되지 않습니다.';
-
-  @override
-  String communityBlockConfirmTitle(String name) {
-    return '「$name」님을 차단할까요?';
-  }
-
-  @override
-  String get communityBlockConfirmBody => '차단하면 이 작성자의 작품이 목록에 표시되지 않습니다.';
 
   @override
   String get communityBlockComingSoonSnackbar =>
@@ -7250,9 +7085,6 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get filterNoiseStyle => '노이즈 종류';
-
-  @override
-  String get filterNoiseFilmGrain => '필름 그레인';
 
   @override
   String get filterNoiseColor => '컬러 노이즈';
@@ -8137,9 +7969,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String get communityUnmuteDone => '사용자를 다시 표시했습니다';
 
   @override
-  String get communityMilestoneNotificationsTitle => '알림';
-
-  @override
   String communityFollowerMilestone(String count) {
     return '팔로워가 $count명에 도달했습니다';
   }
@@ -8169,17 +7998,10 @@ class AppLocalizationsKo extends AppLocalizations {
   String get homeTrashWorking => '처리 중…';
 
   @override
-  String get homeAddTooltip => '새로 만들기';
-
-  @override
   String get commonShowExplanation => '설명 보기';
 
   @override
   String get homeViewModeTooltip => '표시 형식과 크기';
-
-  @override
-  String get homeMoveToTrashNothing =>
-      '휴지통으로 이동할 항목이 없습니다(즐겨찾기한 항목은 이동하지 않습니다).';
 
   @override
   String homeMovedToTrashSnackbar(int count) {
@@ -8513,11 +8335,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String get projectListTrashFolderConfirmTitle => '폴더를 휴지통으로 이동하시겠습니까?';
 
   @override
-  String projectListTrashFolderConfirmBody(String name) {
-    return '「$name」을(를) 휴지통으로 이동합니다. 휴지통에서 폴더째 복원할 수 있습니다.';
-  }
-
-  @override
   String homeFolderMovedToTrashSnackbar(String name) {
     return '「$name」을(를) 휴지통으로 이동했습니다';
   }
@@ -8570,37 +8387,7 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
-  String get pcViewZoomIn => '확대';
-
-  @override
-  String get pcViewZoomOut => '축소';
-
-  @override
   String get pcViewFit => '창에 맞추기';
-
-  @override
-  String get pcViewActualPixels => '실제 픽셀(100%)';
-
-  @override
-  String get pcViewRotateLeft => '왼쪽으로 회전';
-
-  @override
-  String get pcViewRotateRight => '오른쪽으로 회전';
-
-  @override
-  String get pcViewResetRotation => '회전 초기화';
-
-  @override
-  String get pcViewHidePanels => '패널 숨기기';
-
-  @override
-  String get pcViewFrameStrip => '프레임 목록';
-
-  @override
-  String get pcPaneToolProperty => '도구 설정';
-
-  @override
-  String get pcToolPropertyEmpty => '이 도구에는 설정이 없습니다';
 
   @override
   String pcStatusFrame(int current, int total) {
@@ -8608,36 +8395,9 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
-  String get pcPaneProgram => '미리보기';
-
-  @override
-  String get pcPaneInspector => '상세';
-
-  @override
-  String get pcTimelineZoomIn => '타임라인 확대';
-
-  @override
-  String get pcTimelineZoomOut => '타임라인 축소';
-
-  @override
-  String get pcBinEmpty => '아직 소재가 없습니다';
-
-  @override
-  String pcBinSceneFrames(int count) {
-    return '$count프레임';
-  }
-
-  @override
-  String get pcInspectorHint =>
-      '타임라인에서 소재를 선택하면 여기에서 위치·크기·불투명도 등을 조정할 수 있습니다.';
-
-  @override
   String pcStatusFps(int fps) {
     return '$fps fps';
   }
-
-  @override
-  String get canvasSizePresetDuplicateSuffix => '사본';
 
   @override
   String get communityChannelRefreshButton => 'YouTube 이름·아이콘 갱신 (하루 1회)';
@@ -10460,9 +10220,6 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get brushNibWidthRatio => '펜촉 너비(높이 대비)';
-
-  @override
-  String get brushFoldFlatEnds => '양끝을 평평하게';
 
   @override
   String get brushFoldTriggerAngle => '접힘 시작 각도';

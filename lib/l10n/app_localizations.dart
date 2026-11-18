@@ -485,18 +485,6 @@ abstract class AppLocalizations {
   /// **'共有・写真アプリ等で開く'**
   String get homeShareOpenWith;
 
-  /// No description provided for @homeWorkDeleteConfirmTitle.
-  ///
-  /// In ja, this message translates to:
-  /// **'{name}を削除しますか？'**
-  String homeWorkDeleteConfirmTitle(String name);
-
-  /// No description provided for @homeWorkDeleteConfirmBody.
-  ///
-  /// In ja, this message translates to:
-  /// **'端末内の書き出しファイルが削除されます。元に戻すことはできません。'**
-  String get homeWorkDeleteConfirmBody;
-
   /// No description provided for @homePreviewFailed.
   ///
   /// In ja, this message translates to:
@@ -857,12 +845,6 @@ abstract class AppLocalizations {
   /// **'{label}: {value}'**
   String commonLabelWithValue(String label, String value);
 
-  /// No description provided for @homePasteTooltip.
-  ///
-  /// In ja, this message translates to:
-  /// **'{count}件を貼り付け'**
-  String homePasteTooltip(int count);
-
   /// No description provided for @commonOk.
   ///
   /// In ja, this message translates to:
@@ -1012,24 +994,6 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'設定'**
   String get homeDrawerSettings;
-
-  /// No description provided for @homeDrawerHelp.
-  ///
-  /// In ja, this message translates to:
-  /// **'ヘルプ'**
-  String get homeDrawerHelp;
-
-  /// No description provided for @homeDrawerTips.
-  ///
-  /// In ja, this message translates to:
-  /// **'活用Tips'**
-  String get homeDrawerTips;
-
-  /// No description provided for @homeDrawerPremium.
-  ///
-  /// In ja, this message translates to:
-  /// **'プレミアム'**
-  String get homeDrawerPremium;
 
   /// No description provided for @gestureActionNoneShort.
   ///
@@ -1355,12 +1319,6 @@ abstract class AppLocalizations {
   /// **'.niatraファイルを書き出しました'**
   String get transferExportSuccessSnackbar;
 
-  /// No description provided for @transferExportFailedSnackbar.
-  ///
-  /// In ja, this message translates to:
-  /// **'書き出しに失敗しました: {error}'**
-  String transferExportFailedSnackbar(String error);
-
   /// No description provided for @transferImportSuccessSnackbar.
   ///
   /// In ja, this message translates to:
@@ -1382,12 +1340,6 @@ abstract class AppLocalizations {
     String name,
     String combo,
   );
-
-  /// No description provided for @transferImportFailedSnackbar.
-  ///
-  /// In ja, this message translates to:
-  /// **'読み込みに失敗しました: {error}'**
-  String transferImportFailedSnackbar(String error);
 
   /// No description provided for @folderManagementTitle.
   ///
@@ -2037,12 +1989,6 @@ abstract class AppLocalizations {
   /// **'年額プラン（おすすめ）'**
   String get premiumYearlyTitle;
 
-  /// No description provided for @premiumYearlyDescription.
-  ///
-  /// In ja, this message translates to:
-  /// **'実質2か月分無料'**
-  String get premiumYearlyDescription;
-
   /// No description provided for @premiumYearlyPrice.
   ///
   /// In ja, this message translates to:
@@ -2054,12 +2000,6 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'¥6,600'**
   String get premiumYearlyOriginalPrice;
-
-  /// No description provided for @premiumYearlyPerMonthLabel.
-  ///
-  /// In ja, this message translates to:
-  /// **'月あたり¥458相当'**
-  String get premiumYearlyPerMonthLabel;
 
   /// No description provided for @premiumMonthlyTitle.
   ///
@@ -4863,12 +4803,6 @@ abstract class AppLocalizations {
   /// **'自作スタンプ'**
   String get stampCreateDialogTitle;
 
-  /// No description provided for @stampImportFailedSnackbar.
-  ///
-  /// In ja, this message translates to:
-  /// **'スタンプの読み込みに失敗しました: {error}'**
-  String stampImportFailedSnackbar(String error);
-
   /// No description provided for @stampExportFailedSnackbar.
   ///
   /// In ja, this message translates to:
@@ -5451,30 +5385,6 @@ abstract class AppLocalizations {
   /// **'続行'**
   String get exportContinueButton;
 
-  /// No description provided for @exportDurationExceededTitle.
-  ///
-  /// In ja, this message translates to:
-  /// **'動画尺の上限を超えています'**
-  String get exportDurationExceededTitle;
-
-  /// No description provided for @exportDurationExceededBody.
-  ///
-  /// In ja, this message translates to:
-  /// **'無料版の最大動画尺は{max}秒です。\n現在のプロジェクトは約{current}秒あります。\nプレミアムにアップグレードすると最大2時間まで作成できるようになります。'**
-  String exportDurationExceededBody(int max, int current);
-
-  /// No description provided for @exportViewPremiumButton.
-  ///
-  /// In ja, this message translates to:
-  /// **'プレミアムを見る'**
-  String get exportViewPremiumButton;
-
-  /// No description provided for @exportContinueAnywayButton.
-  ///
-  /// In ja, this message translates to:
-  /// **'このまま続行'**
-  String get exportContinueAnywayButton;
-
   /// No description provided for @exportCompleteTitle.
   ///
   /// In ja, this message translates to:
@@ -5889,23 +5799,11 @@ abstract class AppLocalizations {
   /// **'決まった形のスタンプを配置できます。長押しで回転・密度などを設定できます。'**
   String get penSubToolStampTooltipMessage;
 
-  /// No description provided for @penSubToolManageTooltip.
-  ///
-  /// In ja, this message translates to:
-  /// **'管理'**
-  String get penSubToolManageTooltip;
-
   /// No description provided for @penSubToolBrushSizeOpacity.
   ///
   /// In ja, this message translates to:
   /// **'{size}px · {opacity}%'**
   String penSubToolBrushSizeOpacity(int size, int opacity);
-
-  /// No description provided for @penSubToolStampRotationSubtitle.
-  ///
-  /// In ja, this message translates to:
-  /// **'ストローク方向に合わせてランダムに回転'**
-  String get penSubToolStampRotationSubtitle;
 
   /// No description provided for @brushSearchHint.
   ///
@@ -5924,12 +5822,6 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'自作ブラシ'**
   String get brushCreateDialogTitle;
-
-  /// No description provided for @brushImportFailedSnackbar.
-  ///
-  /// In ja, this message translates to:
-  /// **'ブラシの読み込みに失敗しました: {error}'**
-  String brushImportFailedSnackbar(String error);
 
   /// No description provided for @brushExportFailedSnackbar.
   ///
@@ -6885,12 +6777,6 @@ abstract class AppLocalizations {
   /// **'フィルターがありません'**
   String get filterEmpty;
 
-  /// No description provided for @filterPickHint.
-  ///
-  /// In ja, this message translates to:
-  /// **'上の一覧から使うフィルターを選んでください'**
-  String get filterPickHint;
-
   /// No description provided for @filterApplyingTitle.
   ///
   /// In ja, this message translates to:
@@ -6950,12 +6836,6 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'フォルダを削除しますか？'**
   String get projectListDeleteFolderConfirmTitle;
-
-  /// No description provided for @projectListDeleteFolderConfirmBody.
-  ///
-  /// In ja, this message translates to:
-  /// **'「{name}」を削除します。中のプロジェクト・子フォルダはルートへ戻ります。'**
-  String projectListDeleteFolderConfirmBody(String name);
 
   /// No description provided for @projectListFolderRootOption.
   ///
@@ -7328,30 +7208,6 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'{projects}件の作品の線画レイヤー{layers}件で使用中です。これらのレイヤーで自動塗りを実行するには、別のパーツを割り当ててください。'**
   String autofillDeleteUsage(int projects, int layers);
-
-  /// No description provided for @autofillPartUnconfiguredDialogTitle.
-  ///
-  /// In ja, this message translates to:
-  /// **'未設定のパーツがあります'**
-  String get autofillPartUnconfiguredDialogTitle;
-
-  /// No description provided for @autofillPartUnconfiguredDialogBody.
-  ///
-  /// In ja, this message translates to:
-  /// **'保存する前に、以下のパーツを設定してください。'**
-  String get autofillPartUnconfiguredDialogBody;
-
-  /// No description provided for @autofillPartUnconfiguredItem.
-  ///
-  /// In ja, this message translates to:
-  /// **'・{name}：トーンが未選択です'**
-  String autofillPartUnconfiguredItem(String name);
-
-  /// No description provided for @autofillPartUnconfiguredBackButton.
-  ///
-  /// In ja, this message translates to:
-  /// **'設定へ戻る'**
-  String get autofillPartUnconfiguredBackButton;
 
   /// No description provided for @autofillPartEmpty.
   ///
@@ -7874,18 +7730,6 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'このときのセーブデータは消えますがよろしいですか？'**
   String get saveTreeOverwriteConfirmBody;
-
-  /// No description provided for @saveTreeResumeFromHereAction.
-  ///
-  /// In ja, this message translates to:
-  /// **'ここから再開する'**
-  String get saveTreeResumeFromHereAction;
-
-  /// No description provided for @saveTreeResumeConfirmBody.
-  ///
-  /// In ja, this message translates to:
-  /// **'このセーブデータから作業を再開しますか？\n\n現在のデータは上書きされます。保存する必要がある場合は先にセーブしてください。'**
-  String get saveTreeResumeConfirmBody;
 
   /// No description provided for @saveTreeProjectDetailResumeBody.
   ///
@@ -9579,12 +9423,6 @@ abstract class AppLocalizations {
   /// **'カメラ'**
   String get timelineCameraTrackLabel;
 
-  /// No description provided for @timelineRangeSceneFixed.
-  ///
-  /// In ja, this message translates to:
-  /// **'シーン固定'**
-  String get timelineRangeSceneFixed;
-
   /// No description provided for @timelineEndCardDefaultLogoLabel.
   ///
   /// In ja, this message translates to:
@@ -10815,41 +10653,11 @@ abstract class AppLocalizations {
   /// **'ツールパネルの並び順'**
   String get pcWorkspaceLayoutToolOrderSection;
 
-  /// No description provided for @pcWorkspaceLayoutToolOrderHint.
-  ///
-  /// In ja, this message translates to:
-  /// **'ブラシ・トーン・スタンプ等、複数同時に開いた際に積み重なる順番です。'**
-  String get pcWorkspaceLayoutToolOrderHint;
-
   /// No description provided for @pcWorkspaceLayoutRightOrderSection.
   ///
   /// In ja, this message translates to:
   /// **'レイヤー等パネルの並び順'**
   String get pcWorkspaceLayoutRightOrderSection;
-
-  /// No description provided for @pcWorkspaceLayoutRightOrderHint.
-  ///
-  /// In ja, this message translates to:
-  /// **'カラーピッカー・レイヤー・キャンバスプレビューの積み重ね順です。'**
-  String get pcWorkspaceLayoutRightOrderHint;
-
-  /// No description provided for @pcWorkspaceLayoutWidthSection.
-  ///
-  /// In ja, this message translates to:
-  /// **'パネルの幅'**
-  String get pcWorkspaceLayoutWidthSection;
-
-  /// No description provided for @pcWorkspaceLayoutToolWidthLabel.
-  ///
-  /// In ja, this message translates to:
-  /// **'ツールパネル側の幅'**
-  String get pcWorkspaceLayoutToolWidthLabel;
-
-  /// No description provided for @pcWorkspaceLayoutRightWidthLabel.
-  ///
-  /// In ja, this message translates to:
-  /// **'レイヤー等パネル側の幅'**
-  String get pcWorkspaceLayoutRightWidthLabel;
 
   /// No description provided for @pcWorkspaceLayoutResetWidthButton.
   ///
@@ -11349,12 +11157,6 @@ abstract class AppLocalizations {
   /// **'名前を入力してください'**
   String get workspaceNameRequiredError;
 
-  /// No description provided for @workspaceNoSavedPresets.
-  ///
-  /// In ja, this message translates to:
-  /// **'保存済みのワークスペースがありません'**
-  String get workspaceNoSavedPresets;
-
   /// No description provided for @workspaceOverwriteSelectTitle.
   ///
   /// In ja, this message translates to:
@@ -11517,12 +11319,6 @@ abstract class AppLocalizations {
   /// **'デイリー'**
   String get communityRankingPeriodDaily;
 
-  /// No description provided for @communityRankingSortViews.
-  ///
-  /// In ja, this message translates to:
-  /// **'再生数'**
-  String get communityRankingSortViews;
-
   /// No description provided for @communityRankingSortBookmarks.
   ///
   /// In ja, this message translates to:
@@ -11552,12 +11348,6 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'YouTubeで見る'**
   String get communityWorkDetailViewOnYoutube;
-
-  /// No description provided for @communityWorkDetailViewOnYoutubeComingSoonSnackbar.
-  ///
-  /// In ja, this message translates to:
-  /// **'YouTube連携機能は準備中です'**
-  String get communityWorkDetailViewOnYoutubeComingSoonSnackbar;
 
   /// No description provided for @communityWorkDetailBookmarkAdd.
   ///
@@ -11667,83 +11457,11 @@ abstract class AppLocalizations {
   /// **'この作品は詳細画面で確認できます。'**
   String get communityFloatingPreviewCompactHint;
 
-  /// No description provided for @communityReportDialogTitle.
-  ///
-  /// In ja, this message translates to:
-  /// **'作品を通報'**
-  String get communityReportDialogTitle;
-
-  /// No description provided for @communityReportDialogBody.
-  ///
-  /// In ja, this message translates to:
-  /// **'通報理由を選択してください。'**
-  String get communityReportDialogBody;
-
-  /// No description provided for @communityReportReasonInappropriate.
-  ///
-  /// In ja, this message translates to:
-  /// **'不適切な内容'**
-  String get communityReportReasonInappropriate;
-
-  /// No description provided for @communityReportReasonCopyright.
-  ///
-  /// In ja, this message translates to:
-  /// **'著作権侵害の疑い'**
-  String get communityReportReasonCopyright;
-
-  /// No description provided for @communityReportReasonSpam.
-  ///
-  /// In ja, this message translates to:
-  /// **'スパム・繰り返し投稿'**
-  String get communityReportReasonSpam;
-
-  /// No description provided for @communityReportReasonOther.
-  ///
-  /// In ja, this message translates to:
-  /// **'その他'**
-  String get communityReportReasonOther;
-
-  /// No description provided for @communityReportSubmitButton.
-  ///
-  /// In ja, this message translates to:
-  /// **'通報する'**
-  String get communityReportSubmitButton;
-
-  /// No description provided for @communityReportDetailLabel.
-  ///
-  /// In ja, this message translates to:
-  /// **'詳細'**
-  String get communityReportDetailLabel;
-
-  /// No description provided for @communityReportDetailHint.
-  ///
-  /// In ja, this message translates to:
-  /// **'どのような点が問題か具体的に入力してください'**
-  String get communityReportDetailHint;
-
-  /// No description provided for @communityReportDetailRequiredError.
-  ///
-  /// In ja, this message translates to:
-  /// **'詳細を入力してください'**
-  String get communityReportDetailRequiredError;
-
   /// No description provided for @communityReportComingSoonSnackbar.
   ///
   /// In ja, this message translates to:
   /// **'通報機能は準備中です。実際には送信されません。'**
   String get communityReportComingSoonSnackbar;
-
-  /// No description provided for @communityBlockConfirmTitle.
-  ///
-  /// In ja, this message translates to:
-  /// **'「{name}」をブロックしますか？'**
-  String communityBlockConfirmTitle(String name);
-
-  /// No description provided for @communityBlockConfirmBody.
-  ///
-  /// In ja, this message translates to:
-  /// **'ブロックすると、この作者の作品が一覧に表示されなくなります。'**
-  String get communityBlockConfirmBody;
 
   /// No description provided for @communityBlockComingSoonSnackbar.
   ///
@@ -13124,12 +12842,6 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'ノイズの種類'**
   String get filterNoiseStyle;
-
-  /// No description provided for @filterNoiseFilmGrain.
-  ///
-  /// In ja, this message translates to:
-  /// **'フィルム粒子'**
-  String get filterNoiseFilmGrain;
 
   /// No description provided for @filterNoiseColor.
   ///
@@ -14703,12 +14415,6 @@ abstract class AppLocalizations {
   /// **'このユーザーの非表示を解除しました'**
   String get communityUnmuteDone;
 
-  /// No description provided for @communityMilestoneNotificationsTitle.
-  ///
-  /// In ja, this message translates to:
-  /// **'通知'**
-  String get communityMilestoneNotificationsTitle;
-
   /// No description provided for @communityFollowerMilestone.
   ///
   /// In ja, this message translates to:
@@ -14757,12 +14463,6 @@ abstract class AppLocalizations {
   /// **'処理中…'**
   String get homeTrashWorking;
 
-  /// No description provided for @homeAddTooltip.
-  ///
-  /// In ja, this message translates to:
-  /// **'新規作成'**
-  String get homeAddTooltip;
-
   /// No description provided for @commonShowExplanation.
   ///
   /// In ja, this message translates to:
@@ -14774,12 +14474,6 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'表示形式とサイズ'**
   String get homeViewModeTooltip;
-
-  /// No description provided for @homeMoveToTrashNothing.
-  ///
-  /// In ja, this message translates to:
-  /// **'ゴミ箱へ移動できるものがありません（お気に入りは移動しません）。'**
-  String get homeMoveToTrashNothing;
 
   /// No description provided for @homeMovedToTrashSnackbar.
   ///
@@ -15261,12 +14955,6 @@ abstract class AppLocalizations {
   /// **'フォルダをゴミ箱へ移動しますか？'**
   String get projectListTrashFolderConfirmTitle;
 
-  /// No description provided for @projectListTrashFolderConfirmBody.
-  ///
-  /// In ja, this message translates to:
-  /// **'「{name}」をゴミ箱へ移動します。ゴミ箱からフォルダごと元に戻せます。'**
-  String projectListTrashFolderConfirmBody(String name);
-
   /// No description provided for @homeFolderMovedToTrashSnackbar.
   ///
   /// In ja, this message translates to:
@@ -15309,71 +14997,11 @@ abstract class AppLocalizations {
   /// **'{min}〜{max}の数字を入力してください'**
   String newProjectNumberRangeError(int min, int max);
 
-  /// No description provided for @pcViewZoomIn.
-  ///
-  /// In ja, this message translates to:
-  /// **'拡大'**
-  String get pcViewZoomIn;
-
-  /// No description provided for @pcViewZoomOut.
-  ///
-  /// In ja, this message translates to:
-  /// **'縮小'**
-  String get pcViewZoomOut;
-
   /// No description provided for @pcViewFit.
   ///
   /// In ja, this message translates to:
   /// **'全体を表示'**
   String get pcViewFit;
-
-  /// No description provided for @pcViewActualPixels.
-  ///
-  /// In ja, this message translates to:
-  /// **'100%で表示'**
-  String get pcViewActualPixels;
-
-  /// No description provided for @pcViewRotateLeft.
-  ///
-  /// In ja, this message translates to:
-  /// **'左に回転'**
-  String get pcViewRotateLeft;
-
-  /// No description provided for @pcViewRotateRight.
-  ///
-  /// In ja, this message translates to:
-  /// **'右に回転'**
-  String get pcViewRotateRight;
-
-  /// No description provided for @pcViewResetRotation.
-  ///
-  /// In ja, this message translates to:
-  /// **'回転を戻す'**
-  String get pcViewResetRotation;
-
-  /// No description provided for @pcViewHidePanels.
-  ///
-  /// In ja, this message translates to:
-  /// **'パネルを隠す'**
-  String get pcViewHidePanels;
-
-  /// No description provided for @pcViewFrameStrip.
-  ///
-  /// In ja, this message translates to:
-  /// **'フレーム一覧'**
-  String get pcViewFrameStrip;
-
-  /// No description provided for @pcPaneToolProperty.
-  ///
-  /// In ja, this message translates to:
-  /// **'ツールの設定'**
-  String get pcPaneToolProperty;
-
-  /// No description provided for @pcToolPropertyEmpty.
-  ///
-  /// In ja, this message translates to:
-  /// **'このツールには設定がありません'**
-  String get pcToolPropertyEmpty;
 
   /// PC/DeXモードのステータスバー：今のフレームと総数
   ///
@@ -15381,59 +15009,11 @@ abstract class AppLocalizations {
   /// **'フレーム {current}/{total}'**
   String pcStatusFrame(int current, int total);
 
-  /// No description provided for @pcPaneProgram.
-  ///
-  /// In ja, this message translates to:
-  /// **'プレビュー'**
-  String get pcPaneProgram;
-
-  /// No description provided for @pcPaneInspector.
-  ///
-  /// In ja, this message translates to:
-  /// **'詳細'**
-  String get pcPaneInspector;
-
-  /// No description provided for @pcTimelineZoomIn.
-  ///
-  /// In ja, this message translates to:
-  /// **'タイムラインを拡大'**
-  String get pcTimelineZoomIn;
-
-  /// No description provided for @pcTimelineZoomOut.
-  ///
-  /// In ja, this message translates to:
-  /// **'タイムラインを縮小'**
-  String get pcTimelineZoomOut;
-
-  /// No description provided for @pcBinEmpty.
-  ///
-  /// In ja, this message translates to:
-  /// **'素材はまだありません'**
-  String get pcBinEmpty;
-
-  /// PC/DeXモードのタイムライン：シーンの一覧のフレーム数
-  ///
-  /// In ja, this message translates to:
-  /// **'{count}フレーム'**
-  String pcBinSceneFrames(int count);
-
-  /// No description provided for @pcInspectorHint.
-  ///
-  /// In ja, this message translates to:
-  /// **'タイムラインの素材を選ぶと、ここで位置・大きさ・不透明度などを調整できます。'**
-  String get pcInspectorHint;
-
   /// PC/DeXモードのタイムライン：ステータスバーのフレームレート
   ///
   /// In ja, this message translates to:
   /// **'{fps} fps'**
   String pcStatusFps(int fps);
-
-  /// No description provided for @canvasSizePresetDuplicateSuffix.
-  ///
-  /// In ja, this message translates to:
-  /// **'のコピー'**
-  String get canvasSizePresetDuplicateSuffix;
 
   /// No description provided for @communityChannelRefreshButton.
   ///
@@ -18338,12 +17918,6 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'ペン先の幅（高さ比）'**
   String get brushNibWidthRatio;
-
-  /// No description provided for @brushFoldFlatEnds.
-  ///
-  /// In ja, this message translates to:
-  /// **'両端を平らにする'**
-  String get brushFoldFlatEnds;
 
   /// No description provided for @brushFoldTriggerAngle.
   ///

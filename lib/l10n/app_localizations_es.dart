@@ -240,15 +240,6 @@ class AppLocalizationsEs extends AppLocalizations {
   String get homeShareOpenWith => 'Compartir / Abrir en Fotos';
 
   @override
-  String homeWorkDeleteConfirmTitle(String name) {
-    return '¿Eliminar $name?';
-  }
-
-  @override
-  String get homeWorkDeleteConfirmBody =>
-      'Se eliminará el archivo exportado de este dispositivo. Esta acción no se puede deshacer.';
-
-  @override
   String get homePreviewFailed => 'No se puede reproducir la vista previa';
 
   @override
@@ -445,11 +436,6 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
-  String homePasteTooltip(int count) {
-    return 'Pegar $count elemento(s)';
-  }
-
-  @override
   String get commonOk => 'Aceptar';
 
   @override
@@ -528,15 +514,6 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get homeDrawerSettings => 'Ajustes';
-
-  @override
-  String get homeDrawerHelp => 'Ayuda';
-
-  @override
-  String get homeDrawerTips => 'Consejos';
-
-  @override
-  String get homeDrawerPremium => 'Premium';
 
   @override
   String get gestureActionNoneShort => 'Ninguna';
@@ -716,11 +693,6 @@ class AppLocalizationsEs extends AppLocalizations {
   String get transferExportSuccessSnackbar => 'Archivo .niatra exportado';
 
   @override
-  String transferExportFailedSnackbar(String error) {
-    return 'Error al exportar: $error';
-  }
-
-  @override
   String get transferImportSuccessSnackbar => 'Archivo .niatra importado';
 
   @override
@@ -751,11 +723,6 @@ class AppLocalizationsEs extends AppLocalizations {
           'El atajo importado «$name» ($combo) no se añadió porque este dispositivo usa las mismas teclas para otra acción. Para usarlo, añádelo con otras teclas en los ajustes de Atajos',
     );
     return '$_temp0';
-  }
-
-  @override
-  String transferImportFailedSnackbar(String error) {
-    return 'Error al importar: $error';
   }
 
   @override
@@ -1130,16 +1097,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get premiumYearlyTitle => 'Plan anual (recomendado)';
 
   @override
-  String get premiumYearlyDescription => 'Equivale a 2 meses gratis';
-
-  @override
   String get premiumYearlyPrice => '¥5.500/año';
 
   @override
   String get premiumYearlyOriginalPrice => '¥6.600';
-
-  @override
-  String get premiumYearlyPerMonthLabel => 'Equivale a ¥458/mes';
 
   @override
   String get premiumMonthlyTitle => 'Plan mensual';
@@ -2792,11 +2753,6 @@ class AppLocalizationsEs extends AppLocalizations {
   String get stampCreateDialogTitle => 'Sello personalizado';
 
   @override
-  String stampImportFailedSnackbar(String error) {
-    return 'Error al cargar el sello: $error';
-  }
-
-  @override
   String stampExportFailedSnackbar(String error) {
     return 'Error al exportar el sello: $error';
   }
@@ -3130,20 +3086,6 @@ class AppLocalizationsEs extends AppLocalizations {
   String get exportContinueButton => 'Continuar';
 
   @override
-  String get exportDurationExceededTitle => 'Se superó la duración máxima';
-
-  @override
-  String exportDurationExceededBody(int max, int current) {
-    return 'La duración máxima de la versión gratuita es de $max segundos.\nEl proyecto actual dura aproximadamente $current segundos.\nActualizar a Premium amplía este límite hasta 2 horas.';
-  }
-
-  @override
-  String get exportViewPremiumButton => 'Ver Premium';
-
-  @override
-  String get exportContinueAnywayButton => 'Continuar de todos modos';
-
-  @override
   String get exportCompleteTitle => 'Exportación completa';
 
   @override
@@ -3395,16 +3337,9 @@ class AppLocalizationsEs extends AppLocalizations {
       'Coloca sellos de forma fija. Mantén pulsado para ajustar la rotación, la densidad y más.';
 
   @override
-  String get penSubToolManageTooltip => 'Gestionar';
-
-  @override
   String penSubToolBrushSizeOpacity(int size, int opacity) {
     return '${size}px · $opacity%';
   }
-
-  @override
-  String get penSubToolStampRotationSubtitle =>
-      'Rotación aleatoria según la dirección del trazo';
 
   @override
   String get brushSearchHint => 'Buscar por nombre de pincel';
@@ -3414,11 +3349,6 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get brushCreateDialogTitle => 'Pincel personalizado';
-
-  @override
-  String brushImportFailedSnackbar(String error) {
-    return 'Error al cargar el pincel: $error';
-  }
 
   @override
   String brushExportFailedSnackbar(String error) {
@@ -3978,9 +3908,6 @@ class AppLocalizationsEs extends AppLocalizations {
   String get filterEmpty => 'No hay filtros';
 
   @override
-  String get filterPickHint => 'Elige un filtro de la lista de arriba';
-
-  @override
   String get filterApplyingTitle => 'Aplicando filtro';
 
   @override
@@ -4012,11 +3939,6 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get projectListDeleteFolderConfirmTitle => '¿Eliminar esta carpeta?';
-
-  @override
-  String projectListDeleteFolderConfirmBody(String name) {
-    return 'Se eliminará «$name». Los proyectos y subcarpetas que contiene se moverán a la raíz.';
-  }
 
   @override
   String get projectListFolderRootOption => 'Sin carpeta (raíz)';
@@ -4242,21 +4164,6 @@ class AppLocalizationsEs extends AppLocalizations {
     );
     return 'Afecta a $_temp0 y a $_temp1. Asigna otra parte antes de usar el relleno automático en esas capas.';
   }
-
-  @override
-  String get autofillPartUnconfiguredDialogTitle => 'Hay partes sin configurar';
-
-  @override
-  String get autofillPartUnconfiguredDialogBody =>
-      'Configura las siguientes partes antes de guardar.';
-
-  @override
-  String autofillPartUnconfiguredItem(String name) {
-    return '• $name: sin trama seleccionada';
-  }
-
-  @override
-  String get autofillPartUnconfiguredBackButton => 'Volver a la configuración';
 
   @override
   String get autofillPartEmpty => 'No hay partes\nToca + para añadir una';
@@ -4574,13 +4481,6 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get saveTreeOverwriteConfirmBody =>
       'Se perderán los datos guardados en ese momento. ¿Continuar?';
-
-  @override
-  String get saveTreeResumeFromHereAction => 'Reanudar desde aquí';
-
-  @override
-  String get saveTreeResumeConfirmBody =>
-      '¿Quieres continuar trabajando desde estos datos guardados?\n\nSe sobrescribirán los datos actuales. Guarda el trabajo actual antes si necesitas conservarlo.';
 
   @override
   String get saveTreeProjectDetailResumeBody =>
@@ -5587,9 +5487,6 @@ class AppLocalizationsEs extends AppLocalizations {
   String get timelineCameraTrackLabel => 'Cámara';
 
   @override
-  String get timelineRangeSceneFixed => 'Escena fija';
-
-  @override
   String get timelineEndCardDefaultLogoLabel => 'Logo de NIARIM';
 
   @override
@@ -6314,27 +6211,8 @@ class AppLocalizationsEs extends AppLocalizations {
       'Orden de los paneles de herramientas';
 
   @override
-  String get pcWorkspaceLayoutToolOrderHint =>
-      'El orden de apilado usado cuando hay varios paneles abiertos a la vez (pincel, trama, sello, etc.).';
-
-  @override
   String get pcWorkspaceLayoutRightOrderSection =>
       'Orden del panel de capas, etc.';
-
-  @override
-  String get pcWorkspaceLayoutRightOrderHint =>
-      'El orden de apilado del selector de color, el panel de capas y la vista previa del lienzo.';
-
-  @override
-  String get pcWorkspaceLayoutWidthSection => 'Ancho de los paneles';
-
-  @override
-  String get pcWorkspaceLayoutToolWidthLabel =>
-      'Ancho del lado del panel de herramientas';
-
-  @override
-  String get pcWorkspaceLayoutRightWidthLabel =>
-      'Ancho del lado del panel de capas';
 
   @override
   String get pcWorkspaceLayoutResetWidthButton => 'Restablecer ancho y alto';
@@ -6628,10 +6506,6 @@ class AppLocalizationsEs extends AppLocalizations {
   String get workspaceNameRequiredError => 'Introduce un nombre.';
 
   @override
-  String get workspaceNoSavedPresets =>
-      'Todavía no hay espacios de trabajo guardados.';
-
-  @override
   String get workspaceOverwriteSelectTitle =>
       'Selecciona un espacio de trabajo para sobrescribir';
 
@@ -6720,9 +6594,6 @@ class AppLocalizationsEs extends AppLocalizations {
   String get communityRankingPeriodDaily => 'Diario';
 
   @override
-  String get communityRankingSortViews => 'Reproducciones';
-
-  @override
   String get communityRankingSortBookmarks => 'Marcadores';
 
   @override
@@ -6740,10 +6611,6 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get communityWorkDetailViewOnYoutube => 'Ver en YouTube';
-
-  @override
-  String get communityWorkDetailViewOnYoutubeComingSoonSnackbar =>
-      'La integración con YouTube estará disponible próximamente';
 
   @override
   String get communityWorkDetailBookmarkAdd => 'Marcar';
@@ -6808,50 +6675,8 @@ class AppLocalizationsEs extends AppLocalizations {
       'Abre Detalles para ver esta obra.';
 
   @override
-  String get communityReportDialogTitle => 'Denunciar esta obra';
-
-  @override
-  String get communityReportDialogBody =>
-      'Selecciona un motivo para la denuncia.';
-
-  @override
-  String get communityReportReasonInappropriate => 'Contenido inapropiado';
-
-  @override
-  String get communityReportReasonCopyright =>
-      'Posible infracción de derechos de autor';
-
-  @override
-  String get communityReportReasonSpam => 'Spam o publicaciones repetidas';
-
-  @override
-  String get communityReportReasonOther => 'Otro';
-
-  @override
-  String get communityReportSubmitButton => 'Enviar denuncia';
-
-  @override
-  String get communityReportDetailLabel => 'Detalles';
-
-  @override
-  String get communityReportDetailHint =>
-      'Describe específicamente cuál es el problema';
-
-  @override
-  String get communityReportDetailRequiredError => 'Introduce los detalles';
-
-  @override
   String get communityReportComingSoonSnackbar =>
       'La función de denuncia estará disponible próximamente. No se ha enviado nada.';
-
-  @override
-  String communityBlockConfirmTitle(String name) {
-    return '¿Bloquear a «$name»?';
-  }
-
-  @override
-  String get communityBlockConfirmBody =>
-      'Al bloquear, las obras de este creador dejarán de aparecer en tus listas.';
 
   @override
   String get communityBlockComingSoonSnackbar =>
@@ -7629,9 +7454,6 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get filterNoiseStyle => 'Tipo de ruido';
-
-  @override
-  String get filterNoiseFilmGrain => 'Grano de película';
 
   @override
   String get filterNoiseColor => 'Ruido de color';
@@ -8566,9 +8388,6 @@ class AppLocalizationsEs extends AppLocalizations {
   String get communityUnmuteDone => 'Creador visible de nuevo';
 
   @override
-  String get communityMilestoneNotificationsTitle => 'Notificaciones';
-
-  @override
   String communityFollowerMilestone(String count) {
     return 'Has alcanzado $count seguidores';
   }
@@ -8599,17 +8418,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get homeTrashWorking => 'Procesando…';
 
   @override
-  String get homeAddTooltip => 'Crear nuevo';
-
-  @override
   String get commonShowExplanation => 'Mostrar explicación';
 
   @override
   String get homeViewModeTooltip => 'Diseño y tamaño';
-
-  @override
-  String get homeMoveToTrashNothing =>
-      'No hay nada que mover a la papelera (los favoritos no se mueven).';
 
   @override
   String homeMovedToTrashSnackbar(int count) {
@@ -9002,11 +8814,6 @@ class AppLocalizationsEs extends AppLocalizations {
       '¿Mover la carpeta a la papelera?';
 
   @override
-  String projectListTrashFolderConfirmBody(String name) {
-    return '«$name» se moverá a la papelera. Puedes restaurar la carpeta completa desde la papelera.';
-  }
-
-  @override
   String homeFolderMovedToTrashSnackbar(String name) {
     return '«$name» movida a la papelera';
   }
@@ -9069,37 +8876,7 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
-  String get pcViewZoomIn => 'Acercar';
-
-  @override
-  String get pcViewZoomOut => 'Alejar';
-
-  @override
   String get pcViewFit => 'Ajustar a la ventana';
-
-  @override
-  String get pcViewActualPixels => 'Píxeles reales (100 %)';
-
-  @override
-  String get pcViewRotateLeft => 'Girar a la izquierda';
-
-  @override
-  String get pcViewRotateRight => 'Girar a la derecha';
-
-  @override
-  String get pcViewResetRotation => 'Restablecer el giro';
-
-  @override
-  String get pcViewHidePanels => 'Ocultar paneles';
-
-  @override
-  String get pcViewFrameStrip => 'Lista de fotogramas';
-
-  @override
-  String get pcPaneToolProperty => 'Ajustes de la herramienta';
-
-  @override
-  String get pcToolPropertyEmpty => 'Esta herramienta no tiene ajustes';
 
   @override
   String pcStatusFrame(int current, int total) {
@@ -9107,36 +8884,9 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
-  String get pcPaneProgram => 'Vista previa';
-
-  @override
-  String get pcPaneInspector => 'Detalles';
-
-  @override
-  String get pcTimelineZoomIn => 'Ampliar la línea de tiempo';
-
-  @override
-  String get pcTimelineZoomOut => 'Reducir la línea de tiempo';
-
-  @override
-  String get pcBinEmpty => 'Aún no hay materiales';
-
-  @override
-  String pcBinSceneFrames(int count) {
-    return '$count fotogramas';
-  }
-
-  @override
-  String get pcInspectorHint =>
-      'Selecciona un material en la línea de tiempo para ajustar aquí su posición, tamaño, opacidad y más.';
-
-  @override
   String pcStatusFps(int fps) {
     return '$fps fps';
   }
-
-  @override
-  String get canvasSizePresetDuplicateSuffix => 'copia';
 
   @override
   String get communityChannelRefreshButton =>
@@ -11332,9 +11082,6 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get brushNibWidthRatio => 'Ancho de la punta respecto a la altura';
-
-  @override
-  String get brushFoldFlatEnds => 'Extremos planos';
 
   @override
   String get brushFoldTriggerAngle => 'Ángulo mínimo de giro';

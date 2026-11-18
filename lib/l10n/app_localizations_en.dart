@@ -237,15 +237,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeShareOpenWith => 'Share / Open in Photos';
 
   @override
-  String homeWorkDeleteConfirmTitle(String name) {
-    return 'Delete $name?';
-  }
-
-  @override
-  String get homeWorkDeleteConfirmBody =>
-      'The exported file on this device will be deleted. This cannot be undone.';
-
-  @override
   String get homePreviewFailed => 'Unable to play preview';
 
   @override
@@ -438,11 +429,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String homePasteTooltip(int count) {
-    return 'Paste $count item(s)';
-  }
-
-  @override
   String get commonOk => 'OK';
 
   @override
@@ -519,15 +505,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get homeDrawerSettings => 'Settings';
-
-  @override
-  String get homeDrawerHelp => 'Help';
-
-  @override
-  String get homeDrawerTips => 'Tips';
-
-  @override
-  String get homeDrawerPremium => 'Premium';
 
   @override
   String get gestureActionNoneShort => 'None';
@@ -705,11 +682,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get transferExportSuccessSnackbar => 'Exported the .niatra file';
 
   @override
-  String transferExportFailedSnackbar(String error) {
-    return 'Export failed: $error';
-  }
-
-  @override
   String get transferImportSuccessSnackbar => 'Imported the .niatra file';
 
   @override
@@ -740,11 +712,6 @@ class AppLocalizationsEn extends AppLocalizations {
           'The imported shortcut “$name” ($combo) was not added because this device uses the same keys for another action. To use it, add it with other keys in the Shortcuts settings',
     );
     return '$_temp0';
-  }
-
-  @override
-  String transferImportFailedSnackbar(String error) {
-    return 'Import failed: $error';
   }
 
   @override
@@ -1107,16 +1074,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get premiumYearlyTitle => 'Yearly Plan (Recommended)';
 
   @override
-  String get premiumYearlyDescription => 'Equivalent to 2 months free';
-
-  @override
   String get premiumYearlyPrice => '¥5,500/year';
 
   @override
   String get premiumYearlyOriginalPrice => '¥6,600';
-
-  @override
-  String get premiumYearlyPerMonthLabel => 'Equivalent to ¥458/month';
 
   @override
   String get premiumMonthlyTitle => 'Monthly Plan';
@@ -2754,11 +2715,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get stampCreateDialogTitle => 'Custom Stamp';
 
   @override
-  String stampImportFailedSnackbar(String error) {
-    return 'Failed to load the stamp: $error';
-  }
-
-  @override
   String stampExportFailedSnackbar(String error) {
     return 'Failed to export the stamp: $error';
   }
@@ -3087,20 +3043,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get exportContinueButton => 'Continue';
 
   @override
-  String get exportDurationExceededTitle => 'Exceeds the maximum duration';
-
-  @override
-  String exportDurationExceededBody(int max, int current) {
-    return 'The maximum duration for the free version is $max seconds.\nThe current project is about $current seconds.\nUpgrading to Premium raises this limit to up to 2 hours.';
-  }
-
-  @override
-  String get exportViewPremiumButton => 'View Premium';
-
-  @override
-  String get exportContinueAnywayButton => 'Continue Anyway';
-
-  @override
   String get exportCompleteTitle => 'Export Complete';
 
   @override
@@ -3349,16 +3291,9 @@ class AppLocalizationsEn extends AppLocalizations {
       'Place stamps of a fixed shape. Long-press to set rotation, density, and more.';
 
   @override
-  String get penSubToolManageTooltip => 'Manage';
-
-  @override
   String penSubToolBrushSizeOpacity(int size, int opacity) {
     return '${size}px · $opacity%';
   }
-
-  @override
-  String get penSubToolStampRotationSubtitle =>
-      'Randomly rotate to match the stroke direction';
 
   @override
   String get brushSearchHint => 'Search by brush name';
@@ -3368,11 +3303,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get brushCreateDialogTitle => 'Custom brush';
-
-  @override
-  String brushImportFailedSnackbar(String error) {
-    return 'Failed to load brush: $error';
-  }
 
   @override
   String brushExportFailedSnackbar(String error) {
@@ -3920,9 +3850,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get filterEmpty => 'No filters';
 
   @override
-  String get filterPickHint => 'Choose a filter from the list above';
-
-  @override
   String get filterApplyingTitle => 'Applying filter';
 
   @override
@@ -3954,11 +3881,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get projectListDeleteFolderConfirmTitle => 'Delete this folder?';
-
-  @override
-  String projectListDeleteFolderConfirmBody(String name) {
-    return '“$name” will be deleted. Projects and subfolders inside it will move to the root.';
-  }
 
   @override
   String get projectListFolderRootOption => 'No folder (root)';
@@ -4184,22 +4106,6 @@ class AppLocalizationsEn extends AppLocalizations {
     );
     return 'This affects $_temp0 and $_temp1. Assign another part before running autofill on those layers.';
   }
-
-  @override
-  String get autofillPartUnconfiguredDialogTitle =>
-      'There are unconfigured parts';
-
-  @override
-  String get autofillPartUnconfiguredDialogBody =>
-      'Please set up the following parts before saving.';
-
-  @override
-  String autofillPartUnconfiguredItem(String name) {
-    return '• $name: No screentone selected';
-  }
-
-  @override
-  String get autofillPartUnconfiguredBackButton => 'Back to setup';
 
   @override
   String get autofillPartEmpty => 'No parts\nTap + to add one';
@@ -4513,13 +4419,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get saveTreeOverwriteConfirmBody =>
       'The data saved at that point will be lost. Are you sure?';
-
-  @override
-  String get saveTreeResumeFromHereAction => 'Resume from here';
-
-  @override
-  String get saveTreeResumeConfirmBody =>
-      'Resume work from this saved data?\n\nYour current data will be overwritten. Save your current work first if you need to keep it.';
 
   @override
   String get saveTreeProjectDetailResumeBody =>
@@ -5512,9 +5411,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get timelineCameraTrackLabel => 'Camera';
 
   @override
-  String get timelineRangeSceneFixed => 'Fixed scene';
-
-  @override
   String get timelineEndCardDefaultLogoLabel => 'NIARIM logo';
 
   @override
@@ -6222,24 +6118,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get pcWorkspaceLayoutToolOrderSection => 'Tool panel order';
 
   @override
-  String get pcWorkspaceLayoutToolOrderHint =>
-      'The stacking order used when multiple panels (brush, screentone, stamp, etc.) are open at once.';
-
-  @override
   String get pcWorkspaceLayoutRightOrderSection => 'Layer panel etc. order';
-
-  @override
-  String get pcWorkspaceLayoutRightOrderHint =>
-      'The stacking order of the color picker, layer panel, and canvas preview.';
-
-  @override
-  String get pcWorkspaceLayoutWidthSection => 'Panel width';
-
-  @override
-  String get pcWorkspaceLayoutToolWidthLabel => 'Tool panel side width';
-
-  @override
-  String get pcWorkspaceLayoutRightWidthLabel => 'Layer panel side width';
 
   @override
   String get pcWorkspaceLayoutResetWidthButton => 'Reset width and height';
@@ -6525,9 +6404,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get workspaceNameRequiredError => 'Please enter a name.';
 
   @override
-  String get workspaceNoSavedPresets => 'No saved workspaces yet.';
-
-  @override
   String get workspaceOverwriteSelectTitle => 'Select a workspace to overwrite';
 
   @override
@@ -6613,9 +6489,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get communityRankingPeriodDaily => 'Daily';
 
   @override
-  String get communityRankingSortViews => 'Views';
-
-  @override
   String get communityRankingSortBookmarks => 'Bookmarks';
 
   @override
@@ -6632,10 +6505,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get communityWorkDetailViewOnYoutube => 'Watch on YouTube';
-
-  @override
-  String get communityWorkDetailViewOnYoutubeComingSoonSnackbar =>
-      'YouTube integration is coming soon';
 
   @override
   String get communityWorkDetailBookmarkAdd => 'Bookmark';
@@ -6699,50 +6568,8 @@ class AppLocalizationsEn extends AppLocalizations {
       'Open Details to view this work.';
 
   @override
-  String get communityReportDialogTitle => 'Report this work';
-
-  @override
-  String get communityReportDialogBody =>
-      'Please choose a reason for reporting.';
-
-  @override
-  String get communityReportReasonInappropriate => 'Inappropriate content';
-
-  @override
-  String get communityReportReasonCopyright =>
-      'Suspected copyright infringement';
-
-  @override
-  String get communityReportReasonSpam => 'Spam or repeated posting';
-
-  @override
-  String get communityReportReasonOther => 'Other';
-
-  @override
-  String get communityReportSubmitButton => 'Submit report';
-
-  @override
-  String get communityReportDetailLabel => 'Details';
-
-  @override
-  String get communityReportDetailHint =>
-      'Describe specifically what the problem is';
-
-  @override
-  String get communityReportDetailRequiredError => 'Please enter details';
-
-  @override
   String get communityReportComingSoonSnackbar =>
       'Reporting is coming soon. Nothing was actually sent.';
-
-  @override
-  String communityBlockConfirmTitle(String name) {
-    return 'Block “$name”?';
-  }
-
-  @override
-  String get communityBlockConfirmBody =>
-      'Blocking hides this creator\'s works from your lists.';
 
   @override
   String get communityBlockComingSoonSnackbar =>
@@ -7512,9 +7339,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get filterNoiseStyle => 'Noise style';
-
-  @override
-  String get filterNoiseFilmGrain => 'Film grain';
 
   @override
   String get filterNoiseColor => 'Color noise';
@@ -8436,9 +8260,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get communityUnmuteDone => 'Creator shown again';
 
   @override
-  String get communityMilestoneNotificationsTitle => 'Notifications';
-
-  @override
   String communityFollowerMilestone(String count) {
     return 'You reached $count followers';
   }
@@ -8468,17 +8289,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeTrashWorking => 'Working…';
 
   @override
-  String get homeAddTooltip => 'Create new';
-
-  @override
   String get commonShowExplanation => 'Show explanation';
 
   @override
   String get homeViewModeTooltip => 'Layout and size';
-
-  @override
-  String get homeMoveToTrashNothing =>
-      'Nothing to move to the trash (favorites are not moved).';
 
   @override
   String homeMovedToTrashSnackbar(int count) {
@@ -8867,11 +8681,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'Move the folder to the trash?';
 
   @override
-  String projectListTrashFolderConfirmBody(String name) {
-    return '“$name” will be moved to the trash. You can restore the whole folder from the trash.';
-  }
-
-  @override
   String homeFolderMovedToTrashSnackbar(String name) {
     return 'Moved “$name” to the trash';
   }
@@ -8934,37 +8743,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get pcViewZoomIn => 'Zoom In';
-
-  @override
-  String get pcViewZoomOut => 'Zoom Out';
-
-  @override
   String get pcViewFit => 'Fit to Window';
-
-  @override
-  String get pcViewActualPixels => 'Actual Pixels (100%)';
-
-  @override
-  String get pcViewRotateLeft => 'Rotate Left';
-
-  @override
-  String get pcViewRotateRight => 'Rotate Right';
-
-  @override
-  String get pcViewResetRotation => 'Reset Rotation';
-
-  @override
-  String get pcViewHidePanels => 'Hide Panels';
-
-  @override
-  String get pcViewFrameStrip => 'Frame List';
-
-  @override
-  String get pcPaneToolProperty => 'Tool Settings';
-
-  @override
-  String get pcToolPropertyEmpty => 'This tool has no settings';
 
   @override
   String pcStatusFrame(int current, int total) {
@@ -8972,36 +8751,9 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get pcPaneProgram => 'Preview';
-
-  @override
-  String get pcPaneInspector => 'Details';
-
-  @override
-  String get pcTimelineZoomIn => 'Zoom In Timeline';
-
-  @override
-  String get pcTimelineZoomOut => 'Zoom Out Timeline';
-
-  @override
-  String get pcBinEmpty => 'No materials yet';
-
-  @override
-  String pcBinSceneFrames(int count) {
-    return '$count frames';
-  }
-
-  @override
-  String get pcInspectorHint =>
-      'Select a material on the timeline to adjust its position, size, opacity and more here.';
-
-  @override
   String pcStatusFps(int fps) {
     return '$fps fps';
   }
-
-  @override
-  String get canvasSizePresetDuplicateSuffix => 'copy';
 
   @override
   String get communityChannelRefreshButton =>
@@ -11165,9 +10917,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get brushNibWidthRatio => 'Tip width relative to height';
-
-  @override
-  String get brushFoldFlatEnds => 'Flat ends';
 
   @override
   String get brushFoldTriggerAngle => 'Minimum turn angle';

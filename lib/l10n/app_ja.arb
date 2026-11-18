@@ -139,15 +139,6 @@
     }
   },
   "homeShareOpenWith": "共有・写真アプリ等で開く",
-  "homeWorkDeleteConfirmTitle": "{name}を削除しますか？",
-  "@homeWorkDeleteConfirmTitle": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "homeWorkDeleteConfirmBody": "端末内の書き出しファイルが削除されます。元に戻すことはできません。",
   "homePreviewFailed": "プレビューを再生できません",
   "homeFirstLaunchMessage": "手描きアニメーションを制作できます",
   "homeFirstLaunchStart": "はじめる",
@@ -233,14 +224,6 @@
       }
     }
   },
-  "homePasteTooltip": "{count}件を貼り付け",
-  "@homePasteTooltip": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "commonOk": "OK",
   "gestureSettingsTitle": "ジェスチャー設定",
   "gestureTwoFingerTap": "2本指タップ",
@@ -273,9 +256,6 @@
   "homeDrawerAppTagline": "手描きアニメ制作アプリ",
   "homeDrawerAutofillPreset": "自動塗り設定",
   "homeDrawerSettings": "設定",
-  "homeDrawerHelp": "ヘルプ",
-  "homeDrawerTips": "活用Tips",
-  "homeDrawerPremium": "プレミアム",
   "gestureActionNoneShort": "なし",
   "pressureTryDrawHint": "この設定で試し書きできます（ペンの場合、実際の筆圧が反映されます）",
   "pressureTryDrawClear": "クリア",
@@ -337,14 +317,6 @@
   "transferImport": "読み込み",
   "transferExport": "書き出し",
   "transferExportSuccessSnackbar": ".niatraファイルを書き出しました",
-  "transferExportFailedSnackbar": "書き出しに失敗しました: {error}",
-  "@transferExportFailedSnackbar": {
-    "placeholders": {
-      "error": {
-        "type": "String"
-      }
-    }
-  },
   "transferImportSuccessSnackbar": ".niatraファイルを読み込みました",
   "transferImportAddedCopiesSnackbar": "{count, plural, =1{.niatraファイルを読み込みました。この端末の内容と違った1件は、この端末の方をそのまま残し、読み込んだ方を「{name}」として足しました} other{.niatraファイルを読み込みました。この端末の内容と違った{count}件は、この端末の方をそのまま残し、読み込んだ方を「{name}」などの名前で足しました}}",
   "@transferImportAddedCopiesSnackbar": {
@@ -369,14 +341,6 @@
         "type": "String"
       },
       "combo": {
-        "type": "String"
-      }
-    }
-  },
-  "transferImportFailedSnackbar": "読み込みに失敗しました: {error}",
-  "@transferImportFailedSnackbar": {
-    "placeholders": {
-      "error": {
         "type": "String"
       }
     }
@@ -546,10 +510,8 @@
   "premiumPlanSectionTitle": "プラン",
   "premiumStoreUnavailable": "ストアから購入情報を取得できませんでした。通信を確認して再試行してください。",
   "premiumYearlyTitle": "年額プラン（おすすめ）",
-  "premiumYearlyDescription": "実質2か月分無料",
   "premiumYearlyPrice": "¥5,500/年",
   "premiumYearlyOriginalPrice": "¥6,600",
-  "premiumYearlyPerMonthLabel": "月あたり¥458相当",
   "premiumMonthlyTitle": "月額プラン",
   "premiumRestorePurchases": "購入を復元",
   "premiumRestoredSnackbar": "購入情報を復元しました（該当する購入がある場合）",
@@ -1081,14 +1043,6 @@
   "stampSearchHint": "スタンプ名で検索",
   "stampEmpty": "スタンプがありません",
   "stampCreateDialogTitle": "自作スタンプ",
-  "stampImportFailedSnackbar": "スタンプの読み込みに失敗しました: {error}",
-  "@stampImportFailedSnackbar": {
-    "placeholders": {
-      "error": {
-        "type": "String"
-      }
-    }
-  },
   "stampExportFailedSnackbar": "スタンプの書き出しに失敗しました: {error}",
   "@stampExportFailedSnackbar": {
     "placeholders": {
@@ -1249,20 +1203,6 @@
   "exportOutdatedAutofillTitle": "自動塗りが最新ではありません",
   "exportOutdatedAutofillBody": "更新されていない自動塗りレイヤーがあります。このまま書き出しますか？",
   "exportContinueButton": "続行",
-  "exportDurationExceededTitle": "動画尺の上限を超えています",
-  "exportDurationExceededBody": "無料版の最大動画尺は{max}秒です。\n現在のプロジェクトは約{current}秒あります。\nプレミアムにアップグレードすると最大2時間まで作成できるようになります。",
-  "@exportDurationExceededBody": {
-    "placeholders": {
-      "max": {
-        "type": "int"
-      },
-      "current": {
-        "type": "int"
-      }
-    }
-  },
-  "exportViewPremiumButton": "プレミアムを見る",
-  "exportContinueAnywayButton": "このまま続行",
   "exportCompleteTitle": "書き出し完了",
   "exportCompleteFramesBody": "{count} フレームの書き出しが完了しました。",
   "@exportCompleteFramesBody": {
@@ -1458,7 +1398,6 @@
   "penSubToolTabLassoFill": "投げ縄塗り",
   "penSubToolToneTooltipMessage": "トーンを選ぶと、バケツやペンでアミトーン柄を塗れます。",
   "penSubToolStampTooltipMessage": "決まった形のスタンプを配置できます。長押しで回転・密度などを設定できます。",
-  "penSubToolManageTooltip": "管理",
   "penSubToolBrushSizeOpacity": "{size}px · {opacity}%",
   "@penSubToolBrushSizeOpacity": {
     "placeholders": {
@@ -1470,18 +1409,9 @@
       }
     }
   },
-  "penSubToolStampRotationSubtitle": "ストローク方向に合わせてランダムに回転",
   "brushSearchHint": "ブラシ名で検索",
   "brushEmpty": "ブラシがありません",
   "brushCreateDialogTitle": "自作ブラシ",
-  "brushImportFailedSnackbar": "ブラシの読み込みに失敗しました: {error}",
-  "@brushImportFailedSnackbar": {
-    "placeholders": {
-      "error": {
-        "type": "String"
-      }
-    }
-  },
   "brushExportFailedSnackbar": "ブラシの書き出しに失敗しました: {error}",
   "@brushExportFailedSnackbar": {
     "placeholders": {
@@ -1754,7 +1684,6 @@
     }
   },
   "filterEmpty": "フィルターがありません",
-  "filterPickHint": "上の一覧から使うフィルターを選んでください",
   "filterApplyingTitle": "フィルター適用中",
   "filterApplyingSubtitle": "{name}　{count}フレーム",
   "@filterApplyingSubtitle": {
@@ -1775,14 +1704,6 @@
   "projectListCreateShareAction": "プロジェクトを共有",
   "projectListEditFolderAction": "名前・色を編集",
   "projectListDeleteFolderConfirmTitle": "フォルダを削除しますか？",
-  "projectListDeleteFolderConfirmBody": "「{name}」を削除します。中のプロジェクト・子フォルダはルートへ戻ります。",
-  "@projectListDeleteFolderConfirmBody": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
   "projectListFolderRootOption": "フォルダなし（ルート）",
   "projectListEditFolderTooltip": "フォルダを編集",
   "projectListCreateFolderAction": "新規フォルダを作成",
@@ -1903,17 +1824,6 @@
       }
     }
   },
-  "autofillPartUnconfiguredDialogTitle": "未設定のパーツがあります",
-  "autofillPartUnconfiguredDialogBody": "保存する前に、以下のパーツを設定してください。",
-  "autofillPartUnconfiguredItem": "・{name}：トーンが未選択です",
-  "@autofillPartUnconfiguredItem": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "autofillPartUnconfiguredBackButton": "設定へ戻る",
   "autofillPartEmpty": "パーツがありません\n＋ボタンで追加してください",
   "autofillPartToneUnselected": "トーンが未選択です",
   "autofillPartAddDialogTitle": "パーツ追加",
@@ -2120,8 +2030,6 @@
   "saveTreeTimelineActionChoiceBody": "このセーブへ「上書き保存」するか、「ここから作業を再開」するか選んでください。",
   "saveTreeOverwriteAction": "上書きする",
   "saveTreeOverwriteConfirmBody": "このときのセーブデータは消えますがよろしいですか？",
-  "saveTreeResumeFromHereAction": "ここから再開する",
-  "saveTreeResumeConfirmBody": "このセーブデータから作業を再開しますか？\n\n現在のデータは上書きされます。保存する必要がある場合は先にセーブしてください。",
   "saveTreeProjectDetailResumeBody": "このセーブデータから作業を再開しますか？\n\n現在のデータは上書きされます。残したい場合は、一旦キャンセルして先に別のセーブスロット（ツリー方式では別の分岐）へセーブしてください。",
   "saveTreeLoadFailedSnackbar": "保存データの読み込みに失敗しました",
   "saveTreeRestoredSnackbar": "セーブデータを読み込みました（{name}）",
@@ -2687,7 +2595,6 @@
   "timelineFrameTrackLabel": "フレーム",
   "timelineTrackRowRenameTitle": "行名を変更",
   "timelineCameraTrackLabel": "カメラ",
-  "timelineRangeSceneFixed": "シーン固定",
   "timelineEndCardDefaultLogoLabel": "NIARIMロゴ",
   "timelineEndCardHiddenLabel": "非表示",
   "timelineEndCardTrackLabel": "エンドカードトラック",
@@ -2993,12 +2900,7 @@
   "pcWorkspaceLayoutScreenTitle": "PCレイアウト設定",
   "pcWorkspaceLayoutIntroHint": "PCモード（横画面＋マウス・ペンタブ接続）でキャンバス画面を開いた際の、パネルの並び順・幅を調整できます。",
   "pcWorkspaceLayoutToolOrderSection": "ツールパネルの並び順",
-  "pcWorkspaceLayoutToolOrderHint": "ブラシ・トーン・スタンプ等、複数同時に開いた際に積み重なる順番です。",
   "pcWorkspaceLayoutRightOrderSection": "レイヤー等パネルの並び順",
-  "pcWorkspaceLayoutRightOrderHint": "カラーピッカー・レイヤー・キャンバスプレビューの積み重ね順です。",
-  "pcWorkspaceLayoutWidthSection": "パネルの幅",
-  "pcWorkspaceLayoutToolWidthLabel": "ツールパネル側の幅",
-  "pcWorkspaceLayoutRightWidthLabel": "レイヤー等パネル側の幅",
   "pcWorkspaceLayoutResetWidthButton": "幅と高さをデフォルトに戻す",
   "pcWorkspaceLayoutResetOrderButton": "並び順をデフォルトに戻す",
   "pcWorkspaceLayoutResetWorkspaceConfirmBody": "パネルの並び順・幅・高さ・収納状態・自動収納の設定と、最初から開くパネルをデフォルトに戻します。",
@@ -3106,7 +3008,6 @@
   "workspaceImportFromFileButton": "外部ファイルを読み込み",
   "workspaceImportFailedSnackbar": "読み込みに失敗しました: {error}",
   "workspaceNameRequiredError": "名前を入力してください",
-  "workspaceNoSavedPresets": "保存済みのワークスペースがありません",
   "workspaceOverwriteSelectTitle": "上書きするワークスペースを選択",
   "workspaceOverwriteConfirmTitle": "上書きの確認",
   "workspaceOverwriteConfirmBody": "「{name}」を現在の設定で上書きします。元の内容は削除されます。よろしいですか？",
@@ -3162,7 +3063,6 @@
   "communityRankingPeriodMonthly": "月間",
   "communityRankingPeriodWeekly": "週間",
   "communityRankingPeriodDaily": "デイリー",
-  "communityRankingSortViews": "再生数",
   "communityRankingSortBookmarks": "ブックマーク数",
   "communityRankingSortAscendingTooltip": "昇順（少ない順）",
   "communityRankingSortDescendingTooltip": "降順（多い順）",
@@ -3175,7 +3075,6 @@
     }
   },
   "communityWorkDetailViewOnYoutube": "YouTubeで見る",
-  "communityWorkDetailViewOnYoutubeComingSoonSnackbar": "YouTube連携機能は準備中です",
   "communityWorkDetailBookmarkAdd": "ブックマーク",
   "communityWorkDetailBookmarkRemove": "ブックマーク済み",
   "communityWorkDetailReportButton": "通報",
@@ -3194,26 +3093,7 @@
   "communityFloatingPreviewResizeTooltip": "プレビューのサイズを変更",
   "communityFloatingPreviewMoveHint": "ドラッグで移動できます。Alt＋矢印キーでも移動できます。",
   "communityFloatingPreviewCompactHint": "この作品は詳細画面で確認できます。",
-  "communityReportDialogTitle": "作品を通報",
-  "communityReportDialogBody": "通報理由を選択してください。",
-  "communityReportReasonInappropriate": "不適切な内容",
-  "communityReportReasonCopyright": "著作権侵害の疑い",
-  "communityReportReasonSpam": "スパム・繰り返し投稿",
-  "communityReportReasonOther": "その他",
-  "communityReportSubmitButton": "通報する",
-  "communityReportDetailLabel": "詳細",
-  "communityReportDetailHint": "どのような点が問題か具体的に入力してください",
-  "communityReportDetailRequiredError": "詳細を入力してください",
   "communityReportComingSoonSnackbar": "通報機能は準備中です。実際には送信されません。",
-  "communityBlockConfirmTitle": "「{name}」をブロックしますか？",
-  "@communityBlockConfirmTitle": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "communityBlockConfirmBody": "ブロックすると、この作者の作品が一覧に表示されなくなります。",
   "communityBlockComingSoonSnackbar": "ブロック機能は準備中です。実際には反映されません。",
   "communityAuthorWorksCount": "{count}作品",
   "@communityAuthorWorksCount": {
@@ -3569,7 +3449,6 @@
   "brushImageMoveDown": "下へ移動",
   "brushImageRemove": "素材を外す",
   "filterNoiseStyle": "ノイズの種類",
-  "filterNoiseFilmGrain": "フィルム粒子",
   "filterNoiseColor": "カラーノイズ",
   "filterNoiseSeed": "模様のシード値",
   "communityContentFilterTitle": "表示フィルター",
@@ -3990,7 +3869,6 @@
   "communityMuteNo": "いいえ",
   "communityMuteDone": "このユーザーを非表示にしました",
   "communityUnmuteDone": "このユーザーの非表示を解除しました",
-  "communityMilestoneNotificationsTitle": "通知",
   "communityFollowerMilestone": "フォロワーが{count}人に達しました",
   "@communityFollowerMilestone": {
     "placeholders": {
@@ -4016,10 +3894,8 @@
   "communitySortLabel": "並び替え",
   "homeTrashOperationFailed": "操作を完了できませんでした。保存先を確認して、もう一度お試しください。",
   "homeTrashWorking": "処理中…",
-  "homeAddTooltip": "新規作成",
   "commonShowExplanation": "説明を表示",
   "homeViewModeTooltip": "表示形式とサイズ",
-  "homeMoveToTrashNothing": "ゴミ箱へ移動できるものがありません（お気に入りは移動しません）。",
   "homeMovedToTrashSnackbar": "{count}件をゴミ箱へ移動しました",
   "@homeMovedToTrashSnackbar": {
     "placeholders": {
@@ -4282,14 +4158,6 @@
   "settingsTipsResetDone": "機能の説明を、次に使うときにもう一度表示します",
   "helpTutorialButton": "使い方を見る",
   "projectListTrashFolderConfirmTitle": "フォルダをゴミ箱へ移動しますか？",
-  "projectListTrashFolderConfirmBody": "「{name}」をゴミ箱へ移動します。ゴミ箱からフォルダごと元に戻せます。",
-  "@projectListTrashFolderConfirmBody": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
   "homeFolderMovedToTrashSnackbar": "「{name}」をゴミ箱へ移動しました",
   "@homeFolderMovedToTrashSnackbar": {
     "placeholders": {
@@ -4345,17 +4213,7 @@
       }
     }
   },
-  "pcViewZoomIn": "拡大",
-  "pcViewZoomOut": "縮小",
   "pcViewFit": "全体を表示",
-  "pcViewActualPixels": "100%で表示",
-  "pcViewRotateLeft": "左に回転",
-  "pcViewRotateRight": "右に回転",
-  "pcViewResetRotation": "回転を戻す",
-  "pcViewHidePanels": "パネルを隠す",
-  "pcViewFrameStrip": "フレーム一覧",
-  "pcPaneToolProperty": "ツールの設定",
-  "pcToolPropertyEmpty": "このツールには設定がありません",
   "pcStatusFrame": "フレーム {current}/{total}",
   "@pcStatusFrame": {
     "description": "PC/DeXモードのステータスバー：今のフレームと総数",
@@ -4368,21 +4226,6 @@
       }
     }
   },
-  "pcPaneProgram": "プレビュー",
-  "pcPaneInspector": "詳細",
-  "pcTimelineZoomIn": "タイムラインを拡大",
-  "pcTimelineZoomOut": "タイムラインを縮小",
-  "pcBinEmpty": "素材はまだありません",
-  "pcBinSceneFrames": "{count}フレーム",
-  "@pcBinSceneFrames": {
-    "description": "PC/DeXモードのタイムライン：シーンの一覧のフレーム数",
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "pcInspectorHint": "タイムラインの素材を選ぶと、ここで位置・大きさ・不透明度などを調整できます。",
   "pcStatusFps": "{fps} fps",
   "@pcStatusFps": {
     "description": "PC/DeXモードのタイムライン：ステータスバーのフレームレート",
@@ -4392,7 +4235,6 @@
       }
     }
   },
-  "canvasSizePresetDuplicateSuffix": "のコピー",
   "communityChannelRefreshButton": "YouTube名・アイコンを更新（1日1回）",
   "communityChannelRefreshSuccess": "YouTubeの名前・アイコンを更新しました",
   "communityChannelRefreshNoToken": "YouTubeの認証が必要です",
@@ -6299,7 +6141,6 @@
     "description": "PCレイアウト：見本の操作のしかた"
   },
   "brushNibWidthRatio": "ペン先の幅（高さ比）",
-  "brushFoldFlatEnds": "両端を平らにする",
   "brushFoldTriggerAngle": "折り返しが始まる角度",
   "brushFoldEndTaper": "折り返し線の先細り",
   "timelineSelectionScenes": "シーン",

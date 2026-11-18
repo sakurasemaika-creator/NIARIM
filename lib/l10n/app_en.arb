@@ -63,8 +63,6 @@
   "homeSharedFolderEmpty": "No shared projects in this folder",
   "homeDeleteFolderKeepContents": "“{name}” will be deleted. Its contents will return to the main list and will not be deleted.",
   "homeShareOpenWith": "Share / Open in Photos",
-  "homeWorkDeleteConfirmTitle": "Delete {name}?",
-  "homeWorkDeleteConfirmBody": "The exported file on this device will be deleted. This cannot be undone.",
   "homePreviewFailed": "Unable to play preview",
   "homeFirstLaunchMessage": "You can create hand-drawn animations",
   "homeFirstLaunchStart": "Get Started",
@@ -129,14 +127,6 @@
   "commonRename": "Rename",
   "commonCopy": "Copy",
   "commonCut": "Cut",
-  "homePasteTooltip": "Paste {count} item(s)",
-  "@homePasteTooltip": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "commonPaste": "Paste",
   "commonDuplicate": "Duplicate",
   "commonLabelWithValue": "{label}: {value}",
@@ -172,9 +162,6 @@
   "homeDrawerAppTagline": "Hand-drawn animation app",
   "homeDrawerAutofillPreset": "Autofill Settings",
   "homeDrawerSettings": "Settings",
-  "homeDrawerHelp": "Help",
-  "homeDrawerTips": "Tips",
-  "homeDrawerPremium": "Premium",
   "gestureActionNoneShort": "None",
   "pressureTryDrawHint": "Try drawing with this setting (with a stylus, actual pressure is reflected)",
   "pressureTryDrawClear": "Clear",
@@ -229,11 +216,9 @@
   "transferImport": "Import",
   "transferExport": "Export",
   "transferExportSuccessSnackbar": "Exported the .niatra file",
-  "transferExportFailedSnackbar": "Export failed: {error}",
   "transferImportSuccessSnackbar": "Imported the .niatra file",
   "transferImportAddedCopiesSnackbar": "{count, plural, =1{Imported the .niatra file. 1 item was different on this device, so this device's version was kept and the imported one was added as “{name}”} other{Imported the .niatra file. {count} items were different on this device, so this device's versions were kept and the imported ones were added under names such as “{name}”}}",
   "transferImportShortcutsNotAddedSnackbar": "{count, plural, =1{The imported shortcut “{name}” ({combo}) was not added because this device uses the same keys for another action. To use it, add it with other keys in the Shortcuts settings} other{{count} imported shortcuts, such as “{name}” ({combo}), were not added because this device uses the same keys for other actions. To use them, add them with other keys in the Shortcuts settings}}",
-  "transferImportFailedSnackbar": "Import failed: {error}",
   "folderManagementTitle": "Folder Management",
   "folderManagementCreateNew": "New",
   "folderManagementEmpty": "No folders yet",
@@ -373,10 +358,8 @@
   "premiumPlanSectionTitle": "Plans",
   "premiumStoreUnavailable": "Could not load purchase information from the store. Check your connection and try again.",
   "premiumYearlyTitle": "Yearly Plan (Recommended)",
-  "premiumYearlyDescription": "Equivalent to 2 months free",
   "premiumYearlyPrice": "¥5,500/year",
   "premiumYearlyOriginalPrice": "¥6,600",
-  "premiumYearlyPerMonthLabel": "Equivalent to ¥458/month",
   "premiumMonthlyTitle": "Monthly Plan",
   "premiumRestorePurchases": "Restore Purchases",
   "premiumRestoredSnackbar": "Restored your purchases (if any were found)",
@@ -851,7 +834,6 @@
   "stampSearchHint": "Search by stamp name",
   "stampEmpty": "No stamps",
   "stampCreateDialogTitle": "Custom Stamp",
-  "stampImportFailedSnackbar": "Failed to load the stamp: {error}",
   "stampExportFailedSnackbar": "Failed to export the stamp: {error}",
   "stampEditTitle": "Edit Stamp",
   "stampRotationLabel": "Rotation",
@@ -949,10 +931,6 @@
   "exportOutdatedAutofillTitle": "Auto-fill is not up to date",
   "exportOutdatedAutofillBody": "Some auto-fill layers haven't been updated. Export anyway?",
   "exportContinueButton": "Continue",
-  "exportDurationExceededTitle": "Exceeds the maximum duration",
-  "exportDurationExceededBody": "The maximum duration for the free version is {max} seconds.\nThe current project is about {current} seconds.\nUpgrading to Premium raises this limit to up to 2 hours.",
-  "exportViewPremiumButton": "View Premium",
-  "exportContinueAnywayButton": "Continue Anyway",
   "exportCompleteTitle": "Export Complete",
   "exportCompleteFramesBody": "Exported {count} frame(s).",
   "exportSaveLocationLabel": "Saved to: In-app storage ({fileName})",
@@ -1131,7 +1109,6 @@
   "penSubToolTabLassoFill": "Lasso fill",
   "penSubToolToneTooltipMessage": "Choose a screentone to paint screentone patterns with the bucket or pen.",
   "penSubToolStampTooltipMessage": "Place stamps of a fixed shape. Long-press to set rotation, density, and more.",
-  "penSubToolManageTooltip": "Manage",
   "penSubToolBrushSizeOpacity": "{size}px · {opacity}%",
   "@penSubToolBrushSizeOpacity": {
     "placeholders": {
@@ -1143,18 +1120,9 @@
       }
     }
   },
-  "penSubToolStampRotationSubtitle": "Randomly rotate to match the stroke direction",
   "brushSearchHint": "Search by brush name",
   "brushEmpty": "No brushes",
   "brushCreateDialogTitle": "Custom brush",
-  "brushImportFailedSnackbar": "Failed to load brush: {error}",
-  "@brushImportFailedSnackbar": {
-    "placeholders": {
-      "error": {
-        "type": "String"
-      }
-    }
-  },
   "brushExportFailedSnackbar": "Failed to export brush: {error}",
   "@brushExportFailedSnackbar": {
     "placeholders": {
@@ -1415,7 +1383,6 @@
     }
   },
   "filterEmpty": "No filters",
-  "filterPickHint": "Choose a filter from the list above",
   "filterApplyingTitle": "Applying filter",
   "filterApplyingSubtitle": "{name}　{count} frames",
   "@filterApplyingSubtitle": {
@@ -1436,14 +1403,6 @@
   "projectListCreateShareAction": "Create .niashare",
   "projectListEditFolderAction": "Edit name & color",
   "projectListDeleteFolderConfirmTitle": "Delete this folder?",
-  "projectListDeleteFolderConfirmBody": "“{name}” will be deleted. Projects and subfolders inside it will move to the root.",
-  "@projectListDeleteFolderConfirmBody": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
   "projectListFolderRootOption": "No folder (root)",
   "projectListEditFolderTooltip": "Edit folder",
   "projectListCreateFolderAction": "Create new folder",
@@ -1531,17 +1490,6 @@
       }
     }
   },
-  "autofillPartUnconfiguredDialogTitle": "There are unconfigured parts",
-  "autofillPartUnconfiguredDialogBody": "Please set up the following parts before saving.",
-  "autofillPartUnconfiguredItem": "• {name}: No screentone selected",
-  "@autofillPartUnconfiguredItem": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "autofillPartUnconfiguredBackButton": "Back to setup",
   "autofillPartEmpty": "No parts\nTap + to add one",
   "autofillPartToneUnselected": "No screentone selected",
   "autofillPartAddDialogTitle": "Add part",
@@ -1726,8 +1674,6 @@
   "saveTreeTimelineActionChoiceBody": "Choose whether to overwrite this save with the current content, or resume work from here.",
   "saveTreeOverwriteAction": "Overwrite",
   "saveTreeOverwriteConfirmBody": "The data saved at that point will be lost. Are you sure?",
-  "saveTreeResumeFromHereAction": "Resume from here",
-  "saveTreeResumeConfirmBody": "Resume work from this saved data?\n\nYour current data will be overwritten. Save your current work first if you need to keep it.",
   "saveTreeProjectDetailResumeBody": "Resume work from this saved data?\n\nYour current work will be overwritten. To keep it, cancel for now and save to another slot first (or a separate branch in tree mode).",
   "saveTreeLoadFailedSnackbar": "Failed to load the save data",
   "saveTreeRestoredSnackbar": "Save data loaded ({name})",
@@ -2259,7 +2205,6 @@
   "timelineFrameTrackLabel": "Frame",
   "timelineTrackRowRenameTitle": "Rename row",
   "timelineCameraTrackLabel": "Camera",
-  "timelineRangeSceneFixed": "Fixed scene",
   "timelineEndCardDefaultLogoLabel": "NIARIM logo",
   "timelineEndCardHiddenLabel": "Hidden",
   "timelineEndCardTrackLabel": "End Card Track",
@@ -2542,12 +2487,7 @@
   "pcWorkspaceLayoutScreenTitle": "PC layout settings",
   "pcWorkspaceLayoutIntroHint": "Adjust the order and width of panels when the canvas screen opens in PC mode (landscape + mouse/pen tablet connected).",
   "pcWorkspaceLayoutToolOrderSection": "Tool panel order",
-  "pcWorkspaceLayoutToolOrderHint": "The stacking order used when multiple panels (brush, screentone, stamp, etc.) are open at once.",
   "pcWorkspaceLayoutRightOrderSection": "Layer panel etc. order",
-  "pcWorkspaceLayoutRightOrderHint": "The stacking order of the color picker, layer panel, and canvas preview.",
-  "pcWorkspaceLayoutWidthSection": "Panel width",
-  "pcWorkspaceLayoutToolWidthLabel": "Tool panel side width",
-  "pcWorkspaceLayoutRightWidthLabel": "Layer panel side width",
   "pcWorkspaceLayoutResetWidthButton": "Reset width and height",
   "pcWorkspaceLayoutResetOrderButton": "Reset order to default",
   "pcWorkspaceLayoutResetWorkspaceConfirmBody": "This restores the default panel order, sizes, collapse settings, and panels that open by default.",
@@ -2645,7 +2585,6 @@
   "workspaceImportFromFileButton": "Import from file",
   "workspaceImportFailedSnackbar": "Failed to import: {error}",
   "workspaceNameRequiredError": "Please enter a name.",
-  "workspaceNoSavedPresets": "No saved workspaces yet.",
   "workspaceOverwriteSelectTitle": "Select a workspace to overwrite",
   "workspaceOverwriteConfirmTitle": "Confirm overwrite",
   "workspaceOverwriteConfirmBody": "This will overwrite “{name}” with the current settings. Its previous contents will be lost. Continue?",
@@ -2701,7 +2640,6 @@
   "communityRankingPeriodMonthly": "Monthly",
   "communityRankingPeriodWeekly": "Weekly",
   "communityRankingPeriodDaily": "Daily",
-  "communityRankingSortViews": "Views",
   "communityRankingSortBookmarks": "Bookmarks",
   "communityRankingSortAscendingTooltip": "Ascending (lowest first)",
   "communityRankingSortDescendingTooltip": "Descending (highest first)",
@@ -2714,7 +2652,6 @@
     }
   },
   "communityWorkDetailViewOnYoutube": "Watch on YouTube",
-  "communityWorkDetailViewOnYoutubeComingSoonSnackbar": "YouTube integration is coming soon",
   "communityWorkDetailBookmarkAdd": "Bookmark",
   "communityWorkDetailBookmarkRemove": "Bookmarked",
   "communityWorkDetailReportButton": "Report",
@@ -2733,26 +2670,7 @@
   "communityFloatingPreviewResizeTooltip": "Resize preview",
   "communityFloatingPreviewMoveHint": "Drag to move. Alt + arrow keys also move the preview.",
   "communityFloatingPreviewCompactHint": "Open Details to view this work.",
-  "communityReportDialogTitle": "Report this work",
-  "communityReportDialogBody": "Please choose a reason for reporting.",
-  "communityReportReasonInappropriate": "Inappropriate content",
-  "communityReportReasonCopyright": "Suspected copyright infringement",
-  "communityReportReasonSpam": "Spam or repeated posting",
-  "communityReportReasonOther": "Other",
-  "communityReportSubmitButton": "Submit report",
-  "communityReportDetailLabel": "Details",
-  "communityReportDetailHint": "Describe specifically what the problem is",
-  "communityReportDetailRequiredError": "Please enter details",
   "communityReportComingSoonSnackbar": "Reporting is coming soon. Nothing was actually sent.",
-  "communityBlockConfirmTitle": "Block “{name}”?",
-  "@communityBlockConfirmTitle": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "communityBlockConfirmBody": "Blocking hides this creator's works from your lists.",
   "communityBlockComingSoonSnackbar": "Blocking is coming soon. Nothing was actually applied.",
   "communityAuthorWorksCount": "{count} works",
   "@communityAuthorWorksCount": {
@@ -3095,7 +3013,6 @@
   "brushImageMoveDown": "Move down",
   "brushImageRemove": "Remove image",
   "filterNoiseStyle": "Noise style",
-  "filterNoiseFilmGrain": "Film grain",
   "filterNoiseColor": "Color noise",
   "filterNoiseSeed": "Pattern seed",
   "communityContentFilterTitle": "Display filters",
@@ -3372,7 +3289,6 @@
   "communityMuteNo": "No",
   "communityMuteDone": "Creator hidden",
   "communityUnmuteDone": "Creator shown again",
-  "communityMilestoneNotificationsTitle": "Notifications",
   "communityFollowerMilestone": "You reached {count} followers",
   "@communityFollowerMilestone": {
     "placeholders": {
@@ -3398,10 +3314,8 @@
   "communitySortLabel": "Sort",
   "homeTrashOperationFailed": "The operation could not be completed. Check your storage and try again.",
   "homeTrashWorking": "Working…",
-  "homeAddTooltip": "Create new",
   "commonShowExplanation": "Show explanation",
   "homeViewModeTooltip": "Layout and size",
-  "homeMoveToTrashNothing": "Nothing to move to the trash (favorites are not moved).",
   "homeMovedToTrashSnackbar": "{count, plural, one{Moved {count} item to the trash} other{Moved {count} items to the trash}}",
   "homeUndoAction": "Undo",
   "homeCutSnackbar": "{count, plural, one{Cut {count} item. Open the destination and tap Paste in the bar below the tabs.} other{Cut {count} items. Open the destination and tap Paste in the bar below the tabs.}}",
@@ -3482,7 +3396,6 @@
   "settingsTipsResetDone": "Feature tips will show again the next time you use each feature",
   "helpTutorialButton": "View the guide",
   "projectListTrashFolderConfirmTitle": "Move the folder to the trash?",
-  "projectListTrashFolderConfirmBody": "“{name}” will be moved to the trash. You can restore the whole folder from the trash.",
   "homeFolderMovedToTrashSnackbar": "Moved “{name}” to the trash",
   "homeMoveToTrashFolderContents": "The {contents} inside will be moved too.",
   "homeMoveToTrashUnreadNote": "Any projects inside that could not be loaded will join the folder in the trash once they load.",
@@ -3490,27 +3403,9 @@
   "homeFolderContents": "{projects, plural, =0{{folders, plural, =0{Empty} =1{1 folder} other{{folders} folders}}} =1{1 project{folders, plural, =0{} =1{ and 1 folder} other{ and {folders} folders}}} other{{projects} projects{folders, plural, =0{} =1{ and 1 folder} other{ and {folders} folders}}}}",
   "homeTrashFolderPermanentDeleteContents": "The {contents} inside will be deleted too.",
   "newProjectNumberRangeError": "Enter a number from {min} to {max}",
-  "pcViewZoomIn": "Zoom In",
-  "pcViewZoomOut": "Zoom Out",
   "pcViewFit": "Fit to Window",
-  "pcViewActualPixels": "Actual Pixels (100%)",
-  "pcViewRotateLeft": "Rotate Left",
-  "pcViewRotateRight": "Rotate Right",
-  "pcViewResetRotation": "Reset Rotation",
-  "pcViewHidePanels": "Hide Panels",
-  "pcViewFrameStrip": "Frame List",
-  "pcPaneToolProperty": "Tool Settings",
-  "pcToolPropertyEmpty": "This tool has no settings",
   "pcStatusFrame": "Frame {current}/{total}",
-  "pcPaneProgram": "Preview",
-  "pcPaneInspector": "Details",
-  "pcTimelineZoomIn": "Zoom In Timeline",
-  "pcTimelineZoomOut": "Zoom Out Timeline",
-  "pcBinEmpty": "No materials yet",
-  "pcBinSceneFrames": "{count} frames",
-  "pcInspectorHint": "Select a material on the timeline to adjust its position, size, opacity and more here.",
   "pcStatusFps": "{fps} fps",
-  "canvasSizePresetDuplicateSuffix": "copy",
   "communityChannelRefreshButton": "Refresh YouTube name & icon (once daily)",
   "communityChannelRefreshSuccess": "YouTube name and icon updated",
   "communityChannelRefreshNoToken": "YouTube authorization is required",
@@ -3995,7 +3890,6 @@
   "pcLayoutResetWorkspace": "Reset workspace",
   "pcLayoutInstruction": "Drag a window’s edge in the preview to change its width or height. Press and hold the handle at its top left to move it or swap it with another window. Pinch to zoom.",
   "brushNibWidthRatio": "Tip width relative to height",
-  "brushFoldFlatEnds": "Flat ends",
   "brushFoldTriggerAngle": "Minimum turn angle",
   "brushFoldEndTaper": "Folded tip taper",
   "timelineSelectionScenes": "Scenes",

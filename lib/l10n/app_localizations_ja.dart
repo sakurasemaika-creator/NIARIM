@@ -223,14 +223,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get homeShareOpenWith => '共有・写真アプリ等で開く';
 
   @override
-  String homeWorkDeleteConfirmTitle(String name) {
-    return '$nameを削除しますか？';
-  }
-
-  @override
-  String get homeWorkDeleteConfirmBody => '端末内の書き出しファイルが削除されます。元に戻すことはできません。';
-
-  @override
   String get homePreviewFailed => 'プレビューを再生できません';
 
   @override
@@ -419,11 +411,6 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
-  String homePasteTooltip(int count) {
-    return '$count件を貼り付け';
-  }
-
-  @override
   String get commonOk => 'OK';
 
   @override
@@ -500,15 +487,6 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get homeDrawerSettings => '設定';
-
-  @override
-  String get homeDrawerHelp => 'ヘルプ';
-
-  @override
-  String get homeDrawerTips => '活用Tips';
-
-  @override
-  String get homeDrawerPremium => 'プレミアム';
 
   @override
   String get gestureActionNoneShort => 'なし';
@@ -682,11 +660,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get transferExportSuccessSnackbar => '.niatraファイルを書き出しました';
 
   @override
-  String transferExportFailedSnackbar(String error) {
-    return '書き出しに失敗しました: $error';
-  }
-
-  @override
   String get transferImportSuccessSnackbar => '.niatraファイルを読み込みました';
 
   @override
@@ -717,11 +690,6 @@ class AppLocalizationsJa extends AppLocalizations {
           '読み込んだショートカット「$name」（$combo）は、この端末で同じキーを別の操作に使っているため足していません。使うときは、ショートカット設定から別のキーで追加してください',
     );
     return '$_temp0';
-  }
-
-  @override
-  String transferImportFailedSnackbar(String error) {
-    return '読み込みに失敗しました: $error';
   }
 
   @override
@@ -1077,16 +1045,10 @@ class AppLocalizationsJa extends AppLocalizations {
   String get premiumYearlyTitle => '年額プラン（おすすめ）';
 
   @override
-  String get premiumYearlyDescription => '実質2か月分無料';
-
-  @override
   String get premiumYearlyPrice => '¥5,500/年';
 
   @override
   String get premiumYearlyOriginalPrice => '¥6,600';
-
-  @override
-  String get premiumYearlyPerMonthLabel => '月あたり¥458相当';
 
   @override
   String get premiumMonthlyTitle => '月額プラン';
@@ -2645,11 +2607,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get stampCreateDialogTitle => '自作スタンプ';
 
   @override
-  String stampImportFailedSnackbar(String error) {
-    return 'スタンプの読み込みに失敗しました: $error';
-  }
-
-  @override
   String stampExportFailedSnackbar(String error) {
     return 'スタンプの書き出しに失敗しました: $error';
   }
@@ -2966,20 +2923,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get exportContinueButton => '続行';
 
   @override
-  String get exportDurationExceededTitle => '動画尺の上限を超えています';
-
-  @override
-  String exportDurationExceededBody(int max, int current) {
-    return '無料版の最大動画尺は$max秒です。\n現在のプロジェクトは約$current秒あります。\nプレミアムにアップグレードすると最大2時間まで作成できるようになります。';
-  }
-
-  @override
-  String get exportViewPremiumButton => 'プレミアムを見る';
-
-  @override
-  String get exportContinueAnywayButton => 'このまま続行';
-
-  @override
   String get exportCompleteTitle => '書き出し完了';
 
   @override
@@ -3220,15 +3163,9 @@ class AppLocalizationsJa extends AppLocalizations {
       '決まった形のスタンプを配置できます。長押しで回転・密度などを設定できます。';
 
   @override
-  String get penSubToolManageTooltip => '管理';
-
-  @override
   String penSubToolBrushSizeOpacity(int size, int opacity) {
     return '${size}px · $opacity%';
   }
-
-  @override
-  String get penSubToolStampRotationSubtitle => 'ストローク方向に合わせてランダムに回転';
 
   @override
   String get brushSearchHint => 'ブラシ名で検索';
@@ -3238,11 +3175,6 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get brushCreateDialogTitle => '自作ブラシ';
-
-  @override
-  String brushImportFailedSnackbar(String error) {
-    return 'ブラシの読み込みに失敗しました: $error';
-  }
 
   @override
   String brushExportFailedSnackbar(String error) {
@@ -3753,9 +3685,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get filterEmpty => 'フィルターがありません';
 
   @override
-  String get filterPickHint => '上の一覧から使うフィルターを選んでください';
-
-  @override
   String get filterApplyingTitle => 'フィルター適用中';
 
   @override
@@ -3786,11 +3715,6 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get projectListDeleteFolderConfirmTitle => 'フォルダを削除しますか？';
-
-  @override
-  String projectListDeleteFolderConfirmBody(String name) {
-    return '「$name」を削除します。中のプロジェクト・子フォルダはルートへ戻ります。';
-  }
 
   @override
   String get projectListFolderRootOption => 'フォルダなし（ルート）';
@@ -4000,20 +3924,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String autofillDeleteUsage(int projects, int layers) {
     return '$projects件の作品の線画レイヤー$layers件で使用中です。これらのレイヤーで自動塗りを実行するには、別のパーツを割り当ててください。';
   }
-
-  @override
-  String get autofillPartUnconfiguredDialogTitle => '未設定のパーツがあります';
-
-  @override
-  String get autofillPartUnconfiguredDialogBody => '保存する前に、以下のパーツを設定してください。';
-
-  @override
-  String autofillPartUnconfiguredItem(String name) {
-    return '・$name：トーンが未選択です';
-  }
-
-  @override
-  String get autofillPartUnconfiguredBackButton => '設定へ戻る';
 
   @override
   String get autofillPartEmpty => 'パーツがありません\n＋ボタンで追加してください';
@@ -4318,13 +4228,6 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get saveTreeOverwriteConfirmBody => 'このときのセーブデータは消えますがよろしいですか？';
-
-  @override
-  String get saveTreeResumeFromHereAction => 'ここから再開する';
-
-  @override
-  String get saveTreeResumeConfirmBody =>
-      'このセーブデータから作業を再開しますか？\n\n現在のデータは上書きされます。保存する必要がある場合は先にセーブしてください。';
 
   @override
   String get saveTreeProjectDetailResumeBody =>
@@ -5286,9 +5189,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get timelineCameraTrackLabel => 'カメラ';
 
   @override
-  String get timelineRangeSceneFixed => 'シーン固定';
-
-  @override
   String get timelineEndCardDefaultLogoLabel => 'NIARIMロゴ';
 
   @override
@@ -5970,24 +5870,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get pcWorkspaceLayoutToolOrderSection => 'ツールパネルの並び順';
 
   @override
-  String get pcWorkspaceLayoutToolOrderHint =>
-      'ブラシ・トーン・スタンプ等、複数同時に開いた際に積み重なる順番です。';
-
-  @override
   String get pcWorkspaceLayoutRightOrderSection => 'レイヤー等パネルの並び順';
-
-  @override
-  String get pcWorkspaceLayoutRightOrderHint =>
-      'カラーピッカー・レイヤー・キャンバスプレビューの積み重ね順です。';
-
-  @override
-  String get pcWorkspaceLayoutWidthSection => 'パネルの幅';
-
-  @override
-  String get pcWorkspaceLayoutToolWidthLabel => 'ツールパネル側の幅';
-
-  @override
-  String get pcWorkspaceLayoutRightWidthLabel => 'レイヤー等パネル側の幅';
 
   @override
   String get pcWorkspaceLayoutResetWidthButton => '幅と高さをデフォルトに戻す';
@@ -6260,9 +6143,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get workspaceNameRequiredError => '名前を入力してください';
 
   @override
-  String get workspaceNoSavedPresets => '保存済みのワークスペースがありません';
-
-  @override
   String get workspaceOverwriteSelectTitle => '上書きするワークスペースを選択';
 
   @override
@@ -6348,9 +6228,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get communityRankingPeriodDaily => 'デイリー';
 
   @override
-  String get communityRankingSortViews => '再生数';
-
-  @override
   String get communityRankingSortBookmarks => 'ブックマーク数';
 
   @override
@@ -6366,10 +6243,6 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get communityWorkDetailViewOnYoutube => 'YouTubeで見る';
-
-  @override
-  String get communityWorkDetailViewOnYoutubeComingSoonSnackbar =>
-      'YouTube連携機能は準備中です';
 
   @override
   String get communityWorkDetailBookmarkAdd => 'ブックマーク';
@@ -6430,45 +6303,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get communityFloatingPreviewCompactHint => 'この作品は詳細画面で確認できます。';
 
   @override
-  String get communityReportDialogTitle => '作品を通報';
-
-  @override
-  String get communityReportDialogBody => '通報理由を選択してください。';
-
-  @override
-  String get communityReportReasonInappropriate => '不適切な内容';
-
-  @override
-  String get communityReportReasonCopyright => '著作権侵害の疑い';
-
-  @override
-  String get communityReportReasonSpam => 'スパム・繰り返し投稿';
-
-  @override
-  String get communityReportReasonOther => 'その他';
-
-  @override
-  String get communityReportSubmitButton => '通報する';
-
-  @override
-  String get communityReportDetailLabel => '詳細';
-
-  @override
-  String get communityReportDetailHint => 'どのような点が問題か具体的に入力してください';
-
-  @override
-  String get communityReportDetailRequiredError => '詳細を入力してください';
-
-  @override
   String get communityReportComingSoonSnackbar => '通報機能は準備中です。実際には送信されません。';
-
-  @override
-  String communityBlockConfirmTitle(String name) {
-    return '「$name」をブロックしますか？';
-  }
-
-  @override
-  String get communityBlockConfirmBody => 'ブロックすると、この作者の作品が一覧に表示されなくなります。';
 
   @override
   String get communityBlockComingSoonSnackbar => 'ブロック機能は準備中です。実際には反映されません。';
@@ -7213,9 +7048,6 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get filterNoiseStyle => 'ノイズの種類';
-
-  @override
-  String get filterNoiseFilmGrain => 'フィルム粒子';
 
   @override
   String get filterNoiseColor => 'カラーノイズ';
@@ -8097,9 +7929,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get communityUnmuteDone => 'このユーザーの非表示を解除しました';
 
   @override
-  String get communityMilestoneNotificationsTitle => '通知';
-
-  @override
   String communityFollowerMilestone(String count) {
     return 'フォロワーが$count人に達しました';
   }
@@ -8128,16 +7957,10 @@ class AppLocalizationsJa extends AppLocalizations {
   String get homeTrashWorking => '処理中…';
 
   @override
-  String get homeAddTooltip => '新規作成';
-
-  @override
   String get commonShowExplanation => '説明を表示';
 
   @override
   String get homeViewModeTooltip => '表示形式とサイズ';
-
-  @override
-  String get homeMoveToTrashNothing => 'ゴミ箱へ移動できるものがありません（お気に入りは移動しません）。';
 
   @override
   String homeMovedToTrashSnackbar(int count) {
@@ -8465,11 +8288,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get projectListTrashFolderConfirmTitle => 'フォルダをゴミ箱へ移動しますか？';
 
   @override
-  String projectListTrashFolderConfirmBody(String name) {
-    return '「$name」をゴミ箱へ移動します。ゴミ箱からフォルダごと元に戻せます。';
-  }
-
-  @override
   String homeFolderMovedToTrashSnackbar(String name) {
     return '「$name」をゴミ箱へ移動しました';
   }
@@ -8522,37 +8340,7 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
-  String get pcViewZoomIn => '拡大';
-
-  @override
-  String get pcViewZoomOut => '縮小';
-
-  @override
   String get pcViewFit => '全体を表示';
-
-  @override
-  String get pcViewActualPixels => '100%で表示';
-
-  @override
-  String get pcViewRotateLeft => '左に回転';
-
-  @override
-  String get pcViewRotateRight => '右に回転';
-
-  @override
-  String get pcViewResetRotation => '回転を戻す';
-
-  @override
-  String get pcViewHidePanels => 'パネルを隠す';
-
-  @override
-  String get pcViewFrameStrip => 'フレーム一覧';
-
-  @override
-  String get pcPaneToolProperty => 'ツールの設定';
-
-  @override
-  String get pcToolPropertyEmpty => 'このツールには設定がありません';
 
   @override
   String pcStatusFrame(int current, int total) {
@@ -8560,35 +8348,9 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
-  String get pcPaneProgram => 'プレビュー';
-
-  @override
-  String get pcPaneInspector => '詳細';
-
-  @override
-  String get pcTimelineZoomIn => 'タイムラインを拡大';
-
-  @override
-  String get pcTimelineZoomOut => 'タイムラインを縮小';
-
-  @override
-  String get pcBinEmpty => '素材はまだありません';
-
-  @override
-  String pcBinSceneFrames(int count) {
-    return '$countフレーム';
-  }
-
-  @override
-  String get pcInspectorHint => 'タイムラインの素材を選ぶと、ここで位置・大きさ・不透明度などを調整できます。';
-
-  @override
   String pcStatusFps(int fps) {
     return '$fps fps';
   }
-
-  @override
-  String get canvasSizePresetDuplicateSuffix => 'のコピー';
 
   @override
   String get communityChannelRefreshButton => 'YouTube名・アイコンを更新（1日1回）';
@@ -10403,9 +10165,6 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get brushNibWidthRatio => 'ペン先の幅（高さ比）';
-
-  @override
-  String get brushFoldFlatEnds => '両端を平らにする';
 
   @override
   String get brushFoldTriggerAngle => '折り返しが始まる角度';

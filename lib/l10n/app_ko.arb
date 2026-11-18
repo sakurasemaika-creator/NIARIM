@@ -63,8 +63,6 @@
   "homeSharedFolderEmpty": "이 폴더에는 공유된 프로젝트가 없어요",
   "homeDeleteFolderKeepContents": "「{name}」 폴더를 삭제해요. 안의 항목은 목록으로 돌아가며 삭제되지 않아요.",
   "homeShareOpenWith": "공유・사진 앱 등으로 열기",
-  "homeWorkDeleteConfirmTitle": "{name}을(를) 삭제하시겠습니까?",
-  "homeWorkDeleteConfirmBody": "기기에 저장된 내보내기 파일이 삭제됩니다. 되돌릴 수 없습니다.",
   "homePreviewFailed": "미리보기를 재생할 수 없습니다",
   "homeFirstLaunchMessage": "손그림 애니메이션을 제작할 수 있습니다",
   "homeFirstLaunchStart": "시작하기",
@@ -129,14 +127,6 @@
   "commonRename": "이름 변경",
   "commonCopy": "복사",
   "commonCut": "잘라내기",
-  "homePasteTooltip": "{count}건 붙여넣기",
-  "@homePasteTooltip": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "commonPaste": "붙여넣기",
   "commonDuplicate": "복제",
   "commonLabelWithValue": "{label}: {value}",
@@ -172,9 +162,6 @@
   "homeDrawerAppTagline": "손그림 애니메이션 제작 앱",
   "homeDrawerAutofillPreset": "자동 채색 설정",
   "homeDrawerSettings": "설정",
-  "homeDrawerHelp": "도움말",
-  "homeDrawerTips": "활용 팁",
-  "homeDrawerPremium": "Premium",
   "gestureActionNoneShort": "없음",
   "pressureTryDrawHint": "이 설정으로 시험 삼아 그려볼 수 있습니다（펜의 경우 실제 필압이 반영됩니다）",
   "pressureTryDrawClear": "지우기",
@@ -229,11 +216,9 @@
   "transferImport": "가져오기",
   "transferExport": "내보내기",
   "transferExportSuccessSnackbar": ".niatra 파일을 내보냈습니다",
-  "transferExportFailedSnackbar": "내보내기에 실패했습니다: {error}",
   "transferImportSuccessSnackbar": ".niatra 파일을 가져왔습니다",
   "transferImportAddedCopiesSnackbar": "{count, plural, =1{.niatra 파일을 가져왔습니다. 이 기기의 내용과 다른 1개 항목은 이 기기의 것을 그대로 두고, 가져온 것을 「{name}」(으)로 추가했습니다} other{.niatra 파일을 가져왔습니다. 이 기기의 내용과 다른 {count}개 항목은 이 기기의 것을 그대로 두고, 가져온 것을 「{name}」 등의 이름으로 추가했습니다}}",
   "transferImportShortcutsNotAddedSnackbar": "{count, plural, =1{가져온 단축키 「{name}」({combo})은(는) 이 기기에서 같은 키를 다른 동작에 쓰고 있어서 추가하지 않았습니다. 사용하려면 단축키 설정에서 다른 키로 추가하세요} other{가져온 단축키 「{name}」({combo}) 등 {count}개는 이 기기에서 같은 키를 다른 동작에 쓰고 있어서 추가하지 않았습니다. 사용하려면 단축키 설정에서 다른 키로 추가하세요}}",
-  "transferImportFailedSnackbar": "가져오기에 실패했습니다: {error}",
   "folderManagementTitle": "폴더 관리",
   "folderManagementCreateNew": "새로 만들기",
   "folderManagementEmpty": "아직 폴더가 없습니다",
@@ -373,10 +358,8 @@
   "premiumHeroHighlightWatermark": "NIARIM 엔드마크 편집",
   "premiumHeroHighlightGrading": "톤 커브 /\n레벨 보정",
   "premiumYearlyTitle": "연간 플랜（추천）",
-  "premiumYearlyDescription": "실질적으로 2개월 무료",
   "premiumYearlyPrice": "¥5,500/년",
   "premiumYearlyOriginalPrice": "¥6,600",
-  "premiumYearlyPerMonthLabel": "월 환산 ¥458",
   "premiumMonthlyTitle": "월간 플랜",
   "premiumRestorePurchases": "구매 복원",
   "premiumRestoredSnackbar": "구매 정보를 복원했습니다（해당하는 구매가 있는 경우）",
@@ -851,7 +834,6 @@
   "stampSearchHint": "스탬프 이름으로 검색",
   "stampEmpty": "스탬프가 없습니다",
   "stampCreateDialogTitle": "직접 제작한 스탬프",
-  "stampImportFailedSnackbar": "스탬프를 불러오지 못했습니다: {error}",
   "stampExportFailedSnackbar": "스탬프 내보내기에 실패했습니다: {error}",
   "stampEditTitle": "스탬프 편집",
   "stampRotationLabel": "회전",
@@ -949,10 +931,6 @@
   "exportOutdatedAutofillTitle": "자동 채색이 최신 상태가 아닙니다",
   "exportOutdatedAutofillBody": "업데이트되지 않은 자동 채색 레이어가 있습니다. 이대로 내보내시겠습니까?",
   "exportContinueButton": "계속",
-  "exportDurationExceededTitle": "동영상 길이 상한을 초과했습니다",
-  "exportDurationExceededBody": "무료판의 최대 동영상 길이는 {max}초입니다.\n현재 프로젝트는 약 {current}초입니다.\nPremium으로 업그레이드하면 길이 제한이 최대 2시간까지 늘어납니다.",
-  "exportViewPremiumButton": "Premium 보기",
-  "exportContinueAnywayButton": "그대로 계속",
   "exportCompleteTitle": "내보내기 완료",
   "exportCompleteFramesBody": "{count}개 프레임의 내보내기가 완료되었습니다.",
   "exportSaveLocationLabel": "저장 위치: 앱 내부（{fileName}）",
@@ -1131,7 +1109,6 @@
   "penSubToolTabLassoFill": "올가미 채우기",
   "penSubToolToneTooltipMessage": "톤을 선택하면 페인트통이나 펜으로 스크린톤 무늬를 칠할 수 있습니다.",
   "penSubToolStampTooltipMessage": "정해진 모양의 스탬프를 배치할 수 있습니다. 길게 누르면 회전・밀도 등을 설정할 수 있습니다.",
-  "penSubToolManageTooltip": "관리",
   "penSubToolBrushSizeOpacity": "{size}px · {opacity}%",
   "@penSubToolBrushSizeOpacity": {
     "placeholders": {
@@ -1143,18 +1120,9 @@
       }
     }
   },
-  "penSubToolStampRotationSubtitle": "획 방향에 맞춰 무작위로 회전",
   "brushSearchHint": "브러시 이름으로 검색",
   "brushEmpty": "브러시가 없습니다",
   "brushCreateDialogTitle": "커스텀 브러시",
-  "brushImportFailedSnackbar": "브러시 불러오기에 실패했습니다: {error}",
-  "@brushImportFailedSnackbar": {
-    "placeholders": {
-      "error": {
-        "type": "String"
-      }
-    }
-  },
   "brushExportFailedSnackbar": "브러시 내보내기에 실패했습니다: {error}",
   "@brushExportFailedSnackbar": {
     "placeholders": {
@@ -1394,7 +1362,6 @@
     }
   },
   "filterEmpty": "필터가 없습니다",
-  "filterPickHint": "위 목록에서 사용할 필터를 고르세요",
   "filterApplyingTitle": "필터 적용 중",
   "filterApplyingSubtitle": "{name}　{count}프레임",
   "@filterApplyingSubtitle": {
@@ -1415,14 +1382,6 @@
   "projectListCreateShareAction": ".niashare 만들기",
   "projectListEditFolderAction": "이름・색상 편집",
   "projectListDeleteFolderConfirmTitle": "이 폴더를 삭제하시겠습니까?",
-  "projectListDeleteFolderConfirmBody": "「{name}」을(를) 삭제합니다. 안에 있던 프로젝트・하위 폴더는 루트로 이동합니다.",
-  "@projectListDeleteFolderConfirmBody": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
   "projectListFolderRootOption": "폴더 없음(루트)",
   "projectListEditFolderTooltip": "폴더 편집",
   "projectListCreateFolderAction": "새 폴더 만들기",
@@ -1510,17 +1469,6 @@
       }
     }
   },
-  "autofillPartUnconfiguredDialogTitle": "설정되지 않은 부위가 있습니다",
-  "autofillPartUnconfiguredDialogBody": "저장하기 전에 다음 부위를 설정해 주세요.",
-  "autofillPartUnconfiguredItem": "・{name}: 스크린톤이 선택되지 않았습니다",
-  "@autofillPartUnconfiguredItem": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "autofillPartUnconfiguredBackButton": "설정으로 돌아가기",
   "autofillPartEmpty": "부위가 없습니다\n＋ 버튼으로 추가해 주세요",
   "autofillPartToneUnselected": "스크린톤이 선택되지 않았습니다",
   "autofillPartAddDialogTitle": "부위 추가",
@@ -1705,8 +1653,6 @@
   "saveTreeTimelineActionChoiceBody": "이 세이브를 현재 내용으로 「덮어쓰기」할지, 「여기서부터 다시 시작」할지 선택하세요.",
   "saveTreeOverwriteAction": "덮어쓰기",
   "saveTreeOverwriteConfirmBody": "그 시점의 세이브 데이터가 사라집니다. 계속하시겠습니까?",
-  "saveTreeResumeFromHereAction": "여기서부터 다시 시작",
-  "saveTreeResumeConfirmBody": "이 세이브 데이터에서 작업을 다시 시작하시겠습니까?\n\n현재 데이터가 덮어쓰여집니다. 현재 작업을 보관하려면 먼저 저장하세요.",
   "saveTreeProjectDetailResumeBody": "이 저장 데이터에서 작업을 다시 시작하시겠습니까?\n\n현재 작업이 덮어쓰입니다. 현재 작업을 보관하려면 일단 취소하고 다른 저장 슬롯(트리 모드에서는 다른 분기)에 먼저 저장하세요.",
   "saveTreeLoadFailedSnackbar": "저장 데이터를 불러오지 못했습니다",
   "saveTreeRestoredSnackbar": "저장 데이터를 불러왔습니다 ({name})",
@@ -2238,7 +2184,6 @@
   "timelineFrameTrackLabel": "프레임",
   "timelineTrackRowRenameTitle": "행 이름 변경",
   "timelineCameraTrackLabel": "카메라",
-  "timelineRangeSceneFixed": "씬 고정",
   "timelineEndCardDefaultLogoLabel": "NIARIM 로고",
   "timelineEndCardHiddenLabel": "숨김",
   "timelineEndCardTrackLabel": "엔드카드 트랙",
@@ -2521,12 +2466,7 @@
   "pcWorkspaceLayoutScreenTitle": "PC 레이아웃 설정",
   "pcWorkspaceLayoutIntroHint": "PC 모드(가로 화면 + 마우스·펜타블릿 연결)로 캔버스 화면을 열었을 때의 패널 순서와 너비를 조정할 수 있습니다.",
   "pcWorkspaceLayoutToolOrderSection": "도구 패널 순서",
-  "pcWorkspaceLayoutToolOrderHint": "브러시·스크린톤·스탬프 등을 동시에 열었을 때 쌓이는 순서입니다.",
   "pcWorkspaceLayoutRightOrderSection": "레이어 등 패널 순서",
-  "pcWorkspaceLayoutRightOrderHint": "색상 선택기·레이어·캔버스 미리보기의 쌓이는 순서입니다.",
-  "pcWorkspaceLayoutWidthSection": "패널 너비",
-  "pcWorkspaceLayoutToolWidthLabel": "도구 패널 쪽 너비",
-  "pcWorkspaceLayoutRightWidthLabel": "레이어 패널 쪽 너비",
   "pcWorkspaceLayoutResetWidthButton": "너비와 높이 초기화",
   "pcWorkspaceLayoutResetOrderButton": "순서를 기본값으로 되돌리기",
   "pcWorkspaceLayoutResetWorkspaceConfirmBody": "패널 순서, 크기, 접힘 상태, 자동 접기 설정, 기본으로 열리는 패널을 모두 기본값으로 되돌립니다.",
@@ -2624,7 +2564,6 @@
   "workspaceImportFromFileButton": "외부 파일 불러오기",
   "workspaceImportFailedSnackbar": "불러오기에 실패했습니다: {error}",
   "workspaceNameRequiredError": "이름을 입력해 주세요.",
-  "workspaceNoSavedPresets": "저장된 워크스페이스가 없습니다.",
   "workspaceOverwriteSelectTitle": "덮어쓸 워크스페이스 선택",
   "workspaceOverwriteConfirmTitle": "덮어쓰기 확인",
   "workspaceOverwriteConfirmBody": "「{name}」을(를) 현재 설정으로 덮어씁니다. 기존 내용은 삭제됩니다. 계속하시겠습니까？",
@@ -2680,7 +2619,6 @@
   "communityRankingPeriodMonthly": "월간",
   "communityRankingPeriodWeekly": "주간",
   "communityRankingPeriodDaily": "일간",
-  "communityRankingSortViews": "조회수",
   "communityRankingSortBookmarks": "북마크 수",
   "communityRankingSortAscendingTooltip": "오름차순（적은 순）",
   "communityRankingSortDescendingTooltip": "내림차순（많은 순）",
@@ -2693,7 +2631,6 @@
     }
   },
   "communityWorkDetailViewOnYoutube": "YouTube에서 보기",
-  "communityWorkDetailViewOnYoutubeComingSoonSnackbar": "YouTube 연동 기능은 준비 중입니다",
   "communityWorkDetailBookmarkAdd": "북마크",
   "communityWorkDetailBookmarkRemove": "북마크됨",
   "communityWorkDetailReportButton": "신고",
@@ -2712,26 +2649,7 @@
   "communityFloatingPreviewResizeTooltip": "미리보기 크기 조절",
   "communityFloatingPreviewMoveHint": "드래그하거나 Alt + 방향키로 미리보기를 이동할 수 있습니다.",
   "communityFloatingPreviewCompactHint": "이 작품은 상세 화면에서 볼 수 있습니다.",
-  "communityReportDialogTitle": "작품 신고",
-  "communityReportDialogBody": "신고 사유를 선택해 주세요.",
-  "communityReportReasonInappropriate": "부적절한 내용",
-  "communityReportReasonCopyright": "저작권 침해 의심",
-  "communityReportReasonSpam": "스팸・반복 게시",
-  "communityReportReasonOther": "기타",
-  "communityReportSubmitButton": "신고하기",
-  "communityReportDetailLabel": "상세 내용",
-  "communityReportDetailHint": "구체적으로 어떤 점이 문제인지 입력해 주세요",
-  "communityReportDetailRequiredError": "상세 내용을 입력해 주세요",
   "communityReportComingSoonSnackbar": "신고 기능은 준비 중입니다. 실제로 전송되지 않습니다.",
-  "communityBlockConfirmTitle": "「{name}」님을 차단할까요?",
-  "@communityBlockConfirmTitle": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "communityBlockConfirmBody": "차단하면 이 작성자의 작품이 목록에 표시되지 않습니다.",
   "communityBlockComingSoonSnackbar": "차단 기능은 준비 중입니다. 실제로 반영되지 않습니다.",
   "communityAuthorWorksCount": "작품 {count}개",
   "@communityAuthorWorksCount": {
@@ -3067,7 +2985,6 @@
   "brushImageMoveDown": "아래로 이동",
   "brushImageRemove": "소재 제거",
   "filterNoiseStyle": "노이즈 종류",
-  "filterNoiseFilmGrain": "필름 그레인",
   "filterNoiseColor": "컬러 노이즈",
   "filterNoiseSeed": "패턴 시드",
   "communityContentFilterTitle": "표시 필터",
@@ -3344,7 +3261,6 @@
   "communityMuteNo": "아니요",
   "communityMuteDone": "사용자를 숨겼습니다",
   "communityUnmuteDone": "사용자를 다시 표시했습니다",
-  "communityMilestoneNotificationsTitle": "알림",
   "communityFollowerMilestone": "팔로워가 {count}명에 도달했습니다",
   "@communityFollowerMilestone": {
     "placeholders": {
@@ -3370,10 +3286,8 @@
   "communitySortLabel": "정렬",
   "homeTrashOperationFailed": "작업을 완료하지 못했습니다. 저장 공간을 확인하고 다시 시도해 주세요.",
   "homeTrashWorking": "처리 중…",
-  "homeAddTooltip": "새로 만들기",
   "commonShowExplanation": "설명 보기",
   "homeViewModeTooltip": "표시 형식과 크기",
-  "homeMoveToTrashNothing": "휴지통으로 이동할 항목이 없습니다(즐겨찾기한 항목은 이동하지 않습니다).",
   "homeMovedToTrashSnackbar": "{count}개 항목을 휴지통으로 이동했습니다",
   "homeUndoAction": "실행 취소",
   "homeCutSnackbar": "{count}개 항목을 잘라냈습니다. 옮길 곳을 열고 탭 아래 막대의 붙여넣기를 누르세요.",
@@ -3454,7 +3368,6 @@
   "settingsTipsResetDone": "다음에 쓸 때 기능 설명이 다시 표시됩니다",
   "helpTutorialButton": "사용법 보기",
   "projectListTrashFolderConfirmTitle": "폴더를 휴지통으로 이동하시겠습니까?",
-  "projectListTrashFolderConfirmBody": "「{name}」을(를) 휴지통으로 이동합니다. 휴지통에서 폴더째 복원할 수 있습니다.",
   "homeFolderMovedToTrashSnackbar": "「{name}」을(를) 휴지통으로 이동했습니다",
   "homeMoveToTrashFolderContents": "폴더 안의 {contents}도 함께 이동합니다.",
   "homeMoveToTrashUnreadNote": "불러오지 못한 프로젝트가 폴더 안에 있으면, 불러온 뒤 휴지통의 그 폴더로 들어갑니다.",
@@ -3462,27 +3375,9 @@
   "homeFolderContents": "{projects, plural, =0{{folders, plural, =0{비어 있음} other{폴더 {folders}개}}} other{프로젝트 {projects}개{folders, plural, =0{} other{, 폴더 {folders}개}}}}",
   "homeTrashFolderPermanentDeleteContents": "폴더 안의 {contents}도 함께 삭제합니다.",
   "newProjectNumberRangeError": "{min}~{max} 사이의 숫자를 입력하세요",
-  "pcViewZoomIn": "확대",
-  "pcViewZoomOut": "축소",
   "pcViewFit": "창에 맞추기",
-  "pcViewActualPixels": "실제 픽셀(100%)",
-  "pcViewRotateLeft": "왼쪽으로 회전",
-  "pcViewRotateRight": "오른쪽으로 회전",
-  "pcViewResetRotation": "회전 초기화",
-  "pcViewHidePanels": "패널 숨기기",
-  "pcViewFrameStrip": "프레임 목록",
-  "pcPaneToolProperty": "도구 설정",
-  "pcToolPropertyEmpty": "이 도구에는 설정이 없습니다",
   "pcStatusFrame": "프레임 {current}/{total}",
-  "pcPaneProgram": "미리보기",
-  "pcPaneInspector": "상세",
-  "pcTimelineZoomIn": "타임라인 확대",
-  "pcTimelineZoomOut": "타임라인 축소",
-  "pcBinEmpty": "아직 소재가 없습니다",
-  "pcBinSceneFrames": "{count}프레임",
-  "pcInspectorHint": "타임라인에서 소재를 선택하면 여기에서 위치·크기·불투명도 등을 조정할 수 있습니다.",
   "pcStatusFps": "{fps} fps",
-  "canvasSizePresetDuplicateSuffix": "사본",
   "communityChannelRefreshButton": "YouTube 이름·아이콘 갱신 (하루 1회)",
   "communityChannelRefreshSuccess": "YouTube 이름과 아이콘을 갱신했습니다",
   "communityChannelRefreshNoToken": "YouTube 인증이 필요합니다",
@@ -3967,7 +3862,6 @@
   "pcLayoutResetWorkspace": "작업 공간 초기화",
   "pcLayoutInstruction": "미리보기에서 창 가장자리를 드래그해 너비와 높이를 바꾸고, 왼쪽 위의 손잡이를 길게 눌러 이동하거나 다른 창과 바꿀 수 있습니다. 핀치하면 확대됩니다.",
   "brushNibWidthRatio": "펜촉 너비(높이 대비)",
-  "brushFoldFlatEnds": "양끝을 평평하게",
   "brushFoldTriggerAngle": "접힘 시작 각도",
   "brushFoldEndTaper": "접힌 끝 가늘기",
   "timelineSelectionScenes": "장면",

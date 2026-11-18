@@ -63,8 +63,6 @@
   "homeSharedFolderEmpty": "此文件夹中没有共享项目",
   "homeDeleteFolderKeepContents": "将删除文件夹“{name}”。其中的项目将返回主列表，不会被删除。",
   "homeShareOpenWith": "分享・用照片应用等打开",
-  "homeWorkDeleteConfirmTitle": "要删除{name}吗？",
-  "homeWorkDeleteConfirmBody": "设备中的导出文件将被删除，此操作无法撤销。",
   "homePreviewFailed": "无法播放预览",
   "homeFirstLaunchMessage": "您可以制作手绘动画",
   "homeFirstLaunchStart": "开始使用",
@@ -129,14 +127,6 @@
   "commonRename": "重命名",
   "commonCopy": "复制",
   "commonCut": "剪切",
-  "homePasteTooltip": "粘贴{count}项",
-  "@homePasteTooltip": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "commonPaste": "粘贴",
   "commonDuplicate": "创建副本",
   "commonLabelWithValue": "{label}：{value}",
@@ -172,9 +162,6 @@
   "homeDrawerAppTagline": "手绘动画制作应用",
   "homeDrawerAutofillPreset": "自动上色设置",
   "homeDrawerSettings": "设置",
-  "homeDrawerHelp": "帮助",
-  "homeDrawerTips": "使用技巧",
-  "homeDrawerPremium": "Premium",
   "gestureActionNoneShort": "无",
   "pressureTryDrawHint": "可以用此设置试写（使用触控笔时会反映实际笔压）",
   "pressureTryDrawClear": "清除",
@@ -229,11 +216,9 @@
   "transferImport": "导入",
   "transferExport": "导出",
   "transferExportSuccessSnackbar": "已导出.niatra文件",
-  "transferExportFailedSnackbar": "导出失败：{error}",
   "transferImportSuccessSnackbar": "已导入.niatra文件",
   "transferImportAddedCopiesSnackbar": "{count, plural, =1{已导入.niatra文件。有1项与本设备的内容不同：已保留本设备的版本，导入的版本已添加为“{name}”} other{已导入.niatra文件。有{count}项与本设备的内容不同：已保留本设备的版本，导入的版本已以“{name}”等名称添加}}",
   "transferImportShortcutsNotAddedSnackbar": "{count, plural, =1{导入的快捷键“{name}”（{combo}）未添加，因为本设备已将相同的按键用于其他操作。如需使用，请在快捷键设置中用其他按键添加} other{导入的快捷键“{name}”（{combo}）等{count}个未添加，因为本设备已将相同的按键用于其他操作。如需使用，请在快捷键设置中用其他按键添加}}",
-  "transferImportFailedSnackbar": "导入失败：{error}",
   "folderManagementTitle": "文件夹管理",
   "folderManagementCreateNew": "新建",
   "folderManagementEmpty": "还没有文件夹",
@@ -373,10 +358,8 @@
   "premiumHeroHighlightWatermark": "编辑 NIARIM 片尾标志",
   "premiumHeroHighlightGrading": "色调曲线 /\n色阶调整",
   "premiumYearlyTitle": "年付套餐（推荐）",
-  "premiumYearlyDescription": "相当于2个月免费",
   "premiumYearlyPrice": "¥5,500/年",
   "premiumYearlyOriginalPrice": "¥6,600",
-  "premiumYearlyPerMonthLabel": "折合每月¥458",
   "premiumMonthlyTitle": "月付套餐",
   "premiumRestorePurchases": "恢复购买",
   "premiumRestoredSnackbar": "已恢复购买信息（如有对应购买记录）",
@@ -851,7 +834,6 @@
   "stampSearchHint": "按图章名称搜索",
   "stampEmpty": "没有图章",
   "stampCreateDialogTitle": "自制图章",
-  "stampImportFailedSnackbar": "图章读取失败：{error}",
   "stampExportFailedSnackbar": "图章导出失败：{error}",
   "stampEditTitle": "编辑图章",
   "stampRotationLabel": "旋转",
@@ -949,10 +931,6 @@
   "exportOutdatedAutofillTitle": "自动上色不是最新状态",
   "exportOutdatedAutofillBody": "存在尚未更新的自动上色图层。要直接导出吗？",
   "exportContinueButton": "继续",
-  "exportDurationExceededTitle": "超出视频时长上限",
-  "exportDurationExceededBody": "免费版的最大视频时长为{max}秒。\n当前项目约为{current}秒。\n升级到Premium后最长可达2小时。",
-  "exportViewPremiumButton": "查看Premium",
-  "exportContinueAnywayButton": "仍要继续",
   "exportCompleteTitle": "导出完成",
   "exportCompleteFramesBody": "已完成{count}帧的导出。",
   "exportSaveLocationLabel": "保存位置：应用内（{fileName}）",
@@ -1131,7 +1109,6 @@
   "penSubToolTabLassoFill": "套索填色",
   "penSubToolToneTooltipMessage": "选择网点后，可以用填色桶或画笔涂上网点纹理。",
   "penSubToolStampTooltipMessage": "可以放置固定形状的图章。长按可设置旋转、密度等。",
-  "penSubToolManageTooltip": "管理",
   "penSubToolBrushSizeOpacity": "{size}px · {opacity}%",
   "@penSubToolBrushSizeOpacity": {
     "placeholders": {
@@ -1143,18 +1120,9 @@
       }
     }
   },
-  "penSubToolStampRotationSubtitle": "根据笔画方向随机旋转",
   "brushSearchHint": "按画笔名称搜索",
   "brushEmpty": "没有画笔",
   "brushCreateDialogTitle": "自制画笔",
-  "brushImportFailedSnackbar": "画笔读取失败：{error}",
-  "@brushImportFailedSnackbar": {
-    "placeholders": {
-      "error": {
-        "type": "String"
-      }
-    }
-  },
   "brushExportFailedSnackbar": "画笔导出失败：{error}",
   "@brushExportFailedSnackbar": {
     "placeholders": {
@@ -1394,7 +1362,6 @@
     }
   },
   "filterEmpty": "没有滤镜",
-  "filterPickHint": "请从上方列表中选择滤镜",
   "filterApplyingTitle": "正在应用滤镜",
   "filterApplyingSubtitle": "{name}　{count}帧",
   "@filterApplyingSubtitle": {
@@ -1415,14 +1382,6 @@
   "projectListCreateShareAction": "创建.niashare",
   "projectListEditFolderAction": "编辑名称与颜色",
   "projectListDeleteFolderConfirmTitle": "要删除此文件夹吗？",
-  "projectListDeleteFolderConfirmBody": "将删除“{name}”。其中的项目・子文件夹将移至根目录。",
-  "@projectListDeleteFolderConfirmBody": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
   "projectListFolderRootOption": "无文件夹（根目录）",
   "projectListEditFolderTooltip": "编辑文件夹",
   "projectListCreateFolderAction": "新建文件夹",
@@ -1510,17 +1469,6 @@
       }
     }
   },
-  "autofillPartUnconfiguredDialogTitle": "有尚未设置的部件",
-  "autofillPartUnconfiguredDialogBody": "保存前请先设置以下部件。",
-  "autofillPartUnconfiguredItem": "・{name}：未选择网点",
-  "@autofillPartUnconfiguredItem": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "autofillPartUnconfiguredBackButton": "返回设置",
   "autofillPartEmpty": "没有部件\n请点击＋按钮添加",
   "autofillPartToneUnselected": "未选择网点",
   "autofillPartAddDialogTitle": "添加部件",
@@ -1705,8 +1653,6 @@
   "saveTreeTimelineActionChoiceBody": "请选择是用当前内容“覆盖保存”这个存档，还是“从此处继续作业”。",
   "saveTreeOverwriteAction": "覆盖保存",
   "saveTreeOverwriteConfirmBody": "该时间点的存档数据将会消失，确定吗？",
-  "saveTreeResumeFromHereAction": "从此处继续",
-  "saveTreeResumeConfirmBody": "要从这份存档继续作业吗？\n\n当前数据将被覆盖。如果需要保留当前内容，请先保存。",
   "saveTreeProjectDetailResumeBody": "要从这份存档继续作业吗？\n\n当前数据将被覆盖。如需保留，请先取消，再保存到其他存档槽（树状模式下保存到其他分支）。",
   "saveTreeLoadFailedSnackbar": "存档数据读取失败",
   "saveTreeRestoredSnackbar": "已读取存档数据（{name}）",
@@ -2238,7 +2184,6 @@
   "timelineFrameTrackLabel": "帧",
   "timelineTrackRowRenameTitle": "重命名行",
   "timelineCameraTrackLabel": "相机",
-  "timelineRangeSceneFixed": "固定场景",
   "timelineEndCardDefaultLogoLabel": "NIARIM标志",
   "timelineEndCardHiddenLabel": "隐藏",
   "timelineEndCardTrackLabel": "片尾卡轨道",
@@ -2521,12 +2466,7 @@
   "pcWorkspaceLayoutScreenTitle": "PC布局设置",
   "pcWorkspaceLayoutIntroHint": "可调整以PC模式（横屏+连接鼠标/数位板）打开画布画面时，面板的排列顺序和宽度。",
   "pcWorkspaceLayoutToolOrderSection": "工具面板顺序",
-  "pcWorkspaceLayoutToolOrderHint": "同时打开画笔、网点、图章等多个面板时的堆叠顺序。",
   "pcWorkspaceLayoutRightOrderSection": "图层等面板顺序",
-  "pcWorkspaceLayoutRightOrderHint": "取色器、图层面板、画布预览的堆叠顺序。",
-  "pcWorkspaceLayoutWidthSection": "面板宽度",
-  "pcWorkspaceLayoutToolWidthLabel": "工具面板一侧宽度",
-  "pcWorkspaceLayoutRightWidthLabel": "图层面板一侧宽度",
   "pcWorkspaceLayoutResetWidthButton": "恢复默认宽度和高度",
   "pcWorkspaceLayoutResetOrderButton": "将顺序恢复为默认值",
   "pcWorkspaceLayoutResetWorkspaceConfirmBody": "将恢复面板的默认顺序、大小、折叠状态、自动折叠设置及默认打开的面板。",
@@ -2624,7 +2564,6 @@
   "workspaceImportFromFileButton": "从外部文件导入",
   "workspaceImportFailedSnackbar": "导入失败：{error}",
   "workspaceNameRequiredError": "请输入名称。",
-  "workspaceNoSavedPresets": "还没有已保存的工作区。",
   "workspaceOverwriteSelectTitle": "选择要覆盖的工作区",
   "workspaceOverwriteConfirmTitle": "确认覆盖",
   "workspaceOverwriteConfirmBody": "将用当前设置覆盖“{name}”，原有内容将被删除。是否继续？",
@@ -2680,7 +2619,6 @@
   "communityRankingPeriodMonthly": "月度",
   "communityRankingPeriodWeekly": "每周",
   "communityRankingPeriodDaily": "每日",
-  "communityRankingSortViews": "播放量",
   "communityRankingSortBookmarks": "书签数",
   "communityRankingSortAscendingTooltip": "升序（从少到多）",
   "communityRankingSortDescendingTooltip": "降序（从多到少）",
@@ -2693,7 +2631,6 @@
     }
   },
   "communityWorkDetailViewOnYoutube": "在YouTube上观看",
-  "communityWorkDetailViewOnYoutubeComingSoonSnackbar": "YouTube联动功能正在开发中",
   "communityWorkDetailBookmarkAdd": "加入书签",
   "communityWorkDetailBookmarkRemove": "已加书签",
   "communityWorkDetailReportButton": "举报",
@@ -2712,26 +2649,7 @@
   "communityFloatingPreviewResizeTooltip": "调整预览大小",
   "communityFloatingPreviewMoveHint": "拖动可移动预览，也可以使用 Alt + 方向键。",
   "communityFloatingPreviewCompactHint": "打开详情即可查看此作品。",
-  "communityReportDialogTitle": "举报此作品",
-  "communityReportDialogBody": "请选择举报原因。",
-  "communityReportReasonInappropriate": "内容不当",
-  "communityReportReasonCopyright": "疑似侵犯版权",
-  "communityReportReasonSpam": "垃圾内容・重复发布",
-  "communityReportReasonOther": "其他",
-  "communityReportSubmitButton": "提交举报",
-  "communityReportDetailLabel": "详细说明",
-  "communityReportDetailHint": "请具体说明存在什么问题",
-  "communityReportDetailRequiredError": "请输入详细说明",
   "communityReportComingSoonSnackbar": "举报功能正在开发中，实际上不会发送。",
-  "communityBlockConfirmTitle": "要屏蔽“{name}”吗？",
-  "@communityBlockConfirmTitle": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "communityBlockConfirmBody": "屏蔽后，该作者的作品将不会出现在你的列表中。",
   "communityBlockComingSoonSnackbar": "屏蔽功能正在开发中，实际上不会生效。",
   "communityAuthorWorksCount": "{count}件作品",
   "@communityAuthorWorksCount": {
@@ -3067,7 +2985,6 @@
   "brushImageMoveDown": "下移",
   "brushImageRemove": "移除素材",
   "filterNoiseStyle": "噪点类型",
-  "filterNoiseFilmGrain": "胶片颗粒",
   "filterNoiseColor": "彩色噪点",
   "filterNoiseSeed": "图案种子",
   "communityContentFilterTitle": "显示筛选",
@@ -3344,7 +3261,6 @@
   "communityMuteNo": "否",
   "communityMuteDone": "已隐藏这位用户",
   "communityUnmuteDone": "已重新显示这位用户",
-  "communityMilestoneNotificationsTitle": "通知",
   "communityFollowerMilestone": "关注者达到 {count} 人",
   "@communityFollowerMilestone": {
     "placeholders": {
@@ -3370,10 +3286,8 @@
   "communitySortLabel": "排序",
   "homeTrashOperationFailed": "无法完成操作。请检查存储空间后重试。",
   "homeTrashWorking": "正在处理…",
-  "homeAddTooltip": "新建",
   "commonShowExplanation": "显示说明",
   "homeViewModeTooltip": "显示方式和大小",
-  "homeMoveToTrashNothing": "没有可移至回收站的项目（收藏的项目不会移动）。",
   "homeMovedToTrashSnackbar": "已将{count}项移至回收站",
   "homeUndoAction": "撤销",
   "homeCutSnackbar": "已剪切{count}项。打开目标位置后，点按标签栏下方工具栏的粘贴。",
@@ -3454,7 +3368,6 @@
   "settingsTipsResetDone": "下次使用各功能时将再次显示说明",
   "helpTutorialButton": "查看使用方法",
   "projectListTrashFolderConfirmTitle": "要将文件夹移至回收站吗？",
-  "projectListTrashFolderConfirmBody": "“{name}”将移至回收站。可以从回收站整体恢复该文件夹。",
   "homeFolderMovedToTrashSnackbar": "已将“{name}”移至回收站",
   "homeMoveToTrashFolderContents": "文件夹中的{contents}也将一并移动。",
   "homeMoveToTrashUnreadNote": "如果文件夹中有无法加载的项目，加载后会移入回收站中的该文件夹。",
@@ -3462,27 +3375,9 @@
   "homeFolderContents": "{projects, plural, =0{{folders, plural, =0{空} other{{folders}个文件夹}}} other{{projects}个项目{folders, plural, =0{} other{和{folders}个文件夹}}}}",
   "homeTrashFolderPermanentDeleteContents": "文件夹中的{contents}也将一并删除。",
   "newProjectNumberRangeError": "请输入{min}到{max}之间的数字",
-  "pcViewZoomIn": "放大",
-  "pcViewZoomOut": "缩小",
   "pcViewFit": "适应窗口",
-  "pcViewActualPixels": "实际像素（100%）",
-  "pcViewRotateLeft": "向左旋转",
-  "pcViewRotateRight": "向右旋转",
-  "pcViewResetRotation": "重置旋转",
-  "pcViewHidePanels": "隐藏面板",
-  "pcViewFrameStrip": "帧列表",
-  "pcPaneToolProperty": "工具设置",
-  "pcToolPropertyEmpty": "此工具没有可调整的设置",
   "pcStatusFrame": "第 {current}/{total} 帧",
-  "pcPaneProgram": "预览",
-  "pcPaneInspector": "详情",
-  "pcTimelineZoomIn": "放大时间轴",
-  "pcTimelineZoomOut": "缩小时间轴",
-  "pcBinEmpty": "还没有素材",
-  "pcBinSceneFrames": "{count} 帧",
-  "pcInspectorHint": "在时间轴上选择素材后，可在此调整位置、大小、不透明度等。",
   "pcStatusFps": "{fps} fps",
-  "canvasSizePresetDuplicateSuffix": "副本",
   "communityChannelRefreshButton": "更新 YouTube 名称和头像（每天一次）",
   "communityChannelRefreshSuccess": "YouTube 名称和头像已更新",
   "communityChannelRefreshNoToken": "需要 YouTube 授权",
@@ -3967,7 +3862,6 @@
   "pcLayoutResetWorkspace": "重置工作区",
   "pcLayoutInstruction": "在预览中拖动窗口边缘可调整宽度和高度，长按左上角的手柄可移动窗口或与其他窗口交换。双指缩放可放大。",
   "brushNibWidthRatio": "笔尖宽度（相对高度）",
-  "brushFoldFlatEnds": "两端切平",
   "brushFoldTriggerAngle": "开始折叠的角度",
   "brushFoldEndTaper": "折叠末端收尖",
   "timelineSelectionScenes": "场景",

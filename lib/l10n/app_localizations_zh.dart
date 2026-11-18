@@ -220,14 +220,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get homeShareOpenWith => '分享・用照片应用等打开';
 
   @override
-  String homeWorkDeleteConfirmTitle(String name) {
-    return '要删除$name吗？';
-  }
-
-  @override
-  String get homeWorkDeleteConfirmBody => '设备中的导出文件将被删除，此操作无法撤销。';
-
-  @override
   String get homePreviewFailed => '无法播放预览';
 
   @override
@@ -414,11 +406,6 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String homePasteTooltip(int count) {
-    return '粘贴$count项';
-  }
-
-  @override
   String get commonOk => '确定';
 
   @override
@@ -495,15 +482,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get homeDrawerSettings => '设置';
-
-  @override
-  String get homeDrawerHelp => '帮助';
-
-  @override
-  String get homeDrawerTips => '使用技巧';
-
-  @override
-  String get homeDrawerPremium => 'Premium';
 
   @override
   String get gestureActionNoneShort => '无';
@@ -675,11 +653,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get transferExportSuccessSnackbar => '已导出.niatra文件';
 
   @override
-  String transferExportFailedSnackbar(String error) {
-    return '导出失败：$error';
-  }
-
-  @override
   String get transferImportSuccessSnackbar => '已导入.niatra文件';
 
   @override
@@ -707,11 +680,6 @@ class AppLocalizationsZh extends AppLocalizations {
       one: '导入的快捷键“$name”（$combo）未添加，因为本设备已将相同的按键用于其他操作。如需使用，请在快捷键设置中用其他按键添加',
     );
     return '$_temp0';
-  }
-
-  @override
-  String transferImportFailedSnackbar(String error) {
-    return '导入失败：$error';
   }
 
   @override
@@ -1064,16 +1032,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get premiumYearlyTitle => '年付套餐（推荐）';
 
   @override
-  String get premiumYearlyDescription => '相当于2个月免费';
-
-  @override
   String get premiumYearlyPrice => '¥5,500/年';
 
   @override
   String get premiumYearlyOriginalPrice => '¥6,600';
-
-  @override
-  String get premiumYearlyPerMonthLabel => '折合每月¥458';
 
   @override
   String get premiumMonthlyTitle => '月付套餐';
@@ -2624,11 +2586,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get stampCreateDialogTitle => '自制图章';
 
   @override
-  String stampImportFailedSnackbar(String error) {
-    return '图章读取失败：$error';
-  }
-
-  @override
   String stampExportFailedSnackbar(String error) {
     return '图章导出失败：$error';
   }
@@ -2938,20 +2895,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get exportContinueButton => '继续';
 
   @override
-  String get exportDurationExceededTitle => '超出视频时长上限';
-
-  @override
-  String exportDurationExceededBody(int max, int current) {
-    return '免费版的最大视频时长为$max秒。\n当前项目约为$current秒。\n升级到Premium后最长可达2小时。';
-  }
-
-  @override
-  String get exportViewPremiumButton => '查看Premium';
-
-  @override
-  String get exportContinueAnywayButton => '仍要继续';
-
-  @override
   String get exportCompleteTitle => '导出完成';
 
   @override
@@ -3191,15 +3134,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get penSubToolStampTooltipMessage => '可以放置固定形状的图章。长按可设置旋转、密度等。';
 
   @override
-  String get penSubToolManageTooltip => '管理';
-
-  @override
   String penSubToolBrushSizeOpacity(int size, int opacity) {
     return '${size}px · $opacity%';
   }
-
-  @override
-  String get penSubToolStampRotationSubtitle => '根据笔画方向随机旋转';
 
   @override
   String get brushSearchHint => '按画笔名称搜索';
@@ -3209,11 +3146,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get brushCreateDialogTitle => '自制画笔';
-
-  @override
-  String brushImportFailedSnackbar(String error) {
-    return '画笔读取失败：$error';
-  }
 
   @override
   String brushExportFailedSnackbar(String error) {
@@ -3724,9 +3656,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get filterEmpty => '没有滤镜';
 
   @override
-  String get filterPickHint => '请从上方列表中选择滤镜';
-
-  @override
   String get filterApplyingTitle => '正在应用滤镜';
 
   @override
@@ -3757,11 +3686,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get projectListDeleteFolderConfirmTitle => '要删除此文件夹吗？';
-
-  @override
-  String projectListDeleteFolderConfirmBody(String name) {
-    return '将删除“$name”。其中的项目・子文件夹将移至根目录。';
-  }
 
   @override
   String get projectListFolderRootOption => '无文件夹（根目录）';
@@ -3970,20 +3894,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String autofillDeleteUsage(int projects, int layers) {
     return '有$projects个作品的$layers个线稿图层正在使用。对这些图层执行自动上色前，请指定其他部件。';
   }
-
-  @override
-  String get autofillPartUnconfiguredDialogTitle => '有尚未设置的部件';
-
-  @override
-  String get autofillPartUnconfiguredDialogBody => '保存前请先设置以下部件。';
-
-  @override
-  String autofillPartUnconfiguredItem(String name) {
-    return '・$name：未选择网点';
-  }
-
-  @override
-  String get autofillPartUnconfiguredBackButton => '返回设置';
 
   @override
   String get autofillPartEmpty => '没有部件\n请点击＋按钮添加';
@@ -4286,13 +4196,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get saveTreeOverwriteConfirmBody => '该时间点的存档数据将会消失，确定吗？';
-
-  @override
-  String get saveTreeResumeFromHereAction => '从此处继续';
-
-  @override
-  String get saveTreeResumeConfirmBody =>
-      '要从这份存档继续作业吗？\n\n当前数据将被覆盖。如果需要保留当前内容，请先保存。';
 
   @override
   String get saveTreeProjectDetailResumeBody =>
@@ -5229,9 +5132,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get timelineCameraTrackLabel => '相机';
 
   @override
-  String get timelineRangeSceneFixed => '固定场景';
-
-  @override
   String get timelineEndCardDefaultLogoLabel => 'NIARIM标志';
 
   @override
@@ -5911,22 +5811,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get pcWorkspaceLayoutToolOrderSection => '工具面板顺序';
 
   @override
-  String get pcWorkspaceLayoutToolOrderHint => '同时打开画笔、网点、图章等多个面板时的堆叠顺序。';
-
-  @override
   String get pcWorkspaceLayoutRightOrderSection => '图层等面板顺序';
-
-  @override
-  String get pcWorkspaceLayoutRightOrderHint => '取色器、图层面板、画布预览的堆叠顺序。';
-
-  @override
-  String get pcWorkspaceLayoutWidthSection => '面板宽度';
-
-  @override
-  String get pcWorkspaceLayoutToolWidthLabel => '工具面板一侧宽度';
-
-  @override
-  String get pcWorkspaceLayoutRightWidthLabel => '图层面板一侧宽度';
 
   @override
   String get pcWorkspaceLayoutResetWidthButton => '恢复默认宽度和高度';
@@ -6199,9 +6084,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get workspaceNameRequiredError => '请输入名称。';
 
   @override
-  String get workspaceNoSavedPresets => '还没有已保存的工作区。';
-
-  @override
   String get workspaceOverwriteSelectTitle => '选择要覆盖的工作区';
 
   @override
@@ -6287,9 +6169,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get communityRankingPeriodDaily => '每日';
 
   @override
-  String get communityRankingSortViews => '播放量';
-
-  @override
   String get communityRankingSortBookmarks => '书签数';
 
   @override
@@ -6305,10 +6184,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get communityWorkDetailViewOnYoutube => '在YouTube上观看';
-
-  @override
-  String get communityWorkDetailViewOnYoutubeComingSoonSnackbar =>
-      'YouTube联动功能正在开发中';
 
   @override
   String get communityWorkDetailBookmarkAdd => '加入书签';
@@ -6366,45 +6241,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get communityFloatingPreviewCompactHint => '打开详情即可查看此作品。';
 
   @override
-  String get communityReportDialogTitle => '举报此作品';
-
-  @override
-  String get communityReportDialogBody => '请选择举报原因。';
-
-  @override
-  String get communityReportReasonInappropriate => '内容不当';
-
-  @override
-  String get communityReportReasonCopyright => '疑似侵犯版权';
-
-  @override
-  String get communityReportReasonSpam => '垃圾内容・重复发布';
-
-  @override
-  String get communityReportReasonOther => '其他';
-
-  @override
-  String get communityReportSubmitButton => '提交举报';
-
-  @override
-  String get communityReportDetailLabel => '详细说明';
-
-  @override
-  String get communityReportDetailHint => '请具体说明存在什么问题';
-
-  @override
-  String get communityReportDetailRequiredError => '请输入详细说明';
-
-  @override
   String get communityReportComingSoonSnackbar => '举报功能正在开发中，实际上不会发送。';
-
-  @override
-  String communityBlockConfirmTitle(String name) {
-    return '要屏蔽“$name”吗？';
-  }
-
-  @override
-  String get communityBlockConfirmBody => '屏蔽后，该作者的作品将不会出现在你的列表中。';
 
   @override
   String get communityBlockComingSoonSnackbar => '屏蔽功能正在开发中，实际上不会生效。';
@@ -7145,9 +6982,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get filterNoiseStyle => '噪点类型';
-
-  @override
-  String get filterNoiseFilmGrain => '胶片颗粒';
 
   @override
   String get filterNoiseColor => '彩色噪点';
@@ -8004,9 +7838,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get communityUnmuteDone => '已重新显示这位用户';
 
   @override
-  String get communityMilestoneNotificationsTitle => '通知';
-
-  @override
   String communityFollowerMilestone(String count) {
     return '关注者达到 $count 人';
   }
@@ -8035,16 +7866,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get homeTrashWorking => '正在处理…';
 
   @override
-  String get homeAddTooltip => '新建';
-
-  @override
   String get commonShowExplanation => '显示说明';
 
   @override
   String get homeViewModeTooltip => '显示方式和大小';
-
-  @override
-  String get homeMoveToTrashNothing => '没有可移至回收站的项目（收藏的项目不会移动）。';
 
   @override
   String homeMovedToTrashSnackbar(int count) {
@@ -8367,11 +8192,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get projectListTrashFolderConfirmTitle => '要将文件夹移至回收站吗？';
 
   @override
-  String projectListTrashFolderConfirmBody(String name) {
-    return '“$name”将移至回收站。可以从回收站整体恢复该文件夹。';
-  }
-
-  @override
   String homeFolderMovedToTrashSnackbar(String name) {
     return '已将“$name”移至回收站';
   }
@@ -8423,37 +8243,7 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get pcViewZoomIn => '放大';
-
-  @override
-  String get pcViewZoomOut => '缩小';
-
-  @override
   String get pcViewFit => '适应窗口';
-
-  @override
-  String get pcViewActualPixels => '实际像素（100%）';
-
-  @override
-  String get pcViewRotateLeft => '向左旋转';
-
-  @override
-  String get pcViewRotateRight => '向右旋转';
-
-  @override
-  String get pcViewResetRotation => '重置旋转';
-
-  @override
-  String get pcViewHidePanels => '隐藏面板';
-
-  @override
-  String get pcViewFrameStrip => '帧列表';
-
-  @override
-  String get pcPaneToolProperty => '工具设置';
-
-  @override
-  String get pcToolPropertyEmpty => '此工具没有可调整的设置';
 
   @override
   String pcStatusFrame(int current, int total) {
@@ -8461,35 +8251,9 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get pcPaneProgram => '预览';
-
-  @override
-  String get pcPaneInspector => '详情';
-
-  @override
-  String get pcTimelineZoomIn => '放大时间轴';
-
-  @override
-  String get pcTimelineZoomOut => '缩小时间轴';
-
-  @override
-  String get pcBinEmpty => '还没有素材';
-
-  @override
-  String pcBinSceneFrames(int count) {
-    return '$count 帧';
-  }
-
-  @override
-  String get pcInspectorHint => '在时间轴上选择素材后，可在此调整位置、大小、不透明度等。';
-
-  @override
   String pcStatusFps(int fps) {
     return '$fps fps';
   }
-
-  @override
-  String get canvasSizePresetDuplicateSuffix => '副本';
 
   @override
   String get communityChannelRefreshButton => '更新 YouTube 名称和头像（每天一次）';
@@ -10286,9 +10050,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get brushNibWidthRatio => '笔尖宽度（相对高度）';
 
   @override
-  String get brushFoldFlatEnds => '两端切平';
-
-  @override
   String get brushFoldTriggerAngle => '开始折叠的角度';
 
   @override
@@ -10448,10 +10209,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get homeShareFileDialogTitle => '共享檔案';
 
   @override
-  String get homeSharedFileTooLarge => '分享檔案超過 128 MB。請開啟不超過 128 MB 的檔案。';
+  String get homeSharedFileTooLarge => '共享檔案超過 128 MB。請開啟不超過 128 MB 的檔案。';
 
   @override
-  String get homeSharedFileUnreadable => '無法開啟分享檔案。請重新儲存檔案後再開啟。';
+  String get homeSharedFileUnreadable => '無法開啟共享檔案。請重新儲存檔案後再開啟。';
 
   @override
   String get homeShareFileDialogContent => '要複製這個共享檔案並另存為一般專案嗎？';
@@ -10565,14 +10326,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get homeShareOpenWith => '分享・用相片App等開啟';
-
-  @override
-  String homeWorkDeleteConfirmTitle(String name) {
-    return '要刪除$name嗎？';
-  }
-
-  @override
-  String get homeWorkDeleteConfirmBody => '裝置中的匯出檔案將被刪除，此操作無法復原。';
 
   @override
   String get homePreviewFailed => '無法播放預覽';
@@ -10761,11 +10514,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   }
 
   @override
-  String homePasteTooltip(int count) {
-    return '貼上$count項';
-  }
-
-  @override
   String get commonOk => '確定';
 
   @override
@@ -10842,15 +10590,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get homeDrawerSettings => '設定';
-
-  @override
-  String get homeDrawerHelp => '說明';
-
-  @override
-  String get homeDrawerTips => '使用技巧';
-
-  @override
-  String get homeDrawerPremium => 'Premium';
 
   @override
   String get gestureActionNoneShort => '無';
@@ -11022,11 +10761,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get transferExportSuccessSnackbar => '已匯出.niatra檔案';
 
   @override
-  String transferExportFailedSnackbar(String error) {
-    return '匯出失敗：$error';
-  }
-
-  @override
   String get transferImportSuccessSnackbar => '已匯入.niatra檔案';
 
   @override
@@ -11054,11 +10788,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
       one: '匯入的快捷鍵「$name」（$combo）未新增，因為本裝置已將相同的按鍵用於其他操作。如需使用，請在快捷鍵設定中以其他按鍵新增',
     );
     return '$_temp0';
-  }
-
-  @override
-  String transferImportFailedSnackbar(String error) {
-    return '匯入失敗：$error';
   }
 
   @override
@@ -11411,16 +11140,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get premiumYearlyTitle => '年繳方案（推薦）';
 
   @override
-  String get premiumYearlyDescription => '相當於2個月免費';
-
-  @override
   String get premiumYearlyPrice => '¥5,500/年';
 
   @override
   String get premiumYearlyOriginalPrice => '¥6,600';
-
-  @override
-  String get premiumYearlyPerMonthLabel => '折合每月¥458';
 
   @override
   String get premiumMonthlyTitle => '月繳方案';
@@ -12971,11 +12694,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get stampCreateDialogTitle => '自製印章';
 
   @override
-  String stampImportFailedSnackbar(String error) {
-    return '印章讀取失敗：$error';
-  }
-
-  @override
   String stampExportFailedSnackbar(String error) {
     return '印章匯出失敗：$error';
   }
@@ -13285,20 +13003,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get exportContinueButton => '繼續';
 
   @override
-  String get exportDurationExceededTitle => '超出影片長度上限';
-
-  @override
-  String exportDurationExceededBody(int max, int current) {
-    return '免費版的最長影片長度為$max秒。\n目前專案約為$current秒。\n升級為Premium後最長可達2小時。';
-  }
-
-  @override
-  String get exportViewPremiumButton => '查看Premium';
-
-  @override
-  String get exportContinueAnywayButton => '仍要繼續';
-
-  @override
   String get exportCompleteTitle => '匯出完成';
 
   @override
@@ -13537,15 +13241,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get penSubToolStampTooltipMessage => '可以放置固定形狀的印章。長按可設定旋轉、密度等。';
 
   @override
-  String get penSubToolManageTooltip => '管理';
-
-  @override
   String penSubToolBrushSizeOpacity(int size, int opacity) {
     return '${size}px · $opacity%';
   }
-
-  @override
-  String get penSubToolStampRotationSubtitle => '依筆畫方向隨機旋轉';
 
   @override
   String get brushSearchHint => '以筆刷名稱搜尋';
@@ -13555,11 +13253,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get brushCreateDialogTitle => '自製筆刷';
-
-  @override
-  String brushImportFailedSnackbar(String error) {
-    return '筆刷讀取失敗：$error';
-  }
 
   @override
   String brushExportFailedSnackbar(String error) {
@@ -14070,9 +13763,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get filterEmpty => '沒有濾鏡';
 
   @override
-  String get filterPickHint => '請從上方列表中選擇濾鏡';
-
-  @override
   String get filterApplyingTitle => '套用濾鏡中';
 
   @override
@@ -14103,11 +13793,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get projectListDeleteFolderConfirmTitle => '要刪除這個資料夾嗎？';
-
-  @override
-  String projectListDeleteFolderConfirmBody(String name) {
-    return '將刪除「$name」。其中的專案・子資料夾將移至根目錄。';
-  }
 
   @override
   String get projectListFolderRootOption => '無資料夾（根目錄）';
@@ -14316,20 +14001,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String autofillDeleteUsage(int projects, int layers) {
     return '有$projects個作品的$layers個線稿圖層正在使用。對這些圖層執行自動上色前，請指定其他部件。';
   }
-
-  @override
-  String get autofillPartUnconfiguredDialogTitle => '有尚未設定的部件';
-
-  @override
-  String get autofillPartUnconfiguredDialogBody => '儲存前請先設定以下部件。';
-
-  @override
-  String autofillPartUnconfiguredItem(String name) {
-    return '・$name：未選擇網點';
-  }
-
-  @override
-  String get autofillPartUnconfiguredBackButton => '返回設定';
 
   @override
   String get autofillPartEmpty => '沒有部件\n請點擊＋按鈕新增';
@@ -14632,13 +14303,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get saveTreeOverwriteConfirmBody => '該時間點的存檔資料將會消失，確定嗎？';
-
-  @override
-  String get saveTreeResumeFromHereAction => '從此處繼續';
-
-  @override
-  String get saveTreeResumeConfirmBody =>
-      '要從這份存檔繼續作業嗎？\n\n目前的資料將被覆寫。如果需要保留目前內容，請先儲存。';
 
   @override
   String get saveTreeProjectDetailResumeBody =>
@@ -15576,9 +15240,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get timelineCameraTrackLabel => '相機';
 
   @override
-  String get timelineRangeSceneFixed => '固定場景';
-
-  @override
   String get timelineEndCardDefaultLogoLabel => 'NIARIM標誌';
 
   @override
@@ -16258,22 +15919,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get pcWorkspaceLayoutToolOrderSection => '工具面板順序';
 
   @override
-  String get pcWorkspaceLayoutToolOrderHint => '同時開啟畫筆、網點、印章等多個面板時的堆疊順序。';
-
-  @override
   String get pcWorkspaceLayoutRightOrderSection => '圖層等面板順序';
-
-  @override
-  String get pcWorkspaceLayoutRightOrderHint => '顏色選擇器、圖層面板、畫布預覽的堆疊順序。';
-
-  @override
-  String get pcWorkspaceLayoutWidthSection => '面板寬度';
-
-  @override
-  String get pcWorkspaceLayoutToolWidthLabel => '工具面板側寬度';
-
-  @override
-  String get pcWorkspaceLayoutRightWidthLabel => '圖層面板側寬度';
 
   @override
   String get pcWorkspaceLayoutResetWidthButton => '恢復預設寬度和高度';
@@ -16546,9 +16192,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get workspaceNameRequiredError => '請輸入名稱。';
 
   @override
-  String get workspaceNoSavedPresets => '目前沒有已儲存的工作區。';
-
-  @override
   String get workspaceOverwriteSelectTitle => '選擇要覆蓋的工作區';
 
   @override
@@ -16634,9 +16277,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get communityRankingPeriodDaily => '每日';
 
   @override
-  String get communityRankingSortViews => '觀看次數';
-
-  @override
   String get communityRankingSortBookmarks => '收藏數';
 
   @override
@@ -16652,10 +16292,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get communityWorkDetailViewOnYoutube => '在YouTube上觀看';
-
-  @override
-  String get communityWorkDetailViewOnYoutubeComingSoonSnackbar =>
-      'YouTube連動功能正在開發中';
 
   @override
   String get communityWorkDetailBookmarkAdd => '收藏';
@@ -16713,45 +16349,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get communityFloatingPreviewCompactHint => '開啟詳情即可查看此作品。';
 
   @override
-  String get communityReportDialogTitle => '檢舉此作品';
-
-  @override
-  String get communityReportDialogBody => '請選擇檢舉原因。';
-
-  @override
-  String get communityReportReasonInappropriate => '內容不當';
-
-  @override
-  String get communityReportReasonCopyright => '疑似侵犯著作權';
-
-  @override
-  String get communityReportReasonSpam => '垃圾內容・重複發佈';
-
-  @override
-  String get communityReportReasonOther => '其他';
-
-  @override
-  String get communityReportSubmitButton => '提交檢舉';
-
-  @override
-  String get communityReportDetailLabel => '詳細說明';
-
-  @override
-  String get communityReportDetailHint => '請具體說明有什麼問題';
-
-  @override
-  String get communityReportDetailRequiredError => '請輸入詳細說明';
-
-  @override
   String get communityReportComingSoonSnackbar => '檢舉功能正在開發中，實際上不會送出。';
-
-  @override
-  String communityBlockConfirmTitle(String name) {
-    return '要封鎖「$name」嗎？';
-  }
-
-  @override
-  String get communityBlockConfirmBody => '封鎖後，該作者的作品將不會出現在你的清單中。';
 
   @override
   String get communityBlockComingSoonSnackbar => '封鎖功能正在開發中，實際上不會生效。';
@@ -17492,9 +17090,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get filterNoiseStyle => '雜訊類型';
-
-  @override
-  String get filterNoiseFilmGrain => '底片顆粒';
 
   @override
   String get filterNoiseColor => '彩色雜訊';
@@ -18353,9 +17948,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get communityUnmuteDone => '已重新顯示這位使用者';
 
   @override
-  String get communityMilestoneNotificationsTitle => '通知';
-
-  @override
   String communityFollowerMilestone(String count) {
     return '追蹤者達到 $count 人';
   }
@@ -18384,16 +17976,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get homeTrashWorking => '處理中…';
 
   @override
-  String get homeAddTooltip => '新增';
-
-  @override
   String get commonShowExplanation => '顯示說明';
 
   @override
   String get homeViewModeTooltip => '顯示方式和大小';
-
-  @override
-  String get homeMoveToTrashNothing => '沒有可移至垃圾桶的項目（我的最愛不會移動）。';
 
   @override
   String homeMovedToTrashSnackbar(int count) {
@@ -18716,11 +18302,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get projectListTrashFolderConfirmTitle => '要將資料夾移至垃圾桶嗎？';
 
   @override
-  String projectListTrashFolderConfirmBody(String name) {
-    return '「$name」將移至垃圾桶。可以從垃圾桶整個復原該資料夾。';
-  }
-
-  @override
   String homeFolderMovedToTrashSnackbar(String name) {
     return '已將「$name」移至垃圾桶';
   }
@@ -18772,37 +18353,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   }
 
   @override
-  String get pcViewZoomIn => '放大';
-
-  @override
-  String get pcViewZoomOut => '縮小';
-
-  @override
   String get pcViewFit => '符合視窗';
-
-  @override
-  String get pcViewActualPixels => '實際像素（100%）';
-
-  @override
-  String get pcViewRotateLeft => '向左旋轉';
-
-  @override
-  String get pcViewRotateRight => '向右旋轉';
-
-  @override
-  String get pcViewResetRotation => '重設旋轉';
-
-  @override
-  String get pcViewHidePanels => '隱藏面板';
-
-  @override
-  String get pcViewFrameStrip => '影格列表';
-
-  @override
-  String get pcPaneToolProperty => '工具設定';
-
-  @override
-  String get pcToolPropertyEmpty => '此工具沒有可調整的設定';
 
   @override
   String pcStatusFrame(int current, int total) {
@@ -18810,35 +18361,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   }
 
   @override
-  String get pcPaneProgram => '預覽';
-
-  @override
-  String get pcPaneInspector => '詳情';
-
-  @override
-  String get pcTimelineZoomIn => '放大時間軸';
-
-  @override
-  String get pcTimelineZoomOut => '縮小時間軸';
-
-  @override
-  String get pcBinEmpty => '還沒有素材';
-
-  @override
-  String pcBinSceneFrames(int count) {
-    return '$count 影格';
-  }
-
-  @override
-  String get pcInspectorHint => '在時間軸上選擇素材後，可在此調整位置、大小、不透明度等。';
-
-  @override
   String pcStatusFps(int fps) {
     return '$fps fps';
   }
-
-  @override
-  String get canvasSizePresetDuplicateSuffix => '副本';
 
   @override
   String get communityChannelRefreshButton => '更新 YouTube 名稱和頭像（每日一次）';
@@ -20633,9 +20158,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get brushNibWidthRatio => '筆尖寬度（相對高度）';
-
-  @override
-  String get brushFoldFlatEnds => '兩端切平';
 
   @override
   String get brushFoldTriggerAngle => '開始摺疊的角度';
