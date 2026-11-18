@@ -49,7 +49,7 @@ void main() {
       expect(await draw(true), steady, reason: ribbon.name);
     }
   });
-  test('ribbon ends come from its PNG with folding on or off', () async {
+  test('the ribbon PNG makes square ends with folding on or off', () async {
     final presets = brushExtensionPresets().where(
       (brush) => brush.name.startsWith('リボン'),
     );
@@ -82,6 +82,13 @@ void main() {
       expect(alpha(18, 35), greaterThan(0), reason: preset.name);
       expect(alpha(101, 35), greaterThan(0), reason: preset.name);
       expect(alpha(95, 43), 255, reason: preset.name);
+      List<int> inkColumns(int y) => [
+        for (var x = 0; x < 120; x++)
+          if (alpha(x, y) >= 128) x,
+      ];
+      final middle = inkColumns(35);
+      expect(inkColumns(23), middle, reason: preset.name);
+      expect(inkColumns(47), middle, reason: preset.name);
     }
   });
   for (final id in ['Brush0023']) {

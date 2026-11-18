@@ -389,25 +389,33 @@ void main() {
     }
 
     final straight = await crease(ribbon.copyWith(foldCurveStartRatio: 1));
-    void expectStraight(List<ui.Offset> pixels) {
-      final direction = pixels.last - pixels.first;
-      expect(direction.distance, greaterThan(10));
+    ui.Offset expectStraight(List<ui.Offset> pixels) {
+      expect(pixels.last.dx - pixels.first.dx, greaterThan(10));
+      // Fit the ink's center line, independent of which edge pixel happens
+      // to be first or last in each end column.
+      final center = pixels.reduce((a, b) => a + b) / pixels.length.toDouble();
+      var xx = 0.0, xy = 0.0;
       for (final pixel in pixels) {
-        final delta = pixel - pixels.first;
+        final delta = pixel - center;
+        xx += delta.dx * delta.dx;
+        xy += delta.dx * delta.dy;
+      }
+      final direction = ui.Offset(1, xy / xx);
+      for (final pixel in pixels) {
+        final delta = pixel - center;
         final deviation =
             (direction.dx * delta.dy - direction.dy * delta.dx).abs() /
             direction.distance;
         expect(deviation, lessThan(2.2), reason: 'at $pixel');
       }
+      return direction;
     }
 
-    expectStraight(straight);
+    final baseline = expectStraight(straight);
     final tilted = await crease(
       ribbon.copyWith(foldCurveStartRatio: 1, foldDepartureAngle: 12),
     );
-    expectStraight(tilted);
-    final baseline = straight.last - straight.first;
-    final rotated = tilted.last - tilted.first;
+    final rotated = expectStraight(tilted);
     final tilt = math.atan2(
       baseline.dx * rotated.dy - baseline.dy * rotated.dx,
       baseline.dx * rotated.dx + baseline.dy * rotated.dy,
