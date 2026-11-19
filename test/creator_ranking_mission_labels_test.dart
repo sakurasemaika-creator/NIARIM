@@ -48,7 +48,10 @@ void main() {
     expect(find.textContaining('作品ごとに別途'), findsNothing);
     expect(find.textContaining('作品ごとに判定'), findsOneWidget);
     expect(find.textContaining('現在オパール報酬'), findsNothing);
-    expect(find.textContaining('48時間経過後'), findsOneWidget);
+    // ランキング報酬は「受け取る」を押した時点で確認してすぐ付与する
+    // （48時間の保留は3454af7eで無くなった）。
+    expect(find.textContaining('48時間'), findsNothing);
+    expect(find.textContaining('満たしていればすぐに付与'), findsOneWidget);
     expect(find.textContaining('同じ作品の同じ順位報酬は1回限り'), findsOneWidget);
     expect(find.textContaining('現在80件／必要100件'), findsOneWidget);
     expect(find.textContaining('現在4件／必要15件'), findsOneWidget);
