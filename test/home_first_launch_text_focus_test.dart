@@ -61,6 +61,13 @@ const _sizes = [
   (Size(1280, 800), 2.0),
 ];
 
+// 初回の案内の「はじめる」。空のホームにも作成の塗りのボタンがあるので、
+// ダイアログの中に限って探す。
+final _startButton = find.descendant(
+  of: find.byType(Dialog),
+  matching: find.byType(FilledButton),
+);
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -234,7 +241,7 @@ void main() {
     final handle = tester.ensureSemantics();
     final c = await open(tester, language: 'ja');
     c.store.reject = true;
-    await tester.tap(find.byType(FilledButton));
+    await tester.tap(_startButton);
     await tester.pumpAndSettle();
     expect(c.store.attempts, 1);
     for (final language in ['ja', 'zh', 'zh_Hant', 'ko', 'en', 'es', 'fr']) {
@@ -306,7 +313,7 @@ void main() {
       'as the name at every width', (tester) async {
     final c = await open(tester, language: 'ja');
     c.store.reject = true;
-    await tester.tap(find.byType(FilledButton));
+    await tester.tap(_startButton);
     await tester.pumpAndSettle();
     expect(c.store.attempts, 1);
     final split = <String>[];
@@ -422,7 +429,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 300));
     expect(c.store.attempts, 1);
     expect(
-      tester.widget<FilledButton>(find.byType(FilledButton)).onPressed,
+      tester.widget<FilledButton>(_startButton).onPressed,
       isNull,
       reason: 'Start is disabled while the save is pending',
     );
