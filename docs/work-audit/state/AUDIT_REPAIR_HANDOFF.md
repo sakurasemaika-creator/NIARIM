@@ -615,6 +615,17 @@ App・Web共通。Claudeが要修正の詳細を追記し、ユーザーが別�
 - **DISC021（直っている）**：別のセッションの`c96b8d8f`が足した`timeline_preview_controls_test`「320px timeline opens export without scrolling the toolbar」（仏語・文字2倍・320×640px、書き出しのボタンがスクロールなしで押せ48×48、押すと書き出しの画面）が`14f4ee5c`で成功。
 - **DISC040（直っている）**：`home_library_sort_layout_test`（文字拡大を含む）9件が`14f4ee5c`で成功（`863b962b`の全体回帰では1件落ちていたが、別のセッションの`fc240a9b`で直った）。
 - **DISC012（一部）**：全体回帰`44433103724`（`863b962b`）の`home_continuous_resize_test`は24ケース中20ケース（プロジェクト・検索・フォルダ・引き出し・一覧の末尾×ja/fr×文字1.0/1.3）が成功。落ちた4ケースはゴミ箱の場面だけで、633〜634pxでゴミ箱の種類の絞り込みのチップが見当たらない（全体回帰の失敗の1つ。別のセッションがゴミ箱の狭い幅を`6e1ae0f5`で変えた後の`44440083597`で確かめる）。
+- **直っている（App `8049980e`、2026-11-19）**：
+  - DISC017：カードの絵は作品の背景色の上に描く（`FramePreviewBackground`、透過の絵も作品の色）。紙の上の操作の丸・表紙の印は見分けられ、名前は絵の下に2行まで全文。`collection_action_frame_on_paper_test`・`frame_preview_background_test`・`home_cover_mark_on_paper_test`・`home_tile_name_lines_test` 13件成功（白い実際の絵での見え方は二巡目の実画面）。
+  - DISC018：プロジェクト詳細のプレビューは、描いている間の要求を1つにまとめ、終わるたびに最新のコマで描き直す（`_renderFrame`の`_renderAgain`、古い画像は破棄）。`project_detail_audit_test`「quick seeking ends on the frame chosen last」成功。
+  - DISC020：スマホのキャンバスの上部バー（設定・戻る・取り消し・やり直し）は各幅で48pxの的と間隔（`canvas_top_bar_tap_targets_test` 2件成功）。ツールバーの全ボタンの実機での押しやすさは二巡目。
+  - DISC024：書き出しはプリセットのFPSへ長さを保ったまま割り当て直す（`ExportEngine`の`sourceFps`→出力FPS）。`export_timing_test`（12fpsの作品が30・60fpsで91秒のまま、GIFのコマの時間の丸めが積み重ならない）2件成功。音声つきの実ファイルの再生の確認は実機。
+  - DISC035：作品フォルダは右クリック・長押しでメニューが開く（`home_row_right_click_menu_test` 6件、`863b962b`では2件落ちていたが今は成功）。カードのTab・Enter・Spaceは`collection_card_keys`。
+- **仕様どおり／判断待ち**：
+  - DISC161（前半）：作品の詳細の「YouTubeで見る」「ブックマーク」は、1行に並ばなければ1つずつの行、行の幅いっぱいでも名前が入らなければアイコンだけ（名前は吹き出しと読み上げ）＝所有者の判断3と同じ決まり（`ButtonRowOrStack`＋`FirstThatFits`）。後半（浮かぶプレビューの文が左端x=0から始まる）は未確認。
+  - DISC145：1語が欄の幅より広いときだけ字の間で折るのはDISC118で決めた決まり（`KeepTogetherText`）で、「Storyboar/ds」はその語が欄より広いとき。決まりは決まっている。欄より狭いのに折れる場面が残っていないかは二巡目の実画面。
+  - DISC052：AUDIT_ROUTEの記録どおりコード側は確認済み（幅320・残りの高さ320の条件・リサイズ・27の回帰）。残りは実際の広告・Android/DeX・端末の安全な領域＝実機。
+  - DISC070：読めない保存の項目を戻す手段・知らせ方・ブラシ以外の一覧へ持ち越しを広げるかは所有者の判断（今はブラシだけ読めない項目を保存の末尾に残し、ほかの一覧は次に変えたときに読めた分だけで保存し直す）。
 - **DISC039・042（全体回帰で確かめる）**：ホームの総当たり（`home_matrix2_*`・`home_display_matrix_test`）は文字の切れ・重なり・48×48・語の途中の折れを見るが、`44433103724`での失敗はゴミ箱のTabのフォーカスの輪（カード全体に止まり印が見えない）と読み込み中の場面だけで、DISC039（長いフォルダ名）・DISC042（操作が名前の幅を詰める）にあたる失敗は無かった。`44440083597`の結果で確定する。
 
 ## 要修正の記録
