@@ -15,6 +15,7 @@ on:
       - "test/community_work_card_layout_test.dart"
       - "test/canvas_timeline_position_test.dart"
       - "test/canvas_panel_screenshot_audit_test.dart"
+      - "test/canvas_dock_fit_test.dart"
       - "test/helpers/home_matrix_checks.dart"
       - "lib/widgets/action_beside_or_below.dart"
       - "test/visual/modified_canvas_scope_capture_test.dart"

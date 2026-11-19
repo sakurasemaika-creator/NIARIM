@@ -124,6 +124,9 @@ void main() {
       await settle(tester, 12);
       await capture(tester, name);
       expect(tester.takeException(), isNull);
+      final timelineButton = find.byKey(const Key('canvasTimelineModeButton'));
+      expect(timelineButton.hitTestable(), findsOneWidget);
+      expect(tester.getRect(timelineButton).right, lessThanOrEqualTo(width));
       final canvas = tester.getRect(find.byType(CanvasArea));
       // 2つのドックをパネルが崩れない幅（左260・右240）まで狭めれば、
       // 800px幅からはキャンバスに240pxが残る。それより狭い窓では残りすべて。
@@ -155,21 +158,12 @@ void main() {
       // つまみを外側へ引くと色・レイヤーのドックが広がる（左利きでは
       // 向きが逆になっていて、引くと狭まった）。
       if (width == 1280 && rightWidth == 436) {
-        final handle = find.byType(PcDockSplitter);
+        final handle = find.byKey(
+          ValueKey('dockColumnResize-${leftHanded ? 'left' : 'right'}'),
+        );
         final before = layers.width;
-        // 色・レイヤーのドックに一番近いつまみ。
-        final nearest =
-            [
-              for (var i = 0; i < handle.evaluate().length; i++)
-                tester.getRect(handle.at(i)),
-            ].reduce(
-              (a, b) =>
-                  (a.center.dx - layers.center.dx).abs() <
-                      (b.center.dx - layers.center.dx).abs()
-                  ? a
-                  : b,
-            );
-        final gesture = await tester.startGesture(nearest.center);
+        expect(handle.hitTestable(), findsOneWidget);
+        final gesture = await tester.startGesture(tester.getCenter(handle));
         for (var i = 0; i < 6; i++) {
           await gesture.moveBy(Offset(leftHanded ? 10 : -10, 0));
           await tester.pump();

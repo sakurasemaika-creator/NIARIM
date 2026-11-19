@@ -17,9 +17,11 @@ import 'package:niarim/screens/canvas/widgets/color_picker_panel.dart';
 import 'package:niarim/screens/canvas/widgets/layer_panel.dart';
 import 'package:niarim/widgets/labeled_slider.dart';
 import 'package:niarim/screens/canvas/widgets/mesh_transform_panel.dart';
+import 'package:niarim/screens/canvas/widgets/pen_sub_tool_panel.dart';
 import 'package:niarim/screens/canvas/widgets/reference_window.dart';
 import 'package:niarim/screens/canvas/widgets/filter_panel.dart';
 import 'package:niarim/screens/settings/pc_workspace_layout_settings_screen.dart';
+import 'package:niarim/services/premium_service.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:niarim/services/settings_service.dart';
 import 'package:niarim/services/filter_service.dart';
@@ -28,6 +30,13 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'helpers/load_app_fonts.dart';
 import 'helpers/first_use_tooltips.dart';
+import 'helpers/pick_filter_card.dart';
+
+class _ToneCurveCapturePremium extends PremiumService {
+  @override
+  bool isFeatureAvailable(PremiumFeature feature) =>
+      feature == PremiumFeature.toneCurve || super.isFeatureAvailable(feature);
+}
 
 class _NoPicker extends FilePicker {
   @override
@@ -76,7 +85,15 @@ void main() {
     await tester.pumpWidget(
       RepaintBoundary(
         key: key,
-        child: MultiProvider(providers: providers, child: const NiarimApp()),
+        child: MultiProvider(
+          providers: [
+            ...providers,
+            ChangeNotifierProvider<PremiumService>(
+              create: (_) => _ToneCurveCapturePremium(),
+            ),
+          ],
+          child: const NiarimApp(),
+        ),
       ),
     );
     final out = Directory('build/requested-ui-all-captures')
@@ -337,7 +354,7 @@ void main() {
     final demoService = tester
         .element(find.byType(FilterPanel))
         .read<FilterService>();
-    demoService.selectFilter('Filter0025'); // Invert colors.
+    await pickFilterCard(tester, 'Filter0025'); // Invert colors.
     await settle();
     expect(demoService.currentFilter?.id, 'Filter0025');
     await shot('07g_first_filter_temporary_inversion_preview');
@@ -573,11 +590,30 @@ void main() {
       CanvasDockPanel.ruler,
     ];
     for (final panel in affectedDocks) {
+      final dock = canonicalCanvasDock(panel);
       await navigate('/home');
-      await settings.setDefaultDockedPanels({panel});
-      await settings.setDesktopDockHeight(panel, 520);
+      await settings.setDefaultDockedPanels({dock});
+      await settings.setDesktopDockHeight(dock, 520);
       await navigate('/canvas/${colored.id}');
-      final grip = find.byKey(ValueKey('dockDrag-${panel.name}'));
+      final tabIndex = switch (panel) {
+        CanvasDockPanel.brush => 0,
+        CanvasDockPanel.tone => 1,
+        CanvasDockPanel.stamp => 2,
+        _ => null,
+      };
+      if (tabIndex != null) {
+        final tabs = find.descendant(
+          of: find.byType(PenSubToolPanel),
+          matching: find.byType(TabBar),
+        );
+        await tester.tap(
+          find
+              .descendant(of: tabs.first, matching: find.byType(Tab))
+              .at(tabIndex),
+        );
+        await settle();
+      }
+      final grip = find.byKey(ValueKey('dockDrag-${dock.name}'));
       if (grip.evaluate().isNotEmpty) {
         await shot('popup_fix_${panel.name}');
       } else {
@@ -692,20 +728,20 @@ void main() {
 
     // Free positioning is removed: desktop tools share the regular docks.
     await settings.setDefaultDockedPanels({
-      CanvasDockPanel.brush,
+      CanvasDockPanel.penSubTool,
       CanvasDockPanel.colorPicker,
       CanvasDockPanel.layer,
     });
     await navigate('/home');
     await navigate('/canvas/${colored.id}');
-    expect(find.byKey(const ValueKey('dockTarget-brush')), findsOneWidget);
+    expect(find.byKey(const ValueKey('dockTarget-penSubTool')), findsOneWidget);
     expect(
       find.byKey(const ValueKey('dockTarget-colorPicker')),
       findsOneWidget,
     );
     expect(find.byKey(const ValueKey('freeDockWindow-brush')), findsNothing);
     await shot('19_pc_dex_compact_dock_panels');
-    await tester.tap(find.byKey(const ValueKey('dockMenu-brush')));
+    await tester.tap(find.byKey(const ValueKey('dockMenu-penSubTool')));
     await settle();
     expect(find.text('自由配置'), findsNothing);
     await shot('20_pc_dex_dock_menu_without_free_position');

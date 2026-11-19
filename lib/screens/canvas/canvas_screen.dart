@@ -3958,6 +3958,65 @@ class _CanvasScreenState extends State<CanvasScreen> {
 
   Widget _buildTopBar() {
     final l10n = AppLocalizations.of(context)!;
+    final desktop = isWideScreen(context);
+    final toolActions = Align(
+      alignment: AlignmentDirectional.centerStart,
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // 投げ縄塗り選択中：囲って塗るモードスイッチ
+            if (_currentTool == DrawingTool.lasso &&
+                _currentSubTool == PenSubTool.lassoFill) ...[
+              const SizedBox(width: 8),
+              Text(
+                l10n.canvasLassoEnclosedLabel,
+                style: TextStyle(
+                  fontSize: 12,
+                  shadows: CanvasIconButton.foregroundShadows(
+                    Theme.of(context).colorScheme.onSurface,
+                    Theme.of(context).colorScheme,
+                  ),
+                ),
+              ),
+              Switch(
+                value: _lassoFillEnclosedMode,
+                onChanged: (v) => setState(() => _lassoFillEnclosedMode = v),
+              ),
+            ],
+            // 範囲選択中にのみ使える「選択範囲を反転」ボタン。
+            if (_isSelectionToolActive &&
+                _hasActiveSelection &&
+                !_selectionEditingGivesWay(desktop)) ...[
+              const SizedBox(width: 8),
+              _topBarIconButton(
+                context,
+                Icons.invert_colors_outlined,
+                onPressed: () => setState(() => _invertSelectionToken++),
+                tooltip: l10n.canvasInvertSelectionTooltip,
+              ),
+            ],
+            // テキストツール選択中：キャンバスタップでテキスト入力ダイアログを表示する旨を示すラベル
+            if (_currentTool == DrawingTool.text)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                child: Text(
+                  l10n.canvasTapToEnterTextLabel,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Theme.of(context).colorScheme.primary,
+                    shadows: CanvasIconButton.foregroundShadows(
+                      Theme.of(context).colorScheme.primary,
+                      Theme.of(context).colorScheme,
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       child: Row(
@@ -3978,75 +4037,30 @@ class _CanvasScreenState extends State<CanvasScreen> {
             onPressed: () => _applyArtworkHistory(redo: true),
             tooltip: l10n.commonRedo,
           ),
-          if (isWideScreen(context)) ...[
-            const SizedBox(width: 16),
-            _buildDesktopMenuBar(),
-          ],
-          // What the current tool adds shrinks to fit instead of pushing
-          // the right-hand buttons off a narrow phone.
           Expanded(
-            child: Align(
-              alignment: AlignmentDirectional.centerStart,
-              child: FittedBox(
-                fit: BoxFit.scaleDown,
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // 投げ縄塗り選択中：囲って塗るモードスイッチ
-                    if (_currentTool == DrawingTool.lasso &&
-                        _currentSubTool == PenSubTool.lassoFill) ...[
-                      const SizedBox(width: 8),
-                      Text(
-                        l10n.canvasLassoEnclosedLabel,
-                        style: TextStyle(
-                          fontSize: 12,
-                          shadows: CanvasIconButton.foregroundShadows(
-                            Theme.of(context).colorScheme.onSurface,
-                            Theme.of(context).colorScheme,
-                          ),
-                        ),
-                      ),
-                      Switch(
-                        value: _lassoFillEnclosedMode,
-                        onChanged: (v) =>
-                            setState(() => _lassoFillEnclosedMode = v),
-                      ),
-                    ],
-                    // 範囲選択中にのみ使える「選択範囲を反転」ボタン。
-                    if (_isSelectionToolActive &&
-                        _hasActiveSelection &&
-                        !_selectionEditingGivesWay(isWideScreen(context))) ...[
-                      const SizedBox(width: 8),
-                      _topBarIconButton(
-                        context,
-                        Icons.invert_colors_outlined,
-                        onPressed: () =>
-                            setState(() => _invertSelectionToken++),
-                        tooltip: l10n.canvasInvertSelectionTooltip,
-                      ),
-                    ],
-                    // テキストツール選択中：キャンバスタップでテキスト入力ダイアログを表示する旨を示すラベル
-                    if (_currentTool == DrawingTool.text)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 8),
-                        child: Text(
-                          l10n.canvasTapToEnterTextLabel,
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Theme.of(context).colorScheme.primary,
-                            shadows: CanvasIconButton.foregroundShadows(
-                              Theme.of(context).colorScheme.primary,
-                              Theme.of(context).colorScheme,
+            child: desktop
+                ? LayoutBuilder(
+                    builder: (context, constraints) {
+                      final inset = math.min(16.0, constraints.maxWidth);
+                      return Row(
+                        children: [
+                          SizedBox(width: inset),
+                          // MenuBar scrolls its own contents when constrained.
+                          // Leave the fixed actions outside that scroll area.
+                          ConstrainedBox(
+                            constraints: BoxConstraints(
+                              maxWidth: constraints.maxWidth - inset,
                             ),
+                            child: _buildDesktopMenuBar(),
                           ),
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-            ),
+                          Expanded(child: toolActions),
+                        ],
+                      );
+                    },
+                  )
+                : toolActions,
           ),
-          if (isWideScreen(context))
+          if (desktop)
             PopupMenuButton<CanvasDockPanel>(
               key: const Key('desktopWindowVisibilityMenu'),
               tooltip: AppLocalizations.of(
