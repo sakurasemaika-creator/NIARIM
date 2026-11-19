@@ -79,7 +79,13 @@ void main() {
 
     final counter = find.byKey(const Key('timelinePreviewFrameCount'));
     expect(tester.widget<Text>(counter).data, '4/6');
-    final secondScene = find.text(secondName);
+    // PCのシーン一覧にも同じ名前があるため、タイムライン上の
+    // 選択チップだけを押す（文言だけでは2件見つかる）。
+    final secondScene = find.descendant(
+      of: find.byType(ChoiceChip),
+      matching: find.text(secondName),
+    );
+    expect(secondScene, findsOneWidget);
     await tester.tap(secondScene);
     await tester.pump(const Duration(milliseconds: 40));
     await tester.tap(secondScene);

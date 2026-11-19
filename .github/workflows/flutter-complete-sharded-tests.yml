@@ -10,6 +10,11 @@ on:
     paths:
       - ".github/workflows/flutter-complete-sharded-tests.yml"
       - "test/floating_action_button_visual_capture_test.dart"
+      - "test/app_smoke_test.dart"
+      - "test/save_dialog_hint_warning_test.dart"
+      - "test/community_work_card_layout_test.dart"
+      - "test/canvas_timeline_position_test.dart"
+      - "lib/widgets/action_beside_or_below.dart"
       - "test/visual/modified_canvas_scope_capture_test.dart"
       - "test/timeline_pc_workspace_test.dart"
       - "test/timeline_preview_controls_test.dart"
