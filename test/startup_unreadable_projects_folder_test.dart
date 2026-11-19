@@ -196,8 +196,11 @@ void main() {
     'expired trash that was read is cleaned up while an unrelated work '
     'cannot be opened; a folder holding an unread work is kept whole',
     () async {
-      Future<Project> seed(String name) async =>
-          (await _seedProjectWithSaves(name: name, comments: const [])).$1;
+      // Keep the ID counter shared across these works, even when several are
+      // created in the same millisecond.
+      final seedProjects = ProjectService();
+      addTearDown(seedProjects.dispose);
+      Future<Project> seed(String name) => _createWork(seedProjects, name);
       final unrelated = await seed('開けない作品');
       final loose = await seed('期限切れの作品');
       final inReadFolder = await seed('読めたフォルダの作品');
@@ -982,6 +985,7 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
     SharedPreferences.setMockInitialValues({
       'first_launch': false,
+      'quality_level': 'low',
       'language': 'ja',
       firstUseTooltipsSeenKey: kAllFirstUseTooltipKeys,
     });
@@ -1068,6 +1072,7 @@ void main() {
       addTearDown(tester.view.resetDevicePixelRatio);
       SharedPreferences.setMockInitialValues({
         'first_launch': false,
+        'quality_level': 'low',
         'language': 'ja',
         firstUseTooltipsSeenKey: kAllFirstUseTooltipKeys,
       });
@@ -1164,6 +1169,7 @@ void main() {
       addTearDown(tester.view.resetDevicePixelRatio);
       SharedPreferences.setMockInitialValues({
         'first_launch': false,
+        'quality_level': 'low',
         'language': 'ja',
         firstUseTooltipsSeenKey: kAllFirstUseTooltipKeys,
       });
@@ -1280,6 +1286,7 @@ void main() {
       addTearDown(tester.view.resetDevicePixelRatio);
       SharedPreferences.setMockInitialValues({
         'first_launch': false,
+        'quality_level': 'low',
         'language': 'ja',
         firstUseTooltipsSeenKey: kAllFirstUseTooltipKeys,
       });
@@ -4020,6 +4027,7 @@ void main() {
       addTearDown(tester.view.resetDevicePixelRatio);
       SharedPreferences.setMockInitialValues({
         'first_launch': false,
+        'quality_level': 'low',
         'language': 'ja',
         firstUseTooltipsSeenKey: kAllFirstUseTooltipKeys,
       });
@@ -4662,6 +4670,7 @@ void main() {
         addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
         SharedPreferences.setMockInitialValues({
           'first_launch': false,
+          'quality_level': 'low',
           'language': language,
           firstUseTooltipsSeenKey: kAllFirstUseTooltipKeys,
         });
@@ -4807,6 +4816,7 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
     SharedPreferences.setMockInitialValues({
       'first_launch': false,
+      'quality_level': 'low',
       'language': 'ja',
       firstUseTooltipsSeenKey: kAllFirstUseTooltipKeys,
     });
