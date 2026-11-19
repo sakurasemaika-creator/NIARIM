@@ -607,6 +607,12 @@ App・Web共通。Claudeが要修正の詳細を追記し、ユーザーが別�
 - **DISC062（App `8b83cec9`）**：`niatra_transfer_draw_filters_test`で再現し、`FilterService.mergeTransferred`と共通の`mergeTransferredItems`を確かめた。取り込みの契約はどれも成り立っていた：この端末で組み込みのフィルターが出荷時のままなら取り込んだ値にする／両方で調整した組み込みはこの端末の値を保ち、複製は足さない（足すと行き来のたびに同じ名前のフィルターが増えた、testの説明）／もう1台で後から変えた自作のフィルターはこの端末の版を残して複製を足して知らせる／読み直し・起動し直しで変わらない。落ちていたのは名前だけで、`3f437f61`から`duplicateFilter`が複製の名前の決まり（「ガウスぼかし (コピー)」）で名前を付けるので、後から足す複製は「(コピー 2)」になる。testの期待する名前を`projectDuplicateName`・`projectDuplicateNameNumbered`から作るようにした（製品のコードは変えていない）。`niatra_transfer_draw_filters_test` 4件、引き継ぎの回帰（`niatra_*`の21ファイル）136件が成功。**注**：ユーザーの依頼文の「両端末で調整した場合は既存の設定を保ってコピーする」は、組み込みのフィルターについてはtestと今の作り（保つが複製は足さない）と食い違う。複製を足すのは自作のフィルターをもう1台で後から変えたとき。組み込みでも複製を足すべきなら所有者の判断が要る。
 - **全体回帰の起動条件（App `1eec2d77`）**：`flutter-complete-sharded-tests.yml`はpush.pathsに挙げたファイルが変わったときだけ起動し、DISC062の修正のファイルは入っていなかったので、`test/niatra_transfer_draw_filters_test.dart`の1行だけを足した（このpushはワークフロー自身も変えるので起動する）。
 
+## Claudeの再検証（2026-11-19、App dev_branch、S47）
+
+- **起点**：App `b31e620f`（originと同じ）。DISC062のtestの直しは`c96b8d8f`、全体回帰の起動条件と台帳は`55ead7c7`まで反映済み（ユーザーの載せ直し、重複した`8b83cec9`は飛ばした）。組み込みのフィルターの取り込みは今の契約（両方で調整したらこの端末の値を保ち複製は足さない）のまま。全体回帰`44440083597`（`55ead7c7`）は記録時点で待機中。
+- **DISC030・031・037・038（S46の未反映のローカルコミット`465d6200`・`eac21f92`の結果を、`b31e620f`で流し直して反映）**：どれも直っている。DISC037：フォルダを中身ごと消さない`deleteFolder`（プロジェクトのフォルダを切り取って作品一覧・共有へ貼り付けたときに今も使う）は、中の作品（ゴミ箱の分も含む）1件ずつのファイルに所属なしを保存し終えてからフォルダを消す（`_saveMembership`）。DISC038：ホームの一覧は中身の無いフォルダも1つの項目として数え、作品もフォルダも無いときだけ空の表示を出す（`home_screen.dart`の`rootItems.isEmpty && !hasHeader`）。DISC030・031は対応するtestが320px・文字拡大・短い画面・キーボードを含む。`project_folder_persistence_test`・`direct_service_coverage_batch07_test`・`home_paste_result_sources_test`・`exported_work_preview_layout_test`・`exported_work_preview_aspect_test`・`typing_dialog_keyboard_room_test`・`name_entry_dialog_disabled_confirm_focus_test`・`home_empty_short_height_test`の8ファイル47件が`b31e620f`で成功。
+- **今回の対象（14件）**：DISC012・017・018・020・021・024・035・039・040・042・052・070・145・161。全体回帰の失敗への横断の修正は今回は扱わない（別のセッションと重ならないように）。
+
 ## 要修正の記録
 
 ### 旧手順の修正担当からの切替（2026-11-16、Claude・S40）
