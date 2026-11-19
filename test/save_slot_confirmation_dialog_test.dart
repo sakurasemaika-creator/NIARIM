@@ -8,6 +8,8 @@ import 'package:niarim/app.dart';
 import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/router.dart';
+import 'package:niarim/screens/save_tree/widgets/save_display_name.dart'
+    show formatSaveTime;
 import 'package:niarim/services/project_service.dart';
 import 'package:niarim/services/save_tree_service.dart';
 import 'package:provider/provider.dart';
@@ -53,9 +55,7 @@ void main() {
       }
     }
 
-    String formatDate(DateTime dt) =>
-        '${dt.year}/${dt.month.toString().padLeft(2, '0')}/${dt.day.toString().padLeft(2, '0')} '
-        '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
+
 
     FileImage fileImageOf(Image image) {
       ImageProvider provider = image.image;
@@ -159,7 +159,7 @@ void main() {
     final thumbnailFile = File(node.thumbnailPath!);
     expect(thumbnailFile.existsSync(), isTrue);
     expect(thumbnailFile.readAsBytesSync(), orderedEquals(thumbnailBytes));
-    final savedAtText = formatDate(node.savedAt);
+    final savedAtText = formatSaveTime(node.savedAt, 'ja');
 
     // projectDetail は既存スロットからの読み込みが許可される正式な入口。
     appRouter.go('/save-tree/${project.id}?entry=projectDetail');

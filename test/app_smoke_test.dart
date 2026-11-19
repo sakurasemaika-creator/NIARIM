@@ -2111,8 +2111,15 @@ void main() {
     Navigator.of(tester.element(find.byType(Scaffold).last)).pop();
     await tester.pump(const Duration(milliseconds: 300));
     expect(tester.takeException(), isNull, reason: '通知一覧画面から戻る操作で例外');
-    // 戻った後はバッジが消えているはず（既読になったため）。
-    expect(find.text('$initialUnread'), findsNothing);
+    // Badgeは未読0件でもラベルのTextをWidgetツリーに保持する。
+    // 画面に表示されないことは件数のText検索ではなく表示フラグで確認する。
+    final clearedBadge = find.ancestor(
+      of: find.byIcon(Icons.notifications_outlined),
+      matching: find.byType(Badge),
+    );
+    expect(clearedBadge, findsOneWidget);
+    expect(tester.widget<Badge>(clearedBadge).isLabelVisible, isFalse);
+    expect(communityService.unreadMilestoneCount, 0);
   }, timeout: const Timeout(Duration(seconds: 60)));
 
   testWidgets('投稿者別作品一覧でフォロー一覧へ移動できるのは本人だけ', (tester) async {

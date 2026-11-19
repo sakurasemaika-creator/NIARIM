@@ -11,6 +11,8 @@ import 'package:niarim/models/project.dart';
 import 'package:niarim/models/save_node.dart';
 import 'package:niarim/screens/save_tree/save_management_screen.dart';
 import 'package:niarim/screens/save_tree/save_tree_screen.dart';
+import 'package:niarim/screens/save_tree/widgets/save_display_name.dart'
+    show formatSaveTime;
 import 'package:niarim/screens/save_tree/widgets/save_screen_app_bar.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:niarim/services/save_tree_service.dart';
@@ -280,10 +282,7 @@ void main() {
     await settleIo(tester, 3);
     await tester.tap(find.text(l10n.commonDelete).last);
     await settleIo(tester, 3);
-    final at = node.savedAt;
-    String two(int v) => v.toString().padLeft(2, '0');
-    final time =
-        '${at.year}/${two(at.month)}/${two(at.day)} ${two(at.hour)}:${two(at.minute)}';
+    final time = formatSaveTime(node.savedAt, l10n.localeName);
     final body = dialogText(tester);
     // 行に出ている保存の日時で呼ぶ（空白だけの名前をかぎ括弧で囲まない）。
     if (!body.contains(time) ||
