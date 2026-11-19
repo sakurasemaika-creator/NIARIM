@@ -253,10 +253,26 @@ void main() {
     await closeMenu(tester);
     expect(find.widgetWithText(TextField, name), findsNothing);
     await rightClick(tester, find.text(name).first);
-    await tester.tap(find.text(text.homeMoveToTrash).last);
-    await settle(tester);
+    final move = find.widgetWithText(
+      PopupMenuItem<String>,
+      text.homeMoveToTrash,
+    );
+    expect(move.hitTestable(), findsOneWidget);
+    await tester.tap(move);
     // ほかのゴミ箱へ移す確認と同じ形（フォルダの名前を出す）。
-    expect(find.byType(ProjectTrashDialog), findsOneWidget);
+    final confirmation = find.byType(ProjectTrashDialog);
+    for (
+      var attempt = 0;
+      attempt < 8 && confirmation.evaluate().isEmpty;
+      attempt++
+    ) {
+      await settleIo(tester);
+    }
+    expect(
+      confirmation,
+      findsOneWidget,
+      reason: '$name: folder move confirmation',
+    );
     expect(
       find.descendant(
         of: find.byType(ProjectTrashDialog),
@@ -265,7 +281,13 @@ void main() {
       findsOneWidget,
     );
     expect(find.textContaining(text.homeMoveToTrashConfirm(1)), findsOneWidget);
-    await closeMenu(tester);
+    await tester.tap(
+      find.descendant(
+        of: confirmation,
+        matching: find.widgetWithText(TextButton, text.commonCancel),
+      ),
+    );
+    await settle(tester);
     expect(find.byType(ProjectTrashDialog), findsNothing);
     expect(find.text(name), findsWidgets, reason: 'the folder was removed');
     await rightClick(tester, find.text(name).first);

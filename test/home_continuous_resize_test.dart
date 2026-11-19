@@ -603,7 +603,9 @@ Future<void> _sweep(
         trashCompact: onProjects || !scan.trashCards
             ? null
             : scan.trashActionsBelow,
-        trashSortLabel: onProjects ? null : scan.trashSortText,
+        trashSortLabel: scan.keyed.containsKey('trashKind_receivedShare')
+            ? scan.trashSortText
+            : null,
       );
     }
 
@@ -700,18 +702,22 @@ Future<void> _sweep(
       // ゴミ箱の絞り込み：外した「受け取った共有」の行が無く、作った作品の
       // 21行だけが並ぶ。
       if (scenario == _Scenario.trash) {
-        for (final kind in const [
-          'createdProject',
-          'receivedShare',
-          'createdShare',
-          'exportedWork',
-        ]) {
-          final chip = scan.keyed['trashKind_$kind'];
-          if (chip == null) {
-            found.add('trash filter $kind missing');
-          } else if ((chip.widget as FilterChip).selected ==
-              hiddenKinds.contains(kind)) {
-            found.add('trash filter $kind changed');
+        // The header is the first scrollable list item and can be unmounted
+        // while the rows below it remain in view.
+        if (scan.keyed.containsKey('trashKind_receivedShare')) {
+          for (final kind in const [
+            'createdProject',
+            'receivedShare',
+            'createdShare',
+            'exportedWork',
+          ]) {
+            final chip = scan.keyed['trashKind_$kind'];
+            if (chip == null) {
+              found.add('trash filter $kind missing');
+            } else if ((chip.widget as FilterChip).selected ==
+                hiddenKinds.contains(kind)) {
+              found.add('trash filter $kind changed');
+            }
           }
         }
         if (scan.keyed.containsKey('trash-restore-${seed.receivedTrashId}')) {
@@ -1125,6 +1131,16 @@ Future<void> _sweep(
     await sweep(up.reversed.skip(1).toList(), 'down');
     await capture('end_320');
     endOffset = offsetNow();
+    if (scenario == _Scenario.trash) {
+      final received = find.byKey(const ValueKey('trashKind_receivedShare'));
+      for (var i = 0; i < 8 && received.evaluate().isEmpty; i++) {
+        await tester.drag(scrollable(), const Offset(0, 250));
+        await _settle(tester);
+      }
+      expect(received, findsOneWidget);
+      expect(tester.widget<FilterChip>(received).selected, isFalse);
+      expect(_Scan().trashSortText, isTrue);
+    }
 
     // 切り替えは広げたときと狭めたときで同じ境目で1回ずつ、逆向きの値で。
     for (final key in _Layout(tabLabels: false).toJson().keys) {

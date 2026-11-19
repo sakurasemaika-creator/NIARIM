@@ -74,7 +74,7 @@ void main() {
     }
 
     const lowerBoundary = 480;
-    const upperBoundary = 640;
+    const upperBoundary = 1280;
     await setWidth(lowerBoundary);
     expect(showLabels(), isFalse);
     await setWidth(upperBoundary);

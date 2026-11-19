@@ -1,5 +1,5 @@
-// Reproducible, production-route UI captures. Only app storage/plugin boundaries
-// and the input artwork are fixtures; every effect is selected and run by taps.
+// Reproducible, production-route UI captures with fixture artwork and access
+// to paid features. Every effect is selected and run by taps.
 // CAPTURE_GROUP=filters|automation|autofill|extras can split the capture run.
 import 'dart:convert';
 import 'dart:io';
@@ -30,6 +30,7 @@ import 'package:niarim/services/autofill_preset_service.dart';
 import 'package:niarim/services/custom_automation_service.dart';
 import 'package:niarim/services/filter_service.dart';
 import 'package:niarim/services/pixel_art_palette_service.dart';
+import 'package:niarim/services/premium_service.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:niarim/utils/filter_display_name.dart';
 import 'package:niarim/services/tone_service.dart';
@@ -43,6 +44,11 @@ import '../helpers/load_app_fonts.dart';
 import '../helpers/pick_filter_card.dart';
 
 const _captureMatch = String.fromEnvironment('CAPTURE_MATCH');
+
+class _CapturePremiumService extends PremiumService {
+  @override
+  bool get isPremium => true;
+}
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -1002,7 +1008,15 @@ class _Harness {
     await tester.pumpWidget(
       RepaintBoundary(
         key: key,
-        child: MultiProvider(providers: providers!, child: const NiarimApp()),
+        child: MultiProvider(
+          providers: [
+            ...providers!,
+            ChangeNotifierProvider<PremiumService>(
+              create: (_) => _CapturePremiumService(),
+            ),
+          ],
+          child: const NiarimApp(),
+        ),
       ),
     );
     final h = _Harness(

@@ -1479,6 +1479,15 @@ class HomeMatrix {
         find.byKey(const Key('trashProjectsLoadFailed')),
         l10n.homeProjectsLoadFailed,
       ),
+      (HomeContents.loading, HomeView.trash) => [
+        if (!any(
+          find.descendant(
+            of: find.byKey(const Key('trashFilesLoading')),
+            matching: find.text(l10n.homeTrashLoadingFiles),
+          ),
+        ))
+          'trash file loading notice not shown',
+      ],
       (HomeContents.loading, _) => [
         if (!any(find.byType(CircularProgressIndicator)))
           'loading indicator not shown',

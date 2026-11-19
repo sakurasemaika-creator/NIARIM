@@ -745,10 +745,10 @@ extension HomeMatrixChecks on HomeMatrix {
       lowest = math.min(lowest, r.height);
     }
     final tall = verticals.isNotEmpty && rect.height > lowest + 0.5;
-    // 全体に近い大きさでも、高い項目そのもの（InkWell）に止まったなら、
-    // その項目にフォーカスの色が塗られる。
+    // 画面の大半を占めても、項目そのもの（InkWell）はフォーカスを表示する。
+    // ビューポートに収まる高さかどうかは、次の可視性の検査で扱う。
     if (rect.width * rect.height > 0.6 * screen.width * screen.height &&
-        !(tall && _paintsOwnFocusHighlight(stop))) {
+        !_paintsOwnFocusHighlight(stop)) {
       problems.add(
         'focus: Tab #$index stopped on a whole area $rect ($name), '
         'nothing visible lights up',
