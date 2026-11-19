@@ -16,6 +16,7 @@ import 'package:audioplayers/audioplayers.dart' as ap;
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart' show listEquals;
 import 'package:flutter/material.dart' hide MaterialType;
+import 'package:flutter/scheduler.dart' show SchedulerPhase;
 import 'package:flutter/services.dart' show HardwareKeyboard;
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -314,7 +315,6 @@ class _TimelineScreenState extends State<TimelineScreen> {
   // 正しく動作しないため）。
   String? _draggingClipId;
   _ClipDragMode? _clipDragMode;
-  double _clipDragStartX = 0;
   int _clipDragStartFrame = 0;
   int _clipDragStartLength = 0;
 
@@ -335,7 +335,6 @@ class _TimelineScreenState extends State<TimelineScreen> {
   // ため、ローカルStateだけで暫定位置を表示する）。
   int? _draggingCameraKfOriginalFrame;
   int? _draggingCameraKfLiveFrame;
-  double _cameraKfDragStartX = 0;
   int _cameraKfDragStartFrame = 0;
 
   // 音声・動画クリップの再生位置連動
@@ -375,6 +374,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
   }
 
   void _onTimelinePinchPointerMove(PointerMoveEvent e) {
+    if (_timelineDragStartX != null) return;
     if (!_timelinePinchPointers.containsKey(e.pointer)) return;
     _timelinePinchPointers[e.pointer] = e.position;
     if (_timelinePinchPointers.length != 2) return;
@@ -387,7 +387,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
     final distance = (pts[0] - pts[1]).distance;
     final newScale = (startScale * distance / startDistance).clamp(0.6, 2.5);
     if ((newScale - _frameWidthScale).abs() > 0.01) {
-      setState(() => _frameWidthScale = newScale);
+      _zoomTimeline(newScale / _frameWidthScale);
     }
   }
 
@@ -400,16 +400,23 @@ class _TimelineScreenState extends State<TimelineScreen> {
   }
 
   void _onTimelinePointerSignal(PointerSignalEvent event) {
-    if (event is! PointerScrollEvent ||
-        event.scrollDelta.dy == 0 ||
-        !isWideScreen(context, listen: false)) {
-      return;
-    }
+    if (event is! PointerScrollEvent || _timelineDragStartX != null) return;
     final keyboard = HardwareKeyboard.instance;
-    if (!keyboard.isControlPressed && !keyboard.isMetaPressed) return;
-    GestureBinding.instance.pointerSignalResolver.register(event, (_) {
-      _zoomTimeline(event.scrollDelta.dy > 0 ? 1 / 1.1 : 1.1);
-    });
+    if ((keyboard.isControlPressed || keyboard.isMetaPressed) &&
+        event.scrollDelta.dy != 0 &&
+        isWideScreen(context, listen: false)) {
+      GestureBinding.instance.pointerSignalResolver.register(event, (_) {
+        _zoomTimeline(event.scrollDelta.dy > 0 ? 1 / 1.1 : 1.1);
+      });
+    } else if (_isFrameCursorActive) {
+      GestureBinding.instance.pointerSignalResolver.register(event, (_) {
+        final delta = event.scrollDelta.dx == 0
+            ? event.scrollDelta.dy
+            : event.scrollDelta.dx;
+        final next = ((_timelineOffset + delta) / _cellW).round();
+        _chooseFramePlacement(next.clamp(0, _totalFrames));
+      });
+    }
   }
 
   /// 動画・音源トラック1行の高さ（px）。ワークスペース設定の
@@ -429,6 +436,90 @@ class _TimelineScreenState extends State<TimelineScreen> {
   late final ScrollController _commonLayerScrollCtrl;
   late final ScrollController _effectFilterScrollCtrl;
   bool _syncingScroll = false;
+  bool _jumpingTimeline = false;
+  bool _followingTimelineScroll = false;
+  Timer? _dragScrollTimer;
+  double _dragScrollStep = 0;
+  VoidCallback? _onDragScroll;
+  double? _timelineDragStartX;
+  double _timelineDragStartOffset = 0;
+  bool _timelineDragScrolled = false;
+
+  double get _timelineOffset =>
+      _frameScrollCtrl.hasClients ? _frameScrollCtrl.offset : 0;
+
+  void _startTimelineDrag(double globalX) {
+    _stopTimelineDrag(snap: false);
+    if (_isPlaying) _togglePlay();
+    _timelineDragStartX = globalX;
+    _timelineDragStartOffset = _timelineOffset;
+    // Stop earlier scrolling activity before taking the drag anchor.
+    if (_frameScrollCtrl.hasClients) {
+      _jumpTimelineTo(_timelineDragStartOffset);
+    }
+  }
+
+  double _timelineDragDistance(double globalX) =>
+      globalX -
+      (_timelineDragStartX ?? globalX) +
+      _timelineOffset -
+      _timelineDragStartOffset;
+
+  double _timelineScrollStep(double globalX) {
+    // The grab point is neutral. Holding the pointer farther away makes
+    // the timeline advance faster, even without another pointer event.
+    final distance = globalX - (_timelineDragStartX ?? globalX);
+    const deadZone = 12.0;
+    const fullSpeedDistance = 180.0;
+    final strength =
+        ((distance.abs() - deadZone) / (fullSpeedDistance - deadZone)).clamp(
+          0.0,
+          1.0,
+        );
+    return distance.sign * strength * 14;
+  }
+
+  void _updateTimelineDragScroll(double globalX, {VoidCallback? onScroll}) {
+    if (_timelineDragStartX == null) return;
+    _dragScrollStep = _timelineScrollStep(globalX);
+    _onDragScroll = onScroll;
+    if (_dragScrollStep == 0) {
+      _dragScrollTimer?.cancel();
+      _dragScrollTimer = null;
+      return;
+    }
+    _dragScrollTimer ??= Timer.periodic(const Duration(milliseconds: 16), (
+      timer,
+    ) {
+      if (!_scrollTimelineDuringDrag(_timelineOffset + _dragScrollStep)) {
+        timer.cancel();
+        _dragScrollTimer = null;
+        return;
+      }
+      _onDragScroll?.call();
+    });
+  }
+
+  bool _scrollTimelineDuringDrag(double target) {
+    if (!_frameScrollCtrl.hasClients) return false;
+    final offset = target.clamp(0.0, _frameScrollCtrl.position.maxScrollExtent);
+    final changed = offset != _timelineOffset;
+    if (changed) {
+      _jumpTimelineTo(offset);
+      _timelineDragScrolled = true;
+    }
+    _followTimelineScroll(append: target > _cellW * (_totalFrames - 1));
+    return changed;
+  }
+
+  void _stopTimelineDrag({bool snap = true}) {
+    _dragScrollTimer?.cancel();
+    _dragScrollTimer = null;
+    _onDragScroll = null;
+    _timelineDragStartX = null;
+    if (snap && _timelineDragScrolled) _centerFrameInList();
+    _timelineDragScrolled = false;
+  }
 
   // 素材種別ごとに複数行のタイムライン行を追加できるようにするための、
   // 2行目以降の行専用スクロールコントローラー。1行目は既存の
@@ -470,7 +561,6 @@ class _TimelineScreenState extends State<TimelineScreen> {
   }
 
   ({String layerId, String? sceneId, int start, int end})? _commonDragRange;
-  double _commonDragAccumPx = 0;
 
   // シーン複数選択モード（「選択」ボタンで開始）
   bool _isSceneMultiSelect = false;
@@ -496,66 +586,66 @@ class _TimelineScreenState extends State<TimelineScreen> {
   // 来るよう一覧側をスクロールさせる（キャンバスモードのフレーム一覧と
   // 同じ挙動）。_frameScrollCtrlは他トラックと同期済みのため、
   // ここでのスクロールは共通レイヤー・素材トラック等にも連動する。
-  int? _lastCenteredFrame;
-
-  /// 再生位置が変わったときの追従処理（フレーム一覧の中央寄せ）。
   void _onCurrentFrameChanged() {
-    if (!mounted) return;
-    _maybeCenterCurrentFrame();
+    if (!mounted || _followingTimelineScroll) return;
+    if (_isFrameCursorActive &&
+        _currentFrame != math.min(_frameMoveCursorPos, _totalFrames - 1)) {
+      _frameMoveCursorPos = _currentFrame;
+    }
+    // Seeking updates the preview immediately, so move the rows in the same
+    // frame. Defer only when the list hasn't finished layout.
+    if (_frameScrollCtrl.hasClients &&
+        _frameScrollCtrl.position.hasContentDimensions &&
+        WidgetsBinding.instance.schedulerPhase !=
+            SchedulerPhase.persistentCallbacks) {
+      _centerFrameInList();
+    } else {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && _timelineDragStartX == null) _centerFrameInList();
+      });
+    }
   }
 
-  void _maybeCenterCurrentFrame() {
-    if (_isFrameCursorActive) return; // 移動・貼り付けモード中はレイアウトが異なるため対象外
-    if (_lastCenteredFrame == _currentFrame) return;
-    final hadPrevious = _lastCenteredFrame != null;
-    _lastCenteredFrame = _currentFrame;
-    // 再生中はアニメーションさせない。再生タイマーはfps間隔（24fpsなら約41ms）
-    // でフレームを進めるため、200msのanimateToを毎フレーム張り直すことになり、
-    // 前のアニメーションを打ち切っては新しいSimulationを作る動作を毎秒24回
-    // 繰り返す。処理が無駄なうえ、スクロールが再生位置に追いつかず遅れて
-    // 揺れる。jumpToなら再生位置とぴったり一致する。
-    final animate = hadPrevious && !_isPlaying;
-    WidgetsBinding.instance.addPostFrameCallback(
-      (_) => _centerFrameInList(animate: animate),
-    );
-  }
-
-  // フレーム一覧の左右には((ビューポート幅-セル幅)/2)の余白（_buildFrameList
-  // 参照）を入れてあるため、先頭・末尾のフレームも赤枠（画面中央）まで
-  // きっちりスクロールできる。
-  void _centerFrameInList({required bool animate}) {
-    if (!_frameScrollCtrl.hasClients) return;
+  void _centerFrameInList() {
+    if (!_frameScrollCtrl.hasClients ||
+        !_frameScrollCtrl.position.hasContentDimensions) {
+      return;
+    }
     final target = (_currentFrame * _cellW).clamp(
       0.0,
       _frameScrollCtrl.position.maxScrollExtent,
     );
-    if (animate) {
-      _frameScrollCtrl.animateTo(
-        target,
-        duration: const Duration(milliseconds: 200),
-        curve: Curves.easeOut,
-      );
-    } else {
-      _frameScrollCtrl.jumpTo(target);
+    if (target != _timelineOffset) _jumpTimelineTo(target);
+  }
+
+  void _jumpTimelineTo(double offset) {
+    _jumpingTimeline = true;
+    try {
+      _frameScrollCtrl.jumpTo(offset);
+    } finally {
+      _jumpingTimeline = false;
     }
   }
 
-  /// スワイプ・ドラッグを手放した位置が中途半端でも、赤枠に一番近い
-  /// フレームへ自動的にスナップさせる（キャンバスモードのフレーム一覧と
-  /// 同じ挙動）。
-  bool _handleFrameListScrollEnd(ScrollEndNotification notification) {
-    if (notification.dragDetails == null) return false;
-    if (_isFrameCursorActive || _isFrameMultiSelect) return false;
-    final total = _totalFrames;
-    if (total <= 0 || !_frameScrollCtrl.hasClients) return false;
-    final nearest = (_frameScrollCtrl.offset / _cellW).round().clamp(
-      0,
-      total - 1,
-    );
-    if (nearest != _currentFrame) {
-      setState(() => _currentFrame = nearest);
-    } else {
-      _centerFrameInList(animate: true);
+  void _followTimelineScroll({bool append = false}) {
+    final last = _totalFrames - 1;
+    final frame = (_timelineOffset / _cellW).round().clamp(0, last);
+    final placement = append ? last + 1 : frame;
+    if (_isFrameCursorActive && _frameMoveCursorPos != placement) {
+      setState(() => _frameMoveCursorPos = placement);
+    }
+    _followingTimelineScroll = true;
+    _currentFrame = frame;
+    _followingTimelineScroll = false;
+  }
+
+  bool _handleTrackScrollEnd(ScrollEndNotification notification) {
+    if (!_jumpingTimeline &&
+        !_syncingScroll &&
+        _timelineDragStartX == null &&
+        notification.depth == 0 &&
+        notification.metrics.axis == Axis.horizontal) {
+      _centerFrameInList();
     }
     return false;
   }
@@ -572,7 +662,11 @@ class _TimelineScreenState extends State<TimelineScreen> {
     // ナビゲーションバーを最小化する。
     ImmersiveMode.enterWorkspace();
 
-    _frameScrollCtrl = ScrollController();
+    _frameScrollCtrl = ScrollController(
+      onAttach: (_) => WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && _timelineDragStartX == null) _centerFrameInList();
+      }),
+    );
     _audioScrollCtrl = ScrollController();
     _videoScrollCtrl = ScrollController();
     _imageScrollCtrl = ScrollController();
@@ -621,21 +715,29 @@ class _TimelineScreenState extends State<TimelineScreen> {
     ..._rowScrollCtrls.values,
   ];
 
-  void _syncFrom(ScrollController source) {
+  void _syncFrom(ScrollController source, {bool updatePlayhead = true}) {
     if (_syncingScroll) return;
     if (!source.hasClients) return;
     _syncingScroll = true;
     final offset = source.offset;
     for (final ctrl in _trackScrollCtrls) {
-      if (ctrl != source && ctrl.hasClients) {
-        ctrl.jumpTo(offset.clamp(0.0, ctrl.position.maxScrollExtent));
+      if (ctrl != source &&
+          ctrl.hasClients &&
+          ctrl.position.hasContentDimensions) {
+        final target = offset.clamp(0.0, ctrl.position.maxScrollExtent);
+        if (target != ctrl.offset) ctrl.jumpTo(target);
       }
     }
     _syncingScroll = false;
+    if (updatePlayhead && !_jumpingTimeline && _frameScrollCtrl.hasClients) {
+      if (_isPlaying) _togglePlay();
+      _followTimelineScroll();
+    }
   }
 
   @override
   void dispose() {
+    _stopTimelineDrag(snap: false);
     _screenFocus.dispose();
     ImmersiveMode.exitWorkspace();
     _playTimer?.cancel();
@@ -1670,12 +1772,13 @@ class _TimelineScreenState extends State<TimelineScreen> {
   }
 
   void _zoomTimeline(double factor) {
+    if (_timelineDragStartX != null) return;
     final scale = (_frameWidthScale * factor).clamp(0.6, 2.5);
     if (scale == _frameWidthScale) return;
     setState(() => _frameWidthScale = scale);
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted && !_isFrameCursorActive) {
-        _centerFrameInList(animate: false);
+      if (mounted && _timelineDragStartX == null) {
+        _centerFrameInList();
       }
     });
   }
@@ -2587,10 +2690,10 @@ class _TimelineScreenState extends State<TimelineScreen> {
             max: maxFrame.toDouble(),
             divisions: maxFrame > 0 ? maxFrame : null,
             showSteppers: false,
-            onChanged: (v) => setState(() {
-              _currentFrame = v.round();
-              _isPlaying = false;
-            }),
+            onChanged: (v) {
+              if (_isPlaying) _togglePlay();
+              setState(() => _currentFrame = v.round());
+            },
           ),
         ),
       ),
@@ -4013,138 +4116,23 @@ class _TimelineScreenState extends State<TimelineScreen> {
                         final sidePadding = _trackSidePadding(
                           constraints.maxWidth,
                         );
-                        return NotificationListener<ScrollEndNotification>(
-                          onNotification: _handleFrameListScrollEnd,
+                        final track = NotificationListener<ScrollEndNotification>(
+                          onNotification: _handleTrackScrollEnd,
                           child: Stack(
                             children: [
                               ListView.builder(
                                 controller: _frameScrollCtrl,
                                 scrollDirection: Axis.horizontal,
+                                itemExtent: _cellW,
+                                physics: _isFrameCursorActive
+                                    ? const NeverScrollableScrollPhysics()
+                                    : const ClampingScrollPhysics(),
                                 padding: EdgeInsets.symmetric(
                                   vertical: 4,
                                   horizontal: sidePadding,
                                 ),
-                                // 移動・貼り付けモード：カーソル位置(n+1) + フレームチップ(n) = 2n+1
-                                // 通常モード：フレームチップ(n) + ＋ボタン(1) = n+1
-                                itemCount: _isFrameCursorActive
-                                    ? total * 2 + 1
-                                    : total + 1,
+                                itemCount: total,
                                 itemBuilder: (context, index) {
-                                  if (_isFrameCursorActive) {
-                                    if (index.isEven) {
-                                      final cursorPos = index ~/ 2;
-                                      final isActive =
-                                          _frameMoveCursorPos == cursorPos;
-                                      return GestureDetector(
-                                        onTap: () => setState(
-                                          () => _frameMoveCursorPos = cursorPos,
-                                        ),
-                                        child: Container(
-                                          width: 12,
-                                          alignment: Alignment.center,
-                                          child: Container(
-                                            width: 3,
-                                            height: 28,
-                                            color: isActive
-                                                ? Theme.of(
-                                                    context,
-                                                  ).colorScheme.primary
-                                                : Theme.of(
-                                                    context,
-                                                  ).colorScheme.outline,
-                                          ),
-                                        ),
-                                      );
-                                    } else {
-                                      final frameIndex = index ~/ 2;
-                                      // 貼り付けモード中はコピー元フレームをこの
-                                      // カーソル一覧上でハイライトする対象がないため
-                                      // 常にfalseとする。
-                                      final isMoving =
-                                          !_isFramePasteMode &&
-                                          _selectedFrameIndices.contains(
-                                            frameIndex,
-                                          );
-                                      return Container(
-                                        width: _frameW,
-                                        margin: EdgeInsets.symmetric(
-                                          horizontal: _frameMargin,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color: isMoving
-                                              ? Theme.of(
-                                                  context,
-                                                ).colorScheme.primaryContainer
-                                              : ThemeService
-                                                    .activeColorScheme
-                                                    .onSurfaceVariant,
-                                          border: Border.all(
-                                            color: ThemeService
-                                                .activeColorScheme
-                                                .onSurfaceVariant,
-                                          ),
-                                          borderRadius: BorderRadius.circular(
-                                            3,
-                                          ),
-                                        ),
-                                        child: Center(
-                                          child: Text(
-                                            '${frameIndex + 1}',
-                                            style: TextStyle(
-                                              fontSize: 9,
-                                              color: isMoving
-                                                  ? Theme.of(
-                                                      context,
-                                                    ).colorScheme.primary
-                                                  : null,
-                                            ),
-                                          ),
-                                        ),
-                                      );
-                                    }
-                                  }
-                                  if (index == total) {
-                                    return GestureDetector(
-                                      onTap: () {
-                                        final sceneId = _selectedSceneId;
-                                        if (sceneId == null) return;
-                                        if (!_canAddFrames(1)) return;
-                                        context.read<ProjectService>().addFrame(
-                                          widget.projectId,
-                                          sceneId,
-                                        );
-                                        _recordTimelineAutomation(
-                                          'timeline.addFrame',
-                                          'Add frame',
-                                        );
-                                      },
-                                      child: Container(
-                                        width: _frameW,
-                                        margin: EdgeInsets.symmetric(
-                                          horizontal: _frameMargin,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          border: Border.all(
-                                            color: ThemeService
-                                                .activeColorScheme
-                                                .onSurfaceVariant,
-                                          ),
-                                          borderRadius: BorderRadius.circular(
-                                            3,
-                                          ),
-                                        ),
-                                        child: Center(
-                                          child: Icon(
-                                            Icons.add,
-                                            size: 16,
-                                            color: ThemeService
-                                                .activeColorScheme
-                                                .onSurfaceVariant,
-                                          ),
-                                        ),
-                                      ),
-                                    );
-                                  }
                                   // 現在フレームの強調表示は画面中央固定の赤枠が担うため、
                                   // 通常モードでは枠色を変えない（複数選択のチェック状態のみ
                                   // ここで色分けする）。
@@ -4163,7 +4151,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
                                   return GestureDetector(
                                     key: ValueKey('timelineFrameCell$index'),
                                     onTap: () {
-                                      if (_isFrameMultiSelect) {
+                                      if (_isFrameCursorActive) {
+                                        _chooseFramePlacement(index);
+                                      } else if (_isFrameMultiSelect) {
                                         setState(() {
                                           if (!_selectedFrameIndices.remove(
                                             index,
@@ -4182,15 +4172,18 @@ class _TimelineScreenState extends State<TimelineScreen> {
                                       }
                                     },
                                     // 長押し：このフレームを選択済みの状態でフレーム複数選択モードを開始する
-                                    onLongPress: () {
-                                      if (_isFrameMultiSelect) return;
-                                      setState(() {
-                                        _setTimelineSelection(
-                                          _TimelineSelection.frames,
-                                        );
-                                        _selectedFrameIndices.add(index);
-                                      });
-                                    },
+                                    onLongPress:
+                                        _isFrameCursorActive ||
+                                            _isFrameMultiSelect
+                                        ? null
+                                        : () {
+                                            setState(() {
+                                              _setTimelineSelection(
+                                                _TimelineSelection.frames,
+                                              );
+                                              _selectedFrameIndices.add(index);
+                                            });
+                                          },
                                     child: Container(
                                       width: _frameW,
                                       margin: const EdgeInsets.symmetric(
@@ -4287,7 +4280,8 @@ class _TimelineScreenState extends State<TimelineScreen> {
                                                   ),
                                                 ),
                                               ),
-                                            if (_isFrameMultiSelect)
+                                            if (_isFrameMultiSelect &&
+                                                !_isFrameCursorActive)
                                               Positioned(
                                                 right: 1,
                                                 top: 1,
@@ -4306,13 +4300,24 @@ class _TimelineScreenState extends State<TimelineScreen> {
                                   );
                                 },
                               ),
+                              _buildFrameEndButton(
+                                total,
+                                sidePadding,
+                                constraints.maxWidth,
+                              ),
                               // 画面中央に固定表示する赤枠。フレーム一覧側が
                               // スクロールして現在位置のフレームをここへ合わせる。
                               IgnorePointer(
                                 child: Center(
                                   child: Container(
+                                    key: const Key(
+                                      'timelineCurrentFrameOutline',
+                                    ),
                                     width: _frameW,
                                     height: 40,
+                                    alignment: _frameMoveCursorPos == total
+                                        ? Alignment.centerRight
+                                        : Alignment.centerLeft,
                                     decoration: BoxDecoration(
                                       border: Border.all(
                                         color: ThemeService
@@ -4322,11 +4327,23 @@ class _TimelineScreenState extends State<TimelineScreen> {
                                       ),
                                       borderRadius: BorderRadius.circular(3),
                                     ),
+                                    child: _isFrameCursorActive
+                                        ? Container(
+                                            width: 3,
+                                            color: Theme.of(
+                                              context,
+                                            ).colorScheme.primary,
+                                          )
+                                        : null,
                                   ),
                                 ),
                               ),
                             ],
                           ),
+                        );
+                        return _framePlacementDrag(
+                          child: track,
+                          enabled: _isFrameCursorActive,
                         );
                       },
                     ),
@@ -4342,6 +4359,44 @@ class _TimelineScreenState extends State<TimelineScreen> {
     );
   }
 
+  Widget _buildFrameEndButton(int total, double padding, double viewportWidth) {
+    final colors = ThemeService.activeColorScheme;
+    return AnimatedBuilder(
+      animation: _frameScrollCtrl,
+      builder: (context, child) {
+        final left = padding + total * _cellW - _timelineOffset;
+        if (left >= viewportWidth) return const SizedBox.shrink();
+        return Positioned(
+          left: left,
+          top: 4,
+          bottom: 4,
+          width: _cellW,
+          child: child!,
+        );
+      },
+      child: GestureDetector(
+        onTap: () {
+          if (_isFrameCursorActive) {
+            _chooseFramePlacement(total);
+            return;
+          }
+          final sceneId = _selectedSceneId;
+          if (sceneId == null || !_canAddFrames(1)) return;
+          context.read<ProjectService>().addFrame(widget.projectId, sceneId);
+          _recordTimelineAutomation('timeline.addFrame', 'Add frame');
+        },
+        child: Container(
+          decoration: BoxDecoration(
+            border: Border.all(color: colors.onSurfaceVariant),
+            borderRadius: BorderRadius.circular(3),
+          ),
+          alignment: Alignment.center,
+          child: Icon(Icons.add, size: 16, color: colors.onSurfaceVariant),
+        ),
+      ),
+    );
+  }
+
   Widget _buildFrameCursorBubble() {
     // 移動モードは_selectedFrameIndices、貼り付けモードはクリップボードの件数を使う
     final count = _isFramePasteMode
@@ -4350,81 +4405,135 @@ class _TimelineScreenState extends State<TimelineScreen> {
     final cardCount = count.clamp(1, 3);
     return Positioned(
       bottom: 50,
-      left: 0,
+      left: _trackLabelWidth,
       right: 0,
       child: Center(
-        child: Stack(
-          clipBehavior: Clip.none,
-          children: [
-            for (int i = cardCount - 1; i >= 1; i--)
-              Positioned(
-                left: i * 3.0,
-                top: -(i * 3.0),
-                child: Transform.rotate(
-                  angle: (i.isOdd ? 1 : -1) * 0.025,
+        child: _framePlacementDrag(
+          isHandle: true,
+          child: Stack(
+            key: const Key('timelineFramePlacementHandle'),
+            clipBehavior: Clip.none,
+            children: [
+              for (int i = cardCount - 1; i >= 1; i--)
+                Positioned(
+                  left: i * 3.0,
+                  top: -(i * 3.0),
+                  child: Transform.rotate(
+                    angle: (i.isOdd ? 1 : -1) * 0.025,
+                    child: Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: ThemeService.activeColorScheme.onSurface,
+                        border: Border.all(
+                          color:
+                              ThemeService.activeColorScheme.onSurfaceVariant,
+                        ),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                  ),
+                ),
+              Container(
+                width: 40,
+                height: 40,
+                clipBehavior: Clip.antiAlias,
+                decoration: BoxDecoration(
+                  color: ThemeService.activeColorScheme.onSurfaceVariant,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: _moveThumbnail != null
+                    ? FramePreviewBackground(
+                        backgroundColor: _projectBackgroundOf(
+                          context.read<ProjectService>(),
+                          widget.projectId,
+                        ),
+                        child: RawImage(
+                          image: _moveThumbnail,
+                          fit: BoxFit.cover,
+                        ),
+                      )
+                    : Icon(
+                        Icons.movie_filter,
+                        size: 18,
+                        color: ThemeService.activeColorScheme.onSurface
+                            .withValues(alpha: 0.54),
+                      ),
+              ),
+              if (count > 1)
+                Positioned(
+                  right: -8,
+                  top: -8,
                   child: Container(
-                    width: 40,
-                    height: 40,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 4,
+                      vertical: 2,
+                    ),
                     decoration: BoxDecoration(
-                      color: ThemeService.activeColorScheme.onSurface,
-                      border: Border.all(
-                        color: ThemeService.activeColorScheme.onSurfaceVariant,
+                      color: Theme.of(context).colorScheme.primary,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      '×$count',
+                      style: TextStyle(
+                        fontSize: 10,
+                        color: ThemeService.activeColorScheme.onSurface,
+                        fontWeight: FontWeight.bold,
                       ),
-                      borderRadius: BorderRadius.circular(4),
                     ),
                   ),
                 ),
-              ),
-            Container(
-              width: 40,
-              height: 40,
-              clipBehavior: Clip.antiAlias,
-              decoration: BoxDecoration(
-                color: ThemeService.activeColorScheme.onSurfaceVariant,
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: _moveThumbnail != null
-                  ? FramePreviewBackground(
-                      backgroundColor: _projectBackgroundOf(
-                        context.read<ProjectService>(),
-                        widget.projectId,
-                      ),
-                      child: RawImage(image: _moveThumbnail, fit: BoxFit.cover),
-                    )
-                  : Icon(
-                      Icons.movie_filter,
-                      size: 18,
-                      color: ThemeService.activeColorScheme.onSurface
-                          .withValues(alpha: 0.54),
-                    ),
-            ),
-            if (count > 1)
-              Positioned(
-                right: -8,
-                top: -8,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 4,
-                    vertical: 2,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.primary,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    '×$count',
-                    style: TextStyle(
-                      fontSize: 10,
-                      color: ThemeService.activeColorScheme.onSurface,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ),
-          ],
+            ],
+          ),
         ),
       ),
     );
+  }
+
+  Widget _framePlacementDrag({
+    required Widget child,
+    bool isHandle = false,
+    bool enabled = true,
+  }) {
+    void update(DragUpdateDetails details) {
+      if (_timelineDragStartX == null) return;
+      if (isHandle) {
+        _updateTimelineDragScroll(details.globalPosition.dx);
+      } else {
+        _scrollTimelineDuringDrag(_timelineOffset - details.delta.dx);
+      }
+    }
+
+    return Listener(
+      onPointerCancel: enabled ? (_) => _stopTimelineDrag() : null,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        dragStartBehavior: DragStartBehavior.down,
+        onHorizontalDragStart: enabled
+            ? (d) => _startTimelineDrag(d.globalPosition.dx)
+            : null,
+        onHorizontalDragUpdate: enabled ? update : null,
+        onHorizontalDragEnd: enabled ? (_) => _stopTimelineDrag() : null,
+        onHorizontalDragCancel: enabled ? _stopTimelineDrag : null,
+        onLongPressStart: enabled
+            ? (d) => _startTimelineDrag(d.globalPosition.dx)
+            : null,
+        onLongPressMoveUpdate: enabled
+            ? (d) => _updateTimelineDragScroll(d.globalPosition.dx)
+            : null,
+        onLongPressEnd: enabled ? (_) => _stopTimelineDrag() : null,
+        child: child,
+      ),
+    );
+  }
+
+  void _chooseFramePlacement(int position) {
+    if (_isPlaying) _togglePlay();
+    setState(() {
+      _frameMoveCursorPos = position;
+      _currentFrame = math.min(position, _totalFrames - 1);
+    });
+    _centerFrameInList();
   }
 
   /// フレーム追加・複製の前に、無料会員の長さ上限（90秒）を超えないか
@@ -4499,8 +4608,8 @@ class _TimelineScreenState extends State<TimelineScreen> {
     final sorted = _selectedFrameIndices.toList()..sort();
     setState(() {
       _isFrameMoveMode = true;
-      _frameMoveCursorPos = sorted.last + 1;
     });
+    _chooseFramePlacement(sorted.last + 1);
     final sceneId = _selectedSceneId;
     if (sceneId != null) _loadMoveThumbnail(sceneId, frameIndex: sorted.first);
   }
@@ -4510,6 +4619,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
     if (_selectedFrameIndices.isEmpty) return;
     final sceneId = _selectedSceneId;
     if (sceneId == null) return;
+    _stopTimelineDrag(snap: false);
     final total = _totalFrames;
     final moving = _selectedFrameIndices.toList()..sort();
     final removedBefore = moving.where((i) => i < _frameMoveCursorPos).length;
@@ -4533,6 +4643,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
       _selectedFrameIndices.clear();
       _currentFrame = _currentFrame.clamp(0, _totalFrames - 1);
     });
+    _centerFrameInList();
   }
 
   // フレーム貼り付けモード開始（クリップボードにフレームがある場合のみ
@@ -4542,8 +4653,8 @@ class _TimelineScreenState extends State<TimelineScreen> {
     if (clip == null) return;
     setState(() {
       _isFramePasteMode = true;
-      _frameMoveCursorPos = _totalFrames;
     });
+    _chooseFramePlacement(_totalFrames);
     _loadMoveThumbnail(clip.sceneId, frameIndex: clip.indices.first);
   }
 
@@ -4565,6 +4676,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
             ) >
             sortedSourceIndices.length;
     if (!movingFrames && !_canAddFrames(sortedSourceIndices.length)) return;
+    _stopTimelineDrag(snap: false);
     final ps = context.read<ProjectService>();
     final insertAt = _frameMoveCursorPos.clamp(0, _totalFrames);
     final sameScene = clip.sceneId == targetSceneId;
@@ -4622,7 +4734,10 @@ class _TimelineScreenState extends State<TimelineScreen> {
       _selectedFrameIndices.clear();
       _currentFrame = _currentFrame.clamp(0, _totalFrames - 1);
     });
+    _centerFrameInList();
   }
+
+  static const double _trackLabelWidth = 64;
 
   Widget _buildTrackLabel(IconData icon, String label) {
     return Container(
@@ -4630,7 +4745,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
       // 残らず、9ptの「フレーム」（約36px）が「フレ…」に切れていた。
       // 実キャプチャ（build/all-route-screenshots/05_timeline.png）で
       // 発覚。`test/timeline_track_label_test.dart`が再発を見張る。
-      width: 64,
+      width: _trackLabelWidth,
       padding: const EdgeInsets.symmetric(horizontal: 3),
       child: Row(
         children: [
@@ -4705,6 +4820,40 @@ class _TimelineScreenState extends State<TimelineScreen> {
     );
   }
 
+  Widget _buildTrackGrid(
+    ScrollController controller,
+    int total,
+    double padding,
+  ) {
+    return NotificationListener<ScrollEndNotification>(
+      onNotification: _handleTrackScrollEnd,
+      child: NotificationListener<ScrollMetricsNotification>(
+        onNotification: (_) {
+          _syncFrom(_frameScrollCtrl, updatePlayhead: false);
+          return false;
+        },
+        child: ListView.builder(
+          controller: controller,
+          scrollDirection: Axis.horizontal,
+          physics: const ClampingScrollPhysics(),
+          padding: EdgeInsets.symmetric(horizontal: padding),
+          itemExtent: _cellW,
+          itemCount: total,
+          itemBuilder: (context, _) => DecoratedBox(
+            decoration: BoxDecoration(
+              border: Border(
+                right: BorderSide(
+                  color: Theme.of(context).colorScheme.outlineVariant,
+                  width: 0.5,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildClipTrackRow({
     required TimelineRowKind type,
     required int rowIndex,
@@ -4732,63 +4881,37 @@ class _TimelineScreenState extends State<TimelineScreen> {
             child: LayoutBuilder(
               builder: (context, constraints) {
                 final sidePadding = _trackSidePadding(constraints.maxWidth);
-                return NotificationListener<ScrollMetricsNotification>(
-                  onNotification: (_) {
-                    _syncFrom(_frameScrollCtrl);
-                    return false;
-                  },
-                  child: Stack(
-                    children: [
-                      // 背景グリッド（フレーム幅に合わせた縦線）
-                      ListView.builder(
-                        controller: scrollCtrl,
-                        scrollDirection: Axis.horizontal,
-                        physics: const ClampingScrollPhysics(),
-                        padding: EdgeInsets.symmetric(horizontal: sidePadding),
-                        itemCount: total,
-                        itemBuilder: (_, i) => Container(
-                          width: _cellW,
-                          decoration: BoxDecoration(
-                            border: Border(
-                              right: BorderSide(
-                                color: Theme.of(
-                                  context,
-                                ).colorScheme.outlineVariant,
-                                width: 0.5,
-                              ),
+                return Stack(
+                  children: [
+                    _buildTrackGrid(scrollCtrl, total, sidePadding),
+                    // クリップ描画
+                    for (final clip in clips)
+                      _buildClipWidget(clip, scrollCtrl, sidePadding),
+                    // 表示中の最後尾の行にのみ＋を出し、同じタイミングで重ねたい
+                    // 素材がある時だけ新しい行を追加できるようにする。行の削除は
+                    // 個々のクリップを消せば自動で畳まれるため、専用ボタンは持たない。
+                    if (showAddButton)
+                      Positioned(
+                        right: 4,
+                        top: 4,
+                        child: GestureDetector(
+                          onTap: () => _addTrackRow(type),
+                          child: Container(
+                            width: 20,
+                            height: 20,
+                            decoration: BoxDecoration(
+                              color: addColor.withValues(alpha: 0.8),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Icon(
+                              Icons.add,
+                              size: 14,
+                              color: ThemeService.activeColorScheme.onSurface,
                             ),
                           ),
                         ),
                       ),
-                      // クリップ描画
-                      for (final clip in clips)
-                        _buildClipWidget(clip, scrollCtrl, sidePadding),
-                      // 表示中の最後尾の行にのみ＋を出し、同じタイミングで重ねたい
-                      // 素材がある時だけ新しい行を追加できるようにする。行の削除は
-                      // 個々のクリップを消せば自動で畳まれるため、専用ボタンは持たない。
-                      if (showAddButton)
-                        Positioned(
-                          right: 4,
-                          top: 4,
-                          child: GestureDetector(
-                            onTap: () => _addTrackRow(type),
-                            child: Container(
-                              width: 20,
-                              height: 20,
-                              decoration: BoxDecoration(
-                                color: addColor.withValues(alpha: 0.8),
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: Icon(
-                                Icons.add,
-                                size: 14,
-                                color: ThemeService.activeColorScheme.onSurface,
-                              ),
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
+                  ],
                 );
               },
             ),
@@ -4876,122 +4999,128 @@ class _TimelineScreenState extends State<TimelineScreen> {
           top: rowPadding,
           width: width.clamp(handleW * 2 + 4, double.infinity),
           height: _materialTrackHeight - rowPadding * 2,
-          child: GestureDetector(
-            key: ValueKey('timelineClip-${clip.id}'),
-            onTap: () {
-              if (_isClipMultiSelect) {
-                setState(() {
-                  if (isSelected) {
-                    _selectedClipIds.remove(clip.id);
-                  } else {
-                    _selectedClipIds.add(clip.id);
-                  }
-                });
-              } else {
-                _showEditClipDialog(clip);
-              }
-            },
-            // 長押しドラッグでクリップ本体を移動＝表示開始位置を変更する
-            // （「開始フレーム変更：タイムライン上で表示開始
-            // 位置を変更」）。複数選択モード中は選択操作と競合するため無効化する。
-            onLongPressStart: _isClipMultiSelect
-                ? null
-                : (d) => _beginClipDrag(
-                    clip,
-                    _ClipDragMode.move,
-                    d.globalPosition.dx,
-                  ),
-            onLongPressMoveUpdate: _isClipMultiSelect
-                ? null
-                : (d) => _updateClipDrag(clip, d.globalPosition.dx),
-            onLongPressEnd: _isClipMultiSelect
-                ? null
-                : (_) => _endClipDrag(clip),
-            child: Stack(
-              children: [
-                Positioned.fill(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: clip.color.withValues(
-                        alpha: isDragging ? 1.0 : 0.85,
-                      ),
-                      borderRadius: BorderRadius.circular(4),
-                      border: isDragging
-                          ? Border.all(
-                              color: ThemeService.activeColorScheme.onSurface,
-                              width: 1.5,
-                            )
-                          : (isSelected
-                                ? Border.all(
-                                    color: ThemeService
-                                        .activeColorScheme
-                                        .onSurface,
-                                    width: 1.5,
-                                  )
-                                : null),
-                      boxShadow: isDragging
-                          ? null
-                          : [
-                              BoxShadow(
-                                color: ThemeService.activeColorScheme.onSurface
-                                    .withValues(alpha: 0.25),
-                                blurRadius: 2,
-                                offset: const Offset(0, 1),
-                              ),
-                            ],
+          child: Listener(
+            onPointerCancel: (_) => _endClipDrag(clip, commit: false),
+            child: GestureDetector(
+              key: ValueKey('timelineClip-${clip.id}'),
+              onTap: () {
+                if (_isClipMultiSelect) {
+                  setState(() {
+                    if (isSelected) {
+                      _selectedClipIds.remove(clip.id);
+                    } else {
+                      _selectedClipIds.add(clip.id);
+                    }
+                  });
+                } else {
+                  _showEditClipDialog(clip);
+                }
+              },
+              // 長押しドラッグでクリップ本体を移動＝表示開始位置を変更する
+              // （「開始フレーム変更：タイムライン上で表示開始
+              // 位置を変更」）。複数選択モード中は選択操作と競合するため無効化する。
+              onLongPressStart: _isClipMultiSelect
+                  ? null
+                  : (d) => _beginClipDrag(
+                      clip,
+                      _ClipDragMode.move,
+                      d.globalPosition.dx,
                     ),
-                    clipBehavior: Clip.antiAlias,
-                    child: Stack(
-                      fit: StackFit.expand,
-                      children: [
-                        if (clip.trackType == _ClipTrackType.audio &&
-                            clip.filePath != null)
-                          _AudioWaveformThumb(
-                            key: ValueKey('wf_${clip.id}'),
-                            filePath: clip.filePath!,
-                            cacheKey: clip.materialId,
-                          ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 4),
-                          child: Align(
-                            alignment: Alignment.centerLeft,
-                            child: Text(
-                              clip.label,
-                              style: TextStyle(
-                                fontSize: 9,
+              onLongPressMoveUpdate: _isClipMultiSelect
+                  ? null
+                  : (d) => _updateClipDrag(clip, d.globalPosition.dx),
+              onLongPressEnd: _isClipMultiSelect
+                  ? null
+                  : (_) => _endClipDrag(clip),
+              child: Stack(
+                children: [
+                  Positioned.fill(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: clip.color.withValues(
+                          alpha: isDragging ? 1.0 : 0.85,
+                        ),
+                        borderRadius: BorderRadius.circular(4),
+                        border: isDragging
+                            ? Border.all(
                                 color: ThemeService.activeColorScheme.onSurface,
-                                fontFamily: 'Kuramubon',
-                                fontFamilyFallback: kHeadingFontFallback,
+                                width: 1.5,
+                              )
+                            : (isSelected
+                                  ? Border.all(
+                                      color: ThemeService
+                                          .activeColorScheme
+                                          .onSurface,
+                                      width: 1.5,
+                                    )
+                                  : null),
+                        boxShadow: isDragging
+                            ? null
+                            : [
+                                BoxShadow(
+                                  color: ThemeService
+                                      .activeColorScheme
+                                      .onSurface
+                                      .withValues(alpha: 0.25),
+                                  blurRadius: 2,
+                                  offset: const Offset(0, 1),
+                                ),
+                              ],
+                      ),
+                      clipBehavior: Clip.antiAlias,
+                      child: Stack(
+                        fit: StackFit.expand,
+                        children: [
+                          if (clip.trackType == _ClipTrackType.audio &&
+                              clip.filePath != null)
+                            _AudioWaveformThumb(
+                              key: ValueKey('wf_${clip.id}'),
+                              filePath: clip.filePath!,
+                              cacheKey: clip.materialId,
+                            ),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 4),
+                            child: Align(
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                clip.label,
+                                style: TextStyle(
+                                  fontSize: 9,
+                                  color:
+                                      ThemeService.activeColorScheme.onSurface,
+                                  fontFamily: 'Kuramubon',
+                                  fontFamilyFallback: kHeadingFontFallback,
+                                ),
+                                overflow: TextOverflow.ellipsis,
                               ),
-                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
-                ),
-                if (_isClipMultiSelect)
-                  Positioned(
-                    right: 2,
-                    top: 2,
-                    child: Icon(
-                      isSelected
-                          ? Icons.check_circle
-                          : Icons.radio_button_unchecked,
-                      size: 12,
-                      color: ThemeService.activeColorScheme.onSurface,
+                  if (_isClipMultiSelect)
+                    Positioned(
+                      right: 2,
+                      top: 2,
+                      child: Icon(
+                        isSelected
+                            ? Icons.check_circle
+                            : Icons.radio_button_unchecked,
+                        size: 12,
+                        color: ThemeService.activeColorScheme.onSurface,
+                      ),
                     ),
-                  ),
-                // 左右端のドラッグハンドル：表示範囲（長さ）を変更する
-                // （「使用範囲変更：タイムライン上でドラッグ
-                // ハンドルにより変更」）。複数選択モード中は選択操作と
-                // 競合するため表示しない。
-                if (!_isClipMultiSelect) ...[
-                  _buildClipResizeHandle(clip, handleW, isLeft: true),
-                  _buildClipResizeHandle(clip, handleW, isLeft: false),
+                  // 左右端のドラッグハンドル：表示範囲（長さ）を変更する
+                  // （「使用範囲変更：タイムライン上でドラッグ
+                  // ハンドルにより変更」）。複数選択モード中は選択操作と
+                  // 競合するため表示しない。
+                  if (!_isClipMultiSelect) ...[
+                    _buildClipResizeHandle(clip, handleW, isLeft: true),
+                    _buildClipResizeHandle(clip, handleW, isLeft: false),
+                  ],
                 ],
-              ],
+              ),
             ),
           ),
         );
@@ -5013,11 +5142,13 @@ class _TimelineScreenState extends State<TimelineScreen> {
       width: handleW,
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
+        dragStartBehavior: DragStartBehavior.down,
         onHorizontalDragStart: (d) =>
             _beginClipDrag(clip, mode, d.globalPosition.dx),
         onHorizontalDragUpdate: (d) =>
             _updateClipDrag(clip, d.globalPosition.dx),
         onHorizontalDragEnd: (_) => _endClipDrag(clip),
+        onHorizontalDragCancel: () => _endClipDrag(clip, commit: false),
         child: MouseRegion(
           cursor: SystemMouseCursors.resizeLeftRight,
           child: Container(
@@ -5042,18 +5173,27 @@ class _TimelineScreenState extends State<TimelineScreen> {
   }
 
   void _beginClipDrag(_TrackClip clip, _ClipDragMode mode, double globalX) {
+    _startTimelineDrag(globalX);
     setState(() {
       _draggingClipId = clip.id;
       _clipDragMode = mode;
-      _clipDragStartX = globalX;
       _clipDragStartFrame = clip.startFrame;
       _clipDragStartLength = clip.lengthFrames;
     });
   }
 
   void _updateClipDrag(_TrackClip clip, double globalX) {
+    if (_draggingClipId != clip.id) return;
+    _applyClipDrag(clip, globalX);
+    _updateTimelineDragScroll(
+      globalX,
+      onScroll: () => _applyClipDrag(clip, globalX),
+    );
+  }
+
+  void _applyClipDrag(_TrackClip clip, double globalX) {
     if (_draggingClipId != clip.id || _clipDragMode == null) return;
-    final deltaFrames = ((globalX - _clipDragStartX) / _cellW).round();
+    final deltaFrames = (_timelineDragDistance(globalX) / _cellW).round();
     final total = _totalFrames;
     switch (_clipDragMode!) {
       case _ClipDragMode.move:
@@ -5091,15 +5231,22 @@ class _TimelineScreenState extends State<TimelineScreen> {
     }
   }
 
-  void _endClipDrag(_TrackClip clip) {
+  void _endClipDrag(_TrackClip clip, {bool commit = true}) {
     if (_draggingClipId != clip.id) return;
+    _stopTimelineDrag();
     final moved = _clipDragMode == _ClipDragMode.move;
     setState(() {
+      if (!commit) {
+        clip.startFrame = _clipDragStartFrame;
+        clip.lengthFrames = _clipDragStartLength;
+      }
       _draggingClipId = null;
       _clipDragMode = null;
     });
     final sceneId = _selectedSceneId;
-    if (sceneId != null) _persistClipUpdate(clip, sceneId, moved: moved);
+    if (commit && sceneId != null) {
+      _persistClipUpdate(clip, sceneId, moved: moved);
+    }
   }
 
   _TimelineSelection? get _timelineSelection {
@@ -5225,12 +5372,16 @@ class _TimelineScreenState extends State<TimelineScreen> {
       subtitle: paste ? l10n.commonPaste : l10n.commonMove,
       actions: [
         TextButton(
-          onPressed: () => setState(() {
-            _isMoveMode = false;
-            _isScenePasteMode = false;
-            _isFrameMoveMode = false;
-            _isFramePasteMode = false;
-          }),
+          onPressed: () {
+            if (!scene) _stopTimelineDrag(snap: false);
+            setState(() {
+              _isMoveMode = false;
+              _isScenePasteMode = false;
+              _isFrameMoveMode = false;
+              _isFramePasteMode = false;
+            });
+            if (!scene) _centerFrameInList();
+          },
           child: Text(l10n.commonCancel),
         ),
         const SizedBox(width: 4),
@@ -5413,50 +5564,66 @@ class _TimelineScreenState extends State<TimelineScreen> {
             ],
           ),
           Expanded(
-            child: SingleChildScrollView(
-              controller: _commonLayerScrollCtrl,
-              scrollDirection: Axis.horizontal,
-              physics: const ClampingScrollPhysics(),
-              child: SizedBox(
-                width: total * _cellW,
-                child: Column(
-                  children: [
-                    for (final r in rows)
-                      SizedBox(
-                        height: 32,
-                        child: Stack(
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                return NotificationListener<ScrollEndNotification>(
+                  onNotification: _handleTrackScrollEnd,
+                  child: NotificationListener<ScrollMetricsNotification>(
+                    onNotification: (_) {
+                      _syncFrom(_frameScrollCtrl, updatePlayhead: false);
+                      return false;
+                    },
+                    child: SingleChildScrollView(
+                      controller: _commonLayerScrollCtrl,
+                      padding: EdgeInsets.symmetric(
+                        horizontal: _trackSidePadding(constraints.maxWidth),
+                      ),
+                      scrollDirection: Axis.horizontal,
+                      physics: const ClampingScrollPhysics(),
+                      child: SizedBox(
+                        width: total * _cellW,
+                        child: Column(
                           children: [
-                            Row(
-                              children: [
-                                for (int i = 0; i < total; i++)
-                                  Container(
-                                    width: _cellW,
-                                    decoration: BoxDecoration(
-                                      border: Border(
-                                        right: BorderSide(
-                                          color: Theme.of(
-                                            context,
-                                          ).colorScheme.outlineVariant,
-                                          width: 0.5,
-                                        ),
-                                      ),
+                            for (final r in rows)
+                              SizedBox(
+                                height: 32,
+                                child: Stack(
+                                  children: [
+                                    Row(
+                                      children: [
+                                        for (int i = 0; i < total; i++)
+                                          Container(
+                                            width: _cellW,
+                                            decoration: BoxDecoration(
+                                              border: Border(
+                                                right: BorderSide(
+                                                  color: Theme.of(
+                                                    context,
+                                                  ).colorScheme.outlineVariant,
+                                                  width: 0.5,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                      ],
                                     ),
-                                  ),
-                              ],
-                            ),
-                            _buildCommonLayerBar(
-                              r.layer,
-                              r.home,
-                              r.start,
-                              r.end,
-                              total,
-                            ),
+                                    _buildCommonLayerBar(
+                                      r.layer,
+                                      r.home,
+                                      r.start,
+                                      r.end,
+                                      total,
+                                    ),
+                                  ],
+                                ),
+                              ),
                           ],
                         ),
                       ),
-                  ],
-                ),
-              ),
+                    ),
+                  ),
+                );
+              },
             ),
           ),
         ],
@@ -5489,6 +5656,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
           result.sceneId != sceneId) {
         return;
       }
+      _stopTimelineDrag();
       setState(() => _commonDragRange = null);
       if (!commit || (result.start == start && result.end == end)) return;
       context.read<ProjectService>().updateLayer(
@@ -5506,6 +5674,32 @@ class _TimelineScreenState extends State<TimelineScreen> {
 
     Widget handle({required bool movesStart}) {
       final color = ThemeService.activeColorScheme.onSurface;
+      void updateRange(double globalX) {
+        final current = _commonDragRange;
+        if (current == null ||
+            current.layerId != layer.id ||
+            current.sceneId != sceneId) {
+          return;
+        }
+        final delta = (_timelineDragDistance(globalX) / _cellW).truncate();
+        final newStart = movesStart
+            ? (start + delta).clamp(0, total - 1)
+            : start;
+        final newEnd = (movesStart ? end : end + delta).clamp(
+          newStart,
+          total - 1,
+        );
+        if (newStart == current.start && newEnd == current.end) return;
+        setState(() {
+          _commonDragRange = (
+            layerId: layer.id,
+            sceneId: sceneId,
+            start: newStart,
+            end: newEnd,
+          );
+        });
+      }
+
       return Positioned(
         left: movesStart ? 0 : null,
         right: movesStart ? null : 0,
@@ -5515,8 +5709,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
           onPointerCancel: (_) => finishDrag(commit: false),
           child: GestureDetector(
             behavior: HitTestBehavior.opaque,
-            onHorizontalDragStart: (_) {
-              _commonDragAccumPx = 0;
+            dragStartBehavior: DragStartBehavior.down,
+            onHorizontalDragStart: (details) {
+              _startTimelineDrag(details.globalPosition.dx);
               _commonDragRange = (
                 layerId: layer.id,
                 sceneId: sceneId,
@@ -5525,30 +5720,12 @@ class _TimelineScreenState extends State<TimelineScreen> {
               );
             },
             onHorizontalDragUpdate: (details) {
-              final current = _commonDragRange;
-              if (current == null ||
-                  current.layerId != layer.id ||
-                  current.sceneId != sceneId) {
-                return;
-              }
-              _commonDragAccumPx += details.delta.dx;
-              final delta = (_commonDragAccumPx / _cellW).truncate();
-              final newStart = movesStart
-                  ? (start + delta).clamp(0, total - 1)
-                  : start;
-              final newEnd = (movesStart ? end : end + delta).clamp(
-                newStart,
-                total - 1,
+              final globalX = details.globalPosition.dx;
+              updateRange(globalX);
+              _updateTimelineDragScroll(
+                globalX,
+                onScroll: () => updateRange(globalX),
               );
-              if (newStart == current.start && newEnd == current.end) return;
-              setState(() {
-                _commonDragRange = (
-                  layerId: layer.id,
-                  sceneId: sceneId,
-                  start: newStart,
-                  end: newEnd,
-                );
-              });
             },
             onHorizontalDragEnd: (_) => finishDrag(commit: true),
             onHorizontalDragCancel: () => finishDrag(commit: false),
@@ -5785,50 +5962,39 @@ class _TimelineScreenState extends State<TimelineScreen> {
         children: [
           _buildTrackLabel(Icons.camera_alt, l10n.timelineCameraTrackLabel),
           Expanded(
-            child: Stack(
-              children: [
-                ListView.builder(
-                  controller: _cameraScrollCtrl,
-                  scrollDirection: Axis.horizontal,
-                  physics: const ClampingScrollPhysics(),
-                  itemCount: total,
-                  itemBuilder: (_, i) => Container(
-                    width: _cellW,
-                    decoration: BoxDecoration(
-                      border: Border(
-                        right: BorderSide(
-                          color: Theme.of(context).colorScheme.outlineVariant,
-                          width: 0.5,
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final padding = _trackSidePadding(constraints.maxWidth);
+                return Stack(
+                  children: [
+                    _buildTrackGrid(_cameraScrollCtrl, total, padding),
+                    // キーフレームマーカー
+                    ...cameraKfs.map((kf) => _buildCameraKfMarker(kf, padding)),
+                    // ＋ボタン
+                    Positioned(
+                      right: 4,
+                      top: 4,
+                      child: GestureDetector(
+                        onTap: () => _addCameraKf(),
+                        child: Container(
+                          width: 20,
+                          height: 20,
+                          decoration: BoxDecoration(
+                            color: ThemeService.activeColorScheme.secondary
+                                .withValues(alpha: 0.8),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Icon(
+                            Icons.add,
+                            size: 14,
+                            color: ThemeService.activeColorScheme.onSurface,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                ),
-                // キーフレームマーカー
-                ...cameraKfs.map((kf) => _buildCameraKfMarker(kf)),
-                // ＋ボタン
-                Positioned(
-                  right: 4,
-                  top: 4,
-                  child: GestureDetector(
-                    onTap: () => _addCameraKf(),
-                    child: Container(
-                      width: 20,
-                      height: 20,
-                      decoration: BoxDecoration(
-                        color: ThemeService.activeColorScheme.secondary
-                            .withValues(alpha: 0.8),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Icon(
-                        Icons.add,
-                        size: 14,
-                        color: ThemeService.activeColorScheme.onSurface,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
+                  ],
+                );
+              },
             ),
           ),
         ],
@@ -5836,7 +6002,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
     );
   }
 
-  Widget _buildCameraKfMarker(CameraKeyframe kf) {
+  Widget _buildCameraKfMarker(CameraKeyframe kf, double padding) {
     return AnimatedBuilder(
       animation: _cameraScrollCtrl,
       builder: (ctx, child) {
@@ -5847,7 +6013,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
         final displayFrame = isDragging
             ? (_draggingCameraKfLiveFrame ?? kf.frameIndex)
             : kf.frameIndex;
-        final cx = displayFrame * _cellW + _cellW / 2 - scrollOffset;
+        final cx = padding + displayFrame * _cellW + _cellW / 2 - scrollOffset;
         return Positioned(
           left: cx - 7,
           top: 9,
@@ -5859,11 +6025,13 @@ class _TimelineScreenState extends State<TimelineScreen> {
             key: ValueKey('cameraKfMarker_${kf.frameIndex}'),
             onTap: () => _showEditCameraKfDialog(kf),
             // ドラッグでキーフレーム位置（フレーム）を変更する。
+            dragStartBehavior: DragStartBehavior.down,
             onHorizontalDragStart: (d) =>
                 _beginCameraKfDrag(kf, d.globalPosition.dx),
             onHorizontalDragUpdate: (d) =>
                 _updateCameraKfDrag(d.globalPosition.dx),
             onHorizontalDragEnd: (_) => _endCameraKfDrag(kf),
+            onHorizontalDragCancel: () => _endCameraKfDrag(kf, commit: false),
             child: Transform.rotate(
               angle: 0.785, // 45°
               child: Container(
@@ -5892,18 +6060,26 @@ class _TimelineScreenState extends State<TimelineScreen> {
   }
 
   void _beginCameraKfDrag(CameraKeyframe kf, double globalX) {
+    _startTimelineDrag(globalX);
     setState(() {
       _draggingCameraKfOriginalFrame = kf.frameIndex;
       _draggingCameraKfLiveFrame = kf.frameIndex;
-      _cameraKfDragStartX = globalX;
       _cameraKfDragStartFrame = kf.frameIndex;
     });
   }
 
   void _updateCameraKfDrag(double globalX) {
     if (_draggingCameraKfOriginalFrame == null) return;
+    _applyCameraKfDrag(globalX);
+    _updateTimelineDragScroll(
+      globalX,
+      onScroll: () => _applyCameraKfDrag(globalX),
+    );
+  }
+
+  void _applyCameraKfDrag(double globalX) {
     final total = _totalFrames;
-    final deltaFrames = ((globalX - _cameraKfDragStartX) / _cellW).round();
+    final deltaFrames = (_timelineDragDistance(globalX) / _cellW).round();
     final newFrame = (_cameraKfDragStartFrame + deltaFrames).clamp(
       0,
       total > 0 ? total - 1 : 0,
@@ -5913,7 +6089,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
     }
   }
 
-  void _endCameraKfDrag(CameraKeyframe kf) {
+  void _endCameraKfDrag(CameraKeyframe kf, {bool commit = true}) {
+    if (_draggingCameraKfOriginalFrame != kf.frameIndex) return;
+    _stopTimelineDrag();
     final originalFrame = _draggingCameraKfOriginalFrame;
     final liveFrame = _draggingCameraKfLiveFrame;
     setState(() {
@@ -5921,7 +6099,8 @@ class _TimelineScreenState extends State<TimelineScreen> {
       _draggingCameraKfLiveFrame = null;
     });
     final sceneId = _selectedSceneId;
-    if (sceneId == null ||
+    if (!commit ||
+        sceneId == null ||
         originalFrame == null ||
         liveFrame == null ||
         liveFrame == originalFrame) {
@@ -5977,50 +6156,40 @@ class _TimelineScreenState extends State<TimelineScreen> {
             l10n.timelineMarkerTrackLabel,
           ),
           Expanded(
-            child: Stack(
-              children: [
-                ListView.builder(
-                  controller: _markerScrollCtrl,
-                  scrollDirection: Axis.horizontal,
-                  physics: const ClampingScrollPhysics(),
-                  itemCount: total,
-                  itemBuilder: (_, i) => Container(
-                    width: _cellW,
-                    decoration: BoxDecoration(
-                      border: Border(
-                        right: BorderSide(
-                          color: Theme.of(context).colorScheme.outlineVariant,
-                          width: 0.5,
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final padding = _trackSidePadding(constraints.maxWidth);
+                return Stack(
+                  children: [
+                    _buildTrackGrid(_markerScrollCtrl, total, padding),
+                    ...markersByFrame.entries.map(
+                      (entry) =>
+                          _buildMarkerPin(entry.key, entry.value, padding),
+                    ),
+                    Positioned(
+                      right: 4,
+                      top: 4,
+                      child: GestureDetector(
+                        onTap: () => _showAddMarkerDialog(),
+                        child: Container(
+                          width: 20,
+                          height: 20,
+                          decoration: BoxDecoration(
+                            color: ThemeService.activeColorScheme.secondary
+                                .withValues(alpha: 0.8),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Icon(
+                            Icons.add,
+                            size: 14,
+                            color: ThemeService.activeColorScheme.onSurface,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                ),
-                ...markersByFrame.entries.map(
-                  (entry) => _buildMarkerPin(entry.key, entry.value),
-                ),
-                Positioned(
-                  right: 4,
-                  top: 4,
-                  child: GestureDetector(
-                    onTap: () => _showAddMarkerDialog(),
-                    child: Container(
-                      width: 20,
-                      height: 20,
-                      decoration: BoxDecoration(
-                        color: ThemeService.activeColorScheme.secondary
-                            .withValues(alpha: 0.8),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Icon(
-                        Icons.add,
-                        size: 14,
-                        color: ThemeService.activeColorScheme.onSurface,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
+                  ],
+                );
+              },
             ),
           ),
         ],
@@ -6028,7 +6197,11 @@ class _TimelineScreenState extends State<TimelineScreen> {
     );
   }
 
-  Widget _buildMarkerPin(int frameIndex, List<TimelineMarker> markers) {
+  Widget _buildMarkerPin(
+    int frameIndex,
+    List<TimelineMarker> markers,
+    double padding,
+  ) {
     final markerLabels = markers
         .map(
           (marker) =>
@@ -6042,7 +6215,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
         final scrollOffset = _markerScrollCtrl.hasClients
             ? _markerScrollCtrl.offset
             : 0.0;
-        final cx = frameIndex * _cellW + _cellW / 2 - scrollOffset;
+        final cx = padding + frameIndex * _cellW + _cellW / 2 - scrollOffset;
         return Positioned(
           left: cx - 7,
           top: 9,
@@ -6243,57 +6416,49 @@ class _TimelineScreenState extends State<TimelineScreen> {
                       _EffectFilterSheet._displayName(l10n, e),
                     ),
                     Expanded(
-                      child: Stack(
-                        children: [
-                          ListView.builder(
-                            controller: _effectRowScrollCtrl(row),
-                            scrollDirection: Axis.horizontal,
-                            physics: const ClampingScrollPhysics(),
-                            itemCount: total,
-                            itemBuilder: (_, i) => Container(
-                              width: _cellW,
-                              decoration: BoxDecoration(
-                                border: Border(
-                                  right: BorderSide(
-                                    color: Theme.of(
-                                      context,
-                                    ).colorScheme.outlineVariant,
-                                    width: 0.5,
-                                  ),
-                                ),
+                      child: LayoutBuilder(
+                        builder: (context, constraints) {
+                          final padding = _trackSidePadding(
+                            constraints.maxWidth,
+                          );
+                          final controller = _effectRowScrollCtrl(row);
+                          return Stack(
+                            children: [
+                              _buildTrackGrid(controller, total, padding),
+                              AnimatedBuilder(
+                                animation: controller,
+                                builder: (ctx, child) {
+                                  final scrollOffset = controller.hasClients
+                                      ? controller.offset
+                                      : 0.0;
+                                  final left =
+                                      padding +
+                                      e.startFrame * _cellW -
+                                      scrollOffset;
+                                  final width =
+                                      (e.endFrame - e.startFrame + 1) * _cellW;
+                                  return Positioned(
+                                    left: left,
+                                    top: 6,
+                                    child: Container(
+                                      width: width,
+                                      height: 20,
+                                      decoration: BoxDecoration(
+                                        color: ThemeService
+                                            .activeColorScheme
+                                            .secondary
+                                            .withValues(
+                                              alpha: e.enabled ? 0.8 : 0.3,
+                                            ),
+                                        borderRadius: BorderRadius.circular(4),
+                                      ),
+                                    ),
+                                  );
+                                },
                               ),
-                            ),
-                          ),
-                          AnimatedBuilder(
-                            animation: _effectRowScrollCtrl(row),
-                            builder: (ctx, child) {
-                              final ctrl = _effectRowScrollCtrl(row);
-                              final scrollOffset = ctrl.hasClients
-                                  ? ctrl.offset
-                                  : 0.0;
-                              final left = e.startFrame * _cellW - scrollOffset;
-                              final width =
-                                  (e.endFrame - e.startFrame + 1) * _cellW;
-                              return Positioned(
-                                left: left,
-                                top: 6,
-                                child: Container(
-                                  width: width,
-                                  height: 20,
-                                  decoration: BoxDecoration(
-                                    color: ThemeService
-                                        .activeColorScheme
-                                        .secondary
-                                        .withValues(
-                                          alpha: e.enabled ? 0.8 : 0.3,
-                                        ),
-                                    borderRadius: BorderRadius.circular(4),
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                        ],
+                            ],
+                          );
+                        },
                       ),
                     ),
                   ],
@@ -8740,12 +8905,12 @@ class _TimelinePreviewState extends State<_TimelinePreview> {
     }
   }
 
-  LayerKeyframe? _groupKeyframeOf(Layer layer) {
-    for (final g in widget.groups) {
+  LayerKeyframe? _groupKeyframeOf(_TimelinePreview request, Layer layer) {
+    for (final g in request.groups) {
       if (g.memberLayerIds.contains(layer.id)) {
         return g.keyframes.isEmpty
             ? null
-            : _layerKeyframeEngine.valueAt(g.keyframes, widget.frameIndex);
+            : _layerKeyframeEngine.valueAt(g.keyframes, request.frameIndex);
       }
     }
     return null;
@@ -8757,31 +8922,35 @@ class _TimelinePreviewState extends State<_TimelinePreview> {
       return;
     }
     _building = true;
-    final tm = widget.tileManager;
+    final request = widget;
+    final tm = request.tileManager;
     final layered = await LayerCompositor.composite(
       tm,
-      widget.layers,
+      request.layers,
       (l) => resolveTileKey(
-        widget.layerHomes,
-        widget.sceneId,
-        widget.frameIndex,
+        request.layerHomes,
+        request.sceneId,
+        request.frameIndex,
         l.id,
       ),
       tm.canvasWidth,
       tm.canvasHeight,
       keyframeOf: (l) => l.keyframes.isEmpty
           ? null
-          : _layerKeyframeEngine.valueAt(l.keyframes, widget.frameIndex),
-      groupKeyframeOf: _groupKeyframeOf,
+          : _layerKeyframeEngine.valueAt(l.keyframes, request.frameIndex),
+      groupKeyframeOf: (l) => _groupKeyframeOf(request, l),
       paperColor: LayerCompositor.paperForBlendModes(
-        widget.layers,
-        widget.backgroundColor,
+        request.layers,
+        request.backgroundColor,
       ),
-      maskGroups: widget.maskGroups,
+      maskGroups: request.maskGroups,
     );
 
     // カメラ変換を適用する（カメラは表示のみを変更する）
-    final kf = _cameraEngine.valueAt(widget.cameraKeyframes, widget.frameIndex);
+    final kf = _cameraEngine.valueAt(
+      request.cameraKeyframes,
+      request.frameIndex,
+    );
     final recorder = ui.PictureRecorder();
     final canvas = ui.Canvas(recorder);
     canvas.save();
@@ -8798,15 +8967,15 @@ class _TimelinePreviewState extends State<_TimelinePreview> {
     var img = await picture.toImage(tm.canvasWidth, tm.canvasHeight);
 
     // 演出フィルター：合成・カメラ適用後の映像へ非破壊で適用する
-    if (widget.effectFilters.isNotEmpty) {
+    if (request.effectFilters.isNotEmpty) {
       final byteData = await img.toByteData(format: ui.ImageByteFormat.rawRgba);
       if (byteData != null) {
         final filtered = _filterEngine.applyEffectFilters(
           byteData.buffer.asUint8List(),
           tm.canvasWidth,
           tm.canvasHeight,
-          widget.effectFilters,
-          widget.frameIndex,
+          request.effectFilters,
+          request.frameIndex,
         );
         final composed = img;
         img = await _decodeRgba(filtered, tm.canvasWidth, tm.canvasHeight);

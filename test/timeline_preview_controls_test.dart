@@ -29,6 +29,7 @@ import 'package:niarim/services/project_service.dart';
 import 'package:niarim/services/autofill_preset_service.dart';
 import 'package:niarim/widgets/labeled_slider.dart';
 import 'package:niarim/widgets/progress_dialog.dart';
+import 'package:niarim/widgets/stepped_slider.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -71,6 +72,7 @@ void main() {
     AutofillPresetService? presets,
     bool showNavigator = false,
     String language = 'ja',
+    int durationSeconds = 1,
   }) async {
     await tester.pumpWidget(const SizedBox.shrink());
     SharedPreferences.setMockInitialValues({
@@ -113,7 +115,7 @@ void main() {
       () => ps.createProject(
         name: 'preview-controls',
         fps: 12,
-        durationSeconds: 1,
+        durationSeconds: durationSeconds,
         backgroundColor: 0xFFFFFFFF,
         exportWidth: project.width.toInt(),
         exportHeight: project.height.toInt(),
@@ -1079,6 +1081,243 @@ void main() {
       expect(tester.takeException(), isNull);
     },
   );
+
+  testWidgets('frame paste scroll speed follows the distance from the grab', (
+    tester,
+  ) async {
+    final id = await openTimeline(
+      tester,
+      project: const Size(64, 64),
+      screen: const Size(390, 844),
+      pc: false,
+      fraction: .36,
+      durationSeconds: 3,
+      setUpProject: (ps, id) {
+        final scene = ps.scenesOf(id).single;
+        final tiles = ps.tileManagerOf(id);
+        for (final (i, frame) in scene.frames.indexed) {
+          final key = ps.tileKeyFor(id, scene.id, i, frame.layers.first.id);
+          tiles.setPixel(
+            tiles.getOrCreateTile(key, 0, 0),
+            0,
+            0,
+            i + 50,
+            0,
+            0,
+            255,
+          );
+        }
+      },
+    );
+    final outline = find.byKey(const Key('timelineCurrentFrameOutline'));
+    final previewCount = find.byKey(const Key('timelinePreviewFrameCount'));
+    final screen = tester.element(find.byType(TimelineScreen));
+    final ps = screen.read<ProjectService>();
+    final l10n = AppLocalizations.of(screen)!;
+    final initial = ps.scenesOf(id).single.frames;
+    int currentIndex() =>
+        int.parse(tester.widget<Text>(previewCount).data!.split('/').first) - 1;
+
+    await tester.longPress(find.byKey(const Key('timelineFrameCell0')));
+    await pumpRealAsync(tester, const Duration(milliseconds: 200));
+    await tester.tap(find.byIcon(Icons.content_copy));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('timelinePasteButton')));
+    await pumpRealAsync(tester, const Duration(milliseconds: 240));
+
+    final cursorX = tester.getCenter(outline).dx;
+    final handle = find.byKey(const Key('timelineFramePlacementHandle'));
+    final origin = tester.getCenter(handle);
+    expect(origin.dx, cursorX);
+    final drag = await tester.startGesture(origin);
+    await tester.pump(kLongPressTimeout);
+    final start = currentIndex();
+    expect(start, initial.length - 1);
+    expect(
+      tester.getCenter(find.byKey(ValueKey('timelineFrameCell$start'))).dx,
+      closeTo(cursorX, .5),
+    );
+
+    const interval = Duration(milliseconds: 192);
+    await drag.moveTo(origin - const Offset(68, 0));
+    await tester.pump(interval);
+    final slow = currentIndex();
+    expect(slow, lessThan(start));
+    await drag.moveTo(origin - const Offset(140, 0));
+    await tester.pump(interval);
+    final fast = currentIndex();
+    expect(slow - fast, greaterThan(start - slow));
+
+    await drag.moveTo(origin + const Offset(80, 0));
+    await tester.pump(interval);
+    final target = currentIndex();
+    expect(target, greaterThan(fast));
+    await drag.moveTo(origin);
+    await pumpRealAsync(tester, const Duration(milliseconds: 240));
+    expect(currentIndex(), target);
+    expect(tester.getCenter(outline).dx, cursorX);
+    final centered = find.byKey(ValueKey('timelineFrameCell$target'));
+    expect(
+      tester.getRect(centered).contains(tester.getCenter(outline)),
+      isTrue,
+    );
+    final picture = tester.widget<RawImage>(
+      find.byKey(const Key('timelinePreviewPicture')),
+    );
+    final pixels = await tester.runAsync(
+      () => picture.image!.toByteData(format: ui.ImageByteFormat.rawRgba),
+    );
+    expect(pixels!.getUint8(0), target + 50);
+
+    await drag.up();
+    await tester.pumpAndSettle();
+    expect(tester.getCenter(centered).dx, closeTo(cursorX, .5));
+    await tester.tap(find.text(l10n.timelineConfirmButton));
+    await tester.pumpAndSettle();
+    final pasted = ps.scenesOf(id).single.frames;
+    expect(pasted.length, initial.length + 1);
+    expect(pasted[target + 1].layers.first.id, initial[target].layers.first.id);
+    expect(tester.takeException(), isNull);
+    await tester.pumpWidget(const SizedBox.shrink());
+  });
+
+  testWidgets('material drags move the clip and the preview on DeX', (
+    tester,
+  ) async {
+    final clips = <String>[];
+    final id = await openTimeline(
+      tester,
+      project: const Size(64, 64),
+      screen: const Size(1280, 800),
+      pc: true,
+      fraction: .36,
+      durationSeconds: 3,
+      setUpProject: (ps, id) {
+        final scene = ps.scenesOf(id).single.id;
+        for (final type in [
+          LayerType.timelineText,
+          LayerType.timelineImage,
+          LayerType.timelineVideo,
+        ]) {
+          final layer = ps.addLayer(
+            projectId: id,
+            sceneId: scene,
+            frameIndex: 2,
+            type: type,
+            name: type.name,
+          );
+          clips.add(layer.id);
+          ps.updateLayer(
+            projectId: id,
+            sceneId: scene,
+            frameIndex: 2,
+            layer: layer.copyWith(
+              rangeMode: LayerRangeMode.frameRange,
+              rangeStart: 3,
+              rangeEnd: 5,
+            ),
+          );
+        }
+        clips.add('drag-audio');
+        ps.addAudioClip(
+          id,
+          scene,
+          const AudioClip(
+            id: 'drag-audio',
+            label: 'Audio',
+            startFrame: 2,
+            lengthFrames: 3,
+          ),
+        );
+      },
+    );
+    final ps = tester
+        .element(find.byType(TimelineScreen))
+        .read<ProjectService>();
+    final scene = ps.scenesOf(id).single.id;
+    final initialFrame = find.byKey(const Key('timelineFrameCell0'));
+    final outline = find.byKey(const Key('timelineCurrentFrameOutline'));
+    final previewCount = find.byKey(const Key('timelinePreviewFrameCount'));
+    final seek = find.byType(SteppedSlider);
+    final trackLists = find.byWidgetPredicate(
+      (w) =>
+          w is ListView &&
+          w.scrollDirection == Axis.horizontal &&
+          w.controller != null,
+    );
+    int currentFrame() =>
+        int.parse(tester.widget<Text>(previewCount).data!.split('/').first);
+    int savedStart(String clip) => clip == 'drag-audio'
+        ? ps.audioClipsOf(id, scene).single.startFrame
+        : ps
+                  .layersOf(id, scene, 2)
+                  .singleWhere((l) => l.id == clip)
+                  .rangeStart! -
+              1;
+
+    void expectTracksFollow() {
+      final offsets = tester
+          .widgetList<ListView>(trackLists)
+          .map((track) => track.controller!.offset)
+          .toList();
+      expect(offsets, hasLength(5));
+      expect(offsets.first, greaterThan(0));
+      expect(offsets, everyElement(closeTo(offsets.first, .5)));
+      expect(tester.widget<SteppedSlider>(seek).value, currentFrame() - 1);
+    }
+
+    for (final clip in clips) {
+      await tester.tap(initialFrame);
+      await tester.pumpAndSettle();
+      final origin = tester.getCenter(
+        find.byKey(ValueKey('timelineClip-$clip')),
+      );
+      final cursor = tester.getCenter(outline);
+      final drag = await tester.startGesture(
+        origin,
+        kind: ui.PointerDeviceKind.mouse,
+      );
+      await tester.pump(kLongPressTimeout);
+      await drag.moveTo(origin + const Offset(120, 0));
+      await tester.pump(const Duration(milliseconds: 256));
+      expect(currentFrame(), greaterThan(2));
+      expect(tester.getCenter(outline), cursor);
+      expectTracksFollow();
+      expect(savedStart(clip), 2);
+      if (clip == clips.first) {
+        await drag.cancel();
+        await tester.pumpAndSettle();
+        expect(savedStart(clip), 2);
+      } else {
+        await drag.up();
+        await tester.pumpAndSettle();
+        // Pointer displacement alone would move the clip by only 3 frames.
+        expect(savedStart(clip), greaterThan(5));
+      }
+    }
+
+    await tester.tap(initialFrame);
+    await tester.pumpAndSettle();
+    final row = trackLists.at(1);
+    final swipe = await tester.startGesture(tester.getCenter(row));
+    await swipe.moveBy(const Offset(-60, 0));
+    await swipe.moveBy(const Offset(-60, 0));
+    await tester.pump();
+    expect(currentFrame(), greaterThan(1));
+    expectTracksFollow();
+    await swipe.up();
+    await tester.pumpAndSettle();
+    expectTracksFollow();
+
+    tester.widget<SteppedSlider>(seek).onChanged!(17);
+    await tester.pump();
+    expect(currentFrame(), 18);
+    expectTracksFollow();
+    final seekTarget = find.byKey(const Key('timelineFrameCell17'));
+    expect(tester.getCenter(seekTarget).dx, tester.getCenter(outline).dx);
+    expect(tester.takeException(), isNull);
+    await tester.pumpWidget(const SizedBox.shrink());
+  });
 
   testWidgets('material clip starts line up while the frame row scrolls', (
     tester,
