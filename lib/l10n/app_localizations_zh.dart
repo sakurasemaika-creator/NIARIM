@@ -800,7 +800,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get timelineBackToProjectListSaveButton => '保存并返回';
 
   @override
-  String get timelineBackToProjectListDiscardButton => '不保存直接返回';
+  String get timelineBackToProjectListDiscardButton => '不手动保存直接返回';
 
   @override
   String get timelineSkipToStart => '跳到第一帧';
@@ -11046,7 +11046,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get timelineBackToProjectListSaveButton => '儲存並返回';
 
   @override
-  String get timelineBackToProjectListDiscardButton => '不儲存直接返回';
+  String get timelineBackToProjectListDiscardButton => '不手動儲存直接返回';
 
   @override
   String get timelineSkipToStart => '跳到第一幀';

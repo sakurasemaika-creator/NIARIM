@@ -811,7 +811,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get timelineBackToProjectListSaveButton => '保存して戻る';
 
   @override
-  String get timelineBackToProjectListDiscardButton => '保存せず戻る';
+  String get timelineBackToProjectListDiscardButton => '手動セーブせずに戻る';
 
   @override
   String get timelineSkipToStart => '先頭フレームへ';

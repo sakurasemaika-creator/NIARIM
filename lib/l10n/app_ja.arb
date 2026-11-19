@@ -421,7 +421,7 @@
   "timelineBackToProjectListDialogTitle": "プロジェクト一覧に戻る",
   "timelineBackToProjectListDialogBody": "変更を保存してから戻りますか？",
   "timelineBackToProjectListSaveButton": "保存して戻る",
-  "timelineBackToProjectListDiscardButton": "保存せず戻る",
+  "timelineBackToProjectListDiscardButton": "手動セーブせずに戻る",
   "timelineSkipToStart": "先頭フレームへ",
   "timelineStepBack": "1フレーム戻る",
   "timelineStepForward": "1フレーム進む",

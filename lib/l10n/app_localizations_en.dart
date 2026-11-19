@@ -836,7 +836,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get timelineBackToProjectListSaveButton => 'Save and go back';
 
   @override
-  String get timelineBackToProjectListDiscardButton => 'Go back without saving';
+  String get timelineBackToProjectListDiscardButton =>
+      'Go back without saving manually';
 
   @override
   String get timelineSkipToStart => 'Skip to first frame';

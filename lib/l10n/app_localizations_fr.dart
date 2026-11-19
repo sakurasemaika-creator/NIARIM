@@ -857,7 +857,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get timelineBackToProjectListDiscardButton =>
-      'Revenir sans enregistrer';
+      'Revenir sans enregistrer manuellement';
 
   @override
   String get timelineSkipToStart => 'Aller à la première image';

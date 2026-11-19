@@ -814,7 +814,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get timelineBackToProjectListSaveButton => '저장하고 돌아가기';
 
   @override
-  String get timelineBackToProjectListDiscardButton => '저장하지 않고 돌아가기';
+  String get timelineBackToProjectListDiscardButton => '수동 저장 없이 돌아가기';
 
   @override
   String get timelineSkipToStart => '첫 프레임으로 이동';

@@ -266,7 +266,7 @@
   "timelineBackToProjectListDialogTitle": "Back to project list",
   "timelineBackToProjectListDialogBody": "Save your changes before going back?",
   "timelineBackToProjectListSaveButton": "Save and go back",
-  "timelineBackToProjectListDiscardButton": "Go back without saving",
+  "timelineBackToProjectListDiscardButton": "Go back without saving manually",
   "timelineSkipToStart": "Skip to first frame",
   "timelineStepBack": "Step back one frame",
   "timelineStepForward": "Step forward one frame",

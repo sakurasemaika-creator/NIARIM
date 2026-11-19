@@ -266,7 +266,7 @@
   "timelineBackToProjectListDialogTitle": "Retour à la liste des projets",
   "timelineBackToProjectListDialogBody": "Enregistrer les modifications avant de revenir ?",
   "timelineBackToProjectListSaveButton": "Enregistrer et revenir",
-  "timelineBackToProjectListDiscardButton": "Revenir sans enregistrer",
+  "timelineBackToProjectListDiscardButton": "Revenir sans enregistrer manuellement",
   "timelineSkipToStart": "Aller à la première image",
   "timelineStepBack": "Reculer d’une image",
   "timelineStepForward": "Avancer d’une image",

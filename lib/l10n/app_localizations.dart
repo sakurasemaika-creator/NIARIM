@@ -1542,7 +1542,7 @@ abstract class AppLocalizations {
   /// No description provided for @timelineBackToProjectListDiscardButton.
   ///
   /// In ja, this message translates to:
-  /// **'保存せず戻る'**
+  /// **'手動セーブせずに戻る'**
   String get timelineBackToProjectListDiscardButton;
 
   /// No description provided for @timelineSkipToStart.

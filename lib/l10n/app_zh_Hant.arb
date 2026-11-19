@@ -266,7 +266,7 @@
   "timelineBackToProjectListDialogTitle": "返回專案列表",
   "timelineBackToProjectListDialogBody": "要先儲存變更再返回嗎？",
   "timelineBackToProjectListSaveButton": "儲存並返回",
-  "timelineBackToProjectListDiscardButton": "不儲存直接返回",
+  "timelineBackToProjectListDiscardButton": "不手動儲存直接返回",
   "timelineSkipToStart": "跳到第一幀",
   "timelineStepBack": "後退一幀",
   "timelineStepForward": "前進一幀",

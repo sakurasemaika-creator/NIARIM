@@ -858,7 +858,8 @@ class AppLocalizationsEs extends AppLocalizations {
   String get timelineBackToProjectListSaveButton => 'Guardar y volver';
 
   @override
-  String get timelineBackToProjectListDiscardButton => 'Volver sin guardar';
+  String get timelineBackToProjectListDiscardButton =>
+      'Volver sin guardar manualmente';
 
   @override
   String get timelineSkipToStart => 'Ir al primer fotograma';

@@ -2504,3 +2504,8 @@ App・Web共通。Claudeが要修正の詳細を追記し、ユーザーが別�
 
 - **追加のスモーク確認**。Web `f8da229` の [#44477201011](https://github.com/sakurasemaika-creator/NIARIM-web/actions/runs/44477201011) は、オパールの旧比較価格とヘルプ80項目を固定した期待値で失敗した。既存の価格契約とヘルプ81項目を確認し、別セッションが先に反映した `569dc0b` を採用した。修正後の [#44477509018 の smoke ジョブ](https://github.com/sakurasemaika-creator/NIARIM-web/actions/runs/44477509018/job/135401517169) は7言語・レスポンシブ・日本語の価格表とヘルプ・ブラウザと全ページ撮影まで成功した。同じ実行の公開料金ページ2件は Cloudflare Access の認証画面で止まり、公開ページの価格の確認は認証可能な環境への引継ぎ。同時点のWeb先端 `569dc0b` は、字形CIを通した `b8ff700` からフォント・本体ファイルに差分が無い。
 - **追加のApp回帰確認**。`b1abd0ca` は[作品広場のフォロー・再読み込み](https://github.com/sakurasemaika-creator/NIARIM/actions/runs/44476930712) と[カード操作](https://github.com/sakurasemaika-creator/NIARIM/actions/runs/44476930714) の専用CIが成功。引継ぎ記録の保存直前に入っていた App `a87cc8c` は[新規プロジェクト・料金比較CI](https://github.com/sakurasemaika-creator/NIARIM/actions/runs/44477341019) が成功し、[全Flutterテストを含む readiness CI #44477341064](https://github.com/sakurasemaika-creator/NIARIM/actions/runs/44477341064) は記録時点で実行中。二巡目の対象とする先端で結果を照合する。
+
+## 保存に関する所有者決定（2026-11-19）
+
+- DISC090。キャンバス・タイムラインから作品一覧へ戻るボタンを、日本語では「手動セーブせずに戻る」とする。7言語の表示を手動セーブを作らない意味にそろえる。作品の編集を破棄する操作の追加は今回の決定に含まれない。
+- DISC119。保存方式の変更中に「キャンセル」したら、保存方式の変更全体を取り消す。現行コードでは全対象作品の選択を集めてから変更を適用し、取り消した場合はパフォーマンス設定の保存方式・スロット数を確定しない。既存の `save_mode_change_slots_test.dart` は、2作品目で取り消した場合にも1作品目を含む既存の保存、方式、枠数を保持することを検証する。保存方式確定時の移行・退避・削除に関する既存の挙動は説明資料で確認する。

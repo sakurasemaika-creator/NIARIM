@@ -266,7 +266,7 @@
   "timelineBackToProjectListDialogTitle": "Volver a la lista de proyectos",
   "timelineBackToProjectListDialogBody": "¿Guardar los cambios antes de volver?",
   "timelineBackToProjectListSaveButton": "Guardar y volver",
-  "timelineBackToProjectListDiscardButton": "Volver sin guardar",
+  "timelineBackToProjectListDiscardButton": "Volver sin guardar manualmente",
   "timelineSkipToStart": "Ir al primer fotograma",
   "timelineStepBack": "Retroceder un fotograma",
   "timelineStepForward": "Avanzar un fotograma",
