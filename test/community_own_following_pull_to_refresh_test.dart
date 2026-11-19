@@ -122,6 +122,18 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Bob'), findsOneWidget);
     expect(find.text('さらに表示'), findsNothing);
+    await tester.tap(find.text('Bob'));
+    await tester.pumpAndSettle();
+    expect(
+      tester
+          .widget<CommunityAuthorWorksScreen>(
+            find.byType(CommunityAuthorWorksScreen),
+          )
+          .authorId,
+      'bob',
+    );
+    await tester.tap(find.byType(BackButton));
+    await tester.pumpAndSettle();
     await tester.tap(find.byType(BackButton));
     await tester.pumpAndSettle();
     expect(find.byType(CommunityAuthorWorksScreen), findsOneWidget);
@@ -297,7 +309,9 @@ void main() {
 
     await tester.pumpWidget(_app(service));
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const Key('communityFollowingAuthor_alice')));
+    await tester.tap(
+      find.byWidgetPredicate((widget) => widget is CircleAvatar),
+    );
     await tester.pumpAndSettle();
 
     final author = tester.widget<CommunityAuthorWorksScreen>(
@@ -380,6 +394,7 @@ void main() {
     tester,
   ) async {
     final requested = <String>[];
+    var following = true;
     final service = _service(
       MockClient((request) async {
         requested.add(request.url.path);
@@ -390,9 +405,10 @@ void main() {
             return _reply({'followerCount': 2, 'followingCount': 1});
           case '/users/self/following':
             return _reply({
-              'following': [_user('alice', 'Alice')],
+              'following': [if (following) _user('alice', 'Alice')],
             });
           case '/users/alice/follow':
+            following = false;
             return _reply({'following': false});
           case '/users/self/reposts':
             return _reply({'reposts': <Object>[]});
@@ -428,6 +444,17 @@ void main() {
     await tester.tap(find.byKey(const Key('communityFollowingUnfollow_alice')));
     await tester.pumpAndSettle();
     expect(service.favoriteAuthorIds, isEmpty);
+    expect(
+      find.byKey(const Key('communityFollowingFollow_alice')),
+      findsOneWidget,
+    );
+    await tester.fling(
+      find.byKey(const Key('communityOwnFollowingPullRefresh')),
+      const Offset(0, 420),
+      950,
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Alice'), findsNothing);
 
     // Returning to the profile updates the same numeric control immediately.
     Navigator.of(
@@ -442,6 +469,10 @@ void main() {
       find.byKey(const Key('communityOwnFollowingCountButton')),
       findsOneWidget,
     );
+    await tester.tap(count);
+    await tester.pumpAndSettle();
+    expect(find.byType(CommunityFollowingListScreen), findsOneWidget);
+    expect(find.text('Alice'), findsNothing);
     expect(tester.takeException(), isNull);
   });
 

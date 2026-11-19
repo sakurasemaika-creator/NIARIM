@@ -2697,6 +2697,7 @@
       }
     }
   },
+  "communityAuthorSortPosted": "게시 날짜",
   "communityAuthorTabWorks": "작품",
   "communityAuthorTabBookmarks": "북마크",
   "communityBookmarksHiddenMessage": "북마크한 작품을 아직 불러오지 못했거나 지금은 공개되어 있지 않습니다",

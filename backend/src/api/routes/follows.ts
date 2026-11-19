@@ -201,6 +201,8 @@ export async function getFollowing(
   const result = await ddb.send(
     new QueryCommand({
       TableName: tableName(),
+      // A reload after an unfollow must see the committed deletion.
+      ConsistentRead: true,
       KeyConditionExpression: "pk = :pk AND begins_with(sk, :prefix)",
       ExpressionAttributeValues: {
         ":pk": `USER#${followerId}`,

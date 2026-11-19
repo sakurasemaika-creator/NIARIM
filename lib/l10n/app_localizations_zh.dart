@@ -6316,6 +6316,9 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String get communityAuthorSortPosted => '投稿时间';
+
+  @override
   String get communityAuthorTabWorks => '作品';
 
   @override
@@ -16554,6 +16557,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String communityRepostedByBadge(String name) {
     return '$name轉發了';
   }
+
+  @override
+  String get communityAuthorSortPosted => '投稿時間';
 
   @override
   String get communityAuthorTabWorks => '作品';

@@ -5,6 +5,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../../l10n/community_plaza_labels.dart';
 import '../../../services/community_service.dart';
 import '../../../widgets/collection_action_controls.dart';
+import '../../../widgets/collection_tile_layout.dart';
 
 import 'package:provider/provider.dart';
 
@@ -484,6 +485,7 @@ class CommunityWorkGrid extends StatelessWidget {
   /// （どれだけスクロールしても出てこない）。
   final double bottomPadding;
   final double minTileWidth;
+  final CollectionViewSize? viewSize;
 
   const CommunityWorkGrid({
     super.key,
@@ -496,6 +498,7 @@ class CommunityWorkGrid extends StatelessWidget {
     this.repostedByNames,
     this.bottomPadding = 12,
     this.minTileWidth = 160,
+    this.viewSize,
   });
 
   @override
@@ -504,9 +507,21 @@ class CommunityWorkGrid extends StatelessWidget {
       final service = context.watch<CommunityService>();
       final scale = MediaQuery.textScalerOf(context).scale(13) / 13;
       final minimumWidth = minTileWidth * (scale < 1 ? 1 : scale);
-      final columns = ((constraints.maxWidth - 24 + 10) / (minimumWidth + 10))
-          .floor()
-          .clamp(1, 6);
+      final extent = switch (viewSize) {
+        CollectionViewSize.small => kCollectionTileSmallExtent,
+        CollectionViewSize.medium => kCollectionTileMediumExtent,
+        CollectionViewSize.large => kCollectionTileLargeExtent,
+        null => null,
+      };
+      final columns = extent == null
+          ? ((constraints.maxWidth - 24 + 10) / (minimumWidth + 10))
+                .floor()
+                .clamp(1, 6)
+          : collectionTileColumnCount(
+              extent,
+              constraints.maxWidth - 24,
+              textScale: scale,
+            );
       final width = (constraints.maxWidth - 24 - 10 * (columns - 1)) / columns;
       return SizedBox(
         width: constraints.maxWidth,

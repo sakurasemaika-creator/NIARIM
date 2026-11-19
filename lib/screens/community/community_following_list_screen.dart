@@ -23,12 +23,14 @@ class _CommunityFollowingListScreenState
     extends State<CommunityFollowingListScreen> {
   final ScrollController _scrollController = ScrollController();
   final Map<String, String> _recentlyUnfollowed = {};
-  final Set<String> _togglingIds = {};
+  final Map<String, Future<void>> _pendingToggles = {};
+  late final int _accountRevision;
   bool _refreshing = false;
 
   @override
   void initState() {
     super.initState();
+    _accountRevision = context.read<CommunityService>().accountRevision;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) _refresh();
     });
@@ -36,39 +38,50 @@ class _CommunityFollowingListScreenState
 
   Future<void> _refresh() async {
     if (_refreshing || !mounted) return;
-    _refreshing = true;
+    final service = context.read<CommunityService>();
+    if (service.accountRevision != _accountRevision) return;
+    setState(() => _refreshing = true);
     try {
-      final updated = await context
-          .read<CommunityService>()
-          .refreshOwnFollowing();
-      if (updated && mounted) {
-        setState(_recentlyUnfollowed.clear);
-      }
+      // A refresh started just after an unfollow must read after the write.
+      await Future.wait(_pendingToggles.values.toList());
+      if (!mounted || service.accountRevision != _accountRevision) return;
+      await service.refreshOwnFollowing();
     } finally {
-      _refreshing = false;
+      if (mounted) {
+        setState(() {
+          _recentlyUnfollowed.clear();
+          _refreshing = false;
+        });
+      }
     }
   }
 
   Future<void> _toggle(String id, String name) async {
-    if (_togglingIds.contains(id)) return;
-    setState(() => _togglingIds.add(id));
+    if (_refreshing || _pendingToggles.containsKey(id)) return;
     final service = context.read<CommunityService>();
-    await reportFailedCommunityEdit(
+    if (service.accountRevision != _accountRevision) return;
+    if (service.isFavoriteAuthor(id)) _recentlyUnfollowed[id] = name;
+    final mutation = reportFailedCommunityEdit(
       context,
       service,
       service.toggleFavoriteAuthor(id),
     );
-    if (!mounted) return;
     setState(() {
-      if (service.isFavoriteAuthor(id)) {
-        _recentlyUnfollowed.remove(id);
-      } else {
-        // Keep an unfollowed author available in this session, so the viewer
-        // can follow them again without leaving the list or losing the name.
-        _recentlyUnfollowed[id] = name;
-      }
-      _togglingIds.remove(id);
+      _pendingToggles[id] = mutation;
     });
+    try {
+      await mutation;
+    } finally {
+      if (mounted) {
+        setState(() {
+          if (service.accountRevision != _accountRevision ||
+              service.isFavoriteAuthor(id)) {
+            _recentlyUnfollowed.remove(id);
+          }
+          _pendingToggles.remove(id);
+        });
+      }
+    }
   }
 
   @override
@@ -80,10 +93,13 @@ class _CommunityFollowingListScreenState
   @override
   Widget build(BuildContext context) {
     final service = context.watch<CommunityService>();
-    final ids = service.favoriteAuthorIds.toList();
-    final removed = _recentlyUnfollowed.entries
-        .where((entry) => !service.isFavoriteAuthor(entry.key))
-        .toList();
+    final isSameAccount = service.accountRevision == _accountRevision;
+    final ids = isSameAccount ? service.favoriteAuthorIds.toList() : <String>[];
+    final removed = isSameAccount
+        ? _recentlyUnfollowed.entries
+              .where((entry) => !service.isFavoriteAuthor(entry.key))
+              .toList()
+        : <MapEntry<String, String>>[];
     final isEmpty = ids.isEmpty && removed.isEmpty;
     final l10n = AppLocalizations.of(context)!;
 
@@ -105,7 +121,9 @@ class _CommunityFollowingListScreenState
                 ? 'communityFollowingUnfollow_$id'
                 : 'communityFollowingFollow_$id',
           ),
-          onPressed: _togglingIds.contains(id) ? null : () => _toggle(id, name),
+          onPressed: _refreshing || _pendingToggles.containsKey(id)
+              ? null
+              : () => _toggle(id, name),
           child: Text(
             following
                 ? l10n.communityUnfollowAction
@@ -116,11 +134,18 @@ class _CommunityFollowingListScreenState
     }
 
     return Scaffold(
-      appBar: AppBar(title: FitOrHideTitle(l10n.communityTabFavoriteAuthors)),
+      appBar: AppBar(
+        leading: ModalRoute.of(context)?.canPop == true
+            ? const BackButton()
+            : null,
+        title: FitOrHideTitle(l10n.communityTabFavoriteAuthors),
+      ),
       body: CommunityTopEdgeRefresh(
         key: const Key('communityOwnFollowingPullRefresh'),
         controller: _scrollController,
-        enabled: service.isBackendConnected,
+        enabled:
+            isSameAccount &&
+            (service.isBackendConnected || _recentlyUnfollowed.isNotEmpty),
         onRefresh: _refresh,
         child: ListView.builder(
           key: const Key('communityOwnFollowingList'),

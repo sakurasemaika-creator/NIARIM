@@ -2697,6 +2697,7 @@
       }
     }
   },
+  "communityAuthorSortPosted": "Date de publication",
   "communityAuthorTabWorks": "Œuvres",
   "communityAuthorTabBookmarks": "Favoris",
   "communityBookmarksHiddenMessage": "Vos œuvres en favoris ne sont pas encore chargées ou ne sont plus publiques",

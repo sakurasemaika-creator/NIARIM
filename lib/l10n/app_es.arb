@@ -2697,6 +2697,7 @@
       }
     }
   },
+  "communityAuthorSortPosted": "Fecha de publicación",
   "communityAuthorTabWorks": "Obras",
   "communityAuthorTabBookmarks": "Marcadores",
   "communityBookmarksHiddenMessage": "Tus obras marcadas aún no se han cargado o ya no son públicas",

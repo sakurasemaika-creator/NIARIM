@@ -442,6 +442,24 @@ class _HomeScreenState extends State<HomeScreen>
     }
   }
 
+  double _homeSwipeDistance = 0;
+
+  void _finishHomeSwipe(DragEndDetails details) {
+    final distance = _homeSwipeDistance;
+    final speed = details.primaryVelocity ?? 0;
+    final scaffold = _scaffoldKey.currentState;
+    if (scaffold == null || _endDrawerReleased) return;
+    final swipeLeft = distance < -48 || (distance < 0 && speed < -400);
+    final swipeRight = distance > 48 || (distance > 0 && speed > 400);
+    if (scaffold.isEndDrawerOpen) {
+      if (swipeRight) scaffold.closeEndDrawer();
+    } else if (swipeLeft) {
+      scaffold.openEndDrawer();
+    } else if (swipeRight && _currentTabIndex > 0) {
+      _tabController.animateTo(_currentTabIndex - 1);
+    }
+  }
+
   // 引き出し（画面の外へ出たかを見る）と、閉じた引き出しを1フレームだけ
   // 外している間（[_releaseClosedEndDrawer]）。
   final _endDrawerKey = GlobalKey(debugLabel: 'homeEndDrawer');
@@ -1253,20 +1271,14 @@ class _HomeScreenState extends State<HomeScreen>
                 key: const Key('homeMenuButton'),
                 icon: const Icon(Icons.menu),
                 tooltip: MaterialLocalizations.of(context).openAppDrawerTooltip,
-                onPressed: () {
-                  // Refresh server-owned mission status only when the drawer
-                  // is opened, never with an endless polling timer.
-                  setState(() => _missionDrawerRefreshToken++);
-                  _scaffoldKey.currentState?.openEndDrawer();
-                },
+                onPressed: () => _scaffoldKey.currentState?.openEndDrawer(),
               ).tooltipsBelowTabs(),
             ],
             // 標準のTabBarは項目名の文字数に関わらず均等4分割になるため、
             // 「プロジェクト」のように長い項目名が「共有」等の短い項目名と
             // 同じ幅しか確保できず、文字が見切れてしまっていた。各項目名の
             // 実際の描画幅を計測し、その比率でタブ幅を配分する独自実装へ
-            // 差し替える（TabControllerは共通のまま、TabBarViewとの
-            // スワイプ連動はそのまま維持される）。
+            // 差し替える（TabControllerはTabBarViewと共通）。
             bottom: PreferredSize(
               preferredSize: const Size.fromHeight(_kHomeTabBarHeight),
               child: KeyedSubtree(
@@ -1292,8 +1304,12 @@ class _HomeScreenState extends State<HomeScreen>
                 ),
           // 引き出しの開閉で画面のショートカットを組み替える
           // （_buildShortcutBindings）。
+          drawerBarrierDismissible: true,
           onEndDrawerChanged: (open) {
-            if (mounted) setState(() {});
+            if (!mounted) return;
+            setState(() {
+              if (open) _missionDrawerRefreshToken++;
+            });
             if (!open) _releaseClosedEndDrawer();
           },
           body: Column(
@@ -1318,6 +1334,8 @@ class _HomeScreenState extends State<HomeScreen>
                   },
                   child: TabBarView(
                     controller: _tabController,
+                    // The home gesture handles left swipes for the menu.
+                    physics: const NeverScrollableScrollPhysics(),
                     children: [
                       ProjectListWidget(
                         scrollController: _projectScrollController,
@@ -1541,7 +1559,24 @@ class _HomeScreenState extends State<HomeScreen>
             context.pop();
           }
         },
-        child: FocusTraversalGroup(policy: _homeTraversal, child: content),
+        child: FocusTraversalGroup(
+          policy: _homeTraversal,
+          child: GestureDetector(
+            behavior: HitTestBehavior.translucent,
+            supportedDevices: const {
+              PointerDeviceKind.touch,
+              PointerDeviceKind.stylus,
+              PointerDeviceKind.invertedStylus,
+              PointerDeviceKind.trackpad,
+            },
+            dragStartBehavior: DragStartBehavior.down,
+            onHorizontalDragStart: (_) => _homeSwipeDistance = 0,
+            onHorizontalDragUpdate: (details) =>
+                _homeSwipeDistance += details.primaryDelta ?? 0,
+            onHorizontalDragEnd: _finishHomeSwipe,
+            child: content,
+          ),
+        ),
       ),
     );
   }

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -6,7 +8,12 @@ import '../../l10n/community_plaza_labels.dart';
 import '../../models/community_work.dart';
 import '../../services/community_preview_service.dart';
 import '../../services/community_service.dart';
+import '../../utils/name_collation.dart';
+import '../../widgets/checked_menu_item.dart';
+import '../../widgets/collection_tile_layout.dart';
+import '../../widgets/sort_mode_control.dart';
 import '../../widgets/responsive.dart';
+import '../../widgets/fit_or_hide_title.dart';
 import '../../widgets/ad_banner_mock_widget.dart';
 import 'community_edit_feedback.dart';
 import 'community_following_list_screen.dart';
@@ -125,27 +132,57 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
   int _visibleWorks = CommunityService.pageSize;
   bool _loadingMoreWorks = false;
 
+  CollectionViewSize _viewSize = CollectionViewSize.medium;
+  bool _sortByName = false;
+  bool _sortAscending = false;
+
+  bool get _needsCompleteList => _sortByName || _sortAscending;
+
+  List<CommunityWork> _sortWorks(Iterable<CommunityWork> works) {
+    final byName = nameComparator<CommunityWork>((work) => work.title);
+    return works.toList()..sort((a, b) {
+      final order = _sortByName
+          ? byName(a, b)
+          : a.postedAt.compareTo(b.postedAt);
+      if (order == 0) return a.id.compareTo(b.id);
+      return _sortAscending ? order : -order;
+    });
+  }
+
+  void _updateSort({bool? byName, bool? ascending}) {
+    setState(() {
+      if (byName != null && byName != _sortByName) {
+        _sortByName = byName;
+        _sortAscending = byName;
+      }
+      if (ascending != null) _sortAscending = ascending;
+      _visibleWorks = CommunityService.pageSize;
+    });
+    if (_authorWorksScroll.hasClients) _authorWorksScroll.jumpTo(0);
+    if (_bookmarksScroll.hasClients) _bookmarksScroll.jumpTo(0);
+    if (_needsCompleteList) unawaited(_loadMoreAuthorWorks());
+  }
+
   void _onAuthorScroll() {
     if (!_authorWorksScroll.hasClients ||
         _authorWorksScroll.position.extentAfter > 220 ||
-        _loadingMoreWorks) {
+        _loadingMoreWorks ||
+        _refreshingAuthorWorks) {
       return;
     }
     final service = context.read<CommunityService>();
-    if (service.api == null) {
-      final count = _videoTypeFilter
-          .apply(
-            service.worksByAuthor(
-              widget.authorId,
-              includeHidden: service.isOwnAuthor(widget.authorId),
-            ),
-          )
-          .length;
-      if (_visibleWorks < count) {
-        setState(() => _visibleWorks += CommunityService.pageSize);
-      }
-    } else if (service.hasMoreAuthor(widget.authorId)) {
-      _loadMoreAuthorWorks();
+    final count = _videoTypeFilter
+        .apply(
+          service.worksByAuthor(
+            widget.authorId,
+            includeHidden: service.isOwnAuthor(widget.authorId),
+          ),
+        )
+        .length;
+    if (_visibleWorks < count) {
+      setState(() => _visibleWorks += CommunityService.pageSize);
+    } else if (!_needsCompleteList) {
+      unawaited(_loadMoreAuthorWorks());
     }
   }
 
@@ -153,15 +190,15 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
     if (_refreshingAuthorWorks || _loadingMoreWorks) return;
     final service = context.read<CommunityService>();
     if (!service.isBackendConnected) return;
-    _refreshingAuthorWorks = true;
+    setState(() => _refreshingAuthorWorks = true);
     try {
-      final refreshed = await service.refreshAuthorWorks(widget.authorId);
-      if (refreshed && mounted) {
-        setState(() => _visibleWorks = CommunityService.pageSize);
+      if (await service.refreshAuthorWorks(widget.authorId) && mounted) {
+        _visibleWorks = CommunityService.pageSize;
       }
     } finally {
-      _refreshingAuthorWorks = false;
+      if (mounted) setState(() => _refreshingAuthorWorks = false);
     }
+    if (mounted && _needsCompleteList) await _loadMoreAuthorWorks();
   }
 
   Future<void> _refreshBookmarks() async {
@@ -179,12 +216,19 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
   }
 
   Future<void> _loadMoreAuthorWorks() async {
-    if (_loadingMoreWorks) return;
+    final service = context.read<CommunityService>();
+    if (_loadingMoreWorks ||
+        _refreshingAuthorWorks ||
+        !service.hasMoreAuthor(widget.authorId)) {
+      return;
+    }
     setState(() => _loadingMoreWorks = true);
     try {
-      await context.read<CommunityService>().loadMoreAuthorWorks(
-        widget.authorId,
-      );
+      do {
+        if (!await service.loadMoreAuthorWorks(widget.authorId) || !mounted) {
+          return;
+        }
+      } while (_needsCompleteList && service.hasMoreAuthor(widget.authorId));
     } finally {
       if (mounted) setState(() => _loadingMoreWorks = false);
     }
@@ -200,7 +244,7 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
       if (!mounted) return;
       final service = context.read<CommunityService>();
       if (service.isBackendConnected) {
-        service.refreshAuthorWorks(widget.authorId);
+        unawaited(_refreshAuthorWorks());
       }
       service.refreshFollowerCount(widget.authorId);
     });
@@ -258,10 +302,12 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
     // 「作品」タブの一覧・縦画面モードにのみ「総合/縦画面のみ/横画面のみ」
     // 絞り込みを適用する。投稿数の表示（works.length）は絞り込みの影響を
     // 受けない総数のままにする。
-    final filteredWorks = _videoTypeFilter
-        .apply(works)
-        .take(_visibleWorks)
-        .toList();
+    final sortedWorks = _sortWorks(_videoTypeFilter.apply(works));
+    final filteredWorks = sortedWorks.take(_visibleWorks).toList();
+    final moreAuthorPages = communityService.hasMoreAuthor(widget.authorId);
+    final sorting =
+        _needsCompleteList && (_refreshingAuthorWorks || moreAuthorPages);
+    final moreVisibleWorks = sortedWorks.length > filteredWorks.length;
     final followerCount = communityService.followerCountOf(widget.authorId);
     final followingCount = communityService.followingCountOf(widget.authorId);
     final bookmarkedIds = communityService.bookmarkedIds;
@@ -313,10 +359,88 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
     void openWork(CommunityWork work) =>
         context.read<CommunityPreviewService>().show(work);
 
+    Widget workGrid(List<CommunityWork> visibleWorks) => CommunityWorkGrid(
+      works: visibleWorks,
+      viewSize: _viewSize,
+      bookmarkedIds: bookmarkedIds,
+      onTapWork: openWork,
+      onToggleBookmark: toggleBookmark,
+    );
+
+    final worksPane = CommunityTopEdgeRefresh(
+      key: const Key('communityAuthorWorksPullRefresh'),
+      controller: _authorWorksScroll,
+      enabled: communityService.isBackendConnected,
+      onRefresh: _refreshAuthorWorks,
+      child: SingleChildScrollView(
+        controller: _authorWorksScroll,
+        physics: const AlwaysScrollableScrollPhysics(),
+        child: Column(
+          children: [
+            if (!sorting && filteredWorks.isNotEmpty) workGrid(filteredWorks),
+            if (!sorting &&
+                filteredWorks.isEmpty &&
+                !_loadingMoreWorks &&
+                !_refreshingAuthorWorks)
+              Padding(
+                padding: const EdgeInsets.all(32),
+                child: Text(l10n.communityNoWorksMessage),
+              ),
+            if (_loadingMoreWorks || (sorting && _refreshingAuthorWorks))
+              const Padding(
+                padding: EdgeInsets.all(16),
+                child: CircularProgressIndicator(),
+              )
+            else if (moreAuthorPages || moreVisibleWorks)
+              TextButton.icon(
+                key: const Key('communityAuthorLoadNextPage'),
+                onPressed: () {
+                  if (!sorting && moreVisibleWorks) {
+                    setState(() => _visibleWorks += CommunityService.pageSize);
+                  } else {
+                    unawaited(_loadMoreAuthorWorks());
+                  }
+                },
+                icon: Icon(sorting ? Icons.refresh : Icons.expand_more),
+                label: Text(
+                  sorting
+                      ? l10n.communityRetry
+                      : MaterialLocalizations.of(context).moreButtonTooltip,
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.authorName),
+        leading: ModalRoute.of(context)?.canPop == true
+            ? const BackButton()
+            : null,
+        title: FitOrHideTitle(widget.authorName),
         actions: [
+          PopupMenuButton<CollectionViewSize>(
+            key: const Key('communityAuthorViewSize'),
+            icon: const Icon(Icons.view_module),
+            tooltip: l10n.homeViewModeTooltip,
+            position: PopupMenuPosition.under,
+            onSelected: (size) => setState(() => _viewSize = size),
+            itemBuilder: (_) => [
+              MenuSectionHeading<CollectionViewSize>(l10n.homeViewSizeHeading),
+              for (final size in CollectionViewSize.values)
+                checkedMenuItem(
+                  context,
+                  value: size,
+                  checked: _viewSize == size,
+                  label: switch (size) {
+                    CollectionViewSize.large => l10n.homeViewModeLarge,
+                    CollectionViewSize.medium => l10n.homeViewModeMedium,
+                    CollectionViewSize.small => l10n.homeViewModeSmall,
+                  },
+                ),
+            ],
+          ),
           VideoTypeFilterButton(
             value: _videoTypeFilter,
             onChanged: (v) => setState(() => _videoTypeFilter = v),
@@ -327,7 +451,9 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
               tooltip: l10n.communityShortsModeTooltip,
               // ショートモードは「作品」タブの一覧を対象にする
               // （ブックマーク一覧は本来の投稿順ではないため対象外）。
-              onPressed: () => _openShortsMode(filteredWorks, bookmarkedIds),
+              onPressed: sorting
+                  ? null
+                  : () => _openShortsMode(filteredWorks, bookmarkedIds),
             ),
         ],
         bottom: isSelf
@@ -451,61 +577,23 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
                   ),
                 ),
               ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: SortModeControl(
+                dateLabel: l10n.communityAuthorSortPosted,
+                sortByName: _sortByName,
+                sortAscending: _sortAscending,
+                onSortByNameChanged: (byName) => _updateSort(byName: byName),
+                onToggleDirection: () =>
+                    _updateSort(ascending: !_sortAscending),
+              ),
+            ),
             Expanded(
               child: isSelf
                   ? TabBarView(
                       controller: _tabController,
                       children: [
-                        // ─── 作品タブ ───────────────────────────────────
-                        CommunityTopEdgeRefresh(
-                          key: const Key('communityAuthorWorksPullRefresh'),
-                          controller: _authorWorksScroll,
-                          enabled: communityService.isBackendConnected,
-                          onRefresh: _refreshAuthorWorks,
-                          child: SingleChildScrollView(
-                            controller: _authorWorksScroll,
-                            physics: const AlwaysScrollableScrollPhysics(),
-                            child: filteredWorks.isEmpty
-                                ? Column(
-                                    children: [
-                                      Padding(
-                                        padding: const EdgeInsets.all(32),
-                                        child: Center(
-                                          child: Text(
-                                            l10n.communityNoWorksMessage,
-                                            style: TextStyle(
-                                              color: scheme.onSurfaceVariant,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                      if (communityService.hasMoreAuthor(
-                                        widget.authorId,
-                                      ))
-                                        TextButton.icon(
-                                          key: const Key(
-                                            'communityAuthorLoadNextPage',
-                                          ),
-                                          onPressed: _loadingMoreWorks
-                                              ? null
-                                              : _loadMoreAuthorWorks,
-                                          icon: const Icon(Icons.expand_more),
-                                          label: Text(
-                                            MaterialLocalizations.of(
-                                              context,
-                                            ).moreButtonTooltip,
-                                          ),
-                                        ),
-                                    ],
-                                  )
-                                : CommunityWorkGrid(
-                                    works: filteredWorks,
-                                    bookmarkedIds: bookmarkedIds,
-                                    onTapWork: openWork,
-                                    onToggleBookmark: toggleBookmark,
-                                  ),
-                          ),
-                        ),
+                        worksPane,
                         // Private bookmarks are visible to their owner only.
                         CommunityTopEdgeRefresh(
                           key: const Key('communityAuthorBookmarksPullRefresh'),
@@ -531,60 +619,12 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
                                       ),
                                     ),
                                   )
-                                : CommunityWorkGrid(
-                                    works: bookmarkedWorks,
-                                    bookmarkedIds: bookmarkedIds,
-                                    onTapWork: openWork,
-                                    onToggleBookmark: toggleBookmark,
-                                  ),
+                                : workGrid(_sortWorks(bookmarkedWorks)),
                           ),
                         ),
                       ],
                     )
-                  : CommunityTopEdgeRefresh(
-                      key: const Key('communityAuthorWorksPullRefresh'),
-                      controller: _authorWorksScroll,
-                      enabled: communityService.isBackendConnected,
-                      onRefresh: _refreshAuthorWorks,
-                      child: SingleChildScrollView(
-                        controller: _authorWorksScroll,
-                        physics: const AlwaysScrollableScrollPhysics(),
-                        child: filteredWorks.isEmpty
-                            ? Column(
-                                children: [
-                                  Padding(
-                                    padding: const EdgeInsets.all(32),
-                                    child: Center(
-                                      child: Text(l10n.communityNoWorksMessage),
-                                    ),
-                                  ),
-                                  if (communityService.hasMoreAuthor(
-                                    widget.authorId,
-                                  ))
-                                    TextButton.icon(
-                                      key: const Key(
-                                        'communityAuthorLoadNextPage',
-                                      ),
-                                      onPressed: _loadingMoreWorks
-                                          ? null
-                                          : _loadMoreAuthorWorks,
-                                      icon: const Icon(Icons.expand_more),
-                                      label: Text(
-                                        MaterialLocalizations.of(
-                                          context,
-                                        ).moreButtonTooltip,
-                                      ),
-                                    ),
-                                ],
-                              )
-                            : CommunityWorkGrid(
-                                works: filteredWorks,
-                                bookmarkedIds: bookmarkedIds,
-                                onTapWork: openWork,
-                                onToggleBookmark: toggleBookmark,
-                              ),
-                      ),
-                    ),
+                  : worksPane,
             ),
           ],
         ),

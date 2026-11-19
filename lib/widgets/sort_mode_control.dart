@@ -11,6 +11,7 @@ enum _SortMenuAction { name, updated, direction }
 /// ゴミ箱一覧など、名前と更新日時で並び替えられる一覧画面すべてで
 /// 同じ見た目・操作性にするために切り出している。
 class SortModeControl extends StatelessWidget {
+  final String? dateLabel;
   final bool sortByName;
   final bool sortAscending;
   final ValueChanged<bool> onSortByNameChanged;
@@ -18,6 +19,7 @@ class SortModeControl extends StatelessWidget {
 
   const SortModeControl({
     super.key,
+    this.dateLabel,
     required this.sortByName,
     required this.sortAscending,
     required this.onSortByNameChanged,
@@ -27,9 +29,8 @@ class SortModeControl extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final fieldLabel = sortByName
-        ? l10n.homeSortFieldName
-        : l10n.homeSortFieldUpdated;
+    final dateFieldLabel = dateLabel ?? l10n.homeSortFieldUpdated;
+    final fieldLabel = sortByName ? l10n.homeSortFieldName : dateFieldLabel;
     const fieldStyle = TextStyle(
       fontSize: 16,
       fontWeight: FontWeight.w500,
@@ -61,7 +62,7 @@ class SortModeControl extends StatelessWidget {
               ),
               PopupMenuItem(
                 value: _SortMenuAction.updated,
-                child: Text(l10n.homeSortFieldUpdated),
+                child: Text(dateFieldLabel),
               ),
               const PopupMenuDivider(),
               PopupMenuItem(
@@ -126,7 +127,7 @@ class SortModeControl extends StatelessWidget {
               context,
               value: false,
               checked: !sortByName,
-              label: l10n.homeSortFieldUpdated,
+              label: dateFieldLabel,
             ),
           ],
           child: compact

@@ -2696,6 +2696,7 @@
       }
     }
   },
+  "communityAuthorSortPosted": "投稿時間",
   "communityAuthorTabWorks": "作品",
   "communityAuthorTabBookmarks": "收藏",
   "communityBookmarksHiddenMessage": "收藏的作品尚未載入，或目前未公開",

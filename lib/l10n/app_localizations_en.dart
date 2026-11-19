@@ -6646,6 +6646,9 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get communityAuthorSortPosted => 'Date posted';
+
+  @override
   String get communityAuthorTabWorks => 'Works';
 
   @override

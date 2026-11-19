@@ -111,7 +111,12 @@ class _CommunityFollowersScreenState extends State<CommunityFollowersScreen> {
     }
 
     return Scaffold(
-      appBar: AppBar(title: FitOrHideTitle(l10n.communityFollowersTitle)),
+      appBar: AppBar(
+        leading: ModalRoute.of(context)?.canPop == true
+            ? const BackButton()
+            : null,
+        title: FitOrHideTitle(l10n.communityFollowersTitle),
+      ),
       body: !_isOwner(service)
           ? Center(child: Text(l10n.communityErrorSignInRequired))
           : CommunityTopEdgeRefresh(

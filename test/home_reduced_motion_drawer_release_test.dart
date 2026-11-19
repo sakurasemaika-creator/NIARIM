@@ -100,6 +100,50 @@ void main() {
     },
   };
 
+  testWidgets('Home opens from the middle and closes by scrim or right swipe', (
+    tester,
+  ) async {
+    final m = HomeMatrix(tester, 'ja', run);
+    await m.begin();
+    try {
+      await m.start();
+      await m.resize(const Size(390, 700));
+
+      Future<void> swipeLeft() async {
+        await tester.flingFrom(
+          const Offset(250, 300),
+          const Offset(-160, 0),
+          900,
+        );
+        await m.frames(40);
+        expect(drawerGone(m), isFalse);
+        expect(m.tabIndex, 0);
+      }
+
+      await swipeLeft();
+      final drawer = tester.getRect(find.byType(Drawer));
+      await tester.tapAt(Offset(drawer.left / 2, 300));
+      await m.frames(40);
+      expect(drawerGone(m), isTrue);
+
+      await swipeLeft();
+      await tester.flingFrom(drawer.center, const Offset(200, 0), 900);
+      await m.frames(40);
+      expect(drawerGone(m), isTrue);
+      expect(tabPressable(m), isTrue);
+
+      await tester.tap(find.byKey(const ValueKey('home_tab_1')));
+      await m.frames(30);
+      expect(m.tabIndex, 1);
+      await tester.flingFrom(const Offset(100, 300), const Offset(160, 0), 900);
+      await m.frames(30);
+      expect(m.tabIndex, 0);
+      expect(tester.takeException(), isNull);
+    } finally {
+      debugDisableShadows = true;
+    }
+  });
+
   for (final reduced in const [true, false]) {
     testWidgets('${reduced ? 'reduced motion' : 'motion on'}: Home takes '
         'taps on the frame after the closed drawer leaves the screen', (

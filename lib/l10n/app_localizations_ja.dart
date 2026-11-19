@@ -6379,6 +6379,9 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
+  String get communityAuthorSortPosted => '投稿日時';
+
+  @override
   String get communityAuthorTabWorks => '作品';
 
   @override
@@ -10337,10 +10340,10 @@ class AppLocalizationsJa extends AppLocalizations {
   String get communityTagDeleteConfirm => '本当にこのタグを削除しますか？';
 
   @override
-  String get communityTagLockAction => 'ロックする';
+  String get communityTagLockAction => 'ロック';
 
   @override
-  String get communityTagUnlockAction => '解除する';
+  String get communityTagUnlockAction => '解除';
 
   @override
   String get communityPreviewStart => '動画の先頭へ';

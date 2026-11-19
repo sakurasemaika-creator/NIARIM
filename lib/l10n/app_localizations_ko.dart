@@ -6414,6 +6414,9 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
+  String get communityAuthorSortPosted => '게시 날짜';
+
+  @override
   String get communityAuthorTabWorks => '작품';
 
   @override

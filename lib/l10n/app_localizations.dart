@@ -11577,6 +11577,12 @@ abstract class AppLocalizations {
   /// **'{name}さんがリポスト'**
   String communityRepostedByBadge(String name);
 
+  /// No description provided for @communityAuthorSortPosted.
+  ///
+  /// In ja, this message translates to:
+  /// **'投稿日時'**
+  String get communityAuthorSortPosted;
+
   /// No description provided for @communityAuthorTabWorks.
   ///
   /// In ja, this message translates to:
@@ -18198,13 +18204,13 @@ abstract class AppLocalizations {
   /// No description provided for @communityTagLockAction.
   ///
   /// In ja, this message translates to:
-  /// **'ロックする'**
+  /// **'ロック'**
   String get communityTagLockAction;
 
   /// No description provided for @communityTagUnlockAction.
   ///
   /// In ja, this message translates to:
-  /// **'解除する'**
+  /// **'解除'**
   String get communityTagUnlockAction;
 
   /// No description provided for @communityPreviewStart.

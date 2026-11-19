@@ -9,6 +9,8 @@ import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/screens/community/community_author_works_screen.dart';
 import 'package:niarim/screens/community/community_follow_notifications_screen.dart';
 import 'package:niarim/screens/community/community_my_works_screen.dart';
+import 'package:niarim/screens/community/widgets/community_work_card.dart';
+import 'package:niarim/widgets/sort_mode_control.dart';
 import 'package:niarim/services/api/community_api.dart';
 import 'package:niarim/services/api/niarim_api_client.dart';
 import 'package:niarim/services/community_service.dart';
@@ -176,6 +178,89 @@ void main() {
     expect(authorFetches, 2);
     expect(find.text(title), findsOneWidget);
     expect(find.text('Other'), findsWidgets);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('author sizes and sorts across server pages', (tester) async {
+    var pageCalls = 0;
+    final service = _service(
+      MockClient((request) async {
+        if (request.url.path != '/users/other/works') return _reply({});
+        pageCalls++;
+        if (request.url.queryParameters['cursor'] != null) {
+          return _reply({
+            'works': [
+              {
+                ..._work('other', 'Alpha'),
+                'workId': 'video00002',
+                'postedAt': '2026-10-01T12:00:00Z',
+              },
+            ],
+          });
+        }
+        return _reply({
+          'works': [_work('other', 'Zulu')],
+          'nextCursor': 'page-2',
+        });
+      }),
+    );
+    addTearDown(service.dispose);
+    await tester.binding.setSurfaceSize(const Size(390, 740));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    const author = CommunityAuthorWorksScreen(
+      authorId: 'other',
+      authorName: 'Other',
+    );
+    await tester.pumpWidget(
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider.value(value: service),
+          ChangeNotifierProvider(create: (_) => SettingsService()),
+        ],
+        child: const MaterialApp(
+          locale: Locale('ja'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: author,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(pageCalls, 1);
+
+    final card = find.byType(CommunityWorkCard);
+    final mediumWidth = tester.getSize(card).width;
+    await tester.tap(find.byKey(const Key('communityAuthorViewSize')));
+    await tester.pumpAndSettle();
+    final l10n = lookupAppLocalizations(const Locale('ja'));
+    await tester.tap(find.text(l10n.homeViewModeSmall));
+    await tester.pumpAndSettle();
+    expect(tester.getSize(card).width, lessThan(mediumWidth));
+
+    final sort = find.byType(SortModeControl);
+    await tester.tap(
+      find.descendant(of: sort, matching: find.byIcon(Icons.arrow_downward)),
+    );
+    await tester.pumpAndSettle();
+    List<String> titles() => tester
+        .widget<CommunityWorkGrid>(find.byType(CommunityWorkGrid))
+        .works
+        .map((work) => work.title)
+        .toList();
+    expect(pageCalls, 2);
+    expect(titles(), ['Alpha', 'Zulu']);
+
+    await tester.tap(
+      find.descendant(of: sort, matching: find.byIcon(Icons.arrow_upward)),
+    );
+    await tester.pumpAndSettle();
+    expect(titles(), ['Zulu', 'Alpha']);
+
+    await tester.tap(find.text(l10n.communityAuthorSortPosted));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(l10n.homeSortFieldName).last);
+    await tester.pumpAndSettle();
+    expect(titles(), ['Alpha', 'Zulu']);
     expect(tester.takeException(), isNull);
   });
 

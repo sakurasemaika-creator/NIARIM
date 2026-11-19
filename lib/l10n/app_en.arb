@@ -2718,6 +2718,7 @@
       }
     }
   },
+  "communityAuthorSortPosted": "Date posted",
   "communityAuthorTabWorks": "Works",
   "communityAuthorTabBookmarks": "Bookmarks",
   "communityBookmarksHiddenMessage": "Your bookmarked works have not loaded yet or are no longer public",

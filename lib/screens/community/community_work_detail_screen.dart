@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -327,40 +328,85 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
     final accountRevision = service.accountRevision;
     final action = await showDialog<_TagAction>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(tag),
-        content: Text(
-          locked ? l10n.communityTagLockedMessage : l10n.communityTagEditPrompt,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(locked && !owner ? l10n.commonOk : l10n.commonCancel),
+      builder: (ctx) {
+        final actions = [
+          (
+            value: null,
+            label: locked && !owner ? l10n.commonOk : l10n.commonCancel,
+            icon: locked && !owner ? Icons.check : Icons.close,
           ),
           if (owner || !locked)
-            TextButton(
-              onPressed: () => Navigator.pop(ctx, _TagAction.edit),
-              child: Text(l10n.commonEdit),
+            (
+              value: _TagAction.edit,
+              label: l10n.commonEdit,
+              icon: Icons.edit_outlined,
             ),
           if (!locked)
-            TextButton(
-              onPressed: () => Navigator.pop(ctx, _TagAction.delete),
-              style: TextButton.styleFrom(
-                foregroundColor: Theme.of(ctx).colorScheme.error,
-              ),
-              child: Text(l10n.commonDelete),
+            (
+              value: _TagAction.delete,
+              label: l10n.commonDelete,
+              icon: Icons.delete_outline,
             ),
           if (owner)
-            TextButton(
-              onPressed: () => Navigator.pop(ctx, _TagAction.toggleLock),
-              child: Text(
-                locked
-                    ? l10n.communityTagUnlockAction
-                    : l10n.communityTagLockAction,
-              ),
+            (
+              value: _TagAction.toggleLock,
+              label: locked
+                  ? l10n.communityTagUnlockAction
+                  : l10n.communityTagLockAction,
+              icon: locked ? Icons.lock_open_outlined : Icons.lock_outline,
             ),
-        ],
-      ),
+        ];
+        final errorColor = Theme.of(ctx).colorScheme.error;
+        return AlertDialog(
+          insetPadding: const EdgeInsets.symmetric(
+            horizontal: 20,
+            vertical: 24,
+          ),
+          actionsPadding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+          title: Text(tag),
+          content: Text(
+            locked
+                ? l10n.communityTagLockedMessage
+                : l10n.communityTagEditPrompt,
+          ),
+          actions: [
+            FirstThatFits(
+              children: [
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    for (final action in actions)
+                      TextButton(
+                        onPressed: () => Navigator.pop(ctx, action.value),
+                        style: TextButton.styleFrom(
+                          foregroundColor: action.value == _TagAction.delete
+                              ? errorColor
+                              : null,
+                          minimumSize: const Size(48, 48),
+                          padding: const EdgeInsets.symmetric(horizontal: 6),
+                        ),
+                        child: Text(action.label),
+                      ),
+                  ],
+                ),
+                Wrap(
+                  children: [
+                    for (final action in actions)
+                      IconButton(
+                        tooltip: action.label,
+                        onPressed: () => Navigator.pop(ctx, action.value),
+                        color: action.value == _TagAction.delete
+                            ? errorColor
+                            : null,
+                        icon: Icon(action.icon),
+                      ),
+                  ],
+                ),
+              ],
+            ),
+          ],
+        );
+      },
     );
     if (!mounted ||
         action == null ||
@@ -459,6 +505,17 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final hasPreviousRoute = ModalRoute.of(context)?.canPop ?? false;
+    final router = GoRouter.maybeOf(context);
+    AppBar detailAppBar() => AppBar(
+      leading: hasPreviousRoute
+          ? const BackButton()
+          : router == null
+          ? null
+          : BackButton(onPressed: () => router.go('/community')),
+      title: FitOrHideTitle(l10n.communityWorkDetailTitle),
+    );
+
     final communityService = context.watch<CommunityService>();
     final currentAccount = context.watch<GoogleAuthService?>()?.account?.id;
     final ownerFallback =
@@ -479,7 +536,7 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
       final hiddenByViewer =
           work != null && work.isNiarimPublished && !work.isUnavailable;
       return Scaffold(
-        appBar: AppBar(title: FitOrHideTitle(l10n.communityWorkDetailTitle)),
+        appBar: detailAppBar(),
         body: hiddenByViewer
             ? Center(
                 child: Padding(
@@ -502,7 +559,7 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
     // Owners can still manage their own private uploads.
     if (!isOwner && _playbackStatus != CommunityPlaybackStatus.available) {
       return Scaffold(
-        appBar: AppBar(title: FitOrHideTitle(l10n.communityWorkDetailTitle)),
+        appBar: detailAppBar(),
         body: Center(
           child: CommunityPlaybackStatusView(
             status: _playbackStatus,
@@ -535,7 +592,7 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
     );
 
     return Scaffold(
-      appBar: AppBar(title: FitOrHideTitle(l10n.communityWorkDetailTitle)),
+      appBar: detailAppBar(),
       body: desktopCentered(
         context,
         SingleChildScrollView(

@@ -3165,6 +3165,7 @@
       }
     }
   },
+  "communityAuthorSortPosted": "投稿日時",
   "communityAuthorTabWorks": "作品",
   "communityAuthorTabBookmarks": "ブックマーク",
   "communityBookmarksHiddenMessage": "ブックマークした作品は、まだ読み込めていないか、今は公開されていません",
@@ -6282,8 +6283,8 @@
   "communityTagLockedMessage": "このタグはロックされています。編集できるのは投稿者本人です。",
   "communityTagEditPrompt": "このタグを編集しますか？",
   "communityTagDeleteConfirm": "本当にこのタグを削除しますか？",
-  "communityTagLockAction": "ロックする",
-  "communityTagUnlockAction": "解除する",
+  "communityTagLockAction": "ロック",
+  "communityTagUnlockAction": "解除",
   "communityPreviewStart": "動画の先頭へ",
   "communityPreviewEnd": "動画の末尾へ",
   "communityPreviewBackward": "5秒戻る",

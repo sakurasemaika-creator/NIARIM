@@ -6766,6 +6766,9 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
+  String get communityAuthorSortPosted => 'Date de publication';
+
+  @override
   String get communityAuthorTabWorks => 'Œuvres';
 
   @override
