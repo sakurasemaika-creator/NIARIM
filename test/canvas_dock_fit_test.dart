@@ -67,6 +67,7 @@ void main() {
   for (final (width, height, leftHanded, toolWidth, rightWidth) in [
     (1280.0, 800.0, false, 280.0, 436.0),
     (900.0, 650.0, false, 280.0, 436.0),
+    (900.0, 650.0, true, 280.0, 436.0),
     (700.0, 560.0, false, 280.0, 436.0),
     (700.0, 560.0, true, 280.0, 436.0),
     (1280.0, 800.0, true, 280.0, 436.0),
@@ -96,6 +97,10 @@ void main() {
       tester.view.devicePixelRatio = 1;
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
+      if (width == 900 && leftHanded) {
+        tester.view.padding = const FakeViewPadding(left: 28, right: 32);
+        addTearDown(tester.view.resetPadding);
+      }
       await loadAppFonts(tester);
       final providers = (await tester.runAsync(buildAppProviders))!;
       await tester.pumpWidget(
@@ -128,8 +133,7 @@ void main() {
       expect(timelineButton.hitTestable(), findsOneWidget);
       expect(tester.getRect(timelineButton).right, lessThanOrEqualTo(width));
       final canvas = tester.getRect(find.byType(CanvasArea));
-      // 2つのドックをパネルが崩れない幅（左260・右240）まで狭めれば、
-      // 800px幅からはキャンバスに240pxが残る。それより狭い窓では残りすべて。
+      // 800px以上の窓では、セーフエリアを除いた行に240pxを確保する。
       expect(
         canvas.width,
         greaterThanOrEqualTo(

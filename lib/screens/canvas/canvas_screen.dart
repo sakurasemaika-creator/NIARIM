@@ -365,6 +365,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
 
   double _desktopDockColumnWidth({
     required bool right,
+    required double availableWidth,
     required double availableHeight,
   }) {
     final settings = context.watch<SettingsService>();
@@ -379,7 +380,10 @@ class _CanvasScreenState extends State<CanvasScreen> {
       availableHeight: availableHeight,
     );
     final sizes = DesktopDockColumnFit.columnWidths(
-      availableWidth: MediaQuery.sizeOf(context).width,
+      availableWidth: availableWidth,
+      canvasWidth: DesktopDockColumnFit.minimumCanvasWidth(
+        MediaQuery.sizeOf(context).width,
+      ),
       leftDesired: left,
       rightDesired: rightWidth,
       leftVisible: left > 0,
@@ -1693,12 +1697,14 @@ class _CanvasScreenState extends State<CanvasScreen> {
                               SizedBox(
                                 width: _desktopDockColumnWidth(
                                   right: false,
+                                  availableWidth: dockRowConstraints.maxWidth,
                                   availableHeight: dockRowConstraints.maxHeight,
                                 ),
                                 child: _dockedPanelStack(right: false),
                               ),
                               if (_desktopDockColumnWidth(
                                     right: false,
+                                    availableWidth: dockRowConstraints.maxWidth,
                                     availableHeight:
                                         dockRowConstraints.maxHeight,
                                   ) >
@@ -1957,6 +1963,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
                             if (rightDockHasPanels &&
                                 _desktopDockColumnWidth(
                                       right: true,
+                                      availableWidth:
+                                          dockRowConstraints.maxWidth,
                                       availableHeight:
                                           dockRowConstraints.maxHeight,
                                     ) >
@@ -1974,6 +1982,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                               SizedBox(
                                 width: _desktopDockColumnWidth(
                                   right: true,
+                                  availableWidth: dockRowConstraints.maxWidth,
                                   availableHeight: dockRowConstraints.maxHeight,
                                 ),
                                 child: _buildRightDockColumn(),

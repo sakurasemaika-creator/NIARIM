@@ -144,7 +144,7 @@ void main() {
     );
     expect(widths.left, closeTo(widths.right, 0.001));
     expect(
-      widths.left + widths.right + 60 + 160 + 36,
+      widths.left + widths.right + 60 + 240 + 36,
       lessThanOrEqualTo(900.001),
     );
 

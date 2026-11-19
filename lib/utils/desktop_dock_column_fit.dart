@@ -29,6 +29,9 @@ class DesktopDockColumnFit {
   static const double gap = 0;
   static const double minimumBodyHeight = 80;
 
+  static double minimumCanvasWidth(double viewportWidth) =>
+      viewportWidth >= 800 ? 240 : 160;
+
   /// Left-handed mode mirrors the visual sides without mutating saved
   /// logical dock orders. Drag/drop uses this mapping in reverse.
   static bool storedRightForPhysicalSide({
@@ -109,14 +112,15 @@ class DesktopDockColumnFit {
     required bool leftVisible,
     required bool rightVisible,
     double toolbarWidth = 60,
-    double canvasWidth = 160,
+    double? canvasWidth,
   }) {
     var left = leftVisible ? leftDesired : 0.0;
     var right = rightVisible ? rightDesired : 0.0;
     final leftGrip = leftVisible && left > 52 ? 18.0 : 0.0;
     final rightGrip = rightVisible && right > 52 ? 18.0 : 0.0;
+    final canvasBudget = canvasWidth ?? minimumCanvasWidth(availableWidth);
     final available =
-        (availableWidth - toolbarWidth - canvasWidth - leftGrip - rightGrip)
+        (availableWidth - toolbarWidth - canvasBudget - leftGrip - rightGrip)
             .clamp(0.0, double.infinity);
 
     if (left + right <= available) return (left: left, right: right);
