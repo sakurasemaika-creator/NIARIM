@@ -5993,7 +5993,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get privacyPolicyArt9Body =>
-      'Si tiene alguna consulta sobre esta Política, póngase en contacto con nosotros a través de los siguientes datos.\n(Contacto del desarrollador: aún no definido; complete una dirección de correo electrónico u otros datos de contacto antes de la publicación).';
+      'Si tiene alguna consulta sobre esta Política, póngase en contacto con nosotros a través de los siguientes datos.\nsupport@miranima-studio.com';
 
   @override
   String get privacyPolicyAdConsentButton =>
@@ -11259,4 +11259,41 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get pcTimelineZoomOut => 'Reducir la línea de tiempo';
+
+  @override
+  String get communityTagLockedMessage =>
+      'Esta etiqueta está bloqueada. Solo el autor puede editarla.';
+
+  @override
+  String get communityTagEditPrompt => '¿Editar esta etiqueta?';
+
+  @override
+  String get communityTagDeleteConfirm => '¿Eliminar esta etiqueta?';
+
+  @override
+  String get communityTagLockAction => 'Bloquear';
+
+  @override
+  String get communityTagUnlockAction => 'Desbloquear';
+
+  @override
+  String communityEstimatedFramePosition(int current, int total) {
+    return 'Fotograma aprox. $current / $total';
+  }
+
+  @override
+  String get communityPreviewBackward => 'Retroceder';
+
+  @override
+  String get communityPreviewForward => 'Avanzar';
+
+  @override
+  String get settingsSupportTitle => 'Ayuda y contacto';
+
+  @override
+  String get settingsSupportForm => 'Abrir el formulario de contacto';
+
+  @override
+  String get settingsSupportLinkFailed =>
+      'No se pudo abrir el formulario de contacto.';
 }

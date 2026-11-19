@@ -10260,7 +10260,7 @@ abstract class AppLocalizations {
   /// No description provided for @privacyPolicyArt9Body.
   ///
   /// In ja, this message translates to:
-  /// **'本ポリシーに関するお問い合わせは、下記の連絡先までご連絡ください。\n（開発者連絡先：未設定 ― 公開前にメールアドレス等の連絡先情報をご記入ください）'**
+  /// **'本ポリシーに関するお問い合わせは、下記の連絡先までご連絡ください。\nsupport@miranima-studio.com'**
   String get privacyPolicyArt9Body;
 
   /// No description provided for @privacyPolicyAdConsentButton.
@@ -18176,6 +18176,72 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'タイムラインを縮小'**
   String get pcTimelineZoomOut;
+
+  /// No description provided for @communityTagLockedMessage.
+  ///
+  /// In ja, this message translates to:
+  /// **'このタグはロックされています。編集できるのは投稿者本人です。'**
+  String get communityTagLockedMessage;
+
+  /// No description provided for @communityTagEditPrompt.
+  ///
+  /// In ja, this message translates to:
+  /// **'このタグを編集しますか？'**
+  String get communityTagEditPrompt;
+
+  /// No description provided for @communityTagDeleteConfirm.
+  ///
+  /// In ja, this message translates to:
+  /// **'本当にこのタグを削除しますか？'**
+  String get communityTagDeleteConfirm;
+
+  /// No description provided for @communityTagLockAction.
+  ///
+  /// In ja, this message translates to:
+  /// **'ロックする'**
+  String get communityTagLockAction;
+
+  /// No description provided for @communityTagUnlockAction.
+  ///
+  /// In ja, this message translates to:
+  /// **'解除する'**
+  String get communityTagUnlockAction;
+
+  /// No description provided for @communityEstimatedFramePosition.
+  ///
+  /// In ja, this message translates to:
+  /// **'約 {current} / {total} フレーム'**
+  String communityEstimatedFramePosition(int current, int total);
+
+  /// No description provided for @communityPreviewBackward.
+  ///
+  /// In ja, this message translates to:
+  /// **'前へ戻る'**
+  String get communityPreviewBackward;
+
+  /// No description provided for @communityPreviewForward.
+  ///
+  /// In ja, this message translates to:
+  /// **'次へ進む'**
+  String get communityPreviewForward;
+
+  /// No description provided for @settingsSupportTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'ヘルプ・お問い合わせ'**
+  String get settingsSupportTitle;
+
+  /// No description provided for @settingsSupportForm.
+  ///
+  /// In ja, this message translates to:
+  /// **'お問い合わせフォームを開く'**
+  String get settingsSupportForm;
+
+  /// No description provided for @settingsSupportLinkFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'お問い合わせフォームを開けませんでした。'**
+  String get settingsSupportLinkFailed;
 }
 
 class _AppLocalizationsDelegate

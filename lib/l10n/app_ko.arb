@@ -2400,7 +2400,7 @@
   "privacyPolicyArt8Title": "제8조（본 방침의 변경）",
   "privacyPolicyArt8Body": "개발자는 법령 개정, 본 앱 내용의 변경 기타 필요하다고 판단한 경우, 본 방침을 변경할 수 있습니다. 본 방침을 변경하는 경우, 변경 내용 및 효력 발생일을 본 앱 내 기타 적절한 방법으로 사전에 고지합니다.",
   "privacyPolicyArt9Title": "제9조（문의）",
-  "privacyPolicyArt9Body": "본 방침에 관한 문의는 아래 연락처로 연락해 주십시오.\n（개발자 연락처: 미설정 ― 공개 전 이메일 주소 등 연락처 정보를 기입해 주십시오）",
+  "privacyPolicyArt9Body": "본 방침에 관한 문의는 아래 연락처로 연락해 주십시오.\nsupport@miranima-studio.com",
   "privacyPolicyAdConsentButton": "광고 동의 설정 변경",
   "tipsPcDexLayoutTitle": "넓은 화면에서는 PC 모드(DeX)의 본격 레이아웃으로",
   "tipsPcDexLayoutDesc": "Chromebook이나 키보드를 연결한 태블릿, DeX 등 화면이 넓은 환경에서 사용하면 도킹 패널 방식의 전문적인 레이아웃으로 자동 전환됩니다. 워크스페이스 설정에서 항상 PC 모드·항상 모바일 모드로 수동 고정할 수도 있어, 외부 디스플레이에 연결해 작업할 때도 유용합니다.",
@@ -3904,5 +3904,16 @@
   "pcPaneInspector": "상세",
   "pcPaneProgram": "미리보기",
   "pcTimelineZoomIn": "타임라인 확대",
-  "pcTimelineZoomOut": "타임라인 축소"
+  "pcTimelineZoomOut": "타임라인 축소",
+  "communityTagLockedMessage": "이 태그는 잠겨 있습니다. 작성자만 편집할 수 있습니다.",
+  "communityTagEditPrompt": "이 태그를 편집할까요?",
+  "communityTagDeleteConfirm": "이 태그를 삭제할까요?",
+  "communityTagLockAction": "잠그기",
+  "communityTagUnlockAction": "잠금 해제",
+  "communityEstimatedFramePosition": "약 {current} / {total} 프레임",
+  "communityPreviewBackward": "뒤로 이동",
+  "communityPreviewForward": "앞으로 이동",
+  "settingsSupportTitle": "도움말 및 문의",
+  "settingsSupportForm": "문의 양식 열기",
+  "settingsSupportLinkFailed": "문의 양식을 열 수 없습니다."
 }

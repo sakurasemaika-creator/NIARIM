@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../l10n/app_localizations.dart';
 import '../../services/settings_service.dart';
@@ -24,6 +26,7 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
+  static const _supportEmail = 'support@miranima-studio.com';
   final _searchController = TextEditingController();
   bool _showSearch = false;
   String _query = '';
@@ -52,6 +55,56 @@ class _SettingsScreenState extends State<SettingsScreen> {
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(SnackBar(content: Text(l10n.settingsTipsResetDone)));
+  }
+
+  Future<void> _showSupport() async {
+    final l10n = AppLocalizations.of(context)!;
+    final messenger = ScaffoldMessenger.of(context);
+    await showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l10n.settingsSupportTitle),
+        content: const SelectableText(_supportEmail),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: Text(l10n.commonClose),
+          ),
+          TextButton.icon(
+            icon: const Icon(Icons.copy_outlined),
+            label: Text(l10n.commonCopy),
+            onPressed: () async {
+              await Clipboard.setData(const ClipboardData(text: _supportEmail));
+              if (mounted) {
+                messenger.showSnackBar(
+                  SnackBar(content: Text(l10n.qrShareCopiedSnackbar)),
+                );
+              }
+            },
+          ),
+          FilledButton.icon(
+            icon: const Icon(Icons.open_in_new),
+            label: Text(l10n.settingsSupportForm),
+            onPressed: () async {
+              var opened = false;
+              try {
+                opened = await launchUrl(
+                  Uri.https('niarim.miranima-studio.com', '/contact/'),
+                  mode: LaunchMode.externalApplication,
+                );
+              } catch (_) {
+                // The address stays available in the dialog.
+              }
+              if (!opened && mounted) {
+                messenger.showSnackBar(
+                  SnackBar(content: Text(l10n.settingsSupportLinkFailed)),
+                );
+              }
+            },
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -193,6 +246,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
         subtitle: l10n.settingsErrorLogSubtitle,
         keywords: 'エラー 不具合 報告 ログ コピー error log bug report copy',
         onTap: () => context.push('/settings/error-log'),
+        accent: Theme.of(context).colorScheme.primary,
+      ),
+      (
+        icon: Icons.support_agent_outlined,
+        title: l10n.settingsSupportTitle,
+        subtitle: _supportEmail,
+        keywords: 'サポート メール support contact help',
+        onTap: _showSupport,
         accent: Theme.of(context).colorScheme.primary,
       ),
     ];

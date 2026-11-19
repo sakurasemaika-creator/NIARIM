@@ -185,6 +185,10 @@ class _LayerPanelState extends State<LayerPanel> {
         widget.sceneId != oldWidget.sceneId ||
         widget.frameIndex != oldWidget.frameIndex) {
       _selectedFolderId = null;
+      _selectedIndex = 0;
+      _isSelectionMode = false;
+      _selectedIds.clear();
+      _selectionBaseType = null;
     }
     if (widget.selectAllToken != oldWidget.selectAllToken) {
       final allLayers = context.read<ProjectService>().layersOf(

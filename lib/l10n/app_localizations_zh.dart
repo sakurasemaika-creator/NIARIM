@@ -5601,7 +5601,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get privacyPolicyArt9Body =>
-      '有关本政策的咨询，请通过以下联系方式与我们联系。\n（开发者联系方式：尚未设定 —— 请在公开前填写电子邮件地址等联系方式信息）';
+      '有关本政策的咨询，请通过以下联系方式与我们联系。\nsupport@miranima-studio.com';
 
   @override
   String get privacyPolicyAdConsentButton => '变更广告同意设置';
@@ -10199,6 +10199,41 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get pcTimelineZoomOut => '缩小时间轴';
+
+  @override
+  String get communityTagLockedMessage => '此标签已锁定，只有投稿者可以编辑。';
+
+  @override
+  String get communityTagEditPrompt => '要编辑此标签吗？';
+
+  @override
+  String get communityTagDeleteConfirm => '确定删除此标签吗？';
+
+  @override
+  String get communityTagLockAction => '锁定';
+
+  @override
+  String get communityTagUnlockAction => '解锁';
+
+  @override
+  String communityEstimatedFramePosition(int current, int total) {
+    return '约第 $current / $total 帧';
+  }
+
+  @override
+  String get communityPreviewBackward => '后退';
+
+  @override
+  String get communityPreviewForward => '前进';
+
+  @override
+  String get settingsSupportTitle => '帮助与联系';
+
+  @override
+  String get settingsSupportForm => '打开联系表单';
+
+  @override
+  String get settingsSupportLinkFailed => '无法打开联系表单。';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -15798,7 +15833,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get privacyPolicyArt9Body =>
-      '有關本政策之相關詢問，請透過下列聯絡方式與我們聯繫。\n（開發者聯絡方式：尚未設定 —— 請於公開前填寫電子郵件地址等聯絡資訊）';
+      '有關本政策之相關詢問，請透過下列聯絡方式與我們聯繫。\nsupport@miranima-studio.com';
 
   @override
   String get privacyPolicyAdConsentButton => '變更廣告同意設定';
@@ -20398,4 +20433,39 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get pcTimelineZoomOut => '縮小時間軸';
+
+  @override
+  String get communityTagLockedMessage => '此標籤已鎖定，只有投稿者可以編輯。';
+
+  @override
+  String get communityTagEditPrompt => '要編輯此標籤嗎？';
+
+  @override
+  String get communityTagDeleteConfirm => '確定刪除此標籤嗎？';
+
+  @override
+  String get communityTagLockAction => '鎖定';
+
+  @override
+  String get communityTagUnlockAction => '解鎖';
+
+  @override
+  String communityEstimatedFramePosition(int current, int total) {
+    return '約第 $current / $total 格';
+  }
+
+  @override
+  String get communityPreviewBackward => '後退';
+
+  @override
+  String get communityPreviewForward => '前進';
+
+  @override
+  String get settingsSupportTitle => '說明與聯絡';
+
+  @override
+  String get settingsSupportForm => '開啟聯絡表單';
+
+  @override
+  String get settingsSupportLinkFailed => '無法開啟聯絡表單。';
 }

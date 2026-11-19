@@ -5660,7 +5660,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get privacyPolicyArt9Body =>
-      '本ポリシーに関するお問い合わせは、下記の連絡先までご連絡ください。\n（開発者連絡先：未設定 ― 公開前にメールアドレス等の連絡先情報をご記入ください）';
+      '本ポリシーに関するお問い合わせは、下記の連絡先までご連絡ください。\nsupport@miranima-studio.com';
 
   @override
   String get privacyPolicyAdConsentButton => '広告の同意設定を変更';
@@ -10318,4 +10318,39 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get pcTimelineZoomOut => 'タイムラインを縮小';
+
+  @override
+  String get communityTagLockedMessage => 'このタグはロックされています。編集できるのは投稿者本人です。';
+
+  @override
+  String get communityTagEditPrompt => 'このタグを編集しますか？';
+
+  @override
+  String get communityTagDeleteConfirm => '本当にこのタグを削除しますか？';
+
+  @override
+  String get communityTagLockAction => 'ロックする';
+
+  @override
+  String get communityTagUnlockAction => '解除する';
+
+  @override
+  String communityEstimatedFramePosition(int current, int total) {
+    return '約 $current / $total フレーム';
+  }
+
+  @override
+  String get communityPreviewBackward => '前へ戻る';
+
+  @override
+  String get communityPreviewForward => '次へ進む';
+
+  @override
+  String get settingsSupportTitle => 'ヘルプ・お問い合わせ';
+
+  @override
+  String get settingsSupportForm => 'お問い合わせフォームを開く';
+
+  @override
+  String get settingsSupportLinkFailed => 'お問い合わせフォームを開けませんでした。';
 }

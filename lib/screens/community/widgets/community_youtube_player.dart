@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 
 import '../../../l10n/app_localizations.dart';
+import '../../../widgets/stepped_slider.dart';
 
 /// The only YouTube media surface used by Community. Video files are never
 /// downloaded or played outside the official YouTube IFrame player.
@@ -17,11 +18,17 @@ class CommunityYoutubePlayer extends StatefulWidget {
     this.onEnded,
     this.validatePlayback,
     this.onPlayingChanged,
+    this.detailPreviewHeight,
+    this.detailDurationSeconds = 0,
+    this.detailFrameCount = 0,
   });
 
   final String videoId;
   final bool playing;
   final bool active;
+  final double? detailPreviewHeight;
+  final int detailDurationSeconds;
+  final int detailFrameCount;
 
   /// Allows Shorts to either replay the current video or advance a page.
   final void Function(VoidCallback replay)? onEnded;
@@ -48,6 +55,11 @@ class CommunityYoutubePlayer extends StatefulWidget {
 class _CommunityYoutubePlayerState extends State<CommunityYoutubePlayer> {
   YoutubePlayerController? _controller;
   StreamSubscription<YoutubePlayerValue>? _events;
+  StreamSubscription<YoutubeVideoState>? _progressEvents;
+  double _position = 0;
+  double? _dragPosition;
+  double _videoDuration = 0;
+  bool _nativePlaying = false;
   bool _endedReported = false;
   bool _playerFailed = false;
   bool _verifyingPlayback = false;
@@ -81,8 +93,33 @@ class _CommunityYoutubePlayerState extends State<CommunityYoutubePlayer> {
     _playerFailed = false;
     _endedReported = false;
     _lastNativeState = PlayerState.unknown;
+    _position = 0;
+    _dragPosition = null;
+    _videoDuration = 0;
+    _nativePlaying = false;
+    if (widget.detailPreviewHeight != null) {
+      _progressEvents = controller.videoStateStream.listen((state) {
+        if (!mounted || !identical(controller, _controller)) return;
+        final position = state.position.inMilliseconds / 1000;
+        if ((position - _position).abs() >= .025) {
+          setState(() => _position = position);
+        }
+      });
+    }
     _events = controller.listen((value) {
       if (!mounted) return;
+      if (widget.detailPreviewHeight != null) {
+        final duration = value.metaData.duration.inMilliseconds / 1000;
+        final playing =
+            value.playerState == PlayerState.playing ||
+            (value.playerState == PlayerState.buffering && _nativePlaying);
+        if (duration != _videoDuration || playing != _nativePlaying) {
+          setState(() {
+            _videoDuration = duration;
+            _nativePlaying = playing;
+          });
+        }
+      }
       if (value.hasError && !_playerFailed) {
         setState(() => _playerFailed = true);
       }
@@ -136,6 +173,9 @@ class _CommunityYoutubePlayerState extends State<CommunityYoutubePlayer> {
     final subscription = _events;
     _events = null;
     if (subscription != null) unawaited(subscription.cancel());
+    final progress = _progressEvents;
+    _progressEvents = null;
+    if (progress != null) unawaited(progress.cancel());
     if (old != null) unawaited(old.close());
   }
 
@@ -175,6 +215,179 @@ class _CommunityYoutubePlayerState extends State<CommunityYoutubePlayer> {
 
   @override
   Widget build(BuildContext context) {
+    if (widget.detailPreviewHeight case final height?) {
+      return _buildDetailPreview(context, height);
+    }
+    return _buildPlayerSurface(context);
+  }
+
+  Widget _buildDetailPreview(BuildContext context, double height) {
+    final l10n = AppLocalizations.of(context)!;
+    final scheme = Theme.of(context).colorScheme;
+    final controller = _controller;
+    final available = controller != null && !_playerFailed;
+    final duration = _videoDuration > 0
+        ? _videoDuration
+        : widget.detailDurationSeconds.clamp(0, double.infinity).toDouble();
+    final position = (_dragPosition ?? _position).clamp(0.0, duration);
+    final frames = widget.detailFrameCount;
+    final hasFrames = frames > 0 && duration > 0;
+    final frame = hasFrames
+        ? (position * frames / duration).floor().clamp(0, frames - 1) + 1
+        : 0;
+    final step = hasFrames ? duration / frames : 5.0;
+
+    Future<void> seek(double seconds) async {
+      if (controller == null || duration <= 0) return;
+      try {
+        await controller.seekTo(
+          seconds: seconds.clamp(0.0, duration),
+          allowSeekAhead: true,
+        );
+      } catch (_) {
+        if (mounted && identical(controller, _controller)) {
+          setState(() => _playerFailed = true);
+        }
+      }
+    }
+
+    Widget control(IconData icon, String tooltip, VoidCallback? onPressed) =>
+        IconButton(
+          icon: Icon(icon),
+          tooltip: tooltip,
+          onPressed: onPressed,
+          padding: EdgeInsets.zero,
+          constraints: const BoxConstraints(minWidth: 36, minHeight: 48),
+        );
+    Widget cell(Widget child) => Expanded(child: Center(child: child));
+    Widget time(double seconds) => FittedBox(
+      fit: BoxFit.scaleDown,
+      child: Text(
+        '${seconds.toStringAsFixed(1)}s',
+        style: Theme.of(context).textTheme.bodySmall,
+      ),
+    );
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            control(
+              Icons.fullscreen,
+              l10n.projectDetailFullscreenTooltip,
+              available ? () => controller.enterFullScreen() : null,
+            ),
+          ],
+        ),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(14),
+          child: SizedBox(
+            height: height,
+            child: ColoredBox(
+              color: scheme.surfaceContainerHighest,
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(maxWidth: height * (16 / 9)),
+                  child: _buildPlayerSurface(context),
+                ),
+              ),
+            ),
+          ),
+        ),
+        if (hasFrames)
+          Padding(
+            padding: const EdgeInsets.only(top: 4),
+            child: Text(
+              l10n.communityEstimatedFramePosition(frame, frames),
+              key: const Key('communityDetailFrameCounter'),
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+          ),
+        SliderTheme(
+          data: SliderTheme.of(context).copyWith(
+            trackHeight: 2,
+            thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
+          ),
+          child: SteppedSlider(
+            key: const Key('communityDetailSeekBar'),
+            value: position,
+            min: 0,
+            max: duration > 0 ? duration : 1,
+            showSteppers: false,
+            onChanged: available && duration > 0
+                ? (value) => setState(() => _dragPosition = value)
+                : null,
+            onChangeEnd: (value) async {
+              await seek(value);
+              if (mounted && identical(controller, _controller)) {
+                setState(() {
+                  _position = value;
+                  _dragPosition = null;
+                });
+              }
+            },
+          ),
+        ),
+        Row(
+          children: [
+            cell(time(position)),
+            cell(
+              control(
+                Icons.skip_previous,
+                l10n.projectDetailFirstFrameTooltip,
+                available ? () => seek(0) : null,
+              ),
+            ),
+            cell(
+              control(
+                Icons.fast_rewind,
+                l10n.communityPreviewBackward,
+                available ? () => seek(position - step) : null,
+              ),
+            ),
+            cell(
+              control(
+                _nativePlaying
+                    ? Icons.pause_circle_filled
+                    : Icons.play_circle_fill,
+                _nativePlaying
+                    ? l10n.projectDetailPauseTooltip
+                    : l10n.projectDetailPlayTooltip,
+                available
+                    ? () {
+                        if (_nativePlaying) {
+                          unawaited(controller.pauseVideo());
+                        } else {
+                          unawaited(controller.playVideo());
+                        }
+                      }
+                    : null,
+              ),
+            ),
+            cell(
+              control(
+                Icons.fast_forward,
+                l10n.communityPreviewForward,
+                available ? () => seek(position + step) : null,
+              ),
+            ),
+            cell(
+              control(
+                Icons.skip_next,
+                l10n.projectDetailLastFrameTooltip,
+                available ? () => seek(duration) : null,
+              ),
+            ),
+            cell(time(duration)),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPlayerSurface(BuildContext context) {
     if (!CommunityYoutubePlayer.isValidVideoId(widget.videoId)) {
       return Center(
         child: Text(AppLocalizations.of(context)!.communityPlayerNotLinked),

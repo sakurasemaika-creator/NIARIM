@@ -5898,7 +5898,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get privacyPolicyArt9Body =>
-      'If you have any inquiries regarding this Policy, please contact us using the information below.\n(Developer contact: Not yet set — please fill in an email address or other contact information before publishing.)';
+      'If you have any inquiries regarding this Policy, please contact us using the information below.\nsupport@miranima-studio.com';
 
   @override
   String get privacyPolicyAdConsentButton => 'Manage ad consent settings';
@@ -11102,4 +11102,40 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get pcTimelineZoomOut => 'Zoom Out Timeline';
+
+  @override
+  String get communityTagLockedMessage =>
+      'This tag is locked. Only the creator can edit it.';
+
+  @override
+  String get communityTagEditPrompt => 'Edit this tag?';
+
+  @override
+  String get communityTagDeleteConfirm => 'Delete this tag?';
+
+  @override
+  String get communityTagLockAction => 'Lock';
+
+  @override
+  String get communityTagUnlockAction => 'Unlock';
+
+  @override
+  String communityEstimatedFramePosition(int current, int total) {
+    return 'Approx. frame $current / $total';
+  }
+
+  @override
+  String get communityPreviewBackward => 'Step back';
+
+  @override
+  String get communityPreviewForward => 'Step forward';
+
+  @override
+  String get settingsSupportTitle => 'Help and contact';
+
+  @override
+  String get settingsSupportForm => 'Open the contact form';
+
+  @override
+  String get settingsSupportLinkFailed => 'Could not open the contact form.';
 }

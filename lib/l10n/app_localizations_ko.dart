@@ -5690,7 +5690,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get privacyPolicyArt9Body =>
-      '본 방침에 관한 문의는 아래 연락처로 연락해 주십시오.\n（개발자 연락처: 미설정 ― 공개 전 이메일 주소 등 연락처 정보를 기입해 주십시오）';
+      '본 방침에 관한 문의는 아래 연락처로 연락해 주십시오.\nsupport@miranima-studio.com';
 
   @override
   String get privacyPolicyAdConsentButton => '광고 동의 설정 변경';
@@ -10375,4 +10375,39 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get pcTimelineZoomOut => '타임라인 축소';
+
+  @override
+  String get communityTagLockedMessage => '이 태그는 잠겨 있습니다. 작성자만 편집할 수 있습니다.';
+
+  @override
+  String get communityTagEditPrompt => '이 태그를 편집할까요?';
+
+  @override
+  String get communityTagDeleteConfirm => '이 태그를 삭제할까요?';
+
+  @override
+  String get communityTagLockAction => '잠그기';
+
+  @override
+  String get communityTagUnlockAction => '잠금 해제';
+
+  @override
+  String communityEstimatedFramePosition(int current, int total) {
+    return '약 $current / $total 프레임';
+  }
+
+  @override
+  String get communityPreviewBackward => '뒤로 이동';
+
+  @override
+  String get communityPreviewForward => '앞으로 이동';
+
+  @override
+  String get settingsSupportTitle => '도움말 및 문의';
+
+  @override
+  String get settingsSupportForm => '문의 양식 열기';
+
+  @override
+  String get settingsSupportLinkFailed => '문의 양식을 열 수 없습니다.';
 }

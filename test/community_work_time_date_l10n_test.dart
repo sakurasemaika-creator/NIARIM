@@ -98,11 +98,11 @@ void main() {
       final created = DateFormat.yMd(
         l.localeName,
       ).format(work.projectCreatedAt!);
-      if (find.text(created).evaluate().isEmpty) {
-        problems.add('$tag: 作った日「$created」が出ていない');
+      if (find.text(created).evaluate().isNotEmpty) {
+        problems.add('$tag: 制作情報の行に日付が残っている');
       }
       final posted = l.communityWorkDetailPostedLabel(
-        DateFormat.yMd(l.localeName).format(work.postedAt),
+        DateFormat.yMd(l.localeName).add_Hm().format(work.postedAt.toLocal()),
       );
       if (find.text(posted).evaluate().isEmpty) {
         problems.add('$tag: 「$posted」が出ていない');

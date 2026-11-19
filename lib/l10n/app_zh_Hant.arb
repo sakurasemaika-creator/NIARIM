@@ -2400,7 +2400,7 @@
   "privacyPolicyArt8Title": "第8條（本政策之變更）",
   "privacyPolicyArt8Body": "因法令修正、本應用程式內容變更或其他開發者認有必要之情形，開發者得變更本政策。變更本政策時，開發者將事先透過本應用程式內或其他適當方式，公告變更內容及生效日期。",
   "privacyPolicyArt9Title": "第9條（聯絡方式）",
-  "privacyPolicyArt9Body": "有關本政策之相關詢問，請透過下列聯絡方式與我們聯繫。\n（開發者聯絡方式：尚未設定 —— 請於公開前填寫電子郵件地址等聯絡資訊）",
+  "privacyPolicyArt9Body": "有關本政策之相關詢問，請透過下列聯絡方式與我們聯繫。\nsupport@miranima-studio.com",
   "privacyPolicyAdConsentButton": "變更廣告同意設定",
   "tipsPcDexLayoutTitle": "寬螢幕環境會自動切換為PC模式（DeX）的專業版面",
   "tipsPcDexLayoutDesc": "在Chromebook、外接鍵盤的平板、三星DeX等寬螢幕環境下使用時，應用程式會自動切換為停靠面板式的專業版面。也可以在工作區設定中手動固定為永遠PC模式或永遠手機模式，連接外接螢幕工作時同樣好用。",
@@ -3904,5 +3904,16 @@
   "pcPaneInspector": "詳情",
   "pcPaneProgram": "預覽",
   "pcTimelineZoomIn": "放大時間軸",
-  "pcTimelineZoomOut": "縮小時間軸"
+  "pcTimelineZoomOut": "縮小時間軸",
+  "communityTagLockedMessage": "此標籤已鎖定，只有投稿者可以編輯。",
+  "communityTagEditPrompt": "要編輯此標籤嗎？",
+  "communityTagDeleteConfirm": "確定刪除此標籤嗎？",
+  "communityTagLockAction": "鎖定",
+  "communityTagUnlockAction": "解鎖",
+  "communityEstimatedFramePosition": "約第 {current} / {total} 格",
+  "communityPreviewBackward": "後退",
+  "communityPreviewForward": "前進",
+  "settingsSupportTitle": "說明與聯絡",
+  "settingsSupportForm": "開啟聯絡表單",
+  "settingsSupportLinkFailed": "無法開啟聯絡表單。"
 }

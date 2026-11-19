@@ -13,6 +13,7 @@ vi.mock("../src/lib/auth", () => ({
   authenticate: vi.fn(async () => ({ niarimUserId: "Nauthor" })),
 }));
 import { authenticate } from "../src/lib/auth";
+import { updateTags } from "../src/api/routes/tags";
 import { updateWork } from "../src/api/routes/worksUpdate";
 
 const work: WorkItem = {
@@ -60,6 +61,50 @@ beforeEach(() => {
       ? { Item: { ...work } }
       : { Attributes: { ...work } },
   );
+});
+
+describe("tag renaming", () => {
+  const rename = event({ action: "rename", tag: "old", newTag: "new" });
+
+  it("replaces a locked tag in place even when the work has ten tags", async () => {
+    const tags = ["first", "old", ...Array.from({ length: 8 }, (_, index) => `tag${index}`)];
+    const lockedTags = ["first", "old"];
+    send.mockImplementation(async (command) =>
+      command instanceof GetCommand
+        ? { Item: { ...work, tags, lockedTags } }
+        : { Attributes: { ...work, tags, lockedTags } },
+    );
+
+    await updateTags(rename, work.workId);
+
+    expect(updates()).toHaveLength(1);
+    expect(updates()[0].input.ExpressionAttributeValues).toMatchObject({
+      ":tags": [tags[0], "new", ...tags.slice(2)],
+      ":lockedTags": ["first", "new"],
+      ":expectedTags": tags,
+      ":expectedLockedTags": lockedTags,
+    });
+  });
+
+  it("rejects an edit if another operation locks the tag before the write", async () => {
+    vi.mocked(authenticate).mockResolvedValueOnce({
+      niarimUserId: "Nviewer",
+    } as Awaited<ReturnType<typeof authenticate>>);
+    let reads = 0;
+    send.mockImplementation(async (command) => {
+      if (command instanceof GetCommand) {
+        return {
+          Item: { ...work, tags: ["old"], lockedTags: reads++ ? ["old"] : [] },
+        };
+      }
+      throw changed();
+    });
+
+    await expect(updateTags(rename, work.workId)).rejects.toMatchObject({
+      statusCode: 403,
+    });
+    expect(updates()).toHaveLength(1);
+  });
 });
 
 describe("work editing concurrency", () => {

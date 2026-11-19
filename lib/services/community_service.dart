@@ -1531,6 +1531,42 @@ class CommunityService extends ChangeNotifier {
     );
   }
 
+  /// Replaces a tag in one conditional server update, preserving its lock.
+  Future<bool?> renameTag(String workId, String tag, String replacement) async {
+    final name = replacement.trim();
+    final work = byId(workId);
+    if (work == null ||
+        name.isEmpty ||
+        name.length > 30 ||
+        !work.tags.contains(tag) ||
+        work.tags.contains(name) ||
+        (work.lockedTags.contains(tag) && !isOwnWork(work))) {
+      return null;
+    }
+
+    CommunityWork rename(CommunityWork item, String from, String to) {
+      if (!item.tags.contains(from) || item.tags.contains(to)) return item;
+      return item.copyWith(
+        tags: [for (final value in item.tags) value == from ? to : value],
+        lockedTags: {
+          for (final value in item.lockedTags) value == from ? to : value,
+        },
+      );
+    }
+
+    return _edit(
+      workId,
+      apply: (item) => rename(item, tag, name),
+      undo: (item) => rename(item, name, tag),
+      send: (client) => client.updateTag(
+        workId,
+        action: CommunityTagAction.rename,
+        tag: tag,
+        newTag: name,
+      ),
+    );
+  }
+
   /// Removes a tag. A locked tag cannot be removed (the UI offers no remove
   /// button for it).
   Future<bool?> removeTag(String workId, String tag) async {

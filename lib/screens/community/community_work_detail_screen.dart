@@ -4,10 +4,10 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../l10n/app_localizations.dart';
 import '../../models/community_work.dart';
-import '../../router.dart';
 import '../../services/community_service.dart';
 import '../../services/google_auth_service.dart';
 import '../../services/api/community_api.dart';
+import '../../services/api/niarim_api_exception.dart';
 import 'widgets/community_playback_status_view.dart';
 import 'widgets/community_youtube_player.dart';
 import 'widgets/community_work_description.dart';
@@ -16,8 +16,8 @@ import '../../widgets/dispose_on_unmount.dart';
 import '../../widgets/ad_banner_mock_widget.dart';
 import '../../widgets/responsive.dart';
 import 'community_author_works_screen.dart';
+import 'community_error_text.dart';
 import 'community_edit_feedback.dart';
-import 'widgets/community_work_card.dart';
 import '../../config/font_fallback.dart';
 import '../../config/accent_text_theme.dart';
 import 'package:intl/intl.dart';
@@ -32,6 +32,8 @@ import 'widgets/community_work_counts.dart';
 /// どちらもこの同一画面へ遷移する。YouTube統計に加えて、投稿元NIARIM
 /// プロジェクトのFPS・フレーム数・制作時間・制作日時・キャンバスサイズも
 /// 同じ画面で確認できる。
+enum _TagAction { edit, delete, toggleLock }
+
 class CommunityWorkDetailScreen extends StatefulWidget {
   final String workId;
   const CommunityWorkDetailScreen({super.key, required this.workId});
@@ -148,6 +150,78 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
     Future<bool?> edit,
   ) => reportFailedCommunityEdit(context, service, edit);
 
+  Future<void> _applyTagAction(
+    CommunityService service,
+    String workId,
+    CommunityTagAction action,
+    String tag, {
+    String? replacement,
+  }) async {
+    final cached = service.byId(workId);
+    final accountId = context.read<GoogleAuthService?>()?.account?.id;
+    final privateWork = _ownerOnlyWork;
+    final client = service.api;
+    if ((cached == null || cached.isUnavailable) &&
+        privateWork?.id == workId &&
+        accountId != null &&
+        accountId == _ownerOnlyAccountId &&
+        client != null) {
+      final revision = service.accountRevision;
+      try {
+        final work = await client.updateTag(
+          workId,
+          action: action,
+          tag: tag,
+          newTag: replacement,
+        );
+        if (!mounted ||
+            revision != service.accountRevision ||
+            context.read<GoogleAuthService?>()?.account?.id != accountId) {
+          return;
+        }
+        setState(() {
+          _ownerOnlyWork = _ownerOnlyWork?.copyWith(
+            tags: work.tags,
+            lockedTags: work.lockedTags.toSet(),
+          );
+        });
+      } on NiarimApiException catch (error) {
+        if (!mounted ||
+            revision != service.accountRevision ||
+            context.read<GoogleAuthService?>()?.account?.id != accountId) {
+          return;
+        }
+        final l10n = AppLocalizations.of(context)!;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              error.isUnauthorized
+                  ? l10n.communityEditSignInRequired
+                  : communityApiErrorCodeText(l10n, error.code) ??
+                        l10n.communityEditFailed,
+            ),
+          ),
+        );
+      }
+      return;
+    }
+
+    if (cached == null || cached.isUnavailable) return;
+    final edit = switch (action) {
+      CommunityTagAction.add => service.addTag(workId, tag),
+      CommunityTagAction.remove => service.removeTag(workId, tag),
+      CommunityTagAction.rename => service.renameTag(workId, tag, replacement!),
+      CommunityTagAction.lock || CommunityTagAction.unlock =>
+        cached.tags.contains(tag) &&
+                service.isOwnWork(cached) &&
+                cached.lockedTags.contains(tag) ==
+                    (action == CommunityTagAction.unlock)
+            ? service.toggleTagLock(workId, tag)
+            : Future<bool?>.value(),
+    };
+    await _reportFailedEdit(service, edit);
+  }
+
   Future<void> _setAiImageVideoDisclosure(
     CommunityService service,
     String workId,
@@ -206,9 +280,11 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
             ),
             onSubmitted: (v) {
               Navigator.pop(ctx);
-              _reportFailedEdit(
+              _applyTagAction(
                 communityService,
-                communityService.addTag(workId, v),
+                workId,
+                CommunityTagAction.add,
+                v,
               );
             },
           ),
@@ -220,9 +296,11 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
             FilledButton(
               onPressed: () {
                 Navigator.pop(ctx);
-                _reportFailedEdit(
+                _applyTagAction(
                   communityService,
-                  communityService.addTag(workId, controller.text),
+                  workId,
+                  CommunityTagAction.add,
+                  controller.text,
                 );
               },
               child: Text(l10n.commonOk),
@@ -233,8 +311,150 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
     );
   }
 
-  String _formatDate(DateTime d) =>
-      DateFormat.yMd(AppLocalizations.of(context)!.localeName).format(d);
+  Future<void> _showTagActions(
+    CommunityService service,
+    CommunityWork work,
+    String tag,
+  ) async {
+    final l10n = AppLocalizations.of(context)!;
+    final locked = work.lockedTags.contains(tag);
+    final ownerAccount = context.read<GoogleAuthService?>()?.account?.id;
+    final owner =
+        service.isOwnWork(work) ||
+        (identical(work, _ownerOnlyWork) &&
+            ownerAccount != null &&
+            ownerAccount == _ownerOnlyAccountId);
+    final accountRevision = service.accountRevision;
+    final action = await showDialog<_TagAction>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(tag),
+        content: Text(
+          locked ? l10n.communityTagLockedMessage : l10n.communityTagEditPrompt,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(locked && !owner ? l10n.commonOk : l10n.commonCancel),
+          ),
+          if (owner || !locked)
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, _TagAction.edit),
+              child: Text(l10n.commonEdit),
+            ),
+          if (!locked)
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, _TagAction.delete),
+              style: TextButton.styleFrom(
+                foregroundColor: Theme.of(ctx).colorScheme.error,
+              ),
+              child: Text(l10n.commonDelete),
+            ),
+          if (owner)
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, _TagAction.toggleLock),
+              child: Text(
+                locked
+                    ? l10n.communityTagUnlockAction
+                    : l10n.communityTagLockAction,
+              ),
+            ),
+        ],
+      ),
+    );
+    if (!mounted ||
+        action == null ||
+        accountRevision != service.accountRevision) {
+      return;
+    }
+    switch (action) {
+      case _TagAction.toggleLock:
+        await _applyTagAction(
+          service,
+          work.id,
+          locked ? CommunityTagAction.unlock : CommunityTagAction.lock,
+          tag,
+        );
+      case _TagAction.delete:
+        final confirmed = await showDialog<bool>(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            title: Text(l10n.communityTagDeleteConfirm),
+            content: Text(tag),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: Text(l10n.commonCancel),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.pop(ctx, true),
+                style: FilledButton.styleFrom(
+                  backgroundColor: Theme.of(ctx).colorScheme.error,
+                  foregroundColor: Theme.of(ctx).colorScheme.onError,
+                ),
+                child: Text(l10n.commonDelete),
+              ),
+            ],
+          ),
+        );
+        if (mounted &&
+            confirmed == true &&
+            accountRevision == service.accountRevision) {
+          await _applyTagAction(
+            service,
+            work.id,
+            CommunityTagAction.remove,
+            tag,
+          );
+        }
+      case _TagAction.edit:
+        final controller = TextEditingController(text: tag);
+        final replacement = await showDialog<String>(
+          context: context,
+          builder: (ctx) => DisposeOnUnmount(
+            controller: controller,
+            builder: (ctx) => AlertDialog(
+              insetPadding: typingDialogInsetPadding(ctx),
+              title: Text(l10n.commonEdit),
+              content: TextField(
+                key: const Key('communityDetailTagEditor'),
+                controller: controller,
+                autofocus: true,
+                maxLength: 30,
+                textInputAction: TextInputAction.done,
+                decoration: InputDecoration(
+                  labelText: l10n.communityAddTagDialogHint,
+                ),
+                onSubmitted: (value) => Navigator.pop(ctx, value.trim()),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  child: Text(l10n.commonCancel),
+                ),
+                FilledButton(
+                  onPressed: () => Navigator.pop(ctx, controller.text.trim()),
+                  child: Text(l10n.commonApply),
+                ),
+              ],
+            ),
+          ),
+        );
+        if (mounted &&
+            replacement != null &&
+            replacement.isNotEmpty &&
+            replacement != tag &&
+            accountRevision == service.accountRevision) {
+          await _applyTagAction(
+            service,
+            work.id,
+            CommunityTagAction.rename,
+            tag,
+            replacement: replacement,
+          );
+        }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -303,6 +523,7 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
     );
     final isAuthorSelf = isOwner;
     final isReposted = communityService.isRepostedBySelf(work.id);
+    final repostAccent = isReposted ? AccentTextTheme.of(context) : null;
     final canAddTag = work.tags.length < CommunityService.maxTagsPerWork;
     final maxPreviewHeight = (MediaQuery.sizeOf(context).height * 0.55).clamp(
       _minPreviewHeight,
@@ -330,59 +551,37 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
                     style: Theme.of(context).textTheme.labelLarge,
                   ),
                 ),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(14),
-                child: SizedBox(
+              if (_playbackStatus == CommunityPlaybackStatus.available)
+                CommunityYoutubePlayer(
+                  key: ValueKey('communityDetailYoutube-${work.id}'),
+                  videoId: work.id,
+                  playing: false,
+                  detailPreviewHeight: previewHeight,
+                  detailDurationSeconds: work.durationSeconds,
+                  detailFrameCount: work.projectFrameCount,
+                  validatePlayback: () async {
+                    final status = await context
+                        .read<CommunityService>()
+                        .playbackStatus(work.id);
+                    if (mounted &&
+                        widget.workId == work.id &&
+                        status != CommunityPlaybackStatus.available) {
+                      setState(() => _playbackStatus = status);
+                    }
+                    return mounted &&
+                        widget.workId == work.id &&
+                        status == CommunityPlaybackStatus.available;
+                  },
+                )
+              else
+                SizedBox(
                   height: previewHeight,
                   width: double.infinity,
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: communityThumbnailGradient(
-                          Theme.of(context).colorScheme,
-                          work.thumbnailColorIndex,
-                        ),
-                      ),
-                    ),
-                    child: _playbackStatus != CommunityPlaybackStatus.available
-                        ? CommunityPlaybackStatusView(
-                            status: _playbackStatus,
-                            onRetry: _checkPlaybackStatus,
-                          )
-                        : Center(
-                            child: ConstrainedBox(
-                              constraints: BoxConstraints(
-                                maxWidth: previewHeight * (16 / 9),
-                              ),
-                              child: CommunityYoutubePlayer(
-                                key: ValueKey(
-                                  'communityDetailYoutube-${work.id}',
-                                ),
-                                videoId: work.id,
-                                playing: false,
-                                validatePlayback: () async {
-                                  final status = await context
-                                      .read<CommunityService>()
-                                      .playbackStatus(work.id);
-                                  if (mounted &&
-                                      widget.workId == work.id &&
-                                      status !=
-                                          CommunityPlaybackStatus.available) {
-                                    setState(() => _playbackStatus = status);
-                                  }
-                                  return mounted &&
-                                      widget.workId == work.id &&
-                                      status ==
-                                          CommunityPlaybackStatus.available;
-                                },
-                              ),
-                            ),
-                          ),
+                  child: CommunityPlaybackStatusView(
+                    status: _playbackStatus,
+                    onRetry: _checkPlaybackStatus,
                   ),
                 ),
-              ),
               GestureDetector(
                 onVerticalDragUpdate: (d) => setState(() {
                   _previewHeight = (previewHeight + d.delta.dy).clamp(
@@ -475,11 +674,14 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
                 ],
               ),
               const SizedBox(height: 14),
-              CommunityWorkCounts(work: work, fontSize: 14),
-              const SizedBox(height: 6),
-              Text(
-                l10n.communityWorkDetailPostedLabel(_formatDate(work.postedAt)),
-                style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
+              CommunityWorkCounts(
+                work: work,
+                fontSize: 14,
+                postedLabel: l10n.communityWorkDetailPostedLabel(
+                  DateFormat.yMd(
+                    l10n.localeName,
+                  ).add_Hm().format(work.postedAt.toLocal()),
+                ),
               ),
               if (_hasProjectMetadata(work)) ...[
                 const SizedBox(height: 12),
@@ -521,19 +723,7 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
                     _TagChip(
                       label: tag,
                       isLocked: work.lockedTags.contains(tag),
-                      onToggleLock: isAuthorSelf
-                          ? () => _reportFailedEdit(
-                              communityService,
-                              communityService.toggleTagLock(work.id, tag),
-                            )
-                          : null,
-                      onRemove: work.lockedTags.contains(tag)
-                          ? null
-                          : () => _reportFailedEdit(
-                              communityService,
-                              communityService.removeTag(work.id, tag),
-                            ),
-                      onTap: () => appRouter.push('/community', extra: tag),
+                      onTap: () => _showTagActions(communityService, work, tag),
                     ),
                   ActionChip(
                     avatar: const Icon(Icons.add, size: 16),
@@ -576,16 +766,33 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
                   FirstThatFits(
                     children: [
                       OutlinedButton.icon(
-                        onPressed: toggleBookmark,
-                        icon: Icon(bookmarkIcon),
-                        label: Text(bookmarkLabel),
-                      ),
-                      Tooltip(
-                        message: bookmarkLabel,
-                        child: OutlinedButton(
-                          onPressed: toggleBookmark,
-                          child: Icon(bookmarkIcon),
+                        style: isReposted
+                            ? OutlinedButton.styleFrom(
+                                foregroundColor: repostAccent,
+                                side: BorderSide(color: repostAccent!),
+                              )
+                            : null,
+                        onPressed: () => _reportFailedEdit(
+                          communityService,
+                          communityService.toggleRepost(work.id),
                         ),
+                        icon: const Icon(Icons.repeat),
+                        label: Text(
+                          isReposted
+                              ? l10n.communityRepostedButton
+                              : l10n.communityRepostButton,
+                        ),
+                      ),
+                      IconButton.outlined(
+                        color: repostAccent,
+                        onPressed: () => _reportFailedEdit(
+                          communityService,
+                          communityService.toggleRepost(work.id),
+                        ),
+                        tooltip: isReposted
+                            ? l10n.communityRepostedButton
+                            : l10n.communityRepostButton,
+                        icon: const Icon(Icons.repeat),
                       ),
                     ],
                   ),
@@ -594,28 +801,19 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
               const SizedBox(height: 8),
               SizedBox(
                 width: double.infinity,
-                child: OutlinedButton.icon(
-                  onPressed: () => _reportFailedEdit(
-                    communityService,
-                    communityService.toggleRepost(work.id),
-                  ),
-                  icon: Icon(
-                    Icons.repeat,
-                    color: isReposted ? AccentTextTheme.of(context) : null,
-                  ),
-                  label: Text(
-                    isReposted
-                        ? l10n.communityRepostedButton
-                        : l10n.communityRepostButton,
-                    style: TextStyle(
-                      color: isReposted ? AccentTextTheme.of(context) : null,
+                child: FirstThatFits(
+                  children: [
+                    OutlinedButton.icon(
+                      onPressed: toggleBookmark,
+                      icon: Icon(bookmarkIcon),
+                      label: Text(bookmarkLabel),
                     ),
-                  ),
-                  style: OutlinedButton.styleFrom(
-                    side: isReposted
-                        ? BorderSide(color: AccentTextTheme.of(context))
-                        : null,
-                  ),
+                    IconButton.outlined(
+                      onPressed: toggleBookmark,
+                      tooltip: bookmarkLabel,
+                      icon: Icon(bookmarkIcon),
+                    ),
+                  ],
                 ),
               ),
               if (!isOwner) ...[
@@ -633,11 +831,17 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
                     ),
                     Expanded(
                       child: TextButton.icon(
-                        onPressed: () => _showComingSoonSnackbar(
-                          l10n.communityBlockComingSoonSnackbar,
+                        onPressed: () => confirmCommunityAuthorMute(
+                          context,
+                          communityService,
+                          work.authorId,
+                          mute: true,
                         ),
-                        icon: const Icon(Icons.block, size: 18),
-                        label: Text(l10n.communityWorkDetailBlockButton),
+                        icon: const Icon(
+                          Icons.visibility_off_outlined,
+                          size: 18,
+                        ),
+                        label: Text(l10n.communityMuteConfirmAction),
                       ),
                     ),
                   ],
@@ -655,7 +859,6 @@ bool _hasProjectMetadata(CommunityWork work) =>
     work.projectFps > 0 ||
     work.projectFrameCount > 0 ||
     work.projectWorkSeconds > 0 ||
-    work.projectCreatedAt != null ||
     (work.projectCanvasWidth > 0 && work.projectCanvasHeight > 0);
 
 class _ProjectMetadataCard extends StatelessWidget {
@@ -673,59 +876,27 @@ class _ProjectMetadataCard extends StatelessWidget {
       borderRadius: BorderRadius.circular(12),
       child: Padding(
         padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: Wrap(
+          spacing: 14,
+          runSpacing: 8,
           children: [
-            Row(
-              children: [
-                Icon(
-                  Icons.animation_rounded,
-                  size: 18,
-                  color: AccentTextTheme.of(context),
-                ),
-                const SizedBox(width: 6),
-                Text(
-                  'NIARIM',
-                  style: TextStyle(
-                    color: AccentTextTheme.of(context),
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Wrap(
-              spacing: 14,
-              runSpacing: 8,
-              children: [
-                if (work.projectFrameCount > 0)
-                  _ProjectMetaItem(
-                    icon: Icons.movie_outlined,
-                    text: '${work.projectFrameCount}f',
-                  ),
-                if (work.projectFps > 0)
-                  _ProjectMetaItem(
-                    icon: Icons.speed_rounded,
-                    text: '${work.projectFps}fps',
-                  ),
-                if (work.projectCanvasWidth > 0 && work.projectCanvasHeight > 0)
-                  _ProjectMetaItem(
-                    icon: Icons.aspect_ratio_rounded,
-                    text:
-                        '${work.projectCanvasWidth}×${work.projectCanvasHeight}',
-                  ),
-                if (workTime.isNotEmpty)
-                  _ProjectMetaItem(icon: Icons.timer_outlined, text: workTime),
-                if (work.projectCreatedAt != null)
-                  _ProjectMetaItem(
-                    icon: Icons.edit_calendar_outlined,
-                    // 日付は表示言語の書き方。
-                    text: DateFormat.yMd(
-                      l10n.localeName,
-                    ).format(work.projectCreatedAt!),
-                  ),
-              ],
-            ),
+            if (work.projectFrameCount > 0)
+              _ProjectMetaItem(
+                icon: Icons.movie_outlined,
+                text: '${work.projectFrameCount}f',
+              ),
+            if (work.projectFps > 0)
+              _ProjectMetaItem(
+                icon: Icons.speed_rounded,
+                text: '${work.projectFps}fps',
+              ),
+            if (work.projectCanvasWidth > 0 && work.projectCanvasHeight > 0)
+              _ProjectMetaItem(
+                icon: Icons.aspect_ratio_rounded,
+                text: '${work.projectCanvasWidth}×${work.projectCanvasHeight}',
+              ),
+            if (workTime.isNotEmpty)
+              _ProjectMetaItem(icon: Icons.timer_outlined, text: workTime),
           ],
         ),
       ),
@@ -756,62 +927,35 @@ class _ProjectMetaItem extends StatelessWidget {
 class _TagChip extends StatelessWidget {
   final String label;
   final bool isLocked;
-  final VoidCallback? onToggleLock;
-  final VoidCallback? onRemove;
   final VoidCallback onTap;
 
   const _TagChip({
     required this.label,
     required this.isLocked,
-    required this.onToggleLock,
-    required this.onRemove,
     required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
     final scheme = Theme.of(context).colorScheme;
-    return Material(
-      color: scheme.surfaceContainerHighest,
-      shape: const StadiumBorder(),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.only(left: 12, top: 2, bottom: 2, right: 4),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (isLocked) ...[
-                Icon(Icons.lock, size: 13, color: scheme.onSurfaceVariant),
-                const SizedBox(width: 4),
-              ],
-              Text(
-                label,
-                style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
-              ),
-              if (onToggleLock != null)
-                IconButton(
-                  visualDensity: VisualDensity.compact,
-                  iconSize: 15,
-                  tooltip: isLocked
-                      ? l10n.communityTagUnlockTooltip
-                      : l10n.communityTagLockTooltip,
-                  icon: Icon(isLocked ? Icons.lock : Icons.lock_open),
-                  onPressed: onToggleLock,
-                ),
-              if (onRemove != null)
-                IconButton(
-                  visualDensity: VisualDensity.compact,
-                  iconSize: 15,
-                  tooltip: l10n.communityRemoveTagTooltip,
-                  icon: const Icon(Icons.close),
-                  onPressed: onRemove,
-                ),
-            ],
-          ),
+    final l10n = AppLocalizations.of(context)!;
+    return Semantics(
+      label: isLocked ? l10n.communityTagLockedMessage : null,
+      child: ActionChip(
+        key: ValueKey('communityDetailTag-$label'),
+        avatar: SizedBox(
+          width: 16,
+          height: 16,
+          child: isLocked
+              ? Icon(
+                  Icons.lock_outline,
+                  size: 15,
+                  color: scheme.onSurfaceVariant,
+                )
+              : null,
         ),
+        label: Text(label),
+        onPressed: onTap,
       ),
     );
   }
@@ -907,7 +1051,7 @@ class _AiImageVideoSwitch extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Icon(
-                Icons.auto_awesome_outlined,
+                Icons.smart_toy_outlined,
                 color: value
                     ? AccentTextTheme.of(context)
                     : scheme.onSurfaceVariant,
@@ -969,7 +1113,7 @@ class _AiImageVideoLabel extends StatelessWidget {
       child: Row(
         children: [
           Icon(
-            Icons.auto_awesome_outlined,
+            Icons.smart_toy_outlined,
             size: 16,
             color: scheme.onSurfaceVariant,
           ),

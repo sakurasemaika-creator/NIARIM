@@ -18,6 +18,7 @@ import { toPublicWork } from "./_publicWork";
 type TagAction =
   | { action: "add"; tag: string }
   | { action: "remove"; tag: string }
+  | { action: "rename"; tag: string; newTag: string }
   | { action: "lock"; tag: string }
   | { action: "unlock"; tag: string };
 
@@ -29,7 +30,7 @@ const MAX_CONFLICT_RETRIES = 3;
  * `PATCH /works/{id}/tags`。
  *
  * 追加/未ロックタグ削除はログイン済みユーザーなら誰でも可能。
- * lock/unlockは作者本人のみ。ロック済みタグは作者を含め直接削除できない。
+ * lock/unlock、ロック済みタグの改名は作者本人のみ。ロック済みタグは直接削除できない。
  *
  * 誰でも編集できるため、単純な「Get → 配列全体SET」では同時操作時に
  * 後勝ちで片方の編集を消してしまう。そこで取得時のtags/lockedTagsを
@@ -57,11 +58,22 @@ export async function updateTags(
     const work = raw as WorkItem;
 
     const isOwner = work.authorId === auth.niarimUserId;
+    if (
+      !isOwner &&
+      (!work.isNiarimPublished ||
+        work.youtubePrivacyStatus === "private" ||
+        work.youtubePrivacyStatus === "deleted")
+    ) {
+      notFound("作品が見つかりません");
+    }
     if ((body.action === "lock" || body.action === "unlock") && !isOwner) {
       forbidden("タグのロック操作は投稿者本人のみ行えます");
     }
     if (body.action === "remove" && work.lockedTags.includes(body.tag)) {
       forbidden("ロックされているタグは削除できません");
+    }
+    if (body.action === "rename" && work.lockedTags.includes(body.tag) && !isOwner) {
+      forbidden("ロックされているタグは投稿者本人のみ編集できます");
     }
 
     let tags = work.tags;
@@ -83,6 +95,13 @@ export async function updateTags(
         tags = tags.filter((t) => t !== body.tag);
         lockedTags = lockedTags.filter((t) => t !== body.tag);
         break;
+      case "rename":
+        if (!tags.includes(body.tag) || (body.tag !== body.newTag && tags.includes(body.newTag))) {
+          conflict("タグはすでに変更されています", "TAG_UPDATE_CONFLICT");
+        }
+        tags = tags.map((tag) => tag === body.tag ? body.newTag : tag);
+        lockedTags = lockedTags.map((tag) => tag === body.tag ? body.newTag : tag);
+        break;
       case "lock":
         if (!tags.includes(body.tag)) {
           badRequest("存在しないタグはロックできません");
@@ -103,12 +122,19 @@ export async function updateTags(
           Key: Keys.work(workId),
           UpdateExpression: "SET tags = :tags, lockedTags = :lockedTags",
           ConditionExpression:
-            "tags = :expectedTags AND lockedTags = :expectedLockedTags",
+            "itemType = :workType AND tags = :expectedTags AND lockedTags = :expectedLockedTags" +
+            (isOwner
+              ? " AND authorId = :authorId"
+              : " AND isNiarimPublished = :published AND (attribute_not_exists(youtubePrivacyStatus) OR (youtubePrivacyStatus <> :private AND youtubePrivacyStatus <> :deleted))"),
           ExpressionAttributeValues: {
             ":tags": tags,
             ":lockedTags": lockedTags,
             ":expectedTags": work.tags,
             ":expectedLockedTags": work.lockedTags,
+            ":workType": TABLE_ITEM_TYPE.Work,
+            ...(isOwner
+              ? { ":authorId": auth.niarimUserId }
+              : { ":published": true, ":private": "private", ":deleted": "deleted" }),
           },
           ReturnValues: "ALL_NEW",
         }),
@@ -145,10 +171,18 @@ function parseBody(raw: string | undefined): TagAction {
   }
   if (
     typeof body.action !== "string" ||
-    !["add", "remove", "lock", "unlock"].includes(body.action)
+    !["add", "remove", "rename", "lock", "unlock"].includes(body.action)
   ) {
-    badRequest("actionはadd/remove/lock/unlockのいずれかである必要があります");
+    badRequest("actionはadd/remove/rename/lock/unlockのいずれかである必要があります");
   }
   const tag = body.tag.trim();
+  if (body.action === "rename") {
+    if (typeof body.newTag !== "string" || !body.newTag.trim()) badRequest("newTagは必須です");
+    const newTag = body.newTag.trim();
+    if (newTag.length > MAX_TAG_LENGTH) {
+      badRequest(`タグは${MAX_TAG_LENGTH}文字以内にしてください`, "TAG_TOO_LONG");
+    }
+    return { action: "rename", tag, newTag };
+  }
   return { action: body.action, tag } as TagAction;
 }

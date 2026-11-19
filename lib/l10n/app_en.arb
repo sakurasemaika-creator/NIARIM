@@ -2421,7 +2421,7 @@
   "privacyPolicyArt8Title": "Article 8 (Changes to This Policy)",
   "privacyPolicyArt8Body": "The developer may change this Policy in the event of a change in applicable laws, a change in the content of the App, or other circumstances the developer deems necessary. When changing this Policy, the developer will give advance notice of the content of the change and its effective date, within the App or by other appropriate means.",
   "privacyPolicyArt9Title": "Article 9 (Contact)",
-  "privacyPolicyArt9Body": "If you have any inquiries regarding this Policy, please contact us using the information below.\n(Developer contact: Not yet set — please fill in an email address or other contact information before publishing.)",
+  "privacyPolicyArt9Body": "If you have any inquiries regarding this Policy, please contact us using the information below.\nsupport@miranima-studio.com",
   "privacyPolicyAdConsentButton": "Manage ad consent settings",
   "tipsPcDexLayoutTitle": "Wide screens auto-switch to the full PC Mode (DeX) layout",
   "tipsPcDexLayoutDesc": "On a Chromebook, a tablet with a keyboard, Samsung DeX, or any wide-screen setup, the app automatically switches to a professional docked-panel layout. You can also force Always PC Mode or Always Mobile Mode from Workspace Settings, which is handy when connecting to an external display.",
@@ -3939,5 +3939,26 @@
   "pcPaneInspector": "Details",
   "pcPaneProgram": "Preview",
   "pcTimelineZoomIn": "Zoom In Timeline",
-  "pcTimelineZoomOut": "Zoom Out Timeline"
+  "pcTimelineZoomOut": "Zoom Out Timeline",
+  "communityTagLockedMessage": "This tag is locked. Only the creator can edit it.",
+  "communityTagEditPrompt": "Edit this tag?",
+  "communityTagDeleteConfirm": "Delete this tag?",
+  "communityTagLockAction": "Lock",
+  "communityTagUnlockAction": "Unlock",
+  "communityEstimatedFramePosition": "Approx. frame {current} / {total}",
+  "communityPreviewBackward": "Step back",
+  "communityPreviewForward": "Step forward",
+  "settingsSupportTitle": "Help and contact",
+  "settingsSupportForm": "Open the contact form",
+  "settingsSupportLinkFailed": "Could not open the contact form.",
+  "@communityEstimatedFramePosition": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  }
 }

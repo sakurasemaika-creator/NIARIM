@@ -45,6 +45,11 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('${work.projectFrameCount}f'), findsOneWidget);
+    expect(find.byKey(const Key('communityDetailSeekBar')), findsOneWidget);
+    expect(
+      find.byKey(const Key('communityDetailFrameCounter')),
+      findsOneWidget,
+    );
     expect(find.text('${work.projectFps}fps'), findsOneWidget);
     expect(
       find.text('${work.projectCanvasWidth}×${work.projectCanvasHeight}'),
@@ -61,6 +66,63 @@ void main() {
       ),
       findsOneWidget,
     );
+  });
+
+  testWidgets('tag edit and delete require explicit actions', (tester) async {
+    SharedPreferences.setMockInitialValues({});
+    final service = CommunityService();
+    final work = service.works.firstWhere(
+      (work) => work.tags.any((tag) => !work.lockedTags.contains(tag)),
+    );
+    service.setCurrentUserId('viewer-for-detail-test');
+    final original = work.tags.firstWhere(
+      (tag) => !work.lockedTags.contains(tag),
+    );
+    await tester.pumpWidget(
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider<CommunityService>.value(value: service),
+          ChangeNotifierProvider(create: (_) => SettingsService()),
+          ChangeNotifierProvider(create: (_) => GoogleAuthService()),
+        ],
+        child: MaterialApp(
+          locale: const Locale('ja'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: CommunityWorkDetailScreen(workId: work.id),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    final l = AppLocalizations.of(
+      tester.element(find.byType(CommunityWorkDetailScreen)),
+    )!;
+    final originalChip = find.byKey(ValueKey('communityDetailTag-$original'));
+    expect(find.byTooltip(l.communityRemoveTagTooltip), findsNothing);
+    await tester.ensureVisible(originalChip);
+    await tester.tap(originalChip);
+    await tester.pumpAndSettle();
+    expect(find.text(l.communityTagLockAction), findsNothing);
+    await tester.tap(find.text(l.commonDelete));
+    await tester.pumpAndSettle();
+    expect(find.text(l.communityTagDeleteConfirm), findsOneWidget);
+    await tester.tap(find.text(l.commonCancel));
+    await tester.pumpAndSettle();
+    expect(service.byId(work.id)!.tags, contains(original));
+
+    await tester.tap(originalChip);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(l.commonEdit));
+    await tester.pumpAndSettle();
+    final editor = find.byKey(const Key('communityDetailTagEditor'));
+    expect(tester.widget<TextField>(editor).controller!.text, original);
+    await tester.enterText(editor, '回帰テスト用のタグ');
+    await tester.tap(find.text(l.commonApply));
+    await tester.pumpAndSettle();
+    expect(service.byId(work.id)!.tags, contains('回帰テスト用のタグ'));
+    expect(service.byId(work.id)!.tags, isNot(contains(original)));
+    await tester.pumpWidget(const SizedBox());
+    service.dispose();
   });
 
   testWidgets('横画面と縦画面の詳細操作が選んだ作品の本番ルートへ遷移する', (tester) async {

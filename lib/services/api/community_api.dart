@@ -25,7 +25,7 @@ enum RankingPeriod {
   final String pathValue;
 }
 
-enum CommunityTagAction { add, remove, lock, unlock }
+enum CommunityTagAction { add, remove, rename, lock, unlock }
 
 class CommunityApi {
   final NiarimApiClient _client;
@@ -652,10 +652,11 @@ class CommunityApi {
     String workId, {
     required CommunityTagAction action,
     required String tag,
+    String? newTag,
   }) async {
     final json = await _client.patchJson(
       '/works/${Uri.encodeComponent(workId)}/tags',
-      body: {'action': action.name, 'tag': tag},
+      body: {'action': action.name, 'tag': tag, 'newTag': ?newTag},
     );
     return ApiWork.fromJson(_work(json));
   }

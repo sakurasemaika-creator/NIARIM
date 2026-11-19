@@ -7,6 +7,7 @@ import 'package:niarim/models/audio_clip.dart';
 import 'package:niarim/router.dart';
 import 'package:niarim/screens/canvas/widgets/canvas_area.dart';
 import 'package:niarim/screens/canvas/widgets/frame_strip_widget.dart';
+import 'package:niarim/screens/canvas/widgets/layer_panel.dart';
 import 'package:niarim/screens/timeline/timeline_screen.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:provider/provider.dart';
@@ -31,6 +32,7 @@ void main() {
       'first_launch': false,
       'language': 'ja',
       'force_pc_mode': 1,
+      'default_docked_panels': ['layer'],
       firstUseTooltipsSeenKey: kAllFirstUseTooltipKeys,
     });
     appRouter.go('/home');
@@ -78,14 +80,24 @@ void main() {
     await pumpRealAsync(tester, const Duration(milliseconds: 450));
     final canvas = find.byType(CanvasArea);
     CanvasArea area() => tester.widget<CanvasArea>(canvas);
+    final palette = find.byType(LayerPanel);
+    void expectPaletteCurrent() {
+      final panel = tester.widget<LayerPanel>(palette);
+      expect(panel.sceneId, area().sceneId);
+      expect(panel.frameIndex, area().currentFrame);
+      expect(panel.currentLayerId, area().currentLayerId);
+    }
+
     final l10n = AppLocalizations.of(tester.element(canvas))!;
     expect(area().sceneId, first);
     expect(area().currentFrame, 0);
+    expectPaletteCurrent();
 
     final fourth = find.byKey(const ValueKey('frameStripCell3'));
     await tester.tap(fourth);
     await tester.pumpAndSettle();
     expect(area().currentFrame, 3);
+    expectPaletteCurrent();
     await tester.tap(find.byTooltip(l10n.canvasTimelineModeTooltip));
     await pumpRealAsync(tester, const Duration(milliseconds: 450));
 
@@ -117,6 +129,7 @@ void main() {
     await pumpRealAsync(tester, const Duration(milliseconds: 600));
     expect(area().sceneId, second);
     expect(area().currentFrame, 1);
+    expectPaletteCurrent();
     final outline = find.byKey(const Key('canvasCurrentFrameOutline'));
     final secondFrame = find.byKey(const Key('frameStripCell1'));
     expect(
@@ -135,6 +148,7 @@ void main() {
     await drag.moveBy(const Offset(-100, 0));
     await tester.pump(const Duration(milliseconds: 16));
     expect(area().currentFrame, 3);
+    expectPaletteCurrent();
     expect(
       tester
           .getRect(find.byKey(const Key('frameStripCell3')))

@@ -2400,7 +2400,7 @@
   "privacyPolicyArt8Title": "Artículo 8 (Modificaciones de esta Política)",
   "privacyPolicyArt8Body": "El desarrollador podrá modificar esta Política en caso de cambios en la legislación aplicable, cambios en el contenido de la Aplicación u otras circunstancias que considere necesarias. Al modificar esta Política, el desarrollador comunicará con antelación el contenido de la modificación y su fecha de entrada en vigor, dentro de la Aplicación o por otros medios adecuados.",
   "privacyPolicyArt9Title": "Artículo 9 (Contacto)",
-  "privacyPolicyArt9Body": "Si tiene alguna consulta sobre esta Política, póngase en contacto con nosotros a través de los siguientes datos.\n(Contacto del desarrollador: aún no definido; complete una dirección de correo electrónico u otros datos de contacto antes de la publicación).",
+  "privacyPolicyArt9Body": "Si tiene alguna consulta sobre esta Política, póngase en contacto con nosotros a través de los siguientes datos.\nsupport@miranima-studio.com",
   "privacyPolicyAdConsentButton": "Cambiar la configuración de consentimiento de anuncios",
   "tipsPcDexLayoutTitle": "En pantallas anchas, cambia automáticamente al modo PC (DeX)",
   "tipsPcDexLayoutDesc": "En un Chromebook, una tablet con teclado, Samsung DeX o cualquier entorno de pantalla ancha, la app cambia automáticamente a un diseño profesional con paneles acoplados. También puedes forzar Siempre modo PC o Siempre modo móvil desde los ajustes de espacio de trabajo, útil al conectar una pantalla externa.",
@@ -3904,5 +3904,16 @@
   "pcPaneInspector": "Detalles",
   "pcPaneProgram": "Vista previa",
   "pcTimelineZoomIn": "Ampliar la línea de tiempo",
-  "pcTimelineZoomOut": "Reducir la línea de tiempo"
+  "pcTimelineZoomOut": "Reducir la línea de tiempo",
+  "communityTagLockedMessage": "Esta etiqueta está bloqueada. Solo el autor puede editarla.",
+  "communityTagEditPrompt": "¿Editar esta etiqueta?",
+  "communityTagDeleteConfirm": "¿Eliminar esta etiqueta?",
+  "communityTagLockAction": "Bloquear",
+  "communityTagUnlockAction": "Desbloquear",
+  "communityEstimatedFramePosition": "Fotograma aprox. {current} / {total}",
+  "communityPreviewBackward": "Retroceder",
+  "communityPreviewForward": "Avanzar",
+  "settingsSupportTitle": "Ayuda y contacto",
+  "settingsSupportForm": "Abrir el formulario de contacto",
+  "settingsSupportLinkFailed": "No se pudo abrir el formulario de contacto."
 }

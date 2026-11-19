@@ -14,12 +14,14 @@ class CommunityWorkCounts extends StatelessWidget {
     this.periodBookmarks,
     this.compact = false,
     this.fontSize = 12,
+    this.postedLabel,
   });
 
   final CommunityWork work;
   final int? periodBookmarks;
   final bool compact;
   final double fontSize;
+  final String? postedLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -60,6 +62,12 @@ class CommunityWorkCounts extends StatelessWidget {
       spacing: 10,
       runSpacing: 2,
       children: [
+        if (postedLabel case final label?)
+          Text(
+            label,
+            key: const Key('communityDetailPostedAt'),
+            style: TextStyle(fontSize: fontSize, color: color),
+          ),
         metric(
           'bookmark',
           Icons.bookmarks_outlined,
