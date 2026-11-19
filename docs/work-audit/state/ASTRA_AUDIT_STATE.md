@@ -500,6 +500,15 @@ status: done（2026-10-10、製品修正 App `35d229e`、証跡 https://claude.a
 - 未確認（環境なし）: Android実機・低性能端末での起動時間・プロセスlifecycle。NATIVE系ID（A098等）で扱う。
 - Discovery: DISC001（初回起動の言語が端末言語に関係なく日本語）、DISC002（エラー記録を利用者が見る手段が無い）。
 
+### A001 二巡目（2026-11-19、Claude・S41、App `2939841e`・Web `a44daf4`）— 判定：要修正（DISC491）
+
+- 範囲の変更（`a3121df7`以降）：`app.dart`（ホーム画面ウィジェットを焼き直す鍵に作品の状態、浮かぶプレビューの`obscured`）、`app_bootstrap.dart`（作品広場のAPIへ資格情報の更新・削除済みアカウントの受け取り）、`google_auth_service.dart`（IDトークンの期限切れの更新・`_disposed`）、`saved_list_reader.dart`（DISC070の`SavedListCarryOver`）。
+- test：起動の11本（`startup_service_contract`・`startup_settings_recovery`・`startup_failure_recovery`〔29段〕・`startup_unreadable_saved_lists`・`startup_saved_number_range`・`startup_unreadable_projects_folder`・`startup_trash_sweep_unavailable`・`saved_list_unreadable_carry_over`・`initial_language`・`google_auth_init_once`・`startup_failure_korean_line_break`）は161件成功・9件スキップ。スキップの9件は`--dart-define=NIARIM_GOOGLE_CLIENT_ID=test`で9件成功。S49の残件だった`startup_unreadable_projects_folder_test`は、このHEADの手元では全件成功（CIの失敗は再現しない）。`flutter analyze`（範囲の8ファイル）0件。
+- 実画面（Linux debug・Xvfb・ja）：新しい保存領域→起動画面→作品をつくる→ホーム（初回の案内）。同じ保存領域で起動し直す→保存の19キーに増減・変化なし。壊れた設定（`theme_current_json`の壊れたJSON、`custom_size_presets`の読めない2件、ブラシ・トーンの読めない1件ずつ、`language`・`undo_limit`・`trash_auto_delete`・`tool_thickness_pen`の型違い）→起動し、どの値も元のまま。ホームに「読み込めない項目が1件」の知らせ、エラーの記録にトーン・ブラシ・型違い4件。起動失敗（`NIARIM_DEBUG_FAIL_STARTUP_STEP=brush`の別ビルド、390×844）→失敗画面・詳細→「もう一度試す」で起動画面（失敗の記録は1件）。
+- 要修正（DISC491）：(1) キャンバスサイズのプリセットの読めない項目は記録されず、知らせの件数にも入らず、新しいサイズを1つ保存すると消えた（保存後の`custom_size_presets`は新しい1件だけ）。テーマ一覧・現在のテーマの読めない項目も記録されない。描画フィルターとテーマ一覧は保存し直すと読めない項目を落とすコード。(2) 知らせの件数は10の一覧だけを数え、ブラシ・サイズ・テーマを数えない。
+- 正式なstatusはdoneのまま（既存の進捗を保持し、Verifierの順序を崩さない）。二巡目のOKはDISC491の修正の後の確認で出す。
+- 画像：`shots-r1/r2a001-*`（backup-pending）。
+
 ## A002 — 起動画面 /・2導線・テーマ救済
 
 status: done（2026-10-10、製品修正 App `35d229e`、証跡 https://claude.ai/artifact/C6t3uteANocXs9nTLizazi#A002）
