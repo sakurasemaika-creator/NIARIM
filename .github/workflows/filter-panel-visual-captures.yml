@@ -26,8 +26,9 @@ jobs:
           ref: dev_branch
       - uses: subosito/flutter-action@v2
         with:
+          flutter-version: "3.47.2"
           channel: stable
-      - run: flutter pub get
+      - run: flutter pub get --enforce-lockfile
       - name: Validate unified noise, help translations and filter gallery
         run: |
           flutter test test/filter_noise_settings_test.dart test/help_filter_names_test.dart --reporter expanded
