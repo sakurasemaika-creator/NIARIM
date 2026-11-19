@@ -29,6 +29,7 @@ on:
       - "lib/services/local_file_trash_service.dart"
       - "lib/widgets/premium_lock_widget.dart"
       - "test/niatra_transfer_draw_filters_test.dart"
+      - "lib/utils/desktop_dock_column_fit.dart"
   workflow_dispatch:
 permissions:
   contents: read
