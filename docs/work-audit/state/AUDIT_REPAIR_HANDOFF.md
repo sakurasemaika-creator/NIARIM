@@ -641,6 +641,20 @@ App・Web共通。Claudeが要修正の詳細を追記し、ユーザーが別�
 - **A011（直っている）**：別のセッションの`61800aea`（Reserve usable canvas width between desktop docks）が同じ直しを先に入れた。私も同じ直し（ドックが崩れない幅を先に取り、残りから最大240pxをキャンバスへ）を作ったが、載せ直しでぶつかったので`61800aea`の版を採った。その版で`canvas_dock_fit_test`（900×650・600×900・左右利き）ほかドックの6ファイル36件が成功。私の版で流した`canvas_pc_dock_labels_fit_test`・`desktop_dock_gap_test`・`workspace_preset_service_test`・`docked_panel_close_scope_test`の13件は、`61800aea`の版では未実行（全体回帰で確かめる）。全体回帰の起動条件に`lib/utils/desktop_dock_column_fit.dart`を足した（App `786eff8c`）。
 - **全体回帰`44445033678`（`eda174e9`）**：記録時点で実行中。
 
+## Claudeの修正・再検証（2026-11-19、App dev_branch、S49：DISC070）
+
+- **起点**：App `71c33de3`（A011の製品修正`61800aea`、起動条件・方針・所有者の決定の記録`c9866536`は反映済み）。全体回帰`44450273319`（`c9866536`）は失敗で完了（作品広場のスモーク3件・翻訳は別のセッションの担当）。
+- **DISC070：失う経路（調べた結果）**：保存した一覧は`readSavedJsonList`で1件ずつ読み、読めない1件は飛ばす（DISC063）。ブラシだけは読めない項目を保存の末尾へ持ち越していたが、ほかの10の一覧（トーン`ToneService`・スタンプ`StampService`・パレット`PaletteService`・ドット絵のパレット`PixelArtPaletteService`・ショートカット`ShortcutService`・早替えツール`QuickToolService`・作業画面のプリセット`WorkspacePresetService`・透かし`WatermarkService`・自動塗り`AutofillPresetService`・自作の自動操作`CustomAutomationService`）は、次にその一覧を変えたときに読めた分だけで保存し直し、元データを失った。
+- **修正1（App `74393dd7`）**：`readSavedJsonList`に`listKey`を渡すと、読めない項目の元の文字列を`SavedListCarryOver`が保存キーごとに覚え、`setSavedJsonList`で保存し直すときに読めた項目の後ろへそのまま残す（10の一覧の起動時の読み込みと保存をこの形に）。読めた項目は通常どおり使える。元データは一覧の中に残るので、起動のたびにもう一度読み込みを試し、読めれば戻る（復旧の再試行）。保存の形は変えない（既存の保存と互換）。設定の引き継ぎ（.niatra）の読み込みは`listKey`を渡さないので変わらない。
+- **修正2（App `0490ec25`）**：知らせ。「エラーの記録」の先頭に件数と「元のデータは消さずに残し、次に起動したときにもう一度読み込みを試す」を出す（エラーの記録を消していても出す）。読めない項目があればホームを開いたときに起動ごとに1回だけ同じ知らせ（「エラーの記録」を開く操作つき、時間で消える）。文言`savedListUnreadableNotice`は7言語（ICUのplural、韓国語・中国語は部分フォントにある字だけ）。全体回帰の起動条件に`lib/utils/saved_list_reader.dart`を足した（`10d5573e`）。
+- **経路ごとの検証（App `10d5573e`の手元）**：
+  - 共通の読み込み・持ち越し・読めるようになったら忘れる：`saved_list_unreadable_carry_over_test`の1件目。
+  - 正常2件＋読めない1件の混在で、読み込み（読めた2件が使える）→名前の変更・削除・追加→保存（読めない項目が残る）→再起動（編集の後のまま、読めない項目も残る）→元データが読める形になったときの復旧：同じtestの2件目（作業画面のプリセットで）。
+  - 起動の決まり（DISC063：読めない1件で起動を止めない、型違い・範囲外）：`startup_unreadable_saved_lists_test`・`startup_saved_number_range_test`・`startup_failure_recovery_test`・`brush_saved_number_types_test`。設定の引き継ぎ：`niatra_transfer_unread_lists_test`・`niatra_transfer_keeps_this_device_test`。ここまで54件成功。
+  - 知らせ：`error_log_screen_test`（7言語・320px・文字2倍で出てはみ出さない、無ければ出さない）、`home_unreadable_saved_items_notice_test`（読めないプリセットのある保存で起動→ホームで知らせ→操作でエラーの記録→元データは保存に残る）、`toast_contract_test`・`home_navigation_state_test`ほか、計79件成功。`font_coverage_test`成功。flutter analyze 0件。
+- **残件**：個別の一覧ごとの混在のtestは作業画面のプリセットだけ（ほか9つは同じ共通の経路を通る）。トーン・スタンプ・自動塗り・自作の自動操作は起動時に読めない項目があると保存し直さない（DISC063）ので、その後の編集で持ち越す経路は同じ。手で1件ずつ元データから戻す画面は作っていない（起動のたびの自動の読み直しで復旧を試す）。全体回帰はこの修正を含むSHAでまだ。
+- **次の再開位置**：pushしてこの修正を含むSHAの全体回帰（8シャード）を確かめる。
+
 ## 要修正の記録
 
 ### 旧手順の修正担当からの切替（2026-11-16、Claude・S40）
