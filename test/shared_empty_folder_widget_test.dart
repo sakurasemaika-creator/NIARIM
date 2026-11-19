@@ -114,8 +114,7 @@ void main() {
         final l10n = await show(tester, service!, locale);
         expect(service.shared, isEmpty);
         expect(find.text('S25'), findsOneWidget, reason: '$locale $size');
-        // Folder tiles use the Project card's bottom-left favorite and
-        // top-right overflow menu at both mobile and desktop widths.
+        // Both actions share the bottom row below the title.
         final folderFavorite = find.byKey(
           const Key('collectionFavorite_saved'),
         );
@@ -126,10 +125,12 @@ void main() {
         expect(folderMenu, findsOneWidget, reason: '$locale $size');
         final starRect = tester.getRect(folderFavorite);
         final menuRect = tester.getRect(folderMenu);
-        expect(starRect.left, lessThan(menuRect.left), reason: '$locale $size');
+        expect(starRect.right, lessThanOrEqualTo(menuRect.left));
+        final titleBottom = tester.getBottomLeft(find.text('S25')).dy;
+        expect(starRect.top, greaterThanOrEqualTo(titleBottom));
         expect(
           starRect.center.dy,
-          greaterThan(menuRect.center.dy),
+          closeTo(menuRect.center.dy, 0.5),
           reason: '$locale $size',
         );
         expect(

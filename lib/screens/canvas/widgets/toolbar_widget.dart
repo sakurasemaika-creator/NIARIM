@@ -256,21 +256,16 @@ class ToolbarWidget extends StatelessWidget {
         tooltipKey: 'quick_tool',
         message: l10n.toolbarQuickToolFirstUseTip,
         child: GestureDetector(
-          onLongPress: () {
-            showIconActionDescription(context, l10n.toolbarQuickToolTooltip);
-            onQuickToolLongPress();
-          },
           onVerticalDragEnd: (details) {
             if ((details.primaryVelocity ?? 0) < -200) {
               onQuickToolLongPress();
             }
           },
-          child: _borderedIconButton(
-            context,
-            Icons.loop,
+          child: CanvasIconButton(
+            icon: Icons.loop,
             onPressed: onQuickToolTap,
             tooltip: l10n.toolbarQuickToolTooltip,
-            longPressTooltip: false,
+            onTooltipLongPress: onQuickToolLongPress,
           ),
         ),
       ),

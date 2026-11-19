@@ -18,8 +18,8 @@ import 'helpers/load_app_fonts.dart';
 ///
 /// 分割画面・ポップアップの窓・折りたたみ端末のカバー画面のような狭い窓
 /// でも、幅260pxまでは3つとも違う列数にする（小のカードが幅76px以上に
-/// なる間は小を3列にする）。それより狭いと3列のカードに右上のメニューと
-/// 左下の星が並ばないので、大と中が同じ1列になる。
+/// なる間は小を3列にする）。それより狭いと3列のカードに星と
+/// メニューが並ばないので、大と中が同じ1列になる。
 void main() {
   const widths = [
     240.0,
@@ -100,7 +100,7 @@ void main() {
           reason: '$mode at $width',
         );
         expect(tester.takeException(), isNull, reason: '$mode at $width');
-        // 狭いカードでも、右上のメニューと左下の星が重ならない。
+        // 狭いカードでも、右下に並ぶメニューと星が重ならない。
         for (final card
             in find
                 .descendant(
@@ -116,7 +116,7 @@ void main() {
                 )
                 .first,
           );
-          final menu = rectOf(CollectionActionFrame);
+          final menu = rectOf(PopupMenuButton<String>);
           final star = rectOf(CollectionFavoriteButton);
           expect(
             menu.overlaps(star),

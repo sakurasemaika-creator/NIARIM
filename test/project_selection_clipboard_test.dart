@@ -257,15 +257,19 @@ void main() {
         );
         final star = tester.getRect(find.byKey(Key('collectionFavorite_$id')));
         final menu = tester.getRect(find.byKey(Key('collectionMenu_$id')));
-        // Each circle's hit area extends four pixels beyond its painted bounds.
-        final starTarget = star.inflate(4);
-        final menuTarget = menu.inflate(4);
-        expect(starTarget.overlaps(cover), isFalse);
-        expect(menuTarget.overlaps(cover), isFalse);
-        expect(starTarget.overlaps(menuTarget), isFalse);
+        expect(star.top, greaterThanOrEqualTo(cover.bottom));
+        expect(menu.top, greaterThanOrEqualTo(cover.bottom));
+        expect(star.right, lessThanOrEqualTo(menu.left));
+        final seam = (star.right + menu.left) / 2;
         await tester.tapAt(star.centerLeft - const Offset(2, 0));
         await settleIo(tester);
         expect(service.folders.single.isFavorite, isTrue);
+        await tester.tapAt(Offset(seam - 0.5, star.center.dy));
+        await settleIo(tester);
+        expect(service.folders.single.isFavorite, isFalse);
+        await tester.tapAt(Offset(seam + 0.5, menu.center.dy));
+        await settle(tester);
+        expect(find.byType(PopupMenuItem<String>), findsWidgets);
       },
     );
   }

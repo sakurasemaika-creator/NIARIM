@@ -36,6 +36,7 @@ class CanvasIconButton extends StatelessWidget {
 
   /// 長押しでツールチップを出すかどうか。
   final bool longPressTooltip;
+  final VoidCallback? onTooltipLongPress;
 
   const CanvasIconButton({
     super.key,
@@ -49,6 +50,7 @@ class CanvasIconButton extends StatelessWidget {
     this.iconSize = 20,
     this.padding = 6,
     this.longPressTooltip = true,
+    this.onTooltipLongPress,
   }) : assert(
          icon != null || iconBuilder != null || outlinedIconBuilder != null,
          'iconかiconBuilderのどちらかを指定してください',
@@ -148,6 +150,9 @@ class CanvasIconButton extends StatelessWidget {
       triggerMode: longPressTooltip
           ? TooltipTriggerMode.longPress
           : TooltipTriggerMode.manual,
+      onTriggered: (trigger) {
+        if (trigger == TooltipTriggerMode.longPress) onTooltipLongPress?.call();
+      },
       child: InkResponse(
         onTap: onPressed,
         radius: padding > 6 ? iconSize / 2 + padding + 2 : 22,

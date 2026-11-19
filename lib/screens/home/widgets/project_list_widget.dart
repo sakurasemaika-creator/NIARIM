@@ -1041,7 +1041,7 @@ class ProjectListWidget extends StatelessWidget {
                 ),
               ),
               _gridCaption(context, project.name, project.folderId),
-              if (_showsGridActions)
+              if (onPickProject == null)
                 _gridCardActions(
                   context,
                   menu: _projectMenu(context, project),
@@ -1188,7 +1188,7 @@ class ProjectListWidget extends StatelessWidget {
                 ),
               ),
               _gridCaption(context, folder.name, folder.parentFolderId),
-              if (_showsGridActions)
+              if (onPickProject == null)
                 _gridCardActions(
                   context,
                   menu: _folderMenu(context, folder),
@@ -1216,6 +1216,7 @@ class ProjectListWidget extends StatelessWidget {
     required String itemId,
     required VoidCallback onFavorite,
   }) {
+    if (isSelectionMode) return CollectionTileActions.selectionSpace;
     final l10n = AppLocalizations.of(context)!;
     return CollectionTileActions(
       compact: viewMode.size == CollectionViewSize.small,

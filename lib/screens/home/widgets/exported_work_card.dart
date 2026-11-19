@@ -372,7 +372,9 @@ class ExportedWorkCard extends StatelessWidget {
                     ),
                   ),
                   collectionTileCaption(context, name, keepFileSuffix: true),
-                  if (!selectionActive)
+                  if (selectionActive)
+                    CollectionTileActions.selectionSpace
+                  else
                     CollectionTileActions(
                       compact: compactActions,
                       children: [

@@ -1,4 +1,4 @@
-name: Project creation and plan comparison
+name: Project, canvas and plan usability
 on:
   push:
     branches: [dev_branch]
@@ -10,6 +10,12 @@ on:
       - 'lib/screens/project/new_project_screen.dart'
       - 'test/new_project_inputs_test.dart'
       - 'test/background_color_picker_test.dart'
+      - 'lib/screens/canvas/widgets/canvas_icon_button.dart'
+      - 'lib/screens/canvas/widgets/toolbar_widget.dart'
+      - 'lib/widgets/collection_action_controls.dart'
+      - 'test/project_grid_view_size_test.dart'
+      - 'test/project_selection_clipboard_test.dart'
+      - 'test/quick_tool_panel_landscape_fit_test.dart'
       - 'test/l10n_locales_not_left_in_english_test.dart'
       - 'test/visual/project_and_plan_capture_test.dart'
       - 'test/premium_screen_price_test.dart'
@@ -36,6 +42,11 @@ jobs:
           test/premium_screen_price_test.dart test/premium_comparison_table_test.dart
           test/new_project_inputs_test.dart test/background_color_picker_test.dart
           test/l10n_locales_not_left_in_english_test.dart
+      - name: Verify project selection, card hit targets and quick tool controls
+        run: >
+          flutter test --no-pub --reporter expanded
+          test/project_grid_view_size_test.dart test/project_selection_clipboard_test.dart
+          test/shared_empty_folder_widget_test.dart test/quick_tool_panel_landscape_fit_test.dart
       - run: flutter test --no-pub --reporter expanded test/startup_unreadable_projects_folder_test.dart --name 'Home'
       - name: Capture Japanese project and plan screens on mobile and desktop
         run: flutter test --no-pub --dart-define=NIARIM_CAPTURE_PROJECT_AND_PLAN=true test/visual/project_and_plan_capture_test.dart

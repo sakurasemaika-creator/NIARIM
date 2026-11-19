@@ -254,6 +254,11 @@ class _RenderReachHost extends RenderProxyBox {
 /// A tile's bottom action band. It keeps the controls side by side, with
 /// full-height touch targets and non-overlapping horizontal reach.
 class CollectionTileActions extends StatelessWidget {
+  /// Keeps the title and cover at their usual positions during multi-selection.
+  static const selectionSpace = SizedBox(
+    height: CollectionActionFrame.targetExtent,
+  );
+
   const CollectionTileActions({
     super.key,
     required this.children,

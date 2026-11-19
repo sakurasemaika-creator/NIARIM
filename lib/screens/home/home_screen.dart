@@ -4869,7 +4869,9 @@ Widget _receivedShareProjectTile(
               children: [
                 Expanded(child: cover()),
                 collectionTileCaption(context, project.name),
-                if (!selecting)
+                if (selecting)
+                  CollectionTileActions.selectionSpace
+                else
                   CollectionTileActions(
                     compact: compactActions,
                     children: _sharedProjectActions(
@@ -5437,7 +5439,9 @@ class _OutgoingSharesList extends StatelessWidget {
                       ),
                     ),
                     collectionTileCaption(context, entry.name),
-                    if (!selecting)
+                    if (selecting)
+                      CollectionTileActions.selectionSpace
+                    else
                       CollectionTileActions(
                         compact: viewMode.size == CollectionViewSize.small,
                         children: [favoriteAction, menuAction],
@@ -6080,7 +6084,9 @@ class _FolderableList<T> extends StatelessWidget {
                   ),
                 ),
                 collectionTileCaption(context, folder.name),
-                if (!selecting)
+                if (selecting)
+                  CollectionTileActions.selectionSpace
+                else
                   CollectionTileActions(
                     compact: viewMode?.size == CollectionViewSize.small,
                     children: _folderActions(context, folder),
