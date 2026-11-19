@@ -76,6 +76,7 @@ const _sameInLocale = <String, Set<String>>{
     'brushSettingsFadeDistanceLabel',
     'brushSettingsMixingTexture',
     'canvasAutofillCheckNormal',
+    'canvasBackgroundTransparent',
     'canvasShapeRect',
     'canvasTextHorizontal',
     'canvasTextVertical',
