@@ -581,7 +581,9 @@ App・Web共通。Claudeが要修正の詳細を追記し、ユーザーが別�
 - **古いDISCの確認（続き7）**：DISC015の書式の残り（別のセッションの2ファイルが未整形）をApp `b6cf29a6`で整形（`dart format --set-exit-if-changed lib test tool`で0件、analyze 0件。testの失敗の部分は全体のtestをCIで通すときに確かめる）。DISC033（書き出しが0件でも作ったフォルダに入れる。`home_work_folder_empty_test`が`libraryHasFile: false`で見張り、成功）は直っている。共有フォルダのtest 4ファイル36件は成功したが、DISC038（共有の作品が0件のときのフォルダ）を直接見張っているかは未確認。
 - **所有者の判断待ち（追加）**：DISC090（「保存せず戻る」：案A＝今のまま文言を「手動セーブを作らずに戻る」へ7言語で直す／案B＝この回に描いた分を捨てる。案Bの反例test 5件は`logs/DISC090/fix2/`）、DISC010（作品広場の上部バーの画面名とフィルターの密度）、DISC119（保存の方式の変更・後片付けの残り）、DISC150（中国語・韓国語の太字の本文の太さの違い。書体の作り直しの判断）。
 - **Webのpush（2026-11-19確認）**：Webの5コミット（`2ce5408`〜`cdf36de`）は`origin/dev_branch`に入った（このセッションの開始時に`git fetch`で確認、ローカルとoriginが一致）。DISC444・450・451・457・459・460のWeb側とナビの修正は反映済み。
-- **次の再開位置**：(1) 残りの古いDISC（DISC008・009・011・012・014・016〜024・030・031・035・037〜040・042・052・056・070・145・161）を対応するtest・コードで確かめる。(3) Flutter全体のtestをCIで通す。
+- **DISC008（App `53887cf2`）**：自分の作者ページの「ブックマーク」タブは、出せる作品が0件なら理由に関係なく「ありません」と出した。一覧はブックマークのIDがあっても、作品がまだ読み込まれていないか今は公開されていないと外す（表示フィルター・ミュートは一覧に効かない）。IDがあって出せる作品が無いときは`communityBookmarksHiddenMessage`（「まだ読み込めていないか、今は公開されていません」、7言語）を出すようにした。新しい`community_bookmarks_hidden_message_test` 2件、font_coverage・l10n、作者ページの関連test 36件が成功、analyze 0件。取得の失敗・オフラインの区別（読み込み中・失敗の表示）は、接続先のあるビルドでの実操作で二巡目に確かめる。
+- **DISC009**：アカウントの切り替え・サインアウト後に古い応答を当てない。`community_account_boundary_test`・`community_account_boundary_widget_test`・`community_account_microtask_boundary_test`・`community_backend_social_sync_test`の31件が成功（直っている）。
+- **次の再開位置**：(1) 残りの古いDISC（DISC011・012・014・016〜024・030・031・035・037〜040・042・052・056・070・145・161）を対応するtest・コードで確かめる。(3) Flutter全体のtestをCIで通す。
 
 ## 要修正の記録
 
