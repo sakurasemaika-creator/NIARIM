@@ -134,8 +134,11 @@ Locale _localeOf(String code) => code == 'zh_Hant'
     : Locale(code);
 
 /// 数とコインの単位の語。どの言語の語でも、つながっていれば数と一緒に拾う。
+/// 数は表示言語の桁区切り（「55,000」「55.000」「55 000」）ごと拾う
+/// （区切りの後ろの「000」だけを拾うと0として比べてしまう）。
 final _coinPhrase = RegExp(
-  r'(\d+)\s*(opals?|ópalos?|opales?|오팔|オパール|欧泊|歐泊)(?![\p{L}])',
+  r'(?<![\d,.  ])(\d{1,3}(?:[,.  ]\d{3})+|\d+)\s*'
+  r'(opals?|ópalos?|opales?|오팔|オパール|欧泊|歐泊)(?![\p{L}])',
   unicode: true,
 );
 
@@ -164,7 +167,9 @@ void _expectLocalised(
     for (final match in _coinPhrase.allMatches(text)) {
       expect(
         match.group(0),
-        l10n.coinAmount(int.parse(match.group(1)!)),
+        l10n.coinAmount(
+          int.parse(match.group(1)!.replaceAll(RegExp(r'\D'), '')),
+        ),
         reason: '$locale: 数と単位がその言語の形でない: $text',
       );
     }
