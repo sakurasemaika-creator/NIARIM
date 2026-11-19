@@ -7,6 +7,7 @@ on:
       - "lib/services/theme_service.dart"
       - "lib/screens/home/home_screen.dart"
       - "test/snack_bar_action_contrast_test.dart"
+      - "test/toast_contract_test.dart"
       - "test/home_shared_folder_paste_flow_test.dart"
       - "test/project_selection_clipboard_test.dart"
       - ".github/workflows/home-folder-toast-visual-proof.yml"
@@ -31,6 +32,8 @@ jobs:
         run: flutter analyze --no-fatal-infos lib/services/theme_service.dart lib/screens/home/home_screen.dart test/snack_bar_action_contrast_test.dart test/home_shared_folder_paste_flow_test.dart test/project_selection_clipboard_test.dart
       - name: Flat SnackBar without flattening other surfaces
         run: flutter test test/snack_bar_action_contrast_test.dart --reporter expanded
+      - name: Check toast source contract
+        run: flutter test --no-pub test/toast_contract_test.dart --plain-name '自作の知らせ' --reporter expanded
       - name: Shared and Works collection real UI screenshots
         run: flutter test test/home_shared_folder_paste_flow_test.dart --reporter expanded
       - name: Bulk folder Trash screenshot
