@@ -596,6 +596,7 @@ App・Web共通。Claudeが要修正の詳細を追記し、ユーザーが別�
   - 今のコードで通った：`save_slot_confirmation_dialog_test`・`save_unnamed_names_test`（GPTの`863b962b`で直っていた）。
   - **製品の不具合として残る**：`niatra_transfer_draw_filters_test`（設定の引き継ぎ：相手の端末で調整した組み込みのフィルター「ガウスぼかし」を、この端末が出荷時のままなら値を受け取るはずが「(コピー)」として足し、両方で調整した分が「(コピー 2)」になる。`61c87c82`から出ている。DISC062の取り込みの決まりに反する。`FilterService`の`mergeTransferred`を直す）。
   - **testの前提が古い見込み（要調査）**：`exported_work_card_test`3件（共有・削除のボタンがメニューへ移った後もボタンを探す）、`community_theme_color_propagation_test`1件（浮かぶプレビューの再生ボタンが`communityPreviewControls`の中に見つからない）、`home_trash_confirm_style_test`1件（作品のフォルダ・受け取ったフォルダのゴミ箱の確認の後にAlertDialogが残る）。
+- **`44433103724`（`863b962b`）の状況（記録時点）**：8シャード中7つが失敗で終わり、`full-tests (2)`だけ1時間以上実行中（止まっている可能性）。ログは実行が全部終わるまで取れない。
 - **全体回帰の手動起動**：`gh workflow run flutter-complete-sharded-tests.yml`は許可が下りなかった（pushで起動するのは特定のファイルが変わったときだけ）。**必要な操作**：このワークフローを`dev_branch`で手動起動する（または`gh workflow run`を許可する）。
 - **次の再開位置**：(0) `44433103724`の結果のログを取り（`node .dart_tool/audit_tools/fetch_job_logs.mjs <出力> <失敗したjob id…>`→`failed_tests.mjs`）、上の残りと照らす。`64e46ac1`以降の全体回帰が成功したら、そのSHAをここに書く。(1) 残りの古いDISC（DISC012・017・018・020・021・024・030・031・035・037〜040・042・052・056・070・145・161）を対応するtest・コードで確かめる。(3) Flutter全体のtestをCIで通す。
 
