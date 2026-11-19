@@ -3168,6 +3168,7 @@
   },
   "communityAuthorTabWorks": "作品",
   "communityAuthorTabBookmarks": "ブックマーク",
+  "communityBookmarksHiddenMessage": "ブックマークした作品は、まだ読み込めていないか、今は公開されていません",
   "communityBookmarksEmptyMessage": "ブックマークした作品がありません",
   "communityShortsBadge": "縦画面",
   "communityVideoTypeFilterTooltip": "動画の種類を絞り込む",

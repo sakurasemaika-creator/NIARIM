@@ -6325,6 +6325,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get communityAuthorTabBookmarks => '书签';
 
   @override
+  String get communityBookmarksHiddenMessage => '加入书签的作品尚未加载，或目前未公开';
+
+  @override
   String get communityBookmarksEmptyMessage => '暂无加入书签的作品';
 
   @override
@@ -16517,6 +16520,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get communityAuthorTabBookmarks => '收藏';
+
+  @override
+  String get communityBookmarksHiddenMessage => '收藏的作品尚未載入，或目前未公開';
 
   @override
   String get communityBookmarksEmptyMessage => '尚無收藏的作品';

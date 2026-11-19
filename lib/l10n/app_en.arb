@@ -2721,6 +2721,7 @@
   },
   "communityAuthorTabWorks": "Works",
   "communityAuthorTabBookmarks": "Bookmarks",
+  "communityBookmarksHiddenMessage": "Your bookmarked works have not loaded yet or are no longer public",
   "communityBookmarksEmptyMessage": "No bookmarked works",
   "communityShortsBadge": "Portrait",
   "communityVideoTypeFilterTooltip": "Filter by video type",

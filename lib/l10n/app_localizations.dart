@@ -11595,6 +11595,12 @@ abstract class AppLocalizations {
   /// **'ブックマーク'**
   String get communityAuthorTabBookmarks;
 
+  /// No description provided for @communityBookmarksHiddenMessage.
+  ///
+  /// In ja, this message translates to:
+  /// **'ブックマークした作品は、まだ読み込めていないか、今は公開されていません'**
+  String get communityBookmarksHiddenMessage;
+
   /// No description provided for @communityBookmarksEmptyMessage.
   ///
   /// In ja, this message translates to:

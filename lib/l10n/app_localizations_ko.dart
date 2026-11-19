@@ -6424,6 +6424,10 @@ class AppLocalizationsKo extends AppLocalizations {
   String get communityAuthorTabBookmarks => '북마크';
 
   @override
+  String get communityBookmarksHiddenMessage =>
+      '북마크한 작품을 아직 불러오지 못했거나 지금은 공개되어 있지 않습니다';
+
+  @override
   String get communityBookmarksEmptyMessage => '북마크한 작품이 없습니다';
 
   @override

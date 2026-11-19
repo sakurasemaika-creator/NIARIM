@@ -2700,6 +2700,7 @@
   },
   "communityAuthorTabWorks": "作品",
   "communityAuthorTabBookmarks": "书签",
+  "communityBookmarksHiddenMessage": "加入书签的作品尚未加载，或目前未公开",
   "communityBookmarksEmptyMessage": "暂无加入书签的作品",
   "communityShortsBadge": "竖屏",
   "communityVideoTypeFilterTooltip": "按视频类型筛选",

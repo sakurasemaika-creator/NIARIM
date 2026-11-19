@@ -6776,6 +6776,10 @@ class AppLocalizationsFr extends AppLocalizations {
   String get communityAuthorTabBookmarks => 'Favoris';
 
   @override
+  String get communityBookmarksHiddenMessage =>
+      'Vos œuvres en favoris ne sont pas encore chargées ou ne sont plus publiques';
+
+  @override
   String get communityBookmarksEmptyMessage => 'Aucune œuvre en favoris';
 
   @override

@@ -6388,6 +6388,10 @@ class AppLocalizationsJa extends AppLocalizations {
   String get communityAuthorTabBookmarks => 'ブックマーク';
 
   @override
+  String get communityBookmarksHiddenMessage =>
+      'ブックマークした作品は、まだ読み込めていないか、今は公開されていません';
+
+  @override
   String get communityBookmarksEmptyMessage => 'ブックマークした作品がありません';
 
   @override

@@ -6656,6 +6656,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get communityAuthorTabBookmarks => 'Bookmarks';
 
   @override
+  String get communityBookmarksHiddenMessage =>
+      'Your bookmarked works have not loaded yet or are no longer public';
+
+  @override
   String get communityBookmarksEmptyMessage => 'No bookmarked works';
 
   @override

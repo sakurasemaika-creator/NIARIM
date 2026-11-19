@@ -6770,6 +6770,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get communityAuthorTabBookmarks => 'Marcadores';
 
   @override
+  String get communityBookmarksHiddenMessage =>
+      'Tus obras marcadas aún no se han cargado o ya no son públicas';
+
+  @override
   String get communityBookmarksEmptyMessage => 'No hay obras marcadas';
 
   @override

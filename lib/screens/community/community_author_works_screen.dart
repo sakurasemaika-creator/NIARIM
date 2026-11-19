@@ -523,8 +523,15 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
                                 ? Padding(
                                     padding: const EdgeInsets.all(32),
                                     child: Center(
+                                      // ブックマークはあるのに出せる作品が無い
+                                      // ときは「ありません」と言わない（まだ
+                                      // 読み込めていないか、今は公開されて
+                                      // いない）。
                                       child: Text(
-                                        l10n.communityBookmarksEmptyMessage,
+                                        bookmarkedIds.isEmpty
+                                            ? l10n.communityBookmarksEmptyMessage
+                                            : l10n.communityBookmarksHiddenMessage,
+                                        textAlign: TextAlign.center,
                                       ),
                                     ),
                                   )

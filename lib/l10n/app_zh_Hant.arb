@@ -2699,6 +2699,7 @@
   },
   "communityAuthorTabWorks": "作品",
   "communityAuthorTabBookmarks": "收藏",
+  "communityBookmarksHiddenMessage": "收藏的作品尚未載入，或目前未公開",
   "communityBookmarksEmptyMessage": "尚無收藏的作品",
   "communityShortsBadge": "直向",
   "communityVideoTypeFilterTooltip": "依影片類型篩選",

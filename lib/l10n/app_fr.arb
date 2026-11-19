@@ -2700,6 +2700,7 @@
   },
   "communityAuthorTabWorks": "Œuvres",
   "communityAuthorTabBookmarks": "Favoris",
+  "communityBookmarksHiddenMessage": "Vos œuvres en favoris ne sont pas encore chargées ou ne sont plus publiques",
   "communityBookmarksEmptyMessage": "Aucune œuvre en favoris",
   "communityShortsBadge": "Vertical",
   "communityVideoTypeFilterTooltip": "Filtrer par type de vidéo",
