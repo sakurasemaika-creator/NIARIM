@@ -14787,6 +14787,12 @@ abstract class AppLocalizations {
   /// **'このアプリを閉じるまでに起きたエラーを、新しい順に最大20件表示します。メールアドレスやログインの情報は伏せてあります。'**
   String get errorLogHint;
 
+  /// No description provided for @savedListUnreadableNotice.
+  ///
+  /// In ja, this message translates to:
+  /// **'{count, plural, other{保存の中に読み込めない項目が{count}件あります。元のデータは消さずに残してあり、次に起動したときにもう一度読み込みを試します。}}'**
+  String savedListUnreadableNotice(int count);
+
   /// No description provided for @errorLogEmpty.
   ///
   /// In ja, this message translates to:

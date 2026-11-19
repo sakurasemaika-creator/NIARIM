@@ -8586,6 +8586,19 @@ class AppLocalizationsEn extends AppLocalizations {
       'Shows up to 20 errors since the app was opened, newest first. Email addresses and sign-in details are hidden.';
 
   @override
+  String savedListUnreadableNotice(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count saved items could not be read. Their original data is kept, and the app tries to read them again the next time it starts.',
+      one:
+          '1 saved item could not be read. Its original data is kept, and the app tries to read it again the next time it starts.',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get errorLogEmpty => 'No errors have been recorded';
 
   @override

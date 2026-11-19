@@ -3368,6 +3368,7 @@
   "settingsErrorLogTitle": "Error log",
   "settingsErrorLogSubtitle": "View and copy errors from the app to include when reporting a problem",
   "errorLogHint": "Shows up to 20 errors since the app was opened, newest first. Email addresses and sign-in details are hidden.",
+  "savedListUnreadableNotice": "{count, plural, one{1 saved item could not be read. Its original data is kept, and the app tries to read it again the next time it starts.} other{{count} saved items could not be read. Their original data is kept, and the app tries to read them again the next time it starts.}}",
   "errorLogEmpty": "No errors have been recorded",
   "errorLogCopyAll": "Copy all",
   "errorLogCopied": "Error log copied",

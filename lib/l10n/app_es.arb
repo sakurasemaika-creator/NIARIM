@@ -3340,6 +3340,7 @@
   "settingsErrorLogTitle": "Registro de errores",
   "settingsErrorLogSubtitle": "Consulta y copia los errores de la app para incluirlos al informar de un problema",
   "errorLogHint": "Muestra hasta 20 errores desde que se abrió la app, del más reciente al más antiguo. Las direcciones de correo y los datos de inicio de sesión se ocultan.",
+  "savedListUnreadableNotice": "{count, plural, one{No se pudo leer 1 elemento guardado. Sus datos originales se conservan y la app intentará leerlo de nuevo la próxima vez que se inicie.} other{No se pudieron leer {count} elementos guardados. Sus datos originales se conservan y la app intentará leerlos de nuevo la próxima vez que se inicie.}}",
   "errorLogEmpty": "No se ha registrado ningún error",
   "errorLogCopyAll": "Copiar todo",
   "errorLogCopied": "Registro de errores copiado",

@@ -4153,6 +4153,12 @@
   "settingsErrorLogTitle": "エラーの記録",
   "settingsErrorLogSubtitle": "不具合を知らせるときに、アプリで起きたエラーを確認してコピーできます",
   "errorLogHint": "このアプリを閉じるまでに起きたエラーを、新しい順に最大20件表示します。メールアドレスやログインの情報は伏せてあります。",
+  "savedListUnreadableNotice": "{count, plural, other{保存の中に読み込めない項目が{count}件あります。元のデータは消さずに残してあり、次に起動したときにもう一度読み込みを試します。}}",
+  "@savedListUnreadableNotice": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
   "errorLogEmpty": "エラーは記録されていません",
   "errorLogCopyAll": "すべてコピー",
   "errorLogCopied": "エラーの記録をコピーしました",

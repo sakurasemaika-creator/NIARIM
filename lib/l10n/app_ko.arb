@@ -3340,6 +3340,7 @@
   "settingsErrorLogTitle": "오류 기록",
   "settingsErrorLogSubtitle": "문제를 알릴 때 앱에서 발생한 오류를 확인하고 복사할 수 있습니다",
   "errorLogHint": "앱을 연 뒤 발생한 오류를 최신순으로 최대 20건 표시합니다. 이메일 주소와 로그인 정보는 가려져 있습니다.",
+  "savedListUnreadableNotice": "{count, plural, other{저장된 항목 중 {count}개를 읽지 못했습니다. 원래 데이터는 지우지 않고 남겨 두었으며, 다음에 앱을 시작할 때 다시 읽기를 시도합니다.}}",
   "errorLogEmpty": "기록된 오류가 없습니다",
   "errorLogCopyAll": "모두 복사",
   "errorLogCopied": "오류 기록을 복사했습니다",

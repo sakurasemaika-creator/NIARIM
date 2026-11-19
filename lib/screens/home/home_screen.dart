@@ -74,6 +74,7 @@ import 'home_clipboard_policy.dart';
 import '../../config/font_fallback.dart';
 import '../../utils/line_break.dart';
 import '../../utils/name_collation.dart';
+import '../../utils/saved_list_reader.dart';
 import '../../widgets/projects_load_failure_notice.dart';
 import '../../widgets/scrollable_sheet_body.dart';
 import '../../utils/app_error_reporter.dart';
@@ -682,12 +683,40 @@ class _HomeScreenState extends State<HomeScreen>
   // 表示する（ブクマ済みタブに新規作成の導線があるのは不自然なため）。
   int _currentTabIndex = 0;
 
+  /// 読めない保存項目を、この起動でもう知らせたか。
+  static bool _unreadableSavedItemsAnnounced = false;
+
+  /// 保存の中の読めない項目（元のデータは一覧に残してあり、起動のたびに
+  /// 読み直す）を知らせ、「エラーの記録」を開けるようにする。
+  void _announceUnreadableSavedItems() {
+    if (!mounted || _unreadableSavedItemsAnnounced) return;
+    final count = SavedListCarryOver.total;
+    if (count == 0) return;
+    _unreadableSavedItemsAnnounced = true;
+    final l10n = AppLocalizations.of(context)!;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        key: const Key('homeUnreadableSavedItemsNotice'),
+        persist: false,
+        content: Text(l10n.savedListUnreadableNotice(count)),
+        action: SnackBarAction(
+          label: l10n.settingsErrorLogTitle,
+          onPressed: () => context.push('/settings/error-log'),
+        ),
+      ),
+    );
+  }
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _tabController = _HomeTabController(length: 4, vsync: this);
     _projectScrollController.addListener(_syncProjectsCanGoUp);
+    // 保存の中に読めない項目があれば、起動ごとに1回だけ知らせる。
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => _announceUnreadableSavedItems(),
+    );
     _tabController.addListener(() {
       if (_tabController.index != _currentTabIndex) {
         final wasSearching = _isSearching;

@@ -8739,6 +8739,19 @@ class AppLocalizationsFr extends AppLocalizations {
       'Affiche jusqu’à 20 erreurs depuis l’ouverture de l’application, des plus récentes aux plus anciennes. Les adresses e-mail et les informations de connexion sont masquées.';
 
   @override
+  String savedListUnreadableNotice(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count éléments enregistrés n’ont pas pu être lus. Leurs données d’origine sont conservées et l’application essaiera de nouveau de les lire au prochain démarrage.',
+      one:
+          '$count élément enregistré n’a pas pu être lu. Ses données d’origine sont conservées et l’application essaiera de nouveau de le lire au prochain démarrage.',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get errorLogEmpty => 'Aucune erreur enregistrée';
 
   @override

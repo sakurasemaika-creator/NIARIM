@@ -8208,6 +8208,17 @@ class AppLocalizationsJa extends AppLocalizations {
       'このアプリを閉じるまでに起きたエラーを、新しい順に最大20件表示します。メールアドレスやログインの情報は伏せてあります。';
 
   @override
+  String savedListUnreadableNotice(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '保存の中に読み込めない項目が$count件あります。元のデータは消さずに残してあり、次に起動したときにもう一度読み込みを試します。',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get errorLogEmpty => 'エラーは記録されていません';
 
   @override

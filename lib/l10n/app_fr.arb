@@ -3340,6 +3340,7 @@
   "settingsErrorLogTitle": "Journal des erreurs",
   "settingsErrorLogSubtitle": "Consultez et copiez les erreurs de l’application pour les joindre à un signalement",
   "errorLogHint": "Affiche jusqu’à 20 erreurs depuis l’ouverture de l’application, des plus récentes aux plus anciennes. Les adresses e-mail et les informations de connexion sont masquées.",
+  "savedListUnreadableNotice": "{count, plural, one{{count} élément enregistré n’a pas pu être lu. Ses données d’origine sont conservées et l’application essaiera de nouveau de le lire au prochain démarrage.} other{{count} éléments enregistrés n’ont pas pu être lus. Leurs données d’origine sont conservées et l’application essaiera de nouveau de les lire au prochain démarrage.}}",
   "errorLogEmpty": "Aucune erreur enregistrée",
   "errorLogCopyAll": "Tout copier",
   "errorLogCopied": "Journal des erreurs copié",

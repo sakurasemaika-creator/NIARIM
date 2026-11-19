@@ -11,6 +11,7 @@ import 'package:niarim/screens/settings/error_log_screen.dart';
 import 'package:niarim/services/settings_service.dart';
 import 'package:niarim/utils/app_error_reporter.dart';
 import 'package:niarim/utils/app_locale.dart';
+import 'package:niarim/utils/saved_list_reader.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -91,6 +92,40 @@ void main() {
           home: const ErrorLogScreen(),
         ),
       );
+
+  testWidgets(
+    'unreadable saved items are announced in every language (DISC070)',
+    (tester) async {
+      tester.view.physicalSize = const Size(320, 640);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      addTearDown(SavedListCarryOver.reset);
+      AppErrorReporter.recentErrors.clear();
+      // 読めない項目が無ければ知らせない。
+      SavedListCarryOver.reset();
+      await tester.pumpWidget(screen(const Locale('ja')));
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const Key('errorLogUnreadableSavedItems')),
+        findsNothing,
+      );
+      // エラーの記録を消していても、読めない項目があれば知らせる。
+      SavedListCarryOver.remember('tones', ['{broken', '[1]']);
+      for (final locale in AppLocalizations.supportedLocales) {
+        await tester.pumpWidget(const SizedBox());
+        await tester.pumpWidget(screen(locale, scale: 2));
+        await tester.pumpAndSettle();
+        final l10n = lookupAppLocalizations(locale);
+        expect(
+          find.text(l10n.savedListUnreadableNotice(2)),
+          findsOneWidget,
+          reason: '$locale',
+        );
+        expect(tester.takeException(), isNull, reason: '$locale');
+      }
+    },
+  );
 
   testWidgets('errors can be read, copied and cleared', (tester) async {
     String? copied;

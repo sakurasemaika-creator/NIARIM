@@ -7,6 +7,7 @@ import '../../widgets/empty_state_placeholder.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/fit_or_hide_title.dart';
 import '../../widgets/menu_card.dart';
+import '../../utils/saved_list_reader.dart';
 
 /// 設定の「エラーの記録」。アプリを閉じるまでに起きたエラー
 /// （[AppErrorReporter.recentErrors]）を新しい順に見せ、不具合を知らせる
@@ -35,11 +36,31 @@ class _ErrorLogScreenState extends State<ErrorLogScreen> {
     final l10n = AppLocalizations.of(context)!;
     final scheme = Theme.of(context).colorScheme;
     final errors = List<String>.of(AppErrorReporter.recentErrors);
+    // 保存の中の読めない項目（元のデータは一覧に残し、起動のたびに読み直す）。
+    final unreadable = SavedListCarryOver.total;
+    final unreadableNotice = unreadable == 0
+        ? null
+        : MenuCard(
+            key: const Key('errorLogUnreadableSavedItems'),
+            child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Icon(Icons.inventory_2_outlined),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(l10n.savedListUnreadableNotice(unreadable)),
+                  ),
+                ],
+              ),
+            ),
+          );
     return Scaffold(
       appBar: AppBar(title: FitOrHideTitle(l10n.settingsErrorLogTitle)),
       body: desktopCentered(
         context,
-        errors.isEmpty
+        errors.isEmpty && unreadableNotice == null
             ? EmptyStatePlaceholder(
                 icon: Icons.check_circle_outline,
                 title: l10n.errorLogEmpty,
@@ -49,6 +70,10 @@ class _ErrorLogScreenState extends State<ErrorLogScreen> {
                 key: const Key('errorLogList'),
                 padding: const EdgeInsets.all(16),
                 children: [
+                  if (unreadableNotice != null) ...[
+                    unreadableNotice,
+                    const SizedBox(height: 12),
+                  ],
                   Text(
                     l10n.errorLogHint,
                     style: TextStyle(color: scheme.onSurfaceVariant),

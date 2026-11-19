@@ -8111,6 +8111,16 @@ class AppLocalizationsZh extends AppLocalizations {
   String get errorLogHint => '按从新到旧的顺序显示打开应用后发生的最多20条错误。电子邮件地址和登录信息已隐藏。';
 
   @override
+  String savedListUnreadableNotice(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '有$count个已保存的项目无法读取。原始数据已保留，下次启动时会再次尝试读取。',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get errorLogEmpty => '没有记录到错误';
 
   @override
@@ -18344,6 +18354,16 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get errorLogHint => '依新到舊的順序顯示開啟應用程式後發生的最多20筆錯誤。電子郵件地址與登入資訊已隱藏。';
+
+  @override
+  String savedListUnreadableNotice(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '有$count個已儲存的項目無法讀取。原始資料已保留，下次啟動時會再次嘗試讀取。',
+    );
+    return '$_temp0';
+  }
 
   @override
   String get errorLogEmpty => '沒有記錄到錯誤';

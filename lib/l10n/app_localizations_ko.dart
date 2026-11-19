@@ -8251,6 +8251,17 @@ class AppLocalizationsKo extends AppLocalizations {
       '앱을 연 뒤 발생한 오류를 최신순으로 최대 20건 표시합니다. 이메일 주소와 로그인 정보는 가려져 있습니다.';
 
   @override
+  String savedListUnreadableNotice(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '저장된 항목 중 $count개를 읽지 못했습니다. 원래 데이터는 지우지 않고 남겨 두었으며, 다음에 앱을 시작할 때 다시 읽기를 시도합니다.',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get errorLogEmpty => '기록된 오류가 없습니다';
 
   @override

@@ -3340,6 +3340,7 @@
   "settingsErrorLogTitle": "錯誤記錄",
   "settingsErrorLogSubtitle": "回報問題時，可以查看並複製應用程式中發生的錯誤",
   "errorLogHint": "依新到舊的順序顯示開啟應用程式後發生的最多20筆錯誤。電子郵件地址與登入資訊已隱藏。",
+  "savedListUnreadableNotice": "{count, plural, other{有{count}個已儲存的項目無法讀取。原始資料已保留，下次啟動時會再次嘗試讀取。}}",
   "errorLogEmpty": "沒有記錄到錯誤",
   "errorLogCopyAll": "全部複製",
   "errorLogCopied": "已複製錯誤記錄",

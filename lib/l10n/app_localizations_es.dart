@@ -8724,6 +8724,19 @@ class AppLocalizationsEs extends AppLocalizations {
       'Muestra hasta 20 errores desde que se abrió la app, del más reciente al más antiguo. Las direcciones de correo y los datos de inicio de sesión se ocultan.';
 
   @override
+  String savedListUnreadableNotice(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'No se pudieron leer $count elementos guardados. Sus datos originales se conservan y la app intentará leerlos de nuevo la próxima vez que se inicie.',
+      one:
+          'No se pudo leer 1 elemento guardado. Sus datos originales se conservan y la app intentará leerlo de nuevo la próxima vez que se inicie.',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get errorLogEmpty => 'No se ha registrado ningún error';
 
   @override
