@@ -141,8 +141,12 @@ void main() {
       afterSecond,
       'もう1台で後から変えた自作のフィルターは、この端末の版を残して足す',
     );
-    final copyName = _ja.projectDuplicateName(_ja.filterNameGaussianBlur);
-    p.check(later.addedCopies, [copyName], '足した複製を知らせる');
+    final customName = _ja.projectDuplicateName(_ja.filterNameGaussianBlur);
+    final importedName = _ja.projectDuplicateNameNumbered(
+      _ja.filterNameGaussianBlur,
+      2,
+    );
+    p.check(later.addedCopies, [importedName], '足した複製を知らせる');
     p.check(
       [
         for (final f in b.filter.filters)
@@ -151,8 +155,8 @@ void main() {
       ],
       [
         '${_ja.filterNameGaussianBlur}:42.0',
-        '${_ja.filterNameGaussianBlur}:77.0',
-        '$copyName:5.0',
+        '$customName:77.0',
+        '$importedName:5.0',
       ],
       'フィルターの一覧では、複製は知らせと同じ名前で出る（元のフィルターは'
       'そのまま）',

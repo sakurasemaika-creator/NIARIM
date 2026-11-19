@@ -23,6 +23,7 @@ import 'package:niarim/models/effect_filter_instance.dart';
 import 'package:niarim/screens/canvas/widgets/canvas_area.dart';
 import 'package:niarim/screens/canvas/widgets/canvas_preview_navigator.dart';
 import 'package:niarim/screens/canvas/widgets/layer_panel.dart';
+import 'package:niarim/screens/export/export_screen.dart';
 import 'package:niarim/screens/timeline/timeline_screen.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:niarim/services/autofill_preset_service.dart';
@@ -69,11 +70,12 @@ void main() {
     void Function(ProjectService, String)? setUpProject,
     AutofillPresetService? presets,
     bool showNavigator = false,
+    String language = 'ja',
   }) async {
     await tester.pumpWidget(const SizedBox.shrink());
     SharedPreferences.setMockInitialValues({
       'first_launch': false,
-      'language': 'ja',
+      'language': language,
       'force_pc_mode': pc ? 1 : 0,
       'timeline_preview_height_fraction': fraction,
       if (showNavigator) 'default_docked_panels': ['canvasPreview'],
@@ -125,6 +127,29 @@ void main() {
     await tester.pump(const Duration(milliseconds: 600));
     return created.id;
   }
+
+  testWidgets('320px timeline opens export without scrolling the toolbar', (
+    tester,
+  ) async {
+    tester.platformDispatcher.textScaleFactorTestValue = 2;
+    addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+    await openTimeline(
+      tester,
+      project: const Size(16, 16),
+      screen: const Size(320, 640),
+      pc: false,
+      fraction: .4,
+      language: 'fr',
+    );
+    final export = find.byKey(const Key('timelineExportButton'));
+    expect(export.hitTestable(), findsOneWidget);
+    expect(tester.getSize(export), const Size(48, 48));
+    await tester.tap(export);
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 600));
+    expect(find.byType(ExportScreen), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
 
   for (final scenario in ['success', 'unreadable frame', 'cancel']) {
     testWidgets('timeline batch auto-fill: $scenario', (tester) async {

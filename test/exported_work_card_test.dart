@@ -190,16 +190,24 @@ void main() {
       await tester.pumpAndSettle();
       await tester.longPress(label);
       await tester.pumpAndSettle();
-      for (final icon in [Icons.ios_share, Icons.delete_outline]) {
-        final button = find.ancestor(
-          of: find.byIcon(icon),
-          matching: find.byType(IconButton),
-        );
-        await tester.ensureVisible(button);
-        await tester.tap(button);
+      final menu = find.byKey(const Key('exportedWorkMoreMenu'));
+      Future<void> chooseAction(String value, Offset edge) async {
+        await tester.ensureVisible(menu);
         await tester.pumpAndSettle();
-        expect(tester.getSize(button), const Size(48, 48));
+        // The action draws a 40px circle inside a 48px hit target.
+        await tester.tapAt(tester.getCenter(menu) + edge);
+        await tester.pumpAndSettle();
+        final item = find.byWidgetPredicate(
+          (widget) => widget is PopupMenuItem<String> && widget.value == value,
+        );
+        await tester.ensureVisible(item);
+        await tester.pumpAndSettle();
+        await tester.tap(item);
+        await tester.pumpAndSettle();
       }
+
+      await chooseAction('share', const Offset(23, 0));
+      await chooseAction('delete', const Offset(0, 23));
       expect(actions, ['open', 'move', 'share', 'delete']);
       Focus.of(tester.element(label)).requestFocus();
       await tester.pump();
@@ -208,14 +216,7 @@ void main() {
       expect(actions, ['open', 'move', 'share', 'delete', 'open']);
       tester.view.physicalSize = const Size(320, 220);
       await tester.pumpAndSettle();
-      final share = find.ancestor(
-        of: find.byIcon(Icons.ios_share),
-        matching: find.byType(IconButton),
-      );
-      await tester.ensureVisible(share);
-      await tester.pumpAndSettle();
-      await tester.tap(share);
-      await tester.pumpAndSettle();
+      await chooseAction('share', const Offset(23, 0));
       expect(actions.last, 'share');
       final semantics = tester.ensureSemantics();
       await tester.ensureVisible(label);
@@ -269,10 +270,7 @@ void main() {
         );
         await tester.pumpAndSettle();
         expect(paragraphFor(tester, name).didExceedMaxLines, isFalse);
-        final button = find.ancestor(
-          of: find.byIcon(Icons.delete_outline),
-          matching: find.byType(IconButton),
-        );
+        final button = find.byKey(const Key('exportedWorkMoreMenu'));
         await tester.ensureVisible(button);
         await tester.pumpAndSettle();
         expect(tester.getCenter(button).dy, inInclusiveRange(24, 196));
@@ -353,12 +351,15 @@ void main() {
               expect(paragraph.text.style?.color, preset.menuTextColor);
               final card = tester.widget<Card>(find.byType(Card));
               expect(card.color, theme.themeData.cardTheme.color);
-              for (final button in tester.widgetList<IconButton>(
-                find.byType(IconButton),
-              )) {
-                expect(button.color, preset.menuTextColor);
-                expect(button.tooltip, contains(name));
-              }
+              final menu = find.byKey(const Key('exportedWorkMoreMenu'));
+              final menuLabel = MaterialLocalizations.of(
+                tester.element(menu),
+              ).showMenuTooltip;
+              final button = tester.widget<IconButton>(
+                find.descendant(of: menu, matching: find.byType(IconButton)),
+              );
+              expect(button.color, preset.menuTextColor);
+              expect(button.tooltip, menuLabel);
               expect(
                 tester.takeException(),
                 isNull,
