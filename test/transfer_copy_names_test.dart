@@ -186,12 +186,9 @@ void main() {
       brushes.duplicateBrush(pen.id, name: old);
       await tester.pump();
 
-      final row = find.ancestor(
-        of: find.text(pen.name).first,
-        matching: find.byType(ListTile),
-      );
+      final row = find.byKey(ValueKey(pen.id));
       await tester.tap(
-        find.descendant(of: row.first, matching: find.byIcon(Icons.more_vert)),
+        find.descendant(of: row, matching: find.byIcon(Icons.more_vert)),
       );
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 400));

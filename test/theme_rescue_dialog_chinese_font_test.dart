@@ -1,18 +1,4 @@
-// 読めないテーマの救済のダイアログの書体が、中国語（簡体字・繁体字）でも
-// その言語の画面のテーマと同じであること（DISC231の確かめ）。
-//
-// 救済のダイアログは、今の（読めない）テーマの色を使わないよう、中身を
-// 表示言語なしで作った`ThemeService.rescueThemeData`で包む。中国語の画面の
-// テーマ（`themeDataFor(locale)`）は本文の主フォントを Noto Serif SC にする
-// （DISC132）ので、救済のダイアログの中に本文の書体で描く文があれば、中国語で
-// 白光明朝の漢字が混ざるはず、という疑いがあった。
-//
-// 本物の`ThemeRescueButton`から救済のダイアログを開き、中の文（題・ボタン）
-// それぞれの書体と代替の列を、同じ中身のダイアログをその言語の画面のテーマ
-// （標準のライトのテーマを`themeDataFor(locale)`で作ったもの）で描いたときと
-// 比べ、ダイアログの画素も比べる。どれも同じなら、言語なしで作ったテーマでも
-// 救済のダイアログの見え方は変わらない（題とボタンはくらむぼんで、本文の書体の
-// 文が無い）。
+// 配色リセットの確認も、中国語の画面と同じ書体で描かれる。
 import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
@@ -226,17 +212,9 @@ void main() {
         '$tag: ${rescuePixels.length ~/ 4} dialog pixels, '
         '$differing channel values differ',
       );
-      // 確かめの前提：本文の書体は、救済のテーマ（言語なし）では白光明朝、
-      // 中国語の画面のテーマでは Noto Serif SC で違う。違いが出るのは本文の
-      // 書体で描く文だけで、救済のダイアログにはそれが無い。
-      final rescueBody = ThemeService.rescueThemeData.textTheme.bodyMedium!;
-      final localeBody = localeTheme.textTheme.bodyMedium!;
-      debugPrint(
-        '$tag body font: rescue theme ${rescueBody.fontFamily}, '
-        '$tag theme ${localeBody.fontFamily}',
-      );
-      expect(rescueBody.fontFamily, 'HakkouMincho');
-      expect(localeBody.fontFamily, 'NotoSerifSCSubset');
+      final rescueBody =
+          ThemeService.rescueThemeDataFor(locale).textTheme.bodyMedium!;
+      expect(rescueBody.fontFamily, 'NotoSerifSCSubset');
       expect(rescueFonts, isNotEmpty);
       expect(rescueFonts, referenceFonts);
       expect(rescuePixels.length, referencePixels.length);

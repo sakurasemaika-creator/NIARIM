@@ -24,6 +24,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/app.dart';
 import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/l10n/app_localizations.dart';
+import 'package:niarim/l10n/creative_preset_labels.dart';
 import 'package:niarim/router.dart';
 import 'package:niarim/screens/canvas/widgets/layer_panel.dart';
 import 'package:niarim/screens/canvas/widgets/stamp_panel.dart';
@@ -222,12 +223,15 @@ void main() {
               );
               await settle(tester, 3);
               final stamps = find.byType(StampPanel);
-              final names = tester
-                  .element(stamps)
-                  .read<StampService>()
-                  .stamps
-                  .map((s) => s.name)
-                  .toSet();
+              final service = tester.element(stamps).read<StampService>();
+              final names = {
+                for (final stamp in service.stamps)
+                  creativePresetLabel(
+                    l10n,
+                    stamp.name,
+                    builtIn: service.isBuiltIn(stamp.id),
+                  ),
+              };
               var seen = 0;
               for (final e
                   in find

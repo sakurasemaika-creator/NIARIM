@@ -23,7 +23,9 @@ class ThemeRescueButton extends StatelessWidget {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => Theme(
-        data: ThemeService.rescueThemeData,
+        data: ThemeService.rescueThemeDataFor(
+          Localizations.localeOf(dialogContext),
+        ),
         child: AlertDialog(
           // 救済のテーマで包むと、画面の印がテーマに入れる狭い画面の空き
           // （NarrowDialogInset）が隠れ、320pxの画面では最小の幅より狭い

@@ -16,6 +16,9 @@ on:
       - 'test/project_grid_view_size_test.dart'
       - 'test/project_selection_clipboard_test.dart'
       - 'test/quick_tool_panel_landscape_fit_test.dart'
+      - 'lib/widgets/qr_import_dialog.dart'
+      - 'lib/widgets/theme_rescue_button.dart'
+      - 'lib/screens/rewards/reward_unlock_screen.dart'
       - 'test/l10n_locales_not_left_in_english_test.dart'
       - 'test/visual/project_and_plan_capture_test.dart'
       - 'test/premium_screen_price_test.dart'
@@ -52,6 +55,12 @@ jobs:
           flutter test --no-pub --reporter expanded
           test/project_grid_view_size_test.dart test/project_selection_clipboard_test.dart
           test/shared_empty_folder_widget_test.dart test/quick_tool_panel_landscape_fit_test.dart
+      - name: Verify localized controls, dialog fonts and keyboard space
+        run: >
+          flutter test --no-pub --reporter expanded
+          test/rewards_tabs_fit_test.dart test/theme_button_font_test.dart
+          test/theme_rescue_dialog_chinese_font_test.dart test/typing_dialog_keyboard_room_test.dart
+          test/canvas_pc_dock_labels_fit_test.dart test/transfer_copy_names_test.dart
       - run: flutter test --no-pub --reporter expanded test/startup_unreadable_projects_folder_test.dart --name 'Home'
       - name: Capture Japanese project and plan screens on mobile and desktop
         run: flutter test --no-pub --dart-define=NIARIM_CAPTURE_PROJECT_AND_PLAN=true test/visual/project_and_plan_capture_test.dart

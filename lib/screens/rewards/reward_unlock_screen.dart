@@ -1113,7 +1113,7 @@ class _RewardUnlockScreenState extends State<RewardUnlockScreen> {
                 label: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(t['watchRewardedAd']),
+                    messageText(t['watchRewardedAd'], textAlign: TextAlign.center),
                     if (rewardCoins is int && rewardCoins > 0)
                       messageText('+${l10n.coinAmount(rewardCoins)}'),
                     messageText(

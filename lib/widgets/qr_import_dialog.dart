@@ -76,8 +76,6 @@ class _QrImportDialogState extends State<QrImportDialog> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(l10n.qrImportHint, style: const TextStyle(fontSize: 12)),
-            const SizedBox(height: 8),
             TextField(
               controller: _controller,
               maxLines: 4,
@@ -92,6 +90,8 @@ class _QrImportDialogState extends State<QrImportDialog> {
                 ),
               ),
             ),
+            const SizedBox(height: 8),
+            Text(l10n.qrImportHint, style: const TextStyle(fontSize: 12)),
           ],
         ),
       ),
