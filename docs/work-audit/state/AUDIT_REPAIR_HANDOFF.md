@@ -653,7 +653,8 @@ App・Web共通。Claudeが要修正の詳細を追記し、ユーザーが別�
   - 起動の決まり（DISC063：読めない1件で起動を止めない、型違い・範囲外）：`startup_unreadable_saved_lists_test`・`startup_saved_number_range_test`・`startup_failure_recovery_test`・`brush_saved_number_types_test`。設定の引き継ぎ：`niatra_transfer_unread_lists_test`・`niatra_transfer_keeps_this_device_test`。ここまで54件成功。
   - 知らせ：`error_log_screen_test`（7言語・320px・文字2倍で出てはみ出さない、無ければ出さない）、`home_unreadable_saved_items_notice_test`（読めないプリセットのある保存で起動→ホームで知らせ→操作でエラーの記録→元データは保存に残る）、`toast_contract_test`・`home_navigation_state_test`ほか、計79件成功。`font_coverage_test`成功。flutter analyze 0件。
 - **残件**：個別の一覧ごとの混在のtestは作業画面のプリセットだけ（ほか9つは同じ共通の経路を通る）。トーン・スタンプ・自動塗り・自作の自動操作は起動時に読めない項目があると保存し直さない（DISC063）ので、その後の編集で持ち越す経路は同じ。手で1件ずつ元データから戻す画面は作っていない（起動のたびの自動の読み直しで復旧を試す）。全体回帰はこの修正を含むSHAでまだ。
-- **次の再開位置**：pushしてこの修正を含むSHAの全体回帰（8シャード）を確かめる。
+- **全体回帰**：`44451689623`（`71c33de3`、A011の修正を含む）は失敗。シャード0・2・3・4・7成功、1・5・6失敗。失敗は4件だけ：`community_work_time_date_l10n_test`・`l10n_french_typography_test`・`l10n_review_wording_test`・`l10n_unused_key_test`（どれも作品広場・プライバシーポリシーの文言で、別のセッションの担当）。`canvas_dock_fit_test`（A011）は失敗に無い。DISC070を含む`6a8db98a`の実行は`44457298111`（https://github.com/sakurasemaika-creator/NIARIM/actions/runs/44457298111）、記録時点で待機中。
+- **次の再開位置**：`44457298111`の8シャードの結果を確かめる（`node .dart_tool/audit_tools/wait_run.mjs 44457298111 <保存先>`→`failed_tests.mjs`）。上の4件（別のセッション）以外の失敗が無ければ、DISC070を含む版での回帰は確認済みとする。
 
 ## 要修正の記録
 
