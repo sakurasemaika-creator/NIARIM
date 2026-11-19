@@ -1593,7 +1593,7 @@ void main() {
           1,
           'ウィジェットの絵を選ぶ画面のコマ送り再生',
         ),
-        'lib/screens/timeline/timeline_screen.dart': (1, 'タイムラインの再生'),
+        'lib/screens/timeline/timeline_screen.dart': (2, '再生とドラッグ中の自動スクロール'),
         'lib/screens/timeline/widgets/material_edit_panel.dart': (
           1,
           '打ち終わってから文字の素材を描き直す',
