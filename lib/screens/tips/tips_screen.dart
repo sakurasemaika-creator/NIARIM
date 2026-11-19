@@ -1068,6 +1068,9 @@ class _TipDetailDialogState extends State<_TipDetailDialog> {
                   top: 4,
                   child: IconButton(
                     icon: const Icon(Icons.close, size: 20),
+                    tooltip: MaterialLocalizations.of(
+                      context,
+                    ).closeButtonTooltip,
                     onPressed: () => Navigator.pop(context),
                   ),
                 ),

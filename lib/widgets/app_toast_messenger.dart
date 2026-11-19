@@ -3,6 +3,18 @@ import 'dart:collection';
 
 import 'package:flutter/material.dart';
 
+/// Shows an action label when its long press also opens a menu or dialog.
+void showIconActionDescription(BuildContext context, String label) {
+  ScaffoldMessenger.maybeOf(context)?.showSnackBar(
+    SnackBar(
+      content: Text(label, textAlign: TextAlign.center),
+      duration: const Duration(seconds: 2),
+      behavior: SnackBarBehavior.floating,
+      width: 220,
+    ),
+  );
+}
+
 /// 画面下の知らせ（トースト＝SnackBar）が、初めて描かれてから消え切るまでの
 /// 上限（出てくる途中で描画が止まっていた間は数えない）。
 const Duration kToastMaxLifetime = Duration(seconds: 5);

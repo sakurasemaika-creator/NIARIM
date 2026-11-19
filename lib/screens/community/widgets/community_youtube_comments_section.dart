@@ -10,8 +10,14 @@ import '../../../widgets/menu_card.dart';
 /// View-only YouTube comments. A collapsed section issues NO YouTube requests.
 /// Comment text is held in widget memory only; never persisted to DynamoDB.
 class CommunityYoutubeCommentsSection extends StatefulWidget {
-  const CommunityYoutubeCommentsSection({super.key, required this.workId});
+  const CommunityYoutubeCommentsSection({
+    super.key,
+    required this.workId,
+    required this.onOpenYouTube,
+  });
+
   final String workId;
+  final VoidCallback onOpenYouTube;
 
   @override
   State<CommunityYoutubeCommentsSection> createState() =>
@@ -20,28 +26,35 @@ class CommunityYoutubeCommentsSection extends StatefulWidget {
 
 class _CommunityYoutubeCommentsSectionState
     extends State<CommunityYoutubeCommentsSection> {
+  static const _displayChunk = 20;
+  static const _maxComments = 100;
+
   bool _loaded = false;
-  bool _loading = false;
+  Object? _request;
   bool _unavailable = false;
   bool _failed = false;
-  String? _nextCursor;
-  final List<Map<String, dynamic>> _comments = [];
+  bool _hasMoreOnYouTube = false;
+  int _visibleCount = _displayChunk;
+  List<Map<String, dynamic>> _comments = [];
+
+  bool get _loading => _request != null;
 
   @override
   void didUpdateWidget(covariant CommunityYoutubeCommentsSection oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.workId != widget.workId) {
       _loaded = false;
-      _loading = false;
+      _request = null;
       _unavailable = false;
       _failed = false;
-      _nextCursor = null;
-      _comments.clear();
+      _hasMoreOnYouTube = false;
+      _visibleCount = _displayChunk;
+      _comments = [];
     }
   }
 
-  Future<void> _load({bool more = false}) async {
-    if (_loading || (more && _nextCursor == null)) return;
+  Future<void> _load() async {
+    if (_loading) return;
     final api = context.read<CommunityService>().api;
     if (api == null) {
       setState(() {
@@ -50,35 +63,36 @@ class _CommunityYoutubeCommentsSectionState
       });
       return;
     }
+    final request = Object();
     setState(() {
-      _loading = true;
+      _request = request;
       _failed = false;
     });
     try {
-      final payload = await api.youtubeComments(
-        widget.workId,
-        cursor: more ? _nextCursor : null,
-      );
-      if (!mounted) return;
+      final payload = await api.youtubeComments(widget.workId);
+      if (!mounted || _request != request) return;
       final comments = (payload['comments'] as List? ?? const [])
           .whereType<Map<String, dynamic>>()
+          .take(_maxComments)
           .toList();
       setState(() {
-        if (!more) _comments.clear();
-        _comments.addAll(comments);
-        _nextCursor = payload['nextCursor'] as String?;
+        _comments = comments;
+        final cursor = payload['nextCursor'];
+        _hasMoreOnYouTube =
+            (cursor is String && cursor.isNotEmpty) ||
+            comments.length == _maxComments;
         _unavailable = payload['unavailable'] == true;
         _loaded = true;
       });
     } catch (_) {
-      if (mounted) {
+      if (mounted && _request == request) {
         setState(() {
           _loaded = true;
           _failed = true;
         });
       }
     } finally {
-      if (mounted) setState(() => _loading = false);
+      if (mounted && _request == request) setState(() => _request = null);
     }
   }
 
@@ -171,7 +185,7 @@ class _CommunityYoutubeCommentsSectionState
             TextButton(onPressed: () => _load(), child: Text(labels.retry)),
           ] else if (_loaded && _comments.isEmpty)
             Text(labels.noComments),
-          for (final comment in _comments) ...[
+          for (final comment in _comments.take(_visibleCount)) ...[
             _comment(comment),
             for (final reply
                 in ((comment['replies'] as List?) ?? const [])
@@ -190,12 +204,19 @@ class _CommunityYoutubeCommentsSectionState
               ),
             const Divider(height: 1),
           ],
-          if (!_loading && _nextCursor != null)
+          if (_visibleCount < _comments.length)
             TextButton.icon(
               key: const Key('communityYoutubeCommentsLoadMore'),
-              onPressed: () => _load(more: true),
+              onPressed: () => setState(() => _visibleCount += _displayChunk),
               icon: const Icon(Icons.expand_more),
               label: Text(labels.loadMore),
+            )
+          else if (!_unavailable && !_failed && _hasMoreOnYouTube)
+            TextButton.icon(
+              key: const Key('communityYoutubeCommentsOpenYouTube'),
+              onPressed: widget.onOpenYouTube,
+              icon: const Icon(Icons.open_in_new),
+              label: Text(labels.openYouTube),
             ),
         ],
       ),

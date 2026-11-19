@@ -93,6 +93,26 @@ void main() {
     final l10n = lookupAppLocalizations(const Locale('ja'));
     expect(find.text(l10n.communityTagDeleteConfirm), findsOneWidget);
     expect(service.byId(work.id)!.tags, contains('tag_to_edit'));
+    await tester.tap(find.widgetWithText(TextButton, l10n.commonCancel));
+    await tester.pumpAndSettle();
+    await service.toggleTagLock(work.id, 'tag_to_edit');
+    await tester.pumpAndSettle();
+    await tester.tap(tag);
+    await tester.pumpAndSettle();
+    expect(action(l10n.communityTagUnlockAction), findsOneWidget);
+    expect(find.text(l10n.communityTagUnlockBeforeDelete), findsOneWidget);
+
+    tester.platformDispatcher.textScaleFactorTestValue = 2;
+    addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+    await tester.binding.setSurfaceSize(const Size(320, 800));
+    await tester.pumpAndSettle();
+    final unlock = find.byIcon(Icons.lock_open_outlined).hitTestable();
+    expect(unlock, findsOneWidget);
+    await tester.longPress(unlock);
+    await tester.pump();
+    expect(find.text(l10n.communityTagUnlockAction), findsWidgets);
+    expect(find.byTooltip(l10n.communityTagUnlockAction), findsOneWidget);
+    expect(service.byId(work.id)!.lockedTags, contains('tag_to_edit'));
     expect(tester.takeException(), isNull);
   });
 }

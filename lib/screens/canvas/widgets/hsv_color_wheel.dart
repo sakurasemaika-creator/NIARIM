@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../services/theme_service.dart';
+import '../../../utils/app_locale.dart';
 
 /// 正方形（彩度・明度）＋外側カラーサークル（色相）のタップ選択式カラー
 /// ピッカー。従来のH/S/Vスライダー方式に
@@ -337,33 +338,36 @@ class _TransparentToggleButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      key: const ValueKey('color-picker-transparent-toggle'),
-      onTap: onTap,
-      child: Container(
-        width: HsvColorWheel._transparentSize,
-        height: HsvColorWheel._transparentSize,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          border: Border.all(
-            color: isActive
-                ? Theme.of(context).colorScheme.primary
-                : Theme.of(context).colorScheme.outlineVariant,
-            width: isActive ? 2.5 : 1.5,
+    return Tooltip(
+      message: appLocalizationsOf(context).canvasBackgroundTransparent,
+      child: GestureDetector(
+        key: const ValueKey('color-picker-transparent-toggle'),
+        onTap: onTap,
+        child: Container(
+          width: HsvColorWheel._transparentSize,
+          height: HsvColorWheel._transparentSize,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: isActive
+                  ? Theme.of(context).colorScheme.primary
+                  : Theme.of(context).colorScheme.outlineVariant,
+              width: isActive ? 2.5 : 1.5,
+            ),
           ),
-        ),
-        child: ClipOval(
-          child: Stack(
-            children: [
-              CustomPaint(
-                size: const Size(26, 26),
-                painter: _MiniCheckerPainter(),
-              ),
-              if (isActive)
-                const Center(
-                  child: Icon(Icons.check, size: 14, color: Colors.black87),
+          child: ClipOval(
+            child: Stack(
+              children: [
+                CustomPaint(
+                  size: const Size(26, 26),
+                  painter: _MiniCheckerPainter(),
                 ),
-            ],
+                if (isActive)
+                  const Center(
+                    child: Icon(Icons.check, size: 14, color: Colors.black87),
+                  ),
+              ],
+            ),
           ),
         ),
       ),

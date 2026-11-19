@@ -2086,23 +2086,27 @@ class _CanvasScreenState extends State<CanvasScreen> {
                     if (!isDesktop &&
                         !_isSelectionToolActive &&
                         !immersiveAdjusting)
-                      GestureDetector(
-                        behavior: HitTestBehavior.opaque,
-                        onTap: () =>
-                            setState(() => _showToolbar = !_showToolbar),
-                        child: Container(
-                          height: 28,
-                          alignment: Alignment.center,
-                          color: Colors.transparent,
-                          child: Icon(
-                            _showToolbar
-                                ? Icons.keyboard_arrow_down
-                                : Icons.keyboard_arrow_up,
-                            size: 22,
-                            color: Theme.of(context).colorScheme.onSurface,
-                            shadows: CanvasIconButton.foregroundShadows(
-                              Theme.of(context).colorScheme.onSurface,
-                              Theme.of(context).colorScheme,
+                      Tooltip(
+                        message: AppLocalizations.of(context)!
+                            .canvasToolbarToggleTooltip,
+                        child: GestureDetector(
+                          behavior: HitTestBehavior.opaque,
+                          onTap: () =>
+                              setState(() => _showToolbar = !_showToolbar),
+                          child: Container(
+                            height: 28,
+                            alignment: Alignment.center,
+                            color: Colors.transparent,
+                            child: Icon(
+                              _showToolbar
+                                  ? Icons.keyboard_arrow_down
+                                  : Icons.keyboard_arrow_up,
+                              size: 22,
+                              color: Theme.of(context).colorScheme.onSurface,
+                              shadows: CanvasIconButton.foregroundShadows(
+                                Theme.of(context).colorScheme.onSurface,
+                                Theme.of(context).colorScheme,
+                              ),
                             ),
                           ),
                         ),
@@ -2124,25 +2128,29 @@ class _CanvasScreenState extends State<CanvasScreen> {
                     // 選択ツール使用中は、キャンバス左下の操作バーへ集中できるよう
                     // ツールバー・フレーム一覧ごと畳む（開閉ハンドルも隠す）。
                     if (!_isSelectionToolActive && !immersiveAdjusting)
-                      GestureDetector(
-                        behavior: HitTestBehavior.opaque,
-                        onTap: () =>
-                            setState(() => _showFrameStrip = !_showFrameStrip),
-                        child: Container(
-                          height: 28,
-                          alignment: Alignment.center,
-                          color: Colors.transparent,
-                          child: Icon(
-                            _showFrameStrip
-                                ? Icons.keyboard_arrow_down
-                                : Icons.keyboard_arrow_up,
-                            size: 22,
-                            // 色固定をやめ、テーマの文字色と連動させる（CanvasIconButton・
-                            // ToolbarWidgetの色連動と同じ方針）。
-                            color: Theme.of(context).colorScheme.onSurface,
-                            shadows: CanvasIconButton.foregroundShadows(
-                              Theme.of(context).colorScheme.onSurface,
-                              Theme.of(context).colorScheme,
+                      Tooltip(
+                        message: AppLocalizations.of(context)!
+                            .canvasFrameStripToggleTooltip,
+                        child: GestureDetector(
+                          behavior: HitTestBehavior.opaque,
+                          onTap: () =>
+                              setState(() => _showFrameStrip = !_showFrameStrip),
+                          child: Container(
+                            height: 28,
+                            alignment: Alignment.center,
+                            color: Colors.transparent,
+                            child: Icon(
+                              _showFrameStrip
+                                  ? Icons.keyboard_arrow_down
+                                  : Icons.keyboard_arrow_up,
+                              size: 22,
+                              // 色固定をやめ、テーマの文字色と連動させる（CanvasIconButton・
+                              // ToolbarWidgetの色連動と同じ方針）。
+                              color: Theme.of(context).colorScheme.onSurface,
+                              shadows: CanvasIconButton.foregroundShadows(
+                                Theme.of(context).colorScheme.onSurface,
+                                Theme.of(context).colorScheme,
+                              ),
                             ),
                           ),
                         ),

@@ -86,11 +86,12 @@ void main() {
           .ancestor(of: favorite, matching: find.byType(Card))
           .first;
       final cardRect = tester.getRect(card);
-      expect(favoriteRect.left, closeTo(cardRect.left + 4, 2));
-      expect(menuRect.right, closeTo(cardRect.right - 4, 2));
-      expect(favoriteRect.center.dy, greaterThan(menuRect.center.dy));
-      expect(favoriteRect.size, const Size(40, 40));
-      expect(menuRect.size, const Size(40, 40));
+      expect(favoriteRect.right, lessThan(menuRect.left));
+      expect(cardRect.right - menuRect.right, lessThanOrEqualTo(16));
+      expect(cardRect.bottom - menuRect.bottom, lessThanOrEqualTo(10));
+      expect(favoriteRect.center.dy, closeTo(menuRect.center.dy, 0.1));
+      expect(favoriteRect.size, const Size(32, 32));
+      expect(menuRect.size, const Size(32, 32));
     }
 
     await loadAppFonts(tester);

@@ -6,11 +6,15 @@ import { ApiError, badRequest, notFound, ok } from "../../lib/response";
 
 // Best-effort 45s cache per warm Lambda instance; no DynamoDB storage.
 // This is not a quota guarantee across cold starts or multiple instances.
+const defaultPageSize = 20;
+const expandedPageSize = 100;
+const maxCacheBytes = 8 * 1024 * 1024;
+let cacheBytes = 0;
 const commentCache = new Map<string, {
   expiryMs: number;
+  bytes: number;
   payload: { comments: unknown[]; nextCursor: string | null; unavailable: boolean };
 }>();
-
 
 interface YoutubeCommentSnippet {
   authorDisplayName?: string;
@@ -44,6 +48,8 @@ export async function getYoutubeComments(event: APIGatewayProxyEventV2, workId: 
   if (!/^[A-Za-z0-9_-]{11}$/.test(workId)) notFound();
   const qp = event.queryStringParameters ?? {};
   const cursor = qp.cursor ?? "";
+  const pageSize = qp.limit === String(expandedPageSize)
+    ? expandedPageSize : defaultPageSize;
   if (cursor.length > 1024 || (cursor && !/^[A-Za-z0-9_\-=]+$/.test(cursor))) {
     badRequest("コメントのページ指定が不正です", "INVALID_COMMENT_CURSOR");
   }
@@ -57,9 +63,13 @@ export async function getYoutubeComments(event: APIGatewayProxyEventV2, workId: 
       work.youtubePrivacyStatus === "deleted") {
     notFound();
   }
-  const cacheKey = `${workId}:${cursor}`;
+  const cacheKey = `${workId}:${pageSize}:${cursor}`;
   const cached = commentCache.get(cacheKey);
-  if (cached && cached.expiryMs > Date.now()) return ok(cached.payload);
+  if (cached) {
+    if (cached.expiryMs > Date.now()) return ok(cached.payload);
+    cacheBytes -= cached.bytes;
+    commentCache.delete(cacheKey);
+  }
   const key = process.env.YOUTUBE_API_KEY;
   if (!key || key === "REPLACE_ME") {
     throw new ApiError(503, "コメント機能を利用できません", "YOUTUBE_NOT_CONFIGURED");
@@ -67,7 +77,7 @@ export async function getYoutubeComments(event: APIGatewayProxyEventV2, workId: 
   const url = new URL("https://www.googleapis.com/youtube/v3/commentThreads");
   url.searchParams.set("part", "snippet,replies");
   url.searchParams.set("videoId", workId);
-  url.searchParams.set("maxResults", "20");
+  url.searchParams.set("maxResults", String(pageSize));
   url.searchParams.set("textFormat", "plainText");
   url.searchParams.set("order", "time");
   url.searchParams.set("key", key);
@@ -87,18 +97,39 @@ export async function getYoutubeComments(event: APIGatewayProxyEventV2, workId: 
   const body = await response.json() as {
     items?: YoutubeThread[]; nextPageToken?: string;
   };
+  const comments = (body.items ?? []).slice(0, pageSize).map((thread) => ({
+    ...safeComment(thread.snippet?.topLevelComment ?? {}),
+    replies: [] as ReturnType<typeof safeComment>[],
+    totalReplyCount: Math.max(0, Number(thread.snippet?.totalReplyCount ?? 0)),
+  }));
+  // Give primary comments priority. Bound the additional preview replies so
+  // a full page fits the buffered Function URL response even for long threads.
+  let remainingReplyBytes = 1024 * 1024;
+  for (const [i, comment] of comments.entries()) {
+    const replies = body.items?.[i]?.replies?.comments ?? [];
+    for (const raw of replies.slice(0, 5)) {
+      const reply = safeComment(raw);
+      const bytes = Buffer.byteLength(JSON.stringify(reply)) + 1;
+      if (bytes > remainingReplyBytes) break;
+      comment.replies.push(reply);
+      remainingReplyBytes -= bytes;
+    }
+  }
   const payload = {
-    comments: (body.items ?? []).slice(0, 20).map((thread) => ({
-      ...safeComment(thread.snippet?.topLevelComment ?? {}),
-      replies: (thread.replies?.comments ?? []).slice(0, 5).map(safeComment),
-      totalReplyCount: Math.max(0, Number(thread.snippet?.totalReplyCount ?? 0)),
-    })),
+    comments,
     nextCursor: typeof body.nextPageToken === "string"
       ? body.nextPageToken : null,
     unavailable: false,
   };
   // Bound memory and expire quickly so deleted/edited comments are refreshed.
-  if (commentCache.size >= 200) commentCache.clear();
-  commentCache.set(cacheKey, { expiryMs: Date.now() + 45_000, payload });
+  const bytes = Buffer.byteLength(JSON.stringify(payload));
+  if (commentCache.size >= 200 || cacheBytes + bytes > maxCacheBytes) {
+    commentCache.clear();
+    cacheBytes = 0;
+  }
+  // Another invocation may have filled this cache key during the fetch.
+  cacheBytes -= commentCache.get(cacheKey)?.bytes ?? 0;
+  commentCache.set(cacheKey, { expiryMs: Date.now() + 45_000, bytes, payload });
+  cacheBytes += bytes;
   return ok(payload);
 }

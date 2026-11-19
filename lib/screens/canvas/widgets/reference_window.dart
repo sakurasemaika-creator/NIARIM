@@ -180,19 +180,25 @@ class _ReferenceWindowState extends State<ReferenceWindow> {
                             onTap: controller._loading
                                 ? null
                                 : controller.pickImage,
-                            child: Icon(
-                              Icons.add_photo_alternate_outlined,
-                              size: 16,
-                              color: theme.menuTextColor,
+                            child: Tooltip(
+                              message: l10n.referenceWindowSelectImageButton,
+                              child: Icon(
+                                Icons.add_photo_alternate_outlined,
+                                size: 16,
+                                color: theme.menuTextColor,
+                              ),
                             ),
                           ),
                           const SizedBox(width: 10),
                           InkWell(
                             onTap: widget.onClose,
-                            child: Icon(
-                              Icons.close,
-                              size: 16,
-                              color: theme.menuTextColor,
+                            child: Tooltip(
+                              message: l10n.commonClose,
+                              child: Icon(
+                                Icons.close,
+                                size: 16,
+                                color: theme.menuTextColor,
+                              ),
                             ),
                           ),
                         ],

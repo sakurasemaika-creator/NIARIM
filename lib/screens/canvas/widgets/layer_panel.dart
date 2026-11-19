@@ -593,30 +593,33 @@ class _LayerPanelState extends State<LayerPanel> {
                             if (depth > 0)
                               SizedBox(width: depth.clamp(0, 4) * 12.0),
                             if (layer.type == model.LayerType.folder)
-                              GestureDetector(
-                                onTap: () {
-                                  final projects = context
-                                      .read<ProjectService>();
-                                  projects.setLayerFolderExpanded(
-                                    widget.projectId,
-                                    layer,
-                                    !projects.isLayerFolderExpanded(
+                              Tooltip(
+                                message: l10n.layerPanelToggleFolderTooltip,
+                                child: GestureDetector(
+                                  onTap: () {
+                                    final projects = context
+                                        .read<ProjectService>();
+                                    projects.setLayerFolderExpanded(
                                       widget.projectId,
                                       layer,
-                                    ),
-                                  );
-                                  setState(() {});
-                                },
-                                child: Icon(
-                                  context
-                                          .read<ProjectService>()
-                                          .isLayerFolderExpanded(
-                                            widget.projectId,
-                                            layer,
-                                          )
-                                      ? Icons.expand_more
-                                      : Icons.chevron_right,
-                                  size: 16,
+                                      !projects.isLayerFolderExpanded(
+                                        widget.projectId,
+                                        layer,
+                                      ),
+                                    );
+                                    setState(() {});
+                                  },
+                                  child: Icon(
+                                    context
+                                            .read<ProjectService>()
+                                            .isLayerFolderExpanded(
+                                              widget.projectId,
+                                              layer,
+                                            )
+                                        ? Icons.expand_more
+                                        : Icons.chevron_right,
+                                    size: 16,
+                                  ),
                                 ),
                               )
                             else if (depth > 0)
@@ -639,21 +642,26 @@ class _LayerPanelState extends State<LayerPanel> {
                                     : null,
                               )
                             else
-                              GestureDetector(
-                                onTap: () =>
-                                    context.read<ProjectService>().updateLayer(
-                                      projectId: widget.projectId,
-                                      sceneId: widget.sceneId,
-                                      frameIndex: widget.frameIndex,
-                                      layer: layer.copyWith(
-                                        isVisible: !layer.isVisible,
+                              Tooltip(
+                                message: layer.isVisible
+                                    ? l10n.layerPanelHideLayerTooltip
+                                    : l10n.layerPanelShowLayerTooltip,
+                                child: GestureDetector(
+                                  onTap: () =>
+                                      context.read<ProjectService>().updateLayer(
+                                        projectId: widget.projectId,
+                                        sceneId: widget.sceneId,
+                                        frameIndex: widget.frameIndex,
+                                        layer: layer.copyWith(
+                                          isVisible: !layer.isVisible,
+                                        ),
                                       ),
-                                    ),
-                                child: Icon(
-                                  layer.isVisible
-                                      ? Icons.visibility
-                                      : Icons.visibility_off,
-                                  size: 16,
+                                  child: Icon(
+                                    layer.isVisible
+                                        ? Icons.visibility
+                                        : Icons.visibility_off,
+                                    size: 16,
+                                  ),
                                 ),
                               ),
                             const SizedBox(width: 4),
@@ -754,49 +762,58 @@ class _LayerPanelState extends State<LayerPanel> {
                               const Icon(Icons.lock, size: 14),
                             // 三点メニュー・ゴミ箱は各レイヤーの右側に配置する
                             // （対象レイヤーが常に明確になり、選択状態に依存しない）。
-                            GestureDetector(
-                              key: ValueKey('canvasLayerMenu_${layer.id}'),
-                              onTap: () =>
-                                  _isTimelineMaterial(layer.type) ||
-                                      layer.type == model.LayerType.common ||
-                                      layer.type ==
-                                          model.LayerType.autoFillLineart
-                                  ? _showTimelineLayerMenu(context, layer)
-                                  : _showLayerOptions(context, layer),
-                              child: const Icon(Icons.more_vert, size: 16),
+                            Tooltip(
+                              message: MaterialLocalizations.of(context).showMenuTooltip,
+                              child: GestureDetector(
+                                key: ValueKey('canvasLayerMenu_${layer.id}'),
+                                onTap: () =>
+                                    _isTimelineMaterial(layer.type) ||
+                                        layer.type == model.LayerType.common ||
+                                        layer.type ==
+                                            model.LayerType.autoFillLineart
+                                    ? _showTimelineLayerMenu(context, layer)
+                                    : _showLayerOptions(context, layer),
+                                child: const Icon(Icons.more_vert, size: 16),
+                              ),
                             ),
                             const SizedBox(width: 8),
                             // 下のレイヤーとワンタップで結合（複数選択モードを使わずに
                             // 済む一括操作の一つ）。ゴミ箱アイコンのすぐ隣に置くことで
                             // 「レイヤーへの操作」としてまとまって見えるようにしている。
-                            GestureDetector(
-                              onTap: _layerBelow(layer, layers) != null
-                                  ? () => _mergeWithLayerBelow(
-                                      context,
-                                      layer,
-                                      layers,
-                                    )
-                                  : null,
-                              child: Icon(
-                                Icons.merge_type,
-                                size: 16,
-                                color: _layerBelow(layer, layers) != null
-                                    ? null
-                                    : Theme.of(context).disabledColor,
+                            Tooltip(
+                              message: l10n.layerPanelMergeDownTooltip,
+                              child: GestureDetector(
+                                onTap: _layerBelow(layer, layers) != null
+                                    ? () => _mergeWithLayerBelow(
+                                        context,
+                                        layer,
+                                        layers,
+                                      )
+                                    : null,
+                                child: Icon(
+                                  Icons.merge_type,
+                                  size: 16,
+                                  color: _layerBelow(layer, layers) != null
+                                      ? null
+                                      : Theme.of(context).disabledColor,
+                                ),
                               ),
                             ),
                             const SizedBox(width: 8),
-                            GestureDetector(
-                              onTap: _canDeleteLayerRow(layer, layers)
-                                  ? () =>
-                                        _deleteLayerRow(context, layer, layers)
-                                  : null,
-                              child: Icon(
-                                Icons.delete_outline,
-                                size: 16,
-                                color: _canDeleteLayerRow(layer, layers)
-                                    ? ThemeService.activeColorScheme.error
-                                    : Theme.of(context).disabledColor,
+                            Tooltip(
+                              message: l10n.commonDelete,
+                              child: GestureDetector(
+                                onTap: _canDeleteLayerRow(layer, layers)
+                                    ? () =>
+                                          _deleteLayerRow(context, layer, layers)
+                                    : null,
+                                child: Icon(
+                                  Icons.delete_outline,
+                                  size: 16,
+                                  color: _canDeleteLayerRow(layer, layers)
+                                      ? ThemeService.activeColorScheme.error
+                                      : Theme.of(context).disabledColor,
+                                ),
                               ),
                             ),
                             const SizedBox(width: 8),

@@ -78,6 +78,7 @@ class WatermarkSettingsScreen extends StatelessWidget {
         actions: const [HelpButton(topic: 'ウォーターマーク')],
       ),
       floatingActionButton: FloatingActionButton(
+        tooltip: l10n.commonAdd,
         onPressed: () => _showAddSheet(context, service),
         child: const Icon(Icons.add),
       ),

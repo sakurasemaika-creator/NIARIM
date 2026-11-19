@@ -209,6 +209,7 @@ class _RecurringMissionsPanelState extends State<RecurringMissionsPanel> {
                     child: messageText(l10n.recurringMissionsUnavailable),
                   ),
                   IconButton(
+                    tooltip: l10n.creatorMissionRetry,
                     onPressed: () => setState(() => _future = _load(_api!)),
                     icon: const Icon(Icons.refresh),
                   ),
@@ -227,6 +228,7 @@ class _RecurringMissionsPanelState extends State<RecurringMissionsPanel> {
                   icon: Icons.event_repeat_outlined,
                   title: l10n.recurringMissionsTitle,
                   action: IconButton(
+                    tooltip: l10n.missionRefresh,
                     onPressed: () => setState(() => _future = _load(_api!)),
                     icon: const Icon(Icons.refresh),
                   ),

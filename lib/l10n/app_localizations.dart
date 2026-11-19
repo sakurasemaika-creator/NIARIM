@@ -15390,8 +15390,14 @@ abstract class AppLocalizations {
   /// No description provided for @communityYoutubeCommentLoadMore.
   ///
   /// In ja, this message translates to:
-  /// **'さらに20件表示'**
+  /// **'さらに表示'**
   String get communityYoutubeCommentLoadMore;
+
+  /// No description provided for @communityYoutubeCommentOpenYouTube.
+  ///
+  /// In ja, this message translates to:
+  /// **'続きをYouTubeで見る'**
+  String get communityYoutubeCommentOpenYouTube;
 
   /// No description provided for @communityYoutubeCommentNoComments.
   ///
@@ -18216,8 +18222,14 @@ abstract class AppLocalizations {
   /// No description provided for @communityTagUnlockAction.
   ///
   /// In ja, this message translates to:
-  /// **'解除'**
+  /// **'ロック解除'**
   String get communityTagUnlockAction;
+
+  /// No description provided for @communityTagUnlockBeforeDelete.
+  ///
+  /// In ja, this message translates to:
+  /// **'このタグを削除するには、投稿者がロックを解除する必要があります。'**
+  String get communityTagUnlockBeforeDelete;
 
   /// No description provided for @communityPreviewStart.
   ///
@@ -18260,6 +18272,48 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'お問い合わせフォームを開けませんでした。'**
   String get settingsSupportLinkFailed;
+
+  /// No description provided for @canvasToolbarToggleTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'ツールバーを開閉'**
+  String get canvasToolbarToggleTooltip;
+
+  /// No description provided for @canvasFrameStripToggleTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'フレーム一覧を開閉'**
+  String get canvasFrameStripToggleTooltip;
+
+  /// No description provided for @layerPanelToggleFolderTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'フォルダを開閉'**
+  String get layerPanelToggleFolderTooltip;
+
+  /// No description provided for @layerPanelShowLayerTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'レイヤーを表示'**
+  String get layerPanelShowLayerTooltip;
+
+  /// No description provided for @layerPanelHideLayerTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'レイヤーを非表示'**
+  String get layerPanelHideLayerTooltip;
+
+  /// No description provided for @layerPanelMergeDownTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'下のレイヤーと結合'**
+  String get layerPanelMergeDownTooltip;
+
+  /// No description provided for @timelineAddTrackRowTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'トラックに行を追加'**
+  String get timelineAddTrackRowTooltip;
 }
 
 class _AppLocalizationsDelegate

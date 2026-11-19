@@ -310,7 +310,10 @@ void main() {
             localizationsDelegates: AppLocalizations.localizationsDelegates,
             home: Scaffold(
               body: SingleChildScrollView(
-                child: CommunityYoutubeCommentsSection(workId: 'w$tag'),
+                child: CommunityYoutubeCommentsSection(
+                  workId: 'w$tag',
+                  onOpenYouTube: () {},
+                ),
               ),
             ),
           ),
@@ -335,6 +338,81 @@ void main() {
       await tester.pumpWidget(const SizedBox());
     }
     expect(problems, isEmpty, reason: problems.join('\n'));
+  });
+
+  testWidgets('YouTube comments reveal a single batch before opening YouTube', (
+    tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({});
+    var requests = 0;
+    var opens = 0;
+    final service = CommunityService(
+      api: CommunityApi(
+        NiarimApiClient(
+          baseUrl: 'https://example.invalid',
+          httpClient: MockClient((request) async {
+            requests++;
+            expect(request.url.queryParameters, {'limit': '100'});
+            return http.Response(
+              jsonEncode({
+                'comments': [
+                  for (var i = 1; i <= 100; i++) {'text': 'Comment $i'},
+                ],
+                'nextCursor': 'next-page',
+              }),
+              200,
+              headers: {'content-type': 'application/json'},
+            );
+          }),
+          maxGetRetries: 0,
+        ),
+      ),
+    );
+    addTearDown(service.dispose);
+    await tester.pumpWidget(
+      ChangeNotifierProvider.value(
+        value: service,
+        child: MaterialApp(
+          locale: const Locale('ja'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: SingleChildScrollView(
+              child: CommunityYoutubeCommentsSection(
+                workId: 'abcdefghijk',
+                onOpenYouTube: () => opens++,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    const more = Key('communityYoutubeCommentsLoadMore');
+    const youtube = Key('communityYoutubeCommentsOpenYouTube');
+    expect(requests, 0);
+    await tester.tap(
+      find.byKey(const Key('communityYoutubeCommentsExpansion')),
+    );
+    await tester.pumpAndSettle();
+    expect(requests, 1);
+    for (var count = 20; count <= 100; count += 20) {
+      expect(find.byType(SelectableText), findsNWidgets(count));
+      if (count == 100) break;
+      final button = find.byKey(more);
+      await tester.ensureVisible(button);
+      await tester.pumpAndSettle();
+      await tester.tap(button);
+      await tester.pumpAndSettle();
+      expect(requests, 1);
+    }
+    expect(find.byKey(more), findsNothing);
+    final link = find.byKey(youtube);
+    await tester.ensureVisible(link);
+    await tester.pumpAndSettle();
+    await tester.tap(link);
+    expect(opens, 1);
+    expect(requests, 1);
   });
 
   testWidgets('作品広場の通知の一覧の日付も、表示言語の書き方', (tester) async {

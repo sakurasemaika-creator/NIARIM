@@ -163,6 +163,30 @@ describe("read-only, on-demand YouTube comments", () => {
     expect(send.mock.calls.every(([cmd]) => cmd instanceof GetCommand)).toBe(true);
   });
 
+  it("returns a 100-thread batch without reusing the legacy 20-thread cache entry", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        items: Array.from({ length: 100 }, (_, n) => ({
+          snippet: {
+            topLevelComment: { id: String(n), snippet: { textDisplay: `Comment ${n}` } },
+          },
+        })),
+        nextPageToken: "more",
+      }),
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    const request = { ...event(), queryStringParameters: { limit: "100" } };
+    const result = await getYoutubeComments(request, work.workId);
+    expect(JSON.parse(result.body ?? "{}").comments).toHaveLength(100);
+    const url = new URL(fetchMock.mock.calls[0][0]);
+    expect(url.searchParams.get("maxResults")).toBe("100");
+    expect(url.searchParams.has("pageToken")).toBe(false);
+    const cached = await getYoutubeComments(request, work.workId);
+    expect(cached.body).toBe(result.body);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
   it("does not contact YouTube for a hidden NIARIM work", async () => {
     send.mockResolvedValueOnce({ Item: { ...work, isNiarimPublished: false } });
     const fetchMock = vi.fn();

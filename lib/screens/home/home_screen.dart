@@ -4671,6 +4671,7 @@ class _SharedTab extends StatelessWidget {
         project,
         onCopyEntry: onCopyEntry,
         grid: true,
+        compactActions: viewMode.size == CollectionViewSize.small,
       ),
       header: Column(
         mainAxisSize: MainAxisSize.min,
@@ -4782,6 +4783,7 @@ Widget _receivedShareProjectTile(
   BuildContext context,
   Project project, {
   required bool grid,
+  bool compactActions = false,
   ValueChanged<HomeClipboardEntry>? onCopyEntry,
 }) {
   final l10n = AppLocalizations.of(context)!;
@@ -4856,37 +4858,17 @@ Widget _receivedShareProjectTile(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Expanded(
-                  child: Stack(
-                    fit: StackFit.expand,
-                    children: [
-                      cover(),
-                      if (!selecting)
-                        Positioned(
-                          top: 4,
-                          right: 4,
-                          child: _sharedProjectActions(
-                            context,
-                            project,
-                            onCopyEntry: onCopyEntry,
-                            showFavorite: false,
-                          ),
-                        ),
-                      if (!selecting)
-                        Positioned(
-                          bottom: 4,
-                          left: 4,
-                          child: _sharedProjectActions(
-                            context,
-                            project,
-                            onCopyEntry: onCopyEntry,
-                            showMenu: false,
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
+                Expanded(child: cover()),
                 collectionTileCaption(context, project.name),
+                if (!selecting)
+                  CollectionTileActions(
+                    compact: compactActions,
+                    children: _sharedProjectActions(
+                      context,
+                      project,
+                      onCopyEntry: onCopyEntry,
+                    ),
+                  ),
               ],
             ),
           ),
@@ -4928,7 +4910,13 @@ Widget _receivedShareProjectTile(
         onLongPress: selectedLongPress,
         trailing: selecting
             ? null
-            : _sharedProjectActions(context, project, onCopyEntry: onCopyEntry),
+            : CollectionActionRow(
+                children: _sharedProjectActions(
+                  context,
+                  project,
+                  onCopyEntry: onCopyEntry,
+                ),
+              ),
         // 行の︙の押せる所（48×48）は、行の右の余白へも届く。
       ).withCollectionActionReach(),
     ),
@@ -4937,36 +4925,30 @@ Widget _receivedShareProjectTile(
 
 /// Received projects remain editable. Sharing one explicitly creates a new
 /// saved .niashare snapshot, whereas outbound snapshots reuse existing bytes.
-Widget _sharedProjectActions(
+List<Widget> _sharedProjectActions(
   BuildContext context,
   Project project, {
   ValueChanged<HomeClipboardEntry>? onCopyEntry,
-  bool showFavorite = true,
-  bool showMenu = true,
 }) {
   final l10n = AppLocalizations.of(context)!;
   // 星と︙の押せる所（48×48）は、丸の外へも届き、隣どうしは隙間を分け合う。
-  return CollectionActionRow(
-    children: [
-      if (showFavorite)
-        CollectionFavoriteButton(
-          itemId: project.id,
-          favorite: project.isFavorite,
-          tooltip: project.isFavorite
-              ? l10n.colorPickerFavoriteRemove
-              : l10n.colorPickerFavoriteAdd,
-          onPressed: () => runProjectAction(
-            context,
-            () => context.read<ProjectService>().toggleFavorite(project.id),
-          ),
-        ),
-      if (showMenu)
-        CollectionActionFrame(
-          key: Key('collectionMenu_${project.id}'),
-          child: _receivedShareMenu(context, project, onCopyEntry: onCopyEntry),
-        ),
-    ],
-  );
+  return [
+    CollectionFavoriteButton(
+      itemId: project.id,
+      favorite: project.isFavorite,
+      tooltip: project.isFavorite
+          ? l10n.colorPickerFavoriteRemove
+          : l10n.colorPickerFavoriteAdd,
+      onPressed: () => runProjectAction(
+        context,
+        () => context.read<ProjectService>().toggleFavorite(project.id),
+      ),
+    ),
+    CollectionActionFrame(
+      key: Key('collectionMenu_${project.id}'),
+      child: _receivedShareMenu(context, project, onCopyEntry: onCopyEntry),
+    ),
+  ];
 }
 
 Widget _receivedShareMenu(
@@ -5435,30 +5417,22 @@ class _OutgoingSharesList extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     Expanded(
-                      child: Stack(
-                        fit: StackFit.expand,
-                        children: [
-                          ColoredBox(
-                            color: scheme.surfaceContainerHighest,
-                            child: const Center(
-                              child: Icon(
-                                Icons.insert_drive_file_outlined,
-                                size: 52,
-                              ),
-                            ),
+                      child: ColoredBox(
+                        color: scheme.surfaceContainerHighest,
+                        child: const Center(
+                          child: Icon(
+                            Icons.insert_drive_file_outlined,
+                            size: 52,
                           ),
-                          if (!selecting)
-                            Positioned(top: 4, right: 4, child: menuAction),
-                          if (!selecting)
-                            Positioned(
-                              bottom: 4,
-                              left: 4,
-                              child: favoriteAction,
-                            ),
-                        ],
+                        ),
                       ),
                     ),
                     collectionTileCaption(context, entry.name),
+                    if (!selecting)
+                      CollectionTileActions(
+                        compact: viewMode.size == CollectionViewSize.small,
+                        children: [favoriteAction, menuAction],
+                      ),
                   ],
                 ),
               ),
@@ -5699,6 +5673,7 @@ class _SharedFolderScreenState extends State<_SharedFolderScreen> {
           ctx,
           items[i],
           grid: grid,
+          compactActions: _viewMode.size == CollectionViewSize.small,
           onCopyEntry: widget.onCopyEntry,
         );
     return Scaffold(
@@ -6021,41 +5996,33 @@ class _FolderableList<T> extends StatelessWidget {
     return result;
   }
 
-  Widget _folderActions(
-    BuildContext context,
-    ProjectFolder folder, {
-    bool showFavorite = true,
-    bool showMenu = true,
-  }) {
+  List<Widget> _folderActions(BuildContext context, ProjectFolder folder) {
     final l10n = AppLocalizations.of(context)!;
-    return CollectionActionRow(
-      children: [
-        if (showFavorite && onToggleFolderFavorite != null)
-          CollectionFavoriteButton(
-            itemId: folder.id,
-            favorite: folder.isFavorite,
-            tooltip: folder.isFavorite
-                ? l10n.colorPickerFavoriteRemove
-                : l10n.colorPickerFavoriteAdd,
-            onPressed: () => onToggleFolderFavorite!(folder),
+    return [
+      if (onToggleFolderFavorite != null)
+        CollectionFavoriteButton(
+          itemId: folder.id,
+          favorite: folder.isFavorite,
+          tooltip: folder.isFavorite
+              ? l10n.colorPickerFavoriteRemove
+              : l10n.colorPickerFavoriteAdd,
+          onPressed: () => onToggleFolderFavorite!(folder),
+        ),
+      CollectionActionFrame(
+        child: IconButton(
+          key: ValueKey('collectionFolderMenu_${folder.id}'),
+          // ほかのカードの「⋮」（PopupMenuButton）と同じメニューの文字色。
+          icon: Icon(
+            Icons.more_vert,
+            size: CollectionActionFrame.glyphSize,
+            color: Theme.of(context).popupMenuTheme.iconColor,
           ),
-        if (showMenu)
-          CollectionActionFrame(
-            child: IconButton(
-              key: ValueKey('collectionFolderMenu_${folder.id}'),
-              // ほかのカードの「⋮」（PopupMenuButton）と同じメニューの文字色。
-              icon: Icon(
-                Icons.more_vert,
-                size: CollectionActionFrame.glyphSize,
-                color: Theme.of(context).popupMenuTheme.iconColor,
-              ),
-              tooltip: AppLocalizations.of(context)!.homeFolderMenuTooltip,
-              padding: EdgeInsets.zero,
-              onPressed: () => _showFolderMenu(context, folder),
-            ),
-          ),
-      ],
-    );
+          tooltip: AppLocalizations.of(context)!.homeFolderMenuTooltip,
+          padding: EdgeInsets.zero,
+          onPressed: () => _showFolderMenu(context, folder),
+        ),
+      ),
+    ];
   }
 
   Widget _folderGridTile(
@@ -6098,37 +6065,17 @@ class _FolderableList<T> extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Expanded(
-                  child: Stack(
-                    fit: StackFit.expand,
-                    children: [
-                      FolderThumbnail(
-                        folder: folder,
-                        choices: _folderCoverChoices(folder.id),
-                      ),
-                      if (!selecting)
-                        Positioned(
-                          top: 4,
-                          right: 4,
-                          child: _folderActions(
-                            context,
-                            folder,
-                            showFavorite: false,
-                          ),
-                        ),
-                      if (!selecting && onToggleFolderFavorite != null)
-                        Positioned(
-                          bottom: 4,
-                          left: 4,
-                          child: _folderActions(
-                            context,
-                            folder,
-                            showMenu: false,
-                          ),
-                        ),
-                    ],
+                  child: FolderThumbnail(
+                    folder: folder,
+                    choices: _folderCoverChoices(folder.id),
                   ),
                 ),
                 collectionTileCaption(context, folder.name),
+                if (!selecting)
+                  CollectionTileActions(
+                    compact: viewMode?.size == CollectionViewSize.small,
+                    children: _folderActions(context, folder),
+                  ),
               ],
             ),
           ),
@@ -6184,7 +6131,9 @@ class _FolderableList<T> extends StatelessWidget {
                     HomeCollectionSelectionScope.maybeOf(context)?.active ==
                         true
                     ? null
-                    : _folderActions(context, folder),
+                    : CollectionActionRow(
+                        children: _folderActions(context, folder),
+                      ),
                 onTap: () {
                   final selection = HomeCollectionSelectionScope.maybeOf(
                     context,
@@ -7344,6 +7293,7 @@ SliverGridDelegate _worksGridDelegate(
     context,
     mode.isDetail ? kCollectionTileLargeExtent : mode.tileExtent,
     nameLines: nameLines,
+    actionBandHeight: CollectionActionFrame.targetExtent,
   );
 }
 
@@ -7603,6 +7553,7 @@ class _WorksTabState extends State<_WorksTab>
               file: file,
               stat: listing.stats[file]!,
               gridTile: grid,
+              compactActions: widget.viewMode.size == CollectionViewSize.small,
               isFavorite: _favoritePaths.contains(file.path),
               onToggleFavorite: () => _toggleFavorite(file.path),
               onDeleted: _reload,
@@ -7989,6 +7940,7 @@ class _WorksFolderScreenState extends State<_WorksFolderScreen> {
                     file: file,
                     stat: listing.stats[file]!,
                     gridTile: grid,
+                    compactActions: _viewMode.size == CollectionViewSize.small,
                     isFavorite: widget.favoritePaths.contains(file.path),
                     // お気に入りは作品一覧のタブが持つので、この画面も
                     // 描き直す（以前は星を押しても、画面を開き直すまで
@@ -8046,6 +7998,7 @@ class _WorkListItem extends StatefulWidget {
   final VoidCallback onDeleted;
   final VoidCallback? onCopy;
   final bool gridTile;
+  final bool compactActions;
   final bool isFavorite;
   final VoidCallback? onToggleFavorite;
   const _WorkListItem({
@@ -8055,6 +8008,7 @@ class _WorkListItem extends StatefulWidget {
     required this.onDeleted,
     this.onCopy,
     this.gridTile = false,
+    this.compactActions = false,
     this.isFavorite = false,
     this.onToggleFavorite,
   });
@@ -8147,6 +8101,7 @@ class _WorkListItemState extends State<_WorkListItem> {
         final path = setting['imagePath'];
         return ExportedWorkCard(
           gridTile: widget.gridTile,
+          compactActions: widget.compactActions,
           selectionId: 'work_file:${file.path}',
           isFavorite: widget.isFavorite,
           onToggleFavorite: widget.onToggleFavorite,

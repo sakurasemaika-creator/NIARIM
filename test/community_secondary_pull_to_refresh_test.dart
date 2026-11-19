@@ -248,7 +248,11 @@ void main() {
     );
     expect(
       tester.getCenter(bookmark).dy,
-      lessThan(tester.getCenter(moreActions).dy),
+      closeTo(tester.getCenter(moreActions).dy, 1),
+    );
+    expect(
+      tester.getCenter(bookmark).dx,
+      lessThan(tester.getCenter(moreActions).dx),
     );
     expect(bookmark.hitTestable(), findsOneWidget);
     expect(moreActions.hitTestable(), findsOneWidget);

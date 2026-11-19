@@ -209,6 +209,7 @@ class _PlazaMissionsPanelState extends State<PlazaMissionsPanel> {
                       child: messageText(_l10n.plazaMissionsUnavailable),
                     ),
                     IconButton(
+                      tooltip: _l10n.creatorMissionRetry,
                       onPressed: () =>
                           setState(() => _state = _api!.myPlazaMissions()),
                       icon: const Icon(Icons.refresh),

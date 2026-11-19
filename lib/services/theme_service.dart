@@ -1297,6 +1297,7 @@ class ThemeService extends ChangeNotifier {
       // Flutter既定のツールチップは下地が90%の不透明度で、後ろの画面が
       // 透ける。色と形は既定のまま、不透明にする。
       tooltipTheme: TooltipThemeData(
+        triggerMode: TooltipTriggerMode.longPress,
         textStyle: textTheme.bodySmall?.copyWith(color: preset.menuTextColor),
         decoration: BoxDecoration(
           color: popupColor,

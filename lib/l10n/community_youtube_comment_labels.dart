@@ -14,6 +14,7 @@ class CommunityYoutubeCommentLabels {
 
   String get heading => _l10n.communityYoutubeCommentHeading;
   String get loadMore => _l10n.communityYoutubeCommentLoadMore;
+  String get openYouTube => _l10n.communityYoutubeCommentOpenYouTube;
   String get noComments => _l10n.communityYoutubeCommentNoComments;
   String get unavailable => _l10n.communityYoutubeCommentUnavailable;
   String get retry => _l10n.communityYoutubeCommentRetry;

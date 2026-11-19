@@ -201,13 +201,24 @@ void main() {
                 ),
               ),
             ),
-            const Size(40, 40),
+            mode == ProjectViewMode.small
+                ? const Size(32, 32)
+                : const Size(40, 40),
           );
           final frame = find.byKey(
             Key('collectionMenu_${name == 'Project' ? 'project' : 'folder'}'),
           );
           final target = tester.getRect(frame);
           expect(tester.getRect(_card(name)).contains(target.topLeft), isTrue);
+          final title = tester.getRect(find.text(name));
+          final id = name == 'Project' ? 'project' : 'folder';
+          final favorite = find.byKey(Key('collectionFavorite_$id'));
+          expect(
+            tester.getRect(favorite).top,
+            greaterThanOrEqualTo(title.bottom),
+          );
+          expect(tester.getCenter(favorite).dy, closeTo(target.center.dy, 0.1));
+          expect(tester.getCenter(favorite).dx, lessThan(target.center.dx));
           expect(
             tester.getRect(_card(name)).contains(target.bottomRight),
             isTrue,

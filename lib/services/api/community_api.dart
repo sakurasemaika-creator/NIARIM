@@ -57,13 +57,11 @@ class CommunityApi {
   }
 
   /// YouTube comments are fetched only after an explicit viewer action.
-  Future<Map<String, dynamic>> youtubeComments(
-    String workId, {
-    String? cursor,
-  }) => _client.getJson(
-    '/works/${Uri.encodeComponent(workId)}/youtube-comments',
-    query: {'cursor': ?cursor},
-  );
+  Future<Map<String, dynamic>> youtubeComments(String workId) =>
+      _client.getJson(
+        '/works/${Uri.encodeComponent(workId)}/youtube-comments',
+        query: const {'limit': '100'},
+      );
 
   /// NIARIM-authored description is stored outside the indexing GSIs.
   Future<Map<String, dynamic>> workMetadata(String workId) => _client.getJson(

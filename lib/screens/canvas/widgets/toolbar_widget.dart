@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
 
+import '../../../widgets/app_toast_messenger.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../models/toolbar_item.dart';
 import '../../../services/settings_service.dart';
@@ -68,7 +69,10 @@ class ToolbarWidget extends StatelessWidget {
         tooltipKey: 'pen_tool',
         message: l10n.toolbarPenFirstUseTip,
         child: GestureDetector(
-          onLongPress: onPenLongPress,
+          onLongPress: () {
+            showIconActionDescription(context, l10n.toolbarPenTooltip);
+            onPenLongPress();
+          },
           onVerticalDragEnd: (details) {
             if ((details.primaryVelocity ?? 0) < -200) onPenLongPress();
           },
@@ -83,7 +87,7 @@ class ToolbarWidget extends StatelessWidget {
       ),
       ToolbarItemId.eraser => GestureDetector(
         onDoubleTap: () =>
-            _showBriefDescription(context, l10n.toolbarItemEraser),
+            showIconActionDescription(context, l10n.toolbarItemEraser),
         child: CanvasIconButton(
           iconBuilder: (color) =>
               FaIcon(FontAwesomeIcons.eraser, size: 18, color: color),
@@ -96,7 +100,10 @@ class ToolbarWidget extends StatelessWidget {
         tooltipKey: 'bucket_tool',
         message: l10n.toolbarBucketFirstUseTip,
         child: GestureDetector(
-          onLongPress: () => _showBucketToneMenu(context),
+          onLongPress: () {
+            showIconActionDescription(context, l10n.toolbarBucketTooltip);
+            _showBucketToneMenu(context);
+          },
           onVerticalDragEnd: (details) {
             if ((details.primaryVelocity ?? 0) < -200) {
               _showBucketToneMenu(context);
@@ -118,7 +125,10 @@ class ToolbarWidget extends StatelessWidget {
         l10n.toolbarItemEyedropper,
       ),
       ToolbarItemId.finger => GestureDetector(
-        onLongPress: onFingerLongPress,
+        onLongPress: () {
+          showIconActionDescription(context, l10n.toolbarItemFinger);
+          onFingerLongPress();
+        },
         onVerticalDragEnd: (details) {
           if ((details.primaryVelocity ?? 0) < -200) onFingerLongPress();
         },
@@ -246,7 +256,10 @@ class ToolbarWidget extends StatelessWidget {
         tooltipKey: 'quick_tool',
         message: l10n.toolbarQuickToolFirstUseTip,
         child: GestureDetector(
-          onLongPress: onQuickToolLongPress,
+          onLongPress: () {
+            showIconActionDescription(context, l10n.toolbarQuickToolTooltip);
+            onQuickToolLongPress();
+          },
           onVerticalDragEnd: (details) {
             if ((details.primaryVelocity ?? 0) < -200) {
               onQuickToolLongPress();
@@ -330,7 +343,7 @@ class ToolbarWidget extends StatelessWidget {
   }) {
     final selected = isSelected ?? (currentTool == tool);
     return GestureDetector(
-      onDoubleTap: () => _showBriefDescription(context, tooltip),
+      onDoubleTap: () => showIconActionDescription(context, tooltip),
       child: _borderedIconButton(
         context,
         icon,
@@ -338,17 +351,6 @@ class ToolbarWidget extends StatelessWidget {
         tooltip: tooltip,
         selected: selected,
         longPressTooltip: longPressTooltip,
-      ),
-    );
-  }
-
-  static void _showBriefDescription(BuildContext context, String text) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(text, textAlign: TextAlign.center),
-        duration: const Duration(seconds: 2),
-        behavior: SnackBarBehavior.floating,
-        width: 220,
       ),
     );
   }
@@ -381,9 +383,12 @@ class ToolbarWidget extends StatelessWidget {
       _ => Icons.highlight_alt,
     };
     return GestureDetector(
-      onLongPress: () => _showSelectMenu(context, l10n),
+      onLongPress: () {
+        showIconActionDescription(context, l10n.toolbarSelectTooltip);
+        _showSelectMenu(context, l10n);
+      },
       onDoubleTap: () =>
-          _showBriefDescription(context, l10n.toolbarSelectTooltip),
+          showIconActionDescription(context, l10n.toolbarSelectTooltip),
       onVerticalDragEnd: (details) {
         if ((details.primaryVelocity ?? 0) < -200) {
           _showSelectMenu(context, l10n);

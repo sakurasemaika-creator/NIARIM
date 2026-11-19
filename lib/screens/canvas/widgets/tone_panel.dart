@@ -253,19 +253,24 @@ class _TonePanelState extends State<TonePanel> {
                           trailing: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              GestureDetector(
-                                onTap: () =>
-                                    toneService.toggleFavorite(tone.id),
-                                child: Icon(
-                                  tone.isFavorite
-                                      ? Icons.star
-                                      : Icons.star_outline,
-                                  size: 14,
-                                  color: tone.isFavorite
-                                      ? ThemeService.activeColorScheme.tertiary
-                                      : ThemeService
-                                            .activeColorScheme
-                                            .onSurfaceVariant,
+                              Tooltip(
+                                message: tone.isFavorite
+                                  ? l10n.colorPickerFavoriteRemove
+                                  : l10n.colorPickerFavoriteAdd,
+                                child: GestureDetector(
+                                  onTap: () =>
+                                      toneService.toggleFavorite(tone.id),
+                                  child: Icon(
+                                    tone.isFavorite
+                                        ? Icons.star
+                                        : Icons.star_outline,
+                                    size: 14,
+                                    color: tone.isFavorite
+                                        ? ThemeService.activeColorScheme.tertiary
+                                        : ThemeService
+                                              .activeColorScheme
+                                              .onSurfaceVariant,
+                                  ),
                                 ),
                               ),
                               PopupMenuButton<String>(

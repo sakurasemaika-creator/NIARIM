@@ -8985,7 +8985,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get communityYoutubeCommentHeading => 'View YouTube comments';
 
   @override
-  String get communityYoutubeCommentLoadMore => 'Load 20 more';
+  String get communityYoutubeCommentLoadMore => 'Show more';
+
+  @override
+  String get communityYoutubeCommentOpenYouTube => 'See more on YouTube';
 
   @override
   String get communityYoutubeCommentNoComments => 'No comments yet';
@@ -11135,6 +11138,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get communityTagUnlockAction => 'Unlock';
 
   @override
+  String get communityTagUnlockBeforeDelete =>
+      'The creator must unlock this tag before it can be deleted.';
+
+  @override
   String get communityPreviewStart => 'Go to start';
 
   @override
@@ -11154,4 +11161,25 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsSupportLinkFailed => 'Could not open the contact form.';
+
+  @override
+  String get canvasToolbarToggleTooltip => 'Show or hide the toolbar';
+
+  @override
+  String get canvasFrameStripToggleTooltip => 'Show or hide the frame strip';
+
+  @override
+  String get layerPanelToggleFolderTooltip => 'Expand or collapse the folder';
+
+  @override
+  String get layerPanelShowLayerTooltip => 'Show layer';
+
+  @override
+  String get layerPanelHideLayerTooltip => 'Hide layer';
+
+  @override
+  String get layerPanelMergeDownTooltip => 'Merge with the layer below';
+
+  @override
+  String get timelineAddTrackRowTooltip => 'Add a track row';
 }

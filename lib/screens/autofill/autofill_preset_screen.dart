@@ -407,6 +407,7 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
+        tooltip: l10n.commonAdd,
         onPressed: _showAddOrImportChoice,
         child: const Icon(Icons.add),
       ),
@@ -1220,6 +1221,7 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
+        tooltip: l10n.autofillPartAddDialogTitle,
         onPressed: _showAddPartDialog,
         child: const Icon(Icons.add),
       ),

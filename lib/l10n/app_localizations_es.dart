@@ -9129,7 +9129,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get communityYoutubeCommentHeading => 'Ver comentarios de YouTube';
 
   @override
-  String get communityYoutubeCommentLoadMore => 'Cargar 20 más';
+  String get communityYoutubeCommentLoadMore => 'Mostrar más';
+
+  @override
+  String get communityYoutubeCommentOpenYouTube => 'Ver más en YouTube';
 
   @override
   String get communityYoutubeCommentNoComments => 'Aún no hay comentarios';
@@ -11292,6 +11295,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get communityTagUnlockAction => 'Desbloquear';
 
   @override
+  String get communityTagUnlockBeforeDelete =>
+      'El autor debe desbloquear esta etiqueta para poder eliminarla.';
+
+  @override
   String get communityPreviewStart => 'Ir al inicio';
 
   @override
@@ -11312,4 +11319,27 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get settingsSupportLinkFailed =>
       'No se pudo abrir el formulario de contacto.';
+
+  @override
+  String get canvasToolbarToggleTooltip =>
+      'Mostrar u ocultar la barra de herramientas';
+
+  @override
+  String get canvasFrameStripToggleTooltip =>
+      'Mostrar u ocultar la tira de fotogramas';
+
+  @override
+  String get layerPanelToggleFolderTooltip => 'Expandir o contraer la carpeta';
+
+  @override
+  String get layerPanelShowLayerTooltip => 'Mostrar capa';
+
+  @override
+  String get layerPanelHideLayerTooltip => 'Ocultar capa';
+
+  @override
+  String get layerPanelMergeDownTooltip => 'Combinar con la capa inferior';
+
+  @override
+  String get timelineAddTrackRowTooltip => 'Añadir una fila a la pista';
 }

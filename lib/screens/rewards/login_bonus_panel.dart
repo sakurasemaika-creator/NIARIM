@@ -120,6 +120,7 @@ class _LoginBonusPanelState extends State<LoginBonusPanel> {
                 children: [
                   Expanded(child: messageText(t['unknown'])),
                   IconButton(
+                    tooltip: l10n.loginBonusRetry,
                     onPressed: () => setState(() => _future = _load(_api!)),
                     icon: const Icon(Icons.refresh),
                   ),

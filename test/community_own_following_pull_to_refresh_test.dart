@@ -376,7 +376,7 @@ void main() {
       find.byKey(const Key('communityFollowingFollow_alice')),
       findsOneWidget,
     );
-    expect(find.text('最近フォローを解除したユーザー'), findsOneWidget);
+    expect(find.text('最近フォローを解除したユーザー'), findsNothing);
 
     await tester.tap(find.byKey(const Key('communityFollowingFollow_alice')));
     await tester.pumpAndSettle();

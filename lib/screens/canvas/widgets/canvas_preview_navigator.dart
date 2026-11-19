@@ -196,12 +196,15 @@ class _CanvasPreviewNavigatorState extends State<CanvasPreviewNavigator> {
                   ),
                 ),
                 if (widget.showCloseButton)
-                  InkWell(
-                    onTap: widget.onClose,
-                    child: Icon(
-                      Icons.close,
-                      size: 16,
-                      color: theme.menuTextColor,
+                  Tooltip(
+                    message: l10n.commonClose,
+                    child: InkWell(
+                      onTap: widget.onClose,
+                      child: Icon(
+                        Icons.close,
+                        size: 16,
+                        color: theme.menuTextColor,
+                      ),
                     ),
                   ),
               ],

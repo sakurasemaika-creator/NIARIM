@@ -117,8 +117,7 @@ void main() {
         tester.widget<ExportedWorkCard>(work('Alpha.gif')).gridTile,
         isTrue,
       );
-      // Exported Works must share the Projects layout: top-right menu and
-      // bottom-left favorite, not two controls side by side at the top.
+      // The title sits directly below the cover, followed by both actions.
       final favorite = find.descendant(
         of: work('Alpha.gif'),
         matching: find.byType(CollectionFavoriteButton),
@@ -132,7 +131,9 @@ void main() {
       final favoriteRect = tester.getRect(favorite);
       final menuRect = tester.getRect(menu);
       expect(favoriteRect.left, lessThan(menuRect.left));
-      expect(favoriteRect.center.dy, greaterThan(menuRect.center.dy));
+      expect(favoriteRect.center.dy, closeTo(menuRect.center.dy, 0.1));
+      final title = tester.getRect(find.text('Alpha.gif'));
+      expect(favoriteRect.top, greaterThanOrEqualTo(title.bottom));
       await tester.tap(favorite);
       await pumpRealAsync(tester, const Duration(milliseconds: 150));
       final prefs = await SharedPreferences.getInstance();

@@ -108,7 +108,6 @@ class _CommunityFollowingListScreenState
         key: Key('communityFollowingAuthor_$id'),
         leading: const CircleAvatar(child: Icon(Icons.person_outline)),
         title: Text(name),
-        subtitle: following ? null : Text(l10n.communityUnfollowedLabel),
         onTap: () => Navigator.of(context).push(
           adMockMaterialPageRoute<void>(
             builder: (_) =>
@@ -151,9 +150,7 @@ class _CommunityFollowingListScreenState
           key: const Key('communityOwnFollowingList'),
           controller: _scrollController,
           physics: const AlwaysScrollableScrollPhysics(),
-          itemCount: isEmpty
-              ? 1
-              : ids.length + (removed.isEmpty ? 0 : removed.length + 1),
+          itemCount: isEmpty ? 1 : ids.length + removed.length,
           itemBuilder: (context, index) {
             if (isEmpty) {
               return Padding(
@@ -169,13 +166,7 @@ class _CommunityFollowingListScreenState
                 following: true,
               );
             }
-            if (index == ids.length) {
-              return Padding(
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                child: Text(l10n.communityRecentlyUnfollowedHeader),
-              );
-            }
-            final user = removed[index - ids.length - 1];
+            final user = removed[index - ids.length];
             return authorRow(user.key, user.value, following: false);
           },
         ),

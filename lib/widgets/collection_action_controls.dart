@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 
@@ -51,12 +53,11 @@ class CollectionActionFrame extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final slot = _CollectionActionSlot.maybeOf(context);
     return _ActionTarget(
-      reach:
-          _CollectionActionSlot.reachOf(context) ??
-          const EdgeInsets.all((targetExtent - extent) / 2),
+      reach: slot?.reach ?? const EdgeInsets.all((targetExtent - extent) / 2),
       child: SizedBox.square(
-        dimension: extent,
+        dimension: slot?.buttonExtent ?? extent,
         child: DecoratedBox(
           // Drawn outside the circle, so the layout and the tap target stay.
           decoration: BoxDecoration(
@@ -100,6 +101,8 @@ class CollectionActionRow extends StatelessWidget {
     super.key,
     required this.children,
     this.direction = Axis.horizontal,
+    this.buttonExtent = CollectionActionFrame.extent,
+    this.targetWidth = CollectionActionFrame.targetExtent,
   });
 
   /// The drawn space between two circles.
@@ -113,18 +116,23 @@ class CollectionActionRow extends StatelessWidget {
 
   /// Which way the circles are lined up.
   final Axis direction;
+  final double buttonExtent;
+  final double targetWidth;
 
   @override
   Widget build(BuildContext context) {
     if (children.isEmpty) return const SizedBox.shrink();
-    const spare =
-        CollectionActionFrame.targetExtent - CollectionActionFrame.extent;
-    const inner = gap / 2;
-    const across = spare / 2;
-    final count = children.length;
-    // The two ends reach outwards so that each end target is 48 across.
-    final outer = count == 1 ? spare / 2 : spare - inner;
     final vertical = direction == Axis.vertical;
+    final spare =
+        (vertical ? CollectionActionFrame.targetExtent : targetWidth) -
+        buttonExtent;
+    const inner = gap / 2;
+    final across =
+        ((vertical ? targetWidth : CollectionActionFrame.targetExtent) -
+            buttonExtent) /
+        2;
+    final count = children.length;
+    final outer = count == 1 ? spare / 2 : spare - inner;
     final rtl = !vertical && Directionality.of(context) == TextDirection.rtl;
     EdgeInsets reachAt(int visual) {
       final before = visual == 0 ? outer : inner;
@@ -143,6 +151,7 @@ class CollectionActionRow extends StatelessWidget {
       children: [
         for (var i = 0; i < count; i++)
           _CollectionActionSlot(
+            buttonExtent: buttonExtent,
             reach: reachAt(rtl ? count - 1 - i : i),
             child: children[i],
           ),
@@ -242,19 +251,74 @@ class _RenderReachHost extends RenderProxyBox {
   }
 }
 
+/// A tile's bottom action band. It keeps the controls side by side, with
+/// full-height touch targets and non-overlapping horizontal reach.
+class CollectionTileActions extends StatelessWidget {
+  const CollectionTileActions({
+    super.key,
+    required this.children,
+    this.compact = false,
+  });
+
+  final List<Widget> children;
+  final bool compact;
+
+  @override
+  Widget build(BuildContext context) {
+    if (children.isEmpty) return const SizedBox.shrink();
+    return SizedBox(
+      height: CollectionActionFrame.targetExtent,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final count = children.length;
+          final width = math.min(
+            CollectionActionFrame.targetExtent,
+            constraints.maxWidth / count,
+          );
+          if (width <= CollectionActionRow.gap) return const SizedBox.shrink();
+          final preferredExtent = compact ? 32.0 : CollectionActionFrame.extent;
+          final extent = math.min(
+            preferredExtent,
+            width - CollectionActionRow.gap,
+          );
+          final spare = width - extent;
+          final edge = count == 1
+              ? spare / 2
+              : spare - CollectionActionRow.gap / 2;
+          return Padding(
+            padding: EdgeInsetsDirectional.only(end: edge),
+            child: Align(
+              alignment: AlignmentDirectional.centerEnd,
+              child: CollectionActionRow(
+                buttonExtent: extent,
+                targetWidth: width,
+                children: children,
+              ),
+            ),
+          );
+        },
+      ),
+    ).withCollectionActionReach();
+  }
+}
+
 /// How far a [CollectionActionFrame] below takes taps beyond its circle.
 class _CollectionActionSlot extends InheritedWidget {
-  const _CollectionActionSlot({required this.reach, required super.child});
+  const _CollectionActionSlot({
+    required this.reach,
+    required this.buttonExtent,
+    required super.child,
+  });
 
   final EdgeInsets reach;
+  final double buttonExtent;
 
-  static EdgeInsets? reachOf(BuildContext context) => context
-      .dependOnInheritedWidgetOfExactType<_CollectionActionSlot>()
-      ?.reach;
+  static _CollectionActionSlot? maybeOf(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<_CollectionActionSlot>();
 
   @override
   bool updateShouldNotify(_CollectionActionSlot oldWidget) =>
-      reach != oldWidget.reach;
+      reach != oldWidget.reach || buttonExtent != oldWidget.buttonExtent;
 }
 
 /// Takes taps and gives screen readers the circle's square grown by [reach]

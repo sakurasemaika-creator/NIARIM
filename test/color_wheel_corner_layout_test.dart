@@ -76,6 +76,7 @@ void main() {
       (tester) async {
         final theme = ThemeService();
         addTearDown(theme.dispose);
+        var transparencyTaps = 0;
         await tester.pumpWidget(
           ChangeNotifierProvider<ThemeService>.value(
             value: theme,
@@ -92,7 +93,7 @@ void main() {
                     onHueChanged: (_) {},
                     onSvChanged: (_, _) {},
                     onEyedropperTap: () {},
-                    onToggleTransparent: () {},
+                    onToggleTransparent: () => transparencyTaps++,
                     onSliderModeChanged: (_) {},
                   ),
                 ),
@@ -140,6 +141,16 @@ void main() {
           lessThanOrEqualTo(wheel.bottom),
           reason: 'The picker must allocate enough height for the pill',
         );
+        final transparent = find.byKey(
+          const ValueKey('color-picker-transparent-toggle'),
+        );
+        await tester.longPress(transparent);
+        await tester.pumpAndSettle();
+        expect(find.text('Transparent'), findsOneWidget);
+        expect(transparencyTaps, 0);
+        await tester.tap(transparent);
+        await tester.pumpAndSettle();
+        expect(transparencyTaps, 1);
         expect(tester.takeException(), isNull);
       },
     );

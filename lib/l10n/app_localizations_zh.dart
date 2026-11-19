@@ -8463,7 +8463,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get communityYoutubeCommentHeading => '查看 YouTube 评论';
 
   @override
-  String get communityYoutubeCommentLoadMore => '再加载20条';
+  String get communityYoutubeCommentLoadMore => '显示更多';
+
+  @override
+  String get communityYoutubeCommentOpenYouTube => '在 YouTube 上查看更多';
 
   @override
   String get communityYoutubeCommentNoComments => '暂无评论';
@@ -10229,6 +10232,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get communityTagUnlockAction => '解锁';
 
   @override
+  String get communityTagUnlockBeforeDelete => '删除此标签前，发布者必须先解锁。';
+
+  @override
   String get communityPreviewStart => '跳到视频开头';
 
   @override
@@ -10248,6 +10254,27 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get settingsSupportLinkFailed => '无法打开联系表单。';
+
+  @override
+  String get canvasToolbarToggleTooltip => '展开或收起工具栏';
+
+  @override
+  String get canvasFrameStripToggleTooltip => '展开或收起帧列表';
+
+  @override
+  String get layerPanelToggleFolderTooltip => '展开或收起文件夹';
+
+  @override
+  String get layerPanelShowLayerTooltip => '显示图层';
+
+  @override
+  String get layerPanelHideLayerTooltip => '隐藏图层';
+
+  @override
+  String get layerPanelMergeDownTooltip => '与下方图层合并';
+
+  @override
+  String get timelineAddTrackRowTooltip => '添加轨道行';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -18711,7 +18738,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get communityYoutubeCommentHeading => '查看 YouTube 留言';
 
   @override
-  String get communityYoutubeCommentLoadMore => '再載入20則';
+  String get communityYoutubeCommentLoadMore => '顯示更多';
+
+  @override
+  String get communityYoutubeCommentOpenYouTube => '在 YouTube 上查看更多';
 
   @override
   String get communityYoutubeCommentNoComments => '尚無留言';
@@ -20477,6 +20507,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get communityTagUnlockAction => '解鎖';
 
   @override
+  String get communityTagUnlockBeforeDelete => '刪除此標籤前，發布者必須先解鎖。';
+
+  @override
   String get communityPreviewStart => '跳到影片開頭';
 
   @override
@@ -20496,4 +20529,25 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get settingsSupportLinkFailed => '無法開啟聯絡表單。';
+
+  @override
+  String get canvasToolbarToggleTooltip => '展開或收合工具列';
+
+  @override
+  String get canvasFrameStripToggleTooltip => '展開或收合影格列表';
+
+  @override
+  String get layerPanelToggleFolderTooltip => '展開或收合資料夾';
+
+  @override
+  String get layerPanelShowLayerTooltip => '顯示圖層';
+
+  @override
+  String get layerPanelHideLayerTooltip => '隱藏圖層';
+
+  @override
+  String get layerPanelMergeDownTooltip => '與下方圖層合併';
+
+  @override
+  String get timelineAddTrackRowTooltip => '新增軌道列';
 }

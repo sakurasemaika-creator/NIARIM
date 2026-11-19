@@ -4,6 +4,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/foundation.dart' show listEquals;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart' show ScrollDirection;
+import '../../../widgets/app_toast_messenger.dart';
 import '../../../widgets/project_duration_limit_dialog.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -517,7 +518,13 @@ class _FrameStripWidgetState extends State<FrameStripWidget> {
                       if (!_canAddFrames(context, service, 1)) return;
                       service.addFrame(widget.projectId, widget.sceneId);
                     },
-                    onLongPress: () => _showBatchAddDialog(context, service),
+                    onLongPress: () {
+                      showIconActionDescription(
+                        context,
+                        AppLocalizations.of(context)!.frameStripBulkAddTitle,
+                      );
+                      _showBatchAddDialog(context, service);
+                    },
                     child: Container(
                       width: 50,
                       height: 50,

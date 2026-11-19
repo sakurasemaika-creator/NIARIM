@@ -285,19 +285,24 @@ class _BrushPanelState extends State<BrushPanel> {
                           trailing: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              GestureDetector(
-                                onTap: () =>
-                                    brushService.toggleFavoriteBrush(brush.id),
-                                child: Icon(
-                                  brush.isFavorite
-                                      ? Icons.star
-                                      : Icons.star_outline,
-                                  size: 14,
-                                  color: brush.isFavorite
-                                      ? ThemeService.activeColorScheme.tertiary
-                                      : ThemeService
-                                            .activeColorScheme
-                                            .onSurfaceVariant,
+                              Tooltip(
+                                message: brush.isFavorite
+                                  ? l10n.colorPickerFavoriteRemove
+                                  : l10n.colorPickerFavoriteAdd,
+                                child: GestureDetector(
+                                  onTap: () =>
+                                      brushService.toggleFavoriteBrush(brush.id),
+                                  child: Icon(
+                                    brush.isFavorite
+                                        ? Icons.star
+                                        : Icons.star_outline,
+                                    size: 14,
+                                    color: brush.isFavorite
+                                        ? ThemeService.activeColorScheme.tertiary
+                                        : ThemeService
+                                              .activeColorScheme
+                                              .onSurfaceVariant,
+                                  ),
                                 ),
                               ),
                               PopupMenuButton<String>(

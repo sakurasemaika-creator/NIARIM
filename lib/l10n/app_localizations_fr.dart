@@ -9144,7 +9144,10 @@ class AppLocalizationsFr extends AppLocalizations {
   String get communityYoutubeCommentHeading => 'Voir les commentaires YouTube';
 
   @override
-  String get communityYoutubeCommentLoadMore => 'Charger 20 commentaires';
+  String get communityYoutubeCommentLoadMore => 'Afficher la suite';
+
+  @override
+  String get communityYoutubeCommentOpenYouTube => 'Voir la suite sur YouTube';
 
   @override
   String get communityYoutubeCommentNoComments => 'Aucun commentaire';
@@ -11302,6 +11305,10 @@ class AppLocalizationsFr extends AppLocalizations {
   String get communityTagUnlockAction => 'Déverrouiller';
 
   @override
+  String get communityTagUnlockBeforeDelete =>
+      'La personne qui a publié doit déverrouiller ce tag avant qu’il puisse être supprimé.';
+
+  @override
   String get communityPreviewStart => 'Aller au début';
 
   @override
@@ -11322,4 +11329,28 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get settingsSupportLinkFailed =>
       'Impossible d’ouvrir le formulaire de contact.';
+
+  @override
+  String get canvasToolbarToggleTooltip =>
+      'Afficher ou masquer la barre d’outils';
+
+  @override
+  String get canvasFrameStripToggleTooltip =>
+      'Afficher ou masquer la bande d’images';
+
+  @override
+  String get layerPanelToggleFolderTooltip =>
+      'Développer ou replier le dossier';
+
+  @override
+  String get layerPanelShowLayerTooltip => 'Afficher le calque';
+
+  @override
+  String get layerPanelHideLayerTooltip => 'Masquer le calque';
+
+  @override
+  String get layerPanelMergeDownTooltip => 'Fusionner avec le calque inférieur';
+
+  @override
+  String get timelineAddTrackRowTooltip => 'Ajouter une ligne à la piste';
 }

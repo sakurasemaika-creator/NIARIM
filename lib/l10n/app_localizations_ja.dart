@@ -8566,7 +8566,10 @@ class AppLocalizationsJa extends AppLocalizations {
   String get communityYoutubeCommentHeading => 'YouTubeのコメントを見る';
 
   @override
-  String get communityYoutubeCommentLoadMore => 'さらに20件表示';
+  String get communityYoutubeCommentLoadMore => 'さらに表示';
+
+  @override
+  String get communityYoutubeCommentOpenYouTube => '続きをYouTubeで見る';
 
   @override
   String get communityYoutubeCommentNoComments => 'コメントはまだありません';
@@ -10346,7 +10349,11 @@ class AppLocalizationsJa extends AppLocalizations {
   String get communityTagLockAction => 'ロック';
 
   @override
-  String get communityTagUnlockAction => '解除';
+  String get communityTagUnlockAction => 'ロック解除';
+
+  @override
+  String get communityTagUnlockBeforeDelete =>
+      'このタグを削除するには、投稿者がロックを解除する必要があります。';
 
   @override
   String get communityPreviewStart => '動画の先頭へ';
@@ -10368,4 +10375,25 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get settingsSupportLinkFailed => 'お問い合わせフォームを開けませんでした。';
+
+  @override
+  String get canvasToolbarToggleTooltip => 'ツールバーを開閉';
+
+  @override
+  String get canvasFrameStripToggleTooltip => 'フレーム一覧を開閉';
+
+  @override
+  String get layerPanelToggleFolderTooltip => 'フォルダを開閉';
+
+  @override
+  String get layerPanelShowLayerTooltip => 'レイヤーを表示';
+
+  @override
+  String get layerPanelHideLayerTooltip => 'レイヤーを非表示';
+
+  @override
+  String get layerPanelMergeDownTooltip => '下のレイヤーと結合';
+
+  @override
+  String get timelineAddTrackRowTooltip => 'トラックに行を追加';
 }

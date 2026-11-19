@@ -919,6 +919,7 @@ class _FilterPanelState extends State<FilterPanel> {
         ),
         IconButton(
           visualDensity: VisualDensity.compact,
+          tooltip: l10n.creativePanelFavoritesOnlyTooltip,
           icon: Icon(
             _showFavoritesOnly ? Icons.star : Icons.star_outline,
             size: 18,
@@ -1152,9 +1153,16 @@ class _FilterPanelState extends State<FilterPanel> {
                       children: [
                         InkWell(
                           onTap: () => service.toggleFavorite(filter.id),
-                          child: Icon(
-                            filter.isFavorite ? Icons.star : Icons.star_outline,
-                            size: 15,
+                          child: Tooltip(
+                            message: filter.isFavorite
+                                ? l10n.colorPickerFavoriteRemove
+                                : l10n.colorPickerFavoriteAdd,
+                            child: Icon(
+                              filter.isFavorite
+                                  ? Icons.star
+                                  : Icons.star_outline,
+                              size: 15,
+                            ),
                           ),
                         ),
                         if (!builtIn)
@@ -3015,6 +3023,9 @@ class _FilterPanelState extends State<FilterPanel> {
             IconButton(
               visualDensity: VisualDensity.compact,
               icon: const Icon(Icons.colorize, size: 18),
+              tooltip: AppLocalizations.of(
+                context,
+              )!.filterCanvasEyedropperTooltip,
               onPressed: () =>
                   widget.onStartCanvasEyedropper?.call(eyedropperTarget),
             ),
@@ -3125,6 +3136,7 @@ class _FilterPanelState extends State<FilterPanel> {
               IconButton(
                 visualDensity: VisualDensity.compact,
                 icon: const Icon(Icons.remove_rounded, size: 18),
+                tooltip: AppLocalizations.of(context)!.commonDecrease,
                 onPressed: wrap || shown > min ? () => change(shown - 1) : null,
               ),
               Expanded(
@@ -3139,6 +3151,7 @@ class _FilterPanelState extends State<FilterPanel> {
               IconButton(
                 visualDensity: VisualDensity.compact,
                 icon: const Icon(Icons.add_rounded, size: 18),
+                tooltip: AppLocalizations.of(context)!.commonIncrease,
                 onPressed: wrap || shown < max ? () => change(shown + 1) : null,
               ),
             ],

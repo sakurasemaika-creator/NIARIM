@@ -71,7 +71,7 @@ void main() {
   /// 決まり：丸の40×40を、押せる所の48×48が囲む。隣の丸が隙間4pxで
   /// 並ぶ所（詳細の行の星と︙）は隙間の真ん中で分け、残りを外側へ伸ばす。
   Rect expectedTarget(Rect circle, List<Rect> all) {
-    const spare = kMinInteractiveDimension - CollectionActionFrame.extent;
+    final spare = kMinInteractiveDimension - circle.width;
     var left = spare / 2;
     var right = spare / 2;
     for (final other in all) {
@@ -79,12 +79,12 @@ void main() {
         continue;
       }
       final gapRight = other.left - circle.right;
-      if (gapRight >= 0 && gapRight <= spare) {
+      if ((gapRight - CollectionActionRow.gap).abs() < 0.01) {
         right = gapRight / 2;
         left = spare - right;
       }
       final gapLeft = circle.left - other.right;
-      if (gapLeft >= 0 && gapLeft <= spare) {
+      if ((gapLeft - CollectionActionRow.gap).abs() < 0.01) {
         left = gapLeft / 2;
         right = spare - left;
       }
@@ -157,9 +157,13 @@ void main() {
             for (final frame in frames) {
               framesChecked++;
               final circle = circles[frame]!;
-              // 描く丸は40×40のまま。
-              if ((circle.width - CollectionActionFrame.extent).abs() > 0.01 ||
-                  (circle.height - CollectionActionFrame.extent).abs() > 0.01) {
+              final tile = frame
+                  .findAncestorWidgetOfExactType<CollectionTileActions>();
+              final drawnExtent = tile?.compact == true
+                  ? 32.0
+                  : CollectionActionFrame.extent;
+              if ((circle.width - drawnExtent).abs() > 0.01 ||
+                  (circle.height - drawnExtent).abs() > 0.01) {
                 problems.add('$cell: the circle is ${circle.size}');
               }
               final target = expectedTarget(circle, circles.values.toList());

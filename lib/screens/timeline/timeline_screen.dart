@@ -3560,13 +3560,17 @@ class _TimelineScreenState extends State<TimelineScreen> {
                               ),
                             ),
                             if (!_isSceneMultiSelect)
-                              GestureDetector(
-                                key: ValueKey('timelineSceneMenu_${scene.id}'),
-                                behavior: HitTestBehavior.opaque,
-                                onTap: () => _showSceneMenu(scene, scenes),
-                                child: const Padding(
-                                  padding: EdgeInsets.symmetric(horizontal: 2),
-                                  child: Icon(Icons.more_vert, size: 14),
+                              Tooltip(
+                                message: MaterialLocalizations.of(context)
+                                    .showMenuTooltip,
+                                child: GestureDetector(
+                                  key: ValueKey('timelineSceneMenu_${scene.id}'),
+                                  behavior: HitTestBehavior.opaque,
+                                  onTap: () => _showSceneMenu(scene, scenes),
+                                  child: const Padding(
+                                    padding: EdgeInsets.symmetric(horizontal: 2),
+                                    child: Icon(Icons.more_vert, size: 14),
+                                  ),
                                 ),
                               ),
                           ],
@@ -4379,6 +4383,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
 
   Widget _buildFrameEndButton(int total, double padding, double viewportWidth) {
     final colors = ThemeService.activeColorScheme;
+    final l10n = AppLocalizations.of(context)!;
     return AnimatedBuilder(
       animation: _frameScrollCtrl,
       builder: (context, child) {
@@ -4392,24 +4397,29 @@ class _TimelineScreenState extends State<TimelineScreen> {
           child: child!,
         );
       },
-      child: GestureDetector(
-        onTap: () {
-          if (_isFrameCursorActive) {
-            _chooseFramePlacement(total);
-            return;
-          }
-          final sceneId = _selectedSceneId;
-          if (sceneId == null || !_canAddFrames(1)) return;
-          context.read<ProjectService>().addFrame(widget.projectId, sceneId);
-          _recordTimelineAutomation('timeline.addFrame', 'Add frame');
-        },
-        child: Container(
-          decoration: BoxDecoration(
-            border: Border.all(color: colors.onSurfaceVariant),
-            borderRadius: BorderRadius.circular(3),
+      child: Tooltip(
+        message: _isFrameCursorActive
+            ? (_isFramePasteMode ? l10n.commonPaste : l10n.commonMove)
+            : l10n.customAutomationStepAddFrame,
+        child: GestureDetector(
+          onTap: () {
+            if (_isFrameCursorActive) {
+              _chooseFramePlacement(total);
+              return;
+            }
+            final sceneId = _selectedSceneId;
+            if (sceneId == null || !_canAddFrames(1)) return;
+            context.read<ProjectService>().addFrame(widget.projectId, sceneId);
+            _recordTimelineAutomation('timeline.addFrame', 'Add frame');
+          },
+          child: Container(
+            decoration: BoxDecoration(
+              border: Border.all(color: colors.onSurfaceVariant),
+              borderRadius: BorderRadius.circular(3),
+            ),
+            alignment: Alignment.center,
+            child: Icon(Icons.add, size: 16, color: colors.onSurfaceVariant),
           ),
-          alignment: Alignment.center,
-          child: Icon(Icons.add, size: 16, color: colors.onSurfaceVariant),
         ),
       ),
     );
@@ -4912,19 +4922,22 @@ class _TimelineScreenState extends State<TimelineScreen> {
                       Positioned(
                         right: 4,
                         top: 4,
-                        child: GestureDetector(
-                          onTap: () => _addTrackRow(type),
-                          child: Container(
-                            width: 20,
-                            height: 20,
-                            decoration: BoxDecoration(
-                              color: addColor.withValues(alpha: 0.8),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Icon(
-                              Icons.add,
-                              size: 14,
-                              color: ThemeService.activeColorScheme.onSurface,
+                        child: Tooltip(
+                          message: AppLocalizations.of(context)!.timelineAddTrackRowTooltip,
+                          child: GestureDetector(
+                            onTap: () => _addTrackRow(type),
+                            child: Container(
+                              width: 20,
+                              height: 20,
+                              decoration: BoxDecoration(
+                                color: addColor.withValues(alpha: 0.8),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Icon(
+                                Icons.add,
+                                size: 14,
+                                color: ThemeService.activeColorScheme.onSurface,
+                              ),
                             ),
                           ),
                         ),
@@ -5992,20 +6005,23 @@ class _TimelineScreenState extends State<TimelineScreen> {
                     Positioned(
                       right: 4,
                       top: 4,
-                      child: GestureDetector(
-                        onTap: () => _addCameraKf(),
-                        child: Container(
-                          width: 20,
-                          height: 20,
-                          decoration: BoxDecoration(
-                            color: ThemeService.activeColorScheme.secondary
-                                .withValues(alpha: 0.8),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Icon(
-                            Icons.add,
-                            size: 14,
-                            color: ThemeService.activeColorScheme.onSurface,
+                      child: Tooltip(
+                        message: AppLocalizations.of(context)!.timelineAddCameraKfTooltip,
+                        child: GestureDetector(
+                          onTap: () => _addCameraKf(),
+                          child: Container(
+                            width: 20,
+                            height: 20,
+                            decoration: BoxDecoration(
+                              color: ThemeService.activeColorScheme.secondary
+                                  .withValues(alpha: 0.8),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Icon(
+                              Icons.add,
+                              size: 14,
+                              color: ThemeService.activeColorScheme.onSurface,
+                            ),
                           ),
                         ),
                       ),
@@ -6187,20 +6203,23 @@ class _TimelineScreenState extends State<TimelineScreen> {
                     Positioned(
                       right: 4,
                       top: 4,
-                      child: GestureDetector(
-                        onTap: () => _showAddMarkerDialog(),
-                        child: Container(
-                          width: 20,
-                          height: 20,
-                          decoration: BoxDecoration(
-                            color: ThemeService.activeColorScheme.secondary
-                                .withValues(alpha: 0.8),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Icon(
-                            Icons.add,
-                            size: 14,
-                            color: ThemeService.activeColorScheme.onSurface,
+                      child: Tooltip(
+                        message: l10n.timelineMarkerAddDialogTitle(_currentFrame + 1),
+                        child: GestureDetector(
+                          onTap: () => _showAddMarkerDialog(),
+                          child: Container(
+                            width: 20,
+                            height: 20,
+                            decoration: BoxDecoration(
+                              color: ThemeService.activeColorScheme.secondary
+                                  .withValues(alpha: 0.8),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Icon(
+                              Icons.add,
+                              size: 14,
+                              color: ThemeService.activeColorScheme.onSurface,
+                            ),
                           ),
                         ),
                       ),

@@ -35,6 +35,7 @@ class ExportedWorkCard extends StatelessWidget {
     this.shareBusy = false,
     this.shareError,
     this.gridTile = false,
+    this.compactActions = false,
     this.isFavorite = false,
     this.onToggleFavorite,
     this.selectionId,
@@ -60,6 +61,7 @@ class ExportedWorkCard extends StatelessWidget {
 
   /// Match the project collection's small/medium/large card presentation.
   final bool gridTile;
+  final bool compactActions;
   final bool isFavorite;
   final VoidCallback? onToggleFavorite;
   final String? selectionId;
@@ -366,23 +368,18 @@ class ExportedWorkCard extends StatelessWidget {
                               ),
                             ),
                           ),
-                        // Keep grid actions in the same corners as Projects:
-                        // menu at top-right, favorite at bottom-left.
-                        if (!selectionActive)
-                          Positioned(top: 4, right: 4, child: menu()),
-                        if (!selectionActive && onToggleFavorite != null)
-                          Positioned(
-                            key: const Key(
-                              'exportedWorkGridFavoriteBottomLeft',
-                            ),
-                            bottom: 4,
-                            left: 4,
-                            child: favorite(),
-                          ),
                       ],
                     ),
                   ),
                   collectionTileCaption(context, name, keepFileSuffix: true),
+                  if (!selectionActive)
+                    CollectionTileActions(
+                      compact: compactActions,
+                      children: [
+                        if (onToggleFavorite != null) favorite(),
+                        menu(),
+                      ],
+                    ),
                 ],
               ),
             ),

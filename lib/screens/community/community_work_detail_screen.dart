@@ -357,17 +357,36 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
             ),
         ];
         final errorColor = Theme.of(ctx).colorScheme.error;
+        final largeText = MediaQuery.textScalerOf(ctx).scale(14) >= 21;
         return AlertDialog(
+          scrollable: true,
           insetPadding: const EdgeInsets.symmetric(
             horizontal: 20,
             vertical: 24,
           ),
-          actionsPadding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+          titlePadding: EdgeInsets.fromLTRB(24, largeText ? 32 : 24, 24, 0),
+          contentPadding: EdgeInsets.fromLTRB(
+            24,
+            largeText ? 24 : 16,
+            24,
+            largeText ? 28 : 20,
+          ),
+          actionsPadding: EdgeInsets.fromLTRB(12, 0, 12, largeText ? 22 : 12),
           title: Text(tag),
-          content: Text(
-            locked
-                ? l10n.communityTagLockedMessage
-                : l10n.communityTagEditPrompt,
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                locked
+                    ? l10n.communityTagLockedMessage
+                    : l10n.communityTagEditPrompt,
+              ),
+              if (locked) ...[
+                SizedBox(height: largeText ? 16 : 10),
+                Text(l10n.communityTagUnlockBeforeDelete),
+              ],
+            ],
           ),
           actions: [
             FirstThatFits(
@@ -390,6 +409,8 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
                   ],
                 ),
                 Wrap(
+                  spacing: largeText ? 6 : 0,
+                  runSpacing: largeText ? 8 : 0,
                   children: [
                     for (final action in actions)
                       IconButton(
@@ -790,6 +811,7 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
               CommunityYoutubeCommentsSection(
                 key: ValueKey('communityYoutubeComments-${work.id}'),
                 workId: work.id,
+                onOpenYouTube: () => _openYoutubeIfAvailable(work.id),
               ),
               const SizedBox(height: 20),
               // 2つのボタンは、名前の幅のまま1行に入るなら並べ（「YouTubeで

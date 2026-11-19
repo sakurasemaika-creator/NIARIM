@@ -496,7 +496,7 @@ class ProjectListWidget extends StatelessWidget {
       context,
       targetExtent,
       locationRow: searchQuery.trim().isNotEmpty,
-      actionBandHeight: _usesGridActionBand
+      actionBandHeight: onPickProject == null
           ? CollectionActionFrame.targetExtent
           : 0,
     );
@@ -917,39 +917,30 @@ class ProjectListWidget extends StatelessWidget {
     );
   }
 
-  bool get _usesGridActionBand =>
-      viewMode == ProjectViewMode.small || viewMode == ProjectViewMode.medium;
+  bool get _showsGridActions => !isSelectionMode && onPickProject == null;
 
-  Widget _gridPicture({
+  Widget _gridPicture(
+    BuildContext context, {
     required Widget cover,
-    required Widget actions,
+    required bool isFavorite,
     Widget? selectionMarker,
-  }) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        // Two 48px targets must fit side by side in the action band.
-        final separate =
-            _usesGridActionBand &&
-            constraints.maxWidth >= 2 * CollectionActionFrame.targetExtent;
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Expanded(
-              child: Stack(
-                fit: StackFit.expand,
-                children: [cover, if (!separate) actions, ?selectionMarker],
-              ),
-            ),
-            if (separate)
-              SizedBox(
-                height: CollectionActionFrame.targetExtent,
-                child: actions,
-              ),
-          ],
-        );
-      },
-    );
-  }
+  }) => Stack(
+    fit: StackFit.expand,
+    children: [
+      cover,
+      if (!_showsGridActions && isFavorite)
+        Positioned(
+          left: 4,
+          bottom: 4,
+          child: Icon(
+            Icons.star,
+            size: CollectionActionFrame.glyphSize,
+            color: Theme.of(context).colorScheme.primary,
+          ),
+        ),
+      ?selectionMarker,
+    ],
+  );
 
   Widget _gridCard(BuildContext context, _Entry entry) {
     if (entry.isFolder) return _folderGridCard(context, entry.folder!);
@@ -1010,19 +1001,9 @@ class ProjectListWidget extends StatelessWidget {
             children: [
               Expanded(
                 child: _gridPicture(
+                  context,
                   cover: _thumbnail(context, project),
-                  actions: _gridCardActions(
-                    context,
-                    menu: _projectMenu(context, project),
-                    isFavorite: project.isFavorite,
-                    itemId: project.id,
-                    onFavorite: () => runProjectAction(
-                      context,
-                      () => context.read<ProjectService>().toggleFavorite(
-                        project.id,
-                      ),
-                    ),
-                  ),
+                  isFavorite: project.isFavorite,
                   selectionMarker: isSelectionMode
                       ? Positioned(
                           top: 4,
@@ -1060,6 +1041,19 @@ class ProjectListWidget extends StatelessWidget {
                 ),
               ),
               _gridCaption(context, project.name, project.folderId),
+              if (_showsGridActions)
+                _gridCardActions(
+                  context,
+                  menu: _projectMenu(context, project),
+                  isFavorite: project.isFavorite,
+                  itemId: project.id,
+                  onFavorite: () => runProjectAction(
+                    context,
+                    () => context.read<ProjectService>().toggleFavorite(
+                      project.id,
+                    ),
+                  ),
+                ),
             ],
           ),
         ),
@@ -1159,20 +1153,14 @@ class ProjectListWidget extends StatelessWidget {
             children: [
               Expanded(
                 child: _gridPicture(
+                  context,
                   cover: FolderThumbnail(
                     key: ValueKey('projectFolderCover_${folder.id}'),
                     folder: folder,
                     choices: _folderCoverChoices(context, folder),
                     defaultImagePath: _projectFolderCoverPath(context, folder),
                   ),
-                  actions: _gridCardActions(
-                    context,
-                    menu: _folderMenu(context, folder),
-                    isFavorite: folder.isFavorite,
-                    itemId: folder.id,
-                    onFavorite: () =>
-                        _handleFolderAction(context, 'favorite', folder),
-                  ),
+                  isFavorite: folder.isFavorite,
                   selectionMarker: isSelectionMode
                       ? Positioned(
                           top: 4,
@@ -1200,6 +1188,15 @@ class ProjectListWidget extends StatelessWidget {
                 ),
               ),
               _gridCaption(context, folder.name, folder.parentFolderId),
+              if (_showsGridActions)
+                _gridCardActions(
+                  context,
+                  menu: _folderMenu(context, folder),
+                  isFavorite: folder.isFavorite,
+                  itemId: folder.id,
+                  onFavorite: () =>
+                      _handleFolderAction(context, 'favorite', folder),
+                ),
             ],
           ),
         ),
@@ -1219,45 +1216,19 @@ class ProjectListWidget extends StatelessWidget {
     required String itemId,
     required VoidCallback onFavorite,
   }) {
-    final showActions = !isSelectionMode && onPickProject == null;
-    return Stack(
-      fit: StackFit.expand,
+    final l10n = AppLocalizations.of(context)!;
+    return CollectionTileActions(
+      compact: viewMode.size == CollectionViewSize.small,
       children: [
-        // Selection-mode favorite markers are visual only; tapping still
-        // selects the card, as before. Normal mode has real outlined buttons.
-        if (!showActions && isFavorite)
-          Positioned(
-            left: 4,
-            bottom: 4,
-            child: Icon(
-              Icons.star,
-              size: CollectionActionFrame.glyphSize,
-              color: Theme.of(context).colorScheme.primary,
-            ),
-          ),
-        if (showActions)
-          Positioned(
-            top: 4,
-            right: 4,
-            child: CollectionActionFrame(
-              key: Key('collectionMenu_$itemId'),
-              child: menu,
-            ),
-          ),
-        if (showActions)
-          Positioned(
-            key: const Key('projectGridFavoriteBottomLeft'),
-            left: 4,
-            bottom: 4,
-            child: CollectionFavoriteButton(
-              favorite: isFavorite,
-              itemId: itemId,
-              tooltip: isFavorite
-                  ? AppLocalizations.of(context)!.colorPickerFavoriteRemove
-                  : AppLocalizations.of(context)!.colorPickerFavoriteAdd,
-              onPressed: onFavorite,
-            ),
-          ),
+        CollectionFavoriteButton(
+          favorite: isFavorite,
+          itemId: itemId,
+          tooltip: isFavorite
+              ? l10n.colorPickerFavoriteRemove
+              : l10n.colorPickerFavoriteAdd,
+          onPressed: onFavorite,
+        ),
+        CollectionActionFrame(key: Key('collectionMenu_$itemId'), child: menu),
       ],
     );
   }

@@ -8613,7 +8613,10 @@ class AppLocalizationsKo extends AppLocalizations {
   String get communityYoutubeCommentHeading => 'YouTube 댓글 보기';
 
   @override
-  String get communityYoutubeCommentLoadMore => '20개 더 불러오기';
+  String get communityYoutubeCommentLoadMore => '더 보기';
+
+  @override
+  String get communityYoutubeCommentOpenYouTube => 'YouTube에서 더 보기';
 
   @override
   String get communityYoutubeCommentNoComments => '아직 댓글이 없습니다';
@@ -10405,6 +10408,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get communityTagUnlockAction => '잠금 해제';
 
   @override
+  String get communityTagUnlockBeforeDelete => '이 태그를 삭제하려면 게시자가 잠금을 해제해야 합니다.';
+
+  @override
   String get communityPreviewStart => '영상 처음으로';
 
   @override
@@ -10424,4 +10430,25 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get settingsSupportLinkFailed => '문의 양식을 열 수 없습니다.';
+
+  @override
+  String get canvasToolbarToggleTooltip => '도구 모음 열기 또는 닫기';
+
+  @override
+  String get canvasFrameStripToggleTooltip => '프레임 목록 열기 또는 닫기';
+
+  @override
+  String get layerPanelToggleFolderTooltip => '폴더 펼치기 또는 접기';
+
+  @override
+  String get layerPanelShowLayerTooltip => '레이어 표시';
+
+  @override
+  String get layerPanelHideLayerTooltip => '레이어 숨기기';
+
+  @override
+  String get layerPanelMergeDownTooltip => '아래 레이어와 병합';
+
+  @override
+  String get timelineAddTrackRowTooltip => '트랙 행 추가';
 }
