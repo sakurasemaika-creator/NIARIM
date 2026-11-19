@@ -100,9 +100,12 @@ void main() {
       ..addFont(rootBundle.load('assets/fonts/NotoSerifJP.ttf'));
     await loader.load();
   });
-  test('crescent depth threshold, shallow bows and short wide leads', () async {
-    final presets = brushExtensionPresets();
-    for (final id in ['Brush0023', 'Brush0024']) {
+  final presets = brushExtensionPresets();
+  const brushes = {'Brush0023': 'hair', 'Brush0024': 'bangs'};
+  const captureTimeout = Timeout(Duration(minutes: 4));
+
+  for (final MapEntry(key: id, value: prefix) in brushes.entries) {
+    test('crescent depth and short wide leads: $prefix', () async {
       final brush = presets
           .singleWhere((b) => b.id == id)
           .copyWith(
@@ -116,7 +119,6 @@ void main() {
             foldTriggerDepthRatio: 0,
             customImageSelectionMode: BrushImageSelectionMode.sequential,
           );
-      final prefix = id == 'Brush0023' ? 'hair' : 'bangs';
       final smallWave = [
         for (var i = 0; i <= 120; i++)
           ui.Offset(350 + 20 * math.sin(i * math.pi / 60), 95 + i * 170 / 60),
@@ -185,94 +187,93 @@ void main() {
                     20,
         ],
       );
-    }
-  }, timeout: const Timeout(Duration(minutes: 2)));
-  test(
-    'production hair and textured bangs follow the same curve in five modes',
-    () async {
-      final presets = brushExtensionPresets();
-      for (final entry in modeNames.entries) {
-        for (final id in ['Brush0023', 'Brush0024']) {
-          final base = presets.singleWhere((b) => b.id == id);
-          final settings = base.copyWith(
+    }, timeout: captureTimeout);
+  }
+
+  for (final entry in modeNames.entries) {
+    test('saved and built-in strokes agree: ${entry.value}', () async {
+      for (final id in brushes.keys) {
+        final base = presets.singleWhere((b) => b.id == id);
+        final settings = base.copyWith(
+          size: 64,
+          outlineWidth: 2.5,
+          stabilization: false,
+          fadeMode: FadeMode.off,
+          foldEnabled: true,
+          foldMode: entry.key,
+          customImageSelectionMode: BrushImageSelectionMode.sequential,
+        );
+        final name = '${brushes[id]}_${entry.value}';
+        final presetPixels = await capture(settings, '${name}_same_curve');
+        // A saved custom definition must render exactly the same authored
+        // curve. This catches preset-ID/name dispatch in the real engine.
+        final custom = Brush.fromJson(
+          settings.copyWith(id: 'user-$id', name: 'My strand').toJson(),
+        );
+        final customPixels = await capture(custom, '${name}_custom_same_curve');
+        expect(customPixels, orderedEquals(presetPixels), reason: name);
+      }
+    }, timeout: captureTimeout);
+  }
+
+  test('production preset captures', () async {
+    await capture(
+      presets.singleWhere((b) => b.id == 'Brush0024'),
+      'bangs_production_preset',
+    );
+    await capture(
+      presets.singleWhere((b) => b.id == 'Brush0023'),
+      'hair_production_preset',
+    );
+  }, timeout: captureTimeout);
+
+  List<ui.Offset> arc(double degrees, double radius) {
+    final count = (degrees.abs() / 3).ceil();
+    // Use an open spiral rather than retracing the same circle beyond
+    // 360 degrees. The latter overlaps a 64 px brush with itself before
+    // the second 270-degree boundary and hides the fold we want to judge.
+    return [
+      for (var i = 0; i <= count; i++)
+        ui.Offset(
+          360 +
+              (radius + math.min(i * 3, degrees) * .18) *
+                  math.cos(math.min(i * 3, degrees) * math.pi / 180),
+          420 +
+              (radius + math.min(i * 3, degrees) * .18) *
+                  math.sin(math.min(i * 3, degrees) * math.pi / 180),
+        ),
+    ];
+  }
+
+  for (final mode in [
+    HairFoldMode.crescent,
+    HairFoldMode.waveTopView,
+    HairFoldMode.waveLowAngle,
+  ]) {
+    test('continuous angles: ${modeNames[mode]}', () async {
+      final base = presets.singleWhere((b) => b.id == 'Brush0023');
+      for (final degrees in [
+        175.0,
+        185.0,
+        265.0,
+        275.0,
+        355.0,
+        365.0,
+        535.0,
+        545.0,
+      ]) {
+        await capture(
+          base.copyWith(
             size: 64,
             outlineWidth: 2.5,
             stabilization: false,
             fadeMode: FadeMode.off,
-            foldEnabled: true,
-            foldMode: entry.key,
-            customImageSelectionMode: BrushImageSelectionMode.sequential,
-          );
-          final name = '${id == "Brush0023" ? "hair" : "bangs"}_${entry.value}';
-          final presetPixels = await capture(settings, '${name}_same_curve');
-          // A saved custom definition must render exactly the same authored
-          // curve. This catches preset-ID/name dispatch in the real engine.
-          final custom = Brush.fromJson(
-            settings.copyWith(id: 'user-$id', name: 'My strand').toJson(),
-          );
-          final customPixels = await capture(
-            custom,
-            '${name}_custom_same_curve',
-          );
-          expect(customPixels, orderedEquals(presetPixels), reason: name);
-        }
+            foldMode: mode,
+          ),
+          'hair_${modeNames[mode]}_${degrees.toInt()}deg_continuous',
+          input: arc(degrees, 70),
+        );
       }
-      await capture(
-        presets.singleWhere((b) => b.id == 'Brush0024'),
-        'bangs_production_preset',
-      );
-      await capture(
-        presets.singleWhere((b) => b.id == 'Brush0023'),
-        'hair_production_preset',
-      );
-      List<ui.Offset> arc(double degrees, double radius) {
-        final count = (degrees.abs() / 3).ceil();
-        // Use an open spiral rather than retracing the same circle beyond
-        // 360 degrees. The latter overlaps a 64 px brush with itself before
-        // the second 270-degree boundary and hides the fold we want to judge.
-        return [
-          for (var i = 0; i <= count; i++)
-            ui.Offset(
-              360 +
-                  (radius + math.min(i * 3, degrees) * .18) *
-                      math.cos(math.min(i * 3, degrees) * math.pi / 180),
-              420 +
-                  (radius + math.min(i * 3, degrees) * .18) *
-                      math.sin(math.min(i * 3, degrees) * math.pi / 180),
-            ),
-        ];
-      }
-
-      for (final mode in [
-        HairFoldMode.crescent,
-        HairFoldMode.waveTopView,
-        HairFoldMode.waveLowAngle,
-      ]) {
-        final base = presets.singleWhere((b) => b.id == 'Brush0023');
-        for (final degrees in [
-          175.0,
-          185.0,
-          265.0,
-          275.0,
-          355.0,
-          365.0,
-          535.0,
-          545.0,
-        ]) {
-          await capture(
-            base.copyWith(
-              size: 64,
-              outlineWidth: 2.5,
-              stabilization: false,
-              fadeMode: FadeMode.off,
-              foldMode: mode,
-            ),
-            'hair_${modeNames[mode]}_${degrees.toInt()}deg_continuous',
-            input: arc(degrees, 70),
-          );
-        }
-      }
-    },
-    timeout: const Timeout(Duration(minutes: 5)),
-  );
+    }, timeout: captureTimeout);
+  }
 }
