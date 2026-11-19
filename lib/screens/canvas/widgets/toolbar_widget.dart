@@ -16,7 +16,8 @@ import '../canvas_screen.dart';
 import 'canvas_icon_button.dart';
 import '../../../config/font_fallback.dart';
 import '../../../widgets/list_ink_clip.dart';
-import '../../../widgets/tone_preview_thumb.dart';
+import '../../../l10n/creative_preset_labels.dart';
+import 'tone_fill_grid.dart';
 import 'pen_sub_tool_panel.dart' show LassoFillToneSheet;
 
 class ToolbarWidget extends StatelessWidget {
@@ -418,182 +419,139 @@ class ToolbarWidget extends StatelessWidget {
               // 行を押したときの色・選んだ行の色をスクロールの中に限る（シートの
               // 面へ描くと、半分隠れた行の色が下の余白〔ナビゲーションバーの
               // 下〕へはみ出す）。
-              child: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    ListTile(
-                      dense: true,
-                      leading: const Icon(Icons.format_color_fill, size: 18),
-                      title: Text(
-                        l10n.toolbarBucketFlatFill,
-                        style: const TextStyle(fontSize: 13),
-                      ),
-                      selected: !useTone,
-                      onTap: () {
-                        toneService.setBucketUseTone(false);
-                        Navigator.pop(ctx);
-                      },
-                    ),
-                    ListTile(
-                      dense: true,
-                      leading: const Icon(Icons.gesture, size: 18),
-                      title: Text(
-                        l10n.penSubToolTabLassoFill,
-                        style: const TextStyle(fontSize: 13),
-                      ),
-                      onTap: () {
-                        onLassoFillSelected();
-                        Navigator.pop(ctx);
-                        showModalBottomSheet(
-                          context: context,
-                          isScrollControlled: true,
-                          builder: (sheetCtx) => SizedBox(
-                            height: MediaQuery.sizeOf(sheetCtx).height * 0.6,
-                            child: LassoFillToneSheet(
-                              onClose: () => Navigator.pop(sheetCtx),
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                    const Divider(height: 1),
-                    Padding(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 4,
-                      ),
-                      child: Text(
-                        l10n.toolbarBucketToneListLabel,
-                        style: TextStyle(
-                          fontSize: 11,
-                          color:
-                              ThemeService.activeColorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                    ),
-                    GridView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      padding: const EdgeInsets.symmetric(horizontal: 8),
-                      gridDelegate:
-                          const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 4,
-                            crossAxisSpacing: 4,
-                            mainAxisSpacing: 4,
-                            childAspectRatio: 1,
-                          ),
-                      itemCount: tones.length,
-                      itemBuilder: (context, index) {
-                        final tone = tones[index];
-                        final isSelected =
-                            useTone && lastBucketTone?.id == tone.id;
-                        return GestureDetector(
-                          onTap: () {
-                            toneService.setBucketUseTone(true);
-                            toneService.setLastBucketTone(tone);
-                            Navigator.pop(ctx);
-                          },
-                          child: Container(
-                            decoration: BoxDecoration(
-                              border: Border.all(
-                                color: isSelected
-                                    ? Theme.of(context).colorScheme.primary
-                                    : ThemeService
-                                          .activeColorScheme
-                                          .onSurfaceVariant,
-                                width: isSelected ? 2 : 1,
-                              ),
-                              borderRadius: BorderRadius.circular(4),
-                              color: Theme.of(
-                                context,
-                              ).colorScheme.surfaceContainerHighest,
-                            ),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                TonePreviewThumb(
-                                  tone: tone,
-                                  color: Theme.of(context).colorScheme.surface,
-                                  size: 23,
-                                  shape: BoxShape.rectangle,
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  tone.name,
-                                  style: const TextStyle(
-                                    fontSize: 7,
-                                    fontFamily: 'Kuramubon',
-                                    fontFamilyFallback: kHeadingFontFallback,
-                                  ),
-                                  textAlign: TextAlign.center,
-                                  maxLines: 2,
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                    const Divider(height: 1),
-                    Theme(
-                      data: Theme.of(
-                        ctx,
-                      ).copyWith(dividerColor: Colors.transparent),
-                      child: ExpansionTile(
+              child: CustomScrollView(
+                primary: false,
+                shrinkWrap: true,
+                slivers: [
+                  SliverList.list(
+                    children: [
+                      ListTile(
                         dense: true,
-                        leading: const Icon(Icons.tune, size: 18),
+                        leading: const Icon(Icons.format_color_fill, size: 18),
                         title: Text(
-                          l10n.bucketSettingsTitle,
-                          style: const TextStyle(
-                            fontSize: 13,
-                            fontFamily: 'Kuramubon',
-                            fontFamilyFallback: kHeadingFontFallback,
-                          ),
+                          l10n.toolbarBucketFlatFill,
+                          style: const TextStyle(fontSize: 13),
                         ),
-                        childrenPadding: const EdgeInsets.fromLTRB(
-                          16,
-                          0,
-                          16,
-                          12,
-                        ),
-                        children: [
-                          _bucketDetailSlider(
-                            ctx: ctx,
-                            label: l10n.bucketSettingsToleranceSection,
-                            value: settings.bucketTolerance,
-                            min: 0,
-                            max: 100,
-                            divisions: 100,
-                            onChanged: (v) => settings.setBucketTolerance(v),
-                          ),
-                          _bucketDetailSlider(
-                            ctx: ctx,
-                            label: l10n.bucketSettingsExpandSection,
-                            value: settings.bucketExpandPx.toDouble(),
-                            min: 0,
-                            max: 10,
-                            divisions: 10,
-                            onChanged: (v) =>
-                                settings.setBucketExpandPx(v.round()),
-                          ),
-                          SwitchListTile(
-                            contentPadding: EdgeInsets.zero,
-                            dense: true,
-                            title: Text(
-                              l10n.bucketSettingsUnderLineTitle,
-                              style: const TextStyle(fontSize: 13),
-                            ),
-                            value: settings.bucketFillUnderLine,
-                            onChanged: (v) =>
-                                settings.setBucketFillUnderLine(v),
-                          ),
-                        ],
+                        selected: !useTone,
+                        onTap: () {
+                          toneService.setBucketUseTone(false);
+                          Navigator.pop(ctx);
+                        },
                       ),
+                      ListTile(
+                        dense: true,
+                        leading: const Icon(Icons.gesture, size: 18),
+                        title: Text(
+                          l10n.penSubToolTabLassoFill,
+                          style: const TextStyle(fontSize: 13),
+                        ),
+                        onTap: () {
+                          onLassoFillSelected();
+                          Navigator.pop(ctx);
+                          showModalBottomSheet(
+                            context: context,
+                            isScrollControlled: true,
+                            builder: (sheetCtx) => SizedBox(
+                              height: MediaQuery.sizeOf(sheetCtx).height * 0.6,
+                              child: LassoFillToneSheet(
+                                onClose: () => Navigator.pop(sheetCtx),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                      const Divider(height: 1),
+                      Padding(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 4,
+                        ),
+                        child: Text(
+                          l10n.toolbarBucketToneListLabel,
+                          style: TextStyle(
+                            fontSize: 11,
+                            color:
+                                ThemeService.activeColorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  SliverToneFillGrid(
+                    tones: tones,
+                    selectedId: useTone ? lastBucketTone?.id : null,
+                    labelOf: (tone) => creativePresetLabel(
+                      l10n,
+                      tone.name,
+                      builtIn: toneService.isBuiltIn(tone.id),
                     ),
-                  ],
-                ),
+                    onSelected: (tone) {
+                      toneService.setBucketUseTone(true);
+                      toneService.setLastBucketTone(tone);
+                      Navigator.pop(ctx);
+                    },
+                  ),
+                  SliverList.list(
+                    children: [
+                      const Divider(height: 1),
+                      Theme(
+                        data: Theme.of(
+                          ctx,
+                        ).copyWith(dividerColor: Colors.transparent),
+                        child: ExpansionTile(
+                          dense: true,
+                          leading: const Icon(Icons.tune, size: 18),
+                          title: Text(
+                            l10n.bucketSettingsTitle,
+                            style: const TextStyle(
+                              fontSize: 13,
+                              fontFamily: 'Kuramubon',
+                              fontFamilyFallback: kHeadingFontFallback,
+                            ),
+                          ),
+                          childrenPadding: const EdgeInsets.fromLTRB(
+                            16,
+                            0,
+                            16,
+                            12,
+                          ),
+                          children: [
+                            _bucketDetailSlider(
+                              ctx: ctx,
+                              label: l10n.bucketSettingsToleranceSection,
+                              value: settings.bucketTolerance,
+                              min: 0,
+                              max: 100,
+                              divisions: 100,
+                              onChanged: (v) => settings.setBucketTolerance(v),
+                            ),
+                            _bucketDetailSlider(
+                              ctx: ctx,
+                              label: l10n.bucketSettingsExpandSection,
+                              value: settings.bucketExpandPx.toDouble(),
+                              min: 0,
+                              max: 10,
+                              divisions: 10,
+                              onChanged: (v) =>
+                                  settings.setBucketExpandPx(v.round()),
+                            ),
+                            SwitchListTile(
+                              contentPadding: EdgeInsets.zero,
+                              dense: true,
+                              title: Text(
+                                l10n.bucketSettingsUnderLineTitle,
+                                style: const TextStyle(fontSize: 13),
+                              ),
+                              value: settings.bucketFillUnderLine,
+                              onChanged: (v) =>
+                                  settings.setBucketFillUnderLine(v),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ).clipListInk(),
             ),
           );

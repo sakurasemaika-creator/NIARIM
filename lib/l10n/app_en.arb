@@ -655,7 +655,7 @@
   "tipsVerticalPixelFontTitle": "Mix live-action footage with hand-drawn art for “live-action × anime”",
   "tipsVerticalPixelFontDesc": "A trick only possible because this app is both an illustration app and a video editor at once. Place a live-action video clip on the timeline, then use onion skin on a layer above it to hand-draw speed lines or a character over the footage — creating a mixed-media video where hand-drawn animation overlays live action.",
   "tipsTimelineMarkerTitle": "Use timestamps to line up sound and mouth flaps",
-  "tipsTimelineMarkerDesc": "Scenes handle a range — a start and end frame — while timestamps mark a single instant with a comment you can jump to in one tap. Placing several timestamps inside the same scene — “sound effect at frame 120,” “mouth flap ‘ah’ at frame 180” — makes lining up sound with the picture dramatically easier.",
+  "tipsTimelineMarkerDesc": "A timestamp attaches a note to a frame. Choose a color when you add one and a small triangle appears above the frame. Tap the triangle to read the note, then tap the frame number to jump there. Touch and hold the triangle to edit or delete the note.",
   "tipsCommunityYoutubeTitle": "Posting to the Work Plaza goes through YouTube",
   "tipsCommunityYoutubeDesc": "When you post to the Work Plaza, your work is published through YouTube. NIARIM does not transmit, collect, or store the video file itself on the developer's servers. If you set the video to “Unlisted” on the YouTube side, it won't appear in YouTube's public listings and will only be posted within the Work Plaza.",
   "tipsToolbarCustomizeTitle": "Reorder or hide toolbar tools to cut down finger travel",
@@ -3962,5 +3962,6 @@
   "layerPanelShowLayerTooltip": "Show layer",
   "layerPanelHideLayerTooltip": "Hide layer",
   "layerPanelMergeDownTooltip": "Merge with the layer below",
-  "timelineAddTrackRowTooltip": "Add a track row"
+  "timelineAddTrackRowTooltip": "Add a track row",
+  "keyframePreviewGestureHint": "Drag the preview to move. Pinch or twist to resize or rotate."
 }

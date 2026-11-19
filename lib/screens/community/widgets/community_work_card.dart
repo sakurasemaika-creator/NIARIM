@@ -10,8 +10,8 @@ import '../../../widgets/collection_tile_layout.dart';
 import 'package:provider/provider.dart';
 
 import '../../../models/community_work.dart';
-import '../../../config/font_fallback.dart';
 import 'community_work_counts.dart';
+import 'community_ranking_work_list.dart' show CommunityRankBadge;
 
 String formatDurationLabel(int seconds) {
   final m = seconds ~/ 60;
@@ -46,6 +46,7 @@ class CommunityWorkCard extends StatelessWidget {
   final VoidCallback onBookmarkToggle;
   final VoidCallback? onAuthorTap;
   final int? rankNumber;
+  final int? periodBookmarks;
   final String? repostedByAuthorName;
   final bool isMuted;
   final bool isUnavailable;
@@ -60,6 +61,7 @@ class CommunityWorkCard extends StatelessWidget {
     required this.onBookmarkToggle,
     this.onAuthorTap,
     this.rankNumber,
+    this.periodBookmarks,
     this.repostedByAuthorName,
     this.isMuted = false,
     this.isUnavailable = false,
@@ -120,231 +122,196 @@ class CommunityWorkCard extends StatelessWidget {
         ),
       ),
     );
-    final cardMargin = CardTheme.of(context).margin ?? const EdgeInsets.all(4);
-    const contentPadding = EdgeInsets.fromLTRB(10, 8, 6, 0);
+    const contentPadding = EdgeInsets.symmetric(horizontal: 6);
     return LayoutBuilder(
       builder: (context, constraints) {
         final compact = constraints.maxWidth < 200;
+        final thumbnail = LayoutBuilder(
+          key: ValueKey('community-thumbnail-${work.id}'),
+          builder: (context, thumbnail) {
+            final maxBadgeWidth = (thumbnail.maxWidth - 66).clamp(
+              1.0,
+              double.infinity,
+            );
+            return Stack(
+              children: [
+                if (obscured)
+                  Positioned.fill(
+                    child: ColoredBox(
+                      color: scheme.surfaceContainerHighest,
+                      child: Center(
+                        child: Icon(
+                          Icons.visibility_off_outlined,
+                          size: 32,
+                          color: scheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ),
+                  ),
+                if (!obscured)
+                  Positioned.fill(
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: communityThumbnailGradient(
+                            scheme,
+                            work.thumbnailColorIndex,
+                          ),
+                        ),
+                      ),
+                      // Draw real YouTube artwork whenever the backend
+                      // supplies it. A theme-derived gradient remains
+                      // visible while loading or if the URL fails.
+                      child: work.thumbnailUrl.startsWith('https://')
+                          ? Image.network(
+                              work.thumbnailUrl,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stack) =>
+                                  const SizedBox.shrink(),
+                            )
+                          : null,
+                    ),
+                  ),
+                if (rankNumber case final rank?)
+                  PositionedDirectional(
+                    start: 4,
+                    top: 4,
+                    child: CommunityRankBadge(rank: rank, small: true),
+                  ),
+                if (!obscured && (repostedByAuthorName != null || isSample))
+                  PositionedDirectional(
+                    end: 4,
+                    top: 4,
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(maxWidth: maxBadgeWidth),
+                      child: badge(
+                        repostedByAuthorName != null
+                            ? l10n.communityRepostedByBadge(
+                                repostedByAuthorName!,
+                              )
+                            : l10n.communitySampleBadge,
+                        icon: repostedByAuthorName == null
+                            ? null
+                            : Icons.repeat,
+                        iconOnly: compact && repostedByAuthorName != null,
+                      ),
+                    ),
+                  ),
+                // The upper menu is a 48dp touch target. On
+                // 120dp tiles a bottom-right duration chip would
+                // overlap it, so favor a clear thumbnail.
+                if (!obscured && thumbnail.maxWidth >= 148)
+                  Positioned(
+                    right: 6,
+                    bottom: 6,
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        maxWidth: (thumbnail.maxWidth - 18) * .48,
+                      ),
+                      child: badge(formatDurationLabel(work.durationSeconds)),
+                    ),
+                  ),
+                if (work.isShort && !obscured)
+                  Positioned(
+                    left: 6,
+                    bottom: 6,
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        maxWidth: (thumbnail.maxWidth - 18) * .48,
+                      ),
+                      child: badge(l10n.communityShortsBadge),
+                    ),
+                  ),
+              ],
+            );
+          },
+        );
         return Card(
-          margin: cardMargin,
+          margin: EdgeInsets.zero,
           color: cardColor,
           surfaceTintColor: Colors.transparent,
           clipBehavior: Clip.antiAlias,
           elevation: 1,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(12),
           ),
           child: InkWell(
             onTap: obscured ? null : onTap,
             child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                AspectRatio(
-                  aspectRatio: 16 / 9,
-                  child: LayoutBuilder(
-                    builder: (context, thumbnail) {
-                      final maxBadgeWidth = (thumbnail.maxWidth - 66).clamp(
-                        1.0,
-                        double.infinity,
-                      );
-                      return Stack(
-                        children: [
-                          if (obscured)
-                            Positioned.fill(
-                              child: ColoredBox(
-                                color: scheme.surfaceContainerHighest,
-                                child: Center(
-                                  child: Icon(
-                                    Icons.visibility_off_outlined,
-                                    size: 32,
-                                    color: scheme.onSurfaceVariant,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          if (!obscured)
-                            Positioned.fill(
-                              child: DecoratedBox(
-                                decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
-                                    colors: communityThumbnailGradient(
-                                      scheme,
-                                      work.thumbnailColorIndex,
-                                    ),
-                                  ),
-                                ),
-                                // Draw real YouTube artwork whenever the backend
-                                // supplies it. A theme-derived gradient remains
-                                // visible while loading or if the URL fails.
-                                child: work.thumbnailUrl.startsWith('https://')
-                                    ? Image.network(
-                                        work.thumbnailUrl,
-                                        fit: BoxFit.cover,
-                                        errorBuilder: (context, error, stack) =>
-                                            const SizedBox.shrink(),
-                                      )
-                                    : null,
-                              ),
-                            ),
-                          if (!work.isNiarimPublished && !obscured)
-                            Positioned(
-                              left: 6,
-                              top: 6,
-                              child: ConstrainedBox(
-                                constraints: BoxConstraints(
-                                  maxWidth: maxBadgeWidth,
-                                ),
-                                child: badge(
-                                  l10n.communityVisibilityHiddenBadge,
-                                  icon: Icons.lock_outline,
-                                  iconOnly: compact,
-                                ),
-                              ),
-                            )
-                          else if (rankNumber != null)
-                            Positioned(
-                              left: 6,
-                              top: 6,
-                              child: ConstrainedBox(
-                                constraints: BoxConstraints(
-                                  maxWidth: maxBadgeWidth,
-                                ),
-                                child: badge('#$rankNumber', fontSize: 16),
-                              ),
-                            ),
-                          // The upper menu is a 48dp touch target. On
-                          // 120dp tiles a bottom-right duration chip would
-                          // overlap it, so favor a clear thumbnail.
-                          if (!obscured && thumbnail.maxWidth >= 148)
-                            Positioned(
-                              right: 6,
-                              bottom: 6,
-                              child: ConstrainedBox(
-                                constraints: BoxConstraints(
-                                  maxWidth: (thumbnail.maxWidth - 18) * .48,
-                                ),
-                                child: badge(
-                                  formatDurationLabel(work.durationSeconds),
-                                ),
-                              ),
-                            ),
-                          if (work.isShort && !obscured)
-                            Positioned(
-                              left: 6,
-                              bottom: 6,
-                              child: ConstrainedBox(
-                                constraints: BoxConstraints(
-                                  maxWidth: (thumbnail.maxWidth - 18) * .48,
-                                ),
-                                child: badge(l10n.communityShortsBadge),
-                              ),
-                            ),
-                        ],
-                      );
-                    },
-                  ),
-                ),
+                if (constraints.hasTightHeight)
+                  Expanded(child: thumbnail)
+                else
+                  AspectRatio(aspectRatio: 16 / 9, child: thumbnail),
                 Padding(
                   padding: contentPadding,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      if (repostedByAuthorName != null && !obscured) ...[
-                        Row(
-                          children: [
-                            Icon(Icons.repeat, size: 12, color: detailColor),
-                            const SizedBox(width: 3),
-                            Expanded(
-                              child: Text(
-                                l10n.communityRepostedByBadge(
-                                  repostedByAuthorName!,
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  fontSize: 10,
-                                  color: detailColor,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 3),
-                      ],
-                      if (isSample && !obscured)
-                        Text(
-                          l10n.communitySampleBadge,
-                          style: theme.textTheme.labelSmall,
-                        ),
-                      // Full-width title and author. The final line keeps
-                      // count, bookmark action and menu left-to-right.
-                      Text(
-                        isUnavailable
-                            ? CommunityPlazaLabels.of(
+                  child: Text(
+                    isUnavailable
+                        ? CommunityPlazaLabels.of(
+                            context,
+                          ).unavailablePlaceholder
+                        : isMuted
+                        ? CommunityPlazaLabels.of(context).mutedPlaceholder
+                        : work.title,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: collectionTileCaptionStyle(context),
+                  ),
+                ),
+                if (!obscured)
+                  Padding(
+                    padding: contentPadding,
+                    child: Semantics(
+                      button: onAuthorTap != null,
+                      label: author,
+                      child: GestureDetector(
+                        key: ValueKey('community-author-${work.id}'),
+                        onTap: onAuthorTap,
+                        behavior: HitTestBehavior.opaque,
+                        child: SizedBox(
+                          height:
+                              MediaQuery.textScalerOf(
                                 context,
-                              ).unavailablePlaceholder
-                            : isMuted
-                            ? CommunityPlazaLabels.of(context).mutedPlaceholder
-                            : work.title,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          fontFamily: 'Kuramubon',
-                          fontFamilyFallback: kHeadingFontFallback,
-                          color: textColor,
-                        ),
-                      ),
-                      if (!obscured) ...[
-                        const SizedBox(height: 4),
-                        Semantics(
-                          button: onAuthorTap != null,
-                          label: author,
-                          child: GestureDetector(
-                            key: ValueKey('community-author-${work.id}'),
-                            onTap: onAuthorTap,
-                            behavior: HitTestBehavior.opaque,
-                            child: ConstrainedBox(
-                              constraints: BoxConstraints(
-                                minHeight: onAuthorTap == null ? 0 : 48,
-                              ),
-                              child: Align(
-                                alignment: Alignment.centerLeft,
+                              ).scale(11).clamp(11.0, 22.0) +
+                              29,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Flexible(
                                 child: ExcludeSemantics(
                                   child: Text(
                                     author,
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                     style: TextStyle(
-                                      fontSize: 11,
+                                      fontSize: 10,
                                       color: detailColor,
-                                      fontFamily: 'Kuramubon',
-                                      fontFamilyFallback: kHeadingFontFallback,
                                     ),
                                   ),
                                 ),
                               ),
-                            ),
+                              Flexible(
+                                child: FittedBox(
+                                  fit: BoxFit.scaleDown,
+                                  alignment: AlignmentDirectional.centerStart,
+                                  child: CommunityWorkCounts(
+                                    work: work,
+                                    periodBookmarks: periodBookmarks,
+                                    compact: constraints.maxWidth < 160,
+                                    fontSize: 10,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                      ],
-                      if (!obscured) ...[
-                        const SizedBox(height: 4),
-                        CommunityWorkCounts(
-                          work: work,
-                          compact: constraints.maxWidth < 160,
-                          fontSize: 11,
-                        ),
-                      ],
-                    ],
+                      ),
+                    ),
                   ),
-                ),
                 if (!isUnavailable)
                   CollectionTileActions(
                     key: ValueKey('community-card-actions-${work.id}'),
@@ -410,7 +377,7 @@ class CommunityWorkCard extends StatelessWidget {
                         ),
                     ],
                   ),
-                const SizedBox(height: 6),
+                if (isUnavailable) CollectionTileActions.selectionSpace,
               ],
             ),
           ),
@@ -466,8 +433,8 @@ class CommunityWorkGrid extends StatelessWidget {
   /// 画面では、これが無いと**最終行のカードの下側がFABに永久に隠れる**
   /// （どれだけスクロールしても出てこない）。
   final double bottomPadding;
-  final double minTileWidth;
-  final CollectionViewSize? viewSize;
+  final CollectionViewSize viewSize;
+  final Map<String, int> periodScores;
 
   const CommunityWorkGrid({
     super.key,
@@ -479,66 +446,43 @@ class CommunityWorkGrid extends StatelessWidget {
     this.rankNumbers,
     this.repostedByNames,
     this.bottomPadding = 12,
-    this.minTileWidth = 160,
-    this.viewSize,
+    this.viewSize = CollectionViewSize.medium,
+    this.periodScores = const {},
   });
 
   @override
-  Widget build(BuildContext context) => LayoutBuilder(
-    builder: (context, constraints) {
-      final service = context.watch<CommunityService>();
-      final scale = MediaQuery.textScalerOf(context).scale(13) / 13;
-      final minimumWidth = minTileWidth * (scale < 1 ? 1 : scale);
-      final extent = switch (viewSize) {
-        CollectionViewSize.small => kCollectionTileSmallExtent,
-        CollectionViewSize.medium => kCollectionTileMediumExtent,
-        CollectionViewSize.large => kCollectionTileLargeExtent,
-        null => null,
-      };
-      final columns = extent == null
-          ? ((constraints.maxWidth - 24 + 10) / (minimumWidth + 10))
-                .floor()
-                .clamp(1, 6)
-          : collectionTileColumnCount(
-              extent,
-              constraints.maxWidth - 24,
-              textScale: scale,
-            );
-      final width = (constraints.maxWidth - 24 - 10 * (columns - 1)) / columns;
-      return SizedBox(
-        width: constraints.maxWidth,
-        child: Padding(
-          padding: EdgeInsets.fromLTRB(12, 12, 12, bottomPadding),
-          child: Wrap(
-            spacing: 10,
-            runSpacing: 10,
-            children: [
-              for (final work in works)
-                SizedBox(
-                  width: width,
-                  child: CommunityWorkCard(
-                    work: work,
-                    isBookmarked: bookmarkedIds.contains(work.id),
-                    onTap: () => onTapWork(work),
-                    onBookmarkToggle: () => onToggleBookmark(work),
-                    onAuthorTap: onTapAuthor == null
-                        ? null
-                        : () => onTapAuthor!(work),
-                    compactActions: viewSize == CollectionViewSize.small,
-                    rankNumber: rankNumbers?[work.id],
-                    repostedByAuthorName: repostedByNames?[work.id],
-                    isMuted: !work.isUnavailable && service.isWorkMuted(work),
-                    isUnavailable:
-                        work.isUnavailable || !work.isNiarimPublished,
-                    onMuteToggle: work.isUnavailable || !work.isNiarimPublished
-                        ? null
-                        : () => toggleCommunityWorkVisibility(context, work),
-                  ),
-                ),
-            ],
-          ),
-        ),
-      );
-    },
-  );
+  Widget build(BuildContext context) {
+    final service = context.watch<CommunityService>();
+    return GridView.builder(
+      primary: false,
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      padding: EdgeInsets.fromLTRB(8, 0, 8, bottomPadding),
+      gridDelegate: collectionTileGridDelegate(
+        context,
+        viewSize.tileExtent,
+        actionBandHeight: CollectionActionFrame.targetExtent,
+      ),
+      itemCount: works.length,
+      itemBuilder: (context, index) {
+        final work = works[index];
+        return CommunityWorkCard(
+          work: work,
+          isBookmarked: bookmarkedIds.contains(work.id),
+          onTap: () => onTapWork(work),
+          onBookmarkToggle: () => onToggleBookmark(work),
+          onAuthorTap: onTapAuthor == null ? null : () => onTapAuthor!(work),
+          compactActions: viewSize == CollectionViewSize.small,
+          rankNumber: rankNumbers?[work.id],
+          periodBookmarks: periodScores[work.id],
+          repostedByAuthorName: repostedByNames?[work.id],
+          isMuted: !work.isUnavailable && service.isWorkMuted(work),
+          isUnavailable: work.isUnavailable || !work.isNiarimPublished,
+          onMuteToggle: work.isUnavailable || !work.isNiarimPublished
+              ? null
+              : () => toggleCommunityWorkVisibility(context, work),
+        );
+      },
+    );
+  }
 }

@@ -832,7 +832,7 @@
   "tipsVerticalPixelFontTitle": "実写動画×手描き作画で「実写×アニメ」を作る",
   "tipsVerticalPixelFontDesc": "イラストアプリと動画編集アプリを兼ねているからこそできる遊び方です。実写の動画クリップをタイムラインに配置し、その上のレイヤーへオニオンスキンを使いながら手描きで効果線やキャラクターを描き足せば、実写に手描きアニメが重なった「実写×アニメ」のミックスメディア動画が作れます。",
   "tipsTimelineMarkerTitle": "音や口パクのタイミング合わせにはタイムスタンプ",
-  "tipsTimelineMarkerDesc": "シーンは「開始〜終了フレームの範囲」を扱う機能ですが、タイムスタンプは「その一瞬」にコメントを付けてワンタップで移動できる機能です。「120フレーム目で効果音」「180フレーム目は口パク『あ』」のように、同じシーンの範囲内に複数のタイムスタンプを打っておけば、音と映像のタイミング合わせが格段にやりやすくなります。",
+  "tipsTimelineMarkerDesc": "タイムスタンプはフレームにメモを残す機能です。登録時に色を選ぶと、フレームの上に小さな三角が表示されます。三角をタップするとメモが開き、フレーム番号をタップするとその位置に移動します。長押しでメモの編集や削除ができます。",
   "tipsCommunityYoutubeTitle": "作品広場への投稿はYouTube経由です",
   "tipsCommunityYoutubeDesc": "作品広場に投稿すると、YouTubeを通じて作品が公開されます。NIARIMは動画ファイル本体を開発者のサーバーへ送信・収集・保存する機能を持っていません。YouTube側の公開設定を「限定公開」にすれば、YouTube上の一般公開一覧には表示されず、作品広場内だけに投稿された状態にできます。",
   "tipsToolbarCustomizeTitle": "ツールバーの並び替え・非表示で指の移動距離を減らす",
@@ -6301,5 +6301,6 @@
   "layerPanelShowLayerTooltip": "レイヤーを表示",
   "layerPanelHideLayerTooltip": "レイヤーを非表示",
   "layerPanelMergeDownTooltip": "下のレイヤーと結合",
-  "timelineAddTrackRowTooltip": "トラックに行を追加"
+  "timelineAddTrackRowTooltip": "トラックに行を追加",
+  "keyframePreviewGestureHint": "プレビューをドラッグして移動。2本指で拡大・縮小、回転できます。"
 }

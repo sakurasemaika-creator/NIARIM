@@ -2162,7 +2162,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get tipsTimelineMarkerDesc =>
-      'Las escenas manejan un rango —un fotograma de inicio y de fin—, mientras que las marcas de tiempo señalan un instante concreto con un comentario al que puedes saltar de un toque. Colocar varias marcas de tiempo dentro de la misma escena —«efecto de sonido en el fotograma 120», «boca \'a\' en el fotograma 180»— hace que sincronizar el sonido con la imagen sea muchísimo más fácil.';
+      'Una marca de tiempo añade una nota a un fotograma. Elige un color al crearla y aparecerá un triángulo pequeño encima del fotograma. Toca el triángulo para leer la nota y el número de fotograma para ir a esa posición. Mantén pulsado el triángulo para editar o eliminar la nota.';
 
   @override
   String get tipsCommunityYoutubeTitle =>
@@ -11342,4 +11342,8 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get timelineAddTrackRowTooltip => 'Añadir una fila a la pista';
+
+  @override
+  String get keyframePreviewGestureHint =>
+      'Arrastra la vista previa para mover. Pellizca o gira con dos dedos para cambiar el tamaño o rotar.';
 }

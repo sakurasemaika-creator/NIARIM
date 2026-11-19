@@ -10,9 +10,9 @@ import '../../services/community_preview_service.dart';
 import '../../services/community_service.dart';
 import '../../utils/name_collation.dart';
 import '../../widgets/checked_menu_item.dart';
+import '../../utils/responsive_tile_defaults.dart';
 import '../../widgets/collection_tile_layout.dart';
 import '../../widgets/sort_mode_control.dart';
-import '../../widgets/responsive.dart';
 import '../../widgets/fit_or_hide_title.dart';
 import '../../widgets/ad_banner_mock_widget.dart';
 import 'community_edit_feedback.dart';
@@ -132,7 +132,9 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
   int _visibleWorks = CommunityService.pageSize;
   bool _loadingMoreWorks = false;
 
-  CollectionViewSize _viewSize = CollectionViewSize.medium;
+  CollectionViewSize? _chosenViewSize;
+  CollectionViewSize get _viewSize =>
+      _chosenViewSize ?? defaultTileSizeFor(MediaQuery.sizeOf(context).width);
   bool _sortByName = false;
   bool _sortAscending = false;
 
@@ -425,7 +427,7 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
             icon: const Icon(Icons.view_module),
             tooltip: l10n.homeViewModeTooltip,
             position: PopupMenuPosition.under,
-            onSelected: (size) => setState(() => _viewSize = size),
+            onSelected: (size) => setState(() => _chosenViewSize = size),
             itemBuilder: (_) => [
               MenuSectionHeading<CollectionViewSize>(l10n.homeViewSizeHeading),
               for (final size in CollectionViewSize.values)
@@ -466,9 +468,8 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
               )
             : null,
       ),
-      body: desktopCentered(
-        context,
-        Column(
+      body: SafeArea(
+        child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Padding(

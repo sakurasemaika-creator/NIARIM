@@ -11,6 +11,7 @@ import 'package:niarim/screens/canvas/widgets/filter_panel.dart';
 import 'package:niarim/services/filter_service.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:niarim/services/premium_service.dart';
+import 'package:niarim/widgets/filter_sample_preview.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -87,6 +88,17 @@ void main() {
       await tester.tap(find.byKey(ValueKey('filter-menu-$id')));
       await tester.pumpAndSettle();
     }
+
+    final favorite = tester.getRect(
+      find.byKey(const ValueKey('filter-favorite-Filter0001')),
+    );
+    final menu = tester.getRect(
+      find.byKey(const ValueKey('filter-menu-Filter0001')),
+    );
+    final preview = tester.getRect(find.byType(FilterSamplePreview).first);
+    expect(favorite.right, lessThanOrEqualTo(menu.left));
+    expect(menu.top, greaterThanOrEqualTo(preview.bottom));
+    expect(menu.center.dy, closeTo(favorite.center.dy, 4));
 
     await openMenu('Filter0001');
     expect(find.text(l10n.commonRename), findsNothing);

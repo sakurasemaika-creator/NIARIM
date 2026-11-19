@@ -2122,7 +2122,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tipsTimelineMarkerDesc =>
-      'Scenes handle a range — a start and end frame — while timestamps mark a single instant with a comment you can jump to in one tap. Placing several timestamps inside the same scene — “sound effect at frame 120,” “mouth flap ‘ah’ at frame 180” — makes lining up sound with the picture dramatically easier.';
+      'A timestamp attaches a note to a frame. Choose a color when you add one and a small triangle appears above the frame. Tap the triangle to read the note, then tap the frame number to jump there. Touch and hold the triangle to edit or delete the note.';
 
   @override
   String get tipsCommunityYoutubeTitle =>
@@ -11182,4 +11182,8 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get timelineAddTrackRowTooltip => 'Add a track row';
+
+  @override
+  String get keyframePreviewGestureHint =>
+      'Drag the preview to move. Pinch or twist to resize or rotate.';
 }

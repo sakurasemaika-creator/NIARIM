@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:niarim/services/theme_service.dart';
 import 'package:flutter/material.dart';
 
@@ -5,6 +7,8 @@ import '../../../engine/layer_keyframe_engine.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../models/layer.dart' as model;
 import '../../../models/layer_keyframe.dart';
+import '../../../services/project_service.dart';
+import '../../../widgets/keyframe_preview.dart';
 import '../../../widgets/labeled_slider.dart';
 import '../../../config/font_fallback.dart';
 
@@ -28,6 +32,9 @@ String layerKeyframeEasingLabel(
 void showLayerKeyframeSheet(
   BuildContext context, {
   required model.Layer layer,
+  required ProjectService projects,
+  required String projectId,
+  required String sceneId,
   required int currentFrame,
   required int totalFrames,
   required int canvasWidth,
@@ -38,6 +45,10 @@ void showLayerKeyframeSheet(
     context: context,
     isScrollControlled: true,
     builder: (ctx) => _LayerKeyframeListSheet(
+      projects: projects,
+      projectId: projectId,
+      sceneId: sceneId,
+      layerId: layer.id,
       layerName: layer.name,
       initialKeyframes: layer.keyframes,
       currentFrame: currentFrame,
@@ -56,6 +67,10 @@ void showLayerGroupKeyframeSheet(
   BuildContext context, {
   required String groupName,
   required List<LayerKeyframe> initialKeyframes,
+  required ProjectService projects,
+  required String projectId,
+  required String sceneId,
+  required String groupId,
   required int currentFrame,
   required int totalFrames,
   required int canvasWidth,
@@ -66,6 +81,10 @@ void showLayerGroupKeyframeSheet(
     context: context,
     isScrollControlled: true,
     builder: (ctx) => _LayerKeyframeListSheet(
+      projects: projects,
+      projectId: projectId,
+      sceneId: sceneId,
+      groupId: groupId,
       layerName: groupName,
       initialKeyframes: initialKeyframes,
       currentFrame: currentFrame,
@@ -78,6 +97,11 @@ void showLayerGroupKeyframeSheet(
 }
 
 class _LayerKeyframeListSheet extends StatefulWidget {
+  final ProjectService projects;
+  final String projectId;
+  final String sceneId;
+  final String? layerId;
+  final String? groupId;
   final String layerName;
   final List<LayerKeyframe> initialKeyframes;
   final int currentFrame;
@@ -86,6 +110,11 @@ class _LayerKeyframeListSheet extends StatefulWidget {
   final int canvasHeight;
   final ValueChanged<List<LayerKeyframe>> onChanged;
   const _LayerKeyframeListSheet({
+    required this.projects,
+    required this.projectId,
+    required this.sceneId,
+    this.layerId,
+    this.groupId,
     required this.layerName,
     required this.initialKeyframes,
     required this.currentFrame,
@@ -123,6 +152,11 @@ class _LayerKeyframeListSheetState extends State<_LayerKeyframeListSheet> {
       context: context,
       isScrollControlled: true,
       builder: (ctx) => _LayerKeyframeEditSheet(
+        projects: widget.projects,
+        projectId: widget.projectId,
+        sceneId: widget.sceneId,
+        layerId: widget.layerId,
+        groupId: widget.groupId,
         keyframe: kf,
         totalFrames: widget.totalFrames,
         canvasWidth: widget.canvasWidth,
@@ -273,6 +307,11 @@ class _LayerKeyframeListSheetState extends State<_LayerKeyframeListSheet> {
 }
 
 class _LayerKeyframeEditSheet extends StatefulWidget {
+  final ProjectService projects;
+  final String projectId;
+  final String sceneId;
+  final String? layerId;
+  final String? groupId;
   final LayerKeyframe keyframe;
   final int totalFrames;
   final int canvasWidth;
@@ -280,6 +319,11 @@ class _LayerKeyframeEditSheet extends StatefulWidget {
   final ValueChanged<LayerKeyframe> onSave;
   final VoidCallback? onDelete;
   const _LayerKeyframeEditSheet({
+    required this.projects,
+    required this.projectId,
+    required this.sceneId,
+    required this.layerId,
+    required this.groupId,
     required this.keyframe,
     required this.totalFrames,
     required this.canvasWidth,
@@ -295,6 +339,45 @@ class _LayerKeyframeEditSheet extends StatefulWidget {
 
 class _LayerKeyframeEditSheetState extends State<_LayerKeyframeEditSheet> {
   late LayerKeyframe _kf = widget.keyframe;
+  late LayerKeyframe _gestureStart = _kf;
+
+  void _transform(Offset delta, double scale, double degrees) {
+    final start = _gestureStart;
+    // A group transform is applied outside the selected layer's transform.
+    final group = widget.layerId == null
+        ? null
+        : widget.projects.groupContainingLayer(
+            widget.projectId,
+            widget.sceneId,
+            widget.layerId!,
+          );
+    if (group != null && group.keyframes.isNotEmpty) {
+      final parent = LayerKeyframeEngine().valueAt(
+        group.keyframes,
+        _kf.frameIndex,
+      );
+      final angle = -parent.rotation * math.pi / 180;
+      final zoom = parent.scale == 0 ? 1.0 : parent.scale;
+      delta = Offset(
+        (delta.dx * math.cos(angle) - delta.dy * math.sin(angle)) / zoom,
+        (delta.dx * math.sin(angle) + delta.dy * math.cos(angle)) / zoom,
+      );
+    }
+    setState(
+      () => _kf = start.copyWith(
+        x: (start.x + delta.dx).clamp(
+          -widget.canvasWidth.toDouble(),
+          widget.canvasWidth.toDouble(),
+        ),
+        y: (start.y + delta.dy).clamp(
+          -widget.canvasHeight.toDouble(),
+          widget.canvasHeight.toDouble(),
+        ),
+        scale: (start.scale * scale).clamp(.1, 3.0),
+        rotation: (start.rotation + degrees + 180) % 360 - 180,
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -302,9 +385,9 @@ class _LayerKeyframeEditSheetState extends State<_LayerKeyframeEditSheet> {
     final maxFrame = (widget.totalFrames - 1).clamp(0, 1 << 30);
     return DraggableScrollableSheet(
       expand: false,
-      initialChildSize: 0.55,
-      minChildSize: 0.4,
-      maxChildSize: 0.85,
+      initialChildSize: 0.91,
+      minChildSize: 0.65,
+      maxChildSize: 0.96,
       builder: (ctx, scrollCtrl) => Column(
         children: [
           Container(
@@ -348,6 +431,25 @@ class _LayerKeyframeEditSheetState extends State<_LayerKeyframeEditSheet> {
           ),
           const Divider(height: 1),
           Expanded(
+            flex: 5,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: KeyframePreview(
+                projects: widget.projects,
+                projectId: widget.projectId,
+                sceneId: widget.sceneId,
+                frameIndex: _kf.frameIndex,
+                layerId: widget.layerId,
+                groupId: widget.groupId,
+                layerTransform: _kf,
+                onGestureStart: () => _gestureStart = _kf,
+                onTransform: _transform,
+              ),
+            ),
+          ),
+          const KeyframePreviewHint(),
+          Expanded(
+            flex: 4,
             child: ListView(
               controller: scrollCtrl,
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),

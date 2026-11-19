@@ -2156,7 +2156,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get tipsTimelineMarkerDesc =>
-      'Les scènes gèrent une plage — une image de début et de fin —, tandis que les horodatages marquent un instant précis avec un commentaire vers lequel sauter d’un seul geste. Placer plusieurs horodatages dans la même scène — « effet sonore à l’image 120 », « bouche « a » à l’image 180 » — rend la synchronisation du son et de l’image bien plus facile.';
+      'Un horodatage ajoute une note à une image. Choisissez une couleur à sa création pour afficher un petit triangle au-dessus de l’image. Touchez le triangle pour lire la note, puis le numéro d’image pour accéder à cette position. Appuyez longuement sur le triangle pour modifier ou supprimer la note.';
 
   @override
   String get tipsCommunityYoutubeTitle =>
@@ -11353,4 +11353,8 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get timelineAddTrackRowTooltip => 'Ajouter une ligne à la piste';
+
+  @override
+  String get keyframePreviewGestureHint =>
+      'Faites glisser l’aperçu pour déplacer. Pincez ou tournez avec deux doigts pour redimensionner ou faire pivoter.';
 }

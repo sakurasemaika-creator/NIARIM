@@ -655,7 +655,7 @@
   "tipsVerticalPixelFontTitle": "實拍影片×手繪作畫，打造「實拍×動畫」",
   "tipsVerticalPixelFontDesc": "正因為這款App兼具插畫App和影片剪輯App的雙重身分，才能玩出這種手法。把實拍影片片段放到時間軸上，在其上方圖層用洋蔥皮一邊參考一邊手繪特效線或角色，就能做出實拍畫面疊加手繪動畫的「實拍×動畫」混合媒體影片。",
   "tipsTimelineMarkerTitle": "對齊聲音與嘴形的時間點，交給時間戳記",
-  "tipsTimelineMarkerDesc": "場景處理的是「開始～結束影格的範圍」，而時間戳記則是為「那一瞬間」加上備註、並可一鍵跳轉的功能。像「第120格配音效」「第180格對嘴形『啊』」這樣，在同一個場景範圍內打上多個時間戳記，就能大幅提升聲音與畫面對齊的效率。",
+  "tipsTimelineMarkerDesc": "時間戳記可以在影格上留下備註。新增時選擇顏色，影格上方就會顯示一個小三角形。點一下三角形可查看備註，再點一下影格編號可跳至該位置。長按三角形可編輯或刪除備註。",
   "tipsCommunityYoutubeTitle": "投稿到作品廣場需要透過YouTube",
   "tipsCommunityYoutubeDesc": "投稿到作品廣場後，作品將透過YouTube公開。NIARIM不具備將影片檔案本體傳送、蒐集或保存到開發者伺服器的功能。若在YouTube端將影片設定為「非公開條列」，該影片就不會出現在YouTube的公開清單中，僅會顯示於作品廣場內。",
   "tipsToolbarCustomizeTitle": "重新排列、隱藏工具列，縮短手指移動距離",
@@ -3927,5 +3927,6 @@
   "layerPanelShowLayerTooltip": "顯示圖層",
   "layerPanelHideLayerTooltip": "隱藏圖層",
   "layerPanelMergeDownTooltip": "與下方圖層合併",
-  "timelineAddTrackRowTooltip": "新增軌道列"
+  "timelineAddTrackRowTooltip": "新增軌道列",
+  "keyframePreviewGestureHint": "拖曳預覽可移動。用雙指捏合或旋轉就能縮放或轉動。"
 }

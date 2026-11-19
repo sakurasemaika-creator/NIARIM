@@ -3460,12 +3460,14 @@ class ProjectService extends ChangeNotifier {
     String projectId,
     String sceneId,
     int frameIndex,
-    String comment,
-  ) {
+    String comment, {
+    int? color,
+  }) {
     final marker = TimelineMarker(
       id: 'marker_${DateTime.now().microsecondsSinceEpoch}',
       frameIndex: frameIndex,
       comment: comment,
+      color: color,
     );
     _updateSceneMarkers(projectId, sceneId, [
       ...timelineMarkersOf(projectId, sceneId),

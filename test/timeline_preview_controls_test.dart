@@ -16,6 +16,8 @@ import 'package:niarim/engine/undo_manager.dart';
 import 'package:niarim/router.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/models/layer.dart';
+import 'package:niarim/models/timeline_marker.dart';
+import 'package:niarim/widgets/keyframe_preview.dart';
 import 'package:niarim/models/autofill_preset.dart';
 import 'package:niarim/models/audio_clip.dart';
 import 'package:niarim/models/camera_keyframe.dart';
@@ -714,6 +716,49 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('dragging artwork registers a camera keyframe only on save', (
+    tester,
+  ) async {
+    final id = await openTimeline(
+      tester,
+      project: const Size(160, 90),
+      screen: const Size(390, 844),
+      pc: false,
+      fraction: .4,
+    );
+    final ctx = tester.element(find.byType(TimelineScreen));
+    final l10n = AppLocalizations.of(ctx)!;
+    final ps = ctx.read<ProjectService>();
+    final sceneId = ps.scenesOf(id).single.id;
+    await tester.tap(find.byTooltip(l10n.timelineAddCameraKfTooltip).first);
+    await pumpRealAsync(tester, const Duration(milliseconds: 500));
+
+    final surface = find.byKey(const ValueKey('keyframeTransformPreview'));
+    expect(surface.hitTestable(), findsOneWidget);
+    final start = tester
+        .widget<KeyframePreview>(find.byType(KeyframePreview))
+        .camera!;
+    final gesture = await tester.startGesture(tester.getCenter(surface));
+    await gesture.moveBy(const Offset(24, 0));
+    await gesture.moveBy(const Offset(48, 18));
+    await gesture.up();
+    await tester.pump();
+
+    expect(ps.cameraKeyframesOf(id, sceneId), isEmpty);
+    final draft = tester
+        .widget<KeyframePreview>(find.byType(KeyframePreview))
+        .camera!;
+    expect(draft.x, lessThan(start.x));
+    expect(draft.y, lessThan(start.y));
+    await tester.tap(find.widgetWithText(FilledButton, l10n.commonAdd));
+    await pumpRealAsync(tester, const Duration(milliseconds: 400));
+    final saved = ps.cameraKeyframesOf(id, sceneId).single;
+    expect(saved.frameIndex, 0);
+    expect(saved.x, draft.x);
+    expect(saved.y, draft.y);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets(
     'markers sharing a frame can be edited and deleted individually',
     (tester) async {
@@ -733,12 +778,28 @@ void main() {
       final l10n = AppLocalizations.of(context)!;
       final ps = context.read<ProjectService>();
       final sceneId = ps.scenesOf(id).single.id;
-      final both = find.byTooltip('First marker\nSecond marker');
-      await tester.longPress(both);
+      final stamp = find.byKey(const ValueKey('timelineTimestamp-1'));
+      expect(
+        tester.getRect(stamp).bottom,
+        lessThanOrEqualTo(
+          tester.getRect(find.byKey(const ValueKey('timelineFrameCell1'))).top,
+        ),
+      );
+      await tester.tap(stamp);
+      await tester.pumpAndSettle();
+      expect(find.text('First marker'), findsOneWidget);
+      expect(find.text('Second marker'), findsOneWidget);
+      await tester.tap(find.widgetWithText(MenuItemButton, 'F2'));
+      await tester.pumpAndSettle();
+      await tester.longPress(stamp);
       await tester.pumpAndSettle();
       await tester.tap(find.widgetWithText(SimpleDialogOption, 'First marker'));
       await tester.pumpAndSettle();
       await tester.enterText(find.byType(TextField), 'Edited marker');
+      const blue = 0xFF387AC4;
+      await tester.tap(
+        find.byKey(const ValueKey('timelineTimestampColor-$blue')),
+      );
       await tester.tap(find.widgetWithText(FilledButton, l10n.commonSave));
       await tester.pumpAndSettle();
       final markers = ps.timelineMarkersOf(id, sceneId);
@@ -747,8 +808,7 @@ void main() {
         'Second marker',
       });
 
-      final updated = find.byTooltip(markers.map((m) => m.comment).join('\n'));
-      await tester.longPress(updated);
+      await tester.longPress(stamp);
       await tester.pumpAndSettle();
       await tester.tap(
         find.widgetWithText(SimpleDialogOption, 'Second marker'),
@@ -758,7 +818,18 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.widgetWithText(FilledButton, l10n.commonDelete));
       await tester.pumpAndSettle();
-      expect(ps.timelineMarkersOf(id, sceneId).single.comment, 'Edited marker');
+      final remaining = ps.timelineMarkersOf(id, sceneId).single;
+      expect(remaining.comment, 'Edited marker');
+      expect(remaining.color, blue);
+      expect(TimelineMarker.fromJson(remaining.toJson()).color, blue);
+      expect(
+        TimelineMarker.fromJson({
+          'id': 'old',
+          'frameIndex': 1,
+          'comment': 'Old',
+        }).color,
+        isNull,
+      );
       expect(tester.takeException(), isNull);
     },
   );

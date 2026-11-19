@@ -8442,11 +8442,7 @@ enum ProjectViewMode {
 
   /// タイルのカードの基準の幅（[collectionTileGridDelegate]）。詳細の
   /// 表示では使わない。
-  double get tileExtent => switch (size) {
-    CollectionViewSize.large => kCollectionTileLargeExtent,
-    CollectionViewSize.medium => kCollectionTileMediumExtent,
-    CollectionViewSize.small => kCollectionTileSmallExtent,
-  };
+  double get tileExtent => size.tileExtent;
 }
 
 enum ProjectSortMode { nameAsc, nameDesc, updatedAsc, updatedDesc }

@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:ui' as ui;
 
+import 'package:niarim/screens/community/widgets/community_work_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -261,10 +262,7 @@ void main() {
     expect(option.hitTestable(), findsOneWidget);
     await tester.tap(option);
     await tester.pumpAndSettle();
-    expect(
-      find.byKey(const Key('communityRankingLargeThumbnailCard')),
-      findsWidgets,
-    );
+    expect(find.byType(CommunityWorkCard), findsWidgets);
     expect(
       find.byKey(const Key('communityRankingHorizontalCard')),
       findsNothing,
@@ -284,10 +282,7 @@ void main() {
     await tester.tap(order);
     await tester.pumpAndSettle();
     expect(find.byType(CommunityRankBadge), findsNothing);
-    expect(
-      find.byKey(const Key('communityRankingLargeThumbnailCard')),
-      findsWidgets,
-    );
+    expect(find.byType(CommunityWorkCard), findsWidgets);
     await tester.tap(order);
     await tester.pumpAndSettle();
     expect(find.byType(CommunityRankBadge), findsWidgets);

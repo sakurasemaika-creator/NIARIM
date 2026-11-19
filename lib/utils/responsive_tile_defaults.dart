@@ -11,13 +11,6 @@ TileScreenClass tileScreenClassForWidth(double width) {
   return TileScreenClass.desktop;
 }
 
-double defaultCommunityTileWidthForWidth(double width) =>
-    switch (tileScreenClassForWidth(width)) {
-      TileScreenClass.phone => 140.0,
-      TileScreenClass.tablet => 200.0,
-      TileScreenClass.desktop => 300.0,
-    };
-
 /// The tile size used until one is chosen: small on phones, medium on
 /// tablets and large on PCs.
 CollectionViewSize defaultTileSizeFor(double width) =>

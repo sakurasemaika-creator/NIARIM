@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/utils/responsive_tile_defaults.dart';
+import 'package:niarim/widgets/collection_tile_layout.dart';
 
 void main() {
   test('thumbnail default changes at logical phone/tablet/desktop widths', () {
@@ -10,8 +11,8 @@ void main() {
     expect(tileScreenClassForWidth(999), TileScreenClass.tablet);
     expect(tileScreenClassForWidth(1000), TileScreenClass.desktop);
     expect(tileScreenClassForWidth(1280), TileScreenClass.desktop);
-    expect(defaultCommunityTileWidthForWidth(390), 140);
-    expect(defaultCommunityTileWidthForWidth(800), 200);
-    expect(defaultCommunityTileWidthForWidth(1280), 300);
+    expect(defaultTileSizeFor(390), CollectionViewSize.small);
+    expect(defaultTileSizeFor(800), CollectionViewSize.medium);
+    expect(defaultTileSizeFor(1280), CollectionViewSize.large);
   });
 }

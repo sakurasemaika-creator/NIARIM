@@ -2058,7 +2058,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get tipsTimelineMarkerDesc =>
-      '장면은 「시작~끝 프레임의 범위」를 다루는 기능이지만, 타임스탬프는 「그 한순간」에 코멘트를 붙여 한 번의 탭으로 이동할 수 있는 기능입니다. 「120프레임째에 효과음」「180프레임째는 입모양 『아』」처럼, 같은 장면의 범위 안에 여러 타임스탬프를 찍어두면 소리와 영상의 타이밍 맞추기가 훨씬 쉬워집니다.';
+      '타임스탬프는 프레임에 메모를 남깁니다. 등록할 때 색상을 선택하면 프레임 위에 작은 삼각형이 표시됩니다. 삼각형을 탭하면 메모를 읽을 수 있고 프레임 번호를 탭하면 그 위치로 이동합니다. 삼각형을 길게 눌러 메모를 편집하거나 삭제할 수 있습니다.';
 
   @override
   String get tipsCommunityYoutubeTitle => '작품 광장 게시는 YouTube를 통해 이루어집니다';
@@ -10451,4 +10451,8 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get timelineAddTrackRowTooltip => '트랙 행 추가';
+
+  @override
+  String get keyframePreviewGestureHint =>
+      '미리보기를 드래그하여 이동하세요. 두 손가락으로 확대, 축소 또는 회전할 수 있습니다.';
 }

@@ -14,7 +14,6 @@ import '../../services/community_service.dart';
 import '../../services/google_auth_service.dart';
 import '../../l10n/community_channel_refresh_labels.dart';
 import '../../widgets/ad_banner_mock_widget.dart';
-import '../../widgets/responsive.dart';
 import 'community_error_text.dart';
 import 'community_author_works_screen.dart';
 import 'community_post_screen.dart';
@@ -23,7 +22,11 @@ import 'widgets/community_top_edge_refresh.dart';
 import 'widgets/community_work_counts.dart';
 import '../../widgets/first_that_fits.dart';
 import '../../widgets/fit_or_hide_title.dart';
-import '../../widgets/menu_card.dart';
+import '../../widgets/checked_menu_item.dart';
+import '../../widgets/collection_action_controls.dart';
+import '../../widgets/collection_tile_layout.dart';
+import '../../utils/responsive_tile_defaults.dart';
+import 'widgets/community_work_card.dart' show communityThumbnailGradient;
 
 /// Owner hub opened from the community square.
 ///
@@ -53,6 +56,7 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
   final Set<String> _selectedIds = <String>{};
   bool _selectionMode = false;
   bool _bulkBusy = false;
+  CollectionViewSize? _viewSize;
   final ScrollController _worksScrollController = ScrollController();
   bool _loadingMoreOwnWorks = false;
   int _visibleOwnCount = CommunityService.pageSize;
@@ -592,6 +596,146 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
         : Icons.visibility_off_outlined;
   }
 
+  Widget _workTile(
+    BuildContext context,
+    AppLocalizations l10n,
+    CommunityWork work,
+    CollectionViewSize size,
+  ) {
+    final scheme = Theme.of(context).colorScheme;
+    final deleted = _youtubePrivacyById[work.id] == 'deleted';
+    final selected = _selectedIds.contains(work.id);
+    final title = work.title.isEmpty ? work.id : work.title;
+    return Card(
+      margin: EdgeInsets.zero,
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        key: ValueKey('communityMyWorksRow-${work.id}'),
+        onTap: () {
+          if (_selectionMode) {
+            _toggleSelected(work.id);
+          } else {
+            context.read<CommunityPreviewService>().show(work);
+          }
+        },
+        onLongPress: () {
+          if (_selectionMode) {
+            _toggleSelected(work.id);
+          } else {
+            setState(() {
+              _selectionMode = true;
+              _selectedIds.add(work.id);
+            });
+          }
+        },
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Expanded(
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: communityThumbnailGradient(
+                          scheme,
+                          work.thumbnailColorIndex,
+                        ),
+                      ),
+                    ),
+                    child: !deleted && work.thumbnailUrl.startsWith('https://')
+                        ? Image.network(
+                            work.thumbnailUrl,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stack) =>
+                                const SizedBox.shrink(),
+                          )
+                        : null,
+                  ),
+                  if (_selectionMode)
+                    Align(
+                      alignment: AlignmentDirectional.topEnd,
+                      child: Checkbox(
+                        key: ValueKey('communityMyWorksSelect-${work.id}'),
+                        value: selected,
+                        onChanged: _bulkBusy
+                            ? null
+                            : (_) => _toggleSelected(work.id),
+                      ),
+                    )
+                  else
+                    Align(
+                      alignment: AlignmentDirectional.topStart,
+                      child: Padding(
+                        padding: const EdgeInsets.all(6),
+                        child: CircleAvatar(
+                          radius: 12,
+                          backgroundColor: scheme.surface,
+                          child: Icon(_visibilityIcon(work), size: 15),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 6),
+              child: Text(
+                title,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: collectionTileCaptionStyle(context),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 6),
+              child: Text(
+                '${_visibilityLabel(l10n, work)}  •  ${l10n.communityYoutubeVideoIdLabel(work.id)}',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: Theme.of(context).textTheme.labelSmall,
+              ),
+            ),
+            if (!deleted && !work.isUnavailable)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 6),
+                child: Align(
+                  alignment: AlignmentDirectional.centerStart,
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: CommunityWorkCounts(
+                      work: work,
+                      compact: true,
+                      fontSize: 10,
+                    ),
+                  ),
+                ),
+              ),
+            if (_selectionMode)
+              CollectionTileActions.selectionSpace
+            else
+              CollectionTileActions(
+                compact: size == CollectionViewSize.small,
+                children: [
+                  CollectionActionFrame(
+                    child: IconButton(
+                      key: ValueKey('communityMyWorksSettings-${work.id}'),
+                      tooltip: l10n.communityMyWorksSettingsTitle,
+                      onPressed: () => _openWorkSettings(work),
+                      padding: EdgeInsets.zero,
+                      iconSize: CollectionActionFrame.glyphSize,
+                      icon: const Icon(Icons.build_outlined),
+                    ),
+                  ),
+                ],
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -628,6 +772,8 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
               .take(_visibleOwnCount)
               .toList();
 
+    final viewSize =
+        _viewSize ?? defaultTileSizeFor(MediaQuery.sizeOf(context).width);
     return Scaffold(
       appBar: AppBar(
         // 選んでいる間の題は選んだ件数（画面名ではなく、ここにしか出ない
@@ -636,6 +782,25 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
             ? _SelectionCountTitle(_selectedIds.length)
             : FitOrHideTitle(l10n.communityMyWorksTitle),
         actions: [
+          PopupMenuButton<CollectionViewSize>(
+            tooltip: l10n.homeViewModeTooltip,
+            icon: const Icon(Icons.grid_view_rounded),
+            onSelected: (size) => setState(() => _viewSize = size),
+            itemBuilder: (context) => [
+              MenuSectionHeading<CollectionViewSize>(l10n.homeViewSizeHeading),
+              for (final size in CollectionViewSize.values)
+                checkedMenuItem(
+                  context,
+                  value: size,
+                  checked: viewSize == size,
+                  label: switch (size) {
+                    CollectionViewSize.large => l10n.homeViewModeLarge,
+                    CollectionViewSize.medium => l10n.homeViewModeMedium,
+                    CollectionViewSize.small => l10n.homeViewModeSmall,
+                  },
+                ),
+            ],
+          ),
           IconButton(
             tooltip: l10n.communityReloadTooltip,
             onPressed: _loadingWorks ? null : _reloadOwnerWorks,
@@ -643,9 +808,8 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
           ),
         ],
       ),
-      body: desktopCentered(
-        context,
-        CommunityTopEdgeRefresh(
+      body: SafeArea(
+        child: CommunityTopEdgeRefresh(
           key: const Key('communityMyWorksPullRefresh'),
           controller: _worksScrollController,
           enabled: usingBackendOwnerList,
@@ -932,104 +1096,34 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
                     ),
                   ),
                 )
-              else
+              else ...[
                 SliverPadding(
-                  padding: EdgeInsets.fromLTRB(
-                    16,
-                    8,
-                    16,
-                    _selectionMode ? 126 : 24,
-                  ),
-                  sliver: SliverList.separated(
-                    itemCount: works.length + (_loadingMoreOwnWorks ? 1 : 0),
-                    separatorBuilder: (_, _) => const SizedBox(height: 8),
-                    itemBuilder: (context, index) {
-                      if (index == works.length) {
-                        return const Center(
-                          child: Padding(
-                            padding: EdgeInsets.all(12),
-                            child: CircularProgressIndicator(),
-                          ),
-                        );
-                      }
-                      final work = works[index];
-                      final youtubePrivacy = _youtubePrivacyById[work.id];
-                      final deleted = youtubePrivacy == 'deleted';
-                      return MenuCard(
-                        clipBehavior: Clip.antiAlias,
-                        child: ListTile(
-                          key: ValueKey('communityMyWorksRow-${work.id}'),
-                          onLongPress: () {
-                            if (!_selectionMode) {
-                              setState(() {
-                                _selectionMode = true;
-                                _selectedIds.add(work.id);
-                              });
-                            } else {
-                              _toggleSelected(work.id);
-                            }
-                          },
-                          onTap: () {
-                            if (_selectionMode) {
-                              _toggleSelected(work.id);
-                            } else {
-                              context.read<CommunityPreviewService>().show(
-                                work,
-                              );
-                            }
-                          },
-                          selected: _selectedIds.contains(work.id),
-                          leading: _selectionMode
-                              ? Checkbox(
-                                  key: ValueKey(
-                                    'communityMyWorksSelect-${work.id}',
-                                  ),
-                                  value: _selectedIds.contains(work.id),
-                                  onChanged: _bulkBusy
-                                      ? null
-                                      : (_) => _toggleSelected(work.id),
-                                )
-                              : CircleAvatar(
-                                  backgroundColor:
-                                      work.isNiarimPublished && !deleted
-                                      ? scheme.primaryContainer
-                                      : scheme.surfaceContainerHighest,
-                                  child: Icon(_visibilityIcon(work)),
-                                ),
-                          title: Text(
-                            work.title.isEmpty ? work.id : work.title,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          subtitle: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                '${_visibilityLabel(l10n, work)}  •  '
-                                '${l10n.communityYoutubeVideoIdLabel(work.id)}',
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              if (!deleted && !work.isUnavailable)
-                                CommunityWorkCounts(work: work),
-                            ],
-                          ),
-                          trailing: _selectionMode
-                              ? null
-                              : IconButton(
-                                  key: ValueKey(
-                                    'communityMyWorksSettings-${work.id}',
-                                  ),
-                                  tooltip: l10n.communityMyWorksSettingsTitle,
-                                  onPressed: () => _openWorkSettings(work),
-                                  icon: const Icon(Icons.build_outlined),
-                                ),
-                        ),
-                      );
-                    },
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  sliver: SliverGrid.builder(
+                    gridDelegate: collectionTileGridDelegate(
+                      context,
+                      viewSize.tileExtent,
+                      actionBandHeight: CollectionActionFrame.targetExtent,
+                    ),
+                    itemCount: works.length,
+                    itemBuilder: (context, index) =>
+                        _workTile(context, l10n, works[index], viewSize),
                   ),
                 ),
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: EdgeInsets.only(bottom: _selectionMode ? 126 : 24),
+                    child: _loadingMoreOwnWorks
+                        ? const Center(
+                            child: Padding(
+                              padding: EdgeInsets.all(12),
+                              child: CircularProgressIndicator(),
+                            ),
+                          )
+                        : null,
+                  ),
+                ),
+              ],
             ],
           ),
         ),

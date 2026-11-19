@@ -1051,7 +1051,7 @@ class _FilterPanelState extends State<FilterPanel> {
             crossAxisCount: columns,
             mainAxisSpacing: 6,
             crossAxisSpacing: 6,
-            mainAxisExtent: 108,
+            mainAxisExtent: 116 + MediaQuery.textScalerOf(context).scale(18),
           ),
           itemCount: filters.length,
           itemBuilder: (context, index) {
@@ -1063,108 +1063,126 @@ class _FilterPanelState extends State<FilterPanel> {
             final selected = filter.id == current?.id;
             final scheme = Theme.of(context).colorScheme;
             final builtIn = service.isBuiltIn(filter.id);
-            final child = InkWell(
-              key: ValueKey('filter-card-${filter.id}'),
-              onTap: locked ? null : () => _chooseFilter(service, filter),
+            final shape = RoundedRectangleBorder(
+              side: BorderSide(
+                color: selected ? scheme.primary : scheme.outlineVariant,
+                width: selected ? 2 : 1,
+              ),
               borderRadius: BorderRadius.circular(8),
-              child: Container(
-                padding: const EdgeInsets.all(5),
-                decoration: BoxDecoration(
-                  border: Border.all(
-                    color: selected ? scheme.primary : scheme.outlineVariant,
-                    width: selected ? 2 : 1,
-                  ),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Column(
-                  children: [
-                    Expanded(
-                      child: Stack(
-                        alignment: Alignment.center,
-                        children: [
-                          LayoutBuilder(
-                            builder: (context, size) => FilterSamplePreview(
-                              filter,
-                              width: math.max(1.0, size.maxWidth),
-                              height: math.max(1.0, size.maxHeight),
-                            ),
-                          ),
-                          if (!locked)
-                            PositionedDirectional(
-                              top: 0,
-                              end: 0,
-                              child: Material(
-                                color: scheme.surface.withValues(alpha: .90),
-                                borderRadius: BorderRadius.circular(6),
-                                child: PopupMenuButton<_FilterCardAction>(
-                                  key: ValueKey('filter-menu-${filter.id}'),
-                                  padding: EdgeInsets.zero,
-                                  icon: const Icon(Icons.more_vert, size: 20),
-                                  onSelected: (action) => _manageFilter(
-                                    action,
-                                    service,
-                                    filter,
-                                    l10n,
-                                  ),
-                                  itemBuilder: (_) => [
-                                    PopupMenuItem(
-                                      value: _FilterCardAction.duplicate,
-                                      child: Text(l10n.commonDuplicate),
-                                    ),
-                                    if (!builtIn) ...[
-                                      PopupMenuItem(
-                                        value: _FilterCardAction.rename,
-                                        child: Text(l10n.commonRename),
-                                      ),
-                                      PopupMenuItem(
-                                        value: _FilterCardAction.delete,
-                                        enabled: !filter.isFavorite,
-                                        child: Text(l10n.commonDelete),
-                                      ),
-                                    ],
-                                  ],
+            );
+            final child = Material(
+              type: MaterialType.transparency,
+              shape: shape,
+              clipBehavior: Clip.antiAlias,
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(5),
+                    child: Column(
+                      children: [
+                        Expanded(
+                          child: Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              LayoutBuilder(
+                                builder: (context, size) => FilterSamplePreview(
+                                  filter,
+                                  width: math.max(1.0, size.maxWidth),
+                                  height: math.max(1.0, size.maxHeight),
                                 ),
                               ),
-                            ),
-                          Positioned(
-                            right: 1,
-                            bottom: 1,
-                            child: DecoratedBox(
-                              decoration: BoxDecoration(
-                                color: scheme.surface.withValues(alpha: .85),
-                                borderRadius: BorderRadius.circular(3),
+                              Positioned(
+                                right: 1,
+                                bottom: 1,
+                                child: DecoratedBox(
+                                  decoration: BoxDecoration(
+                                    color: scheme.surface.withValues(
+                                      alpha: .85,
+                                    ),
+                                    borderRadius: BorderRadius.circular(3),
+                                  ),
+                                  child: Icon(_iconForFilter(filter), size: 12),
+                                ),
                               ),
-                              child: Icon(_iconForFilter(filter), size: 12),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 3),
-                    Text(
-                      filterDisplayName(l10n, filter),
-                      maxLines: 2,
-                      textAlign: TextAlign.center,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(fontSize: 9),
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        InkWell(
-                          onTap: () => service.toggleFavorite(filter.id),
-                          child: Tooltip(
-                            message: filter.isFavorite
-                                ? l10n.colorPickerFavoriteRemove
-                                : l10n.colorPickerFavoriteAdd,
-                            child: Icon(
-                              filter.isFavorite
-                                  ? Icons.star
-                                  : Icons.star_outline,
-                              size: 15,
-                            ),
+                            ],
                           ),
                         ),
+                        const SizedBox(height: 3),
+                        Text(
+                          filterDisplayName(l10n, filter),
+                          maxLines: 2,
+                          textAlign: TextAlign.center,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(fontSize: 9),
+                        ),
+                        const SizedBox(height: 40),
+                      ],
+                    ),
+                  ),
+                  // The picture is opaque, so the card's touch feedback is
+                  // painted on a transparent surface above it.
+                  Material(
+                    type: MaterialType.transparency,
+                    child: InkWell(
+                      key: ValueKey('filter-card-${filter.id}'),
+                      onTap: locked
+                          ? null
+                          : () => _chooseFilter(service, filter),
+                    ),
+                  ),
+                  PositionedDirectional(
+                    end: 4,
+                    bottom: 3,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          key: ValueKey('filter-favorite-${filter.id}'),
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(
+                            minWidth: 32,
+                            minHeight: 40,
+                          ),
+                          tooltip: filter.isFavorite
+                              ? l10n.colorPickerFavoriteRemove
+                              : l10n.colorPickerFavoriteAdd,
+                          onPressed: () => service.toggleFavorite(filter.id),
+                          icon: Icon(
+                            filter.isFavorite ? Icons.star : Icons.star_outline,
+                            size: 15,
+                          ),
+                        ),
+                        if (!locked)
+                          PopupMenuButton<_FilterCardAction>(
+                            key: ValueKey('filter-menu-${filter.id}'),
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(minWidth: 164),
+                            style: IconButton.styleFrom(
+                              minimumSize: const Size(36, 40),
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            ),
+                            icon: const Icon(Icons.more_vert, size: 20),
+                            onSelected: (action) =>
+                                _manageFilter(action, service, filter, l10n),
+                            itemBuilder: (_) => [
+                              PopupMenuItem(
+                                value: _FilterCardAction.duplicate,
+                                child: Text(l10n.commonDuplicate),
+                              ),
+                              if (!builtIn) ...[
+                                PopupMenuItem(
+                                  value: _FilterCardAction.rename,
+                                  child: Text(l10n.commonRename),
+                                ),
+                                PopupMenuItem(
+                                  value: _FilterCardAction.delete,
+                                  enabled: !filter.isFavorite,
+                                  child: Text(l10n.commonDelete),
+                                ),
+                              ],
+                            ],
+                          ),
                         if (!builtIn)
                           InkWell(
                             onTap: () => SharedAssetCardService.exportSettings(
@@ -1180,8 +1198,8 @@ class _FilterPanelState extends State<FilterPanel> {
                           ),
                       ],
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             );
             return locked

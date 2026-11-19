@@ -162,6 +162,7 @@ void main() {
     WidgetTester tester, {
     required Finder rows,
     required String label,
+    double horizontalFraction = .5,
   }) async {
     final shotBox = tester.renderObject<RenderBox>(find.byKey(shot));
     Rect rectOf(RenderBox box) =>
@@ -197,7 +198,12 @@ void main() {
         final visible = rectOf(rowBox).intersect(list);
         final idle = await capture(tester);
         final finger = await tester.startGesture(
-          shotBox.localToGlobal(visible.center),
+          shotBox.localToGlobal(
+            Offset(
+              visible.left + visible.width * horizontalFraction,
+              visible.center.dy,
+            ),
+          ),
           kind: PointerDeviceKind.touch,
         );
         // スクロールの中では、押した色は少し待ってから出る（スクロールか
@@ -333,10 +339,13 @@ void main() {
       rows: find.byWidgetPredicate(
         (w) =>
             w is InkWell &&
+            w.onTap != null &&
             w.key is ValueKey<String> &&
             (w.key! as ValueKey<String>).value.startsWith('filter-card-'),
       ),
       label: 'filter list',
+      // Press the card surface, clear of the filter's action buttons.
+      horizontalFraction: .16,
     );
     expect(failures, isEmpty, reason: failures.join('\n'));
   });

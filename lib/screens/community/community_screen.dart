@@ -22,7 +22,6 @@ import '../../l10n/community_ranking_layout_labels.dart';
 import 'widgets/community_ranking_work_list.dart';
 import '../../widgets/ad_banner_mock_widget.dart';
 import '../../widgets/help_button.dart';
-import '../../widgets/responsive.dart';
 import '../../widgets/mission_completion_dialog.dart';
 import 'community_edit_feedback.dart';
 import 'community_bookmarked_tab.dart';
@@ -34,7 +33,9 @@ import 'widgets/community_work_card.dart';
 import 'widgets/video_type_filter.dart';
 import '../../config/font_fallback.dart';
 import '../../utils/color_contrast.dart';
+import '../../widgets/collection_tile_layout.dart';
 import '../../utils/responsive_tile_defaults.dart';
+import '../../widgets/checked_menu_item.dart';
 import '../../widgets/typing_dialog_inset.dart';
 import '../../widgets/keep_together_text.dart';
 import '../../widgets/menu_surface.dart';
@@ -176,6 +177,7 @@ class _CommunityScreenState extends State<CommunityScreen>
 
   static const _savedSearchesKey = 'community.savedSearches.v1';
   static const _historyKey = 'community.searchHistory.v1';
+  static const _tileSizeKey = 'community.tileSize.v2';
   static const _tileWidthKey = 'community.tileMinWidth.v1';
   static const _rankingLayoutKey = 'community.rankingLayout.v1';
   final List<Map<String, dynamic>> _savedSearches = [];
@@ -194,11 +196,9 @@ class _CommunityScreenState extends State<CommunityScreen>
   _PostDateFilter _postDateFilter = _PostDateFilter.all;
   DateTimeRange? _customPostDateRange;
   bool _tagExactMatch = false;
-  double? _userTileWidth;
-
-  double _effectiveTileWidth(BuildContext context) =>
-      _userTileWidth ??
-      defaultCommunityTileWidthForWidth(MediaQuery.sizeOf(context).width);
+  CollectionViewSize? _chosenTileSize;
+  CollectionViewSize get _tileSize =>
+      _chosenTileSize ?? defaultTileSizeFor(MediaQuery.sizeOf(context).width);
   CommunityRankingLayout _rankingLayout = CommunityRankingLayout.horizontal;
   _DurationFilterMode _durationMode = _DurationFilterMode.all;
   double _upToMinutes = 5;
@@ -368,7 +368,7 @@ class _CommunityScreenState extends State<CommunityScreen>
       if (mounted) _pulsePlazaTime();
     });
     _loadSavedSearches();
-    _loadTileWidth();
+    _loadTileSize();
     _loadRankingLayout();
     _tabController = TabController(length: 5, vsync: this)
       ..addListener(_onTabChanged);
@@ -403,17 +403,58 @@ class _CommunityScreenState extends State<CommunityScreen>
     });
   }
 
-  Future<void> _loadTileWidth() async {
+  Future<void> _loadTileSize() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final saved = prefs.readDouble(_tileWidthKey);
-      if (saved != null && mounted) {
-        setState(() => _userTileWidth = saved.clamp(120.0, 360.0).toDouble());
-      }
+      final saved = prefs.readString(_tileSizeKey);
+      final legacy = prefs.readDouble(_tileWidthKey);
+      final size =
+          CollectionViewSize.values
+              .where((size) => size.name == saved)
+              .firstOrNull ??
+          (legacy == null
+              ? null
+              : legacy > 145 && legacy < 205
+              ? CollectionViewSize.medium
+              : legacy <= 145
+              ? CollectionViewSize.small
+              : CollectionViewSize.large);
+      if (mounted) setState(() => _chosenTileSize = size);
     } catch (error) {
       debugPrint('Community tile width could not be restored: $error');
     }
   }
+
+  Widget _tileSizeButton(AppLocalizations l10n, {bool ranking = false}) =>
+      PopupMenuButton<CollectionViewSize>(
+        key: Key(
+          ranking
+              ? 'communityRankingTileSizeButton'
+              : 'communityTileSizeButton',
+        ),
+        tooltip: l10n.communityTileSize,
+        icon: const Icon(Icons.grid_view_rounded),
+        position: PopupMenuPosition.under,
+        onSelected: (size) async {
+          setState(() => _chosenTileSize = size);
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setString(_tileSizeKey, size.name);
+        },
+        itemBuilder: (context) => [
+          MenuSectionHeading<CollectionViewSize>(l10n.homeViewSizeHeading),
+          for (final size in CollectionViewSize.values)
+            checkedMenuItem(
+              context,
+              value: size,
+              checked: size == _tileSize,
+              label: switch (size) {
+                CollectionViewSize.large => l10n.homeViewModeLarge,
+                CollectionViewSize.medium => l10n.homeViewModeMedium,
+                CollectionViewSize.small => l10n.homeViewModeSmall,
+              },
+            ),
+        ],
+      );
 
   Future<void> _loadRankingLayout() async {
     try {
@@ -1055,7 +1096,6 @@ class _CommunityScreenState extends State<CommunityScreen>
         initialMaximumMinutes: _maximumMinutes,
         initialMinimumViews: _minimumViews,
         initialMinimumBookmarks: _minimumBookmarks,
-        initialTileWidth: _effectiveTileWidth(context),
       ),
     );
     if (result == null) return;
@@ -1432,46 +1472,7 @@ class _CommunityScreenState extends State<CommunityScreen>
                       ),
                   ],
                 ),
-                IconButton(
-                  key: const Key('communityTileSizeButton'),
-                  tooltip: l10n.communityTileSize,
-                  icon: const Icon(Icons.grid_view_rounded),
-                  onPressed: () async {
-                    var size = _effectiveTileWidth(context);
-                    final chosen = await showDialog<double>(
-                      context: context,
-                      builder: (dialogContext) => StatefulBuilder(
-                        builder: (dialogContext, update) => AlertDialog(
-                          title: Text(l10n.communityTileSize),
-                          content: Slider(
-                            key: const Key('communityTileSizeQuickSlider'),
-                            min: 120,
-                            max: 360,
-                            divisions: 12,
-                            value: size,
-                            onChanged: (next) => update(() => size = next),
-                          ),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Navigator.pop(dialogContext),
-                              child: Text(l10n.commonCancel),
-                            ),
-                            FilledButton(
-                              onPressed: () =>
-                                  Navigator.pop(dialogContext, size),
-                              child: Text(l10n.commonSave),
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                    if (chosen != null && mounted) {
-                      setState(() => _userTileWidth = chosen);
-                      final prefs = await SharedPreferences.getInstance();
-                      await prefs.setDouble(_tileWidthKey, chosen);
-                    }
-                  },
-                ),
+                _tileSizeButton(l10n),
                 const Spacer(),
                 if (tab == 3) ...[
                   Tooltip(
@@ -1630,6 +1631,12 @@ class _CommunityScreenState extends State<CommunityScreen>
           ],
         ),
         actions: [
+          AnimatedBuilder(
+            animation: _tabController,
+            builder: (context, _) => _tabController.index == 4
+                ? _tileSizeButton(l10n)
+                : const SizedBox.shrink(),
+          ),
           IconButton(
             icon: Badge(
               label: Text('${communityService.unreadMilestoneCount}'),
@@ -1753,9 +1760,8 @@ class _CommunityScreenState extends State<CommunityScreen>
           ],
         ),
       ),
-      body: desktopCentered(
-        context,
-        TabBarView(
+      body: SafeArea(
+        child: TabBarView(
           controller: _tabController,
           children: [
             Builder(
@@ -1792,7 +1798,7 @@ class _CommunityScreenState extends State<CommunityScreen>
                       children: [
                         searchRowFor(0),
                         CommunityWorkGrid(
-                          minTileWidth: _effectiveTileWidth(context),
+                          viewSize: _tileSize,
                           works: works,
                           bookmarkedIds: bookmarkedIds,
                           onTapWork: _openFloatingPreview,
@@ -1923,6 +1929,9 @@ class _CommunityScreenState extends State<CommunityScreen>
                               ];
                             },
                           ),
+                          if (_rankingLayout ==
+                              CommunityRankingLayout.largeThumbnail)
+                            _tileSizeButton(l10n, ranking: true),
                         ],
                       ),
                     ),
@@ -1930,6 +1939,32 @@ class _CommunityScreenState extends State<CommunityScreen>
                       builder: (context) {
                         final ranked = _visible(_rankingWorks(allWorks), 1);
                         if (ranked.isEmpty) return _buildSearchEmptyState(l10n);
+                        if (_rankingLayout ==
+                            CommunityRankingLayout.largeThumbnail) {
+                          return CommunityWorkGrid(
+                            key: const Key('communityRankingWorkList'),
+                            works: ranked,
+                            viewSize: _tileSize,
+                            rankNumbers: _sortAscending
+                                ? null
+                                : {
+                                    for (var i = 0; i < ranked.length; i++)
+                                      ranked[i].id: i + 1,
+                                  },
+                            periodScores:
+                                communityService.periodRankingBookmarkCounts,
+                            bookmarkedIds: bookmarkedIds,
+                            onTapWork: _openRankingPreview,
+                            onToggleBookmark: (work) =>
+                                reportFailedCommunityEdit(
+                                  context,
+                                  communityService,
+                                  communityService.toggleBookmark(work.id),
+                                ),
+                            onTapAuthor: _openAuthorWorks,
+                            bottomPadding: 88,
+                          );
+                        }
                         return CommunityRankingWorkList(
                           layout: _rankingLayout,
                           works: ranked,
@@ -2008,7 +2043,7 @@ class _CommunityScreenState extends State<CommunityScreen>
                       children: [
                         searchRowFor(2),
                         CommunityWorkGrid(
-                          minTileWidth: _effectiveTileWidth(context),
+                          viewSize: _tileSize,
                           works: works,
                           bookmarkedIds: bookmarkedIds,
                           onTapWork: _openFloatingPreview,
@@ -2054,7 +2089,7 @@ class _CommunityScreenState extends State<CommunityScreen>
                           _buildSearchEmptyState(l10n)
                         else
                           CommunityWorkGrid(
-                            minTileWidth: _effectiveTileWidth(context),
+                            viewSize: _tileSize,
                             works: works,
                             bookmarkedIds: bookmarkedIds,
                             onTapWork: _openFloatingPreview,
@@ -2077,6 +2112,7 @@ class _CommunityScreenState extends State<CommunityScreen>
             CommunityBookmarkedTab(
               key: const PageStorageKey('community-bookmarks'),
               scrollController: _tabScrollControllers[4],
+              viewSize: _tileSize,
               onBrowseWorks: () => _tabController.animateTo(0),
             ),
           ],
@@ -2185,7 +2221,6 @@ class _ContentFilterDialog extends StatefulWidget {
     required this.initialMaximumMinutes,
     required this.initialMinimumViews,
     required this.initialMinimumBookmarks,
-    required this.initialTileWidth,
   });
 
   final bool muteOnly;
@@ -2201,7 +2236,6 @@ class _ContentFilterDialog extends StatefulWidget {
   final int initialMaximumMinutes;
   final int initialMinimumViews;
   final int initialMinimumBookmarks;
-  final double initialTileWidth;
 
   @override
   State<_ContentFilterDialog> createState() => _ContentFilterDialogState();
@@ -2220,7 +2254,6 @@ class _ContentFilterDialogState extends State<_ContentFilterDialog> {
   late int _maximumMinutes;
   late int _minimumViews;
   late int _minimumBookmarks;
-  late double _tileWidth;
 
   @override
   void initState() {
@@ -2237,7 +2270,6 @@ class _ContentFilterDialogState extends State<_ContentFilterDialog> {
     _maximumMinutes = widget.initialMaximumMinutes;
     _minimumViews = widget.initialMinimumViews;
     _minimumBookmarks = widget.initialMinimumBookmarks;
-    _tileWidth = widget.initialTileWidth;
   }
 
   _MuteEntry _makeEntry(String value, {bool editing = false}) {
@@ -2837,7 +2869,6 @@ class _ContentFilterDialogState extends State<_ContentFilterDialog> {
               maximumMinutes: _maximumMinutes,
               minimumViews: _minimumViews,
               minimumBookmarks: _minimumBookmarks,
-              tileWidth: _tileWidth,
             ),
           ),
           child: Text(l10n.commonSave),
@@ -2861,7 +2892,6 @@ class _ContentFilterInput {
     required this.maximumMinutes,
     required this.minimumViews,
     required this.minimumBookmarks,
-    required this.tileWidth,
   });
 
   final bool hideAi;
@@ -2876,5 +2906,4 @@ class _ContentFilterInput {
   final int maximumMinutes;
   final int minimumViews;
   final int minimumBookmarks;
-  final double tileWidth;
 }

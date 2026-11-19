@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../l10n/app_localizations.dart';
-import 'tip_diagrams.dart';
+import 'tip_captures.dart';
 import '../../config/font_fallback.dart';
 import '../../config/accent_text_theme.dart';
 import '../../utils/name_collation.dart';
@@ -13,7 +13,7 @@ import '../../widgets/keep_together_text.dart';
 /// ヘルプ（機能の説明）とは別に、「こうすると便利」という活用方法を
 /// 紹介するTipsページ。ホーム画面のハンバーガーメニューから開く。
 /// 一覧はタイトルだけのコンパクトな行にし、タップするとポップアップ
-/// （_TipDetailDialog）で「図解＋要点」→「詳しい説明」を横スライドで
+/// （_TipDetailDialog）でキャプチャと説明を横スライドで
 /// 読める構成にしている。説明の分量に応じてページ数は可変（固定2ページ
 /// に限らない）で、下部にページ位置インジケーター、右上に閉じるボタンを
 /// 常設する。ヘルプ画面と同様、タイトル・説明・カテゴリ名から検索できる。
@@ -173,81 +173,44 @@ List<_TipCategory> _buildTipCategories(AppLocalizations l10n) => [
     icon: Icons.movie_creation_outlined,
     tips: [
       _Tip(
-        TipDiagramSpec(TipDiagramKind.clipDuplicate),
+        'clipDuplicate',
         l10n.tipsClipDuplicateTitle,
         l10n.tipsClipDuplicateDesc,
       ),
+      _Tip('textCaption', l10n.tipsTextCaptionTitle, l10n.tipsTextCaptionDesc),
+      _Tip('audioRepeat', l10n.tipsAudioRepeatTitle, l10n.tipsAudioRepeatDesc),
       _Tip(
-        TipDiagramSpec(TipDiagramKind.textCaption),
-        l10n.tipsTextCaptionTitle,
-        l10n.tipsTextCaptionDesc,
-      ),
-      _Tip(
-        TipDiagramSpec(
-          TipDiagramKind.pairCombo,
-          iconA: Icons.content_copy,
-          iconB: Icons.graphic_eq,
-        ),
-        l10n.tipsAudioRepeatTitle,
-        l10n.tipsAudioRepeatDesc,
-      ),
-      _Tip(
-        TipDiagramSpec(
-          TipDiagramKind.pairCombo,
-          iconA: Icons.text_rotate_vertical,
-          iconB: Icons.text_fields,
-        ),
+        'verticalRuby',
         l10n.tipsVerticalRubyTitle,
         l10n.tipsVerticalRubyDesc,
       ),
       _Tip(
-        TipDiagramSpec(
-          TipDiagramKind.pairCombo,
-          iconA: Icons.branding_watermark,
-          iconB: Icons.movie_filter_outlined,
-          separator: '≠',
-        ),
+        'endCardWatermark',
         l10n.tipsEndCardWatermarkTitle,
         l10n.tipsEndCardWatermarkDesc,
       ),
       _Tip(
-        TipDiagramSpec(
-          TipDiagramKind.pairCombo,
-          iconA: Icons.videocam_outlined,
-          iconB: Icons.brush,
-        ),
+        'verticalPixelFont',
         l10n.tipsVerticalPixelFontTitle,
         l10n.tipsVerticalPixelFontDesc,
       ),
       _Tip(
-        TipDiagramSpec(
-          TipDiagramKind.pairCombo,
-          iconA: Icons.approval,
-          iconB: Icons.layers,
-        ),
+        'stampBlendMode',
         l10n.tipsStampBlendModeTitle,
         l10n.tipsStampBlendModeDesc,
       ),
       _Tip(
-        TipDiagramSpec(
-          TipDiagramKind.flowArrow,
-          iconA: Icons.content_cut,
-          iconB: Icons.repeat,
-        ),
+        'videoTrimReuse',
         l10n.tipsVideoTrimReuseTitle,
         l10n.tipsVideoTrimReuseDesc,
       ),
       _Tip(
-        TipDiagramSpec(TipDiagramKind.timelineMarker),
+        'timelineMarker',
         l10n.tipsTimelineMarkerTitle,
         l10n.tipsTimelineMarkerDesc,
       ),
       _Tip(
-        TipDiagramSpec(
-          TipDiagramKind.pairCombo,
-          iconA: Icons.movie_filter_outlined,
-          iconB: Icons.info_outline,
-        ),
+        'communityYoutube',
         l10n.tipsCommunityYoutubeTitle,
         l10n.tipsCommunityYoutubeDesc,
       ),
@@ -258,158 +221,99 @@ List<_TipCategory> _buildTipCategories(AppLocalizations l10n) => [
     icon: Icons.speed_outlined,
     tips: [
       _Tip(
-        TipDiagramSpec(TipDiagramKind.autofillPreset),
+        'autofillPreset',
         l10n.tipsAutofillPresetTitle,
         l10n.tipsAutofillPresetDesc,
       ),
       _Tip(
-        TipDiagramSpec(
-          TipDiagramKind.pairCombo,
-          iconA: Icons.playlist_play,
-          iconB: Icons.tune,
-        ),
+        'officialAutomationPresets',
         l10n.tipsOfficialAutomationPresetsTitle,
         l10n.tipsOfficialAutomationPresetsDesc,
       ),
       _Tip(
-        TipDiagramSpec(
-          TipDiagramKind.pairCombo,
-          iconA: Icons.auto_fix_high,
-          iconB: Icons.format_color_fill,
-        ),
+        'autofillBaseCoat',
         l10n.tipsAutofillBaseCoatTitle,
         l10n.tipsAutofillBaseCoatDesc,
       ),
       _Tip(
-        TipDiagramSpec(
-          TipDiagramKind.flowArrow,
-          iconA: Icons.edit_outlined,
-          iconB: Icons.palette_outlined,
-        ),
+        'autofillManualPartColor',
         l10n.tipsAutofillManualPartColorTitle,
         l10n.tipsAutofillManualPartColorDesc,
       ),
       _Tip(
-        TipDiagramSpec(TipDiagramKind.brushFavorite),
+        'brushFavorite',
         l10n.tipsBrushFavoriteTitle,
         l10n.tipsBrushFavoriteDesc,
       ),
       _Tip(
-        TipDiagramSpec(
-          TipDiagramKind.pairCombo,
-          iconA: Icons.tune,
-          iconB: Icons.history,
-        ),
+        'brushTrySaveTree',
         l10n.tipsBrushTrySaveTreeTitle,
         l10n.tipsBrushTrySaveTreeDesc,
       ),
       _Tip(
-        TipDiagramSpec(TipDiagramKind.gestureShortcut, iconA: Icons.colorize),
+        'eyedropperGesture',
         l10n.tipsEyedropperGestureTitle,
         l10n.tipsEyedropperGestureDesc,
       ),
       _Tip(
-        TipDiagramSpec(TipDiagramKind.selectionTool),
+        'magicWandLasso',
         l10n.tipsMagicWandLassoTitle,
         l10n.tipsMagicWandLassoDesc,
       ),
       _Tip(
-        TipDiagramSpec(TipDiagramKind.layerFolder),
+        'commonLayerFolder',
         l10n.tipsCommonLayerFolderTitle,
         l10n.tipsCommonLayerFolderDesc,
       ),
       _Tip(
-        TipDiagramSpec(
-          TipDiagramKind.pairCombo,
-          iconA: Icons.restart_alt,
-          iconB: Icons.edit,
-        ),
+        'quickToolPenSub',
         l10n.tipsQuickToolPenSubTitle,
         l10n.tipsQuickToolPenSubDesc,
       ),
       _Tip(
-        TipDiagramSpec(
-          TipDiagramKind.pairCombo,
-          iconA: Icons.restart_alt,
-          iconB: Icons.tune,
-        ),
+        'quickToolVariant',
         l10n.tipsQuickToolVariantTitle,
         l10n.tipsQuickToolVariantDesc,
       ),
       _Tip(
-        TipDiagramSpec(
-          TipDiagramKind.pairCombo,
-          iconA: Icons.edit_outlined,
-          iconB: Icons.grain,
-        ),
+        'autofillToneReuse',
         l10n.tipsAutofillToneReuseTitle,
         l10n.tipsAutofillToneReuseDesc,
       ),
       _Tip(
-        TipDiagramSpec(
-          TipDiagramKind.flowArrow,
-          iconA: Icons.palette_outlined,
-          iconB: Icons.auto_fix_high,
-        ),
+        'autofillMisfill',
         l10n.tipsAutofillMisfillTitle,
         l10n.tipsAutofillMisfillDesc,
       ),
+      _Tip('homeWidget', l10n.tipsHomeWidgetTitle, l10n.tipsHomeWidgetDesc),
       _Tip(
-        TipDiagramSpec(
-          TipDiagramKind.pairCombo,
-          iconA: Icons.widgets_outlined,
-          iconB: Icons.movie_creation_outlined,
-        ),
-        l10n.tipsHomeWidgetTitle,
-        l10n.tipsHomeWidgetDesc,
-      ),
-      _Tip(
-        TipDiagramSpec(
-          TipDiagramKind.pairCombo,
-          iconA: Icons.format_color_fill,
-          iconB: Icons.opacity,
-        ),
+        'autofillTransparentFix',
         l10n.tipsAutofillTransparentFixTitle,
         l10n.tipsAutofillTransparentFixDesc,
       ),
       _Tip(
-        TipDiagramSpec(TipDiagramKind.saveSlot),
+        'saveSlotAutoSave',
         l10n.tipsSaveSlotAutoSaveTitle,
         l10n.tipsSaveSlotAutoSaveDesc,
       ),
       _Tip(
-        TipDiagramSpec(
-          TipDiagramKind.gestureShortcut,
-          iconA: Icons.swipe_up_alt,
-        ),
+        'quickToolSwipe',
         l10n.tipsQuickToolSwipeTitle,
         l10n.tipsQuickToolSwipeDesc,
       ),
       _Tip(
-        TipDiagramSpec(TipDiagramKind.toolbarCustomize),
+        'toolbarCustomize',
         l10n.tipsToolbarCustomizeTitle,
         l10n.tipsToolbarCustomizeDesc,
       ),
+      _Tip('pcDexLayout', l10n.tipsPcDexLayoutTitle, l10n.tipsPcDexLayoutDesc),
       _Tip(
-        TipDiagramSpec(TipDiagramKind.pcDexLayout),
-        l10n.tipsPcDexLayoutTitle,
-        l10n.tipsPcDexLayoutDesc,
-      ),
-      _Tip(
-        TipDiagramSpec(
-          TipDiagramKind.pairCombo,
-          iconA: Icons.groups_outlined,
-          iconB: Icons.person_outline,
-        ),
+        'commonLayerLipSync',
         l10n.tipsCommonLayerLipSyncTitle,
         l10n.tipsCommonLayerLipSyncDesc,
       ),
       _Tip(
-        TipDiagramSpec(
-          TipDiagramKind.pairCombo,
-          iconA: Icons.groups_outlined,
-          iconB: Icons.timeline,
-        ),
+        'commonLayerKeyframe',
         l10n.tipsCommonLayerKeyframeTitle,
         l10n.tipsCommonLayerKeyframeDesc,
       ),
@@ -420,140 +324,84 @@ List<_TipCategory> _buildTipCategories(AppLocalizations l10n) => [
     icon: Icons.brush_outlined,
     tips: [
       _Tip(
-        TipDiagramSpec(TipDiagramKind.transparentColor),
+        'transparentColor',
         l10n.tipsTransparentColorTitle,
         l10n.tipsTransparentColorDesc,
       ),
       _Tip(
-        TipDiagramSpec(TipDiagramKind.pressureCurve),
+        'pressureCurve',
         l10n.tipsPressureCurveTitle,
         l10n.tipsPressureCurveDesc,
       ),
+      _Tip('rulerOnion', l10n.tipsRulerOnionTitle, l10n.tipsRulerOnionDesc),
       _Tip(
-        TipDiagramSpec(
-          TipDiagramKind.pairCombo,
-          iconA: Icons.straighten,
-          iconB: Icons.layers,
-        ),
-        l10n.tipsRulerOnionTitle,
-        l10n.tipsRulerOnionDesc,
-      ),
-      _Tip(
-        TipDiagramSpec(
-          TipDiagramKind.pairCombo,
-          iconA: Icons.grid_view_outlined,
-          iconB: Icons.straighten,
-        ),
+        'fourPanelBrush',
         l10n.tipsFourPanelBrushTitle,
         l10n.tipsFourPanelBrushDesc,
       ),
       _Tip(
-        TipDiagramSpec(
-          TipDiagramKind.pairCombo,
-          iconA: Icons.gradient,
-          iconB: Icons.colorize,
-        ),
+        'gradientTrace',
         l10n.tipsGradientTraceTitle,
         l10n.tipsGradientTraceDesc,
       ),
       _Tip(
-        TipDiagramSpec(
-          TipDiagramKind.pairCombo,
-          iconA: Icons.gradient,
-          iconB: Icons.border_color,
-        ),
+        'gradientOutlineHair',
         l10n.tipsGradientOutlineHairTitle,
         l10n.tipsGradientOutlineHairDesc,
       ),
+      _Tip('brushFold', l10n.tipsBrushFoldTitle, l10n.tipsBrushFoldDesc),
       _Tip(
-        TipDiagramSpec(
-          TipDiagramKind.pairCombo,
-          iconA: Icons.brush,
-          iconB: Icons.turn_right,
-        ),
-        l10n.tipsBrushFoldTitle,
-        l10n.tipsBrushFoldDesc,
-      ),
-      _Tip(
-        TipDiagramSpec(
-          TipDiagramKind.pairCombo,
-          iconA: Icons.brush,
-          iconB: Icons.opacity,
-        ),
+        'strokeDecayFade',
         l10n.tipsStrokeDecayFadeTitle,
         l10n.tipsStrokeDecayFadeDesc,
       ),
       _Tip(
-        TipDiagramSpec(
-          TipDiagramKind.pairCombo,
-          iconA: Icons.palette,
-          iconB: Icons.opacity,
-        ),
+        'colorMixingFade',
         l10n.tipsColorMixingFadeTitle,
         l10n.tipsColorMixingFadeDesc,
       ),
       _Tip(
-        TipDiagramSpec(TipDiagramKind.radialVignette),
+        'radialVignette',
         l10n.tipsRadialVignetteTitle,
         l10n.tipsRadialVignetteDesc,
       ),
       _Tip(
-        TipDiagramSpec(
-          TipDiagramKind.pairCombo,
-          iconA: Icons.layers,
-          iconB: Icons.gradient,
-        ),
+        'clippingGradient',
         l10n.tipsClippingGradientTitle,
         l10n.tipsClippingGradientDesc,
       ),
       _Tip(
-        TipDiagramSpec(
-          TipDiagramKind.pairCombo,
-          iconA: Icons.crop_free,
-          iconB: Icons.videocam_outlined,
-        ),
+        'drawingAreaCamera',
         l10n.tipsDrawingAreaCameraTitle,
         l10n.tipsDrawingAreaCameraDesc,
       ),
       _Tip(
-        TipDiagramSpec(
-          TipDiagramKind.pairCombo,
-          iconA: Icons.auto_fix_high,
-          iconB: Icons.opacity,
-        ),
+        'autofillBlendMode',
         l10n.tipsAutofillBlendModeTitle,
         l10n.tipsAutofillBlendModeDesc,
       ),
       _Tip(
-        TipDiagramSpec(
-          TipDiagramKind.pairCombo,
-          iconA: Icons.edit_note,
-          iconB: Icons.brightness_6,
-        ),
+        'roughLayerRescue',
         l10n.tipsRoughLayerRescueTitle,
         l10n.tipsRoughLayerRescueDesc,
       ),
       _Tip(
-        TipDiagramSpec(TipDiagramKind.lineArtExtraction),
+        'lineArtExtraction',
         l10n.tipsLineArtExtractionTitle,
         l10n.tipsLineArtExtractionDesc,
       ),
       _Tip(
-        TipDiagramSpec(TipDiagramKind.lineColorModes),
+        'lineColorUsage',
         l10n.tipsLineColorUsageTitle,
         l10n.tipsLineColorUsageDesc,
       ),
       _Tip(
-        TipDiagramSpec(TipDiagramKind.blushGradient),
+        'blushAutofill',
         l10n.tipsBlushAutofillTitle,
         l10n.tipsBlushAutofillDesc,
       ),
       _Tip(
-        TipDiagramSpec(
-          TipDiagramKind.pairCombo,
-          iconA: Icons.checkroom_outlined,
-          iconB: Icons.grid_on,
-        ),
+        'stockingDenier',
         l10n.tipsStockingDenierTitle,
         l10n.tipsStockingDenierDesc,
       ),
@@ -563,117 +411,69 @@ List<_TipCategory> _buildTipCategories(AppLocalizations l10n) => [
     title: l10n.tipsCategoryEffects,
     icon: Icons.auto_awesome_outlined,
     tips: [
+      _Tip('rainNoise', l10n.tipsRainNoiseTitle, l10n.tipsRainNoiseDesc),
       _Tip(
-        TipDiagramSpec(
-          TipDiagramKind.pairCombo,
-          iconA: Icons.water_drop,
-          iconB: Icons.blur_on,
-        ),
-        l10n.tipsRainNoiseTitle,
-        l10n.tipsRainNoiseDesc,
-      ),
-      _Tip(
-        TipDiagramSpec(
-          TipDiagramKind.pairCombo,
-          iconA: Icons.auto_awesome,
-          iconB: Icons.tv,
-        ),
+        'texturePrismVhs',
         l10n.tipsTexturePrismVhsTitle,
         l10n.tipsTexturePrismVhsDesc,
       ),
       _Tip(
-        TipDiagramSpec(
-          TipDiagramKind.pairCombo,
-          iconA: Icons.timeline,
-          iconB: Icons.groups_outlined,
-        ),
+        'partKeyframeGroup',
         l10n.tipsPartKeyframeGroupTitle,
         l10n.tipsPartKeyframeGroupDesc,
       ),
       _Tip(
-        TipDiagramSpec(
-          TipDiagramKind.pairCombo,
-          iconA: Icons.border_color,
-          iconB: Icons.movie_filter_outlined,
-        ),
+        'outlineAnimeStyle',
         l10n.tipsOutlineAnimeStyleTitle,
         l10n.tipsOutlineAnimeStyleDesc,
       ),
       _Tip(
-        TipDiagramSpec(TipDiagramKind.pressureCurve, iconA: Icons.tune),
+        'levelsToneCurve',
         l10n.tipsLevelsToneCurveTitle,
         l10n.tipsLevelsToneCurveDesc,
       ),
       _Tip(
-        TipDiagramSpec(
-          TipDiagramKind.pairCombo,
-          iconA: Icons.show_chart,
-          iconB: Icons.filter_vintage,
-        ),
+        'toneCurveSepia',
         l10n.tipsToneCurveSepiaTitle,
         l10n.tipsToneCurveSepiaDesc,
       ),
       _Tip(
-        TipDiagramSpec(TipDiagramKind.cameraKeyframe),
+        'cameraLensBlur',
         l10n.tipsCameraLensBlurTitle,
         l10n.tipsCameraLensBlurDesc,
       ),
       _Tip(
-        TipDiagramSpec(
-          TipDiagramKind.pairCombo,
-          iconA: Icons.layers_outlined,
-          iconB: Icons.groups_outlined,
-        ),
+        'webmCommonLayer',
         l10n.tipsWebmCommonLayerTitle,
         l10n.tipsWebmCommonLayerDesc,
       ),
       _Tip(
-        TipDiagramSpec(TipDiagramKind.mirrorLayout),
+        'leftHandedWorkspace',
         l10n.tipsLeftHandedWorkspaceTitle,
         l10n.tipsLeftHandedWorkspaceDesc,
       ),
       _Tip(
-        TipDiagramSpec(
-          TipDiagramKind.pairCombo,
-          iconA: Icons.layers,
-          iconB: Icons.checklist,
-        ),
+        'blendModeUsage',
         l10n.tipsBlendModeUsageTitle,
         l10n.tipsBlendModeUsageDesc,
       ),
       _Tip(
-        TipDiagramSpec(
-          TipDiagramKind.pairCombo,
-          iconA: Icons.panorama_fish_eye,
-          iconB: Icons.color_lens,
-        ),
+        'fisheyeChromatic',
         l10n.tipsFisheyeChromaticTitle,
         l10n.tipsFisheyeChromaticDesc,
       ),
       _Tip(
-        TipDiagramSpec(
-          TipDiagramKind.pairCombo,
-          iconA: Icons.highlight_alt,
-          iconB: Icons.remove_red_eye,
-        ),
+        'lensDistortion',
         l10n.tipsLensDistortionTitle,
         l10n.tipsLensDistortionDesc,
       ),
       _Tip(
-        TipDiagramSpec(
-          TipDiagramKind.pairCombo,
-          iconA: Icons.brightness_medium,
-          iconB: Icons.layers,
-        ),
+        'sphereShading',
         l10n.tipsSphereShadingTitle,
         l10n.tipsSphereShadingDesc,
       ),
       _Tip(
-        TipDiagramSpec(
-          TipDiagramKind.pairCombo,
-          iconA: Icons.landscape_outlined,
-          iconB: Icons.person_outline,
-        ),
+        'backgroundBlend',
         l10n.tipsBackgroundBlendTitle,
         l10n.tipsBackgroundBlendDesc,
       ),
@@ -684,72 +484,52 @@ List<_TipCategory> _buildTipCategories(AppLocalizations l10n) => [
     icon: Icons.ios_share_outlined,
     tips: [
       _Tip(
-        TipDiagramSpec(TipDiagramKind.exportFormat),
+        'exportFormat',
         l10n.tipsExportFormatTitle,
         l10n.tipsExportFormatDesc,
       ),
       _Tip(
-        TipDiagramSpec(TipDiagramKind.gestureShortcut, iconA: Icons.bolt),
+        'gestureShortcut',
         l10n.tipsGestureShortcutTitle,
         l10n.tipsGestureShortcutDesc,
       ),
       _Tip(
-        TipDiagramSpec(TipDiagramKind.performanceGauge),
+        'lowSpecSettings',
         l10n.tipsLowSpecSettingsTitle,
         l10n.tipsLowSpecSettingsDesc,
       ),
       _Tip(
-        TipDiagramSpec(
-          TipDiagramKind.pairCombo,
-          iconA: Icons.filter_alt,
-          iconB: Icons.folder,
-        ),
+        'seriesPresetFolder',
         l10n.tipsSeriesPresetFolderTitle,
         l10n.tipsSeriesPresetFolderDesc,
       ),
       _Tip(
-        TipDiagramSpec(
-          TipDiagramKind.pairCombo,
-          iconA: Icons.grid_view,
-          iconB: Icons.blur_linear,
-        ),
+        'mosaicChromatic',
         l10n.tipsMosaicChromaticTitle,
         l10n.tipsMosaicChromaticDesc,
       ),
       _Tip(
-        TipDiagramSpec(
-          TipDiagramKind.pairCombo,
-          iconA: Icons.grid_on,
-          iconB: Icons.grain,
-        ),
+        'pixelToneRetro',
         l10n.tipsPixelToneRetroTitle,
         l10n.tipsPixelToneRetroDesc,
       ),
       _Tip(
-        TipDiagramSpec(
-          TipDiagramKind.pairCombo,
-          iconA: Icons.blur_on,
-          iconB: Icons.brightness_low,
-        ),
+        'blurVignetteBg',
         l10n.tipsBlurVignetteBgTitle,
         l10n.tipsBlurVignetteBgDesc,
       ),
       _Tip(
-        TipDiagramSpec(TipDiagramKind.effectFilter),
+        'sepiaVignette',
         l10n.tipsSepiaVignetteTitle,
         l10n.tipsSepiaVignetteDesc,
       ),
       _Tip(
-        TipDiagramSpec(TipDiagramKind.deviceTransfer),
+        'transferDevice',
         l10n.tipsTransferDeviceTitle,
         l10n.tipsTransferDeviceDesc,
       ),
       _Tip(
-        TipDiagramSpec(
-          TipDiagramKind.pairCombo,
-          iconA: Icons.palette,
-          iconB: Icons.sync_alt,
-        ),
+        'transferCustomization',
         l10n.tipsTransferCustomizationTitle,
         l10n.tipsTransferCustomizationDesc,
       ),
@@ -766,11 +546,6 @@ class _TipListTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    // 図解は一覧の時点では表示しない（ポップアップを開いてから表示する）。
-    // 40×40の小さな領域に押し込めて表示すると、画面全体を模した図解が
-    // つぶれて崩れて見えるうえ、60件超の一覧すべてを常時描画するのは
-    // 無駄が大きいため、詳細ポップアップ（_TipDetailDialog）側でのみ描画する。
-    // カード自体は影付きで浮かせ、電球アイコンのバッジを添える。
     return Padding(
       padding: EdgeInsets.only(bottom: 6),
       child: Material(
@@ -864,8 +639,7 @@ class _TipDetailDialogState extends State<_TipDetailDialog> {
   /// ページ数を概算し、そのページ数へ均等に近い分量で配分し直す（＝
   /// どのページも中身の詰まった1ページとして成立するようにする）。改行
   /// （段落）の区切りを優先して尊重し、1段落だけで目標分量を超える場合は
-  /// そのまま1ページにする。どのページにも図解を併記するため、文章だけの
-  /// ページより少し広めの上限にしている。
+  /// そのまま1ページにする。
   static List<String> _splitIntoPages(String text) {
     const maxCharsPerPage = 220;
     final paragraphs = text
@@ -915,11 +689,6 @@ class _TipDetailDialogState extends State<_TipDetailDialog> {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final totalPages = _textPages.length;
-    // 図解を「画面をちゃんと再現したミニスクリーン」として見せられる
-    // よう、以前の固定84pxの帯から大きく拡大した。ダイアログ自体の
-    // サイズも画面幅・高さに応じて可変にする（以前は360×420の固定
-    // サイズで、insetPadding分を差し引くと横幅360dp未満の端末では
-    // 既にはみ出していた）。
     final screenSize = MediaQuery.sizeOf(context);
     final dialogWidth = (screenSize.width - 32).clamp(280.0, 480.0);
     final dialogHeight = (screenSize.height - 64).clamp(420.0, 680.0);
@@ -946,65 +715,57 @@ class _TipDetailDialogState extends State<_TipDetailDialog> {
                 Column(
                   children: [
                     Expanded(
-                      child: PageView(
+                      child: PageView.builder(
                         controller: _pageController,
+                        itemCount: totalPages,
                         onPageChanged: (p) => setState(() => _page = p),
-                        children: [
-                          for (final page in _textPages)
-                            Padding(
-                              padding: const EdgeInsets.fromLTRB(20, 40, 20, 8),
-                              // タイトルは上寄せ・図解は中央寄せ・本文は下寄せに
-                              // なるよう、縦方向をExpandedで区切って配分する。
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  // タイトル（上寄せ、くらむぼんフォント）。
-                                  Text(
-                                    widget.tip.title,
-                                    style: TextStyle(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.w700,
-                                      fontFamily: 'Kuramubon',
-                                      fontFamilyFallback: kHeadingFontFallback,
-                                      color: AccentTextTheme.of(context),
-                                    ),
+                        itemBuilder: (context, index) {
+                          final capture = tipCaptureFor(widget.tip.id, index);
+                          return SingleChildScrollView(
+                            padding: const EdgeInsets.fromLTRB(20, 48, 20, 16),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  widget.tip.title,
+                                  style: TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w700,
+                                    fontFamily: 'Kuramubon',
+                                    fontFamilyFallback: kHeadingFontFallback,
+                                    color: AccentTextTheme.of(context),
                                   ),
-                                  const SizedBox(height: 10),
-                                  // 図解（中央寄せ。すべてのページで併記する、
-                                  // 文章だけのページを作らない）。画面を再現する
-                                  // 図解ほど縦横比が意味を持つため、AspectRatioで
-                                  // 一定比率を保ちつつダイアログ幅いっぱいに広げる。
-                                  Expanded(
-                                    flex: 6,
-                                    child: Center(
-                                      child: AspectRatio(
-                                        aspectRatio: 15 / 11,
-                                        child: TipDiagram(widget.tip.diagram),
+                                ),
+                                if (capture != null) ...[
+                                  const SizedBox(height: 12),
+                                  Center(
+                                    child: ConstrainedBox(
+                                      constraints: BoxConstraints(
+                                        maxHeight: dialogHeight * .48,
                                       ),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 10),
-                                  // 本文（下寄せ。ページ内に収まらない分量は
-                                  // スクロールできる）。
-                                  Expanded(
-                                    flex: 4,
-                                    child: Align(
-                                      alignment: Alignment.bottomLeft,
-                                      child: SingleChildScrollView(
-                                        child: Text(
-                                          page,
-                                          style: const TextStyle(
-                                            fontSize: 13,
-                                            height: 1.5,
-                                          ),
+                                      child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(8),
+                                        child: Image.asset(
+                                          capture,
+                                          fit: BoxFit.contain,
+                                          semanticLabel: widget.tip.title,
                                         ),
                                       ),
                                     ),
                                   ),
                                 ],
-                              ),
+                                const SizedBox(height: 12),
+                                Text(
+                                  _textPages[index],
+                                  style: const TextStyle(
+                                    fontSize: 13,
+                                    height: 1.5,
+                                  ),
+                                ),
+                              ],
                             ),
-                        ],
+                          );
+                        },
                       ),
                     ),
                     if (totalPages > 1)
@@ -1095,8 +856,8 @@ class _TipCategory {
 }
 
 class _Tip {
-  final TipDiagramSpec diagram;
+  final String id;
   final String title;
   final String description;
-  const _Tip(this.diagram, this.title, this.description);
+  const _Tip(this.id, this.title, this.description);
 }

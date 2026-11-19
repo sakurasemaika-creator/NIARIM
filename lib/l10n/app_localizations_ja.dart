@@ -2054,7 +2054,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get tipsTimelineMarkerDesc =>
-      'シーンは「開始〜終了フレームの範囲」を扱う機能ですが、タイムスタンプは「その一瞬」にコメントを付けてワンタップで移動できる機能です。「120フレーム目で効果音」「180フレーム目は口パク『あ』」のように、同じシーンの範囲内に複数のタイムスタンプを打っておけば、音と映像のタイミング合わせが格段にやりやすくなります。';
+      'タイムスタンプはフレームにメモを残す機能です。登録時に色を選ぶと、フレームの上に小さな三角が表示されます。三角をタップするとメモが開き、フレーム番号をタップするとその位置に移動します。長押しでメモの編集や削除ができます。';
 
   @override
   String get tipsCommunityYoutubeTitle => '作品広場への投稿はYouTube経由です';
@@ -10396,4 +10396,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get timelineAddTrackRowTooltip => 'トラックに行を追加';
+
+  @override
+  String get keyframePreviewGestureHint => 'プレビューをドラッグして移動。2本指で拡大・縮小、回転できます。';
 }

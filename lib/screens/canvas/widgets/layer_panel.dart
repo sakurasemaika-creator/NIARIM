@@ -648,8 +648,9 @@ class _LayerPanelState extends State<LayerPanel> {
                                     ? l10n.layerPanelHideLayerTooltip
                                     : l10n.layerPanelShowLayerTooltip,
                                 child: GestureDetector(
-                                  onTap: () =>
-                                      context.read<ProjectService>().updateLayer(
+                                  onTap: () => context
+                                      .read<ProjectService>()
+                                      .updateLayer(
                                         projectId: widget.projectId,
                                         sceneId: widget.sceneId,
                                         frameIndex: widget.frameIndex,
@@ -764,7 +765,9 @@ class _LayerPanelState extends State<LayerPanel> {
                             // 三点メニュー・ゴミ箱は各レイヤーの右側に配置する
                             // （対象レイヤーが常に明確になり、選択状態に依存しない）。
                             Tooltip(
-                              message: MaterialLocalizations.of(context).showMenuTooltip,
+                              message: MaterialLocalizations.of(
+                                context,
+                              ).showMenuTooltip,
                               child: GestureDetector(
                                 key: ValueKey('canvasLayerMenu_${layer.id}'),
                                 onTap: () =>
@@ -805,8 +808,11 @@ class _LayerPanelState extends State<LayerPanel> {
                               message: l10n.commonDelete,
                               child: GestureDetector(
                                 onTap: _canDeleteLayerRow(layer, layers)
-                                    ? () =>
-                                          _deleteLayerRow(context, layer, layers)
+                                    ? () => _deleteLayerRow(
+                                        context,
+                                        layer,
+                                        layers,
+                                      )
                                     : null,
                                 child: Icon(
                                   Icons.delete_outline,
@@ -1112,6 +1118,10 @@ class _LayerPanelState extends State<LayerPanel> {
                 );
                 showLayerGroupKeyframeSheet(
                   context,
+                  projects: context.read<ProjectService>(),
+                  projectId: widget.projectId,
+                  sceneId: widget.sceneId,
+                  groupId: group.id,
                   groupName: group.name,
                   initialKeyframes: group.keyframes,
                   currentFrame: widget.frameIndex,
@@ -2100,6 +2110,9 @@ class _LayerPanelState extends State<LayerPanel> {
                   showLayerKeyframeSheet(
                     context,
                     layer: layer,
+                    projects: context.read<ProjectService>(),
+                    projectId: widget.projectId,
+                    sceneId: widget.sceneId,
                     currentFrame: widget.frameIndex,
                     totalFrames:
                         context
@@ -2160,6 +2173,10 @@ class _LayerPanelState extends State<LayerPanel> {
                       );
                       showLayerGroupKeyframeSheet(
                         context,
+                        projects: context.read<ProjectService>(),
+                        projectId: widget.projectId,
+                        sceneId: widget.sceneId,
+                        groupId: group.id,
                         groupName: group.name,
                         initialKeyframes: group.keyframes,
                         currentFrame: widget.frameIndex,

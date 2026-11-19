@@ -133,20 +133,14 @@ void main() {
     expect(tileButton, findsOneWidget);
     await tester.tap(tileButton);
     await _settle(tester);
-    final slider = find.byKey(const Key('communityTileSizeQuickSlider'));
-    expect(slider, findsOneWidget);
-    tester.widget<Slider>(slider).onChanged!(320);
-    await tester.pump();
-    final l10n = AppLocalizations.of(
-      tester.element(find.byType(Scaffold).last),
-    )!;
-    await tester.tap(find.text(l10n.commonSave).last);
-    await _shot(tester, root, '08_community_pc_user_override_320');
+    final l10n = AppLocalizations.of(tester.element(tileButton))!;
+    await tester.tap(find.text(l10n.homeViewModeLarge).last);
+    await _shot(tester, root, '08_community_pc_user_override_large');
     expect(
-      (await SharedPreferences.getInstance()).getDouble(
-        'community.tileMinWidth.v1',
+      (await SharedPreferences.getInstance()).getString(
+        'community.tileSize.v2',
       ),
-      320,
+      'large',
     );
     tester.view.physicalSize = const Size(820, 1180);
     await _shot(tester, root, '09_community_tablet_preserves_user_override');

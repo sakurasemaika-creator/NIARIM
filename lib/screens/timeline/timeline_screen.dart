@@ -24,6 +24,7 @@ import 'package:video_player/video_player.dart';
 
 import '../../utils/immersive_mode.dart';
 import '../../utils/app_error_reporter.dart';
+import '../../widgets/keyframe_preview.dart';
 import '../../widgets/action_beside_or_below.dart';
 import '../../widgets/name_entry_dialog.dart';
 import '../../widgets/pc_workspace.dart';
@@ -432,7 +433,6 @@ class _TimelineScreenState extends State<TimelineScreen> {
   late final ScrollController _imageScrollCtrl;
   late final ScrollController _textScrollCtrl;
   late final ScrollController _cameraScrollCtrl;
-  late final ScrollController _markerScrollCtrl;
   late final ScrollController _commonLayerScrollCtrl;
   late final ScrollController _effectFilterScrollCtrl;
   bool _syncingScroll = false;
@@ -672,7 +672,6 @@ class _TimelineScreenState extends State<TimelineScreen> {
     _imageScrollCtrl = ScrollController();
     _textScrollCtrl = ScrollController();
     _cameraScrollCtrl = ScrollController();
-    _markerScrollCtrl = ScrollController();
     _commonLayerScrollCtrl = ScrollController();
     _effectFilterScrollCtrl = ScrollController();
 
@@ -709,7 +708,6 @@ class _TimelineScreenState extends State<TimelineScreen> {
     _imageScrollCtrl,
     _textScrollCtrl,
     _cameraScrollCtrl,
-    _markerScrollCtrl,
     _commonLayerScrollCtrl,
     _effectFilterScrollCtrl,
     ..._rowScrollCtrls.values,
@@ -1278,11 +1276,11 @@ class _TimelineScreenState extends State<TimelineScreen> {
     // 各種タイムライン行：デフォルトではプレビュー・
     // フレーム一覧のみを表示し、それぞれ中身（共通レイヤー・
     // テキスト・画像・動画・音源・カメラキーフレーム・
-    // タイムスタンプ・演出フィルター）が1つでも追加された行だけを
+    // 演出フィルター）が1つでも追加された行だけを
     // 表示する。最後の1件を削除すれば、その行だけ最初と同じく
     // 非表示に戻る。
     // 表示順：フレーム・シーン・共通レイヤー・テキスト・画像・動画・
-    // 音源・カメラ・タイムスタンプ・演出フィルター・エンドカードの順。
+    // 音源・カメラ・演出フィルター・エンドカードの順。
     // プレビュー欄をドラッグハンドルで縮めた分だけ、この一覧が
     // スクロールで広く見られるようにExpanded+スクロールにしている。
     Expanded(
@@ -1329,7 +1327,6 @@ class _TimelineScreenState extends State<TimelineScreen> {
                   addColor: ThemeService.activeColorScheme.tertiary,
                 ),
                 _buildCameraTrack(),
-                _buildMarkerTrack(),
                 _buildEffectFilterTrack(),
                 _buildEndCardTrack(),
               ],
@@ -3564,14 +3561,19 @@ class _TimelineScreenState extends State<TimelineScreen> {
                             ),
                             if (!_isSceneMultiSelect)
                               Tooltip(
-                                message: MaterialLocalizations.of(context)
-                                    .showMenuTooltip,
+                                message: MaterialLocalizations.of(
+                                  context,
+                                ).showMenuTooltip,
                                 child: GestureDetector(
-                                  key: ValueKey('timelineSceneMenu_${scene.id}'),
+                                  key: ValueKey(
+                                    'timelineSceneMenu_${scene.id}',
+                                  ),
                                   behavior: HitTestBehavior.opaque,
                                   onTap: () => _showSceneMenu(scene, scenes),
                                   child: const Padding(
-                                    padding: EdgeInsets.symmetric(horizontal: 2),
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: 2,
+                                    ),
                                     child: Icon(Icons.more_vert, size: 14),
                                   ),
                                 ),
@@ -4104,12 +4106,23 @@ class _TimelineScreenState extends State<TimelineScreen> {
       widget.projectId,
     );
     final frameListSceneId = _selectedSceneId;
+    final timestamps = <int, List<TimelineMarker>>{};
+    if (frameListSceneId != null) {
+      for (final marker in projectService.timelineMarkersOf(
+        widget.projectId,
+        frameListSceneId,
+      )) {
+        (timestamps[marker.frameIndex] ??= []).add(marker);
+      }
+    }
+    final markerHeight = timestamps.isEmpty ? 0.0 : 22.0;
+
     // 中央寄せは_currentFrameNotifierのリスナー（_onCurrentFrameChanged）で
     // 行う。以前はここで呼んでいたが、buildの中でスクロールという副作用を
     // 起こすのは筋が悪く、再生中に画面全体を作り直さなくなると呼ばれなく
     // なるという問題もあった。
     return SizedBox(
-      height: _isFrameCursorActive ? 92 : 50,
+      height: (_isFrameCursorActive ? 92 : 50) + markerHeight,
       child: Stack(
         clipBehavior: Clip.none,
         children: [
@@ -4117,7 +4130,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
             left: 0,
             right: 0,
             bottom: 0,
-            height: 50,
+            height: 50 + markerHeight,
             child: Container(
               decoration: BoxDecoration(
                 border: Border.symmetric(
@@ -4153,7 +4166,6 @@ class _TimelineScreenState extends State<TimelineScreen> {
                                     ? const NeverScrollableScrollPhysics()
                                     : const ClampingScrollPhysics(),
                                 padding: EdgeInsets.symmetric(
-                                  vertical: 4,
                                   horizontal: sidePadding,
                                 ),
                                 itemCount: total,
@@ -4173,7 +4185,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                                             frameListSceneId,
                                             index,
                                           );
-                                  return GestureDetector(
+                                  final frame = GestureDetector(
                                     key: ValueKey('timelineFrameCell$index'),
                                     onTap: () {
                                       if (_isFrameCursorActive) {
@@ -4323,43 +4335,68 @@ class _TimelineScreenState extends State<TimelineScreen> {
                                       ),
                                     ),
                                   );
+                                  return Column(
+                                    children: [
+                                      if (markerHeight > 0)
+                                        SizedBox(
+                                          height: markerHeight,
+                                          child: timestamps[index] == null
+                                              ? null
+                                              : _buildMarkerPin(
+                                                  timestamps[index]!,
+                                                ),
+                                        ),
+                                      Expanded(
+                                        child: Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                            vertical: 4,
+                                          ),
+                                          child: frame,
+                                        ),
+                                      ),
+                                    ],
+                                  );
                                 },
                               ),
                               _buildFrameEndButton(
                                 total,
                                 sidePadding,
                                 constraints.maxWidth,
+                                markerHeight: markerHeight,
                               ),
                               // 画面中央に固定表示する赤枠。フレーム一覧側が
                               // スクロールして現在位置のフレームをここへ合わせる。
                               IgnorePointer(
-                                child: Center(
-                                  child: Container(
-                                    key: const Key(
-                                      'timelineCurrentFrameOutline',
-                                    ),
-                                    width: _frameW,
-                                    height: 40,
-                                    alignment: _frameMoveCursorPos == total
-                                        ? Alignment.centerRight
-                                        : Alignment.centerLeft,
-                                    decoration: BoxDecoration(
-                                      border: Border.all(
-                                        color: ThemeService
-                                            .activeColorScheme
-                                            .error,
-                                        width: 3,
+                                child: Padding(
+                                  padding: EdgeInsets.only(top: markerHeight),
+                                  child: Center(
+                                    child: Container(
+                                      key: const Key(
+                                        'timelineCurrentFrameOutline',
                                       ),
-                                      borderRadius: BorderRadius.circular(3),
+                                      width: _frameW,
+                                      height: 40,
+                                      alignment: _frameMoveCursorPos == total
+                                          ? Alignment.centerRight
+                                          : Alignment.centerLeft,
+                                      decoration: BoxDecoration(
+                                        border: Border.all(
+                                          color: ThemeService
+                                              .activeColorScheme
+                                              .error,
+                                          width: 3,
+                                        ),
+                                        borderRadius: BorderRadius.circular(3),
+                                      ),
+                                      child: _isFrameCursorActive
+                                          ? Container(
+                                              width: 3,
+                                              color: Theme.of(
+                                                context,
+                                              ).colorScheme.primary,
+                                            )
+                                          : null,
                                     ),
-                                    child: _isFrameCursorActive
-                                        ? Container(
-                                            width: 3,
-                                            color: Theme.of(
-                                              context,
-                                            ).colorScheme.primary,
-                                          )
-                                        : null,
                                   ),
                                 ),
                               ),
@@ -4378,13 +4415,18 @@ class _TimelineScreenState extends State<TimelineScreen> {
             ),
           ),
           // 移動・貼り付けモード中：吹き出しプレビューをフレーム一覧の上に表示
-          if (_isFrameCursorActive) _buildFrameCursorBubble(),
+          if (_isFrameCursorActive) _buildFrameCursorBubble(markerHeight),
         ],
       ),
     );
   }
 
-  Widget _buildFrameEndButton(int total, double padding, double viewportWidth) {
+  Widget _buildFrameEndButton(
+    int total,
+    double padding,
+    double viewportWidth, {
+    required double markerHeight,
+  }) {
     final colors = ThemeService.activeColorScheme;
     final l10n = AppLocalizations.of(context)!;
     return AnimatedBuilder(
@@ -4394,7 +4436,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
         if (left >= viewportWidth) return const SizedBox.shrink();
         return Positioned(
           left: left,
-          top: 4,
+          top: 4 + markerHeight,
           bottom: 4,
           width: _cellW,
           child: child!,
@@ -4428,14 +4470,14 @@ class _TimelineScreenState extends State<TimelineScreen> {
     );
   }
 
-  Widget _buildFrameCursorBubble() {
+  Widget _buildFrameCursorBubble(double markerHeight) {
     // 移動モードは_selectedFrameIndices、貼り付けモードはクリップボードの件数を使う
     final count = _isFramePasteMode
         ? (_frameClipboard?.indices.length ?? 0)
         : _selectedFrameIndices.length;
     final cardCount = count.clamp(1, 3);
     return Positioned(
-      bottom: 50,
+      bottom: 50 + markerHeight,
       left: _trackLabelWidth,
       right: 0,
       child: Center(
@@ -4770,6 +4812,15 @@ class _TimelineScreenState extends State<TimelineScreen> {
 
   static const double _trackLabelWidth = 64;
 
+  BoxDecoration get _trackRowDivider => BoxDecoration(
+    border: Border(
+      bottom: BorderSide(
+        color: Theme.of(context).colorScheme.outlineVariant,
+        width: .75,
+      ),
+    ),
+  );
+
   Widget _buildTrackLabel(IconData icon, String label) {
     return Container(
       // 56dpだとアイコン12＋間隔2＋左右の余白8を引いて文字に34dpしか
@@ -4899,6 +4950,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
     return Container(
       height: _materialTrackHeight,
       color: Theme.of(context).colorScheme.surfaceContainerLow,
+      foregroundDecoration: _trackRowDivider,
       child: Row(
         children: [
           // 行名タップで名称変更（「タイムライン左側の素材種別名は
@@ -4926,7 +4978,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
                         right: 4,
                         top: 4,
                         child: Tooltip(
-                          message: AppLocalizations.of(context)!.timelineAddTrackRowTooltip,
+                          message: AppLocalizations.of(
+                            context,
+                          )!.timelineAddTrackRowTooltip,
                           child: GestureDetector(
                             onTap: () => _addTrackRow(type),
                             child: Container(
@@ -5586,8 +5640,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
           Column(
             children: [
               for (final r in rows)
-                SizedBox(
+                Container(
                   height: 32,
+                  foregroundDecoration: _trackRowDivider,
                   child: _buildTrackLabel(
                     r.layer.type == LayerType.watermark
                         ? Icons.branding_watermark
@@ -5619,8 +5674,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
                         child: Column(
                           children: [
                             for (final r in rows)
-                              SizedBox(
+                              Container(
                                 height: 32,
+                                foregroundDecoration: _trackRowDivider,
                                 child: Stack(
                                   children: [
                                     Row(
@@ -5992,6 +6048,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
     return Container(
       height: 32,
       color: Theme.of(context).colorScheme.surfaceContainerLow,
+      foregroundDecoration: _trackRowDivider,
       child: Row(
         children: [
           _buildTrackLabel(Icons.camera_alt, l10n.timelineCameraTrackLabel),
@@ -6009,7 +6066,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
                       right: 4,
                       top: 4,
                       child: Tooltip(
-                        message: AppLocalizations.of(context)!.timelineAddCameraKfTooltip,
+                        message: AppLocalizations.of(
+                          context,
+                        )!.timelineAddCameraKfTooltip,
                         child: GestureDetector(
                           onTap: () => _addCameraKf(),
                           child: Container(
@@ -6166,134 +6225,83 @@ class _TimelineScreenState extends State<TimelineScreen> {
   /// こちらは「その瞬間の記録・移動」用のため、タップの意味も
   /// （カメラ＝編集ダイアログを開く、こちら＝その場へジャンプする）で
   /// あえて分けている。編集・削除は長押しから行う。
-  Widget _buildMarkerTrack() {
-    final l10n = AppLocalizations.of(context)!;
-    final total = _totalFrames;
-    final sceneId = _selectedSceneId;
-    final markers = sceneId == null
-        ? const <TimelineMarker>[]
-        : context.watch<ProjectService>().timelineMarkersOf(
-            widget.projectId,
-            sceneId,
-          );
-    // タイムスタンプが1件もない間は非表示にする。最初の1件は
-    // ツールバーのタイムスタンプアイコンから追加できる。
-    if (markers.isEmpty) return const SizedBox.shrink();
-    final markersByFrame = <int, List<TimelineMarker>>{};
-    for (final marker in markers) {
-      (markersByFrame[marker.frameIndex] ??= []).add(marker);
-    }
-    return Container(
-      height: 32,
-      color: Theme.of(context).colorScheme.surfaceContainerLow,
-      child: Row(
-        children: [
-          _buildTrackLabel(
-            Icons.push_pin_outlined,
-            l10n.timelineMarkerTrackLabel,
-          ),
-          Expanded(
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                final padding = _trackSidePadding(constraints.maxWidth);
-                return Stack(
-                  children: [
-                    _buildTrackGrid(_markerScrollCtrl, total, padding),
-                    ...markersByFrame.entries.map(
-                      (entry) =>
-                          _buildMarkerPin(entry.key, entry.value, padding),
-                    ),
-                    Positioned(
-                      right: 4,
-                      top: 4,
-                      child: Tooltip(
-                        message: l10n.timelineMarkerAddDialogTitle(_currentFrame + 1),
-                        child: GestureDetector(
-                          onTap: () => _showAddMarkerDialog(),
-                          child: Container(
-                            width: 20,
-                            height: 20,
-                            decoration: BoxDecoration(
-                              color: ThemeService.activeColorScheme.secondary
-                                  .withValues(alpha: 0.8),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Icon(
-                              Icons.add,
-                              size: 14,
-                              color: ThemeService.activeColorScheme.onSurface,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                );
-              },
+  Widget _buildMarkerPin(List<TimelineMarker> markers) {
+    final frame = markers.first.frameIndex;
+    final labels = [
+      for (final marker in markers)
+        marker.comment.isEmpty ? 'F${frame + 1}' : marker.comment,
+    ];
+    final scheme = Theme.of(context).colorScheme;
+    return MenuAnchor(
+      style: MenuStyle(
+        minimumSize: WidgetStatePropertyAll(const Size(100, 0)),
+        maximumSize: WidgetStatePropertyAll(
+          Size(math.min(300, MediaQuery.sizeOf(context).width - 24), 210),
+        ),
+      ),
+      menuChildren: [
+        MenuItemButton(
+          onPressed: () => setState(() => _currentFrame = frame),
+          child: Text('F${frame + 1}'),
+        ),
+        for (final (i, marker) in markers.indexed)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.arrow_drop_down,
+                  color: marker.color == null
+                      ? scheme.primary
+                      : Color(marker.color!),
+                ),
+                Flexible(child: Text(labels[i])),
+              ],
             ),
           ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildMarkerPin(
-    int frameIndex,
-    List<TimelineMarker> markers,
-    double padding,
-  ) {
-    final markerLabels = markers
-        .map(
-          (marker) =>
-              marker.comment.isEmpty ? 'F${frameIndex + 1}' : marker.comment,
-        )
-        .toList();
-    final colors = ThemeService.activeColorScheme;
-    return AnimatedBuilder(
-      animation: _markerScrollCtrl,
-      builder: (ctx, child) {
-        final scrollOffset = _markerScrollCtrl.hasClients
-            ? _markerScrollCtrl.offset
-            : 0.0;
-        final cx = padding + frameIndex * _cellW + _cellW / 2 - scrollOffset;
-        return Positioned(
-          left: cx - 7,
-          top: 9,
-          child: GestureDetector(
-            // タップ一発でその場所へジャンプする（タイムスタンプの主目的）。
-            onTap: () => setState(() => _currentFrame = frameIndex),
-            onLongPress: () => _editMarkerAtFrame(markers, markerLabels),
-            onSecondaryTap: () => _editMarkerAtFrame(markers, markerLabels),
-            child: Tooltip(
-              message: markerLabels.join('\n'),
-              triggerMode: TooltipTriggerMode.manual,
-              child: Container(
-                width: 14,
-                height: 14,
-                decoration: BoxDecoration(
-                  color: colors.secondary,
-                  shape: BoxShape.circle,
-                  border: Border.all(color: colors.onSurface, width: 1.5),
-                  boxShadow: [
-                    BoxShadow(
-                      color: colors.onSurface.withValues(alpha: 0.3),
-                      blurRadius: 2,
+      ],
+      builder: (context, controller, _) => Semantics(
+        button: true,
+        label: labels.join('\n'),
+        child: GestureDetector(
+          key: ValueKey('timelineTimestamp-$frame'),
+          behavior: HitTestBehavior.opaque,
+          onTap: () {
+            if (controller.isOpen) {
+              controller.close();
+            } else {
+              controller.open();
+            }
+          },
+          onLongPress: () => _editMarkerAtFrame(markers, labels),
+          onSecondaryTap: () => _editMarkerAtFrame(markers, labels),
+          child: Center(
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  for (final marker in markers.take(3))
+                    Icon(
+                      Icons.arrow_drop_down,
+                      size: markers.length == 1 ? 23 : 17,
+                      color: marker.color == null
+                          ? scheme.primary
+                          : Color(marker.color!),
                     ),
-                  ],
-                ),
-                alignment: Alignment.center,
-                child: markers.length == 1
-                    ? null
-                    : Icon(
-                        Icons.more_horiz,
-                        size: 10,
-                        color: colors.onSecondary,
-                      ),
+                  if (markers.length > 3)
+                    Icon(
+                      Icons.more_horiz,
+                      size: 12,
+                      color: scheme.onSurfaceVariant,
+                    ),
+                ],
               ),
             ),
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 
@@ -6323,101 +6331,138 @@ class _TimelineScreenState extends State<TimelineScreen> {
     if (mounted && selected != null) _showEditMarkerDialog(selected);
   }
 
-  void _showAddMarkerDialog() {
-    final l10n = AppLocalizations.of(context)!;
-    final sceneId = _selectedSceneId;
-    if (sceneId == null) return;
-    final ctrl = TextEditingController();
-    showDialog(
-      context: context,
-      builder: (ctx) => DisposeOnUnmount(
-        controller: ctrl,
-        builder: (ctx) => AlertDialog(
-          insetPadding: typingDialogInsetPadding(ctx),
-          title: Text(l10n.timelineMarkerAddDialogTitle(_currentFrame + 1)),
-          content: TextField(
-            controller: ctrl,
-            autofocus: true,
-            decoration: InputDecoration(
-              hintText: l10n.timelineMarkerCommentHint,
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: Text(l10n.commonCancel),
-            ),
-            FilledButton(
-              onPressed: () {
-                context.read<ProjectService>().addTimelineMarker(
-                  widget.projectId,
-                  sceneId,
-                  _currentFrame,
-                  ctrl.text,
-                );
-                Navigator.pop(ctx);
-              },
-              child: Text(l10n.commonAdd),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  void _showAddMarkerDialog() => _showMarkerDialog();
 
-  void _showEditMarkerDialog(TimelineMarker m) {
+  void _showEditMarkerDialog(TimelineMarker marker) =>
+      _showMarkerDialog(marker: marker);
+
+  void _showMarkerDialog({TimelineMarker? marker}) {
     final l10n = AppLocalizations.of(context)!;
     final sceneId = _selectedSceneId;
     if (sceneId == null) return;
-    final ctrl = TextEditingController(text: m.comment);
-    showDialog(
+    final projects = context.read<ProjectService>();
+    final frame = marker?.frameIndex ?? _currentFrame;
+    final ctrl = TextEditingController(text: marker?.comment);
+    final scheme = Theme.of(context).colorScheme;
+    final colors = <int?>[
+      null, // The theme's accent, including after switching themes.
+      0xFFDA405F,
+      0xFFE39926,
+      0xFF408A59,
+      0xFF387AC4,
+      0xFF8854B2,
+    ];
+    var color = marker?.color;
+    if (!colors.contains(color)) colors.add(color);
+    showDialog<void>(
       context: context,
       builder: (ctx) => DisposeOnUnmount(
         controller: ctrl,
-        builder: (ctx) => AlertDialog(
-          insetPadding: typingDialogInsetPadding(ctx),
-          title: Text(l10n.timelineMarkerEditDialogTitle(m.frameIndex + 1)),
-          content: TextField(
-            controller: ctrl,
-            autofocus: true,
-            decoration: InputDecoration(
-              hintText: l10n.timelineMarkerCommentHint,
+        builder: (ctx) => StatefulBuilder(
+          builder: (ctx, update) => AlertDialog(
+            insetPadding: typingDialogInsetPadding(ctx),
+            scrollable: true,
+            title: Text(
+              marker == null
+                  ? l10n.timelineMarkerAddDialogTitle(frame + 1)
+                  : l10n.timelineMarkerEditDialogTitle(frame + 1),
             ),
-          ),
-          actions: [
-            IconButton(
-              icon: Icon(
-                Icons.delete,
-                color: ThemeService.activeColorScheme.error,
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                TextField(
+                  controller: ctrl,
+                  autofocus: true,
+                  minLines: 1,
+                  maxLines: 3,
+                  decoration: InputDecoration(
+                    hintText: l10n.timelineMarkerCommentHint,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(l10n.timelineColorLabel),
+                Wrap(
+                  children: [
+                    for (final swatch in colors)
+                      Semantics(
+                        selected: swatch == color,
+                        child: IconButton(
+                          key: ValueKey('timelineTimestampColor-$swatch'),
+                          tooltip: swatch == null
+                              ? l10n.widgetColorFollowTheme
+                              : '#${(swatch & 0xffffff).toRadixString(16).padLeft(6, '0').toUpperCase()}',
+                          onPressed: () => update(() => color = swatch),
+                          icon: CircleAvatar(
+                            radius: 13,
+                            backgroundColor: swatch == null
+                                ? scheme.primary
+                                : Color(swatch),
+                            foregroundColor:
+                                (swatch == null
+                                            ? scheme.primary
+                                            : Color(swatch))
+                                        .computeLuminance() >
+                                    .4
+                                ? Colors.black
+                                : Colors.white,
+                            child: swatch == color
+                                ? const Icon(Icons.check, size: 16)
+                                : null,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ],
+            ),
+            actions: [
+              if (marker != null)
+                IconButton(
+                  icon: Icon(Icons.delete, color: scheme.error),
+                  tooltip: l10n.commonDelete,
+                  onPressed: () async {
+                    if (!await confirmDelete(ctx) || !ctx.mounted) return;
+                    projects.removeTimelineMarker(
+                      widget.projectId,
+                      sceneId,
+                      marker.id,
+                    );
+                    Navigator.pop(ctx);
+                  },
+                ),
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: Text(l10n.commonCancel),
               ),
-              tooltip: l10n.commonDelete,
-              onPressed: () async {
-                if (!await confirmDelete(context)) return;
-                if (!mounted) return;
-                context.read<ProjectService>().removeTimelineMarker(
-                  widget.projectId,
-                  sceneId,
-                  m.id,
-                );
-                if (ctx.mounted) Navigator.pop(ctx);
-              },
-            ),
-            TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: Text(l10n.commonCancel),
-            ),
-            FilledButton(
-              onPressed: () {
-                context.read<ProjectService>().updateTimelineMarker(
-                  widget.projectId,
-                  sceneId,
-                  m.copyWith(comment: ctrl.text),
-                );
-                Navigator.pop(ctx);
-              },
-              child: Text(l10n.commonSave),
-            ),
-          ],
+              FilledButton(
+                onPressed: () {
+                  if (marker == null) {
+                    projects.addTimelineMarker(
+                      widget.projectId,
+                      sceneId,
+                      frame,
+                      ctrl.text,
+                      color: color,
+                    );
+                  } else {
+                    projects.updateTimelineMarker(
+                      widget.projectId,
+                      sceneId,
+                      TimelineMarker(
+                        id: marker.id,
+                        frameIndex: marker.frameIndex,
+                        comment: ctrl.text,
+                        color: color,
+                      ),
+                    );
+                  }
+                  Navigator.pop(ctx);
+                },
+                child: Text(marker == null ? l10n.commonAdd : l10n.commonSave),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -6447,8 +6492,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
           for (final (row, e) in effects.indexed)
             GestureDetector(
               onTap: _showEffectFilterDialog,
-              child: SizedBox(
+              child: Container(
                 height: 32,
+                foregroundDecoration: _trackRowDivider,
                 child: Row(
                   children: [
                     _buildTrackLabel(
@@ -6538,6 +6584,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
           child: Container(
             height: 32,
             color: Theme.of(context).colorScheme.surfaceContainerLow,
+            foregroundDecoration: _trackRowDivider,
             padding: const EdgeInsets.symmetric(horizontal: 8),
             child: Row(
               children: [
@@ -6618,19 +6665,26 @@ class _TimelineScreenState extends State<TimelineScreen> {
   void _addCameraKf() {
     final sceneId = _selectedSceneId;
     if (sceneId == null) return;
-    final ps = context.read<ProjectService>();
-    final existing = ps.cameraKeyframesOf(widget.projectId, sceneId);
-    if (existing.any((k) => k.frameIndex == _currentFrame)) return;
-    ps.addCameraKeyframe(
-      widget.projectId,
-      sceneId,
-      CameraKeyframe(frameIndex: _currentFrame),
-    );
+    final projects = context.read<ProjectService>();
+    final keys = projects.cameraKeyframesOf(widget.projectId, sceneId);
+    final existing = keys
+        .where((key) => key.frameIndex == _currentFrame)
+        .firstOrNull;
+    if (existing != null) {
+      _showEditCameraKfDialog(existing);
+      return;
+    }
+    final draft = CameraEngine()
+        .valueAt(keys, _currentFrame)
+        .copyWith(frameIndex: _currentFrame);
+    _showEditCameraKfDialog(draft, isNew: true);
   }
 
-  void _showEditCameraKfDialog(CameraKeyframe kf) {
+  void _showEditCameraKfDialog(CameraKeyframe kf, {bool isNew = false}) {
     final sceneId = _selectedSceneId;
     if (sceneId == null) return;
+    final projects = context.read<ProjectService>();
+    final totalFrames = _totalFrames;
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -6638,16 +6692,30 @@ class _TimelineScreenState extends State<TimelineScreen> {
         projectId: widget.projectId,
         sceneId: sceneId,
         kf: kf,
-        totalFrames: _totalFrames,
-        onDelete: (currentFrameIndex) => context
-            .read<ProjectService>()
-            .removeCameraKeyframe(widget.projectId, sceneId, currentFrameIndex),
-        onSave: (newKf) => context.read<ProjectService>().updateCameraKeyframe(
-          widget.projectId,
-          sceneId,
-          kf.frameIndex,
-          newKf,
-        ),
+        totalFrames: totalFrames,
+        onDelete: isNew
+            ? null
+            : () => projects.removeCameraKeyframe(
+                widget.projectId,
+                sceneId,
+                kf.frameIndex,
+              ),
+        onSave: (newKf) {
+          if (isNew) {
+            final exists = projects
+                .cameraKeyframesOf(widget.projectId, sceneId)
+                .any((key) => key.frameIndex == newKf.frameIndex);
+            if (exists) return false;
+            projects.addCameraKeyframe(widget.projectId, sceneId, newKf);
+            return true;
+          }
+          return projects.updateCameraKeyframe(
+            widget.projectId,
+            sceneId,
+            kf.frameIndex,
+            newKf,
+          );
+        },
       ),
     );
   }
@@ -10617,7 +10685,7 @@ class _CameraKfSheet extends StatefulWidget {
   final String sceneId;
   final CameraKeyframe kf;
   final int totalFrames;
-  final ValueChanged<int> onDelete;
+  final VoidCallback? onDelete;
   final bool Function(CameraKeyframe newKf) onSave;
   const _CameraKfSheet({
     required this.projectId,
@@ -10642,45 +10710,23 @@ class _CameraKfSheetState extends State<_CameraKfSheet> {
 
   void _update(CameraKeyframe newKf) => setState(() => _kf = newKf);
 
-  /// カメラ操作の見え方をスライダー操作だけに頼らず確認できるようにする
-  /// プレビュー。現在編集中のキーフレーム位置における実際の
-  /// 見え方（カメラ変換適用後の
-  /// フレーム）をその場でプレビュー表示し、スライダー操作と同時に確認できる
-  /// ようにする。確定するまで編集中のキーフレームはシート内だけに反映する。
-  Widget _buildLivePreview(ProjectService ps, List<CameraKeyframe> savedKeys) {
-    final tileManager = ps.tileManagerOf(widget.projectId);
-    final stacked = ps.stackedLayersOf(
-      widget.projectId,
-      widget.sceneId,
-      _kf.frameIndex,
-    );
-    final previewKeys = [
-      for (final keyframe in savedKeys)
-        if (keyframe.frameIndex != widget.kf.frameIndex &&
-            keyframe.frameIndex != _kf.frameIndex)
-          keyframe,
-      _kf,
-    ]..sort((a, b) => a.frameIndex.compareTo(b.frameIndex));
-    return Container(
-      margin: EdgeInsets.fromLTRB(16, 4, 16, 8),
-      height: 140,
-      // Around the picture, the canvas's surroundings; _TimelinePreview
-      // shows the project's background behind the picture itself.
-      decoration: BoxDecoration(
-        color: ThemeService.activeColorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(6),
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: _TimelinePreview(
-        backgroundColor: _projectBackgroundOf(ps, widget.projectId),
-        tileManager: tileManager,
-        layers: stacked.layers,
-        maskGroups: stacked.maskGroups,
-        sceneId: widget.sceneId,
-        frameIndex: _kf.frameIndex,
-        cameraKeyframes: previewKeys,
-        layerHomes: ps.layerHomesOf(widget.projectId),
-        groups: ps.layerGroupsOf(widget.projectId, widget.sceneId),
+  late CameraKeyframe _gestureStart = _kf;
+
+  void _transform(Offset delta, double scale, double degrees) {
+    final start = _gestureStart;
+    final zoom = (start.zoom * scale).clamp(.1, 5.0);
+    final rotation = (start.rotation + degrees + 180) % 360 - 180;
+    // Moving the picture translates the camera in the opposite direction.
+    // Undo the display rotation and zoom to turn that into canvas pixels.
+    final theta = -rotation * math.pi / 180;
+    final dx = (delta.dx * math.cos(theta) - delta.dy * math.sin(theta)) / zoom;
+    final dy = (delta.dx * math.sin(theta) + delta.dy * math.cos(theta)) / zoom;
+    _update(
+      start.copyWith(
+        x: (start.x - dx).clamp(-1920.0, 1920.0),
+        y: (start.y - dy).clamp(-1080.0, 1080.0),
+        zoom: zoom,
+        rotation: rotation,
       ),
     );
   }
@@ -10690,10 +10736,12 @@ class _CameraKfSheetState extends State<_CameraKfSheet> {
     final l10n = AppLocalizations.of(context)!;
     final ps = context.watch<ProjectService>();
     final savedKeys = ps.cameraKeyframesOf(widget.projectId, widget.sceneId);
+    final isNew = widget.onDelete == null;
     final occupied =
-        _kf.frameIndex != widget.kf.frameIndex &&
+        (isNew || _kf.frameIndex != widget.kf.frameIndex) &&
         savedKeys.any((keyframe) => keyframe.frameIndex == _kf.frameIndex);
     final changed =
+        isNew ||
         _kf.frameIndex != widget.kf.frameIndex ||
         _kf.x != widget.kf.x ||
         _kf.y != widget.kf.y ||
@@ -10701,9 +10749,9 @@ class _CameraKfSheetState extends State<_CameraKfSheet> {
         _kf.rotation != widget.kf.rotation;
     return DraggableScrollableSheet(
       expand: false,
-      initialChildSize: 0.6,
-      minChildSize: 0.4,
-      maxChildSize: 0.9,
+      initialChildSize: 0.91,
+      minChildSize: 0.65,
+      maxChildSize: 0.96,
       builder: (ctx, scrollCtrl) => Column(
         children: [
           Container(
@@ -10730,33 +10778,50 @@ class _CameraKfSheetState extends State<_CameraKfSheet> {
                     ),
                   ),
                 ),
-                IconButton(
-                  icon: Icon(
-                    Icons.delete,
-                    color: ThemeService.activeColorScheme.error,
+                if (widget.onDelete != null)
+                  IconButton(
+                    icon: Icon(
+                      Icons.delete,
+                      color: ThemeService.activeColorScheme.error,
+                    ),
+                    tooltip: l10n.commonDelete,
+                    onPressed: () async {
+                      if (!await confirmDelete(context)) return;
+                      if (!context.mounted) return;
+                      Navigator.pop(context);
+                      widget.onDelete!();
+                    },
                   ),
-                  tooltip: l10n.commonDelete,
-                  onPressed: () async {
-                    if (!await confirmDelete(context)) return;
-                    if (!context.mounted) return;
-                    Navigator.pop(context);
-                    widget.onDelete(widget.kf.frameIndex);
-                  },
-                ),
                 FilledButton(
                   onPressed: changed && !occupied
                       ? () {
                           if (widget.onSave(_kf)) Navigator.pop(context);
                         }
                       : null,
-                  child: Text(l10n.commonApply),
+                  child: Text(isNew ? l10n.commonAdd : l10n.commonApply),
                 ),
               ],
             ),
           ),
           const Divider(height: 1),
-          _buildLivePreview(ps, savedKeys),
           Expanded(
+            flex: 5,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: KeyframePreview(
+                projects: ps,
+                projectId: widget.projectId,
+                sceneId: widget.sceneId,
+                frameIndex: _kf.frameIndex,
+                camera: _kf,
+                onGestureStart: () => _gestureStart = _kf,
+                onTransform: _transform,
+              ),
+            ),
+          ),
+          const KeyframePreviewHint(),
+          Expanded(
+            flex: 4,
             child: ListView(
               controller: scrollCtrl,
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),

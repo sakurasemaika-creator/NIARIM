@@ -655,7 +655,7 @@
   "tipsVerticalPixelFontTitle": "Mezcla metraje real con dibujo a mano para «acción real × anime»",
   "tipsVerticalPixelFontDesc": "Un truco solo posible porque esta app es a la vez una app de ilustración y un editor de vídeo. Coloca un clip de vídeo real en la línea de tiempo, y luego usa el papel cebolla en una capa encima para dibujar a mano líneas de velocidad o un personaje sobre el metraje, creando un vídeo mixto donde la animación dibujada a mano se superpone a la acción real.",
   "tipsTimelineMarkerTitle": "Usa marcas de tiempo para sincronizar sonido y bocas",
-  "tipsTimelineMarkerDesc": "Las escenas manejan un rango —un fotograma de inicio y de fin—, mientras que las marcas de tiempo señalan un instante concreto con un comentario al que puedes saltar de un toque. Colocar varias marcas de tiempo dentro de la misma escena —«efecto de sonido en el fotograma 120», «boca 'a' en el fotograma 180»— hace que sincronizar el sonido con la imagen sea muchísimo más fácil.",
+  "tipsTimelineMarkerDesc": "Una marca de tiempo añade una nota a un fotograma. Elige un color al crearla y aparecerá un triángulo pequeño encima del fotograma. Toca el triángulo para leer la nota y el número de fotograma para ir a esa posición. Mantén pulsado el triángulo para editar o eliminar la nota.",
   "tipsCommunityYoutubeTitle": "Publicar en la Plaza de Obras se hace a través de YouTube",
   "tipsCommunityYoutubeDesc": "Al publicar en la Plaza de Obras, tu obra se publica a través de YouTube. NIARIM no transmite, recopila ni almacena el propio archivo de vídeo en los servidores del desarrollador. Si configuras el vídeo como «No listado» en YouTube, no aparecerá en los listados públicos de YouTube y solo se publicará dentro de la Plaza de Obras.",
   "tipsToolbarCustomizeTitle": "Reordena u oculta herramientas de la barra para reducir el recorrido del dedo",
@@ -3927,5 +3927,6 @@
   "layerPanelShowLayerTooltip": "Mostrar capa",
   "layerPanelHideLayerTooltip": "Ocultar capa",
   "layerPanelMergeDownTooltip": "Combinar con la capa inferior",
-  "timelineAddTrackRowTooltip": "Añadir una fila a la pista"
+  "timelineAddTrackRowTooltip": "Añadir una fila a la pista",
+  "keyframePreviewGestureHint": "Arrastra la vista previa para mover. Pellizca o gira con dos dedos para cambiar el tamaño o rotar."
 }

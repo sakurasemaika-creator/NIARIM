@@ -8,11 +8,11 @@ import '../../../l10n/creative_preset_labels.dart';
 import '../../../widgets/docked_panel_scope.dart';
 import '../../../services/tone_service.dart';
 import '../../../services/theme_service.dart';
-import '../../../config/font_fallback.dart';
 import '../../../widgets/first_use_tooltip.dart';
 import '../canvas_screen.dart';
 import 'brush_panel.dart';
 import 'tone_panel.dart';
+import 'tone_fill_grid.dart';
 import 'stamp_panel.dart';
 import '../../../widgets/fit_or_icon_tab_bar.dart';
 
@@ -233,59 +233,25 @@ class LassoFillToneSheet extends StatelessWidget {
           ),
         ),
         Expanded(
-          child: GridView.builder(
-            padding: const EdgeInsets.symmetric(horizontal: 8),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 4,
-              crossAxisSpacing: 4,
-              mainAxisSpacing: 4,
-            ),
-            itemCount: tones.length,
-            itemBuilder: (context, index) {
-              final tone = tones[index];
-              final isSelected = useTone && lastLassoTone?.id == tone.id;
-              return GestureDetector(
-                onTap: () {
+          child: CustomScrollView(
+            primary: false,
+            slivers: [
+              SliverToneFillGrid(
+                tones: tones,
+                selectedId: useTone ? lastLassoTone?.id : null,
+                labelOf: (tone) => creativePresetLabel(
+                  l10n,
+                  tone.name,
+                  builtIn: toneService.isBuiltIn(tone.id),
+                ),
+                onSelected: (tone) {
                   toneService.setLassoUseTone(true);
                   toneService.setLastLassoTone(tone);
                   toneService.selectTone(tone.id);
                   onClose();
                 },
-                child: Container(
-                  decoration: BoxDecoration(
-                    border: Border.all(
-                      color: isSelected
-                          ? Theme.of(context).colorScheme.primary
-                          : ThemeService.activeColorScheme.onSurfaceVariant,
-                      width: isSelected ? 2 : 1,
-                    ),
-                    borderRadius: BorderRadius.circular(4),
-                    color: ThemeService.activeColorScheme.onSurfaceVariant,
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(Icons.grid_on, size: 16),
-                      const SizedBox(height: 2),
-                      Text(
-                        creativePresetLabel(
-                          l10n,
-                          tone.name,
-                          builtIn: toneService.isBuiltIn(tone.id),
-                        ),
-                        style: const TextStyle(
-                          fontSize: 7,
-                          fontFamily: 'Kuramubon',
-                          fontFamilyFallback: kHeadingFontFallback,
-                        ),
-                        textAlign: TextAlign.center,
-                        maxLines: 2,
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            },
+              ),
+            ],
           ),
         ),
       ],

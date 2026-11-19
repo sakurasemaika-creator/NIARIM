@@ -9,18 +9,21 @@ class TimelineMarker {
   final String id;
   final int frameIndex;
   final String comment;
+  final int? color;
 
   const TimelineMarker({
     required this.id,
     required this.frameIndex,
     this.comment = '',
+    this.color,
   });
 
-  TimelineMarker copyWith({int? frameIndex, String? comment}) {
+  TimelineMarker copyWith({int? frameIndex, String? comment, int? color}) {
     return TimelineMarker(
       id: id,
       frameIndex: frameIndex ?? this.frameIndex,
       comment: comment ?? this.comment,
+      color: color ?? this.color,
     );
   }
 
@@ -28,11 +31,13 @@ class TimelineMarker {
     'id': id,
     'frameIndex': frameIndex,
     'comment': comment,
+    if (color != null) 'color': color,
   };
 
   factory TimelineMarker.fromJson(Map<String, dynamic> j) => TimelineMarker(
     id: j['id'] as String,
     frameIndex: j['frameIndex'] as int,
     comment: j['comment'] as String? ?? '',
+    color: j['color'] as int?,
   );
 }

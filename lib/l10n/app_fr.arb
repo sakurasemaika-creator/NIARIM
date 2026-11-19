@@ -655,7 +655,7 @@
   "tipsVerticalPixelFontTitle": "Mélangez images réelles et dessin à la main pour du « prise de vue réelle × anime »",
   "tipsVerticalPixelFontDesc": "Une astuce possible uniquement parce que cette app est à la fois une app d’illustration et un éditeur vidéo. Placez un clip vidéo réel sur la timeline, puis utilisez le papier calque sur un calque au-dessus pour dessiner à la main des traits de vitesse ou un personnage par-dessus les images — créant une vidéo mixte où une animation dessinée à la main se superpose à des prises de vue réelles.",
   "tipsTimelineMarkerTitle": "Utilisez les horodatages pour synchroniser le son et les mouvements de bouche",
-  "tipsTimelineMarkerDesc": "Les scènes gèrent une plage — une image de début et de fin —, tandis que les horodatages marquent un instant précis avec un commentaire vers lequel sauter d’un seul geste. Placer plusieurs horodatages dans la même scène — « effet sonore à l’image 120 », « bouche « a » à l’image 180 » — rend la synchronisation du son et de l’image bien plus facile.",
+  "tipsTimelineMarkerDesc": "Un horodatage ajoute une note à une image. Choisissez une couleur à sa création pour afficher un petit triangle au-dessus de l’image. Touchez le triangle pour lire la note, puis le numéro d’image pour accéder à cette position. Appuyez longuement sur le triangle pour modifier ou supprimer la note.",
   "tipsCommunityYoutubeTitle": "Publier sur la Place des œuvres se fait via YouTube",
   "tipsCommunityYoutubeDesc": "Lorsque vous publiez sur la Place des œuvres, votre création est publiée via YouTube. NIARIM ne transmet, ne collecte ni ne stocke le fichier vidéo lui-même sur les serveurs du développeur. Si vous réglez la vidéo sur « Non répertoriée » côté YouTube, elle n’apparaîtra pas dans les listes publiques de YouTube et ne sera publiée que sur la Place des œuvres.",
   "tipsToolbarCustomizeTitle": "Réorganisez ou masquez des outils de la barre pour réduire le trajet du doigt",
@@ -3927,5 +3927,6 @@
   "layerPanelShowLayerTooltip": "Afficher le calque",
   "layerPanelHideLayerTooltip": "Masquer le calque",
   "layerPanelMergeDownTooltip": "Fusionner avec le calque inférieur",
-  "timelineAddTrackRowTooltip": "Ajouter une ligne à la piste"
+  "timelineAddTrackRowTooltip": "Ajouter une ligne à la piste",
+  "keyframePreviewGestureHint": "Faites glisser l’aperçu pour déplacer. Pincez ou tournez avec deux doigts pour redimensionner ou faire pivoter."
 }

@@ -6,6 +6,7 @@ import '../../l10n/app_localizations.dart';
 import '../../services/community_preview_service.dart';
 import '../../services/community_service.dart';
 import '../../utils/color_contrast.dart';
+import '../../widgets/collection_tile_layout.dart';
 import 'community_edit_feedback.dart';
 import 'community_error_text.dart';
 import 'widgets/community_work_card.dart';
@@ -16,10 +17,12 @@ class CommunityBookmarkedTab extends StatelessWidget {
     super.key,
     required this.onBrowseWorks,
     required this.scrollController,
+    this.viewSize = CollectionViewSize.medium,
   });
 
   final VoidCallback onBrowseWorks;
   final ScrollController scrollController;
+  final CollectionViewSize viewSize;
 
   @override
   Widget build(BuildContext context) {
@@ -183,6 +186,7 @@ class CommunityBookmarkedTab extends StatelessWidget {
                       ),
                     ),
                   CommunityWorkGrid(
+                    viewSize: viewSize,
                     works: works,
                     bookmarkedIds: service.bookmarkedIds,
                     onTapWork: (work) =>

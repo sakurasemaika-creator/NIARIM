@@ -2036,7 +2036,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get tipsTimelineMarkerDesc =>
-      '场景处理的是“开始～结束帧的范围”，而时间戳则是为“那一瞬间”加上备注、并可一键跳转的功能。像“第120帧配音效”“第180帧对口型‘啊’”这样，在同一个场景范围内打上多个时间戳，就能大幅提升声音与画面对齐的效率。';
+      '时间戳可以在帧上留下备注。添加时选择颜色，帧上方就会显示一个小三角。点按三角可查看备注，再点按帧编号可跳转到该位置。长按三角可编辑或删除备注。';
 
   @override
   String get tipsCommunityYoutubeTitle => '投稿到作品广场需要通过YouTube';
@@ -10275,6 +10275,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get timelineAddTrackRowTooltip => '添加轨道行';
+
+  @override
+  String get keyframePreviewGestureHint => '拖动预览可移动。双指捏合或旋转可缩放或转动。';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -12309,7 +12312,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get tipsTimelineMarkerDesc =>
-      '場景處理的是「開始～結束影格的範圍」，而時間戳記則是為「那一瞬間」加上備註、並可一鍵跳轉的功能。像「第120格配音效」「第180格對嘴形『啊』」這樣，在同一個場景範圍內打上多個時間戳記，就能大幅提升聲音與畫面對齊的效率。';
+      '時間戳記可以在影格上留下備註。新增時選擇顏色，影格上方就會顯示一個小三角形。點一下三角形可查看備註，再點一下影格編號可跳至該位置。長按三角形可編輯或刪除備註。';
 
   @override
   String get tipsCommunityYoutubeTitle => '投稿到作品廣場需要透過YouTube';
@@ -20550,4 +20553,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get timelineAddTrackRowTooltip => '新增軌道列';
+
+  @override
+  String get keyframePreviewGestureHint => '拖曳預覽可移動。用雙指捏合或旋轉就能縮放或轉動。';
 }

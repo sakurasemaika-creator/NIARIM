@@ -1,5 +1,3 @@
-import 'package:niarim/services/theme_service.dart';
-
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
@@ -17,6 +15,7 @@ class TonePreviewThumb extends StatefulWidget {
   final Color color;
   final double size;
   final BoxShape shape;
+  final Color? background;
 
   const TonePreviewThumb({
     super.key,
@@ -24,6 +23,7 @@ class TonePreviewThumb extends StatefulWidget {
     required this.color,
     this.size = 32,
     this.shape = BoxShape.circle,
+    this.background,
   });
 
   @override
@@ -33,6 +33,7 @@ class TonePreviewThumb extends StatefulWidget {
 class _TonePreviewThumbState extends State<TonePreviewThumb> {
   static const int _textureSize = 64;
   ui.Image? _image;
+  int _loadVersion = 0;
 
   @override
   void initState() {
@@ -46,6 +47,8 @@ class _TonePreviewThumbState extends State<TonePreviewThumb> {
     if (old.tone?.id != widget.tone?.id ||
         old.tone?.texturePath != widget.tone?.texturePath ||
         old.tone?.pixelMode != widget.tone?.pixelMode ||
+        old.tone?.patternName != widget.tone?.patternName ||
+        old.tone?.name != widget.tone?.name ||
         old.color != widget.color) {
       _load();
     }
@@ -58,10 +61,15 @@ class _TonePreviewThumbState extends State<TonePreviewThumb> {
   }
 
   Future<void> _load() async {
+    final version = ++_loadVersion;
     final tone = widget.tone;
-    if (tone == null) return;
+    if (tone == null) {
+      _image?.dispose();
+      _image = null;
+      return;
+    }
     await ensureToneTextureLoaded(tone, size: _textureSize);
-    if (!mounted) return;
+    if (!mounted || version != _loadVersion) return;
     final mask = generateBuiltInToneTexture(tone, size: _textureSize);
     final rgba = Uint8List(mask.length);
     final r = (widget.color.r * 255).round();
@@ -79,7 +87,7 @@ class _TonePreviewThumbState extends State<TonePreviewThumb> {
       _textureSize,
       ui.PixelFormat.rgba8888,
       (img) {
-        if (!mounted) {
+        if (!mounted || version != _loadVersion) {
           img.dispose();
           return;
         }
@@ -98,14 +106,20 @@ class _TonePreviewThumbState extends State<TonePreviewThumb> {
       height: widget.size,
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
-        color: ThemeService.activeColorScheme.onSurface,
+        color: widget.background ?? Theme.of(context).colorScheme.onSurface,
         shape: widget.shape,
         borderRadius: widget.shape == BoxShape.rectangle
             ? BorderRadius.circular(6)
             : null,
         border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
       ),
-      child: _image == null ? null : RawImage(image: _image, fit: BoxFit.cover),
+      child: _image == null
+          ? null
+          : RawImage(
+              image: _image,
+              fit: BoxFit.cover,
+              filterQuality: FilterQuality.none,
+            ),
     );
   }
 }

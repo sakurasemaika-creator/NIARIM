@@ -66,7 +66,17 @@ class CollectionTileGridDelegate
 }
 
 /// 一覧の表示の大きさ（タイルでも詳細でも、大・中・小）。
-enum CollectionViewSize { large, medium, small }
+enum CollectionViewSize {
+  large,
+  medium,
+  small;
+
+  double get tileExtent => switch (this) {
+    large => kCollectionTileLargeExtent,
+    medium => kCollectionTileMediumExtent,
+    small => kCollectionTileSmallExtent,
+  };
+}
 
 /// 表示サイズ（小・中・大）のカードの基準の幅（スマホ）。タブレット・PCの
 /// 広い一覧では[collectionTileColumnCount]がそれぞれの幅に合わせ直す。
