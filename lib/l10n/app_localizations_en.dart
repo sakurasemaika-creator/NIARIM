@@ -1394,7 +1394,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpQuickToolDesc =>
-      'Register combinations of brushes and tools you use often, and cycle through them with a single button tap. Long-press or swipe up on the ↺ button on the canvas to open a management popup where you can add, reorder, and remove entries. Drag to change their order.';
+      'Register combinations of brushes and tools you use often, and cycle through them with a single button tap. Long-press or swipe up on the Quick Tool button (circular arrows) on the canvas to open a management popup where you can add, reorder, and remove entries. Drag to change their order.';
 
   @override
   String get helpLayerTitle => 'Layers';

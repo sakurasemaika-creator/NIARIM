@@ -1422,7 +1422,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get helpQuickToolDesc =>
-      'Enregistrez des combinaisons de pinceaux et d’outils que vous utilisez souvent, et faites défiler entre elles d’une simple pression sur un bouton. Faites un appui long ou balayez vers le haut sur le bouton ↺ du canevas pour ouvrir une fenêtre de gestion où ajouter, réorganiser et supprimer des entrées. Faites glisser pour changer leur ordre.';
+      'Enregistrez des combinaisons de pinceaux et d’outils que vous utilisez souvent, et faites défiler entre elles d’une simple pression sur un bouton. Faites un appui long ou balayez vers le haut sur le bouton Outil rapide (flèches circulaires) du canevas pour ouvrir une fenêtre de gestion où ajouter, réorganiser et supprimer des entrées. Faites glisser pour changer leur ordre.';
 
   @override
   String get helpLayerTitle => 'Calques';

@@ -1341,7 +1341,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get helpQuickToolDesc =>
-      '预先登记常用的画笔、工具组合，只需点击一个按钮即可依次切换。长按或向上滑动画布上的↺按钮，即可打开可以添加、排序、删除的管理弹窗。可通过拖动改变顺序。';
+      '预先登记常用的画笔、工具组合，只需点击一个按钮即可依次切换。长按或向上滑动画布上的快捷工具按钮（环形箭头），即可打开可以添加、排序、删除的管理弹窗。可通过拖动改变顺序。';
 
   @override
   String get helpLayerTitle => '图层';
@@ -11620,7 +11620,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get helpQuickToolDesc =>
-      '預先登記常用的畫筆、工具組合，只需點擊一個按鈕即可依序切換。長按或向上滑動畫布上的↺按鈕，即可開啟可以新增、排序、刪除的管理彈窗。可透過拖曳改變順序。';
+      '預先登記常用的畫筆、工具組合，只需點擊一個按鈕即可依序切換。長按或向上滑動畫布上的快速切換工具按鈕（環形箭頭），即可開啟可以新增、排序、刪除的管理彈窗。可透過拖曳改變順序。';
 
   @override
   String get helpLayerTitle => '圖層';

@@ -2574,7 +2574,7 @@ abstract class AppLocalizations {
   /// No description provided for @helpQuickToolDesc.
   ///
   /// In ja, this message translates to:
-  /// **'よく使うブラシ・ツールの組み合わせをあらかじめ登録しておき、ボタン一つで順番に切り替えられる機能です。キャンバス上の↺ボタンを長押しまたは上スワイプすると、登録・並べ替え・削除ができる管理ポップアップが開きます。ドラッグで並び順を変更できます。'**
+  /// **'よく使うブラシ・ツールの組み合わせをあらかじめ登録しておき、ボタン一つで順番に切り替えられる機能です。キャンバス上の「ツール早替え」ボタン（円形の矢印）を長押しまたは上スワイプすると、登録・並べ替え・削除ができる管理ポップアップが開きます。ドラッグで並び順を変更できます。'**
   String get helpQuickToolDesc;
 
   /// No description provided for @helpLayerTitle.

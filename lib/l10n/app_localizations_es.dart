@@ -1428,7 +1428,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get helpQuickToolDesc =>
-      'Registra combinaciones de pinceles y herramientas que uses a menudo, y alterna entre ellas con un solo toque de botón. Mantén pulsado o desliza hacia arriba el botón ↺ del lienzo para abrir un panel de gestión donde añadir, reordenar y eliminar entradas. Arrastra para cambiar su orden.';
+      'Registra combinaciones de pinceles y herramientas que uses a menudo, y alterna entre ellas con un solo toque de botón. Mantén pulsado o desliza hacia arriba el botón Herramienta rápida (flechas circulares) del lienzo para abrir un panel de gestión donde añadir, reordenar y eliminar entradas. Arrastra para cambiar su orden.';
 
   @override
   String get helpLayerTitle => 'Capas';

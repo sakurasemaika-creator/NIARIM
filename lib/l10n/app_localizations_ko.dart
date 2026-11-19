@@ -1361,7 +1361,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get helpQuickToolDesc =>
-      '자주 쓰는 브러시·도구 조합을 미리 등록해두고 버튼 하나로 순서대로 전환할 수 있는 기능입니다. 캔버스의 ↺ 버튼을 길게 누르거나 위로 스와이프하면 등록·순서 변경·삭제가 가능한 관리 팝업이 열립니다. 드래그로 순서를 바꿀 수 있습니다.';
+      '자주 쓰는 브러시·도구 조합을 미리 등록해두고 버튼 하나로 순서대로 전환할 수 있는 기능입니다. 캔버스의 빠른 도구 버튼(원형 화살표)을 길게 누르거나 위로 스와이프하면 등록·순서 변경·삭제가 가능한 관리 팝업이 열립니다. 드래그로 순서를 바꿀 수 있습니다.';
 
   @override
   String get helpLayerTitle => '레이어';
