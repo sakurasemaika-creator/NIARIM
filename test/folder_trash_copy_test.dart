@@ -671,7 +671,8 @@ void main() {
       await openFolderMenu(tester, '親');
       await tester.tap(find.text('名前・色を編集').last);
       await settle(tester);
-      final green = find.byTooltip('フォルダ色: #3DDC97');
+      // 色の名前は folderColorOptionSemanticsLabel（「フォルダ色 #3DDC97」）。
+      final green = find.byTooltip('フォルダ色 #3DDC97');
       final size = tester.getSize(green);
       expect(size.width, greaterThanOrEqualTo(48));
       expect(size.height, greaterThanOrEqualTo(48));
