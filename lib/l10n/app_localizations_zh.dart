@@ -10272,6 +10272,15 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get keyframePreviewGestureHint => '拖动预览可移动。双指捏合或旋转可缩放或转动。';
+
+  @override
+  String get settingsAccountDeletionTitle => '删除 NIARIM 账号';
+
+  @override
+  String get settingsAccountDeletionSubtitle => '前往官方网站办理';
+
+  @override
+  String get settingsAccountDeletionLinkFailed => '无法打开账号删除页面。';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -20544,4 +20553,13 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get keyframePreviewGestureHint => '拖曳預覽可移動。用雙指捏合或旋轉就能縮放或轉動。';
+
+  @override
+  String get settingsAccountDeletionTitle => '刪除 NIARIM 帳號';
+
+  @override
+  String get settingsAccountDeletionSubtitle => '前往官方網站辦理';
+
+  @override
+  String get settingsAccountDeletionLinkFailed => '無法開啟帳號刪除頁面。';
 }

@@ -3926,5 +3926,8 @@
   "layerPanelHideLayerTooltip": "隱藏圖層",
   "layerPanelMergeDownTooltip": "與下方圖層合併",
   "timelineAddTrackRowTooltip": "新增軌道列",
-  "keyframePreviewGestureHint": "拖曳預覽可移動。用雙指捏合或旋轉就能縮放或轉動。"
+  "keyframePreviewGestureHint": "拖曳預覽可移動。用雙指捏合或旋轉就能縮放或轉動。",
+  "settingsAccountDeletionTitle": "刪除 NIARIM 帳號",
+  "settingsAccountDeletionSubtitle": "前往官方網站辦理",
+  "settingsAccountDeletionLinkFailed": "無法開啟帳號刪除頁面。"
 }

@@ -3926,5 +3926,8 @@
   "layerPanelHideLayerTooltip": "Masquer le calque",
   "layerPanelMergeDownTooltip": "Fusionner avec le calque inférieur",
   "timelineAddTrackRowTooltip": "Ajouter une ligne à la piste",
-  "keyframePreviewGestureHint": "Faites glisser l’aperçu pour déplacer. Pincez ou tournez avec deux doigts pour redimensionner ou faire pivoter."
+  "keyframePreviewGestureHint": "Faites glisser l’aperçu pour déplacer. Pincez ou tournez avec deux doigts pour redimensionner ou faire pivoter.",
+  "settingsAccountDeletionTitle": "Supprimer votre compte NIARIM",
+  "settingsAccountDeletionSubtitle": "Continuer sur le site officiel",
+  "settingsAccountDeletionLinkFailed": "Impossible d’ouvrir la page de suppression du compte."
 }

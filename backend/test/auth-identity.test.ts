@@ -10,7 +10,7 @@ vi.mock("../src/lib/dynamo", async (original) => ({
 vi.mock("google-auth-library", () => ({
   OAuth2Client: class {
     async verifyIdToken() {
-      return { getPayload: () => ({ sub: "google-sub" }) };
+      return { getPayload: () => ({ sub: "google-sub", iat: 1500 }) };
     }
   },
 }));
@@ -43,6 +43,7 @@ describe("stable account identity", () => {
   it("joins the winning account after concurrent registration", async () => {
     send
       .mockResolvedValueOnce({})
+      .mockResolvedValueOnce({})
       .mockRejectedValueOnce(conflict())
       .mockResolvedValueOnce({ Item: lookup })
       .mockResolvedValueOnce({ Item: user });
@@ -52,7 +53,8 @@ describe("stable account identity", () => {
       .filter((c) => c instanceof TransactWriteCommand);
     expect(writes).toHaveLength(1);
     for (const action of writes[0].input.TransactItems ?? []) {
-      expect(action.Put?.ConditionExpression).toBe("attribute_not_exists(pk)");
+      if (action.Put) expect(action.Put.ConditionExpression).toBe("attribute_not_exists(pk)");
+      else expect(action.ConditionCheck?.ConditionExpression).toContain("rejectIssuedAtOrBefore");
     }
   });
 
@@ -88,8 +90,22 @@ describe("stable account identity", () => {
     expect(writes).toHaveLength(3);
     expect(
       writes.every((c) =>
-        c.input.TransactItems?.every((a) => a.Put?.ConditionExpression),
+        c.input.TransactItems?.every((a) => a.Put?.ConditionExpression || a.ConditionCheck?.ConditionExpression),
       ),
     ).toBe(true);
+  });
+
+  it("does not sign in a pending account or recreate it with a prior token", async () => {
+    send.mockResolvedValueOnce({ Item: { ...lookup, erasureReceipt: "pending" } });
+    await expect(authenticate("Bearer token")).rejects.toMatchObject({
+      code: "ACCOUNT_ERASURE_PENDING",
+    });
+    expect(send).toHaveBeenCalledTimes(1);
+    send
+      .mockResolvedValueOnce({})
+      .mockResolvedValueOnce({ Item: { rejectIssuedAtOrBefore: 1500 } });
+    await expect(authenticate("Bearer token")).rejects.toMatchObject({ statusCode: 401 });
+    send.mockResolvedValueOnce({ Item: { ...lookup, rejectIssuedAtOrBefore: 1500 } });
+    await expect(authenticate("Bearer token")).rejects.toMatchObject({ statusCode: 401 });
   });
 });

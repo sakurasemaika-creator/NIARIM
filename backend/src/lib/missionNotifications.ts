@@ -93,6 +93,11 @@ export async function recordMissionAchievement(
           },
           ConditionExpression: "attribute_not_exists(pk)",
         }},
+        ...(useStream ? [{ ConditionCheck: {
+          TableName: tableName(), Key: Keys.user(userId),
+          ConditionExpression: "itemType = :user AND attribute_not_exists(erasureReceipt)",
+          ExpressionAttributeValues: { ":user": "USER" },
+        } }] : []),
       ],
     }));
     // The durable event has already been committed. Push failure must not

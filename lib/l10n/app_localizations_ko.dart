@@ -10448,4 +10448,13 @@ class AppLocalizationsKo extends AppLocalizations {
   @override
   String get keyframePreviewGestureHint =>
       '미리보기를 드래그하여 이동하세요. 두 손가락으로 확대, 축소 또는 회전할 수 있습니다.';
+
+  @override
+  String get settingsAccountDeletionTitle => 'NIARIM 계정 삭제';
+
+  @override
+  String get settingsAccountDeletionSubtitle => '공식 사이트에서 진행';
+
+  @override
+  String get settingsAccountDeletionLinkFailed => '계정 삭제 페이지를 열 수 없습니다.';
 }

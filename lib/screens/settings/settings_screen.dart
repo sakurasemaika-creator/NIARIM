@@ -107,6 +107,27 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
+  Future<void> _openAccountDeletion() async {
+    final l10n = AppLocalizations.of(context)!;
+    final language = Localizations.localeOf(context).toLanguageTag();
+    final uri = Uri.https('niarim.miranima-studio.com', '/account-deletion/', {
+      'lang': language == 'zh' ? 'zh-Hans' : language,
+    });
+    var opened = false;
+    try {
+      opened = await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } catch (_) {
+      // Keep the settings screen available for retry.
+    }
+    if (!opened && mounted) {
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(content: Text(l10n.settingsAccountDeletionLinkFailed)),
+        );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final isPremium = context.watch<PremiumService>().isPremium;
@@ -254,6 +275,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
         subtitle: _supportEmail,
         keywords: 'サポート メール support contact help',
         onTap: _showSupport,
+        accent: Theme.of(context).colorScheme.primary,
+      ),
+      (
+        icon: Icons.person_remove_outlined,
+        title: l10n.settingsAccountDeletionTitle,
+        subtitle: l10n.settingsAccountDeletionSubtitle,
+        keywords: 'アカウント 退会 削除 delete account',
+        onTap: _openAccountDeletion,
         accent: Theme.of(context).colorScheme.primary,
       ),
     ];

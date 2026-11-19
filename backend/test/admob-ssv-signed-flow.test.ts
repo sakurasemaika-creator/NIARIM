@@ -208,7 +208,7 @@ describe("real ECDSA-signed AdMob reward callback through NIARIM API", () => {
       .filter((command) => command instanceof TransactWriteCommand);
     expect(txs).toHaveLength(1);
     const items = (txs[0] as TransactWriteCommand).input.TransactItems!;
-    expect(items).toHaveLength(5);
+    expect(items).toHaveLength(6);
     expect(items[0].Put?.Item?.transactionId).toBe(signedTransactionId);
     expect(items[0].Put?.ConditionExpression).toContain("attribute_not_exists");
     expect(items[1].Update?.ExpressionAttributeValues?.[":nonce"])
@@ -218,6 +218,7 @@ describe("real ECDSA-signed AdMob reward callback through NIARIM API", () => {
     expect(items[2].Update?.ExpressionAttributeValues?.[":limit"]).toBe(10);
     expect(items[3].Put?.Item?.deltaCoins).toBe(10);
     expect(items[4].Update?.ExpressionAttributeValues?.[":reward"]).toBe(10);
+    expect(items[5].ConditionCheck?.ConditionExpression).toContain("erasureReceipt");
   });
 
   it("signed unbound AdMob URL check succeeds while coin issuance remains disabled", async () => {

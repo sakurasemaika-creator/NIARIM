@@ -142,6 +142,11 @@ async function storeActivity(activity: Activity): Promise<void> {
         },
         ConditionExpression: "attribute_not_exists(pk)",
       } },
+      { ConditionCheck: {
+        TableName: currentTable, Key: Keys.user(owner),
+        ConditionExpression: "itemType = :user AND attribute_not_exists(erasureReceipt)",
+        ExpressionAttributeValues: { ":user": TABLE_ITEM_TYPE.User },
+      } },
     ] }));
   } catch (error) {
     // A removal/privacy change or an unexpired marker is a normal no-op.

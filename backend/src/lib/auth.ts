@@ -9,7 +9,7 @@ import {
 import { ddb, tableName, Keys } from "./dynamo";
 import type { GoogleSubLookupItem, MembershipTier, UserItem } from "./types";
 import { TABLE_ITEM_TYPE } from "./types";
-import { unauthorized } from "./response";
+import { conflict, unauthorized } from "./response";
 
 /**
  * Google IDトークンの検証＋NIARIM User IDの発行・再利用（4章）。
@@ -32,32 +32,8 @@ export interface AuthenticatedUser {
 export async function authenticate(
   authorizationHeader: string | undefined,
 ): Promise<AuthenticatedUser> {
-  if (!authorizationHeader?.startsWith("Bearer ")) {
-    unauthorized("Authorizationヘッダーが不正です");
-  }
-  const idToken = authorizationHeader.slice("Bearer ".length);
-  if (!idToken || idToken.length > 8192 || /[\r\n]/.test(idToken)) {
-    unauthorized("Authorizationヘッダーが不正です");
-  }
-
-  const clientId = process.env.GOOGLE_CLIENT_ID;
-  if (!clientId)
-    throw new Error("GOOGLE_CLIENT_ID環境変数が設定されていません");
-
-  let sub: string;
-  try {
-    const ticket = await oauthClient.verifyIdToken({
-      idToken,
-      audience: clientId,
-    });
-    const payload = ticket.getPayload();
-    if (!payload?.sub) unauthorized("IDトークンの検証に失敗しました");
-    sub = payload.sub;
-  } catch {
-    unauthorized("IDトークンの検証に失敗しました");
-  }
-
-  const user = await findOrCreateUser(sub);
+  const { sub, iat } = await verifyGoogleIdentity(authorizationHeader);
+  const user = await findOrCreateUser(sub, iat);
   return {
     niarimUserId: user.niarimUserId,
     googleSub: sub,
@@ -72,13 +48,40 @@ export async function authenticate(
   };
 }
 
+export async function verifyGoogleIdentity(authorizationHeader: string | undefined) {
+  if (!authorizationHeader?.startsWith("Bearer ")) {
+    unauthorized("Authorizationヘッダーが不正です");
+  }
+  const idToken = authorizationHeader.slice("Bearer ".length);
+  if (!idToken || idToken.length > 8192 || /[\r\n]/.test(idToken)) {
+    unauthorized("Authorizationヘッダーが不正です");
+  }
+
+  const clientId = process.env.GOOGLE_CLIENT_ID;
+  if (!clientId)
+    throw new Error("GOOGLE_CLIENT_ID環境変数が設定されていません");
+
+  try {
+    const ticket = await oauthClient.verifyIdToken({
+      idToken,
+      audience: clientId,
+    });
+    const payload = ticket.getPayload();
+    if (!payload?.sub) unauthorized("IDトークンの検証に失敗しました");
+    return payload;
+  } catch {
+    unauthorized("IDトークンの検証に失敗しました");
+  }
+
+}
+
 /**
  * `sub`からNIARIM User IDを引く。未登録なら新規発行する
  * （4章の「初回投稿時：Google sub → 未登録 → NIARIM User ID発行」）。
  * 会員種別（membershipTier）は課金基盤（未実装）と連携するまでの間、
  * 既定で'free'とする。
  */
-async function findOrCreateUser(sub: string): Promise<UserItem> {
+async function findOrCreateUser(sub: string, issuedAt: number): Promise<UserItem> {
   const lookupKey = Keys.googleSubLookup(sub);
   // 競合後も強い整合性で読み直す。読み取りの遅延を「未登録」と扱って
   // lookupを上書きすると、同じGoogleアカウントの履歴が別IDへ分裂する。
@@ -90,7 +93,21 @@ async function findOrCreateUser(sub: string): Promise<UserItem> {
         ConsistentRead: true,
       }),
     );
-    const existing = lookup.Item as GoogleSubLookupItem | undefined;
+    const existing = lookup.Item as (GoogleSubLookupItem & {
+      erasureReceipt?: string;
+      rejectIssuedAtOrBefore?: number;
+    }) | undefined;
+    if (existing?.erasureReceipt) {
+      conflict("アカウントの削除を処理しています", "ACCOUNT_ERASURE_PENDING");
+    }
+    const boundary = existing ? undefined : await ddb.send(new GetCommand({
+      TableName: tableName(), Key: Keys.accountErasureBoundary(sub), ConsistentRead: true,
+    }));
+    const rejectedBefore = existing?.rejectIssuedAtOrBefore ??
+      boundary?.Item?.rejectIssuedAtOrBefore;
+    if (typeof rejectedBefore === "number" && issuedAt <= rejectedBefore) {
+      unauthorized("アカウントが削除されました。もう一度ログインしてください");
+    }
     const niarimUserId = existing?.niarimUserId ?? generateNiarimUserId();
     if (existing) {
       const user = await getUser(niarimUserId);
@@ -107,11 +124,12 @@ async function findOrCreateUser(sub: string): Promise<UserItem> {
       followingCount: 0,
       createdAt: new Date().toISOString(),
     };
-    const newLookup: GoogleSubLookupItem = {
+    const newLookup = {
       itemType: TABLE_ITEM_TYPE.GoogleSubLookup,
       ...lookupKey,
       googleSub: sub,
       niarimUserId,
+      ...(typeof rejectedBefore === "number" ? { rejectIssuedAtOrBefore: rejectedBefore } : {}),
     };
 
     try {
@@ -125,7 +143,7 @@ async function findOrCreateUser(sub: string): Promise<UserItem> {
                   ConditionCheck: {
                     TableName: tableName(),
                     Key: lookupKey,
-                    ConditionExpression: "niarimUserId = :uid",
+                    ConditionExpression: "niarimUserId = :uid AND attribute_not_exists(erasureReceipt)",
                     ExpressionAttributeValues: { ":uid": niarimUserId },
                   },
                 }
@@ -136,6 +154,14 @@ async function findOrCreateUser(sub: string): Promise<UserItem> {
                     ConditionExpression: "attribute_not_exists(pk)",
                   },
                 },
+            ...(existing ? [] : [{
+              ConditionCheck: {
+                TableName: tableName(),
+                Key: Keys.accountErasureBoundary(sub),
+                ConditionExpression: "attribute_not_exists(rejectIssuedAtOrBefore) OR rejectIssuedAtOrBefore < :iat",
+                ExpressionAttributeValues: { ":iat": issuedAt },
+              },
+            }]),
             {
               Put: {
                 TableName: tableName(),
@@ -215,5 +241,6 @@ export async function getUser(
       ConsistentRead: true,
     }),
   );
-  return result.Item as UserItem | undefined;
+  const item = result.Item as UserItem | undefined;
+  return item?.erasureReceipt ? undefined : item;
 }

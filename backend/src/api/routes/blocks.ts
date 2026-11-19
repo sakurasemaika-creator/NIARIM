@@ -1,8 +1,8 @@
 import type { APIGatewayProxyEventV2 } from "aws-lambda";
 import { PutCommand } from "@aws-sdk/lib-dynamodb";
 import { ddb, tableName, Keys } from "../../lib/dynamo";
-import { authenticate } from "../../lib/auth";
-import { badRequest, created } from "../../lib/response";
+import { authenticate, getUser } from "../../lib/auth";
+import { badRequest, created, notFound } from "../../lib/response";
 import { parseJsonObject } from "../../lib/request";
 import type { BlockItem } from "../../lib/types";
 import { TABLE_ITEM_TYPE } from "../../lib/types";
@@ -33,6 +33,7 @@ export async function createBlock(event: APIGatewayProxyEventV2) {
   if (body.blockedUserId === auth.niarimUserId) {
     badRequest("自分自身をブロックすることはできません");
   }
+  if (!await getUser(body.blockedUserId)) notFound("アカウントが見つかりません");
 
   const now = new Date().toISOString();
   const block: BlockItem = {

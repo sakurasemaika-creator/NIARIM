@@ -3961,5 +3961,8 @@
   "layerPanelHideLayerTooltip": "Hide layer",
   "layerPanelMergeDownTooltip": "Merge with the layer below",
   "timelineAddTrackRowTooltip": "Add a track row",
-  "keyframePreviewGestureHint": "Drag the preview to move. Pinch or twist to resize or rotate."
+  "keyframePreviewGestureHint": "Drag the preview to move. Pinch or twist to resize or rotate.",
+  "settingsAccountDeletionTitle": "Delete your NIARIM account",
+  "settingsAccountDeletionSubtitle": "Continue on the official website",
+  "settingsAccountDeletionLinkFailed": "Could not open the account deletion page."
 }

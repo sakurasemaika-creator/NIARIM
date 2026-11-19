@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
 
@@ -25,6 +26,12 @@ export const Keys = {
   workDetail: (workId: string) => ({ pk: `WORK#${workId}`, sk: "DETAIL" }),
   user: (niarimUserId: string) => ({ pk: `USER#${niarimUserId}`, sk: "META" }),
   googleSubLookup: (sub: string) => ({ pk: `GOOGLESUB#${sub}`, sk: "META" }),
+  accountErasureJob: (receipt: string) => ({ pk: "ACCOUNT_ERASURE_QUEUE", sk: receipt }),
+  accountErasureReceipt: (receipt: string) => ({ pk: `ACCOUNT_ERASURE#${receipt}`, sk: "META" }),
+  accountErasureBoundary: (sub: string) => ({
+    pk: `ACCOUNT_ERASURE_BOUNDARY#${createHash("sha256").update(sub).digest("hex")}`,
+    sk: "META",
+  }),
   /** A Play purchase token is bound to a single account by its SHA256 hash. */
   playPurchaseToken: (hash: string) => ({ pk: `PLAY_PURCHASE#${hash}`, sk: "META" }),
   /** Reward entitlement is server-issued only; clients cannot write this key. */

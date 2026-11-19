@@ -10392,4 +10392,13 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get keyframePreviewGestureHint => 'プレビューをドラッグして移動。2本指で拡大・縮小、回転できます。';
+
+  @override
+  String get settingsAccountDeletionTitle => 'NIARIMアカウントを削除';
+
+  @override
+  String get settingsAccountDeletionSubtitle => '公式サイトで手続きする';
+
+  @override
+  String get settingsAccountDeletionLinkFailed => 'アカウント削除ページを開けませんでした。';
 }

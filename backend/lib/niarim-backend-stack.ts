@@ -437,6 +437,22 @@ export class NiarimBackendStack extends Stack {
       targets: [new targets.LambdaFunction(releaseFunction)],
     });
 
+    const accountErasureFunction = new NodejsFunction(this, "AccountErasureFunction", {
+      entry: path.join(__dirname, "../src/batch/accountErasure.ts"),
+      logRetention: FUNCTION_LOG_RETENTION,
+      handler: "handler",
+      runtime: lambda.Runtime.NODEJS_22_X,
+      memorySize: 256,
+      timeout: Duration.seconds(40),
+      environment: { TABLE_NAME: table.tableName },
+      bundling: { minify: true, sourceMap: false },
+    });
+    table.grantReadWriteData(accountErasureFunction);
+    new events.Rule(this, "AccountErasureMinuteRule", {
+      schedule: events.Schedule.rate(Duration.minutes(1)),
+      targets: [new targets.LambdaFunction(accountErasureFunction)],
+    });
+
     if (reportSecretArn) {
       const reportSecret = secretsmanager.Secret.fromSecretCompleteArn(
         this, "AdmobReportOAuthSecret", reportSecretArn,

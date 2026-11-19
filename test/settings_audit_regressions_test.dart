@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/models/canvas_dock_panel.dart';
@@ -23,7 +24,11 @@ void main() {
     ja = lookupAppLocalizations(const Locale('ja'));
   });
 
-  Future<void> pumpScreen(WidgetTester tester, Widget screen) async {
+  Future<void> pumpScreen(
+    WidgetTester tester,
+    Widget screen, {
+    Locale? locale,
+  }) async {
     await tester.pumpWidget(
       MultiProvider(
         providers: [
@@ -34,7 +39,7 @@ void main() {
         ],
         child: Consumer<SettingsService>(
           builder: (context, settings, _) => MaterialApp(
-            locale: Locale(settings.language),
+            locale: locale ?? Locale(settings.language),
             localizationsDelegates: AppLocalizations.localizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
             home: screen,
@@ -65,6 +70,67 @@ void main() {
     expect(find.text(en.settingsDrawingAreaTitle), findsOneWidget);
     expect(find.text(ja.settingsBasicSheetTitle), findsNothing);
     expect((await SharedPreferences.getInstance()).getString('language'), 'en');
+  });
+
+  testWidgets('the account deletion entry opens the localized page', (
+    tester,
+  ) async {
+    const channel = MethodChannel('plugins.flutter.io/url_launcher');
+    final urls = <Uri>[];
+    final messenger =
+        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
+    messenger.setMockMethodCallHandler(channel, (call) async {
+      expect(call.method, 'launch');
+      urls.add(Uri.parse(call.arguments['url'] as String));
+      return urls.length == 1;
+    });
+    addTearDown(() => messenger.setMockMethodCallHandler(channel, null));
+    await pumpScreen(tester, const SettingsScreen());
+    final entry = find.text(ja.settingsAccountDeletionTitle);
+    await tap(tester, find.byTooltip(ja.commonSearch));
+    await tester.enterText(find.byType(TextField), '退会');
+    await tester.pumpAndSettle();
+
+    await tap(tester, entry);
+    expect(urls.single.scheme, 'https');
+    expect(urls.single.host, 'niarim.miranima-studio.com');
+    expect(urls.single.path, '/account-deletion/');
+    expect(urls.single.queryParameters, {'lang': 'ja'});
+
+    await tap(tester, entry);
+    expect(urls, hasLength(2));
+    expect(find.text(ja.settingsAccountDeletionLinkFailed), findsOneWidget);
+  });
+
+  testWidgets('the deletion page distinguishes the two Chinese locales', (
+    tester,
+  ) async {
+    const channel = MethodChannel('plugins.flutter.io/url_launcher');
+    final languageTags = <String?>[];
+    final messenger =
+        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
+    messenger.setMockMethodCallHandler(channel, (call) async {
+      final uri = Uri.parse(call.arguments['url'] as String);
+      languageTags.add(uri.queryParameters['lang']);
+      return true;
+    });
+    addTearDown(() => messenger.setMockMethodCallHandler(channel, null));
+    for (final locale in const [
+      Locale('zh'),
+      Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hant'),
+    ]) {
+      final l10n = lookupAppLocalizations(locale);
+      await pumpScreen(
+        tester,
+        SettingsScreen(key: ValueKey(locale)),
+        locale: locale,
+      );
+      await tap(tester, find.byTooltip(l10n.commonSearch));
+      await tester.enterText(find.byType(TextField), 'delete account');
+      await tester.pumpAndSettle();
+      await tap(tester, find.text(l10n.settingsAccountDeletionTitle));
+    }
+    expect(languageTags, ['zh-Hans', 'zh-Hant']);
   });
 
   testWidgets('bucket values expose the scale and pixel unit', (tester) async {

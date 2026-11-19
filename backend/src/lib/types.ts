@@ -157,6 +157,7 @@ export interface UserItem {
   niarimUserId: string;
   googleSub: string;
   membershipTier: MembershipTier;
+  erasureReceipt?: string;
   // Play purchases are authenticated by Google, never by local preferences.
   // Cached verification expires quickly even when the Play expiry is later.
   playPremiumExpiresAtEpochMs?: number;

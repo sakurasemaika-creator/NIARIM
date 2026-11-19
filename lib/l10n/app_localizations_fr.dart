@@ -11350,4 +11350,15 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get keyframePreviewGestureHint =>
       'Faites glisser l’aperçu pour déplacer. Pincez ou tournez avec deux doigts pour redimensionner ou faire pivoter.';
+
+  @override
+  String get settingsAccountDeletionTitle => 'Supprimer votre compte NIARIM';
+
+  @override
+  String get settingsAccountDeletionSubtitle =>
+      'Continuer sur le site officiel';
+
+  @override
+  String get settingsAccountDeletionLinkFailed =>
+      'Impossible d’ouvrir la page de suppression du compte.';
 }

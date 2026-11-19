@@ -348,6 +348,12 @@ export async function receiveRewardedAdSsv(event: APIGatewayProxyEventV2) {
             },
           },
         },
+          {
+            ConditionCheck: {
+              TableName: tableName(), Key: Keys.user(userId),
+              ConditionExpression: "attribute_not_exists(erasureReceipt)",
+            },
+          },
       ],
     }));
   } catch (error) {

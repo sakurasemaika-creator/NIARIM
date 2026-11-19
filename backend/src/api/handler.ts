@@ -11,6 +11,7 @@ import {
   payloadTooLarge,
 } from "../lib/response";
 import { handleNotificationStream } from "../lib/communityNotifications";
+import { getAccountDeletionStatus, startAccountDeletion, verifyAccountDeletion } from "./routes/accountDeletion";
 import { getRanking, getRankingVisibility } from "./routes/ranking";
 import { refreshMyYoutubeChannel } from "./routes/youtubeChannelRefresh";
 import { getLatestWorks } from "./routes/worksLatest";
@@ -110,6 +111,9 @@ const routes: Route[] = [
   // Authenticated owner read. This keeps account switching simple on clients:
   // callers do not need to know or persist the generated NIARIM user id.
   route("GET", "/me/works", (e) => getMyWorks(e)),
+  route("POST", "/account-deletion/verify", (e) => verifyAccountDeletion(e)),
+  route("POST", "/account-deletion/submit", (e) => startAccountDeletion(e)),
+  route("POST", "/account-deletion/status", (e) => getAccountDeletionStatus(e)),
   route("GET", "/me/works/{id}", (e, p) => getMyWork(e, p.id)),
   route("POST", "/me/youtube-channel/refresh", (e) => refreshMyYoutubeChannel(e)),
   route("GET", "/me/rewards", (e) => getMyRewardState(e)),

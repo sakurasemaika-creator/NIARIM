@@ -6300,5 +6300,8 @@
   "layerPanelHideLayerTooltip": "レイヤーを非表示",
   "layerPanelMergeDownTooltip": "下のレイヤーと結合",
   "timelineAddTrackRowTooltip": "トラックに行を追加",
-  "keyframePreviewGestureHint": "プレビューをドラッグして移動。2本指で拡大・縮小、回転できます。"
+  "keyframePreviewGestureHint": "プレビューをドラッグして移動。2本指で拡大・縮小、回転できます。",
+  "settingsAccountDeletionTitle": "NIARIMアカウントを削除",
+  "settingsAccountDeletionSubtitle": "公式サイトで手続きする",
+  "settingsAccountDeletionLinkFailed": "アカウント削除ページを開けませんでした。"
 }

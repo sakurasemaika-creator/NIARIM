@@ -211,7 +211,7 @@ describe("rewarded ad SSV + exactly-once wallet", () => {
     expect(response.statusCode).toBe(200);
     const tx = send.mock.calls[1][0] as TransactWriteCommand;
     expect(tx).toBeInstanceOf(TransactWriteCommand);
-    expect(tx.input.TransactItems).toHaveLength(5);
+    expect(tx.input.TransactItems).toHaveLength(6);
     const rows = tx.input.TransactItems!;
     expect(rows[0].Put?.Item?.pk).toMatch(/^ADMOB_TX#/);
     expect(rows[0].Put?.ConditionExpression).toContain("attribute_not_exists");
@@ -230,6 +230,7 @@ describe("rewarded ad SSV + exactly-once wallet", () => {
     expect(rows[3].Put?.Item?.deltaCoins).toBe(10);
     expect(rows[4].Update?.Key?.sk).toBe("COIN_WALLET");
     expect(rows[4].Update?.ExpressionAttributeValues?.[":reward"]).toBe(10);
+    expect(rows[5].ConditionCheck?.ConditionExpression).toContain("erasureReceipt");
   });
 
   it("lost acknowledgment does not mint another ten coins", async () => {

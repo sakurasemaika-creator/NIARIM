@@ -61,7 +61,9 @@ function lastStored() {
   const write = send.mock.calls.slice().reverse().find(([cmd]) => cmd instanceof TransactWriteCommand);
   expect(write).toBeDefined();
   const items = (write![0] as TransactWriteCommand).input.TransactItems!;
-  return { items, marker: items.at(-2)!.Put!, event: items.at(-1)!.Put!.Item! };
+  const writes = items.flatMap((item) => item.Put ? [item.Put] : []);
+  expect(items.some((item) => item.ConditionCheck?.ConditionExpression?.includes("erasureReceipt"))).toBe(true);
+  return { items, marker: writes.at(-2)!, event: writes.at(-1)!.Item! };
 }
 
 describe("committed activity to private history", () => {

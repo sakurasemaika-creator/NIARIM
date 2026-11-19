@@ -18308,6 +18308,24 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'プレビューをドラッグして移動。2本指で拡大・縮小、回転できます。'**
   String get keyframePreviewGestureHint;
+
+  /// No description provided for @settingsAccountDeletionTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'NIARIMアカウントを削除'**
+  String get settingsAccountDeletionTitle;
+
+  /// No description provided for @settingsAccountDeletionSubtitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'公式サイトで手続きする'**
+  String get settingsAccountDeletionSubtitle;
+
+  /// No description provided for @settingsAccountDeletionLinkFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'アカウント削除ページを開けませんでした。'**
+  String get settingsAccountDeletionLinkFailed;
 }
 
 class _AppLocalizationsDelegate

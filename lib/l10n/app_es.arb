@@ -3926,5 +3926,8 @@
   "layerPanelHideLayerTooltip": "Ocultar capa",
   "layerPanelMergeDownTooltip": "Combinar con la capa inferior",
   "timelineAddTrackRowTooltip": "Añadir una fila a la pista",
-  "keyframePreviewGestureHint": "Arrastra la vista previa para mover. Pellizca o gira con dos dedos para cambiar el tamaño o rotar."
+  "keyframePreviewGestureHint": "Arrastra la vista previa para mover. Pellizca o gira con dos dedos para cambiar el tamaño o rotar.",
+  "settingsAccountDeletionTitle": "Eliminar tu cuenta de NIARIM",
+  "settingsAccountDeletionSubtitle": "Continuar en el sitio web oficial",
+  "settingsAccountDeletionLinkFailed": "No se pudo abrir la página de eliminación de la cuenta."
 }

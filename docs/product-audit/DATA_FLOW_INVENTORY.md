@@ -5,7 +5,8 @@
 | 機能 | 取得する情報と送信先 | コードで確認した保存と制御 | 根拠 |
 | --- | --- | --- | --- |
 | 作品の編集・保存・共有 | 作品の絵、シーン、履歴は端末内で扱う。作品共有と端末引き継ぎは、利用者が作成したファイルをOSの共有先へ渡す。 | 作品共有は選択した画像・動画・音声と使用フォント名を含める。端末引き継ぎのファイルは選択に応じて実データを含む。初回のファイル作成時点では共有先にネットワーク送信しない。 | [作品保存と共有](../../lib/engine/niapro_serializer.dart)、[共有操作](../../lib/widgets/share_project_file_action.dart)、[引き継ぎ画面](../../lib/screens/settings/transfer_screen.dart) |
-| Googleログイン | GoogleのIDトークンをNIARIM APIに渡し、サーバーで検証してGoogleアカウントの識別子 `sub` とNIARIM内のIDを対応付ける。YouTube向けの認可は読み取り・アップロードの用途ごとに扱う。 | AWSのデータベースにアカウントの対応を保存する。作品の削除とアカウントの削除は別の処理で、アカウント削除の経路は確認できていない。 | [Google認証](../../lib/services/google_auth_service.dart)、[NIARIM API認証](../../backend/src/lib/auth.ts)、[APIルート](../../backend/src/api/handler.ts) |
+| Googleログイン | GoogleのIDトークンをNIARIM APIに渡し、サーバーで検証してGoogleアカウントの識別子 `sub` とNIARIM内のIDを対応付ける。YouTube向けの認可は読み取り・アップロードの用途ごとに扱う。 | AWSのデータベースにアカウントの対応を保存する。 | [Google認証](../../lib/services/google_auth_service.dart)、[NIARIM API認証](../../backend/src/lib/auth.ts)、[APIルート](../../backend/src/api/handler.ts) |
+| NIARIMアカウント削除 | アプリ設定またはWebのプライバシーポリシーから、公式サイトの削除ページを開く。削除対象と同じGoogleアカウントで本人確認し、復元できないことを確認して送信する。 | AWSに処理を登録し、ログインを止めて、作品広場の投稿・アカウントの対応・フォロー等、オパールの残高・履歴・特典、通知と端末トークン等を削除する。ブラウザを閉じた後も処理する。端末内の作品、YouTube動画、Google Playの定期購入はそれぞれの場所で管理する。 | [App設定](../../lib/screens/settings/settings_screen.dart)、[削除API](../../backend/src/api/routes/accountDeletion.ts)、[削除処理](../../backend/src/batch/accountErasure.ts) |
 | 作品広場と動画投稿 | 動画ファイルは端末からYouTubeへ送る。タイトル、説明、タグ、公開状態・公開予定時刻、子ども向けと改変・合成に関する申告をアップロード時に渡す。作品広場の作品情報・反応はNIARIM APIが扱う。 | AWSに作品広場の投稿情報、ブックマーク等を保存する。YouTube上の動画とNIARIM上の投稿情報の操作はそれぞれのサービスで行う。 | [YouTubeアップロード](../../lib/services/youtube_upload_service.dart)、[作品広場API](../../backend/src/api/handler.ts) |
 | Google Playの購入確認 | 商品IDと購入トークンを端末からNIARIM APIへ送り、NIARIM APIがGoogle Playに照会する。 | AWSのデータベースにトークンのSHA-256ハッシュ、アカウントと商品の対応、期限・検証時刻を記録する。購入照会には環境設定の有効化が必要。 | [端末の購入処理](../../lib/services/premium_service.dart)、[購入確認API](../../backend/src/api/routes/playPremium.ts) |
 | オパール・広告報酬 | NIARIM APIで残高、付与・消費、ログインボーナス、ミッションを処理する。広告報酬はリワード広告の検証情報をAdMobから受け取り、セッションと照合する。 | AWSのデータベースに残高と履歴、検証用のセッション・受領記録等を保存する。一部の検証記録と集計には個別のTTLがある。 | [報酬API](../../backend/src/api/handler.ts)、[広告報酬検証](../../backend/src/api/routes/rewardedAd.ts)、[広告SDK呼び出し](../../lib/services/advertising_service.dart) |
@@ -18,5 +19,5 @@
 
 - 本番で有効な環境設定と配信SDK、ログとバックアップの保持、AWS・Cloudflare・Resend・Googleで実際に設定している保管先と削除手順。
 - 問い合わせメールの保管と削除、各処理の運用主体と委託先、利用者からの開示・訂正・削除の窓口。
-- アカウント削除経路と、作品広場の投稿・端末トークン・各種サーバー記録を削除または保持する範囲。
+- アカウント削除のGoogle OAuth許可元と公開URL、処理完了までのテスト用アカウントでの照合。現行実装は、古いログインを拒否するサブジェクトのハッシュ（TTL 2時間）、進捗確認用の無記名の完了キー（TTL 24時間）、連携を外した広告報酬の二重付与防止キー（既存TTL）を保持する。作品IDのみの削除済みレコードを利用する。障害時の通知ストリーム退避は既存S3の7日ライフサイクル、Lambdaログの保持は既存設定の1か月。
 - この一覧と公開用プライバシーポリシー、Google Play Data safetyの申告内容との照合。
