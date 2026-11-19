@@ -155,9 +155,17 @@ void main() {
               of: sort,
               matching: find.byWidgetPredicate((w) => w is PopupMenuButton),
             );
-            final direction = find.widgetWithIcon(
-              IconButton,
-              Icons.arrow_downward,
+            // 昇順なら↑、降順なら↓。下向きだけを探すと、表示済みの
+            // 切り替えボタンを見落とし、存在しないメニュー項目を押してしまう。
+            final direction = find.descendant(
+              of: sort,
+              matching: find.byWidgetPredicate(
+                (widget) =>
+                    widget is IconButton &&
+                    widget.icon is Icon &&
+                    ((widget.icon as Icon).icon == Icons.arrow_upward ||
+                        (widget.icon as Icon).icon == Icons.arrow_downward),
+              ),
             );
             for (final control in [
               field,
