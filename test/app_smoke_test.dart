@@ -2074,11 +2074,23 @@ void main() {
     final initialUnread = communityService.unreadMilestoneCount;
     expect(initialUnread, 1, reason: '9→10の匿名件数milestoneを1件保存');
 
-    // 通知ベルのバッジに未読数が表示されているはず。
-    expect(find.text('$initialUnread'), findsOneWidget);
-
+    // 通知ベルのバッジだけで未読数を確認する。ほかのタブや作品に
+    // 同じ数字があっても通知数の検証は影響を受けない。
     final bellFinder = find.byIcon(Icons.notifications_outlined);
     expect(bellFinder, findsOneWidget);
+    final notificationBadge = find.ancestor(
+      of: bellFinder,
+      matching: find.byType(Badge),
+    );
+    expect(notificationBadge, findsOneWidget);
+    expect(tester.widget<Badge>(notificationBadge).isLabelVisible, isTrue);
+    expect(
+      find.descendant(
+        of: notificationBadge,
+        matching: find.text('$initialUnread'),
+      ),
+      findsOneWidget,
+    );
     await tester.tap(bellFinder);
     await tester.pump(const Duration(milliseconds: 300));
     await tester.pump(const Duration(milliseconds: 300));

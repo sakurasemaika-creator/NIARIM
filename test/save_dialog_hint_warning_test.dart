@@ -24,6 +24,8 @@ import 'package:niarim/models/save_node.dart';
 import 'package:niarim/router.dart';
 import 'package:niarim/screens/home/home_screen.dart';
 import 'package:niarim/screens/save_tree/save_tree_screen.dart';
+import 'package:niarim/screens/save_tree/widgets/save_display_name.dart'
+    show formatSaveTime;
 import 'package:niarim/services/project_service.dart';
 import 'package:niarim/services/save_tree_service.dart';
 import 'package:niarim/services/theme_service.dart';
@@ -238,13 +240,10 @@ void main() {
     return (project.id, node);
   }
 
-  String warningOf(AppLocalizations l10n, SaveNode node) {
-    final t = node.savedAt;
-    String two(int v) => v.toString().padLeft(2, '0');
-    return l10n.saveTreeSlotOverwriteWarning(
-      '${t.year}/${two(t.month)}/${two(t.day)} ${two(t.hour)}:${two(t.minute)}',
-    );
-  }
+  String warningOf(AppLocalizations l10n, SaveNode node) =>
+      l10n.saveTreeSlotOverwriteWarning(
+        formatSaveTime(node.savedAt, l10n.localeName),
+      );
 
   Future<void> closeDialog(WidgetTester tester, AppLocalizations l10n) async {
     await tester.tap(
