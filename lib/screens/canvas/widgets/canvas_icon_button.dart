@@ -150,9 +150,7 @@ class CanvasIconButton extends StatelessWidget {
       triggerMode: longPressTooltip
           ? TooltipTriggerMode.longPress
           : TooltipTriggerMode.manual,
-      onTriggered: (trigger) {
-        if (trigger == TooltipTriggerMode.longPress) onTooltipLongPress?.call();
-      },
+      onTriggered: onTooltipLongPress,
       child: InkResponse(
         onTap: onPressed,
         radius: padding > 6 ? iconSize / 2 + padding + 2 : 22,

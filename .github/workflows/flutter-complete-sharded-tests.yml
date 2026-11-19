@@ -25,6 +25,7 @@ on:
       - "test/home_shared_folder_paste_flow_test.dart"
       - "test/startup_unreadable_projects_folder_test.dart"
       - "lib/screens/canvas/widgets/hsv_color_wheel.dart"
+      - "lib/screens/canvas/widgets/canvas_icon_button.dart"
       - "lib/screens/community/community_screen.dart"
       - "lib/screens/community/community_work_detail_screen.dart"
       - "lib/screens/home/home_screen.dart"
