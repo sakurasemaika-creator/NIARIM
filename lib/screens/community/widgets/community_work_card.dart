@@ -118,10 +118,22 @@ class CommunityWorkCard extends StatelessWidget {
         ),
       ),
     );
+    final cardMargin = CardTheme.of(context).margin ?? const EdgeInsets.all(4);
+    const contentPadding = EdgeInsets.fromLTRB(10, 8, 6, 10);
     return LayoutBuilder(
       builder: (context, constraints) {
         final compact = constraints.maxWidth < 200;
+        final availableActionWidth =
+            constraints.maxWidth -
+            cardMargin.horizontal -
+            contentPadding.horizontal;
+        final actionsDirection =
+            availableActionWidth <
+                2 * CollectionActionFrame.extent + CollectionActionRow.gap
+            ? Axis.vertical
+            : Axis.horizontal;
         return Card(
+          margin: cardMargin,
           color: cardColor,
           surfaceTintColor: Colors.transparent,
           clipBehavior: Clip.antiAlias,
@@ -245,7 +257,7 @@ class CommunityWorkCard extends StatelessWidget {
                 // 右の余白は、︙の押せる所（丸の外へ6px）がカードの中に
                 // 収まる幅（狭いと、端の帯を押してもカードの外で届かない）。
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(10, 8, 6, 10),
+                  padding: contentPadding,
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -347,6 +359,7 @@ class CommunityWorkCard extends StatelessWidget {
                             // ブックマークと︙は押せる所（48×48）が重ならず、
                             // 行の外（上下の帯）も押せる並び。
                             CollectionActionRow(
+                              direction: actionsDirection,
                               children: [
                                 // 読み上げの名前は丸の中に置く（丸の外に箱を
                                 // 置くと、その箱が丸の外の帯を押しても断る）。

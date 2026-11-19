@@ -17,6 +17,7 @@ import 'package:niarim/services/community_service.dart';
 import 'package:niarim/services/google_auth_service.dart';
 import 'package:niarim/services/premium_service.dart';
 import 'package:niarim/services/settings_service.dart';
+import 'package:niarim/services/theme_service.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -205,6 +206,8 @@ void main() {
       }),
     );
     addTearDown(service.dispose);
+    final theme = ThemeService();
+    addTearDown(theme.dispose);
     await tester.binding.setSurfaceSize(const Size(390, 740));
     addTearDown(() => tester.binding.setSurfaceSize(null));
     const author = CommunityAuthorWorksScreen(
@@ -217,8 +220,9 @@ void main() {
           ChangeNotifierProvider.value(value: service),
           ChangeNotifierProvider(create: (_) => SettingsService()),
         ],
-        child: const MaterialApp(
-          locale: Locale('ja'),
+        child: MaterialApp(
+          theme: theme.themeDataFor(const Locale('ja')),
+          locale: const Locale('ja'),
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: author,
@@ -236,6 +240,19 @@ void main() {
     await tester.tap(find.text(l10n.homeViewModeSmall));
     await tester.pumpAndSettle();
     expect(tester.getSize(card).width, lessThan(mediumWidth));
+    final bookmark = find.byKey(
+      const ValueKey('community-bookmark-video00001'),
+    );
+    final moreActions = find.byKey(
+      const ValueKey('communityMuteMenu-video00001'),
+    );
+    expect(
+      tester.getCenter(bookmark).dy,
+      lessThan(tester.getCenter(moreActions).dy),
+    );
+    expect(bookmark.hitTestable(), findsOneWidget);
+    expect(moreActions.hitTestable(), findsOneWidget);
+    expect(tester.takeException(), isNull);
 
     final sort = find.byType(SortModeControl);
     await tester.tap(
