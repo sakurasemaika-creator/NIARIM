@@ -92,16 +92,19 @@ void main() {
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
       addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
-      final semantics = tester.ensureSemantics();
-      addTearDown(semantics.dispose);
       final words = await show(tester, _Store(storeAvailable: false));
-      expect(find.byType(Table), findsNothing);
-      final row = find.bySemanticsLabel(
-        '${words.premiumFeatureWatermark}\n${words.premiumComparisonFree} ${words.premiumValueNo}\n${words.premiumComparisonPremium} ${words.premiumValueYes}',
-      );
-      await tester.ensureVisible(find.text(words.premiumFeatureWatermark));
-      await tester.pumpAndSettle();
-      expect(row, findsOneWidget);
+      final semantics = tester.ensureSemantics();
+      try {
+        expect(find.byType(Table), findsNothing);
+        final row = find.bySemanticsLabel(
+          '${words.premiumFeatureWatermark}\n${words.premiumComparisonFree} ${words.premiumValueNo}\n${words.premiumComparisonPremium} ${words.premiumValueYes}',
+        );
+        await tester.ensureVisible(find.text(words.premiumFeatureWatermark));
+        await tester.pumpAndSettle();
+        expect(row, findsOneWidget);
+      } finally {
+        semantics.dispose();
+      }
       final shortcut = find.byKey(const Key('premiumSeePlansButton'));
       await tester.ensureVisible(shortcut);
       await tester.tap(shortcut);
