@@ -66,14 +66,12 @@ void main() {
     final l10n = AppLocalizations.of(
       tester.element(find.byType(Scaffold).first),
     )!;
-    final panel = tester.element(find.byType(ListTile).first);
-    final name = panel.read<BrushService>().brushes.first.name;
-    final row = find.ancestor(
-      of: find.text(name).first,
-      matching: find.byType(ListTile),
-    );
+    final brush = tester
+        .element(find.byType(BrushPanel))
+        .read<BrushService>()
+        .brushes.first;
     final menu = find.descendant(
-      of: row.first,
+      of: find.byKey(ValueKey(brush.id)),
       matching: find.byIcon(Icons.more_vert),
     );
     await tester.ensureVisible(menu);

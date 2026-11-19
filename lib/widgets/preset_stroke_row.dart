@@ -7,6 +7,8 @@ import '../models/brush.dart';
 import '../models/stamp.dart';
 import '../models/tone.dart';
 import '../utils/line_break.dart';
+import 'action_beside_or_below.dart';
+import 'docked_panel_scope.dart';
 import 'keep_together_text.dart';
 import 'stroke_sample_preview.dart';
 
@@ -109,6 +111,10 @@ class PresetStrokeRow extends StatelessWidget {
         );
       },
     );
+    final label = semanticsLabel == null
+        ? title
+        : Semantics(label: semanticsLabel, child: title);
+    final dockActions = DockedPanelScope.of(context) ? trailing : null;
     return ListTile(
       dense: true,
       contentPadding: const EdgeInsetsDirectional.fromSTEB(6, 2, 6, 2),
@@ -116,9 +122,14 @@ class PresetStrokeRow extends StatelessWidget {
       title: Padding(
         // Shift names slightly higher and separate all three asset samples.
         padding: const EdgeInsets.only(bottom: 6),
-        child: semanticsLabel == null
-            ? title
-            : Semantics(label: semanticsLabel, child: title),
+        child: dockActions == null
+            ? label
+            : ActionBesideOrBelow(
+                text: label,
+                action: dockActions,
+                minTextWidth: MediaQuery.textScalerOf(context).scale(72),
+                gap: 8,
+              ),
       ),
       subtitle: StrokeSamplePreview(
         brush: brush,
@@ -126,7 +137,7 @@ class PresetStrokeRow extends StatelessWidget {
         stamp: stamp,
         color: color,
       ),
-      trailing: trailing,
+      trailing: dockActions == null ? trailing : null,
       onTap: onTap,
       onLongPress: onLongPress,
     );

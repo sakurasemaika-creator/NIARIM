@@ -61,6 +61,8 @@ jobs:
           test/rewards_tabs_fit_test.dart test/theme_button_font_test.dart
           test/theme_rescue_dialog_chinese_font_test.dart test/typing_dialog_keyboard_room_test.dart
           test/canvas_pc_dock_labels_fit_test.dart test/transfer_copy_names_test.dart
+          test/brush_management_test.dart test/shared_asset_card_language_test.dart
+          test/niatra_transfer_saved_keys_test.dart test/niatra_transfer_keeps_this_device_test.dart
       - run: flutter test --no-pub --reporter expanded test/startup_unreadable_projects_folder_test.dart --name 'Home'
       - name: Capture Japanese project and plan screens on mobile and desktop
         run: flutter test --no-pub --dart-define=NIARIM_CAPTURE_PROJECT_AND_PLAN=true test/visual/project_and_plan_capture_test.dart

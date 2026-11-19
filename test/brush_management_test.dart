@@ -135,8 +135,10 @@ void main() {
 
     Future<void> menu(String brushName, String action) async {
       // 一覧は見える分だけ作るので、複製（一覧の最後）まで送る。
+      final brush = brushes.brushes.singleWhere((b) => b.name == brushName);
+      final row = find.byKey(ValueKey(brush.id));
       await tester.scrollUntilVisible(
-        find.text(brushName),
+        row,
         200,
         scrollable: find
             .descendant(
@@ -145,12 +147,8 @@ void main() {
             )
             .first,
       );
-      final row = find.ancestor(
-        of: find.text(brushName).first,
-        matching: find.byType(ListTile),
-      );
       await tester.tap(
-        find.descendant(of: row.first, matching: find.byIcon(Icons.more_vert)),
+        find.descendant(of: row, matching: find.byIcon(Icons.more_vert)),
       );
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 400));

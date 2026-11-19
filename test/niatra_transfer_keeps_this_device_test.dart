@@ -77,6 +77,7 @@ Map<String, Object> _deviceRecords(String who) => {
   'user_fonts': '[{"family":"$who"}]',
   'home_widget_config_v1': '{"device":"$who"}',
   'premium_purchase_product_id': '$who-product',
+  'tool_thickness_eraser': who == 'A' ? 8.0 : 24.0,
   'autosave_0_project': 'proj$who',
 };
 
@@ -136,6 +137,7 @@ void main() {
     for (final entry in _deviceRecords('A').entries) {
       final value = entry.value;
       if (value is String) await aPrefs.setString(entry.key, value);
+      if (value is double) await aPrefs.setDouble(entry.key, value);
       if (value is List<String>) await aPrefs.setStringList(entry.key, value);
     }
     await aPrefs.setStringList('community.mutedWords', ['a-word']);

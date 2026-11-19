@@ -135,6 +135,8 @@ class NiatraSerializer {
   static const List<String> deviceRecordPrefixes = [
     TransferCopyRecord.keyPrefix,
     'autosave_',
+    // The last thickness used on this device, independent of saved brush presets.
+    'tool_thickness_',
     'community.pendingUpload.',
     'community.ownerByAccount.',
     'community.savedSearches.v1',
