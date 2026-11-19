@@ -27,6 +27,7 @@ on:
       - "lib/screens/project/project_detail_screen.dart"
       - "lib/services/local_file_trash_service.dart"
       - "lib/widgets/premium_lock_widget.dart"
+      - "test/niatra_transfer_draw_filters_test.dart"
   workflow_dispatch:
 permissions:
   contents: read
