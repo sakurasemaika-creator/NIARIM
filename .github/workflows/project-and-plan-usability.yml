@@ -10,6 +10,7 @@ on:
       - 'lib/screens/project/new_project_screen.dart'
       - 'test/new_project_inputs_test.dart'
       - 'test/background_color_picker_test.dart'
+      - 'test/visual/project_and_plan_capture_test.dart'
       - 'test/premium_screen_price_test.dart'
       - '.github/workflows/project-and-plan-usability.yml'
   workflow_dispatch:
@@ -34,3 +35,12 @@ jobs:
           test/premium_screen_price_test.dart test/premium_comparison_table_test.dart
           test/new_project_inputs_test.dart test/background_color_picker_test.dart
       - run: flutter test --no-pub --reporter expanded test/startup_unreadable_projects_folder_test.dart --name 'Home'
+      - name: Capture Japanese project and plan screens on mobile and desktop
+        run: flutter test --no-pub --dart-define=NIARIM_CAPTURE_PROJECT_AND_PLAN=true test/visual/project_and_plan_capture_test.dart
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: project-and-plan-screens
+          path: build/project-and-plan/
+          if-no-files-found: warn
+          retention-days: 14
