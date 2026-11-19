@@ -194,7 +194,10 @@ class EmptyStatePlaceholder extends StatelessWidget {
             ),
           ),
         SizedBox(height: _badgeGap(badge)),
-        _centredText(title, _titleStyle(scheme)),
+        Semantics(
+          header: true,
+          child: _centredText(title, _titleStyle(scheme)),
+        ),
         if (actionFirst && action != null) ...[
           const SizedBox(height: 16),
           action!,

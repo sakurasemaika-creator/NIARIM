@@ -1,0 +1,31 @@
+name: Project creation and plan comparison
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - 'lib/screens/home/widgets/project_list_widget.dart'
+      - 'lib/screens/premium/premium_screen.dart'
+      - 'lib/widgets/empty_state_placeholder.dart'
+      - 'test/premium_screen_price_test.dart'
+      - '.github/workflows/project-and-plan-usability.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.47.2'
+          cache: true
+      - run: flutter pub get --enforce-lockfile
+      - run: flutter analyze --no-pub lib/screens/home/widgets/project_list_widget.dart lib/screens/premium/premium_screen.dart lib/widgets/empty_state_placeholder.dart
+      - run: >
+          flutter test --no-pub --reporter expanded
+          test/home_a003_visual_findings_test.dart test/home_small_fixes_test.dart
+          test/home_filtered_empty_states_test.dart test/empty_state_placeholder_test.dart
+          test/premium_screen_price_test.dart test/premium_comparison_table_test.dart
+      - run: flutter test --no-pub --reporter expanded test/startup_unreadable_projects_folder_test.dart --name 'Home'

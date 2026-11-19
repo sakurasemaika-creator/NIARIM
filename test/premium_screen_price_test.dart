@@ -83,6 +83,37 @@ void main() {
     expect(row, hasLength(1));
   });
 
+  testWidgets(
+    'large text keeps the plan differences together and the plan shortcut works',
+    (tester) async {
+      tester.view.devicePixelRatio = 1;
+      tester.view.physicalSize = const Size(320, 640);
+      tester.platformDispatcher.textScaleFactorTestValue = 2;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+      final semantics = tester.ensureSemantics();
+      addTearDown(semantics.dispose);
+      final words = await show(tester, _Store(storeAvailable: false));
+      expect(find.byType(Table), findsNothing);
+      final row = find.bySemanticsLabel(
+        '${words.premiumFeatureWatermark}\n${words.premiumComparisonFree} ${words.premiumValueNo}\n${words.premiumComparisonPremium} ${words.premiumValueYes}',
+      );
+      await tester.ensureVisible(find.text(words.premiumFeatureWatermark));
+      await tester.pumpAndSettle();
+      expect(row, findsOneWidget);
+      final shortcut = find.byKey(const Key('premiumSeePlansButton'));
+      await tester.ensureVisible(shortcut);
+      await tester.tap(shortcut);
+      await tester.pumpAndSettle();
+      expect(
+        find.text(words.premiumPlanSectionTitle).hitTestable(),
+        findsOneWidget,
+      );
+      expect(tester.takeException(), isNull);
+    },
+  );
+
   testWidgets('unavailable products hide prices and can be queried again', (
     tester,
   ) async {

@@ -237,6 +237,7 @@ class ProjectListWidget extends StatelessWidget {
   // 選ぶ専用画面（[onPickProject]使用時）には＋ボタンが無いため、
   // 存在しないボタンを指す文言を隠せるようにする。
   final bool showEmptyCreateHint;
+  final VoidCallback? onCreateProject;
 
   /// 作品を読み込めなかった間（`ProjectService.projectsLoadFailed`）に渡す。
   /// 並べるものが無くても「プロジェクトがありません」と作成の案内を出さず、
@@ -271,6 +272,7 @@ class ProjectListWidget extends StatelessWidget {
     this.searchByTag = false,
     this.onPickProject,
     this.showEmptyCreateHint = true,
+    this.onCreateProject,
     this.hideEmptyState = false,
     this.onClearSearch,
     this.onShowAll,
@@ -607,6 +609,9 @@ class ProjectListWidget extends StatelessWidget {
       );
     }
     final inFolder = currentFolderId != null;
+    final create = inFolder || isSelectionMode || onPickProject != null
+        ? null
+        : onCreateProject;
     return EmptyStatePlaceholder(
       clearFloatingButtons: clearFloatingButtons,
       scrollable: scrollable,
@@ -615,7 +620,19 @@ class ProjectListWidget extends StatelessWidget {
       title: inFolder
           ? l10n.projectListEmptyFolderTitle
           : l10n.projectListEmptyTitle,
-      hint: showEmptyCreateHint ? l10n.projectListEmptyHint : null,
+      hint: create == null && showEmptyCreateHint
+          ? l10n.projectListEmptyHint
+          : null,
+      action: create == null
+          ? null
+          : FilledButton.icon(
+              onPressed: create,
+              icon: const Icon(Icons.note_add_outlined),
+              label: Text(
+                l10n.homeAddSheetNewProject,
+                textAlign: TextAlign.center,
+              ),
+            ),
     );
   }
 
@@ -863,9 +880,8 @@ class ProjectListWidget extends StatelessWidget {
       // 検索の結果には、入っているフォルダを添える。
       subtitle: DateLineText(
         [
-          AppLocalizations.of(
-            context,
-          )!.projectListFolderCreatedOn(folder.createdAt),
+          AppLocalizations.of(context)!
+              .projectListFolderCreatedOn(folder.createdAt),
           if (_searchLocation(context, folder.parentFolderId)
               case final location?)
             AppLocalizations.of(context)!.projectListInFolder(location),

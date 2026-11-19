@@ -827,9 +827,9 @@ void main() {
       }
       // 一覧に書けたので、控えは残さない。
       expect(
-        Directory(folder).listSync().where(
-          (f) => f.path.endsWith(SaveTreeService.pendingSuffix),
-        ),
+        Directory(folder)
+            .listSync()
+            .where((f) => f.path.endsWith(SaveTreeService.pendingSuffix)),
         isEmpty,
       );
       // 一覧に書いたので、次の起動でも同じ。
@@ -1029,9 +1029,8 @@ void main() {
     storage.paths.clear();
     expect(File(indexPath).readAsStringSync(), before);
     // 知らせは薄くなって消える（400ms）。
-    ScaffoldMessenger.of(
-      tester.element(find.byType(Scaffold).first),
-    ).removeCurrentSnackBar();
+    ScaffoldMessenger.of(tester.element(find.byType(Scaffold).first))
+        .removeCurrentSnackBar();
     await _settleWithFiles(tester, rounds: 6);
     expect(find.byType(SnackBar), findsNothing);
 
@@ -3375,9 +3374,8 @@ void main() {
     );
     expect(projects.trashedFolders.map((t) => t.folder.id), [folder.id]);
     expect(works.every(onDisk), isTrue);
-    ScaffoldMessenger.of(
-      tester.element(find.byType(Scaffold).last),
-    ).removeCurrentSnackBar();
+    ScaffoldMessenger.of(tester.element(find.byType(Scaffold).last))
+        .removeCurrentSnackBar();
     appRouter.pop();
     await _settleWithFiles(tester, rounds: 4);
 
@@ -3721,7 +3719,7 @@ void main() {
           if (find.text(l10n.projectListEmptyTitle).evaluate().isNotEmpty) {
             saidEmpty.add(where);
           }
-          if (find.text(l10n.projectListEmptyHint).evaluate().isNotEmpty) {
+          if (find.text(l10n.homeAddSheetNewProject).evaluate().isNotEmpty) {
             invitedCreating.add(where);
           }
           // 並び順などの見出しは、知らせと一緒に出たまま。
@@ -3750,7 +3748,7 @@ void main() {
       }
       expect(notice, findsNothing);
       expect(find.text(l10n.projectListEmptyTitle), findsOneWidget);
-      expect(find.text(l10n.projectListEmptyHint), findsOneWidget);
+      expect(find.text(l10n.homeAddSheetNewProject), findsOneWidget);
       expect(tester.takeException(), isNull);
       await tester.pumpWidget(const SizedBox.shrink());
     });

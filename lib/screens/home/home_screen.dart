@@ -1409,6 +1409,7 @@ class _HomeScreenState extends State<HomeScreen>
                         searchByTag: _searchByTag,
                         currentFolderId: _currentFolderId,
                         onOpenFolder: _openProjectFolder,
+                        onCreateProject: () => context.push('/new-project'),
                         onClearSearch: _closeProjectSearch,
                         onShowAll: () => _changeProjectScope(
                           () => _showFavoritesOnly = false,

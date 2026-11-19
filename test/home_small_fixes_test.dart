@@ -202,7 +202,7 @@ void main() {
 
     await check('projects', [
       l10n.projectListEmptyTitle,
-      l10n.projectListEmptyHint,
+      l10n.homeAddSheetNewProject,
     ]);
     await _showTab(tester, 1);
     await check('works', [l10n.homeWorksEmpty, l10n.homeWorksEmptyHint]);
@@ -302,9 +302,8 @@ void main() {
           )
           .color!;
       expect(background, preset.menuBgColor);
-      final scheme = Theme.of(
-        tester.element(find.byType(HomeScreen)),
-      ).colorScheme;
+      final scheme = Theme.of(tester.element(find.byType(HomeScreen)))
+          .colorScheme;
       for (var i = 0; i < 4; i++) {
         final tab = find.byKey(ValueKey('home_tab_$i'));
         final colours = <Color>[
@@ -540,6 +539,10 @@ void main() {
   testWidgets('the Simplified Chinese empty hint quotes the plus button with '
       'Simplified quotation marks', (tester) async {
     final home = await _openHome(tester, language: 'zh');
+    await tester.runAsync(() => home.projects.createFolder('Empty'));
+    await _settleIo(tester);
+    await tester.tap(find.text('Empty').first);
+    await _settleIo(tester);
     String hint() => tester
         .widget<Text>(
           find.descendant(
