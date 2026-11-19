@@ -44,12 +44,14 @@ class PixelArtPaletteService extends ChangeNotifier {
     final raw = prefs.readStringList(_prefsKey) ?? const [];
     _palettes
       ..clear()
-      ..addAll(readSavedJsonList(raw, ColorPalette.fromJson));
+      ..addAll(
+        readSavedJsonList(listKey: _prefsKey, raw, ColorPalette.fromJson),
+      );
   }
 
   Future<void> _persist() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setStringList(
+    await prefs.setSavedJsonList(
       _prefsKey,
       _palettes.map((p) => jsonEncode(p.toJson())).toList(),
     );

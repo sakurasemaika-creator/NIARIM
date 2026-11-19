@@ -52,7 +52,7 @@ class QuickToolService extends ChangeNotifier {
     // 1件ずつ読む（読めない1件で起動を止めない）。
     final saved = raw == null
         ? const <QuickToolEntry>[]
-        : readSavedJsonList(raw, QuickToolEntry.fromJson);
+        : readSavedJsonList(listKey: _prefsKey, raw, QuickToolEntry.fromJson);
     if (saved.isEmpty) {
       _entries.addAll(_defaults);
       // 保存が無い（初回）・空のときだけ既定を保存する。読めない値・
@@ -67,7 +67,7 @@ class QuickToolService extends ChangeNotifier {
 
   Future<void> _persist() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setStringList(
+    await prefs.setSavedJsonList(
       _prefsKey,
       _entries.map((e) => jsonEncode(e.toJson())).toList(),
     );

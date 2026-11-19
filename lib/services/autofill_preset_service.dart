@@ -206,6 +206,7 @@ class AutofillPresetService extends ChangeNotifier {
       var intact = true;
       _presets.addAll(
         readSavedJsonList(
+          listKey: _prefsKey,
           raw,
           AutofillPreset.fromJson,
           onSkipped: () => intact = false,
@@ -299,7 +300,7 @@ class AutofillPresetService extends ChangeNotifier {
 
   Future<void> _persist() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setStringList(
+    await prefs.setSavedJsonList(
       _prefsKey,
       _presets.map((p) => jsonEncode(p.toJson())).toList(),
     );

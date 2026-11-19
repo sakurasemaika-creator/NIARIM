@@ -548,7 +548,12 @@ class ToneService extends ChangeNotifier {
     } else {
       var intact = true;
       _tones.addAll(
-        readSavedJsonList(raw, Tone.fromJson, onSkipped: () => intact = false),
+        readSavedJsonList(
+          listKey: _prefsKey,
+          raw,
+          Tone.fromJson,
+          onSkipped: () => intact = false,
+        ),
       );
       // 既存ユーザーにも新規追加した初期トーン（ピクセルモード2種）を
       // 反映する（既に同名IDのトーンが存在する場合は追加しない）。
@@ -694,7 +699,7 @@ class ToneService extends ChangeNotifier {
 
   Future<void> _persist() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setStringList(
+    await prefs.setSavedJsonList(
       _prefsKey,
       _tones.map((t) => jsonEncode(t.toJson())).toList(),
     );

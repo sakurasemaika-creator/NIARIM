@@ -29,6 +29,7 @@ class ShortcutService extends ChangeNotifier {
     final saved = raw == null
         ? const <ShortcutBinding>[]
         : readSavedJsonList(
+            listKey: _prefsKey,
             raw,
             ShortcutBinding.fromJson,
             onSkipped: () => intact = false,
@@ -120,7 +121,7 @@ class ShortcutService extends ChangeNotifier {
 
   Future<void> _persist() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setStringList(
+    await prefs.setSavedJsonList(
       _prefsKey,
       _bindings.map((b) => jsonEncode(b.toJson())).toList(),
     );

@@ -61,7 +61,13 @@ class PaletteService extends ChangeNotifier {
     final rawPalettes = prefs.readStringList(_palettesKey) ?? const [];
     _palettes
       ..clear()
-      ..addAll(readSavedJsonList(rawPalettes, ColorPalette.fromJson));
+      ..addAll(
+        readSavedJsonList(
+          listKey: _palettesKey,
+          rawPalettes,
+          ColorPalette.fromJson,
+        ),
+      );
     if (_palettes.isEmpty) {
       // 初回起動時：デフォルトパレットを1つ用意する
       _palettes.add(_defaultPalette);
@@ -82,7 +88,7 @@ class PaletteService extends ChangeNotifier {
 
   Future<void> _persistPalettes() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setStringList(
+    await prefs.setSavedJsonList(
       _palettesKey,
       _palettes.map((p) => jsonEncode(p.toJson())).toList(),
     );

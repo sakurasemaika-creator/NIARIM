@@ -231,7 +231,12 @@ class StampService extends ChangeNotifier {
     } else {
       var intact = true;
       _stamps.addAll(
-        readSavedJsonList(raw, Stamp.fromJson, onSkipped: () => intact = false),
+        readSavedJsonList(
+          listKey: _prefsKey,
+          raw,
+          Stamp.fromJson,
+          onSkipped: () => intact = false,
+        ),
       );
       // 既存ユーザーにも、後から追加した組み込みスタンプを反映する
       // （同じIDが既にあれば追加しない）。BrushService・ToneServiceは
@@ -345,7 +350,7 @@ class StampService extends ChangeNotifier {
 
   Future<void> _persist() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setStringList(
+    await prefs.setSavedJsonList(
       _prefsKey,
       _stamps.map((s) => jsonEncode(s.toJson())).toList(),
     );

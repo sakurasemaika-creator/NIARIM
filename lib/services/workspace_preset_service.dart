@@ -23,12 +23,14 @@ class WorkspacePresetService extends ChangeNotifier {
     final raw = prefs.readStringList(_prefsKey) ?? const [];
     _presets
       ..clear()
-      ..addAll(readSavedJsonList(raw, WorkspacePreset.fromJson));
+      ..addAll(
+        readSavedJsonList(listKey: _prefsKey, raw, WorkspacePreset.fromJson),
+      );
   }
 
   Future<void> _persist() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setStringList(
+    await prefs.setSavedJsonList(
       _prefsKey,
       _presets.map((p) => jsonEncode(p.toJson())).toList(),
     );

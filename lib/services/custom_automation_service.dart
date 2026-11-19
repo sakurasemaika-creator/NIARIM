@@ -81,6 +81,7 @@ class CustomAutomationService extends ChangeNotifier {
     } else {
       _items.addAll(
         readSavedJsonList(
+          listKey: _prefsKey,
           raw,
           CustomAutomation.fromJson,
           onSkipped: () => intact = false,
@@ -160,7 +161,7 @@ class CustomAutomationService extends ChangeNotifier {
 
   Future<void> _persist() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setStringList(
+    await prefs.setSavedJsonList(
       _prefsKey,
       _items.map((item) => jsonEncode(item.toJson())).toList(),
     );

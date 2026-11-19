@@ -35,12 +35,14 @@ class WatermarkService extends ChangeNotifier {
   Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
     final raw = prefs.readStringList(_prefsKey) ?? const [];
-    _assets.addAll(readSavedJsonList(raw, WatermarkAsset.fromJson));
+    _assets.addAll(
+      readSavedJsonList(listKey: _prefsKey, raw, WatermarkAsset.fromJson),
+    );
   }
 
   Future<void> _persist() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setStringList(
+    await prefs.setSavedJsonList(
       _prefsKey,
       _assets.map((a) => jsonEncode(a.toJson())).toList(),
     );
