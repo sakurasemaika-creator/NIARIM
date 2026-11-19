@@ -584,7 +584,8 @@ App・Web共通。Claudeが要修正の詳細を追記し、ユーザーが別�
 - **DISC008（App `53887cf2`）**：自分の作者ページの「ブックマーク」タブは、出せる作品が0件なら理由に関係なく「ありません」と出した。一覧はブックマークのIDがあっても、作品がまだ読み込まれていないか今は公開されていないと外す（表示フィルター・ミュートは一覧に効かない）。IDがあって出せる作品が無いときは`communityBookmarksHiddenMessage`（「まだ読み込めていないか、今は公開されていません」、7言語）を出すようにした。新しい`community_bookmarks_hidden_message_test` 2件、font_coverage・l10n、作者ページの関連test 36件が成功、analyze 0件。取得の失敗・オフラインの区別（読み込み中・失敗の表示）は、接続先のあるビルドでの実操作で二巡目に確かめる。
 - **Appのpushが止まっている（2026-11-19）**：pushの直前に別のセッションの`ed2870f7`（`test/app_smoke_test.dart`・`test/save_dialog_hint_warning_test.dart`・`.github/workflows/community-icon-tabs-visual.yml`）がoriginに入り、non-fast-forwardで断られた。`git rebase origin/dev_branch`・`git pull --rebase`・`git merge`のどれも許可が下りなかった。未反映のコミットは`53887cf2`（DISC008）と、その後の`[audit-state]`のコミット（この台帳）。変えたファイルは`ed2870f7`と重ならない。**必要な操作**：`git rebase origin/dev_branch`（または`git pull --rebase origin dev_branch`）を許可して、`git push origin HEAD:refs/heads/dev_branch`する。
 - **DISC009**：アカウントの切り替え・サインアウト後に古い応答を当てない。`community_account_boundary_test`・`community_account_boundary_widget_test`・`community_account_microtask_boundary_test`・`community_backend_social_sync_test`の31件が成功（直っている）。
-- **次の再開位置**：(1) 残りの古いDISC（DISC011・012・014・016〜024・030・031・035・037〜040・042・052・056・070・145・161）を対応するtest・コードで確かめる。(3) Flutter全体のtestをCIで通す。
+- **古いDISCの確認（続き8、App `78d4a228`）**：DISC011（`community_work_card_layout_test`、文字拡大を含む）、DISC014（`built_in_theme_original_palette_test`・`theme_accent_only_test`、見本一覧のtestはS43で17件成功）、DISC019（`project_detail_audit_test`、文字2倍・倍率の段階を含む）、DISC022（`export_preset_selector_test`の「プリセット名が全幅・全言語・書体で収まる」）は直っている（5ファイル25件・3ファイル23件成功）。DISC016（Linuxのソフトウェア描画で連続して幅を変えると表示が遅れる）は確認用の実行環境の現象で、製品の不具合ではない（Androidの実機では起きない見込み。実機の連続の回転・折りたたみで二巡目に確かめる）。DISC012の`home_continuous_resize_test`は5分を超え、この環境では流せなかった。
+- **次の再開位置**：(1) 残りの古いDISC（DISC012・017・018・020・021・023・024・030・031・035・037〜040・042・052・056・070・145・161）を対応するtest・コードで確かめる。(3) Flutter全体のtestをCIで通す。
 
 ## 要修正の記録
 
