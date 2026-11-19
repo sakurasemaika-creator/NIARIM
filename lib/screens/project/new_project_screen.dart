@@ -17,6 +17,7 @@ import '../../services/settings_service.dart';
 import '../../widgets/autofill_preset_selection_sheet.dart';
 import '../../widgets/background_color_picker.dart';
 import '../../widgets/labeled_slider.dart';
+import '../../widgets/frame_preview_background.dart';
 import '../../widgets/name_entry_dialog.dart';
 import '../../widgets/stepped_slider.dart';
 import '../../widgets/responsive.dart';
@@ -630,32 +631,31 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
               const SizedBox(height: 12),
               // 比率プレビュー：プリセットタップ・カスタム数値変更のどちらでも
               // 即座に連動する。
-              Center(
-                child: SizedBox(
-                  height: 90,
+              SizedBox(
+                height: 90,
+                child: Center(
                   child: AspectRatio(
                     aspectRatio: _exportWidth / _exportHeight,
                     child: DecoratedBox(
+                      position: DecorationPosition.foreground,
                       decoration: BoxDecoration(
-                        color: Theme.of(
-                          context,
-                        ).colorScheme.surfaceContainerHighest,
-                        border: Border.all(
-                          color: Theme.of(context).colorScheme.outline,
-                        ),
-                        borderRadius: BorderRadius.circular(4),
+                        border: Border.all(color: Theme.of(context).colorScheme.outline),
                       ),
-                      child: Center(
-                        child: Text(
-                          '$_exportWidth×$_exportHeight',
-                          style: const TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+                      child: FramePreviewBackground(
+                        backgroundColor: _backgroundColor.toARGB32(),
                       ),
                     ),
                   ),
+                ),
+              ),
+              const SizedBox(height: 6),
+              Semantics(
+                label: l10n.newProjectExportSizeInfo('$_exportWidth×$_exportHeight'),
+                excludeSemantics: true,
+                child: Text(
+                  '$_exportWidth×$_exportHeight',
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.labelLarge,
                 ),
               ),
               const SizedBox(height: 24),

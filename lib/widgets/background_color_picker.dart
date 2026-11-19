@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../utils/app_locale.dart';
+
 /// プロジェクト背景色の候補。新規作成とキャンバス設定で共通。
 /// 淡い黄色のプリセットは廃止し、白・黒・透明の3色に統一する。
 const List<Color> kProjectBackgroundColorChoices = [
@@ -43,6 +45,7 @@ class BackgroundColorSwatchPicker extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
+    final words = appLocalizationsOf(context);
     return Wrap(
       spacing: 12,
       children: kProjectBackgroundColorChoices.map((color) {
@@ -52,15 +55,32 @@ class BackgroundColorSwatchPicker extends StatelessWidget {
         // Fill the *entire* circle with the selected background.
         // A theme-derived neutral outline sits outside the fill so
         // transparent pixels never show the accent color underneath.
-        return GestureDetector(
+        final label = switch (color) {
+          Colors.white => words.timelineColorWhite,
+          Colors.black => words.timelineColorBlack,
+          _ => words.canvasBackgroundTransparent,
+        };
+        return Semantics(
           key: ValueKey<Color>(color),
-          behavior: HitTestBehavior.opaque,
-          onTap: () => onChanged(color),
-          child: SizedBox(
-            width: 46,
-            height: 46,
-            child: Center(
-              child: Container(
+          selected: selected,
+          inMutuallyExclusiveGroup: true,
+          label: label,
+          child: Tooltip(
+            message: label,
+            excludeFromSemantics: true,
+            child: IconButton(
+              iconSize: 44,
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints.tightFor(width: 48, height: 48),
+              style: ButtonStyle(
+                side: WidgetStateProperty.resolveWith(
+                  (states) => states.contains(WidgetState.focused)
+                      ? BorderSide(color: colors.onSurface, width: 2)
+                      : BorderSide.none,
+                ),
+              ),
+              onPressed: () => onChanged(color),
+              icon: Container(
                 width: 44,
                 height: 44,
                 decoration: BoxDecoration(

@@ -1113,7 +1113,7 @@ class AppLocalizationsFr extends AppLocalizations {
       'Impossible de charger les informations d’achat de la boutique. Vérifiez votre connexion et réessayez.';
 
   @override
-  String get premiumYearlyTitle => 'Formule annuelle (recommandée)';
+  String get premiumYearlyTitle => 'Formule annuelle';
 
   @override
   String get premiumYearlyPrice => '5 500 ¥/an';
@@ -8344,8 +8344,10 @@ class AppLocalizationsFr extends AppLocalizations {
   String get canvasAutofillCheckSilhouette => 'Vérifier la silhouette';
 
   @override
-  String get canvasBackgroundColorChoices =>
-      'Blanc / Noir / Transparent / Beige';
+  String get canvasBackgroundColorChoices => 'Blanc / Noir / Transparent';
+
+  @override
+  String get canvasBackgroundTransparent => 'Transparent';
 
   @override
   String get canvasTimelineModeTooltip => 'Mode timeline';

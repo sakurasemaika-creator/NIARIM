@@ -1060,7 +1060,7 @@ class AppLocalizationsKo extends AppLocalizations {
       '스토어에서 구매 정보를 불러오지 못했습니다. 연결을 확인하고 다시 시도해 주세요.';
 
   @override
-  String get premiumYearlyTitle => '연간 플랜（추천）';
+  String get premiumYearlyTitle => '연간 플랜';
 
   @override
   String get premiumYearlyPrice => '¥5,500/년';
@@ -7905,7 +7905,10 @@ class AppLocalizationsKo extends AppLocalizations {
   String get canvasAutofillCheckSilhouette => '실루엣 확인';
 
   @override
-  String get canvasBackgroundColorChoices => '흰색 / 검정 / 투명 / 베이지';
+  String get canvasBackgroundColorChoices => '흰색 / 검정 / 투명';
+
+  @override
+  String get canvasBackgroundTransparent => '투명';
 
   @override
   String get canvasTimelineModeTooltip => '타임라인 모드';

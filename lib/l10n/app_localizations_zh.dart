@@ -1043,7 +1043,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get premiumStoreUnavailable => '无法加载商店的购买信息。请检查网络连接后重试。';
 
   @override
-  String get premiumYearlyTitle => '年付套餐（推荐）';
+  String get premiumYearlyTitle => '年付套餐';
 
   @override
   String get premiumYearlyPrice => '¥5,500/年';
@@ -7776,7 +7776,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get canvasAutofillCheckSilhouette => '检查剪影';
 
   @override
-  String get canvasBackgroundColorChoices => '白 / 黑 / 透明 / 米色';
+  String get canvasBackgroundColorChoices => '白 / 黑 / 透明';
+
+  @override
+  String get canvasBackgroundTransparent => '透明';
 
   @override
   String get canvasTimelineModeTooltip => '时间轴模式';
@@ -11286,7 +11289,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get premiumStoreUnavailable => '無法載入商店的購買資訊。請檢查網路連線後再試一次。';
 
   @override
-  String get premiumYearlyTitle => '年繳方案（推薦）';
+  String get premiumYearlyTitle => '年繳方案';
 
   @override
   String get premiumYearlyPrice => '¥5,500/年';
@@ -18020,7 +18023,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get canvasAutofillCheckSilhouette => '檢查剪影';
 
   @override
-  String get canvasBackgroundColorChoices => '白 / 黑 / 透明 / 米色';
+  String get canvasBackgroundColorChoices => '白 / 黑 / 透明';
+
+  @override
+  String get canvasBackgroundTransparent => '透明';
 
   @override
   String get canvasTimelineModeTooltip => '時間軸模式';

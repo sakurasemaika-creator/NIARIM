@@ -2004,7 +2004,7 @@ abstract class AppLocalizations {
   /// No description provided for @premiumYearlyTitle.
   ///
   /// In ja, this message translates to:
-  /// **'年額プラン（おすすめ）'**
+  /// **'年額プラン'**
   String get premiumYearlyTitle;
 
   /// No description provided for @premiumYearlyPrice.
@@ -14292,8 +14292,14 @@ abstract class AppLocalizations {
   /// No description provided for @canvasBackgroundColorChoices.
   ///
   /// In ja, this message translates to:
-  /// **'白 / 黒 / 透明 / ベージュ'**
+  /// **'白 / 黒 / 透明'**
   String get canvasBackgroundColorChoices;
+
+  /// No description provided for @canvasBackgroundTransparent.
+  ///
+  /// In ja, this message translates to:
+  /// **'透明'**
+  String get canvasBackgroundTransparent;
 
   /// No description provided for @canvasTimelineModeTooltip.
   ///

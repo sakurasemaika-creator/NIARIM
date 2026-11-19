@@ -19,6 +19,8 @@ import 'package:niarim/utils/app_locale.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:niarim/widgets/frame_preview_background.dart';
+
 import 'helpers/first_use_tooltips.dart';
 
 /// 新規プロジェクトの入力：カスタムサイズの保存のダイアログ、幅・高さ・長さの
@@ -199,6 +201,14 @@ void main() {
     expect(text(tester, '高さ(px)'), '64');
     expect(find.text(sizeError), findsNothing);
     expect(find.textContaining('1920×64'), findsWidgets);
+    final preview = find.byType(FramePreviewBackground);
+    final size = tester.getSize(preview);
+    expect(size.width / size.height, closeTo(1920 / 64, 0.01));
+    final transparent = find.byKey(const ValueKey<Color>(Colors.transparent));
+    await tester.ensureVisible(transparent);
+    await tester.tap(transparent);
+    await tester.pumpAndSettle();
+    expect(tester.widget<FramePreviewBackground>(preview).backgroundColor, 0);
     expect(tester.takeException(), isNull);
   });
 

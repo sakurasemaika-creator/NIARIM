@@ -1116,7 +1116,7 @@ class AppLocalizationsEs extends AppLocalizations {
       'No se pudo cargar la información de compra de la tienda. Comprueba la conexión y vuelve a intentarlo.';
 
   @override
-  String get premiumYearlyTitle => 'Plan anual (recomendado)';
+  String get premiumYearlyTitle => 'Plan anual';
 
   @override
   String get premiumYearlyPrice => '¥5.500/año';
@@ -8331,8 +8331,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get canvasAutofillCheckSilhouette => 'Comprobar la silueta';
 
   @override
-  String get canvasBackgroundColorChoices =>
-      'Blanco / Negro / Transparente / Beige';
+  String get canvasBackgroundColorChoices => 'Blanco / Negro / Transparente';
+
+  @override
+  String get canvasBackgroundTransparent => 'Transparente';
 
   @override
   String get canvasTimelineModeTooltip => 'Modo línea de tiempo';

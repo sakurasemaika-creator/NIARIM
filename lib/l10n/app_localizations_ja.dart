@@ -1057,7 +1057,7 @@ class AppLocalizationsJa extends AppLocalizations {
       'ストアから購入情報を取得できませんでした。通信を確認して再試行してください。';
 
   @override
-  String get premiumYearlyTitle => '年額プラン（おすすめ）';
+  String get premiumYearlyTitle => '年額プラン';
 
   @override
   String get premiumYearlyPrice => '¥5,500/年';
@@ -7866,7 +7866,10 @@ class AppLocalizationsJa extends AppLocalizations {
   String get canvasAutofillCheckSilhouette => 'シルエット確認';
 
   @override
-  String get canvasBackgroundColorChoices => '白 / 黒 / 透明 / ベージュ';
+  String get canvasBackgroundColorChoices => '白 / 黒 / 透明';
+
+  @override
+  String get canvasBackgroundTransparent => '透明';
 
   @override
   String get canvasTimelineModeTooltip => 'タイムラインモード';

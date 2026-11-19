@@ -1,4 +1,7 @@
+import 'dart:ui' show Tristate;
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/widgets/background_color_picker.dart';
 
@@ -63,7 +66,15 @@ void main() {
     expect(whiteFill, findsOneWidget);
     expect(tester.getSize(whiteFill), const Size(40, 40));
 
-    await tester.tap(black);
+    expect(tester.getSemantics(white).label, 'White');
+    expect(tester.getSemantics(white).flagsCollection.isSelected, Tristate.isTrue);
+    expect(tester.getSemantics(transparent).label, 'Transparent');
+    expect(tester.getSize(black), const Size(48, 48));
+    await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+    await tester.pump();
+    await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+    await tester.pump();
+    await tester.sendKeyEvent(LogicalKeyboardKey.enter);
     await tester.pump();
     expect(current, Colors.black);
     expect(
