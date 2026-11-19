@@ -1,0 +1,119 @@
+name: One-shot Deploy NIARIM Tag Rename
+on:
+  push:
+    branches: [dev_branch]
+    paths: [.github/workflows/one-shot-deploy-tag-rename.yml]
+permissions:
+  contents: read
+  id-token: write
+jobs:
+  deploy:
+    if: github.ref == 'refs/heads/dev_branch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      BEFORE: 8e0be62e8ba29147958447ec4fdd1036ce30c246
+      AFTER: eda174e9352b09e30aa0d74be145f29b94f46677
+      FUNCTION_NAME: niarim-api
+      AWS_ACCOUNT: '368601349794'
+      AWS_REGION: ap-northeast-1
+    defaults:
+      run:
+        shell: bash
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - name: Build the exact tag-only change and its baseline
+        run: |
+          set -euo pipefail
+          git merge-base --is-ancestor "$AFTER" "$GITHUB_SHA"
+          test "$(git diff --name-only "$BEFORE" "$AFTER" -- src package.json package-lock.json)" = backend/src/api/routes/tags.ts
+          git diff --exit-code "$AFTER" "$GITHUB_SHA" -- src package.json package-lock.json
+          npm ci
+          npm run build
+          npx vitest run test/tags-contract.test.ts test/works-update.test.ts
+          out="$RUNNER_TEMP/tag-rename"
+          mkdir -p "$out"/{full,external}
+          route=src/api/routes/tags.ts
+          cp "$route" "$out/tag-renamed.ts"
+          trap 'cp "$out/tag-renamed.ts" "$route"' EXIT
+          git show "$BEFORE:backend/$route" > "$route"
+          for kind in full external; do
+            flags=()
+            if [[ "$kind" == external ]]; then flags+=( '--external:@aws-sdk/*' ); fi
+            npx esbuild src/api/handler.ts --bundle --platform=node --target=node22 --format=cjs --minify "${flags[@]}" --outfile="$out/$kind/before.js"
+          done
+          cp "$out/tag-renamed.ts" "$route"
+          for kind in full external; do
+            flags=()
+            if [[ "$kind" == external ]]; then flags+=( '--external:@aws-sdk/*' ); fi
+            npx esbuild src/api/handler.ts --bundle --platform=node --target=node22 --format=cjs --minify "${flags[@]}" --outfile="$out/$kind/index.js"
+            (cd "$out/$kind" && zip -q -X niarim-tag-rename.zip index.js)
+          done
+      - uses: aws-actions/configure-aws-credentials@b47578312673ae6fa5b5096b330d9fbac3d116df
+        with:
+          role-to-assume: arn:aws:iam::368601349794:role/NIARIM-GitHub-Deploy-dev
+          aws-region: ap-northeast-1
+      - name: Publish the verified ZIP privately for operator recovery
+        run: |
+          set -euo pipefail
+          test "$(aws sts get-caller-identity --query Account --output text)" = "$AWS_ACCOUNT"
+          credentials="$(aws sts assume-role --role-arn "arn:aws:iam::$AWS_ACCOUNT:role/cdk-hnb659fds-file-publishing-role-$AWS_ACCOUNT-$AWS_REGION" --role-session-name niarim-tag-code-upload --query Credentials --output json)"
+          export AWS_ACCESS_KEY_ID="$(jq -r .AccessKeyId <<<"$credentials")"
+          export AWS_SECRET_ACCESS_KEY="$(jq -r .SecretAccessKey <<<"$credentials")"
+          export AWS_SESSION_TOKEN="$(jq -r .SessionToken <<<"$credentials")"
+          bucket="cdk-hnb659fds-assets-$AWS_ACCOUNT-$AWS_REGION"
+          key="niarim-code-only/$AFTER/niarim-tag-rename.zip"
+          aws s3 cp "$RUNNER_TEMP/tag-rename/full/niarim-tag-rename.zip" "s3://$bucket/$key" --no-progress
+          aws s3api head-object --bucket "$bucket" --key "$key" --query ContentLength --output text
+          printf 'Verified private ZIP: s3://%s/%s\n' "$bucket" "$key" >> "$GITHUB_STEP_SUMMARY"
+      - name: Confirm the running baseline and update only the Lambda code
+        run: |
+          set -euo pipefail
+          out="$RUNNER_TEMP/tag-rename"
+          get_live() {
+            aws lambda get-function --function-name "$FUNCTION_NAME" --query '{Arn:Configuration.FunctionArn,Revision:Configuration.RevisionId,Runtime:Configuration.Runtime,Handler:Configuration.Handler,URL:Code.Location}' --output json
+          }
+          if ! old="$(get_live)"; then
+            credentials="$(aws sts assume-role --role-arn "arn:aws:iam::$AWS_ACCOUNT:role/cdk-hnb659fds-lookup-role-$AWS_ACCOUNT-$AWS_REGION" --role-session-name niarim-tag-code-read --query Credentials --output json)"
+            old="$(AWS_ACCESS_KEY_ID="$(jq -r .AccessKeyId <<<"$credentials")" AWS_SECRET_ACCESS_KEY="$(jq -r .SecretAccessKey <<<"$credentials")" AWS_SESSION_TOKEN="$(jq -r .SessionToken <<<"$credentials")" get_live)"
+          fi
+          test "$(jq -r .Arn <<<"$old")" = "arn:aws:lambda:$AWS_REGION:$AWS_ACCOUNT:function:$FUNCTION_NAME"
+          test "$(jq -r .Runtime <<<"$old")" = nodejs22.x
+          test "$(jq -r .Handler <<<"$old")" = index.handler
+          url="$(jq -er '.URL | select(startswith("https://"))' <<<"$old")"
+          curl --silent --fail --max-time 30 "$url" --output "$out/live.zip"
+          unzip -p "$out/live.zip" index.js > "$out/live.js"
+          for kind in full external; do
+            if cmp -s "$out/live.js" "$out/$kind/index.js"; then
+              echo 'The tag rename code is already deployed.' >> "$GITHUB_STEP_SUMMARY"
+              exit 0
+            fi
+          done
+          artifact=
+          for kind in full external; do
+            if cmp -s "$out/live.js" "$out/$kind/before.js"; then
+              artifact="$out/$kind/niarim-tag-rename.zip"
+              break
+            fi
+          done
+          if [[ -z "$artifact" ]]; then
+            echo '::error::The live bundle differs from the verified tag-only baseline.'
+            exit 1
+          fi
+          revision="$(jq -er '.Revision | select(length > 0)' <<<"$old")"
+          aws lambda update-function-code --function-name "$FUNCTION_NAME" --revision-id "$revision" --zip-file "fileb://$artifact" --dry-run --query FunctionName --output text
+          sha="$(aws lambda update-function-code --function-name "$FUNCTION_NAME" --revision-id "$revision" --zip-file "fileb://$artifact" --query CodeSha256 --output text)"
+          test "$sha" = "$(openssl dgst -sha256 -binary "$artifact" | openssl base64 -A)"
+          aws lambda wait function-updated --function-name "$FUNCTION_NAME"
+          curl --silent --show-error --fail --max-time 25 'https://ibjfhyoqvfanle62ltokgz6sry0fjqfh.lambda-url.ap-northeast-1.on.aws/works/latest' --output "$out/smoke.json"
+          jq -e '.works | type == "array"' "$out/smoke.json" >/dev/null
+          echo 'Tag rename code deployed. Public works API returned HTTP 200.' >> "$GITHUB_STEP_SUMMARY"
