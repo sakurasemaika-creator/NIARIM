@@ -182,7 +182,7 @@ describe.skipIf(process.env.NIARIM_DYNAMODB_LOCAL_TESTS !== "1")("self-service a
     expect(await read(Keys.deviceOwner("rebound-hash"))).toEqual(transferredDevice);
     expect(await read(Keys.admobReceipt("test-ad"))).not.toHaveProperty("niarimUserId");
     expect(await read(Keys.accountErasureBoundary(sub))).toMatchObject({ ttl: expect.any(Number) });
-    await expect(authenticate("Bearer owner")).rejects.toMatchObject({ statusCode: 401 });
+    await expect(authenticate("Bearer owner")).rejects.toMatchObject({ statusCode: 410, code: "ACCOUNT_ERASED" });
     expect(parse(await verifyAccountDeletion(event({ nonce })))).toMatchObject({ state: "no-account" });
     await erase({}, context);
     expect((await read(Keys.work(otherWork)))?.bookmarkCount).toBe(1);

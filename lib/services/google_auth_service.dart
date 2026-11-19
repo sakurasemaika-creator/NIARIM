@@ -266,6 +266,23 @@ class GoogleAuthService extends ChangeNotifier {
     _setAccount(null);
   });
 
+  Future<void> signOutDeletedAccount(String token) async {
+    await _backendTokenRefresh;
+    final user = _account;
+    if (_disposed || user == null || authOperationInProgress) return;
+    if (user.authentication.idToken != token &&
+        _lastRejectedBackendToken != token) {
+      return;
+    }
+    await _runExclusive(() async {
+      try {
+        await _signIn.signOut();
+      } finally {
+        if (_account?.id == user.id) _setAccount(null);
+      }
+    });
+  }
+
   /// Google側のNIARIM認可そのものも取り消す場合に使う。
   Future<void> disconnect() => _runExclusive(() async {
     _ensureReadyForGoogle();

@@ -9,7 +9,7 @@ import {
 import { ddb, tableName, Keys } from "./dynamo";
 import type { GoogleSubLookupItem, MembershipTier, UserItem } from "./types";
 import { TABLE_ITEM_TYPE } from "./types";
-import { conflict, unauthorized } from "./response";
+import { ApiError, conflict, unauthorized } from "./response";
 
 /**
  * Google IDトークンの検証＋NIARIM User IDの発行・再利用（4章）。
@@ -106,7 +106,7 @@ async function findOrCreateUser(sub: string, issuedAt: number): Promise<UserItem
     const rejectedBefore = existing?.rejectIssuedAtOrBefore ??
       boundary?.Item?.rejectIssuedAtOrBefore;
     if (typeof rejectedBefore === "number" && issuedAt <= rejectedBefore) {
-      unauthorized("アカウントが削除されました。もう一度ログインしてください");
+      throw new ApiError(410, "アカウントが削除されました", "ACCOUNT_ERASED");
     }
     const niarimUserId = existing?.niarimUserId ?? generateNiarimUserId();
     if (existing) {

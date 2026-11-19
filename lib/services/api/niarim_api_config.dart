@@ -46,6 +46,7 @@ class NiarimApiConfig {
   static CommunityApi? createApi({
     NiarimAuthTokenProvider? tokenProvider,
     NiarimAuthTokenRefresher? refreshToken,
+    NiarimErasedSessionHandler? onAccountErased,
     http.Client? httpClient,
   }) {
     if (!isConfigured) return null;
@@ -54,6 +55,7 @@ class NiarimApiConfig {
         baseUrl: baseUrl,
         tokenProvider: tokenProvider,
         refreshToken: refreshToken,
+        onAccountErased: onAccountErased,
         httpClient: httpClient,
       ),
     );

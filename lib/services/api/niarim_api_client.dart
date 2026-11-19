@@ -7,6 +7,7 @@ import 'niarim_api_exception.dart';
 
 typedef NiarimAuthTokenProvider = Future<String?> Function();
 typedef NiarimAuthTokenRefresher = Future<String?> Function(String rejected);
+typedef NiarimErasedSessionHandler = Future<void> Function(String token);
 
 class NiarimApiClient {
   final String baseUrl;
@@ -14,6 +15,7 @@ class NiarimApiClient {
   final http.Client _httpClient;
   final NiarimAuthTokenProvider _tokenProvider;
   final NiarimAuthTokenRefresher? _refreshToken;
+  final NiarimErasedSessionHandler? _onAccountErased;
 
   final Duration timeout;
   final int maxGetRetries;
@@ -24,6 +26,7 @@ class NiarimApiClient {
     http.Client? httpClient,
     NiarimAuthTokenProvider? tokenProvider,
     this._refreshToken,
+    this._onAccountErased,
     this.timeout = const Duration(seconds: 15),
     this.maxGetRetries = 2,
     this.retryBackoff = const Duration(milliseconds: 400),
@@ -142,6 +145,14 @@ class NiarimApiClient {
       try {
         return await _sendOnce(method, uri, body: body, token: token);
       } on NiarimApiException catch (e) {
+        if (authenticated && token != null && e.code == 'ACCOUNT_ERASED') {
+          try {
+            await _onAccountErased?.call(token);
+          } on Object {
+            // Preserve the server's deletion response if sign-out fails.
+          }
+          rethrow;
+        }
         if (authenticated &&
             e.isUnauthorized &&
             !authRetryUsed &&

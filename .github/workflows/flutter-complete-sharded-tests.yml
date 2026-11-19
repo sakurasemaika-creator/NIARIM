@@ -36,6 +36,9 @@ on:
       - "test/niatra_transfer_keeps_this_device_test.dart"
       - "lib/utils/saved_list_reader.dart"
       - "lib/utils/desktop_dock_column_fit.dart"
+      - "lib/services/api/niarim_api_client.dart"
+      - "lib/services/google_auth_service.dart"
+      - "lib/screens/settings/settings_screen.dart"
   workflow_dispatch:
 permissions:
   contents: read

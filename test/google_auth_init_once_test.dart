@@ -20,6 +20,7 @@ import 'package:niarim/services/google_auth_service.dart';
 class _FakeSignIn implements GoogleSignIn {
   int initializeCalls = 0;
   int lightweightCalls = 0;
+  int signOutCalls = 0;
   Completer<void> initialization = Completer<void>();
   Future<GoogleSignInAccount?>? Function()? lightweight;
   final _events = StreamController<GoogleSignInAuthenticationEvent>.broadcast();
@@ -45,6 +46,11 @@ class _FakeSignIn implements GoogleSignIn {
   }) {
     lightweightCalls++;
     return lightweight?.call();
+  }
+
+  @override
+  Future<void> signOut() async {
+    signOutCalls++;
   }
 
   @override
@@ -169,6 +175,54 @@ void main() {
     expect(await auth.backendIdToken(), 'fresh');
     expect(sdk.lightweightCalls, 2);
   }, skip: configured ? false : skip);
+
+  test(
+    'a deleted account signs out without automatically refreshing',
+    () async {
+      final sdk = _FakeSignIn()..initialization.complete();
+      final auth = await signedIn(sdk, _TestAccount());
+      final api = NiarimApiClient(
+        baseUrl: 'https://example.invalid',
+        tokenProvider: auth.backendIdToken,
+        refreshToken: auth.refreshRejectedBackendIdToken,
+        onAccountErased: auth.signOutDeletedAccount,
+        httpClient: MockClient((request) async {
+          expect(request.headers['authorization'], 'Bearer stale');
+          return http.Response('{"code":"ACCOUNT_ERASED"}', 410);
+        }),
+      );
+      addTearDown(api.close);
+      await expectLater(
+        api.getJson('/me/works', authenticated: true),
+        throwsA(
+          isA<NiarimApiException>().having(
+            (e) => e.code,
+            'code',
+            'ACCOUNT_ERASED',
+          ),
+        ),
+      );
+      expect(sdk.lightweightCalls, 1);
+      expect(sdk.signOutCalls, 1);
+      expect(await auth.backendIdToken(), isNull);
+    },
+    skip: configured ? false : skip,
+  );
+
+  test(
+    'the deletion response for a prior account preserves the current sign-in',
+    () async {
+      final sdk = _FakeSignIn()..initialization.complete();
+      final auth = await signedIn(
+        sdk,
+        _TestAccount(id: 'second', token: 'other'),
+      );
+      await auth.signOutDeletedAccount('stale');
+      expect(sdk.signOutCalls, 0);
+      expect(await auth.backendIdToken(), 'other');
+    },
+    skip: configured ? false : skip,
+  );
 
   test(
     'a different account at renewal signs out and never replays a write',

@@ -104,8 +104,8 @@ describe("stable account identity", () => {
     send
       .mockResolvedValueOnce({})
       .mockResolvedValueOnce({ Item: { rejectIssuedAtOrBefore: 1500 } });
-    await expect(authenticate("Bearer token")).rejects.toMatchObject({ statusCode: 401 });
+    await expect(authenticate("Bearer token")).rejects.toMatchObject({ statusCode: 410, code: "ACCOUNT_ERASED" });
     send.mockResolvedValueOnce({ Item: { ...lookup, rejectIssuedAtOrBefore: 1500 } });
-    await expect(authenticate("Bearer token")).rejects.toMatchObject({ statusCode: 401 });
+    await expect(authenticate("Bearer token")).rejects.toMatchObject({ statusCode: 410, code: "ACCOUNT_ERASED" });
   });
 });

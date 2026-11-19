@@ -258,6 +258,7 @@ Future<List<SingleChildWidget>> _buildAppProviders(
       api: NiarimApiConfig.createApi(
         tokenProvider: googleAuthService.backendIdToken,
         refreshToken: googleAuthService.refreshRejectedBackendIdToken,
+        onAccountErased: googleAuthService.signOutDeletedAccount,
       ),
     ),
   );

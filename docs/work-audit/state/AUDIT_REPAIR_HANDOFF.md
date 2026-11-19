@@ -2528,3 +2528,10 @@ App・Web共通。Claudeが要修正の詳細を追記し、ユーザーが別�
 - **Webの字形とブラウザ**。簡体字の「对」を補った `c9905cf4` の[字形CI #44530795445](https://github.com/sakurasemaika-creator/NIARIM-web/actions/runs/44530795445) は、Chromiumで13ページ×2画面幅×7言語（182条件）すべて不足0件。同一SHAの[Webスモークジョブ](https://github.com/sakurasemaika-creator/NIARIM-web/actions/runs/44530795659/job/135583251751)も成功した。別ジョブの公開料金ページは2 URLともCloudflare Accessの認証を要求した。配信済みの料金は認証可能な環境で確認する。
 - **DISC482・490の証跡**。[組み込み素材の一覧](../../product-audit/MATERIAL_ASSET_INVENTORY.md)にブラシ45・スタンプ22・トーン63の全130ファイルとGitの識別子を記録した。作成者・入手元・利用許諾は所有者資料と照合する。追加フォントのライセンス資料を含む[Web依存関係CI #44530390167](https://github.com/sakurasemaika-creator/NIARIM-web/actions/runs/44530390167)と[App・バックエンド依存関係CI #44527699318](https://github.com/sakurasemaika-creator/NIARIM/actions/runs/44527699318)は成功した。
 - **二巡目の開始判断に残る項目**。DISC487は現行のApp・Web・バックエンドでアカウント全体の削除経路を確認できなかった。バックエンドの `DELETE /works/{id}` は投稿が対象。認証は既存ユーザーが見つからない場合に作成へ進むため、削除の受付から完了までの再作成・並行書き込みの防止と、投稿・購入記録・通知トークン等の削除・保持の範囲を詰める必要がある。DISC410は準備中の表示への修正を先行済みで、通報・ブロックの本機能は所有者判断の引き継ぎ。今回の確認結果を全DISCの完了とは扱わず、各残件の判断と修正証跡を照合したうえでClaudeがA001から始める。Android／DeXの実機、実広告、実課金は人の最終確認への引き継ぎ。
+
+## DISC487のセルフサービス削除（2026-11-20、App・Web dev_branch）
+
+- 所有者の指示を受け、人による個別の申請受付から本人操作で完結する削除に切り替えた。アプリの設定とWebのプライバシーポリシーから公式の削除ページを開ける。Googleで本人確認して対象アカウントを表示し、削除範囲と復元不可への確認を経て処理する。理由の回答は手続きに含めない。
+- App製品 `f4118200` とWeb `20b7564d` を `dev_branch` に反映。DynamoDBの処理待ち、アカウントの書き込み制限、途中再開、所有者のデータ消去、他のアカウントを巻き込まないことを[使い捨てDBのCI #44561615229](https://github.com/sakurasemaika-creator/NIARIM/actions/runs/44561615229)で確認した。削除の同意・二重実行防止・7言語のPC/SPの完了表示は[Webのブラウザ検証](https://github.com/sakurasemaika-creator/NIARIM-web/actions/runs/44561616607/job/135692133190)の模擬Google認証で確認した。
+- アプリが削除済みのIDトークンを送った場合はHTTP 410を受け、対象のセッションだけサインアウトする。通常のトークン更新や別アカウントのログインを保つことを、Google設定を模擬したFlutterテストで確認した。削除対象・関連サービス・保持記録の区分は[データフロー資料](../../product-audit/DATA_FLOW_INVENTORY.md)に記録。
+- 公開前には実際に配信するWebのHTTPSオリジンを既存Google OAuth Webクライアントに登録し、Webに同じ公開クライアントIDを設定した状態で、テストアカウントの本人確認から消去完了までを照合する。ここでのDBテストはAWSの公開データと切り離して実施した。Google Playの定期購入はGoogle Play、YouTube動画はYouTubeで管理する旨を表示する。Claudeが2周目のA001からの正式判定を担当する。
