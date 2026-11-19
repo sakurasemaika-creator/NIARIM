@@ -112,17 +112,16 @@ void main() {
             4,
             reason: 'delay=$delay',
           );
-          final appBar = tester.widget<AppBar>(
-            find
-                .descendant(
-                  of: find.byType(CommunityScreen),
-                  matching: find.byType(AppBar),
-                )
-                .first,
+          final appBar = find.descendant(
+            of: find.byType(CommunityScreen),
+            matching: find.byType(AppBar),
           );
           expect(
-            (appBar.title as Text).data,
-            l10n.communityScreenTitle,
+            find.descendant(
+              of: appBar,
+              matching: find.text(l10n.communityScreenTitle),
+            ),
+            findsOneWidget,
             reason: 'delay=$delay',
           );
           expect(

@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/models/app_theme_preset.dart';
+import 'package:niarim/models/community_work.dart';
 import 'package:niarim/screens/community/widgets/community_floating_preview.dart';
 import 'package:niarim/screens/community/widgets/community_work_card.dart';
+import 'package:niarim/screens/community/widgets/community_youtube_player.dart';
 import 'package:niarim/services/community_preview_service.dart';
 import 'package:niarim/services/community_service.dart';
 import 'package:niarim/services/theme_service.dart';
@@ -27,7 +29,22 @@ void main() {
       tester.view.devicePixelRatio = 1;
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
-      final work = community.discoverableWorks.first;
+      final work = CommunityWork(
+        id: 'abcdefghijk',
+        title: 'Preview video',
+        authorId: 'preview-author',
+        authorName: 'Creator',
+        viewCount: 0,
+        likeCount: 0,
+        bookmarkCount: 0,
+        postedAt: DateTime.utc(2026),
+        durationSeconds: 30,
+        thumbnailColorIndex: 0,
+      );
+      community.applyServerWork(work);
+      CommunityYoutubePlayer.debugPlayerBuilder = (_, _, _) =>
+          const SizedBox.expand();
+      addTearDown(() => CommunityYoutubePlayer.debugPlayerBuilder = null);
       for (final preset in [
         AppThemePreset.defaultLight.copyWith(
           id: ThemeService.customCurrentId,

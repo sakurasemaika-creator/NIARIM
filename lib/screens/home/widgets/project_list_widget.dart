@@ -880,8 +880,9 @@ class ProjectListWidget extends StatelessWidget {
       // 検索の結果には、入っているフォルダを添える。
       subtitle: DateLineText(
         [
-          AppLocalizations.of(context)!
-              .projectListFolderCreatedOn(folder.createdAt),
+          AppLocalizations.of(
+            context,
+          )!.projectListFolderCreatedOn(folder.createdAt),
           if (_searchLocation(context, folder.parentFolderId)
               case final location?)
             AppLocalizations.of(context)!.projectListInFolder(location),

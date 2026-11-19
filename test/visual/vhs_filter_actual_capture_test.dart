@@ -10,6 +10,7 @@ import 'package:niarim/app.dart';
 import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/engine/tile_manager.dart';
 import 'package:niarim/l10n/app_localizations.dart';
+import 'package:niarim/models/filter_def.dart';
 import 'package:niarim/router.dart';
 import 'package:niarim/screens/canvas/widgets/canvas_area.dart';
 import 'package:niarim/screens/canvas/widgets/filter_panel.dart';
@@ -169,15 +170,23 @@ void main() {
       matching: find.byType(TextField),
     );
     expect(searchField, findsOneWidget);
-    await tester.enterText(searchField, 'VHS');
+    await tester.enterText(searchField, l10n.filterNameGenericNoise);
     await settle(3);
-    expect(find.text(l10n.filterNameVhsNoise), findsOneWidget);
-    await tester.tap(find.text(l10n.filterNameVhsNoise));
-    await settle(8);
-    expect(
-      appContext.read<FilterService>().currentFilter?.id,
-      FilterService.vhsNoiseFilterId,
+    final noiseCard = find.descendant(
+      of: find.byKey(const ValueKey('filter-tile-grid')),
+      matching: find.text(l10n.filterNameGenericNoise),
     );
+    expect(noiseCard, findsOneWidget);
+    await tester.ensureVisible(noiseCard);
+    await tester.tap(noiseCard);
+    await settle(3);
+    final vhs = find.byKey(const ValueKey('noise-style-option-vhs'));
+    await tester.ensureVisible(vhs);
+    await tester.tap(vhs);
+    await settle(8);
+    final selected = appContext.read<FilterService>().currentFilter;
+    expect(selected?.id, FilterService.genericNoiseFilterId);
+    expect(selected?.noiseStyle, NoiseStyle.vhs);
     stage('vhs:selected');
     await capture('02_vhs_selected_default');
 

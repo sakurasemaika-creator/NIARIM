@@ -183,8 +183,9 @@ void main() {
               // Compact mode moves the direction action into the popup.
               // It must toggle from the current direction, whichever the
               // persisted sort preference is for this locale/viewport.
-              final ascendingBefore =
-                  tester.widget<SortModeControl>(sort).sortAscending;
+              final ascendingBefore = tester
+                  .widget<SortModeControl>(sort)
+                  .sortAscending;
               await tester.tap(field);
               await tester.pumpAndSettle();
               await tester.tap(

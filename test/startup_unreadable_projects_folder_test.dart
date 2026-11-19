@@ -827,9 +827,9 @@ void main() {
       }
       // 一覧に書けたので、控えは残さない。
       expect(
-        Directory(folder)
-            .listSync()
-            .where((f) => f.path.endsWith(SaveTreeService.pendingSuffix)),
+        Directory(folder).listSync().where(
+          (f) => f.path.endsWith(SaveTreeService.pendingSuffix),
+        ),
         isEmpty,
       );
       // 一覧に書いたので、次の起動でも同じ。
@@ -1029,8 +1029,9 @@ void main() {
     storage.paths.clear();
     expect(File(indexPath).readAsStringSync(), before);
     // 知らせは薄くなって消える（400ms）。
-    ScaffoldMessenger.of(tester.element(find.byType(Scaffold).first))
-        .removeCurrentSnackBar();
+    ScaffoldMessenger.of(
+      tester.element(find.byType(Scaffold).first),
+    ).removeCurrentSnackBar();
     await _settleWithFiles(tester, rounds: 6);
     expect(find.byType(SnackBar), findsNothing);
 
@@ -3374,8 +3375,9 @@ void main() {
     );
     expect(projects.trashedFolders.map((t) => t.folder.id), [folder.id]);
     expect(works.every(onDisk), isTrue);
-    ScaffoldMessenger.of(tester.element(find.byType(Scaffold).last))
-        .removeCurrentSnackBar();
+    ScaffoldMessenger.of(
+      tester.element(find.byType(Scaffold).last),
+    ).removeCurrentSnackBar();
     appRouter.pop();
     await _settleWithFiles(tester, rounds: 4);
 

@@ -14,6 +14,7 @@ import 'package:niarim/screens/canvas/widgets/filter_panel.dart';
 import 'package:niarim/screens/canvas/widgets/layer_panel.dart';
 import 'package:niarim/screens/canvas/widgets/mesh_transform_panel.dart';
 import 'package:niarim/screens/canvas/widgets/onion_skin_panel.dart';
+import 'package:niarim/screens/canvas/widgets/pen_sub_tool_panel.dart';
 import 'package:niarim/screens/canvas/widgets/quick_tool_panel.dart';
 import 'package:niarim/screens/canvas/widgets/ruler_panel.dart';
 import 'package:niarim/screens/canvas/widgets/toolbar_widget.dart';
@@ -172,12 +173,15 @@ void main() {
     // ままだと次のツールバー操作がパネル側に吸われてボタンが反応しない。
     // 実際の操作と同じく、次を開く前に今開いているパネルを閉じる。
     Future<void> closeOpenPanel() async {
-      final closeBar = find.byType(PanelCenterCloseBar);
-      if (closeBar.evaluate().isEmpty) return;
-      // The × sits at the bar's right end; the middle of the bar is empty.
-      await tester.tap(
-        find.descendant(of: closeBar.first, matching: find.byType(IconButton)),
+      final close = find.descendant(
+        of: find.byWidgetPredicate(
+          (widget) =>
+              widget is PanelCenterCloseBar || widget is PenSubToolPanel,
+        ),
+        matching: find.widgetWithIcon(IconButton, Icons.close),
       );
+      if (close.evaluate().isEmpty) return;
+      await tester.tap(close.hitTestable().first);
       await tester.pump(const Duration(milliseconds: 400));
     }
 

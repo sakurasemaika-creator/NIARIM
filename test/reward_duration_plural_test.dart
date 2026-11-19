@@ -91,20 +91,6 @@ const _toneCurvePrices = CoinUnlockUnitPrices(
 
 /// [_toneCurvePrices]で[duration]を選んだときの必要オパール（モデルを通さず、
 /// 短期は単価×数、月単位は12か月ごとに10か月分の価格で計算する）。
-/// [n]を、表示言語の桁区切り（「4,320」「4.320」「4 320」）があっても無くても
-/// 合う正規表現の文字列にする。
-String _grouped(int n) {
-  final digits = n.toString();
-  final out = StringBuffer();
-  for (var i = 0; i < digits.length; i++) {
-    if (i > 0 && (digits.length - i) % 3 == 0) {
-      out.write('[,.  ]?');
-    }
-    out.write(digits[i]);
-  }
-  return out.toString();
-}
-
 int _expectedToneCurveCoins(CoinUnlockDuration duration) =>
     switch (duration.unit) {
       CoinDurationUnit.hour => 2160 * duration.amount,
@@ -113,6 +99,18 @@ int _expectedToneCurveCoins(CoinUnlockDuration duration) =>
       CoinDurationUnit.month =>
         129400 * (duration.amount ~/ 12) + 12940 * (duration.amount % 12),
     };
+
+String _expectedToneCurvePriceLabel(
+  AppLocalizations l10n,
+  CoinUnlockDuration duration,
+) {
+  final amount = l10n.coinAmount(_expectedToneCurveCoins(duration));
+  // The injected quote has flat unit prices. For complete years the screen
+  // displays the discounted reference price with its availability note.
+  return duration.unit == CoinDurationUnit.month && duration.amount >= 12
+      ? '${l10n.rewardUnlockFixedPrice} · $amount'
+      : amount;
+}
 
 Future<void> _pumpScreen(
   WidgetTester tester, {
@@ -326,19 +324,14 @@ void main() {
         expect(find.byIcon(Icons.check), findsOneWidget);
         await _closeSheet(tester);
 
-        // 文言を変えても、その期間の必要オパールは単価×数のまま（日本語・
-        // 韓国語は数と「オパール」「오팔」の間に空白を入れない）。
+        // その期間の必要オパールを、表示言語の桁区切りと単位で確かめる。
         final toneCurve = find.byKey(const ValueKey('rewardFeature_toneCurve'));
+        final l10n = lookupAppLocalizations(language.locale);
         await _reveal(tester, toneCurve);
         expect(
           find.descendant(
             of: toneCurve,
-            matching: find.textContaining(
-              RegExp(
-                r'(?<![0-9])'
-                '${_grouped(_expectedToneCurveCoins(duration))}(?![0-9])',
-              ),
-            ),
+            matching: find.text(_expectedToneCurvePriceLabel(l10n, duration)),
           ),
           findsOneWidget,
           reason: '${language.code} $name',
@@ -401,6 +394,7 @@ void main() {
       priceCatalog: const {CoinUnlockTarget.toneCurve: _toneCurvePrices},
     );
     final english = rewardDurationLanguages.singleWhere((l) => l.code == 'en');
+    final l10n = lookupAppLocalizations(english.locale);
     final toneCurve = find.byKey(const ValueKey('rewardFeature_toneCurve'));
     await _reveal(tester, toneCurve);
     await tester.tap(toneCurve);
@@ -410,7 +404,7 @@ void main() {
     var checked = 0;
     for (final duration in offeredRewardDurations) {
       await _pick(tester, duration);
-      final coins = _expectedToneCurveCoins(duration);
+      final price = l10n.coinAmount(_expectedToneCurveCoins(duration));
       final where = '${duration.unit.name} ${duration.amount}';
 
       await _reveal(tester, _durationButton);
@@ -419,20 +413,13 @@ void main() {
       expect(
         find.descendant(
           of: toneCurve,
-          matching: find.textContaining(
-            RegExp('(?<![0-9])${_grouped(coins)} opals'),
-          ),
+          matching: find.text(_expectedToneCurvePriceLabel(l10n, duration)),
         ),
         findsOneWidget,
         reason: where,
       );
       await _reveal(tester, total);
-      // 英語の数は桁区切りつき（「2,160 opals」、表示言語の書き方）。
-      expect(
-        tester.widget<Text>(total).data,
-        lookupAppLocalizations(const Locale('en')).coinAmount(coins),
-        reason: where,
-      );
+      expect(tester.widget<Text>(total).data, price, reason: where);
       checked++;
     }
     expect(checked, 153);

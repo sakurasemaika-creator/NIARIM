@@ -142,8 +142,10 @@ void main() {
       ),
     );
     await home.waitFor(
-      () => folders.folders.isEmpty,
-      reason: 'the works folder was not moved',
+      () =>
+          folders.folders.isEmpty &&
+          find.byType(AlertDialog).evaluate().isEmpty,
+      reason: 'the works folder move did not finish and close the confirmation',
     );
     await home.settleIo(2);
     expect(find.byType(AlertDialog), findsNothing);

@@ -302,8 +302,9 @@ void main() {
           )
           .color!;
       expect(background, preset.menuBgColor);
-      final scheme = Theme.of(tester.element(find.byType(HomeScreen)))
-          .colorScheme;
+      final scheme = Theme.of(
+        tester.element(find.byType(HomeScreen)),
+      ).colorScheme;
       for (var i = 0; i < 4; i++) {
         final tab = find.byKey(ValueKey('home_tab_$i'));
         final colours = <Color>[

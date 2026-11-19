@@ -55,8 +55,6 @@ void main() {
       }
     }
 
-
-
     FileImage fileImageOf(Image image) {
       ImageProvider provider = image.image;
       if (provider is ResizeImage) {

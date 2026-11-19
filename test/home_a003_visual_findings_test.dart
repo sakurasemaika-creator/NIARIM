@@ -497,9 +497,9 @@ void main() {
     final grid = tester.renderObject<RenderSliverGrid>(
       find.byType(SliverGrid).first,
     );
-    final layout = grid.gridDelegate.getLayout(
-      grid.constraints,
-    ) as SliverGridRegularTileLayout;
+    final layout =
+        grid.gridDelegate.getLayout(grid.constraints)
+            as SliverGridRegularTileLayout;
     final name = _paragraph(
       tester,
       find.text('Archive of finished commissions', findRichText: true),
@@ -779,8 +779,9 @@ void main() {
     final paragraph = _paragraph(tester, find.text(name).first);
     final lines = ParagraphLines(paragraph);
     final count =
-        [for (var i = 0; i < lines.visible.length; i++) ?lines.lineOf(i)]
-            .reduce((a, b) => a > b ? a : b) +
+        [
+          for (var i = 0; i < lines.visible.length; i++) ?lines.lineOf(i),
+        ].reduce((a, b) => a > b ? a : b) +
         1;
     expect(count, greaterThan(1));
     // 書式に大きさが無いときは、文字の既定の大きさ（14）で描かれる。
@@ -1022,8 +1023,9 @@ void main() {
     if (!shared.sortByName || shared.sortAscending) lost.add('shared sort');
     await home.showTab(0);
     await home.showTab(3);
-    if (chip(ValueKey('trashKind_${TrashEntryKind.exportedWork.name}'))
-        .selected) {
+    if (chip(
+      ValueKey('trashKind_${TrashEntryKind.exportedWork.name}'),
+    ).selected) {
       lost.add('trash kind filter');
     }
     if (!sortIn(TrashScreen).sortByName) lost.add('trash sort');
