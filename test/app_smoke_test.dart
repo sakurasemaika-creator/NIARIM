@@ -29,6 +29,7 @@ import 'package:niarim/screens/canvas/widgets/canvas_area.dart';
 import 'package:niarim/screens/rewards/membership_benefits_screen.dart';
 import 'package:niarim/screens/canvas/widgets/toolbar_widget.dart';
 import 'package:niarim/screens/community/community_author_works_screen.dart';
+import 'package:niarim/screens/community/community_work_detail_screen.dart';
 import 'package:niarim/screens/community/widgets/community_shorts_viewer.dart';
 import 'package:niarim/screens/community/widgets/community_work_card.dart';
 import 'package:niarim/services/community_service.dart';
@@ -1766,6 +1767,35 @@ void main() {
     expect(find.byType(CommunityShortsScreen), findsNothing);
   }, timeout: const Timeout(Duration(seconds: 60)));
 
+  Future<void> openCommunityWorkDetails(
+    WidgetTester tester,
+    Finder card,
+  ) async {
+    final work = tester.widget<CommunityWorkCard>(card).work;
+    // カード中央には投稿者リンクが来ることがあるため、サムネイルを押す。
+    final thumbnail = find.descendant(
+      of: card,
+      matching: find.byType(AspectRatio),
+    );
+    final preview = tester.element(card).read<CommunityPreviewService>();
+    await tester.ensureVisible(thumbnail);
+    expect(thumbnail.hitTestable(), findsOneWidget);
+    await tester.tap(thumbnail);
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull, reason: 'フローティングプレビュー表示で例外');
+    expect(preview.work?.id, work.id);
+
+    final detailsButton = find.byKey(const Key('communityPreviewDetails'));
+    expect(detailsButton, findsOneWidget);
+    expect(detailsButton.hitTestable(), findsOneWidget);
+    await tester.tap(detailsButton);
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull, reason: '作品詳細画面表示で例外');
+    final detail = find.byType(CommunityWorkDetailScreen);
+    expect(tester.widget<CommunityWorkDetailScreen>(detail).workId, work.id);
+    expect(ModalRoute.of(tester.element(detail))?.isCurrent, isTrue);
+  }
+
   testWidgets('コミュニティ画面：タグの追加・タップでの絞り込み・削除ができる', (WidgetTester tester) async {
     setPhoneViewSize(tester);
     final providers = await tester.runAsync(buildAppProviders);
@@ -1774,103 +1804,107 @@ void main() {
     );
     await tester.pump(const Duration(milliseconds: 500));
 
-    final communityButtonFinder = find.byIcon(Icons.movie_filter_outlined);
-    await tester.tap(communityButtonFinder);
-    await tester.pump(const Duration(milliseconds: 300));
-    await tester.pump(const Duration(milliseconds: 300));
+    await tester.tap(find.byIcon(Icons.movie_filter_outlined));
+    await tester.pumpAndSettle();
 
-    // 最初の作品カードをタップするとフローティング動画プレビュー
-    // ウィンドウが開く。「詳細へ」ボタンで作品詳細画面（別ルート）へ
-    // 遷移する。
-    final workCardFinder = find.byType(CommunityWorkCard);
-    expect(workCardFinder, findsWidgets);
-    await tester.tap(workCardFinder.first);
-    await tester.pump(const Duration(milliseconds: 300));
-    expect(tester.takeException(), isNull, reason: 'フローティングプレビュー表示で例外');
-    final detailButtonFinder = find.text('詳細へ');
-    expect(
-      detailButtonFinder,
-      findsOneWidget,
-      reason: 'フローティングプレビューの「詳細へ」ボタンが見つからない',
+    // 縦画面ビューアはタグのタップで検索に移り、作品詳細のタグは操作メニューを開く。
+    final sortButton = find.byKey(const Key('communitySortButton'));
+    final plazaLabels = AppLocalizations.of(tester.element(sortButton))!;
+    await tester.tap(sortButton);
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.widgetWithText(
+        CheckedPopupMenuItem<String>,
+        plazaLabels.communityVideoTypeFilterShortOnly,
+      ),
     );
-    await tester.tap(detailButtonFinder);
-    await tester.pump(const Duration(milliseconds: 300));
-    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pumpAndSettle();
+    await tester.tap(sortButton);
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.widgetWithText(
+        PopupMenuItem<String>,
+        plazaLabels.communityShortsModeTooltip,
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull, reason: '縦画面ビューア表示で例外');
+    final shorts = find.byType(CommunityShortsScreen);
+    expect(ModalRoute.of(tester.element(shorts))?.isCurrent, isTrue);
+    final shortsScreen = tester.widget<CommunityShortsScreen>(shorts);
+    final work = shortsScreen.works[shortsScreen.initialIndex];
+    await tester.tap(
+      find
+          .descendant(
+            of: shorts,
+            matching: find.byIcon(Icons.info_outline_rounded),
+          )
+          .hitTestable(),
+    );
+    await tester.pumpAndSettle();
     expect(tester.takeException(), isNull, reason: '作品詳細画面表示で例外');
+    final detail = find.byType(CommunityWorkDetailScreen);
+    expect(tester.widget<CommunityWorkDetailScreen>(detail).workId, work.id);
+    final l10n = AppLocalizations.of(tester.element(detail))!;
 
-    // 「タグを追加」→ダイアログでタグ名を入力→OK。
     const newTag = 'テスト用タグ__probe';
-    final addTagChipFinder = find.text('タグを追加');
-    expect(addTagChipFinder, findsOneWidget);
-    await tester.tap(addTagChipFinder);
-    await tester.pump(const Duration(milliseconds: 300));
-    final tagInputFinder = find.byType(TextField).last;
-    await tester.enterText(tagInputFinder, newTag);
-    await tester.tap(find.text('OK'));
-    await tester.pump(const Duration(milliseconds: 300));
+    final newTagChip = find.byKey(const ValueKey('communityDetailTag-$newTag'));
+    expect(newTagChip, findsNothing);
+    final addTag = find.widgetWithText(ActionChip, l10n.communityAddTagButton);
+    await tester.ensureVisible(addTag);
+    await tester.tap(addTag);
+    await tester.pumpAndSettle();
+    final dialog = find.byType(AlertDialog);
+    await tester.enterText(
+      find.descendant(of: dialog, matching: find.byType(TextField)),
+      newTag,
+    );
+    await tester.tap(find.widgetWithText(FilledButton, l10n.commonOk));
+    await tester.pumpAndSettle();
     expect(tester.takeException(), isNull, reason: 'タグ追加で例外');
-    expect(find.text(newTag), findsOneWidget, reason: '追加したタグがシートに表示されていない');
+    expect(newTagChip, findsOneWidget);
 
-    // 追加したタグ（一意な文字列のため該当作品は1件のみのはず）をタップし、
-    // タグ検索モードでの絞り込みへ遷移することを確認する。
-    await tester.tap(find.text(newTag));
-    await tester.pump(const Duration(milliseconds: 300));
-    await tester.pump(const Duration(milliseconds: 300));
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+    expect(ModalRoute.of(tester.element(shorts))?.isCurrent, isTrue);
+    final filterTag = find.descendant(
+      of: shorts,
+      matching: find.widgetWithText(ActionChip, '#$newTag'),
+    );
+    await tester.ensureVisible(filterTag);
+    await tester.tap(filterTag);
+    await tester.pumpAndSettle();
     expect(tester.takeException(), isNull, reason: 'タグタップでの絞り込みで例外');
-    final tagModeFinder = find.byKey(const Key('communitySearchModeToggle'));
-    expect(tagModeFinder, findsOneWidget);
-    expect(find.byType(SegmentedButton<bool>), findsNothing);
-    final tagField = find.byKey(const Key('communitySearchInput'));
-    final searchContext = tester.element(tagField);
-    final searchLabels = AppLocalizations.of(searchContext)!;
-    final field = tester.widget<TextField>(tagField);
-    expect(field.decoration?.hintText, searchLabels.communityTagSearchHint);
-    expect(field.controller!.text, newTag);
-    expect(
-      find.byType(CommunityWorkCard),
-      findsOneWidget,
-      reason: '一意なタグでの絞り込み件数が想定と異なる',
-    );
 
-    // 絞り込まれた唯一の作品カードを開き（フローティングプレビュー→
-    // 「詳細へ」）、追加したタグを削除できることを確認する
-    // （新規タグなのでロックされておらず、削除ボタンが必ず出る）。
-    await tester.tap(find.byType(CommunityWorkCard).first);
-    await tester.pump(const Duration(milliseconds: 300));
-    await tester.tap(find.text('詳細へ'));
-    await tester.pump(const Duration(milliseconds: 300));
-    await tester.pump(const Duration(milliseconds: 300));
-    // 検索中の（下に隠れている）コミュニティ画面のAppBar検索欄にも
-    // 同じタグ文字列が残ったままなので（EditableTextもテキストの
-    // 一致対象になる）、find.text(newTag)は単体では一意にならない。
-    // 作品詳細画面本体のSingleChildScrollView配下に絞り込むことで、
-    // 詳細画面側のタグチップのTextだけを特定する。
-    final sheetScope = find.byType(SingleChildScrollView).last;
-    final tagTextInSheet = find.descendant(
-      of: sheetScope,
-      matching: find.text(newTag),
-    );
-    expect(tagTextInSheet, findsOneWidget, reason: '追加したタグがシートに表示されていない');
-    // タグチップ内部ではラベルのTextと削除ボタンが同じRowの直接の子と
-    // なっているため、最も近いRow祖先へ絞り込むことで、他のタグ
-    // （同じ作品に元から付いているダミータグ）の削除ボタンと混同せずに
-    // このタグ専用の削除ボタンだけを特定できる。
-    final removeButtonFinder = find.descendant(
-      of: find.ancestor(of: tagTextInSheet, matching: find.byType(Row)).first,
-      matching: find.byIcon(Icons.close),
-    );
-    expect(removeButtonFinder, findsOneWidget, reason: 'タグ削除ボタンが見つからない');
-    await tester.tap(removeButtonFinder);
-    await tester.pump(const Duration(milliseconds: 300));
+    final tagField = find.byKey(const Key('communitySearchInput'));
+    expect(tagField.hitTestable(), findsOneWidget);
+    final field = tester.widget<TextField>(tagField);
+    expect(field.decoration?.hintText, l10n.communityTagSearchHint);
+    expect(field.controller!.text, newTag);
+    final exactMatch = find.byKey(const Key('communitySearchExactMatch'));
+    expect(tester.widget<CheckboxListTile>(exactMatch).value, isTrue);
+    final cards = find.byType(CommunityWorkCard);
+    expect(cards, findsOneWidget);
+    expect(tester.widget<CommunityWorkCard>(cards).work.id, work.id);
+
+    await openCommunityWorkDetails(tester, cards);
+    await tester.ensureVisible(newTagChip);
+    await tester.tap(newTagChip);
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(TextButton, l10n.commonDelete));
+    await tester.pumpAndSettle();
+    expect(find.text(l10n.communityTagDeleteConfirm), findsOneWidget);
+    await tester.tap(find.widgetWithText(FilledButton, l10n.commonDelete));
+    await tester.pumpAndSettle();
     expect(tester.takeException(), isNull, reason: 'タグ削除で例外');
-    // AppBarの検索欄には削除後もタグ文字列のクエリが残ったままなので
-    // （find.text(newTag)単体では引き続きヒットする）、シート側だけを
-    // 見て削除できたことを確認する。
-    expect(
-      find.descendant(of: sheetScope, matching: find.text(newTag)),
-      findsNothing,
-      reason: '削除したはずのタグがまだシートに表示されている',
-    );
+    expect(newTagChip, findsNothing);
+
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull, reason: 'タグ削除後の検索結果表示で例外');
+    expect(tagField.hitTestable(), findsOneWidget);
+    expect(tester.widget<TextField>(tagField).controller!.text, newTag);
+    expect(cards, findsNothing);
   }, timeout: const Timeout(Duration(seconds: 60)));
 
   testWidgets('コミュニティ画面：タグのロックは投稿者本人にのみ操作可能', (WidgetTester tester) async {
@@ -1881,70 +1915,81 @@ void main() {
     );
     await tester.pump(const Duration(milliseconds: 500));
 
-    final communityButtonFinder = find.byIcon(Icons.movie_filter_outlined);
-    await tester.tap(communityButtonFinder);
-    await tester.pump(const Duration(milliseconds: 300));
-    await tester.pump(const Duration(milliseconds: 300));
+    await tester.tap(find.byIcon(Icons.movie_filter_outlined));
+    await tester.pumpAndSettle();
 
-    // kDummySelfAuthorId（'author_01'）に対応する投稿者名'あにめ工房ミラ'
-    // の作品を開く（フローティングプレビュー→「詳細へ」）。この投稿者の
-    // 作品にのみロック切り替えボタン（Icons.lock_open／ロック中タグの
-    // Icons.lock）が表示されるはず。
-    final selfAuthorCardFinder = find.widgetWithText(
-      CommunityWorkCard,
-      'あにめ工房ミラ',
+    final ownCards = find.byWidgetPredicate(
+      (w) => w is CommunityWorkCard && w.work.authorId == kDummySelfAuthorId,
     );
-    expect(selfAuthorCardFinder, findsWidgets);
-    await tester.tap(selfAuthorCardFinder.first);
-    await tester.pump(const Duration(milliseconds: 300));
-    await tester.tap(find.text('詳細へ'));
-    await tester.pump(const Duration(milliseconds: 300));
-    await tester.pump(const Duration(milliseconds: 300));
-    expect(tester.takeException(), isNull, reason: '投稿者本人の作品詳細画面表示で例外');
+    final ownWork = tester.widget<CommunityWorkCard>(ownCards.first).work;
+    await openCommunityWorkDetails(tester, ownCards.first);
+    final detail = find.byType(CommunityWorkDetailScreen);
+    final l10n = AppLocalizations.of(tester.element(detail))!;
 
-    // ダミーデータは各作品に必ず1個ロック済みタグがあるため、
-    // ロック解除ボタン（Icons.lock_open）が最低1個は表示されるはず。
-    final unlockButtonFinder = find.byIcon(Icons.lock_open);
-    expect(
-      unlockButtonFinder,
-      findsWidgets,
-      reason: '投稿者本人にロック切り替えボタンが表示されていない',
+    final ownTag = ownWork.tags.firstWhere(
+      (tag) => !ownWork.lockedTags.contains(tag),
     );
-    final unlockCountBefore = unlockButtonFinder.evaluate().length;
+    final ownChip = find.byKey(ValueKey('communityDetailTag-$ownTag'));
+    final lockedIcon = find.descendant(
+      of: ownChip,
+      matching: find.byIcon(Icons.lock_outline),
+    );
+    await tester.ensureVisible(ownChip);
+    await tester.tap(ownChip);
+    await tester.pumpAndSettle();
+    final lock = find.widgetWithText(TextButton, l10n.communityTagLockAction);
+    expect(lock.hitTestable(), findsOneWidget);
+    await tester.tap(lock);
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull, reason: 'タグロックで例外');
+    expect(lockedIcon, findsOneWidget);
 
-    // 未ロックのタグを1つロックする。
-    await tester.tap(unlockButtonFinder.first);
-    await tester.pump(const Duration(milliseconds: 300));
-    expect(tester.takeException(), isNull, reason: 'タグロックの切り替えで例外');
-    final unlockCountAfter = find.byIcon(Icons.lock_open).evaluate().length;
-    expect(
-      unlockCountAfter,
-      unlockCountBefore - 1,
-      reason: 'ロック後も解除ボタンの数が減っていない',
+    await tester.tap(ownChip);
+    await tester.pumpAndSettle();
+    final unlock = find.widgetWithText(
+      TextButton,
+      l10n.communityTagUnlockAction,
     );
+    expect(unlock.hitTestable(), findsOneWidget);
+    await tester.tap(unlock);
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull, reason: 'タグのロック解除で例外');
+    expect(lockedIcon, findsNothing);
 
-    // 詳細画面を閉じてコミュニティ画面へ戻る。
-    Navigator.of(tester.element(find.byType(Scaffold).last)).pop();
-    await tester.pump(const Duration(milliseconds: 300));
-    await tester.pump(const Duration(milliseconds: 300));
-
-    // 投稿者本人ではない作品（'あにめ工房ミラ'以外）にはロック切り替え
-    // ボタンが一切表示されないことを確認する。
-    final otherAuthorCardFinder = find.byWidgetPredicate(
-      (w) => w is CommunityWorkCard && w.work.authorName != 'あにめ工房ミラ',
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+    final otherCards = find.byWidgetPredicate(
+      (w) => w is CommunityWorkCard && w.work.authorId != kDummySelfAuthorId,
     );
-    expect(otherAuthorCardFinder, findsWidgets);
-    await tester.tap(otherAuthorCardFinder.first);
-    await tester.pump(const Duration(milliseconds: 300));
-    await tester.tap(find.text('詳細へ'));
-    await tester.pump(const Duration(milliseconds: 300));
-    await tester.pump(const Duration(milliseconds: 300));
-    expect(tester.takeException(), isNull, reason: '他ユーザー作品詳細画面表示で例外');
-    expect(
-      find.byIcon(Icons.lock_open),
-      findsNothing,
-      reason: '投稿者本人以外にロック解除ボタンが表示されている',
-    );
+    final otherWork = tester.widget<CommunityWorkCard>(otherCards.first).work;
+    await openCommunityWorkDetails(tester, otherCards.first);
+    // 他の投稿者のタグでは、ロック中かどうかに関わらず切り替えできない。
+    for (final tag in [
+      otherWork.lockedTags.first,
+      otherWork.tags.firstWhere((tag) => !otherWork.lockedTags.contains(tag)),
+    ]) {
+      final chip = find.byKey(ValueKey('communityDetailTag-$tag'));
+      await tester.ensureVisible(chip);
+      await tester.tap(chip);
+      await tester.pumpAndSettle();
+      final dialog = find.byType(AlertDialog);
+      expect(
+        find.descendant(of: dialog, matching: find.text(tag)),
+        findsOneWidget,
+      );
+      expect(lock, findsNothing);
+      expect(unlock, findsNothing);
+      await tester.tap(
+        find.widgetWithText(
+          TextButton,
+          otherWork.lockedTags.contains(tag)
+              ? l10n.commonOk
+              : l10n.commonCancel,
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull, reason: '他の投稿者のタグ操作メニューで例外');
+    }
   }, timeout: const Timeout(Duration(seconds: 60)));
 
   testWidgets('コミュニティでブックマークした作品が作品広場の「ブックマーク」タブに表示される', (
@@ -2376,26 +2421,29 @@ void main() {
     await tester.pump(const Duration(milliseconds: 300));
     expect(tester.takeException(), isNull, reason: 'コミュニティ画面への遷移で例外');
 
-    // 作品カードをタップするとフローティング動画プレビューウィンドウが
-    // 開く。「詳細へ」ボタンで作品詳細画面（別ルート）へ遷移する。
-    final workCardFinder = find.byType(CommunityWorkCard);
-    expect(workCardFinder, findsWidgets);
-    await tester.tap(workCardFinder.first);
-    await tester.pump(const Duration(milliseconds: 300));
-    await tester.tap(find.text('詳細へ'));
-    await tester.pump(const Duration(milliseconds: 300));
-    await tester.pump(const Duration(milliseconds: 300));
-    expect(tester.takeException(), isNull, reason: '作品詳細画面表示で例外');
+    final card = find.byType(CommunityWorkCard).first;
+    final work = tester.widget<CommunityWorkCard>(card).work;
+    await openCommunityWorkDetails(tester, card);
 
-    // 詳細画面内の投稿者アイコン（CircleAvatar、一覧カード側には無い）を
-    // タップして投稿者別作品一覧画面（MaterialPageRoute）を開く。
-    final authorAvatarFinder = find.byType(CircleAvatar);
-    expect(authorAvatarFinder, findsWidgets);
-    await tester.tap(authorAvatarFinder.first);
-    await tester.pump(const Duration(milliseconds: 300));
-    await tester.pump(const Duration(milliseconds: 300));
+    final detail = find.byType(CommunityWorkDetailScreen);
+    final detailRoute = ModalRoute.of(tester.element(detail))!;
+    final authorAvatar = find.descendant(
+      of: detail,
+      matching: find.byType(CircleAvatar),
+    );
+    await tester.ensureVisible(authorAvatar);
+    await tester.tap(authorAvatar);
+    await tester.pumpAndSettle();
     expect(tester.takeException(), isNull, reason: '投稿者別作品一覧画面への遷移で例外');
-    expect(find.byType(Scaffold), findsWidgets);
+    final authorScreen = find.byType(CommunityAuthorWorksScreen);
+    final authorWorks = tester.widget<CommunityAuthorWorksScreen>(authorScreen);
+    expect(authorWorks.authorId, work.authorId);
+    expect(authorWorks.authorName, work.authorName);
+    final authorRoute = ModalRoute.of(tester.element(authorScreen))!;
+    expect(authorRoute, isA<MaterialPageRoute<dynamic>>());
+    expect(authorRoute, isNot(same(detailRoute)));
+    expect(authorRoute.isCurrent, isTrue);
+    expect(detailRoute.isCurrent, isFalse);
     await probeAllControls(tester);
   }, timeout: const Timeout(Duration(seconds: 60)));
 
