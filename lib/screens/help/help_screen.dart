@@ -10,8 +10,8 @@ import '../../widgets/fit_or_hide_title.dart';
 
 class HelpScreen extends StatefulWidget {
   // 各画面のヘルプボタンから「この画面に関連する項目」を指定して開いた
-  // 場合のトピック名（_HelpEntry.topicKeyと一致させる）。指定されると検索欄に
-  // 自動入力され、該当項目が自動展開された状態で表示される。
+  // 場合のトピック名（_HelpEntry.topicKeyと一致させる）。該当項目を展開し、
+  // 検索欄は別の項目を探せるよう空けておく。
   // topicKeyは表示言語に関わらず固定の日本語文字列（HelpButton(topic:)の
   // 呼び出し元と一致させるための内部識別子であり、翻訳対象外）。
   final String? initialTopic;
@@ -25,6 +25,8 @@ class HelpScreen extends StatefulWidget {
 
 class _HelpScreenState extends State<HelpScreen> {
   final _searchController = TextEditingController();
+  final _searchFocus = FocusNode();
+  final _resultsScroll = ScrollController(keepScrollOffset: false);
   String _searchQuery = '';
 
   /// The screen's own topic, shown alone until something is typed. It is an
@@ -594,38 +596,53 @@ class _HelpScreenState extends State<HelpScreen> {
 
   @override
   void dispose() {
+    _resultsScroll.dispose();
+    _searchFocus.dispose();
     _searchController.dispose();
     super.dispose();
   }
 
-  List<_HelpEntry> _filtered(List<_HelpEntry> entries) {
-    if (_searchQuery.isEmpty) {
+  void _updateSearch(String value) {
+    if (_resultsScroll.hasClients && _resultsScroll.offset != 0) {
+      _resultsScroll.jumpTo(0);
+    }
+    setState(() {
+      _searchQuery = value;
+      _topic = null;
+    });
+  }
+
+  void _clearSearch() {
+    _searchController.clear();
+    _updateSearch('');
+    _searchFocus.requestFocus();
+  }
+
+  List<_HelpEntry> _filtered(List<_HelpEntry> entries, String query) {
+    if (query.isEmpty) {
       return _topic == null
           ? entries
           : entries.where((e) => e.topicKey == _topic).toList();
     }
-    // The text is written with ’ and no-break spaces (French), the keyboard
-    // types ' and plain spaces: compare both in the same form.
-    final query = foldName(_searchQuery);
-    return entries
-        .where(
-          (e) =>
-              e.topicKey == _searchQuery ||
-              nameMatches(e.title, query) ||
-              nameMatches(e.description, query) ||
-              nameMatches(e.category, query),
-        )
-        .toList();
+    final terms = query.split(RegExp(r'\s+'));
+    return entries.where((entry) {
+      if (entry.topicKey == _searchQuery.trim()) return true;
+      final text = foldName(
+        '${entry.title} ${entry.category} ${entry.description}',
+      );
+      return terms.every(text.contains);
+    }).toList();
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final entries = _buildEntries(l10n);
-    final filtered = _filtered(entries);
+    final query = foldName(_searchQuery).trim();
+    final filtered = _filtered(entries, query);
     // 何も探していないときは、一覧の先頭から使い方（図つきの数ページ）を
     // 開ける。
-    final showTutorial = _searchQuery.isEmpty && _topic == null;
+    final showTutorial = query.isEmpty && _topic == null;
     return Scaffold(
       appBar: widget.embedded
           ? null
@@ -637,17 +654,26 @@ class _HelpScreenState extends State<HelpScreen> {
               padding: const EdgeInsets.fromLTRB(12, 12, 12, 4),
               child: TextField(
                 controller: _searchController,
+                focusNode: _searchFocus,
+                textInputAction: TextInputAction.search,
                 // 画面の色で塗る欄なので、打った字・ヒント・アイコンは本文の
                 // 文字色（テーマの入力欄はメニューの色で塗りメニューの文字色）。
                 style: TextStyle(
                   color: Theme.of(context).colorScheme.onSurface,
                 ),
                 decoration: InputDecoration(
-                  hintText: l10n.helpSearchHint,
-                  hintStyle: TextStyle(
+                  labelText: l10n.helpSearchHint,
+                  labelStyle: TextStyle(
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                   prefixIcon: const Icon(Icons.search),
+                  suffixIcon: _searchQuery.isEmpty
+                      ? null
+                      : IconButton(
+                          tooltip: l10n.projectListClearSearch,
+                          onPressed: _clearSearch,
+                          icon: const Icon(Icons.clear),
+                        ),
                   prefixIconColor: Theme.of(
                     context,
                   ).colorScheme.onSurfaceVariant,
@@ -659,10 +685,7 @@ class _HelpScreenState extends State<HelpScreen> {
                   ),
                   isDense: true,
                 ),
-                onChanged: (v) => setState(() {
-                  _searchQuery = v;
-                  _topic = null;
-                }),
+                onChanged: _updateSearch,
               ),
             ),
             if (_topic != null && _searchQuery.isEmpty)
@@ -673,14 +696,21 @@ class _HelpScreenState extends State<HelpScreen> {
             Expanded(
               child: filtered.isEmpty
                   ? Center(
-                      child: Text(
-                        l10n.helpNoResults,
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      child: Semantics(
+                        liveRegion: true,
+                        child: Text(
+                          l10n.helpNoResults,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.onSurfaceVariant,
+                          ),
                         ),
                       ),
                     )
                   : ListView.builder(
+                      controller: _resultsScroll,
+                      keyboardDismissBehavior:
+                          ScrollViewKeyboardDismissBehavior.onDrag,
                       padding: const EdgeInsets.only(top: 4, bottom: 12),
                       itemCount: filtered.length + (showTutorial ? 1 : 0),
                       itemBuilder: (context, index) {
@@ -692,6 +722,7 @@ class _HelpScreenState extends State<HelpScreen> {
                         final entry = filtered[index];
                         // 各項目を独立したカードとして浮かせる。
                         return Padding(
+                          key: ValueKey(entry.topicKey),
                           padding: EdgeInsets.symmetric(
                             horizontal: 12,
                             vertical: 4,
@@ -711,9 +742,7 @@ class _HelpScreenState extends State<HelpScreen> {
                               // 各画面のヘルプボタンから遷移した場合、該当項目を
                               // 自動展開して探す手間を省く。topicKeyはHelpButton(topic:)の
                               // 呼び出し元と一致させる固定の内部識別子（翻訳対象外）。
-                              initiallyExpanded:
-                                  widget.initialTopic != null &&
-                                  entry.topicKey == widget.initialTopic,
+                              initiallyExpanded: entry.topicKey == _topic,
                               shape: const Border(),
                               leading: Container(
                                 width: 36,
