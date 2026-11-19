@@ -227,12 +227,7 @@ void main() {
     await pumpStrip(tester, frameCount: 10);
     expect(stripOffset(tester), 0.0, reason: '先頭フレームでは左端（＝中央寄せ）');
 
-    // index 4 をタップ → _StripHostがcurrentFrameを更新 →
-    // didUpdateWidget経由で_scrollToCurrent(animate: true)が走る。
     await tester.tap(find.byKey(const ValueKey('frameStripCell4')));
-    // `animateTo`はポストフレームコールバックで始まるため、最初のpumpは
-    // Tickerの開始時刻を決めるだけで値が動かない。pumpAndSettleで
-    // アニメーションを終端まで進める。
     await tester.pumpAndSettle();
 
     expect(stripOffset(tester), closeTo(4 * itemExtent, 0.5));
@@ -262,6 +257,7 @@ void main() {
       reason: '中途半端な位置で離さないと吸着を検証できない',
     );
     final expectedIndex = (released / itemExtent).round();
+    expect(ctx.selected.last, expectedIndex);
 
     await gesture.up();
     await tester.pumpAndSettle();
@@ -289,10 +285,10 @@ void main() {
       await tester.pump(const Duration(milliseconds: 20));
     }
     await tester.sendKeyUpEvent(LogicalKeyboardKey.shiftLeft);
-    expect(strip.selected, isEmpty);
+    expect(strip.selected, [1, 2]);
     await tester.pump(const Duration(milliseconds: 180));
     await tester.pumpAndSettle();
-    expect(strip.selected, [2]);
+    expect(strip.selected, [1, 2]);
     expect(stripOffset(tester), closeTo(2 * itemExtent, 0.5));
   });
 

@@ -1591,11 +1591,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
               overflow: TextOverflow.ellipsis,
             ),
             subtitle: Text(l10n.pcBinSceneFrames(scene.frames.length)),
-            onTap: () => setState(() {
-              _selectedSceneId = scene.id;
-              _isPlaying = false;
-              _currentFrame = 0;
-            }),
+            onTap: () => _selectTimelineScene(scene),
           ),
       ],
     );
@@ -3484,9 +3480,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                               },
                               onDoubleTap: _isSceneMultiSelect
                                   ? null
-                                  : () => setState(
-                                      () => _selectedSceneId = scene.id,
-                                    ),
+                                  : () => _selectTimelineScene(scene),
                               // 長押し：シーン内フレームを全選択し、フレーム複数選択モードへ
                               // 移行する（フレーム一覧と操作体系を統一）。
                               // シーン自体の複数選択（移動・削除）は上部の「選択」ボタンから行う。
@@ -3495,16 +3489,16 @@ class _TimelineScreenState extends State<TimelineScreen> {
                                     _isFrameMultiSelect) {
                                   return;
                                 }
-                                final frameCount = context
-                                    .read<ProjectService>()
-                                    .frameCount(widget.projectId, scene.id);
+                                _selectTimelineScene(scene);
                                 setState(() {
-                                  _selectedSceneId = scene.id;
                                   _setTimelineSelection(
                                     _TimelineSelection.frames,
                                   );
                                   _selectedFrameIndices.addAll(
-                                    List.generate(frameCount, (i) => i),
+                                    List.generate(
+                                      scene.frames.length,
+                                      (i) => i,
+                                    ),
                                   );
                                 });
                               },
@@ -3589,6 +3583,30 @@ class _TimelineScreenState extends State<TimelineScreen> {
         ],
       ),
     );
+  }
+
+  void _selectTimelineScene(Scene scene) {
+    if (_selectedSceneId == scene.id) return;
+    if (_isPlaying) _togglePlay();
+    _stopTimelineDrag(snap: false);
+    setState(() {
+      _selectedSceneId = scene.id;
+      _isFrameMoveMode = false;
+      _frameMoveCursorPos = 0;
+      _draggingClipId = null;
+      _clipDragMode = null;
+      _draggingCameraKfOriginalFrame = null;
+      _draggingCameraKfLiveFrame = null;
+      _commonDragRange = null;
+      _setTimelineSelection(null);
+      _clipsLoadedForSceneId = null;
+      _audioClips.clear();
+      _videoClips.clear();
+      _imageClips.clear();
+      _textClips.clear();
+      _currentFrame = 0;
+    });
+    _centerFrameInList();
   }
 
   String _sceneCopyName(
@@ -7860,6 +7878,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
   /// ため削除し、代わりに画面を離れるタイミングで自動的に保存されるよう
   /// にした。
   Future<void> _saveAndGoToCanvas() async {
+    if (_isPlaying) _togglePlay();
     // 保存に失敗した場合は無理に画面遷移せず、保存データを失わないよう
     // その場に留まりエラーを知らせる（失敗時に黙って進むと、セーブされて
     // いないデータが消えたことにユーザーが気づけなくなるため）。

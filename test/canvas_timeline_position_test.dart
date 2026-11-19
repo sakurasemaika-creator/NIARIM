@@ -3,8 +3,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/app.dart';
 import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/l10n/app_localizations.dart';
+import 'package:niarim/models/audio_clip.dart';
 import 'package:niarim/router.dart';
 import 'package:niarim/screens/canvas/widgets/canvas_area.dart';
+import 'package:niarim/screens/canvas/widgets/frame_strip_widget.dart';
 import 'package:niarim/screens/timeline/timeline_screen.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:provider/provider.dart';
@@ -58,6 +60,16 @@ void main() {
       for (var i = 0; i < 4; i++) {
         projects.addFrame(project.id, second.id);
       }
+      for (final (sceneId, clipId) in [
+        (first, 'first'),
+        (second.id, 'second'),
+      ]) {
+        projects.addAudioClip(
+          project.id,
+          sceneId,
+          AudioClip(id: clipId, label: clipId, startFrame: 0, lengthFrames: 2),
+        );
+      }
       await projects.saveProject(project.id);
       return second.id;
     }))!;
@@ -79,6 +91,10 @@ void main() {
 
     final counter = find.byKey(const Key('timelinePreviewFrameCount'));
     expect(tester.widget<Text>(counter).data, '4/6');
+    final firstAudio = find.byKey(const Key('timelineClip-first'));
+    final secondAudio = find.byKey(const Key('timelineClip-second'));
+    expect(firstAudio, findsOneWidget);
+    expect(secondAudio, findsNothing);
     // PCのシーン一覧にも同じ名前があるため、タイムライン上の
     // 選択チップだけを押す（文言だけでは2件見つかる）。
     final secondScene = find.descendant(
@@ -90,6 +106,9 @@ void main() {
     await tester.pump(const Duration(milliseconds: 40));
     await tester.tap(secondScene);
     await tester.pumpAndSettle();
+    expect(tester.widget<Text>(counter).data, '1/5');
+    expect(firstAudio, findsNothing);
+    expect(secondAudio, findsOneWidget);
     await tester.tap(find.byKey(const ValueKey('timelineFrameCell1')));
     await tester.pumpAndSettle();
     expect(tester.widget<Text>(counter).data, '2/5');
@@ -98,14 +117,49 @@ void main() {
     await pumpRealAsync(tester, const Duration(milliseconds: 600));
     expect(area().sceneId, second);
     expect(area().currentFrame, 1);
+    final outline = find.byKey(const Key('canvasCurrentFrameOutline'));
+    final secondFrame = find.byKey(const Key('frameStripCell1'));
+    expect(
+      tester.getCenter(secondFrame).dx,
+      closeTo(tester.getCenter(outline).dx, .5),
+    );
     expect(
       area().currentLayerId,
       projects.layersOf(project.id, second, 1).first.id,
     );
 
+    final strip = find.byType(FrameStripWidget);
+    final drag = await tester.startGesture(tester.getCenter(strip));
+    await drag.moveBy(const Offset(-30, 0));
+    await tester.pump(const Duration(milliseconds: 16));
+    await drag.moveBy(const Offset(-100, 0));
+    await tester.pump(const Duration(milliseconds: 16));
+    expect(area().currentFrame, 3);
+    expect(
+      tester
+          .getRect(find.byKey(const Key('frameStripCell3')))
+          .contains(tester.getCenter(outline)),
+      isTrue,
+    );
+    await drag.up();
+    await tester.pumpAndSettle();
+    final frameAfterDrag = area().currentFrame;
+    expect(frameAfterDrag, greaterThanOrEqualTo(3));
+
     await tester.tap(find.byTooltip(l10n.canvasTimelineModeTooltip));
     await pumpRealAsync(tester, const Duration(milliseconds: 450));
-    expect(tester.widget<Text>(counter).data, '2/5');
+    expect(tester.widget<Text>(counter).data, '${frameAfterDrag + 1}/5');
+    expect(firstAudio, findsNothing);
+    expect(secondAudio, findsOneWidget);
+    final timelineOutline = find.byKey(
+      const Key('timelineCurrentFrameOutline'),
+    );
+    expect(
+      tester
+          .getCenter(find.byKey(ValueKey('timelineFrameCell$frameAfterDrag')))
+          .dx,
+      closeTo(tester.getCenter(timelineOutline).dx, .5),
+    );
 
     appRouter.go('/canvas/${project.id}?scene=missing&frame=999');
     await pumpRealAsync(tester, const Duration(milliseconds: 450));

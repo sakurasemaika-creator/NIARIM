@@ -51,14 +51,13 @@ class _FrameStripWidgetState extends State<FrameStripWidget> {
   final ScrollController _scrollController = ScrollController();
   bool _userScrolled = false;
   bool _dragScrolled = false;
+  int? _scrollSelectedFrame;
   Timer? _wheelSnap;
   static const double _itemExtent = 50;
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback(
-      (_) => _scrollToCurrent(animate: false),
-    );
+    WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToCurrent());
   }
 
   @override
@@ -67,31 +66,28 @@ class _FrameStripWidgetState extends State<FrameStripWidget> {
     if (old.multiSelectMode != widget.multiSelectMode) _wheelSnap?.cancel();
     if (old.currentFrame != widget.currentFrame ||
         old.sceneId != widget.sceneId) {
-      _wheelSnap?.cancel();
       final left = old.currentFrame;
       _refreshTick[left] = (_refreshTick[left] ?? 0) + 1;
-      WidgetsBinding.instance.addPostFrameCallback(
-        (_) => _scrollToCurrent(animate: true),
-      );
+      final followedScroll =
+          old.sceneId == widget.sceneId &&
+          _scrollSelectedFrame == widget.currentFrame;
+      _scrollSelectedFrame = null;
+      if (followedScroll) return;
+      _wheelSnap?.cancel();
+      _userScrolled = false;
+      _dragScrolled = false;
+      WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToCurrent());
     }
   }
 
-  void _scrollToCurrent({required bool animate}) {
+  void _scrollToCurrent() {
     if (!mounted || !_scrollController.hasClients) return;
     final target = (widget.currentFrame * _itemExtent).clamp(
       0.0,
       _scrollController.position.maxScrollExtent,
     );
     if ((target - _scrollController.offset).abs() < 0.001) return;
-    if (animate) {
-      _scrollController.animateTo(
-        target,
-        duration: const Duration(milliseconds: 200),
-        curve: Curves.easeOut,
-      );
-    } else {
-      _scrollController.jumpTo(target);
-    }
+    _scrollController.jumpTo(target);
   }
 
   bool _handleScroll(ScrollNotification notification) {
@@ -100,22 +96,23 @@ class _FrameStripWidgetState extends State<FrameStripWidget> {
         notification.direction != ScrollDirection.idle) {
       _userScrolled = true;
       _wheelSnap?.cancel();
-    } else if (notification is ScrollUpdateNotification &&
-        notification.dragDetails != null) {
-      _dragScrolled = true;
+    } else if (notification is ScrollUpdateNotification && _userScrolled) {
+      _dragScrolled |= notification.dragDetails != null;
+      _selectNearestFrame();
     } else if (notification is ScrollEndNotification && _userScrolled) {
       _userScrolled = false;
       final wasDrag = _dragScrolled;
       _dragScrolled = false;
       if (wasDrag) {
-        _selectNearestFrame();
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!_userScrolled && !widget.multiSelectMode) _scrollToCurrent();
+        });
       } else {
         // Wheel scrolling sends an end notification for each increment.
         // Snap after the increments stop so small deltas add up to a frame.
-        _wheelSnap = Timer(
-          const Duration(milliseconds: 120),
-          _selectNearestFrame,
-        );
+        _wheelSnap = Timer(const Duration(milliseconds: 120), () {
+          if (!_userScrolled && !widget.multiSelectMode) _scrollToCurrent();
+        });
       }
     }
     return false;
@@ -134,14 +131,9 @@ class _FrameStripWidgetState extends State<FrameStripWidget> {
       0,
       total - 1,
     );
-    if (nearest != widget.currentFrame) {
+    if (nearest != (_scrollSelectedFrame ?? widget.currentFrame)) {
+      _scrollSelectedFrame = nearest;
       widget.onFrameSelected(nearest);
-    } else {
-      // Starting an animation in ScrollEnd can synchronously end the drag
-      // again while ScrollPosition is still replacing its activity.
-      WidgetsBinding.instance.addPostFrameCallback(
-        (_) => _scrollToCurrent(animate: true),
-      );
     }
   }
 
@@ -383,36 +375,9 @@ class _FrameStripWidgetState extends State<FrameStripWidget> {
                   controller: _scrollController,
                   scrollDirection: Axis.horizontal,
                   padding: EdgeInsets.symmetric(horizontal: sidePadding),
-                  itemCount: total + 1,
+                  itemExtent: _itemExtent,
+                  itemCount: total,
                   itemBuilder: (context, index) {
-                    if (index == total) {
-                      return GestureDetector(
-                        // 自動テストがコマを番号指定でタップできるよう
-                        // にするためのKey（見た目・挙動には影響しない）。
-                        key: const ValueKey('frameStripAddCell'),
-                        onTap: () {
-                          if (!_canAddFrames(context, service, 1)) return;
-                          service.addFrame(widget.projectId, widget.sceneId);
-                        },
-                        onLongPress: () =>
-                            _showBatchAddDialog(context, service),
-                        child: Container(
-                          width: 50,
-                          height: 50,
-                          margin: const EdgeInsets.symmetric(vertical: 7),
-                          decoration: BoxDecoration(
-                            border: Border.all(color: scheme.outline),
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: Center(
-                            child: Icon(
-                              Icons.add,
-                              color: scheme.onSurfaceVariant,
-                            ),
-                          ),
-                        ),
-                      );
-                    }
                     final isChecked = widget.selectedFrames.contains(index);
                     final isSelected = widget.multiSelectMode && isChecked;
                     final hold = service.frameHold(
@@ -526,9 +491,51 @@ class _FrameStripWidgetState extends State<FrameStripWidget> {
                     );
                   },
                 ),
+                AnimatedBuilder(
+                  animation: _scrollController,
+                  builder: (context, child) {
+                    final offset = _scrollController.hasClients
+                        ? _scrollController.offset
+                        : 0.0;
+                    final left = sidePadding + _itemExtent * total - offset;
+                    if (left >= constraints.maxWidth) {
+                      return const SizedBox.shrink();
+                    }
+                    return Positioned(
+                      left: left,
+                      top: 0,
+                      bottom: 0,
+                      width: _itemExtent,
+                      child: child!,
+                    );
+                  },
+                  child: GestureDetector(
+                    // 自動テストがコマを番号指定でタップできるよう
+                    // にするためのKey（見た目・挙動には影響しない）。
+                    key: const ValueKey('frameStripAddCell'),
+                    onTap: () {
+                      if (!_canAddFrames(context, service, 1)) return;
+                      service.addFrame(widget.projectId, widget.sceneId);
+                    },
+                    onLongPress: () => _showBatchAddDialog(context, service),
+                    child: Container(
+                      width: 50,
+                      height: 50,
+                      margin: const EdgeInsets.symmetric(vertical: 7),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: scheme.outline),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Center(
+                        child: Icon(Icons.add, color: scheme.onSurfaceVariant),
+                      ),
+                    ),
+                  ),
+                ),
                 IgnorePointer(
                   child: Center(
                     child: Container(
+                      key: const Key('canvasCurrentFrameOutline'),
                       width: 50,
                       height: 50,
                       decoration: BoxDecoration(
