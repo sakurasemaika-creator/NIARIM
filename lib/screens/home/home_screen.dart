@@ -7099,9 +7099,13 @@ class _TrashTabState extends State<_TrashTab> {
           // 種類の絞り込み・検索で隠れているだけのときは「ゴミ箱は空です」と
           // 言わず、外すボタンを出す（プロジェクトのタブと同じ）。
           final shownQuery = widget.searchQuery.trim();
-          final empty = hiddenByKinds
+          // 空のゴミ箱も、ほかの3タブと同じく画面下の浮かぶボタンの
+          // 分を確保する。文字2倍・320pxでは解除ボタンがFABに重なった。
+          // 見出しを除く実際の残り寸法で印を小さくし、長い文はスクロール可能にする。
+          Widget emptyFor(Size fitIn) => hiddenByKinds
               ? EmptyStatePlaceholder(
                   scrollable: false,
+                  fitIn: fitIn,
                   icon: Icons.filter_alt_off,
                   title: shownQuery.isEmpty
                       ? l10n.homeTrashNoKindTitle
@@ -7116,19 +7120,40 @@ class _TrashTabState extends State<_TrashTab> {
               : query.isNotEmpty
               ? EmptyStatePlaceholder(
                   scrollable: false,
+                  fitIn: fitIn,
                   icon: Icons.search_off,
                   title: l10n.homeTrashNoMatchTitle(shownQuery),
                   action: _clearSearchButton(l10n, widget.onClearSearch),
                 )
               : EmptyStatePlaceholder(
                   scrollable: false,
+                  fitIn: fitIn,
                   icon: Icons.delete_outline,
                   title: l10n.homeTrashEmpty,
                 );
           return CustomScrollView(
             slivers: [
               SliverToBoxAdapter(child: widget.header),
-              SliverFillRemaining(hasScrollBody: false, child: empty),
+              SliverLayoutBuilder(
+                builder: (context, constraints) {
+                  final reserve = 88 + MediaQuery.paddingOf(context).bottom;
+                  final availableHeight =
+                      (constraints.viewportMainAxisExtent -
+                              constraints.precedingScrollExtent -
+                              reserve)
+                          .clamp(0.0, double.infinity)
+                          .toDouble();
+                  return SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: Padding(
+                      padding: EdgeInsets.only(bottom: reserve),
+                      child: emptyFor(
+                        Size(constraints.crossAxisExtent, availableHeight),
+                      ),
+                    ),
+                  );
+                },
+              ),
             ],
           );
         }
