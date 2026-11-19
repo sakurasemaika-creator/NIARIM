@@ -10216,15 +10216,16 @@ class AppLocalizationsZh extends AppLocalizations {
   String get communityTagUnlockAction => '解锁';
 
   @override
-  String communityEstimatedFramePosition(int current, int total) {
-    return '约第 $current / $total 帧';
-  }
+  String get communityPreviewStart => '跳到视频开头';
 
   @override
-  String get communityPreviewBackward => '后退';
+  String get communityPreviewEnd => '跳到视频结尾';
 
   @override
-  String get communityPreviewForward => '前进';
+  String get communityPreviewBackward => '后退 5 秒';
+
+  @override
+  String get communityPreviewForward => '前进 5 秒';
 
   @override
   String get settingsSupportTitle => '帮助与联系';
@@ -20450,15 +20451,16 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get communityTagUnlockAction => '解鎖';
 
   @override
-  String communityEstimatedFramePosition(int current, int total) {
-    return '約第 $current / $total 格';
-  }
+  String get communityPreviewStart => '跳到影片開頭';
 
   @override
-  String get communityPreviewBackward => '後退';
+  String get communityPreviewEnd => '跳到影片結尾';
 
   @override
-  String get communityPreviewForward => '前進';
+  String get communityPreviewBackward => '倒退 5 秒';
+
+  @override
+  String get communityPreviewForward => '前進 5 秒';
 
   @override
   String get settingsSupportTitle => '說明與聯絡';

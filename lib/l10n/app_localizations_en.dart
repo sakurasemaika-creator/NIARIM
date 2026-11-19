@@ -11120,15 +11120,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get communityTagUnlockAction => 'Unlock';
 
   @override
-  String communityEstimatedFramePosition(int current, int total) {
-    return 'Approx. frame $current / $total';
-  }
+  String get communityPreviewStart => 'Go to start';
 
   @override
-  String get communityPreviewBackward => 'Step back';
+  String get communityPreviewEnd => 'Go to end';
 
   @override
-  String get communityPreviewForward => 'Step forward';
+  String get communityPreviewBackward => 'Back 5 seconds';
+
+  @override
+  String get communityPreviewForward => 'Forward 5 seconds';
 
   @override
   String get settingsSupportTitle => 'Help and contact';

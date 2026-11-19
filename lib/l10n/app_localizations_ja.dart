@@ -6338,7 +6338,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String communityAuthorFollowingCount(int count) {
-    return 'フォロー中$count人';
+    return 'フォロー$count人';
   }
 
   @override
@@ -10335,15 +10335,16 @@ class AppLocalizationsJa extends AppLocalizations {
   String get communityTagUnlockAction => '解除する';
 
   @override
-  String communityEstimatedFramePosition(int current, int total) {
-    return '約 $current / $total フレーム';
-  }
+  String get communityPreviewStart => '動画の先頭へ';
 
   @override
-  String get communityPreviewBackward => '前へ戻る';
+  String get communityPreviewEnd => '動画の末尾へ';
 
   @override
-  String get communityPreviewForward => '次へ進む';
+  String get communityPreviewBackward => '5秒戻る';
+
+  @override
+  String get communityPreviewForward => '5秒進む';
 
   @override
   String get settingsSupportTitle => 'ヘルプ・お問い合わせ';

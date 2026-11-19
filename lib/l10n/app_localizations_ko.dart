@@ -10392,15 +10392,16 @@ class AppLocalizationsKo extends AppLocalizations {
   String get communityTagUnlockAction => '잠금 해제';
 
   @override
-  String communityEstimatedFramePosition(int current, int total) {
-    return '약 $current / $total 프레임';
-  }
+  String get communityPreviewStart => '영상 처음으로';
 
   @override
-  String get communityPreviewBackward => '뒤로 이동';
+  String get communityPreviewEnd => '영상 끝으로';
 
   @override
-  String get communityPreviewForward => '앞으로 이동';
+  String get communityPreviewBackward => '5초 뒤로';
+
+  @override
+  String get communityPreviewForward => '5초 앞으로';
 
   @override
   String get settingsSupportTitle => '도움말 및 문의';

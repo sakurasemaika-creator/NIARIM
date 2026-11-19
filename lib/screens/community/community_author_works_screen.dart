@@ -293,11 +293,7 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
                 Flexible(
                   child: Text(
                     label,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: color,
-                      decoration: TextDecoration.underline,
-                    ),
+                    style: TextStyle(fontSize: 12, color: color),
                   ),
                 ),
                 const SizedBox(width: 2),

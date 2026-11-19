@@ -27,6 +27,9 @@ void main() {
   testWidgets('作品詳細にNIARIM制作情報が表示される', (tester) async {
     final service = CommunityService();
     final work = service.works.first;
+    service.applyServerWork(
+      work.copyWith(containsGenerativeAiImageOrVideo: true),
+    );
 
     await tester.pumpWidget(
       MultiProvider(
@@ -46,25 +49,30 @@ void main() {
 
     expect(find.text('${work.projectFrameCount}f'), findsOneWidget);
     expect(find.byKey(const Key('communityDetailSeekBar')), findsOneWidget);
-    expect(
-      find.byKey(const Key('communityDetailFrameCounter')),
-      findsOneWidget,
-    );
+    expect(find.byKey(const Key('communityDetailFrameCounter')), findsNothing);
+    expect(find.byIcon(Icons.fullscreen), findsNothing);
     expect(find.text('${work.projectFps}fps'), findsOneWidget);
     expect(
       find.text('${work.projectCanvasWidth}×${work.projectCanvasHeight}'),
       findsOneWidget,
     );
+    final l10n = AppLocalizations.of(
+      tester.element(find.byType(CommunityWorkDetailScreen)),
+    )!;
+    final workTime = find.text(
+      formatProjectWorkTime(l10n, work.projectWorkSeconds),
+    );
+    final aiLabel = find
+        .text(l10n.communityContainsGenerativeAiImageVideo)
+        .first;
+    expect(workTime, findsOneWidget);
     expect(
-      find.text(
-        formatProjectWorkTime(
-          AppLocalizations.of(
-            tester.element(find.byType(CommunityWorkDetailScreen)),
-          )!,
-          work.projectWorkSeconds,
-        ),
-      ),
-      findsOneWidget,
+      tester.getTopLeft(aiLabel).dx,
+      greaterThan(tester.getTopRight(workTime).dx),
+    );
+    expect(
+      tester.getCenter(aiLabel).dy,
+      closeTo(tester.getCenter(workTime).dy, 1),
     );
   });
 
@@ -98,6 +106,13 @@ void main() {
       tester.element(find.byType(CommunityWorkDetailScreen)),
     )!;
     final originalChip = find.byKey(ValueKey('communityDetailTag-$original'));
+    expect(
+      find.descendant(
+        of: originalChip,
+        matching: find.byIcon(Icons.edit_outlined),
+      ),
+      findsOneWidget,
+    );
     expect(find.byTooltip(l.communityRemoveTagTooltip), findsNothing);
     await tester.ensureVisible(originalChip);
     await tester.tap(originalChip);

@@ -20,7 +20,6 @@ class CommunityYoutubePlayer extends StatefulWidget {
     this.onPlayingChanged,
     this.detailPreviewHeight,
     this.detailDurationSeconds = 0,
-    this.detailFrameCount = 0,
   });
 
   final String videoId;
@@ -28,7 +27,6 @@ class CommunityYoutubePlayer extends StatefulWidget {
   final bool active;
   final double? detailPreviewHeight;
   final int detailDurationSeconds;
-  final int detailFrameCount;
 
   /// Allows Shorts to either replay the current video or advance a page.
   final void Function(VoidCallback replay)? onEnded;
@@ -230,12 +228,7 @@ class _CommunityYoutubePlayerState extends State<CommunityYoutubePlayer> {
         ? _videoDuration
         : widget.detailDurationSeconds.clamp(0, double.infinity).toDouble();
     final position = (_dragPosition ?? _position).clamp(0.0, duration);
-    final frames = widget.detailFrameCount;
-    final hasFrames = frames > 0 && duration > 0;
-    final frame = hasFrames
-        ? (position * frames / duration).floor().clamp(0, frames - 1) + 1
-        : 0;
-    final step = hasFrames ? duration / frames : 5.0;
+    const step = 5.0;
 
     Future<void> seek(double seconds) async {
       if (controller == null || duration <= 0) return;
@@ -271,16 +264,6 @@ class _CommunityYoutubePlayerState extends State<CommunityYoutubePlayer> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [
-            control(
-              Icons.fullscreen,
-              l10n.projectDetailFullscreenTooltip,
-              available ? () => controller.enterFullScreen() : null,
-            ),
-          ],
-        ),
         ClipRRect(
           borderRadius: BorderRadius.circular(14),
           child: SizedBox(
@@ -296,15 +279,6 @@ class _CommunityYoutubePlayerState extends State<CommunityYoutubePlayer> {
             ),
           ),
         ),
-        if (hasFrames)
-          Padding(
-            padding: const EdgeInsets.only(top: 4),
-            child: Text(
-              l10n.communityEstimatedFramePosition(frame, frames),
-              key: const Key('communityDetailFrameCounter'),
-              style: Theme.of(context).textTheme.bodySmall,
-            ),
-          ),
         SliderTheme(
           data: SliderTheme.of(context).copyWith(
             trackHeight: 2,
@@ -336,7 +310,7 @@ class _CommunityYoutubePlayerState extends State<CommunityYoutubePlayer> {
             cell(
               control(
                 Icons.skip_previous,
-                l10n.projectDetailFirstFrameTooltip,
+                l10n.communityPreviewStart,
                 available ? () => seek(0) : null,
               ),
             ),
@@ -376,7 +350,7 @@ class _CommunityYoutubePlayerState extends State<CommunityYoutubePlayer> {
             cell(
               control(
                 Icons.skip_next,
-                l10n.projectDetailLastFrameTooltip,
+                l10n.communityPreviewEnd,
                 available ? () => seek(duration) : null,
               ),
             ),

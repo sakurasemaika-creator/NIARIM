@@ -11288,15 +11288,16 @@ class AppLocalizationsFr extends AppLocalizations {
   String get communityTagUnlockAction => 'Déverrouiller';
 
   @override
-  String communityEstimatedFramePosition(int current, int total) {
-    return 'Image env. $current / $total';
-  }
+  String get communityPreviewStart => 'Aller au début';
 
   @override
-  String get communityPreviewBackward => 'Reculer';
+  String get communityPreviewEnd => 'Aller à la fin';
 
   @override
-  String get communityPreviewForward => 'Avancer';
+  String get communityPreviewBackward => 'Reculer de 5 secondes';
+
+  @override
+  String get communityPreviewForward => 'Avancer de 5 secondes';
 
   @override
   String get settingsSupportTitle => 'Aide et contact';

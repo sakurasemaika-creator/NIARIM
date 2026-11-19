@@ -3910,9 +3910,10 @@
   "communityTagDeleteConfirm": "¿Eliminar esta etiqueta?",
   "communityTagLockAction": "Bloquear",
   "communityTagUnlockAction": "Desbloquear",
-  "communityEstimatedFramePosition": "Fotograma aprox. {current} / {total}",
-  "communityPreviewBackward": "Retroceder",
-  "communityPreviewForward": "Avanzar",
+  "communityPreviewStart": "Ir al inicio",
+  "communityPreviewEnd": "Ir al final",
+  "communityPreviewBackward": "Retroceder 5 segundos",
+  "communityPreviewForward": "Avanzar 5 segundos",
   "settingsSupportTitle": "Ayuda y contacto",
   "settingsSupportForm": "Abrir el formulario de contacto",
   "settingsSupportLinkFailed": "No se pudo abrir el formulario de contacto."

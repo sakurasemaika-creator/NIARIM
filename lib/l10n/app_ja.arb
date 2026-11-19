@@ -3139,7 +3139,7 @@
       }
     }
   },
-  "communityAuthorFollowingCount": "フォロー中{count}人",
+  "communityAuthorFollowingCount": "フォロー{count}人",
   "@communityAuthorFollowingCount": {
     "placeholders": {
       "count": {
@@ -6279,16 +6279,11 @@
   "communityTagDeleteConfirm": "本当にこのタグを削除しますか？",
   "communityTagLockAction": "ロックする",
   "communityTagUnlockAction": "解除する",
-  "communityEstimatedFramePosition": "約 {current} / {total} フレーム",
-  "communityPreviewBackward": "前へ戻る",
-  "communityPreviewForward": "次へ進む",
+  "communityPreviewStart": "動画の先頭へ",
+  "communityPreviewEnd": "動画の末尾へ",
+  "communityPreviewBackward": "5秒戻る",
+  "communityPreviewForward": "5秒進む",
   "settingsSupportTitle": "ヘルプ・お問い合わせ",
   "settingsSupportForm": "お問い合わせフォームを開く",
-  "settingsSupportLinkFailed": "お問い合わせフォームを開けませんでした。",
-  "@communityEstimatedFramePosition": {
-    "placeholders": {
-      "current": { "type": "int" },
-      "total": { "type": "int" }
-    }
-  }
+  "settingsSupportLinkFailed": "お問い合わせフォームを開けませんでした。"
 }

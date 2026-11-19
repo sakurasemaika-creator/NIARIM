@@ -11508,7 +11508,7 @@ abstract class AppLocalizations {
   /// No description provided for @communityAuthorFollowingCount.
   ///
   /// In ja, this message translates to:
-  /// **'フォロー中{count}人'**
+  /// **'フォロー{count}人'**
   String communityAuthorFollowingCount(int count);
 
   /// No description provided for @communityFollowNotificationsTooltip.
@@ -18207,22 +18207,28 @@ abstract class AppLocalizations {
   /// **'解除する'**
   String get communityTagUnlockAction;
 
-  /// No description provided for @communityEstimatedFramePosition.
+  /// No description provided for @communityPreviewStart.
   ///
   /// In ja, this message translates to:
-  /// **'約 {current} / {total} フレーム'**
-  String communityEstimatedFramePosition(int current, int total);
+  /// **'動画の先頭へ'**
+  String get communityPreviewStart;
+
+  /// No description provided for @communityPreviewEnd.
+  ///
+  /// In ja, this message translates to:
+  /// **'動画の末尾へ'**
+  String get communityPreviewEnd;
 
   /// No description provided for @communityPreviewBackward.
   ///
   /// In ja, this message translates to:
-  /// **'前へ戻る'**
+  /// **'5秒戻る'**
   String get communityPreviewBackward;
 
   /// No description provided for @communityPreviewForward.
   ///
   /// In ja, this message translates to:
-  /// **'次へ進む'**
+  /// **'5秒進む'**
   String get communityPreviewForward;
 
   /// No description provided for @settingsSupportTitle.

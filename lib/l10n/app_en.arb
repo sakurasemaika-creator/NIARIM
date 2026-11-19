@@ -3945,20 +3945,11 @@
   "communityTagDeleteConfirm": "Delete this tag?",
   "communityTagLockAction": "Lock",
   "communityTagUnlockAction": "Unlock",
-  "communityEstimatedFramePosition": "Approx. frame {current} / {total}",
-  "communityPreviewBackward": "Step back",
-  "communityPreviewForward": "Step forward",
+  "communityPreviewStart": "Go to start",
+  "communityPreviewEnd": "Go to end",
+  "communityPreviewBackward": "Back 5 seconds",
+  "communityPreviewForward": "Forward 5 seconds",
   "settingsSupportTitle": "Help and contact",
   "settingsSupportForm": "Open the contact form",
-  "settingsSupportLinkFailed": "Could not open the contact form.",
-  "@communityEstimatedFramePosition": {
-    "placeholders": {
-      "current": {
-        "type": "int"
-      },
-      "total": {
-        "type": "int"
-      }
-    }
-  }
+  "settingsSupportLinkFailed": "Could not open the contact form."
 }

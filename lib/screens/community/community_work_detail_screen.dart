@@ -558,7 +558,6 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
                   playing: false,
                   detailPreviewHeight: previewHeight,
                   detailDurationSeconds: work.durationSeconds,
-                  detailFrameCount: work.projectFrameCount,
                   validatePlayback: () async {
                     final status = await context
                         .read<CommunityService>()
@@ -683,7 +682,8 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
                   ).add_Hm().format(work.postedAt.toLocal()),
                 ),
               ),
-              if (_hasProjectMetadata(work)) ...[
+              if (_hasProjectMetadata(work) ||
+                  work.containsGenerativeAiImageOrVideo) ...[
                 const SizedBox(height: 12),
                 _ProjectMetadataCard(work: work),
               ],
@@ -707,11 +707,6 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
                           value,
                         ),
                 ),
-              ] else if (work.containsGenerativeAiImageOrVideo) ...[
-                // Only public works reach a viewer, so there is no hidden
-                // notice for them.
-                const SizedBox(height: 12),
-                const _AiImageVideoLabel(),
               ],
               const SizedBox(height: 16),
               Wrap(
@@ -895,8 +890,30 @@ class _ProjectMetadataCard extends StatelessWidget {
                 icon: Icons.aspect_ratio_rounded,
                 text: '${work.projectCanvasWidth}×${work.projectCanvasHeight}',
               ),
-            if (workTime.isNotEmpty)
-              _ProjectMetaItem(icon: Icons.timer_outlined, text: workTime),
+            if (workTime.isNotEmpty || work.containsGenerativeAiImageOrVideo)
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (workTime.isNotEmpty)
+                    Flexible(
+                      child: _ProjectMetaItem(
+                        icon: Icons.timer_outlined,
+                        text: workTime,
+                      ),
+                    ),
+                  if (workTime.isNotEmpty &&
+                      work.containsGenerativeAiImageOrVideo)
+                    const SizedBox(width: 14),
+                  if (work.containsGenerativeAiImageOrVideo)
+                    Flexible(
+                      child: _ProjectMetaItem(
+                        key: const ValueKey('communityDetailAiImageVideoLabel'),
+                        icon: Icons.smart_toy_outlined,
+                        text: l10n.communityContainsGenerativeAiImageVideo,
+                      ),
+                    ),
+                ],
+              ),
           ],
         ),
       ),
@@ -908,7 +925,7 @@ class _ProjectMetaItem extends StatelessWidget {
   final IconData icon;
   final String text;
 
-  const _ProjectMetaItem({required this.icon, required this.text});
+  const _ProjectMetaItem({super.key, required this.icon, required this.text});
 
   @override
   Widget build(BuildContext context) {
@@ -918,7 +935,9 @@ class _ProjectMetaItem extends StatelessWidget {
       children: [
         Icon(icon, size: 15, color: color),
         const SizedBox(width: 4),
-        Text(text, style: TextStyle(fontSize: 12, color: color)),
+        Flexible(
+          child: Text(text, style: TextStyle(fontSize: 12, color: color)),
+        ),
       ],
     );
   }
@@ -946,13 +965,11 @@ class _TagChip extends StatelessWidget {
         avatar: SizedBox(
           width: 16,
           height: 16,
-          child: isLocked
-              ? Icon(
-                  Icons.lock_outline,
-                  size: 15,
-                  color: scheme.onSurfaceVariant,
-                )
-              : null,
+          child: Icon(
+            isLocked ? Icons.lock_outline : Icons.edit_outlined,
+            size: 15,
+            color: scheme.onSurfaceVariant,
+          ),
         ),
         label: Text(label),
         onPressed: onTap,
@@ -1090,41 +1107,6 @@ class _AiImageVideoSwitch extends StatelessWidget {
             ],
           ),
         ),
-      ),
-    );
-  }
-}
-
-/// Tells viewers that the poster declared AI-generated images or video.
-class _AiImageVideoLabel extends StatelessWidget {
-  const _AiImageVideoLabel();
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    final scheme = Theme.of(context).colorScheme;
-    return Container(
-      key: const ValueKey('communityDetailAiImageVideoLabel'),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: scheme.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Row(
-        children: [
-          Icon(
-            Icons.smart_toy_outlined,
-            size: 16,
-            color: scheme.onSurfaceVariant,
-          ),
-          const SizedBox(width: 6),
-          Flexible(
-            child: Text(
-              l10n.communityContainsGenerativeAiImageVideo,
-              style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
-            ),
-          ),
-        ],
       ),
     );
   }

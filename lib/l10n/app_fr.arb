@@ -3910,9 +3910,10 @@
   "communityTagDeleteConfirm": "Supprimer ce tag ?",
   "communityTagLockAction": "Verrouiller",
   "communityTagUnlockAction": "Déverrouiller",
-  "communityEstimatedFramePosition": "Image env. {current} / {total}",
-  "communityPreviewBackward": "Reculer",
-  "communityPreviewForward": "Avancer",
+  "communityPreviewStart": "Aller au début",
+  "communityPreviewEnd": "Aller à la fin",
+  "communityPreviewBackward": "Reculer de 5 secondes",
+  "communityPreviewForward": "Avancer de 5 secondes",
   "settingsSupportTitle": "Aide et contact",
   "settingsSupportForm": "Ouvrir le formulaire de contact",
   "settingsSupportLinkFailed": "Impossible d’ouvrir le formulaire de contact."

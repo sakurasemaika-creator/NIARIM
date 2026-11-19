@@ -252,7 +252,7 @@ void main() {
       await tester.pump();
       expect(service.byId(own.id)!.containsGenerativeAiImageOrVideo, isTrue);
       expect(tester.widget<Switch>(find.byKey(switchKey)).value, isTrue);
-      expect(find.byKey(labelKey), findsNothing);
+      expect(find.byKey(labelKey), findsOneWidget);
     });
 
     testWidgets('the poster still opens their own work while hiding AI '

@@ -3910,9 +3910,10 @@
   "communityTagDeleteConfirm": "确定删除此标签吗？",
   "communityTagLockAction": "锁定",
   "communityTagUnlockAction": "解锁",
-  "communityEstimatedFramePosition": "约第 {current} / {total} 帧",
-  "communityPreviewBackward": "后退",
-  "communityPreviewForward": "前进",
+  "communityPreviewStart": "跳到视频开头",
+  "communityPreviewEnd": "跳到视频结尾",
+  "communityPreviewBackward": "后退 5 秒",
+  "communityPreviewForward": "前进 5 秒",
   "settingsSupportTitle": "帮助与联系",
   "settingsSupportForm": "打开联系表单",
   "settingsSupportLinkFailed": "无法打开联系表单。"

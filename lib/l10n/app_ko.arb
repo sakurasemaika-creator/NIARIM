@@ -3910,9 +3910,10 @@
   "communityTagDeleteConfirm": "이 태그를 삭제할까요?",
   "communityTagLockAction": "잠그기",
   "communityTagUnlockAction": "잠금 해제",
-  "communityEstimatedFramePosition": "약 {current} / {total} 프레임",
-  "communityPreviewBackward": "뒤로 이동",
-  "communityPreviewForward": "앞으로 이동",
+  "communityPreviewStart": "영상 처음으로",
+  "communityPreviewEnd": "영상 끝으로",
+  "communityPreviewBackward": "5초 뒤로",
+  "communityPreviewForward": "5초 앞으로",
   "settingsSupportTitle": "도움말 및 문의",
   "settingsSupportForm": "문의 양식 열기",
   "settingsSupportLinkFailed": "문의 양식을 열 수 없습니다."

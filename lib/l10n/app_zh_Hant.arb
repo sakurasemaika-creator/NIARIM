@@ -3910,9 +3910,10 @@
   "communityTagDeleteConfirm": "確定刪除此標籤嗎？",
   "communityTagLockAction": "鎖定",
   "communityTagUnlockAction": "解鎖",
-  "communityEstimatedFramePosition": "約第 {current} / {total} 格",
-  "communityPreviewBackward": "後退",
-  "communityPreviewForward": "前進",
+  "communityPreviewStart": "跳到影片開頭",
+  "communityPreviewEnd": "跳到影片結尾",
+  "communityPreviewBackward": "倒退 5 秒",
+  "communityPreviewForward": "前進 5 秒",
   "settingsSupportTitle": "說明與聯絡",
   "settingsSupportForm": "開啟聯絡表單",
   "settingsSupportLinkFailed": "無法開啟聯絡表單。"
