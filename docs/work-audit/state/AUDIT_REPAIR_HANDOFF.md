@@ -586,7 +586,8 @@ App・Web共通。Claudeが要修正の詳細を追記し、ユーザーが別�
 - **DISC009**：アカウントの切り替え・サインアウト後に古い応答を当てない。`community_account_boundary_test`・`community_account_boundary_widget_test`・`community_account_microtask_boundary_test`・`community_backend_social_sync_test`の31件が成功（直っている）。
 - **古いDISCの確認（続き8、App `78d4a228`）**：DISC011（`community_work_card_layout_test`、文字拡大を含む）、DISC014（`built_in_theme_original_palette_test`・`theme_accent_only_test`、見本一覧のtestはS43で17件成功）、DISC019（`project_detail_audit_test`、文字2倍・倍率の段階を含む）、DISC022（`export_preset_selector_test`の「プリセット名が全幅・全言語・書体で収まる」）は直っている（5ファイル25件・3ファイル23件成功）。DISC016（Linuxのソフトウェア描画で連続して幅を変えると表示が遅れる）は確認用の実行環境の現象で、製品の不具合ではない（Androidの実機では起きない見込み。実機の連続の回転・折りたたみで二巡目に確かめる）。DISC012の`home_continuous_resize_test`は5分を超え、この環境では流せなかった。
 - **DISC023（一部）**：`timeline_no_overflow_test`が320pxでフレーム数・全画面のボタンが絵を隠さず画面内に収まることを見張り、`timeline_preview_controls_test`とあわせて25件成功。文字の読みやすさ（下地との明るさの比）は二巡目に実画面で確かめる。DISC021（320pxで書き出しの操作が横スクロールの先に隠れる）はこのtestでは見ていないので残る。
-- **次の再開位置**：(0) Appの未反映のコミット（`53887cf2`〜）をorigin（`ed2870f7`）へ載せ直してpush（許可待ち、上）。(1) 残りの古いDISC（DISC012・017・018・020・021・024・030・031・035・037〜040・042・052・056・070・145・161）を対応するtest・コードで確かめる。(3) Flutter全体のtestをCIで通す。
+- **載せ直しの確認（2026-11-19、S45）**：ユーザーが起動前にAppのローカルコミットを`origin/dev_branch`（`6e1ae0f5`）へ載せ直した。DISC008は`d2f03b7d`（元の`53887cf2`と同じ16ファイル・同じ差分）、`[audit-state]`の4つも揃っていた。`d2f03b7d`の上で`flutter gen-l10n`の差分なし、flutter analyze 0件、`community_bookmarks_hidden_message_test`・font_coverage・l10n 3つ・作者ページの関連3つの計8ファイル112件が成功。
+- **次の再開位置**：(0) 済み（上の載せ直しを確認してpush）。(1) 残りの古いDISC（DISC012・017・018・020・021・024・030・031・035・037〜040・042・052・056・070・145・161）を対応するtest・コードで確かめる。(3) Flutter全体のtestをCIで通す。
 
 ## 要修正の記録
 
