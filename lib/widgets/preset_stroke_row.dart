@@ -51,10 +51,11 @@ class PresetStrokeRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const style = TextStyle(
+    final locale = Localizations.maybeLocaleOf(context);
+    final style = TextStyle(
       fontSize: 12,
-      fontFamily: 'Kuramubon',
-      fontFamilyFallback: kHeadingFontFallback,
+      fontFamily: headingFontFamilyFor(locale),
+      fontFamilyFallback: headingFontFallbackFor(locale),
     );
     // 名前は2行まで折り返してから「…」で切る（狭いドック・大きな文字で
     // 「三角形」が「三…」と1字で切れた）。ただし行に入らない語がある名前と、

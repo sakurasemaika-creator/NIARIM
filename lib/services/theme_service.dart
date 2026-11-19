@@ -864,6 +864,8 @@ class ThemeService extends ChangeNotifier {
   /// 丸みの強い形状で統一し、スマホでの誤タップを減らす。
   ThemeData _buildTheme(AppThemePreset preset, {Locale? locale}) {
     final bodyFont = bodyFontFamilyFor(locale);
+    final headingFont = headingFontFamilyFor(locale);
+    final headingFallback = headingFontFallbackFor(locale);
     // 明暗（Brightness）は、以前は独立した「ベーステーマ」設定から決めて
     // いたが、プリセット自身の文字色・背景色と噛み合わない組み合わせを
     // 選べてしまい、暗い文字が暗い背景に埋もれて読めなくなる不具合の
@@ -1004,7 +1006,11 @@ class ThemeService extends ChangeNotifier {
     // それ以外の説明文・通常サイズの文字（body/label）はすべて白光明朝、
     // という切り分けに変更した（従来はくらむぼんをチュートリアル説明の
     // 吹き出し専用にしていたが、それは廃止しこの規則へ統一する）。
-    final headingTextTheme = _applyHeadingFont(bodyTextTheme, 'Kuramubon');
+    final headingTextTheme = _applyHeadingFont(
+      bodyTextTheme,
+      headingFont,
+      headingFallback,
+    );
     // 入力欄に打った文字（Material 3 の TextField は bodyLarge で書く）。
     // 入力欄はメニューの背景色で塗る（inputDecorationTheme）ので、メニューの
     // 文字色で書く。本文の文字色のままだと、メニューを暗く・本文の文字を
@@ -1019,8 +1025,8 @@ class ThemeService extends ChangeNotifier {
     // metrics. Give wrapped action labels room between their baselines.
     final buttonLabelStyle = (textTheme.labelLarge ?? const TextStyle())
         .copyWith(
-          fontFamily: 'Kuramubon',
-          fontFamilyFallback: kHeadingFontFallback,
+          fontFamily: headingFont,
+          fontFamilyFallback: headingFallback,
           fontWeight: FontWeight.w700,
           height: 1.4,
         );
@@ -1076,8 +1082,8 @@ class ThemeService extends ChangeNotifier {
               fontWeight: FontWeight.w700,
             ) ??
             TextStyle(
-              fontFamily: 'Kuramubon',
-              fontFamilyFallback: kHeadingFontFallback,
+              fontFamily: headingFont,
+              fontFamilyFallback: headingFallback,
               color: menuForeground,
               fontSize: 18,
               fontWeight: FontWeight.w700,
@@ -1366,8 +1372,8 @@ class ThemeService extends ChangeNotifier {
           // 切り替えボタンのラベルも他のボタンと同じくくらむぼん。
           textStyle: WidgetStatePropertyAll(
             textTheme.labelLarge?.copyWith(
-              fontFamily: 'Kuramubon',
-              fontFamilyFallback: kHeadingFontFallback,
+              fontFamily: headingFont,
+              fontFamilyFallback: headingFallback,
               fontWeight: FontWeight.w700,
             ),
           ),
@@ -1424,8 +1430,8 @@ class ThemeService extends ChangeNotifier {
         // labelLarge（本文の書体の白光明朝）で描かれた。大きさは labelLarge の
         // まま、色はボタンが前景色で上書きする。
         extendedTextStyle: textTheme.labelLarge?.copyWith(
-          fontFamily: 'Kuramubon',
-          fontFamilyFallback: kHeadingFontFallback,
+          fontFamily: headingFont,
+          fontFamilyFallback: headingFallback,
           fontWeight: FontWeight.w700,
         ),
       ),
@@ -1473,13 +1479,17 @@ class ThemeService extends ChangeNotifier {
   /// display/headline/title（見出し・項目名として使われるサイズ）のみ
   /// [fontFamily]（くらむぼん）へ差し替え、body/label（説明文・通常サイズの
   /// 文字）はそのまま（白光明朝）にする（フォントの使い分けルール）。
-  TextTheme _applyHeadingFont(TextTheme textTheme, String fontFamily) {
+  TextTheme _applyHeadingFont(
+    TextTheme textTheme,
+    String fontFamily,
+    List<String> fontFamilyFallback,
+  ) {
     // 見出し用フォント（くらむぼん）は本文用より収録文字が少ないため、
     // 代替フォント列は消さずに引き継ぐ（以前はnullで消しており、
     // くらむぼんに無い文字が豆腐（□）になっていた）。
     TextStyle? heading(TextStyle? style) => style?.copyWith(
       fontFamily: fontFamily,
-      fontFamilyFallback: kHeadingFontFallback,
+      fontFamilyFallback: fontFamilyFallback,
     );
     return textTheme.copyWith(
       displayLarge: heading(textTheme.displayLarge),

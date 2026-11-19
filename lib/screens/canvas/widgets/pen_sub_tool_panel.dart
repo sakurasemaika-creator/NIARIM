@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../l10n/app_localizations.dart';
+import '../../../l10n/creative_preset_labels.dart';
 import '../../../widgets/docked_panel_scope.dart';
 import '../../../services/tone_service.dart';
 import '../../../services/theme_service.dart';
@@ -267,7 +268,11 @@ class LassoFillToneSheet extends StatelessWidget {
                       const Icon(Icons.grid_on, size: 16),
                       const SizedBox(height: 2),
                       Text(
-                        tone.name,
+                        creativePresetLabel(
+                          l10n,
+                          tone.name,
+                          builtIn: toneService.isBuiltIn(tone.id),
+                        ),
                         style: const TextStyle(
                           fontSize: 7,
                           fontFamily: 'Kuramubon',

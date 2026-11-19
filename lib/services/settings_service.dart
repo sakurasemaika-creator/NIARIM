@@ -78,6 +78,17 @@ class SettingsService extends ChangeNotifier {
   Set<ToolbarItemId> _hiddenToolbarItems = {};
   // Five persistent visual sizes; applies to the toolbar's real hit cells.
   int _toolbarSizeLevel = 3;
+  final _toolThickness = <String, double>{};
+
+  double? toolThickness(String tool) => _toolThickness[tool];
+
+  Future<void> rememberToolThickness(String tool, double value) async {
+    if (!value.isFinite || value <= 0 || _toolThickness[tool] == value) return;
+    _toolThickness[tool] = value;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setDouble('tool_thickness_$tool', _toolThickness[tool]!);
+  }
+
   // Last visible set of PC dock windows, shared across all projects and
   // restored on every canvas open. Mobile overlay state stays independent.
   Set<CanvasDockPanel> _defaultDockedPanels = {
@@ -876,6 +887,13 @@ class SettingsService extends ChangeNotifier {
 
   Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
+    const prefix = 'tool_thickness_';
+    for (final key in prefs.getKeys().where((key) => key.startsWith(prefix))) {
+      final value = prefs.readDouble(key);
+      if (value != null && value.isFinite && value > 0) {
+        _toolThickness[key.substring(prefix.length)] = value;
+      }
+    }
     _defaultFps = prefs.readInt('default_fps') ?? 12;
     _pushNotificationsEnabled =
         prefs.readBool('push_notifications_enabled') ?? true;

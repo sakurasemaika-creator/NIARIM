@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../l10n/app_localizations.dart';
+import '../../../l10n/creative_preset_labels.dart';
 import '../../../models/stamp.dart';
 import '../../../services/brush_service.dart';
 import '../../../services/export_share_service.dart';
@@ -86,7 +87,11 @@ class _StampPanelState extends State<StampPanel> {
     if (query.isNotEmpty) {
       stamps = stamps.where(
         (s) => assetMatchesSearch(
-          name: s.name,
+          name: creativePresetLabel(
+            l10n,
+            s.name,
+            builtIn: stampService.isBuiltIn(s.id),
+          ),
           // 既定タグは言語非依存のキーで保存されているため、その言語での
           // 表示文言へ直してから突き合わせる（英語UIで「pixel」と打って
           // ドット絵向けの素材が出る、という当たり前の挙動にするため）。
@@ -250,7 +255,11 @@ class _StampPanelState extends State<StampPanel> {
                         final builtIn = stampService.isBuiltIn(stamp.id);
                         return PresetStrokeRow(
                           key: ValueKey(stamp.id),
-                          name: stamp.name,
+                          name: creativePresetLabel(
+                            l10n,
+                            stamp.name,
+                            builtIn: stampService.isBuiltIn(stamp.id),
+                          ),
                           color:
                               drawingColor ??
                               Theme.of(context).colorScheme.onSurface,
@@ -408,7 +417,11 @@ class _StampPanelState extends State<StampPanel> {
       case 'tags':
         showAssetTagDialog(
           context,
-          assetName: stamp.name,
+          assetName: creativePresetLabel(
+            l10n,
+            stamp.name,
+            builtIn: service.isBuiltIn(stamp.id),
+          ),
           currentTags: localizeAssetTags(l10n, stamp.tags),
           suggestions: localizeAssetTags(l10n, service.allTags()),
           // ダイアログは表示文言で編集させるので、保存時にキーへ戻す。

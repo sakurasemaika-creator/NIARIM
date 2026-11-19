@@ -954,21 +954,24 @@ class _TimelineScreenState extends State<TimelineScreen> {
 
   void _applyHistory({required bool redo}) {
     final history = context.read<UndoManager>();
-    if (redo ? !history.canRedo : !history.canUndo) return;
-    if (redo) {
-      history.redo();
-    } else {
-      history.undo();
-    }
+    final id = widget.projectId;
+    if (redo ? !history.canRedoFor(id) : !history.canUndoFor(id)) return;
+    final target = redo
+        ? history.redo(projectId: id)
+        : history.undo(projectId: id);
     final projects = context.read<ProjectService>();
-    final scenes = projects.scenesOf(widget.projectId);
+    final scenes = projects.scenesOf(id);
     final scene =
+        (target == null ? null : projects.sceneOf(id, target.sceneId)) ??
         scenes.where((item) => item.id == _selectedSceneId).firstOrNull ??
         scenes.firstOrNull;
     if (scene == null) return;
+    if (target != null) _playTimer?.cancel();
     setState(() {
+      if (target != null) _isPlaying = false;
+      if (scene.id != _selectedSceneId) _selectedFrameIndices.clear();
       _selectedSceneId = scene.id;
-      _currentFrame = _currentFrame.clamp(
+      _currentFrame = (target?.frameIndex ?? _currentFrame).clamp(
         0,
         math.max(0, scene.frames.length - 1),
       );

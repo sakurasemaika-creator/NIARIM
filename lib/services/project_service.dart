@@ -391,12 +391,60 @@ class ProjectService extends ChangeNotifier {
         description,
         () => _restoreTimeline(projectId, before, oldLayers),
         () => _restoreTimeline(projectId, after, newLayers),
+        undoFrame: _changedHistoryFrame(after, before, oldLayers.keys),
+        redoFrame: _changedHistoryFrame(before, after, newLayers.keys),
         retainedMaterialIds: _materialIdsIn(
           before.scenes,
         ).followedBy(_materialIdsIn(after.scenes)),
       ),
       projectId: projectId,
     );
+  }
+
+  HistoryFrame? _changedHistoryFrame(
+    _TimelineEditState other,
+    _TimelineEditState restored,
+    Iterable<String> changedTileKeys,
+  ) {
+    final previousScenes = {for (final scene in other.scenes) scene.id: scene};
+    for (final scene in restored.scenes) {
+      final previous = previousScenes[scene.id];
+      if (scene.frames.isEmpty || identical(scene, previous)) continue;
+      for (var i = 0; i < scene.frames.length; i++) {
+        if (previous == null ||
+            i >= previous.frames.length ||
+            !identical(scene.frames[i], previous.frames[i])) {
+          return (sceneId: scene.id, frameIndex: i);
+        }
+      }
+      if (scene.frames.length < previous!.frames.length) {
+        return (sceneId: scene.id, frameIndex: scene.frames.length - 1);
+      }
+      if (!identical(scene.stack, previous.stack)) {
+        return (sceneId: scene.id, frameIndex: 0);
+      }
+    }
+    for (final tileKey in changedTileKeys) {
+      final key = parseFrameLayerKey(tileKey);
+      if (key == null) continue;
+      final scene = restored.scenes
+          .where((s) => s.id == key.sceneId)
+          .firstOrNull;
+      if (scene != null && key.frameIndex < scene.frames.length) {
+        return (sceneId: key.sceneId, frameIndex: key.frameIndex);
+      }
+    }
+    if (other.scenes.length != restored.scenes.length ||
+        !listEquals(
+          other.scenes.map((s) => s.id).toList(),
+          restored.scenes.map((s) => s.id).toList(),
+        )) {
+      final scene = restored.scenes
+          .where((s) => s.frames.isNotEmpty)
+          .firstOrNull;
+      if (scene != null) return (sceneId: scene.id, frameIndex: 0);
+    }
+    return null;
   }
 
   _TimelineEditState _captureTimeline(String projectId) {
@@ -4006,6 +4054,7 @@ class ProjectService extends ChangeNotifier {
     final initialLayer = Layer(
       id: 'Layer0001',
       name: 'レイヤー1',
+      localizedStarterName: true,
       type: LayerType.normal,
     );
     final initialFrame = Frame(index: 0, layers: [initialLayer]);
@@ -4115,8 +4164,11 @@ class ProjectService extends ChangeNotifier {
 
   /// Read the current model when the queued save starts. A background save
   /// requested during a folder move must not overwrite its acknowledged result.
-  void _saveAsync(String projectId) {
-    saveProject(projectId).catchError((Object _, StackTrace _) {});
+  void _saveAsync(String projectId, {bool keepUpdatedAt = false}) {
+    _queueProjectSave(
+      projectId,
+      () => _writeProjectFile(projectId, keepUpdatedAt: keepUpdatedAt),
+    ).catchError((Object _, StackTrace _) {});
   }
 
   Future<void> saveProject(String projectId) =>
@@ -4808,13 +4860,29 @@ class ProjectService extends ChangeNotifier {
 
   /// プロジェクトのタグ一覧を置き換える（詳細情報画面のタグ機能）。
   Future<void> setProjectTags(String projectId, List<String> tags) async {
-    editTimeline(projectId, 'Edit project tags', () {
-      final idx = _projects.indexWhere((p) => p.id == projectId);
-      if (idx < 0 || listEquals(_projects[idx].tags, tags)) return;
-      _projects[idx] = _projects[idx].copyWith(tags: List.unmodifiable(tags));
-      _saveAsync(projectId);
-      notifyListeners();
-    }, changesTiles: false);
+    final project = _projects.where((p) => p.id == projectId).firstOrNull;
+    if (project == null || listEquals(project.tags, tags)) return;
+    final before = List<String>.unmodifiable(project.tags);
+    final after = List<String>.unmodifiable(tags);
+    _applyProjectTags(projectId, after);
+    if (!_recordingTimelineEdits.contains(projectId)) {
+      _undoManager?.push(
+        ProjectEditUndoAction(
+          'Edit project tags',
+          () => _applyProjectTags(projectId, before),
+          () => _applyProjectTags(projectId, after),
+        ),
+        projectId: projectId,
+      );
+    }
+  }
+
+  void _applyProjectTags(String projectId, List<String> tags) {
+    final index = _projects.indexWhere((project) => project.id == projectId);
+    if (index < 0) return;
+    _projects[index] = _projects[index].copyWith(tags: tags);
+    _saveAsync(projectId, keepUpdatedAt: true);
+    notifyListeners();
   }
 
   /// プロジェクト一覧カード表示用のサムネイルを生成し、Project.thumbnailPathへ反映する
@@ -5781,6 +5849,10 @@ class _LayerPixelsUndoAction extends UndoAction {
 
   @override
   String get description => 'Filter on $layerKey';
+
+  @override
+  HistoryFrame frameForHistory({required bool redo}) =>
+      (sceneId: sceneId, frameIndex: frameIndex);
 }
 
 class _TimelineEditState {

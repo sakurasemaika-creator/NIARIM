@@ -3,10 +3,12 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:flutter/services.dart';
+import 'package:flutter/services.dart' hide UndoManager;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/app.dart';
 import 'package:niarim/app_bootstrap.dart';
+import 'package:niarim/engine/niapro_serializer.dart';
+import 'package:niarim/engine/undo_manager.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/models/layer.dart';
 import 'package:niarim/models/layer_mask.dart';
@@ -703,6 +705,57 @@ void main() {
     expect(tags.last, '打ったまま');
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('shared project history seeks to the edited frame', (
+    tester,
+  ) async {
+    await open(tester, colors: [Colors.red, Colors.green, Colors.blue]);
+    final words = AppLocalizations.of(
+      tester.element(find.byType(ProjectDetailScreen)),
+    )!;
+    final counter = find.byKey(const Key('projectDetailFrameCounter'));
+    await tester.tap(find.byTooltip(words.projectDetailFirstFrameTooltip));
+    await settle(tester);
+    expect(tester.widget<Text>(counter).data, '1/3');
+
+    await tester.tap(find.byTooltip(words.commonUndo));
+    await settleIo(tester);
+    expect(tester.widget<Text>(counter).data, '3/3');
+
+    await tester.tap(find.byTooltip(words.projectDetailFirstFrameTooltip));
+    await settle(tester);
+    await tester.tap(find.byTooltip(words.commonRedo));
+    await settleIo(tester);
+    expect(tester.widget<Text>(counter).data, '3/3');
+  });
+
+  testWidgets(
+    'tag changes and their history preserve the stored updated time',
+    (tester) async {
+      final work = await open(tester);
+      final history = tester
+          .element(find.byType(ProjectDetailScreen))
+          .read<UndoManager>();
+      final project = work.service.projects.singleWhere((p) => p.id == work.id);
+      final base = (await tester.runAsync(NiaproSerializer.projectsBasePath))!;
+      final file = '$base/${work.id}/${work.id}.niapro';
+      Future<void> expectStoredTags(List<String> tags) async {
+        await settleIo(tester);
+        final saved = (await tester.runAsync(
+          () => NiaproSerializer.load(file),
+        ))!.project;
+        expect(saved.updatedAt, project.updatedAt);
+        expect(saved.tags, tags);
+      }
+
+      await work.service.setProjectTags(work.id, ['見直し']);
+      await expectStoredTags(['見直し']);
+      history.undo(projectId: work.id);
+      await expectStoredTags([]);
+      history.redo(projectId: work.id);
+      await expectStoredTags(['見直し']);
+    },
+  );
 
   // 同梱フォントは読み込むとこのファイルの残りのテストにも効くので、
   // このテストは最後に置く。

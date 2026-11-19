@@ -14,6 +14,7 @@ import '../../../engine/layer_keyframe_engine.dart';
 import '../../../engine/tile_manager.dart' show frameLayerKey;
 import '../../../engine/undo_manager.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../l10n/creative_preset_labels.dart';
 import '../../../models/layer.dart' as model;
 import '../../../models/layer_keyframe.dart';
 import '../../../services/autofill_preset_service.dart';
@@ -698,7 +699,7 @@ class _LayerPanelState extends State<LayerPanel> {
                         // 折り返しを許すと日本語名が**1文字ずつ縦に積まれて**
                         // 行の高さが3倍になり読めなくなるため、必ず1行で省略する。
                         title: Text(
-                          layer.name,
+                          editingLayerLabel(l10n, layer),
                           maxLines: 1,
                           softWrap: false,
                           overflow: TextOverflow.ellipsis,
@@ -1174,7 +1175,9 @@ class _LayerPanelState extends State<LayerPanel> {
     final l10n = AppLocalizations.of(context)!;
     if (!await confirmDelete(
       context,
-      message: l10n.layerPanelDeleteConfirmTitle(layer.name),
+      message: l10n.layerPanelDeleteConfirmTitle(
+        editingLayerLabel(l10n, layer),
+      ),
     )) {
       return;
     }
@@ -1225,7 +1228,9 @@ class _LayerPanelState extends State<LayerPanel> {
     Future<void> deleteEntirely() async {
       if (!await confirmDelete(
         context,
-        message: l10n.layerPanelDeleteConfirmTitle(layer.name),
+        message: l10n.layerPanelDeleteConfirmTitle(
+          editingLayerLabel(l10n, layer),
+        ),
       )) {
         return;
       }
@@ -1305,7 +1310,9 @@ class _LayerPanelState extends State<LayerPanel> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text(l10n.layerPanelDeleteConfirmTitle(layer.name)),
+        title: Text(
+          l10n.layerPanelDeleteConfirmTitle(editingLayerLabel(l10n, layer)),
+        ),
         content: messageText(l10n.layerPanelDeleteConfirmBody),
         actions: [
           TextButton(
@@ -1402,7 +1409,7 @@ class _LayerPanelState extends State<LayerPanel> {
             Padding(
               padding: const EdgeInsets.all(12),
               child: Text(
-                layer.name,
+                editingLayerLabel(l10n, layer),
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   fontFamily: 'Kuramubon',
@@ -1528,7 +1535,9 @@ class _LayerPanelState extends State<LayerPanel> {
 
   void _showRenameDialog(BuildContext context, model.Layer layer) {
     final l10n = AppLocalizations.of(context)!;
-    final nameCtrl = TextEditingController(text: layer.name);
+    final nameCtrl = TextEditingController(
+      text: editingLayerLabel(l10n, layer),
+    );
     showDialog(
       context: context,
       builder: (ctx) => DisposeOnUnmount(
@@ -1914,7 +1923,7 @@ class _LayerPanelState extends State<LayerPanel> {
               Padding(
                 padding: const EdgeInsets.all(12),
                 child: Text(
-                  layer.name,
+                  editingLayerLabel(l10n, layer),
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontFamily: 'Kuramubon',

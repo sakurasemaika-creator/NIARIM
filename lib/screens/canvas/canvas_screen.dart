@@ -127,11 +127,19 @@ class _CanvasScreenState extends State<CanvasScreen> {
   (DrawingTool, PenSubTool?) get _brushControlTarget =>
       (_currentTool, _currentTool == DrawingTool.pen ? _currentSubTool : null);
 
-  double? get _toolBrushSize => _toolBrushSizes[_brushControlTarget];
+  String get _brushThicknessKey {
+    final (tool, subTool) = _brushControlTarget;
+    return subTool == null ? tool.name : '${tool.name}.${subTool.name}';
+  }
+
+  double? get _toolBrushSize =>
+      _toolBrushSizes[_brushControlTarget] ??
+      context.read<SettingsService>().toolThickness(_brushThicknessKey);
   int? get _toolBrushOpacity => _toolBrushOpacities[_brushControlTarget];
 
   Color get _currentColor => context.read<BrushService>().currentColor;
   int _currentFrame = 0;
+  String? _historySceneId;
   AutofillCheckMode _autofillCheckMode = AutofillCheckMode.normal;
   bool _showLayerPanel = false;
   // ショートカット（Ctrl+A）からレイヤーパネルの全選択を起動するための
@@ -478,8 +486,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
   /// 太さ・不透明度の欄で変えた値を、ブラシの覚えにするか。ブラシで描いて
   /// いるとき（ペンのブラシ）だけ。消しゴム・ぼかし・指先・モザイク・定規・
   /// 投げ縄や、ペンのトーン・スタンプ・投げ縄塗りも同じ欄を使うが、そこで
-  /// 変えた太さはその場だけの値にする（消すために太くしただけで、ペンの
-  /// ブラシが太いまま覚えられないように）。
+  /// 変えた太さはそのツールに覚えさせる（消すために太くしても、選択中の
+  /// ペンのブラシには影響しない）。
   bool get _remembersBrushValues =>
       _currentTool == DrawingTool.pen && _currentSubTool == PenSubTool.brush;
 
@@ -491,6 +499,14 @@ class _CanvasScreenState extends State<CanvasScreen> {
       );
     } else {
       setState(() => _toolBrushSizes[_brushControlTarget] = value);
+      if (remember) {
+        unawaited(
+          context.read<SettingsService>().rememberToolThickness(
+            _brushThicknessKey,
+            value,
+          ),
+        );
+      }
     }
   }
 
@@ -3103,14 +3119,27 @@ class _CanvasScreenState extends State<CanvasScreen> {
       widget.projectId,
     );
     if (tiles.isRecordingUndo) return;
+    final projects = context.read<ProjectService>();
     final history = context.read<UndoManager>();
-    if (redo ? !history.canRedo : !history.canUndo) return;
-    if (redo) {
-      history.redo();
-    } else {
-      history.undo();
-    }
-    setState(() => _canvasContentRevision++);
+    final id = widget.projectId;
+    if (redo ? !history.canRedoFor(id) : !history.canUndoFor(id)) return;
+    final target = redo
+        ? history.redo(projectId: id)
+        : history.undo(projectId: id);
+    setState(() {
+      if (target != null) {
+        final scene = projects.sceneOf(id, target.sceneId);
+        if (scene != null && scene.frames.isNotEmpty) {
+          if (target.sceneId != _currentSceneId) {
+            _selectedFrameIndices.clear();
+            _filterBulkFrames = null;
+          }
+          _historySceneId = target.sceneId;
+          _currentFrame = target.frameIndex.clamp(0, scene.frames.length - 1);
+        }
+      }
+      _canvasContentRevision++;
+    });
   }
 
   /// Whether the filter's UI has the screen, so the selection's own editing
@@ -4425,7 +4454,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
 
   String get _currentSceneId {
     final projects = context.read<ProjectService>();
-    final initialSceneId = widget.initialSceneId;
+    final initialSceneId = _historySceneId ?? widget.initialSceneId;
     if (initialSceneId != null &&
         projects.sceneOf(widget.projectId, initialSceneId) != null) {
       return initialSceneId;

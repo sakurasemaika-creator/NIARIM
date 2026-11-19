@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../l10n/app_localizations.dart';
+import '../../../l10n/creative_preset_labels.dart';
 import '../../../models/tone.dart';
 import '../../../services/export_share_service.dart';
 import '../../../services/shared_asset_card_service.dart';
@@ -82,7 +83,11 @@ class _TonePanelState extends State<TonePanel> {
     if (query.isNotEmpty) {
       tones = tones.where(
         (t) => assetMatchesSearch(
-          name: t.name,
+          name: creativePresetLabel(
+            l10n,
+            t.name,
+            builtIn: toneService.isBuiltIn(t.id),
+          ),
           // 既定タグは言語非依存のキーで保存されているため、その言語での
           // 表示文言へ直してから突き合わせる（英語UIで「pixel」と打って
           // ドット絵向けの素材が出る、という当たり前の挙動にするため）。
@@ -246,7 +251,11 @@ class _TonePanelState extends State<TonePanel> {
                         final builtIn = toneService.isBuiltIn(tone.id);
                         return PresetStrokeRow(
                           key: ValueKey(tone.id),
-                          name: tone.name,
+                          name: creativePresetLabel(
+                            l10n,
+                            tone.name,
+                            builtIn: toneService.isBuiltIn(tone.id),
+                          ),
                           color: context.watch<BrushService>().currentColor,
                           tone: tone,
                           selected: isSelected,
@@ -402,7 +411,11 @@ class _TonePanelState extends State<TonePanel> {
       case 'tags':
         showAssetTagDialog(
           context,
-          assetName: tone.name,
+          assetName: creativePresetLabel(
+            l10n,
+            tone.name,
+            builtIn: service.isBuiltIn(tone.id),
+          ),
           currentTags: localizeAssetTags(l10n, tone.tags),
           suggestions: localizeAssetTags(l10n, service.allTags()),
           // ダイアログは表示文言で編集させるので、保存時にキーへ戻す。

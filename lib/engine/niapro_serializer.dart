@@ -1101,6 +1101,8 @@ class NiaproSerializer {
   static Map<String, dynamic> _serializeLayer(Layer l) => {
     'id': l.id,
     'name': l.name,
+    if (l.id == 'Layer0001' || l.localizedStarterName)
+      'localizedStarterName': l.localizedStarterName,
     'type': l.type.name,
     'opacity': l.opacity,
     'blendMode': l.blendMode.name,
@@ -1324,6 +1326,11 @@ class NiaproSerializer {
   static Layer _deserializeLayer(Map<String, dynamic> j) => Layer(
     id: j['id'] as String,
     name: j['name'] as String,
+    localizedStarterName:
+        j['localizedStarterName'] as bool? ??
+        (j['id'] == 'Layer0001' &&
+            j['name'] == 'レイヤー1' &&
+            j['type'] == 'normal'),
     type: LayerType.values.firstWhere(
       (e) => e.name == j['type'],
       orElse: () => LayerType.normal,

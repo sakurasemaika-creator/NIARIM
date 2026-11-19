@@ -167,6 +167,22 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
     _renderFrame(ps, flat);
   }
 
+  void _showHistoryFrame(ProjectService projectService, HistoryFrame? target) {
+    final flat = _flatten(projectService);
+    if (target == null) {
+      _seekTo(projectService, flat, _frameIndex);
+      return;
+    }
+    final index = flat.indexOf(target);
+    if (index < 0) {
+      _seekTo(projectService, flat, _frameIndex);
+      return;
+    }
+    _timer?.cancel();
+    setState(() => _isPlaying = false);
+    _seekTo(projectService, flat, index);
+  }
+
   void _togglePlay(ProjectService ps, List<_FlatFrame> flat, int fps) {
     if (flat.isEmpty) return;
     if (_isPlaying) {
@@ -336,20 +352,20 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
               icon: const Icon(Icons.undo),
               tooltip: l10n.commonUndo,
               onPressed: canUndo
-                  ? () {
-                      history.undo(projectId: project.id);
-                      _renderFrame(projectService, flat);
-                    }
+                  ? () => _showHistoryFrame(
+                      projectService,
+                      history.undo(projectId: project.id),
+                    )
                   : null,
             ),
             IconButton(
               icon: const Icon(Icons.redo),
               tooltip: l10n.commonRedo,
               onPressed: canRedo
-                  ? () {
-                      history.redo(projectId: project.id);
-                      _renderFrame(projectService, flat);
-                    }
+                  ? () => _showHistoryFrame(
+                      projectService,
+                      history.redo(projectId: project.id),
+                    )
                   : null,
             ),
           ],

@@ -726,9 +726,10 @@ class _PcDockPaneView extends StatelessWidget {
         .indexWhere((t) => t.id == activeId)
         .clamp(0, pane.tabs.length - 1);
     final active = pane.tabs[activeIndex];
+    final locale = Localizations.maybeLocaleOf(context);
     final titleStyle = TextStyle(
-      fontFamily: 'Kuramubon',
-      fontFamilyFallback: kHeadingFontFallback,
+      fontFamily: headingFontFamilyFor(locale),
+      fontFamilyFallback: headingFontFallbackFor(locale),
       fontSize: 12,
       color: colors.onPane,
     );

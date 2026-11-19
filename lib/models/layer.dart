@@ -5,6 +5,7 @@ import 'text_object.dart';
 class Layer {
   final String id;
   final String name;
+  final bool localizedStarterName;
   final LayerType type;
   final int opacity;
   final LayerBlendMode blendMode;
@@ -38,6 +39,7 @@ class Layer {
   const Layer({
     required this.id,
     required this.name,
+    this.localizedStarterName = false,
     required this.type,
     this.opacity = 100,
     this.blendMode = LayerBlendMode.normal,
@@ -99,6 +101,7 @@ class Layer {
     return Layer(
       id: id ?? this.id,
       name: name ?? this.name,
+      localizedStarterName: name == null && localizedStarterName,
       type: type ?? this.type,
       opacity: opacity ?? this.opacity,
       blendMode: blendMode ?? this.blendMode,

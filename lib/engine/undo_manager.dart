@@ -2,6 +2,8 @@ import 'package:flutter/foundation.dart';
 
 import 'tile_manager.dart';
 
+typedef HistoryFrame = ({String sceneId, int frameIndex});
+
 class UndoManager extends ChangeNotifier {
   final Map<String?, _UndoStacks> _projectStacks = {};
   String? _projectId;
@@ -101,22 +103,24 @@ class UndoManager extends ChangeNotifier {
     }
   }
 
-  void undo({String? projectId}) {
+  HistoryFrame? undo({String? projectId}) {
     final history = _stacksFor(projectId ?? _projectId);
-    if (history.undo.isEmpty) return;
+    if (history.undo.isEmpty) return null;
     final action = history.undo.removeLast();
     action.undo();
     history.redo.add(action);
     notifyListeners();
+    return action.frameForHistory(redo: false);
   }
 
-  void redo({String? projectId}) {
+  HistoryFrame? redo({String? projectId}) {
     final history = _stacksFor(projectId ?? _projectId);
-    if (history.redo.isEmpty) return;
+    if (history.redo.isEmpty) return null;
     final action = history.redo.removeLast();
     action.redo();
     history.undo.add(action);
     notifyListeners();
+    return action.frameForHistory(redo: true);
   }
 
   /// Removes the specified operations from both stacks after their caller
@@ -145,6 +149,7 @@ abstract class UndoAction {
   void undo();
   void redo();
   String get description;
+  HistoryFrame? frameForHistory({required bool redo}) => null;
 }
 
 class ProjectEditUndoAction extends UndoAction {
@@ -153,6 +158,8 @@ class ProjectEditUndoAction extends UndoAction {
     this.before,
     this.after, {
     this.retainedMaterialIds = const {},
+    this.undoFrame,
+    this.redoFrame,
   });
 
   @override
@@ -160,6 +167,12 @@ class ProjectEditUndoAction extends UndoAction {
   final VoidCallback before;
   final VoidCallback after;
   final Iterable<String> retainedMaterialIds;
+  final HistoryFrame? undoFrame;
+  final HistoryFrame? redoFrame;
+
+  @override
+  HistoryFrame? frameForHistory({required bool redo}) =>
+      redo ? redoFrame : undoFrame;
 
   @override
   void undo() => before();
@@ -176,6 +189,16 @@ class _GroupedUndoAction extends UndoAction {
   final List<UndoAction> _undone = [];
 
   _GroupedUndoAction(this.description, this._actions, this._shouldUndoAction);
+
+  @override
+  HistoryFrame? frameForHistory({required bool redo}) {
+    final actions = redo ? _undone.reversed : _undone;
+    for (final action in actions) {
+      final frame = action.frameForHistory(redo: redo);
+      if (frame != null) return frame;
+    }
+    return null;
+  }
 
   @override
   void undo() {
@@ -206,6 +229,7 @@ class TileUndoAction extends UndoAction {
   final Map<String, Uint8List?> before;
   final Map<String, Uint8List?> after;
   final VoidCallback onApply;
+  final HistoryFrame? editingFrame;
 
   TileUndoAction({
     required this.tileManager,
@@ -213,6 +237,7 @@ class TileUndoAction extends UndoAction {
     required this.before,
     required this.after,
     required this.onApply,
+    this.editingFrame,
   });
 
   @override
@@ -229,6 +254,15 @@ class TileUndoAction extends UndoAction {
 
   @override
   String get description => 'Draw on $layerId';
+
+  @override
+  HistoryFrame? frameForHistory({required bool redo}) {
+    if (editingFrame != null) return editingFrame;
+    final key = parseFrameLayerKey(layerId);
+    return key == null
+        ? null
+        : (sceneId: key.sceneId, frameIndex: key.frameIndex);
+  }
 }
 
 /// レイヤー追加のUndo/Redo。
@@ -275,6 +309,10 @@ class LayerAddUndoAction extends UndoAction {
 
   @override
   String get description => 'Add layer $layerId';
+
+  @override
+  HistoryFrame frameForHistory({required bool redo}) =>
+      (sceneId: sceneId, frameIndex: frameIndex);
 }
 
 /// レイヤー削除のUndo/Redo。
@@ -321,4 +359,8 @@ class LayerRemoveUndoAction extends UndoAction {
 
   @override
   String get description => 'Remove layer $layerId';
+
+  @override
+  HistoryFrame frameForHistory({required bool redo}) =>
+      (sceneId: sceneId, frameIndex: frameIndex);
 }

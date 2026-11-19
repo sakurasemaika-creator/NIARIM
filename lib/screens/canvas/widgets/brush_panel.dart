@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../l10n/app_localizations.dart';
+import '../../../l10n/creative_preset_labels.dart';
 import '../../../models/brush.dart';
 import '../../../services/brush_service.dart';
 import '../../../services/export_share_service.dart';
@@ -95,7 +96,11 @@ class _BrushPanelState extends State<BrushPanel> {
     if (query.isNotEmpty) {
       brushes = brushes.where(
         (b) => assetMatchesSearch(
-          name: b.name,
+          name: creativePresetLabel(
+            l10n,
+            b.name,
+            builtIn: brushService.isBuiltIn(b.id),
+          ),
           // 既定タグは言語非依存のキーで保存されているため、その言語での
           // 表示文言へ直してから突き合わせる（英語UIで「pixel」と打って
           // ドット絵向けの素材が出る、という当たり前の挙動にするため）。
@@ -274,7 +279,11 @@ class _BrushPanelState extends State<BrushPanel> {
                         final builtIn = brushService.isBuiltIn(brush.id);
                         return PresetStrokeRow(
                           key: ValueKey(brush.id),
-                          name: brush.name,
+                          name: creativePresetLabel(
+                            l10n,
+                            brush.name,
+                            builtIn: brushService.isBuiltIn(brush.id),
+                          ),
                           color: brushService.currentColor,
                           brush: shown,
                           selected: isSelected,
@@ -454,7 +463,11 @@ class _BrushPanelState extends State<BrushPanel> {
       case 'tags':
         showAssetTagDialog(
           context,
-          assetName: brush.name,
+          assetName: creativePresetLabel(
+            l10n,
+            brush.name,
+            builtIn: service.isBuiltIn(brush.id),
+          ),
           currentTags: localizeAssetTags(l10n, brush.tags),
           suggestions: localizeAssetTags(l10n, service.allTags()),
           // ダイアログは表示文言で編集させるので、保存時にキーへ戻す。

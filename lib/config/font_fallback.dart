@@ -97,9 +97,23 @@ const List<String> kChineseBodyFontFallback = <String>[
 /// 書体は同梱していない）。サブセットには、ARBの字に加えて lib 配下の
 /// 手書きの文字列（組み込みのブラシ・トーン等の名前）の漢字・かな・全角の
 /// 字と空白も入れてある（tool/build_fallback_fonts.py）。
-String bodyFontFamilyFor(Locale? locale) =>
-    locale?.languageCode == 'zh' ? 'NotoSerifSCSubset' : 'HakkouMincho';
+String bodyFontFamilyFor(Locale? locale) => switch (locale?.languageCode) {
+  'zh' => 'NotoSerifSCSubset',
+  'ko' => 'NotoSerifKRSubset',
+  _ => 'HakkouMincho',
+};
 
 /// 表示言語[locale]の本文の代替フォント列（[bodyFontFamilyFor]と組で使う）。
 List<String> bodyFontFallbackFor(Locale? locale) =>
     locale?.languageCode == 'zh' ? kChineseBodyFontFallback : kBodyFontFallback;
+
+bool _usesUnifiedHeadingFont(Locale? locale) =>
+    locale?.languageCode == 'zh' || locale?.languageCode == 'ko';
+
+String headingFontFamilyFor(Locale? locale) =>
+    _usesUnifiedHeadingFont(locale) ? bodyFontFamilyFor(locale) : 'Kuramubon';
+
+List<String> headingFontFallbackFor(Locale? locale) =>
+    _usesUnifiedHeadingFont(locale)
+    ? bodyFontFallbackFor(locale)
+    : kHeadingFontFallback;

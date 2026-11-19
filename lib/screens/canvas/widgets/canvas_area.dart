@@ -2285,6 +2285,7 @@ class _CanvasAreaState extends State<CanvasArea> {
   // ─── Undo/Redo ─────────────────────────────────────────────────────────
 
   String? _undoRecordingLayerKey;
+  app_undo.HistoryFrame? _undoRecordingFrame;
 
   /// 描画操作（ストローク・バケツ・投げ縄塗り・トーン・スタンプ・移動・
   /// 変形・図形）の直前に呼び、現在のレイヤーへのタイル変更差分の記録を開始する。
@@ -2293,6 +2294,10 @@ class _CanvasAreaState extends State<CanvasArea> {
   /// 不透明度を変えない（[TileManager.opacityLocked]）。
   void _beginTileUndo({bool paints = true}) {
     _undoRecordingLayerKey = _tileKeyFor(_layerId);
+    _undoRecordingFrame = (
+      sceneId: widget.sceneId,
+      frameIndex: widget.currentFrame,
+    );
     _recordingLocksOpacity =
         paints &&
         (_layers.where((l) => l.id == _layerId).firstOrNull?.opacityLocked ??
@@ -2344,7 +2349,9 @@ class _CanvasAreaState extends State<CanvasArea> {
   }) {
     final snapshot = _tileManager.endUndoRecording();
     final layerKey = _undoRecordingLayerKey;
+    final editingFrame = _undoRecordingFrame;
     _undoRecordingLayerKey = null;
+    _undoRecordingFrame = null;
     if (layerKey == null || (snapshot.before.isEmpty && wrap == null)) return;
     final projectId = widget.project?.id;
     final projects = projectId == null ? null : context.read<ProjectService>();
@@ -2353,6 +2360,7 @@ class _CanvasAreaState extends State<CanvasArea> {
       layerId: layerKey,
       before: snapshot.before,
       after: snapshot.after,
+      editingFrame: editingFrame,
       onApply: () {
         if (projectId != null) projects?.refreshDrawingHistory(projectId);
         if (mounted) _scheduleComposite();
@@ -3558,6 +3566,8 @@ class _CanvasAreaState extends State<CanvasArea> {
           tiles.description,
           () => restore(previous, tiles.undo),
           () => restore(next, tiles.redo),
+          undoFrame: tiles.frameForHistory(redo: false),
+          redoFrame: tiles.frameForHistory(redo: true),
         );
         _selectionActions.add(action);
         return action;

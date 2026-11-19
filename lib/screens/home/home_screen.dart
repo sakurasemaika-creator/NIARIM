@@ -2483,10 +2483,19 @@ class _HomeScreenState extends State<HomeScreen>
     if (_isSearching) return {_escapeOnce: _escapeInSearch};
     // 作品一覧・共有・ゴミ箱のタブでは全選択・コピー等を効かせない。Escは
     // どのタブでも選ぶのを終える（以前はこれらのタブでEscが何もしなかった）。
+    const find = SingleActivator(LogicalKeyboardKey.keyF, control: true);
+    final result = <ShortcutActivator, VoidCallback>{find: _openProjectSearch};
     if (_currentTabIndex != 0) {
-      return {if (_isSelectionMode) _escapeOnce: _endProjectSelection};
+      if (_isSelectionMode) result[_escapeOnce] = _endProjectSelection;
+      return result;
     }
-    final result = <ShortcutActivator, VoidCallback>{};
+    if (_isSelectionMode && _selectedIds.isNotEmpty) {
+      result[const SingleActivator(
+            LogicalKeyboardKey.delete,
+            includeRepeats: false,
+          )] =
+          _deleteSelected;
+    }
     for (final b in bindings) {
       if (b.isToolAction) continue;
       switch (b.command) {

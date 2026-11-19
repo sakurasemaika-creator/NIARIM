@@ -1808,12 +1808,16 @@ Future<NiashareIncludeOptions?> showMaterialIncludeDialog(
             CheckboxListTile(
               value: includeFonts,
               title: Text(l10n.projectListIncludeFontsTitle),
-              subtitle: Text(
-                l10n.projectListIncludeFontsSubtitle,
-                style: const TextStyle(fontSize: 11),
-              ),
               contentPadding: EdgeInsets.zero,
               onChanged: (v) => setDialogState(() => includeFonts = v == true),
+            ),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Icon(Icons.info_outline, size: 18),
+                const SizedBox(width: 8),
+                Expanded(child: Text(l10n.projectListIncludeFontsSubtitle)),
+              ],
             ),
           ],
         ),
