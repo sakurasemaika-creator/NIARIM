@@ -550,6 +550,14 @@ status: done（2026-10-10、製品修正 App `35d229e`、証跡 https://claude.a
 - 修正（App `7c96013`・`b928b22`）：ロゴはボタンの基準幅に対する比（モノグラム0.6倍、PC・タブレット0.55倍、アプリ名0.9倍）。PC（isWideScreen）とタブレット（短辺600dp以上）は並び全体を画面幅の約8割まで拡大（2.2倍まで）。SPはボタン150pxのまま、間隔を余白に応じて最大64px。
 - 検証：`splash_layout_test`のPC行をPCモードで描画、84通り・336通りの全セルで「ロゴの幅・高さ＜ボタン」、PC/タブレット/SP縦横の比率テスト（変更前は落ちる）。全336画像を目視。実画面でPC 1280×800・1024×768・1920×1080、SP 390×844・360×640・横844×390・横568×320（証跡 A002_rebalance）。
 
+### A002 二巡目（2026-11-19、Claude・S41、App `2939841e`）— 判定：要修正（DISC492）
+
+- 範囲の変更（`a3121df7`以降）：`splash_screen.dart`は変更なし。`router.dart`はキャンバス・タイムラインの初期シーン・コマ（A002の導線には関係しない）。`theme_rescue_button.dart`は救済のダイアログのテーマを言語ごと（`rescueThemeDataFor`）に。
+- test：`splash_layout_test`・`splash_gradient_test`・`home_widget_shortcut_design_test`・`theme_contrast_rescue_test`・`theme_rescue_dialog_chinese_font_test`・`theme_rescue_dialog_inset_test`の50件成功。
+- 実画面（Linux debug・Xvfb）：ja 390×844で自動遷移なし。作品をつくる→ホーム→戻る1回で起動画面、さらに戻るでアプリが閉じる。作品広場→戻る→起動画面。キーボード：Tabで作品広場→作品をつくるにフォーカスの輪、Enterでホーム。横向き568×320・844×390で欠けなし。読めないテーマ（文字色＝背景色）で起動→横向き・縦向きとも右上に固定色の「テーマをもとに戻す」→確認→既定の配色と知らせ→起動し直すとボタンなし（保存も既定）。en 320×568・ko 640×360で文言の省略なし。PC 1280×800（A001の起動で確認）。
+- 要修正（DISC492）：30ms間隔の3回押しで、作品をつくる・作品広場とも同じ画面が2重に積まれ、「戻る」1回で起動画面に戻らない（2回押し・90ms間隔はOK）。
+- 正式なstatusはdoneのまま。二巡目のOKはDISC492の修正の後の確認で出す。画像：`shots-r1/r2a002-*`（backup-pending）。
+
 ## A003 — ホーム /home・初回案内・ドロワー（Opusブランチの証跡）
 
 status: Opusのブランチ（`ccr-f56ee68e-77ag7y`）で2026-10-17にdoneと判定した記録。2026-10-23にdev_branchへ統合した後のRoute状態はAUDIT_ROUTE.mdに従う（A003 in_progress。この節はA003の完了判定で再利用できる証跡で、現在のHEADで再確認してから使う）。製品修正 App（`d83cbe4`）、証跡 https://claude.ai/artifact/C6t3uteANocXs9nTLizazi#A003）
