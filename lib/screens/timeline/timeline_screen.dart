@@ -1260,6 +1260,8 @@ class _TimelineScreenState extends State<TimelineScreen> {
   }
 
   List<Widget> _buildTimelineTracks(AppLocalizations l10n) => [
+    if (!_isSceneCursorActive && !_isFrameCursorActive)
+      _buildTimestampRow(l10n),
     // ピンチイン・ピンチアウトでフレーム幅（拡大縮小）を
     // 変更できるよう、フレーム一覧から各トラックまでを
     // Listenerで包み2本指の距離変化を監視する。子孫の
@@ -6219,12 +6221,144 @@ class _TimelineScreenState extends State<TimelineScreen> {
     }
   }
 
-  /// タイムスタンプ用トラック（特定フレームへワンタップで移動できるマーカー
-  /// ＋コメント）。カメラキーフレームのトラックと見た目・スクロール連動の
-  /// 仕組みは共通だが、役割が異なる：カメラキーフレームは「値の補間」用、
-  /// こちらは「その瞬間の記録・移動」用のため、タップの意味も
-  /// （カメラ＝編集ダイアログを開く、こちら＝その場へジャンプする）で
-  /// あえて分けている。編集・削除は長押しから行う。
+  Widget _buildTimestampRow(AppLocalizations l10n) {
+    final sceneId = _selectedSceneId;
+    if (sceneId == null) return const SizedBox.shrink();
+
+    final projects = context.watch<ProjectService>();
+    final markers = projects.timelineMarkersOf(widget.projectId, sceneId);
+    final fps = _projectFps(projects);
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    final rowHeight = math.max(
+      38.0,
+      MediaQuery.textScalerOf(context).scale(11) * 1.3 + 14,
+    );
+    return Container(
+      key: const ValueKey('timelineTimestampRow'),
+      height: rowHeight,
+      foregroundDecoration: _trackRowDivider,
+      child: Row(
+        children: [
+          Padding(
+            padding: const EdgeInsetsDirectional.fromSTEB(8, 0, 4, 0),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                maxWidth: math.min(148, MediaQuery.sizeOf(context).width / 3),
+              ),
+              child: Text(
+                l10n.timelineMarkerTrackLabel,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.labelSmall,
+              ),
+            ),
+          ),
+          Expanded(
+            child: markers.isEmpty
+                ? const SizedBox.shrink()
+                : ListView.separated(
+                    key: ValueKey(('timelineTimestampNames', sceneId)),
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 4,
+                      vertical: 3,
+                    ),
+                    itemCount: markers.length,
+                    separatorBuilder: (_, _) => const SizedBox(width: 4),
+                    itemBuilder: (context, index) {
+                      final marker = markers[index];
+                      final label = marker.comment.trim().isEmpty
+                          ? 'F${marker.frameIndex + 1}'
+                          : marker.comment.trim();
+                      final seconds =
+                          '${(marker.frameIndex / fps).toStringAsFixed(2)}s';
+                      final color = marker.color == null
+                          ? colors.primary
+                          : Color(marker.color!);
+                      return ValueListenableBuilder<int>(
+                        valueListenable: _currentFrameNotifier,
+                        builder: (context, frame, _) {
+                          final selected = frame == marker.frameIndex;
+                          return Semantics(
+                            selected: selected,
+                            child: Tooltip(
+                              message: '$label · $seconds',
+                              excludeFromSemantics: true,
+                              child: TextButton(
+                                key: ValueKey(
+                                  'timelineTimestampName-${marker.id}',
+                                ),
+                                onPressed: () =>
+                                    _seekToTimestamp(marker.frameIndex),
+                                style: TextButton.styleFrom(
+                                  backgroundColor: selected
+                                      ? colors.primaryContainer
+                                      : colors.surfaceContainerLow,
+                                  foregroundColor: selected
+                                      ? colors.onPrimaryContainer
+                                      : colors.onSurface,
+                                  minimumSize: Size.zero,
+                                  maximumSize: const Size.fromWidth(220),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                  ),
+                                  tapTargetSize:
+                                      MaterialTapTargetSize.shrinkWrap,
+                                  textStyle: theme.textTheme.labelSmall,
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      Icons.arrow_drop_down,
+                                      color: color,
+                                      size: 16,
+                                    ),
+                                    Flexible(
+                                      child: Text(
+                                        label,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 5),
+                                    Text(seconds),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      );
+                    },
+                  ),
+          ),
+          ValueListenableBuilder<int>(
+            valueListenable: _currentFrameNotifier,
+            builder: (context, frame, _) => IconButton(
+              tooltip: l10n.timelineMarkerAddDialogTitle(frame + 1),
+              icon: const Icon(Icons.add, size: 18),
+              onPressed: _showAddMarkerDialog,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _seekToTimestamp(int frame) {
+    if (_isPlaying) _togglePlay();
+    _stopTimelineDrag(snap: false);
+    final target = frame.clamp(0, _totalFrames - 1);
+    if (target == _currentFrame) {
+      _centerFrameInList();
+    } else {
+      _currentFrame = target;
+    }
+  }
+
+  /// フレーム上の三角からメモを開く。長押しで編集・削除へ進む。
   Widget _buildMarkerPin(List<TimelineMarker> markers) {
     final frame = markers.first.frameIndex;
     final labels = [
@@ -6241,7 +6375,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
       ),
       menuChildren: [
         MenuItemButton(
-          onPressed: () => setState(() => _currentFrame = frame),
+          onPressed: () => _seekToTimestamp(frame),
           child: Text('F${frame + 1}'),
         ),
         for (final (i, marker) in markers.indexed)

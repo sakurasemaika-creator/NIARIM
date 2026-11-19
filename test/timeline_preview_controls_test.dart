@@ -759,6 +759,58 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  for (final pc in [false, true]) {
+    testWidgets('timestamp name seeks and centers its frame (PC: $pc)', (
+      tester,
+    ) async {
+      await openTimeline(
+        tester,
+        project: const Size(160, 90),
+        screen: pc ? const Size(1280, 800) : const Size(390, 844),
+        pc: pc,
+        fraction: .4,
+        durationSeconds: 4,
+        setUpProject: (ps, id) {
+          final scene = ps.scenesOf(id).single;
+          ps.addTimelineMarker(id, scene.id, 36, 'Cut at three seconds');
+        },
+      );
+
+      final row = find.byKey(const Key('timelineTimestampRow'));
+      final name = find.descendant(
+        of: row,
+        matching: find.text('Cut at three seconds'),
+      );
+      final outline = find.byKey(const Key('timelineCurrentFrameOutline'));
+      expect(
+        find.descendant(of: row, matching: find.text('3.00s')),
+        findsOneWidget,
+      );
+      expect(tester.getRect(row).bottom, lessThan(tester.getRect(outline).top));
+      await tester.tap(name);
+      await pumpRealAsync(tester, const Duration(milliseconds: 250));
+
+      final frame = find.byKey(const Key('timelineFrameCell36'));
+      expect(
+        tester.getCenter(frame).dx,
+        closeTo(tester.getCenter(outline).dx, .5),
+      );
+      expect(
+        find.byKey(const Key('timelineTimestamp-36')).hitTestable(),
+        findsOneWidget,
+      );
+      if (!pc) {
+        expect(
+          tester
+              .widget<Text>(find.byKey(const Key('timelineCurrentSeconds')))
+              .data,
+          '3.0s',
+        );
+      }
+      expect(tester.takeException(), isNull);
+    });
+  }
+
   testWidgets(
     'markers sharing a frame can be edited and deleted individually',
     (tester) async {
@@ -787,8 +839,8 @@ void main() {
       );
       await tester.tap(stamp);
       await tester.pumpAndSettle();
-      expect(find.text('First marker'), findsOneWidget);
-      expect(find.text('Second marker'), findsOneWidget);
+      expect(find.text('First marker'), findsNWidgets(2));
+      expect(find.text('Second marker'), findsNWidgets(2));
       await tester.tap(find.widgetWithText(MenuItemButton, 'F2'));
       await tester.pumpAndSettle();
       await tester.longPress(stamp);
