@@ -189,8 +189,10 @@ void main() {
               final row = find
                   .byWidgetPredicate(
                     (w) =>
-                        w is ListTile &&
-                        '${w.key}'.contains('communityMyWorksRow-'),
+                        w.key is ValueKey<String> &&
+                        (w.key! as ValueKey<String>).value.startsWith(
+                          'communityMyWorksRow-',
+                        ),
                   )
                   .first;
               await tester.ensureVisible(row);

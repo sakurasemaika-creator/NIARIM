@@ -3928,15 +3928,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get projectListMaterialAudio => 'Audio';
 
   @override
-  String get projectListIncludeFontsTitle => 'Include fonts';
-
-  @override
-  String get projectListIncludeFontsSubtitle =>
-      'Includes the added fonts used in this project. Only include fonts you have permission to redistribute.';
-
-  @override
-  String get projectListFontLicenseUnavailable =>
-      'A font license could not be verified. Check your connection and try again, or share without the fonts.';
+  String get projectListShareFontNamesHint =>
+      'Only the names of added fonts used in this project are shared. Install them separately on the receiving device.';
 
   @override
   String get blendModeNormal => 'Normal';

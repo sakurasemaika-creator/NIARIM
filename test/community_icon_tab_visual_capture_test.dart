@@ -160,8 +160,14 @@ void main() {
         final titleRect = tester.getRect(
           find.descendant(of: visibleCard, matching: find.text(title)),
         );
+        final author = find.byKey(ValueKey('community-author-$workId'));
         final authorRect = tester.getRect(
-          find.byKey(ValueKey('community-author-$workId')),
+          find.descendant(
+            of: author,
+            matching: find.text(
+              tester.widget<CommunityWorkCard>(visibleCard).work.authorName,
+            ),
+          ),
         );
         final countRect = tester.getRect(
           find.byKey(ValueKey('community-bookmark-count-$workId')),
@@ -197,14 +203,18 @@ void main() {
           lessThan(3),
           reason: '$width bookmark and menu must share a horizontal row',
         );
-        // The collection action glyph and hit region must follow the same
-        // shared dimensions used on Project and Works cards.
+        // Small tiles draw smaller circles, and the action band still
+        // reserves the same touch height as Project and Works cards.
+        final compact = tester
+            .widget<CommunityWorkCard>(visibleCard)
+            .compactActions;
+        final circle = compact ? 32.0 : CollectionActionFrame.extent;
+        expect(saveRect.size, Size.square(circle));
         expect(
-          tester.getSize(find.byKey(ValueKey('community-bookmark-$workId'))),
-          const Size(
-            CollectionActionFrame.extent,
-            CollectionActionFrame.extent,
-          ),
+          tester
+              .getSize(find.byKey(ValueKey('community-card-actions-$workId')))
+              .height,
+          CollectionActionFrame.targetExtent,
         );
         expect(tester.takeException(), isNull);
         await capture('new-arrivals');

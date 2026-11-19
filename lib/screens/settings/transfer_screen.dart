@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:file_picker/file_picker.dart';
@@ -7,6 +8,7 @@ import 'package:intl/intl.dart';
 // models/material_asset.dart（画像/動画/音声の素材種別）の双方に同名の型が
 // 存在するため、こちらでは使わないflutter側をhideして曖昧さを解消する。
 import 'package:flutter/material.dart' hide MaterialType;
+import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 
 import '../../engine/archive_security.dart';
@@ -342,36 +344,48 @@ class _TransferScreenState extends State<TransferScreen> {
     final currentIds = {
       for (final project in projectService.projects) project.id,
     };
-    for (final id in _selectedProjectIds.intersection(currentIds)) {
-      final project = projectService.projects
-          .where((p) => p.id == id)
-          .firstOrNull;
-      if (project == null) continue;
-      final scenes = projectService.scenesOf(id);
-      final tileManager = projectService.tileManagerOf(id);
-      final bundle = await materialService.buildShareBundle(
-        id,
-        MaterialType.values.toSet(),
-      );
-      final fontBundle = await buildFontShareBundle(
-        projectService,
-        fontService,
-        id,
-        forSharing: false,
-      );
-      final file = await NiaproSerializer.saveShare(
-        project: project,
-        scenes: scenes,
-        tileManager: tileManager,
-        materialFiles: bundle.files.isEmpty ? null : bundle.files,
-        materialsManifest: bundle.manifest,
-        fontFiles: fontBundle.files.isEmpty ? null : fontBundle.files,
-        fontsManifest: fontBundle.manifest,
-      );
+    final temporary = await (await getTemporaryDirectory()).createTemp(
+      'niarim-transfer-',
+    );
+    try {
+      for (final id in _selectedProjectIds.intersection(currentIds)) {
+        final project = projectService.projects
+            .where((p) => p.id == id)
+            .firstOrNull;
+        if (project == null) continue;
+        final scenes = projectService.scenesOf(id);
+        final tileManager = projectService.tileManagerOf(id);
+        final bundle = await materialService.buildShareBundle(
+          id,
+          MaterialType.values.toSet(),
+        );
+        final fontBundle = await buildFontShareBundle(
+          projectService,
+          fontService,
+          id,
+          forSharing: false,
+        );
+        final file = await NiaproSerializer.saveShare(
+          project: project,
+          scenes: scenes,
+          tileManager: tileManager,
+          outputDir: temporary.path,
+          materialFiles: bundle.files.isEmpty ? null : bundle.files,
+          materialsManifest: bundle.manifest,
+          fontFiles: fontBundle.files.isEmpty ? null : fontBundle.files,
+          fontsManifest: fontBundle.manifest,
+        );
+        try {
+          files['$id.niashare'] = await file.readAsBytes();
+        } finally {
+          if (await file.exists()) await file.delete();
+        }
+      }
+    } finally {
       try {
-        files['$id.niashare'] = await file.readAsBytes();
-      } finally {
-        if (await file.exists()) await file.delete();
+        await temporary.delete(recursive: true);
+      } on FileSystemException catch (error, stackTrace) {
+        AppErrorReporter.record(error, stackTrace);
       }
     }
     return files;

@@ -3780,15 +3780,8 @@ class AppLocalizationsKo extends AppLocalizations {
   String get projectListMaterialAudio => '오디오';
 
   @override
-  String get projectListIncludeFontsTitle => '폰트 포함';
-
-  @override
-  String get projectListIncludeFontsSubtitle =>
-      '이 프로젝트에서 사용 중인 추가 폰트를 포함합니다. 재배포가 허용된 폰트만 포함하세요.';
-
-  @override
-  String get projectListFontLicenseUnavailable =>
-      '폰트 라이선스를 확인할 수 없습니다. 연결을 확인하고 다시 시도하거나 폰트를 제외하고 공유하세요.';
+  String get projectListShareFontNamesHint =>
+      '이 프로젝트에서 사용한 추가 폰트의 이름만 공유합니다. 받는 기기에서 폰트를 따로 추가하세요.';
 
   @override
   String get blendModeNormal => '표준';

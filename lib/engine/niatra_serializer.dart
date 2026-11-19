@@ -259,6 +259,7 @@ class NiatraSerializer {
     'community.hideGenerativeAiImageVideo',
     'community.rankingLayout.v1',
     'community.tileMinWidth.v1',
+    'community.tileSize.v2',
     'community_vertical_video_end_behavior',
   };
 

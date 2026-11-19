@@ -642,7 +642,6 @@ class ProjectService extends ChangeNotifier {
     required Project project,
     Map<String, Uint8List>? materialFiles,
     String? materialsManifest,
-    Map<String, Uint8List>? fontFiles,
     String? fontsManifest,
   }) async {
     final archive = await OutgoingShareLibrary.save(
@@ -651,7 +650,6 @@ class ProjectService extends ChangeNotifier {
       tileManager: tileManagerOf(project.id),
       materialFiles: materialFiles,
       materialsManifest: materialsManifest,
-      fontFiles: fontFiles,
       fontsManifest: fontsManifest,
     );
     StorageInfoService().invalidate();

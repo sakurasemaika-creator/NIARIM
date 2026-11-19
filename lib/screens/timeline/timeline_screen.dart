@@ -2590,8 +2590,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
     );
     return LayoutBuilder(
       builder: (context, constraints) {
+        final gripHeight = math.min(22.0, constraints.maxHeight);
         final allocatedPreviewHeight = constraints.hasBoundedHeight
-            ? math.max(0.0, constraints.maxHeight - 22.0)
+            ? constraints.maxHeight - gripHeight
             : maxPreviewHeight;
         final visiblePreviewHeight = math.min(
           previewHeight,
@@ -2617,7 +2618,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
             // 確実にリサイズとして認識されるようにするため）。
             // Resize grip only; transport time labels live beside skip buttons.
             SizedBox(
-              height: 22,
+              height: gripHeight,
               child: Center(
                 child: GestureDetector(
                   key: const Key('timelinePreviewResizeHandle'),

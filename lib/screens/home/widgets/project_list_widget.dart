@@ -1572,17 +1572,17 @@ class ProjectListWidget extends StatelessWidget {
           project.id,
           options.materialTypes,
         );
-        final fontBundle = options.includeFonts
-            ? await buildFontShareBundle(service, fontService, project.id)
-            : (files: <String, Uint8List>{}, manifest: null);
         return NiaproSerializer.saveShare(
           project: project,
           scenes: service.scenesOf(project.id),
           tileManager: service.tileManagerOf(project.id),
           materialFiles: bundle.files.isEmpty ? null : bundle.files,
           materialsManifest: bundle.manifest,
-          fontFiles: fontBundle.files.isEmpty ? null : fontBundle.files,
-          fontsManifest: fontBundle.manifest,
+          fontsManifest: projectFontNamesManifest(
+            service,
+            fontService,
+            project.id,
+          ),
         );
       },
     );
@@ -1689,10 +1689,7 @@ class ProjectListWidget extends StatelessWidget {
 String niashareKey(String projectId) => 'niashare:$projectId';
 
 /// .niashare作成時の同梱の選択。
-typedef NiashareIncludeOptions = ({
-  Set<MaterialType> materialTypes,
-  bool includeFonts,
-});
+typedef NiashareIncludeOptions = ({Set<MaterialType> materialTypes});
 
 /// 同梱の確認→共有ファイルの作成（[build]）→共有を、作品ごとに一度に1つだけ
 /// 走らせる（ホームの一覧のメニュー・プロジェクト詳細・受け取った作品の
@@ -1729,9 +1726,6 @@ Future<void> runNiashareFlow(
     final File file;
     try {
       file = await build(options);
-    } on CatalogFontNoticeException {
-      handles.tell(handles.l10n.projectListFontLicenseUnavailable);
-      return;
     } catch (error, stackTrace) {
       AppErrorReporter.record(error, stackTrace);
       handles.tell(
@@ -1747,7 +1741,7 @@ Future<void> runNiashareFlow(
 }
 
 /// .niashare作成時の同梱選択ダイアログ（画像/動画/音声を
-/// 種類ごとに選択できる。フォントは利用者が選んだときだけ同梱する）。
+/// 種類ごとに選択できる）。
 /// キャンセル時はnullを返す。
 Future<NiashareIncludeOptions?> showMaterialIncludeDialog(
   BuildContext context,
@@ -1758,7 +1752,6 @@ Future<NiashareIncludeOptions?> showMaterialIncludeDialog(
     MaterialType.video,
     MaterialType.audio,
   };
-  bool includeFonts = false;
   return showDialog<NiashareIncludeOptions>(
     context: context,
     builder: (ctx) => StatefulBuilder(
@@ -1806,18 +1799,12 @@ Future<NiashareIncludeOptions?> showMaterialIncludeDialog(
               ),
             ),
             const Divider(),
-            CheckboxListTile(
-              value: includeFonts,
-              title: Text(l10n.projectListIncludeFontsTitle),
-              contentPadding: EdgeInsets.zero,
-              onChanged: (v) => setDialogState(() => includeFonts = v == true),
-            ),
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Icon(Icons.info_outline, size: 18),
                 const SizedBox(width: 8),
-                Expanded(child: Text(l10n.projectListIncludeFontsSubtitle)),
+                Expanded(child: Text(l10n.projectListShareFontNamesHint)),
               ],
             ),
           ],
@@ -1828,10 +1815,7 @@ Future<NiashareIncludeOptions?> showMaterialIncludeDialog(
             child: Text(l10n.commonCancel),
           ),
           FilledButton(
-            onPressed: () => Navigator.pop(ctx, (
-              materialTypes: selected,
-              includeFonts: includeFonts,
-            )),
+            onPressed: () => Navigator.pop(ctx, (materialTypes: selected)),
             child: Text(l10n.commonCreate),
           ),
         ],
@@ -1840,9 +1824,21 @@ Future<NiashareIncludeOptions?> showMaterialIncludeDialog(
   );
 }
 
-/// プロジェクトで使用中のユーザー追加フォントをまとめ、.niashareへ同梱する
-/// ためのファイル群とマニフェストを作成する（プロジェクト共有時の
-/// 「フォントを含める」選択時に使用）。使用フォントがアプリ標準フォントのみの場合は空を返す。
+/// 共有ファイルに、作品で使った追加フォントの名前を記録する。
+String? projectFontNamesManifest(
+  ProjectService projects,
+  FontService fonts,
+  String projectId,
+) {
+  final usedFamilies = projects.usedFontFamiliesOf(projectId);
+  return NiaproSerializer.encodeFontNames({
+    for (final font in fonts.fonts)
+      if (usedFamilies.contains(fonts.familyNameOf(font)))
+        font.id: font.displayName,
+  });
+}
+
+/// 個人の設定引き継ぎで使うフォントの実ファイルとマニフェストを作成する。
 Future<({Map<String, Uint8List> files, String? manifest})> buildFontShareBundle(
   ProjectService projectService,
   FontService fontService,

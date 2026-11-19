@@ -22,6 +22,7 @@ import 'widgets/community_top_edge_refresh.dart';
 import 'widgets/community_work_counts.dart';
 import '../../widgets/first_that_fits.dart';
 import '../../widgets/fit_or_hide_title.dart';
+import '../../widgets/menu_card.dart';
 import '../../widgets/checked_menu_item.dart';
 import '../../widgets/collection_action_controls.dart';
 import '../../widgets/collection_tile_layout.dart';
@@ -606,7 +607,7 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
     final deleted = _youtubePrivacyById[work.id] == 'deleted';
     final selected = _selectedIds.contains(work.id);
     final title = work.title.isEmpty ? work.id : work.title;
-    return Card(
+    return MenuCard(
       margin: EdgeInsets.zero,
       clipBehavior: Clip.antiAlias,
       child: InkWell(

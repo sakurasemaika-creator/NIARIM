@@ -3992,15 +3992,8 @@ class AppLocalizationsEs extends AppLocalizations {
   String get projectListMaterialAudio => 'Audio';
 
   @override
-  String get projectListIncludeFontsTitle => 'Incluir fuentes';
-
-  @override
-  String get projectListIncludeFontsSubtitle =>
-      'Incluye las fuentes añadidas que usa este proyecto. Incluye solo fuentes que tengas permiso para redistribuir.';
-
-  @override
-  String get projectListFontLicenseUnavailable =>
-      'No se pudo verificar la licencia de una fuente. Comprueba tu conexión y vuelve a intentarlo o comparte sin incluir las fuentes.';
+  String get projectListShareFontNamesHint =>
+      'Solo se comparten los nombres de las fuentes añadidas que usa este proyecto. Instálalas por separado en el dispositivo receptor.';
 
   @override
   String get blendModeNormal => 'Normal';

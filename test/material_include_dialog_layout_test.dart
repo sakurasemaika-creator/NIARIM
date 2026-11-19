@@ -70,15 +70,9 @@ void main() {
             tester.element(find.byType(AlertDialog)),
           )!;
           final dialog = tester.getRect(find.byType(AlertDialog));
-          final fonts = find.widgetWithText(
-            CheckboxListTile,
-            l10n.projectListIncludeFontsTitle,
-          );
-          expect(tester.widget<CheckboxListTile>(fonts).value, isFalse);
-          expect(
-            find.text(l10n.projectListIncludeFontsSubtitle),
-            findsOneWidget,
-          );
+          expect(find.byType(CheckboxListTile), findsNWidgets(3));
+          final fontHint = find.text(l10n.projectListShareFontNamesHint);
+          expect(fontHint, findsOneWidget);
           // ボタンは画面の中にあり、押せる（何かに重なっていない）こと。
           for (final label in [l10n.commonCancel, l10n.commonCreate]) {
             final button = find.text(label);
@@ -94,12 +88,11 @@ void main() {
               problems.add('$profile: "$label" is covered');
             }
           }
-          // 4つの選択肢は（必要ならダイアログの中をスクロールして）全部届く。
+          // 3つの選択肢は（必要ならダイアログの中をスクロールして）全部届く。
           for (final label in [
             l10n.projectListMaterialImage,
             l10n.projectListMaterialVideo,
             l10n.projectListMaterialAudio,
-            l10n.projectListIncludeFontsTitle,
           ]) {
             final option = find.text(label);
             await tester.ensureVisible(option);
@@ -115,9 +108,8 @@ void main() {
               problems.add('$profile: "$label" is covered');
             }
           }
-          await tester.tap(find.text(l10n.projectListIncludeFontsTitle));
+          await tester.ensureVisible(fontHint);
           await tester.pumpAndSettle();
-          expect(tester.widget<CheckboxListTile>(fonts).value, isTrue);
           expect(tester.takeException(), isNull, reason: profile);
         }
       }

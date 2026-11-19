@@ -3729,14 +3729,8 @@ class AppLocalizationsZh extends AppLocalizations {
   String get projectListMaterialAudio => '音频';
 
   @override
-  String get projectListIncludeFontsTitle => '包含字体';
-
-  @override
-  String get projectListIncludeFontsSubtitle => '包含此项目使用的已添加字体。请仅包含允许再分发的字体。';
-
-  @override
-  String get projectListFontLicenseUnavailable =>
-      '无法确认字体许可证。请检查网络连接后重试，或取消包含字体后再分享。';
+  String get projectListShareFontNamesHint =>
+      '只共享此项目所用的已添加字体名称。请在接收设备上另行安装这些字体。';
 
   @override
   String get blendModeNormal => '正常';
@@ -14004,14 +13998,8 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get projectListMaterialAudio => '音訊';
 
   @override
-  String get projectListIncludeFontsTitle => '包含字型';
-
-  @override
-  String get projectListIncludeFontsSubtitle => '包含此專案使用的已新增字型。請僅包含允許再散布的字型。';
-
-  @override
-  String get projectListFontLicenseUnavailable =>
-      '無法確認字型授權。請檢查網路連線後重試，或取消包含字型後再分享。';
+  String get projectListShareFontNamesHint =>
+      '只分享此專案所用的已新增字型名稱。請在接收裝置上另外安裝這些字型。';
 
   @override
   String get blendModeNormal => '正常';

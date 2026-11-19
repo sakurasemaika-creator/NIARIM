@@ -1021,8 +1021,12 @@ class _HomeScreenState extends State<HomeScreen>
         (f) => f.startsWith('UserFont_') && !installedFamilies.contains(f),
       );
       if (missing.isNotEmpty) {
+        final sharedFontNames = NiaproSerializer.fontNames(data.fontsManifest);
         final names = missing
-            .map((f) => f.replaceFirst('UserFont_', ''))
+            .map((family) {
+              final id = family.replaceFirst('UserFont_', '');
+              return sharedFontNames[id] ?? id;
+            })
             .join(l10n.commonListSeparator);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(l10n.homeMissingFontsSnackbar(names))),

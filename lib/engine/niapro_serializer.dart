@@ -275,6 +275,79 @@ class NiaproSerializer {
     );
   }
 
+  static String? encodeFontNames(Map<String, String> names) => names.isEmpty
+      ? null
+      : jsonEncode([
+          for (final entry in names.entries)
+            {'id': entry.key, 'displayName': entry.value},
+        ]);
+
+  /// 名前だけを記録した共有と、フォントを同梱していた旧版の両方を読む。
+  static Map<String, String> fontNames(String? manifest) {
+    if (manifest == null) return const {};
+    try {
+      final entries = jsonDecode(manifest);
+      if (entries is! List) return const {};
+      return {
+        for (final entry in entries)
+          if (entry case {
+            'id': final String id,
+            'displayName': final String name,
+          } when name.trim().isNotEmpty)
+            id: name,
+      };
+    } on FormatException {
+      return const {};
+    }
+  }
+
+  /// 旧共有の作品データ・同梱素材を保ち、フォント領域は名前だけで作り直す。
+  /// 既に名前だけなら元のファイルをそのまま共有できる。
+  static Future<Uint8List?> withoutBundledFontFiles(File source) async {
+    ArchiveSecurity.validateFileSize(await source.length());
+    final archive = ArchiveSecurity.decodeZip(await source.readAsBytes());
+    const manifestPath = '$_fontsArchiveDir/fonts.json';
+    final originalManifest = archive.findFile(manifestPath);
+    final names = fontNames(
+      originalManifest == null
+          ? null
+          : utf8.decode(
+              originalManifest.content as List<int>,
+              allowMalformed: true,
+            ),
+    );
+    final encodedNames = encodeFontNames(names);
+    final fontEntries = archive.files.where(
+      (file) =>
+          file.name.replaceAll('\\', '/').startsWith('$_fontsArchiveDir/'),
+    );
+    if (fontEntries.isEmpty ||
+        (fontEntries.length == 1 &&
+            originalManifest != null &&
+            utf8.decode(
+                  originalManifest.content as List<int>,
+                  allowMalformed: true,
+                ) ==
+                encodedNames)) {
+      return null;
+    }
+    final cleaned = Archive();
+    for (final entry in archive.files) {
+      if (entry.name.replaceAll('\\', '/').startsWith('$_fontsArchiveDir/')) {
+        continue;
+      }
+      cleaned.addFile(entry..lastModTime = _storedModTime(entry));
+    }
+    if (encodedNames != null) {
+      final bytes = utf8.encode(encodedNames);
+      cleaned.addFile(ArchiveFile(manifestPath, bytes.length, bytes));
+    }
+    ArchiveSecurity.validateExport(cleaned);
+    final bytes = Uint8List.fromList(ZipEncoder().encode(cleaned)!);
+    ArchiveSecurity.validateFileSize(bytes.length);
+    return bytes;
+  }
+
   /// .niashare を読み込む（.niaproと同一形式なので load() をそのまま利用できる）。
   static Future<NiaproData> loadShare(String filePath) => load(filePath);
 

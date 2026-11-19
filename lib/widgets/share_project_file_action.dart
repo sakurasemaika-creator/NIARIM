@@ -1,20 +1,20 @@
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../engine/niapro_serializer.dart';
 import '../models/project.dart';
 import '../services/export_share_service.dart';
 import '../services/font_service.dart';
 import '../services/material_service.dart';
 import '../services/project_service.dart';
 import '../screens/home/widgets/project_list_widget.dart'
-    show buildFontShareBundle, runNiashareFlow;
+    show projectFontNamesManifest, runNiashareFlow;
 import '../utils/app_error_reporter.dart';
 import 'export_share_feedback.dart';
 
-/// Share the exact saved .niashare bytes, without rebuilding the project.
+/// Share a saved .niashare snapshot, stripping bundled fonts from older files.
 /// Missing external files are reported rather than silently recreating them.
 ///
 /// 保存したファイルが無くなっていること、共有できない端末、共有の失敗は別の
@@ -33,7 +33,26 @@ Future<void> shareSavedNiashare(BuildContext context, String path) {
       handles.tell(handles.l10n.communityErrorNotFound);
       return;
     }
-    await handles.share(file);
+    try {
+      final sanitized = await NiaproSerializer.withoutBundledFontFiles(file);
+      if (sanitized == null) {
+        await handles.share(file);
+      } else {
+        await handles.shareFiles(
+          [
+            XFile.fromData(
+              sanitized,
+              mimeType: 'application/vnd.niarim.niashare',
+            ),
+          ],
+          key: file.absolute.path,
+          fileNameOverrides: [file.uri.pathSegments.last],
+        );
+      }
+    } catch (error, stackTrace) {
+      AppErrorReporter.record(error, stackTrace);
+      handles.tell(handles.l10n.homeSharedFileUnreadable);
+    }
   });
 }
 
@@ -58,15 +77,15 @@ Future<void> createAndShareProjectNiashare(
         project.id,
         options.materialTypes,
       );
-      final fontBundle = options.includeFonts
-          ? await buildFontShareBundle(service, fontService, project.id)
-          : (files: <String, Uint8List>{}, manifest: null);
       return service.createOutgoingShare(
         project: project,
         materialFiles: materials.files.isEmpty ? null : materials.files,
         materialsManifest: materials.manifest,
-        fontFiles: fontBundle.files.isEmpty ? null : fontBundle.files,
-        fontsManifest: fontBundle.manifest,
+        fontsManifest: projectFontNamesManifest(
+          service,
+          fontService,
+          project.id,
+        ),
       );
     },
   );

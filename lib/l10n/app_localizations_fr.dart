@@ -3988,15 +3988,8 @@ class AppLocalizationsFr extends AppLocalizations {
   String get projectListMaterialAudio => 'Audio';
 
   @override
-  String get projectListIncludeFontsTitle => 'Inclure les polices';
-
-  @override
-  String get projectListIncludeFontsSubtitle =>
-      'Inclut les polices ajoutées utilisées dans ce projet. Incluez uniquement les polices que vous êtes autorisé à redistribuer.';
-
-  @override
-  String get projectListFontLicenseUnavailable =>
-      'Impossible de vérifier la licence d’une police. Vérifiez votre connexion et réessayez, ou partagez sans inclure les polices.';
+  String get projectListShareFontNamesHint =>
+      'Seuls les noms des polices ajoutées utilisées dans ce projet sont partagés. Installez-les séparément sur l’appareil destinataire.';
 
   @override
   String get blendModeNormal => 'Normal';

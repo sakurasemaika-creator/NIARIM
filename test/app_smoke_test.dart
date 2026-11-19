@@ -1313,7 +1313,16 @@ void main() {
     final addCameraKfButton = find.byIcon(Icons.camera);
     expect(addCameraKfButton, findsOneWidget);
     await tester.tap(addCameraKfButton);
-    await tester.pump(const Duration(milliseconds: 200));
+    await tester.pumpAndSettle();
+    final cameraSheet = find.byType(BottomSheet);
+    final cameraL10n = AppLocalizations.of(tester.element(cameraSheet))!;
+    await tester.tap(
+      find.descendant(
+        of: cameraSheet,
+        matching: find.widgetWithText(FilledButton, cameraL10n.commonAdd),
+      ),
+    );
+    await tester.pumpAndSettle();
     expect(tester.takeException(), isNull, reason: 'カメラキーフレーム追加で例外');
     expect(
       ps.cameraKeyframesOf(projectId, sceneId).map((k) => k.frameIndex),
@@ -1670,14 +1679,16 @@ void main() {
       final l10n = AppLocalizations.of(context)!;
       preview.show(community.discoverableWorks.first);
       await tester.pumpAndSettle();
+      final details = find.byKey(const Key('communityPreviewDetails'));
       final surface = find.byKey(const Key('communityPreviewSurface'));
-      expect(surface.hitTestable(), findsOneWidget);
+      expect(surface, findsOneWidget);
+      expect(details.hitTestable(), findsOneWidget);
       expect(filter.hitTestable(), findsOneWidget);
       await tester.tap(filter);
       await pumpRealAsync(tester, const Duration(milliseconds: 200));
       await tester.pumpAndSettle();
       expect(find.byType(AlertDialog), findsOneWidget);
-      expect(surface.hitTestable(), findsNothing);
+      expect(details.hitTestable(), findsNothing);
       final save = find.descendant(
         of: find.byType(AlertDialog),
         matching: find.text(l10n.commonSave),
@@ -1686,7 +1697,7 @@ void main() {
       await tester.tap(save);
       await tester.pumpAndSettle();
       expect(find.byType(AlertDialog), findsNothing);
-      expect(surface.hitTestable(), findsOneWidget);
+      expect(details.hitTestable(), findsOneWidget);
       expect(tester.takeException(), isNull);
     },
   );
@@ -1775,7 +1786,7 @@ void main() {
     // カード中央には投稿者リンクが来ることがあるため、サムネイルを押す。
     final thumbnail = find.descendant(
       of: card,
-      matching: find.byType(AspectRatio),
+      matching: find.byKey(ValueKey('community-thumbnail-${work.id}')),
     );
     final preview = tester.element(card).read<CommunityPreviewService>();
     await tester.ensureVisible(thumbnail);

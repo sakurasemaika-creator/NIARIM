@@ -1,0 +1,46 @@
+name: App and backend dependency inventory
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - "pubspec.yaml"
+      - "pubspec.lock"
+      - "backend/package.json"
+      - "backend/package-lock.json"
+      - "tool/export_flutter_dependency_inventory.py"
+      - ".github/workflows/dependency-inventory.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  inventory:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.47.2"
+          channel: stable
+          cache: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Inventory Flutter dependencies and license evidence
+        run: |
+          set -euo pipefail
+          flutter pub get --enforce-lockfile
+          dart pub deps --json > "$RUNNER_TEMP/niarim-flutter-deps.json"
+          python3 tool/export_flutter_dependency_inventory.py "$RUNNER_TEMP/niarim-flutter-deps.json" .dart_tool/package_config.json reports/dependencies
+      - name: Inventory locked backend dependencies
+        working-directory: backend
+        run: npm sbom --sbom-format=cyclonedx --package-lock-only > ../reports/dependencies/backend.cdx.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: niarim-dependencies-${{ github.sha }}
+          path: reports/dependencies/
+          if-no-files-found: error

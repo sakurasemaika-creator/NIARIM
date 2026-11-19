@@ -38,7 +38,6 @@ abstract final class OutgoingShareLibrary {
     required TileManager tileManager,
     Map<String, Uint8List>? materialFiles,
     String? materialsManifest,
-    Map<String, Uint8List>? fontFiles,
     String? fontsManifest,
     Directory? libraryRoot,
   }) async {
@@ -61,7 +60,6 @@ abstract final class OutgoingShareLibrary {
         outputDir: directory.path,
         materialFiles: materialFiles,
         materialsManifest: materialsManifest,
-        fontFiles: fontFiles,
         fontsManifest: fontsManifest,
       );
     } catch (_) {

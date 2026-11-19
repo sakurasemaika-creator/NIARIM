@@ -6909,23 +6909,11 @@ abstract class AppLocalizations {
   /// **'音声'**
   String get projectListMaterialAudio;
 
-  /// No description provided for @projectListIncludeFontsTitle.
+  /// No description provided for @projectListShareFontNamesHint.
   ///
   /// In ja, this message translates to:
-  /// **'フォントを含める'**
-  String get projectListIncludeFontsTitle;
-
-  /// No description provided for @projectListIncludeFontsSubtitle.
-  ///
-  /// In ja, this message translates to:
-  /// **'使用中の追加フォントを同梱します。再配布が許可されたフォントだけにしてください。'**
-  String get projectListIncludeFontsSubtitle;
-
-  /// No description provided for @projectListFontLicenseUnavailable.
-  ///
-  /// In ja, this message translates to:
-  /// **'追加フォントのライセンスを確認できません。通信を確認して再試行するか、フォントの同梱を外してください。'**
-  String get projectListFontLicenseUnavailable;
+  /// **'使用中の追加フォントは名前だけを共有します。受け取った端末では、フォントを別途追加してください。'**
+  String get projectListShareFontNamesHint;
 
   /// No description provided for @blendModeNormal.
   ///

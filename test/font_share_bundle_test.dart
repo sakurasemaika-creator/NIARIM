@@ -168,6 +168,54 @@ void main() {
     },
   );
 
+  test(
+    'public sharing writes names, and legacy forwarding removes font files',
+    () async {
+      final source = File('${sandbox.path}/manual.ttf');
+      await source.writeAsBytes(fixture);
+      final font = (await fonts.addFont(source.path, 'Manual font'))!;
+      final id = await workUsing(fonts.familyNameOf(font));
+      final project = projects.projects.single;
+      final names = {font.id: font.displayName};
+
+      final fresh = await projects.createOutgoingShare(
+        project: project,
+        fontsManifest: projectFontNamesManifest(projects, fonts, id),
+      );
+      final freshData = await NiaproSerializer.loadShare(fresh.path);
+      expect(freshData.fontFiles, isEmpty);
+      expect(NiaproSerializer.fontNames(freshData.fontsManifest), names);
+      expect(await NiaproSerializer.withoutBundledFontFiles(fresh), isNull);
+
+      final personal = await buildFontShareBundle(
+        projects,
+        fonts,
+        id,
+        forSharing: false,
+      );
+      final legacy = await NiaproSerializer.saveShare(
+        project: project,
+        scenes: projects.scenesOf(id),
+        tileManager: projects.tileManagerOf(id),
+        outputDir: sandbox.path,
+        materialFiles: {
+          'sample.wav': Uint8List.fromList([1, 2, 3]),
+        },
+        fontFiles: personal.files,
+        fontsManifest: personal.manifest,
+      );
+      final original = await legacy.readAsBytes();
+      final sanitized = await NiaproSerializer.withoutBundledFontFiles(legacy);
+      final forwarded = NiaproSerializer.loadFromBytes(sanitized!);
+      expect(forwarded.fontFiles, isEmpty);
+      expect(NiaproSerializer.bundledFonts(forwarded), isEmpty);
+      expect(NiaproSerializer.fontNames(forwarded.fontsManifest), names);
+      expect(forwarded.project.name, project.name);
+      expect(forwarded.materialFiles['sample.wav'], [1, 2, 3]);
+      expect(await legacy.readAsBytes(), original);
+    },
+  );
+
   test('a user-imported font does not get an invented license', () async {
     final source = File('${sandbox.path}/manual.ttf');
     await source.writeAsBytes(fixture);

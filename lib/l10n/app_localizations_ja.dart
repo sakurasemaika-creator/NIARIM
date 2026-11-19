@@ -3759,15 +3759,8 @@ class AppLocalizationsJa extends AppLocalizations {
   String get projectListMaterialAudio => '音声';
 
   @override
-  String get projectListIncludeFontsTitle => 'フォントを含める';
-
-  @override
-  String get projectListIncludeFontsSubtitle =>
-      '使用中の追加フォントを同梱します。再配布が許可されたフォントだけにしてください。';
-
-  @override
-  String get projectListFontLicenseUnavailable =>
-      '追加フォントのライセンスを確認できません。通信を確認して再試行するか、フォントの同梱を外してください。';
+  String get projectListShareFontNamesHint =>
+      '使用中の追加フォントは名前だけを共有します。受け取った端末では、フォントを別途追加してください。';
 
   @override
   String get blendModeNormal => '通常';
