@@ -5999,7 +5999,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get privacyPolicyArt9Body =>
-      'Pour toute question relative à la présente Politique, veuillez nous contacter aux coordonnées ci-dessous.\nsupport@miranima-studio.com';
+      'Pour toute question relative à la présente Politique, veuillez nous contacter aux coordonnées ci-dessous :\nsupport@miranima-studio.com';
 
   @override
   String get privacyPolicyAdConsentButton =>
@@ -6709,10 +6709,6 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get communityReportComingSoonSnackbar =>
       'Le signalement arrive bientôt. Rien n’a réellement été envoyé.';
-
-  @override
-  String get communityBlockComingSoonSnackbar =>
-      'Le blocage arrive bientôt. Rien n’a réellement été appliqué.';
 
   @override
   String communityAuthorWorksCount(int count) {
@@ -11289,10 +11285,10 @@ class AppLocalizationsFr extends AppLocalizations {
       'Ce tag est verrouillé. Seul son auteur peut le modifier.';
 
   @override
-  String get communityTagEditPrompt => 'Modifier ce tag ?';
+  String get communityTagEditPrompt => 'Modifier ce tag ?';
 
   @override
-  String get communityTagDeleteConfirm => 'Supprimer ce tag ?';
+  String get communityTagDeleteConfirm => 'Supprimer ce tag ?';
 
   @override
   String get communityTagLockAction => 'Verrouiller';

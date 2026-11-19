@@ -2654,7 +2654,6 @@
   "communityFloatingPreviewMoveHint": "드래그하거나 Alt + 방향키로 미리보기를 이동할 수 있습니다.",
   "communityFloatingPreviewCompactHint": "이 작품은 상세 화면에서 볼 수 있습니다.",
   "communityReportComingSoonSnackbar": "신고 기능은 준비 중입니다. 실제로 전송되지 않습니다.",
-  "communityBlockComingSoonSnackbar": "차단 기능은 준비 중입니다. 실제로 반영되지 않습니다.",
   "communityAuthorWorksCount": "작품 {count}개",
   "@communityAuthorWorksCount": {
     "placeholders": {

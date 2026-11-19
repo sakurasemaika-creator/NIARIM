@@ -6359,10 +6359,6 @@ class AppLocalizationsKo extends AppLocalizations {
       '신고 기능은 준비 중입니다. 실제로 전송되지 않습니다.';
 
   @override
-  String get communityBlockComingSoonSnackbar =>
-      '차단 기능은 준비 중입니다. 실제로 반영되지 않습니다.';
-
-  @override
   String communityAuthorWorksCount(int count) {
     return '작품 $count개';
   }

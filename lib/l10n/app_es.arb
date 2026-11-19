@@ -2400,7 +2400,7 @@
   "privacyPolicyArt8Title": "Artículo 8 (Modificaciones de esta Política)",
   "privacyPolicyArt8Body": "El desarrollador podrá modificar esta Política en caso de cambios en la legislación aplicable, cambios en el contenido de la Aplicación u otras circunstancias que considere necesarias. Al modificar esta Política, el desarrollador comunicará con antelación el contenido de la modificación y su fecha de entrada en vigor, dentro de la Aplicación o por otros medios adecuados.",
   "privacyPolicyArt9Title": "Artículo 9 (Contacto)",
-  "privacyPolicyArt9Body": "Si tiene alguna consulta sobre esta Política, póngase en contacto con nosotros a través de los siguientes datos.\nsupport@miranima-studio.com",
+  "privacyPolicyArt9Body": "Si tiene alguna consulta sobre esta Política, póngase en contacto con nosotros a través de los siguientes datos:\nsupport@miranima-studio.com",
   "privacyPolicyAdConsentButton": "Cambiar la configuración de consentimiento de anuncios",
   "tipsPcDexLayoutTitle": "En pantallas anchas, cambia automáticamente al modo PC (DeX)",
   "tipsPcDexLayoutDesc": "En un Chromebook, una tablet con teclado, Samsung DeX o cualquier entorno de pantalla ancha, la app cambia automáticamente a un diseño profesional con paneles acoplados. También puedes forzar Siempre modo PC o Siempre modo móvil desde los ajustes de espacio de trabajo, útil al conectar una pantalla externa.",
@@ -2654,7 +2654,6 @@
   "communityFloatingPreviewMoveHint": "Arrastra para mover. También puedes usar Alt + las flechas.",
   "communityFloatingPreviewCompactHint": "Abre Detalles para ver esta obra.",
   "communityReportComingSoonSnackbar": "La función de denuncia estará disponible próximamente. No se ha enviado nada.",
-  "communityBlockComingSoonSnackbar": "La función de bloqueo estará disponible próximamente. No se ha aplicado nada.",
   "communityAuthorWorksCount": "{count} obras",
   "@communityAuthorWorksCount": {
     "placeholders": {

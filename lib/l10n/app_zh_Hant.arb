@@ -2653,7 +2653,6 @@
   "communityFloatingPreviewMoveHint": "拖曳可移動預覽，也可以使用 Alt + 方向鍵。",
   "communityFloatingPreviewCompactHint": "開啟詳情即可查看此作品。",
   "communityReportComingSoonSnackbar": "檢舉功能正在開發中，實際上不會送出。",
-  "communityBlockComingSoonSnackbar": "封鎖功能正在開發中，實際上不會生效。",
   "communityAuthorWorksCount": "{count}件作品",
   "@communityAuthorWorksCount": {
     "placeholders": {

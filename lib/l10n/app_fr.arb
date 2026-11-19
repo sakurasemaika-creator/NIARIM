@@ -2400,7 +2400,7 @@
   "privacyPolicyArt8Title": "Article 8 (Modifications de la présente Politique)",
   "privacyPolicyArt8Body": "Le développeur peut modifier la présente Politique en cas de changement de la législation applicable, de modification du contenu de l’Application ou pour toute autre raison qu’il juge nécessaire. En cas de modification de la présente Politique, le développeur en communiquera au préalable le contenu et la date d’entrée en vigueur, dans l’Application ou par tout autre moyen approprié.",
   "privacyPolicyArt9Title": "Article 9 (Contact)",
-  "privacyPolicyArt9Body": "Pour toute question relative à la présente Politique, veuillez nous contacter aux coordonnées ci-dessous.\nsupport@miranima-studio.com",
+  "privacyPolicyArt9Body": "Pour toute question relative à la présente Politique, veuillez nous contacter aux coordonnées ci-dessous :\nsupport@miranima-studio.com",
   "privacyPolicyAdConsentButton": "Modifier les préférences de consentement publicitaire",
   "tipsPcDexLayoutTitle": "Sur grand écran, bascule automatiquement en mode PC (DeX)",
   "tipsPcDexLayoutDesc": "Sur un Chromebook, une tablette avec clavier, Samsung DeX ou tout environnement à écran large, l’application bascule automatiquement vers une mise en page professionnelle à panneaux ancrés. Vous pouvez aussi forcer Toujours en mode PC ou Toujours en mode mobile depuis les paramètres d’espace de travail, utile lors d’une connexion à un écran externe.",
@@ -2654,7 +2654,6 @@
   "communityFloatingPreviewMoveHint": "Faites glisser pour déplacer l’aperçu, ou utilisez Alt + les flèches.",
   "communityFloatingPreviewCompactHint": "Ouvrez Détails pour voir cette œuvre.",
   "communityReportComingSoonSnackbar": "Le signalement arrive bientôt. Rien n’a réellement été envoyé.",
-  "communityBlockComingSoonSnackbar": "Le blocage arrive bientôt. Rien n’a réellement été appliqué.",
   "communityAuthorWorksCount": "{count} œuvres",
   "@communityAuthorWorksCount": {
     "placeholders": {
@@ -3907,8 +3906,8 @@
   "pcTimelineZoomIn": "Agrandir la chronologie",
   "pcTimelineZoomOut": "Réduire la chronologie",
   "communityTagLockedMessage": "Ce tag est verrouillé. Seul son auteur peut le modifier.",
-  "communityTagEditPrompt": "Modifier ce tag ?",
-  "communityTagDeleteConfirm": "Supprimer ce tag ?",
+  "communityTagEditPrompt": "Modifier ce tag ?",
+  "communityTagDeleteConfirm": "Supprimer ce tag ?",
   "communityTagLockAction": "Verrouiller",
   "communityTagUnlockAction": "Déverrouiller",
   "communityPreviewStart": "Aller au début",

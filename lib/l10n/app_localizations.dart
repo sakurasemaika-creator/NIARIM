@@ -11487,12 +11487,6 @@ abstract class AppLocalizations {
   /// **'通報機能は準備中です。実際には送信されません。'**
   String get communityReportComingSoonSnackbar;
 
-  /// No description provided for @communityBlockComingSoonSnackbar.
-  ///
-  /// In ja, this message translates to:
-  /// **'ブロック機能は準備中です。実際には反映されません。'**
-  String get communityBlockComingSoonSnackbar;
-
   /// No description provided for @communityAuthorWorksCount.
   ///
   /// In ja, this message translates to:

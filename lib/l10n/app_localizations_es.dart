@@ -5993,7 +5993,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get privacyPolicyArt9Body =>
-      'Si tiene alguna consulta sobre esta Política, póngase en contacto con nosotros a través de los siguientes datos.\nsupport@miranima-studio.com';
+      'Si tiene alguna consulta sobre esta Política, póngase en contacto con nosotros a través de los siguientes datos:\nsupport@miranima-studio.com';
 
   @override
   String get privacyPolicyAdConsentButton =>
@@ -6702,10 +6702,6 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get communityReportComingSoonSnackbar =>
       'La función de denuncia estará disponible próximamente. No se ha enviado nada.';
-
-  @override
-  String get communityBlockComingSoonSnackbar =>
-      'La función de bloqueo estará disponible próximamente. No se ha aplicado nada.';
 
   @override
   String communityAuthorWorksCount(int count) {

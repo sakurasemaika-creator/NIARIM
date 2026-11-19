@@ -6261,9 +6261,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get communityReportComingSoonSnackbar => '举报功能正在开发中，实际上不会发送。';
 
   @override
-  String get communityBlockComingSoonSnackbar => '屏蔽功能正在开发中，实际上不会生效。';
-
-  @override
   String communityAuthorWorksCount(int count) {
     return '$count件作品';
   }
@@ -16502,9 +16499,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get communityReportComingSoonSnackbar => '檢舉功能正在開發中，實際上不會送出。';
-
-  @override
-  String get communityBlockComingSoonSnackbar => '封鎖功能正在開發中，實際上不會生效。';
 
   @override
   String communityAuthorWorksCount(int count) {

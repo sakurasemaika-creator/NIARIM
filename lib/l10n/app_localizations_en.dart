@@ -5898,7 +5898,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get privacyPolicyArt9Body =>
-      'If you have any inquiries regarding this Policy, please contact us using the information below.\nsupport@miranima-studio.com';
+      'If you have any inquiries regarding this Policy, please contact us using the information below:\nsupport@miranima-studio.com';
 
   @override
   String get privacyPolicyAdConsentButton => 'Manage ad consent settings';
@@ -6589,10 +6589,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get communityReportComingSoonSnackbar =>
       'Reporting is coming soon. Nothing was actually sent.';
-
-  @override
-  String get communityBlockComingSoonSnackbar =>
-      'Blocking is coming soon. Nothing was actually applied.';
 
   @override
   String communityAuthorWorksCount(int count) {

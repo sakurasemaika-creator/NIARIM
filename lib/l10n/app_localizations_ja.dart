@@ -6324,9 +6324,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get communityReportComingSoonSnackbar => '通報機能は準備中です。実際には送信されません。';
 
   @override
-  String get communityBlockComingSoonSnackbar => 'ブロック機能は準備中です。実際には反映されません。';
-
-  @override
   String communityAuthorWorksCount(int count) {
     return '$count作品';
   }
