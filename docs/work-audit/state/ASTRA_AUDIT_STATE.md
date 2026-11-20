@@ -3025,3 +3025,15 @@ S36公開照合: App `ba9bd14b9aba7b71dfcedc00940801ce8995d392` / Web `c510745a1
 - test：`effect_filter_from_draw_filters_test`・`effect_filter_non_square_test`・`timeline_effect_filter_header_fit_test`・`engine/vhs_filter_integration_test`・`engine/watercolor_border_test`・`ink_pool_filter_test`・`pixel_art_dither_toggle_test`・`functional_audit_batch2_test`・`visual_reaudit_export_camera_test`を`9e8124f0`で93件成功（ほかの`functional_audit_batch24`・`time_change_strict_evidence`・`timeline_frame_paste`・`timeline_preview_controls`はA053の実行で成功）。
 - 未確認：全14種の各パラメーターの最小・最大、範囲の前後のコマでの見え方、重なったときの並べ替えのドラッグ、入切、書き出した静止画との見比べ、時間で変わるフィルター（雨・動くノイズ・VHS）の再生と書き出し（Androidの実機）。
 - 画像：`shots-r1/r2a054-*`（backup-pending）。
+
+## A055 — エンドカード
+
+### A055 二巡目（2026-11-20、Claude・S50、App `9e8124f0`のLinuxデバッグビルド）— 判定：要修正（新DISC523）
+
+- 環境：ja、1280×800、マウス、無料会員、PCのタイムライン（作品10の「ShotA (コピー 3)」）。
+- 一巡目のDISC345は直った：`direct_service_coverage_batch10_test`を含む7本が`9e8124f0`で31件成功（ドックの窓の一覧に`reference`が入った）。
+- OK：タイムラインの「エンドカードトラック」（🔒）を押すと「NIARIM Premium／公式エンドマーク」の案内（「公式エンドマークの表示・非表示は、プレミアム会員またはエンドマーク編集の特典を利用中に設定できます。」、プレミアム会員の詳細・特典の詳細・閉じる）。コード：`premium_service.dart`の`shouldAppendOfficialEndCard`は、特典が無ければ必ず付け、`export_screen.dart`の`_appendEndCard`はGIFでは付けない。
+- 要修正（新、DISC523）：同じ機能を「エンドカード」と「エンドマーク」の2つの名前で呼び、1つの画面の中でも見出しと本文で食い違う。タイムラインの行は「エンドカードトラック」なのに押すと「公式エンドマーク」の案内、︙のメニューは「エンドマークを表示／非表示」。ヘルプの見出しは「エンドカード」で本文は「NIARIMのエンドマークは…」。ワークスペースの見出し「エンドカード」と説明「…エンドマーク…」。特典は「エンドカード編集・削除」。日本語のARBで「エンドカード」7か所・「エンドマーク」14か所、英語も「end card」7・「end mark」14。DISC402（Premiumの画面の「エンドマーク」と「エンドロゴ」）の記録は、ほかの画面は「エンドマーク」だとしていたが、実際は「エンドカード」も残っている。
+- test：`premium_all_entry_points_test`・`premium_expiry_video_output_test`・`export_video_failure_cleanup_test`・`premium_production_entry_wiring_test`・`l10n_known_typos_test`・`shared_asset_card_dialog_capture_test`・`direct_service_coverage_batch10_test`を`9e8124f0`で31件成功。呼び名のそろいを見るtestは無い。
+- 止められているもの（A043と同じ）：プレミアム・特典の状態はこの環境で作れないので、表示・非表示の切り替え・既定・期限切れの実操作は未確認。動画・GIFの書き出しはLinuxにffmpegが無く、エンドマークの尺・画質・最後のフレームは実機で確かめる。
+- 画像：`shots-r1/r2a055-*`（backup-pending）。
