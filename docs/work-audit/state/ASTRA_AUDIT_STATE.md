@@ -2798,3 +2798,16 @@ S36公開照合: App `ba9bd14b9aba7b71dfcedc00940801ce8995d392` / Web `c510745a1
 - test：全体回帰 `44641695291` で`filter_edit_undo_group_test`・`filter_settings_persistence_test`・`generated_filter_redo_test`・`filter0025_default_test`・`filter_selection_lens_mask_e2e_test`・`filter_panel_production_ui_contract_test`・`filter_edit_undo_routing_e2e_test`・`canvas_pc_filter_menu_list_test`・`services/filter_custom_replay_test`・`engine/filter_premultiplied_validity_test`・`layer_pixels_replace_test`は成功。
 - 未確認：暗いテーマのスライダー（DISC311）、レイヤーを作るフィルター（縁取り・墨溜まり・自動線画）の適用・取り消し・やり直し、二度押し、不透明度ロック、3コマのうち1つがロック、スマホ390×844の調整モード、色調整から足した自作のフィルター。
 - 画像：`shots-r1/r2a037-*`（backup-pending）。
+
+## A038 — 色調整・filterへの登録
+
+### A038 二巡目（2026-11-20、Claude・S50、App `da41e99d`）— 判定：OK
+
+- 一巡目の指摘（Linux debug、ja、1280×800、PCの形、三角の線画と塗りのコマ）：
+  - DISC314は直った：投げ縄で塗りの右半分だけを囲んで設定/編集→「色調整」で明度を下げて「適用」すると、範囲の中（右半分）だけが暗くなり、左半分は元のまま。塗りのレイヤーを「ロック」して「適用」を押すと「このレイヤーはロック中のため描けません。レイヤーの設定で「ロック」をオフにしてください。」が出て、絵は変わらない。色調整が範囲を見るようになったので、描画フィルターとして使ったときとの食い違いの元も無くなった。
+  - DISC316は直った：「描画フィルターに追加する」で名前の欄が開き、既定の名前は変えた値を含む「色調整 (明度 -57)」。「追加」で「描画フィルターに「色調整 (明度 -57)」を追加しました。」。同じ値でもう一度追加すると「色調整 (明度 -57) (2)」と番号が付く。「演出フィルターに追加する」も名前の欄（「色調整 (彩度 +77)」）が開き、「演出フィルターに「色調整 (彩度 +77)」を追加しました。タイムラインで確認できます。」。
+  - DISC315（乗算済みの画素のまま計算して半透明の縁が光る）：全体回帰 `44641695291` で`engine/filter_premultiplied_validity_test`が成功（全描画フィルターの出力が「どのチャンネルもα以下」）。
+- 気づいた点（DISCにしない）：ロックしたレイヤーでも色調整のプレビューはキャンバスで暗くなる（「適用」で理由を出して断る）。知らせは画面の下の選択のボタンの帯に重なる（5秒以内に消える）。
+- test：全体回帰 `44641695291` で`canvas_edit_menu_walkthrough_test`・`effect_filter_from_draw_filters_test`・`filter_panel_production_ui_contract_test`・`filter_selection_lens_mask_e2e_test`・`layer_lock_canvas_test`は成功。
+- 未確認：追加した描画フィルターを範囲を選んで適用したときの結果の比較、演出フィルターのタイムラインでの見え方と作品の保存・再読込での名前、半透明の縁の実画面、スマホ・仏語・文字2倍。
+- 画像：`shots-r1/r2a038-*`（backup-pending）。
