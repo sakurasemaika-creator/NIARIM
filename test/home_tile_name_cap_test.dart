@@ -37,10 +37,7 @@ void main() {
 
   Finder caption(String name) => HomeAppHarness.inProjects(
     find.byWidgetPredicate(
-      (w) =>
-          w is Text &&
-          w.style?.fontFamily == 'Kuramubon' &&
-          (w.semanticsLabel ?? w.data) == name,
+      (w) => w is Text && w.maxLines == 2 && w.semanticsLabel == name,
     ),
   );
 

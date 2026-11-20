@@ -23,6 +23,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:niarim/config/font_fallback.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/screens/settings/theme_preview_gallery_screen.dart';
 import 'package:niarim/services/theme_service.dart';
@@ -316,15 +317,19 @@ void main() {
           ).where((p) => p.text.toPlainText() == description).toList();
           if (p.isEmpty) {
             problems.add('$where: 「$description」が無い');
-          } else if (p.first.text.style?.fontFamily == 'Kuramubon') {
-            problems.add('$where: 「$description」が見出しの書体');
+          } else if (p.first.text.style?.fontFamily !=
+                  bodyFontFamilyFor(locale) ||
+              p.first.text.style?.fontWeight != FontWeight.normal) {
+            problems.add('$where: 「$description」が本文の書体でない');
           }
         }
-        for (final name in ['MP4', 'GIF', 'AVI']) {
+        for (final name in ['MP4', 'GIF', l.helpTransparentWebmTitle, 'AVI']) {
           final p = _paragraphs(
             tester,
           ).where((p) => p.text.toPlainText() == name).toList();
-          if (p.isEmpty || p.first.text.style?.fontFamily != 'Kuramubon') {
+          if (p.isEmpty ||
+              p.first.text.style?.fontFamily != headingFontFamilyFor(locale) ||
+              p.first.text.style?.fontWeight != FontWeight.w700) {
             problems.add('$where: 「$name」が見出しの書体でない');
           }
         }

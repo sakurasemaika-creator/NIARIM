@@ -110,6 +110,7 @@ class _ScriptedStorage extends StorageInfoService {
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   const pathChannel = MethodChannel('plugins.flutter.io/path_provider');
+  const ffmpegEvents = EventChannel('flutter.arthenica.com/ffmpeg_kit_event');
   final messenger =
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
   late Directory root;
@@ -118,11 +119,16 @@ void main() {
   setUp(() {
     root = Directory.systemTemp.createTempSync('storage-states-');
     messenger.setMockMethodCallHandler(pathChannel, (call) async => root.path);
+    messenger.setMockStreamHandler(
+      ffmpegEvents,
+      MockStreamHandler.inline(onListen: (_, _) {}),
+    );
     AppErrorReporter.recentErrors.clear();
   });
 
   tearDown(() {
     messenger.setMockMethodCallHandler(pathChannel, null);
+    messenger.setMockStreamHandler(ffmpegEvents, null);
     root.deleteSync(recursive: true);
   });
 

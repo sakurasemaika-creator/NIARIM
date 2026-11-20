@@ -225,9 +225,13 @@ extension HomeMatrixChecks on HomeMatrix {
         while (end < v.length && _wordChar(v[end])) {
           end++;
         }
+        // A shortened card name must fit with its visible ellipsis attached.
+        final measuredEnd = end == v.length - 1 && v[end] == '…'
+            ? end + 1
+            : end;
         var width = 0.0;
         for (final box in p.getBoxesForSelection(
-          lines.sourceSelection(start, end),
+          lines.sourceSelection(start, measuredEnd),
         )) {
           width += box.right - box.left;
         }

@@ -1428,9 +1428,12 @@ void main() {
     await tester.pump(const Duration(milliseconds: 500));
     expect(tester.takeException(), isNull, reason: 'タイムラインモードへの遷移で例外');
 
+    // Moving the clip can take it out of frame zero's visible layer list.
     Layer videoLayerOf(ProjectService s) => s
-        .layersOf(projectId, sceneId, 0)
-        .firstWhere((l) => l.type == LayerType.timelineVideo);
+        .sceneOf(projectId, sceneId)!
+        .frames
+        .expand((frame) => frame.layers)
+        .singleWhere((stored) => stored.id == layer.id);
     final layerBeforeMove = videoLayerOf(ps);
     final rangeStartBeforeMove = layerBeforeMove.rangeStart;
     final rangeEndBeforeMove = layerBeforeMove.rangeEnd;

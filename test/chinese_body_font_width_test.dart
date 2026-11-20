@@ -38,7 +38,14 @@ final RegExp _hangul = RegExp(r'[가-힯]');
 /// 段落[p]の本文の書体の漢字・ハングルの字幅の問題（無ければ空）。
 /// 漢字は全角（文字の大きさと同じ幅）、ハングルはどれも同じ幅であること。
 List<String> _widthProblems(RenderParagraph p) {
-  if (p.text.style?.fontFamily == 'Kuramubon') return const [];
+  final style = p.text.style;
+  // Korean and Chinese headings share the family with body copy, but use
+  // semibold or bold rather than the regular body face measured here.
+  if (style?.fontFamily == 'Kuramubon' ||
+      (style?.fontWeight?.index ?? FontWeight.normal.index) >
+          FontWeight.normal.index) {
+    return const [];
+  }
   final text = p.text.toPlainText(includeSemanticsLabels: false);
   final size = p.textScaler.scale(p.text.style?.fontSize ?? 14);
   final out = <String>[];
