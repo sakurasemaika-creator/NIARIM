@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -6,6 +7,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../l10n/app_localizations.dart';
 import '../../models/export_preset.dart';
+import '../export/widgets/export_complete_dialog.dart';
 import '../export/widgets/export_preset_selector.dart';
 import '../../services/theme_service.dart';
 import '../../config/accent_text_theme.dart';
@@ -2331,123 +2333,8 @@ class _ThemeSampleScreen extends StatelessWidget {
         Positioned.fill(
           child: ColoredBox(color: Colors.black.withValues(alpha: .46)),
         ),
-        // Like the real AlertDialog: the dialog scrolls when its text is
-        // taller than the screen (large text, long languages). The title is
-        // never broken inside a word: the dialog takes more of the width
-        // when a word needs it, and when even that is not enough the title
-        // is left out (read out; the text under it says the same).
-        Center(
-          child: LayoutBuilder(
-            builder: (context, box) {
-              final titleStyle = headingStyleFor(
-                _locale,
-                const TextStyle(fontSize: 21, fontWeight: FontWeight.w700),
-              );
-              final title = keepKoreanWordsTogether(l.exportCompleteTitle);
-              final word = _widestWord(context, title, titleStyle);
-              final margin = ((box.maxWidth - 48 - word) / 2).clamp(8.0, 32.0);
-              final showTitle = word <= box.maxWidth - 48 - margin * 2;
-              return SingleChildScrollView(
-                physics: const NeverScrollableScrollPhysics(),
-                padding: EdgeInsets.symmetric(horizontal: margin, vertical: 24),
-                child: Material(
-                  elevation: 0,
-                  color: c.surfaceContainerHigh,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(28),
-                    side: BorderSide.none,
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(24, 24, 24, 20),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        if (showTitle) ...[
-                          Text(
-                            title,
-                            semanticsLabel: l.exportCompleteTitle,
-                            style: titleStyle,
-                          ),
-                          const SizedBox(height: 18),
-                        ] else
-                          Semantics(
-                            header: true,
-                            label: l.exportCompleteTitle,
-                            child: const SizedBox.shrink(),
-                          ),
-                        // 韓国語は語（空白で区切った単位）の途中で折らない。
-                        Text(
-                          keepKoreanWordsTogether(
-                            l.exportCompleteFramesBody(48),
-                          ),
-                          semanticsLabel: l.exportCompleteFramesBody(48),
-                          style: const TextStyle(fontSize: 14),
-                        ),
-                        const SizedBox(height: 12),
-                        Text(
-                          l.exportSaveLocationLabel('animation.mp4'),
-                          style: const TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 5),
-                        Text(
-                          l.exportSaveLocationHint,
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: c.onSurfaceVariant,
-                          ),
-                        ),
-                        const SizedBox(height: 20),
-                        // Like the real dialog's buttons: side by side, or one
-                        // under the other when they do not fit.
-                        OverflowBar(
-                          alignment: MainAxisAlignment.end,
-                          overflowAlignment: OverflowBarAlignment.end,
-                          spacing: 14,
-                          overflowSpacing: 10,
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 10),
-                              child: Text(
-                                keepKoreanWordsTogether(
-                                  l.exportBackToProjectsButton,
-                                ),
-                                semanticsLabel: l.exportBackToProjectsButton,
-                                style: headingStyleFor(
-                                  _locale,
-                                  TextStyle(fontSize: 12, color: accentText),
-                                ),
-                              ),
-                            ),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 17,
-                                vertical: 10,
-                              ),
-                              decoration: BoxDecoration(
-                                color: c.primary,
-                                borderRadius: BorderRadius.circular(24),
-                              ),
-                              child: Text(
-                                l.commonShare,
-                                style: headingStyleFor(
-                                  _locale,
-                                  TextStyle(color: c.onPrimary),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              );
-            },
-          ),
+        ExcludeFocus(
+          child: ExportCompleteDialog(file: File('animation.mp4'), frames: 24),
         ),
       ],
     ),

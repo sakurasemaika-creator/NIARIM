@@ -207,7 +207,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get homeWorksEmpty => '내보낸 작품이 없습니다';
 
   @override
-  String get homeWorksEmptyHint => '캔버스에서 동영상이나 GIF를 내보내면\n여기에 표시됩니다';
+  String get homeWorksEmptyHint => '타임라인에서 동영상이나 GIF를 내보내면 여기에 표시됩니다.';
 
   @override
   String get homeWorkFolderEmpty => '이 폴더에는 내보낸 작품이 없어요';
@@ -1800,7 +1800,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get helpExportScreenDesc =>
-      '\'프리셋\'에서 \'표준\', \'고화질\', \'커스텀\'를 선택할 수 있습니다. \'커스텀\'에서는 FPS를 조정할 수 있습니다. 동영상·이미지를 내보내는 동안 진행 상황이 표시되며, 도중에 취소할 수도 있습니다. 내보내기에 걸리는 시간은 기기 성능에 따라 달라집니다.';
+      '\'프리셋\'에서 \'표준\', \'고화질\', \'커스텀\'를 선택할 수 있습니다. \'커스텀\'에서는 FPS를 조정할 수 있습니다. 동영상·이미지를 내보내는 동안 진행 상황이 표시되며, 도중에 취소할 수도 있습니다. 내보내기에 걸리는 시간은 기기 성능에 따라 달라집니다. 내보낸 파일은 홈 화면의 작품 목록에 저장됩니다. 사진 앱에 저장하거나 다른 앱에서 열려면 공유 메뉴에서 대상을 선택하세요.';
 
   @override
   String get helpDrawingFilterTitle => '그리기 필터';
@@ -2972,7 +2972,10 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get exportSaveLocationHint =>
-      '기기의 「사진」 앱이나 파일 앱에서 열려면 아래의 「공유」에서 저장할 앱을 선택하세요.';
+      '내보낸 파일은 홈 화면의 작품 목록에 저장됩니다. 사진 앱에 저장하거나 다른 앱에서 열려면 공유 메뉴에서 대상을 선택하세요.';
+
+  @override
+  String get exportOpenWorks => '작품 목록 열기';
 
   @override
   String get exportBackToProjectsButton => '프로젝트 목록으로 돌아가기';

@@ -203,7 +203,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get homeWorksEmpty => '还没有导出的作品';
 
   @override
-  String get homeWorksEmptyHint => '从画布导出视频或GIF后，\n将显示在这里';
+  String get homeWorksEmptyHint => '从时间线导出视频或 GIF 后，即可在这里查看。';
 
   @override
   String get homeWorkFolderEmpty => '此文件夹中没有导出的作品';
@@ -1780,7 +1780,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get helpExportScreenDesc =>
-      '在“预设”中选择“标准”“高画质”或“自定义”。选择“自定义”后，可以调整帧率（FPS）。导出视频、图片期间会显示进度，也可以中途取消。所需时间会因设备性能而异。';
+      '在“预设”中选择“标准”“高画质”或“自定义”。选择“自定义”后，可以调整帧率（FPS）。导出视频、图片期间会显示进度，也可以中途取消。所需时间会因设备性能而异。 导出的文件保存在首页的“作品列表”中。要保存到相册或用其他应用打开，请在分享菜单中选择目标应用。';
 
   @override
   String get helpDrawingFilterTitle => '绘图滤镜';
@@ -2928,7 +2928,10 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get exportSaveLocationHint =>
-      '如需在设备的“照片”应用或文件管理器中打开，请从下方的“分享”中选择要保存到的应用。';
+      '导出的文件保存在首页的“作品列表”中。要保存到相册或用其他应用打开，请在分享菜单中选择目标应用。';
+
+  @override
+  String get exportOpenWorks => '打开作品列表';
 
   @override
   String get exportBackToProjectsButton => '返回项目列表';
@@ -10571,7 +10574,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get homeWorksEmpty => '還沒有匯出的作品';
 
   @override
-  String get homeWorksEmptyHint => '從畫布匯出影片或GIF後，\n將顯示在這裡';
+  String get homeWorksEmptyHint => '從時間軸匯出影片或 GIF 後，就能在這裡看到。';
 
   @override
   String get homeWorkFolderEmpty => '此資料夾中沒有匯出的作品';
@@ -12148,7 +12151,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get helpExportScreenDesc =>
-      '在「預設」中選取「標準」「高畫質」或「自訂」。選取「自訂」後，可以調整影格率（FPS）。匯出影片、圖片期間會顯示進度，也可以中途取消。所需時間會依裝置效能而異。';
+      '在「預設」中選取「標準」「高畫質」或「自訂」。選取「自訂」後，可以調整影格率（FPS）。匯出影片、圖片期間會顯示進度，也可以中途取消。所需時間會依裝置效能而異。 匯出的檔案會儲存在首頁的「作品列表」。若要存到相簿或用其他 App 開啟，請在分享選單中選擇目的地。';
 
   @override
   String get helpDrawingFilterTitle => '繪圖濾鏡';
@@ -13296,7 +13299,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get exportSaveLocationHint =>
-      '若要在裝置的「相片」App或檔案App中開啟，請從下方的「分享」選擇要儲存到的App。';
+      '匯出的檔案會儲存在首頁的「作品列表」。若要存到相簿或用其他 App 開啟，請在分享選單中選擇目的地。';
+
+  @override
+  String get exportOpenWorks => '開啟作品列表';
 
   @override
   String get exportBackToProjectsButton => '返回專案列表';

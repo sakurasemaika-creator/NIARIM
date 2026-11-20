@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/l10n/app_localizations.dart';
+import 'package:niarim/screens/export/widgets/export_complete_dialog.dart';
 import 'package:niarim/utils/app_error_reporter.dart';
 import 'package:niarim/widgets/export_share_feedback.dart';
 
@@ -117,15 +118,42 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  test('the export-complete dialog shares through the notice helper', () {
-    final source = File(
-      'lib/screens/export/export_screen.dart',
-    ).readAsStringSync();
-    expect(source, isNot(contains('SharePlus.instance')));
-    expect(source, contains('shareExportedFileWithNotice(context'));
-    // 作品一覧の行とプレビューも同じ文の決まりを使う。
-    final home = File('lib/screens/home/home_screen.dart').readAsStringSync();
-    expect(home, isNot(contains('SharePlus.instance')));
-    expect(home, contains('exportShareFailureText('));
+  testWidgets('share can be retried and Works opened at 200% text', (
+    tester,
+  ) async {
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(320, 568);
+    tester.platformDispatcher.textScaleFactorTestValue = 2;
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+    final l10n = await pump(tester, 'ja');
+    final result = showDialog<ExportDestination>(
+      context: tester.element(find.text('share')),
+      builder: (_) => ExportCompleteDialog(file: file, frames: 24),
+    );
+    await tester.pumpAndSettle();
+    final share = find.widgetWithText(FilledButton, l10n.commonShare);
+    failure = MissingPluginException('no receiver');
+    await tester.ensureVisible(share);
+    await tester.tap(share);
+    await tester.pumpAndSettle();
+    expect(find.text(l10n.communityErrorUnsupported), findsOneWidget);
+    expect(find.byType(ExportCompleteDialog), findsOneWidget);
+
+    failure = null;
+    await tester.ensureVisible(share);
+    await tester.tap(share);
+    await tester.pumpAndSettle();
+    expect(calls, 2);
+    expect(find.text(l10n.communityErrorUnsupported), findsNothing);
+    expect(find.byType(ExportCompleteDialog), findsOneWidget);
+    final works = find.widgetWithText(OutlinedButton, l10n.exportOpenWorks);
+    await tester.ensureVisible(works);
+    await tester.tap(works);
+    await tester.pumpAndSettle();
+    expect(await result, ExportDestination.works);
+    expect(file.readAsBytesSync(), [1, 2, 3]);
+    expect(tester.takeException(), isNull);
   });
 }

@@ -17,6 +17,8 @@ on:
       - 'test/project_selection_clipboard_test.dart'
       - 'test/quick_tool_panel_landscape_fit_test.dart'
       - 'lib/screens/export/export_screen.dart'
+      - 'lib/screens/export/widgets/export_complete_dialog.dart'
+      - 'test/export_share_notice_test.dart'
       - 'test/app_web_reference_export_exact_test.dart'
       - 'lib/screens/help/help_screen.dart'
       - 'test/help_topic_search_text_test.dart'
@@ -46,10 +48,10 @@ jobs:
           lib/screens/home/widgets/project_list_widget.dart lib/screens/premium/premium_screen.dart
           lib/widgets/empty_state_placeholder.dart lib/widgets/background_color_picker.dart
           lib/screens/help/help_screen.dart lib/screens/project/new_project_screen.dart lib/screens/export/export_screen.dart
-          lib/screens/canvas/widgets/canvas_icon_button.dart
+          lib/screens/export/widgets/export_complete_dialog.dart lib/screens/canvas/widgets/canvas_icon_button.dart
           lib/screens/canvas/widgets/toolbar_widget.dart lib/widgets/collection_action_controls.dart
       - name: Verify choosing a format and opening export help from the timeline
-        run: flutter test --no-pub --reporter expanded test/app_web_reference_export_exact_test.dart
+        run: flutter test --no-pub --reporter expanded test/export_share_notice_test.dart test/app_web_reference_export_exact_test.dart
       - run: >
           flutter test --no-pub --reporter expanded
           test/home_a003_visual_findings_test.dart test/home_small_fixes_test.dart
@@ -84,6 +86,8 @@ jobs:
         if: success()
         with:
           name: export-settings-screen
-          path: build/visual-smoke/webref_exact_07_export.png
+          path: |
+            build/visual-smoke/webref_exact_07_export.png
+            build/visual-smoke/webref_export_complete.png
           if-no-files-found: error
           retention-days: 14

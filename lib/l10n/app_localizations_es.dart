@@ -228,7 +228,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get homeWorksEmptyHint =>
-      'Exporta un vídeo o GIF desde el lienzo y aparecerá aquí';
+      'Exporta un vídeo o un GIF desde la línea de tiempo para verlo aquí.';
 
   @override
   String get homeWorkFolderEmpty => 'No hay obras exportadas en esta carpeta';
@@ -1874,7 +1874,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get helpExportScreenDesc =>
-      'En «Preajuste», elige «Estándar», «Alta calidad» o «Personalizado». Con «Personalizado» puedes ajustar los fotogramas por segundo (FPS). Muestra el progreso al exportar un vídeo o una imagen, y permite cancelar a mitad de camino. El tiempo que tarda depende del rendimiento del dispositivo.';
+      'En «Preajuste», elige «Estándar», «Alta calidad» o «Personalizado». Con «Personalizado» puedes ajustar los fotogramas por segundo (FPS). Muestra el progreso al exportar un vídeo o una imagen, y permite cancelar a mitad de camino. El tiempo que tarda depende del rendimiento del dispositivo. Los archivos exportados se guardan en Obras, en la pantalla de inicio. Para guardar un archivo en Fotos o abrirlo en otra aplicación, elige un destino en el menú de compartir.';
 
   @override
   String get helpDrawingFilterTitle => 'Filtros de dibujo';
@@ -3133,7 +3133,10 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get exportSaveLocationHint =>
-      'Para abrirlo en la app de Fotos o el gestor de archivos de tu dispositivo, usa «Compartir» a continuación para elegir dónde guardarlo.';
+      'Los archivos exportados se guardan en Obras, en la pantalla de inicio. Para guardar un archivo en Fotos o abrirlo en otra aplicación, elige un destino en el menú de compartir.';
+
+  @override
+  String get exportOpenWorks => 'Abrir Obras';
 
   @override
   String get exportBackToProjectsButton => 'Volver a proyectos';

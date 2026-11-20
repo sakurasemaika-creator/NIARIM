@@ -21,6 +21,7 @@ import 'package:niarim/services/premium_service.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:niarim/widgets/ad_banner_widget.dart';
 import 'package:niarim/screens/export/export_screen.dart';
+import 'package:niarim/screens/export/widgets/export_complete_dialog.dart';
 import 'package:niarim/screens/timeline/timeline_screen.dart';
 
 import 'helpers/load_app_fonts.dart';
@@ -78,7 +79,10 @@ void main() {
     if (tempDir.existsSync()) tempDir.deleteSync(recursive: true);
   });
 
-  Future<void> capture(WidgetTester tester) async {
+  Future<void> capture(
+    WidgetTester tester, {
+    String name = 'webref_exact_07_export.png',
+  }) async {
     await tester.pump(const Duration(milliseconds: 250));
     expect(find.byType(AdBannerWidget, skipOffstage: false), findsNothing);
     final boundary =
@@ -91,7 +95,7 @@ void main() {
       return data!.buffer.asUint8List();
     });
     final dir = Directory('build/visual-smoke')..createSync(recursive: true);
-    File('${dir.path}/webref_exact_07_export.png').writeAsBytesSync(bytes!);
+    File('${dir.path}/$name').writeAsBytesSync(bytes!);
   }
 
   testWidgets('exact export via real timeline toolbar tap', (tester) async {
@@ -128,8 +132,9 @@ void main() {
       await tester.pump(const Duration(milliseconds: 500));
     }
 
-    GoRouter.of(tester.element(find.byType(Scaffold).first))
-        .push('/new-project');
+    GoRouter.of(
+      tester.element(find.byType(Scaffold).first),
+    ).push('/new-project');
     await tester.pump(const Duration(milliseconds: 600));
     final create = find.widgetWithText(FilledButton, '作成', skipOffstage: false);
     await tester.dragUntilVisible(
@@ -145,8 +150,9 @@ void main() {
         .element(find.byType(Scaffold).first)
         .read<ProjectService>();
     final project = projectService.projects.first;
-    GoRouter.of(tester.element(find.byType(Scaffold).first))
-        .go('/canvas/${project.id}');
+    GoRouter.of(
+      tester.element(find.byType(Scaffold).first),
+    ).go('/canvas/${project.id}');
     await tester.pump(const Duration(milliseconds: 700));
 
     final canvas = find.byType(CanvasScreen);
@@ -240,6 +246,89 @@ void main() {
     await tester.tap(find.byTooltip(l10n.layerPanelHelpTooltip));
     await tester.pumpAndSettle();
     expect(find.text(l10n.helpVideoExportDesc), findsOneWidget);
+    appRouter.pop();
+    await tester.pumpAndSettle();
+    final tiny = await tester.runAsync(
+      () => projectService.createProject(
+        name: '月明かりの谷',
+        fps: 6,
+        durationSeconds: 1,
+        backgroundColor: 0xff39254a,
+        exportWidth: 64,
+        exportHeight: 64,
+      ),
+    );
+    appRouter.go('/export/${tiny!.id}');
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(gif);
+    await tester.tap(gif);
+    await tester.pumpAndSettle();
+    final start = find.byIcon(Icons.file_download);
+    await tester.ensureVisible(start);
+    await tester.runAsync(() async {
+      await tester.tap(start);
+      for (
+        var i = 0;
+        i < 160 && find.byType(ExportCompleteDialog).evaluate().isEmpty;
+        i++
+      ) {
+        await tester.pump(const Duration(milliseconds: 60));
+        await Future<void>.delayed(const Duration(milliseconds: 50));
+      }
+    });
+    await tester.pump(const Duration(milliseconds: 450));
+    expect(
+      find.byType(ExportCompleteDialog),
+      findsOneWidget,
+      reason: tester
+          .widgetList<Text>(find.byType(Text))
+          .map((t) => t.data)
+          .join(' / '),
+    );
+    final exported = tester
+        .widget<ExportCompleteDialog>(find.byType(ExportCompleteDialog))
+        .file;
+    expect(exported.readAsBytesSync().take(3), [
+      71,
+      73,
+      70,
+    ], reason: 'GIF signature');
+    await capture(tester, name: 'webref_export_complete.png');
+    final openWorks = find.widgetWithText(OutlinedButton, l10n.exportOpenWorks);
+    await tester.ensureVisible(openWorks);
+    await tester.tap(openWorks);
+    await tester.runAsync(() async {
+      for (var i = 0; i < 100 && find.byType(TabBar).evaluate().isEmpty; i++) {
+        await tester.pump(const Duration(milliseconds: 50));
+        await Future<void>.delayed(const Duration(milliseconds: 20));
+      }
+    });
+    expect(
+      appRouter.routeInformationProvider.value.uri.toString(),
+      '/home?tab=works',
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 700));
+    expect(
+      tester.widget<TabBar>(find.byType(TabBar).first).controller!.index,
+      1,
+    );
+    final filename = exported.uri.pathSegments.last;
+    await tester.runAsync(() async {
+      for (var i = 0; i < 100 && find.text(filename).evaluate().isEmpty; i++) {
+        await tester.pump(const Duration(milliseconds: 50));
+        await Future<void>.delayed(const Duration(milliseconds: 20));
+      }
+    });
+    expect(find.text(filename), findsWidgets);
+    appRouter.go('/home');
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 700));
+    expect(
+      tester.widget<TabBar>(find.byType(TabBar).first).controller!.index,
+      0,
+    );
+    expect(tester.takeException(), isNull);
     premium.applyServerCoinPremiumExpiry(null);
   }, timeout: const Timeout(Duration(seconds: 180)));
 }

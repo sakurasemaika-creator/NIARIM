@@ -227,7 +227,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get homeWorksEmptyHint =>
-      'Exportez une vidéo ou un GIF depuis le canevas et il apparaîtra ici';
+      'Exportez une vidéo ou un GIF depuis la timeline pour le retrouver ici.';
 
   @override
   String get homeWorkFolderEmpty =>
@@ -1867,7 +1867,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get helpExportScreenDesc =>
-      'Dans « Préréglage », choisissez « Standard », « Haute qualité » ou « Personnalisé ». Le mode « Personnalisé » permet de régler les images par seconde (FPS). Affiche la progression pendant l’export d’une vidéo ou d’une image, et permet d’annuler en cours de route. Le temps nécessaire dépend des performances de l’appareil.';
+      'Dans « Préréglage », choisissez « Standard », « Haute qualité » ou « Personnalisé ». Le mode « Personnalisé » permet de régler les images par seconde (FPS). Affiche la progression pendant l’export d’une vidéo ou d’une image, et permet d’annuler en cours de route. Le temps nécessaire dépend des performances de l’appareil. Les fichiers exportés se trouvent dans Œuvres sur l’écran d’accueil. Pour enregistrer un fichier dans Photos ou l’ouvrir dans une autre application, choisissez une destination dans le menu de partage.';
 
   @override
   String get helpDrawingFilterTitle => 'Filtres de dessin';
@@ -3129,7 +3129,10 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get exportSaveLocationHint =>
-      'Pour l’ouvrir dans l’application Photos ou le gestionnaire de fichiers de votre appareil, utilisez « Partager » ci-dessous pour choisir où l’enregistrer.';
+      'Les fichiers exportés se trouvent dans Œuvres sur l’écran d’accueil. Pour enregistrer un fichier dans Photos ou l’ouvrir dans une autre application, choisissez une destination dans le menu de partage.';
+
+  @override
+  String get exportOpenWorks => 'Ouvrir les œuvres';
 
   @override
   String get exportBackToProjectsButton => 'Retour aux projets';

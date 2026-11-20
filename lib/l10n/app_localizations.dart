@@ -458,7 +458,7 @@ abstract class AppLocalizations {
   /// No description provided for @homeWorksEmptyHint.
   ///
   /// In ja, this message translates to:
-  /// **'キャンバスの書き出しから動画・GIFを作成すると\nここに表示されます'**
+  /// **'タイムラインから動画やGIFを書き出すと、ここに表示されます。'**
   String get homeWorksEmptyHint;
 
   /// No description provided for @homeWorkFolderEmpty.
@@ -3330,7 +3330,7 @@ abstract class AppLocalizations {
   /// No description provided for @helpExportScreenDesc.
   ///
   /// In ja, this message translates to:
-  /// **'「プリセット」で「標準」「高画質」「カスタム」を選べます。「カスタム」ではFPSを調整できます。動画・画像の書き出し中は進捗状況が表示され、途中でキャンセルすることもできます。書き出しにかかる時間は端末の性能によって変わります。'**
+  /// **'「プリセット」で「標準」「高画質」「カスタム」を選べます。「カスタム」ではFPSを調整できます。動画・画像の書き出し中は進捗状況が表示され、途中でキャンセルすることもできます。書き出しにかかる時間は端末の性能によって変わります。 書き出したファイルはホームの「作品一覧」に保存されます。写真アプリに保存したり、ほかのアプリで開いたりするときは、共有先を選んでください。'**
   String get helpExportScreenDesc;
 
   /// No description provided for @helpDrawingFilterTitle.
@@ -5436,8 +5436,14 @@ abstract class AppLocalizations {
   /// No description provided for @exportSaveLocationHint.
   ///
   /// In ja, this message translates to:
-  /// **'端末の「写真」アプリやファイルアプリで開くには、下の「共有」から保存先アプリを選んでください。'**
+  /// **'書き出したファイルはホームの「作品一覧」に保存されます。写真アプリに保存したり、ほかのアプリで開いたりするときは、共有先を選んでください。'**
   String get exportSaveLocationHint;
+
+  /// No description provided for @exportOpenWorks.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品一覧を開く'**
+  String get exportOpenWorks;
 
   /// No description provided for @exportBackToProjectsButton.
   ///

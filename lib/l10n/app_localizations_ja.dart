@@ -206,7 +206,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get homeWorksEmpty => '書き出した作品がありません';
 
   @override
-  String get homeWorksEmptyHint => 'キャンバスの書き出しから動画・GIFを作成すると\nここに表示されます';
+  String get homeWorksEmptyHint => 'タイムラインから動画やGIFを書き出すと、ここに表示されます。';
 
   @override
   String get homeWorkFolderEmpty => 'このフォルダには書き出した作品がありません';
@@ -1796,7 +1796,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get helpExportScreenDesc =>
-      '「プリセット」で「標準」「高画質」「カスタム」を選べます。「カスタム」ではFPSを調整できます。動画・画像の書き出し中は進捗状況が表示され、途中でキャンセルすることもできます。書き出しにかかる時間は端末の性能によって変わります。';
+      '「プリセット」で「標準」「高画質」「カスタム」を選べます。「カスタム」ではFPSを調整できます。動画・画像の書き出し中は進捗状況が表示され、途中でキャンセルすることもできます。書き出しにかかる時間は端末の性能によって変わります。 書き出したファイルはホームの「作品一覧」に保存されます。写真アプリに保存したり、ほかのアプリで開いたりするときは、共有先を選んでください。';
 
   @override
   String get helpDrawingFilterTitle => '描画フィルター';
@@ -2957,7 +2957,10 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get exportSaveLocationHint =>
-      '端末の「写真」アプリやファイルアプリで開くには、下の「共有」から保存先アプリを選んでください。';
+      '書き出したファイルはホームの「作品一覧」に保存されます。写真アプリに保存したり、ほかのアプリで開いたりするときは、共有先を選んでください。';
+
+  @override
+  String get exportOpenWorks => '作品一覧を開く';
 
   @override
   String get exportBackToProjectsButton => 'プロジェクト一覧へ戻る';

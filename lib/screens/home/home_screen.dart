@@ -357,7 +357,9 @@ Future<File> _copyFileDestination(AppLocalizations l10n, File source) async {
 }
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  const HomeScreen({super.key, this.openWorks = false});
+
+  final bool openWorks;
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -726,10 +728,23 @@ class _HomeScreenState extends State<HomeScreen>
   }
 
   @override
+  void didUpdateWidget(covariant HomeScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.openWorks != oldWidget.openWorks) {
+      _tabController.index = widget.openWorks ? 1 : 0;
+    }
+  }
+
+  @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _tabController = _HomeTabController(length: 4, vsync: this);
+    _currentTabIndex = widget.openWorks ? 1 : 0;
+    _tabController = _HomeTabController(
+      length: 4,
+      vsync: this,
+      initialIndex: _currentTabIndex,
+    );
     _projectScrollController.addListener(_syncProjectsCanGoUp);
     // 保存の中に読めない項目があれば、起動ごとに1回だけ知らせる。
     WidgetsBinding.instance.addPostFrameCallback(
@@ -3542,7 +3557,11 @@ class _SideStripsPainter extends CustomPainter {
 /// タブを[animateTo]で選ぶ）。以前は設定を見ずに約300ms横に滑った。設定が
 /// オフなら既定のまま。
 class _HomeTabController extends TabController {
-  _HomeTabController({required super.length, required super.vsync});
+  _HomeTabController({
+    required super.length,
+    required super.vsync,
+    required super.initialIndex,
+  });
 
   /// 動きを減らす設定（組み立てのたびにホームが合わせる）。
   bool reduceMotion = false;

@@ -11,7 +11,7 @@ import '../../l10n/app_localizations.dart';
 import '../../services/premium_service.dart';
 import '../../services/project_service.dart';
 import '../../services/settings_service.dart';
-import '../../widgets/export_share_feedback.dart';
+import 'widgets/export_complete_dialog.dart';
 import '../../widgets/labeled_slider.dart';
 import '../../widgets/progress_dialog.dart';
 import '../../widgets/responsive.dart';
@@ -480,7 +480,7 @@ class _ExportScreenState extends State<ExportScreen> {
       // cover in the background so the completion dialog appears immediately;
       // the saved-work list also retries when an app is relaunched mid-cache.
       unawaited(ExportedWorkCoverStore.ensureCached(File(outputPath)));
-      _showCompleteDialog(outputPath, totalFrames);
+      await _showCompleteDialog(outputPath, totalFrames);
     } on ExportCancelledException {
       _closeProgressDialog();
       if (!mounted) return;
@@ -583,68 +583,20 @@ class _ExportScreenState extends State<ExportScreen> {
     );
   }
 
-  void _showCompleteDialog(String outputPath, int totalFrames) {
-    final l10n = AppLocalizations.of(context)!;
-    final fileName = outputPath.split('/').last;
-    showDialog(
+  Future<void> _showCompleteDialog(String outputPath, int totalFrames) async {
+    final destination = await showDialog<ExportDestination>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(l10n.exportCompleteTitle),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(l10n.exportCompleteFramesBody(totalFrames)),
-            const SizedBox(height: 12),
-            // 保存先はアプリ内の永続領域（他端末のファイルアプリ等からは
-            // 直接見えないアプリ専用領域）。端末の「写真」アプリや
-            // ファイルアプリで見つけたい場合は「共有」から保存先を選ぶ
-            // 必要があることを明示する。
-            Text(
-              l10n.exportSaveLocationLabel(fileName),
-              style: localizedHeadingStyle(
-                context,
-                const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              l10n.exportSaveLocationHint,
-              style: TextStyle(
-                fontSize: 11,
-                color: Theme.of(ctx).colorScheme.onSurfaceVariant,
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(ctx);
-              context.go('/home');
-            },
-            child: Text(l10n.exportBackToProjectsButton),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(ctx);
-              context.go('/canvas/${widget.projectId}');
-            },
-            child: Text(l10n.exportBackToCanvasButton),
-          ),
-          FilledButton.icon(
-            onPressed: () {
-              Navigator.pop(ctx);
-              // 共有できない端末・失敗は、この画面の通知で知らせる
-              // （以前は結果を待たず、失敗が未処理の例外になった）。
-              shareExportedFileWithNotice(context, File(outputPath));
-            },
-            icon: const Icon(Icons.share),
-            label: Text(l10n.homeShareOpenWith),
-          ),
-        ],
+      builder: (_) => ExportCompleteDialog(
+        file: File(outputPath),
+        frames: totalFrames,
       ),
     );
+    if (!mounted || destination == null) return;
+    context.go(switch (destination) {
+      ExportDestination.works => '/home?tab=works',
+      ExportDestination.projects => '/home',
+      ExportDestination.canvas => '/canvas/${widget.projectId}',
+    });
   }
 }
 

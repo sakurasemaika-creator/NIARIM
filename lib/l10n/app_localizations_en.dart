@@ -220,7 +220,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get homeWorksEmptyHint =>
-      'Export a video or GIF from the canvas and it will appear here';
+      'Export a video or GIF from the timeline to see it here.';
 
   @override
   String get homeWorkFolderEmpty => 'No exported works in this folder';
@@ -1837,7 +1837,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpExportScreenDesc =>
-      'Choose “Standard”, “High Quality”, or “Custom” under “Preset”. With “Custom”, you can adjust the FPS. Shows progress while exporting a video or image, and lets you cancel partway through. How long it takes depends on your device\'s performance.';
+      'Choose “Standard”, “High Quality”, or “Custom” under “Preset”. With “Custom”, you can adjust the FPS. Shows progress while exporting a video or image, and lets you cancel partway through. How long it takes depends on your device\'s performance. Find exported files in Works on the home screen. To save a file to Photos or open it in another app, choose a destination in the share menu.';
 
   @override
   String get helpDrawingFilterTitle => 'Draw filters';
@@ -3082,7 +3082,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get exportSaveLocationHint =>
-      'To open it in your device\'s Photos app or file manager, use “Share” below to choose where to save it.';
+      'Find exported files in Works on the home screen. To save a file to Photos or open it in another app, choose a destination in the share menu.';
+
+  @override
+  String get exportOpenWorks => 'Open Works';
 
   @override
   String get exportBackToProjectsButton => 'Back to Projects';

@@ -50,7 +50,9 @@ final appRouter = GoRouter(
     ),
     GoRoute(
       path: '/home',
-      builder: (context, state) => const AdMockPageFrame(child: HomeScreen()),
+      builder: (context, state) => AdMockPageFrame(
+        child: HomeScreen(openWorks: state.uri.queryParameters['tab'] == 'works'),
+      ),
     ),
     GoRoute(
       path: '/shared',
