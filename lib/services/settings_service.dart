@@ -569,7 +569,7 @@ class SettingsService extends ChangeNotifier {
 
   Future<void> _persistCustomSizePresets() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setStringList(
+    await prefs.setSavedJsonList(
       'custom_size_presets',
       _customSizePresets.map((p) => jsonEncode(p.toJson())).toList(),
     );
@@ -1023,26 +1023,17 @@ class SettingsService extends ChangeNotifier {
       _rightDockOrder = right;
     }
     final sizePresetStrings = prefs.readStringList('custom_size_presets') ?? [];
-    _customSizePresets = [];
-    for (final encoded in sizePresetStrings) {
-      try {
-        final decoded = jsonDecode(encoded);
-        if (decoded is Map<String, dynamic>) {
-          // 以前の版で範囲外のサイズを保存できたので、読むときに収める。
-          final preset = CanvasSizePreset.fromJson(decoded);
-          _customSizePresets.add(
-            preset.copyWith(
-              width: clampCanvasEdge(preset.width),
-              height: clampCanvasEdge(preset.height),
-            ),
-          );
-        }
-      } on FormatException {
-        // Keep the raw persisted entry untouched so recovery is non-destructive.
-      } on TypeError {
-        // A structurally invalid preset is isolated instead of aborting startup.
-      }
-    }
+    _customSizePresets = [
+      for (final preset in readSavedJsonList(
+        sizePresetStrings,
+        CanvasSizePreset.fromJson,
+        listKey: 'custom_size_presets',
+      ))
+        preset.copyWith(
+          width: clampCanvasEdge(preset.width),
+          height: clampCanvasEdge(preset.height),
+        ),
+    ];
     _endCardDefaultHiddenForPremium =
         prefs.readBool('endcard_default_hidden_for_premium') ?? true;
     _toolbarSizeLevel = (prefs.readInt('toolbar_size_level') ?? 3).clamp(1, 5);

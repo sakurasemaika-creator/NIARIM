@@ -257,6 +257,7 @@ class FilterService extends ChangeNotifier {
     // 読めない値・読めない項目があった保存は、起動では書き換えない。
     var intact = !prefs.holdsUnreadableStringList(_prefsKey);
     _filters.clear();
+    SavedListCarryOver.remember(_prefsKey, const []);
     _colorNoiseProfile = null;
     final savedColor = prefs.readString(_colorNoiseProfileKey);
     if (savedColor != null) {
@@ -293,7 +294,10 @@ class FilterService extends ChangeNotifier {
           final filter = _upToDate(saved);
           if (!identical(filter, saved)) migratedFilterState = true;
           return filter;
-        }, onSkipped: () => intact = false).whereType<FilterDef>(),
+        },
+          onSkipped: () => intact = false,
+          listKey: _prefsKey,
+        ).whereType<FilterDef>(),
       );
       final existingIds = _filters.map((f) => f.id).toSet();
       final missing = _defaultFilters().where(
@@ -367,7 +371,7 @@ class FilterService extends ChangeNotifier {
 
   Future<void> _persist() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setStringList(
+    await prefs.setSavedJsonList(
       _prefsKey,
       _filters.map((f) => jsonEncode(f.toJson())).toList(),
     );

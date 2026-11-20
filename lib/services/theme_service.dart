@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/app_theme_preset.dart';
 import '../utils/color_contrast.dart';
+import '../utils/saved_list_reader.dart';
 import '../utils/tolerant_preferences.dart';
 import '../utils/transfer_merge.dart';
 import '../widgets/button_label_room.dart';
@@ -27,6 +28,7 @@ class ThemeService extends ChangeNotifier {
   /// 現在の色そのもの（JSON）。テーマ一覧から配色だけ取り込んだ状態は
   /// どのプリセットとも一致しないため、IDだけでは復元できない。
   static const _prefsCurrentJsonKey = 'theme_current_json';
+  static const _unreadableCurrentKey = 'theme_unreadable_current_json';
 
   /// テーマ一覧から配色だけ取り込んだ「現在の色」に付けるID。
   /// プリセット一覧には現れないIDなので、この状態では一覧のどのテーマにも
@@ -40,6 +42,7 @@ class ThemeService extends ChangeNotifier {
   static const Set<String> savedPreferenceKeys = {
     _prefsPresetsKey,
     _prefsCurrentJsonKey,
+    _unreadableCurrentKey,
     _originalBuiltInPaletteRestoreKey,
   };
 
@@ -489,25 +492,16 @@ class ThemeService extends ChangeNotifier {
             prefs.get(_prefsCurrentJsonKey) is! String)) {
       storedDataIsValid = false;
     }
+    final restoredPresets = readSavedJsonList(
+      raw ?? const [],
+      AppThemePreset.fromJson,
+      onSkipped: () => storedDataIsValid = false,
+      listKey: _prefsPresetsKey,
+    );
     if (raw == null || raw.isEmpty) {
       _presets.addAll(_builtInPresets);
     } else {
-      for (final encoded in raw) {
-        try {
-          final decoded = jsonDecode(encoded);
-          if (decoded is Map<String, dynamic>) {
-            _presets.add(AppThemePreset.fromJson(decoded));
-          } else {
-            storedDataIsValid = false;
-          }
-        } on FormatException {
-          // Keep malformed persisted JSON untouched; skip it for this session.
-          storedDataIsValid = false;
-        } on TypeError {
-          // Isolate structurally invalid presets instead of aborting startup.
-          storedDataIsValid = false;
-        }
-      }
+      _presets.addAll(restoredPresets);
       // 保存済みプリセット一覧に、組み込みプリセット（パステル・
       // ニュアンス・くすみカラー等）を反映する（同IDが既に存在する場合は
       // 追加しない。利用者が付けた名前は保存済みデータを優先する）。
@@ -533,22 +527,12 @@ class ThemeService extends ChangeNotifier {
     }
     // 現在の色は「一覧のどれか」とは限らないため、保存したJSONから復元する。
     final currentJson = prefs.readString(_prefsCurrentJsonKey);
-    AppThemePreset? restoredCurrent;
-    if (currentJson != null) {
-      try {
-        final decoded = jsonDecode(currentJson);
-        if (decoded is Map<String, dynamic>) {
-          restoredCurrent = AppThemePreset.fromJson(decoded);
-        }
-      } on FormatException {
-        // Keep the damaged raw value untouched and fall back below.
-      } on TypeError {
-        // Structurally invalid current theme must not abort app startup.
-      }
-    }
-    if (currentJson != null && restoredCurrent == null) {
-      storedDataIsValid = false;
-    }
+    final restoredCurrent = readSavedJsonList(
+      [if (currentJson != null) currentJson],
+      AppThemePreset.fromJson,
+      onSkipped: () => storedDataIsValid = false,
+      listKey: _prefsCurrentJsonKey,
+    ).firstOrNull;
     if (restoredCurrent != null) {
       // Only an explicitly selected built-in should follow the rollback.
       // A color-sampled/current-custom theme is a separate saved creation,
@@ -581,7 +565,7 @@ class ThemeService extends ChangeNotifier {
 
   Future<void> _persistPresets() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setStringList(
+    await prefs.setSavedJsonList(
       _prefsPresetsKey,
       _presets.map((p) => jsonEncode(p.toJson())).toList(),
     );
@@ -589,7 +573,19 @@ class ThemeService extends ChangeNotifier {
 
   Future<void> _persistCurrent() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_prefsCurrentJsonKey, jsonEncode(_current.toJson()));
+    final unreadable = SavedListCarryOver.keep(_prefsCurrentJsonKey, []);
+    if (unreadable.isNotEmpty) {
+      final recovered = prefs.readStringList(_unreadableCurrentKey) ?? [];
+      final preserved = await prefs.setStringList(_unreadableCurrentKey, [
+        ...{...recovered, ...unreadable},
+      ]);
+      if (!preserved) return;
+    }
+    final saved = await prefs.setString(
+      _prefsCurrentJsonKey,
+      jsonEncode(_current.toJson()),
+    );
+    if (saved) SavedListCarryOver.remember(_prefsCurrentJsonKey, const []);
   }
 
   /// テーマ一覧の三点メニュー「編集」から呼ぶ：そのテーマ自体を編集対象に

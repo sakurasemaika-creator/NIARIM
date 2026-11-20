@@ -41,6 +41,18 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
+  bool _openingDestination = false;
+
+  Future<void> _openDestination(String route) async {
+    if (_openingDestination) return;
+    _openingDestination = true;
+    try {
+      await context.push<void>(route);
+    } finally {
+      _openingDestination = false;
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -128,7 +140,7 @@ class _SplashScreenState extends State<SplashScreen> {
         scheme.secondaryContainer,
         buttonInk,
       ),
-      onTap: () => context.push('/community'),
+      onTap: () => _openDestination('/community'),
     );
     final createButton = _SplashActionButton(
       key: const Key('splashCreateActionButton'),
@@ -143,7 +155,7 @@ class _SplashScreenState extends State<SplashScreen> {
       ),
       // 作品広場と同じく起動画面を履歴へ残し、Android標準の戻る操作でも
       // 「作品をつくる」ホームからこの画面へ戻れるようにする。
-      onTap: () => context.push('/home'),
+      onTap: () => _openDestination('/home'),
     );
     // モノグラムは、アプリランチャーアイコン（tool/gen_app_icon.py）と
     // 同じ「テーマ色の角丸正方形の背景に、モノグラムを白抜きで重ねる」

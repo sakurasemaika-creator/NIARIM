@@ -17,6 +17,7 @@ import '../models/brush_presets_extension.dart';
 import '../utils/built_in_preset_order.dart';
 import '../utils/creative_image_source.dart';
 import '../utils/duplicate_name.dart';
+import '../utils/saved_list_reader.dart';
 import '../utils/tolerant_preferences.dart';
 import '../utils/transfer_merge.dart';
 
@@ -1140,6 +1141,8 @@ class BrushService extends ChangeNotifier {
         }
       }
     }
+    SavedListCarryOver.remember(_prefsKey, _unreadableEntries);
+    SavedListCarryOver.remember(_foldersKey, _unreadableFolderEntries);
     final currentId = prefs.readString(_currentIdKey);
     _currentBrush =
         _brushes.where((b) => b.id == currentId).firstOrNull ??
