@@ -26,6 +26,7 @@ import 'package:niarim/screens/canvas/widgets/pen_sub_tool_panel.dart';
 import 'package:niarim/screens/canvas/widgets/stamp_panel.dart';
 import 'package:niarim/screens/canvas/widgets/tone_panel.dart';
 import 'package:niarim/screens/settings/font_settings_screen.dart';
+import 'package:niarim/services/font_service.dart';
 import 'package:niarim/services/theme_service.dart';
 import 'package:niarim/widgets/docked_panel_scope.dart';
 import 'package:provider/provider.dart';
@@ -34,6 +35,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'helpers/first_use_tooltips.dart';
 import 'helpers/load_app_fonts.dart';
+import 'helpers/project_storage.dart';
 import 'helpers/text_fit_problems.dart';
 
 typedef _Layout = (String, double, Widget Function());
@@ -140,6 +142,7 @@ Widget _host(
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+  useTemporaryProjectStorage();
   tearDown(() {
     final view =
         TestWidgetsFlutterBinding.instance.platformDispatcher.views.first;
@@ -281,6 +284,24 @@ void main() {
       'はみ出さず、端に接しない', (tester) async {
     await loadAppFonts(tester);
     final providers = await _providers(tester);
+    const seedLocale = Locale('en');
+    await tester.pumpWidget(
+      _host(providers, seedLocale, 1, const FontSettingsScreen()),
+    );
+    await tester.pumpAndSettle();
+    expect(
+      find.text(lookupAppLocalizations(seedLocale).fontEmptyTitle),
+      findsOneWidget,
+    );
+    expect(find.byType(FilterChip), findsNothing);
+    final fonts = tester
+        .element(find.byType(FontSettingsScreen))
+        .read<FontService>();
+    final sample = await tester.runAsync(
+      () => fonts.addFont('assets/fonts/HakkouMincho.ttf', 'Sample'),
+    );
+    expect(sample, isNotNull);
+    await tester.pumpWidget(const SizedBox());
     final problems = <String>[];
     for (final locale in AppLocalizations.supportedLocales) {
       final l = lookupAppLocalizations(locale);
