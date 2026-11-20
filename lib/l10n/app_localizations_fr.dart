@@ -8500,9 +8500,9 @@ class AppLocalizationsFr extends AppLocalizations {
       count,
       locale: localeName,
       other:
-          '$count éléments coupés. Ouvrez la destination et touchez Coller dans la barre sous les onglets.',
+          '$count éléments coupés. Ouvrez la destination et touchez Coller dans la barre en bas de l’écran.',
       one:
-          '$count élément coupé. Ouvrez la destination et touchez Coller dans la barre sous les onglets.',
+          '$count élément coupé. Ouvrez la destination et touchez Coller dans la barre en bas de l’écran.',
     );
     return '$_temp0';
   }
@@ -8513,9 +8513,9 @@ class AppLocalizationsFr extends AppLocalizations {
       count,
       locale: localeName,
       other:
-          '$count éléments copiés. Ouvrez l’emplacement voulu et touchez Coller dans la barre sous les onglets.',
+          '$count éléments copiés. Ouvrez l’emplacement voulu et touchez Coller dans la barre en bas de l’écran.',
       one:
-          '$count élément copié. Ouvrez l’emplacement voulu et touchez Coller dans la barre sous les onglets.',
+          '$count élément copié. Ouvrez l’emplacement voulu et touchez Coller dans la barre en bas de l’écran.',
     );
     return '$_temp0';
   }

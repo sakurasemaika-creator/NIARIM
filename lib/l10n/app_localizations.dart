@@ -14544,13 +14544,13 @@ abstract class AppLocalizations {
   /// No description provided for @homeCutSnackbar.
   ///
   /// In ja, this message translates to:
-  /// **'{count}件を切り取りました。移動先を開いて、タブの下の貼り付けを押してください。'**
+  /// **'{count}件を切り取りました。移動先を開いて、画面下部のバーにある貼り付けを押してください。'**
   String homeCutSnackbar(int count);
 
   /// No description provided for @homeCopiedSnackbar.
   ///
   /// In ja, this message translates to:
-  /// **'{count}件をコピーしました。貼り付けたい場所を開いて、タブの下の貼り付けを押してください。'**
+  /// **'{count}件をコピーしました。貼り付けたい場所を開いて、画面下部のバーにある貼り付けを押してください。'**
   String homeCopiedSnackbar(int count);
 
   /// No description provided for @homePastedSnackbar.

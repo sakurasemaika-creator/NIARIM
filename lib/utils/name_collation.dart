@@ -14,6 +14,8 @@
 /// ヘルプ・活用Tips・設定の検索も[foldName]・[nameMatches]で比べる。
 library;
 
+import 'duplicate_name.dart';
+
 /// [compareNames]・[nameMatches]で使う、比べるための形。
 String foldName(String name) {
   final out = StringBuffer();
@@ -55,7 +57,12 @@ int compareNames(String a, String b) =>
 
 /// [foldName]した結果を持たせた、並べ替え用の名前。
 class NameSortKey {
-  NameSortKey(this.raw) : folded = foldName(raw);
+  NameSortKey(this.raw) : folded = foldName(_copySortName(raw));
+
+  static String _copySortName(String name) {
+    final copy = copyNameParts(name);
+    return copy == null ? name : '${copy.name} (copy ${copy.number})';
+  }
 
   final String raw;
   final String folded;

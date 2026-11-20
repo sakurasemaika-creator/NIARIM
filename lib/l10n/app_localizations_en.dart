@@ -8348,9 +8348,9 @@ class AppLocalizationsEn extends AppLocalizations {
       count,
       locale: localeName,
       other:
-          'Cut $count items. Open the destination and tap Paste in the bar below the tabs.',
+          'Cut $count items. Open the destination and tap Paste in the bar at the bottom of the screen.',
       one:
-          'Cut $count item. Open the destination and tap Paste in the bar below the tabs.',
+          'Cut $count item. Open the destination and tap Paste in the bar at the bottom of the screen.',
     );
     return '$_temp0';
   }
@@ -8361,9 +8361,9 @@ class AppLocalizationsEn extends AppLocalizations {
       count,
       locale: localeName,
       other:
-          'Copied $count items. Open where you want them and tap Paste in the bar below the tabs.',
+          'Copied $count items. Open where you want them and tap Paste in the bar at the bottom of the screen.',
       one:
-          'Copied $count item. Open where you want it and tap Paste in the bar below the tabs.',
+          'Copied $count item. Open where you want it and tap Paste in the bar at the bottom of the screen.',
     );
     return '$_temp0';
   }

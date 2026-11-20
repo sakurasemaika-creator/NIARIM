@@ -17,7 +17,6 @@ import '../../../services/font_service.dart';
 import '../../../services/material_service.dart';
 import '../../../services/project_service.dart';
 import '../home_screen.dart';
-import '../../../config/font_fallback.dart';
 import '../../../widgets/checked_menu_item.dart';
 import '../../../widgets/empty_state_placeholder.dart';
 import '../../../widgets/korean_words_text.dart';
@@ -871,8 +870,6 @@ class ProjectListWidget extends StatelessWidget {
         keepJapaneseLineStarts: true,
         style: const TextStyle(
           fontWeight: FontWeight.w600,
-          fontFamily: 'Kuramubon',
-          fontFamilyFallback: kHeadingFontFallback,
           height: kWrappedNameLineHeight,
         ),
       ),

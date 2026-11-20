@@ -8486,9 +8486,9 @@ class AppLocalizationsEs extends AppLocalizations {
       count,
       locale: localeName,
       other:
-          '$count elementos cortados. Abre el destino y toca Pegar en la barra debajo de las pestañas.',
+          '$count elementos cortados. Abre el destino y toca Pegar en la barra inferior de la pantalla.',
       one:
-          '$count elemento cortado. Abre el destino y toca Pegar en la barra debajo de las pestañas.',
+          '$count elemento cortado. Abre el destino y toca Pegar en la barra inferior de la pantalla.',
     );
     return '$_temp0';
   }
@@ -8499,9 +8499,9 @@ class AppLocalizationsEs extends AppLocalizations {
       count,
       locale: localeName,
       other:
-          '$count elementos copiados. Abre el lugar de destino y toca Pegar en la barra debajo de las pestañas.',
+          '$count elementos copiados. Abre el lugar de destino y toca Pegar en la barra inferior de la pantalla.',
       one:
-          '$count elemento copiado. Abre el lugar de destino y toca Pegar en la barra debajo de las pestañas.',
+          '$count elemento copiado. Abre el lugar de destino y toca Pegar en la barra inferior de la pantalla.',
     );
     return '$_temp0';
   }
