@@ -2714,3 +2714,14 @@ S36公開照合: App `ba9bd14b9aba7b71dfcedc00940801ce8995d392` / Web `c510745a1
 - test：全体回帰 `44641695291` で`canvas_menu_sheets_reachability_test`・`final_remaining_strict_evidence_test`・`requested_ui_all_captures_test`は成功。
 - 未確認：浮かぶ窓の大きさの変更（角のつまみ）、Androidの画像選択・HEIC、画面の回転（Androidが要る）。
 - 画像：`shots-r1/r2a030-*`（backup-pending）。
+
+## A031 — レイヤー一覧・追加・順序・削除
+
+### A031 二巡目（2026-11-20、Claude・S50、App `2939841e`）— 判定：要修正（既存DISC198）
+
+- 一巡目の指摘：DISC301は直った（Linux debug、ja、1280×800、PCの形。レイヤー1を選んで＋で足すと「レイヤー3」が一番上に足され塗られる。つまみでレイヤー3を一番下へ動かして線を描き、レイヤー3を目のアイコンで隠すと線が消える〔線はレイヤー3に入った〕。塗られていない「テキスト1」を一番下へ動かしてから描いた線もレイヤー3に入った）。DISC302は直った（塗られているレイヤー3を自分の行の🗑で消すと、キャンバスからその線が消え、塗りはレイヤー1へ移り、次の線はレイヤー1に入る〔レイヤー1を隠すと消える〕。塗られていない行の🗑で別のレイヤーを消しても、次の線は塗られたレイヤー1に入る）。DISC303は直った（確認は「レイヤー3を削除しますか？」で「取り消せません」の文は無い。Ctrl+Zで消したレイヤー3が線ごと戻る）。
+- 要修正（既存DISC198）：レイヤーの行の🗑が赤い（画面の色(186,26,26)、`layer_panel.dart`821行の`ThemeService.activeColorScheme.error`。タイムラインの︙の「削除」も1529・1533行で同じ色）。
+- そのほか：目のアイコンの表示・非表示も取り消しの1手として積まれる（Ctrl+Zの順に入る）。＋は選んでいるレイヤーの上ではなく一番上に足す。どちらも仕様の記述が見つからないので指摘にはしない。
+- test：全体回帰 `44641695291` で`layer_panel_action_row_test`・`layer_panel_add_sheet_and_range_dialog_test`・`reorder_index_test`・`layer_pixels_replace_test`・`canvas_pinch_gesture_test`は成功。
+- 未確認：追加メニューの全種類、レイヤーの検索、名前の変更・複製・コピー・貼り付け、30枚以上のスクロール、たたんだフォルダ、保存して起動し直した後。
+- 画像：`shots-r1/r2a031-*`（backup-pending）。
