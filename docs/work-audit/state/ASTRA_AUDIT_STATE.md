@@ -3427,3 +3427,15 @@ S36公開照合: App `ba9bd14b9aba7b71dfcedc00940801ce8995d392` / Web `c510745a1
 - 未確認：カタログのダウンロードの失敗と再試行（実際につながる環境のため）、7言語・文字2倍・360pxの実画面、文字のレイヤーでの消したフォントの描かれ方。
 - 操作の誤り（製品の不具合ではない）：起動し直した直後にクリックを続けて送り、画面が違ったためファイル選択が開かず、打ったパスがホームに入った。作品・ゴミ箱は変わっていないことを確かめた。
 - 画像：`shots-r1/r2a084-*`（backup-pending）。
+
+## A085 — 利用規約・ライセンス・privacy画面
+
+### A085 二巡目（2026-11-20、Claude・S50、App `1740d395`のLinuxデバッグビルド、App `48313c82`のARB・Web `cbecc10`のHTML）— 判定：要修正（新DISC535。一巡目のDISC395・396は直った）
+
+- 環境：ja、1280×800、マウス。設定の一番下「利用規約・ライセンス」「プライバシーポリシー」。条文の比較は、日本語のARB（`licenseTermsArt*`・`privacyPolicyArt*`）とWebの`public/terms/index.html`・`public/privacy/index.html`の`data-i18n`の本文を、条ごとに空白を除いて突き合わせた（scratchpadの`r2tools/a085cmp.py`）。ほかの6言語は第4条の該当の語だけWebの`i18n-dict-legal.js`と比べた。
+- DISC395は直った：利用規約の第1〜13条・プライバシーポリシーの第1〜8条は、日本語でアプリとWebの本文が一致（第2条の未成年、第12条のフォロー・ブックマーク・リポスト、プライバシー第2条の生成AIの学習、第3条のGitHub、第7条の作品広場の情報を含む）。両方に「最終更新日：2026年11月18日」。プライバシー第9条（お問い合わせ）はアプリがメールアドレス、Webが問い合わせフォームへの案内（GPTの返却どおり意図した違い）。
+- 要修正（新、DISC535）：利用規約第4条3項の「エンドカード表示」が、アプリでは`ec135568`（DISC523の修正、11-20）で7言語とも「エンドマーク表示」に変わったが、Webの日本語のHTMLと`i18n-dict-legal.js`の7言語は「エンドカード」のまま（en end card / es tarjeta final / fr carte de fin / ko 엔드카드 / zh 片尾卡 / zh_Hant 片尾卡）。アプリの最終更新日も2026年11月18日のまま。
+- DISC396は直った：「利用規約・ライセンス」の使用フォントの欄は書体ごとの用途・作者・ライセンスと、追加書体の道順「設定→フォント管理→探してDLからダウンロード」（`shots-r1/r2a085-02`）。7言語は`l10n_locales_not_left_in_english_test`・`l10n_hardcoded_text_guard_test`で確認。
+- test：`privacy_policy_ai_clause_test`・`l10n_locales_not_left_in_english_test`・`font_license_test`・`community_playback_privacy_actions_test`・`community_ranking_privacy_visibility_test`・`ported_code_license_test`・`l10n_hardcoded_text_guard_test`を`1740d395`で34件成功。アプリとWebの条文の一致を見るtestは無い。
+- 未確認：7言語の全条文のアプリとWebの一致（第4条の語以外）、オフライン、文字2倍・360px、ストアに載せるプライバシーポリシーのURL。
+- 画像：`shots-r1/r2a085-*`（backup-pending）。
