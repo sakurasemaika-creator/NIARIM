@@ -2949,3 +2949,16 @@ S36公開照合: App `ba9bd14b9aba7b71dfcedc00940801ce8995d392` / Web `c510745a1
 - test：`timeline_text_material_flow_test`・`timeline_preview_controls_test`・`timeline_text_mask_persistence_test`は`e30860e0`で成功（A048と同じ実行、33件）。始まりのコマの縮小画像、四隅のつまみの取り消しの段数を見るtestは無い。
 - 未確認：素材の置き換え、縦長・巨大・透過の画像、回転のつまみ、不透明度、書き出したPNGとの見比べ、動画のクリップ（再生・壊れた動画はAndroidの実機）。
 - 画像：`shots-r1/r2a049-*`（backup-pending）。
+
+## A050 — 音声・波形・動画音・同期
+
+### A050 二巡目（2026-11-20、Claude・S50、App `e30860e0`→`3966af4f`のLinuxデバッグビルド）— 判定：一部確認（DISCなし。音はLinuxで確かめられない）
+
+- 環境：A048と同じ（portalの中、ja、1280×800、マウス、PCのタイムライン、作品10の「ShotA」に3〜14コマの音声のクリップ「tone」〔`media/tone.wav`、2.0秒〕）。途中でGPTの修正（`84f02194`・`677558b1`、タイムラインの外）が入ったので`3966af4f`で作り直した。
+- OK：＋音源→GTKのファイル選択でtone.wav→「音声クリップを追加」（ラベル・開始＝今のコマF3・長さ12F）→「音声1」の行に茶色のクリップ（A048）。波形を作れなくても止まらない（ログはFFmpegKitの読み込みの失敗だけ）。音声のクリップの左の端も3コマ目の左の端とそろい、送ってもそろう（DISC329、A048）。右の端のつまみを短くドラッグして1コマ縮める→取り消し1回で3〜14コマに戻る。起動し直しても3〜14コマのまま残る。
+- 環境の制約（製品の不具合ではない）：音声のクリップを押すと「音量調整」のシート（音量・フェードイン・フェードアウト、▶・✓・×）が出るが、スライダーを動かす・×で閉じるとアプリが落ちる（ログ「terminate called after throwing an instance of 'char const*'」）。シートの変更が`_syncMediaPlayback`→`_syncAudioClip`でクリップの`ap.AudioPlayer()`を初めて作り、Linuxのaudioplayers（GStreamer）が中で例外を投げる（この環境に音の出口が無い）。製品はAndroidだけなので、音量・フェード・再生・シーク・ループ・波形・書き出しの同期はAndroidの実機で確かめる。
+- 気づいた点（DISCにしない）：（1）音声を足すときの長さの既定はどの素材も12コマ（`timeline_screen.dart`7376行付近の`int length = 12`）で、2.0秒（24コマ）の音でも半分で切れて足される（一巡目と同じ。仕様か所有者に確かめたい）。（2）クリップを足すダイアログはスライダーがあるのに幅が狭い（A048と同じ）。（3）音声のシートの部品（`_ClipDetailSheet`）は`onDelete`・`onDuplicate`を受け取るが画面に出していない（音声のクリップは選択→クリップの削除・切り取りで消せる）。
+- A049の訂正（DISC519）：起動し直した直後（縮小画像を新しく作った後）も、3コマ目（クリップの始まり）の縮小画像は青の画素 約648で、4〜14コマ目（約84）と違い、変えていない15・16コマ目（約648）と同じだった。作り直されないのではなく、始まりのコマの縮小画像を作るときに素材の拡大縮小が当たっていない。DISC519の直し方を確かめるときは、始まりのコマで縮小画像の合成（`LayerKeyframeEngine().valueAt(l.keyframes, …)`）とプレビュー（`materialTransformAt`）・書き出しが同じ配置になるかを見る（書き出しは未確認）。
+- test：`audio_source_offset_serializer_regression_test`・`audio_waveform_service_test`・`timeline_preview_controls_test`（A048の実行で成功）。
+- 未確認（Androidの実機）：音量・フェードの境界、再生・シーク・ループ・一時停止・裏へ回したとき、二重再生、波形、動画の音、速度・FPSの変化、書き出しの音ズレ。
+- 画像：`shots-r1/r2a050-*`（backup-pending）。
