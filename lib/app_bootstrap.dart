@@ -149,8 +149,12 @@ Future<List<SingleChildWidget>> _buildAppProviders(
   );
   await advertisingService.init();
 
+  await enter('autosave');
+  final autosaveService = own(AutosaveService());
+  await autosaveService.init();
+
   await enter('project');
-  final projectService = own(ProjectService());
+  final projectService = own(ProjectService(autosaveService));
   projectService.configureTileCacheBudget(
     switch (performanceService.qualityLevel) {
       QualityLevel.low => 6,
@@ -184,9 +188,6 @@ Future<List<SingleChildWidget>> _buildAppProviders(
   final themeService = own(ThemeService());
   await themeService.init();
 
-  await enter('autosave');
-  final autosaveService = own(AutosaveService());
-  await autosaveService.init();
   await enter('save_tree');
   final saveTreeService = own(SaveTreeService());
   if (performanceService.saveMode == SaveMode.slot) {

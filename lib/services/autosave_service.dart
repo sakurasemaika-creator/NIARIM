@@ -8,7 +8,7 @@ import '../engine/undo_manager.dart';
 import 'project_service.dart';
 import '../utils/tolerant_preferences.dart';
 
-/// 自動保存（クラッシュ・ファイル破損時の復元専用）。
+/// 自動保存（作業の再開・クラッシュやファイル破損からの復旧用）。
 /// 最大3件固定・古い順に自動削除。手動保存（セーブスロット・セーブツリー）とは完全に独立。
 /// 描画などで変更が発生したタイミング（Undo更新と連動）で自動保存する。
 class AutosaveService extends ChangeNotifier {
@@ -25,23 +25,11 @@ class AutosaveService extends ChangeNotifier {
   ProjectService? _projectService;
   UndoManager? _undoManager;
   String? _currentProjectId;
-  // クラッシュ復元確認ダイアログを、同一アプリセッション中に同じ
-  // プロジェクトへ再度提示しないようにするための記録。CanvasScreenは
-  // タイムラインモードとの往復（context.go）のたびに再生成されるため、
-  // Widget側の状態だけで「一度確認済み」を覚えることができない。
-  // AutosaveServiceはアプリ起動時に1つだけ生成されアプリ全体で共有される
-  // ため、ここに記録することで「編集再開のたびに自動保存ダイアログが
-  // 毎回出る」不具合を防ぐ。
-  final Set<String> _promptedProjectIds = {};
-
   List<AutosaveSlot> get slots => List.unmodifiable(_slots);
 
-  /// このアプリセッション中に既にクラッシュ復元確認を行ったプロジェクトか。
-  bool hasPromptedThisSession(String projectId) =>
-      _promptedProjectIds.contains(projectId);
-
-  /// クラッシュ復元確認を行った（結果に関わらず）ことを記録する。
-  void markPrompted(String projectId) => _promptedProjectIds.add(projectId);
+  /// Most recently written first, even if the device clock moved backwards.
+  Iterable<AutosaveSlot> slotsForProject(String projectId) =>
+      _slots.reversed.where((slot) => slot.projectId == projectId);
 
   Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
@@ -52,7 +40,11 @@ class AutosaveService extends ChangeNotifier {
       final projectId = prefs.readString('autosave_${i}_project');
       final savedAtMs = prefs.readInt('autosave_${i}_savedAt');
       final slotIndex = prefs.readInt('autosave_${i}_slot');
-      if (projectId == null || savedAtMs == null || slotIndex == null) {
+      if (projectId == null ||
+          savedAtMs == null ||
+          slotIndex == null ||
+          slotIndex < 0 ||
+          slotIndex >= maxSlots) {
         continue;
       }
       // 日時として読めない1件は使わない（1件で起動を止めない）。
@@ -109,15 +101,19 @@ class AutosaveService extends ChangeNotifier {
     final id = _currentProjectId;
     final ps = _projectService;
     if (id == null || ps == null) return;
-    await save(id, ps);
+    await save(id, ps, skipUnchanged: true);
   }
 
   /// 指定プロジェクトを自動保存スロットへ書き出す（3件固定・古い順に上書き）。
-  Future<void> save(String projectId, ProjectService projectService) {
+  Future<void> save(
+    String projectId,
+    ProjectService projectService, {
+    bool skipUnchanged = false,
+  }) {
     final previous = _pendingSave;
-    final save = previous == null
-        ? _writeSlot(projectId, projectService)
-        : previous.then((_) => _writeSlot(projectId, projectService));
+    Future<void> write() =>
+        _writeSlot(projectId, projectService, skipUnchanged);
+    final save = previous == null ? write() : previous.then((_) => write());
     final settled = save.then<void>(
       (_) {},
       onError: (Object _, StackTrace _) {},
@@ -131,14 +127,30 @@ class AutosaveService extends ChangeNotifier {
   Future<void> _writeSlot(
     String projectId,
     ProjectService projectService,
+    bool skipUnchanged,
   ) async {
     if (_disposed) return;
+    final lastSlot = skipUnchanged
+        ? slotsForProject(projectId).firstOrNull
+        : null;
+    final previous = lastSlot == null ? null : await _loadSlot(lastSlot);
     final project = projectService.projects
         .where((p) => p.id == projectId)
         .firstOrNull;
     if (project == null) return;
     final scenes = projectService.scenesOf(projectId);
     final tileManager = projectService.tileManagerOf(projectId);
+    if (previous != null &&
+        NiaproSerializer.sameContent(
+          previous,
+          NiaproData(
+            project: project,
+            scenes: scenes,
+            tileData: tileManager.exportAll(),
+          ),
+        )) {
+      return;
+    }
 
     final slotIndex = _nextSlotIndex % maxSlots;
     try {
@@ -167,35 +179,37 @@ class AutosaveService extends ChangeNotifier {
     if (!_disposed) notifyListeners();
   }
 
-  /// スロットの書き込み順を使い、作品と内容が異なる場合に復元候補を返す。
-  Future<NiaproData?> recoveryCandidate(
-    ProjectService projectService,
+  /// Skip damaged snapshots and recover from the newest readable one.
+  Future<({NiaproData data, DateTime savedAt})?> latestReadable(
     String projectId,
   ) async {
-    final candidates = _slots.reversed
-        .where((slot) => slot.projectId == projectId)
-        .toList();
-    for (final slot in candidates) {
-      final backup = await restore(projectId, slot.slotIndex);
-      if (backup == null || backup.project.id != projectId) continue;
-      final project = projectService.projects
-          .where((project) => project.id == projectId)
-          .firstOrNull;
-      if (project == null) return null;
-      final current = NiaproData(
-        project: project,
-        scenes: projectService.scenesOf(projectId),
-        tileData: projectService.tileManagerOf(projectId).exportAll(),
-      );
-      return NiaproSerializer.sameContent(current, backup) ? null : backup;
+    await _pendingSave;
+    for (final slot in slotsForProject(projectId).toList()) {
+      final data = await readSlot(slot);
+      if (data != null) return (data: data, savedAt: slot.savedAt);
     }
     return null;
   }
 
-  /// 自動保存データを読み込む（実際の反映はProjectService.restoreFromAutosave経由）。
-  Future<NiaproData?> restore(String projectId, int slotIndex) async {
+  /// Resolve the selected snapshot, even if its slot has since been reused.
+  Future<NiaproData?> readSlot(AutosaveSlot slot) async {
+    await _pendingSave;
+    return _loadSlot(slot);
+  }
+
+  Future<NiaproData?> _loadSlot(AutosaveSlot slot) async {
     try {
-      return await NiaproSerializer.loadAutosave(projectId, slotIndex);
+      if (!_slots.contains(slot)) return null;
+      final data = await NiaproSerializer.loadAutosave(
+        slot.projectId,
+        slot.slotIndex,
+      );
+      if (!_slots.contains(slot) ||
+          data.project.id != slot.projectId ||
+          !data.hasEditableFrames) {
+        return null;
+      }
+      return data;
     } catch (_) {
       return null;
     }

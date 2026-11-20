@@ -2778,20 +2778,26 @@ abstract class AppLocalizations {
   /// No description provided for @helpAutoSaveDesc.
   ///
   /// In ja, this message translates to:
-  /// **'クラッシュやファイル破損が起きた時のための復元専用の保存です。描画などの変更があるたびに自動で保存され、最大3件まで古い順に上書きされます。手動保存（セーブスロット・セーブツリー）とは完全に別で管理されており、通常の保存の代わりにはなりません。作品を開いたときに内容が異なる自動保存があれば、復元するかどうかを尋ねられます。'**
+  /// **'編集中の内容を自動で記録し、最大3件残します。作品ファイルが壊れている場合は、読み込める最新の自動保存から自動で復旧します。保存データの一覧では、自動保存と手動保存（セーブスロット・セーブツリー）を切り替えて、読み込むデータを選べます。'**
   String get helpAutoSaveDesc;
 
-  /// No description provided for @canvasAutosaveRecoveryTitle.
+  /// No description provided for @saveDataManualTab.
   ///
   /// In ja, this message translates to:
-  /// **'自動保存から復元'**
-  String get canvasAutosaveRecoveryTitle;
+  /// **'手動保存'**
+  String get saveDataManualTab;
 
-  /// No description provided for @canvasAutosaveRecoveryBody.
+  /// No description provided for @saveDataAutosavesEmpty.
   ///
   /// In ja, this message translates to:
-  /// **'この作品と内容が異なる自動保存があります。その内容で作品を開きますか？'**
-  String get canvasAutosaveRecoveryBody;
+  /// **'この作品の自動保存はまだありません。'**
+  String get saveDataAutosavesEmpty;
+
+  /// No description provided for @projectAutosaveRecovered.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品ファイルを読み込めなかったため、自動保存から復旧しました。'**
+  String get projectAutosaveRecovered;
 
   /// No description provided for @helpSaveSlotTitle.
   ///
@@ -3978,7 +3984,7 @@ abstract class AppLocalizations {
   /// No description provided for @tipsSaveSlotAutoSaveDesc.
   ///
   /// In ja, this message translates to:
-  /// **'自動保存は常に最新状態を上書きしますが、セーブスロットは複数の状態を残しておけます。大きな節目でセーブスロットに保存し、それ以外の細かい変更は自動保存に任せると、必要な時点へ確実に戻れます。'**
+  /// **'自動保存は最大3件です。大事な時点のデータを残したいときは手動保存を使い、後から保存データの一覧で選んで読み込めます。'**
   String get tipsSaveSlotAutoSaveDesc;
 
   /// No description provided for @tipsQuickToolSwipeTitle.
@@ -10554,7 +10560,7 @@ abstract class AppLocalizations {
   /// No description provided for @workspaceDockPanelSection.
   ///
   /// In ja, this message translates to:
-  /// **'PC版で既定で開くパネル'**
+  /// **'PCモード版で既定で開くパネル'**
   String get workspaceDockPanelSection;
 
   /// No description provided for @workspaceDockPanelHint.

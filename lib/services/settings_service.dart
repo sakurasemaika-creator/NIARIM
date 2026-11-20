@@ -1271,7 +1271,7 @@ class SettingsService extends ChangeNotifier {
   }
 
   /// PC/DeXモードで既定でドッキング表示するパネルの一覧を丸ごと入れ替える
-  /// （ワークスペース設定＞PC版で既定で開くパネル）。
+  /// （ワークスペース設定＞PCモード版で既定で開くパネル）。
   Future<void> setDefaultDockedPanels(Set<CanvasDockPanel> panels) async {
     final canonical = panels.map(canonicalCanvasDock).toSet();
     if (setEquals(_defaultDockedPanels, canonical)) return;

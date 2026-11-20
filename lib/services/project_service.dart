@@ -36,6 +36,7 @@ import '../utils/duplicate_name.dart';
 import '../utils/tolerant_preferences.dart';
 import '../utils/folder_persistence.dart';
 import '../utils/project_trash_guard.dart';
+import 'autosave_service.dart';
 import 'storage_info_service.dart';
 
 /// Moving an active favorite to Trash requires removing its protection first.
@@ -226,6 +227,16 @@ class TrashedFolder {
 const _folderSentinel = Object();
 
 class ProjectService extends ChangeNotifier {
+  ProjectService([this._autosaves]);
+
+  final AutosaveService? _autosaves;
+  final Set<String> _recoveredFromAutosave = {};
+  final Set<String> _needsArchiveRewrite = {};
+
+  /// Report the recovery once when the user first opens the restored work.
+  bool takeAutosaveRecoveryNotice(String projectId) =>
+      _recoveredFromAutosave.remove(projectId);
+
   final List<Project> _projects = [];
   final List<Project> _trash = [];
   final List<ProjectFolder> _folders = [];
@@ -677,8 +688,8 @@ class ProjectService extends ChangeNotifier {
   DateTime? deletedAtOf(String projectId) => _trashDeletedAt[projectId];
 
   /// 保存先のプロジェクトを読み込めなかったか（保存先が開けない・一覧を
-  /// 読めない・作品のフォルダや保存に入れない）。1件ずつの破損は数えない
-  /// （その作品だけ飛ばす。読み直しても同じなので）。
+  /// 読めない・作品のフォルダや保存に入れない）。
+  /// 自動保存からも復旧できない破損がある場合も真。
   bool get projectsLoadFailed => _projectsLoadFailed;
   bool _projectsLoadFailed = false;
 
@@ -782,50 +793,67 @@ class ProjectService extends ChangeNotifier {
       };
       final folders = baseDir.listSync().whereType<Directory>().toList();
       listed = true;
-      // 入れない作品のフォルダ・開けない作品の保存（権限が無い・入出力の
-      // 失敗）。壊れた保存と違い、読めるようになれば読み直しで戻るので、
-      // 知らせと「再試行」を残す。
+      // 入れない作品や復旧できなかった作品には知らせと「再試行」を残す。
       final unread = <String>{};
       final read = <(Project, NiaproData)>[];
+      var hasUnrecoveredArchive = false;
       for (final dir in folders) {
         final projectId = dir.path.split(RegExp(r'[\\/]')).last;
         existingDirectories.add(projectId);
         if (known.contains(projectId)) continue;
         final niaproFile = File('${dir.path}/$projectId.niapro');
-        if (!niaproFile.existsSync()) {
-          if (_isUnreadableArchive(niaproFile)) unread.add(projectId);
-          continue;
-        }
+        NiaproData? data;
+        int? sizeBytes;
+        DateTime? recoveredAt;
+        var damaged = false;
         try {
-          final data = await NiaproSerializer.load(niaproFile.path);
-          if (data.project.id != projectId) {
+          final loaded = await NiaproSerializer.load(niaproFile.path);
+          if (loaded.project.id != projectId || !loaded.hasEditableFrames) {
             throw const FormatException(
-              'Project archive ID does not match its directory',
+              'Project archive ID or scene data is invalid',
             );
           }
           // 容量（Manifest「容量」）は実ファイルサイズから都度算出する
           // （保存済みの数値をそのまま信用すると、外部要因での差分等でズレうるため）。
-          final sizeBytes = niaproFile.lengthSync();
-          final project = data.project.copyWith(sizeBytes: sizeBytes);
-          if (_trashDeletedAt.containsKey(projectId)) {
-            // ゴミ箱内のプロジェクト：一覧には出さず、シーンデータもメモリに
-            // 載せない（deleteProject()直後と同じ状態を再現する）
-            _trash.add(project);
-          } else {
-            // 一覧へ出すか、ゴミ箱のフォルダへ入れるかは、読み終えてから
-            // 下で決める。
-            read.add((project, data));
-          }
-        } on PathNotFoundException catch (error, stackTrace) {
-          // 読む前に消えた（消す途中等）。
-          AppErrorReporter.record(error, stackTrace);
+          sizeBytes = niaproFile.lengthSync();
+          data = loaded;
+        } on PathNotFoundException {
+          // 作業フォルダだけが残った場合も、有効な自動保存があれば復旧する。
         } on FileSystemException catch (error, stackTrace) {
           // 開けない・読めない（ファイルの権限が無い・入出力の失敗）。
           AppErrorReporter.record(error, stackTrace);
           unread.add(projectId);
         } catch (error, stackTrace) {
           AppErrorReporter.record(error, stackTrace);
-          // 破損ファイルはスキップ
+          damaged = true;
+        }
+        if (data == null &&
+            !unread.contains(projectId) &&
+            !cleanup.any((guard) => guard.project.id == projectId)) {
+          final backup = await _autosaves?.latestReadable(projectId);
+          if (backup != null &&
+              backup.data.project.id == projectId &&
+              backup.data.hasEditableFrames) {
+            data = backup.data;
+            recoveredAt = backup.savedAt;
+            sizeBytes = await _rewriteRecoveredArchive(data, recoveredAt);
+            _recoveredFromAutosave.add(projectId);
+          }
+        }
+        if (data == null) {
+          if (damaged && !_trashDeletedAt.containsKey(projectId)) {
+            hasUnrecoveredArchive = true;
+          }
+          continue;
+        }
+        final project = data.project.copyWith(
+          sizeBytes: sizeBytes,
+          updatedAt: recoveredAt,
+        );
+        if (_trashDeletedAt.containsKey(projectId)) {
+          _trash.add(project);
+        } else {
+          read.add((project, data));
         }
       }
       // フォルダの列の中で決める：読んでいる間にフォルダがゴミ箱へ移ると、
@@ -833,7 +861,7 @@ class ProjectService extends ChangeNotifier {
       // 入らず、一番上に出た（次の起動ではゴミ箱へ入った）。読めていない
       // 作品の覚えも列の中で書き換え、後から移すフォルダが今の分を記録する。
       await _queueFolder(() async {
-        _projectsLoadFailed = unread.isNotEmpty;
+        _projectsLoadFailed = unread.isNotEmpty || hasUnrecoveredArchive;
         _projectsListingFailed = false;
         _unreadProjectIds
           ..clear()
@@ -885,21 +913,35 @@ class ProjectService extends ChangeNotifier {
     return listed;
   }
 
-  /// 作品のフォルダに作品の保存（.niapro）が見当たらないとき、「無い」のか
-  /// 「入れない」のか（フォルダの権限が無い・入出力の失敗。existsSyncは
-  /// どちらもfalse）を分ける。入れないときは記録してtrue（作品が何の
-  /// 知らせも無く一覧から消えないように）。保存の無いフォルダ（消す途中で
-  /// 残ったもの等）はfalse。
-  static bool _isUnreadableArchive(File archive) {
+  /// Rebuild the full archive without copying entries from the damaged one.
+  Future<int?> _rewriteRecoveredArchive(
+    NiaproData data,
+    DateTime savedAt,
+  ) async {
+    final project = data.project;
+    final tiles = TileManager(
+      canvasWidth: project.drawingWidth,
+      canvasHeight: project.drawingHeight,
+      compositeCacheMax: _tileCacheBudget,
+    );
     try {
-      archive.lengthSync();
-    } on PathNotFoundException {
-      // 作品の保存の無いフォルダ。
+      tiles.importAll(data.tileData);
+      final file = await NiaproSerializer.save(
+        project: project,
+        scenes: data.scenes,
+        tileManager: tiles,
+        updatedAt: savedAt,
+        rewrite: true,
+      );
+      return file.lengthSync();
     } catch (error, stackTrace) {
       AppErrorReporter.record(error, stackTrace);
-      return true;
+      // The user can still open the recovered work if the storage is read-only.
+      _needsArchiveRewrite.add(project.id);
+      return null;
+    } finally {
+      tiles.dispose();
     }
-    return false;
   }
 
   // ─── ゴミ箱の状態永続化（ゴミ箱・自動削除設定） ─────────────────────────
@@ -1309,6 +1351,7 @@ class ProjectService extends ChangeNotifier {
     _workPaused = false;
     _workTimer?.cancel();
     _workTimer = Timer.periodic(_workTickInterval, (_) => _settleWorkTime());
+    _autosaves?.attach(this, projectId, undoManager: _undoManager);
     _creatorEditReporter?.begin(
       projectId: projectId,
       activeSeconds: () => currentWorkSessionSeconds,
@@ -1413,6 +1456,7 @@ class ProjectService extends ChangeNotifier {
   Future<void> saveProjectManually(String projectId) async {
     _settleWorkTime();
     await saveProject(projectId);
+    await _checkpointAutosave(projectId);
     try {
       onManualSaveCommitted(projectId);
     } catch (error) {
@@ -1432,7 +1476,11 @@ class ProjectService extends ChangeNotifier {
     _workTimer = null;
     _creatorEditReporter?.end();
     final id = _trackedProjectId;
-    if (id != null) _saveAsync(id);
+    if (id != null) {
+      _autosaves?.detach();
+      unawaited(_checkpointAutosave(id));
+      _saveAsync(id);
+    }
   }
 
   void resumeWorkTracking() {
@@ -1441,6 +1489,7 @@ class ProjectService extends ChangeNotifier {
     _workStopwatch?.start();
     _workLastSettledMs = _workStopwatch!.elapsedMilliseconds;
     _workLastActivityMs = _workLastSettledMs;
+    _autosaves?.attach(this, _trackedProjectId!, undoManager: _undoManager);
     _workTimer?.cancel();
     _workTimer = Timer.periodic(_workTickInterval, (_) => _settleWorkTime());
     _creatorEditReporter?.begin(
@@ -1461,6 +1510,8 @@ class ProjectService extends ChangeNotifier {
     _workStopwatch = null;
     _trackedProjectId = null;
     _workPaused = false;
+    _autosaves?.detach();
+    unawaited(_checkpointAutosave(id));
     _creatorEditReporter?.end();
     // Persist even a 1-9 second session; no reliance on the next 10s tick.
     _saveAsync(id);
@@ -2556,7 +2607,21 @@ class ProjectService extends ChangeNotifier {
     return project;
   }
 
-  /// 自動保存データを既存プロジェクトへ復元する（クラッシュ復元専用）。
+  /// Load the selected snapshot into the editable work, keeping its history.
+  void useSavedVersion(String projectId, NiaproData data) {
+    restoreFromAutosave(projectId, data);
+    _saveAsync(projectId);
+  }
+
+  Future<void> _checkpointAutosave(String projectId) async {
+    try {
+      await _autosaves?.save(projectId, this, skipUnchanged: true);
+    } catch (error, stackTrace) {
+      AppErrorReporter.record(error, stackTrace);
+    }
+  }
+
+  /// 保存データを既存プロジェクトへ復元する。
   /// プロジェクトIDは維持したまま、シーン・タイルの内容のみ自動保存時点へ戻す。
   void restoreFromAutosave(String projectId, NiaproData data) {
     final idx = _projects.indexWhere((p) => p.id == projectId);
@@ -2564,12 +2629,12 @@ class ProjectService extends ChangeNotifier {
     final tiles = tileManagerOf(projectId);
     if (tiles.canvasWidth != data.project.drawingWidth ||
         tiles.canvasHeight != data.project.drawingHeight) {
-      final before = _captureTimeline(projectId);
       final restoredTiles = TileManager(
         canvasWidth: data.project.drawingWidth,
         canvasHeight: data.project.drawingHeight,
         compositeCacheMax: _tileCacheBudget,
       )..importAll(data.tileData);
+      final before = _captureTimeline(projectId);
       _tileManagers[projectId] = restoredTiles;
       _installAutosave(projectId, idx, data);
       final after = _captureTimeline(projectId);
@@ -2618,6 +2683,19 @@ class ProjectService extends ChangeNotifier {
       // 消したフォルダも〕へ戻り、お気に入り・タグも戻った）。
       folderId: live.folderId,
       sharedFolderId: live.sharedFolderId,
+      name: live.name,
+      totalWorkSeconds: math.max(
+        live.totalWorkSeconds,
+        data.project.totalWorkSeconds,
+      ),
+      sizeBytes: live.sizeBytes,
+      isSharedImport: live.isSharedImport,
+      thumbnailPath: live.thumbnailPath,
+      thumbnailMode: live.thumbnailMode,
+      thumbnailFrameSceneId: live.thumbnailFrameSceneId,
+      thumbnailFrameIndex: live.thumbnailFrameIndex,
+      thumbnailLastSceneId: live.thumbnailLastSceneId,
+      thumbnailLastFrameIndex: live.thumbnailLastFrameIndex,
       isFavorite: live.isFavorite,
       tags: live.tags,
     );
@@ -4272,7 +4350,9 @@ class ProjectService extends ChangeNotifier {
       scenes: scenes,
       tileManager: tm,
       updatedAt: updatedAt,
+      rewrite: _needsArchiveRewrite.contains(projectId),
     );
+    _needsArchiveRewrite.remove(projectId);
     // 容量と最終保存の時刻は、ファイルに書いたものに合わせる。保存は
     // 描いている間にも走るので、通知はせず次に画面を作るときに使われる
     // 値だけを更新する。

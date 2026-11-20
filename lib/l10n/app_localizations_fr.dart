@@ -1541,15 +1541,18 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get helpAutoSaveDesc =>
-      'Un enregistrement dédié à la récupération en cas de plantage ou de corruption de fichier. Il s’enregistre automatiquement à chaque modification, comme le dessin, et écrase le plus ancien des 3 enregistrements maximum. Il est géré complètement séparément des enregistrements manuels (emplacements de sauvegarde et arbre de sauvegarde) et ne remplace pas l’enregistrement habituel. Lorsque vous ouvrez un projet dont la sauvegarde automatique diffère, vous pouvez choisir de la restaurer.';
+      'NIARIM conserve jusqu’à 3 sauvegardes automatiques pendant le montage. Si le fichier du projet est endommagé, NIARIM le récupère automatiquement depuis la sauvegarde automatique lisible la plus récente. Dans la liste, passez des sauvegardes automatiques aux sauvegardes manuelles (emplacements ou arbre) pour choisir la version à charger.';
 
   @override
-  String get canvasAutosaveRecoveryTitle =>
-      'Restaurer la sauvegarde automatique';
+  String get saveDataManualTab => 'Sauvegardes manuelles';
 
   @override
-  String get canvasAutosaveRecoveryBody =>
-      'Une version enregistrée automatiquement contient des modifications différentes. Voulez-vous l’ouvrir ?';
+  String get saveDataAutosavesEmpty =>
+      'Ce projet n’a pas encore de sauvegarde automatique.';
+
+  @override
+  String get projectAutosaveRecovered =>
+      'Impossible d’ouvrir le fichier du projet. Le projet a été récupéré depuis une sauvegarde automatique.';
 
   @override
   String get helpSaveSlotTitle => 'Emplacement de sauvegarde';
@@ -2292,7 +2295,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get tipsSaveSlotAutoSaveDesc =>
-      'La sauvegarde automatique écrase toujours avec le dernier état, tandis que les emplacements de sauvegarde peuvent conserver plusieurs états à la fois. Sauvegardez sur un emplacement à une étape importante et laissez les petits changements à la sauvegarde automatique, pour pouvoir revenir de façon fiable au point voulu.';
+      'NIARIM conserve jusqu’à 3 sauvegardes automatiques. Utilisez une sauvegarde manuelle pour garder une version importante et la charger plus tard depuis la liste.';
 
   @override
   String get tipsQuickToolSwipeTitle =>
@@ -6180,7 +6183,8 @@ class AppLocalizationsFr extends AppLocalizations {
   String get referenceWindowSelectImageButton => 'Choisir une image';
 
   @override
-  String get workspaceDockPanelSection => 'Panneaux ouverts par défaut (PC)';
+  String get workspaceDockPanelSection =>
+      'Panneaux ouverts par défaut en mode PC';
 
   @override
   String get workspaceDockPanelHint =>

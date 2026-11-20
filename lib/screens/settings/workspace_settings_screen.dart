@@ -690,7 +690,7 @@ class WorkspaceSettingsScreen extends StatelessWidget {
               .toList(),
         );
       }
-      // PC版で既定で開くパネルも一括で切り替える。保存時点で1枚も選んで
+      // PCモード版で既定で開くパネルも一括で切り替える。保存時点で1枚も選んで
       // いなかった場合（空リスト）は、アプリの既定値を保つため上書きしない。
       if (preset.defaultDockedPanels.isNotEmpty) {
         final map = CanvasDockPanel.values.asNameMap();

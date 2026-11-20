@@ -23,6 +23,7 @@ import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
 
 import '../../utils/immersive_mode.dart';
+import '../../widgets/project_autosave_notice.dart';
 import '../../utils/app_error_reporter.dart';
 import '../../widgets/keyframe_preview.dart';
 import '../../widgets/action_beside_or_below.dart';
@@ -709,6 +710,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
     }
     context.read<UndoManager>().selectProject(widget.projectId);
     _workTrackingLease = _projectService.beginWorkTracking(widget.projectId);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) showProjectAutosaveNotice(context, widget.projectId);
+    });
   }
 
   List<ScrollController> get _trackScrollCtrls => [

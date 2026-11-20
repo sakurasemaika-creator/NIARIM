@@ -1513,14 +1513,18 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpAutoSaveDesc =>
-      'A save dedicated to recovery in case of a crash or file corruption. It saves automatically every time there\'s a change, such as drawing, and overwrites the oldest of up to 3 saves. It\'s managed completely separately from manual saves (save slots and the save tree) and is not a substitute for regular saving. When you open a project with a different autosaved version, you can choose whether to restore it.';
+      'NIARIM keeps up to 3 autosaves while you edit. If the project file is damaged, NIARIM automatically recovers it from the newest readable autosave. In the save list, switch between autosaves and manual saves (save slots or the save tree) to choose which version to load.';
 
   @override
-  String get canvasAutosaveRecoveryTitle => 'Restore autosave';
+  String get saveDataManualTab => 'Manual saves';
 
   @override
-  String get canvasAutosaveRecoveryBody =>
-      'An autosave contains different changes from this project. Open the autosaved version?';
+  String get saveDataAutosavesEmpty =>
+      'There are no autosaves for this project yet.';
+
+  @override
+  String get projectAutosaveRecovered =>
+      'The project file could not be opened, so NIARIM recovered it from an autosave.';
 
   @override
   String get helpSaveSlotTitle => 'Save Slot';
@@ -2258,7 +2262,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tipsSaveSlotAutoSaveDesc =>
-      'Autosave always overwrites with the latest state, while save slots can hold several states at once. Save to a slot at a major milestone and leave the small changes to autosave, so you can reliably get back to the point you need.';
+      'Up to 3 autosaves are kept. Use a manual save to keep an important version and load it later from the save list.';
 
   @override
   String get tipsQuickToolSwipeTitle =>
@@ -6073,7 +6077,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get referenceWindowSelectImageButton => 'Choose Image';
 
   @override
-  String get workspaceDockPanelSection => 'Panels open by default (PC)';
+  String get workspaceDockPanelSection => 'Panels open by default in PC Mode';
 
   @override
   String get workspaceDockPanelHint =>

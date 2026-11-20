@@ -21,6 +21,7 @@ import '../../widgets/projects_load_failure_notice.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/typing_dialog_inset.dart';
 import 'save_tree_screen.dart';
+import 'widgets/autosave_list.dart';
 import 'widgets/save_thumbnail_capture.dart';
 import 'widgets/save_delete_feedback.dart';
 import 'widgets/save_display_name.dart';
@@ -50,18 +51,22 @@ class SaveManagementScreen extends StatelessWidget {
     if (saveService.isTreeMode) {
       return SaveTreeScreen(projectId: projectId, entryMode: entryMode);
     }
-    return _GameStyleSlotScreen(projectId: projectId, entryMode: entryMode);
+    return _GameStyleSlotScreen(projectId: projectId);
   }
 }
 
-class _GameStyleSlotScreen extends StatelessWidget {
+class _GameStyleSlotScreen extends StatefulWidget {
   final String projectId;
-  final SaveTreeEntryMode entryMode;
 
-  const _GameStyleSlotScreen({
-    required this.projectId,
-    required this.entryMode,
-  });
+  const _GameStyleSlotScreen({required this.projectId});
+
+  @override
+  State<_GameStyleSlotScreen> createState() => _GameStyleSlotScreenState();
+}
+
+class _GameStyleSlotScreenState extends State<_GameStyleSlotScreen> {
+  String get projectId => widget.projectId;
+  bool _showAutosaves = false;
 
   @override
   Widget build(BuildContext context) {
@@ -75,57 +80,77 @@ class _GameStyleSlotScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: SaveScreenTitle(l10n.saveTreeScreenTitleSlot),
-        actions: const [
-          HelpButton(topic: 'セーブツリー'),
-          SizedBox(width: 8),
+        title: SaveScreenTitle(
+          _showAutosaves
+              ? l10n.helpAutoSaveTitle
+              : l10n.saveTreeScreenTitleSlot,
+        ),
+        actions: [
+          HelpButton(topic: _showAutosaves ? '自動保存' : 'セーブツリー'),
+          const SizedBox(width: 8),
         ],
       ),
       body: Column(
         children: [
+          SaveSourcePicker(
+            showAutosaves: _showAutosaves,
+            onChanged: (show) => setState(() => _showAutosaves = show),
+          ),
           // 保存の一覧を読めなかった：空に見えるスロットにも保存があるかも
           // しれない（「保存データなし」とは言わない）。
-          if (saveService.saveListUnreadable(projectId))
+          if (!_showAutosaves && saveService.saveListUnreadable(projectId))
             ProjectsLoadFailureNotice(
               key: const Key('saveListLoadFailed'),
               message: l10n.saveTreeLoadFailedSnackbar,
               onRetry: () => saveService.retryReadList(projectId),
             ),
           Expanded(
-            child: desktopCentered(
-              context,
-              ListView.builder(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 8,
-                  vertical: 10,
-                ),
-                itemCount: saveService.slotMax,
-                itemBuilder: (context, slotIndex) {
-                  final node = bySlot[slotIndex];
-                  return _GameSaveSlotTile(
-                    key: ValueKey('manual-save-slot-$slotIndex'),
-                    projectId: projectId,
-                    slotIndex: slotIndex,
-                    memo: saveService.slotDisplayMemoOf(projectId, slotIndex),
-                    node: node,
-                    listUnread: saveService.saveListUnreadable(projectId),
-                    // メモ＋ペン＝書き込み、ノート＝読み込み、ゴミ箱＝削除。
-                    // 3つを全スロットへ常に出し、使えない操作は無効化して
-                    // 見せる（空スロットは読み込み・削除ができない、
-                    // クイックセーブ経由では読み込みを行わない）。
-                    onWrite: () =>
-                        _writeToSlot(context, saveService, slotIndex, node),
-                    onLoad:
-                        node == null || entryMode == SaveTreeEntryMode.quickSave
-                        ? null
-                        : () => _confirmAndRestore(context, saveService, node),
-                    onDelete: node == null
-                        ? null
-                        : () => _deleteSlot(context, saveService, node),
-                  );
-                },
-              ),
-            ),
+            child: _showAutosaves
+                ? AutosaveList(projectId: projectId)
+                : desktopCentered(
+                    context,
+                    ListView.builder(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 10,
+                      ),
+                      itemCount: saveService.slotMax,
+                      itemBuilder: (context, slotIndex) {
+                        final node = bySlot[slotIndex];
+                        return _GameSaveSlotTile(
+                          key: ValueKey('manual-save-slot-$slotIndex'),
+                          projectId: projectId,
+                          slotIndex: slotIndex,
+                          memo: saveService.slotDisplayMemoOf(
+                            projectId,
+                            slotIndex,
+                          ),
+                          node: node,
+                          listUnread: saveService.saveListUnreadable(projectId),
+                          // メモ＋ペン＝書き込み、ノート＝読み込み、ゴミ箱＝削除。
+                          // 3つを全スロットへ常に出し、使えない操作は無効化して
+                          // 見せる（空スロットは読み込み・削除ができない、
+                          // 読み込みは確認してから行う）。
+                          onWrite: () => _writeToSlot(
+                            context,
+                            saveService,
+                            slotIndex,
+                            node,
+                          ),
+                          onLoad: node == null
+                              ? null
+                              : () => _confirmAndRestore(
+                                  context,
+                                  saveService,
+                                  node,
+                                ),
+                          onDelete: node == null
+                              ? null
+                              : () => _deleteSlot(context, saveService, node),
+                        );
+                      },
+                    ),
+                  ),
           ),
         ],
       ),
@@ -466,7 +491,7 @@ class _GameStyleSlotScreen extends StatelessWidget {
       return;
     }
 
-    context.read<ProjectService>().restoreFromAutosave(projectId, data);
+    context.read<ProjectService>().useSavedVersion(projectId, data);
     if (!context.mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(

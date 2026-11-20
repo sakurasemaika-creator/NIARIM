@@ -1547,14 +1547,18 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get helpAutoSaveDesc =>
-      'Un guardado dedicado a la recuperación en caso de fallo o corrupción de archivo. Se guarda automáticamente cada vez que hay un cambio, como dibujar, y sobrescribe el más antiguo de un máximo de 3 guardados. Se gestiona de forma completamente separada de los guardados manuales (ranuras de guardado y árbol de guardado) y no sustituye al guardado habitual. Al abrir un proyecto con una versión automática distinta, puedes elegir si quieres restaurarla.';
+      'NIARIM conserva hasta 3 guardados automáticos mientras editas. Si el archivo del proyecto está dañado, NIARIM lo recupera automáticamente desde el guardado automático más reciente que se pueda leer. En la lista, alterna entre los guardados automáticos y los manuales (ranuras o árbol de guardados) para elegir qué versión cargar.';
 
   @override
-  String get canvasAutosaveRecoveryTitle => 'Restaurar guardado automático';
+  String get saveDataManualTab => 'Guardados manuales';
 
   @override
-  String get canvasAutosaveRecoveryBody =>
-      'Hay una versión guardada automáticamente con contenido distinto. ¿Quieres abrirla?';
+  String get saveDataAutosavesEmpty =>
+      'Este proyecto aún no tiene guardados automáticos.';
+
+  @override
+  String get projectAutosaveRecovered =>
+      'No se pudo abrir el archivo del proyecto. Se ha recuperado a partir de un guardado automático.';
 
   @override
   String get helpSaveSlotTitle => 'Ranura de guardado';
@@ -2298,7 +2302,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get tipsSaveSlotAutoSaveDesc =>
-      'El guardado automático siempre sobrescribe con el último estado, mientras que las ranuras de guardado pueden conservar varios estados a la vez. Guarda en una ranura en un hito importante y deja los cambios pequeños al guardado automático, así podrás volver con fiabilidad al punto que necesites.';
+      'Se conservan hasta 3 guardados automáticos. Usa el guardado manual para conservar una versión importante y cargarla más adelante desde la lista.';
 
   @override
   String get tipsQuickToolSwipeTitle =>
@@ -6173,7 +6177,8 @@ class AppLocalizationsEs extends AppLocalizations {
   String get referenceWindowSelectImageButton => 'Elegir imagen';
 
   @override
-  String get workspaceDockPanelSection => 'Paneles abiertos por defecto (PC)';
+  String get workspaceDockPanelSection =>
+      'Paneles abiertos por defecto en el modo PC';
 
   @override
   String get workspaceDockPanelHint =>

@@ -106,16 +106,18 @@ class NiaproSerializer {
   /// [updatedAt]を渡すと、マニフェストの最終保存の日時をその値にする
   /// （渡さなければ今。作品を変えずに書くだけの保存〔ゴミ箱へ移す前〕で、
   /// 並び順に使う日時を変えないため）。
+  /// [rewrite] rebuilds a damaged archive without reusing any old entries.
   static Future<File> save({
     required Project project,
     required List<Scene> scenes,
     required TileManager tileManager,
     DateTime? updatedAt,
+    bool rewrite = false,
   }) {
     return _queueSave(project.id, () async {
       final dir = await _projectDir(project.id);
       final filePath = '${dir.path}/${project.id}.niapro';
-      return File(filePath).existsSync()
+      return !rewrite && File(filePath).existsSync()
           ? _writeArchiveDiff(
               filePath,
               project,
@@ -444,8 +446,8 @@ class NiaproSerializer {
     String projectId,
     int slotIndex,
   ) async {
-    final dir = await _autosaveDir(projectId);
-    return load('$dir/slot_$slotIndex.niapro');
+    final base = await projectsBasePath();
+    return load('$base/$projectId/autosave/slot_$slotIndex.niapro');
   }
 
   // ─── セーブツリー／スロット（手動保存） ───────────────────────────────
@@ -1509,6 +1511,9 @@ class NiaproData {
   // ファイル）。通常の.niapro読み込みでは常に空。
   final Map<String, Uint8List> fontFiles;
   final String? fontsManifest;
+
+  bool get hasEditableFrames =>
+      scenes.isNotEmpty && scenes.every((scene) => scene.frames.isNotEmpty);
 
   const NiaproData({
     required this.project,

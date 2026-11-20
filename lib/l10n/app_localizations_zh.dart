@@ -1460,13 +1460,16 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get helpAutoSaveDesc =>
-      '专用于崩溃或文件损坏时恢复的保存。每次绘图等发生变更时都会自动保存，最多保留3份，按从旧到新的顺序覆盖。它与手动保存（存档槽、存档树）完全分开管理，不能替代常规保存。打开作品时，如果有内容不同的自动保存版本，可以选择是否恢复。';
+      '编辑时会自动保存，最多保留 3 个版本。作品文件损坏时，会自动从最新的可读取自动保存恢复。在保存列表中可切换自动保存与手动保存（存档槽或存档树），选择要读取的版本。';
 
   @override
-  String get canvasAutosaveRecoveryTitle => '恢复自动保存';
+  String get saveDataManualTab => '手动保存';
 
   @override
-  String get canvasAutosaveRecoveryBody => '此作品有内容不同的自动保存版本。要打开该版本吗？';
+  String get saveDataAutosavesEmpty => '此作品还没有自动保存版本。';
+
+  @override
+  String get projectAutosaveRecovered => '无法打开作品文件，已从自动保存恢复。';
 
   @override
   String get helpSaveSlotTitle => '存档槽';
@@ -2154,8 +2157,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get tipsSaveSlotAutoSaveTitle => '区分使用存档槽和自动保存';
 
   @override
-  String get tipsSaveSlotAutoSaveDesc =>
-      '自动保存总是覆盖为最新状态，而存档槽可以保留多个状态。在重要节点保存到存档槽，其余的细微改动就交给自动保存，这样就能可靠地回到需要的时间点。';
+  String get tipsSaveSlotAutoSaveDesc => '最多保留 3 个自动保存版本。重要版本可手动保存，之后从保存列表中读取。';
 
   @override
   String get tipsQuickToolSwipeTitle => '快捷工具可以用上滑手势重新排序';
@@ -5763,7 +5765,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get referenceWindowSelectImageButton => '选择图片';
 
   @override
-  String get workspaceDockPanelSection => 'PC版默认打开的面板';
+  String get workspaceDockPanelSection => '桌面模式下默认打开的面板';
 
   @override
   String get workspaceDockPanelHint =>
@@ -11823,13 +11825,16 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get helpAutoSaveDesc =>
-      '專用於當機或檔案損毀時復原的儲存。每次繪圖等發生變更時都會自動儲存，最多保留3份，依由舊到新的順序覆寫。它與手動儲存（存檔槽、儲存樹）完全分開管理，不能取代一般儲存。開啟作品時，如果有內容不同的自動儲存版本，可以選擇是否還原。';
+      '編輯時會自動儲存，最多保留 3 個版本。作品檔案損毀時，會自動從最新可讀取的自動儲存復原。在儲存列表中可切換自動儲存與手動儲存（存檔槽或儲存樹），選擇要讀取的版本。';
 
   @override
-  String get canvasAutosaveRecoveryTitle => '還原自動儲存';
+  String get saveDataManualTab => '手動儲存';
 
   @override
-  String get canvasAutosaveRecoveryBody => '此作品有內容不同的自動儲存版本。要開啟該版本嗎？';
+  String get saveDataAutosavesEmpty => '此作品還沒有自動儲存版本。';
+
+  @override
+  String get projectAutosaveRecovered => '無法開啟作品檔案，已從自動儲存復原。';
 
   @override
   String get helpSaveSlotTitle => '存檔槽';
@@ -12517,8 +12522,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get tipsSaveSlotAutoSaveTitle => '區分使用存檔槽和自動儲存';
 
   @override
-  String get tipsSaveSlotAutoSaveDesc =>
-      '自動儲存總是覆蓋為最新狀態，而存檔槽可以保留多個狀態。在重要節點儲存到存檔槽，其餘的細微改動就交給自動儲存，這樣就能可靠地回到需要的時間點。';
+  String get tipsSaveSlotAutoSaveDesc => '最多保留 3 個自動儲存版本。重要版本可手動儲存，之後從儲存列表讀取。';
 
   @override
   String get tipsQuickToolSwipeTitle => '快捷工具可以用上滑手勢重新排序';
@@ -16126,7 +16130,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get referenceWindowSelectImageButton => '選擇圖片';
 
   @override
-  String get workspaceDockPanelSection => 'PC版預設開啟的面板';
+  String get workspaceDockPanelSection => '桌面模式下預設開啟的面板';
 
   @override
   String get workspaceDockPanelHint =>

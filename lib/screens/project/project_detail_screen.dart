@@ -26,6 +26,7 @@ import '../../widgets/label_value_row.dart';
 import '../../widgets/moved_to_trash_snack_bar.dart';
 import '../../widgets/name_entry_dialog.dart';
 import '../../widgets/project_not_found_view.dart';
+import '../../widgets/project_autosave_notice.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/help_button.dart';
 import '../../widgets/menu_action_label.dart';
@@ -84,6 +85,9 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
     // 共有ファイルの作成・共有は、この画面を離れても、ホームの一覧から始めても
     // 続く。自分の印ではなく、作品ごとの進行中の状態を見て「共有」を描く。
     ExportShareService.running.addListener(_onShareRunningChanged);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) showProjectAutosaveNotice(context, widget.projectId);
+    });
   }
 
   void _onShareRunningChanged() {

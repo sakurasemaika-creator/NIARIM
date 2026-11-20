@@ -1480,14 +1480,16 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get helpAutoSaveDesc =>
-      '충돌이나 파일 손상이 발생했을 때를 위한 복원 전용 저장입니다. 그리기 등의 변경이 있을 때마다 자동으로 저장되며, 최대 3개까지 오래된 순서로 덮어씌워집니다. 수동 저장（세이브 슬롯·세이브 트리）과는 완전히 별도로 관리되며, 일반 저장을 대체하지는 않습니다. 작품을 열 때 내용이 다른 자동 저장본이 있으면 복원 여부를 선택할 수 있습니다.';
+      '편집 중 자동 저장본을 최대 3개까지 보관합니다. 작품 파일이 손상되면 읽을 수 있는 최신 자동 저장본에서 자동으로 복구합니다. 저장 목록에서 자동 저장과 수동 저장(세이브 슬롯 또는 저장 트리)을 전환해 불러올 버전을 선택할 수 있습니다.';
 
   @override
-  String get canvasAutosaveRecoveryTitle => '자동 저장 복원';
+  String get saveDataManualTab => '수동 저장';
 
   @override
-  String get canvasAutosaveRecoveryBody =>
-      '이 작품과 내용이 다른 자동 저장본이 있습니다. 자동 저장본을 여시겠습니까?';
+  String get saveDataAutosavesEmpty => '이 작품에는 아직 자동 저장본이 없습니다.';
+
+  @override
+  String get projectAutosaveRecovered => '작품 파일을 열 수 없어 자동 저장본에서 복구했습니다.';
 
   @override
   String get helpSaveSlotTitle => '세이브 슬롯';
@@ -2178,7 +2180,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get tipsSaveSlotAutoSaveDesc =>
-      '자동 저장은 항상 최신 상태를 덮어쓰지만, 세이브 슬롯은 여러 상태를 남겨둘 수 있습니다. 중요한 시점에는 세이브 슬롯에 저장하고, 그 외 자잘한 변경은 자동 저장에 맡기면 필요한 시점으로 확실하게 되돌아갈 수 있습니다.';
+      '자동 저장본은 최대 3개까지 보관됩니다. 중요한 버전은 수동 저장을 사용해 보관하고 나중에 저장 목록에서 불러오세요.';
 
   @override
   String get tipsQuickToolSwipeTitle => '빠른 도구는 위로 스와이프해서 재배열할 수 있어요';
@@ -5855,7 +5857,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get referenceWindowSelectImageButton => '이미지 선택';
 
   @override
-  String get workspaceDockPanelSection => 'PC에서 기본으로 열릴 패널';
+  String get workspaceDockPanelSection => 'PC 모드에서 기본으로 열리는 패널';
 
   @override
   String get workspaceDockPanelHint =>

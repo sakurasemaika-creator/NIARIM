@@ -1,5 +1,6 @@
 import 'helpers/project_storage.dart';
 
+import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
@@ -142,7 +143,7 @@ void main() {
   });
 
   for (final clockMovedBack in [false, true]) {
-    test('finds the divergent autosave after restart (clock moved back: '
+    test('finds the last written autosave (clock moved back: '
         '$clockMovedBack)', () async {
       final s = await setUpProject(null);
       addTearDown(s.projects.dispose);
@@ -180,22 +181,120 @@ void main() {
         'autosave_1_savedAt': savedAt.millisecondsSinceEpoch,
         'autosave_1_slot': latest.slotIndex,
       });
-      final reopened = ProjectService();
-      addTearDown(reopened.dispose);
-      await reopened.init();
       final recovery = AutosaveService();
       addTearDown(recovery.dispose);
       await recovery.init();
+      final reopened = ProjectService(recovery);
+      addTearDown(reopened.dispose);
+      await reopened.init();
       final current = reopened.tileManagerOf(s.projectId);
-      final candidate = await recovery.recoveryCandidate(reopened, s.projectId);
-      expect(candidate, isNotNull);
       expect(layerBytes(current, s.key), original);
-      reopened.restoreFromAutosave(s.projectId, candidate!);
+      final saved = await recovery.latestReadable(s.projectId);
+      expect(saved, isNotNull);
+      reopened.restoreFromAutosave(s.projectId, saved!.data);
       expect(layerBytes(current, s.key), solid(30, 60, 220));
-      await reopened.saveProject(s.projectId);
-      expect(await recovery.recoveryCandidate(reopened, s.projectId), isNull);
     });
   }
+
+  for (final missing in [false, true]) {
+    test(
+      'a missing or damaged work file recovers from the newest readable '
+      'autosave and is readable at the next startup (missing: $missing)',
+      () async {
+        final s = await setUpProject(null);
+        addTearDown(s.projects.dispose);
+        addTearDown(s.undo.dispose);
+        final autosaves = AutosaveService();
+        addTearDown(autosaves.dispose);
+        final recoveredPixels = solid(22, 70, 190);
+        s.tm.replaceLayerPixels(s.key, recoveredPixels);
+        await autosaves.save(s.projectId, s.projects);
+        s.tm.replaceLayerPixels(s.key, solid(180, 25, 20));
+        await autosaves.save(s.projectId, s.projects);
+
+        final base = await NiaproSerializer.projectsBasePath();
+        final folder = '$base/${s.projectId}';
+        final workFile = File('$folder/${s.projectId}.niapro');
+        final newestSlot = autosaves.slots.last.slotIndex;
+        File(
+          '$folder/autosave/slot_$newestSlot.niapro',
+        ).writeAsStringSync('bad');
+        if (missing) {
+          workFile.deleteSync();
+        } else {
+          workFile.writeAsStringSync('bad');
+        }
+        final restored = ProjectService(autosaves);
+        addTearDown(restored.dispose);
+        await restored.init();
+        expect(restored.projects.single.id, s.projectId);
+        expect(restored.projectsLoadFailed, isFalse);
+        expect(
+          layerBytes(restored.tileManagerOf(s.projectId), s.key),
+          recoveredPixels,
+        );
+        expect(restored.takeAutosaveRecoveryNotice(s.projectId), isTrue);
+        expect(restored.takeAutosaveRecoveryNotice(s.projectId), isFalse);
+
+        final reopened = ProjectService();
+        addTearDown(reopened.dispose);
+        await reopened.init();
+        expect(
+          layerBytes(reopened.tileManagerOf(s.projectId), s.key),
+          recoveredPixels,
+        );
+      },
+    );
+  }
+
+  test(
+    'leaving the editor checkpoints changes before the timer runs',
+    () async {
+      final s = await setUpProject(null);
+      addTearDown(s.projects.dispose);
+      addTearDown(s.undo.dispose);
+      final autosaves = AutosaveService();
+      addTearDown(autosaves.dispose);
+      final projects = ProjectService(autosaves);
+      addTearDown(projects.dispose);
+      await projects.init();
+
+      final lease = projects.beginWorkTracking(s.projectId);
+      final tiles = projects.tileManagerOf(s.projectId);
+      final edited = solid(60, 130, 70);
+      tiles.replaceLayerPixels(s.key, edited);
+      projects.endWorkTracking(lease: lease);
+      final backup = await autosaves.latestReadable(s.projectId);
+      expect(backup!.data.tileData[s.key]!.values.single.take(4), [
+        60,
+        130,
+        70,
+        255,
+      ]);
+      await projects.saveProject(s.projectId);
+    },
+  );
+
+  test(
+    'keeps an unrecoverable work file intact and reports the read failure',
+    () async {
+      final s = await setUpProject(null);
+      addTearDown(s.projects.dispose);
+      addTearDown(s.undo.dispose);
+      final autosaves = AutosaveService();
+      addTearDown(autosaves.dispose);
+      final base = await NiaproSerializer.projectsBasePath();
+      final archive = File('$base/${s.projectId}/${s.projectId}.niapro');
+      archive.writeAsStringSync('damaged project');
+
+      final reopened = ProjectService(autosaves);
+      addTearDown(reopened.dispose);
+      await reopened.init();
+      expect(reopened.projects, isEmpty);
+      expect(reopened.projectsLoadFailed, isTrue);
+      expect(archive.readAsStringSync(), 'damaged project');
+    },
+  );
 
   test('restoring a save with a different canvas size is reversible', () async {
     final s = await setUpProject(null);

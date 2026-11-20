@@ -20,6 +20,7 @@ import 'package:niarim/screens/canvas/widgets/canvas_area.dart';
 import 'package:niarim/screens/canvas/widgets/layer_panel.dart';
 import 'package:niarim/screens/home/home_screen.dart';
 import 'package:niarim/screens/save_tree/save_management_screen.dart';
+import 'package:niarim/screens/save_tree/widgets/autosave_list.dart';
 import 'package:niarim/screens/timeline/timeline_screen.dart';
 import 'package:niarim/services/autosave_service.dart';
 import 'package:niarim/services/material_service.dart';
@@ -260,66 +261,146 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  for (final restore in [false, true]) {
-    testWidgets(
-      'opening a different autosave asks before restoring ($restore)',
-      (tester) async {
-        if (restore) {
-          SharedPreferences.setMockInitialValues({
-            firstUseTooltipsSeenKey: kAllFirstUseTooltipKeys,
-            'first_launch': false,
-            'language': 'ja',
-            'force_pc_mode': 1,
-          });
-        }
-        final project = await open(
-          tester,
-          size: restore ? const Size(1280, 800) : const Size(390, 844),
-        );
-        final service = project.service;
-        final autosave = tester
-            .element(find.byType(HomeScreen))
-            .read<AutosaveService>();
-        final scene = service.scenesOf(project.id).single;
-        final layer = scene.frames.first.layers.first;
-        final key = service.tileKeyFor(project.id, scene.id, 0, layer.id);
-        final tiles = service.tileManagerOf(project.id);
-        const restored = [30, 60, 220, 255];
-        await tester.runAsync(() async {
-          tiles.getOrCreateTile(key, 0, 0).setRange(0, 4, restored);
-          tiles.markDirty(key, 0, 0);
-          await autosave.save(project.id, service);
-          tiles.importAll(const {});
+  for (final tree in [false, true]) {
+    testWidgets('a readable work opens silently and the list can load '
+        'other versions (tree: $tree)', (tester) async {
+      if (tree) {
+        SharedPreferences.setMockInitialValues({
+          firstUseTooltipsSeenKey: kAllFirstUseTooltipKeys,
+          'first_launch': false,
+          'language': 'ja',
+          'force_pc_mode': 1,
         });
+      }
+      final (service: projects, :id) = await open(
+        tester,
+        size: tree ? const Size(1280, 800) : const Size(390, 844),
+      );
+      final home = tester.element(find.byType(HomeScreen));
+      final autosaves = home.read<AutosaveService>();
+      final saves = home.read<SaveTreeService>()..setTreeMode(tree);
+      final l10n = AppLocalizations.of(home)!;
+      final scene = projects.scenesOf(id).single;
+      final key = projects.tileKeyFor(
+        id,
+        scene.id,
+        0,
+        scene.frames.first.layers.first.id,
+      );
+      final tiles = projects.tileManagerOf(id);
+      final work = projects.projects.single;
+      const manual = [20, 140, 60, 255];
+      const older = [210, 60, 20, 255];
+      const latest = [30, 60, 220, 255];
 
-        appRouter.go('/canvas/${project.id}');
-        await settleIo(tester);
-        final title = find.text('自動保存から復元');
-        expect(title, findsOneWidget);
-        expect(tiles.getTile(key, 0, 0), isNull);
+      await tester.runAsync(() async {
+        tiles.getOrCreateTile(key, 0, 0).setRange(0, 4, manual);
+        if (tree) {
+          await saves.saveAsChild(
+            projectId: id,
+            project: work,
+            scenes: [scene],
+            tileManager: tiles,
+            comment: '手動テスト',
+          );
+        } else {
+          await saves.saveToSlot(
+            projectId: id,
+            slotIndex: 0,
+            project: work,
+            scenes: [scene],
+            tileManager: tiles,
+            comment: '手動テスト',
+          );
+        }
+        tiles.getTile(key, 0, 0)!.setRange(0, 4, older);
+        await autosaves.save(id, projects);
+        tiles.getTile(key, 0, 0)!.setRange(0, 4, latest);
+        await autosaves.save(id, projects);
+        tiles.importAll(const {});
+      });
+
+      appRouter.go('/project/$id');
+      await settleIo(tester);
+      await tester.ensureVisible(find.text(l10n.projectDetailStartEditButton));
+      await tester.tap(find.text(l10n.projectDetailStartEditButton));
+      await settleIo(tester);
+      expect(find.byType(CanvasScreen), findsOneWidget);
+      expect(find.byType(AlertDialog), findsNothing);
+      expect(tiles.getTile(key, 0, 0), isNull);
+
+      appRouter.push('/save-tree/$id');
+      await settleIo(tester);
+      final autoSelector = find.widgetWithText(
+        ChoiceChip,
+        l10n.helpAutoSaveTitle,
+      );
+      final manualSelector = find.widgetWithText(
+        ChoiceChip,
+        l10n.saveDataManualTab,
+      );
+      expect(tester.widget<ChoiceChip>(manualSelector).selected, isTrue);
+      await tester.tap(autoSelector);
+      await settleIo(tester);
+      final autoItems = find.descendant(
+        of: find.byType(AutosaveList),
+        matching: find.byType(ListTile),
+      );
+      expect(autoItems, findsNWidgets(2));
+      await tester.tap(autoItems.at(1));
+      await settleIo(tester);
+      await tester.tap(
+        find.widgetWithText(FilledButton, l10n.saveTreeRestoreAction),
+      );
+      await settleIo(tester);
+      expect(tiles.getTile(key, 0, 0)?.take(4), older);
+      // The confirmation temporarily overlays the bottom row of the tree.
+      await tester.pump(const Duration(seconds: 5));
+      await settleIo(tester);
+
+      await tester.tap(manualSelector);
+      await settleIo(tester);
+      if (tree) {
+        final node = find.ancestor(
+          of: find.text('手動テスト'),
+          matching: find.byType(ListTile),
+        );
         await tester.tap(
-          find.widgetWithText(
-            restore ? FilledButton : TextButton,
-            restore ? '復元' : 'キャンセル',
+          find.descendant(
+            of: node,
+            matching: find.byType(PopupMenuButton<String>),
           ),
-          kind: restore ? PointerDeviceKind.mouse : PointerDeviceKind.touch,
+          kind: PointerDeviceKind.mouse,
         );
         await settleIo(tester);
-        expect(title, findsNothing);
-        if (restore) {
-          expect(tiles.getTile(key, 0, 0)?.take(4), restored);
-          await tester.tap(
-            find.byTooltip('プロジェクト一覧に戻る').hitTestable().first,
-            kind: PointerDeviceKind.mouse,
-          );
-          await settleIo(tester, 3);
-          expect(find.text('変更を保存してから戻りますか？'), findsOneWidget);
-        } else {
-          expect(tiles.getTile(key, 0, 0), isNull);
-        }
-        expect(tester.takeException(), isNull);
-      },
-    );
+        await tester.tap(find.text(l10n.saveTreeRestoreAction));
+      } else {
+        await tester.tap(find.byTooltip(l10n.saveTreeSlotLoadTooltip).first);
+      }
+      await settleIo(tester);
+      await tester.tap(
+        find.widgetWithText(FilledButton, l10n.saveTreeRestoreAction),
+      );
+      await settleIo(tester);
+      expect(tiles.getTile(key, 0, 0)?.take(4), manual);
+      if (tree) {
+        appRouter.pop();
+        await settleIo(tester);
+        await tester.tap(
+          find
+              .byTooltip(l10n.timelineBackToProjectListTooltip)
+              .hitTestable()
+              .first,
+          kind: PointerDeviceKind.mouse,
+        );
+        await settleIo(tester, 3);
+        expect(
+          find.text(l10n.timelineBackToProjectListDialogBody),
+          findsOneWidget,
+        );
+      }
+      expect(tester.takeException(), isNull);
+    });
   }
 
   for (final size in [const Size(390, 844), const Size(1440, 900)]) {

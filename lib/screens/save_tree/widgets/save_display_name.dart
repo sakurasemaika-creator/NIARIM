@@ -32,8 +32,14 @@ String treeSaveName(AppLocalizations l10n, SaveNode node) =>
 /// （ja「2026/11/13 13:56」、en「11/13/2026 1:56 PM」。プロジェクト詳細・
 /// 作品一覧の日時と同じ）。以前は言語に関係なく「2026/11/13 13:56」だった
 /// （DISC134）。
-String formatSaveTime(DateTime dt, String localeName) =>
-    DateFormat.yMd(localeName).add_jm().format(dt);
+String formatSaveTime(
+  DateTime dt,
+  String localeName, {
+  bool withSeconds = false,
+}) {
+  final date = DateFormat.yMd(localeName);
+  return (withSeconds ? date.add_jms() : date.add_jm()).format(dt);
+}
 
 /// 保存を文の中で呼ぶ名前（スロットはスロットのメモ、ツリーは保存の名前）。
 String saveNameOf(

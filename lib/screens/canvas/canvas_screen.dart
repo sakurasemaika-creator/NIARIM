@@ -11,7 +11,7 @@ import 'filter_immersive_policy.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
-import '../../services/autosave_service.dart';
+import '../../widgets/project_autosave_notice.dart';
 import '../../services/save_tree_service.dart';
 import '../../services/project_service.dart';
 import '../../services/layer_clipboard_service.dart';
@@ -1313,14 +1313,12 @@ class _CanvasScreenState extends State<CanvasScreen> {
   PerformanceService? _perf;
 
   String? _currentLayerId;
-  bool _autosaveAttached = false;
   // dispose()内でcontext.read<T>()を呼ぶと、画面が他のウィジェットツリーの
   // 一括破棄に巻き込まれた際（例：GoRouterのgo()によるスタック置き換えで
   // 前の画面がまとめて破棄されるケース）に「破棄済みウィジェットの祖先を
   // 参照できない」例外になることがある。didChangeDependencies内（要素が
   // まだ確実にアクティブ）で取得して保持しておき、dispose()ではこちらを
   // 使う。
-  AutosaveService? _autosaveService;
   ProjectService? _projectServiceForDispose;
   // フレーム一覧の折りたたみ状態（描画領域を広げるため
   // 任意のタイミングで開閉できるようにする）。
@@ -1388,7 +1386,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
       _brushOpacity = brush.opacity;
     }
     // PC/DeXモード（広い画面）では、初回表示時にワークスペース設定
-    // （設定＞ワークスペース＞PC版で既定で開くパネル）で選ばれている
+    // （設定＞ワークスペース＞PCモード版で既定で開くパネル）で選ばれている
     // パネルをまとめて自動でドッキング表示する。1セッション1回のみで、
     // 閉じた後にまた自動で開き直されると邪魔になるため、手動で閉じた後は
     // 再度自動では開かない。いずれも独立して閉じられる
@@ -1421,26 +1419,15 @@ class _CanvasScreenState extends State<CanvasScreen> {
       _perf!.addListener(_onPerfChanged);
       _syncOnionFromPerf();
     }
-    // 自動保存（クラッシュ復元専用）をこのプロジェクトへ接続する
-    if (!_autosaveAttached) {
-      _autosaveAttached = true;
-      final autosave = context.read<AutosaveService>();
-      _autosaveService = autosave;
-      autosave.attach(
-        context.read<ProjectService>(),
-        widget.projectId,
-        undoManager: context.read<UndoManager>(),
-      );
-      WidgetsBinding.instance.addPostFrameCallback(
-        (_) => _checkCrashRecovery(autosave),
-      );
-    }
     // 制作時間カウント（描画モードのみカウント）
     if (!_workTrackingStarted) {
       _workTrackingStarted = true;
       _workTrackingLease = context.read<ProjectService>().beginWorkTracking(
         widget.projectId,
       );
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) showProjectAutosaveNotice(context, widget.projectId);
+      });
     }
     // 不足素材の検出（プロジェクトを開いた際に参照先の素材が
     // 見つからない場合は「不足素材があります」と表示。「再検索」で再確認）
@@ -1465,7 +1452,6 @@ class _CanvasScreenState extends State<CanvasScreen> {
     _customAutomationRecordingOverlay = null;
     ImmersiveMode.exitWorkspace();
     _perf?.removeListener(_onPerfChanged);
-    if (_autosaveAttached) _autosaveService?.detach();
     final projectService = _projectServiceForDispose;
     if (_workTrackingStarted) {
       projectService?.endWorkTracking(lease: _workTrackingLease);
@@ -1486,38 +1472,6 @@ class _CanvasScreenState extends State<CanvasScreen> {
       );
     }
     super.dispose();
-  }
-
-  /// 時計の変更で順序を誤らないよう、内容が異なる場合に復元を選べる。
-  Future<void> _checkCrashRecovery(AutosaveService autosave) async {
-    final projectId = widget.projectId;
-    if (!mounted || autosave.hasPromptedThisSession(projectId)) return;
-    final projects = context.read<ProjectService>();
-    final data = await autosave.recoveryCandidate(projects, projectId);
-    if (!mounted || autosave.hasPromptedThisSession(projectId)) return;
-    autosave.markPrompted(projectId);
-    if (data == null) return;
-    final l10n = AppLocalizations.of(context)!;
-    final restore = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text(l10n.canvasAutosaveRecoveryTitle),
-        content: Text(l10n.canvasAutosaveRecoveryBody),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext, false),
-            child: Text(l10n.commonCancel),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(dialogContext, true),
-            child: Text(l10n.commonRestore),
-          ),
-        ],
-      ),
-    );
-    if (mounted && restore == true) {
-      projects.restoreFromAutosave(projectId, data);
-    }
   }
 
   /// 不足素材の検出。プロジェクトを開いた際に参照先の素材ファイルが
@@ -1632,7 +1586,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
     if (currentBrushOpacity != null) _brushOpacity = currentBrushOpacity;
     // PC/DeXモード（広い画面）：レイヤーパネルをフローティング表示ではなく、
     // 常時表示のドッキングパネルとして右側に固定する（プロ向けレイアウト）。
-    // サブツール系パネル（ブラシ・トーン・スタンプ等）もPC版では互いに
+    // サブツール系パネル（ブラシ・トーン・スタンプ等）もPCモード版では互いに
     // 排他にせず、開いているものをすべて縦に積んで同時表示する。
     final isDesktop = isWideScreen(context);
     final filterAdjusting = shouldUseImmersiveFilterUi(

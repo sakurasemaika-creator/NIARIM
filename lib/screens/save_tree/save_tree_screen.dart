@@ -26,6 +26,7 @@ import '../../widgets/typing_dialog_inset.dart';
 import '../../config/font_fallback.dart';
 import '../../config/accent_text_theme.dart';
 import 'widgets/save_delete_feedback.dart';
+import 'widgets/autosave_list.dart';
 import 'widgets/save_display_name.dart';
 import 'widgets/save_list_feedback.dart';
 import 'widgets/save_rename_button.dart';
@@ -98,14 +99,12 @@ enum SaveTreeEntryMode {
   /// シンプルな確認にする（上書きの概念はここにはない）。
   projectDetail,
 
-  /// それ以外（キャンバス画面の保存ボタン等）：新規保存の作成・一覧の
-  /// 閲覧はできるが、過去のセーブへの復元（＝現在の内容の破棄）は
-  /// この2つの入口からのみ行えるようにするため、ここでは無効化する。
+  /// キャンバスの保存ボタン等。読み込みの際は確認を表示する。
   quickSave,
 }
 
 /// クエリパラメータ（例：`/save-tree/xxx?entry=timeline`）からエントリ
-/// モードを解決する。未指定・不明な値は最も制限の強いquickSaveへ倒す。
+/// モードを解決する。未指定・不明な値はquickSaveとして扱う。
 SaveTreeEntryMode parseSaveTreeEntryMode(String? raw) => switch (raw) {
   'timeline' => SaveTreeEntryMode.timeline,
   'projectDetail' => SaveTreeEntryMode.projectDetail,
@@ -127,6 +126,7 @@ class SaveTreeScreen extends StatefulWidget {
 
 class _SaveTreeScreenState extends State<SaveTreeScreen> {
   String? _selectedNodeId;
+  bool _showAutosaves = false;
 
   @override
   Widget build(BuildContext context) {
@@ -145,13 +145,15 @@ class _SaveTreeScreenState extends State<SaveTreeScreen> {
     return Scaffold(
       appBar: AppBar(
         title: SaveScreenTitle(
-          isTreeMode
+          _showAutosaves
+              ? l10n.helpAutoSaveTitle
+              : isTreeMode
               ? l10n.saveTreeScreenTitleTree
               : l10n.saveTreeScreenTitleSlot,
         ),
         actions: [
-          const HelpButton(topic: 'セーブツリー'),
-          if (isTreeMode)
+          HelpButton(topic: _showAutosaves ? '自動保存' : 'セーブツリー'),
+          if (isTreeMode && !_showAutosaves)
             SaveTreeBarSaveButton(
               onPressed: () => _showTreeSaveDialog(
                 context,
@@ -165,16 +167,23 @@ class _SaveTreeScreenState extends State<SaveTreeScreen> {
       ),
       body: Column(
         children: [
+          SaveSourcePicker(
+            showAutosaves: _showAutosaves,
+            onChanged: (show) => setState(() => _showAutosaves = show),
+          ),
           // 保存の一覧を読めなかった：空に見えるスロット・ツリーにも保存が
           // あるかもしれない（「保存データなし」とは言わない）。
-          if (saveService.saveListUnreadable(widget.projectId))
+          if (!_showAutosaves &&
+              saveService.saveListUnreadable(widget.projectId))
             ProjectsLoadFailureNotice(
               key: const Key('saveListLoadFailed'),
               message: l10n.saveTreeLoadFailedSnackbar,
               onRetry: () => saveService.retryReadList(widget.projectId),
             ),
           Expanded(
-            child: isTreeMode
+            child: _showAutosaves
+                ? AutosaveList(projectId: widget.projectId)
+                : isTreeMode
                 ? _TreeView(
                     projectId: widget.projectId,
                     nodes: saveService.getNodes(widget.projectId),
@@ -412,8 +421,7 @@ enum _SaveNodeChoice { overwrite, resume }
 /// 選ばせ、それぞれ破壊的な結果を確認するダイアログを挟む。プロジェクト
 /// 詳細画面からは、まだ編集セッションが無いため上書きの概念を出さず
 /// 「ここから作業を再開する」か「キャンセルして閉じる」のシンプルな確認
-/// のみにする。quickSaveモードからは呼び出し禁止（呼び出し元でボタン
-/// 自体を非表示にすること）。
+/// のみにする。キャンバスで開いた場合も同じ確認を使う。
 Future<void> _handleSaveNodeRestore(
   BuildContext context,
   SaveTreeEntryMode entryMode,
@@ -421,7 +429,6 @@ Future<void> _handleSaveNodeRestore(
   required VoidCallback onOverwrite,
   required Future<void> Function() onResume,
 }) async {
-  assert(entryMode != SaveTreeEntryMode.quickSave);
   final l10n = AppLocalizations.of(context)!;
   final nodeTitle = saveNameOf(l10n, context.read<SaveTreeService>(), node);
   if (entryMode == SaveTreeEntryMode.timeline) {
@@ -540,9 +547,7 @@ class _SlotView extends StatelessWidget {
           node: node,
           listUnread: saveService.saveListUnreadable(projectId),
           onSave: () => _showSlotSaveDialog(context, slotIndex, node),
-          onRestore: (node != null && entryMode != SaveTreeEntryMode.quickSave)
-              ? () => _restore(context, node)
-              : null,
+          onRestore: node == null ? null : () => _restore(context, node),
           onDelete: node != null
               ? () async {
                   if (!await confirmDelete(
@@ -752,7 +757,7 @@ class _SlotView extends StatelessWidget {
       ).showSnackBar(SnackBar(content: Text(l10n.saveTreeLoadFailedSnackbar)));
       return;
     }
-    context.read<ProjectService>().restoreFromAutosave(projectId, data);
+    context.read<ProjectService>().useSavedVersion(projectId, data);
     if (!context.mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -1304,13 +1309,10 @@ class _TreeView extends StatelessWidget {
             trailing: PopupMenuButton<String>(
               onSelected: (action) => _handleAction(context, action, node),
               itemBuilder: (_) => [
-                // 過去のセーブへの復元は、タイムラインモード・プロジェクト
-                // 詳細画面からの2つの入口からのみ行える。
-                if (entryMode != SaveTreeEntryMode.quickSave)
-                  PopupMenuItem(
-                    value: 'restore',
-                    child: Text(l10n.saveTreeRestoreAction),
-                  ),
+                PopupMenuItem(
+                  value: 'restore',
+                  child: Text(l10n.saveTreeRestoreAction),
+                ),
                 PopupMenuItem(
                   value: 'delete',
                   child: Text(
@@ -1367,7 +1369,7 @@ class _TreeView extends StatelessWidget {
       ).showSnackBar(SnackBar(content: Text(l10n.saveTreeLoadFailedSnackbar)));
       return;
     }
-    context.read<ProjectService>().restoreFromAutosave(projectId, data);
+    context.read<ProjectService>().useSavedVersion(projectId, data);
     // 「セーブ・ロードした地点から次の枝が伸びる」という設計上、復元した
     // ノードをそのまま選択状態にする。三点メニューの「復元」は行の
     // タップ（選択トグル）とは独立した導線のため、これを呼ばないと
