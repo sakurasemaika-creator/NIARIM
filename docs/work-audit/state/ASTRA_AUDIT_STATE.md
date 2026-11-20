@@ -3731,3 +3731,19 @@ S36公開照合: App `ba9bd14b9aba7b71dfcedc00940801ce8995d392` / Web `c510745a1
 - W016（要修正）：既存DISC471（/privacy/にサイトのお問い合わせ・回数制限の情報の扱いが無い、法務の判断待ち）は直っていない（下書き）。最終更新日はDISC553。
 - 未確認：Safari・Firefox、実機（タッチ・IME）、読み上げ、本番のWorker・Durable Object・Resend、7言語の文の意味の一つずつの照合、規約の法的な意味。
 - 記録：`scratchpad/wr2/out/sweep.json`・`sweep-axe.log`、スクリプトと画像は`scratchpad/wr2/a`（backup-pending）。
+
+## W017〜W024 — WebのURL・SEO・多言語・アクセシビリティ・性能・CI
+
+### W017〜W024 二巡目（2026-11-20、Claude・S50、Web `c1182da`・App `643cc267`）— 判定：要修正（W017・W018・W019・W020・W021・W023・W024）、OK（W022）
+
+- 進め方：`round2/WEB_RESULTS_W017_W042.json`（下書き、Web `a44daf4`）を出発点に、`c1182da`をローカルのWorker（127.0.0.1:8801）で動かして確かめ直した（W001〜W016と同じ環境）。スクリプトは`round2/web_w017_w042/scripts`の写し（ポートと`/coins/`→`/opals/`を直した、`scratchpad/wr2/b`）。
+- W017（要修正、下書きはOK）：新DISC554：`c660ad2`で`/coins/`を`/opals/`へ移したが、旧URLの`/coins/`・`/coins`・`/coins/index.html`は転送なしの404（ほかの旧形〔`/about`・`/index.html`等〕は307で正規URLへ移る）。`/coins/`は一巡目のsitemapに7言語で載っていた公開ページ。
+- W018（要修正）：新DISC555：`/opals/`のサーバーが返すHTMLの題・説明・h1が旧名のまま（ja「コイン・特典 | NIARIM」「コインで、もっと自由に制作。」、en「Coins & Benefits | NIARIM」「Create more with coins.」、fr「Pièces et avantages」）。JSが表示を「オパール」に置き換えるので、検索結果・共有の見出しと画面が食い違う。新DISC556：`/font-licenses/`はsitemapに7言語で載るのに、canonical・robots・OGが無い。新DISC557：正規URL（canonical・sitemap・hreflang・og:url）のドメインが`niarim-web.niarim.workers.dev`（`wrangler.jsonc`の`SITE_ORIGIN`）で、Appのお問い合わせ・アカウント削除のリンク（`settings_screen.dart`の`niarim.miranima-studio.com`）と`CONTACT_SITE_ORIGIN`のドメインと違う。既存DISC472の残り：/help/の生の本文の日本語（下書き）。
+- W019（要修正）：新DISC558：トップ（1枚）と/features/（12枚）の画像の代替テキスト（alt）、/opals/のページ内のナビの`aria-label`「ページ内メニュー」が、日本語以外の6言語でも日本語（en・fr・es・ko・zh-Hans・zh-Hantの巡回で検出）。新DISC559：/font-licenses/の英語・仏語の本文に全角の記号（「くらむぼん（Kuramubon） ：」「flopdesign.com。」「（ Official download page ）。」）。オパールの呼び名の置き換えの崩れはDISC552（W012）。下書きの「/coins/の小見出しが日本語」は/opals/では直った（6言語の見出しがその言語）。既存DISC473の残り：「▶」「✦」の印が端末の書体（下書き）。
+- W020（要修正）：新DISC560：/account-deletion/の差し色の見出し（h2、25.6px）・リンク（`accountDeletion.subscriptions`、17.6px）が#FF5C7A／#F7F4F3で2.71:1（axe、ja・PC）。SPのメニューのTabはDISC549（W001）。既存DISC474（ピンクと白、所有者の指定）・DISC475は直ったまま（下書き）。
+- W021（要修正）：新DISC561：英語のトップがPC 1280で読み込み直後に大きくずれる（CLS 0.112、`DIV.nr-hero-showcase`・`.nr-hero-pc-view`、ja・ko・frは0.017前後）。既存DISC476の残り：遅いSPで/opals/（ja）のCLS 0.332・en 0.162、/community/ 0.121、/faq/（en）0.111（ページ内のナビ`coins-shortcuts`・バナーが書体の到着でずれる）。
+- W022（OK）：DISC477は直ったまま（宛先・送り元・回数制限）。
+- W023（要修正）：新DISC562：`npm run format:check`（Prettier）が126ファイルで落ちる。それを流す`visual-audit.yml`は`workflow_dispatch`だけ。`tests/*.test.mjs`7本のうち`community-playback`・`contact-form`・`feature-pair-layout-contract`・`store-release-link`の4本はどのワークフローからも呼ばれない（手元では7本36件とも成功）。既存DISC478（`!important`の増加等）・DISC479は下書きのとおり（478は未修正、479は直った）。
+- W024（要修正）：固有の新しい指摘は無い。W018・W019の新DISCと、規約・ポリシーのDISC（470・471・485〜489・553）を指す。
+- 未確認：本番のCloudflare・Resend・バックエンド・Googleの本人確認、Safari・Firefox、INP、読み上げ。
+- 記録：`scratchpad/wr2/out`（sweep）、`scratchpad/logs/web-r2-format.txt`・`web-r2-nodetest.txt`（backup-pending）。
