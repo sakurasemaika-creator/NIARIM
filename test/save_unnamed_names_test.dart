@@ -328,6 +328,7 @@ void main() {
     SharedPreferences.setMockInitialValues({
       'first_launch': false,
       'language': 'ja',
+      'quality_level': 'medium',
       firstUseTooltipsSeenKey: kAllFirstUseTooltipKeys,
     });
     final providers = (await tester.runAsync(buildAppProviders))!;
