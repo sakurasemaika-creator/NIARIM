@@ -3939,3 +3939,12 @@ D002の実画面（`shots-r1/fd-*`・`fe-*`）と、A018〜A021・A037〜A039の
 - D025の三日月の重点（中心線・中心の太さ・始めと終わりの細り・外側が強いカーブ・閉じる直線なし・太さの跳びなし）は、見た目では満たしている。数値での照合は`hair_fold_crescent_end_test`ほか（下）。
 - 未確認：設定の画面での折り畳みの各値の変更と結果、方向が替わるきっかけの境界、連続する曲がり、筆圧・ペン、保存/復元、後ろ髪の使い方、一般の縁取りペン＋折り畳みの設定でプリセットを作り直せるか、Visual（BEFORE/SETTINGS/AFTER）。
 - test：髪の折り畳み・ブラシのtest 10本を記録時の最新`f09082e1`で137件すべて成功：`engine/drawing_engine_wave_fold_contract_test`（21）・`engine/hair_fold_crescent_end_test`（2）・`engine/hair_fold_line_alignment_test`（46、折り畳みON/OFFで同じ見た目）・`engine/hair_fold_raster_test`（31）・`engine/hair_fold_smooth_bend_dive_test`（2、延長線より外へ出ない）・`engine/hair_preset_taper_test`（8）・`hair_fold_settings_model_test`（19）・`brush_preset_fidelity_test`（3）・`brush_management_test`（3）・`brush_tip_settings_test`（2）。縁取りの`outline_*`（engine）は`643cc267`の98ファイルの中で成功。
+
+## D028 — ヘルプ・Tips・7言語のそろい（二巡目）
+
+### D028 二巡目（2026-11-20、Claude・S50、App `643cc267`〔製品 `4f92188f`〕・Web `c1182da`）— 判定：要修正（既存DISC535・DISC536）
+
+- A085〜A087の二巡目で照らした：ヘルプ（A086、OK）・活用Tips（A087、DISC536：図の送り「‹ 1/3 ›」が←→キーで動かない）・規約とWebの文（A085、DISC535：アプリは「エンドマーク表示」、Webの日本語のHTMLと`i18n-dict-legal.js`の7言語は「エンドカード」のまま）。
+- 古い呼び名：ARBのjaに「下塗りモード」は無い。「下塗り」は自動塗りの使い方（Tipsの「下塗り用に使うだけでも便利」、見本の「グレー単色の下塗り」「下塗り」）の普通の語で、消えた機能の名前ではない。Webの公開ページにも無い（監査の`AUDIT_INVENTORY.json`だけ）。
+- 新しい機能の呼び名：作品広場のヘルプ（`helpCommunityDesc`）は、表示フィルター・非表示ワード（題だけ）・非表示タグ・ミュート・ブロック・「AI画像・AI動画使用」の申告と変更できる人を今の作りどおりに書いている（D020の実画面と一致）。髪の折り畳み・フィルターのプリセット（`0ff63b77`）・Tipsの図（`4f92188f`）はD001.71・D001.73で追う。
+- 7言語の意味の照合（逆翻訳）・Webとアプリの用語のそろい・図のリンク/アンカーは、A086・A087とW系列の二巡目の範囲を超えて全部は見ていない（未確認）。キーの数がそろうだけでは完了にしない（D028の決まり）。
