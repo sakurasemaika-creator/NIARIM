@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/config/font_fallback.dart';
+import 'package:niarim/engine/moonlit_valley.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/models/layer.dart';
 import 'package:niarim/utils/blend_mode_label.dart';
@@ -15,14 +16,11 @@ import 'package:niarim/widgets/blend_mode_preview.dart';
 import 'helpers/load_app_fonts.dart';
 import 'helpers/pump_real_async.dart';
 
-/// The blend mode picker shows each mode's look: one fixture (colour
-/// swatches over a dark-to-light backdrop, the lower third at half opacity)
-/// drawn in each of the 25 modes with the compositor's own formulas. Every
-/// mode looks different, and Addition and Linear Dodge, the same at full
-/// opacity, part ways at half.
+/// The picker renders the same valley and lighting layers in every mode,
+/// with both opaque and translucent slopes showing how the formulas differ.
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
-  const w = kBlendPreviewWidth, h = kBlendPreviewHeight;
+  const w = kBlendPreviewWidth;
 
   test('every blend mode looks different', () {
     final pictures = {
@@ -51,26 +49,31 @@ void main() {
     }
   });
 
-  test('Addition and Linear Dodge differ only at half opacity', () {
+  test('Addition and Linear Dodge differ on the translucent ridge', () {
     final add = blendModePreviewPixels(LayerBlendMode.addition);
     final dodge = blendModePreviewPixels(LayerBlendMode.linearDodge);
-    int luma(List<int> p, int x, int y) {
-      final i = (y * w + x) * 4;
-      return p[i] + p[i + 1] + p[i + 2];
-    }
+    int red(List<int> pixels, int x, int y) => pixels[(y * w + x) * 4];
 
-    // The red swatch over a mid backdrop: same at full opacity…
-    const x = w ~/ 10;
-    const full = h ~/ 5, half = h - h ~/ 5;
-    expect(luma(add, x, full), luma(dodge, x, full));
-    // …Addition brighter at half.
-    expect(luma(add, x, half), greaterThan(luma(dodge, x, half) + 20));
+    expect(red(add, 122, 126), red(dodge, 122, 126));
+    expect(red(add, 122, 94), greaterThan(red(dodge, 122, 94) + 20));
   });
 
-  test('Normal shows the swatches themselves', () {
+  test('Normal shows the valley with its lighting layer', () {
     final normal = blendModePreviewPixels(LayerBlendMode.normal);
-    final i = (h ~/ 5 * w + w ~/ 10) * 4;
-    expect(normal.sublist(i, i + 3), [230, 51, 51]);
+    final valley = moonlitValleyPixels(scale: 2);
+    final lighting = moonlitValleyPixels(
+      part: MoonlitValleyPart.lighting,
+      scale: 2,
+    );
+    const sky = (30 * w + 20) * 4;
+    const opaqueRidge = (126 * w + 122) * 4;
+
+    expect(normal.sublist(sky, sky + 4), valley.sublist(sky, sky + 4));
+    expect(lighting[opaqueRidge + 3], 255);
+    expect(
+      normal.sublist(opaqueRidge, opaqueRidge + 4),
+      lighting.sublist(opaqueRidge, opaqueRidge + 4),
+    );
   });
 
   testWidgets('the picker: two columns, each name at the top of its tile '

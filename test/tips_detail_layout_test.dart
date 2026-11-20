@@ -149,14 +149,17 @@ void main() {
     final next = find.byKey(const ValueKey('tipNextCapture'));
     final previous = find.byKey(const ValueKey('tipPreviousCapture'));
     expect(tester.widget<IconButton>(previous).onPressed, isNull);
+    final viewport = find.byKey(const ValueKey('tipCaptureViewport'));
+    final imageRect = tester.getRect(viewport);
     for (final (index, frame) in frames.indexed) {
       expect(
         find.descendant(of: viewer, matching: find.text(frame.label)),
         findsOneWidget,
       );
-      final picture = tester.widget<Image>(
-        find.descendant(of: viewer, matching: find.byType(Image)),
-      );
+      final image = find.descendant(of: viewer, matching: find.byType(Image));
+      expect(tester.getRect(viewport), imageRect);
+      expect(tester.getRect(image), imageRect);
+      final picture = tester.widget<Image>(image);
       expect((picture.image as AssetImage).assetName, frame.asset);
       if (index < frames.length - 1) {
         await tester.tap(next);
@@ -186,7 +189,7 @@ void main() {
       (tester) async {
         await loadAppFonts(tester);
         await mount(tester, size);
-        (double, Rect, double)? reference;
+        (double, Rect, double, Rect)? reference;
         final entries = allTipEntries(l10n);
         expect(entries, hasLength(TipTopic.values.length));
         for (final (title, description) in entries) {
@@ -216,7 +219,15 @@ void main() {
           expect(visibleBody, findsOneWidget, reason: title);
           final bodyTop = tester.getTopLeft(visibleBody).dy;
           expect(bodyTop - figure.bottom, closeTo(12, .01), reason: title);
-          final layout = (tester.getTopLeft(titleFinder).dy, figure, bodyTop);
+          final captureBounds = tester.getRect(
+            find.byKey(const ValueKey('tipCaptureViewport')),
+          );
+          final layout = (
+            tester.getTopLeft(titleFinder).dy,
+            figure,
+            bodyTop,
+            captureBounds,
+          );
           if (reference == null) {
             reference = layout;
           } else {

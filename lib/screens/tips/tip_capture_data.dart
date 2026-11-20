@@ -629,13 +629,13 @@ List<TipScreenCapture> tipCaptures(
   (TipTopic.radialVignette, 0) => [
     TipScreenCapture(
       'assets/tips/captures/Filter0009_default-settings.webp',
-      const Size(800, 1600),
+      const Size(960, 1920),
       words.filterNameVignette,
       const [Rect.fromLTWH(0.02, 0.55, 0.96, 0.43)],
     ),
     TipScreenCapture(
       'assets/tips/captures/Filter0009_default-after-ui.webp',
-      const Size(800, 1600),
+      const Size(960, 1920),
       words.timelinePreviewPlaceholder,
       const [Rect.fromLTWH(0.04, 0.165, 0.92, 0.375)],
     ),
@@ -682,13 +682,13 @@ List<TipScreenCapture> tipCaptures(
   (TipTopic.lineArtExtraction, 0) => [
     TipScreenCapture(
       'assets/tips/captures/Filter0029_default-settings.webp',
-      const Size(800, 1600),
+      const Size(960, 1920),
       words.filterNameColorAdjust,
       const [Rect.fromLTWH(0.02, 0.55, 0.96, 0.43)],
     ),
     TipScreenCapture(
       'assets/tips/captures/Filter0014_default-settings.webp',
-      const Size(800, 1600),
+      const Size(960, 1920),
       words.filterNameThreshold,
       const [Rect.fromLTWH(0.02, 0.55, 0.96, 0.43)],
     ),
@@ -740,13 +740,13 @@ List<TipScreenCapture> tipCaptures(
   (TipTopic.texturePrismVhs, 0) => [
     TipScreenCapture(
       'assets/tips/captures/Filter0022_default-settings.webp',
-      const Size(800, 1600),
+      const Size(960, 1920),
       words.filterNamePrism,
       const [Rect.fromLTWH(0.02, 0.55, 0.96, 0.43)],
     ),
     TipScreenCapture(
       'assets/tips/captures/Filter0022_default-after-ui.webp',
-      const Size(800, 1600),
+      const Size(960, 1920),
       words.timelinePreviewPlaceholder,
       const [Rect.fromLTWH(0.04, 0.165, 0.92, 0.375)],
     ),
@@ -762,39 +762,39 @@ List<TipScreenCapture> tipCaptures(
   (TipTopic.outlineAnimeStyle, 0) => [
     TipScreenCapture(
       'assets/tips/captures/outline-anime-step-1.webp',
-      const Size(800, 1600),
+      const Size(960, 1920),
       words.filterNameOutline,
       const [Rect.fromLTWH(0.021, 0.554, 0.95, 0.43)],
     ),
     TipScreenCapture(
       'assets/tips/captures/outline-anime-step-2.webp',
-      const Size(800, 1600),
+      const Size(960, 1806),
       words.filterNameAnimeStyle,
-      const [Rect.fromLTWH(0.021, 0.554, 0.95, 0.43)],
+      const [Rect.fromLTWH(0.020, 0.522, 0.960, 0.458)],
     ),
     TipScreenCapture(
       'assets/tips/captures/outline-anime-result.webp',
-      const Size(800, 1600),
+      const Size(960, 1496),
       words.timelinePreviewPlaceholder,
-      const [Rect.fromLTWH(0.04, 0.164, 0.922, 0.375)],
+      const [Rect.fromLTWH(0.009, 0.063, 0.982, 0.408)],
     ),
   ],
   (TipTopic.levelsToneCurve, 0) => [
     TipScreenCapture(
       'assets/tips/captures/levels-tone-step-1.webp',
-      const Size(800, 1600),
+      const Size(960, 1920),
       words.filterNameLevels,
       const [Rect.fromLTWH(0.021, 0.554, 0.95, 0.43)],
     ),
     TipScreenCapture(
       'assets/tips/captures/levels-tone-step-2.webp',
-      const Size(800, 1600),
+      const Size(960, 1920),
       words.filterNameToneCurve,
       const [Rect.fromLTWH(0.021, 0.554, 0.95, 0.43)],
     ),
     TipScreenCapture(
       'assets/tips/captures/levels-tone-result.webp',
-      const Size(800, 1600),
+      const Size(960, 1920),
       words.timelinePreviewPlaceholder,
       const [Rect.fromLTWH(0.04, 0.164, 0.922, 0.375)],
     ),
@@ -816,13 +816,13 @@ List<TipScreenCapture> tipCaptures(
     ),
     TipScreenCapture(
       'assets/tips/captures/Filter0002_default-settings.webp',
-      const Size(800, 1600),
+      const Size(960, 1920),
       words.filterNameLensBlur,
       const [Rect.fromLTWH(0.02, 0.55, 0.96, 0.43)],
     ),
     TipScreenCapture(
       'assets/tips/captures/Filter0002_default-after-ui.webp',
-      const Size(800, 1600),
+      const Size(960, 1920),
       words.timelinePreviewPlaceholder,
       const [Rect.fromLTWH(0.04, 0.165, 0.92, 0.375)],
     ),
@@ -852,25 +852,25 @@ List<TipScreenCapture> tipCaptures(
   (TipTopic.blendModeUsage, 0) => [
     TipScreenCapture(
       'assets/tips/captures/blend_multiply-settings.webp',
-      const Size(800, 1600),
+      const Size(960, 1920),
       words.blendModeMultiply,
       const [],
     ),
     TipScreenCapture(
       'assets/tips/captures/blend_multiply-after-ui.webp',
-      const Size(800, 1600),
+      const Size(960, 1920),
       words.blendModeMultiply,
       const [Rect.fromLTWH(0.038, 0.154, 0.925, 0.49)],
     ),
     TipScreenCapture(
       'assets/tips/captures/blend_screen-after-ui.webp',
-      const Size(800, 1600),
+      const Size(960, 1920),
       words.blendModeScreen,
       const [Rect.fromLTWH(0.038, 0.154, 0.925, 0.49)],
     ),
     TipScreenCapture(
       'assets/tips/captures/blend_overlay-after-ui.webp',
-      const Size(800, 1600),
+      const Size(960, 1920),
       words.blendModeOverlay,
       const [Rect.fromLTWH(0.038, 0.154, 0.925, 0.49)],
     ),
@@ -878,33 +878,33 @@ List<TipScreenCapture> tipCaptures(
   (TipTopic.fisheyeChromatic, 0) => [
     TipScreenCapture(
       'assets/tips/captures/Filter0015_default-settings.webp',
-      const Size(800, 1600),
+      const Size(960, 1806),
       words.filterNameFisheye,
-      const [Rect.fromLTWH(0.02, 0.55, 0.96, 0.43)],
+      const [Rect.fromLTWH(0.020, 0.522, 0.960, 0.458)],
     ),
     TipScreenCapture(
       'assets/tips/captures/Filter0016_default-settings.webp',
-      const Size(800, 1600),
+      const Size(960, 1797),
       words.filterNameChromaticAberration,
-      const [Rect.fromLTWH(0.02, 0.55, 0.96, 0.43)],
+      const [Rect.fromLTWH(0.020, 0.519, 0.960, 0.461)],
     ),
     TipScreenCapture(
       'assets/tips/captures/Filter0016_default-after-ui.webp',
-      const Size(800, 1600),
+      const Size(960, 1681),
       words.timelinePreviewPlaceholder,
-      const [Rect.fromLTWH(0.04, 0.165, 0.92, 0.375)],
+      const [Rect.fromLTWH(0.009, 0.056, 0.982, 0.363)],
     ),
   ],
   (TipTopic.lensDistortion, 0) => [
     TipScreenCapture(
       'assets/tips/captures/Filter0017_default-settings.webp',
-      const Size(800, 1600),
+      const Size(960, 1806),
       words.filterLensMaskTitle,
-      const [Rect.fromLTWH(0.02, 0.55, 0.96, 0.43)],
+      const [Rect.fromLTWH(0.020, 0.522, 0.960, 0.458)],
     ),
     TipScreenCapture(
       'assets/tips/captures/Filter0017_default-after-ui.webp',
-      const Size(800, 1600),
+      const Size(960, 1920),
       words.timelinePreviewPlaceholder,
       const [Rect.fromLTWH(0.04, 0.165, 0.92, 0.375)],
     ),
@@ -912,13 +912,13 @@ List<TipScreenCapture> tipCaptures(
   (TipTopic.sphereShading, 0) => [
     TipScreenCapture(
       'assets/tips/captures/Filter0028_default-settings.webp',
-      const Size(800, 1600),
+      const Size(960, 1920),
       words.filterNameSphereShading,
       const [Rect.fromLTWH(0.02, 0.55, 0.96, 0.43)],
     ),
     TipScreenCapture(
       'assets/tips/captures/Filter0028_default-after-ui.webp',
-      const Size(800, 1600),
+      const Size(960, 1920),
       words.timelinePreviewPlaceholder,
       const [Rect.fromLTWH(0.04, 0.165, 0.92, 0.375)],
     ),
@@ -926,13 +926,13 @@ List<TipScreenCapture> tipCaptures(
   (TipTopic.backgroundBlend, 0) => [
     TipScreenCapture(
       'assets/tips/captures/Filter0020_default-settings.webp',
-      const Size(800, 1600),
+      const Size(960, 1920),
       words.filterNameBackgroundBlend,
       const [Rect.fromLTWH(0.02, 0.55, 0.96, 0.43)],
     ),
     TipScreenCapture(
       'assets/tips/captures/Filter0020_default-after-ui.webp',
-      const Size(800, 1600),
+      const Size(960, 1920),
       words.timelinePreviewPlaceholder,
       const [Rect.fromLTWH(0.04, 0.165, 0.92, 0.375)],
     ),
@@ -990,21 +990,21 @@ List<TipScreenCapture> tipCaptures(
   (TipTopic.mosaicChromatic, 0) => [
     TipScreenCapture(
       'assets/tips/captures/mosaic-chromatic-step-1.webp',
-      const Size(800, 1600),
+      const Size(960, 1617),
       words.filterNameMosaic,
-      const [Rect.fromLTWH(0.021, 0.554, 0.95, 0.43)],
+      const [Rect.fromLTWH(0.020, 0.466, 0.960, 0.512)],
     ),
     TipScreenCapture(
       'assets/tips/captures/mosaic-chromatic-step-2.webp',
-      const Size(800, 1600),
+      const Size(960, 1797),
       words.filterNameChromaticAberration,
-      const [Rect.fromLTWH(0.021, 0.554, 0.95, 0.43)],
+      const [Rect.fromLTWH(0.020, 0.519, 0.960, 0.461)],
     ),
     TipScreenCapture(
       'assets/tips/captures/mosaic-chromatic-result.webp',
-      const Size(800, 1600),
+      const Size(960, 1496),
       words.timelinePreviewPlaceholder,
-      const [Rect.fromLTWH(0.04, 0.164, 0.922, 0.375)],
+      const [Rect.fromLTWH(0.009, 0.063, 0.982, 0.408)],
     ),
   ],
   (TipTopic.pixelToneRetro, 0) => [
@@ -1024,13 +1024,13 @@ List<TipScreenCapture> tipCaptures(
   (TipTopic.blurVignetteBg, 0) => [
     TipScreenCapture(
       'assets/tips/captures/Filter0001_default-settings.webp',
-      const Size(800, 1600),
+      const Size(960, 1617),
       words.filterNameGaussianBlur,
-      const [Rect.fromLTWH(0.02, 0.55, 0.96, 0.43)],
+      const [Rect.fromLTWH(0.020, 0.466, 0.960, 0.512)],
     ),
     TipScreenCapture(
       'assets/tips/captures/Filter0009_default-settings.webp',
-      const Size(800, 1600),
+      const Size(960, 1920),
       words.filterNameVignette,
       const [Rect.fromLTWH(0.02, 0.55, 0.96, 0.43)],
     ),

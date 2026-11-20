@@ -31,17 +31,41 @@ class _TipScreenCapturesState extends State<TipScreenCaptures> {
     final words = AppLocalizations.of(context)!;
     final capture = widget.frames[_selected];
     final count = widget.frames.length;
-    final caption = Theme.of(context).textTheme.titleSmall;
+    final theme = Theme.of(context);
+    final caption = theme.textTheme.titleSmall!.copyWith(height: 1.2);
+    final captionLine =
+        MediaQuery.textScalerOf(context).scale(caption.fontSize!) *
+        caption.height!;
+    final captionLines = captionLine > 23 ? 3 : 2;
     return Column(
       children: [
-        messageText(
-          capture.label,
-          keepLineStarts: true,
-          textAlign: TextAlign.center,
-          style: caption,
+        SizedBox(
+          height: captionLine * captionLines + 4,
+          child: Center(
+            child: SingleChildScrollView(
+              primary: false,
+              child: messageText(
+                capture.label,
+                keepLineStarts: true,
+                textAlign: TextAlign.center,
+                style: caption,
+              ),
+            ),
+          ),
         ),
         const SizedBox(height: 8),
-        Expanded(child: Center(child: _CapturePicture(capture))),
+        Expanded(
+          child: SizedBox.expand(
+            key: const ValueKey('tipCaptureViewport'),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: ColoredBox(
+                color: theme.colorScheme.surfaceContainerHighest,
+                child: _CapturePicture(capture),
+              ),
+            ),
+          ),
+        ),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -119,7 +143,7 @@ class _TipScreenCapturesState extends State<TipScreenCaptures> {
                     child: InteractiveViewer(
                       minScale: 1,
                       maxScale: 5,
-                      child: Center(child: _CapturePicture(capture)),
+                      child: _CapturePicture(capture),
                     ),
                   ),
                 ),
@@ -137,43 +161,44 @@ class _CapturePicture extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FittedBox(
-      child: SizedBox.fromSize(
-        size: capture.size,
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            Image.asset(
-              capture.asset,
-              fit: BoxFit.contain,
-              semanticLabel: capture.label,
-            ),
-            IgnorePointer(
-              child: CustomPaint(painter: _CaptureFocus(capture.focus)),
-            ),
-          ],
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        Image.asset(
+          capture.asset,
+          fit: BoxFit.contain,
+          semanticLabel: capture.label,
         ),
-      ),
+        if (capture.focus.isNotEmpty)
+          IgnorePointer(
+            child: CustomPaint(
+              painter: _CaptureFocus(capture.size, capture.focus),
+            ),
+          ),
+      ],
     );
   }
 }
 
 class _CaptureFocus extends CustomPainter {
-  const _CaptureFocus(this.focus);
+  const _CaptureFocus(this.imageSize, this.focus);
 
+  final Size imageSize;
   final List<Rect> focus;
 
   @override
   void paint(Canvas canvas, Size size) {
-    final scale = size.shortestSide / 300;
+    final fitted = applyBoxFit(BoxFit.contain, imageSize, size).destination;
+    final picture = Alignment.center.inscribe(fitted, Offset.zero & size);
+    final scale = fitted.shortestSide / 300;
     final outline = Paint()..style = PaintingStyle.stroke;
     for (final rect in focus) {
       final target = RRect.fromRectAndRadius(
         Rect.fromLTWH(
-          rect.left * size.width,
-          rect.top * size.height,
-          rect.width * size.width,
-          rect.height * size.height,
+          picture.left + rect.left * picture.width,
+          picture.top + rect.top * picture.height,
+          rect.width * picture.width,
+          rect.height * picture.height,
         ),
         Radius.circular(5 * scale),
       );
@@ -193,5 +218,6 @@ class _CaptureFocus extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(_CaptureFocus previous) => previous.focus != focus;
+  bool shouldRepaint(_CaptureFocus previous) =>
+      previous.imageSize != imageSize || previous.focus != focus;
 }

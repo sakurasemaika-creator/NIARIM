@@ -355,8 +355,16 @@ void main() {
       expect(find.byKey(const Key('themePreviewMockSizes')), findsOneWidget);
 
       await visit('detail');
-      final detailPaper = tester.getSize(
-        find.byKey(const Key('themePreviewFakeProjectCanvas')),
+      final detailPreview = find.byKey(
+        const Key('themePreviewFakeProjectCanvas'),
+      );
+      final detailPaper = tester.getSize(detailPreview);
+      final detailArtwork = tester.widget<Image>(
+        find.descendant(of: detailPreview, matching: find.byType(Image)),
+      );
+      expect(
+        (detailArtwork.image as AssetImage).assetName,
+        'assets/moonlit_valley.webp',
       );
       expect(detailPaper.width / detailPaper.height, closeTo(16 / 9, 0.05));
       expect(find.text('0.1s'), findsOneWidget);

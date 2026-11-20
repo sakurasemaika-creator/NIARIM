@@ -565,7 +565,7 @@ class _ThemeSampleScreen extends StatelessWidget {
   }
 
   // Read-only, zero-data UI atoms shared by theme-preview layouts. All visible
-  // colors come from the active theme; sample project artwork is plain white.
+  // Control colors come from the active theme.
   Widget _mockSlider(
     ColorScheme c, {
     double position = .24,
@@ -642,8 +642,11 @@ class _ThemeSampleScreen extends StatelessWidget {
     );
   }
 
-  Widget _fakePaper(ColorScheme c, {double? height}) =>
-      Container(height: height, color: Colors.white);
+  Widget _sampleArtwork() => Image.asset(
+    'assets/moonlit_valley.webp',
+    fit: BoxFit.cover,
+    excludeFromSemantics: true,
+  );
 
   Widget _mockSettingRow(
     ColorScheme c,
@@ -1527,7 +1530,6 @@ class _ThemeSampleScreen extends StatelessWidget {
   );
 
   Widget _communityWorkCard(ColorScheme c, String label, int i) {
-    final accent = i.isEven ? const Color(0xFFFF8BA7) : const Color(0xFFD0A875);
     return Container(
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
@@ -1543,17 +1545,7 @@ class _ThemeSampleScreen extends StatelessWidget {
             aspectRatio: 1.75,
             child: Stack(
               children: [
-                Positioned.fill(
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [accent.withValues(alpha: .55), accent],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                    ),
-                  ),
-                ),
+                Positioned.fill(child: _sampleArtwork()),
                 Center(
                   child: Container(
                     height: 40,
@@ -2481,7 +2473,7 @@ class _ThemeSampleScreen extends StatelessWidget {
         child: AspectRatio(
           key: const Key('themePreviewFakeProjectCanvas'),
           aspectRatio: 16 / 9,
-          child: _fakePaper(c),
+          child: _sampleArtwork(),
         ),
       ),
       const SizedBox(height: 10),
@@ -2937,28 +2929,26 @@ class _ThemeSampleScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         child: AspectRatio(
           aspectRatio: 1.5,
-          child: Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Color(0xFFFFB9C8), Color(0xFFFF6485)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              _sampleArtwork(),
+              Center(
+                child: Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.black.withValues(alpha: .58),
+                  ),
+                  child: const Icon(
+                    Icons.play_arrow,
+                    color: Colors.white,
+                    size: 32,
+                  ),
+                ),
               ),
-            ),
-            alignment: Alignment.center,
-            child: Container(
-              width: 48,
-              height: 48,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.black.withValues(alpha: .58),
-              ),
-              child: const Icon(
-                Icons.play_arrow,
-                color: Colors.white,
-                size: 32,
-              ),
-            ),
+            ],
           ),
         ),
       ),
@@ -3138,20 +3128,7 @@ class _ThemeSampleScreen extends StatelessWidget {
           aspectRatio: 1.98,
           child: Stack(
             children: [
-              Positioned.fill(
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        c.primary.withValues(alpha: .28),
-                        c.primary.withValues(alpha: .82),
-                      ],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                  ),
-                ),
-              ),
+              Positioned.fill(child: _sampleArtwork()),
               Center(
                 child: CircleAvatar(
                   radius: 23,
