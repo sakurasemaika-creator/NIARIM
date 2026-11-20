@@ -465,7 +465,18 @@ void main() {
     // FakeAsyncのままpumpを重ねても進まない。settleがrunAsyncで実時間を
     // 渡しているので回数を多めに取る（枚数を増やすとここも足りなくなり、
     // 「popし終えていない前画面のTextまで見つかる」形で落ちる）。
-    await tester.tap(find.text(l10n.widgetArtworkFramePickerConfirmButton));
+    tester.view.physicalSize = const Size(1560, 900);
+    tester.platformDispatcher.textScaleFactorTestValue = 2;
+    addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+    await settle();
+    expect(tester.takeException(), isNull);
+    final confirm = find.text(l10n.widgetArtworkFramePickerConfirmButton);
+    await tester.ensureVisible(confirm);
+    await settle();
+    expect(confirm.hitTestable(), findsOneWidget);
+    await tester.tap(confirm);
+    tester.view.physicalSize = const Size(1080, 2280);
+    tester.platformDispatcher.clearTextScaleFactorTestValue();
     await settle(rounds: 100);
     await capture('settings_after_pick');
 

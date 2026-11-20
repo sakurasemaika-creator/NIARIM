@@ -25,7 +25,8 @@ import '../../widgets/dispose_on_unmount.dart';
 import '../../widgets/labeled_slider.dart';
 import '../canvas/widgets/color_picker_panel.dart';
 import '../../config/font_fallback.dart';
-import '../../config/accent_text_theme.dart';
+import '../../widgets/empty_state_placeholder.dart';
+import '../../widgets/scrollable_sheet_body.dart';
 import '../../widgets/fit_or_hide_title.dart';
 import '../../widgets/typing_dialog_inset.dart';
 import '../../widgets/menu_surface.dart';
@@ -49,18 +50,27 @@ class WatermarkSettingsScreen extends StatelessWidget {
     )) {
       return Scaffold(
         appBar: AppBar(title: FitOrHideTitle(l10n.settingsWatermarkTitle)),
-        body: Center(
-          child: PremiumLockWidget(
-            feature: PremiumFeature.watermark,
-            child: Padding(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(Icons.lock_outline, size: 44),
-                  const SizedBox(height: 12),
-                  Text(l10n.premiumBannerRegisterButton),
-                ],
+        body: desktopCentered(
+          context,
+          Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: PremiumLockWidget(
+                feature: PremiumFeature.watermark,
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.lock_outline, size: 44),
+                      const SizedBox(height: 12),
+                      Text(
+                        l10n.premiumBannerRegisterButton,
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ),
           ),
@@ -77,55 +87,25 @@ class WatermarkSettingsScreen extends StatelessWidget {
         title: FitOrHideTitle(l10n.settingsWatermarkTitle),
         actions: const [HelpButton(topic: 'ウォーターマーク')],
       ),
-      floatingActionButton: FloatingActionButton(
-        tooltip: l10n.commonAdd,
-        onPressed: () => _showAddSheet(context, service),
-        child: const Icon(Icons.add),
+      floatingActionButton: desktopCenteredFloatingAction(
+        context,
+        FloatingActionButton(
+          tooltip: l10n.commonAdd,
+          onPressed: () => _showAddSheet(context, service),
+          child: const Icon(Icons.add),
+        ),
       ),
       body: desktopCentered(
         context,
         assets.isEmpty
-            ? Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      width: 96,
-                      height: 96,
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.primaryContainer,
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(
-                        Icons.branding_watermark,
-                        size: 44,
-                        color: AccentTextTheme.of(context),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    Text(
-                      l10n.watermarkEmptyTitle,
-                      style: localizedHeadingStyle(
-                        context,
-                        TextStyle(
-                          color: Theme.of(context).colorScheme.onSurface,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      l10n.watermarkEmptyHint,
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ],
-                ),
+            ? EmptyStatePlaceholder(
+                icon: Icons.branding_watermark,
+                title: l10n.watermarkEmptyTitle,
+                hint: l10n.watermarkEmptyHint,
+                clearFloatingButtons: true,
               )
             : GridView.builder(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 88),
                 gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
                   maxCrossAxisExtent: 160,
                   crossAxisSpacing: 12,
@@ -180,27 +160,32 @@ class WatermarkSettingsScreen extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     showModalBottomSheet(
       context: context,
-      builder: (ctx) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(Icons.image_outlined),
-              title: Text(l10n.watermarkAddFromImage),
-              onTap: () {
-                Navigator.pop(ctx);
-                _addImageWatermark(context, service);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.text_fields),
-              title: Text(l10n.watermarkAddText),
-              onTap: () {
-                Navigator.pop(ctx);
-                _showTextWatermarkDialog(context, service);
-              },
-            ),
-          ],
+      isScrollControlled: true,
+      useSafeArea: true,
+      builder: (ctx) => ScrollableSheetBody(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.image_outlined),
+                title: Text(l10n.watermarkAddFromImage),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _addImageWatermark(context, service);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.text_fields),
+                title: Text(l10n.watermarkAddText),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _showTextWatermarkDialog(context, service);
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -348,9 +333,11 @@ class WatermarkSettingsScreen extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(width: 12),
-                      Text(
-                        l10n.watermarkTextColorTapHint,
-                        style: const TextStyle(fontSize: 11),
+                      Flexible(
+                        child: Text(
+                          l10n.watermarkTextColorTapHint,
+                          style: const TextStyle(fontSize: 11),
+                        ),
                       ),
                     ],
                   ),

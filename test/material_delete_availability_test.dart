@@ -10,9 +10,11 @@ import 'package:niarim/screens/materials/material_list_screen.dart';
 import 'package:niarim/services/material_service.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:niarim/services/settings_service.dart';
+import 'package:niarim/services/theme_service.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 
+import 'helpers/load_app_fonts.dart';
 import 'helpers/project_storage.dart';
 import 'helpers/pump_real_async.dart';
 
@@ -167,5 +169,52 @@ void main() {
     await tester.tap(find.widgetWithIcon(IconButton, Icons.delete_outline));
     await tester.pumpAndSettle();
     expect(find.text(l10n.materialRemoveOneConfirmTitle), findsOneWidget);
+  });
+
+  testWidgets('narrow layouts keep the bulk delete action reachable', (
+    tester,
+  ) async {
+    const locale = Locale('fr');
+    final l10n = lookupAppLocalizations(locale);
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(320, 320);
+    tester.platformDispatcher.textScaleFactorTestValue = 2;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+    await loadAppFonts(tester);
+    final theme = ThemeService();
+    addTearDown(theme.dispose);
+    await tester.pumpWidget(
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider<MaterialService>(create: (_) => _Materials()),
+          ChangeNotifierProvider<ProjectService>(create: (_) => _Projects()),
+          ChangeNotifierProvider(create: (_) => SettingsService()),
+        ],
+        child: MaterialApp(
+          theme: theme.themeDataFor(locale),
+          locale: locale,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: const MaterialListScreen(projectId: 'project'),
+        ),
+      ),
+    );
+
+    await tester.pumpAndSettle();
+    final bulkDelete = find.byTooltip(l10n.materialRemoveUnused(1));
+    expect(bulkDelete.hitTestable(), findsOneWidget);
+    await tester.tap(bulkDelete);
+    await tester.pumpAndSettle();
+    final dialog = find.byType(AlertDialog);
+    expect(tester.widget<AlertDialog>(dialog).scrollable, isTrue);
+    expect(tester.takeException(), isNull);
+    await tester.tap(
+      find.descendant(of: dialog, matching: find.text(l10n.commonCancel)),
+    );
+    await tester.pumpAndSettle();
+    expect(dialog, findsNothing);
+    expect(find.text('image.png'), findsOneWidget);
   });
 }

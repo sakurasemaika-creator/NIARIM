@@ -320,7 +320,16 @@ class _WidgetArtworkFramePickerScreenState
     extends State<WidgetArtworkFramePickerScreen> {
   String? _sceneId;
   int _highlighted = 0;
-  final _stripScroll = ScrollController(keepScrollOffset: false);
+  late final ScrollController _stripScroll = ScrollController(
+    keepScrollOffset: false,
+    onAttach: (position) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && _stripScroll.positions.contains(position)) {
+          _scrollStripToHighlighted(animate: false);
+        }
+      });
+    },
+  );
   static const _stripItemExtent = 56.0;
 
   // タイムラインモードの再生バー（_TimelineScreenState._togglePlay等）と
@@ -342,9 +351,6 @@ class _WidgetArtworkFramePickerScreenState
       _sceneId = widgets.sceneId;
       _highlighted = widgets.frameIndex ?? 0;
     }
-    WidgetsBinding.instance.addPostFrameCallback(
-      (_) => _scrollStripToHighlighted(animate: false),
-    );
   }
 
   @override
@@ -436,7 +442,7 @@ class _WidgetArtworkFramePickerScreenState
         context,
         (scene == null || scene.frames.isEmpty)
             ? Center(
-                child: Padding(
+                child: SingleChildScrollView(
                   padding: const EdgeInsets.all(24),
                   child: Text(
                     l10n.widgetArtworkNoFrames,
@@ -445,246 +451,330 @@ class _WidgetArtworkFramePickerScreenState
                   ),
                 ),
               )
-            : Column(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+            : LayoutBuilder(
+                builder: (context, constraints) {
+                  final scaler = MediaQuery.textScalerOf(context);
+                  final sceneStripHeight = (scaler.scale(14) * 1.5 + 16).clamp(
+                    kMinInteractiveDimension,
+                    double.infinity,
+                  );
+                  // Reserve room for the preview, controls, and wrapped
+                  // labels before switching to a scrollable layout.
+                  final comfortableHeight =
+                      330 +
+                      scaler.scale(14) * 4 +
+                      (scenes.length > 1 ? sceneStripHeight + 8 : 0);
+                  final compact =
+                      constraints.maxHeight < comfortableHeight ||
+                      constraints.maxWidth < 320;
+                  final landscape = compact && constraints.maxWidth >= 500;
+                  final hint = Padding(
+                    padding: landscape
+                        ? const EdgeInsets.fromLTRB(12, 8, 12, 8)
+                        : const EdgeInsets.fromLTRB(16, 12, 16, 8),
                     child: Text(
                       l10n.widgetArtworkFramePickerHint,
+                      textAlign: TextAlign.center,
                       style: TextStyle(
-                        fontSize: 12,
+                        fontSize: landscape ? 12 : 14,
                         color: scheme.onSurfaceVariant,
                       ),
                     ),
-                  ),
-                  if (scenes.length > 1) ...[
-                    SizedBox(
-                      height: 40,
-                      child: ListView.separated(
-                        scrollDirection: Axis.horizontal,
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        itemCount: scenes.length,
-                        separatorBuilder: (context, index) =>
-                            const SizedBox(width: 8),
-                        itemBuilder: (context, i) {
-                          final s = scenes[i];
-                          return ChoiceChip(
-                            label: Text(s.displayName),
-                            selected: s.id == sceneId,
-                            onSelected: (_) {
-                              if (s.id == sceneId) {
-                                _jumpTo(0, total);
-                                return;
-                              }
-                              setState(() {
-                                _stopPlaying();
-                                _sceneId = s.id;
-                                _highlighted = 0;
-                              });
-                            },
-                          );
-                        },
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                  ],
-                  // タイムラインモードと同じ「大きなプレビュー＋下に
-                  // フレーム一覧＋現在地表示」の構成。フレーム一覧の
-                  // タップは即確定せず、まずここでプレビューが差し替わる
-                  // （実際にタイムラインで動画をスクラブする感覚に揃える）。
-                  Expanded(
-                    child: Padding(
+                  );
+                  final sceneStrip = SizedBox(
+                    height: sceneStripHeight,
+                    child: ListView.separated(
+                      scrollDirection: Axis.horizontal,
                       padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: Center(
-                        child: AspectRatio(
-                          aspectRatio: 16 / 9,
-                          child: Container(
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(8),
-                              color: scheme.surfaceContainerHigh,
-                              border: Border.all(color: scheme.outlineVariant),
-                            ),
-                            clipBehavior: Clip.antiAlias,
-                            // keyを付けない：ArtworkFrameThumbnailは
-                            // didUpdateWidgetでframeIndexの変化を検知して
-                            // 再合成するため、keyで毎回作り直す必要はない。
-                            // 再生プレビュー（_togglePlay）でframeIndexが
-                            // 高頻度に変わる場面では、keyを付けると
-                            // 毎ティックWidget自体を作り直すことになり
-                            // 明確に不利（Stateの使い回しができない）。
-                            child: ArtworkFrameThumbnail(
-                              projectId: widget.projectId,
-                              sceneId: scene.id,
-                              frameIndex: highlighted,
-                              maxSize: 480,
-                            ),
+                      itemCount: scenes.length,
+                      separatorBuilder: (context, index) =>
+                          const SizedBox(width: 8),
+                      itemBuilder: (context, i) {
+                        final s = scenes[i];
+                        return ChoiceChip(
+                          label: Text(s.displayName),
+                          selected: s.id == sceneId,
+                          onSelected: (_) {
+                            if (s.id == sceneId) {
+                              _jumpTo(0, total);
+                              return;
+                            }
+                            setState(() {
+                              _stopPlaying();
+                              _sceneId = s.id;
+                              _highlighted = 0;
+                            });
+                          },
+                        );
+                      },
+                    ),
+                  );
+                  // フレームをスクラブすると同じプレビューを更新する。
+                  final preview = Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Center(
+                      child: AspectRatio(
+                        aspectRatio: 16 / 9,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(8),
+                            color: scheme.surfaceContainerHigh,
+                            border: Border.all(color: scheme.outlineVariant),
+                          ),
+                          clipBehavior: Clip.antiAlias,
+                          // keyを付けない：ArtworkFrameThumbnailは
+                          // didUpdateWidgetでframeIndexの変化を検知して
+                          // 再合成するため、keyで毎回作り直す必要はない。
+                          // 再生プレビュー（_togglePlay）でframeIndexが
+                          // 高頻度に変わる場面では、keyを付けると
+                          // 毎ティックWidget自体を作り直すことになり
+                          // 明確に不利（Stateの使い回しができない）。
+                          child: ArtworkFrameThumbnail(
+                            projectId: widget.projectId,
+                            sceneId: scene.id,
+                            frameIndex: highlighted,
+                            maxSize: 480,
                           ),
                         ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
+                  );
+                  final frameNumber = Text(
                     l10n.widgetArtworkFrameNumberLabel(highlighted + 1),
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
                       color: scheme.onSurfaceVariant,
                     ),
-                  ),
-                  // タイムラインモードと同じシークバー＋再生コントロール
-                  // （先頭へ／1フレーム戻る／再生・一時停止／1フレーム進む／
-                  // 最終へ）。ドラッグ・タップどちらでも任意のフレームへ
-                  // 直接移動でき、再生中は選んだ作品の実際のfpsで
-                  // パラパラと自動再生してから止めるフレームを選べる。
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    child: SliderTheme(
-                      data: SliderTheme.of(context).copyWith(
-                        trackHeight: 2,
-                        thumbShape: const RoundSliderThumbShape(
-                          enabledThumbRadius: 6,
+                  );
+                  final controls = <Widget>[
+                    // タイムラインモードと同じシークバー＋再生コントロール
+                    // （先頭へ／1フレーム戻る／再生・一時停止／1フレーム進む／
+                    // 最終へ）。ドラッグ・タップどちらでも任意のフレームへ
+                    // 直接移動でき、再生中は選んだ作品の実際のfpsで
+                    // パラパラと自動再生してから止めるフレームを選べる。
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      child: SliderTheme(
+                        data: SliderTheme.of(context).copyWith(
+                          trackHeight: 2,
+                          thumbShape: const RoundSliderThumbShape(
+                            enabledThumbRadius: 6,
+                          ),
+                        ),
+                        child: SteppedSlider(
+                          value: highlighted.toDouble(),
+                          min: 0,
+                          max: (total - 1).clamp(0, 1 << 30).toDouble(),
+                          divisions: total > 1 ? total - 1 : null,
+                          showSteppers: false,
+                          onChanged: (v) => _jumpTo(v.round(), total),
                         ),
                       ),
-                      child: SteppedSlider(
-                        value: highlighted.toDouble(),
-                        min: 0,
-                        max: (total - 1).clamp(0, 1 << 30).toDouble(),
-                        divisions: total > 1 ? total - 1 : null,
-                        showSteppers: false,
-                        onChanged: (v) => _jumpTo(v.round(), total),
-                      ),
                     ),
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.skip_previous),
-                        tooltip: l10n.timelineSkipToStart,
-                        onPressed: () => _jumpTo(0, total),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.fast_rewind),
-                        tooltip: l10n.timelineStepBack,
-                        onPressed: () => _stepFrame(-1, total),
-                      ),
-                      IconButton(
-                        icon: Icon(_isPlaying ? Icons.pause : Icons.play_arrow),
-                        tooltip: _isPlaying
-                            ? l10n.commonPause
-                            : l10n.commonPlay,
-                        onPressed: () => _togglePlay(total, fps),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.fast_forward),
-                        tooltip: l10n.timelineStepForward,
-                        onPressed: () => _stepFrame(1, total),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.skip_next),
-                        tooltip: l10n.timelineSkipToEnd,
-                        onPressed: () => _jumpTo(total - 1, total),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-                  // 現在地（赤枠）表示つきのフレーム一覧。
-                  // frame_strip_widget.dartと同じ、ビューポート中央に固定した
-                  // 枠へストリップ側をスクロールさせる方式。
-                  SizedBox(
-                    height: 64,
-                    child: LayoutBuilder(
-                      builder: (context, constraints) {
-                        final sidePadding =
-                            ((constraints.maxWidth - _stripItemExtent) / 2)
-                                .clamp(0.0, double.infinity);
-                        return Stack(
-                          children: [
-                            ListView.builder(
-                              // A new scene starts at frame zero with its own
-                              // scroll position, even during an active scroll.
-                              key: ValueKey(scene.id),
-                              controller: _stripScroll,
-                              scrollDirection: Axis.horizontal,
-                              padding: EdgeInsets.symmetric(
-                                horizontal: sidePadding,
-                              ),
-                              itemCount: total,
-                              itemBuilder: (context, index) {
-                                final isHighlighted = index == highlighted;
-                                return GestureDetector(
-                                  // 自動テスト（AIによる操作→キャプチャ→検証）が
-                                  // フレームを番号指定でタップできるようにする
-                                  // ためのKey。見た目・挙動には影響しない。
-                                  key: ValueKey('widgetFrameStripCell$index'),
-                                  onTap: () => _jumpTo(index, total),
-                                  child: Container(
-                                    width: _stripItemExtent - 8,
-                                    margin: const EdgeInsets.symmetric(
-                                      horizontal: 4,
-                                      vertical: 4,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(4),
-                                      color: scheme.surfaceContainerHigh,
-                                      // 中央固定の赤枠はスクロール中は現在地の
-                                      // セルからずれて見えるため、選択中の
-                                      // セル自体にも色を付けて見失わないよう
-                                      // にする。
-                                      border: Border.all(
-                                        color: isHighlighted
-                                            ? scheme.primary
-                                            : scheme.outlineVariant,
-                                        width: isHighlighted ? 2 : 1,
+                    Wrap(
+                      alignment: WrapAlignment.center,
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.skip_previous),
+                          tooltip: l10n.timelineSkipToStart,
+                          onPressed: () => _jumpTo(0, total),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.fast_rewind),
+                          tooltip: l10n.timelineStepBack,
+                          onPressed: () => _stepFrame(-1, total),
+                        ),
+                        IconButton(
+                          icon: Icon(
+                            _isPlaying ? Icons.pause : Icons.play_arrow,
+                          ),
+                          tooltip: _isPlaying
+                              ? l10n.commonPause
+                              : l10n.commonPlay,
+                          onPressed: () => _togglePlay(total, fps),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.fast_forward),
+                          tooltip: l10n.timelineStepForward,
+                          onPressed: () => _stepFrame(1, total),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.skip_next),
+                          tooltip: l10n.timelineSkipToEnd,
+                          onPressed: () => _jumpTo(total - 1, total),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    // 現在地（赤枠）表示つきのフレーム一覧。
+                    // frame_strip_widget.dartと同じ、ビューポート中央に固定した
+                    // 枠へストリップ側をスクロールさせる方式。
+                    SizedBox(
+                      height: 64,
+                      child: LayoutBuilder(
+                        builder: (context, constraints) {
+                          final sidePadding =
+                              ((constraints.maxWidth - _stripItemExtent) / 2)
+                                  .clamp(0.0, double.infinity);
+                          return Stack(
+                            children: [
+                              ListView.builder(
+                                // A new scene starts at frame zero with its own
+                                // scroll position, even during an active scroll.
+                                key: ValueKey(scene.id),
+                                controller: _stripScroll,
+                                scrollDirection: Axis.horizontal,
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: sidePadding,
+                                ),
+                                itemCount: total,
+                                itemBuilder: (context, index) {
+                                  final isHighlighted = index == highlighted;
+                                  return GestureDetector(
+                                    // 自動テスト（AIによる操作→キャプチャ→検証）が
+                                    // フレームを番号指定でタップできるようにする
+                                    // ためのKey。見た目・挙動には影響しない。
+                                    key: ValueKey('widgetFrameStripCell$index'),
+                                    onTap: () => _jumpTo(index, total),
+                                    child: Container(
+                                      width: _stripItemExtent - 8,
+                                      margin: const EdgeInsets.symmetric(
+                                        horizontal: 4,
+                                        vertical: 4,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(4),
+                                        color: scheme.surfaceContainerHigh,
+                                        // 中央固定の赤枠はスクロール中は現在地の
+                                        // セルからずれて見えるため、選択中の
+                                        // セル自体にも色を付けて見失わないよう
+                                        // にする。
+                                        border: Border.all(
+                                          color: isHighlighted
+                                              ? scheme.primary
+                                              : scheme.outlineVariant,
+                                          width: isHighlighted ? 2 : 1,
+                                        ),
+                                      ),
+                                      clipBehavior: Clip.antiAlias,
+                                      child: ArtworkFrameThumbnail(
+                                        projectId: widget.projectId,
+                                        sceneId: scene.id,
+                                        frameIndex: index,
                                       ),
                                     ),
-                                    clipBehavior: Clip.antiAlias,
-                                    child: ArtworkFrameThumbnail(
-                                      projectId: widget.projectId,
-                                      sceneId: scene.id,
-                                      frameIndex: index,
+                                  );
+                                },
+                              ),
+                              IgnorePointer(
+                                child: Center(
+                                  child: Container(
+                                    width: _stripItemExtent,
+                                    height: 64,
+                                    decoration: BoxDecoration(
+                                      border: Border.all(
+                                        color: context
+                                            .watch<ThemeService>()
+                                            .current
+                                            .updateMarkColor,
+                                        width: 3,
+                                      ),
+                                      borderRadius: BorderRadius.circular(4),
                                     ),
-                                  ),
-                                );
-                              },
-                            ),
-                            IgnorePointer(
-                              child: Center(
-                                child: Container(
-                                  width: _stripItemExtent,
-                                  height: 64,
-                                  decoration: BoxDecoration(
-                                    border: Border.all(
-                                      color: context
-                                          .watch<ThemeService>()
-                                          .current
-                                          .updateMarkColor,
-                                      width: 3,
-                                    ),
-                                    borderRadius: BorderRadius.circular(4),
                                   ),
                                 ),
                               ),
-                            ),
-                          ],
-                        );
-                      },
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: SizedBox(
-                      width: double.infinity,
-                      child: FilledButton.icon(
-                        onPressed: () =>
-                            _confirm(context, sceneId!, highlighted),
-                        icon: const Icon(Icons.check),
-                        label: Text(l10n.widgetArtworkFramePickerConfirmButton),
+                            ],
+                          );
+                        },
                       ),
                     ),
-                  ),
-                ],
+                  ];
+                  final confirmLabel = Text(
+                    l10n.widgetArtworkFramePickerConfirmButton,
+                    textAlign: TextAlign.center,
+                  );
+                  void confirm() => _confirm(context, scene.id, highlighted);
+                  final confirmButton = Padding(
+                    padding: landscape
+                        ? const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 8,
+                          )
+                        : const EdgeInsets.all(16),
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: landscape
+                          ? FilledButton(
+                              onPressed: confirm,
+                              child: confirmLabel,
+                            )
+                          : FilledButton.icon(
+                              onPressed: confirm,
+                              icon: const Icon(Icons.check),
+                              label: confirmLabel,
+                            ),
+                    ),
+                  );
+
+                  return SingleChildScrollView(
+                    child: SizedBox(
+                      height: compact ? null : constraints.maxHeight,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (!landscape) hint,
+                          if (scenes.length > 1) ...[
+                            sceneStrip,
+                            const SizedBox(height: 8),
+                          ],
+                          if (landscape)
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Expanded(
+                                  flex: 4,
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(top: 8),
+                                    child: Column(
+                                      children: [
+                                        SizedBox(height: 84, child: preview),
+                                        const SizedBox(height: 4),
+                                        frameNumber,
+                                        hint,
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                                Expanded(
+                                  flex: 9,
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.stretch,
+                                    children: [...controls, confirmButton],
+                                  ),
+                                ),
+                              ],
+                            )
+                          else ...[
+                            Flexible(
+                              fit: compact ? FlexFit.loose : FlexFit.tight,
+                              child: SizedBox(
+                                height: compact ? 128 : null,
+                                child: preview,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            frameNumber,
+                            ...controls,
+                            confirmButton,
+                          ],
+                        ],
+                      ),
+                    ),
+                  );
+                },
               ),
       ),
     );

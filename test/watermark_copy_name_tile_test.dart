@@ -213,12 +213,14 @@ void main() {
     required Locale locale,
     required Size size,
     required double scale,
+    bool empty = false,
   }) async {
     final l10n = lookupAppLocalizations(locale);
     SharedPreferences.setMockInitialValues({
       'language': locale.languageCode,
       'watermark_assets': [
-        for (final m in _marks(l10n)) jsonEncode(m.toJson()),
+        if (!empty)
+          for (final m in _marks(l10n)) jsonEncode(m.toJson()),
       ],
     });
     final services = (await tester.runAsync(() async {
@@ -360,6 +362,36 @@ void main() {
       await tester.pumpWidget(const SizedBox.shrink());
     },
   );
+
+  testWidgets('the text action fits in a short watermark add sheet', (
+    tester,
+  ) async {
+    await loadAppFonts(tester);
+    final (_, l10n) = await pumpScreen(
+      tester,
+      locale: const Locale('fr'),
+      size: const Size(520, 193),
+      scale: 2,
+      empty: true,
+    );
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    expect(tester.takeException(), isNull);
+
+    await tester.tap(find.byTooltip(l10n.commonAdd));
+    await tester.pumpAndSettle();
+    final sheet = find.byType(BottomSheet);
+    final addText = find.descendant(
+      of: sheet,
+      matching: find.text(l10n.watermarkAddText),
+    );
+    expect(addText.hitTestable(), findsOneWidget);
+    expect(tester.takeException(), isNull);
+    await tester.tap(addText);
+    await tester.pumpAndSettle();
+    expect(find.byType(TextField), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
 
   testWidgets('invalid images and blank text do not create a watermark', (
     tester,

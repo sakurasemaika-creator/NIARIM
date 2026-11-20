@@ -13,8 +13,7 @@ import '../../utils/file_size_label.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/help_button.dart';
 import '../../widgets/keep_together_text.dart';
-import '../../config/font_fallback.dart';
-import '../../config/accent_text_theme.dart';
+import '../../widgets/empty_state_placeholder.dart';
 import '../../widgets/fit_or_hide_title.dart';
 import '../../widgets/menu_card.dart';
 
@@ -77,51 +76,19 @@ class _MaterialListScreenState extends State<MaterialListScreen> {
         actions: [
           const HelpButton(topic: '素材一覧'),
           if (unusedCount > 0)
-            TextButton(
-              onPressed: _confirmRemoveUnused,
-              child: Text(l10n.materialRemoveUnused(unusedCount)),
+            _removeUnusedAction(
+              context,
+              l10n.materialRemoveUnused(unusedCount),
             ),
         ],
       ),
       body: desktopCentered(
         context,
         materials.isEmpty
-            ? Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 88,
-                      height: 88,
-                      decoration: BoxDecoration(
-                        color: scheme.primaryContainer,
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(
-                        Icons.perm_media_outlined,
-                        size: 40,
-                        color: AccentTextTheme.of(context),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      l10n.materialEmptyTitle,
-                      style: localizedHeadingStyle(
-                        context,
-                        const TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      l10n.materialEmptyHint,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: scheme.onSurfaceVariant,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ],
-                ),
+            ? EmptyStatePlaceholder(
+                icon: Icons.perm_media_outlined,
+                title: l10n.materialEmptyTitle,
+                hint: l10n.materialEmptyHint,
               )
             : ListView.builder(
                 padding: const EdgeInsets.all(8),
@@ -132,10 +99,17 @@ class _MaterialListScreenState extends State<MaterialListScreen> {
                   final isMissing = _missing.any((e) => e.id == m.id);
                   return MenuCard(
                     child: ListTile(
+                      contentPadding: const EdgeInsetsDirectional.fromSTEB(
+                        12,
+                        0,
+                        8,
+                        0,
+                      ),
+                      horizontalTitleGap: 12,
                       leading: _thumbnail(m, scheme),
                       title: Text(
                         m.originalFileName,
-                        maxLines: 1,
+                        maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
                       // ファイルが見つからない素材には警告アイコンを添える
@@ -197,6 +171,40 @@ class _MaterialListScreenState extends State<MaterialListScreen> {
               ),
       ),
     );
+  }
+
+  Widget _removeUnusedAction(BuildContext context, String label) {
+    final media = MediaQuery.of(context);
+    final theme = Theme.of(context);
+    final text = TextPainter(
+      text: TextSpan(
+        text: label,
+        style:
+            theme.textButtonTheme.style?.textStyle?.resolve({}) ??
+            theme.textTheme.labelLarge,
+      ),
+      textDirection: Directionality.of(context),
+      textScaler: media.textScaler,
+      locale: Localizations.localeOf(context),
+      maxLines: 1,
+    )..layout();
+    // Leave room for the back button, Help, and the page title.
+    final actionWidth =
+        media.size.width -
+        media.padding.horizontal -
+        kToolbarHeight -
+        kMinInteractiveDimension -
+        112;
+    final showLabel = text.width.ceil() + 32 <= actionWidth;
+    text.dispose();
+
+    return showLabel
+        ? TextButton(onPressed: _confirmRemoveUnused, child: Text(label))
+        : IconButton(
+            tooltip: label,
+            onPressed: _confirmRemoveUnused,
+            icon: const Icon(Icons.delete_sweep_outlined),
+          );
   }
 
   Widget _thumbnail(MaterialAsset m, ColorScheme scheme) {
@@ -262,6 +270,7 @@ class _MaterialListScreenState extends State<MaterialListScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
+        scrollable: true,
         title: Text(l10n.materialRemoveOneConfirmTitle),
         content: Text(m.originalFileName),
         actions: [
@@ -294,6 +303,7 @@ class _MaterialListScreenState extends State<MaterialListScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
+        scrollable: true,
         title: Text(l10n.materialRemoveUnusedConfirmTitle),
         content: messageText(l10n.materialRemoveUnusedConfirmBody),
         actions: [
