@@ -10,6 +10,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:image/image.dart' as img;
 import 'package:path_provider/path_provider.dart';
 
+import 'export_filename.dart';
 import '../engine/camera_engine.dart';
 import '../engine/filter_engine.dart';
 import '../engine/layer_compositor.dart';
@@ -354,6 +355,7 @@ class ExportEngine {
   /// うち指定した1フレームだけを合成し、exportsフォルダへ直接保存する
   /// （中間フォルダへの一時ファイル書き出しは不要）。
   Future<String> exportFrameImage({
+    String? projectName,
     required List<Scene> scenes,
     required TileManager tileManager,
     required String sceneId,
@@ -403,7 +405,12 @@ class ExportEngine {
         : img.encodePng(image);
     final dir = await ExportEngine.exportsDir();
     final ext = asJpeg ? 'jpg' : 'png';
-    final outputPath = _freshOutputPath(dir, 'niarim_frame', ext);
+    final outputPath = _freshOutputPath(
+      dir,
+      projectName,
+      ext,
+      frameIndex: frameIndex,
+    );
     await _publishImageExport(outputPath, bytes);
     return outputPath;
   }
@@ -522,9 +529,7 @@ class ExportEngine {
     );
   }
 
-  /// 書き出し先の名前として、この起動の間に渡したものとも、既にあるファイル
-  /// とも重ならないもの（`niarim_<ミリ秒>.<ext>`）。同じミリ秒に終わった2つの
-  /// 書き出しが同じ名前になり、後の方が前の作品を上書きしないように。
+  // An encoder can hold a name before the file exists on disk.
   static final Set<String> _issuedOutputPaths = {};
 
   /// 今走っている書き出しのコマのフォルダ。
@@ -553,15 +558,25 @@ class ExportEngine {
     return frames;
   }
 
-  static String _freshOutputPath(Directory dir, String stem, String ext) {
-    var stamp = DateTime.now().millisecondsSinceEpoch;
-    while (true) {
-      final path = '${dir.path}/${stem}_$stamp.$ext';
-      if (!_issuedOutputPaths.contains(path) && !File(path).existsSync()) {
-        _issuedOutputPaths.add(path);
+  static String _freshOutputPath(
+    Directory dir,
+    String? projectName,
+    String extension, {
+    int? frameIndex,
+  }) {
+    final stem = exportFilenameStem(
+      projectName,
+      DateTime.now(),
+      frameIndex: frameIndex,
+    );
+    for (var version = 1; ; version++) {
+      final suffix = version == 1 ? '' : ' ($version)';
+      final path = '${dir.path}/$stem$suffix.$extension';
+      if (FileSystemEntity.typeSync(path, followLinks: false) ==
+              FileSystemEntityType.notFound &&
+          _issuedOutputPaths.add(path.toLowerCase())) {
         return path;
       }
-      stamp++;
     }
   }
 
@@ -601,6 +616,7 @@ class ExportEngine {
   /// 追加する（動画結合ではなく同一パスの重複指定でエンコーダー側が
   /// 静止フレームとして扱う）。
   Future<String> exportMp4({
+    String? projectName,
     required List<Scene> scenes,
     required TileManager tileManager,
     required int fps,
@@ -697,7 +713,7 @@ class ExportEngine {
       }
 
       final exportsDir = await ExportEngine.exportsDir();
-      final outputPath = _freshOutputPath(exportsDir, 'niarim', 'mp4');
+      final outputPath = _freshOutputPath(exportsDir, projectName, 'mp4');
       partialOutput = outputPath;
       await HardwareVideoEncoder.encodeMp4(
         framePaths: framePaths,
@@ -718,6 +734,7 @@ class ExportEngine {
   }
 
   Future<String> exportGif({
+    String? projectName,
     required List<Scene> scenes,
     required TileManager tileManager,
     required int fps,
@@ -798,7 +815,7 @@ class ExportEngine {
       if (cancelToken?.isCancelled == true) {
         throw const ExportCancelledException();
       }
-      final outputPath = _freshOutputPath(exportsDir, 'niarim', 'gif');
+      final outputPath = _freshOutputPath(exportsDir, projectName, 'gif');
       await _publishImageExport(outputPath, gifBytes);
       return outputPath;
     } finally {
@@ -833,6 +850,7 @@ class ExportEngine {
   /// image2デマルチプレクサは連番ファイルを要求するため、エンドカード画像を
   /// 必要フレーム数ぶん物理的に複製する）。
   Future<String> exportWebm({
+    String? projectName,
     required List<Scene> scenes,
     required TileManager tileManager,
     required int fps,
@@ -927,12 +945,20 @@ class ExportEngine {
       }
 
       final exportsDir = await ExportEngine.exportsDir();
-      final outputPath = _freshOutputPath(exportsDir, 'niarim', 'webm');
+      final outputPath = _freshOutputPath(exportsDir, projectName, 'webm');
       partialOutput = outputPath;
-      final session = await FFmpegKit.execute(
-        '-y -framerate $fps -i "${framesDir.path}/frame_%06d.png" '
-        '-c:v libvpx-vp9 -pix_fmt yuva420p "$outputPath"',
-      );
+      final session = await FFmpegKit.executeWithArguments([
+        '-y',
+        '-framerate',
+        fps.toString(),
+        '-i',
+        '${framesDir.path}/frame_%06d.png',
+        '-c:v',
+        'libvpx-vp9',
+        '-pix_fmt',
+        'yuva420p',
+        outputPath,
+      ]);
       final rc = await session.getReturnCode();
       if (!ReturnCode.isSuccess(rc)) {
         throw Exception('FFmpeg failed: ${await session.getOutput()}');
@@ -958,6 +984,7 @@ class ExportEngine {
   /// （透過が必要な場合は透過WebMを使う）。[appendEndCard]の扱いはMP4と
   /// 同様（無料版のみ、フレーム生成の段階で末尾へ焼き込む）。
   Future<String> exportAvi({
+    String? projectName,
     required List<Scene> scenes,
     required TileManager tileManager,
     required int fps,
@@ -1052,14 +1079,24 @@ class ExportEngine {
       }
 
       final exportsDir = await ExportEngine.exportsDir();
-      final outputPath = _freshOutputPath(exportsDir, 'niarim', 'avi');
+      final outputPath = _freshOutputPath(exportsDir, projectName, 'avi');
       partialOutput = outputPath;
       // mjpegはアルファ非対応のため、透過を破棄してbackgroundColorで合成済みの
       // RGBを不透明のyuvj420pへ変換する（yuva420p等は指定しない）。
-      final session = await FFmpegKit.execute(
-        '-y -framerate $fps -i "${framesDir.path}/frame_%06d.png" '
-        '-c:v mjpeg -pix_fmt yuvj420p -q:v 3 "$outputPath"',
-      );
+      final session = await FFmpegKit.executeWithArguments([
+        '-y',
+        '-framerate',
+        fps.toString(),
+        '-i',
+        '${framesDir.path}/frame_%06d.png',
+        '-c:v',
+        'mjpeg',
+        '-pix_fmt',
+        'yuvj420p',
+        '-q:v',
+        '3',
+        outputPath,
+      ]);
       final rc = await session.getReturnCode();
       if (!ReturnCode.isSuccess(rc)) {
         throw Exception('FFmpeg failed: ${await session.getOutput()}');

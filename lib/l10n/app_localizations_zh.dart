@@ -1780,7 +1780,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get helpExportScreenDesc =>
-      '在“预设”中选择“标准”“高画质”或“自定义”。选择“自定义”后，可以调整帧率（FPS）。导出视频、图片期间会显示进度，也可以中途取消。所需时间会因设备性能而异。 导出的文件保存在首页的“作品列表”中。要保存到相册或用其他应用打开，请在分享菜单中选择目标应用。';
+      '在“预设”中选择“标准”“高画质”或“自定义”。选择“自定义”后，可以调整帧率（FPS）。导出视频、图片期间会显示进度，也可以中途取消。所需时间会因设备性能而异。 在首页的“作品列表”中，可以按项目名称查找导出的文件。选择“分享”即可将文件保存到相册或用其他应用打开。';
 
   @override
   String get helpDrawingFilterTitle => '绘图滤镜';
@@ -2928,7 +2928,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get exportSaveLocationHint =>
-      '导出的文件保存在首页的“作品列表”中。要保存到相册或用其他应用打开，请在分享菜单中选择目标应用。';
+      '在首页的“作品列表”中，可以按项目名称查找导出的文件。选择“分享”即可将文件保存到相册或用其他应用打开。';
 
   @override
   String get exportOpenWorks => '打开作品列表';
@@ -12203,7 +12203,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get helpExportScreenDesc =>
-      '在「預設」中選取「標準」「高畫質」或「自訂」。選取「自訂」後，可以調整影格率（FPS）。匯出影片、圖片期間會顯示進度，也可以中途取消。所需時間會依裝置效能而異。 匯出的檔案會儲存在首頁的「作品列表」。若要存到「照片」或用其他 App 開啟，請在分享選單中選擇目的地。';
+      '在「預設」中選取「標準」「高畫質」或「自訂」。選取「自訂」後，可以調整影格率（FPS）。匯出影片、圖片期間會顯示進度，也可以中途取消。所需時間會依裝置效能而異。 在首頁的「作品列表」可用專案名稱搜尋匯出的檔案。選取「分享」即可存到「照片」或用其他 App 開啟。';
 
   @override
   String get helpDrawingFilterTitle => '繪圖濾鏡';
@@ -13351,7 +13351,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get exportSaveLocationHint =>
-      '匯出的檔案會儲存在首頁的「作品列表」。若要存到「照片」或用其他 App 開啟，請在分享選單中選擇目的地。';
+      '在首頁的「作品列表」可用專案名稱搜尋匯出的檔案。選取「分享」即可存到「照片」或用其他 App 開啟。';
 
   @override
   String get exportOpenWorks => '開啟作品列表';

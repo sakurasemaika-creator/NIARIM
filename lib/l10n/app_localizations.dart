@@ -3330,7 +3330,7 @@ abstract class AppLocalizations {
   /// No description provided for @helpExportScreenDesc.
   ///
   /// In ja, this message translates to:
-  /// **'「プリセット」で「標準」「高画質」「カスタム」を選べます。「カスタム」ではFPSを調整できます。動画・画像の書き出し中は進捗状況が表示され、途中でキャンセルすることもできます。書き出しにかかる時間は端末の性能によって変わります。 書き出したファイルはホームの「作品一覧」に保存されます。写真アプリに保存したり、ほかのアプリで開いたりするときは、共有先を選んでください。'**
+  /// **'「プリセット」で「標準」「高画質」「カスタム」を選べます。「カスタム」ではFPSを調整できます。動画・画像の書き出し中は進捗状況が表示され、途中でキャンセルすることもできます。書き出しにかかる時間は端末の性能によって変わります。 書き出した作品はホームの「作品一覧」でプロジェクト名から探せます。写真アプリに保存したり、ほかのアプリで開いたりするには「共有」を選んでください。'**
   String get helpExportScreenDesc;
 
   /// No description provided for @helpDrawingFilterTitle.
@@ -5436,7 +5436,7 @@ abstract class AppLocalizations {
   /// No description provided for @exportSaveLocationHint.
   ///
   /// In ja, this message translates to:
-  /// **'書き出したファイルはホームの「作品一覧」に保存されます。写真アプリに保存したり、ほかのアプリで開いたりするときは、共有先を選んでください。'**
+  /// **'書き出した作品はホームの「作品一覧」でプロジェクト名から探せます。写真アプリに保存したり、ほかのアプリで開いたりするには「共有」を選んでください。'**
   String get exportSaveLocationHint;
 
   /// No description provided for @exportOpenWorks.

@@ -413,6 +413,7 @@ class _ExportScreenState extends State<ExportScreen> {
       switch (format) {
         case ExportFormat.mp4:
           outputPath = await engine.exportMp4(
+            projectName: project.name,
             scenes: scenes,
             tileManager: tileManager,
             fps: fps,
@@ -429,6 +430,7 @@ class _ExportScreenState extends State<ExportScreen> {
           );
         case ExportFormat.gif:
           outputPath = await engine.exportGif(
+            projectName: project.name,
             scenes: scenes,
             tileManager: tileManager,
             fps: fps,
@@ -444,6 +446,7 @@ class _ExportScreenState extends State<ExportScreen> {
           );
         case ExportFormat.webm:
           outputPath = await engine.exportWebm(
+            projectName: project.name,
             scenes: scenes,
             tileManager: tileManager,
             fps: fps,
@@ -460,6 +463,7 @@ class _ExportScreenState extends State<ExportScreen> {
           );
         case ExportFormat.avi:
           outputPath = await engine.exportAvi(
+            projectName: project.name,
             scenes: scenes,
             tileManager: tileManager,
             fps: fps,

@@ -208,6 +208,7 @@ void main() {
           'MP4',
           'export_frames',
           (engine, tiles, endCard) => engine.exportMp4(
+            projectName: "Studio 2's reel",
             scenes: scenes,
             tileManager: tiles,
             fps: 1,
@@ -223,6 +224,7 @@ void main() {
           'WebM',
           'export_webm_frames',
           (engine, tiles, endCard) => engine.exportWebm(
+            projectName: "Studio 2's reel",
             scenes: scenes,
             tileManager: tiles,
             fps: 1,
@@ -238,6 +240,7 @@ void main() {
           'AVI',
           'export_avi_frames',
           (engine, tiles, endCard) => engine.exportAvi(
+            projectName: "Studio 2's reel",
             scenes: scenes,
             tileManager: tiles,
             fps: 1,
@@ -310,6 +313,7 @@ void main() {
       final output = await export(ExportEngine(), paintedTiles(), true);
 
       expect(File(output).readAsBytesSync(), _fullVideo);
+      expect(File(output).uri.pathSegments.last, startsWith("Studio 2's reel_"));
       expect(exportedNames(), [File(output).uri.pathSegments.last]);
       expect(File(output).parent.path, exportsDir().path);
       expect(frameFoldersLeft(framesFolder), isFalse);
@@ -343,6 +347,7 @@ void main() {
       return null;
     });
     Future<String> mp4() => ExportEngine().exportMp4(
+      projectName: "Studio 2's reel",
       scenes: scenes,
       tileManager: paintedTiles(),
       fps: 1,

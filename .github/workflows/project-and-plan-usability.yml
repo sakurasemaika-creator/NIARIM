@@ -19,6 +19,8 @@ on:
       - 'lib/screens/export/export_screen.dart'
       - 'lib/screens/export/widgets/export_complete_dialog.dart'
       - 'test/export_share_notice_test.dart'
+      - 'lib/engine/export_filename.dart'
+      - 'test/export_filename_test.dart'
       - 'test/app_web_reference_export_exact_test.dart'
       - 'lib/screens/help/help_screen.dart'
       - 'test/help_topic_search_text_test.dart'
@@ -51,7 +53,7 @@ jobs:
           lib/screens/export/widgets/export_complete_dialog.dart lib/screens/canvas/widgets/canvas_icon_button.dart
           lib/screens/canvas/widgets/toolbar_widget.dart lib/widgets/collection_action_controls.dart
       - name: Verify choosing a format and opening export help from the timeline
-        run: flutter test --no-pub --reporter expanded test/export_share_notice_test.dart test/app_web_reference_export_exact_test.dart
+        run: flutter test --no-pub --reporter expanded test/export_filename_test.dart test/export_share_notice_test.dart test/export_video_failure_cleanup_test.dart test/app_web_reference_export_exact_test.dart
       - run: >
           flutter test --no-pub --reporter expanded
           test/home_a003_visual_findings_test.dart test/home_small_fixes_test.dart
@@ -89,5 +91,6 @@ jobs:
           path: |
             build/visual-smoke/webref_exact_07_export.png
             build/visual-smoke/webref_export_complete.png
+            build/visual-smoke/webref_project_export_search.png
           if-no-files-found: error
           retention-days: 14

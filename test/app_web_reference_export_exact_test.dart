@@ -85,7 +85,6 @@ void main() {
     String name = 'webref_exact_07_export.png',
   }) async {
     await tester.pump(const Duration(milliseconds: 250));
-    expect(find.byType(AdBannerWidget, skipOffstage: false), findsNothing);
     final boundary =
         screenshotKey.currentContext!.findRenderObject()
             as RenderRepaintBoundary;
@@ -232,6 +231,7 @@ void main() {
 
     tester.view.physicalSize = const Size(960, 1707);
     await tester.pump(const Duration(milliseconds: 500));
+    expect(find.byType(AdBannerWidget, skipOffstage: false), findsNothing);
     await capture(tester);
     final gif = find.widgetWithText(
       RadioListTile<ExportFormat>,
@@ -289,11 +289,16 @@ void main() {
     final exported = tester
         .widget<ExportCompleteDialog>(find.byType(ExportCompleteDialog))
         .file;
+    expect(
+      exported.uri.pathSegments.last,
+      matches(RegExp(r'^月明かりの谷_\d{8}-\d{6}\.gif$')),
+    );
     expect(exported.readAsBytesSync().take(3), [
       71,
       73,
       70,
     ], reason: 'GIF signature');
+    expect(find.byType(AdBannerWidget, skipOffstage: false), findsNothing);
     await capture(tester, name: 'webref_export_complete.png');
     final openWorks = find.widgetWithText(OutlinedButton, l10n.exportOpenWorks);
     await tester.ensureVisible(openWorks);
@@ -326,6 +331,25 @@ void main() {
       }
     });
     expect(savedWork, findsOneWidget);
+    final welcome = find.text(l10n.homeFirstLaunchStart);
+    if (welcome.evaluate().isNotEmpty) {
+      await tester.ensureVisible(welcome);
+      await tester.tap(welcome);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+    }
+    final search = find.byKey(const Key('homeSearchButton'));
+    expect(search.hitTestable(), findsOneWidget);
+    await tester.tap(search);
+    await tester.pump();
+    final input = find.byKey(const Key('homeSearchInput'));
+    await tester.enterText(input, 'よその作品');
+    await tester.pump(const Duration(milliseconds: 400));
+    expect(savedWork, findsNothing);
+    await tester.enterText(input, '月明かり');
+    await tester.pump(const Duration(milliseconds: 400));
+    expect(savedWork, findsOneWidget);
+    await capture(tester, name: 'webref_project_export_search.png');
     appRouter.go('/home');
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 700));

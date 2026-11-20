@@ -1874,7 +1874,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get helpExportScreenDesc =>
-      'En «Preajuste», elige «Estándar», «Alta calidad» o «Personalizado». Con «Personalizado» puedes ajustar los fotogramas por segundo (FPS). Muestra el progreso al exportar un vídeo o una imagen, y permite cancelar a mitad de camino. El tiempo que tarda depende del rendimiento del dispositivo. Los archivos exportados se guardan en Obras, en la pantalla de inicio. Para guardar un archivo en Fotos o abrirlo en otra aplicación, elige un destino en el menú de compartir.';
+      'En «Preajuste», elige «Estándar», «Alta calidad» o «Personalizado». Con «Personalizado» puedes ajustar los fotogramas por segundo (FPS). Muestra el progreso al exportar un vídeo o una imagen, y permite cancelar a mitad de camino. El tiempo que tarda depende del rendimiento del dispositivo. Busca el archivo por el nombre del proyecto en Obras, en la pantalla de inicio. Elige Compartir para guardarlo en Fotos o abrirlo en otra aplicación.';
 
   @override
   String get helpDrawingFilterTitle => 'Filtros de dibujo';
@@ -3133,7 +3133,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get exportSaveLocationHint =>
-      'Los archivos exportados se guardan en Obras, en la pantalla de inicio. Para guardar un archivo en Fotos o abrirlo en otra aplicación, elige un destino en el menú de compartir.';
+      'Busca el archivo por el nombre del proyecto en Obras, en la pantalla de inicio. Elige Compartir para guardarlo en Fotos o abrirlo en otra aplicación.';
 
   @override
   String get exportOpenWorks => 'Abrir Obras';

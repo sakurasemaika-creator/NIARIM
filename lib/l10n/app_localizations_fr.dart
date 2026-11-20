@@ -1867,7 +1867,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get helpExportScreenDesc =>
-      'Dans « Préréglage », choisissez « Standard », « Haute qualité » ou « Personnalisé ». Le mode « Personnalisé » permet de régler les images par seconde (FPS). Affiche la progression pendant l’export d’une vidéo ou d’une image, et permet d’annuler en cours de route. Le temps nécessaire dépend des performances de l’appareil. Les fichiers exportés se trouvent dans Œuvres sur l’écran d’accueil. Pour enregistrer un fichier dans Photos ou l’ouvrir dans une autre application, choisissez une destination dans le menu de partage.';
+      'Dans « Préréglage », choisissez « Standard », « Haute qualité » ou « Personnalisé ». Le mode « Personnalisé » permet de régler les images par seconde (FPS). Affiche la progression pendant l’export d’une vidéo ou d’une image, et permet d’annuler en cours de route. Le temps nécessaire dépend des performances de l’appareil. Dans Œuvres, sur l’écran d’accueil, recherchez le fichier par le nom du projet. Choisissez Partager pour l’enregistrer dans Photos ou l’ouvrir dans une autre application.';
 
   @override
   String get helpDrawingFilterTitle => 'Filtres de dessin';
@@ -3129,7 +3129,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get exportSaveLocationHint =>
-      'Les fichiers exportés se trouvent dans Œuvres sur l’écran d’accueil. Pour enregistrer un fichier dans Photos ou l’ouvrir dans une autre application, choisissez une destination dans le menu de partage.';
+      'Dans Œuvres, sur l’écran d’accueil, recherchez le fichier par le nom du projet. Choisissez Partager pour l’enregistrer dans Photos ou l’ouvrir dans une autre application.';
 
   @override
   String get exportOpenWorks => 'Ouvrir les œuvres';

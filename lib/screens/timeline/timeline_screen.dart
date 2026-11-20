@@ -8548,6 +8548,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
 
     try {
       final path = await ExportEngine().exportFrameImage(
+        projectName: project.name,
         scenes: scenes,
         tileManager: tileManager,
         sceneId: sceneId,

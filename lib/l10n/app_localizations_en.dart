@@ -1837,7 +1837,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpExportScreenDesc =>
-      'Choose “Standard”, “High Quality”, or “Custom” under “Preset”. With “Custom”, you can adjust the FPS. Shows progress while exporting a video or image, and lets you cancel partway through. How long it takes depends on your device\'s performance. Find exported files in Works on the home screen. To save a file to Photos or open it in another app, choose a destination in the share menu.';
+      'Choose “Standard”, “High Quality”, or “Custom” under “Preset”. With “Custom”, you can adjust the FPS. Shows progress while exporting a video or image, and lets you cancel partway through. How long it takes depends on your device\'s performance. Find your export by its project name in Works on the home screen. Choose Share to save it to Photos or open it in another app.';
 
   @override
   String get helpDrawingFilterTitle => 'Draw filters';
@@ -3082,7 +3082,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get exportSaveLocationHint =>
-      'Find exported files in Works on the home screen. To save a file to Photos or open it in another app, choose a destination in the share menu.';
+      'Find your export by its project name in Works on the home screen. Choose Share to save it to Photos or open it in another app.';
 
   @override
   String get exportOpenWorks => 'Open Works';
