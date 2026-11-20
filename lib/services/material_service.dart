@@ -1,10 +1,13 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:ui' as ui;
 
+import 'package:ffmpeg_kit_flutter_new_video/ffprobe_kit.dart';
 import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 
 import '../models/material_asset.dart';
+import '../utils/app_error_reporter.dart';
 import 'storage_info_service.dart';
 
 /// 素材管理サービス（MaterialID方式）。
@@ -19,6 +22,11 @@ import 'storage_info_service.dart';
 /// MaterialAssetの情報が消えるため）。各公開メソッドの先頭で
 /// [_ensureLoaded] を呼び、初回アクセス時に自動でmaterials.jsonから復元する。
 class MaterialService extends ChangeNotifier {
+  MaterialService({Future<Duration?> Function(String path)? readMediaDuration})
+    : _readMediaDuration = readMediaDuration ?? _probeMediaDuration;
+
+  final Future<Duration?> Function(String path) _readMediaDuration;
+
   final Map<String, List<MaterialAsset>> _materials = {}; // projectId -> assets
   final Map<String, int> _counters = {}; // projectId -> 次の連番
   final Map<String, Future<void>> _loading =
@@ -83,7 +91,9 @@ class MaterialService extends ChangeNotifier {
       'nextCounter': _counters[projectId] ?? 0,
       'materials': list.map(_serialize).toList(),
     };
-    await file.writeAsString(jsonEncode(json));
+    File('${file.path}.tmp')
+      ..writeAsStringSync(jsonEncode(json), flush: true)
+      ..renameSync(file.path);
   }
 
   Map<String, dynamic> _serialize(MaterialAsset m) => {
@@ -119,6 +129,95 @@ class MaterialService extends ChangeNotifier {
     return 'Material${n.toString().padLeft(4, '0')}';
   }
 
+  static Future<Duration?> _probeMediaDuration(String path) async {
+    final session = await FFprobeKit.getMediaInformationFromCommandArguments([
+      '-v',
+      'error',
+      '-protocol_whitelist',
+      'file,pipe',
+      '-show_format',
+      '-of',
+      'json',
+      '-i',
+      path,
+    ]);
+    final seconds = double.tryParse(
+      session.getMediaInformation()?.getDuration() ?? '',
+    );
+    if (seconds == null || !seconds.isFinite || seconds <= 0) return null;
+    return Duration(milliseconds: (seconds * 1000).round());
+  }
+
+  bool _needsMetadata(MaterialAsset asset) => switch (asset.type) {
+    MaterialType.image => asset.width == null || asset.height == null,
+    MaterialType.audio || MaterialType.video => asset.duration == null,
+  };
+
+  Future<MaterialAsset> _readMetadata(File file, MaterialAsset asset) async {
+    if (!_needsMetadata(asset)) return asset;
+    var width = asset.width;
+    var height = asset.height;
+    var duration = asset.duration;
+    try {
+      if (asset.type == MaterialType.image) {
+        final buffer = await ui.ImmutableBuffer.fromFilePath(file.path);
+        try {
+          final descriptor = await ui.ImageDescriptor.encoded(buffer);
+          width = descriptor.width;
+          height = descriptor.height;
+          descriptor.dispose();
+        } finally {
+          buffer.dispose();
+        }
+      } else {
+        duration = await _readMediaDuration(file.path);
+      }
+    } catch (_) {
+      // The file is still a material if its metadata cannot be read.
+      return asset;
+    }
+    if (width == asset.width &&
+        height == asset.height &&
+        duration == asset.duration) {
+      return asset;
+    }
+    return MaterialAsset(
+      id: asset.id,
+      originalFileName: asset.originalFileName,
+      type: asset.type,
+      sizeBytes: asset.sizeBytes,
+      addedAt: asset.addedAt,
+      width: width,
+      height: height,
+      duration: duration,
+    );
+  }
+
+  /// Reads previously imported files when opening the material list.
+  Future<void> fillMissingMetadata(String projectId) async {
+    final list = _materials[projectId];
+    if (list == null || !list.any(_needsMetadata)) return;
+    final dir = await _materialsDir(projectId);
+    var changed = false;
+    for (final asset in List<MaterialAsset>.of(list)) {
+      if (!_needsMetadata(asset)) continue;
+      final file = File('${dir.path}/${asset.storageName}');
+      if (!await file.exists()) continue;
+      final updated = await _readMetadata(file, asset);
+      final index = list.indexOf(asset);
+      if (index < 0 || identical(updated, asset)) continue;
+      list[index] = updated;
+      changed = true;
+    }
+    if (!changed) return;
+    try {
+      await _saveManifest(projectId);
+    } on FileSystemException catch (error, stackTrace) {
+      AppErrorReporter.record(error, stackTrace);
+    }
+    notifyListeners();
+  }
+
   /// [sourcePath]のファイルを素材として登録し、Materials/フォルダへコピーする。
   /// 同一種別・同一内容（バイト一致）の素材が既にある場合はそれを再利用し、
   /// 新規コピーは行わない（重複保存の防止）。
@@ -147,11 +246,13 @@ class MaterialService extends ChangeNotifier {
       sizeBytes: bytes.length,
       addedAt: DateTime.now(),
     );
-    await File('${dir.path}/${asset.storageName}').writeAsBytes(bytes);
-    _materials.putIfAbsent(projectId, () => []).add(asset);
+    final destination = File('${dir.path}/${asset.storageName}');
+    await destination.writeAsBytes(bytes);
+    final measured = await _readMetadata(destination, asset);
+    _materials.putIfAbsent(projectId, () => []).add(measured);
     await _saveManifest(projectId);
     notifyListeners();
-    return asset;
+    return measured;
   }
 
   bool _bytesEqual(List<int> a, List<int> b) {

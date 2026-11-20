@@ -264,7 +264,18 @@ void main() {
     testWidgets(
       'opening a different autosave asks before restoring ($restore)',
       (tester) async {
-        final project = await open(tester);
+        if (restore) {
+          SharedPreferences.setMockInitialValues({
+            firstUseTooltipsSeenKey: kAllFirstUseTooltipKeys,
+            'first_launch': false,
+            'language': 'ja',
+            'force_pc_mode': 1,
+          });
+        }
+        final project = await open(
+          tester,
+          size: restore ? const Size(1280, 800) : const Size(390, 844),
+        );
         final service = project.service;
         final autosave = tester
             .element(find.byType(HomeScreen))
@@ -291,11 +302,18 @@ void main() {
             restore ? FilledButton : TextButton,
             restore ? '復元' : 'キャンセル',
           ),
+          kind: restore ? PointerDeviceKind.mouse : PointerDeviceKind.touch,
         );
         await settleIo(tester);
         expect(title, findsNothing);
         if (restore) {
           expect(tiles.getTile(key, 0, 0)?.take(4), restored);
+          await tester.tap(
+            find.byTooltip('プロジェクト一覧に戻る').hitTestable().first,
+            kind: PointerDeviceKind.mouse,
+          );
+          await settleIo(tester, 3);
+          expect(find.text('変更を保存してから戻りますか？'), findsOneWidget);
         } else {
           expect(tiles.getTile(key, 0, 0), isNull);
         }

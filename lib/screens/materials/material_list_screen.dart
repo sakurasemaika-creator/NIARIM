@@ -51,10 +51,11 @@ class _MaterialListScreenState extends State<MaterialListScreen> {
   }
 
   Future<void> _detectMissing() async {
-    final missing = await context.read<MaterialService>().detectMissing(
-      widget.projectId,
-    );
+    final materials = context.read<MaterialService>();
+    final projectId = widget.projectId;
+    final missing = await materials.detectMissing(projectId);
     if (mounted) setState(() => _missing = missing);
+    await materials.fillMissingMetadata(projectId);
   }
 
   bool _isUsed(String materialId) => context

@@ -4,7 +4,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/foundation.dart' show listEquals;
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart' show RenderImage;
+import 'package:flutter/rendering.dart' show RenderImage, RenderRepaintBoundary;
 import 'package:flutter/services.dart' hide UndoManager;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/app.dart';
@@ -247,15 +247,17 @@ void main() {
         presets: presets,
         setUpProject: (projects, id) {
           final scene = projects.scenesOf(id).single.id;
-          final lineart = Uint8List(16 * 16 * 4);
-          for (var y = 2; y <= 13; y++) {
-            for (var x = 2; x <= 13; x++) {
-              if (x == 2 || x == 13 || y == 2 || y == 13) {
-                lineart[(y * 16 + x) * 4 + 3] = 255;
+          for (var frame = 0; frame < 3; frame++) {
+            final lineart = Uint8List(16 * 16 * 4);
+            for (var y = 2; y <= 13; y++) {
+              final left = frame == 0 ? 2 + (13 - y) ~/ 2 : 2;
+              final right = frame == 0 ? 13 - (13 - y) ~/ 2 : 13;
+              for (var x = left; x <= right; x++) {
+                if (x == left || x == right || y == 2 || y == 13) {
+                  lineart[(y * 16 + x) * 4 + 3] = 255;
+                }
               }
             }
-          }
-          for (var frame = 0; frame < 3; frame++) {
             final layer = projects.addLayer(
               projectId: id,
               sceneId: scene,
@@ -343,8 +345,90 @@ void main() {
       expect(progress, findsNothing);
       if (scenario == 'cancel') {
         expect(filledFrames().skip(1), [false, false]);
+      } else if (scenario == 'success') {
+        const fill = 0x12ab34ff;
+        const paper = 0xffffffff;
+        expect(filledFrames(), [true, true, true]);
+        expect(history.undoCount, before + 1);
+        final preview = find.byKey(const Key('timelinePreviewPicture'));
+        final counter = find.byKey(const Key('timelinePreviewFrameCount'));
+
+        Future<int> readPixel(ui.Image image, int x, int y) async {
+          try {
+            final data = (await image.toByteData(
+              format: ui.ImageByteFormat.rawRgba,
+            ))!;
+            return data.getUint32((y * image.width + x) * 4);
+          } finally {
+            image.dispose();
+          }
+        }
+
+        Future<int?> previewPixel() async {
+          if (preview.evaluate().isEmpty) return null;
+          final image = tester
+              .renderObject<RenderImage>(preview)
+              .image!
+              .clone();
+          return tester.runAsync(() => readPixel(image, 8, 8));
+        }
+
+        Future<void> expectPixel(
+          Future<int?> Function() sample,
+          int expected,
+        ) async {
+          for (var i = 0; i < 40; i++) {
+            if (await sample() == expected) return;
+            await pumpRealAsync(tester, const Duration(milliseconds: 40));
+          }
+          expect(await sample(), expected);
+        }
+
+        await expectPixel(previewPixel, fill);
+        await tester.tap(find.byTooltip(l10n.commonUndo).hitTestable().first);
+        await tester.pump();
+        expect(tester.widget<Text>(counter).data, '3/12');
+        expect(await previewPixel(), isNot(fill));
+        expect(filledFrames(), [false, false, false]);
+
+        await tester.tap(
+          find.byTooltip(l10n.timelineBackToCanvasTooltip).hitTestable().first,
+        );
+        final area = find.byType(CanvasArea);
+        for (var i = 0; area.evaluate().isEmpty && i < 40; i++) {
+          await pumpRealAsync(tester, const Duration(milliseconds: 40));
+        }
+        final project = projects.projects.singleWhere((p) => p.id == id);
+        final boundary = find
+            .descendant(of: area, matching: find.byType(RepaintBoundary))
+            .first;
+        Future<int?> canvasPixel() {
+          final render = tester.renderObject<RenderRepaintBoundary>(boundary);
+          final at = canvasDrawingRectFor(render.size, project).center;
+          return tester.runAsync(() async {
+            final image = await render.toImage();
+            return readPixel(image, at.dx.round(), at.dy.round());
+          });
+        }
+
+        expect(tester.widget<CanvasArea>(area).currentFrame, 2);
+        await expectPixel(canvasPixel, paper);
+        for (var attempt = 0; attempt < 2; attempt++) {
+          await tester.tap(find.byTooltip(l10n.commonRedo).hitTestable().first);
+          await tester.pump();
+          expect(tester.widget<CanvasArea>(area).currentFrame, 0);
+          expect(filledFrames(), [true, true, true]);
+          await expectPixel(canvasPixel, fill);
+
+          await tester.tap(find.byTooltip(l10n.commonUndo).hitTestable().first);
+          await tester.pump();
+          expect(tester.widget<CanvasArea>(area).currentFrame, 2);
+          expect(await canvasPixel(), isNot(fill));
+          await expectPixel(canvasPixel, paper);
+          expect(filledFrames(), [false, false, false]);
+        }
       } else {
-        expect(filledFrames(), [true, scenario == 'success', true]);
+        expect(filledFrames(), [true, false, true]);
         expect(history.undoCount, before + 1);
         history.undo(projectId: id);
         await tester.pump();

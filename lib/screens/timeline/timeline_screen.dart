@@ -249,6 +249,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
   // 作り直しても、離散的な操作なら毎フレームのコストにはならない。
   // 再生タイマーだけがsetStateを使わず、この値の更新だけで済ませる。
   final ValueNotifier<int> _currentFrameNotifier = ValueNotifier<int>(0);
+  int _historyPreviewRevision = 0;
   // 画面全体のショートカット（再生・コマ送り・取り消し等）を受ける
   // フォーカス。入力欄から抜けたら（Enter・欄の外の押下）ここへ戻す。
   final FocusNode _screenFocus = FocusNode(debugLabel: 'Timeline');
@@ -977,6 +978,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
     if (target != null) _playTimer?.cancel();
     setState(() {
       if (target != null) _isPlaying = false;
+      _historyPreviewRevision++;
       if (scene.id != _selectedSceneId) _selectedFrameIndices.clear();
       _selectedSceneId = scene.id;
       _currentFrame = (target?.frameIndex ?? _currentFrame).clamp(
@@ -2576,6 +2578,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                 );
                 final gizmo = _buildMaterialGizmo(ps, frameIndex);
                 final picture = _TimelinePreview(
+                  historyRevision: _historyPreviewRevision,
                   backgroundColor: _projectBackgroundOf(ps, widget.projectId),
                   tileManager: ps.tileManagerOf(widget.projectId),
                   layers: stacked.layers,
@@ -9378,6 +9381,7 @@ class _TimelinePreview extends StatefulWidget {
   final List<LayerMaskGroup> maskGroups;
   final String sceneId;
   final int frameIndex;
+  final int historyRevision;
   final List<CameraKeyframe> cameraKeyframes;
   final List<EffectFilterInstance> effectFilters;
   final Map<String, LayerHome> layerHomes;
@@ -9393,6 +9397,7 @@ class _TimelinePreview extends StatefulWidget {
     this.maskGroups = const [],
     required this.sceneId,
     required this.frameIndex,
+    this.historyRevision = 0,
     this.cameraKeyframes = const [],
     this.effectFilters = const [],
     this.layerHomes = const {},
@@ -9422,7 +9427,15 @@ class _TimelinePreviewState extends State<_TimelinePreview> {
   @override
   void didUpdateWidget(_TimelinePreview old) {
     super.didUpdateWidget(old);
-    if (old.layers != widget.layers ||
+    final historyChanged = old.historyRevision != widget.historyRevision;
+    if (historyChanged) {
+      // Never show the old frame during an Undo or Redo. During playback,
+      // keep the last image while the next frame is being composed.
+      _image?.dispose();
+      _image = null;
+    }
+    if (historyChanged ||
+        old.layers != widget.layers ||
         old.maskGroups != widget.maskGroups ||
         old.tileManager != widget.tileManager ||
         old.sceneId != widget.sceneId ||
@@ -9515,14 +9528,17 @@ class _TimelinePreviewState extends State<_TimelinePreview> {
 
     if (!mounted) {
       img.dispose();
-      _building = false;
       return;
     }
-    setState(() {
-      _image?.dispose();
-      _image = img;
-      _building = false;
-    });
+    _building = false;
+    if (request.historyRevision == widget.historyRevision) {
+      setState(() {
+        _image?.dispose();
+        _image = img;
+      });
+    } else {
+      img.dispose();
+    }
     if (_rebuildPending) {
       _rebuildPending = false;
       _rebuild();
