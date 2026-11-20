@@ -840,6 +840,14 @@ status: dev_branchどおりtodo（Route状態は変えない）
 - 未確認（環境なし）：Android実機のソフトキーボード（数字キーボードの表示）とタッチのダブルタップ。
 - 申し送り（A008）：保存したサイズが組み込みと同じ大きさだと、両方のチップが選ばれた表示になる。
 
+### A007 二巡目（2026-11-20、Claude・S50、App `2939841e`）— 判定：要修正（資料のDISC268の残りだけ。製品はOK）
+
+- 一巡目の指摘：DISC269は直った（西語360×780・文字2倍でカスタムの幅・高さの欄が縦に並び、「Ancho (px)」「Alto (px)」が切れず、幅9999で「Introduce un número entre 64 y 1920」が折り返して全部読め、欄から出ると1920に書き戻る）。DISC268は一部だけ：CLAUDE.mdの「人間の実操作が必要な項目」1は直ったが、地雷の段落（1918〜1923行）が今は無い`lib/config/monetization_gate.dart`・`isMonetizationEnabled`を前提に書かれたまま。ルートの条件の「campaign」も残る。
+- 実画面（Linux debug・Xvfb）：PC ja 1280×800で長さ9999→90秒（総フレーム数1080）に書き戻る、背景・描画領域・自動塗りの選択の行が出る、プレビューは1920×1080の比率。作成ボタンのダブルクリック（60ms間隔）で作品は1つだけ（16→17件）、キャンバスが開く。西語360×780・文字2倍で並び順の名前がアイコンに替わる・サイズの選択肢が折り返して欠けない。
+- test：全体回帰 `44641695291` で`new_project_inputs_test`・`new_project_creation_recovery_test`・`canvas_size_preset_manage_test`・`text_scale_layout_test`は成功。
+- 未確認：Premium・オパールの状態（2時間の上限）、自動塗りの設定の選択の中身。
+- 画像：`shots-r1/r2a007-*`（backup-pending）。
+
 ## A008 — キャンバスサイズのプリセット管理（Opusブランチの証跡）
 
 status: dev_branchどおりtodo（Route状態は変えない）
