@@ -504,11 +504,7 @@ class _QuickToolRows {
         SizedBox.square(
           dimension: _deleteSize,
           child: IconButton(
-            icon: Icon(
-              Icons.delete,
-              size: 16,
-              color: ThemeService.activeColorScheme.error,
-            ),
+            icon: const Icon(Icons.delete_outline, size: 16),
             tooltip: deleteTooltip,
             onPressed: onDelete,
           ),

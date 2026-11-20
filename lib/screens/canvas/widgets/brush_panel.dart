@@ -13,6 +13,7 @@ import '../../../services/export_share_service.dart';
 import '../../../services/shared_asset_card_service.dart';
 import '../../../services/settings_service.dart';
 import '../../../widgets/labeled_slider.dart';
+import '../../../widgets/menu_action_label.dart';
 import '../../../widgets/keep_together_text.dart';
 import '../../../widgets/preset_stroke_row.dart';
 import '../../../widgets/pixel_color_mode_selector.dart';
@@ -369,13 +370,9 @@ class _BrushPanelState extends State<BrushPanel> {
                                   if (!builtIn)
                                     PopupMenuItem(
                                       value: 'delete',
-                                      child: Text(
-                                        l10n.commonDelete,
-                                        style: TextStyle(
-                                          color: ThemeService
-                                              .activeColorScheme
-                                              .error,
-                                        ),
+                                      child: MenuActionLabel(
+                                        icon: Icons.delete_outline,
+                                        label: l10n.commonDelete,
                                       ),
                                     ),
                                 ],

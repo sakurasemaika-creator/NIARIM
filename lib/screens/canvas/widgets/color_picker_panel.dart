@@ -676,14 +676,8 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
               },
             ),
             ListTile(
-              leading: Icon(
-                Icons.delete,
-                color: ThemeService.activeColorScheme.error,
-              ),
-              title: Text(
-                l10n.commonDelete,
-                style: TextStyle(color: ThemeService.activeColorScheme.error),
-              ),
+              leading: const Icon(Icons.delete_outline),
+              title: Text(l10n.commonDelete),
               // お気に入り登録中は削除できない。
               onTap: paletteService.palettes.length > 1
                   ? () async {

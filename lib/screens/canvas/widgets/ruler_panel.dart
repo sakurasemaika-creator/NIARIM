@@ -1,6 +1,5 @@
 import 'dart:math' as math;
 
-import 'package:niarim/services/theme_service.dart';
 import 'package:flutter/material.dart';
 
 import '../../../l10n/app_localizations.dart';
@@ -63,7 +62,7 @@ class RulerPanel extends StatelessWidget {
                     // 既定になる面の切り抜きをしない。
                     clipBehavior: Clip.none,
                     style: TextButton.styleFrom(
-                      foregroundColor: ThemeService.activeColorScheme.error,
+                      foregroundColor: Theme.of(context).colorScheme.onSurface,
                       padding: const EdgeInsets.symmetric(horizontal: 8),
                       minimumSize: Size.zero,
                       tapTargetSize: MaterialTapTargetSize.shrinkWrap,

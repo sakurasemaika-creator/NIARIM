@@ -155,11 +155,7 @@ void showFolderManagementSheet(
                             },
                           ),
                           IconButton(
-                            icon: Icon(
-                              Icons.delete_outline,
-                              size: 18,
-                              color: ThemeService.activeColorScheme.error,
-                            ),
+                            icon: const Icon(Icons.delete_outline, size: 18),
                             tooltip: l10n.commonDelete,
                             // お気に入り登録中は削除できない。
                             onPressed: () async {

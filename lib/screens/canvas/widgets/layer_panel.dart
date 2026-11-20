@@ -818,7 +818,7 @@ class _LayerPanelState extends State<LayerPanel> {
                                   Icons.delete_outline,
                                   size: 16,
                                   color: _canDeleteLayerRow(layer, layers)
-                                      ? ThemeService.activeColorScheme.error
+                                      ? IconTheme.of(context).color
                                       : Theme.of(context).disabledColor,
                                 ),
                               ),
@@ -1524,14 +1524,8 @@ class _LayerPanelState extends State<LayerPanel> {
                 },
               ),
             ListTile(
-              leading: Icon(
-                Icons.delete,
-                color: ThemeService.activeColorScheme.error,
-              ),
-              title: Text(
-                l10n.commonDelete,
-                style: TextStyle(color: ThemeService.activeColorScheme.error),
-              ),
+              leading: const Icon(Icons.delete_outline),
+              title: Text(l10n.commonDelete),
               onTap: () {
                 Navigator.pop(ctx);
                 _showTimelineDeleteConfirm(context, layer);
