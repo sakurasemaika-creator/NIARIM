@@ -1,0 +1,255 @@
+MAKE IT MOVE
+See creativity in action.
+A closer look at drawing, timing, and finishing your work.
+SMARTPHONE
+PC / DEX
+Draw with layers
+Explore all features
+SMARTPHONE
+PC / DEX
+Frames and timeline
+Explore all features
+SMARTPHONE
+PC / DEX
+Export your animation
+Explore all features
+Features
+What You Can Do with NIARIM
+From drawing to animating to exporting — NIARIM supports every step of the creation process.
+Drawing
+Animation
+Editing
+Pro Tools
+Audio
+Save & Share
+Workspace
+Widgets
+Export
+Drawing
+Multiple brushes and drawing settings for every purpose.
+Draw exactly what you have in mind.
+Draw with a pen. Erase. Fill. Select. Transform. Switch between the tools you need to finish a single piece.
+Build a drawing feel that's yours.
+Beyond switching between brushes like the G-pen, pen, and airbrush, you can fine-tune the brushes themselves.
+Brush settings
+Adjust thickness and opacity, of course, plus fade, stroke decay, color mixing, and more. Blend colors together like watercolor, or fade out the end of a line. Adjust the feel of your strokes to match the way you draw.
+Pressure and tilt support
+Pen tablets and pen displays let you use pressure and tilt. Adjust the pressure curve so a light touch can still draw a thick line, tailoring the feel of drawing to your own habits. You can also assign actions like eraser or eyedropper to your pen's buttons.
+G-pen
+A pressure-sensitive pen well suited to outlines.
+Pen
+A standard pen that draws even, uniform lines.
+Airbrush
+Create soft gradients.
+User pen
+Fine-tune the feel to match your own style.
+Color & transparent color
+Free color picking, plus an eraser-like transparent color.
+Opacity
+Fine-tune brush opacity.
+Zoom & pan
+Zoom in for fine detail work.
+Eraser
+A standard eraser for removing parts of what you've drawn.
+Bucket & lasso fill
+Fill an enclosed area with the “bucket,” or a lassoed area with “lasso fill.”
+Eyedropper
+Pick up a color from the canvas and set it as your drawing color instantly.
+Selection tool
+Select an area with a rectangle or lasso, then move, transform, or delete it.
+Finger tool
+Warp your drawing as if tracing it with a finger, or paint Gaussian blur and mosaic effects directly. Long-press or swipe up to switch sub-tools.
+Shape tool
+Draw clean lines, circles, and rectangles with a single tap.
+Detailed brush settings
+Fine-tune your brush feel with fade, stroke decay, color mixing, pressure curves, and more.
+Tag search for assets
+Brushes, tones and stamps carry tags such as line art, fill, blur, analogue, pixel art and halftone, so you can narrow things down by tag even when you can't remember a name. One tap switches between keyword and tag search, and you can tag your own assets yourself.
+Animation
+Stack frames and build motion on a timeline.
+Let's make a hand-drawn animation!
+Draw one picture at a time and stack the frames. Check the onion skin to see the frames before and after, and refine how the motion connects. Organize frames and scenes on the timeline, and time the drawings to the sound. From the first stroke to the moment it moves, it's all done in NIARIM.
+Not just hand-drawn. There's more than one way to express yourself.
+Animate with keyframes
+Set a layer's position, scale, and rotation with keyframes. The frames in between are interpolated automatically, so you can create motion animation by moving parts. You can also group multiple layers together and move them as one. Camera keyframes let you set up camera work like pans and zooms, too.
+Use images and video
+Place image or video material on the timeline and combine it with your hand-drawn art.
+Stop motion, too
+Arrange images as frames to create stop-motion-style work as well. With hand-drawn animation at its core, you can combine a wide range of expressive techniques.
+Frames
+Add frames one at a time, building up your artwork.
+Timeline
+Manage more than just frames on one timeline — images, video, audio, common layers, and camera keyframes all live there too. You can also split your work into scenes to keep it organized.
+Frame editing
+Select any frame and redraw it.
+Animation preview
+Check your motion at any point while you work.
+Camera work (keyframe animation)
+Set position, zoom, and rotation as keyframes, and the app smoothly interpolates the camera movement for you — no need to redraw the layer itself.
+Layer groups
+Group multiple layers together and move them all at once with a single keyframe.
+Editing
+The freedom to redo your work until it feels right.
+Refine every detail, right to the finish.
+Adjustments after drawing happen right inside NIARIM, too.
+Layers
+Manage line art, color, and backgrounds as separate layers. Organize them into layer folders, or use clipping to keep strokes from spilling over. A wide range of blend modes is available, too — use multiply, screen, overlay, add, subtract, and more to create light and shadow.
+Make animation more efficient.
+Common layers
+A layer that shows the same content across multiple frames or scenes. You don't need to redraw fixed elements like backgrounds on every frame. You can even turn a character into a common layer while keeping just the mouth on a regular layer — the character stays put while only the mouth is redrawn frame by frame, giving you lip-sync.
+Auto-fill
+Colors in each part automatically, using colors and tones you set in advance, based on the line art. For hand-drawn animation where the same character is drawn again and again, this greatly reduces the coloring workload. It also supports gradients, outlines, and color trace that blends into the line art. Note: auto-fill is not a generative-AI feature. It colors things in based on rules you set.
+Redraw freely with separate layers
+Keep line art, color, and backgrounds on separate layers, so you can redo just the coloring without touching the line art.
+Fill
+Quickly fill in enclosed areas.
+Tolerance
+Adjust the tolerance used for fill areas.
+Layers
+Manage elements separately with layers.
+Common layers
+Keep artwork you reuse across multiple frames — like a background — on one shared layer, and any change reflects automatically across every frame.
+Blend modes
+Change how layers combine, with modes like multiply and screen, to broaden your range of expression.
+Clipping
+Restrict a layer's drawing to the shape of the layer beneath it.
+Free & mesh transform
+Fine-tune the shape of your artwork with free transform and mesh transform. Mesh transform uses a grid of up to 10×10 to freely reshape a layer.
+Advanced Tools
+A step further for drawing and finishing work.
+Make your everyday work smoother.
+Auto lineart
+Auto lineart follows the centre of your rough strokes to create editable lineart. You can adjust detection tolerance, line width, taper and stabilization while previewing the result, then drag control points to refine the flow. It works from the rough drawing you made; it does not replace your drawing with generative AI.
+Quick-switch tools
+Register combinations of brushes and tools you use often, and switch between them with a single button. Build your own workflow for line art, coloring, finishing touches, and more.
+Favorites
+Register the brushes, stamps, and more you use often as favorites. Pull up just what you need, instantly.
+Color picker
+Switch between HSV and RGB to pick a color. Save colors you use often to a palette.
+Expand your expression with tones and stamps.
+Tones
+A tone carries no color information of its own, so it draws its pattern in whatever color you currently have selected. Combine dot patterns, line patterns, and more to finish your work.
+Stamps
+A stamp's image carries its own color information. That means it's drawn in the stamp's own colors, regardless of what's selected on the color chip. Register effect lines, background patterns, props, and more, and place them instantly whenever you need them. Rotation and scaling are supported, too.
+Pixel mode
+Apply pixel mode to brushes, fonts, and stamps. It removes anti-aliasing for a crisp, pixel-art look. You can even process a stamp in pixel mode to use it as pixel-art-style material.
+Draw filters
+Apply a filter to each layer. Blur, sharpen, unsharp mask, tone curve, levels, vignette, noise, retro anime, CRT, anime-style, outline, pixel art, fisheye lens, aurora hologram, background blend, and more. A lens-prescription filter can even reproduce how a scene distorts when viewed through lenses of different strengths.
+Effect filters
+These are visual effects you can apply per frame or per scene. Since multiple frames can be processed together, you can add the same effect across an entire piece or a single scene. Layer on effects like noise, rain, or the iridescent aurora hologram to finish the mood of the whole piece. Use a draw filter when you want to work on a layer directly; use an effect filter when you want to direct a whole frame or scene. Pick whichever fits what you're doing.
+Onion skin
+Overlay previous and next frames semi-transparently, so you can check them while you draw and keep the motion connected. Adjust how many frames show, plus their color and opacity.
+Tone
+Apply manga-style screentones, using dot patterns to render shading and gradients — a different role from stamps, which place artwork itself.
+Stamps
+Register frequently used artwork as stamps and place them repeatedly. Unlike tones, which render shading with dot patterns, stamps place the artwork itself.
+Ruler
+Use straight-line, circle and ellipse rulers to draw precise lines.
+Text
+Place dialogue or text elements in your work, choosing from available fonts.
+Filters
+Adjust the finished texture with effect and color-correction filters.
+Font library
+Beyond the bundled fonts, browse and add free fonts from the settings screen.
+Watermark
+Add an image or text watermark to your work (a premium feature).
+Pixel mode
+A mode for creating pixel-art-style work, dot by dot. You can create and save your own dot-art palettes, then pick from them while drawing or when applying the dot-art filter. Palettes can be exported and imported as .niapixelpalette files to share with others.
+Color picker
+Pick your drawing color intuitively by hue, saturation, and brightness.
+Quick-switch tools & favorites
+Register your favorite combinations of pen, brush, and size, then cycle through them with a single tap.
+Draw filters vs. effect filters
+Two kinds of filters: “draw filters” applied directly to a layer, and “effect filters” you can time to a start and end frame — across a whole scene or just a batch of selected frames. Layer on cinematic touches — blur, color correction, glow, rain, film-like grain, and more.
+Audio
+Basic audio features to add sound to your work.
+Time your drawings to the sound
+Place audio on the timeline and adjust volume and fade-in/fade-out. Each audio clip shows a faint waveform overlay, so you can see the sound's loudness while adjusting its placement. You can also drop timestamps as markers to check lip-sync or movement timing against the sound.
+Add audio
+Add an audio file to your project.
+Volume
+Adjust the volume.
+Start frame
+Specify which frame the audio starts playing from.
+Fade in & fade out
+Smooth out the start and end of your audio.
+Timestamps
+Drop a commented marker on a specific frame — handy as a reference point for lip-syncing or timing movement to sound.
+Waveform display
+Audio clips show a faint waveform overlay, letting you adjust their placement on the timeline while seeing the sound's loudness.
+Save & Share | Data Management
+Protect your work, grow it over time, and bring it to another device — a flexible way to save.
+Keep your work light. Keep creating comfortably.
+In animation production, data grows larger as frame and layer counts increase. NIARIM provides a range of mechanisms to help you keep creating for the long haul.
+Quality settings
+Choose from Low, Medium, or High quality, or use a custom setting. Fine-tune things like the save method, undo count, onion skin, and tilt detection to match your device's storage and specs. Whether you want to prioritize storage space, lighten performance, or keep more undo history, you can tune your own environment to fit.
+Autosave
+In case the app ever closes unexpectedly, NIARIM autosaves for recovery.
+Save slots
+Choose important states yourself and save them.
+Save tree
+Branch off from a saved state to try a different creative direction. It's handy whenever you think, "I want to go back to this point and try something different."
+Send your work to another device.
+Export your project as a .niashare file to move it to another device or share it with someone else. The project itself is always included. You can choose whether to include images, video, audio, and fonts separately. When you receive a .niashare file, you can duplicate it as your own project.
+Carry your whole setup with you.
+Use .niatra to migrate your app environment. When switching to a new device, the .niatra transfer feature has you covered. Beyond settings and materials, you can migrate brushes, auto-fill settings, themes, and palettes all together, and optionally include in-progress projects too. Pick exactly which items to carry over using checkboxes.
+Use .niashare to hand off a piece of work; use .niatra to carry over your production environment. Pick whichever fits what you need.
+Autosave
+A crash-recovery-only save that lets you pick right back up from the last moment, even if the app closes unexpectedly.
+Save slots
+Save to a fixed number of slots and load any of them whenever you like.
+Save tree
+Keep a branching history of your work in progress, with no limit on how many times you save.
+Share your work (.niashare)
+A share file format that bundles the materials and fonts you used, so it opens exactly as-is on another device.
+Carry your setup over (.niatra)
+Bundle just the items you choose — settings, brushes, tones, stamps, auto-fill presets, themes, palettes (color picker and pixel-art) — and move them to another device. You can also choose to include in-progress projects.
+Workspace | Make It Yours
+Customize the UI itself to match your dominant hand and your way of working.
+A workspace that fits you.
+Theme & appearance settings
+Customize the app's overall theme and accent color to your liking. It's an app you use every day, so make it look the way that works for you.
+Workspace settings
+Switch between PC/DeX mode and adjust settings to fit your working style. Left-handed mode is supported, too. Note: left-handed mode is a PC/DeX mode–only feature.
+Gesture settings
+Assign actions like undo, redo, frame navigation, or the eyedropper to two-finger tap, three-finger tap, swipe, long-press, and more. Customize the gestures you use often to fit your own hand.
+Workspaces
+Save settings like left-handed mode and PC/DeX mode together under a name, then switch between them for different purposes — animation, line art, backgrounds, and more.
+Left-handed mode
+Flip the UI layout so it's just as comfortable to use if you're left-handed. Note: this setting isn't available in Smartphone mode, where the toolbar is docked to the bottom of the screen.
+Gesture settings
+Assign actions like undo, redo, frame move, and eyedropper to gestures such as a two-finger tap, three-finger tap, two-finger swipe, or long press.
+Themes & appearance
+A wide range of presets is included, from pastel to muted tones. But you can go further: accent color, text color, panel background, selection color, even the update-mark color — almost every color in the app can be freely combined with a color picker to build your own theme.
+Widget | Home screen widgets
+Keep your own work on your phone's home screen.
+Your home screen becomes a place for your own work.
+Most app widgets just sit there looking the way the app decided. With NIARIM you choose the work, the frame and the background colour yourself. Having a frame you drew on your home screen is itself a reason to go back and draw the next one.
+Choose right down to the frame
+Pick a work, pick a scene, then pick a single frame inside it. The frame picker shows fully composited previews, so you can choose the finished look without exporting anything first.
+Colour each one however you like
+For the "Create" and "Work Plaza" widgets the background can either follow the app theme or use any colour you choose. Colours are kept separately per widget, so all three can sit side by side and still be told apart at a glance.
+Launch screen widget
+Shows one frame from the work you pick. Tapping it opens NIARIM.
+Create widget
+Tapping it opens the "Create" screen. The background either follows the theme or uses a colour you choose.
+Work Plaza widget
+Tapping it opens the Work Plaza. The background either follows the theme or uses a colour you choose.
+Shown as a still image
+Home screen widgets cannot play video, so a single frame of the chosen work is shown as a still image. Adding the widget itself is done by long-pressing your home screen.
+Export
+Deliver your finished work as a video.
+Share your work with more people.
+Export finished work as video. MP4, WebM, GIF, and AVI are supported. Transparent WebM lets you export animation material with a transparent background. There's an upper limit on canvas size, but within that range you can set a size and aspect ratio that fits your work. The free version allows up to 90 seconds per piece; Premium lets you create and export up to 2 hours per piece. There's no limit on the number of pieces you can make.
+Resolution
+Export at resolutions up to 1920×1920.
+Aspect ratio
+Set the aspect ratio freely.
+Video export
+Export your finished work as a video file.
+Export formats
+Supports MP4, WebM, GIF, and AVI. Transparent WebM lets you use your work as animation material with a see-through background.
+Time limit per work
+Canvas size has an upper limit, but within it you can set the size and aspect ratio to fit your work. The free plan supports up to 90 seconds per work; Premium supports up to 2 hours per work. There's no limit on the number of works you can make.
+Still image export
+Save the frame currently displayed in the timeline as a PNG or JPEG image.

@@ -1,0 +1,29 @@
+FAQ
+Frequently Asked Questions
+What kind of app is NIARIM?
+NIARIM is a mobile app for creating animation from artwork you draw and move yourself.
+Is it free to use?
+Even the free version includes every core creation feature, including video export. It shows ads and automatically adds the NIARIM Official End Mark. Specific pricing plans are available on the Google Play listing.
+Can I export what I've made?
+Yes. You can export your work as video, at resolutions up to 1920×1920, with a freely configurable aspect ratio.
+Can I share what I've made?
+You can freely share your exported video files through your device or other apps. You can also publish your work to the
+Work Plaza
+by posting it to YouTube directly from within the NIARIM app.
+Do I need to create an account?
+You can draw and create without an account. Your works and projects are saved on your device. A Google account sign-in is required to post to the gallery.
+What can I do with the Premium plan?
+Premium removes ads and adds the option to hide the official end card, a custom watermark, a tone curve, and levels adjustment. See the
+Premium plan page
+for details.
+If I publish my work to the Work Plaza, can anyone see it on YouTube too?
+Publishing to the Work Plaza happens by uploading a video to YouTube from within the NIARIM app, but the Work Plaza's own public/private setting is independent of YouTube's visibility setting. Even if the YouTube video is set to "Unlisted," it still displays and plays normally in the Work Plaza, while staying largely hidden from YouTube's own search and recommendations (only people with the direct link can view it there). Conversely, if the YouTube video is set to "Private" or deleted, its playback URL stops working, so display in the Work Plaza is automatically suspended regardless of your NIARIM-side setting (your NIARIM setting itself is preserved, so display resumes automatically if the YouTube status is restored). If you don't want comments from people who have the link, you can disable comments on the YouTube side for peace of mind.
+Where can I report a bug or request a feature?
+To report a bug, request a feature, or ask how to use the app, please use the
+contact form
+.
+Is my work used to train AI?
+No. NIARIM does not use illustrations, animations, project data, or other works created or published by users as training data for generative AI models. Creation data and video files are not sent to or stored on the developer's servers. When you publish a work to the Work Plaza, the video file is stored on YouTube; NIARIM manages only information needed to display the work, such as the YouTube video ID and title.
+Set your story in motion.
+Start your next animation with NIARIM.
+Download the App

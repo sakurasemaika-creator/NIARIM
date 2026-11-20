@@ -1,0 +1,33 @@
+Contact Us
+Get in touch with the NIARIM team for bug reports, feature requests, or usage questions.
+※ Submissions are received by email.
+NIARIM support
+support@miranima-studio.com
+MIRANIMA Studio general inquiries
+contact@miranima-studio.com
+Inquiry type
+Bug report
+Feature request
+How to use the app
+About your account
+Other
+Name
+*
+This field is required.
+Email address
+*
+Please enter a valid email address.
+Message
+*
+Please keep it within 1,000 characters.
+0 / 1,000
+This exceeds the character limit.
+Attach images or videos (optional)
+Choose files
+No file selected
+Up to 5MB per image, up to 15MB per video, 20MB total, and up to 3 files (PNG, JPEG, WebP, GIF, MP4, MOV, or WebM).
+I agree to the
+Privacy Policy
+and consent to submit this form
+You must agree to the Privacy Policy.
+Send

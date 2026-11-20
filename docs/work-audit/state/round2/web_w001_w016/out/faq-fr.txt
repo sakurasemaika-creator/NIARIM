@@ -1,0 +1,29 @@
+FAQ
+Questions fréquentes
+Quel type d'application est NIARIM ?
+NIARIM est une application mobile permettant de créer une animation à partir de dessins que vous réalisez et animez vous-même.
+Est-ce gratuit ?
+Même la version gratuite inclut toutes les fonctionnalités de création essentielles, y compris l'export vidéo. Elle affiche des publicités et ajoute automatiquement la marque de fin officielle de NIARIM. Les tarifs précis sont disponibles sur la fiche Google Play.
+Puis-je exporter ce que j'ai créé ?
+Oui. Vous pouvez exporter votre travail en vidéo, jusqu'à une résolution de 1920×1920, avec un rapport d'aspect librement configurable.
+Puis-je partager ce que j'ai créé ?
+Vous pouvez partager librement vos fichiers vidéo exportés via votre appareil ou d'autres applications. Vous pouvez aussi publier votre œuvre dans la
+« Place des œuvres »
+en la postant directement sur YouTube depuis l'application NIARIM.
+Dois-je créer un compte ?
+Aucun compte n'est nécessaire pour créer. Vos œuvres et projets sont enregistrés sur votre appareil. Une connexion avec un compte Google est requise pour publier dans la galerie.
+Que puis-je faire avec l'offre Premium ?
+Premium supprime les publicités et ajoute la possibilité de masquer la carte de fin officielle, un filigrane personnalisé, une courbe de tons et le réglage des niveaux. Voir la
+page Premium
+pour plus de détails.
+Si je publie mon œuvre dans la Place des œuvres, tout le monde peut-il la voir aussi sur YouTube ?
+La publication dans la Place des œuvres se fait en mettant en ligne une vidéo sur YouTube depuis l'application NIARIM, mais le réglage public/privé de la Place des œuvres elle-même est indépendant du réglage de visibilité de YouTube. Même si la vidéo YouTube est définie sur « Non répertoriée », elle continue de s'afficher et de se lire normalement dans la Place des œuvres, tout en restant largement invisible dans la recherche et les recommandations de YouTube (seules les personnes disposant du lien direct peuvent la visionner là-bas). À l'inverse, si la vidéo YouTube est définie sur « Privée » ou supprimée, son URL de lecture cesse de fonctionner, donc l'affichage dans la Place des œuvres est automatiquement suspendu quel que soit votre réglage côté NIARIM (votre réglage NIARIM lui-même est conservé, donc l'affichage reprend automatiquement si le statut YouTube est rétabli). Si vous ne voulez pas de commentaires de la part des personnes ayant le lien, vous pouvez désactiver les commentaires côté YouTube par précaution.
+Où puis-je signaler un bug ou demander une fonctionnalité ?
+Pour signaler un problème, demander une fonctionnalité ou poser une question sur l’utilisation de l’application, utilisez le
+formulaire de contact
+.
+Mes œuvres sont-elles utilisées pour entraîner une IA ?
+Non. NIARIM n'utilise pas les illustrations, animations, données de projet ou autres œuvres créées ou publiées par les utilisateurs comme données d'entraînement de modèles d'IA générative. Les données de création et les fichiers vidéo ne sont pas envoyés ni stockés sur les serveurs du développeur. Lorsqu'une œuvre est publiée dans la Place des œuvres, le fichier vidéo est stocké sur YouTube ; NIARIM ne gère que les informations nécessaires à son affichage, telles que l'identifiant de la vidéo YouTube et son titre.
+Mettez votre histoire en mouvement.
+Commencez votre prochaine animation avec NIARIM.
+Télécharger l'application
