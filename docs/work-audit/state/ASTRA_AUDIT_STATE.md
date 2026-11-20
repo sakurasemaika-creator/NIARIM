@@ -3333,3 +3333,15 @@ S36公開照合: App `ba9bd14b9aba7b71dfcedc00940801ce8995d392` / Web `c510745a1
 - test：バケツ塗りのエンジンと設定の2本を`1740d395`で11件成功。
 - 未確認：キャンバスでの塗りの結果と値の境界の一致（testで一部）、ほかの言語・文字の大きさ。
 - 画像：`shots-r1/r2a078-*`（backup-pending）。
+
+## A079 — Android widget設定
+
+### A079 二巡目（2026-11-20、Claude・S50、App `1740d395`のLinuxデバッグビルド）— 判定：OK〔ウィジェット本体は実機。一巡目のDISC376は直った〕
+
+- 環境：ja、1280×800、マウス、使い捨てのプロフィール（r2a069tの写し）。設定→「ウィジェット」。
+- 設定の画面：「起動画面ウィジェット」（表示する作品）・「作品をつくるウィジェット」・「作品広場ウィジェット」（それぞれ「アプリのテーマに合わせる／色を選ぶ」）の3種類。冒頭に「ウィジェットの追加自体はホーム画面の長押しから」「動画は再生できないので1コマを静止画で」と出る。
+- 一巡目のDISC376は直った：表示する作品に作品10の「Scene10」の1枚目を選ぶ（保存は`projectId`・`sceneId: Scene0001`・`frameIndex: 0`）→その作品をホームでゴミ箱へ移す→ウィジェットの設定は「作品を選ぶ／選んだ作品はゴミ箱にあります。復元すると再び表示されます。」になる。保存は作品を指したまま。ゴミ箱のタブで「復元」→確認「ゴミ箱から復元」→復元すると、設定は「Scene10／1枚目のフレーム」に戻る（`shots-r1/r2a079-11`）。完全削除で選択が消えること・Androidへ空の画像を渡すことは`home_widget_artwork_picker_test`（ゴミ箱・復元・完全削除）で確かめた。
+- 気づいた点（DISCにしない、一巡目と同じ）：作品・フレームを選ぶ画面の上部バーに画面名が無い。製品はAndroidのみなので、Linuxで設定の画面が出ても誤案内には当たらない。
+- test：`home_widget_cell_size_test`・`home_widget_shortcut_design_test`・`community_account_boundary_widget_test`・`home_widget_artwork_picker_test`・`home_widget_service_test`・`premium_lock_widget_test`・`shared_empty_folder_widget_test`・`widget_artwork_picker_parity_test`・`widget_settings_theme_foreground_test`・`widget_test`を`1740d395`で40件成功。
+- 未確認（実機）：ウィジェットの配置・押したときの冷たい起動／温かい起動・戻る、色・言語・テーマの更新、マスの大きさの変更、ゴミ箱へ移した作品の画像がAndroidのウィジェットから消えること。
+- 画像：`shots-r1/r2a079-*`（backup-pending）。
