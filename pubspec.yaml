@@ -138,7 +138,6 @@ flutter:
     - assets/brushes/
     - assets/stamps/
     - assets/tones/
-    - assets/tips/
     - assets/font_catalog/
     # 同梱フォント（SIL Open Font License 1.1）の著作権表示・ライセンス
     # 本文。OFL第2条が求める「著作権表示とライセンス本文の同梱」を満たす

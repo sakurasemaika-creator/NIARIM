@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../l10n/app_localizations.dart';
-import 'tip_captures.dart';
+import 'tip_diagram.dart';
+import 'tip_diagram_data.dart';
 import '../../config/font_fallback.dart';
 import '../../config/accent_text_theme.dart';
 import '../../utils/name_collation.dart';
@@ -173,44 +174,52 @@ List<_TipCategory> _buildTipCategories(AppLocalizations l10n) => [
     icon: Icons.movie_creation_outlined,
     tips: [
       _Tip(
-        'clipDuplicate',
+        TipTopic.clipDuplicate,
         l10n.tipsClipDuplicateTitle,
         l10n.tipsClipDuplicateDesc,
       ),
-      _Tip('textCaption', l10n.tipsTextCaptionTitle, l10n.tipsTextCaptionDesc),
-      _Tip('audioRepeat', l10n.tipsAudioRepeatTitle, l10n.tipsAudioRepeatDesc),
       _Tip(
-        'verticalRuby',
+        TipTopic.textCaption,
+        l10n.tipsTextCaptionTitle,
+        l10n.tipsTextCaptionDesc,
+      ),
+      _Tip(
+        TipTopic.audioRepeat,
+        l10n.tipsAudioRepeatTitle,
+        l10n.tipsAudioRepeatDesc,
+      ),
+      _Tip(
+        TipTopic.verticalRuby,
         l10n.tipsVerticalRubyTitle,
         l10n.tipsVerticalRubyDesc,
       ),
       _Tip(
-        'endCardWatermark',
+        TipTopic.endCardWatermark,
         l10n.tipsEndCardWatermarkTitle,
         l10n.tipsEndCardWatermarkDesc,
       ),
       _Tip(
-        'verticalPixelFont',
+        TipTopic.verticalPixelFont,
         l10n.tipsVerticalPixelFontTitle,
         l10n.tipsVerticalPixelFontDesc,
       ),
       _Tip(
-        'stampBlendMode',
+        TipTopic.stampBlendMode,
         l10n.tipsStampBlendModeTitle,
         l10n.tipsStampBlendModeDesc,
       ),
       _Tip(
-        'videoTrimReuse',
+        TipTopic.videoTrimReuse,
         l10n.tipsVideoTrimReuseTitle,
         l10n.tipsVideoTrimReuseDesc,
       ),
       _Tip(
-        'timelineMarker',
+        TipTopic.timelineMarker,
         l10n.tipsTimelineMarkerTitle,
         l10n.tipsTimelineMarkerDesc,
       ),
       _Tip(
-        'communityYoutube',
+        TipTopic.communityYoutube,
         l10n.tipsCommunityYoutubeTitle,
         l10n.tipsCommunityYoutubeDesc,
       ),
@@ -221,99 +230,107 @@ List<_TipCategory> _buildTipCategories(AppLocalizations l10n) => [
     icon: Icons.speed_outlined,
     tips: [
       _Tip(
-        'autofillPreset',
+        TipTopic.autofillPreset,
         l10n.tipsAutofillPresetTitle,
         l10n.tipsAutofillPresetDesc,
       ),
       _Tip(
-        'officialAutomationPresets',
+        TipTopic.officialAutomationPresets,
         l10n.tipsOfficialAutomationPresetsTitle,
         l10n.tipsOfficialAutomationPresetsDesc,
       ),
       _Tip(
-        'autofillBaseCoat',
+        TipTopic.autofillBaseCoat,
         l10n.tipsAutofillBaseCoatTitle,
         l10n.tipsAutofillBaseCoatDesc,
       ),
       _Tip(
-        'autofillManualPartColor',
+        TipTopic.autofillManualPartColor,
         l10n.tipsAutofillManualPartColorTitle,
         l10n.tipsAutofillManualPartColorDesc,
       ),
       _Tip(
-        'brushFavorite',
+        TipTopic.brushFavorite,
         l10n.tipsBrushFavoriteTitle,
         l10n.tipsBrushFavoriteDesc,
       ),
       _Tip(
-        'brushTrySaveTree',
+        TipTopic.brushTrySaveTree,
         l10n.tipsBrushTrySaveTreeTitle,
         l10n.tipsBrushTrySaveTreeDesc,
       ),
       _Tip(
-        'eyedropperGesture',
+        TipTopic.eyedropperGesture,
         l10n.tipsEyedropperGestureTitle,
         l10n.tipsEyedropperGestureDesc,
       ),
       _Tip(
-        'magicWandLasso',
+        TipTopic.magicWandLasso,
         l10n.tipsMagicWandLassoTitle,
         l10n.tipsMagicWandLassoDesc,
       ),
       _Tip(
-        'commonLayerFolder',
+        TipTopic.commonLayerFolder,
         l10n.tipsCommonLayerFolderTitle,
         l10n.tipsCommonLayerFolderDesc,
       ),
       _Tip(
-        'quickToolPenSub',
+        TipTopic.quickToolPenSub,
         l10n.tipsQuickToolPenSubTitle,
         l10n.tipsQuickToolPenSubDesc,
       ),
       _Tip(
-        'quickToolVariant',
+        TipTopic.quickToolVariant,
         l10n.tipsQuickToolVariantTitle,
         l10n.tipsQuickToolVariantDesc,
       ),
       _Tip(
-        'autofillToneReuse',
+        TipTopic.autofillToneReuse,
         l10n.tipsAutofillToneReuseTitle,
         l10n.tipsAutofillToneReuseDesc,
       ),
       _Tip(
-        'autofillMisfill',
+        TipTopic.autofillMisfill,
         l10n.tipsAutofillMisfillTitle,
         l10n.tipsAutofillMisfillDesc,
       ),
-      _Tip('homeWidget', l10n.tipsHomeWidgetTitle, l10n.tipsHomeWidgetDesc),
       _Tip(
-        'autofillTransparentFix',
+        TipTopic.homeWidget,
+        l10n.tipsHomeWidgetTitle,
+        l10n.tipsHomeWidgetDesc,
+      ),
+      _Tip(
+        TipTopic.autofillTransparentFix,
         l10n.tipsAutofillTransparentFixTitle,
         l10n.tipsAutofillTransparentFixDesc,
       ),
       _Tip(
-        'saveSlotAutoSave',
+        TipTopic.saveSlotAutoSave,
         l10n.tipsSaveSlotAutoSaveTitle,
         l10n.tipsSaveSlotAutoSaveDesc,
       ),
       _Tip(
-        'quickToolSwipe',
+        TipTopic.quickToolSwipe,
         l10n.tipsQuickToolSwipeTitle,
         l10n.tipsQuickToolSwipeDesc,
       ),
       _Tip(
-        'toolbarCustomize',
+        TipTopic.toolbarCustomize,
         l10n.tipsToolbarCustomizeTitle,
         l10n.tipsToolbarCustomizeDesc,
       ),
-      _Tip('pcDexLayout', l10n.tipsPcDexLayoutTitle, l10n.tipsPcDexLayoutDesc),
       _Tip(
-        'commonLayerLipSync',
+        TipTopic.pcDexLayout,
+        l10n.tipsPcDexLayoutTitle,
+        l10n.tipsPcDexLayoutDesc,
+      ),
+      _Tip(
+        TipTopic.commonLayerLipSync,
         l10n.tipsCommonLayerLipSyncTitle,
         l10n.tipsCommonLayerLipSyncDesc,
       ),
       _Tip(
-        'commonLayerKeyframe',
+        TipTopic.commonLayerKeyframe,
         l10n.tipsCommonLayerKeyframeTitle,
         l10n.tipsCommonLayerKeyframeDesc,
       ),
@@ -324,84 +341,88 @@ List<_TipCategory> _buildTipCategories(AppLocalizations l10n) => [
     icon: Icons.brush_outlined,
     tips: [
       _Tip(
-        'transparentColor',
+        TipTopic.transparentColor,
         l10n.tipsTransparentColorTitle,
         l10n.tipsTransparentColorDesc,
       ),
       _Tip(
-        'pressureCurve',
+        TipTopic.pressureCurve,
         l10n.tipsPressureCurveTitle,
         l10n.tipsPressureCurveDesc,
       ),
-      _Tip('rulerOnion', l10n.tipsRulerOnionTitle, l10n.tipsRulerOnionDesc),
       _Tip(
-        'fourPanelBrush',
+        TipTopic.rulerOnion,
+        l10n.tipsRulerOnionTitle,
+        l10n.tipsRulerOnionDesc,
+      ),
+      _Tip(
+        TipTopic.fourPanelBrush,
         l10n.tipsFourPanelBrushTitle,
         l10n.tipsFourPanelBrushDesc,
       ),
       _Tip(
-        'gradientTrace',
+        TipTopic.gradientTrace,
         l10n.tipsGradientTraceTitle,
         l10n.tipsGradientTraceDesc,
       ),
       _Tip(
-        'gradientOutlineHair',
+        TipTopic.gradientOutlineHair,
         l10n.tipsGradientOutlineHairTitle,
         l10n.tipsGradientOutlineHairDesc,
       ),
-      _Tip('brushFold', l10n.tipsBrushFoldTitle, l10n.tipsBrushFoldDesc),
+      _Tip(TipTopic.brushFold, l10n.tipsBrushFoldTitle, l10n.tipsBrushFoldDesc),
       _Tip(
-        'strokeDecayFade',
+        TipTopic.strokeDecayFade,
         l10n.tipsStrokeDecayFadeTitle,
         l10n.tipsStrokeDecayFadeDesc,
       ),
       _Tip(
-        'colorMixingFade',
+        TipTopic.colorMixingFade,
         l10n.tipsColorMixingFadeTitle,
         l10n.tipsColorMixingFadeDesc,
       ),
       _Tip(
-        'radialVignette',
+        TipTopic.radialVignette,
         l10n.tipsRadialVignetteTitle,
         l10n.tipsRadialVignetteDesc,
       ),
       _Tip(
-        'clippingGradient',
+        TipTopic.clippingGradient,
         l10n.tipsClippingGradientTitle,
         l10n.tipsClippingGradientDesc,
       ),
       _Tip(
-        'drawingAreaCamera',
+        TipTopic.drawingAreaCamera,
         l10n.tipsDrawingAreaCameraTitle,
         l10n.tipsDrawingAreaCameraDesc,
       ),
       _Tip(
-        'autofillBlendMode',
+        TipTopic.autofillBlendMode,
         l10n.tipsAutofillBlendModeTitle,
         l10n.tipsAutofillBlendModeDesc,
       ),
       _Tip(
-        'roughLayerRescue',
+        TipTopic.roughLayerRescue,
         l10n.tipsRoughLayerRescueTitle,
         l10n.tipsRoughLayerRescueDesc,
       ),
       _Tip(
-        'lineArtExtraction',
+        TipTopic.lineArtExtraction,
         l10n.tipsLineArtExtractionTitle,
         l10n.tipsLineArtExtractionDesc,
       ),
       _Tip(
-        'lineColorUsage',
+        TipTopic.lineColorUsage,
         l10n.tipsLineColorUsageTitle,
         l10n.tipsLineColorUsageDesc,
       ),
       _Tip(
-        'blushAutofill',
+        TipTopic.blushAutofill,
         l10n.tipsBlushAutofillTitle,
         l10n.tipsBlushAutofillDesc,
       ),
       _Tip(
-        'stockingDenier',
+        TipTopic.stockingDenier,
         l10n.tipsStockingDenierTitle,
         l10n.tipsStockingDenierDesc,
       ),
@@ -411,69 +432,69 @@ List<_TipCategory> _buildTipCategories(AppLocalizations l10n) => [
     title: l10n.tipsCategoryEffects,
     icon: Icons.auto_awesome_outlined,
     tips: [
-      _Tip('rainNoise', l10n.tipsRainNoiseTitle, l10n.tipsRainNoiseDesc),
+      _Tip(TipTopic.rainNoise, l10n.tipsRainNoiseTitle, l10n.tipsRainNoiseDesc),
       _Tip(
-        'texturePrismVhs',
+        TipTopic.texturePrismVhs,
         l10n.tipsTexturePrismVhsTitle,
         l10n.tipsTexturePrismVhsDesc,
       ),
       _Tip(
-        'partKeyframeGroup',
+        TipTopic.partKeyframeGroup,
         l10n.tipsPartKeyframeGroupTitle,
         l10n.tipsPartKeyframeGroupDesc,
       ),
       _Tip(
-        'outlineAnimeStyle',
+        TipTopic.outlineAnimeStyle,
         l10n.tipsOutlineAnimeStyleTitle,
         l10n.tipsOutlineAnimeStyleDesc,
       ),
       _Tip(
-        'levelsToneCurve',
+        TipTopic.levelsToneCurve,
         l10n.tipsLevelsToneCurveTitle,
         l10n.tipsLevelsToneCurveDesc,
       ),
       _Tip(
-        'toneCurveSepia',
+        TipTopic.toneCurveSepia,
         l10n.tipsToneCurveSepiaTitle,
         l10n.tipsToneCurveSepiaDesc,
       ),
       _Tip(
-        'cameraLensBlur',
+        TipTopic.cameraLensBlur,
         l10n.tipsCameraLensBlurTitle,
         l10n.tipsCameraLensBlurDesc,
       ),
       _Tip(
-        'webmCommonLayer',
+        TipTopic.webmCommonLayer,
         l10n.tipsWebmCommonLayerTitle,
         l10n.tipsWebmCommonLayerDesc,
       ),
       _Tip(
-        'leftHandedWorkspace',
+        TipTopic.leftHandedWorkspace,
         l10n.tipsLeftHandedWorkspaceTitle,
         l10n.tipsLeftHandedWorkspaceDesc,
       ),
       _Tip(
-        'blendModeUsage',
+        TipTopic.blendModeUsage,
         l10n.tipsBlendModeUsageTitle,
         l10n.tipsBlendModeUsageDesc,
       ),
       _Tip(
-        'fisheyeChromatic',
+        TipTopic.fisheyeChromatic,
         l10n.tipsFisheyeChromaticTitle,
         l10n.tipsFisheyeChromaticDesc,
       ),
       _Tip(
-        'lensDistortion',
+        TipTopic.lensDistortion,
         l10n.tipsLensDistortionTitle,
         l10n.tipsLensDistortionDesc,
       ),
       _Tip(
-        'sphereShading',
+        TipTopic.sphereShading,
         l10n.tipsSphereShadingTitle,
         l10n.tipsSphereShadingDesc,
       ),
       _Tip(
-        'backgroundBlend',
+        TipTopic.backgroundBlend,
         l10n.tipsBackgroundBlendTitle,
         l10n.tipsBackgroundBlendDesc,
       ),
@@ -484,52 +505,52 @@ List<_TipCategory> _buildTipCategories(AppLocalizations l10n) => [
     icon: Icons.ios_share_outlined,
     tips: [
       _Tip(
-        'exportFormat',
+        TipTopic.exportFormat,
         l10n.tipsExportFormatTitle,
         l10n.tipsExportFormatDesc,
       ),
       _Tip(
-        'gestureShortcut',
+        TipTopic.gestureShortcut,
         l10n.tipsGestureShortcutTitle,
         l10n.tipsGestureShortcutDesc,
       ),
       _Tip(
-        'lowSpecSettings',
+        TipTopic.lowSpecSettings,
         l10n.tipsLowSpecSettingsTitle,
         l10n.tipsLowSpecSettingsDesc,
       ),
       _Tip(
-        'seriesPresetFolder',
+        TipTopic.seriesPresetFolder,
         l10n.tipsSeriesPresetFolderTitle,
         l10n.tipsSeriesPresetFolderDesc,
       ),
       _Tip(
-        'mosaicChromatic',
+        TipTopic.mosaicChromatic,
         l10n.tipsMosaicChromaticTitle,
         l10n.tipsMosaicChromaticDesc,
       ),
       _Tip(
-        'pixelToneRetro',
+        TipTopic.pixelToneRetro,
         l10n.tipsPixelToneRetroTitle,
         l10n.tipsPixelToneRetroDesc,
       ),
       _Tip(
-        'blurVignetteBg',
+        TipTopic.blurVignetteBg,
         l10n.tipsBlurVignetteBgTitle,
         l10n.tipsBlurVignetteBgDesc,
       ),
       _Tip(
-        'sepiaVignette',
+        TipTopic.sepiaVignette,
         l10n.tipsSepiaVignetteTitle,
         l10n.tipsSepiaVignetteDesc,
       ),
       _Tip(
-        'transferDevice',
+        TipTopic.transferDevice,
         l10n.tipsTransferDeviceTitle,
         l10n.tipsTransferDeviceDesc,
       ),
       _Tip(
-        'transferCustomization',
+        TipTopic.transferCustomization,
         l10n.tipsTransferCustomizationTitle,
         l10n.tipsTransferCustomizationDesc,
       ),
@@ -610,12 +631,12 @@ class _TipListTile extends StatelessWidget {
   }
 }
 
-/// Tips詳細のポップアップ。各ページに図解と本文の両方を必ず表示する。
+/// Tips詳細のポップアップ。各ページに図解と本文を表示する。
 /// 説明文を読みやすい分量ごとに分割し、1ページに収まる分量ならページ数は
 /// 1のまま（＝スワイプ不要）、収まらない場合は必要なだけページ数を
 /// 増やして横スライドで読み進める（ページ数の上限は設けない）。右上の
 /// 閉じるボタンと、下部のページ位置インジケーター（何ページ中何ページ目か）
-/// を常設する。
+/// を表示する。
 class _TipDetailDialog extends StatefulWidget {
   final _Tip tip;
   const _TipDetailDialog({required this.tip});
@@ -627,7 +648,10 @@ class _TipDetailDialog extends StatefulWidget {
 class _TipDetailDialogState extends State<_TipDetailDialog> {
   final _pageController = PageController();
   int _page = 0;
-  late final List<String> _textPages = _splitIntoPages(widget.tip.description);
+  late final List<String> _textPages = _splitIntoPages(
+    widget.tip.description,
+    illustrateByParagraph: widget.tip.topic.illustrateByParagraph,
+  );
 
   @override
   void dispose() {
@@ -641,13 +665,17 @@ class _TipDetailDialogState extends State<_TipDetailDialog> {
   /// どのページも中身の詰まった1ページとして成立するようにする）。改行
   /// （段落）の区切りを優先して尊重し、1段落だけで目標分量を超える場合は
   /// そのまま1ページにする。
-  static List<String> _splitIntoPages(String text) {
+  static List<String> _splitIntoPages(
+    String text, {
+    required bool illustrateByParagraph,
+  }) {
     const maxCharsPerPage = 220;
     final paragraphs = text
         .split('\n')
         .where((p) => p.trim().isNotEmpty)
         .toList();
     if (paragraphs.isEmpty) return [text];
+    if (illustrateByParagraph) return paragraphs;
     final totalLength =
         paragraphs.fold<int>(0, (sum, p) => sum + p.length) +
         (paragraphs.length - 1);
@@ -691,9 +719,57 @@ class _TipDetailDialogState extends State<_TipDetailDialog> {
     final scheme = Theme.of(context).colorScheme;
     final totalPages = _textPages.length;
     final screenSize = MediaQuery.sizeOf(context);
-    final dialogWidth = (screenSize.width - 32).clamp(280.0, 480.0);
-    final dialogHeight = (screenSize.height - 64).clamp(420.0, 680.0);
+    final dialogWidth = (screenSize.width - 24).clamp(0.0, 600.0);
+    final dialogHeight = (screenSize.height - 64).clamp(0.0, 680.0);
     final words = MaterialLocalizations.of(context);
+    final l10n = AppLocalizations.of(context)!;
+    final scaler = MediaQuery.textScalerOf(context);
+    // Illustrated steps and text start at the same positions for every tip.
+    final longTitle = screenSize.width < 360 || scaler.scale(15) > 18;
+    final titleHeight = scaler.scale(15) * (longTitle ? 4.2 : 2.8);
+
+    Widget buildPage(int index) {
+      return SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(16, 48, 16, 20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(
+              width: double.infinity,
+              height: titleHeight,
+              child: SingleChildScrollView(
+                primary: false,
+                child: messageText(
+                  widget.tip.title,
+                  keepLineStarts: true,
+                  style: localizedHeadingStyle(
+                    context,
+                    TextStyle(
+                      fontSize: 15,
+                      height: 1.4,
+                      fontWeight: FontWeight.w700,
+                      color: AccentTextTheme.of(context),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            TipDiagram(
+              steps: widget.tip.topic.steps(l10n, index),
+              height: dialogHeight * .60,
+              isComparison: widget.tip.topic.isComparison,
+            ),
+            const SizedBox(height: 12),
+            Text(
+              _textPages[index],
+              style: const TextStyle(fontSize: 13, height: 1.5),
+            ),
+          ],
+        ),
+      );
+    }
+
     return CallbackShortcuts(
       bindings: {
         const SingleActivator(LogicalKeyboardKey.arrowLeft): () =>
@@ -705,84 +781,28 @@ class _TipDetailDialogState extends State<_TipDetailDialog> {
         autofocus: true,
         child: Dialog(
           insetPadding: const EdgeInsets.symmetric(
-            horizontal: 16,
+            horizontal: 12,
             vertical: 24,
           ),
+          constraints: BoxConstraints(maxHeight: dialogHeight),
           child: SizedBox(
             width: dialogWidth,
             height: dialogHeight,
             child: Stack(
               children: [
-                Column(
-                  children: [
-                    Expanded(
-                      child: PageView.builder(
-                        controller: _pageController,
-                        itemCount: totalPages,
-                        onPageChanged: (p) => setState(() => _page = p),
-                        itemBuilder: (context, index) {
-                          final capture = tipCaptureFor(widget.tip.id, index);
-                          return SingleChildScrollView(
-                            padding: const EdgeInsets.fromLTRB(20, 48, 20, 16),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                SizedBox(
-                                  width: double.infinity,
-                                  height:
-                                      MediaQuery.textScalerOf(
-                                        context,
-                                      ).scale(15) *
-                                      4.2,
-                                  child: SingleChildScrollView(
-                                    primary: false,
-                                    child: Text(
-                                      widget.tip.title,
-                                      style: localizedHeadingStyle(
-                                        context,
-                                        TextStyle(
-                                          fontSize: 15,
-                                          height: 1.4,
-                                          fontWeight: FontWeight.w700,
-                                          color: AccentTextTheme.of(context),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(height: 12),
-                                SizedBox(
-                                  width: double.infinity,
-                                  height: dialogHeight * .36,
-                                  child: capture == null
-                                      ? null
-                                      : ClipRRect(
-                                          borderRadius: BorderRadius.circular(
-                                            8,
-                                          ),
-                                          child: Image.asset(
-                                            capture,
-                                            fit: BoxFit.contain,
-                                            alignment: Alignment.center,
-                                            semanticLabel: widget.tip.title,
-                                          ),
-                                        ),
-                                ),
-                                const SizedBox(height: 12),
-                                Text(
-                                  _textPages[index],
-                                  style: const TextStyle(
-                                    fontSize: 13,
-                                    height: 1.5,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          );
-                        },
+                if (totalPages == 1)
+                  buildPage(0)
+                else
+                  Column(
+                    children: [
+                      Expanded(
+                        child: PageView.builder(
+                          controller: _pageController,
+                          itemCount: totalPages,
+                          onPageChanged: (p) => setState(() => _page = p),
+                          itemBuilder: (_, index) => buildPage(index),
+                        ),
                       ),
-                    ),
-                    if (totalPages > 1)
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -835,8 +855,8 @@ class _TipDetailDialogState extends State<_TipDetailDialog> {
                           ),
                         ],
                       ),
-                  ],
-                ),
+                    ],
+                  ),
                 // 右上の閉じるボタン
                 Positioned(
                   right: 4,
@@ -870,8 +890,8 @@ class _TipCategory {
 }
 
 class _Tip {
-  final String id;
+  final TipTopic topic;
   final String title;
   final String description;
-  const _Tip(this.id, this.title, this.description);
+  const _Tip(this.topic, this.title, this.description);
 }
