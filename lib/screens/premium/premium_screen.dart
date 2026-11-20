@@ -780,7 +780,7 @@ class _PremiumScreenState extends State<PremiumScreen> {
                   ),
                 ),
                 if (price != null)
-                  Flexible(
+                  Expanded(
                     child: Text(
                       price,
                       textAlign: TextAlign.end,

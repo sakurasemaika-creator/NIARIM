@@ -140,6 +140,9 @@ void main() {
         matching: find.byType(InkWell),
       );
       expect(tester.widget<InkWell>(card).onTap, isNull);
+      final endInset =
+          tester.getRect(card).right - tester.getRect(find.text(price)).right;
+      expect(endInset, closeTo(16, 1));
     }
     expect(
       tester
