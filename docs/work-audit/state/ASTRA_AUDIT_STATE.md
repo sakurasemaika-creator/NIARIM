@@ -3578,3 +3578,18 @@ S36公開照合: App `ba9bd14b9aba7b71dfcedc00940801ce8995d392` / Web `c510745a1
 - test：`community_account_boundary_widget_test`・`community_my_works_controls_test`・`community_ranking_privacy_visibility_test`・`five_fixes_screenshot_test`・`app_bar_title_fit_or_hide_test`・`community_post_publish_contract_test`・`community_secondary_pull_to_refresh_test`を`643cc267`で30件成功。
 - 未確認：APIのある環境（読み込み・失敗・再試行・公開の切り替えの失敗の巻き戻し・YouTube側の状態の差〔非公開・削除・予約〕）、2つのアカウントの切り替えの実画面、7言語・文字2倍・360pxの実画面（testで見ている）。
 - 画像：`shots-r1/r2a095-*`（backup-pending）。
+
+## A096 — 投稿・YouTube upload・未完了復旧
+
+### A096 二巡目（2026-11-20、Claude・S50、App `643cc267`のコード・testとLinuxデバッグビルド）— 判定：OK（一巡目のDISC424〜427は直った。実機・実APIは未確認）
+
+- 環境：Linuxのデバッグビルドには`NIARIM_GOOGLE_CLIENT_ID`とAPIの接続先が無い。「自分の投稿」の「投稿する」はログインの説明（「この開発ビルドにはGoogleログイン設定がないため、連携を開始できません。」・連携のボタンは押せない）で止まり、投稿の画面は開けない（`shots-r1/r2a096-01`）。投稿の画面の判定はコードとtestで行った。
+- 一巡目のDISC424は直った：送っている間、上部バーに取り消しのボタン（`communityPostCancelUpload`）が出て、戻るは`_handleBusyBack`で続ける・やめるを聞く（`community_post_screen.dart`の`PopScope`）。`community_post_upload_cancel_test`（5件）が、送っている途中の取り消し・戻るの確認・入力が残ることを見る。
+- 一巡目のDISC425は直った：「作品広場への登録をやめる」は確認のダイアログ（`communityPostDiscardPendingConfirm`、キャンセルで何も消さない）を出してから消す（`_discardPendingUpload`）。`community_filter_surfaces_test`・`community_post_recovery_contract_test`が成功。
+- 一巡目のDISC426は直った：投稿の画面で「AI画像・AI動画使用」と「子ども向け」を選ばないと送れず、`YoutubeUploadService`は`status.containsSyntheticMedia`・`status.selfDeclaredMadeForKids`を同じアップロードの要求で送る（`youtube_upload_service.dart:273-274`）。`community_post_upload_cancel_test`が要求の中身を見る。
+- 一巡目のDISC427は直った：`exported_work_thumbnail_choice_test`（4件）・`project_thumbnail_choice_test`（6件）が成功。
+- 既存のDISC418・DISC421はこの道でも直っている：`google_auth_init_once_test`を`--dart-define=NIARIM_GOOGLE_CLIENT_ID=test`で9件成功（期限の切れたIDトークンを送る前に取り直す・同時の401は更新1回で1度だけ送り直す・別のアカウントなら送り直さない・YouTubeは操作ごとに要る権限〔`youtube.upload`と`youtube.readonly`〕だけを求める）。指定なしでは9件ともスキップになる。
+- 既存：ログインの説明の注意の文が赤（DISC198、A095で記録済み。`community_my_works_screen.dart:326`）。
+- test：`community_post_publish_contract_test`・`community_post_recovery_contract_test`・`community_pending_deleted_recovery_contract_test`・`youtube_thumbnail_service_test`・`community_post_copy_button_test`・`community_post_upload_cancel_test`・`community_shorts_youtube_playback_test`・`home_bookmark_youtube_playback_test`・`community_filter_surfaces_test`・`exported_work_thumbnail_choice_test`・`project_thumbnail_choice_test`・`community_api_test`・`coin_authenticated_client_contract_test`を`643cc267`で87件成功（Googleの9件はスキップ、上の指定で別に9件成功）。
+- 未確認（実機・実API）：動画の選択（ファイルの選択・取り消し）、実際のアップロードの進み具合・途中の通信断・クォータ超過、YouTube Studioでの申告の表示、YouTubeの公開状態と作品広場の公開の組み合わせ、登録の失敗→再試行、強制終了からの復旧、Googleの同意画面と審査、7言語・文字2倍・360pxの実画面。
+- 画像：`shots-r1/r2a096-*`（backup-pending）。
