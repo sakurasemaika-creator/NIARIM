@@ -1,0 +1,400 @@
+[
+ {
+  "id": "W017",
+  "web_sha": "a44daf4",
+  "judgment": "OK",
+  "evidence_ja": "Web `a44daf4`（git archiveの写しを`wrangler dev --local`、127.0.0.1:8802、Chromium〔Playwright〕、`/api/community`は`{\"works\":[]}`に差し替え）。curlでGET・HEAD・POSTの状態・Location・X-Robots-Tag・canonicalを40通り確認（shots-b/w017-probe.txt）、SP 360×740で404を表示。`/about`・`/about/index.html`・`/index.html`・`//about/`・`/about//`・`/account-deletion`は307で正規URLへ1回で移る。知らないパス7種は404＋ブランドの404ページ＋`X-Robots-Tag: noindex, nofollow`。壊れた百分率は307→404で繰り返しなし。`/api/`の不明は404のJSON、`/api/contact`のGET/HEADは405、ページへのPOSTは405。`?lang=fr`はcanonicalに`?lang=fr`、不明な`?lang=xx`・`%ZZ`は200でcanonicalは言語なしのURL。言語なしのURLは英語（所有者決定の既定）。404は言語を引き継ぎ（fr・ko・ja、ホームへ戻るは`/?lang=fr`）、言語なしは英語、横はみ出し無し、戻る・進むで行き来できる（shots-b/w017-404-fr.png）。観察（一巡目と同じ、記録のみ）：`/404`は状態200で404の本文（noindex付き）、`/favicon.ico`は404。JavaScriptなしの404と/account-deletion/の生のHTMLは言語によらず日本語の題（どちらもnoindex）。未確認：本番のCloudflareでの同じ確認。",
+  "first_round_discs": [],
+  "new_findings": []
+ },
+ {
+  "id": "W018",
+  "web_sha": "a44daf4",
+  "judgment": "要修正",
+  "evidence_ja": "Web `a44daf4`（git archiveの写しを`wrangler dev --local`、127.0.0.1:8802、Chromium〔Playwright〕、`/api/community`は`{\"works\":[]}`に差し替え）。`sitemap.xml`の91のURL（13ページ×7言語、英語は言語なしのURL）の生のHTMLをJavaScriptなしで取得し（scripts/w018.py、shots-b/w018-rows.json）、描いた後の題・説明・h1とも突き合わせた（sweep.json）。91件とも状態200・`<html lang>`がURLの言語・hreflang 8件（自分とx-defaultを含む）・JSON-LDは正しいJSON・`<img>`は全部alt付き・説明の重複0・題の重複5組は別言語の同じ語。84件（/font-licenses/以外）はcanonical＝自分・og:url＝canonical・robotsはindex。内部リンク112件は全部200（shots-b/w018-links.log）。`robots.txt`は`/api/`だけ拒否しSitemapを示す。残り：/coins/と/help/の生の本文に日本語が残る（DISC472の一部）、/coins/の生の題・説明・h1が旧名「コイン/Coins」で描いた後と違う、/font-licenses/がsitemapにあるのにcanonical・robots・OGが無い、正規ドメインがworkers.devのまま。未確認：本番の配信先・Search Console。",
+  "first_round_discs": [
+   {
+    "disc": "DISC472",
+    "now": "partial",
+    "note_ja": "11ページ中9ページは生の本文もその言語になった。/coins/は6言語とも日本語の文が約20か所（かな201字：「ログイン日数」「作品の公開」等、`data-i18n`付き）、/help/は9か所（`help.premiumExpiry`・`help.entry76〜80`、かな585字）が日本語のまま。/community/の「作品を読み込んでいます。」と/contact/の「ファイルは選択されていません」も日本語。"
+   }
+  ],
+  "new_findings": [
+   {
+    "scope": "W018（二巡目）",
+    "title_ja": "/coins/の検索向けの題・説明・見出しが旧名「コイン」のままで、表示される「オパール」と食い違う",
+    "detail_ja": "Web `a44daf4`、wrangler dev --local。手順：`/coins/`を7言語でJavaScriptなしで取得し、ブラウザで描いた後と比べる。期待：生のHTMLの題・説明・h1が表示と同じ（W018の完了条件「metadata・本文一致」）。実際：生は「コイン・特典 | NIARIM」「コインで、もっと自由に制作。」「Coins & Benefits」「Create more with coins.」「Monedas y ventajas」等、描いた後は「オパール・ミッション | NIARIM」「無料でもプレミアム機能が使える！」「Opals & Benefits」「Unlock Premium features with Opals!」。91のURLのうち食い違うのは/coins/の7件だけ。検索結果・共有カードには旧名と旧い見出しが出る。",
+    "todo_ja": "`tools/generate-seo-i18n.mjs`の元になる辞書と/coins/のHTMLを「オパール」の文にそろえ、実行時の置き換え（`opal-ui-naming.js`）に頼らない。"
+   },
+   {
+    "scope": "W018（二巡目）",
+    "title_ja": "/font-licenses/がsitemapに7言語で載っているのに、canonical・robots・OGが無い",
+    "detail_ja": "Web `a44daf4`、wrangler dev --local。手順：`sitemap.xml`の`/font-licenses/`（7言語）の生のHTMLを見る。期待：sitemapに載せるページは他の12ページと同じくcanonical（自分）・`meta robots`・`og:*`を持つ。実際：7件ともcanonical・`meta robots`・`og:title/url/image`が無い（hreflang 8件・JSON-LD・題・説明はある）。",
+    "todo_ja": "/font-licenses/にも他のページと同じSEOのタグを付けるか、検索に出さないならsitemapから外してnoindexにする。"
+   },
+   {
+    "scope": "W018（二巡目）",
+    "title_ja": "正規URL（canonical・sitemap・hreflang・og:url）のドメインがworkers.devで、アプリとお問い合わせの設定が指す公開ドメインと違う",
+    "detail_ja": "Web `a44daf4`の`wrangler.jsonc`、App `2939841e`の`lib/screens/settings/settings_screen.dart`。確認：`SITE_ORIGIN`は`https://niarim-web.niarim.workers.dev`で、生のHTMLのcanonical・sitemapの`<loc>`・`robots.txt`のSitemapは全部このドメイン。一方`CONTACT_SITE_ORIGIN`は`https://niarim.miranima-studio.com`、アプリの「アカウント削除」もこのドメインの`/account-deletion/`を開き、CIの公開料金の確認も両方のドメインを見る。期待：公開するドメインと正規URLが同じ。実際：独自ドメインで見てもcanonicalはworkers.devを指す。どちらを正とするかは所有者の決定で、本番の設定は未確認。",
+    "todo_ja": "公開ドメインを決め、`SITE_ORIGIN`（canonical・sitemap）とアプリのリンクを同じドメインにそろえる。"
+   }
+  ]
+ },
+ {
+  "id": "W019",
+  "web_sha": "a44daf4",
+  "judgment": "要修正",
+  "evidence_ja": "Web `a44daf4`（git archiveの写しを`wrangler dev --local`、127.0.0.1:8802、Chromium〔Playwright〕、`/api/community`は`{\"works\":[]}`に差し替え）。辞書24ファイルを読み（scripts/w019dict.js）、15ページ×6言語（ja以外）PC 1280で見える文字を1節ずつ調べ（scripts/leak.js、/help/・/faq/は全部開いた状態）、15ページ×7言語で実際に描いた書体をCDPで調べた（scripts/fonts.js）。CI：`Website font coverage (seven locales)` #44620838112（a44daf4、14ページ×2幅×7言語）成功、`App and Website Help synchronization`・`Translation Tone`成功。差し込みの食い違い0、日本語以外の辞書の値にかなの残り0。同梱の書体で描かれない字は全ページ・全言語で3字だけ（/coins/の「▶」「✦」、/font-licenses/の「©」）。西語・仏語の大文字のアクセントは同梱の書体で描かれる。残り：/coins/の小見出し3つが6言語で日本語、「オパール」への機械的な置き換えで西語の性・韓国語の助詞・仏西の文頭の小文字が崩れた、画像のaltが6言語で日本語、/font-licenses/の欧文に全角の記号。未確認：各言語の意味・語調の逆翻訳（言語の専門の確認）、実機のブラウザ。",
+  "first_round_discs": [
+   {
+    "disc": "DISC473",
+    "now": "partial",
+    "note_ja": "Ó・Í・Ñ・Ç・Ê等の大文字は同梱の書体に入った（描画とCIで確認）。/coins/のカードの印「▶」「✦」は今も端末の書体（Inter・DejaVu Sans等）で描かれる。"
+   }
+  ],
+  "new_findings": [
+   {
+    "scope": "W019（二巡目）",
+    "title_ja": "/coins/の小見出し3つが、日本語以外の6言語でも日本語のまま表示される",
+    "detail_ja": "Web `a44daf4`、PC 1280×900とSP 360×740、en・fr・es・ko・zh-Hans・zh-Hant。手順：`/coins/?lang=fr`を開く。期待：小見出しもその言語。実際：ヒーローの「オパール・ミッション」と、本文の「オパールを集める」「オパールを使う」（`p.eyebrow`、`data-i18n`なし）が6言語とも日本語（shots-b/w020-coins-fr-360.png・w020-coins-es-1280.png）。",
+    "todo_ja": "/coins/の3つの小見出しに辞書の鍵を付けて7言語にする。"
+   },
+   {
+    "scope": "W019（二巡目）",
+    "title_ja": "「コイン→オパール」の機械的な置き換えで、西語の性・韓国語の助詞・仏語と西語の文頭の大文字が崩れている",
+    "detail_ja": "Web `a44daf4`の`public/js/opal-ui-naming.js`（辞書の値を正規表現で置き換える）、PC 1280、es・fr・ko。手順：`/coins/?lang=es`・`?lang=ko`と各ページのナビを見る。期待：アプリの訳（es「Ópalos y premios」「Ganar ópalos gratis」）と同じ自然な文。実際：西語「Cómo usar las ópalos」「¿Te faltan unas ópalos?」「las ópalos que puedes ganar」（ópaloは男性名詞で「los/unos」）、韓国語のh1「오팔으로 Premium 기능을 즐겨 보세요!」（「오팔로」が正しい）、ナビと題が小文字始まり「ópalos y misiones」「opales et missions」「opales et avantages | NIARIM」（他の項目は大文字始まり、9ページのナビに出る）。",
+    "todo_ja": "置き換えをやめ、辞書の文そのものを7言語で書き直す（性・助詞・大文字を言語ごとに確かめる）。"
+   },
+   {
+    "scope": "W019（二巡目）",
+    "title_ja": "トップと/features/の画像の代替テキスト（alt）と/coins/のナビの読み上げ名が、日本語以外の6言語でも日本語",
+    "detail_ja": "Web `a44daf4`、PC 1280・SP 360、ja以外の6言語（言語なしのURL＝英語も同じ）。手順：`/?lang=en`・`/features/?lang=en`・`/coins/?lang=en`で`alt`・`aria-label`を読む。期待：読み上げの文もその言語。実際：トップの画像のalt「NIARIMアプリ本体の作品広場。新着作品カード…」、/features/の「NIARIM PC版 canvas 画面」「フレームとタイムライン」「手描きとレイヤー」等13種、/coins/の`nav`の`aria-label`「ページ内メニュー」が日本語のまま（shots-b/sweep.jsonのleaks）。読み上げの利用者と画像検索に日本語が出る。",
+    "todo_ja": "altと`aria-label`にも辞書の鍵（`data-i18n-alt`等）を付けて7言語にする。"
+   },
+   {
+    "scope": "W019（二巡目）",
+    "title_ja": "/font-licenses/の欧文の本文に全角の記号（（）：。）が混ざる",
+    "detail_ja": "Web `a44daf4`、SP 360×740、fr（en・esも同じ文の作り）。手順：`/font-licenses/?lang=fr`を開く。期待：欧文は半角の括弧・コロン・ピリオド。実際：「くらむぼん（Kuramubon）：Copyright 2020 …flopdesign.com。」「白光明朝（HakkouMincho）：Conçue et adaptée par lavsic（Page officielle de téléchargement）。」と全角の記号で、字の間が空いて見える（shots-b/w020-fontlic-fr-360.png）。フッターのリンクも全言語で「フォントライセンス / Font licenses」。",
+    "todo_ja": "/font-licenses/の記号を言語ごとの辞書の文に入れ、欧文では半角にする。"
+   }
+  ]
+ },
+ {
+  "id": "W020",
+  "web_sha": "a44daf4",
+  "judgment": "要修正",
+  "evidence_ja": "Web `a44daf4`（git archiveの写しを`wrangler dev --local`、127.0.0.1:8802、Chromium〔Playwright〕、`/api/community`は`{\"works\":[]}`に差し替え）。axe-core 4.10.2（WCAG 2.0/2.1/2.2 A・AA＋best-practice、`bypassCSP`）を15ページ（12ページ＋/font-licenses/＋/account-deletion/＋404）×7言語＋言語なし×PC 1280×800、×7言語×SP 360×740の225状態で実行（動きを減らす設定、shots-b/sweep.json・sweep-axe.log）。幅320・640で15ページ×6言語の横はみ出し、本文へスキップ、SPのメニューのキーボード操作を実操作し、画像を目で確かめた。225状態とも`main#main`・h1が1つ・`<html lang>`が言語どおり・横はみ出し0（幅320・640の180状態も0）。「本文へスキップ」は最初のTabで左上に見え、Enterの次のTabは本文の中（/・/help/・/font-licenses/）。トップのPCの最初の40のTab位置は全部フォーカスの枠あり。メニューはEnterで開き（`aria-expanded=true`）Escで閉じてボタンへ戻る。axeのseriousは色の比だけ（/features/のフッターの1.06〜1.11は一巡目と同じ誤検出）。moderate：トップの`.nr-statement`の名前の重なり、/premium/の`aside`、404の`.font-license-access`。残り：白い字と差し色2.97:1・注記3.4:1（DISC474）、SPのメニューを開いた後のTabが裏の本文へ抜ける、/account-deletion/の差し色の文字2.71:1。観察：/account-deletion/は「本文へスキップ」と言語の切り替えが無い（ヘッダーはロゴだけ）、トップのSPの「アプリ画面を見る」は73×20px（文中のリンク扱い）。未確認：読み上げ（スクリーンリーダー）、ブラウザの文字サイズの設定、Safari・Firefox、336通りの全状態の目視（見たのは代表の画像だけ）。",
+  "first_round_discs": [
+   {
+    "disc": "DISC474",
+    "now": "not_fixed",
+    "note_ja": "白い字と#FF5C7Aの比2.97:1は225状態中148状態で検出（各ページのボタン）、トップの見本の注記（#9f8290、11px）は3.4:1のまま。台帳では所有者が今のピンクと白い字を保つと指定（ブランドの色の判断）。注記の3.4:1は判断の対象か未確認。"
+   },
+   {
+    "disc": "DISC475",
+    "now": "fixed",
+    "note_ja": "/font-licenses/は7言語で`<html lang>`・題・見出し・説明が切り替わり、共通ヘッダー・言語の切り替え・「本文へスキップ」がある（7言語×PC/SPで確認）。欧文の全角の記号はW019の新規に記録。"
+   }
+  ],
+  "new_findings": [
+   {
+    "scope": "W020（二巡目）",
+    "title_ja": "SPのメニューを開いた後、Tabで進むとフォーカスが全画面のメニューの裏の本文へ抜ける",
+    "detail_ja": "Web `a44daf4`、SP 360×740、ja `/`・fr `/premium/`・en `/help/`。手順：メニューのボタン（`button.nav-toggle`）を押して（クリックでもEnterでも）開く→Tabを押す。期待：フォーカスはメニューの中の項目へ進み、開いている間はメニューの外へ出ない（一巡目のDISC438の記録では「フォーカスはヘッダーの中に閉じ込められる」）。実際：Tabの1回目で本文のリンク（「制作機能を見てみる」「Gratuit」・検索欄）へ移り、その位置は全画面のメニューに覆われて見えない（`elementFromPoint`で確認、shots-b/w020-sp-menu-open-en.png）。メニューの項目へはShift+Tabでしか行けない（English→Release info→Contact…の逆順）。`main`は`inert`でなく、`body`の`overflow`も`visible`のまま。キーボードの利用者はフォーカスを見失う（WCAG 2.4.3・2.4.11）。",
+    "todo_ja": "メニューを開いたらフォーカスをメニューの最初の項目へ移し、開いている間は裏の本文を`inert`にしてTabをメニューとボタンの中で回す。"
+   },
+   {
+    "scope": "W020（二巡目）",
+    "title_ja": "/account-deletion/の差し色の文字（見出し・リンク）が背景との比2.71:1で読みにくい",
+    "detail_ja": "Web `a44daf4`、PC 1280×800・SP 360×740、7言語。手順：`/account-deletion/`を開きaxeで測る。期待：本文の大きさの文字は4.5:1、大きな文字は3:1以上（WCAG 1.4.3）。実際：h2「削除されるデータ」（#FF5C7A、背景#F7F4F3、20〜26px）と、リンク「Google Playの定期購入は別に管理してください」「プライバシーポリシー」（16〜17.6pxの細い明朝）が2.71:1（shots-b/w017_account-deletion_.png）。取り返しのつかない操作のページで、案内のリンクが薄い。",
+    "todo_ja": "このページの文字に使う差し色を濃い色（本文の色か、4.5:1以上の濃いピンク）にする。"
+   }
+  ]
+ },
+ {
+  "id": "W021",
+  "web_sha": "a44daf4",
+  "judgment": "要修正",
+  "evidence_ja": "Web `a44daf4`（git archiveの写しを`wrangler dev --local`、127.0.0.1:8802、Chromium〔Playwright〕、`/api/community`は`{\"works\":[]}`に差し替え）。地元の配信なので本番のCDN・圧縮・距離は再現しない。10ページ（/・about・features・help・premium・coins・community・faq・contact・privacy）をja・英語（言語なし）で測定：SP 360×740はCPU 4倍遅く・下り1.6Mbps・遅延150ms、PC 1280×800は制限なし（scripts/w021.js・cls.js、shots-b/w021-*.log）。PC ja：LCP 0.2〜0.5秒、CLS 0.034以下、転送1.16〜1.47MB。SP遅い ja：LCP 1.5〜4.4秒（/help/ 4.4・/about/ 3.8・/premium/ 3.8）、読み終わり6.6〜7.7秒、CLSは/coins/ 0.33・/community/ 0.12。SP遅い 英語：LCP 1.4〜3.9秒、転送0.6〜0.85MB（/features/は1.38MB）、CLSは/coins/ 0.16・/faq/ 0.11。キャッシュ：フォント・画像は`max-age=2592000`、CSS/JSは`no-cache, must-revalidate`、HTMLは`max-age=0`（一巡目と同じ）。残り：DISC476、英語のトップのPCでCLS 0.112。未確認：本番のCloudflare（Brotli・HTTP/3）での実測、実機の低性能SP、INP、オフラインの再訪（Service Workerは無い）。",
+  "first_round_discs": [
+   {
+    "disc": "DISC476",
+    "now": "not_fixed",
+    "note_ja": "日本語のページは今も1.16〜1.47MBで、フォントが約1MB（見出し550KB・本文315KB・見出しラテン119KB）。遅いSPのLCPは最大4.4秒、/coins/のCLS 0.33（フォントが届く6〜7秒でナビと本文がずれる）は一巡目と同じ。英語は日本語の部分フォントを読まず0.6〜0.85MBに減った。作り直しの規模は所有者の判断待ちと台帳にある。"
+   }
+  ],
+  "new_findings": [
+   {
+    "scope": "W021（二巡目）",
+    "title_ja": "既定の言語になった英語のトップが、PCで読み込み直後に大きくずれる（CLS 0.112）",
+    "detail_ja": "Web `a44daf4`、PC 1280×800、制限なし、言語なしの`/`と`/?lang=en`（3回とも同じ値）。手順：トップを開き`layout-shift`を記録する。期待：ずれは0.1以下（一巡目のPCは全ページ0.05以下、今の日本語のトップは0.017）。実際：0.3〜0.5秒の時点で`.nr-hero-showcase`・`.nr-hero-pc-view`が動き、CLS 0.112。言語なしのURLは英語が既定になったので、最初に来る人が見るページで起きる。",
+    "todo_ja": "英語の見出しの行数が決まる前にヒーローの見本の場所を確保する（高さ・縦横比を固定する）。"
+   }
+  ]
+ },
+ {
+  "id": "W022",
+  "web_sha": "a44daf4",
+  "judgment": "OK",
+  "evidence_ja": "Web `a44daf4`（git archiveの写しを`wrangler dev --local`、127.0.0.1:8802、Chromium〔Playwright〕、`/api/community`は`{\"works\":[]}`に差し替え）。応答のヘッダーをcurlで、`src/**`・`public/js/**`・`public/_headers`・`wrangler.jsonc`・`.github/workflows/*`を読み、`npm audit`を写しで実行。HTML・API・静的ファイルの全部に`Content-Security-Policy`（`default-src 'self'`・`script-src 'self'`・`frame-ancestors 'none'`・`object-src 'none'`）・HSTS・`X-Frame-Options: DENY`・`nosniff`・`Referrer-Policy`・COOP・`Permissions-Policy`、4xx・5xxに`X-Robots-Tag: noindex`。/account-deletion/だけGoogleのログイン用に`accounts.google.com/gsi`を許し、COOPは`same-origin-allow-popups`、`noindex`。`/api/contact`は別のOrigin・Originなし・設定外のOriginを403 `forbidden_origin`で拒み、OPTIONSは405でCORSのヘッダーなし。`?lang=`やパスに入れた`<script>`は応答に出ない。`innerHTML`に入るのは辞書・固定の部品だけ（作品広場・削除ページ・お問い合わせ・ヘルプのスクリプトは`innerHTML`を使わない）。リポジトリに秘密は無い。`npm audit --omit=dev`は0件。15ページ×7言語で外部への通信0件（/account-deletion/はクライアントIDが未設定でGoogleのスクリプトを読まない）。ワークフローは12本で`one-shot-*`は0本。観察（記録のみ、一巡目と同じ）：W014のDISC467〜469は別の担当が判定、開発用の依存の高の脆弱性4件（`undici`、`npm audit fix`で直る。公開されるWorkerには入らない）。未確認：本番のCloudflareの設定（変数・秘密`RESEND_API_KEY`・`ACCOUNT_DELETION_GOOGLE_CLIENT_ID`・Durable Object・Cloudflare Access・ログ）。台帳にはCIの公開料金の確認が両ドメインともCloudflare Accessの認証で止まると記録がある。手元で確かめられる範囲では完了条件を満たすのでOKとした。正規ドメインの食い違いはW018の新規に記録した。",
+  "first_round_discs": [
+   {
+    "disc": "DISC477",
+    "now": "fixed",
+    "note_ja": "`wrangler.jsonc`の宛先・送り元は`support@miranima-studio.com`、回数制限はDurable Object（`CONTACT_RATE_LIMITER`、SQLite）になり、例示のアドレスとKVの欠けは無くなった。READMEもDurable Objectの手順。本番での送信・制限の動作は未確認。"
+   }
+  ],
+  "new_findings": []
+ },
+ {
+  "id": "W023",
+  "web_sha": "a44daf4",
+  "judgment": "要修正",
+  "evidence_ja": "Web `a44daf4`の写しで数え、CIの定義と結果（GitHub Actions）を読み、手元で実行できる確認を流した。CSS 46ファイル・`!important` 3639個、辞書24ファイルで同じ鍵が2つ以上のファイルにあるもの246（最大22ファイル）、辞書以外で辞書を書き換えるスクリプトが増えた（`opal-ui-naming.js`）。手元の実行：`node --test tests/*.test.mjs` 36件成功、`seo-contract-audit` 成功、`font-and-captures-contract`・`opal-brand-contract`・`audit-translation-tone` 成功、`wrangler deploy --dry-run` 成功。a44daf4のCI：字の抜け7言語・ヘルプの同期・依存の一覧・フォントとキャプチャ・幅の総当たりは成功、`Refreshed website smoke`はsmokeのジョブは成功だが公開料金の2ジョブが失敗（Cloudflare Accessの認証、台帳に記録あり）で実行全体は赤。残り：DISC478、`npm run format:check`が122ファイルで失敗し、それを見る`visual-audit.yml`は手動起動だけ。観察：`tmp-trigger-feature-capture.txt`（中身「temporary trigger」）が残る、公開されるJSの注記に他社の製品名（`i18n-dict-about.js`の先頭の説明、画面には出ない）。未確認：`HANDOFF.md`・`DESIGN.md`・引き継ぎガイドの全文と今の作りの一致、各監査のtestをわざと壊して落ちるかの確認。",
+  "first_round_discs": [
+   {
+    "disc": "DISC478",
+    "now": "not_fixed",
+    "note_ja": "CSSは54→46ファイルに減ったが`!important`は3587→3639に増え、「-final」「-fix」の層も残る。辞書の重なりは246の鍵。実行時の書き換え（`opal-ui-naming.js`）が実際に西語・韓国語の文を壊している（W019の新規）。作り直しの規模は所有者の判断待ちと台帳にある。"
+   },
+   {
+    "disc": "DISC479",
+    "now": "fixed",
+    "note_ja": "字の抜けのCIは7言語×14ページ×2幅になり（a44daf4で成功）、ヘルプの同期の道具（`tools/sync-app-help.mjs`）とCI（`app-help-sync.yml`、成功）がある。`font-fallback-audit`の代わりに`website-glyph-coverage-audit`が走る。"
+   }
+  ],
+  "new_findings": [
+   {
+    "scope": "W023（二巡目）",
+    "title_ja": "整形・SEOの契約・Workerの組み立て・お問い合わせAPIのtestを見るCIが手動起動だけで、整形の確認は今122ファイルで落ちる",
+    "detail_ja": "Web `a44daf4`の`.github/workflows/visual-audit.yml`と写しでの実行。手順：`npm ci`の後`npm run format:check`（Prettier 3.6.2）。期待：READMEとCIの定義どおり成功し、pushのたびに確かめられる。実際：「Code style issues found in 122 files」（`public/js` 24・`public/css` 17・`tests`・`tools`・`docs`）。`format:check`・`wrangler deploy --dry-run`・`seo-contract-audit`・`worker-seo-runtime-audit`・`contact-api.test`・全ページの見た目の総当たりを持つ`visual-audit.yml`は`workflow_dispatch`だけで、最後の実行は2026-09-28（失敗）。`contact-form.test`・`store-release-link.test`・`community-playback.test`・`feature-pair-layout-contract.test`はどのワークフローからも呼ばれない（手元では36件成功）。",
+    "todo_ja": "軽い確認（整形・SEOの契約・dry-run・`node --test tests/*.test.mjs`）をpushで走るワークフローへ移し、整形を一度かけ直す。"
+   }
+  ]
+ },
+ {
+  "id": "W024",
+  "web_sha": "a44daf4",
+  "judgment": "要修正",
+  "evidence_ja": "App `2939841e`・Web `a44daf4`。W017〜W023の二巡目の結果と、製品の約束の項目をコードで確かめた（W001〜W016の個別のDISCは別の担当が判定）。名前は両方NIARIM。アプリは`minSdk 24`、Webは最低の版を書かず食い違いなし。アプリの依存に機械学習・生成AIのライブラリは無い。アプリにhttpsのApp Linksは無く、Webにも`assetlinks.json`は無い。Webに解析のタグは無く外部への通信0件、アプリのFirebaseは通知だけ。Webは「ANDROID / 配信前」「Google Playでの配信を準備しています。」と出し、ストアのボタンはURLが入るまで隠す（`config.js`の`GOOGLE_PLAY_URL`・`X_URL`は空）。アカウント削除はアプリの設定→Webの削除ページ→バックエンドの削除APIでつながる（W037）。製品の約束の食い違いで残るもの：オパールの呼び名（Webの検索向けの文は「コイン」、西語・韓国語の文の崩れ：W018・W019の新規）、アプリが開く削除ページのドメインとWebの正規ドメインの違い（W018の新規）、プライバシーポリシー・規約の不足（DISC485・486・488・489）。未確認：実機での保存→共有→公開→Webでの表示の往復（バックエンドの本番・端末なし）。",
+  "first_round_discs": [],
+  "new_findings": []
+ },
+ {
+  "id": "W025",
+  "web_sha": "a44daf4",
+  "judgment": "未確認",
+  "evidence_ja": "App `2939841e`のコードを読んだだけで、PC・SPの実画面での手数・時間・誤操作の計測はしていない（この担当ではFlutterを動かさない決まり）。繰り返しを短くする仕組み（フレームの一括追加・複製、前後のフレームのキーの繰り返し、オニオンスキン、一括の自動塗り、自作の自動操作、早替えツール、ワークスペース）は一巡目と同じくコードにあり、生成AIの機能は無い。Webの/features/は15ページの確認で表示・多言語の崩れは無い（altの日本語はW019）。A側の個別のDISC（自動塗り・自動操作・フレームの一覧）はA0xxの二巡目で判定する。未確認：実際の手数・時間・誤操作の計測と改善の効果。",
+  "first_round_discs": [],
+  "new_findings": []
+ },
+ {
+  "id": "W026",
+  "web_sha": "a44daf4",
+  "judgment": "未確認",
+  "evidence_ja": "App `2939841e`の`store/aso/**`・`android/app/build.gradle.kts`・`pubspec.yaml`、Web `a44daf4`の`public/js/config.js`・`wrangler.jsonc`を読んだ。国ごとの市場・普及率・価格の一次資料は調べていない（未公開の事実を作らない決まり）。リポジトリで分かる事実：ストアの文は7地域×Google Play・App Store（`tools/validate_aso_metadata.py`は「passed for 7 locales」）、決済はGoogle Play、広告はAdMob（Webに`app-ads.txt`）、Androidは`minSdk 24`、Google PlayのURLと公式Xは未設定で、Webは「配信前」と表示。公開ドメインは`niarim.miranima-studio.com`と`niarim-web.niarim.workers.dev`の2つが設定に出る（W018の新規）。未確認：配布する国・地域の決定、各国の端末・価格・問い合わせの言語・検索の経路（所有者の決定と外部の資料が要る）。",
+  "first_round_discs": [],
+  "new_findings": []
+ },
+ {
+  "id": "W027",
+  "web_sha": "a44daf4",
+  "judgment": "未確認",
+  "evidence_ja": "Web `a44daf4`の`public/**`とApp `2939841e`の`store/aso/metadata.json`を検索した。各市場の検索語・検索量の一次資料は調べていない。表示される文・SEOのタグ・ストアの文に競合の製品名は無い（`i18n-dict-about.js`の先頭の開発者向けの注記に2つあるだけで画面には出ない）。`<meta name=\"keywords\">`・隠した文字・「No.1」「世界初」等の誇張は無い。流入後の期待の一致にかかわる残り：/coins/の検索向けの題が旧名「コイン」（W018の新規）、/coins/と/help/の生の本文の日本語（DISC472の残り）、西語・韓国語の文の崩れ（W019の新規）。未確認：7地域の実際の検索語・意図（公開前で数値が無い）。",
+  "first_round_discs": [],
+  "new_findings": []
+ },
+ {
+  "id": "W028",
+  "web_sha": "a44daf4",
+  "judgment": "要修正",
+  "evidence_ja": "App `2939841e`の`store/aso/metadata.json`・`strategy.md`・`tools/validate_aso_metadata.py`（実行して「ASO metadata validation passed for 7 locales」）・`assets/icon`・`assets/logo`。各ストアの最新の規定の一次資料とPlay Consoleの管理画面は見ていない。題・短い説明は上限内で地域の言葉、競合の名前・順位・料金の主張は無い。説明文は今も113〜362字（ja 157・en 345・zh-CN 113・zh-TW 114・ko 188・fr 355・es 362）で、`store/`にあるのは`metadata.json`と`strategy.md`だけ（スクリーンショット・フィーチャーグラフィック・512pxのアイコンは無い）。未確認：Play Consoleの分類・レーティング・データセーフティ・更新情報・動画。",
+  "first_round_discs": [
+   {
+    "disc": "DISC480",
+    "now": "not_fixed",
+    "note_ja": "説明文の長さ・内容と、ストアの画像が無いことは一巡目と同じ（台帳では所有者の判断待ち）。"
+   }
+  ],
+  "new_findings": []
+ },
+ {
+  "id": "W029",
+  "web_sha": "a44daf4",
+  "judgment": "要修正",
+  "evidence_ja": "App `2939841e`の`store/aso/strategy.md`・`pubspec.yaml`、Web `a44daf4`の`public/js/store-release-link.js`・`config.js`と、15ページ×7言語の通信の記録。公開前で実際の数値は無い。Webは外部への通信0件で解析のタグが無く、同意の画面が要らない状態（ポリシーと矛盾しない）。`store-release-link.js`はGoogle Playの`details?id=com.niarim.niarim`以外のURLを受けず、リンクは`noopener noreferrer`、URLが入るまでボタンを隠す。指標を測る解析と流入元（referrer・UTM）は今も無い。未確認：公開後の実数、ストアの実験。",
+  "first_round_discs": [
+   {
+    "disc": "DISC481",
+    "now": "not_fixed",
+    "note_ja": "解析も、ストアのボタンの流入元の印も無いまま（台帳では所有者の判断待ち。無断で収集を足さない決まりなので、設計の決定が先）。"
+   }
+  ],
+  "new_findings": []
+ },
+ {
+  "id": "W030",
+  "web_sha": "a44daf4",
+  "judgment": "要修正",
+  "evidence_ja": "App `2939841e`の`assets/**`と`docs/product-audit/MATERIAL_ASSET_INVENTORY.md`、Web `a44daf4`の`public/assets/**`・`LICENSE.md`。第三者の作品との類似・肖像の外部の調査はしていない。権利の判断はしない。素材の台帳はブラシ45・スタンプ22・トーン63の130行で、今のファイルの数と同じ。130行の「現行blob」をgitの今の値と突き合わせ、食い違い0。基準のApp `cd1d8d6c`から`assets/`の変更は無い。ただし台帳自身が「確認できたのはファイルと登録履歴まで。原本・作者・制作方法・利用条件・第三者素材の有無は照合を要する」と書く。Webの画像はアプリの画面とロゴ、アイコンはMaterial Icons（`LICENSE.md`に記録）、フォントは`LICENSE.md`と/font-licenses/で表示。未確認：素材の作者・出所（所有者の資料）、類似の調査、翻訳・図の作者の記録。",
+  "first_round_discs": [
+   {
+    "disc": "DISC482",
+    "now": "partial",
+    "note_ja": "ファイルの一覧と登録の履歴・識別子の台帳はできた。求められていた出所・作り方・権利者・利用条件の欄はまだ空で、所有者の資料との照合が要る。"
+   }
+  ],
+  "new_findings": []
+ },
+ {
+  "id": "W031",
+  "web_sha": "a44daf4",
+  "judgment": "未確認",
+  "evidence_ja": "App `2939841e`の`pubspec.yaml`・`.github/workflows/dependency-inventory.yml`・`tool/export_flutter_dependency_inventory.py`・`.niashare`のコード、Web `a44daf4`の`dependency-inventory.yml`・`public/assets/fonts/LICENSE.md`・`NotoSerifTC-OFL.txt`・/font-licenses/。Flutterは動かしていない。ライセンスの条件の判断はしない。依存の一覧（CycloneDX）をCIが作る：App・バックエンドは#44527699318（App `cd1d8d6c`）成功、Webは#44620838078（a44daf4）成功。`cd1d8d6c`から今まで`pubspec.lock`・`backend/package-lock.json`の変更は無い。Webは手元で`npm sbom`を実行して95部品（MIT 52・Apache-2.0 22・LGPL-3.0-or-later 10〔開発用の`sharp`/libvips、公開されるWorkerには入らない〕ほか）。Webのフォントは12の`@font-face`の元（くらむぼん・白光明朝・Noto Serif KR/SC/TC・Noto Sans KR/SC）がどれも`LICENSE.md`と/font-licenses/にあり、繁体字はOFLの文を同梱、予約名「Source」は使わない。未確認：推移の依存の1件ずつのライセンスの条件と表示の漏れ（一覧は作るだけで、許可・不許可の判定はしない）、LGPLの`ffmpeg_kit`の「対応するソース」の示し方（専門の判断）、AdMob・Firebase等のSDKの規約、アプリのライセンスの画面の実際の表示。観察：Webの依存の一覧のCIは`LICENSE.md`か`package*.json`が変わったときだけ動き、フォントのファイルだけを足したときは動かない。",
+  "first_round_discs": [
+   {
+    "disc": "DISC483",
+    "now": "fixed",
+    "note_ja": "コードの確認だけ（Flutterは未実行）：共有の作成は使っているフォントの名前の一覧（`projectFontNamesManifest`）だけを入れ、古い共有の再送はフォントの本体を除いて作り直す（`share_project_file_action.dart`・`niapro_serializer.dart`、`font_share_bundle_test.dart`が4件）。台帳ではApp `cd1d8d6c`の全体回帰#44527698973が成功。実画面での確認はA側の二巡目。"
+   }
+  ],
+  "new_findings": []
+ },
+ {
+  "id": "W032",
+  "web_sha": "a44daf4",
+  "judgment": "要修正",
+  "evidence_ja": "Web `a44daf4`の`public/index.html`・`store-release-link.js`・`config.js`、App `2939841e`のロゴ・題。特許庁（J-PlatPat）・USPTO・EUIPO・WIPOの公式の検索はしていない（この環境から使えない）。登録・非侵害の判断はしない。他社の商標は機能の説明に要る名前（Google・YouTube・Android・Galaxy DeX等）だけで、ロゴの画像は使っていない。競合の名前はSEO・ASOに無い（W027）。ストアのボタンは自前の`a.nr-store-button`のままで、今はURLが空なので隠れている。未確認：「NIARIM」とロゴの各国の公式のデータベースでの調査（一巡目に公開の検索で似た綴りNIRAMI・NIARO・NIARAP・NIYARAを記録）、YouTubeのAPIのブランドの表示、Samsungの商標の表記。",
+  "first_round_discs": [
+   {
+    "disc": "DISC484",
+    "now": "not_fixed",
+    "note_ja": "Google Playへのボタンは今も公式のバッジの画像ではなく自前のボタン（公開前でURLが空の間は隠れる）。台帳では公開時の素材の判断待ち。"
+   }
+  ],
+  "new_findings": []
+ },
+ {
+  "id": "W033",
+  "web_sha": "a44daf4",
+  "judgment": "未確認",
+  "evidence_ja": "App `2939841e`。公式の特許のデータベース（J-PlatPat・USPTO・Espacenet・PATENTSCOPE）の調査と請求項の照合はしていない（この環境から使えず、専門の評価が要る）。一巡目に挙げた独自の処理の候補（自動線画・髪の折り畳み・墨溜まり・投げ縄の領域の吸着・絵の具らしい混色・水彩の境界・ドット絵の色の限り方・自動塗り・期間のランキング）のファイルは今もあり、基準の`cd1d8d6c`から今までの`lib`・`backend`の変更は37ファイル（アカウント削除・文言が中心）。侵害の有無は断定しない。新しい要修正なし。",
+  "first_round_discs": [],
+  "new_findings": []
+ },
+ {
+  "id": "W034",
+  "web_sha": "a44daf4",
+  "judgment": "未確認",
+  "evidence_ja": "App `2939841e`・Web `a44daf4`。公式の意匠のデータベース（J-PlatPat・USPTO・EUIPO・Hague）の調査はしていない（この環境から使えず、専門の評価が要る）。アプリのアイコン・ロゴは自前のSVG、UIのアイコンはMaterial Icons（Apache 2.0、Webの`icons/ui/LICENSE.md`に記録）。Webの15ページを7言語で見た範囲で、他社のロゴ・画面の画像は無い。類似の有無は断定しない。新しい要修正なし。",
+  "first_round_discs": [],
+  "new_findings": []
+ },
+ {
+  "id": "W035",
+  "web_sha": "a44daf4",
+  "judgment": "要修正",
+  "evidence_ja": "App `2939841e`の`docs/product-audit/DATA_FLOW_INVENTORY.md`・`privacyPolicyArt*`（ja）、Web `a44daf4`の/privacy/（ja、生の本文をshots-b/privacy-ja.txtに保存）・`src/contact.js`・`wrangler.jsonc`、15ページ×7言語のブラウザの通信の記録。実機のパケットの記録とPlay Consoleのデータセーフティは見ていない。法令上の十分さは判断しない。データの流れの文書ができ、11の機能（共有・Googleログイン・アカウント削除・作品広場とYouTube・購入の確認・オパールと広告報酬・制作時間・通知・Webのお問い合わせ・Webの作品広場）の送り先と保存を書く。Webのページは外部への通信0件（/account-deletion/は未設定でGoogleを読まない）。ポリシーの第9条に連絡先`support@miranima-studio.com`が入り、Webには削除ページへのリンクがある。ポリシーの本文は今も、購入の確認（購入トークンのハッシュをサーバーに保存）・オパール・制作時間の記録を書かず、第3条は「開発者はこれらの情報を独自に取得・保存する機能を実装していません」のまま。Webのサイト自身の扱い（お問い合わせ・IPでの回数制限・YouTubeの画像）も本文に無い（DISC471、W016で判定）。未確認：各SDKが自動で送る範囲、データセーフティの申告との一致。",
+  "first_round_discs": [
+   {
+    "disc": "DISC485",
+    "now": "not_fixed",
+    "note_ja": "ポリシー（アプリのARBもWebも）に、購入の確認・オパール・制作時間の記録の記述は無い。実装の側の文書（DATA_FLOW_INVENTORY）はこの3つを書いていて、文書とポリシーが食い違う。"
+   }
+  ],
+  "new_findings": []
+ },
+ {
+  "id": "W036",
+  "web_sha": "a44daf4",
+  "judgment": "要修正",
+  "evidence_ja": "App `2939841e`の`privacyPolicyArt1〜9`（ja）、Web `a44daf4`の/privacy/（ja）。法令の一次資料の調査と、どの法令が当てはまるかの判断はしていない（配布の市場が未決定、W026）。第1〜9条の構成は一巡目と同じ。変わった点：第9条に連絡先のメールアドレス、Webに削除ページへのリンク、最終更新日2026年11月18日。事業者の氏名・名称と住所、開示・訂正・利用停止の請求の手続き、安全管理の措置、苦情の窓口、法的な根拠、地域ごとの権利は今も無い。未確認：APPI・GDPR・UK GDPR・米国の州法・PIPL等の適用、同意の取り方、未成年の扱いの十分さ（専門の確認）。",
+  "first_round_discs": [
+   {
+    "disc": "DISC486",
+    "now": "partial",
+    "note_ja": "連絡先のメールアドレスだけ入った。事業者の名称・住所、請求の手続き、安全管理、苦情、法的根拠、権利の項目は無いまま（台帳では法務の確認待ち）。"
+   }
+  ],
+  "new_findings": []
+ },
+ {
+  "id": "W037",
+  "web_sha": "a44daf4",
+  "judgment": "要修正",
+  "evidence_ja": "Web `a44daf4`の/account-deletion/（7言語×PC/SPで表示）・`src/account-deletion.js`・`tests/account-deletion.test.mjs`（手元で成功）、App `2939841e`の`settings_screen.dart`・`backend/src/api/routes/accountDeletion.ts`・`backend/src/batch/accountErasure.ts`・`backend/lib/niarim-backend-stack.ts`。CI：a44daf4のsmokeのジョブの「模擬のGoogleの本人確認と取り消せない削除の確認」成功、台帳の使い捨てDBのCI #44562613100成功。実際のGoogleの本人確認と本番のバックエンドでの削除は実行していない（本番へ要求を送らない決まり）。手元ではクライアントIDが未設定なので`/api/account-deletion/*`は503で、ページは「続行できませんでした」と出る（設定前に進めない作り）。ページは消えるデータ（プロフィール・作品広場の投稿・ブックマーク・フォロー・オパール・特典・ミッション・通知）と残るもの（端末の作品・YouTubeの動画・Google Playの定期購入は別管理）を7言語で示す。アプリの設定に「アカウント削除」の項目があり、バックエンドは本人確認（nonce・5分以内・メール確認済み）→確認→1分ごとの消去処理。要修正はポリシーの文と実際の手段の食い違い（新規）。未確認：削除の受付から完了までを本物のGoogleと公開のURLで確かめていない。台帳では公開前の環境確認へ引き継ぎ、公開のURLは今Cloudflare Accessの認証で止まると記録がある。アクセス・訂正・持ち出しの請求の手段はポリシーに無い（DISC486）。",
+  "first_round_discs": [
+   {
+    "disc": "DISC487",
+    "now": "fixed",
+    "note_ja": "コードとCIの範囲で直った：本人の操作で完結する削除ページ（Web）・アプリの設定からの入口・バックエンドの削除APIと消去のバッチがある。公開環境でのテスト用アカウントの削除は未確認。"
+   }
+  ],
+  "new_findings": [
+   {
+    "scope": "W037（二巡目）",
+    "title_ja": "プライバシーポリシーの第7条6項が今も「削除は第9条の窓口へ連絡」と書き、本人の操作の削除と、削除の後に残る記録を書いていない",
+    "detail_ja": "Web `a44daf4`の/privacy/（ja）とApp `2939841e`の`privacyPolicyArt7Body`、`docs/product-audit/DATA_FLOW_INVENTORY.md`。期待：約束と実際の手段が同じで、消える物・残る物・保持の例外が示される（W037の完了条件）。実際：第7条6項は「開発者のサーバー上の記録の削除を希望する場合は、第9条の窓口へご連絡ください」のまま。削除ページへのリンクはWebのポリシーの末尾にあるだけで、本文は本人の操作の削除を説明しない。データの流れの文書が書く「削除の後も残る記録」（古いログインを拒むハッシュ2時間・完了の確認用の鍵24時間・広告報酬の二重付与防止の鍵・Lambdaのログ1か月・障害時の退避7日）もポリシーと削除ページに無い。",
+    "todo_ja": "第7条6項を本人の操作の削除の案内に直し、残る記録と期間をポリシーか削除ページに書く（文面は法務の確認）。"
+   }
+  ]
+ },
+ {
+  "id": "W038",
+  "web_sha": "a44daf4",
+  "judgment": "要修正",
+  "evidence_ja": "App `2939841e`の`privacyPolicyArt6Body`・`DATA_FLOW_INVENTORY.md`、Web `a44daf4`の/privacy/・`wrangler.jsonc`・`src/contact.js`・`src/account-deletion.js`。各社のDPA・再委託先・契約の締結は見ていない（この環境から閲覧できない）。適法かどうかは判断しない。第6条は今も「Google AdMob、Google Play Billing」だけ。コードと設定から分かる事業者：AWS（Lambda・DynamoDB、`ap-northeast-1`）、Google（AdMob・Play・FCM・YouTube・ログイン）、Resend（お問い合わせのメール）、Cloudflare（Webの配信・Durable Objectの回数制限）、GitHub（フォント）。データの流れの文書は「委託先・保管先・削除の手順は公開前に照合」と書く。未確認：各社のDPA・SCC・UK IDTA・移転の影響評価、契約の有無。",
+  "first_round_discs": [
+   {
+    "disc": "DISC488",
+    "now": "not_fixed",
+    "note_ja": "第6条の文は一巡目と同じで、AWS・FCM・YouTube・Googleのログイン・Resend・Cloudflare・GitHubとその国は書かれていない（台帳では法務の確認待ち）。"
+   }
+  ],
+  "new_findings": []
+ },
+ {
+  "id": "W039",
+  "web_sha": "a44daf4",
+  "judgment": "要修正",
+  "evidence_ja": "App `2939841e`の`licenseTermsArt1〜13`（ja）、Web `a44daf4`の/terms/（ja、生の本文をshots-b/terms-ja.txtに保存）、アプリの同意の記録のコード検索。法令の一次資料の調査・市場ごとの判断はしていない。Webの規約に第2条3項（未成年は法定代理人の同意）が入り、アプリと同じ13条になった（最終更新日2026年11月18日）。第10条3項は今も「故意または重過失がある場合…であっても…直近1年間に実際に支払った金額を上限」。第6条に自動更新・解約の方法の記述は無い（Google Playの規定に従うとだけ書く。削除ページは定期購入が別管理だと案内する）。アプリに規約への同意の版・日時を残すコードは見つからない（`termsAccepted`等の検索0件）。特定商取引法の表示は所有者の作業のまま。未確認：各市場の消費者法との合い方、7言語の法的な意味の一致（逆翻訳）。",
+  "first_round_discs": [
+   {
+    "disc": "DISC489",
+    "now": "not_fixed",
+    "note_ja": "故意・重過失のときの賠償の上限、自動更新と解約の方法、同意の記録の3点とも一巡目と同じ（台帳では法務の確認待ち）。"
+   }
+  ],
+  "new_findings": []
+ },
+ {
+  "id": "W040",
+  "web_sha": "a44daf4",
+  "judgment": "要修正",
+  "evidence_ja": "App `2939841e`の`docs/product-audit/LEGAL_IP_STANDARD.md`・`DATA_FLOW_INVENTORY.md`・`MATERIAL_ASSET_INVENTORY.md`・`.github/workflows/dependency-inventory.yml`、Web `a44daf4`の`dependency-inventory.yml`。W030〜W039の二巡目の結果を集めた。法的な保証はしない。できたもの：依存の一覧（CycloneDX）を作るCI（App・バックエンド・Web、どれも成功）、同梱の素材130件のファイルの台帳、データの流れの文書、アカウント削除の手段（DISC487）、共有にフォントの本体を入れない（DISC483）、お問い合わせの宛先と回数制限の設定（DISC477）。残る法務・知財の危険（重い順）：(1)ポリシーに購入の確認・オパール・制作時間（DISC485）、事業者の名称・住所・請求の手続き等（DISC486）、越境移転の事業者と国（DISC488）、サイト自身の扱い（DISC471）が無い。第7条6項が実際の削除の手段と合わない（W037の新規）。(2)規約の賠償の上限・自動更新と解約・同意の記録（DISC489）、特定商取引法の表示（所有者の作業）。(3)素材の出所・権利者（DISC482の残り）、Google Playのバッジ（DISC484）。(4)外部の調査が未：商標・特許・意匠・各市場の法令・各社のDPA。(5)公開のURLでのアカウント削除の確認（Google Playの規定にかかわる）。",
+  "first_round_discs": [
+   {
+    "disc": "DISC490",
+    "now": "partial",
+    "note_ja": "依存とライセンスの一覧のCI・素材の一覧・データの流れの文書はできた。商標等の調査の記録、素材の出所・権利者、再監査の結果の保存は無く、依存の一覧は「作るだけ」で新しいライセンス・SDK・収集の追加を止める判定はしない。App側は`pubspec`・`backend`の変更のときだけ動く。"
+   }
+  ],
+  "new_findings": []
+ },
+ {
+  "id": "W041",
+  "web_sha": "a44daf4",
+  "judgment": "要修正",
+  "evidence_ja": "App `2939841e`・Web `a44daf4`の監査の記録（`AUDIT_ROUTE.md`・修正引継ぎ台帳）とW017〜W040の二巡目の結果。一周の締めの条件は満たさない。理由：(1)W017〜W040の二巡目で、一巡目のDISCのうち直っていないもの（DISC474・476・478・480・481・484・485・488・489）と一部だけのもの（DISC472・473・482・486・490）が残る。(2)二巡目で新しい要修正が出た（W018で3件、W019で4件、W020で2件、W021・W023・W037で各1件）。(3)未確認が残る：Android実機、本番のWorker・Resend・バックエンド・Googleの本人確認、外部の調査（商標・特許・意匠・法令・DPA・市場）、読み上げ・Safari・Firefox、336通りの全状態の目視。(4)CIの赤：a44daf4の`Refreshed website smoke`は公開料金の2ジョブがCloudflare Accessの認証で失敗（台帳に記録）、`visual-audit.yml`は2026-09-28から走っていない。A001〜A104・W001〜W016の二巡目は別の担当が進めている。",
+  "first_round_discs": [],
+  "new_findings": []
+ },
+ {
+  "id": "W042",
+  "web_sha": "a44daf4",
+  "judgment": "未確認",
+  "evidence_ja": "W042は、全IDの巡回が終わりW041を締めた時点で、両リポジトリの開始SHAから最終HEADまでの差分を数えて回帰を見る行。W041が締まっていないので着手していない。今回の二巡目の対象：Webの製品のHEADは`a44daf4`（その後の`28f35d6`・`7cb46c3`は監査の記録の写しだけで、`a44daf4`からの差分は`docs/work-audit/state/`の3ファイル）、Appの製品の最後のcommitは`2939841e`（HEAD `1a80beb5`は監査の記録）。差分の全件の列挙と回帰は未確認。",
+  "first_round_discs": [],
+  "new_findings": []
+ }
+]

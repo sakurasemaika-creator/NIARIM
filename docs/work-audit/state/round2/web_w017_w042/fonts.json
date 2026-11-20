@@ -1,0 +1,92 @@
+{
+ "ja|Inter ExtraBold": {
+  "glyphs": 1,
+  "ex": [
+   "/coins/ :: ▶ <SPAN.coins-card-icon> x1"
+  ]
+ },
+ "ja|DejaVu Sans": {
+  "glyphs": 1,
+  "ex": [
+   "/coins/ :: ✦ <SPAN.coins-card-icon> x1"
+  ]
+ },
+ "ja|WenQuanYi Zen Hei": {
+  "glyphs": 1,
+  "ex": [
+   "/font-licenses/ :: © NIARIM <DIV.font-license-access> x1"
+  ]
+ },
+ "en|Inter ExtraBold": {
+  "glyphs": 1,
+  "ex": [
+   "/coins/ :: ▶ <SPAN.coins-card-icon> x1"
+  ]
+ },
+ "en|DejaVu Sans": {
+  "glyphs": 1,
+  "ex": [
+   "/coins/ :: ✦ <SPAN.coins-card-icon> x1"
+  ]
+ },
+ "en|WenQuanYi Zen Hei": {
+  "glyphs": 1,
+  "ex": [
+   "/font-licenses/ :: © NIARIM <DIV.font-license-access> x1"
+  ]
+ },
+ "ko|Inter ExtraBold": {
+  "glyphs": 1,
+  "ex": [
+   "/coins/ :: ▶ <SPAN.coins-card-icon> x1"
+  ]
+ },
+ "ko|Unifont": {
+  "glyphs": 1,
+  "ex": [
+   "/coins/ :: ✦ <SPAN.coins-card-icon> x1"
+  ]
+ },
+ "ko|WenQuanYi Zen Hei": {
+  "glyphs": 1,
+  "ex": [
+   "/font-licenses/ :: © NIARIM <DIV.font-license-access> x1"
+  ]
+ },
+ "zh-Hans|Inter ExtraBold": {
+  "glyphs": 1,
+  "ex": [
+   "/coins/ :: ▶ <SPAN.coins-card-icon> x1"
+  ]
+ },
+ "zh-Hans|DejaVu Sans": {
+  "glyphs": 1,
+  "ex": [
+   "/coins/ :: ✦ <SPAN.coins-card-icon> x1"
+  ]
+ },
+ "zh-Hans|WenQuanYi Zen Hei": {
+  "glyphs": 1,
+  "ex": [
+   "/font-licenses/ :: © NIARIM <DIV.font-license-access> x1"
+  ]
+ },
+ "zh-Hant|Inter ExtraBold": {
+  "glyphs": 1,
+  "ex": [
+   "/coins/ :: ▶ <SPAN.coins-card-icon> x1"
+  ]
+ },
+ "zh-Hant|DejaVu Sans": {
+  "glyphs": 1,
+  "ex": [
+   "/coins/ :: ✦ <SPAN.coins-card-icon> x1"
+  ]
+ },
+ "zh-Hant|WenQuanYi Zen Hei": {
+  "glyphs": 1,
+  "ex": [
+   "/font-licenses/ :: © NIARIM <DIV.font-license-access> x1"
+  ]
+ }
+}
