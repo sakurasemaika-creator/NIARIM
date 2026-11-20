@@ -23,6 +23,7 @@ import 'package:niarim/widgets/ad_banner_widget.dart';
 import 'package:niarim/screens/export/export_screen.dart';
 import 'package:niarim/screens/export/widgets/export_complete_dialog.dart';
 import 'package:niarim/screens/timeline/timeline_screen.dart';
+import 'package:niarim/screens/home/widgets/exported_work_card.dart';
 
 import 'helpers/load_app_fonts.dart';
 
@@ -313,14 +314,18 @@ void main() {
       tester.widget<TabBar>(find.byType(TabBar).first).controller!.index,
       1,
     );
-    final filename = exported.uri.pathSegments.last;
+    final savedWork = find.byWidgetPredicate(
+      (widget) =>
+          widget is ExportedWorkCard &&
+          widget.name == exported.uri.pathSegments.last,
+    );
     await tester.runAsync(() async {
-      for (var i = 0; i < 100 && find.text(filename).evaluate().isEmpty; i++) {
+      for (var i = 0; i < 100 && savedWork.evaluate().isEmpty; i++) {
         await tester.pump(const Duration(milliseconds: 50));
         await Future<void>.delayed(const Duration(milliseconds: 20));
       }
     });
-    expect(find.text(filename), findsWidgets);
+    expect(savedWork, findsOneWidget);
     appRouter.go('/home');
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 700));
