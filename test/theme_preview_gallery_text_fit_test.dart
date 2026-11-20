@@ -319,7 +319,7 @@ void main() {
             problems.add('$where: 「$description」が無い');
           } else if (p.first.text.style?.fontFamily !=
                   bodyFontFamilyFor(locale) ||
-              p.first.text.style?.fontWeight != FontWeight.normal) {
+              p.first.text.style?.fontWeight != FontWeight.w500) {
             problems.add('$where: 「$description」が本文の書体でない');
           }
         }

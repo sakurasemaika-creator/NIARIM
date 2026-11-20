@@ -1357,6 +1357,15 @@ void main() {
       '（Task#128）', (WidgetTester tester) async {
     // MaterialService.addMaterialが素材保存先を解決するのに
     // path_providerを使うため必要（mockPathProvider参照）。
+    const ffmpegEvents = EventChannel('flutter.arthenica.com/ffmpeg_kit_event');
+    final messenger =
+        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
+    messenger.setMockStreamHandler(
+      ffmpegEvents,
+      MockStreamHandler.inline(onListen: (_, _) {}),
+    );
+    addTearDown(() => messenger.setMockStreamHandler(ffmpegEvents, null));
+
     await bootToHome(tester);
 
     final routerContext1 = tester.element(find.byType(Scaffold).first);

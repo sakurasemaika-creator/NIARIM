@@ -42,8 +42,8 @@ List<String> _widthProblems(RenderParagraph p) {
   // Korean and Chinese headings share the family with body copy, but use
   // semibold or bold rather than the regular body face measured here.
   if (style?.fontFamily == 'Kuramubon' ||
-      (style?.fontWeight?.index ?? FontWeight.normal.index) >
-          FontWeight.normal.index) {
+      (style?.fontWeight?.value ?? FontWeight.w500.value) >
+          FontWeight.w500.value) {
     return const [];
   }
   final text = p.text.toPlainText(includeSemanticsLabels: false);
